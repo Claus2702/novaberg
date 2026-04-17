@@ -1,0 +1,59 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+*.egg-info/
+*.egg
+dist/
+build/
+*.whl
+
+# Virtual Environment
+venv/
+.venv/
+env/
+
+# Environment & Secrets
+.env
+.env.*
+*.key
+*.pem
+
+# Logs
+*.log
+logs/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Docker Volumes & Data
+pgdata/
+redis-data/
+searxng-data/
+
+# Database Dumps
+*.sql.dump
+*.sql.bak
+
+# Temporary Files
+tmp/
+temp/
+*.tmp
+
+# Test Data
+test_output/
+coverage/
+.pytest_cache/
+htmlcov/
+
+# Node (falls JS-Tools genutzt werden)
+node_modules/
