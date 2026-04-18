@@ -1,0 +1,70 @@
+[AUFGABE]
+Analysiere den folgenden Gespraechs-Turn und bestimme emotionale Salienz,
+Themen, Gedaechtnistyp und Dimension.
+
+Analysiere folgende Dimensionen:
+
+1. THEMEN: Welche sachlichen Themen kommen vor?
+
+2. EMOTIONEN: Welche emotionalen Signale gibt der User?
+   - Explizit (Worte wie "wichtig", "unbedingt", "leider")
+   - Implizit (Satzstruktur, Wiederholungen, Ausrufezeichen)
+
+3. SALIENZ: Wie dringend/wichtig ist dieser Inhalt fuer den User? (0.0 - 1.0)
+   - 0.0-0.2: Beilaeufig, Smalltalk, Hoeflichkeiten
+   - 0.3-0.4: Informativ, sachliche Frage
+   - 0.5-0.6: Moderates Interesse, beilaeufige Erwaehnung
+   - 0.7-0.8: Starke Emotion, Begeisterung, Sorge, explizites Interesse
+   - 0.9-1.0: Maximale Dringlichkeit, Notfall, akute emotionale Belastung
+
+4. GEDAECHTNISTYP: "kurz" oder "lang"
+   - "kurz": Einmalig, situativ, verfaellt wahrscheinlich
+   - "lang": Wiederkehrendes Interesse, Persoenlichkeitsmerkmal
+
+5. DIMENSION: Genau eine aus: kognition | emotion | werte | interessen | kommunikation | kontext
+
+6. INTENTIONEN: Was will der User mit dieser Aussage erreichen?
+   Waehle 1-3 aus dieser Liste, ERSTE = primaere Intention:
+   - "emotionaler_ausdruck" — Gefuehle teilen, Begeisterung, Frustration
+   - "information_teilen" — Fakten mitteilen, Erlebtes berichten
+   - "information_erfragen" — Wissen abfragen, Verstaendnisfrage
+   - "recherche_vertiefen" — Tiefes Eintauchen, Fachthema erforschen
+   - "gemeinsam_eruieren" — Brainstorming, gemeinsam Ideen entwickeln
+   - "reflexion" — Nachdenken, Philosophieren, Sinnfragen
+   - "smalltalk" — Plauderei, Alltaegliches, Verbindung halten
+   - "feedback_geben" — Lob, Kritik, Bewertung
+   - "feedback_erfragen" — Meinung, Einschaetzung einholen
+   - "planung" — Termine, Aufgaben, Organisation
+   - "anweisung" — Direkte Aufgabe, Aufforderung
+   - "bestaetigung" — Zustimmung, Gespraech fortsetzen
+   - "widerspruch" — Ablehnung, Korrektur, andere Sicht
+   - "abschluss" — Verabschiedung, Themenwechsel
+   - "hilferuf" — Ueberforderung, Frustration, Unterstuetzung noetig
+   - "humor" — Witz, Ironie, spielerischer Austausch
+
+7. EMOTION: Die emotionale Faerbung DIESER Nachricht. Genau eine aus:
+   begeisterung | freude | dankbarkeit | zufriedenheit |
+   stress | unsicherheit | ueberrascht | verwundert |
+   verzweiflung | traurigkeit | frustration | enttaeuschung |
+   wut | aerger | hoffnung | neugierig | neutral
+
+8. MODUS: Der aktuelle Gespraechsrahmen. Genau einer aus:
+   fachgespraech | philosophischer_austausch | alltag | arbeitsmodus |
+   emotional | spielerisch | lernmodus | kreativ | beratend | berichtend
+
+Antwortformat:
+{
+  "themen": ["thema1", "thema2"],
+  "emotionen": {
+    "explizit": ["signal1", "signal2"],
+    "implizit": ["signal1"],
+    "valenz": "positiv|negativ|neutral"
+  },
+  "salienz": 0.0,
+  "gedaechtnistyp": "kurz|lang",
+  "dimension": "kognition|emotion|werte|interessen|kommunikation|kontext",
+  "begruendung": "Warum diese Salienz-Bewertung?",
+  "intentionen": ["primaere_intention", "optionale_sekundaere"],
+  "emotion": "begeisterung|neugier|frustration|...|neutral",
+  "modus": "fachgespraech|philosophischer_austausch|alltag|..."
+}

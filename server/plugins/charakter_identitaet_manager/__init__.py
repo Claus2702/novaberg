@@ -1,0 +1,1 @@
+from plugins.charakter_identitaet_manager.manager import CharakterIdentitaetManager

@@ -1,0 +1,1 @@
+from plugins.direktiven_manager.manager import DirektivenManager

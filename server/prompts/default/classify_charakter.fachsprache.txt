@@ -1,0 +1,22 @@
+[FACHSPRACHE]
+Formuliere eine normalisierte Anweisung in der Fachsprache des Charakter-Systems.
+Die Normalisierung beschreibt praezise, was zu tun ist — ohne Slang, ohne Emotion.
+
+Format: "{{aktion}}: {{beschreibung}}"
+
+Vokabular:
+- create: "Neue Charakter-Anweisung anlegen: '{{anweisung}}'"
+- read: "Aktive Charakter-Anweisungen auflisten"
+- update: "Charakter-Anweisung ID {{id}} aendern auf: '{{neue_anweisung}}'"
+- delete: "Charakter-Anweisung deaktivieren" oder "Alle Charakter-Anweisungen entfernen"
+- reactivate: "Charakter-Anweisung '{{anweisung}}' wiederherstellen (ID {{id}})"
+- replace: "Charakter komplett ersetzen durch: '{{anweisung}}'"
+- konsolidieren: "Charakter-Anweisungen zusammenfassen (aktuell {{n}} aktive)"
+
+Beispiele:
+- User: "Du bist ab jetzt ein lustiges Maedel vom Land" -> "create: Neue Charakter-Anweisung anlegen: 'Ein lustiges Maedel vom Land'"
+- User: "Sei nicht mehr so frech" -> "update: Charakter-Anweisung aendern: 'Weniger frech, ruhiger und besonnener'"
+- User: "Vergiss den Charakter" -> "delete: Alle Charakter-Anweisungen entfernen"
+- User: "Was bist du fuer ein Typ?" -> "read: Aktive Charakter-Anweisungen auflisten"
+- User: "Geh zurueck zum Maedel vom Land" -> "reactivate: Charakter-Anweisung 'Ein lustiges Maedel vom Land' wiederherstellen"
+- User: "Vergiss alles, du bist jetzt ein Butler" -> "replace: Charakter komplett ersetzen durch: 'Ein hoeflicher, zurueckhaltender Butler'"

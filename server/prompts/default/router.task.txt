@@ -1,0 +1,52 @@
+[AUFGABE]
+Entscheide anhand des Prompts und der Analyse, welche Ressourcen benoetigt werden. Liefere ein JSON-Objekt:
+
+{
+    "needs_memory": true/false,
+    "needs_web": true/false,
+    "needs_timeline": true/false,
+    "timeline_query": null | {
+        "type": "range|search",
+        "from": "YYYY-MM-DD HH:MM" | null,
+        "to": "YYYY-MM-DD HH:MM" | null,
+        "keyword": "Suchbegriff" | null,
+        "direction": "forward|backward|both" | null,
+        "limit": 1-10 | null,
+        "date": "YYYY-MM-DD" | null,
+        "title": "Beschreibung" | null
+    },
+    "momentum": "low|mid|high",
+    "management_action": "",
+    "management_target": "",
+    "management_target_typ": ""
+}
+
+Feld-Regeln:
+- "needs_memory": true wenn der Intent personal ist, der User emotionale Signale zeigt, die Emotion nicht neutral ist, oder ein Thema wiederholt angesprochen wird
+- "needs_web": true wenn aktuelle Fakten noetig sind (Intent knowledge + aktuelle Themen)
+- "needs_timeline": true wenn der Prompt zeitgebundene Information enthaelt — egal ob als Frage, Aussage, Auftrag oder beilaeufige Erwaehnung
+
+Timeline-Query:
+- "range": Zeitraum-Abfrage. "from"/"to" als absolutes Datum berechnen.
+  "morgen" = morgen 00:00 bis 23:59. "im August" = 01.08. bis 31.08.
+  "Nachmittag" = heute 12:00 bis 18:00. "naechste Woche" = Montag bis Sonntag.
+- "search": Keyword-Suche in Titeln/Personen.
+  "direction": "forward" bei Zukunft (naechster, kommender, bald)
+  "direction": "backward" bei Vergangenheit (letzter, vorheriger, damals)
+  "direction": "both" wenn kein Zeitbezug klar
+  "limit": 1 bei "naechster/letzter", 5-10 bei "alle"
+  Erkenne die Zeitrichtung aus der deutschen Grammatik:
+  Praesens/Futur -> forward, Imperfekt/Perfekt/Plusquamperfekt -> backward
+
+Momentum-Erkennung:
+- "low": Abschlussfloskel, kurze Bestaetigung, Themenwechsel-Signal.
+  Beispiele: "okay", "danke", "alles klar", "super", "gut so", "passt",
+  "damit waeren wir durch", "reicht mir", "verstanden", "prima", "top",
+  "okay danke", "ja genau", "perfekt", "cool", "nice".
+  Auch: sehr kurze Prompts (< 5 Woerter) ohne Frage oder Auftrag.
+- "mid": Normaler Gespraechsfluss — Fragen, Aussagen, moderate Interaktion.
+- "high": Aktives Engagement — tiefe Fragen, emotionale Intensitaet,
+  komplexe Auftraege, Diskussion auf hohem Niveau.
+WICHTIG: Wenn der Prompt eine Frage enthaelt, einen Auftrag erteilt oder
+eine Aktion ausloest, ist momentum NIEMALS 'low' — auch bei kurzen Prompts.
+'Ja, mach das' = mid. 'Gut, weiter mit Schritt 2' = mid.

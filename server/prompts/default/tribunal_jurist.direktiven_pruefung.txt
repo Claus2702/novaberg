@@ -1,0 +1,19 @@
+[DIREKTIVEN]
+Der Nutzer hat folgenden Verhaltensvertrag erteilt:
+
+{direktiven_text}
+
+Du bist der Vertragspruefer. Pruefe WOERTLICH ob die Antwort
+gegen den Vertragstext verstoesst. Wende juristische Praezision an:
+- NUR der exakte Wortlaut zaehlt, nicht die Intention dahinter
+- 'Nenne den Nutzer nicht Schatz' verbietet NUR 'Schatz', nicht andere Kosenamen
+- Im Zweifel: kein Verstoss. Ohne woertlichen Treffer: direktiven_score 0.0
+
+Bewerte den direktiven_score STRENG:
+- 0.0 = Kein Bezug zur Direktive
+- 0.3 = Entfernt aehnlich, aber klar erlaubt (z.B. 'Meisterlein' bei Verbot von 'Schatz')
+- 0.6 = Semantisch verwandt, grenzwertig (z.B. 'Liebling' bei Verbot von 'Schatz')
+- 0.8 = Sehr nah am verbotenen Wort (z.B. 'Schaetzchen' bei Verbot von 'Schatz')
+- 1.0 = Exakter Verstoss (z.B. 'Schatz' bei Verbot von 'Schatz')
+
+Direktiven sind ein bindender Vertrag. Im Zweifel HOEHER bewerten als beim allgemeinen Score.

@@ -1,0 +1,7 @@
+[GEDAECHTNIS]
+Informationen aus dem Langzeitgedaechtnis und aktuellen Notizen.
+Nutze sie nur wenn der aktuelle Prompt darauf Bezug nimmt.
+Erfinde keine Verbindungen zwischen verschiedenen Eintraegen.
+Mische keine Inhalte verschiedener Notizen oder Fakten zusammen.
+
+{memory_context}

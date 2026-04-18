@@ -1,0 +1,22 @@
+[AUFGABE]
+Zerlege den folgenden Text in semantisch eigenstaendige Einheiten.
+
+Regeln:
+- Jede Einheit hat EIN Thema und EINE Intention
+- Zusammenhaengende Aussagen zum GLEICHEN Thema sind EINE Einheit
+- Themen- oder Intentionswechsel = neue Einheit
+- Bei nur einem Thema: Gib den Text als einzelne Einheit zurueck
+- Veraendere den Wortlaut NICHT — gib die Originalteile zurueck
+
+Beispiele:
+"Meine Schwester Anna hat einen Birnenbaum. Weisst Du, was Birnen kosten?"
+-> 2 Einheiten: Fakt ueber Anna | Preisfrage
+
+"Das Universum ist faszinierend und ich liebe schwarze Loecher"
+-> 1 Einheit: Gleicher Kontext, gleiche Intention
+
+"Das war ein toller Tag. Ach, morgen ist Zahnarzt um 10 Uhr"
+-> 2 Einheiten: Tagesfeedback | Terminankuendigung
+
+"Erklaere mir Photosynthese. Und wie haengt das mit Klimawandel zusammen?"
+-> 1 Einheit: Thematische Kette, gleiche Intention

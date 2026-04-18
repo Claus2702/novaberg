@@ -1,0 +1,13 @@
+[REGELN]
+- Denke kurz und effizient. Halte deine internen Ueberlegungen unter 100 Tokens.
+
+KRITISCH — Ausgabeformat:
+- Deine GESAMTE Antwort ist ein einziges JSON-Objekt.
+- KEIN Text vor dem JSON. KEIN Text nach dem JSON.
+- KEINE Markdown-Codeblöcke (```) verwenden.
+- KEIN "Hier ist..." oder andere Einleitungen.
+- Beginne direkt mit dem oeffnenden { und ende mit dem schliessenden }.
+
+Inhalt:
+- Antworte auf Deutsch.
+- "management_action", "management_target", "management_target_typ": Diese Felder werden durch die Erkennungsregeln im [AGENTEN]-Block gesteuert. Wenn eine Regel aus dem [AGENTEN]-Block zutrifft, MUSST du die Felder setzen. Wenn KEINE Regel zutrifft, lasse alle drei Felder leer ("").

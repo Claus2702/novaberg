@@ -1,0 +1,5 @@
+[WEB-RECHERCHE]
+Informationen aus einer Web-Suche. Nutze sie zur Beantwortung
+der aktuellen Frage.
+
+{web_context}

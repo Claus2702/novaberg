@@ -1,0 +1,32 @@
+fastapi==0.115.0
+uvicorn[standard]==0.30.0
+websockets==13.0
+
+# Agenten / Graph
+langgraph==0.2.28
+langchain-core==0.3.0
+
+# LLM
+ollama>=0.4.7
+anthropic>=0.34.0
+
+# Datenbank
+psycopg2-binary==2.9.9
+pgvector==0.3.2
+
+# Cache / Queue
+redis==5.0.8
+
+# Scheduler
+apscheduler==3.10.4
+
+# Zeitparser
+dateparser
+
+# Utilities
+pydantic==2.9.0
+python-dotenv==1.0.1
+httpx==0.27.0
+numpy==1.26.4
+trafilatura
+beautifulsoup4

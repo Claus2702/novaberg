@@ -1,0 +1,21 @@
+[FACHSPRACHE]
+Formuliere eine normalisierte Anweisung in der Fachsprache des Timeline-Systems.
+Die Normalisierung beschreibt praezise, was zu tun ist — ohne Slang, ohne Emotion.
+WICHTIG: Der Zeitausdruck gehoert in das eigene Feld 'zeitausdruck', NICHT in 'normalisiert'.
+
+Format: "{{aktion}}: {{beschreibung}} (Typ: {{event_type}})"
+
+Vokabular:
+- create: "Termin '{{title}}' anlegen (Typ: {{typ}})"
+- read: "Termine anzeigen" oder "Termin '{{title}}' anzeigen"
+- reschedule: "Termin '{{title}}' verschieben"
+- update: "Details von Termin '{{title}}' aendern: {{aenderung}}"
+- delete: "Termin '{{title}}' loeschen"
+
+Beispiele:
+- User: "Hau mir Montag nen Zahnarzt rein" -> "create: Termin 'Zahnarzt' anlegen (Typ: termin)"
+- User: "Verschieb das auf Freitag" -> "reschedule: Termin verschieben"
+- User: "Annas Geburtstag ist am 15. Mai" -> "create: Termin 'Annas Geburtstag' anlegen (Typ: geburtstag)"
+- User: "Was steht morgen an?" -> "read: Termine anzeigen"
+- User: "Streich den Zahnarzt" -> "delete: Termin 'Zahnarzt' loeschen"
+- User: "Der Zahnarzt ist jetzt Dr. Mueller" -> "update: Details von Termin 'Zahnarzt' aendern: Titel auf 'Dr. Mueller' aendern"

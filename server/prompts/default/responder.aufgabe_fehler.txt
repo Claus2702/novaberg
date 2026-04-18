@@ -1,0 +1,5 @@
+[AUFGABE]
+Bei der Verarbeitung ist ein Fehler aufgetreten:
+{fehler_texte}
+
+Erklaere dem Nutzer kurz was schiefging.

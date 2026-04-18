@@ -1,0 +1,79 @@
+[AUFGABE]
+Bestimme AKTION, ZIEL, ZEITAUSDRUCK und EVENT-TYP.
+
+Antwortformat:
+{{{{
+    "action": "{aktionen_text}",
+    "target": "Titel oder Beschreibung des Ereignisses",
+    "zeitausdruck": "Natuerlichsprachlicher Zeitausdruck oder leer",
+    "event_type": "termin|geburtstag|deadline|jahrestag|erinnerung",
+    "normalisiert": "Anweisung in Fachsprache (siehe [FACHSPRACHE])",
+    "grund": "NUR bei rejected — kurze Begruendung"
+}}}}
+
+VORPRUEFUNG — Ist das ueberhaupt ein Termin-Auftrag?
+Pruefe ZUERST: Enthaelt der Prompt einen konkreten Auftrag, einen Termin zu erstellen,
+abzufragen, zu verschieben oder zu loeschen?
+Redewendungen, Gespraechsbeitraege und beilaeufige Zeitbezuege ohne Terminabsicht
+sind KEINE Auftraege.
+Wenn KEIN Auftrag erkennbar → action: "rejected"
+Im Zweifel: rejected.
+
+Beispiele fuer rejected:
+- "Es ist Zeit fuers Bett" → Redewendung
+- "Die Zeit vergeht wie im Flug" → Redensart
+- "Morgen wird ein besserer Tag" → Hoffnung, kein Terminvorsatz
+- "Freitag ist immer gut" → Allgemeine Aussage
+- "Ich hab heute keine Lust mehr" → Befindlichkeit
+
+Beispiele fuer ECHTE Auftraege (nicht rejected):
+- "Morgen muss ich Getraenke kaufen" → create (konkreter Vorsatz mit Zeitbezug)
+- "Annas Geburtstag ist am 15. Mai" → create
+- "Was steht morgen an?" → read
+- "Verschieb den Zahnarzt auf Freitag" → reschedule
+
+AKTIONEN:
+
+"create" — User will einen NEUEN Termin/Eintrag anlegen.
+  Signale: "trag ein", "merk dir", "neuer Termin"
+  AUCH beilaeufige Erwaehnung:
+  "Morgen muss ich Getraenke kaufen" -> create
+  "Annas Geburtstag ist am 15. Mai" -> create
+  "Am Donnerstag habe ich Zahnarzt" -> create
+
+"read" — User will Termine SEHEN oder ABFRAGEN.
+  Signale: "was steht an", "wann ist", "habe ich morgen", "welche Termine"
+
+"reschedule" — User will einen Termin ZEITLICH VERSCHIEBEN.
+  Signale: "verschieb", "verleg", "vorverlegen", "nachholen", "auf Freitag"
+  WICHTIG: reschedule ist NUR fuer zeitliche Aenderungen.
+
+"update" — User will NICHT-ZEITLICHE Details eines Termins aendern.
+  Signale: "aendere den Titel", "der Zahnarzt ist jetzt Dr. Mueller"
+  NICHT fuer Zeitaenderungen — dafuer reschedule verwenden.
+
+"delete" — User will einen Termin LOESCHEN.
+  Signale: "loesch", "absagen", "stornieren", "streichen"
+
+ZEITAUSDRUCK:
+Extrahiere den natuerlichsprachlichen Zeitausdruck WOERTLICH aus dem Prompt.
+Nicht interpretieren, nicht umrechnen — nur extrahieren.
+  "Zahnarzt am Donnerstag um 14 Uhr" -> zeitausdruck: "Donnerstag um 14 Uhr"
+  "Verschieb das auf naechsten Freitag" -> zeitausdruck: "naechsten Freitag"
+  "Was steht morgen an?" -> zeitausdruck: "morgen"
+  Bei reschedule: Extrahiere den NEUEN Zeitausdruck (das Ziel der Verschiebung).
+  "Verschieb den Zahnarzt von Donnerstag auf Freitag" -> zeitausdruck: "Freitag"
+
+EVENT-TYP:
+  "termin": Arzttermin, Meeting, Verabredung (Standard)
+  "geburtstag": Geburtstage
+  "deadline": Abgabetermine, Fristen
+  "jahrestag": Wiederkehrende jaehrliche Ereignisse
+  "erinnerung": Allgemeine Erinnerungen
+  Im Zweifel: "termin"
+
+TARGET-AUFLOESUNG:
+1. WORTLAUT: Steht eine Beschreibung im Prompt? -> Uebernehmen.
+2. KONTEXT-BEZUG: "den Termin", "das" -> Aus Gespraechsverlauf aufloesen.
+3. NICHTS ERKENNBAR: -> target LEER lassen ("").
+Verwende den KUERZESTEN eindeutigen Begriff.

@@ -1,0 +1,6 @@
+[AUFGABE]
+Durchgefuehrte Aktion: {mgmt_result}{detail_text}
+
+Beschreibe dem Nutzer was du gemacht hast.
+Zeige bei Listen oder Notizen den aktuellen Inhalt.
+Halte die Beschreibung kurz und natuerlich.

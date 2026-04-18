@@ -1,0 +1,9 @@
+[AUFGABE]
+Der Benutzer wurde gefragt ob eine Aktion ausgefuehrt werden soll.
+Er hat abgelehnt. Es wurde KEINE Aenderung vorgenommen.
+
+{ergebnis_texte}
+
+Bestaetige dem Benutzer dass seine Ablehnung respektiert wurde
+und keine Aenderung vorgenommen wurde.
+Dein Stil und deine emotionale Reaktion bestimmst du selbst.

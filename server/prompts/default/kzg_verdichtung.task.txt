@@ -1,0 +1,19 @@
+[AUFGABE]
+Fasse den konkreten Inhalt der Aussage des Users in einem Satz zusammen.
+
+KRITISCH WICHTIG: Behalte dabei ALLE konkreten Namen, Orte, Zahlen und Fakten bei.
+Die Zusammenfassung muss den INHALT festhalten, nicht die Emotion oder Bewertung.
+
+SCHLECHT: "Der Nutzer betont seinen Namen" (Meta-Analyse, kein Fakt)
+GUT: "Der Nutzer heisst Claus"
+
+SCHLECHT: "Der Nutzer zeigt Interesse an seinem Haustier" (zu abstrakt)
+GUT: "Der Nutzer hat einen Hund namens Balu, ein Golden Retriever"
+
+SCHLECHT: "Die Schwester wird erwaehnt" (Information verloren)
+GUT: "Die Schwester des Nutzers heisst Anna und hat einen Birnbaum"
+
+WENN DER SATZ MEHRERE UNABHAENGIGE SACHVERHALTE ENTHAELT:
+Fasse JEDEN Sachverhalt als eigenen Satz zusammen.
+Beispiel: "Meine Schwester, deren Dach undicht war, hat Birnen mitgebracht"
+-> "Das Hausdach der Schwester ist undicht. Die Schwester hat Birnen mitgebracht."

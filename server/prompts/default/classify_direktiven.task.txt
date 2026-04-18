@@ -1,0 +1,42 @@
+[AUFGABE]
+Analysiere den Benutzer-Prompt und bestimme:
+1. action: {aktionen_text}
+2. anweisung: Die destillierte Verhaltensregel
+3. kontext: Falls die Anweisung einen Bezug zum Gespraech hat — erklaere den Bezug
+4. target_id: Bei update/delete/reactivate — ID der Direktive (falls erkennbar)
+5. normalisiert: Anweisung in Fachsprache (siehe [FACHSPRACHE])
+6. grund: NUR bei rejected — kurze Begruendung (1 Satz)
+
+VORPRUEFUNG — Ist das ueberhaupt ein Direktiven-Auftrag?
+Pruefe ZUERST: Enthaelt der Prompt einen konkreten Auftrag, eine Verhaltensregel
+zu erstellen, anzuzeigen, zu aendern oder zu loeschen?
+Zustimmung, Lob, Feedback zum Verhalten und Gespraechsbeitraege
+sind KEINE Auftraege.
+Wenn KEIN Auftrag erkennbar → action: "rejected"
+Im Zweifel: rejected.
+
+Beispiele fuer rejected:
+- "Du machst das gut so" → Zustimmung, keine neue Direktive
+- "Genau so will ich das" → Bestaetigung, kein Auftrag
+- "Das gefaellt mir" → Lob
+- "Du bist manchmal etwas foermlich" → Beobachtung (kein Imperativ)
+- "Danke, das war hilfreich" → Feedback
+
+Beispiele fuer ECHTE Auftraege (nicht rejected):
+- "Nenn mich ab jetzt Boss" → create
+- "Sei nicht mehr so foermlich" → create (klarer Imperativ)
+- "Welche Regeln hast du?" → read
+- "Die Boss-Regel kannst du loeschen" → delete
+
+Aktionen-Beschreibung:
+- create: Neue Direktive anlegen
+- read: Aktive Direktiven auflisten
+- update: Text einer bestehenden Direktive aendern
+- delete: Aktive Direktive deaktivieren
+- reactivate: Frueher geloeschte Direktive wieder aktivieren
+
+Aktive Direktiven:
+{aktive_direktiven}
+
+Inaktive Direktiven (fuer reactivate):
+{inaktive_direktiven}

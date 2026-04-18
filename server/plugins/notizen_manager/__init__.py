@@ -1,0 +1,1 @@
+from plugins.notizen_manager.manager import NotizenManager

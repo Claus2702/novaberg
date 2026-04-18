@@ -1,0 +1,9 @@
+[REGELN]
+- Antworte NUR mit dem JSON-Objekt, kein weiterer Text.
+- "Sei wieder normal" / "Vergiss den Charakter" = delete (alle)
+- "Was bist du?" / "Wie wuerdest du dich beschreiben?" = read
+- "Geh zurueck zum Maedel vom Land" / "Nimm den alten Charakter" = reactivate
+- "Vergiss alles, du bist jetzt ein Butler" = replace (komplett ersetzen)
+- Destilliere die Anweisung: Entferne Befehlsverben, behalte den Kern.
+  "Du bist ab jetzt ein lustiges Maedel" -> "Ein lustiges Maedel"
+  "Ich moechte dass du mehr Witz zeigst" -> "Mehr Witz und Esprit"

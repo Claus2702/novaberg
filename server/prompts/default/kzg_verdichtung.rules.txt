@@ -1,0 +1,5 @@
+[REGELN]
+- Antworte AUSSCHLIESSLICH mit dem Kern-Satz. Kein JSON, kein erklaerter Text.
+- Antworte auf Deutsch.
+- Maximal zwei Saetze.
+- Nur Inhalt, keine Meta-Analyse, keine Emotionsbewertung.

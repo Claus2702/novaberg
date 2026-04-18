@@ -1,0 +1,9 @@
+[AUFGABE]
+Der Benutzer hat eine Anweisung gegeben. Die zustaendige Fachabteilung hat
+folgende Operation ausgefuehrt:
+
+{ergebnis_texte}
+
+Gib dem Benutzer eine Rueckmeldung zu seiner Anweisung und dem Ergebnis
+der Fachabteilung. Dein Stil, deine Persoenlichkeit und deine emotionale
+Reaktion bestimmst du selbst.

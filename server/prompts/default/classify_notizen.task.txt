@@ -1,0 +1,82 @@
+[AUFGABE]
+Bestimme AKTION, ZIEL und SUCHTYP fuer eine Notiz-Operation.
+
+Antwortformat:
+{{{{
+    "action": "{aktionen_text}",
+    "target": "Name oder Beschreibung der betroffenen Notiz",
+    "target_typ": "titel|inhalt|thema",
+    "normalisiert": "Anweisung in Fachsprache (siehe [FACHSPRACHE])",
+    "grund": "NUR bei rejected — kurze Begruendung"
+}}}}
+
+VORPRUEFUNG — Ist das ueberhaupt ein Notiz-Auftrag?
+Pruefe ZUERST: Enthaelt der Prompt einen konkreten Auftrag, eine Notiz oder Liste
+zu erstellen, anzuzeigen, zu aendern oder zu loeschen?
+Gespraechsbeitraege, Kommentare ueber Listen und Redewendungen
+sind KEINE Auftraege.
+Wenn KEIN Auftrag erkennbar → action: "rejected"
+Im Zweifel: rejected.
+
+Beispiele fuer rejected:
+- "Gute Liste!" → Kommentar, kein Auftrag
+- "Die Einkaufsliste war hilfreich" → Feedback
+- "Ich schreib mir das auf" → User handelt selbst, kein Auftrag an Nova
+- "Das hab ich mir gemerkt" → Bestaetigung, kein Notiz-Auftrag
+- "Das ist ja ne lange Liste" → Beobachtung
+
+Beispiele fuer ECHTE Auftraege (nicht rejected):
+- "Merk dir: Milch kaufen" → create
+- "Was steht auf der Einkaufsliste?" → read
+- "Setz Butter mit drauf" → add_content
+- "Streich die Milch von der Liste" → remove_content
+
+AKTIONEN:
+
+"create" — User will eine NEUE Notiz/Liste anlegen.
+  Signale: "merk dir", "schreib auf", "neue Liste", "trag ein", "erstelle"
+
+"read" — User will den INHALT einer Notiz sehen oder wissen was existiert.
+  Signale: "was steht auf", "zeig mir", "hast du notiert", "welche Listen habe ich"
+
+"add_content" — User will INHALT zu einer bestehenden Notiz HINZUFUEGEN.
+  Signale: "setz drauf", "fueg hinzu", "nimm auf", "pack auf die Liste"
+  AUCH implizite Ergaenzungen:
+  "Wir brauchen auch Erdbeeren" (wenn vorher eine Liste besprochen wurde) = add_content
+  "Ach, und Butter!" (Bezug auf vorherige Liste aus dem Verlauf) = add_content
+
+"remove_content" — User will einzelne EINTRAEGE aus einer Notiz ENTFERNEN.
+  Signale: "streich X von Y", "nimm X raus", "entferne X von Y", "X brauchen wir nicht"
+  ENTSCHEIDENDE REGEL — Praeposition (von/aus) = INHALT-Operation:
+  "Streich die Milch VON der Liste"       -> remove_content
+  "Nimm die Eier AUS der Einkaufsliste"   -> remove_content
+
+"clear_content" — User will ALLE Eintraege einer Notiz entfernen (leeren).
+  Signale: "leere die Liste", "alles loeschen von der Liste", "Liste komplett leeren"
+  Die Notiz selbst bleibt bestehen, nur der Inhalt wird geloescht.
+
+"update" — User will den INHALT einer Notiz GENERISCH aendern (nicht Hinzufuegen/Entfernen).
+  Signale: "aendere", "korrigiere", "schreib um", "ersetze den Text"
+
+"delete" — User will eine GANZE Notiz/Liste LOESCHEN (Container weg).
+  Signale: "loesch die Liste", "entferne die Notiz", "brauch ich nicht mehr"
+  OHNE Praeposition + direktes Objekt = CONTAINER-Operation:
+  "Streich die Einkaufsliste"             -> delete (ganze Notiz)
+  "Loesch die Obstliste"                  -> delete (ganze Notiz)
+
+"rename" — User will eine Notiz UMBENENNEN.
+  Signale: "nenn die Liste", "benenne um", "neuer Name"
+
+TARGET-AUFLOESUNG:
+
+1. WORTLAUT: Steht ein konkreter Name im Prompt? -> Uebernehmen.
+2. KONTEXT-BEZUG: "drauf", "die Liste", "davon" -> Aus Verlauf aufloesen (hoechste Nummer zuerst).
+3. NICHTS ERKENNBAR: -> target LEER lassen ("").
+
+WICHTIG: Erfinde KEINE Namen. Target muss aus Prompt oder Verlauf stammen.
+
+TARGET-TYP:
+- "titel": Bestimmter Artikel ("die", "meine") oder Eigenname
+- "inhalt": Unbestimmter Artikel, Frage ob etwas existiert
+- "thema": "zum Thema", Oberbegriff
+Im Zweifel: "titel"

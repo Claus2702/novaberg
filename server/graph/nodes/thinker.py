@@ -1,0 +1,431 @@
+"""
+Thinker Node — Logisches Nachdenken mit ReAct Pattern.
+Sitzt zwischen Responder und Tribunal.
+
+Nutzt LangChain ReAct: Das LLM entscheidet selbst,
+welche Tools es braucht und ruft sie eigenstaendig auf.
+
+Denken → Handeln → Beobachten → Denken → ...
+
+Verfuegbare Tools:
+  - timeline_check: Termine an einem Datum abfragen
+  - timeline_search: Termine nach Keyword suchen
+  - memory_search: Gedaechtnis semantisch durchsuchen
+  - web_search: Externe Recherche via SearXNG
+  - web_fetch: Vollstaendigen Seiteninhalt laden (nach web_search)
+
+Prompt-Schema: [BLOCKNAME]-Format (nova-01-t-d, Chat 27).
+"""
+
+import json
+import logging
+
+from datetime import datetime
+from typing   import Annotated
+
+import redis
+
+from langchain_core.tools import tool
+
+from graph.state      import ConversationState
+from memory.repositories.timeline_repository import TimelineRepository
+from memory.lzg       import lzg_context_retrieve
+from memory.embedding import embedding_create
+from config import get_node_config, PROMPTS
+from services.llm_provider import get_chat_provider
+
+logger = logging.getLogger("ki_server.thinker")
+
+from tools.web.search import web_search_manager
+from tools.web.fetch import page_fetch
+
+
+# ─────────────────────────────────────────────
+# Tool-Factory
+# ─────────────────────────────────────────────
+# Tools werden als Closures erzeugt, damit sie
+# Zugriff auf postgres_url, redis_client etc. haben.
+
+def create_tools(
+    postgres_url:  str,
+    user_id:       str,
+    embed_client,
+    embed_model:   str
+) -> list:
+    """Erzeugt die Tools für den Thinker-Agent."""
+
+    @tool
+    def timeline_check(datum: Annotated[str, "Datum im Format YYYY-MM-DD"]) -> str:
+        """Prüfe welche Termine an einem bestimmten Datum existieren.
+        Nutze dieses Tool wenn in der Antwort Termine, Daten oder Zeitangaben vorkommen.
+        Damit kannst du prüfen ob es zeitliche Konflikte mit bestehenden Terminen gibt.
+        Bedenke: Termine haben eine Dauer und erfordern physische Anwesenheit —
+        zwei Termine zur gleichen Zeit am gleichen Tag sind ein Konflikt."""
+
+        logger.info(f"Thinker-Tool: timeline_check({datum})")
+
+        from datetime import datetime as dt
+        from zoneinfo import ZoneInfo
+        from config import TIMEZONE
+
+        try:
+            tag = dt.strptime(datum, "%Y-%m-%d")
+        except ValueError:
+            return f"Ungültiges Datum: {datum}"
+
+        tz = ZoneInfo(TIMEZONE)
+        von = tag.replace(hour=0, minute=0, second=0, tzinfo=tz)
+        bis = tag.replace(hour=23, minute=59, second=59, tzinfo=tz)
+
+        rows: list[dict] = TimelineRepository.find_by_date_range(
+            postgres_url, user_id, von, bis
+        )
+
+        if not rows:
+            return f"Keine Termine am {datum} gefunden."
+
+        parts: list[str] = []
+        for r in rows:
+            zeit = r["event_time"].strftime("%H:%M") if r.get("precision") != "day" else ""
+            detail = f" — {r['details']}" if r.get("details") else ""
+            parts.append(f"[{r['event_type']}] {zeit} {r['title']}{detail}".strip())
+
+        return f"Termine am {datum}:\n" + "\n".join(parts)
+
+    @tool
+    def timeline_search(keyword: Annotated[str, "Suchbegriff für Termine"]) -> str:
+        """Suche nach Terminen anhand eines Begriffs (z.B. 'Friseur', 'Zahnarzt', 'Geburtstag').
+        Nutze dieses Tool wenn du prüfen willst, ob es bereits ähnliche Termine gibt
+        oder wann der nächste/letzte Termin einer bestimmten Art war."""
+
+        logger.info(f"Thinker-Tool: timeline_search({keyword})")
+
+        rows: list[dict] = TimelineRepository.find_by_keyword(
+            postgres_url, user_id, keyword, "both", 5
+        )
+
+        if not rows:
+            return f"Keine Termine zu '{keyword}' gefunden."
+
+        parts: list[str] = []
+        for r in rows:
+            zeit = r["event_time"].strftime("%d.%m.%Y")
+            if r.get("precision") != "day":
+                zeit += f" {r['event_time'].strftime('%H:%M')}"
+            detail = f" — {r['details']}" if r.get("details") else ""
+            parts.append(f"[{r['event_type']}] {zeit}: {r['title']}{detail}")
+
+        return "\n".join(parts)
+
+    @tool
+    def memory_search(frage: Annotated[str, "Semantische Suchanfrage ans Gedächtnis"]) -> str:
+        """Durchsuche das Langzeitgedächtnis des Nutzers nach relevanten Informationen.
+        Nutze dieses Tool wenn du Fakten über den Nutzer prüfen willst,
+        z.B. ob eine Behauptung in der Antwort mit dem übereinstimmt, was bekannt ist."""
+
+        logger.info(f"Thinker-Tool: memory_search({frage})")
+
+        embedding: list[float] = embedding_create(frage, embed_client, embed_model)
+
+        result: str = lzg_context_retrieve(postgres_url, user_id, embedding, top_k=5)
+
+        return result or "Keine relevanten Einträge im Langzeitgedächtnis gefunden."
+    
+    @tool
+    def web_search(suchbegriff: Annotated[str, "Suchbegriff für Web-Recherche"]) -> str:
+        """Durchsuche das Internet nach aktuellen Informationen.
+        Nutze dieses Tool wenn:
+        - Die Antwort Fakten enthaelt die sich auf aktuelle Ereignisse beziehen
+        - Du Behauptungen gegen externe Quellen pruefen willst
+        - Der Nutzer nach Informationen fragt die nicht im Gedaechtnis sind
+        - Der Router needs_web=true gesetzt hat
+
+        Liefert eine Trefferliste plus den vollstaendigen Artikeltext
+        des relevantesten Ergebnisses. Fuer weitere URLs nutze web_fetch(url)."""
+
+        logger.info(f"Thinker-Tool: web_search({suchbegriff})")
+
+        try:
+            results: list[dict] = web_search_manager.suchen(suchbegriff, max_results=5)
+
+            if not results:
+                return f"Keine Ergebnisse fuer '{suchbegriff}' gefunden."
+
+            # Uebersicht aller Treffer (Snippets)
+            parts: list[str] = []
+            for i, r in enumerate(results, 1):
+                parts.append(f"{i}. {r['title']}\n   URL: {r['url']}\n   {r['content']}")
+
+            uebersicht: str = f"Web-Ergebnisse fuer '{suchbegriff}':\n\n" + "\n\n".join(parts)
+
+            # Automatisch Top-Treffer fetchen
+            top_url: str = results[0]["url"]
+            logger.info(f"Thinker-Tool: auto-fetch({top_url})")
+            volltext: str = page_fetch(top_url)
+
+            if volltext:
+                return (
+                    f"{uebersicht}\n\n"
+                    f"--- Vollstaendiger Inhalt von {top_url} ---\n\n"
+                    f"{volltext}"
+                )
+
+            return uebersicht
+
+        except Exception as fehler:
+            logger.error(f"Thinker: Web-Suche fehlgeschlagen — {fehler}")
+            return f"Web-Suche fehlgeschlagen: {fehler}"
+
+    @tool
+    def web_fetch(url: Annotated[str, "URL der Webseite"]) -> str:
+        """Lade den vollstaendigen Textinhalt einer Webseite.
+        web_search laedt bereits automatisch den Top-Treffer.
+        Nutze dieses Tool nur wenn du eine ANDERE URL aus der
+        Trefferliste laden willst.
+        Gibt den extrahierten Artikeltext zurueck (ohne Navigation, Werbung, Footer)."""
+
+        logger.info(f"Thinker-Tool: web_fetch({url})")
+
+        text: str = page_fetch(url)
+        if not text:
+            return f"Seite konnte nicht geladen werden: {url}"
+        return f"Seiteninhalt von {url}:\n\n{text}"
+
+    return [timeline_check, timeline_search, memory_search, web_search, web_fetch]
+
+
+# ─────────────────────────────────────────────
+# Thinker System-Prompt ([BLOCKNAME]-Schema)
+# ─────────────────────────────────────────────
+
+def _build_thinker_prompt(today: str) -> str:
+    """Baut den Thinker-System-Prompt aus [BLOCKNAME]-Bloecken zusammen."""
+    return "\n\n".join([
+        PROMPTS["thinker.identity"].format(today=today),
+        PROMPTS["thinker.task"],
+        PROMPTS["thinker.rules"],
+    ])
+
+
+# ─────────────────────────────────────────────
+# Thinker Node
+# ─────────────────────────────────────────────
+def think(
+    state:         ConversationState,
+    embed_client,
+    embed_model:   str,
+    redis_client:  redis.Redis,
+    postgres_url:  str,
+    user_id:       str
+) -> ConversationState:
+    """
+    Denkt über die Antwort nach.
+    Nutzt ReAct-Pattern: Denken → Tool aufrufen → Beobachten → Weiterdenken.
+    """
+
+    jetzt = datetime.now()
+    today: str = jetzt.strftime("%d.%m.%Y, %H:%M Uhr")
+
+    # ── Schnell-Check: Braucht es überhaupt Nachdenken? ──
+    response: str = state["response"]
+    prompt:   str = state["user_prompt"]
+
+    fact_indicators: list[str] = [
+        "am ", "um ", "20", "19", "Uhr", "Termin", "Datum",
+        "März", "April", "Mai", "Juni", "Juli", "August",
+        "September", "Oktober", "November", "Dezember", "Januar", "Februar",
+        "morgen", "übermorgen", "nächste", "Montag", "Dienstag", "Mittwoch",
+        "Donnerstag", "Freitag", "Samstag", "Sonntag",
+        "Milliard", "Million", "Prozent", "%", "km", "kg",
+    ]
+
+    needs_thinking: bool = any(
+        indicator in response or indicator in prompt
+        for indicator in fact_indicators
+    )
+
+     # Router hat Web-Bedarf erkannt → immer denken
+    if state.get("needs_web"):
+        needs_thinking = True
+        logger.info("Thinker: Router hat needs_web=true gesetzt — Reasoning erzwungen")
+
+
+    if not needs_thinking:
+        logger.info("Thinker: Keine prüfbaren Fakten erkannt — Durchlauf")
+        return state
+
+    logger.info("Thinker: Prüfbare Fakten erkannt — starte Reasoning...")
+
+    tools: list = create_tools(postgres_url, user_id, embed_client, embed_model)
+  
+    # ── Reasoning-Prompt zusammenbauen ───────
+    system_prompt: str = _build_thinker_prompt(today)
+
+    tool_descriptions: str = "\n".join(
+        f"- {t.name}: {t.description}" for t in tools
+    )
+
+    # ── User-Message aus Bloecken zusammenbauen ──
+    msg_parts: list[str] = [
+        "[TOOLS]\n"
+        "Verfuegbare Tools fuer die Pruefung.\n"
+        "Um ein Tool zu nutzen, schreibe: TOOL: toolname(parameter)\n"
+        f"Beispiel: TOOL: timeline_check(2026-03-20)\n\n"
+        f"{tool_descriptions}",
+
+        f"[BENUTZERANFRAGE]\n"
+        f"Der urspruengliche Prompt des Nutzers.\n\n"
+        f"{prompt}",
+
+        f"[ANTWORT]\n"
+        f"Die folgende Antwort muss geprueft werden.\n\n"
+        f"{response}",
+    ]
+
+    if state.get("memory_context"):
+        msg_parts.append(
+            f"[GEDAECHTNIS]\n"
+            f"Bekannter Kontext ueber den Nutzer.\n\n"
+            f"{state['memory_context']}"
+        )
+
+    if state.get("needs_web"):
+        msg_parts.append(
+            "[WEBSUCHE]\n"
+            "Web-Suche ist erforderlich. Der Router hat needs_web=true gesetzt.\n"
+            "Die Antwort wurde OHNE aktuelle Web-Informationen generiert.\n"
+            "Du MUSST web_search() aufrufen, bevor du ERGEBNIS: OK schreibst.\n"
+            "Formuliere den Suchbegriff aus der FRAGE DES NUTZERS."
+        )
+
+    msg_parts.append("Analysiere jetzt schrittweise.")
+
+    reasoning_input: str = "\n\n".join(msg_parts)
+
+    logger.info(f"Thinker: System-Prompt:\n{system_prompt}")
+    logger.info(f"Thinker: Reasoning-Input:\n{reasoning_input}")
+
+    # ── Reasoning-Loop (max 3 Iterationen) ───
+    messages: list[dict] = [
+        {"role": "user", "content": reasoning_input},
+    ]
+
+    max_iterations: int = 5
+    tool_map:       dict = {t.name: t for t in tools}
+    node_cfg = get_node_config("thinker")
+    provider = get_chat_provider()
+
+    for i in range(max_iterations):
+        logger.info(f"Thinker: Reasoning-Iteration {i + 1}")
+
+        antwort = provider.chat(
+            messages          = messages,
+            system            = system_prompt,
+            temperature       = node_cfg.get("temperature", 0.15),
+            max_output_tokens = node_cfg.get("max_output_tokens"),
+            caller            = "thinker",
+        )
+
+        content: str = antwort.content
+        messages.append({"role": "assistant", "content": content})
+
+        state["token_total"] += antwort.token_total
+
+        # Tool-Aufruf erkennen
+        if "TOOL:" in content:
+            tool_result: str = _execute_tool_call(content, tool_map)
+            messages.append({"role": "user", "content": f"Tool-Ergebnis:\n{tool_result}"})
+            logger.info(f"Thinker: Tool ausgeführt → {tool_result[:80]}...")
+            continue
+
+        # Ergebnis erkennen
+        if "ERGEBNIS: OK" in content:
+            logger.info("Thinker: Analyse abgeschlossen — Antwort ist korrekt")
+            return state
+
+        if "ERGEBNIS: KORREKTUR" in content:
+            corrected:  str       = _extract_corrected_response(content)
+            issues:     list[str] = _extract_issues(content)
+
+            if corrected:
+                logger.info("Thinker: Antwort korrigiert")
+                state["response"] = corrected
+                state["node_annotations"].append(
+                    f"[Thinker] Korrektur durchgeführt: {', '.join(issues)}"
+                )
+                for issue in issues:
+                    logger.info(f"Thinker: Problem → {issue}")
+                    state["node_annotations"].append(f"[Thinker/Issue] {issue}")
+
+            return state
+
+    logger.info("Thinker: Max Iterationen erreicht — Antwort bleibt unverändert")
+    return state
+
+
+# ─────────────────────────────────────────────
+# Hilfsfunktionen
+# ─────────────────────────────────────────────
+def _execute_tool_call(content: str, tool_map: dict) -> str:
+    """Extrahiert und führt einen Tool-Aufruf aus dem LLM-Output aus."""
+
+    try:
+        tool_line: str = ""
+        for line in content.split("\n"):
+            if "TOOL:" in line:
+                tool_line = line.strip()
+                break
+
+        if not tool_line:
+            return "Kein Tool-Aufruf erkannt."
+
+        tool_part: str = tool_line.split("TOOL:")[1].strip()
+        tool_name: str = tool_part.split("(")[0].strip()
+        param:     str = tool_part.split("(")[1].rstrip(")").strip().strip("\"'")
+
+        if tool_name not in tool_map:
+            return f"Unbekanntes Tool: {tool_name}"
+
+        logger.info(f"Thinker: Führe Tool aus → {tool_name}({param})")
+
+        result = tool_map[tool_name].invoke(param)
+
+        return str(result)
+
+    except Exception as fehler:
+        logger.error(f"Thinker: Tool-Ausführung fehlgeschlagen — {fehler}")
+        return f"Tool-Fehler: {fehler}"
+
+
+def _extract_corrected_response(content: str) -> str:
+    """Extrahiert die korrigierte Antwort aus dem Thinker-Output."""
+
+    marker: str = "KORRIGIERTE ANTWORT:"
+    if marker not in content:
+        return ""
+
+    corrected: str = content.split(marker)[1].strip()
+    corrected = corrected.strip("`").strip()
+
+    return corrected
+
+
+def _extract_issues(content: str) -> list[str]:
+    """Extrahiert die Problem-Liste aus dem Thinker-Output."""
+
+    marker: str = "PROBLEME:"
+    if marker not in content:
+        return []
+
+    problems_section: str = content.split(marker)[1]
+
+    if "KORRIGIERTE ANTWORT:" in problems_section:
+        problems_section = problems_section.split("KORRIGIERTE ANTWORT:")[0]
+
+    issues: list[str] = [
+        line.strip().lstrip("-").lstrip("•").strip()
+        for line in problems_section.strip().split("\n")
+        if line.strip() and len(line.strip()) > 2
+    ]
+
+    return issues

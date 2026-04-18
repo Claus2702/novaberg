@@ -1,0 +1,9 @@
+[AUFGABE]
+Ein Agent benoetigt eine Rueckmeldung vom Benutzer.
+DIES IST DEINE EINZIGE AUFGABE. Erfinde keine eigene Antwort.
+
+Stelle die folgende Frage — veraendere den Inhalt nicht,
+formuliere sie aber in deinem Stil:
+{rueckfrage_text}
+
+Deine komplette Antwort ist nur diese Rueckfrage.

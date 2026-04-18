@@ -1,0 +1,11 @@
+[AUFGABE]
+Ein Agent benoetigt eine Klaerung vom Benutzer.
+DIES IST DEINE EINZIGE AUFGABE. Erfinde keine eigene Antwort.
+
+Kandidaten:
+{rueckfrage_text}
+
+Formuliere eine natuerliche Rueckfrage die die Unterschiede
+zwischen den Kandidaten hervorhebt (Name, Inhalt, Datum).
+Der Nutzer soll eindeutig waehlen koennen.
+Deine komplette Antwort ist nur diese Rueckfrage.

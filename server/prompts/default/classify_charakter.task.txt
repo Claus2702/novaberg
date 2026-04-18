@@ -1,0 +1,51 @@
+[AUFGABE]
+Analysiere den Benutzer-Prompt und bestimme:
+1. action: {aktionen_text}
+2. anweisung: Der destillierte Charakter-Text (ohne Befehlsverben)
+3. target_id: Bei update/delete/reactivate — ID der Anweisung (falls erkennbar)
+4. normalisiert: Anweisung in Fachsprache (siehe [FACHSPRACHE])
+5. grund: NUR bei rejected — kurze Begruendung (1 Satz)
+
+VORPRUEFUNG — Ist das ueberhaupt ein Auftrag?
+Pruefe ZUERST: Enthaelt der Prompt einen konkreten Auftrag, den Charakter zu aendern, anzuzeigen oder zu verwalten?
+Komplimente, Lob, Kritik am Verhalten, rhetorische Fragen, Redewendungen
+und Gespraechsbeitraege sind KEINE Auftraege.
+Achtung: Auch Imperative ("vergiss nicht", "bleib", "mach weiter so") sind KEINE Auftraege,
+wenn sie sich auf einen BEREITS AKTIVEN Charakter-Zug beziehen (siehe "Aktive Anweisungen" unten).
+"Vergiss das frech sein nicht" → rejected (erinnert an aktiven Zug).
+"Vergiss den Charakter" → delete (will Deaktivierung).
+Wenn KEIN Auftrag erkennbar → action: "rejected"
+Im Zweifel: rejected.
+
+Beispiele fuer rejected:
+- "Du bist echt was besonderes" → Kompliment
+- "Ich mag deine freche Art" → Lob, keine Aenderung gewuenscht
+- "Was ist aus meinem frechen Maedel geworden?" → Rhetorische Frage
+- "Du warst frueher lustiger" → Kritik am Verhalten, kein Aenderungsbefehl
+- "Du bist ein Schatz" → Kosename
+- "Vergiss das frech sein nicht!" → Erinnerung an einen aktiven Charakter-Zug (kein Aenderungsbefehl)
+- "Bleib bitte so frech wie du bist!" → Bestaetigung/Einforderung eines aktiven Zugs (kein Aenderungsbefehl)
+
+Beispiele fuer ECHTE Auftraege (nicht rejected):
+- "Sei ab jetzt frecher" → create/update
+- "Vergiss den Charakter" → delete
+- "Was bist du fuer ein Typ?" → read (direkte Frage nach gespeichertem Charakter)
+- "Sei wieder das Maedel vom Land" → reactivate
+
+Aktionen-Beschreibung:
+- create: Neue Charakter-Anweisung hinzufuegen
+- read: Aktuelle Charakter-Anweisungen anzeigen
+- update: Bestehende Anweisung aendern/erweitern
+- delete: Einzelne oder alle Anweisungen deaktivieren
+- reactivate: Frueher geloeschte Anweisung wieder aktivieren
+- replace: Alle bestehenden deaktivieren, neue anlegen (Charakter komplett ersetzen)
+- konsolidieren: Mehrere Anweisungen zusammenfassen
+
+Aktive Anweisungen ({anzahl_aktiv}):
+{aktive_anweisungen}
+
+Inaktive Anweisungen (fuer reactivate):
+{inaktive_anweisungen}
+
+Wenn action = 'create' UND anzahl_aktiv >= 3:
+  Setze action = 'konsolidieren' — der Agent wird den Nutzer fragen.

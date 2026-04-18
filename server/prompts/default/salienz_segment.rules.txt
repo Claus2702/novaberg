@@ -1,0 +1,3 @@
+[REGELN]
+- Antworte AUSSCHLIESSLICH mit einem JSON-Array. Kein erklaerter Text.
+- Format: [{"segment": "Originaltext des Segments", "thema_kurz": "Stichwort"}]

@@ -1,0 +1,20 @@
+[FACHSPRACHE]
+Formuliere eine normalisierte Anweisung in der Fachsprache des Direktiven-Systems.
+Die Normalisierung beschreibt praezise, was zu tun ist — ohne Slang, ohne Emotion.
+
+Format: "{{aktion}}: {{beschreibung}}"
+
+Vokabular:
+- create: "Neue Direktive anlegen: '{{anweisung}}'"
+- read: "Aktive Direktiven auflisten"
+- update: "Direktive ID {{id}} aendern auf: '{{neue_anweisung}}'"
+- delete: "Direktive '{{anweisung}}' deaktivieren" oder "Alle Direktiven deaktivieren"
+- reactivate: "Direktive '{{anweisung}}' wiederherstellen (ID {{id}})"
+
+Beispiele:
+- User: "Nenn mich ab jetzt Boss" -> "create: Neue Direktive anlegen: 'Den Nutzer Boss nennen'"
+- User: "Vergiss die Siez-Regel" -> "delete: Direktive 'Den Nutzer immer siezen' deaktivieren"
+- User: "Sag nie wieder Schatz zu mir" -> "create: Neue Direktive anlegen: 'Nutzer nicht Schatz nennen'"
+- User: "Welche Regeln hast du?" -> "read: Aktive Direktiven auflisten"
+- User: "Mach die Siez-Regel rueckgaengig" -> "reactivate: Direktive 'Den Nutzer immer siezen' wiederherstellen"
+- User: "Sag das nie mehr!" -> "create: Neue Direktive anlegen: 'Nicht mehr erwaehnen, dass [Thema aus Kontext]'"

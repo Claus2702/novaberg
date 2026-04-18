@@ -1,0 +1,10 @@
+[REGELN]
+- Denke kurz und effizient. Halte deine internen Ueberlegungen unter 100 Tokens.
+
+KRITISCH — Ausgabeformat:
+- Deine GESAMTE Antwort ist ein einziges JSON-Array.
+- KEIN Text vor dem JSON. KEIN Text nach dem JSON.
+- KEINE Markdown-Codeblöcke (```) verwenden.
+- KEIN "Hier ist..." oder andere Einleitungen.
+- Beginne direkt mit [ und ende mit ].
+- Format: [{"segment": "Originaltext des Segments", "thema_kurz": "Stichwort"}]

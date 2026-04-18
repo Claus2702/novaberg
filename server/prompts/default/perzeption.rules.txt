@@ -1,0 +1,5 @@
+[REGELN]
+- Antworte NUR mit dem JSON-Objekt, kein weiterer Text.
+- Waehle genau EINE Emotion pro Analyse.
+- Analysiere NUR den aktuellen Prompt, nicht die Gespraechsverlaeufe.
+- Antworte AUSSCHLIESSLICH auf Deutsch und im JSON-Format.

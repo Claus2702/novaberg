@@ -1,0 +1,114 @@
+"""
+Graph State — Zentrale Datenstruktur für den Gesprächsgraphen.
+Jeder Node liest und schreibt auf diesem State.
+
+Erweiterungen A1:
+  - Management-Felder (Router → Planner → Manager)
+  - pending_writes (Salienz/Planner → Dispatcher → Manager-Plugins)
+"""
+
+from typing import TypedDict
+
+
+class TribunalVote(TypedDict):
+    """Einzelnes Votum eines Tribunal-Agenten."""
+    agent:     str    # jurist | psychologe | ethik
+    vote:      str    # ok | warnung | ablehnen
+    reasoning: str
+
+
+class PendingWrite(TypedDict):
+    """Geplante DB-Operation — wird vom Dispatcher an Manager verteilt."""
+    ziel:          str    # kzg | fakten | timeline | notizen | ...
+    aktion:        str    # create | update | delete | upsert
+    daten:         dict   # Manager-spezifische Nutzdaten
+    beschreibung:  str    # Menschenlesbar, für Logging/Responder
+
+
+class ConversationState(TypedDict):
+    """Zustand, der durch alle Nodes fließt."""
+
+    # ── Eingang ──────────────────────────────
+    user_prompt:   str
+    user_id:       str
+    system_prompt: str
+    temperature:   float
+
+    # ── Perzeption ──────────────────────────
+    intent:               str     # smalltalk | knowledge | personal | task | creative | meta
+    tone:                 str     # empathisch | sachlich | kreativ | direkt
+    prompt_thema:         str     # Kurzbeschreibung des Themas (2-5 Worte)
+    current_emotion:      str     # Dominante Emotion des aktuellen Prompts
+    current_arousal:      float   # Energie-Level: 0.0 (flach) bis 1.0 (maximal)
+    beziehungs_dynamik:   str     # "vertrauen", "distanz", "angriff", "hilfesuchend", "dankbar", "neutral"
+
+    # ── Router ───────────────────────────────
+    needs_memory:   bool
+    needs_web:      bool
+    needs_timeline: bool
+    timeline_query: dict    # {"type": "range|search|store", ...}
+    momentum:       str     # low | mid | high — Gesprächsdynamik
+
+    # ── Management-Routing (Router → Planner) ─
+    management_action:     str  # create | update | delete | read | "" (leer = kein Management)
+    management_target:     str  # "Einkaufsliste", "Zahnarzttermin", etc.
+    management_target_typ: str  # "titel" | "inhalt" | "thema" — wie der User sucht
+
+    # ── Enricher ─────────────────────────────
+    memory_context:    str
+    web_context:       str
+    session_turns:     list   # list[dict] — destillierte Turns für den Responder
+    gespraechs_modus:  str    # Aktueller Modus aus letzten Turns
+    user_intentionen:  list   # Intentionen des aktuellen Turns
+    user_emotion:      str    # Emotion des aktuellen Turns
+
+    # Emotionale Intelligenz (Enricher → Responder)
+    emotions_verlauf:     list    # [{emotion: str, gewicht: float}, ...] — gewichtetes Array
+    emotions_vektor:      str     # Richtung: "absturz", "spirale", "erholung", etc.
+    sprach_stil:          str     # Erkannter Sprachstil ("locker", "formell", "fachlich", "emotional", "jugendlich")
+    beziehungs_kontext:   str     # Beziehungsprofil-Text aus dem Charakter-Hash
+
+    # Novas eigener Charakter (Enricher → Responder)
+    nova_kern:            str     # Novas gewachsene Persönlichkeit (kern_hash für user_id='nova')
+    nova_beziehung:       str     # Novas Bild vom Nutzer (beziehungsprofil für user_id='nova')
+    nova_adaptiv:         str     # Novas aktuelle Themen (adaptiv_hash für user_id='nova')
+    nova_intentionen:     str     # Novas Kommunikationsstil (intentions_profil für user_id='nova')
+    nova_emotions:        str     # Novas emotionale Grundstimmung (emotions_profil für user_id='nova')
+
+    # ── Planner (Management Plan-Phase) ──────
+    management_result:  str
+    management_detail:  str
+    task_block:         str    # Fertiger [AUFGABE]-Block fuer den Responder (leer = kein Block)
+    task_context_cut:   bool   # True = Responder soll Gedaechtnis/Web weglassen
+
+    # ── Responder ────────────────────────────
+    response:    str
+    model:       str
+    token_total: int
+
+    # ── Tribunal ─────────────────────────────
+    tribunal_votes:   list[TribunalVote]
+    tribunal_verdict: str   # ok | warnung | ablehnen
+    tribunal_summary: str   # Zusammenfassung für Corrector
+
+    # ── Korrektur-Loop ───────────────────────
+    correction_round: int
+    max_corrections:  int
+
+    # ── Pending Writes (Salienz + Planner → Dispatcher) ──
+    pending_writes: list[PendingWrite]
+
+    # ── Agent-System (Epic 11) ───────────────────
+    agent_name:    str    # Vom Planner gesetzt — welcher Agent soll arbeiten
+    agent_results: list   # Liste von AgentResult-Objekten — Ergebnisse aller Agenten dieses Turns
+
+    # ── Charakter-Identität + Direktiven ────────────
+    charakter_anweisungen: list[str]        # Aktive Charakter-Anweisungen
+    direktiven: list[dict]                   # Aktive Direktiven [{"anweisung": "...", "kontext": "..."}]
+
+    # ── Gesprächsvektor (Epic 9) ───────────────────
+    gespraechsvektor: str
+
+    # ── Interne Anmerkungen (Node-übergreifend) ──
+    node_annotations: list[str]
+    

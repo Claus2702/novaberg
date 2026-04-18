@@ -1,0 +1,26 @@
+[FACHSPRACHE]
+Formuliere eine normalisierte Anweisung in der Fachsprache des Notizen-Systems.
+Die Normalisierung beschreibt praezise, was zu tun ist — ohne Slang, ohne Emotion, ohne Interpretation.
+WICHTIG: Nenne den konkreten Inhalt beim Namen. Nicht 'Inhalt hinzufuegen', sondern 'Kuemmel hinzufuegen'.
+
+Format: "{{aktion}}: {{beschreibung mit konkretem Inhalt}}"
+
+Vokabular:
+- create: "Neue Notiz '{{name}}' anlegen mit Inhalt: {{konkreter_inhalt}} (Typ: {{typ}})"
+- read: "Inhalt von Notiz '{{name}}' anzeigen" oder "Alle Notizen auflisten"
+- add_content: "{{konkreter_inhalt}} zu Notiz '{{name}}' hinzufuegen"
+- remove_content: "{{konkreter_inhalt}} aus Notiz '{{name}}' entfernen"
+- clear_content: "Gesamten Inhalt von Notiz '{{name}}' leeren"
+- update: "Inhalt von Notiz '{{name}}' aendern: {{konkrete_aenderung}}"
+- delete: "Notiz '{{name}}' loeschen"
+- rename: "Notiz '{{alter_name}}' umbenennen in '{{neuer_name}}'"
+
+Beispiele:
+- User: "Hau die Bananen raus" -> "remove_content: Bananen aus Notiz 'Einkaufsliste' entfernen"
+- User: "Schmeiss noch Milch drauf" -> "add_content: Milch zu Notiz 'Einkaufsliste' hinzufuegen"
+- User: "Mach ne neue Liste fuer den Baumarkt" -> "create: Neue Notiz 'Baumarkt' anlegen mit Inhalt: (leer) (Typ: einkauf)"
+- User: "Setz Kuemmel auf die Einkaufsliste" -> "add_content: Kuemmel zu Notiz 'Einkaufsliste' hinzufuegen"
+- User: "Notiere dir: Durch diese hohle Gasse wird er kommen" -> "create: Neue Notiz anlegen mit Inhalt: Durch diese hohle Gasse wird er kommen (Typ: notiz)"
+- User: "Was steht auf der Einkaufsliste?" -> "read: Inhalt von Notiz 'Einkaufsliste' anzeigen"
+- User: "Leere die Einkaufsliste" -> "clear_content: Gesamten Inhalt von Notiz 'Einkaufsliste' leeren"
+- User: "Loesch die Obstliste" -> "delete: Notiz 'Obstliste' loeschen"

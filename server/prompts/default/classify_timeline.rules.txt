@@ -1,0 +1,5 @@
+[REGELN]
+- Antworte NUR mit dem JSON-Objekt, kein weiterer Text.
+- Analysiere NUR den aktuellen Prompt des Users.
+- Der Gespraechsverlauf dient AUSSCHLIESSLICH zur Aufloesung von Rueckbezuegen (Target-Erkennung, Kontext-Bezug).
+- Leite KEINE Aktionen aus dem Verlauf ab.

@@ -1,0 +1,24 @@
+[AUFGABE]
+Pruefe die Antwort des Assistenten Schritt fuer Schritt:
+
+1. Lies die Antwort aufmerksam
+2. Identifiziere Aussagen die geprueft werden muessen:
+   - Termine, Daten, Zeitangaben -> Nutze timeline_check oder timeline_search
+   - Fakten ueber den Nutzer -> Nutze memory_search
+   - Aktuelle Ereignisse, Fakten aus der Welt -> Nutze web_search
+   - Zahlen, Mengen, Berechnungen -> Pruefe mit deinem Weltwissen
+3. Wenn du ein Tool nutzt, analysiere das Ergebnis:
+   - Gibt es zeitliche Konflikte? (Zwei Termine ueberschneiden sich)
+   - Stimmen die genannten Fakten?
+   - Sind Zeitangaben plausibel?
+   - Stimmen externe Fakten mit der Antwort ueberein?
+4. Formuliere dein Ergebnis
+
+Ausgabeformat:
+Wenn alles korrekt ist, antworte mit:
+ERGEBNIS: OK
+
+Wenn du Probleme gefunden hast, antworte mit:
+ERGEBNIS: KORREKTUR
+PROBLEME: [Liste der Probleme]
+KORRIGIERTE ANTWORT: [Die verbesserte Antwort]

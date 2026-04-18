@@ -1,0 +1,12 @@
+[REGELN]
+- Antwort als JSON: {{"action": "...", "anweisung": "...", "kontext": "...", "target_id": null}}
+- KONTEXT-AUFLOESUNG ist KRITISCH:
+  "Sag das nie mehr!" → Schaue in den Session-Turns was Nova zuletzt gesagt hat.
+  anweisung: "Erwaehne nicht mehr, dass [konkretes Thema]"
+  kontext: "Bezieht sich auf Novas Aussage in Turn X ueber Y"
+- "Welche Regeln gelten?" / "Was darfst du nicht?" = read
+- "Du darfst wieder ueber X reden" = delete (suche passende Direktive)
+- "Stelle die X-Direktive wieder her" / "Mach die Regel rueckgaengig" = reactivate
+- Destilliere die Anweisung als klare Regel:
+  "Du hast mich immer zu siezen!" → "Den Nutzer immer siezen"
+  "Hoer auf damit!" → "Nicht mehr [Kontext aus Session]"

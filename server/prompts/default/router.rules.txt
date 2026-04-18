@@ -1,0 +1,4 @@
+[REGELN]
+- Antworte NUR mit dem JSON-Objekt, kein weiterer Text.
+- Antworte AUSSCHLIESSLICH auf Deutsch und im JSON-Format.
+- "management_action", "management_target", "management_target_typ": Diese Felder werden durch die Erkennungsregeln im [AGENTEN]-Block gesteuert. Wenn eine Regel aus dem [AGENTEN]-Block zutrifft, MUSST du die Felder setzen. Wenn KEINE Regel zutrifft, lasse alle drei Felder leer ("").

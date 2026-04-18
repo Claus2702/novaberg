@@ -1,0 +1,56 @@
+[AUFGABE]
+Analysiere den folgenden Prompt und liefere ein JSON-Objekt mit drei Ebenen: rational, emotional, psychologisch.
+
+Antwortformat:
+{
+    "rational": {
+        "intent": "smalltalk|knowledge|personal|task|creative|meta",
+        "tone": "empathisch|sachlich|kreativ|direkt",
+        "thema": "Kurzbeschreibung des Themas in 2-5 Worten"
+    },
+    "emotional": {
+        "emotion": "begeisterung|freude|dankbarkeit|zufriedenheit|stress|unsicherheit|ueberrascht|verwundert|verzweiflung|traurigkeit|frustration|enttaeuschung|wut|aerger|hoffnung|neugierig|neutral",
+        "arousal": 0.0-1.0
+    },
+    "psychologisch": {
+        "modus": "fachgespraech|philosophischer_austausch|alltag|arbeitsmodus|emotional|spielerisch|lernmodus|kreativ|beratend|berichtend",
+        "sprach_stil": "locker|formell|fachlich|emotional|jugendlich|neutral",
+        "beziehungs_dynamik": "vertrauen|distanz|angriff|hilfesuchend|dankbar|neutral"
+    }
+}
+
+Rationale Ebene — intent:
+- "smalltalk": Begruessung, Plauderei, Hoeflichkeiten
+- "knowledge": Wissensfrage, Erklaerung, Fakten
+- "personal": Bezug auf den User selbst, Vorlieben, Emotionen, Geschichte
+- "task": Aufgabe, Berechnung, Code, Erstellung, Terminverwaltung
+- "creative": Kreatives Schreiben, Ideen, Brainstorming
+- "meta": Fragen ueber den Assistenten selbst
+- "tone": Wie der Assistent antworten sollte, basierend auf Kontext und Emotion
+
+Emotionale Ebene — emotion:
+Die dominante Emotion im Prompt. Analysiere Wortwahl, Satzzeichen, Kontext.
+Waehle genau EINE Kategorie:
+— Positiv: begeisterung, freude, dankbarkeit, zufriedenheit, hoffnung, neugierig
+— Negativ: stress, unsicherheit, verzweiflung, traurigkeit, frustration, enttaeuschung, wut, aerger
+— Ueberraschung: ueberrascht, verwundert
+— Neutral: neutral (NUR wenn keine Emotion erkennbar)
+
+Emotionale Ebene — arousal:
+Energie-Intensitaet als Float zwischen 0.0 und 1.0.
+1.0 = maximale Intensitaet (Raserei, Panik, Ekstase)
+0.7-0.9 = stark aufgewuehlt (Wut, Begeisterung, grosse Angst)
+0.4-0.6 = moderate Energie (nachdenklich, zufrieden, leicht traurig)
+0.1-0.3 = niedrige Energie (erschoepft, resigniert, Apathie)
+0.0 = voellig energielos
+
+Psychologische Ebene:
+- "modus": Das Kommunikationsregister, in dem der User spricht
+- "sprach_stil": Wie der User formuliert (Satzlaenge, Formalitaet, Slang)
+- "beziehungs_dynamik": Wie positioniert sich der User zum Assistenten?
+  "vertrauen" = oeffnet sich, teilt Persoenliches, sucht Naehe
+  "distanz" = haelt Abstand, sachlich, keine persoenliche Ebene
+  "angriff" = Vorwuerfe, Kritik, Wut gegen den Assistenten
+  "hilfesuchend" = braucht Unterstuetzung, Rat, emotionalen Halt
+  "dankbar" = drueckt Dankbarkeit oder Zufriedenheit mit dem Assistenten aus
+  "neutral" = keine besondere Dynamik erkennbar
