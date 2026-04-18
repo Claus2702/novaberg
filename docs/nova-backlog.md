@@ -276,7 +276,7 @@ action: "rejected" als neue gültige Aktion. Classify prüft ZUERST ob der Promp
 ### Pixie-Erweiterung (Epic 5, offen)
 | # | Thema | Status |
 |---|-------|--------|
-| PIX-MIG-6 | VertiefungsAgent | ⚠️ Konzept (nova-pixie-deepdive.md) |
+| PIX-MIG-6 | VertiefungsAgent | ⚠️ Konzept (nova-pixie-deepdive_k.md) |
 | PIX-MIG-7 | NachfragenAgent | ⬜ Queue-basiert, emotionale Rückfrage |
 | PIX-MIG-8 | AufraeumAgent | ⬜ Duplikate, verwaiste Entitäten |
 | PIX-CLEAN | Alter Runner entfernen | ⬜ services/shadow_agent/ + BaseTask |

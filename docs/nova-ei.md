@@ -83,7 +83,7 @@ Neun Vektoren beschreiben die emotionale Dynamik eines Gespraechs. Jeder Vektor 
 
 Der GV-Node berechnet den Vektor als eigener Node im HumanGraph (12 Nodes seit Chat 39). Farbmisch-System, Entity-Hop und Charakter-Linse steuern die Nuancen.
 
-> Detail: nova-node-gv.md
+> Detail: nova-node-gv_k.md
 
 ---
 

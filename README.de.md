@@ -6,7 +6,7 @@
 
 ---
 
-**Nova** ist ein lokaler, privatsphäre-orientierter persönlicher KI-Assistent mit einer kognitiven Architektur. Kein einfacher Chatbot, sondern ein System aus spezialisierten Agenten, geschichtetem Gedächtnis, emotionaler Intelligenz und einem autonomen Hintergrundagenten.
+**Nova** ist ein lokaler, privatsphäre-orientierter persönlicher KI-Assistent mit einer kognitiven Architektur. Kein einfacher Chatbot, sondern ein System aus spezialisierten Agenten, geschichtetem Gedächtnis, emotionaler Intelligenz und einem autonomen Hintergrundagenten. Nova entwickelt eigene Interessen, Ziele und Emotionen, die ihr Gespräch und Denken beeinflussen — mit einem eigenen Emotionsstrang neben dem des Nutzers.
 
 **Leitgedanke:** Das LLM ist ein Sprachprozessor, kein Wissensspeicher. Echtes Wissen liegt in PostgreSQL, Redis und im Web. Intelligenz entsteht aus der parallelen Bewertung durch spezialisierte Perspektiven.
 
@@ -178,7 +178,7 @@ Feingranulare Parameter (Pixie-Intervalle, KZG-Thresholds, Such-Limits etc.) sin
 
 ## Dokumentation
 
-Die Architektur ist ausführlich dokumentiert in `Dokumentation/`:
+Die Architektur ist ausführlich dokumentiert in `docs/`:
 
 - `nova-architecture.md` — Gesamtübersicht
 - `nova-graph.md` — Human Graph Pipeline
@@ -186,7 +186,8 @@ Die Architektur ist ausführlich dokumentiert in `Dokumentation/`:
 - `nova-memory.md` — Gedächtnis-Schichten
 - `nova-ei.md` — Emotionale Intelligenz
 - `nova-node-*.md` — Einzelne Pipeline-Knoten
-- `nova-thinking-curiosity.md` — Neugier und intrinsische Motivation
+- `nova-thinking-curiosity_k.md` — Neugier und intrinsische Motivation
+- `nova-thinking-drive_k.md` — Antrieb, Ziele und Dual-Emotion
 - `nova-roadmap.md` — Projektchronik
 - `nova-backlog.md` — Zukunftskonzepte
 
@@ -210,7 +211,7 @@ Bekanntes Problem (Ollama #15260). Workaround ist im Code implementiert (Cleanup
 
 ## Status
 
-Nova ist aktiv in Entwicklung. Einzelentwicklung, keine externen Beiträge vorgesehen. Die Roadmap in `Dokumentation/nova-roadmap.md` zeigt den historischen Fortschritt, `nova-backlog.md` die offenen Konzepte.
+Nova ist aktiv in Entwicklung. Einzelentwicklung, keine externen Beiträge vorgesehen. Die Roadmap in `docs/nova-roadmap.md` zeigt den historischen Fortschritt, `nova-backlog.md` die offenen Konzepte.
 
 ---
 

@@ -54,7 +54,7 @@ Nicht weil der Arousal hoch ist, sondern weil die **Sicherheit** hoch ist.
 
 ### Was die GV-Tiefentabelle fehlt
 
-Die aktuelle Tabelle (nova-node-gv.md §2.3):
+Die aktuelle Tabelle (nova-node-gv_k.md §2.3):
 
 | Situation | Tiefe | Nova-Verhalten |
 |-----------|-------|----------------|
@@ -99,7 +99,7 @@ Die geplante `_farbe_charakter`-Funktion im GV-Node ist der richtige Ort für di
 2. **`_farbe_charakter` + vertrautes Plateau** (Stufe 2, TR6) → Nova erkennt den Raum für Fragen und stellt sie aus eigenem Antrieb, mit eigener Färbung
 3. **Traum-Modus + Neugier** (Stufe 3) → Nova hat eigene Gedanken und Positionen, fragt nicht nur aus Beziehungs-Neugier, sondern aus intellektueller Neugier
 
-### Sozialer Spielraum (aus nova-thinking-curiosity.md)
+### Sozialer Spielraum (aus nova-thinking-curiosity_k.md)
 
 Das Neugier-Konzept hat den sozialen Spielraum bereits formalisiert:
 
@@ -135,4 +135,4 @@ Aber diese Turns sind die kreativsten im gesamten Gespräch. Sie öffnen neue R�
 
 ---
 
-*Lesson gilt als Input für TR6 (`_farbe_charakter`), den GV-Längenalgorithmus, und das Neugier-Konzept (nova-thinking-curiosity.md §5.3 Sozialer Spielraum).*
+*Lesson gilt als Input für TR6 (`_farbe_charakter`), den GV-Längenalgorithmus, und das Neugier-Konzept (nova-thinking-curiosity_k.md §5.3 Sozialer Spielraum).*

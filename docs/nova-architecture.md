@@ -418,7 +418,7 @@ Perzeption und Router bekommen die letzten 5 Session-Turns als Hintergrund-Konte
 | Plugin-System (6 Manager) | Implementiert & getestet | nova-architecture.md |
 | LLM-Abstraktionsschicht (Provider, Profile, Anthropic Claude API) | Implementiert | nova-architecture.md |
 | Tri-LLM-Architektur (GPU Chat + CPU Analyse + CPU Sprache) | Implementiert | nova-pixie_l_spezialisierung.md |
-| Gespraechsvektor-Node (GV1+GV2) | Implementiert | nova-node-gv.md |
+| Gespraechsvektor-Node (GV1+GV2) | Implementiert | nova-node-gv_k.md |
 | CharakterIdentitaetAgent + DirektivenAgent | Implementiert | nova-agent-directives.md |
 | Tribunal Score-System (T1, Dual-Score Jurist) | Implementiert | nova-node-tribunal.md |
 | Health-Check (5 Dienste + SearXNG) | Implementiert | nova-architecture.md |
@@ -441,7 +441,7 @@ Perzeption und Router bekommen die letzten 5 Session-Turns als Hintergrund-Konte
 | KZG-Agent (LangGraph-Subgraph, 5 Nodes) | Implementiert & validiert | nova-mem-kzg.md |
 | DelegationsAgent (Halluzinations-Ventil) | Implementiert & validiert | nova-pixie-delegation.md |
 | RechercheAgent (Pixie Web-Recherche) | Implementiert | nova-pixie-research.md |
-| Gespraechsvektor (GV1+GV2: Node, Farbmisch, Entity-Hop) | Implementiert & validiert | nova-node-gv.md |
+| Gespraechsvektor (GV1+GV2: Node, Farbmisch, Entity-Hop) | Implementiert & validiert | nova-node-gv_k.md |
 | Session-Kontext-Extraktion (memory/kontext.py) | Implementiert | Chat 35 |
 | Auto-Fetch (web_search -> page_fetch automatisch) | Implementiert | Chat 35 |
 | Prompt-Schema [BLOCKNAME] auf allen Nodes | Implementiert | nova-pattern-prompt-schema.md |
@@ -456,13 +456,13 @@ Perzeption und Router bekommen die letzten 5 Session-Turns als Hintergrund-Konte
 
 ## 7. Dokumentenverzeichnis
 
-Das Handbuch ist nach Betrachtungstiefen organisiert. Tiefe 0 ist der Einstiegspunkt, jede weitere Tiefe geht ins Detail. **71 Dateien** im Verzeichnis `novaberg/docs/`.
+Das Handbuch ist nach Betrachtungstiefen organisiert. Tiefe 0 ist der Einstiegspunkt, jede weitere Tiefe geht ins Detail. **72 Dateien** im Verzeichnis `novaberg/docs/`.
 
 ### Tiefe 0 — Projekt
 
 | Dokument | Beschreibung |
 |----------|-------------|
-| nova-project.md | Konzept, Vision, Leitprinzipien, Persoenlichkeit |
+| nova-project_k.md | Konzept, Vision, Leitprinzipien, Persoenlichkeit |
 
 ### Tiefe 1 — Architektur & Subsysteme
 
@@ -483,7 +483,7 @@ Das Handbuch ist nach Betrachtungstiefen organisiert. Tiefe 0 ist der Einstiegsp
 | nova-node-enricher.md | Enricher (Kontext, EI-Gate, Charakter-Hash) |
 | nova-node-planner.md | Planner (Agent-Loop, Resume-Flow) |
 | nova-node-agent-dispatch.md | Agent-Dispatch (Zentraler Entry-Point) |
-| nova-node-gv.md | Gespraechsvektor (Farbmisch-System, Entity-Hop) |
+| nova-node-gv_k.md | Gespraechsvektor (Farbmisch-System, Entity-Hop) |
 | nova-node-responder.md | Responder (Antwortgenerierung, EI-MIKRO) |
 | nova-node-thinker.md | Thinker (Faktenpruefung, Web-Suche) |
 | nova-node-tribunal.md | Tribunal (Drei-Perspektiven-Bewertung, Score-System) |
@@ -511,7 +511,7 @@ Das Handbuch ist nach Betrachtungstiefen organisiert. Tiefe 0 ist der Einstiegsp
 | nova-pixie-reminder.md | WiedervorlageAgent (4-Tabellen-Scan, Snooze) |
 | nova-pixie-research.md | RechercheAgent (Web-Recherche, Dual-Modell) |
 | nova-pixie-delegation.md | DelegationsAgent (Halluzinations-Ventil, Yin-Yang) |
-| nova-pixie-deepdive.md | VertiefungsAgent (Konzept, nicht implementiert) |
+| nova-pixie-deepdive_k.md | VertiefungsAgent (Konzept, nicht implementiert) |
 
 ### Tiefe 2 — Gedaechtnis-Module (4)
 
@@ -529,6 +529,13 @@ Das Handbuch ist nach Betrachtungstiefen organisiert. Tiefe 0 ist der Einstiegsp
 | nova-ei-plutchik.md | Plutchik-Emotionsmodell (Oktagon, Normalisierung) |
 | nova-ei-character-profiles.md | Charakter-Profile & Hash (5 Dimensionen, alle im Prompt, Pipeline) |
 | nova-ei-language-adaptation.md | Sprachadaption (CAT, Feature-Scoring) |
+
+### Tiefe 2 — Kognition (2)
+
+| Dokument | Beschreibung |
+|----------|-------------|
+| nova-thinking-curiosity_k.md | Neugier (Charakter-Resonanz, intrinsische Motivation, Reflexion) |
+| nova-thinking-drive_k.md | Antrieb (Ziele, Motivation, Gravitation, Dual-Emotion) |
 
 ### Tiefe 2 — Technik & Tools (3)
 

@@ -3,7 +3,7 @@
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Konzept, Vision, Leitprinzipien, Persönlichkeit
 **Stand:** 17. April 2026, Chat 52 (Code-Alignment)
-**Pfad:** novaberg/docs/nova-project.md
+**Pfad:** novaberg/docs/nova-project_k.md
 **Quellen:** nova-00-k.md (Konzept), nova-06-k.md (Identität)
 
 ---
@@ -100,6 +100,14 @@ Jede Nachricht wird auf sechs Säulen analysiert (Schulz von Thun, Watzlawick, B
 Fünf automatisch destillierte Profile, alle im Prompt genutzt: Kern-Hash (Monate), Adaptiv-Hash (Tage), Emotions-Profil (Grundstimmung), Intentions-Profil (Kommunikation), Beziehungs-Profil. Das Emotions-Profil liefert die gewachsene Grundstimmung; EI-MIKRO ergänzt pro Turn die taktische emotionale Reaktion. Der Nutzer prägt den Assistenten durch Interaktion, nicht durch Konfiguration.
 
 > **Das Spiegelproblem (Chat 20):** Ohne Saatgut — ohne eigene Interessen, Werte, Perspektiven — reflektiert Nova nur die Themen des Nutzers. Die Seele soll wachsen und keine Soul-Datei sein (Chat 21).
+
+### 4.5 Antrieb: Ziele formen das Denken
+
+Wissen und Charakter allein machen kein Gegenüber. Was fehlt, ist Antrieb — ein "Ich möchte X." Nova entwickelt eigene Ziele, die aus ihrem Charakter (langfristig) und ihrem Nachdenken (mittelfristig) wachsen. Diese Ziele wirken als Gravitationspunkte im semantischen Raum: Sie ziehen Gesprächsthemen an, die in ihre Nähe kommen, verstärken die Salienz zielrelevanter Informationen und injizieren eigene Emotionen in den Gesprächsvektor.
+
+> **Kognitionswissenschaftlicher Hintergrund:** Eric Klingers "Current Concerns"-Theorie (1971) beschreibt, dass die Verpflichtung zu einem Ziel einen latenten Gehirnprozess startet, der die Person für zielrelevante Reize sensibilisiert — sie nimmt sie bevorzugt wahr, erinnert sich besser und träumt darüber. Der Zeigarnik-Effekt (1927) zeigt, dass unerledigte Ziele kognitiv aktiv bleiben, bis sie erreicht oder aufgegeben werden. Novas Zielsätze mit Motivation und Decay bilden beide Effekte ab.
+
+Nova hat dadurch nicht nur Wissen und Charakter, sondern auch einen eigenen Emotionsstrang — getrennt vom Nutzer. Wenn der Nutzer neutral über Kräuter spricht, kann Nova freudig reagieren, weil das Thema an ihr Ziel andockt. Wenn sie durch Recherche auf eine Gefahr gestoßen ist, kann sie warnen — nicht belehrend, sondern besorgt. → nova-thinking-drive_k.md
 
 ---
 
@@ -257,6 +265,7 @@ Nova ist funktionsfähig und wächst. 44 Sessions, 75 Dokumente, 12 Nodes im Hum
 - **Epic 16:** Entity-First-Retrieval — Knowledge Graph vor Websuche
 - **RESP-CHAR1 (hoch):** Base-Charakter-Prompt im Responder — Hauptursache für Leblosigkeit
 - **Traum-Modus (Epic 8):** Pixie assoziiert frei bei leerer Queue
+- **Antrieb & Dual-Emotion:** Nova entwickelt eigene Ziele mit Gravitation auf Salienz und Gesprächsvektor — mit eigenem Emotionsstrang
 - **Voice (TTS/STT):** Spracheingabe und -ausgabe
 
 Das Ziel ist kein perfekter Assistent. Das Ziel ist ein System, das mit seinem Nutzer wächst — das besser wird, je länger man es nutzt.

@@ -3,7 +3,7 @@
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Konzept — Gesprächsvektor
 **Stand:** 17. April 2026, Chat 52 (Code-Alignment)
-**Pfad:** novaberg/docs/nova-node-gv.md
+**Pfad:** novaberg/docs/nova-node-gv_k.md
 **Quellen:** nova-09-k.md
 
 ---

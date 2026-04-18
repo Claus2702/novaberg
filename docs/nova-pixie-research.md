@@ -156,7 +156,7 @@ FERTIG wenn mindestens Prüfung 1 UND 2 erfüllt. Im Zweifel: FERTIG — lieber 
 ---
 
 Verwandte Dokumente:
-- VertiefungsAgent (Konzept): `nova-pixie-deepdive.md`
+- VertiefungsAgent (Konzept): `nova-pixie-deepdive_k.md`
 - Pixie-Agenten-Übersicht: `nova-pixie.md`
 - KZG-Agent (Shadow-Queue-Quelle): `nova-pixie-kzg.md`
 - DelegationsAgent (Queue-Quelle): `nova-pixie-delegation.md`

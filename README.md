@@ -6,7 +6,7 @@
 
 ---
 
-**Nova** is a local, privacy-focused personal AI assistant built around a cognitive architecture. Not a chatbot — a system of specialized agents, layered memory, emotional intelligence, and an autonomous background agent that keeps thinking when nobody is chatting.
+**Nova** is a local, privacy-focused personal AI assistant built around a cognitive architecture. Not a chatbot — a system of specialized agents, layered memory, emotional intelligence, and an autonomous background agent that keeps thinking when nobody is chatting. Nova develops her own interests, goals, and emotions that shape her conversations and thinking — with her own emotional stream alongside the user's.
 
 **Core principle:** The LLM is a language processor, not a knowledge store. Real knowledge lives in PostgreSQL, Redis, and on the web. Intelligence emerges from simultaneous evaluation across specialized perspectives.
 
@@ -178,7 +178,7 @@ Fine-grained parameters (Pixie intervals, STM thresholds, search limits, etc.) a
 
 ## Documentation
 
-The architecture is extensively documented in `Dokumentation/`:
+The architecture is extensively documented in `docs/`:
 
 - `nova-architecture.md` — System overview
 - `nova-graph.md` — Human Graph pipeline
@@ -186,7 +186,8 @@ The architecture is extensively documented in `Dokumentation/`:
 - `nova-memory.md` — Memory layers
 - `nova-ei.md` — Emotional intelligence
 - `nova-node-*.md` — Individual pipeline nodes
-- `nova-thinking-curiosity.md` — Curiosity and intrinsic motivation
+- `nova-thinking-curiosity_k.md` — Curiosity and intrinsic motivation
+- `nova-thinking-drive_k.md` — Drive, goals, and dual-emotion architecture
 - `nova-roadmap.md` — Project chronicle
 - `nova-backlog.md` — Future concepts
 
@@ -212,7 +213,7 @@ Known issue (Ollama #15260). Workaround is implemented in the code (cleanup pipe
 
 ## Status
 
-Nova is under active development. Solo project, no external contributions planned. The roadmap in `Dokumentation/nova-roadmap.md` shows historical progress, `nova-backlog.md` lists open concepts.
+Nova is under active development. Solo project, no external contributions planned. The roadmap in `docs/nova-roadmap.md` shows historical progress, `nova-backlog.md` lists open concepts.
 
 ---
 

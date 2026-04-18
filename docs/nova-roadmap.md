@@ -273,7 +273,7 @@ HALL2-Reject adressieren, dann Pilot CharakterIdentitaetAgent: Semantik-Check + 
 ## Chat 51 (17. April 2026)
 
 ### Neugier als Architekturprinzip
-- ✅ `nova-thinking-curiosity.md` — Neugier-Konzept: Charakter-Resonanz-Feld im Embedding-Space, `NOVA_NEUGIER` als zentraler Config-Parameter (float 0.0–1.0), Gap-Strategie (Traum) + Verfolgungs-Strategie (Vertiefung v2), Sozialer Spielraum als Bremse, Neugier-Sättigung mit drei Stopp-Bedingungen
+- ✅ `nova-thinking-curiosity_k.md` — Neugier-Konzept: Charakter-Resonanz-Feld im Embedding-Space, `NOVA_NEUGIER` als zentraler Config-Parameter (float 0.0–1.0), Gap-Strategie (Traum) + Verfolgungs-Strategie (Vertiefung v2), Sozialer Spielraum als Bremse, Neugier-Sättigung mit drei Stopp-Bedingungen
 - ✅ Neue Doku-Kategorie `nova-thinking-*` (Thinking als übergeordnete kognitive Schicht)
 - ✅ Reflexion als universelles Architekturprinzip identifiziert: Generiere → Reflektiere → Handle nur auf dem Besten
 

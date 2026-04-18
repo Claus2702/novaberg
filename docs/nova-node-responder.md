@@ -376,4 +376,4 @@ Der Responder ist der einzige Node, der bewusst den vollen Kontext bekommt. Das 
 → Epic 11 Konzept (Agent-System): nova-graph.md
 → Lesson Daten vollständig transportieren: nova-graph_l_datentransport.md
 → Charakter & Direktiven Konzept: nova-agent-directives.md / nova-agent-character.md
-→ Gesprächsvektor-Konzept: nova-node-gv.md
+→ Gesprächsvektor-Konzept: nova-node-gv_k.md

@@ -3,7 +3,7 @@
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Neugier — Charakter-Resonanz, intrinsische Motivation, Reflexion (Konzept)
 **Stand:** 17. April 2026, Chat 52 (Code-Alignment — Konzept unverändert)
-**Pfad:** novaberg/docs/nova-thinking-curiosity.md
+**Pfad:** novaberg/docs/nova-thinking-curiosity_k.md
 **Quellen:** Chat 10 (Traum-Modus-Entscheidung, Resonanz-Modell), Chat 20 (Spiegelproblem, Saatgut), Chat 39 (Gesprächsvektor), Chat 45 (Nova-Destillation), Chat 51 (Neugier-Mechanismus)
 
 ---
@@ -301,7 +301,7 @@ Qwen3-Prompt (Planungsschritt):
 
 Die Sättigung funktioniert identisch zum Traum-Modus (Neuheit sinkt, Resonanz driftet, hartes Limit), aber mit höherem Budget und tieferer Toleranz — die Verfolgungs-Strategie hört erst auf, wenn das Bild wirklich vollständig ist.
 
-**Architektonische Konsequenz:** Der bestehende VertiefungsAgent (`nova-pixie-deepdive.md`) wird zur v2 erweitert. Statt einer einfachen "Lücken füllen"-Logik bekommt er den iterativen Loop mit Qwen3-Query-Planung und Sättigungs-Check. Die Infrastruktur (Suche, Fetch, Destillation) bleibt identisch — nur die Steuerungslogik wird intelligenter.
+**Architektonische Konsequenz:** Der bestehende VertiefungsAgent (`nova-pixie-deepdive_k.md`) wird zur v2 erweitert. Statt einer einfachen "Lücken füllen"-Logik bekommt er den iterativen Loop mit Qwen3-Query-Planung und Sättigungs-Check. Die Infrastruktur (Suche, Fetch, Destillation) bleibt identisch — nur die Steuerungslogik wird intelligenter.
 
 | | Gap-Strategie | Verfolgungs-Strategie |
 |---|---|---|
@@ -754,11 +754,11 @@ Der VertiefungsAgent wird vom Traum-Modus als **Infrastruktur** genutzt (Phase 3
 ---
 
 Verwandte Dokumente:
-- VertiefungsAgent (Shared Infrastruktur): `nova-pixie-deepdive.md`
+- VertiefungsAgent (Shared Infrastruktur): `nova-pixie-deepdive_k.md`
 - RechercheAgent (Such-Pipeline): `nova-pixie-research.md`
 - DelegationsAgent (Queue-Quelle): `nova-pixie-delegation.md`
 - Charakter-Profile (Destillation): `nova-ei-character-profiles.md`
-- Gesprächsvektor (GV-Node): `nova-node-gv.md`
+- Gesprächsvektor (GV-Node): `nova-node-gv_k.md`
 - Salienz (Bewertung): `nova-node-salience.md`
 - Pixie-Übersicht: `nova-pixie.md`
 - Entitäten-Resonanz-Modell: Chat 10 (§3.7)

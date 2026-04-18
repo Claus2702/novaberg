@@ -3,7 +3,7 @@
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** VertiefungsAgent — Konzept (noch nicht implementiert)
 **Stand:** 17. April 2026, Chat 52 (Code-Alignment)
-**Pfad:** novaberg/docs/nova-pixie-deepdive.md
+**Pfad:** novaberg/docs/nova-pixie-deepdive_k.md
 **Quellen:** nova-05-k-b.md (VertiefungsAgent-Abschnitte)
 
 ---
