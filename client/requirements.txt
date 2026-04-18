@@ -1,0 +1,3 @@
+PySide6>=6.6
+requests>=2.31
+qtawesome>=1.3
