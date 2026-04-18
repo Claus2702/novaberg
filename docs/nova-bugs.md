@@ -310,16 +310,26 @@
 
 ### Classify & Router (Chat 48)
 
-#### ROUTE-MISS1 — Router erkennt Timeline-Update nicht ⬜
-**Entdeckt:** Chat 48, Live-Konversation
-**Symptom:** "Der Friseur ist in Monheim. Kannst Du das mit in den Termin schreiben?" → Router setzt `mgmt=/` statt `mgmt=agent/timeline`. Kein TimelineAgent dispatcht.
-**Ursache:** Router erkennt den Kontext-Bezug zum bestehenden Friseur-Termin nicht. Session-Kontext (Termin aus vorherigem Turn) wird nicht für Update-Erkennung genutzt.
+#### ROUTE-MISS1 — Router nutzt Session-Kontext nicht für kontextabhängige Prompts ⬜
+**Entdeckt:** Chat 48, erweitert Chat 54
+**Symptom 1 (Chat 48):** "Der Friseur ist in Monheim. Kannst Du das mit in den Termin schreiben?" → Router setzt `mgmt=/` statt `mgmt=agent/timeline`. Kein TimelineAgent dispatcht.
+**Symptom 2 (Chat 54):** Nova fragt "Sollen wir das indische Essen als Termin vormerken?" → User antwortet "Ja, bitte" → Router setzt `mgmt=/`. Der Router sieht die Session-Turns mit Novas Vorschlag, wertet sie aber nicht aus.
+**Ursache:** Der Router behandelt kurze, kontextabhängige Prompts isoliert. Session-Kontext wird nicht zur Auflösung von Rückbezügen genutzt. Betrifft sowohl Update-Referenzen ("mit in den Termin") als auch Bestätigungen auf Nova-Vorschläge ("Ja, bitte").
 **Verwandt:** Umgekehrtes Problem zu ROUTE-CHAR1 — dort False Positive, hier False Negative.
-**Prio:** Hoch — führt in Kombination mit HALL2 zu stillem Datenverlust.
+**Prio:** Hoch — HALL2-Update ist durch den REGELN-Guard entschärft, aber die Aktion geht trotzdem verloren. Router-Prompt braucht Session-Kontext-Awareness.
 
 ---
 
-#### HALL2-Update — Halluzinierte Bestätigung mit Datenverlust ⚠️
+#### TIMELINE-SEARCH1 — Timeline-Agent findet irrelevanten alten Termin ⬜
+**Entdeckt:** Chat 54, Live-Test
+**Symptom:** "Kannst du das mit in den Termin schreiben?" → Timeline-Agent sucht, findet alten IT-Termin "Abschalten zweier Server" (möglicherweise aktiv=false), kommt mit `status=fehler` zurück. Statt einer Disambiguierungs-Rückfrage ("Meinst du den IT-Termin vom ...?") gibt der Agent einen Fehler.
+**Ursache:** Embedding-Suche matcht zu breit. Kein Scope-Filter (aktiv/inaktiv), keine Disambiguierung bei uneindeutigem Treffer.
+**Prio:** Mittel — funktionale Einschränkung, kein Datenverlust (Pipeline hat den Fehler korrekt kommuniziert).
+
+---
+
+#### HALL2-Update — ~~Halluzinierte Bestätigung mit Datenverlust~~ ✅
+**Gefixt:** Chat 54 — Architektur-Fix: Business-Logik aus dem Responder in den Planner verschoben. `_build_task_block()` erzeugt fertigen [AUFGABE]-Block im State (`task_block`). Responder konsumiert nur noch. REGELN-Guard: "Bestätige keine Aktion ohne Auftrag." Getestet: Router-Miss → Nova sagt ehrlich "kann ich nicht durchführen" statt zu halluzinieren.
 **Entdeckt:** Chat 48, Live-Konversation
 **Symptom:** "Ich hab den Ort direkt in den Termin eingetragen" — aber DB `details`-Feld leer, kein Agent-Dispatch im Log.
 **Schadensfall:** HALL2 + ROUTE-MISS1 in Kombination:
@@ -353,10 +363,12 @@
 **Verwandt:** BUTLER1 (RLHF-Corporate-Sprech), THER1 (RLHF-Phrasenrepertoire).
 **Lösungsansatz:** Responder-Prompt bei CRUD-Erfolg: "Greife den konkreten Inhalt der Änderung auf. Keine generischen Dankes- oder Einsatz-Floskeln." Eventuell Block [AKTIONSERGEBNIS] um die neuen Charakter-Attribute herum, mit Hinweis auf Verwendung.
 **Prio:** Mittel — bricht die Charakter-Immersion im Moment der Aktionsbestätigung, besonders auffällig nach Charakter-Updates.
+**Anmerkung Chat 54:** Durch den `task_block`-Refactor bekommt der Responder jetzt den konkreten Ergebnis-Text vom Agent. Im Live-Test ("Einkaufsliste aktualisieren") referenziert Nova alle Items statt Corporate-Phrasen zu verwenden. Möglicherweise entschärft, weiter beobachten.
 
 ---
 
-#### HALL2-Reject — Halluzinierte Bestätigung bei abgelehnten Agent-Aktionen 🚨
+#### HALL2-Reject — ~~Halluzinierte Bestätigung bei abgelehnten Agent-Aktionen~~ ✅
+**Gefixt:** Chat 54 — Neuer Status `"dismissed"` in resume.py (statt ambiges `"abgeschlossen"` + "Okay, lasse ich."). Eigener Block-Typ `_build_task_dismissed()` im Planner. Prompt `responder.aufgabe_verworfen` instruiert: "Bestätige die ABLEHNUNG, nicht die Ausführung." Getestet: 3x hintereinander abgelehnt, keine einzige halluzinierte Bestätigung.
 **Entdeckt:** Chat 50, Live-Tests B+C (17.04.2026)
 **Symptom:** Nach korrekter Ablehnung durch Resume-Node (Agent-Result: "Okay, lasse ich.") antwortet Nova: "Die Anweisung wurde vom Agenten 'charakter_identitaet' übernommen und die Identität entsprechend angepasst, Herr." — das Gegenteil der Wahrheit. DB ist intakt, aber User glaubt Ablehnung wurde ignoriert.
 **Reproduziert:** Tests B (update + "nein") und C (delete + "Nein"). Test A (replace, erster in Session) war korrekt.
@@ -385,4 +397,4 @@
 
 ---
 
-*Aktualisiert in Chat 52. Chat 50: RESUME-REJECT gefixt, HALL2-Reject neu entdeckt. Chat 51: Keine neuen Bugs (strategische Session: Neugier-Konzept, Pitch, Codeberg). Chat 49: RESP-CRUD-GENERIC, EMOTE-LOCK, TOPOS-LOCK aus Telegram-Konversation. Chat 48: CLASSIFY-REJECTED + Dispatch-Fix, ROUTE-CHAR1 gelöst, CLASSIFY-CONFIRM, ROUTE-MISS1, HALL2-Update, SEARX1 neu.*
+*Aktualisiert in Chat 54. Chat 54: HALL2-Update und HALL2-Reject gefixt (Planner task_block + dismissed-Status + REGELN-Guard). ROUTE-MISS1 erweitert (Session-Kontext-Awareness). TIMELINE-SEARCH1 neu. RESP-CRUD-GENERIC möglicherweise entschärft. Chat 52: Doku-Alignment 46 Dateien. Chat 50: RESUME-REJECT gefixt, HALL2-Reject entdeckt. Chat 49: RESP-CRUD-GENERIC, EMOTE-LOCK, TOPOS-LOCK. Chat 48: CLASSIFY-REJECTED, ROUTE-CHAR1 gelöst.*

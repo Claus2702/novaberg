@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Backlog — Konzipierte, noch nicht implementierte Features
-**Stand:** 17. April 2026, Chat 50
+**Stand:** 18. April 2026, Chat 54
 **Pfad:** novaberg/docs/nova-backlog.md
 **Quellen:** nova-08-k.md (Kognitive Anreicherung), nova-10-k-backlog.md (Skill-System), nova-01-t-c-backlog.md (Node-Konfiguration)
 
@@ -373,6 +373,31 @@ Zwei neue Nodes pro Agent:
 
 ---
 
+## Epic: Client-Dashboard (PySide6 + QWebEngineView)
+
+**Motivation:** Debugging, Kalibrierung und Einregelung des Dual-Emotion-Systems (Chat 53) erfordern visuelles Echtzeit-Feedback. Log-Grep ist kein Werkzeug für die Feinabstimmung von 8-dimensionalen Emotionsvektoren. Ohne Dashboard ist die Dual-Emotion-Architektur Blindflug.
+
+**Architektur:** PySide6 Desktop-Shell als Parent-Formular mit dockbaren Child-Panels. Jedes Panel rendert über QWebEngineView (Chromium) — Markdown, Emojis, Charts nativ. FastAPI liefert Daten über REST (statisch) und WebSocket (Live-Streams). Kein Browser, kein Electron.
+
+**Panels (geplant):**
+
+| Panel | Datenquelle | Zweck |
+|-------|-------------|-------|
+| Chat | Bestehende Chat-API | Markdown + Emoji korrekt gerendert (löst CLIENT-RENDER) |
+| EI-Dashboard | `GespraechAntwort` pro Turn | 8 Plutchik-Dimensionen, Arousal, Vektor — visuell pro Turn |
+| Session-Turns | Session-Daten aus Redis | Rohe Turn-Daten mit Annotationen, Emotion, Kern |
+| Charakter-Viewer | `charakter_hash` + Anweisungen | Kern, Adaptiv, Beziehung, Emotions-Profil, Intentionen |
+| Pixie-Monitor | Redis Pixie-Queue/Status | Aktuelle Tätigkeit, Queue, letzte Ergebnisse |
+| Live-Logs | WebSocket, Python-Logging-Events | Filterbar nach Node/Level, kein docker-compose-logs mehr |
+
+**Voraussetzung für:** Dual-Emotion-Architektur (Chat 53), Antrieb/Gravitation (Chat 53), TR6 (_farbe_charakter). Ohne visuelles Feedback können die Schwellwerte nicht empirisch kalibriert werden.
+
+**Löst:** CLIENT-RENDER (Backlog), Log-Debugging-Workflow
+
+**Aufwand:** Mehrere Sessions. Phase 1: Chat + Live-Logs + EI-Dashboard. Phase 2: Charakter + Pixie + Session-Turns.
+
+---
+
 ## 8. Offene Bugs
 
 | Bug | Status | Beschreibung |
@@ -388,20 +413,21 @@ Zwei neue Nodes pro Agent:
 | PLANNER-WARN | ⬜ | Doppel-Read bei Resume (harmlos, WARNING → DEBUG) |
 | OLLAMA-THINK | ⚠️ | Ollama #15260: `think=false` + `format="json"` = Format ignoriert (Gemma4). Workaround: kein format, Prompt+Cleanup. |
 | ROUTE-MISS1 | ⬜ | Router erkennt "Kannst Du das mit in den Termin schreiben?" nicht als Timeline-Update |
-| HALL2-Update | ⚠️ | Halluzinierte Bestätigung + stiller Datenverlust ("Ort eingetragen" ohne Agent-Lauf) |
+| HALL2-Update | ✅ | ~~Halluzinierte Bestätigung + stiller Datenverlust~~ — Gefixt Chat 54 |
 | SEARX1 | ⚠️ | SearXNG Engines timen aus, keine Web-Suche möglich |
-| RESP-CRUD-GENERIC | ⚠️ | Generische Corporate-Bestätigung nach Agent-Erfolg statt inhaltliche Referenz auf die Änderung |
+| RESP-CRUD-GENERIC | ℹ️ | Möglicherweise entschärft durch task_block (Chat 54), weiter beobachten |
 | EMOTE-LOCK | ⬜ | Emote-Inflation — Nova eröffnet fast jede Antwort mit `*kichere boshaft*` (register-abhängig) |
 | TOPOS-LOCK | ⬜ | Nova zykelt mechanisch durch 8 Alters-Bilder statt auf User-Details einzugehen (register-abhängig) |
 | RESUME-REJECT | ✅ | ~~Pflicht-Rückfrage führt Aktion trotz "Nein" aus~~ — Gefixt Chat 50 |
-| HALL2-Reject | 🚨 | Responder halluziniert Bestätigung bei abgelehnten Agent-Aktionen (Chat 50) |
+| HALL2-Reject | ✅ | ~~Responder halluziniert Bestätigung bei abgelehnten Agent-Aktionen~~ — Gefixt Chat 54 |
 | CRUD-DESTILL-SUBTRAKT | ⚠️ | Subtraktive Änderungen ("Sei nicht mehr X") werden als Anweisung gespeichert statt in den Charakter integriert |
 | CRUD-REACTIVATE-STAMP | ⚠️ | Reactivate setzt `deaktiviert_am` nicht auf NULL zurück (Invarianzverletzung) |
 | CRUD-REACTIVATE-COEXIST | ℹ️ | Reactivate deaktiviert nicht den aktuellen Charakter — abgedeckt durch Fachabteilungs-Epic |
 | CHAR-ID4-ORPHAN | ⬜ | Bi-temporale Invariante verletzt (ID 4: aktiv=f ohne deaktiviert_am) |
+| TIMELINE-SEARCH1 | ⬜ | Timeline-Agent findet irrelevanten alten Termin, keine Disambiguierung |
 
 Details → nova-bugs.md
 
 ---
 
-*Konsolidiert aus Backlog-Dokumenten und Roadmap-Punkten. §7-8 integriert aus ehemaliger Roadmap (Chat 44). Aktualisiert Chat 50: RESUME-REJECT gefixt, HALL2-Reject neu entdeckt, Fachabteilungs-Epic Phase 0 abgeschlossen.*
+*Aktualisiert Chat 54: HALL2-Update + HALL2-Reject gefixt, TIMELINE-SEARCH1 neu, RESP-CRUD-GENERIC möglicherweise entschärft.*

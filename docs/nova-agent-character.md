@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** CharakterIdentitaetAgent (Persoenlichkeits-Saatgut)
-**Stand:** 17. April 2026, Chat 52 (Code-Alignment)
+**Stand:** 18. April 2026, Chat 54 (dismissed-Status in resume.py)
 **Pfad:** novaberg/docs/nova-agent-character.md
 **Quellen:** nova-12-k.md, nova-14-k.md, nova-15-k.md
 
@@ -68,6 +68,17 @@ validieren --+--> resume ------+
 ```
 
 `validieren` routet nach drei Kriterien: bei `resume=True` → `resume`-Node (User-Antwort auf Pflicht-Rueckfrage); bei bereits gueltiger `action` direkt → `db_validieren`; sonst → `klassifizieren`. Verifikation und Confirm liegen inline in `ausfuehren` (kein eigener Node).
+
+**Resume-Node Rückgabe-Status (seit Chat 54):**
+- `status="running"` → User hat bestätigt, weiter zu CRUD-Ausführung
+- `status="inquiry"` → Antwort unklar, erneute Rückfrage
+- `status="dismissed"` → User hat abgelehnt, keine Änderung. Ergebnis-Text: "Benutzer hat die Aktion abgelehnt. Keine Aenderung vorgenommen."
+
+Routing in `_nach_resume`:
+```python
+if status in ("fehler", "rueckfrage", "abgeschlossen", "dismissed"):
+    return END
+```
 
 ```
 agents/charakter_identitaet/

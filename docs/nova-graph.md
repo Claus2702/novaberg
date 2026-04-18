@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Graph-Architektur, HumanGraph, AgentGraph, Agent-System
-**Stand:** 17. April 2026, Chat 52 (Code-Alignment)
+**Stand:** 18. April 2026, Chat 54 (task_block/task_context_cut)
 **Pfad:** novaberg/docs/nova-graph.md
 **Quellen:** nova-01-k.md (Graph-Konzept), nova-01-a.md (Graph-Architektur), nova-11-k.md (Agent-Workflow-Konzept), nova-11-a.md (Agent-Architektur)
 
@@ -212,6 +212,8 @@ Das State-Dict durchlaeuft alle Nodes. Jeder Node liest was er braucht und schre
 | `management_result` | `str` | Ergebnis der Manager-Aktion (fuer den Responder) |
 | `management_detail` | `str` | Details (z.B. "Notiz 'Einkaufsliste' angelegt") |
 | `pending_writes` | `list[PendingWrite]` | Geplante Schreiboperationen |
+| `task_block` | `str` | Fertiger [AUFGABE]-Block fuer den Responder (seit Chat 54) |
+| `task_context_cut` | `bool` | Kontext-Schnitt-Flag fuer den Responder (seit Chat 54) |
 
 ### 4.7 Responder
 

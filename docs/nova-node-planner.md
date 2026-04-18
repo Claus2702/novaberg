@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Node-Referenz Planner
-**Stand:** 17. April 2026, Chat 52 (Code-Alignment)
+**Stand:** 18. April 2026, Chat 54 (HALL2-Fix: Task-Block-Aufbereitung)
 **Pfad:** novaberg/docs/nova-node-planner.md
 **Quellen:** nova-01-m-d.md
 **Datei:** `graph/nodes/planner.py`
@@ -18,6 +18,8 @@ Der Planner ist die Schaltstelle für Management-Aktionen. Er hat zwei Pfade:
 2. **Manager-Pfad (Legacy):** Findet den zuständigen Manager über vier Prioritätsstufen, delegiert `manager.plan()` und erzeugt `pending_writes`. Wird nur noch für nicht-migrierte Manager verwendet (FaktenManager, KzgManager).
 
 3. **Resume-Pfad (seit Chat 23):** Bei `management_action=resume` lädt der Planner den wartenden Agent aus Redis und setzt `agent_name` direkt — keine Manager-Auflösung nötig.
+
+4. **Task-Block-Aufbereitung (seit Chat 54):** An jedem Austrittspunkt interpretiert der Planner die `agent_results` und baut einen fertigen `[AUFGABE]`-Block für den Responder. Reine Python-Logik, kein LLM-Call. Der Responder konsumiert nur noch — keine eigene Ergebnis-Interpretation.
 
 Der Planner ist nur bei Management-Intents aktiv (`management_action ≠ ""`). Bei normalem Chat wird er übersprungen.
 
@@ -106,6 +108,36 @@ Der Manager gibt ein Dict zurück:
 
 Die `pending_writes` werden an die bestehende Liste im State angehängt (nicht ersetzt). Der Dispatcher führt sie am Ende des Graphs aus.
 
+### 4.3 Task-Block-Aufbereitung (Chat 54, HALL2-Fix)
+
+Am Ende jedes Planner-Durchlaufs (sofern Agent-Ergebnisse vorliegen könnten) ruft `_write_task_block(state)` die Ergebnis-Aufbereitung auf. Sechs Helfer-Funktionen, eine Verantwortung pro Funktion:
+
+| Funktion | Verantwortung |
+|----------|--------------|
+| `_build_task_block()` | Entscheidet nach Priorität welcher Block-Typ vorliegt, delegiert |
+| `_build_task_inquiry()` | [AUFGABE] für Pflicht-Rückfrage (inkl. Disambiguierung-JSON) |
+| `_build_task_success()` | [AUFGABE] für erfolgreiche Agent-Aktionen |
+| `_build_task_dismissed()` | [AUFGABE] für abgelehnte Aktionen (User hat "Nein" gesagt) |
+| `_build_task_error()` | [AUFGABE] für fehlgeschlagene Aktionen |
+| `_build_task_legacy()` | [AUFGABE] für Legacy-Management (alter Manager-Pfad) |
+| `_write_task_block()` | Liest agent_results/mgmt_result aus State, ruft `_build_task_block()`, schreibt Ergebnis in State |
+
+**Prioritätsreihenfolge:**
+1. Rückfrage (`inquiry`) → kein Kontext-Schnitt (User braucht Kontext für Antwort)
+2. Fehler (`error`) → Kontext-Schnitt
+3. Verworfen (`dismissed`) → Kontext-Schnitt
+4. Erfolg (`completed`) → Kontext-Schnitt
+5. Legacy-Management → Kontext-Schnitt
+
+`rejected` (Classify-Vorprüfung) wird ignoriert — ist ein Nicht-Ereignis für den Responder.
+
+**Drei Austrittspunkte mit `_write_task_block()`:**
+1. Resume-Fallback (kein pending Agent in Redis, aber agent_results vorhanden)
+2. Agent bereits gelaufen (Schleifen-Schutz, Hauptfall)
+3. Legacy-Manager (nach try/except)
+
+> **Architektur-Entscheidung (Chat 54):** Die [AUFGABE]-Block-Erstellung lag vorher im Responder (Zeilen 229–296). Das verletzte Separation of Concerns: Der Responder interpretierte Agent-Ergebnisse statt sie zu konsumieren. HALL2-Reject entstand, weil `status="abgeschlossen"` mit Text "Okay, lasse ich." ambig war — der Responder löste die Ambiguität falsch auf. Fix: Planner interpretiert (Python), Responder konsumiert (LLM).
+
 ---
 
 ## 5. State-Felder
@@ -129,6 +161,8 @@ Die `pending_writes` werden an die bestehende Liste im State angehängt (nicht e
 | `pending_writes` | Ergänzt um Manager-Writes (nur Legacy-Pfad) |
 | `management_result` | Zusammenfassung für Responder |
 | `management_detail` | Details für Responder |
+| `task_block` | Fertiger [AUFGABE]-Block für den Responder (leer = kein Block) |
+| `task_context_cut` | `True` = Responder soll Gedächtnis/Web weglassen |
 | `node_annotations` | Fehlermeldungen bei Manager-Fehler |
 
 ---

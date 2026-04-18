@@ -1,6 +1,6 @@
 # Novaberg — Roadmap (Projektchronik)
 
-**Stand:** 17. April 2026, Chat 52
+**Stand:** Chat 54, 18. April 2026
 **Single Source of Truth für abgeschlossene Arbeit.**
 **Offene Punkte → nova-backlog.md**
 
@@ -285,6 +285,26 @@ HALL2-Reject adressieren, dann Pilot CharakterIdentitaetAgent: Semantik-Check + 
 - ✅ Projektname: **Novaberg — The Nova Anima Resonance System**
 - ✅ Codeberg-Repo: `ClausVomBerg/novaberg`, SSH-Key, erster Commit (LICENSE, README.md, README.de.md, .gitignore)
 - ✅ Lizenz: Apache 2.0 (erfordert PyQt6 → PySide6 Migration)
+
+---
+
+## Chat 54 (18. April 2026)
+
+### HALL2-Fix — Architektur-Refactor Responder/Planner
+- ✅ HALL2-Reject — Neuer Status `"dismissed"` in resume.py. Eigener Prompt-Block `responder.aufgabe_verworfen`. 3x Ablehnung hintereinander getestet, keine Halluzination.
+- ✅ HALL2-Update — REGELN-Guard gegen Aktionsbestätigung ohne Auftrag. Live-Test: Router-Miss → Nova sagt ehrlich "kann ich nicht durchführen."
+- ✅ Architektur: Business-Logik aus Responder (~68 Zeilen) in Planner verschoben. `_build_task_block()` mit 6 Helfer-Funktionen. Neue State-Felder `task_block` + `task_context_cut`. Responder konsumiert nur noch.
+- ✅ TAG-LEAK-Fix: REGELN-Guard-Text referenzierte internen Blocknamen `[AUFGABE]`, der in die Antwort leckte. Prompt umformuliert.
+
+### Erkenntnisse
+- ROUTE-MISS1 breiter als gedacht: Router nutzt Session-Kontext nicht für kontextabhängige Prompts (Rückbezüge UND Bestätigungen auf Nova-Vorschläge)
+- RESP-CRUD-GENERIC möglicherweise durch task_block entschärft — Nova referenziert konkreten Inhalt statt Corporate-Phrasen
+- TIMELINE-SEARCH1 neu: Agent findet irrelevanten alten Termin, keine Disambiguierung
+
+### Nächste Session
+- ROUTE-MISS1: Router-Prompt Session-Kontext-Awareness
+- Status-Konstanten englisch (dismissed neben abgeschlossen → Inkonsistenz)
+- Agenten-Tests (systematisch)
 
 ---
 

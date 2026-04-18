@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Node-Referenz Responder
-**Stand:** 17. April 2026, Chat 52 (Code-Alignment)
+**Stand:** 18. April 2026, Chat 54 (HALL2-Fix: task_block-Konsum statt Business-Logik)
 **Pfad:** novaberg/docs/nova-node-responder.md
 **Quellen:** nova-01-m-e.md, nova-12-k.md §7
 **Datei:** `graph/nodes/responder.py`
@@ -28,7 +28,7 @@ Enricher → [Planner] → ▶ Responder ◀ → Thinker → Tribunal → ...
 Der System-Prompt wird dynamisch aus dem State zusammengebaut (`_build_system_prompt`). Er folgt dem einheitlichen [BLOCKNAME]-Schema (`nova-01-t-d`, Chat 27). Reihenfolge: Primacy → Kontext → Recency.
 
 1. **[IDENTITAET]** — "Du bist Nova." + Charakter-Anweisung (Saatgut, statisch) + Gewachsene Persönlichkeit (nova_kern) + Aktuelle Themen (nova_adaptiv) + Emotionale Grundstimmung (nova_emotions, seit Chat 52) + Kommunikationsstil (nova_intentionen) + Bild vom Nutzer (nova_beziehung) + Datum/Uhrzeit + Rollenklarheit + Web-Zugriff
-2. **[AUFGABE]** *(bedingt)* — Drei Varianten: Pflicht-Rückfrage, Agent-Erfolg, Legacy-Management. Nur eine erscheint.
+2. **[AUFGABE]** *(bedingt, seit Chat 54 aus State)* — Wird vom Planner als fertiger Block in `task_block` geschrieben. Fünf Varianten: Rückfrage, Erfolg, Verworfen (dismissed), Fehler, Legacy-Management. Der Responder setzt den Block ein ohne eigene Interpretation. Kontext-Schnitt (Gedächtnis/Web weglassen) wird über `task_context_cut` gesteuert.
 3. **[KOMMUNIKATION]** — Emotionaler Zustand, Vektor, EI-MIKRO, Sprachstil, Beziehungsdynamik, Tonalität
 4. **[GESPRAECHSVEKTOR]** *(seit Chat 39)* — Landschaftsbeschreibung aus dem GV-Node
 5. **[GEDAECHTNIS]** *(bei Agent-Erfolg: weggelassen)* — KZG, LZG, Fakten, Notizen
@@ -36,7 +36,7 @@ Der System-Prompt wird dynamisch aus dem State zusammengebaut (`_build_system_pr
 7. **[REGELN]** — Antwortkürze, verbotene Floskeln, Butler-Prinzip, Tag-Unterdrückung
 8. **[DIREKTIVEN]** *(seit Chat 40)* — Absolute Verhaltensanweisungen vom Nutzer mit Arbeitsvertrag-Framing
 
-**Kontext-Schnitt bei Agent-Erfolg (Chat 23, erweitert Chat 27):** Wenn ein Agent erfolgreich war (`hat_agent_erfolg=True`), sieht der Responder NUR:
+**Kontext-Schnitt bei Agent-Aktion (Chat 23, erweitert Chat 27, refactored Chat 54):** Wenn `task_context_cut=True` (Erfolg, Fehler, Ablehnung), sieht der Responder NUR:
 - Identität ([IDENTITAET])
 - Stil ([KOMMUNIKATION], [REGELN])
 - Agent-Ergebnis ([AUFGABE] mit Verarbeitungs-Block)
@@ -48,6 +48,8 @@ Kein `memory_context`, kein `web_context`. Session-Turns werden bei Agent-Erfolg
 > **Lesson (Chat 27, nova-graph_l_kontextualisierung.md):** Imperative ("Erfinde KEINE Probleme") versagen, wenn das LLM den Kontext falsch einordnet. Strukturierte Kontextualisierung (Beschreiben statt Verbieten) löst das an der Wurzel.
 
 **Lesson SYS1:** Der System-Prompt muss minimal sein ("Du bist Nova."). "Du bist ein hilfreicher KI-Assistent." aktiviert RLHF-Conditioning und überschreibt alle nachfolgenden Charakter-Anweisungen. → nova-node-responder_l.md
+
+> **Lesson (Chat 54, HALL2-Fix):** Der Responder enthielt ~68 Zeilen Business-Logik zur Interpretation von agent_results (Rückfrage? Erfolg? Fehler?). Status "abgeschlossen" mit Text "Okay, lasse ich." war ambig — das LLM löste die Ambiguität falsch auf und halluzinierte Bestätigungen. Lösung: Business-Logik in den Planner verschoben. Der Responder konsumiert einen fertigen Block aus dem State. "Daten vollständig transportieren, Formatierung am Konsumenten" — aber die Interpretation gehört zum Produzenten, nicht zum Konsumenten.
 
 ### 3.1 Basis-Identität
 
@@ -183,6 +185,8 @@ Vier Teilblöcke im Prompt, zusammen als Sicherheitsnetz:
 
 > **Designentscheidung (Chat 7 → Chat 19 → Chat 24):** Die Anti-Floskel-Regeln entstanden in Chat 7 (Nova klang wie ein Callcenter-Agent). In Chat 19 wurde der Ansatz erweitert: Therapeuten-Einstiege als eigene Kategorie verboten, Butler-Prinzip ergänzt. In Chat 24 kam das explizite Pseudo-Rückfragen-Verbot hinzu, nachdem ein dokumentierter Schadensfall zeigte, dass Butler-Floskeln Datenintegritätsprobleme verursachen: Pseudo-Rückfrage → User antwortet → kein Pending-Agent → Router behandelt als frischen Prompt → Datenverlust.
 
+**HALL2-Guard (Chat 54):** "Bestätige NIEMALS eine Aktion, wenn du keinen konkreten Auftrag mit Ergebnis erhalten hast." Verhindert, dass der Responder aus Session-Kontext Aktionsbestätigungen halluziniert, wenn der Router einen Management-Intent verpasst hat (ROUTE-MISS1).
+
 ### 3.4 Gedächtnis-Kontext ([BLOCKNAME]-Schema seit Chat 27)
 
 ```
@@ -312,9 +316,9 @@ Ich bin so hyped gerade, das ist nicht real!
 | `beziehungs_dynamik` | Perzeption | Aktuelle Dynamik |
 | `gespraechs_modus` | Perzeption/Enricher | Kommunikationsregister |
 | `user_intentionen` | Enricher | Erkannte Intentionen |
-| `management_result` | Planner | Aktions-Zusammenfassung |
-| `management_detail` | Planner | Detail-Ergebnis |
-| `agent_results` | Agent-Dispatch | Liste aller Agent-Ergebnisse |
+| `task_block` | Planner (seit Chat 54) | Fertiger [AUFGABE]-Block, direkt einsetzbar |
+| `task_context_cut` | Planner (seit Chat 54) | Kontext-Schnitt-Flag (ersetzt `hat_agent_erfolg`) |
+| `agent_results` | Agent-Dispatch | Liste aller Agent-Ergebnisse (nur noch für VENT1-Delegations-Beruhigung gelesen) |
 | `nova_kern` | Enricher | Destillierter Charakter-Hash |
 | `nova_adaptiv` | Enricher | Novas aktuelle Themen (adaptive_hash) |
 | `nova_intentionen` | Enricher | Novas Kommunikationsstil (intentions_profil) |
