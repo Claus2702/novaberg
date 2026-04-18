@@ -1,0 +1,110 @@
+# ──────────────────────────────────────────────────────────────
+# docker-compose.example.yml — Template für Nova
+#
+# Kopieren nach ../docker-compose.yml (außerhalb des Repos) und anpassen.
+# Pfade in diesem Template gehen davon aus, dass die echte Compose-Datei
+# einen Ordner über dem Repo liegt und das Repo unter ./novaberg/ erreichbar
+# ist.
+#
+# Voraussetzungen:
+#   - Ollama läuft host-native auf Ports 11434 (GPU) und 11435 (CPU)
+#   - .env mit TELEGRAM_BOT_TOKEN etc. liegt auf derselben Ebene wie die
+#     Compose-Datei
+#   - searxng/ als lokaler Ordner mit settings.yml liegt auf derselben
+#     Ebene wie die Compose-Datei
+# ──────────────────────────────────────────────────────────────
+
+services:
+
+  postgres:
+    image: pgvector/pgvector:pg16
+    container_name: ki_postgres
+    environment:
+      POSTGRES_DB:       gedaechtnis
+      POSTGRES_USER:     ki
+      POSTGRES_PASSWORD: ki
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./novaberg/db/init.sql:/docker-entrypoint-initdb.d/init.sql
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ki -d gedaechtnis"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    restart: unless-stopped
+
+  redis:
+    image: redis/redis-stack-server:latest
+    container_name: ki_redis
+    volumes:
+      - redis_data:/data
+    ports:
+      - "6379:6379"
+    command: redis-stack-server --appendonly yes --dir /data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    restart: unless-stopped
+
+  searxng:
+    image: searxng/searxng:latest
+    container_name: ki_searxng
+    volumes:
+      - ./searxng:/etc/searxng:rw
+    ports:
+      - "8080:8080"
+    environment:
+      - SEARXNG_BASE_URL=http://localhost:8080/
+      - INSTANCE_NAME=nova-search
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:8080/healthz"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+  server:
+    build:
+      context: ./novaberg/server
+      dockerfile: Dockerfile
+    container_name: ki_server
+    ports:
+      - "8000:8000"
+    environment:
+      OLLAMA_GPU_URL:    http://host.docker.internal:11434
+      OLLAMA_CPU_URL:    http://host.docker.internal:11435
+      REDIS_URL:         redis://redis:6379
+      POSTGRES_URL:      postgresql://ki:ki@postgres:5432/gedaechtnis
+      OLLAMA_CONNECTOR:  gemma4
+      EMBED_MODEL:       nomic-embed-text
+      SEARXNG_URL:       http://searxng:8080
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      searxng:
+        condition: service_healthy
+    volumes:
+      - ./novaberg/server:/app
+    restart: unless-stopped
+
+  telegram-bot:
+    build: ./novaberg/telegram_bot
+    container_name: ki_telegram
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      NOVA_API_URL: http://server:8000
+    depends_on:
+      - server
+
+volumes:
+  postgres_data:
+  redis_data:
