@@ -28,18 +28,62 @@ Geschichtetes Gedächtnis:
 | Knowledge Graph | PostgreSQL | Entitäten, Fakten, bi-temporales Modell |
 | Charakter-Hash | PostgreSQL | Destillierte Persönlichkeitsprofile |
 
-Multi-Channel: Desktop-Client (PySide6) und Telegram-Bot nutzen dieselbe FastAPI-Server-Instanz.
+Multi-Channel: Desktop-Client (GTK4) und Telegram-Bot nutzen dieselbe FastAPI-Server-Instanz.
+
+---
+
+## Screenshots
+
+### Chat — Kognitive Pipeline in Echtzeit
+
+![Chat mit Pipeline-Stages](images/nova-ui-chat-1.png)
+
+Jede Nachricht durchläuft die vollständige kognitive Pipeline. Die Stage-Indikatoren unter der Konversation zeigen jeden Verarbeitungsschritt in Echtzeit: Die Perzeption klassifiziert Intent und Emotion, der Router bestimmt den Verarbeitungspfad, der Enricher lädt relevanten Kontext aus dem Gedächtnis, der Gesprächsvektor formt Novas eigene Gesprächsintention, und der Responder generiert die Antwort. Das ist keine Dekoration — es ist die Live-Spur eines 10-Knoten-Graphen, der natürliche Sprache verarbeitet.
+
+![Chat — Gespräch ohne Stages](images/nova-ui-chat-2.png)
+
+Dieselbe Konversation nach dem Verblassen der Pipeline-Stages. Markdown-Rendering, native Emoji-Darstellung und klare visuelle Trennung zwischen User- und Assistenten-Nachrichten. Novas Persönlichkeit entsteht aus geschichteter Charakter-Destillation, nicht aus einem statischen System-Prompt.
+
+### Emotionale Intelligenz — Plutchik-Oktagon
+
+![Emotions-Panel mit Radar-Diagrammen](images/nova-ui-emotion-1.png)
+
+Novas emotionaler Zustand, visualisiert über die 8 Plutchik-Sektoren (Freude, Zuversicht, Angst, Überraschung, Trauer, Enttäuschung, Ärger, Neugier). Zwei Radar-Diagramme vergleichen das aktuelle Session-Profil mit der emotionalen Langzeit-Landschaft aus dem Kurzzeitgedächtnis. Darunter alle 16 kanonischen Emotionen mit ihren aktuellen Werten. Das Session-Radar zeigt, was jetzt passiert; das KZG-Radar zeigt den emotionalen Fingerabdruck über Wochen der Konversation.
+
+### Session — Analyse auf Turn-Ebene
+
+![Session-Panel](images/nova-ui-session-1.png)
+
+Jeder Gesprächs-Turn wird mit seinen analytischen Metadaten gespeichert: klassifizierter Intent, erkannte Emotion und Gesprächsmodus. Die Zusammenfassung oben wird automatisch aus dem Session-Kontext generiert. Das ist das Rohmaterial, aus dem der Enricher situative Awareness für den Responder aufbaut — hier sichtbar für Kalibrierung und Debugging.
+
+### Kurzzeitgedächtnis (KZG)
+
+![KZG-Panel](images/nova-ui-shorttermmemory-1.png)
+
+Novas Kurzzeitgedächtnis-Einträge, hier für User „nova" — Novas eigene Gedanken. Jeder Eintrag trägt einen Salienz-Score, thematische Tags, eine Dimensions-Klassifikation und einen TTL-Countdown. Einträge über dem Promotions-Schwellwert (0.8) sind Kandidaten für die Konsolidierung ins Langzeitgedächtnis durch den Pixie-Hintergrundagenten. Der Inhalt ist Novas eigene Perspektive: „Für Nova gibt es kaum etwas Besseres als eine reife Tomate frisch vom Strauch."
+
+### Langzeitgedächtnis (LZG)
+
+![LZG-Panel](images/nova-ui-longtermmemory-1.png)
+
+Konsolidierte Erinnerungen, die den Promotions-Prozess überlebt haben. Jeder Eintrag hat ein Gewicht (verstärkt durch Abruf — der Testing Effect), eine Wissens-Dimension und Zeitstempel für Erstellung und letzte Verstärkung. Das ist die persistente Schicht — Erinnerungen hier verfallen nach der Ebbinghaus-Vergessenskurve, werden aber bei jedem Abruf durch den Enricher gestärkt.
+
+### Charakter — Emergente Persönlichkeitsprofile
+
+![Charakter-Panel — Novas Selbstmodell](images/nova-ui-character-1.png)
+
+Fünf destillierte Persönlichkeitsprofile, hier für Nova selbst. Das sind keine handgeschriebenen Beschreibungen, sondern das Ergebnis von Pixies Charakter-Destillationsagent, der periodisch Kurzzeit- und Langzeitgedächtnis zu strukturierten Profilen verdichtet. Das Kern-Profil erfasst, wer Nova geworden ist; das Adaptiv-Profil spiegelt ihre aktuellen Beschäftigungen; Intentionen und Emotionen beschreiben ihre Kommunikationsmuster und emotionale Grundlinie; das Beziehungs-Profil modelliert ihre Wahrnehmung des Nutzers. Alle fünf Schichten fließen in den Identitäts-Block des Responders ein.
 
 ---
 
 ## Technologie-Stack
 
-- **Backend:** Python 3.12, FastAPI, LangGraph, APScheduler
+- **Backend:** Python, FastAPI, LangGraph, APScheduler
 - **Datenbanken:** PostgreSQL 16 mit pgvector, Redis Stack
 - **LLM:** Ollama (lokal) mit Gemma 4 oder Mistral Small 3.2; optional Anthropic Claude API
 - **Embedding:** `nomic-embed-text` via Ollama
 - **Suchmaschine:** SearXNG (Docker)
-- **Desktop-Client:** PySide6 mit SSE-Pipeline-Visualisierung
+- **Desktop-Client:** GTK4 (PyGObject) + WebKitGTK mit SSE-Pipeline-Visualisierung
 - **Chat-Integration:** Telegram Bot (Long Polling, Whitelist)
 
 ---
@@ -54,7 +98,7 @@ Multi-Channel: Desktop-Client (PySide6) und Telegram-Bot nutzen dieselbe FastAPI
 - **Software:**
   - Docker + Docker Compose
   - Ollama (host-native, nicht containerisiert)
-  - Python 3.12 für den Desktop-Client
+  - GTK4, WebKitGTK, PyGObject (auf Fedora/Nobara vorinstalliert)
 
 ### Modell-Footprint
 
@@ -149,11 +193,11 @@ Dienste:
 ### 6. Desktop-Client starten (optional)
 
 ```bash
-cd novaberg/client
-python -m venv venv
-source venv/bin/activate
-pip install -r requirements.txt
-python main.py
+# Abhängigkeiten installieren (Fedora/Nobara — das meiste ist vorinstalliert)
+sudo dnf install -y python3-requests python3-websocket-client python3-markdown
+
+# Starten
+python3 novaberg/client/main.py
 ```
 
 ---

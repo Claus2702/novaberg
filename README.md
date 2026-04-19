@@ -28,18 +28,62 @@ Layered memory:
 | Knowledge Graph | PostgreSQL | Entities, facts, bi-temporal model |
 | Character Hash | PostgreSQL | Distilled personality profiles |
 
-Multi-channel: Desktop client (PySide6) and Telegram bot share the same FastAPI server instance.
+Multi-channel: Desktop client (GTK4) and Telegram bot share the same FastAPI server instance.
+
+---
+
+## Screenshots
+
+### Chat — Cognitive Pipeline in Real Time
+
+![Chat with pipeline stages](images/nova-ui-chat-1.png)
+
+Every message passes through the full cognitive pipeline. The stage indicators below the conversation show each processing step as it happens: Perception classifies intent and emotion, the Router determines the processing path, the Enricher loads relevant context from memory, the Conversational Vector shapes Nova's own conversational intention, and the Responder generates the final answer. This is not decoration — it is the live trace of a 10-node cognitive graph processing natural language.
+
+![Chat — clean conversation](images/nova-ui-chat-2.png)
+
+The same conversation after the pipeline stages fade. Markdown rendering, native emoji support, and distinct visual separation between user and assistant messages. Nova's personality emerges from layered character distillation, not from a static system prompt.
+
+### Emotional Intelligence — Plutchik Octagon
+
+![Emotions panel with radar diagrams](images/nova-ui-emotion-1.png)
+
+Nova's emotional state visualized across the 8 Plutchik sectors (Joy, Trust, Fear, Surprise, Sadness, Disgust, Anger, Anticipation). Two radar diagrams compare the current session profile against the long-term emotional landscape from short-term memory. Below, all 16 canonical emotions are listed with their current values. The session radar shows what is happening now; the STM radar shows the emotional fingerprint across weeks of conversation.
+
+### Session — Turn-Level Analysis
+
+![Session panel](images/nova-ui-session-1.png)
+
+Each conversation turn is stored with its analytical metadata: classified intent, detected emotion, and conversational mode. The summary at the top is auto-generated from the session context. This is the raw material the Enricher uses to build situational awareness for the Responder — visible here for calibration and debugging.
+
+### Short-Term Memory (STM)
+
+![STM panel](images/nova-ui-shorttermmemory-1.png)
+
+Nova's short-term memory entries, shown here for user "nova" — Nova's own thoughts. Each entry carries a salience score, thematic tags, a dimension classification, and a TTL countdown. Entries above the promotion threshold (0.8) are candidates for consolidation into long-term memory via the Pixie background agent. The content is Nova's own perspective: "For Nova, there is hardly anything better than a ripe tomato fresh from the bush."
+
+### Long-Term Memory (LTM)
+
+![LTM panel](images/nova-ui-longtermmemory-1.png)
+
+Consolidated memories that survived the promotion process. Each entry has a weight (reinforced by retrieval — the Testing Effect), a knowledge dimension, and timestamps for creation and last reinforcement. This is the persistent layer — memories here decay according to the Ebbinghaus forgetting curve but are strengthened each time they are retrieved by the Enricher.
+
+### Character — Emergent Personality Profiles
+
+![Character panel — Nova's self-model](images/nova-ui-character-1.png)
+
+Five distilled personality profiles, shown here for Nova herself. These are not hand-written descriptions but the output of Pixie's character distillation agent, which periodically compresses short-term and long-term memory into structured profiles. The Core profile captures who Nova has become; the Adaptive profile reflects her current preoccupations; Intentions and Emotions describe her communication patterns and emotional baseline; the Relationship profile models her perception of the user. All five layers feed into the Responder's identity block.
 
 ---
 
 ## Technology Stack
 
-- **Backend:** Python 3.12, FastAPI, LangGraph, APScheduler
+- **Backend:** Python, FastAPI, LangGraph, APScheduler
 - **Databases:** PostgreSQL 16 with pgvector, Redis Stack
 - **LLM:** Ollama (local) with Gemma 4 or Mistral Small 3.2; optional Anthropic Claude API
 - **Embedding:** `nomic-embed-text` via Ollama
 - **Search engine:** SearXNG (Docker)
-- **Desktop client:** PySide6 with SSE pipeline visualization
+- **Desktop client:** GTK4 (PyGObject) + WebKitGTK with SSE pipeline visualization
 - **Chat integration:** Telegram Bot (long polling, whitelist)
 
 ---
@@ -54,7 +98,7 @@ Multi-channel: Desktop client (PySide6) and Telegram bot share the same FastAPI 
 - **Software:**
   - Docker + Docker Compose
   - Ollama (host-native, not containerized)
-  - Python 3.12 for the desktop client
+  - GTK4, WebKitGTK, PyGObject (pre-installed on Fedora/Nobara)
 
 ### Model Footprint
 
@@ -149,11 +193,11 @@ Services:
 ### 6. Start the desktop client (optional)
 
 ```bash
-cd novaberg/client
-python -m venv venv
-source venv/bin/activate
-pip install -r requirements.txt
-python main.py
+# Install dependencies (Fedora/Nobara — most are pre-installed)
+sudo dnf install -y python3-requests python3-websocket-client python3-markdown
+
+# Start
+python3 novaberg/client/main.py
 ```
 
 ---
