@@ -69,11 +69,11 @@ class ConversationState(TypedDict):
     beziehungs_kontext:   str     # Beziehungsprofil-Text aus dem Charakter-Hash
 
     # Novas eigener Charakter (Enricher → Responder)
-    nova_kern:            str     # Novas gewachsene Persönlichkeit (kern_hash für user_id='nova')
-    nova_beziehung:       str     # Novas Bild vom Nutzer (beziehungsprofil für user_id='nova')
-    nova_adaptiv:         str     # Novas aktuelle Themen (adaptiv_hash für user_id='nova')
-    nova_intentionen:     str     # Novas Kommunikationsstil (intentions_profil für user_id='nova')
-    nova_emotions:        str     # Novas emotionale Grundstimmung (emotions_profil für user_id='nova')
+    nova_kern:            str     # Novas gewachsene Persönlichkeit (kern_hash der Assistentin, ASSISTANT_USER_ID)
+    nova_beziehung:       str     # Novas Bild vom Nutzer (beziehungsprofil der Assistentin, ASSISTANT_USER_ID)
+    nova_adaptiv:         str     # Novas aktuelle Themen (adaptiv_hash der Assistentin, ASSISTANT_USER_ID)
+    nova_intentionen:     str     # Novas Kommunikationsstil (intentions_profil der Assistentin, ASSISTANT_USER_ID)
+    nova_emotions:        str     # Novas emotionale Grundstimmung (emotions_profil der Assistentin, ASSISTANT_USER_ID)
 
     # ── Planner (Management Plan-Phase) ──────
     management_result:  str

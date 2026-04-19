@@ -13,6 +13,7 @@ import logging
 
 from agents.base import BaseAgent, AgentState, PeriodicTask
 from config import (
+    DEFAULT_USER_ID,
     redis_client, POSTGRES_URL, get_node_config,
     PIXIE_PROMOTION_PRIORITAET, PIXIE_PROMOTION_INTERVALL_SEKUNDEN,
 )
@@ -55,7 +56,7 @@ class PromotionAgent(BaseAgent):
 
     def invoke(self, state: AgentState) -> AgentState:
         """Arbeitet die Promotion-Queue komplett ab."""
-        user_id: str = state["kontext"].get("context_user_id", "meister")
+        user_id: str = state["kontext"].get("context_user_id", DEFAULT_USER_ID)
         queue_key: str = f"queue:{user_id}"
         promotet: int = 0
         fehler:   int = 0

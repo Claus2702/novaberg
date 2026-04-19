@@ -24,6 +24,7 @@ import psycopg2
 import redis
 
 from config import (
+    ASSISTANT_USER_ID,
     EMOTION_DECAY_FACTOR,
     EMOTION_DECAY_BASE,
     EMOTION_DEFAULT_AROUSAL,
@@ -898,7 +899,7 @@ def enrich(
         logger.info("Enricher: Charakter-Hash gefunden")
 
     # ── Novas eigener Charakter-Hash ──────────
-    nova_hash_dict: dict = charakter_hash_retrieve_dict(postgres_url, "nova")
+    nova_hash_dict: dict = charakter_hash_retrieve_dict(postgres_url, ASSISTANT_USER_ID)
 
     if nova_hash_dict:
         nova_kern:      str = nova_hash_dict.get("kern", "")

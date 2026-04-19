@@ -8,6 +8,8 @@ import logging
 
 from agents.base import BaseAgent, AgentState, PeriodicTask
 from config import (
+    ASSISTANT_USER_ID,
+    DEFAULT_USER_ID,
     redis_client,
     PIXIE_CHARAKTER_PRIORITAET,
     PIXIE_CHARAKTER_INTERVALL_SEKUNDEN,
@@ -54,7 +56,7 @@ class CharakterAgent(BaseAgent):
 
     @property
     def identity_user(self) -> str:
-        return "nova"
+        return ASSISTANT_USER_ID
 
     def periodic_task(self) -> PeriodicTask:
         return PeriodicTask(
@@ -70,7 +72,7 @@ class CharakterAgent(BaseAgent):
     def invoke(self, state: AgentState) -> AgentState:
         """Destilliert 5 Charakter-Profile fuer alle dirty User."""
 
-        user_ids: list[str] = ["meister", "nova"]
+        user_ids: list[str] = [DEFAULT_USER_ID, ASSISTANT_USER_ID]
         gesamt_destilliert: int = 0
 
         for user_id in user_ids:

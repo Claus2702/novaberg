@@ -12,7 +12,7 @@ from typing import Optional
 import numpy as np
 import redis
 
-from config                                import KZG_VERSTAERKUNG_DIVISOR
+from config                                import ASSISTANT_USER_ID, KZG_VERSTAERKUNG_DIVISOR
 from services.shadow_agent                 import shadow_queue_push
 
 from redis.commands.search.field           import TextField, NumericField, VectorField, TagField
@@ -263,7 +263,7 @@ def kzg_store(
                 }),
             )
 
-        if neue_haeufigkeit >= 3 and neue_salienz >= SALIENZ_HIGH and user_id != "nova":
+        if neue_haeufigkeit >= 3 and neue_salienz >= SALIENZ_HIGH and user_id != ASSISTANT_USER_ID:
             shadow_queue_push(
                 redis_client = redis_client,
                 user_id      = user_id,
@@ -326,7 +326,7 @@ def kzg_store(
 
             aufgabe: str = _aufgabe_aus_intention(intentionen)
 
-            if aufgabe and user_id != "nova":
+            if aufgabe and user_id != ASSISTANT_USER_ID:
                 shadow_queue_push(
                     redis_client = redis_client,
                     user_id      = user_id,

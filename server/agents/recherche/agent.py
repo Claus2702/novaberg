@@ -15,6 +15,8 @@ from agents.recherche.destillation import ergebnisse_destillieren, zwischen_dest
 from memory.kontext import session_kontext_extrahieren
 from services.pixie.stack import stack_push
 from config import (
+    ASSISTANT_USER_ID,
+    DEFAULT_USER_ID,
     redis_client,
     ollama_cpu_client,
     EMBED_MODEL,
@@ -62,7 +64,7 @@ class RechercheAgent(BaseAgent):
         6. Destillation (LLM)
         7. Ergebnis -> Shadow-Stack + Novas KZG
         """
-        user_id: str = state["kontext"].get("context_user_id", "meister")
+        user_id: str = state["kontext"].get("context_user_id", DEFAULT_USER_ID)
         queue_eintrag: dict = state.get("parameter", {})
         thema: str = queue_eintrag.get("thema", "")
 
@@ -216,7 +218,7 @@ class RechercheAgent(BaseAgent):
 
             kzg_store(
                 redis_client=redis_client,
-                user_id="nova",
+                user_id=ASSISTANT_USER_ID,
                 salienz_obj=salienz_obj,
                 embedding=embedding,
             )

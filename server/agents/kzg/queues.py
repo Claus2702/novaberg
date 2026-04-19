@@ -9,7 +9,7 @@ import logging
 from agents.base import AgentState
 from memory.kzg import PROMOTION_THRESHOLD
 from services.shadow_agent.utils import shadow_queue_push
-from config import redis_client, KZG_SALIENZ_HIGH, KZG_VERTIEFUNG_HAEUFIGKEIT
+from config import ASSISTANT_USER_ID, redis_client, KZG_SALIENZ_HIGH, KZG_VERTIEFUNG_HAEUFIGKEIT
 
 logger = logging.getLogger("ki_server.agents.kzg.queues")
 
@@ -70,7 +70,7 @@ def queues_befuellen(state: AgentState) -> dict:
             aktionen.append("promotion")
 
         # Shadow bei haeufiger Wiederholung
-        if neue_haeufigkeit >= KZG_VERTIEFUNG_HAEUFIGKEIT and neue_salienz >= KZG_SALIENZ_HIGH and user_id != "nova":
+        if neue_haeufigkeit >= KZG_VERTIEFUNG_HAEUFIGKEIT and neue_salienz >= KZG_SALIENZ_HIGH and user_id != ASSISTANT_USER_ID:
             existing = state["parameter"].get("existing", {})
             shadow_queue_push(
                 redis_client=redis_client, user_id=user_id,
@@ -95,7 +95,7 @@ def queues_befuellen(state: AgentState) -> dict:
             aktionen.append("promotion")
 
             aufgabe: str = _aufgabe_aus_intention(intentionen)
-            if aufgabe and user_id != "nova":
+            if aufgabe and user_id != ASSISTANT_USER_ID:
                 shadow_queue_push(
                     redis_client=redis_client, user_id=user_id,
                     aufgabe=aufgabe, thema=kzg_themen_str,

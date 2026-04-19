@@ -10,7 +10,7 @@ import logging
 import math
 import time
 
-from config import get_node_config
+from config import ASSISTANT_USER_ID, DEFAULT_USER_ID, get_node_config
 from memory.lzg import effektives_gewicht_berechnen
 from services.llm_provider import get_background_provider
 
@@ -216,7 +216,7 @@ def _llm_call(prompt: str, profil_name: str) -> str:
 # 5 Destillations-Funktionen
 # ─────────────────────────────────────────────
 
-def kern_hash_destillieren(lzg_eintraege: list[dict], user_id: str = "meister") -> str:
+def kern_hash_destillieren(lzg_eintraege: list[dict], user_id: str = DEFAULT_USER_ID) -> str:
     """Destilliert die Grundpersoenlichkeit aus LZG-Eintraegen."""
     if not lzg_eintraege:
         return ""
@@ -228,14 +228,14 @@ def kern_hash_destillieren(lzg_eintraege: list[dict], user_id: str = "meister") 
         for row in lzg_eintraege
     )
 
-    prompt = KERN_HASH_PROMPT_NOVA if user_id == "nova" else KERN_HASH_PROMPT
+    prompt = KERN_HASH_PROMPT_NOVA if user_id == ASSISTANT_USER_ID else KERN_HASH_PROMPT
     return _llm_call(
         prompt.format(eintraege=eintraege),
         f"Kern-Hash ({user_id})",
     )
 
 
-def adaptive_hash_destillieren(kzg_eintraege: list[dict], user_id: str = "meister") -> str:
+def adaptive_hash_destillieren(kzg_eintraege: list[dict], user_id: str = DEFAULT_USER_ID) -> str:
     """Destilliert die aktuelle Verfassung aus KZG-Eintraegen mit Zeitzonen-Gewichtung."""
     if not kzg_eintraege:
         return ""
@@ -276,14 +276,14 @@ def adaptive_hash_destillieren(kzg_eintraege: list[dict], user_id: str = "meiste
     if not zonen_eintraege:
         return ""
 
-    prompt = ADAPTIVE_HASH_PROMPT_NOVA if user_id == "nova" else ADAPTIVE_HASH_PROMPT
+    prompt = ADAPTIVE_HASH_PROMPT_NOVA if user_id == ASSISTANT_USER_ID else ADAPTIVE_HASH_PROMPT
     return _llm_call(
         prompt.format(eintraege="\n".join(zonen_eintraege)),
         f"Adaptive-Hash ({user_id})",
     )
 
 
-def intentions_profil_destillieren(lzg_eintraege: list[dict], user_id: str = "meister") -> str:
+def intentions_profil_destillieren(lzg_eintraege: list[dict], user_id: str = DEFAULT_USER_ID) -> str:
     """Destilliert das Kommunikations-Profil aus LZG-Eintraegen."""
     if not lzg_eintraege:
         return ""
@@ -296,7 +296,7 @@ def intentions_profil_destillieren(lzg_eintraege: list[dict], user_id: str = "me
         for row in lzg_eintraege
     )
 
-    prompt = INTENTIONS_PROFIL_PROMPT_NOVA if user_id == "nova" else INTENTIONS_PROFIL_PROMPT
+    prompt = INTENTIONS_PROFIL_PROMPT_NOVA if user_id == ASSISTANT_USER_ID else INTENTIONS_PROFIL_PROMPT
     return _llm_call(
         prompt.format(eintraege=eintraege),
         f"Intentions-Profil ({user_id})",
@@ -323,7 +323,7 @@ def emotions_profil_destillieren(lzg_eintraege: list[dict]) -> str:
     )
 
 
-def beziehungsprofil_destillieren(kzg_eintraege: list[dict], user_id: str = "meister") -> str:
+def beziehungsprofil_destillieren(kzg_eintraege: list[dict], user_id: str = DEFAULT_USER_ID) -> str:
     """Destilliert das Beziehungsprofil aus KZG-Eintraegen."""
     if not kzg_eintraege:
         return ""
@@ -348,7 +348,7 @@ def beziehungsprofil_destillieren(kzg_eintraege: list[dict], user_id: str = "mei
     if not beziehungs_eintraege:
         return ""
 
-    prompt = BEZIEHUNGS_PROFIL_PROMPT_NOVA if user_id == "nova" else BEZIEHUNGS_PROFIL_PROMPT
+    prompt = BEZIEHUNGS_PROFIL_PROMPT_NOVA if user_id == ASSISTANT_USER_ID else BEZIEHUNGS_PROFIL_PROMPT
     return _llm_call(
         prompt.format(eintraege="\n".join(beziehungs_eintraege)),
         f"Beziehungsprofil ({user_id})",

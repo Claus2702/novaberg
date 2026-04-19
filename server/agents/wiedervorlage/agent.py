@@ -11,6 +11,8 @@ from datetime import datetime, timedelta
 from agents.base import BaseAgent, AgentState, PeriodicTask
 from config import (
     ASSISTANT_NAME,
+    ASSISTANT_USER_ID,
+    DEFAULT_USER_ID,
     POSTGRES_URL,
     PIXIE_WIEDERVORLAGE_PRIORITAET,
     PIXIE_WIEDERVORLAGE_INTERVALL_SEKUNDEN,
@@ -69,7 +71,7 @@ class WiedervorlageAgent(BaseAgent):
 
     @property
     def identity_user(self) -> str:
-        return "nova"
+        return ASSISTANT_USER_ID
 
     def periodic_task(self) -> PeriodicTask:
         return PeriodicTask(
@@ -85,7 +87,7 @@ class WiedervorlageAgent(BaseAgent):
     def invoke(self, state: AgentState) -> AgentState:
         """Prueft faellige Wiedervorlagen und erstellt Erinnerungen."""
 
-        user_id: str = state["kontext"].get("context_user_id", "meister")
+        user_id: str = state["kontext"].get("context_user_id", DEFAULT_USER_ID)
 
         # ── Faellige sammeln ─────────────────
         faellige: list[dict] = self._faellige_sammeln(user_id)

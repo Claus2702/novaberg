@@ -7,6 +7,8 @@ from datetime import datetime
 import psycopg2
 import redis
 
+from config import ASSISTANT_USER_ID
+
 logger = logging.getLogger("ki_server.shadow")
 
 
@@ -146,12 +148,12 @@ def nova_vorwissen_laden(
         cursor.execute("""
             SELECT inhalt
             FROM   langzeitgedaechtnis
-            WHERE  user_id = 'nova'
+            WHERE  user_id = %s
               AND  aktiv = TRUE
               AND  1 - (embedding <=> %s::vector) > 0.7
             ORDER  BY gewicht DESC
             LIMIT  3
-        """, (embedding_str,))
+        """, (ASSISTANT_USER_ID, embedding_str))
 
         treffer: list = cursor.fetchall()
         conn.close()

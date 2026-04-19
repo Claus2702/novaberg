@@ -7,6 +7,8 @@ from typing import Any, TypedDict
 import inspect
 import logging
 
+from config import ASSISTANT_USER_ID
+
 logger = logging.getLogger(__name__)
 
 
@@ -94,9 +96,9 @@ class BaseAgent(ABC):
     @property
     def identity_user(self) -> str:
         """Wessen Charakter wird fuer LLM-Calls verwendet?
-        Immer 'nova' — Pixie denkt als Nova.
+        Immer die Assistentin (ASSISTANT_USER_ID) — Pixie denkt als Nova.
         """
-        return "nova"
+        return ASSISTANT_USER_ID
 
     @abstractmethod
     def build_graph(self):

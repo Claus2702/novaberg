@@ -22,7 +22,7 @@ from datetime import datetime
 import numpy as np
 import redis
 
-from config         import ASSISTANT_NAME, shutdown_event
+from config         import ASSISTANT_NAME, ASSISTANT_USER_ID, shutdown_event
 from memory.session import session_turns_retrieve, session_turn_store
 from services.llm_provider import get_chat_provider
 
@@ -540,10 +540,10 @@ async def _delivery_ausfuehren(
 
     if compiled_agent_graph and agent_graph:
         try:
-            logger.info("Delivery: AgentGraph — erzeuge State für 'nova'")
+            logger.info(f"Delivery: AgentGraph — erzeuge State für '{ASSISTANT_USER_ID}'")
             agent_state = agent_graph.create_state(
                 user_prompt = nachricht,
-                user_id     = "nova",
+                user_id     = ASSISTANT_USER_ID,
             )
             logger.info(f"Delivery: AgentGraph — State erzeugt, starte invoke...")
             compiled_agent_graph.invoke(agent_state)

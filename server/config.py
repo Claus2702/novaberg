@@ -45,6 +45,12 @@ TIMEZONE:     str = os.getenv("TIMEZONE",      "Europe/Berlin")
 ASSISTANT_NAME:  str = os.getenv("ASSISTANT_NAME",  "Nova")
 BACKGROUND_NAME: str = os.getenv("BACKGROUND_NAME", "Pixie")
 
+# ── Identität ──────────────────────────────────────────────────
+# Welche Zeile in charakter_hash ist die Assistentin (Novas Persönlichkeit)
+ASSISTANT_USER_ID: str = os.getenv("ASSISTANT_USER_ID", "nova")
+# Welcher User ist der Standard-Mensch (Fallback wenn kein user_id übergeben wird)
+DEFAULT_USER_ID:   str = os.getenv("DEFAULT_USER_ID",   "meister")
+
 redis_client:   redis.Redis     = redis.from_url(REDIS_URL, decode_responses=True)
 llm_lock:       threading.Lock  = threading.Lock()
 shutdown_event: threading.Event = threading.Event()

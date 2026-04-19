@@ -26,6 +26,7 @@ from plugins     import get_registry
 from agents.kzg.dispatch import dispatch_kzg
 from agents.delegation.dispatch import dispatch_delegation
 from config import (
+    ASSISTANT_USER_ID,
     DELEGATION_EFFEKTIVWERT_SCHWELLE,
     DELEGATION_SALIENZ_SCHWELLE,
     EI_AROUSAL_DOMINANZ,
@@ -36,7 +37,7 @@ logger = logging.getLogger("ki_server.dispatcher")
 
 def _delegation_trigger_pruefen(state: ConversationState) -> str:
     """ODER-Verknuepfung: Effektivwert / Vektor / Salienz."""
-    if state.get("user_id") == "nova":
+    if state.get("user_id") == ASSISTANT_USER_ID:
         return ""
 
     emotions_verlauf: list = state.get("emotions_verlauf", [])

@@ -5,6 +5,7 @@ import threading
 
 import redis
 
+from config import ASSISTANT_USER_ID
 from services.shadow_agent.base_task import BaseTask
 from memory.kzg import kzg_store
 
@@ -73,7 +74,7 @@ class NovaGedaechtnisTask(BaseTask):
 
         kzg_store(
             redis_client = redis_client,
-            user_id      = "nova",
+            user_id      = ASSISTANT_USER_ID,
             salienz_obj  = salienz_obj,
             embedding    = embedding,
         )
