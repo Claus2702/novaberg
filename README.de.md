@@ -224,16 +224,16 @@ Feingranulare Parameter (Pixie-Intervalle, KZG-Thresholds, Such-Limits etc.) sin
 
 Die Architektur ist ausführlich dokumentiert in `docs/`:
 
-- `nova-architecture.md` — Gesamtübersicht
-- `nova-graph.md` — Human Graph Pipeline
-- `nova-pixie.md` — Hintergrundagent
-- `nova-memory.md` — Gedächtnis-Schichten
-- `nova-ei.md` — Emotionale Intelligenz
+- `novaberg-architecture.md` — Gesamtübersicht
+- `novaberg-graph.md` — Human Graph Pipeline
+- `novaberg-pixie.md` — Hintergrundagent
+- `novaberg-memory.md` — Gedächtnis-Schichten
+- `novaberg-ei.md` — Emotionale Intelligenz
 - `nova-node-*.md` — Einzelne Pipeline-Knoten
-- `nova-thinking-curiosity_k.md` — Neugier und intrinsische Motivation
-- `nova-thinking-drive_k.md` — Antrieb, Ziele und Dual-Emotion
-- `nova-roadmap.md` — Projektchronik
-- `nova-backlog.md` — Zukunftskonzepte
+- `novaberg-thinking-curiosity_k.md` — Neugier und intrinsische Motivation
+- `novaberg-thinking-drive_k.md` — Antrieb, Ziele und Dual-Emotion
+- `novaberg-roadmap.md` — Projektchronik
+- `novaberg-backlog.md` — Zukunftskonzepte
 
 ---
 
@@ -255,7 +255,7 @@ Bekanntes Problem (Ollama #15260). Workaround ist im Code implementiert (Cleanup
 
 ## Status
 
-Nova ist aktiv in Entwicklung. Einzelentwicklung, keine externen Beiträge vorgesehen. Die Roadmap in `docs/nova-roadmap.md` zeigt den historischen Fortschritt, `nova-backlog.md` die offenen Konzepte.
+Nova ist aktiv in Entwicklung. Einzelentwicklung, keine externen Beiträge vorgesehen. Die Roadmap in `docs/novaberg-roadmap.md` zeigt den historischen Fortschritt, `novaberg-backlog.md` die offenen Konzepte.
 
 ---
 

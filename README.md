@@ -224,16 +224,16 @@ Fine-grained parameters (Pixie intervals, STM thresholds, search limits, etc.) a
 
 The architecture is extensively documented in `docs/`:
 
-- `nova-architecture.md` — System overview
-- `nova-graph.md` — Human Graph pipeline
-- `nova-pixie.md` — Background agent
-- `nova-memory.md` — Memory layers
-- `nova-ei.md` — Emotional intelligence
+- `novaberg-architecture.md` — System overview
+- `novaberg-graph.md` — Human Graph pipeline
+- `novaberg-pixie.md` — Background agent
+- `novaberg-memory.md` — Memory layers
+- `novaberg-ei.md` — Emotional intelligence
 - `nova-node-*.md` — Individual pipeline nodes
-- `nova-thinking-curiosity_k.md` — Curiosity and intrinsic motivation
-- `nova-thinking-drive_k.md` — Drive, goals, and dual-emotion architecture
-- `nova-roadmap.md` — Project chronicle
-- `nova-backlog.md` — Future concepts
+- `novaberg-thinking-curiosity_k.md` — Curiosity and intrinsic motivation
+- `novaberg-thinking-drive_k.md` — Drive, goals, and dual-emotion architecture
+- `novaberg-roadmap.md` — Project chronicle
+- `novaberg-backlog.md` — Future concepts
 
 Architecture documents are in German with English module names.
 
@@ -257,7 +257,7 @@ Known issue (Ollama #15260). Workaround is implemented in the code (cleanup pipe
 
 ## Status
 
-Nova is under active development. Solo project, no external contributions planned. The roadmap in `docs/nova-roadmap.md` shows historical progress, `nova-backlog.md` lists open concepts.
+Nova is under active development. Solo project, no external contributions planned. The roadmap in `docs/novaberg-roadmap.md` shows historical progress, `novaberg-backlog.md` lists open concepts.
 
 ---
 
