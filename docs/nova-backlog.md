@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Backlog — Konzipierte, noch nicht implementierte Features
-**Stand:** 18. April 2026, Chat 54
+**Stand:** 19. April 2026, Chat 56
 **Pfad:** novaberg/docs/nova-backlog.md
 **Quellen:** nova-08-k.md (Kognitive Anreicherung), nova-10-k-backlog.md (Skill-System), nova-01-t-c-backlog.md (Node-Konfiguration)
 
@@ -244,21 +244,6 @@ Der naechste Schritt in der Kommunikationsbandbreite: Spracheingabe (Speech-to-T
 
 ## 7. Offene Epics & Features
 
-### RESP-CHAR1 — Base-Charakter-Prompt ✅ Chat 45
-nova_kern und nova_beziehung in [IDENTITAET] konsolidiert. [CHARAKTER]-Block entfernt. Destillation für user_id="nova" auf eigene Prompts umgestellt ("Nova ist..." statt "Der Nutzer ist..."). Nova-Charakter bleibt dünn bis Traum-Modus eigenes Material liefert.
-
-### Prompt-Segregation (Chat 46-47, abgeschlossen)
-| # | Thema | Status |
-|---|-------|--------|
-| SEG-1 | Infrastruktur (Loader, PROMPTS, Verzeichnisse) | ✅ Chat 46 |
-| SEG-2 | JSON-Nodes (Perzeption, Router, Salienz, Tribunal) | ✅ Chat 46 |
-| SEG-3 | Gemma4-Overrides (7 Dateien) | ✅ Chat 46 |
-| SEG-4 | Responder + Thinker + Corrector + GV | ✅ Chat 47 |
-| SEG-5 | KZG-Verdichtung + Classify-Nodes (4x) | ✅ Chat 47 |
-
-### CLASSIFY-REJECTED — Selbstprüfung in Classify-Nodes ✅ Chat 48
-action: "rejected" als neue gültige Aktion. Classify prüft ZUERST ob der Prompt überhaupt ein Auftrag ist (vs. Kompliment, Redewendung, rhetorische Bemerkung). Löste ROUTE-CHAR1 und den "Zeit fürs Bett"-Fall. Implementiert in 16 Dateien: 4 Task-Textdateien + 4 klassifikation.py + 4 agent.py + 4 dispatch.py. Dispatch gibt AgentResult mit status="rejected" zurück — der Responder ignoriert es automatisch, der Planner beendet seine Schleife.
-
 ### Gesprächsvektor (Epic 9, offen)
 | # | Thema | Status |
 |---|-------|--------|
@@ -289,10 +274,11 @@ action: "rejected" als neue gültige Aktion. Classify prüft ZUERST ob der Promp
 ### Client & Visualisierung
 | # | Thema | Status |
 |---|-------|--------|
-| CLIENT-RENDER | QWebEngineView Chat-Rendering | ⬜ Markdown + Emojis |
-| Oktagon-Radar | Hexagon → 8 Sektoren | ⬜ Brudi-Prompt erstellt |
-| Konfig-Panel | Schieberegler | ⬜ |
-| Timeline/Schatten-Panel | — | ⬜ |
+| CLIENT-RENDER | GTK4 + WebKitGTK Chat-Rendering (Markdown + Emojis nativ) | ✅ Chat 56 |
+| Oktagon-Radar | 8-Sektor-Radar im Emotions-Panel (Cairo, 2× nebeneinander) | ✅ Chat 56 |
+| Konfig-Panel | Schieberegler für Config-Parameter | ⬜ |
+| Restliche Panels | Fakten, Pixie-Monitor, PostgreSQL, Redis, Logs | ⬜ |
+| Emotionen (Turns) | Turn-reaktives Emotions-Panel (SSE-Event-basiert) | ⬜ |
 
 ### Kommunikation
 | # | Thema | Status |
@@ -300,7 +286,6 @@ action: "rejected" als neue gültige Aktion. Classify prüft ZUERST ob der Promp
 | Überakkommodation | CAT empirisch testen | ⬜ |
 | PENDING-RELEVANZ | Router prüft nicht ob Prompt Antwort auf Rückfrage | ⬜ Chat 43 |
 | KORR1 | Korrektur-Erkennung bei fehlgeschlagenen Aktionen | ⬜ Chat 43 (niedrig) |
-| CLASSIFY-CONFIRM | Classify erkennt Bestätigung/Erinnerung nicht als rejected | ✅ Chat 49 |
 | ROUTE-MISS1 | Router erkennt Timeline-Update-Auftrag mit Kontext-Bezug nicht | ⬜ Chat 48 |
 | 5i | Zeitparser: Fränkisch + Norddeutsch | ⬜ |
 
@@ -373,61 +358,58 @@ Zwei neue Nodes pro Agent:
 
 ---
 
-## Epic: Client-Dashboard (PySide6 + QWebEngineView)
+## Epic: Client-Dashboard (GTK4 / PyGObject)
 
 **Motivation:** Debugging, Kalibrierung und Einregelung des Dual-Emotion-Systems (Chat 53) erfordern visuelles Echtzeit-Feedback. Log-Grep ist kein Werkzeug für die Feinabstimmung von 8-dimensionalen Emotionsvektoren. Ohne Dashboard ist die Dual-Emotion-Architektur Blindflug.
 
-**Architektur:** PySide6 Desktop-Shell als Parent-Formular mit dockbaren Child-Panels. Jedes Panel rendert über QWebEngineView (Chromium) — Markdown, Emojis, Charts nativ. FastAPI liefert Daten über REST (statisch) und WebSocket (Live-Streams). Kein Browser, kein Electron.
+**Architektur:** GTK4 Desktop-App (PyGObject) als Parent-Fenster mit Child-Panel-Fenstern. Emojis nativ (System-Fonts). FastAPI liefert Daten über REST (statisch) und WebSocket (Live-Streams). Kein Qt, kein Browser, kein Electron.
 
-**Panels (geplant):**
+**Technologie-Entscheidung (Chat 55):** PySide6/Qt verworfen nach Emoji-Rendering-Bug (Qt-Chromium findet System-Emoji-Fonts nicht auf Linux). GTK4 ist das native GNOME/Fedora-Toolkit — vorinstalliert, keine Dependencies, Emojis nativ validiert.
 
-| Panel | Datenquelle | Zweck |
-|-------|-------------|-------|
-| Chat | Bestehende Chat-API | Markdown + Emoji korrekt gerendert (löst CLIENT-RENDER) |
-| EI-Dashboard | `GespraechAntwort` pro Turn | 8 Plutchik-Dimensionen, Arousal, Vektor — visuell pro Turn |
-| Session-Turns | Session-Daten aus Redis | Rohe Turn-Daten mit Annotationen, Emotion, Kern |
-| Charakter-Viewer | `charakter_hash` + Anweisungen | Kern, Adaptiv, Beziehung, Emotions-Profil, Intentionen |
-| Pixie-Monitor | Redis Pixie-Queue/Status | Aktuelle Tätigkeit, Queue, letzte Ergebnisse |
-| Live-Logs | WebSocket, Python-Logging-Events | Filterbar nach Node/Level, kein docker-compose-logs mehr |
+**Panels (12 Typen, Chat 55 designed):**
+
+| Panel | Kategorie | Datenquelle | Status |
+|-------|-----------|-------------|--------|
+| Emotionen (Aktuell) | on_demand | `GET /gedaechtnis/emotionen/{user_id}` | ✅ Chat 56 |
+| Emotionen (Turns) | turn_reactive | SSE answer-Event (emotions_vektor) | ⬜ |
+| Session-Turns | on_demand | `GET /session/kontext/{user_id}` | ✅ Chat 56 |
+| KZG | on_demand | `GET /gedaechtnis/kzg/{user_id}` | ✅ Chat 56 |
+| LZG | on_demand | `GET /gedaechtnis/lzg/{user_id}` | ✅ Chat 56 |
+| Charakter | on_demand | `GET /gedaechtnis/hash/{user_id}` | ✅ Chat 56 |
+| Fakten | on_demand | `GET /fakten/{user_id}` | ⬜ |
+| System | on_demand | `GET /health` | ✅ Chat 56 |
+| Pixie-Monitor | on_demand | `GET /debug/pixie/status` (neu) | ⬜ |
+| PostgreSQL | query | `POST /debug/query/postgres` (neu) | ⬜ |
+| Redis | query | `POST /debug/query/redis` (neu) | ⬜ |
+| Docker-Logs | log_stream | `WS /debug/logs` (neu) | ⬜ |
 
 **Voraussetzung für:** Dual-Emotion-Architektur (Chat 53), Antrieb/Gravitation (Chat 53), TR6 (_farbe_charakter). Ohne visuelles Feedback können die Schwellwerte nicht empirisch kalibriert werden.
 
 **Löst:** CLIENT-RENDER (Backlog), Log-Debugging-Workflow
 
-**Aufwand:** Mehrere Sessions. Phase 1: Chat + Live-Logs + EI-Dashboard. Phase 2: Charakter + Pixie + Session-Turns.
+**Status Chat 56:** Phase 1 weitgehend abgeschlossen — Chat (WebKitGTK + SSE + WebSocket), Panel-Infrastruktur (PanelBase, ChildWindow, Registry, UNIQUE-Enforcement), 6 Panels funktional (System, Emotionen mit Radar, KZG, LZG, Session, Charakter). Offen: Fakten, Pixie-Monitor, PostgreSQL-Query, Redis-Query, Docker-Logs, Emotionen (Turns).
 
 ---
 
 ## 8. Offene Bugs
 
-| Bug | Status | Beschreibung |
-|-----|--------|-------------|
-| HALL2 | ⚠️ | KZG-Klebrigkeit — wiederholte Mitteilung bereits kommunizierter Inhalte |
-| TAG-LEAK3 | ⬜ | `[emotionaler_ausdruck]` leckt in Antwort |
-| FAK-LECK | ⬜ | Charakter-Anweisungen als User-Fakten extrahiert |
-| BUTLER1 | ⬜ | Eigeninitiative und Pseudo-Angebote |
-| SIEZ2 | ⬜ | Sie/Du-Inkonsistenz bei formeller Persona |
-| LEAK3 | ⬜ | Salienz-Score leckt in Antwort |
-| RECH2 | ⚠️ | 3/3 Iterationen "luecken", Max-Iter fängt ab |
-| THER1 | ⚠️ | RLHF-Therapeut-Muster |
-| PLANNER-WARN | ⬜ | Doppel-Read bei Resume (harmlos, WARNING → DEBUG) |
-| OLLAMA-THINK | ⚠️ | Ollama #15260: `think=false` + `format="json"` = Format ignoriert (Gemma4). Workaround: kein format, Prompt+Cleanup. |
-| ROUTE-MISS1 | ⬜ | Router erkennt "Kannst Du das mit in den Termin schreiben?" nicht als Timeline-Update |
-| HALL2-Update | ✅ | ~~Halluzinierte Bestätigung + stiller Datenverlust~~ — Gefixt Chat 54 |
-| SEARX1 | ⚠️ | SearXNG Engines timen aus, keine Web-Suche möglich |
-| RESP-CRUD-GENERIC | ℹ️ | Möglicherweise entschärft durch task_block (Chat 54), weiter beobachten |
-| EMOTE-LOCK | ⬜ | Emote-Inflation — Nova eröffnet fast jede Antwort mit `*kichere boshaft*` (register-abhängig) |
-| TOPOS-LOCK | ⬜ | Nova zykelt mechanisch durch 8 Alters-Bilder statt auf User-Details einzugehen (register-abhängig) |
-| RESUME-REJECT | ✅ | ~~Pflicht-Rückfrage führt Aktion trotz "Nein" aus~~ — Gefixt Chat 50 |
-| HALL2-Reject | ✅ | ~~Responder halluziniert Bestätigung bei abgelehnten Agent-Aktionen~~ — Gefixt Chat 54 |
-| CRUD-DESTILL-SUBTRAKT | ⚠️ | Subtraktive Änderungen ("Sei nicht mehr X") werden als Anweisung gespeichert statt in den Charakter integriert |
-| CRUD-REACTIVATE-STAMP | ⚠️ | Reactivate setzt `deaktiviert_am` nicht auf NULL zurück (Invarianzverletzung) |
-| CRUD-REACTIVATE-COEXIST | ℹ️ | Reactivate deaktiviert nicht den aktuellen Charakter — abgedeckt durch Fachabteilungs-Epic |
-| CHAR-ID4-ORPHAN | ⬜ | Bi-temporale Invariante verletzt (ID 4: aktiv=f ohne deaktiviert_am) |
-| TIMELINE-SEARCH1 | ⬜ | Timeline-Agent findet irrelevanten alten Termin, keine Disambiguierung |
+Vollständige Bug-Dokumentation → `nova-bugs.md`
 
-Details → nova-bugs.md
+Kurzübersicht aktiver Bugs:
+
+| Bug | Prio | Kurzbeschreibung |
+|-----|------|-----------------|
+| HALL2 | ⚠️ | KZG-Klebrigkeit — wiederholte Mitteilung bereits kommunizierter Inhalte |
+| ROUTE-MISS1 | ⬜ | Router erkennt kontextabhängige Aufträge nicht |
+| SEARX1 | ⚠️ | SearXNG Engines timen aus |
+| THER1 | ⚠️ | RLHF-Therapeut-Muster |
+| CRUD-DESTILL-SUBTRAKT | ⚠️ | Subtraktive Änderungen als Anweisung gespeichert |
+| CRUD-REACTIVATE-STAMP | ⚠️ | Reactivate setzt deaktiviert_am nicht auf NULL |
+| EMOTE-LOCK | ⬜ | Emote-Inflation bei langem Charakter-Register |
+| TOPOS-LOCK | ⬜ | Bildervorrat wird mechanisch zykeliert |
+
+Details, Ursachen und Lösungsansätze → `nova-bugs.md`
 
 ---
 
-*Aktualisiert Chat 54: HALL2-Update + HALL2-Reject gefixt, TIMELINE-SEARCH1 neu, RESP-CRUD-GENERIC möglicherweise entschärft.*
+*Aktualisiert Chat 56: CLIENT-RENDER + Oktagon-Radar erledigt, LZG-Panel erledigt, Panel-Status-Spalte im Dashboard-Epic ergänzt, 6/12 Panels funktional.*

@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Multi-Channel-Architektur (Telegram Bot, Formatierung)
-**Stand:** 17. April 2026, Chat 52 (Code-Alignment)
+**Stand:** 19. April 2026, Chat 56
 **Pfad:** novaberg/docs/nova-tool-multi-channel.md
 **Quellen:** Chat 41 (Telegram Bot), Chat 43 (Konzept-Referenz)
 
@@ -20,7 +20,7 @@ Nova ist nicht an einen einzelnen Client gebunden. Der Server (FastAPI) ist kana
 
 | Kanal | Technologie | Status |
 |-------|------------|--------|
-| Desktop-Client | PyQt6, HTTP + WebSocket | Produktiv |
+| Desktop-Client | GTK4 (PyGObject) + WebKitGTK, SSE + WebSocket | Produktiv |
 | Telegram-Bot | python-telegram-bot v20+, Long Polling | Produktiv (Chat 41) |
 | Web-Interface | — | Geplant |
 
@@ -48,7 +48,7 @@ Nova ist nicht an einen einzelnen Client gebunden. Der Server (FastAPI) ist kana
 | Kanal | Format | Konvertierung |
 |-------|--------|--------------|
 | Server-Antwort | Markdown (kanonisch) | — |
-| Desktop-Client | HTML (QWebEngineView) | Markdown → HTML am Client |
+| Desktop-Client | HTML (WebKitGTK WebView) | Markdown → HTML am Client |
 | Telegram | Plain Text | Markdown → Text (Telegram unterstützt teilweise Markdown) |
 
 **Prinzip aus Chat 30:** "Daten vollständig transportieren, Formatierung am Konsumenten." Der Server liefert immer Markdown. Jeder Client konvertiert für sein Medium.

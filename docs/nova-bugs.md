@@ -1,7 +1,7 @@
 # Novaberg — Bugs & Limitationen
 
-**Stand:** 18. April 2026, Chat 52
-**Quelle:** Testlauf "Karrierekrise" (200 Prompts) + Gedächtnis-Epic (Chat 11) + Epic 11 Agent-System (Chats 22–32) + Persona Smoke-Tests (Chats 31–32) + RechercheAgent-Test (Chat 35) + Doku-Audit (Chat 36) + PRIO0-Fix + Client-Observability (Chat 37) + Claude API-Test + STREAM1-Fix + Gesprächsvektor (Chat 39) + CharakterIdentitaetAgent + DirektivenAgent + Tribunal Score-System (Chat 40) + Telegram Bot + Zeitparser-Fixes (Chat 41) + CRUD-Härtung + Telegram-Chat-Analyse + DB-Report (Chat 42) + KONTEXT1-Fix + Resume-Bug + Epic 15 Pilot (Chat 43) + Epic 15 Rollout + DELEG-REG Fix + KZG-Klebrigkeit (Chat 44) + RESP-CHAR1 Fix (Chat 45) + CLASSIFY-REJECTED + Gemma4 Live-Tests (Chat 48) + Telegram-Konversation "frecher Charakter" (Chat 49) + RESUME-REJECT Fix + Live-Tests (Chat 50) + Neugier-Konzept + Projektinfrastruktur (Chat 51)
+**Stand:** 19. April 2026, Chat 56
+**Quelle:** Testlauf "Karrierekrise" (200 Prompts) + Gedächtnis-Epic (Chat 11) + Epic 11 Agent-System (Chats 22–32) + Persona Smoke-Tests (Chats 31–32) + RechercheAgent-Test (Chat 35) + Doku-Audit (Chat 36) + PRIO0-Fix + Client-Observability (Chat 37) + Claude API-Test + STREAM1-Fix + Gesprächsvektor (Chat 39) + CharakterIdentitaetAgent + DirektivenAgent + Tribunal Score-System (Chat 40) + Telegram Bot + Zeitparser-Fixes (Chat 41) + CRUD-Härtung + Telegram-Chat-Analyse + DB-Report (Chat 42) + KONTEXT1-Fix + Resume-Bug + Epic 15 Pilot (Chat 43) + Epic 15 Rollout + DELEG-REG Fix + KZG-Klebrigkeit (Chat 44) + RESP-CHAR1 Fix (Chat 45) + CLASSIFY-REJECTED + Gemma4 Live-Tests (Chat 48) + Telegram-Konversation "frecher Charakter" (Chat 49) + RESUME-REJECT Fix + Live-Tests (Chat 50) + Neugier-Konzept + Projektinfrastruktur (Chat 51) + Doku-Alignment + emotions_profil (Chat 52) + Antrieb-Konzept + Dual-Emotion (Chat 53) + HALL2-Fix + Planner-Refactor (Chat 54) + PySide6 verworfen + GTK4-Entscheidung (Chat 55) + GTK4-Client + Panel-Infrastruktur (Chat 56)
 
 ---
 
@@ -56,6 +56,7 @@
 | ROUTE-CHAR1 | Router klassifiziert rhetorische Charakter-Bemerkungen als Management-Befehl | CLASSIFY-REJECTED: Classify fängt rhetorische Fragen/Komplimente mit action="rejected" ab, Dispatch gibt AgentResult ohne Inhalt zurück | Chat 48 |
 | CLASSIFY-CONFIRM | Bestätigung/Erinnerung ("Vergiss das frech sein nicht") wird als Update klassifiziert | Ergänzungen in `classify_charakter.task.txt`: neue Regel im VORPRUEFUNG-Block + zwei Beispiele. Bestätigt durch Live-Tests (Tests 1–3 grün, Regressions-Test "Sei nicht mehr das kleine Mädchen" → update bleibt). | Chat 49 |
 | RESUME-REJECT | Resume-Node für CharakterIdentitaetAgent: `resume.py` mit Strategy-Hook, Routing in `agent.py`. Vier Live-Tests bestanden (replace/update/delete Ablehnung + update Bestätigung). | Chat 50 |
+| HALL2-Reject | Status "dismissed" + Prompt-Block responder.aufgabe_verworfen | Chat 54 |
 
 ---
 
@@ -367,18 +368,6 @@
 
 ---
 
-#### HALL2-Reject — ~~Halluzinierte Bestätigung bei abgelehnten Agent-Aktionen~~ ✅
-**Gefixt:** Chat 54 — Neuer Status `"dismissed"` in resume.py (statt ambiges `"abgeschlossen"` + "Okay, lasse ich."). Eigener Block-Typ `_build_task_dismissed()` im Planner. Prompt `responder.aufgabe_verworfen` instruiert: "Bestätige die ABLEHNUNG, nicht die Ausführung." Getestet: 3x hintereinander abgelehnt, keine einzige halluzinierte Bestätigung.
-**Entdeckt:** Chat 50, Live-Tests B+C (17.04.2026)
-**Symptom:** Nach korrekter Ablehnung durch Resume-Node (Agent-Result: "Okay, lasse ich.") antwortet Nova: "Die Anweisung wurde vom Agenten 'charakter_identitaet' übernommen und die Identität entsprechend angepasst, Herr." — das Gegenteil der Wahrheit. DB ist intakt, aber User glaubt Ablehnung wurde ignoriert.
-**Reproduziert:** Tests B (update + "nein") und C (delete + "Nein"). Test A (replace, erster in Session) war korrekt.
-**Ursache (Hypothese):** Conversation-History-Kontamination. Jede HALL2-Antwort verstärkt die nächste selbst-rekursiv. Agent-Result "Okay, lasse ich." ist ein schwaches Signal gegen den dominanten Kontext.
-**Abgrenzung:** HALL2-Update = halluzinierte Bestätigung ohne Agent-Lauf. HALL2-Reject = halluzinierte Bestätigung trotz korrekter Ablehnung. RESP-CRUD-GENERIC = generische Phrase bei Erfolg.
-**Lösungsansatz:** Responder-Prompt bei Ablehnung schärfen, oder Agent-Result-Text spezifischer formulieren, oder im Fachabteilungs-Epic (Phase 1) mit adressieren.
-**Prio:** Hoch — UX-katastrophal, User verliert Vertrauen in den Ablehnungs-Mechanismus.
-
----
-
 #### EMOTE-LOCK — Emote-Inflation und -Wiederholung ⬜
 **Entdeckt:** Chat 48 (erste Beobachtung), Chat 49 (bestätigt)
 **Symptom:** Nova eröffnet bei aktivem Charakter-Register fast jede Antwort mit `*kichere boshaft*` oder minimaler Variation (`*kichere boshaft und zwinkere frech*`, `*kichere boshaft und verdrehe die Augen*`). In der Chat-49-Konversation: 12 von 15 Antworten mit identischem Eröffnungsemote.
@@ -397,4 +386,4 @@
 
 ---
 
-*Aktualisiert in Chat 54. Chat 54: HALL2-Update und HALL2-Reject gefixt (Planner task_block + dismissed-Status + REGELN-Guard). ROUTE-MISS1 erweitert (Session-Kontext-Awareness). TIMELINE-SEARCH1 neu. RESP-CRUD-GENERIC möglicherweise entschärft. Chat 52: Doku-Alignment 46 Dateien. Chat 50: RESUME-REJECT gefixt, HALL2-Reject entdeckt. Chat 49: RESP-CRUD-GENERIC, EMOTE-LOCK, TOPOS-LOCK. Chat 48: CLASSIFY-REJECTED, ROUTE-CHAR1 gelöst.*
+*Aktualisiert in Chat 56. HALL2-Reject in Behobene-Tabelle verschoben. Stand-Header auf Chat 56 gezogen.*

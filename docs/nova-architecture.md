@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Systemarchitektur, Tech-Stack, Plugin-System
-**Stand:** 17. April 2026, Chat 52 (Code-Alignment)
+**Stand:** 19. April 2026, Chat 56
 **Pfad:** novaberg/docs/nova-architecture.md
 **Quellen:** nova-00-a.md (Architektur-Übersicht), nova-07-a.md (Tech-Stack), nova-07-m-a.md (Plugin-System)
 
@@ -44,7 +44,7 @@ ROCm-Versionen im Docker-Image und auf dem Host sind inkompatibel. Ollama muss d
 
 | Komponente | Technologie | Rolle |
 |------------|------------|-------|
-| Desktop-Client | PyQt6 | Chat-UI, Panels (Fakten, Gedaechtnis, Timeline, Schatten, Status, System, Emotions-Radar), WebSocket-Empfang |
+| Desktop-Client | GTK4 (PyGObject) + WebKitGTK | Chat-UI (WebView), Panel-System (System, Emotionen, KZG, LZG, Session, Charakter), SSE + WebSocket |
 
 ---
 
@@ -165,7 +165,7 @@ Status: Ollama-Bug offen (Stand 15.04.2026).
 ```
 project/
 ├── client/
-│   ├── main.py                          # PyQt6 Einstieg
+│   ├── main.py                          # GTK4 Application Einstieg
 │   └── ui/                              # Chat, Fakten, Gedaechtnis, Timeline, Schatten,
 │                                        #   Status, System-Panels, Hauptfenster,
 │                                        #   Emotions-Radar (QPainter)
@@ -662,7 +662,7 @@ Docker-Container erreichen den Host via `host.docker.internal`. Ollama muss expl
    ├── APScheduler -> SchattenArbeit (alle 10 Min)
    └── API bereit auf :8000
 5. docker compose up -> telegram-bot (Long Polling, wartet auf server)
-6. Client -> PyQt6 App verbindet sich via HTTP + WebSocket
+6. Client -> GTK4 App verbindet sich via SSE + WebSocket
 ```
 
 ### 8.4 Admin-API

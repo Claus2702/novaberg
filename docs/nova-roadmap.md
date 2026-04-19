@@ -1,6 +1,7 @@
 # Novaberg — Roadmap (Projektchronik)
 
-**Stand:** Chat 54, 18. April 2026
+**Stand:** Chat 56, 19. April 2026
+**Pfad:** novaberg/docs/nova-roadmap.md
 **Single Source of Truth für abgeschlossene Arbeit.**
 **Offene Punkte → nova-backlog.md**
 
@@ -167,145 +168,109 @@
 | RESP2+RESP3 | Aufgelöst durch KONTEXT1 + Resume-Fix | 43 |
 | DELEG-REG | Doppeltes Präfix in deduplizierung.py | 44 |
 | RESUME-REJECT | Resume-Node für CharakterIdentitaetAgent (Strategy-Hook) | 50 |
+| CLASSIFY-CONFIRM | VORPRUEFUNG-Regel für Bestätigungen | 49 |
+| HALL2-Reject | Status "dismissed" + Prompt-Block | 54 |
+| HALL2-Update | REGELN-Guard + Planner task_block | 54 |
 
 ---
 
-## Chat 46: Gemma4-Migration + Prompt-Segregation (April 2026)
+## Chats 46–48: Gemma4-Migration + Prompt-Segregation (April 2026)
 
-### Gemma4-Integration
+### Gemma4-Migration (Chat 46)
 - ✅ Gemma4 26B-A4B (MoE, Q4) als GPU- und CPU-Modell importiert
 - ✅ Connector-System: `OLLAMA_CONNECTORS` Dict mit gemma4/mistral Profilen
 - ✅ `OLLAMA_CONNECTOR` Env-Variable als Umschalter
 - ✅ Think-Steuerung: `think=False` global (Ollama Bug #15260 Workaround)
 - ✅ Modelfile: `gemma4-gpu` + `gemma4-cpu` registriert, 32768 ctx
 
-### Prompt-Segregation
+### Prompt-Segregation (Chats 46–47)
 - ✅ `prompt_loader.py`: Default + Connector-Override Verzeichnisse
 - ✅ `PROMPTS` Dict in `config.py` (beim Start geladen)
-- ✅ 16 Default-Bloecke extrahiert (Perzeption, Router, Salienz, Tribunal)
-- ✅ 7 Gemma4-Overrides (verschaerfte JSON-Regeln + Tribunal-Prompts)
+- ✅ SEG-1/2/3: 16 Default-Blöcke + 7 Gemma4-Overrides (Chat 46)
+- ✅ SEG-4: Thinker (3), Corrector (1), GV-Node (3), Responder (9) (Chat 47)
+- ✅ SEG-5: KZG-Verdichtung (3), Classify ×4 (16) (Chat 47)
+- ✅ Prompt-Segregation komplett: 51 Default-Dateien, 7 Gemma4-Overrides, 0 hardcoded Prompts
 
-### JSON Cleanup-Pipeline
-- ✅ `_clean_json_response` (Markdown-Wrapper entfernen)
-- ✅ `_deduplicate_repetition` (Repetitions-Loops brechen)
-- ✅ `_repair_truncated_json` (abgeschnittenes JSON reparieren)
+### JSON Cleanup-Pipeline (Chat 46)
+- ✅ `_clean_json_response` + `_deduplicate_repetition` + `_repair_truncated_json`
 
-### Doku-Audit
-- ✅ nova-agent-character.md: 5 Audit-Fixes
-- ✅ nova-agent-directives.md: 5 Audit-Fixes
+### Classify-Verfeinerung (Chats 48–49)
+- ✅ CLASSIFY-REJECTED — action: "rejected" als neue gültige Aktion (16 Dateien)
+- ✅ Dispatch-Fix — AgentResult mit status="rejected" (verhindert Planner-Endlosschleife)
+- ✅ ROUTE-CHAR1 — Classify fängt rhetorische Charakter-Bemerkungen ab
+- ✅ CLASSIFY-CONFIRM — Bestätigungen/Erinnerungen korrekt als rejected klassifiziert
 
----
-
-## Chat 47: Prompt-Segregation abgeschlossen (April 2026)
-
-### Chat 47 — 15. April 2026
-- Prompt-Segregation SEG-4 abgeschlossen: Thinker (3 Dateien), Corrector (1 Datei), GV-Node (3 Dateien), Responder (9 Dateien)
-- Prompt-Segregation SEG-5 abgeschlossen: KZG-Verdichtung (3 Dateien), Classify Notizen (4 Dateien), Classify Timeline (4 Dateien), Classify Charakter (4 Dateien), Classify Direktiven (4 Dateien)
-- Prompt-Segregation komplett: 51 Default-Dateien, 7 Gemma4-Overrides, 0 hardcoded Prompts in Python
-- Escaping-Konvention: Alle PROMPTS[]-Zugriffe durch .format(), literale {name} als {{name}} escaped
+### Doku-Audit (Chat 46)
+- ✅ nova-agent-character.md + nova-agent-directives.md: je 5 Audit-Fixes
 
 ---
 
-## Chat 48 (15. April 2026)
+## Chats 49–51: Qualitätssicherung + Konzepte (April 2026)
 
-### Prompt-Segregation Anwendung
-- ✅ CLASSIFY-REJECTED — 4 Classify-Nodes bekommen Vorprüfung "Ist das ein Auftrag?", action: "rejected" als neue gültige Aktion (16 Dateien: 4 Prompts + 4 klassifikation.py + 4 agent.py + 4 dispatch.py)
-- ✅ Dispatch-Fix — AgentResult mit status="rejected" statt kein Result (verhindert Planner-Endlosschleife)
+### RESUME-REJECT Fix (Chat 50)
+- ✅ Neuer Resume-Node für CharakterIdentitaetAgent (resume.py + Routing)
+- ✅ Strategy-Hook-Architektur für Fachabteilungs-Epic vorbereitet
+- ✅ Vier Live-Tests bestanden (replace/update/delete + Regression)
 
-### Agent-System Fixes
-- ✅ ROUTE-CHAR1 — Classify fängt rhetorische Charakter-Bemerkungen ab ("Was ist aus meinem frechen Mädel geworden?" → rejected, kein False-Positive Management-Befehl)
+### Fachabteilungs-Epic beschlossen (Chat 49)
+- ✅ Konzept: Agenten als Fachabteilungen mit Intelligenz (nova-agent-fachabteilung_k.md)
+- ✅ Generische Pipeline: Input-Validation → Semantik-Check → HITL-Gate → CRUD → Output-Validation
 
----
+### Neugier als Architekturprinzip (Chat 51)
+- ✅ `nova-thinking-curiosity_k.md` — Charakter-Resonanz-Feld, Gap-/Verfolgungs-Strategie, Neugier-Sättigung
+- ✅ Reflexion als universelles Architekturprinzip: Generiere → Reflektiere → Handle
 
-## Chat 49 (16. April 2026)
-
-### Classify-Verfeinerung
-- ✅ CLASSIFY-CONFIRM — `classify_charakter.task.txt` erweitert um neue VORPRUEFUNG-Regel für Bestätigungen/Erinnerungen an aktive Charakter-Züge ("Vergiss das frech sein nicht", "Bleib bitte so kess") + zwei Kontrast-Beispiele (rejected vs. delete). Regressions-Tests grün ("Sei nicht mehr X" bleibt update).
-
-### Doku-Update
-- ✅ `nova-agent-character.md` überarbeitet: Basis-Persönlichkeit emergiert aus Destillations-Schichten, Charakter-Anweisung als Modulation, CLASSIFY-CONFIRM + CRUD-DESTILL-SUBTRAKT dokumentiert, RESP-CHAR1-Konsolidierung nachgezogen.
-
-### Repo-Vorbereitung (in Planung)
-- Ordnerstruktur für Codeberg-Repo konzipiert: `~/ki-assistent/repo/` als Git-Root, `searxng`/`docker-compose.yml`/`.env`/`Texte und Dialoge`/`tools`/`tests` bleiben außerhalb
-- Templates erstellt: `docker-compose.example.yml`, `.env.template`, `README.md` (Standard-Umfang mit Tech-Stack, Modell-Footprint-Tabelle für Gemma4-GPU + nomic-embed-GPU + Gemma4-CPU + Qwen3-32B-CPU)
-- Lizenz-Entscheidung: Privates Repo zunächst, Client-Migration PyQt6 → PySide6 + Chromium vor Public-Switch, finale Lizenz dann MIT oder Apache 2.0
-
-### Test-Ergebnisse (Live-Tests Telegram)
-- ✅ CLASSIFY-CONFIRM funktioniert (Tests 1–3 grün)
-- ✅ Basis-Persönlichkeit ohne Charakter: Nova bleibt kohärent, spielerisch, emotional adaptiv (ohne aktive Anweisung)
-- ✅ Charakter-Modulation über einen Satz funktioniert: Butler (nüchtern, analytisch) vs. Mädel (kess, frech) — deutlich unterschiedliche Register aus einer Anweisung
-- ✅ Reactivate per Semantik-Matching (ohne ID-Nennung) funktioniert
-- ✅ Replace funktioniert wie spezifiziert
-- ❌ Reactivate + bestehender aktiver Charakter → zwei aktive Einträge (Spec-konform, aber semantisch falsch)
-- ❌ `deaktiviert_am` nicht auf NULL gesetzt bei Reactivate
-
-### Architektur-Entscheidung
-- 🎯 **Fachabteilungs-Agenten-Epic beschlossen:** Alle CRUD-Agenten sollen zu Fachabteilungen mit Intelligenz werden. Generische Pipeline mit Semantik-Check (Input) + Output-Validation + differenzierten Rückfrage-Typen. Inspiration OpenClaw, 2026-Agent-Standard. Pilot: CharakterIdentitaetAgent.
-
-### Entdeckte Bugs (Telegram-Live-Tests)
-- 🚨 RESUME-REJECT (dreimal reproduziert) — Pflicht-Rückfrage führt Aktion trotz "Nein" aus. Nächster Arbeitsschritt.
-- ⚠️ CRUD-DESTILL-SUBTRAKT — Subtraktive Änderungen ("Sei nicht mehr X") werden als Anweisung gespeichert statt integriert
-- ⚠️ CRUD-REACTIVATE-STAMP — `deaktiviert_am` nicht auf NULL gesetzt bei Reactivate
-- ℹ️ CRUD-REACTIVATE-COEXIST — Reactivate deaktiviert nicht den aktuellen Charakter (durch Fachabteilungs-Epic abgedeckt)
-- ⚠️ RESP-CRUD-GENERIC — Generische Corporate-Phrasen nach Agent-Erfolg ("Durch die Fachabteilung entfernt")
-- ⬜ EMOTE-LOCK — Emote-Wiederholung (register-abhängig, bei passendem Charakter weniger)
-- ⬜ TOPOS-LOCK — Bildervorrat-Zykeln (register-abhängig)
-- ⬜ CHAR-ID4-ORPHAN — Bi-temporale Invariante verletzt (Einzelfall)
-
-### Nächste Session: RESUME-REJECT + Fachabteilungs-Konzept
-RESUME-REJECT-Fix ist Voraussetzung für die Fachabteilungs-Agenten. Beides wird in den nächsten Sessions angegangen.
-
----
-
-## Chat 50 (17. April 2026)
-
-### RESUME-REJECT Fix (Phase 0 Fachabteilungs-Epic)
-- ✅ RESUME-REJECT — Neuer Resume-Node für CharakterIdentitaetAgent (`resume.py` + Routing in `agent.py`). Strategy-Hook-Architektur für Phase 1 vorbereitet. Vier Live-Tests bestanden (replace/update/delete + Regression).
-
-### Entdeckte Bugs
-- 🚨 HALL2-Reject (NEU) — Responder halluziniert Bestätigung bei abgelehnten Aktionen. Conversation-History-Kontamination.
-
-### Nächste Session: Phase 1 Fachabteilungs-Epic
-HALL2-Reject adressieren, dann Pilot CharakterIdentitaetAgent: Semantik-Check + Output-Validation.
-
----
-
-## Chat 51 (17. April 2026)
-
-### Neugier als Architekturprinzip
-- ✅ `nova-thinking-curiosity_k.md` — Neugier-Konzept: Charakter-Resonanz-Feld im Embedding-Space, `NOVA_NEUGIER` als zentraler Config-Parameter (float 0.0–1.0), Gap-Strategie (Traum) + Verfolgungs-Strategie (Vertiefung v2), Sozialer Spielraum als Bremse, Neugier-Sättigung mit drei Stopp-Bedingungen
-- ✅ Neue Doku-Kategorie `nova-thinking-*` (Thinking als übergeordnete kognitive Schicht)
-- ✅ Reflexion als universelles Architekturprinzip identifiziert: Generiere → Reflektiere → Handle nur auf dem Besten
-
-### Marktanalyse + Pitch
-- ✅ 7 Open-Source-Projekte analysiert (Letta/MemGPT, Stanford Generative Agents, Khoj, Leon AI, LocalAI, C.O.R.E., Agent Brain). Ergebnis: Nova architektonisch das innovativste Projekt, einziges mit Charakter-getriebener Neugier + emergentem Charakter + Gesprächsvektor.
-- ✅ `nova-pitch-anthropic.docx` erstellt (6 Abschnitte, Cognitive Design als eigenständige Disziplin)
-
-### Projektinfrastruktur
+### Marktanalyse + Projektinfrastruktur (Chat 51)
+- ✅ 7 Open-Source-Projekte analysiert — Nova architektonisch einzigartig
 - ✅ Projektname: **Novaberg — The Nova Anima Resonance System**
-- ✅ Codeberg-Repo: `ClausVomBerg/novaberg`, SSH-Key, erster Commit (LICENSE, README.md, README.de.md, .gitignore)
-- ✅ Lizenz: Apache 2.0 (erfordert PyQt6 → PySide6 Migration)
+- ✅ Codeberg-Repo: `ClausVomBerg/novaberg`, Apache 2.0
+- ✅ `nova-pitch-anthropic.docx` erstellt
 
 ---
 
-## Chat 54 (18. April 2026)
+## Chats 52–53: Dokumentation + Kognitive Architektur (April 2026)
 
-### HALL2-Fix — Architektur-Refactor Responder/Planner
-- ✅ HALL2-Reject — Neuer Status `"dismissed"` in resume.py. Eigener Prompt-Block `responder.aufgabe_verworfen`. 3x Ablehnung hintereinander getestet, keine Halluzination.
-- ✅ HALL2-Update — REGELN-Guard gegen Aktionsbestätigung ohne Auftrag. Live-Test: Router-Miss → Nova sagt ehrlich "kann ich nicht durchführen."
-- ✅ Architektur: Business-Logik aus Responder (~68 Zeilen) in Planner verschoben. `_build_task_block()` mit 6 Helfer-Funktionen. Neue State-Felder `task_block` + `task_context_cut`. Responder konsumiert nur noch.
-- ✅ TAG-LEAK-Fix: REGELN-Guard-Text referenzierte internen Blocknamen `[AUFGABE]`, der in die Antwort leckte. Prompt umformuliert.
+### Doku-Alignment (Chat 52)
+- ✅ 71 Dateien Header-Rename auf Novaberg
+- ✅ 46 Dateien Code-Alignment in 9 Batches (Config-Konstanten, State-Felder, Subgraph-Routing)
+- ✅ PyQt6 → PySide6 Migration (14 Dateien, Lizenz-Blocker für Apache 2.0 behoben)
+- ✅ emotions_profil als 5. IDENTITAET-Schicht integriert (4 Code-Dateien + 8 Doku-Dateien)
 
-### Erkenntnisse
-- ROUTE-MISS1 breiter als gedacht: Router nutzt Session-Kontext nicht für kontextabhängige Prompts (Rückbezüge UND Bestätigungen auf Nova-Vorschläge)
-- RESP-CRUD-GENERIC möglicherweise durch task_block entschärft — Nova referenziert konkreten Inhalt statt Corporate-Phrasen
-- TIMELINE-SEARCH1 neu: Agent findet irrelevanten alten Termin, keine Disambiguierung
-
-### Nächste Session
-- ROUTE-MISS1: Router-Prompt Session-Kontext-Awareness
-- Status-Konstanten englisch (dismissed neben abgeschlossen → Inkonsistenz)
-- Agenten-Tests (systematisch)
+### Antrieb-Konzept (Chat 53)
+- ✅ `nova-thinking-drive_k.md` — Drei Zeithorizonte (lang/mittel/kurz), Gravitation über Embedding-Similarity
+- ✅ Dual-Emotion-Architektur: Eigener 8-dimensionaler Plutchik-Vektor für Nova
+- ✅ Asymmetrische Empathie über Sektor-Distanzmatrix (α variabel nach Distanz)
+- ✅ Suffix-Konvention `_k` auf 4 Konzeptdokumente + alle Referenzen angewendet
 
 ---
 
-*Aktualisiert in Chat 52. Offene Punkte → nova-backlog.md. Bugs → nova-bugs.md. Konzept → nova-agent-fachabteilung_k.md.*
+## Chats 54–56: Stabilisierung + Client-Umbau (April 2026)
+
+### HALL2-Fix — Architektur-Refactor (Chat 54)
+- ✅ HALL2-Reject — Status "dismissed" + eigener Prompt-Block
+- ✅ HALL2-Update — REGELN-Guard gegen Aktionsbestätigung ohne Auftrag
+- ✅ Business-Logik aus Responder (~68 Zeilen) in Planner verschoben
+- ✅ TAG-LEAK-Fix: Interner Blockname leckte in Antwort
+
+### Client v2: PySide6 + Chromium (Chat 55, verworfen)
+- ✅ Panel-Architektur designed: 12 Typen, UNIQUE/CATEGORY, Turn-Signal-Routing
+- ❌ PySide6/Qt verworfen — Qt-Chromium rendert System-Emoji-Fonts nicht auf Linux
+
+### Client v3: GTK4 + WebKitGTK (Chats 55–56)
+- ✅ GTK4 (PyGObject) als Client-Plattform validiert — Emojis nativ, vorinstalliert
+- ✅ Hauptfenster + Chat (WebKitGTK) + SSE-Streaming + WebSocket (Chat 56)
+- ✅ Panel-Infrastruktur: PanelBase, ChildWindow, PanelRegistry (Chat 56)
+- ✅ 6 Panels funktional: System, Emotionen, KZG, LZG, Session, Charakter (Chat 56)
+- ✅ Markdown-Rendering für User und Assistant, Emoji-Picker (Strg+. / Button)
+- ✅ Emotions-Panel: Alle 16 kanonischen Emotionen in 8 Plutchik-Sektoren (Chat 56)
+- ✅ Radar-Diagramme: 2× Cairo-Radar (Session + KZG) im Emotions-Panel (Chat 56)
+- ✅ PySide6/venv/Emote aufgeräumt, System sauber (Chat 56)
+
+### Dokumentation (Chat 56)
+- ✅ Roadmap, Backlog, Bugs bereinigt (Prompt 06: thematische Gruppen, erledigte Items entfernt, Bug-Referenzen konsolidiert)
+- ✅ nova-architecture.md, nova-tool-multi-channel.md, nova-agent-fachabteilung_k.md: PyQt6/PySide6 → GTK4
+- ✅ README.md + README.de.md: Screenshots-Sektion (7 Bilder), Client-Referenzen auf GTK4 aktualisiert
+
+---
+
+*Aktualisiert in Chat 56. Offene Punkte → nova-backlog.md. Bugs → nova-bugs.md.*

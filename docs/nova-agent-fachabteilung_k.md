@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Fachabteilungs-Agenten (Konzept/Vision)
-**Stand:** 17. April 2026, Chat 52 (Code-Alignment — Konzept unverändert)
+**Stand:** 19. April 2026, Chat 56
 **Pfad:** novaberg/docs/nova-agent-fachabteilung_k.md
 **Status:** Konzept — nicht implementiert, Pilot: CharakterIdentitaetAgent
 
@@ -231,7 +231,6 @@ Realistisch: 8-10 Sessions über mehrere Wochen.
 Während die Fachabteilungs-Umbauten laufen, können andere Arbeiten parallelisiert werden:
 - Pixie-Classifier (unabhängig)
 - Träumen + Vertiefen (unabhängig)
-- Client-Migration PyQt6 → PySide6 (Frontend-Thema)
 - Repo-Vorbereitung und Codeberg-Push (Meta-Arbeit)
 
 Nicht parallel: Andere CRUD-Agent-Änderungen, weil sie mit dem Epic kollidieren würden.
