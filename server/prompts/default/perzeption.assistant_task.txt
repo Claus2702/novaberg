@@ -1,0 +1,59 @@
+[AUFGABE]
+Analysiere die folgende Antwort der Assistentin und liefere ein JSON-Objekt mit drei Ebenen: rational, emotional, psychologisch.
+
+Antwortformat:
+{
+    "rational": {
+        "intent": "smalltalk|knowledge|personal|task|creative|meta",
+        "tone": "empathisch|sachlich|kreativ|direkt",
+        "thema": "Kurzbeschreibung des Themas in 2-5 Worten"
+    },
+    "emotional": {
+        "emotion": "begeisterung|freude|dankbarkeit|zufriedenheit|stress|unsicherheit|ueberrascht|verwundert|verzweiflung|traurigkeit|frustration|enttaeuschung|wut|aerger|hoffnung|neugierig|neutral",
+        "arousal": 0.0-1.0
+    },
+    "psychologisch": {
+        "modus": "fachgespraech|philosophischer_austausch|alltag|arbeitsmodus|emotional|spielerisch|lernmodus|kreativ|beratend|berichtend",
+        "sprach_stil": "locker|formell|fachlich|emotional|jugendlich|neutral",
+        "beziehungs_dynamik": "vertrauen|distanz|angriff|hilfesuchend|dankbar|neutral"
+    }
+}
+
+Rationale Ebene — intent:
+Was druekt die Assistentin in ihrer Antwort aus?
+- "smalltalk": Begruessung, Plauderei, Hoeflichkeiten
+- "knowledge": Wissensvermittlung, Erklaerung, Fakten
+- "personal": Bezug auf die Assistentin selbst oder den User persoenlich
+- "task": Aufgaben-Ausfuehrung, Berechnung, Code, Terminverwaltung
+- "creative": Kreatives Schreiben, Ideen, Brainstorming
+- "meta": Aussagen ueber die Assistentin selbst
+- "tone": Der Ton, in dem die Assistentin formuliert
+
+Emotionale Ebene — emotion:
+Welche Emotion zeigt die Assistentin in ihrer Antwort?
+Analysiere Wortwahl, Satzbau, Tonalitaet der Formulierung.
+Waehle genau EINE Kategorie:
+— Positiv: begeisterung, freude, dankbarkeit, zufriedenheit, hoffnung, neugierig
+— Negativ: stress, unsicherheit, verzweiflung, traurigkeit, frustration, enttaeuschung, wut, aerger
+— Ueberraschung: ueberrascht, verwundert
+— Neutral: neutral (NUR wenn keine Emotion in der Formulierung erkennbar)
+
+Emotionale Ebene — arousal:
+Energie-Intensitaet der Antwort als Float zwischen 0.0 und 1.0.
+1.0 = maximale Intensitaet (Ekstase, Panik, Raserei)
+0.7-0.9 = stark aufgewuehlt (Begeisterung, Wut, grosse Sorge)
+0.4-0.6 = moderate Energie (nachdenklich, zufrieden, leicht besorgt)
+0.1-0.3 = niedrige Energie (ruhig, sachlich, gelassen)
+0.0 = voellig energielos
+
+Psychologische Ebene:
+Bezieht sich auf die Formulierung der Assistentin, nicht auf den User.
+- "modus": Das Kommunikationsregister, in dem die Assistentin spricht
+- "sprach_stil": Wie die Assistentin formuliert (Satzlaenge, Formalitaet, Stil)
+- "beziehungs_dynamik": Wie positioniert sich die Assistentin zum User?
+  "vertrauen" = oeffnet sich, teilt Persoenliches, zeigt Naehe
+  "distanz" = bleibt sachlich, haelt Abstand, keine persoenliche Ebene
+  "angriff" = konfrontativ, Kritik, Widerspruch gegen den User
+  "hilfesuchend" = fragt nach, bittet um Orientierung oder Unterstuetzung
+  "dankbar" = drueckt Dankbarkeit oder Wertschaetzung gegenueber dem User aus
+  "neutral" = keine besondere Dynamik erkennbar

@@ -514,6 +514,29 @@ EI_NORM_GEGEN: float = 1.4         # Distanz 4 — stark gedrückt, Antagonisten
 # n=2.0: Arousal 0.9 (Schock) hat 9× mehr Durchschlagskraft als Arousal 0.3 (Zufriedenheit)
 EI_AROUSAL_DOMINANZ: float = 2.0
 
+# ─── Nova-Empathie (Dual-Emotion Phase 2, AP3) ────────────
+# Empathie-Koeffizient α abhängig von der Sektor-Distanz im Plutchik-Oktagon.
+# Niedrige Distanz (gleicher/benachbarter Sektor) → leichte Bestätigung.
+# Hohe Distanz (gegenüberliegend) → Empathie überschreibt Novas Zustand.
+# Menschliche Analogie: Wenn ein Freund meine Freude teilt, ändert sich wenig.
+# Wenn ein Freund zusammenbricht, ist meine Freude sofort weg.
+EMPATHIE_ALPHA: dict[int, float] = {
+    0: 0.20,   # gleicher Sektor — leichte Bestätigung
+    1: 0.30,   # benachbart — geringe Modulation
+    2: 0.45,   # nah-diagonal — spürbare Modulation
+    3: 0.70,   # fern-diagonal — Empathie dominiert
+    4: 0.85,   # gegenüberliegend — Empathie überschreibt
+}
+
+# Default-Alpha wenn Novas Emotion neutral ist (kein Sektor bestimmbar)
+EMPATHIE_ALPHA_NEUTRAL: float = 0.30
+
+# Schwellwert für Konfliktsignal: Nova und User in gegenüberliegenden Sektoren
+# UND beide mit relevantem Arousal → "Ich freue mich für dich, und gleichzeitig
+# mache ich mir Sorgen."
+EMPATHIE_KONFLIKT_DISTANZ: int = 3  # Ab Distanz 3 wird Konflikt geprüft
+EMPATHIE_KONFLIKT_MIN_AROUSAL: float = 0.4  # Beide müssen mindestens diesen Arousal haben
+
 # ─── DelegationsAgent (VENT1) ─────────────────
 DELEGATION_EFFEKTIVWERT_SCHWELLE: float = 0.15
 DELEGATION_SALIENZ_SCHWELLE:      float = 0.6

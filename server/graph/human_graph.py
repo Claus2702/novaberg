@@ -2,13 +2,15 @@
 HumanGraph — Vollständiger Gesprächsgraph für menschliche User.
 
 Flow:
-  Perzeption → Router → Enricher → [Planner]* → Responder → Thinker → Tribunal → Evaluate
-                                                                        ↓
-                                                          ok → Salience → Dispatcher → END
-                                                          ↓
-                                                   Corrector → Tribunal (max 2 Runden)
+  Perzeption → Enricher → EI-Calc → Router → [Planner]* → GV-Node → Responder → Thinker → Tribunal → Evaluate
+                                                                                              ↓
+                                                                                ok → END
+                                                                                ↓
+                                                                         Corrector → Tribunal (max 2 Runden)
 
   [Planner]* = nur wenn Router management_action gesetzt hat
+
+  Salienz + Dispatcher laufen asynchron nach der Antwort-Auslieferung (siehe services/nova_nachbearbeitung.py).
 """
 
 import logging
@@ -35,26 +37,26 @@ class HumanGraph(GraphBase):
         graph.add_node("perzeption", self._node_perceive)
         graph.add_node("router",     self._node_route)
         graph.add_node("enricher",   self._node_enrich)
+        graph.add_node("ei_calc",    self._node_ei_calc)
         graph.add_node("planner",    self._node_plan)
         graph.add_node("responder",  self._node_respond)
         graph.add_node("thinker",    self._node_think)
         graph.add_node("tribunal",   self._node_judge)
         graph.add_node("evaluate",   self._node_evaluate)
         graph.add_node("corrector",  self._node_correct)
-        graph.add_node("salience",        self._node_salience)
-        graph.add_node("dispatcher",      self._node_dispatch)
         graph.add_node("agent_dispatch",  self._node_agent_dispatch)
         graph.add_node("gv_node", self._node_gespraechsvektor)
 
         # ── Kanten ─────────────────────────────
         graph.set_entry_point("perzeption")
-        graph.add_edge("perzeption", "router")
-        graph.add_edge("router", "enricher")
+        graph.add_edge("perzeption", "enricher")
+        graph.add_edge("enricher", "ei_calc")
+        graph.add_edge("ei_calc", "router")
 
-        # Enricher → Planner oder Gesprächsvektor
+        # Router → Planner oder Gesprächsvektor
         graph.add_conditional_edges(
-            "enricher",
-            self._after_enricher,
+            "router",
+            self._after_router,
             {
                 "planner":           "planner",
                 "gv_node":  "gv_node",
@@ -81,15 +83,13 @@ class HumanGraph(GraphBase):
             "evaluate",
             self._after_evaluate,
             {
-                "output":   "salience",
+                "output":   END,
                 "correct":  "corrector",
                 "fallback": END,
             },
         )
 
         graph.add_edge("corrector",  "tribunal")
-        graph.add_edge("salience",   "dispatcher")
-        graph.add_edge("dispatcher", END)
 
         # ── Kompilieren ────────────────────────
         compiled = graph.compile()
@@ -117,6 +117,7 @@ class HumanGraph(GraphBase):
             temperature   = temperature,
 
             # Perzeption
+            perzeption_rolle    = "user",
             intent              = "",
             tone                = "sachlich",
             prompt_thema        = "",
@@ -142,12 +143,24 @@ class HumanGraph(GraphBase):
             gespraechs_modus   = "",
             user_intentionen   = [],
             user_emotion       = "",
+            raw_turns          = [],
+            char_hash_dict     = {},
 
             # Emotionale Intelligenz
             emotions_verlauf     = [],
             emotions_vektor      = "",
             sprach_stil          = "",
             beziehungs_kontext   = "",
+            nova_kern            = "",
+            nova_beziehung       = "",
+            nova_adaptiv         = "",
+            nova_intentionen     = "",
+            nova_emotions        = "",
+
+            # Nova-Emotion (Dual-Emotion Phase 2)
+            nova_emotions_verlauf  = [],
+            nova_emotions_vektor   = "",
+            nova_emotion_konflikt  = False,
 
             # Planner (Management Plan-Phase)
             management_result = "",
@@ -199,7 +212,7 @@ class HumanGraph(GraphBase):
             return "agent_dispatch"
         return "gv_node"
 
-    def _after_enricher(self, state: ConversationState) -> str:
+    def _after_router(self, state: ConversationState) -> str:
         """Planner nur wenn Router einen Management-Intent erkannt hat."""
         if state.get("management_action"):
             logger.info("Graph: Management-Intent erkannt — Planner aktiviert")
@@ -211,9 +224,9 @@ class HumanGraph(GraphBase):
 
         verdict: str = state["tribunal_verdict"]
 
-        # ok → Salienz → Dispatcher → Ende
+        # ok → Ende (Salienz + Dispatcher laufen asynchron)
         if verdict == "ok":
-            logger.info("Graph: Tribunal akzeptiert — Salienz + Dispatcher")
+            logger.info("Graph: Tribunal akzeptiert — Ausgabe")
             return "output"
 
         # Max Korrekturen erreicht

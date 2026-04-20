@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Node-Referenz Dispatcher
-**Stand:** 17. April 2026, Chat 52 (Code-Alignment)
+**Stand:** 20. April 2026, Chat 59 (asynchrone Ausführung über services/nachbearbeitung.py)
 **Pfad:** novaberg/docs/novaberg-node-dispatcher.md
 **Quellen:** nova-01-m-h.md
 **Datei:** `graph/nodes/dispatcher.py`
@@ -11,7 +11,7 @@
 
 ## 1. Aufgabe
 
-Der Dispatcher ist der letzte Node im Graph. Er nimmt die `pending_writes` aus dem State, gruppiert sie nach Ziel und ruft den jeweils zuständigen Manager-Plugin oder Agent auf. Er ist reiner Arbeiter — keine Bewertung, keine Entscheidung, keine LLM-Calls.
+Der Dispatcher ist der letzte Node im User-Pfad des async-Blocks. Er nimmt die `pending_writes` aus dem State, gruppiert sie nach Ziel und ruft den jeweils zuständigen Manager-Plugin oder Agent auf. Er ist reiner Arbeiter — keine Bewertung, keine Entscheidung, keine LLM-Calls.
 
 **Zwei Agent-Dispatcher.** Seit Chat 29 ruft der Dispatcher für das Ziel `"kzg"` direkt `dispatch_kzg()` auf. Seit Chat 32 feuert er zusätzlich den DelegationsAgent (`dispatch_delegation()`) über eine ODER-Trigger-Prüfung auf den emotionalen State.
 
@@ -20,12 +20,23 @@ Der Dispatcher ist der letzte Node im Graph. Er nimmt die `pending_writes` aus d
 ## 2. Position im Graph
 
 ```
-... → Salienz → ▶ Dispatcher ◀ → END
+... → Tribunal → Evaluate → ok → END          (sync-Graph-Austritt, seit Chat 59)
+                                  │
+                                  v
+                 (ASYNCHRON, services/nachbearbeitung.py)
+                                  │
+                         Salienz → ▶ Dispatcher ◀
 ```
 
-**Input:** State mit `pending_writes` (befüllt von Planner und/oder Salienz).
+**Seit Chat 59 asynchron.** Der Dispatcher ist nicht mehr Teil des sync-HumanGraph — er läuft im User-Pfad des async-Blocks (`services/nachbearbeitung.py`) direkt nach der Salienz, nachdem die Antwort ausgeliefert wurde.
+
+**Kein LLM-Call:** Der Dispatcher selbst macht nichts am LLM — er ruft nur Manager-Plugins und Agent-Dispatcher auf. Der `llm_lock` wird hier nicht erworben.
+
+**Input:** State mit `pending_writes` (befüllt von Salienz; Planner-Writes sind bereits vor dem Graph-Austritt geflossen — deren Dispatch passiert weiterhin implizit im Planner-Pfad).
 
 **Output:** State mit geleerten `pending_writes`. Die Manager/Agenten haben ihre Schreiboperationen ausgeführt.
+
+→ Details zum Async-Flow: `novaberg-service-nachbearbeitung.md`
 
 ---
 

@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Node-Referenz Enricher
-**Stand:** 17. April 2026, Chat 52 (Code-Alignment)
+**Stand:** 20. April 2026, Chat 59 (EI-Abschnitt in eigenen Node EI-Calc ausgelagert, Position vor Router)
 **Pfad:** novaberg/docs/novaberg-node-enricher.md
 **Quellen:** nova-01-m-c.md
 **Datei:** `graph/nodes/enricher.py`
@@ -11,25 +11,35 @@
 
 ## 1. Aufgabe
 
-Der Enricher ist Novas Gedächtnis-Schnittstelle. Er lädt den gesamten verfügbaren Kontext — Session, KZG, LZG, Charakter-Hash, Plugin-Daten — und berechnet die emotionale Intelligenz des aktuellen Turns. Er ist der einzige Node, der Daten aus allen Gedächtnisebenen zusammenführt.
+Der Enricher ist Novas Gedächtnis-Schnittstelle — seit Chat 59 ein **reiner I/O-Node**. Er lädt den gesamten verfügbaren Kontext — Session, KZG, LZG, Charakter-Hash, Plugin-Daten — und stellt ihn dem Graph zur Verfügung. Die emotionale Intelligenz wird **nicht mehr** hier berechnet, sondern im nachgelagerten EI-Calc-Node.
 
-**Kein LLM-Call.** Der Enricher macht ausschließlich Datenzugriffe, Embedding-Erzeugung und deterministische Python-Berechnungen.
+**Kein LLM-Call.** Der Enricher macht ausschließlich Datenzugriffe und Embedding-Erzeugung.
+
+**Keine EI-Berechnung mehr.** Alle 12 EI-Funktionen (Verlauf, Vektor, Modus-/Stil-Plausibilität, Nova-Empathie) sind in `ei/berechnung.py` ausgelagert und werden vom neuen EI-Calc-Node aufgerufen.
+
+→ Details: `novaberg-node-ei-calc.md`
 
 ---
 
 ## 2. Position im Graph
 
 ```
-Perzeption → Router → ▶ Enricher ◀ → [Planner] → Responder → ...
+Perzeption → ▶ Enricher ◀ → EI-Calc → Router → [Planner] → GV-Node → Responder → ...
 ```
 
-**Input:** State mit Perzeptionsergebnissen (Emotion, Arousal, Modus) und Router-Flags (`needs_memory`, `needs_timeline`, `management_action`).
+**Seit Chat 59 vor dem Router.** Die neue Reihenfolge gibt dem Router die volle Sicht auf Session, KZG, LZG, Charakter-Hash und (nach EI-Calc) den EI-Zustand — adressiert ROUTE-MISS1 strukturell.
 
-**Output:** State angereichert mit `memory_context`, `session_turns` (vollständige Turn-Dicts, nur Shadow-Impulse gefiltert), `emotions_verlauf`, `emotions_vektor`, `sprach_stil`, `beziehungs_kontext`.
+**Input:** State mit Perzeptionsergebnissen (Emotion, Arousal, Modus). Router-Flags (`needs_memory`, `needs_timeline`) spielen hier keine Rolle mehr, weil der Enricher jetzt vor dem Router läuft — er lädt alles, was später gebraucht werden könnte.
+
+**Output:** State angereichert mit `memory_context`, `session_turns` (vollständige Turn-Dicts, nur Shadow-Impulse gefiltert), `raw_turns` (ungefiltert für EI-Calc), `char_hash_dict` (als Dict für EI-Calc), Nova-Profile aus dem Charakter-Hash.
 
 ---
 
-## 3. Fünf Kontextquellen
+## 3. Vier Kontextquellen
+
+**Hinweis (seit Chat 59):** Der fünfte Abschnitt „Emotionale Intelligenz" wurde entfernt. Alle EI-Berechnungen laufen jetzt im EI-Calc-Node (→ `novaberg-node-ei-calc.md`). Der Enricher übergibt nur noch die Rohdaten (`raw_turns`, `char_hash_dict`) an den State.
+
+
 
 ### 3.1 Session-Kontext (immer, als erstes)
 
@@ -81,62 +91,19 @@ Nur wenn Einträge existieren (Vor-Check zur Kostenoptimierung):
 
 Lädt den Charakter-Hash als String (`charakter_hash_retrieve`) und als Dict (`charakter_hash_retrieve_dict`). Der String fließt in den `memory_context`, das Dict wird für Stilanalyse und Beziehungsprofil verwendet.
 
-### 3.5 Emotionale Intelligenz (immer)
+### 3.5 Rohdaten für den EI-Calc (seit Chat 59)
 
-Vier Berechnungen, alle in Python — kein LLM-Call:
+Der Enricher schreibt zwei Brücken-Felder in den State, die der nachfolgende EI-Calc-Node konsumiert:
 
-**a) Emotions-Verlauf** (`_emotions_verlauf_berechnen`): Logarithmischer Decay über alle User-Turns. Die aktuelle Emotion (aus der Perzeption) wird als virtueller Turn 0 eingefügt — damit ist sie sofort sichtbar, ohne auf die Salienz-Annotation warten zu müssen.
+| Feld | Quelle | Inhalt |
+|------|--------|--------|
+| `raw_turns` | `session_turns_retrieve()` | Ungefilterte Session-Turns (User + Assistant) für Verlauf, Vektor, Stilanalyse |
+| `char_hash_dict` | `charakter_hash_retrieve_dict()` | Charakter-Hash als Dict für Stil-Tiebreaker und Beziehungsprofil |
 
-Formel: `gewicht = 1.0 / (1.0 + DECAY_FACTOR × log_base(1 + position))`
+Die eigentliche Berechnung (Verlauf, Vektor, EI-Arousal, Modus-/Stil-Plausibilität, Nova-Empathie, Beziehungs-Kontext) passiert im EI-Calc-Node.
 
-Konfigurierbar: `EMOTION_DECAY_FACTOR` (0.8), `EMOTION_DECAY_BASE` (10), `EMOTION_MAX_TURNS`, `EMOTION_MIN_WEIGHT`.
-
-Ergebnis: Array `[{emotion: "traurigkeit", gewicht: 1.0, arousal: 0.6}, ...]`, normalisiert (stärkstes = 1.0).
-
-**Kanonisierung (seit Chat 18):** Jede Emotion wird vor der Verlaufsberechnung über `_emotion_kanonisieren()` auf die 16 kanonischen Emotionen gemappt. Synonyme (z.B. `resignation` → `traurigkeit`) werden aufgelöst, unbekannte Emotionen erzeugen einen Error-Log.
-
-**Sektorabhängige Normalisierung (seit Chat 18):** Die uniforme Division (stärkstes = 1.0) wurde durch eine Potenz-Transformation ersetzt. Der Exponent hängt von der Distanz zwischen dem Sektor der dominanten und der jeweiligen Emotion ab (Plutchik-Oktagon). Benachbarte Emotionen werden geschützt (Exponent 0.7), gegenüberliegende verdrängt (Exponent 1.4). Die Exponenten skalieren zusätzlich mit dem Arousal der dominanten Emotion. → Details: novaberg-ei-plutchik.md
-
-**b) Emotions-Vektor** (`_emotions_vektor_bestimmen`): Bestimmt die Richtung des emotionalen Verlaufs durch Vergleich der dominanten Emotions-Gruppe (positiv/negativ/neutral) der älteren und neueren Turns.
-
-| Übergang | Vektor |
-|----------|--------|
-| positiv → negativ | `absturz` |
-| negativ → noch negativer | `spirale` |
-| negativ → neutral | `stabilisierung` |
-| negativ → positiv | `erholung` |
-| neutral → positiv | `aufbluehen` |
-| positiv → noch positiver | `eskalation` |
-| positiv → neutral | `abkuehlung` |
-| neutral → negativ | `einbruch` |
-| stabil | `plateau` |
-
-Spirale und Eskalation werden durch neue, vorher nicht vorhandene Emotionen erkannt (Intensitätsanstieg).
-
-**c) EI-Plausibilitäts-Gate** (seit Chat 16): Validiert `gespraechs_modus` und `sprach_stil` der Perzeption gegen einen berechneten `ei_arousal`. Drei Schritte:
-
-1. **`_ei_arousal_berechnen()`** — Gewichteter Kombinationsfaktor aus Beziehungsdynamik, Intent und Tone. Verstärkt oder dämpft den Roh-Arousal der Perzeption.
-
-2. **`_modus_plausibilitaet()`** — Matrix-Lookup: Wenn die Emotion negativ ist und der EI-Arousal über 0.4 liegt, wird `gespraechs_modus` auf `emotional` erzwungen — egal was die Perzeption sagt. Bei neutraler Emotion wird `emotional` blockiert.
-
-3. **`_stil_plausibilitaet()`** — Prüft den Perzeption-Sprachstil gegen regelbasierte Textmarker. Bei Widerspruch (Perzeption sagt `emotional`, Textmerkmale sagen `neutral`, Emotion ist neutral) gewinnt der regelbasierte Wert.
-
-→ Konfiguration: `config.py` (EI_DYNAMIK_FAKTOREN, EI_INTENT_FAKTOREN, EI_TONE_FAKTOREN, EI_GEWICHTE)
-→ Details: novaberg-node-perception.md, Abschnitt EI-Plausibilitäts-Gate
-
-**d) Beziehungs-Kontext:** Direkt aus dem Charakter-Hash-Dict (`beziehungsprofil`).
-
-### Differenzierte Fenster (seit Chat 16)
-
-Drei separate Fenstergrößen statt eines einzigen `EMOTION_MAX_TURNS`:
-
-| Fenster | Config-Variable | Wert | Zweck |
-|---------|----------------|------|-------|
-| Emotions-Verlauf | `EMOTION_MAX_TURNS` | 100 | Gesamte Session. Arousal-Decay regelt Gewicht. |
-| Vektor-Berechnung | `EMOTION_VEKTOR_TURNS` | 8 | Kurz — erkennt Wendepunkte, nicht Grundstimmung |
-| Sprachstil-Analyse | `STIL_ANALYSE_TURNS` | 5 | Aktuelle Formulierung, ändert sich schnell |
-
-**Begründung:** Der Emotions-Verlauf profitiert von maximaler Tiefe — der arousal-basierte Decay sorgt dafür, dass nur starke Emotionen langfristig Gewicht behalten. Kleine Emotionen verfallen organisch. Der Vektor muss reaktiv sein (Richtungswechsel erkennen), der Sprachstil misst Textmerkmale der letzten Minuten.
+→ Vollständige Beschreibung aller EI-Berechnungen: `novaberg-node-ei-calc.md`
+→ Fensterbreiten (`EMOTION_MAX_TURNS`, `EMOTION_VEKTOR_TURNS`, `STIL_ANALYSE_TURNS`): dort im Detail
 
 ---
 
@@ -148,9 +115,8 @@ Drei separate Fenstergrößen statt eines einzigen `EMOTION_MAX_TURNS`:
 |------|--------|-------------|
 | `user_id` | API | Gedächtnis-Partition |
 | `user_prompt` | API | Für Embedding-Erzeugung |
-| `current_emotion` | Perzeption | Aktuelle Emotion (Turn 0 für EI) |
-| `current_arousal` | Perzeption | Aktueller Arousal-Wert |
-| `sprach_stil` | Perzeption | Bevorzugter Stil (Fallback: regelbasiert) |
+
+Die Perzeptionsergebnisse (`current_emotion`, `current_arousal`, `sprach_stil`) werden vom Enricher nicht mehr gelesen — sie sind Eingang für den EI-Calc-Node.
 
 ### Geschrieben
 
@@ -158,13 +124,10 @@ Drei separate Fenstergrößen statt eines einzigen `EMOTION_MAX_TURNS`:
 |------|-----|-------------|
 | `memory_context` | `str` | Zusammengeführter Kontext aller Quellen |
 | `session_turns` | `list[dict]` | Vollständige Turn-Dicts (nur Shadow-Impulse gefiltert) |
-| `gespraechs_modus` | `str` | Letzter erkannter Modus |
+| `raw_turns` | `list[dict]` | Ungefilterte Session-Turns als Brücke zum EI-Calc (seit Chat 59) |
+| `char_hash_dict` | `dict` | Charakter-Hash als Dict als Brücke zum EI-Calc (seit Chat 59) |
 | `user_intentionen` | `list[str]` | Letzte erkannte Intentionen |
 | `user_emotion` | `str` | Letzte annotierte Emotion |
-| `emotions_verlauf` | `list[dict]` | Gewichteter Verlauf mit Decay |
-| `emotions_vektor` | `str` | Einer der 9 Richtungsvektoren |
-| `sprach_stil` | `str` | Erkannter Sprachstil |
-| `beziehungs_kontext` | `str` | Beziehungsprofil aus Hash |
 | `charakter_anweisungen` | `list[str]` | Aktive Charakter-Anweisungen aus DB (seit Chat 40) |
 | `direktiven` | `list[dict]` | Aktive Verhaltens-Direktiven aus DB (seit Chat 40) |
 | `nova_kern` | `str` | Novas Kern-Hash (user_id="nova", seit Chat 20) |
@@ -173,15 +136,19 @@ Drei separate Fenstergrößen statt eines einzigen `EMOTION_MAX_TURNS`:
 | `nova_intentionen` | `str` | Novas Intentions-Profil (seit Chat 45) |
 | `nova_emotions` | `str` | Novas emotionale Grundstimmung (seit Chat 52) |
 
+**Entfernt (seit Chat 59):** `emotions_verlauf`, `emotions_vektor`, `gespraechs_modus`, `sprach_stil`, `beziehungs_kontext` werden jetzt vom EI-Calc-Node geschrieben.
+
 ---
 
 ## 5. Besonderheiten
 
-**Timing-Bug und Turn 0:** Die Salienz annotiert Session-Turns erst *nach* dem Responder. Das bedeutet: Der Enricher arbeitet immer mit einem Turn Verzögerung. Die Lösung: Die Perzeption liefert die aktuelle Emotion/Arousal, und der Enricher fügt sie als virtuellen Turn 0 in alle EI-Berechnungen ein. So erkennt der Emotions-Vektor Richtungswechsel sofort, nicht erst beim nächsten Turn.
+**Turn 0 — weiterhin relevant (jetzt im EI-Calc):** Der Turn-0-Trick (Perzeptionsergebnis als virtueller neuester Turn) lebt weiter — nur im EI-Calc statt im Enricher. Hintergrund: Die Salienz annotiert Session-Turns erst *nach* dem Responder (und seit Chat 59 asynchron). Deshalb fügt EI-Calc die Perzeptionswerte als Turn 0 in die Verlaufsberechnung ein, damit der Emotions-Vektor Richtungswechsel sofort erkennt.
 
-> **Entdeckt in Chat 8:** Edge Case „Alles scheiße!" nach positiver Phase → Vektor zeigte `stabilisierung` statt `absturz`. Ursache: Aktuelle Emotion war für den Enricher unsichtbar. Fix: Turn 0 aus Perzeption.
+> **Entdeckt in Chat 8:** Edge Case „Alles scheiße!" nach positiver Phase → Vektor zeigte `stabilisierung` statt `absturz`. Ursache: Aktuelle Emotion war für die EI-Berechnung unsichtbar. Fix: Turn 0 aus Perzeption.
 
-**Kein LLM-Call:** Der Enricher ist bewusst LLM-frei. Alle Operationen sind deterministisch: Datenbankabfragen, Embedding-Erzeugung (via Ollama, aber das ist kein generativer Call), Python-Berechnungen. Das macht ihn schnell, reproduzierbar und testbar.
+**Kein LLM-Call:** Der Enricher ist bewusst LLM-frei. Alle Operationen sind deterministisch: Datenbankabfragen, Embedding-Erzeugung (via Ollama, aber das ist kein generativer Call). Das macht ihn schnell, reproduzierbar und testbar.
+
+**Reiner I/O-Node (seit Chat 59):** Keine Python-Berechnungen mehr — alles was rechnet, steht im EI-Calc. Der Enricher lädt. Punkt.
 
 **Plugin-Erweiterbarkeit:** Neue Manager können Kontext liefern ohne den Enricher zu ändern. Der Hook `manager.enrich(state, postgres_url)` ist das einzige Interface.
 
@@ -197,19 +164,11 @@ Drei separate Fenstergrößen statt eines einzigen `EMOTION_MAX_TURNS`:
 
 ---
 
-### Feature-Scoring für Sprachstil (seit Chat 20)
+### Feature-Scoring für Sprachstil (seit Chat 20, jetzt im EI-Calc)
 
-Die regelbasierte Stil-Erkennung (Chat 8) wurde auf Per-Turn Feature-Scoring
-umgebaut. `_turn_features_bewerten()` berechnet pro Turn Scores über 13 Merkmale
-(Satzlänge, Komma-Dichte, Zeichensetzung, Emojis, Slang, Höflichkeit,
-Fachbegriffe, Interjektionen, Ellipsen, Caps, Abkürzungen, Konjunktiv,
-Abwesenheit informeller Marker). Positive UND negative Scores pro Stil.
+Die regelbasierte Stil-Erkennung wurde im Zuge von AP2 (Chat 59) aus dem Enricher entfernt und läuft jetzt im EI-Calc-Node. Die Funktionen `_turn_features_bewerten()`, `_sprach_stil_erkennen()` und `_hash_stil_extrahieren()` leben in `ei/berechnung.py`.
 
-`_sprach_stil_erkennen()` akkumuliert die Turn-Scores über `STIL_ANALYSE_TURNS`.
-Schwelle: < 1.5 → "neutral". Bei Ambiguität (Abstand < 2.0) dient der Hash als
-Tiebreaker via `_hash_stil_extrahieren()`.
-
-Ergebnis: Formell-Erkennung von 3/15 auf 15/15 im Smoking Test.
+→ Details: `novaberg-node-ei-calc.md`
 
 ### Novas eigener Hash (seit Chat 20, erweitert Chat 45, erweitert Chat 52)
 

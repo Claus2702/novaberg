@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Pipeline-Node Salienz (Bewertung & Gedächtnisbildung)
-**Stand:** 17. April 2026, Chat 52 (Code-Alignment)
+**Stand:** 20. April 2026, Chat 59 (asynchrone Ausführung über services/nachbearbeitung.py)
 **Pfad:** novaberg/docs/novaberg-node-salience.md
 **Quellen:** nova-01-m-g.md (Node-Beschreibung), nova-02-t-b.md (Salienz-Technik)
 
@@ -23,10 +23,21 @@ Salienz ist Novas Aufmerksamkeitsfilter — das Äquivalent zur menschlichen Amy
 ## 2. Position im Graph
 
 ```
-... → Tribunal → Evaluate → ok → ▶ Salienz ◀ → Dispatcher → END
+... → Tribunal → Evaluate → ok → END          (sync-Graph-Austritt, seit Chat 59)
+                                  │
+                                  v
+                 (ASYNCHRON, services/nachbearbeitung.py)
+                                  │
+                         ▶ Salienz ◀ → Dispatcher
 ```
 
-**Nach dem Tribunal:** Nur geprüfte und freigegebene Antworten werden für die Gedächtnisbildung bewertet. Verhindert, dass fehlerhafte oder ethisch fragwürdige Inhalte im Gedächtnis landen.
+**Seit Chat 59 asynchron.** Die Salienz ist nicht mehr Teil des sync-HumanGraph — sie läuft im User-Pfad des async-Blocks (`services/nachbearbeitung.py`), nachdem die Antwort an den User ausgeliefert wurde. Der User wartet nicht mehr auf die Gedächtnisbildung.
+
+**Nach dem Tribunal:** Nur geprüfte und freigegebene Antworten werden für die Gedächtnisbildung bewertet — der State, mit dem die Salienz arbeitet, ist der State nach dem ok-Verdikt. Verhindert, dass fehlerhafte oder ethisch fragwürdige Inhalte im Gedächtnis landen.
+
+**GPU, nicht CPU:** Salienz ist ein GPU-LLM-Call (`llm_lock`). Der async-Block erwirbt den Lock nur für den Call, nicht für den ganzen Block — Kontention mit dem nächsten User-Turn bleibt minimal.
+
+→ Details zum Async-Flow: `novaberg-service-nachbearbeitung.md`
 
 ### Salienz als Gedächtnis-Weiche
 

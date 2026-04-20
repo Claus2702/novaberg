@@ -1,6 +1,6 @@
 # Novaberg — Roadmap (Projektchronik)
 
-**Stand:** Chat 56, 19. April 2026
+**Stand:** Chat 59, 20. April 2026
 **Pfad:** novaberg/docs/novaberg-roadmap.md
 **Single Source of Truth für abgeschlossene Arbeit.**
 **Offene Punkte → novaberg-backlog.md**
@@ -273,4 +273,48 @@
 
 ---
 
-*Aktualisiert in Chat 56. Offene Punkte → novaberg-backlog.md. Bugs → novaberg-bugs.md.*
+## Chats 57–58: Docs-Rename, Dual-Emotion, Projektseite (April 2026)
+
+### Docs-Rename + SEARX1 (Chat 57)
+- ✅ SEARX1 geschlossen — transient, Code prüft korrekt `len(results)`
+- ✅ Docs-Rename: 73 Dateien `nova-*.md` → `novaberg-*.md` (636 Änderungen, null Fehler)
+- ✅ Titel, Pfad-Header, Querverweise, Inhaltsstellen aktualisiert
+- ✅ READMEs: Doc-Referenzen auf novaberg-*.md (22 Änderungen)
+- ✅ novaberg-tool-web.md §5: DRY-Prinzip für SearXNG-Nutzung explizit
+
+### Dual-Emotion Phase 1 — User-ID Entkopplung (Chat 57)
+- ✅ `ASSISTANT_USER_ID` + `DEFAULT_USER_ID` als Config-Konstanten
+- ✅ 27 Stellen in 13 Dateien + config.py entkoppelt (4 Kategorien)
+- ✅ SQL-Injection in `services/shadow_agent/utils.py` behoben (Beifang)
+
+### Projektseite — Codeberg Pages (Chat 57)
+- ✅ Akademisches Whitepaper, 13 Kapitel, kausale Erzählstruktur
+- ✅ NB-Monogramm Logo in Oxblood
+- ✅ 3 inhaltliche Review-Durchgänge (Claude Opus), null inhaltliche Fehler
+- ✅ Live: https://ClausVomBerg.codeberg.page/Novaberg/
+
+### Dual-Emotion Phase 2 — Konzept + AP1 (Chat 58)
+- ✅ Konzeptdokument `novaberg-ei-dual-emotion_k.md` (9 Arbeitspakete)
+- ✅ Enricher-Split AP1: 12 EI-Funktionen → `server/ei/berechnung.py`, Enricher nur noch `enrich()`
+- ✅ Dead-Import `STIL_SESSION_GEWICHT` entfernt (Beifang)
+- ✅ Graph-Neuordnung beschlossen: Perzeption → Enricher → EI-Calc → Router (Enricher VOR Router)
+- ✅ Asynchroner Nova-Pfad designed: Perzeption → Enricher → EI-Calc → Router → [Agent] → Salienz → Dispatcher
+- ✅ Projektseite: Sprachwechsel-Symbol eingebaut (DE/EN)
+
+---
+
+## Chat 59 (20. April 2026) — Dual-Emotion Phase 2 Kern + Async-Block
+
+- ✅ **AP2 — EI-Calc-Node:** Neuer reiner Python-Node `graph/nodes/ei_calc.py`. 12 EI-Funktionen aus Enricher übernommen. Position: Enricher → EI-Calc → Router.
+- ✅ **Graph-Umbau — Enricher vor Router:** Kanten umverdrahtet (Perzeption → Enricher → EI-Calc → Router). Conditional Edge `_after_enricher` → `_after_router`. ROUTE-MISS1 strukturell adressiert.
+- ✅ **AP3 — Nova-Empathie:** `_nova_empathie_berechnen()` in `ei/berechnung.py`. Sektor-Distanz → α-Koeffizient. Konflikterkennung. 4 neue Config-Konstanten.
+- ✅ **AP7 — Async-Block:** Salienz + Dispatcher aus HumanGraph entfernt. `services/nachbearbeitung.py` mit ThreadPoolExecutor: User-Pfad (Salienz → Dispatcher) parallel zu Nova-Pfad (Perzeption → Enricher → Annotation).
+- ✅ **AP4 (teilw.) — Perzeption(Nova):** State-Flag `perzeption_rolle`, neuer Prompt `perzeption.assistant_task`. Novas Antwort wird mit eigenem Prompt analysiert.
+- ✅ **AP8 (teilw.) — Nova-Emotion in API:** 5 neue Felder in GespraechAntwort. EI-Calc Stage-Detail zeigt Nova-Emotion.
+- ✅ **Log-Prefix-Fix:** 10 Log-Nachrichten in `ei/berechnung.py` von "Enricher:" auf "EI-Calc:".
+- ✅ **Rolle-Parameter:** `_emotions_verlauf_berechnen()` und `_emotions_vektor_bestimmen()` generisch für User + Nova via `rolle`-Parameter.
+- ✅ **Codeberg-Pages:** Korrekturlesen beider Sprachversionen. 4 Korrekturen in der deutschen Fassung.
+
+---
+
+*Aktualisiert in Chat 59. Offene Punkte → novaberg-backlog.md. Bugs → novaberg-bugs.md.*

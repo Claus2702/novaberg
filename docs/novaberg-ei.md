@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Emotionale Intelligenz (Übersicht)
-**Stand:** 17. April 2026, Chat 52 (Code-Alignment)
+**Stand:** 20. April 2026, Chat 59 (EI-Calc als eigener Node, Nova-Empathie, rolle-Parameter)
 **Pfad:** novaberg/docs/novaberg-ei.md
 **Quellen:** nova-04-k.md (EI-Konzept)
 
@@ -81,7 +81,7 @@ Neun Vektoren beschreiben die emotionale Dynamik eines Gespraechs. Jeder Vektor 
 
 **Spirale vs. Plateau:** Beide haben die gleiche Emotions-Gruppe (negativ → negativ). Der Unterschied: Spirale zeigt *neue* negative Emotionen (Intensitaetsanstieg), Plateau zeigt dieselben (keine Veraenderung). Gleiches gilt fuer Eskalation vs. Plateau bei positiv → positiv.
 
-Der GV-Node berechnet den Vektor als eigener Node im HumanGraph (12 Nodes seit Chat 39). Farbmisch-System, Entity-Hop und Charakter-Linse steuern die Nuancen.
+Der GV-Node berechnet den Vektor als eigener Node im HumanGraph (13 Nodes seit Chat 59 — 11 sync + 2 async). Farbmisch-System, Entity-Hop und Charakter-Linse steuern die Nuancen.
 
 > Detail: novaberg-node-gv_k.md
 
@@ -157,39 +157,44 @@ Die Perzeption klassifiziert die aktuelle Beziehungsdynamik:
 
 ## 9. EI im Pipeline-Flow
 
-Die EI-Berechnung ist vollstaendig deterministisch und in Python implementiert:
+Die EI-Berechnung ist vollstaendig deterministisch und in Python implementiert. Seit Chat 59 laeuft sie in einem eigenen Node `graph/nodes/ei_calc.py` — nicht mehr im Enricher.
 
 ```
 Perzeption (LLM: Emotion + Arousal pro Turn)
-    → produziert: current_emotion, current_arousal, berne_position, modus
+    → produziert: current_emotion, current_arousal, beziehungs_dynamik, modus
     |
     v
-Enricher (Python: berechnet Verlauf, Vektor, Sprachstil, EI-MIKRO)
+Enricher (Python: laedt Daten — reiner I/O)
+    → laedt: session_turns, raw_turns, char_hash_dict, Plugin-Kontext, KZG/LZG
+    |
+    v
+EI-Calc (Python: berechnet Verlauf, Vektor, Stil, Nova-Empathie)
     → berechnet: emotions_verlauf (log decay), emotions_vektor (9 Richtungen),
-      sprach_stil (Feature-Scoring), beziehungs_dynamik
+      sprach_stil (Feature-Scoring), beziehungs_kontext, Modus-/Stil-Plausibilitaet,
+      nova_emotions_verlauf (Decay + Empathie), nova_emotions_vektor, nova_emotion_konflikt
     |
     v
-GV-Node (Python: Gespraechsvektor, Farbmischung, Charakter-Linse)
-    → produziert: gespraechsvektor_block (Laenge aus EI, Farbton aus Vektor)
-    |
-    v
-Responder (LLM: bekommt EI-Ergebnisse als Klartext)
-    → sieht: [KOMMUNIKATION]-Block mit EI-MIKRO (situative Mikro-Anweisung)
+Router → [Planner] → GV-Node → Responder → ...
 ```
 
 Das LLM liefert die Rohdaten (Emotion, Arousal, Beziehungsdynamik pro Turn via Perzeption). Python berechnet Verlauf, Vektor und Stil. Das LLM bekommt die Ergebnisse als Klartext im Responder-Prompt. Schneller, exakter, reproduzierbar.
 
+**Funktions-Standort (seit Chat 58, AP1):** Alle 12 EI-Funktionen leben in `ei/berechnung.py` — extrahiert aus dem Enricher. Der EI-Calc-Node importiert sie. Ein zusaetzliches Paket (`_nova_empathie_berechnen()`) kam in Chat 59 (AP3) hinzu.
+
+**rolle-Parameter:** `_emotions_verlauf_berechnen()` und `_emotions_vektor_bestimmen()` akzeptieren seit Chat 59 einen Parameter `rolle: str = "user"`. Fuer Novas eigenen Bogen wird `rolle="assistant"` uebergeben. Gleiche Funktion, gleicher Decay-Mechanismus — andere Turn-Filterung.
+
 | Dimension | Berechnung | LLM-Call? |
 |-----------|-----------|-----------|
-| Emotions-Verlauf | `_emotions_verlauf_berechnen()` im Enricher | Nein |
-| Emotions-Vektor | `_emotions_vektor_bestimmen()` im Enricher | Nein |
-| Arousal | Float aus Perzeption, Decay im Enricher | Perzeption: Ja, Decay: Nein |
-| Sprachstil | `_sprach_stil_erkennen()` im Enricher | Nein |
-| EI-Plausibilitaets-Gate | `_ei_gate()` im Enricher | Nein |
+| Emotions-Verlauf (User + Nova) | `_emotions_verlauf_berechnen()` im EI-Calc | Nein |
+| Emotions-Vektor (User + Nova) | `_emotions_vektor_bestimmen()` im EI-Calc | Nein |
+| Arousal | Float aus Perzeption, Decay im EI-Calc | Perzeption: Ja, Decay: Nein |
+| Sprachstil | `_sprach_stil_erkennen()` + `_stil_plausibilitaet()` im EI-Calc | Nein |
+| EI-Plausibilitaets-Gate | `_ei_arousal_berechnen()` + `_modus_plausibilitaet()` im EI-Calc | Nein |
+| Nova-Empathie | `_nova_empathie_berechnen()` im EI-Calc | Nein |
 
 ### EI-Plausibilitaets-Gate
 
-Die Perzeption erkennt Emotion und Arousal zuverlaessig, verwechselt aber Inhalt mit Stil. Das EI-Plausibilitaets-Gate im Enricher korrigiert das mit drei Faktor-Tabellen:
+Die Perzeption erkennt Emotion und Arousal zuverlaessig, verwechselt aber Inhalt mit Stil. Das EI-Plausibilitaets-Gate im EI-Calc korrigiert das mit drei Faktor-Tabellen:
 
 - **Beziehungsdynamik-Faktor:** vertrauen=1.0, distanz=0.3, angriff=0.8, hilfesuchend=1.0, dankbar=0.5
 - **Intent-Faktor:** emotionaler_ausdruck=1.0, hilferuf=1.0, information_erfragen=0.3, ...
@@ -197,13 +202,56 @@ Die Perzeption erkennt Emotion und Arousal zuverlaessig, verwechselt aber Inhalt
 
 Ergebnis: `ei_arousal = arousal * dynamik_faktor * intent_faktor * tone_faktor`
 
-Der berechnete `ei_arousal` wird gegen eine 18-Zonen-Matrix geprueft. Alles Python, kein LLM-Call — deterministisch und nachvollziehbar.
+Der berechnete `ei_arousal` wird gegen eine Matrix geprueft. Alles Python, kein LLM-Call — deterministisch und nachvollziehbar.
 
-> Detail: novaberg-node-enricher.md
+> Detail: novaberg-node-ei-calc.md
 
 ---
 
-## 10. Die zwei Achsen: WAS und WIE
+## 10. Nova-Empathie (Dual-Emotion Phase 2, Chat 59)
+
+Seit Chat 59 hat Nova einen eigenen Emotionsstrang. Der EI-Calc berechnet pro Turn zwei Kraefte, die auf Novas Position im Plutchik-Raum wirken:
+
+### 10.1 Kraft 1 — Eigener Decay
+
+`_emotions_verlauf_berechnen(nova_turns, rolle="assistant")` wendet den gleichen logarithmischen Decay auf Novas annotierte Session-Turns an. Der `rolle`-Parameter filtert Turns auf `rolle="assistant"`.
+
+### 10.2 Kraft 2 — Asymmetrische Empathie
+
+`_nova_empathie_berechnen(nova_verlauf_basis, current_emotion, current_arousal)` moduliert Novas Zustand durch die Emotion des Users. Der Empathie-Koeffizient α haengt von der Sektor-Distanz im Plutchik-Oktagon ab:
+
+| Distanz | α | Effekt |
+|---------|-----|--------|
+| 0 (gleicher Sektor) | 0.10 | Leichte Bestaetigung |
+| 1 (benachbart) | 0.15 | Geringe Modulation |
+| 2 (nah-diagonal) | 0.35 | Spuerbare Modulation |
+| 3 (fern-diagonal) | 0.70 | Empathie dominiert |
+| 4 (gegenueberliegend) | 0.85 | Empathie ueberschreibt |
+
+Ist Novas eigene Emotion neutral (kein Sektor bestimmbar), gilt `EMPATHIE_ALPHA_NEUTRAL = 0.30`.
+
+### 10.3 Konflikt-Erkennung
+
+Wenn Nova und User in gegenueberliegenden Sektoren sind UND beide mindestens `EMPATHIE_KONFLIKT_MIN_AROUSAL = 0.4` Arousal haben, setzt EI-Calc `nova_emotion_konflikt = True`. Beispiel: "Ich freue mich fuer dich, und gleichzeitig mache ich mir Sorgen."
+
+**Config-Konstanten (alle in `config.py`, Chat 59):**
+
+| Konstante | Wert | Zweck |
+|-----------|------|-------|
+| `EMPATHIE_ALPHA` | `{0:0.10, 1:0.15, 2:0.35, 3:0.70, 4:0.85}` | α pro Sektor-Distanz |
+| `EMPATHIE_ALPHA_NEUTRAL` | `0.30` | α bei neutraler Nova-Emotion |
+| `EMPATHIE_KONFLIKT_DISTANZ` | `3` | Ab welcher Distanz Konflikt geprueft wird |
+| `EMPATHIE_KONFLIKT_MIN_AROUSAL` | `0.4` | Mindest-Arousal fuer Konflikt-Flag |
+
+### 10.4 Kein Decay im Async-Pfad
+
+Novas Antwort wird im async-Pfad (`services/nachbearbeitung.py`) per Perzeption analysiert und mit Emotion + Arousal in den Session-Turn annotiert — genau wie beim User. **Kein Decay beim Speichern.** Der Decay laeuft beim Lesen im synchronen EI-Calc des naechsten Turns. Eine Berechnung, nicht zwei.
+
+> Detail: novaberg-ei-dual-emotion_k.md (Konzept), novaberg-node-ei-calc.md (Implementierung), novaberg-service-nachbearbeitung.md (async-Pfad)
+
+---
+
+## 11. Die zwei Achsen: WAS und WIE
 
 EI-MIKRO und Kommunikations-Profil sind zwei unabhaengige Achsen:
 

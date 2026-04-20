@@ -24,7 +24,7 @@ from services.llm_provider import get_chat_provider
 logger = logging.getLogger("ki_server.perzeption")
 
 
-def _build_system_prompt(today: str, session_turns: str | None = None) -> str:
+def _build_system_prompt(today: str, session_turns: str | None = None, rolle: str = "user") -> str:
     """Baut den Perzeption-System-Prompt aus [BLOCKNAME]-Bloecken zusammen.
 
     Reihenfolge nach Primacy/Recency (nova-01-t-d):
@@ -32,9 +32,11 @@ def _build_system_prompt(today: str, session_turns: str | None = None) -> str:
     MITTE:  [KONTEXT] (nur wenn Session-Turns vorhanden)
     UNTEN:  [REGELN] (direkt vor der User-Message)
     """
+    task_key: str = "perzeption.task" if rolle == "user" else "perzeption.assistant_task"
+
     bloecke: list[str] = [
         PROMPTS["perzeption.identity"].format(today=today),
-        PROMPTS["perzeption.task"],
+        PROMPTS[task_key],
     ]
 
     if session_turns:
@@ -56,7 +58,12 @@ def perceive(
 ) -> ConversationState:
     """Analysiert den User-Prompt auf rationaler, emotionaler und psychologischer Ebene."""
 
-    logger.info(f"Perzeption: Analysiere Prompt ({len(state['user_prompt'])} Zeichen)")
+    rolle: str = state.get("perzeption_rolle", "user")
+
+    if rolle == "assistant":
+        logger.info(f"Perzeption: Analysiere Assistant-Antwort ({len(state['user_prompt'])} Zeichen)")
+    else:
+        logger.info(f"Perzeption: Analysiere Prompt ({len(state['user_prompt'])} Zeichen)")
 
     today: str = datetime.now().strftime("%d.%m.%Y, %H:%M Uhr")
 
@@ -72,7 +79,7 @@ def perceive(
         except Exception as e:
             logger.warning(f"Perzeption: Session-Kontext konnte nicht geladen werden: {e}")
 
-    system_prompt: str = _build_system_prompt(today, session_turns)
+    system_prompt: str = _build_system_prompt(today, session_turns, rolle=rolle)
 
     logger.info(f"Perzeption: System-Prompt:\n{system_prompt}")
 

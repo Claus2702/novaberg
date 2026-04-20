@@ -35,6 +35,7 @@ class ConversationState(TypedDict):
     temperature:   float
 
     # ── Perzeption ──────────────────────────
+    perzeption_rolle:     str     # "user" (Default) oder "assistant"
     intent:               str     # smalltalk | knowledge | personal | task | creative | meta
     tone:                 str     # empathisch | sachlich | kreativ | direkt
     prompt_thema:         str     # Kurzbeschreibung des Themas (2-5 Worte)
@@ -61,12 +62,19 @@ class ConversationState(TypedDict):
     gespraechs_modus:  str    # Aktueller Modus aus letzten Turns
     user_intentionen:  list   # Intentionen des aktuellen Turns
     user_emotion:      str    # Emotion des aktuellen Turns
+    raw_turns:         list[dict]    # Ungefilterte Session-Turns (für EI-Calc)
+    char_hash_dict:    dict          # Charakter-Hash als Dict (für EI-Calc)
 
     # Emotionale Intelligenz (Enricher → Responder)
     emotions_verlauf:     list    # [{emotion: str, gewicht: float}, ...] — gewichtetes Array
     emotions_vektor:      str     # Richtung: "absturz", "spirale", "erholung", etc.
     sprach_stil:          str     # Erkannter Sprachstil ("locker", "formell", "fachlich", "emotional", "jugendlich")
     beziehungs_kontext:   str     # Beziehungsprofil-Text aus dem Charakter-Hash
+
+    # Nova-Emotion (Dual-Emotion Phase 2 — EI-Calc → Responder)
+    nova_emotions_verlauf:  list[dict]   # Novas gewichteter Emotions-Verlauf (mit Empathie)
+    nova_emotions_vektor:   str          # Novas Emotions-Vektor (Richtung)
+    nova_emotion_konflikt:  bool         # Empathie-Vektor vs. eigener Zustand
 
     # Novas eigener Charakter (Enricher → Responder)
     nova_kern:            str     # Novas gewachsene Persönlichkeit (kern_hash der Assistentin, ASSISTANT_USER_ID)

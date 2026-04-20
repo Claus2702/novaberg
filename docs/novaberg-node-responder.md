@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Node-Referenz Responder
-**Stand:** 18. April 2026, Chat 54 (HALL2-Fix: task_block-Konsum statt Business-Logik)
+**Stand:** 20. April 2026, Chat 59 (EI-Quellen aus EI-Calc statt Enricher; Nova-Emotion-Felder verfügbar)
 **Pfad:** novaberg/docs/novaberg-node-responder.md
 **Quellen:** nova-01-m-e.md, nova-12-k.md §7
 **Datei:** `graph/nodes/responder.py`
@@ -18,8 +18,10 @@ Der Responder generiert Novas Antwort. Er ist der einzige Node, der alles sieht 
 ## 2. Position im Graph
 
 ```
-Enricher → [Planner] → ▶ Responder ◀ → Thinker → Tribunal → ...
+Enricher → EI-Calc → Router → [Planner] → GV-Node → ▶ Responder ◀ → Thinker → Tribunal → ...
 ```
+
+Seit Chat 59 sind Enricher, EI-Calc und Router dem Responder zeitlich vorgelagert — der Responder sieht den bereits berechneten EI-Zustand.
 
 ---
 
@@ -309,13 +311,16 @@ Ich bin so hyped gerade, das ist nicht real!
 | `memory_context` | Enricher | Gedächtnis-Kontext |
 | `web_context` | (Platzhalter) | Web-Kontext. Aktuell werden Web-Informationen über den Thinker eingearbeitet (SearXNG, seit Chat 12/15). |
 | `session_turns` | Enricher | Vollständige Turn-Dicts aus Redis (alle Felder, nur Shadow-Impulse gefiltert) |
-| `emotions_verlauf` | Enricher | Gewichteter Emotions-Verlauf |
-| `emotions_vektor` | Enricher | Richtungsvektor |
-| `sprach_stil` | Enricher/Perzeption | Erkannter Formulierungsstil |
-| `beziehungs_kontext` | Enricher | Langzeit-Beziehungsprofil |
+| `emotions_verlauf` | EI-Calc (seit Chat 59) | Gewichteter Emotions-Verlauf |
+| `emotions_vektor` | EI-Calc (seit Chat 59) | Richtungsvektor |
+| `sprach_stil` | EI-Calc (seit Chat 59) | Erkannter Formulierungsstil (Plausibilitäts-Gegencheck zur Perzeption) |
+| `beziehungs_kontext` | EI-Calc (seit Chat 59) | Langzeit-Beziehungsprofil aus Charakter-Hash |
 | `beziehungs_dynamik` | Perzeption | Aktuelle Dynamik |
-| `gespraechs_modus` | Perzeption/Enricher | Kommunikationsregister |
+| `gespraechs_modus` | EI-Calc (seit Chat 59, korrigiert Perzeption) | Kommunikationsregister |
 | `user_intentionen` | Enricher | Erkannte Intentionen |
+| `nova_emotions_verlauf` | EI-Calc (seit Chat 59) | Novas eigener Emotions-Verlauf nach Empathie-Modulation — Quelle für zukünftigen `[EIGENE_EMOTION]`-Block |
+| `nova_emotions_vektor` | EI-Calc (seit Chat 59) | Richtung von Novas eigenem Bogen |
+| `nova_emotion_konflikt` | EI-Calc (seit Chat 59) | True wenn Nova und User in gegenüberliegenden Sektoren mit hohem Arousal — Signal für Responder, Inkongruenz explizit zu machen |
 | `task_block` | Planner (seit Chat 54) | Fertiger [AUFGABE]-Block, direkt einsetzbar |
 | `task_context_cut` | Planner (seit Chat 54) | Kontext-Schnitt-Flag (ersetzt `hat_agent_erfolg`) |
 | `agent_results` | Agent-Dispatch | Liste aller Agent-Ergebnisse (nur noch für VENT1-Delegations-Beruhigung gelesen) |
@@ -369,7 +374,8 @@ Der Responder ist der einzige Node, der bewusst den vollen Kontext bekommt. Das 
 
 ---
 
-→ Enricher (liefert Kontext): novaberg-node-enricher.md
+→ Enricher (liefert Gedächtnis-Kontext, Nova-Profile): novaberg-node-enricher.md
+→ EI-Calc (liefert Emotions-Verlauf, Vektor, Stil, Modus, Nova-Emotion): novaberg-node-ei-calc.md
 → Planner (liefert Management-Ergebnis): novaberg-node-planner.md
 → Tribunal (bewertet die Antwort): novaberg-node-tribunal.md
 → Emotionale Intelligenz: novaberg-ei.md, novaberg-node-perception.md

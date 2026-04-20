@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Systemarchitektur, Tech-Stack, Plugin-System
-**Stand:** 19. April 2026, Chat 56
+**Stand:** 20. April 2026, Chat 59 (EI-Calc-Node, Async-Block, 13 Nodes)
 **Pfad:** novaberg/docs/novaberg-architecture.md
 **Quellen:** nova-00-a.md (Architektur-Übersicht), nova-07-a.md (Tech-Stack), nova-07-m-a.md (Plugin-System)
 
@@ -189,15 +189,16 @@ project/
 │   │   ├── builder.py                   #   Fassade, Plugin-Init
 │   │   ├── state.py                     #   State-Definition, PendingWrite
 │   │   ├── memory.py                    #   Graph-Checkpoint-Memory
-│   │   └── nodes/                       #   12 Graph-Nodes
+│   │   └── nodes/                       #   13 Graph-Nodes (11 sync + 2 async)
 │   │       ├── perzeption.py            #     → novaberg-node-perception.md
-│   │       ├── router.py                #     → novaberg-node-router.md
 │   │       ├── enricher.py              #     → novaberg-node-enricher.md
+│   │       ├── ei_calc.py               #     → novaberg-node-ei-calc.md (seit Chat 59)
+│   │       ├── router.py                #     → novaberg-node-router.md
 │   │       ├── planner.py               #     → novaberg-node-planner.md
 │   │       ├── responder.py             #     → novaberg-node-responder.md
 │   │       ├── thinker.py               #     → novaberg-node-thinker.md
-│   │       ├── salience.py              #     → novaberg-node-salience.md
-│   │       ├── dispatcher.py            #     → novaberg-node-dispatcher.md
+│   │       ├── salience.py              #     → novaberg-node-salience.md (async, seit Chat 59)
+│   │       ├── dispatcher.py            #     → novaberg-node-dispatcher.md (async, seit Chat 59)
 │   │       ├── tribunal.py              #     → novaberg-node-tribunal.md
 │   │       ├── corrector.py             #     → novaberg-node-corrector.md
 │   │       ├── agent_dispatch.py        #     Agent-Dispatch (Epic 11)
@@ -251,6 +252,7 @@ project/
 │   │
 │   └── services/                        # Dienste
 │       ├── llm_provider.py             #   → novaberg-tool-llm-abstraction.md
+│       ├── nachbearbeitung.py           #   → novaberg-service-nachbearbeitung.md (seit Chat 59)
 │       ├── shadow_delivery.py           #   Pixie -> Chat-Einspeisung
 │       ├── shadow_agent/                #   Alter Pixie-Runner (wird bei PIX-CLEAN entfernt)
 │       └── pixie/                       #   Neues Pixie-System (Chat 33+)
@@ -396,7 +398,10 @@ Perzeption und Router bekommen die letzten 5 Session-Turns als Hintergrund-Konte
 
 | Feature | Status | Referenz |
 |---------|--------|----------|
-| Graph-Pipeline (HumanGraph, 12 Nodes) | Implementiert & getestet | novaberg-graph.md, nova-node-*.md |
+| Graph-Pipeline (HumanGraph, 13 Nodes: 11 sync + 2 async) | Implementiert & getestet | novaberg-graph.md, nova-node-*.md |
+| Async-Block (Salienz + Dispatcher + Nova-Pfad) | Implementiert & validiert | novaberg-service-nachbearbeitung.md |
+| EI-Calc-Node (reine Python-Berechnung, Dual-Modus User + Nova) | Implementiert & validiert | novaberg-node-ei-calc.md |
+| Dual-Emotion Phase 2 (Nova-Empathie, Konflikt-Erkennung) | Implementiert (AP1–3, AP7, AP4 teilw., AP8 teilw.) | novaberg-ei-dual-emotion_k.md |
 | Graph-Pipeline (AgentGraph, 3 Nodes) | Implementiert & getestet | novaberg-graph.md, novaberg-pixie.md |
 | Kurzzeitgedaechtnis (Redis + Vektor) | Implementiert & getestet | novaberg-mem-kzg.md |
 | Langzeitgedaechtnis (PostgreSQL) | Implementiert & getestet | novaberg-mem-lzg.md |
@@ -474,13 +479,14 @@ Das Handbuch ist nach Betrachtungstiefen organisiert. Tiefe 0 ist der Einstiegsp
 | novaberg-ei.md | Emotionale Intelligenz Ueberblick |
 | novaberg-pixie.md | Pixie-System, Scheduling, Queue/Stack/Delivery |
 
-### Tiefe 2 — Pipeline-Nodes (12)
+### Tiefe 2 — Pipeline-Nodes (13)
 
 | Dokument | Beschreibung |
 |----------|-------------|
-| novaberg-node-perception.md | Perzeption (Emotion, Arousal, Intent, Plutchik-Oktagon) |
+| novaberg-node-perception.md | Perzeption (Emotion, Arousal, Intent, Plutchik-Oktagon, Dual-Modus User/Nova) |
+| novaberg-node-enricher.md | Enricher (Kontext-Laden, Plugin-Hooks, reines I/O) |
+| novaberg-node-ei-calc.md | EI-Calc (Python-Berechnung: Verlauf, Vektor, Nova-Empathie, kein LLM) |
 | novaberg-node-router.md | Router (Routing, Agenten-Delegation) |
-| novaberg-node-enricher.md | Enricher (Kontext, EI-Gate, Charakter-Hash) |
 | novaberg-node-planner.md | Planner (Agent-Loop, Resume-Flow) |
 | novaberg-node-agent-dispatch.md | Agent-Dispatch (Zentraler Entry-Point) |
 | novaberg-node-gv_k.md | Gespraechsvektor (Farbmisch-System, Entity-Hop) |
@@ -488,8 +494,9 @@ Das Handbuch ist nach Betrachtungstiefen organisiert. Tiefe 0 ist der Einstiegsp
 | novaberg-node-thinker.md | Thinker (Faktenpruefung, Web-Suche) |
 | novaberg-node-tribunal.md | Tribunal (Drei-Perspektiven-Bewertung, Score-System) |
 | novaberg-node-corrector.md | Corrector (Korrekturschleife) |
-| novaberg-node-salience.md | Salienz (Bewertung, pending_writes, Segmentierung) |
-| novaberg-node-dispatcher.md | Dispatcher (Schreiboperationen verteilen) |
+| novaberg-node-salience.md | Salienz (Bewertung, pending_writes — asynchron seit Chat 59) |
+| novaberg-node-dispatcher.md | Dispatcher (Schreiboperationen verteilen — asynchron seit Chat 59) |
+| novaberg-service-nachbearbeitung.md | Async-Service (User-Pfad + Nova-Pfad parallel nach Antwort-Auslieferung) |
 
 ### Tiefe 2 — User-Agenten (4)
 

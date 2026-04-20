@@ -33,6 +33,13 @@ class GespraechAntwort(BaseModel):
     sprach_stil:      str            = ""
     beziehungs_dynamik: str          = ""
 
+    # Nova-Emotion (Dual-Emotion Phase 2)
+    nova_emotion:           str        = ""
+    nova_arousal:           float      = 0.0
+    nova_emotions_verlauf:  list[dict] = []
+    nova_emotions_vektor:   str        = ""
+    nova_emotion_konflikt:  bool       = False
+
     # Perzeption & Routing
     intent:           str            = ""
     tone:             str            = ""

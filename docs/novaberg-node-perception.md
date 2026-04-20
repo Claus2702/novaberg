@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Pipeline-Node Perzeption (Emotionale + rationale Analyse)
-**Stand:** 17. April 2026, Chat 52 (Code-Alignment)
+**Stand:** 20. April 2026, Chat 59 (Dual-Modus: User- und Assistant-Prompt via `perzeption_rolle`-Flag)
 **Pfad:** novaberg/docs/novaberg-node-perception.md
 **Quellen:** nova-01-m-a.md (Node-Beschreibung), nova-04-m-a.md (Emotions-Vektoren, Plutchik-Details)
 
@@ -10,17 +10,21 @@
 
 ## 1. Aufgabe
 
-Die Perzeption ist Novas Wahrnehmungsapparat — der erste Node im HumanGraph. Sie analysiert den eingehenden User-Prompt auf drei Ebenen und liefert ein vollständiges Bild, auf dessen Basis alle nachfolgenden Nodes arbeiten. Sie trifft keine Entscheidungen und steuert keine Pfade — sie nimmt wahr und klassifiziert.
+Die Perzeption ist Novas Wahrnehmungsapparat — der erste Node im HumanGraph. Sie analysiert Eingaben auf drei Ebenen und liefert ein vollständiges Bild, auf dessen Basis alle nachfolgenden Nodes arbeiten. Sie trifft keine Entscheidungen und steuert keine Pfade — sie nimmt wahr und klassifiziert.
+
+**Dual-Modus (seit Chat 59):** Dieselbe Funktion analysiert wahlweise einen User-Prompt (sync-Graph) oder Novas eigene Antwort (async-Pfad). Das State-Feld `perzeption_rolle` schaltet zwischen beiden Modi um — gleiche JSON-Ausgabestruktur, anderer Fokus.
 
 ---
 
 ## 2. Position im Graph
 
 ```
-▶ Perzeption ◀ → Router → Enricher → ...
+▶ Perzeption ◀ → Enricher → EI-Calc → Router → ...
 ```
 
-**Entry-Point** des HumanGraph. Sieht den rohen User-Prompt und den Session-Kontext (letzte 5 Turns aus Redis). Kein KZG, kein LZG, kein Charakter-Hash.
+**Entry-Point** des HumanGraph (seit Chat 59 unmittelbar vor dem Enricher — die alte Reihenfolge war Perzeption → Router → Enricher). Sieht den rohen User-Prompt und den Session-Kontext (letzte 5 Turns aus Redis). Kein KZG, kein LZG, kein Charakter-Hash.
+
+**Zweiter Einsatzort (seit Chat 59):** Der async-Pfad `services/nachbearbeitung.py` ruft denselben Node mit `perzeption_rolle="assistant"` auf, um Novas Antwort zu analysieren. → `novaberg-service-nachbearbeitung.md`
 
 ---
 
@@ -86,15 +90,17 @@ Die Perzeption ist Novas Wahrnehmungsapparat — der erste Node im HumanGraph. S
 
 ### 4.1 System-Prompt
 
-Zusammengebaut in `_build_system_prompt()` aus drei `[BLOCKNAME]`-Bausteinen (Prompt-Segregation seit Chat 46):
+Zusammengebaut in `_build_system_prompt(today, session_turns, rolle)` aus drei `[BLOCKNAME]`-Bausteinen (Prompt-Segregation seit Chat 46). Der `[AUFGABE]`-Block wird seit Chat 59 abhängig von der Rolle geladen:
 
-| Block | Datei | Rolle |
-|-------|-------|-------|
-| `[IDENTITAET]` | `prompts/default/perzeption.identity.txt` | Rollendefinition + aktuelles Datum (`{today}`, Format `dd.mm.YYYY, HH:MM Uhr`) |
-| `[AUFGABE]` | `prompts/default/perzeption.task.txt` | JSON-Format-Vorgabe + Wertedefinitionen für alle drei Ebenen |
-| `[REGELN]` | `prompts/default/perzeption.rules.txt` | „Analysiere NUR den aktuellen Prompt, nicht die Gespraechsverlaeufe." + „Antworte AUSSCHLIESSLICH auf Deutsch und im JSON-Format." |
+| Block | Datei (rolle="user") | Datei (rolle="assistant") | Rolle |
+|-------|----------------------|---------------------------|-------|
+| `[IDENTITAET]` | `prompts/default/perzeption.identity.txt` | (identisch) | Rollendefinition + aktuelles Datum |
+| `[AUFGABE]` | `prompts/default/perzeption.task.txt` | `prompts/default/perzeption.assistant_task.txt` | JSON-Format + Wertedefinitionen; Fokus „Nutzer" vs. „Assistentin" |
+| `[REGELN]` | `prompts/default/perzeption.rules.txt` | (identisch) | „Analysiere NUR den aktuellen Prompt" + JSON-Ausgabe |
 
 Reihenfolge nach Primacy/Recency: `[IDENTITAET]` → `[AUFGABE]` → (optional `[KONTEXT]`) → `[REGELN]` direkt vor der User-Message.
+
+**Gemma4-Override:** `prompts/gemma4/perzeption.rules.txt` existiert. Die Task-Blöcke haben keinen Connector-Override — ein Prompt gilt für alle Connectoren.
 
 ### 4.2 Session-Kontext (seit Chat 23)
 
@@ -142,15 +148,16 @@ Der rohe `user_prompt` als einzige User-Message — ohne Vorverarbeitung.
 
 | Feld | Quelle | Beschreibung |
 |------|--------|-------------|
-| `user_prompt` | API | Der rohe User-Input |
+| `user_prompt` | API / async-Pfad | Der zu analysierende Text (User-Prompt oder Novas Antwort) |
 | `user_id` | API | User-ID für Redis-Session-Lookup |
+| `perzeption_rolle` | create_state (`"user"`) / Nachbearbeitung (`"assistant"`) | Schaltet zwischen Task-Prompts um (seit Chat 59) |
 
 ### Geschrieben
 
 | Feld | Typ | Beschreibung |
 |------|-----|-------------|
 | `intent` | `str` | Kommunikationsabsicht |
-| `tone` | `str` | Gewünschter Antwort-Ton |
+| `tone` | `str` | Gewünschter Antwort-Ton (User-Modus) / Ton der Antwort (Assistant-Modus) |
 | `prompt_thema` | `str` | Thematischer Kern |
 | `current_emotion` | `str` | Dominante Emotion |
 | `current_arousal` | `float` | Energie-Intensität (0.0–1.0) |
@@ -196,6 +203,22 @@ Die Perzeption liefert die aktuelle Emotion und Arousal als „Turn 0" an den En
 ### Zukunft: Klassifizierungs-Tribunal
 
 Langfristig sollen die drei Ebenen in drei parallele Nodes aufgeteilt werden — analog zum Tribunal für die Bewertung. Das braucht Hardware-Headroom und steht auf der Roadmap.
+
+### Dual-Modus: User-Prompt vs. Assistant-Antwort (seit Chat 59)
+
+Die Perzeption wird zweimal pro Turn aufgerufen — einmal synchron auf den User-Prompt, einmal asynchron auf Novas Antwort. Statt zwei Nodes mit duplizierter JSON-Parsing-Logik schaltet ein Flag im State zwischen zwei Task-Prompts um:
+
+| `perzeption_rolle` | Aufgerufen von | Task-Prompt | Fokus |
+|--------------------|----------------|-------------|-------|
+| `"user"` (Default) | HumanGraph sync | `perzeption.task` | „Analysiere den Prompt des Nutzers" |
+| `"assistant"` | `services/nachbearbeitung.py` async | `perzeption.assistant_task` | „Analysiere die folgende Antwort der Assistentin" |
+
+Die JSON-Ausgabestruktur ist in beiden Modi identisch (rational, emotional, psychologisch). Der Assistant-Modus interpretiert die Felder bezogen auf Novas Formulierung — Modus, Stil, Beziehungsdynamik beschreiben den Ton **ihrer** Antwort, nicht den des Users.
+
+> **Warum ein Flag statt zwei Nodes?** Derselbe JSON-Parser, dieselbe Fallback-Logik, dieselbe Kanonisierung. Nur der Auftrag am LLM ändert sich. Generalisierung mit Flag statt Duplizierung — bewusst umgekehrt zum „Spezialisierung schlägt Generalisierung"-Prinzip (Pixie), weil hier die Fachlichkeit identisch ist.
+
+→ Async-Pfad: `novaberg-service-nachbearbeitung.md`
+→ EI-Calc nutzt die Assistant-Ergebnisse im nächsten Turn: `novaberg-node-ei-calc.md`
 
 ---
 

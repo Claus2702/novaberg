@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Graph-Architektur, HumanGraph, AgentGraph, Agent-System
-**Stand:** 18. April 2026, Chat 54 (task_block/task_context_cut)
+**Stand:** 20. April 2026, Chat 59 (Enricher vor Router, EI-Calc-Node, Salienz+Dispatcher async)
 **Pfad:** novaberg/docs/novaberg-graph.md
 **Quellen:** nova-01-k.md (Graph-Konzept), nova-01-a.md (Graph-Architektur), nova-11-k.md (Agent-Workflow-Konzept), nova-11-a.md (Agent-Architektur)
 
@@ -41,7 +41,7 @@ Warum nicht pragmatisch / kritisch / empathisch? Das Konzept (Chat 1) war bewuss
 ```
 2x ablehnen  -> ablehnen -> Corrector
 2x warnung   -> warnung  -> Corrector
-sonst        -> ok       -> weiter zu Salienz
+sonst        -> ok       -> END (Salienz laeuft asynchron, seit Chat 59)
 ```
 
 Maximale Korrektur-Iterationen: 2. Danach Fallback (neutrale Antwort). Das verhindert endlose Schleifen bei unlosbaren Konflikten zwischen Perspektiven.
@@ -72,7 +72,7 @@ Psychologe und Ethiker: Einfacher Score (0.0-1.0), Schwellwerte 0.7/0.9. Keine D
 
 ---
 
-## 3. HumanGraph — 12-Node Chat-Pipeline
+## 3. HumanGraph — 13-Node Chat-Pipeline (11 synchron + 2 asynchron)
 
 ### 3.1 Kanten-Diagramm
 
@@ -80,74 +80,109 @@ Psychologe und Ethiker: Einfacher Score (0.0-1.0), Schwellwerte 0.7/0.9. Keine D
 Perzeption
     |
     v
-Router
+Enricher
     |
     v
-Enricher -----------------------------------------+
-    |                                             |
-    +-- management_action != "" ODER              |
-    |   agent_name gesetzt?                       |
-    |   +-- ja -> Planner ----------------+       |
-    |              |                      |       |
-    |              +-- agent_name? -------+       |
-    |              |   +-- ja -> Agent-Dispatch    |
-    |              |         |                    |
-    |              |         +-- -> Planner       |
-    |              |              (Schleife)      |
-    |              |                              |
-    |              +-- kein Agent -> --+          |
-    |                                 |          |
-    v                                 v          |
-GV-Node <-----------------------------+          |
-    |                                             |
-    v                                             |
-Responder                                         |
-    |                                             |
-    v                                             |
-Thinker                                           |
-    |                                             |
-    v                                             |
-Tribunal --> Evaluate                             |
-                |                                 |
-                +-- ok --> Salienz --> Dispatcher --> END
+EI-Calc                                              (seit Chat 59)
+    |
+    v
+Router --------------------------------------+
+    |                                        |
+    +-- management_action != "" gesetzt?     |
+    |   +-- ja -> Planner ---------------+   |
+    |              |                     |   |
+    |              +-- agent_name? ------+   |
+    |              |   +-- ja -> Agent-Dispatch
+    |              |         |               |
+    |              |         +-- -> Planner  |
+    |              |              (Schleife) |
+    |              |                         |
+    |              +-- kein Agent -> -+      |
+    |                                 |      |
+    v                                 v      |
+GV-Node <-----------------------------+      |
+    |                                        |
+    v                                        |
+Responder                                    |
+    |                                        |
+    v                                        |
+Thinker                                      |
+    |                                        |
+    v                                        |
+Tribunal --> Evaluate                        |
+                |                            |
+                +-- ok --> END  (sync-Graph-Austritt, seit Chat 59)
                 |
                 +-- ablehnen --> Corrector --> Tribunal
                                    (max 2 Iterationen)
+
+                                    |
+                                    v
+              (ASYNCHRON, services/nachbearbeitung.py)
+                                    |
+       +----------------------------+----------------------------+
+       |                                                         |
+User-Pfad (GPU, llm_lock pro Call)          Nova-Pfad (GPU, llm_lock pro Call)
+       |                                                         |
+Salienz --> Dispatcher                  Perzeption(Nova) --> Enricher(Nova)
+                                                                  |
+                                                                  v
+                                                     Session-Turn annotieren
 ```
 
 **Entry-Point:** Perzeption.
+**Graph-Austritt:** Tribunal/Corrector → END. Salienz und Dispatcher sind **nicht mehr** Teil des Graphen — sie laufen asynchron nach der Antwort-Auslieferung (Chat 59, AP7).
 
-### 3.2 Alle 12 Nodes
+### 3.2 Alle 13 Nodes (11 synchron + 2 asynchron)
 
-| Node | Datei | LLM-Call? | Aufgabe |
-|------|-------|-----------|---------|
-| Perzeption | `nodes/perzeption.py` | GPU | Analysiert Prompt: rational (Intent, Thema), emotional (Emotion, Arousal), psychologisch (Modus, Berne) |
-| Router | `nodes/router.py` | GPU | Routing-Entscheidungen: Brauche ich Gedaechtnis? Web-Suche? Management-Aktion? |
-| Enricher | `nodes/enricher.py` | Nein | Laedt Gedaechtnis-Kontext (KZG, LZG, Fakten, Timeline, Notizen). Plugin-Hooks. |
-| Planner | `nodes/planner.py` | GPU | Nur bei Management-Aktionen. Findet Agent, plant Aktion, erzeugt pending_writes. |
-| Agent-Dispatch | `nodes/agent_dispatch.py` | Nein | Delegiert an agenten-spezifischen Dispatch. Generischer Router. |
-| GV-Node | `nodes/gespraechsvektor.py` | GPU | Gespraechsvektor destillieren (natuerlichsprachliche Hypothese fuer Responder). |
-| Responder | `nodes/responder.py` | GPU | Generiert die Antwort. Sieht alles: Gedaechtnis, EI-Profil, Direktiven. |
-| Thinker | `nodes/thinker.py` | GPU | Faktencheck gegen DB. Timeline-Check, Wissens-Abgleich. |
-| Tribunal | `nodes/tribunal.py` | GPU (3x) | Multi-Perspektiven-Pruefung (Jurist, Psychologe, Ethiker). Score-System. |
-| Corrector | `nodes/corrector.py` | GPU | Ueberarbeitet abgelehnte Antworten unter Tribunal-Feedback. Max 2 Iterationen. |
-| Salienz | `nodes/salience.py` | GPU | Bewertet: Was ist speicherwuerdig? Schreibt pending_writes. |
-| Dispatcher | `nodes/dispatcher.py` | Nein | Verteilt pending_writes an zustaendige Manager-Plugins. |
+| # | Node | Datei | LLM? | Modus | Aufgabe |
+|---|------|-------|------|-------|---------|
+| 1 | Perzeption | `nodes/perzeption.py` | GPU | sync | Analysiert Prompt: rational (Intent, Thema), emotional (Emotion, Arousal), psychologisch (Modus, Beziehungsdynamik). Rolle-Flag `perzeption_rolle` (User oder Assistant, seit Chat 59). |
+| 2 | Enricher | `nodes/enricher.py` | Nein | sync | Laedt Gedaechtnis-Kontext (Session, KZG, LZG, Charakter-Hash, Plugin-Hooks). Kein EI mehr (seit Chat 59). |
+| 3 | EI-Calc | `nodes/ei_calc.py` | Nein | sync | Reiner Python-Berechnungs-Node (seit Chat 59). User-Verlauf, Vektor, Modus-/Stil-Plausibilitaet, Nova-Empathie. |
+| 4 | Router | `nodes/router.py` | GPU | sync | Routing-Entscheidungen mit voller Sicht auf Session, KZG, LZG, EI (seit Chat 59). |
+| 5 | Planner | `nodes/planner.py` | GPU | sync | Nur bei Management-Aktionen. Findet Agent, plant Aktion, erzeugt pending_writes. |
+| 6 | Agent-Dispatch | `nodes/agent_dispatch.py` | Nein | sync | Delegiert an agenten-spezifischen Dispatch. Generischer Router. |
+| 7 | GV-Node | `nodes/gespraechsvektor.py` | GPU | sync | Gespraechsvektor destillieren (natuerlichsprachliche Hypothese fuer Responder). |
+| 8 | Responder | `nodes/responder.py` | GPU | sync | Generiert die Antwort. Sieht alles: Gedaechtnis, EI-Profil, Direktiven. |
+| 9 | Thinker | `nodes/thinker.py` | GPU | sync | Faktencheck gegen DB. Timeline-Check, Wissens-Abgleich. |
+| 10 | Tribunal | `nodes/tribunal.py` | GPU (3x) | sync | Multi-Perspektiven-Pruefung (Jurist, Psychologe, Ethiker). Score-System. |
+| 11 | Corrector | `nodes/corrector.py` | GPU | sync | Ueberarbeitet abgelehnte Antworten unter Tribunal-Feedback. Max 2 Iterationen. |
+| 12 | Salienz | `nodes/salience.py` | GPU | **async** | Bewertet: Was ist speicherwuerdig? Schreibt pending_writes. Ausgeloest von `services/nachbearbeitung.py` (seit Chat 59). |
+| 13 | Dispatcher | `nodes/dispatcher.py` | Nein | **async** | Verteilt pending_writes an zustaendige Manager-Plugins. DelegationsAgent-Trigger-Pruefung. Ausgeloest von `services/nachbearbeitung.py` (seit Chat 59). |
 
 ### 3.3 Bedingte Kanten
 
-1. **Enricher -> Planner oder GV-Node:** Planner wenn `management_action` gesetzt oder `agent_name` vorhanden. Sonst direkt zu GV-Node.
+1. **Router -> Planner oder GV-Node** (`_after_router`, seit Chat 59): Planner wenn `management_action` gesetzt. Sonst direkt zu GV-Node. (Der Entscheidungspunkt liegt jetzt nach dem Router, nicht nach dem Enricher — EI-Calc ist dazwischen.)
 2. **Planner -> Agent-Dispatch oder GV-Node:** Agent-Dispatch wenn `agent_name` gesetzt. Sonst GV-Node.
 3. **Agent-Dispatch -> Planner (Schleife):** Nach Agent-Ausfuehrung zurueck zum Planner. Der Planner entscheidet, ob ein weiterer Agent noetig ist (Multi-Agent-Turns). Schleifenschutz: `bereits_gelaufen`-Dict verhindert Endlosschleifen.
 4. **GV-Node -> Responder:** Immer. Gespraechsvektor destillieren (oder Skip bei Laenge 0).
-5. **Evaluate -> Salienz oder Corrector:** Basierend auf Tribunal-Ergebnis (ok / warnung / ablehnen).
-6. **Corrector -> Tribunal:** Zurueck in die Schleife, max. 2 Iterationen. Danach Fallback.
+5. **Evaluate -> END oder Corrector** (seit Chat 59): Bei `ok` direkt END (async-Block uebernimmt). Bei `warnung`/`ablehnen` → Corrector (max. 2 Iterationen, dann Fallback).
+6. **Corrector -> Tribunal:** Zurueck in die Schleife.
 
-### 3.4 LLM-Calls pro Turn
+### 3.4 Asynchroner Block (seit Chat 59, AP7)
 
-- **Normaler Chat (typisch):** 8 Calls — Perzeption, Router, GV-Node, Responder, Thinker, 3x Tribunal.
-- **Bei Korrektur:** 9 Calls (+ Corrector).
-- **Bei Management:** 9+ Calls (+ Planner + Agent-Classify + Salienz-Segmentierung).
+Nach dem Graph-Austritt (END) startet `services/nachbearbeitung.py` einen Background-Thread mit zwei parallelen Pfaden:
+
+| Pfad | Ablauf | LLM? |
+|------|--------|------|
+| **User-Pfad** | Salienz(User) → Dispatcher(User) | GPU (Salienz), keiner (Dispatcher) |
+| **Nova-Pfad** | Perzeption(Nova) → Enricher(Nova) → Session-Turn annotieren | GPU (Perzeption), keiner (Enricher) |
+
+- **Threading:** `threading.Thread` (daemon) wrapped um `ThreadPoolExecutor(max_workers=2)`.
+- **GPU statt CPU:** Nova gehoert zum Human Graph, nicht zu Pixie. Gleiche Qualitaetsanforderung.
+- **llm_lock:** Feingranular fuer einzelne GPU-Calls, nicht fuer den ganzen Block.
+- **Perzeption-Flag:** Der Nova-Pfad setzt `perzeption_rolle="assistant"` → anderer Prompt-Block, gleiche Ausgabestruktur.
+- **Effekt:** Der User spart 2–3 Sekunden Wartezeit pro Turn.
+
+→ Details: `novaberg-service-nachbearbeitung.md`
+
+### 3.5 LLM-Calls pro Turn
+
+- **Normaler Chat (typisch):** 8 synchrone Calls — Perzeption, Router, GV-Node, Responder, Thinker, 3x Tribunal. (EI-Calc ist kein LLM-Call.)
+- **Bei Korrektur:** 9 synchrone Calls (+ Corrector).
+- **Bei Management:** 9+ synchrone Calls (+ Planner + Agent-Classify).
+- **Asynchron dazu:** 1 Salienz-Call + ggf. Segmentierung + 1 Nova-Perzeption-Call — nach der User-Antwort.
 
 ---
 
@@ -452,6 +487,7 @@ def domain_language(self) -> dict:
 | **Chat 40** (10. April) | State: `charakter_anweisungen`, `direktiven`. Router: "MUSST wenn Regel zutrifft" statt "NIEMALS eigenstaendig". Tribunal: Score-System (T1). Responder: `[IDENTITAET]` + `[DIREKTIVEN]`. Corrector: `[DIREKTIVEN]`-Block. |
 | **Chat 43** (12. April) | KONTEXT1-Fix: `[ERLEDIGT]`/`[FEHLGESCHLAGEN]`-Marker in Session-Turns. Resume-Bug gefixt. Epic 15 Pilot: Domain-Language-Normalisierung im NotizenAgent Classify-Node. |
 | **Chat 44** (12. April) | Epic 15 Rollout: Domain-Language-Normalisierung auf DirektivenAgent, CharakterIdentitaetAgent, TimelineAgent. DELEG-REG gefixt (Einzeiler). Verb-Mappings: Rolle verschoben zu sekundaerer Konfidenz-Pruefung. |
+| **Chat 59** (20. April) | **Enricher vor Router.** EI-Calc als eigener Python-Node zwischen Enricher und Router eingefuegt. Salienz + Dispatcher aus dem sync-Graph entfernt — laufen asynchron in `services/nachbearbeitung.py`. Nova-Pfad (Perzeption(Nova) → Enricher(Nova) → Turn-Annotation) parallel zum User-Pfad. `perzeption_rolle`-Flag schaltet Perzeption zwischen User- und Assistant-Prompt. 13 Nodes (11 sync + 2 async). |
 
 Die Richtung war immer gleich: Von einem monolithischen Pfad zu spezialisierten Nodes mit klarer Verantwortungstrennung. Jeder Umbau wurde durch ein konkretes Problem motiviert — nie praeventiv.
 

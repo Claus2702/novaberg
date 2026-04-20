@@ -19,6 +19,7 @@ from graph.state           import ConversationState
 from graph.nodes.perzeption import perceive
 from graph.nodes.router     import route
 from graph.nodes.enricher  import enrich
+from graph.nodes.ei_calc   import ei_calc
 from graph.nodes.planner   import plan
 from graph.nodes.responder import respond
 from graph.nodes.thinker   import think
@@ -83,6 +84,9 @@ class GraphBase(ABC):
 
     def _node_enrich(self, state: ConversationState) -> ConversationState:
         return enrich(state, self.embed_client, self.embed_model, self.redis_client, self.postgres_url, state["user_id"])
+
+    def _node_ei_calc(self, state: ConversationState) -> ConversationState:
+        return ei_calc(state)
 
     def _node_plan(self, state: ConversationState) -> ConversationState:
         return plan(state, self.postgres_url)

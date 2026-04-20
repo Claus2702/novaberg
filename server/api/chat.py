@@ -20,6 +20,7 @@ from memory.embedding           import embedding_create
 from memory.repositories.entitaeten_repository import EntitaetenRepository
 
 from services.shadow_delivery   import shadow_cooldown_reset
+from services.nachbearbeitung   import nachbearbeitung_starten
 
 logger = logging.getLogger("ki_server.chat")
 
@@ -93,16 +94,15 @@ router = APIRouter()
 # ─────────────────────────────────────────────
 NODE_LABELS: dict[str, str] = {
     "perzeption": "Perzeption — Wahrnehmung",
-    "router":     "Router — Prompt analysieren",
     "enricher":   "Enricher — Kontext laden",
+    "ei_calc":    "EI-Calc — Emotionale Intelligenz",
+    "router":     "Router — Prompt analysieren",
     "planner":    "Planner — Operation planen",
     "responder":  "Responder — Antwort generieren",
     "thinker":    "Thinker — Nachdenken",
     "tribunal":   "Tribunal — Bewertung",
     "evaluate":   "Tribunal — Auswertung",
     "corrector":  "Corrector — Korrektur",
-    "salience":   "Salienz — Analyse",
-    "dispatcher":      "Dispatcher — Gedächtnis schreiben",
     "agent_dispatch":  "Agent — Ausführung",
     "gv_node": "Gesprächsvektor — Antizipation",
 }
@@ -158,6 +158,14 @@ def ChatSenden(anfrage: GespraechAnfrage, request: Request):
             # Momentum für Shadow Delivery Service setzen (NACH Response)
             redis_client.set(f"momentum:{anfrage.user_id}", result.get("momentum", "mid"), ex=300)
 
+        # ── Asynchrone Nachbearbeitung (User-Salienz + Nova-Pfad) ──
+        nachbearbeitung_starten(
+            state=result,
+            human_graph=request.app.state.human_graph,
+            response=result.get("response", ""),
+            redis_client=redis_client,
+        )
+
         return GespraechAntwort(
             antwort            = result["response"],
             modell             = result["model"],
@@ -168,6 +176,11 @@ def ChatSenden(anfrage: GespraechAnfrage, request: Request):
             emotions_verlauf   = result.get("emotions_verlauf", []),
             sprach_stil        = result.get("sprach_stil", ""),
             beziehungs_dynamik = result.get("beziehungs_dynamik", ""),
+            nova_emotion           = result.get("nova_emotions_verlauf", [{}])[0].get("emotion", "") if result.get("nova_emotions_verlauf") else "",
+            nova_arousal           = result.get("nova_emotions_verlauf", [{}])[0].get("arousal", 0.0) if result.get("nova_emotions_verlauf") else 0.0,
+            nova_emotions_verlauf  = result.get("nova_emotions_verlauf", []),
+            nova_emotions_vektor   = result.get("nova_emotions_vektor", ""),
+            nova_emotion_konflikt  = result.get("nova_emotion_konflikt", False),
             intent             = result.get("intent", ""),
             tone               = result.get("tone", ""),
             gespraechs_modus   = result.get("gespraechs_modus", ""),
@@ -263,6 +276,42 @@ def ChatStreamSenden(anfrage: GespraechAnfrage, request: Request):
                                     f"Intention: {', '.join(i.capitalize() for i in intentionen) if intentionen else '?'}"
                                 )
 
+                        elif node_name == "ei_calc":
+                            ev:            list = node_state.get("emotions_verlauf", [])
+                            vektor:         str = node_state.get("emotions_vektor", "") or ""
+                            stil:           str = node_state.get("sprach_stil", "") or ""
+                            modus_korr:     str = node_state.get("gespraechs_modus", "") or ""
+                            has_bez:       bool = bool(node_state.get("beziehungs_kontext", ""))
+
+                            ei_teile: list[str] = []
+                            if ev:
+                                top3: str = ", ".join(
+                                    f"{e.get('emotion','?')}({e.get('gewicht',0):.2f})"
+                                    for e in ev[:3]
+                                )
+                                ei_teile.append(f"Verlauf: {top3}")
+                            if vektor:
+                                ei_teile.append(f"Vektor: {vektor}")
+                            if modus_korr:
+                                ei_teile.append(f"Modus: {modus_korr}")
+                            if stil:
+                                ei_teile.append(f"Stil: {stil}")
+                            if has_bez:
+                                ei_teile.append("Beziehung: geladen")
+
+                            # Nova-Emotion ergänzen
+                            nova_ev: list = node_state.get("nova_emotions_verlauf", [])
+                            if nova_ev:
+                                nova_top: str = nova_ev[0].get("emotion", "?")
+                                nova_ar: float = nova_ev[0].get("arousal", 0.0)
+                                nova_konf: bool = node_state.get("nova_emotion_konflikt", False)
+                                nova_str: str = f"Nova: {nova_top}(a={nova_ar:.2f})"
+                                if nova_konf:
+                                    nova_str += " ⚡Konflikt"
+                                ei_teile.append(nova_str)
+
+                            detail = " | ".join(ei_teile) if ei_teile else "—"
+
                         elif node_name == "responder":
                             detail = f"{node_state.get('token_total', 0)} Tokens"
 
@@ -321,37 +370,6 @@ def ChatStreamSenden(anfrage: GespraechAnfrage, request: Request):
                             else:
                                 detail = "Ausführung läuft"
 
-                        elif node_name == "dispatcher":
-                            d_trigger: str = node_state.get("_delegation_trigger", "")
-                            pw_count: int = len(node_state.get("pending_writes", []) or [])
-                            dispatcher_teile: list[str] = []
-                            if pw_count == 0:
-                                dispatcher_teile.append("Gedächtnis geschrieben")
-                            else:
-                                dispatcher_teile.append(f"{pw_count} Writes offen")
-                            if d_trigger:
-                                dispatcher_teile.append(f"Delegation: {d_trigger}")
-                            detail = " | ".join(dispatcher_teile)
-
-                        elif node_name == "salience":
-                            pw: list = node_state.get("pending_writes", [])
-                            # Salienz-Daten aus dem KZG pending_write extrahieren
-                            sal_detail: str = "Gedächtnis aktualisiert"
-                            for p in pw:
-                                if p.get("ziel") == "kzg":
-                                    s_obj: dict = p.get("daten", {}).get("salienz_obj", {})
-                                    if s_obj:
-                                        s_int: list = s_obj.get("intentionen", [])
-                                        sal_detail = (
-                                            f"Score: {s_obj.get('salienz', 0):.2f} | "
-                                            f"Emotion: {s_obj.get('emotion', '?')} | "
-                                            f"Modus: {s_obj.get('modus', '?')} | "
-                                            f"Intention: {', '.join(s_int) if s_int else '?'} | "
-                                            f"Themen: {', '.join(s_obj.get('themen', []))}"
-                                        )
-                                    break
-                            detail = sal_detail
-
                         yield _sse_event("stage", {
                             "node":   node_name,
                             "label":  label,
@@ -391,6 +409,11 @@ def ChatStreamSenden(anfrage: GespraechAnfrage, request: Request):
                 "emotions_verlauf":   letzter_state.get("emotions_verlauf", []),
                 "sprach_stil":        letzter_state.get("sprach_stil", ""),
                 "beziehungs_dynamik": letzter_state.get("beziehungs_dynamik", ""),
+                "nova_emotion":           letzter_state.get("nova_emotions_verlauf", [{}])[0].get("emotion", "") if letzter_state.get("nova_emotions_verlauf") else "",
+                "nova_arousal":           letzter_state.get("nova_emotions_verlauf", [{}])[0].get("arousal", 0.0) if letzter_state.get("nova_emotions_verlauf") else 0.0,
+                "nova_emotions_verlauf":  letzter_state.get("nova_emotions_verlauf", []),
+                "nova_emotions_vektor":   letzter_state.get("nova_emotions_vektor", ""),
+                "nova_emotion_konflikt":  letzter_state.get("nova_emotion_konflikt", False),
                 "intent":             letzter_state.get("intent", ""),
                 "tone":               letzter_state.get("tone", ""),
                 "gespraechs_modus":   letzter_state.get("gespraechs_modus", ""),
@@ -404,6 +427,14 @@ def ChatStreamSenden(anfrage: GespraechAnfrage, request: Request):
                 f"momentum:{letzter_state['user_id']}",
                 letzter_state.get("momentum", "mid"),
                 ex=300,
+            )
+
+            # ── Asynchrone Nachbearbeitung (User-Salienz + Nova-Pfad) ──
+            nachbearbeitung_starten(
+                state=letzter_state,
+                human_graph=request.app.state.human_graph,
+                response=letzter_state.get("response", ""),
+                redis_client=redis_client,
             )
 
         except Exception as fehler:

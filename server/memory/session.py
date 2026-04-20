@@ -117,6 +117,55 @@ def session_turn_annotate(
 
 
 # ─────────────────────────────────────────────
+# Assistant-Turn nachträglich anreichern (Nova-Emotionen)
+# ─────────────────────────────────────────────
+def session_assistant_turn_annotate(
+    redis_client:  redis.Redis,
+    user_id:       str,
+    emotion:       str   = "",
+    arousal:       float = 0.5,
+    modus:         str   = "",
+    emotions_vektor:    str = "",
+    sprach_stil:        str = "",
+    beziehungs_dynamik: str = "",
+) -> None:
+    """Reichert den letzten Assistant-Turn mit Novas Emotions-Metadaten an."""
+
+    key:   str  = f"session:{user_id}:turns"
+    turns: list = redis_client.lrange(key, 0, -1)
+
+    if not turns:
+        return
+
+    for idx in range(len(turns) - 1, -1, -1):
+        try:
+            turn: dict = json.loads(turns[idx])
+        except json.JSONDecodeError:
+            continue
+
+        if turn.get("rolle") == "assistant" and not turn.get("emotion"):
+            turn["emotion"]            = emotion
+            turn["arousal"]            = arousal
+            turn["modus"]              = modus
+            turn["emotions_vektor"]    = emotions_vektor
+            turn["sprach_stil"]        = sprach_stil
+            turn["beziehungs_dynamik"] = beziehungs_dynamik
+
+            redis_client.lset(key, idx, json.dumps(turn, ensure_ascii=False))
+
+            logger.info(
+                f"Session: Assistant-Turn annotiert — "
+                f"emotion={emotion}, arousal={arousal:.2f}, "
+                f"modus={modus}, vektor={emotions_vektor}, "
+                f"sprach_stil={sprach_stil}, "
+                f"beziehungs_dynamik={beziehungs_dynamik}"
+            )
+            return
+
+    logger.debug("Session: Kein unannotierter Assistant-Turn gefunden")
+
+
+# ─────────────────────────────────────────────
 # Turn als Agent-Aktion markieren (KONTEXT1)
 # ─────────────────────────────────────────────
 def session_turn_mark_action(

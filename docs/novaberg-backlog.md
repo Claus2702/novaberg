@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Backlog — Konzipierte, noch nicht implementierte Features
-**Stand:** 19. April 2026, Chat 57
+**Stand:** 20. April 2026, Chat 59
 **Pfad:** novaberg/docs/novaberg-backlog.md
 **Quellen:** nova-08-k.md (Kognitive Anreicherung), nova-10-k-backlog.md (Skill-System), nova-01-t-c-backlog.md (Node-Konfiguration)
 
@@ -286,7 +286,7 @@ Der naechste Schritt in der Kommunikationsbandbreite: Spracheingabe (Speech-to-T
 | Überakkommodation | CAT empirisch testen | ⬜ |
 | PENDING-RELEVANZ | Router prüft nicht ob Prompt Antwort auf Rückfrage | ⬜ Chat 43 |
 | KORR1 | Korrektur-Erkennung bei fehlgeschlagenen Aktionen | ⬜ Chat 43 (niedrig) |
-| ROUTE-MISS1 | Router erkennt Timeline-Update-Auftrag mit Kontext-Bezug nicht | ⬜ Chat 48 |
+| ROUTE-MISS1 | Router erkennt kontextabhängige Aufträge nicht | ⬜ Chat 48, strukturell adressiert durch Enricher-vor-Router (Chat 59, implementiert). Offen für Validierung. |
 | 5i | Zeitparser: Fränkisch + Norddeutsch | ⬜ |
 
 ### Infrastruktur
@@ -391,6 +391,87 @@ Zwei neue Nodes pro Agent:
 
 ---
 
+## Epic: Dual-Emotion (Chats 53, 57–58)
+
+**Vision:** Nova hat einen eigenen Emotionsstrang mit denselben 8 Plutchik-Dimensionen wie der User. Jede Antwort wird analysiert — Emotion, Arousal, Modus, Intent. Die Daten fließen unter `ASSISTANT_USER_ID` ins Gedächtnis und werden im nächsten Turn geladen.
+
+**Leitprinzip:** "Der Eingangspfad für den User ist der Ausgangspfad für Nova."
+
+**Drei Phasen:**
+
+| Phase | Ziel | Status |
+|-------|------|--------|
+| Phase 1 | User-IDs entkoppeln — frei wählbar aus Config | ✅ Chat 57 |
+| Phase 2 | Zweiter Emotionsstrang + Enricher-Split + Graph-Neuordnung | 🔧 AP1–3+7 ✅, AP4+8 teilw., AP5+6+9 offen |
+| Phase 3 | Ziel-Vektor (Antrieb) als dritte Kraft auf Novas Emotion | ⬜ |
+
+**Konzept-Dokumente:** `novaberg-thinking-drive_k.md` §4 (Chat 53), `novaberg-ei-dual-emotion_k.md` (Chat 58)
+
+**Arbeitspakete Phase 2:**
+
+| AP | Paket | Status |
+|----|-------|--------|
+| 1 | EI-Extraktion (Enricher → ei/berechnung.py) | ✅ Chat 58 |
+| 2 | EI-Calc-Node (graph/nodes/ei_calc.py) | ✅ Chat 59 |
+| 3 | Nova-Emotion Berechnung (Decay + Empathie) | ✅ Chat 59 |
+| 4 | Perzeption(Nova) + EI-Calc(Nova) im async-Block | 🔧 Chat 59 — Perzeption(Nova) + Enricher(Nova) ✅, Router(Nova) offen |
+| 5 | Router(Nova) + Commitment-Erkennung | ⬜ |
+| 6 | Salienz(Nova) — eigener Salienz-Prompt | ⬜ |
+| 7 | Asynchroner Block orchestrieren | ✅ Chat 59 |
+| 8 | API + Client (GespraechAntwort + Dual-Radar) | 🔧 Chat 59 — API + SSE ✅, Client-Panels offen |
+| 9 | Dokumentation | 🔧 Chat 59 — Protokoll ✅, Doku-Update läuft |
+
+---
+
+## Epic: Graph-Neuordnung (Chat 58–59) — ✅ Chat 59
+
+**Beschluss:** Enricher vor Router verschieben. Der Router sieht dadurch die volle Session, KZG, LZG, Charakter-Hash und EI-Ergebnisse — statt nur 5 Turns aus eigenem Redis-Read.
+
+**Neuer synchroner Graph (implementiert Chat 59):**
+```
+Perzeption → Enricher(laden) → EI-Calc → Router → [Planner → Agent] →
+GV-Node → Responder → Thinker → Tribunal → [Corrector]
+```
+
+**Löst:** ROUTE-MISS1 (strukturell — Router erkennt "Ja, bitte!" nach "Soll ich einen Termin anlegen?"). Offen für Validierung.
+
+**Status:** ✅ Implementiert in Chat 59 zusammen mit Dual-Emotion AP2. Conditional Edge `_after_enricher` → `_after_router`. Salienz und Dispatcher zugleich aus dem sync-Graph entfernt (siehe Dual-Emotion AP7).
+
+---
+
+## Epic: Session-Trennung (User × Charakter) (Chat 54, 59)
+
+**Vision:** Jede Gesprächskombination (User × Charakter) bekommt eine eigene Session-Partition. `session:meister:nova`, `session:meister:james`, `session:meister:tarzan`.
+
+**Motivation:** Aktuell landen alle Charakter-Daten in `session:meister`. Multi-Character ist nicht trennbar. Durch die Turn-Annotation (Chat 59) ist das Problem sichtbarer geworden: Novas Emotionen landen in Meisters Session, unabhängig vom Charakter.
+
+**Betroffene Stellen (Chat 54):**
+1. Session-Keys in Redis (`session:{user_id}` → `session:{user_id}:{character_id}`)
+2. `ASSISTANT_USER_ID` in config.py (hartkodiert → parametrisiert pro Turn)
+3. `ASSISTANT_NAME` in config.py (Konstante → pro Turn aus Character-Definition)
+4. Pending Agents in Redis (Character-Dimension nötig)
+
+**Zusätzlich betroffen (Chat 59):**
+5. `session_assistant_turn_annotate()` — annotiert in User-Session, muss Character-aware sein
+6. Enricher — lädt Session-Turns, KZG, LZG, Hash pro Character
+7. Nachbearbeitung — Nova-Pfad muss Character-ID durchreichen
+
+**Priorität:** Direkt nach Dual-Emotion Phase 2. Wird für Debugging, Tests mit eigenen Charakteren und Multi-Character-Betrieb gebraucht.
+
+**Status:** Beschlossen, nicht implementiert.
+
+---
+
+## Vision: TurnOrchestrator (Chat 58)
+
+**Idee:** Den linearen Graph durch einen sternförmigen Orchestrator ersetzen. Ein TurnOrchestrator entscheidet regelbasiert, welcher Node als nächstes läuft ("Waren wir schon bei Perception? Nein? Dann Perception."). Der asynchrone Nova-Pfad wäre dann kein Sonderfall, sondern eine weitere Sequenz in derselben State-Machine.
+
+**Vorteil:** Flexiblere Pfade, weniger Conditional Edges, Nova-Pfad als natürlicher Teil statt Sonderlogik.
+
+**Status:** Diskutiert, als Zukunfts-Epic festgehalten. Großer Umbau — berührt human_graph.py, alle Conditional Edges, Node-Wrapper-Factory, Builder. Nicht Teil von Phase 2.
+
+---
+
 ## 8. Offene Bugs
 
 Vollständige Bug-Dokumentation → `novaberg-bugs.md`
@@ -400,7 +481,7 @@ Kurzübersicht aktiver Bugs:
 | Bug | Prio | Kurzbeschreibung |
 |-----|------|-----------------|
 | HALL2 | ⚠️ | KZG-Klebrigkeit — wiederholte Mitteilung bereits kommunizierter Inhalte |
-| ROUTE-MISS1 | ⬜ | Router erkennt kontextabhängige Aufträge nicht |
+| ROUTE-MISS1 | ⬜ | Router erkennt kontextabhängige Aufträge nicht (strukturell adressiert durch Enricher-vor-Router, Chat 59, offen für Validierung) |
 | THER1 | ⚠️ | RLHF-Therapeut-Muster |
 | CRUD-DESTILL-SUBTRAKT | ⚠️ | Subtraktive Änderungen als Anweisung gespeichert |
 | CRUD-REACTIVATE-STAMP | ⚠️ | Reactivate setzt deaktiviert_am nicht auf NULL |
@@ -411,4 +492,4 @@ Details, Ursachen und Lösungsansätze → `novaberg-bugs.md`
 
 ---
 
-*Aktualisiert Chat 57: SEARX1 aus Kurzübersicht entfernt (transient, in novaberg-bugs.md unter Behobene Bugs).*
+*Aktualisiert Chat 59: Dual-Emotion Phase 2 AP2+AP3+AP7 ✅, AP4+AP8 teilweise, AP5+AP6+AP9 offen. Graph-Neuordnung Epic ✅ implementiert (Enricher vor Router, EI-Calc-Node, Async-Block). Neues Epic Session-Trennung (User × Charakter). ROUTE-MISS1 strukturell adressiert, offen für Validierung.*

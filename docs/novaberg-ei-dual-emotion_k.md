@@ -277,17 +277,17 @@ Platziert zwischen [IDENTITAET] und [KOMMUNIKATION]. Die Emotion beeinflusst die
 
 ## 10. Arbeitspakete
 
-| # | Paket | Beschreibung | Abhängigkeit |
-|---|-------|-------------|-------------|
-| 1 | **EI-Extraktion** | ~600 Zeilen aus Enricher → `ei/berechnung.py`. Enricher importiert sie. Reines Refactoring, null Funktionsänderung. | — |
-| 2 | **EI-Calc-Node** | Neuer Node `graph/nodes/ei_calc.py`. Ruft extrahierte Funktionen auf. Graph-Kante: Enricher → EI-Calc → Router (Enricher vor Router!). | AP 1 |
-| 3 | **Nova-Emotion Berechnung** | EI-Calc berechnet Nova-Emotion(N) aus Historie + Empathie. Neue State-Felder. | AP 2 |
-| 4 | **Perzeption(Nova) + EI-Calc(Nova)** | Perzeption-Aufruf auf `response` nach Tribunal. EI-Calc direkt danach. Prompt-Anpassung. | AP 2, 3 |
-| 5 | **Router(Nova) + Commitment** | Router-Aufruf auf Nova-Response. Bei Commitment → Planner → Agent. | AP 4 |
-| 6 | **Salienz(Nova)** | Eigener Salienz-Call für Novas Aussagen. Prompt-Anpassung. | AP 4 |
-| 7 | **Asynchroner Block** | Nova-Pfad: Perzeption → Enricher → EI-Calc → Router → [Agent] → Salienz → Dispatcher. User-Pfad: Salienz → Dispatcher. | AP 3-6 |
-| 8 | **API + Client** | `GespraechAntwort` erweitern, Emotions-Panel: Dual-Radar. | AP 7 |
-| 9 | **Dokumentation** | Graph-Doku, Enricher-Doku, EI-Doku, Roadmap, Backlog aktualisieren. | AP 7 |
+| # | Paket | Beschreibung | Status |
+|---|-------|-------------|--------|
+| 1 | **EI-Extraktion** | ~600 Zeilen aus Enricher → `ei/berechnung.py`. Enricher importiert sie. Reines Refactoring, null Funktionsänderung. | ✅ Chat 58 — Enricher-Split |
+| 2 | **EI-Calc-Node** | Neuer Node `graph/nodes/ei_calc.py`. Ruft extrahierte Funktionen auf. Graph-Kante: Enricher → EI-Calc → Router (Enricher vor Router!). | ✅ Chat 59 — EI-Calc-Node + Graph-Umbau |
+| 3 | **Nova-Emotion Berechnung** | EI-Calc berechnet Nova-Emotion(N) aus Historie + Empathie. Neue State-Felder. | ✅ Chat 59 — Nova-Emotion (Decay + Empathie) |
+| 4 | **Perzeption(Nova) + EI-Calc(Nova)** | Perzeption-Aufruf auf `response` nach Tribunal. EI-Calc direkt danach. Prompt-Anpassung. | 🔧 Chat 59 — Perzeption(Nova) mit eigenem Prompt, Enricher(Nova) im async-Pfad. Router(Nova) noch offen. |
+| 5 | **Router(Nova) + Commitment** | Router-Aufruf auf Nova-Response. Bei Commitment → Planner → Agent. | ⬜ Router(Nova) + Commitment-Erkennung |
+| 6 | **Salienz(Nova)** | Eigener Salienz-Call für Novas Aussagen. Prompt-Anpassung. | ⬜ Salienz(Nova) — eigener Salienz-Prompt |
+| 7 | **Asynchroner Block** | Nova-Pfad: Perzeption → Enricher → EI-Calc → Router → [Agent] → Salienz → Dispatcher. User-Pfad: Salienz → Dispatcher. | ✅ Chat 59 — Async-Block (User-Salienz + Nova-Pfad parallel, ThreadPoolExecutor) |
+| 8 | **API + Client** | `GespraechAntwort` erweitern, Emotions-Panel: Dual-Radar. | 🔧 Chat 59 — Nova-Emotion in API + SSE. Client-Panels noch offen. |
+| 9 | **Dokumentation** | Graph-Doku, Enricher-Doku, EI-Doku, Roadmap, Backlog aktualisieren. | 🔧 Chat 59 — Protokoll geschrieben, Doku-Update läuft |
 
 ---
 
