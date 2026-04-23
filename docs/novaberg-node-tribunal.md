@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Node-Referenz Tribunal
-**Stand:** 17. April 2026, Chat 52 (Code-Alignment)
+**Stand:** 21. April 2026, Chat 60 (Event-Modell, Graph-Split)
 **Pfad:** novaberg/docs/novaberg-node-tribunal.md
 **Quellen:** nova-01-m-i.md
 **Datei:** `graph/nodes/tribunal.py`
@@ -22,9 +22,11 @@ Das Tribunal enthält zwei Funktionen: `judge()` (die drei Agenten laufen lassen
 ```
 Thinker → ▶ Tribunal ◀ → Evaluate
                             │
-                            ├── ok → Salienz → Dispatcher → END
+                            ├── ok → Salienz → Dispatcher → END (seit Chat 60 wieder im Graph, nicht mehr async)
                             └── ablehnen/warnung → Corrector → Tribunal (max 2×)
 ```
+
+Nur im CharacterGraph (Pfad 2). Seit Chat 60 nicht mehr im HumanGraph.
 
 ---
 

@@ -29,7 +29,7 @@ from memory.charakter  import charakter_hash_retrieve, charakter_hash_retrieve_d
 from memory.embedding  import embedding_create
 from memory.kzg        import kzg_context_retrieve
 from memory.lzg        import lzg_context_retrieve
-from memory.session    import session_turns_retrieve
+from memory.session    import session_turns_retrieve, _session_key
 from plugins           import get_registry
 
 logger = logging.getLogger("ki_server.enricher")
@@ -52,7 +52,8 @@ def enrich(
     # ─────────────────────────────────────────
 
     # Session-Summary in den Kontext (ältere Turns, zusammengefasst)
-    summary_key: str = f"session:{user_id}:summary"
+    character_id: str = state.get("character_id", "")
+    summary_key: str = _session_key(user_id, character_id, "summary")
     summary:     str = redis_client.get(summary_key) or ""
 
     if summary:
@@ -60,7 +61,7 @@ def enrich(
         logger.info("Enricher: Session-Summary geladen")
 
     # Rohe Turns laden
-    raw_turns: list[dict] = session_turns_retrieve(redis_client, user_id)
+    raw_turns: list[dict] = session_turns_retrieve(redis_client, user_id, character_id)
     state["raw_turns"] = raw_turns
 
     # Session-Turns vollstaendig durchreichen — kein Datenverlust.

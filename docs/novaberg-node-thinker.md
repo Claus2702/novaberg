@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Node-Referenz Thinker
-**Stand:** 17. April 2026, Chat 52 (Code-Alignment)
+**Stand:** 21. April 2026, Chat 60 (Event-Modell, Graph-Split)
 **Pfad:** novaberg/docs/novaberg-node-thinker.md
 **Quellen:** nova-01-m-f.md
 **Datei:** `graph/nodes/thinker.py`
@@ -20,6 +20,8 @@ Der Thinker ist Novas Faktenprüfer. Er sitzt zwischen Responder und Tribunal un
 ```
 Responder → ▶ Thinker ◀ → Tribunal → Evaluate → ...
 ```
+
+Nur im CharacterGraph (Pfad 2). Seit Chat 60 nicht mehr im HumanGraph.
 
 ---
 

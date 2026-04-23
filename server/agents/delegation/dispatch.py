@@ -60,6 +60,7 @@ def dispatch_delegation(
         "agent_name":  "delegation",
         "kontext": {
             "user_id":      user_id,
+            "character_id": state.get("character_id", ""),
             "embed_client": embed_client,
             "embed_model":  embed_model,
         },

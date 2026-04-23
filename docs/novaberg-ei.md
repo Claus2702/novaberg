@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Emotionale Intelligenz (Übersicht)
-**Stand:** 20. April 2026, Chat 59 (EI-Calc als eigener Node, Nova-Empathie, rolle-Parameter)
+**Stand:** 21. April 2026, Chat 60 (Event-Modell, Graph-Split — EI-Calc in beiden Graphen)
 **Pfad:** novaberg/docs/novaberg-ei.md
 **Quellen:** nova-04-k.md (EI-Konzept)
 
@@ -81,7 +81,7 @@ Neun Vektoren beschreiben die emotionale Dynamik eines Gespraechs. Jeder Vektor 
 
 **Spirale vs. Plateau:** Beide haben die gleiche Emotions-Gruppe (negativ → negativ). Der Unterschied: Spirale zeigt *neue* negative Emotionen (Intensitaetsanstieg), Plateau zeigt dieselben (keine Veraenderung). Gleiches gilt fuer Eskalation vs. Plateau bei positiv → positiv.
 
-Der GV-Node berechnet den Vektor als eigener Node im HumanGraph (13 Nodes seit Chat 59 — 11 sync + 2 async). Farbmisch-System, Entity-Hop und Charakter-Linse steuern die Nuancen.
+Der GV-Node berechnet den Vektor als eigener Node im CharacterGraph (Pfad 2, seit Chat 60). Farbmisch-System, Entity-Hop und Charakter-Linse steuern die Nuancen.
 
 > Detail: novaberg-node-gv_k.md
 
@@ -123,6 +123,52 @@ Aus den sechs Wahrnehmungs-Saeulen leitet Nova vier Steuerungssignale ab:
 
 ---
 
+## Emotionen über Zeit: Drei biologisch motivierte Mechanismen
+
+Seit Chat 61 folgt Novaberg einem explizit wissenschaftlich verankerten Drei-Mechanismen-Modell:
+
+### Mechanismus 1: Carryover (Emotionen hallen nach)
+
+Der aktuelle Turn (i=0) zählt mit seinem vollen Decay-Wert. Ältere Turns ziehen nur mit 15% ihres Decay-Werts ein (`EMOTION_HISTORIEN_GEWICHT`). Das modelliert **affective carryover**: Die letzte Emotion färbt die Wahrnehmung der nächsten, aber sie übertönt nicht den aktuellen Zustand.
+
+Wissenschaftliche Basis: Russell & Carroll (1999), Davidson (1998) "Affective Chronometry", Bower (1981) "Mood-Congruent Memory".
+
+### Mechanismus 2: Allostatischer Decay (Rückkehr zur Baseline)
+
+Ältere Turns verfallen logarithmisch, nicht auf null sondern auf eine "Baseline" im kognitiven Sinne. Der Decay ist arousal-abhängig: Starke Emotionen (hoher Arousal) halten länger, leichte Emotionen verblassen schnell.
+
+`decay = 1.0 / (1.0 + effective_decay × log(1 + i, BASE))`
+
+wobei `effective_decay = BASE_DECAY × (1 - arousal × PERSISTENCE)`.
+
+Wissenschaftliche Basis: Sterling (2012) "Allostasis", Frijda (1988) "Laws of Emotion", Gross (2002) "Emotion Regulation".
+
+### Mechanismus 3: Antagonistische Hemmung (Plutchik-Sektor-Dämpfung)
+
+Gegensätzliche Emotionen hemmen sich aktiv. Im Plutchik-Oktagon entspricht die Sektor-Distanz dieser Hemmung: Distanz 0 = gleich, Distanz 4 = maximale Opposition. Die Dämpfung wirkt multiplikativ über eine Potenz-Transformation mit Arousal.
+
+Wissenschaftliche Basis: Solomon (1980) "Opponent-Process Theory", Cacioppo, Gardner & Berntson (1997) "Beyond bipolar", Plutchik (1980).
+
+### Glättung auf Anzeigebereich: sin^0.5
+
+Der akkumulierte Rohwert (Summe aus Mechanismus 1 + 2) wird gekappt bei 2.5 und über die Kurve `sin(rohwert / 2.5 × π/2)^0.5` auf [0, 1] abgebildet. Die Kurve ist:
+
+- **Steil unten:** kleine Andeutungen werden sichtbar (0.1 → 0.25)
+- **Sanft oben:** einzelne starke Turns werden präsent, aber nicht ausgereizt (1.0 → 0.77)
+- **Mathematisch exakt 1.0 am Cap:** lodernde Dauer-Emotionen verdienen ihre Eins
+
+Nach der Glättung wirkt Mechanismus 3 (Plutchik-Dämpfung) auf die absoluten Werte.
+
+---
+
+### Integrations-Gedanke
+
+Drei mathematisch simple Komponenten — Historien-Gewicht, logarithmischer Decay, Sektor-Distanz-Dämpfung — ergeben zusammen ein plausibles Emotions-System. Kein Mechanismus ist neu; neu ist ihre Integration in ein einziges lauffähiges System mit klaren Parametern und nachvollziehbarem Verhalten.
+
+Leitprinzip: **"Wir bauen kein Gehirn. Wir simulieren bekannte Vorgänge, so dass das Gefühl der Kommunikation menschlich wirkt."**
+
+---
+
 ## 7. EI-MIKRO
 
 Statt dem Modell alle EI-Regeln fuer alle Situationen zu geben, berechnet `_ei_mikro_anweisung()` in Python eine situative Mikro-Anweisung (3-8 Zeilen), die nur das Relevanteste fuer den aktuellen Turn enthaelt. Sieben optionale Bausteine:
@@ -157,25 +203,17 @@ Die Perzeption klassifiziert die aktuelle Beziehungsdynamik:
 
 ## 9. EI im Pipeline-Flow
 
-Die EI-Berechnung ist vollstaendig deterministisch und in Python implementiert. Seit Chat 59 laeuft sie in einem eigenen Node `graph/nodes/ei_calc.py` — nicht mehr im Enricher.
+Die EI-Berechnung ist vollstaendig deterministisch und in Python implementiert. EI-Calc läuft in beiden Graphen — HumanGraph (Pfad 1) und CharacterGraph (Pfad 2). Seit Chat 60.
 
 ```
-Perzeption (LLM: Emotion + Arousal pro Turn)
-    → produziert: current_emotion, current_arousal, beziehungs_dynamik, modus
-    |
-    v
-Enricher (Python: laedt Daten — reiner I/O)
-    → laedt: session_turns, raw_turns, char_hash_dict, Plugin-Kontext, KZG/LZG
-    |
-    v
-EI-Calc (Python: berechnet Verlauf, Vektor, Stil, Nova-Empathie)
-    → berechnet: emotions_verlauf (log decay), emotions_vektor (9 Richtungen),
-      sprach_stil (Feature-Scoring), beziehungs_kontext, Modus-/Stil-Plausibilitaet,
-      nova_emotions_verlauf (Decay + Empathie), nova_emotions_vektor, nova_emotion_konflikt
-    |
-    v
-Router → [Planner] → GV-Node → Responder → ...
+HumanGraph (Pfad 1):
+Perzeption → Enricher → EI-Calc → Salienz → Dispatcher → END
+
+CharacterGraph (Pfad 2):
+Enricher → EI-Calc → Router → [Planner ⇄ Agent] → GV-Node → Responder → Thinker → Tribunal → ... → Salienz → Dispatcher → END
 ```
+
+EI-Calc berechnet in beiden Graphen: emotions_verlauf (log decay), emotions_vektor (9 Richtungen), sprach_stil (Feature-Scoring), beziehungs_kontext, Modus-/Stil-Plausibilitaet, nova_emotions_verlauf (Decay + Empathie), nova_emotions_vektor, nova_emotion_konflikt. Empathie-Switch über `event_source` (siehe `novaberg-node-ei-calc.md` §3.3).
 
 Das LLM liefert die Rohdaten (Emotion, Arousal, Beziehungsdynamik pro Turn via Perzeption). Python berechnet Verlauf, Vektor und Stil. Das LLM bekommt die Ergebnisse als Klartext im Responder-Prompt. Schneller, exakter, reproduzierbar.
 
@@ -243,11 +281,11 @@ Wenn Nova und User in gegenueberliegenden Sektoren sind UND beide mindestens `EM
 | `EMPATHIE_KONFLIKT_DISTANZ` | `3` | Ab welcher Distanz Konflikt geprueft wird |
 | `EMPATHIE_KONFLIKT_MIN_AROUSAL` | `0.4` | Mindest-Arousal fuer Konflikt-Flag |
 
-### 10.4 Kein Decay im Async-Pfad
+### 10.4 Kein doppelter Decay
 
-Novas Antwort wird im async-Pfad (`services/nachbearbeitung.py`) per Perzeption analysiert und mit Emotion + Arousal in den Session-Turn annotiert — genau wie beim User. **Kein Decay beim Speichern.** Der Decay laeuft beim Lesen im synchronen EI-Calc des naechsten Turns. Eine Berechnung, nicht zwei.
+Novas Antwort wird im CharacterGraph (Pfad 2) erzeugt; ihre Emotion + Arousal werden vom Dispatcher direkt in den Session-Turn geschrieben — genau wie beim User-Turn. **Kein Decay beim Speichern.** Der Decay laeuft beim Lesen im EI-Calc des naechsten Turns. Eine Berechnung, nicht zwei.
 
-> Detail: novaberg-ei-dual-emotion_k.md (Konzept), novaberg-node-ei-calc.md (Implementierung), novaberg-service-nachbearbeitung.md (async-Pfad)
+> Detail: novaberg-ei-dual-emotion_k.md (Konzept), novaberg-node-ei-calc.md (Implementierung), novaberg-event-model_k.md (Event-Modell)
 
 ---
 

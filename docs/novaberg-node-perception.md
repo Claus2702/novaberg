@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Pipeline-Node Perzeption (Emotionale + rationale Analyse)
-**Stand:** 20. April 2026, Chat 59 (Dual-Modus: User- und Assistant-Prompt via `perzeption_rolle`-Flag)
+**Stand:** 21. April 2026, Chat 60 (Event-Modell, Graph-Split)
 **Pfad:** novaberg/docs/novaberg-node-perception.md
 **Quellen:** nova-01-m-a.md (Node-Beschreibung), nova-04-m-a.md (Emotions-Vektoren, Plutchik-Details)
 
@@ -16,15 +16,28 @@ Die Perzeption ist Novas Wahrnehmungsapparat — der erste Node im HumanGraph. S
 
 ---
 
+## Verwendung in beiden Graphen
+
+Seit Chat 61 läuft Perzeption symmetrisch in beiden Graphen:
+
+- **HumanGraph (Pfad 1):** Perzeption läuft als erster Node und analysiert den User-Prompt. Flag `perzeption_rolle: "user"`.
+- **CharacterGraph (Pfad 2):** Perzeption läuft nach Corrector/Evaluate als `perzeption_assistant`-Node und analysiert Nova's finale Antwort. Flag `perzeption_rolle: "assistant"`.
+
+Das Flag `perzeption_rolle` wird in `create_state()` des jeweiligen Graphen gesetzt (siehe `graph/base.py` und `graph/character_graph.py`). Der Perzeption-Node prüft das Flag und liest entweder den User-Prompt oder die gerade generierte Nova-Antwort.
+
+**Konsequenz:** Nach jedem Turn sind sowohl User-Emotion als auch Nova-Emotion im Session-Turn annotiert. Der nächste Turn kann beide als Historie nutzen.
+
+---
+
 ## 2. Position im Graph
 
 ```
-▶ Perzeption ◀ → Enricher → EI-Calc → Router → ...
+HumanGraph (Pfad 1): ▶ Perzeption ◀ → Enricher → EI-Calc → Salienz → Dispatcher → END
 ```
 
-**Entry-Point** des HumanGraph (seit Chat 59 unmittelbar vor dem Enricher — die alte Reihenfolge war Perzeption → Router → Enricher). Sieht den rohen User-Prompt und den Session-Kontext (letzte 5 Turns aus Redis). Kein KZG, kein LZG, kein Charakter-Hash.
+Nur im HumanGraph. Der CharacterGraph beginnt beim Enricher — die User-Perzeption ist in Pfad 1 passiert, die Ergebnisse liegen annotiert in der Session.
 
-**Zweiter Einsatzort (seit Chat 59):** Der async-Pfad `services/nachbearbeitung.py` ruft denselben Node mit `perzeption_rolle="assistant"` auf, um Novas Antwort zu analysieren. → `novaberg-service-nachbearbeitung.md`
+**Entry-Point** des HumanGraph. Sieht den rohen User-Prompt und den Session-Kontext (letzte 5 Turns aus Redis). Kein KZG, kein LZG, kein Charakter-Hash. Session-Turns werden mit `character_id` aus dem State geladen (seit Chat 60).
 
 ---
 

@@ -30,7 +30,9 @@ from config import (
     DELEGATION_EFFEKTIVWERT_SCHWELLE,
     DELEGATION_SALIENZ_SCHWELLE,
     EI_AROUSAL_DOMINANZ,
+    redis_client as cfg_redis_client,
 )
+from memory.session import session_turn_store, session_summarize_if_needed
 
 logger = logging.getLogger("ki_server.dispatcher")
 
@@ -72,6 +74,58 @@ def _delegation_trigger_pruefen(state: ConversationState) -> str:
         return "salienz"
 
     return ""
+
+
+def _session_turn_schreiben(state: ConversationState) -> None:
+    """Schreibt den aktuellen Turn vollständig in die Session.
+
+    Bestimmt die Rolle automatisch: Wenn eine Response vorhanden ist,
+    wird ein Assistant-Turn geschrieben. Sonst ein User-Turn.
+    Alle Metadaten kommen aus dem State — kein nachträgliches Annotieren.
+    """
+    user_id:      str = state.get("user_id", "")
+    character_id: str = state.get("character_id", "")
+
+    if not user_id or not character_id:
+        logger.warning("Dispatcher: Session-Turn nicht geschrieben — user_id oder character_id fehlt")
+        return
+
+    response: str = state.get("response", "")
+
+    if response:
+        # Pfad 2: Charakter hat geantwortet
+        rolle:  str = "assistant"
+        inhalt: str = response
+    else:
+        # Pfad 1: User hat geschrieben
+        rolle  = "user"
+        inhalt = state.get("user_prompt", "")
+
+    if not inhalt:
+        logger.warning(f"Dispatcher: Session-Turn nicht geschrieben — kein Inhalt (rolle={rolle})")
+        return
+
+    session_turn_store(
+        redis_client       = cfg_redis_client,
+        user_id            = user_id,
+        character_id       = character_id,
+        rolle              = rolle,
+        inhalt             = inhalt,
+        intentionen        = state.get("user_intentionen", []),
+        emotion            = state.get("current_emotion", "neutral"),
+        arousal            = state.get("current_arousal", 0.5),
+        modus              = state.get("gespraechs_modus", ""),
+        kern               = state.get("session_turn_kern", ""),
+        emotions_vektor    = state.get("emotions_vektor", ""),
+        sprach_stil        = state.get("sprach_stil", ""),
+        beziehungs_dynamik = state.get("beziehungs_dynamik", ""),
+        tone               = state.get("tone", "sachlich"),
+    )
+
+    logger.info(f"Dispatcher: Session-Turn geschrieben — rolle={rolle}, {len(inhalt)} Zeichen")
+
+    # Zusammenfassung prüfen (älteste Turns komprimieren wenn Stack zu groß)
+    session_summarize_if_needed(cfg_redis_client, user_id, character_id)
 
 
 def dispatch(
@@ -159,6 +213,9 @@ def dispatch(
             logger.info(f"Dispatcher: DelegationsAgent gefeuert (trigger={trigger})")
         except Exception as fehler:
             logger.error(f"Dispatcher: Fehler bei DelegationsAgent — {fehler}")
+
+    # ── Session-Turn schreiben (nach allen Writes, damit kern verfügbar ist) ──
+    _session_turn_schreiben(state)
 
     # pending_writes leeren
     state["pending_writes"] = []

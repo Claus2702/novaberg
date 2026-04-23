@@ -9,18 +9,13 @@ import time
 from fastapi                    import APIRouter, Request
 from fastapi.responses          import JSONResponse, StreamingResponse
 
-from config                     import redis_client, ollama_gpu_client, OLLAMA_MODEL, EMBED_MODEL, POSTGRES_URL, llm_lock
-from api.models                 import GespraechAnfrage, GespraechAntwort
-from graph.memory               import (
-    session_turn_store,
-    session_turn_mark_action,
-    session_summarize_if_needed,
-)
+from config                     import redis_client, ollama_gpu_client, EMBED_MODEL, POSTGRES_URL, llm_lock, ASSISTANT_USER_ID
+from api.models                 import GespraechAnfrage
+from services.events            import event_erzeugen
 from memory.embedding           import embedding_create
 from memory.repositories.entitaeten_repository import EntitaetenRepository
 
 from services.shadow_delivery   import shadow_cooldown_reset
-from services.nachbearbeitung   import nachbearbeitung_starten
 
 logger = logging.getLogger("ki_server.chat")
 
@@ -96,15 +91,8 @@ NODE_LABELS: dict[str, str] = {
     "perzeption": "Perzeption — Wahrnehmung",
     "enricher":   "Enricher — Kontext laden",
     "ei_calc":    "EI-Calc — Emotionale Intelligenz",
-    "router":     "Router — Prompt analysieren",
-    "planner":    "Planner — Operation planen",
-    "responder":  "Responder — Antwort generieren",
-    "thinker":    "Thinker — Nachdenken",
-    "tribunal":   "Tribunal — Bewertung",
-    "evaluate":   "Tribunal — Auswertung",
-    "corrector":  "Corrector — Korrektur",
-    "agent_dispatch":  "Agent — Ausführung",
-    "gv_node": "Gesprächsvektor — Antizipation",
+    "salience":   "Salienz — Bewertung",
+    "dispatcher": "Dispatcher — Speichern",
 }
 
 
@@ -116,78 +104,57 @@ def _sse_event(event_type: str, data: dict) -> str:
 # ─────────────────────────────────────────────
 # Synchroner Chat
 # ─────────────────────────────────────────────
-@router.post("/chat", response_model=GespraechAntwort)
+@router.post("/chat")
 def ChatSenden(anfrage: GespraechAnfrage, request: Request):
     """Prompt durch den Gesprächsgraphen verarbeiten."""
     try:
         _user_entitaet_sicherstellen(anfrage.user_id)
+        character_id: str = ASSISTANT_USER_ID
 
+        # Shadow Delivery: Aktivität melden + Cooldown zurücksetzen
+        redis_client.set(f"last_activity:{anfrage.user_id}", str(time.time()), ex=7200)
+        shadow_cooldown_reset(redis_client, anfrage.user_id)
+
+        # ── Pfad 1: HumanGraph (Perzeption → Enricher → EI-Calc → Salienz → Dispatcher) ──
         with llm_lock:
-            session_turn_store(redis_client, anfrage.user_id, "user", anfrage.prompt)
-
-            # Shadow Delivery: Aktivität melden + Cooldown zurücksetzen
-            redis_client.set(f"last_activity:{anfrage.user_id}", str(time.time()), ex=7200)
-            shadow_cooldown_reset(redis_client, anfrage.user_id)
-
             initial_state: dict = request.app.state.human_graph.create_state(
                 user_prompt   = anfrage.prompt,
                 user_id       = anfrage.user_id,
+                character_id  = character_id,
                 system_prompt = anfrage.system,
                 temperature   = anfrage.temperatur,
             )
 
             result: dict = request.app.state.conversation_graph.invoke(initial_state)
 
-            # BUG-FIX: Original referenzierte nicht-existierendes 'letzter_state'
-            session_turn_store(redis_client, anfrage.user_id, "assistant", result.get("response", ""))
-
-            # KONTEXT1: Agent-Aktionsstatus im Session-Gedächtnis markieren
-            if result.get("agent_results"):
-                letztes = result["agent_results"][-1]
-                status = letztes.status if hasattr(letztes, "status") else letztes.get("status")
-                if status != "rueckfrage":
-                    session_turn_mark_action(
-                        redis_client,
-                        anfrage.user_id,
-                        erledigt=True,
-                        erfolgreich=(status == "abgeschlossen"),
-                    )
-
-            session_summarize_if_needed(redis_client, anfrage.user_id)
-
-            # Momentum für Shadow Delivery Service setzen (NACH Response)
-            redis_client.set(f"momentum:{anfrage.user_id}", result.get("momentum", "mid"), ex=300)
-
-        # ── Asynchrone Nachbearbeitung (User-Salienz + Nova-Pfad) ──
-        nachbearbeitung_starten(
-            state=result,
-            human_graph=request.app.state.human_graph,
-            response=result.get("response", ""),
-            redis_client=redis_client,
+        # ── Event erzeugen — löst CharacterGraph (Pfad 2) im Consumer aus ──
+        event_erzeugen(
+            redis_client = redis_client,
+            user_id      = anfrage.user_id,
+            character_id = character_id,
+            source       = "user",
+            typ          = "message",
+            payload      = {
+                "user_prompt":        anfrage.prompt,
+                "current_emotion":    result.get("current_emotion", ""),
+                "current_arousal":    result.get("current_arousal", 0.0),
+                "gespraechs_modus":   result.get("gespraechs_modus", ""),
+                "intent":             result.get("intent", ""),
+                "tone":               result.get("tone", ""),
+                "sprach_stil":        result.get("sprach_stil", ""),
+                "beziehungs_dynamik": result.get("beziehungs_dynamik", ""),
+            },
         )
 
-        return GespraechAntwort(
-            antwort            = result["response"],
-            modell             = result["model"],
-            token_total        = result["token_total"],
-            emotion            = result.get("current_emotion", ""),
-            arousal            = result.get("current_arousal", 0.0),
-            emotions_vektor    = result.get("emotions_vektor", ""),
-            emotions_verlauf   = result.get("emotions_verlauf", []),
-            sprach_stil        = result.get("sprach_stil", ""),
-            beziehungs_dynamik = result.get("beziehungs_dynamik", ""),
-            nova_emotion           = result.get("nova_emotions_verlauf", [{}])[0].get("emotion", "") if result.get("nova_emotions_verlauf") else "",
-            nova_arousal           = result.get("nova_emotions_verlauf", [{}])[0].get("arousal", 0.0) if result.get("nova_emotions_verlauf") else 0.0,
-            nova_emotions_verlauf  = result.get("nova_emotions_verlauf", []),
-            nova_emotions_vektor   = result.get("nova_emotions_vektor", ""),
-            nova_emotion_konflikt  = result.get("nova_emotion_konflikt", False),
-            intent             = result.get("intent", ""),
-            tone               = result.get("tone", ""),
-            gespraechs_modus   = result.get("gespraechs_modus", ""),
-            user_intentionen   = result.get("user_intentionen", []),
-            momentum           = result.get("momentum", ""),
-            needs_web          = result.get("needs_web", False),
-        )
+        # Momentum für Shadow Delivery Service
+        redis_client.set(f"momentum:{anfrage.user_id}", result.get("momentum", "mid"), ex=300)
+
+        return {
+            "status":    "processing",
+            "nachricht": "Nachricht empfangen, Charakter-Antwort folgt per WebSocket.",
+            "emotion":   result.get("current_emotion", ""),
+            "arousal":   result.get("current_arousal", 0.0),
+        }
 
     except Exception as fehler:
         logger.error(f"Graph-Fehler: {fehler}")
@@ -207,16 +174,17 @@ def ChatStreamSenden(anfrage: GespraechAnfrage, request: Request):
 
     def event_generator():
         try:
+            character_id: str = ASSISTANT_USER_ID
+
+            # Shadow Delivery: Aktivität melden + Cooldown zurücksetzen
+            redis_client.set(f"last_activity:{anfrage.user_id}", str(time.time()), ex=7200)
+            shadow_cooldown_reset(redis_client, anfrage.user_id)
+
             with llm_lock:
-                session_turn_store(redis_client, anfrage.user_id, "user", anfrage.prompt)
-
-                # Shadow Delivery: Aktivität melden + Cooldown zurücksetzen
-                redis_client.set(f"last_activity:{anfrage.user_id}", str(time.time()), ex=7200)
-                shadow_cooldown_reset(redis_client, anfrage.user_id)
-
                 initial_state: dict = request.app.state.human_graph.create_state(
                     user_prompt   = anfrage.prompt,
                     user_id       = anfrage.user_id,
+                    character_id  = character_id,
                     system_prompt = anfrage.system,
                     temperature   = anfrage.temperatur,
                 )
@@ -255,13 +223,6 @@ def ChatStreamSenden(anfrage: GespraechAnfrage, request: Request):
                                 teile.append(dynamik)
 
                             detail = " · ".join(teile) if teile else "—"
-
-                        elif node_name == "router":
-                            detail = (
-                                f"Intent: {node_state.get('intent', '?')}, "
-                                f"Ton: {node_state.get('tone', '?')}, "
-                                f"Momentum: {node_state.get('momentum', '?')}"
-                            )
 
                         elif node_name == "enricher":
                             hat_kontext: bool = bool(node_state.get("memory_context", ""))
@@ -312,64 +273,6 @@ def ChatStreamSenden(anfrage: GespraechAnfrage, request: Request):
 
                             detail = " | ".join(ei_teile) if ei_teile else "—"
 
-                        elif node_name == "responder":
-                            detail = f"{node_state.get('token_total', 0)} Tokens"
-
-                        elif node_name == "evaluate":
-                            verdict: str = node_state.get("tribunal_verdict", "?")
-                            summary: str = node_state.get("tribunal_summary", "")
-                            detail = f"Verdict: {verdict}"
-                            if verdict != "ok" and summary:
-                                detail += f" — {summary[:120]}"
-
-                        elif node_name == "corrector":
-                            detail = f"Runde {node_state.get('correction_round', 0)}"
-
-                        elif node_name == "thinker":
-                            needs_web: bool = node_state.get("needs_web", False)
-                            annotations: list = node_state.get("node_annotations", [])
-                            thinker_annotations: list[str] = [
-                                a for a in annotations if a.startswith("[Thinker")
-                            ]
-                            thinker_teile: list[str] = []
-                            if needs_web:
-                                thinker_teile.append("Web-Suche aktiv")
-                            korrigiert: bool = any("[Thinker] Korrektur" in a for a in thinker_annotations)
-                            if korrigiert:
-                                issues: list[str] = [
-                                    a.replace("[Thinker/Issue] ", "")
-                                    for a in thinker_annotations
-                                    if a.startswith("[Thinker/Issue]")
-                                ]
-                                thinker_teile.append(f"Korrigiert ({len(issues)} Probleme)")
-                            elif needs_web:
-                                thinker_teile.append("Fakten geprüft")
-                            else:
-                                thinker_teile.append("Kein Web nötig")
-                            detail = " | ".join(thinker_teile)
-
-                        elif node_name == "planner":
-                            planner_aktiv: bool = node_state.get("planner_aktiv", False)
-                            agent_name: str = node_state.get("agent_name", "")
-                            if planner_aktiv and agent_name:
-                                detail = f"Agent: {agent_name}"
-                            elif planner_aktiv:
-                                detail = "Agent-Dispatch vorbereitet"
-                            else:
-                                detail = "Kein Agent nötig"
-
-                        elif node_name == "agent_dispatch":
-                            agent_results_list: list = node_state.get("agent_results", [])
-                            if agent_results_list:
-                                agent_teile: list[str] = []
-                                for a_result in agent_results_list:
-                                    a_name:   str = getattr(a_result, "agent_name", "?") if not isinstance(a_result, dict) else a_result.get("agent_name", "?")
-                                    a_status: str = getattr(a_result, "status", "?") if not isinstance(a_result, dict) else a_result.get("status", "?")
-                                    agent_teile.append(f"{a_name}: {a_status}")
-                                detail = " | ".join(agent_teile)
-                            else:
-                                detail = "Ausführung läuft"
-
                         yield _sse_event("stage", {
                             "node":   node_name,
                             "label":  label,
@@ -378,64 +281,38 @@ def ChatStreamSenden(anfrage: GespraechAnfrage, request: Request):
 
                         letzter_state = node_state
 
-                session_turn_store(
-                    redis_client,
-                    letzter_state["user_id"],
-                    "assistant",
-                    letzter_state.get("response", ""),
-                )
+            # ── Event erzeugen — löst CharacterGraph (Pfad 2) im Consumer aus ──
+            event_erzeugen(
+                redis_client = redis_client,
+                user_id      = anfrage.user_id,
+                character_id = character_id,
+                source       = "user",
+                typ          = "message",
+                payload      = {
+                    "user_prompt":        anfrage.prompt,
+                    "current_emotion":    letzter_state.get("current_emotion", ""),
+                    "current_arousal":    letzter_state.get("current_arousal", 0.0),
+                    "gespraechs_modus":   letzter_state.get("gespraechs_modus", ""),
+                    "intent":             letzter_state.get("intent", ""),
+                    "tone":               letzter_state.get("tone", ""),
+                    "sprach_stil":        letzter_state.get("sprach_stil", ""),
+                    "beziehungs_dynamik": letzter_state.get("beziehungs_dynamik", ""),
+                },
+            )
 
-                # KONTEXT1: Agent-Aktionsstatus im Session-Gedächtnis markieren
-                if letzter_state.get("agent_results"):
-                    letztes = letzter_state["agent_results"][-1]
-                    status = letztes.status if hasattr(letztes, "status") else letztes.get("status")
-                    if status != "rueckfrage":
-                        session_turn_mark_action(
-                            redis_client,
-                            anfrage.user_id,
-                            erledigt=True,
-                            erfolgreich=(status == "abgeschlossen"),
-                        )
-
-                session_summarize_if_needed(redis_client, anfrage.user_id)
-
-            yield _sse_event("answer", {
-                "antwort":            letzter_state.get("response", ""),
-                "modell":             letzter_state.get("model", OLLAMA_MODEL),
-                "token_total":        letzter_state.get("token_total", 0),
-                "emotion":            letzter_state.get("current_emotion", ""),
-                "arousal":            letzter_state.get("current_arousal", 0.0),
-                "emotions_vektor":    letzter_state.get("emotions_vektor", ""),
-                "emotions_verlauf":   letzter_state.get("emotions_verlauf", []),
-                "sprach_stil":        letzter_state.get("sprach_stil", ""),
-                "beziehungs_dynamik": letzter_state.get("beziehungs_dynamik", ""),
-                "nova_emotion":           letzter_state.get("nova_emotions_verlauf", [{}])[0].get("emotion", "") if letzter_state.get("nova_emotions_verlauf") else "",
-                "nova_arousal":           letzter_state.get("nova_emotions_verlauf", [{}])[0].get("arousal", 0.0) if letzter_state.get("nova_emotions_verlauf") else 0.0,
-                "nova_emotions_verlauf":  letzter_state.get("nova_emotions_verlauf", []),
-                "nova_emotions_vektor":   letzter_state.get("nova_emotions_vektor", ""),
-                "nova_emotion_konflikt":  letzter_state.get("nova_emotion_konflikt", False),
-                "intent":             letzter_state.get("intent", ""),
-                "tone":               letzter_state.get("tone", ""),
-                "gespraechs_modus":   letzter_state.get("gespraechs_modus", ""),
-                "user_intentionen":   letzter_state.get("user_intentionen", []),
-                "momentum":           letzter_state.get("momentum", ""),
-                "needs_web":          letzter_state.get("needs_web", False),
-            })
-
-            # Momentum für Shadow Delivery Service setzen (NACH Response)
+            # Momentum für Shadow Delivery Service
             redis_client.set(
                 f"momentum:{letzter_state['user_id']}",
                 letzter_state.get("momentum", "mid"),
                 ex=300,
             )
 
-            # ── Asynchrone Nachbearbeitung (User-Salienz + Nova-Pfad) ──
-            nachbearbeitung_starten(
-                state=letzter_state,
-                human_graph=request.app.state.human_graph,
-                response=letzter_state.get("response", ""),
-                redis_client=redis_client,
-            )
+            yield _sse_event("processing", {
+                "status":    "event_created",
+                "nachricht": "Charakter-Antwort folgt per WebSocket.",
+                "emotion":   letzter_state.get("current_emotion", ""),
+                "arousal":   letzter_state.get("current_arousal", 0.0),
+            })
 
         except Exception as fehler:
             logger.error(f"Stream-Fehler: {fehler}")

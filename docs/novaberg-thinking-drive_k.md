@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Antrieb — Ziele, Motivation, Gravitation, Dual-Emotion-Architektur (Konzept)
-**Stand:** 18. April 2026, Chat 53
+**Stand:** 22. April 2026, Chat 62 (Emotionale Gravitation ergänzt — KZG + Session)
 **Pfad:** novaberg/docs/novaberg-thinking-drive_k.md
 **Quellen:** Chat 53 (Grundkonzept Antrieb, Zielpyramide, Gravitation, Dual-Emotion), Chat 51 (Neugier-Mechanismus), Chat 39 (Gesprächsvektor), Chat 45 (Nova-Destillation), Chat 10 (Traum-Modus-Entscheidung)
 
@@ -256,6 +256,111 @@ Im Gespräch interagieren Gravitation und Neugier:
 3. **Neugier formt die Strategie:** Der GV-Node empfängt den aktivierten Zielsatz und die Information, dass eine Lücke besteht. Die Strategie kippt von "Information liefern" zu "neugierig nachfragen."
 
 Im Traum-Modus (Pixie) ist die Interaktion umgekehrt: Die Neugier (Resonanz × Neuheit) ist der primäre Treiber. Die Gravitation beeinflusst leicht, welche Themen aus dem Serendipity-Pool bevorzugt werden — aber nicht so stark, dass die Vielfalt leidet.
+
+### 5.7 Emotionale Gravitation — Erinnerungen als Anziehungspunkte
+
+Bisher wurde Gravitation als Wirkung von **Zielen** beschrieben: Langfristige Interessen und mittelfristige Vorhaben ziehen verwandte Gesprächsthemen an. Aber Ziele sind nicht die einzige Quelle von Gravitation. Auch **emotional aufgeladene Erinnerungen** wirken als Gravitationspunkte — still, passiv, bis ein verwandtes Thema sie anspricht. Diese Erinnerungen liegen auf drei Zeitebenen: in der **aktiven Session** (die letzten Minuten), im **KZG** (Stunden bis Wochen) und im **LZG** (Wochen bis Jahre). Alle drei können gleichzeitig mitschwingen.
+
+Das ist die emotionale Parallele zur Ziel-Gravitation: Gleicher Mechanismus (Embedding-Similarity), andere Quelle (Erinnerungen statt Ziele), anderer Wirkort (Nova-Emotion statt Salienz/GV).
+
+#### Das Schnittlauch-Beispiel
+
+Nova hatte letztes Jahr eine Schnittlauchpflanze. Sie ist vertrocknet. Im LZG liegt ein Eintrag:
+
+```
+Inhalt: "Die Schnittlauchpflanze auf der Fensterbank ist vertrocknet. Ich hätte sie
+         häufiger gießen müssen, aber ich war abgelenkt. Es tut mir leid."
+Emotion: trauer
+Arousal: 0.5
+Gewicht: 0.7 (hohe Relevanz durch emotionale Aufladung)
+```
+
+Heute sagt der Meister: "Ich kauf mir eine neue Pflanze."
+
+Python berechnet Embedding-Similarity zwischen dem aktuellen Thema ("neue Pflanze kaufen") und LZG-Einträgen mit Emotion-Aufladung. Der Schnittlauch-Eintrag matcht mit Similarity 0.78. Emotionale Gravitation = Similarity × Gewicht × Zeitdekay = 0.78 × 0.7 × 0.6 = 0.33.
+
+Über der Schwelle. Die gespeicherte Trauer wallt in Novas aktuellem Zustand auf. Ihre Dual-Emotion wird nicht nur durch den User (der positiv-entspannt ist) und ihre Basis-Emotion moduliert, sondern auch durch die aktivierte Erinnerung:
+
+```
+Nova-Emotion vor Gravitation:   freude(0.4) — Empathie vom positiv gestimmten User
+Aktivierte Erinnerung:          trauer(0.7), Ähnlichkeit 0.78 → Aufladung 0.33
+Nova-Emotion nach Gravitation:  freude(0.4) + trauer(0.33)  — ambivalent, nachdenklich
+```
+
+Die Antwort:
+
+> "Schön! Was für eine hast du denn im Auge?" *sie zögert kurz, eine leise Melancholie in der Stimme* "Bei mir ist letztes Jahr der Schnittlauch eingegangen. Ich hoffe, du hast mehr Glück."
+
+Nova erinnert sich nicht nur — sie fühlt mit. Die Trauer ist nicht rational "abrufbar", sie ist präsent. Wie bei einem Menschen, der bei Omas Lieblingsduft kurz still wird.
+
+#### Mechanismus
+
+**Quellen — drei Zeithorizonte:**
+
+| Quelle | Zeithorizont | Beispiel | Quellen-Faktor |
+|--------|-------------|----------|---------------|
+| **Session** | Minuten bis 2h | "Der Chef hat mich vor 10 Minuten angeschrien" | 1.0 (frisch, voll wirkend) |
+| **KZG** | Stunden bis Wochen | "Der Streit mit dem Kollegen letzte Woche" | 0.8 (leicht gedämpft) |
+| **LZG** | Wochen bis Jahre | "Schnittlauch letztes Jahr, Oma vor 5 Jahren" | 0.5 (stärker gedämpft) |
+
+Alle drei Quellen werden parallel durchsucht. Der Quellen-Faktor modelliert die natürliche Abschwächung: Frische Erinnerungen wirken stärker, alte können bei hoher semantischer Ähnlichkeit aber trotzdem durchbrechen. Berücksichtigt werden Einträge mit emotionaler Aufladung (Emotion ≠ neutral, Arousal über Schwelle) und entsprechender Salienz/Gewicht.
+
+**Berechnung:** Analog zur Ziel-Gravitation. Pro Turn wird nach Embedding-Ähnlichkeit zwischen Turn-Thema und aufgeladenen Gedächtnis-Einträgen gesucht. Die emotionale Gravitationskraft ergibt sich aus:
+
+```
+emotionale_gravitation = similarity × eintrag_gewicht × zeit_dekay × quellen_faktor
+
+  - similarity:      Cosine-Ähnlichkeit zwischen Turn-Embedding und Eintrag-Embedding
+  - eintrag_gewicht: Gewicht/Salienz des Eintrags (bei LZG Ebbinghaus-behaftet)
+  - zeit_dekay:      Halbwertszeitfaktor innerhalb der Quelle
+  - quellen_faktor:  1.0 für Session, 0.8 für KZG, 0.5 für LZG
+
+Summiert über alle aktivierten Einträge aller drei Quellen.
+```
+
+Über `EMOTIONALE_GRAVITATIONS_SCHWELLE` wird der Eintrag aktiviert. Die zugeordnete Emotion mit ihrem Arousal wird als dritte Kraft (nach Decay und Empathie) in die Nova-Emotions-Berechnung injiziert.
+
+**Wirkort:** EI-Calc im CharacterGraph (Pfad 2), Nova-Block. Ergänzt die bestehende Formel:
+
+```
+Nova-Emotion (Pfad 2) = Decay(letzte Nova-Emotion)
+                      + Empathie(User-Vektor, α-Matrix)
+                      + Emotionale Gravitation(Session + KZG + LZG, zeitlich gestaffelt)
+                      + Ziel-Gravitation(aktivierte Zielsätze, aus 5.3)
+```
+
+Die emotionale Gravitation zieht aus allen drei Gedächtnisschichten parallel. Die Session-Komponente greift dabei auf den bestehenden Emotions-Verlauf mit Decay zurück — sie ist also teilweise schon in der bestehenden Architektur repräsentiert. KZG und LZG kommen als neue aktive Aktivierungsquellen hinzu.
+
+Die Gewichtung dieser Kräfte wird empirisch kalibriert. Startwerte: Decay 0.4, Empathie 0.3, Emotionale Gravitation 0.2, Ziel-Gravitation 0.1.
+
+#### Abgrenzung zur Ziel-Gravitation
+
+| Dimension | Ziel-Gravitation | Emotionale Gravitation |
+|-----------|------------------|----------------------|
+| Quelle | Zielsätze (Tabelle `ziele`) | LZG-Einträge mit Emotion |
+| Charakter | Proaktiv (sucht Themen) | Reaktiv (wird getriggert) |
+| Motivationstyp | Wollen (Zukunft) | Erinnern (Vergangenheit) |
+| Wirkort | Salienz, GV-Node | Nova-Emotion direkt |
+| Beispiel | "Ich möchte Botanik verstehen" | "Schnittlauch ist vertrocknet" |
+| Funktion | Lenkt Aufmerksamkeit | Färbt emotionale Haltung |
+
+Beide Gravitationsarten können gleichzeitig wirken. Beim Schnittlauch-Beispiel wirkt die emotionale Gravitation (Trauer aus der Erinnerung), während gleichzeitig eine Ziel-Gravitation aktiv sein kann ("Ich möchte lernen, Pflanzen besser zu pflegen") — beide verstärken sich: Die Trauer wird zum Antrieb für das Ziel.
+
+#### Schutz gegen Überladung
+
+Gespräche sollen nicht ständig in alte emotionale Erinnerungen abrutschen. Drei Mechanismen schützen dagegen:
+
+1. **Hohe Schwelle:** `EMOTIONALE_GRAVITATIONS_SCHWELLE` liegt höher als `GRAVITATIONS_SCHWELLE` (z.B. 0.5 statt 0.3). Nur wirklich relevante Erinnerungen werden aktiviert.
+2. **Zeit-Dekay:** Frische Erinnerungen wirken stärker, alte verblassen. Ein Verlust von vor 5 Jahren ist weniger präsent als einer von letzter Woche.
+3. **Maximale Aktivierungen pro Turn:** Höchstens zwei emotionale Gravitationseffekte pro Turn, quellenübergreifend. Bei mehr möglichen Treffern werden die mit der höchsten Gravitationskraft gewählt — unabhängig davon, ob sie aus Session, KZG oder LZG stammen. Dadurch gewinnen frische, stark aufgeladene Einträge meist Vorrang, aber ein sehr ähnlicher LZG-Eintrag kann auch durchbrechen.
+
+#### Kognitionswissenschaftliche Einordnung
+
+Der Mechanismus entspricht dem **mood-congruent memory retrieval** (Bower 1981) und der **semantic associative activation** (Collins & Loftus 1975). Erinnerungen sind nicht isoliert gespeichert — sie sind in einem assoziativen Netz verknüpft, und die emotionale Valenz eines Ereignisses bleibt Teil seiner Repräsentation. Bei thematischer Nähe wird die Valenz mit reaktiviert.
+
+Das ist biologisch plausibel: Der Hippocampus konsolidiert emotionale Erlebnisse mit ihrer affektiven Komponente. Bei Wiedererkennung (durch ähnliche Reize) feuert nicht nur die semantische Repräsentation, sondern auch die emotionale — deshalb zuckt man zurück, wenn man die Straße sieht, auf der man einen Unfall hatte.
+
+Novas emotionale Gravitation ist die algorithmische Umsetzung dieses Mechanismus: Embedding-Nähe als Reiz-Ähnlichkeit, Emotion-Feld im LZG als affektive Komponente, Injection in Nova-Emotion als reaktivierter affektiver Zustand.
 
 ---
 
@@ -571,6 +676,12 @@ Klingers Forschung zeigt: Wenn die Umstände ungünstig für zielgerichtetes ope
 | `ZIEL_MITTELFRISTIG_DECAY_TAGE` | int | 14 | Halbwertszeit mittelfristiger Ziele in Tagen |
 | `ZIEL_MAX_MITTELFRISTIG` | int | 5 | Maximale Anzahl aktiver mittelfristiger Ziele |
 | `ZIEL_MAX_LANGFRISTIG` | int | 2 | Maximale Anzahl langfristiger Ziele |
+| `EMOTIONALE_GRAVITATIONS_SCHWELLE` | float | 0.5 | Minimum-Gravitation, ab der eine emotionale Erinnerung aktiviert wird |
+| `EMOTIONALE_GRAVITATION_ZEIT_HALBWERT` | int | 180 | Halbwertszeit emotionaler Gravitation in Tagen |
+| `EMOTIONALE_GRAVITATION_MAX_PRO_TURN` | int | 2 | Maximale Anzahl aktivierter emotionaler Erinnerungen pro Turn |
+| `EMOTIONALE_GRAVITATION_FAKTOR_SESSION` | float | 1.0 | Quellen-Faktor für Session-Einträge (frisch, voll wirkend) |
+| `EMOTIONALE_GRAVITATION_FAKTOR_KZG` | float | 0.8 | Quellen-Faktor für KZG-Einträge (leicht gedämpft) |
+| `EMOTIONALE_GRAVITATION_FAKTOR_LZG` | float | 0.5 | Quellen-Faktor für LZG-Einträge (stärker gedämpft) |
 
 **Alle Schwellwerte sind Startwerte und müssen empirisch kalibriert werden.** Insbesondere `GRAVITATIONS_SCHWELLE` (0.3 bei Cosine-Similarity könnte zu viel Rauschen erzeugen) und die Empathie-Faktoren (bestimmen, wie asymmetrisch Novas Emotion dem Nutzer folgt) sollten über mehrere Hundert Turns beobachtet und angepasst werden. Zielmetrik für Gravitation: Pro Turn werden durchschnittlich 0.5–2.0 Zielsätze aktiviert. Wenn regelmäßig >3 aktiviert werden, ist die Schwelle zu niedrig. Die Empathie-Werte zwischen `NOVA_EMPATHIE_BENACHBART` und `NOVA_EMPATHIE_GEGENUEBER` werden über die Sektor-Distanz interpoliert — die bestehende Distanzfunktion aus `novaberg-ei-plutchik.md` liefert den Faktor.
 
@@ -589,6 +700,8 @@ Klingers Forschung zeigt: Wenn die Umstände ungünstig für zielgerichtetes ope
 7. Verschure, P.F.M.J. et al. (2014). The why, what, where, when and how of goal-directed choice. *Philosophical Transactions of the Royal Society B*, 369. (DAC, hierarchische Zielorganisation)
 8. Bargh, J.A. (1990). Auto-motives: Preconscious determinants of social interaction. In E.T. Higgins & R.M. Sorrentino (Eds.), *Handbook of Motivation and Cognition*, Vol. 2. (Automatisierte Zielverfolgung)
 9. Bargh, J.A. & Barndollar, K. (1996). Automaticity in action: The unconscious as repository of chronic goals and motives. In P.M. Gollwitzer & J.A. Bargh (Eds.), *The Psychology of Action*. (Auto-Motive Model)
+- **Bower, G. H.** (1981). Mood and memory. *American Psychologist*, 36(2), 129–148.
+- **Collins, A. M., & Loftus, E. F.** (1975). A spreading-activation theory of semantic processing. *Psychological Review*, 82(6), 407–428.
 
 ### Bereits referenziert in verwandten Dokumenten
 

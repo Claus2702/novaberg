@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Node-Referenz Dispatcher
-**Stand:** 20. April 2026, Chat 59 (asynchrone Ausführung über services/nachbearbeitung.py)
+**Stand:** 21. April 2026, Chat 60 (Event-Modell, Graph-Split)
 **Pfad:** novaberg/docs/novaberg-node-dispatcher.md
 **Quellen:** nova-01-m-h.md
 **Datei:** `graph/nodes/dispatcher.py`
@@ -11,7 +11,7 @@
 
 ## 1. Aufgabe
 
-Der Dispatcher ist der letzte Node im User-Pfad des async-Blocks. Er nimmt die `pending_writes` aus dem State, gruppiert sie nach Ziel und ruft den jeweils zuständigen Manager-Plugin oder Agent auf. Er ist reiner Arbeiter — keine Bewertung, keine Entscheidung, keine LLM-Calls.
+Der Dispatcher ist der letzte Node in beiden Graphen (HumanGraph und CharacterGraph). Er nimmt die `pending_writes` aus dem State, verteilt sie an Manager/Agenten, und schreibt den Session-Turn vollständig (seit Chat 60). Er ist reiner Arbeiter — keine Bewertung, keine Entscheidung, keine LLM-Calls.
 
 **Zwei Agent-Dispatcher.** Seit Chat 29 ruft der Dispatcher für das Ziel `"kzg"` direkt `dispatch_kzg()` auf. Seit Chat 32 feuert er zusätzlich den DelegationsAgent (`dispatch_delegation()`) über eine ODER-Trigger-Prüfung auf den emotionalen State.
 
@@ -20,23 +20,17 @@ Der Dispatcher ist der letzte Node im User-Pfad des async-Blocks. Er nimmt die `
 ## 2. Position im Graph
 
 ```
-... → Tribunal → Evaluate → ok → END          (sync-Graph-Austritt, seit Chat 59)
-                                  │
-                                  v
-                 (ASYNCHRON, services/nachbearbeitung.py)
-                                  │
-                         Salienz → ▶ Dispatcher ◀
+HumanGraph (Pfad 1):    ... → EI-Calc → Salienz → ▶ Dispatcher ◀ → END
+CharacterGraph (Pfad 2): ... → Tribunal → Evaluate → ok → Salienz → ▶ Dispatcher ◀ → END
 ```
 
-**Seit Chat 59 asynchron.** Der Dispatcher ist nicht mehr Teil des sync-HumanGraph — er läuft im User-Pfad des async-Blocks (`services/nachbearbeitung.py`) direkt nach der Salienz, nachdem die Antwort ausgeliefert wurde.
+**Seit Chat 60 wieder im Graph.** Der Dispatcher ist letzter Node beider Graphen. Salienz und Dispatcher laufen nicht mehr asynchron — sie sind Teil des jeweiligen Graph-Durchlaufs.
 
 **Kein LLM-Call:** Der Dispatcher selbst macht nichts am LLM — er ruft nur Manager-Plugins und Agent-Dispatcher auf. Der `llm_lock` wird hier nicht erworben.
 
-**Input:** State mit `pending_writes` (befüllt von Salienz; Planner-Writes sind bereits vor dem Graph-Austritt geflossen — deren Dispatch passiert weiterhin implizit im Planner-Pfad).
+**Input:** State mit `pending_writes` (befüllt von Salienz; Planner-Writes sind bereits vor dem Dispatcher geflossen — deren Dispatch passiert weiterhin implizit im Planner-Pfad).
 
-**Output:** State mit geleerten `pending_writes`. Die Manager/Agenten haben ihre Schreiboperationen ausgeführt.
-
-→ Details zum Async-Flow: `novaberg-service-nachbearbeitung.md`
+**Output:** State mit geleerten `pending_writes` und vollständig geschriebenem Session-Turn. Die Manager/Agenten haben ihre Schreiboperationen ausgeführt.
 
 ---
 
@@ -126,6 +120,20 @@ Neue PendingWrite-Ziele werden durch neue Manager-Plugins automatisch bedient �
 > **Entscheider/Arbeiter-Trennung (A1):** Die Salienz entscheidet *was* gespeichert wird. Der Planner entscheidet *welche Management-Aktion* ausgeführt wird. Der Dispatcher *führt aus* — blind, nach Anweisung, ohne eigene Logik.
 
 > **Yin-Yang-Prinzip (VENT1, Chat 32):** Der DelegationsAgent ist die Ausnahme — er wird nicht durch pending_writes ausgelöst, sondern durch den emotionalen State. Das ist bewusst: Emotionale Begleitung braucht einen eigenen Trigger-Pfad, nicht den gleichen wie Gedächtnis-Operationen.
+
+---
+
+## 7. Session-Turn-Schreiber (Chat 60)
+
+Seit Chat 60 schreibt der Dispatcher den Session-Turn als letzte Aktion — vollständig, mit allen Metadaten. Kein nachträgliches Annotieren.
+
+**Automatische Rollen-Erkennung:** Wenn `state["response"]` vorhanden → Assistant-Turn. Sonst → User-Turn.
+
+**Geschriebene Felder:** inhalt, rolle, emotion, arousal, modus, intentionen, emotions_vektor, sprach_stil, beziehungs_dynamik, tone, kern (aus `session_turn_kern`, vom KZG-Agent).
+
+**Session-Zusammenfassung:** Nach dem Turn-Store wird `session_summarize_if_needed()` aufgerufen — älteste Turns werden komprimiert wenn der Stack > 25 Turns hat.
+
+Funktion: `_session_turn_schreiben()` in `dispatcher.py`.
 
 ---
 

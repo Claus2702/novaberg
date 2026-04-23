@@ -100,10 +100,11 @@ def route(
         return state
 
     # ── Session-Kontext laden (leichtgewichtig, Redis-Read) ──
+    character_id: str = state.get("character_id", "")
     session_turns: str | None = None
     if user_id:
         try:
-            raw_turns: list[dict] = session_turns_retrieve(redis_client, user_id)
+            raw_turns: list[dict] = session_turns_retrieve(redis_client, user_id, character_id)
             session_turns = format_session_turns_numbered(raw_turns, max_turns=5) or None
             if session_turns:
                 logger.info("Router: Session-Kontext geladen (nummeriert)")

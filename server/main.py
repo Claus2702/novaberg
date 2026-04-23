@@ -20,7 +20,7 @@ from config import (
     PIXIE_INTERVALL_MIN, shutdown_event,
 )
 from services.llm_provider import init_providers
-from graph.builder              import build_human_graph, build_agent_graph
+from graph.builder              import build_human_graph, build_agent_graph, build_character_graph
 from services.shadow_agent      import schatten_arbeit_ausfuehren, discover_tasks
 
 # API-Router
@@ -32,6 +32,7 @@ from api.websocket              import router as websocket_router, aktive_verbin
 from api.admin                  import router as admin_router
 
 from services.shadow_delivery   import shadow_delivery_loop
+from services.event_consumer    import event_consumer_loop
 
 logger        = logging.getLogger("ki_server")
 scheduler     = AsyncIOScheduler()
@@ -236,6 +237,16 @@ async def Lifespan(app: FastAPI):
     app.state.compiled_agent_graph = compiled_agent
     logger.info("AgentGraph initialisiert.")
 
+    compiled_character, character_graph = build_character_graph(
+        embed_client = ollama_gpu_client,
+        embed_model  = EMBED_MODEL,
+        redis_client = redis_client,
+        postgres_url = POSTGRES_URL,
+    )
+    app.state.character_graph          = character_graph
+    app.state.compiled_character_graph = compiled_character
+    logger.info("CharacterGraph initialisiert.")
+
     # ── NEU: Shadow Delivery Service starten ──
     delivery_task = asyncio.create_task(
         shadow_delivery_loop(
@@ -250,12 +261,25 @@ async def Lifespan(app: FastAPI):
     )
     logger.info("Shadow Delivery Service gestartet.")
 
+    # ── Event-Consumer starten ──
+    consumer_task = asyncio.create_task(
+        event_consumer_loop(
+            redis_client       = redis_client,
+            character_graph    = character_graph,
+            compiled_character = compiled_character,
+            websocket_map      = aktive_verbindungen,
+            llm_lock           = llm_lock,
+        )
+    )
+    logger.info("Event-Consumer gestartet.")
+
     yield
 
     # ── Shutdown: Event setzen, dann aufräumen ──
     shutdown_event.set()
     scheduler.shutdown(wait=False)
     delivery_task.cancel()
+    consumer_task.cancel()
     logger.info("Server gestoppt.")
 
 

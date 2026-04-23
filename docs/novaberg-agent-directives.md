@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** DirektivenAgent (Verhaltensanweisungen, Arbeitsvertrag)
-**Stand:** 17. April 2026, Chat 52 (Code-Alignment)
+**Stand:** 21. April 2026, Chat 60 (Session-Trennung: character_id im Kontext)
 **Pfad:** novaberg/docs/novaberg-agent-directives.md
 **Quellen:** nova-12-k.md, nova-14-k.md, nova-15-k.md
 
@@ -84,6 +84,8 @@ agents/direktiven/
 ---
 
 ## 4. Classify-Node
+
+Seit Chat 60: `character_id` wird im Agent-Kontext (`state["kontext"]["character_id"]`) durchgereicht und an `session_turns_retrieve()` übergeben. Der Session-Key enthält die Charakter-Dimension.
 
 Der Classify-Node extrahiert vier Felder per LLM:
 

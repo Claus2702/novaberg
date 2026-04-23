@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Backlog — Konzipierte, noch nicht implementierte Features
-**Stand:** 20. April 2026, Chat 59
+**Stand:** 21. April 2026, Chat 60
 **Pfad:** novaberg/docs/novaberg-backlog.md
 **Quellen:** nova-08-k.md (Kognitive Anreicherung), nova-10-k-backlog.md (Skill-System), nova-01-t-c-backlog.md (Node-Konfiguration)
 
@@ -414,12 +414,69 @@ Zwei neue Nodes pro Agent:
 | 1 | EI-Extraktion (Enricher → ei/berechnung.py) | ✅ Chat 58 |
 | 2 | EI-Calc-Node (graph/nodes/ei_calc.py) | ✅ Chat 59 |
 | 3 | Nova-Emotion Berechnung (Decay + Empathie) | ✅ Chat 59 |
-| 4 | Perzeption(Nova) + EI-Calc(Nova) im async-Block | 🔧 Chat 59 — Perzeption(Nova) + Enricher(Nova) ✅, Router(Nova) offen |
-| 5 | Router(Nova) + Commitment-Erkennung | ⬜ |
-| 6 | Salienz(Nova) — eigener Salienz-Prompt | ⬜ |
-| 7 | Asynchroner Block orchestrieren | ✅ Chat 59 |
-| 8 | API + Client (GespraechAntwort + Dual-Radar) | 🔧 Chat 59 — API + SSE ✅, Client-Panels offen |
-| 9 | Dokumentation | 🔧 Chat 59 — Protokoll ✅, Doku-Update läuft |
+| 4 | Perzeption(Nova) + EI-Calc(Nova) im async-Block | ✅ Chat 60 — Event-Modell ersetzt den async-Pfad |
+| 5 | Router(Nova) + Commitment-Erkennung | ✅ Chat 60 — Router im CharacterGraph |
+| 6 | Salienz(Nova) — eigener Salienz-Prompt | ✅ Chat 60 — Salienz im CharacterGraph |
+| 7 | Asynchroner Block orchestrieren | ✅ Chat 60 — Event-Consumer ersetzt async-Block |
+| 8 | API + Client (GespraechAntwort + Dual-Radar) | 🔧 API ✅, Client-Panels offen |
+| 9 | Dokumentation | 🔧 Konzeptdokument + 12 Node-Dokumente aktualisiert |
+
+**Chat 61 Nachtrag:**
+- Perzeption(Nova) läuft nun symmetrisch nach Nova's finaler Antwort (analog zu Perzeption(User) in Pfad 1). Siehe Roadmap Chat 61.
+- EI-Calc hat einen sauberen Rollen-Split bekommen (`ei_calc_rolle: "user" | "character"`). Trennung von User- und Nova-Emotion-Berechnung ist damit architektonisch abgeschlossen.
+
+---
+
+## Epic: Emotionale Gravitation (Chat 61)
+
+**Vision:** Gespeicherte emotional aufgeladene Erinnerungen wirken als Attraktoren auf Novas aktuellen Emotionsstrom. Still, passiv, bis ein thematisch verwandtes Gespräch sie reaktiviert.
+
+**Konzept:** `novaberg-thinking-drive_k.md` Kapitel 5.7 — drei Zeithorizonte (Session/KZG/LZG), Formel `gravitation = similarity × gewicht × zeit_dekay × quellen_faktor`.
+
+**Mechanik:** Bei jedem Turn in Pfad 2 (Nova-EI-Calc):
+1. Embedding des aktuellen Themas berechnen (liegt bereits vor)
+2. Top-K Einträge aus Session + KZG + LZG mit Emotion-Aufladung retrieven
+3. Ähnlichkeits-basierte Gravitations-Berechnung je Eintrag
+4. Einträge über Schwelle (EMOTIONALE_GRAVITATIONS_SCHWELLE) fügen ihren Emotions-Vektor zu Novas Vektor hinzu
+5. Hard-Cap auf EMOTIONALE_GRAVITATION_MAX_PRO_TURN (default 2) um keine Gefühls-Explosion auszulösen
+
+**Config-Parameter (neu):**
+- `EMOTIONALE_GRAVITATIONS_SCHWELLE: float = 0.5`
+- `EMOTIONALE_GRAVITATION_ZEIT_HALBWERT: int = 180` (Tage)
+- `EMOTIONALE_GRAVITATION_MAX_PRO_TURN: int = 2`
+- `EMOTIONALE_GRAVITATION_FAKTOR_SESSION: float = 1.0`
+- `EMOTIONALE_GRAVITATION_FAKTOR_KZG: float = 0.8`
+- `EMOTIONALE_GRAVITATION_FAKTOR_LZG: float = 0.5`
+
+**Wissenschaftliche Basis:** Bower (1981) Mood-Congruent Memory, Collins & Loftus (1975) Spreading Activation, Tulving (1983) Episodic Memory.
+
+**Status:** Konzeptionell vollständig. Code-Implementation offen.
+
+**Priorität:** Mittel — schön zu haben, erhöht emotionale Tiefe deutlich, aber nicht blockierend.
+
+---
+
+## Epic: Client urllib3-Retry-Fix (Chat 61)
+
+**Problem:** Wenn der Server lange braucht (z.B. 55 Sekunden bei GPU-Druck), sendet urllib3 (unter requests) automatisch einen Retry. Der Server bekommt den Prompt zweimal, schreibt zwei identische User-Turns in die Session. Symptom wurde in Chat 61 beobachtet.
+
+**Fix:** In `client/ui/stream_handler.py` HTTPAdapter mit `max_retries=0` konfigurieren, damit keine automatischen Retries stattfinden. Timeouts auf Client-Ebene explizit behandeln.
+
+**Priorität:** Niedrig-Mittel — tritt nur bei langsamen Server-Responses auf. Mit schneller GPU und normaler Session-Größe kein Problem. Verhindert aber Daten-Inkonsistenzen bei Edge-Cases.
+
+---
+
+## Epic: Session-Limit für Responder-Prompt (Chat 61)
+
+**Problem:** Der Responder-Node packt aktuell alle Session-Turns (seit Session-Beginn) in den System-Prompt. Bei 18+ Turns mit reichhaltigen Emotions-Metadaten wird der Kontext schnell groß (~7000-14000 Tokens für einen Turn). In Kombination mit KZG + Charakter-Hash + Regeln kann das Gemma4's Kontext-Fenster (32768) deutlich beanspruchen.
+
+**Fix:** Session-Fenster einziehen — z.B. nur die letzten 12 Turns in den Prompt packen. Die älteren Turns bleiben in Redis für Nova's Gedächtnis, fließen aber nicht mehr in den aktuellen LLM-Call.
+
+**Zu beachten:** 
+- KZG-Verdichtung und Charakter-Hash ersetzen bereits den älteren Kontext konzeptionell
+- Der Cut-off sollte aber die aktuelle Gesprächs-Episode vollständig enthalten (Session-Cluster-Grenzen beachten, nicht mitten in einem thematischen Block abschneiden)
+
+**Priorität:** Mittel — performance- und kontextrelevant. Wird dringender, je längere Gespräche geführt werden.
 
 ---
 
@@ -458,7 +515,7 @@ GV-Node → Responder → Thinker → Tribunal → [Corrector]
 
 **Priorität:** Direkt nach Dual-Emotion Phase 2. Wird für Debugging, Tests mit eigenen Charakteren und Multi-Character-Betrieb gebraucht.
 
-**Status:** Beschlossen, nicht implementiert.
+**Status:** ✅ Implementiert in Chat 60. 23 Dateien, 56 Stellen. Session-Key `session:{user_id}:{character_id}:turns`.
 
 ---
 
@@ -469,6 +526,23 @@ GV-Node → Responder → Thinker → Tribunal → [Corrector]
 **Vorteil:** Flexiblere Pfade, weniger Conditional Edges, Nova-Pfad als natürlicher Teil statt Sonderlogik.
 
 **Status:** Diskutiert, als Zukunfts-Epic festgehalten. Großer Umbau — berührt human_graph.py, alle Conditional Edges, Node-Wrapper-Factory, Builder. Nicht Teil von Phase 2.
+
+**Update Chat 60:** Das Event-Modell löst das TurnOrchestrator-Problem auf eine andere Art — statt eines sternförmigen Orchestrators gibt es zwei separate Graphen, verbunden durch eine Event-Queue. Der TurnOrchestrator als separates Epic ist damit konzeptionell überholt.
+
+---
+
+## Epic: Client WebSocket-Umbau (Chat 60)
+
+**Vision:** Der GTK4-Client empfängt Charakter-Antworten per WebSocket (`typ: "character_response"`) statt aus dem SSE-"answer"-Event. Der SSE-Stream zeigt nur noch die Pfad-1-Stages.
+
+**Motivation:** chat.py ist fire-and-forget (Chat 60). Die Antwort kommt vom Event-Consumer per WebSocket. Der Client muss den neuen Message-Typ rendern.
+
+**Betroffene Stellen:**
+1. `client/ui/chat_view.py` (oder äquivalent) — WebSocket-Handler für `character_response`
+2. SSE-Handler — kein `answer`-Event mehr, nur `processing`
+3. Nachrichten-Rendering — Antworten asynchron anzeigen
+
+**Status:** Offen. Server-Seite fertig (Chat 60).
 
 ---
 
@@ -487,9 +561,11 @@ Kurzübersicht aktiver Bugs:
 | CRUD-REACTIVATE-STAMP | ⚠️ | Reactivate setzt deaktiviert_am nicht auf NULL |
 | EMOTE-LOCK | ⬜ | Emote-Inflation bei langem Charakter-Register |
 | TOPOS-LOCK | ⬜ | Bildervorrat wird mechanisch zykeliert |
+| urllib3-RETRY | ⬜ | Client-urllib3 macht automatischen Retry bei langer Response, erzeugt Doppel-Turns |
+| PATH1-LATENZ | ⬜ | Pfad-1 kann bei GPU-Druck auf 55+ Sekunden gehen (Einmal-Event beobachtet) |
 
 Details, Ursachen und Lösungsansätze → `novaberg-bugs.md`
 
 ---
 
-*Aktualisiert Chat 59: Dual-Emotion Phase 2 AP2+AP3+AP7 ✅, AP4+AP8 teilweise, AP5+AP6+AP9 offen. Graph-Neuordnung Epic ✅ implementiert (Enricher vor Router, EI-Calc-Node, Async-Block). Neues Epic Session-Trennung (User × Charakter). ROUTE-MISS1 strukturell adressiert, offen für Validierung.*
+*Aktualisiert Chat 61: Perzeption-Symmetrie ✅, EI-Calc Rollen-Split ✅, Akkumulations-Refactor mit Historien-Gewicht + sin^0.5-Glättung ✅, perzeption_assistant Client-Label ✅. Konzeptionell: Emotionale Gravitation (Kapitel 5.7 in thinking-drive), Paper-Portfolio (novaberg-papers.md mit 29 Titeln, 9 angereichert). Neue Epics: Emotionale Gravitation implementieren, Client urllib3-Retry-Fix, Session-Limit für Responder-Prompt. Neue Bugs: urllib3-RETRY, PATH1-LATENZ.*

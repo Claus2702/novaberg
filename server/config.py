@@ -514,6 +514,36 @@ EI_NORM_GEGEN: float = 1.4         # Distanz 4 — stark gedrückt, Antagonisten
 # n=2.0: Arousal 0.9 (Schock) hat 9× mehr Durchschlagskraft als Arousal 0.3 (Zufriedenheit)
 EI_AROUSAL_DOMINANZ: float = 2.0
 
+# ─────────────────────────────────────────────
+# Emotions-Akkumulation und Glättung
+#
+# Emotionen werden pro Turn akkumuliert, wobei der aktuelle (neueste)
+# Turn voll zählt und ältere Turns nur als Echo einfließen. Danach
+# wird das Rohgewicht über eine sin^0.5-Kurve auf [0, 1] gestaucht.
+#
+# HISTORIEN_GEWICHT = 0.15
+#   Anteil, mit dem ältere Turns in die Akkumulation eingehen. Der
+#   neueste Turn (i=0) zählt immer voll (100%). Ältere Turns ziehen
+#   als Stimmungs-Trägheit mit, verstärken sich aber nicht unbegrenzt.
+#
+# GLAETTUNGS_MAXIMUM = 2.5
+#   Harte Obergrenze für akkumulierte Rohwerte. Bei diesem Wert erreicht
+#   die Glättungs-Kurve mathematisch exakt 1.0. Rohwerte darüber werden
+#   ebenfalls auf 1.0 abgebildet — lodernde Dauer-Emotionen verdienen
+#   ihre Eins, alles bis dahin wird differenziert dargestellt.
+#
+# Die Glättungs-Kurve sin^0.5 ist eine durchgehende, glatte Funktion ohne
+# Knickstellen: steil unten (kleine Andeutungen werden sichtbar), flach
+# oben (natürliche Sättigung). Modelliert konversationelle Emotion gut —
+# eine Emotion baut sich durch Wiederholung auf, statt sofort voll
+# auszuschlagen.
+#
+# Beispielwerte (Maximum=2.5):
+#   0.1 → 0.25, 0.5 → 0.56, 1.0 → 0.77, 1.5 → 0.90, 2.0 → 0.98, 2.5 → 1.00
+# ─────────────────────────────────────────────
+EMOTION_HISTORIEN_GEWICHT:  float = 0.15
+EMOTION_GLAETTUNGS_MAXIMUM: float = 2.5
+
 # ─── Nova-Empathie (Dual-Emotion Phase 2, AP3) ────────────
 # Empathie-Koeffizient α abhängig von der Sektor-Distanz im Plutchik-Oktagon.
 # Niedrige Distanz (gleicher/benachbarter Sektor) → leichte Bestätigung.

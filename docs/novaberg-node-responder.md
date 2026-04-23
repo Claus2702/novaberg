@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Node-Referenz Responder
-**Stand:** 20. April 2026, Chat 59 (EI-Quellen aus EI-Calc statt Enricher; Nova-Emotion-Felder verfügbar)
+**Stand:** 21. April 2026, Chat 60 (Event-Modell, Graph-Split)
 **Pfad:** novaberg/docs/novaberg-node-responder.md
 **Quellen:** nova-01-m-e.md, nova-12-k.md §7
 **Datei:** `graph/nodes/responder.py`
@@ -21,7 +21,7 @@ Der Responder generiert Novas Antwort. Er ist der einzige Node, der alles sieht 
 Enricher → EI-Calc → Router → [Planner] → GV-Node → ▶ Responder ◀ → Thinker → Tribunal → ...
 ```
 
-Seit Chat 59 sind Enricher, EI-Calc und Router dem Responder zeitlich vorgelagert — der Responder sieht den bereits berechneten EI-Zustand.
+Nur im CharacterGraph (Pfad 2). Seit Chat 60 nicht mehr im HumanGraph.
 
 ---
 

@@ -29,13 +29,20 @@ class ConversationState(TypedDict):
     """Zustand, der durch alle Nodes fließt."""
 
     # ── Eingang ──────────────────────────────
-    user_prompt:   str
-    user_id:       str
-    system_prompt: str
-    temperature:   float
+    user_prompt:    str
+    user_id:        str
+    character_id:   str      # Aktiver Charakter (z.B. "nova") — bildet mit user_id den Session-Key
+    system_prompt:  str
+    temperature:    float
+
+    # ── Event Context ────────────────────────
+    event_source:   str      # "user" | "character" — controls EI-Calc empathy switch
+    event_payload:  dict     # Free dict from the event (remaining tasks, pending_agent, etc.)
 
     # ── Perzeption ──────────────────────────
     perzeption_rolle:     str     # "user" (Default) oder "assistant"
+    # Welcher Graph ruft den EI-Calc auf: "user" (HumanGraph) oder "character" (CharacterGraph)
+    ei_calc_rolle: str
     intent:               str     # smalltalk | knowledge | personal | task | creative | meta
     tone:                 str     # empathisch | sachlich | kreativ | direkt
     prompt_thema:         str     # Kurzbeschreibung des Themas (2-5 Worte)
@@ -64,6 +71,7 @@ class ConversationState(TypedDict):
     user_emotion:      str    # Emotion des aktuellen Turns
     raw_turns:         list[dict]    # Ungefilterte Session-Turns (für EI-Calc)
     char_hash_dict:    dict          # Charakter-Hash als Dict (für EI-Calc)
+    session_turn_kern: str           # Komprimierter Turn-Inhalt (vom KZG-Agent, für Session-Turn)
 
     # Emotionale Intelligenz (Enricher → Responder)
     emotions_verlauf:     list    # [{emotion: str, gewicht: float}, ...] — gewichtetes Array

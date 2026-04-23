@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Multi-Channel-Architektur (Telegram Bot, Formatierung)
-**Stand:** 19. April 2026, Chat 56
+**Stand:** 21. April 2026, Chat 60 (chat.py fire-and-forget, Event-Modell)
 **Pfad:** novaberg/docs/novaberg-tool-multi-channel.md
 **Quellen:** Chat 41 (Telegram Bot), Chat 43 (Konzept-Referenz)
 
@@ -31,6 +31,8 @@ Novaberg ist nicht an einen einzelnen Client gebunden. Der Server (FastAPI) ist 
 **Dateien:** `telegram_bot/bot.py`, `telegram_bot/config.py`
 
 **Architektur:** Dünner Client. Leitet Nachrichten an `POST /chat` weiter und gibt die Antwort zurück. Kein eigener State, keine Business-Logik.
+
+Seit Chat 60: chat.py führt nur Pfad 1 (HumanGraph) aus — Wahrnehmung und Speicherung. Die Charakter-Antwort wird asynchron per WebSocket geliefert (Event-Consumer → CharacterGraph → WebSocket). Der SSE-Stream zeigt Pfad-1-Stages, kein "answer"-Event mehr.
 
 **Whitelist:** `TELEGRAM_USER_MAP` in `.env` (Format: `telegram_id:user_id`). Unbekannte Telegram-IDs werden ignoriert.
 

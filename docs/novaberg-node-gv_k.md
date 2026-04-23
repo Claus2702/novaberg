@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Konzept — Gesprächsvektor
-**Stand:** 17. April 2026, Chat 52 (Code-Alignment)
+**Stand:** 21. April 2026, Chat 60 (Event-Modell, Graph-Split)
 **Pfad:** novaberg/docs/novaberg-node-gv_k.md
 **Quellen:** nova-09-k.md
 
@@ -643,7 +643,7 @@ Der existierende Task `vertiefen` ist konzeptionell der richtige Ort für den Ge
 
 ### 10.1 Implementierungsdetails GV1+GV2 (Chat 39)
 
-**Node:** `graph/nodes/gespraechsvektor.py` — 12. Node im HumanGraph. Beide Wege zum Responder (Management und Nicht-Management) laufen durch den GV-Node.
+**Node:** `graph/nodes/gespraechsvektor.py` — Node im CharacterGraph (Pfad 2). Seit Chat 60 nicht mehr im HumanGraph. Beide Wege zum Responder (Management und Nicht-Management) laufen durch den GV-Node.
 
 **Sequentieller Ablauf:**
 1. [Python] Skip-Check: Begrüßung/Meta → Durchreichen (Länge 0)

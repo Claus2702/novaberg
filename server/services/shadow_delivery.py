@@ -144,10 +144,11 @@ def _gespraechs_embedding(
     embed_client,
     embed_model:   str,
     user_id:       str,
+    character_id:  str = "",
 ) -> list[float]:
     """Berechnet ein Embedding aus den letzten Session-Turns."""
 
-    turns: list[dict] = session_turns_retrieve(redis_client, user_id)
+    turns: list[dict] = session_turns_retrieve(redis_client, user_id, character_id or ASSISTANT_USER_ID)
 
     if not turns:
         return []
@@ -461,9 +462,11 @@ async def _delivery_ausfuehren(
     Gibt True zurück wenn eine Nachricht gesendet wurde.
     """
 
+    character_id: str = ASSISTANT_USER_ID
+
     # Gesprächskontext als Embedding
     gespraechs_vector: list[float] = _gespraechs_embedding(
-        redis_client, embed_client, embed_model, user_id,
+        redis_client, embed_client, embed_model, user_id, character_id,
     )
 
     if not gespraechs_vector:
@@ -471,7 +474,7 @@ async def _delivery_ausfuehren(
         return False
 
     # Aktuelle Emotion und Modus aus letzten Turns
-    turns: list[dict] = session_turns_retrieve(redis_client, user_id)
+    turns: list[dict] = session_turns_retrieve(redis_client, user_id, character_id)
     user_emotion:     str = "neutral"
     gespraechs_modus: str = ""
 
@@ -528,7 +531,7 @@ async def _delivery_ausfuehren(
 
     # Als Session-Turn speichern (markiert als Shadow-Impuls)
     session_turn_store(
-        redis_client, user_id, "assistant", nachricht,
+        redis_client, user_id, character_id, "assistant", nachricht,
         intentionen = ["eigener_impuls"],
         emotion     = eintrag.get("emotion", ""),
         modus       = eintrag.get("modus", ""),
@@ -542,8 +545,9 @@ async def _delivery_ausfuehren(
         try:
             logger.info(f"Delivery: AgentGraph — erzeuge State für '{ASSISTANT_USER_ID}'")
             agent_state = agent_graph.create_state(
-                user_prompt = nachricht,
-                user_id     = ASSISTANT_USER_ID,
+                user_prompt  = nachricht,
+                user_id      = ASSISTANT_USER_ID,
+                character_id = character_id,
             )
             logger.info(f"Delivery: AgentGraph — State erzeugt, starte invoke...")
             compiled_agent_graph.invoke(agent_state)
@@ -632,7 +636,7 @@ async def shadow_delivery_loop(
 
                         if inaktiv_seit >= INAKTIVITAET_GRENZE:
                             # Nicht feuern wenn noch kein Gespräch läuft
-                            turns: list = session_turns_retrieve(redis_client, user_id)
+                            turns: list = session_turns_retrieve(redis_client, user_id, ASSISTANT_USER_ID)
                             if not turns:
                                 continue
 

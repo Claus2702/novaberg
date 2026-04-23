@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** TimelineAgent (Termine, Ereignisse, Zeitachse)
-**Stand:** 17. April 2026, Chat 52 (Code-Alignment)
+**Stand:** 21. April 2026, Chat 60 (Session-Trennung: character_id im Kontext)
 **Pfad:** novaberg/docs/novaberg-agent-timeline.md
 **Quellen:** nova-02-m-e.md, nova-14-k.md, nova-15-k.md
 
@@ -56,6 +56,8 @@ Konvention: Oeffentliche Node-Einstiegspunkte ohne Unterstrich, private Helfer m
 ---
 
 ## 3. Classify-Node
+
+Seit Chat 60: `character_id` wird im Agent-Kontext (`state["kontext"]["character_id"]`) durchgereicht und an `session_turns_retrieve()` übergeben. Der Session-Key enthält die Charakter-Dimension.
 
 Der Classify-Node extrahiert fuenf Felder per LLM:
 

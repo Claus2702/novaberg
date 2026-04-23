@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Node-Referenz Router
-**Stand:** 17. April 2026, Chat 52 (Code-Alignment)
+**Stand:** 21. April 2026, Chat 60 (Event-Modell, Graph-Split)
 **Pfad:** novaberg/docs/novaberg-node-router.md
 **Quellen:** nova-01-m-b.md
 **Datei:** `graph/nodes/router.py`
@@ -20,8 +20,10 @@ Der Router entscheidet, welche Ressourcen für die Verarbeitung des User-Prompts
 ## 2. Position im Graph
 
 ```
-Perzeption → ▶ Router ◀ → Enricher → [Planner] → Responder → ...
+CharacterGraph (Pfad 2): Enricher → EI-Calc → ▶ Router ◀ → [Planner ⇄ Agent] → GV-Node → ...
 ```
+
+Nur im CharacterGraph. Im HumanGraph (Pfad 1) gibt es keinen Router — der User-Pfad routet nicht.
 
 ---
 

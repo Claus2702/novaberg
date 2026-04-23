@@ -25,11 +25,36 @@ logger = logging.getLogger("ki_server.ei_calc")
 
 
 def ei_calc(state: ConversationState) -> ConversationState:
-    """Berechnet EI-Werte aus den vom Enricher geladenen Daten."""
+    """Berechnet EI-Werte, rollenabhängig.
 
-    logger.info("EI-Calc: Starte Berechnung")
+    Rolle "user":      Nur User-EI-Block (Pfad 1, HumanGraph).
+    Rolle "character": Nur Nova-EI-Block (Pfad 2, CharacterGraph).
 
-    # ── Eingangsdaten aus dem State ──
+    Die saubere Trennung vermeidet Doppelarbeit und semantische Vermischung.
+    """
+
+    rolle: str = state.get("ei_calc_rolle", "user")
+    logger.info(f"EI-Calc: Starte Berechnung (rolle={rolle})")
+
+    if rolle == "user":
+        _ei_calc_user(state)
+    elif rolle == "character":
+        _ei_calc_character(state)
+    else:
+        logger.warning(f"EI-Calc: Unbekannte rolle '{rolle}' — fallback auf user")
+        _ei_calc_user(state)
+
+    logger.info("EI-Calc: Berechnung abgeschlossen")
+    return state
+
+
+def _ei_calc_user(state: ConversationState) -> None:
+    """User-EI-Block — für Pfad 1 (HumanGraph).
+
+    Berechnet Emotions-Verlauf, Vektor, Arousal-Korrektur, Modus-Plausibilität,
+    Sprachstil und Beziehungs-Kontext aus den vom Enricher geladenen Daten.
+    Keine Nova-Berechnung hier — das passiert in Pfad 2.
+    """
     raw_turns:      list[dict] = state.get("raw_turns", [])
     char_hash_dict: dict       = state.get("char_hash_dict", {})
 
@@ -41,30 +66,30 @@ def ei_calc(state: ConversationState) -> ConversationState:
     perzeption_modus:   str   = state.get("gespraechs_modus", "alltag")
     perzeption_stil:    str   = state.get("sprach_stil", "neutral")
 
-    # ── 1. Emotions-Verlauf (logarithmischer Decay) ──
+    # 1. Emotions-Verlauf (logarithmischer Decay, mit current_emotion als Turn 0)
     emotions_verlauf: list[dict] = _emotions_verlauf_berechnen(
-        raw_turns, current_emotion, current_arousal,
+        raw_turns, current_emotion, current_arousal, rolle="user",
     )
     state["emotions_verlauf"] = emotions_verlauf
 
-    # ── 2. Emotions-Vektor (Richtung) ──
+    # 2. Emotions-Vektor
     emotions_vektor: str = _emotions_vektor_bestimmen(
-        raw_turns, current_emotion,
+        raw_turns, current_emotion, rolle="user",
     )
     state["emotions_vektor"] = emotions_vektor
 
-    # ── 3. EI-Arousal (gewichteter Kombinationsfaktor) ──
+    # 3. EI-Arousal
     ei_arousal: float = _ei_arousal_berechnen(
         current_arousal, beziehungs_dynamik, intent, tone,
     )
 
-    # ── 4. Modus-Plausibilität (Matrix-Lookup) ──
+    # 4. Modus-Plausibilität
     korrigierter_modus: str = _modus_plausibilitaet(
         current_emotion, ei_arousal, perzeption_modus,
     )
     state["gespraechs_modus"] = korrigierter_modus
 
-    # ── 5. Stil-Plausibilität (regelbasiert + Gegencheck) ──
+    # 5. Sprachstil-Plausibilität
     regelbasiert_stil: str = _sprach_stil_erkennen(
         raw_turns, char_hash_dict or None,
     )
@@ -74,67 +99,77 @@ def ei_calc(state: ConversationState) -> ConversationState:
     )
     state["sprach_stil"] = sprach_stil
 
-    # ── 6. Beziehungs-Kontext aus Hash ──
+    # 6. Beziehungs-Kontext
     state["beziehungs_kontext"] = char_hash_dict.get("beziehungsprofil", "")
 
-    # ── Logging ──
+    # Logging
     if emotions_verlauf:
         top_emotions: str = ", ".join(
             f"{e['emotion']}({e['gewicht']:.2f},a={e.get('arousal', 0.5):.2f})"
             for e in emotions_verlauf[:4]
         )
-        logger.info(f"EI-Calc: Emotions-Verlauf — {top_emotions}")
+        logger.info(f"EI-Calc/User: Emotions-Verlauf — {top_emotions}")
 
     if emotions_vektor and emotions_vektor != "plateau":
-        logger.info(f"EI-Calc: Emotions-Vektor — {emotions_vektor}")
+        logger.info(f"EI-Calc/User: Emotions-Vektor — {emotions_vektor}")
 
     if sprach_stil and sprach_stil != "neutral":
-        logger.info(f"EI-Calc: Sprachstil — {sprach_stil}")
+        logger.info(f"EI-Calc/User: Sprachstil — {sprach_stil}")
 
     if state.get("beziehungs_kontext"):
-        logger.info("EI-Calc: Beziehungs-Kontext gesetzt")
+        logger.info("EI-Calc/User: Beziehungs-Kontext gesetzt")
 
-    # ── Nova-Emotion (Dual-Emotion Phase 2) ──────────────
-    # Kraft 1: Novas vorheriger Zustand mit Decay
-    # Novas Turns haben aktuell keine Emotions-Metadaten (bis AP4-7 den
-    # async-Pfad baut). _emotions_verlauf_berechnen() auf Novas Turns
-    # liefert daher einen leeren Verlauf → Nova startet neutral.
-    # Sobald der async-Pfad existiert, füllt sich die Historie und der
-    # Decay wirkt automatisch.
 
+def _ei_calc_character(state: ConversationState) -> None:
+    """Character-EI-Block — für Pfad 2 (CharacterGraph).
+
+    Berechnet Novas Emotion aus ihrer eigenen Turn-Historie plus
+    optionaler Empathie vom User (abhängig von event_source).
+    Kein virtueller Turn 0 — Novas aktuelle Emotion wird erst nach
+    der Antwort-Generierung durch die Perzeption analysiert.
+    """
+    raw_turns: list[dict] = state.get("raw_turns", [])
+
+    # User-Werte werden gelesen, aber NICHT als Turn 0 in Novas Verlauf injiziert.
+    # Sie werden nur für die Empathie-Berechnung gebraucht.
+    current_emotion: str   = state.get("current_emotion", "neutral")
+    current_arousal: float = state.get("current_arousal", 0.5)
+
+    # Kraft 1: Novas vorheriger Zustand mit Decay (rein auf historischen Nova-Turns)
     nova_turns: list[dict] = [
         t for t in raw_turns if t.get("rolle") == "assistant"
     ]
     nova_verlauf_basis: list[dict] = _emotions_verlauf_berechnen(
-        nova_turns, rolle="assistant",
+        nova_turns, rolle="assistant", inject_current=False,
     )
 
     # Kraft 2: Asymmetrische Empathie vom User-Vektor
-    empathie_ergebnis: dict = _nova_empathie_berechnen(
-        nova_verlauf_basis,
-        current_emotion,
-        current_arousal,
-    )
+    event_source: str = state.get("event_source", "user")
 
-    state["nova_emotions_verlauf"] = empathie_ergebnis["nova_verlauf_modifiziert"]
-    state["nova_emotion_konflikt"] = empathie_ergebnis["nova_konflikt"]
+    if event_source == "user":
+        empathie_ergebnis: dict = _nova_empathie_berechnen(
+            nova_verlauf_basis, current_emotion, current_arousal,
+        )
+        state["nova_emotions_verlauf"] = empathie_ergebnis["nova_verlauf_modifiziert"]
+        state["nova_emotion_konflikt"] = empathie_ergebnis["nova_konflikt"]
+        logger.info("EI-Calc/Character: Nova-Empathie berechnet (event_source=user)")
+    else:
+        state["nova_emotions_verlauf"] = nova_verlauf_basis
+        state["nova_emotion_konflikt"] = False
+        logger.info("EI-Calc/Character: Nova-Empathie übersprungen (event_source=character, nur Decay)")
 
-    # Novas Emotions-Vektor (Richtung ihres eigenen Bogens)
+    # Novas Emotions-Vektor
     nova_emotions_vektor: str = _emotions_vektor_bestimmen(
-        nova_turns, rolle="assistant",
+        nova_turns, rolle="assistant", inject_current=False,
     )
     state["nova_emotions_vektor"] = nova_emotions_vektor
 
-    if empathie_ergebnis["nova_verlauf_modifiziert"]:
+    if state["nova_emotions_verlauf"]:
         nova_top: str = ", ".join(
             f"{e['emotion']}({e['gewicht']:.2f})"
-            for e in empathie_ergebnis["nova_verlauf_modifiziert"][:3]
+            for e in state["nova_emotions_verlauf"][:3]
         )
-        logger.info(f"EI-Calc: Nova-Emotion — {nova_top}")
+        logger.info(f"EI-Calc/Character: Nova-Emotion — {nova_top}")
 
-    if empathie_ergebnis["nova_konflikt"]:
-        logger.info("EI-Calc: Nova-Emotion — Konflikt erkannt (gegenüberliegende Sektoren)")
-
-    logger.info("EI-Calc: Berechnung abgeschlossen")
-
-    return state
+    if state["nova_emotion_konflikt"]:
+        logger.info("EI-Calc/Character: Nova-Emotion — Konflikt erkannt (gegenüberliegende Sektoren)")

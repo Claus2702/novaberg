@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** KZG-Agent — LangGraph-Subgraph für Kurzzeitgedächtnis
-**Stand:** 17. April 2026, Chat 52 (Code-Alignment)
+**Stand:** 21. April 2026, Chat 60 (Kern-Entkopplung: session_turn_kern in State)
 **Pfad:** novaberg/docs/novaberg-pixie-kzg.md
 **Quellen:** nova-02-m-b.md (KZG-Agent-Abschnitte)
 
@@ -97,6 +97,8 @@ neue_häufigkeit = alte_häufigkeit + 1
 ```
 
 `KZG_VERSTAERKUNG_DIVISOR` = 2.0. Wenn die Salienz durch Verstärkung über 0.7 steigt → TTL auf 30 Tage hochstufen.
+
+Seit Chat 60: `dispatch_kzg()` ruft nicht mehr `session_turn_annotate()` direkt auf. Stattdessen schreibt er den `kern` in `state["session_turn_kern"]`. Der Dispatcher sammelt den Kern ein und schreibt den Session-Turn vollständig.
 
 ---
 

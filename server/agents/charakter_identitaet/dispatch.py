@@ -40,6 +40,7 @@ def dispatch_charakter_identitaet(state: dict) -> dict:
         "agent_name": "charakter_identitaet",
         "kontext": {
             "user_id": user_id,
+            "character_id": state.get("character_id", ""),
             "memory_context": state.get("memory_context", ""),
         },
         "parameter": {
@@ -132,6 +133,7 @@ def _handle_resume(state: dict, pending: dict, pending_key: str) -> dict:
         "agent_name": "charakter_identitaet",
         "kontext": {
             "user_id": state.get("user_id", ""),
+            "character_id": state.get("character_id", ""),
             "memory_context": state.get("memory_context", ""),
         },
         "parameter": {

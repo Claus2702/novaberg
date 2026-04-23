@@ -17,33 +17,3 @@ class GespraechAnfrage(BaseModel):
         description="System-Prompt"
     )
     temperatur: float = Field(default=0.7, ge=0.0, le=2.0, description="Kreativität")
-
-
-class GespraechAntwort(BaseModel):
-    """Antwort vom LLM."""
-    antwort:     str
-    modell:      str
-    token_total: int
-
-    # Emotionale Intelligenz
-    emotion:          str            = ""
-    arousal:          float          = 0.0
-    emotions_vektor:  str            = ""
-    emotions_verlauf: list[dict]     = []
-    sprach_stil:      str            = ""
-    beziehungs_dynamik: str          = ""
-
-    # Nova-Emotion (Dual-Emotion Phase 2)
-    nova_emotion:           str        = ""
-    nova_arousal:           float      = 0.0
-    nova_emotions_verlauf:  list[dict] = []
-    nova_emotions_vektor:   str        = ""
-    nova_emotion_konflikt:  bool       = False
-
-    # Perzeption & Routing
-    intent:           str            = ""
-    tone:             str            = ""
-    gespraechs_modus: str            = ""
-    user_intentionen: list[str]      = []
-    momentum:         str            = ""
-    needs_web:        bool           = False

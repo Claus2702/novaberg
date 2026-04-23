@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Pipeline-Node Salienz (Bewertung & Gedächtnisbildung)
-**Stand:** 20. April 2026, Chat 59 (asynchrone Ausführung über services/nachbearbeitung.py)
+**Stand:** 21. April 2026, Chat 60 (Event-Modell, Graph-Split)
 **Pfad:** novaberg/docs/novaberg-node-salience.md
 **Quellen:** nova-01-m-g.md (Node-Beschreibung), nova-02-t-b.md (Salienz-Technik)
 
@@ -23,21 +23,15 @@ Salienz ist Novas Aufmerksamkeitsfilter — das Äquivalent zur menschlichen Amy
 ## 2. Position im Graph
 
 ```
-... → Tribunal → Evaluate → ok → END          (sync-Graph-Austritt, seit Chat 59)
-                                  │
-                                  v
-                 (ASYNCHRON, services/nachbearbeitung.py)
-                                  │
-                         ▶ Salienz ◀ → Dispatcher
+HumanGraph (Pfad 1):    ... → EI-Calc → ▶ Salienz ◀ → Dispatcher → END
+CharacterGraph (Pfad 2): ... → Evaluate → ok → ▶ Salienz ◀ → Dispatcher → END
 ```
 
-**Seit Chat 59 asynchron.** Die Salienz ist nicht mehr Teil des sync-HumanGraph — sie läuft im User-Pfad des async-Blocks (`services/nachbearbeitung.py`), nachdem die Antwort an den User ausgeliefert wurde. Der User wartet nicht mehr auf die Gedächtnisbildung.
+Seit Chat 60 wieder Teil beider Graphen (HumanGraph und CharacterGraph). Nicht mehr asynchron.
 
-**Nach dem Tribunal:** Nur geprüfte und freigegebene Antworten werden für die Gedächtnisbildung bewertet — der State, mit dem die Salienz arbeitet, ist der State nach dem ok-Verdikt. Verhindert, dass fehlerhafte oder ethisch fragwürdige Inhalte im Gedächtnis landen.
+**Nach dem Tribunal (CharacterGraph):** Nur geprüfte und freigegebene Antworten werden für die Gedächtnisbildung bewertet — der State, mit dem die Salienz arbeitet, ist der State nach dem ok-Verdikt. Verhindert, dass fehlerhafte oder ethisch fragwürdige Inhalte im Gedächtnis landen.
 
-**GPU, nicht CPU:** Salienz ist ein GPU-LLM-Call (`llm_lock`). Der async-Block erwirbt den Lock nur für den Call, nicht für den ganzen Block — Kontention mit dem nächsten User-Turn bleibt minimal.
-
-→ Details zum Async-Flow: `novaberg-service-nachbearbeitung.md`
+**GPU-LLM-Call (`llm_lock`):** Wird pro Call erworben, nicht pro Graph-Durchlauf.
 
 ### Salienz als Gedächtnis-Weiche
 

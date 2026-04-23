@@ -42,6 +42,7 @@ def dispatch_notizen(state: dict) -> dict:
         "agent_name": "notizen",
         "kontext": {
             "user_id": user_id,
+            "character_id": state.get("character_id", ""),
             "memory_context": state.get("memory_context", ""),
         },
         "parameter": {
@@ -147,6 +148,7 @@ def _handle_resume(state: dict, pending: dict, pending_key: str) -> dict:
         "agent_name": "notizen",
         "kontext": {
             "user_id": state.get("user_id", ""),
+            "character_id": state.get("character_id", ""),
             "memory_context": state.get("memory_context", ""),
         },
         "parameter": {

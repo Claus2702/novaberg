@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** CharakterIdentitaetAgent (Persoenlichkeits-Saatgut)
-**Stand:** 18. April 2026, Chat 54 (dismissed-Status in resume.py)
+**Stand:** 21. April 2026, Chat 60 (Session-Trennung: character_id im Kontext)
 **Pfad:** novaberg/docs/novaberg-agent-character.md
 **Quellen:** nova-12-k.md, nova-14-k.md, nova-15-k.md
 
@@ -95,6 +95,8 @@ agents/charakter_identitaet/
 ---
 
 ## 4. Classify-Node
+
+Seit Chat 60: `character_id` wird im Agent-Kontext (`state["kontext"]["character_id"]`) durchgereicht und an `session_turns_retrieve()` übergeben. Der Session-Key enthält die Charakter-Dimension.
 
 Der Classify-Node fuehrt zwei Schritte durch: Zuerst die VORPRUEFUNG ("Ist das ueberhaupt ein Auftrag?"), dann die Klassifikation der Aktion. Er extrahiert bis zu fuenf Felder per LLM:
 

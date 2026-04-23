@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Node-Referenz EI-Calc (Emotionale Intelligenz — Berechnungsschicht)
-**Stand:** 20. April 2026, Chat 59 (Dual-Emotion Phase 2, AP2 + AP3)
+**Stand:** 21. April 2026, Chat 60 (Empathie-Switch nach event_source, in beiden Graphen)
 **Pfad:** novaberg/docs/novaberg-node-ei-calc.md
 **Quellen:** Chat 58 (Konzept-Split), Chat 59 (Implementierung)
 **Datei:** `graph/nodes/ei_calc.py`
@@ -19,11 +19,44 @@ Er ist der einzige Node, der sowohl die **User-EI** als auch die **Nova-Emotion*
 
 ---
 
+## Rollen-Split: User vs. Character
+
+Seit Chat 61 hat EI-Calc einen klaren Rollen-Split via State-Flag `ei_calc_rolle`:
+
+- **`"user"` (HumanGraph):** Berechnet nur den User-Emotionsstrom. Liest User-Perzeptions-Daten, rechnet User-Verlauf, User-Vektor.
+- **`"character"` (CharacterGraph):** Berechnet nur Nova's Emotionsstrom. Liest Nova-Perzeptions-Daten (falls schon vorhanden via `perzeption_assistant`), rechnet Nova-Verlauf mit Empathie-Modulation vom User, Nova-Vektor.
+
+Die internen Funktionen `_ei_calc_user()` und `_ei_calc_character()` sind entsprechend separiert.
+
+### `inject_current: bool` Parameter
+
+Funktionen `_emotions_verlauf_berechnen()` und `_emotions_vektor_bestimmen()` haben einen neuen Parameter `inject_current`:
+
+- **`True` (Default, Pfad 1):** Der aktuelle User-Turn wird als "virtueller Turn 0" in den Verlauf eingefügt, bevor der Decay rückwärts läuft. So zählt die frische User-Emotion voll.
+- **`False` (Pfad 2):** Nova's aktuelle Emotion ist noch nicht perzipiert (das passiert erst am Ende des CharacterGraphs durch `perzeption_assistant`). Der Verlauf wird nur aus historischen Nova-Turns berechnet — die Empathie-Modulation ersetzt die Rolle des "aktuellen Turns".
+
+### Akkumulation und Glättung (seit Chat 61)
+
+Die Akkumulation folgt drei biologisch motivierten Mechanismen:
+
+1. **Aktueller Turn voll, Historie als Echo (15%):** Der neueste Turn (i=0) zählt mit seinem vollen Decay-Wert. Ältere Turns ziehen nur mit 15% ihres Decay-Werts ein. Modelliert **affective carryover** (Russell & Carroll 1999, Davidson 1998) — Emotionen hallen nach, übertönen aber nicht den aktuellen Zustand.
+
+2. **Harter Cap bei 2.5:** Akkumulierte Rohwerte werden auf maximal 2.5 beschränkt. Verhindert unbegrenztes Aufstauen über viele wiederholte Turns.
+
+3. **sin^0.5-Glättungskurve:** Der gekappte Rohwert wird auf den Anzeigebereich [0, 1] abgebildet über `sin(rohwert / MAXIMUM × π/2)^0.5`. Die Kurve ist steil unten (selbst kleine Andeutungen werden sichtbar: 0.1 → 0.25), sanft oben (einzelner starker Turn: 1.0 → 0.77, mehrere Turns bauen auf), mathematisch exakt 1.0 am Cap. Modelliert konversationelle Emotion — eine Emotion baut sich durch Wiederholung auf, statt sofort voll auszuschlagen.
+
+Die Funktion ist in `server/ei/berechnung.py` als `_glaettung()` implementiert. Config-Parameter: `EMOTION_HISTORIEN_GEWICHT = 0.15`, `EMOTION_GLAETTUNGS_MAXIMUM = 2.5`.
+
+---
+
 ## 2. Position im Graph
 
 ```
-Perzeption → Enricher → ▶ EI-Calc ◀ → Router → [Planner] → GV-Node → Responder → ...
+HumanGraph (Pfad 1):    Perzeption → Enricher → ▶ EI-Calc ◀ → Salienz → Dispatcher → END
+CharacterGraph (Pfad 2): Enricher → ▶ EI-Calc ◀ → Router → [Planner ⇄ Agent] → GV-Node → ...
 ```
+
+In beiden Graphen. Berechnet User-EI und Nova-Emotion.
 
 **Input:** State mit Perzeptionsergebnissen (Emotion, Arousal, Modus, Stil, Intent, Tone, Beziehungsdynamik) und den vom Enricher geladenen Rohdaten (`raw_turns`, `char_hash_dict`).
 
@@ -85,6 +118,19 @@ Novas emotionaler Zustand entsteht aus zwei Kräften, die in Folge berechnet wer
 > **Designentscheidung (Chat 59): Kein doppelter Decay.** Novas Antwort wird im async-Pfad (`services/nachbearbeitung.py`) per Perzeption analysiert und als Emotion + Arousal in den Session-Turn annotiert — genau wie beim User. Der Decay läuft beim Lesen im synchronen EI-Calc des nächsten Turns. Eine Berechnung, nicht zwei.
 
 → Details: `novaberg-ei-dual-emotion_k.md`
+
+---
+
+## 3.3 Empathie-Switch (Chat 60)
+
+`event_source` im State steuert, ob der User-Vektor auf Novas Emotion wirkt:
+
+| `event_source` | Empathie | Decay | Situation |
+|---|---|---|---|
+| `"user"` | Ja — `_nova_empathie_berechnen()` | Ja | Charakter reagiert auf User-Input |
+| `"character"` | Nein — nur Decay-Basis | Ja | Self-Trigger, kein neuer User-Input |
+
+Bei `event_source == "character"` wird `state["nova_emotions_verlauf"]` auf die reine Decay-Basis gesetzt, `nova_emotion_konflikt` auf `False`.
 
 ---
 

@@ -196,9 +196,10 @@ class StreamHandler:
             detail: str = data.get("detail", "")
             GLib.idle_add(self._invoke_stage, label, detail)
 
-        elif event_type == "answer":
-            antwort: str = data.get("antwort", "")
-            GLib.idle_add(self._invoke_answer, antwort, data)
+        elif event_type == "processing":
+            # Pfad 1 ist abgeschlossen. Die Charakter-Antwort kommt per WebSocket.
+            logger.info("SSE: Pfad 1 abgeschlossen — warte auf WebSocket-Antwort")
+            GLib.idle_add(self._invoke_stage, "Nova denkt nach …", "")
 
         elif event_type == "error":
             msg: str = data.get("fehler", "Unbekannter Fehler")
@@ -301,6 +302,21 @@ class StreamHandler:
         # ``verbindung`` und ``echo`` sind Infrastruktur-Events — nicht anzeigen.
         if typ in {"verbindung", "echo"}:
             logger.debug(f"WebSocket: System-Event '{typ}' — nicht angezeigt")
+            return
+
+        if typ == "character_response":
+            # Charakter-Antwort aus dem Event-Consumer (Pfad 2 abgeschlossen).
+            # Feld heißt "nachricht" (nicht "antwort" wie im alten SSE-answer-Event).
+            logger.info(f"WebSocket: Charakter-Antwort empfangen ({len(nachricht)} Zeichen)")
+            GLib.idle_add(self._invoke_answer, nachricht, data)
+            return
+
+        if typ == "character_stage":
+            # Live-Stage aus dem CharacterGraph (Pfad 2, läuft gerade).
+            label:  str = data.get("label", data.get("node", "?"))
+            detail: str = data.get("detail", "")
+            logger.debug(f"WebSocket: Charakter-Stage {label} — {detail}")
+            GLib.idle_add(self._invoke_stage, label, detail)
             return
 
         # Alles andere (Pixie-Impulse, Shadow-Delivery, ...) an die UI reichen.

@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Node-Referenz Corrector
-**Stand:** 17. April 2026, Chat 52 (Code-Alignment)
+**Stand:** 21. April 2026, Chat 60 (Event-Modell, Graph-Split)
 **Pfad:** novaberg/docs/novaberg-node-corrector.md
 **Quellen:** nova-01-m-j.md
 **Datei:** `graph/nodes/corrector.py`
@@ -24,6 +24,8 @@ Der Corrector überarbeitet Novas Antwort basierend auf dem Feedback des Tribuna
                     │
                     └── ablehnen/warnung → ▶ Corrector ◀ → Tribunal (max 2×)
 ```
+
+Nur im CharacterGraph (Pfad 2). Seit Chat 60 nicht mehr im HumanGraph.
 
 **Korrekturschleife:** Corrector → Tribunal → Evaluate → ggf. erneut Corrector. Maximal 2 Iterationen (`correction_round`). Danach Fallback.
 

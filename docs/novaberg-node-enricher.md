@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Node-Referenz Enricher
-**Stand:** 20. April 2026, Chat 59 (EI-Abschnitt in eigenen Node EI-Calc ausgelagert, Position vor Router)
+**Stand:** 21. April 2026, Chat 60 (Event-Modell, Graph-Split)
 **Pfad:** novaberg/docs/novaberg-node-enricher.md
 **Quellen:** nova-01-m-c.md
 **Datei:** `graph/nodes/enricher.py`
@@ -24,10 +24,11 @@ Der Enricher ist Novas Gedächtnis-Schnittstelle — seit Chat 59 ein **reiner I
 ## 2. Position im Graph
 
 ```
-Perzeption → ▶ Enricher ◀ → EI-Calc → Router → [Planner] → GV-Node → Responder → ...
+HumanGraph (Pfad 1):    Perzeption → ▶ Enricher ◀ → EI-Calc → Salienz → Dispatcher → END
+CharacterGraph (Pfad 2): ▶ Enricher ◀ → EI-Calc → Router → [Planner ⇄ Agent] → GV-Node → ...
 ```
 
-**Seit Chat 59 vor dem Router.** Die neue Reihenfolge gibt dem Router die volle Sicht auf Session, KZG, LZG, Charakter-Hash und (nach EI-Calc) den EI-Zustand — adressiert ROUTE-MISS1 strukturell.
+**Seit Chat 60 in beiden Graphen.** Im HumanGraph als zweiter Node (nach Perzeption), im CharacterGraph als Entry-Point. Lädt in beiden Fällen den vollen Kontext: Session, KZG, LZG, Charakter-Hash, Plugin-Daten.
 
 **Input:** State mit Perzeptionsergebnissen (Emotion, Arousal, Modus). Router-Flags (`needs_memory`, `needs_timeline`) spielen hier keine Rolle mehr, weil der Enricher jetzt vor dem Router läuft — er lädt alles, was später gebraucht werden könnte.
 
@@ -45,7 +46,9 @@ Perzeption → ▶ Enricher ◀ → EI-Calc → Router → [Planner] → GV-Node
 
 Lädt die bisherigen Turns des Gesprächs aus Redis. Zwei Bestandteile:
 
-**Session-Summary:** Zusammenfassung älterer Turns (`session:{user_id}:summary`). Komprimierter Überblick über das bisherige Gespräch.
+Session-Key seit Chat 60: `session:{user_id}:{character_id}:turns`. Der Enricher liest `character_id` aus dem State und verwendet `_session_key()` für den Summary-Key.
+
+**Session-Summary:** Zusammenfassung älterer Turns (`session:{user_id}:{character_id}:summary`). Komprimierter Überblick über das bisherige Gespräch.
 
 **Session-Turns (Chat 30: vollständiges Durchreichen):** Rohe Session-Turns werden vollständig in `state["session_turns"]` durchgereicht. Der Enricher filtert nur Shadow-Impulse (`[Nova-Impuls]`-Prefix im `kern`-Feld) — alle anderen Felder (inhalt, emotion, arousal, vektor, stil, dynamik, tone, kern, intentionen, modus) bleiben erhalten.
 

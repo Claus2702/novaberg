@@ -23,7 +23,7 @@ from config import (
     get_node_config,
 )
 from graph.state import ConversationState
-from memory.session import session_turns_retrieve, format_session_turns_numbered
+from memory.session import format_session_turns_numbered
 from services.llm_provider import get_chat_provider
 
 logger = logging.getLogger("ki_server.gespraechsvektor")

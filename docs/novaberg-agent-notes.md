@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Modul NotizenAgent — Merkzettel, Listen, Snippets (konsolidiert)
-**Stand:** 17. April 2026, Chat 52 (Code-Alignment)
+**Stand:** 21. April 2026, Chat 60 (Session-Trennung: character_id im Kontext)
 **Pfad:** novaberg/docs/novaberg-agent-notes.md
 **Quellen:** nova-02-m-f.md (Modul), nova-14-k.md (CRUD-Haertung), nova-15-k.md (Domain Language)
 
@@ -60,6 +60,8 @@ Oeffentliche Node-Einstiegspunkte ohne Unterstrich (z.B. `resume()`), private He
 ---
 
 ## 3. Classify-Node — Container vs. Inhalt
+
+Seit Chat 60: `character_id` wird im Agent-Kontext (`state["kontext"]["character_id"]`) durchgereicht und an `session_turns_retrieve()` übergeben. Der Session-Key enthält die Charakter-Dimension.
 
 Der Classify-Node loest AGT7: Der Router konnte "Streich die Bananen von der Obstliste" nicht von "Streich die Obstliste" unterscheiden. Der Agent kann das — per LLM mit einer expliziten Regel:
 

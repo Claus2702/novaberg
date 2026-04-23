@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Systemarchitektur, Tech-Stack, Plugin-System
-**Stand:** 20. April 2026, Chat 59 (EI-Calc-Node, Async-Block, 13 Nodes)
+**Stand:** 21. April 2026, Chat 60 (Event-Modell, Graph-Split, Session-Trennung)
 **Pfad:** novaberg/docs/novaberg-architecture.md
 **Quellen:** nova-00-a.md (Architektur-Übersicht), nova-07-a.md (Tech-Stack), nova-07-m-a.md (Plugin-System)
 
@@ -44,7 +44,7 @@ ROCm-Versionen im Docker-Image und auf dem Host sind inkompatibel. Ollama muss d
 
 | Komponente | Technologie | Rolle |
 |------------|------------|-------|
-| Desktop-Client | GTK4 (PyGObject) + WebKitGTK | Chat-UI (WebView), Panel-System (System, Emotionen, KZG, LZG, Session, Charakter), SSE + WebSocket |
+| Desktop-Client | GTK4 (PyGObject) + WebKitGTK | Chat-UI (WebView), Panel-System (System, Emotionen, KZG, LZG, Session, Charakter), WebSocket (Charakter-Antworten + Shadow Delivery) |
 
 ---
 
@@ -189,7 +189,7 @@ project/
 │   │   ├── builder.py                   #   Fassade, Plugin-Init
 │   │   ├── state.py                     #   State-Definition, PendingWrite
 │   │   ├── memory.py                    #   Graph-Checkpoint-Memory
-│   │   └── nodes/                       #   13 Graph-Nodes (11 sync + 2 async)
+│   │   └── nodes/                       #   HumanGraph: 5 Nodes (Pfad 1) | CharacterGraph: 13 Nodes (Pfad 2) | AgentGraph: 3 Nodes
 │   │       ├── perzeption.py            #     → novaberg-node-perception.md
 │   │       ├── enricher.py              #     → novaberg-node-enricher.md
 │   │       ├── ei_calc.py               #     → novaberg-node-ei-calc.md (seit Chat 59)
@@ -270,6 +270,35 @@ project/
 │
 └── docker-compose.yml
 ```
+
+### Event-Modell (Chat 60)
+
+Seit Chat 60 sind User und Charakter zwei unabhängige Akteure:
+
+| Pfad | Graph | Nodes | Aufgabe |
+|------|-------|-------|---------|
+| Pfad 1 | HumanGraph | 5 | User schreibt: Wahrnehmung + Speicherung |
+| Pfad 2 | CharacterGraph | 13 | Charakter reagiert: Lesen + Entscheiden + Antworten + Speichern |
+
+Verbunden durch eine Redis-Event-Queue (`event_queue:{user_id}:{character_id}`). Ein Event-Consumer (`services/event_consumer.py`) pollt die Queue und startet CharacterGraph-Durchlaeufe. Antworten erreichen den Client per WebSocket.
+
+**Neue Services:**
+
+| Service | Datei | Aufgabe |
+|---------|-------|---------|
+| Event-Queue | `services/events.py` | Event erzeugen, lesen, Self-Trigger-Schutz |
+| Event-Consumer | `services/event_consumer.py` | Queue-Polling, Debouncing, Graph-Aufruf, WebSocket-Delivery |
+
+**Ersetzte Services:**
+
+| Service | Status | Ersetzt durch |
+|---------|--------|---------------|
+| Nachbearbeitung | Deprecated | Event-Consumer |
+| SSE-Streaming (Antwort) | Deprecated | WebSocket-Delivery |
+
+Session-Key seit Chat 60: `session:{user_id}:{character_id}:turns` (vorher: `session:{user_id}:turns`).
+
+→ Details: `novaberg-graph.md` §3, `novaberg-event-model_k.md`
 
 ---
 
@@ -398,7 +427,7 @@ Perzeption und Router bekommen die letzten 5 Session-Turns als Hintergrund-Konte
 
 | Feature | Status | Referenz |
 |---------|--------|----------|
-| Graph-Pipeline (HumanGraph, 13 Nodes: 11 sync + 2 async) | Implementiert & getestet | novaberg-graph.md, nova-node-*.md |
+| Graph-Pipeline (HumanGraph: 5 Nodes Pfad 1 | CharacterGraph: 13 Nodes Pfad 2 | AgentGraph: 3 Nodes) | Implementiert & getestet | novaberg-graph.md, nova-node-*.md |
 | Async-Block (Salienz + Dispatcher + Nova-Pfad) | Implementiert & validiert | novaberg-service-nachbearbeitung.md |
 | EI-Calc-Node (reine Python-Berechnung, Dual-Modus User + Nova) | Implementiert & validiert | novaberg-node-ei-calc.md |
 | Dual-Emotion Phase 2 (Nova-Empathie, Konflikt-Erkennung) | Implementiert (AP1–3, AP7, AP4 teilw., AP8 teilw.) | novaberg-ei-dual-emotion_k.md |

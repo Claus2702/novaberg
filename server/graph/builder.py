@@ -11,9 +11,10 @@ import warnings
 import redis
 from langgraph.graph.state import CompiledStateGraph
 
-from graph.human_graph import HumanGraph
-from graph.agent_graph import AgentGraph
-from graph.state       import ConversationState
+from graph.human_graph     import HumanGraph
+from graph.agent_graph     import AgentGraph
+from graph.character_graph import CharacterGraph
+from graph.state           import ConversationState
 
 logger = logging.getLogger("ki_server.graph")
 
@@ -37,6 +38,17 @@ def build_agent_graph(
 ) -> tuple[CompiledStateGraph, AgentGraph]:
     """Baut den Analyse-Graphen für KI-User (Nova, etc.)."""
     graph = AgentGraph(embed_client, embed_model, redis_client, postgres_url)
+    return graph.build(), graph
+
+
+def build_character_graph(
+    embed_client,
+    embed_model:  str,
+    redis_client: redis.Redis,
+    postgres_url: str,
+) -> tuple[CompiledStateGraph, CharacterGraph]:
+    """Baut den Charakter-Graphen (Pfad 2: Charakter reagiert)."""
+    graph = CharacterGraph(embed_client, embed_model, redis_client, postgres_url)
     return graph.build(), graph
 
 

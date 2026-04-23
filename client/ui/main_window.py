@@ -90,6 +90,9 @@ class MainWindow(Gtk.ApplicationWindow):
             user_id       = DEFAULT_USER_ID,
         )
 
+        # Flag: Warten wir auf eine WebSocket-Antwort nach Pfad 1?
+        self._awaiting_response: bool = False
+
         # UI-Baum aufsetzen
         self._build_ui()
 
@@ -302,6 +305,7 @@ class MainWindow(Gtk.ApplicationWindow):
 
         # Eingabe sperren, solange der SSE-Stream läuft.
         self._set_input_sensitive(False)
+        self._awaiting_response = True
         self._status_bar.set_connection_status("Sende...")
 
         self._stream.send_message(text)
@@ -337,6 +341,11 @@ class MainWindow(Gtk.ApplicationWindow):
         self._chat_view.clear_stages()
         self._chat_view.add_assistant_message(antwort)
 
+        # Antwort da — Eingabe wieder freigeben.
+        self._awaiting_response = False
+        self._set_input_sensitive(True)
+        self._status_bar.set_connection_status("Verbunden")
+
         # Pixie-Momentum-Anzeige aktualisieren (optional, nur wenn gesetzt)
         momentum: str = meta.get("momentum", "")
         if momentum:
@@ -350,12 +359,22 @@ class MainWindow(Gtk.ApplicationWindow):
         logger.error(f"Stream-Fehler: {message}")
         self._chat_view.clear_stages()
         self._chat_view.add_assistant_message(f"**Fehler:** {message}")
+
+        # Bei Fehler: Warte-Flag zurücksetzen und Eingabe freigeben.
+        self._awaiting_response = False
+        self._set_input_sensitive(True)
         self._status_bar.set_connection_status("Getrennt")
 
     def _handle_done(self) -> None:
+        if self._awaiting_response:
+            # SSE-Stream (Pfad 1) ist beendet, aber die Charakter-Antwort
+            # kommt noch per WebSocket. Eingabe bleibt gesperrt.
+            logger.debug("Stream-Ende (Pfad 1) — warte auf WebSocket-Antwort")
+            self._status_bar.set_connection_status("Verarbeite...")
+            return
+
         logger.debug("Stream-Ende — Eingabe wird wieder freigegeben")
         self._set_input_sensitive(True)
-        # Verbindungsstatus nur zurücksetzen, wenn kein Fehler-Text aktiv ist.
         self._status_bar.set_connection_status("Verbunden")
 
     def _handle_impulse(self, text: str, data: dict) -> None:

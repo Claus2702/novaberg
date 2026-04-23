@@ -36,6 +36,8 @@ from config import (
     SEKTOR_GRUPPE,
     EMOTION_AROUSAL_DECAY,
     EI_AROUSAL_DOMINANZ,
+    EMOTION_HISTORIEN_GEWICHT,
+    EMOTION_GLAETTUNGS_MAXIMUM,
     EMPATHIE_ALPHA,
     EMPATHIE_ALPHA_NEUTRAL,
     EMPATHIE_KONFLIKT_DISTANZ,
@@ -85,11 +87,61 @@ def _arousal_to_float(raw, emotion: str = "neutral") -> float:
     return EMOTION_DEFAULT_AROUSAL.get(emotion, 0.5)
 
 
+def _glaettung(rohwert: float) -> float:
+    """
+    Glättet einen akkumulierten Emotions-Rohwert auf den Bereich [0, 1]
+    über eine sin^0.5-Kurve.
+
+    Die Kurve ist eine durchgehende, glatte Funktion ohne Knickstellen:
+    - Steil unten: selbst kleine Andeutungen werden sichtbar
+    - Flach oben: natürliche Sättigung, einzelne Turns nicht sofort am Max
+    - Mathematisch sauber: erreicht exakt 1.0 am Cap
+
+    Modelliert konversationelle Emotion plausibel: Eine Emotion baut sich
+    durch Wiederholung auf, statt sofort voll auszuschlagen.
+
+    Mathematik:
+        x_normalisiert = rohwert / MAXIMUM × π/2     # mappt [0, MAXIMUM] auf [0, π/2]
+        ergebnis       = sin(x_normalisiert)^0.5      # sin liegt in [0, 1], Wurzel macht steiler unten
+
+    Args:
+        rohwert: Akkumulierter Emotions-Wert (kann > MAXIMUM sein).
+
+    Returns:
+        Geglätteter Wert zwischen 0.0 und 1.0.
+
+    Beispielwerte (Maximum=2.5):
+        0.05 → 0.18 (auch leise Andeutungen sichtbar)
+        0.10 → 0.25
+        0.30 → 0.43
+        0.50 → 0.56
+        1.00 → 0.77 (einzelner starker Turn — präsent, nicht ausgereizt)
+        1.50 → 0.90 (mehrere Turns akkumuliert)
+        2.00 → 0.98
+        2.50 → 1.00 (Cap, mathematisch exakt)
+    """
+    if rohwert >= EMOTION_GLAETTUNGS_MAXIMUM:
+        logger.debug(f"EI-Calc: Glättung am Cap — rohwert={rohwert:.3f} → 1.000")
+        return 1.0
+
+    if rohwert <= 0.0:
+        return 0.0
+
+    x_normalisiert: float = rohwert / EMOTION_GLAETTUNGS_MAXIMUM * (math.pi / 2)
+    ergebnis:       float = math.sin(x_normalisiert) ** 0.5
+
+    logger.debug(
+        f"EI-Calc: Glättung — rohwert={rohwert:.3f} → geglättet={ergebnis:.3f}"
+    )
+    return ergebnis
+
+
 def _emotions_verlauf_berechnen(
     turns: list[dict],
     current_emotion: str = "neutral",
     current_arousal: float = 0.5,
     rolle: str = "user",
+    inject_current: bool = True,
 ) -> list[dict]:
     """
     Berechnet einen gewichteten Emotions-Verlauf über alle User-Turns.
@@ -123,8 +175,13 @@ def _emotions_verlauf_berechnen(
     # 2. Letzte N Turns
     emotion_turns = emotion_turns[-EMOTION_MAX_TURNS:]
 
-    # 2b. Aktuellen Prompt als virtuellen Turn 0 einfügen (neuester)
-    has_current: bool = current_emotion and current_emotion != "neutral"
+    # 2b. Aktuellen Prompt als virtuellen Turn 0 einfügen (neuester) — optional.
+    # In Pfad 2 (CharacterGraph, rolle="assistant") wird inject_current=False
+    # gesetzt: Novas aktuelle Emotion wird erst nach der Antwort per Perzeption
+    # analysiert, nicht vorher. Für den User-Pfad bleibt die Injection aktiv.
+    has_current: bool = (
+        inject_current and current_emotion and current_emotion != "neutral"
+    )
 
     if has_current:
         kanon_current: str = _emotion_kanonisieren(current_emotion)
@@ -142,6 +199,10 @@ def _emotions_verlauf_berechnen(
         return []
 
     # 3. Decay berechnen (neuester Turn zuerst)
+    # Aktueller Turn (i=0) zählt voll (100%), ältere Turns nur als Echo
+    # (HISTORIEN_GEWICHT, default 15%). Das modelliert biologisch: die
+    # aktuelle Emotion dominiert, alte Turns ziehen als Stimmungs-Trägheit
+    # nur sanft mit. Verhindert unbegrenztes Aufsummieren über Turns.
     akkumuliert: dict[str, float] = {}
     arousal_map: dict[str, float] = {}
 
@@ -154,7 +215,10 @@ def _emotions_verlauf_berechnen(
         # Kleiner Ärger (0.2) verfällt schnell, Kündigung (0.8) hält.
         effective_decay: float = EMOTION_DECAY_FACTOR * (1.0 - arousal * EI_AROUSAL_PERSISTENCE)
         decay: float = 1.0 / (1.0 + effective_decay * math.log(1.0 + i, EMOTION_DECAY_BASE))
-        akkumuliert[emotion] = akkumuliert.get(emotion, 0.0) + decay
+
+        # Aktueller Turn voll, ältere Turns als Echo
+        beitrag: float = decay if i == 0 else decay * EMOTION_HISTORIEN_GEWICHT
+        akkumuliert[emotion] = akkumuliert.get(emotion, 0.0) + beitrag
 
         # Arousal mit emotionsspezifischem Decay dämpfen
         decay_rate: float = EMOTION_AROUSAL_DECAY.get(emotion, 0.05)
@@ -164,15 +228,23 @@ def _emotions_verlauf_berechnen(
         if emotion not in arousal_map or gedaempfter_arousal > arousal_map[emotion]:
             arousal_map[emotion] = gedaempfter_arousal
 
-    # 4. Sektorabhängige Normalisierung (Plutchik-Modell)
-    max_gewicht: float = max(akkumuliert.values())
+    # 4. Glättung: Cap + lineare Zone + tanh-Kurve
+    # Akkumulierte Rohwerte werden gekappt (EMOTION_GLAETTUNGS_MAXIMUM)
+    # und dann über eine Kurve auf [0, 1] gestaucht. Bis zur Schwelle
+    # linear (normale Emotionen behalten ihre Dynamik), darüber sanft
+    # gegen 1.0 abflachend. Nur am Cap wird wirklich 1.0 erreicht —
+    # lodernde Dauer-Emotionen verdienen ihre Eins.
+    geglaettet: dict[str, float] = {
+        emotion: _glaettung(gewicht)
+        for emotion, gewicht in akkumuliert.items()
+    }
 
-    if max_gewicht <= 0:
+    if not geglaettet or max(geglaettet.values()) <= 0:
         return []
 
     # Dominante Emotion über Effektivwert bestimmen (Gewicht × Arousal^n)
     effektiv_werte: dict[str, float] = {}
-    for emotion, gewicht in akkumuliert.items():
+    for emotion, gewicht in geglaettet.items():
         ar: float = arousal_map.get(emotion, 0.5)
         effektiv_werte[emotion] = gewicht * (ar ** EI_AROUSAL_DOMINANZ)
 
@@ -180,34 +252,35 @@ def _emotions_verlauf_berechnen(
     dominante_sektor: int | None = EMOTION_SEKTOR_MAP.get(dominante_emotion)
     dominante_arousal: float = arousal_map.get(dominante_emotion, 0.5)
 
+    # Plutchik-Sektordistanz-Modulation bleibt: Emotionen, die weit
+    # entfernt vom dominanten Sektor liegen, werden über Potenz-
+    # Transformation gedämpft (Gegenpole können nicht gleich hoch sein).
+    # Der ABSOLUTE Wert bleibt aber erhalten — keine Division durch Max.
     normalisiert: dict[str, float] = {}
 
-    for emotion, gewicht in akkumuliert.items():
-        # Basis-Normalisierung (wie bisher)
-        basis_norm: float = gewicht / max_gewicht
-
+    for emotion, gewicht in geglaettet.items():
         if emotion == dominante_emotion:
-            normalisiert[emotion] = 1.0
+            # Dominante Emotion: absoluter geglätteter Wert, keine Anpassung
+            normalisiert[emotion] = gewicht
             continue
 
-        # Sektor der aktuellen Emotion
         emotion_sektor: int | None = EMOTION_SEKTOR_MAP.get(emotion)
 
-        # Sektorlose Emotionen oder unbekannte: Exponent 1.0 (wie bisher)
+        # Sektorlose Emotionen oder unbekannte: absolut durchreichen
         if dominante_sektor is None or emotion_sektor is None:
-            normalisiert[emotion] = basis_norm
+            normalisiert[emotion] = gewicht
             continue
 
-        # Basis-Exponent aus Distanzmatrix
+        # Basis-Exponent aus Distanzmatrix (Gegenpole → höherer Exponent → stärkere Dämpfung)
         basis_exponent: float = EMOTION_SEKTOR_DISTANZ.get(
             (dominante_sektor, emotion_sektor), 1.0
         )
 
-        # Arousal-Skalierung: Niedrige Arousal → Exponent wandert Richtung 1.0
+        # Arousal-Skalierung: Niedrige Arousal → Exponent Richtung 1.0 (weniger Dämpfung)
         eff_exponent: float = 1.0 + (basis_exponent - 1.0) * dominante_arousal
 
-        # Potenz-Transformation
-        normalisiert[emotion] = basis_norm ** eff_exponent
+        # Potenz-Transformation auf absoluten gesättigten Wert
+        normalisiert[emotion] = gewicht ** eff_exponent
 
     # 5. Filtern + Sortieren
     ergebnis: list[dict] = [
@@ -259,6 +332,7 @@ def _emotions_vektor_bestimmen(
     turns: list[dict],
     current_emotion: str = "neutral",
     rolle: str = "user",
+    inject_current: bool = True,
 ) -> str:
     """
     Bestimmt den emotionalen Vektor (Richtung) aus den letzten User-Turns.
@@ -283,8 +357,8 @@ def _emotions_vektor_bestimmen(
         emotion_turns.append({**t, "emotion": kanon})
     emotion_turns = emotion_turns[-EMOTION_VEKTOR_TURNS:]
 
-    # 1b. Aktuellen Prompt als neuesten Turn einfügen
-    if current_emotion:
+    # 1b. Aktuellen Prompt als neuesten Turn einfügen (optional — siehe inject_current)
+    if inject_current and current_emotion:
         kanon_current: str = _emotion_kanonisieren(current_emotion)
         emotion_turns.append({
             "rolle": rolle,

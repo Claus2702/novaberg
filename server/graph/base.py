@@ -15,6 +15,7 @@ import redis
 from langgraph.graph import END  # noqa: F401 — re-export für Subklassen
 from langgraph.graph.state import CompiledStateGraph
 
+from config                 import ASSISTANT_NAME, ASSISTANT_USER_ID
 from graph.state           import ConversationState
 from graph.nodes.perzeption import perceive
 from graph.nodes.router     import route
@@ -70,9 +71,119 @@ class GraphBase(ABC):
     def build(self) -> CompiledStateGraph:
         """Subklassen verdrahten ihre Nodes und geben den kompilierten Graphen zurück."""
 
-    @abstractmethod
-    def create_state(self, user_prompt: str, user_id: str, **kwargs) -> ConversationState:
-        """Subklassen erzeugen ihren initialen State."""
+    def create_state(
+        self,
+        user_prompt:   str,
+        user_id:       str,
+        character_id:  str = "",
+        system_prompt: str = (
+            f"Du bist {ASSISTANT_NAME}. Antworte auf Deutsch."
+        ),
+        temperature:   float = 0.7,
+        **kwargs,
+    ) -> ConversationState:
+        """Erzeugt einen frischen State für einen neuen Gesprächs-Turn."""
+
+        return ConversationState(
+            # Eingang
+            user_prompt   = user_prompt,
+            user_id       = user_id,
+            character_id  = character_id or ASSISTANT_USER_ID,
+            system_prompt = system_prompt,
+            temperature   = temperature,
+
+            # Event Context
+            event_source  = kwargs.get("event_source", "user"),
+            event_payload = kwargs.get("event_payload", {}),
+
+            # Perzeption
+            perzeption_rolle    = kwargs.get("perzeption_rolle", "user"),
+            ei_calc_rolle       = kwargs.get("ei_calc_rolle", "user"),
+            intent              = "",
+            tone                = "sachlich",
+            prompt_thema        = "",
+            current_emotion     = "neutral",
+            current_arousal     = 0.5,
+            beziehungs_dynamik  = "neutral",
+
+            # Router
+            needs_memory   = False,
+            needs_web      = False,
+            needs_timeline = False,
+            timeline_query = {},
+
+            # Management-Routing (Router → Planner)
+            management_action     = "",
+            management_target     = "",
+            management_target_typ = "titel",
+
+            # Enricher
+            memory_context     = "",
+            web_context        = "",
+            session_turns      = [],
+            gespraechs_modus   = "",
+            user_intentionen   = [],
+            user_emotion       = "",
+            raw_turns          = [],
+            char_hash_dict     = {},
+            session_turn_kern  = "",
+
+            # Emotionale Intelligenz
+            emotions_verlauf     = [],
+            emotions_vektor      = "",
+            sprach_stil          = "",
+            beziehungs_kontext   = "",
+            nova_kern            = "",
+            nova_beziehung       = "",
+            nova_adaptiv         = "",
+            nova_intentionen     = "",
+            nova_emotions        = "",
+
+            # Nova-Emotion (Dual-Emotion Phase 2)
+            nova_emotions_verlauf  = [],
+            nova_emotions_vektor   = "",
+            nova_emotion_konflikt  = False,
+
+            # Planner (Management Plan-Phase)
+            management_result = "",
+            management_detail = "",
+            task_block       = "",
+            task_context_cut = False,
+
+            # Momentum (für Shadow Delivery Service via Redis)
+            momentum = "mid",
+
+            # Responder
+            response    = "",
+            model       = "",
+            token_total = 0,
+
+            # Tribunal
+            tribunal_votes   = [],
+            tribunal_verdict = "",
+            tribunal_summary = "",
+
+            # Korrektur-Loop
+            correction_round = 0,
+            max_corrections  = self.MAX_CORRECTIONS,
+
+            # Pending Writes (Salienz + Planner → Dispatcher)
+            pending_writes = [],
+
+            # Agent-System (Epic 11)
+            agent_name    = "",
+            agent_results = [],
+
+            # Charakter-Identität + Direktiven
+            charakter_anweisungen = [],
+            direktiven = [],
+
+            # Gesprächsvektor (Epic 9)
+            gespraechsvektor = "",
+
+            # Interne Anmerkungen
+            node_annotations = [],
+        )
 
     # ── Node-Wrapper ───────────────────────────
 

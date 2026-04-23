@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Node-Referenz Planner
-**Stand:** 18. April 2026, Chat 54 (HALL2-Fix: Task-Block-Aufbereitung)
+**Stand:** 21. April 2026, Chat 60 (Event-Modell, Graph-Split)
 **Pfad:** novaberg/docs/novaberg-node-planner.md
 **Quellen:** nova-01-m-d.md
 **Datei:** `graph/nodes/planner.py`
@@ -28,10 +28,12 @@ Der Planner ist nur bei Management-Intents aktiv (`management_action ≠ ""`). B
 ## 2. Position im Graph
 
 ```
-Router → Enricher → ▶ [Planner] ◀ → Responder → ...
+Router → ▶ [Planner] ◀ ⇄ Agent-Dispatch → GV-Node → Responder → ...
 ```
 
-**Bedingte Kante:** Nur aktiv wenn `management_action ≠ ""`. Sonst springt der Graph direkt von Enricher zu Responder.
+Nur im CharacterGraph (Pfad 2). Seit Chat 60 nicht mehr im HumanGraph.
+
+**Bedingte Kante:** Nur aktiv wenn `management_action ≠ ""`. Sonst springt der Graph direkt vom Router zum GV-Node.
 
 ---
 

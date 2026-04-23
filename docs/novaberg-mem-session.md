@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Modul Session-Gedächtnis
-**Stand:** 17. April 2026, Chat 52 (Code-Alignment)
+**Stand:** 21. April 2026, Chat 60 (Session-Trennung: character_id, Dispatcher schreibt Turns)
 **Pfad:** novaberg/docs/novaberg-mem-session.md
 **Quellen:** nova-02-m-a.md
 **Datei:** `memory/session.py`
@@ -23,8 +23,10 @@ Das Session-Gedächtnis ist Novas Arbeitsgedächtnis für das laufende Gespräch
 
 | Key | Typ | TTL | Beschreibung |
 |-----|-----|-----|-------------|
-| `session:{user_id}:turns` | List | 7200s (2h) | Geordnete Liste aller Turns |
-| `session:{user_id}:summary` | String | 7200s (2h) | Zusammenfassung älterer Turns |
+| `session:{user_id}:{character_id}:turns` | List | 7200s (2h) | Geordnete Liste aller Turns |
+| `session:{user_id}:{character_id}:summary` | String | 7200s (2h) | Zusammenfassung älterer Turns |
+
+Seit Chat 60: Session-Key enthält `character_id`. Die Session repräsentiert das Gespräch zwischen einem bestimmten User und einem bestimmten Charakter (z.B. `session:meister:nova:turns`). Helfer: `_session_key(user_id, character_id, suffix)`.
 
 ### 2.2 Turn-Format
 
@@ -60,11 +62,17 @@ Jeder Turn ist ein JSON-Objekt in der Redis-Liste:
 
 ### 3.1 session_turn_store
 
+Signatur: `session_turn_store(redis_client, user_id, character_id, rolle, inhalt, ...)`.
+
 Speichert einen Turn (User oder Assistent) am Ende der Liste. Setzt die TTL bei jedem Schreibvorgang zurück — solange gesprochen wird, lebt die Session.
 
-Optional mit Metadaten (Intentionen, Emotion, Modus, Kern) — wird aber typischerweise erst nachträglich via `session_turn_annotate` befüllt.
+Seit Chat 60: Erweitert um `arousal`, `emotions_vektor`, `sprach_stil`, `beziehungs_dynamik`, `tone`, `themen`. Damit kann ein Turn vollständig in einem Aufruf gespeichert werden — kein nachträgliches Annotieren nötig.
 
 ### 3.2 session_turn_annotate
+
+Signatur: `session_turn_annotate(redis_client, user_id, character_id, ...)`.
+
+**Perspektivisch deprecated (Chat 60).** Der Dispatcher schreibt Turns ab Chat 60 vollständig via `session_turn_store()`. Die Annotate-Funktionen (auch `session_assistant_turn_annotate()`) werden nur noch von Legacy-Code aufgerufen.
 
 Sucht den letzten User-Turn ohne `kern`-Annotation (von hinten nach vorne) und reichert ihn an. Wird von der Salienz nach der Analyse aufgerufen.
 
@@ -73,6 +81,8 @@ Sucht den letzten User-Turn ohne `kern`-Annotation (von hinten nach vorne) und r
 **Felder:** `intentionen`, `emotion`, `modus`, `kern`, `arousal`, `emotions_vektor`, `sprach_stil`, `beziehungs_dynamik`, `tone` — alles aus dem Salienz-Ergebnis des Segments mit der höchsten Salienz. Die letzten vier Felder werden nicht von der Salienz selbst berechnet, sondern aus dem State durchgereicht (Enricher/Perzeption → State → Salienz → Session).
 
 ### 3.3 session_summarize_if_needed
+
+Signatur: `session_summarize_if_needed(redis_client, user_id, character_id)`.
 
 Wenn die Turn-Liste über `SESSION_SUMMARIZE_AT` (25) Turns wächst, werden die ältesten 10 Turns zusammengefasst:
 
@@ -85,13 +95,19 @@ Wenn die Turn-Liste über `SESSION_SUMMARIZE_AT` (25) Turns wächst, werden die 
 
 ### 3.4 session_turns_retrieve
 
+Signatur: `session_turns_retrieve(redis_client, user_id, character_id)`.
+
 Gibt alle Turns der aktuellen Session als Liste von Dicts zurück. Wird vom Enricher verwendet, um den Gesprächskontext zu laden.
 
 ### 3.5 session_reset
 
+Signatur: `session_reset(redis_client, user_id, character_id)`.
+
 Löscht alle Session-Daten eines Users: Turns, Summary, Stack, Pending.
 
 ### 3.6 session_turn_mark_action (Chat 43)
+
+Signatur: `session_turn_mark_action(redis_client, user_id, character_id, ...)`.
 
 Markiert den letzten User-Turn mit dem Ergebnis einer Agent-Aktion. Wird nach dem Agent-Dispatch aufgerufen, analog zu `session_turn_annotate`.
 
@@ -125,11 +141,13 @@ Der Marker verhindert, dass Classify-Nodes erledigte Anweisungen als aktive Auft
 
 ## 5. Zusammenspiel mit anderen Nodes
 
+Seit Chat 60: Der Dispatcher (`graph/nodes/dispatcher.py`) schreibt alle Session-Turns — User-Turns (Pfad 1) und Assistant-Turns (Pfad 2). `chat.py` schreibt keine Turns mehr direkt.
+
 | Node | Interaktion |
 |------|-------------|
-| **API-Layer** (`api/chat.py`) | Speichert User- und Assistenten-Turns via `session_turn_store` |
+| **Dispatcher** | Schreibt User- und Assistant-Turns vollständig via `session_turn_store` (seit Chat 60) |
 | **Enricher** | Liest Turns via `session_turns_retrieve`, destilliert sie, blendet Shadow-Impulse aus |
-| **Salienz** | Annotiert den letzten User-Turn via `session_turn_annotate` |
+| **Salienz** | Legacy-Annotation via `session_turn_annotate` (perspektivisch deprecated, Chat 60) |
 | **API-Layer** (`api/chat.py`) | Markiert User-Turns nach Agent-Dispatch via `session_turn_mark_action` |
 | **Responder** | Sieht die destillierten Turns (über den Enricher, nicht direkt) |
 

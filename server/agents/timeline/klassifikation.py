@@ -66,6 +66,7 @@ def klassifizieren(state: AgentState) -> dict:
     """Bestimmt Aktion, Target, Zeitausdruck und Event-Typ per Keyword-Hints + LLM-Call."""
     prompt = state["aufgabe"]
     user_id = state["kontext"].get("user_id", "")
+    character_id = state["kontext"].get("character_id", "")
 
     logger.info(f"klassifizieren: Einstieg — prompt='{prompt[:80]}', user_id='{user_id}'")
 
@@ -85,7 +86,7 @@ def klassifizieren(state: AgentState) -> dict:
     session_turns: str | None = None
     if user_id:
         try:
-            raw_turns: list[dict] = session_turns_retrieve(redis_client, user_id)
+            raw_turns: list[dict] = session_turns_retrieve(redis_client, user_id, character_id)
             session_turns = format_session_turns_numbered(raw_turns, max_turns=5) or None
         except Exception as e:
             logger.warning(f"klassifizieren: Session-Kontext fehlt: {e}")

@@ -21,32 +21,58 @@ SESSION_TTL:          int = 7200    # 2 Stunden Inaktivität
 SESSION_SUMMARIZE_AT: int = 25      # Ab 25 Turns: älteste 10 zusammenfassen
 
 
+def _session_key(user_id: str, character_id: str, suffix: str) -> str:
+    """Baut den Redis-Key für eine Session-Partition.
+
+    Format: session:{user_id}:{character_id}:{suffix}
+    Beispiel: session:meister:nova:turns
+    """
+    return f"session:{user_id}:{character_id}:{suffix}"
+
+
 # ─────────────────────────────────────────────
 # Turn speichern
 # ─────────────────────────────────────────────
 def session_turn_store(
     redis_client: redis.Redis,
     user_id:      str,
+    character_id: str,
     rolle:        str,
     inhalt:       str,
     intentionen:  list = None,
     emotion:      str  = "",
+    arousal:      float = 0.5,
     modus:        str  = "",
     kern:         str  = "",
+    emotions_vektor:    str = "",
+    sprach_stil:        str = "",
+    beziehungs_dynamik: str = "",
+    tone:               str = "",
+    themen:             list[str] | None = None,
 ) -> None:
-    """Speichert einen Turn in der Session, optional mit Meta-Daten."""
+    """Speichert einen Turn in der Session, vollständig mit allen Meta-Daten."""
 
-    key: str = f"session:{user_id}:turns"
+    key: str = _session_key(user_id, character_id, "turns")
 
-    turn: str = json.dumps({
+    turn_data: dict = {
         "rolle":        rolle,
         "inhalt":       inhalt,
         "zeit":         time.time(),
         "intentionen":  intentionen or [],
         "emotion":      emotion,
+        "arousal":      arousal,
         "modus":        modus,
         "kern":         kern,
-    }, ensure_ascii=False)
+        "emotions_vektor":    emotions_vektor,
+        "sprach_stil":        sprach_stil,
+        "beziehungs_dynamik": beziehungs_dynamik,
+        "tone":               tone,
+    }
+
+    if themen is not None:
+        turn_data["themen"] = themen
+
+    turn: str = json.dumps(turn_data, ensure_ascii=False)
 
     redis_client.rpush(key, turn)
     redis_client.expire(key, SESSION_TTL)
@@ -56,121 +82,12 @@ def session_turn_store(
 
 
 # ─────────────────────────────────────────────
-# Turn nachträglich anreichern
-# ─────────────────────────────────────────────
-def session_turn_annotate(
-    redis_client:    redis.Redis,
-    user_id:         str,
-    intentionen:     list,
-    emotion:         str,
-    modus:           str,
-    kern:            str,
-    arousal:            float = 0.5,
-    emotions_vektor:    str   = "",
-    sprach_stil:        str   = "",
-    beziehungs_dynamik: str   = "",
-    tone:               str   = "",
-    themen:             list[str] | None = None,
-) -> None:
-    """Reichert den letzten User-Turn nachträglich mit Meta-Daten an."""
-
-    key:   str  = f"session:{user_id}:turns"
-    turns: list = redis_client.lrange(key, 0, -1)
-
-    if not turns:
-        return
-
-    # Letzten User-Turn von hinten suchen
-    for idx in range(len(turns) - 1, -1, -1):
-        try:
-            turn: dict = json.loads(turns[idx])
-        except json.JSONDecodeError:
-            continue
-
-        if turn.get("rolle") == "user" and not turn.get("kern"):
-            # Anreichern
-            turn["intentionen"]     = intentionen
-            turn["emotion"]         = emotion
-            turn["modus"]           = modus
-            turn["kern"]            = kern
-            turn["arousal"]         = arousal
-            turn["emotions_vektor"]    = emotions_vektor
-            turn["sprach_stil"]        = sprach_stil
-            turn["beziehungs_dynamik"] = beziehungs_dynamik
-            turn["tone"]               = tone
-            if themen is not None:
-                turn["themen"]         = themen
-
-            redis_client.lset(key, idx, json.dumps(turn, ensure_ascii=False))
-
-            logger.info(
-                f"Session: User-Turn annotiert — "
-                f"intentionen={intentionen}, emotion={emotion}, "
-                f"modus={modus}, arousal={arousal}, vektor={emotions_vektor}, "
-                f"sprach_stil={sprach_stil}, "
-                f"beziehungs_dynamik={beziehungs_dynamik}, "
-                f"tone={tone}"
-            )
-            return
-
-    logger.debug("Session: Kein unannotierter User-Turn gefunden")
-
-
-# ─────────────────────────────────────────────
-# Assistant-Turn nachträglich anreichern (Nova-Emotionen)
-# ─────────────────────────────────────────────
-def session_assistant_turn_annotate(
-    redis_client:  redis.Redis,
-    user_id:       str,
-    emotion:       str   = "",
-    arousal:       float = 0.5,
-    modus:         str   = "",
-    emotions_vektor:    str = "",
-    sprach_stil:        str = "",
-    beziehungs_dynamik: str = "",
-) -> None:
-    """Reichert den letzten Assistant-Turn mit Novas Emotions-Metadaten an."""
-
-    key:   str  = f"session:{user_id}:turns"
-    turns: list = redis_client.lrange(key, 0, -1)
-
-    if not turns:
-        return
-
-    for idx in range(len(turns) - 1, -1, -1):
-        try:
-            turn: dict = json.loads(turns[idx])
-        except json.JSONDecodeError:
-            continue
-
-        if turn.get("rolle") == "assistant" and not turn.get("emotion"):
-            turn["emotion"]            = emotion
-            turn["arousal"]            = arousal
-            turn["modus"]              = modus
-            turn["emotions_vektor"]    = emotions_vektor
-            turn["sprach_stil"]        = sprach_stil
-            turn["beziehungs_dynamik"] = beziehungs_dynamik
-
-            redis_client.lset(key, idx, json.dumps(turn, ensure_ascii=False))
-
-            logger.info(
-                f"Session: Assistant-Turn annotiert — "
-                f"emotion={emotion}, arousal={arousal:.2f}, "
-                f"modus={modus}, vektor={emotions_vektor}, "
-                f"sprach_stil={sprach_stil}, "
-                f"beziehungs_dynamik={beziehungs_dynamik}"
-            )
-            return
-
-    logger.debug("Session: Kein unannotierter Assistant-Turn gefunden")
-
-
-# ─────────────────────────────────────────────
 # Turn als Agent-Aktion markieren (KONTEXT1)
 # ─────────────────────────────────────────────
 def session_turn_mark_action(
     redis_client: redis.Redis,
     user_id:      str,
+    character_id: str,
     erledigt:     bool = True,
     erfolgreich:  bool = False,
 ) -> None:
@@ -182,7 +99,7 @@ def session_turn_mark_action(
 
     Wird NICHT aufgerufen bei Rueckfragen (status=rueckfrage).
     """
-    key: str = f"session:{user_id}:turns"
+    key: str = _session_key(user_id, character_id, "turns")
     turns: list = redis_client.lrange(key, 0, -1)
 
     if not turns:
@@ -208,11 +125,12 @@ def session_turn_mark_action(
 def session_summarize_if_needed(
     redis_client:  redis.Redis,
     user_id:       str,
+    character_id:  str,
 ) -> None:
     """Fasst älteste Turns zusammen wenn der Stack zu groß wird."""
 
-    key:         str = f"session:{user_id}:turns"
-    summary_key: str = f"session:{user_id}:summary"
+    key:         str = _session_key(user_id, character_id, "turns")
+    summary_key: str = _session_key(user_id, character_id, "summary")
     laenge:      int = redis_client.llen(key)
 
     if laenge <= SESSION_SUMMARIZE_AT:
@@ -278,11 +196,12 @@ def session_summarize_if_needed(
 # ─────────────────────────────────────────────
 def session_turns_retrieve(
     redis_client: redis.Redis,
-    user_id:      str
+    user_id:      str,
+    character_id: str,
 ) -> list[dict]:
     """Holt alle Turns der aktuellen Session."""
 
-    key:        str       = f"session:{user_id}:turns"
+    key:        str       = _session_key(user_id, character_id, "turns")
     raw_turns:  list      = redis_client.lrange(key, 0, -1)
     turns:      list[dict] = []
 
@@ -382,19 +301,20 @@ def format_session_turns_numbered(
 # ─────────────────────────────────────────────
 def session_context_build(
     redis_client: redis.Redis,
-    user_id:      str
+    user_id:      str,
+    character_id: str,
 ) -> str:
     """Baut den vollständigen Session-Kontext: Zusammenfassung + aktuelle Turns."""
 
     parts: list[str] = []
 
-    summary_key: str = f"session:{user_id}:summary"
+    summary_key: str = _session_key(user_id, character_id, "summary")
     summary:     str = redis_client.get(summary_key) or ""
 
     if summary:
         parts.append(f"[Bisheriger Gesprächsverlauf, zusammengefasst]\n{summary}")
 
-    turns: list[dict] = session_turns_retrieve(redis_client, user_id)
+    turns: list[dict] = session_turns_retrieve(redis_client, user_id, character_id)
 
     if turns:
         turn_lines: list[str] = []
@@ -412,13 +332,14 @@ def session_context_build(
 # ─────────────────────────────────────────────
 def session_reset(
     redis_client: redis.Redis,
-    user_id:      str
+    user_id:      str,
+    character_id: str,
 ) -> None:
     """Löscht die aktuelle Session komplett."""
 
-    redis_client.delete(f"session:{user_id}:turns")
-    redis_client.delete(f"session:{user_id}:summary")
-    redis_client.delete(f"session:{user_id}:stack")
-    redis_client.delete(f"session:{user_id}:pending")
+    redis_client.delete(_session_key(user_id, character_id, "turns"))
+    redis_client.delete(_session_key(user_id, character_id, "summary"))
+    redis_client.delete(_session_key(user_id, character_id, "stack"))
+    redis_client.delete(_session_key(user_id, character_id, "pending"))
 
-    logger.info(f"Session: Zurückgesetzt für user '{user_id}'")
+    logger.info(f"Session: Zurückgesetzt für user '{user_id}', charakter '{character_id}'")

@@ -13,6 +13,7 @@ import json
 import logging
 
 from config import (
+    ASSISTANT_USER_ID,
     PIXIE_RECHERCHE_SESSION_TURNS,
     redis_client,
 )
@@ -23,6 +24,7 @@ logger = logging.getLogger(__name__)
 
 def session_kontext_extrahieren(
     user_id: str,
+    character_id: str = "",
     max_turns: int | None = None,
 ) -> dict:
     """Extrahiert den Arbeitskontext aus den letzten Session-Turns.
@@ -49,7 +51,8 @@ def session_kontext_extrahieren(
         Leeres Dict wenn keine Session oder LLM-Fehler.
     """
     limit: int = max_turns or PIXIE_RECHERCHE_SESSION_TURNS
-    session_key: str = f"session:{user_id}:turns"
+    from memory.session import _session_key
+    session_key: str = _session_key(user_id, character_id or ASSISTANT_USER_ID, "turns")
 
     # -- Turns aus Redis laden --
     try:

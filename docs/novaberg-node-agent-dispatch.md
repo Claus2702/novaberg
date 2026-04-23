@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Node-Referenz Agent-Dispatch (zentraler Agenten-Router im Graph)
-**Stand:** 17. April 2026, Chat 52 (Code-Alignment)
+**Stand:** 21. April 2026, Chat 60 (Event-Modell, Graph-Split)
 **Pfad:** novaberg/docs/novaberg-node-agent-dispatch.md
 **Quellen:** nova-11-m-a.md
 **Datei:** `graph/nodes/agent_dispatch.py`
@@ -22,6 +22,8 @@ Planner → ▶ Agent-Dispatch ◀ → Planner (Schleife)
                                     │
                                     └── kein agent_name → Responder
 ```
+
+Nur im CharacterGraph (Pfad 2). Seit Chat 60 nicht mehr im HumanGraph.
 
 **Input:** State mit `agent_name` (vom Planner gesetzt).
 **Output:** State mit `agent_results` (vom agenten-spezifischen Dispatch befüllt), `agent_name = ""` (Reset, Planner entscheidet neu).

@@ -9,7 +9,6 @@ import logging
 
 from agents import AgentRegistry
 from agents.base import AgentState
-from memory.session import session_turn_annotate
 from config import redis_client as cfg_redis_client
 
 logger = logging.getLogger("ki_server.agents.kzg.dispatch")
@@ -70,6 +69,7 @@ def dispatch_kzg(
             "agent_name":  "kzg",
             "kontext": {
                 "user_id":      user_id,
+                "character_id": state.get("character_id", ""),
                 "embed_client": embed_client,
                 "embed_model":  embed_model,
             },
@@ -96,23 +96,10 @@ def dispatch_kzg(
             bestes_ergebnis  = salienz_obj
             bester_kern      = result_state.get("parameter", {}).get("kern", "")
 
-    # ── Session-Turn einmalig annotieren (hoechstes Segment) ──
+    # ── Kern in State schreiben (Dispatcher schreibt den Session-Turn komplett) ──
     if bestes_ergebnis and bester_kern:
-        session_turn_annotate(
-            redis_client       = cfg_redis_client,
-            user_id            = user_id,
-            intentionen        = bestes_ergebnis.get("intentionen", []),
-            emotion            = state.get("current_emotion", "neutral"),
-            modus              = bestes_ergebnis.get("modus", ""),
-            kern               = bester_kern,
-            arousal            = state.get("current_arousal", 0.5),
-            emotions_vektor    = state.get("emotions_vektor", ""),
-            sprach_stil        = state.get("sprach_stil", "neutral"),
-            beziehungs_dynamik = state.get("beziehungs_dynamik", "neutral"),
-            tone               = state.get("tone", "sachlich"),
-            themen             = bestes_ergebnis.get("themen", []),
-        )
-        logger.info(f"KZG-Dispatch: Session annotiert — kern='{bester_kern[:60]}'")
+        state["session_turn_kern"] = bester_kern
+        logger.info(f"KZG-Dispatch: Kern in State geschrieben — '{bester_kern[:60]}'")
 
     logger.info(f"KZG-Dispatch: {verarbeitet} Segmente verarbeitet")
 

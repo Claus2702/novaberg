@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Konzept — Dual-Emotion Phase 2
-**Stand:** 19. April 2026, Chat 58
+**Stand:** 21. April 2026, Chat 60 (Async-Pfad ersetzt durch Event-Modell)
 **Pfad:** novaberg/docs/novaberg-ei-dual-emotion_k.md
 **Typ:** Konzept (K)
 **Voraussetzung:** Phase 1 (User-ID-Entkopplung, Chat 57) ✅
@@ -157,6 +157,8 @@ Strikte Partition über `user_id`:
 
 ## 6. Asynchroner Block — Details
 
+> **⚠️ Veraltet (Chat 60).** Der hier beschriebene asynchrone Block wurde durch das Event-Modell ersetzt. Der CharacterGraph (Pfad 2) läuft als eigenständiger Graph, ausgelöst durch Events. Siehe `novaberg-event-model_k.md`.
+
 ### 6.1 Perzeption(Nova)
 
 Derselbe Perzeption-Node, aufgerufen mit Novas `response` statt `user_prompt`. Der Prompt wird minimal angepasst: "Analysiere die folgende Aussage der Assistentin" statt "Analysiere den Prompt des Nutzers."
@@ -279,15 +281,15 @@ Platziert zwischen [IDENTITAET] und [KOMMUNIKATION]. Die Emotion beeinflusst die
 
 | # | Paket | Beschreibung | Status |
 |---|-------|-------------|--------|
-| 1 | **EI-Extraktion** | ~600 Zeilen aus Enricher → `ei/berechnung.py`. Enricher importiert sie. Reines Refactoring, null Funktionsänderung. | ✅ Chat 58 — Enricher-Split |
-| 2 | **EI-Calc-Node** | Neuer Node `graph/nodes/ei_calc.py`. Ruft extrahierte Funktionen auf. Graph-Kante: Enricher → EI-Calc → Router (Enricher vor Router!). | ✅ Chat 59 — EI-Calc-Node + Graph-Umbau |
-| 3 | **Nova-Emotion Berechnung** | EI-Calc berechnet Nova-Emotion(N) aus Historie + Empathie. Neue State-Felder. | ✅ Chat 59 — Nova-Emotion (Decay + Empathie) |
-| 4 | **Perzeption(Nova) + EI-Calc(Nova)** | Perzeption-Aufruf auf `response` nach Tribunal. EI-Calc direkt danach. Prompt-Anpassung. | 🔧 Chat 59 — Perzeption(Nova) mit eigenem Prompt, Enricher(Nova) im async-Pfad. Router(Nova) noch offen. |
-| 5 | **Router(Nova) + Commitment** | Router-Aufruf auf Nova-Response. Bei Commitment → Planner → Agent. | ⬜ Router(Nova) + Commitment-Erkennung |
-| 6 | **Salienz(Nova)** | Eigener Salienz-Call für Novas Aussagen. Prompt-Anpassung. | ⬜ Salienz(Nova) — eigener Salienz-Prompt |
-| 7 | **Asynchroner Block** | Nova-Pfad: Perzeption → Enricher → EI-Calc → Router → [Agent] → Salienz → Dispatcher. User-Pfad: Salienz → Dispatcher. | ✅ Chat 59 — Async-Block (User-Salienz + Nova-Pfad parallel, ThreadPoolExecutor) |
-| 8 | **API + Client** | `GespraechAntwort` erweitern, Emotions-Panel: Dual-Radar. | 🔧 Chat 59 — Nova-Emotion in API + SSE. Client-Panels noch offen. |
-| 9 | **Dokumentation** | Graph-Doku, Enricher-Doku, EI-Doku, Roadmap, Backlog aktualisieren. | 🔧 Chat 59 — Protokoll geschrieben, Doku-Update läuft |
+| 1 | **EI-Extraktion** | ~600 Zeilen aus Enricher → `ei/berechnung.py`. Enricher importiert sie. Reines Refactoring, null Funktionsänderung. | ✅ Chat 58 |
+| 2 | **EI-Calc-Node** | Neuer Node `graph/nodes/ei_calc.py`. Ruft extrahierte Funktionen auf. Graph-Kante: Enricher → EI-Calc → Router (Enricher vor Router!). | ✅ Chat 59 |
+| 3 | **Nova-Emotion Berechnung** | EI-Calc berechnet Nova-Emotion(N) aus Historie + Empathie. Neue State-Felder. | ✅ Chat 59 |
+| 4 | **Perzeption(Nova) + EI-Calc(Nova)** | Perzeption-Aufruf auf `response` nach Tribunal. EI-Calc direkt danach. Prompt-Anpassung. | ✅ Chat 60 — Durch Event-Modell ersetzt. Perzeption läuft in Pfad 1 (HumanGraph), Ergebnisse in der Session. |
+| 5 | **Router(Nova) + Commitment** | Router-Aufruf auf Nova-Response. Bei Commitment → Planner → Agent. | ✅ Chat 60 — Router im CharacterGraph (Pfad 2). Commitments werden normal geroutet. |
+| 6 | **Salienz(Nova)** | Eigener Salienz-Call für Novas Aussagen. Prompt-Anpassung. | ✅ Chat 60 — Salienz im CharacterGraph (Pfad 2). Keine eigene Salienz(Nova) nötig. |
+| 7 | **Asynchroner Block** | Nova-Pfad: Perzeption → Enricher → EI-Calc → Router → [Agent] → Salienz → Dispatcher. User-Pfad: Salienz → Dispatcher. | ✅ Chat 60 — Async-Block durch Event-Consumer ersetzt. |
+| 8 | **API + Client** | `GespraechAntwort` erweitern, Emotions-Panel: Dual-Radar. | 🔧 API-Felder ✅, Client-Panels offen |
+| 9 | **Dokumentation** | Graph-Doku, Enricher-Doku, EI-Doku, Roadmap, Backlog aktualisieren. | 🔧 Konzeptdokument aktualisiert, Node-Dokumente teilweise |
 
 ---
 

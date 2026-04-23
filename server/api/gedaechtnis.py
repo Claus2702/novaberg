@@ -10,7 +10,7 @@ import redis as redis_lib
 from fastapi           import APIRouter
 from fastapi.responses import JSONResponse
 
-from config import redis_client, REDIS_URL, postgres_verbinden, EMOTION_SEKTOR_MAP
+from config import redis_client, REDIS_URL, postgres_verbinden, EMOTION_SEKTOR_MAP, ASSISTANT_USER_ID
 
 logger = logging.getLogger("ki_server.gedaechtnis")
 router = APIRouter()
@@ -221,7 +221,8 @@ def EmotionenAbrufen(user_id: str):
         # --- Session-Turns ---
         session_turns: list = []
         try:
-            raw_turns: list = redis_client.lrange(f"session:{user_id}:turns", 0, -1)
+            from memory.session import _session_key
+            raw_turns: list = redis_client.lrange(_session_key(user_id, ASSISTANT_USER_ID, "turns"), 0, -1)
             for raw in raw_turns:
                 turn: dict = json.loads(raw) if isinstance(raw, str) else json.loads(raw.decode())
                 if turn.get("rolle") == "user":
