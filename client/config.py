@@ -6,6 +6,8 @@ Timeouts, Logging-Einstellungen) werden hier gebündelt, damit andere
 Module ausschließlich aus dieser Datei importieren.
 """
 
+from dataclasses import dataclass
+
 # ─────────────────────────────────────────────
 # Server-Verbindung
 # ─────────────────────────────────────────────
@@ -27,11 +29,44 @@ THREAD_SHUTDOWN_TIMEOUT: float   = 2.0    # Max. Wartezeit beim Join während Sh
 PANEL_REQUEST_TIMEOUT: float     = 8.0    # Einheitlicher Timeout für Panel-Requests
 
 # ─────────────────────────────────────────────
-# Benutzer
+# Benutzer / Gesprächspaar
 # ─────────────────────────────────────────────
-DEFAULT_USER_ID: str            = "meister"
-# Im Panel-Header wählbare User-IDs (Multi-Tenant-Erweiterung landet hier).
-SELECTABLE_USER_IDS: list[str]  = ["meister", "nova"]
+DEFAULT_USER_ID: str   = "meister"
+ASSISTANT_USER_ID: str = "nova"
+
+
+@dataclass(frozen=True)
+class GespraechsPerspektive:
+    """Ein Eintrag im Perspektive-Selector.
+
+    Jede Perspektive legt drei API-Parameter fest: welches Gespräch
+    (``user_id`` + ``character_id``) geladen wird und aus wessen Sicht
+    (``beobachter``) gefiltert wird.
+    """
+
+    label:        str   # Anzeige im Dropdown.
+    user_id:      str
+    character_id: str
+    beobachter:   str   # "user" oder "assistant"
+
+
+# Im Panel-Header wählbare Gesprächspaar-Perspektiven.
+# Später dynamisch aus Config/DB befüllen (alle bekannten
+# user_id/character_id-Paare jeweils zweimal — einmal pro Beobachter).
+PERSPEKTIVEN: list[GespraechsPerspektive] = [
+    GespraechsPerspektive(
+        label        = "Meister — Gespräch mit Nova",
+        user_id      = DEFAULT_USER_ID,
+        character_id = ASSISTANT_USER_ID,
+        beobachter   = "user",
+    ),
+    GespraechsPerspektive(
+        label        = "Nova — Gespräch mit Meister",
+        user_id      = DEFAULT_USER_ID,
+        character_id = ASSISTANT_USER_ID,
+        beobachter   = "assistant",
+    ),
+]
 
 # ─────────────────────────────────────────────
 # Chat-Darstellung (wird in das HTML-Template eingesetzt)

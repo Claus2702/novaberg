@@ -72,9 +72,12 @@ class NovaGedaechtnisTask(BaseTask):
             "modus":          "",
         }
 
+        # Novas Erkenntnisse gehoeren zum Paar (user_id, nova) mit Beobachter "assistant".
         kzg_store(
             redis_client = redis_client,
-            user_id      = ASSISTANT_USER_ID,
+            user_id      = user_id,
+            character_id = ASSISTANT_USER_ID,
+            beobachter   = "assistant",
             salienz_obj  = salienz_obj,
             embedding    = embedding,
         )

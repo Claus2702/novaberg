@@ -31,7 +31,11 @@ import gi
 gi.require_version("Gtk", "4.0")
 from gi.repository import GLib, Gtk  # noqa: E402
 
-from config import DEFAULT_USER_ID, SELECTABLE_USER_IDS  # noqa: E402
+from config import (  # noqa: E402
+    DEFAULT_USER_ID,
+    GespraechsPerspektive,
+    PERSPEKTIVEN,
+)
 
 
 logger = logging.getLogger(__name__)
@@ -84,24 +88,25 @@ class PanelBase(Gtk.Box):
     # UI-Aufbau
     # ═══════════════════════════════════════════════════════════════
     def _build_header(self) -> None:
-        """Legt Header-Zeile mit User-Selector und Aktualisieren-Button an."""
+        """Legt Header-Zeile mit Perspektive-Selector und Aktualisieren-Button an."""
         header = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=6)
 
         if self.NEEDS_USER_SELECTOR:
-            label = Gtk.Label(label="User:")
+            label = Gtk.Label(label="Perspektive:")
             header.append(label)
 
             string_list = Gtk.StringList()
-            for option in SELECTABLE_USER_IDS:
-                string_list.append(option)
+            for p in PERSPEKTIVEN:
+                string_list.append(p.label)
 
             self._user_dropdown = Gtk.DropDown(model=string_list)
-            # Vorauswahl auf DEFAULT_USER_ID, sonst erster Eintrag.
-            default_index: int = (
-                SELECTABLE_USER_IDS.index(DEFAULT_USER_ID)
-                if DEFAULT_USER_ID in SELECTABLE_USER_IDS
-                else 0
-            )
+            # Vorauswahl: erste Perspektive mit user_id == DEFAULT_USER_ID
+            # und beobachter == "user", sonst der erste Eintrag.
+            default_index: int = 0
+            for idx, p in enumerate(PERSPEKTIVEN):
+                if p.user_id == DEFAULT_USER_ID and p.beobachter == "user":
+                    default_index = idx
+                    break
             self._user_dropdown.set_selected(default_index)
             self._user_dropdown.connect("notify::selected", self._on_user_changed)
             header.append(self._user_dropdown)
@@ -143,19 +148,36 @@ class PanelBase(Gtk.Box):
     # Öffentliche API
     # ═══════════════════════════════════════════════════════════════
     @property
-    def user_id(self) -> str:
-        """Liefert die aktuell ausgewählte User-ID (Default: DEFAULT_USER_ID)."""
+    def current_perspektive(self) -> GespraechsPerspektive:
+        """Liefert die aktuell gewählte Gesprächspaar-Perspektive."""
         if self._user_dropdown is None:
-            return DEFAULT_USER_ID
+            return PERSPEKTIVEN[0]
 
         index: int = self._user_dropdown.get_selected()
-        if 0 <= index < len(SELECTABLE_USER_IDS):
-            return SELECTABLE_USER_IDS[index]
-        return DEFAULT_USER_ID
+        if 0 <= index < len(PERSPEKTIVEN):
+            return PERSPEKTIVEN[index]
+        return PERSPEKTIVEN[0]
+
+    @property
+    def user_id(self) -> str:
+        """API-``user_id`` der aktuellen Perspektive (für Logausgaben)."""
+        return self.current_perspektive.user_id
+
+    def _get_api_params(self) -> dict:
+        """Liefert die API-Parameter für die aktuell gewählte Perspektive."""
+        p: GespraechsPerspektive = self.current_perspektive
+        return {
+            "user_id":      p.user_id,
+            "character_id": p.character_id,
+            "beobachter":   p.beobachter,
+        }
 
     def refresh(self) -> None:
         """Lädt Panel-Daten in einem Hintergrund-Thread neu."""
-        logger.debug(f"Panel '{self.PANEL_ID}' wird aktualisiert (user='{self.user_id}')")
+        logger.debug(
+            f"Panel '{self.PANEL_ID}' wird aktualisiert "
+            f"(perspektive='{self.current_perspektive.label}')"
+        )
         thread = threading.Thread(
             target=self._load_in_thread,
             name=f"panel-{self.PANEL_ID}-refresh",
@@ -218,6 +240,9 @@ class PanelBase(Gtk.Box):
     # Signal-Handler
     # ═══════════════════════════════════════════════════════════════
     def _on_user_changed(self, *args) -> None:
-        """Wird ausgelöst, wenn der User-Selector umgeschaltet wird."""
-        logger.debug(f"Panel '{self.PANEL_ID}': User-Wechsel auf '{self.user_id}'")
+        """Wird ausgelöst, wenn der Perspektive-Selector umgeschaltet wird."""
+        logger.debug(
+            f"Panel '{self.PANEL_ID}': Perspektive gewechselt auf "
+            f"'{self.current_perspektive.label}'"
+        )
         self.refresh()

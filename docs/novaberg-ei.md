@@ -285,7 +285,20 @@ Wenn Nova und User in gegenueberliegenden Sektoren sind UND beide mindestens `EM
 
 Novas Antwort wird im CharacterGraph (Pfad 2) erzeugt; ihre Emotion + Arousal werden vom Dispatcher direkt in den Session-Turn geschrieben — genau wie beim User-Turn. **Kein Decay beim Speichern.** Der Decay laeuft beim Lesen im EI-Calc des naechsten Turns. Eine Berechnung, nicht zwei.
 
-> Detail: novaberg-ei-dual-emotion_k.md (Konzept), novaberg-node-ei-calc.md (Implementierung), novaberg-event-model_k.md (Event-Modell)
+### 10.5 KZG-Dispatch im Paar-Schema (Chat 62)
+
+Der KZG-Dispatch nutzt jetzt die `character_id` aus dem State und leitet den `beobachter` aus `ei_calc_rolle` ab:
+
+- HumanGraph (Pfad 1, `ei_calc_rolle="user"`) → `beobachter="user"` — Meister hat den Turn beobachtet.
+- CharacterGraph (Pfad 2, `ei_calc_rolle="character"`) → `beobachter="assistant"` — Nova hat den Turn beobachtet.
+
+Jeder Eintrag landet damit in der richtigen Paar-Partition `kzg:{user_id}:{character_id}:{entry_id}` und traegt seine Perspektive als Indexfeld. Log-Zeile beim Schreiben:
+
+```
+KZG-Dispatch: Paar={user_id}:{character_id}, Beobachter={beobachter}
+```
+
+> Detail: novaberg-ei-dual-emotion_k.md (Konzept), novaberg-node-ei-calc.md (Implementierung), novaberg-event-model_k.md (Event-Modell), novaberg-mem-kzg.md §4a (Dispatch)
 
 ---
 

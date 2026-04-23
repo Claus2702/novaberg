@@ -11,6 +11,8 @@ from fastapi           import APIRouter
 from fastapi.responses import JSONResponse
 
 from config import redis_client, REDIS_URL, postgres_verbinden, EMOTION_SEKTOR_MAP, ASSISTANT_USER_ID
+from memory.kzg     import _kzg_prefix
+from memory.session import _session_key, session_turns_retrieve
 
 logger = logging.getLogger("ki_server.gedaechtnis")
 router = APIRouter()
@@ -20,10 +22,17 @@ router = APIRouter()
 # KZG (Redis)
 # ─────────────────────────────────────────────
 @router.get("/gedaechtnis/kzg/{user_id}")
-def KzgAbrufen(user_id: str):
-    """Alle KZG-Einträge eines Users aus Redis."""
+def KzgAbrufen(
+    user_id: str,
+    character_id: str = ASSISTANT_USER_ID,
+    beobachter: str | None = None,
+):
+    """Alle KZG-Einträge eines Gesprächspaares aus Redis.
+
+    Optional per ``beobachter`` (``user``/``assistant``) filterbar.
+    """
     try:
-        keys:      list = redis_client.keys(f"kzg:{user_id}:*")
+        keys:      list = redis_client.keys(_kzg_prefix(user_id, character_id))
         eintraege: list = []
 
         raw_redis = redis_lib.from_url(REDIS_URL, decode_responses=False)
@@ -38,6 +47,9 @@ def KzgAbrufen(user_id: str):
                     continue
                 eintrag[feld] = v.decode() if isinstance(v, bytes) else v
 
+            if beobachter and eintrag.get("beobachter", "") != beobachter:
+                continue
+
             ttl: int = redis_client.ttl(key)
 
             eintraege.append({
@@ -48,6 +60,7 @@ def KzgAbrufen(user_id: str):
                 "haeufigkeit":    int(float(eintrag.get("haeufigkeit", 1))),
                 "dimension":      eintrag.get("dimension", ""),
                 "gedaechtnistyp": eintrag.get("gedaechtnistyp", ""),
+                "beobachter":     eintrag.get("beobachter", ""),
                 "ttl_sekunden":   ttl,
             })
 
@@ -62,24 +75,42 @@ def KzgAbrufen(user_id: str):
 # LZG (PostgreSQL)
 # ─────────────────────────────────────────────
 @router.get("/gedaechtnis/lzg/{user_id}")
-def LzgAbrufen(user_id: str):
-    """Alle LZG-Einträge eines Users."""
+def LzgAbrufen(
+    user_id: str,
+    character_id: str = ASSISTANT_USER_ID,
+    beobachter: str | None = None,
+):
+    """Alle LZG-Einträge eines Gesprächspaares.
+
+    Optional per ``beobachter`` (``user``/``assistant``) filterbar.
+    """
     try:
         conn   = postgres_verbinden()
         cursor = conn.cursor()
 
-        cursor.execute("""
-            SELECT dimension, inhalt, gewicht, haeufigkeit, erstellt_am, verstaerkt_am
-            FROM langzeitgedaechtnis
-            WHERE user_id = %s AND aktiv = TRUE
-            ORDER BY verstaerkt_am DESC
-        """, (user_id,))
+        if beobachter:
+            cursor.execute("""
+                SELECT dimension, inhalt, gewicht, haeufigkeit,
+                       erstellt_am, verstaerkt_am, beobachter
+                FROM langzeitgedaechtnis
+                WHERE user_id = %s AND character_id = %s
+                  AND beobachter = %s AND aktiv = TRUE
+                ORDER BY verstaerkt_am DESC
+            """, (user_id, character_id, beobachter))
+        else:
+            cursor.execute("""
+                SELECT dimension, inhalt, gewicht, haeufigkeit,
+                       erstellt_am, verstaerkt_am, beobachter
+                FROM langzeitgedaechtnis
+                WHERE user_id = %s AND character_id = %s AND aktiv = TRUE
+                ORDER BY verstaerkt_am DESC
+            """, (user_id, character_id))
 
         rows = cursor.fetchall()
         conn.close()
 
         eintraege: list = []
-        for dimension, inhalt, gewicht, haeufigkeit, erstellt, verstaerkt in rows:
+        for dimension, inhalt, gewicht, haeufigkeit, erstellt, verstaerkt, beob in rows:
             eintraege.append({
                 "dimension":     dimension,
                 "inhalt":        inhalt,
@@ -87,6 +118,7 @@ def LzgAbrufen(user_id: str):
                 "haeufigkeit":   haeufigkeit,
                 "erstellt_am":   erstellt.isoformat() if erstellt else "",
                 "verstaerkt_am": verstaerkt.isoformat() if verstaerkt else "",
+                "beobachter":    beob or "",
             })
 
         return {"eintraege": eintraege, "anzahl": len(eintraege)}
@@ -99,8 +131,12 @@ def LzgAbrufen(user_id: str):
 # Charakter-Hash
 # ─────────────────────────────────────────────
 @router.get("/gedaechtnis/hash/{user_id}")
-def HashAbrufen(user_id: str):
-    """Charakter-Hash eines Users."""
+def HashAbrufen(user_id: str, character_id: str = ASSISTANT_USER_ID):
+    """Charakter-Hash eines Users.
+
+    ``character_id`` wird aktuell nicht gefiltert — Tabelle hat nur user_id.
+    Der Parameter existiert fuer Schema-Konsistenz mit den anderen Endpunkten.
+    """
     try:
         conn   = postgres_verbinden()
         cursor = conn.cursor()
@@ -196,8 +232,16 @@ def FaktenAbrufen(user_id: str):
 # Emotionen (Radar-Daten)
 # ─────────────────────────────────────────────
 @router.get("/gedaechtnis/emotionen/{user_id}")
-def EmotionenAbrufen(user_id: str):
-    """Emotions-Radar-Daten: Aggregierte Arousal-Werte pro Emotion für Session und KZG."""
+def EmotionenAbrufen(
+    user_id: str,
+    character_id: str = ASSISTANT_USER_ID,
+    beobachter: str | None = None,
+):
+    """Emotions-Radar-Daten: Aggregierte Arousal-Werte pro Emotion für Session und KZG.
+
+    ``beobachter`` filtert bei Session die Turn-Rolle (user/assistant) und
+    bei KZG das ``beobachter``-Feld des Eintrags.
+    """
 
     def emotionen_aggregieren(eintraege: list) -> dict:
         """Berechnet Durchschnitts-Arousal pro Einzelemotion.
@@ -217,19 +261,28 @@ def EmotionenAbrufen(user_id: str):
 
         return {em: round(summen[em] / zaehler[em], 2) for em in summen}
 
+    # Rolle, nach der die Session-Turns gefiltert werden (user / assistant / alle).
+    turn_rolle: str | None = beobachter
+
     try:
         # --- Session-Turns ---
         session_turns: list = []
         try:
-            from memory.session import _session_key
-            raw_turns: list = redis_client.lrange(_session_key(user_id, ASSISTANT_USER_ID, "turns"), 0, -1)
+            raw_turns: list = redis_client.lrange(
+                _session_key(user_id, character_id, "turns"), 0, -1
+            )
             for raw in raw_turns:
                 turn: dict = json.loads(raw) if isinstance(raw, str) else json.loads(raw.decode())
-                if turn.get("rolle") == "user":
-                    emotion: str = turn.get("emotion", "neutral")
-                    arousal_raw = turn.get("arousal", 0)
-                    arousal: float = float(arousal_raw) if arousal_raw else 0.0
-                    session_turns.append({"emotion": emotion, "arousal": arousal})
+                rolle: str = turn.get("rolle", "")
+                if turn_rolle and rolle != turn_rolle:
+                    continue
+                # Ohne Filter: nur user-Turns (bisheriges Verhalten als Default).
+                if not turn_rolle and rolle != "user":
+                    continue
+                emotion: str = turn.get("emotion", "neutral")
+                arousal_raw = turn.get("arousal", 0)
+                arousal: float = float(arousal_raw) if arousal_raw else 0.0
+                session_turns.append({"emotion": emotion, "arousal": arousal})
         except Exception as e:
             logger.warning(f"Session-Turns lesen fehlgeschlagen: {e}")
 
@@ -237,9 +290,16 @@ def EmotionenAbrufen(user_id: str):
         kzg_eintraege: list = []
         try:
             raw_redis = redis_lib.from_url(REDIS_URL, decode_responses=False)
-            keys: list = redis_client.keys(f"kzg:{user_id}:*")
+            keys: list = redis_client.keys(_kzg_prefix(user_id, character_id))
             for key in keys:
                 daten: dict = raw_redis.hgetall(key.encode() if isinstance(key, str) else key)
+
+                if beobachter:
+                    beob_raw = daten.get(b"beobachter", b"")
+                    beob: str = beob_raw.decode() if isinstance(beob_raw, bytes) else beob_raw
+                    if beob != beobachter:
+                        continue
+
                 emotion_raw = daten.get(b"emotion", b"neutral")
                 emotion: str = emotion_raw.decode() if isinstance(emotion_raw, bytes) else emotion_raw
                 arousal_raw = daten.get(b"arousal", b"0")

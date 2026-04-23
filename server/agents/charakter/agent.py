@@ -58,7 +58,7 @@ class CharakterAgent(BaseAgent):
     def identity_user(self) -> str:
         return ASSISTANT_USER_ID
 
-    def periodic_task(self) -> PeriodicTask:
+    def periodic_task(self) -> PeriodicTask | None:
         return PeriodicTask(
             name="charakter_hash",
             priority=PIXIE_CHARAKTER_PRIORITAET,

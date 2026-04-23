@@ -16,6 +16,8 @@ CREATE EXTENSION IF NOT EXISTS pg_trgm;
 CREATE TABLE IF NOT EXISTS langzeitgedaechtnis (
     id              SERIAL           PRIMARY KEY,
     user_id         TEXT             NOT NULL,
+    character_id    VARCHAR(50)      NOT NULL DEFAULT 'nova',
+    beobachter      VARCHAR(20)      NOT NULL DEFAULT 'user',
     dimension       TEXT             NOT NULL,
     inhalt          TEXT             NOT NULL,
     gewicht         DOUBLE PRECISION NOT NULL DEFAULT 0.5,
@@ -42,7 +44,7 @@ CREATE INDEX IF NOT EXISTS idx_lzg_embedding
     WITH (lists = 100);
 
 CREATE INDEX IF NOT EXISTS idx_lzg_aktiv
-    ON langzeitgedaechtnis (aktiv) WHERE aktiv = TRUE;
+    ON langzeitgedaechtnis (user_id, character_id) WHERE aktiv = TRUE;
 
 -- ───────────────────────────────────────────────
 -- charakter_hash
@@ -252,6 +254,24 @@ ALTER TABLE hintergrund_log ADD COLUMN IF NOT EXISTS verarbeitet_am TIMESTAMPTZ;
 -- Ebbinghaus-Decay (E1)
 ALTER TABLE langzeitgedaechtnis ADD COLUMN IF NOT EXISTS aktiv BOOLEAN NOT NULL DEFAULT TRUE;
 CREATE INDEX IF NOT EXISTS idx_lzg_aktiv ON langzeitgedaechtnis (aktiv) WHERE aktiv = TRUE;
+
+-- Paar-Schema (Chat 62): Gespraech = (user_id, character_id) + Beobachter-Sicht
+ALTER TABLE langzeitgedaechtnis
+    ADD COLUMN IF NOT EXISTS character_id VARCHAR(50) NOT NULL DEFAULT 'nova',
+    ADD COLUMN IF NOT EXISTS beobachter   VARCHAR(20) NOT NULL DEFAULT 'user';
+
+-- Nova-Eintraege (user_id='nova') sind Novas Beobachtungen im Paar meister:nova
+-- -> umschreiben auf das Paar mit Beobachter-Sicht 'assistant'. Idempotent.
+UPDATE langzeitgedaechtnis
+SET    user_id      = 'meister',
+       character_id = 'nova',
+       beobachter   = 'assistant'
+WHERE  user_id = 'nova';
+
+-- Partial-Index auf das Paar: loest den alten aktiv-only-Index ab.
+DROP INDEX IF EXISTS idx_lzg_aktiv;
+CREATE INDEX IF NOT EXISTS idx_lzg_aktiv
+    ON langzeitgedaechtnis (user_id, character_id) WHERE aktiv = TRUE;
 
 -- ── M2: Entitäten + Fakten (Knowledge Graph) ────────────
 -- Tabellen werden über CREATE TABLE IF NOT EXISTS angelegt.

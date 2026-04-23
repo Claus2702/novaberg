@@ -9,7 +9,7 @@ import logging
 
 from agents import AgentRegistry
 from agents.base import AgentState
-from config import redis_client as cfg_redis_client
+from config import ASSISTANT_USER_ID, redis_client as cfg_redis_client
 
 logger = logging.getLogger("ki_server.agents.kzg.dispatch")
 
@@ -35,7 +35,15 @@ def dispatch_kzg(
         Dict mit kzg_verarbeitet (Anzahl verarbeiteter Segmente)
     """
 
-    user_id: str = state.get("user_id", "")
+    user_id:      str = state.get("user_id", "")
+    character_id: str = state.get("character_id", ASSISTANT_USER_ID)
+
+    # Beobachter: User-Graph (Pfad 1) vs. Character-Graph (Pfad 2).
+    # ei_calc_rolle ist "user" im HumanGraph und "character" im CharacterGraph.
+    beobachter: str = "assistant" if state.get("ei_calc_rolle") == "character" else "user"
+
+    logger.info(f"KZG-Dispatch: Paar={user_id}:{character_id}, Beobachter={beobachter}")
+
     agent = AgentRegistry.finden("kzg")
 
     if not agent:
@@ -69,7 +77,8 @@ def dispatch_kzg(
             "agent_name":  "kzg",
             "kontext": {
                 "user_id":      user_id,
-                "character_id": state.get("character_id", ""),
+                "character_id": character_id,
+                "beobachter":   beobachter,
                 "embed_client": embed_client,
                 "embed_model":  embed_model,
             },

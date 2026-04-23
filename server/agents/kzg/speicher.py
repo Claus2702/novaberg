@@ -17,27 +17,31 @@ from config import (
     KZG_TTL_HIGH_SEKUNDEN,
     redis_client,
 )
+from memory.kzg import _kzg_key
 
 logger = logging.getLogger("ki_server.agents.kzg.speicher")
-
-KZG_PREFIX: str = "kzg:"
 
 
 def speichern(state: AgentState) -> dict:
     """Speichert neuen KZG-Eintrag oder verstaerkt bestehenden."""
 
-    salienz_obj: dict        = state["parameter"].get("salienz_obj", {})
-    kern:        str         = state["parameter"].get("kern", "")
-    embedding:   list[float] = state["parameter"].get("embedding", [])
-    existing:    dict | None = state["parameter"].get("existing")
-    user_id:     str         = state["kontext"].get("user_id", "")
+    salienz_obj:  dict        = state["parameter"].get("salienz_obj", {})
+    kern:         str         = state["parameter"].get("kern", "")
+    embedding:    list[float] = state["parameter"].get("embedding", [])
+    existing:     dict | None = state["parameter"].get("existing")
+    user_id:      str         = state["kontext"].get("user_id", "")
+    character_id: str         = state["kontext"].get("character_id", "")
+    beobachter:   str         = state["kontext"].get("beobachter", "user")
 
     salienz: float = salienz_obj.get("salienz", 0.0)
 
     if existing:
         ergebnis = _verstaerken(redis_client, existing, salienz_obj, salienz)
     else:
-        ergebnis = _neu_anlegen(redis_client, user_id, salienz_obj, kern, embedding, salienz)
+        ergebnis = _neu_anlegen(
+            redis_client, user_id, character_id, beobachter,
+            salienz_obj, kern, embedding, salienz,
+        )
 
     return {
         "parameter": {
@@ -104,23 +108,27 @@ def _verstaerken(
 
 def _neu_anlegen(
     rc,
-    user_id:     str,
-    salienz_obj: dict,
-    kern:        str,
-    embedding:   list[float],
-    salienz:     float,
+    user_id:      str,
+    character_id: str,
+    beobachter:   str,
+    salienz_obj:  dict,
+    kern:         str,
+    embedding:    list[float],
+    salienz:      float,
 ) -> dict:
     """Legt einen neuen KZG-Eintrag an."""
 
     embedding_bytes: bytes = np.array(embedding, dtype=np.float32).tobytes()
     timestamp:       float = time.time()
 
-    key:        str = f"{KZG_PREFIX}{user_id}:{int(timestamp * 1000)}"
+    key:        str = _kzg_key(user_id, character_id, str(int(timestamp * 1000)))
     themen_str: str = ", ".join(salienz_obj.get("themen", []))
     dimension:  str = salienz_obj.get("dimension", "kontext")
 
     rc.hset(key, mapping={
         "user_id":            user_id,
+        "character_id":       character_id,
+        "beobachter":         beobachter,
         "themen":             themen_str,
         "inhalt":             kern,
         "salienz":            str(salienz),

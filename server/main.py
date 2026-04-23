@@ -21,7 +21,6 @@ from config import (
 )
 from services.llm_provider import init_providers
 from graph.builder              import build_human_graph, build_agent_graph, build_character_graph
-from services.shadow_agent      import schatten_arbeit_ausfuehren, discover_tasks
 
 # API-Router
 from api.health                 import router as health_router,      ollama_testen, redis_testen, postgres_testen
@@ -34,9 +33,8 @@ from api.admin                  import router as admin_router
 from services.shadow_delivery   import shadow_delivery_loop
 from services.event_consumer    import event_consumer_loop
 
-logger        = logging.getLogger("ki_server")
-scheduler     = AsyncIOScheduler()
-task_registry = {}
+logger    = logging.getLogger("ki_server")
+scheduler = AsyncIOScheduler()
 
 
 def schema_migrieren(postgres_url: str) -> None:
@@ -61,7 +59,15 @@ def schema_migrieren(postgres_url: str) -> None:
         "ALTER TABLE hintergrund_log ADD COLUMN IF NOT EXISTS verarbeitet_am TIMESTAMPTZ",
         # Ebbinghaus-Decay (E1)
         "ALTER TABLE langzeitgedaechtnis ADD COLUMN IF NOT EXISTS aktiv BOOLEAN NOT NULL DEFAULT TRUE",
-        "CREATE INDEX IF NOT EXISTS idx_lzg_aktiv ON langzeitgedaechtnis (aktiv) WHERE aktiv = TRUE",
+        # Paar-Schema (Chat 62): Gespraech = (user_id, character_id) + Beobachter
+        "ALTER TABLE langzeitgedaechtnis ADD COLUMN IF NOT EXISTS character_id VARCHAR(50) NOT NULL DEFAULT 'nova'",
+        "ALTER TABLE langzeitgedaechtnis ADD COLUMN IF NOT EXISTS beobachter VARCHAR(20) NOT NULL DEFAULT 'user'",
+        # Nova-Eintraege (user_id='nova') ins Paar meister:nova mit Beobachter 'assistant' umschreiben.
+        # Idempotent: nach erstem Lauf matcht WHERE nichts mehr.
+        "UPDATE langzeitgedaechtnis SET user_id = 'meister', character_id = 'nova', beobachter = 'assistant' WHERE user_id = 'nova'",
+        # Partial-Index auf das Paar — loest den alten aktiv-only-Index ab.
+        "DROP INDEX IF EXISTS idx_lzg_aktiv",
+        "CREATE INDEX IF NOT EXISTS idx_lzg_aktiv ON langzeitgedaechtnis (user_id, character_id) WHERE aktiv = TRUE",
         # M2: Entitäten + Fakten Tabellen
         # CREATE TABLE IF NOT EXISTS wird in init.sql behandelt.
         # DROP alter Tabellen + Neuanlage ebenfalls in init.sql (Migrations-Block).
@@ -93,29 +99,6 @@ def schema_migrieren(postgres_url: str) -> None:
         logger.info(f"Schema-Migration: {len(migrationen)} Statements ausgeführt.")
     except Exception as fehler:
         logger.warning(f"Schema-Migration fehlgeschlagen: {fehler}")
-
-
-# ─────────────────────────────────────────────
-# Shadow Agent (Scheduler-Job)
-# ─────────────────────────────────────────────
-async def PixieArbeit():
-    """Pixie — Legacy Background-Worker auf CPU (wird durch Heartbeat ersetzt)."""
-    if shutdown_event.is_set():
-        return
-    logger.info("Pixie-Legacy: Starte...")
-    try:
-        verarbeitet: int = await asyncio.to_thread(
-            schatten_arbeit_ausfuehren,
-            redis_client   = redis_client,
-            postgres_url   = POSTGRES_URL,
-            embed_client   = ollama_gpu_client,
-            embed_model    = EMBED_MODEL,
-            task_registry  = task_registry,
-            shutdown_event = shutdown_event,
-        )
-        logger.info(f"Pixie-Legacy: {verarbeitet} Aufträge verarbeitet.")
-    except Exception as fehler:
-        logger.error(f"Pixie-Legacy: Fehler — {fehler}")
 
 
 # ─────────────────────────────────────────────
@@ -165,11 +148,6 @@ async def Lifespan(app: FastAPI):
     # Embedding-Repair: Entitäten ohne Embedding nachträglich versorgen
     if postgres_ok and ollama_ok:
         entitaeten_embeddings_sicherstellen()
-
-    # Task-Registry initialisieren
-    global task_registry
-    task_registry = discover_tasks()
-    logger.info(f"Pixie: {len(task_registry)} Tasks registriert.")
 
     # Epic 11: Agent-Discovery
     from agents import discover_agents, AgentRegistry

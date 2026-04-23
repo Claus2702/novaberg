@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Modul Langzeitgedächtnis
-**Stand:** 17. April 2026, Chat 52 (Code-Alignment)
+**Stand:** 23. April 2026, Chat 62 (Paar-Schema, character_id + beobachter)
 **Pfad:** novaberg/docs/novaberg-mem-lzg.md
 **Quellen:** nova-02-m-c.md
 **Datei:** `memory/lzg.py`
@@ -24,7 +24,8 @@ Tabelle: `langzeitgedaechtnis`
 | Spalte | Typ | Beschreibung |
 |--------|-----|-------------|
 | `id` | SERIAL | Primärschlüssel |
-| `user_id` | VARCHAR(50) | Gedächtnis-Partition (`meister` oder `nova`) |
+| `user_id` | VARCHAR(50) | User-Partition (`meister`, `nova`, …) |
+| `character_id` | VARCHAR(50), DEFAULT `'nova'` | Charakter-Partition (Chat 62). Paar-Schema mit `user_id`. |
 | `inhalt` | TEXT | Destillierter Inhalt (aus KZG-Promotion) |
 | `dimension` | TEXT | kognition / emotion / werte / interessen / kommunikation / kontext |
 | `gewicht` | DOUBLE | Basis-Gewicht (steigt bei Verstärkung, wird nie durch Decay reduziert) |
@@ -32,15 +33,26 @@ Tabelle: `langzeitgedaechtnis`
 | `embedding` | VECTOR(768) | nomic-embed-text Embedding |
 | `arousal` | FLOAT | Energie-Intensität zum Zeitpunkt der Speicherung |
 | `emotions_vektor` | TEXT | Emotions-Richtung zum Zeitpunkt der Speicherung |
+| `beobachter` | VARCHAR(20), DEFAULT `'user'` | `"user"` oder `"assistant"` (Chat 62). Bei Promotion aus dem KZG-Eintrag uebernommen. |
 | `aktiv` | BOOLEAN | Soft-Delete Flag (Default: TRUE) |
 | `verstaerkt_am` | TIMESTAMPTZ | Basis für Decay-Berechnung (Reset bei Verstärkung) |
 | `created_at` | TIMESTAMPTZ | Erstellungszeitpunkt |
 
 **Indexes:**
-- Partial Index `idx_lzg_aktiv` auf `aktiv WHERE aktiv = TRUE` — alle Abfragen filtern auf aktive Einträge
+- Partial Index `idx_lzg_aktiv` auf `(user_id, character_id) WHERE aktiv = TRUE` — alle Abfragen filtern auf Paar + aktive Einträge (Chat 62)
 - pgvector-Index auf `embedding` für KNN-Suche
 
 Zusätzliche EI-Metadaten-Spalten (intentionen, emotion, modus, sprach_stil, beziehungs_dynamik, tone) werden bei der Promotion aus dem KZG-Eintrag übernommen und per `ALTER TABLE ADD COLUMN` hinzugefügt.
+
+### 2.1 Paar-Schema (Chat 62)
+
+Alle Queries (Retrieval, Verstaerkung, Decay, Charakter-Hash) filtern jetzt auf das Gespraechspaar:
+
+```sql
+WHERE user_id = %s AND character_id = %s AND aktiv = TRUE
+```
+
+**Migration (bereits ausgefuehrt):** Bestehende Eintraege mit `user_id='nova'` (Novas Beobachtungen unter dem alten Ein-User-Schema) wurden zu `user_id='meister', character_id='nova', beobachter='assistant'` umgeschrieben. Eintraege mit `user_id='meister'` bekamen per DEFAULT `character_id='nova'` und `beobachter='user'`. Ergebnis: eine durchgaengige Paar-Partition `(meister, nova)` mit sauberer Beobachter-Zuordnung.
 
 ---
 

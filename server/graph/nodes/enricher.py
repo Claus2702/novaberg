@@ -27,7 +27,7 @@ from config import (
 from graph.state       import ConversationState
 from memory.charakter  import charakter_hash_retrieve, charakter_hash_retrieve_dict
 from memory.embedding  import embedding_create
-from memory.kzg        import kzg_context_retrieve
+from memory.kzg        import kzg_context_retrieve, _kzg_prefix
 from memory.lzg        import lzg_context_retrieve
 from memory.session    import session_turns_retrieve, _session_key
 from plugins           import get_registry
@@ -152,15 +152,16 @@ def enrich(
     # ─────────────────────────────────────────
     # 3. KZG/LZG semantische Suche
     # ─────────────────────────────────────────
-    kzg_keys: list = redis_client.keys(f"kzg:{user_id}:*")
+    kzg_keys: list = redis_client.keys(_kzg_prefix(user_id, character_id))
     has_lzg:  bool = False
 
     try:
         conn   = psycopg2.connect(postgres_url)
         cursor = conn.cursor()
         cursor.execute(
-            "SELECT EXISTS(SELECT 1 FROM langzeitgedaechtnis WHERE user_id = %s AND aktiv = TRUE)",
-            (user_id,),
+            "SELECT EXISTS(SELECT 1 FROM langzeitgedaechtnis "
+            "WHERE user_id = %s AND character_id = %s AND aktiv = TRUE)",
+            (user_id, character_id),
         )
         has_lzg = cursor.fetchone()[0]
         conn.close()
@@ -177,13 +178,13 @@ def enrich(
         )
 
         if kzg_keys:
-            kzg_context: str = kzg_context_retrieve(redis_client, user_id, embedding)
+            kzg_context: str = kzg_context_retrieve(redis_client, user_id, character_id, embedding)
             if kzg_context:
                 context_parts.append(kzg_context)
                 logger.info("Enricher: KZG-Kontext gefunden")
 
         if has_lzg:
-            lzg_context: str = lzg_context_retrieve(postgres_url, user_id, embedding)
+            lzg_context: str = lzg_context_retrieve(postgres_url, user_id, character_id, embedding)
             if lzg_context:
                 context_parts.append(lzg_context)
                 logger.info("Enricher: LZG-Kontext gefunden")

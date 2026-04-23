@@ -1,6 +1,11 @@
 """
 Kurzzeitgedächtnis — Redis Stack mit Vektorsuche.
 TTL-basiert, Promotion ins LZG bei Schwellwert.
+
+Key-Schema: kzg:{user_id}:{character_id}:{entry_id}
+Das Paar (user_id, character_id) definiert das gemeinsame Gespraech.
+Feld `beobachter` unterscheidet, ob der Eintrag aus Sicht des Users (HumanGraph)
+oder des Charakters (CharacterGraph) entstanden ist.
 """
 
 import json
@@ -33,6 +38,19 @@ SALIENZ_LOW:          float = 0.5
 SALIENZ_HIGH:         float = 0.7
 KZG_INDEX_NAME:       str   = "idx:kzg"
 KZG_PREFIX:           str   = "kzg:"
+
+
+# ─────────────────────────────────────────────
+# Key-Helfer
+# ─────────────────────────────────────────────
+def _kzg_key(user_id: str, character_id: str, entry_id: str) -> str:
+    """Baut den Redis-Key fuer einen KZG-Eintrag."""
+    return f"kzg:{user_id}:{character_id}:{entry_id}"
+
+
+def _kzg_prefix(user_id: str, character_id: str) -> str:
+    """Prefix fuer alle KZG-Eintraege eines Gespraechspaares."""
+    return f"kzg:{user_id}:{character_id}:*"
 
 
 # ─────────────────────────────────────────────
@@ -84,6 +102,8 @@ def kzg_index_create(redis_client: redis.Redis) -> None:
 
     schema = (
         TagField("user_id"),
+        TagField("character_id"),
+        TagField("beobachter"),
         TextField("themen"),
         TextField("inhalt"),
         NumericField("salienz"),
@@ -91,6 +111,12 @@ def kzg_index_create(redis_client: redis.Redis) -> None:
         TextField("gedaechtnistyp"),
         TextField("dimension"),
         NumericField("erstellt_am"),
+        NumericField("arousal"),
+        TextField("emotions_vektor"),
+        TextField("sprach_stil"),
+        TextField("tone"),
+        TagField("emotion"),
+        TagField("modus"),
         VectorField(
             "embedding",
             "FLAT",
@@ -121,15 +147,19 @@ def kzg_index_create(redis_client: redis.Redis) -> None:
 def kzg_similar_find(
     redis_client: redis.Redis,
     user_id:      str,
+    character_id: str,
     embedding:    list[float],
     top_k:        int = 1
 ) -> Optional[dict]:
-    """Sucht den ähnlichsten KZG-Eintrag per Vektorsuche."""
+    """Sucht den ähnlichsten KZG-Eintrag per Vektorsuche (paar-skopiert)."""
 
     embedding_bytes: bytes = np.array(embedding, dtype=np.float32).tobytes()
 
     query = (
-        Query(f"(@user_id:{{{user_id}}})=>[KNN {top_k} @embedding $vec AS score]")
+        Query(
+            f"(@user_id:{{{user_id}}} @character_id:{{{character_id}}})"
+            f"=>[KNN {top_k} @embedding $vec AS score]"
+        )
         .sort_by("score")
         .return_fields("themen", "inhalt", "salienz", "haeufigkeit",
                        "gedaechtnistyp", "dimension", "score")
@@ -177,6 +207,8 @@ def kzg_similar_find(
 def kzg_store(
     redis_client: redis.Redis,
     user_id:      str,
+    character_id: str,
+    beobachter:   str,
     salienz_obj:  dict,
     embedding:    list[float]
 ) -> str:
@@ -196,7 +228,7 @@ def kzg_store(
     emotion:     str  = salienz_obj.get("emotion", "neutral")
     modus:       str  = salienz_obj.get("modus", "")
 
-    existing: Optional[dict] = kzg_similar_find(redis_client, user_id, embedding)
+    existing: Optional[dict] = kzg_similar_find(redis_client, user_id, character_id, embedding)
 
     # Themen-Overlap prüfen wenn Treffer
     if existing:
@@ -239,6 +271,10 @@ def kzg_store(
             update_mapping["beziehungs_dynamik"] = neue_dynamik
         if neuer_tone:
             update_mapping["tone"] = neuer_tone
+        if emotion:
+            update_mapping["emotion"] = emotion
+        if modus:
+            update_mapping["modus"] = modus
 
         redis_client.hset(existing["key"], mapping=update_mapping)
 
@@ -282,7 +318,7 @@ def kzg_store(
         embedding_bytes: bytes = np.array(embedding, dtype=np.float32).tobytes()
         timestamp:       float = time.time()
 
-        key:        str = f"{KZG_PREFIX}{user_id}:{int(timestamp * 1000)}"
+        key:        str = _kzg_key(user_id, character_id, str(int(timestamp * 1000)))
         themen_str: str = ", ".join(salienz_obj.get("themen", []))
         dimension:  str = salienz_obj.get("dimension", "kontext")
 
@@ -291,6 +327,8 @@ def kzg_store(
 
         redis_client.hset(key, mapping={
             "user_id":          user_id,
+            "character_id":     character_id,
+            "beobachter":       beobachter,
             "themen":           themen_str,
             "inhalt":           salienz_obj.get("zusammenfassung", salienz_obj.get("begruendung", "")),
             "salienz":          str(salienz),
@@ -353,15 +391,19 @@ def kzg_store(
 def kzg_context_retrieve(
     redis_client: redis.Redis,
     user_id:      str,
+    character_id: str,
     embedding:    list[float],
     top_k:        int = 10
 ) -> str:
-    """Holt die relevantesten KZG-Einträge als Kontext-String."""
+    """Holt die relevantesten KZG-Einträge eines Paares als Kontext-String."""
 
     embedding_bytes: bytes = np.array(embedding, dtype=np.float32).tobytes()
 
     query = (
-        Query(f"(@user_id:{{{user_id}}})=>[KNN {top_k} @embedding $vec AS score]")
+        Query(
+            f"(@user_id:{{{user_id}}} @character_id:{{{character_id}}})"
+            f"=>[KNN {top_k} @embedding $vec AS score]"
+        )
         .sort_by("score")
         .return_fields("themen", "inhalt", "salienz", "score")
         .dialect(2)

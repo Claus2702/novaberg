@@ -35,7 +35,7 @@ class DecayAgent(BaseAgent):
     def graph_eignung(self) -> list[str]:
         return ["pixie"]
 
-    def periodic_task(self) -> PeriodicTask:
+    def periodic_task(self) -> PeriodicTask | None:
         return PeriodicTask(
             name="decay",
             priority=PIXIE_DECAY_PRIORITAET,

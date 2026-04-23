@@ -13,7 +13,7 @@ import logging
 
 from agents.base import BaseAgent, AgentState, PeriodicTask
 from config import (
-    DEFAULT_USER_ID,
+    ASSISTANT_USER_ID, DEFAULT_USER_ID,
     redis_client, POSTGRES_URL, get_node_config,
     PIXIE_PROMOTION_PRIORITAET, PIXIE_PROMOTION_INTERVALL_SEKUNDEN,
 )
@@ -43,7 +43,7 @@ class PromotionAgent(BaseAgent):
     def context_user(self) -> str:
         return "user"
 
-    def periodic_task(self) -> PeriodicTask:
+    def periodic_task(self) -> PeriodicTask | None:
         return PeriodicTask(
             name="promotion",
             priority=PIXIE_PROMOTION_PRIORITAET,
@@ -118,9 +118,16 @@ class PromotionAgent(BaseAgent):
         beziehungs_dynamik: str   = _hget("beziehungs_dynamik")
         tone:               str   = _hget("tone")
 
+        # Paar-Felder aus dem KZG-Eintrag (KZG-Paar-Schema). Fallback fuer
+        # Alt-Eintraege ohne diese Felder: Standardpaar + Beobachter "user".
+        character_id: str = _hget("character_id") or ASSISTANT_USER_ID
+        beobachter:   str = _hget("beobachter")   or "user"
+
         if not inhalt:
             logger.warning(f"Promotion: KZG-Key '{kzg_key}' nicht mehr vorhanden — uebersprungen")
             return
+
+        logger.info(f"LZG: Paar={user_id}:{character_id}, Beobachter={beobachter}")
 
         # ── 0. Bekannte Entitaeten laden ──────
         bekannte: list[dict] = EntitaetenRepository.find_by_user(POSTGRES_URL, user_id)
@@ -191,16 +198,18 @@ class PromotionAgent(BaseAgent):
             db_manager.execute(
                 """
                 INSERT INTO langzeitgedaechtnis
-                    (user_id, dimension, inhalt, gewicht, haeufigkeit,
+                    (user_id, character_id, beobachter,
+                     dimension, inhalt, gewicht, haeufigkeit,
                      embedding, intentionen, emotion, modus,
                      arousal, emotions_vektor,
                      sprach_stil, beziehungs_dynamik, tone,
                      verstaerkt_am)
                 VALUES
-                    (%s, %s, %s, %s, %s, %s::vector, %s, %s, %s, %s, %s,
+                    (%s, %s, %s, %s, %s, %s, %s, %s::vector, %s, %s, %s, %s, %s,
                      %s, %s, %s, NOW())
                 """,
-                (user_id, dimension, inhalt, min(salienz, 1.0), haeufigkeit,
+                (user_id, character_id, beobachter,
+                 dimension, inhalt, min(salienz, 1.0), haeufigkeit,
                  embedding_str, intentionen, emotion, modus,
                  arousal, emotions_vektor,
                  sprach_stil, beziehungs_dynamik, tone),

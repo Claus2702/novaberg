@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Backlog — Konzipierte, noch nicht implementierte Features
-**Stand:** 21. April 2026, Chat 60
+**Stand:** 23. April 2026, Chat 62
 **Pfad:** novaberg/docs/novaberg-backlog.md
 **Quellen:** nova-08-k.md (Kognitive Anreicherung), nova-10-k-backlog.md (Skill-System), nova-01-t-c-backlog.md (Node-Konfiguration)
 
@@ -389,6 +389,8 @@ Zwei neue Nodes pro Agent:
 
 **Status Chat 56:** Phase 1 weitgehend abgeschlossen — Chat (WebKitGTK + SSE + WebSocket), Panel-Infrastruktur (PanelBase, ChildWindow, Registry, UNIQUE-Enforcement), 6 Panels funktional (System, Emotionen mit Radar, KZG, LZG, Session, Charakter). Offen: Fakten, Pixie-Monitor, PostgreSQL-Query, Redis-Query, Docker-Logs, Emotionen (Turns).
 
+**Status Chat 62:** Perspektive-Selector eingebaut — `GespraechsPerspektive`-Dataclass + `PERSPEKTIVEN`-Liste als Single Source. Dropdown im Hauptfenster: "Meister — Gespraech mit Nova" / "Nova — Gespraech mit Meister". Alle sechs aktiven Panels auf `_get_api_params()` umgestellt, sodass sie die aktuelle Perspektive konsumieren statt hartkodierter User-IDs. Emotionen-Panel zeigt Dual-Emotion je Perspektive — verschiedene Radare fuer Meister und Nova. Die Dataclass-Liste ist erweiterbar fuer weitere User/Charakter-Paare (`james`, `tarzan`, weitere User).
+
 ---
 
 ## Epic: Dual-Emotion (Chats 53, 57–58)
@@ -546,6 +548,44 @@ GV-Node → Responder → Thinker → Tribunal → [Corrector]
 
 ---
 
+## Epic: Chat 62 — Folgearbeiten aus dem Paar-Schema
+
+Vier Arbeitspakete, die durch die KZG/LZG-Umstellung auf das Paar-Schema und durch beobachtete Gespraechsverlaeufe sichtbar wurden. Zwei Bugs, ein Bug-Risiko, ein Feature.
+
+### KZG-DEDUP — Deduplizierung semantisch aehnlicher Eintraege (Feature, mittel)
+
+Bei semantisch aehnlichen Turns erzeugt die Salienz mehrere KZG-Eintraege statt zu verstaerken, weil der Themen-Vergleich leicht unterschiedliche Tags extrahiert ("Name Lumi" vs. "Namensgebung Lumi" vs. "neuer Mitbewohner"). In Chat 62 beobachtet: Ein Gespraech ueber Lumi erzeugte 8 Eintraege statt 1–2. Der Cosine-Schwellwert (0.85) greift erst ab einer bestimmten Formulierungs-Naehe, der Themen-Tag-Match davor nicht.
+
+**Loesungsansatz:** Zweite Deduplizierungs-Stufe vor dem Schreiben — Embedding-Aehnlichkeit gegen die letzten N Eintraege der Paar-Partition pruefen, bei Treffer Verstaerkung statt Neuanlage. Priorisierung nach Herkunft (assistant vs. user) und Salienz; nur der wichtigste Eintrag ueberlebt.
+
+**Prio:** Mittel — reduziert KZG-Rauschen, verbessert Promotion-Qualitaet.
+
+### CHAR-HASH-FILTER — beobachter-Filter bei Hash-Destillation (Bug-Risiko, niedrig)
+
+Durch das Paar-Schema fliessen jetzt auch `beobachter="assistant"`-Eintraege in die Charakter-Hash-Destillation ein — `agents/charakter/agent.py` und `charakter_hash.py` lesen ueber das Prefix `kzg:{user_id}:*`, ohne nach Beobachter zu filtern. Novas eigene Beobachtungen sollten nicht Meisters adaptives Profil formen.
+
+**Loesungsansatz:** `beobachter="user"`-Filter bei der Hash-Destillation fuer den User-Hash; spiegelsymmetrisch `beobachter="assistant"` fuer den Nova-Hash.
+
+**Prio:** Niedrig — bisher keine beobachtete Profil-Verzerrung, aber strukturell riskant bei laengeren Paar-Historien.
+
+### KZG-KERN-BLIND — Verstaerkung ignoriert neuen Kern-Inhalt (Bug, mittel)
+
+Bei KZG-Verstaerkung wird der Zaehler erhoeht und Scores/Emotionen aktualisiert, aber der inhaltliche `inhalt`/Kern bleibt auf dem Text des ersten Turns. Folge-Turns, die den Moment erst bedeutsam machen (z.B. der Name "Lumi" nach mehreren Turns ueber die neue Pflanze), gehen inhaltlich verloren. Der Promotion-Call liest dann den ersten, oft weniger pointierten Kern — und ins LZG wandert die fruehe Form statt der reifen.
+
+**Loesungsansatz:** Kern-Neudestillation bei Verstaerkung — LLM-Call mit altem Kern + neuem Turn als Input, neuer Kern als Output. Kostet einen zusaetzlichen CPU-LLM-Call pro Verstaerkung; begrenzbar auf Schwellwert (z.B. nur ab `haeufigkeit >= 2`).
+
+**Prio:** Mittel — bricht die Promotion-Qualitaet bei Themen, die sich ueber mehrere Turns entwickeln.
+
+### ROUTE-CHAR-NOTIZ — CharacterGraph-Router dispatched Konversation an NotizenAgent (Bug, niedrig)
+
+Der Router im CharacterGraph erkennt Konversation faelschlich als Notizen-Task ("Lumi Geschlecht" → NotizenAgent-Dispatch → Fehler). Der Classify im NotizenAgent rejected korrekt mit "kein Notiz-Auftrag", aber der Umweg kostet einen LLM-Call und erzeugt eine Fehlermeldung im Gespraechsvektor. Verwandt mit ROUTE-MISS1 (dort False Negative, hier False Positive).
+
+**Loesungsansatz:** Router-Prompt haerten — kurze Zwei-Wort-Phrasen ohne Verb und ohne Objekt-Marker nicht als Notiz-Auftrag klassifizieren. Alternativ: Router bekommt die letzten Turns als Kontext und pruefend ob das Thema gerade im Gespraech ist.
+
+**Prio:** Niedrig — kosmetisch und Performance, kein Datenverlust.
+
+---
+
 ## 8. Offene Bugs
 
 Vollständige Bug-Dokumentation → `novaberg-bugs.md`
@@ -563,6 +603,9 @@ Kurzübersicht aktiver Bugs:
 | TOPOS-LOCK | ⬜ | Bildervorrat wird mechanisch zykeliert |
 | urllib3-RETRY | ⬜ | Client-urllib3 macht automatischen Retry bei langer Response, erzeugt Doppel-Turns |
 | PATH1-LATENZ | ⬜ | Pfad-1 kann bei GPU-Druck auf 55+ Sekunden gehen (Einmal-Event beobachtet) |
+| KZG-KERN-BLIND | ⬜ | KZG-Verstaerkung aktualisiert Scores, aber nicht den Kern (Chat 62) |
+| ROUTE-CHAR-NOTIZ | ⬜ | CharacterGraph-Router dispatched Konversation an NotizenAgent (Chat 62) |
+| ENRICHER-DUP | 👁 | Fakten werden mehrfach in den Enricher-Kontext injiziert (Chat 62, Beobachtung) |
 
 Details, Ursachen und Lösungsansätze → `novaberg-bugs.md`
 

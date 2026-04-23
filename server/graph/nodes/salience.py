@@ -135,11 +135,17 @@ def analyze(
                 f"Ignoriere Inhalte aus anderen Teilen des Prompts.\n"
             )
 
+        lagebild: str = ""
+        if state.get("response"):
+            lagebild = (
+                "[LAGEBILD]\n"
+                "Hintergrund — nicht bewerten. "
+                "Dies ist die Antwort des Assistenten.\n\n"
+                f"{state['response']}\n\n"
+            )
+
         analyse_prompt: str = (
-            "[LAGEBILD]\n"
-            "Hintergrund — nicht bewerten. "
-            "Dies ist die Antwort des Assistenten.\n\n"
-            f"{state['response']}\n\n"
+            f"{lagebild}"
             "[BEWERTUNGSOBJEKT]\n"
             "Analysiere und bewerte NUR den folgenden Teil.\n"
             f"{segment_hinweis}"

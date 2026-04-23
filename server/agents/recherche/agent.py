@@ -216,9 +216,12 @@ class RechercheAgent(BaseAgent):
 
             embedding: list[float] = embedding_manager.embed(destillat)
 
+            # Recherche-Erkenntnisse ins Paar (user_id, nova) — Beobachter "assistant".
             kzg_store(
                 redis_client=redis_client,
-                user_id=ASSISTANT_USER_ID,
+                user_id=user_id,
+                character_id=ASSISTANT_USER_ID,
+                beobachter="assistant",
                 salienz_obj=salienz_obj,
                 embedding=embedding,
             )

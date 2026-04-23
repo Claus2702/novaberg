@@ -1,6 +1,6 @@
 # Novaberg — Bugs & Limitationen
 
-**Stand:** 23. April 2026, Chat 61
+**Stand:** 23. April 2026, Chat 62
 **Quelle:** Testlauf "Karrierekrise" (200 Prompts) + Gedächtnis-Epic (Chat 11) + Epic 11 Agent-System (Chats 22–32) + Persona Smoke-Tests (Chats 31–32) + RechercheAgent-Test (Chat 35) + Doku-Audit (Chat 36) + PRIO0-Fix + Client-Observability (Chat 37) + Claude API-Test + STREAM1-Fix + Gesprächsvektor (Chat 39) + CharakterIdentitaetAgent + DirektivenAgent + Tribunal Score-System (Chat 40) + Telegram Bot + Zeitparser-Fixes (Chat 41) + CRUD-Härtung + Telegram-Chat-Analyse + DB-Report (Chat 42) + KONTEXT1-Fix + Resume-Bug + Epic 15 Pilot (Chat 43) + Epic 15 Rollout + DELEG-REG Fix + KZG-Klebrigkeit (Chat 44) + RESP-CHAR1 Fix (Chat 45) + CLASSIFY-REJECTED + Gemma4 Live-Tests (Chat 48) + Telegram-Konversation "frecher Charakter" (Chat 49) + RESUME-REJECT Fix + Live-Tests (Chat 50) + Neugier-Konzept + Projektinfrastruktur (Chat 51) + Doku-Alignment + emotions_profil (Chat 52) + Antrieb-Konzept + Dual-Emotion (Chat 53) + HALL2-Fix + Planner-Refactor (Chat 54) + PySide6 verworfen + GTK4-Entscheidung (Chat 55) + GTK4-Client + Panel-Infrastruktur (Chat 56) + Web-Tool-Doku + SEARX1-Diagnose (Chat 57) + Chat 61 (Perzeption-Symmetrie, Akkumulations-Refactor, Paper-Portfolio, Lumi, urllib3-Doppel-Turn beobachtet)
 
 ---
@@ -58,6 +58,9 @@
 | RESUME-REJECT | Resume-Node für CharakterIdentitaetAgent: `resume.py` mit Strategy-Hook, Routing in `agent.py`. Vier Live-Tests bestanden (replace/update/delete Ablehnung + update Bestätigung). | Chat 50 |
 | HALL2-Reject | Status "dismissed" + Prompt-Block responder.aufgabe_verworfen | Chat 54 |
 | SEARX1 | SearXNG Engines timen aus — transient, kein Code-Fix nötig. Code prüft korrekt `len(results)` statt `number_of_results`. | Chat 57 |
+| E.1 KZG-INDEX | RediSearch-Index fehlten 6 Felder (`arousal`, `emotions_vektor`, `sprach_stil`, `tone`, `emotion`, `modus`). Werte wurden geschrieben, aber nicht indiziert — Filter lieferten 0 Treffer. Index um die Felder erweitert. | Chat 62 |
+| E.2 KZG-VERST | KZG-Verstaerkung aktualisierte `emotion` und `modus` nicht — Eintrag blieb auf dem Erst-Wert festgenagelt. Beide Felder werden jetzt mit jedem Verstaerkungs-Schreiben nachgezogen. | Chat 62 |
+| E.3 SALIENZ-LEER | Salienz im HumanGraph las eine leere LLM-Response (Token-Limit, JSON-Abbruch) ohne Fallback. Folge: kein KZG-Eintrag, obwohl salienter Turn. Fix: leere/truncated Response abfangen und Salienz-Default setzen. | Chat 62 |
 
 ---
 
@@ -406,4 +409,33 @@ Dann Requests über diese Session abwickeln statt direkt `requests.post()`.
 
 ---
 
-*Aktualisiert Chat 61: Zwei neue Bugs eingetragen — urllib3-RETRY (Doppel-Turn durch HTTP-Retry) und PATH1-LATENZ (langsamer Pfad 1 unter GPU-Druck). Keine Bugs in Chat 61 behoben (waren Neu-Entdeckungen).*
+### Chat 62 — Paar-Schema-Folgebugs
+
+#### KZG-KERN-BLIND — Verstaerkung ignoriert neuen Kern-Inhalt ⚠️
+**Entdeckt:** Chat 62, Lumi-Gespraech
+**Symptom:** Bei der KZG-Verstaerkung (Cosine ≥ 0.85) werden Zaehler, Salienz, Emotions-Felder und Metadaten aktualisiert — aber der inhaltliche `inhalt`/Kern bleibt auf dem Text des ersten Turns stehen. Folge-Turns, die den Moment erst bedeutsam machen (z.B. der Name "Lumi" nach mehreren Turns ueber die neue Pflanze), gehen inhaltlich verloren. Bei der Promotion liest der LLM-Call den ersten, oft weniger pointierten Kern — und ins LZG wandert die fruehe Form statt der reifen.
+**Ursache:** Verstaerkungs-Logik in `memory/kzg.py` schreibt alle EI-Metadaten durch (nach Fix E.2), aktualisiert aber den `inhalt` nicht.
+**Loesungsansatz:** Kern-Neudestillation bei Verstaerkung — LLM-Call mit altem Kern + neuem Turn als Input, neuer Kern als Output. Begrenzbar auf Schwellwert (z.B. nur ab `haeufigkeit >= 2`), um LLM-Last zu kontrollieren.
+**Prio:** Mittel — bricht die Promotion-Qualitaet bei Themen, die sich ueber mehrere Turns entwickeln.
+
+---
+
+#### ROUTE-CHAR-NOTIZ — CharacterGraph-Router dispatched Konversation an NotizenAgent ⬜
+**Entdeckt:** Chat 62
+**Symptom:** Der Router im CharacterGraph erkennt Konversation faelschlich als Notizen-Task ("Lumi Geschlecht" → `management_action=agent`, `management_target=notizen` → Dispatch → Fehler). Der Classify im NotizenAgent rejected korrekt ("kein Notiz-Auftrag"), aber der Umweg kostet einen LLM-Call und erzeugt eine Fehlermeldung im Gespraechsvektor.
+**Verwandt:** ROUTE-MISS1 — dort False Negative (Router uebersieht Auftrag), hier False Positive (Router halluziniert Auftrag). Beide zeigen, dass der Router kurze kontextabhaengige Prompts nicht sauber klassifiziert.
+**Loesungsansatz:** Router-Prompt haerten — kurze Zwei-Wort-Phrasen ohne Verb und ohne Objekt-Marker nicht als Notiz-Auftrag klassifizieren. Alternativ: Router bekommt die letzten Turns als Kontext und prueft, ob das Thema gerade im Gespraech ist.
+**Prio:** Niedrig — kosmetisch und Performance, kein Datenverlust.
+
+---
+
+#### ENRICHER-DUP — Fakten werden mehrfach in den Enricher-Kontext injiziert 👁
+**Entdeckt:** Chat 62, Beobachtung im memory_context-Log
+**Symptom:** Einzelne Fakten (beobachtet: `HAT_FREUNDIN`) erscheinen 4–7 Mal hintereinander im destillierten Enricher-Kontext, der an den Responder geht. Der Kontext wird unnoetig aufgeblaeht, und das LLM kann den Fakt als besonders wichtig (weil haeufig genannt) fehldeuten.
+**Ursache (vermutet):** Der Enricher holt Fakten aus mehreren Quellen (KZG, LZG, Knowledge Graph, evtl. Timeline) ohne nachgelagerte Dedup-Stufe. Bei ueberlappenden Retrieval-Treffern wandert derselbe Fakt mehrfach in die Liste.
+**Loesungsansatz:** Deduplizierungs-Schritt im Enricher nach dem Sammeln — einfacher Set-Filter auf `subjekt+attribut+objekt`-Tripel oder Embedding-Aehnlichkeit.
+**Prio:** Beobachtung — noch kein bestaetigter Funktionsbruch, aber kontext- und qualitaetsrelevant. Bei naechstem Auftreten Details sammeln (welche Quellen liefern den Fakt?).
+
+---
+
+*Aktualisiert Chat 62: Drei Bugs aus den Chat-62-Fixes in die Behoben-Tabelle uebernommen (E.1 KZG-INDEX, E.2 KZG-VERST, E.3 SALIENZ-LEER). Drei neue Bugs aus dem Paar-Schema-Rollout + Lumi-Gespraech eingetragen: KZG-KERN-BLIND (Verstaerkung ohne Kern-Update), ROUTE-CHAR-NOTIZ (Router-False-Positive), ENRICHER-DUP (Fakten-Duplikate im Kontext, Beobachtung).*

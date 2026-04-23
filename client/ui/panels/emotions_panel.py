@@ -104,10 +104,21 @@ class EmotionsPanel(PanelBase):
     # Daten-Ladung
     # ═══════════════════════════════════════════════════════════════
     def load_data(self) -> dict:
-        """Holt Emotions-Aggregate für den aktuellen User."""
-        url: str = f"{SERVER_URL}/gedaechtnis/emotionen/{self.user_id}"
-        logger.debug(f"EmotionsPanel: GET {url}")
-        response = requests.get(url, timeout=PANEL_REQUEST_TIMEOUT)
+        """Holt Emotions-Aggregate für die aktuell gewählte Perspektive.
+
+        Der ``beobachter``-Filter wirkt serverseitig: Session-Turns werden
+        auf die passende Rolle (user/assistant) gefiltert, KZG auf das
+        ``beobachter``-Feld. So zeigen die Radare Meisters bzw. Novas
+        Emotionsverlauf — je nach Dropdown-Wahl.
+        """
+        params: dict = self._get_api_params()
+        url: str = f"{SERVER_URL}/gedaechtnis/emotionen/{params['user_id']}"
+        query: dict = {
+            "character_id": params["character_id"],
+            "beobachter":   params["beobachter"],
+        }
+        logger.debug(f"EmotionsPanel: GET {url} {query}")
+        response = requests.get(url, params=query, timeout=PANEL_REQUEST_TIMEOUT)
         response.raise_for_status()
         return response.json()
 

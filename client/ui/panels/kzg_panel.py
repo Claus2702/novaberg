@@ -71,10 +71,15 @@ class KzgPanel(PanelBase):
     # Daten-Ladung
     # ═══════════════════════════════════════════════════════════════
     def load_data(self) -> dict:
-        """Holt alle KZG-Einträge des aktuellen Users."""
-        url: str = f"{SERVER_URL}/gedaechtnis/kzg/{self.user_id}"
-        logger.debug(f"KzgPanel: GET {url}")
-        response = requests.get(url, timeout=PANEL_REQUEST_TIMEOUT)
+        """Holt alle KZG-Einträge der aktuell gewählten Perspektive."""
+        params: dict = self._get_api_params()
+        url: str = f"{SERVER_URL}/gedaechtnis/kzg/{params['user_id']}"
+        query: dict = {
+            "character_id": params["character_id"],
+            "beobachter":   params["beobachter"],
+        }
+        logger.debug(f"KzgPanel: GET {url} {query}")
+        response = requests.get(url, params=query, timeout=PANEL_REQUEST_TIMEOUT)
         response.raise_for_status()
         return response.json()
 
@@ -118,14 +123,28 @@ def _clear_box(box: Gtk.Box) -> None:
         child = box.get_first_child()
 
 
+_BEOBACHTER_BADGE: dict[str, str] = {
+    "user":      "👤",
+    "assistant": "🤖",
+}
+
+
 def _build_entry_card(eintrag: dict) -> Gtk.Box:
     """Baut eine Karte für einen einzelnen KZG-Eintrag."""
     card = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=4)
     card.set_margin_top(6)
     card.set_margin_bottom(6)
 
-    # Kopfzeile: Salienz-Badge + Themen (fett) + TTL rechts.
+    # Kopfzeile: Beobachter-Badge + Salienz + Themen + TTL.
     head = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=8)
+
+    beobachter: str = str(eintrag.get("beobachter", "") or "")
+    beob_icon: str = _BEOBACHTER_BADGE.get(beobachter, "")
+    if beob_icon:
+        beob_label = Gtk.Label(label=beob_icon)
+        beob_label.set_tooltip_text(f"Beobachter: {beobachter}")
+        beob_label.set_xalign(0.0)
+        head.append(beob_label)
 
     salienz: float = float(eintrag.get("salienz", 0.0))
     badge = Gtk.Label(label=f"{salienz:.2f}")

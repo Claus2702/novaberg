@@ -70,10 +70,15 @@ class LzgPanel(PanelBase):
     # Daten-Ladung
     # ═══════════════════════════════════════════════════════════════
     def load_data(self) -> dict:
-        """Holt alle LZG-Einträge des aktuellen Users."""
-        url: str = f"{SERVER_URL}/gedaechtnis/lzg/{self.user_id}"
-        logger.debug(f"LzgPanel: GET {url}")
-        response = requests.get(url, timeout=PANEL_REQUEST_TIMEOUT)
+        """Holt alle LZG-Einträge der aktuell gewählten Perspektive."""
+        params: dict = self._get_api_params()
+        url: str = f"{SERVER_URL}/gedaechtnis/lzg/{params['user_id']}"
+        query: dict = {
+            "character_id": params["character_id"],
+            "beobachter":   params["beobachter"],
+        }
+        logger.debug(f"LzgPanel: GET {url} {query}")
+        response = requests.get(url, params=query, timeout=PANEL_REQUEST_TIMEOUT)
         response.raise_for_status()
         return response.json()
 

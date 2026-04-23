@@ -168,75 +168,84 @@ project/
 │   ├── main.py                          # GTK4 Application Einstieg
 │   └── ui/                              # Chat, Fakten, Gedaechtnis, Timeline, Schatten,
 │                                        #   Status, System-Panels, Hauptfenster,
-│                                        #   Emotions-Radar (QPainter)
+│                                        #   Emotions-Radar (Cairo)
 ├── server/
-│   ├── main.py                          # App-Start, Lifespan, Router-Includes (~60 Zeilen)
+│   ├── main.py                          # App-Start, Lifespan, Router-Includes
 │   ├── config.py                        # Zentrale Konfiguration, Umgebungsvariablen
+│   ├── prompt_loader.py                 # Laedt PROMPTS-Dict (default/ + Connector-Override)
 │   │
 │   ├── api/                             # REST + WebSocket Endpoints
-│   │   ├── chat.py                      #   /chat, /chat/stream, SSE
+│   │   ├── chat.py                      #   /chat, /chat/stream (Pfad 1 + Event-Erzeugung)
 │   │   ├── health.py                    #   /health (5 Dienste + Pixie), /modelle
 │   │   ├── gedaechtnis.py               #   /gedaechtnis/*, /fakten/*, /emotionen/*
 │   │   ├── session.py                   #   /session/*
-│   │   ├── websocket.py                 #   WebSocket-Endpoint
-│   │   ├── admin.py                     #   /admin/pixie/* (Pause, Resume, Flush)
+│   │   ├── websocket.py                 #   WebSocket (Charakter-Antwort + Shadow Delivery)
+│   │   ├── admin.py                     #   /admin/pixie/{pause,resume,status}
 │   │   └── models.py                    #   Pydantic-Modelle
 │   │
-│   ├── graph/                           # LangGraph Graphen + State
-│   │   ├── base.py                      #   GraphBase (abstrakt)
-│   │   ├── human_graph.py               #   HumanGraph (Chat-Pipeline)
-│   │   ├── agent_graph.py               #   AgentGraph (Pixie-Pipeline)
+│   ├── graph/                           # LangGraph Graphen + State (Chat 60: Graph-Split)
+│   │   ├── base.py                      #   GraphBase (abstrakt, create_state)
+│   │   ├── human_graph.py               #   HumanGraph (Pfad 1, 5 Nodes)
+│   │   ├── character_graph.py           #   CharacterGraph (Pfad 2, 14 Nodes, Chat 60/61)
+│   │   ├── agent_graph.py               #   AgentGraph (Pixie-Pipeline, 3 Nodes)
 │   │   ├── builder.py                   #   Fassade, Plugin-Init
 │   │   ├── state.py                     #   State-Definition, PendingWrite
-│   │   ├── memory.py                    #   Graph-Checkpoint-Memory
-│   │   └── nodes/                       #   HumanGraph: 5 Nodes (Pfad 1) | CharacterGraph: 13 Nodes (Pfad 2) | AgentGraph: 3 Nodes
-│   │       ├── perzeption.py            #     → novaberg-node-perception.md
+│   │   └── nodes/                       #   13 Node-Dateien, von den drei Graphen geteilt
+│   │       ├── perzeption.py            #     → novaberg-node-perception.md (rolle user/assistant)
 │   │       ├── enricher.py              #     → novaberg-node-enricher.md
-│   │       ├── ei_calc.py               #     → novaberg-node-ei-calc.md (seit Chat 59)
+│   │       ├── ei_calc.py               #     → novaberg-node-ei-calc.md (rolle user/character)
 │   │       ├── router.py                #     → novaberg-node-router.md
 │   │       ├── planner.py               #     → novaberg-node-planner.md
 │   │       ├── responder.py             #     → novaberg-node-responder.md
 │   │       ├── thinker.py               #     → novaberg-node-thinker.md
-│   │       ├── salience.py              #     → novaberg-node-salience.md (async, seit Chat 59)
-│   │       ├── dispatcher.py            #     → novaberg-node-dispatcher.md (async, seit Chat 59)
+│   │       ├── salience.py              #     → novaberg-node-salience.md
+│   │       ├── dispatcher.py            #     → novaberg-node-dispatcher.md (zentraler Session-Turn-Schreiber)
 │   │       ├── tribunal.py              #     → novaberg-node-tribunal.md
 │   │       ├── corrector.py             #     → novaberg-node-corrector.md
 │   │       ├── agent_dispatch.py        #     Agent-Dispatch (Epic 11)
-│   │       └── gespraechsvektor.py      #     → novaberg-ei-conversation-vector.md
+│   │       └── gespraechsvektor.py      #     → novaberg-node-gv_k.md
 │   │
-│   ├── agents/                         # Agent-System (Epic 11 + Epic 5)
-│   │   ├── __init__.py                 #   AgentRegistry, Auto-Discovery
-│   │   ├── base.py                     #   BaseAgent, AgentState, AgentResult, PeriodicTask
-│   │   ├── notizen/                    #   NotizenAgent (6 Module)
-│   │   ├── timeline/                   #   TimelineAgent (6 Module)
-│   │   ├── kzg/                        #   KZG-Agent (LangGraph-Subgraph, 5 Nodes)
-│   │   ├── delegation/                 #   DelegationsAgent (Halluzinations-Ventil)
-│   │   ├── recherche/                  #   RechercheAgent (Web-Recherche fuer Pixie)
-│   │   ├── promotion/                  #   PromotionAgent (KZG -> LZG)
-│   │   ├── decay/                      #   DecayAgent (Ebbinghaus)
-│   │   ├── charakter/                  #   CharakterAgent (Hash-Destillation)
-│   │   └── wiedervorlage/              #   WiedervorlageAgent
+│   ├── agents/                          # Agent-System (Epic 11 + Epic 5) — 11 Agenten
+│   │   ├── __init__.py                  #   AgentRegistry, Auto-Discovery
+│   │   ├── base.py                      #   BaseAgent, AgentState, AgentResult, PeriodicTask
+│   │   ├── crud_validation.py           #   Gemeinsame CRUD-Haertung (Chat 42)
+│   │   ├── notizen/                     #   NotizenAgent (User-Agent, Resume + Bestaetigung)
+│   │   ├── timeline/                    #   TimelineAgent (User-Agent, Zeitparser + Resume)
+│   │   ├── charakter_identitaet/        #   CharakterIdentitaetAgent (User-Agent, Resume + init.sql)
+│   │   ├── direktiven/                  #   DirektivenAgent (User-Agent, HITL-Gate + init.sql)
+│   │   ├── kzg/                         #   KZG-Agent (LangGraph-Subgraph, 5 Nodes)
+│   │   ├── delegation/                  #   DelegationsAgent (Halluzinations-Ventil, init.sql)
+│   │   ├── recherche/                   #   RechercheAgent (Pixie, Web-Recherche)
+│   │   ├── promotion/                   #   PromotionAgent (Pixie, KZG -> LZG)
+│   │   ├── decay/                       #   DecayAgent (Pixie, Ebbinghaus)
+│   │   ├── charakter/                   #   CharakterAgent (Pixie, Hash-Destillation)
+│   │   └── wiedervorlage/               #   WiedervorlageAgent (Pixie)
 │   │
-│   ├── tools/                          # Tool-Manager (Epic 11)
-│   │   ├── db_manager.py              #   PostgreSQL + Connection Pool
-│   │   ├── redis_manager.py           #   Redis (nativ threadsafe)
-│   │   ├── embedding_manager.py       #   Ollama Embeddings
-│   │   ├── file_manager.py            #   Dateisystem + Lock-Dict
-│   │   ├── time_parser.py             #   Zeitparser-Proxy
-│   │   └── web/                       #   Web-Infrastruktur (Chat 35)
-│   │       ├── __init__.py            #     Package-Init
-│   │       ├── search.py              #     WebSearchManager (SearXNG)
-│   │       └── fetch.py               #     PageFetcher (trafilatura + BS4)
+│   ├── ei/                              # EI-Berechnungsmodul (Chat 58 ausgelagert, Chat 61 Refactor)
+│   │   └── berechnung.py                #   Verlauf, Vektor, Nova-Empathie, sin^0.5-Glaettung
+│   │
+│   ├── tools/                           # Tool-Manager (Epic 11)
+│   │   ├── db_manager.py                #   PostgreSQL + Connection Pool
+│   │   ├── redis_manager.py             #   Redis (nativ threadsafe)
+│   │   ├── embedding_manager.py         #   Ollama Embeddings
+│   │   └── web/                         #   Web-Infrastruktur (Chat 35)
+│   │       ├── search.py                #     WebSearchManager (SearXNG)
+│   │       └── fetch.py                 #     PageFetcher (trafilatura + BS4)
 │   │
 │   ├── memory/                          # Gedaechtnis-Schicht
 │   │   ├── embedding.py                 #   Embedding-Erzeugung (nomic-embed-text)
-│   │   ├── kzg.py                       #   Kurzzeitgedaechtnis (Redis)
-│   │   ├── lzg.py                       #   Langzeitgedaechtnis (PostgreSQL)
-│   │   ├── charakter.py                 #   Charakter-Hash
-│   │   ├── session.py                   #   Session/Gespraechskontext
-│   │   ├── fakten.py                    #   Deklaratives Wissen
-│   │   ├── timeline.py                  #   Temporale Fakten
-│   │   └── kontext.py                   #   Session-Kontext-Extraktion (LLM-gestuetzt)
+│   │   ├── kzg.py                       #   Kurzzeitgedaechtnis (Redis, RediSearch-Index)
+│   │   ├── lzg.py                       #   Langzeitgedaechtnis (PostgreSQL, Ebbinghaus)
+│   │   ├── charakter.py                 #   Charakter-Hash (Read)
+│   │   ├── session.py                   #   Session (_session_key mit character_id, Chat 60)
+│   │   ├── kontext.py                   #   Session-Kontext-Extraktion (LLM-gestuetzt)
+│   │   ├── repositories/                #   Daten-Repositories (CRUD gegen PostgreSQL)
+│   │   │   ├── entitaeten_repository.py #     Knowledge Graph Nodes
+│   │   │   ├── fakten_repository.py     #     Knowledge Graph Edges (bi-temporal)
+│   │   │   ├── timeline_repository.py   #     Termine und Ereignisse
+│   │   │   └── notizen_repository.py    #     Merkzettel und Listen
+│   │   └── services/
+│   │       └── entity_resolution.py     #   Entity Resolution (Name + Fuzzy + Embedding)
 │   │
 │   ├── utils/                           # Hilfsfunktionen
 │   │   └── zeitparser.py                #   Zeitaufloesung (Fuzzy + Normalisierung + Vektor)
@@ -247,14 +256,15 @@ project/
 │   │   ├── fakten_manager/              #   Fakten + Entity Resolution
 │   │   ├── timeline_manager/            #   Termine + Zeitparser
 │   │   ├── notizen_manager/             #   Merkzettel, Listen
-│   │   ├── charakter_identitaet_manager/#   Charakter-Identität (Selbstbeschreibung)
-│   │   └── direktiven_manager/          #   Direktiven (Verhaltensregeln)
+│   │   ├── charakter_identitaet_manager/#   Charakter-Identitaet (Router-Prompt)
+│   │   └── direktiven_manager/          #   Direktiven (Router-Prompt)
 │   │
 │   └── services/                        # Dienste
-│       ├── llm_provider.py             #   → novaberg-tool-llm-abstraction.md
-│       ├── nachbearbeitung.py           #   → novaberg-service-nachbearbeitung.md (seit Chat 59)
+│       ├── llm_provider.py              #   LLM-Provider-Abstraktion (Ollama + Anthropic)
+│       ├── events.py                    #   Event-Queue (Redis FIFO, Self-Trigger-Schutz, Chat 60)
+│       ├── event_consumer.py            #   Event-Consumer (async-Loop, WebSocket-Delivery, Chat 60)
 │       ├── shadow_delivery.py           #   Pixie -> Chat-Einspeisung
-│       ├── shadow_agent/                #   Alter Pixie-Runner (wird bei PIX-CLEAN entfernt)
+│       ├── shadow_agent/                #   Alter Pixie-Runner (extern aufruflos, PIX-CLEAN)
 │       └── pixie/                       #   Neues Pixie-System (Chat 33+)
 │           ├── scheduler.py             #     APScheduler-Heartbeat
 │           ├── kandidaten.py            #     Queue-Peek + periodische Aufgaben
@@ -278,7 +288,7 @@ Seit Chat 60 sind User und Charakter zwei unabhängige Akteure:
 | Pfad | Graph | Nodes | Aufgabe |
 |------|-------|-------|---------|
 | Pfad 1 | HumanGraph | 5 | User schreibt: Wahrnehmung + Speicherung |
-| Pfad 2 | CharacterGraph | 13 | Charakter reagiert: Lesen + Entscheiden + Antworten + Speichern |
+| Pfad 2 | CharacterGraph | 14 | Charakter reagiert: Lesen + Entscheiden + Antworten + Perzeption(Nova) + Speichern |
 
 Verbunden durch eine Redis-Event-Queue (`event_queue:{user_id}:{character_id}`). Ein Event-Consumer (`services/event_consumer.py`) pollt die Queue und startet CharacterGraph-Durchlaeufe. Antworten erreichen den Client per WebSocket.
 
@@ -322,7 +332,7 @@ Das Plugin-System ist Novas Erweiterungsmechanismus fuer strukturiertes Wissen. 
 | `enrich(state, postgres_url)` | `str` | Kontext liefern (Fakten, Termine, Notizen) | Enricher |
 | `plan(state, postgres_url)` | `dict` | Management-Aktion planen (LLM via `get_chat_provider()`) | Planner |
 | `execute(writes, user_id, redis_client, postgres_url, embed_client, embed_model)` | `int` | DB-Writes ausfuehren | Dispatcher |
-| `setup(postgres_url)` | — | Schema anlegen (`init.sql` ausfuehren) | GraphBase beim Start |
+| `setup(postgres_url, redis_client=None)` | — | Schema anlegen (`init.sql` ausfuehren), optional Redis-Init | GraphBase beim Start |
 
 ### 4.3 Selbstbeschreibende Prompts
 
@@ -372,23 +382,24 @@ PendingWrite = TypedDict("PendingWrite", {
 
 ### 4.7 Koexistenz mit Agent-System (seit Chat 22, Epic 11)
 
-Seit Epic 11 ersetzen Agenten die Manager schrittweise:
+Seit Epic 11 ergaenzen Agenten die Manager schrittweise — sie ersetzen sie nicht vollstaendig:
 
 | Manager | Agent | Status |
 |---------|-------|--------|
-| NotizenManager | NotizenAgent | Agent fuehrt aus, Manager liefert router_prompt + enrich() |
-| TimelineManager | TimelineAgent | Agent fuehrt aus, Manager liefert router_prompt + enrich() |
-| FaktenManager | — | Noch nicht migriert |
-| KzgManager | — | Noch nicht migriert |
+| NotizenManager | NotizenAgent | Agent bedient `/notizen/*`-Dispatches; Manager liefert `router_prompt`, `enrich()`, und traegt weiterhin seine eigenen `plan()`/`execute()`-Pfade |
+| TimelineManager | TimelineAgent | Agent bedient `/timeline/*`-Dispatches; Manager liefert `router_prompt`, `enrich()`, `plan()` (Zeitparser + Entity Resolution) und `execute()` |
+| FaktenManager | — | Kein Agent. Manager traegt vollstaendiges `execute()` (CRUD + Entity Resolution, bi-temporal) |
+| KzgManager | — | Kein Agent (KZG-Schreiben geht ueber den KZG-*Subgraph-Agent*, nicht den Manager). Manager traegt nur `execute()` als Legacy-Fallback |
 
-Die Manager bleiben als duenne Huellen bestehen fuer drei Aufgaben:
+Die Manager bleiben **nicht** leere Huellen. Sie halten drei Aufgaben fuer Router/Enricher/Salienz und zusaetzlich ihre eigentliche Domain-Logik (LLM-Extraction, Zeitparser, Entity Resolution) in `plan()` und `execute()`. Diese Methoden werden weiter aktiv benutzt:
+
 - `router_prompt` — Domaenen-Erkennung fuer den Router
 - `enrich()` — Kontext-Hook fuer den Enricher
 - `salienz_prompt` — Salienz-Erweiterung
+- `plan()` — vom Planner aufgerufen, wenn kein Agent die Domaene uebernimmt (aktueller Stand: bei FaktenManager und KzgManager). Fuer NotizenManager und TimelineManager ist der Code vorhanden, wird aber vom Planner uebersprungen, sobald ein passender Agent gefunden ist.
+- `execute()` — vom Dispatcher aufgerufen, wenn `pending_writes` ein Manager-Ziel (`fakten`, `kzg`, `timeline`, `notizen`) treffen. Der Agent-Pfad erzeugt `pending_writes` nur fuer `kzg`; alle anderen Ziele gehen weiter ueber den Manager-`execute()`.
 
-`plan()` und `execute()` sind fuer migrierte Manager toter Code — der Planner erkennt den Agent und ueberspringt den Manager.
-
-**Ziel:** Wenn alle Manager migriert sind, bekommen Agenten die Selbstbeschreibung (`BaseAgent.router_prompt` etc.) und das Plugin-System wird optional.
+**Ziel langfristig:** Wenn alle Domains einen Agenten haben, koennen Agenten die Selbstbeschreibung (`BaseAgent.router_prompt` etc.) selbst tragen, und das Plugin-System wird optional. Aktuell sind Plugin-Manager und Agent-System parallele Saeulen, die sich ergaenzen, nicht zwei Schichten, die sich ersetzen.
 
 ---
 
@@ -427,7 +438,7 @@ Perzeption und Router bekommen die letzten 5 Session-Turns als Hintergrund-Konte
 
 | Feature | Status | Referenz |
 |---------|--------|----------|
-| Graph-Pipeline (HumanGraph: 5 Nodes Pfad 1 | CharacterGraph: 13 Nodes Pfad 2 | AgentGraph: 3 Nodes) | Implementiert & getestet | novaberg-graph.md, nova-node-*.md |
+| Graph-Pipeline (HumanGraph: 5 Nodes Pfad 1 | CharacterGraph: 14 Nodes Pfad 2 | AgentGraph: 3 Nodes) | Implementiert & getestet | novaberg-graph.md, novaberg-node-*.md |
 | Async-Block (Salienz + Dispatcher + Nova-Pfad) | Implementiert & validiert | novaberg-service-nachbearbeitung.md |
 | EI-Calc-Node (reine Python-Berechnung, Dual-Modus User + Nova) | Implementiert & validiert | novaberg-node-ei-calc.md |
 | Dual-Emotion Phase 2 (Nova-Empathie, Konflikt-Erkennung) | Implementiert (AP1–3, AP7, AP4 teilw., AP8 teilw.) | novaberg-ei-dual-emotion_k.md |

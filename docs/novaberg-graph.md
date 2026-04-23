@@ -242,8 +242,20 @@ Das State-Dict durchlaeuft alle Nodes. Jeder Node liest was er braucht und schre
 | Feld | Typ | Gesetzt von | Gelesen von |
 |------|-----|-------------|-------------|
 | `user_id` | `str` | API-Layer | Alle Nodes |
+| `character_id` | `str` | API-Layer / `create_state` | Alle Nodes (Paar-Partitionierung, seit Chat 60) |
 | `user_input` | `str` | API-Layer | Perzeption, Router, Salienz |
 | `session_id` | `str` | API-Layer | Session-Management |
+
+### 4.1a Event- und Rollen-Flags (Chat 60/62)
+
+Felder, die den Graph-Zweig und die Akteurs-Perspektive steuern.
+
+| Feld | Typ | Gesetzt von | Beschreibung |
+|------|-----|-------------|-------------|
+| `event_source` | `str` | Event-Consumer | `"user"` oder `"character"` — steuert EI-Calc-Empathie-Switch |
+| `event_payload` | `dict` | Event-Consumer | Freies Dict aus dem Event (Metadaten, Trigger-Info) |
+| `perzeption_rolle` | `str` | `create_state` | `"user"` (HumanGraph) oder `"assistant"` (CharacterGraph, `perzeption_assistant`) — steuert, welchen Text die Perzeption liest |
+| `ei_calc_rolle` | `str` | `create_state` | `"user"` (Pfad 1) oder `"character"` (Pfad 2, Nova-Empathie) — auch Quelle fuer `beobachter` im KZG-Dispatch (Chat 62) |
 
 ### 4.2 Perzeption -> Router
 
@@ -278,8 +290,20 @@ Das State-Dict durchlaeuft alle Nodes. Jeder Node liest was er braucht und schre
 | `beziehungs_kontext` | `dict` | Beziehungsprofil aus Charakter-Hash |
 | `emotions_vektor` | `str` | Einer der 9 Vektoren (spirale, erholung, absturz, ...) |
 | `session_turns` | `list[dict]` | Vollstaendige Turn-Dicts (seit Chat 30) |
+| `raw_turns` | `list[dict]` | Vollstaendige Turn-Dicts (ungekuerzt, fuer EI-Calc + Analyse) |
+| `char_hash_dict` | `dict` | Charakter-Hash als Dict (alle fuenf Profile) |
 | `charakter_anweisungen` | `list[str]` | User-definierte Charakter-Anweisungen (seit Chat 40) |
 | `direktiven` | `list[dict]` | Aktive Verhaltens-Direktiven (seit Chat 40) |
+
+### 4.4a EI-Calc (Nova-Empathie, Chat 59/60)
+
+Novas eigener Emotionsstrang. Wird im CharacterGraph (bei `ei_calc_rolle="character"`) gefuellt.
+
+| Feld | Typ | Beschreibung |
+|------|-----|-------------|
+| `nova_emotions_verlauf` | `list[dict]` | Novas Emotions-Verlauf (Decay + Empathie) |
+| `nova_emotions_vektor` | `str` | Novas Emotions-Vektor (9 Richtungen) |
+| `nova_emotion_konflikt` | `bool` | Konflikt-Flag bei gegenlaeufigen Stroemen (gegenueberliegende Plutchik-Sektoren + Arousal ≥ 0.4) |
 
 ### 4.5 GV-Node (seit Chat 39)
 
@@ -308,6 +332,12 @@ Das State-Dict durchlaeuft alle Nodes. Jeder Node liest was er braucht und schre
 | Feld | Typ | Beschreibung |
 |------|-----|-------------|
 | `pending_writes` | `list[PendingWrite]` | Ergaenzt um Salienz-Writes (KZG, Fakten, Timeline) |
+
+### 4.8a KZG-Dispatch (Chat 60)
+
+| Feld | Typ | Beschreibung |
+|------|-----|-------------|
+| `session_turn_kern` | `str` | Verdichteter Kern fuer den Session-Turn. Vom KZG-Dispatch geschrieben, vom Dispatcher (Session-Turn-Schreiber) eingesammelt. |
 
 ### 4.9 PendingWrite TypedDict
 
@@ -455,18 +485,27 @@ Typ-1-Agenten (Workflow) folgen diesem Muster als LangGraph-Subgraph. Jeder Schr
 
 ### 7.2 File-Split-Konvention
 
+Workflow-Agenten konvergieren zu dieser Datei-Zerlegung — nicht als erzwungene Schablone, sondern als Muster, das aus wiederholter Implementierung entstanden ist:
+
 ```
 agents/timeline/
-+-- agent.py            # TimelineAgent(BaseAgent) — Subgraph-Logik
-+-- klassifikation.py   # Classify-Node (LLM-Aktionsklassifikation)
-+-- suche.py            # Search-Node (DB-Abfragen)
-+-- crud.py             # CRUD-Node (Create/Read/Update/Delete)
-+-- resume.py           # Resume-Node (Rueckfrage-Fortsetzung)
-+-- bestaetigung.py     # Confirm-Node (Ergebnis-Formulierung)
-+-- dispatch.py         # dispatch_timeline() — State-Transformation
-+-- init.sql            # Schema
-+-- AGENT.md            # Beschreibung, Faehigkeiten, Trigger
++-- agent.py            # TimelineAgent(BaseAgent) — Subgraph-Logik (Pflicht)
++-- dispatch.py         # dispatch_timeline() — State-Transformation (Pflicht fuer User-Agenten)
++-- klassifikation.py   # Classify-Node (LLM-Aktionsklassifikation, bei Workflow-Agenten)
++-- suche.py            # Search-Node (DB-Abfragen, wenn Agent Entitaeten aufloest)
++-- crud.py             # CRUD-Node (Create/Read/Update/Delete, wenn Agent schreibt)
++-- resume.py           # Resume-Node (nur wenn Agent Rueckfragen erzeugt)
++-- bestaetigung.py     # Confirm-Node (wenn Ergebnis formuliert werden muss)
++-- init.sql            # Schema (nur wenn Agent eigene Tabellen braucht)
++-- AGENT.md            # Beschreibung, Faehigkeiten, Trigger (Pflicht)
 ```
+
+**Was tatsaechlich vorhanden ist, variiert nach Aufgabe:**
+
+- **Pixie-Agenten** (`charakter`, `decay`, `promotion`, `recherche`, `wiedervorlage`) haben meist nur `agent.py` + `__init__.py` + AGENT.md — kein Classify, keine Rueckfragen, kein eigenes Schema. Sie nutzen bestehende Tabellen (`langzeitgedaechtnis`, `charakter_hash`, `hintergrund_log`) aus `db/init.sql`.
+- **User-Agenten** mit HITL-Gate (`notizen`, `timeline`, `charakter_identitaet`, `direktiven`) tragen das vollstaendige Set inklusive `dispatch.py` und meist `resume.py`.
+- **`init.sql` ist agentenspezifisch** — nur Agenten, die eine eigene Tabelle brauchen, legen sie an (aktuell: `charakter_identitaet`, `delegation`, `direktiven`, `timeline`). Agenten, die auf bereits existierenden Tabellen arbeiten, brauchen keine leere Platzhalter-Datei.
+- `__init__.py` ist fuer die Auto-Discovery in `agents/__init__.py` Pflicht (macht den Ordner zu einem Python-Package).
 
 ### 7.3 Resume-Flow (Redis Pending State, TTL 300s)
 

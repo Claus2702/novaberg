@@ -76,10 +76,18 @@ class CharacterPanel(PanelBase):
     # Daten-Ladung
     # ═══════════════════════════════════════════════════════════════
     def load_data(self) -> dict:
-        """Holt Charakter-Hash-Profile für den aktuellen User."""
-        url: str = f"{SERVER_URL}/gedaechtnis/hash/{self.user_id}"
-        logger.debug(f"CharacterPanel: GET {url}")
-        response = requests.get(url, timeout=PANEL_REQUEST_TIMEOUT)
+        """Holt Charakter-Hash-Profile für die aktuell gewählte Perspektive.
+
+        Der Hash hängt aktuell nur an ``user_id``. Die Perspektive-Zeile
+        beobachter hat hier keine Wirkung — bei Umschaltung auf "nova"
+        würde der Client eigentlich Novas Charakter-Hash wollen, der aber
+        noch nicht existiert (kein ``character_id``-Eintrag in der Tabelle).
+        """
+        params: dict = self._get_api_params()
+        url: str = f"{SERVER_URL}/gedaechtnis/hash/{params['user_id']}"
+        query: dict = {"character_id": params["character_id"]}
+        logger.debug(f"CharacterPanel: GET {url} {query}")
+        response = requests.get(url, params=query, timeout=PANEL_REQUEST_TIMEOUT)
         response.raise_for_status()
         return response.json()
 

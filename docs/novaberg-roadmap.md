@@ -1,6 +1,6 @@
 # Novaberg — Roadmap (Projektchronik)
 
-**Stand:** Chat 60, 21. April 2026
+**Stand:** Chat 62, 23. April 2026
 **Pfad:** novaberg/docs/novaberg-roadmap.md
 **Single Source of Truth für abgeschlossene Arbeit.**
 **Offene Punkte → novaberg-backlog.md**
@@ -355,4 +355,44 @@
 
 ---
 
-*Aktualisiert in Chat 60. Offene Punkte → novaberg-backlog.md. Bugs → novaberg-bugs.md.*
+---
+
+## Chat 62 (23. April 2026) — Paper-Stoffsammlung, KZG/LZG-Paar-Schema, Client-Perspektive
+
+### Paper-Stoffsammlung
+- ✅ Drei Paper ausgearbeitet (Phase 1): Personal AI, Clipboard Pattern, Dual-Emotion
+- ✅ Stoffsammlung mit Hooks, Abstracts, Gliederungen, Code-Snippets, Einwaenden
+- ✅ Verifiziert gegen Code und Doku (10-Punkte-Diff-Liste)
+
+### Konsistenz-Bericht (Code vs. Doku)
+- ✅ E.1: KZG-Index um 6 Felder erweitert (`arousal`, `emotions_vektor`, `sprach_stil`, `tone`, `emotion`, `modus`)
+- ✅ E.2: KZG-Verstaerkung schreibt jetzt `emotion` + `modus` mit
+- ✅ E.3: Salienz im HumanGraph faengt leere Response ab
+- ✅ C: `AgentGraph.create_state()` erbt alle Chat-60-Felder
+- ✅ Leichen entfernt: PixieArbeit, `file_manager.py`, `time_parser.py`, `graph/memory.py`
+- ✅ `architecture.md` §3 Verzeichnisbaum neu, §4.7 Plugin-Status korrigiert
+- ✅ `graph.md` §3.2 auf 14 Nodes, init.sql-Konvention abgeschwaecht
+- ✅ Return-Type-Drift in 4 Agent-Dateien behoben
+
+### KZG-Paar-Schema
+- ✅ Key-Schema: `kzg:{user_id}:{character_id}:{entry_id}`, neues Feld `beobachter` (`user`/`assistant`)
+- ✅ Migration: 330 Keys (305 user + 25 assistant)
+- ✅ Helfer `_kzg_key()`, `_kzg_prefix()` in `memory/kzg.py`
+
+### LZG-Paar-Schema
+- ✅ Neue Spalten `character_id` + `beobachter`, partieller Index auf `(user_id, character_id) WHERE aktiv = TRUE`
+- ✅ Migration: `ALTER TABLE` + `UPDATE` fuer Nova-Eintraege (`user_id='nova'` → `user_id='meister', character_id='nova', beobachter='assistant'`)
+
+### Client-Perspektive-Selector
+- ✅ `GespraechsPerspektive`-Dataclass + `PERSPEKTIVEN`-Liste als Single Source
+- ✅ Dropdown: "Meister — Gespräch mit Nova" / "Nova — Gespräch mit Meister"
+- ✅ Alle 6 Panels auf `_get_api_params()` umgestellt
+- ✅ Dual-Emotion sichtbar: verschiedene Radare je Perspektive
+
+### Lumi
+- ✅ E.3-Fix bestaetigt: Lumi-Turn kommt jetzt ins KZG (Score 0.80)
+- ✅ `HAT_FREUNDIN`-Halluzination aus Fakten geloescht
+
+---
+
+*Aktualisiert in Chat 62. Offene Punkte → novaberg-backlog.md. Bugs → novaberg-bugs.md.*

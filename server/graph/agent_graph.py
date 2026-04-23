@@ -23,6 +23,9 @@ logger = logging.getLogger("ki_server.graph.agent")
 class AgentGraph(GraphBase):
     """Leichtgewichtiger Analyse-Graph für KI-User."""
 
+    # Analyse-Graph hat keine Korrektur-Schleife (kein Tribunal, kein Corrector)
+    MAX_CORRECTIONS: int = 0
+
     def build(self) -> CompiledStateGraph:
         """Baut den Analyse-Graphen mit Enricher → Salience → Dispatcher."""
 
@@ -45,84 +48,15 @@ class AgentGraph(GraphBase):
 
         return compiled
 
-    def create_state(
-        self,
-        user_prompt: str,
-        user_id:     str,
-        **kwargs,
-    ) -> ConversationState:
-        """Erzeugt einen State für Analyse-Durchläufe (kein System-Prompt, T=0)."""
+    def create_state(self, user_prompt: str, user_id: str, **kwargs) -> ConversationState:
+        """Erzeugt einen frischen State für Analyse-Durchläufe.
 
-        return ConversationState(
-            # Eingang
-            user_prompt   = user_prompt,
-            user_id       = user_id,
-            system_prompt = "",
-            temperature   = 0.0,
-
-            # Perzeption (nicht genutzt, aber TypedDict erfordert alle Felder)
-            intent              = "",
-            tone                = "sachlich",
-            prompt_thema        = "",
-            current_emotion     = "neutral",
-            current_arousal     = 0.5,
-            beziehungs_dynamik  = "neutral",
-
-            # Router
-            needs_memory   = False,
-            needs_web      = False,
-            needs_timeline = False,
-            timeline_query = {},
-
-            # Management-Routing
-            management_action     = "",
-            management_target     = "",
-            management_target_typ = "titel",
-
-            # Enricher
-            memory_context     = "",
-            web_context        = "",
-            session_turns      = [],
-            gespraechs_modus   = "",
-            user_intentionen   = [],
-            user_emotion       = "",
-
-            # Emotionale Intelligenz
-            emotions_verlauf     = [],
-            emotions_vektor      = "",
-            sprach_stil          = "",
-            beziehungs_kontext   = "",
-
-            # Planner
-            management_result = "",
-            management_detail = "",
-            task_block       = "",
-            task_context_cut = False,
-
-            # Momentum
-            momentum = "mid",
-
-            # Responder
-            response    = "",
-            model       = "",
-            token_total = 0,
-
-            # Tribunal
-            tribunal_votes   = [],
-            tribunal_verdict = "",
-            tribunal_summary = "",
-
-            # Korrektur-Loop (deaktiviert)
-            correction_round = 0,
-            max_corrections  = 0,
-
-            # Pending Writes
-            pending_writes = [],
-
-            # Agent-System (Epic 11)
-            agent_name    = "",
-            agent_results = [],
-
-            # Interne Anmerkungen
-            node_annotations = [],
-        )
+        Delegiert an GraphBase.create_state(), damit alle State-Felder
+        (inkl. Chat-60-Felder wie character_id, event_source, nova_*)
+        konsistent mit HumanGraph/CharacterGraph gesetzt werden.
+        Setzt nur die analyse-spezifischen Defaults: leerer System-Prompt,
+        Temperature 0.0.
+        """
+        kwargs.setdefault("system_prompt", "")
+        kwargs.setdefault("temperature",   0.0)
+        return super().create_state(user_prompt=user_prompt, user_id=user_id, **kwargs)

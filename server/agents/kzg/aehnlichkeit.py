@@ -17,9 +17,10 @@ logger = logging.getLogger("ki_server.agents.kzg.aehnlichkeit")
 def aehnlichkeit_pruefen(state: AgentState) -> dict:
     """Erzeugt Embedding fuer kern und sucht aehnlichen KZG-Eintrag."""
 
-    kern:        str  = state["parameter"].get("kern", "")
-    salienz_obj: dict = state["parameter"].get("salienz_obj", {})
-    user_id:     str  = state["kontext"].get("user_id", "")
+    kern:         str  = state["parameter"].get("kern", "")
+    salienz_obj:  dict = state["parameter"].get("salienz_obj", {})
+    user_id:      str  = state["kontext"].get("user_id", "")
+    character_id: str  = state["kontext"].get("character_id", "")
 
     # Embedding fuer Verdichtung erzeugen
     valenz:     str = salienz_obj.get("emotionen", {}).get("valenz", "neutral")
@@ -31,8 +32,8 @@ def aehnlichkeit_pruefen(state: AgentState) -> dict:
 
     embedding: list[float] = embedding_create(embed_text, embed_client, embed_model)
 
-    # Aehnlichen Eintrag suchen
-    existing = kzg_similar_find(redis_client, user_id, embedding)
+    # Aehnlichen Eintrag im gleichen Paar (user_id, character_id) suchen
+    existing = kzg_similar_find(redis_client, user_id, character_id, embedding)
 
     # Themen-Overlap pruefen
     if existing:
