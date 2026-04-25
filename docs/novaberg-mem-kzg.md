@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** KZG-Speicher (Redis, Vektorsuche, TTL, Verstärkung)
-**Stand:** 23. April 2026, Chat 62 (Paar-Schema, RediSearch-Index-Erweiterung)
+**Stand:** 25. April 2026, Chat 64 (KZG-Liberalisierung: 3-Stufen-TTL, thematische Verstärkung, sin^0.6-Cap)
 **Pfad:** novaberg/docs/novaberg-mem-kzg.md
 **Quellen:** nova-02-m-b.md (Speicher-Abschnitte)
 
@@ -13,6 +13,8 @@
 Das Kurzzeitgedächtnis ist Novas schneller, flüchtiger Speicher — das Äquivalent zum menschlichen Arbeitsgedächtnis über Tage und Wochen. Es lebt vollständig in Redis mit TTL (Time-to-Live) und nativer Vektorsuche. Kein PostgreSQL-Zugriff — das LZG ist der nächste Schritt.
 
 > **Kognitionswissenschaftlicher Hintergrund:** Der Spacing Effect (Ebbinghaus 1885, Cepeda et al. 2006) zeigt, dass Wiederholung in Intervallen die Konsolidierung überproportional verstärkt. Novas Verstärkungsmechanismus bildet das ab: Ein Thema, das über mehrere Gespräche wiederkehrt, gewinnt an Gewicht und wird wahrscheinlicher ins LZG promoviert.
+
+Seit Chat 64 arbeitet die Verstärkung thematisch statt per Embedding-Match: Jeder Turn wird als eigenständiger Eintrag mit seinem scharfen Kern gespeichert. Einträge mit thematischem Overlap werden in Salienz und Häufigkeit geboosted, aber nie inhaltlich zusammengeführt. Die Zusammenführung passiert erst bei der Cluster-Promotion ins LZG.
 
 ---
 
@@ -33,8 +35,8 @@ _kzg_prefix(user_id, character_id)            # Scan-/Match-Prefix
 |------|--------|-------------|
 | `inhalt` | KZG-Agent (Verdichtung) | Destillierter Kern des Turns |
 | `themen` | Salienz Dim 1 | Erkannte Themen |
-| `salienz` | Salienz Dim 3 | Bewertung 0.0–1.0 |
-| `haeufigkeit` | KZG-Agent | Verstärkungszähler (initial 1) |
+| `salienz` | Salienz Dim 3 | Bewertung 0.0–10.0 (Cap mit sin^0.6-Dämpfung) |
+| `haeufigkeit` | KZG-Agent | Thematische Verstärkungszähler (initial 1, steigt bei Themen-Overlap) |
 | `gedaechtnistyp` | Salienz Dim 4 | episodisch / semantisch / prozedural |
 | `dimension` | Salienz Dim 5 | Zuordnung (interessen, beziehungen, ...) |
 | `intentionen` | Salienz Dim 6 | Erkannte User-Intentionen |
@@ -48,6 +50,19 @@ _kzg_prefix(user_id, character_id)            # Scan-/Match-Prefix
 | `beobachter` | Dispatch | `"user"` (HumanGraph, Pfad 1) oder `"assistant"` (CharacterGraph, Pfad 2) — wer hat den Turn beobachtet |
 | `embedding` | KZG-Agent | 768-Dim Vektor (nomic-embed-text) |
 | `erstellt_am` | System | Unix-Timestamp |
+
+---
+
+## 2a. Salienz-Schwellen und TTL (seit Chat 64)
+
+| Bereich | TTL | Aktion |
+|---------|-----|--------|
+| < 0.3 | — | Ignoriert (`schwelle_pruefen` lehnt ab) |
+| 0.3–0.5 | 7 Tage | KZG kurz |
+| 0.5–0.7 | 14 Tage | KZG mittel |
+| ≥ 0.7 | 30 Tage | KZG lang + Promotion-Queue + Shadow-Queue + `hash_dirty` |
+
+Die Untergrenze 0.3 (vorher 0.5) lässt informative Alltagsaussagen ("Ich mag Schnittlauch") ins KZG. Wenn sie nie wiederkehren, sterben sie durch TTL. Wenn doch, steigen sie durch thematische Verstärkung in höhere Stufen auf.
 
 ---
 
@@ -81,31 +96,44 @@ FT.SEARCH idx:kzg "@user_id:{meister} @character_id:{nova}"
   => KNN 5 @embedding $query_vec AS score
 ```
 
-**Schwellwert:** `SIMILARITY_THRESHOLD = 0.85` — darüber wird verstärkt statt neu angelegt.
+Seit Chat 64 wird der Index nur noch zur Lese-/Retrieval-Zeit genutzt (Enricher, Cluster-Promotion). Die KZG-Schreib-Pipeline verwendet keine Vektorsuche mehr — die Verstärkung läuft über exakten Themen-String-Match.
 
 ---
 
-## 4. Verstärkung bei Wiederholung
+## 4. Thematische Verstärkung (seit Chat 64)
 
-Wenn ein neuer Turn einem bestehenden KZG-Eintrag ähnelt (Cosine ≥ 0.85):
+### Prinzip
 
-```
-neue_salienz        = alte_salienz + (aktuelle_salienz / KZG_VERSTAERKUNG_DIVISOR)
-neue_haeufigkeit    = alte_haeufigkeit + 1
-neuer_arousal       = Durchschnitt(alter_arousal, aktueller_arousal)
-neuer_emotions_vekt = aktueller Vektor (neuester überschreibt)
-neuer_sprach_stil   = aktueller Stil (neuester überschreibt)
-neuer_tone          = aktueller Ton (neuester überschreibt)
-neue_emotion        = aktuelle Emotion (neueste überschreibt)   # Fix E.2, Chat 62
-neuer_modus         = aktueller Modus (neuester überschreibt)   # Fix E.2, Chat 62
-neue_beziehungs_dyn = aktuelle Dynamik (neueste überschreibt)
-```
+Wenn ein neuer Eintrag gespeichert wird, durchsucht `_thematisch_verstaerken()` die gesamte Paar-Partition nach Einträgen mit Themen-Overlap (exakter String-Match, case-insensitive). Treffer bekommen einen Salienz-Boost und TTL-Auffrischung.
 
-`KZG_VERSTAERKUNG_DIVISOR = 2.0` (konfigurierbar).
+### Was wird verstärkt (nur Metadaten)
 
-Wenn die Salienz durch Verstärkung über 0.7 steigt → TTL auf 30 Tage hochstufen.
+- `salienz += eingehende_salienz / KZG_VERSTAERKUNG_DIVISOR` (gedämpft durch sin^0.6)
+- `haeufigkeit += 1`
+- TTL = max(verbleibend, neu berechnet aus neuer Salienz-Stufe)
 
-**Fix E.2 (Chat 62):** Vor dem Fix wurden bei Verstaerkung nur `arousal`, `emotions_vektor`, `sprach_stil`, `tone` und `beziehungs_dynamik` aktualisiert — `emotion` und `modus` blieben auf dem Erst-Wert stehen. Ein Gespraech konnte so im Index auf "freude/fachlich" festgenagelt sein, obwohl der letzte Turn "sorge/emotional" war. Der Fix zieht beide Felder nach.
+### Was wird NIE angerührt
+
+- `inhalt` — der scharfe Kern bleibt exakt wie bei der Verdichtung
+- `embedding` — kein Neuberechnen
+- `emotion`, `modus`, `arousal` — gehören zum originalen Turn
+
+### sin^0.6-Dämpfung
+
+Verhindert Salienz-Explosion bei häufig wiederkehrenden Themen:
+
+- `remaining = max(0, KZG_SALIENZ_CAP - alte_salienz)`
+- `ratio = remaining / KZG_SALIENZ_CAP`
+- `dämpfung = sin(ratio × π/2) ^ 0.6`
+- `effektiver_boost = raw_boost × dämpfung`
+
+Unten fast voller Boost, oben asymptotisch gegen Cap (10.0). Selbe Kurvenfamilie wie Arousal-Glättung (Chat 61, sin^0.5, Cap 2.5).
+
+### Unterschied zum alten System (vor Chat 64)
+
+Vorher: Embedding-Ähnlichkeit ≥ 0.85 → zwei Einträge werden zu einem gemerged. Der zweite Kern geht verloren.
+
+Nachher: Jeder Eintrag bleibt eigenständig. Die Zusammenführung passiert erst bei der Cluster-Promotion.
 
 ---
 
@@ -124,13 +152,9 @@ Damit gehoert jeder Eintrag einem Gespraechspaar und traegt die Perspektive sein
 
 ## 5. TTL-Steuerung
 
-| Salienz | TTL | Beschreibung |
-|---------|-----|-------------|
-| 0.5–0.7 | 7 Tage (`KZG_TTL_LOW_SEKUNDEN = 604800`) | Relevant, aber nicht dringend |
-| ≥ 0.7 | 30 Tage (`KZG_TTL_HIGH_SEKUNDEN = 2592000`) | Hochsalient, längere Haltbarkeit |
-| < 0.5 | — | Wird nicht ins KZG aufgenommen |
+Drei Stufen je nach Salienz — die genauen Bereiche und Aktionen siehe §2a.
 
-Einträge verfallen automatisch per Redis TTL. Kein Cron-Job, kein manuelles Löschen.
+Einträge verfallen automatisch per Redis TTL. Kein Cron-Job, kein manuelles Löschen. Bei thematischer Verstärkung wird der TTL auf `max(verbleibend, neuer_TTL)` gesetzt, sodass ein bereits hoch eingestufter Eintrag durch eine schwache Wiederholung nicht heruntergestuft wird.
 
 ---
 
@@ -161,22 +185,27 @@ Der RedisManager mit `decode_responses=True` bricht binäre Vektorsuche und Embe
 
 | Konstante | Wert | Pfad | Beschreibung |
 |-----------|------|------|-------------|
-| `KZG_SALIENZ_MINIMUM` | 0.5 | `config.py` | Eingangsfilter (darunter kein KZG-Eintrag) |
-| `KZG_SALIENZ_HIGH` | 0.7 | `config.py` | Schwelle für hohe TTL + Shadow-Queue |
-| `SIMILARITY_THRESHOLD` | 0.85 | `memory/kzg.py` | Cosine-Minimum für Verstärkung |
-| `PROMOTION_THRESHOLD` | 0.8 | `memory/kzg.py` | Salienz-Schwelle, ab der ein KZG-Eintrag in die Promotion-Queue gepusht wird |
-| `KZG_TTL_LOW_SEKUNDEN` | 604800 (7 Tage) | `config.py` | Salienz 0.5–0.7 |
+| `KZG_SALIENZ_MINIMUM` | 0.3 | `config.py` | Eingangsfilter (darunter kein KZG-Eintrag) — Chat 64: von 0.5 gesenkt |
+| `KZG_SALIENZ_MID` | 0.5 | `config.py` | Schwelle für mittlere TTL (14 Tage) — Chat 64 neu |
+| `KZG_SALIENZ_HIGH` | 0.7 | `config.py` | Schwelle für hohe TTL + Promotion-/Shadow-Queue |
+| `KZG_SALIENZ_CAP` | 10.0 | `config.py` | Asymptotischer Cap der thematischen Verstärkung — Chat 64 neu |
+| `KZG_SALIENZ_DAEMPFUNG_EXP` | 0.6 | `config.py` | Exponent der sin-Dämpfungskurve — Chat 64 neu |
+| `KZG_TTL_LOW_SEKUNDEN` | 604800 (7 Tage) | `config.py` | Salienz 0.3–0.5 |
+| `KZG_TTL_MID_SEKUNDEN` | 1209600 (14 Tage) | `config.py` | Salienz 0.5–0.7 — Chat 64 neu |
 | `KZG_TTL_HIGH_SEKUNDEN` | 2592000 (30 Tage) | `config.py` | Salienz ≥ 0.7 |
-| `KZG_VERSTAERKUNG_DIVISOR` | 2.0 | `config.py` | Verstärkungs-Stärke |
+| `KZG_VERSTAERKUNG_DIVISOR` | 2.0 | `config.py` | Verstärkungs-Stärke (Roh-Boost vor sin^0.6-Dämpfung) |
 | `KZG_VERTIEFUNG_HAEUFIGKEIT` | 3 | `config.py` | Ab dieser Wiederholungszahl Vertiefungs-Trigger |
-| `PIXIE_PROMOTION_PRIORITAET` | 0.9 | `config.py` | Scheduler-Priorität für periodischen Promotion-Task (anderer Zweck als `PROMOTION_THRESHOLD`) |
+| `PIXIE_PROMOTION_PRIORITAET` | 0.9 | `config.py` | Scheduler-Priorität für periodischen Promotion-Task |
 | `EMBEDDING_DIM` | 768 | — | nomic-embed-text Dimensionen |
+
+`SIMILARITY_THRESHOLD` und `PROMOTION_THRESHOLD` in `memory/kzg.py` existieren noch als Konstanten, werden aber von der KZG-Schreib-Pipeline nicht mehr genutzt. Der Promotion-Push gegen die Queue läuft jetzt über `KZG_SALIENZ_HIGH`.
 
 ---
 
 **Abgrenzung:**
-- Der **KZG-Agent** (Subgraph, 5 Nodes, Verdichtung, Ähnlichkeit) → novaberg-pixie-kzg.md
-- Der **KZG-Speicher** (Schema, TTL, Vektorsuche, Verstärkung) → dieses Dokument
+
+- Der **KZG-Agent** (Subgraph, 4 Nodes seit Chat 64: `schwelle_pruefen → verdichten → speichern → queues_befuellen`) → novaberg-pixie-kzg.md
+- Der **KZG-Speicher** (Schema, TTL, Vektorsuche, thematische Verstärkung) → dieses Dokument
 
 → KZG-Agent: novaberg-pixie-kzg.md
 → Promotion (KZG → LZG): novaberg-pixie-promotion.md

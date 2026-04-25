@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Gedächtnis-System (Übersicht)
-**Stand:** 23. April 2026, Chat 62 (Paar-Schema in KZG/LZG)
+**Stand:** 25. April 2026, Chat 64
 **Pfad:** novaberg/docs/novaberg-memory.md
 **Quellen:** nova-02-k.md (Gedächtnis-Konzept)
 
@@ -44,11 +44,11 @@ Der Session-Kontext lebt nur im Python-RAM und ist an den aktuellen Turn gebunde
 
 ## 3. Kurzzeitgedaechtnis (KZG)
 
-Das KZG lebt in Redis 7 Stack mit TTL (7 oder 30 Tage, abhaengig von der Salienz). Jeder Eintrag hat ein Embedding (nomic-embed-text, 768 Dimensionen) fuer semantische Vektorsuche. Bei erneutem Auftreten desselben Themas (Cosine Similarity >= 0.85) wird der bestehende Eintrag verstaerkt statt dupliziert — das bildet den Spacing Effect ab. Die Verstaerkungsformel: `neues_gewicht = altes_gewicht + (salienz / KZG_VERSTAERKUNG_DIVISOR)`.
+Das KZG lebt in Redis 7 Stack mit dreistufigem TTL (7/14/30 Tage, abhaengig von der Salienz). Jeder Eintrag hat ein Embedding (nomic-embed-text, 768 Dimensionen) fuer semantische Vektorsuche. Seit Chat 64 wird jeder Eintrag als eigenstaendiger Eintrag mit seinem scharfen Kern gespeichert — keine Zusammenfuehrung im KZG. Eintraege mit thematischem Overlap werden in Salienz und Haeufigkeit geboosted (Verstaerkungsformel: `boost = salienz / KZG_VERSTAERKUNG_DIVISOR`, gedaempft durch sin^0.6-Kurve, Cap 10.0), aber der Inhalt bleibt exakt. Die Zusammenfuehrung passiert erst bei der Cluster-Promotion ins LZG (4-Phasen-Algorithmus mit LLM-Kohaerenzpruefung).
 
 Seit Chat 62 nutzt das KZG ein **Paar-Schema** — der Redis-Key lautet `kzg:{user_id}:{character_id}:{entry_id}`. Jeder Eintrag gehoert zu einem Gespraechspaar (User × Charakter), nicht zu einem einzelnen User. Ein zusaetzliches Feld `beobachter` (`"user"` oder `"assistant"`) haelt fest, aus wessen Perspektive der Inhalt stammt: Nova beobachtet im CharacterGraph (Pfad 2), Meister im HumanGraph (Pfad 1). Das ermoeglicht getrennte Gedaechtnis-Perspektiven — Nova kann sich an ihre eigenen Beobachtungen erinnern, Meister an seine.
 
-> **Kognitionswissenschaftlicher Hintergrund:** Der Spacing Effect (Ebbinghaus 1885, Cepeda et al. 2006) zeigt, dass Wiederholung in Intervallen die Konsolidierung ueberproportional verstaerkt. Novas Verstaerkungsmechanismus bildet das ab: Ein Thema, das ueber mehrere Gespraeche hinweg wiederkehrt, gewinnt kontinuierlich an Gewicht — und wird dadurch wahrscheinlicher ins LZG promoviert.
+> **Kognitionswissenschaftlicher Hintergrund:** Der Spacing Effect (Ebbinghaus 1885, Cepeda et al. 2006) zeigt, dass Wiederholung in Intervallen die Konsolidierung ueberproportional verstaerkt. Novas Verstaerkungsmechanismus bildet das ab: Ein Thema, das ueber mehrere Gespraeche wiederkehrt, erzeugt mehrere KZG-Eintraege mit steigender Salienz durch thematische Verstaerkung. Bei der Cluster-Promotion werden diese Eintraege als Cluster erkannt und zu einem kohaerenten LZG-Eintrag destilliert — die Haeufigkeit ist die implizite Verstaerkung.
 
 > Detail: novaberg-mem-kzg.md
 
@@ -61,6 +61,8 @@ Das LZG lebt in PostgreSQL 16 mit pgvector. Das effektive Gewicht wird bei jedem
 Wie das KZG folgt das LZG seit Chat 62 dem **Paar-Schema**: Die Spalten `character_id` und `beobachter` partitionieren die Tabelle nach Gespraechspaar und Perspektive. Alle Queries filtern auf `(user_id, character_id) WHERE aktiv = TRUE`; das Beobachter-Feld wird bei der Promotion aus dem KZG-Eintrag uebernommen.
 
 > **Kognitionswissenschaftlicher Hintergrund:** Karim Nader zeigte 2000 in einem wegweisenden Experiment, dass Langzeiterinnerungen beim Abruf kurzzeitig instabil werden und sich neu konsolidieren muessen — "Memory Reconsolidation". Novas bi-temporales Modell bildet das konzeptionell ab: Der alte Fakt wird nicht geloescht, sondern als historisch markiert. Wenn ein Fakt abgerufen und im selben Gespraech korrigiert wird, oeffnet sich ein natuerliches Update-Fenster — analog zur Rekonsolidierung.
+
+Seit Chat 64 ist Memory Reconsolidation teilweise aktiv: Die Cluster-Promotion prueft bei jedem LZG-Abgleich, ob die neuen KZG-Eintraege der bestehenden Erinnerung widersprechen. Bestaetigung verstaerkt (gewicht += 0.1, verstaerkt_am reset), Widerspruch schwaecht (gewicht /= 3.0) und erzeugt einen neuen Eintrag mit der korrigierten Information. Der Echtzeit-Trigger (Widerspruch im selben Gespraech sofort erkennen) ist noch offen (Epic 8 MR).
 
 > Detail: novaberg-mem-lzg.md
 

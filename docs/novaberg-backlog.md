@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Backlog — Konzipierte, noch nicht implementierte Features
-**Stand:** 24. April 2026, Chat 63
+**Stand:** 25. April 2026, Chat 64
 **Pfad:** novaberg/docs/novaberg-backlog.md
 **Quellen:** nova-08-k.md (Kognitive Anreicherung), nova-10-k-backlog.md (Skill-System), nova-01-t-c-backlog.md (Node-Konfiguration)
 
@@ -73,13 +73,25 @@ Wo: `graph/nodes/salience.py`, parallel zum CEM-Boost. Kein LLM-Call, reine Embe
 
 > **Kognitionswissenschaftlicher Hintergrund:** Nader, Schafe & LeDoux (2000), *Nature*. Lee, Nader & Schiller (2017), *Trends in Cognitive Sciences*. Haubrich & Nader (2016), *Current Topics in Behavioral Neurosciences*. Konsolidierte Erinnerungen koennen nach dem Abruf erneut in einen instabilen Zustand uebergehen, in dem sie modifiziert werden koennen, bevor sie rekonsolidiert werden. Neuere Forschung interpretiert Rekonsolidierung als "Updating Consolidation" — ein Mechanismus, durch den aktualisierte Erfahrungen in das Langzeitgedaechtnis integriert werden.
 
-Das bi-temporale Modell existiert bereits (passiv). Was fehlt: der bewusste Trigger "Abruf + Widerspruch im selben Kontext":
+**Implementierungsstand nach Chat 64:**
 
-1. Enricher markiert abgerufene LZG-Eintraege im State
+Der Mechanismus ist seit Chat 64 über die Cluster-Promotion implementiert:
+
+- ✅ Widerspruch-Erkennung: LLM-Kohärenzprüfung in `_cluster_update_kohaerenz()` erkennt `widerspruch: true`
+- ✅ Decay bei Widerspruch: `gewicht /= CLUSTER_WIDERSPRUCH_DECAY_FAKTOR` (3.0)
+- ✅ Neuer Eintrag: INSERT mit korrigierter Information nach Decay
+
+**Was noch fehlt — der Echtzeit-Trigger:**
+
+Die Cluster-Promotion arbeitet periodisch (alle 5 Minuten). Epic 8 MR braucht einen Echtzeit-Trigger:
+
+1. Enricher markiert abgerufene LZG-Einträge im State (z.B. `abgerufene_lzg_ids`)
 2. Salienz erkennt Widerspruch zu einem abgerufenen Eintrag
-3. Promotion invalidiert den alten Eintrag und erzeugt den neuen
+3. Sofortige LZG-Korrektur im Dispatcher (nicht erst beim nächsten Pixie-Scan)
 
-Kann in den bestehenden Promotion Call 2 integriert werden (zusaetzliches Feld: `widerspricht_bestehendem: true/false`).
+Der Echtzeit-Trigger könnte `_cluster_update_kohaerenz()` aus dem PromotionAgent wiederverwenden — die Mechanik ist identisch, nur der Auslöser unterscheidet sich.
+
+**Priorität:** Mittel — der periodische Pfad deckt 90% der Fälle ab. Der Echtzeit-Trigger verbessert die Reaktionszeit bei offensichtlichen Korrekturen ("Anna wohnt jetzt in München" direkt nach LZG-Abruf "Anna wohnt in Nürnberg").
 
 ### 1.6 Themen-Modell: Resonanz und Arousal
 
@@ -134,7 +146,7 @@ Neuer Pixie-Task: `traeumen` — niedrigste Prioritaet, laeuft nur wenn sonst ni
 4. TE: Enricher-Abruf → reinforcement_queue → Pixie SQL-Update
 5. VRE: Isolationsbonus in salience.py (Session-Kontext-Vergleich)
 6. ZE: Arousal-Dynamik in Pixie (steigern/senken)
-7. MR: Widerspruchs-Trigger in Promotion Call 2
+7. MR: Echtzeit-Trigger in Enricher/Salienz (Mechanismus via Cluster-Promotion bereits implementiert, Chat 64)
 8. Traum-Modus: Neuer Pixie-Task 'traeumen'
 9. Themen-Erkennung: Pixie-Task fuer automatische Cluster-Erkennung
 ```
@@ -146,11 +158,11 @@ Schritte 1-5 sind unabhaengig implementierbar. Schritte 6-9 bauen auf dem Themen
 | Effekt | Quelle | Nova-Implementierung | Dokument |
 |--------|--------|---------------------|----------|
 | Ebbinghaus-Vergessenskurve | Ebbinghaus 1885 | Exponentieller Decay, konfigurierbare Rate | novaberg-pixie-decay.md |
-| Spacing Effect | Distributed Practice | KZG-Verstaerkung bei Wiederholung | novaberg-mem-kzg.md / novaberg-pixie-kzg.md |
+| Spacing Effect | Distributed Practice | KZG thematische Verstärkung (Salienz-Boost + TTL-Auffrischung, Chat 64) | novaberg-mem-kzg.md |
 | Emotionale Salienz | Plutchik 1980, Russell 1980 | Arousal (0.0-1.0), 9 Emotions-Vektoren | novaberg-node-perception.md |
 | Default Mode Network | Raichle et al. 2001 | Pixie als Hintergrundprozess | novaberg-pixie.md |
-| Konsolidierung | McGaugh 1966, Dudai 2004 | KZG→LZG Promotion (Zwei-Call) | novaberg-pixie-promotion.md |
-| Memory Reconsolidation (passiv) | Nader et al. 2000 | Bi-temporales Modell | novaberg-mem-knowledge-graph.md |
+| Konsolidierung | McGaugh 1966, Dudai 2004 | KZG→LZG Promotion: Einzelpromotion (Zwei-Call) + Cluster-Promotion (4-Phasen, Chat 64) | novaberg-pixie-promotion.md |
+| Memory Reconsolidation (teilw. aktiv) | Nader et al. 2000 | Cluster-Promotion: Widerspruch-Erkennung + Decay + Neueintrag (Chat 64). Echtzeit-Trigger noch offen. | novaberg-pixie-promotion.md, novaberg-mem-knowledge-graph.md |
 
 ### 1.11 Quellen
 
@@ -552,13 +564,11 @@ GV-Node → Responder → Thinker → Tribunal → [Corrector]
 
 Vier Arbeitspakete, die durch die KZG/LZG-Umstellung auf das Paar-Schema und durch beobachtete Gespraechsverlaeufe sichtbar wurden. Zwei Bugs, ein Bug-Risiko, ein Feature.
 
-### KZG-DEDUP — Deduplizierung semantisch aehnlicher Eintraege (Feature, mittel)
+### KZG-DEDUP — Deduplizierung semantisch aehnlicher Eintraege ✅ Gelöst Chat 64
 
-Bei semantisch aehnlichen Turns erzeugt die Salienz mehrere KZG-Eintraege statt zu verstaerken, weil der Themen-Vergleich leicht unterschiedliche Tags extrahiert ("Name Lumi" vs. "Namensgebung Lumi" vs. "neuer Mitbewohner"). In Chat 62 beobachtet: Ein Gespraech ueber Lumi erzeugte 8 Eintraege statt 1–2. Der Cosine-Schwellwert (0.85) greift erst ab einer bestimmten Formulierungs-Naehe, der Themen-Tag-Match davor nicht.
+Bei semantisch aehnlichen Turns erzeugt die Salienz mehrere KZG-Eintraege statt zu verstaerken, weil der Themen-Vergleich leicht unterschiedliche Tags extrahiert ("Name Lumi" vs. "Namensgebung Lumi" vs. "neuer Mitbewohner"). In Chat 62 beobachtet: Ein Gespraech ueber Lumi erzeugte 8 Eintraege statt 1–2.
 
-**Loesungsansatz:** Zweite Deduplizierungs-Stufe vor dem Schreiben — Embedding-Aehnlichkeit gegen die letzten N Eintraege der Paar-Partition pruefen, bei Treffer Verstaerkung statt Neuanlage. Priorisierung nach Herkunft (assistant vs. user) und Salienz; nur der wichtigste Eintrag ueberlebt.
-
-**Prio:** Mittel — reduziert KZG-Rauschen, verbessert Promotion-Qualitaet.
+**Auflösung Chat 64:** Re-framed als Feature im Rahmen der KZG-Liberalisierung. Verschiedene Facetten desselben Themas werden im KZG bewusst als eigenständige Einträge behalten — die Cluster-Promotion sammelt sie ein und destilliert sie zu einem kohärenten LZG-Eintrag.
 
 ### CHAR-HASH-FILTER — beobachter-Filter bei Hash-Destillation (Bug-Risiko, niedrig)
 
@@ -568,13 +578,11 @@ Durch das Paar-Schema fliessen jetzt auch `beobachter="assistant"`-Eintraege in 
 
 **Prio:** Niedrig — bisher keine beobachtete Profil-Verzerrung, aber strukturell riskant bei laengeren Paar-Historien.
 
-### KZG-KERN-BLIND — Verstaerkung ignoriert neuen Kern-Inhalt (Bug, mittel)
+### KZG-KERN-BLIND — Verstaerkung ignoriert neuen Kern-Inhalt ✅ Gelöst Chat 64
 
-Bei KZG-Verstaerkung wird der Zaehler erhoeht und Scores/Emotionen aktualisiert, aber der inhaltliche `inhalt`/Kern bleibt auf dem Text des ersten Turns. Folge-Turns, die den Moment erst bedeutsam machen (z.B. der Name "Lumi" nach mehreren Turns ueber die neue Pflanze), gehen inhaltlich verloren. Der Promotion-Call liest dann den ersten, oft weniger pointierten Kern — und ins LZG wandert die fruehe Form statt der reifen.
+Bei KZG-Verstaerkung wurde der Zaehler erhoeht und Scores/Emotionen aktualisiert, aber der inhaltliche `inhalt`/Kern blieb auf dem Text des ersten Turns. Folge-Turns, die den Moment erst bedeutsam machen (z.B. der Name "Lumi" nach mehreren Turns ueber die neue Pflanze), gingen inhaltlich verloren.
 
-**Loesungsansatz:** Kern-Neudestillation bei Verstaerkung — LLM-Call mit altem Kern + neuem Turn als Input, neuer Kern als Output. Kostet einen zusaetzlichen CPU-LLM-Call pro Verstaerkung; begrenzbar auf Schwellwert (z.B. nur ab `haeufigkeit >= 2`).
-
-**Prio:** Mittel — bricht die Promotion-Qualitaet bei Themen, die sich ueber mehrere Turns entwickeln.
+**Auflösung Chat 64:** Obsolet durch Architekturwechsel — keine Merge-Verstärkung mehr. Jeder KZG-Eintrag behält seinen originalen Kern. Die thematische Verstärkung boosted nur Metadaten (Salienz, Häufigkeit, TTL). Die Cluster-Promotion destilliert alle Kerne bei der Zusammenführung ins LZG.
 
 ### ROUTE-CHAR-NOTIZ — CharacterGraph-Router dispatched Konversation an NotizenAgent (Bug, niedrig)
 
@@ -764,7 +772,6 @@ Kurzübersicht aktiver Bugs:
 | TOPOS-LOCK | ⬜ | Bildervorrat wird mechanisch zykeliert |
 | urllib3-RETRY | ⬜ | Client-urllib3 macht automatischen Retry bei langer Response, erzeugt Doppel-Turns |
 | PATH1-LATENZ | ⬜ | Pfad-1 kann bei GPU-Druck auf 55+ Sekunden gehen (Einmal-Event beobachtet) |
-| KZG-KERN-BLIND | ⬜ | KZG-Verstaerkung aktualisiert Scores, aber nicht den Kern (Chat 62) |
 | ROUTE-CHAR-NOTIZ | ⬜ | CharacterGraph-Router dispatched Konversation an NotizenAgent (Chat 62) |
 | ENRICHER-DUP | 👁 | Fakten werden mehrfach in den Enricher-Kontext injiziert (Chat 62, Beobachtung) |
 

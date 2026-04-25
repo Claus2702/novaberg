@@ -1,6 +1,6 @@
 # Novaberg — Roadmap (Projektchronik)
 
-**Stand:** Chat 63, 24. April 2026
+**Stand:** Chat 64, 25. April 2026
 **Pfad:** novaberg/docs/novaberg-roadmap.md
 **Single Source of Truth für abgeschlossene Arbeit.**
 **Offene Punkte → novaberg-backlog.md**
@@ -434,4 +434,37 @@
 
 ---
 
-*Aktualisiert in Chat 63. Offene Punkte → novaberg-backlog.md. Bugs → novaberg-bugs.md.*
+## Chat 64 (25. April 2026) — KZG-Liberalisierung + Cluster-Promotion
+
+### KZG-Liberalisierung
+
+- ✅ Konstanten-Migration: `memory/kzg.py` → `config.py` (Single Source of Truth)
+- ✅ Salienz-Schwelle von 0.5 auf 0.3 gesenkt — mehr fließt ins KZG
+- ✅ 3-Stufen-TTL: 7/14/30 Tage (war 7/30)
+- ✅ Salienz-Prompt: Bewertungsskala angepasst, Perspektivwechsel "für das Gedächtnis"
+- ✅ KZG-Agent: 5→4 Nodes, `aehnlichkeit_pruefen` entfernt, `aehnlichkeit.py` gelöscht
+- ✅ Thematische Verstärkung: Themen-Match statt Embedding-Match, kein Merge, jeder Kern bleibt exakt
+- ✅ sin^0.6-Dämpfung: Salienz-Cap 10.0, asymptotische Kurve (wie Arousal sin^0.5)
+
+### Cluster-Promotion (4-Phasen-Algorithmus)
+
+- ✅ Phase 1: Zentren finden (Greedy über Entry-Embeddings)
+- ✅ Phase 2: Mehrfachzuordnung (jeder Eintrag kann in N Clustern sein)
+- ✅ Phase 3a: Destillation mit LLM-Kohärenzprüfung (ja/teilweise/nein)
+- ✅ Phase 3b: LZG-Magnetismus (bestehende LZG-Einträge ziehen verwandte Einzelgänger an)
+- ✅ Phase 4: Aufräumen (promovierte KZG-Einträge löschen)
+- ✅ Backpropagation: Bestätigung verstärkt (gewicht + 0.1, verstaerkt_am reset), Widerspruch schwächt (gewicht / 3.0)
+- ✅ 5 neue Config-Konstanten, `cluster_destillation` in NODE_LLM_CONFIG
+
+### Bugs gelöst
+
+- ✅ KZG-KERN-BLIND — obsolet durch Architekturwechsel (keine Merge-Verstärkung mehr)
+- ✅ KZG-DEDUP — re-framed als Feature (verschiedene Facetten, Cluster-Promotion destilliert)
+
+### Konzeptdokument
+
+- ✅ `novaberg-kzg-liberalisierung_k.md` erstellt und finalisiert
+
+---
+
+*Aktualisiert in Chat 64. Offene Punkte → novaberg-backlog.md. Bugs → novaberg-bugs.md.*

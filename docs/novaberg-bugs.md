@@ -1,6 +1,6 @@
 # Novaberg — Bugs & Limitationen
 
-**Stand:** 23. April 2026, Chat 62
+**Stand:** 25. April 2026, Chat 64
 **Quelle:** Testlauf "Karrierekrise" (200 Prompts) + Gedächtnis-Epic (Chat 11) + Epic 11 Agent-System (Chats 22–32) + Persona Smoke-Tests (Chats 31–32) + RechercheAgent-Test (Chat 35) + Doku-Audit (Chat 36) + PRIO0-Fix + Client-Observability (Chat 37) + Claude API-Test + STREAM1-Fix + Gesprächsvektor (Chat 39) + CharakterIdentitaetAgent + DirektivenAgent + Tribunal Score-System (Chat 40) + Telegram Bot + Zeitparser-Fixes (Chat 41) + CRUD-Härtung + Telegram-Chat-Analyse + DB-Report (Chat 42) + KONTEXT1-Fix + Resume-Bug + Epic 15 Pilot (Chat 43) + Epic 15 Rollout + DELEG-REG Fix + KZG-Klebrigkeit (Chat 44) + RESP-CHAR1 Fix (Chat 45) + CLASSIFY-REJECTED + Gemma4 Live-Tests (Chat 48) + Telegram-Konversation "frecher Charakter" (Chat 49) + RESUME-REJECT Fix + Live-Tests (Chat 50) + Neugier-Konzept + Projektinfrastruktur (Chat 51) + Doku-Alignment + emotions_profil (Chat 52) + Antrieb-Konzept + Dual-Emotion (Chat 53) + HALL2-Fix + Planner-Refactor (Chat 54) + PySide6 verworfen + GTK4-Entscheidung (Chat 55) + GTK4-Client + Panel-Infrastruktur (Chat 56) + Web-Tool-Doku + SEARX1-Diagnose (Chat 57) + Chat 61 (Perzeption-Symmetrie, Akkumulations-Refactor, Paper-Portfolio, Lumi, urllib3-Doppel-Turn beobachtet)
 
 ---
@@ -61,6 +61,8 @@
 | E.1 KZG-INDEX | RediSearch-Index fehlten 6 Felder (`arousal`, `emotions_vektor`, `sprach_stil`, `tone`, `emotion`, `modus`). Werte wurden geschrieben, aber nicht indiziert — Filter lieferten 0 Treffer. Index um die Felder erweitert. | Chat 62 |
 | E.2 KZG-VERST | KZG-Verstaerkung aktualisierte `emotion` und `modus` nicht — Eintrag blieb auf dem Erst-Wert festgenagelt. Beide Felder werden jetzt mit jedem Verstaerkungs-Schreiben nachgezogen. | Chat 62 |
 | E.3 SALIENZ-LEER | Salienz im HumanGraph las eine leere LLM-Response (Token-Limit, JSON-Abbruch) ohne Fallback. Folge: kein KZG-Eintrag, obwohl salienter Turn. Fix: leere/truncated Response abfangen und Salienz-Default setzen. | Chat 62 |
+| KZG-KERN-BLIND | Verstärkung aktualisierte Scores aber nicht den Kern — Promotion bekam unreife Version | Obsolet: Keine Merge-Verstärkung mehr. Jeder Eintrag behält seinen originalen Kern. Thematische Verstärkung boosted nur Metadaten (Salienz, Häufigkeit, TTL). Cluster-Promotion destilliert alle Kerne bei der Zusammenführung. | Chat 64 |
+| KZG-DEDUP | 8 KZG-Einträge statt 1 bei Lumi-Gespräch | Re-framed als Feature: Verschiedene Facetten desselben Themas werden als eigenständige Einträge behalten. Die Cluster-Promotion sammelt sie ein und destilliert sie zu einem kohärenten LZG-Eintrag. | Chat 64 |
 
 ---
 
@@ -411,15 +413,6 @@ Dann Requests über diese Session abwickeln statt direkt `requests.post()`.
 
 ### Chat 62 — Paar-Schema-Folgebugs
 
-#### KZG-KERN-BLIND — Verstaerkung ignoriert neuen Kern-Inhalt ⚠️
-**Entdeckt:** Chat 62, Lumi-Gespraech
-**Symptom:** Bei der KZG-Verstaerkung (Cosine ≥ 0.85) werden Zaehler, Salienz, Emotions-Felder und Metadaten aktualisiert — aber der inhaltliche `inhalt`/Kern bleibt auf dem Text des ersten Turns stehen. Folge-Turns, die den Moment erst bedeutsam machen (z.B. der Name "Lumi" nach mehreren Turns ueber die neue Pflanze), gehen inhaltlich verloren. Bei der Promotion liest der LLM-Call den ersten, oft weniger pointierten Kern — und ins LZG wandert die fruehe Form statt der reifen.
-**Ursache:** Verstaerkungs-Logik in `memory/kzg.py` schreibt alle EI-Metadaten durch (nach Fix E.2), aktualisiert aber den `inhalt` nicht.
-**Loesungsansatz:** Kern-Neudestillation bei Verstaerkung — LLM-Call mit altem Kern + neuem Turn als Input, neuer Kern als Output. Begrenzbar auf Schwellwert (z.B. nur ab `haeufigkeit >= 2`), um LLM-Last zu kontrollieren.
-**Prio:** Mittel — bricht die Promotion-Qualitaet bei Themen, die sich ueber mehrere Turns entwickeln.
-
----
-
 #### ROUTE-CHAR-NOTIZ — CharacterGraph-Router dispatched Konversation an NotizenAgent ⬜
 **Entdeckt:** Chat 62
 **Symptom:** Der Router im CharacterGraph erkennt Konversation faelschlich als Notizen-Task ("Lumi Geschlecht" → `management_action=agent`, `management_target=notizen` → Dispatch → Fehler). Der Classify im NotizenAgent rejected korrekt ("kein Notiz-Auftrag"), aber der Umweg kostet einen LLM-Call und erzeugt eine Fehlermeldung im Gespraechsvektor.
@@ -439,3 +432,5 @@ Dann Requests über diese Session abwickeln statt direkt `requests.post()`.
 ---
 
 *Aktualisiert Chat 62: Drei Bugs aus den Chat-62-Fixes in die Behoben-Tabelle uebernommen (E.1 KZG-INDEX, E.2 KZG-VERST, E.3 SALIENZ-LEER). Drei neue Bugs aus dem Paar-Schema-Rollout + Lumi-Gespraech eingetragen: KZG-KERN-BLIND (Verstaerkung ohne Kern-Update), ROUTE-CHAR-NOTIZ (Router-False-Positive), ENRICHER-DUP (Fakten-Duplikate im Kontext, Beobachtung).*
+
+*Aktualisiert Chat 64: KZG-KERN-BLIND und KZG-DEDUP durch KZG-Liberalisierung (Architekturwechsel) aufgelöst. Keine Merge-Verstärkung mehr, thematische Verstärkung boosted nur Metadaten, Cluster-Promotion destilliert kohärent.*

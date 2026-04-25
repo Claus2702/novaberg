@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** KZG-Agent — LangGraph-Subgraph für Kurzzeitgedächtnis
-**Stand:** 21. April 2026, Chat 60 (Kern-Entkopplung: session_turn_kern in State)
+**Stand:** 25. April 2026, Chat 64 (KZG-Liberalisierung: 4 Nodes, thematische Verstärkung, sin^0.6-Cap)
 **Pfad:** novaberg/docs/novaberg-pixie-kzg.md
 **Quellen:** nova-02-m-b.md (KZG-Agent-Abschnitte)
 
@@ -10,28 +10,27 @@
 
 ## 1. Aufgabe
 
-Der KZG-Agent ist die Fachabteilung für Novas Kurzzeitgedächtnis. Er empfängt eingehende Turns über den Dispatcher, entscheidet WAS und WIE ins Gedächtnis fließt, verdichtet den User-Turn zu einem destillierten Kern, erzeugt Embeddings, prüft auf Ähnlichkeit, speichert oder verstärkt Einträge und befüllt Promotion- und Shadow-Queue.
+Der KZG-Agent ist die Fachabteilung für Novas Kurzzeitgedächtnis. Er empfängt eingehende Turns über den Dispatcher, entscheidet WAS und WIE ins Gedächtnis fließt, verdichtet den User-Turn zu einem destillierten Kern, erzeugt das Embedding, schreibt einen eigenständigen Eintrag und befüllt Promotion- und Shadow-Queue. Seit Chat 64 wird parallel zum Schreiben die thematische Verstärkung verwandter Bestandseinträge ausgelöst.
 
 Die Salienz bewertet OB etwas relevant ist — der KZG-Agent entscheidet WAS damit passiert. Trennung der Verantwortlichkeiten: Bewertung in der Salienz, Verdichtung im KZG-Agent, Extraktion im WissensAgent.
 
-**Dateien:** `agents/kzg/agent.py`, `agents/kzg/verdichtung.py`, `agents/kzg/aehnlichkeit.py`, `agents/kzg/speicher.py`, `agents/kzg/queues.py`, `agents/kzg/dispatch.py`
+**Dateien:** `agents/kzg/agent.py`, `agents/kzg/verdichtung.py`, `agents/kzg/speicher.py`, `agents/kzg/queues.py`, `agents/kzg/dispatch.py` (`agents/kzg/aehnlichkeit.py` in Chat 64 entfernt)
 
 ---
 
 ## 2. Subgraph-Überblick
 
-Der KZG-Agent ist ein 5-Node-LangGraph-Subgraph:
+Der KZG-Agent ist seit Chat 64 ein 4-Node-LangGraph-Subgraph (vorher 5):
 
 ```
-Schwelle prüfen → Verdichten → Ähnlichkeit → Speichern → Queues
+Schwelle prüfen → Verdichten → Speichern → Queues
 ```
 
 | Node | Datei | Aufgabe |
 |------|-------|---------|
 | `schwelle_pruefen` | `agent.py` | Salienz-Score gegen `KZG_SALIENZ_MINIMUM`. Unter Schwelle → kein LLM-Call, kein Store. |
 | `verdichten` | `verdichtung.py` | LLM-Call: Erzeugt `kern` — konkreter Satz mit allen Namen, Orten, Zahlen. |
-| `aehnlichkeit_pruefen` | `aehnlichkeit.py` | Embedding erzeugen. Redis-Vektorsuche (Cosine >= 0.85). Themen-Overlap-Check. |
-| `speichern` | `speicher.py` | Neuer Eintrag oder Verstärkung. TTL nach Salienz (7 / 30 Tage). |
+| `speichern` | `speicher.py` | Embedding erzeugen, eigenständigen Eintrag schreiben, thematische Verstärkung verwandter Bestandseinträge in der Paar-Partition. TTL nach Salienz (7/14/30 Tage). |
 | `queues_befuellen` | `queues.py` | Promotion-Queue + Shadow-Queue + Dirty-Flag. |
 
 **Routing:**
@@ -39,8 +38,10 @@ Schwelle prüfen → Verdichten → Ähnlichkeit → Speichern → Queues
 ```
 schwelle_pruefen
   ├─ abgelehnt (Score < Schwelle) → END
-  └─ angenommen → verdichten → aehnlichkeit_pruefen → speichern → queues_befuellen → END
+  └─ angenommen → verdichten → speichern → queues_befuellen → END
 ```
+
+Der Node `aehnlichkeit_pruefen` und die Datei `aehnlichkeit.py` wurden in Chat 64 entfernt. Es gibt keine Embedding-basierte Schreibzeit-Deduplizierung mehr — jeder Turn landet als eigenständiger Eintrag.
 
 ---
 
@@ -49,13 +50,13 @@ schwelle_pruefen
 Salienz-Filter am Eingang des Subgraphs:
 
 ```python
-KZG_SALIENZ_MINIMUM = 0.5
+KZG_SALIENZ_MINIMUM = 0.3   # Chat 64: von 0.5 gesenkt
 
 if salienz_score < KZG_SALIENZ_MINIMUM:
     return AgentResult(status="abgelehnt", ergebnis="Salienz unter Schwelle")
 ```
 
-Unter der Schwelle wird kein LLM-Call ausgelöst, kein Embedding erzeugt, nichts gespeichert. Smalltalk-Turns behalten den rohen `inhalt` in der Session — ein destillierter `kern` für "Hallo" hat keinen Mehrwert.
+Unter der Schwelle wird kein LLM-Call ausgelöst, kein Embedding erzeugt, nichts gespeichert. Smalltalk-Turns behalten den rohen `inhalt` in der Session — ein destillierter `kern` für "Hallo" hat keinen Mehrwert. Die Senkung der Untergrenze von 0.5 auf 0.3 (Chat 64) lässt informative Alltagsaussagen ("Ich mag Schnittlauch") ins KZG; sie sterben durch TTL, wenn sie nicht thematisch verstärkt werden.
 
 ---
 
@@ -73,36 +74,32 @@ Der einzige LLM-Call im KZG-Agent. Erzeugt den `kern`:
 
 ---
 
-## 5. Ähnlichkeit
+## 5. Speichern
 
-Prüft, ob ein thematisch ähnlicher KZG-Eintrag bereits existiert.
+**Eigenständiger Eintrag (immer):** Jeder Turn oberhalb der Salienz-Schwelle wird als neuer Eintrag in Redis abgelegt. Hash mit `inhalt` (kern), `themen`, `salienz`, `haeufigkeit` (1), `gedaechtnistyp`, `dimension`, `intentionen`, `emotion`, `modus`, `arousal`, `emotions_vektor`, `embedding`, `erstellt_am`. TTL nach Salienz-Stufe (siehe §7 Konfiguration und novaberg-mem-kzg.md §2a).
 
-1. **Embedding:** `EmbeddingManager.embed(kern)` → 768-dimensionaler Vektor (nomic-embed-text)
-2. **Vektorsuche:** Redis KNN-Query auf `idx:kzg`, Prefix `kzg:{user_id}`. Ergebnis: ähnlichster Eintrag mit Cosine-Score.
-3. **Themen-Overlap:** Hoher Embedding-Score allein reicht nicht. Themen-Tags müssen überlappen. Ohne Overlap → neuer Eintrag statt Verstärkung. Verhindert Verschmelzung von "Birnen im Garten" und "Birnen als Obst".
+Seit Chat 64 entfällt die Schreibzeit-Deduplizierung. Jeder Kern bleibt exakt erhalten — Zusammenführung passiert erst bei der Cluster-Promotion ins LZG.
 
-**Schwellwert:** Cosine >= 0.85 UND Themen-Overlap → Verstärkung. Sonst → neuer Eintrag.
-
----
-
-## 6. Speichern
-
-**Neuer Eintrag:** Redis-Hash mit `inhalt` (kern), `themen`, `salienz`, `haeufigkeit` (1), `gedaechtnistyp`, `dimension`, `intentionen`, `emotion`, `modus`, `arousal`, `emotions_vektor`, `embedding`, `erstellt_am`. TTL: Salienz 0.5–0.7 → 7 Tage, Salienz >= 0.7 → 30 Tage.
-
-**Verstärkung (bei Ähnlichkeit >= 0.85):**
+**Thematische Verstärkung (verwandte Bestandseinträge):** Direkt nach dem Schreiben durchsucht `_thematisch_verstaerken()` die gesamte Paar-Partition (`kzg:{user_id}:{character_id}:*`) nach Einträgen mit Themen-String-Overlap (case-insensitive, exakter Match auf den `themen`-Tags). Treffer bekommen einen gedämpften Salienz-Boost und TTL-Auffrischung — der `inhalt` und das `embedding` bleiben unangetastet.
 
 ```
-neue_salienz    = alte_salienz + (aktuelle_salienz / KZG_VERSTAERKUNG_DIVISOR)
-neue_häufigkeit = alte_häufigkeit + 1
+boost_roh    = aktuelle_salienz / KZG_VERSTAERKUNG_DIVISOR
+remaining    = max(0, KZG_SALIENZ_CAP - alte_salienz)
+ratio        = remaining / KZG_SALIENZ_CAP
+daempfung    = sin(ratio × π/2) ^ KZG_SALIENZ_DAEMPFUNG_EXP   # sin^0.6
+boost        = boost_roh × daempfung
+neue_salienz = alte_salienz + boost
+neue_haeufigkeit = alte_haeufigkeit + 1
+neuer_TTL    = max(verbleibend, TTL der neuen Salienz-Stufe)
 ```
 
-`KZG_VERSTAERKUNG_DIVISOR` = 2.0. Wenn die Salienz durch Verstärkung über 0.7 steigt → TTL auf 30 Tage hochstufen.
+`KZG_VERSTAERKUNG_DIVISOR = 2.0`, `KZG_SALIENZ_CAP = 10.0`, `KZG_SALIENZ_DAEMPFUNG_EXP = 0.6`. Die sin^0.6-Kurve verhindert Salienz-Explosion bei häufig wiederkehrenden Themen (selbe Kurvenfamilie wie Arousal-Glättung, Chat 61).
 
 Seit Chat 60: `dispatch_kzg()` ruft nicht mehr `session_turn_annotate()` direkt auf. Stattdessen schreibt er den `kern` in `state["session_turn_kern"]`. Der Dispatcher sammelt den Kern ein und schreibt den Session-Turn vollständig.
 
 ---
 
-## 7. Queues
+## 6. Queues
 
 ### Shadow-Queue Push (bei Salienz >= 0.7)
 
@@ -117,9 +114,9 @@ Intention aus der Salienz wird auf eine Pixie-Aufgabe gemappt:
 
 Bei Verstärkung mit Häufigkeit >= 3 und Salienz >= 0.7 → `vertiefen`.
 
-### Promotion-Queue Push (bei Salienz >= PROMOTION_THRESHOLD)
+### Promotion-Queue Push (bei Salienz >= KZG_SALIENZ_HIGH)
 
-Wenn Salienz eines Eintrags (neu oder verstärkt) >= 0.8 → Promotion-Queue (`queue:{user_id}`). Pixie arbeitet diese Queue mit höchster Priorität ab.
+Wenn Salienz eines Eintrags >= 0.7 → Promotion-Queue (`queue:{user_id}`). Pixie arbeitet diese Queue mit höchster Priorität ab. Der frühere Schwellwert `PROMOTION_THRESHOLD = 0.8` wurde in Chat 64 durch `KZG_SALIENZ_HIGH` abgelöst.
 
 ### Dirty-Flag
 
@@ -127,25 +124,29 @@ Jeder Schreibvorgang setzt `hash_dirty:{user_id}` auf `"1"`. Pixie prüft das Fl
 
 ---
 
-## 8. Nova-Guard
+## 7. Nova-Guard
 
 `user_id == "nova"` → keine Shadow-Queue-Einträge (Feedback-Loop-Schutz, O9b). Verhindert, dass Novas eigene KZG-Einträge Pixie-Aufgaben auslösen, die wiederum KZG-Einträge erzeugen würden.
 
 ---
 
-## 9. Konfiguration
+## 8. Konfiguration
 
 | Konstante | Wert | Pfad | Beschreibung |
 |-----------|------|------|-------------|
-| `KZG_SALIENZ_MINIMUM` | 0.5 | `config.py` | Agent-Eingangsfilter |
-| `KZG_SALIENZ_HIGH` | 0.7 | `config.py` | Schwelle für hohe TTL + Shadow-Queue |
-| `SIMILARITY_THRESHOLD` | 0.85 | `memory/kzg.py` | Cosine-Minimum für Verstärkung |
-| `PROMOTION_THRESHOLD` | 0.8 | `memory/kzg.py` | Ab hier → Promotion-Queue |
-| `KZG_TTL_LOW_SEKUNDEN` | 604800 (7 Tage) | `config.py` | Salienz 0.5–0.7 |
+| `KZG_SALIENZ_MINIMUM` | 0.3 | `config.py` | Agent-Eingangsfilter — Chat 64: von 0.5 gesenkt |
+| `KZG_SALIENZ_MID` | 0.5 | `config.py` | Schwelle für mittlere TTL (14 Tage) — Chat 64 neu |
+| `KZG_SALIENZ_HIGH` | 0.7 | `config.py` | Schwelle für hohe TTL + Promotion-/Shadow-Queue |
+| `KZG_SALIENZ_CAP` | 10.0 | `config.py` | Asymptotischer Cap der thematischen Verstärkung — Chat 64 neu |
+| `KZG_SALIENZ_DAEMPFUNG_EXP` | 0.6 | `config.py` | Exponent der sin-Dämpfungskurve — Chat 64 neu |
+| `KZG_TTL_LOW_SEKUNDEN` | 604800 (7 Tage) | `config.py` | Salienz 0.3–0.5 |
+| `KZG_TTL_MID_SEKUNDEN` | 1209600 (14 Tage) | `config.py` | Salienz 0.5–0.7 — Chat 64 neu |
 | `KZG_TTL_HIGH_SEKUNDEN` | 2592000 (30 Tage) | `config.py` | Salienz >= 0.7 |
-| `KZG_VERSTAERKUNG_DIVISOR` | 2.0 | `config.py` | Verstärkungs-Stärke |
+| `KZG_VERSTAERKUNG_DIVISOR` | 2.0 | `config.py` | Roh-Boost-Divisor (vor sin^0.6-Dämpfung) |
 | `KZG_VERTIEFUNG_HAEUFIGKEIT` | 3 | `config.py` | Häufigkeits-Schwelle für `vertiefen`-Trigger |
 | `EMBEDDING_DIM` | 768 | — | nomic-embed-text Dimensionen |
+
+`SIMILARITY_THRESHOLD` und `PROMOTION_THRESHOLD` in `memory/kzg.py` existieren noch als Konstanten, werden aber von der KZG-Schreib-Pipeline nicht mehr genutzt. Der Promotion-Push gegen die Queue läuft jetzt über `KZG_SALIENZ_HIGH`.
 
 ---
 

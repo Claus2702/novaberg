@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** PromotionAgent — KZG-nach-LZG-Promotion (Zwei-Call-Prozess)
-**Stand:** 17. April 2026, Chat 52 (Code-Alignment)
+**Stand:** 25. April 2026, Chat 64 (Cluster-Promotion: 4-Phasen-Algorithmus, Mehrfachzuordnung, Kohärenzprüfung)
 **Pfad:** novaberg/docs/novaberg-pixie-promotion.md
 **Quellen:** nova-05-m-a.md, nova-03-t-b.md
 
@@ -10,7 +10,13 @@
 
 ## 1. Aufgabe
 
-Der PromotionAgent ist der einzige Weg vom Kurzzeitgedächtnis (KZG, Redis) ins Langzeitgedächtnis (LZG, PostgreSQL) und in den Knowledge Graph. Pixie arbeitet die Promotion-Queue ab und führt für jeden Eintrag zwei LLM-Calls durch: Der erste klassifiziert, der zweite extrahiert strukturierte Fakten-Tripel. Python-Nachbearbeitung filtert Müll, löst Entitäten auf und schreibt die Ergebnisse.
+Der PromotionAgent ist der einzige Weg vom Kurzzeitgedächtnis (KZG, Redis) ins Langzeitgedächtnis (LZG, PostgreSQL) und in den Knowledge Graph. Seit Chat 64 arbeitet er in zwei Modi:
+
+**Modus 1 — Einzelpromotion (Queue-basiert):** Für KZG-Einträge mit Salienz ≥ 0.85, die über die Promotion-Queue kommen. Zwei LLM-Calls: Klassifikation + Fakten-Extraktion. Wie bisher.
+
+**Modus 2 — Cluster-Promotion (Scan-basiert):** 4-Phasen-Algorithmus, der die gesamte KZG-Partition scannt, thematisch verwandte Einträge zu Clustern zusammenfasst und per LLM-Destillation mit Kohärenzprüfung ins LZG schreibt. Läuft nach der Queue-Verarbeitung.
+
+**Leitprinzip:** Die Promotion ist Novas Backpropagation — das Kurzzeitgedächtnis liefert den Gradienten, das Langzeitgedächtnis passt seine Gewichte an. Bestätigung verstärkt, Widerspruch schwächt.
 
 **Dateien:** `agents/promotion/agent.py`, `AGENT.md`
 
@@ -27,6 +33,8 @@ Der PromotionAgent ist der einzige Weg vom Kurzzeitgedächtnis (KZG, Redis) ins 
 | **context_user** | `user` |
 
 Die Queue wird vollständig abgearbeitet (while-Schleife mit LPOP). KZG-Einträge haben TTL — Verzögerung bedeutet Datenverlust. Die Promotion hat deshalb die höchste Priorität unter allen Pixie-Agenten.
+
+Nach der Queue-Verarbeitung läuft automatisch die Cluster-Promotion (Scan der gesamten KZG-Partition).
 
 ---
 
@@ -103,21 +111,102 @@ Alle Referenz-Entitäten aus Call 1+2 durchlaufen die Entity Resolution via `Ent
 
 ## 6. hash_dirty
 
-Nach erfolgreicher Promotion setzt der Agent das Flag `hash_dirty:{user_id}` in Redis. Der CharakterAgent prüft dieses Flag und destilliert bei Bedarf die Charakter-Profile neu.
+Nach erfolgreicher Promotion setzt der Agent das Flag `hash_dirty:{user_id}` in Redis. Der CharakterAgent prüft dieses Flag und destilliert bei Bedarf die Charakter-Profile neu. Gilt für beide Modi (Einzel- und Cluster-Promotion).
 
 ---
 
-## 7. Konfiguration
+## 7. Cluster-Promotion — 4-Phasen-Algorithmus (seit Chat 64)
+
+### Phase 1 — Zentren finden
+
+Greedy-Verfahren über Entry-Embeddings. Ein Eintrag wird Zentrum, wenn sein Embedding zu KEINEM bisherigen Zentrum Cosine ≥ 0.75 hat. Ältere Einträge werden zuerst verarbeitet → stabile Zentren.
+
+**Keine Themen-Strings als Cluster-Schlüssel.** Kurze Einzelwörter ("Emotionen", "Höflichkeitsform") produzieren bei Embedding-Modellen unzuverlässige Cosine-Werte. Rein Embedding-basiertes Clustering auf den vollen Kernen ist präziser.
+
+### Phase 2 — Mehrfachzuordnung
+
+Jeder Eintrag wird gegen ALLE Zentren geprüft. Cosine ≥ 0.75 → Mitglied. Ein Eintrag kann in 0, 1 oder N Clustern sein.
+
+**Warum Mehrfachzuordnung:** "Brokkoli mit Käsesoße" gehört sowohl zu "Vorlieben" (Cosine 0.80 zu "Ich mag Brokkoli") als auch zu "Lieblingsgerichte" (Cosine 0.78 zu "Blumenkohl-Auflauf Lieblingsgericht"). Greedy-Zuordnung (jeder Eintrag in nur ein Cluster) verliert diese Verbindung.
+
+### Phase 3a — Destillation mit Kohärenzprüfung
+
+Cluster mit ≥ 3 Mitgliedern → LLM-Destillations-Call mit vorgeschalteter Kohärenzprüfung.
+
+Der LLM antwortet mit:
+
+- **"ja"** — alle Einträge gehören zusammen → Destillat ins LZG, KZG-Quellen löschen
+- **"teilweise"** — Ausreißer identifiziert → Destillat nur aus kohärenten Einträgen, Ausreißer bleiben im KZG
+- **"nein"** — Cluster ist ein False Positive → kein LZG-Eintrag, alle bleiben im KZG
+
+**LZG-Abgleich:** Vor dem Schreiben wird per Embedding-Suche geprüft, ob das Thema schon im LZG existiert:
+
+- Treffer + Bestätigung → UPDATE (inhalt, embedding, gewicht += 0.1, verstaerkt_am = NOW)
+- Treffer + Widerspruch → Decay (gewicht /= 3.0) + neuer Eintrag
+- Kein Treffer → INSERT
+
+### Phase 3b — LZG-Magnetismus
+
+Einzelgänger und Zweier-Cluster, die Phase 3a nicht bestehen, werden trotzdem gegen das LZG geprüft. Wenn ein bestehender LZG-Eintrag Cosine ≥ 0.80 hat, dockt der Einzelgänger an — mit Kohärenzprüfung.
+
+**Beispiel:** KZG-Eintrag "Rosenkohl mit Speck geht noch" (allein, schafft ≥ 3 nicht). Im LZG steht "Hasst Rosenkohl". Cosine 0.78 → Magnetismus → UPDATE: "Hasst Rosenkohl generell, mit Speck noch akzeptabel."
+
+### Phase 4 — Aufräumen
+
+KZG-Einträge, die in mindestens einem promovierten Cluster waren, werden gelöscht. Ausreißer (vom LLM als "teilweise" markiert) bleiben im KZG. `hash_dirty` wird gesetzt.
+
+### Querschneidende Cluster
+
+Der entscheidende Vorteil gegenüber Themen-basiertem Clustering: Einträge über verschiedene Gemüsesorten ("Blumenkohl-Auflauf", "Gefüllte Paprika") können im selben Cluster landen, weil sie auf der Aussage-Ebene ähnlich sind ("Lieblingsgerichte"). Themen-Strings können das prinzipiell nicht.
+
+---
+
+## 8. Backpropagation — Bestätigung & Widerspruch
+
+### Bestätigung (positiver Gradient)
+
+- `gewicht += CLUSTER_BESTAETIGUNG_BOOST` (0.1)
+- `verstaerkt_am = NOW()` (resettet den Ebbinghaus-Timer)
+- `inhalt` wird mit der neuen Destillation überschrieben
+- Kein neuer Mechanismus — harmonisiert mit bestehendem Ebbinghaus-Decay
+
+### Widerspruch (negativer Gradient)
+
+- `gewicht /= CLUSTER_WIDERSPRUCH_DECAY_FAKTOR` (3.0)
+- Neuer LZG-Eintrag mit der korrigierten Information
+- Alter Eintrag fällt durch reduziertes Gewicht schneller unter EBBINGHAUS_MIN_GEWICHT (0.1) → DecayAgent markiert inaktiv
+
+### Kein Feedback (Stillstand)
+
+- TTL im KZG → Eintrag stirbt
+- Ebbinghaus-Decay im LZG → effektives Gewicht sinkt → irgendwann unter Schwelle
+
+---
+
+## 9. Konfiguration
+
+### Einzelpromotion (Modus 1)
 
 | Parameter | Wert | Pfad | Beschreibung |
 |-----------|------|------|-------------|
-| `PROMOTION_THRESHOLD` | 0.8 | `memory/kzg.py` | Salienz-Minimum für Eintritt in die Promotion-Queue |
+| `PROMOTION_THRESHOLD` | 0.8 | `memory/kzg.py` | Salienz-Minimum für Eintritt in die Promotion-Queue (Legacy, vgl. KZG_SALIENZ_HIGH) |
 | `PIXIE_PROMOTION_PRIORITAET` | 0.9 | `config.py` | Höchste Pixie-Scheduler-Priorität |
 | `PIXIE_PROMOTION_INTERVALL_SEKUNDEN` | 300 (5 min) | `config.py` | Task-Intervall (PeriodicTask) |
 | Analyse-Modell | `qwen3-32b-cpu` | — | Reasoning, JSON-Output |
 | Sprach-Modell | `mistral-small3.2-cpu` | — | Fließtext, Deutsch (bei Typ-3-Erinnerungen) |
 
-**LLM-Call-Budget pro Eintrag:**
+### Cluster-Promotion (Modus 2, Chat 64)
+
+| Konstante | Wert | Beschreibung |
+|-----------|------|-------------|
+| `CLUSTER_MIN_EINTRAEGE` | 3 | Mindestanzahl für Cluster-Promotion |
+| `CLUSTER_THEMEN_SIMILARITY` | 0.85 | Cosine-Schwelle für Zentren-Identifikation und Zuordnung |
+| `CLUSTER_LZG_SIMILARITY` | 0.80 | Cosine-Schwelle für LZG-Abgleich (lockerer, da LZG abstrakter) |
+| `CLUSTER_WIDERSPRUCH_DECAY_FAKTOR` | 3.0 | Decay-Multiplikator bei Widerspruch |
+| `CLUSTER_BESTAETIGUNG_BOOST` | 0.1 | Gewichts-Boost bei Bestätigung |
+| `cluster_destillation` | temp 0.1, 1024 tokens | NODE_LLM_CONFIG Eintrag |
+
+### LLM-Call-Budget pro Einzelpromotion-Eintrag
 
 | Schicht | Calls | Bedingung |
 |---------|-------|-----------|
@@ -125,6 +214,34 @@ Nach erfolgreicher Promotion setzt der Agent das Flag `hash_dirty:{user_id}` in 
 | Call 2: Fakten-Extraktion | 0–1 | Nur wenn Fakt erkannt |
 | Entity Resolution | 0–1 | Nur bei Mehrdeutigkeit |
 | **Total** | **1–3** | |
+
+---
+
+## 10. Methoden
+
+### Einzelpromotion (Modus 1 — bestehend)
+
+- `invoke()` — Queue-Verarbeitung + Cluster-Promotion-Aufruf
+- `_call1_klassifizieren()` — Klassifikation
+- `_call1_nachbearbeiten()` — 4 Qualitätsfilter (O5 Speaker, O6 Interface, O11 Objekt, O12 Tautologie)
+- `_call2_fakten_extrahieren()` — Fakten-Tripel
+- `_call2_nachbearbeiten()` — Entity Resolution + KG-Schreiben
+
+### Cluster-Promotion (Modus 2 — seit Chat 64)
+
+- `_cluster_promotion()` — 4-Phasen-Orchestrierung
+- `_kzg_partition_laden()` — Redis-Scan mit frischen Embeddings
+- `_zentren_finden()` — Phase 1: Greedy
+- `_mehrfach_zuordnen()` — Phase 2: N:M-Zuordnung
+- `_cluster_insert_kohaerenz()` — Phase 3a: INSERT mit Kohärenz
+- `_cluster_update_kohaerenz()` — Phase 3a/3b: UPDATE mit Kohärenz
+- `_parse_kohaerenz_antwort()` — JSON-Parsing
+- `_lzg_thema_suchen()` — Embedding-Suche im LZG
+- `_cluster_update()` — UPDATE ohne Kohärenz (Legacy, für Fallback)
+- `_cluster_insert()` — INSERT ohne Kohärenz (Legacy, für Fallback)
+- `_lzg_eintrag_schreiben()` — SQL INSERT
+- `_destillation_insert()` — LLM-Call ohne Kohärenz
+- `_destillation_update()` — LLM-Call ohne Kohärenz
 
 ---
 
