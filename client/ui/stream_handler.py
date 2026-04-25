@@ -24,6 +24,7 @@ import threading
 from typing import Callable, Optional
 
 import requests
+from requests.adapters import HTTPAdapter
 import websocket
 
 from gi.repository import GLib
@@ -52,6 +53,20 @@ ImpulseCallback    = Callable[[str, dict], None]       # (text, rohdaten)
 ConnectionCallback = Callable[[str], None]             # (status-text,)
 
 
+def _create_http_session() -> requests.Session:
+    """Erzeugt eine HTTP-Session ohne automatische Retries.
+
+    urllib3 macht standardmäßig Retries bei Connection-Resets.
+    Bei langen LLM-Responses (>30s) kann das zu Doppel-Turns führen.
+    """
+    session = requests.Session()
+    adapter = HTTPAdapter(max_retries=0)
+    session.mount("http://", adapter)
+    session.mount("https://", adapter)
+    logger.debug("HTTP-Session erstellt (max_retries=0)")
+    return session
+
+
 class StreamHandler:
     """Koordiniert SSE-Anfragen und den Dauer-WebSocket."""
 
@@ -77,6 +92,7 @@ class StreamHandler:
         # SSE-Zustand
         self._sse_thread:   Optional[threading.Thread] = None
         self._sse_stop:     threading.Event            = threading.Event()
+        self._session:      requests.Session            = _create_http_session()
 
         # WebSocket-Zustand
         self._ws_app:       Optional[websocket.WebSocketApp] = None
@@ -114,7 +130,7 @@ class StreamHandler:
             # ``stream=True`` hält die Verbindung offen, damit wir die
             # Events inkrementell lesen können. Kein explizites Timeout
             # auf die Gesamt-Dauer — der Server entscheidet, wann Schluss ist.
-            response = requests.post(
+            response = self._session.post(
                 SSE_URL,
                 json=payload,
                 stream=True,
