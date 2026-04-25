@@ -1,6 +1,6 @@
 # Novaberg — Roadmap (Projektchronik)
 
-**Stand:** Chat 62, 23. April 2026
+**Stand:** Chat 63, 24. April 2026
 **Pfad:** novaberg/docs/novaberg-roadmap.md
 **Single Source of Truth für abgeschlossene Arbeit.**
 **Offene Punkte → novaberg-backlog.md**
@@ -395,4 +395,43 @@
 
 ---
 
-*Aktualisiert in Chat 62. Offene Punkte → novaberg-backlog.md. Bugs → novaberg-bugs.md.*
+## Chat 63 (24. April 2026) — Paper-Review, Übersetzung, Website novaberg.de
+
+### Clipboard Pattern Paper — Review + Korrekturen
+
+- ✅ Inhaltsprüfung: 7 Befunde identifiziert, 6 korrigiert
+- ✅ Fix: "two years" → "over sixty development sessions"
+- ✅ Fix: `user_prompt` → `user_input` in Listing 2
+- ✅ Fix: Figure 1 Path 2 — Enricher + EI-Calc vor Router eingefügt
+- ✅ Fix: "roughly forty" / "about forty" → "over sixty" (2 Stellen)
+- ✅ Fix: Figure-Caption — Satz über weggelassene Nodes ergänzt
+- ✅ Neuer Abschnitt §3: "The normalisation layer — where speech becomes structure" (~700 Wörter, Listing 5)
+- ✅ Domain Language als eigenständiges Argument: Arzt-Metapher, Architekten-Metapher, fünf Rollen, Skalierbarkeit
+- ✅ SSE → WebSocket Fix in Objections-Tabelle (DE)
+
+### Deutsche Übersetzung
+
+- ✅ Komplette Übersetzung des Clipboard Pattern Papers (1781 Zeilen HTML)
+- ✅ Alle Prosa, Code-Kommentare, SVG-Labels, Meta-Tags übersetzt
+- ✅ Code und Feldnamen bleiben Englisch
+
+### Website novaberg.de
+
+- ✅ Domain novaberg.de bei Goneo registriert
+- ✅ Hosting-Upgrade auf Webhosting Profi (SSL, 50 GB, SSH)
+- ✅ Landing Page EN/DE — Projektvorstellung, Nav-Karten, Byline mit master@novaberg.de
+- ✅ Paper-Übersicht EN/DE — Serien-Sektionen, Paper-Karten mit Sprach-Badges
+- ✅ Impressum — Pflichtangaben nach DDG, noindex
+- ✅ Architecture EN/DE — Autor→Schlehhuber, E-Mail, Pfade, Impressum, Buttons entfernt
+- ✅ Clipboard Pattern EN/DE — E-Mail, Pfade, Impressum, Sprach-Toggle, Cloudflare-Encoding entfernt
+- ✅ Alle Seiten: konsistentes Design-System (IBM Plex, 4 Paletten, SVG-Flaggen)
+- ✅ SSL-Zertifikat beantragt (verfügbar 26. April)
+
+### Backlog
+
+- ✅ Epic: KZG-Liberalisierung + LZG-Destillation (Schwelle senken, Deduplizierung aufweichen, Destillation bei Promotion)
+- ✅ Epic: Embedding-Gravitationsgraph (Turn-Dashboard mit Plutchik-Mikrosternen, Gravitationsfeldern, geladenem Gedächtnis)
+
+---
+
+*Aktualisiert in Chat 63. Offene Punkte → novaberg-backlog.md. Bugs → novaberg-bugs.md.*

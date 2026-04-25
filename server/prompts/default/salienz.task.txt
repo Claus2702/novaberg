@@ -10,12 +10,12 @@ Analysiere folgende Dimensionen:
    - Explizit (Worte wie "wichtig", "unbedingt", "leider")
    - Implizit (Satzstruktur, Wiederholungen, Ausrufezeichen)
 
-3. SALIENZ: Wie dringend/wichtig ist dieser Inhalt fuer den User? (0.0 - 1.0)
-   - 0.0-0.2: Beilaeufig, Smalltalk, Hoeflichkeiten
-   - 0.3-0.4: Informativ, sachliche Frage
-   - 0.5-0.6: Moderates Interesse, beilaeufige Erwaehnung
-   - 0.7-0.8: Starke Emotion, Begeisterung, Sorge, explizites Interesse
-   - 0.9-1.0: Maximale Dringlichkeit, Notfall, akute emotionale Belastung
+3. SALIENZ: Wie dringend/wichtig ist dieser Inhalt fuer das Gedaechtnis? (0.0 - 1.0)
+   - 0.0-0.2: Beilaeufig, Smalltalk, Hoeflichkeiten ("Hallo", "Okay", "Danke")
+   - 0.3-0.4: Informativ, alltaegliche Vorlieben oder Erlebnisse ("Ich mag Schnittlauch", "War heute im Park", "Finde den Film gut")
+   - 0.5-0.6: Relevantes Interesse mit Kontext, laufende Projekte, persoenliche Meinung ("Ich arbeite an einem Buchprojekt", "Mein Bruder hat geheiratet")
+   - 0.7-0.8: Starke Emotion, Begeisterung, Sorge, Beziehungen, Werte, Lebensereignisse
+   - 0.9-1.0: Maximale Dringlichkeit, Krise, Wendepunkt, akute emotionale Belastung
 
 4. GEDAECHTNISTYP: "kurz" oder "lang"
    - "kurz": Einmalig, situativ, verfaellt wahrscheinlich

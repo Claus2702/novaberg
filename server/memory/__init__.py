@@ -23,10 +23,6 @@ from memory.kzg import (
     EMBEDDING_DIM,
     SIMILARITY_THRESHOLD,
     PROMOTION_THRESHOLD,
-    TTL_LOW,
-    TTL_HIGH,
-    SALIENZ_LOW,
-    SALIENZ_HIGH,
     KZG_INDEX_NAME,
     KZG_PREFIX,
 )

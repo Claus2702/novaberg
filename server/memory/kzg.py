@@ -10,6 +10,7 @@ oder des Charakters (CharacterGraph) entstanden ist.
 
 import json
 import logging
+import math
 import time
 
 from typing import Optional
@@ -17,7 +18,18 @@ from typing import Optional
 import numpy as np
 import redis
 
-from config                                import ASSISTANT_USER_ID, KZG_VERSTAERKUNG_DIVISOR
+from config                                import (
+    ASSISTANT_USER_ID,
+    KZG_VERSTAERKUNG_DIVISOR,
+    KZG_SALIENZ_MINIMUM,
+    KZG_SALIENZ_MID,
+    KZG_SALIENZ_HIGH,
+    KZG_SALIENZ_CAP,
+    KZG_SALIENZ_DAEMPFUNG_EXP,
+    KZG_TTL_LOW_SEKUNDEN,
+    KZG_TTL_MID_SEKUNDEN,
+    KZG_TTL_HIGH_SEKUNDEN,
+)
 from services.shadow_agent                 import shadow_queue_push
 
 from redis.commands.search.field           import TextField, NumericField, VectorField, TagField
@@ -32,10 +44,6 @@ logger = logging.getLogger("ki_server.memory.kzg")
 EMBEDDING_DIM:        int   = 768
 SIMILARITY_THRESHOLD: float = 0.85
 PROMOTION_THRESHOLD:  float = 0.8
-TTL_LOW:              int   = 604800     # 7 Tage
-TTL_HIGH:             int   = 2592000    # 30 Tage
-SALIENZ_LOW:          float = 0.5
-SALIENZ_HIGH:         float = 0.7
 KZG_INDEX_NAME:       str   = "idx:kzg"
 KZG_PREFIX:           str   = "kzg:"
 
@@ -202,6 +210,32 @@ def kzg_similar_find(
 
 
 # ─────────────────────────────────────────────
+# Salienz-Boost-Dämpfung
+# ─────────────────────────────────────────────
+def _gedaempfter_boost(alte_salienz: float, raw_boost: float) -> float:
+    """Berechnet den gedämpften Salienz-Boost mit sin^0.6-Kurve.
+
+    Unten fast voller Boost, oben immer weniger, asymptotisch gegen den Cap.
+    Dieselbe Kurvenfamilie wie bei der Emotions-Glättung (sin^0.5, Cap 2.5).
+
+    Formel:
+        remaining = max(0, CAP - alte_salienz)
+        ratio = remaining / CAP                    (1.0 am Anfang, 0.0 am Cap)
+        dämpfung = sin(ratio × π/2) ^ EXPONENT     (sin^0.6)
+        effektiver_boost = raw_boost × dämpfung
+    """
+    remaining: float = max(0.0, KZG_SALIENZ_CAP - alte_salienz)
+    if remaining <= 0:
+        return 0.0
+
+    ratio:     float = remaining / KZG_SALIENZ_CAP
+    daempfung: float = math.sin(ratio * math.pi / 2) ** KZG_SALIENZ_DAEMPFUNG_EXP
+    effektiv:  float = raw_boost * daempfung
+
+    return effektiv
+
+
+# ─────────────────────────────────────────────
 # Eintrag speichern oder verstärken
 # ─────────────────────────────────────────────
 def kzg_store(
@@ -213,13 +247,14 @@ def kzg_store(
     embedding:    list[float]
 ) -> str:
     """
-    Speichert einen neuen KZG-Eintrag oder verstärkt einen existierenden.
-    Gibt den Status zurück: 'neu', 'verstaerkt' oder 'ignoriert'.
+    Speichert einen neuen KZG-Eintrag und verstärkt thematisch verwandte
+    Einträge in der Paar-Partition (kein Merge, nur Salienz/Häufigkeit/TTL).
+    Gibt den Status zurück: 'neu' oder 'ignoriert'.
     """
 
     salienz: float = salienz_obj.get("salienz", 0.0)
 
-    if salienz < SALIENZ_LOW:
+    if salienz < KZG_SALIENZ_MINIMUM:
         logger.info(f"KZG: Salienz {salienz:.2f} unter Schwellwert — ignoriert")
         return "ignoriert"
 
@@ -228,161 +263,132 @@ def kzg_store(
     emotion:     str  = salienz_obj.get("emotion", "neutral")
     modus:       str  = salienz_obj.get("modus", "")
 
-    existing: Optional[dict] = kzg_similar_find(redis_client, user_id, character_id, embedding)
+    # Thematisch verwandte Einträge verstärken (kein Merge, nur Boost)
+    neue_themen: set[str] = set(
+        t.strip().lower() for t in salienz_obj.get("themen", []) if t.strip()
+    )
 
-    # Themen-Overlap prüfen wenn Treffer
-    if existing:
-        neue_themen:     set = set(t.strip().lower() for t in salienz_obj.get("themen", []))
-        existing_themen: set = set(t.strip().lower() for t in existing["themen"].split(","))
+    embedding_bytes: bytes = np.array(embedding, dtype=np.float32).tobytes()
+    timestamp:       float = time.time()
 
-        if not neue_themen & existing_themen:
-            logger.info(
-                f"KZG: Embedding ähnlich, aber Themen disjunkt — neuer Eintrag "
-                f"(neu={neue_themen}, existierend={existing_themen})"
-            )
-            existing = None
+    key:        str = _kzg_key(user_id, character_id, str(int(timestamp * 1000)))
+    themen_str: str = ", ".join(salienz_obj.get("themen", []))
+    dimension:  str = salienz_obj.get("dimension", "kontext")
 
-    if existing:
-        neue_salienz:     float = existing["salienz"] + (salienz / KZG_VERSTAERKUNG_DIVISOR)
-        neue_haeufigkeit: int   = existing["haeufigkeit"] + 1
+    arousal:          float = salienz_obj.get("arousal", 0.5)
+    emotions_vektor:  str   = salienz_obj.get("emotions_vektor", "")
 
-        # Arousal: Durchschnitt aus altem und neuem Wert
-        alter_arousal: float = float(redis_client.hget(existing["key"], "arousal") or "0.5")
-        neuer_arousal: float = float(salienz_obj.get("arousal", 0.5))
-        gemittelter_arousal: float = round((alter_arousal + neuer_arousal) / 2, 2)
+    redis_client.hset(key, mapping={
+        "user_id":          user_id,
+        "character_id":     character_id,
+        "beobachter":       beobachter,
+        "themen":           themen_str,
+        "inhalt":           salienz_obj.get("zusammenfassung", salienz_obj.get("begruendung", "")),
+        "salienz":          str(salienz),
+        "haeufigkeit":      str(1),
+        "gedaechtnistyp":   salienz_obj.get("gedaechtnistyp", "kurz"),
+        "dimension":        dimension,
+        "intentionen":      json.dumps(intentionen),
+        "emotion":          emotion,
+        "modus":            modus,
+        "arousal":          str(arousal),
+        "emotions_vektor":    emotions_vektor,
+        "sprach_stil":        salienz_obj.get("sprach_stil", "neutral"),
+        "beziehungs_dynamik": salienz_obj.get("beziehungs_dynamik", "neutral"),
+        "tone":               salienz_obj.get("tone", "sachlich"),
+        "erstellt_am":        str(timestamp),
+        "embedding":        embedding_bytes,
+    })
 
-        # Vektor: neuester überschreibt
-        neuer_vektor: str = salienz_obj.get("emotions_vektor", "")
+    if salienz >= KZG_SALIENZ_HIGH:
+        ttl: int = KZG_TTL_HIGH_SEKUNDEN
+    elif salienz >= KZG_SALIENZ_MID:
+        ttl: int = KZG_TTL_MID_SEKUNDEN
+    else:
+        ttl: int = KZG_TTL_LOW_SEKUNDEN
+    redis_client.expire(key, ttl)
 
-        update_mapping: dict = {
-            "salienz":     str(neue_salienz),
-            "haeufigkeit": str(neue_haeufigkeit),
-            "arousal":     str(gemittelter_arousal),
-        }
-        if neuer_vektor:
-            update_mapping["emotions_vektor"] = neuer_vektor
-
-        neuer_stil:   str = salienz_obj.get("sprach_stil", "")
-        neue_dynamik: str = salienz_obj.get("beziehungs_dynamik", "")
-        neuer_tone:   str = salienz_obj.get("tone", "")
-        if neuer_stil:
-            update_mapping["sprach_stil"] = neuer_stil
-        if neue_dynamik:
-            update_mapping["beziehungs_dynamik"] = neue_dynamik
-        if neuer_tone:
-            update_mapping["tone"] = neuer_tone
-        if emotion:
-            update_mapping["emotion"] = emotion
-        if modus:
-            update_mapping["modus"] = modus
-
-        redis_client.hset(existing["key"], mapping=update_mapping)
-
-        ttl: int = TTL_HIGH if neue_salienz >= SALIENZ_HIGH else TTL_LOW
-        redis_client.expire(existing["key"], ttl)
-
-        logger.info(
-            f"KZG: Verstärkt — salienz {existing['salienz']:.2f} → {neue_salienz:.2f}, "
-            f"häufigkeit {neue_haeufigkeit}, TTL {ttl}s"
+    if salienz >= KZG_SALIENZ_HIGH:
+        redis_client.rpush(
+            f"queue:{user_id}",
+            json.dumps({
+                "aufgabe":   "lzg_promotion",
+                "key":       key,
+                "salienz":   salienz,
+                "themen":    themen_str,
+                "dimension": dimension,
+            }),
         )
 
-        if neue_salienz >= PROMOTION_THRESHOLD:
-            logger.info(f"KZG: Salienz {neue_salienz:.2f} ≥ {PROMOTION_THRESHOLD} — Promotion vorgemerkt")
-            redis_client.rpush(
-                f"queue:{user_id}",
-                json.dumps({
-                    "aufgabe":   "lzg_promotion",
-                    "key":       existing["key"],
-                    "salienz":   neue_salienz,
-                    "themen":    existing["themen"],
-                    "dimension": existing["dimension"],
-                }),
-            )
+        aufgabe: str = _aufgabe_aus_intention(intentionen)
 
-        if neue_haeufigkeit >= 3 and neue_salienz >= SALIENZ_HIGH and user_id != ASSISTANT_USER_ID:
+        if aufgabe and user_id != ASSISTANT_USER_ID:
             shadow_queue_push(
                 redis_client = redis_client,
                 user_id      = user_id,
-                aufgabe      = "vertiefen",
-                thema        = existing["themen"],
-                kontext      = existing.get("inhalt", ""),
+                aufgabe      = aufgabe,
+                thema        = themen_str,
+                kontext      = salienz_obj.get("zusammenfassung", ""),
                 intentionen  = intentionen,
                 emotion      = emotion,
                 modus        = modus,
             )
 
-        redis_client.set(f"hash_dirty:{user_id}", "1")
-        return "verstaerkt"
+    logger.info(
+        f"KZG: Neuer Eintrag — salienz={salienz:.2f}, themen={themen_str}, "
+        f"arousal={arousal:.2f}, vektor={emotions_vektor}, TTL={ttl}s"
+    )
 
-    else:
-        embedding_bytes: bytes = np.array(embedding, dtype=np.float32).tobytes()
-        timestamp:       float = time.time()
-
-        key:        str = _kzg_key(user_id, character_id, str(int(timestamp * 1000)))
-        themen_str: str = ", ".join(salienz_obj.get("themen", []))
-        dimension:  str = salienz_obj.get("dimension", "kontext")
-
-        arousal:          float = salienz_obj.get("arousal", 0.5)
-        emotions_vektor:  str   = salienz_obj.get("emotions_vektor", "")
-
-        redis_client.hset(key, mapping={
-            "user_id":          user_id,
-            "character_id":     character_id,
-            "beobachter":       beobachter,
-            "themen":           themen_str,
-            "inhalt":           salienz_obj.get("zusammenfassung", salienz_obj.get("begruendung", "")),
-            "salienz":          str(salienz),
-            "haeufigkeit":      str(1),
-            "gedaechtnistyp":   salienz_obj.get("gedaechtnistyp", "kurz"),
-            "dimension":        dimension,
-            "intentionen":      json.dumps(intentionen),
-            "emotion":          emotion,
-            "modus":            modus,
-            "arousal":          str(arousal),
-            "emotions_vektor":    emotions_vektor,
-            "sprach_stil":        salienz_obj.get("sprach_stil", "neutral"),
-            "beziehungs_dynamik": salienz_obj.get("beziehungs_dynamik", "neutral"),
-            "tone":               salienz_obj.get("tone", "sachlich"),
-            "erstellt_am":        str(timestamp),
-            "embedding":        embedding_bytes,
-        })
-
-        ttl: int = TTL_HIGH if salienz >= SALIENZ_HIGH else TTL_LOW
-        redis_client.expire(key, ttl)
-
-        if salienz >= SALIENZ_HIGH:
-            redis_client.rpush(
-                f"queue:{user_id}",
-                json.dumps({
-                    "aufgabe":   "lzg_promotion",
-                    "key":       key,
-                    "salienz":   salienz,
-                    "themen":    themen_str,
-                    "dimension": dimension,
-                }),
-            )
-
-            aufgabe: str = _aufgabe_aus_intention(intentionen)
-
-            if aufgabe and user_id != ASSISTANT_USER_ID:
-                shadow_queue_push(
-                    redis_client = redis_client,
-                    user_id      = user_id,
-                    aufgabe      = aufgabe,
-                    thema        = themen_str,
-                    kontext      = salienz_obj.get("zusammenfassung", ""),
-                    intentionen  = intentionen,
-                    emotion      = emotion,
-                    modus        = modus,
+    # Thematische Verstärkung: verwandte Einträge im KZG boosten
+    if neue_themen:
+        prefix: str = f"kzg:{user_id}:{character_id}:"
+        for other_key in redis_client.keys(f"{prefix}*"):
+            if isinstance(other_key, bytes):
+                other_key = other_key.decode("utf-8")
+            if other_key == key:
+                continue
+            try:
+                other_themen_raw: str | None = redis_client.hget(other_key, "themen")
+                if not other_themen_raw:
+                    continue
+                other_themen: set[str] = set(
+                    t.strip().lower() for t in other_themen_raw.split(",") if t.strip()
                 )
+                if not neue_themen & other_themen:
+                    continue
 
-        logger.info(
-            f"KZG: Neuer Eintrag — salienz={salienz:.2f}, themen={themen_str}, "
-            f"arousal={arousal:.2f}, vektor={emotions_vektor}, TTL={ttl}s"
-        )
-        redis_client.set(f"hash_dirty:{user_id}", "1")
+                alte_sal: float = float(redis_client.hget(other_key, "salienz") or "0.0")
+                alte_hfk: int   = int(float(redis_client.hget(other_key, "haeufigkeit") or "1"))
+                raw_boost: float = salienz / KZG_VERSTAERKUNG_DIVISOR
+                boost:     float = _gedaempfter_boost(alte_sal, raw_boost)
+                neue_sal:  float = alte_sal + boost
+                neue_hfk: int   = alte_hfk + 1
 
-        return "neu"
+                redis_client.hset(other_key, mapping={
+                    "salienz":     str(neue_sal),
+                    "haeufigkeit": str(neue_hfk),
+                })
+
+                if neue_sal >= KZG_SALIENZ_HIGH:
+                    neuer_ttl: int = KZG_TTL_HIGH_SEKUNDEN
+                elif neue_sal >= KZG_SALIENZ_MID:
+                    neuer_ttl: int = KZG_TTL_MID_SEKUNDEN
+                else:
+                    neuer_ttl: int = KZG_TTL_LOW_SEKUNDEN
+
+                verbleibend: int = redis_client.ttl(other_key)
+                redis_client.expire(other_key, max(verbleibend if verbleibend > 0 else 0, neuer_ttl))
+
+                logger.info(
+                    f"KZG: Thematische Verstärkung {other_key} — "
+                    f"salienz {alte_sal:.2f} → {neue_sal:.2f}, "
+                    f"häufigkeit {alte_hfk} → {neue_hfk}"
+                )
+            except Exception as ex:
+                logger.warning(f"KZG: Verstärkungsfehler bei {other_key}: {ex}")
+
+    redis_client.set(f"hash_dirty:{user_id}", "1")
+    return "neu"
 
 
 # ─────────────────────────────────────────────

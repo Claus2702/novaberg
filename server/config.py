@@ -153,11 +153,22 @@ PIXIE_RECHERCHE_MAX_QUERIES:             int   = int(os.getenv("PIXIE_RECHERCHE_
 PIXIE_RECHERCHE_MAX_SEITEN_PRO_RUNDE:    int   = int(os.getenv("PIXIE_RECHERCHE_MAX_SEITEN_PRO_RUNDE", "3"))
 
 # ─── KZG (Kurzzeitgedaechtnis) ─────────────────
-KZG_SALIENZ_MINIMUM:          float = float(os.getenv("KZG_SALIENZ_MINIMUM", "0.5"))
+KZG_SALIENZ_MINIMUM:          float = float(os.getenv("KZG_SALIENZ_MINIMUM", "0.3"))
+KZG_SALIENZ_MID:              float = float(os.getenv("KZG_SALIENZ_MID", "0.5"))
 KZG_SALIENZ_HIGH:             float = float(os.getenv("KZG_SALIENZ_HIGH", "0.7"))
-KZG_TTL_LOW_SEKUNDEN:         int   = int(os.getenv("KZG_TTL_LOW_SEKUNDEN", "604800"))      # 7 Tage
-KZG_TTL_HIGH_SEKUNDEN:        int   = int(os.getenv("KZG_TTL_HIGH_SEKUNDEN", "2592000"))     # 30 Tage
+KZG_TTL_LOW_SEKUNDEN:         int   = int(os.getenv("KZG_TTL_LOW_SEKUNDEN", "604800"))       # 7 Tage  — Salienz 0.3–0.5
+KZG_TTL_MID_SEKUNDEN:         int   = int(os.getenv("KZG_TTL_MID_SEKUNDEN", "1209600"))      # 14 Tage — Salienz 0.5–0.7
+KZG_TTL_HIGH_SEKUNDEN:        int   = int(os.getenv("KZG_TTL_HIGH_SEKUNDEN", "2592000"))     # 30 Tage — Salienz >= 0.7
 KZG_VERTIEFUNG_HAEUFIGKEIT:   int   = int(os.getenv("KZG_VERTIEFUNG_HAEUFIGKEIT", "3"))
+KZG_SALIENZ_CAP:              float = float(os.getenv("KZG_SALIENZ_CAP", "10.0"))
+KZG_SALIENZ_DAEMPFUNG_EXP:    float = float(os.getenv("KZG_SALIENZ_DAEMPFUNG_EXP", "0.6"))
+
+# ─── Cluster-Promotion ─────────────────────
+CLUSTER_MIN_EINTRAEGE:              int   = int(os.getenv("CLUSTER_MIN_EINTRAEGE", "3"))
+CLUSTER_THEMEN_SIMILARITY:          float = float(os.getenv("CLUSTER_THEMEN_SIMILARITY", "0.85"))
+CLUSTER_LZG_SIMILARITY:             float = float(os.getenv("CLUSTER_LZG_SIMILARITY", "0.80"))
+CLUSTER_WIDERSPRUCH_DECAY_FAKTOR:   float = float(os.getenv("CLUSTER_WIDERSPRUCH_DECAY_FAKTOR", "3.0"))
+CLUSTER_BESTAETIGUNG_BOOST:         float = float(os.getenv("CLUSTER_BESTAETIGUNG_BOOST", "0.1"))
 
 # ─── Vertiefung ────────────────────────────────
 PIXIE_VERTIEFUNG_LZG_LIMIT:  int = int(os.getenv("PIXIE_VERTIEFUNG_LZG_LIMIT", "20"))
@@ -812,6 +823,10 @@ NODE_LLM_CONFIG: dict = {
         "max_output_tokens": 1024,
     },
     "lzg_promotion": {
+        "temperature": 0.1,
+        "max_output_tokens": 1024,
+    },
+    "cluster_destillation": {
         "temperature": 0.1,
         "max_output_tokens": 1024,
     },

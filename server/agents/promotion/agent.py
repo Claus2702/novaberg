@@ -11,14 +11,22 @@ Queue wird VOLLSTAENDIG abgearbeitet (KZG hat TTL!).
 import json
 import logging
 
+from collections import Counter
+
+import numpy as np
+
 from agents.base import BaseAgent, AgentState, PeriodicTask
 from config import (
     ASSISTANT_USER_ID, DEFAULT_USER_ID,
     redis_client, POSTGRES_URL, get_node_config,
     PIXIE_PROMOTION_PRIORITAET, PIXIE_PROMOTION_INTERVALL_SEKUNDEN,
+    CLUSTER_MIN_EINTRAEGE, CLUSTER_THEMEN_SIMILARITY,
+    CLUSTER_LZG_SIMILARITY, CLUSTER_WIDERSPRUCH_DECAY_FAKTOR,
+    CLUSTER_BESTAETIGUNG_BOOST,
 )
 from services.llm_provider import get_background_provider
 from memory.repositories.entitaeten_repository import EntitaetenRepository
+from memory.kzg import _kzg_prefix
 from tools.embedding_manager import embedding_manager
 from tools.db_manager import db_manager
 
@@ -81,7 +89,15 @@ class PromotionAgent(BaseAgent):
         else:
             logger.debug("Promotion: Queue leer — nichts zu tun")
 
-        state["ergebnis"] = {"promotet": promotet, "fehler": fehler}
+        # Cluster-Promotion: thematisch verwandte KZG-Eintraege zusammenfuehren
+        character_id: str = state["kontext"].get("character_id", ASSISTANT_USER_ID)
+        cluster_promotet: int = self._cluster_promotion(user_id, character_id)
+
+        state["ergebnis"] = {
+            "promotet": promotet,
+            "cluster_promotet": cluster_promotet,
+            "fehler": fehler,
+        }
         state["status"] = "abgeschlossen"
         return state
 
@@ -540,3 +556,789 @@ class PromotionAgent(BaseAgent):
 
         ergebnis["fakten"] = fakten
         return ergebnis
+
+    # ─────────────────────────────────────────
+    # Cluster-Promotion
+    # ─────────────────────────────────────────
+
+    def _cluster_promotion(self, user_id: str, character_id: str) -> int:
+        """4-Phasen Cluster-Promotion: Rein Embedding-basiert mit Mehrfachzuordnung.
+
+        Phase 1: Zentren finden (Greedy)
+        Phase 2: Jeden Eintrag allen passenden Zentren zuordnen (Mehrfachzuordnung)
+        Phase 3: Cluster >= 3 destillieren mit Kohaerenzpruefung
+        Phase 4: Promovierte KZG-Eintraege loeschen
+
+        Returns:
+            Anzahl promoteter Cluster.
+        """
+        if user_id == ASSISTANT_USER_ID:
+            logger.debug("Cluster-Promotion: Nova-Guard — uebersprungen")
+            return 0
+
+        eintraege: list[dict] = self._kzg_partition_laden(user_id, character_id)
+
+        if len(eintraege) < CLUSTER_MIN_EINTRAEGE:
+            logger.debug(
+                f"Cluster-Promotion: Nur {len(eintraege)} Eintraege "
+                f"fuer {user_id}:{character_id} — zu wenig"
+            )
+            return 0
+
+        # --- Phase 1: Zentren finden ---
+        zentren: list[int] = self._zentren_finden(eintraege)
+
+        logger.info(
+            f"Cluster-Promotion Phase 1: {len(eintraege)} Eintraege "
+            f"→ {len(zentren)} Zentren"
+        )
+
+        # --- Phase 2: Mehrfachzuordnung ---
+        cluster_map: dict[int, list[dict]] = self._mehrfach_zuordnen(
+            eintraege, zentren,
+        )
+
+        # --- Phase 3: Promotion mit Kohaerenzpruefung ---
+        promotet: int = 0
+        promovierte_keys: set[str] = set()
+
+        # 3a: Cluster mit >= 3 Mitgliedern → Destillation
+        for zentrum_idx, mitglieder in cluster_map.items():
+            if len(mitglieder) < CLUSTER_MIN_EINTRAEGE:
+                continue
+
+            zentrum_text: str = eintraege[zentrum_idx]["inhalt"][:50]
+            logger.info(
+                f"Cluster-Promotion Phase 3: Cluster '{zentrum_text}...' "
+                f"mit {len(mitglieder)} Eintraegen → Destillation"
+            )
+
+            lzg_treffer: dict | None = self._lzg_thema_suchen(
+                user_id, character_id,
+                eintraege[zentrum_idx]["inhalt"],
+                mitglieder,
+            )
+
+            if lzg_treffer:
+                ergebnis: dict = self._cluster_update_kohaerenz(
+                    user_id, character_id,
+                    mitglieder, lzg_treffer,
+                )
+            else:
+                ergebnis = self._cluster_insert_kohaerenz(
+                    user_id, character_id, mitglieder,
+                )
+
+            kohaerenz: str = ergebnis.get("kohaerenz", "nein")
+            ausreisser_texte: list[str] = ergebnis.get("ausreisser", [])
+
+            if kohaerenz == "nein":
+                logger.info(
+                    f"Cluster-Promotion: Kohaerenzpruefung gescheitert "
+                    f"fuer Cluster '{zentrum_text}...' — kein Destillat"
+                )
+                continue
+
+            ausreisser_set: set[str] = set(ausreisser_texte)
+            for eintrag in mitglieder:
+                if eintrag["inhalt"] not in ausreisser_set:
+                    promovierte_keys.add(eintrag["key"])
+
+            promotet += 1
+
+        # 3b: Einzelgaenger und Zweier → LZG-Magnetismus
+        for zentrum_idx, mitglieder in cluster_map.items():
+            if len(mitglieder) >= CLUSTER_MIN_EINTRAEGE:
+                continue
+
+            verbleibend: list[dict] = [
+                e for e in mitglieder if e["key"] not in promovierte_keys
+            ]
+            if not verbleibend:
+                continue
+
+            lzg_treffer = self._lzg_thema_suchen(
+                user_id, character_id,
+                verbleibend[0]["inhalt"],
+                verbleibend,
+            )
+
+            if lzg_treffer:
+                logger.info(
+                    f"Cluster-Promotion: LZG-Magnetismus — "
+                    f"{len(verbleibend)} Einzelgaenger docken an "
+                    f"LZG #{lzg_treffer['id']} an"
+                )
+                ergebnis = self._cluster_update_kohaerenz(
+                    user_id, character_id,
+                    verbleibend, lzg_treffer,
+                )
+                if ergebnis.get("kohaerenz") == "nein":
+                    logger.debug(
+                        f"Cluster-Promotion: Magnetismus abgelehnt — "
+                        f"Kohaerenz 'nein'"
+                    )
+                    continue
+                for eintrag in verbleibend:
+                    promovierte_keys.add(eintrag["key"])
+                promotet += 1
+
+        # --- Phase 4: Aufraeumen ---
+        if promovierte_keys:
+            for key in promovierte_keys:
+                redis_client.delete(key)
+                logger.debug(f"Cluster-Promotion: KZG {key} geloescht")
+
+            redis_client.set(f"hash_dirty:{user_id}", "1")
+            logger.info(
+                f"Cluster-Promotion Phase 4: {len(promovierte_keys)} "
+                f"KZG-Eintraege geloescht, {promotet} Cluster promotet"
+            )
+
+        return promotet
+
+    @staticmethod
+    def _kzg_partition_laden(user_id: str, character_id: str) -> list[dict]:
+        """Laedt alle KZG-Eintraege einer Paar-Partition aus Redis."""
+
+        keys: list = redis_client.keys(_kzg_prefix(user_id, character_id))
+        eintraege: list[dict] = []
+
+        for key in keys:
+            if isinstance(key, bytes):
+                key = key.decode("utf-8")
+
+            try:
+                inhalt:      str = redis_client.hget(key, "inhalt") or ""
+                themen_raw:  str = redis_client.hget(key, "themen") or ""
+                salienz_raw: str = redis_client.hget(key, "salienz") or "0.0"
+                beobachter:  str = redis_client.hget(key, "beobachter") or "user"
+                dimension:   str = redis_client.hget(key, "dimension") or "kontext"
+
+                themen: list[str] = [t.strip() for t in themen_raw.split(",") if t.strip()]
+
+                # Embedding frisch erzeugen — Redis-Blob ist durch decode_responses=True korrumpiert
+                entry_embedding: list[float] = embedding_manager.embed(inhalt)
+
+                eintraege.append({
+                    "key":        key,
+                    "inhalt":     inhalt,
+                    "themen":     themen,
+                    "salienz":    float(salienz_raw),
+                    "beobachter": beobachter,
+                    "dimension":  dimension,
+                    "embedding":  entry_embedding,
+                })
+            except Exception as ex:
+                logger.warning(f"Cluster-Promotion: Fehler bei Key {key}: {ex}")
+
+        logger.info(
+            f"Cluster-Promotion: {len(eintraege)} KZG-Eintraege "
+            f"geladen fuer {user_id}:{character_id}"
+        )
+        return eintraege
+
+    def _zentren_finden(self, eintraege: list[dict]) -> list[int]:
+        """Phase 1: Identifiziert Cluster-Zentren per Greedy.
+
+        Ein Eintrag wird Zentrum, wenn sein Embedding zu KEINEM bisherigen
+        Zentrum Cosine >= CLUSTER_THEMEN_SIMILARITY hat.
+
+        Aeltere Eintraege werden zuerst verarbeitet → stabile Zentren.
+
+        Returns:
+            Liste von Indizes in eintraege[].
+        """
+        zentren: list[int] = []
+        zentren_embs: list[np.ndarray] = []
+
+        for i, eintrag in enumerate(eintraege):
+            emb_i: np.ndarray = np.array(eintrag["embedding"], dtype=np.float32)
+            norm_i: float = float(np.linalg.norm(emb_i))
+            if norm_i == 0:
+                continue
+
+            ist_zentrum: bool = True
+            for z_emb in zentren_embs:
+                similarity: float = float(
+                    np.dot(emb_i, z_emb) / (norm_i * float(np.linalg.norm(z_emb)))
+                )
+                if similarity >= CLUSTER_THEMEN_SIMILARITY:
+                    ist_zentrum = False
+                    break
+
+            if ist_zentrum:
+                zentren.append(i)
+                zentren_embs.append(emb_i)
+
+        return zentren
+
+    def _mehrfach_zuordnen(
+        self,
+        eintraege: list[dict],
+        zentren:   list[int],
+    ) -> dict[int, list[dict]]:
+        """Phase 2: Ordnet jeden Eintrag ALLEN passenden Zentren zu.
+
+        Ein Eintrag kann in 0, 1 oder N Clustern sein. Cosine >= threshold
+        wird gegen jedes Zentrum geprueft.
+
+        'Brokkoli mit Kaesesosse' kann sowohl in 'Vorlieben' als auch in
+        'Lieblingsgerichte' landen — keine Information geht verloren.
+
+        Returns:
+            Dict: zentrum_index → Liste der zugeordneten Eintraege.
+        """
+        cluster_map: dict[int, list[dict]] = {z: [] for z in zentren}
+
+        zentren_embs: list[tuple[int, np.ndarray, float]] = []
+        for z_idx in zentren:
+            z_emb: np.ndarray = np.array(eintraege[z_idx]["embedding"], dtype=np.float32)
+            z_norm: float = float(np.linalg.norm(z_emb))
+            zentren_embs.append((z_idx, z_emb, z_norm))
+
+        zuordnungen: int = 0
+        mehrfach: int = 0
+
+        for eintrag in eintraege:
+            emb_i: np.ndarray = np.array(eintrag["embedding"], dtype=np.float32)
+            norm_i: float = float(np.linalg.norm(emb_i))
+            if norm_i == 0:
+                continue
+
+            treffer: int = 0
+            for z_idx, z_emb, z_norm in zentren_embs:
+                if z_norm == 0:
+                    continue
+                similarity: float = float(np.dot(emb_i, z_emb) / (norm_i * z_norm))
+                if similarity >= CLUSTER_THEMEN_SIMILARITY:
+                    cluster_map[z_idx].append(eintrag)
+                    treffer += 1
+
+            if treffer > 1:
+                mehrfach += 1
+            zuordnungen += treffer
+
+        logger.info(
+            f"Cluster-Promotion Phase 2: {zuordnungen} Zuordnungen, "
+            f"davon {mehrfach} Eintraege in mehreren Clustern"
+        )
+
+        return cluster_map
+
+    @staticmethod
+    def _lzg_thema_suchen(
+        user_id:           str,
+        character_id:      str,
+        thema:             str,
+        cluster_eintraege: list[dict],
+    ) -> dict | None:
+        """Sucht im LZG nach einem bestehenden Eintrag zum Cluster-Thema.
+
+        Verwendet Embedding-Suche mit pgvector.
+        Schwelle: CLUSTER_LZG_SIMILARITY (0.80, etwas lockerer als KZG,
+        da LZG-Eintraege bereits destilliert und abstrakter sind).
+        """
+        thema_embedding: list[float] = embedding_manager.embed(thema)
+        embedding_str: str = "[" + ",".join(str(x) for x in thema_embedding) + "]"
+
+        try:
+            row: dict | None = db_manager.select_one(
+                """
+                SELECT id, inhalt, gewicht, dimension, verstaerkt_am,
+                       1 - (embedding <=> %s::vector) AS similarity
+                FROM langzeitgedaechtnis
+                WHERE user_id = %s
+                  AND character_id = %s
+                  AND aktiv = TRUE
+                  AND embedding IS NOT NULL
+                ORDER BY embedding <=> %s::vector
+                LIMIT 1
+                """,
+                (embedding_str, user_id, character_id, embedding_str),
+            )
+
+            if row and row["similarity"] >= CLUSTER_LZG_SIMILARITY:
+                logger.info(
+                    f"Cluster-Promotion: LZG-Treffer "
+                    f"(Similarity {row['similarity']:.2f}) → UPDATE"
+                )
+                return {
+                    "id":            row["id"],
+                    "inhalt":        row["inhalt"],
+                    "gewicht":       row["gewicht"],
+                    "dimension":     row["dimension"],
+                    "verstaerkt_am": row["verstaerkt_am"],
+                }
+
+            logger.info(f"Cluster-Promotion: Kein LZG-Treffer fuer '{thema[:50]}' → INSERT")
+            return None
+
+        except Exception as ex:
+            logger.error(f"Cluster-Promotion: LZG-Suche fehlgeschlagen: {ex}")
+            return None
+
+    def _cluster_update(
+        self,
+        user_id:           str,
+        character_id:      str,
+        thema:             str,
+        cluster_eintraege: list[dict],
+        lzg_treffer:       dict,
+    ) -> None:
+        """Aktualisiert bestehenden LZG-Eintrag mit neuen KZG-Daten.
+
+        Backpropagation: Bestaetigung verstaerkt, Widerspruch schwaecht.
+        Harmonisiert mit Ebbinghaus: verstaerkt_am und gewicht steuern den Decay.
+        """
+        neue_kerne: list[str] = [e["inhalt"] for e in cluster_eintraege]
+        alter_text: str = lzg_treffer["inhalt"]
+
+        ergebnis: dict = self._destillation_update(alter_text, neue_kerne, thema, user_id)
+
+        zusammenfassung: str  = ergebnis.get("zusammenfassung", "")
+        ist_widerspruch: bool = ergebnis.get("widerspruch", False)
+
+        if not zusammenfassung:
+            logger.warning(f"Cluster-Promotion: Leere Destillation fuer '{thema}' — uebersprungen")
+            return
+
+        neues_embedding: list[float] = embedding_manager.embed(zusammenfassung)
+        embedding_str: str = "[" + ",".join(str(x) for x in neues_embedding) + "]"
+
+        if ist_widerspruch:
+            logger.info(
+                f"Cluster-Promotion: Widerspruch fuer '{thema}' — "
+                f"Decay x{CLUSTER_WIDERSPRUCH_DECAY_FAKTOR}, neuer Eintrag"
+            )
+            db_manager.execute(
+                """
+                UPDATE langzeitgedaechtnis
+                SET gewicht = gewicht / %s
+                WHERE id = %s
+                """,
+                (CLUSTER_WIDERSPRUCH_DECAY_FAKTOR, lzg_treffer["id"]),
+            )
+
+            self._lzg_eintrag_schreiben(
+                user_id, character_id, zusammenfassung, embedding_str,
+                cluster_eintraege, thema,
+            )
+        else:
+            logger.info(
+                f"Cluster-Promotion: Bestaetigung fuer '{thema}' — "
+                f"UPDATE + Gewicht +{CLUSTER_BESTAETIGUNG_BOOST}"
+            )
+            db_manager.execute(
+                """
+                UPDATE langzeitgedaechtnis
+                SET inhalt = %s,
+                    embedding = %s::vector,
+                    gewicht = LEAST(gewicht + %s, 5.0),
+                    verstaerkt_am = NOW()
+                WHERE id = %s
+                """,
+                (zusammenfassung, embedding_str,
+                 CLUSTER_BESTAETIGUNG_BOOST, lzg_treffer["id"]),
+            )
+
+    def _cluster_insert_kohaerenz(
+        self,
+        user_id:           str,
+        character_id:      str,
+        cluster_eintraege: list[dict],
+    ) -> dict:
+        """Destillation mit Kohaerenzpruefung fuer neue LZG-Eintraege.
+
+        Der LLM prueft ob die Eintraege zusammengehoeren bevor er destilliert.
+
+        Returns:
+            {"kohaerenz": "ja|teilweise|nein",
+             "zusammenfassung": "...",
+             "ausreisser": ["Kern-Text", ...]}
+        """
+        kerne: list[str] = [e["inhalt"] for e in cluster_eintraege]
+        kerne_formatiert: str = "\n".join(f"- {k}" for k in kerne)
+
+        system_prompt: str = (
+            "Du bist ein Gedaechtnissystem. "
+            "Deine Aufgabe: Pruefe ob die folgenden Beobachtungen thematisch "
+            "zusammengehoeren, und fasse die zusammengehoerigen zusammen.\n\n"
+            "SCHRITT 1 — KOHAERENZ PRUEFEN:\n"
+            "- 'ja': Alle Beobachtungen handeln vom selben Thema.\n"
+            "- 'teilweise': Die meisten gehoeren zusammen, aber einzelne "
+            "Ausreisser passen nicht.\n"
+            "- 'nein': Die Beobachtungen sind zu verschieden fuer eine "
+            "gemeinsame Zusammenfassung.\n\n"
+            "SCHRITT 2 — ZUSAMMENFASSEN (nur bei 'ja' oder 'teilweise'):\n"
+            "- Behalte ALLE konkreten Namen, Orte, Zahlen\n"
+            "- Ein bis drei Saetze\n"
+            f"- Dritte Person ('{user_id} mag...')\n"
+            "- Bei 'teilweise': Nur die zusammengehoerigen zusammenfassen, "
+            "Ausreisser im Feld 'ausreisser' auflisten (exakter Text).\n"
+            "- Kein Kommentar, keine Einleitung\n\n"
+            "ANTWORTFORMAT (JSON ohne Backticks):\n"
+            '{"kohaerenz": "ja|teilweise|nein", '
+            '"zusammenfassung": "...", '
+            '"ausreisser": ["exakter Text des Ausreissers", ...]}'
+        )
+
+        user_prompt: str = f"Beobachtungen:\n{kerne_formatiert}"
+
+        node_cfg = get_node_config("cluster_destillation")
+        provider = get_background_provider()
+        antwort = provider.chat(
+            messages=[{"role": "user", "content": user_prompt}],
+            system=system_prompt,
+            temperature=node_cfg.get("temperature", 0.1),
+            max_output_tokens=node_cfg.get("max_output_tokens"),
+            caller="pixie/promotion/cluster_insert_kohaerenz",
+        )
+
+        ergebnis: dict = self._parse_kohaerenz_antwort(antwort.content)
+
+        kohaerenz: str = ergebnis.get("kohaerenz", "nein")
+        zusammenfassung: str = ergebnis.get("zusammenfassung", "")
+
+        if kohaerenz == "nein" or not zusammenfassung:
+            logger.info(
+                f"Cluster-Promotion: Kohaerenz '{kohaerenz}' "
+                f"— kein LZG-Eintrag"
+            )
+            return ergebnis
+
+        neues_embedding: list[float] = embedding_manager.embed(zusammenfassung)
+        embedding_str: str = "[" + ",".join(str(x) for x in neues_embedding) + "]"
+
+        ausreisser_set: set[str] = set(ergebnis.get("ausreisser", []))
+        kohaerente_eintraege: list[dict] = [
+            e for e in cluster_eintraege
+            if e["inhalt"] not in ausreisser_set
+        ]
+        if not kohaerente_eintraege:
+            kohaerente_eintraege = cluster_eintraege
+
+        self._lzg_eintrag_schreiben(
+            user_id, character_id, zusammenfassung, embedding_str,
+            kohaerente_eintraege, zusammenfassung[:50],
+        )
+
+        logger.info(
+            f"Cluster-Promotion: LZG INSERT — Kohaerenz '{kohaerenz}', "
+            f"{len(kohaerente_eintraege)} Quellen, "
+            f"{len(ausreisser_set)} Ausreisser zurueck ins KZG"
+        )
+
+        return ergebnis
+
+    def _cluster_update_kohaerenz(
+        self,
+        user_id:           str,
+        character_id:      str,
+        cluster_eintraege: list[dict],
+        lzg_treffer:       dict,
+    ) -> dict:
+        """Destillation mit Kohaerenzpruefung fuer LZG-Updates (Backpropagation).
+
+        Returns:
+            {"kohaerenz": "ja|teilweise|nein",
+             "zusammenfassung": "...",
+             "widerspruch": bool,
+             "ausreisser": ["...", ...]}
+        """
+        kerne: list[str] = [e["inhalt"] for e in cluster_eintraege]
+        kerne_formatiert: str = "\n".join(f"- {k}" for k in kerne)
+        alter_text: str = lzg_treffer["inhalt"]
+
+        system_prompt: str = (
+            "Du bist ein Gedaechtnissystem. "
+            "Deine Aufgabe: Pruefe ob neue Beobachtungen zu einer bestehenden "
+            "Erinnerung passen, und aktualisiere sie.\n\n"
+            "SCHRITT 1 — KOHAERENZ PRUEFEN:\n"
+            "- 'ja': Alle neuen Beobachtungen passen zur bestehenden Erinnerung.\n"
+            "- 'teilweise': Manche passen, manche sind Ausreisser.\n"
+            "- 'nein': Die Beobachtungen haben nichts mit der Erinnerung zu tun.\n\n"
+            "SCHRITT 2 — WIDERSPRUCH PRUEFEN:\n"
+            "- Widersprechen die neuen Beobachtungen der bestehenden Erinnerung?\n\n"
+            "SCHRITT 3 — ZUSAMMENFASSEN (nur bei 'ja' oder 'teilweise'):\n"
+            "- Bei Widerspruch: Neue Aussage nur aus den neuen Beobachtungen.\n"
+            "- Sonst: Bestehende Erinnerung und neue Beobachtungen vereinen.\n"
+            "- Behalte ALLE konkreten Namen, Orte, Zahlen\n"
+            "- Ein bis drei Saetze\n"
+            f"- Dritte Person ('{user_id} mag...')\n"
+            "- Kein Kommentar, keine Einleitung\n\n"
+            "ANTWORTFORMAT (JSON ohne Backticks):\n"
+            '{"kohaerenz": "ja|teilweise|nein", '
+            '"widerspruch": true/false, '
+            '"zusammenfassung": "...", '
+            '"ausreisser": ["exakter Text", ...]}'
+        )
+
+        user_prompt: str = (
+            f"Bestehende Erinnerung:\n\"{alter_text}\"\n\n"
+            f"Neue Beobachtungen:\n{kerne_formatiert}"
+        )
+
+        node_cfg = get_node_config("cluster_destillation")
+        provider = get_background_provider()
+        antwort = provider.chat(
+            messages=[{"role": "user", "content": user_prompt}],
+            system=system_prompt,
+            temperature=node_cfg.get("temperature", 0.1),
+            max_output_tokens=node_cfg.get("max_output_tokens"),
+            caller="pixie/promotion/cluster_update_kohaerenz",
+        )
+
+        ergebnis: dict = self._parse_kohaerenz_antwort(antwort.content)
+
+        kohaerenz: str = ergebnis.get("kohaerenz", "nein")
+        zusammenfassung: str = ergebnis.get("zusammenfassung", "")
+        ist_widerspruch: bool = ergebnis.get("widerspruch", False)
+
+        if kohaerenz == "nein" or not zusammenfassung:
+            return ergebnis
+
+        neues_embedding: list[float] = embedding_manager.embed(zusammenfassung)
+        embedding_str: str = "[" + ",".join(str(x) for x in neues_embedding) + "]"
+
+        if ist_widerspruch:
+            logger.info(
+                f"Cluster-Promotion: Widerspruch — "
+                f"Decay x{CLUSTER_WIDERSPRUCH_DECAY_FAKTOR}, neuer Eintrag"
+            )
+            db_manager.execute(
+                """
+                UPDATE langzeitgedaechtnis
+                SET gewicht = gewicht / %s,
+                    verstaerkt_am = NOW()
+                WHERE id = %s
+                """,
+                (CLUSTER_WIDERSPRUCH_DECAY_FAKTOR, lzg_treffer["id"]),
+            )
+
+            ausreisser_set: set[str] = set(ergebnis.get("ausreisser", []))
+            kohaerente: list[dict] = [
+                e for e in cluster_eintraege
+                if e["inhalt"] not in ausreisser_set
+            ] or cluster_eintraege
+
+            self._lzg_eintrag_schreiben(
+                user_id, character_id, zusammenfassung, embedding_str,
+                kohaerente, zusammenfassung[:50],
+            )
+        else:
+            logger.info(
+                f"Cluster-Promotion: Bestaetigung — "
+                f"UPDATE + Gewicht +{CLUSTER_BESTAETIGUNG_BOOST}"
+            )
+            db_manager.execute(
+                """
+                UPDATE langzeitgedaechtnis
+                SET inhalt = %s,
+                    embedding = %s::vector,
+                    gewicht = LEAST(gewicht + %s, 5.0),
+                    verstaerkt_am = NOW()
+                WHERE id = %s
+                """,
+                (zusammenfassung, embedding_str,
+                 CLUSTER_BESTAETIGUNG_BOOST, lzg_treffer["id"]),
+            )
+
+        return ergebnis
+
+    def _parse_kohaerenz_antwort(self, raw_content: str) -> dict:
+        """Parst die JSON-Antwort des Kohaerenz-LLM-Calls.
+
+        Robustes Parsing mit Backtick-Cleanup und Fallbacks.
+        """
+        raw: str = raw_content.strip()
+
+        if raw.startswith("```"):
+            raw = raw.split("\n", 1)[1] if "\n" in raw else raw[3:]
+        if raw.endswith("```"):
+            raw = raw[:-3]
+        raw = raw.strip()
+
+        try:
+            return json.loads(raw)
+        except json.JSONDecodeError:
+            logger.warning(
+                f"Cluster-Promotion: Ungueltiges Kohaerenz-JSON: {raw[:200]}"
+            )
+            if raw and len(raw) > 10:
+                return {
+                    "kohaerenz": "ja",
+                    "zusammenfassung": raw,
+                    "ausreisser": [],
+                }
+            return {"kohaerenz": "nein", "zusammenfassung": "", "ausreisser": []}
+
+    def _cluster_insert(
+        self,
+        user_id:           str,
+        character_id:      str,
+        thema:             str,
+        cluster_eintraege: list[dict],
+    ) -> None:
+        """Erzeugt neuen LZG-Eintrag aus Cluster-Destillat."""
+
+        neue_kerne: list[str] = [e["inhalt"] for e in cluster_eintraege]
+
+        zusammenfassung: str = self._destillation_insert(neue_kerne, thema, user_id)
+
+        if not zusammenfassung:
+            logger.warning(f"Cluster-Promotion: Leere Destillation fuer '{thema}' — uebersprungen")
+            return
+
+        neues_embedding: list[float] = embedding_manager.embed(zusammenfassung)
+        embedding_str: str = "[" + ",".join(str(x) for x in neues_embedding) + "]"
+
+        self._lzg_eintrag_schreiben(
+            user_id, character_id, zusammenfassung, embedding_str,
+            cluster_eintraege, thema,
+        )
+
+        logger.info(
+            f"Cluster-Promotion: LZG INSERT fuer '{thema}' — "
+            f"{len(cluster_eintraege)} Quellen → 1 Eintrag"
+        )
+
+    @staticmethod
+    def _lzg_eintrag_schreiben(
+        user_id:           str,
+        character_id:      str,
+        zusammenfassung:   str,
+        embedding_str:     str,
+        cluster_eintraege: list[dict],
+        thema:             str,
+    ) -> None:
+        """Schreibt einen neuen LZG-Eintrag (gleiches INSERT wie Einzelpromotion)."""
+
+        beobachter_counts = Counter(e["beobachter"] for e in cluster_eintraege)
+        beobachter: str = beobachter_counts.most_common(1)[0][0]
+
+        avg_salienz: float = sum(e["salienz"] for e in cluster_eintraege) / len(cluster_eintraege)
+
+        dim_counts = Counter(e["dimension"] for e in cluster_eintraege)
+        dimension: str = dim_counts.most_common(1)[0][0]
+
+        db_manager.execute(
+            """
+            INSERT INTO langzeitgedaechtnis
+                (user_id, character_id, beobachter,
+                 dimension, inhalt, gewicht, haeufigkeit,
+                 embedding,
+                 intentionen, emotion, modus,
+                 arousal, emotions_vektor,
+                 sprach_stil, beziehungs_dynamik, tone,
+                 verstaerkt_am)
+            VALUES
+                (%s, %s, %s, %s, %s, %s, %s, %s::vector,
+                 %s, %s, %s, %s, %s, %s, %s, %s, NOW())
+            """,
+            (user_id, character_id, beobachter,
+             dimension, zusammenfassung, min(avg_salienz, 1.0),
+             len(cluster_eintraege),
+             embedding_str,
+             "[]", "neutral", "",
+             0.5, "",
+             "neutral", "neutral", "sachlich"),
+        )
+
+    # ─────────────────────────────────────────
+    # LLM-Calls fuer Cluster-Destillation
+    # ─────────────────────────────────────────
+
+    @staticmethod
+    def _destillation_insert(kerne: list[str], thema: str, user_id: str) -> str:
+        """LLM-Call: Destilliert mehrere KZG-Kerne zu einer LZG-Zusammenfassung."""
+
+        kerne_formatiert: str = "\n".join(f"- {k}" for k in kerne)
+
+        system_prompt: str = (
+            "Du bist ein Gedaechtnissystem. "
+            "Deine Aufgabe: Mehrere Einzelbeobachtungen zu einer praezisen "
+            "Zusammenfassung verdichten.\n\n"
+            "REGELN:\n"
+            "- Behalte ALLE konkreten Namen, Orte, Zahlen, Beziehungen\n"
+            "- Entferne Redundanzen — dreimal dasselbe reicht einmal\n"
+            "- Ein bis drei Saetze\n"
+            f"- Schreibe in der dritten Person ('{user_id} mag...', "
+            f"'{user_id} hat...')\n"
+            "- Kein Kommentar, keine Einleitung, nur die Zusammenfassung"
+        )
+
+        user_prompt: str = (
+            f"Thema: {thema}\n\n"
+            f"Beobachtungen:\n{kerne_formatiert}"
+        )
+
+        node_cfg = get_node_config("cluster_destillation")
+        provider = get_background_provider()
+        antwort  = provider.chat(
+            messages=[{"role": "user", "content": user_prompt}],
+            system=system_prompt,
+            temperature=node_cfg.get("temperature", 0.1),
+            max_output_tokens=node_cfg.get("max_output_tokens"),
+            caller="pixie/promotion/cluster_insert",
+        )
+
+        return antwort.content.strip()
+
+    @staticmethod
+    def _destillation_update(
+        alter_text: str, kerne: list[str], thema: str, user_id: str,
+    ) -> dict:
+        """LLM-Call: Gleicht neue Beobachtungen mit bestehender Erinnerung ab.
+
+        Returns:
+            {"zusammenfassung": str, "widerspruch": bool}
+        """
+        kerne_formatiert: str = "\n".join(f"- {k}" for k in kerne)
+
+        system_prompt: str = (
+            "Du bist ein Gedaechtnissystem. "
+            "Deine Aufgabe: Eine bestehende Erinnerung mit neuen Beobachtungen "
+            "abgleichen und aktualisieren.\n\n"
+            "PRUEFE:\n"
+            "1. Widersprechen die neuen Beobachtungen der bestehenden Erinnerung?\n"
+            "2. Wenn NEIN: Fasse bestehende Erinnerung und neue Beobachtungen "
+            "zu einer aktualisierten Gesamtaussage zusammen.\n"
+            "3. Wenn JA: Schreibe eine neue Aussage nur aus den neuen Beobachtungen.\n\n"
+            "REGELN:\n"
+            "- Behalte ALLE konkreten Namen, Orte, Zahlen\n"
+            "- Ein bis drei Saetze\n"
+            f"- Dritte Person ('{user_id} mag...')\n"
+            "- Kein Kommentar, keine Einleitung\n\n"
+            "ANTWORTFORMAT (JSON ohne Backticks):\n"
+            '{"zusammenfassung": "...", "widerspruch": true/false}'
+        )
+
+        user_prompt: str = (
+            f"Thema: {thema}\n\n"
+            f"Bestehende Erinnerung:\n\"{alter_text}\"\n\n"
+            f"Neue Beobachtungen:\n{kerne_formatiert}"
+        )
+
+        node_cfg = get_node_config("cluster_destillation")
+        provider = get_background_provider()
+        antwort  = provider.chat(
+            messages=[{"role": "user", "content": user_prompt}],
+            system=system_prompt,
+            temperature=node_cfg.get("temperature", 0.1),
+            max_output_tokens=node_cfg.get("max_output_tokens"),
+            caller="pixie/promotion/cluster_update",
+        )
+
+        raw: str = antwort.content.strip()
+        if raw.startswith("```"):
+            raw = raw.split("\n", 1)[1] if "\n" in raw else raw[3:]
+        if raw.endswith("```"):
+            raw = raw[:-3]
+        raw = raw.strip()
+
+        try:
+            return json.loads(raw)
+        except json.JSONDecodeError:
+            logger.error(f"Cluster-Promotion: Ungueltiges JSON: {raw[:200]}")
+            return {"zusammenfassung": raw, "widerspruch": False}

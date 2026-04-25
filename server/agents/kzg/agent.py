@@ -2,8 +2,7 @@
 
 Graph-Aufbau und Routing-Logik. Die Business-Logik liegt in:
   verdichtung.py  -- LLM-Call: kern erzeugen
-  aehnlichkeit.py -- Embedding + Redis-Vektorsuche
-  speicher.py     -- Store neu / Verstaerkung
+  speicher.py     -- Neuanlage + thematische Verstaerkung verwandter Eintraege
   queues.py       -- Promotion + Shadow + Dirty-Flag
 """
 
@@ -12,7 +11,6 @@ import logging
 from agents.base import BaseAgent, AgentState
 from langgraph.graph import StateGraph, END
 from agents.kzg.verdichtung import verdichten
-from agents.kzg.aehnlichkeit import aehnlichkeit_pruefen
 from agents.kzg.speicher import speichern
 from agents.kzg.queues import queues_befuellen
 from config import KZG_SALIENZ_MINIMUM
@@ -28,7 +26,7 @@ class KzgAgent(BaseAgent):
 
     @property
     def faehigkeiten(self) -> list[str]:
-        return ["kzg_verdichten", "kzg_speichern", "kzg_verstaerken"]
+        return ["kzg_verdichten", "kzg_speichern", "kzg_thematisch_verstaerken"]
 
     @property
     def graph_eignung(self) -> list[str]:
@@ -39,16 +37,14 @@ class KzgAgent(BaseAgent):
 
         graph.add_node("schwelle_pruefen", self._schwelle_pruefen)
         graph.add_node("verdichten",       verdichten)
-        graph.add_node("aehnlichkeit",     aehnlichkeit_pruefen)
         graph.add_node("speichern",        speichern)
         graph.add_node("queues",           queues_befuellen)
 
         graph.set_entry_point("schwelle_pruefen")
         graph.add_conditional_edges("schwelle_pruefen", self._nach_schwelle)
-        graph.add_edge("verdichten",   "aehnlichkeit")
-        graph.add_edge("aehnlichkeit", "speichern")
-        graph.add_edge("speichern",    "queues")
-        graph.add_edge("queues",       END)
+        graph.add_edge("verdichten", "speichern")
+        graph.add_edge("speichern",  "queues")
+        graph.add_edge("queues",     END)
 
         return graph.compile()
 
