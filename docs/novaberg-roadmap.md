@@ -490,6 +490,36 @@
 
 - Ollama-Bug #15260 (think+format) — weiterhin offen, Workaround bleibt
 
+## Chat 66 (26. April 2026) — Dual-Emotion Abschluss, [EIGENE_EMOTION], charakter_hash Migration, Client-Panels
+
+### Dual-Emotion Phase 2 — Abschluss
+
+- ✅ AP9 Doku-Update: 6 Dateien aktualisiert (dual-emotion_k, backlog, responder, router, roadmap, bugs)
+- ✅ **Phase 2 komplett** — AP1–9 alle ✅
+
+### [EIGENE_EMOTION]-Block im Responder
+
+- ✅ Neuer Block zwischen [IDENTITAET] und [AUFGABE] in `_build_system_prompt()`
+- ✅ Drei Bestandteile: Top-3 Emotionen + Vektor-Beschreibung + Konflikt-Signal
+- ✅ Konsumiert bestehende State-Felder (nova_emotions_verlauf, nova_emotions_vektor, nova_emotion_konflikt)
+- ✅ EMOTIONS_VEKTOREN_NOVA als eigenes Dict in config.py — Ich-Perspektive, getrennt kalibrierbar
+
+### charakter_hash Paar-Schema-Migration
+
+- ✅ ALTER TABLE + Backfill + PK auf (user_id, character_id) in main.py
+- ✅ 11 Dateien migriert: Schema, Lese-API, Enricher, REST-API, CharakterAgent, Legacy-Pixie, hash_dirty Setter (4×), Recherche (2×)
+- ✅ Enricher-Semantik: User-Hash (wie Nova den User sieht) + Nova-Hash (Novas Persönlichkeit im Kontext)
+
+### Client-Panels
+
+- ✅ Drei ComboBox-Modi: Voll (Emotionen/KZG/LZG), Dedupliziert (Session), Bidirektional (Charakter)
+- ✅ Beobachter-Icons vereinheitlicht auf 👤/🤖 (KZG-Muster) in LZG- und Session-Panel
+- ✅ Charakter-Panel: PERSPEKTIVE_BIDIREKTIONAL für beide Richtungen je Paar
+
+### Architekturentscheidung
+
+- ✅ Agent-Plugins stellen Panels — künftige Panels werden vom jeweiligen Agenten als Plugin bereitgestellt
+
 ---
 
-*Aktualisiert in Chat 66. Offene Punkte → novaberg-backlog.md. Bugs → novaberg-bugs.md.*
+*Aktualisiert in Chat 67. Offene Punkte → novaberg-backlog.md. Bugs → novaberg-bugs.md.*
