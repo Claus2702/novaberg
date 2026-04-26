@@ -122,14 +122,28 @@ def _clear_box(box: Gtk.Box) -> None:
         child = box.get_first_child()
 
 
+_BEOBACHTER_BADGE: dict[str, str] = {
+    "user":      "👤",
+    "assistant": "🤖",
+}
+
+
 def _build_entry_card(eintrag: dict) -> Gtk.Box:
     """Baut eine Karte für einen einzelnen LZG-Eintrag."""
     card = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=4)
     card.set_margin_top(6)
     card.set_margin_bottom(6)
 
-    # Kopfzeile: Gewicht-Badge + Dimension (fett) + verstärkt-Zeitstempel rechts.
+    # Kopfzeile: Beobachter-Badge + Gewicht-Badge + Dimension (fett) + verstärkt-Zeitstempel rechts.
     head = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=8)
+
+    beobachter: str = str(eintrag.get("beobachter", "") or "")
+    beob_icon: str = _BEOBACHTER_BADGE.get(beobachter, "")
+    if beob_icon:
+        beob_label = Gtk.Label(label=beob_icon)
+        beob_label.set_tooltip_text(f"Beobachter: {beobachter}")
+        beob_label.set_xalign(0.0)
+        head.append(beob_label)
 
     gewicht: float = float(eintrag.get("gewicht", 0.0))
     badge = Gtk.Label(label=f"{gewicht:.2f}")

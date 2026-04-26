@@ -18,6 +18,7 @@ from config import (
     LLM_PROFILE, ANTHROPIC_API_KEY, ANTHROPIC_MODEL,
     PIXIE_ANALYSE_MODEL, PIXIE_ANALYSE_NUM_CTX,
     PIXIE_INTERVALL_MIN, shutdown_event,
+    DEFAULT_USER_ID, ASSISTANT_USER_ID,
 )
 from services.llm_provider import init_providers
 from graph.builder              import build_human_graph, build_agent_graph, build_character_graph
@@ -54,6 +55,25 @@ def schema_migrieren(postgres_url: str) -> None:
         "ALTER TABLE charakter_hash ADD COLUMN IF NOT EXISTS intentions_profil TEXT NOT NULL DEFAULT ''",
         "ALTER TABLE charakter_hash ADD COLUMN IF NOT EXISTS emotions_profil TEXT NOT NULL DEFAULT ''",
         "ALTER TABLE charakter_hash ADD COLUMN IF NOT EXISTS beziehungsprofil TEXT NOT NULL DEFAULT ''",
+        # charakter_hash — Paar-Schema (Chat 66)
+        "ALTER TABLE charakter_hash ADD COLUMN IF NOT EXISTS character_id TEXT NOT NULL DEFAULT ''",
+        # Bestehende Daten: user_id='meister' gehoert zu character_id='nova' und umgekehrt
+        f"UPDATE charakter_hash SET character_id = '{ASSISTANT_USER_ID}' WHERE user_id = '{DEFAULT_USER_ID}' AND character_id = ''",
+        f"UPDATE charakter_hash SET character_id = '{DEFAULT_USER_ID}' WHERE user_id = '{ASSISTANT_USER_ID}' AND character_id = ''",
+        # PK auf Paar erweitern (nur wenn noch alter PK)
+        """
+        DO $$
+        BEGIN
+            IF EXISTS (
+                SELECT 1 FROM pg_constraint
+                WHERE conname = 'charakter_hash_pkey'
+                AND conrelid = 'charakter_hash'::regclass
+            ) THEN
+                ALTER TABLE charakter_hash DROP CONSTRAINT charakter_hash_pkey;
+                ALTER TABLE charakter_hash ADD CONSTRAINT charakter_hash_pkey PRIMARY KEY (user_id, character_id);
+            END IF;
+        END $$
+        """,
         # hintergrund_log
         "ALTER TABLE hintergrund_log ADD COLUMN IF NOT EXISTS status TEXT NOT NULL DEFAULT 'offen'",
         "ALTER TABLE hintergrund_log ADD COLUMN IF NOT EXISTS verarbeitet_am TIMESTAMPTZ",

@@ -231,7 +231,7 @@ class PromotionAgent(BaseAgent):
                  sprach_stil, beziehungs_dynamik, tone),
             )
 
-            redis_client.set(f"hash_dirty:{user_id}", "1")
+            redis_client.set(f"hash_dirty:{user_id}:{character_id}", "1")
 
             logger.info(
                 f"Promotion: '{themen}' -> LZG als Erinnerung "
@@ -689,7 +689,7 @@ class PromotionAgent(BaseAgent):
                 redis_client.delete(key)
                 logger.debug(f"Cluster-Promotion: KZG {key} geloescht")
 
-            redis_client.set(f"hash_dirty:{user_id}", "1")
+            redis_client.set(f"hash_dirty:{user_id}:{character_id}", "1")
             logger.info(
                 f"Cluster-Promotion Phase 4: {len(promovierte_keys)} "
                 f"KZG-Eintraege geloescht, {promotet} Cluster promotet"

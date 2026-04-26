@@ -82,10 +82,12 @@ class RechercheAgent(BaseAgent):
         logger.info(f"RechercheAgent: Session-Kontext — {session_kontext.get('thema_kern', '?')}")
 
         # -- 2a. Kontext-Paket bauen (deterministisch, kein LLM) --
+        character_id: str = ASSISTANT_USER_ID if user_id == DEFAULT_USER_ID else DEFAULT_USER_ID
         kontext_paket: dict = kontext_paket_bauen(
             thema=thema or session_kontext.get("thema_kern", ""),
             queue_eintrag=queue_eintrag,
             user_id=user_id,
+            character_id=character_id,
         )
 
         # -- 2b. Lagebeurteilung (Qwen3-32B, Analyse-Modell) --

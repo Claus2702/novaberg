@@ -9,16 +9,16 @@ import psycopg2
 logger = logging.getLogger("ki_server.memory.charakter")
 
 
-def charakter_hash_retrieve(postgres_url: str, user_id: str) -> str:
-    """Holt den aktuellen Charakter-Hash des Users."""
+def charakter_hash_retrieve(postgres_url: str, user_id: str, character_id: str = "") -> str:
+    """Holt den aktuellen Charakter-Hash fuer ein Gespraechspaar."""
 
     try:
         conn   = psycopg2.connect(postgres_url)
         cursor = conn.cursor()
 
         cursor.execute(
-            "SELECT kern_hash, adaptive_hash FROM charakter_hash WHERE user_id = %s",
-            (user_id,),
+            "SELECT kern_hash, adaptive_hash FROM charakter_hash WHERE user_id = %s AND character_id = %s",
+            (user_id, character_id),
         )
 
         row = cursor.fetchone()
@@ -31,7 +31,7 @@ def charakter_hash_retrieve(postgres_url: str, user_id: str) -> str:
                 parts.append(f"Kern-Persönlichkeit: {kern}")
             if adaptiv:
                 parts.append(f"Aktuelle Phase: {adaptiv}")
-            logger.info(f"Charakter-Hash gefunden für user '{user_id}'")
+            logger.info(f"Charakter-Hash gefunden fuer Paar '{user_id}/{character_id}'")
             return "\n".join(parts)
 
         return ""
@@ -41,8 +41,8 @@ def charakter_hash_retrieve(postgres_url: str, user_id: str) -> str:
         return ""
 
 
-def charakter_hash_retrieve_dict(postgres_url: str, user_id: str) -> dict:
-    """Holt den Charakter-Hash als Dict (kern, adaptiv, beziehungsprofil, intentions_profil, emotions_profil)."""
+def charakter_hash_retrieve_dict(postgres_url: str, user_id: str, character_id: str = "") -> dict:
+    """Holt den Charakter-Hash als Dict fuer ein Gespraechspaar."""
 
     try:
         conn   = psycopg2.connect(postgres_url)
@@ -50,8 +50,8 @@ def charakter_hash_retrieve_dict(postgres_url: str, user_id: str) -> dict:
 
         cursor.execute(
             "SELECT kern_hash, adaptive_hash, beziehungsprofil, intentions_profil, emotions_profil "
-            "FROM charakter_hash WHERE user_id = %s",
-            (user_id,),
+            "FROM charakter_hash WHERE user_id = %s AND character_id = %s",
+            (user_id, character_id),
         )
 
         row = cursor.fetchone()

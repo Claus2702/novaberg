@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Node-Referenz Router
-**Stand:** 21. April 2026, Chat 60 (Event-Modell, Graph-Split)
+**Stand:** 26. April 2026, Chat 66 (Dispatch-Guard dokumentiert)
 **Pfad:** novaberg/docs/novaberg-node-router.md
 **Quellen:** nova-01-m-b.md
 **Datei:** `graph/nodes/router.py`
@@ -83,6 +83,12 @@ Jedes Agent-Plugin definiert seine eigenen Erkennungsregeln über `router_prompt
 Der Agent klassifiziert die konkrete Aktion (create/read/update/delete) selbst über einen LLM-Call (Classify-Node in `agents/notizen/klassifikation.py`).
 
 > **Architektur-Entscheidung (Chat 25/26, AGT6):** Die Sekretärin diagnostiziert nicht. Der Router erkennt die Domäne, der Agent die Aktion. Das vermeidet AGT7 („Streich X von Y" als Delete statt Update) und ROUTE3 (semantische statt Recency-basierte Auflösung).
+
+#### Dispatch-Guard (Chat 65)
+
+Generelle Sicherheitsregel in `prompts/default/router.task.txt`: Kein Agent-Dispatch ohne Kommando-Signal. Der User-Prompt muss ein Verb, einen Imperativ oder ein Schlüsselwort enthalten, das eine Aktion impliziert. Bloße Themen-Erwähnung ("Wir haben über Lumi gesprochen") darf keinen Agent triggern — nur explizite Änderungsanweisungen ("Schreib auf, dass Lumi...").
+
+**Ursache (ROUTE-CHAR-NOTIZ, Chat 62/65):** Der CharacterGraph-Router dispatchte Konversation an den NotizenAgent, weil Themen-Erwähnung als Notiz-Update interpretiert wurde. Zwei Maßnahmen: (1) Genereller Dispatch-Guard im Router-Task-Prompt. (2) Plugin-Regel im `notizen_manager` verschärft.
 
 ### 3.5 Management-Felder (Referenz)
 

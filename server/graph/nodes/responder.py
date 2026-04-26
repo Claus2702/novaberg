@@ -16,7 +16,7 @@ import logging
 import re
 
 from datetime    import datetime
-from config      import ASSISTANT_NAME, BEZIEHUNG_EINFLUSS, EMOTIONS_VEKTOREN, PROMPTS, get_node_config
+from config      import ASSISTANT_NAME, BEZIEHUNG_EINFLUSS, EMOTIONS_VEKTOREN, EMOTIONS_VEKTOREN_NOVA, PROMPTS, get_node_config
 from graph.state import ConversationState
 from services.llm_provider import get_chat_provider
 
@@ -224,6 +224,45 @@ def _build_system_prompt(state: ConversationState) -> str:
         )
 
     parts.append("\n\n".join(identitaet_parts))
+
+    # ── [EIGENE_EMOTION] ── Novas eigener Emotionszustand (Dual-Emotion Phase 2) ──
+    nova_emotions_verlauf: list = state.get("nova_emotions_verlauf", [])
+    nova_emotions_vektor:  str  = state.get("nova_emotions_vektor", "")
+    nova_emotion_konflikt: bool = state.get("nova_emotion_konflikt", False)
+
+    if nova_emotions_verlauf:
+        eigene_emo_parts: list[str] = ["[EIGENE_EMOTION]\nDein aktueller emotionaler Zustand:"]
+
+        # Top-Emotionen aus dem Verlauf
+        emo_text: str = ", ".join(
+            f"{e['emotion']} ({e['gewicht']:.0%}, a={e.get('arousal', 0.5):.0%})"
+            for e in nova_emotions_verlauf[:3]
+        )
+        eigene_emo_parts.append(emo_text)
+
+        # Vektor-Beschreibung (gleiche Vektoren wie User)
+        if nova_emotions_vektor and nova_emotions_vektor in EMOTIONS_VEKTOREN_NOVA:
+            eigene_emo_parts.append(EMOTIONS_VEKTOREN_NOVA[nova_emotions_vektor])
+
+        # Konflikt-Signal
+        if nova_emotion_konflikt:
+            eigene_emo_parts.append(
+                "Du spuerst einen inneren Konflikt — dein eigener Zustand "
+                "und der des Nutzers zeigen in verschiedene Richtungen. "
+                "Das darf sich in deiner Antwort zeigen."
+            )
+
+        parts.append("\n".join(eigene_emo_parts))
+
+        # Log
+        top_nova: str = ", ".join(
+            f"{e['emotion']}={e['gewicht']:.0%}" for e in nova_emotions_verlauf[:3]
+        )
+        logger.info(
+            f"Responder: [EIGENE_EMOTION] injiziert — {top_nova}"
+            f"{', KONFLIKT' if nova_emotion_konflikt else ''}"
+            f"{f', Vektor={nova_emotions_vektor}' if nova_emotions_vektor else ''}"
+        )
 
     # ── [AUFGABE] ── Fertiger Block aus dem Planner ──
     task_block: str = state.get("task_block", "")

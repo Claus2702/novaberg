@@ -62,6 +62,7 @@ class LzgPromotionTask(BaseTask):
         sprach_stil:        str = redis_client.hget(kzg_key, "sprach_stil") or ""
         beziehungs_dynamik: str = redis_client.hget(kzg_key, "beziehungs_dynamik") or ""
         tone:               str = redis_client.hget(kzg_key, "tone") or ""
+        character_id:       str = redis_client.hget(kzg_key, "character_id") or ""
 
         if not inhalt:
             logger.warning(f"Promotion: KZG-Key '{kzg_key}' nicht mehr vorhanden — übersprungen")
@@ -183,7 +184,7 @@ class LzgPromotionTask(BaseTask):
             conn.close()
 
             # Charakter-Hash muss neu destilliert werden
-            redis_client.set(f"hash_dirty:{user_id}", "1")
+            redis_client.set(f"hash_dirty:{user_id}:{character_id}", "1")
 
             logger.info(
                 f"Promotion: '{themen}' → LZG als Erinnerung "

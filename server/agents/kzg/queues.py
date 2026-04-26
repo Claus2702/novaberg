@@ -41,6 +41,7 @@ def queues_befuellen(state: AgentState) -> dict:
     salienz_obj:     dict  = state["parameter"].get("salienz_obj", {})
     speicher_status: str   = state["parameter"].get("speicher_status", "")
     user_id:         str   = state["kontext"].get("user_id", "")
+    character_id:    str   = state["kontext"].get("character_id", "")
 
     salienz:     float = salienz_obj.get("salienz", 0.0)
     intentionen: list  = salienz_obj.get("intentionen", [])
@@ -106,7 +107,7 @@ def queues_befuellen(state: AgentState) -> dict:
                 aktionen.append(f"shadow_{aufgabe}")
 
     # Dirty-Flag fuer Hash-Destillation
-    redis_client.set(f"hash_dirty:{user_id}", "1")
+    redis_client.set(f"hash_dirty:{user_id}:{character_id}", "1")
     aktionen.append("dirty_flag")
 
     logger.info(f"KZG-Queues: {', '.join(aktionen)}")

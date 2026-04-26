@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Backlog — Konzipierte, noch nicht implementierte Features
-**Stand:** 25. April 2026, Chat 64
+**Stand:** 26. April 2026, Chat 66
 **Pfad:** novaberg/docs/novaberg-backlog.md
 **Quellen:** nova-08-k.md (Kognitive Anreicherung), nova-10-k-backlog.md (Skill-System), nova-01-t-c-backlog.md (Node-Konfiguration)
 
@@ -416,7 +416,7 @@ Zwei neue Nodes pro Agent:
 | Phase | Ziel | Status |
 |-------|------|--------|
 | Phase 1 | User-IDs entkoppeln — frei wählbar aus Config | ✅ Chat 57 |
-| Phase 2 | Zweiter Emotionsstrang + Enricher-Split + Graph-Neuordnung | 🔧 AP1–3+7 ✅, AP4+8 teilw., AP5+6+9 offen |
+| Phase 2 | Zweiter Emotionsstrang + Enricher-Split + Graph-Neuordnung | 🔧 AP1–7 ✅, AP8 teilw. (Server ✅, Client offen), AP9 ✅ |
 | Phase 3 | Ziel-Vektor (Antrieb) als dritte Kraft auf Novas Emotion | ⬜ |
 
 **Konzept-Dokumente:** `novaberg-thinking-drive_k.md` §4 (Chat 53), `novaberg-ei-dual-emotion_k.md` (Chat 58)
@@ -432,8 +432,8 @@ Zwei neue Nodes pro Agent:
 | 5 | Router(Nova) + Commitment-Erkennung | ✅ Chat 60 — Router im CharacterGraph |
 | 6 | Salienz(Nova) — eigener Salienz-Prompt | ✅ Chat 60 — Salienz im CharacterGraph |
 | 7 | Asynchroner Block orchestrieren | ✅ Chat 60 — Event-Consumer ersetzt async-Block |
-| 8 | API + Client (GespraechAntwort + Dual-Radar) | 🔧 API ✅, Client-Panels offen |
-| 9 | Dokumentation | 🔧 Konzeptdokument + 12 Node-Dokumente aktualisiert |
+| 8 | API + Client (GespraechAntwort + Dual-Radar) | 🔧 API ✅, Responder [EIGENE_EMOTION] ✅, Client-Panels offen |
+| 9 | Dokumentation | ✅ Chat 66 |
 
 **Chat 61 Nachtrag:**
 - Perzeption(Nova) läuft nun symmetrisch nach Nova's finaler Antwort (analog zu Perzeption(User) in Pfad 1). Siehe Roadmap Chat 61.

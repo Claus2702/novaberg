@@ -8,7 +8,7 @@ import psycopg2
 import redis
 
 from memory.lzg                      import effektives_gewicht_berechnen
-from config                          import get_node_config
+from config                          import get_node_config, DEFAULT_USER_ID, ASSISTANT_USER_ID
 from services.shadow_agent.base_task import BaseTask
 from services.llm_provider           import get_background_provider
 
@@ -125,6 +125,9 @@ class CharakterHashTask(BaseTask):
             "kern": "", "adaptiv": "",
             "intentions_profil": "", "emotions_profil": "", "beziehungsprofil": "",
         }
+
+        # Paar-Schema (Chat 66): character_id aus user_id ableiten
+        character_id: str = ASSISTANT_USER_ID if user_id == DEFAULT_USER_ID else DEFAULT_USER_ID
 
         # ── Kern-Hash aus LZG ────────────────────
         try:
@@ -371,11 +374,11 @@ class CharakterHashTask(BaseTask):
 
                 cursor.execute("""
                     INSERT INTO charakter_hash
-                        (user_id, kern_hash, adaptive_hash, intentions_profil,
+                        (user_id, character_id, kern_hash, adaptive_hash, intentions_profil,
                          emotions_profil, beziehungsprofil,
                          kern_aktualisiert_am, adaptive_aktualisiert_am)
-                    VALUES (%s, %s, %s, %s, %s, %s, NOW(), NOW())
-                    ON CONFLICT (user_id) DO UPDATE SET
+                    VALUES (%s, %s, %s, %s, %s, %s, %s, NOW(), NOW())
+                    ON CONFLICT (user_id, character_id) DO UPDATE SET
                         kern_hash = CASE WHEN %s != '' THEN %s
                             ELSE charakter_hash.kern_hash END,
                         adaptive_hash = CASE WHEN %s != '' THEN %s
@@ -391,7 +394,7 @@ class CharakterHashTask(BaseTask):
                         adaptive_aktualisiert_am = CASE WHEN %s != '' THEN NOW()
                             ELSE charakter_hash.adaptive_aktualisiert_am END
                 """, (
-                    user_id,
+                    user_id, character_id,
                     ergebnis["kern"], ergebnis["adaptiv"],
                     ergebnis["intentions_profil"], ergebnis["emotions_profil"],
                     ergebnis["beziehungsprofil"],
@@ -407,8 +410,8 @@ class CharakterHashTask(BaseTask):
                 conn.commit()
                 conn.close()
 
-                redis_client.delete(f"hash_dirty:{user_id}")
-                logger.info(f"Charakter-Hash gespeichert für user '{user_id}' (5 Profile)")
+                redis_client.delete(f"hash_dirty:{user_id}:{character_id}")
+                logger.info(f"Charakter-Hash gespeichert fuer Paar '{user_id}/{character_id}' (5 Profile)")
 
             except Exception as fehler:
                 logger.error(f"Charakter-Hash Speicherung fehlgeschlagen: {fehler}")

@@ -1,6 +1,6 @@
 # Novaberg — Roadmap (Projektchronik)
 
-**Stand:** Chat 64, 25. April 2026
+**Stand:** Chat 66, 26. April 2026
 **Pfad:** novaberg/docs/novaberg-roadmap.md
 **Single Source of Truth für abgeschlossene Arbeit.**
 **Offene Punkte → novaberg-backlog.md**
@@ -467,4 +467,29 @@
 
 ---
 
-*Aktualisiert in Chat 64. Offene Punkte → novaberg-backlog.md. Bugs → novaberg-bugs.md.*
+## Chat 65 (26. April 2026) — Paper I Published, Bugfixes
+
+### Paper I — "Why I Built a Personal AI That Runs Entirely On My Own Hardware"
+
+- ✅ HTML geschrieben, reviewed, korrigiert — EN + DE mit Lumi-Chat als gezeichnete Bubbles
+- ✅ Deployed auf novaberg.de mit SSL-Zertifikat
+- ✅ robots.txt angelegt, Paper-Index aktiviert
+- ✅ GPT-4 → GPT-5 Angleichung, Grammatik-Fix DE, Cloudflare-Email-Fix
+
+### Bugfixes
+
+- ✅ urllib3-RETRY: `HTTPAdapter(max_retries=0)` in `client/ui/stream_handler.py` (Verifikation ausstehend)
+- ✅ ROUTE-CHAR-NOTIZ: Genereller Dispatch-Guard in `router.task.txt` + Notizen-Regel verschärft (Verifikation ausstehend)
+
+### Neue Bugs dokumentiert
+
+- ⬜ RESP-DEAD — Tote Antwort bei fehlgeschlagenem Agent-Dispatch
+- ⬜ PIXIE-GHOST — Pixie-Delivery fließt nicht durch EI/Session/Router
+
+### Recherche
+
+- Ollama-Bug #15260 (think+format) — weiterhin offen, Workaround bleibt
+
+---
+
+*Aktualisiert in Chat 66. Offene Punkte → novaberg-backlog.md. Bugs → novaberg-bugs.md.*

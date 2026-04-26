@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Konzept — Dual-Emotion Phase 2
-**Stand:** 21. April 2026, Chat 60 (Async-Pfad ersetzt durch Event-Modell)
+**Stand:** 26. April 2026, Chat 66 (AP9 Doku-Abschluss, alle Server-APs fertig)
 **Pfad:** novaberg/docs/novaberg-ei-dual-emotion_k.md
 **Typ:** Konzept (K)
 **Voraussetzung:** Phase 1 (User-ID-Entkopplung, Chat 57) ✅
@@ -262,9 +262,9 @@ Ermöglicht dem GTK4-Client die Visualisierung beider Emotionsströme im Emotion
 
 ---
 
-## 9. Responder-Integration
+## 9. Responder-Integration ✅
 
-Der Responder bekommt Novas berechnete Emotion für den aktuellen Turn als zusätzlichen Kontext:
+Der Responder bekommt Novas berechnete Emotion für den aktuellen Turn als zusätzlichen Kontext im `[EIGENE_EMOTION]`-Block:
 
 ```
 [EIGENE_EMOTION]
@@ -274,6 +274,8 @@ Vektor: {nova_emotions_vektor}
 ```
 
 Platziert zwischen [IDENTITAET] und [KOMMUNIKATION]. Die Emotion beeinflusst die Antwort, ohne sie zu diktieren — Nova kann fröhlich sein und trotzdem sachlich antworten, aber die Grundfärbung ändert sich.
+
+**Status:** Implementiert. Der Block wird aus `nova_emotions_verlauf`, `nova_emotions_vektor` und `nova_emotion_konflikt` (State-Felder aus EI-Calc) zusammengebaut.
 
 ---
 
@@ -288,8 +290,23 @@ Platziert zwischen [IDENTITAET] und [KOMMUNIKATION]. Die Emotion beeinflusst die
 | 5 | **Router(Nova) + Commitment** | Router-Aufruf auf Nova-Response. Bei Commitment → Planner → Agent. | ✅ Chat 60 — Router im CharacterGraph (Pfad 2). Commitments werden normal geroutet. |
 | 6 | **Salienz(Nova)** | Eigener Salienz-Call für Novas Aussagen. Prompt-Anpassung. | ✅ Chat 60 — Salienz im CharacterGraph (Pfad 2). Keine eigene Salienz(Nova) nötig. |
 | 7 | **Asynchroner Block** | Nova-Pfad: Perzeption → Enricher → EI-Calc → Router → [Agent] → Salienz → Dispatcher. User-Pfad: Salienz → Dispatcher. | ✅ Chat 60 — Async-Block durch Event-Consumer ersetzt. |
-| 8 | **API + Client** | `GespraechAntwort` erweitern, Emotions-Panel: Dual-Radar. | 🔧 API-Felder ✅, Client-Panels offen |
-| 9 | **Dokumentation** | Graph-Doku, Enricher-Doku, EI-Doku, Roadmap, Backlog aktualisieren. | 🔧 Konzeptdokument aktualisiert, Node-Dokumente teilweise |
+| 8 | **API + Client** | `GespraechAntwort` erweitern, Emotions-Panel: Dual-Radar. | 🔧 API ✅, Responder [EIGENE_EMOTION] ✅, Client-Panels offen |
+| 9 | **Dokumentation** | Graph-Doku, Enricher-Doku, EI-Doku, Roadmap, Backlog aktualisieren. | ✅ Chat 66 — alle Dokumente aktualisiert |
+
+### Chat-61-Nachträge (Akkumulationsrefactor + Perzeption-Symmetrie)
+
+Drei wesentliche Verfeinerungen nach der Kernimplementierung:
+
+1. **Rollen-Split im EI-Calc:** State-Flag `ei_calc_rolle` ("user" | "character") trennt die Berechnungspfade sauber. `_ei_calc_user()` und `_ei_calc_character()` sind separate Funktionen.
+
+2. **Akkumulationsrefactor:** Drei biologisch motivierte Mechanismen ersetzen die einfache Decay-Summierung:
+   - Aktueller Turn voll, Historie als Echo (15% — `EMOTION_HISTORIEN_GEWICHT`)
+   - Harter Cap bei 2.5 (`EMOTION_GLAETTUNGS_MAXIMUM`)
+   - sin^0.5-Glättungskurve für den Anzeigebereich [0, 1] — steil unten (kleine Andeutungen sichtbar), sanft oben (aufbauend statt sofort ausschlagend)
+
+3. **Perzeption-Symmetrie:** Perzeption läuft nun in beiden Graphen — als erster Node im HumanGraph (User-Prompt, `perzeption_rolle: "user"`) und als letzter Node im CharacterGraph nach Corrector/Evaluate (Nova-Antwort, `perzeption_rolle: "assistant"`). Nach jedem Turn sind beide Emotionen im Session-Turn annotiert.
+
+→ Details: `novaberg-node-ei-calc.md` §§ Rollen-Split, Akkumulation
 
 ---
 
@@ -299,9 +316,9 @@ Platziert zwischen [IDENTITAET] und [KOMMUNIKATION]. Die Emotion beeinflusst die
 
 Dritte Kraft auf Novas Emotion: aktivierte Zielsätze injizieren Emotion über Embedding-Similarity. Novaberg-thinking-drive_k.md §4.3. Benötigt die `ziele`-Tabelle und Gravitationsberechnung.
 
-### TurnOrchestrator (Zukunft)
+### TurnOrchestrator (überholt)
 
-Der lineare Graph wird durch einen sternförmigen Orchestrator ersetzt. Ein TurnOrchestrator entscheidet regelbasiert, welcher Node als nächstes läuft. Der asynchrone Nova-Pfad ist dann kein Sonderfall mehr, sondern eine weitere Sequenz in derselben State-Machine. Großer Umbau — eigenes Epic.
+Ursprünglich als sternförmiger Orchestrator konzipiert, der regelbasiert entscheidet, welcher Node als nächstes läuft. **Seit Chat 60 durch das Event-Modell ersetzt:** Zwei separate Graphen (HumanGraph + CharacterGraph), verbunden durch eine Redis-Event-Queue. Der TurnOrchestrator als separates Epic ist damit konzeptionell überholt. Siehe `novaberg-event-model_k.md`.
 
 ---
 
@@ -317,4 +334,4 @@ Der lineare Graph wird durch einen sternförmigen Orchestrator ersetzt. Ein Turn
 
 ---
 
-*Konzept erstellt 19. April 2026, Chat 58. Grundlage: novaberg-thinking-drive_k.md §4 (Chat 53), Phase 1 User-ID-Entkopplung (Chat 57), Enricher-Analyse (Chat 58).*
+*Konzept erstellt 19. April 2026, Chat 58. Aktualisiert Chat 66 (AP9 Doku-Abschluss). Grundlage: novaberg-thinking-drive_k.md §4 (Chat 53), Phase 1 User-ID-Entkopplung (Chat 57), Enricher-Analyse (Chat 58). Akkumulationsrefactor + Perzeption-Symmetrie Chat 61. [EIGENE_EMOTION]-Block im Responder live.*

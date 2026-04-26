@@ -52,6 +52,7 @@ class CharacterPanel(PanelBase):
     UNIQUE = True
     CATEGORY = "on_demand"
     NEEDS_USER_SELECTOR = True
+    PERSPEKTIVE_BIDIREKTIONAL = True  # Beide Richtungen: User-Hash + Nova-Hash
     DEFAULT_WIDTH = 500
     DEFAULT_HEIGHT = 600
 
@@ -76,12 +77,9 @@ class CharacterPanel(PanelBase):
     # Daten-Ladung
     # ═══════════════════════════════════════════════════════════════
     def load_data(self) -> dict:
-        """Holt Charakter-Hash-Profile für die aktuell gewählte Perspektive.
+        """Holt Charakter-Hash-Profile fuer das aktuell gewaehlte Gespraechspaar.
 
-        Der Hash hängt aktuell nur an ``user_id``. Die Perspektive-Zeile
-        beobachter hat hier keine Wirkung — bei Umschaltung auf "nova"
-        würde der Client eigentlich Novas Charakter-Hash wollen, der aber
-        noch nicht existiert (kein ``character_id``-Eintrag in der Tabelle).
+        Filtert nach ``user_id`` + ``character_id`` (Paar-Schema seit Chat 62).
         """
         params: dict = self._get_api_params()
         url: str = f"{SERVER_URL}/gedaechtnis/hash/{params['user_id']}"

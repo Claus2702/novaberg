@@ -387,7 +387,7 @@ def kzg_store(
             except Exception as ex:
                 logger.warning(f"KZG: Verstärkungsfehler bei {other_key}: {ex}")
 
-    redis_client.set(f"hash_dirty:{user_id}", "1")
+    redis_client.set(f"hash_dirty:{user_id}:{character_id}", "1")
     return "neu"
 
 

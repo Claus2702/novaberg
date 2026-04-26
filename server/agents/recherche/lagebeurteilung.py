@@ -32,6 +32,7 @@ def kontext_paket_bauen(
     thema: str,
     queue_eintrag: dict,
     user_id: str,
+    character_id: str,
     lzg_limit: int = PIXIE_VERTIEFUNG_LZG_LIMIT,
     kzg_limit: int = PIXIE_VERTIEFUNG_KZG_LIMIT,
 ) -> dict:
@@ -49,7 +50,7 @@ def kontext_paket_bauen(
     kzg_eintraege = _kzg_eintraege_laden(thema, user_id, kzg_limit)
 
     # 4. Charakter-Hash
-    charakter_hash = _charakter_laden(user_id)
+    charakter_hash = _charakter_laden(user_id, character_id)
 
     # 5. Beziehungsdynamik
     beziehungs_dynamik = "neutral"
@@ -135,17 +136,17 @@ def _kzg_eintraege_laden(thema: str, user_id: str, limit: int) -> list[dict]:
         return []
 
 
-def _charakter_laden(user_id: str) -> dict:
-    """Laedt den Charakter-Hash aus der Datenbank."""
+def _charakter_laden(user_id: str, character_id: str) -> dict:
+    """Laedt den Charakter-Hash aus der Datenbank (Paar-Schema)."""
     try:
         rows = db_manager.select(
             """
             SELECT kern_hash, adaptive_hash, intentions_profil,
                    emotions_profil, beziehungsprofil
             FROM charakter_hash
-            WHERE user_id = %s
+            WHERE user_id = %s AND character_id = %s
             """,
-            (user_id,),
+            (user_id, character_id),
         )
         return rows[0] if rows else {}
     except Exception as e:

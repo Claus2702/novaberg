@@ -72,14 +72,17 @@ class CharakterAgent(BaseAgent):
     def invoke(self, state: AgentState) -> AgentState:
         """Destilliert 5 Charakter-Profile fuer alle dirty User."""
 
-        user_ids: list[str] = [DEFAULT_USER_ID, ASSISTANT_USER_ID]
+        paare: list[tuple[str, str]] = [
+            (DEFAULT_USER_ID, ASSISTANT_USER_ID),
+            (ASSISTANT_USER_ID, DEFAULT_USER_ID),
+        ]
         gesamt_destilliert: int = 0
 
-        for user_id in user_ids:
+        for user_id, character_id in paare:
             # ── Dirty-Check ──────────────────────
-            dirty = redis_client.get(f"hash_dirty:{user_id}")
+            dirty = redis_client.get(f"hash_dirty:{user_id}:{character_id}")
             if not dirty:
-                logger.debug(f"CharakterAgent: Kein hash_dirty fuer {user_id}")
+                logger.debug(f"CharakterAgent: Kein hash_dirty fuer {user_id}:{character_id}")
                 continue
 
             logger.info(f"CharakterAgent: Starte Destillation fuer {user_id}")
@@ -129,8 +132,8 @@ class CharakterAgent(BaseAgent):
 
             if hat_aenderungen:
                 try:
-                    self._ergebnis_speichern(user_id, ergebnis)
-                    redis_client.delete(f"hash_dirty:{user_id}")
+                    self._ergebnis_speichern(user_id, character_id, ergebnis)
+                    redis_client.delete(f"hash_dirty:{user_id}:{character_id}")
                     gesamt_destilliert += 1
                     logger.info(f"CharakterAgent: {user_id} destilliert (5 Profile)")
                 except Exception as ex:
@@ -218,16 +221,16 @@ class CharakterAgent(BaseAgent):
     # ─────────────────────────────────────────
 
     @staticmethod
-    def _ergebnis_speichern(user_id: str, ergebnis: dict) -> None:
-        """Schreibt die 5 Profile per UPSERT in charakter_hash."""
+    def _ergebnis_speichern(user_id: str, character_id: str, ergebnis: dict) -> None:
+        """Schreibt die 5 Profile per UPSERT in charakter_hash (Paar-Schema)."""
         db_manager.execute(
             """
             INSERT INTO charakter_hash
-                (user_id, kern_hash, adaptive_hash, intentions_profil,
+                (user_id, character_id, kern_hash, adaptive_hash, intentions_profil,
                  emotions_profil, beziehungsprofil,
                  kern_aktualisiert_am, adaptive_aktualisiert_am)
-            VALUES (%s, %s, %s, %s, %s, %s, NOW(), NOW())
-            ON CONFLICT (user_id) DO UPDATE SET
+            VALUES (%s, %s, %s, %s, %s, %s, %s, NOW(), NOW())
+            ON CONFLICT (user_id, character_id) DO UPDATE SET
                 kern_hash = CASE WHEN %s != '' THEN %s
                     ELSE charakter_hash.kern_hash END,
                 adaptive_hash = CASE WHEN %s != '' THEN %s
@@ -244,7 +247,7 @@ class CharakterAgent(BaseAgent):
                     ELSE charakter_hash.adaptive_aktualisiert_am END
             """,
             (
-                user_id,
+                user_id, character_id,
                 ergebnis["kern"], ergebnis["adaptiv"],
                 ergebnis["intentions_profil"], ergebnis["emotions_profil"],
                 ergebnis["beziehungsprofil"],

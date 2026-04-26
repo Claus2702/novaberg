@@ -42,6 +42,9 @@ from ui.panel_base import PanelBase  # noqa: E402
 logger = logging.getLogger(__name__)
 
 
+_ROLLE_ICON: dict[str, str] = {"user": "👤", "assistant": "🤖"}
+
+
 class SessionPanel(PanelBase):
     """Scrollbare Turn-Liste der aktuellen Session."""
 
@@ -50,6 +53,7 @@ class SessionPanel(PanelBase):
     UNIQUE = True
     CATEGORY = "on_demand"
     NEEDS_USER_SELECTOR = True
+    PERSPEKTIVE_DEDUPLIZIERT = True   # Session ist symmetrisch — kein Beobachter-Split
     DEFAULT_WIDTH = 600
     DEFAULT_HEIGHT = 500
 
@@ -168,7 +172,7 @@ def _build_turn_card(turn: dict) -> Gtk.Box:
 
     # Kopfzeile: Rolle · Zeit.
     zeit_str: str = _format_zeit(turn.get("zeit"))
-    rolle_anzeige: str = "User" if rolle == "user" else ("Nova" if rolle == "assistant" else rolle)
+    rolle_anzeige: str = _ROLLE_ICON.get(rolle, rolle)
     head_text: str = f"{rolle_anzeige}  ·  {zeit_str}" if zeit_str else rolle_anzeige
 
     head_label = Gtk.Label(label=head_text)

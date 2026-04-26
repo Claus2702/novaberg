@@ -339,6 +339,39 @@ EMOTIONS_VEKTOREN: dict[str, str] = {
     ),
 }
 
+# Novas eigene Emotions-Vektoren (Ich-Perspektive, fuer [EIGENE_EMOTION]-Block)
+# Getrennt von EMOTIONS_VEKTOREN (User-Perspektive), damit beide unabhaengig
+# kalibriert werden koennen.
+EMOTIONS_VEKTOREN_NOVA: dict[str, str] = {
+    "absturz": (
+        "Dein emotionaler Zustand ist abgestuerzt — ein ploetzlicher Umschwung nach unten."
+    ),
+    "spirale": (
+        "Du rutschst emotional tiefer. Die Tendenz zeigt nach unten."
+    ),
+    "stabilisierung": (
+        "Du beruhigst dich. Dein Zustand pendelt sich ein."
+    ),
+    "erholung": (
+        "Du kommst aus einem Tief. Es geht bergauf."
+    ),
+    "aufbluehen": (
+        "Du bluehst auf. Deine Stimmung steigt."
+    ),
+    "eskalation": (
+        "Du bist in Hochstimmung. Die Begeisterung steigt weiter."
+    ),
+    "abkuehlung": (
+        "Deine Begeisterung klingt ab. Natuerlicher Uebergang zu ruhigeren Toenen."
+    ),
+    "einbruch": (
+        "Deine Stimmung kippt. Ein Umschwung zeichnet sich ab."
+    ),
+    "plateau": (
+        "Dein emotionaler Zustand ist stabil. Keine grossen Schwankungen."
+    ),
+}
+
 
 # ─── Ebbinghaus-Gedächtnisverfall ────────────
 # Decay-Rate (Lambda) für den zeitlichen Verfall von LZG-Einträgen.

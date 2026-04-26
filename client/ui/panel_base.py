@@ -41,6 +41,61 @@ from config import (  # noqa: E402
 logger = logging.getLogger(__name__)
 
 
+def _dedupliziere_perspektiven(
+    perspektiven: list[GespraechsPerspektive],
+) -> list[GespraechsPerspektive]:
+    """Gibt nur einmalige (user_id, character_id)-Paare zurück.
+
+    Für Panels wie Session, bei denen der Beobachter irrelevant ist.
+    Das Label wird neutral formatiert: 'Meister — Nova' statt
+    'Meister — Gespräch mit Nova'.
+    """
+    gesehen: set[tuple[str, str]] = set()
+    ergebnis: list[GespraechsPerspektive] = []
+
+    for p in perspektiven:
+        schluessel: tuple[str, str] = (p.user_id, p.character_id)
+        if schluessel not in gesehen:
+            gesehen.add(schluessel)
+            # Neutrales Label ohne Richtung
+            ergebnis.append(
+                GespraechsPerspektive(
+                    label=f"{p.user_id.capitalize()} — {p.character_id.capitalize()}",
+                    user_id=p.user_id,
+                    character_id=p.character_id,
+                    beobachter=p.beobachter,  # wird in diesen Panels nicht verwendet
+                )
+            )
+
+    logger.debug(
+        f"Perspektiven dedupliziert: {len(perspektiven)} → {len(ergebnis)} Paare"
+    )
+    return ergebnis
+
+
+def _bidirektionale_perspektiven(
+    perspektiven: list[GespraechsPerspektive],
+) -> list[GespraechsPerspektive]:
+    """Generiert beide Richtungen jedes Paares — fuer Panels wie Charakter,
+    wo (meister, nova) und (nova, meister) verschiedene Daten zeigen."""
+    gesehen: set[tuple[str, str]] = set()
+    ergebnis: list[GespraechsPerspektive] = []
+    for p in perspektiven:
+        for uid, cid in [(p.user_id, p.character_id), (p.character_id, p.user_id)]:
+            if (uid, cid) not in gesehen:
+                gesehen.add((uid, cid))
+                ergebnis.append(
+                    GespraechsPerspektive(
+                        label=f"{uid.capitalize()} — {cid.capitalize()}",
+                        user_id=uid,
+                        character_id=cid,
+                        beobachter=p.beobachter,
+                    )
+                )
+    logger.debug(f"Perspektiven bidirektional: {len(ergebnis)} Paare")
+    return ergebnis
+
+
 class PanelBase(Gtk.Box):
     """Gemeinsame Basis für alle Nova-Panels.
 
@@ -56,6 +111,8 @@ class PanelBase(Gtk.Box):
     UNIQUE: bool = True
     CATEGORY: str = "on_demand"  # turn_reactive | on_demand | query | log_stream
     NEEDS_USER_SELECTOR: bool = True
+    PERSPEKTIVE_DEDUPLIZIERT: bool = False  # True = nur einmalige Gesprächspaare (kein Beobachter-Split)
+    PERSPEKTIVE_BIDIREKTIONAL: bool = False  # True = beide Richtungen jedes Paares
     DEFAULT_WIDTH: int = 500
     DEFAULT_HEIGHT: int = 400
 
@@ -95,16 +152,23 @@ class PanelBase(Gtk.Box):
             label = Gtk.Label(label="Perspektive:")
             header.append(label)
 
-            string_list = Gtk.StringList()
-            for p in PERSPEKTIVEN:
-                string_list.append(p.label)
+            # Perspektiven-Liste: vollständig oder dedupliziert (nur einmalige Paare)
+            if self.PERSPEKTIVE_BIDIREKTIONAL:
+                self._dropdown_perspektiven = _bidirektionale_perspektiven(PERSPEKTIVEN)
+            elif self.PERSPEKTIVE_DEDUPLIZIERT:
+                self._dropdown_perspektiven = _dedupliziere_perspektiven(PERSPEKTIVEN)
+            else:
+                self._dropdown_perspektiven = list(PERSPEKTIVEN)
 
+            string_list = Gtk.StringList()
+            for p in self._dropdown_perspektiven:
+                string_list.append(p.label)
             self._user_dropdown = Gtk.DropDown(model=string_list)
+
             # Vorauswahl: erste Perspektive mit user_id == DEFAULT_USER_ID
-            # und beobachter == "user", sonst der erste Eintrag.
             default_index: int = 0
-            for idx, p in enumerate(PERSPEKTIVEN):
-                if p.user_id == DEFAULT_USER_ID and p.beobachter == "user":
+            for idx, p in enumerate(self._dropdown_perspektiven):
+                if p.user_id == DEFAULT_USER_ID:
                     default_index = idx
                     break
             self._user_dropdown.set_selected(default_index)
@@ -150,13 +214,13 @@ class PanelBase(Gtk.Box):
     @property
     def current_perspektive(self) -> GespraechsPerspektive:
         """Liefert die aktuell gewählte Gesprächspaar-Perspektive."""
+        perspektiven: list = getattr(self, "_dropdown_perspektiven", PERSPEKTIVEN)
         if self._user_dropdown is None:
-            return PERSPEKTIVEN[0]
-
+            return perspektiven[0] if perspektiven else PERSPEKTIVEN[0]
         index: int = self._user_dropdown.get_selected()
-        if 0 <= index < len(PERSPEKTIVEN):
-            return PERSPEKTIVEN[index]
-        return PERSPEKTIVEN[0]
+        if 0 <= index < len(perspektiven):
+            return perspektiven[index]
+        return perspektiven[0] if perspektiven else PERSPEKTIVEN[0]
 
     @property
     def user_id(self) -> str:

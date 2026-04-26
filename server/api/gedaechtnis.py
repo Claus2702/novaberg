@@ -132,10 +132,9 @@ def LzgAbrufen(
 # ─────────────────────────────────────────────
 @router.get("/gedaechtnis/hash/{user_id}")
 def HashAbrufen(user_id: str, character_id: str = ASSISTANT_USER_ID):
-    """Charakter-Hash eines Users.
+    """Charakter-Hash eines Users fuer ein bestimmtes Gespraechspaar.
 
-    ``character_id`` wird aktuell nicht gefiltert — Tabelle hat nur user_id.
-    Der Parameter existiert fuer Schema-Konsistenz mit den anderen Endpunkten.
+    Seit dem Paar-Schema (Chat 62) wird nach ``user_id`` + ``character_id`` gefiltert.
     """
     try:
         conn   = postgres_verbinden()
@@ -146,8 +145,8 @@ def HashAbrufen(user_id: str, character_id: str = ASSISTANT_USER_ID):
                    intentions_profil, emotions_profil, beziehungsprofil,
                    kern_aktualisiert_am, adaptive_aktualisiert_am
             FROM charakter_hash
-            WHERE user_id = %s
-        """, (user_id,))
+            WHERE user_id = %s AND character_id = %s
+        """, (user_id, character_id))
 
         row = cursor.fetchone()
         conn.close()

@@ -192,8 +192,8 @@ def enrich(
     # ─────────────────────────────────────────
     # 4. Charakter-Hash (immer)
     # ─────────────────────────────────────────
-    char_hash: str = charakter_hash_retrieve(postgres_url, user_id)
-    char_hash_dict: dict = charakter_hash_retrieve_dict(postgres_url, user_id)
+    char_hash: str = charakter_hash_retrieve(postgres_url, user_id, character_id)
+    char_hash_dict: dict = charakter_hash_retrieve_dict(postgres_url, user_id, character_id)
     state["char_hash_dict"] = char_hash_dict or {}
 
     if char_hash:
@@ -201,7 +201,7 @@ def enrich(
         logger.info("Enricher: Charakter-Hash gefunden")
 
     # ── Novas eigener Charakter-Hash ──────────
-    nova_hash_dict: dict = charakter_hash_retrieve_dict(postgres_url, ASSISTANT_USER_ID)
+    nova_hash_dict: dict = charakter_hash_retrieve_dict(postgres_url, ASSISTANT_USER_ID, user_id)
 
     if nova_hash_dict:
         nova_kern:      str = nova_hash_dict.get("kern", "")

@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Node-Referenz Responder
-**Stand:** 21. April 2026, Chat 60 (Event-Modell, Graph-Split)
+**Stand:** 26. April 2026, Chat 66 ([EIGENE_EMOTION]-Block dokumentiert)
 **Pfad:** novaberg/docs/novaberg-node-responder.md
 **Quellen:** nova-01-m-e.md, nova-12-k.md §7
 **Datei:** `graph/nodes/responder.py`
@@ -30,13 +30,14 @@ Nur im CharacterGraph (Pfad 2). Seit Chat 60 nicht mehr im HumanGraph.
 Der System-Prompt wird dynamisch aus dem State zusammengebaut (`_build_system_prompt`). Er folgt dem einheitlichen [BLOCKNAME]-Schema (`nova-01-t-d`, Chat 27). Reihenfolge: Primacy → Kontext → Recency.
 
 1. **[IDENTITAET]** — "Du bist Nova." + Charakter-Anweisung (Saatgut, statisch) + Gewachsene Persönlichkeit (nova_kern) + Aktuelle Themen (nova_adaptiv) + Emotionale Grundstimmung (nova_emotions, seit Chat 52) + Kommunikationsstil (nova_intentionen) + Bild vom Nutzer (nova_beziehung) + Datum/Uhrzeit + Rollenklarheit + Web-Zugriff
-2. **[AUFGABE]** *(bedingt, seit Chat 54 aus State)* — Wird vom Planner als fertiger Block in `task_block` geschrieben. Fünf Varianten: Rückfrage, Erfolg, Verworfen (dismissed), Fehler, Legacy-Management. Der Responder setzt den Block ein ohne eigene Interpretation. Kontext-Schnitt (Gedächtnis/Web weglassen) wird über `task_context_cut` gesteuert.
-3. **[KOMMUNIKATION]** — Emotionaler Zustand, Vektor, EI-MIKRO, Sprachstil, Beziehungsdynamik, Tonalität
-4. **[GESPRAECHSVEKTOR]** *(seit Chat 39)* — Landschaftsbeschreibung aus dem GV-Node
-5. **[GEDAECHTNIS]** *(bei Agent-Erfolg: weggelassen)* — KZG, LZG, Fakten, Notizen
-6. **[WEB-RECHERCHE]** *(bei Agent-Erfolg: weggelassen)* — SearXNG-Ergebnisse
-7. **[REGELN]** — Antwortkürze, verbotene Floskeln, Butler-Prinzip, Tag-Unterdrückung
-8. **[DIREKTIVEN]** *(seit Chat 40)* — Absolute Verhaltensanweisungen vom Nutzer mit Arbeitsvertrag-Framing
+2. **[EIGENE_EMOTION]** *(seit Dual-Emotion Phase 2)* — Novas berechneter Emotionszustand: `nova_emotion_label`, `nova_arousal`, `nova_emotions_vektor`. Aus EI-Calc (State-Felder). Gibt Nova eine eigene emotionale Grundfärbung pro Turn — beeinflusst, diktiert nicht.
+3. **[AUFGABE]** *(bedingt, seit Chat 54 aus State)* — Wird vom Planner als fertiger Block in `task_block` geschrieben. Fünf Varianten: Rückfrage, Erfolg, Verworfen (dismissed), Fehler, Legacy-Management. Der Responder setzt den Block ein ohne eigene Interpretation. Kontext-Schnitt (Gedächtnis/Web weglassen) wird über `task_context_cut` gesteuert.
+4. **[KOMMUNIKATION]** — Emotionaler Zustand, Vektor, EI-MIKRO, Sprachstil, Beziehungsdynamik, Tonalität
+5. **[GESPRAECHSVEKTOR]** *(seit Chat 39)* — Landschaftsbeschreibung aus dem GV-Node
+6. **[GEDAECHTNIS]** *(bei Agent-Erfolg: weggelassen)* — KZG, LZG, Fakten, Notizen
+7. **[WEB-RECHERCHE]** *(bei Agent-Erfolg: weggelassen)* — SearXNG-Ergebnisse
+8. **[REGELN]** — Antwortkürze, verbotene Floskeln, Butler-Prinzip, Tag-Unterdrückung
+9. **[DIREKTIVEN]** *(seit Chat 40)* — Absolute Verhaltensanweisungen vom Nutzer mit Arbeitsvertrag-Framing
 
 **Kontext-Schnitt bei Agent-Aktion (Chat 23, erweitert Chat 27, refactored Chat 54):** Wenn `task_context_cut=True` (Erfolg, Fehler, Ablehnung), sieht der Responder NUR:
 - Identität ([IDENTITAET])
@@ -318,7 +319,7 @@ Ich bin so hyped gerade, das ist nicht real!
 | `beziehungs_dynamik` | Perzeption | Aktuelle Dynamik |
 | `gespraechs_modus` | EI-Calc (seit Chat 59, korrigiert Perzeption) | Kommunikationsregister |
 | `user_intentionen` | Enricher | Erkannte Intentionen |
-| `nova_emotions_verlauf` | EI-Calc (seit Chat 59) | Novas eigener Emotions-Verlauf nach Empathie-Modulation — Quelle für zukünftigen `[EIGENE_EMOTION]`-Block |
+| `nova_emotions_verlauf` | EI-Calc (seit Chat 59) | Novas eigener Emotions-Verlauf nach Empathie-Modulation — Quelle für den `[EIGENE_EMOTION]`-Block |
 | `nova_emotions_vektor` | EI-Calc (seit Chat 59) | Richtung von Novas eigenem Bogen |
 | `nova_emotion_konflikt` | EI-Calc (seit Chat 59) | True wenn Nova und User in gegenüberliegenden Sektoren mit hohem Arousal — Signal für Responder, Inkongruenz explizit zu machen |
 | `task_block` | Planner (seit Chat 54) | Fertiger [AUFGABE]-Block, direkt einsetzbar |
