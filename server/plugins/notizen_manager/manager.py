@@ -78,8 +78,11 @@ Setze management_action = "agent" wenn:
 1. Der User eine Notiz, Liste, Einkaufsliste, ToDo oder Merkzettel
    verwalten moechte (erstellen, bearbeiten, loeschen, abfragen)
 2. ODER der Gespraechsverlauf eine aktive Notiz/Liste enthaelt
-   und der aktuelle Prompt sich inhaltlich darauf bezieht
-   (z.B. "Wir brauchen auch Erdbeeren" nach Obstlisten-Gespraech)
+   und der aktuelle Prompt eine AENDERUNG an dieser Notiz ausdrueckt
+   (z.B. "Wir brauchen auch Erdbeeren" = Ergaenzung,
+    "Streich die Milch" = Loeschung).
+   Blosse Erwaehnung eines Themas, das zufaellig auch in einer
+   Notiz steht, ist KEIN Dispatch.
 
 Bei Erkennung:
   management_action = "agent"

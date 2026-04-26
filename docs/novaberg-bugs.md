@@ -413,12 +413,14 @@ Dann Requests über diese Session abwickeln statt direkt `requests.post()`.
 
 ### Chat 62 — Paar-Schema-Folgebugs
 
-#### ROUTE-CHAR-NOTIZ — CharacterGraph-Router dispatched Konversation an NotizenAgent ⬜
+#### ROUTE-CHAR-NOTIZ — CharacterGraph-Router dispatched Konversation an NotizenAgent ✅
 **Entdeckt:** Chat 62
 **Symptom:** Der Router im CharacterGraph erkennt Konversation faelschlich als Notizen-Task ("Lumi Geschlecht" → `management_action=agent`, `management_target=notizen` → Dispatch → Fehler). Der Classify im NotizenAgent rejected korrekt ("kein Notiz-Auftrag"), aber der Umweg kostet einen LLM-Call und erzeugt eine Fehlermeldung im Gespraechsvektor.
 **Verwandt:** ROUTE-MISS1 — dort False Negative (Router uebersieht Auftrag), hier False Positive (Router halluziniert Auftrag). Beide zeigen, dass der Router kurze kontextabhaengige Prompts nicht sauber klassifiziert.
 **Loesungsansatz:** Router-Prompt haerten — kurze Zwei-Wort-Phrasen ohne Verb und ohne Objekt-Marker nicht als Notiz-Auftrag klassifizieren. Alternativ: Router bekommt die letzten Turns als Kontext und prueft, ob das Thema gerade im Gespraech ist.
 **Prio:** Niedrig — kosmetisch und Performance, kein Datenverlust.
+**Fix (Chat 65):** Zwei Maßnahmen: (1) Genereller Dispatch-Guard in `prompts/default/router.task.txt` — kein Dispatch ohne Kommando-Signal (Verb, Imperativ, Schlüsselwort). (2) Regel 2 in `plugins/notizen_manager/manager.py` verschärft — bloße Themen-Erwähnung ist kein Dispatch mehr, nur explizite Änderungsanweisungen.
+**Status:** Behoben, Verifikation ausstehend. Bei erneutem Auftreten wieder öffnen.
 
 ---
 
@@ -428,6 +430,34 @@ Dann Requests über diese Session abwickeln statt direkt `requests.post()`.
 **Ursache (vermutet):** Der Enricher holt Fakten aus mehreren Quellen (KZG, LZG, Knowledge Graph, evtl. Timeline) ohne nachgelagerte Dedup-Stufe. Bei ueberlappenden Retrieval-Treffern wandert derselbe Fakt mehrfach in die Liste.
 **Loesungsansatz:** Deduplizierungs-Schritt im Enricher nach dem Sammeln — einfacher Set-Filter auf `subjekt+attribut+objekt`-Tripel oder Embedding-Aehnlichkeit.
 **Prio:** Beobachtung — noch kein bestaetigter Funktionsbruch, aber kontext- und qualitaetsrelevant. Bei naechstem Auftreten Details sammeln (welche Quellen liefern den Fakt?).
+
+---
+
+#### RESP-DEAD — Tote Antwort nach fehlgeschlagener Agent-Suche ⬜
+
+**Entdeckt:** Chat 65, 26. April 2026
+
+**Symptom:** Wenn ein Agent-Dispatch fehlschlägt (z.B. NotizenAgent findet keine passende Notiz), verpackt der Responder die Fehlermeldung in eine generische Floskel. Beispiel: "Die Suche nach dem Namen 'Lumi' blieb ohne Erfolg; es wurde keine entsprechende Notiz im System gefunden. Es ist faszinierend, wie ein Name wie Lumi..." — das ist kein Nova-Ton, sondern eine Standardphrase mit angeklebter Überleitung.
+
+**Ursache (Hypothese):** Der Responder bekommt das Agent-Ergebnis mit `status="fehler"` oder `status="rejected"`, aber der EI-Kontext (Emotion, Modus, Beziehungsdynamik) fließt nicht ausreichend in die Formulierung ein. Die Fehlermeldung wird eher wiedergegeben als in Novas Stimme übersetzt.
+
+**Lösungsansatz:** Offen. Denkbar: (a) Responder-Prompt für Fehler-Fälle härten — Nova soll den Fehler in eigenem Ton kommunizieren, nicht die Agent-Meldung paraphrasieren, (b) Separate Fehler-Templates im Responder je nach Modus/Emotion.
+
+**Prio:** Mittel — betrifft die Gesprächsqualität direkt, wird bei jedem fehlgeschlagenen Dispatch sichtbar.
+
+---
+
+#### PIXIE-GHOST — Pixie-Delivery fließt nicht durch Novas Verarbeitung ⬜
+
+**Entdeckt:** Chat 65, 26. April 2026
+
+**Symptom:** Pixie-Nachrichten (Shadow Delivery) werden im Chat angezeigt, aber sie fließen nicht durch Novas EI-System, nicht in die Session-Turns, nicht in den Gesprächsvektor. Wenn der User auf eine Pixie-Nachricht antwortet (z.B. "Du kannst den Punkt im Kalender löschen"), kann der Router diesen Bezug nicht auflösen, weil die Pixie-Nachricht für ihn nicht existiert. Effekt: Pixie spricht, aber Nova hört sich selbst nicht sprechen.
+
+**Ursache:** Pixie-Delivery wird direkt über WebSocket an den Client gesendet (Shadow Delivery Service), ohne einen Turn in die Session zu schreiben und ohne den CharacterGraph zu durchlaufen. Die Nachricht existiert nur im Client, nicht im System-Gedächtnis.
+
+**Lösungsansatz:** Offen, wird Teil der Pixie-Überarbeitung. Denkbar: (a) Pixie-Delivery als Session-Turn mit Rolle "assistant_pixie" persistieren, sodass Router und Enricher den Kontext sehen, (b) Pixie-Nachrichten über den Nova-Pfad (CharacterGraph unter ASSISTANT_USER_ID) schicken statt direkt, (c) Mindestens den Bezugs-Kontext der Pixie-Nachricht in Redis halten (TTL), damit der Router bei der nächsten User-Antwort den Rückbezug auflösen kann.
+
+**Prio:** Mittel — strukturelles Problem, das bei jeder Pixie-Interaktion auftritt. Wird dringender, je mehr Pixie-Tasks aktiv kommunizieren.
 
 ---
 

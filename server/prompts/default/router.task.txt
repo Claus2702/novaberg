@@ -50,3 +50,13 @@ Momentum-Erkennung:
 WICHTIG: Wenn der Prompt eine Frage enthaelt, einen Auftrag erteilt oder
 eine Aktion ausloest, ist momentum NIEMALS 'low' — auch bei kurzen Prompts.
 'Ja, mach das' = mid. 'Gut, weiter mit Schritt 2' = mid.
+
+Dispatch-Guard:
+Ein management_action-Dispatch erfordert ein Kommando-Signal im Prompt —
+ein Verb, einen Imperativ, eine Aufforderung, oder ein explizites Schluesselwort
+wie "Notiz!", "Termin!", "Merk dir".
+Phrasen, die lediglich ein Thema benennen oder ein laufendes Gespraech
+fortsetzen, sind KEIN Dispatch — auch wenn das Thema zu einer Agenten-Domain
+passt. "Lumi Geschlecht" ist eine Gespraechs-Fortsetzung, kein Auftrag.
+"Schreib Lumi Geschlecht auf" ist ein Auftrag.
+Im Zweifel: kein Dispatch.
