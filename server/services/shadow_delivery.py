@@ -22,6 +22,7 @@ from datetime import datetime
 import numpy as np
 import redis
 
+from api.websocket import broadcast
 from config         import ASSISTANT_NAME, ASSISTANT_USER_ID, shutdown_event
 from memory.session import session_turns_retrieve, session_turn_store
 from services.llm_provider import get_chat_provider
@@ -499,26 +500,24 @@ async def _delivery_ausfuehren(
     if not nachricht:
         return False
 
-    # Über WebSocket senden
-    websocket = websocket_map.get(user_id)
-
-    if not websocket:
+    # Über WebSocket an alle Clients senden
+    if not websocket_map.get(user_id):
         logger.warning(f"Delivery: Kein WebSocket für '{user_id}' — Nachricht verworfen")
         return False
 
-    try:
-        await websocket.send_text(json.dumps({
-            "typ":       "shadow_impuls",
-            "nachricht": nachricht,
-            "thema":     eintrag.get("thema", ""),
-            "aufgabe":   eintrag.get("aufgabe", ""),
-        }, ensure_ascii=False))
+    impuls_payload: str = json.dumps({
+        "typ":       "shadow_impuls",
+        "nachricht": nachricht,
+        "thema":     eintrag.get("thema", ""),
+        "aufgabe":   eintrag.get("aufgabe", ""),
+    }, ensure_ascii=False)
 
-        logger.info(f"Delivery: Nachricht gesendet — '{eintrag.get('thema', '')[:40]}'")
+    await broadcast(user_id, impuls_payload, character_id=character_id)
 
-    except Exception as fehler:
-        logger.error(f"Delivery: WebSocket-Fehler — {fehler}")
-        return False
+    logger.info(
+        f"Delivery: Nachricht gesendet — '{eintrag.get('thema', '')[:40]}' "
+        f"({len(websocket_map.get(user_id, []))} Clients)"
+    )
 
     # Vom Stack entfernen (erst NACH erfolgreichem Senden)
     _stack_eintrag_entfernen(redis_client, user_id, index)

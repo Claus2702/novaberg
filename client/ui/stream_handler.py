@@ -121,8 +121,9 @@ class StreamHandler:
     def _sse_worker(self, prompt: str) -> None:
         """Thread-Entry: Request absetzen, Events parsen, Callbacks dispatchen."""
         payload: dict = {
-            "prompt":  prompt,
-            "user_id": self._user_id,
+            "prompt":    prompt,
+            "user_id":   self._user_id,
+            "client_id": "desktop",
         }
         logger.debug(f"SSE: POST {SSE_URL} Payload={payload}")
 
@@ -268,7 +269,7 @@ class StreamHandler:
 
     def _ws_worker(self) -> None:
         """Verbindet, lauscht, reconnectet — bis stop() gesetzt wird."""
-        ws_full_url: str = f"{WS_URL}/{self._user_id}"
+        ws_full_url: str = f"{WS_URL}/{self._user_id}?client_id=desktop&character_id=nova"
         logger.debug(f"WebSocket-URL: {ws_full_url}")
 
         while self._ws_should_run:
@@ -333,6 +334,12 @@ class StreamHandler:
             detail: str = data.get("detail", "")
             logger.debug(f"WebSocket: Charakter-Stage {label} — {detail}")
             GLib.idle_add(self._invoke_stage, label, detail)
+            return
+
+        if typ == "user_message":
+            # User-Eingabe von einem anderen Client (z.B. Telegram).
+            logger.info(f"WebSocket: User-Nachricht von anderem Client ({len(nachricht)} Zeichen)")
+            GLib.idle_add(self._invoke_impulse, nachricht, data)
             return
 
         # Alles andere (Pixie-Impulse, Shadow-Delivery, ...) an die UI reichen.

@@ -13,6 +13,7 @@ import asyncio
 import json
 import logging
 
+from api.websocket import broadcast, broadcast_threadsafe
 from config import shutdown_event, ASSISTANT_USER_ID
 from services.events import (
     event_naechstes,
@@ -211,7 +212,8 @@ def _graph_streamen(
     compiled_character,
     state: dict,
     loop: asyncio.AbstractEventLoop,
-    websocket,
+    user_id: str,
+    character_id: str = "",
 ) -> dict:
     """Führt den CharacterGraph als Stream aus und sendet Stages per WebSocket.
 
@@ -223,7 +225,8 @@ def _graph_streamen(
         compiled_character: Kompilierter CharacterGraph (.stream()-fähig).
         state: Initialer State-Dict für den Graph-Durchlauf.
         loop: Referenz auf den asyncio Event-Loop (für WebSocket-Sends).
-        websocket: WebSocket-Verbindung zum Client (kann None sein).
+        user_id: User-ID für WebSocket-Broadcast.
+        character_id: Charakter-ID für WebSocket-Filterung.
 
     Returns:
         Letzter State-Dict nach Graph-Durchlauf.
@@ -242,10 +245,7 @@ def _graph_streamen(
         for node_name, node_state in chunk.items():
             letzter_state = node_state
 
-            # Stage per WebSocket senden (live, während der Graph läuft).
-            if websocket is None:
-                continue
-
+            # Stage per WebSocket an alle Clients senden (live, während der Graph läuft).
             label:  str = CHARACTER_NODE_LABELS.get(node_name, node_name)
             detail: str = _stage_detail_bauen(node_name, node_state)
 
@@ -256,15 +256,7 @@ def _graph_streamen(
                 "detail": detail,
             }, ensure_ascii=False)
 
-            try:
-                future = asyncio.run_coroutine_threadsafe(
-                    websocket.send_text(stage_payload),
-                    loop,
-                )
-                # Kurzes Timeout — wenn der WebSocket blockiert, nicht ewig warten.
-                future.result(timeout=5.0)
-            except Exception as fehler:
-                logger.warning(f"Stage-Delivery fehlgeschlagen ({node_name}): {fehler}")
+            broadcast_threadsafe(user_id, stage_payload, loop, character_id=character_id)
 
     return letzter_state
 
@@ -282,7 +274,7 @@ async def event_consumer_loop(
         redis_client: Redis-Verbindung.
         character_graph: CharacterGraph-Instanz (für create_state).
         compiled_character: Kompilierter CharacterGraph (für invoke).
-        websocket_map: Dict {user_id: WebSocket} für Antwort-Delivery.
+        websocket_map: Dict {user_id: list[WebSocket]} für Antwort-Delivery.
         llm_lock: Threading-Lock für GPU-Zugriff.
     """
     logger.info("Event-Consumer gestartet.")
@@ -383,7 +375,7 @@ async def _event_verarbeiten(
         redis_client: Redis-Verbindung.
         character_graph: CharacterGraph-Instanz (für create_state).
         compiled_character: Kompilierter CharacterGraph (für stream).
-        websocket_map: Dict {user_id: WebSocket} für Delivery.
+        websocket_map: Dict {user_id: list[WebSocket]} für Delivery.
         llm_lock: Threading-Lock für GPU-Zugriff.
     """
     payload:     dict = event.get("payload", {})
@@ -420,9 +412,11 @@ async def _event_verarbeiten(
 
     # ── Event-Loop-Referenz für threadsichere WebSocket-Sends ──
     loop: asyncio.AbstractEventLoop = asyncio.get_running_loop()
-    websocket = websocket_map.get(user_id)
 
-    if not websocket:
+    # ── Prüfe ob WebSocket-Clients verbunden sind ──
+    hat_clients: bool = bool(websocket_map.get(user_id))
+
+    if not hat_clients:
         logger.warning(
             f"Event-Consumer: Kein WebSocket für '{user_id}' — "
             f"Stages und Antwort nur in Session"
@@ -441,7 +435,7 @@ async def _event_verarbeiten(
     try:
         result: dict = await asyncio.to_thread(
             _graph_streamen,
-            compiled_character, state, loop, websocket,
+            compiled_character, state, loop, user_id, character_id,
         )
     except Exception as fehler:
         logger.error(f"Event-Consumer: Graph-Fehler — {fehler}")
@@ -452,39 +446,38 @@ async def _event_verarbeiten(
     # ── Antwort per WebSocket senden ──
     response: str = result.get("response", "")
 
-    if response and websocket:
-        try:
-            await websocket.send_text(json.dumps({
-                "typ":                "character_response",
-                "nachricht":          response,
-                "modell":             result.get("model", ""),
-                "token_total":        result.get("token_total", 0),
-                "emotion":            result.get("current_emotion", ""),
-                "arousal":            result.get("current_arousal", 0.0),
-                "emotions_vektor":    result.get("emotions_vektor", ""),
-                "emotions_verlauf":   result.get("emotions_verlauf", []),
-                "sprach_stil":        result.get("sprach_stil", ""),
-                "beziehungs_dynamik": result.get("beziehungs_dynamik", ""),
-                "nova_emotion":           result.get("nova_emotions_verlauf", [{}])[0].get("emotion", "") if result.get("nova_emotions_verlauf") else "",
-                "nova_arousal":           result.get("nova_emotions_verlauf", [{}])[0].get("arousal", 0.0) if result.get("nova_emotions_verlauf") else 0.0,
-                "nova_emotions_verlauf":  result.get("nova_emotions_verlauf", []),
-                "nova_emotions_vektor":   result.get("nova_emotions_vektor", ""),
-                "nova_emotion_konflikt":  result.get("nova_emotion_konflikt", False),
-                "intent":             result.get("intent", ""),
-                "tone":               result.get("tone", ""),
-                "gespraechs_modus":   result.get("gespraechs_modus", ""),
-                "user_intentionen":   result.get("user_intentionen", []),
-                "momentum":           result.get("momentum", ""),
-                "gespraechsvektor":   result.get("gespraechsvektor", ""),
-            }, ensure_ascii=False))
+    if response and websocket_map.get(user_id):
+        response_payload: str = json.dumps({
+            "typ":                "character_response",
+            "nachricht":          response,
+            "modell":             result.get("model", ""),
+            "token_total":        result.get("token_total", 0),
+            "emotion":            result.get("current_emotion", ""),
+            "arousal":            result.get("current_arousal", 0.0),
+            "emotions_vektor":    result.get("emotions_vektor", ""),
+            "emotions_verlauf":   result.get("emotions_verlauf", []),
+            "sprach_stil":        result.get("sprach_stil", ""),
+            "beziehungs_dynamik": result.get("beziehungs_dynamik", ""),
+            "nova_emotion":           result.get("nova_emotions_verlauf", [{}])[0].get("emotion", "") if result.get("nova_emotions_verlauf") else "",
+            "nova_arousal":           result.get("nova_emotions_verlauf", [{}])[0].get("arousal", 0.0) if result.get("nova_emotions_verlauf") else 0.0,
+            "nova_emotions_verlauf":  result.get("nova_emotions_verlauf", []),
+            "nova_emotions_vektor":   result.get("nova_emotions_vektor", ""),
+            "nova_emotion_konflikt":  result.get("nova_emotion_konflikt", False),
+            "intent":             result.get("intent", ""),
+            "tone":               result.get("tone", ""),
+            "gespraechs_modus":   result.get("gespraechs_modus", ""),
+            "user_intentionen":   result.get("user_intentionen", []),
+            "momentum":           result.get("momentum", ""),
+            "gespraechsvektor":   result.get("gespraechsvektor", ""),
+        }, ensure_ascii=False)
 
-            logger.info(
-                f"Event-Consumer: Antwort gesendet per WebSocket "
-                f"({len(response)} Zeichen)"
-            )
+        await broadcast(user_id, response_payload, character_id=character_id)
 
-        except Exception as ws_fehler:
-            logger.warning(f"Event-Consumer: WebSocket-Fehler — {ws_fehler}")
+        logger.info(
+            f"Event-Consumer: Antwort gesendet per WebSocket "
+            f"({len(response)} Zeichen, "
+            f"{len(websocket_map.get(user_id, []))} Clients)"
+        )
 
     elif response:
         logger.warning(

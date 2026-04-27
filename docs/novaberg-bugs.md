@@ -1,7 +1,7 @@
 # Novaberg — Bugs & Limitationen
 
-**Stand:** 26. April 2026, Chat 66
-**Quelle:** Testlauf "Karrierekrise" (200 Prompts) + Gedächtnis-Epic (Chat 11) + Epic 11 Agent-System (Chats 22–32) + Persona Smoke-Tests (Chats 31–32) + RechercheAgent-Test (Chat 35) + Doku-Audit (Chat 36) + PRIO0-Fix + Client-Observability (Chat 37) + Claude API-Test + STREAM1-Fix + Gesprächsvektor (Chat 39) + CharakterIdentitaetAgent + DirektivenAgent + Tribunal Score-System (Chat 40) + Telegram Bot + Zeitparser-Fixes (Chat 41) + CRUD-Härtung + Telegram-Chat-Analyse + DB-Report (Chat 42) + KONTEXT1-Fix + Resume-Bug + Epic 15 Pilot (Chat 43) + Epic 15 Rollout + DELEG-REG Fix + KZG-Klebrigkeit (Chat 44) + RESP-CHAR1 Fix (Chat 45) + CLASSIFY-REJECTED + Gemma4 Live-Tests (Chat 48) + Telegram-Konversation "frecher Charakter" (Chat 49) + RESUME-REJECT Fix + Live-Tests (Chat 50) + Neugier-Konzept + Projektinfrastruktur (Chat 51) + Doku-Alignment + emotions_profil (Chat 52) + Antrieb-Konzept + Dual-Emotion (Chat 53) + HALL2-Fix + Planner-Refactor (Chat 54) + PySide6 verworfen + GTK4-Entscheidung (Chat 55) + GTK4-Client + Panel-Infrastruktur (Chat 56) + Web-Tool-Doku + SEARX1-Diagnose (Chat 57) + Chat 61 (Perzeption-Symmetrie, Akkumulations-Refactor, Paper-Portfolio, Lumi, urllib3-Doppel-Turn beobachtet) + Paper I + urllib3-RETRY + ROUTE-CHAR-NOTIZ + RESP-DEAD + PIXIE-GHOST (Chat 65)
+**Stand:** 27. April 2026, Chat 68
+**Quelle:** Testlauf "Karrierekrise" (200 Prompts) + Gedächtnis-Epic (Chat 11) + Epic 11 Agent-System (Chats 22–32) + Persona Smoke-Tests (Chats 31–32) + RechercheAgent-Test (Chat 35) + Doku-Audit (Chat 36) + PRIO0-Fix + Client-Observability (Chat 37) + Claude API-Test + STREAM1-Fix + Gesprächsvektor (Chat 39) + CharakterIdentitaetAgent + DirektivenAgent + Tribunal Score-System (Chat 40) + Telegram Bot + Zeitparser-Fixes (Chat 41) + CRUD-Härtung + Telegram-Chat-Analyse + DB-Report (Chat 42) + KONTEXT1-Fix + Resume-Bug + Epic 15 Pilot (Chat 43) + Epic 15 Rollout + DELEG-REG Fix + KZG-Klebrigkeit (Chat 44) + RESP-CHAR1 Fix (Chat 45) + CLASSIFY-REJECTED + Gemma4 Live-Tests (Chat 48) + Telegram-Konversation "frecher Charakter" (Chat 49) + RESUME-REJECT Fix + Live-Tests (Chat 50) + Neugier-Konzept + Projektinfrastruktur (Chat 51) + Doku-Alignment + emotions_profil (Chat 52) + Antrieb-Konzept + Dual-Emotion (Chat 53) + HALL2-Fix + Planner-Refactor (Chat 54) + PySide6 verworfen + GTK4-Entscheidung (Chat 55) + GTK4-Client + Panel-Infrastruktur (Chat 56) + Web-Tool-Doku + SEARX1-Diagnose (Chat 57) + Chat 61 (Perzeption-Symmetrie, Akkumulations-Refactor, Paper-Portfolio, Lumi, urllib3-Doppel-Turn beobachtet) + Paper I + urllib3-RETRY + ROUTE-CHAR-NOTIZ + RESP-DEAD + PIXIE-GHOST (Chat 65) + WS-SINGLE Fix + ClientConnection + User-Message-Broadcast (Chat 68)
 
 ---
 
@@ -64,6 +64,7 @@
 | KZG-KERN-BLIND | Verstärkung aktualisierte Scores aber nicht den Kern — Promotion bekam unreife Version | Obsolet: Keine Merge-Verstärkung mehr. Jeder Eintrag behält seinen originalen Kern. Thematische Verstärkung boosted nur Metadaten (Salienz, Häufigkeit, TTL). Cluster-Promotion destilliert alle Kerne bei der Zusammenführung. | Chat 64 |
 | KZG-DEDUP | 8 KZG-Einträge statt 1 bei Lumi-Gespräch | Re-framed als Feature: Verschiedene Facetten desselben Themas werden als eigenständige Einträge behalten. Die Cluster-Promotion sammelt sie ein und destilliert sie zu einem kohärenten LZG-Eintrag. | Chat 64 |
 | ROUTE-CHAR-NOTIZ | CharacterGraph-Router dispatched Konversation an NotizenAgent | Genereller Dispatch-Guard in router.task.txt + Notizen-Plugin-Regel verschärft. Verifikation ausstehend. | Chat 65 |
+| WS-SINGLE | WebSocket verdrängt bestehende Verbindung — Dict erlaubte nur einen Slot pro User | `aktive_verbindungen` auf `dict[str, list[ClientConnection]]` mit `ClientConnection`-Dataclass. `broadcast()`/`broadcast_threadsafe()` mit `character_id`-Filterung und `exclude_client`. User-Message-Broadcast über alle Clients. 12 Dateien. | Chat 68 |
 
 ---
 
@@ -462,22 +463,10 @@ Dann Requests über diese Session abwickeln statt direkt `requests.post()`.
 
 ---
 
-### WS-SINGLE — WebSocket verdrängt bestehende Verbindung (Chat 67)
-
-**Symptom:** Wenn der Telegram-Bot sich per WebSocket als `meister` verbindet, wird die bestehende Desktop-Client-Verbindung verdrängt. Nachrichten gehen nur noch an den Bot, der Client bekommt nichts.
-
-**Ursache:** `aktive_verbindungen` in `api/websocket.py` ist ein `dict[str, WebSocket]` — ein Slot pro `user_id`. Die letzte Verbindung überschreibt die vorherige.
-
-**Fix:** `aktive_verbindungen` auf `dict[str, list[WebSocket]]` umbauen. Der Event-Consumer und Shadow-Delivery senden an *alle* verbundenen Clients pro User. Beim Disconnect wird nur die betroffene Verbindung aus der Liste entfernt.
-
-**Betroffene Dateien:** `api/websocket.py`, `services/event_consumer.py`, `services/shadow_delivery.py`
-
-**Priorität:** Hoch — blockiert parallele Nutzung von Desktop-Client und Telegram-Bot.
-
----
-
 *Aktualisiert Chat 62: Drei Bugs aus den Chat-62-Fixes in die Behoben-Tabelle uebernommen (E.1 KZG-INDEX, E.2 KZG-VERST, E.3 SALIENZ-LEER). Drei neue Bugs aus dem Paar-Schema-Rollout + Lumi-Gespraech eingetragen: KZG-KERN-BLIND (Verstaerkung ohne Kern-Update), ROUTE-CHAR-NOTIZ (Router-False-Positive), ENRICHER-DUP (Fakten-Duplikate im Kontext, Beobachtung).*
 
 *Aktualisiert Chat 64: KZG-KERN-BLIND und KZG-DEDUP durch KZG-Liberalisierung (Architekturwechsel) aufgelöst. Keine Merge-Verstärkung mehr, thematische Verstärkung boosted nur Metadaten, Cluster-Promotion destilliert kohärent.*
 
 *Aktualisiert Chat 66: ROUTE-CHAR-NOTIZ in Behoben-Tabelle. Header auf Chat 66 aktualisiert. Inhalt bereits in Chat 65 eingetragen (RESP-DEAD, PIXIE-GHOST, urllib3-RETRY, ROUTE-CHAR-NOTIZ-Fix).*
+
+*Aktualisiert Chat 68: WS-SINGLE in Behoben-Tabelle. ClientConnection-Dataclass mit client_id/character_id-Filterung. User-Message-Broadcast für Cross-Client-Sync (Desktop ↔ Telegram). 12 Dateien geändert.*

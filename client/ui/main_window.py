@@ -378,8 +378,13 @@ class MainWindow(Gtk.ApplicationWindow):
         self._status_bar.set_connection_status("Verbunden")
 
     def _handle_impulse(self, text: str, data: dict) -> None:
-        logger.info(f"Pixie-Impuls empfangen: {text[:80]!r}")
-        self._chat_view.add_impulse_message(text)
+        if data.get("typ") == "user_message":
+            # User-Eingabe von einem anderen Client — als User-Bubble anzeigen.
+            logger.info(f"User-Nachricht von anderem Client: {text[:80]!r}")
+            self._chat_view.add_user_message(text)
+        else:
+            logger.info(f"Pixie-Impuls empfangen: {text[:80]!r}")
+            self._chat_view.add_impulse_message(text)
 
     def _handle_connection(self, status: str) -> None:
         logger.debug(f"Verbindungsstatus -> {status}")

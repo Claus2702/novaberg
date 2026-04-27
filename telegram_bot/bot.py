@@ -76,6 +76,7 @@ async def handle_message(update, context: ContextTypes.DEFAULT_TYPE) -> None:
                 json={
                     "prompt": user_text,
                     "user_id": user_id,
+                    "client_id": "telegram",
                 },
             )
             response.raise_for_status()
@@ -109,7 +110,7 @@ async def websocket_listener(bot: Bot, user_id: str, chat_id: int) -> None:
         user_id: Novaberg-User-ID (z.B. "meister").
         chat_id: Telegram-Chat-ID für die Zustellung.
     """
-    ws_url: str = f"{NOVA_WS_URL}/ws/{user_id}"
+    ws_url: str = f"{NOVA_WS_URL}/ws/{user_id}?client_id=telegram&character_id=nova"
 
     while True:
         try:
@@ -138,6 +139,15 @@ async def websocket_listener(bot: Bot, user_id: str, chat_id: int) -> None:
                             bot, chat_id, user_id,
                             daten.get("nachricht", ""),
                         )
+
+                    elif typ == "user_message":
+                        # User-Eingabe von einem anderen Client — als Info anzeigen
+                        user_text: str = daten.get("nachricht", "")
+                        if user_text:
+                            await _nachricht_senden(
+                                bot, chat_id, user_id,
+                                f"[Du] {user_text}",
+                            )
 
                     # character_stage, verbindung, echo → ignorieren
                     elif typ not in ("character_stage", "verbindung", "echo"):

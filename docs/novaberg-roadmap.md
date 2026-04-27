@@ -549,6 +549,27 @@
 
 - 🐛 WS-SINGLE — aktive_verbindungen verdrängt Client wenn zweiter WebSocket (Telegram-Bot) sich verbindet. Dict muss auf Liste pro User umgebaut werden.
 
+## Chat 68 (27. April 2026) — WS-SINGLE Fix, ClientConnection, User-Message-Broadcast
+
+### WS-SINGLE — Multi-Client WebSocket
+
+- ✅ `aktive_verbindungen` von `dict[str, WebSocket]` auf `dict[str, list[ClientConnection]]`
+- ✅ `ClientConnection`-Dataclass mit `client_id`, `character_id`, `websocket`
+- ✅ `broadcast()` (async) + `broadcast_threadsafe()` (Thread-Kontext) mit character_id-Filterung und exclude_client
+- ✅ WebSocket-Endpoint: `client_id` + `character_id` als Query-Parameter
+- ✅ Event-Consumer + Shadow-Delivery senden an alle verbundenen Clients
+
+### User-Message-Broadcast
+
+- ✅ `client_id`-Feld in `GespraechAnfrage` (Pydantic-Modell)
+- ✅ `broadcast_threadsafe()` im Chat-Endpoint nach `event_erzeugen()` — User-Eingabe an andere Clients
+- ✅ `app.state.loop` im Lifespan-Handler für threadsafe-Broadcast aus sync-Endpoints
+- ✅ Telegram-Bot: `client_id=telegram` + `character_id=nova` bei WebSocket-Connect und POST
+- ✅ Telegram-Bot: `user_message`-Event empfangen, als `[Du] ...` anzeigen
+- ✅ Desktop-Client: `client_id=desktop` + `character_id=nova` bei WebSocket-Connect und POST
+- ✅ Desktop-Client: `user_message`-Event als User-Bubble anzeigen
+- ✅ Live getestet — Desktop ↔ Telegram bidirektional
+
 ---
 
-*Aktualisiert in Chat 67. Offene Punkte → novaberg-backlog.md. Bugs → novaberg-bugs.md.*
+*Aktualisiert in Chat 68. Offene Punkte → novaberg-backlog.md. Bugs → novaberg-bugs.md.*

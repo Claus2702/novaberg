@@ -11,6 +11,7 @@ from fastapi.responses          import JSONResponse, StreamingResponse
 
 from config                     import redis_client, ollama_gpu_client, EMBED_MODEL, POSTGRES_URL, llm_lock, ASSISTANT_USER_ID
 from api.models                 import GespraechAnfrage
+from api.websocket              import broadcast_threadsafe
 from services.events            import event_erzeugen
 from memory.embedding           import embedding_create
 from memory.repositories.entitaeten_repository import EntitaetenRepository
@@ -145,6 +146,32 @@ def ChatSenden(anfrage: GespraechAnfrage, request: Request):
                 "beziehungs_dynamik": result.get("beziehungs_dynamik", ""),
             },
         )
+
+        # ── User-Nachricht an andere Clients broadcasten ──
+        if anfrage.client_id:
+            try:
+                user_msg_payload: str = json.dumps({
+                    "typ":          "user_message",
+                    "nachricht":    anfrage.prompt,
+                    "user_id":      anfrage.user_id,
+                    "character_id": character_id,
+                    "client_id":    anfrage.client_id,
+                }, ensure_ascii=False)
+
+                broadcast_threadsafe(
+                    user_id=anfrage.user_id,
+                    nachricht=user_msg_payload,
+                    loop=request.app.state.loop,
+                    character_id=character_id,
+                    exclude_client=anfrage.client_id,
+                )
+
+                logger.debug(
+                    f"User-Message Broadcast: '{anfrage.prompt[:60]}' "
+                    f"(exclude={anfrage.client_id})"
+                )
+            except Exception as broadcast_fehler:
+                logger.warning(f"User-Message Broadcast fehlgeschlagen: {broadcast_fehler}")
 
         # Momentum für Shadow Delivery Service
         redis_client.set(f"momentum:{anfrage.user_id}", result.get("momentum", "mid"), ex=300)
@@ -299,6 +326,32 @@ def ChatStreamSenden(anfrage: GespraechAnfrage, request: Request):
                     "beziehungs_dynamik": letzter_state.get("beziehungs_dynamik", ""),
                 },
             )
+
+            # ── User-Nachricht an andere Clients broadcasten ──
+            if anfrage.client_id:
+                try:
+                    user_msg_payload: str = json.dumps({
+                        "typ":          "user_message",
+                        "nachricht":    anfrage.prompt,
+                        "user_id":      anfrage.user_id,
+                        "character_id": character_id,
+                        "client_id":    anfrage.client_id,
+                    }, ensure_ascii=False)
+
+                    broadcast_threadsafe(
+                        user_id=anfrage.user_id,
+                        nachricht=user_msg_payload,
+                        loop=request.app.state.loop,
+                        character_id=character_id,
+                        exclude_client=anfrage.client_id,
+                    )
+
+                    logger.debug(
+                        f"User-Message Broadcast: '{anfrage.prompt[:60]}' "
+                        f"(exclude={anfrage.client_id})"
+                    )
+                except Exception as broadcast_fehler:
+                    logger.warning(f"User-Message Broadcast fehlgeschlagen: {broadcast_fehler}")
 
             # Momentum für Shadow Delivery Service
             redis_client.set(

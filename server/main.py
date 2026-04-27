@@ -135,6 +135,9 @@ async def Lifespan(app: FastAPI):
 
     logger.info("Server startet...")
 
+    # Event-Loop-Referenz für synchrone Endpoints (broadcast_threadsafe)
+    app.state.loop = asyncio.get_running_loop()
+
     # LLM-Provider initialisieren (Ollama oder Claude)
     init_providers(
         profile               = LLM_PROFILE,
