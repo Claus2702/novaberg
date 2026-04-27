@@ -520,6 +520,35 @@
 
 - ✅ Agent-Plugins stellen Panels — künftige Panels werden vom jeweiligen Agenten als Plugin bereitgestellt
 
+## Chat 67 (27./28. April 2026) — Paper III, Telegram-Bot WebSocket, Epic Retrieval-Gate
+
+### Paper III — Dual-Emotion
+
+- ✅ Text EN + DE geschrieben (~2900 Wörter), Code-Kommentare sprachlich getrennt
+- ✅ Code-Snippet ins Englische übersetzt für Paper (Codebase bleibt deutsch)
+- ✅ HTML EN + DE durch Design-Brudi im novaberg.de Design-System
+- ✅ Paper-Index EN + DE aktualisiert (Paper III aktiv, Series II geplant)
+- ✅ Screenshots Dual-Radar (User + Nova Perspektive) als Assets
+- ✅ Deployed auf novaberg.de
+- ✅ Series I komplett (3 Papers)
+
+### Telegram-Bot — WebSocket-Umbau
+
+- ✅ Bot von synchronem POST /chat auf WebSocket-Architektur umgebaut
+- ✅ Zwei parallele async-Tasks: Telegram Long Polling + WebSocket-Listener pro User
+- ✅ Empfängt character_response + shadow_delivery, ignoriert character_stage/verbindung/echo
+- ✅ Fire-and-forget statt Antwort-Erwartung
+- ✅ websockets als Dependency ergänzt (mit Version-Pin)
+- ✅ Live getestet — funktioniert
+
+### Backlog
+
+- ✅ Epic Retrieval-Gate konzipiert (Kontextverifikation nach Enricher)
+
+### Neuer Bug
+
+- 🐛 WS-SINGLE — aktive_verbindungen verdrängt Client wenn zweiter WebSocket (Telegram-Bot) sich verbindet. Dict muss auf Liste pro User umgebaut werden.
+
 ---
 
 *Aktualisiert in Chat 67. Offene Punkte → novaberg-backlog.md. Bugs → novaberg-bugs.md.*

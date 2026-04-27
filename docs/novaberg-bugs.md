@@ -462,6 +462,20 @@ Dann Requests über diese Session abwickeln statt direkt `requests.post()`.
 
 ---
 
+### WS-SINGLE — WebSocket verdrängt bestehende Verbindung (Chat 67)
+
+**Symptom:** Wenn der Telegram-Bot sich per WebSocket als `meister` verbindet, wird die bestehende Desktop-Client-Verbindung verdrängt. Nachrichten gehen nur noch an den Bot, der Client bekommt nichts.
+
+**Ursache:** `aktive_verbindungen` in `api/websocket.py` ist ein `dict[str, WebSocket]` — ein Slot pro `user_id`. Die letzte Verbindung überschreibt die vorherige.
+
+**Fix:** `aktive_verbindungen` auf `dict[str, list[WebSocket]]` umbauen. Der Event-Consumer und Shadow-Delivery senden an *alle* verbundenen Clients pro User. Beim Disconnect wird nur die betroffene Verbindung aus der Liste entfernt.
+
+**Betroffene Dateien:** `api/websocket.py`, `services/event_consumer.py`, `services/shadow_delivery.py`
+
+**Priorität:** Hoch — blockiert parallele Nutzung von Desktop-Client und Telegram-Bot.
+
+---
+
 *Aktualisiert Chat 62: Drei Bugs aus den Chat-62-Fixes in die Behoben-Tabelle uebernommen (E.1 KZG-INDEX, E.2 KZG-VERST, E.3 SALIENZ-LEER). Drei neue Bugs aus dem Paar-Schema-Rollout + Lumi-Gespraech eingetragen: KZG-KERN-BLIND (Verstaerkung ohne Kern-Update), ROUTE-CHAR-NOTIZ (Router-False-Positive), ENRICHER-DUP (Fakten-Duplikate im Kontext, Beobachtung).*
 
 *Aktualisiert Chat 64: KZG-KERN-BLIND und KZG-DEDUP durch KZG-Liberalisierung (Architekturwechsel) aufgelöst. Keine Merge-Verstärkung mehr, thematische Verstärkung boosted nur Metadaten, Cluster-Promotion destilliert kohärent.*
