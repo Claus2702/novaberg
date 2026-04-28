@@ -611,6 +611,23 @@ EMPATHIE_ALPHA_NEUTRAL: float = 0.30
 EMPATHIE_KONFLIKT_DISTANZ: int = 3  # Ab Distanz 3 wird Konflikt geprüft
 EMPATHIE_KONFLIKT_MIN_AROUSAL: float = 0.4  # Beide müssen mindestens diesen Arousal haben
 
+# ─────────────────────────────────────────────
+# Drive / Gravitation
+# ─────────────────────────────────────────────
+GRAVITATIONS_SCHWELLE:        float = 0.3    # Minimum gravitation (sim × mot) für Aktivierung
+GRAVITATIONS_SALIENZ_FAKTOR:  float = 0.5    # Skalierung des Gravitationsterms auf die Salienz
+ZIEL_MITTELFRISTIG_DECAY_TAGE: int  = 14     # Halbwertszeit mittelfristiger Ziele in Tagen
+ZIEL_MAX_MITTELFRISTIG:         int = 5      # Max aktive mittelfristige Ziele
+ZIEL_MAX_LANGFRISTIG:           int = 2      # Max langfristige Ziele
+
+# Emotionale Gravitation (EI Phase 3)
+EMOTIONALE_GRAVITATIONS_SCHWELLE:       float = 0.5    # Höher als Ziel-Gravitation (0.3) — nur starke Matches
+EMOTIONALE_GRAVITATION_ZEIT_HALBWERT:   int   = 180    # Halbwertszeit in Tagen
+EMOTIONALE_GRAVITATION_MAX_PRO_TURN:    int   = 2      # Max aktivierte Erinnerungen pro Turn
+EMOTIONALE_GRAVITATION_FAKTOR_SESSION:  float = 1.0    # Session-Einträge: frisch, volle Wirkung
+EMOTIONALE_GRAVITATION_FAKTOR_KZG:      float = 0.8    # KZG: leicht gedämpft
+EMOTIONALE_GRAVITATION_FAKTOR_LZG:      float = 0.5    # LZG: stärker gedämpft
+
 # ─── DelegationsAgent (VENT1) ─────────────────
 DELEGATION_EFFEKTIVWERT_SCHWELLE: float = 0.15
 DELEGATION_SALIENZ_SCHWELLE:      float = 0.6

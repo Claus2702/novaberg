@@ -11,6 +11,10 @@ from config import (
     ASSISTANT_USER_ID,
     DEFAULT_USER_ID,
     redis_client,
+    ollama_gpu_client,
+    EMBED_MODEL,
+    POSTGRES_URL,
+    ZIEL_MAX_LANGFRISTIG,
     PIXIE_CHARAKTER_PRIORITAET,
     PIXIE_CHARAKTER_INTERVALL_SEKUNDEN,
     PIXIE_CHARAKTER_LZG_LIMIT,
@@ -23,7 +27,10 @@ from agents.charakter.destillation import (
     intentions_profil_destillieren,
     emotions_profil_destillieren,
     beziehungsprofil_destillieren,
+    langfristige_ziele_destillieren,
 )
+from memory.ziele import ziel_speichern, ziele_aktive_laden, ziel_deaktivieren
+from memory.embedding import embedding_create
 
 logger = logging.getLogger("ki_server.agents.charakter")
 
@@ -138,6 +145,54 @@ class CharakterAgent(BaseAgent):
                     logger.info(f"CharakterAgent: {user_id} destilliert (5 Profile)")
                 except Exception as ex:
                     logger.error(f"CharakterAgent: Speicherung fehlgeschlagen fuer {user_id}: {ex}")
+
+                # ── Langfristige Ziele aus Kern-Hash destillieren ──
+                # Nur für Novas eigenen Hash (ASSISTANT_USER_ID als user_id),
+                # nicht für den User-Hash.
+                if user_id == ASSISTANT_USER_ID and ergebnis["kern"]:
+                    try:
+                        neue_ziele: list[dict] = langfristige_ziele_destillieren(
+                            ergebnis["kern"], user_id=ASSISTANT_USER_ID,
+                        )
+
+                        if neue_ziele:
+                            # Alte langfristige Ziele deaktivieren
+                            alte_ziele: list[dict] = ziele_aktive_laden(
+                                POSTGRES_URL, user_id=ASSISTANT_USER_ID,
+                            )
+                            for altes in alte_ziele:
+                                if altes["ziel_typ"] == "langfristig":
+                                    ziel_deaktivieren(POSTGRES_URL, altes["id"])
+
+                            # Neue Ziele speichern (mit Embedding)
+                            for z in neue_ziele[:ZIEL_MAX_LANGFRISTIG]:
+                                try:
+                                    emb: list[float] = embedding_create(
+                                        z["zielsatz"], ollama_gpu_client, EMBED_MODEL,
+                                    )
+                                except Exception:
+                                    emb = None
+
+                                ziel_speichern(
+                                    postgres_url=POSTGRES_URL,
+                                    user_id=ASSISTANT_USER_ID,
+                                    ziel_typ="langfristig",
+                                    zielsatz=z["zielsatz"],
+                                    motivation=0.8,
+                                    emotion=z.get("emotion", "neugierig"),
+                                    arousal=z.get("arousal", 0.6),
+                                    embedding=emb,
+                                )
+
+                            logger.info(
+                                f"CharakterAgent: {len(neue_ziele)} langfristige Ziele "
+                                f"für {ASSISTANT_USER_ID} erneuert"
+                            )
+
+                    except Exception as ziel_fehler:
+                        logger.warning(
+                            f"CharakterAgent: Ziel-Destillation fehlgeschlagen — {ziel_fehler}"
+                        )
             else:
                 logger.info(f"CharakterAgent: Keine Aenderungen fuer {user_id}")
 

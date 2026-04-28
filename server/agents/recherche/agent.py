@@ -20,10 +20,72 @@ from config import (
     redis_client,
     ollama_cpu_client,
     EMBED_MODEL,
+    POSTGRES_URL,
+    ZIEL_MAX_MITTELFRISTIG,
     PIXIE_RECHERCHE_MAX_ITERATIONEN,
 )
+from memory.ziele import ziel_speichern, ziele_aktive_laden
+from memory.embedding import embedding_create
 
 logger = logging.getLogger("ki_server.agents.recherche")
+
+
+def _ziel_aus_recherche_extrahieren(recherche_ziel: str, destillat: str) -> dict | None:
+    """Extrahiert einen mittelfristigen Zielsatz aus dem Recherche-Ergebnis.
+
+    Args:
+        recherche_ziel: Das ursprüngliche Recherche-Ziel.
+        destillat: Der destillierte Ergebnis-Text.
+
+    Returns:
+        Dict mit zielsatz, motivation, emotion, arousal — oder None.
+    """
+    import json
+
+    prompt: str = (
+        "[IDENTITAET]\n"
+        "Du bist Novas Reflexions-Modul.\n\n"
+        "[RECHERCHE_ZIEL]\n"
+        f"{recherche_ziel}\n\n"
+        "[ERGEBNIS]\n"
+        f"{destillat[:800]}\n\n"
+        "[AUFGABE]\n"
+        "Hat diese Recherche ein neues Interesse oder eine offene Frage aufgeworfen,\n"
+        "die Nova weiterverfolgen möchte?\n\n"
+        "[FORMAT]\n"
+        "Wenn ja: JSON mit einem Ziel:\n"
+        '{"zielsatz": "Ich möchte ...", "motivation": 0.6, "emotion": "neugierig", "arousal": 0.5}\n\n'
+        "Wenn nein (das Thema ist abgeschlossen): antworte mit:\n"
+        '{"zielsatz": ""}\n\n'
+        "[REGELN]\n"
+        "- Nur EIN Ziel, 1-2 Sätze\n"
+        "- Motivation 0.4-0.8 (Recherche hat Interesse geweckt, nicht Leidenschaft)\n"
+        "- Nicht das Recherche-Ziel wiederholen — das war der Auslöser, nicht das Ergebnis\n"
+        "- Sprache: Deutsch, Ich-Perspektive"
+    )
+
+    try:
+        from services.llm_provider import pixie_llm_call
+
+        antwort = pixie_llm_call(
+            prompt=prompt,
+            modus="analyse",
+            temperatur=0.3,
+            json_output=True,
+            caller="recherche/ziel",
+        )
+        ziel: dict = json.loads(antwort)
+
+        if not ziel.get("zielsatz"):
+            logger.info("RechercheAgent: Kein Folgeziel aus Recherche")
+            return None
+
+        logger.info(f"RechercheAgent: Folgeziel extrahiert — '{ziel['zielsatz'][:60]}'")
+        return ziel
+
+    except Exception as fehler:
+        logger.warning(f"RechercheAgent: Ziel-Extraktion fehlgeschlagen — {fehler}")
+        return None
 
 
 class RechercheAgent(BaseAgent):
@@ -230,6 +292,44 @@ class RechercheAgent(BaseAgent):
             logger.info("RechercheAgent: In Novas KZG gespeichert")
         except Exception as e:
             logger.warning(f"RechercheAgent: KZG-Write fehlgeschlagen — {e}")
+
+        # -- 8. Mittelfristiges Ziel extrahieren (Drive) --
+        try:
+            # Max-Check: nicht über ZIEL_MAX_MITTELFRISTIG
+            aktive_ziele: list[dict] = ziele_aktive_laden(POSTGRES_URL, user_id=ASSISTANT_USER_ID)
+            mittelfristige: int = sum(1 for z in aktive_ziele if z["ziel_typ"] == "mittelfristig")
+
+            if mittelfristige < ZIEL_MAX_MITTELFRISTIG:
+                ziel_extrakt: dict | None = _ziel_aus_recherche_extrahieren(
+                    recherche_ziel, destillat,
+                )
+
+                if ziel_extrakt:
+                    try:
+                        ziel_emb: list[float] = embedding_create(
+                            ziel_extrakt["zielsatz"], ollama_cpu_client, EMBED_MODEL,
+                        )
+                    except Exception:
+                        ziel_emb = None
+
+                    ziel_speichern(
+                        postgres_url=POSTGRES_URL,
+                        user_id=ASSISTANT_USER_ID,
+                        ziel_typ="mittelfristig",
+                        zielsatz=ziel_extrakt["zielsatz"],
+                        motivation=ziel_extrakt.get("motivation", 0.6),
+                        emotion=ziel_extrakt.get("emotion", "neugierig"),
+                        arousal=ziel_extrakt.get("arousal", 0.5),
+                        embedding=ziel_emb,
+                    )
+            else:
+                logger.info(
+                    f"RechercheAgent: Max mittelfristige Ziele erreicht "
+                    f"({mittelfristige}/{ZIEL_MAX_MITTELFRISTIG}) — kein neues Ziel"
+                )
+
+        except Exception as ziel_fehler:
+            logger.warning(f"RechercheAgent: Ziel-Speicherung fehlgeschlagen — {ziel_fehler}")
 
         state["status"] = "abgeschlossen"
         state["ergebnis"] = destillat

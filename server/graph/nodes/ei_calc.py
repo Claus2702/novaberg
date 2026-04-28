@@ -19,6 +19,7 @@ from ei.berechnung import (
     _stil_plausibilitaet,
     _nova_empathie_berechnen,
 )
+from ei.gravitation import emotionale_gravitation_auf_verlauf_anwenden
 from graph.state import ConversationState
 
 logger = logging.getLogger("ki_server.ei_calc")
@@ -150,6 +151,28 @@ def _ei_calc_character(state: ConversationState) -> None:
         empathie_ergebnis: dict = _nova_empathie_berechnen(
             nova_verlauf_basis, current_emotion, current_arousal,
         )
+
+        # ── Emotionale Gravitation anwenden (EI Phase 3) ──
+        emotionale_punkte: list[dict] = state.get("emotionale_gravitationspunkte", [])
+
+        if emotionale_punkte and empathie_ergebnis.get("nova_verlauf_modifiziert"):
+            empathie_ergebnis["nova_verlauf_modifiziert"] = emotionale_gravitation_auf_verlauf_anwenden(
+                empathie_ergebnis["nova_verlauf_modifiziert"],
+                emotionale_punkte,
+            )
+
+            # Nova-Emotion nach Gravitation neu bestimmen (für Logging)
+            if empathie_ergebnis["nova_verlauf_modifiziert"]:
+                top: dict = empathie_ergebnis["nova_verlauf_modifiziert"][0]
+                empathie_ergebnis["nova_emotion"] = top["emotion"]
+                empathie_ergebnis["nova_arousal"] = top.get("arousal", 0.3)
+
+            logger.info(
+                f"EI-Calc: Emotionale Gravitation angewendet — "
+                f"{len(emotionale_punkte)} Punkte, "
+                f"Nova-Emotion jetzt: {empathie_ergebnis.get('nova_emotion', '?')}"
+            )
+
         state["nova_emotions_verlauf"] = empathie_ergebnis["nova_verlauf_modifiziert"]
         state["nova_emotion_konflikt"] = empathie_ergebnis["nova_konflikt"]
         logger.info("EI-Calc/Character: Nova-Empathie berechnet (event_source=user)")

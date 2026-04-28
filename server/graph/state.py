@@ -125,6 +125,11 @@ class ConversationState(TypedDict):
     # ── Gesprächsvektor (Epic 9) ───────────────────
     gespraechsvektor: str
 
+    # ── Drive / Gravitation (Chat 68) ────────────
+    aktivierte_ziele:  list[dict]   # Ziele über Gravitationsschwelle [{zielsatz, motivation, gravitation, ...}]
+    gravitationsterm:  float        # Salienz-Boost aus Ziel-Gravitation
+    emotionale_gravitationspunkte: list[dict]   # Emotional aufgeladene Erinnerungen [{emotion, arousal, gravitation, ...}]
+
     # ── Interne Anmerkungen (Node-übergreifend) ──
     node_annotations: list[str]
     

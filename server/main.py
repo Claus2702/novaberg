@@ -26,6 +26,7 @@ from graph.builder              import build_human_graph, build_agent_graph, bui
 # API-Router
 from api.health                 import router as health_router,      ollama_testen, redis_testen, postgres_testen
 from api.chat                   import router as chat_router, entitaeten_embeddings_sicherstellen
+from memory.ziele               import ziele_embeddings_sicherstellen
 from api.gedaechtnis            import router as gedaechtnis_router
 from api.session                import router as session_router
 from api.websocket              import router as websocket_router, aktive_verbindungen
@@ -105,6 +106,38 @@ def schema_migrieren(postgres_url: str) -> None:
         "ALTER TABLE notizen ADD COLUMN IF NOT EXISTS last_touched TIMESTAMPTZ NOT NULL DEFAULT NOW()",
         "ALTER TABLE notizen ADD COLUMN IF NOT EXISTS wiedervorlage_am TIMESTAMPTZ",
         "ALTER TABLE notizen ADD COLUMN IF NOT EXISTS suchtext TSVECTOR",
+        # Ziele-Tabelle (Drive, Chat 68)
+        """
+        CREATE TABLE IF NOT EXISTS ziele (
+            id              SERIAL PRIMARY KEY,
+            user_id         VARCHAR(50) NOT NULL DEFAULT 'nova',
+            ziel_typ        VARCHAR(20) NOT NULL DEFAULT 'mittelfristig',
+            zielsatz        TEXT NOT NULL,
+            motivation      DOUBLE PRECISION NOT NULL DEFAULT 0.5,
+            emotion         VARCHAR(30) NOT NULL DEFAULT '',
+            arousal         DOUBLE PRECISION NOT NULL DEFAULT 0.5,
+            embedding       vector(768),
+            aktiv           BOOLEAN NOT NULL DEFAULT TRUE,
+            erstellt_am     TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+            aktualisiert_am TIMESTAMPTZ NOT NULL DEFAULT NOW()
+        )
+        """,
+        "CREATE INDEX IF NOT EXISTS idx_ziele_aktiv ON ziele (user_id) WHERE aktiv = TRUE",
+        # Seed-Ziele für Nova (idempotent — nur einfügen wenn Tabelle leer)
+        """
+        INSERT INTO ziele (user_id, ziel_typ, zielsatz, motivation, emotion, arousal)
+        SELECT 'nova', 'langfristig',
+               'Ich möchte die Verbindungen zwischen Natur und menschlicher Kultur verstehen — wie Pflanzen, Jahreszeiten und Landschaften das Leben der Menschen formen.',
+               0.8, 'neugierig', 0.6
+        WHERE NOT EXISTS (SELECT 1 FROM ziele WHERE user_id = 'nova' AND ziel_typ = 'langfristig')
+        """,
+        """
+        INSERT INTO ziele (user_id, ziel_typ, zielsatz, motivation, emotion, arousal)
+        SELECT 'nova', 'langfristig',
+               'Ich möchte meinen Menschen wirklich kennenlernen — seine Gedanken, seine Sorgen, was ihn antreibt und was ihn glücklich macht.',
+               0.9, 'neugierig', 0.5
+        WHERE NOT EXISTS (SELECT 1 FROM ziele WHERE user_id = 'nova' AND ziel_typ = 'langfristig' AND id > 1)
+        """,
     ]
 
     import psycopg2
@@ -171,6 +204,7 @@ async def Lifespan(app: FastAPI):
     # Embedding-Repair: Entitäten ohne Embedding nachträglich versorgen
     if postgres_ok and ollama_ok:
         entitaeten_embeddings_sicherstellen()
+        ziele_embeddings_sicherstellen(POSTGRES_URL, ollama_gpu_client, EMBED_MODEL)
 
     # Epic 11: Agent-Discovery
     from agents import discover_agents, AgentRegistry

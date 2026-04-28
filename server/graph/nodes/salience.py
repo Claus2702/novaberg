@@ -185,6 +185,20 @@ def analyze(
             logger.warning(f"Salienz: JSON-Parsing fehlgeschlagen ({fehler}) — Segment uebersprungen")
             continue
 
+        # ── Gravitationsterm auf Salienz addieren (Drive) ──
+        gravitationsterm: float = state.get("gravitationsterm", 0.0)
+
+        if gravitationsterm > 0.0:
+            salienz_basis: float = salienz_obj.get("salienz", 0.0)
+            salienz_neu:   float = min(1.0, salienz_basis + gravitationsterm)
+            salienz_obj["salienz"] = round(salienz_neu, 2)
+
+            logger.info(
+                f"Salienz: Gravitationsboost — "
+                f"basis={salienz_basis:.2f} + grav={gravitationsterm:.3f} "
+                f"= {salienz_neu:.2f}"
+            )
+
         # ── pending_write fuer KZG-Agent (ohne Embedding, ohne kern) ─
         pending.append({
             "ziel":         "kzg",

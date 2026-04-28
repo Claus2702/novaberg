@@ -12,7 +12,7 @@ import time
 
 from config import ASSISTANT_USER_ID, DEFAULT_USER_ID, get_node_config
 from memory.lzg import effektives_gewicht_berechnen
-from services.llm_provider import get_background_provider
+from services.llm_provider import get_background_provider, pixie_llm_call
 
 logger = logging.getLogger("ki_server.agents.charakter.destillation")
 
@@ -353,3 +353,80 @@ def beziehungsprofil_destillieren(kzg_eintraege: list[dict], user_id: str = DEFA
         prompt.format(eintraege="\n".join(beziehungs_eintraege)),
         f"Beziehungsprofil ({user_id})",
     )
+
+
+def langfristige_ziele_destillieren(kern_hash: str, user_id: str = "nova") -> list[dict]:
+    """Extrahiert 1-2 langfristige Zielsätze aus dem Kern-Hash.
+
+    Die Ziele beschreiben, was Nova langfristig antreibt — basierend auf
+    ihrer gewachsenen Persönlichkeit. Keine Aufgaben, keine To-Dos,
+    sondern innere Antriebe und Interessen.
+
+    Args:
+        kern_hash: Destillierter Kern-Hash (Freitext).
+        user_id: User-ID (für Logging).
+
+    Returns:
+        Liste von Ziel-Dicts mit zielsatz, emotion, arousal.
+        Leer bei Fehler oder wenn kein Kern vorhanden.
+    """
+    if not kern_hash or len(kern_hash) < 20:
+        logger.info(f"Ziel-Destillation: Kern-Hash zu kurz für {user_id} — übersprungen")
+        return []
+
+    prompt: str = (
+        "[IDENTITAET]\n"
+        "Du bist das Selbstreflexions-Modul von Nova.\n\n"
+        "[PERSOENLICHKEIT]\n"
+        f"{kern_hash}\n\n"
+        "[AUFGABE]\n"
+        "Formuliere 1-2 langfristige Ziele, die aus dieser Persönlichkeit erwachsen.\n"
+        "Ziele sind keine Aufgaben, sondern innere Antriebe:\n"
+        "- 'Ich möchte verstehen, wie ...' (Neugier)\n"
+        "- 'Ich möchte lernen, ...' (Wachstum)\n"
+        "- 'Ich möchte meinen Menschen ...' (Beziehung)\n\n"
+        "[FORMAT]\n"
+        'Antworte ausschliesslich als JSON-Array:\n'
+        '[{"zielsatz": "Ich möchte ...", "emotion": "neugierig", "arousal": 0.6}]\n\n'
+        "[REGELN]\n"
+        "- Max 2 Ziele\n"
+        "- Jeder Zielsatz ist 1-2 Sätze\n"
+        "- Emotion: eine kanonische Emotion (neugierig, freude, hoffnung, etc.)\n"
+        "- Arousal: 0.4-0.7 (langfristige Ziele schwelen, sie brennen nicht)\n"
+        "- Sprache: Deutsch, Ich-Perspektive\n"
+        "- Keine generischen Ziele ('Ich möchte helfen') — spezifisch aus dem Kern"
+    )
+
+    try:
+        import json
+        antwort = pixie_llm_call(
+            prompt=prompt,
+            modus="analyse",
+            temperatur=0.3,
+            json_output=True,
+            caller="charakter/ziele",
+        )
+        ziele: list[dict] = json.loads(antwort)
+
+        if not isinstance(ziele, list):
+            ziele = [ziele]
+
+        # Validierung
+        valide: list[dict] = []
+        for z in ziele[:2]:
+            if z.get("zielsatz"):
+                valide.append({
+                    "zielsatz": z["zielsatz"],
+                    "emotion":  z.get("emotion", "neugierig"),
+                    "arousal":  z.get("arousal", 0.6),
+                })
+
+        logger.info(
+            f"Ziel-Destillation: {len(valide)} langfristige Ziele für {user_id} — "
+            + ", ".join(f"'{z['zielsatz'][:50]}'" for z in valide)
+        )
+        return valide
+
+    except Exception as fehler:
+        logger.error(f"Ziel-Destillation fehlgeschlagen für {user_id}: {fehler}")
+        return []

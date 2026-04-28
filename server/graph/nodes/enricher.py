@@ -30,6 +30,12 @@ from memory.embedding  import embedding_create
 from memory.kzg        import kzg_context_retrieve, _kzg_prefix
 from memory.lzg        import lzg_context_retrieve
 from memory.session    import session_turns_retrieve, _session_key
+from memory.ziele      import ziele_aktive_laden
+from ei.gravitation    import (
+    ziel_gravitation_berechnen,
+    gravitationsterm_berechnen,
+    emotionale_gravitation_scannen,
+)
 from plugins           import get_registry
 
 logger = logging.getLogger("ki_server.enricher")
@@ -168,13 +174,14 @@ def enrich(
     except Exception:
         pass
 
+    # Prompt-Embedding (für KZG/LZG + Gravitation)
+    embedding: list[float] = embedding_create(
+        state["user_prompt"], embed_client, embed_model,
+    )
+
     if kzg_keys or has_lzg:
         logger.info(
             f"Enricher: {len(kzg_keys)} KZG, LZG={'ja' if has_lzg else 'nein'} — suche Kontext..."
-        )
-
-        embedding: list[float] = embedding_create(
-            state["user_prompt"], embed_client, embed_model,
         )
 
         if kzg_keys:
@@ -221,6 +228,61 @@ def enrich(
         state["nova_adaptiv"]      = ""
         state["nova_intentionen"]  = ""
         state["nova_emotions"]     = ""
+
+    # ─────────────────────────────────────────
+    # 5. Ziele + Gravitation (Drive)
+    # ─────────────────────────────────────────
+    ziele: list[dict] = ziele_aktive_laden(postgres_url, user_id=ASSISTANT_USER_ID)
+
+    if ziele:
+        aktiviert: list = ziel_gravitation_berechnen(embedding, ziele)
+
+        state["aktivierte_ziele"] = [
+            {
+                "ziel_id":     g.ziel_id,
+                "ziel_typ":    g.ziel_typ,
+                "zielsatz":    g.zielsatz,
+                "motivation":  g.motivation,
+                "emotion":     g.emotion,
+                "arousal":     g.arousal,
+                "similarity":  g.similarity,
+                "gravitation": g.gravitation,
+            }
+            for g in aktiviert
+        ]
+        state["gravitationsterm"] = gravitationsterm_berechnen(aktiviert)
+
+        if aktiviert:
+            logger.info(
+                f"Enricher: {len(aktiviert)} Ziele aktiviert, "
+                f"Gravitationsterm={state['gravitationsterm']:.3f}"
+            )
+    else:
+        state["aktivierte_ziele"] = []
+        state["gravitationsterm"] = 0.0
+
+    # ─────────────────────────────────────────
+    # 6. Emotionale Gravitation (EI Phase 3)
+    # ─────────────────────────────────────────
+    emotionale_punkte: list[dict] = emotionale_gravitation_scannen(
+        turn_embedding=embedding,
+        redis_client=redis_client,
+        postgres_url=postgres_url,
+        user_id=user_id,
+        character_id=character_id,
+    )
+
+    state["emotionale_gravitationspunkte"] = emotionale_punkte
+
+    if emotionale_punkte:
+        logger.info(
+            f"Enricher: {len(emotionale_punkte)} emotionale Gravitationspunkte — "
+            f"stärkster: {emotionale_punkte[0].get('emotion', '?')} "
+            f"(grav={emotionale_punkte[0].get('gravitation', 0):.3f}, "
+            f"quelle={emotionale_punkte[0].get('quelle', '?')})"
+        )
+    else:
+        logger.debug("Enricher: Keine emotionalen Gravitationspunkte")
 
     # ─────────────────────────────────────────
     # State aktualisieren

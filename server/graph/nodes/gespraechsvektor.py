@@ -438,6 +438,24 @@ def _hypothese_destillieren(
                 f"Beziehung zum Nutzer:\n{nova_beziehung}"
             )
 
+    # Aktivierte Ziele als innere Gedanken (Drive)
+    aktivierte_ziele: list[dict] = state.get("aktivierte_ziele", [])
+
+    if aktivierte_ziele:
+        gedanken_zeilen: list[str] = [
+            f"- {z['zielsatz']}" for z in aktivierte_ziele[:3]  # Max 3 Ziele
+        ]
+        gedanken_block: str = (
+            "\n\n[GEDANKEN]\n"
+            "Gedanken, die dir gerade durch den Kopf gehen:\n"
+            + "\n".join(gedanken_zeilen)
+        )
+        system_parts.append(gedanken_block)
+
+        logger.info(
+            f"GV: {len(aktivierte_ziele)} aktivierte Ziele als [GEDANKEN]-Block eingefügt"
+        )
+
     # Situativer Farbton
     farbton: str = _gv_strategie(state)
     farbton_block: str = f"\n\n[SITUATION]\n{farbton}" if farbton else ""

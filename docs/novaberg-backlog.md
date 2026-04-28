@@ -802,6 +802,49 @@ Jeder Turn-Punkt (User-Aussage, GV-Schritte, Nova-Aussage) wird nicht als einfac
 
 ---
 
+## Epic: Matrix-Kanal + WireGuard-Zugang (Chat 68)
+
+**Vision:** Nova als vollwertiger Chat-Partner über das Matrix-Protokoll, erreichbar von überall per WireGuard-VPN. Im Gegensatz zu Telegram kann Matrix über den Application-Service-Mechanismus *beide* Seiten steuern — User-Nachrichten und Bot-Nachrichten. Damit entfällt die `[Du]`-Krücke: Desktop-Eingaben erscheinen im Matrix-Client als echte User-Nachrichten, Novas Antworten als echte Nova-Nachrichten.
+
+**Leitprinzip:** "Der Kanal ist dumm. Absichtlich." — Gilt weiterhin. Matrix ist ein dritter Renderer neben Desktop (GTK4) und Telegram. Markdown bleibt das kanonische Format.
+
+**Architektur:**
+
+1. **Matrix-Homeserver** — Synapse oder Dendrite, lokal auf der Novaberg-Maschine. Kein Cloud-Dienst, kein föderierter Zugang (optional später).
+2. **Zwei Accounts** — `@meister:novaberg.local` (User) + `@nova:novaberg.local` (Charakter) in einem gemeinsamen Room.
+3. **Application Service (AS)** — Novaberg registriert sich als AS beim Homeserver. Kann als beide Accounts schreiben. Empfängt Room-Events per Callback.
+4. **Novaberg-Integration** — Analog zum Telegram-Bot: fire-and-forget POST /chat + WebSocket-Listener. Aber zusätzlich: User-Nachrichten von anderen Clients werden als `@meister` in den Room geschrieben (nicht als Bot-Nachricht).
+5. **WireGuard-VPN** — Server auf der Novaberg-Maschine, Client auf dem Handy (e/OS, F-Droid). Kein offener Port, kein externer Server. Voller Zugriff auf lokales Netz (Matrix, REST-API, Panels, Docker).
+6. **Matrix-Client** — Element oder FluffyChat auf e/OS (F-Droid). Verbindet sich über VPN-Tunnel auf den lokalen Homeserver.
+
+**Vorteil gegenüber Telegram:**
+
+| Aspekt | Telegram | Matrix |
+|--------|----------|--------|
+| User-Nachrichten einspeisen | ❌ Nur Bot-Messages | ✅ AS kann als beliebiger User schreiben |
+| Datenhaltung | Telegram-Cloud | Lokal (Homeserver auf eigener Maschine) |
+| Erreichbarkeit unterwegs | Internet (Telegram-API) | WireGuard-VPN (kein offener Port) |
+| Client-Verfügbarkeit | Telegram-App | Element/FluffyChat (F-Droid) |
+| Protokoll | Proprietär | Offen (Matrix-Spezifikation) |
+
+**Bestandteile:**
+
+| # | Arbeitspaket | Beschreibung |
+|---|-------------|-------------|
+| 1 | WireGuard-Server | Installation + Konfiguration auf der Novaberg-Maschine (Nobara/Fedora) |
+| 2 | WireGuard-Client | Konfiguration auf e/OS Handy, Verbindungstest |
+| 3 | Matrix-Homeserver | Synapse oder Dendrite als Docker-Service im Compose-Stack |
+| 4 | Account-Setup | Zwei Accounts anlegen, Room erstellen, Berechtigungen |
+| 5 | Application Service | AS-Registrierung, Event-Callback, Nachrichtensteuerung als beide User |
+| 6 | Novaberg-Connector | `matrix_bot/bot.py` analog zu `telegram_bot/bot.py` — POST /chat + WebSocket-Listener + user_message-Einspeisung als `@meister` |
+| 7 | Client-Test | Element auf e/OS über VPN, bidirektionaler Nachrichtentest |
+
+**Priorität:** Niedrig — Telegram funktioniert, Matrix ist Kür. Aber architektonisch sauber und privacy-konform.
+
+**Voraussetzung:** WS-SINGLE Fix (Chat 68, ✅), ClientConnection mit client_id/character_id-Filterung (Chat 68, ✅).
+
+---
+
 ## 8. Offene Bugs
 
 Vollständige Bug-Dokumentation → `novaberg-bugs.md`
