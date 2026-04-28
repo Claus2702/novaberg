@@ -31,6 +31,7 @@ from api.gedaechtnis            import router as gedaechtnis_router
 from api.session                import router as session_router
 from api.websocket              import router as websocket_router, aktive_verbindungen
 from api.admin                  import router as admin_router
+from api.drive                  import router as drive_router
 
 from services.shadow_delivery   import shadow_delivery_loop
 from services.event_consumer    import event_consumer_loop
@@ -123,6 +124,8 @@ def schema_migrieren(postgres_url: str) -> None:
         )
         """,
         "CREATE INDEX IF NOT EXISTS idx_ziele_aktiv ON ziele (user_id) WHERE aktiv = TRUE",
+        # Themen-Stichwort fuer den Gravitationsgraph (Region-Label)
+        "ALTER TABLE ziele ADD COLUMN IF NOT EXISTS thema VARCHAR(100) NOT NULL DEFAULT ''",
         # Seed-Ziele für Nova (idempotent — nur einfügen wenn Tabelle leer)
         """
         INSERT INTO ziele (user_id, ziel_typ, zielsatz, motivation, emotion, arousal)
@@ -334,3 +337,4 @@ app.include_router(gedaechtnis_router)
 app.include_router(session_router)
 app.include_router(websocket_router)
 app.include_router(admin_router)
+app.include_router(drive_router)

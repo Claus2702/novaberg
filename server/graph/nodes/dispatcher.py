@@ -17,7 +17,9 @@ DelegationsAgent (Chat 32, VENT1):
   ODER-Trigger (Effektivwert / Vektor / Salienz) -> dispatch_delegation()
 """
 
+import json
 import logging
+from datetime import datetime, timezone
 
 import redis
 
@@ -76,6 +78,84 @@ def _delegation_trigger_pruefen(state: ConversationState) -> str:
     return ""
 
 
+def _persist_short_term_drive(state: ConversationState) -> None:
+    """Schreibt den kurzfristigen Drive-Zustand nach Redis.
+
+    Snapshot der drei Felder, die nach einem Turn das aktuelle Drive-Bild
+    ergeben: Gespraechsvektor (GV-Hypothese), aktivierte Ziele (mit
+    Gravitation), Gravitationsterm. Wird vom Drive-Endpoint gelesen, damit
+    das Ziele-Panel die Live-Lage zeigen kann.
+
+    Key: drive:short_term:{user_id}:{character_id}
+    Wert: JSON mit englischen Feldnamen (conversation_vector,
+    activated_goals, gravity_term, timestamp). Kein TTL — wird beim
+    naechsten Turn ueberschrieben.
+    """
+    user_id:      str = state.get("user_id", "")
+    character_id: str = state.get("character_id", "")
+
+    if not user_id or not character_id:
+        logger.debug(
+            "Dispatcher: Short-Term-Drive nicht persistiert — "
+            "user_id oder character_id fehlt"
+        )
+        return
+
+    aktivierte: list = state.get("aktivierte_ziele") or []
+    activated_goals: list[dict] = []
+    for ziel in aktivierte:
+        # aktivierte_ziele sind plain dicts (siehe enricher); robust gegen
+        # versehentliche ActivatedGoal-Objekte mit getattr-Fallback.
+        if isinstance(ziel, dict):
+            zielsatz    = ziel.get("zielsatz", "")
+            similarity  = ziel.get("similarity", 0.0)
+            motivation  = ziel.get("motivation", 0.0)
+            gravitation = ziel.get("gravitation", 0.0)
+        else:
+            zielsatz    = getattr(ziel, "zielsatz", "")
+            similarity  = getattr(ziel, "similarity", 0.0)
+            motivation  = getattr(ziel, "motivation", 0.0)
+            gravitation = getattr(ziel, "gravitation", 0.0)
+
+        activated_goals.append({
+            "goal_text":        zielsatz,
+            "similarity":       float(similarity),
+            "motivation":       float(motivation),
+            "gravity_strength": float(gravitation),
+        })
+
+    conversation_vector: str = state.get("gespraechsvektor", "") or ""
+    gravity_term_raw         = state.get("gravitationsterm", 0.0)
+    gravity_term: float | None
+    if gravity_term_raw is None:
+        gravity_term = None
+    else:
+        try:
+            gravity_term = float(gravity_term_raw)
+        except (TypeError, ValueError):
+            gravity_term = None
+
+    payload: dict = {
+        "conversation_vector": conversation_vector,
+        "activated_goals":     activated_goals,
+        "gravity_term":        gravity_term,
+        "timestamp":           datetime.now(timezone.utc).isoformat(),
+    }
+
+    key: str = f"drive:short_term:{user_id}:{character_id}"
+
+    try:
+        cfg_redis_client.set(key, json.dumps(payload, ensure_ascii=False))
+        logger.info(
+            f"Dispatcher: Short-Term-Drive geschrieben — "
+            f"{len(activated_goals)} aktivierte Ziele, "
+            f"gravity_term={gravity_term}, "
+            f"vector={'gefuellt' if conversation_vector else 'leer'}"
+        )
+    except Exception as fehler:
+        logger.warning(f"Dispatcher: Short-Term-Drive-Persist fehlgeschlagen — {fehler}")
+
+
 def _session_turn_schreiben(state: ConversationState) -> None:
     """Schreibt den aktuellen Turn vollständig in die Session.
 
@@ -105,6 +185,21 @@ def _session_turn_schreiben(state: ConversationState) -> None:
         logger.warning(f"Dispatcher: Session-Turn nicht geschrieben — kein Inhalt (rolle={rolle})")
         return
 
+    # Embedding nur fuer User-Turns durchreichen — der Enricher berechnet
+    # eines fuer Novas eigene Antworten nicht, und der Gravitationsgraph
+    # braucht es auch nur fuer die User-Punkte.
+    embedding: list[float] | None = None
+    themen: list[str] | None = None
+    if rolle == "user":
+        embedding = state.get("prompt_embedding") or None
+        # Perzeption setzt ``prompt_thema`` als String (Singular). Wir
+        # heben das auf eine Liste, weil session_turn_store ein themen-
+        # Array erwartet und der Gravitationsgraph mehrere Topics pro
+        # Turn unterstuetzt.
+        prompt_thema: str = (state.get("prompt_thema") or "").strip()
+        if prompt_thema:
+            themen = [prompt_thema]
+
     session_turn_store(
         redis_client       = cfg_redis_client,
         user_id            = user_id,
@@ -120,6 +215,8 @@ def _session_turn_schreiben(state: ConversationState) -> None:
         sprach_stil        = state.get("sprach_stil", ""),
         beziehungs_dynamik = state.get("beziehungs_dynamik", ""),
         tone               = state.get("tone", "sachlich"),
+        themen             = themen,
+        embedding          = embedding,
     )
 
     logger.info(f"Dispatcher: Session-Turn geschrieben — rolle={rolle}, {len(inhalt)} Zeichen")
@@ -144,6 +241,10 @@ def dispatch(
 
     if not writes:
         logger.info("Dispatcher: Keine pending_writes — Durchlauf")
+        # Auch ohne Writes wollen wir den kurzfristigen Drive-Snapshot
+        # persistieren, damit das Ziele-Panel z.B. nach Begruessungs-Turns
+        # nicht auf veraltete Daten zeigt.
+        _persist_short_term_drive(state)
         return state
 
     user_id:  str  = state["user_id"]
@@ -216,6 +317,9 @@ def dispatch(
 
     # ── Session-Turn schreiben (nach allen Writes, damit kern verfügbar ist) ──
     _session_turn_schreiben(state)
+
+    # ── Short-Term-Drive nach Redis (fuers Ziele-Panel) ──
+    _persist_short_term_drive(state)
 
     # pending_writes leeren
     state["pending_writes"] = []

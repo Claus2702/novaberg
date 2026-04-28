@@ -179,6 +179,10 @@ def enrich(
         state["user_prompt"], embed_client, embed_model,
     )
 
+    # In den State stellen, damit der Dispatcher es spaeter neben dem
+    # User-Turn in der Session ablegen kann (Gravitationsgraph-Panel).
+    state["prompt_embedding"] = embedding
+
     if kzg_keys or has_lzg:
         logger.info(
             f"Enricher: {len(kzg_keys)} KZG, LZG={'ja' if has_lzg else 'nein'} — suche Kontext..."

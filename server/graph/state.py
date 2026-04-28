@@ -129,6 +129,7 @@ class ConversationState(TypedDict):
     aktivierte_ziele:  list[dict]   # Ziele über Gravitationsschwelle [{zielsatz, motivation, gravitation, ...}]
     gravitationsterm:  float        # Salienz-Boost aus Ziel-Gravitation
     emotionale_gravitationspunkte: list[dict]   # Emotional aufgeladene Erinnerungen [{emotion, arousal, gravitation, ...}]
+    prompt_embedding:  list[float]  # Embedding des aktuellen User-Prompts (768-dim, vom Enricher gesetzt)
 
     # ── Interne Anmerkungen (Node-übergreifend) ──
     node_annotations: list[str]

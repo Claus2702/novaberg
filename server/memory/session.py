@@ -49,6 +49,7 @@ def session_turn_store(
     beziehungs_dynamik: str = "",
     tone:               str = "",
     themen:             list[str] | None = None,
+    embedding:          list[float] | None = None,
 ) -> None:
     """Speichert einen Turn in der Session, vollständig mit allen Meta-Daten."""
 
@@ -71,6 +72,11 @@ def session_turn_store(
 
     if themen is not None:
         turn_data["themen"] = themen
+
+    # Embedding als JSON-Array mitspeichern (nur fuer User-Turns relevant — wird
+    # vom Gravitationsgraph-Panel gelesen, um Turns auf 2D zu projizieren).
+    if embedding:
+        turn_data["embedding"] = list(embedding)
 
     turn: str = json.dumps(turn_data, ensure_ascii=False)
 

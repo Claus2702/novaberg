@@ -614,7 +614,7 @@ EMPATHIE_KONFLIKT_MIN_AROUSAL: float = 0.4  # Beide müssen mindestens diesen Ar
 # ─────────────────────────────────────────────
 # Drive / Gravitation
 # ─────────────────────────────────────────────
-GRAVITATIONS_SCHWELLE:        float = 0.3    # Minimum gravitation (sim × mot) für Aktivierung
+GRAVITATIONS_SCHWELLE:        float = 0.75   # Minimum gravitation (sim × mot) für Aktivierung — Baseline von nomic-embed-text liegt ~0.55–0.60, niedriger feuert bei jedem Turn
 GRAVITATIONS_SALIENZ_FAKTOR:  float = 0.5    # Skalierung des Gravitationsterms auf die Salienz
 ZIEL_MITTELFRISTIG_DECAY_TAGE: int  = 14     # Halbwertszeit mittelfristiger Ziele in Tagen
 ZIEL_MAX_MITTELFRISTIG:         int = 5      # Max aktive mittelfristige Ziele

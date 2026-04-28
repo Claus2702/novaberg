@@ -31,7 +31,7 @@ def ziele_aktive_laden(postgres_url: str, user_id: str = "nova") -> list[dict]:
         cursor.execute(
             """
             SELECT id, ziel_typ, zielsatz, motivation, emotion, arousal,
-                   embedding::text, erstellt_am
+                   embedding::text, erstellt_am, COALESCE(thema, '')
             FROM ziele
             WHERE user_id = %s AND aktiv = TRUE
             ORDER BY ziel_typ, motivation DESC
@@ -61,6 +61,7 @@ def ziele_aktive_laden(postgres_url: str, user_id: str = "nova") -> list[dict]:
                 "arousal":     row[5],
                 "embedding":   embedding,
                 "erstellt_am": row[7],
+                "thema":       row[8] or "",
             })
 
         logger.info(
