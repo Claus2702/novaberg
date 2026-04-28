@@ -570,6 +570,47 @@
 - ✅ Desktop-Client: `user_message`-Event als User-Bubble anzeigen
 - ✅ Live getestet — Desktop ↔ Telegram bidirektional
 
+## Chat 69 (28. April 2026) — Goals-Panel, Gravitationsgraph, Drive-Verifikation
+
+### Goals-Panel (3 Ebenen)
+
+- ✅ Server-Endpoint `GET /drive/goals` — lang-/mittelfristige Ziele aus PostgreSQL, kurzfristige aus Redis
+- ✅ Kurzfristig-Persistenz: Dispatcher schreibt `aktivierte_ziele`, `gravitationsterm`, `gespraechsvektor` nach jedem Turn in Redis
+- ✅ Client: GoalsPanel (turn_reactive) mit Config-Zeile, Motivation-LevelBars, Emotion-Badges, Aktiv-Indikator
+- ✅ Umbenennung `debug.py` → `drive.py`, Route `/debug/ziele` → `/drive/goals`
+
+### Gravitationsgraph-Panel
+
+- ✅ Embedding-Persistenz: Enricher → State (`prompt_embedding`) → Dispatcher → `session_turn_store` (nur User-Turns)
+- ✅ Server-Endpoint `GET /drive/gravity_map` mit Fruchterman-Reingold Force-Directed Layout (numpy, deterministisch)
+- ✅ PCA anfangs implementiert, dann durch Force-Directed ersetzt
+- ✅ Client: GravityMapPanel (turn_reactive, 900×650, Cairo)
+- ✅ Plutchik-Farbkodierung für Turn-Emotionen (8 Sektoren + Neutral)
+- ✅ Zeitliches Fading (dunkel = alt, hell = neu) für Punkte, Pfad und Linien
+- ✅ Ereignishorizonte als halbtransparente Discs (Radius = weitester verbundener Turn)
+- ✅ Topic-Pills an Turn-Punkten aus `themen`-Feld
+- ✅ Theme Regions als Wasserzeichen aus `ziele.thema`-Spalte
+- ✅ Ziel-Leiste am unteren Rand mit nummerierten Referenzen
+- ✅ Konsistente Liniensprache: solid = langfristig, dashed = mittelfristig, dotted = kurzfristig
+- ✅ Relative Turn-Nummern (0, -1, -2, ...)
+- ✅ Cairo-Bug gefixt: Phantom-Linien durch `new_sub_path()` vor `arc()`
+
+### Pipeline-Fixes
+
+- ✅ Themen-Pipeline: `prompt_thema` vom Enricher durch Dispatcher an `session_turn_store` durchgereicht
+- ✅ `thema`-Spalte in `ziele`-Tabelle (idempotente Migration)
+- ✅ `GRAVITATIONS_SCHWELLE` kalibriert: 0.3 → 0.75
+
+### Drive-Verifikation
+
+- ✅ Ziel-Produktion durch Pixie bestätigt (Gräser-Ziel, Klima-Ziel emergent aus Gesprächen)
+- ✅ Gravitation beeinflusst Novas Sprache messbar ("Samen säen", "Gräser bei Sonne", "Botanik auf Terrasse")
+- ✅ GV-Hypothese antizipiert korrekt ("wird wahrscheinlich die Liste ihrer Ziele präsentieren")
+
+### HN-Post
+
+- ✅ Login-Bug HN-seitig bestätigt (dang: "I broke logins without realizing it")
+
 ---
 
-*Aktualisiert in Chat 68. Offene Punkte → novaberg-backlog.md. Bugs → novaberg-bugs.md.*
+*Aktualisiert in Chat 69. Offene Punkte → novaberg-backlog.md. Bugs → novaberg-bugs.md.*

@@ -1,6 +1,6 @@
 # Novaberg — Bugs & Limitationen
 
-**Stand:** 27. April 2026, Chat 68
+**Stand:** 28. April 2026, Chat 69
 **Quelle:** Testlauf "Karrierekrise" (200 Prompts) + Gedächtnis-Epic (Chat 11) + Epic 11 Agent-System (Chats 22–32) + Persona Smoke-Tests (Chats 31–32) + RechercheAgent-Test (Chat 35) + Doku-Audit (Chat 36) + PRIO0-Fix + Client-Observability (Chat 37) + Claude API-Test + STREAM1-Fix + Gesprächsvektor (Chat 39) + CharakterIdentitaetAgent + DirektivenAgent + Tribunal Score-System (Chat 40) + Telegram Bot + Zeitparser-Fixes (Chat 41) + CRUD-Härtung + Telegram-Chat-Analyse + DB-Report (Chat 42) + KONTEXT1-Fix + Resume-Bug + Epic 15 Pilot (Chat 43) + Epic 15 Rollout + DELEG-REG Fix + KZG-Klebrigkeit (Chat 44) + RESP-CHAR1 Fix (Chat 45) + CLASSIFY-REJECTED + Gemma4 Live-Tests (Chat 48) + Telegram-Konversation "frecher Charakter" (Chat 49) + RESUME-REJECT Fix + Live-Tests (Chat 50) + Neugier-Konzept + Projektinfrastruktur (Chat 51) + Doku-Alignment + emotions_profil (Chat 52) + Antrieb-Konzept + Dual-Emotion (Chat 53) + HALL2-Fix + Planner-Refactor (Chat 54) + PySide6 verworfen + GTK4-Entscheidung (Chat 55) + GTK4-Client + Panel-Infrastruktur (Chat 56) + Web-Tool-Doku + SEARX1-Diagnose (Chat 57) + Chat 61 (Perzeption-Symmetrie, Akkumulations-Refactor, Paper-Portfolio, Lumi, urllib3-Doppel-Turn beobachtet) + Paper I + urllib3-RETRY + ROUTE-CHAR-NOTIZ + RESP-DEAD + PIXIE-GHOST (Chat 65) + WS-SINGLE Fix + ClientConnection + User-Message-Broadcast (Chat 68)
 
 ---
@@ -65,6 +65,7 @@
 | KZG-DEDUP | 8 KZG-Einträge statt 1 bei Lumi-Gespräch | Re-framed als Feature: Verschiedene Facetten desselben Themas werden als eigenständige Einträge behalten. Die Cluster-Promotion sammelt sie ein und destilliert sie zu einem kohärenten LZG-Eintrag. | Chat 64 |
 | ROUTE-CHAR-NOTIZ | CharacterGraph-Router dispatched Konversation an NotizenAgent | Genereller Dispatch-Guard in router.task.txt + Notizen-Plugin-Regel verschärft. Verifikation ausstehend. | Chat 65 |
 | WS-SINGLE | WebSocket verdrängt bestehende Verbindung — Dict erlaubte nur einen Slot pro User | `aktive_verbindungen` auf `dict[str, list[ClientConnection]]` mit `ClientConnection`-Dataclass. `broadcast()`/`broadcast_threadsafe()` mit `character_id`-Filterung und `exclude_client`. User-Message-Broadcast über alle Clients. 12 Dateien. | Chat 68 |
+| CAIRO-PHANTOM | Phantom-Linien zwischen Goal-Indikatoren im Gravitationsgraph | `cr.new_sub_path()` vor jedem `cr.arc()` — Cairo zieht impliziten `line_to(arc_start)` vom Current Point nach `show_text()` | Chat 69 |
 
 ---
 
