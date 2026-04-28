@@ -54,6 +54,7 @@ _TOOLBAR_PANELS: list[str] = [
     "LZG",
     "Charakter",
     "🎯 Ziele & Antrieb",
+    "🌌 Gravitationsgraph",
     "Fakten",
     "System",
     "Pixie",
