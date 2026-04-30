@@ -156,6 +156,30 @@ def _persist_short_term_drive(state: ConversationState) -> None:
         logger.warning(f"Dispatcher: Short-Term-Drive-Persist fehlgeschlagen — {fehler}")
 
 
+def _persist_gv_detail(state: ConversationState) -> None:
+    """Schreibt das GV-Detail (Sprünge, Neugier, Wissensluecken, Farbton)
+    nach Redis, damit das GV-Panel den aktuellen Stand auch ohne
+    WebSocket-Broadcast (Initial-Load) abfragen kann.
+
+    Key: gv:detail:{user_id}:{character_id}. Kein TTL — wird beim naechsten
+    Turn ueberschrieben.
+    """
+    user_id:      str  = state.get("user_id", "")
+    character_id: str  = state.get("character_id", "")
+    gv_detail:    dict = state.get("gv_detail") or {}
+
+    if not user_id or not character_id or not gv_detail:
+        return
+
+    key: str = f"gv:detail:{user_id}:{character_id}"
+
+    try:
+        cfg_redis_client.set(key, json.dumps(gv_detail, ensure_ascii=False))
+        logger.debug(f"Dispatcher: gv_detail nach Redis geschrieben ({key})")
+    except Exception as fehler:
+        logger.warning(f"Dispatcher: gv_detail-Persist fehlgeschlagen — {fehler}")
+
+
 def _session_turn_schreiben(state: ConversationState) -> None:
     """Schreibt den aktuellen Turn vollständig in die Session.
 
@@ -318,8 +342,16 @@ def dispatch(
     # ── Session-Turn schreiben (nach allen Writes, damit kern verfügbar ist) ──
     _session_turn_schreiben(state)
 
+    logger.info(
+        f"Dispatcher: gv_detail={'vorhanden' if state.get('gv_detail') else 'LEER'}, "
+        f"Keys: {list(state.get('gv_detail', {}).keys())}"
+    )
+
     # ── Short-Term-Drive nach Redis (fuers Ziele-Panel) ──
     _persist_short_term_drive(state)
+
+    # ── GV-Detail nach Redis (fuers GV-Panel Initial-Load) ──
+    _persist_gv_detail(state)
 
     # pending_writes leeren
     state["pending_writes"] = []

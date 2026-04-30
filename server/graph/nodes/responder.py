@@ -369,7 +369,9 @@ def _build_system_prompt(state: ConversationState) -> str:
     if gv_hypothese:
         parts.append(
             "[GESPRAECHSVEKTOR]\n"
-            "So bewegt sich das Gespraech gerade. Du bist mittendrin.\n\n"
+            "So bewegt sich das Gespraech gerade. Du bist mittendrin.\n"
+            "Wenn hier ein Vorschlag fuer den naechsten Schritt steht,\n"
+            "greif ihn auf — als Gedanke, als Frage, als Impuls.\n\n"
             f"{gv_hypothese}"
         )
         logger.info(f"Responder: Gespraechsvektor injiziert ({len(gv_hypothese)} Zeichen)")

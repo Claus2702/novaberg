@@ -75,6 +75,25 @@ def _short_term_load(user_id: str, character_id: str) -> dict | None:
         return None
 
 
+@router.get("/gv_detail")
+def GvDetailLesen(user_id: str = DEFAULT_USER_ID, character_id: str = ASSISTANT_USER_ID):
+    """Liefert das letzte vom Dispatcher persistierte GV-Detail.
+
+    Key: gv:detail:{user_id}:{character_id}. Wird vom GV-Panel beim
+    Oeffnen aufgerufen, damit ein Stand sichtbar ist, bevor der naechste
+    Turn ueber WebSocket frische Daten liefert.
+    """
+    key: str = f"gv:detail:{user_id}:{character_id}"
+    raw: str | None = redis_client.get(key)
+    if not raw:
+        return {}
+    try:
+        return json.loads(raw)
+    except json.JSONDecodeError as fehler:
+        logger.warning(f"Drive/GvDetail: '{key}' nicht parsebar — {fehler}")
+        return {}
+
+
 @router.get("/goals")
 def GoalsLesen():
     """Liefert alle Ziele und den aktuellen kurzfristigen Drive-Zustand.

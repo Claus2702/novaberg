@@ -259,8 +259,9 @@ Der naechste Schritt in der Kommunikationsbandbreite: Spracheingabe (Speech-to-T
 ### Gesprächsvektor (Epic 9, offen)
 | # | Thema | Status |
 |---|-------|--------|
-| GV3 | Invertierte Perzeption (Ziel → benötigter Modus) | ⬜ |
-| GV4 | Wissens-Lücken via Embedding-Nachbarschaft | ⬜ |
+| GV3 | Invertierte Perzeption (Ziel → benötigter Modus) | 🔧 Chat 71 |
+| GV4 | Wissens-Lücken via Embedding-Nachbarschaft | 🔧 Chat 71 (Kern: LZG + KZG) |
+| GV4b | Agenten als Wissensquellen (Timeline, Notizen, Fakten, Dateien) | ⬜ Epic unten |
 | GV5 | Vektor-Typen (explizite Erkennung) | ⬜ Implizit durch Farbtöne abgedeckt |
 | GV6 | Pixie-Vorbereitung (Vektor im Hintergrund vorbereiten) | ⬜ Nach VertiefungsAgent v2 |
 
@@ -367,6 +368,76 @@ Zwei neue Nodes pro Agent:
 **Konzept-Dokument:** `novaberg-agent-fachabteilung_k.md` (Chat 49)
 
 **Aufwand:** Mehrere Sessions. Pilot-Agent: Charakter (aktueller Fokus). Rollout danach auf die anderen drei.
+
+---
+
+### Charakter-Hash: Fehlende Zeitstempel (Chat 71)
+
+Die Tabelle `charakter_hash` hat nur `kern_aktualisiert_am` und `adaptive_aktualisiert_am`.
+Drei Profile haben keinen eigenen Zeitstempel — man kann nicht sehen wann sie
+zuletzt destilliert wurden:
+
+| Profil | Spalte existiert | Zeitstempel |
+|--------|:---:|:---:|
+| kern_hash | ✅ | kern_aktualisiert_am |
+| adaptive_hash | ✅ | adaptive_aktualisiert_am |
+| beziehungsprofil | ❌ | fehlt |
+| intentions_profil | ❌ | fehlt |
+| emotions_profil | ❌ | fehlt |
+
+Fix:
+
+1. ALTER TABLE charakter_hash ADD COLUMN IF NOT EXISTS beziehung_aktualisiert_am TIMESTAMPTZ;
+2. ALTER TABLE charakter_hash ADD COLUMN IF NOT EXISTS intentionen_aktualisiert_am TIMESTAMPTZ;
+3. ALTER TABLE charakter_hash ADD COLUMN IF NOT EXISTS emotionen_aktualisiert_am TIMESTAMPTZ;
+4. CharakterAgent: Beim Schreiben den jeweiligen Zeitstempel setzen
+5. Charakter-Panel: Alle 5 Zeitstempel anzeigen
+
+Priorität: Niedrig — aber wichtig für Debugging (Chat 71 hat gezeigt dass ein
+veraltetes Beziehungsprofil die gesamte Antwortqualität ruiniert).
+
+---
+
+### Charakter-Hash schema-konform um `beobachter` erweitern (Chat 71)
+
+Konzept: `novaberg-paar-schema_k.md`. Heute mischt der Hash-Eintrag
+`(nova, meister)` zwei Sichten — Nova-aus-User-Sicht (Beobachter `user`) und
+Nova-aus-Selbstsicht (Beobachter `assistant`) — in einem Datensatz. Dadurch
+überschreibt jede Destillation die jeweils andere Sicht.
+
+Fix:
+
+1. ALTER TABLE charakter_hash ADD COLUMN IF NOT EXISTS beobachter TEXT NOT NULL DEFAULT 'user';
+2. Primärschlüssel umstellen: `(user_id, character_id)` → `(user_id, character_id, beobachter)`.
+3. CharakterAgent-Loop erweitern: Statt zwei Paaren jetzt vier Tripel — `(meister, nova, user)`, `(meister, nova, assistant)`, `(nova, meister, user)`, `(nova, meister, assistant)`.
+4. Destillations-Funktionen filtern KZG/LZG zusätzlich nach `beobachter`.
+5. Enricher entscheidet per Kontext, welchen Hash er liest.
+6. Cluster-Promotion-Guard für Nova ([promotion/agent.py:575-577](novaberg/server/agents/promotion/agent.py#L575-L577)) entschärfen, sobald genug Nova-KZG-Material da ist (sonst läuft die Promotion auf 0 Einträgen).
+
+Priorität: Mittel. Erst sinnvoll, wenn der Sofort-Fix aus Chat 71
+(`nova_gedaechtnis.py`) ein paar Tage Material gesammelt hat. Vorher fehlt
+die Datengrundlage für die Beobachter-Trennung.
+
+---
+
+### Altdaten-Migration: `kzg:nova:nova:*` → `kzg:nova:meister:*` (Chat 71)
+
+Konzept: `novaberg-paar-schema_k.md`, Abschnitt 4.2. In Redis liegen aktuell
+19 KZG-Einträge unter `kzg:nova:nova:*` aus der Zeit vor dem Chat-71-Fix.
+Sie werden vom CharakterAgent zufällig mitgelesen (Wildcard `kzg:nova:*`),
+gehören aber semantisch unter `kzg:nova:meister:*` mit `beobachter=assistant`.
+
+Fix:
+
+1. Tool-Skript schreiben (analog `tools/migrate_kzg_keys.py`): Iteriere alle Keys mit Pattern `kzg:nova:nova:*`.
+2. Pro Eintrag den Redis-Hash auslesen, mit `beobachter=assistant` neuen Key `kzg:nova:meister:{id}` schreiben, alte TTL übernehmen, alten Key löschen.
+3. Anschließend `hash_dirty:nova:meister` setzen, damit der CharakterAgent das migrierte Material direkt einliest.
+4. Sicherheitscheck: Vor der Migration zählen, nach der Migration zählen, in einem Log dokumentieren.
+
+Priorität: Niedrig. Solange der Sofort-Fix neue Einträge sauber unter
+`kzg:nova:meister:*` ablegt, schadet das Altmaterial nicht — es führt nur
+zu einer leichten Mischung in der Destillation. Wenn die Beobachter-
+Erweiterung (siehe oben) kommt, müssen die Altdaten ohnehin migriert werden.
 
 ---
 
@@ -849,6 +920,174 @@ Jeder Turn-Punkt (User-Aussage, GV-Schritte, Nova-Aussage) wird nicht als einfac
 
 ---
 
+## Epic: GV4b — Agenten als Wissensquellen (Chat 71)
+
+### Kontext
+
+GV4 (Chat 71, Kern) durchsucht LZG und KZG nach Wissenslücken — semantisch nahe,
+aber unbesprochene Konzepte. Die Relevanz wird über 6 Systeme berechnet: Gedächtnis,
+Aktualität, Drive (Ziel-Gravitation), Neugier (6 EI-Säulen, sin^0.5), Register-
+Kompatibilität und Charakter-Filter. Die Formel ist validiert (58-Testfälle-Matrix).
+
+Was fehlt: Agenten-Domänen als Quellen. Timeline-Einträge, Notizen, Fakten und
+autonome Wissens-Dateien enthalten Wissen, das Nova für Wissenslücken nutzen kann.
+Die Agenten müssen sich selbst als Quelle anmelden und ihre eigenen Config-Werte
+bereitstellen.
+
+### Architektur: BaseAgent-Erweiterung
+
+Neue Attribute in `server/agents/base.py` (`BaseAgent`):
+
+| Attribut | Typ | Default | Beschreibung |
+|----------|-----|---------|-------------|
+| `neugier_quelle` | `bool` | `False` | Kann dieser Agent Wissenslücken liefern? |
+| `neugier_config` | `dict` | `{}` | Agent-spezifische GV4-Parameter |
+
+Neue Methode in `BaseAgent`:
+
+```python
+def neugier_suchen(
+    self,
+    turn_embedding: list[float],
+    user_id: str,
+    character_id: str,
+    limit: int = 10,
+) -> list[dict]:
+    """Durchsucht die Domäne nach Wissenslücken.
+
+    Returns: [{konzept, similarity, gewicht, gap_arousal, quelle, quellen_faktor}]
+    """
+    return []
+```
+
+Jeder Agent implementiert `neugier_suchen()` mit seiner eigenen DB-Query
+(pgvector, RediSearch, Textsuche) und liefert Kandidaten mit seinem eigenen
+`quellen_faktor` aus `neugier_config`.
+
+### Agent-Registrierung (Opt-in)
+
+| Agent | `neugier_quelle` | `quellen_faktor` | `gap_arousal_base` | Voraussetzung |
+|-------|:-:|:-:|:-:|---|
+| TimelineAgent | `True` | 0.7 | 0.3 | **Embedding-Nachrüstung** (s.u.) |
+| NotizenAgent | `True` | 0.5 | 0.2 | **Embedding-Nachrüstung** (s.u.) |
+| FaktenAgent | `True` | 0.6 | 0.3 | Fakten-Tabelle hat bereits `embedding VECTOR(768)` — sofort möglich |
+| DateienAgent | `True` | 0.5 | 0.2 | `autonomous_wissen`-Tabelle (Phase 3, Pixie-Infrastruktur) |
+| CharakterAgent | `False` | — | — | Keine Wissensdomäne |
+| DelegationsAgent | `False` | — | — | Keine Wissensdomäne |
+| RechercheAgent | `False` | — | — | Produziert Wissen, liefert es nicht |
+| PromotionAgent | `False` | — | — | Infrastruktur, keine Domäne |
+| DecayAgent | `False` | — | — | Infrastruktur, keine Domäne |
+| WiedervorlageAgent | `False` | — | — | Trigger, keine Domäne |
+| KZG-Agent | `False` | — | — | KZG ist Kern-Quelle, kein Agent-Opt-in |
+
+### Embedding-Nachrüstung (Voraussetzung)
+
+Zwei Tabellen haben aktuell **kein** `embedding`-Feld:
+
+**1. Timeline:**
+
+```sql
+ALTER TABLE timeline ADD COLUMN IF NOT EXISTS embedding VECTOR(768);
+CREATE INDEX IF NOT EXISTS idx_timeline_embedding
+    ON timeline USING ivfflat (embedding vector_cosine_ops) WITH (lists = 20);
+```
+
+- TimelineAgent muss bei `create`, `update`, `reschedule` das Embedding aus
+  `title + ' ' + COALESCE(details, '')` erzeugen.
+- Einmalige Migration: Alle bestehenden Einträge embedden
+  (`embedding_create(title + details, embed_client, EMBED_MODEL)`).
+- `neugier_suchen()` Query: pgvector `ORDER BY embedding <=> %s LIMIT 10`
+  mit Zeitfenster-Filter `WHERE event_time >= NOW() AND event_time <= NOW() + INTERVAL '{zeitfenster_h} hours'`
+  (aus `neugier_config["zeitfenster_h"]`, Default 72).
+
+**2. Notizen:**
+
+```sql
+ALTER TABLE notizen ADD COLUMN IF NOT EXISTS embedding VECTOR(768);
+CREATE INDEX IF NOT EXISTS idx_notizen_embedding
+    ON notizen USING ivfflat (embedding vector_cosine_ops) WITH (lists = 20);
+```
+
+- NotizenAgent muss bei `create`, `update` das Embedding aus
+  `titel + ' ' + COALESCE(inhalt, '')` erzeugen.
+- Einmalige Migration analog zu Timeline.
+- `neugier_suchen()` Query: pgvector `ORDER BY embedding <=> %s LIMIT 10`.
+
+**3. Fakten:** Hat bereits `embedding VECTOR(768)` — kein ALTER TABLE nötig.
+  FaktenAgent kann `neugier_suchen()` sofort implementieren.
+  Die Entity-Hop-ILIKE-Suche im GV-Node bleibt parallel bestehen —
+  sie findet Named Entities, die pgvector-Suche findet semantische Nachbarschaft.
+
+**4. Dateien:** `autonomous_wissen`-Tabelle hat bereits `themen_embedding VECTOR(768)`
+  im Konzept (`novaberg-autonomous-wissen_k.md`). Wird mit Phase 3 (Pixie-Infrastruktur)
+  angelegt. DateienAgent implementiert `neugier_suchen()` sobald die Tabelle existiert.
+
+### Integration in `_wissensluecken_finden()`
+
+Nach den Kern-Quellen (LZG + KZG) iteriert der GV-Node über die Agent-Registry:
+
+```python
+from agents import AgentRegistry
+
+for agent in AgentRegistry.get_all():
+    if agent.neugier_quelle:
+        agent_kandidaten = agent.neugier_suchen(
+            turn_embedding, user_id, character_id
+        )
+        alle_kandidaten.extend(agent_kandidaten)
+```
+
+Die Relevanz-Berechnung liest den `quellen_faktor` aus dem Kandidaten-Dict
+(statt aus der zentralen Config-Variable). Kern-Quellen (LZG, KZG) setzen
+weiterhin den Default `GV_QUELLEN_FAKTOR`.
+
+```python
+# Statt:
+basis = k["similarity"] * k["gewicht"] * GV_QUELLEN_FAKTOR
+# Jetzt:
+basis = k["similarity"] * k["gewicht"] * k.get("quellen_faktor", GV_QUELLEN_FAKTOR)
+```
+
+### Reihenfolge
+
+| Schritt | Was | Abhängigkeit |
+|---------|-----|-------------|
+| 1 | `BaseAgent` um `neugier_quelle`, `neugier_config`, `neugier_suchen()` erweitern | — |
+| 2 | `_wissensluecken_finden()` um Agent-Registry-Loop ergänzen | Schritt 1 |
+| 3 | FaktenAgent: `neugier_suchen()` implementieren | Schritt 1 (sofort, Embedding existiert) |
+| 4 | Timeline: Embedding nachrüsten (ALTER TABLE + Migration + Agent-Writes) | — |
+| 5 | TimelineAgent: `neugier_suchen()` implementieren | Schritt 1 + 4 |
+| 6 | Notizen: Embedding nachrüsten (ALTER TABLE + Migration + Agent-Writes) | — |
+| 7 | NotizenAgent: `neugier_suchen()` implementieren | Schritt 1 + 6 |
+| 8 | DateienAgent: `neugier_suchen()` implementieren | Phase 3 (autonomous_wissen) |
+
+Schritte 1–3 könnten unmittelbar nach GV4-Kern-Validierung erfolgen.
+Schritte 4–7 sind unabhängig voneinander und parallelisierbar.
+Schritt 8 wartet auf die Pixie-Infrastruktur (Phase 3).
+
+### Designprinzipien
+
+> **"Jeder Agent kennt seine Domäne."** Der GV-Node fragt nicht die Timeline-Tabelle
+> direkt ab — der TimelineAgent weiß, wie seine Daten liegen und welche Filter
+> (Zeitfenster, aktiv-Flag) gelten. Das ist "Separation of Concerns über Nodes"
+> konsequent auf Agenten-Ebene angewendet.
+
+> **"Die Neugier gehört Nova, die Daten gehören dem Agenten."** Der GV-Node berechnet
+> die Relevanz (Neugier, Register, Charakter). Der Agent liefert die Rohdaten
+> (Kandidaten mit Similarity, Gewicht, Arousal). Keine Vermischung.
+
+> **"Config beim Agenten, nicht in der Zentrale."** Jeder Agent bringt seinen eigenen
+> `quellen_faktor` und `gap_arousal_base` mit. Das vermeidet eine zentrale
+> Faktor-Tabelle, die bei jedem neuen Agenten wachsen müsste.
+
+### Priorität
+
+Mittel. Der GV4-Kern (LZG + KZG) deckt den Hauptanwendungsfall ab. Die
+Agent-Quellen erweitern die Reichweite, sind aber nicht blockierend.
+FaktenAgent als erste Agent-Quelle (Embedding existiert) ist Quick Win.
+
+---
+
 ## 8. Offene Bugs
 
 Vollständige Bug-Dokumentation → `novaberg-bugs.md`
@@ -882,3 +1121,5 @@ Details, Ursachen und Lösungsansätze → `novaberg-bugs.md`
 *Aktualisiert Chat 68: WS-SINGLE behoben (ClientConnection-Dataclass, broadcast()/broadcast_threadsafe() mit character_id/exclude_client). User-Message-Broadcast: Desktop ↔ Telegram bidirektional sichtbar (server-seitige Filterung). 12 Dateien.*
 
 *Aktualisiert Chat 69: Goals-Panel ✅ + Gravitationsgraph-Panel ✅ (2 neue Panels). Embedding-Persistenz in Session-Turns. Themen-Pipeline (`prompt_thema` → Dispatcher → Session) geschlossen. `thema`-Spalte in `ziele`-Tabelle. GRAVITATIONS_SCHWELLE kalibriert (0.3 → 0.75). Dashboard-Epic: 8/14 Panels.*
+
+*Aktualisiert Chat 71: GV3 + GV4 in Implementierung (🔧). GV4b als neues Epic: Agenten als Wissensquellen mit BaseAgent-Erweiterung (neugier_quelle, neugier_config, neugier_suchen()). Embedding-Nachrüstung für Timeline + Notizen. FaktenAgent als Quick Win (Embedding existiert). 6-Systeme-Relevanzformel validiert (58-Testfälle-Matrix, sin^0.5 Neugier-Normalisierung, Register-Kompatibilität, Session-Decay).*

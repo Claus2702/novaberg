@@ -55,6 +55,7 @@ _TOOLBAR_PANELS: list[str] = [
     "Charakter",
     "🎯 Ziele & Antrieb",
     "🌌 Gravitationsgraph",
+    "🧭 Gesprächsvektor",
     "Fakten",
     "System",
     "Pixie",

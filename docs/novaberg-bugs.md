@@ -1,6 +1,6 @@
 # Novaberg — Bugs & Limitationen
 
-**Stand:** 28. April 2026, Chat 69
+**Stand:** 30. April 2026, Chat 71
 **Quelle:** Testlauf "Karrierekrise" (200 Prompts) + Gedächtnis-Epic (Chat 11) + Epic 11 Agent-System (Chats 22–32) + Persona Smoke-Tests (Chats 31–32) + RechercheAgent-Test (Chat 35) + Doku-Audit (Chat 36) + PRIO0-Fix + Client-Observability (Chat 37) + Claude API-Test + STREAM1-Fix + Gesprächsvektor (Chat 39) + CharakterIdentitaetAgent + DirektivenAgent + Tribunal Score-System (Chat 40) + Telegram Bot + Zeitparser-Fixes (Chat 41) + CRUD-Härtung + Telegram-Chat-Analyse + DB-Report (Chat 42) + KONTEXT1-Fix + Resume-Bug + Epic 15 Pilot (Chat 43) + Epic 15 Rollout + DELEG-REG Fix + KZG-Klebrigkeit (Chat 44) + RESP-CHAR1 Fix (Chat 45) + CLASSIFY-REJECTED + Gemma4 Live-Tests (Chat 48) + Telegram-Konversation "frecher Charakter" (Chat 49) + RESUME-REJECT Fix + Live-Tests (Chat 50) + Neugier-Konzept + Projektinfrastruktur (Chat 51) + Doku-Alignment + emotions_profil (Chat 52) + Antrieb-Konzept + Dual-Emotion (Chat 53) + HALL2-Fix + Planner-Refactor (Chat 54) + PySide6 verworfen + GTK4-Entscheidung (Chat 55) + GTK4-Client + Panel-Infrastruktur (Chat 56) + Web-Tool-Doku + SEARX1-Diagnose (Chat 57) + Chat 61 (Perzeption-Symmetrie, Akkumulations-Refactor, Paper-Portfolio, Lumi, urllib3-Doppel-Turn beobachtet) + Paper I + urllib3-RETRY + ROUTE-CHAR-NOTIZ + RESP-DEAD + PIXIE-GHOST (Chat 65) + WS-SINGLE Fix + ClientConnection + User-Message-Broadcast (Chat 68)
 
 ---
@@ -293,6 +293,15 @@
 
 ---
 
+#### FAKTEN-RAUSCH — Fakten-Enrichment produziert massenhaft Rauschen ⚠️ Deaktiviert
+**Entdeckt:** Chat 71
+**Symptom:** Fakten-Enrichment produziert 130+ Einträge für User "meister", davon die meisten Rauschen: `VERWENDET_BELEIDIGUNG = Fotzen`, `HAT_VISITENKARTE = Code`, `BEHERRSCHT = Markdown`, `LEGT_AB = Schwarzweiß-Brille`, `HALTET_SICHER_UND_FEST = schwarzes Geschöpf`.
+**Ursache:** Salienz-Agent extrahiert zu aggressiv Fakten aus Gesprächskontext, ohne Qualitätsfilter. Rollenspiel-Inhalte, einmalige Erwähnungen und metaphorische Sprache werden als Fakten gespeichert.
+**Workaround:** Fakten-Enrichment im Enricher deaktiviert (Chat 71).
+**Fix:** Fakten-Bereinigung (manuelle DB-Cleaning + Salienz-Prompt-Tuning für Fakten-Extraktion). Phase 4 (CRUD gerade ziehen).
+
+---
+
 #### CHAR-ID4-ORPHAN — Charakter-Eintrag mit gebrochener bi-temporaler Invariante ⬜
 **Entdeckt:** Chat 49, DB-Inspektion
 **Symptom:** In `charakter_identitaet` existiert ID 4 mit `aktiv=f` und `deaktiviert_am IS NULL`. Die bi-temporale Invariante verlangt: `aktiv=f` ⇒ `deaktiviert_am IS NOT NULL`.
@@ -306,6 +315,26 @@
 - Prüfen ob andere Einträge (auch in anderen Tabellen mit bi-temporalem Modell) dieselbe Anomalie haben
 - DB-Constraint einziehen: `CHECK (aktiv = TRUE OR deaktiviert_am IS NOT NULL)`
 **Prio:** Niedrig — isolierter Vorfall, kein aktueller Schaden. Hinweis auf mögliche CRUD-Schwäche an einer Stelle.
+
+---
+
+#### CHAR-BEZ-STALE — Veraltetes Beziehungsprofil im Prompt (Chat 71) ⚠️
+**Status:** ⚠️ Offen
+**Symptom:** Der GV-Node und der Responder erhalten als `nova_beziehung`:
+  "Nova sieht ihren Nutzer als eine rein sachliche und effizienzorientierte Instanz,
+  mit der sie eine rein funktionale und professionelle Beziehung pflegt."
+Das widerspricht dem tatsächlichen Beziehungsprofil in der DB (User-Perspektive):
+  "Der Nutzer pflegt eine sehr vertraute und emotionale Beziehung zum Assistenten,
+  die durch eine hohe Dynamik des Vertrauens und einen empathischen Ton geprägt ist."
+**Ursache (Vermutung):** Der Enricher lädt möglicherweise das falsche Paar
+  (user_id/character_id vertauscht) oder es existiert ein zweiter Hash-Eintrag
+  mit veralteten Daten. Muss untersucht werden: Welcher Eintrag liefert das
+  "rein sachliche" Profil?
+**Auswirkung:** Schwer. Nova antwortet mechanisch und kurz trotz warmem Gespräch.
+  GV3-Strategie und GV4-Wissenslücken können nicht gegen ein falsches Identitäts-
+  profil in Primacy-Position ankämpfen.
+**Debug:** `SELECT user_id, character_id, beziehungsprofil FROM charakter_hash;`
+  um alle Einträge zu sehen.
 
 ---
 

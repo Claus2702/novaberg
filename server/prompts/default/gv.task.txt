@@ -7,9 +7,8 @@ Beschreibe die Gespraechslandschaft in 2-4 Saetzen:
 
 Denke dabei maximal {max_laenge} Gedankenschritt(e) voraus.
 
-Beschreibe die LANDSCHAFT — nicht die Route.
-Beschreibe WAS IST und WAS KOMMT — nicht was Nova tun soll.
-Kein Imperativ, keine Handlungsanweisung, keine Formvorgabe.
+{strategie_block}
+
 Die verwandten Fakten und das Gedaechtnis sind Kontext,
 keine Pflicht-Zutaten.
 

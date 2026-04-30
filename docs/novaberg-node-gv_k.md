@@ -725,6 +725,42 @@ Der existierende Task `vertiefen` ist konzeptionell der richtige Ort für den Ge
 
 ---
 
+## GV3 — Invertierte Perzeption (Chat 71)
+
+Der GV-Node formuliert zusätzlich zur Landschaftsbeschreibung eine **Strategie**
+für Novas nächsten Gedankenschritt. Bedingung: Vektorlänge ≥ 2, kein Krisenmodus.
+
+Die Strategie ist Teil des `[AUFGABE]`-Blocks (nicht separat), um Prompt-Widersprüche
+zu vermeiden. Template in `gv.task.txt` mit `{strategie_block}`-Platzhalter.
+
+Vollständige Strategie-Architektur: siehe `novaberg-gv-strategie_k.md`.
+
+## GV4 — Wissenslücken (Chat 71)
+
+Deterministische Wissenslücken-Erkennung über 6 Systeme:
+Gedächtnis (LZG + KZG), Aktualität (Session-Decay sin^0.5),
+Drive (Ziel-Gravitation), Neugier (6 Säulen, sin^0.5 [0,1]),
+Register-Kompatibilität, Charakter-Filter.
+
+Formel und Kalibrierung: siehe `novaberg-gv-strategie_k.md` Anhang A.
+
+Erweiterung auf Agent-Quellen (Timeline, Notizen, Fakten, Dateien):
+siehe Backlog GV4b.
+
+## GV-Panel (Chat 71)
+
+GTK4-Panel zeigt nach jedem Turn: Sprünge (LevelBar 0-3), Neugier (LevelBar 0-1
+mit Schwelle), Strategie-Status, Wissenslücken-Liste (Konzept, Quelle, Relevanz),
+Farbton. Transport: WebSocket (aktuell), geplant Redis/REST.
+
+## Dreischicht-Architektur (Chat 71)
+
+7 Strategien (WAS) × 4 Absichten (WARUM) × 3 Vehikel (WIE).
+Charakter-abgeleitete Gewichtung über Embedding-Similarity.
+Vollständige Dokumentation: `novaberg-gv-strategie_k.md`.
+
+---
+
 → Emotionale Intelligenz (bestehend): novaberg-ei.md
 → Perzeption (Eingangs-Analyse): novaberg-node-perception.md
 → Emotions-Vektoren (Richtung der Stimmung): novaberg-node-perception.md

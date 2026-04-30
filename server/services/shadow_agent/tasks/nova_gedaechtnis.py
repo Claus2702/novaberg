@@ -5,7 +5,7 @@ import threading
 
 import redis
 
-from config import ASSISTANT_USER_ID
+from config import ASSISTANT_USER_ID, DEFAULT_USER_ID
 from services.shadow_agent.base_task import BaseTask
 from memory.kzg import kzg_store
 
@@ -72,11 +72,17 @@ class NovaGedaechtnisTask(BaseTask):
             "modus":          "",
         }
 
-        # Novas Erkenntnisse gehoeren zum Paar (user_id, nova) mit Beobachter "assistant".
+        # Paar-Schema: user_id = Subjekt, character_id = Gegenueber, beobachter
+        # = wer schreibt. Novas eigene Erkenntnis: Subjekt = Nova, Gegenueber =
+        # der echte User (Fallback DEFAULT_USER_ID), Beobachter = assistant.
+        # Damit landen die Eintraege unter kzg:nova:{user}:* — und triggern
+        # hash_dirty:nova:{user}, das genau das Paar ist, das der CharakterAgent
+        # fuer den Nova-Hash erwartet (siehe novaberg-paar-schema_k.md).
+        gegenueber_id: str = user_id if user_id != ASSISTANT_USER_ID else DEFAULT_USER_ID
         kzg_store(
             redis_client = redis_client,
-            user_id      = user_id,
-            character_id = ASSISTANT_USER_ID,
+            user_id      = ASSISTANT_USER_ID,
+            character_id = gegenueber_id,
             beobachter   = "assistant",
             salienz_obj  = salienz_obj,
             embedding    = embedding,

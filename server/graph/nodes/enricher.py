@@ -111,6 +111,13 @@ def enrich(
     registry: dict = get_registry()
 
     for name, manager in registry.items():
+        # DEAKTIVIERT Chat 71 — Fakten-Enrichment produziert 130+ Rausch-Eintraege
+        # Wird reaktiviert nach Fakten-Bereinigung
+        if name == "fakten":
+            # plugin_context = manager.enrich(state, postgres_url)
+            logger.info("Enricher: Fakten-Enrichment deaktiviert (Chat 71)")
+            continue
+
         try:
             plugin_context: str = manager.enrich(state, postgres_url)
 

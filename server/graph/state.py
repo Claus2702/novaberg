@@ -124,6 +124,7 @@ class ConversationState(TypedDict):
 
     # ── Gesprächsvektor (Epic 9) ───────────────────
     gespraechsvektor: str
+    gv_detail: dict          # GV4 Debug-Info (Neugier, Luecken, Farbton)
 
     # ── Drive / Gravitation (Chat 68) ────────────
     aktivierte_ziele:  list[dict]   # Ziele über Gravitationsschwelle [{zielsatz, motivation, gravitation, ...}]

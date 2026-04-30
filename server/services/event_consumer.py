@@ -175,6 +175,18 @@ def _stage_detail_bauen(node_name: str, node_state: dict) -> str:
         return f"Runde {node_state.get('correction_round', 0)}"
 
     if node_name == "gv_node":
+        gv_detail: dict = node_state.get("gv_detail") or {}
+        if gv_detail:
+            laenge:    int   = int(gv_detail.get("laenge", 0) or 0)
+            neugier:   float = float(gv_detail.get("effektive_neugier", 0.0) or 0.0)
+            strategie: str   = "aktiv" if gv_detail.get("strategie_aktiv") else "—"
+            luecken:   int   = len(gv_detail.get("wissensluecken") or [])
+            return (
+                f"Sprünge: {laenge}/3 · "
+                f"Neugier: {neugier:.2f} · "
+                f"Strategie: {strategie} · "
+                f"Lücken: {luecken}"
+            )
         hypothese: str = node_state.get("gespraechsvektor", "") or ""
         if not hypothese:
             return "Übersprungen"

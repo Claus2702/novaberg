@@ -613,4 +613,33 @@
 
 ---
 
-*Aktualisiert in Chat 69. Offene Punkte → novaberg-backlog.md. Bugs → novaberg-bugs.md.*
+## Chat 71 (29. April 2026) — GV-Panel-Datenfluss, Prompt-Entlastung, Fakten-Deaktivierung
+
+### Temporäre Deaktivierungen (müssen reaktiviert werden)
+
+| Was | Wo | Warum deaktiviert | Wann reaktivieren |
+|-----|-----|-------------------|-------------------|
+| **Fakten-Enrichment** | `enricher.py` | 130+ Rausch-Einträge (`VERWENDET_BELEIDIGUNG`, `BEHERRSCHT = Markdown`, etc.) — Fakten-Qualität muss erst bereinigt werden | Nach Fakten-Bereinigung (CRUD gerade ziehen, Phase 4) |
+| **memory_context im GV-Node** | `gespraechsvektor.py`, `_hypothese_destillieren()` | Der GV-Node bekommt den kompletten Enricher-Dump (Fakten + KZG + LZG + Notizen + Timeline + Charakter) als [GEDAECHTNIS]-Block — alles redundant, weil der GV eigene Quellen hat (Entity-Hops, Wissenslücken). Charakter steht bereits im System-Prompt. ~3500 Tokens Rauschen, Strategie-Prompt geht unter | **Permanent für den GV** — der GV braucht memory_context nicht. Der Responder braucht ihn weiterhin (dort bleibt er aktiv). Wenn der Reducer kommt, baut er das Responder-Konzentrat aus dem State, nicht aus memory_context. |
+
+### Konsequenzen und Abhängigkeiten
+
+**Fakten-Enrichment:**
+
+- Der Responder bekommt aktuell keine Fakten mehr im Kontext
+- Semantische Fragen zu Personen/Orten ("Wo wohnt Anna?") funktionieren weiterhin über KZG und LZG, aber nicht über strukturierte Fakten
+- Entity-Hops im GV-Node funktionieren weiterhin (eigene DB-Query, unabhängig vom Enricher)
+- Reaktivierung erfordert: Fakten-Tabelle bereinigen (Rausch-Einträge löschen, Attribut-Normalisierung), dann Enricher wieder einschalten
+
+**memory_context im GV:**
+
+- Designentscheidung, keine temporäre Deaktivierung: Der GV braucht keinen Enricher-Dump. Er hat eigene, fokussierte Datenquellen:
+  - [VERWANDTE FAKTEN] aus Entity-Hops (eigene pgvector/ILIKE-Query)
+  - [WISSENSLUECKEN] aus GV4 (eigene LZG + KZG Embedding-Suche)
+  - [CHARAKTER] bereits im System-Prompt
+  - [GEDANKEN] aus Drive-System (aktivierte Ziele)
+- Wenn der Reducer kommt, wird der Responder ebenfalls sein eigenes Konzentrat bekommen — dann ist memory_context nur noch für Nodes relevant die den vollen Kontext brauchen (Salienz, Thinker)
+
+---
+
+*Aktualisiert in Chat 71. Offene Punkte → novaberg-backlog.md. Bugs → novaberg-bugs.md.*

@@ -614,7 +614,7 @@ EMPATHIE_KONFLIKT_MIN_AROUSAL: float = 0.4  # Beide müssen mindestens diesen Ar
 # ─────────────────────────────────────────────
 # Drive / Gravitation
 # ─────────────────────────────────────────────
-GRAVITATIONS_SCHWELLE:        float = 0.75   # Minimum gravitation (sim × mot) für Aktivierung — Baseline von nomic-embed-text liegt ~0.55–0.60, niedriger feuert bei jedem Turn
+GRAVITATIONS_SCHWELLE:        float = 0.60   # Minimum gravitation (sim × mot) für Aktivierung — Baseline von nomic-embed-text liegt ~0.55–0.60, niedriger feuert bei jedem Turn
 GRAVITATIONS_SALIENZ_FAKTOR:  float = 0.5    # Skalierung des Gravitationsterms auf die Salienz
 ZIEL_MITTELFRISTIG_DECAY_TAGE: int  = 14     # Halbwertszeit mittelfristiger Ziele in Tagen
 ZIEL_MAX_MITTELFRISTIG:         int = 5      # Max aktive mittelfristige Ziele
@@ -898,6 +898,72 @@ NODE_LLM_CONFIG: dict = {
         "max_output_tokens": 512,
     },
 }
+
+# ── GV4 — Wissenslücken-Erkennung ────────────────────────────
+# Formel: relevanz = sim × gewicht × session_akt × QF × (1 + boost) × eff_neugier × register
+NOVA_NEUGIER:                    float = 0.5    # Novas Grund-Neugier (Persoenlichkeitsparameter)
+GV_LUECKEN_MAX:                  int   = 8      # Erweitert Chat 71 (vorher 3)
+GV_LUECKEN_MIN_RELEVANZ:         float = 0.15   # Mindest-Gesamtrelevanz
+GV_NEUGIER_BOOST_SCHWELLE:       float = 0.30   # Mindest-Gravitation fuer Ziel-Boost
+GV_CHARAKTER_RESONANZ_SCHWELLE:  float = 0.40   # Mindest-Cosine zum kern_hash
+GV_QUELLEN_FAKTOR:               float = 0.6    # Einheitlich fuer alle Quellen
+GV_SESSION_AKT_CAP:              int   = 25     # Session-Decay: nach 25 Turns = 0
+GV_NEUGIER_CAP:                  float = 2.5    # sin^0.5 Normalisierung: Rohwert-Obergrenze
+GV_STRATEGIE_MIN_LAENGE:         int   = 2      # GV3-Strategie nur ab Vektorlaenge >= 2
+GV_LUECKEN_SIM_OBERGRENZE:       float = 0.92   # Zu aehnlich = bereits besprochen
+
+# Neugier-Saeulen: Faktor-Tabellen fuer effektive Neugier
+GV_NEUGIER_EMOTION: dict[int, float] = {
+    0: 1.50,   # Neugier selbst (Sektor 8)
+    1: 1.25,   # Adjacent (Freude, Aerger)
+    2: 1.00,   # Nah-diagonal (Zuversicht, Enttaeuschung)
+    3: 0.75,   # Fern (Angst, Trauer)
+    4: 0.50,   # Gegenpol (Ueberraschung)
+}
+
+GV_NEUGIER_VEKTOR: dict[str, float] = {
+    "aufbluehen":     1.30,
+    "eskalation":     1.25,
+    "erholung":       1.15,
+    "stabilisierung": 1.00,
+    "plateau":        1.00,
+    "abkuehlung":     0.90,
+    "einbruch":       0.70,
+    "spirale":        0.50,
+    "absturz":        0.40,
+}
+
+GV_NEUGIER_MODUS: dict[str, float] = {
+    "spielerisch":    1.40,
+    "fachgespraech":  1.30,
+    "arbeitsmodus":   1.00,
+    "alltag":         1.00,
+    "emotional":      0.70,
+}
+
+GV_NEUGIER_DYNAMIK: dict[str, float] = {
+    "vertrauen":      1.30,
+    "dankbar":        1.15,
+    "neutral":        1.00,
+    "hilfesuchend":   0.85,
+    "distanz":        0.85,
+    "angriff":        0.60,
+}
+
+GV_NEUGIER_STIL: dict[str, float] = {
+    "locker":         1.20,
+    "jugendlich":     1.15,
+    "neutral":        1.00,
+    "fachlich":       0.95,
+    "emotional":      0.90,
+    "formell":        0.90,
+}
+
+# Register-Kompatibilitaet: Passt die emotionale Ladung der Luecke zum Gespraechsregister?
+GV_REGISTER_SACHLICH_EMOTIONAL:  float = 0.60   # Hoch-emotional in sachlichem Register
+GV_REGISTER_SACHLICH_MILD:       float = 0.90   # Mild-emotional in sachlichem Register
+GV_REGISTER_SACHLICH_NEUTRAL:    float = 1.15   # Sachliche Luecke in sachlichem Register
+GV_REGISTER_OFFEN_EMOTIONAL:     float = 1.20   # Emotionale Luecke in offenem Register
 
 # ── Tribunal — Schwellwerte pro Rolle (T1) ────────────────
 # Score: 0.0 = unbedenklich, 1.0 = schwerer Verstoss
