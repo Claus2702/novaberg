@@ -181,6 +181,7 @@ class CharakterAgent(BaseAgent):
                                     motivation=0.8,
                                     emotion=z.get("emotion", "neugierig"),
                                     arousal=z.get("arousal", 0.6),
+                                    thema=z.get("thema", ""),
                                     embedding=emb,
                                 )
 

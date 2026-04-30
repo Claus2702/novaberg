@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Backlog — Konzipierte, noch nicht implementierte Features
-**Stand:** 26. April 2026, Chat 66
+**Stand:** 01. Mai 2026, Chat 72
 **Pfad:** novaberg/docs/novaberg-backlog.md
 **Quellen:** nova-08-k.md (Kognitive Anreicherung), nova-10-k-backlog.md (Skill-System), nova-01-t-c-backlog.md (Node-Konfiguration)
 
@@ -259,7 +259,7 @@ Der naechste Schritt in der Kommunikationsbandbreite: Spracheingabe (Speech-to-T
 ### Gesprächsvektor (Epic 9, offen)
 | # | Thema | Status |
 |---|-------|--------|
-| GV3 | Invertierte Perzeption (Ziel → benötigter Modus) | 🔧 Chat 71 |
+| GV3 | Invertierte Perzeption (Ziel → benötigter Modus) — Dreischicht-Prompt-Integration | ✅ Chat 72 |
 | GV4 | Wissens-Lücken via Embedding-Nachbarschaft | 🔧 Chat 71 (Kern: LZG + KZG) |
 | GV4b | Agenten als Wissensquellen (Timeline, Notizen, Fakten, Dateien) | ⬜ Epic unten |
 | GV5 | Vektor-Typen (explizite Erkennung) | ⬜ Implizit durch Farbtöne abgedeckt |
@@ -1088,6 +1088,52 @@ FaktenAgent als erste Agent-Quelle (Embedding existiert) ist Quick Win.
 
 ---
 
+## Epic: Chat 72 — Folgearbeiten aus Dreischicht-Integration
+
+### Reducer-Node — Gegenspieler zum Enricher (Hoch, Chat 71/72)
+
+Der Reducer fasst ältere Session-Turns zusammen, statt alle 11+ Turns wörtlich an den Responder durchzureichen. Pendant zum Enricher: wo der Enricher anreichert, dünnt der Reducer aus.
+
+**Motivation:** Echo-Bug (Chat 72) zeigt, dass Nova ab ~11 Turns die User-Nachricht wörtlich wiederholt. Vermutete Ursache: Kontext-Sättigung durch Session-Turns + KZG/LZG-Rauschen + Charakter-Hash + GV-Vorschlag. Konzipiert in Chat 71, durch Echo-Bug in Chat 72 priorisiert.
+
+**Funktion:**
+
+- Ältere Turns (>N) destillieren statt durchreichen
+- Pro Responder-Call ein fokussiertes Konzentrat aus dem State bauen, statt vollen `memory_context`
+- Reduktionsstufen je nach Turn-Alter (jüngste vollständig, mittlere zusammengefasst, alte als Themen-Tag)
+
+**Architektur-Anschluss:** Reducer läuft im CharacterGraph zwischen Enricher und Responder. Konsumiert Session + KZG/LZG-Treffer und schreibt `responder_context` in den State. Auch GV-Vorschlag und Charakter-Hash gehen durch den Reducer, damit der Responder ein konsistentes Konzentrat bekommt.
+
+**Priorität:** Hoch — direkt blockierender Bug bei langen Sessions.
+
+---
+
+### GV-Panel: Dreischicht-Felder visualisieren (Hoch, Chat 72)
+
+`gv_detail` enthält seit Chat 72 die volle Entscheidungskette: Achsen, Sektor, Cluster, Repertoire, Charakter-Gewichtung, Sprünge, Absicht, Strategie, Vehikel. Das GV-Panel soll diese Felder detailliert anzeigen — die komplette Entscheidungskette von EI-State bis Antwort-Strategie sichtbar machen.
+
+**Was zu sehen sein soll:**
+
+- 6 Achsen (Werte + Visualisierung)
+- Aktiver Sektor (1 von 64) mit Cluster-Zuordnung (1 von 13)
+- Repertoire (Strategien × Absichten × Vehikel) mit Charakter-Gewichtung
+- Gewählte Absicht / Strategie / Vehikel als Endergebnis
+- Sprünge zwischen Sektoren über die letzten Turns
+
+**Priorität:** Hoch — ohne Sichtbarkeit ist die neue Architektur nicht debugbar oder kalibrierbar.
+
+---
+
+### Modus-Kalibrierung: spielerisch vs. emotional (Niedrig, Chat 72)
+
+Perzeption klassifiziert 😍-Katzen-Chat als `gespraechs_modus="emotional"` statt `"spielerisch"`. Folge: Tiefe-Achse 0.70 statt 0.40, was die Sektor-Berechnung in der Dreischicht verschiebt.
+
+**Lösungsansatz:** Modus-Beispiele im Perzeption-LLM-Call schärfen. Spielerisch (Tier-Niedlichkeit, Quatschen, leichte Themen) klar von emotional (Beziehungsthemen, Sorgen, Tiefe) abgrenzen.
+
+**Priorität:** Niedrig — kosmetische Verschiebung der Sektor-Verteilung, keine Funktion gebrochen.
+
+---
+
 ## 8. Offene Bugs
 
 Vollständige Bug-Dokumentation → `novaberg-bugs.md`
@@ -1121,5 +1167,7 @@ Details, Ursachen und Lösungsansätze → `novaberg-bugs.md`
 *Aktualisiert Chat 68: WS-SINGLE behoben (ClientConnection-Dataclass, broadcast()/broadcast_threadsafe() mit character_id/exclude_client). User-Message-Broadcast: Desktop ↔ Telegram bidirektional sichtbar (server-seitige Filterung). 12 Dateien.*
 
 *Aktualisiert Chat 69: Goals-Panel ✅ + Gravitationsgraph-Panel ✅ (2 neue Panels). Embedding-Persistenz in Session-Turns. Themen-Pipeline (`prompt_thema` → Dispatcher → Session) geschlossen. `thema`-Spalte in `ziele`-Tabelle. GRAVITATIONS_SCHWELLE kalibriert (0.3 → 0.75). Dashboard-Epic: 8/14 Panels.*
+
+*Aktualisiert Chat 72: GV3 (Dreischicht-Prompt-Integration) ✅ — implementiert in Chat 72. GV-Panel Redis-Persistierung ✅ (war bei Chat-72-Start bereits erledigt). Drei neue Folgearbeiten: Reducer-Node (Hoch, gegen Echo-Bug bei langen Sessions), GV-Panel Dreischicht-Felder visualisieren (Hoch, Sichtbarkeit der neuen Architektur), Modus-Kalibrierung spielerisch vs. emotional (Niedrig, Perzeption-Prompt).*
 
 *Aktualisiert Chat 71: GV3 + GV4 in Implementierung (🔧). GV4b als neues Epic: Agenten als Wissensquellen mit BaseAgent-Erweiterung (neugier_quelle, neugier_config, neugier_suchen()). Embedding-Nachrüstung für Timeline + Notizen. FaktenAgent als Quick Win (Embedding existiert). 6-Systeme-Relevanzformel validiert (58-Testfälle-Matrix, sin^0.5 Neugier-Normalisierung, Register-Kompatibilität, Session-Decay).*

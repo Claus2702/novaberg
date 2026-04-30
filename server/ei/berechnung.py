@@ -81,7 +81,7 @@ _AROUSAL_STR_TO_FLOAT: dict[str, float] = {"high": 0.8, "mid": 0.5, "low": 0.2}
 def _arousal_to_float(raw, emotion: str = "neutral") -> float:
     """Konvertiert einen Arousal-Wert (float oder Legacy-String) zu Float."""
     if isinstance(raw, (int, float)):
-        return float(raw)
+        return max(0.0, min(1.0, float(raw)))
     if isinstance(raw, str) and raw in _AROUSAL_STR_TO_FLOAT:
         return _AROUSAL_STR_TO_FLOAT[raw]
     return EMOTION_DEFAULT_AROUSAL.get(emotion, 0.5)

@@ -144,6 +144,7 @@ def ChatSenden(anfrage: GespraechAnfrage, request: Request):
                 "tone":               result.get("tone", ""),
                 "sprach_stil":        result.get("sprach_stil", ""),
                 "beziehungs_dynamik": result.get("beziehungs_dynamik", ""),
+                "emotions_vektor":    result.get("emotions_vektor", ""),
             },
         )
 
@@ -324,6 +325,7 @@ def ChatStreamSenden(anfrage: GespraechAnfrage, request: Request):
                     "tone":               letzter_state.get("tone", ""),
                     "sprach_stil":        letzter_state.get("sprach_stil", ""),
                     "beziehungs_dynamik": letzter_state.get("beziehungs_dynamik", ""),
+                    "emotions_vektor":    letzter_state.get("emotions_vektor", ""),
                 },
             )
 

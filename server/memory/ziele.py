@@ -84,6 +84,7 @@ def ziel_speichern(
     motivation:   float,
     emotion:      str = "",
     arousal:      float = 0.5,
+    thema:        str = "",
     embedding:    list[float] | None = None,
 ) -> int | None:
     """Speichert ein neues Ziel in PostgreSQL.
@@ -96,6 +97,7 @@ def ziel_speichern(
         motivation: Motivationsstärke (0.0-1.0).
         emotion: Emotionale Valenz des Ziels.
         arousal: Emotionale Intensität.
+        thema: Kurzes Themen-Label (2-3 Wörter) für das Gravitationsgraph-Panel.
         embedding: Vorberechnetes Embedding (768-dim), oder None.
 
     Returns:
@@ -112,12 +114,12 @@ def ziel_speichern(
         cursor.execute(
             """
             INSERT INTO ziele (user_id, ziel_typ, zielsatz, motivation,
-                               emotion, arousal, embedding)
-            VALUES (%s, %s, %s, %s, %s, %s, %s::vector)
+                               emotion, arousal, thema, embedding)
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s::vector)
             RETURNING id
             """,
             (user_id, ziel_typ, zielsatz, motivation,
-             emotion, arousal, embedding_str),
+             emotion, arousal, thema, embedding_str),
         )
 
         ziel_id: int = cursor.fetchone()[0]

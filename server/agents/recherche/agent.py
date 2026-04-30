@@ -52,14 +52,18 @@ def _ziel_aus_recherche_extrahieren(recherche_ziel: str, destillat: str) -> dict
         "[AUFGABE]\n"
         "Hat diese Recherche ein neues Interesse oder eine offene Frage aufgeworfen,\n"
         "die Nova weiterverfolgen möchte?\n\n"
+        "Gib zusätzlich ein kurzes Themen-Label (2-3 Wörter) das den Wissensbereich\n"
+        "des Ziels benennt. Beispiele: 'Gartengestaltung', 'KI und Kognition',\n"
+        "'Beziehung', 'Natur und Kultur', 'Klimaanpassung'.\n\n"
         "[FORMAT]\n"
         "Wenn ja: JSON mit einem Ziel:\n"
-        '{"zielsatz": "Ich möchte ...", "motivation": 0.6, "emotion": "neugierig", "arousal": 0.5}\n\n'
+        '{"zielsatz": "Ich möchte ...", "motivation": 0.6, "emotion": "neugierig", "arousal": 0.5, "thema": "Natur und Kultur"}\n\n'
         "Wenn nein (das Thema ist abgeschlossen): antworte mit:\n"
         '{"zielsatz": ""}\n\n'
         "[REGELN]\n"
         "- Nur EIN Ziel, 1-2 Sätze\n"
         "- Motivation 0.4-0.8 (Recherche hat Interesse geweckt, nicht Leidenschaft)\n"
+        "- Thema: 2-3 Wörter, knappes Label (kein Satz)\n"
         "- Nicht das Recherche-Ziel wiederholen — das war der Auslöser, nicht das Ergebnis\n"
         "- Sprache: Deutsch, Ich-Perspektive"
     )
@@ -320,6 +324,7 @@ class RechercheAgent(BaseAgent):
                         motivation=ziel_extrakt.get("motivation", 0.6),
                         emotion=ziel_extrakt.get("emotion", "neugierig"),
                         arousal=ziel_extrakt.get("arousal", 0.5),
+                        thema=(ziel_extrakt.get("thema") or "").strip()[:100],
                         embedding=ziel_emb,
                     )
             else:

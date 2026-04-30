@@ -95,7 +95,8 @@ def enrich(
             letzte_intentionen = turn.get("intentionen", [])
             break
 
-    state["gespraechs_modus"]  = letzter_modus
+    if letzter_modus:
+        state["gespraechs_modus"] = letzter_modus
     state["user_intentionen"]  = letzte_intentionen
     state["user_emotion"]      = letzte_emotion
 

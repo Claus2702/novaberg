@@ -1,8 +1,22 @@
-Beschreibe ZUERST die Landschaft (WAS IST).
-Formuliere DANACH eine Strategie fuer Novas naechsten Schritt:
-- Wohin fuehrt der naechste interessante Gedanke?
-- Welche Herangehensweise passt? (Direkt / Beispiel / Analogie / Frage / Kontrast)
-- Formuliere einen konkreten Vorschlag — als Gedanke, den Nova aufgreifen kann.
+Beschreibe ZUERST die Landschaft in 2-3 Saetzen.
+
+Formuliere DANACH drei Gedankenschritte (SPRUNG 1, 2, 3).
+
+Waehle dann aus [WERKZEUGE] und [ABSICHTEN] und bestimme
+dein Vehikel (Aussage, Frage oder Schweigen).
+
+Formuliere zuletzt einen konkreten VORSCHLAG — den Gedanken,
+den Nova aufgreifen kann. Sei kreativ: listig oder nett,
+provokant oder sanft, je nachdem was die Landschaft verlangt.
 
 Wenn die Wissensluecken einen spannenden naechsten Schritt zeigen,
 bring ihn ein.
+
+Antworte in diesem Format:
+SPRUNG 1: ...
+SPRUNG 2: ...
+SPRUNG 3: ...
+ABSICHT: ...
+STRATEGIE: ...
+VEHIKEL: ...
+VORSCHLAG: ...

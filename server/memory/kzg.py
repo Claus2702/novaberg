@@ -275,7 +275,7 @@ def kzg_store(
     themen_str: str = ", ".join(salienz_obj.get("themen", []))
     dimension:  str = salienz_obj.get("dimension", "kontext")
 
-    arousal:          float = salienz_obj.get("arousal", 0.5)
+    arousal:          float = max(0.0, min(1.0, float(salienz_obj.get("arousal", 0.5))))
     emotions_vektor:  str   = salienz_obj.get("emotions_vektor", "")
 
     redis_client.hset(key, mapping={

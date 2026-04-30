@@ -1,71 +1,41 @@
 """
 Gespraechsvektor Node — Antizipiert die Richtung des Gespraechs.
 
-Bestimmt WOHIN das Gespraech fuehrt, basierend auf:
-- WOHER + WO (Session-Turns + Perzeption)
-- 8 EI-Dimensionen → Richtung im mehrdimensionalen Raum
-- EI-Modell → Vektorlaenge (0-3 Gedankenschritte)
-- Entity-Hop → verwandte Fakten fuer Assoziationen
-- Novas Charakter → Linse fuer die Selektion
+Schlanker Orchestrator: Berechnet die Vektorlaenge, laedt Entity-Kontext
+und assembliert den LLM-Prompt. Alle EI-Berechnungen (Farbton, Neugier,
+Wissensluecken, Dreischicht) sind in server/ei/ ausgelagert.
 
-Konzept: nova-09-k.md
+Konzept: novaberg-gv-strategie_k.md
 """
 
 import logging
-import math
 
-import numpy as np
 import psycopg2
 
 from config import (
     POSTGRES_URL,
-    EMOTION_SEKTOR_MAP,
-    SEKTOR_GRUPPE,
     PROMPTS,
     get_node_config,
-    # GV4 — Wissenslücken
-    GV_NEUGIER_CAP,
-    GV_SESSION_AKT_CAP,
-    GV_NEUGIER_EMOTION,
-    GV_NEUGIER_VEKTOR,
-    GV_NEUGIER_MODUS,
-    GV_NEUGIER_DYNAMIK,
-    GV_NEUGIER_STIL,
-    GV_REGISTER_SACHLICH_EMOTIONAL,
-    GV_REGISTER_SACHLICH_MILD,
-    GV_REGISTER_SACHLICH_NEUTRAL,
-    GV_REGISTER_OFFEN_EMOTIONAL,
-    # GV4 — Wissensluecken-Suche
-    GV_LUECKEN_MAX,
-    GV_LUECKEN_MIN_RELEVANZ,
-    GV_NEUGIER_BOOST_SCHWELLE,
-    GV_CHARAKTER_RESONANZ_SCHWELLE,
-    GV_QUELLEN_FAKTOR,
-    GV_LUECKEN_SIM_OBERGRENZE,
     GV_STRATEGIE_MIN_LAENGE,
-    EMBED_MODEL,
-    ollama_gpu_client,
-    redis_client,
 )
 from graph.state import ConversationState
-from memory.embedding import embedding_create
 from memory.session import format_session_turns_numbered
 from services.llm_provider import get_chat_provider
 
+from ei.utils import POSITIVE_EMOTIONEN, NEGATIVE_EMOTIONEN
+from ei.farbton import farbton_berechnen
+from ei.neugier import effektive_neugier_berechnen
+from ei.wissensluecken import wissensluecken_finden
+from ei.dreischicht import (
+    achsen_berechnen,
+    sektor_bestimmen,
+    repertoire_laden,
+    charakter_gewichtung_berechnen,
+    dreischicht_prompt_bauen,
+    gv_output_parsen,
+)
+
 logger = logging.getLogger("ki_server.gespraechsvektor")
-
-
-# ─────────────────────────────────────────────
-# Emotions-Gruppen aus dem Plutchik-Modell
-# ─────────────────────────────────────────────
-_POSITIVE_EMOTIONEN: set[str] = {
-    emotion for emotion, sektor in EMOTION_SEKTOR_MAP.items()
-    if SEKTOR_GRUPPE.get(sektor) == "positiv"
-}
-_NEGATIVE_EMOTIONEN: set[str] = {
-    emotion for emotion, sektor in EMOTION_SEKTOR_MAP.items()
-    if SEKTOR_GRUPPE.get(sektor) == "negativ"
-}
 
 
 # ─────────────────────────────────────────────
@@ -117,9 +87,9 @@ def _vektor_laenge_berechnen(state: ConversationState) -> int:
     laenge: float = 1.0
 
     # Positive Emotion + Arousal → mehr Spruenge
-    if emotion in _POSITIVE_EMOTIONEN:
+    if emotion in POSITIVE_EMOTIONEN:
         laenge += 0.5 + (arousal * 0.5)
-    elif emotion in _NEGATIVE_EMOTIONEN:
+    elif emotion in NEGATIVE_EMOTIONEN:
         laenge -= arousal * 0.5
 
     # Vertrautheit erhoeht die erlaubte Laenge
@@ -257,691 +227,22 @@ def _entity_kontext_laden(state: ConversationState) -> str:
 
 
 # ─────────────────────────────────────────────
-# Farbmisch-System: 8 unabhaengige Dimensionen
-# ─────────────────────────────────────────────
-# Jede Dimension traegt einen kurzen Satz zur Landschaftsbeschreibung bei,
-# aber NUR wenn sie etwas Auffaelliges zu sagen hat.
-# Neutrale Werte schweigen. Keine Imperative — nur Beschreibungen.
-# Analog zu EI-MIKRO: Python waehlt, LLM interpretiert.
-
-
-def _farbe_intent(intent: str) -> str:
-    """Was fuer ein Gespraech ist das?"""
-    farben: dict[str, str] = {
-        "personal":    "Der Nutzer teilt etwas Persoenliches.",
-        "knowledge":   "Der Nutzer verfolgt einen Wissenspfad.",
-        "task":        "Eine Aufgabe steht an.",
-        "creative":    "Der Nutzer ist im kreativen Modus.",
-        "smalltalk":   "",  # schweigt — zu unspezifisch
-        "begruessung": "",
-        "meta":        "",
-    }
-    return farben.get(intent, "")
-
-
-def _farbe_emotion(emotion: str, arousal: float) -> str:
-    """Wie warm oder kalt ist die Stimmung?"""
-    if emotion == "neutral":
-        return ""
-    if emotion in _POSITIVE_EMOTIONEN:
-        if arousal >= 0.7:
-            return "Die Stimmung ist lebhaft und positiv."
-        elif arousal >= 0.4:
-            return "Eine warme Grundstimmung liegt im Raum."
-        else:
-            return ""  # leise positive Stimmung — schweigt
-    if emotion in _NEGATIVE_EMOTIONEN:
-        if arousal >= 0.7:
-            return "Schwere liegt ueber dem Gespraech."
-        elif arousal >= 0.4:
-            return "Eine Anspannung ist spuerbar."
-        else:
-            return "Eine leise Schwere ist da."
-    return ""
-
-
-def _farbe_vektor(vektor: str) -> str:
-    """Wohin bewegt sich die Energie? Die wichtigste Farbe — beschreibt den Uebergang."""
-    farben: dict[str, str] = {
-        "absturz":         "Die Stimmung ist eingebrochen.",
-        "spirale":         "Die Belastung nimmt zu. Neue negative Gefuehle kommen hinzu.",
-        "einbruch":        "Die Stimmung kippt gerade ins Negative.",
-        "abkuehlung":      "Die Stimmung wechselt von Begeisterung zu Sachlichkeit.",
-        "stabilisierung":  "Die Stimmung beruhigt sich.",
-        "plateau":         "",  # schweigt — keine Veraenderung
-        "erholung":        "Die Stimmung hellt sich auf nach einem Tief.",
-        "aufbluehen":      "Die Stimmung hebt sich. Positive Energie baut sich auf.",
-        "eskalation":      "Die Begeisterung steigt weiter.",
-    }
-    return farben.get(vektor, "")
-
-
-def _farbe_dynamik(dynamik: str) -> str:
-    """Wie nah sind wir uns?"""
-    farben: dict[str, str] = {
-        "vertrauen":    "Der Nutzer ist offen und vertraut.",
-        "distanz":      "Der Nutzer haelt Abstand.",
-        "hilfesuchend": "Der Nutzer sucht Halt.",
-        "dankbar":      "Dankbarkeit schwingt mit.",
-        "angriff":      "Der Nutzer ist konfrontativ.",
-        "neutral":      "",  # schweigt
-    }
-    return farben.get(dynamik, "")
-
-
-def _farbe_modus(modus: str) -> str:
-    """Wie tief gehen wir?"""
-    farben: dict[str, str] = {
-        "fachgespraech":  "Das Gespraech ist fachlich und konzentriert.",
-        "emotional":      "Gefuehle stehen im Vordergrund.",
-        "spielerisch":    "Die Stimmung ist verspielt und leicht.",
-        "arbeitsmodus":   "Der Fokus liegt auf der Aufgabe.",
-        "alltag":         "",  # schweigt — Normalzustand
-    }
-    return farben.get(modus, "")
-
-
-def _farbe_stil(stil: str) -> str:
-    """Wie foermlich ist der Raum?"""
-    farben: dict[str, str] = {
-        "formell":     "Der Ton ist nuechtern geworden.",
-        "fachlich":    "Der Ton ist sachlich und praezise.",
-        "emotional":   "Der Ton ist emotional gefaerbt.",
-        "jugendlich":  "Der Ton ist jung und direkt.",
-        "locker":      "",  # schweigt — Normalzustand fuer diesen User
-        "neutral":     "",
-    }
-    return farben.get(stil, "")
-
-
-def _farbe_arousal(arousal: float) -> str:
-    """Wie viel Energie ist im Raum?"""
-    if arousal >= 0.7:
-        return "Die Energie ist hoch."
-    elif arousal <= 0.25:
-        return "Die Energie ist ruhig."
-    return ""  # Mittelbereich schweigt
-
-
-def _farbe_tone(tone: str, stil: str) -> str:
-    """Welches Licht faellt drauf? Schweigt wenn redundant zum Stil."""
-    # Vermeidet Dopplung: sachlich + formell sagen dasselbe
-    if tone == "sachlich" and stil in ("formell", "fachlich"):
-        return ""
-    if tone == "empathisch" and stil == "emotional":
-        return ""
-    farben: dict[str, str] = {
-        "kreativ":    "Es darf unkonventionell gedacht werden.",
-        "empathisch": "Waerme ist gefragt.",
-        "direkt":     "Klarheit steht im Vordergrund.",
-        "sachlich":   "",  # oft redundant, schweigt im Zweifel
-    }
-    return farben.get(tone, "")
-
-
-def _gv_strategie(state: ConversationState) -> str:
-    """Mischt die 8 Dimensionen zu einer Landschaftsbeschreibung.
-
-    Jede Dimension traegt einen kurzen Satz bei — aber nur wenn sie
-    etwas Auffaelliges zu sagen hat. Neutrale Werte schweigen.
-    Das Ergebnis sind 2-5 Saetze die dem LLM die emotionale und
-    kognitive Landschaft beschreiben, ohne Handlungsanweisungen.
-    """
-    emotion: str   = state.get("current_emotion", "neutral")
-    arousal: float = state.get("current_arousal", 0.5)
-    vektor:  str   = state.get("emotions_vektor", "")
-    modus:   str   = state.get("gespraechs_modus", "alltag")
-    intent:  str   = state.get("intent", "")
-    dynamik: str   = state.get("beziehungs_dynamik", "neutral")
-    stil:    str   = state.get("sprach_stil", "neutral")
-    tone:    str   = state.get("tone", "sachlich")
-
-    farben: list[str] = [
-        _farbe_intent(intent),
-        _farbe_emotion(emotion, arousal),
-        _farbe_vektor(vektor),
-        _farbe_dynamik(dynamik),
-        _farbe_modus(modus),
-        _farbe_stil(stil),
-        _farbe_arousal(arousal),
-        _farbe_tone(tone, stil),
-    ]
-
-    landschaft: str = " ".join(f for f in farben if f)
-
-    if not landschaft:
-        landschaft = "Das Gespraech ist ruhig und ausgeglichen."
-
-    return landschaft
-
-
-# ─────────────────────────────────────────────
-# GV4: Effektive Neugier (6 Saeulen)
-# ─────────────────────────────────────────────
-# Berechnet Novas aktuelle Neugier aus ihrem emotionalen Zustand,
-# dem Gespraechsregister und ihrer Grundpersoenlichkeit.
-# Rein deterministisch (Python). Ergebnis: [0, 1] via sin^0.5.
-# Konzept: Chat 71 — 6 Saeulen × NOVA_NEUGIER, gedeckelt.
-
-
-def _sektor_distanz(sektor_a: int, sektor_b: int) -> int:
-    """Kuerzeste Distanz auf dem Plutchik-Oktagon (0-4)."""
-    d: int = abs(sektor_a - sektor_b)
-    return min(d, 8 - d)
-
-
-def _sin_sqrt_norm(wert: float, cap: float) -> float:
-    """sin^0.5 Normalisierung: Wert/Cap -> [0, 1].
-
-    Steil am Anfang, flach am Ende. Cap = Obergrenze
-    ab der der Wert 1.0 erreicht.
-    Gleiches Pattern wie EI-Arousal-Glaettung (Chat 61).
-    """
-    if wert <= 0:
-        return 0.0
-    anteil: float = min(wert / cap, 1.0)
-    return math.sin(anteil * math.pi / 2) ** 0.5
-
-
-def _effektive_neugier_berechnen(state: ConversationState) -> float:
-    """Berechnet Novas aktuelle Neugier aus 6 EI-Dimensionen.
-
-    Basis: NOVA_NEUGIER (0.5, Persoenlichkeitsparameter)
-    Moduliert durch:
-      E — Emotion (Sektor-Distanz zu Neugier/Sektor 8)
-      A — Arousal (Energielevel, Krise = Kill)
-      V — Vektor (Richtung der Stimmung)
-      M — Modus (Fach/Spielerisch/Emotional)
-      D — Dynamik (Vertrauen/Distanz)
-      S — Stil (Locker/Formell)
-
-    Ergebnis: sin^0.5 normiert auf [0, 1].
-    Hohe Neugier (P1/P2) → ~0.96-0.99
-    Neutral (P3) → ~0.56
-    Traurig (P4) → ~0.32
-    Krise (P5) → 0.00
-    """
-    # Novas Emotion (aus Dual-Emotion, falls vorhanden)
-    nova_verlauf: list = state.get("nova_emotions_verlauf", [])
-    if nova_verlauf:
-        nova_emotion: str = nova_verlauf[0].get("emotion", "neutral")
-        nova_arousal: float = nova_verlauf[0].get("arousal", 0.5)
-    else:
-        # Fallback: User-Emotion als Proxy (vor Dual-Emotion)
-        nova_emotion = state.get("current_emotion", "neutral")
-        nova_arousal = state.get("current_arousal", 0.5)
-
-    vektor: str = state.get("nova_emotions_vektor",
-                            state.get("emotions_vektor", ""))
-    modus:   str = state.get("gespraechs_modus", "alltag")
-    dynamik: str = state.get("beziehungs_dynamik", "neutral")
-    stil:    str = state.get("sprach_stil", "neutral")
-
-    # ── Krise: sofortiger Kill ──
-    if vektor in ("spirale", "absturz") and nova_arousal >= 0.7:
-        logger.info("GV4-Neugier: 0.00 (Krise)")
-        return 0.0
-
-    # ── E: Emotion → Sektor-Distanz zu Neugier (Sektor 8) ──
-    sektor: int | None = EMOTION_SEKTOR_MAP.get(nova_emotion)
-    if sektor is not None:
-        distanz: int = _sektor_distanz(sektor, 8)
-        logger.debug(
-            f"GV4-Neugier Detail: emotion='{nova_emotion}' → sektor={sektor}, "
-            f"distanz_zu_8={distanz if sektor is not None else 'n/a'}"
-        )
-        faktor_e: float = GV_NEUGIER_EMOTION.get(distanz, 1.0)
-    else:
-        faktor_e = 1.0  # neutral — keine Modulation
-
-    # ── A: Arousal ──
-    if nova_arousal >= 0.7:
-        faktor_a: float = 1.25
-    elif nova_arousal >= 0.5:
-        faktor_a = 1.15
-    elif nova_arousal >= 0.3:
-        faktor_a = 1.00
-    else:
-        faktor_a = 0.85
-
-    # ── V, M, D, S: Lookup ──
-    faktor_v: float = GV_NEUGIER_VEKTOR.get(vektor, 1.0)
-    faktor_m: float = GV_NEUGIER_MODUS.get(modus, 1.0)
-    faktor_d: float = GV_NEUGIER_DYNAMIK.get(dynamik, 1.0)
-    faktor_s: float = GV_NEUGIER_STIL.get(stil, 1.0)
-
-    # ── Rohwert → sin^0.5 → [0, 1] ──
-    from config import NOVA_NEUGIER  # Persoenlichkeitsparameter (0.5)
-    produkt: float = faktor_e * faktor_a * faktor_v * faktor_m * faktor_d * faktor_s
-    rohwert: float = NOVA_NEUGIER * produkt
-    effektiv: float = _sin_sqrt_norm(rohwert, GV_NEUGIER_CAP)
-
-    logger.info(
-        f"GV4-Neugier: {effektiv:.3f} "
-        f"(roh={rohwert:.2f}, produkt={produkt:.2f}, "
-        f"emotion='{nova_emotion}' sektor={sektor} dist={distanz if sektor is not None else 'n/a'}, "
-        f"E={faktor_e:.2f}, A={faktor_a:.2f}, V={faktor_v:.2f}, "
-        f"M={faktor_m:.2f}, D={faktor_d:.2f}, S={faktor_s:.2f})"
-    )
-
-    return effektiv
-
-
-def _register_kompatibilitaet(
-    gap_arousal: float,
-    modus:       str,
-    dynamik:     str,
-) -> float:
-    """Passt die emotionale Ladung der Luecke zum Gespraechsregister?
-
-    Sachlich (Fachgespraech/Arbeit/Distanz):
-      → Emotionale Luecken gedaempft, sachliche bevorzugt.
-    Offen (Spielerisch/Vertrauen):
-      → Emotionale Luecken willkommen.
-    Neutral: Keine Modulation.
-    """
-    ist_sachlich: bool = (
-        modus in ("fachgespraech", "arbeitsmodus")
-        or dynamik == "distanz"
-    )
-    ist_offen: bool = (
-        modus == "spielerisch"
-        or dynamik == "vertrauen"
-    )
-
-    if ist_sachlich:
-        if gap_arousal >= 0.6:
-            return GV_REGISTER_SACHLICH_EMOTIONAL   # 0.60
-        elif gap_arousal >= 0.3:
-            return GV_REGISTER_SACHLICH_MILD         # 0.90
-        else:
-            return GV_REGISTER_SACHLICH_NEUTRAL      # 1.15
-
-    if ist_offen:
-        if gap_arousal >= 0.4:
-            return GV_REGISTER_OFFEN_EMOTIONAL       # 1.20
-        else:
-            return 1.0
-
-    return 1.0
-
-
-def _session_aktualitaet(turn_abstand: int) -> float:
-    """Berechnet die Frische eines Session-Turns.
-
-    Invertierte sin^0.5: Steil am Anfang (schnelles Vergessen),
-    lang nachhallend (noch praesent nach vielen Turns).
-    Nach GV_SESSION_AKT_CAP Turns = 0.
-
-    Turn 0: 1.00, Turn 1: 0.75, Turn 5: 0.44,
-    Turn 10: 0.23, Turn 15: 0.10, Turn 20: 0.03
-    """
-    return 1.0 - _sin_sqrt_norm(turn_abstand, GV_SESSION_AKT_CAP)
-
-
-# ─────────────────────────────────────────────
-# GV4: Wissensluecken finden
-# ─────────────────────────────────────────────
-# Durchsucht LZG (PostgreSQL/pgvector) und KZG (Redis/RediSearch)
-# nach semantisch nahen, aber unbesprochenen Konzepten.
-# Berechnet Relevanz aus 6 Systemen: Gedaechtnis, Aktualitaet,
-# Drive, Neugier, Register, Charakter.
-# Konzept: Chat 71 — validiert über 58-Testfälle-Matrix.
-
-
-def _cosine_similarity(vec_a: list[float], vec_b: list[float]) -> float:
-    """Cosine-Similarity zwischen zwei Vektoren."""
-    a = np.array(vec_a, dtype=np.float32)
-    b = np.array(vec_b, dtype=np.float32)
-    dot: float = float(np.dot(a, b))
-    norm_a: float = float(np.linalg.norm(a))
-    norm_b: float = float(np.linalg.norm(b))
-    if norm_a == 0 or norm_b == 0:
-        return 0.0
-    return dot / (norm_a * norm_b)
-
-
-def _ist_bereits_erwaehnt(inhalt: str, session_turns: list[dict]) -> bool:
-    """Prueft ob der Inhalt einer Luecke bereits in der Session erwaehnt wurde.
-
-    Einfacher Token-Overlap: Wenn mehr als 40% der Woerter des Inhalts
-    in den letzten 8 Session-Turns vorkommen, gilt es als bereits besprochen.
-    """
-    if not session_turns:
-        return False
-
-    inhalt_woerter: set[str] = {
-        w.lower() for w in inhalt.split() if len(w) > 3
-    }
-    if not inhalt_woerter:
-        return False
-
-    session_text: str = " ".join(
-        turn.get("inhalt", "") for turn in session_turns[-8:]
-    ).lower()
-
-    treffer: int = sum(1 for w in inhalt_woerter if w in session_text)
-    overlap: float = treffer / len(inhalt_woerter)
-    return overlap > 0.4
-
-
-def _lzg_kandidaten_suchen(
-    turn_embedding: list[float],
-    user_id:        str,
-    character_id:   str,
-) -> list[dict]:
-    """Sucht semantisch nahe Eintraege im LZG via pgvector.
-
-    Returns:
-        Liste von Dicts mit konzept, similarity, gewicht, gap_arousal, quelle.
-    """
-    kandidaten: list[dict] = []
-
-    try:
-        conn = psycopg2.connect(POSTGRES_URL)
-        cursor = conn.cursor()
-
-        embedding_str: str = "[" + ",".join(str(v) for v in turn_embedding) + "]"
-
-        cursor.execute(
-            """
-            SELECT inhalt,
-                   1 - (embedding <=> %s::vector) AS similarity,
-                   gewicht,
-                   COALESCE(arousal, 0.3) AS gap_arousal
-            FROM langzeitgedaechtnis
-            WHERE user_id = %s
-              AND character_id = %s
-              AND aktiv = TRUE
-            ORDER BY embedding <=> %s::vector
-            LIMIT 10
-            """,
-            (embedding_str, user_id, character_id, embedding_str),
-        )
-
-        for row in cursor.fetchall():
-            inhalt, similarity, gewicht, gap_arousal = row
-            if similarity and similarity > 0.1:
-                kandidaten.append({
-                    "konzept":    inhalt,
-                    "similarity": float(similarity),
-                    "gewicht":    float(gewicht) if gewicht else 0.5,
-                    "gap_arousal": float(gap_arousal),
-                    "quelle":     "lzg",
-                })
-
-        conn.close()
-        logger.info(f"GV4-LZG: {len(kandidaten)} Kandidaten gefunden")
-
-    except Exception as fehler:
-        logger.warning(f"GV4-LZG-Suche fehlgeschlagen: {fehler}")
-
-    return kandidaten
-
-
-def _kzg_kandidaten_suchen(
-    turn_embedding: list[float],
-    user_id:        str,
-    character_id:   str,
-) -> list[dict]:
-    """Sucht semantisch nahe Eintraege im KZG via RediSearch KNN.
-
-    Nutzt config.redis_client. Da wir nur Text-/Numeric-Felder zurueckliefern
-    (kein Embedding-Blob), spielt decode_responses=True hier keine Rolle —
-    die Query-Bytes werden via PARAMS unbeeinflusst durchgereicht.
-
-    Returns:
-        Liste von Dicts mit konzept, similarity, gewicht (=salienz), gap_arousal, quelle.
-    """
-    kandidaten: list[dict] = []
-
-    try:
-        query_blob: bytes = np.array(turn_embedding, dtype=np.float32).tobytes()
-
-        ergebnis = redis_client.execute_command(
-            "FT.SEARCH", "idx:kzg",
-            f"(@user_id:{{{user_id}}} @character_id:{{{character_id}}})"
-            f"=>[KNN 10 @embedding $vec AS score]",
-            "PARAMS", "2", "vec", query_blob,
-            "SORTBY", "score",
-            "LIMIT", "0", "10",
-            "RETURN", "4", "inhalt", "salienz", "arousal", "score",
-            "DIALECT", "2",
-        )
-
-        if ergebnis and isinstance(ergebnis, list) and len(ergebnis) > 1:
-            idx: int = 1
-            while idx < len(ergebnis) - 1:
-                _key = ergebnis[idx]
-                felder = ergebnis[idx + 1]
-                idx += 2
-
-                feld_dict: dict = {}
-                for i in range(0, len(felder), 2):
-                    k = felder[i].decode("utf-8") if isinstance(felder[i], bytes) else felder[i]
-                    v = felder[i + 1].decode("utf-8") if isinstance(felder[i + 1], bytes) else felder[i + 1]
-                    feld_dict[k] = v
-
-                inhalt:  str   = feld_dict.get("inhalt", "")
-                salienz: float = float(feld_dict.get("salienz", "0.5"))
-                arousal: float = float(feld_dict.get("arousal", "0.3"))
-                score:   float = float(feld_dict.get("score", "1.0"))
-                similarity: float = 1.0 - score
-
-                if inhalt and similarity > 0.1:
-                    kandidaten.append({
-                        "konzept":     inhalt,
-                        "similarity":  similarity,
-                        "gewicht":     salienz,
-                        "gap_arousal": arousal,
-                        "quelle":      "kzg",
-                    })
-
-        logger.info(f"GV4-KZG: {len(kandidaten)} Kandidaten gefunden")
-
-    except Exception as fehler:
-        logger.warning(f"GV4-KZG-Suche fehlgeschlagen: {fehler}")
-
-    return kandidaten
-
-
-def _wissensluecken_finden(
-    state:             ConversationState,
-    effektive_neugier: float,
-) -> list[dict]:
-    """Findet semantisch nahe, aber unbesprochene Konzepte.
-
-    Durchsucht LZG (pgvector) und KZG (RediSearch), filtert bereits
-    Erwaentes und zu Aehnliches heraus, berechnet Relevanz aus
-    6 Systemen und gibt die Top-N Luecken zurueck.
-
-    Systeme:
-      1. Gedaechtnis     — similarity × gewicht (aus DB)
-      2. Aktualitaet     — nur Session-Turns (hier: alle DB = 1.0)
-      3. Drive           — Ziel-Gravitation (neugier_boost)
-      4. Neugier         — effektive_neugier (6 Saeulen, sin^0.5)
-      5. Register        — register_kompatibilitaet (sachlich/offen)
-      6. Charakter       — kern_hash Cosine >= Schwelle
-
-    Returns:
-        Top GV_LUECKEN_MAX Luecken sortiert nach Relevanz,
-        oder leere Liste wenn nichts gefunden.
-    """
-    user_id:      str = state.get("user_id", "")
-    character_id: str = state.get("character_id", "nova")
-    user_prompt:  str = state.get("user_prompt", "")
-    modus:        str = state.get("gespraechs_modus", "alltag")
-    dynamik:      str = state.get("beziehungs_dynamik", "neutral")
-
-    if not user_prompt or not user_id:
-        return []
-
-    # ── 1. Turn-Embedding ──
-    # Bevorzugt das vom Enricher bereits berechnete Embedding (spart ~1.6s).
-    turn_embedding: list[float] = state.get("prompt_embedding") or []
-    if not turn_embedding:
-        try:
-            turn_embedding = embedding_create(
-                user_prompt, ollama_gpu_client, EMBED_MODEL
-            )
-        except Exception as fehler:
-            logger.warning(f"GV4: Embedding fehlgeschlagen: {fehler}")
-            return []
-
-    # ── 2. Kandidaten aus LZG + KZG ──
-    lzg_kandidaten: list[dict] = _lzg_kandidaten_suchen(
-        turn_embedding, user_id, character_id
-    )
-    kzg_kandidaten: list[dict] = _kzg_kandidaten_suchen(
-        turn_embedding, user_id, character_id
-    )
-    alle_kandidaten: list[dict] = lzg_kandidaten + kzg_kandidaten
-
-    if not alle_kandidaten:
-        logger.info("GV4: Keine Kandidaten gefunden")
-        return []
-
-    # ── 3. Filter: bereits erwaehnt ──
-    session_turns: list[dict] = state.get("session_turns", [])
-    gefiltert: list[dict] = [
-        k for k in alle_kandidaten
-        if not _ist_bereits_erwaehnt(k["konzept"], session_turns)
-    ]
-
-    gefiltert = [
-        k for k in gefiltert
-        if k["similarity"] <= GV_LUECKEN_SIM_OBERGRENZE
-    ]
-
-    if not gefiltert:
-        logger.info("GV4: Alle Kandidaten bereits erwaehnt oder zu aehnlich")
-        return []
-
-    # ── 4. Relevanz berechnen ──
-    aktivierte_ziele: list[dict] = state.get("aktivierte_ziele", [])
-
-    for k in gefiltert:
-        basis: float = k["similarity"] * k["gewicht"] * GV_QUELLEN_FAKTOR
-
-        # Neugier-Boost aus Ziel-Gravitation (Turn-Embedding als Proxy)
-        neugier_boost: float = 0.0
-        if aktivierte_ziele:
-            max_grav: float = 0.0
-            for ziel in aktivierte_ziele:
-                ziel_embedding = ziel.get("embedding")
-                if not ziel_embedding:
-                    continue
-                ziel_sim: float = _cosine_similarity(
-                    turn_embedding, ziel_embedding
-                )
-                grav: float = ziel_sim * ziel.get("motivation", 0.5)
-                max_grav = max(max_grav, grav)
-            if max_grav >= GV_NEUGIER_BOOST_SCHWELLE:
-                neugier_boost = max_grav
-
-        register: float = _register_kompatibilitaet(
-            k["gap_arousal"], modus, dynamik
-        )
-
-        relevanz: float = (
-            basis
-            * (1.0 + neugier_boost)
-            * effektive_neugier
-            * register
-        )
-
-        k["relevanz"]      = relevanz
-        k["neugier_boost"] = neugier_boost
-        k["register"]      = register
-
-    # ── 5. Charakter-Filter ──
-    nova_kern: str = state.get("nova_kern", "")
-    if nova_kern:
-        try:
-            kern_embedding: list[float] = embedding_create(
-                nova_kern, ollama_gpu_client, EMBED_MODEL
-            )
-            for k in gefiltert:
-                # Turn-Embedding als Proxy fuer Luecken-Embedding
-                k["charakter_resonanz"] = _cosine_similarity(
-                    turn_embedding, kern_embedding
-                )
-        except Exception as fehler:
-            logger.warning(f"GV4: Kern-Embedding fehlgeschlagen: {fehler}")
-            for k in gefiltert:
-                k["charakter_resonanz"] = 0.5
-    else:
-        for k in gefiltert:
-            k["charakter_resonanz"] = 0.5
-
-    qualifiziert: list[dict] = [
-        k for k in gefiltert
-        if k["relevanz"] >= GV_LUECKEN_MIN_RELEVANZ
-        and k["charakter_resonanz"] >= GV_CHARAKTER_RESONANZ_SCHWELLE
-    ]
-
-    qualifiziert.sort(key=lambda k: k["relevanz"], reverse=True)
-
-    # Deduplizierung: Wenn zwei Luecken untereinander zu aehnlich sind,
-    # nur die mit der hoeheren Relevanz behalten.
-    dedupliziert: list[dict] = []
-    for kandidat in qualifiziert:
-        ist_duplikat: bool = False
-        for behalten in dedupliziert:
-            # Einfacher Token-Overlap als Proxy (kein Embedding noetig)
-            woerter_a: set[str] = {w.lower() for w in kandidat["konzept"].split() if len(w) > 3}
-            woerter_b: set[str] = {w.lower() for w in behalten["konzept"].split() if len(w) > 3}
-            if woerter_a and woerter_b:
-                overlap: float = len(woerter_a & woerter_b) / min(len(woerter_a), len(woerter_b))
-                if overlap > 0.6:
-                    ist_duplikat = True
-                    logger.debug(
-                        f"GV4-Dedup: '{kandidat['konzept'][:50]}' "
-                        f"ist Duplikat von '{behalten['konzept'][:50]}' "
-                        f"(Overlap {overlap:.0%})"
-                    )
-                    break
-        if not ist_duplikat:
-            dedupliziert.append(kandidat)
-    qualifiziert = dedupliziert
-
-    # ── 6. Top N ──
-    qualifiziert.sort(key=lambda k: k["relevanz"], reverse=True)
-    ergebnis: list[dict] = qualifiziert[:GV_LUECKEN_MAX]
-
-    if ergebnis:
-        logger.info(
-            f"GV4: {len(ergebnis)} Wissensluecken qualifiziert — "
-            + ", ".join(
-                f"'{l['konzept'][:40]}' ({l['quelle']}, rel={l['relevanz']:.3f})"
-                for l in ergebnis
-            )
-        )
-    else:
-        logger.info(
-            f"GV4: {len(gefiltert)} Kandidaten geprueft, "
-            f"keine ueber Relevanz-Schwelle {GV_LUECKEN_MIN_RELEVANZ}"
-        )
-
-    return ergebnis
-
-
-# ─────────────────────────────────────────────
 # LLM-Call: Hypothese destillieren
 # ─────────────────────────────────────────────
 
 def _hypothese_destillieren(
-    state:            ConversationState,
-    max_laenge:       int,
-    entity_kontext:   str,
-    farbton:          str = "",
-    wissensluecken:   list[dict] | None = None,
-    strategie_aktiv:  bool = False,
-) -> str:
+    state:             ConversationState,
+    max_laenge:        int,
+    entity_kontext:    str,
+    farbton:           str = "",
+    wissensluecken:    list[dict] | None = None,
+    strategie_aktiv:   bool = False,
+    dreischicht_block: str = "",
+) -> tuple[str, dict]:
     """Destilliert die Gespraechsvektor-Hypothese via LLM.
 
     Input: Session-Turns, Emotion, Charakter, Entity-Kontext
-    Output: Natuerlichsprachliche Hypothese (2-4 Saetze)
+    Output: Natuerlichsprachliche Hypothese (2-4 Saetze) + geparste Felder.
     """
     # Session-Turns aufbereiten (letzte 8)
     session_turns: list[dict] = state.get("session_turns", [])
@@ -1008,6 +309,9 @@ def _hypothese_destillieren(
             ),
         ) + farbton_block
     )
+
+    if dreischicht_block:
+        system_parts.append(dreischicht_block)
 
     if strategie_aktiv:
         logger.info("GV3: Strategie-Prompt eingefuegt (Laenge >= GV_STRATEGIE_MIN_LAENGE)")
@@ -1099,7 +403,8 @@ def _hypothese_destillieren(
 
     hypothese: str = antwort.content.strip()
     logger.info(f"GV-Hypothese ({antwort.token_total} Tokens): {hypothese[:500]}...")
-    return hypothese
+    gv_parsed: dict = gv_output_parsen(hypothese)
+    return hypothese, gv_parsed
 
 
 # ─────────────────────────────────────────────
@@ -1113,9 +418,10 @@ def gespraechsvektor(state: ConversationState) -> ConversationState:
       1. Skip-Check (Begruessung/Meta → durchreichen)
       2. Laenge aus EI-Dimensionen berechnen (Python, deterministisch)
       3. Entity-Hop ueber Fakten-Tabelle (Python, DB-Queries)
-      3b. Farbmisch-System (Python, 8 Dimensionen → Landschaftsbeschreibung)
-      3c. GV4: Effektive Neugier berechnen (Python, 6 Saeulen)
-      3d. GV4: Wissensluecken finden (DB-Queries, Relevanz-Berechnung)
+      3b. Farbmisch-System (8 Dimensionen → Landschaftsbeschreibung)
+      3c. Effektive Neugier berechnen (6 Saeulen)
+      3d. Wissensluecken finden (DB-Queries, Relevanz-Berechnung)
+      3e. Dreischicht: Achsen → Sektor → Cluster → Repertoire
       4. LLM-Call → Hypothese + Strategie destillieren
       5. Ergebnis + Debug-Info in State schreiben
     """
@@ -1139,7 +445,7 @@ def gespraechsvektor(state: ConversationState) -> ConversationState:
     entity_kontext: str = _entity_kontext_laden(state)
 
     # 3b. Farbton (einmal berechnen, durchreichen)
-    farbton: str = _gv_strategie(state)
+    farbton: str = farbton_berechnen(state)
     if farbton:
         logger.info(f"GV-Farbton: {farbton}")
 
@@ -1149,28 +455,57 @@ def gespraechsvektor(state: ConversationState) -> ConversationState:
     wissensluecken:     list[dict] = []
 
     if strategie_aktiv:
-        effektive_neugier = _effektive_neugier_berechnen(state)
+        effektive_neugier = effektive_neugier_berechnen(state)
 
         # 3d. GV4: Wissensluecken finden (nur wenn Neugier > 0)
         if effektive_neugier > 0:
-            wissensluecken = _wissensluecken_finden(state, effektive_neugier)
+            wissensluecken = wissensluecken_finden(state, effektive_neugier)
+
+    # 3e. Dreischicht: Achsen → Sektor → Cluster → Repertoire
+    achsen: dict = achsen_berechnen(state)
+    sektor_index, sektor_name, cluster = sektor_bestimmen(achsen)
+    repertoire: dict[str, str] = repertoire_laden(cluster)
+    charakter_gewichtung: dict[str, float] = charakter_gewichtung_berechnen(state)
+    dreischicht_block: str = dreischicht_prompt_bauen(
+        cluster, repertoire, charakter_gewichtung,
+    )
 
     # 4. Hypothese destillieren
-    hypothese: str = _hypothese_destillieren(
+    hypothese, gv_parsed = _hypothese_destillieren(
         state, max_laenge, entity_kontext,
         farbton=farbton,
         wissensluecken=wissensluecken,
         strategie_aktiv=strategie_aktiv,
+        dreischicht_block=dreischicht_block,
     )
 
     # 5. State schreiben
     state["gespraechsvektor"] = hypothese
 
     state["gv_detail"] = {
-        "laenge":            max_laenge,
-        "farbton":           farbton,
-        "entity_hops":       entity_kontext[:500] if entity_kontext else "",
-        "effektive_neugier": effektive_neugier,
+        # Spruenge (LLM-Output geparst)
+        "sprung_1":              gv_parsed.get("sprung_1", ""),
+        "sprung_2":              gv_parsed.get("sprung_2", ""),
+        "sprung_3":              gv_parsed.get("sprung_3", ""),
+        # Dreischicht (LLM waehlt aus Python-Korridor)
+        "absicht":               gv_parsed.get("absicht", ""),
+        "strategie":             gv_parsed.get("strategie", ""),
+        "vehikel":               gv_parsed.get("vehikel", ""),
+        "vorschlag":             gv_parsed.get("vorschlag", ""),
+        # Achsen (Python, deterministisch)
+        "achsen":                achsen,
+        "sektor_index":          sektor_index,
+        "sektor_name":           sektor_name,
+        "cluster":               cluster,
+        "drive":                 achsen.get("drive", 0.0),
+        # Repertoire + Gewichtung (Python)
+        "repertoire":            repertoire,
+        "charakter_gewichtung":  charakter_gewichtung,
+        # Bestehende Felder
+        "laenge":                max_laenge,
+        "farbton":               farbton,
+        "entity_hops":           entity_kontext[:500] if entity_kontext else "",
+        "effektive_neugier":     effektive_neugier,
         "wissensluecken": [
             {
                 "konzept":       l["konzept"][:120],
@@ -1181,7 +516,7 @@ def gespraechsvektor(state: ConversationState) -> ConversationState:
             }
             for l in wissensluecken
         ],
-        "strategie_aktiv": strategie_aktiv,
+        "strategie_aktiv":       strategie_aktiv,
     }
 
     return state

@@ -385,14 +385,18 @@ def langfristige_ziele_destillieren(kern_hash: str, user_id: str = "nova") -> li
         "- 'Ich möchte verstehen, wie ...' (Neugier)\n"
         "- 'Ich möchte lernen, ...' (Wachstum)\n"
         "- 'Ich möchte meinen Menschen ...' (Beziehung)\n\n"
+        "Gib zusätzlich ein kurzes Themen-Label (2-3 Wörter) das den Wissensbereich\n"
+        "des Ziels benennt. Beispiele: 'Gartengestaltung', 'KI und Kognition',\n"
+        "'Beziehung', 'Natur und Kultur', 'Klimaanpassung'.\n\n"
         "[FORMAT]\n"
         'Antworte ausschliesslich als JSON-Array:\n'
-        '[{"zielsatz": "Ich möchte ...", "emotion": "neugierig", "arousal": 0.6}]\n\n'
+        '[{"zielsatz": "Ich möchte ...", "emotion": "neugierig", "arousal": 0.6, "thema": "Natur und Kultur"}]\n\n'
         "[REGELN]\n"
         "- Max 2 Ziele\n"
         "- Jeder Zielsatz ist 1-2 Sätze\n"
         "- Emotion: eine kanonische Emotion (neugierig, freude, hoffnung, etc.)\n"
         "- Arousal: 0.4-0.7 (langfristige Ziele schwelen, sie brennen nicht)\n"
+        "- Thema: 2-3 Wörter, knappes Label (kein Satz)\n"
         "- Sprache: Deutsch, Ich-Perspektive\n"
         "- Keine generischen Ziele ('Ich möchte helfen') — spezifisch aus dem Kern"
     )
@@ -419,6 +423,7 @@ def langfristige_ziele_destillieren(kern_hash: str, user_id: str = "nova") -> li
                     "zielsatz": z["zielsatz"],
                     "emotion":  z.get("emotion", "neugierig"),
                     "arousal":  z.get("arousal", 0.6),
+                    "thema":    (z.get("thema") or "").strip()[:100],
                 })
 
         logger.info(

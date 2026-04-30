@@ -409,6 +409,7 @@ async def _event_verarbeiten(
     perzeption_felder: list[str] = [
         "current_emotion", "current_arousal", "gespraechs_modus",
         "intent", "tone", "sprach_stil", "beziehungs_dynamik",
+        "emotions_vektor",
     ]
     for feld in perzeption_felder:
         wert = payload.get(feld)

@@ -171,6 +171,9 @@ def analyze(
             logger.debug(f"Salienz RAW: '{antwort.content[:500]}'")
             salienz_obj: dict = json.loads(antwort.content)
 
+            if "arousal" in salienz_obj:
+                salienz_obj["arousal"] = max(0.0, min(1.0, float(salienz_obj.get("arousal", 0.5))))
+
             logger.info(
                 f"Salienz: score={salienz_obj.get('salienz', 0):.2f}, "
                 f"themen={salienz_obj.get('themen', [])}, "

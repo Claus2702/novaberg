@@ -367,14 +367,44 @@ def _build_system_prompt(state: ConversationState) -> str:
     # ── [GESPRAECHSVEKTOR] ── Antizipation: Wohin fuehrt das Gespraech? ──
     gv_hypothese: str = state.get("gespraechsvektor", "")
     if gv_hypothese:
+        gv_detail: dict = state.get("gv_detail", {})
+        cluster:   str  = gv_detail.get("cluster", "")
+        strategie: str  = gv_detail.get("strategie", "")
+        vehikel:   str  = gv_detail.get("vehikel", "")
+        vorschlag: str  = gv_detail.get("vorschlag", "")
+
+        rahmen: str = ""
+        if cluster:
+            from ei.dreischicht import (
+                CLUSTER_BESCHREIBUNGEN, CLUSTER_FRAGEN, STRATEGIE_NAMEN,
+            )
+            cluster_beschr: str = CLUSTER_BESCHREIBUNGEN.get(cluster, "")
+            fragen_freq:    str = CLUSTER_FRAGEN.get(cluster, "")
+            strat_name:     str = STRATEGIE_NAMEN.get(strategie, strategie)
+
+            rahmen = (
+                f"Gespraechslandschaft: {cluster.capitalize()} — {cluster_beschr}\n"
+                f"Fragen: {fragen_freq}\n"
+            )
+            if strategie:
+                rahmen += f"Deine Strategie: {strat_name}"
+                if vehikel:
+                    rahmen += f" als {vehikel.capitalize()}"
+                rahmen += ".\n"
+
+        inhalt: str = vorschlag if vorschlag else gv_hypothese
+
         parts.append(
-            "[GESPRAECHSVEKTOR]\n"
-            "So bewegt sich das Gespraech gerade. Du bist mittendrin.\n"
-            "Wenn hier ein Vorschlag fuer den naechsten Schritt steht,\n"
-            "greif ihn auf — als Gedanke, als Frage, als Impuls.\n\n"
-            f"{gv_hypothese}"
+            f"[GESPRAECHSVEKTOR]\n"
+            f"{rahmen}"
+            f"So bewegt sich das Gespraech gerade. Du bist mittendrin.\n\n"
+            f"{inhalt}"
         )
-        logger.info(f"Responder: Gespraechsvektor injiziert ({len(gv_hypothese)} Zeichen)")
+        logger.info(
+            f"Responder: Gespraechsvektor injiziert "
+            f"(Cluster={cluster}, Strategie={strategie}, "
+            f"Vehikel={vehikel}, {len(inhalt)} Zeichen)"
+        )
 
     # Logging
     aktive_dimensionen: list[str] = []

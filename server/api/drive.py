@@ -272,6 +272,21 @@ def _content_preview(text: str, limit: int = 80) -> str:
     return text[:limit].rstrip() + "…"
 
 
+def _kurzlabel_aus_zielsatz(zielsatz: str) -> str:
+    """Fallback-Label aus dem Zielsatz fuer Altbestand ohne thema."""
+    text: str = (zielsatz or "").strip().rstrip(".… ")
+    if not text:
+        return ""
+    lower: str = text.lower()
+    for marker in ("über ", "wie ", "dass ", "warum "):
+        pos: int = lower.find(marker)
+        if pos >= 0:
+            rest: str = text[pos + len(marker):].strip().rstrip(".… ")
+            return " ".join(rest.split()[:4])
+    words: list[str] = [w for w in text.split() if len(w) > 2]
+    return " ".join(words[-3:]) if len(words) >= 3 else text[:30]
+
+
 def _aggregate_dominant_topics(
     user_turns: list[dict],
     limit: int = 8,
@@ -374,7 +389,8 @@ def GravityMapLesen():
             ),
             "motivation":  float(ziel.get("motivation", 0.0) or 0.0),
             "emotion":     ziel.get("emotion", "") or "neutral",
-            "theme_label": (ziel.get("thema") or "").strip(),
+            "theme_label": (ziel.get("thema") or "").strip()
+                           or _kurzlabel_aus_zielsatz(ziel.get("zielsatz", "")),
             "embedding":   [float(x) for x in ziel_embedding],
         })
 

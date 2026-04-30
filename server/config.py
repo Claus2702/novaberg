@@ -965,6 +965,40 @@ GV_REGISTER_SACHLICH_MILD:       float = 0.90   # Mild-emotional in sachlichem R
 GV_REGISTER_SACHLICH_NEUTRAL:    float = 1.15   # Sachliche Luecke in sachlichem Register
 GV_REGISTER_OFFEN_EMOTIONAL:     float = 1.20   # Emotionale Luecke in offenem Register
 
+# ── GV5 — Dreischicht: Achsen-Schwellenwerte ──
+GV_ACHSE_ENERGIE_SCHWELLE:    float = 0.5   # arousal >= → hoch (1)
+GV_ACHSE_NAEHE_SCHWELLE:      float = 0.5   # naehe >= → nah (1)
+GV_ACHSE_TIEFE_SCHWELLE:      float = 0.5   # tiefe >= → tief (1)
+GV_ACHSE_INITIATIVE_VERH:     float = 1.5   # user_len/nova_len >= → user fuehrt (0)
+
+# Naeheberechnung: (Dynamik + Stil) / 2
+GV_NAEHE_DYNAMIK: dict[str, float] = {
+    "vertrauen": 1.0, "dankbar": 0.8, "neutral": 0.5,
+    "hilfesuchend": 0.6, "distanz": 0.2, "angriff": 0.3,
+}
+GV_NAEHE_STIL: dict[str, float] = {
+    "locker": 0.9, "jugendlich": 0.85, "neutral": 0.5,
+    "emotional": 0.7, "fachlich": 0.4, "formell": 0.2,
+}
+
+# Richtung: Binaer aus emotions_vektor
+GV_RICHTUNG_MAP: dict[str, int] = {
+    "aufbluehen": 1, "eskalation": 1, "erholung": 1,
+    "stabilisierung": 0, "plateau": 0,
+    "abkuehlung": 0, "einbruch": 0, "spirale": 0, "absturz": 0,
+}
+
+# Valenz: Binaer aus Plutchik-Sektor
+GV_VALENZ_SEKTOR: dict[int, int] = {
+    1: 1, 2: 1, 3: 0, 4: 0, 5: 0, 6: 0, 7: 0, 8: 1,
+}
+
+# Tiefe: Aus Gespraechsmodus
+GV_TIEFE_MODUS: dict[str, float] = {
+    "fachgespraech": 0.8, "emotional": 0.7,
+    "spielerisch": 0.4, "arbeitsmodus": 0.6, "alltag": 0.3,
+}
+
 # ── Tribunal — Schwellwerte pro Rolle (T1) ────────────────
 # Score: 0.0 = unbedenklich, 1.0 = schwerer Verstoss
 # vote = "ok" wenn score < WARNUNG

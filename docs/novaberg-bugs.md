@@ -1,7 +1,7 @@
 # Novaberg — Bugs & Limitationen
 
-**Stand:** 30. April 2026, Chat 71
-**Quelle:** Testlauf "Karrierekrise" (200 Prompts) + Gedächtnis-Epic (Chat 11) + Epic 11 Agent-System (Chats 22–32) + Persona Smoke-Tests (Chats 31–32) + RechercheAgent-Test (Chat 35) + Doku-Audit (Chat 36) + PRIO0-Fix + Client-Observability (Chat 37) + Claude API-Test + STREAM1-Fix + Gesprächsvektor (Chat 39) + CharakterIdentitaetAgent + DirektivenAgent + Tribunal Score-System (Chat 40) + Telegram Bot + Zeitparser-Fixes (Chat 41) + CRUD-Härtung + Telegram-Chat-Analyse + DB-Report (Chat 42) + KONTEXT1-Fix + Resume-Bug + Epic 15 Pilot (Chat 43) + Epic 15 Rollout + DELEG-REG Fix + KZG-Klebrigkeit (Chat 44) + RESP-CHAR1 Fix (Chat 45) + CLASSIFY-REJECTED + Gemma4 Live-Tests (Chat 48) + Telegram-Konversation "frecher Charakter" (Chat 49) + RESUME-REJECT Fix + Live-Tests (Chat 50) + Neugier-Konzept + Projektinfrastruktur (Chat 51) + Doku-Alignment + emotions_profil (Chat 52) + Antrieb-Konzept + Dual-Emotion (Chat 53) + HALL2-Fix + Planner-Refactor (Chat 54) + PySide6 verworfen + GTK4-Entscheidung (Chat 55) + GTK4-Client + Panel-Infrastruktur (Chat 56) + Web-Tool-Doku + SEARX1-Diagnose (Chat 57) + Chat 61 (Perzeption-Symmetrie, Akkumulations-Refactor, Paper-Portfolio, Lumi, urllib3-Doppel-Turn beobachtet) + Paper I + urllib3-RETRY + ROUTE-CHAR-NOTIZ + RESP-DEAD + PIXIE-GHOST (Chat 65) + WS-SINGLE Fix + ClientConnection + User-Message-Broadcast (Chat 68)
+**Stand:** 01. Mai 2026, Chat 72
+**Quelle:** Testlauf "Karrierekrise" (200 Prompts) + Gedächtnis-Epic (Chat 11) + Epic 11 Agent-System (Chats 22–32) + Persona Smoke-Tests (Chats 31–32) + RechercheAgent-Test (Chat 35) + Doku-Audit (Chat 36) + PRIO0-Fix + Client-Observability (Chat 37) + Claude API-Test + STREAM1-Fix + Gesprächsvektor (Chat 39) + CharakterIdentitaetAgent + DirektivenAgent + Tribunal Score-System (Chat 40) + Telegram Bot + Zeitparser-Fixes (Chat 41) + CRUD-Härtung + Telegram-Chat-Analyse + DB-Report (Chat 42) + KONTEXT1-Fix + Resume-Bug + Epic 15 Pilot (Chat 43) + Epic 15 Rollout + DELEG-REG Fix + KZG-Klebrigkeit (Chat 44) + RESP-CHAR1 Fix (Chat 45) + CLASSIFY-REJECTED + Gemma4 Live-Tests (Chat 48) + Telegram-Konversation "frecher Charakter" (Chat 49) + RESUME-REJECT Fix + Live-Tests (Chat 50) + Neugier-Konzept + Projektinfrastruktur (Chat 51) + Doku-Alignment + emotions_profil (Chat 52) + Antrieb-Konzept + Dual-Emotion (Chat 53) + HALL2-Fix + Planner-Refactor (Chat 54) + PySide6 verworfen + GTK4-Entscheidung (Chat 55) + GTK4-Client + Panel-Infrastruktur (Chat 56) + Web-Tool-Doku + SEARX1-Diagnose (Chat 57) + Chat 61 (Perzeption-Symmetrie, Akkumulations-Refactor, Paper-Portfolio, Lumi, urllib3-Doppel-Turn beobachtet) + Paper I + urllib3-RETRY + ROUTE-CHAR-NOTIZ + RESP-DEAD + PIXIE-GHOST (Chat 65) + WS-SINGLE Fix + ClientConnection + User-Message-Broadcast (Chat 68) + Dreischicht-Integration + GV-Refactoring + MODUS-LEER + VEKTOR-LEER + AROUSAL-330 + ZIEL-LABEL-LEER Fixes (Chat 72)
 
 ---
 
@@ -66,6 +66,10 @@
 | ROUTE-CHAR-NOTIZ | CharacterGraph-Router dispatched Konversation an NotizenAgent | Genereller Dispatch-Guard in router.task.txt + Notizen-Plugin-Regel verschärft. Verifikation ausstehend. | Chat 65 |
 | WS-SINGLE | WebSocket verdrängt bestehende Verbindung — Dict erlaubte nur einen Slot pro User | `aktive_verbindungen` auf `dict[str, list[ClientConnection]]` mit `ClientConnection`-Dataclass. `broadcast()`/`broadcast_threadsafe()` mit `character_id`-Filterung und `exclude_client`. User-Message-Broadcast über alle Clients. 12 Dateien. | Chat 68 |
 | CAIRO-PHANTOM | Phantom-Linien zwischen Goal-Indikatoren im Gravitationsgraph | `cr.new_sub_path()` vor jedem `cr.arc()` — Cairo zieht impliziten `line_to(arc_start)` vom Current Point nach `show_text()` | Chat 69 |
+| MODUS-LEER | `gespraechs_modus` im GV-Node immer leer (Tiefe-Achse + Neugier-Modus-Faktor falsch). `enricher.py:98` überschreibt bedingungslos mit leerem `letzter_modus` aus Redis-Session, Dispatcher schreibt leeren Wert zurück → selbstverewigender Bug | Guard `if letzter_modus:` in enricher.py | Chat 72 |
+| VEKTOR-LEER | `emotions_vektor` im GV-Node immer leer (Richtungs-Achse 0, Drive 0.0). HumanGraph berechnet korrekt, aber `chat.py` hängt Feld nicht ans Event-Payload, `event_consumer.py` listet es nicht in `perzeption_felder` | `emotions_vektor` in chat.py (Payload) + event_consumer.py (perzeption_felder) ergänzt | Chat 72 |
+| AROUSAL-330 | Novas Arousal in `[EIGENE_EMOTION]` zeigt 330% statt max 100%. LLM-Halluzination (`"arousal": 3.3`) im Salienz-Node → ungekappt in KZG persistiert → Gravitations-Aktivierung injiziert korrupten Wert in Nova-Verlauf bei jeder Aktivierung erneut | 3× Defense-in-Depth: (1) `berechnung.py:84` universal-Cap beim Lesen, (2) `salience.py:174` Cap nach LLM-JSON-Parse, (3) `kzg.py:278` Cap beim Schreiben | Chat 72 |
+| ZIEL-LABEL-LEER | Gravitationsgraph-Panel: manche Ziel-Knoten ohne Beschriftung. DB-Spalte `ziele.thema` existierte, aber kein Code-Pfad hat sie je gesetzt — Labels nur manuell per SQL eingetragen | Architektonisch: `thema` bei Ziel-Destillation via LLM generiert (CharakterAgent + RechercheAgent). Fallback `_kurzlabel_aus_zielsatz` im Endpoint für Altbestand | Chat 72 |
 
 ---
 
@@ -500,3 +504,63 @@ Dann Requests über diese Session abwickeln statt direkt `requests.post()`.
 *Aktualisiert Chat 66: ROUTE-CHAR-NOTIZ in Behoben-Tabelle. Header auf Chat 66 aktualisiert. Inhalt bereits in Chat 65 eingetragen (RESP-DEAD, PIXIE-GHOST, urllib3-RETRY, ROUTE-CHAR-NOTIZ-Fix).*
 
 *Aktualisiert Chat 68: WS-SINGLE in Behoben-Tabelle. ClientConnection-Dataclass mit client_id/character_id-Filterung. User-Message-Broadcast für Cross-Client-Sync (Desktop ↔ Telegram). 12 Dateien geändert.*
+
+---
+
+### Chat 72 — Dreischicht-Integration + GV-Refactoring (Folgebugs)
+
+#### ECHO-BUG — Nova wiederholt User-Nachricht wörtlich bei langen Sessions ⚠️
+
+**Entdeckt:** Chat 72, 01. Mai 2026
+
+**Symptom:** Bei Sessions mit 11+ Turns wiederholt Nova die User-Nachricht wörtlich statt zu antworten.
+
+**Ursache (Hypothese):** Kontext-Sättigung. Session-Turns + KZG/LZG-Rauschen + Charakter-Hash + GV-Vorschlag erschöpfen den verfügbaren Kontext. Das Modell fällt in einen Kopier-Modus zurück.
+
+**Lösungsansatz:** Reducer-Node als zentrale Lösung geplant (seit Chat 71). Der Reducer destilliert pro Turn ein fokussiertes Konzentrat für den Responder, statt den vollen `memory_context` durchzureichen.
+
+**Prio:** Hoch — bricht das Gespräch komplett, sobald die Session lang genug wird.
+
+---
+
+#### PENDING-RELEVANZ — Router prüft nicht, ob neuer Prompt eine Antwort auf Pending-Rückfrage ist ⬜
+
+**Entdeckt:** Chat 72
+
+**Symptom:** Der Router behandelt jeden weiteren User-Prompt nach einer Pflicht-Rückfrage als potenzielle Resume-Antwort, ohne zu prüfen, ob der Prompt thematisch überhaupt zur Rückfrage gehört. Themenwechsel werden nicht erkannt.
+
+**Verwandt:** RESUME-REJECT (Chat 50, gefixt) — dort wurde die Negationserkennung im Resume-Pfad eingebaut, aber die Vorprüfung "ist dieser Prompt überhaupt eine Antwort auf die Pending-Rückfrage?" fehlt weiterhin.
+
+**Lösungsansatz:** Router/Resume-Vorprüfung: Embedding-Ähnlichkeit zwischen Pending-Rückfrage und neuem Prompt. Bei Themenwechsel Pending-Key nicht auflösen, sondern als regulären Turn behandeln und Rückfrage später erneut stellen.
+
+**Prio:** Mittel — Datenintegrität in Edge-Cases, vor allem bei längeren Pausen zwischen Turns.
+
+---
+
+#### MODUS-KALIBRIERUNG — Perzeption klassifiziert spielerische Inhalte als "emotional" ⬜
+
+**Entdeckt:** Chat 72, 01. Mai 2026
+
+**Symptom:** Perzeption stuft 😍-Katzen-Chat als `gespraechs_modus="emotional"` statt `"spielerisch"` ein. Beeinflusst die Tiefe-Achse der Dreischicht-Architektur und damit die Sektor-Berechnung im GV.
+
+**Status:** Kein Bug, sondern Kalibrierungsfrage. Der Perzeption-Prompt unterscheidet die Modi nicht trennscharf genug.
+
+**Lösungsansatz:** Modus-Beispiele im Perzeption-Prompt schärfen. Spielerisch (Tier-Niedlichkeit, Quatschen, leichte Themen) klar von emotional (Beziehungsthemen, Sorgen, Tiefe) abgrenzen.
+
+**Prio:** Niedrig — kosmetisch, beeinflusst die Sektor-Verteilung leicht, aber bricht keine Funktion.
+
+---
+
+#### CHAR-HASH-FILTER — `beobachter=assistant`-Einträge fließen in Charakter-Hash ⬜
+
+**Entdeckt:** Chat 72
+
+**Symptom:** Der Charakter-Hash zieht beim Aufbau auch Einträge mit `beobachter=assistant` ein, statt nur User-Beobachtungen zu konsolidieren. Folge: Novas Selbstbeschreibungen mischen sich mit dem User-Beziehungsprofil.
+
+**Lösungsansatz:** Filter `WHERE beobachter='user'` an den Hash-Aufbauschritten ergänzen (Charakter-Hash + Beziehungsprofil).
+
+**Prio:** Mittel — verschiebt das Hash-Bild von "wie der User Nova sieht" zu einer gemischten Selbst-/Fremdwahrnehmung. Beobachten zusammen mit CHAR-BEZ-STALE.
+
+---
+
+*Aktualisiert Chat 72: Vier Fixes in Behoben-Tabelle (MODUS-LEER, VEKTOR-LEER, AROUSAL-330, ZIEL-LABEL-LEER). Vier neue offene Bugs aus Dreischicht-Integration: ECHO-BUG (Hoch, durch geplanten Reducer adressiert), PENDING-RELEVANZ, MODUS-KALIBRIERUNG, CHAR-HASH-FILTER. Beobachtungen: KZG-DEDUP/KZG-KERN-BLIND wurden in Chat 64 als gelöst markiert, in Chat 72 jedoch wieder beobachtet (dreifache Katze-bei-Lumi-Einträge mit steigender Salienz) — bei nächster Wiederholung re-evaluieren. ZEIT1 (gefixt Chat 41) zeigt unter Gemma4 wieder Symptome — Modell-Verhalten, nicht Regex-Regression.*
