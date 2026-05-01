@@ -408,6 +408,8 @@ veraltetes Beziehungsprofil die gesamte Antwortqualität ruiniert).
 
 ### Charakter-Hash schema-konform um `beobachter` erweitern (Chat 71)
 
+**Stufe 1 erledigt (Chat 73):** `beobachter_filter` in `_kzg_laden()` + 20 Altdaten migriert. Stufe 2 (Schema-Erweiterung) und Stufe 3 (vier Tripel im CharakterAgent) noch offen.
+
 Konzept: `novaberg-paar-schema_k.md`. Heute mischt der Hash-Eintrag
 `(nova, meister)` zwei Sichten — Nova-aus-User-Sicht (Beobachter `user`) und
 Nova-aus-Selbstsicht (Beobachter `assistant`) — in einem Datensatz. Dadurch
@@ -553,7 +555,7 @@ Erweiterung (siehe oben) kommt, müssen die Altdaten ohnehin migriert werden.
 
 ---
 
-## Epic: Client urllib3-Retry-Fix (Chat 61)
+## Epic: Client urllib3-Retry-Fix (Chat 61) ✅ Chat 65 (verifiziert Chat 73)
 
 **Problem:** Wenn der Server lange braucht (z.B. 55 Sekunden bei GPU-Druck), sendet urllib3 (unter requests) automatisch einen Retry. Der Server bekommt den Prompt zweimal, schreibt zwei identische User-Turns in die Session. Symptom wurde in Chat 61 beobachtet.
 
@@ -654,14 +656,6 @@ Vier Arbeitspakete, die durch die KZG/LZG-Umstellung auf das Paar-Schema und dur
 Bei semantisch aehnlichen Turns erzeugt die Salienz mehrere KZG-Eintraege statt zu verstaerken, weil der Themen-Vergleich leicht unterschiedliche Tags extrahiert ("Name Lumi" vs. "Namensgebung Lumi" vs. "neuer Mitbewohner"). In Chat 62 beobachtet: Ein Gespraech ueber Lumi erzeugte 8 Eintraege statt 1–2.
 
 **Auflösung Chat 64:** Re-framed als Feature im Rahmen der KZG-Liberalisierung. Verschiedene Facetten desselben Themas werden im KZG bewusst als eigenständige Einträge behalten — die Cluster-Promotion sammelt sie ein und destilliert sie zu einem kohärenten LZG-Eintrag.
-
-### CHAR-HASH-FILTER — beobachter-Filter bei Hash-Destillation (Bug-Risiko, niedrig)
-
-Durch das Paar-Schema fliessen jetzt auch `beobachter="assistant"`-Eintraege in die Charakter-Hash-Destillation ein — `agents/charakter/agent.py` und `charakter_hash.py` lesen ueber das Prefix `kzg:{user_id}:*`, ohne nach Beobachter zu filtern. Novas eigene Beobachtungen sollten nicht Meisters adaptives Profil formen.
-
-**Loesungsansatz:** `beobachter="user"`-Filter bei der Hash-Destillation fuer den User-Hash; spiegelsymmetrisch `beobachter="assistant"` fuer den Nova-Hash.
-
-**Prio:** Niedrig — bisher keine beobachtete Profil-Verzerrung, aber strukturell riskant bei laengeren Paar-Historien.
 
 ### KZG-KERN-BLIND — Verstaerkung ignoriert neuen Kern-Inhalt ✅ Gelöst Chat 64
 
@@ -1157,7 +1151,6 @@ Kurzübersicht aktiver Bugs:
 | CRUD-REACTIVATE-STAMP | ⚠️ | Reactivate setzt deaktiviert_am nicht auf NULL |
 | EMOTE-LOCK | ⬜ | Emote-Inflation bei langem Charakter-Register |
 | TOPOS-LOCK | ⬜ | Bildervorrat wird mechanisch zykeliert |
-| urllib3-RETRY | ⬜ | Client-urllib3 macht automatischen Retry bei langer Response, erzeugt Doppel-Turns |
 | PATH1-LATENZ | ⬜ | Pfad-1 kann bei GPU-Druck auf 55+ Sekunden gehen (Einmal-Event beobachtet) |
 | ROUTE-CHAR-NOTIZ | ✅ (beobachten) | CharacterGraph-Router dispatched Konversation an NotizenAgent (Chat 62) |
 | ENRICHER-DUP | 👁 | Fakten werden mehrfach in den Enricher-Kontext injiziert (Chat 62, Beobachtung) |

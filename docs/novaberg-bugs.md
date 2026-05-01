@@ -1,6 +1,6 @@
 # Novaberg — Bugs & Limitationen
 
-**Stand:** 01. Mai 2026, Chat 72
+**Stand:** 01. Mai 2026, Chat 73
 **Quelle:** Testlauf "Karrierekrise" (200 Prompts) + Gedächtnis-Epic (Chat 11) + Epic 11 Agent-System (Chats 22–32) + Persona Smoke-Tests (Chats 31–32) + RechercheAgent-Test (Chat 35) + Doku-Audit (Chat 36) + PRIO0-Fix + Client-Observability (Chat 37) + Claude API-Test + STREAM1-Fix + Gesprächsvektor (Chat 39) + CharakterIdentitaetAgent + DirektivenAgent + Tribunal Score-System (Chat 40) + Telegram Bot + Zeitparser-Fixes (Chat 41) + CRUD-Härtung + Telegram-Chat-Analyse + DB-Report (Chat 42) + KONTEXT1-Fix + Resume-Bug + Epic 15 Pilot (Chat 43) + Epic 15 Rollout + DELEG-REG Fix + KZG-Klebrigkeit (Chat 44) + RESP-CHAR1 Fix (Chat 45) + CLASSIFY-REJECTED + Gemma4 Live-Tests (Chat 48) + Telegram-Konversation "frecher Charakter" (Chat 49) + RESUME-REJECT Fix + Live-Tests (Chat 50) + Neugier-Konzept + Projektinfrastruktur (Chat 51) + Doku-Alignment + emotions_profil (Chat 52) + Antrieb-Konzept + Dual-Emotion (Chat 53) + HALL2-Fix + Planner-Refactor (Chat 54) + PySide6 verworfen + GTK4-Entscheidung (Chat 55) + GTK4-Client + Panel-Infrastruktur (Chat 56) + Web-Tool-Doku + SEARX1-Diagnose (Chat 57) + Chat 61 (Perzeption-Symmetrie, Akkumulations-Refactor, Paper-Portfolio, Lumi, urllib3-Doppel-Turn beobachtet) + Paper I + urllib3-RETRY + ROUTE-CHAR-NOTIZ + RESP-DEAD + PIXIE-GHOST (Chat 65) + WS-SINGLE Fix + ClientConnection + User-Message-Broadcast (Chat 68) + Dreischicht-Integration + GV-Refactoring + MODUS-LEER + VEKTOR-LEER + AROUSAL-330 + ZIEL-LABEL-LEER Fixes (Chat 72)
 
 ---
@@ -70,6 +70,10 @@
 | VEKTOR-LEER | `emotions_vektor` im GV-Node immer leer (Richtungs-Achse 0, Drive 0.0). HumanGraph berechnet korrekt, aber `chat.py` hängt Feld nicht ans Event-Payload, `event_consumer.py` listet es nicht in `perzeption_felder` | `emotions_vektor` in chat.py (Payload) + event_consumer.py (perzeption_felder) ergänzt | Chat 72 |
 | AROUSAL-330 | Novas Arousal in `[EIGENE_EMOTION]` zeigt 330% statt max 100%. LLM-Halluzination (`"arousal": 3.3`) im Salienz-Node → ungekappt in KZG persistiert → Gravitations-Aktivierung injiziert korrupten Wert in Nova-Verlauf bei jeder Aktivierung erneut | 3× Defense-in-Depth: (1) `berechnung.py:84` universal-Cap beim Lesen, (2) `salience.py:174` Cap nach LLM-JSON-Parse, (3) `kzg.py:278` Cap beim Schreiben | Chat 72 |
 | ZIEL-LABEL-LEER | Gravitationsgraph-Panel: manche Ziel-Knoten ohne Beschriftung. DB-Spalte `ziele.thema` existierte, aber kein Code-Pfad hat sie je gesetzt — Labels nur manuell per SQL eingetragen | Architektonisch: `thema` bei Ziel-Destillation via LLM generiert (CharakterAgent + RechercheAgent). Fallback `_kurzlabel_aus_zielsatz` im Endpoint für Altbestand | Chat 72 |
+| AROUSAL-367 | Gravitations-Injektor schrieb arousal * gravitation ungecappt in Novas Verlauf → a=3.67 | 4. Defense-in-Depth Cap: `min(1.0, ...)` an 2 Stellen in `ei/gravitation.py` | Chat 73 |
+| CHAR-HASH-FILTER | `_kzg_laden()` filterte nicht nach beobachter → Profil-Mischperspektive | `beobachter_filter`-Parameter, invoke() setzt Perspektive + 20 Altdaten migriert | Chat 73 |
+| urllib3-RETRY | Client-urllib3 machte automatischen Retry → Doppel-Turns | `HTTPAdapter(max_retries=0)` in `stream_handler.py` | Chat 65 (verifiziert Chat 73) |
+| IMPULS-KOPIE | GV-VORSCHLAG war fertiger Satz, Responder kopierte 1:1 | VORSCHLAG→IMPULS: Richtungsangabe statt Text, Leitgedanke im Prompt | Chat 73 |
 
 ---
 
@@ -421,7 +425,7 @@ Das widerspricht dem tatsächlichen Beziehungsprofil in der DB (User-Perspektive
 
 ---
 
-#### urllib3-RETRY — Automatischer HTTP-Retry erzeugt Doppel-Turns ⬜
+#### urllib3-RETRY — Automatischer HTTP-Retry erzeugt Doppel-Turns ✅
 **Entdeckt:** Chat 61, 23. April 2026
 **Symptom:** Wenn der Server lange auf die LLM-Antwort wartet (in Chat 61: 55 Sekunden Pfad 1 durch GPU-Druck), wird der gleiche User-Prompt zweimal in die Session geschrieben. Zwei User-Turns mit identischem Inhalt, Zeitstempel-Differenz exakt 55 Sekunden. Kein Fehler im Log.
 **Ursache (Hypothese):** Die `requests`-Library (über urllib3) macht automatische Retries bei Connection-Reset oder ähnlichen Netzwerk-Events. Bei langen Verbindungen zum Docker-Server kann ein Connection-Wackler den Retry triggern — der Server sieht ihn als neuen Prompt.
@@ -434,6 +438,8 @@ session.mount('https://', HTTPAdapter(max_retries=0))
 ```
 Dann Requests über diese Session abwickeln statt direkt `requests.post()`.
 **Prio:** Niedrig-Mittel — nur bei langsamen Responses auftretbar, aber erzeugt inkonsistente Session-Daten, wenn es auftritt.
+
+**Verifiziert Chat 73:** Fix seit Chat 65 aktiv, 5 Tage ohne Doppel-Turn-Bericht.
 
 ---
 
@@ -551,7 +557,7 @@ Dann Requests über diese Session abwickeln statt direkt `requests.post()`.
 
 ---
 
-#### CHAR-HASH-FILTER — `beobachter=assistant`-Einträge fließen in Charakter-Hash ⬜
+#### CHAR-HASH-FILTER — `beobachter=assistant`-Einträge fließen in Charakter-Hash ✅
 
 **Entdeckt:** Chat 72
 
@@ -560,6 +566,8 @@ Dann Requests über diese Session abwickeln statt direkt `requests.post()`.
 **Lösungsansatz:** Filter `WHERE beobachter='user'` an den Hash-Aufbauschritten ergänzen (Charakter-Hash + Beziehungsprofil).
 
 **Prio:** Mittel — verschiebt das Hash-Bild von "wie der User Nova sieht" zu einer gemischten Selbst-/Fremdwahrnehmung. Beobachten zusammen mit CHAR-BEZ-STALE.
+
+**Behoben Chat 73:** Beobachter-Filter in `_kzg_laden()` + 20 Altdaten von `kzg:nova:nova:*` nach `kzg:nova:meister:*` migriert (DUMP/RESTORE).
 
 ---
 
