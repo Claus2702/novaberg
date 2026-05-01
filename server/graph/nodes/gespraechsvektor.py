@@ -491,7 +491,7 @@ def gespraechsvektor(state: ConversationState) -> ConversationState:
         "absicht":               gv_parsed.get("absicht", ""),
         "strategie":             gv_parsed.get("strategie", ""),
         "vehikel":               gv_parsed.get("vehikel", ""),
-        "vorschlag":             gv_parsed.get("vorschlag", ""),
+        "impuls":                gv_parsed.get("impuls", ""),
         # Achsen (Python, deterministisch)
         "achsen":                achsen,
         "sektor_index":          sektor_index,

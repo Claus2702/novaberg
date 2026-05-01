@@ -94,17 +94,54 @@ class GvPanel(PanelBase):
         wissensluecken:    list  = data.get("wissensluecken") or []
         farbton:           str   = str(data.get("farbton") or "")
 
+        # Dreischicht-Felder (Chat 72/73)
+        sektor_index:   int  = int(data.get("sektor_index", 0) or 0)
+        sektor_name:    str  = str(data.get("sektor_name") or "")
+        cluster:        str  = str(data.get("cluster") or "")
+        achsen:         dict = data.get("achsen") or {}
+        absicht:        str  = str(data.get("absicht") or "")
+        strategie_name: str  = str(data.get("strategie") or "")
+        vehikel:        str  = str(data.get("vehikel") or "")
+        sprung_1:       str  = str(data.get("sprung_1") or "")
+        sprung_2:       str  = str(data.get("sprung_2") or "")
+        sprung_3:       str  = str(data.get("sprung_3") or "")
+        impuls:         str  = str(data.get("impuls") or "")
+
         logger.info(
             f"GvPanel: laenge={laenge}, neugier={effektive_neugier:.3f}, "
-            f"strategie={strategie_aktiv}, luecken={len(wissensluecken)}"
+            f"strategie={strategie_aktiv}, luecken={len(wissensluecken)}, "
+            f"sektor=#{sektor_index} {sektor_name}, cluster={cluster}, "
+            f"absicht={absicht}, strat={strategie_name}, vehikel={vehikel}"
         )
 
+        # 1. Bestehend: Kennzahlen (Sprünge-Bar, Neugier-Bar, Strategie aktiv/—)
         self._outer_box.append(_build_kennzahlen(
             laenge=laenge,
             neugier=effektive_neugier,
             strategie_aktiv=strategie_aktiv,
         ))
+
+        # 2. NEU: Dreischicht (Sektor, Cluster, Achsen, Absicht/Strategie/Vehikel)
+        self._outer_box.append(_build_dreischicht_section(
+            sektor_index=sektor_index,
+            sektor_name=sektor_name,
+            cluster=cluster,
+            achsen=achsen,
+            absicht=absicht,
+            strategie=strategie_name,
+            vehikel=vehikel,
+        ))
+
+        # 3. NEU: Sprünge (3 Gedankenschritte)
+        self._outer_box.append(_build_spruenge_section(sprung_1, sprung_2, sprung_3))
+
+        # 4. NEU: Impuls (Richtungsangabe für den Responder)
+        self._outer_box.append(_build_impuls_section(impuls))
+
+        # 5. Bestehend: Wissenslücken
         self._outer_box.append(_build_luecken_section(wissensluecken))
+
+        # 6. Bestehend: Farbton
         self._outer_box.append(_build_farbton_section(farbton))
 
     # ═══════════════════════════════════════════════════════════════
@@ -303,6 +340,158 @@ def _build_farbton_section(farbton: str) -> Gtk.Box:
         text_label.set_selectable(True)
     else:
         text_label = Gtk.Label(label="(kein Farbton in diesem Turn)")
+        text_label.set_xalign(0.0)
+        text_label.add_css_class("dim-label")
+
+    inner.append(text_label)
+    frame.set_child(inner)
+    section.append(frame)
+
+    return section
+
+
+def _build_dreischicht_section(
+    sektor_index: int,
+    sektor_name: str,
+    cluster: str,
+    achsen: dict,
+    absicht: str,
+    strategie: str,
+    vehikel: str,
+) -> Gtk.Box:
+    """Sektion Dreischicht: Sektor, Cluster, Achsen, gewaehlte Strategie."""
+    section = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=4)
+
+    header = Gtk.Label(label="Dreischicht")
+    header.set_xalign(0.0)
+    header.add_css_class("heading")
+    section.append(header)
+
+    # Sektor + Cluster
+    if sektor_name or cluster:
+        sektor_text: str = f"#{sektor_index} {sektor_name}" if sektor_name else ""
+        if cluster:
+            sektor_text += f"  (Cluster: {cluster.capitalize()})"
+        sektor_label = Gtk.Label(label=sektor_text.strip())
+        sektor_label.set_xalign(0.0)
+        sektor_label.set_wrap(True)
+        sektor_label.set_wrap_mode(Pango.WrapMode.WORD_CHAR)
+        section.append(sektor_label)
+
+    # Absicht / Strategie / Vehikel — kompakte Zeile
+    if absicht or strategie or vehikel:
+        teile: list[str] = []
+        if absicht:
+            teile.append(f"Absicht: {absicht.capitalize()}")
+        if strategie:
+            teile.append(f"Strategie: {strategie}")
+        if vehikel:
+            teile.append(f"als {vehikel.capitalize()}")
+        strat_label = Gtk.Label(label="  ·  ".join(teile))
+        strat_label.set_xalign(0.0)
+        strat_label.set_wrap(True)
+        strat_label.set_wrap_mode(Pango.WrapMode.WORD_CHAR)
+        strat_label.add_css_class("caption")
+        section.append(strat_label)
+
+    # Achsen — kompakte einzeilige Darstellung
+    # Format in Redis: flache Keys, z.B. energie_roh=0.7, energie=1,
+    # richtung="plateau", richtung_bin=0, valenz_bin=1 (ohne Rohwert)
+    if achsen:
+        achsen_teile: list[str] = []
+        for kuerzel, roh_key, bin_key in [
+            ("E", "energie_roh", "energie"),
+            ("R", "richtung",    "richtung_bin"),
+            ("N", "naehe_roh",   "naehe"),
+            ("V", None,          "valenz_bin"),
+            ("T", "tiefe_roh",   "tiefe"),
+            ("I", "initiative_roh", "initiative"),
+        ]:
+            binary = achsen.get(bin_key, "")
+            if roh_key is not None:
+                raw = achsen.get(roh_key, "")
+            else:
+                raw = ""
+            if raw != "" or binary != "":
+                achsen_teile.append(f"{kuerzel}={binary}({raw})")
+        # Drive separat (kein binaerer Wert)
+        drive: float = float(achsen.get("drive", 0.0) or 0.0)
+        achsen_teile.append(f"Drive={drive:.2f}")
+
+        if achsen_teile:
+            achsen_label = Gtk.Label(label="  ".join(achsen_teile))
+            achsen_label.set_xalign(0.0)
+            achsen_label.add_css_class("caption")
+            achsen_label.add_css_class("dim-label")
+            achsen_label.set_selectable(True)
+            section.append(achsen_label)
+
+    # Leer-Zustand
+    if not sektor_name and not cluster and not absicht:
+        leer = Gtk.Label(label="(keine Dreischicht-Daten in diesem Turn)")
+        leer.set_xalign(0.0)
+        leer.add_css_class("dim-label")
+        section.append(leer)
+
+    return section
+
+
+def _build_spruenge_section(sprung_1: str, sprung_2: str, sprung_3: str) -> Gtk.Box:
+    """Sektion mit den drei Gedankenspruengen des GV."""
+    section = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=4)
+
+    header = Gtk.Label(label="Sprünge")
+    header.set_xalign(0.0)
+    header.add_css_class("heading")
+    section.append(header)
+
+    hat_spruenge: bool = False
+    for nummer, text in [("1", sprung_1), ("2", sprung_2), ("3", sprung_3)]:
+        if not text:
+            continue
+        hat_spruenge = True
+        label = Gtk.Label(label=f"{nummer}: {text}")
+        label.set_xalign(0.0)
+        label.set_wrap(True)
+        label.set_wrap_mode(Pango.WrapMode.WORD_CHAR)
+        label.set_selectable(True)
+        section.append(label)
+
+    if not hat_spruenge:
+        leer = Gtk.Label(label="(keine Sprünge in diesem Turn)")
+        leer.set_xalign(0.0)
+        leer.add_css_class("dim-label")
+        section.append(leer)
+
+    return section
+
+
+def _build_impuls_section(impuls: str) -> Gtk.Box:
+    """Sektion mit dem Impuls — Richtungsangabe fuer den Responder."""
+    section = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=4)
+
+    header = Gtk.Label(label="Impuls")
+    header.set_xalign(0.0)
+    header.add_css_class("heading")
+    section.append(header)
+
+    frame = Gtk.Frame()
+    frame.set_margin_top(2)
+
+    inner = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=0)
+    inner.set_margin_start(8)
+    inner.set_margin_end(8)
+    inner.set_margin_top(6)
+    inner.set_margin_bottom(6)
+
+    if impuls:
+        text_label = Gtk.Label(label=impuls)
+        text_label.set_xalign(0.0)
+        text_label.set_wrap(True)
+        text_label.set_wrap_mode(Pango.WrapMode.WORD_CHAR)
+        text_label.set_selectable(True)
+    else:
+        text_label = Gtk.Label(label="(kein Impuls in diesem Turn)")
         text_label.set_xalign(0.0)
         text_label.add_css_class("dim-label")
 

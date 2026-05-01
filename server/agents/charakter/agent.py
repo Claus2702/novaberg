@@ -100,7 +100,11 @@ class CharakterAgent(BaseAgent):
             lzg_emotionen = self._lzg_emotionen_laden(user_id)
 
             # ── KZG-Eintraege laden ──────────────
-            kzg_eintraege = self._kzg_laden(user_id)
+            # CHAR-HASH-FILTER (Chat 73): Nur eigene Perspektive laden.
+            # User-Profil (meister) ← beobachter=user (Meisters Aeusserungen)
+            # Nova-Profil (nova)    ← beobachter=assistant (Novas Beobachtungen)
+            beobachter: str = "assistant" if user_id == ASSISTANT_USER_ID else "user"
+            kzg_eintraege = self._kzg_laden(user_id, beobachter_filter=beobachter)
 
             # ── 5 Profile destillieren ───────────
             ergebnis: dict = {
@@ -247,13 +251,28 @@ class CharakterAgent(BaseAgent):
             (user_id, PIXIE_CHARAKTER_LZG_LIMIT),
         )
 
-    def _kzg_laden(self, user_id: str) -> list[dict]:
-        """Laedt KZG-Eintraege aus Redis via SCAN."""
+    def _kzg_laden(self, user_id: str, beobachter_filter: str = "") -> list[dict]:
+        """Laedt KZG-Eintraege aus Redis via SCAN.
+
+        Args:
+            user_id: Subjekt-ID (wessen Eintraege geladen werden).
+            beobachter_filter: Wenn gesetzt, nur Eintraege mit diesem
+                Beobachter-Wert laden ('user' oder 'assistant').
+                Leerer String = kein Filter (Rueckwaertskompatibilitaet).
+        """
         eintraege: list[dict] = []
+        uebersprungen: int = 0
 
         for key in redis_client.scan_iter(match=f"kzg:{user_id}:*", count=100):
             if isinstance(key, bytes):
                 key = key.decode("utf-8")
+
+            # Beobachter-Filter: nur Eintraege der gewuenschten Perspektive
+            if beobachter_filter:
+                eintrag_beobachter: str = _hget(redis_client, key, "beobachter")
+                if eintrag_beobachter != beobachter_filter:
+                    uebersprungen += 1
+                    continue
 
             eintrag: dict = {
                 "themen":             _hget(redis_client, key, "themen"),
@@ -269,6 +288,13 @@ class CharakterAgent(BaseAgent):
 
             if len(eintraege) >= PIXIE_CHARAKTER_KZG_LIMIT:
                 break
+
+        if beobachter_filter:
+            logger.info(
+                f"CharakterAgent: KZG geladen fuer {user_id} — "
+                f"{len(eintraege)} Eintraege (beobachter={beobachter_filter}, "
+                f"{uebersprungen} uebersprungen)"
+            )
 
         return eintraege
 

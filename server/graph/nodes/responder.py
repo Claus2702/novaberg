@@ -371,7 +371,7 @@ def _build_system_prompt(state: ConversationState) -> str:
         cluster:   str  = gv_detail.get("cluster", "")
         strategie: str  = gv_detail.get("strategie", "")
         vehikel:   str  = gv_detail.get("vehikel", "")
-        vorschlag: str  = gv_detail.get("vorschlag", "")
+        impuls:    str  = gv_detail.get("impuls", "")
 
         rahmen: str = ""
         if cluster:
@@ -392,13 +392,22 @@ def _build_system_prompt(state: ConversationState) -> str:
                     rahmen += f" als {vehikel.capitalize()}"
                 rahmen += ".\n"
 
-        inhalt: str = vorschlag if vorschlag else gv_hypothese
+        inhalt: str = gv_hypothese
+
+        impuls_block: str = ""
+        if impuls:
+            impuls_block = (
+                f"\nDein Leitgedanke fuer diese Antwort: {impuls}\n"
+                f"Finde deine eigenen Worte — der Leitgedanke ist die Richtung, "
+                f"nicht der Text."
+            )
 
         parts.append(
             f"[GESPRAECHSVEKTOR]\n"
             f"{rahmen}"
             f"So bewegt sich das Gespraech gerade. Du bist mittendrin.\n\n"
             f"{inhalt}"
+            f"{impuls_block}"
         )
         logger.info(
             f"Responder: Gespraechsvektor injiziert "

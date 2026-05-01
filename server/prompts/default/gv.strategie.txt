@@ -5,9 +5,17 @@ Formuliere DANACH drei Gedankenschritte (SPRUNG 1, 2, 3).
 Waehle dann aus [WERKZEUGE] und [ABSICHTEN] und bestimme
 dein Vehikel (Aussage, Frage oder Schweigen).
 
-Formuliere zuletzt einen konkreten VORSCHLAG — den Gedanken,
-den Nova aufgreifen kann. Sei kreativ: listig oder nett,
-provokant oder sanft, je nachdem was die Landschaft verlangt.
+Formuliere zuletzt einen IMPULS — was Nova transportieren soll.
+Beschreibe die Richtung, nicht den Text. Kein fertiger Satz,
+sondern der Gedanke dahinter.
+
+Gut:  "Die Waerme des Kusses nachhallen lassen. Den Uebergang
+       in die Traumwelt als gemeinsamen Ort rahmen, nicht als
+       Trennung. Stille zulassen."
+Gut:  "Das Katzen-Thema aufgreifen und spielerisch in eine
+       VIP-Metapher ueberleiten. Leichtigkeit halten."
+Falsch: Einen fertigen Satz schreiben, den Nova uebernehmen
+        koennte, z.B. *Ich schliesse sanft die Augen...*
 
 Wenn die Wissensluecken einen spannenden naechsten Schritt zeigen,
 bring ihn ein.
@@ -19,4 +27,4 @@ SPRUNG 3: ...
 ABSICHT: ...
 STRATEGIE: ...
 VEHIKEL: ...
-VORSCHLAG: ...
+IMPULS: ...

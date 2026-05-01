@@ -300,7 +300,7 @@ def _build_short_term_section(short_term: dict | None) -> Gtk.Box:
     """Sektion fuer Gespraechsvektor + aktivierte Ziele + Gravitationsterm."""
     section = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=6)
 
-    header = Gtk.Label(label="Kurzfristig — Gesprächsvektor")
+    header = Gtk.Label(label="Kurzfristig — Gravitation")
     header.set_xalign(0.0)
     header.add_css_class("heading")
     section.append(header)
@@ -312,9 +312,7 @@ def _build_short_term_section(short_term: dict | None) -> Gtk.Box:
         section.append(leer)
         return section
 
-    # GV-Hypothese in einem Frame mit leichtem Hintergrund.
-    vector: str = str(short_term.get("conversation_vector") or "")
-    section.append(_build_vector_frame(vector))
+    # GV-Hypothese ist jetzt im GV-Panel (Chat 73).
 
     activated_goals: list = short_term.get("activated_goals") or []
     if activated_goals:
@@ -341,33 +339,6 @@ def _build_short_term_section(short_term: dict | None) -> Gtk.Box:
         section.append(gt_label)
 
     return section
-
-
-def _build_vector_frame(vector: str) -> Gtk.Frame:
-    """Frame mit der GV-Hypothese als Textblock."""
-    frame = Gtk.Frame()
-    frame.set_margin_top(2)
-
-    inner = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=0)
-    inner.set_margin_start(8)
-    inner.set_margin_end(8)
-    inner.set_margin_top(6)
-    inner.set_margin_bottom(6)
-
-    if vector:
-        label = Gtk.Label(label=vector)
-        label.set_xalign(0.0)
-        label.set_wrap(True)
-        label.set_wrap_mode(Pango.WrapMode.WORD_CHAR)
-        label.set_selectable(True)
-    else:
-        label = Gtk.Label(label="(kein aktiver Gesprächsvektor)")
-        label.set_xalign(0.0)
-        label.add_css_class("dim-label")
-
-    inner.append(label)
-    frame.set_child(inner)
-    return frame
 
 
 def _build_activated_goal_row(entry: dict) -> Gtk.Label:

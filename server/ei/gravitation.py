@@ -514,7 +514,7 @@ def emotionale_gravitation_auf_verlauf_anwenden(
                     min(1.0, eintrag["gewicht"] + injektions_gewicht), 2
                 )
                 eintrag["arousal"] = round(
-                    max(eintrag.get("arousal", 0.0), arousal * gravitation), 2
+                    min(1.0, max(eintrag.get("arousal", 0.0), arousal * gravitation)), 2
                 )
                 gefunden = True
                 break
@@ -523,7 +523,7 @@ def emotionale_gravitation_auf_verlauf_anwenden(
             modifiziert.append({
                 "emotion": emotion,
                 "gewicht": round(injektions_gewicht, 2),
-                "arousal": round(arousal * gravitation, 2),
+                "arousal": round(min(1.0, arousal * gravitation), 2),
             })
 
         logger.info(

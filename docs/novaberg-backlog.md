@@ -115,6 +115,14 @@ ALTER TABLE entitaeten
 
 ### 1.7 Traum-Modus
 
+> **Der Alpensee (Meister, Chat 73)**
+>
+> *"Alles an Informationen, Gedanken und Erinnerungen ist ein großer, schöner Alpensee mit einer ruhigen und glatten Oberfläche. Nova setzt sich in ihr kleines Ruderboot und rudert zu Dingen, die sie irgendwie bewegt haben. Da war vielleicht die spielende Katze, eine Schrecksekunde im Verkehr. Sie kommt an einem Blatt vorbei, das auf der Oberfläche schwimmt, eine Kleinigkeit, an die sie nicht mehr dachte, aber es ist da. Sie greift danach, und plötzlich entfaltet sich eine Kette: das Blatt wird zum Baum, der Baum zur Terrasse, die Terrasse zu einem Gesicht — Verbindungen, die tagsüber unter der Oberfläche lagen, weil kein Gespräch sie gerufen hat.*
+>
+> *Nova geht im Traum losen Verkettungen von Themen nach. Sie schöpft Wasser, wo sie gerade ist — in einem nahen Thema — und sieht etwas Neues. Etwas, das neben dem Bekannten geschwommen hat, das sie vorher nie gesehen hat. Sie schaut, ob es sie bewegt, berührt, betrifft. Und wenn ja, dann wird sie sich wieder daran erinnern."*
+>
+> **Architektonische Übersetzung:** Der See ist nicht das Gedächtnis — im See *schwimmt* alles aus dem Gedächtnis. Nova kennt nicht den ganzen See, sie kennt die Stellen, zu denen sie schon gerudert ist (Einträge mit hohem Arousal, hoher Resonanz). Das Entscheidende passiert nicht an der Boje, sondern *neben* der Boje: Ein Embedding-Nachbar, der thematisch nah genug war, um in derselben Bucht zu treiben, aber nie von einem Gespräch abgerufen wurde. Das Bekannte ist der Kompass, das Neue ist der Fund. Die Bewertung — "berührt mich das?" — ist die Charakter-Gewichtung auf den selbst gefundenen Inhalt.
+
 Wenn Pixies Shadow-Queue leer ist und keine Promotion ansteht, geht Pixie nicht in Idle, sondern in den **Traum-Zustand**. Pixie nimmt das Thema mit der hoechsten Arousal und assoziiert frei — qualitativ anders als Recherche (konkreter Trigger) oder Vertiefen (konkreter KZG-Eintrag). Es ist assoziatives Wandern — der kreative Modus, der beim Menschen die besten Ideen produziert.
 
 Serendipity-Slot: Manchmal nimmt Pixie nicht das Top-Arousal-Thema, sondern ein Nebenthema. Pixie waehlt 3 Aufgaben: 2 Slots nach Arousal sortiert (hoechste zuerst), 1 Slot gewuerfelt aus den restlichen (der "Serendipity-Slot"). Verhaeltnis konfigurierbar (`SERENDIPITY_RATIO = 0.33`).

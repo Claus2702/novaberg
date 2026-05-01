@@ -479,59 +479,59 @@ def gv_output_parsen(hypothese: str) -> dict:
     """Parst die strukturierten Zeilen aus dem LLM-Output.
 
     Erwartet gelabelte Zeilen:
-        SPRUNG 1/2/3, ABSICHT, STRATEGIE, VEHIKEL, VORSCHLAG
-    Bei fehlenden Labels → voller Text als Vorschlag (graceful degradation).
+        SPRUNG 1/2/3, ABSICHT, STRATEGIE, VEHIKEL, IMPULS
+    Bei fehlenden Labels → voller Text als Impuls (graceful degradation).
 
     Returns:
-        Dict mit sprung_1..3, absicht, strategie, vehikel, vorschlag.
+        Dict mit sprung_1..3, absicht, strategie, vehikel, impuls.
     """
     ergebnis: dict = {
         "sprung_1": "", "sprung_2": "", "sprung_3": "",
-        "absicht": "", "strategie": "", "vehikel": "", "vorschlag": "",
+        "absicht": "", "strategie": "", "vehikel": "", "impuls": "",
     }
 
-    vorschlag_zeilen: list[str] = []
-    im_vorschlag: bool = False
+    impuls_zeilen: list[str] = []
+    im_impuls: bool = False
 
     for zeile in hypothese.splitlines():
         stripped: str = zeile.strip()
         if not stripped:
-            if im_vorschlag:
-                vorschlag_zeilen.append("")
+            if im_impuls:
+                impuls_zeilen.append("")
             continue
 
         obere: str = stripped.upper()
 
         if obere.startswith("SPRUNG 1:"):
             ergebnis["sprung_1"] = stripped[9:].strip()
-            im_vorschlag = False
+            im_impuls = False
         elif obere.startswith("SPRUNG 2:"):
             ergebnis["sprung_2"] = stripped[9:].strip()
-            im_vorschlag = False
+            im_impuls = False
         elif obere.startswith("SPRUNG 3:"):
             ergebnis["sprung_3"] = stripped[9:].strip()
-            im_vorschlag = False
+            im_impuls = False
         elif obere.startswith("ABSICHT:"):
             raw: str = stripped[8:].strip().lower()
             ergebnis["absicht"] = raw.split()[0] if raw else ""
-            im_vorschlag = False
+            im_impuls = False
         elif obere.startswith("STRATEGIE:"):
             raw: str = stripped[10:].strip()
             ergebnis["strategie"] = raw.split()[0] if raw else ""
-            im_vorschlag = False
+            im_impuls = False
         elif obere.startswith("VEHIKEL:"):
             raw: str = stripped[8:].strip().lower()
             ergebnis["vehikel"] = raw.split()[0] if raw else ""
-            im_vorschlag = False
-        elif obere.startswith("VORSCHLAG:"):
-            vorschlag_zeilen.append(stripped[10:].strip())
-            im_vorschlag = True
-        elif im_vorschlag:
-            vorschlag_zeilen.append(stripped)
+            im_impuls = False
+        elif obere.startswith("IMPULS:"):
+            impuls_zeilen.append(stripped[7:].strip())
+            im_impuls = True
+        elif im_impuls:
+            impuls_zeilen.append(stripped)
         else:
-            vorschlag_zeilen.append(stripped)
+            impuls_zeilen.append(stripped)
 
-    ergebnis["vorschlag"] = "\n".join(vorschlag_zeilen).strip()
+    ergebnis["impuls"] = "\n".join(impuls_zeilen).strip()
 
     # Validierung
     if ergebnis["strategie"] and ergebnis["strategie"] not in STRATEGIE_NAMEN:
