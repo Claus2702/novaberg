@@ -57,10 +57,6 @@ BEISPIELE (alle → management_action = "agent"):
 - "Was bist du eigentlich fuer ein Typ?"
 """
 
-    def enrich(self, state: dict, postgres_url: str) -> str:
-        """Charakter-Anweisungen werden im Enricher direkt geladen, nicht hier."""
-        return ""
-
     def execute(
         self,
         writes:       list[dict],

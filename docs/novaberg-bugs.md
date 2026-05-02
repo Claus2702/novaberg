@@ -1,7 +1,7 @@
 # Novaberg — Bugs & Limitationen
 
-**Stand:** 02. Mai 2026, Chat 74
-**Quelle:** Testlauf "Karrierekrise" (200 Prompts) + Gedächtnis-Epic (Chat 11) + Epic 11 Agent-System (Chats 22–32) + Persona Smoke-Tests (Chats 31–32) + RechercheAgent-Test (Chat 35) + Doku-Audit (Chat 36) + PRIO0-Fix + Client-Observability (Chat 37) + Claude API-Test + STREAM1-Fix + Gesprächsvektor (Chat 39) + CharakterIdentitaetAgent + DirektivenAgent + Tribunal Score-System (Chat 40) + Telegram Bot + Zeitparser-Fixes (Chat 41) + CRUD-Härtung + Telegram-Chat-Analyse + DB-Report (Chat 42) + KONTEXT1-Fix + Resume-Bug + Epic 15 Pilot (Chat 43) + Epic 15 Rollout + DELEG-REG Fix + KZG-Klebrigkeit (Chat 44) + RESP-CHAR1 Fix (Chat 45) + CLASSIFY-REJECTED + Gemma4 Live-Tests (Chat 48) + Telegram-Konversation "frecher Charakter" (Chat 49) + RESUME-REJECT Fix + Live-Tests (Chat 50) + Neugier-Konzept + Projektinfrastruktur (Chat 51) + Doku-Alignment + emotions_profil (Chat 52) + Antrieb-Konzept + Dual-Emotion (Chat 53) + HALL2-Fix + Planner-Refactor (Chat 54) + PySide6 verworfen + GTK4-Entscheidung (Chat 55) + GTK4-Client + Panel-Infrastruktur (Chat 56) + Web-Tool-Doku + SEARX1-Diagnose (Chat 57) + Chat 61 (Perzeption-Symmetrie, Akkumulations-Refactor, Paper-Portfolio, Lumi, urllib3-Doppel-Turn beobachtet) + Paper I + urllib3-RETRY + ROUTE-CHAR-NOTIZ + RESP-DEAD + PIXIE-GHOST (Chat 65) + WS-SINGLE Fix + ClientConnection + User-Message-Broadcast (Chat 68) + Dreischicht-Integration + GV-Refactoring + MODUS-LEER + VEKTOR-LEER + AROUSAL-330 + ZIEL-LABEL-LEER Fixes (Chat 72)
+**Stand:** 02. Mai 2026, Chat 75
+**Quelle:** Testlauf "Karrierekrise" (200 Prompts) + Gedächtnis-Epic (Chat 11) + Epic 11 Agent-System (Chats 22–32) + Persona Smoke-Tests (Chats 31–32) + RechercheAgent-Test (Chat 35) + Doku-Audit (Chat 36) + PRIO0-Fix + Client-Observability (Chat 37) + Claude API-Test + STREAM1-Fix + Gesprächsvektor (Chat 39) + CharakterIdentitaetAgent + DirektivenAgent + Tribunal Score-System (Chat 40) + Telegram Bot + Zeitparser-Fixes (Chat 41) + CRUD-Härtung + Telegram-Chat-Analyse + DB-Report (Chat 42) + KONTEXT1-Fix + Resume-Bug + Epic 15 Pilot (Chat 43) + Epic 15 Rollout + DELEG-REG Fix + KZG-Klebrigkeit (Chat 44) + RESP-CHAR1 Fix (Chat 45) + CLASSIFY-REJECTED + Gemma4 Live-Tests (Chat 48) + Telegram-Konversation "frecher Charakter" (Chat 49) + RESUME-REJECT Fix + Live-Tests (Chat 50) + Neugier-Konzept + Projektinfrastruktur (Chat 51) + Doku-Alignment + emotions_profil (Chat 52) + Antrieb-Konzept + Dual-Emotion (Chat 53) + HALL2-Fix + Planner-Refactor (Chat 54) + PySide6 verworfen + GTK4-Entscheidung (Chat 55) + GTK4-Client + Panel-Infrastruktur (Chat 56) + Web-Tool-Doku + SEARX1-Diagnose (Chat 57) + Chat 61 (Perzeption-Symmetrie, Akkumulations-Refactor, Paper-Portfolio, Lumi, urllib3-Doppel-Turn beobachtet) + Paper I + urllib3-RETRY + ROUTE-CHAR-NOTIZ + RESP-DEAD + PIXIE-GHOST (Chat 65) + WS-SINGLE Fix + ClientConnection + User-Message-Broadcast (Chat 68) + Dreischicht-Integration + GV-Refactoring + MODUS-LEER + VEKTOR-LEER + AROUSAL-330 + ZIEL-LABEL-LEER Fixes (Chat 72) + Promotion-Pipeline-Audit (Chat 75) + Reducer-Umbau Smoke-Tests (Chat 75)
 
 ---
 
@@ -343,6 +343,76 @@ Das widerspricht dem tatsächlichen Beziehungsprofil in der DB (User-Perspektive
   profil in Primacy-Position ankämpfen.
 **Debug:** `SELECT user_id, character_id, beziehungsprofil FROM charakter_hash;`
   um alle Einträge zu sehen.
+
+---
+
+#### PROMO-CLUSTER-EI — Cluster-Promotion setzt EI-Felder auf Hardcoded-Defaults ⚠️
+**Entdeckt:** Chat 75, Promotion-Pipeline-Audit
+**Symptom:** Bei der Cluster-Promotion (mehrere KZG-Einträge → ein LZG-Eintrag) werden die EI-Metadaten-Felder (`intentionen`, `emotion`, `modus`, `arousal`, `emotions_vektor`, `sprach_stil`, `beziehungs_dynamik`, `tone`) nicht aus den Quell-Einträgen aggregiert, sondern hartcodiert auf Defaults gesetzt: `"neutral"`, `0.5`, `"[]"`, Leerstring. Bei der Einzel-Promotion werden die Felder korrekt durchgereicht — die Inkonsistenz zwischen den Pfaden ist nirgends dokumentiert.
+**Ursache:** `agents/promotion/agent.py:1207-1246` (Cluster-Pfad). Die Mehrheits-Aggregation gibt es nur für `beobachter` und `dimension`. Für die EI-Felder existiert kein Aggregations-Code.
+**Auswirkung:** Schwer. Jeder LZG-Eintrag aus Cluster-Promotion hat emotional plattes Profil. Untergräbt die Dual-Emotion-Architektur und verfälscht alle LZG-basierten Charakter-Profile (kern_hash, adaptive_hash, etc.), weil diese auf den EI-Feldern aufbauen.
+**Lösung:** Aggregation analog zur `beobachter`/`dimension`-Mehrheits-Logik einbauen — numerisch (Mittelwert für `arousal`) und kategorisch (häufigster Wert für `emotion`/`modus`/`sprach_stil`/`tone`/`beziehungs_dynamik`, Mengen-Vereinigung für `intentionen`).
+**Vorbedingung:** Doppelpipeline klären (siehe PROMO-DUAL-IMPL) — sonst Doppelfix.
+**Messung vor Fix empfohlen:** Wieviele LZG-Einträge tragen heute `emotion="neutral"` und `arousal=0.5`? SQL: `SELECT COUNT(*) FROM langzeitgedaechtnis WHERE emotion='neutral' AND arousal=0.5;`
+**Prio:** Hoch.
+
+---
+
+#### PROMO-DROP1 — KZG-Felder werden bei Promotion stillschweigend verworfen ⚠️
+**Entdeckt:** Chat 75, Promotion-Pipeline-Audit
+**Symptom:** Drei KZG-Hash-Felder kommen niemals im LZG an:
+- `themen` (Salienz Dim 1) — fließt nur als Embedding-Input ein, kein abfragbares Feld in der DB.
+- `gedaechtnistyp` (Salienz Dim 4: episodisch/semantisch/prozedural) — wird im Promotion-Code nicht einmal gelesen.
+- `erstellt_am` (KZG-Original-Zeitstempel) — `langzeitgedaechtnis.erstellt_am` ist DB-Default (Promotion-Zeitpunkt), nicht der ursprüngliche Wahrnehmungszeitpunkt.
+
+**Ursache:** Das LZG-Schema (`db/init.sql:16-37`) hat keine entsprechenden Spalten. Die Promotion-Pipeline wurde 1:1 aus der Legacy-Variante übernommen, ohne Re-Evaluation. Keine Code-Kommentare, keine Doku-Hinweise — wirkt unbemerkt.
+**Auswirkung:** Mittel. Themen-basierte LZG-Verknüpfung ist nicht möglich, episodisch/semantisch/prozedural-Klassifikation für später nicht nutzbar, "Wann hat der User zuerst von X erzählt?" nicht beantwortbar (chronologisch unscharf um die Promotion-Verzögerung). Blockiert Akten-Architektur (Backlog) und Knowledge-Graph-Integration mit LZG.
+**Lösung:** LZG-Schema um drei Spalten erweitern: `themen TEXT[]` (oder JSON), `gedaechtnistyp VARCHAR(20)`, `kzg_erstellt_am TIMESTAMPTZ`. Promotion-Code in `agents/promotion/agent.py` (beide Pfade — Einzel und Cluster) entsprechend anpassen. Migration für Altbestand: alte Einträge bekommen `NULL` in den neuen Feldern.
+**Vorbedingung:** Doppelpipeline klären (siehe PROMO-DUAL-IMPL).
+**Prio:** Mittel.
+
+---
+
+#### PROMO-DUAL-IMPL — Zwei parallele Promotion-Implementierungen mit identischem Verhalten ⬜
+**Entdeckt:** Chat 75, Promotion-Pipeline-Audit
+**Symptom:** Promotion existiert in zwei Codepfaden:
+- Aktiv: `agents/promotion/agent.py` (`PromotionAgent._eintrag_verarbeiten`, `_lzg_eintrag_schreiben`)
+- Legacy: `services/shadow_agent/tasks/lzg_promotion.py` (`LzgPromotionTask.execute`)
+
+Header der aktiven Datei sagt explizit „Migriert aus: services/shadow_agent/tasks/lzg_promotion.py". Beide haben identisches Feld-Mapping und identische `themen`/EI-Behandlung.
+**Ursache:** Migration unvollständig — Legacy nicht entfernt nach Migration.
+**Auswirkung:** Tech-Debt. Bug-Fixes müssen heute an beiden Stellen erfolgen, sonst Drift. Erhöht Fehlerquote bei künftigen Anpassungen (z.B. PROMO-DROP1, PROMO-CLUSTER-EI).
+**Lösung:** Verifizieren ob die Legacy-Variante noch von irgendeinem Pfad aufgerufen wird (`grep -rn "LzgPromotionTask\|lzg_promotion" novaberg/server/`). Falls nicht: Datei entfernen. Falls doch: aktiven Code zur einzigen Quelle machen, Aufrufer migrieren.
+**Vorbedingung:** Sollte VOR PROMO-DROP1 und PROMO-CLUSTER-EI gefixt werden, sonst doppelter Aufwand.
+**Prio:** Mittel.
+
+#### THINK-MEM-LOOP — Thinker zykelt im memory_search-Tool ohne Konvergenz ⚠️
+**Entdeckt:** Chat 75, Reducer-Umbau Smoke-Test (Faktencheck-Turn)
+**Symptom:** Der Thinker ruft das `memory_search`-Tool 5× hintereinander mit derselben Query auf (`memory_search(Anna Geburtstag)`), bekommt 5× das identische Ergebnis (5 Treffer, 605 Zeichen Output) und verbraucht damit das gesamte 5-Iterationen-Limit (Thinker-Doku §3). Latenz dadurch ~25 Sekunden pro Turn. Nach Limit-Erreichung bleibt die Antwort unverändert — kein Faktencheck-Korrektur-Pfad.
+**Ursache:** Möglicherweise zwei Faktoren:
+1. **Format-Lärm:** Tool-Output enthält die volle LZG-Klammer `(Gewicht: X.XX, Arousal: Y%, Beobachter: Z, Vektor: V)` — Designentscheidung aus STRUCT-5c (Option A: einheitlicher Format-Vertrag mit Responder-`memory_context`). Für ein LLM, das im ReAct-Loop entscheiden muss „enthält dieses Result die Antwort?", könnte die Metadaten-Klammer Ablenkung sein.
+2. **Fehlendes Abbruchkriterium:** Der Thinker-Prompt gibt dem LLM keinen klaren Hinweis, dass identische Wiederholung der Query keine neuen Ergebnisse bringt.
+**Wichtig:** Dies ist KEIN Reducer-Umbau-Bug. Pre-Umbau wäre derselbe Loop entstanden — er war nur unsichtbar, weil der alte `lzg_context_retrieve`-Aufruf einen Argument-Mismatch hatte und zur Laufzeit beim ersten Tool-Call gecrasht wäre. STRUCT-5c hat den latenten Bug en passant gefixt — und damit den Loop-Bug sichtbar gemacht.
+**Auswirkung:** Schwer. User-sichtbar als Latenz; Faktencheck-Korrekturen fallen aus, weil das Limit ohne Konvergenz erreicht wird.
+**Lösungsansätze:**
+- Tool-spezifischer kompakterer Output (siehe THINKER-TOOL-FORMAT im Backlog).
+- Abbruch-Heuristik: identische Query mit identischem Result-Hash → Tool gibt einen Hinweis-String zurück („Bereits gesucht, keine weiteren Treffer").
+- Thinker-System-Prompt schärfen: explizite Anweisung, Query bei identischem Ergebnis nicht zu wiederholen.
+**Prio:** Hoch.
+
+#### PIXIE-AGENT-MISSING — Periodische Pixie-Dispatches auf nicht-registrierte Agenten ⬜
+**Entdeckt:** Chat 75, Reducer-Umbau Smoke-Tests
+**Symptom:** Pixie-Dispatcher loggt periodisch ERROR für zwei nicht-registrierte Agenten:
+- `Pixie-Dispatch: Agent 'nachfragen' nicht in Registry` (beobachtet 13:37:22)
+- `Pixie-Dispatch: Agent 'vertiefung' nicht in Registry` (beobachtet 13:41:22, 13:56:31)
+
+**Ursache:** Unklar. Mögliche Kandidaten:
+- Halb-implementierte Features mit Pixie-Task-Eintrag, aber ohne Agent-Implementierung
+- Agenten wurden umbenannt/entfernt, ohne den Pixie-Task-Scheduler zu bereinigen
+- Alte Queue-Einträge in Redis, die einen nicht mehr existenten Agent referenzieren
+**Auswirkung:** Mittel. Funktional kein Schaden (try/except fängt vermutlich), aber Log-Lärm bei jeder Pixie-Iteration und potenziell verlorene Tasks, die eigentlich verarbeitet werden sollten.
+**Lösungsansatz:** `grep -rn "nachfragen\|vertiefung" novaberg/server/agents/ novaberg/server/pixie/` um Quelle zu finden. Entweder Agenten implementieren/registrieren oder Queue/Scheduler bereinigen.
+**Prio:** Mittel.
 
 ---
 

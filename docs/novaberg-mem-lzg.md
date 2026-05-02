@@ -81,7 +81,7 @@ effektives_gewicht = gewicht × e^(-decay_rate × tage_seit_verstärkung)
 
 ---
 
-## 4. Kontext-Abruf (`lzg_context_retrieve`)
+## 4. Kontext-Abruf (`lzg_entries_retrieve`)
 
 Der Enricher ruft die relevantesten LZG-Einträge per pgvector-Similarity-Suche ab:
 
@@ -91,7 +91,9 @@ Der Enricher ruft die relevantesten LZG-Einträge per pgvector-Similarity-Suche 
 4. Top-K (Default: 10)
 5. Similarity-Filter: Nur Einträge mit Similarity ≥ 0.5
 
-**Format pro Eintrag im Kontext:**
+**Hinweis (Chat 75):** Seit dem Reducer-Umbau (`novaberg-reducer-umbau_k.md`) liefert die Funktion eine Liste strukturierter `ContextEntry`-Dicts. Der unten gezeigte Format-String wird vom Formatter (`graph/format/memory_context.py`, `format_memory_entries()`) gebaut, nicht mehr von der Retrieve-Funktion selbst.
+
+**Format pro Eintrag im Kontext (Formatter-Output):**
 
 ```
 [LZG/interessen] (Gewicht: 2.15, Arousal: 70%, Vektor: aufbluehen): User ist begeistert von Astronomie und schwarzen Löchern
@@ -146,7 +148,7 @@ LZG (PostgreSQL)                 Pixie: lzg_decay
     │                                │
     ▼                                ▼
 Enricher                         Charakter-Hash
-    │ lzg_context_retrieve()         │ Destillation aus aktiven Einträgen
+    │ lzg_entries_retrieve()         │ Destillation aus aktiven Einträgen
     │ Effektives Gewicht live        │ Gewichtet nach effektivem Gewicht
     ▼                                ▼
 Responder                        Responder (als Persönlichkeit)

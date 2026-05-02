@@ -20,6 +20,7 @@ from typing import TYPE_CHECKING
 import psycopg2
 import redis
 
+from graph.context_entry import ContextEntry
 from plugins.base import BaseManager
 from memory.repositories.notizen_repository import NotizenRepository
 from memory.repositories.entitaeten_repository import EntitaetenRepository
@@ -113,59 +114,117 @@ Falls keine Notiz erkennbar: "snippet": null
     # ─────────────────────────────────────────
     # Enricher-Hook
     # ─────────────────────────────────────────
-    def enrich(self, state: dict, postgres_url: str) -> str:
-        """
-        Lädt Notizen-Kontext.
-        Bei Management-Intent: gezielt die betroffene Notiz.
-        Sonst: alle aktiven Notizen (nur Stichwort + Zusammenfassung).
+    def enrich_entries(self, state: dict, postgres_url: str) -> list[ContextEntry]:
+        """Liefert Notizen-Kontext als strukturierte ContextEntry-Liste.
+
+        Zwei Zweige:
+          - Gezielt (intent == "notizen_management" und management_target gesetzt):
+              Eine Notiz wird per Stichwort, Volltext oder direktem SQL-Fallback
+              gesucht und als ein Entry mit subtyp="management" geliefert.
+          - Proaktiv (sonst):
+              Alle aktiven Notizen des Nutzers werden geladen; pro Notiz
+              ein Entry mit subtyp="proaktiv".
+
+        Mapping pro Entry:
+          quelle  = "plugin_notiz"
+          subtyp  = "management" | "proaktiv"
+          inhalt  = (gezielt) Volltext der Notiz; (proaktiv) "{name}" + optional
+                    ": {zusammenfassung}" + optional " (Themen: {themen_str})"
+          gewicht = 1.0
+          meta    = {
+              "praefix": "Notiz/{name} ({typ})" | "Notiz",
+              "name":             Notiz-Name,
+              "typ":              Notiz-Typ (gezielt) — fehlt im proaktiven Pfad,
+              "zusammenfassung":  Kurzfassung (proaktiv),
+              "themen":           Themen-String (proaktiv, nur wenn nicht leer),
+          }
         """
         user_id: str = state.get("user_id", "")
         if not user_id:
-            return ""
+            return []
 
-        intent: str = state.get("intent", "")
-        target: str = state.get("management_target", "")
+        intent:            str               = state.get("intent", "")
+        management_target: str               = state.get("management_target", "")
+        entries:           list[ContextEntry] = []
+
+        logger.info(
+            f"NotizenManager.enrich_entries: intent={intent}, target={management_target}"
+        )
 
         # Gezielt eine Notiz laden (für Management-Intents)
-        if intent == "notizen_management" and target:
+        if intent == "notizen_management" and management_target:
+            row: dict | None = None
+            quelle_branch:   str = ""
+
             try:
                 treffer: list[dict] = NotizenRepository.find_by_stichwort(
-                    postgres_url, user_id, target
+                    postgres_url, user_id, management_target
                 )
                 if treffer:
                     row = treffer[0]
-                    return f"[Notiz/{row['name']} ({row['typ']})]\n{row['text']}"
-
-                # Fallback: Volltextsuche
-                treffer = NotizenRepository.find_by_volltext(
-                    postgres_url, user_id, target
-                )
-                if treffer:
-                    row = treffer[0]
-                    return f"[Notiz/{row['name']} ({row['typ']})]\n{row['text']}"
+                    quelle_branch = "stichwort"
+                else:
+                    # Fallback: Volltextsuche
+                    treffer = NotizenRepository.find_by_volltext(
+                        postgres_url, user_id, management_target
+                    )
+                    if treffer:
+                        row = treffer[0]
+                        quelle_branch = "volltext"
 
             except Exception as fehler:
                 logger.warning(f"Notizen-Enricher (gezielt) fehlgeschlagen: {fehler}")
 
             # Alter Fallback: direkte DB-Abfrage
-            try:
-                conn = psycopg2.connect(postgres_url)
-                cursor = conn.cursor()
-                cursor.execute("""
-                    SELECT name, typ, text FROM notizen
-                    WHERE user_id = %s AND LOWER(name) ILIKE LOWER(%s)
-                      AND status = 'aktiv'
-                    ORDER BY updated_at DESC
-                    LIMIT 1
-                """, (user_id, f"%{target}%"))
-                row = cursor.fetchone()
-                conn.close()
-                if row:
-                    return f"[Notiz/{row[0]} ({row[1]})]\n{row[2]}"
-            except Exception as fehler:
-                logger.error(f"Notizen-Enricher Fallback fehlgeschlagen: {fehler}")
+            if row is None:
+                try:
+                    conn = psycopg2.connect(postgres_url)
+                    cursor = conn.cursor()
+                    cursor.execute("""
+                        SELECT name, typ, text FROM notizen
+                        WHERE user_id = %s AND LOWER(name) ILIKE LOWER(%s)
+                          AND status = 'aktiv'
+                        ORDER BY updated_at DESC
+                        LIMIT 1
+                    """, (user_id, f"%{management_target}%"))
+                    raw = cursor.fetchone()
+                    conn.close()
+                    if raw:
+                        row = {"name": raw[0], "typ": raw[1], "text": raw[2]}
+                        quelle_branch = "sql_fallback"
+                except Exception as fehler:
+                    logger.error(f"Notizen-Enricher Fallback fehlgeschlagen: {fehler}")
 
-            return ""
+            if row:
+                name:   str = row["name"]
+                typ:    str = row["typ"]
+                inhalt: str = row["text"]
+                entry: ContextEntry = {
+                    "quelle":  "plugin_notiz",
+                    "subtyp":  "management",
+                    "inhalt":  inhalt,
+                    "gewicht": 1.0,
+                    "meta": {
+                        "praefix": f"Notiz/{name} ({typ})",
+                        "name":    name,
+                        "typ":     typ,
+                    },
+                }
+                entries.append(entry)
+                logger.info(
+                    f"NotizenManager.enrich_entries: gezielt ({quelle_branch}) — 1 Treffer"
+                )
+                logger.debug(
+                    f"Notiz-Entry: subtyp=management, name={name}, "
+                    f"inhalt-snippet={inhalt[:60]}"
+                )
+            else:
+                logger.info("NotizenManager.enrich_entries: gezielt — kein Treffer")
+
+            logger.info(
+                f"NotizenManager.enrich_entries: {len(entries)} Eintraege geliefert"
+            )
+            return entries
 
         # Proaktiv: alle aktiven Notizen (nur Stichwort + Zusammenfassung)
         try:
@@ -173,28 +232,50 @@ Falls keine Notiz erkennbar: "snippet": null
                 postgres_url, user_id
             )
 
-            if not notizen:
-                return ""
+            logger.info(
+                f"NotizenManager.enrich_entries: proaktiv — {len(notizen)} Notiz(en)"
+            )
 
-            kontext: list[str] = []
             for n in notizen:
-                zusammenfassung: str = n.get("zusammenfassung") or ""
-                themen: list[str] = n.get("themen") or []
-                themen_str: str = ", ".join(themen) if themen else ""
+                name:            str       = n["name"]
+                zusammenfassung: str       = n.get("zusammenfassung") or ""
+                themen:          list[str] = n.get("themen") or []
+                themen_str:      str       = ", ".join(themen) if themen else ""
 
-                eintrag: str = f"[Notiz] {n['name']}"
+                inhalt: str = name
                 if zusammenfassung:
-                    eintrag += f": {zusammenfassung}"
+                    inhalt += f": {zusammenfassung}"
                 if themen_str:
-                    eintrag += f" (Themen: {themen_str})"
+                    inhalt += f" (Themen: {themen_str})"
 
-                kontext.append(eintrag)
+                meta: dict = {
+                    "praefix":         "Notiz",
+                    "name":            name,
+                    "zusammenfassung": zusammenfassung,
+                }
+                if themen_str:
+                    meta["themen"] = themen_str
 
-            return "\n".join(kontext) if kontext else ""
+                entry: ContextEntry = {
+                    "quelle":  "plugin_notiz",
+                    "subtyp":  "proaktiv",
+                    "inhalt":  inhalt,
+                    "gewicht": 1.0,
+                    "meta":    meta,
+                }
+                entries.append(entry)
+                logger.debug(
+                    f"Notiz-Entry: subtyp=proaktiv, name={name}, "
+                    f"inhalt-snippet={inhalt[:60]}"
+                )
 
         except Exception as fehler:
             logger.warning(f"Notizen-Enricher (proaktiv) fehlgeschlagen: {fehler}")
-            return ""
+
+        logger.info(
+            f"NotizenManager.enrich_entries: {len(entries)} Eintraege geliefert"
+        )
+        return entries
 
     # ─────────────────────────────────────────
     # Planner-Hook

@@ -9,7 +9,8 @@ from datetime import datetime, timezone
 
 import psycopg2
 
-from config import EBBINGHAUS_DECAY_RATE
+from config              import EBBINGHAUS_DECAY_RATE
+from graph.context_entry import ContextEntry
 
 logger = logging.getLogger("ki_server.memory.lzg")
 
@@ -41,16 +42,66 @@ def effektives_gewicht_berechnen(
     return round(gewicht * decay, 4)
 
 
-def lzg_context_retrieve(
+def lzg_entries_retrieve(
     postgres_url: str,
     user_id:      str,
     character_id: str,
     embedding:    list[float],
     top_k:        int = 10
-) -> str:
-    """Holt die relevantesten LZG-Einträge eines Paares (user_id, character_id)."""
+) -> list[ContextEntry]:
+    """Holt die relevantesten LZG-Eintraege eines Paares als ContextEntry-Liste.
+
+    Liefert strukturierte Daten ohne Format-Drumherum. Der Reducer
+    dedupliziert auf dieser Ebene; der Formatter baut daraus den
+    finalen memory_context-String fuer den Responder.
+
+    Datenbeschaffung: pgvector-KNN-Suche auf der Tabelle
+    `langzeitgedaechtnis`, paar-skopiert auf user_id/character_id,
+    nur aktive Eintraege mit Embedding, Similarity-Schwelle 0.5,
+    top_k Treffer. Filter, Schwellwerte und Index bleiben identisch
+    zur Vorgaengerfunktion.
+
+    Effektives Gewicht: Wird live ueber `effektives_gewicht_berechnen()`
+    aus dem gespeicherten `gewicht` und `verstaerkt_am` (Ebbinghaus-Decay)
+    bestimmt. Top-Level-Feld `gewicht` traegt das effektive Gewicht;
+    das Basis-Gewicht der DB-Zeile bleibt zusaetzlich als
+    `meta.gewicht_basis` erhalten.
+
+    Mapping pro DB-Zeile auf ContextEntry:
+      quelle  = "lzg" (Konstante)
+      subtyp  = Spalte `dimension` (kognition / emotion / werte /
+                interessen / kommunikation / kontext)
+      inhalt  = Spalte `inhalt`
+      gewicht = effektives Gewicht (live, mit Decay)
+      meta    = {
+          "arousal":       Spalte `arousal` (float),
+          "vektor":        Spalte `emotions_vektor` (str),
+          "beobachter":    Spalte `beobachter` (str),
+          "dimension":     Spalte `dimension` (str — duplikativ zu
+                           subtyp, laut Format-Vertrag explizit erwartet),
+          "erstellt_am":   Spalte `erstellt_am` als Unix-Timestamp,
+          "verstaerkt_am": Spalte `verstaerkt_am` als Unix-Timestamp,
+          "haeufigkeit":   Spalte `haeufigkeit` (int),
+          "gewicht_basis": Spalte `gewicht` (float, gespeichertes
+                           Basis-Gewicht ohne Decay),
+      }
+
+    Args:
+        postgres_url: Connection-String fuer die LZG-Datenbank.
+        user_id:      Subjekt der Paar-Partition.
+        character_id: Gegenueber der Paar-Partition.
+        embedding:    Query-Vektor (768-dim) des aktuellen Prompts.
+        top_k:        Maximale Treffer-Anzahl vor Similarity-Filter.
+
+    Returns:
+        Liste von ContextEntry-Dicts. Leer bei keinen Treffern oder Fehler.
+    """
+
+    logger.info(f"LZG-Entries-Retrieve: Paar={user_id}:{character_id}, Limit={top_k}")
 
     embedding_str: str = "[" + ",".join(str(x) for x in embedding) + "]"
+
+    entries: list[ContextEntry] = []
 
     try:
         conn   = psycopg2.connect(postgres_url)
@@ -58,7 +109,7 @@ def lzg_context_retrieve(
 
         cursor.execute("""
             SELECT inhalt, dimension, gewicht, arousal, emotions_vektor,
-                   verstaerkt_am, beobachter,
+                   verstaerkt_am, beobachter, erstellt_am, haeufigkeit,
                    1 - (embedding <=> %s::vector) AS similarity
             FROM langzeitgedaechtnis
             WHERE user_id = %s
@@ -73,23 +124,48 @@ def lzg_context_retrieve(
         conn.close()
 
         if not rows:
-            return ""
+            logger.info("LZG-Entries-Retrieve: 0 Eintraege geliefert (Similarity-Filter angewendet)")
+            return entries
 
-        logger.info(f"LZG: Paar={user_id}:{character_id}, Treffer={len(rows)}")
+        for (inhalt, dimension, gewicht_basis, arousal, emotions_vektor,
+             verstaerkt_am, beobachter, erstellt_am, haeufigkeit, similarity) in rows:
+            if similarity < 0.5:
+                continue
 
-        context_parts: list[str] = []
-        for inhalt, dimension, gewicht, arousal, emotions_vektor, verstaerkt_am, beobachter, similarity in rows:
-            if similarity >= 0.5:
-                eff_gewicht: float = effektives_gewicht_berechnen(gewicht, verstaerkt_am)
-                meta: str = f"Gewicht: {eff_gewicht:.2f}, Arousal: {arousal:.0%}, Beobachter: {beobachter}"
-                if emotions_vektor:
-                    meta += f", Vektor: {emotions_vektor}"
-                context_parts.append(
-                    f"[LZG/{dimension}] ({meta}): {inhalt}"
-                )
+            eff_gewicht: float = effektives_gewicht_berechnen(gewicht_basis, verstaerkt_am)
 
-        return "\n".join(context_parts)
+            erstellt_ts:   float = erstellt_am.timestamp()   if erstellt_am   else 0.0
+            verstaerkt_ts: float = verstaerkt_am.timestamp() if verstaerkt_am else 0.0
+
+            entry: ContextEntry = {
+                "quelle":  "lzg",
+                "subtyp":  dimension or "",
+                "inhalt":  inhalt or "",
+                "gewicht": eff_gewicht,
+                "meta": {
+                    "arousal":       float(arousal) if arousal is not None else 0.0,
+                    "vektor":        emotions_vektor or "",
+                    "beobachter":    beobachter or "",
+                    "dimension":     dimension or "",
+                    "erstellt_am":   erstellt_ts,
+                    "verstaerkt_am": verstaerkt_ts,
+                    "haeufigkeit":   int(haeufigkeit) if haeufigkeit is not None else 0,
+                    "gewicht_basis": float(gewicht_basis) if gewicht_basis is not None else 0.0,
+                },
+            }
+            entries.append(entry)
+
+            logger.debug(
+                f"LZG-Entry: dimension={entry['subtyp']}, "
+                f"eff_gewicht={eff_gewicht:.2f}, inhalt-snippet={(inhalt or '')[:60]}"
+            )
+
+        logger.info(
+            f"LZG-Entries-Retrieve: {len(entries)} Eintraege geliefert "
+            f"(Similarity-Filter angewendet)"
+        )
+        return entries
 
     except Exception as fehler:
-        logger.error(f"LZG-Kontextabruf fehlgeschlagen: {fehler}")
-        return ""
+        logger.error(f"LZG-Entries-Retrieve fehlgeschlagen: {fehler}")
+        return []

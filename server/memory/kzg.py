@@ -30,6 +30,7 @@ from config                                import (
     KZG_TTL_MID_SEKUNDEN,
     KZG_TTL_HIGH_SEKUNDEN,
 )
+from graph.context_entry                   import ContextEntry
 from services.shadow_agent                 import shadow_queue_push
 
 from redis.commands.search.field           import TextField, NumericField, VectorField, TagField
@@ -394,14 +395,53 @@ def kzg_store(
 # ─────────────────────────────────────────────
 # Kontext abrufen für Enricher
 # ─────────────────────────────────────────────
-def kzg_context_retrieve(
+def kzg_entries_retrieve(
     redis_client: redis.Redis,
     user_id:      str,
     character_id: str,
     embedding:    list[float],
     top_k:        int = 10
-) -> str:
-    """Holt die relevantesten KZG-Einträge eines Paares als Kontext-String."""
+) -> list[ContextEntry]:
+    """Holt die relevantesten KZG-Eintraege eines Paares als ContextEntry-Liste.
+
+    Liefert strukturierte Daten ohne Format-Drumherum. Der Reducer
+    dedupliziert auf dieser Ebene; der Formatter baut daraus den
+    finalen memory_context-String fuer den Responder.
+
+    Datenbeschaffung: KNN-Suche im RediSearch-Index (paar-skopiert auf
+    user_id/character_id), Similarity-Schwelle 0.5, top_k Treffer.
+    Filter, Schwellwerte und Index bleiben identisch zur Vorgaengerfunktion.
+
+    Mapping pro KZG-Hash-Treffer auf ContextEntry:
+      quelle  = "kzg" (Konstante)
+      subtyp  = Hash-Feld `dimension` (Salienz-Dim 5: interessen,
+                beziehungen, ...). Leer-String wenn nicht gesetzt.
+      inhalt  = Hash-Feld `inhalt` (destillierter Kern)
+      gewicht = Hash-Feld `salienz` als float
+      meta    = {
+          "themen":         Hash-Feld `themen` (String wie gespeichert),
+          "beobachter":     Hash-Feld `beobachter`,
+          "erstellt_am":    Hash-Feld `erstellt_am` (Unix-Timestamp, float),
+          "arousal":        Hash-Feld `arousal` (float, fuer spaetere
+                            Format-Erweiterungen),
+          "emotion":        Hash-Feld `emotion`,
+          "modus":          Hash-Feld `modus`,
+          "gedaechtnistyp": Hash-Feld `gedaechtnistyp`,
+          "emotions_vektor": Hash-Feld `emotions_vektor`,
+      }
+
+    Args:
+        redis_client: Redis-Verbindung mit RediSearch-Modul.
+        user_id:      Subjekt der Paar-Partition.
+        character_id: Gegenueber der Paar-Partition.
+        embedding:    Query-Vektor (768-dim) des aktuellen Prompts.
+        top_k:        Maximale Treffer-Anzahl vor Similarity-Filter.
+
+    Returns:
+        Liste von ContextEntry-Dicts. Leer bei keinen Treffern oder Fehler.
+    """
+
+    logger.info(f"KZG-Entries-Retrieve: Paar={user_id}:{character_id}, Limit={top_k}")
 
     embedding_bytes: bytes = np.array(embedding, dtype=np.float32).tobytes()
 
@@ -411,9 +451,16 @@ def kzg_context_retrieve(
             f"=>[KNN {top_k} @embedding $vec AS score]"
         )
         .sort_by("score")
-        .return_fields("themen", "inhalt", "salienz", "score")
+        .return_fields(
+            "themen", "inhalt", "salienz", "score",
+            "dimension", "beobachter", "erstellt_am",
+            "arousal", "emotion", "modus", "gedaechtnistyp",
+            "emotions_vektor",
+        )
         .dialect(2)
     )
+
+    entries: list[ContextEntry] = []
 
     try:
         results = redis_client.ft(KZG_INDEX_NAME).search(
@@ -422,18 +469,55 @@ def kzg_context_retrieve(
         )
 
         if results.total == 0:
-            return ""
+            logger.info("KZG-Entries-Retrieve: 0 Eintraege geliefert")
+            return entries
 
-        context_parts: list[str] = []
         for doc in results.docs:
             similarity: float = 1.0 - (float(doc.score) / 2.0)
-            if similarity >= 0.5:
-                context_parts.append(
-                    f"[KZG] {doc.themen} (Salienz: {doc.salienz}): {doc.inhalt}"
-                )
+            if similarity < 0.5:
+                continue
 
-        return "\n".join(context_parts)
+            subtyp:  str   = getattr(doc, "dimension", "") or ""
+            inhalt:  str   = getattr(doc, "inhalt", "") or ""
+            gewicht: float = float(getattr(doc, "salienz", 0.0) or 0.0)
+
+            erstellt_am_raw = getattr(doc, "erstellt_am", "") or ""
+            try:
+                erstellt_am: float = float(erstellt_am_raw) if erstellt_am_raw else 0.0
+            except (TypeError, ValueError):
+                erstellt_am = 0.0
+
+            try:
+                arousal: float = float(getattr(doc, "arousal", 0.0) or 0.0)
+            except (TypeError, ValueError):
+                arousal = 0.0
+
+            entry: ContextEntry = {
+                "quelle":  "kzg",
+                "subtyp":  subtyp,
+                "inhalt":  inhalt,
+                "gewicht": gewicht,
+                "meta": {
+                    "themen":          getattr(doc, "themen", "") or "",
+                    "beobachter":      getattr(doc, "beobachter", "") or "",
+                    "erstellt_am":     erstellt_am,
+                    "arousal":         arousal,
+                    "emotion":         getattr(doc, "emotion", "") or "",
+                    "modus":           getattr(doc, "modus", "") or "",
+                    "gedaechtnistyp":  getattr(doc, "gedaechtnistyp", "") or "",
+                    "emotions_vektor": getattr(doc, "emotions_vektor", "") or "",
+                },
+            }
+            entries.append(entry)
+
+            logger.debug(
+                f"KZG-Entry: subtyp={subtyp}, gewicht={gewicht:.2f}, "
+                f"inhalt-snippet={inhalt[:60]}"
+            )
+
+        logger.info(f"KZG-Entries-Retrieve: {len(entries)} Eintraege geliefert")
+        return entries
 
     except Exception as fehler:
-        logger.error(f"KZG-Kontextabruf fehlgeschlagen: {fehler}")
-        return ""
+        logger.error(f"KZG-Entries-Retrieve fehlgeschlagen: {fehler}")
+        return []

@@ -21,6 +21,7 @@ from utils.zeitparser import zeit_parsen, zeit_parsen_vektor, ZeitVektor
 
 import redis
 
+from graph.context_entry import ContextEntry
 from plugins.base import BaseManager
 from memory.repositories.timeline_repository import TimelineRepository
 from memory.repositories.entitaeten_repository import EntitaetenRepository
@@ -92,18 +93,38 @@ und der aktuelle Prompt sich darauf bezieht.
     # ─────────────────────────────────────────
     # Enricher-Hook
     # ─────────────────────────────────────────
-    def enrich(self, state: dict, postgres_url: str) -> str:
-        """
-        Lädt Timeline-Kontext:
-        - Gezielt per Router-Query (range oder search)
-        - Proaktiv: anstehende Termine (heute -3 bis +14 Tage) via Repository
-        - Fallback: nächste 7 Tage via alte Funktion
+    def enrich_entries(self, state: dict, postgres_url: str) -> list[ContextEntry]:
+        """Liefert Timeline-Kontext als strukturierte ContextEntry-Liste.
+
+        Drei Zweige:
+          - range: Router-Query mit Datum-Bereich (timeline_query.type == "range")
+          - search: Router-Query per Keyword (timeline_query.type == "search")
+          - proaktiv: Zeitfenster heute -3 bis +14 Tage
+
+        Mapping pro Termin (ein Entry pro Termin):
+          quelle  = "plugin_timeline"
+          subtyp  = (range/search) Spalte event_type
+                    (proaktiv)     "anstehend" / "vergangen"
+          inhalt  = "{datum}: {titel}{detail_str}" — datum mit Uhrzeit, falls
+                    precision != "day"; detail_str = " — {details}" oder ""
+          gewicht = 1.0
+          meta    = {
+              "praefix":    "Timeline/{subtyp}",
+              "datum":      Formatiertes Datum/Uhrzeit,
+              "titel":      Termin-Titel,
+              "details":    detail_str (mit fuehrendem " — " oder ""),
+              "termin_id":  Datenbank-ID (wenn vorhanden),
+          }
         """
         user_id: str = state.get("user_id", "")
         if not user_id:
-            return ""
+            return []
 
-        tl_query: dict = state.get("timeline_query", {})
+        intent:   str               = state.get("intent", "")
+        tl_query: dict              = state.get("timeline_query", {})
+        entries:  list[ContextEntry] = []
+
+        logger.info(f"TimelineManager.enrich_entries: intent={intent}")
 
         # Gezielter Query vom Router
         if state.get("needs_timeline") and tl_query:
@@ -119,10 +140,16 @@ und der aktuelle Prompt sich darauf bezieht.
                     rows = TimelineRepository.find_by_date_range(
                         postgres_url, user_id, von_dt, bis_dt
                     )
-                    return self._format_termine(rows)
+                    logger.info(
+                        f"TimelineManager.enrich_entries: branch=range, treffer={len(rows)}"
+                    )
+                    for r in rows:
+                        entries.append(self._termin_zu_entry(r, subtyp_quelle="event_type"))
                 except Exception as fehler:
                     logger.warning(f"TimelineManager enrich range: {fehler}")
-                    return ""
+
+                self._log_entries(entries)
+                return entries
 
             elif query_type == "search":
                 rows = TimelineRepository.find_by_keyword(
@@ -131,7 +158,14 @@ und der aktuelle Prompt sich darauf bezieht.
                     tl_query.get("direction", "forward"),
                     tl_query.get("limit", 5),
                 )
-                return self._format_termine(rows)
+                logger.info(
+                    f"TimelineManager.enrich_entries: branch=search, treffer={len(rows)}"
+                )
+                for r in rows:
+                    entries.append(self._termin_zu_entry(r, subtyp_quelle="event_type"))
+
+                self._log_entries(entries)
+                return entries
 
         # Neuer Pfad: Repository mit erweitertem Zeitfenster
         try:
@@ -143,41 +177,69 @@ und der aktuelle Prompt sich darauf bezieht.
                 postgres_url, user_id, von, bis
             )
 
-            if termine:
-                kontext: list[str] = []
-                for t in termine:
-                    zeitpunkt: str = t["event_time"].strftime("%d.%m.%Y")
-                    if t.get("precision") != "day":
-                        zeitpunkt += f" {t['event_time'].strftime('%H:%M')}"
+            logger.info(
+                f"TimelineManager.enrich_entries: branch=proaktiv, treffer={len(termine)}"
+            )
 
-                    status: str = "vergangen" if t["event_time"] < jetzt else "anstehend"
-                    detail_str: str = f" — {t['details']}" if t.get("details") else ""
-                    kontext.append(
-                        f"[Timeline/{status}] {zeitpunkt}: {t['title']}{detail_str}"
-                    )
-
-                return "\n".join(kontext)
+            for t in termine:
+                entries.append(
+                    self._termin_zu_entry(t, subtyp_quelle="status", jetzt=jetzt)
+                )
 
         except Exception as fehler:
             logger.warning(f"TimelineManager enrich (neu) fehlgeschlagen: {fehler}")
 
-        return ""
+        self._log_entries(entries)
+        return entries
 
     @staticmethod
-    def _format_termine(rows: list[dict]) -> str:
-        """Formatiert Timeline-Rows als Kontext-String."""
-        if not rows:
-            return "[Timeline] Keine Einträge gefunden."
+    def _termin_zu_entry(
+        termin:        dict,
+        subtyp_quelle: str,
+        jetzt:         datetime | None = None,
+    ) -> ContextEntry:
+        """Baut einen ContextEntry aus einer Timeline-Repository-Zeile.
 
-        parts: list[str] = []
-        for r in rows:
-            datum: str = r["event_time"].strftime("%d.%m.%Y")
-            if r.get("precision") != "day":
-                datum += f" {r['event_time'].strftime('%H:%M')}"
-            detail: str = f" — {r['details']}" if r.get("details") else ""
-            parts.append(f"[Timeline/{r['event_type']}] {datum}: {r['title']}{detail}")
+        subtyp_quelle="event_type": subtyp = termin["event_type"] (range/search).
+        subtyp_quelle="status":     subtyp = "vergangen"/"anstehend" (proaktiv).
+        """
+        zeitpunkt: str = termin["event_time"].strftime("%d.%m.%Y")
+        if termin.get("precision") != "day":
+            zeitpunkt += f" {termin['event_time'].strftime('%H:%M')}"
 
-        return "\n".join(parts)
+        if subtyp_quelle == "status":
+            subtyp: str = "vergangen" if termin["event_time"] < jetzt else "anstehend"
+        else:
+            subtyp = termin.get("event_type", "")
+
+        detail_str: str = f" — {termin['details']}" if termin.get("details") else ""
+        titel:      str = termin.get("title", "")
+        inhalt:     str = f"{zeitpunkt}: {titel}{detail_str}"
+
+        logger.debug(
+            f"Timeline-Entry: subtyp={subtyp}, datum={zeitpunkt}, "
+            f"titel={titel[:40]}"
+        )
+
+        return {
+            "quelle":  "plugin_timeline",
+            "subtyp":  subtyp,
+            "inhalt":  inhalt,
+            "gewicht": 1.0,
+            "meta": {
+                "praefix":   f"Timeline/{subtyp}",
+                "datum":     zeitpunkt,
+                "titel":     titel,
+                "details":   detail_str,
+                "termin_id": termin.get("id"),
+            },
+        }
+
+    @staticmethod
+    def _log_entries(entries: list[ContextEntry]) -> None:
+        logger.info(
+            f"TimelineManager.enrich_entries: {len(entries)} Eintraege geliefert"
+        )
 
     # ─────────────────────────────────────────
     # Planner-Hook

@@ -57,3 +57,6 @@ htmlcov/
 
 # Node (falls JS-Tools genutzt werden)
 node_modules/
+
+# Obsidian
+.obsidian

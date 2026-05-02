@@ -1223,6 +1223,96 @@ Perzeption klassifiziert 😍-Katzen-Chat als `gespraechs_modus="emotional"` sta
 
 ---
 
+## Epic: Memory-Promotion-Korrektur (Chat 75)
+
+**Status:** Konzept
+**Bezug:** PROMO-DROP1, PROMO-CLUSTER-EI, PROMO-DUAL-IMPL (siehe novaberg-bugs.md, Sektion Datenqualität)
+**Vorbedingung:** Reducer-Umbau (novaberg-reducer-umbau_k.md) abgeschlossen.
+
+### Hintergrund
+
+Ein Audit der Promotion-Pipeline KZG→LZG in Chat 75 hat drei Datenverluste sichtbar gemacht, die in den Bug-Einträgen einzeln dokumentiert sind. Die drei Befunde hängen zusammen und sollten in einer geschlossenen Sequenz angegangen werden. Sie tangieren die Akten-Vision direkt: Ohne Themen-Persistenz und ohne intakte EI-Felder im LZG sind später keine sinnvollen Akten-Aggregate möglich.
+
+### Reihenfolge nach dem Reducer-Umbau
+
+**Phase M1 — Doppelpipeline konsolidieren (PROMO-DUAL-IMPL).**
+Verifizieren, ob `services/shadow_agent/tasks/lzg_promotion.py` noch von irgendeinem Pfad aufgerufen wird. Falls nicht: entfernen. Falls doch: Aufrufer migrieren, Legacy entfernen. Eine einzige Promotion-Implementierung als Voraussetzung für die nächsten Phasen.
+
+**Phase M2 — LZG-Schema erweitern (PROMO-DROP1, Schema-Teil).**
+DB-Migration: drei neue Spalten in `langzeitgedaechtnis`:
+- `themen TEXT[]` (Themen aus KZG übernommen)
+- `gedaechtnistyp VARCHAR(20)` (episodisch/semantisch/prozedural)
+- `kzg_erstellt_am TIMESTAMPTZ` (KZG-Original-Zeitstempel, getrennt vom Promotion-`erstellt_am`)
+
+Altbestand bekommt `NULL`. Index auf `themen` (GIN) für spätere Themen-basierte Suche prüfen.
+
+**Phase M3 — Promotion-Code anpassen (PROMO-DROP1, Code-Teil).**
+Im konsolidierten Promotion-Pfad (nach M1) die drei Felder aus dem KZG-Hash bzw. Queue-Auftrag in die LZG-INSERT übernehmen. Logging ergänzen: pro Promotion eine Zeile mit den übernommenen Werten.
+
+**Phase M4 — Cluster-Promotion EI-Aggregation (PROMO-CLUSTER-EI).**
+Im Cluster-Pfad die hartcodierten Defaults durch echte Aggregation ersetzen. Pro Feld die passende Aggregations-Strategie:
+- Numerisch (`arousal`): Mittelwert
+- Kategorisch (`emotion`, `modus`, `sprach_stil`, `tone`, `beziehungs_dynamik`): häufigster Wert (Counter-Mehrheit, analog zum bestehenden `beobachter`-Code)
+- Mengen-artig (`intentionen`, falls als Liste/Array): Vereinigung der Quell-Einträge
+- `emotions_vektor`: Vektor-Mittelung oder häufigster Wert (Designentscheidung)
+
+Vor Implementierung: Messung wieviele Cluster-Einträge heute mit Default-Profil existieren (SQL aus PROMO-CLUSTER-EI-Bug). Nach Implementierung: Audit ob neue Einträge plausible Profile haben.
+
+**Phase M5 — Agenten nachziehen.**
+Erst nach M1–M4 abgeschlossen sind, werden die Agenten an die neue Memory-Struktur angepasst:
+- **FaktenManager-Reaktivierung** (heute durch `continue` im Enricher gesperrt seit Chat 71). Voraussetzung: Themen-basierte Verknüpfung im LZG verfügbar (M2/M3).
+- **Themen-Cluster-Promotion** könnte mit echtem `themen[]`-Feld smarter werden (heute nur über Embedding-Cluster).
+- **Charakter-Hash-Generierung** (`charakter_hash`) profitiert von echten EI-Profilen aus Cluster-Promotion (M4) — Profile werden weniger neutral.
+
+### Auswirkung auf Akten-Vision
+
+Diese fünf Phasen sind Vorarbeit für die Akten-Architektur (siehe `novaberg-reducer-umbau_k.md` §10 „eigenständige Erweiterung"). Ohne intakte Themen, ohne intakte EI-Profile und ohne ursprünglichen Zeitstempel im LZG fehlen die Schienen, an denen Akten-Aggregate später ansetzen. Der Knowledge Graph (`entitaeten` + `fakten`) hat seine Struktur bereits — ihm fehlt nur die Verknüpfung mit dem korrigierten LZG.
+
+---
+
+## Tech-Debt: Reducer-Umbau-Nachzügler (Chat 75)
+
+**Status:** Beobachtet
+**Bezug:** novaberg-reducer-umbau_k.md, Implementierungsbericht (Abschnitt 13)
+
+Drei kleine Punkte aus dem Reducer-Umbau, die nicht im Scope der STRUCT-Phasen lagen:
+
+### REDUCER-CONFIG-DEAD
+
+**Symptom:** Konfigurations-Konstanten `REDUCER_AKTIV` und `REDUCER_LOG_REMOVED` in `config.py:1008-1013` werden nach dem Umbau nicht mehr genutzt — der neue Reducer hat keinen Master-Schalter mehr und loggt entfernte Einträge fest auf DEBUG-Level.
+**Fix:** Beide Konstanten entfernen, falls keine externen Konsumenten existieren (`grep` zur Sicherheit).
+**Prio:** Niedrig.
+
+### LOGGER-NAMESPACE
+
+**Symptom:** Reducer-Logger heißt `graph.nodes.reducer` (über `logging.getLogger(__name__)`), während der Rest des Servers über das `ki_server.<modul>`-Schema loggt. Folge: `grep "ki_server"` über das Log-Archiv erfasst den Reducer nicht.
+**Fix:** Reducer-Logger-Name entweder explizit auf `ki_server.reducer` setzen oder zentrale Logging-Konfiguration so anpassen, dass alle `graph.*`-Module das Präfix erben.
+**Prio:** Niedrig — kosmetisch, kein funktionaler Schaden.
+
+### SESSION-SUMMARY-INACTIVE
+
+**Symptom:** In allen Smoke-Test-Turns von Chat 75 zeigte das Reducer-Logging `Gruppe summary: 0 Eintraege`. Der Session-Summary-Pfad im Enricher (STRUCT-5b: Entry mit `quelle="summary"`) wurde nie aktiviert.
+**Vermutung:** Der Session-Summary wird vermutlich nur unter bestimmten Bedingungen erzeugt (z.B. ab N Turns Session-Länge) und war im Test-Szenario nicht erreicht. Möglich aber auch: Der Pfad ist tatsächlich tot (z.B. weil die zugrundeliegende Funktion nie returns oder die State-Variable nie gesetzt wird).
+**Fix:** Verifizieren, unter welchen Bedingungen der Session-Summary heute erzeugt wird, und prüfen, ob die Bedingungen sinnvoll sind.
+**Prio:** Niedrig — Beobachtung, kein bestätigter Bug.
+
+---
+
+## Designdiskussion: THINKER-TOOL-FORMAT (Chat 75)
+
+**Status:** Offen
+**Bezug:** THINK-MEM-LOOP (novaberg-bugs.md), STRUCT-5c (Reducer-Umbau)
+
+Der Thinker `memory_search`-Tool-Output verwendet seit STRUCT-5c (Chat 75) den gleichen Format-Vertrag wie der Responder-`memory_context`. Vorteile: ein einziger Format-Ort, Konsistenz für das LLM. Nachteile: möglicherweise Mit-Ursache von THINK-MEM-LOOP (das LLM verbraucht alle Reasoning-Iterationen ohne Konvergenz, weil die Metadaten-Klammer es ablenkt).
+
+**Alternative (Option B aus der STRUCT-5-Diskussion):** Tool-spezifisches kompakteres Format, optimiert fürs LLM-Reasoning. Beispiel: `"LZG-Treffer (Gewicht 2.15): {inhalt}"` statt `"[LZG/{subtyp}] (Gewicht: 2.15, Arousal: 70%, Beobachter: meister, Vektor: aufbluehen): {inhalt}"`.
+
+**Entscheidung verschoben** auf den Zeitpunkt, an dem THINK-MEM-LOOP angegangen wird. Falls THINK-MEM-LOOP durch eine andere Maßnahme (Abbruch-Heuristik, Prompt-Schärfung) gelöst wird, bleibt Option A bestehen. Falls die Format-Lärm-Hypothese sich bestätigt, wird Option B umgesetzt — dann braucht der Formatter eine zweite Variante (`format_memory_entries(entries, mode="responder"|"thinker_tool")`).
+
+**Prio:** Niedrig (Designdiskussion), wird durch THINK-MEM-LOOP-Untersuchung getriggert.
+
+---
+
 ## 8. Offene Bugs
 
 Vollständige Bug-Dokumentation → `novaberg-bugs.md`

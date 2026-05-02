@@ -61,10 +61,6 @@ BEISPIELE (alle → management_action = "agent"):
 - "Du darfst wieder ueber Milch reden"
 """
 
-    def enrich(self, state: dict, postgres_url: str) -> str:
-        """Direktiven werden im Enricher direkt geladen, nicht hier."""
-        return ""
-
     def execute(
         self,
         writes:       list[dict],

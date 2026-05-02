@@ -9,6 +9,8 @@ Erweiterungen A1:
 
 from typing import TypedDict
 
+from graph.context_entry import ContextEntry
+
 
 class TribunalVote(TypedDict):
     """Einzelnes Votum eines Tribunal-Agenten."""
@@ -64,6 +66,8 @@ class ConversationState(TypedDict):
 
     # ── Enricher ─────────────────────────────
     memory_context:    str
+    memory_entries:    list[ContextEntry]   # Strukturierte Eintraege (vor Reducer-Dedup, vor Formatter)
+    memory_entries_raw: list[ContextEntry]   # Ungekuerzte Eintraege vor Reducer-Dedup (Debug)
     web_context:       str
     session_turns:     list   # list[dict] — destillierte Turns für den Responder
     gespraechs_modus:  str    # Aktueller Modus aus letzten Turns

@@ -1,7 +1,8 @@
 # Reducer-Umbau — Strukturierter memory_context
 
-**Status:** Konzept
+**Status:** Implementiert (Chat 75)
 **Eröffnet:** Chat 74
+**Abgeschlossen:** Chat 75
 **Bezug:** ENRICHER-DUP, Echo-Bug, RESP-DEAD, künftige Akten-Architektur (Backlog)
 
 ---
@@ -230,3 +231,26 @@ Der Umbau gilt als abgeschlossen, wenn:
 - Keine Verhaltensänderung im Responder.
 - Keine Änderung an EI, GV, Tribunal, Salienz, Dispatcher.
 - Keine neue Funktionalität — nur Aufräumen einer brüchigen Stelle.
+
+## 13. Implementierungsbericht (Chat 75)
+
+Alle 6 STRUCT-Phasen abgeschlossen. Smoke-Test grün.
+
+**Erfolgskriterien aus Abschnitt 11 erfüllt:**
+1. ✅ Memory-Module und Plugin-Manager liefern `ContextEntry`-Listen.
+2. ✅ Enricher sammelt nur strukturierte Daten, baut keinen String mehr.
+3. ✅ Reducer arbeitet ausschließlich auf `memory_entries`, kein Regex auf String-Format.
+4. ✅ Responder erhält `memory_context`-String, formal identisch zum heutigen.
+5. ✅ Smoke-Test zeigt korrekte Verarbeitung von KZG, LZG, Charakter-Hash und mindestens zwei Plugin-Quellen (Notizen, Timeline; Fakten weiterhin gesperrt seit Chat 71).
+6. ✅ Logging dokumentiert pro Eintrag Quelle, Gewicht und Dedup-Entscheidungen.
+
+**Messung im Smoke-Test:**
+- Reducer entfernte 1-2 Einträge pro Turn (Stufe 1 Exakt-Dedup), Stufe 2 (Substring) ohne Treffer.
+- Output-Längen plausibel (4517-5613 Zeichen), keine drastische Reduktion.
+
+**Beobachtungen für Folge-Sessions (Backlog):**
+- `Gruppe summary: 0` durchgehend — Session-Summary-Pfad eventuell inaktiv (Backlog).
+- Reducer-Logger-Name `graph.nodes.reducer` weicht von `ki_server.<modul>` ab (Tech-Debt).
+- `REDUCER_AKTIV` / `REDUCER_LOG_REMOVED` in `config.py:1008-1013` nach Umbau funktionslos (Tech-Debt).
+
+**Audit-Nebeneffekt:** Promotion-Pipeline-Audit ergab drei Datenverluste KZG→LZG (PROMO-DROP1, PROMO-CLUSTER-EI, PROMO-DUAL-IMPL — siehe novaberg-bugs.md, Sektion Datenqualität, sowie Epic „Memory-Promotion-Korrektur" in novaberg-backlog.md).

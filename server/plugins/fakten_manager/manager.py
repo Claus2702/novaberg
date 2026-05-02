@@ -14,6 +14,7 @@ from typing import TYPE_CHECKING
 
 import redis
 
+from graph.context_entry import ContextEntry
 from plugins.base import BaseManager
 from memory.embedding import embedding_create
 from memory.repositories.entitaeten_repository import EntitaetenRepository
@@ -130,43 +131,97 @@ Trigger-Phrasen: "das stimmt nicht", "korrigiere", "vergiss das",
     # ─────────────────────────────────────────
     # Enricher-Hook
     # ─────────────────────────────────────────
-    def enrich(self, state: dict, postgres_url: str) -> str:
-        """Lädt Fakten als Kontext — nutzt neue Repositories wenn möglich."""
+    def enrich_entries(self, state: dict, postgres_url: str) -> list[ContextEntry]:
+        """Liefert Fakten als strukturierte ContextEntry-Liste.
+
+        Pro Entitaet mit mindestens einem Fakt wird ein Entry erzeugt;
+        die Fakt-Zeilen der Entitaet werden als zusammengehoeriger Block
+        in `inhalt` mit Newlines verkettet (gleiche Einrueckung wie zuvor:
+        zwei Leerzeichen pro Fakt-Zeile).
+
+        Mapping pro Entitaets-Block:
+          quelle  = "plugin_fakt"
+          subtyp  = ent["typ"] (Entity-Typ: person, ort, ...)
+          inhalt  = mehrzeiliger String, pro Fakt eine Zeile
+                    "  {attribut} = {wert} (seit {t_valid})"
+          gewicht = 1.0
+          meta    = {
+              "praefix":        "Fakten/{name} ({typ})",
+              "name":           Entitaets-Name,
+              "typ":            Entitaets-Typ,
+              "fakten_anzahl":  Anzahl der Fakt-Zeilen im Block,
+          }
+
+        Hinweis: Der FaktenManager liefert aktuell zwar Entries, der
+        Enricher hat den Aufruf jedoch seit Chat 71 per `continue`
+        deaktiviert (Rausch-Eintraege). Aktivierung erfordert Entfernung
+        der Sperre in graph/nodes/enricher.py.
+        """
         user_id: str = state.get("user_id", "")
         if not user_id:
-            return ""
+            return []
 
-        # Neuer Pfad: Repositories
+        entries: list[ContextEntry] = []
+
         try:
             entitaeten: list[dict] = EntitaetenRepository.find_by_user(
                 postgres_url, user_id
             )
 
-            if not entitaeten:
-                return ""
+            logger.info(
+                f"FaktenManager.enrich_entries: entitaeten={len(entitaeten)}"
+            )
 
-            fakten_kontext: list[str] = []
             for ent in entitaeten:
                 fakten: list[dict] = FaktenRepository.find_by_subjekt(
                     postgres_url, ent["id"]
                 )
-                if fakten:
-                    fakten_kontext.append(f"[Fakten/{ent['name']} ({ent['typ']})]")
-                    for fakt in fakten:
-                        t_valid: str = str(fakt.get("t_valid") or "unbekannt")
-                        fakten_kontext.append(
-                            f"  {fakt['attribut']} = "
-                            f"{fakt.get('objekt_wert') or fakt.get('fakt_text', '')} "
-                            f"(seit {t_valid})"
-                        )
+                if not fakten:
+                    continue
 
-            if fakten_kontext:
-                return "\n".join(fakten_kontext)
+                fakt_zeilen: list[str] = []
+                for fakt in fakten:
+                    t_valid: str = str(fakt.get("t_valid") or "unbekannt")
+                    fakt_zeilen.append(
+                        f"  {fakt['attribut']} = "
+                        f"{fakt.get('objekt_wert') or fakt.get('fakt_text', '')} "
+                        f"(seit {t_valid})"
+                    )
+
+                inhalt: str           = "\n".join(fakt_zeilen)
+                name:   str           = ent["name"]
+                typ:    str           = ent["typ"]
+                fakten_anzahl: int    = len(fakt_zeilen)
+
+                logger.info(
+                    f"FaktenManager.enrich_entries: name={name}, "
+                    f"fakten={fakten_anzahl}"
+                )
+
+                entry: ContextEntry = {
+                    "quelle":  "plugin_fakt",
+                    "subtyp":  typ,
+                    "inhalt":  inhalt,
+                    "gewicht": 1.0,
+                    "meta": {
+                        "praefix":       f"Fakten/{name} ({typ})",
+                        "name":          name,
+                        "typ":           typ,
+                        "fakten_anzahl": fakten_anzahl,
+                    },
+                }
+                entries.append(entry)
+                logger.debug(
+                    f"Fakt-Entry: name={name}, typ={typ}, fakten={fakten_anzahl}"
+                )
 
         except Exception as fehler:
-            logger.warning(f"FaktenManager enrich (neu) fehlgeschlagen: {fehler}")
+            logger.warning(f"FaktenManager enrich_entries (neu) fehlgeschlagen: {fehler}")
 
-        return ""
+        logger.info(
+            f"FaktenManager.enrich_entries: {len(entries)} Eintraege geliefert"
+        )
+        return entries
 
     # ─────────────────────────────────────────
     # Salienz → M2 Transformation

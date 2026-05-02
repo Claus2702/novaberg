@@ -78,7 +78,9 @@ memory_search("Wo wohnt Anna?")
 → LZG-Einträge mit semantischer Ähnlichkeit
 ```
 
-Durchsucht das Langzeitgedächtnis per Embedding-Suche (`embedding_create` + `lzg_context_retrieve`). Prüft ob Behauptungen in der Antwort mit dem gespeicherten Wissen übereinstimmen.
+Durchsucht das Langzeitgedächtnis per Embedding-Suche. Prüft ob Behauptungen in der Antwort mit dem gespeicherten Wissen übereinstimmen.
+
+**Hinweis (Chat 75):** Seit dem Reducer-Umbau (`novaberg-reducer-umbau_k.md`) nutzt das Tool `lzg_entries_retrieve()` plus `format_memory_entries()` (aus `graph/format/memory_context.py`) statt `lzg_context_retrieve()` direkt aufzurufen. Der Format-Vertrag des Tool-Outputs ist identisch zum Responder-`memory_context`.
 
 ### 4.4 web_search (mit Auto-Fetch)
 

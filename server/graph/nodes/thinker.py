@@ -27,11 +27,13 @@ import redis
 
 from langchain_core.tools import tool
 
-from graph.state      import ConversationState
+from graph.context_entry import ContextEntry
+from graph.format        import format_memory_entries
+from graph.state         import ConversationState
 from memory.repositories.timeline_repository import TimelineRepository
-from memory.lzg       import lzg_context_retrieve
-from memory.embedding import embedding_create
-from config import get_node_config, PROMPTS
+from memory.lzg          import lzg_entries_retrieve
+from memory.embedding    import embedding_create
+from config              import get_node_config, PROMPTS
 from services.llm_provider import get_chat_provider
 
 logger = logging.getLogger("ki_server.thinker")
@@ -49,6 +51,7 @@ from tools.web.fetch import page_fetch
 def create_tools(
     postgres_url:  str,
     user_id:       str,
+    character_id:  str,
     embed_client,
     embed_model:   str
 ) -> list:
@@ -122,14 +125,34 @@ def create_tools(
         """Durchsuche das Langzeitgedächtnis des Nutzers nach relevanten Informationen.
         Nutze dieses Tool wenn du Fakten über den Nutzer prüfen willst,
         z.B. ob eine Behauptung in der Antwort mit dem übereinstimmt, was bekannt ist."""
+        # Implementierung (STRUCT-5c): nutzt die strukturierte ContextEntry-Pipeline.
+        # 1. Embedding der Query erzeugen.
+        # 2. lzg_entries_retrieve() liefert list[ContextEntry].
+        # 3. format_memory_entries() baut den finalen String fuer das LLM.
+        # Damit ist das Tool-Output-Format identisch zum memory_context im Responder.
 
-        logger.info(f"Thinker-Tool: memory_search({frage})")
+        logger.info(f"Thinker.memory_search: query={frage[:60]}")
 
         embedding: list[float] = embedding_create(frage, embed_client, embed_model)
 
-        result: str = lzg_context_retrieve(postgres_url, user_id, embedding, top_k=5)
+        entries: list[ContextEntry] = lzg_entries_retrieve(
+            postgres_url=postgres_url,
+            user_id=user_id,
+            character_id=character_id,
+            embedding=embedding,
+            top_k=5,
+        )
 
-        return result or "Keine relevanten Einträge im Langzeitgedächtnis gefunden."
+        if not entries:
+            logger.info("Thinker.memory_search: keine Treffer")
+            return "Keine relevanten Einträge im Langzeitgedächtnis gefunden."
+
+        formatierter_kontext: str = format_memory_entries(entries)
+        logger.info(
+            f"Thinker.memory_search: {len(entries)} Treffer, "
+            f"Output-Laenge {len(formatierter_kontext)}"
+        )
+        return formatierter_kontext
     
     @tool
     def web_search(suchbegriff: Annotated[str, "Suchbegriff für Web-Recherche"]) -> str:
@@ -256,7 +279,8 @@ def think(
 
     logger.info("Thinker: Prüfbare Fakten erkannt — starte Reasoning...")
 
-    tools: list = create_tools(postgres_url, user_id, embed_client, embed_model)
+    character_id: str = state.get("character_id", "")
+    tools: list = create_tools(postgres_url, user_id, character_id, embed_client, embed_model)
   
     # ── Reasoning-Prompt zusammenbauen ───────
     system_prompt: str = _build_thinker_prompt(today)

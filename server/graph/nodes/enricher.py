@@ -24,19 +24,20 @@ import redis
 from config import (
     ASSISTANT_USER_ID,
 )
-from graph.state       import ConversationState
-from memory.charakter  import charakter_hash_retrieve, charakter_hash_retrieve_dict
-from memory.embedding  import embedding_create
-from memory.kzg        import kzg_context_retrieve, _kzg_prefix
-from memory.lzg        import lzg_context_retrieve
-from memory.session    import session_turns_retrieve, _session_key
-from memory.ziele      import ziele_aktive_laden
-from ei.gravitation    import (
+from graph.context_entry import ContextEntry
+from graph.state         import ConversationState
+from memory.charakter    import charakter_hash_retrieve, charakter_hash_retrieve_dict
+from memory.embedding    import embedding_create
+from memory.kzg          import kzg_entries_retrieve, _kzg_prefix
+from memory.lzg          import lzg_entries_retrieve
+from memory.session      import session_turns_retrieve, _session_key
+from memory.ziele        import ziele_aktive_laden
+from ei.gravitation      import (
     ziel_gravitation_berechnen,
     gravitationsterm_berechnen,
     emotionale_gravitation_scannen,
 )
-from plugins           import get_registry
+from plugins             import get_registry
 
 logger = logging.getLogger("ki_server.enricher")
 
@@ -51,7 +52,7 @@ def enrich(
 ) -> ConversationState:
     """Sammelt Kontext aus Kern-Quellen und Plugin-Hooks."""
 
-    context_parts: list[str] = []
+    entries: list[ContextEntry] = []
 
     # ─────────────────────────────────────────
     # 1. Session-Kontext (immer, als erstes)
@@ -63,8 +64,14 @@ def enrich(
     summary:     str = redis_client.get(summary_key) or ""
 
     if summary:
-        context_parts.append(f"═══ BISHERIGER GESPRÄCHSVERLAUF ═══\n{summary}")
-        logger.info("Enricher: Session-Summary geladen")
+        entries.append({
+            "quelle":  "summary",
+            "subtyp":  "",
+            "inhalt":  summary,
+            "gewicht": 1.0,
+            "meta":    {},
+        })
+        logger.info("Enricher: Session-Summary geladen (1 Eintrag)")
 
     # Rohe Turns laden
     raw_turns: list[dict] = session_turns_retrieve(redis_client, user_id, character_id)
@@ -115,16 +122,18 @@ def enrich(
         # DEAKTIVIERT Chat 71 — Fakten-Enrichment produziert 130+ Rausch-Eintraege
         # Wird reaktiviert nach Fakten-Bereinigung
         if name == "fakten":
-            # plugin_context = manager.enrich(state, postgres_url)
+            # plugin_entries = manager.enrich_entries(state, postgres_url)
             logger.info("Enricher: Fakten-Enrichment deaktiviert (Chat 71)")
             continue
 
         try:
-            plugin_context: str = manager.enrich(state, postgres_url)
+            plugin_entries: list[ContextEntry] = manager.enrich_entries(state, postgres_url)
 
-            if plugin_context:
-                context_parts.append(plugin_context)
-                logger.info(f"Enricher: Plugin '{name}' lieferte Kontext")
+            if plugin_entries:
+                entries.extend(plugin_entries)
+                logger.info(
+                    f"Enricher: Plugin '{name}' lieferte {len(plugin_entries)} Eintraege"
+                )
 
         except Exception as fehler:
             logger.error(f"Enricher: Plugin '{name}' Fehler — {fehler}")
@@ -197,16 +206,20 @@ def enrich(
         )
 
         if kzg_keys:
-            kzg_context: str = kzg_context_retrieve(redis_client, user_id, character_id, embedding)
-            if kzg_context:
-                context_parts.append(kzg_context)
-                logger.info("Enricher: KZG-Kontext gefunden")
+            kzg_entries: list[ContextEntry] = kzg_entries_retrieve(
+                redis_client, user_id, character_id, embedding,
+            )
+            if kzg_entries:
+                entries.extend(kzg_entries)
+                logger.info(f"Enricher: KZG lieferte {len(kzg_entries)} Eintraege")
 
         if has_lzg:
-            lzg_context: str = lzg_context_retrieve(postgres_url, user_id, character_id, embedding)
-            if lzg_context:
-                context_parts.append(lzg_context)
-                logger.info("Enricher: LZG-Kontext gefunden")
+            lzg_entries: list[ContextEntry] = lzg_entries_retrieve(
+                postgres_url, user_id, character_id, embedding,
+            )
+            if lzg_entries:
+                entries.extend(lzg_entries)
+                logger.info(f"Enricher: LZG lieferte {len(lzg_entries)} Eintraege")
 
     # ─────────────────────────────────────────
     # 4. Charakter-Hash (immer)
@@ -216,8 +229,14 @@ def enrich(
     state["char_hash_dict"] = char_hash_dict or {}
 
     if char_hash:
-        context_parts.append(f"[Charakter] {char_hash}")
-        logger.info("Enricher: Charakter-Hash gefunden")
+        entries.append({
+            "quelle":  "charakter",
+            "subtyp":  "",
+            "inhalt":  char_hash,
+            "gewicht": 1.0,
+            "meta":    {},
+        })
+        logger.info("Enricher: Charakter-Hash geladen (1 Eintrag)")
 
     # ── Novas eigener Charakter-Hash ──────────
     nova_hash_dict: dict = charakter_hash_retrieve_dict(postgres_url, ASSISTANT_USER_ID, user_id)
@@ -299,11 +318,11 @@ def enrich(
     # ─────────────────────────────────────────
     # State aktualisieren
     # ─────────────────────────────────────────
-    state["memory_context"] = "\n".join(context_parts)
+    state["memory_entries"] = entries
 
-    if not context_parts:
-        logger.info("Enricher: Kein relevanter Kontext gefunden")
+    if not entries:
+        logger.info("Enricher: Pipeline abgeschlossen, 0 Eintraege gesammelt")
     else:
-        logger.info(f"Enricher: {len(context_parts)} Kontextquellen angereichert")
+        logger.info(f"Enricher: Pipeline abgeschlossen, {len(entries)} Eintraege gesammelt")
 
     return state

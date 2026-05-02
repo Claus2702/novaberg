@@ -19,6 +19,8 @@ from pathlib import Path
 import psycopg2
 import redis
 
+from graph.context_entry import ContextEntry
+
 logger = logging.getLogger("ki_server.plugins")
 
 
@@ -66,12 +68,51 @@ class BaseManager(ABC):
     # ─────────────────────────────────────────
     # Enricher-Hook (Kontext laden)
     # ─────────────────────────────────────────
-    def enrich(self, state: dict, postgres_url: str) -> str:
+    def enrich_entries(
+        self,
+        state: dict,
+        postgres_url: str,
+    ) -> list[ContextEntry]:
+        """Liefert strukturierte Kontext-Eintraege fuer den Enricher.
+
+        Default-Implementierung: leere Liste. Manager, die Kontext zum
+        memory_entries-Pool beitragen wollen, ueberschreiben diese Methode.
+
+        Konvention fuer ContextEntry-Felder bei Plugin-Quellen:
+
+            quelle:  Beginnt mit dem Praefix "plugin_". Empfohlene
+                     Form: "plugin_<sinngemaess>" im Singular, z.B.
+                     "plugin_notiz", "plugin_timeline", "plugin_direktive",
+                     "plugin_fakt". Der Reducer behandelt alle plugin_*-
+                     Quellen gleichwertig; der Formatter (STRUCT-6) liest
+                     die quelle, um den Output-Praefix zu waehlen.
+
+            subtyp:  Optional. Beispiel Timeline: "geplant" / "erledigt".
+                     Leer-String ist erlaubt.
+
+            inhalt:  Reiner Text ohne Format-Drumherum. Mehrzeilig erlaubt.
+                     Bei klar separierbaren Listen (z.B. mehrere Notizen)
+                     jeweils ein eigener Entry. Bei zusammengehoerigen
+                     Bloecken ein Entry mit mehrzeiligem inhalt.
+
+            gewicht: Effektives Gewicht oder Salienz. Manager ohne
+                     Gewichts-Konzept setzen 1.0.
+
+            meta:    Manager-spezifische Felder, die der Formatter zum
+                     Aufbau des Praefix oder fuer Sortierung nutzt.
+                     Beispiele: name, typ, status, datum, themen.
+                     Konvention pro Manager im jeweiligen
+                     enrich_entries-Docstring dokumentieren.
+
+        Args:
+            state: Aktueller Graph-State.
+            postgres_url: Verbindungs-URL fuer DB-Zugriffe.
+
+        Returns:
+            Liste von ContextEntry-Eintraegen. Leere Liste, wenn der
+            Manager fuer den aktuellen State nichts beitraegt.
         """
-        Optional: Kontext laden wenn dieser Manager betroffen ist.
-        Wird vom Enricher aufgerufen. Default: nichts.
-        """
-        return ""
+        return []
 
     # ─────────────────────────────────────────
     # Planner-Hook (Plan-Phase)

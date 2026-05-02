@@ -19,7 +19,7 @@ from memory.kzg import (
     kzg_index_create,
     kzg_similar_find,
     kzg_store,
-    kzg_context_retrieve,
+    kzg_entries_retrieve,
     EMBEDDING_DIM,
     SIMILARITY_THRESHOLD,
     PROMOTION_THRESHOLD,
@@ -28,7 +28,7 @@ from memory.kzg import (
 )
 
 # LZG
-from memory.lzg import lzg_context_retrieve
+from memory.lzg import lzg_entries_retrieve
 
 # Charakter-Hash
 from memory.charakter import charakter_hash_retrieve
