@@ -22,6 +22,7 @@ from graph.nodes.router     import route
 from graph.nodes.enricher  import enrich
 from graph.nodes.ei_calc   import ei_calc
 from graph.nodes.planner   import plan
+from graph.nodes.reducer   import reduce
 from graph.nodes.responder import respond
 from graph.nodes.thinker   import think
 from graph.nodes.tribunal  import judge, evaluate
@@ -225,6 +226,9 @@ class GraphBase(ABC):
 
     def _node_agent_dispatch(self, state: ConversationState) -> ConversationState:
         return agent_dispatch_node(state)
+
+    def _node_reduce(self, state: ConversationState) -> ConversationState:
+        return reduce(state)
 
     # Gesprächsvektor
     def _node_gespraechsvektor(self, state: ConversationState) -> ConversationState:

@@ -304,14 +304,21 @@ class CharakterAgent(BaseAgent):
 
     @staticmethod
     def _ergebnis_speichern(user_id: str, character_id: str, ergebnis: dict) -> None:
-        """Schreibt die 5 Profile per UPSERT in charakter_hash (Paar-Schema)."""
+        """Schreibt die 5 Profile per UPSERT in charakter_hash (Paar-Schema).
+
+        Jedes Profil wird nur ueberschrieben wenn der neue Wert nicht-leer ist.
+        Der zugehoerige Zeitstempel wird nur dann auf NOW() gesetzt.
+        """
         db_manager.execute(
             """
             INSERT INTO charakter_hash
-                (user_id, character_id, kern_hash, adaptive_hash, intentions_profil,
-                 emotions_profil, beziehungsprofil,
-                 kern_aktualisiert_am, adaptive_aktualisiert_am)
-            VALUES (%s, %s, %s, %s, %s, %s, %s, NOW(), NOW())
+                (user_id, character_id,
+                 kern_hash, adaptive_hash,
+                 intentions_profil, emotions_profil, beziehungsprofil,
+                 kern_aktualisiert_am, adaptive_aktualisiert_am,
+                 intentions_aktualisiert_am, emotions_aktualisiert_am,
+                 beziehung_aktualisiert_am)
+            VALUES (%s, %s, %s, %s, %s, %s, %s, NOW(), NOW(), NOW(), NOW(), NOW())
             ON CONFLICT (user_id, character_id) DO UPDATE SET
                 kern_hash = CASE WHEN %s != '' THEN %s
                     ELSE charakter_hash.kern_hash END,
@@ -326,19 +333,30 @@ class CharakterAgent(BaseAgent):
                 kern_aktualisiert_am = CASE WHEN %s != '' THEN NOW()
                     ELSE charakter_hash.kern_aktualisiert_am END,
                 adaptive_aktualisiert_am = CASE WHEN %s != '' THEN NOW()
-                    ELSE charakter_hash.adaptive_aktualisiert_am END
+                    ELSE charakter_hash.adaptive_aktualisiert_am END,
+                intentions_aktualisiert_am = CASE WHEN %s != '' THEN NOW()
+                    ELSE charakter_hash.intentions_aktualisiert_am END,
+                emotions_aktualisiert_am = CASE WHEN %s != '' THEN NOW()
+                    ELSE charakter_hash.emotions_aktualisiert_am END,
+                beziehung_aktualisiert_am = CASE WHEN %s != '' THEN NOW()
+                    ELSE charakter_hash.beziehung_aktualisiert_am END
             """,
             (
                 user_id, character_id,
                 ergebnis["kern"], ergebnis["adaptiv"],
                 ergebnis["intentions_profil"], ergebnis["emotions_profil"],
                 ergebnis["beziehungsprofil"],
+                # ON CONFLICT — Profil-Werte (je 2×: Bedingung + Wert)
                 ergebnis["kern"], ergebnis["kern"],
                 ergebnis["adaptiv"], ergebnis["adaptiv"],
                 ergebnis["intentions_profil"], ergebnis["intentions_profil"],
                 ergebnis["emotions_profil"], ergebnis["emotions_profil"],
                 ergebnis["beziehungsprofil"], ergebnis["beziehungsprofil"],
+                # ON CONFLICT — Zeitstempel-Bedingungen (je 1×)
                 ergebnis["kern"],
                 ergebnis["adaptiv"],
+                ergebnis["intentions_profil"],
+                ergebnis["emotions_profil"],
+                ergebnis["beziehungsprofil"],
             ),
         )

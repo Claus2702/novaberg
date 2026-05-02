@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Backlog — Konzipierte, noch nicht implementierte Features
-**Stand:** 01. Mai 2026, Chat 72
+**Stand:** 02. Mai 2026, Chat 74
 **Pfad:** novaberg/docs/novaberg-backlog.md
 **Quellen:** nova-08-k.md (Kognitive Anreicherung), nova-10-k-backlog.md (Skill-System), nova-01-t-c-backlog.md (Node-Konfiguration)
 
@@ -1092,21 +1092,108 @@ FaktenAgent als erste Agent-Quelle (Embedding existiert) ist Quick Win.
 
 ## Epic: Chat 72 — Folgearbeiten aus Dreischicht-Integration
 
-### Reducer-Node — Gegenspieler zum Enricher (Hoch, Chat 71/72)
+### Reducer-Umbau — Strukturierter memory_context (Hoch, Chat 74)
+
+**Stand Chat 74:** Erst-Iteration als String-Parser implementiert (Chat 74). Architektur-Schuld erkannt: Parser auf Pre-Format-String ist brüchig (Mehrzeilen-Plugin-Blöcke werden zerlegt). Sauberer Umbau geplant.
+
+**Ziel:** Memory-Module und Plugin-Manager liefern strukturierte `ContextEntry`-Listen statt vorformatierter Strings. Reducer arbeitet auf Dicts. Ein Formatter-Tool baut den finalen `memory_context`-String für den Responder.
+
+**Konzept-Dokument:** `novaberg-reducer-umbau_k.md` (Chat 74, vollständige Architektur, 7-Phasen-Plan STRUCT-1 bis STRUCT-7).
+
+**Phasen:**
+
+1. STRUCT-1: `ContextEntry`-TypedDict + State-Erweiterung
+2. STRUCT-2: KZG/LZG-Module umstellen (alte Funktionen entfernen)
+3. STRUCT-3: Plugin-Inventur + Basisklasse umstellen
+4. STRUCT-4: Plugin-Manager einzeln umstellen
+5. STRUCT-5: Enricher umbauen (sammelt Entries statt Strings)
+6. STRUCT-6: Formatter-Tool + Reducer neu
+7. STRUCT-7: Verifikation
+
+**Big Bang:** Keine 2-Methoden-Schicht. Plugin-Manager brechen während des Umbaus, werden im Nachgang einzeln nachgezogen.
+
+**Motivation:**
+- Echo-Bug bei langen Sessions (~11+ Turns)
+- ENRICHER-DUP (Mehrfach-Einträge im Kontext)
+- Mehrzeilen-Notizen werden vom Parser fragmentiert (latenter Bug)
+- Format-Wissen über fünf Stellen verteilt (KZG, LZG, Enricher, Plugin-Manager, Reducer-Parser)
+
+**Was unverändert bleibt:**
+- Responder-Schnittstelle (`state["memory_context"]` als String)
+- Format-Konvention im Output-String
+- CharacterGraph + HumanGraph Knoten/Kanten
+- Alle anderen Nodes
+
+**Priorität:** Hoch — der heutige Reducer arbeitet, hat aber latente Bugs und brüchige Architektur.
+
+---
+
+### Assoziatives Retrieval — Kontext als Geflecht (Mittel, Chat 74)
+
+Der Enricher liefert heute isolierte Fragmente, ausgewählt nach Embedding-Ähnlichkeit zum Prompt. Bedeutung entsteht aber aus Verbindungen zwischen Einträgen — ein KZG-Treffer "Meister hat Lumi seit März" und "Lumi schläft viel" gehören zusammen, weil sie denselben Referenten teilen, nicht weil sie zum aktuellen Prompt ähnlich sind.
+
+**Drei Assoziations-Dimensionen:**
+
+- **Referentiell** — selbe Entität in mehreren Einträgen. KZG/LZG haben Embeddings, aber keine Entity-Marker. Anna und Lumi werden semantisch ähnlich (beide Lebewesen + Meister), aber nicht referentiell unterschieden.
+- **Temporal** — Reihenfolge und Gleichzeitigkeit. Einträge tragen `erstellt_am`, aber kein Eintrag weiß, was zur selben Episode gehört. "Streit mit Anna" und "Lumi tröstete" am selben Tag sind narrativ verbunden, im Retrieval aber entkoppelt.
+- **Kausal/thematisch** — Themen-Tags existieren, werden aber nur zur Verstärkung genutzt, nicht zur Cluster-Bildung beim Retrieval. Drei Einträge mit Thema "Beziehungsende" bilden zusammen eine Geschichte, die relevanter sein kann als zehn isolierte Hochsalienz-Treffer.
+
+**Verwandtschaft:** Epic 16 (Entity-First-Retrieval) ist die referenzielle Spitze dieses Eisbergs. Akten-basiertes Retrieval ist der konkrete Implementierungsschritt der referentiellen Dimension.
+
+**Priorität:** Mittel — konzeptuelle Vertiefung, kein akuter Blocker.
+
+---
+
+### Akten-basiertes Retrieval — Entitäten als kohärente Pakete (Mittel, Chat 74)
+
+Heute ist die Einheit der Bewertung im Retrieval = einzelner Fakt. Beobachtung: Anna ist 20 Triples, davon werden 5 gefunden, ohne Zusammenhang. Schrott im Kontext.
+
+**Vorschlag:** Einheit der Bewertung = **Entitäten-Akte**. Pro relevanter Entität liefert der Fakten-Agent eine geschlossene Akte mit allen Fakten + Metadaten + destillierter Beschreibung. Der Reducer bewertet Akten als Ganzes — entweder die ganze Anna-Akte rein oder ganz raus. Niemals halb-Anna.
+
+**Drei Stellen müssen sich ändern:**
+
+1. **Fakten-Agent als Akten-Lieferant** — Funktion `entity_akte_laden(entity_id) -> EntityAkte` mit allen Fakten + Metadaten + Zusammenfassung
+2. **Enricher als Akten-Sammler** — identifiziert relevante Entitäten (über Embedding oder NER), zieht pro Entität die Akte
+3. **Reducer als Akten-Bewerter** — bewertet jede Akte als Block; akzeptierte Akten werden als Ganzes weitergegeben, abgelehnte komplett verworfen
+
+**Verbindung zum Reducer-Umbau:** Der heutige Reducer (Chat 74, String-Parser) und der Umbau (strukturierter memory_context) sind Voraussetzung. Akten-Bewertung ist eine Erweiterung, keine Ersetzung. Stufe 3 im Reducer-Konzept (Akten-aware) baut auf Stufe 1+2 (Exakt + Substring) auf.
+
+**Voraussetzungen:**
+- Fakten-Tabelle bereinigt (FAKTEN-RAUSCH gelöst, Reaktivierung möglich)
+- Reducer-Umbau abgeschlossen (Daten strukturiert)
+- Knowledge-Graph-Erweiterung (1-Hop für gefundene Entitäten)
+
+**Priorität:** Mittel — adressiert die "zu wenig Richtiges"-Pathologie (Anna in Nürnberg ohne Schwester-Kontext). Pendant zur "zu viel Falsches"-Pathologie, die der Reducer-Umbau adressiert.
+
+---
+
+### Anker-Emotion (Grundemotion pro Charakter) (Niedrig, Chat 74)
+
+Heute ist `emotions_profil` eine Beobachtung aus dem LZG (was wurde gefühlt). Eine Anker-Emotion wäre eine Setzung — eine Charakter-Eigenschaft, gegen die der Verlauf kontinuierlich zurückdriftet.
+
+**Mechanik:** In `ei/berechnung.py` für Novas Strang bei jeder Akkumulation den Verlauf gewichtet zum Anker zurückdriften lassen:
+
+```
+nova_emotion[t+1] = α × empathie_signal + β × verlauf[t] + γ × anker
+```
+
+Mit `α + β + γ = 1`. Bei Marvin (depremierter Roboter): `anker = traurigkeit(0.6)`, `γ = 0.3`. Bei Nova heute: `γ = 0` (kein Anker, reine Beobachtung).
+
+**Datenmodell:** Neue Spalte `grundemotion` in `charakter_hash` oder eigene Tabelle `charakter_grundemotionen` (mehrere Anker pro Charakter, z.B. "fundamental traurig, gelegentlich sarkastisch").
+
+**Beispiel-Charaktere mit Anker:** Marvin (Hitchhiker), eeyore-artige Trauer, festes Zen-Gleichmut.
+
+**Priorität:** Niedrig — keine Funktion gebrochen, aber öffnet expressiven Spielraum für Charaktere.
+
+---
+
+### Reducer-Node — Gegenspieler zum Enricher (Hoch, Chat 71/72) ✅ Erst-Iteration Chat 74
 
 Der Reducer fasst ältere Session-Turns zusammen, statt alle 11+ Turns wörtlich an den Responder durchzureichen. Pendant zum Enricher: wo der Enricher anreichert, dünnt der Reducer aus.
 
-**Motivation:** Echo-Bug (Chat 72) zeigt, dass Nova ab ~11 Turns die User-Nachricht wörtlich wiederholt. Vermutete Ursache: Kontext-Sättigung durch Session-Turns + KZG/LZG-Rauschen + Charakter-Hash + GV-Vorschlag. Konzipiert in Chat 71, durch Echo-Bug in Chat 72 priorisiert.
+**Motivation:** Echo-Bug (Chat 72) zeigt, dass Nova ab ~11 Turns die User-Nachricht wörtlich wiederholt. Vermutete Ursache: Kontext-Sättigung durch Session-Turns + KZG/LZG-Rauschen + Charakter-Hash + GV-Vorschlag.
 
-**Funktion:**
-
-- Ältere Turns (>N) destillieren statt durchreichen
-- Pro Responder-Call ein fokussiertes Konzentrat aus dem State bauen, statt vollen `memory_context`
-- Reduktionsstufen je nach Turn-Alter (jüngste vollständig, mittlere zusammengefasst, alte als Themen-Tag)
-
-**Architektur-Anschluss:** Reducer läuft im CharacterGraph zwischen Enricher und Responder. Konsumiert Session + KZG/LZG-Treffer und schreibt `responder_context` in den State. Auch GV-Vorschlag und Charakter-Hash gehen durch den Reducer, damit der Responder ein konsistentes Konzentrat bekommt.
-
-**Priorität:** Hoch — direkt blockierender Bug bei langen Sessions.
+**Status Chat 74:** Erst-Iteration als String-Parser implementiert. Funktioniert für Exakt-Dedup von KZG/LZG-Einträgen. Architektur-Schuld erkannt — sauberer Umbau geplant (siehe oben: Reducer-Umbau).
 
 ---
 
@@ -1151,9 +1238,11 @@ Kurzübersicht aktiver Bugs:
 | CRUD-REACTIVATE-STAMP | ⚠️ | Reactivate setzt deaktiviert_am nicht auf NULL |
 | EMOTE-LOCK | ⬜ | Emote-Inflation bei langem Charakter-Register |
 | TOPOS-LOCK | ⬜ | Bildervorrat wird mechanisch zykeliert |
+| ABER-SAG-MAL | ⬜ | TOPOS-LOCK-Verstärkung im flirty Register (Chat 74) |
+| REDUCER-MULTILINE | ⚠ | Reducer-String-Parser fragmentiert mehrzeilige Plugin-Blöcke (Chat 74, latent) |
 | PATH1-LATENZ | ⬜ | Pfad-1 kann bei GPU-Druck auf 55+ Sekunden gehen (Einmal-Event beobachtet) |
 | ROUTE-CHAR-NOTIZ | ✅ (beobachten) | CharacterGraph-Router dispatched Konversation an NotizenAgent (Chat 62) |
-| ENRICHER-DUP | 👁 | Fakten werden mehrfach in den Enricher-Kontext injiziert (Chat 62, Beobachtung) |
+| ENRICHER-DUP | 👁 | Fakten werden mehrfach in den Enricher-Kontext injiziert (Chat 62, Beobachtung; Chat 74: durch Reducer teilweise adressiert) |
 | RESP-DEAD | ⬜ | Tote Standardphrase statt Nova-Ton bei fehlgeschlagenen Agent-Dispatches |
 | PIXIE-GHOST | ⬜ | Pixie-Delivery fließt nicht durch EI/Session/Router — Nova hört sich selbst nicht |
 
@@ -1172,3 +1261,5 @@ Details, Ursachen und Lösungsansätze → `novaberg-bugs.md`
 *Aktualisiert Chat 72: GV3 (Dreischicht-Prompt-Integration) ✅ — implementiert in Chat 72. GV-Panel Redis-Persistierung ✅ (war bei Chat-72-Start bereits erledigt). Drei neue Folgearbeiten: Reducer-Node (Hoch, gegen Echo-Bug bei langen Sessions), GV-Panel Dreischicht-Felder visualisieren (Hoch, Sichtbarkeit der neuen Architektur), Modus-Kalibrierung spielerisch vs. emotional (Niedrig, Perzeption-Prompt).*
 
 *Aktualisiert Chat 71: GV3 + GV4 in Implementierung (🔧). GV4b als neues Epic: Agenten als Wissensquellen mit BaseAgent-Erweiterung (neugier_quelle, neugier_config, neugier_suchen()). Embedding-Nachrüstung für Timeline + Notizen. FaktenAgent als Quick Win (Embedding existiert). 6-Systeme-Relevanzformel validiert (58-Testfälle-Matrix, sin^0.5 Neugier-Normalisierung, Register-Kompatibilität, Session-Decay).*
+
+*Aktualisiert Chat 74: Reducer-Erst-Iteration ✅ (String-Parser, funktional aber brüchig). Reducer-Umbau als neues Hoch-Prio-Epic mit Konzept-Dokument `novaberg-reducer-umbau_k.md` (7-Phasen-Plan STRUCT-1 bis STRUCT-7, Big Bang). Drei neue Konzept-Backlog-Punkte: Assoziatives Retrieval, Akten-basiertes Retrieval, Anker-Emotion. Hash-Zeitstempel für alle 5 Profile ✅ (3 neue DB-Spalten + Migration + Agent + API + Client).*

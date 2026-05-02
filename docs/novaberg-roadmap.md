@@ -1,6 +1,6 @@
 # Novaberg — Roadmap (Projektchronik)
 
-**Stand:** Chat 72, 01. Mai 2026
+**Stand:** Chat 74, 02. Mai 2026
 **Pfad:** novaberg/docs/novaberg-roadmap.md
 **Single Source of Truth für abgeschlossene Arbeit.**
 **Offene Punkte → novaberg-backlog.md**
@@ -688,4 +688,43 @@
 
 ---
 
-*Aktualisiert in Chat 73. Offene Punkte → novaberg-backlog.md. Bugs → novaberg-bugs.md.*
+## Chat 74 (02. Mai 2026) — Hash-Zeitstempel + Reducer-Iteration + Umbau-Plan
+
+### Hash-Zeitstempel — alle 5 Profile sichtbar
+
+- ✅ DB-Schema `charakter_hash`: 3 neue Spalten (`intentions_aktualisiert_am`, `emotions_aktualisiert_am`, `beziehung_aktualisiert_am`) als TIMESTAMPTZ DEFAULT NOW()
+- ✅ Idempotente Migration via `ALTER TABLE ... ADD COLUMN IF NOT EXISTS` + manuelle Anwendung auf Live-DB
+- ✅ CharakterAgent `_ergebnis_speichern()` schreibt alle 5 Zeitstempel konditional (CASE WHEN profil != '' THEN NOW())
+- ✅ API-Endpoint `GET /gedaechtnis/hash/{user_id}` liefert 3 zusätzliche Felder
+- ✅ Client-Panel `character_panel.py` zeigt Zeitstempel für alle 5 Profile (Kern, Adaptiv, Intentionen, Emotionen, Beziehung)
+- ✅ `init.sql` an Live-Schema angeglichen: `character_id`-Spalte + Composite PK `(user_id, character_id)` (war bereits manuell migriert, jetzt im Schema reflektiert)
+
+### Reducer-Node (Erst-Iteration, String-Parser)
+
+- ✅ Reducer-Node konzipiert und implementiert: `server/graph/nodes/reducer.py`
+- ✅ Eingebunden im CharacterGraph zwischen `gv_node` und `responder`
+- ✅ Konfiguration in `config.py`: `REDUCER_AKTIV`, `REDUCER_LOG_REMOVED`
+- ✅ Wrapper `_node_reduce` in `graph/base.py`
+- ✅ Zwei Stufen: Exakt-Dedup + Substring-Dedup
+- ⚠ Architektur-Schuld erkannt: String-Parser auf Pre-Format-String ist brüchig (Mehrzeilen-Plugin-Blöcke werden zerlegt, latenter Bug bei Notizen)
+
+### Reducer-Umbau-Plan (Strukturierter memory_context)
+
+- ✅ Konzept-Dokument `novaberg-reducer-umbau_k.md` verfasst
+- ✅ Architektur: Strukturierte Pipeline mit `ContextEntry`-TypedDict statt vorformatiertem String
+- ✅ Brudi-Prompt-Plan in 7 Phasen (STRUCT-1 bis STRUCT-7)
+- ✅ Format-Vertrag dokumentiert (Responder-Stabilität)
+- ✅ Formatter als Tool definiert (`graph/format/memory_context.py`), nicht als Graph-Node
+- ✅ Plugin-Manager-Inventur als Voraussetzung vor STRUCT-3 markiert
+- 📋 Implementierung erfolgt in Folge-Sessions (Big Bang, Plugin-Manager werden im Nachgang nachgezogen)
+
+### Backlog-Konzepte (für spätere Sessions)
+
+- ✅ Assoziatives Retrieval — Kontext als Geflecht (referentiell/temporal/kausal-thematisch)
+- ✅ Anker-Emotion (Grundemotion pro Charakter, Marvin-Konzept)
+- ✅ Akten-basiertes Retrieval — Entitäten als kohärente Wissens-Pakete
+- ✅ memory_context strukturieren (Listen von Dicts statt String) → wird durch Reducer-Umbau realisiert
+
+---
+
+*Aktualisiert in Chat 74. Offene Punkte → novaberg-backlog.md. Bugs → novaberg-bugs.md.*

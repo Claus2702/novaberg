@@ -1,6 +1,6 @@
 # Novaberg — Bugs & Limitationen
 
-**Stand:** 01. Mai 2026, Chat 73
+**Stand:** 02. Mai 2026, Chat 74
 **Quelle:** Testlauf "Karrierekrise" (200 Prompts) + Gedächtnis-Epic (Chat 11) + Epic 11 Agent-System (Chats 22–32) + Persona Smoke-Tests (Chats 31–32) + RechercheAgent-Test (Chat 35) + Doku-Audit (Chat 36) + PRIO0-Fix + Client-Observability (Chat 37) + Claude API-Test + STREAM1-Fix + Gesprächsvektor (Chat 39) + CharakterIdentitaetAgent + DirektivenAgent + Tribunal Score-System (Chat 40) + Telegram Bot + Zeitparser-Fixes (Chat 41) + CRUD-Härtung + Telegram-Chat-Analyse + DB-Report (Chat 42) + KONTEXT1-Fix + Resume-Bug + Epic 15 Pilot (Chat 43) + Epic 15 Rollout + DELEG-REG Fix + KZG-Klebrigkeit (Chat 44) + RESP-CHAR1 Fix (Chat 45) + CLASSIFY-REJECTED + Gemma4 Live-Tests (Chat 48) + Telegram-Konversation "frecher Charakter" (Chat 49) + RESUME-REJECT Fix + Live-Tests (Chat 50) + Neugier-Konzept + Projektinfrastruktur (Chat 51) + Doku-Alignment + emotions_profil (Chat 52) + Antrieb-Konzept + Dual-Emotion (Chat 53) + HALL2-Fix + Planner-Refactor (Chat 54) + PySide6 verworfen + GTK4-Entscheidung (Chat 55) + GTK4-Client + Panel-Infrastruktur (Chat 56) + Web-Tool-Doku + SEARX1-Diagnose (Chat 57) + Chat 61 (Perzeption-Symmetrie, Akkumulations-Refactor, Paper-Portfolio, Lumi, urllib3-Doppel-Turn beobachtet) + Paper I + urllib3-RETRY + ROUTE-CHAR-NOTIZ + RESP-DEAD + PIXIE-GHOST (Chat 65) + WS-SINGLE Fix + ClientConnection + User-Message-Broadcast (Chat 68) + Dreischicht-Integration + GV-Refactoring + MODUS-LEER + VEKTOR-LEER + AROUSAL-330 + ZIEL-LABEL-LEER Fixes (Chat 72)
 
 ---
@@ -471,6 +471,7 @@ Dann Requests über diese Session abwickeln statt direkt `requests.post()`.
 **Symptom:** Einzelne Fakten (beobachtet: `HAT_FREUNDIN`) erscheinen 4–7 Mal hintereinander im destillierten Enricher-Kontext, der an den Responder geht. Der Kontext wird unnoetig aufgeblaeht, und das LLM kann den Fakt als besonders wichtig (weil haeufig genannt) fehldeuten.
 **Ursache (vermutet):** Der Enricher holt Fakten aus mehreren Quellen (KZG, LZG, Knowledge Graph, evtl. Timeline) ohne nachgelagerte Dedup-Stufe. Bei ueberlappenden Retrieval-Treffern wandert derselbe Fakt mehrfach in die Liste.
 **Loesungsansatz:** Deduplizierungs-Schritt im Enricher nach dem Sammeln — einfacher Set-Filter auf `subjekt+attribut+objekt`-Tripel oder Embedding-Aehnlichkeit.
+**Status Chat 74:** Reducer-Erst-Iteration adressiert das Problem teilweise. Beobachtung im Live-Log: bei ~30 Einträgen werden 1-2 Duplikate pro Turn entfernt — also weniger als ursprünglich vermutet. Wichtige Erkenntnis: ENRICHER-DUP ist nicht das Hauptproblem des memory_context, sondern thematisch unpassende Einträge (Embedding-Schrott, Anna im Katzen-Chat). Reducer-Umbau wird beide Aspekte sauberer adressieren.
 **Prio:** Beobachtung — noch kein bestaetigter Funktionsbruch, aber kontext- und qualitaetsrelevant. Bei naechstem Auftreten Details sammeln (welche Quellen liefern den Fakt?).
 
 ---
@@ -525,6 +526,8 @@ Dann Requests über diese Session abwickeln statt direkt `requests.post()`.
 
 **Lösungsansatz:** Reducer-Node als zentrale Lösung geplant (seit Chat 71). Der Reducer destilliert pro Turn ein fokussiertes Konzentrat für den Responder, statt den vollen `memory_context` durchzureichen.
 
+**Status Chat 74:** Reducer-Erst-Iteration implementiert (String-Parser, Exakt + Substring-Dedup). Funktioniert für KZG/LZG-Einträge, dedupliziert 1-2 Treffer pro Turn bei ~30 Einträgen. Echo-Bug nicht direkt verifiziert (kein langer Test-Lauf), aber Architektur-Schuld erkannt: String-Parser ist brüchig. Sauberer Umbau via `novaberg-reducer-umbau_k.md` geplant.
+
 **Prio:** Hoch — bricht das Gespräch komplett, sobald die Session lang genug wird.
 
 ---
@@ -572,3 +575,28 @@ Dann Requests über diese Session abwickeln statt direkt `requests.post()`.
 ---
 
 *Aktualisiert Chat 72: Vier Fixes in Behoben-Tabelle (MODUS-LEER, VEKTOR-LEER, AROUSAL-330, ZIEL-LABEL-LEER). Vier neue offene Bugs aus Dreischicht-Integration: ECHO-BUG (Hoch, durch geplanten Reducer adressiert), PENDING-RELEVANZ, MODUS-KALIBRIERUNG, CHAR-HASH-FILTER. Beobachtungen: KZG-DEDUP/KZG-KERN-BLIND wurden in Chat 64 als gelöst markiert, in Chat 72 jedoch wieder beobachtet (dreifache Katze-bei-Lumi-Einträge mit steigender Salienz) — bei nächster Wiederholung re-evaluieren. ZEIT1 (gefixt Chat 41) zeigt unter Gemma4 wieder Symptome — Modell-Verhalten, nicht Regex-Regression.*
+
+---
+
+### Chat 74 — Reducer-Iteration + Live-Beobachtungen
+
+#### REDUCER-MULTILINE — Mehrzeilen-Plugin-Blöcke werden vom String-Parser fragmentiert ⚠
+**Entdeckt:** Chat 74, 02. Mai 2026
+**Symptom:** Der Reducer-Erst-Iteration-Parser zerlegt mehrzeilige Plugin-Blöcke (Notizen mit mehreren Listenpunkten) in einzelne Zeilen. Beobachtung: "einkaufsliste: kümmel" wird ein Eintrag, "kardamon" und "hefe" werden zu eigenständigen Einträgen ohne Präfix mit Gewicht 0.0.
+**Risiko:** Bei zufälligem Match-Wort ("hefe" auch in einem anderen Eintrag) würde die Notiz löchrig — der Reducer würde "hefe" entfernen und der Responder bekäme die Notiz unvollständig.
+**Status:** Latenter Bug, schlägt heute nicht zu, weil keine Match-Kollisionen aufgetreten sind. Wird durch Reducer-Umbau (`novaberg-reducer-umbau_k.md`) strukturell gelöst — strukturierte ContextEntries statt String-Parser.
+**Prio:** Mittel — solange der Reducer aktiv ist, latentes Datenintegritäts-Risiko. Behebung mit Reducer-Umbau.
+
+---
+
+#### ABER-SAG-MAL — TOPOS-LOCK-Verstärkung im flirty Register ⬜
+**Entdeckt:** Chat 74, 02. Mai 2026
+**Symptom:** Im spielerisch-flirty Register von Nova zementiert sich die rhetorische Wendung "Aber sag mal: …" als Standard-Eröffnung für reflektierende Rückfragen. In einem ~20-Turn-Gespräch fünfmal beobachtet: "Aber sag mal: Glaubst du wirklich…", "Aber sag mal: Bist du eigentlich bereit…", "Aber sag mal: Beinhaltet dieses 'Alles'…". Mechanisches Pattern, kein semantisches.
+**Verwandt:** TOPOS-LOCK (Chat 49), EMOTE-LOCK (Bildervorrat-Recycling). Gleiche Klasse: Gemma4 extrahiert "funktionierende Bausteine" aus früheren Antworten und recycelt sie.
+**Hypothese:** Selbstverstärkung durch Verlauf im Responder-Kontext. Nova kopiert sich selbst, weil das Pattern hochfrequent im Verlauf steht.
+**Lösungsansatz:** Offen. Möglich: (a) GV-Tracker für "bereits verwendete Wendungen", (b) Responder-Anweisung, das exakte Phrasen-Muster nicht zweimal in Folge zu nutzen, (c) Verlaufs-Trimming im Reducer-Umbau (jüngste Turns voll, mittlere kondensiert).
+**Prio:** Niedrig — kosmetisch im flirty Register, beeinträchtigt die Lebendigkeit aber spürbar. Bei Reducer-Umbau mit-evaluieren.
+
+---
+
+*Aktualisiert Chat 74: REDUCER-MULTILINE als latenter Bug der Erst-Iteration vermerkt (wird durch Umbau strukturell gelöst). ABER-SAG-MAL als TOPOS-LOCK-Verstärkung im flirty Register beobachtet. ECHO-BUG-Eintrag um Reducer-Status ergänzt. ENRICHER-DUP-Eintrag um Live-Beobachtung ergänzt (1-2 Treffer pro 30 Einträge — weniger als vermutet).*

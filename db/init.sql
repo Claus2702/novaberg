@@ -50,14 +50,19 @@ CREATE INDEX IF NOT EXISTS idx_lzg_aktiv
 -- charakter_hash
 -- ───────────────────────────────────────────────
 CREATE TABLE IF NOT EXISTS charakter_hash (
-    user_id                  TEXT        PRIMARY KEY,
-    kern_hash                TEXT        NOT NULL DEFAULT '',
-    adaptive_hash            TEXT        NOT NULL DEFAULT '',
-    kern_aktualisiert_am     TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-    adaptive_aktualisiert_am TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-    intentions_profil        TEXT        NOT NULL DEFAULT '',
-    emotions_profil          TEXT        NOT NULL DEFAULT '',
-    beziehungsprofil         TEXT        NOT NULL DEFAULT ''
+    user_id                        TEXT        NOT NULL,
+    character_id                   TEXT        NOT NULL DEFAULT 'nova',
+    kern_hash                      TEXT        NOT NULL DEFAULT '',
+    adaptive_hash                  TEXT        NOT NULL DEFAULT '',
+    kern_aktualisiert_am           TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    adaptive_aktualisiert_am       TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    intentions_profil              TEXT        NOT NULL DEFAULT '',
+    intentions_aktualisiert_am     TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    emotions_profil                TEXT        NOT NULL DEFAULT '',
+    emotions_aktualisiert_am       TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    beziehungsprofil               TEXT        NOT NULL DEFAULT '',
+    beziehung_aktualisiert_am      TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    PRIMARY KEY (user_id, character_id)
 );
 
 -- ───────────────────────────────────────────────
@@ -246,6 +251,16 @@ ALTER TABLE langzeitgedaechtnis ADD COLUMN IF NOT EXISTS tone TEXT NOT NULL DEFA
 ALTER TABLE charakter_hash ADD COLUMN IF NOT EXISTS intentions_profil TEXT NOT NULL DEFAULT '';
 ALTER TABLE charakter_hash ADD COLUMN IF NOT EXISTS emotions_profil TEXT NOT NULL DEFAULT '';
 ALTER TABLE charakter_hash ADD COLUMN IF NOT EXISTS beziehungsprofil TEXT NOT NULL DEFAULT '';
+
+-- Zeitstempel fuer Intentionen/Emotionen/Beziehung (Chat 74)
+ALTER TABLE charakter_hash ADD COLUMN IF NOT EXISTS intentions_aktualisiert_am TIMESTAMPTZ NOT NULL DEFAULT NOW();
+ALTER TABLE charakter_hash ADD COLUMN IF NOT EXISTS emotions_aktualisiert_am TIMESTAMPTZ NOT NULL DEFAULT NOW();
+ALTER TABLE charakter_hash ADD COLUMN IF NOT EXISTS beziehung_aktualisiert_am TIMESTAMPTZ NOT NULL DEFAULT NOW();
+
+-- Paar-Schema fuer charakter_hash (Chat 74): character_id als Teil des PK.
+-- Auf bestehenden Installationen wurde der PK bereits manuell erweitert.
+-- Diese Migration ist idempotent und sichert Neuinstallationen ab.
+ALTER TABLE charakter_hash ADD COLUMN IF NOT EXISTS character_id TEXT NOT NULL DEFAULT 'nova';
 
 -- hintergrund_log Erweiterungen
 ALTER TABLE hintergrund_log ADD COLUMN IF NOT EXISTS status TEXT NOT NULL DEFAULT 'offen';

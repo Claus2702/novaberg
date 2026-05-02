@@ -50,6 +50,7 @@ class CharacterGraph(GraphBase):
         graph.add_node("planner",         self._node_plan)
         graph.add_node("agent_dispatch",  self._node_agent_dispatch)
         graph.add_node("gv_node",         self._node_gespraechsvektor)
+        graph.add_node("reducer",         self._node_reduce)
         graph.add_node("responder",       self._node_respond)
         graph.add_node("thinker",         self._node_think)
         graph.add_node("tribunal",        self._node_judge)
@@ -85,7 +86,8 @@ class CharacterGraph(GraphBase):
         )
         graph.add_edge("agent_dispatch", "planner")  # Schleife zurück zum Planner
 
-        graph.add_edge("gv_node",    "responder")
+        graph.add_edge("gv_node",    "reducer")
+        graph.add_edge("reducer",    "responder")
         graph.add_edge("responder",  "thinker")
         graph.add_edge("thinker",    "tribunal")
         graph.add_edge("tribunal",   "evaluate")

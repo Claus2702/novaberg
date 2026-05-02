@@ -999,6 +999,19 @@ GV_TIEFE_MODUS: dict[str, float] = {
     "spielerisch": 0.4, "arbeitsmodus": 0.6, "alltag": 0.3,
 }
 
+# ─────────────────────────────────────────────
+# Reducer (Chat 74)
+# ─────────────────────────────────────────────
+# Master-Schalter fuer den Reducer-Node. Wenn False, wird der Node zur
+# No-Op und der memory_context bleibt unveraendert. Erlaubt schnelles
+# Abschalten zum A/B-Vergleich.
+REDUCER_AKTIV: bool = True
+
+# Detailliertes Logging der entfernten Eintraege. Pro entferntem Eintrag
+# eine INFO-Zeile mit Begruendung und Inhalt-Snippet. Im Produktivbetrieb
+# ggf. auf False stellen.
+REDUCER_LOG_REMOVED: bool = True
+
 # ── Tribunal — Schwellwerte pro Rolle (T1) ────────────────
 # Score: 0.0 = unbedenklich, 1.0 = schwerer Verstoss
 # vote = "ok" wenn score < WARNUNG

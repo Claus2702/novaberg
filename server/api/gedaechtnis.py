@@ -143,7 +143,9 @@ def HashAbrufen(user_id: str, character_id: str = ASSISTANT_USER_ID):
         cursor.execute("""
             SELECT kern_hash, adaptive_hash,
                    intentions_profil, emotions_profil, beziehungsprofil,
-                   kern_aktualisiert_am, adaptive_aktualisiert_am
+                   kern_aktualisiert_am, adaptive_aktualisiert_am,
+                   intentions_aktualisiert_am, emotions_aktualisiert_am,
+                   beziehung_aktualisiert_am
             FROM charakter_hash
             WHERE user_id = %s AND character_id = %s
         """, (user_id, character_id))
@@ -157,16 +159,21 @@ def HashAbrufen(user_id: str, character_id: str = ASSISTANT_USER_ID):
                 "intentions_profil": "", "emotions_profil": "",
                 "beziehungsprofil": "",
                 "kern_aktualisiert": "", "adaptive_aktualisiert": "",
+                "intentions_aktualisiert": "", "emotions_aktualisiert": "",
+                "beziehung_aktualisiert": "",
             }
 
         return {
-            "kern_hash":             row[0] or "",
-            "adaptive_hash":         row[1] or "",
-            "intentions_profil":     row[2] or "",
-            "emotions_profil":       row[3] or "",
-            "beziehungsprofil":      row[4] or "",
-            "kern_aktualisiert":     row[5].isoformat() if row[5] else "",
-            "adaptive_aktualisiert": row[6].isoformat() if row[6] else "",
+            "kern_hash":                row[0] or "",
+            "adaptive_hash":            row[1] or "",
+            "intentions_profil":        row[2] or "",
+            "emotions_profil":          row[3] or "",
+            "beziehungsprofil":         row[4] or "",
+            "kern_aktualisiert":        row[5].isoformat() if row[5] else "",
+            "adaptive_aktualisiert":    row[6].isoformat() if row[6] else "",
+            "intentions_aktualisiert":  row[7].isoformat() if row[7] else "",
+            "emotions_aktualisiert":    row[8].isoformat() if row[8] else "",
+            "beziehung_aktualisiert":   row[9].isoformat() if row[9] else "",
         }
 
     except Exception as fehler:

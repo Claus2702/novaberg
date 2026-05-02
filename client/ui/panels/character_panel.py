@@ -8,13 +8,16 @@ scrollbare Sektionen.
 Response-Format (siehe ``server/api/gedaechtnis.py``):
 
     {
-        "kern_hash":             str,
-        "adaptive_hash":         str,
-        "intentions_profil":     str,
-        "emotions_profil":       str,
-        "beziehungsprofil":      str,
-        "kern_aktualisiert":     str,   # ISO-Timestamp
-        "adaptive_aktualisiert": str,
+        "kern_hash":                str,
+        "adaptive_hash":            str,
+        "intentions_profil":        str,
+        "emotions_profil":          str,
+        "beziehungsprofil":         str,
+        "kern_aktualisiert":        str,   # ISO-Timestamp
+        "adaptive_aktualisiert":    str,
+        "intentions_aktualisiert":  str,
+        "emotions_aktualisiert":    str,
+        "beziehung_aktualisiert":   str,
     }
 """
 
@@ -38,9 +41,9 @@ logger = logging.getLogger(__name__)
 _SECTIONS: list[tuple[str, str, str]] = [
     ("Kern",        "kern_hash",         "kern_aktualisiert"),
     ("Adaptiv",     "adaptive_hash",     "adaptive_aktualisiert"),
-    ("Intentionen", "intentions_profil", ""),
-    ("Emotionen",   "emotions_profil",   ""),
-    ("Beziehung",   "beziehungsprofil",  ""),
+    ("Intentionen", "intentions_profil", "intentions_aktualisiert"),
+    ("Emotionen",   "emotions_profil",   "emotions_aktualisiert"),
+    ("Beziehung",   "beziehungsprofil",  "beziehung_aktualisiert"),
 ]
 
 
