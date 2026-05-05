@@ -326,7 +326,7 @@
 - ✅ **Dispatcher als Session-Turn-Schreiber:** Vollständige Turns (Text + alle Metadaten). `session_turn_store()` erweitert. KZG-Kern-Entkopplung (`session_turn_kern` in State). `session_summarize_if_needed()` im Dispatcher.
 - ✅ **EI-Calc Empathie-Switch:** `event_source` steuert Nova-Empathie (user → Empathie, character → nur Decay).
 - ✅ **chat.py Fire-and-Forget:** Pfad 1 statt Vollgraph. Event-Erzeugung. Kein SSE-Answer mehr.
-- ✅ **Konzeptdokument:** `novaberg-event-model_k.md` erstellt.
+- ✅ **Konzeptdokument:** `novaberg-convention-event-model.md` erstellt.
 - ✅ **Englisch-Bereinigung:** `event_quelle` → `event_source`, `"charakter"` → `"character"`.
 - ✅ **nachbearbeitung.py deprecated:** Ersetzt durch Event-Consumer.
 

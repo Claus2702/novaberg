@@ -76,7 +76,7 @@ Psychologe und Ethiker: Einfacher Score (0.0-1.0), Schwellwerte 0.7/0.9. Keine D
 
 Seit Chat 60 sind User und Charakter zwei unabhängige Akteure, verbunden durch Events und ein gemeinsames Session-Gedächtnis. Der bisherige synchrone Monolith-Graph wurde in zwei spezialisierte Graphen aufgespalten.
 
-→ Konzeptdokument: `novaberg-event-model_k.md`
+→ Konzeptdokument: `novaberg-convention-event-model.md`
 
 ### 3.1 HumanGraph — Pfad 1: User schreibt (5 Nodes)
 
@@ -196,7 +196,7 @@ chat.py → HumanGraph (Pfad 1) → Event erzeugen
 **Self-Trigger:** Nach dem Dispatcher kann der Charakter ein weiteres Event erzeugen (Multi-Turn).
 **Loop-Schutz:** Max 3 Self-Triggers pro User-Event.
 
-→ Details: `novaberg-event-model_k.md`, `novaberg-service-events.md`, `novaberg-service-event-consumer.md`
+→ Details: `novaberg-convention-event-model.md`, `novaberg-service-events.md`, `novaberg-service-event-consumer.md`
 
 ### 3.4 Session-Trennung (Chat 60)
 

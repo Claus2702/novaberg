@@ -308,7 +308,7 @@ Verbunden durch eine Redis-Event-Queue (`event_queue:{user_id}:{character_id}`).
 
 Session-Key seit Chat 60: `session:{user_id}:{character_id}:turns` (vorher: `session:{user_id}:turns`).
 
-→ Details: `novaberg-graph.md` §3, `novaberg-event-model_k.md`
+→ Details: `novaberg-graph.md` §3, `novaberg-convention-event-model.md`
 
 ---
 

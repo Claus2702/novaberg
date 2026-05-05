@@ -3,8 +3,8 @@
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Konzept — Verbindliche Konvention für (user_id, character_id, beobachter)
 **Stand:** 29. April 2026, Chat 71
-**Pfad:** novaberg/docs/novaberg-paar-schema_k.md
-**Typ:** Konzept (K)
+**Pfad:** novaberg/docs/novaberg-convention-paar-schema.md
+**Typ:** Convention
 **Voraussetzung:** Paar-Schema-Migration, Chat 66 ✅
 **Folgendes:** CHAR-BEZ-STALE (novaberg-bugs.md), Backlog "Hash-Schema um beobachter erweitern", Backlog "Migrations-Skript Altdaten kzg:nova:nova:*"
 

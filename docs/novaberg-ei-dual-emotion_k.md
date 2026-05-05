@@ -157,7 +157,7 @@ Strikte Partition über `user_id`:
 
 ## 6. Asynchroner Block — Details
 
-> **⚠️ Veraltet (Chat 60).** Der hier beschriebene asynchrone Block wurde durch das Event-Modell ersetzt. Der CharacterGraph (Pfad 2) läuft als eigenständiger Graph, ausgelöst durch Events. Siehe `novaberg-event-model_k.md`.
+> **⚠️ Veraltet (Chat 60).** Der hier beschriebene asynchrone Block wurde durch das Event-Modell ersetzt. Der CharacterGraph (Pfad 2) läuft als eigenständiger Graph, ausgelöst durch Events. Siehe `novaberg-convention-event-model.md`.
 
 ### 6.1 Perzeption(Nova)
 
@@ -318,7 +318,7 @@ Dritte Kraft auf Novas Emotion: aktivierte Zielsätze injizieren Emotion über E
 
 ### TurnOrchestrator (überholt)
 
-Ursprünglich als sternförmiger Orchestrator konzipiert, der regelbasiert entscheidet, welcher Node als nächstes läuft. **Seit Chat 60 durch das Event-Modell ersetzt:** Zwei separate Graphen (HumanGraph + CharacterGraph), verbunden durch eine Redis-Event-Queue. Der TurnOrchestrator als separates Epic ist damit konzeptionell überholt. Siehe `novaberg-event-model_k.md`.
+Ursprünglich als sternförmiger Orchestrator konzipiert, der regelbasiert entscheidet, welcher Node als nächstes läuft. **Seit Chat 60 durch das Event-Modell ersetzt:** Zwei separate Graphen (HumanGraph + CharacterGraph), verbunden durch eine Redis-Event-Queue. Der TurnOrchestrator als separates Epic ist damit konzeptionell überholt. Siehe `novaberg-convention-event-model.md`.
 
 ---
 

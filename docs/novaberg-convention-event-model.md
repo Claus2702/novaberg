@@ -3,8 +3,8 @@
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Konzept — Event-Modell (Architektur-Evolution)
 **Stand:** 21. April 2026, Chat 60
-**Pfad:** novaberg/docs/novaberg-event-model_k.md
-**Typ:** Konzept (K)
+**Pfad:** novaberg/docs/novaberg-convention-event-model.md
+**Typ:** Convention
 **Voraussetzung:** Session-Trennung (user_id × character_id), Chat 60 ✅
 **Ersetzt:** Async-Block (nachbearbeitung.py), TurnOrchestrator-Vision
 

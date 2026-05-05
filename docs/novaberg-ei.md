@@ -298,7 +298,7 @@ Jeder Eintrag landet damit in der richtigen Paar-Partition `kzg:{user_id}:{chara
 KZG-Dispatch: Paar={user_id}:{character_id}, Beobachter={beobachter}
 ```
 
-> Detail: novaberg-ei-dual-emotion_k.md (Konzept), novaberg-node-ei-calc.md (Implementierung), novaberg-event-model_k.md (Event-Modell), novaberg-mem-kzg.md §4a (Dispatch)
+> Detail: novaberg-ei-dual-emotion_k.md (Konzept), novaberg-node-ei-calc.md (Implementierung), novaberg-convention-event-model.md (Event-Modell), novaberg-mem-kzg.md §4a (Dispatch)
 
 ---
 

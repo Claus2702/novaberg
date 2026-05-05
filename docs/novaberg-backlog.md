@@ -410,7 +410,7 @@ veraltetes Beziehungsprofil die gesamte Antwortqualität ruiniert).
 
 **Stufe 1 erledigt (Chat 73):** `beobachter_filter` in `_kzg_laden()` + 20 Altdaten migriert. Stufe 2 (Schema-Erweiterung) und Stufe 3 (vier Tripel im CharakterAgent) noch offen.
 
-Konzept: `novaberg-paar-schema_k.md`. Heute mischt der Hash-Eintrag
+Konzept: `novaberg-convention-paar-schema.md`. Heute mischt der Hash-Eintrag
 `(nova, meister)` zwei Sichten — Nova-aus-User-Sicht (Beobachter `user`) und
 Nova-aus-Selbstsicht (Beobachter `assistant`) — in einem Datensatz. Dadurch
 überschreibt jede Destillation die jeweils andere Sicht.
@@ -432,7 +432,7 @@ die Datengrundlage für die Beobachter-Trennung.
 
 ### Altdaten-Migration: `kzg:nova:nova:*` → `kzg:nova:meister:*` (Chat 71)
 
-Konzept: `novaberg-paar-schema_k.md`, Abschnitt 4.2. In Redis liegen aktuell
+Konzept: `novaberg-convention-paar-schema.md`, Abschnitt 4.2. In Redis liegen aktuell
 19 KZG-Einträge unter `kzg:nova:nova:*` aus der Zeit vor dem Chat-71-Fix.
 Sie werden vom CharakterAgent zufällig mitgelesen (Wildcard `kzg:nova:*`),
 gehören aber semantisch unter `kzg:nova:meister:*` mit `beobachter=assistant`.
@@ -1296,6 +1296,33 @@ Drei kleine Punkte aus dem Reducer-Umbau, die nicht im Scope der STRUCT-Phasen l
 **Fix:** Verifizieren, unter welchen Bedingungen der Session-Summary heute erzeugt wird, und prüfen, ob die Bedingungen sinnvoll sind.
 **Prio:** Niedrig — Beobachtung, kein bestätigter Bug.
 
+### PIX-CLEAN — Toter ShadowAgent-Runner und aufruflose Tasks (Chat 77)
+
+**Status:** Beobachtet
+**Bezug:** M1-Audit Memory-Promotion-Korrektur (Chat 77)
+
+Der M1-Audit hat bestätigt, dass `services/shadow_agent/runner.py`
+(`schatten_arbeit_ausfuehren`) und damit alle Tasks unter
+`services/shadow_agent/tasks/` aufruflos sind. Weder `main.py` noch
+`api/admin.py` rufen den Legacy-Runner. `lzg_promotion` wurde in M1
+entfernt — die übrigen Tasks bleiben vorerst stehen:
+
+- recherche, vertiefen, nachfragen, charakter_hash, lzg_decay,
+  wiedervorlage, nova_gedaechtnis, aufraeumen
+
+**Empfehlung:** Pro Task denselben Audit fahren wie für `lzg_promotion`:
+
+1. Statische Aufrufer suchen
+2. Pixie-Router-Tabelle prüfen, ob die Aufgabe an einen neuen Agenten
+   geroutet wird (oder ob sie überhaupt noch in eine Queue gepusht wird)
+3. Bei Karteileichen-Befund Datei entfernen
+
+Erst danach kann `runner.py` selbst und der `discover_tasks()`-Pfad in
+`services/shadow_agent/__init__.py` entfernt werden. Die Utilities
+(`shadow_queue_push`, `nova_vorwissen_laden`, etc.) bleiben in jedem Fall.
+
+**Prio:** Niedrig — kein funktionaler Schaden, reine Code-Hygiene.
+
 ---
 
 ## Designdiskussion: THINKER-TOOL-FORMAT (Chat 75)
@@ -1351,5 +1378,8 @@ Details, Ursachen und Lösungsansätze → `novaberg-bugs.md`
 *Aktualisiert Chat 72: GV3 (Dreischicht-Prompt-Integration) ✅ — implementiert in Chat 72. GV-Panel Redis-Persistierung ✅ (war bei Chat-72-Start bereits erledigt). Drei neue Folgearbeiten: Reducer-Node (Hoch, gegen Echo-Bug bei langen Sessions), GV-Panel Dreischicht-Felder visualisieren (Hoch, Sichtbarkeit der neuen Architektur), Modus-Kalibrierung spielerisch vs. emotional (Niedrig, Perzeption-Prompt).*
 
 *Aktualisiert Chat 71: GV3 + GV4 in Implementierung (🔧). GV4b als neues Epic: Agenten als Wissensquellen mit BaseAgent-Erweiterung (neugier_quelle, neugier_config, neugier_suchen()). Embedding-Nachrüstung für Timeline + Notizen. FaktenAgent als Quick Win (Embedding existiert). 6-Systeme-Relevanzformel validiert (58-Testfälle-Matrix, sin^0.5 Neugier-Normalisierung, Register-Kompatibilität, Session-Decay).*
+
+- Chat 78: Convention-Magneten angelegt (`novaberg-convention-magneten.md`) — Drei-Achsen-Modell für Bündelung von Erinnerungen
+- Chat 78: Convention-Planner-Needs angelegt (`novaberg-convention-planner-needs.md`) — Multi-Agent-Schreibpfad mit Vorbedingungs-Auflösung
 
 *Aktualisiert Chat 74: Reducer-Erst-Iteration ✅ (String-Parser, funktional aber brüchig). Reducer-Umbau als neues Hoch-Prio-Epic mit Konzept-Dokument `novaberg-reducer-umbau_k.md` (7-Phasen-Plan STRUCT-1 bis STRUCT-7, Big Bang). Drei neue Konzept-Backlog-Punkte: Assoziatives Retrieval, Akten-basiertes Retrieval, Anker-Emotion. Hash-Zeitstempel für alle 5 Profile ✅ (3 neue DB-Spalten + Migration + Agent + API + Client).*

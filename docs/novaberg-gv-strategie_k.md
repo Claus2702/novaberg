@@ -602,7 +602,7 @@ Arbeitstitel: "The Conversational Landscape: A Six-Axis Model for Dialogue State
 - Emotionale Intelligenz: `novaberg-ei.md`
 - Drive und Neugier: `novaberg-thinking-drive_k.md`, `novaberg-thinking-curiosity_k.md`
 - Charakter-Hash: `novaberg-ei-character-profiles.md`
-- Paar-Schema: `novaberg-paar-schema_k.md`
+- Paar-Schema: `novaberg-convention-paar-schema.md`
 
 ---
 
