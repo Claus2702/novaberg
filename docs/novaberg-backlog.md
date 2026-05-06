@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Backlog — Konzipierte, noch nicht implementierte Features
-**Stand:** 02. Mai 2026, Chat 74
+**Stand:** 06. Mai 2026, Chat 78
 **Pfad:** novaberg/docs/novaberg-backlog.md
 **Quellen:** nova-08-k.md (Kognitive Anreicherung), nova-10-k-backlog.md (Skill-System), nova-01-t-c-backlog.md (Node-Konfiguration)
 
@@ -1340,6 +1340,167 @@ Der Thinker `memory_search`-Tool-Output verwendet seit STRUCT-5c (Chat 75) den g
 
 ---
 
+## Sprint: THINK-TRANSITION-INFO — Thinker bekommt Verarbeitungs-Block (Chat 78)
+
+**Status:** Designed (Chat 78), Implementierung ausstehend
+**Bezug:** Bug `THINK-MEM-CONFLICT` (`novaberg-bugs.md`), Responder-`task_block` (Chat 54), strukturierte Kontextualisierung (Chat 27)
+
+**Problem:** Der Thinker hat Information-Gap zum Agent-Run im selben Turn. `memory_context` zeigt Vor-Insert-Stand, eigene Tool-Aufrufe sehen Nach-Insert-Stand. Resultat: korrekte Antworten werden mit Konflikt-Formulierungen überschrieben (siehe Bug `THINK-MEM-CONFLICT`).
+
+**Lösung:** Wir geben dem Thinker dieselbe Transition-Information, die der Responder seit Chat 54 vom Planner bekommt. Pattern wie Chat 27: strukturierte Kontextualisierung statt Imperativ. Operations-neutraler Block deckt CRUD durchgängig ab — Verb steckt im `r.ergebnis`-String.
+
+**Implementierungs-Skizze:**
+
+1. Helper `format_success_lines` in neuer Datei `graph/format/agent_results.py` (gemeinsam genutzt von Planner und Thinker, modul-öffentlich analog zu `format_memory_entries`).
+2. Refactor in `graph/nodes/planner.py:116-123`: `_build_task_success` nutzt den Helper.
+3. Neue Funktion `_build_verarbeitungs_block` in `graph/nodes/thinker.py` baut Block aus `agent_results` mit `status == "abgeschlossen"`.
+4. Insert in `msg_parts` an Index 1 (nach `[TOOLS]`, vor `[BENUTZERANFRAGE]`).
+5. Reasoning-Regel in `prompts/default/thinker.rules.txt` ergänzt.
+6. Doku-Update in `novaberg-node-thinker.md` §8 Tabelle "Gelesen": neue Zeile für `agent_results`.
+
+**Smoke-Test:** Drei Turns auf leerer Timeline (Create/Update/Delete: "Zahnarzt morgen 14 Uhr" → "Verschiebe auf Freitag" → "Sag Freitag ab"). Erwartet: Nova bestätigt jeweils sauber, kein Thinker-Override.
+
+**Eingeordnet:** Vor M2.5a, weil M2.5a-Smoke-Tests sonst auf den Bug stoßen.
+
+---
+
+## Sprint: M2.5a — TimelineAgent-Manager-Cleanup (Chat 78)
+
+**Status:** Audit abgeschlossen (Chat 78), Implementierung ausstehend
+
+**Hintergrund:** Ursprünglich gedacht als TimelineAgent-Migration auf das NotizenAgent-Pattern. Audit in Chat 78 zeigt: der Subgraph ist bereits sauber, Search-vor-Execute korrekt verdrahtet seit Chat 27. Manager-Schreibpfade (`plan()`, `execute()` plus Hilfsfunktionen) sind tot — sie werden nicht mehr aufgerufen, seit der TimelineAgent in der Registry ist.
+
+**Reduzierter Scope:**
+
+1. Tote Manager-Schreibpfade in `plugins/timeline_manager/manager.py` löschen (`plan()`, `execute()`, `termin_verarbeiten`, `_termin_create`, `_termin_delete`, `_termin_update`, `_termin_query`).
+2. Manager schrumpft auf Lese-Schicht: `enrich_entries()` und `_termin_zu_entry()` bleiben.
+3. `themen`-Befüllung beim Schreiben in `agents/timeline/crud.py` (Create und Update). Variante in M2.5a zunächst: `ARRAY[event_type]`. Reichere thematische Anreicherung (kategorische Map über Entitäten) bleibt M3-Scope.
+4. Drei Verhaltens-Flags (`binding`, `remind`, `conflict_check`) beim Schreiben aus `event_type` ableiten:
+   - `termin`/`deadline` → alle drei TRUE
+   - `geburtstag`/`jahrestag`/`erinnerung` → nur `remind=TRUE`
+
+**Vorbedingung:** THINK-TRANSITION-INFO muss vorher ausgerollt sein, sonst stoßen die M2.5a-Smoke-Tests auf den THINK-MEM-CONFLICT-Bug.
+
+**Vorbehalt zum Pattern-Vorbild:** Der NotizenAgent dient als Vorbild. Meister sieht aber noch Schwächen im NotizenAgent, die in Chat 79 ausformuliert werden müssen vor Pattern-Übertragung. Die `themen`-Befüllung sollte beim NotizenAgent gleichgezogen werden.
+
+**Folge-Sprints:**
+
+- M2.5a-PRECISION (`precision`-Erweiterung auf `hour`/`month`/`quarter`/`year`, abhängig von Zeitparser-Erweiterung)
+- M2.5b (FaktenAgent neu anlegen)
+
+---
+
+## Konzept: MEMORY-SALIENZ-VERERBUNG — Salienz auf semantischen Trägern, Vererbung an Instanzen (Chat 78)
+
+**Status:** Konzept (Chat 78)
+**Inspiration:** OpenMemory-Recherche (Chat 78) — Composite-Score-Idee, aber auf Novabergs strukturierte Speicher übertragen.
+
+**Grundprinzip:** Salienz wohnt auf semantischen Trägern, nicht auf Instanz-Containern.
+
+- **Semantische Träger:** KZG-Einträge (haben Salienz schon), Themen, Entitäten, Knowledge-Graph-Triples.
+- **Instanz-Container:** Timeline-Einträge, Notizen, Fakten, Termine. Sie bekommen keine eigene Salienz, sondern erben über ihre Verweise (`themen`, `entitaet_ids`, Subject/Object-IDs).
+
+**Begründung der Trennung:** Eine einzelne Termin-Instanz wie *„Zahnarzt am 15. Juni"* ist zu kurzlebig und zu instanziell, um Aktivierungs-Geschichte aufzubauen. Was Geschichte aufbaut und Verfestigung erfährt, ist das Thema *„Zahnarzt"* — über Jahre, über mehrere Termine, über zwischenzeitliche Gespräche. Der Termin „erbt" Wichtigkeit von dem, worauf er zeigt.
+
+**Drei Wirkungen pro Träger:**
+
+1. **Verstärkung durch Aktivierung** (*„gefunden + serviert"*-Pattern, nicht jeder Read).
+2. **Konflikt-Auflösung gewichtet** (statt binär).
+3. **Retrieval-Ranking** (Träger gewichtet, Instanzen erben).
+
+**Implementierungs-Reihenfolge:**
+
+- **Phase 1: Triple-Salienz** — Knowledge-Graph-Triples bekommen Salienz-Feld plus `last_activated_at`. Kleinster Footprint, klar abgrenzbar. Aktivierungs-Hook nach Enricher: Triples deren Subject/Object im Output erscheinen werden geboostet.
+- **Phase 2: Themen/Entitäten-Salienz** — Themen und Entitäten als eigene Salienz-Träger. Vererbung an Termine und Notizen über ihre `themen`/`entitaet_ids`-Verweise.
+- **Phase 3: Enricher-Integration** — siehe ENRICHER-AKTE.
+
+**Vorbehalt Timeline:** `binding=TRUE` und Termin-Nähe haben Vorrang vor Salienz-Ranking. Salienz-Vererbung greift nur als zusätzlicher Ranking-Faktor für die nicht-bindenden und thematisch-relevanten Einträge.
+
+**Eingeordnet:** Phase 1 zwischen M2.5b (FaktenAgent) und M3 (Promotion-Code befüllt Magnete). Phase 2+3 nach M3.
+
+---
+
+## Konzept: ENRICHER-AKTE — Strukturierte Memory-Context-Akte aus vier Quellen (Chat 78)
+
+**Status:** Konzept (Chat 78)
+
+**Heute:** Der Enricher liefert einen flachen `memory_context` als zusammengeführte Liste von Einträgen. Quellen: KZG, LZG, Knowledge Graph, Timeline. Ohne klare Funktionstrennung, ohne gewichtete Auswahl.
+
+**Vision:** Eine strukturierte Akte, die aus vier funktional unterschiedlichen Quellen zusammengetragen wird:
+
+1. **Semantische Nähe (KZG/LZG).** Einträge die thematisch oder embeddingsnah zur aktuellen Anfrage liegen. Ranking nach Salienz × Embedding-Ähnlichkeit × Themen-Match.
+2. **Strukturelle Nähe (Knowledge Graph).** Spreading Activation von den Anfrage-Entitäten ausgehend. Salientere Triples werden bevorzugt expandiert.
+3. **Termin-Nähe (Timeline, zwei Kriterien).**
+   - Zeitliche Nähe (klassisch, heute schon).
+   - Thematische/embeddingsnahe Termine — wenn der User über Zähne redet, sollten Zahnarzttermine auftauchen, auch wenn sie noch Monate weg sind. Heute fehlt diese zweite Achse.
+   - Termin-Salienz wird über `themen`/`entitaet_ids` aus den semantischen Trägern vererbt (siehe MEMORY-SALIENZ-VERERBUNG).
+4. **Charakter-Magneten (Drive + Neugier).**
+   - Aktivierte Ziele aus dem Drive-System (Phase 1-4 implementiert) und ihre semantischen Kerne.
+   - Themen aus dem Neugier-System (Phase 5, ausstehend) — Lücken in Novas eigenem Wissen.
+   - Diese Quelle wirkt unabhängig von der aktuellen Anfrage als Pull-Faktor — sie färbt die Auswahl mit dem, wofür sich Nova selbst interessiert.
+
+**Erkenntnis:** Heute ist der `memory_context` ein flacher Sack. Die Akte ist strukturiert, jede Quelle weiß warum sie da ist. Salienz ist der gemeinsame Hebel, mit dem über alle vier Quellen hinweg gewichtet wird — pro Quelle aber mit unterschiedlicher Bedeutung (Erinnerung, Verknüpfung, Termin-Bezug, Selbst-Bezug).
+
+**Bezug zu OpenMemory:** Konzeptuell tiefer als deren *„explainable recall"* — vier funktional unterschiedliche Quellen statt einem einzigen Composite Score. Aber dieselbe Grundidee: nachvollziehbares, gewichtetes Retrieval über mehrere Achsen.
+
+**Abhängigkeiten:**
+
+- MEMORY-SALIENZ-VERERBUNG Phase 1+2 müssen implementiert sein.
+- Drive-System Phase 5 (Neugier) für Quelle 4 vollständig.
+- Magneten-Convention bereits dokumentiert (Chat 77).
+
+**Eingeordnet:** Nach M3 + MEMORY-SALIENZ-VERERBUNG Phase 2.
+
+---
+
+## Sprint: MIGRATION-PIX-CLEANUP — Pixie-Migration nach Multi-Charakter-Umstellung abschließen (Chat 78)
+
+**Status:** Konzept (Chat 78), hohe Priorität
+
+**Hintergrund:** Bei der Multi-Charakter-Umstellung (Chat 60, Paar-Schema) wurden die Pixie-Schreibpfade nicht nachgezogen. Audit Chat 78 hat drei konkrete Schreibpfade identifiziert, die noch das alte Pre-Chat-60-Schema verwenden. Verursacht aktiv falsche KZG-Einträge bei jeder Pixie-Aktivität.
+
+**Scope:**
+
+- Bug MIGRATION-PIX-PAIR: `nova_gedaechtnis` und RechercheAgent auf kanonisches Paar umstellen.
+- Bug MIGRATION-AGENTGRAPH-PAIR: AgentGraph-Calls in Shadow-Delivery mit User-Kontext aufrufen.
+- Konsistenzprüfung der weiteren Pixie-Tasks (PromotionAgent, DecayAgent, CharakterAgent, ZielDecayAgent) — alle sollten Paar-konform schreiben/lesen.
+- Verifikation: nach Fix entstehen keine neuen Einträge in `kzg:nova:meister:*` oder `kzg:nova:nova:*`.
+
+**Hohe Priorität, weil:**
+
+- Pixie-Arbeit (Recherche, Vertiefung, NovaGedächtnis) bleibt heute faktisch wirkungslos — Einträge im falschen Paar werden vom Enricher nicht gelesen.
+- Bei jeder neuen Pixie-Aktivierung wachsen die fehlerhaften Bestände.
+- Blockiert sauberes Verhalten von MEMORY-SALIENZ-VERERBUNG, das auf konsistente Schreib-/Lesepfade angewiesen ist.
+
+**Eingeordnet:** Vor MEMORY-SALIENZ-VERERBUNG Phase 1 (Triple-Salienz). Pragmatisch zeitnah, da Pixie aktuell deaktiviert ist (`PIXIE_AKTIV=False`) und der Fix vor Wieder-Aktivierung erfolgen kann.
+
+---
+
+## Sprint: KZG-CLEANUP — Bereinigung fehlerhafter KZG-Einträge (Chat 78)
+
+**Status:** Konzept (Chat 78)
+
+**Hintergrund:** Audit Chat 78 hat im KZG-Bestand drei Paar-Varianten gefunden:
+
+- `kzg:meister:nova:*` (156 Einträge) — kanonisches Paar, korrekt.
+- `kzg:nova:meister:*` (17 Einträge) — umgekehrtes Paar, Migrations-Rest.
+- `kzg:nova:nova:*` (7 Einträge) — Phantom-Paar mit beiden IDs auf "nova".
+
+**Scope:**
+
+- Nach Fix von MIGRATION-PIX-CLEANUP: einmaliger Bereinigungslauf der Bestände.
+- Optionen: löschen (TTL-Lauf abwarten reicht ggf. auch) oder migrieren (Inhalte ins kanonische Paar verschieben mit `beobachter=assistant`).
+- Entscheidung pro Variante: `kzg:nova:meister:*` (Pixie-Arbeit, vermutlich migrierenswert) und `kzg:nova:nova:*` (Phantom, vermutlich Müll).
+
+**Bestand zum Zeitpunkt des Audits:**
+
+- LZG: leer (keine Migration nötig).
+- KZG: 24 fehlerhafte Einträge gegenüber 156 korrekten.
+
+**Eingeordnet:** Nach MIGRATION-PIX-CLEANUP, vor MEMORY-SALIENZ-VERERBUNG Phase 1. Wenn der TTL der bestehenden Einträge schneller abläuft als der Fix umgesetzt wird, erübrigt sich die Bereinigung — dann nur Verifikation.
+
+---
+
 ## 8. Offene Bugs
 
 Vollständige Bug-Dokumentation → `novaberg-bugs.md`
@@ -1379,7 +1540,7 @@ Details, Ursachen und Lösungsansätze → `novaberg-bugs.md`
 
 *Aktualisiert Chat 71: GV3 + GV4 in Implementierung (🔧). GV4b als neues Epic: Agenten als Wissensquellen mit BaseAgent-Erweiterung (neugier_quelle, neugier_config, neugier_suchen()). Embedding-Nachrüstung für Timeline + Notizen. FaktenAgent als Quick Win (Embedding existiert). 6-Systeme-Relevanzformel validiert (58-Testfälle-Matrix, sin^0.5 Neugier-Normalisierung, Register-Kompatibilität, Session-Decay).*
 
-- Chat 78: Convention-Magneten angelegt (`novaberg-convention-magneten.md`) — Drei-Achsen-Modell für Bündelung von Erinnerungen
-- Chat 78: Convention-Planner-Needs angelegt (`novaberg-convention-planner-needs.md`) — Multi-Agent-Schreibpfad mit Vorbedingungs-Auflösung
+- Chat 77: Convention-Magneten angelegt (`novaberg-convention-magneten.md`) — Drei-Achsen-Modell für Bündelung von Erinnerungen
+- Chat 77: Convention-Planner-Needs angelegt (`novaberg-convention-planner-needs.md`) — Multi-Agent-Schreibpfad mit Vorbedingungs-Auflösung
 
 *Aktualisiert Chat 74: Reducer-Erst-Iteration ✅ (String-Parser, funktional aber brüchig). Reducer-Umbau als neues Hoch-Prio-Epic mit Konzept-Dokument `novaberg-reducer-umbau_k.md` (7-Phasen-Plan STRUCT-1 bis STRUCT-7, Big Bang). Drei neue Konzept-Backlog-Punkte: Assoziatives Retrieval, Akten-basiertes Retrieval, Anker-Emotion. Hash-Zeitstempel für alle 5 Profile ✅ (3 neue DB-Spalten + Migration + Agent + API + Client).*
