@@ -7,7 +7,7 @@ from datetime import datetime
 import psycopg2
 import redis
 
-from config import ASSISTANT_USER_ID
+from config import ASSISTANT_USER_ID, PIXIE_AKTIV
 
 logger = logging.getLogger("ki_server.shadow")
 
@@ -27,6 +27,10 @@ def shadow_queue_push(
     modus:        str  = "",
 ) -> None:
     """Legt einen Auftrag in die Shadow-Queue."""
+
+    if not PIXIE_AKTIV:
+        logger.debug("shadow_agent.utils: shadow_queue_push uebersprungen (PIXIE_AKTIV=False)")
+        return
 
     eintrag: dict = {
         "aufgabe":     aufgabe,
@@ -92,6 +96,10 @@ def stack_push(
     modus:         str  = "",
 ) -> None:
     """Legt ein Ergebnis mit Embedding und Meta-Daten auf den Shadow-Stack."""
+
+    if not PIXIE_AKTIV:
+        logger.debug("shadow_agent.utils: stack_push uebersprungen (PIXIE_AKTIV=False)")
+        return
 
     embed_text: str = f"{thema} {inhalt[:200]}"
 

@@ -9,7 +9,7 @@ import logging
 from agents.base import AgentState
 from memory.kzg import PROMOTION_THRESHOLD
 from services.shadow_agent.utils import shadow_queue_push
-from config import ASSISTANT_USER_ID, redis_client, KZG_SALIENZ_HIGH, KZG_VERTIEFUNG_HAEUFIGKEIT
+from config import ASSISTANT_USER_ID, redis_client, KZG_SALIENZ_HIGH, KZG_VERTIEFUNG_HAEUFIGKEIT, PIXIE_AKTIV
 
 logger = logging.getLogger("ki_server.agents.kzg.queues")
 
@@ -37,6 +37,16 @@ _INTENTION_AUFGABE_MAP: dict[str, str] = {
 
 def queues_befuellen(state: AgentState) -> dict:
     """Befuellt Promotion-Queue, Shadow-Queue und setzt Dirty-Flag."""
+
+    if not PIXIE_AKTIV:
+        logger.debug("kzg.queues: queues_befuellen uebersprungen (PIXIE_AKTIV=False)")
+        return {
+            "status":   "abgeschlossen",
+            "ergebnis": state["parameter"].get("speicher_status", ""),
+            "schritte": state["schritte"] + [
+                {"node": "queues", "ergebnis": "pixie_off", "aktionen": []}
+            ],
+        }
 
     salienz_obj:     dict  = state["parameter"].get("salienz_obj", {})
     speicher_status: str   = state["parameter"].get("speicher_status", "")

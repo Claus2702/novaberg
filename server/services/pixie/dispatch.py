@@ -9,7 +9,7 @@ import logging
 import time
 
 from agents.base import AgentState
-from config import redis_client
+from config import redis_client, PIXIE_AKTIV
 
 logger = logging.getLogger("ki_server.pixie")
 
@@ -110,8 +110,11 @@ def abschluss(kandidat: dict, erfolg: bool) -> None:
                 else:
                     eintrag["_retries"] = retries
                     redis_client.lrem(kandidat["queue_key"], 1, kandidat["queue_raw"])
-                    redis_client.rpush(kandidat["queue_key"], json.dumps(eintrag))
-                    logger.info(f"Pixie: Retry {retries}/3 fuer {eintrag.get('aufgabe')}")
+                    if PIXIE_AKTIV:
+                        redis_client.rpush(kandidat["queue_key"], json.dumps(eintrag))
+                        logger.info(f"Pixie: Retry {retries}/3 fuer {eintrag.get('aufgabe')}")
+                    else:
+                        logger.debug("pixie.dispatch: Retry-Push uebersprungen (PIXIE_AKTIV=False)")
             except Exception:
                 pass  # Im Fehlerfall einfach stehen lassen
 

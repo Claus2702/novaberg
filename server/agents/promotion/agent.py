@@ -23,6 +23,7 @@ from config import (
     CLUSTER_MIN_EINTRAEGE, CLUSTER_THEMEN_SIMILARITY,
     CLUSTER_LZG_SIMILARITY, CLUSTER_WIDERSPRUCH_DECAY_FAKTOR,
     CLUSTER_BESTAETIGUNG_BOOST,
+    PIXIE_AKTIV,
 )
 from services.llm_provider import get_background_provider
 from memory.repositories.entitaeten_repository import EntitaetenRepository
@@ -231,7 +232,10 @@ class PromotionAgent(BaseAgent):
                  sprach_stil, beziehungs_dynamik, tone),
             )
 
-            redis_client.set(f"hash_dirty:{user_id}:{character_id}", "1")
+            if PIXIE_AKTIV:
+                redis_client.set(f"hash_dirty:{user_id}:{character_id}", "1")
+            else:
+                logger.debug("promotion: hash_dirty-Setzer uebersprungen (PIXIE_AKTIV=False)")
 
             logger.info(
                 f"Promotion: '{themen}' -> LZG als Erinnerung "
@@ -689,7 +693,10 @@ class PromotionAgent(BaseAgent):
                 redis_client.delete(key)
                 logger.debug(f"Cluster-Promotion: KZG {key} geloescht")
 
-            redis_client.set(f"hash_dirty:{user_id}:{character_id}", "1")
+            if PIXIE_AKTIV:
+                redis_client.set(f"hash_dirty:{user_id}:{character_id}", "1")
+            else:
+                logger.debug("promotion: hash_dirty-Setzer uebersprungen (PIXIE_AKTIV=False)")
             logger.info(
                 f"Cluster-Promotion Phase 4: {len(promovierte_keys)} "
                 f"KZG-Eintraege geloescht, {promotet} Cluster promotet"

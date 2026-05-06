@@ -121,6 +121,13 @@ ANTHROPIC_PRICE_OUTPUT_PER_M: float = float(os.getenv("ANTHROPIC_PRICE_OUTPUT_PE
 # ─────────────────────────────────────────────
 # Pixie-Einstellungen (Background Task)
 # ─────────────────────────────────────────────
+
+# Pixie-Master-Switch (Chat 78, PIXIE-OFF).
+# False = kein Scheduler-Job, keine Queue-Pushes, kein Shadow-Delivery,
+# keine Dirty-Flags, kein Nova-Schreiben. Komplett still.
+# True = normaler Betrieb.
+PIXIE_AKTIV: bool = False
+
 PIXIE_INTERVALL_MIN: int = int(os.getenv("PIXIE_INTERVALL_MIN", "2"))
 
 # Pixie Heartbeat (kompetitives Scheduling, Chat 33)

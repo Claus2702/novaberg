@@ -29,6 +29,7 @@ from config                                import (
     KZG_TTL_LOW_SEKUNDEN,
     KZG_TTL_MID_SEKUNDEN,
     KZG_TTL_HIGH_SEKUNDEN,
+    PIXIE_AKTIV,
 )
 from graph.context_entry                   import ContextEntry
 from services.shadow_agent                 import shadow_queue_push
@@ -126,6 +127,8 @@ def kzg_index_create(redis_client: redis.Redis) -> None:
         TextField("tone"),
         TagField("emotion"),
         TagField("modus"),
+        TagField("entitaet_ids", separator=","),
+        NumericField("timeline_id"),
         VectorField(
             "embedding",
             "FLAT",
@@ -310,30 +313,33 @@ def kzg_store(
     redis_client.expire(key, ttl)
 
     if salienz >= KZG_SALIENZ_HIGH:
-        redis_client.rpush(
-            f"queue:{user_id}",
-            json.dumps({
-                "aufgabe":   "lzg_promotion",
-                "key":       key,
-                "salienz":   salienz,
-                "themen":    themen_str,
-                "dimension": dimension,
-            }),
-        )
-
-        aufgabe: str = _aufgabe_aus_intention(intentionen)
-
-        if aufgabe and user_id != ASSISTANT_USER_ID:
-            shadow_queue_push(
-                redis_client = redis_client,
-                user_id      = user_id,
-                aufgabe      = aufgabe,
-                thema        = themen_str,
-                kontext      = salienz_obj.get("zusammenfassung", ""),
-                intentionen  = intentionen,
-                emotion      = emotion,
-                modus        = modus,
+        if PIXIE_AKTIV:
+            redis_client.rpush(
+                f"queue:{user_id}",
+                json.dumps({
+                    "aufgabe":   "lzg_promotion",
+                    "key":       key,
+                    "salienz":   salienz,
+                    "themen":    themen_str,
+                    "dimension": dimension,
+                }),
             )
+
+            aufgabe: str = _aufgabe_aus_intention(intentionen)
+
+            if aufgabe and user_id != ASSISTANT_USER_ID:
+                shadow_queue_push(
+                    redis_client = redis_client,
+                    user_id      = user_id,
+                    aufgabe      = aufgabe,
+                    thema        = themen_str,
+                    kontext      = salienz_obj.get("zusammenfassung", ""),
+                    intentionen  = intentionen,
+                    emotion      = emotion,
+                    modus        = modus,
+                )
+        else:
+            logger.debug("kzg: Promotion-Queue-Push uebersprungen (PIXIE_AKTIV=False)")
 
     logger.info(
         f"KZG: Neuer Eintrag — salienz={salienz:.2f}, themen={themen_str}, "
@@ -388,7 +394,10 @@ def kzg_store(
             except Exception as ex:
                 logger.warning(f"KZG: Verstärkungsfehler bei {other_key}: {ex}")
 
-    redis_client.set(f"hash_dirty:{user_id}:{character_id}", "1")
+    if PIXIE_AKTIV:
+        redis_client.set(f"hash_dirty:{user_id}:{character_id}", "1")
+    else:
+        logger.debug("kzg: hash_dirty-Setzer uebersprungen (PIXIE_AKTIV=False)")
     return "neu"
 
 

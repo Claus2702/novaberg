@@ -17,7 +17,7 @@ from config import (
     SHADOW_MODEL, EMBED_MODEL, POSTGRES_URL,
     LLM_PROFILE, ANTHROPIC_API_KEY, ANTHROPIC_MODEL,
     PIXIE_ANALYSE_MODEL, PIXIE_ANALYSE_NUM_CTX,
-    PIXIE_INTERVALL_MIN, shutdown_event,
+    PIXIE_INTERVALL_MIN, PIXIE_AKTIV, shutdown_event,
     DEFAULT_USER_ID, ASSISTANT_USER_ID,
 )
 from services.llm_provider import init_providers
@@ -217,42 +217,49 @@ async def Lifespan(app: FastAPI):
     logger.info(f"Agent-Discovery: {len(AgentRegistry.alle())} Agenten registriert")
 
     # Periodische Pixie-Aufgaben registrieren (aus Agent periodic_task())
-    import time as _time
-    for _agent in AgentRegistry.alle().values():
-        _task = _agent.periodic_task()
-        if _task:
-            _key = f"pixie:schedule:{_task.name}"
-            if not redis_client.exists(_key):
-                redis_client.hset(_key, mapping={
-                    "priority":    str(_task.priority),
-                    "interval":    str(_task.interval),
-                    "next_run":    str(_time.time()),
-                    "description": _task.description,
-                })
-                logger.info(
-                    f"Pixie: Periodische Aufgabe registriert — {_task.name} "
-                    f"(Prio {_task.priority}, alle {_task.interval}s)"
-                )
+    if PIXIE_AKTIV:
+        import time as _time
+        for _agent in AgentRegistry.alle().values():
+            _task = _agent.periodic_task()
+            if _task:
+                _key = f"pixie:schedule:{_task.name}"
+                if not redis_client.exists(_key):
+                    redis_client.hset(_key, mapping={
+                        "priority":    str(_task.priority),
+                        "interval":    str(_task.interval),
+                        "next_run":    str(_time.time()),
+                        "description": _task.description,
+                    })
+                    logger.info(
+                        f"Pixie: Periodische Aufgabe registriert — {_task.name} "
+                        f"(Prio {_task.priority}, alle {_task.interval}s)"
+                    )
+    else:
+        logger.debug("main: Periodic-Task-Discovery uebersprungen (PIXIE_AKTIV=False)")
 
     # Scheduler starten — Pixie-Heartbeat (kompetitives Scheduling)
-    from services.pixie.scheduler import pixie_heartbeat
     from config import PIXIE_INTERVALL_SEKUNDEN
 
-    async def _pixie_job():
-        await pixie_heartbeat(app.state)
+    if PIXIE_AKTIV:
+        from services.pixie.scheduler import pixie_heartbeat
 
-    scheduler.add_job(
-        _pixie_job,
-        trigger       = "interval",
-        seconds       = PIXIE_INTERVALL_SEKUNDEN,
-        id            = "pixie_heartbeat",
-        name          = "Pixie Heartbeat",
-        max_instances = 1,
-        coalesce      = True,
-    )
+        async def _pixie_job():
+            await pixie_heartbeat(app.state)
 
-    scheduler.start()
-    logger.info(f"Scheduler gestartet (Pixie-Heartbeat: {PIXIE_INTERVALL_SEKUNDEN}s).")
+        scheduler.add_job(
+            _pixie_job,
+            trigger       = "interval",
+            seconds       = PIXIE_INTERVALL_SEKUNDEN,
+            id            = "pixie_heartbeat",
+            name          = "Pixie Heartbeat",
+            max_instances = 1,
+            coalesce      = True,
+        )
+        scheduler.start()
+        logger.info(f"Scheduler gestartet (Pixie-Heartbeat: {PIXIE_INTERVALL_SEKUNDEN}s).")
+    else:
+        logger.debug("main: Pixie-Heartbeat-Job uebersprungen (PIXIE_AKTIV=False)")
+        logger.info("Pixie-Master-Switch: AKTIV=False — alle Pixie-Pfade ruhen")
 
     # Graphen kompilieren
     compiled_human, human_graph = build_human_graph(
@@ -286,18 +293,22 @@ async def Lifespan(app: FastAPI):
     logger.info("CharacterGraph initialisiert.")
 
     # ── NEU: Shadow Delivery Service starten ──
-    delivery_task = asyncio.create_task(
-        shadow_delivery_loop(
-            redis_client         = redis_client,
-            embed_client         = ollama_gpu_client,
-            embed_model          = EMBED_MODEL,
-            websocket_map        = aktive_verbindungen,
-            llm_lock             = llm_lock,
-            compiled_agent_graph = compiled_agent,
-            agent_graph          = agent_graph,
+    if PIXIE_AKTIV:
+        delivery_task = asyncio.create_task(
+            shadow_delivery_loop(
+                redis_client         = redis_client,
+                embed_client         = ollama_gpu_client,
+                embed_model          = EMBED_MODEL,
+                websocket_map        = aktive_verbindungen,
+                llm_lock             = llm_lock,
+                compiled_agent_graph = compiled_agent,
+                agent_graph          = agent_graph,
+            )
         )
-    )
-    logger.info("Shadow Delivery Service gestartet.")
+        logger.info("Shadow Delivery Service gestartet.")
+    else:
+        delivery_task = None
+        logger.debug("main: Shadow Delivery Service uebersprungen (PIXIE_AKTIV=False)")
 
     # ── Event-Consumer starten ──
     consumer_task = asyncio.create_task(
@@ -315,8 +326,10 @@ async def Lifespan(app: FastAPI):
 
     # ── Shutdown: Event setzen, dann aufräumen ──
     shutdown_event.set()
-    scheduler.shutdown(wait=False)
-    delivery_task.cancel()
+    if PIXIE_AKTIV:
+        scheduler.shutdown(wait=False)
+    if delivery_task is not None:
+        delivery_task.cancel()
     consumer_task.cancel()
     logger.info("Server gestoppt.")
 
