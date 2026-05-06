@@ -14,6 +14,7 @@ from datetime import datetime
 from zoneinfo import ZoneInfo
 
 from agents.base import AgentState
+from agents.timeline.event_time import precision_has_time, precision_format
 from config import TIMEZONE
 
 logger = logging.getLogger("ki_server.agents.timeline.crud")
@@ -128,7 +129,7 @@ def _create(state: AgentState) -> dict:
     verifiziert = _verifizieren_termin(termin_id, {"aktiv": True})
 
     lokale_zeit: str = event_time.astimezone(tz).strftime("%d.%m.%Y")
-    if precision != "day":
+    if precision_has_time(precision):
         lokale_zeit += f" {event_time.astimezone(tz).strftime('%H:%M')}"
 
     logger.info(f"TimelineAgent: Termin '{title}' angelegt (ID {termin_id}, {lokale_zeit}), verifiziert={verifiziert}")
@@ -243,7 +244,7 @@ def _update(state: AgentState) -> dict:
     verifiziert = verifiziert_alt and verifiziert_neu
 
     lokale_zeit: str = neues_datum.astimezone(tz).strftime("%d.%m.%Y")
-    if precision != "day":
+    if precision_has_time(precision):
         lokale_zeit += f" {neues_datum.astimezone(tz).strftime('%H:%M')}"
 
     logger.info(f"TimelineAgent: Termin '{termin.get('title')}' verschoben auf {lokale_zeit} "

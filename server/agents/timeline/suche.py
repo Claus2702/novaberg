@@ -12,6 +12,7 @@ from datetime import datetime, timedelta
 from zoneinfo import ZoneInfo
 
 from agents.base import AgentState
+from agents.timeline.event_time import precision_has_time, precision_format
 from config import (
     TIMEZONE,
     TIMELINE_SUCHE_LIMIT,
@@ -95,7 +96,7 @@ def suchen(state: AgentState) -> dict:
             # Aehnlicher Eintrag existiert bereits → kein Duplikat anlegen
             existierend = treffer[0]
             datum = existierend["event_time"].astimezone(tz).strftime("%d.%m.%Y")
-            if existierend.get("precision") != "day":
+            if precision_has_time(existierend.get("precision", "day")):
                 datum += f" {existierend['event_time'].astimezone(tz).strftime('%H:%M')}"
             logger.info(f"suchen: Duplikat erkannt — '{existierend['title']}' am {datum}")
             return {
@@ -136,7 +137,7 @@ def suchen(state: AgentState) -> dict:
         zeilen = []
         for t in treffer:
             datum = t["event_time"].astimezone(tz).strftime("%d.%m.%Y")
-            if t.get("precision") != "day":
+            if precision_has_time(t.get("precision", "day")):
                 datum += f" {t['event_time'].astimezone(tz).strftime('%H:%M')}"
             detail = f" — {t['details']}" if t.get("details") else ""
             zeilen.append(f"[{t['event_type']}] {datum}: {t['title']}{detail}")
