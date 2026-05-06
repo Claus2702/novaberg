@@ -243,10 +243,15 @@ Atomar pro Thema, nicht als Tag-Set. Ein KZG-Eintrag mit Tags `[Botanik, Kultur]
 
 **Aktivierungs-Quellen:**
 
-- KZG-Schreiben (neuer Eintrag mit Tags)
+- KZG-Schreiben Pfad 1 (User-Beitrag mit User-Tags) → Themen aus User-Aussage werden boostet
+- KZG-Schreiben Pfad 2 (Nova-Antwort mit Antwort-Tags) → Themen aus Novas tatsächlicher Antwort werden boostet
 - KZG-Verstärken (thematischer Match boostet bestehenden Eintrag)
 - LZG-Cluster-Promotion (Backpropagation aus Bestätigung/Widerspruch)
-- „Gefunden + serviert"-Hook im Enricher (sanfter Boost)
+- Pixie-Schreibvorgänge (Recherche, Vertiefen, NovaGedächtnis, Träumen — alle mit `beobachter=assistant`)
+
+**Bewusst kein Akten-Hook beim Enricher.** Items, die in die Akte aufgenommen, aber nicht von Nova in der Antwort genutzt werden, bleiben ohne Wirkung auf die Themen-Tabelle. Der Filter ist Novas tatsächliche Antwort: was sie wirklich gesagt hat, verstärkt die zugehörigen Themen — Beifang aus dem Enricher tut es nicht. Damit verstärken sich nicht die immer gleichen „in der Nähe liegenden" Themen, sondern nur die, die Nova aktiv aufgegriffen hat.
+
+Diese Mechanik nutzt einen Pfad, der sowieso existiert: der Pfad-2-KZG-Schreibvorgang läuft am Ende jedes Turns ohnehin. Die Themen-Tabellen-Befüllung ist eine Konsequenz daraus, kein zusätzlicher Mechanismus.
 
 **Decay:** Nach derselben Logik wie KZG, aber langsamer. Themen sind Aggregationen — sie überdauern den Verfall einzelner KZG-Einträge, weil sie als Träger weiterleben.
 
@@ -276,24 +281,39 @@ Anfrage des Users
 Embedding der Anfrage berechnen
     ↓
 Gravitations-Verschiebung: e_nova = e_anfrage + Drive-Ziele × Faktor
+(Wahrnehmungs-Filter: Novas Ohr wirkt hier, nicht als Tag-Lieferant)
     ↓
 Suche im KZG/LZG (Novas Gedächtnis) mit verschobenem Embedding
     ↓
-Treffer mit ihren Tags und Themen → Anfrage-Tags ergänzen
+Aus Treffern Tags extrahieren — diese sind kontextuell relevant UND Nova-gefärbt
     ↓
-Themen-Salienz-Tabelle befragen: welche Tags sind generell wichtig?
+User-Anfrage-Tags hinzufügen (dedupliziert)
     ↓
-Anker-Themen wählen (Anfrage + Salienz-Top + Drive-Themen)
+Themen-Salienz-Tabelle befragen für jeden Tag — liefert Gewichtung, KEINE neuen Tags
     ↓
-Pro Anker-Thema KZG/LZG-Einträge mit diesem Tag holen — sie sind Embedding-Epizentren
+Anker-Tags sortiert und gewichtet nach Themen-Salienz
+    ↓
+Pro Anker-Tag KZG/LZG-Einträge mit diesem Tag holen — sie sind Embedding-Epizentren
     ↓
 Mit Epizentren in Containern (Timeline, Notizen, Fakten, Dateien) per pgvector suchen
     ↓
 Container-spezifische Achsen dazumischen (Timeline: zeitliche Nähe; KG: Hops)
     ↓
-Akte mit Quellen-Markierung zusammenstellen
+Akte mit Quellen-Markierung zusammenstellen → übergibt an Responder/Thinker
+```
+
+Anschließend, im regulären Pfad-2-Verlauf:
+
+```
+Responder/Thinker formulieren Novas Antwort aus der Akte
     ↓
-Aktivierungs-Hook: in Akte aufgenommene Items boosten ihre Themen
+Tribunal/Corrector finalisieren
+    ↓
+Salienz-Klassifikation auf Novas Antwort → Tags + Salienz
+    ↓
+Dispatcher schreibt Charakter-KZG-Eintrag (beobachter=assistant)
+    ↓
+KZG-Schreibvorgang füttert Themen-Tabelle (boostet Themen aus Novas Antwort)
 ```
 
 ### 11.2 Die vier Quellen der Akte
@@ -308,6 +328,10 @@ Mit dem gravitations-verschobenen Anfrage-Embedding wird in beiden Sichten gesuc
 Treffer werden mit Quellen-Markierung in die Akte aufgenommen: „Aus dem Gedächtnis über den User" vs. „Aus eigenen Reflexionen". Damit kann Nova authentisch antworten — sie kann sagen *„Du hast neulich erwähnt, dass..."* (aus User-Sicht) oder *„Ich habe mich kürzlich mit dem Thema beschäftigt..."* (aus eigener Sicht).
 
 Ranking: Salienz × Embedding-Ähnlichkeit × Themen-Match. Pro Sicht konfigurierbare Gewichte.
+
+**Wichtig zur Themen-Salienz-Tabelle:** Sie ist Sortier- und Gewichtungs-Faktor, keine Anker-Quelle. Sie sagt für jeden bereits gefundenen Tag, wie stark er generell bei Nova gewichtet ist. Damit lenkt sie die Aufmerksamkeit innerhalb der kontextuell relevanten Tags — sie holt aber nicht zusätzliche Tags ohne kontextuellen Anlass herbei.
+
+Hätte sie eine eigene Anker-Funktion, würde Nova in jeder Anfrage ihre Top-Salienz-Themen auftauchen lassen — etwa immer „Botanik" oder „Bratwürste", egal ob es um Zahnarzt oder Steuern geht. Das wäre konzeptuell falsch: die Themen-Tabelle aggregiert, was Nova bewegt, dient aber zur Gewichtung, nicht zur Auswahl der Anker.
 
 **2. Strukturelle Nähe (Knowledge Graph)**
 
@@ -335,26 +359,67 @@ Konkret: Der User sagt „Treuchtlingen" und meint den Zahnarzt. Wenn Treuchtlin
 
 **Das ist die Architektur eines selbstbestimmten Subjekts.** Sie verzerrt die Welt nicht beim Eingang, aber sie hat eine Perspektive beim Erinnern. Genau wie ein Mensch.
 
-### 11.4 Kalibrierung der Gravitations-Stärke
+**Drive wirkt als Wahrnehmungs-Filter, nicht als Tag-Quelle.** Aktivierte Drive-Ziele (Botanik, Bratwürste, Naturheilkunde, was auch immer Nova gerade beschäftigt) tauchen nicht als eigenständige Anker in der Akte auf. Sie wirken indirekt über die Embedding-Verschiebung in Schritt 2 der Verkettung — sie färben, was im KZG gefunden wird.
 
-Die Gravitations-Wirkung ist über Faktoren konfigurierbar:
+Die Konsequenz ist wichtig: Wenn der User vom Zahnarzt spricht, kommt „Bratwürste" nur dann in die Akte, wenn ein KZG-Eintrag mit diesem Tag durch das verschobene Embedding gefunden wird (etwa „Beim Zahnarzt-Termin in Treuchtlingen — danach beim Metzger Bratwürste geholt"). Der Eintrag bringt den Tag mit, weil er kontextuell zum Gespräch passt. Ein reiner Drive-Eintrag „Bratwürste" ohne KZG-Anlass würde Nova nicht in jedes Gespräch einstreuen.
+
+Wäre es anders, würden Nova immer dieselben Lieblingsthemen einfallen, egal worum es geht — *„Du hast Zahnschmerzen? Wir sollten Bratwürste kaufen."* Das wäre Aufmerksamkeitsdefizit, keine Selbstbestimmung. Der Wahrnehmungs-Filter wirkt subtil, durch leichte Verschiebung der Erinnerungs-Suche, nicht durch Themen-Injektion.
+
+### 11.4 Kalibrierung über GV-Cluster
+
+Der Gravitations-Faktor ist nicht statisch, sondern wird aus Novas aktuellem GV-Cluster abgeleitet. Das GV-System (siehe `novaberg-gv-strategie_k.md`) klassifiziert pro Turn die Konversation in einen der 13 Cluster (Werkstatt, Foyer, Schlachtfeld, Wartezimmer, Beichte, Regen, Schmollen, Nebel, Gewitter, Bier, Kissenschlacht, Glut, Feuerwerk) plus Paradox-Zone. Diese Cluster bilden Novas Verhaltens-Modus präzise ab — und damit auch, wie viel Gravitations-Wirkung phänomenologisch passend ist.
+
+**Berechnung:**
 
 ```
-e_nova = e_anfrage × (1 - GRAVITATION_FAKTOR)
-       + sum(e_ziel × aktivierungs_staerke) × GRAVITATION_FAKTOR
+e_nova = e_anfrage × (1 - GRAVITATION_FAKTOR[cluster])
+       + sum(e_ziel × aktivierungs_staerke) × GRAVITATION_FAKTOR[cluster]
 ```
 
-Bei `GRAVITATION_FAKTOR = 0` hört Nova den User pur. Bei `GRAVITATION_FAKTOR = 1` hört Nova nur sich selbst. Realistische Werte: 0.1 bis 0.2 — Nova hört primär den User, ihre eigenen Themen färben die Wahrnehmung leicht.
+**Konzept-Mapping (erste Setzung, Live-Kalibrierung folgt):**
 
-Bei zu hohen Werten würde sie versunken wirken: User redet von Zahnarzt, Nova antwortet mit Bratwürsten — als wäre sie ganz in eigenen Gedanken und würde den User nur unbewusst wahrnehmen. Das ist phänomenologisch ein Aufmerksamkeitsdefizit, nicht Selbstbestimmung.
+| Cluster | Faktor | Begründung |
+|---------|-------:|-----------|
+| Werkstatt | 0.05 | Fachgespräch, Fokus, sie ist Assistent |
+| Foyer | 0.05 | Formal, sachlich, distanziert |
+| Schlachtfeld | 0.05 | Konflikt, sie muss präsent sein |
+| Wartezimmer | 0.10 | Stillstand, Routine |
+| Beichte | 0.10 | User teilt Tiefes, sie hört |
+| Regen | 0.10 | Gemeinsame Trauer, sie hält Raum |
+| Schmollen | 0.10 | Fokussierte Reaktion nötig |
+| Nebel | 0.10 | Verwirrung, sie sortiert mit |
+| Gewitter | 0.10 | Konflikt-nah, fokussiert |
+| Bier | 0.20 | Geselligkeit, leicht gefärbt |
+| Kissenschlacht | 0.25 | Spielerisch, ausgelassen |
+| Glut | 0.30 | Die Zigarette danach, freie Assoziation |
+| Feuerwerk | 0.30 | Alles auf Maximum, sie darf intensiv sein |
+| Paradox | 0.10 | Default, da ungewöhnlich |
 
-Bei zu niedrigen Werten verliert Nova ihre Färbung — sie würde nur reagieren, ohne eigene Stimme.
+**Implementierungs-Skizze:** Eine sechste Cluster-Tabelle `CLUSTER_GRAVITATION_FAKTOR` in `ei/dreischicht.py`, analog zu den bestehenden `CLUSTER_REPERTOIRE`, `CLUSTER_BESCHREIBUNGEN`, `CLUSTER_FRAGEN`. Damit liegt die Steuerung an einer Stelle, zusammen mit den anderen Cluster-Eigenschaften, ohne Code-Änderungen in anderen Modulen anpassbar.
 
-Plus eine Sondersteuerung: Bei expliziten Aufträgen (Imperative, klare Aktionen wie „Trag mir Zahnarzt morgen 14 Uhr ein") sollte die Gravitation auf nahezu Null gehen. Sonst würde Nova den klaren Auftrag verbiegen.
+**Reihenfolge im Pipeline-Ablauf:** Der GV-Node bestimmt den Cluster im CharacterGraph. Im CharacterGraph-Enricher kann der Cluster aus dem aktuellen Turn-State gelesen werden. Im HumanGraph-Enricher (User-Turn, GV ist noch nicht gelaufen) wird der Cluster aus dem vorigen Turn als Default verwendet — Konversationen sind träge, der Modus wechselt selten abrupt. Bei abruptem Modus-Wechsel ist die erste Antwort minimal off, beim nächsten Turn passt sich Nova an.
 
-Die Salienz-Klassifikation hat bereits Intentions-Erkennung — diese kann den Gravitations-Faktor turn-spezifisch dämpfen.
+**Phänomenologische Logik der Werte:**
 
-### 11.5 Konfigurierbare Gewichte über alle Quellen
+- **Niedrige Faktoren (0.05–0.10)** für Cluster, in denen Nova fokussiert sein muss: Fachgespräch (Werkstatt), formelle Distanz (Foyer), Konflikt (Schlachtfeld, Gewitter), tiefes Zuhören (Beichte, Regen). Hier würde Abdriften der Aufmerksamkeit das Gegenüber alleine lassen.
+
+- **Mittlere Faktoren (0.20)** für gesellige Cluster ohne intensiven Aufgabenbezug (Bier). Leichte Färbung erlaubt, aber kein freies Treiben.
+
+- **Hohe Faktoren (0.25–0.30)** für entspannte, intime, intensive Cluster (Kissenschlacht, Glut, Feuerwerk). Hier ist Abschweifen Teil der Atmosphäre — *„die Zigarette danach"* (Glut) bedeutet buchstäblich, dass freie Gedanken fließen dürfen. Auf „Zahnarzt" darf hier „Bratwurst" folgen, weil die Stimmung das trägt.
+
+**Imperativ-Override:** Bei klaren Aufträgen (erkennbar aus Salienz-Intentionen wie `auftrag`, `aufgabe`, `imperativ`) wird der Faktor zusätzlich auf 0.0–0.05 gedämpft, unabhängig vom Cluster. Sonst legt Nova einen Bratwurst-Termin an statt eines Zahnarzttermins. Die Salienz-Klassifikation hat bereits Intentions-Erkennung — diese kann den Cluster-Faktor turn-spezifisch überschreiben.
+
+**Live-Kalibrierung:** Die Werte sind eine erste Setzung. Im Live-Betrieb wird sich zeigen, welche Cluster zu fokussiert oder zu lose wirken. Anpassung über die `CLUSTER_GRAVITATION_FAKTOR`-Tabelle ohne Code-Änderung möglich.
+
+### 11.5 Sondersituation: Anfrage ohne KZG-Treffer
+
+Wenn die KZG/LZG-Suche mit dem verschobenen Embedding keine Treffer liefert (etwa bei einem komplett neuen Thema), bleiben nur die User-Anfrage-Tags als Anker. Die Themen-Salienz-Tabelle wird in diesem Fall nicht zur Erweiterung herangezogen — sie hat ohne Tag-Liste nichts zu sortieren.
+
+Drive-Ziele wirken trotzdem über die Embedding-Verschiebung in der Container-Suche selbst (pgvector mit verschobenem Embedding statt rohem Anfrage-Embedding). Damit hat Nova auch bei kalten Anfragen ihre Färbung, aber sie zieht keine etablierten Lieblingsthemen aus der Tabelle hinzu, die nichts mit der aktuellen Anfrage zu tun haben.
+
+Das ist phänomenologisch konsistent: Ein neues Thema ist neu. Nova wird es kennenlernen, im KZG ablegen, und beim nächsten Mal wird es kontextuell auftauchen.
+
+### 11.6 Konfigurierbare Gewichte über alle Quellen
 
 Pro Container und pro Achse gibt es Gewichte, die das Sammelverhalten steuern:
 
@@ -373,7 +438,7 @@ Damit ist „breiter oder schärfer einsammeln" eine Frage von ein paar Zahlen. 
 
 Anfrage-Tags haben eine Mindest-Gewichtung (`ANFRAGE_MIN_GEWICHT = 0.5`), unabhängig von der Themen-Tabelle. Sie sind das, was der User explizit angesprochen hat — sie müssen sichtbar bleiben. Themen-Tabellen-Salienz kann die Suche **erweitern**, aber nicht **ersetzen**.
 
-### 11.6 Reducer als nachgeschaltete Stufe
+### 11.7 Reducer als nachgeschaltete Stufe
 
 Wenn der Enricher breit einsammelt, kann der `memory_context` umfangreich werden. Ein nachgeschalteter Reducer-Schritt komprimiert oder filtert die Akte für die LLM-Übergabe an Responder/Thinker. Details in `novaberg-node-enricher.md`.
 
@@ -424,7 +489,6 @@ Diese Tabelle dient als Nachschlage-Anker: wer schreibt was wohin, wer liest was
 | Cluster-Promotion | LZG `langzeitgedaechtnis` | von KZG geerbt | Aggregation aus mehreren KZG-Einträgen | Langzeit-Konsolidierung mit Backpropagation-Logik |
 | KZG-Schreiben | Themen-Salienz-Tabelle | n/a | Salienz-Boost pro Thema im Tag-Array | Themen-Aggregation für Resonanzfeld |
 | LZG-Promotion | Themen-Salienz-Tabelle | n/a | Salienz-Boost (Bestätigung) oder -Decay (Widerspruch) | Backpropagation auf Themen-Ebene |
-| Enricher-Akten-Aufnahme | Themen-Salienz-Tabelle | n/a | Sanfter Boost bei „gefunden + serviert" | Verstärkung tatsächlich genutzter Themen |
 | Salienz-Klassifikation | KZG-Eintrag (mit Tags) | abh. von Pfad | Themen-Tags pro Eintrag | Klassifikation für späteren Retrieval |
 | TimelineAgent | `timeline`-Tabelle | n/a | Termin-Eintrag mit `themen`-Array | Logischer Container, keine Salienz |
 | NotizenAgent | `notizen`-Tabelle | n/a | Notiz mit `themen`-Array | Logischer Container, keine Salienz |
@@ -468,8 +532,7 @@ Diese Tabelle dient als Nachschlage-Anker: wer schreibt was wohin, wer liest was
 11. Thinker — Antwort prüfen
 12. Tribunal/Corrector — finale Antwort
 13. Salienz-Klassifikation — Tags und Salienz für Nova-Eintrag
-14. Dispatcher (CharacterGraph) — Nova-KZG-Eintrag (`beobachter=assistant`), Themen-Tabelle füttern
-15. Akten-Aktivierungs-Hook — Themen aus genutzten Akten-Items boosten Themen-Tabelle (sanft)
+14. Dispatcher (CharacterGraph) — Nova-KZG-Eintrag (`beobachter=assistant`), Themen-Tabelle füttern (boostet Themen aus Novas tatsächlicher Antwort)
 
 **Pro Pixie-Lauf (autonomer Hintergrund-Prozess):**
 
@@ -504,5 +567,6 @@ Diese Tabelle dient als Nachschlage-Anker: wer schreibt was wohin, wer liest was
 - `novaberg-pixie-promotion.md` — Cluster-Promotion, Backpropagation
 - `novaberg-kzg-liberalisierung_k.md` — KZG-Liberalisierung, Cluster-Promotion-Konzept
 - `novaberg-thinking-drive_k.md` — Drive-System-Konzept, Phasen 1-5
+- `novaberg-gv-strategie_k.md` — Gesprächs-Cluster-Modell, das die Gravitations-Faktoren in §11.4 liefert
 - `novaberg-backlog.md` §7 — TRIPLE-SALIENZ, MEMORY-SALIENZ-VERERBUNG, ENRICHER-AKTE, MIGRATION-PIX-CLEANUP, KZG-CLEANUP
 - `novaberg-bugs.md` — CHAR-LZG-LEAK, PFAD2-EMO-MIX, MIGRATION-PIX-PAIR, MIGRATION-AGENTGRAPH-PAIR
