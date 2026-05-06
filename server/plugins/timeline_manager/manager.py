@@ -16,6 +16,7 @@ from datetime import datetime, timedelta
 from typing import TYPE_CHECKING
 from zoneinfo import ZoneInfo
 
+from agents.timeline.event_time import precision_has_time, precision_format
 from config import TIMEZONE
 from utils.zeitparser import zeit_parsen, zeit_parsen_vektor, ZeitVektor
 
@@ -204,7 +205,7 @@ und der aktuelle Prompt sich darauf bezieht.
         subtyp_quelle="status":     subtyp = "vergangen"/"anstehend" (proaktiv).
         """
         zeitpunkt: str = termin["event_time"].strftime("%d.%m.%Y")
-        if termin.get("precision") != "day":
+        if precision_has_time(termin.get("precision", "day")):
             zeitpunkt += f" {termin['event_time'].strftime('%H:%M')}"
 
         if subtyp_quelle == "status":
@@ -835,7 +836,7 @@ und der aktuelle Prompt sich darauf bezieht.
         # Mehrere Treffer → Disambiguierung
         optionen: str = ", ".join(
             f"'{t['title']}' um {t['event_time'].strftime('%H:%M')}"
-            if t.get("precision") != "day"
+            if precision_has_time(t.get("precision", "day"))
             else f"'{t['title']}'"
             for t in treffer
         )

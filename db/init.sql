@@ -33,7 +33,11 @@ CREATE TABLE IF NOT EXISTS langzeitgedaechtnis (
     sprach_stil        TEXT             NOT NULL DEFAULT '',
     beziehungs_dynamik TEXT             NOT NULL DEFAULT '',
     tone               TEXT             NOT NULL DEFAULT '',
-    aktiv              BOOLEAN          NOT NULL DEFAULT TRUE
+    aktiv              BOOLEAN          NOT NULL DEFAULT TRUE,
+    themen             TEXT[],
+    gedaechtnistyp     VARCHAR(20),
+    kzg_erstellt_am    TIMESTAMPTZ,
+    entitaet_ids       INTEGER[]
 );
 
 CREATE INDEX IF NOT EXISTS idx_lzg_user_id
@@ -142,6 +146,7 @@ CREATE INDEX IF NOT EXISTS idx_entitaeten_suchtext
 CREATE TABLE IF NOT EXISTS fakten (
     id                  SERIAL          PRIMARY KEY,
     user_id             VARCHAR(50)     NOT NULL,
+    character_id        VARCHAR(50)     NOT NULL DEFAULT 'nova',
 
     subjekt_id          INTEGER         NOT NULL REFERENCES entitaeten(id),
     attribut            VARCHAR(255)    NOT NULL,
@@ -314,6 +319,29 @@ CREATE INDEX IF NOT EXISTS idx_notizen_name_trgm
     ON notizen USING gin (name gin_trgm_ops);
 CREATE INDEX IF NOT EXISTS idx_notizen_text_trgm
     ON notizen USING gin (text gin_trgm_ops);
+
+-- ── M2: Schema-Magneten (Entitäten, Zeit, Themen) ────────
+-- Idempotent für bestehende Installationen. Felder bleiben nach M2 leer/NULL/Default
+-- — befüllt werden sie erst in späteren Etappen.
+
+-- LZG: Magnet-Spalten + Indizes (timeline_id-FK kommt aus agents/timeline/init.sql)
+ALTER TABLE langzeitgedaechtnis ADD COLUMN IF NOT EXISTS themen          TEXT[];
+ALTER TABLE langzeitgedaechtnis ADD COLUMN IF NOT EXISTS gedaechtnistyp  VARCHAR(20);
+ALTER TABLE langzeitgedaechtnis ADD COLUMN IF NOT EXISTS kzg_erstellt_am TIMESTAMPTZ;
+ALTER TABLE langzeitgedaechtnis ADD COLUMN IF NOT EXISTS entitaet_ids    INTEGER[];
+
+CREATE INDEX IF NOT EXISTS idx_lzg_themen          ON langzeitgedaechtnis USING GIN (themen);
+CREATE INDEX IF NOT EXISTS idx_lzg_entitaet_ids    ON langzeitgedaechtnis USING GIN (entitaet_ids);
+CREATE INDEX IF NOT EXISTS idx_lzg_kzg_erstellt_am ON langzeitgedaechtnis (kzg_erstellt_am);
+
+-- Notizen: entitaet_ids-Index (Spalte selbst kommt aus M6-Block oben)
+CREATE INDEX IF NOT EXISTS idx_notizen_entitaet_ids ON notizen USING GIN (entitaet_ids);
+
+-- Fakten: Paar-Schema (character_id) + Partial-Index aufs Paar
+ALTER TABLE fakten ADD COLUMN IF NOT EXISTS character_id VARCHAR(50) NOT NULL DEFAULT 'nova';
+
+CREATE INDEX IF NOT EXISTS idx_fakten_aktiv_paar
+    ON fakten (user_id, character_id) WHERE aktiv = TRUE;
 
 -- Lernende Verb-Mappings (Chat 42, CRUD-Härtung)
 CREATE TABLE IF NOT EXISTS verb_mappings (

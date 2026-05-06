@@ -77,7 +77,7 @@ class NovaGedaechtnisTask(BaseTask):
         # der echte User (Fallback DEFAULT_USER_ID), Beobachter = assistant.
         # Damit landen die Eintraege unter kzg:nova:{user}:* — und triggern
         # hash_dirty:nova:{user}, das genau das Paar ist, das der CharakterAgent
-        # fuer den Nova-Hash erwartet (siehe novaberg-paar-schema_k.md).
+        # fuer den Nova-Hash erwartet (siehe novaberg-convention-paar-schema.md).
         gegenueber_id: str = user_id if user_id != ASSISTANT_USER_ID else DEFAULT_USER_ID
         kzg_store(
             redis_client = redis_client,

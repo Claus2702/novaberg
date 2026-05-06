@@ -27,6 +27,7 @@ import redis
 
 from langchain_core.tools import tool
 
+from agents.timeline.event_time import precision_has_time, precision_format
 from graph.context_entry import ContextEntry
 from graph.format        import format_memory_entries
 from graph.state         import ConversationState
@@ -89,7 +90,7 @@ def create_tools(
 
         parts: list[str] = []
         for r in rows:
-            zeit = r["event_time"].strftime("%H:%M") if r.get("precision") != "day" else ""
+            zeit = r["event_time"].strftime("%H:%M") if precision_has_time(r.get("precision", "day")) else ""
             detail = f" — {r['details']}" if r.get("details") else ""
             parts.append(f"[{r['event_type']}] {zeit} {r['title']}{detail}".strip())
 
@@ -113,7 +114,7 @@ def create_tools(
         parts: list[str] = []
         for r in rows:
             zeit = r["event_time"].strftime("%d.%m.%Y")
-            if r.get("precision") != "day":
+            if precision_has_time(r.get("precision", "day")):
                 zeit += f" {r['event_time'].strftime('%H:%M')}"
             detail = f" — {r['details']}" if r.get("details") else ""
             parts.append(f"[{r['event_type']}] {zeit}: {r['title']}{detail}")
