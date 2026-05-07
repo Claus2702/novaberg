@@ -310,6 +310,7 @@ Der naechste Schritt in der Kommunikationsbandbreite: Spracheingabe (Speech-to-T
 | KORR1 | Korrektur-Erkennung bei fehlgeschlagenen Aktionen | ⬜ Chat 43 (niedrig) |
 | ROUTE-MISS1 | Router erkennt kontextabhängige Aufträge nicht | ⬜ Chat 48, strukturell adressiert durch Enricher-vor-Router (Chat 59, implementiert). Offen für Validierung. |
 | 5i | Zeitparser: Fränkisch + Norddeutsch | ⬜ |
+| DELIVERY-VOICE | Recherche-Destillation klingt nach Referat, nicht nach Nova | ⬜ Delivery-Prompt braucht staerkere Charakter-Durchdringung. Beobachtet Chat 79 |
 
 ### Infrastruktur
 | # | Thema | Status |
@@ -323,6 +324,7 @@ Der naechste Schritt in der Kommunikationsbandbreite: Spracheingabe (Speech-to-T
 | D9 | Burst-Deduplizierung (KZG-Klebrigkeit) | ⬜ |
 | TEST1 | Testumgebung vervollständigen | ⚠️ Phase 0+4 fehlen |
 | SHADOW-DEAD | Toten Code in services/shadow_agent/utils.py bereinigen | ⬜ stack_push, shadow_stack_pop, shadow_stack_peek, log_schreiben, nova_vorwissen_laden sind nicht extern referenziert. Nur shadow_queue_push lebt. |
+| PIX-GPU-IDLE | Pixie GPU bei Inaktivitaet | ✅ Chat 79 — Sprach-Calls auf gemma4-gpu bei > 5 Min Inaktivitaet, Analyse bleibt Qwen-CPU. Feature-Flag PIXIE_GPU_IDLE |
 
 ### DateienAgent / ProjektAgent (Chat 45)
 

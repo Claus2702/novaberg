@@ -135,6 +135,8 @@ def pixie_llm_call(prompt: str, modus: str = "analyse", ...) -> str:
 
 Statisches Routing pro Workflow-Schritt. CJK-Guard fuer Qwen-Output. JSON-Fallback bei Parse-Fehlern.
 
+**GPU-Idle-Modus (Chat 79):** Bei User-Inaktivitaet > 300s routet `pixie_llm_call` Sprach-Calls (`modus=sprache`) auf den GPU-Provider (`gemma4-gpu`, Port 11434). Analyse-Calls bleiben auf Qwen3-32B-CPU. Vierter Provider `_pixie_idle_provider` wird in `init_providers` gebaut (`None` im Claude-Profil). Modul-Cache `_aktiver_pixie_user` transportiert die User-ID vom Dispatcher zu `pixie_llm_call` ohne Parameter-Welle. Config: `PIXIE_GPU_IDLE`, `PIXIE_IDLE_SCHWELLE_SEKUNDEN`.
+
 ### 2.6 Embedding
 
 Embedding (`nomic-embed-text`) ist bewusst **nicht** Teil der Provider-Abstraktion. Es bleibt direkt auf Ollama via `embed_client`. Grund: Vektorkonsistenz — ein Wechsel des Embedding-Modells wuerde alle gespeicherten Vektoren invalidieren.
@@ -149,6 +151,8 @@ Embedding (`nomic-embed-text`) ist bewusst **nicht** Teil der Provider-Abstrakti
 | `PIXIE_MODELL_ANALYSE` | `"qwen3-32b-cpu"` | Pixie Analyse-Modell |
 | `PIXIE_MODELL_SPRACHE` | `"mistral-small3.2-cpu"` | Pixie Sprach-Modell |
 | `OLLAMA_CONNECTOR` | `"gemma4"` | Aktiver Modell-Connector (`gemma4` oder `mistral`) |
+| `PIXIE_GPU_IDLE` | `True` | Feature-Flag: Sprach-Calls auf GPU bei Inaktivitaet |
+| `PIXIE_IDLE_SCHWELLE_SEKUNDEN` | `300` | Sekunden Inaktivitaet bevor GPU-Routing greift |
 
 ### 2.8 Bekannter Bug: Ollama think+format (Chat 46)
 

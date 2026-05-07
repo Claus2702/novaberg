@@ -95,6 +95,14 @@ Pixie laeuft auf zwei eigenen LLMs, physisch getrennt vom Chat:
 
 Statisches Routing pro Workflow-Schritt: Analyse (Reasoning, JSON-Output) auf Qwen3, Sprache (Fliesstext, Charakter-Treue) auf Mistral. Beide CPU-Modelle gleichzeitig im RAM (36 GB < 64 GB verfuegbar). Komplett entkoppelt — der Chat-Flow wird nie durch Pixie blockiert. CJK-Guard verhindert chinesische Ausgaben bei Qwen.
 
+### GPU-Idle-Modus (Chat 79, PIX-GPU-IDLE)
+
+Wenn der User laenger als `PIXIE_IDLE_SCHWELLE_SEKUNDEN` (Default: 300) nicht gechattet hat, routet `pixie_llm_call` Sprach-Calls auf das GPU-Modell (`gemma4-gpu` auf Port 11434) statt auf das CPU-Modell. Analyse-Calls bleiben immer auf Qwen3-32B-CPU — die dichte 32B-Architektur liefert besseres Reasoning als Gemma4 mit 3.8B aktiven Parametern.
+
+Idle-Erkennung ueber bestehenden Redis-Key `last_activity:{user_id}` (gesetzt bei jedem Chat-Turn, TTL 7200s). Feature-Flag `PIXIE_GPU_IDLE` in `config.py`.
+
+Kein Kollisionsrisiko: Pixie und Chat nutzen bei Idle dasselbe GPU-Modell (gemma4-gpu). Falls ein Chat-Turn waehrend eines Pixie-GPU-Calls eingeht, teilen sich beide die GPU fuer einen Call — danach faellt der naechste Pixie-Call zurueck auf CPU.
+
 ---
 
 ## 5. Agenten-Uebersicht
@@ -132,7 +140,7 @@ Enricher → Salienz → Dispatcher → END
 
 Kein Perzeption, kein Router, kein Responder, kein Tribunal. Pixie weiss bereits, was zu tun ist. Typischer LLM-Verbrauch: 1 Call (Salienz) pro Durchlauf.
 
-Vier Pixie-Agenten laufen eigenstaendig ueber den Pixie-Heartbeat und die AgentRegistry: CharakterAgent, PromotionAgent, DecayAgent, RechercheAgent. Der alte Plugin-basierte Runner (services/shadow_agent/runner.py) und sieben OLD-Task-Dateien wurden in Chat 79 (PIX-CLEAN) entfernt. Ein verbleibender Task (nova_gedaechtnis.py) ist als Post-Hook konserviert, aber nicht ueber den Pixie-Router verdrahtet — Migration zu einem echten Agent steht aus (PIX-MIG-NOVA).
+Fuenf Pixie-Agenten laufen eigenstaendig ueber den Pixie-Heartbeat und die AgentRegistry: CharakterAgent, PromotionAgent, DecayAgent, RechercheAgent, WiedervorlageAgent. Der alte Plugin-basierte Runner (services/shadow_agent/runner.py) und sieben OLD-Task-Dateien wurden in Chat 79 (PIX-CLEAN) entfernt. Ein verbleibender Task (nova_gedaechtnis.py) ist als Post-Hook konserviert, aber nicht ueber den Pixie-Router verdrahtet — Migration zu einem echten Agent steht aus (PIX-MIG-NOVA).
 
 Der geplante PixieGraph (PIX-GRAPH) wird den AgentGraph als zentrale Routing-Infrastruktur abloesen.
 
