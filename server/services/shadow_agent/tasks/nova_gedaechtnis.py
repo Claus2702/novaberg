@@ -72,17 +72,15 @@ class NovaGedaechtnisTask(BaseTask):
             "modus":          "",
         }
 
-        # Paar-Schema: user_id = Subjekt, character_id = Gegenueber, beobachter
-        # = wer schreibt. Novas eigene Erkenntnis: Subjekt = Nova, Gegenueber =
-        # der echte User (Fallback DEFAULT_USER_ID), Beobachter = assistant.
-        # Damit landen die Eintraege unter kzg:nova:{user}:* — und triggern
-        # hash_dirty:nova:{user}, das genau das Paar ist, das der CharakterAgent
-        # fuer den Nova-Hash erwartet (siehe novaberg-convention-paar-schema.md).
+        # Paar-Schema (Chat 60+): Kanonisches Paar ist (menschlicher_user, nova).
+        # Nova schreibt ihre Erkenntnisse ins Paar des Users, mit beobachter="assistant".
+        # Damit landen die Eintraege unter kzg:{user}:nova:* — konsistent mit
+        # HumanGraph (beobachter=user) und CharacterGraph (beobachter=assistant).
         gegenueber_id: str = user_id if user_id != ASSISTANT_USER_ID else DEFAULT_USER_ID
         kzg_store(
             redis_client = redis_client,
-            user_id      = ASSISTANT_USER_ID,
-            character_id = gegenueber_id,
+            user_id      = gegenueber_id,
+            character_id = ASSISTANT_USER_ID,
             beobachter   = "assistant",
             salienz_obj  = salienz_obj,
             embedding    = embedding,
@@ -91,6 +89,10 @@ class NovaGedaechtnisTask(BaseTask):
         # Cooldown setzen (600s = 10 Minuten)
         redis_client.set(cooldown_key, "1", ex=600)
 
-        logger.info(f"Nova-KZG: Erkenntnis zu '{thema}' via kzg_store gespeichert.")
+        logger.info(
+            f"NovaGedaechtnis: KZG-Eintrag geschrieben — "
+            f"user_id={gegenueber_id}, character_id={ASSISTANT_USER_ID}, "
+            f"beobachter=assistant"
+        )
 
         return None

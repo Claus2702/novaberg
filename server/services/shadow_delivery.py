@@ -463,11 +463,9 @@ async def _delivery_ausfuehren(
     Gibt True zurück wenn eine Nachricht gesendet wurde.
     """
 
-    character_id: str = ASSISTANT_USER_ID
-
     # Gesprächskontext als Embedding
     gespraechs_vector: list[float] = _gespraechs_embedding(
-        redis_client, embed_client, embed_model, user_id, character_id,
+        redis_client, embed_client, embed_model, user_id, ASSISTANT_USER_ID,
     )
 
     if not gespraechs_vector:
@@ -475,7 +473,7 @@ async def _delivery_ausfuehren(
         return False
 
     # Aktuelle Emotion und Modus aus letzten Turns
-    turns: list[dict] = session_turns_retrieve(redis_client, user_id, character_id)
+    turns: list[dict] = session_turns_retrieve(redis_client, user_id, ASSISTANT_USER_ID)
     user_emotion:     str = "neutral"
     gespraechs_modus: str = ""
 
@@ -512,7 +510,7 @@ async def _delivery_ausfuehren(
         "aufgabe":   eintrag.get("aufgabe", ""),
     }, ensure_ascii=False)
 
-    await broadcast(user_id, impuls_payload, character_id=character_id)
+    await broadcast(user_id, impuls_payload, character_id=ASSISTANT_USER_ID)
 
     logger.info(
         f"Delivery: Nachricht gesendet — '{eintrag.get('thema', '')[:40]}' "
@@ -530,7 +528,7 @@ async def _delivery_ausfuehren(
 
     # Als Session-Turn speichern (markiert als Shadow-Impuls)
     session_turn_store(
-        redis_client, user_id, character_id, "assistant", nachricht,
+        redis_client, user_id, ASSISTANT_USER_ID, "assistant", nachricht,
         intentionen = ["eigener_impuls"],
         emotion     = eintrag.get("emotion", ""),
         modus       = eintrag.get("modus", ""),
@@ -542,11 +540,15 @@ async def _delivery_ausfuehren(
 
     if compiled_agent_graph and agent_graph:
         try:
-            logger.info(f"Delivery: AgentGraph — erzeuge State für '{ASSISTANT_USER_ID}'")
+            logger.info(
+                f"Delivery: AgentGraph — erzeuge State fuer user='{user_id}', "
+                f"character='{ASSISTANT_USER_ID}', rolle='character'"
+            )
             agent_state = agent_graph.create_state(
-                user_prompt  = nachricht,
-                user_id      = ASSISTANT_USER_ID,
-                character_id = character_id,
+                user_prompt    = nachricht,
+                user_id        = user_id,
+                character_id   = ASSISTANT_USER_ID,
+                ei_calc_rolle  = "character",
             )
             logger.info(f"Delivery: AgentGraph — State erzeugt, starte invoke...")
             compiled_agent_graph.invoke(agent_state)

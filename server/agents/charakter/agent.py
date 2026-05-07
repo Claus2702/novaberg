@@ -77,129 +77,166 @@ class CharakterAgent(BaseAgent):
         return None
 
     def invoke(self, state: AgentState) -> AgentState:
-        """Destilliert 5 Charakter-Profile fuer alle dirty User."""
+        """Destilliert 5 Charakter-Profile aus dem kanonischen Paar.
+
+        Seit Chat 60: Ein kanonisches Paar pro (User, Charakter)-Beziehung.
+        Perspektiv-Unterscheidung User-Profil vs. Nova-Profil ueber das
+        beobachter-Feld im KZG, nicht ueber Paar-Richtung.
+        """
 
         paare: list[tuple[str, str]] = [
             (DEFAULT_USER_ID, ASSISTANT_USER_ID),
-            (ASSISTANT_USER_ID, DEFAULT_USER_ID),
         ]
         gesamt_destilliert: int = 0
 
-        for user_id, character_id in paare:
+        for kanon_user_id, kanon_character_id in paare:
             # ── Dirty-Check ──────────────────────
-            dirty = redis_client.get(f"hash_dirty:{user_id}:{character_id}")
+            dirty = redis_client.get(f"hash_dirty:{kanon_user_id}:{kanon_character_id}")
             if not dirty:
-                logger.debug(f"CharakterAgent: Kein hash_dirty fuer {user_id}:{character_id}")
+                logger.debug(
+                    f"CharakterAgent: Kein hash_dirty fuer "
+                    f"{kanon_user_id}:{kanon_character_id}"
+                )
                 continue
 
-            logger.info(f"CharakterAgent: Starte Destillation fuer {user_id}")
+            logger.info(
+                f"CharakterAgent: Lade KZG fuer Paar "
+                f"({kanon_user_id}, {kanon_character_id}) — "
+                f"kanonisches Schema, Perspektive ueber beobachter"
+            )
 
-            # ── LZG-Eintraege laden ──────────────
-            lzg_kern = self._lzg_kern_laden(user_id)
-            lzg_intentionen = self._lzg_intentionen_laden(user_id)
-            lzg_emotionen = self._lzg_emotionen_laden(user_id)
+            # Profil-Konfigurationen: User-Profil (beobachter=user) und
+            # Nova-Profil (beobachter=assistant) aus demselben kanonischen Paar.
+            # Storage-Key (charakter_hash) bleibt (subjekt_user_id, subjekt_character_id),
+            # damit bestehende Enricher-Lesepfade unveraendert funktionieren.
+            profil_konfig: list[tuple[str, str, str]] = [
+                ("user",      kanon_user_id,      kanon_character_id),  # User-Profil
+                ("assistant", kanon_character_id, kanon_user_id),       # Nova-Profil
+            ]
 
-            # ── KZG-Eintraege laden ──────────────
-            # CHAR-HASH-FILTER (Chat 73): Nur eigene Perspektive laden.
-            # User-Profil (meister) ← beobachter=user (Meisters Aeusserungen)
-            # Nova-Profil (nova)    ← beobachter=assistant (Novas Beobachtungen)
-            beobachter: str = "assistant" if user_id == ASSISTANT_USER_ID else "user"
-            kzg_eintraege = self._kzg_laden(user_id, beobachter_filter=beobachter)
+            paar_etwas_gespeichert: bool = False
 
-            # ── 5 Profile destillieren ───────────
-            ergebnis: dict = {
-                "kern": "", "adaptiv": "",
-                "intentions_profil": "", "emotions_profil": "",
-                "beziehungsprofil": "",
-            }
+            for beobachter, subjekt_user_id, subjekt_character_id in profil_konfig:
+                logger.info(
+                    f"CharakterAgent: Profil-Build — "
+                    f"subjekt={subjekt_user_id}, beobachter={beobachter}"
+                )
 
-            try:
-                ergebnis["kern"] = kern_hash_destillieren(lzg_kern, user_id=user_id)
-            except Exception as ex:
-                logger.error(f"CharakterAgent: Kern-Hash fehlgeschlagen fuer {user_id}: {ex}")
+                # ── LZG-Eintraege laden (LZG-Lesepfad unveraendert — CHAR-LZG-LEAK Sprint 3) ──
+                lzg_kern        = self._lzg_kern_laden(subjekt_user_id)
+                lzg_intentionen = self._lzg_intentionen_laden(subjekt_user_id)
+                lzg_emotionen   = self._lzg_emotionen_laden(subjekt_user_id)
 
-            try:
-                ergebnis["adaptiv"] = adaptive_hash_destillieren(kzg_eintraege, user_id=user_id)
-            except Exception as ex:
-                logger.error(f"CharakterAgent: Adaptive-Hash fehlgeschlagen fuer {user_id}: {ex}")
+                # ── KZG-Eintraege laden (kanonisches Paar + beobachter-Filter) ──
+                kzg_eintraege = self._kzg_laden(
+                    kanon_user_id, kanon_character_id,
+                    beobachter_filter=beobachter,
+                )
 
-            try:
-                ergebnis["intentions_profil"] = intentions_profil_destillieren(lzg_intentionen, user_id=user_id)
-            except Exception as ex:
-                logger.error(f"CharakterAgent: Intentions-Profil fehlgeschlagen fuer {user_id}: {ex}")
+                # ── 5 Profile destillieren ───────────
+                ergebnis: dict = {
+                    "kern": "", "adaptiv": "",
+                    "intentions_profil": "", "emotions_profil": "",
+                    "beziehungsprofil": "",
+                }
 
-            try:
-                ergebnis["emotions_profil"] = emotions_profil_destillieren(lzg_emotionen)
-            except Exception as ex:
-                logger.error(f"CharakterAgent: Emotions-Profil fehlgeschlagen fuer {user_id}: {ex}")
-
-            try:
-                ergebnis["beziehungsprofil"] = beziehungsprofil_destillieren(kzg_eintraege, user_id=user_id)
-            except Exception as ex:
-                logger.error(f"CharakterAgent: Beziehungsprofil fehlgeschlagen fuer {user_id}: {ex}")
-
-            # ── In PostgreSQL speichern ──────────
-            hat_aenderungen: bool = any(v for v in ergebnis.values())
-
-            if hat_aenderungen:
                 try:
-                    self._ergebnis_speichern(user_id, character_id, ergebnis)
-                    redis_client.delete(f"hash_dirty:{user_id}:{character_id}")
-                    gesamt_destilliert += 1
-                    logger.info(f"CharakterAgent: {user_id} destilliert (5 Profile)")
+                    ergebnis["kern"] = kern_hash_destillieren(lzg_kern, user_id=subjekt_user_id)
                 except Exception as ex:
-                    logger.error(f"CharakterAgent: Speicherung fehlgeschlagen fuer {user_id}: {ex}")
+                    logger.error(f"CharakterAgent: Kern-Hash fehlgeschlagen fuer {subjekt_user_id}: {ex}")
 
-                # ── Langfristige Ziele aus Kern-Hash destillieren ──
-                # Nur für Novas eigenen Hash (ASSISTANT_USER_ID als user_id),
-                # nicht für den User-Hash.
-                if user_id == ASSISTANT_USER_ID and ergebnis["kern"]:
+                try:
+                    ergebnis["adaptiv"] = adaptive_hash_destillieren(kzg_eintraege, user_id=subjekt_user_id)
+                except Exception as ex:
+                    logger.error(f"CharakterAgent: Adaptive-Hash fehlgeschlagen fuer {subjekt_user_id}: {ex}")
+
+                try:
+                    ergebnis["intentions_profil"] = intentions_profil_destillieren(lzg_intentionen, user_id=subjekt_user_id)
+                except Exception as ex:
+                    logger.error(f"CharakterAgent: Intentions-Profil fehlgeschlagen fuer {subjekt_user_id}: {ex}")
+
+                try:
+                    ergebnis["emotions_profil"] = emotions_profil_destillieren(lzg_emotionen)
+                except Exception as ex:
+                    logger.error(f"CharakterAgent: Emotions-Profil fehlgeschlagen fuer {subjekt_user_id}: {ex}")
+
+                try:
+                    ergebnis["beziehungsprofil"] = beziehungsprofil_destillieren(kzg_eintraege, user_id=subjekt_user_id)
+                except Exception as ex:
+                    logger.error(f"CharakterAgent: Beziehungsprofil fehlgeschlagen fuer {subjekt_user_id}: {ex}")
+
+                # ── In PostgreSQL speichern ──────────
+                hat_aenderungen: bool = any(v for v in ergebnis.values())
+
+                if hat_aenderungen:
                     try:
-                        neue_ziele: list[dict] = langfristige_ziele_destillieren(
-                            ergebnis["kern"], user_id=ASSISTANT_USER_ID,
+                        self._ergebnis_speichern(subjekt_user_id, subjekt_character_id, ergebnis)
+                        paar_etwas_gespeichert = True
+                        gesamt_destilliert += 1
+                        logger.info(
+                            f"CharakterAgent: {subjekt_user_id} destilliert "
+                            f"(5 Profile, beobachter={beobachter})"
                         )
+                    except Exception as ex:
+                        logger.error(f"CharakterAgent: Speicherung fehlgeschlagen fuer {subjekt_user_id}: {ex}")
 
-                        if neue_ziele:
-                            # Alte langfristige Ziele deaktivieren
-                            alte_ziele: list[dict] = ziele_aktive_laden(
-                                POSTGRES_URL, user_id=ASSISTANT_USER_ID,
+                    # ── Langfristige Ziele aus Kern-Hash destillieren ──
+                    # Nur fuer Novas eigenen Hash (ASSISTANT_USER_ID als subjekt_user_id),
+                    # nicht fuer den User-Hash.
+                    if subjekt_user_id == ASSISTANT_USER_ID and ergebnis["kern"]:
+                        try:
+                            neue_ziele: list[dict] = langfristige_ziele_destillieren(
+                                ergebnis["kern"], user_id=ASSISTANT_USER_ID,
                             )
-                            for altes in alte_ziele:
-                                if altes["ziel_typ"] == "langfristig":
-                                    ziel_deaktivieren(POSTGRES_URL, altes["id"])
 
-                            # Neue Ziele speichern (mit Embedding)
-                            for z in neue_ziele[:ZIEL_MAX_LANGFRISTIG]:
-                                try:
-                                    emb: list[float] = embedding_create(
-                                        z["zielsatz"], ollama_gpu_client, EMBED_MODEL,
+                            if neue_ziele:
+                                # Alte langfristige Ziele deaktivieren
+                                alte_ziele: list[dict] = ziele_aktive_laden(
+                                    POSTGRES_URL, user_id=ASSISTANT_USER_ID,
+                                )
+                                for altes in alte_ziele:
+                                    if altes["ziel_typ"] == "langfristig":
+                                        ziel_deaktivieren(POSTGRES_URL, altes["id"])
+
+                                # Neue Ziele speichern (mit Embedding)
+                                for z in neue_ziele[:ZIEL_MAX_LANGFRISTIG]:
+                                    try:
+                                        emb: list[float] = embedding_create(
+                                            z["zielsatz"], ollama_gpu_client, EMBED_MODEL,
+                                        )
+                                    except Exception:
+                                        emb = None
+
+                                    ziel_speichern(
+                                        postgres_url=POSTGRES_URL,
+                                        user_id=ASSISTANT_USER_ID,
+                                        ziel_typ="langfristig",
+                                        zielsatz=z["zielsatz"],
+                                        motivation=0.8,
+                                        emotion=z.get("emotion", "neugierig"),
+                                        arousal=z.get("arousal", 0.6),
+                                        thema=z.get("thema", ""),
+                                        embedding=emb,
                                     )
-                                except Exception:
-                                    emb = None
 
-                                ziel_speichern(
-                                    postgres_url=POSTGRES_URL,
-                                    user_id=ASSISTANT_USER_ID,
-                                    ziel_typ="langfristig",
-                                    zielsatz=z["zielsatz"],
-                                    motivation=0.8,
-                                    emotion=z.get("emotion", "neugierig"),
-                                    arousal=z.get("arousal", 0.6),
-                                    thema=z.get("thema", ""),
-                                    embedding=emb,
+                                logger.info(
+                                    f"CharakterAgent: {len(neue_ziele)} langfristige Ziele "
+                                    f"für {ASSISTANT_USER_ID} erneuert"
                                 )
 
-                            logger.info(
-                                f"CharakterAgent: {len(neue_ziele)} langfristige Ziele "
-                                f"für {ASSISTANT_USER_ID} erneuert"
+                        except Exception as ziel_fehler:
+                            logger.warning(
+                                f"CharakterAgent: Ziel-Destillation fehlgeschlagen — {ziel_fehler}"
                             )
+                else:
+                    logger.info(
+                        f"CharakterAgent: Keine Aenderungen fuer {subjekt_user_id} "
+                        f"(beobachter={beobachter})"
+                    )
 
-                    except Exception as ziel_fehler:
-                        logger.warning(
-                            f"CharakterAgent: Ziel-Destillation fehlgeschlagen — {ziel_fehler}"
-                        )
-            else:
-                logger.info(f"CharakterAgent: Keine Aenderungen fuer {user_id}")
+            # Dirty-Flag erst nach beiden Profil-Builds loeschen.
+            if paar_etwas_gespeichert:
+                redis_client.delete(f"hash_dirty:{kanon_user_id}:{kanon_character_id}")
 
         state["ergebnis"] = {"destilliert": gesamt_destilliert}
         state["status"] = "abgeschlossen"
@@ -251,19 +288,25 @@ class CharakterAgent(BaseAgent):
             (user_id, PIXIE_CHARAKTER_LZG_LIMIT),
         )
 
-    def _kzg_laden(self, user_id: str, beobachter_filter: str = "") -> list[dict]:
-        """Laedt KZG-Eintraege aus Redis via SCAN.
+    def _kzg_laden(
+        self,
+        user_id:           str,
+        character_id:      str,
+        beobachter_filter: str = "",
+    ) -> list[dict]:
+        """Laedt KZG-Eintraege aus dem kanonischen Paar via SCAN.
 
         Args:
-            user_id: Subjekt-ID (wessen Eintraege geladen werden).
+            user_id: Subjekt-ID des kanonischen Paares.
+            character_id: Charakter-ID des kanonischen Paares.
             beobachter_filter: Wenn gesetzt, nur Eintraege mit diesem
                 Beobachter-Wert laden ('user' oder 'assistant').
-                Leerer String = kein Filter (Rueckwaertskompatibilitaet).
+                Leerer String = kein Filter.
         """
         eintraege: list[dict] = []
         uebersprungen: int = 0
 
-        for key in redis_client.scan_iter(match=f"kzg:{user_id}:*", count=100):
+        for key in redis_client.scan_iter(match=f"kzg:{user_id}:{character_id}:*", count=100):
             if isinstance(key, bytes):
                 key = key.decode("utf-8")
 
@@ -291,7 +334,7 @@ class CharakterAgent(BaseAgent):
 
         if beobachter_filter:
             logger.info(
-                f"CharakterAgent: KZG geladen fuer {user_id} — "
+                f"CharakterAgent: KZG geladen fuer Paar ({user_id}, {character_id}) — "
                 f"{len(eintraege)} Eintraege (beobachter={beobachter_filter}, "
                 f"{uebersprungen} uebersprungen)"
             )
