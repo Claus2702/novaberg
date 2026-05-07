@@ -232,6 +232,44 @@ def _build_thinker_prompt(today: str) -> str:
 
 
 # ─────────────────────────────────────────────
+# Verarbeitungs-Block (THINK-TRANSITION-INFO)
+# ─────────────────────────────────────────────
+def _build_verarbeitungs_block(agent_results: list) -> str:
+    """Baut den [VERARBEITUNG]-Block fuer den Thinker-Reasoning-Input.
+
+    Liefert leeren String wenn keine erfolgreichen AgentResults vorliegen.
+    Bei Erfolg (status='abgeschlossen'): operations-neutraler Block, der dem
+    Thinker mitteilt, dass eine Aenderung in diesem Turn passiert ist.
+    """
+    from graph.format.agent_results import format_success_lines
+
+    successes: list = [
+        r for r in agent_results
+        if hasattr(r, "status") and r.status == "abgeschlossen"
+    ]
+
+    if not successes:
+        return ""
+
+    ergebnis_texte: str = format_success_lines(successes)
+
+    block: str = (
+        "[VERARBEITUNG]\n"
+        "Eine Fachabteilung hat in diesem Turn folgende Operation ausgefuehrt:\n\n"
+        f"{ergebnis_texte}\n\n"
+        "Diese Operation hat den Datenbestand bereits veraendert. Tool-Aufrufe,\n"
+        "die zu dieser Operation passende Eintraege finden, zeigen das Ergebnis\n"
+        "der Aenderung — nicht einen Konflikt. Eintraege im\n"
+        "[GEDAECHTNIS], die der Aenderung widersprechen, zeigen den Stand VOR\n"
+        "der Operation — auch das ist kein Konflikt. Eine Antwort, die die\n"
+        "Operation bestaetigt, ist deshalb korrekt."
+    )
+
+    logger.debug(f"Thinker: Verarbeitungs-Block gebaut ({len(successes)} Operation(en))")
+    return block
+
+
+# ─────────────────────────────────────────────
 # Thinker Node
 # ─────────────────────────────────────────────
 def think(
@@ -306,6 +344,10 @@ def think(
         f"Die folgende Antwort muss geprueft werden.\n\n"
         f"{response}",
     ]
+
+    verarbeitungs_block: str = _build_verarbeitungs_block(state.get("agent_results", []))
+    if verarbeitungs_block:
+        msg_parts.insert(1, verarbeitungs_block)
 
     if state.get("memory_context"):
         msg_parts.append(

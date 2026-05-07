@@ -47,6 +47,10 @@ Kein Match → Durchlauf ohne LLM-Call. Das spart bei Smalltalk und einfachen An
 
 **Zusätzlich:** Wenn der Router `needs_web=true` gesetzt hat, wird Reasoning erzwungen — unabhängig von den Indikatoren. Das stellt sicher, dass bei Wissensfragen immer eine Web-Verifikation stattfindet.
 
+### 3.2 Verarbeitungs-Block (THINK-TRANSITION-INFO)
+
+Schreibt im selben Turn ein Agent in die DB (z.B. Timeline-Create/Update/Delete via `agents/timeline/crud.py`), würde der Thinker einen Treffer in `timeline_search` oder einen `[GEDAECHTNIS]`-Eintrag fälschlich für einen Konflikt halten und die korrekte Antwort überschreiben. Lösung analog zu Chat 27 (strukturierte Kontextualisierung statt Imperativ) und Chat 54 (Planner-`task_block` für den Responder): `_build_verarbeitungs_block()` liest `state["agent_results"]` und erzeugt bei `status == "abgeschlossen"` einen operations-neutralen `[VERARBEITUNG]`-Block, der dem Thinker mitteilt, dass die Aenderung bereits passiert ist — Tool-Treffer dazu sind das Ergebnis, nicht der Konflikt; widersprechende `[GEDAECHTNIS]`-Eintraege zeigen den Stand davor. Der Block wird per `msg_parts.insert(1, ...)` direkt nach `[TOOLS]` und vor `[BENUTZERANFRAGE]` eingefuegt. Das Verb (`eingetragen`/`verschoben`/`geloescht`) steckt im `r.ergebnis`-String — der Wrapper bleibt CRUD-neutral.
+
 ---
 
 ## 4. Tools
@@ -186,6 +190,7 @@ Kein einzelner Node „wusste", was er tat. Zusammen entstand Verhalten, das aus
 | `user_prompt` | API | Für Kontext im Reasoning-Prompt |
 | `memory_context` | Enricher | Bekannter Kontext (optional im Reasoning-Prompt) |
 | `needs_web` | Router | Erzwingt Reasoning + Web-Suche wenn `true` |
+| `agent_results` | Agent-Dispatch | Liste der Agent-Ergebnisse — fuer Verarbeitungs-Block (THINK-TRANSITION-INFO) |
 
 ### Geschrieben
 

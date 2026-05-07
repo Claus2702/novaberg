@@ -16,6 +16,7 @@ import json
 import logging
 
 from config       import PROMPTS
+from graph.format.agent_results import format_success_lines
 from graph.state  import ConversationState
 from plugins      import get_registry
 from agents       import AgentRegistry
@@ -115,9 +116,7 @@ def _build_task_inquiry(result) -> str:
 
 def _build_task_success(results: list) -> str:
     """[AUFGABE] fuer erfolgreiche Agent-Aktionen."""
-    ergebnis_texte: str = "\n".join(
-        f"- Agent '{r.agent_name}': {r.ergebnis}" for r in results
-    )
+    ergebnis_texte: str = format_success_lines(results)
     return PROMPTS["responder.aufgabe_erfolg"].format(
         ergebnis_texte=ergebnis_texte
     )
