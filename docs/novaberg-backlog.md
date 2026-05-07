@@ -285,7 +285,8 @@ Der naechste Schritt in der Kommunikationsbandbreite: Spracheingabe (Speech-to-T
 | PIX-MIG-6 | VertiefungsAgent | ⚠️ Konzept (novaberg-pixie-deepdive_k.md) |
 | PIX-MIG-7 | NachfragenAgent | ⬜ Queue-basiert, emotionale Rückfrage |
 | PIX-MIG-8 | AufraeumAgent | ⬜ Duplikate, verwaiste Entitäten |
-| PIX-CLEAN | Alter Runner entfernen | ⬜ services/shadow_agent/ + BaseTask |
+| PIX-CLEAN | Alter Runner entfernt | ✅ Chat 79 — runner.py + 7 Task-Dateien geloescht, __init__.py bereinigt. base_task.py + nova_gedaechtnis.py bleiben (nicht-migrierter Task) |
+| PIX-MIG-NOVA | NovaGedaechtnis als Agent migrieren | ⬜ Post-Hook nova_gedaechtnis.py in services/shadow_agent/tasks/ ist nicht ueber Pixie-Router verdrahtet. Sprint-2-Fix (kanonisches Paar) konserviert, wirkt aber erst nach Migration zu einem echten Agent in agents/ |
 | PIX-GRAPH | PixieGraph | ⬜ Router → Agent-Dispatch → Agent (CPU) → Salienz → Dispatcher |
 | PIX-STATUS | Pixie-Statusleiste | ⬜ Zeigt aktiven Agenten statt nur "idle" |
 | PIX-FALLBACK | Queue-Fallback bei Fehler | ⬜ Offset +1 nach Dispatch-Fehler |
@@ -321,6 +322,7 @@ Der naechste Schritt in der Kommunikationsbandbreite: Spracheingabe (Speech-to-T
 | E4/E5 | LZG-Verdichtung durch Pixie | ⬜ |
 | D9 | Burst-Deduplizierung (KZG-Klebrigkeit) | ⬜ |
 | TEST1 | Testumgebung vervollständigen | ⚠️ Phase 0+4 fehlen |
+| SHADOW-DEAD | Toten Code in services/shadow_agent/utils.py bereinigen | ⬜ stack_push, shadow_stack_pop, shadow_stack_peek, log_schreiben, nova_vorwissen_laden sind nicht extern referenziert. Nur shadow_queue_push lebt. |
 
 ### DateienAgent / ProjektAgent (Chat 45)
 
@@ -1455,7 +1457,7 @@ Der Thinker `memory_search`-Tool-Output verwendet seit STRUCT-5c (Chat 75) den g
 
 ## Sprint: MIGRATION-PIX-CLEANUP — Pixie-Migration nach Multi-Charakter-Umstellung abschließen (Chat 78)
 
-**Status:** Konzept (Chat 78), hohe Priorität
+**Status:** ✅ Erledigt (Chat 79)
 
 **Hintergrund:** Bei der Multi-Charakter-Umstellung (Chat 60, Paar-Schema) wurden die Pixie-Schreibpfade nicht nachgezogen. Audit Chat 78 hat drei konkrete Schreibpfade identifiziert, die noch das alte Pre-Chat-60-Schema verwenden. Verursacht aktiv falsche KZG-Einträge bei jeder Pixie-Aktivität.
 
@@ -1465,6 +1467,8 @@ Der Thinker `memory_search`-Tool-Output verwendet seit STRUCT-5c (Chat 75) den g
 - Bug MIGRATION-AGENTGRAPH-PAIR: AgentGraph-Calls in Shadow-Delivery mit User-Kontext aufrufen.
 - Konsistenzprüfung der weiteren Pixie-Tasks (PromotionAgent, DecayAgent, CharakterAgent, ZielDecayAgent) — alle sollten Paar-konform schreiben/lesen.
 - Verifikation: nach Fix entstehen keine neuen Einträge in `kzg:nova:meister:*` oder `kzg:nova:nova:*`.
+
+**Erledigt Chat 79:** Fix 1 (nova_gedaechtnis IDs getauscht), Fix 3 (shadow_delivery User-Kontext), Fix 4 (CharakterAgent paare-Liste auf kanonisches Paar). Fix 2 entfiel (RechercheAgent bereits korrekt). Zusaetzlich: charakter_hash.py OLD-Task geloescht.
 
 **Hohe Priorität, weil:**
 
@@ -1478,7 +1482,7 @@ Der Thinker `memory_search`-Tool-Output verwendet seit STRUCT-5c (Chat 75) den g
 
 ## Sprint: KZG-CLEANUP — Bereinigung fehlerhafter KZG-Einträge (Chat 78)
 
-**Status:** Konzept (Chat 78)
+**Status:** ✅ Erledigt (Chat 79)
 
 **Hintergrund:** Audit Chat 78 hat im KZG-Bestand drei Paar-Varianten gefunden:
 
@@ -1491,6 +1495,8 @@ Der Thinker `memory_search`-Tool-Output verwendet seit STRUCT-5c (Chat 75) den g
 - Nach Fix von MIGRATION-PIX-CLEANUP: einmaliger Bereinigungslauf der Bestände.
 - Optionen: löschen (TTL-Lauf abwarten reicht ggf. auch) oder migrieren (Inhalte ins kanonische Paar verschieben mit `beobachter=assistant`).
 - Entscheidung pro Variante: `kzg:nova:meister:*` (Pixie-Arbeit, vermutlich migrierenswert) und `kzg:nova:nova:*` (Phantom, vermutlich Müll).
+
+**Erledigt Chat 79:** Alle 24 Alt-Eintraege per EVAL-Befehl geloescht (17× kzg:nova:meister:* + 7× kzg:nova:nova:*). LZG war leer, keine Migration noetig.
 
 **Bestand zum Zeitpunkt des Audits:**
 
@@ -1523,6 +1529,7 @@ Kurzübersicht aktiver Bugs:
 | ENRICHER-DUP | 👁 | Fakten werden mehrfach in den Enricher-Kontext injiziert (Chat 62, Beobachtung; Chat 74: durch Reducer teilweise adressiert) |
 | RESP-DEAD | ⬜ | Tote Standardphrase statt Nova-Ton bei fehlgeschlagenen Agent-Dispatches |
 | PIXIE-GHOST | ⬜ | Pixie-Delivery fließt nicht durch EI/Session/Router — Nova hört sich selbst nicht |
+| PIXIE-AGENT-MISSING | ⬜ | `nachfragen` und `vertiefung` werden geroutet, sind aber nach PIX-CLEAN keine Agenten mehr (PIX-MIG-6/7) |
 
 Details, Ursachen und Lösungsansätze → `novaberg-bugs.md`
 

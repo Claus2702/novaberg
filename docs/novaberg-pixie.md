@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Pixie — Hintergrundverarbeitung (Übersicht)
-**Stand:** 17. April 2026, Chat 52 (Code-Alignment)
+**Stand:** 07. Mai 2026, Chat 79
 **Pfad:** novaberg/docs/novaberg-pixie.md
 **Quellen:** nova-05-k.md (Pixie-Konzept), nova-05-a.md (AgentGraph), nova-05-t-a.md (Queue/Stack/Delivery), nova-05-m-a.md (Agenten-Referenz)
 
@@ -130,7 +130,11 @@ Der AgentGraph ist eine leichtgewichtige 3-Node-Kette fuer Novas eigene Gedaecht
 Enricher → Salienz → Dispatcher → END
 ```
 
-Kein Perzeption, kein Router, kein Responder, kein Tribunal. Pixie weiss bereits, was zu tun ist. Typischer LLM-Verbrauch: 1 Call (Salienz) pro Durchlauf. Die migrierten Pixie-Agenten (5 von 8) laufen eigenstaendig — sie nutzen eigene Tool-Manager und KZG/Stack-Aufrufe, ohne den AgentGraph. Der geplante PixieGraph (PIX-GRAPH) wird den AgentGraph als zentrale Routing-Infrastruktur abloesen.
+Kein Perzeption, kein Router, kein Responder, kein Tribunal. Pixie weiss bereits, was zu tun ist. Typischer LLM-Verbrauch: 1 Call (Salienz) pro Durchlauf.
+
+Vier Pixie-Agenten laufen eigenstaendig ueber den Pixie-Heartbeat und die AgentRegistry: CharakterAgent, PromotionAgent, DecayAgent, RechercheAgent. Der alte Plugin-basierte Runner (services/shadow_agent/runner.py) und sieben OLD-Task-Dateien wurden in Chat 79 (PIX-CLEAN) entfernt. Ein verbleibender Task (nova_gedaechtnis.py) ist als Post-Hook konserviert, aber nicht ueber den Pixie-Router verdrahtet — Migration zu einem echten Agent steht aus (PIX-MIG-NOVA).
+
+Der geplante PixieGraph (PIX-GRAPH) wird den AgentGraph als zentrale Routing-Infrastruktur abloesen.
 
 ---
 
@@ -148,6 +152,25 @@ Kein Perzeption, kein Router, kein Responder, kein Tribunal. Pixie weiss bereits
 | `MAX_BURST` | 2 | `services/shadow_delivery.py` | Max. Impulse pro Delivery-Zyklus |
 
 Naming-Konvention: Anzeige = "Pixie" (Logs, UI, Dokumentation). Technisch = "Shadow" (Redis-Keys, Verzeichnisse, Funktionsnamen).
+
+---
+
+## 8. Migrationsstatus (Chat 79)
+
+| Agent | Status | Quelle |
+|-------|--------|--------|
+| CharakterAgent | ✅ Migriert (Chat 33, gefixt Chat 73+79) | agents/charakter/ |
+| PromotionAgent | ✅ Migriert (Chat 33) | agents/promotion/ |
+| DecayAgent | ✅ Migriert (Chat 33) | agents/decay/ |
+| RechercheAgent | ✅ Migriert (Chat 35) | agents/recherche/ |
+| WiedervorlageAgent | ✅ Migriert (Chat 35) | agents/wiedervorlage/ |
+| NovaGedaechtnis | ⚠️ Post-Hook, nicht verdrahtet | services/shadow_agent/tasks/nova_gedaechtnis.py |
+| VertiefungsAgent | ⬜ Konzept (PIX-MIG-6) | novaberg-pixie-deepdive_k.md |
+| NachfragenAgent | ⬜ Offen (PIX-MIG-7) | — |
+| AufraeumAgent | ⬜ Offen (PIX-MIG-8) | — |
+| TraumAgent | ⬜ Offen (Epic 8) | novaberg-backlog.md §1.7 |
+
+Alter Runner-Stack (services/shadow_agent/runner.py, discover_tasks, get_task_registry) seit Chat 79 entfernt. Shared Utilities (shadow_queue_push in utils.py) bleiben.
 
 ---
 

@@ -770,4 +770,50 @@
 
 ---
 
-*Aktualisiert in Chat 78. Offene Punkte → novaberg-backlog.md. Bugs → novaberg-bugs.md.*
+## Chat 79 (07. Mai 2026) — Bug-Sprints + PIX-CLEAN + Pixie-Restart
+
+### THINK-TRANSITION-INFO (Sprint 1)
+
+- ✅ Helper `format_success_lines` in neuer Datei `graph/format/agent_results.py`
+- ✅ `_build_verarbeitungs_block` in `graph/nodes/thinker.py` — operations-neutraler [VERARBEITUNG]-Block
+- ✅ Insert an Index 1 in `msg_parts` (nach [TOOLS], vor [BENUTZERANFRAGE])
+- ✅ Reasoning-Regel in `prompts/default/thinker.rules.txt`
+- ✅ Smoke-Test: Create/Update/Delete Zahnarzt — alle drei Turns sauber bestaetigt, kein Konflikt-Override
+- ✅ Planner-Refactor: `_build_task_success` nutzt shared Helper
+
+### MIGRATION-PIX-CLEANUP (Sprint 2)
+
+- ✅ Fix 1: `nova_gedaechtnis.py` IDs getauscht (kanonisches Paar), Pre-Chat-60-Kommentar ersetzt
+- ✅ Fix 2: Entfaellt (RechercheAgent bereits korrekt)
+- ✅ Fix 3: `shadow_delivery.py` — user_id des menschlichen Users durchgereicht, ei_calc_rolle="character" (Option B)
+- ✅ Fix 4: `charakter/agent.py` — paare-Liste auf kanonisches Paar reduziert, Perspektiv-Unterscheidung ueber beobachter statt Paar-Richtung
+- ✅ charakter_hash.py OLD-Task geloescht (komplett orphaniert, nie dispatcht)
+- ✅ hash_dirty-Key automatisch korrekt durch kzg_store-Argumenttausch
+
+### CHAR-LZG-LEAK (Sprint 3)
+
+- ✅ `_lzg_kern_laden`, `_lzg_intentionen_laden`, `_lzg_emotionen_laden`: Neue Signatur (user_id, character_id, beobachter), WHERE um character_id + beobachter erweitert
+- ✅ Aufrufstellen auf kanonisches Paar umgestellt (kanon_user_id, kanon_character_id, beobachter statt subjekt_user_id)
+- ✅ Beziehungsprofil: keine LZG-Methode vorhanden, laeuft ueber KZG — nichts zu tun
+
+### PIX-CLEAN (Sprint 4)
+
+- ✅ 7 tote Task-Dateien geloescht: runner.py, aufraeumen.py, lzg_decay.py, nachfragen.py, recherche.py, vertiefen.py, wiedervorlage.py
+- ✅ __init__.py: Von 45 auf 13 Zeilen, nur Re-Export von shadow_queue_push
+- ✅ base_task.py + nova_gedaechtnis.py bleiben (nicht-migrierter Task, Sprint-2-Fix konserviert)
+- ✅ ~600 Zeilen toter Code entfernt
+
+### KZG-CLEANUP
+
+- ✅ 24 Alt-Eintraege geloescht (17× kzg:nova:meister:* + 7× kzg:nova:nova:*) per Redis EVAL
+- ✅ KZG-Bestand sauber: nur kanonische Eintraege in kzg:meister:nova:*
+
+### Pixie-Restart
+
+- ✅ PIXIE_AKTIV = True, Container neu gebaut
+- Aktive Agenten: CharakterAgent, PromotionAgent, DecayAgent, RechercheAgent
+- Nicht-migriert: VertiefungsAgent, NachfragenAgent, AufraeumAgent, TraumAgent, NovaGedaechtnis
+
+---
+
+*Aktualisiert in Chat 79. Offene Punkte → novaberg-backlog.md. Bugs → novaberg-bugs.md.*

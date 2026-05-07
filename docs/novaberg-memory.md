@@ -483,7 +483,7 @@ Diese Tabelle dient als Nachschlage-Anker: wer schreibt was wohin, wer liest was
 | User-Turn (Pfad 1) | KZG `kzg:{user}:{nova}:*` | `user` | User-Beitrag verdichtet, User-Themen, User-Emotion | Empathie-Gedächtnis: was hat der User gesagt und gefühlt |
 | Character-Turn (Pfad 2) | KZG `kzg:{user}:{nova}:*` | `assistant` | Nova-Antwort verdichtet, Nova-Themen, Nova-Emotion | Selbst-Gedächtnis: was hat sie gesagt und dabei empfunden |
 | Pixie-RechercheAgent | KZG `kzg:{user}:{nova}:*` | `assistant` | Recherche-Erkenntnis, Themen, Salienz hartcodiert oder LLM | Selbst-Gedächtnis: was sie für diesen User recherchiert hat |
-| Pixie-NovaGedächtnis | KZG `kzg:{user}:{nova}:*` | `assistant` | Verdichtete Erkenntnis aus Recherche/Vertiefen | Selbst-Gedächtnis: kondensierte Eigenwelt |
+| Pixie-NovaGedächtnis | KZG `kzg:{user}:{nova}:*` | `assistant` | Verdichtete Erkenntnis aus Recherche/Vertiefen (`user_id=gegenueber_id, character_id=ASSISTANT_USER_ID` — Fix Chat 79, aber Task nicht über Pixie-Router verdrahtet, siehe PIX-MIG-NOVA) | Selbst-Gedächtnis: kondensierte Eigenwelt |
 | Pixie-Vertiefen | KZG `kzg:{user}:{nova}:*` | `assistant` | Vertiefungs-Ergebnis | Selbst-Gedächtnis: tiefere Auseinandersetzung mit Themen |
 | Pixie-Träumen | KZG `kzg:{user}:{nova}:*` | `assistant` | Traum-Ergebnis (assoziative Verknüpfung) | Selbst-Gedächtnis: kreative Verbindungen |
 | Cluster-Promotion | LZG `langzeitgedaechtnis` | von KZG geerbt | Aggregation aus mehreren KZG-Einträgen | Langzeit-Konsolidierung mit Backpropagation-Logik |

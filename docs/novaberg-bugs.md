@@ -1,7 +1,7 @@
 # Novaberg — Bugs & Limitationen
 
-**Stand:** 06. Mai 2026, Chat 78
-**Quelle:** Testlauf "Karrierekrise" (200 Prompts) + Gedächtnis-Epic (Chat 11) + Epic 11 Agent-System (Chats 22–32) + Persona Smoke-Tests (Chats 31–32) + RechercheAgent-Test (Chat 35) + Doku-Audit (Chat 36) + PRIO0-Fix + Client-Observability (Chat 37) + Claude API-Test + STREAM1-Fix + Gesprächsvektor (Chat 39) + CharakterIdentitaetAgent + DirektivenAgent + Tribunal Score-System (Chat 40) + Telegram Bot + Zeitparser-Fixes (Chat 41) + CRUD-Härtung + Telegram-Chat-Analyse + DB-Report (Chat 42) + KONTEXT1-Fix + Resume-Bug + Epic 15 Pilot (Chat 43) + Epic 15 Rollout + DELEG-REG Fix + KZG-Klebrigkeit (Chat 44) + RESP-CHAR1 Fix (Chat 45) + CLASSIFY-REJECTED + Gemma4 Live-Tests (Chat 48) + Telegram-Konversation "frecher Charakter" (Chat 49) + RESUME-REJECT Fix + Live-Tests (Chat 50) + Neugier-Konzept + Projektinfrastruktur (Chat 51) + Doku-Alignment + emotions_profil (Chat 52) + Antrieb-Konzept + Dual-Emotion (Chat 53) + HALL2-Fix + Planner-Refactor (Chat 54) + PySide6 verworfen + GTK4-Entscheidung (Chat 55) + GTK4-Client + Panel-Infrastruktur (Chat 56) + Web-Tool-Doku + SEARX1-Diagnose (Chat 57) + Chat 61 (Perzeption-Symmetrie, Akkumulations-Refactor, Paper-Portfolio, Lumi, urllib3-Doppel-Turn beobachtet) + Paper I + urllib3-RETRY + ROUTE-CHAR-NOTIZ + RESP-DEAD + PIXIE-GHOST (Chat 65) + WS-SINGLE Fix + ClientConnection + User-Message-Broadcast (Chat 68) + Dreischicht-Integration + GV-Refactoring + MODUS-LEER + VEKTOR-LEER + AROUSAL-330 + ZIEL-LABEL-LEER Fixes (Chat 72) + Promotion-Pipeline-Audit (Chat 75) + Reducer-Umbau Smoke-Tests (Chat 75)
+**Stand:** 07. Mai 2026, Chat 79
+**Quelle:** Testlauf "Karrierekrise" (200 Prompts) + Gedächtnis-Epic (Chat 11) + Epic 11 Agent-System (Chats 22–32) + Persona Smoke-Tests (Chats 31–32) + RechercheAgent-Test (Chat 35) + Doku-Audit (Chat 36) + PRIO0-Fix + Client-Observability (Chat 37) + Claude API-Test + STREAM1-Fix + Gesprächsvektor (Chat 39) + CharakterIdentitaetAgent + DirektivenAgent + Tribunal Score-System (Chat 40) + Telegram Bot + Zeitparser-Fixes (Chat 41) + CRUD-Härtung + Telegram-Chat-Analyse + DB-Report (Chat 42) + KONTEXT1-Fix + Resume-Bug + Epic 15 Pilot (Chat 43) + Epic 15 Rollout + DELEG-REG Fix + KZG-Klebrigkeit (Chat 44) + RESP-CHAR1 Fix (Chat 45) + CLASSIFY-REJECTED + Gemma4 Live-Tests (Chat 48) + Telegram-Konversation "frecher Charakter" (Chat 49) + RESUME-REJECT Fix + Live-Tests (Chat 50) + Neugier-Konzept + Projektinfrastruktur (Chat 51) + Doku-Alignment + emotions_profil (Chat 52) + Antrieb-Konzept + Dual-Emotion (Chat 53) + HALL2-Fix + Planner-Refactor (Chat 54) + PySide6 verworfen + GTK4-Entscheidung (Chat 55) + GTK4-Client + Panel-Infrastruktur (Chat 56) + Web-Tool-Doku + SEARX1-Diagnose (Chat 57) + Chat 61 (Perzeption-Symmetrie, Akkumulations-Refactor, Paper-Portfolio, Lumi, urllib3-Doppel-Turn beobachtet) + Paper I + urllib3-RETRY + ROUTE-CHAR-NOTIZ + RESP-DEAD + PIXIE-GHOST (Chat 65) + WS-SINGLE Fix + ClientConnection + User-Message-Broadcast (Chat 68) + Dreischicht-Integration + GV-Refactoring + MODUS-LEER + VEKTOR-LEER + AROUSAL-330 + ZIEL-LABEL-LEER Fixes (Chat 72) + Promotion-Pipeline-Audit (Chat 75) + Reducer-Umbau Smoke-Tests (Chat 75) + Chat 79 (THINK-MEM-CONFLICT, CHAR-LZG-LEAK, MIGRATION-PIX-PAIR, MIGRATION-AGENTGRAPH-PAIR, PIX-CLEAN, KZG-CLEANUP)
 
 ---
 
@@ -74,6 +74,10 @@
 | CHAR-HASH-FILTER | `_kzg_laden()` filterte nicht nach beobachter → Profil-Mischperspektive | `beobachter_filter`-Parameter, invoke() setzt Perspektive + 20 Altdaten migriert | Chat 73 |
 | urllib3-RETRY | Client-urllib3 machte automatischen Retry → Doppel-Turns | `HTTPAdapter(max_retries=0)` in `stream_handler.py` | Chat 65 (verifiziert Chat 73) |
 | IMPULS-KOPIE | GV-VORSCHLAG war fertiger Satz, Responder kopierte 1:1 | VORSCHLAG→IMPULS: Richtungsangabe statt Text, Leitgedanke im Prompt | Chat 73 |
+| THINK-MEM-CONFLICT | `[VERARBEITUNG]`-Block im Thinker-Reasoning-Input, Helper `format_success_lines` in `graph/format/agent_results.py`, Reasoning-Regel in `thinker.rules.txt` | Chat 79 |
+| CHAR-LZG-LEAK | `beobachter`- und `character_id`-Filter in `_lzg_kern_laden`, `_lzg_intentionen_laden`, `_lzg_emotionen_laden`. LZG-Lookup ueber kanonisches Paar statt `subjekt_user_id` | Chat 79 |
+| MIGRATION-PIX-PAIR | IDs getauscht in `nova_gedaechtnis.py`: `user_id=gegenueber_id, character_id=ASSISTANT_USER_ID`. Pre-Chat-60-Kommentar ersetzt | Chat 79 |
+| MIGRATION-AGENTGRAPH-PAIR | `shadow_delivery.py`: `user_id` des menschlichen Users durchgereicht, `ei_calc_rolle="character"` explizit gesetzt. GraphBase-Default unangetastet (Option B) | Chat 79 |
 
 ---
 
@@ -412,6 +416,9 @@ Header der aktiven Datei sagt explizit „Migriert aus: services/shadow_agent/ta
 - Alte Queue-Einträge in Redis, die einen nicht mehr existenten Agent referenzieren
 **Auswirkung:** Mittel. Funktional kein Schaden (try/except fängt vermutlich), aber Log-Lärm bei jeder Pixie-Iteration und potenziell verlorene Tasks, die eigentlich verarbeitet werden sollten.
 **Lösungsansatz:** `grep -rn "nachfragen\|vertiefung" novaberg/server/agents/ novaberg/server/pixie/` um Quelle zu finden. Entweder Agenten implementieren/registrieren oder Queue/Scheduler bereinigen.
+
+**Ergänzung Chat 79:** Die Agenten `nachfragen` und `vertiefung` sind keine Registry-Fehler, sondern nicht-migrierte OLD-Tasks. Die alten Task-Dateien wurden in Chat 79 (PIX-CLEAN) gelöscht. Die String-Namen leben weiter in `pixie/router.py` und `memory/kzg.py` (Intention-Aufgabe-Map), werden aber auf nicht-existierende Agenten geroutet. Fix: Agenten implementieren und registrieren (PIX-MIG-6, PIX-MIG-7 im Backlog).
+
 **Prio:** Mittel.
 
 ---
@@ -675,45 +682,6 @@ Dann Requests über diese Session abwickeln statt direkt `requests.post()`.
 
 ### Chat 78 — TimelineAgent-Audit + Thinker-Findings
 
-#### THINK-MEM-CONFLICT — Thinker überschreibt korrekte Bestätigung mit Konflikt-Formulierung ⚠️
-
-**Entdeckt:** Chat 77 Live-Test, Chat 78 Audit
-**Symptom:** Nach erfolgreichem Insert auf leerer Timeline überschreibt der Thinker die korrekte Bestätigung mit Konflikt-Formulierung ("du hast bereits einen Zahnarzttermin..."). Beobachtet bei Create auf leerer Timeline — der vermeintliche Konflikt existiert in der DB gar nicht.
-
-**Ursprünglich vermutet als:** Insert-vor-Search-Bug im TimelineAgent (Subgraph würde nach dem Insert nochmal suchen und den eigenen Eintrag als Konflikt sehen).
-
-**Tatsächliche Ursache (Chat 78 Audit):** Information-Gap im Thinker. Der Thinker liest den `memory_context` (vor dem Agent-Run gerendert) plus eigene Tool-Aufrufe (`timeline_search` greift auf den Stand nach dem Insert zu). Er sieht die Transition nicht und interpretiert den frischen Eintrag als Konflikt. Der Subgraph des TimelineAgents ist sauber (Search-vor-Execute korrekt verdrahtet seit Chat 27, `validieren → suchen → ausfuehren → bestaetigen → END`).
-
-**Auswirkung:** Schwer in der Wahrnehmung — Nova widerspricht sich selbst innerhalb desselben Turns. Datenbestand bleibt korrekt, aber die Antwort ist falsch und für den User irritierend.
-
-**Status:** Lösung designed (THINK-TRANSITION-INFO, siehe Backlog §7), Implementierung ausstehend für Chat 79.
-
-**Prio:** Hoch — blockiert M2.5a-Smoke-Tests, sonst stoßen die wieder auf den Bug.
-
----
-
-#### CHAR-LZG-LEAK — User-Charakter-Profil enthält Nova-Beobachtungen ⚠️
-
-**Entdeckt:** Chat 78 Audit (KZG/LZG-Befund)
-
-**Symptom:** Der CharakterAgent destilliert die LZG-basierten Profile (kern, intentions, emotions) ohne Filter auf `beobachter` und `character_id`. Pulled `WHERE user_id = X AND aktiv = TRUE`.
-
-**Konkrete Stellen:**
-
-- [agents/charakter/agent.py:212-223](agents/charakter/agent.py#L212-L223) — `_lzg_kern_laden`
-- [agents/charakter/agent.py:225-238](agents/charakter/agent.py#L225-L238) — `_lzg_intentionen_laden`
-- [agents/charakter/agent.py:240-252](agents/charakter/agent.py#L240-L252) — `_lzg_emotionen_laden`
-
-**Konsequenz:** Beim User-Profil (`user_id=meister`) fließen LZG-Einträge mit `beobachter=user` (Meisters Aussagen) UND mit `beobachter=assistant` (Novas Reaktionen, Pfad-2-Promotion) gemeinsam in seinen Charakter-Hash. Damit infizieren Nova-Beobachtungen Meisters Charakter-Bild.
-
-**Soll-Verhalten:** LZG-Reads filtern auf `beobachter` und `character_id` analog zur KZG-Lade-Logik in `_kzg_laden` ([agents/charakter/agent.py:103-107](agents/charakter/agent.py#L103-L107)).
-
-**Verwandt:** CHAR-HASH-FILTER (Chat 73, KZG-Seite gefixt). Dieser Bug ist die LZG-Spiegelung.
-
-**Prio:** Hoch — verfälscht den Charakter-Hash strukturell, sobald LZG-Einträge entstehen. Heute noch nicht akut (LZG leer), wird mit erster Promotion akut.
-
----
-
 #### PFAD2-EMO-MIX — Pfad-2-KZG-Eintrag mischt User- und Nova-Emotion ⚠️
 
 **Entdeckt:** Chat 78 Audit (KZG/LZG-Befund)
@@ -741,54 +709,8 @@ Dann Requests über diese Session abwickeln statt direkt `requests.post()`.
 
 ---
 
-#### MIGRATION-PIX-PAIR — Pixie-Schreibpfade nicht auf Paar-Schema umgestellt ⚠️
-
-**Entdeckt:** Chat 78 Audit (KZG/LZG-Befund)
-
-**Symptom:** Nach der Multi-Charakter-Umstellung (Chat 60, Paar-Schema `kzg:{user_id}:{character_id}:{entry_id}`) wurden die Pixie-Schreibpfade nicht nachgezogen. Sie verwenden noch das alte Pre-Chat-60-Schema, in dem Nova ein eigenes `user_id=nova` als Subjekt hatte.
-
-**Konkrete Stellen:**
-
-- [services/shadow_agent/tasks/nova_gedaechtnis.py:82-89](services/shadow_agent/tasks/nova_gedaechtnis.py#L82-L89) — schreibt mit `user_id=ASSISTANT_USER_ID`, `character_id=gegenueber_id`. Erzeugt umgekehrtes Paar `kzg:nova:meister:*`.
-- [agents/recherche/agent.py:288-295](agents/recherche/agent.py#L288-L295) — schreibt mit hartcodierten Defaults für `salienz=0.7`, `emotion="neutral"`. User-Kontext-Übernahme unklar.
-
-**Konsequenz:** 17 Einträge im Bestand mit umgekehrtem Paar `kzg:nova:meister:*`, die im normalen Enricher-Pfad nicht gelesen werden. Nova-Recherchen und -Reflexionen tauchen damit nicht in Meisters Charakter-Hash-Destillation auf — die Pixie-Arbeit ist faktisch tot.
-
-**Soll-Verhalten:** Pixie-Schreibpfade verwenden das kanonische Paar (User, Charakter) mit `beobachter=assistant` für Nova-Beiträge. Konkret:
-
-- `nova_gedaechtnis`: `user_id=gegenueber_id`, `character_id=ASSISTANT_USER_ID`, `beobachter=assistant`
-- RechercheAgent: `user_id=current_user_id`, `character_id=ASSISTANT_USER_ID`, `beobachter=assistant`
-
-**Bestand:** 17 Einträge in `kzg:nova:meister:*` (Stand 06. Mai 2026).
-
-**Verwandt:** MIGRATION-AGENTGRAPH-PAIR (zweite Hälfte derselben Migrations-Lücke). Bereinigung über KZG-CLEANUP (Backlog §7).
-
-**Prio:** Hoch — Pixie-Arbeit bleibt ohne Fix wirkungslos.
-
----
-
-#### MIGRATION-AGENTGRAPH-PAIR — AgentGraph schreibt mit beiden IDs auf "nova" ⚠️
-
-**Entdeckt:** Chat 78 Audit (KZG/LZG-Befund)
-
-**Symptom:** Der AgentGraph wird in der Shadow-Delivery-Schleife mit `user_id=ASSISTANT_USER_ID` UND `character_id=ASSISTANT_USER_ID` aufgerufen. Beide IDs auf "nova". Ergebnis: KZG-Einträge im Phantom-Paar `kzg:nova:nova:*` mit `beobachter="user"` (Default, weil `ei_calc_rolle` im AgentGraph nicht gesetzt wird).
-
-**Konkrete Stellen:**
-
-- [services/shadow_delivery.py:466](services/shadow_delivery.py#L466) — `character_id: str = ASSISTANT_USER_ID`
-- [services/shadow_delivery.py:546-552](services/shadow_delivery.py#L546-L552) — `agent_graph.create_state(user_id=ASSISTANT_USER_ID, character_id=character_id)`
-- [graph/base.py:102](graph/base.py#L102) — Default `ei_calc_rolle = "user"` im AgentGraph
-
-**Konsequenz:** 7 Einträge im Bestand mit Paar `kzg:nova:nova:*`. Beide IDs gleich, Beobachter falsch. Diese Einträge werden vom CharakterAgent nicht verarbeitet (`paare`-Liste in [agents/charakter/agent.py:82-85](agents/charakter/agent.py#L82-L85) enthält nur kanonische Paare). Sie liegen tot in Redis. Plus: Bei Aktivierung der Salience-Node mit Gravitation aus Novas eigenen Zielen kann `salienz=1.0` entstehen — die Einträge verbrauchen lange TTL.
-
-**Soll-Verhalten:** AgentGraph-Calls verwenden den User-Kontext, in dem die Pixie-Aktivität läuft. `user_id=current_user_id`, `character_id=ASSISTANT_USER_ID`, `ei_calc_rolle="character"` (weil Nova das Subjekt der Verarbeitung ist).
-
-**Bestand:** 7 Einträge in `kzg:nova:nova:*` (Stand 06. Mai 2026).
-
-**Verwandt:** MIGRATION-PIX-PAIR (gleiche Migrations-Lücke). Bereinigung über KZG-CLEANUP (Backlog §7).
-
-**Prio:** Hoch — falsche Schreibrichtung, plus Risiko langlebiger Phantom-Einträge bei Salienz-Hochlauf.
-
----
-
 *Aktualisiert Chat 78: THINK-MEM-CONFLICT angelegt mit Audit-Befund. Bug sitzt im Thinker-Information-Gap, nicht im TimelineAgent-Subgraph. Lösung THINK-TRANSITION-INFO im Backlog §7 designed. Vier weitere Bugs aus KZG/LZG-Audit ergänzt: CHAR-LZG-LEAK (LZG-Spiegelung von CHAR-HASH-FILTER), PFAD2-EMO-MIX (User-/Nova-Emotion gemischt), MIGRATION-PIX-PAIR (Pixie-Schreibpfade in altem Schema), MIGRATION-AGENTGRAPH-PAIR (AgentGraph-Calls mit beiden IDs auf "nova"). Bereinigung der Bestände: Backlog-Eintrag KZG-CLEANUP.*
+
+---
+
+*Aktualisiert Chat 79: Vier Bugs behoben (THINK-MEM-CONFLICT, CHAR-LZG-LEAK, MIGRATION-PIX-PAIR, MIGRATION-AGENTGRAPH-PAIR). PIX-CLEAN: 7 alte Task-Dateien + Runner geloescht, __init__.py bereinigt. KZG-CLEANUP: 24 Alt-Eintraege (17× kzg:nova:meister:* + 7× kzg:nova:nova:*) geloescht. PIXIE-AGENT-MISSING praezisiert.*

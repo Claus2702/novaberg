@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** CharakterAgent — Charakter-Hash aus KZG/LZG destillieren
-**Stand:** 17. April 2026, Chat 52 (Code-Alignment)
+**Stand:** 07. Mai 2026, Chat 79
 **Pfad:** novaberg/docs/novaberg-pixie-character-hash.md
 **Quellen:** nova-05-m-a.md, nova-04-m-b.md, nova-04-t-b.md
 
@@ -155,6 +155,20 @@ Der CharakterAgent iteriert intern über `meister` und `nova`:
 | Quelle LZG | `langzeitgedaechtnis` (user_id=meister) | `langzeitgedaechtnis` (user_id=nova) |
 
 Nova bildet durch ihre eigene KZG-LZG-Pipeline und die Hash-Destillation ein eigenes Selbstbild. Gleicher Mechanismus, getrennte Daten.
+
+### Paar-Schema seit Chat 79
+
+Seit Chat 79 iteriert der CharakterAgent nur noch das kanonische Paar
+(user_id, ASSISTANT_USER_ID). Die Perspektiv-Unterscheidung laeuft ueber
+das `beobachter`-Feld in `_kzg_laden()`:
+
+- User-Profil: beobachter="user" (Meisters Beitraege)
+- Nova-Profil: beobachter="assistant" (Novas Beobachtungen)
+
+Die LZG-Lesepfade (_lzg_kern_laden, _lzg_intentionen_laden,
+_lzg_emotionen_laden) filtern seit Chat 79 ebenfalls auf
+(kanon_user_id, kanon_character_id, beobachter) statt auf subjekt_user_id
+(CHAR-LZG-LEAK Fix).
 
 ---
 
