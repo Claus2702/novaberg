@@ -9,7 +9,8 @@ import logging
 import time
 
 from agents.base import AgentState
-from config import redis_client, PIXIE_AKTIV
+from config import redis_client, PIXIE_AKTIV, DEFAULT_USER_ID
+from services.llm_provider import set_aktiver_pixie_user
 
 logger = logging.getLogger("ki_server.pixie")
 
@@ -68,6 +69,13 @@ async def agent_ausfuehren(agent_name: str, kandidat: dict, app_state) -> bool:
             "fehler":      None,
         }
 
+    # PIX-GPU-IDLE: aktiven User fuer pixie_llm_call() vermerken, damit
+    # _ist_pixie_gpu_idle() den richtigen last_activity-Key liest.
+    user_id_pixie: str = (
+        agent_state["kontext"].get("user_id", "") or DEFAULT_USER_ID
+    )
+    set_aktiver_pixie_user(user_id_pixie)
+
     try:
         result_state = await asyncio.to_thread(agent.invoke, agent_state)
 
@@ -84,6 +92,9 @@ async def agent_ausfuehren(agent_name: str, kandidat: dict, app_state) -> bool:
     except Exception as ex:
         logger.error(f"Pixie-Dispatch: Exception bei Agent '{agent_name}': {ex}", exc_info=True)
         return False
+
+    finally:
+        set_aktiver_pixie_user("")
 
 
 def abschluss(kandidat: dict, erfolg: bool) -> None:

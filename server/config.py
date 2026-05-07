@@ -134,6 +134,13 @@ PIXIE_INTERVALL_MIN: int = int(os.getenv("PIXIE_INTERVALL_MIN", "2"))
 PIXIE_INTERVALL_SEKUNDEN: int = int(os.getenv("PIXIE_INTERVALL_SEKUNDEN", "120"))
 PIXIE_LOCK_TTL_SEKUNDEN:  int = int(os.getenv("PIXIE_LOCK_TTL_SEKUNDEN", "600"))
 
+# Pixie GPU-Idle-Modus (Chat 79, PIX-GPU-IDLE).
+# Wenn der letzte Chat-Turn laenger als PIXIE_IDLE_SCHWELLE_SEKUNDEN her ist,
+# routet pixie_llm_call() Sprach-Calls auf das GPU-Modell statt auf das CPU-
+# Sprach-Modell. Analyse-Calls bleiben immer auf Qwen3-32B-CPU.
+PIXIE_GPU_IDLE:               bool = True
+PIXIE_IDLE_SCHWELLE_SEKUNDEN: int  = int(os.getenv("PIXIE_IDLE_SCHWELLE_SEKUNDEN", "300"))
+
 # --- Pixie Agent: Promotion ---
 PIXIE_PROMOTION_PRIORITAET:          float = float(os.getenv("PIXIE_PROMOTION_PRIORITAET", "0.9"))
 PIXIE_PROMOTION_INTERVALL_SEKUNDEN:  int   = int(os.getenv("PIXIE_PROMOTION_INTERVALL_SEKUNDEN", "300"))   # 5 Minuten
