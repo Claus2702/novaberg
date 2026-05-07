@@ -122,10 +122,19 @@ class CharakterAgent(BaseAgent):
                     f"subjekt={subjekt_user_id}, beobachter={beobachter}"
                 )
 
-                # ── LZG-Eintraege laden (LZG-Lesepfad unveraendert — CHAR-LZG-LEAK Sprint 3) ──
-                lzg_kern        = self._lzg_kern_laden(subjekt_user_id)
-                lzg_intentionen = self._lzg_intentionen_laden(subjekt_user_id)
-                lzg_emotionen   = self._lzg_emotionen_laden(subjekt_user_id)
+                # ── LZG-Eintraege laden (kanonisches Paar + beobachter-Filter) ──
+                # CHAR-LZG-LEAK: LZG-Lookup ueber das kanonische Paar (analog
+                # zum KZG-Lookup), nicht ueber subjekt_user_id. Damit fliessen
+                # nur Eintraege der gewuenschten Perspektive ins Profil.
+                lzg_kern = self._lzg_kern_laden(
+                    kanon_user_id, kanon_character_id, beobachter,
+                )
+                lzg_intentionen = self._lzg_intentionen_laden(
+                    kanon_user_id, kanon_character_id, beobachter,
+                )
+                lzg_emotionen = self._lzg_emotionen_laden(
+                    kanon_user_id, kanon_character_id, beobachter,
+                )
 
                 # ── KZG-Eintraege laden (kanonisches Paar + beobachter-Filter) ──
                 kzg_eintraege = self._kzg_laden(
@@ -246,46 +255,81 @@ class CharakterAgent(BaseAgent):
     # Daten laden
     # ─────────────────────────────────────────
 
-    def _lzg_kern_laden(self, user_id: str) -> list[dict]:
-        """Laedt LZG-Eintraege fuer Kern-Hash (gewichtet nach Gewicht + Haeufigkeit)."""
+    def _lzg_kern_laden(
+        self,
+        user_id:      str,
+        character_id: str,
+        beobachter:   str,
+    ) -> list[dict]:
+        """Laedt LZG-Eintraege fuer Kern-Hash (gewichtet nach Gewicht + Haeufigkeit).
+
+        Filtert auf das kanonische Paar (user_id, character_id) und die
+        gewuenschte Perspektive (beobachter). Spiegelung des KZG-Lesepfads
+        (CHAR-HASH-FILTER, Chat 73) auf LZG-Seite.
+        """
+        logger.debug(
+            f"CharakterAgent: LZG-Kern laden fuer user={user_id}, "
+            f"character={character_id}, beobachter={beobachter}"
+        )
         return db_manager.select(
             """
             SELECT dimension, inhalt, gewicht, haeufigkeit, verstaerkt_am
             FROM langzeitgedaechtnis
-            WHERE user_id = %s AND aktiv = TRUE
+            WHERE user_id = %s AND character_id = %s AND beobachter = %s
+              AND aktiv = TRUE
             ORDER BY gewicht DESC, haeufigkeit DESC
             LIMIT %s
             """,
-            (user_id, PIXIE_CHARAKTER_LZG_LIMIT),
+            (user_id, character_id, beobachter, PIXIE_CHARAKTER_LZG_LIMIT),
         )
 
-    def _lzg_intentionen_laden(self, user_id: str) -> list[dict]:
-        """Laedt LZG-Eintraege mit Kommunikations-Signalen."""
+    def _lzg_intentionen_laden(
+        self,
+        user_id:      str,
+        character_id: str,
+        beobachter:   str,
+    ) -> list[dict]:
+        """Laedt LZG-Eintraege mit Kommunikations-Signalen (paar- + perspektivgefiltert)."""
+        logger.debug(
+            f"CharakterAgent: LZG-Intentionen laden fuer user={user_id}, "
+            f"character={character_id}, beobachter={beobachter}"
+        )
         return db_manager.select(
             """
             SELECT intentionen, emotion, modus, sprach_stil, tone,
                    dimension, inhalt
             FROM langzeitgedaechtnis
-            WHERE user_id = %s AND aktiv = TRUE
+            WHERE user_id = %s AND character_id = %s AND beobachter = %s
+              AND aktiv = TRUE
               AND (intentionen != '[]' OR emotion != '' OR sprach_stil != '')
             ORDER BY gewicht DESC
             LIMIT %s
             """,
-            (user_id, PIXIE_CHARAKTER_LZG_LIMIT),
+            (user_id, character_id, beobachter, PIXIE_CHARAKTER_LZG_LIMIT),
         )
 
-    def _lzg_emotionen_laden(self, user_id: str) -> list[dict]:
-        """Laedt LZG-Eintraege mit emotionalen Signalen."""
+    def _lzg_emotionen_laden(
+        self,
+        user_id:      str,
+        character_id: str,
+        beobachter:   str,
+    ) -> list[dict]:
+        """Laedt LZG-Eintraege mit emotionalen Signalen (paar- + perspektivgefiltert)."""
+        logger.debug(
+            f"CharakterAgent: LZG-Emotionen laden fuer user={user_id}, "
+            f"character={character_id}, beobachter={beobachter}"
+        )
         return db_manager.select(
             """
             SELECT emotion, arousal, emotions_vektor,
                    dimension, inhalt, gewicht, verstaerkt_am
             FROM langzeitgedaechtnis
-            WHERE user_id = %s AND aktiv = TRUE AND emotion != ''
+            WHERE user_id = %s AND character_id = %s AND beobachter = %s
+              AND aktiv = TRUE AND emotion != ''
             ORDER BY gewicht DESC
             LIMIT %s
             """,
-            (user_id, PIXIE_CHARAKTER_LZG_LIMIT),
+            (user_id, character_id, beobachter, PIXIE_CHARAKTER_LZG_LIMIT),
         )
 
     def _kzg_laden(
