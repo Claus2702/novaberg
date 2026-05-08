@@ -293,6 +293,56 @@ Der naechste Schritt in der Kommunikationsbandbreite: Spracheingabe (Speech-to-T
 | SA2–SA4 | Charakter-basierte Priorisierung | ⬜ Multiplikator auf Queue-Priorität |
 | PIX-LLM-ROUTER | LLM-Router für Pixie | ⬜ Ersetzt regelbasierten Router |
 
+### Epic: PIXIE-GRAPH-MERGE — Pixie durch CharacterGraph-Instanz (Pfad 3)
+
+**Status:** Konzept (Chat 79, `novaberg-pixie-graph-merge_k.md`)
+**Loest:** RECH-CHARAKTER, DELIVERY-VOICE, fehlende Qualitaetskontrolle in Pixie
+
+Pixie-Themen (Recherche, Vertiefung, Traeumen) laufen durch eine eigene
+CharacterGraph-Instanz auf CPU statt durch den isolierten AgentGraph.
+Gleiche Node-Topologie wie Pfad 2 (Chat), aber eigene Instanz damit GPU
+nicht blockiert wird. Synthetischer Prompt aus Queue-Thema,
+event_source=character, erweiterte Agenten-Liste im Planner.
+
+Ersetzt: AgentGraph, shadow_delivery.py, nova_gedaechtnis.py Post-Hook.
+Daten-Agenten (Charakter, Promotion, Decay) bleiben ausserhalb.
+
+| Phase | Inhalt | Status |
+|-------|--------|--------|
+| Phase 0 | PixieGraph-Instanz bauen, create_pixie_state() | ⬜ |
+| Phase 1 | RechercheAgent umstellen (Feature-Flag) | ⬜ |
+| Phase 2 | Neue Agenten direkt fuer Pfad 3 (Vertiefung, Traeumen, Nachfragen) | ⬜ |
+| Phase 3 | Alten Pfad abbauen (AgentGraph + shadow_delivery loeschen) | ⬜ |
+
+### Epic: META-KOGNITION — Pipeline-Log, Selbstbeobachtung, Vorsaetze
+
+**Status:** Konzept (Chat 79, `novaberg-metakognition_k.md`)
+**Wissenschaftliche Basis:** Flavell (1979), Zimmerman (2000), Higgins (1987), Sterling (2012)
+
+Nova beobachtet ihren eigenen Verarbeitungsprozess und leitet daraus
+Verhaltensaenderungen und Aktionen ab. Drei Schichten: Pipeline-Log
+(Entscheidung pro Node pro Turn in PostgreSQL), Selbstbeobachtung
+(pipeline_search Tool), Vorsaetze (SelbstreflexionsAgent).
+
+Zwei Ergebnis-Typen: Verhaltensaenderungen ("Ich will anders SEIN",
+moduliert Responder/GV/EI, Charakter-Hash als Magnet) und Aktionen
+("Ich will etwas TUN", Queue-Auftrag mit quelle=selbstreflexion,
+jeder Agent moeglich).
+
+Drei Regulationskraefte: Feedback-Verstaerkung, Monotonie-Druck
+(gegen Einseitigkeit), Charakter-Gravitation (Kern-Hash als Magnet,
+kannibalisiert kurzfristige Vorsaetze). Hard Cap ±0.15 auf
+Emotions-Baseline.
+
+| Phase | Inhalt | Status |
+|-------|--------|--------|
+| Phase 1 | Pipeline-Log (Tabelle + log_entscheidung in allen Nodes) | ⬜ |
+| Phase 2 | pipeline_search Tool (Thinker + Responder) | ⬜ |
+| Phase 3 | Vorsaetze-Tabelle + SelbstreflexionsAgent | ⬜ |
+| Phase 4 | Vorsatz-Wirkung im Responder/GV/EI | ⬜ |
+| Phase 5 | Aktionen aus Selbstreflexion (Queue, jeder Agent) | ⬜ |
+| Phase 6 | Vorsatz-Evaluation + Charakter-Verschiebung (experimentell) | ⬜ |
+
 ### Client & Visualisierung
 | # | Thema | Status |
 |---|-------|--------|
@@ -1532,6 +1582,9 @@ Kurzübersicht aktiver Bugs:
 | RESP-DEAD | ⬜ | Tote Standardphrase statt Nova-Ton bei fehlgeschlagenen Agent-Dispatches |
 | PIXIE-GHOST | ⬜ | Pixie-Delivery fließt nicht durch EI/Session/Router — Nova hört sich selbst nicht |
 | PIXIE-AGENT-MISSING | ⬜ | `nachfragen` und `vertiefung` werden geroutet, sind aber nach PIX-CLEAN keine Agenten mehr (PIX-MIG-6/7) |
+| RECH-SPIRAL | Mittel | RechercheAgent erzeugt Folge-Recherchen zum selben Thema ohne Konvergenz. Selbstfuetternde Kette: Recherche → Destillation → Queue-Eintrag → gleiche Recherche. Braucht Themen-Aehnlichkeits-Check in shadow_queue_push gegen die letzten N Eintraege. Beobachtet Chat 79 (Feng-Shui-Spirale: 4× Vertiefen + 1× Folge-Recherche zum identischen Thema) |
+| RECH-CHARAKTER | Mittel | RechercheAgent ist charakter-blind — kein Zugang zum Charakter-Hash, kein [IDENTITAET]-Block, kein Responder. Grundursache von DELIVERY-VOICE. Loesung: PIXIE-GRAPH-MERGE (Pfad 3 durch CharacterGraph-Instanz). Beobachtet Chat 79 |
+| DELIVERY-DEDUP | Niedrig | Mehrfach identische proaktive Nachrichten zum selben Thema. Delivery-Pfad prueft nicht ob kuerzlich eine thematisch aehnliche Nachricht gesendet wurde. Beobachtet Chat 79 (4× Feng-Shui-Delivery) |
 
 Details, Ursachen und Lösungsansätze → `novaberg-bugs.md`
 
