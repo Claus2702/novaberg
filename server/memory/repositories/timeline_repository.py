@@ -67,12 +67,20 @@ class TimelineRepository:
         precision:        str = "day",
         entitaet_ids:     list[int] | None = None,
         wiedervorlage_am: datetime | None = None,
+        themen:           list[str] | None = None,
+        binding:          bool = False,
+        remind:           bool = False,
+        conflict_check:   bool = False,
     ) -> int:
         """
         Neuen Termin anlegen. Gibt die neue ID zurück.
         Setzt last_touched auf NOW().
         Wenn wiedervorlage_am nicht gesetzt: automatisch event_time + 7 Tage.
         event_time kann ein datetime oder ein ISO-String sein.
+
+        Magnet-Spalten (M2.5a):
+          - themen=None   -> NULL (DB-Default greift), nicht leeres Array
+          - binding/remind/conflict_check default False (sicherer Default)
         """
         # String → datetime konvertieren
         if isinstance(event_time, str):
@@ -92,13 +100,20 @@ class TimelineRepository:
                 INSERT INTO timeline
                     (user_id, event_time, event_type, title, details,
                      recurring, precision, entitaet_ids, wiedervorlage_am,
+                     themen, binding, remind, conflict_check,
                      last_touched)
-                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, NOW())
+                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, NOW())
                 RETURNING id
             """, (user_id, event_time_utc, event_type, title, details,
-                  recurring, precision, entitaet_ids, wiedervorlage_utc))
+                  recurring, precision, entitaet_ids, wiedervorlage_utc,
+                  themen, binding, remind, conflict_check))
             termin_id: int = cursor.fetchone()[0]
             conn.commit()
+            logger.info(
+                f"TimelineRepository.insert: id={termin_id}, event_type='{event_type}', "
+                f"themen={themen}, binding={binding}, remind={remind}, "
+                f"conflict_check={conflict_check}"
+            )
             return termin_id
         finally:
             conn.close()

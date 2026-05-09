@@ -24,3 +24,7 @@ Beispiele:
 - User: "Was steht auf der Einkaufsliste?" -> "read: Inhalt von Notiz 'Einkaufsliste' anzeigen"
 - User: "Leere die Einkaufsliste" -> "clear_content: Gesamten Inhalt von Notiz 'Einkaufsliste' leeren"
 - User: "Loesch die Obstliste" -> "delete: Notiz 'Obstliste' loeschen"
+- User: "Leg sie bitte an" (nach Vor-Turn mit Liste-Inhalt) -> "create: Neue Notiz mit Inhalt aus Vor-Turn"
+- User: "Schmeiss die in eine Notiz" (nach Vor-Turn mit Aufzaehlung) -> "create: Neue Notiz mit Inhalt aus Vor-Turn"
+
+Bei Bezugs-Anweisungen ohne aktuellen Inhalt: Vor-Turn-Inhalt explizit ins normalisiert-Feld kopieren.

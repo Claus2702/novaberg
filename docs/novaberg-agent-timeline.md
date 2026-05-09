@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** TimelineAgent (Termine, Ereignisse, Zeitachse)
-**Stand:** 21. April 2026, Chat 60 (Session-Trennung: character_id im Kontext)
+**Stand:** 08. Mai 2026, Chat 80 (M2.5a — Manager-Cleanup + Magnet-Befüllung)
 **Pfad:** novaberg/docs/novaberg-agent-timeline.md
 **Quellen:** nova-02-m-e.md, nova-14-k.md, nova-15-k.md
 
@@ -84,6 +84,10 @@ Zusaetzlich kann der Classify den Output `rejected` liefern (kein echter Termin-
 
 Die Domain Language ist die primaere Quelle fuer das Verstaendnis umgangssprachlicher Ausdruecke. Keywords und Verb-Mappings dienen als unabhaengige Gegenprobe fuer die Konfidenz-Berechnung.
 
+**Offen — TIMELINE-VOR-TURN-BEZUG (Chat 80):**
+
+Der Classify-Node des TimelineAgent enthält dasselbe Verbot, das im NotizenAgent durch NOTIZEN-VOR-TURN-BEZUG (Chat 80) aufgehoben wurde: *"Verlauf dient AUSSCHLIESSLICH fuer Rueckbezuege"*. Eine analoge Erweiterung ist vorgesehen — wird aber im Lichte der Live-Test-Befunde des NotizenAgent (Chat 80) **nicht als isolierter Sprint** verfolgt, sondern im Frame-Konzept Phase 1 (Termin-Frame-Pilot) integriert. Frame-Konzept liefert die strukturelle Lösung, die isoliertes Bezugs-Auflösen nicht leisten kann.
+
 ---
 
 ## 4. Suche -- 3 Modi
@@ -127,6 +131,20 @@ Validierung prueft vor dem Anlegen, ob ein aktiver Eintrag mit aehnlichem Inhalt
 ### 5.3 Delete (Invalidieren)
 
 Soft-Delete: `aktiv = FALSE` ueber `TimelineRepository.invalidate()`. Kein Hard-Delete. Verifikation: Eintrag wirklich `aktiv=FALSE`?
+
+### 5.4 Schreibpfad
+
+Alle Schreibpfade leben ausschließlich im TimelineAgent (Paket `agents/timeline/`). Der TimelineManager im Plugin ist seit M2.5a reine Lese-Schicht — siehe §10.
+
+```
+TimelineAgent.handle()
+  → agents/timeline/crud.py (_create, _update, _delete)
+    → agents/timeline/magneten.py (event_type → Magnete)
+      → memory/repositories/timeline_repository.py (.insert / .invalidate)
+        → DB
+```
+
+`agents/timeline/magneten.py` ist Single Source of Truth für das `event_type → (themen, binding, remind, conflict_check)`-Mapping. `_create` und `_update` rufen den Helper, reichen die vier Werte als Magnet-Parameter an `TimelineRepository.insert()` durch.
 
 ---
 
@@ -240,13 +258,19 @@ CREATE TABLE IF NOT EXISTS timeline (
 
 **Timezone-Konvention:** UTC in der DB, lokale Zeit (`Europe/Berlin`) in der Anzeige. Repository konvertiert.
 
+**Magnet-Spalten:** Seit M2.5a (Chat 80) befüllt der Schreibpfad die vier Magnet-Spalten `themen`, `binding`, `remind`, `conflict_check` automatisch beim Insert aus dem `event_type`. Mapping: `agents/timeline/magneten.py` (Single Source of Truth, hier nicht dupliziert). Magnet-Begründung: `novaberg-convention-magneten.md` §5.
+
 ---
 
 ## 10. Konfiguration
 
-**Dateien:** `agents/timeline/agent.py`, `klassifikation.py`, `resume.py`, `suche.py`, `crud.py`, `bestaetigung.py`, `dispatch.py`, `AGENT.md`
+**Dateien:** `agents/timeline/agent.py`, `klassifikation.py`, `resume.py`, `suche.py`, `crud.py`, `bestaetigung.py`, `dispatch.py`, `magneten.py`, `AGENT.md`
 
-**Plugin:** TimelineManager (Enricher-Hook fuer proaktiven Kontext: heute -3 bis +14 Tage)
+**Plugin TimelineManager** (`plugins/timeline_manager/manager.py`) ist seit M2.5a (Chat 80) reine Lese-Schicht:
+
+- `enrich_entries()` und `_termin_zu_entry()` — Enricher-Hook für proaktiven Kontext (heute -3 bis +14 Tage), `_log_entries()` als Trace-Helper.
+- Schreibpfade leben ausschließlich im TimelineAgent (`agents/timeline/`, siehe §5.4).
+- `execute()` existiert nur als Loud-Failure-Stub für die `BaseManager.execute()`-Abstraktheit. Falls jemals ein `ziel="timeline"`-Write den Dispatcher erreicht, wirft er `NotImplementedError` mit voller Diagnose.
 
 **Router-Prompt:** `management_action = "agent"` bei Termin-Erkennung. Keine spezifische CRUD-Aktion.
 

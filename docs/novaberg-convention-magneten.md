@@ -126,7 +126,7 @@ fremd ist, wissen Sie was dazu?"*
 
 ## 4. Magnet-Träger pro Speicher
 
-Status nach M2-Schema-Migration:
+Status nach M2-Schema-Migration und M2.5a-Implementierung:
 
 | Speicher | entitaet_ids (n:m) | timeline_id (1:n) | themen (n:m) |
 |---|:---:|:---:|:---:|
@@ -135,6 +135,18 @@ Status nach M2-Schema-Migration:
 | KZG (Redis) | TAG-Feld ✓ | NUMERIC-Feld ✓ | TAG-Feld ✓ (vorhanden) |
 | `timeline` | INTEGER[] (vorhanden, leer) | (selbst) | TEXT[] + GIN ✓ |
 | `fakten` | über `subjekt_id`/`objekt_id` (vorhanden) | — | — |
+
+**Befüllungs-Status (Stand Chat 80):**
+
+| Speicher | entitaet_ids | timeline_id | themen | Verhaltens-Flags |
+|---|:---:|:---:|:---:|:---:|
+| `langzeitgedaechtnis` | leer | leer | leer | — |
+| `notizen` | leer | leer | leer | — |
+| KZG (Redis) | leer | leer | befüllt (vor M2) | — |
+| `timeline` | leer (M5) | (selbst) | **befüllt seit M2.5a** | **befüllt seit M2.5a** |
+| `fakten` | (über Subject/Object-FK) | — | — | — |
+
+Timeline ist die erste Schicht mit produktiv befüllten Magneten. Helper-Funktion `agents/timeline/magneten.py` ist Single Source of Truth für das `event_type → Magnete`-Mapping.
 
 Befüllt werden die Felder durch:
 

@@ -78,6 +78,10 @@ def _create(state: AgentState) -> dict:
     from config import POSTGRES_URL
     from memory.repositories.timeline_repository import TimelineRepository
     from utils.zeitparser import zeit_parsen_vektor, ZeitVektor
+    from agents.timeline.magneten import (
+        themen_aus_event_type,
+        verhaltens_flags_aus_event_type,
+    )
 
     user_id = state["kontext"].get("user_id", "")
     title = state["parameter"].get("target", "")
@@ -87,6 +91,13 @@ def _create(state: AgentState) -> dict:
     tz = ZoneInfo(TIMEZONE)
 
     logger.debug(f"_create: Einstieg — title='{title}', zeit='{zeitausdruck}', typ='{event_type}'")
+
+    themen = themen_aus_event_type(event_type)
+    binding, remind, conflict_check = verhaltens_flags_aus_event_type(event_type)
+    logger.debug(
+        f"_create: Magneten abgeleitet — themen={themen}, "
+        f"binding={binding}, remind={remind}, conflict_check={conflict_check}"
+    )
 
     if not title:
         return {
@@ -124,6 +135,10 @@ def _create(state: AgentState) -> dict:
         recurring=False,
         precision=precision,
         entitaet_ids=entitaet_ids if entitaet_ids else None,
+        themen=themen,
+        binding=binding,
+        remind=remind,
+        conflict_check=conflict_check,
     )
 
     verifiziert = _verifizieren_termin(termin_id, {"aktiv": True})
@@ -149,6 +164,10 @@ def _update(state: AgentState) -> dict:
     from config import POSTGRES_URL
     from memory.repositories.timeline_repository import TimelineRepository
     from utils.zeitparser import zeit_parsen_vektor, ZeitVektor
+    from agents.timeline.magneten import (
+        themen_aus_event_type,
+        verhaltens_flags_aus_event_type,
+    )
 
     termin = state["parameter"].get("termin", {})
     termin_id = termin.get("id")
@@ -156,8 +175,16 @@ def _update(state: AgentState) -> dict:
     prompt = state["aufgabe"]
     tz = ZoneInfo(TIMEZONE)
 
+    event_type_alt: str = termin.get("event_type", "termin")
     logger.debug(f"_update: Einstieg — termin_id={termin_id}, title='{termin.get('title')}', "
-                 f"neuer zeit='{zeitausdruck}'")
+                 f"neuer zeit='{zeitausdruck}', event_type='{event_type_alt}'")
+
+    themen = themen_aus_event_type(event_type_alt)
+    binding, remind, conflict_check = verhaltens_flags_aus_event_type(event_type_alt)
+    logger.debug(
+        f"_update: Magneten abgeleitet — themen={themen}, "
+        f"binding={binding}, remind={remind}, conflict_check={conflict_check}"
+    )
 
     if not termin_id:
         return {
@@ -232,12 +259,16 @@ def _update(state: AgentState) -> dict:
         postgres_url=POSTGRES_URL,
         user_id=state["kontext"].get("user_id", ""),
         event_time=neues_datum,
-        event_type=termin.get("event_type", "termin"),
+        event_type=event_type_alt,
         title=termin.get("title", ""),
         details=termin.get("details"),
         recurring=termin.get("recurring", False),
         precision=precision,
         entitaet_ids=None,
+        themen=themen,
+        binding=binding,
+        remind=remind,
+        conflict_check=conflict_check,
     )
 
     verifiziert_neu = _verifizieren_termin(neuer_id, {"aktiv": True})

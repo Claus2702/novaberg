@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Modul NotizenAgent — Merkzettel, Listen, Snippets (konsolidiert)
-**Stand:** 21. April 2026, Chat 60 (Session-Trennung: character_id im Kontext)
+**Stand:** 08. Mai 2026, Chat 80 (NOTIZEN-VOR-TURN-BEZUG — Inhalts-Auflösung, kleinste Wirkstufe)
 **Pfad:** novaberg/docs/novaberg-agent-notes.md
 **Quellen:** nova-02-m-f.md (Modul), nova-14-k.md (CRUD-Haertung), nova-15-k.md (Domain Language)
 
@@ -101,6 +101,8 @@ Der Classify-Node normalisiert den User-Prompt in die Fachsprache des Notizen-Sy
 | "Hau die Scheiße raus" | "remove_content: Bananen von Notiz 'Einkaufsliste' entfernen" |
 | "Schmeiss noch Milch drauf" | "add_content: Milch zu Notiz 'Einkaufsliste' hinzufuegen" |
 | "Mach ne neue Liste fuer den Baumarkt" | "create: Neue Notiz 'Baumarkt' mit Typ 'einkauf' anlegen" |
+| "Leg sie bitte an" *(nach Listen-Turn)* | "create: Neue Notiz mit Inhalt: Halloumi, Feta, Paneer" |
+| "Schreib das auf" *(nach Aufzählungs-Turn)* | "create: Neue Notiz mit Inhalt: Bohrer, Dübel, Schrauben" |
 
 Die CRUD nutzt `normalisiert` als primaere Anweisung, den Originaltext (`aufgabe`) als Inhaltsquelle. Trennung: Normalisierung steuert die Aktion, Originaltext liefert den woertlichen Inhalt.
 
@@ -134,6 +136,22 @@ Classify-Output (erweitert):
 ```
 
 Primacy/Recency-Reihenfolge im Classify-Prompt: [IDENTITAET] → [AUFGABE] → [FACHSPRACHE] → [REGELN].
+
+### Inhalts-Auflösung aus Vor-Turns (seit Chat 80)
+
+Der Classify-Node erhält über `session_turns_retrieve(user_id, character_id)` die letzten 5 Vor-Turn-Paare als `[KONTEXT]`-Block. Bis Chat 80 war die Nutzung dieses Verlaufs explizit auf Target-Auflösung beschränkt — der Prompt verbot Inhalts-Auflösung.
+
+Seit Chat 80 darf der Classify-Node den Verlauf für **Target-Auflösung und Inhalts-Auflösung** nutzen. Bezugs-Anweisungen wie *"Leg sie bitte an"* nach einem Listen-Turn werden aufgelöst, indem der Klassifikator den vollständigen Vor-Turn-Inhalt in das `normalisiert`-Feld extrahiert.
+
+**Beispiel:**
+
+- Vor-Turn: *"Halloumi, Feta, Paneer kommen mir in den Sinn"*
+- Aktueller Prompt: *"Leg sie bitte als Notiz an"*
+- Klassifikator-Output: `normalisiert = "create: Neue Notiz mit Inhalt: Halloumi, Feta, Paneer"`
+
+**Logging:** DEBUG-Log nach jedem LLM-Call mit `normalisiert`-Feld. INFO-Log mit Heuristik *"Inhalts-Auflösung erkannt: aufgabe={N} Zeichen, normalisiert={M} Zeichen"* wenn `normalisiert` deutlich länger ist als `aufgabe`.
+
+**Reichweite:** Diese Wirkstufe deckt **einen Vor-Turn-Sprung** in **CREATE-Aktionen** ab. Mehrschrittige Rekonstruktion über mehrere Turns oder Bezugsauflösung in UPDATE/RENAME-Pfaden ist **nicht** abgedeckt — siehe Bugs NOTIZEN-KONTEXT-REKONSTRUKTION und NOTIZEN-UPDATE-TARGET-LEER. Die strukturelle Lösung ist das Frame-Konzept (`novaberg-thinking-frames_k.md`) Phase 1b.
 
 ---
 
@@ -350,3 +368,16 @@ pg_trgm Extension: `CREATE EXTENSION IF NOT EXISTS pg_trgm` in `db/init.sql`.
 | Redis Pending TTL | 300s | Timeout fuer Rueckfrage-Flow |
 | Zusammenfassung | Erste 20 Woerter | Heuristik fuer Notiz-Zusammenfassung |
 | Konfidenz-Lernschwelle | 3 | Ab 3 Bestaetigungen keine Rueckfrage |
+
+---
+
+## 11. Offene Punkte
+
+**Offen — durch Live-Test in Chat 80 entdeckt, strukturelle Lösung im Frame-Konzept Phase 1b:**
+
+- NOTIZEN-KONTEXT-REKONSTRUKTION — Mehrschritt-Rekonstruktion über mehrere Turns
+- NOTIZEN-CONTAINER-WECHSEL — Notiz↔Liste-Wechsel als legitime Aktion
+- NOTIZEN-SKILL-MANIFEST — Nova kennt eigene Fähigkeiten in Sprach-Schicht nicht
+- NOTIZEN-UPDATE-TARGET-LEER — Bezugs-Pronomen im UPDATE-Pfad
+
+Details siehe `novaberg-bugs.md` und `novaberg-backlog.md`. Lösungsraum: `novaberg-thinking-frames_k.md` §16.2 (Phase 1b).

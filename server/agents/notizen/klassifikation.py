@@ -51,8 +51,17 @@ def _build_classify_prompt(
     if session_turns:
         bloecke.append(
             "[KONTEXT]\n"
-            "Nutze den Verlauf AUSSCHLIESSLICH fuer Target-Aufloesung. "
+            "Nutze den Verlauf fuer Target-Aufloesung UND Inhalts-Aufloesung. "
             "Hoehere Nummern sind aktueller.\n"
+            "\n"
+            "Inhalts-Aufloesung: Wenn der aktuelle Prompt einen Bezug enthaelt "
+            "('leg sie an', 'mach das', 'die Liste', 'die', 'sie', 'das'), "
+            "loese ihn aus dem letzten passenden Vor-Turn auf und schreibe den "
+            "vollstaendigen Inhalt ins 'normalisiert'-Feld.\n"
+            "\n"
+            "Beispiel: Vor-Turn enthaelt 'Halloumi, Feta, Paneer'. "
+            "Aktueller Prompt: 'Leg sie bitte an'. "
+            "normalisiert = \"create: Neue Notiz mit Inhalt: Halloumi, Feta, Paneer\".\n"
             f"\n{session_turns}"
         )
 
@@ -127,6 +136,15 @@ def klassifizieren(state: AgentState) -> dict:
         target = ergebnis.get("target", "")
         target_typ = ergebnis.get("target_typ", "titel")
         normalisiert = ergebnis.get("normalisiert", "")
+
+        # Inhalts-Aufloesung-Heuristik: normalisiert deutlich laenger als aufgabe
+        # = LLM hat Inhalt aus Vor-Turn ins normalisiert-Feld kopiert.
+        logger.debug(f"klassifizieren: LLM-Ergebnis normalisiert='{normalisiert}'")
+        if len(normalisiert) > len(prompt) * 2 and len(normalisiert) - len(prompt) > 20:
+            logger.info(
+                f"klassifizieren: Inhalts-Aufloesung erkannt — "
+                f"aufgabe={len(prompt)} Zeichen, normalisiert={len(normalisiert)} Zeichen"
+            )
 
         if action not in GUELTIGE_AKTIONEN:
             logger.warning(f"klassifizieren: Ungueltige Aktion '{action}' — Fallback 'read'")

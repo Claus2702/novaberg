@@ -1418,9 +1418,39 @@ Der Thinker `memory_search`-Tool-Output verwendet seit STRUCT-5c (Chat 75) den g
 
 ---
 
+## Sprint: NOTIZEN-VOR-TURN-BEZUG — Inhalts-Auflösung im Classify-Node (Chat 80)
+
+**Status:** ✅ Abgeschlossen (Chat 80) — kleinste Wirkstufe der Bezugsauflösung
+
+**Motivation:** NotizenAgent-Audit (Chat 80) hat strukturell belegt, dass Bezugs-Anweisungen wie *"Leg sie bitte an"* nach einem Listen-Turn nicht zuverlässig aufgelöst werden. Der Classify-Prompt verbot dem LLM explizit, den Verlauf für Inhalts-Auflösung zu nutzen — nur Target-Auflösung war erlaubt.
+
+**Änderung:**
+
+- Classify-Prompt-Verbot durch Erlaubnis für Inhalts-Auflösung ersetzt, Beispiel ergänzt
+- Domain-Language-Block um zwei Bezugs-Beispiele erweitert
+- Logging im Classify-Node: DEBUG mit `normalisiert`-Feld, INFO-Heuristik bei deutlich längerem `normalisiert` als `aufgabe`
+
+**Geänderte Dateien:**
+
+- `agents/notizen/klassifikation.py` (Z. 53-66, 130-138)
+- `prompts/default/classify_notizen.rules.txt` (Z. 3-5)
+- `prompts/default/classify_notizen.fachsprache.txt` (Z. 27-30)
+
+**Smoke-Test (Chat 80):**
+
+- Test A — Käse-Sorten + "Leg das bitte als Notiz an" → ✅ Inhalt korrekt aus Vor-Turn übernommen
+- Test B — Bauwoche-Liste + "Schreib das auf" → ⚠️ deckte vier weitere strukturelle Schwächen auf (siehe neue Bugs unten)
+- Test C — Direkt-Notiz "Notiere dir: Sonntag muss der Rasen gemäht werden" → ✅ unverändert
+
+**Beurteilung:** Sprint-Kernziel erreicht (Test A), aber das Pattern reicht nur für **einfache Vor-Turn-Bezüge in CREATE-Aktionen**. Für mehrschrittige Kontext-Rekonstruktion in UPDATE/RENAME-Pfaden ist die strukturelle Lösung das Frame-Konzept Phase 1b.
+
+**Verbindung zum Frame-Konzept:** Dieser Sprint ist die kleinste Wirkstufe. Das umfassendere Konzept (`novaberg-thinking-frames_k.md`) generalisiert das Pattern auf strukturierte Slot-Erhebung mit Vor-Wissen-Rekonstruktion und Skill-Bewusstsein.
+
+---
+
 ## Sprint: M2.5a — TimelineAgent-Manager-Cleanup (Chat 78)
 
-**Status:** Audit abgeschlossen (Chat 78), Implementierung ausstehend
+**Status:** ✅ Abgeschlossen (Chat 80) — Audit (Chat 78), Implementierung in zwei Phasen (Chat 80)
 
 **Hintergrund:** Ursprünglich gedacht als TimelineAgent-Migration auf das NotizenAgent-Pattern. Audit in Chat 78 zeigt: der Subgraph ist bereits sauber, Search-vor-Execute korrekt verdrahtet seit Chat 27. Manager-Schreibpfade (`plan()`, `execute()` plus Hilfsfunktionen) sind tot — sie werden nicht mehr aufgerufen, seit der TimelineAgent in der Registry ist.
 
@@ -1436,6 +1466,20 @@ Der Thinker `memory_search`-Tool-Output verwendet seit STRUCT-5c (Chat 75) den g
 **Vorbedingung:** THINK-TRANSITION-INFO muss vorher ausgerollt sein, sonst stoßen die M2.5a-Smoke-Tests auf den THINK-MEM-CONFLICT-Bug.
 
 **Vorbehalt zum Pattern-Vorbild:** Der NotizenAgent dient als Vorbild. Meister sieht aber noch Schwächen im NotizenAgent, die in Chat 79 ausformuliert werden müssen vor Pattern-Übertragung. Die `themen`-Befüllung sollte beim NotizenAgent gleichgezogen werden.
+
+**Ergebnis (Chat 80):**
+
+- **Phase 1 — Audit (read-only):** Bestätigt, dass `plan()`, `execute()`, `termin_verarbeiten()`, `_termin_create/_delete/_update/_query()` toter Code sind. Planner short-circuited via `AgentRegistry.finden("timeline")` vor `plan()`-Aufruf, kein Producer erzeugt `ziel="timeline"`-Writes für den Dispatcher.
+- **Phase 2 — Cleanup + Magnet-Befüllung:**
+  - 703 Zeilen tote Schreibpfade aus `manager.py` entfernt (960 → 257 Zeilen), 7 Imports entfernt.
+  - `BaseManager.execute()` ist `@abstractmethod` ohne Default — `TimelineManager.execute()` bleibt als Loud-Failure-Stub mit `NotImplementedError`, voller Diagnose im Text.
+  - Neuer Helper `agents/timeline/magneten.py` als Single Source of Truth für `event_type → (themen, binding, remind, conflict_check)`.
+  - `TimelineRepository.insert()` erweitert um vier Magnet-Parameter.
+  - `crud.py:_create` und `_update` rufen den Helper, reichen Werte durch.
+- **Smoke-Test grün:** Termin → `(termin, T, T, T)`, Geburtstag → `(geburtstag, F, T, F)`. Erwartung erfüllt.
+- **10 Minuten Server-Lauf nach Restart ohne einen einzigen `NotImplementedError`** — empirische Bestätigung, dass kein Producer mehr `ziel="timeline"` schreibt.
+
+**Befunde fürs nächste Mal:** Migrations-Buckets in `agents/timeline/init.sql` und Helper-Mapping müssen langfristig konsistent gehalten werden — separater Sprint, nicht in M2.5a-Scope. `event_ende` und `recurring` werden nirgends ausgewertet, beides bleibt für spätere Sprints.
 
 **Folge-Sprints:**
 
@@ -1507,6 +1551,38 @@ Der Thinker `memory_search`-Tool-Output verwendet seit STRUCT-5c (Chat 75) den g
 
 ---
 
+## Konzept: FRAMES — Strukturelle Slot-Erhebung für Vorhaben (Chat 80)
+
+**Status:** Konzept fertig (`novaberg-thinking-frames_k.md`), Implementation steht aus
+
+**Idee:** Vorhaben (Termin, Einkauf, Reise, Notiz-Update...) haben strukturelle Slots, die das LLM aus Weltwissen kennt. Classify-Node erhebt sie pro Aktion, ein optionaler Frame-Auflöser füllt Lücken aus Vor-Wissen oder formuliert eine Rückfrage. Vollständige Frames triggern den FaktenAgent als Pipeline-Schluss und schreiben strukturiertes Wissen ins Knowledge Graph.
+
+**Türsteher:** Interface vs. Referenz — nur Vorhaben mit konkretem Bezug erzeugen Frames, beiläufige Erwähnungen nicht. Linguistische Marker als Klassifikations-Grundlage.
+
+**Vorbedingungen (Phase 0):**
+
+- M2.5b — FaktenAgent als echter Agent statt Plugin
+- TIMELINE-PAIR-MIGRATION
+- NOTIZEN-PAIR-MISSING
+- FAKTEN-PAIR-IGNORED
+
+**Implementierungs-Phasen** (siehe §16.2 des Konzept-Dokuments):
+
+- **Phase 1:** Pilot — Termin-Frame im TimelineAgent
+- **Phase 1b:** Übertragung NotizenAgent (UPDATE/RENAME-Bezug, Container-Wechsel, Skill-Manifest implizit)
+- **Phase 2:** Generalisierung, Frame-Lager mit Konsens-Aggregator
+- **Phase 3:** Vehicle-Schicht
+- **Phase 4:** Drive-/Neugier-Integration
+
+**Adressiert die Chat-80-Live-Befunde:**
+
+- NOTIZEN-KONTEXT-REKONSTRUKTION → Phase 1b (Frame-Auflöser)
+- NOTIZEN-CONTAINER-WECHSEL → Phase 1b (`notiz_update`-Frame mit Slot `neuer_typ`)
+- NOTIZEN-SKILL-MANIFEST → Phase 1b implizit (Frames definieren legitime Aktionen)
+- NOTIZEN-UPDATE-TARGET-LEER → Phase 1b (Bezugs-Auflösung in UPDATE-Pfad)
+
+---
+
 ## Sprint: MIGRATION-PIX-CLEANUP — Pixie-Migration nach Multi-Charakter-Umstellung abschließen (Chat 78)
 
 **Status:** ✅ Erledigt (Chat 79)
@@ -1556,6 +1632,153 @@ Der Thinker `memory_search`-Tool-Output verwendet seit STRUCT-5c (Chat 75) den g
 - KZG: 24 fehlerhafte Einträge gegenüber 156 korrekten.
 
 **Eingeordnet:** Nach MIGRATION-PIX-CLEANUP, vor MEMORY-SALIENZ-VERERBUNG Phase 1. Wenn der TTL der bestehenden Einträge schneller abläuft als der Fix umgesetzt wird, erübrigt sich die Bereinigung — dann nur Verifikation.
+
+---
+
+## Bug: TIMELINE-PAIR-MISSING — Timeline-Tabelle ohne `character_id` (Chat 80)
+
+**Entdeckt:** Chat 80
+**Klasse:** Schema-Lücke, paar-spezifisches Wissen leakt zwischen Charakteren
+**Severity:** Mittel — relevant erst bei Multi-Charakter-Setup, aber Foundation-Bug
+
+**Beschreibung:**
+
+Die Tabelle `timeline` hat heute nur `user_id`, kein `character_id`. Das verletzt:
+
+- `novaberg-convention-paar-schema.md` — Subjekt × Gegenüber × Beobachter, Erlebnis-Wissen ist paar-spezifisch
+- `novaberg-convention-magneten.md` §6 — Welt-Wissen vs. Erlebnis-Wissen, Timeline gehört zu Erlebnis (`(user_id, character_id)`-Skopierung)
+
+Bei Multi-Charakter-Setup würden Aria-Termine bei Nova auftauchen (und umgekehrt). Heute kein praktisches Problem (Nur Nova), aber jeder neue Charakter bringt Wissens-Leck mit.
+
+**Vermutung:** Andere paar-skopierte Speicher haben dieselbe Lücke. Geprüft (Chat 74) und sauber: KZG (im Redis-Schlüssel), `charakter_hash` (Composite PK). Ungeprüft: `langzeitgedaechtnis`, `notizen`, `fakten`, `dateien`.
+
+**Lösung — zwei Sprints:**
+
+1. **Inventur-Sprint TIMELINE-PAIR-INVENTUR:** `\d` auf alle paar-skopierten Speicher, prüfen wo `character_id` fehlt. Erwarteter Aufwand: 5-10 Minuten Read-only, ein kurzer Brudi-Prompt.
+2. **Migrations-Sprint TIMELINE-PAIR-MIGRATION:** `character_id`-Spalte ergänzen wo nötig, Indexe anpassen, Repositories und Schreibpfade durchziehen, Bestand initialisieren (alle alten Einträge bekommen `character_id='nova'`).
+
+**Eingeordnet:** Inventur-Sprint nach M2.5a (jetzt). Migrations-Sprint wahrscheinlich nach M3, abhängig vom Inventur-Befund.
+
+---
+
+## Bug: NOTIZEN-PAIR-MISSING — Notizen-Tabelle ohne `character_id` (Chat 80)
+
+**Entdeckt:** Chat 80 (Audit zur character_id-Inventur)
+**Klasse:** Schema-Lücke, paar-spezifisches Wissen leakt zwischen Charakteren
+**Severity:** Mittel — relevant erst bei Multi-Charakter-Setup, aber Foundation-Bug
+
+**Symptom:** Tabelle `notizen` hat nur `user_id`, kein `character_id`. Repository-Pfade filtern nur `WHERE user_id = %s`. Bei Multi-Charakter-Setup würden Aria-Notizen bei Nova auftauchen und umgekehrt.
+
+**Klasse:** Identisch zu TIMELINE-PAIR-MISSING (Chat 80) und FAKTEN-PAIR-IGNORED (Chat 80) — alle drei sind Symptome derselben fehlenden Paar-Skopierung in Erlebnis-Wissens-Speichern. Verletzt `novaberg-convention-paar-schema.md` und `novaberg-convention-magneten.md` §6.
+
+**Lösung:** Gemeinsamer Migrations-Sprint für alle drei Tabellen (Timeline, Notizen, Fakten). Bei Notizen ist die Migration einfach (1 Bestandseintrag, alle bekommen `character_id='nova'`).
+
+---
+
+## Bug: FAKTEN-PAIR-IGNORED — Fakten-Repository ignoriert `character_id`-Spalte (Chat 80)
+
+**Entdeckt:** Chat 80 (Audit zur character_id-Inventur)
+**Klasse:** Repository-Lücke trotz vorhandener Schema-Spalte
+**Severity:** Hoch — 171 Live-Einträge unter `user_id='nova'` betroffen
+
+**Symptom:** Tabelle `fakten` hat die Spalte `character_id` mit Default `'nova'`. INSERTs in `fakten_repository.py` setzen die Spalte nicht — sie wird durch den DB-Default befüllt. SELECTs filtern nur `WHERE user_id = %s`, ignorieren `character_id` komplett.
+
+**Komplikation — ASSISTANT_USER_ID-Pfad:** 171 Fakten-Einträge stehen heute unter `user_id='nova'` (Pre-Paar-Schema-Logik). Diese können bei einer Migration nicht pauschal auf `character_id='nova'` umgesattelt werden — sie repräsentieren *"Nova-Sicht auf Meister"* und gehören semantisch zu `(user_id='meister', character_id='nova', beobachter='assistant')`. Migration ist nicht trivial und braucht eine Heuristik.
+
+**Lösung:** Konzept-Dokument für die Migration zuerst, dann Sprint. Konzept klärt: Spalten-Migration, Repository-Anpassung, Daten-Migration mit ASSISTANT_USER_ID-Umsattelung.
+
+---
+
+## Bug: ZIELE-PAIR-MISSING — Ziele-Tabelle ohne `character_id` (Chat 80)
+
+**Entdeckt:** Chat 80 (Audit zur character_id-Inventur)
+**Klasse:** Schema-Lücke + offene Skopierungs-Frage
+**Severity:** Niedrig — heute kein Live-Problem, aber Foundation-Bug
+
+**Symptom:** Tabelle `ziele` hat `user_id` mit Default `'nova'` und kein `character_id`. Wirkt wie pro-User-global. 9 Bestandseinträge, alle unter `user_id='nova'`.
+
+**Offene Frage:** Sind Ziele charakter-spezifisch (Nova hat andere Ziele als Aria hätte)? Drive-Konzept (`thinking-drive_k.md`) suggeriert ja — aber explizite Festlegung fehlt.
+
+**Lösung:** Im Migrations-Konzept zusammen mit den anderen Paar-Lücken klären. Falls charakter-spezifisch: Spalte hinzufügen, Repositories anpassen.
+
+---
+
+## Bug: NOTIZEN-KONTEXT-REKONSTRUKTION — Mehrschritt-Rekonstruktion fehlt (Chat 80)
+
+**Entdeckt:** Chat 80 (Live-Test B des NOTIZEN-VOR-TURN-BEZUG-Sprints)
+**Klasse:** Strukturelle Lücke — Bezugsauflösung über mehrere Vor-Turns hinweg
+**Severity:** Hoch — eingeschränkte Konversationsfähigkeit
+
+**Symptom:** Bei UPDATE/RENAME-Aktionen mit mehreren Bezugs-Pronomen über mehrere Turns scheitert die Rekonstruktion.
+
+**Konkreter Fall (Chat 80):**
+
+- Turn n-3: User: *"Bei der nächsten Bauwoche brauche ich noch: Bohrer, Schrauben, Dübel."*
+- Turn n-1: Notiz "Marketing-Aktion beim Obi" wurde angelegt
+- Turn n: User: *"Und schreibe die 3 Sachen in die Liste, die ich erwähnt habe"*
+- Nova: *"Welche drei Sachen?"* — obwohl die drei Sachen drei Turns davor explizit aufgezählt wurden
+
+**Erwartete Kette:** *"Aktualisiere sie"* → Was könnte ich aktualisieren? → Hier, wir haben über eine Liste gesprochen → Die Liste betrifft Baumarkt-Wochen → Der Nutzer hat 3 Dinge erwähnt, die gehören wohl dazu → Container-Typ ändern + Inhalte einfügen.
+
+**Was heute fehlt:** Der Classify-Node hat zwar Vor-Turns im `[KONTEXT]`-Block, aber keinen Mechanismus für **mehrschrittige semantische Kette** über Turn-Distanzen >1. Die Inhalts-Auflösung aus dem heutigen Sprint deckt nur einen Vor-Turn-Sprung ab, keine Kette.
+
+**Strukturelle Lösung:** Frame-Konzept Phase 1b. Der Frame-Auflöser-Node (`thinking-frames_k.md` §7) ist genau für diese mehrschrittige Rekonstruktion gebaut — Slot für Slot prüfen, jeden Slot aus dem passenden Vor-Turn füllen, dann CRUD ausführen.
+
+---
+
+## Bug: NOTIZEN-CONTAINER-WECHSEL — Notiz↔Liste-Wechsel verweigert (Chat 80)
+
+**Entdeckt:** Chat 80 (Live-Test B)
+**Klasse:** Architektur-Strenge zu hoch — Container-Typ als unveränderliche Klasse
+**Severity:** Mittel — eingeschränkte Funktionalität, aber kein Daten-Verlust
+
+**Symptom:** NotizenAgent trennt "Textnotiz" und "Liste" als harte Klassen. Eine als Textnotiz angelegte Notiz kann nicht zu einer Liste mit Items erweitert werden, obwohl semantisch sinnvoll.
+
+**Konkreter Fall (Chat 80):**
+
+- Notiz "Marketing-Aktion beim Obi" wurde als Textnotiz angelegt
+- User wollte Items hinzufügen: Bohrer, Schrauben, Dübel
+- Nova: *"Die Notiz zur Marketing-Aktion ist eine einzelne Notiz und keine Liste, in die man Unterpunkte einfügen kann. Das System unterscheidet hier strikt zwischen einer Textnotiz und einer strukturierten Liste."*
+
+**Was heute fehlt:** Container-Typ als änderbare Eigenschaft. Korrekte Aktion: Bei `add_content` auf Textnotiz mit mehreren Items → Container-Typ-Wechsel zu Liste, Items strukturieren.
+
+**Strukturelle Lösung:** Frame-Konzept Phase 1b. Ein `notiz_update`-Frame hätte Slot `neuer_typ`, der explizit den Container-Wechsel als legitime Aktion definiert.
+
+---
+
+## Bug: NOTIZEN-SKILL-MANIFEST — Nova kennt eigene Fähigkeiten nicht in der Sprach-Schicht (Chat 80)
+
+**Entdeckt:** Chat 80 (Live-Test B, durch Meister thematisiert)
+**Klasse:** Domain-Language-Lücke — Skills im Code vorhanden, in der Sprach-Schicht nicht repräsentiert
+**Severity:** Mittel — falsche Selbstauskunft an User
+
+**Symptom:** Nova verweigert legitime Aktionen mit Begründungen, die im Code so nicht stimmen. Sie kennt ihre eigenen Skills nicht in dem Sinne, dass sie sie **erklären oder anbieten** kann. Wenn sie sagt *"eine Notiz und keine Liste"*, zieht sie eine harte Grenze, die im Code gar nicht so hart ist.
+
+**Erwartung:** Nova sollte ihre Skills wie ein Butler kennen. *"Ich kann für Sie Listen erstellen, Notizen erstellen, das eine zum anderen abändern, Inhalte anhängen oder entfernen, umbenennen, leeren..."*. Pattern-Idee: Agent registriert sich beim Planner mit einer Skill-Beschreibung, die in der Sprach-Schicht verfügbar ist und Nova in Erklärungen nutzen kann.
+
+**Strukturelle Lösung:** Frame-Konzept Phase 1b implizit. Frames definieren legitime Aktionen pro Domäne — wenn `notiz_update` einen Slot `neuer_typ` hat, ist Container-Wechsel automatisch eine bekannte Skill. Frame-Lager (§11) wird zur **Skill-Selbstkenntnis**: Nova kann anhand vergangener Frames erklären, was sie kann.
+
+**Hinweis:** Falls dieser Punkt schneller adressiert werden soll, wäre ein kleiner Skill-Manifest-Sprint möglich — Domain-Language-Datei um die fehlenden Aktionen ergänzen. Wurde in Chat 80 bewusst gegen die strukturelle Lösung verworfen.
+
+---
+
+## Bug: NOTIZEN-UPDATE-TARGET-LEER — Bezugs-Pronomen für UPDATE/RENAME crashen (Chat 80)
+
+**Entdeckt:** Chat 80 (Live-Test B)
+**Klasse:** Bezugsauflösung im UPDATE-Pfad — verwandt zu NOTIZEN-VOR-TURN-BEZUG, aber andere Aktion
+**Severity:** Hoch — Crash-Verhalten
+
+**Symptom:** Bei UPDATE/RENAME-Aktionen mit Bezugs-Pronomen (*"Aktualisiere sie"*) wird `target` leer übergeben. Crash mit *"keine Notiz mit Namen ''"*.
+
+**Konkreter Fall (Chat 80):**
+
+- Notiz im Vor-Turn: *"Neue Notiz anlegen"* — Nova hatte explizit darauf verwiesen
+- User: *"Aktualisiere sie"*
+- NotizenAgent crash: *"Es gab ein Problem beim Agenten 'notizen', da keine Notiz mit dem Namen '' gefunden werden konnte"*
+
+**Was heute fehlt:** Der heutige Sprint NOTIZEN-VOR-TURN-BEZUG hat das Verbot nur für CREATE im Classify-Prompt aufgehoben (Inhalts-Auflösung). Der UPDATE-Pfad hat eine ähnliche Lücke: das `target`-Feld wird nicht aus Vor-Turns aufgelöst, wenn der User ein Bezugs-Pronomen verwendet.
+
+**Strukturelle Lösung:** Frame-Konzept Phase 1b. Frame-Auflöser löst Slots wie `target` deterministisch aus dem Vor-Turn-Kontext auf. Pattern identisch zur Inhalts-Auflösung, nur in anderem Slot.
 
 ---
 
