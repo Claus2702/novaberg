@@ -79,6 +79,7 @@
 | MIGRATION-PIX-PAIR | IDs getauscht in `nova_gedaechtnis.py`: `user_id=gegenueber_id, character_id=ASSISTANT_USER_ID`. Pre-Chat-60-Kommentar ersetzt | Chat 79 |
 | MIGRATION-AGENTGRAPH-PAIR | `shadow_delivery.py`: `user_id` des menschlichen Users durchgereicht, `ei_calc_rolle="character"` explizit gesetzt. GraphBase-Default unangetastet (Option B) | Chat 79 |
 | ECHO-BUG | Reducer-Umbau (STRUCT-1 bis STRUCT-6, Chat 75) hat Memory-Context strukturiert dedupliziert und Kontext-Volumen reduziert. Live-Verifikation im 38-Turn-Chat in Chat 81: kein Echo-Verhalten mehr. | Chat 81 |
+| THINK-MEM-LOOP | Per-Turn-Tool-Cache `ThinkerToolCache` (graph/nodes/thinker_cache.py), strikt lokal in `think()` instanziiert. Stufe 1 (generisch fuer alle 5 Tools): Argument-Cache in `_execute_tool_call`. Stufe 2 (nur `memory_search`): Result-Hash ueber stabile Felder (inhalt, subtyp, dimension, beobachter, vektor) — effektives Gewicht und Arousal wegen Decay-Volatilitaet ausgeschlossen. FIFO-Verdraengung bei MAX_GROESSE=20. | Chat 82 |
 
 ---
 
@@ -391,19 +392,23 @@ Header der aktiven Datei sagt explizit „Migriert aus: services/shadow_agent/ta
 **Vorbedingung:** Sollte VOR PROMO-DROP1 und PROMO-CLUSTER-EI gefixt werden, sonst doppelter Aufwand.
 **Prio:** Mittel.
 
-#### THINK-MEM-LOOP — Thinker zykelt im memory_search-Tool ohne Konvergenz ⚠️
+#### THINK-MEM-LOOP — Thinker zykelt im memory_search-Tool ohne Konvergenz ✅ Behoben Chat 82
+
 **Entdeckt:** Chat 75, Reducer-Umbau Smoke-Test (Faktencheck-Turn)
+**Behoben:** Chat 82 (Per-Turn-Tool-Cache `ThinkerToolCache`, Stufe 1 + Stufe 2)
+
 **Symptom:** Der Thinker ruft das `memory_search`-Tool 5× hintereinander mit derselben Query auf (`memory_search(Anna Geburtstag)`), bekommt 5× das identische Ergebnis (5 Treffer, 605 Zeichen Output) und verbraucht damit das gesamte 5-Iterationen-Limit (Thinker-Doku §3). Latenz dadurch ~25 Sekunden pro Turn. Nach Limit-Erreichung bleibt die Antwort unverändert — kein Faktencheck-Korrektur-Pfad.
-**Ursache:** Möglicherweise zwei Faktoren:
-1. **Format-Lärm:** Tool-Output enthält die volle LZG-Klammer `(Gewicht: X.XX, Arousal: Y%, Beobachter: Z, Vektor: V)` — Designentscheidung aus STRUCT-5c (Option A: einheitlicher Format-Vertrag mit Responder-`memory_context`). Für ein LLM, das im ReAct-Loop entscheiden muss „enthält dieses Result die Antwort?", könnte die Metadaten-Klammer Ablenkung sein.
-2. **Fehlendes Abbruchkriterium:** Der Thinker-Prompt gibt dem LLM keinen klaren Hinweis, dass identische Wiederholung der Query keine neuen Ergebnisse bringt.
-**Wichtig:** Dies ist KEIN Reducer-Umbau-Bug. Pre-Umbau wäre derselbe Loop entstanden — er war nur unsichtbar, weil der alte `lzg_context_retrieve`-Aufruf einen Argument-Mismatch hatte und zur Laufzeit beim ersten Tool-Call gecrasht wäre. STRUCT-5c hat den latenten Bug en passant gefixt — und damit den Loop-Bug sichtbar gemacht.
-**Auswirkung:** Schwer. User-sichtbar als Latenz; Faktencheck-Korrekturen fallen aus, weil das Limit ohne Konvergenz erreicht wird.
-**Lösungsansätze:**
-- Tool-spezifischer kompakterer Output (siehe THINKER-TOOL-FORMAT im Backlog).
-- Abbruch-Heuristik: identische Query mit identischem Result-Hash → Tool gibt einen Hinweis-String zurück („Bereits gesucht, keine weiteren Treffer").
-- Thinker-System-Prompt schärfen: explizite Anweisung, Query bei identischem Ergebnis nicht zu wiederholen.
-**Prio:** Hoch.
+
+**Ursache:** Fehlendes Abbruchkriterium im Thinker-ReAct-Loop. Tool-Outputs lebten ausschliesslich in der lokalen `messages`-Liste, ohne Wiederholungs-Erkennung. Identische Argumente erzeugten identische Tool-Calls, identische Treffer erzeugten identischen LLM-Reasoning-Output, der wieder denselben Tool-Call ausloeste.
+
+**Wichtig:** Dies war KEIN Reducer-Umbau-Bug. Pre-Umbau wäre derselbe Loop entstanden — er war nur unsichtbar, weil der alte `lzg_context_retrieve`-Aufruf einen Argument-Mismatch hatte und zur Laufzeit beim ersten Tool-Call gecrasht wäre. STRUCT-5c hat den latenten Bug en passant gefixt — und damit den Loop-Bug sichtbar gemacht.
+
+**Lösung (Chat 82):** Defense-in-Depth Per-Turn-Cache, strikt lokal in `think()` instanziiert (keine Verschmutzung zwischen parallelen Graph-Laeufen mit unterschiedlichen Paaren moeglich, weil Lebensdauer = Lebensdauer von `think()`).
+
+- **Stufe 1 (generisch, alle 5 Tools):** Argument-Cache in `_execute_tool_call`. Schluessel `f"{tool_name}::{json.dumps(args, sort_keys=True, default=str)}"`. Bei Treffer Hinweis-String zurueck statt Tool-Invocation.
+- **Stufe 2 (nur `memory_search`):** Result-Hash ueber `(inhalt, subtyp, dimension, beobachter, vektor)` der entries-Liste. Effektives Gewicht und Arousal sind Decay-volatil bzw. Float-instabil und bewusst ausgeschlossen — sonst waere der Hash zwischen zwei identischen Anfragen wackelig.
+- **Datenstruktur:** `OrderedDict` mit `MAX_GROESSE=20` und FIFO-Verdraengung via `popitem(last=False)`.
+- **Code:** `novaberg/server/graph/nodes/thinker_cache.py` (neue Datei), Wiring in `novaberg/server/graph/nodes/thinker.py`.
 
 #### PIXIE-AGENT-MISSING — Periodische Pixie-Dispatches auf nicht-registrierte Agenten ⬜
 **Entdeckt:** Chat 75, Reducer-Umbau Smoke-Tests

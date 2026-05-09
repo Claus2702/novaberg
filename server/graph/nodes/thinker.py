@@ -17,6 +17,7 @@ Verfuegbare Tools:
 Prompt-Schema: [BLOCKNAME]-Format (nova-01-t-d, Chat 27).
 """
 
+import hashlib
 import json
 import logging
 
@@ -30,6 +31,7 @@ from langchain_core.tools import tool
 from agents.timeline.event_time import precision_has_time, precision_format
 from graph.context_entry import ContextEntry
 from graph.format        import format_memory_entries
+from graph.nodes.thinker_cache import ThinkerToolCache
 from graph.state         import ConversationState
 from memory.repositories.timeline_repository import TimelineRepository
 from memory.lzg          import lzg_entries_retrieve
@@ -54,9 +56,15 @@ def create_tools(
     user_id:       str,
     character_id:  str,
     embed_client,
-    embed_model:   str
+    embed_model:   str,
+    cache:         ThinkerToolCache,
 ) -> list:
-    """Erzeugt die Tools für den Thinker-Agent."""
+    """Erzeugt die Tools für den Thinker-Agent.
+
+    Der Per-Turn-Cache wird nur an memory_search durchgereicht — Stufe 2
+    (Result-Hash) lebt strukturell ausschliesslich dort. Die Stufe-1-
+    Pruefung haengt auf der Aufruf-Schicht in _execute_tool_call().
+    """
 
     @tool
     def timeline_check(datum: Annotated[str, "Datum im Format YYYY-MM-DD"]) -> str:
@@ -143,6 +151,37 @@ def create_tools(
             embedding=embedding,
             top_k=5,
         )
+
+        # Stufe 2 (THINK-MEM-LOOP): Result-Hash ueber stabile, identifizierende
+        # Felder. Effektives Gewicht und Arousal sind Decay-volatil bzw.
+        # Float-instabil — bewusst ausgeschlossen, sonst waere der Hash
+        # zwischen zwei Aufrufen wackelig. Reihenfolge bleibt wie aus
+        # lzg_entries_retrieve geliefert (pgvector-Sortierung deterministisch
+        # bei identischer Query).
+        hash_input: tuple = tuple(
+            (
+                e.get("inhalt", ""),
+                e.get("subtyp", ""),
+                (e.get("meta") or {}).get("dimension", ""),
+                (e.get("meta") or {}).get("beobachter", ""),
+                (e.get("meta") or {}).get("vektor", ""),
+            )
+            for e in entries
+        )
+        result_hash: str = hashlib.sha256(repr(hash_input).encode()).hexdigest()
+
+        if cache.stufe2_kennt(result_hash):
+            logger.info(
+                "Thinker.memory_search: Stufe-2-Treffer — identische Treffer "
+                "wie frueherer Aufruf in diesem Turn, gebe Hinweis zurueck"
+            )
+            return (
+                "Suche mit anderen Worten ergibt dieselben Treffer wie eine "
+                "vorherige Anfrage in diesem Turn. Verwende ein anderes Tool "
+                "oder antworte direkt."
+            )
+
+        cache.stufe2_speichern(result_hash)
 
         if not entries:
             logger.info("Thinker.memory_search: keine Treffer")
@@ -319,7 +358,16 @@ def think(
     logger.info("Thinker: Prüfbare Fakten erkannt — starte Reasoning...")
 
     character_id: str = state.get("character_id", "")
-    tools: list = create_tools(postgres_url, user_id, character_id, embed_client, embed_model)
+
+    # Per-Turn-Tool-Cache (THINK-MEM-LOOP). Strikt lokal — keine Verschmutzung
+    # zwischen parallelen Graph-Laeufen mit unterschiedlichen (user_id,
+    # character_id)-Paaren moeglich, weil Lebensdauer = Lebensdauer von think().
+    tool_cache: ThinkerToolCache = ThinkerToolCache()
+    logger.info("Thinker: Per-Turn-Tool-Cache instanziiert")
+
+    tools: list = create_tools(
+        postgres_url, user_id, character_id, embed_client, embed_model, tool_cache
+    )
   
     # ── Reasoning-Prompt zusammenbauen ───────
     system_prompt: str = _build_thinker_prompt(today)
@@ -400,7 +448,7 @@ def think(
 
         # Tool-Aufruf erkennen
         if "TOOL:" in content:
-            tool_result: str = _execute_tool_call(content, tool_map)
+            tool_result: str = _execute_tool_call(content, tool_map, tool_cache)
             messages.append({"role": "user", "content": f"Tool-Ergebnis:\n{tool_result}"})
             logger.info(f"Thinker: Tool ausgeführt → {tool_result[:80]}...")
             continue
@@ -433,8 +481,13 @@ def think(
 # ─────────────────────────────────────────────
 # Hilfsfunktionen
 # ─────────────────────────────────────────────
-def _execute_tool_call(content: str, tool_map: dict) -> str:
-    """Extrahiert und führt einen Tool-Aufruf aus dem LLM-Output aus."""
+def _execute_tool_call(content: str, tool_map: dict, cache: ThinkerToolCache) -> str:
+    """Extrahiert und führt einen Tool-Aufruf aus dem LLM-Output aus.
+
+    Stufe 1 (THINK-MEM-LOOP): Bei identischen Argumenten in diesem Turn wird
+    das Tool nicht erneut ausgefuehrt, sondern ein Hinweis-String
+    zurueckgegeben. Greift generisch fuer alle 5 Thinker-Tools.
+    """
 
     try:
         tool_line: str = ""
@@ -453,11 +506,29 @@ def _execute_tool_call(content: str, tool_map: dict) -> str:
         if tool_name not in tool_map:
             return f"Unbekanntes Tool: {tool_name}"
 
+        # Stufe 1 (THINK-MEM-LOOP): Argument-Cache vor Tool-Invocation
+        schluessel: str = f"{tool_name}::{json.dumps(param, sort_keys=True, default=str)}"
+        treffer: str | None = cache.stufe1_treffer(schluessel)
+        if treffer is not None:
+            logger.info(
+                f"Thinker: Stufe-1-Treffer fuer {tool_name} — Tool wird nicht "
+                f"erneut ausgefuehrt"
+            )
+            return (
+                "Bereits in diesem Turn ausgefuehrt mit identischen Argumenten "
+                "— Ergebnis waere dasselbe. Verwende ein anderes Tool oder "
+                "antworte direkt."
+            )
+
         logger.info(f"Thinker: Führe Tool aus → {tool_name}({param})")
 
         result = tool_map[tool_name].invoke(param)
+        ergebnis: str = str(result)
 
-        return str(result)
+        # Stufe 1: Ergebnis fuer kuenftige identische Aufrufe in diesem Turn merken
+        cache.stufe1_speichern(schluessel, ergebnis)
+
+        return ergebnis
 
     except Exception as fehler:
         logger.error(f"Thinker: Tool-Ausführung fehlgeschlagen — {fehler}")

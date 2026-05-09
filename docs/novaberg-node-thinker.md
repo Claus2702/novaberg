@@ -51,6 +51,19 @@ Kein Match → Durchlauf ohne LLM-Call. Das spart bei Smalltalk und einfachen An
 
 Schreibt im selben Turn ein Agent in die DB (z.B. Timeline-Create/Update/Delete via `agents/timeline/crud.py`), würde der Thinker einen Treffer in `timeline_search` oder einen `[GEDAECHTNIS]`-Eintrag fälschlich für einen Konflikt halten und die korrekte Antwort überschreiben. Lösung analog zu Chat 27 (strukturierte Kontextualisierung statt Imperativ) und Chat 54 (Planner-`task_block` für den Responder): `_build_verarbeitungs_block()` liest `state["agent_results"]` und erzeugt bei `status == "abgeschlossen"` einen operations-neutralen `[VERARBEITUNG]`-Block, der dem Thinker mitteilt, dass die Aenderung bereits passiert ist — Tool-Treffer dazu sind das Ergebnis, nicht der Konflikt; widersprechende `[GEDAECHTNIS]`-Eintraege zeigen den Stand davor. Der Block wird per `msg_parts.insert(1, ...)` direkt nach `[TOOLS]` und vor `[BENUTZERANFRAGE]` eingefuegt. Das Verb (`eingetragen`/`verschoben`/`geloescht`) steckt im `r.ergebnis`-String — der Wrapper bleibt CRUD-neutral.
 
+### 3.3 Per-Turn-Tool-Cache (THINK-MEM-LOOP, Chat 82)
+
+Der ReAct-Loop hatte bis Chat 82 keine Wiederholungs-Erkennung. Tool-Outputs lebten ausschliesslich in der lokalen `messages`-Liste; identische Argumente erzeugten identische Tool-Calls, identische Treffer erzeugten identischen LLM-Reasoning-Output, der wieder denselben Tool-Call ausloeste. Das in THINK-MEM-LOOP dokumentierte Symptom — 5× `memory_search` mit identischer Query, Iterations-Limit ohne Konvergenz — war der Endpunkt dieser Pathologie.
+
+Defense-in-Depth-Loesung in zwei Stufen, gebuendelt in `ThinkerToolCache` (siehe `graph/nodes/thinker_cache.py`):
+
+- **Stufe 1 (generisch, alle 5 Tools):** Argument-Cache in `_execute_tool_call`. Schluessel `f"{tool_name}::{json.dumps(args, sort_keys=True, default=str)}"`. Bei Treffer wird das Tool nicht erneut aufgerufen; statt des Outputs gibt der Thinker einen Hinweis-String zurueck.
+- **Stufe 2 (nur `memory_search`):** Result-Hash ueber stabile Felder `(inhalt, subtyp, dimension, beobachter, vektor)` der entries-Liste. Effektives Gewicht und Arousal sind Decay-volatil bzw. Float-instabil und bewusst ausgeschlossen — sonst waere der Hash zwischen zwei identischen Anfragen wackelig. Faengt den Fall semantisch aequivalenter Queries ab, der Stufe 1 nicht erreicht (unterschiedliche Wortlaute, identische Treffer).
+
+**Designentscheidung — Cache strikt lokal in `think()` instanziiert.** Im Gegensatz zu `_aktiver_pixie_user` (Modul-Cache in `services/llm_provider.py`) lebt der Thinker-Cache als lokale Variable in `think()`, nicht auf Modul-Ebene und nicht im `ConversationState`. Begruendung: Pixie-Aufrufe sind durch den Pixie-Lock `pixie:running` serialisiert; der Thinker laeuft potenziell parallel pro `(user_id, character_id)`-Paar. Strikte Lokalitaet macht es strukturell unmoeglich, dass Caches zwischen Graph-Laeufen verschmutzen — Lebensdauer = Lebensdauer von `think()`.
+
+Datenstruktur: `OrderedDict` mit `MAX_GROESSE=20` und FIFO-Verdraengung via `popitem(last=False)`, damit der Cache nicht unbegrenzt waechst. Der STRUCT-5c-Format-Vertrag bleibt unangetastet — Stufe 2 hasht *vor* dem `format_memory_entries()`-Call ueber die strukturierten Entries.
+
 ---
 
 ## 4. Tools
