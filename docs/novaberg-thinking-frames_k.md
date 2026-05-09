@@ -1,490 +1,375 @@
 # Novaberg — Frames (Konzept)
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
-**Dokument:** Frames — Strukturelle Wissens-Erhebung für Vorhaben und Ereignisse (Konzept)
-**Stand:** 08. Mai 2026, Chat 80
+**Dokument:** Frames — Universales kognitives Substrat (Konzept)
+**Stand:** 09. Mai 2026, Chat 81
 **Pfad:** novaberg/docs/novaberg-thinking-frames_k.md
 **Typ:** Konzept (`_k`)
-**Quellen:** Chat 80 (gesamte Konzeption — entstanden aus NotizenAgent-Audit zur Bezugsauflösung, weitergedacht zum Slot-Filling-Pattern)
+**Quellen:** Chat 80 (erste Konzeption als Slot-Erhebung pro Vorhaben), Chat 81 (universale Erweiterung — Frame als kognitives Substrat, Akutheit als Trigger, iterative Validierung, Plausibilitätsprüfung, Trennung zu Skills)
+
+**Vorgänger-Stand:** Die Chat-80-Fassung dieses Dokuments definierte Frames eng als "Slot-Erhebung für Vorhaben" und beschrieb einen Pipeline-Pilot am Termin-Frame. Im Verlauf von Chat 81 wurde diese Definition als zu eng erkannt und durch die hier dokumentierte universale Sicht ersetzt. Die alte 4-Phasen-Implementierungsplanung wandert in das Folge-Dokument `novaberg-thinking-cognitive-pipeline_k.md`, weil Pipeline-Mechanik dort besser aufgehoben ist als im Substrat-Dokument.
 
 ---
 
 ## 1. Vision
 
-Wenn der Nutzer sagt *"Am Freitag habe ich einen Zahnarzttermin"*, soll Nova nicht nur einen Eintrag mit `title="Zahnarzttermin"` und `event_time=Freitag` anlegen. Sie soll erkennen, dass ein Termin **strukturell vier Aspekte** hat — wer, wo, wann, was — und mit den Lücken bewusst umgehen: rekonstruieren, nachfragen oder akzeptieren.
+Wenn Nova den Satz *"Ich bringe morgen das Auto zum Reifenwechseln"* hört, soll sie nicht nur einen Termin anlegen. Sie soll erkennen, dass mit diesem Satz ein ganzes Geflecht von Frames akut wird — das Auto-Frame mit seinem Standort, das Werkstatt-Frame mit seiner Erreichbarkeit, das Person-Frame mit dem aktuellen Aufenthaltsort des Sprechers, das Reifen-Frame mit der Frage, ob die Sommerreifen schon dabei sind. Wenn der Sprecher in Hamburg sitzt und das Auto in Wolferstadt steht, ist der Satz nicht ausführbar, und das soll Nova merken — bevor der Termin im Kalender steht und morgen zum stillen Fehlschlag führt.
 
-Statt einer flachen Erinnerung entsteht ein vollständiges Wissensobjekt:
+Was hier geschieht, ist nicht Slot-Filling. Es ist **Verstehen** im starken Sinne — die Auflösung einer Aussage in das Geflecht von Wissensobjekten, das sie referenziert, und die Prüfung dieses Geflechts auf Vollständigkeit, Konsistenz und Plausibilität.
 
-> *"Meister hat am Freitag einen Termin beim Zahnarzt in Treuchtlingen, voraussichtlich zur Zahnreinigung."*
+Das ist die kognitive Schwester zur emotionalen Wahrnehmung, die Novaberg bereits hat. Während die emotionale Pipeline antwortet auf *"Wie sagt der Nutzer das?"* (Tonfall, Intention, Beziehungsdynamik), antwortet die Frame-Schicht auf *"Was sagt der Nutzer, und passt das zusammen?"*. Sie ist heute der größte blinde Fleck im System — die Stelle, an der die Sachagenten (Notizen, Timeline, Fakten, Dateien) systematisch zu kurz greifen, weil ihnen die Verstehens-Schicht davor fehlt.
 
-Diese Vollständigkeit hat zwei Konsequenzen:
+> **Leitmetapher:** Ein guter Butler hört nicht nur, was sein Herr sagt, sondern weiß, was zu einem Anliegen dazugehört — und merkt, wenn etwas nicht stimmt. *"Sehr wohl, Sir. Wenn ich darauf hinweisen darf — Ihr Wagen steht aktuell in Wolferstadt. Soll ich der Werkstatt vor Ort einen Termin geben oder die Überführung organisieren?"*
 
-1. **Der Termin wird anschlussfähig.** Wenn Nova später nach *"Zahnarzt"* oder *"Treuchtlingen"* gefragt wird, findet sie den Eintrag über mehrere Magnet-Achsen, nicht nur über den rohen Titel-Text.
-2. **Der Termin wird zu strukturiertem Wissen.** Die Slots speisen das Faktengedächtnis, das wiederum bei zukünftigen Termin-Anlagen als Vor-Erfahrung dient. *"Du gehst beim Zahnarzt seit drei Jahren nach Treuchtlingen"* — Nova kann das Vor-Wissen aktivieren, weil es als Tripel im Knowledge Graph liegt.
-
-> **Leitmetapher:** Ein guter Butler hört nicht nur, was sein Herr sagt, sondern weiß, was zu einem Anliegen dazugehört. *"Sir wünscht morgen ein Treffen — selbstverständlich. Mit wem darf ich rechnen, im Kaminzimmer wie üblich?"* — Der Butler füllt die offenen Punkte mit Vor-Wissen und fragt nur, was wirklich offen ist.
-
-**Designziel:** Nova soll nicht nur Termine *speichern*, sondern Vorhaben *verstehen* — als strukturierte Frames, die mit dem Weltwissen verzahnt sind.
+**Designziel:** Frames sind Novabergs kognitives Substrat. Jedes referenzierbare Etwas — Objekt, Vorgang, Person, Ort, Werkzeug, Anweisung — hat ein Frame, das beim Verstehen aktiv werden kann. Das Frame trägt die Slots, die zur vollständigen Erfassung dieses Etwas gehören, und die Constraints, an denen Plausibilität messbar wird.
 
 ---
 
-## 2. Kognitionswissenschaftliche Grundlage
+## 2. Kognitionswissenschaftliche Grundlagen
+
+Frames sind kein neues Konzept. Sie sind eine der ältesten und tragfähigsten Ideen der Kognitionswissenschaft, in mehreren parallelen Linien entstanden und bis heute aktiv beforscht.
 
 ### 2.1 Frame Semantics (Fillmore, 1976)
 
-Charles Fillmore beschrieb in den 1970ern, dass Bedeutung nicht aus isolierten Wörtern entsteht, sondern aus **Frames** — schematischen Wissensstrukturen, die zu einem Begriff dazugehören. Wer das Wort *"Termin"* hört, aktiviert automatisch ein Frame mit Slots wie Teilnehmer, Ort, Zeit, Anlass — auch wenn nicht alle erwähnt werden. Das Verstehen passiert im Kopf des Hörers, nicht im Text.
+Charles Fillmore beschrieb in *"Frame Semantics and the Nature of Language"*, dass Wortbedeutung nicht aus isolierten Lexikoneinträgen entsteht, sondern aus **Frames** — schematischen Wissensstrukturen, die zu einem Begriff dazugehören. Wer das Wort *"verkaufen"* hört, aktiviert automatisch ein Handelsframe mit Verkäufer, Käufer, Ware und Geld. Auch wenn der Satz nur *"Anna hat verkauft"* lautet, sind die anderen Slots im Verstehen mitaktiviert — als offene Fragen.
 
-**Implikation für Nova:** Wenn das LLM den Begriff *"Termin"* erkennt, hat es das Frame implizit verfügbar. Wir müssen es nicht definieren, sondern nur abfragen.
+**Implikation für Nova:** Wenn das LLM einen Begriff erkennt, hat es das zugehörige Frame implizit verfügbar. Wir müssen Frames nicht definieren, sondern nur abrufen.
 
-### 2.2 Slot Filling und Frame-Based Dialogue Management
+### 2.2 Frame-Theorie der Wissensrepräsentation (Minsky, 1974)
 
-Die Dialog-Systeme der späten 1990er und frühen 2000er (DARPA Communicator, TRIPS, RavenClaw) basierten auf **Slot-Filling**: Der Nutzer hat ein Vorhaben (Flug buchen, Termin planen), das System kennt die Slots, die das Vorhaben braucht, und fragt sie strukturiert ab. Damals starr und mit Decision-Trees gebaut, weil die Sprachverarbeitung roh war.
+Marvin Minsky verallgemeinerte das Konzept in *"A Framework for Representing Knowledge"* zur Kerntheorie der KI-Wissensrepräsentation. Bei ihm sind Frames Datenstrukturen für stereotype Situationen — ein Geburtstags-Frame, ein Restaurant-Besuchs-Frame, ein Auto-Frame. Jedes Frame hat **Slots** mit Defaults, **Bedingungen** für gültige Slot-Belegungen und **Verbindungen** zu anderen Frames. Verstehen heißt: das passende Frame finden, mit den verfügbaren Daten füllen, Defaults für Unbekanntes annehmen, Konflikte erkennen.
 
-Mit modernen LLMs lebt das Pattern wieder auf — flexibler, weil das Verständnis kein Decision-Tree mehr ist. Was bleibt: die Disziplin der Slot-Klärung als Grundlage für sinnvolle Aktion.
+**Implikation für Nova:** Minskys Architektur — Slot, Default, Constraint, Frame-Verknüpfung — bildet auch heute noch die Mechanik, die wir bauen wollen. Modern ist nur, dass das Slot-Wissen nicht mehr im Code steht, sondern im LLM.
 
-**Implikation für Nova:** Slot-Filling ist eine bewährte Disziplin, kein neues Experiment. Was neu ist: Die Schemas leben im LLM-Wissen, nicht im Code.
+### 2.3 Scripts, Plans, Goals, Understanding (Schank & Abelson, 1977)
 
-### 2.3 Schema-Gedächtnis (Bartlett, 1932)
+Schank und Abelson fügten dem statischen Frame eine zeitliche Dimension hinzu: das **Script**. Ein Script ist ein Frame für einen typischen Ablauf — Restaurant-Besuch (eintreten, hinsetzen, bestellen, essen, zahlen, gehen). Die einzelnen Schritte sind selbst Frames, das Script verkettet sie zu einer Sequenz mit kausalen Abhängigkeiten und Erwartungen.
 
-Frederic Bartlett zeigte, dass Erinnerungen nicht als Pixel-genaue Reproduktionen gespeichert werden, sondern als **Schemata** — Gerüste, die beim Abrufen mit Details rekonstruiert werden. Wer eine Geschichte nacherzählt, füllt schematische Lücken mit Plausiblem aus dem eigenen Wissen.
+**Implikation für Nova:** Vorgänge wie *"Reifenwechsel"* oder *"Einkauf"* sind Scripts — Frames mit zeitlicher Struktur. Skills (Dokument 3) werden auf dieser Schicht aufsetzen, sind aber selbst nicht das Frame, sondern eine Anweisung, wie ein Script sinnvoll abzuarbeiten ist.
 
-**Implikation für Nova:** Der Frame-Auflöser, der fehlende Slots aus Vor-Wissen rekonstruiert, ist kein Hack — er bildet eine kognitive Grundoperation nach. *"Wo war der Zahnarzt? Wahrscheinlich Treuchtlingen, da warst du immer."*
+### 2.4 Schema-Gedächtnis (Bartlett, 1932)
 
-### 2.4 Interface vs. Referenz — die strukturelle Türschwelle
+Frederic Bartlett zeigte schon vor knapp einem Jahrhundert, dass Erinnerungen nicht als pixelgenaue Reproduktionen gespeichert werden, sondern als **Schemata** — Gerüste, die beim Abrufen mit Details rekonstruiert werden. Wer eine Geschichte nacherzählt, füllt schematische Lücken mit Plausiblem aus dem eigenen Wissen.
 
-Diese Unterscheidung ist Novabergs eigene und entstand parallel zum Substanz-Filter aus der Magneten-Convention §7. Ein Wort kann **interface-haft** verwendet sein (beiläufig, ohne Vorhaben-Charakter) oder **referenziell** (mit konkretem Bezug auf eine Sache, die strukturierbar ist):
+**Implikation für Nova:** Die Rekonstruktion fehlender Slots aus Vor-Wissen ist kein Hack, sondern eine kognitive Grundoperation. *"Wo war der Zahnarzt? Wahrscheinlich Treuchtlingen, da warst du immer."* Bartletts Schemata legitimieren genau diesen Mechanismus.
 
-| Aussage | Klasse |
-|---|---|
-| *"Ich kaufe morgen Fleisch"* | Interface — beiläufige Erwähnung |
-| *"Ich gehe morgen Einkaufen und besorge Fleisch"* | Referenz — Vorhaben mit Vorbereitungs-Verben |
-| *"Anna ist nett heute"* | Interface — Eindruck |
-| *"Anna wohnt in München"* | Referenz — Aussage über Welt |
+### 2.5 Slot Filling als Disziplin
 
-Nur Referenzen erzeugen Frames. Interfaces bleiben im KZG mit Themen-Magneten, ohne Frame-Aufbau.
+Die Dialog-Systeme der späten 1990er und frühen 2000er (DARPA Communicator, TRIPS, RavenClaw) basierten auf Slot-Filling. Der Nutzer hat ein Vorhaben, das System kennt die Slots, die das Vorhaben braucht, und fragt sie strukturiert ab. Damals starr und mit Decision-Trees gebaut, weil die Sprachverarbeitung roh war.
+
+**Implikation für Nova:** Slot-Filling ist eine bewährte Disziplin, kein neues Experiment. Was neu ist: Die Schemas leben im LLM-Wissen, nicht im Code, und die Reihenfolge der Slot-Klärung ist nicht mehr starr.
 
 ---
 
-## 3. Kernidee — Frames als Weltwissen, zentrales Lager als Konsens
+## 3. Frames als universales Substrat
 
-### 3.1 Doppelte Bewegung
+Im Chat-80-Stand dieses Dokuments waren Frames noch *"Slot-Erhebung für Vorhaben"*. Diese Definition ist zu eng. Frames sind das **universale kognitive Substrat** Novabergs. Was sie unterscheidet, ist nicht ihr Wesen, sondern ihre Slot-Zusammensetzung.
 
-Frames werden in Novaberg **nicht als Schema-Definitionen im Code** gehalten. Sie sind Weltwissen, das das LLM bereits hat. *"Termin hat wer/wo/wann/was"* steht in jedem hinreichend trainierten Modell, weil Menschen so denken.
+### 3.1 Die Frame-Klassen
 
-Dafür gibt es ein **zentrales Lager**, das die LLM-erhobenen Frames sammelt und einen **gelernten Konsens** aufbaut. Das Lager ist nicht autoritativ — es zwingt keine Schemas auf — sondern dient als **Konsistenz-Hilfe** und **Vor-Erfahrungs-Speicher**.
+Eine erste, nicht abschließende Aufzählung der Frame-Klassen, die in Novabergs kognitiver Pipeline auftreten:
 
-### 3.2 Warum das eleganter ist als hardcoded Schemas
+**Objekt-Frames** beschreiben Dinge der Welt mit ihren Eigenschaften. *Auto:* Marke, Modell, Standort, Zustand, Halter. *Reifen:* Typ (Sommer/Winter), Größe, Lagerort, Restprofil. *Werkstatt:* Name, Ort, Spezialisierung, Öffnungszeiten.
 
-| Vergleich | Hardcoded Schema | LLM-Wissen + zentrales Lager |
+**Personen-Frames** sind Sonderfall der Objekt-Frames mit eigenem Reichtum: Anna, Meister, der Zahnarzt. Slots: Name, aktueller Aufenthaltsort, Beziehung zum Sprecher, bevorzugter Anredestil, geteilte Vorgeschichte.
+
+**Ort-Frames** beschreiben räumliche Referenzen: Wolferstadt, Hamburg, Treuchtlingen, der Baumarkt in Donauwörth. Slots: Erreichbarkeit, Distanz zu anderen Orten, Funktion (Wohnort, Arbeitsort, Reiseziel).
+
+**Vorgang-Frames** (im Schank-Sinn: Scripts) beschreiben typische Abläufe: Reifenwechseln, Einkaufen, Reisen, Arzt-Besuch. Slots: Voraussetzungen, beteiligte Akteure, Ressourcen, Reihenfolge der Schritte, typisches Ergebnis.
+
+**Werkzeug-Frames** beschreiben die Fähigkeiten der Plugins/Agents: NotizenAgent, TimelineAgent, FaktenAgent, web_search. Slots: Eingaben, Ausgaben, Vorbedingungen, typische Anwendungsfälle, Grenzen.
+
+**Anweisung-Frames** sind eine Sonderkategorie, die in Skills materialisiert wird (siehe Dokument `novaberg-thinking-skills_k.md`): Für eine bestimmte Aufgaben-Klasse beschreibt das Frame, wie der Vorgang sinnvoll abzulaufen hat — welche Werkzeuge zu nutzen sind, welche Defaults zu setzen, welche Rückfragen wann angebracht sind. Das Anweisung-Frame ist aktiv pflegbar (Nova editiert es selbst), die anderen Frame-Klassen sind Beobachtungs-Erträge.
+
+**Anliegen-Frames** beschreiben das, was der Nutzer in einem Turn will: einen Termin anlegen, eine Notiz ändern, eine Frage stellen. Sie sind das, was die Chat-80-Fassung "Vorhaben-Frames" nannte — heute eine Klasse unter mehreren.
+
+Diese Liste ist offen. Mit jeder neuen Domäne (Dateien, Kalender-Synchronisation, externe Datenquellen) kommen neue Klassen hinzu. Der Mechanismus ist aber für alle gleich.
+
+### 3.2 Was Frames nicht sind
+
+Die Universalität der Frame-Sicht erfordert eine sorgfältige Abgrenzung gegen verwandte Konzepte:
+
+**Frames sind keine Skills.** Skills sind Anweisung-Frames, materialisiert als editierbare Markdown-Dateien, die Vorgehen beschreiben. Frames im Allgemeinen sind kognitive Schablonen, die das Verstehen strukturieren. Frames liefern die Slots — Skills verlangen sie. Diese Trennung ist tragend (siehe §8).
+
+**Frames sind keine Workflows.** Ein Workflow ist eine konkrete Ausführungssequenz — *erst dies, dann das, falls A: jenes*. Ein Vorgang-Frame beschreibt das stereotype Wissen über solch eine Sequenz, aber nicht die konkrete Ausführung. Workflows leben im Cognitive Loop (Dokument 2) und sind das Ergebnis der Frame-Aktivierung, nicht das Frame selbst.
+
+**Frames sind keine Datenbank-Records.** Im Frame-Lager (§9) materialisieren wir Beobachtungen über Frames als Records, aber das Frame selbst ist eine kognitive Operation, keine Zeile in der Tabelle. Ein und dasselbe Frame kann in tausend Aktivierungen auftauchen, ohne dass das Lager eine entsprechende Anzahl Records pflegt — Aggregation und Decay sind eingebaut.
+
+**Frames sind kein Code.** Wir definieren Frame-Klassen nicht in einer Schema-Datei. Das LLM kennt sie aus seinem Training. Was wir bauen, ist die Mechanik, mit der Frames im Verstehensvorgang aktiviert, validiert und gegen das eigene Wissen abgeglichen werden.
+
+### 3.3 Frame-Verbindungen
+
+Frames sind nicht isoliert. Sie referenzieren einander über Slots. Ein Termin-Frame hat einen `wer`-Slot, der ein Personen-Frame öffnet. Ein Vorgang-Frame *Reifenwechsel* hat Slots für *Auto* (Objekt-Frame), *Werkstatt* (Ort-Frame), *Termin* (Anliegen-Frame). Ein Werkzeug-Frame *NotizenAgent* hat Slots für die Werkzeug-Eingaben (Listen-Name, Items), die ihrerseits Frames sind.
+
+Diese Verbindungen werden bei der iterativen Validierung (§5) wirksam: Wenn ein Frame akut wird, werden seine slot-referenzierten Frames mit-akut.
+
+---
+
+## 4. Akutheit als Trigger
+
+Frames existieren latent. Das LLM trägt sie in seinem Wissen, das Frame-Lager hält Beobachtungen über sie, aber sie werden nicht geprüft, solange sie nicht akut werden. Diese Trennung ist nicht nur Performance-Frage — sie spiegelt nach, wie biologische Kognition arbeitet. Das Gehirn validiert nicht jede Aussage gegen alles, was es weiß. Es validiert das, was gerade zur Sache wird.
+
+### 4.1 Latenz vs. Aktivierung
+
+Eine **latente** Frame-Aktivierung passiert, wenn ein Begriff erwähnt wird, ohne dass eine Validierung gefordert ist. *"Reifen sind teuer geworden."* aktiviert das Reifen-Frame im Sinne von "das Wort ist verstanden", löst aber keine Slot-Prüfung aus. Es gibt kein Vorhaben, keine Referenz auf eine konkrete Sache, keine zeitliche Nähe.
+
+Eine **akute** Aktivierung passiert, wenn das Frame zur Sache wird. *"Ich brauche neue Reifen für mein Auto, am Wochenende will ich sie wechseln lassen."* — jetzt ist das Frame nicht nur erwähnt, sondern Gegenstand eines konkreten Vorhabens mit zeitlichem Horizont. Slot-Prüfung wird sinnvoll: *Welches Auto? Wo? Welche Werkstatt? Sind die Reifen schon vorhanden?*
+
+### 4.2 Aktivierungs-Quellen
+
+Vier Quellen lösen Akutheit aus, oft gemeinsam:
+
+**Zeitliche Nähe.** *"morgen", "heute", "gleich", "in zwei Stunden"* — explizite zeitliche Verankerung. Ein Vorgang in der Zukunft, der zeitlich greifbar ist, wird akut. *"An Ostern wechsle ich wieder Reifen"* im November ist nicht akut. Im März wird es das.
+
+**Konversationelle Verankerung.** Explizite Referenz auf eine konkrete Sache, nicht beiläufige Erwähnung. *"Mein Auto"* mit besitzanzeigendem Pronomen, *"der Termin"* mit definitem Artikel, Verben des Vorhabens (*"ich plane", "ich bringe", "ich gehe"*). Das ist die Schiene, die im Chat-80-Stand als "Interface vs. Referenz" beschrieben war — bleibt gültig, ist aber nicht die einzige Quelle.
+
+**Situative Aktivierung.** Externe Trigger ohne Sprecherinitiative. Das Frame-Lager merkt: *"Termin Reifenwechsel morgen 10 Uhr"* — bei Tagesbeginn wird das Termin-Frame akut, auch wenn der Sprecher es heute morgen noch nicht erwähnt hat. Das ist die Stelle, an der proaktive Erinnerungen ihren Platz haben.
+
+**Vorbedingungs-Kette.** Ein Slot eines bereits akuten Frames öffnet ein anderes Frame. Termin-Frame akut → Auto-Frame akut (weil Slot `objekt`) → Standort-Slot des Autos akut → Person-Frame akut (weil Sprecher als Akteur). Cascading activation in der klassischen Kognitionswissenschaft.
+
+### 4.3 Smalltalk und Beiläufigkeit
+
+Was nicht akut wird, wird nicht geprüft. Das ist nicht Schwäche, das ist Schutz vor Übergriffigkeit. *"Reifen sind teuer geworden"* ist eine Bemerkung, kein Vorhaben. Wer auf jede Bemerkung mit Slot-Prüfung reagiert, wird unerträglich. Nova muss zwischen Smalltalk und Anliegen unterscheiden, und Frames sind dabei das Filterkriterium.
+
+Diese Disziplin lebt im Classify-Schritt der Cognitive Pipeline (Dokument 2). Sie nutzt die linguistischen Marker aus §4.4 plus den Akutheits-Test: *"Liegt hier eine konkrete Aufgabe oder ein konkreter Sachverhalt vor, der jetzt oder in absehbarer Zeit bearbeitet werden muss?"* Wenn nein — keine Frame-Aktivierung jenseits der latenten.
+
+### 4.4 Linguistische Marker für Akutheit
+
+Aus dem Chat-80-Stand übernommen, im Universal-Kontext leicht erweitert. Diese Liste ist heuristisch — das LLM trifft die Entscheidung, die Liste hilft beim Prompt-Design:
+
+| Marker-Typ | Akut | Latent |
 |---|---|---|
-| Neue Frame-Art (z.B. "Werkstatt-Termin") | Code-Änderung nötig | Funktioniert sofort |
-| Frame-Variante (z.B. "Online-Termin ohne Ort") | Schema-Erweiterung | Frame hat Slot `wo=null`, ist OK |
-| Domänen-spezifisches Wissen ("Zahnarzt-Termine in Treuchtlingen") | Schwer abzubilden | Aus dem Lager: "Du warst da bisher in Treuchtlingen" |
-| Falsche Slot-Bewertung | Hartnäckig | Selbst-korrigierend, wenn 100 Termine nie `wo` haben |
+| Zeitlich | *morgen, heute, am Freitag, in zwei Wochen* | *irgendwann, mal, wenn ich Zeit habe* |
+| Pronomen | *mein, unser, das (definit)* | *ein, irgendein, sowas wie* |
+| Verben | *gehe, plane, bringe, will, muss* | *könnte, wäre schön, mag* |
+| Subjektnähe | *ich, wir, du* | *man, jemand, die Leute* |
 
-**Bonus:** Das Lager **lernt mit**. Nach 50 Terminen weiß es: typische Termin-Slots sind wer/wo/wann/was. Nach 30 Reisen: wer/wo/wann/was/wie-lang. Es ist ein **emergentes Schema-Gedächtnis**, kein deklariertes.
+Mehrere Marker zusammen ergeben höhere Akutheits-Wahrscheinlichkeit. *"Ich plane morgen das Auto zur Werkstatt zu bringen"* hat alle vier — eindeutig akut.
 
-### 3.3 Verwandtschaft zum Knowledge Graph
+### 4.5 Verhältnis zur Chat-80-Fassung "Interface vs. Referenz"
 
-Das Frame-Lager ist konzeptuell ein **leichtgewichtiger Knowledge Graph für Frame-Schemas selbst**. Schemas sind Wissen, lebendig, verändern sich. Sie liegen in derselben Architektur-Familie wie Entitäten und Fakten — nur eine Ebene meta.
+Die alte Unterscheidung war binär: ein Wort ist entweder Interface oder Referenz, ein Frame entsteht oder es entsteht keins. Das war zu starr. *"Ich kaufe morgen Fleisch"* ist nicht Frame-erzeugend (Interface), *"ich gehe morgen einkaufen und besorge Fleisch"* schon (Referenz) — aber die Grenze ist weicher, als der binäre Schnitt suggeriert.
 
-Konkret: Ein Frame-Eintrag ist eine `(art, slot-belegungen, häufigkeit, zuletzt_gesehen)`-Tupel. Das ähnelt der bi-temporalen Fakten-Struktur, ist aber in Schwere und Strenge reduziert.
+Akutheit ist die feinere Mechanik. Sie ist gradiert, nicht binär. Ein Frame kann *halb akut* sein — erwähnt, aber zeitlich noch fern, wie *"an Ostern Reifen wechseln"* im November. Solche Frames werden im Lager registriert, aber nicht voll validiert. Wenn sie zeitlich näher rücken, gewinnen sie an Akutheit, und die Validierung beginnt.
 
----
-
-## 4. Interface vs. Referenz — Der Türsteher
-
-### 4.1 Linguistische Marker
-
-Die Klassifikation ist eine LLM-Aufgabe, aber sie hat klare Indikatoren, die der Classify-Prompt explizit benennen sollte:
-
-**Referenz-Marker:**
-- **Substantive für Vorhaben:** "Termin", "Einkauf", "Reise", "Treffen", "Besorgung", "Vortrag"
-- **Verben mit Vorbereitungs-Charakter:** "gehen + besorgen", "fahren + holen", "treffen mit X"
-- **Konkrete Anlass-Marker:** "wegen", "zum", "für"
-- **Zeitliche Konkretisierung:** "morgen um 10", "am Freitag", "nächste Woche"
-
-**Interface-Marker:**
-- **Beiläufige Verben:** "kaufen", "essen", "haben", "machen"
-- **Generische Objekte:** "Fleisch" statt "Steak vom Metzger"
-- **Vergangenheit / hypothetisch / wertend:** "war", "wäre", "fühlt sich"
-- **Beobachtungen ohne Akteur-Absicht:** "Wetter ist schön"
-
-### 4.2 Beispiele in voller Breite
-
-| Aussage | Klasse | Frame? | Was passiert |
-|---|---|:---:|---|
-| *"Ich kaufe morgen Fleisch"* | Interface | nein | KZG-Eintrag mit Themen `["einkaufen","fleisch"]` |
-| *"Ich gehe morgen Einkaufen und besorge Fleisch"* | Referenz | ja | Frame `einkauf` mit `wann=morgen, was=Fleisch, wo=?` |
-| *"Am Freitag habe ich einen Zahnarzttermin"* | Referenz | ja | Frame `termin` mit `wann=Freitag, was=Zahnarzt, wo=?, wer=Meister` |
-| *"Ich war heute beim Bäcker"* | Interface | nein | KZG mit Entität "Bäcker" |
-| *"Anna ist nett heute"* | Interface | nein | KZG mit Entität "Anna" |
-| *"Anna wohnt in München"* | Referenz | (Fakt direkt) | Tripel `(Anna, WOHNT_IN, München)` ohne Frame-Pfad |
-| *"Ich möchte morgen Schuhe kaufen"* | Referenz schwach | ja | Frame `einkauf` mit `wann=morgen, was=Schuhe, wo=?, wer=Meister` |
-
-Aussagen wie *"Anna wohnt in München"* sind Welt-Aussagen ohne Vorhaben-Charakter — sie gehen direkt ins Faktengedächtnis, ohne durch das Frame-System zu laufen. Das Frame-System ist für **Vorhaben und Ereignisse mit Slot-Struktur**, nicht für jede strukturierte Aussage.
-
-### 4.3 Bedeutung für die Pipeline
-
-Der Classify-Node entscheidet pro Prompt: *"Ist das eine Referenz mit Frame-Charakter?"* Falls nein, läuft die Pipeline wie heute (KZG-Schreiben, ggf. Notiz/Timeline-CRUD ohne Frame-Aufbau). Falls ja, wird das Frame-System aktiviert.
-
-Diese Türschwelle verhindert Übergeneralisierung. Nicht jede Aussage soll zum Vorhaben aufgewertet werden — *"Ich kaufe morgen Fleisch"* will keine Rückfrage produzieren.
+Die alten Beispiele aus dem Chat-80-Stand (*Anna ist nett heute* vs. *Anna wohnt in München*) bleiben gültig, sind jetzt aber Spezialfälle des Akutheits-Konzepts: Ersteres ist eine flüchtige Eindrucks-Aussage ohne Akutheit, Letzteres ist eine Welt-Aussage mit niedriger akuter Validierungs-Notwendigkeit (kein Vorhaben), aber hoher Frame-Lager-Relevanz (Personen-Frame `Anna` bekommt einen Slot `wohnort` belegt).
 
 ---
 
-## 5. Pipeline — Wo das Frame-System eingreift
+## 5. Iterative und rekursive Validierung
 
-### 5.1 Aktuelle Pipeline (vereinfacht)
+Sobald ein Frame akut wird, beginnt die Validierung. Sie ist nicht flach, sondern öffnet rekursiv die Frames, die über Slots referenziert werden, und prüft das gesamte Geflecht auf Konsistenz.
+
+### 5.1 Die Reifenwechsel-Diagnose
+
+Konkretes Beispiel, das die Mechanik zeigt:
+
+> *Sprecher in Hamburg sagt: "Ich bringe morgen das Auto zum Reifenwechseln."*
+
+Akute Frames:
+
+1. **Vorgang-Frame** *Reifenwechsel*. Slots: `objekt=Auto`, `zeit=morgen`, `ort=?`, `werkstatt=?`, `reifen_vorhanden=?`.
+2. **Objekt-Frame** *Auto* (durch Slot `objekt` aktiviert). Slots: `marke=?`, `standort=?`, `halter=Sprecher`.
+3. **Ort-Frame** *Werkstatt* (durch Slot `werkstatt` aktiviert). Slots: `name=?`, `ort=?`, `erreichbarkeit_vom_auto=?`.
+4. **Personen-Frame** *Sprecher* (durch impliziten Akteur aktiviert). Slots: `aktueller_aufenthaltsort=?`, `verfügbar_morgen=?`.
+
+Frame-Auflöser zieht aus dem Bestand:
+
+- `Auto.standort` aus Fakten: *Wolferstadt* (Standard-Standort).
+- `Sprecher.aktueller_aufenthaltsort` aus letzten Turns / Reisedaten: *Hamburg* (heute angekommen).
+- `Werkstatt.name` aus Frame-Lager: häufig *Werkstatt Müller, Wolferstadt* in vorigen Reifenwechsel-Frames.
+
+Plausibilitäts-Test über Frame-Grenzen hinweg:
+
+- `Auto.standort = Wolferstadt`, aber `Werkstatt.ort = Wolferstadt` — passt.
+- `Sprecher.aktueller_aufenthaltsort = Hamburg`, aber `Auto.standort = Wolferstadt` — **Konflikt**: Sprecher kann das Auto nicht ohne Weiteres morgen zur Werkstatt bringen.
+
+Das ist nicht ein Slot-Fehler, sondern ein **Cross-Frame-Konflikt**. Eine flache Slot-Erhebung (wie der Chat-80-Stand sie vorsah) würde das nicht entdecken — sie sähe nur, dass `ort` und `werkstatt` rekonstruierbar sind, und liefe durch.
+
+### 5.2 Validierung als rekursive Operation
+
+Schematisch:
 
 ```
-User-Prompt
-    ↓
-Salienz (extrahiert Roh-Fakten parallel)
-    ↓
-Validate → Classify → [Search] → CRUD → Confirm
-                  ↑
-              Aktion festgelegt
+validiere(frame):
+    für jeden slot in frame.slots:
+        wenn slot referenziert ein anderes frame:
+            sub_frame = aktiviere(slot.referenz)
+            validiere(sub_frame)             # rekursiv
+            cross_check(frame, sub_frame)    # Konflikte zwischen Frames
+        wenn slot ist atomar:
+            plausibility_check(slot.wert, slot.constraints)
+    plausibility_check(frame als Ganzes)
 ```
 
-Heute geht zwischen Classify und Search/CRUD nichts, was das Datenpaket aktion-spezifisch anpasst.
+Die Tiefe ist nicht unbegrenzt — pragmatisch reichen 2-3 Ebenen für die meisten Aktivierungen. Die Regel: *aktiv referenzierte* Sub-Frames werden validiert, *bloß genannte* nicht. Bei *"Reifenwechsel morgen"* ist das Reifen-Frame nur genannt, nicht aktiv referenziert — wir prüfen nicht, ob die Reifen ihrerseits einen Lagerort haben, der konsistent ist. Solange der Sprecher nicht *"die Reifen sind in Hamburg"* sagt, bleibt das Reifen-Frame in geringer Akutheit.
 
-### 5.2 Erweiterte Pipeline mit Frames
+### 5.3 Cross-Frame-Konsistenz
 
-```
-User-Prompt
-    ↓
-Salienz (Pfad 1: extrahiert Roh-Fakten parallel — bleibt bestehen)
-    ↓
-Validate
-    ↓
-Classify+Frame (LLM-Call 1: action, target, normalisiert, frame)
-    ├─ ist_referenz=false → kein Frame-Pfad
-    │    → Search → CRUD → Confirm (heutige Pipeline)
-    │
-    ├─ ist_referenz=true, Frame vollständig
-    │    → Search/Gather (KG + Vorerfahrungen über Slots)
-    │    → CRUD (schreibt Timeline mit Magneten)
-    │    → Confirm
-    │    → FaktenAgent-Push (Pfad 2: schreibt Frame-Tripel)
-    │
-    └─ ist_referenz=true, Frame mit Lücken
-         → Frame-Auflöser (LLM-Call 2)
-              ├─ Lücken aus Wissen rekonstruierbar? → füllen, Slot markieren
-              ├─ kritische Lücke nicht rekonstruierbar? → Rückfrage formulieren
-              └─ unkritische Lücke? → akzeptieren mit slot=null
-         → Resume nach User-Antwort
-         → Frame jetzt vollständig → weiter wie oben
-```
+Die wichtigste Klasse von Validierungs-Fehlern entsteht zwischen Frames, nicht innerhalb. Beispiele:
 
-### 5.3 Welche Nodes neu, welche erweitert
+- *Sprecher-Standort* vs. *Termin-Ort* (Hamburg-Reifen-Beispiel).
+- *Termin-Zeit* vs. *Reise-Zeitraum* (Termin in München während Urlaub auf Mallorca).
+- *Anliegen* vs. *Werkzeug-Fähigkeit* (Bitte um Wetterbericht, Werkzeug `web_search` nicht aktiviert).
+- *Vorgang-Voraussetzungen* vs. *Bestand* (Backe Kuchen — kein Mehl im Vorrat).
 
-| Node | Status | Aufgabe |
+Cross-Frame-Validierung ist genau die Schicht, an der Nova heute systematisch schwach ist. Die einzelnen Agenten arbeiten lokal in ihrem Domänen-Frame, niemand prüft, ob die Frames untereinander passen.
+
+### 5.4 Was bei Konflikt passiert
+
+Konflikt bedeutet nicht zwingend Abbruch. Drei Reaktions-Klassen, je nach Schwere:
+
+**Hart blockierend.** Die Aktion ist physisch oder logisch nicht ausführbar. Sprecher in Hamburg, Auto in Wolferstadt, Werkstatt in Wolferstadt, Reifenwechsel morgen 10 Uhr — das geht nicht. Frame-Auflöser meldet Konflikt zurück, Antwort fragt nach Auflösung: *"Du bist gerade in Hamburg — soll ich einen Termin für nach deiner Rückkehr suchen, oder wird der Wagen anders zur Werkstatt gebracht?"*
+
+**Frage wert, nicht blockierend.** Ungewöhnliche Konstellation, die ein Default-Wert nicht abdecken würde. Reifenwechsel an einem Sonntag — die meisten Werkstätten sind zu, aber es gibt Ausnahmen. Frame-Auflöser meldet als Hinweis, die Antwort kann dezent darauf eingehen: *"Den Sonntag-Termin habe ich notiert — die meisten Werkstätten sind dann zu, ist deine Werkstatt offen?"*
+
+**Plausibel, kein Konflikt.** Der Standardfall. Validierung läuft durch, das Frame ist konsistent, der Vorgang kann angelegt werden.
+
+Die Klassifikation der Konflikt-Schwere ist eine **offene Designfrage** (siehe §11). Eine Heuristik wäre: hart blockierend, wenn ein Slot mit hoher Konsens-Häufigkeit klar widersprochen ist; Frage wert, wenn ein Default unsicher ist.
+
+### 5.5 Reaktionszeitpunkt — Fragen oder Akut warten
+
+Eine zweite offene Designfrage betrifft den Reaktions-*Zeitpunkt*. Gegeben, ein Konflikt ist erkannt — soll Nova sofort reagieren, oder zum Akutheits-Zeitpunkt?
+
+Variante A: **Sofortige Plausibilitäts-Reaktion.** Sprecher sagt heute *"Ich bringe morgen das Auto zur Werkstatt"*, Nova merkt sofort den Standort-Konflikt und antwortet *"Aber du bist in Hamburg…"*. Vorteil: proaktive Beratung, Konflikt früh aufgelöst. Nachteil: kann übergriffig wirken, wenn der Sprecher gerade nur erzählen will.
+
+Variante B: **Aufgeschobene Reaktion zum Akut-Zeitpunkt.** Heute geht der Eintrag durch, morgen früh meldet Nova *"Heute wäre Reifenwechsel — du bist in Hamburg, das passt nicht zusammen"*. Vorteil: weniger aufdringlich. Nachteil: Konflikte werden spät entdeckt, der Termin ist schon im Kalender, möglicherweise wurde was anderes verpasst.
+
+Mein Bauchgefühl, das ich aber nicht hartcoden möchte: Variante A bei Konflikten, die die Durchführbarkeit **blockieren**; Variante B bei Slots, deren Lücke sich später noch schließen lässt. Konflikt-Klassen-abhängige Reaktion, keine globale Regel.
+
+Diese Frage bleibt im Konzept offen und wird in der Implementierungs-Phase pragmatisch entschieden — vermutlich erst, wenn wir ein paar Live-Beispiele beisammen haben.
+
+---
+
+## 6. Plausibilitätsprüfung
+
+Validierung über Slot-Vollständigkeit und Cross-Frame-Konsistenz hinaus gibt es noch eine dritte Operation: die **Plausibilitätsprüfung gegen Weltwissen**. Sie ist die Stelle, an der Frames Constraints tragen, die nicht aus den Daten der Nutzer-Konversation stammen, sondern aus dem allgemeinen Wissen über die Welt.
+
+### 6.1 Konzept
+
+Frames tragen implizit Constraints. Ein Elefant-Frame hat einen Slot *Fortbewegungsart* mit einem Wertebereich, der *gehen, laufen, schwimmen* enthält, aber nicht *fliegen*. Das LLM weiß das aus seinem Training. Wenn jemand sagt *"Mein Elefant ist gestern hergeflogen"*, soll Nova nicht stumm zustimmen, sondern markieren: *Plausibilitäts-Verletzung*.
+
+Wir hardcoden diese Constraints **nicht**. Das wäre der Albtraum-Pfad — eine endlose Tabelle "was ist plausibel". Stattdessen lassen wir das LLM die Plausibilität prüfen, mit dem expliziten Auftrag, gegen sein Weltwissen zu validieren.
+
+### 6.2 Abstufung
+
+Plausibilität ist nicht binär. Vier Stufen, die in der Praxis auftreten:
+
+**Plausibel.** Slot-Wert passt ins Frame, kein Konflikt. *Reifenwechsel im März* — typisch, kein Hinweis nötig.
+
+**Frage wert.** Slot-Wert ist möglich, aber ungewöhnlich. *Reifenwechsel im Juli* — möglich (Reifenkauf, Wechsel auf Neuware), aber atypisch genug, dass eine Rückfrage angemessen wäre. *"Wechseln auf Sommerreifen oder ein Reifenkauf?"*
+
+**Konflikt.** Slot-Wert widerspricht etablierter Erwartung. *Reifenwechsel im November in Mallorca, wo es keine Saisonreifen gibt.* Das ist ein erkennbarer Konflikt — Mallorca-Wissen + Reifensaison-Wissen.
+
+**Unmöglich.** Slot-Wert verletzt grundlegende Welt-Constraints. *Mein Elefant ist hergeflogen.* Hier soll Nova nicht stumm bleiben.
+
+### 6.3 Reaktionsformen
+
+Wie auf jede Stufe reagiert wird, hängt vom Vehicle ab (Beziehungs-Schicht, siehe §10). Das Frame liefert nur den Plausibilitäts-Wert, der Responder formt daraus eine angemessene Antwort. *Plausibel* — keine Reaktion. *Frage wert* — sanfte Rückfrage. *Konflikt* — klärende Bemerkung. *Unmöglich* — direkte Markierung, mit der Möglichkeit, dass es Metapher oder Scherz ist (*"Du meinst sicher, der Elefant kam mit dem Flugzeug?"*).
+
+Wichtig: Plausibilitätsprüfung ist nicht Besserwisserei. Sie ist die Stelle, an der Nova Verstehen demonstriert, indem sie nicht durchwinkt. Aber sie soll dezent sein, nicht belehrend. Die Vehicle-Schicht entscheidet die Form.
+
+### 6.4 Plausibilität als Slot-Eigenschaft
+
+Im Frame-Lager (§9) wird Plausibilität nicht als separates Schema gespeichert, sondern emerge implizit aus der Häufigkeit und Verteilung der beobachteten Slot-Werte. Wenn `Elefant.fortbewegung` in 1000 beobachteten Frames immer eines aus *gehen, laufen, schwimmen* war, wird *fliegen* zu einer Anomalie. Das LLM kann diese Verteilung im Lager nachschlagen — aber meistens reicht sein Trainings-Wissen.
+
+---
+
+## 7. Doppelte Bewegung — LLM-Wissen und Frame-Lager
+
+Aus dem Chat-80-Stand übernommen, im Universal-Kontext etwas ausgeweitet. Frames werden nicht im Code definiert. Sie sind Weltwissen, das das LLM hat. Aber für Nova-spezifisches Lernen brauchen wir einen **zentralen Speicher**, der über das Generelle hinaus die Beobachtungen über *diesen* Nutzer und *seine* Welt sammelt.
+
+### 7.1 Warum eleganter als hardcoded Schemas
+
+| Vergleich | Hardcoded Schema | LLM-Wissen + Frame-Lager |
 |---|---|---|
-| `Classify` | erweitert | Zusätzliches Output-Feld `frame` mit Slots und Referenz-Markierung |
-| `Frame-Auflöser` | **neu** | Optional, nur bei Frame mit Lücken. Lücken-Analyse, ggf. Rückfrage |
-| `Search/Gather` | erweitert | Sammelt Wissen aus KG+Timeline+Notizen über die Frame-Slots |
-| `CRUD` | erweitert | Schreibt Magneten (`themen`, Verhaltens-Flags) und ruft FaktenAgent-Push |
-| `FaktenAgent-Push` | **neu** als Trigger-Pfad | Schreibt strukturierte Tripel aus Frame-Resultat |
+| Neue Frame-Klasse (z.B. *Werkstatt-Termin* spezifisch vs. *Termin* generell) | Code-Änderung nötig | Funktioniert sofort |
+| Frame-Variante (z.B. *Geburtstags-Termin* mit zusätzlichem Slot *Geschenk*) | Schema-Erweiterung | Slot wird einfach mit erhoben |
+| Domänen-spezifisches Wissen (z.B. *Zahnarzt = meist Zahnreinigung*) | Externer Knowledge Graph | Frame-Lager lernt aus Häufigkeit |
+| Selbst-Korrektur (z.B. *Kunde hat doch keinen `wo`-Slot, war Default*) | Manueller Eingriff | Lager passt Konsens an |
 
-### 5.4 Trade-Off zur Latenz
+### 7.2 Lager als Beobachtungs-Aggregat
 
-Bei **vollständigen Frames** (kein Frame-Auflöser nötig) entsteht **kein zusätzlicher LLM-Call** — das Frame ist Teil des bestehenden Classify-Calls. Latenz unverändert.
+Das Frame-Lager sammelt:
 
-Bei **Frames mit Lücken** entsteht ein zweiter LLM-Call (Frame-Auflöser, ca. 1-2 Sekunden). Das ist akzeptabel, weil der Auflöser nur dann läuft, wenn ohnehin eine Rückfrage entsteht. Der Butler-Vergleich passt: *"Hmmmm... Sir, ich habe da noch eine Frage: wird es wieder der Zahnarzt in Treuchtlingen sein?"* — die zwei Sekunden Nachdenken sind Teil der Geste, kein Bug.
+- **Welche Frame-Klassen haben wir gesehen?** (Termin, Einkauf, Reifenwechsel, Person *Anna*, Ort *Treuchtlingen*…)
+- **Welche Slots werden bei Klasse X typischerweise belegt?** (Bei *Termin* meistens `wer/wo/wann/was`, manchmal `anlass`, selten `kosten`.)
+- **Welche Werte tauchen häufig auf?** (Bei `wo` für *Zahnarzt-Termin* dieses Nutzers: *Treuchtlingen*.)
+- **Welche Frame-Verbindungen treten auf?** (Reifenwechsel-Frame öffnet typisch Auto-Frame, das öffnet Standort-Frame.)
 
----
+Das Lager ist nicht autoritativ. Es zwingt keine Schemas auf. Es **hilft** beim Frame-Auflöser (Defaults rekonstruieren) und beim Plausibilitäts-Test (Anomalien erkennen).
 
-## 6. Frame-Erhebung im Classify-Node
+### 7.3 Lernende Eigenschaften
 
-### 6.1 Output-Schema
+Fünf Lern-Mechanismen, die das Lager nicht statisch lassen:
 
-Der Classify-Node gibt heute schon ein JSON mit `action`, `target`, `target_typ`, `konfidenz`, `normalisiert` zurück. Neu kommt das Feld `frame` hinzu:
+**Häufigkeits-Aggregation.** Je öfter ein Slot belegt wird, desto mehr "gehört" er zur Frame-Klasse. Ein Termin-Frame mit `wo=null` in 90% der Fälle ist ein Hinweis, dass `wo` für diesen Nutzer nicht kritisch ist (vermutlich Telefontermine oder Routine-Treffen ohne Ortswechsel).
 
-```json
-{
-    "action": "create",
-    "target": "Zahnarzttermin",
-    "target_typ": "interface",
-    "konfidenz": "hoch",
-    "normalisiert": "create: Termin am Freitag, Anlass Zahnarzt",
-    "frame": {
-        "art": "termin",
-        "ist_referenz": true,
-        "slots": {
-            "wer":  "Meister",
-            "wann": "Freitag",
-            "was":  "Zahnarzt",
-            "wo":   null
-        },
-        "fehlend": ["wo"],
-        "fehlend_kritisch": []
-    }
-}
-```
+**Wert-Cluster.** Häufige Werte für einen Slot werden zur impliziten Default-Annahme. *Treuchtlingen* bei Zahnarzt-`wo` wird zum Erst-Vorschlag des Auflösers.
 
-Bei `ist_referenz=false` enthält `frame` nur das Feld `ist_referenz`, die anderen Felder bleiben leer. Der Pfad-Switch passiert an dieser Markierung.
+**Recency-Gewichtung.** Jüngere Beobachtungen wiegen mehr als ältere. Wenn *Treuchtlingen* in 12 von 14 Zahnarzt-Frames der letzten zwei Jahre vorkommt, aber die letzten drei Beobachtungen in *Donauwörth* waren, soll der Default sich anpassen. Mechanik: zeitlich gewichtete Häufigkeit (linear oder exponentiell), nicht reine Zählung. Das Lager folgt der Realität, ohne dass jemand explizit *"vergiss Treuchtlingen"* sagen muss.
 
-### 6.2 Was das Classify-LLM hinzulernen muss
+**Korrektur-Gewichtung.** Wenn ein Default-Vorschlag des Auflösers vom Nutzer aktiv korrigiert wird (*"Nicht in Donauwörth, in Treuchtlingen"*), zählt das stärker als eine beiläufige Beobachtung. Korrekturen sind explizite Lehrmomente und sollen entsprechend gewichtet werden — pragmatisch fünf- bis zehnfach im Vergleich zur normalen Häufigkeit. Das macht das Lager schnell-lernend gegen Fehler, ohne dass es bei jeder beiläufigen Erwähnung zappelt.
 
-Drei Erweiterungen am bestehenden Classify-Prompt:
+**Schema-Aggregation.** Über die einzelnen Beobachtungen hinaus pflegt das Lager pro Frame-Klasse einen aggregierten **Schema-Zustand**: welche Slots sind typisch, welche optional, welche Defaults sind aktuell etabliert. Dieser Aggregat-Zustand wird beim Hot-Cache (siehe Cognitive-Pipeline-Dokument §4.11) direkt abgerufen, ohne dass für jede Frame-Aktivierung ein neuer LLM-Call das Slot-Inventar bestimmen muss.
 
-1. **Referenz-Erkennung:** Linguistische Marker für Vorhaben-Charakter (Abschnitt 4.1). Konkrete Beispiele in beide Richtungen.
-2. **Frame-Art bestimmen:** Aus dem Anliegen die Frame-Art ableiten (`termin`, `einkauf`, `reise`, `treffen`, `notiz_liste`...). Offene Liste, das LLM darf neue Arten erfinden.
-3. **Slot-Erhebung:** Pro Frame-Art die naheliegenden Slots benennen und aus dem Prompt belegen.
-
-Die Frame-Art-Liste muss nicht im Prompt vorgegeben werden — das LLM kennt typische Vorhaben-Klassen aus seinem Weltwissen. Optional kann das **zentrale Lager** dem Classifier eine Liste der bisher gesehenen Arten als Konsistenz-Hinweis mitgeben (Abschnitt 11.3).
-
-### 6.3 Domain-Language-Erweiterung
-
-Die `[FACHSPRACHE]`-Konvention der Agenten wird um Frame-Beispiele ergänzt. Beispiel-Format für TimelineAgent:
-
-| User sagt | Frame-Output |
-|---|---|
-| *"Am Freitag Zahnarzt"* | `art=termin, slots={wann:Freitag, was:Zahnarzt}` |
-| *"Treffen mit Anna nächste Woche im Café"* | `art=treffen, slots={wer:[Meister,Anna], wann:nächste Woche, wo:Café, was:?}` |
-| *"Ich gehe morgen Einkaufen"* | `art=einkauf, slots={wer:Meister, wann:morgen, was:?, wo:?}` |
+**Decay.** Alte, selten reproduzierte Frame-Klassen verschwinden langsam. Das Schema lebt mit dem Nutzer.
 
 ---
 
-## 7. Frame-Auflöser-Node — Lücken-Analyse und Rückfrage
+## 8. Frames im Verhältnis zu Skills
 
-### 7.1 Wann der Auflöser läuft
+Das ist die zentrale Pipeline-Trennung, die im Chat-80-Stand noch verschwommen war. Sie wurde in Chat 81 herausgearbeitet und ist tragend für die gesamte kognitive Architektur.
 
-Nur dann, wenn Classify ein Frame mit Lücken liefert. Bei vollständigen Frames oder Nicht-Referenzen wird der Auflöser übersprungen. Das ist die einzige Stelle, an der ein zweiter LLM-Call entsteht.
+> **Frames liefern die Slots — Skills verlangen sie.**
 
-### 7.2 Was der Auflöser tut
+Frames sind kognitive Schablonen, die das Verstehen einer Aussage strukturieren und mit Wissen verzahnen. Sie sagen, *was an Informationen vorhanden sein und gesammelt werden muss*. Skills sind Arbeitsanweisungen, die diese Informationen *konsumieren* und in Vorgehen übersetzen.
 
-Drei Aufgaben in einem LLM-Call:
+### 8.1 Beispiel zur Trennung
 
-**Aufgabe 1 — Rekonstruktion aus Vor-Wissen.**
-Für jeden fehlenden Slot prüft das LLM, ob es aus Wissen ableitbar ist:
+Anliegen-Frame *Wetterbericht*:
 
-- Slot `wo` für Frame-Art `termin` mit `was=Zahnarzt`: Schaue im Knowledge Graph nach `(Meister, GEHT_ZUM_ZAHNARZT_IN, ?)` oder im Frame-Lager nach früheren Zahnarzt-Frames mit belegtem `wo`-Slot.
-- Slot `wer` für Frame-Art `termin` mit Default-Annahme: meist der User selbst.
-- Slot `wo` für Frame-Art `einkauf` mit `was=Fleisch`: Schaue nach besuchten Geschäften.
+- Slots: `ort`, `zeit`, `tiefe` (kurz/ausführlich).
+- Frame-Auflöser füllt Lücken: `ort` aus Standort-Fakten, `zeit=heute` als Default, `tiefe=kurz` als Default.
+- Plausibilitäts-Test: `ort=Wolferstadt` mit `zeit=heute` plausibel.
 
-Wenn rekonstruierbar: Slot füllen, im Output markieren als `quelle=rekonstruiert` und ggf. **bei der Bestätigung dem User mitteilen** (*"Wahrscheinlich Treuchtlingen, da warst du immer — passt das?"*).
+Skill *Wetterbericht-Vorgehen* (siehe `novaberg-thinking-skills_k.md`):
 
-**Aufgabe 2 — Kritikalität bewerten.**
-Für jede verbleibende Lücke entscheiden: kritisch oder unkritisch?
+- Nimmt `ort`, `zeit`, `tiefe` aus dem Frame.
+- Anweisung: *Suche bei agrarwetter.org, wenn ländliche Region; sonst allgemeine Wettersuche. Wenn Termine an dem Tag in anderem Ort, prüfe dort auch. Liefere kurz, wenn nicht ausführlich gefordert.*
+- Ruft `web_search` mit dem aus den Slots gebauten Query.
 
-- **Kritisch:** Ohne diesen Slot ist die Aktion nicht sinnvoll durchführbar. Beispiel: `wann` für einen Termin.
-- **Unkritisch:** Aktion ist auch ohne den Slot nützlich. Beispiel: `was` für einen Termin (man weiß: Termin ist morgen, Anlass offen — kann man später noch ergänzen).
+Frame ohne Skill funktioniert: das LLM würde aus den Slots eine plausible Wettersuche machen, vielleicht nicht optimal. Skill ohne Frame funktioniert nicht: ohne Slots fehlt das Material zum Anweisungs-Bezug. **Frames sind Vorbedingung für Skill-Anwendung.**
 
-**Aufgabe 3 — Rückfrage formulieren oder akzeptieren.**
-Wenn kritische Lücke: Eine einzelne Rückfrage formulieren, die alle kritischen Lücken bündelt (Abschnitt 12 zur Rückfragen-Disziplin). Wenn nur unkritische Lücken: Frame mit `slot=null` akzeptieren, weiter zur Aktion.
+### 8.2 Konsequenz für die Reihenfolge
 
-### 7.3 Output-Schema des Auflösers
+In der Cognitive Pipeline (Dokument 2) steht die Frame-Erhebung **vor** dem Skill-Lookup. Sequenz:
 
-```json
-{
-    "frame_aufgeloest": {
-        "art": "termin",
-        "slots": {
-            "wer":  {"wert": "Meister",    "quelle": "default"},
-            "wann": {"wert": "Freitag",    "quelle": "prompt"},
-            "was":  {"wert": "Zahnarzt",   "quelle": "prompt"},
-            "wo":   {"wert": "Treuchtlingen", "quelle": "rekonstruiert"}
-        },
-        "vollstaendig": true,
-        "rueckfrage_noetig": false,
-        "rueckfrage_text": null
-    }
-}
-```
+1. Aussage parsen, Frame-Klassen aktivieren (Anliegen, Objekte, Personen, Orte).
+2. Frame-Auflöser füllt Slots, validiert Cross-Frame.
+3. Mit dem aufgelösten Anliegen-Frame Skill-Lookup im Speicher.
+4. Skill-Executor führt das Vorgehen aus, mit Slot-Werten als Input.
+5. Werkzeug-Aufrufe (NotizenAgent, web_search…) mit Skill-Steuerung.
+6. Reflexion über Ergebnis, ggf. Skill-Edit als Antwort auf Negativ-Feedback.
 
-Wenn `rueckfrage_noetig=true`, läuft der Standard-Resume-Mechanismus an (Pending-Agent in Redis, TTL 300s, Resume nach User-Antwort). Beim Resume wird der Auflöser nicht erneut aufgerufen — die User-Antwort füllt den Slot direkt, das Frame ist vollständig, Pipeline läuft weiter.
-
-### 7.4 Quellen-Markierung als Vertrauens-Information
-
-Die `quelle`-Markierung pro Slot ist nicht nur dokumentarisch. Sie hat zwei Konsequenzen:
-
-1. **Im Confirm-Schritt:** Rekonstruierte Slots werden im Bestätigungs-Text erwähnt (*"...beim Zahnarzt in Treuchtlingen, wie immer"*), damit der User korrigieren kann.
-2. **Beim FaktenAgent-Push:** Rekonstruierte Slots werden mit niedrigerer Konfidenz in den Knowledge Graph geschrieben (oder gar nicht — siehe Abschnitt 10.4).
+Dokument 2 detailliert diese Pipeline. Dieses Dokument hier endet bei Schritt 2.
 
 ---
 
-## 8. Search als Gatherer — Wissens-Aktivierung über Slots
+## 9. Frame-Lager — Schema und Operationen
 
-### 8.1 Konzeptuelle Vertiefung
+Aus dem Chat-80-Stand übernommen, leicht angepasst an die universale Sicht.
 
-Heute ist Search ein punktueller "finde Ziel-Eintrag in DB"-Schritt — pg_trgm-Suche, gewichtete Felder, Score-Gap. Im Frame-Konzept wird Search zum **Gatherer**: einem Sammelpunkt für alles Wissen, das zum Frame gehört.
-
-Beispiel: Frame `einkauf` mit `wo=Aldi`. Search holt:
-- Bestehende Notizen mit `entitaet_ids @> [aldi_id]` — also Listen, die Aldi betreffen
-- Bestehende Timeline-Einträge mit Aldi-Bezug — vergangene Aldi-Besuche, Häufigkeit
-- Bestehende Tripel im Knowledge Graph mit Aldi als Subjekt oder Objekt
-- Bestehende Frames im Lager mit Frame-Art `einkauf` und `wo=Aldi`
-
-### 8.2 Was der Gatherer dem CRUD übergibt
-
-```python
-state["frame_kontext"] = {
-    "frame": {...},                    # vom Auflöser
-    "verwandte_notizen": [...],        # für Aldi: bestehende Aldi-Liste
-    "verwandte_timeline": [...],       # vergangene Aldi-Besuche
-    "verwandte_tripel": [...],         # Knowledge-Graph-Wissen
-    "vergangene_frames": [...],        # ähnliche Frames aus Lager
-}
-```
-
-CRUD nutzt das, um:
-- Bei einem neuen Aldi-Einkauf-Frame die existierende Aldi-Notiz als Verknüpfung anzubieten
-- Im Confirm-Text auf Vor-Wissen zu verweisen (*"Auf deiner Aldi-Liste steht auch Joghurt — soll ich das hinzufügen?"*)
-- Magneten konsequent zu setzen (Frame liefert `entitaet_ids` aus den Slots)
-
-### 8.3 Magnet-Aktivierung über Frame-Slots
-
-Das ist die Stelle, an der Frames die Magneten-Convention §1 in Wirkung bringen. Heute sind Magneten geleerte Schienen — Spalten in der DB, die nicht befüllt werden (außer für Timeline seit M2.5a). Frames sind die strukturelle Quelle für Magnet-Befüllung:
-
-| Frame-Slot | Magnet-Eintrag |
-|---|---|
-| `wer` | `entitaet_ids` (User + ggf. weitere Personen) |
-| `wo` | `entitaet_ids` (Ort als Entität) |
-| `wann` | `timeline_id` (Verweis auf Timeline-Eintrag) |
-| `was` | `themen` (Anlass als Theme) |
-
-Diese Mapping ist domänen-übergreifend stabil — `wer` ist immer `entitaet_ids`, `wann` ist immer `timeline_id`, unabhängig ob `termin` oder `einkauf`.
-
----
-
-## 9. CRUD und Magneten-Befüllung
-
-### 9.1 CRUD bei Frame-Aktionen
-
-Bei einem Frame-getriebenen CRUD-Aufruf bekommt der CRUD-Code:
-
-- Den Frame mit aufgelösten Slots
-- Den Gatherer-Output (verwandte Wissens-Schichten)
-- Optional die User-Antwort aus einer Resume-Phase
-
-Der CRUD führt aus:
-
-1. **Hauptobjekt anlegen** (Timeline-Eintrag, Notiz, Termin) mit Magneten aus den Frame-Slots
-2. **Verknüpfungen setzen** zu existierenden Wissens-Schichten (Notiz an bestehende Aldi-Liste anhängen, statt neue zu erstellen)
-3. **FaktenAgent triggern** mit Frame als Input (Abschnitt 10)
-4. **Bestätigung formulieren**, die Vor-Wissen erwähnt
-
-### 9.2 Magneten-Befüllung in einem Schritt
-
-Das M2.5a-Pattern (themen + Verhaltens-Flags aus `event_type`) bleibt bestehen, wird aber durch Frame-Daten ergänzt:
-
-| Magnet | Quelle vor Frames | Quelle mit Frames |
-|---|---|---|
-| `themen` | abgeleitet aus `event_type` | aus `was`-Slot + `event_type` |
-| `binding`, `remind`, `conflict_check` | abgeleitet aus `event_type` | unverändert |
-| `entitaet_ids` | leer (M5-Scope) | aus `wer`+`wo`-Slots, vor M5 |
-| `timeline_id` | (selbst, bei Timeline) | (selbst, bei Timeline) |
-
-Damit bringt das Frame-Konzept einen Teil der M5-Magnet-Befüllung **vor** ihren ursprünglichen Sprint — natürlich, weil die Frame-Slots ohnehin Entitäten und Themen liefern.
-
-### 9.3 Verknüpfung statt Neuanlage
-
-Wenn der Gatherer eine bestehende Wissens-Schicht findet, die zum Frame passt, soll CRUD nicht blind neu anlegen. Beispiel:
-
-- User: *"Ich gehe morgen zu Aldi und brauche Joghurt"*
-- Gatherer findet: Notiz "Aldi-Liste" existiert bereits mit Inhalt "Brot, Milch"
-- CRUD-Entscheidung: Joghurt wird per `add_content` an bestehende Notiz angehängt, nicht als neue Notiz angelegt
-
-Diese Logik ist bereits embryonal in den CRUD-Codes (Container-vs-Inhalt-Regel beim NotizenAgent), wird aber durch Frame-Daten deterministischer.
-
----
-
-## 10. FaktenAgent als Pipeline-Schluss — Komplementär zur Salienz
-
-### 10.1 Heutige Fakten-Pipeline
-
-Der FaktenManager (`plugins/fakten_manager/manager.py`) wird heute über zwei Pfade aufgerufen, beschrieben in `novaberg-mem-knowledge-graph.md` §5:
-
-**Pfad 1 — Salienz-getriggert (Hauptpfad):**
-Die Salienz extrahiert Roh-Fakten als `{subjekt, schluessel, wert, typ}` aus dem User-Prompt. Der FaktenManager transformiert sie über Konstanten-Tabellen (`_ENTITAETS_SCHLUESSEL`, `_ATTRIBUT_MAP`, `_WERT_TYP_MAP`) und schreibt Tripel.
-
-**Pfad 2 — Planner-getriggert (explizit):**
-Bei Management-Befehlen wie *"Was weißt du über Anna?"* routet der Planner direkt zum FaktenManager.
-
-### 10.2 Was fehlt heute
-
-Die Salienz sieht den **rohen User-Prompt**, nicht das **strukturierte Frame** nach Auflösung. Wenn ein Frame `wo` durch Rekonstruktion aus Vor-Wissen füllt (z.B. *"Treuchtlingen"* aus Vor-Erfahrung), hat die Salienz das nicht gesehen. Die strukturierte Information geht im aktuellen Pfad nicht ins Faktengedächtnis.
-
-### 10.3 Der neue Trigger — Agent-Push
-
-Das Frame-Konzept ergänzt einen **dritten Pfad**:
-
-**Pfad 3 — Agent-Push (neu):**
-Nach erfolgreichem CRUD ruft der ausführende Agent (TimelineAgent, NotizenAgent...) den FaktenAgent mit dem **vollständigen Frame als Input**. Der FaktenAgent extrahiert daraus Tripel und schreibt sie.
-
-Beispiel:
-- Frame nach Auflösung: `art=termin, slots={wer:Meister, wann:Freitag, was:Zahnarzt, wo:Treuchtlingen}`
-- FaktenAgent-Push erzeugt:
-  - `(Meister, HAT_TERMIN_AM, Freitag)` mit Verweis auf Timeline-Eintrag
-  - `(Termin-X, ANLASS, Zahnarzt)`
-  - `(Termin-X, ORT, Treuchtlingen)`
-  - Optional: `(Meister, GEHT_ZUM_ZAHNARZT_IN, Treuchtlingen)` als verallgemeinerter Fakt
-
-### 10.4 Komplementarität, nicht Ablösung
-
-Die drei Pfade koexistieren:
-
-| Pfad | Quelle | Was extrahiert wird |
-|---|---|---|
-| Pfad 1 (Salienz) | roher User-Prompt | Lose Aussagen, Erwähnungen, Entitäten im Text |
-| Pfad 2 (Planner) | explizite Management-Anfrage | Strukturierte Anfrage, vom User intendiert |
-| Pfad 3 (Agent-Push) | strukturierter Frame nach Auflösung | Vollständige Tripel aus Frame-Slots inkl. rekonstruiertem Wissen |
-
-Konflikte zwischen den Pfaden löst die **Edge Invalidation** der Fakten-Tabelle (KG-Doku §5 Schritt 3): Wenn zwei Pfade denselben Fakt schreiben wollen, wird der ältere invalidiert, der neuere ist aktiv. Bi-temporales Modell, kein Daten-Verlust.
-
-### 10.5 Trigger-Logik
-
-Wann triggert ein Agent den FaktenAgent-Push?
-
-- **Bei vollständigem Referenz-Frame:** Immer pushen. Strukturelles Wissen ist faktwürdig.
-- **Bei Frame mit unkritischen Lücken:** Pushen, was vorhanden ist. Lücken bleiben Lücken.
-- **Bei Interface-Klassifikation:** Kein Push. Salienz allein entscheidet.
-- **Bei rekonstruierten Slots:** Push, aber mit Vermerk `quelle=rekonstruiert` — der FaktenAgent kann selbst entscheiden, ob er solche Tripel mit niedrigerer Konfidenz schreibt oder verwirft.
-
-Der Salienz-Schwellen-Mechanismus aus dem heutigen Pfad 1 bleibt für unstrukturierte Aussagen sinnvoll. Bei Frame-Pushes ist die Salienz strukturell garantiert hoch — Frames entstehen nur aus Referenz-Aussagen, die per Definition substanzhaft sind. Daher kein zusätzlicher Salienz-Check beim Push.
-
-### 10.6 Position in der Pipeline
-
-```
-... CRUD (schreibt Hauptobjekt) → Confirm → FaktenAgent-Push → END
-```
-
-Position am Schluss, weil:
-- CRUD könnte beim Schreiben Fakten brauchen, die der Push erst erzeugt — Reihenfolge umgekehrt wäre Henne-Ei
-- Confirm soll vor dem Push laufen, damit der User die Bestätigung schnell sieht (Push kann asynchron sein)
-
-Asynchrone Ausführung des Pushes ist möglich, falls Latenz ein Thema wird. Konzeptuell ist die Reihenfolge wichtiger als die Synchronität.
-
-### 10.7 Verbindung zu M2.5b
-
-Im Backlog steht **M2.5b — FaktenAgent neu anlegen** (heutiger FaktenManager → echter Agent). Das Frame-Konzept hat zwei Konsequenzen für M2.5b:
-
-1. **M2.5b muss vor dem Frame-Pilot liegen.** Den Push-Trigger braucht einen Agent, der angesprochen werden kann.
-2. **M2.5b sollte den Push-Trigger gleich mit vorsehen.** Der neue FaktenAgent bekommt von Anfang an drei Trigger-Pfade in seiner Architektur.
-
----
-
-## 11. Frame-Lager — Lernende Konsens-Speicherung
-
-### 11.1 Zweck
-
-Das Frame-Lager ist kein Schema-Definitions-Ort und kein autoritativer Speicher. Es ist ein **Konsens-Gedächtnis** für Frame-Wissen über die Zeit:
-
-- Welche Frame-Arten haben wir bisher gesehen?
-- Welche Slots werden bei Frame-Art X typischerweise belegt?
-- Welche Werte tauchen häufig auf? (z.B. *"Treuchtlingen"* bei `wo` für Zahnarzt-Frames)
-
-Das Lager wächst mit jeder Frame-Erhebung. Der Classify-Node und der Frame-Auflöser können es als Konsistenz-Hilfe konsultieren.
-
-### 11.2 Schema (vorläufig)
+### 9.1 Schema (vorläufig)
 
 ```sql
 CREATE TABLE frames (
     id              SERIAL PRIMARY KEY,
     user_id         TEXT NOT NULL,
     character_id    TEXT NOT NULL,
-    frame_art       TEXT NOT NULL,        -- 'termin', 'einkauf', 'reise', ...
+    frame_klasse    TEXT NOT NULL,        -- 'anliegen_termin', 'objekt_auto',
+                                          -- 'person_anna', 'ort_treuchtlingen',
+                                          -- 'vorgang_reifenwechsel', ...
     slots           JSONB NOT NULL,       -- aufgelöste Slot-Belegungen
     quellen         JSONB,                -- pro Slot: prompt|rekonstruiert|default
     haeufigkeit     INTEGER DEFAULT 1,
@@ -495,254 +380,189 @@ CREATE TABLE frames (
     aktiv           BOOLEAN DEFAULT TRUE
 );
 
-CREATE INDEX idx_frames_art         ON frames (user_id, character_id, frame_art);
+CREATE INDEX idx_frames_klasse      ON frames (user_id, character_id, frame_klasse);
 CREATE INDEX idx_frames_zuletzt     ON frames (zuletzt_gesehen DESC);
 CREATE INDEX idx_frames_slots_gin   ON frames USING GIN (slots);
 ```
 
-Paar-skopiert über `(user_id, character_id)` analog zu LZG/Notizen/Timeline (Magneten-Convention §6). Querverweise zu Timeline/Notizen für Re-Identifikation.
+Paar-skopiert über `(user_id, character_id)` analog zu LZG/Notizen/Timeline (Magneten-Convention §6). Querverweise zu Timeline/Notizen für Re-Identifikation, weil viele Anliegen-Frames dort materialisiert sind. Querverweise zu Knowledge-Graph-Entitäten ergänzbar (zukünftige Erweiterung).
 
-### 11.3 Operationen
+**Hinweis zur Klassen-Konvention:** `frame_klasse` ist ein Präfix-strukturierter String. *anliegen_termin*, *objekt_auto*, *person_anna*, *ort_treuchtlingen* — das Präfix gibt die Frame-Kategorie, der Rest die spezifische Klasse. Das vereinfacht spätere Analysen: alle Anliegen-Frames per `WHERE frame_klasse LIKE 'anliegen_%'`.
+
+### 9.2 Operationen
 
 ```python
-def frame_registrieren(art, slots, quellen, ...) -> int:
-    """Legt Frame-Eintrag an. Erhöht Häufigkeit, falls identisches Frame existiert."""
+def frame_registrieren(klasse, slots, quellen, ...) -> int:
+    """Legt Frame-Eintrag an. Erhöht Häufigkeit, falls ähnliches Frame existiert.
+    Ähnlichkeit über Klasse + Slot-Schlüssel-Übereinstimmung."""
 
-def frame_konsens_holen(art) -> dict | None:
-    """Aggregiert Konsens für Frame-Art:
+def frame_konsens_holen(klasse) -> dict | None:
+    """Aggregiert Konsens für Frame-Klasse mit Recency-Gewichtung:
        - typische Slots (welche werden in >X% der Fälle belegt?)
-       - typische Werte (Modus, häufigste Belegung)
-       - durchschnittliche Vollständigkeit"""
+       - typische Werte (Modus, häufigste Belegung, jüngere stärker gewichtet)
+       - durchschnittliche Vollständigkeit
+       Korrekturen (siehe frame_korrektur_registrieren) zählen mehrfach."""
 
-def frame_aehnliche_finden(art, slots) -> list[dict]:
-    """Findet Frames mit gleicher Art und teil-überlappenden Slots.
+def frame_schema_holen(klasse) -> dict | None:
+    """Schnellzugriff auf den aggregierten Schema-Zustand pro Klasse:
+       - slots_typisch: Liste der Slots, die in >X% der Fälle belegt sind
+       - slots_optional: Liste der Slots, die selten, aber regelmäßig auftreten
+       - defaults: Dict mit aktuell etablierten Default-Werten pro Slot
+       - reife_stufe: 'cold', 'warm', 'hot' anhand Häufigkeit
+       Wird vom Cognitive Loop (Pipeline §4.11) für die Cache-Hierarchie genutzt.
+       Wenn nicht vorhanden oder nur 'cold': LLM-basierte Slot-Inventarisierung."""
+
+def frame_aehnliche_finden(klasse, slots) -> list[dict]:
+    """Findet Frames mit gleicher Klasse und teil-überlappenden Slots.
        Für Rekonstruktion: 'In früheren Zahnarzt-Frames war wo=Treuchtlingen'."""
 
-def frame_dekay() -> int:
+def frame_korrektur_registrieren(klasse, slot, falscher_wert, korrekter_wert) -> None:
+    """Verbucht eine vom Nutzer ausgesprochene Korrektur eines Default-Vorschlags.
+       Erhöht das Gewicht des korrekten Werts deutlich (5-10× normale Häufigkeit),
+       reduziert das Gewicht des falschen Werts. Triggert ggf. Default-Wechsel im
+       Schema-Aggregat."""
+
+def frame_decay() -> int:
     """Decay analog zu LZG: alte, selten gesehene Frames verlieren Gewicht.
-       Salienz-Inspirierte Dekay-Funktion (siehe Memory-Decay-Konzept)."""
+       Salienz-inspirierte Decay-Funktion (siehe Memory-Decay-Konzept)."""
 ```
 
-### 11.4 Lernende Eigenschaften
-
-Das Lager ist nicht statisch. Drei Lern-Mechanismen:
-
-1. **Häufigkeits-Aggregation:** Je öfter ein Slot belegt wird, desto mehr "gehört" er zum Frame. Ein Termin-Frame mit `wo=null` in 90% der Fälle wäre ein Hinweis, dass `wo` für Termine **nicht kritisch** ist.
-2. **Wert-Cluster:** Häufige Werte für einen Slot (wie *"Treuchtlingen"* bei Zahnarzt-Termin-`wo`) werden zur impliziten Default-Annahme für die Rekonstruktion.
-3. **Decay:** Alte, selten reproduzierte Frame-Arten verschwinden langsam. Das Schema lebt mit dem Nutzer.
-
-### 11.5 Verhältnis zum Knowledge Graph
+### 9.3 Verhältnis zum Knowledge Graph
 
 Das Frame-Lager und der Knowledge Graph sind verschiedene Schichten:
 
 | | Frame-Lager | Knowledge Graph |
 |---|---|---|
-| Granularität | Vorhaben-Schemas mit Slot-Belegungen | Atomare Tripel `(S, P, O)` |
-| Lebensdauer | Wachsend, dekaybar | Bi-temporal (valid_from, valid_to) |
-| Zweck | Schema-Konsens, Vor-Erfahrung | Welt-Wissen für Anfragen |
-| Schreibtrigger | Classify+Frame, Auflöser | Salienz, Planner, Agent-Push |
+| Granularität | Frame-Schemas mit Slot-Belegungen | Atomare Tripel `(S, P, O)` |
+| Lebensdauer | Wachsend, decaybar | Bi-temporal (`valid_from`, `valid_to`) |
+| Zweck | Schema-Konsens, Vor-Erfahrung, Plausibilitäts-Basis | Welt-Wissen für Anfragen |
+| Schreibtrigger | Frame-Aktivierung im Cognitive Loop | Salienz, Planner, Agent-Push |
 
-Zusammenspiel: Ein neuer Termin-Frame schreibt sowohl ins Frame-Lager (als Schema-Beleg) als auch über den FaktenAgent-Push in den Knowledge Graph (als atomare Tripel).
-
----
-
-## 12. Rückfragen-Disziplin
-
-### 12.1 Maximal eine Rückfrage pro Frame-Erhebung
-
-Mehrere Rückfragen in Folge sind nervig. Wenn nach der ersten Rückfrage immer noch kritische Slots offen sind: lieber den Frame mit den vorhandenen Daten anlegen und später einen Hinweis geben (*"Der Termin ist eingetragen, bei Gelegenheit fehlt mir noch der Anlass"*).
-
-### 12.2 Bündelung mehrerer Slots in einer Frage
-
-Wenn mehrere kritische Slots fehlen, formuliert der Auflöser **eine** Frage, die mehrere Slots adressiert:
-
-- Schlecht: *"Wann?"* → User antwortet → *"Wo?"* → User antwortet → *"Was?"*
-- Gut: *"Wann und wo wäre das Treffen, und worum geht es?"*
-
-Das LLM kann das, wenn der Prompt es so formuliert.
-
-### 12.3 Vehicle-Stil aus Beziehungs-Schicht
-
-Der Frame-Auflöser formuliert die Rückfrage **strukturell** (die Information). Wie sie ausgesprochen wird (Ton, Vehicle, Empathie) entscheidet die Beziehungs-Schicht (Responder, Gesprächsraum). Der Auflöser liefert *"Ort fehlt für Termin"*, der Responder formt daraus *"Der Zahnarzt in Treuchtlingen wie üblich, oder diesmal woanders?"*.
-
-### 12.4 Akzeptierte Lücken
-
-Unkritische Lücken bleiben Lücken. Der Frame wird mit `slot=null` angelegt, der Konsens-Speicher lernt, dass dieser Slot häufig leer ist, und mit der Zeit wird er als optional markiert.
+Zusammenspiel: Ein neuer Termin-Frame schreibt sowohl ins Frame-Lager (als Schema-Beleg und Quelle für künftige Plausibilitäts-Tests) als auch über den FaktenAgent-Push in den Knowledge Graph (als atomare Tripel).
 
 ---
 
-## 13. Vehicle als separate Beziehungs-Schicht
+## 10. Frames im Verhältnis zu existierenden Konzepten
 
-### 13.1 Was Vehicle ist
+### 10.1 Magneten-Convention
 
-Vehicle ist die Art, wie Nova ihre Informationsabfrage oder -mitteilung **einkleidet**. Statt *"Welcher Anlass?"* zu sagen, fragt sie *"Hoffentlich nur zur Zahnreinigung?"* — die Frage ist die gleiche, der Vehicle ist Beziehungspflege.
+Magneten sind quer-thematische Achsen, die KZG/LZG-Einträge bündeln (Akteur, Thema, Zeit, Ort). Frame-Slots können Magneten **füttern**: aus dem Termin-Frame werden `wer → akteur_magnet`, `was → thema_magnet`, `wo → ort_magnet`, `wann → zeit_magnet`. Magneten sind die Speicher-Sicht, Frames die Verstehens-Sicht. Beide profitieren voneinander, sind aber nicht identisch.
 
-### 13.2 Wo Vehicle wohnt — nicht im Frame-System
+### 10.2 Domain Language (Pattern)
 
-Frame-System liefert Struktur (Slots, Lücken, Rückfrage-Inhalt). Die Beziehungs-Schicht (Responder, Gesprächsraum) entscheidet:
-- Soll überhaupt etwas zum Frame gesagt werden, oder nur eine Bestätigung?
-- Wenn ja, in welchem Vehicle?
-- Soll ein Vehicle eine empathische Bemerkung sein statt einer Frage?
+Domain-Language-Vokabular (siehe `novaberg-pattern-domain-language.md`) liefert die sprachlichen Marker, mit denen das LLM Frame-Klassen erkennt. Termin-Frame wird durch *"Termin", "Treffen", "Verabredung"* aktiviert; Reifenwechsel-Frame durch *"Reifen wechseln", "Räder umstecken", "Saisonreifenwechsel"*. Domain Language ist das Vokabular, Frame ist die Struktur dahinter.
 
-Diese Entscheidung gehört zum Charakter und zur Stimmung — nicht zum Frame-System.
+### 10.3 Substanz-Filter (Magneten-Convention §7)
 
-### 13.3 Beispiel-Sequenz
+Der Substanz-Filter trennt substantielles Wissen von dekorativem Smalltalk auf der Speicher-Ebene. Frame-Aktivierung trifft eine ähnliche Trennung auf der Verstehens-Ebene: nur akute Frames werden voll validiert. Beide Filter sind verwandt, leben aber an verschiedenen Stellen der Pipeline.
 
-- Frame-System liefert: *"Frame `termin` vollständig: wer=Meister, wann=Freitag, was=Zahnarzt, wo=Treuchtlingen"*
-- Beziehungs-Schicht entscheidet: Bestätigung + empathisches Vehicle
-- Nova sagt: *"Ist eingetragen, Freitag in Treuchtlingen. Hoffe, nur zur Routine?"*
+### 10.4 Entity Resolution (Pattern)
 
-Dasselbe Frame, andere Stimmung — andere Beziehungs-Antwort:
+Entity Resolution gleicht *"der Zahnarzt"* mit *"Dr. Müller, Treuchtlingen"* ab. Das ist Slot-Belegung im Personen-Frame über bestehendes Knowledge-Graph-Wissen. Entity Resolution ist eine Mechanik, die der Frame-Auflöser nutzt — kein paralleler Mechanismus.
 
-- Frame-System liefert: *"Frame `termin` vollständig: ..."*
-- Beziehungs-Schicht entscheidet: knappe Bestätigung
-- Nova sagt: *"Eingetragen."*
+### 10.5 Drive und Neugier
 
-Der Frame ist konstant, das Vehicle variiert mit Charakter und Kontext. Diese Trennung ist explizit gewollt.
+Wenn ein Frame Slots offen lässt, die das Lager-Wissen als kritisch ausweist, kann das ein **Neugier-Trigger** sein: Nova fragt sich selbst (im Pixie-Reflexionslauf), warum der Slot fehlt, und ob Vor-Wissen über andere Quellen aktivierbar ist. Drive-Themen wachsen aus wiederholt unaufgelösten Slots in einer Domäne. Diese Verbindung ist konzeptionell, in der Implementierung später aufzubauen.
 
----
+### 10.6 Vehicle als separate Beziehungs-Schicht
 
-## 14. Verbindungen zu existierenden Konzepten
+Vehicle ist die Sprach- und Beziehungsschicht: *wie* etwas gesagt wird, nicht *was*. Aus der Chat-80-Fassung übernommen und unverändert gültig. Frames sind Struktur, Vehicle ist Form. Der Frame-Auflöser meldet *"Konflikt: Sprecher in Hamburg, Auto in Wolferstadt"*; der Responder formt daraus *"Du bist gerade in Hamburg — magst du den Termin nach deiner Rückkehr legen, oder fährt jemand das Auto rüber?"*. Vehicle wohnt im Responder/Gesprächsraum, nicht im Frame-System.
 
-### 14.1 Magneten-Convention
+### 10.7 Emotionale Pipeline
 
-Frame-Slots speisen Magneten-Spalten direkt. `wer`/`wo` liefern `entitaet_ids`, `was` liefert `themen`. Das Frame-System ist die **strukturelle Quelle** für die Magnet-Befüllung, die heute noch leer ist (außer Timeline seit M2.5a).
-
-### 14.2 Domain Language (Pattern)
-
-Domain Language definiert die Verben pro Agent (`create`, `update`, `add_content`...). Frame-System ergänzt: pro Aktion, welche Slots sind relevant. Domain Language sagt das *Was*, Frame-System sagt das *Womit*.
-
-### 14.3 Substanz-Filter (Magneten-Convention §7)
-
-Substanz-Filter und Interface/Referenz-Türsteher sind eng verwandt. Der Substanz-Filter entscheidet *"ist das Tripel-würdig?"*, der Frame-Türsteher entscheidet *"ist das Frame-würdig?"*. Beide haben dieselbe linguistische Grundlage — das *Namensschild-Prinzip*. Beide schützen das jeweilige strukturierte Gedächtnis vor Übergeneralisierung.
-
-### 14.4 Entity Resolution (Pattern)
-
-Frame-Slots `wer` und `wo` sind Entitäten. Sie laufen durch die bestehende Entity Resolution (`memory/services/entity_resolution.py`) — der ICH/Name/Embedding-Algorithmus aus KG-Doku §6. Das Frame-System ruft Entity Resolution für seine Entitäts-Slots auf, anders nichts.
-
-### 14.5 Action-Context-Pattern (im Backlog erwähnt)
-
-Im Chat 80 wurde diskutiert, ob ein "Compose-Context"-Node nach Classify das aktion-spezifische Datenpaket schnürt. Mit Frame-System ist das **teilweise schon erledigt** — Classify liefert das Frame, der Auflöser ergänzt Wissen, Search wird zum Gatherer. Die `action_context`-Idee ist eine Generalisierung dieser Mechanik. Sie kann später formalisiert werden, ist aber für Frame-Zwecke nicht zwingend nötig.
-
-### 14.6 Neugier (`thinking-curiosity_k`)
-
-Frames sind ein neuer Trigger für Neugier. Wenn ein häufiger Frame plötzlich einen ungewöhnlichen Slot-Wert bekommt (*"Termin beim Zahnarzt — diesmal in Nürnberg statt Treuchtlingen"*), kann das Neugier auslösen: *"Warum diesmal woanders?"* — das ist Berlynes Sweet Spot in strukturierter Form.
-
-### 14.7 Drive (`thinking-drive_k`)
-
-Frames können Drive-Ziele konkretisieren. Ein abstraktes Drive-Ziel *"Botanik vertiefen"* wird greifbar, wenn ein Frame `besuch_botanischer_garten` mit Slots `wann/wo/wer` entsteht. Frames sind die Mikro-Strukturen, in denen Drive-Ziele Form annehmen.
-
-### 14.8 Metakognition (`metakognition_k`)
-
-Das Frame-Lager als emergentes Schema-Gedächtnis ist eine Form von metakognitivem Wissen — Wissen über die Struktur des eigenen Wissens. Es passt zur Vision, dass Nova ihre eigenen Verhaltensmuster beobachten und reflektieren kann.
+Frames sind die kognitive Schwester der emotionalen Pipeline. Beide laufen pro Turn, aber an verschiedenen Stellen. Die emotionale Pipeline verarbeitet *"wie sagt der Nutzer das"* (Tonfall, Intention, Dual-Emotion). Die Frame-Schicht verarbeitet *"was sagt der Nutzer, und passt das"*. Sie sind komplementär — ein Turn braucht beides — und greifen nicht in dieselben State-Felder ein. Konvergenz passiert im Responder, der beide Quellen für die Antwortformung nutzt.
 
 ---
 
-## 15. Designprinzipien
+## 11. Designprinzipien
 
-1. **Frames sind Weltwissen, nicht Code.** Das LLM kennt sie. Wir definieren keine Schemas hard.
-2. **Das Lager lernt, das Lager zwingt nicht.** Konsens entsteht aus Häufigkeit, nicht aus Vorgabe.
-3. **Türsteher vor Aufbau.** Erst Interface vs. Referenz klären, dann Frame erheben.
-4. **Lücken sind erlaubt, kritische Lücken werden eingefordert.** Maximal eine Rückfrage.
-5. **Rekonstruktion vor Rückfrage.** Was aus Vor-Wissen ableitbar ist, wird abgeleitet, nicht erfragt.
-6. **Quelle pro Slot festhalten.** prompt / rekonstruiert / default — Vertrauen ist nicht uniform.
-7. **Komplementäre Trigger ins Faktengedächtnis.** Salienz, Planner, Agent-Push — drei Pfade, ein Speicher.
-8. **Struktur und Beziehung trennen.** Frame liefert Inhalt, Vehicle liefert Form.
-9. **Speichern ist billig, Vergessen ist intelligent.** Auch für Frames — Decay über Häufigkeit + Zeit.
-10. **Magneten als Frame-Konsequenz.** Frame-Slots befüllen Magnet-Spalten direkt.
+Die Leitsätze, die in der Diskussion auftauchten und das Konzept tragen:
 
----
+**Frames sind universales Substrat.** Objekt, Vorgang, Person, Ort, Werkzeug, Anweisung — alles ist Frame, unterschieden nur durch Slot-Zusammensetzung.
 
-## 16. Offene Punkte und nächste Schritte
+**Akutheit ist Trigger.** Latente Frames werden nicht geprüft. Prüfung beginnt bei Referenz, zeitlicher Nähe oder situativer Aktivierung.
 
-### 16.1 Offene konzeptionelle Fragen
+**Validierung ist iterativ und rekursiv.** Slots öffnen Sub-Frames, Cross-Frame-Konflikte werden auf der zweiten und dritten Ebene gefunden — nicht in der flachen Slot-Sicht.
 
-- **Frame-Decay:** Welche Funktion? Salienz-Inspiration aus LZG-Decay (logarithmisch + Häufigkeit) als Startpunkt, aber für Frames vermutlich weniger aggressiv (Schema-Wissen ist langfristiger als Erlebnis).
-- **Multi-Frame-Erhebung pro Turn:** Wenn der User in einem Prompt mehrere Vorhaben erwähnt (*"Morgen Zahnarzt, übermorgen Aldi"*), sollte Classify mehrere Frames produzieren? Pro Vorhaben einer? Im ersten Wurf: ja, das LLM kann das, Output-Schema müsste `frame` als Liste statt als Dict erlauben.
-- **Frame-Hierarchie:** Sind manche Frames Spezialisierungen anderer? `arzttermin` als Spezialfall von `termin`? Vorerst flach lassen, beobachten ob Hierarchie nötig wird.
-- **Konflikt mit existierenden Aussagen:** Was, wenn ein Frame `wo=Nürnberg` rekonstruiert, der KG aber sagt `(Meister, ZAHNARZT_IN, Treuchtlingen)`? Auflöser muss vor Push prüfen und ggf. nachfragen statt anlegen.
+**Plausibilität gehört zum Frame.** Constraints gegen Weltwissen sind keine separate Schicht, sondern Eigenschaft der Frame-Klasse. Das LLM prüft, der Code orchestriert.
 
-### 16.2 Implementierungs-Reihenfolge
+**Frames liefern Slots, Skills verlangen sie.** Saubere Trennung. Frames sind Verstehens-Schablonen, Skills sind Vorgehens-Anweisungen.
 
-**Phase 0 — Vorbereitung (vor allem anderen):**
-- M2.5b — FaktenAgent als echter Agent (statt Plugin) anlegen
-- TIMELINE-PAIR-MIGRATION + NOTIZEN-PAIR-MISSING + FAKTEN-PAIR-IGNORED — `character_id`-Lücken schließen, sonst leakt Frame-Wissen zwischen Charakteren
+**Lager lernt, zwingt nicht.** Das Frame-Lager ist Konsens-Speicher, nicht Schema-Definition. Es hilft beim Auflöser und Plausibilitäts-Test, ohne Schemas aufzuoktroyieren.
 
-**Phase 1 — Pilot-Frame:**
-- Genau ein Frame, genau ein Agent: `termin` im TimelineAgent
-- Classify-Erweiterung um `frame`-Output
-- Frame-Auflöser-Node (LLM-Call 2)
-- Frame-Lager als Tabelle (kein Decay, kein Konsens-Aggregator)
-- FaktenAgent-Push für Termin-Frames
-- Schmaler Scope: keine Vehicle-Schicht, keine Multi-Frame-Erhebung
-
-**Phase 1b — Übertragung NotizenAgent:**
-
-- Frame-Arten `notiz_create`, `notiz_update`, `notiz_rename` im NotizenAgent
-- Frame-Auflöser-Node aus Phase 1 wiederverwendet (Slot-für-Slot-Rekonstruktion über Vor-Turns, Distanz >1)
-- Slot `neuer_typ` im `notiz_update`-Frame definiert Container-Wechsel (Notiz↔Liste) als legitime Aktion
-- Frame-Definitionen in der Domain-Language repräsentieren legitime Skills — Voraussetzung für Skill-Selbstkenntnis
-- Adressiert die Bugs aus Chat 80 (siehe Backlog):
-  - **NOTIZEN-KONTEXT-REKONSTRUKTION** — Mehrschritt-Rekonstruktion (Frame-Auflöser iteriert über Vor-Turns)
-  - **NOTIZEN-CONTAINER-WECHSEL** — `notiz_update`-Frame mit Slot `neuer_typ`
-  - **NOTIZEN-SKILL-MANIFEST** — implizit durch Frame-Definitionen als Skill-Quelle (Frame-Lager §11)
-  - **NOTIZEN-UPDATE-TARGET-LEER** — Bezugs-Auflösung in UPDATE-Pfad analog zur Inhalts-Auflösung im CREATE-Pfad
-
-**Phase 2 — Generalisierung:**
-- Frame-Konzept auf NotizenAgent (Frame-Art `notiz_liste`, `merkzettel`)
-- Frame-Lager bekommt Konsens-Aggregator (`frame_konsens_holen`)
-- Decay-Mechanismus für Frame-Lager
-- Verhältnis zu existierenden Patterns (Action-Context, Domain Language) formalisieren
-
-**Phase 3 — Beziehungs-Schicht:**
-- Vehicle-Mechanismus für Frame-Bestätigungen
-- Frame-Auflöser-Output an Beziehungs-Schicht weiterreichen
-- Charakter-spezifische Vehicle-Wahl
-
-**Phase 4 — Integration in Drive und Neugier:**
-- Drive-Ziele werden über Frames konkretisiert
-- Ungewöhnliche Slot-Werte triggern Neugier-Resonanz
-- Frame-Häufigkeit als Magnet-Aktivierung
-
-### 16.3 Risiken
-
-- **Übergeneralisierung:** LLM erkennt zu viele Aussagen als Referenz, Frame-Lager wird zur Müllhalde. Gegenmaßnahme: Türsteher streng prompten, Substanz-Filter-Verwandtschaft nutzen.
-- **Rekonstruktions-Halluzination:** Frame-Auflöser füllt Slots aus dünner Vor-Erfahrung, schreibt falsche Tripel ins KG. Gegenmaßnahme: `quelle=rekonstruiert` mitführen, FaktenAgent kann strenger filtern, ggf. Bestätigungs-Pflicht.
-- **Latenz:** Zwei LLM-Calls statt einer bei jeder Frame-Erhebung mit Lücken. Akzeptabel im Butler-Stil, aber nicht überall. Gegenmaßnahme: Auflöser nur bei kritischen Lücken, sonst direkt durchwinken.
-- **Konversations-Reibung:** Zu viele Rückfragen werden nervig. Gegenmaßnahme: Maximal eine Rückfrage, kritische Lücken streng definieren, im Zweifel akzeptieren.
+**Latenz ist Schutz, nicht Mangel.** Nicht jeder Begriff aktiviert eine volle Frame-Validierung. Was nicht akut wird, wird nicht geprüft. Das hält Nova frei von Besserwisserei.
 
 ---
 
-## 17. Verweise
+## 12. Offene Punkte und nächste Schritte
+
+### 12.1 Offene konzeptionelle Fragen
+
+**Reaktions-Zeitpunkt bei Konflikten** (§5.5). Sofortige Plausibilitäts-Reaktion oder aufgeschobene Reaktion zum Akutheits-Zeitpunkt? Vorerst: konflikt-klassen-abhängig, Entscheidung pragmatisch in der Implementierung.
+
+**Konflikt-Klassifikation** (§5.4). Wann ist ein Konflikt hart blockierend, wann Frage wert? Vermutlich Heuristik aus Konsens-Häufigkeit im Lager. Genauer Algorithmus offen.
+
+**Akutheits-Schwelle als skalarer Wert?** Akutheit ist hier qualitativ beschrieben (latent, halb-akut, akut). Ob das in der Implementierung eine binäre, dreistufige oder kontinuierliche Variable wird, ist offen.
+
+**Frame-Klasse-Hierarchie.** Sollen Frames in Klassen-Hierarchien stehen? *Termin* als Oberklasse, *Zahnarzt-Termin* und *Werkstatt-Termin* als Spezialisierungen mit zusätzlichen Slots? Pragmatisch: vorerst flach, spätere Hierarchisierung möglich.
+
+**Frame-Lager-Initialbefüllung.** Startet das Lager leer und füllt sich durch Beobachtung, oder gibt es einen Seed mit häufigen Frame-Klassen (Termin, Person, Ort)? Empfehlung: leer starten, Seed wäre vorzeitige Optimierung.
+
+**Plausibilitäts-Implementierung.** LLM-Call pro akutem Frame, oder Sammel-Call mit allen aktiven Frames? Performance-Frage, in der Implementierung zu klären.
+
+### 12.2 Implementierungs-Reihenfolge
+
+Die Phasen-Planung wandert in das Folge-Dokument `novaberg-thinking-cognitive-pipeline_k.md`, weil Pipeline-Mechanik dort orchestriert wird. Hier nur die Markierung, dass die Frame-Schicht **vor** der Skill-Schicht implementiert werden muss — Skills brauchen Frames als Input.
+
+Aus dem Chat-80-Stand bleibt der Hinweis, dass die Phase 0 (Vorbedingungen) weiterhin gilt:
+
+- M2.5b — FaktenAgent als echter Agent statt Plugin
+- TIMELINE-PAIR-MIGRATION
+- NOTIZEN-PAIR-MISSING
+- FAKTEN-PAIR-IGNORED
+
+Diese Migrations-Themen sind unabhängig vom Frame-Konzept anzugehen — sie bereinigen das Paar-Schema und sind Voraussetzung für den FaktenAgent-Push in §9.3.
+
+### 12.3 Risiken
+
+**Über-Validierung.** Wenn jeder Turn rekursiv mehrere Frames öffnet, droht Latenz-Explosion. Pragmatisch: harte Tiefenbegrenzung (2-3 Ebenen), Akutheits-Filter als Gatekeeper.
+
+**Halluzinierte Slots.** Das LLM erfindet Slots, die nicht im Lager sind. Gegenmaßnahme: das Lager kennt die typische Slot-Menge pro Klasse, ungewöhnliche Slots werden markiert, nicht still übernommen.
+
+**Lager-Pollution.** Schlecht erhobene Frames verschmutzen den Konsens. Gegenmaßnahme: Decay, Häufigkeits-Untergrenze für Default-Wert-Übernahme.
+
+**Vehicle-Lärm.** Plausibilitäts-Hinweise klingen schnell besserwisserisch, wenn sie nicht über die Vehicle-Schicht laufen. Gegenmaßnahme: Frame-System liefert nur strukturelle Information, Responder formt aus.
+
+---
+
+## 13. Verweise
 
 ### Verbindliche Dokumente
 
-- Convention: `novaberg-convention-magneten.md` — Drei-Achsen-Modell, Substanz-Filter, Welt vs. Erlebnis
-- Convention: `novaberg-convention-paar-schema.md` — `(user_id, character_id)`-Skopierung
-- Convention: `novaberg-convention-event-model.md` — User und Charakter als Akteure
-- Pattern: `novaberg-pattern-domain-language.md` — Aktion-Verben pro Agent
-- Pattern: `novaberg-pattern-entity-resolution.md` — Auflösung von Eigennamen
+- `novaberg-architecture.md` — Architektur, in die Frames eingebettet werden
+- `novaberg-convention-paar-schema.md` — Paar-Skopierung (`user_id`, `character_id`)
+- `novaberg-convention-magneten.md` — Magneten als Bündelung-Schicht, von Frame-Slots gefüttert
 
-### Zugrundeliegende Konzepte
+### Folge-Dokumente (in Arbeit)
 
-- `novaberg-mem-knowledge-graph.md` — Entitäten, Fakten, FaktenManager-Pipeline
-- `novaberg-mem-lzg.md` — Langzeitgedächtnis, Decay, Salienz
-- `novaberg-thinking-curiosity_k.md` — Neugier (Berlynes Sweet Spot)
-- `novaberg-thinking-drive_k.md` — Drive-Ziele
-- `novaberg-metakognition_k.md` — Selbstbeobachtung und Reflexion
+- `novaberg-thinking-cognitive-pipeline_k.md` — Cognitive Loop, Pipeline-Mechanik, Akutheits-Trigger als Schritt-Folge, Skill-Lookup-Position
+- `novaberg-thinking-skills_k.md` — Skills als Anweisung-Frame, Lifecycle, Editor, Reflexion
 
-### Agent-Dokumente
+### Verwandte Konzepte
 
-- `novaberg-agent-notes.md` — NotizenAgent, Classify-Node, Domain Language
-- `novaberg-agent-timeline.md` — TimelineAgent, Magnet-Befüllung seit M2.5a
-
-### Verwandte Backlog-Einträge
-
-- M2.5b — FaktenAgent als Agent (Vorbedingung für Phase 1)
-- TIMELINE-PAIR-MISSING / NOTIZEN-PAIR-MISSING / FAKTEN-PAIR-IGNORED — Paar-Skopierung (Vorbedingung)
-- NOTIZEN-VOR-TURN-BEZUG (Chat 80) — Inhalts-Auflösung im Classify (verwandt, kleiner Scope)
-- MEMORY-SALIENZ-VERERBUNG — Salienz auf semantischen Trägern (Frame-Slots als Träger)
+- `novaberg-thinking-curiosity_k.md` — Neugier als Folge unaufgelöster Slots
+- `novaberg-thinking-drive_k.md` — Drive-Themen aus Frame-Lager-Wachstum
+- `novaberg-metakognition_k.md` — Selbstbeobachtung und Vorsätze, Reflexions-Trigger
+- `novaberg-pattern-domain-language.md` — Vokabular für Frame-Aktivierung
+- `novaberg-pattern-entity-resolution.md` — Slot-Belegung über Entity-Match
 
 ### Quellen
 
-- Chat 80 — Gesamte Konzeption: NotizenAgent-Audit → Bezugsauflösung → aktion-spezifisches Datenpaket → Slot-Filling → Frame-System → FaktenAgent-Push → Frame-Lager
+- Fillmore, C. J. (1976). *Frame Semantics and the Nature of Language.* Annals of the New York Academy of Sciences, 280, 20–32.
+- Minsky, M. (1974). *A Framework for Representing Knowledge.* MIT-AI Laboratory Memo 306.
+- Schank, R. C., & Abelson, R. P. (1977). *Scripts, Plans, Goals, and Understanding: An Inquiry into Human Knowledge Structures.* Lawrence Erlbaum.
+- Bartlett, F. C. (1932). *Remembering: A Study in Experimental and Social Psychology.* Cambridge University Press.
+
+---
+
+*Stand 09.05.2026 — Chat 81. Universalisierung der Frame-Sicht aus dem Chat-80-Vorgängerstand. Akutheit, iterative Validierung, Plausibilitätsprüfung, Frame-vs-Skill-Trennung. Phasen-Plan ausgelagert in das Cognitive-Pipeline-Dokument.*

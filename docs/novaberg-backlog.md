@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Backlog — Konzipierte, noch nicht implementierte Features
-**Stand:** 06. Mai 2026, Chat 78
+**Stand:** 09. Mai 2026, Chat 78
 **Pfad:** novaberg/docs/novaberg-backlog.md
 **Quellen:** nova-08-k.md (Kognitive Anreicherung), nova-10-k-backlog.md (Skill-System), nova-01-t-c-backlog.md (Node-Konfiguration)
 
@@ -1551,35 +1551,80 @@ Der Thinker `memory_search`-Tool-Output verwendet seit STRUCT-5c (Chat 75) den g
 
 ---
 
-## Konzept: FRAMES — Strukturelle Slot-Erhebung für Vorhaben (Chat 80)
+## Konzept: COGNITIVE PIPELINE — Frames, Verstehens-Loop, Skills, Task Orchestration (Chat 80–81)
 
-**Status:** Konzept fertig (`novaberg-thinking-frames_k.md`), Implementation steht aus
+**Status:** Konzept fertig in vier Dokumenten, Implementation steht aus.
 
-**Idee:** Vorhaben (Termin, Einkauf, Reise, Notiz-Update...) haben strukturelle Slots, die das LLM aus Weltwissen kennt. Classify-Node erhebt sie pro Aktion, ein optionaler Frame-Auflöser füllt Lücken aus Vor-Wissen oder formuliert eine Rückfrage. Vollständige Frames triggern den FaktenAgent als Pipeline-Schluss und schreiben strukturiertes Wissen ins Knowledge Graph.
+**Quartett:**
 
-**Türsteher:** Interface vs. Referenz — nur Vorhaben mit konkretem Bezug erzeugen Frames, beiläufige Erwähnungen nicht. Linguistische Marker als Klassifikations-Grundlage.
+- `novaberg-thinking-frames_k.md` — **Substrat.** Frames als universale kognitive Schablonen (Objekt, Person, Ort, Vorgang, Werkzeug, Anweisung, Anliegen). Akutheit als Trigger, iterative und rekursive Validierung, Plausibilitätsprüfung gegen Weltwissen. Frame-Lager als lernender Konsens-Speicher mit Recency- und Korrektur-Gewichtung.
+- `novaberg-thinking-cognitive-pipeline_k.md` — **Mechanik.** Verstehens-Loop als Sub-Graph zwischen Router und Agent-Dispatch. Zehn Loop-Schritte plus Cache-Hierarchie (Cold/Warm/Hot) für Schema-Reife. Negativ-Feedback-Erkennung aus vier Quellen. Frame-Komposition für Multi-Step-Workflows.
+- `novaberg-thinking-skills_k.md` — **Erfahrungs-Schicht.** Skills als selbst-editierbare Markdown-Dateien, 1:1 zu Aufgabentypen. Modulation statt Werkzeug-Auswahl. Fehler-getrieben entstehend, autonom durch Pixie editiert. Vorschlags-Charakter im Executor.
+- `novaberg-thinking-task-orchestration_k.md` — **Infrastruktur.** Zwei-Queue-Architektur unter den anderen drei Dokumenten. Pixie-Queue als Default Mode Network (Hintergrund), Graph-Queue als Task-Positive Network (Zuwendung). LLM-Queue als zweite Schicht für GPU-Sequenzialisierung. Vier Auftragstypen (user_prompt, nova_self, nova_rueckfrage, pixie_delivery), alle durch denselben CharacterGraph-Pfad.
 
-**Vorbedingungen (Phase 0):**
+**Tragende Architektur-Aussagen:**
+
+- *Frames liefern Slots — Skills verlangen sie.* Pipeline-Trennung zwischen Substrat und Erfahrungs-Schicht.
+- *Loop muss ohne Skills funktionieren.* Phase A ist eigenständig verifizierbarer Architektur-Zustand.
+- *Skills modulieren, sie umgehen nicht.* Werkzeug-Auswahl bleibt im System, Skills beeinflussen nur Werkzeug-Nutzung.
+- *Schema reift, Loop wird billiger.* Frame-Lager-Aggregation reduziert LLM-Calls für wiederkehrende Klassen.
+- *Negativ-Feedback ist Lern-Signal.* Skills entstehen aus Praxis-Korrektur, nicht aus Vor-Audit.
+- *Pixie ist Hintergrund-Verarbeitung, CharacterGraph ist Zuwendung.* Default Mode Network und Task-Positive Network als getrennte mentale Modi mit antikorrelierter Priorität auf der LLM-Queue.
+- *Aufträge tragen wenig, Speicher tragen viel.* Auftrag = Anstoß + Routing-Hinweise. Inhalt holt der Enricher beim Lauf-Start.
+- *Jede sichtbare Aussage geht durch den Stimm-Apparat.* Pixie liefert Material, Responder formt aus. Strukturelle Garantie für Charakter-Konsistenz.
+
+**Vorbedingungen (Phase 0, unverändert aus Chat 80):**
 
 - M2.5b — FaktenAgent als echter Agent statt Plugin
 - TIMELINE-PAIR-MIGRATION
 - NOTIZEN-PAIR-MISSING
 - FAKTEN-PAIR-IGNORED
 
-**Implementierungs-Phasen** (siehe §16.2 des Konzept-Dokuments):
+**Implementierungs-Phasen (überarbeitet, Chat 81):**
 
-- **Phase 1:** Pilot — Termin-Frame im TimelineAgent
-- **Phase 1b:** Übertragung NotizenAgent (UPDATE/RENAME-Bezug, Container-Wechsel, Skill-Manifest implizit)
-- **Phase 2:** Generalisierung, Frame-Lager mit Konsens-Aggregator
-- **Phase 3:** Vehicle-Schicht
-- **Phase 4:** Drive-/Neugier-Integration
+- **Phase 1 (Task-Orchestration, vorgelagert und unabhängig)** — Event-Queue zur Graph-Queue erweitern. Worker-Loop pro `(user_id, character_id)`-Paar. Vier Auftragstypen. Pixie-Auslieferungs-Pfad streichen, Pixie schreibt `pixie_delivery`-Aufträge in dieselbe Queue. Erfolgskriterium: PIXIE-GHOST, DELIVERY-VOICE, RECH-CHARAKTER, DELIVERY-DEDUP nicht mehr reproduzierbar. **Migrations-Aufwand moderat** — bestehende Event-Queue wird rückwärtskompatibel erweitert, keine neue Redis-Struktur.
+- **Phase 2 (Task-Orchestration)** — LLM-Queue mit Priorität-Stufen. PIX-GPU-IDLE-Schalter wird gestrichen, Priorität ersetzt ihn.
+- **Phase A (Cognitive Loop)** — Cognitive Loop ohne Skills. Sub-Graph `graph/cognitive_graph.py`. Akutheits-Klassifikation, Frame-Aktivierung, Frame-Auflöser, Cross-Frame-Validierung, Plausibilitätsprüfung, Werkzeug-Aufruf, Ergebnis-Validierung. Migration agentenweise (NotizenAgent zuerst). Erfolgskriterium: die vier Chat-80-Live-Befunde sind gelöst, ohne dass eine einzige Skill-Datei existiert.
+- **Phase 3 (Task-Orchestration) + Phase B (Skills)** — Cognitive Loop kann Async-Pfad-Entscheidung treffen, schreibt nova_self-Auftrag, antwortet mit Quittung. Skill-Speicher und manuelle Skills für häufige Aufgabentypen.
+- **Phase 4 (Task-Orchestration) + Phase C (Skills)** — Cancellation und Korrektur-Behandlung. Selbst-lernende Skills mit autonomer Pixie-Pflege.
 
-**Adressiert die Chat-80-Live-Befunde:**
+**Empfohlene Reihenfolge:**
 
-- NOTIZEN-KONTEXT-REKONSTRUKTION → Phase 1b (Frame-Auflöser)
-- NOTIZEN-CONTAINER-WECHSEL → Phase 1b (`notiz_update`-Frame mit Slot `neuer_typ`)
-- NOTIZEN-SKILL-MANIFEST → Phase 1b implizit (Frames definieren legitime Aktionen)
-- NOTIZEN-UPDATE-TARGET-LEER → Phase 1b (Bezugs-Auflösung in UPDATE-Pfad)
+Task-Orchestration Phase 1 zuerst (unabhängig, löst gleich vier Bugs strukturell). Dann Phase 0 (Migrations-Sprint für Paar-Schema). Dann Cognitive-Pipeline Phase A. Phase 2/3/A/B/C danach in passender Reihenfolge.
+
+**Adressiert die Chat-80-Live-Befunde** (in Cognitive-Pipeline Phase A):
+
+- NOTIZEN-VOR-TURN-BEZUG (kleinste Wirkstufe in Chat 80 implementiert, Phase A löst es strukturell)
+- NOTIZEN-KONTEXT-REKONSTRUKTION → Frame-Auflöser über Vor-Turn-Quellen
+- NOTIZEN-CONTAINER-WECHSEL → Anliegen-Frame mit Slot `neuer_typ`
+- NOTIZEN-SKILL-MANIFEST → Frames definieren legitime Aktionen pro Domäne
+- NOTIZEN-UPDATE-TARGET-LEER → Bezugs-Auflösung im UPDATE-Pfad
+
+**Strukturell gelöst durch Task-Orchestration Phase 1:**
+
+- PIXIE-GHOST → jeder Pixie-Output fließt durch CharacterGraph (EI, Salienz, Speicherung)
+- DELIVERY-VOICE → Pixie-Material wird im Responder in Charakterstimme geformt
+- RECH-CHARAKTER → RechercheAgent ist nicht mehr charakter-blind, weil Output durch CharacterGraph
+- DELIVERY-DEDUP → Salienz sieht jeden Pixie-Output und kann Dedup-Heuristiken anwenden
+
+**Adressiert weitere Bugs:**
+
+- ROUTE-WEB-MISS (Wetter ohne Web-Suche, Chat 81) — Cognitive-Pipeline Phase A: Frame-Erhebung erkennt Wetter-Anliegen-Typ und routet automatisch zu web_search.
+- HALL2 (KZG-Klebrigkeit) — Cognitive-Pipeline Phase C: Reflexionsmarker und Pixie-Aggregation erkennen wiederholte identische Mitteilungen.
+- THER1, BUTLER1 (RLHF-Muster) — bleiben Modell-Limit, nicht durch Pipeline lösbar.
+
+**Streichungen aus dem Backlog (durch Task-Orchestration obsolet):**
+
+- **PIXIE-GRAPH-MERGE** — Konzept aus den Backlog-Visionen war ein Workaround für RECH-CHARAKTER und DELIVERY-VOICE. Task-Orchestration Phase 1 löst das eleganter, ohne Pfad-3-Klon. Streichung empfohlen.
+- **PIX-GPU-IDLE** — Schalter für GPU-Nutzung nur bei User-Inaktivität. Mit Priorität-Stufen auf der LLM-Queue (Phase 2) nicht mehr nötig.
+
+**Verhältnis zu Epic 10 (Skill-System im Backlog):**
+
+Diese Konzeption materialisiert **Typ 1** (Prompt-Skills als Markdown) aus Epic 10. **Typ 2** (Code-Skills via Claude API mit Tool-Registrierung) bleibt eine separate, riskantere Stufe im Backlog — weit hinter Cognitive-Pipeline Phase C.
+
+**Priorität:** Hoch. Die kognitive Schwester der emotionalen Pipeline ist heute der größte blinde Fleck im System. Task-Orchestration Phase 1 ist der natürliche Erst-Sprint, weil sie unabhängig vorausgehen kann und mehrere alte Bugs strukturell löst, bevor die Cognitive Pipeline darüberkommt.
+
+**Risiken:** Latenz-Explosion durch viele LLM-Calls (mitigiert durch Cache-Hierarchie und LLM-Queue), Migrationsbruch in der Event-Queue (mitigiert durch rückwärtskompatible Schema-Erweiterung), Skill-Inflation (mitigiert durch 1:1-Invariante), Werkzeug-Schicht-Aushebelung durch Skills (mitigiert durch Modulations-Disziplin), Worker-Crash mit verlorenem Auftrag (mitigiert durch Watchdog).
 
 ---
 
@@ -1795,7 +1840,7 @@ Kurzübersicht aktiver Bugs:
 | THER1 | ⚠️ | RLHF-Therapeut-Muster |
 | CRUD-DESTILL-SUBTRAKT | ⚠️ | Subtraktive Änderungen als Anweisung gespeichert |
 | CRUD-REACTIVATE-STAMP | ⚠️ | Reactivate setzt deaktiviert_am nicht auf NULL |
-| EMOTE-LOCK | ⬜ | Emote-Inflation bei langem Charakter-Register |
+| EMOTE-LOCK | ⚠️ | Emote-Inflation bei langem Charakter-Register (Chat 81: register-übergreifend bestätigt) |
 | TOPOS-LOCK | ⬜ | Bildervorrat wird mechanisch zykeliert |
 | ABER-SAG-MAL | ⬜ | TOPOS-LOCK-Verstärkung im flirty Register (Chat 74) |
 | REDUCER-MULTILINE | ⚠ | Reducer-String-Parser fragmentiert mehrzeilige Plugin-Blöcke (Chat 74, latent) |

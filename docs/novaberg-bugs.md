@@ -78,6 +78,7 @@
 | CHAR-LZG-LEAK | `beobachter`- und `character_id`-Filter in `_lzg_kern_laden`, `_lzg_intentionen_laden`, `_lzg_emotionen_laden`. LZG-Lookup ueber kanonisches Paar statt `subjekt_user_id` | Chat 79 |
 | MIGRATION-PIX-PAIR | IDs getauscht in `nova_gedaechtnis.py`: `user_id=gegenueber_id, character_id=ASSISTANT_USER_ID`. Pre-Chat-60-Kommentar ersetzt | Chat 79 |
 | MIGRATION-AGENTGRAPH-PAIR | `shadow_delivery.py`: `user_id` des menschlichen Users durchgereicht, `ei_calc_rolle="character"` explizit gesetzt. GraphBase-Default unangetastet (Option B) | Chat 79 |
+| ECHO-BUG | Reducer-Umbau (STRUCT-1 bis STRUCT-6, Chat 75) hat Memory-Context strukturiert dedupliziert und Kontext-Volumen reduziert. Live-Verifikation im 38-Turn-Chat in Chat 81: kein Echo-Verhalten mehr. | Chat 81 |
 
 ---
 
@@ -484,12 +485,16 @@ Header der aktiven Datei sagt explizit „Migriert aus: services/shadow_agent/ta
 
 ---
 
-#### EMOTE-LOCK — Emote-Inflation und -Wiederholung ⬜
-**Entdeckt:** Chat 48 (erste Beobachtung), Chat 49 (bestätigt)
-**Symptom:** Nova eröffnet bei aktivem Charakter-Register fast jede Antwort mit `*kichere boshaft*` oder minimaler Variation (`*kichere boshaft und zwinkere frech*`, `*kichere boshaft und verdrehe die Augen*`). In der Chat-49-Konversation: 12 von 15 Antworten mit identischem Eröffnungsemote.
-**Ursache (Hypothese):** Gemma4 zieht die eigenen vorherigen Antworten aus dem Session-Kontext und verstärkt den einmal gewählten Stil. Ein Self-Reinforcing-Effekt durch den Kontext, kein RLHF-Problem. Der Emote-Baustein scheint besonders anfällig, weil er als "leerer Einstieg" keinen Informationsgehalt hat, den das Modell variieren müsste.
-**Lösungsansatz:** Offen. Optionen: (a) Emote-Variation explizit im Responder-Prompt fordern, (b) Session-Kontext-Destillation so anpassen dass Nova-Antworten nicht wörtlich im Kontext stehen sondern nur destilliert, (c) Sampling-Parameter (temperature/top_p) beim Responder-Call anheben, (d) ignorieren — ist Kosmetik solange der Charakter als Ganzes lebendig wirkt.
-**Prio:** Niedrig — kosmetisch, aber auffällig bei langen Sessions.
+#### EMOTE-LOCK — Emote-Inflation und -Wiederholung ⚠️
+**Entdeckt:** Chat 48 (erste Beobachtung), Chat 49 (bestätigt), Chat 81 (empirisch bestätigt im warmen Register)
+**Symptom:** Nova zykelt im Charakter-Register auf einen Emote-/Emoji-Baustein und reproduziert ihn als Default-Markierung. Beobachtungen:
+- Chat 49 ("freches Mädel"-Register): 12 von 15 Antworten mit `*kichere boshaft*` oder minimaler Variation als Eröffnungsemote.
+- Chat 81 (`emotional`/`philosophischer_austausch`-Register): Herzen ❤️ in 10 von 15 Nova-Turns als Schluss-Markierung, teils zwei pro Turn.
+
+Beide Beobachtungen zeigen dasselbe Muster in unterschiedlichen Registern — der Bug ist register-übergreifend.
+**Ursache (Hypothese):** Gemma4 zieht die eigenen vorherigen Antworten aus dem Session-Kontext und verstärkt den einmal gewählten Stil. Ein Self-Reinforcing-Effekt durch den Kontext, kein RLHF-Problem. Der Emote-/Emoji-Baustein scheint besonders anfällig, weil er als "leerer Einstieg" oder "leere Schluss-Geste" keinen Informationsgehalt hat, den das Modell variieren müsste.
+**Lösungsansatz:** Offen. Optionen: (a) Emote-Variation explizit im Responder-Prompt fordern, (b) Session-Kontext-Destillation so anpassen dass Nova-Antworten nicht wörtlich im Kontext stehen sondern nur destilliert, (c) Sampling-Parameter (temperature/top_p) beim Responder-Call anheben, (d) ignorieren — ist Kosmetik solange der Charakter als Ganzes lebendig wirkt. Mittelfristig adressierbar durch Vehicle-Schicht (Phase 3 der Frame-Konzepte) — Vehicle-Stil pro Turn entscheidet bewusst über Emote-Form, statt dass das Modell aus dem Kontext recycelt.
+**Prio:** Mittel — strukturell bestätigt, register-übergreifend, kosmetisch aber auffällig.
 
 ---
 
@@ -593,19 +598,18 @@ Dann Requests über diese Session abwickeln statt direkt `requests.post()`.
 
 ### Chat 72 — Dreischicht-Integration + GV-Refactoring (Folgebugs)
 
-#### ECHO-BUG — Nova wiederholt User-Nachricht wörtlich bei langen Sessions ⚠️
+#### ECHO-BUG — Nova wiederholt User-Nachricht wörtlich bei langen Sessions ✅ Behoben Chat 81
 
 **Entdeckt:** Chat 72, 01. Mai 2026
+**Behoben:** Chat 81, 09. Mai 2026 (durch Reducer-Umbau Chat 75, STRUCT-1 bis STRUCT-6)
 
 **Symptom:** Bei Sessions mit 11+ Turns wiederholt Nova die User-Nachricht wörtlich statt zu antworten.
 
-**Ursache (Hypothese):** Kontext-Sättigung. Session-Turns + KZG/LZG-Rauschen + Charakter-Hash + GV-Vorschlag erschöpfen den verfügbaren Kontext. Das Modell fällt in einen Kopier-Modus zurück.
+**Ursache:** Kontext-Sättigung. Session-Turns + KZG/LZG-Rauschen + Charakter-Hash + GV-Vorschlag erschöpften den verfügbaren Kontext. Das Modell fiel in einen Kopier-Modus zurück.
 
-**Lösungsansatz:** Reducer-Node als zentrale Lösung geplant (seit Chat 71). Der Reducer destilliert pro Turn ein fokussiertes Konzentrat für den Responder, statt den vollen `memory_context` durchzureichen.
+**Lösung:** Reducer-Umbau in Chat 75 (STRUCT-1 bis STRUCT-6) hat den Memory-Context strukturiert dedupliziert und das Kontext-Volumen reduziert.
 
-**Status Chat 74:** Reducer-Erst-Iteration implementiert (String-Parser, Exakt + Substring-Dedup). Funktioniert für KZG/LZG-Einträge, dedupliziert 1-2 Treffer pro Turn bei ~30 Einträgen. Echo-Bug nicht direkt verifiziert (kein langer Test-Lauf), aber Architektur-Schuld erkannt: String-Parser ist brüchig. Sauberer Umbau via `novaberg-reducer-umbau_k.md` geplant.
-
-**Prio:** Hoch — bricht das Gespräch komplett, sobald die Session lang genug wird.
+**Verifikation:** Live-Beobachtung im 38-Turn-Chat in Chat 81 — kein Kopier-Modus, kein Echo-Verhalten. Nova antwortet eigenständig auch in langen Sessions.
 
 ---
 
