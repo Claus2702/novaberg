@@ -368,7 +368,7 @@ Empirisch verifiziert per SQL-Abfrage gegen `charakter_hash`. Beide Beobachter-S
 
 ---
 
-#### PROMO-DROP1 — KZG-Felder werden bei Promotion stillschweigend verworfen ⚠️ Teilweise behoben Chat 85
+#### PROMO-DROP1 — KZG-Felder werden bei Promotion stillschweigend verworfen ⚠️ Teilweise behoben Chat 84
 **Entdeckt:** Chat 75, Promotion-Pipeline-Audit
 **Symptom:** Drei KZG-Hash-Felder kommen niemals im LZG an:
 - `themen` (Salienz Dim 1) — fließt nur als Embedding-Input ein, kein abfragbares Feld in der DB.
@@ -379,7 +379,7 @@ Empirisch verifiziert per SQL-Abfrage gegen `charakter_hash`. Beide Beobachter-S
 **Auswirkung:** Mittel. Themen-basierte LZG-Verknüpfung ist nicht möglich, episodisch/semantisch/prozedural-Klassifikation für später nicht nutzbar, "Wann hat der User zuerst von X erzählt?" nicht beantwortbar (chronologisch unscharf um die Promotion-Verzögerung). Blockiert Akten-Architektur (Backlog) und Knowledge-Graph-Integration mit LZG.
 **Lösung:** LZG-Schema um drei Spalten erweitern: `themen TEXT[]` (oder JSON), `gedaechtnistyp VARCHAR(20)`, `kzg_erstellt_am TIMESTAMPTZ`. Promotion-Code in `agents/promotion/agent.py` (beide Pfade — Einzel und Cluster) entsprechend anpassen. Migration für Altbestand: alte Einträge bekommen `NULL` in den neuen Feldern.
 
-**Status Chat 85:** `themen` und `kzg_erstellt_am` ✅ behoben (M3a, Sprint Chat 85 — Promotion-Pfad überträgt beide aus KZG-Hash, Format-Konvertierung trivial). `gedaechtnistyp` weiterhin offen — kein Klassifikator-Pfad vorhanden, wartet auf M5 (Salienz-Pipeline) oder eigenen Klassifikator-Sprint.
+**Status Chat 84:** `themen` und `kzg_erstellt_am` ✅ behoben (M3a, Sprint Chat 84 — Promotion-Pfad überträgt beide aus KZG-Hash, Format-Konvertierung trivial). `gedaechtnistyp` weiterhin offen — kein Klassifikator-Pfad vorhanden, wartet auf M5 (Salienz-Pipeline) oder eigenen Klassifikator-Sprint.
 
 **Vorbedingung:** Doppelpipeline klären (siehe PROMO-DUAL-IMPL).
 **Prio:** Mittel.
@@ -387,7 +387,7 @@ Empirisch verifiziert per SQL-Abfrage gegen `charakter_hash`. Beide Beobachter-S
 ---
 
 #### PROMO-INHALT-FALLBACK-UNSICHER — Single-Promotion fällt bei TTL-abgelaufenem KZG auf Themen-Tags zurück ⬜
-**Entdeckt:** Chat 85 (M3-B-Side-Finding bei Promotion-Code-Audit)
+**Entdeckt:** Chat 84 (M3-B-Side-Finding bei Promotion-Code-Audit)
 
 **Symptom:** In `agents/promotion/agent.py:_eintrag_verarbeiten` wird der LZG-INSERT-Inhalt aus dem KZG-Hash gelesen:
 

@@ -1298,7 +1298,7 @@ Perzeption klassifiziert 😍-Katzen-Chat als `gespraechs_modus="emotional"` sta
 |---|---|---|
 | M1 | Doppelpipeline konsolidieren (PROMO-DUAL-IMPL) | ✅ Chat 77 |
 | M2 | LZG-Schema erweitern (PROMO-DROP1, Schema-Teil) | ✅ Chat 78 |
-| M3a | Promotion-Code: themen + kzg_erstellt_am | ✅ Chat 85 |
+| M3a | Promotion-Code: themen + kzg_erstellt_am | ✅ Chat 84 |
 | M3b | Promotion-Code: entitaet_ids + timeline_id (wartet auf M5) | ⬜ blockiert |
 | M4 Teil 1 | Cluster-Promotion EI-Aggregation — Backfill | ✅ Chat 82 |
 | M4 Teil 2 | Cluster-Promotion EI-Aggregation — Code-Fix | ✅ Chat 83 |
@@ -1316,11 +1316,11 @@ Ein Audit der Promotion-Pipeline KZG→LZG in Chat 75 hat drei Datenverluste sic
 Verifizieren, ob `services/shadow_agent/tasks/lzg_promotion.py` noch von irgendeinem Pfad aufgerufen wird. Falls nicht: entfernen. Falls doch: Aufrufer migrieren, Legacy entfernen. Eine einzige Promotion-Implementierung als Voraussetzung für die nächsten Phasen.
 
 **Phase M2 — LZG-Schema erweitern (PROMO-DROP1, Schema-Teil) ✅ Chat 78.**
-  Vier neue Spalten in `langzeitgedaechtnis` (`themen TEXT[]`, `gedaechtnistyp VARCHAR(20)`, `kzg_erstellt_am TIMESTAMPTZ`, `entitaet_ids INTEGER[]`) plus `timeline_id INTEGER FK timeline(id)` — alle nullable, zugehörige GIN/BTREE-Indizes. Idempotent in `db/init.sql`. **Spiegelung in `main.py:schema_migrieren()` als Schema-Restschuld nachgezogen Chat 85 (M3-A).**
+  Vier neue Spalten in `langzeitgedaechtnis` (`themen TEXT[]`, `gedaechtnistyp VARCHAR(20)`, `kzg_erstellt_am TIMESTAMPTZ`, `entitaet_ids INTEGER[]`) plus `timeline_id INTEGER FK timeline(id)` — alle nullable, zugehörige GIN/BTREE-Indizes. Idempotent in `db/init.sql`. **Spiegelung in `main.py:schema_migrieren()` als Schema-Restschuld nachgezogen Chat 84 (M3-A).**
 
 **Phase M3 — Promotion-Code anpassen.** Zweistufig laut Magnet-Konvention §4.
 
-**M3a — themen + kzg_erstellt_am ✅ Chat 85.** Promotion-Code überträgt beim
+**M3a — themen + kzg_erstellt_am ✅ Chat 84.** Promotion-Code überträgt beim
 KZG→LZG-Schritt zwei Felder aus dem KZG-Hash:
 - `themen` (kommaseparierter String → `TEXT[]`, Cluster-Pfad: Vereinigung über Mitglieder)
 - `kzg_erstellt_am` (Unix-float-String → `TIMESTAMPTZ`, Cluster-Pfad: frühestes über Mitglieder)
@@ -1367,7 +1367,7 @@ Diese fünf Phasen sind Vorarbeit für die Akten-Architektur (siehe `novaberg-re
 **Symptom:** Bestätigungs-Updates in `_cluster_update_kohaerenz` (`agents/promotion/agent.py:1141-1151`) und `_cluster_update` (`:939-950`) aktualisieren nur `inhalt`, `embedding`, `gewicht`, `verstaerkt_am`. Die EI-Felder des bestehenden LZG-Eintrags bleiben eingefroren — neue Cluster-Mitglieder fließen nie in das EI-Profil bestehender LZG-Einträge ein.
 **Konzeptionelle Frage:** Soll der Mehrheits-Wert ersetzt, mit dem alten gemittelt, oder gewichtet nach Mitglieder-Anzahl gemerged werden? Nicht trivial.
 
-**Erweitert Chat 85 (M3-B-Side-Finding):** Die UPDATE-Pfade aktualisieren auch
+**Erweitert Chat 84 (M3-B-Side-Finding):** Die UPDATE-Pfade aktualisieren auch
 die Magnet-Felder nicht:
 - `themen` (Cluster-Mitglieder mit neuen Themen-Tags fließen nicht in den
   bestehenden LZG-Eintrag)
@@ -1775,7 +1775,7 @@ Diese Konzeption materialisiert **Typ 1** (Prompt-Skills als Markdown) aus Epic 
 
 **Auswirkung:** Strukturell kein Schaden — der CharakterAgent scannt mit hartcodierten `[(DEFAULT_USER_ID, ASSISTANT_USER_ID)]` und sieht diese Einträge nie. Sie wachsen nicht weiter, rauschen aber die Tabelle zu und erschweren Tabellen-Inspektionen.
 
-**Lösung:** Einmalige `DELETE FROM charakter_hash WHERE character_id = ''`-Operation in Chat 85+ oder bei nächster Schema-Migration mitnehmen.
+**Lösung:** Einmalige `DELETE FROM charakter_hash WHERE character_id = ''`-Operation in Chat 84+ oder bei nächster Schema-Migration mitnehmen.
 
 **Prio:** Niedrig.
 
@@ -1784,7 +1784,7 @@ Diese Konzeption materialisiert **Typ 1** (Prompt-Skills als Markdown) aus Epic 
 ## Cleanup: LZG-DOKU-DRIFT — `novaberg-mem-lzg.md` reflektiert nicht das Live-Schema
 
 **Status:** Beobachtet
-**Entdeckt:** Chat 85 (M3-D, beim Doku-Synchronisations-Audit)
+**Entdeckt:** Chat 84 (M3-D, beim Doku-Synchronisations-Audit)
 
 **Symptom:** Die Schema-Tabelle in `novaberg-mem-lzg.md` §2 listet 13 Spalten, die Live-DB-Tabelle `langzeitgedaechtnis` hat 24 Spalten. Fehlend in der Doku:
 - Fünf Magnet-/Meta-Spalten (`themen`, `gedaechtnistyp`, `kzg_erstellt_am`, `entitaet_ids`, `timeline_id`) — seit Chat 78 im Schema, in M3-D nur die zwei M3-relevanten ergänzt

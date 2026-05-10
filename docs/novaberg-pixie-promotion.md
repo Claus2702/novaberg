@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** PromotionAgent — KZG-nach-LZG-Promotion (Zwei-Call-Prozess)
-**Stand:** 10. Mai 2026, Chat 85 (M3a: Magnet-Aggregation `themen` + `kzg_erstellt_am`; vorher Chat 83: Cluster-Promotion EI-Aggregation, `_cluster_insert` gelöscht, `emotions_vektor` aus LZG entfernt)
+**Stand:** 10. Mai 2026, Chat 84 (M3a: Magnet-Aggregation `themen` + `kzg_erstellt_am`; vorher Chat 83: Cluster-Promotion EI-Aggregation, `_cluster_insert` gelöscht, `emotions_vektor` aus LZG entfernt)
 **Pfad:** novaberg/docs/novaberg-pixie-promotion.md
 **Quellen:** nova-05-m-a.md, nova-03-t-b.md
 
@@ -169,7 +169,7 @@ Beim Schreiben des Cluster-Destillats ins LZG werden sieben EI-Felder pro Cluste
 
 **Hinweis zu `emotions_vektor`:** Wird im LZG nicht mehr persistiert (siehe `novaberg-mem-lzg.md` §2). Im Loader und in der Aggregation kommt das Feld nicht mehr vor.
 
-### Magnet-Aggregation (Chat 85, M3a)
+### Magnet-Aggregation (Chat 84, M3a)
 
 Beim Cluster-Insert werden zwei Magnet-/Meta-Felder aus den KZG-Mitgliedern aggregiert und ins LZG übertragen — analog zu den sieben EI-Feldern aus M4 Teil 2.
 

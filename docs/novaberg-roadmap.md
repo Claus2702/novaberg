@@ -1,6 +1,6 @@
 # Novaberg — Roadmap (Projektchronik)
 
-**Stand:** Chat 85, 10. Mai 2026
+**Stand:** Chat 84, 10. Mai 2026
 **Pfad:** novaberg/docs/novaberg-roadmap.md
 **Single Source of Truth für abgeschlossene Arbeit.**
 **Offene Punkte → novaberg-backlog.md**
@@ -924,9 +924,9 @@ Bestandsdaten-Korrektur fuer das in Chat 75 entdeckte Hardcoded-Default-Profil i
 
 ---
 
-## Chat 84 (10.05.2026) — Sprint 82+83 final bestätigt + Doku-Drift M1 + REDIS-KEY-ASYMMETRY
+## Chat 84 (10.05.2026) — Sprint 82+83 final + M1-Doku-Drift + REDIS-KEY-ASYMMETRY + M3 (themen + kzg_erstellt_am)
 
-**Schwerpunkt:** Akzeptanz-Verifikation der M4-Code-Fix-Wirkung in der Praxis, M5a unter Code-Fix-Bedingung schließen, Doku-Drift bei M1 (PROMO-DUAL-IMPL) korrigieren, neuer Strukturbug aus Brudi-Audit dokumentieren.
+**Schwerpunkt:** Verifikation der M4-Code-Fix-Wirkung in der Praxis, M5a unter Code-Fix-Bedingung schließen, Doku-Drift bei M1 (PROMO-DUAL-IMPL) korrigieren, Strukturbug REDIS-KEY-ASYMMETRY aus Brudi-Setter-Audit dokumentieren, anschließend M3-Sprint in vier Sub-Sprints (Schema-Restschuld, Promotion-Code, zwei Doku-Sync-Phasen).
 
 **Verifikation Sprint 82+83:**
 - M4 Code-Fix in der Praxis: SQL-Akzeptanz-Check ergab 0/26 LZG-Einträge mit Default-Kombi (`emotion='neutral' AND arousal=0.5`) in 24h. Verteilungs-Sanity zeigt vier Emotionen, drei mit echter `arousal`-Streuung (0.10–0.16). Aggregation produziert echte Werte aus echten Cluster-Inputs.
@@ -939,18 +939,6 @@ Bestandsdaten-Korrektur fuer das in Chat 75 entdeckte Hardcoded-Default-Profil i
 **Karteileichen-Cleanup:**
 - Redis: `hash_dirty:nova:nova` und `drive:short_term:nova:nova` per `redis-cli DEL` entfernt.
 - Postgres: 8 Test-User in `charakter_hash` mit leerem `character_id` als `CHAR-HASH-TEST-LEICHEN` im Backlog vermerkt (niedrige Prio).
-
-**Stand am Ende:**
-- Sprint 82+83 final ✅
-- M1-Statuskorrektur ✅
-- Neuer Strukturbug REDIS-KEY-ASYMMETRY dokumentiert
-- Chat 85 startet mit M2 (LZG-Schema-Erweiterung um `themen[]`, `gedaechtnistyp`, `kzg_erstellt_am`) als nächstem substantiellen Brocken
-
----
-
-## Chat 85 (10.05.2026) — M3 (themen + kzg_erstellt_am) + Schema-Restschuld + Doku-Sync
-
-**Schwerpunkt:** Memory-Promotion-Korrektur Phase M3 schmaler Scope (themen + kzg_erstellt_am befüllen), Schema-Restschuld in `main.py:schema_migrieren()` schließen, vierfache Doku-Synchronisation nach drei aufgedeckten Doku-Drifts während der Sprint-Vorbereitung.
 
 **Sprint A — Schema-Restschuld:** `main.py:schema_migrieren()` um fünf LZG-Magnet-Spalten plus vier Indizes plus Timeline-FK ergänzt. Idempotente Spiegelung von `db/init.sql`. Live-DB hatte die Spalten bereits über Container-Bootstrap; der Sprint schloss die Hygiene-Lücke für künftige Setups (Lesson Chat 83).
 
@@ -973,13 +961,16 @@ Drei Cluster-Aufrufer profitieren über die zentrale Methode. Internes Aggregier
 - Audit-Berichte können in Detail-Behauptungen daneben liegen (Brudis "main.py enthält nur emotions_vektor-DROP" war falsch — Funktion ist 100+ Zeilen lang). Die Kern-Aussage stimmte trotzdem (Magnet-Spiegelung fehlte). Detail-Verifikation lohnt vor jeder Schluss-Aktion.
 
 **Stand am Ende:**
+- Sprint 82+83 final ✅
+- M1-Statuskorrektur ✅
+- Neuer Strukturbug REDIS-KEY-ASYMMETRY dokumentiert
 - M3a ✅, M3b blockiert auf M5, M2 nachträglich ✅ Chat 78 markiert
-- Magnet-Konvention §4 Befüllungs-Status auf Stand Chat 85
+- Magnet-Konvention §4 Befüllungs-Status auf Stand Chat 84
 - PROMO-DROP1 ⚠️ Teilweise behoben (themen + kzg_erstellt_am ✅, gedaechtnistyp ⬜)
 - Schema-Hygiene in `schema_migrieren()` vollständig gespiegelt von init.sql
-- Zwei B-Side-Findings im Bug-Tracker dokumentiert (PROMO-CLUSTER-EI-UPDATE erweitert, PROMO-INHALT-FALLBACK-UNSICHER neu)
-- Chat 86 startet mit M5 (Salienz-Pfad-Erweiterung) als Vorbedingung für M3b und M5b/M5c
+- Zwei Side-Findings im Bug-Tracker dokumentiert (PROMO-CLUSTER-EI-UPDATE erweitert, PROMO-INHALT-FALLBACK-UNSICHER neu)
+- Chat 85 startet mit M5 (Salienz-Pfad-Erweiterung) als Vorbedingung für M3b und M5b/M5c
 
 ---
 
-*Aktualisiert in Chat 85. Offene Punkte → novaberg-backlog.md. Bugs → novaberg-bugs.md.*
+*Aktualisiert in Chat 84. Offene Punkte → novaberg-backlog.md. Bugs → novaberg-bugs.md.*
