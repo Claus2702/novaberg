@@ -130,7 +130,6 @@ class PromotionAgent(BaseAgent):
         emotion:            str   = _hget("emotion")
         modus:              str   = _hget("modus")
         arousal:            float = float(_hget("arousal", "0.5"))
-        emotions_vektor:    str   = _hget("emotions_vektor")
         sprach_stil:        str   = _hget("sprach_stil")
         beziehungs_dynamik: str   = _hget("beziehungs_dynamik")
         tone:               str   = _hget("tone")
@@ -218,17 +217,17 @@ class PromotionAgent(BaseAgent):
                     (user_id, character_id, beobachter,
                      dimension, inhalt, gewicht, haeufigkeit,
                      embedding, intentionen, emotion, modus,
-                     arousal, emotions_vektor,
+                     arousal,
                      sprach_stil, beziehungs_dynamik, tone,
                      verstaerkt_am)
                 VALUES
-                    (%s, %s, %s, %s, %s, %s, %s, %s::vector, %s, %s, %s, %s, %s,
+                    (%s, %s, %s, %s, %s, %s, %s, %s::vector, %s, %s, %s, %s,
                      %s, %s, %s, NOW())
                 """,
                 (user_id, character_id, beobachter,
                  dimension, inhalt, min(salienz, 1.0), haeufigkeit,
                  embedding_str, intentionen, emotion, modus,
-                 arousal, emotions_vektor,
+                 arousal,
                  sprach_stil, beziehungs_dynamik, tone),
             )
 
@@ -706,7 +705,13 @@ class PromotionAgent(BaseAgent):
 
     @staticmethod
     def _kzg_partition_laden(user_id: str, character_id: str) -> list[dict]:
-        """Laedt alle KZG-Eintraege einer Paar-Partition aus Redis."""
+        """Laedt alle KZG-Eintraege einer Paar-Partition aus Redis.
+
+        Inkludiert die sieben EI-Felder (emotion, arousal, modus, sprach_stil,
+        tone, beziehungs_dynamik, intentionen) fuer die Cluster-Aggregation
+        in `_lzg_eintrag_schreiben`. emotions_vektor wird bewusst nicht
+        geladen — das Feld existiert im LZG-Schema nicht mehr.
+        """
 
         keys: list = redis_client.keys(_kzg_prefix(user_id, character_id))
         eintraege: list[dict] = []
@@ -722,20 +727,56 @@ class PromotionAgent(BaseAgent):
                 beobachter:  str = redis_client.hget(key, "beobachter") or "user"
                 dimension:   str = redis_client.hget(key, "dimension") or "kontext"
 
+                emotion:            str = redis_client.hget(key, "emotion") or ""
+                modus:              str = redis_client.hget(key, "modus") or ""
+                sprach_stil:        str = redis_client.hget(key, "sprach_stil") or ""
+                tone:               str = redis_client.hget(key, "tone") or ""
+                beziehungs_dynamik: str = redis_client.hget(key, "beziehungs_dynamik") or ""
+
+                arousal_raw: str = redis_client.hget(key, "arousal") or ""
+                try:
+                    arousal: float | None = float(arousal_raw) if arousal_raw else None
+                except ValueError:
+                    arousal = None
+
+                intentionen_raw: str = redis_client.hget(key, "intentionen") or "[]"
+                try:
+                    intentionen: list = json.loads(intentionen_raw)
+                    if not isinstance(intentionen, list):
+                        intentionen = []
+                except (json.JSONDecodeError, TypeError):
+                    intentionen = []
+
                 themen: list[str] = [t.strip() for t in themen_raw.split(",") if t.strip()]
 
                 # Embedding frisch erzeugen — Redis-Blob ist durch decode_responses=True korrumpiert
                 entry_embedding: list[float] = embedding_manager.embed(inhalt)
 
-                eintraege.append({
-                    "key":        key,
-                    "inhalt":     inhalt,
-                    "themen":     themen,
-                    "salienz":    float(salienz_raw),
-                    "beobachter": beobachter,
-                    "dimension":  dimension,
-                    "embedding":  entry_embedding,
-                })
+                eintrag: dict = {
+                    "key":                key,
+                    "inhalt":             inhalt,
+                    "themen":             themen,
+                    "salienz":            float(salienz_raw),
+                    "beobachter":         beobachter,
+                    "dimension":          dimension,
+                    "embedding":          entry_embedding,
+                    "emotion":            emotion,
+                    "modus":              modus,
+                    "sprach_stil":        sprach_stil,
+                    "tone":               tone,
+                    "beziehungs_dynamik": beziehungs_dynamik,
+                    "arousal":            arousal,
+                    "intentionen":        intentionen,
+                }
+                eintraege.append(eintrag)
+
+                logger.debug(
+                    f"Cluster-Promotion: KZG {key} geladen — "
+                    f"emotion='{emotion}', modus='{modus}', arousal={arousal}, "
+                    f"sprach_stil='{sprach_stil}', tone='{tone}', "
+                    f"beziehungs_dynamik='{beziehungs_dynamik}', "
+                    f"intentionen={len(intentionen)}"
+                )
             except Exception as ex:
                 logger.warning(f"Cluster-Promotion: Fehler bei Key {key}: {ex}")
 
@@ -1180,36 +1221,6 @@ class PromotionAgent(BaseAgent):
                 }
             return {"kohaerenz": "nein", "zusammenfassung": "", "ausreisser": []}
 
-    def _cluster_insert(
-        self,
-        user_id:           str,
-        character_id:      str,
-        thema:             str,
-        cluster_eintraege: list[dict],
-    ) -> None:
-        """Erzeugt neuen LZG-Eintrag aus Cluster-Destillat."""
-
-        neue_kerne: list[str] = [e["inhalt"] for e in cluster_eintraege]
-
-        zusammenfassung: str = self._destillation_insert(neue_kerne, thema, user_id)
-
-        if not zusammenfassung:
-            logger.warning(f"Cluster-Promotion: Leere Destillation fuer '{thema}' — uebersprungen")
-            return
-
-        neues_embedding: list[float] = embedding_manager.embed(zusammenfassung)
-        embedding_str: str = "[" + ",".join(str(x) for x in neues_embedding) + "]"
-
-        self._lzg_eintrag_schreiben(
-            user_id, character_id, zusammenfassung, embedding_str,
-            cluster_eintraege, thema,
-        )
-
-        logger.info(
-            f"Cluster-Promotion: LZG INSERT fuer '{thema}' — "
-            f"{len(cluster_eintraege)} Quellen → 1 Eintrag"
-        )
-
     @staticmethod
     def _lzg_eintrag_schreiben(
         user_id:           str,
@@ -1219,7 +1230,15 @@ class PromotionAgent(BaseAgent):
         cluster_eintraege: list[dict],
         thema:             str,
     ) -> None:
-        """Schreibt einen neuen LZG-Eintrag (gleiches INSERT wie Einzelpromotion)."""
+        """Schreibt einen neuen LZG-Eintrag (gleiches INSERT wie Einzelpromotion).
+
+        Aggregation der EI-Felder aus den Cluster-Quellen:
+          - emotion / modus / sprach_stil / tone / beziehungs_dynamik:
+            Counter-Mehrheit, leere Strings und None vorher gefiltert.
+            Tie-Break ueber Counter.most_common(1) (Insertion-Order).
+          - arousal: Mittelwert aller nicht-None-Werte, Fallback 0.5.
+          - intentionen: Mengen-Vereinigung aller Listen, leere Listen ignoriert.
+        """
 
         beobachter_counts = Counter(e["beobachter"] for e in cluster_eintraege)
         beobachter: str = beobachter_counts.most_common(1)[0][0]
@@ -1229,6 +1248,44 @@ class PromotionAgent(BaseAgent):
         dim_counts = Counter(e["dimension"] for e in cluster_eintraege)
         dimension: str = dim_counts.most_common(1)[0][0]
 
+        def _mehrheit(feld: str) -> str:
+            werte = [e.get(feld) for e in cluster_eintraege]
+            werte = [w for w in werte if w]  # None und "" ausfiltern
+            if not werte:
+                return ""
+            return Counter(werte).most_common(1)[0][0]
+
+        emotion:            str = _mehrheit("emotion")
+        modus:              str = _mehrheit("modus")
+        sprach_stil:        str = _mehrheit("sprach_stil")
+        tone:               str = _mehrheit("tone")
+        beziehungs_dynamik: str = _mehrheit("beziehungs_dynamik")
+
+        arousal_werte: list[float] = [
+            e.get("arousal") for e in cluster_eintraege
+            if e.get("arousal") is not None
+        ]
+        arousal: float = (
+            sum(arousal_werte) / len(arousal_werte) if arousal_werte else 0.5
+        )
+
+        intentionen_set: set[str] = set()
+        for e in cluster_eintraege:
+            werte = e.get("intentionen") or []
+            for v in werte:
+                if v:
+                    intentionen_set.add(v)
+        intentionen_str: str = json.dumps(sorted(intentionen_set))
+
+        logger.info(
+            f"Cluster-Promotion: Aggregation fuer '{thema[:40]}' "
+            f"(Cluster-Groesse {len(cluster_eintraege)}) — "
+            f"emotion='{emotion}', modus='{modus}', arousal={arousal:.3f}, "
+            f"sprach_stil='{sprach_stil}', tone='{tone}', "
+            f"beziehungs_dynamik='{beziehungs_dynamik}', "
+            f"intentionen={len(intentionen_set)}"
+        )
+
         db_manager.execute(
             """
             INSERT INTO langzeitgedaechtnis
@@ -1236,20 +1293,20 @@ class PromotionAgent(BaseAgent):
                  dimension, inhalt, gewicht, haeufigkeit,
                  embedding,
                  intentionen, emotion, modus,
-                 arousal, emotions_vektor,
+                 arousal,
                  sprach_stil, beziehungs_dynamik, tone,
                  verstaerkt_am)
             VALUES
                 (%s, %s, %s, %s, %s, %s, %s, %s::vector,
-                 %s, %s, %s, %s, %s, %s, %s, %s, NOW())
+                 %s, %s, %s, %s, %s, %s, %s, NOW())
             """,
             (user_id, character_id, beobachter,
              dimension, zusammenfassung, min(avg_salienz, 1.0),
              len(cluster_eintraege),
              embedding_str,
-             "[]", "neutral", "",
-             0.5, "",
-             "neutral", "neutral", "sachlich"),
+             intentionen_str, emotion, modus,
+             arousal,
+             sprach_stil, beziehungs_dynamik, tone),
         )
 
     # ─────────────────────────────────────────

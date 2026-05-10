@@ -152,12 +152,11 @@ def _format_kzg(entry: ContextEntry) -> str:
 
 
 def _format_lzg(entry: ContextEntry) -> str:
-    """LZG-Block: [LZG/{subtyp}] (Gewicht/Arousal/Beobachter/Vektor): {inhalt}.
+    """LZG-Block: [LZG/{subtyp}] (Gewicht/Arousal/Beobachter): {inhalt}.
 
     Defaults bei fehlenden meta-Feldern:
         arousal    = 0.0
         beobachter = "unbekannt"
-        vektor     = "unbekannt"
     Leerer subtyp wird unveraendert eingesetzt ([LZG/] ... ).
     """
     subtyp:  str   = entry.get("subtyp", "")
@@ -175,16 +174,10 @@ def _format_lzg(entry: ContextEntry) -> str:
         logger.debug("format_memory_entries: lzg beobachter fehlt — Default 'unbekannt'")
         beobachter = "unbekannt"
 
-    vektor = meta.get("vektor")
-    if not vektor:
-        logger.debug("format_memory_entries: lzg vektor fehlt — Default 'unbekannt'")
-        vektor = "unbekannt"
-
     return (
         f"[LZG/{subtyp}] (Gewicht: {gewicht:.2f}, "
         f"Arousal: {arousal:.0%}, "
-        f"Beobachter: {beobachter}, "
-        f"Vektor: {vektor}): {inhalt}"
+        f"Beobachter: {beobachter}): {inhalt}"
     )
 
 

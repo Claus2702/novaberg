@@ -126,7 +126,7 @@ ANTHROPIC_PRICE_OUTPUT_PER_M: float = float(os.getenv("ANTHROPIC_PRICE_OUTPUT_PE
 # False = kein Scheduler-Job, keine Queue-Pushes, kein Shadow-Delivery,
 # keine Dirty-Flags, kein Nova-Schreiben. Komplett still.
 # True = normaler Betrieb.
-PIXIE_AKTIV: bool = False
+PIXIE_AKTIV: bool = True
 
 PIXIE_INTERVALL_MIN: int = int(os.getenv("PIXIE_INTERVALL_MIN", "2"))
 

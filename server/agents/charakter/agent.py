@@ -321,7 +321,7 @@ class CharakterAgent(BaseAgent):
         )
         return db_manager.select(
             """
-            SELECT emotion, arousal, emotions_vektor,
+            SELECT emotion, arousal,
                    dimension, inhalt, gewicht, verstaerkt_am
             FROM langzeitgedaechtnis
             WHERE user_id = %s AND character_id = %s AND beobachter = %s

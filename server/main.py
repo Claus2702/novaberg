@@ -46,7 +46,9 @@ def schema_migrieren(postgres_url: str) -> None:
     migrationen: list[str] = [
         # langzeitgedaechtnis
         "ALTER TABLE langzeitgedaechtnis ADD COLUMN IF NOT EXISTS arousal DOUBLE PRECISION NOT NULL DEFAULT 0.5",
-        "ALTER TABLE langzeitgedaechtnis ADD COLUMN IF NOT EXISTS emotions_vektor TEXT NOT NULL DEFAULT ''",
+        # emotions_vektor entfernt (PROMO-CLUSTER-EI): Trajektorie passt
+        # semantisch nicht zu einer verdichteten LZG-Erinnerung.
+        "ALTER TABLE langzeitgedaechtnis DROP COLUMN IF EXISTS emotions_vektor",
         "ALTER TABLE langzeitgedaechtnis ADD COLUMN IF NOT EXISTS intentionen TEXT NOT NULL DEFAULT '[]'",
         "ALTER TABLE langzeitgedaechtnis ADD COLUMN IF NOT EXISTS emotion TEXT NOT NULL DEFAULT ''",
         "ALTER TABLE langzeitgedaechtnis ADD COLUMN IF NOT EXISTS modus TEXT NOT NULL DEFAULT ''",

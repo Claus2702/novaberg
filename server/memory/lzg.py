@@ -75,7 +75,6 @@ def lzg_entries_retrieve(
       gewicht = effektives Gewicht (live, mit Decay)
       meta    = {
           "arousal":       Spalte `arousal` (float),
-          "vektor":        Spalte `emotions_vektor` (str),
           "beobachter":    Spalte `beobachter` (str),
           "dimension":     Spalte `dimension` (str — duplikativ zu
                            subtyp, laut Format-Vertrag explizit erwartet),
@@ -108,7 +107,7 @@ def lzg_entries_retrieve(
         cursor = conn.cursor()
 
         cursor.execute("""
-            SELECT inhalt, dimension, gewicht, arousal, emotions_vektor,
+            SELECT inhalt, dimension, gewicht, arousal,
                    verstaerkt_am, beobachter, erstellt_am, haeufigkeit,
                    1 - (embedding <=> %s::vector) AS similarity
             FROM langzeitgedaechtnis
@@ -127,7 +126,7 @@ def lzg_entries_retrieve(
             logger.info("LZG-Entries-Retrieve: 0 Eintraege geliefert (Similarity-Filter angewendet)")
             return entries
 
-        for (inhalt, dimension, gewicht_basis, arousal, emotions_vektor,
+        for (inhalt, dimension, gewicht_basis, arousal,
              verstaerkt_am, beobachter, erstellt_am, haeufigkeit, similarity) in rows:
             if similarity < 0.5:
                 continue
@@ -144,7 +143,6 @@ def lzg_entries_retrieve(
                 "gewicht": eff_gewicht,
                 "meta": {
                     "arousal":       float(arousal) if arousal is not None else 0.0,
-                    "vektor":        emotions_vektor or "",
                     "beobachter":    beobachter or "",
                     "dimension":     dimension or "",
                     "erstellt_am":   erstellt_ts,

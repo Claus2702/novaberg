@@ -29,7 +29,6 @@ CREATE TABLE IF NOT EXISTS langzeitgedaechtnis (
     emotion         TEXT             NOT NULL DEFAULT '',
     modus           TEXT             NOT NULL DEFAULT '',
     arousal         DOUBLE PRECISION NOT NULL DEFAULT 0.5,
-    emotions_vektor    TEXT             NOT NULL DEFAULT '',
     sprach_stil        TEXT             NOT NULL DEFAULT '',
     beziehungs_dynamik TEXT             NOT NULL DEFAULT '',
     tone               TEXT             NOT NULL DEFAULT '',
@@ -240,7 +239,10 @@ CREATE INDEX IF NOT EXISTS idx_archiv_erstellt
 
 -- Neue Spalten in langzeitgedaechtnis (Epic 2)
 ALTER TABLE langzeitgedaechtnis ADD COLUMN IF NOT EXISTS arousal DOUBLE PRECISION NOT NULL DEFAULT 0.5;
-ALTER TABLE langzeitgedaechtnis ADD COLUMN IF NOT EXISTS emotions_vektor TEXT NOT NULL DEFAULT '';
+
+-- emotions_vektor ist eine Trajektorie ueber Turns — semantisch sinnlos in einer
+-- verdichteten LZG-Erinnerung. Spalte entfernt (PROMO-CLUSTER-EI).
+ALTER TABLE langzeitgedaechtnis DROP COLUMN IF EXISTS emotions_vektor;
 
 -- Intentionen/Emotion/Modus in langzeitgedaechtnis
 ALTER TABLE langzeitgedaechtnis ADD COLUMN IF NOT EXISTS intentionen TEXT NOT NULL DEFAULT '[]';

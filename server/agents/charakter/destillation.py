@@ -310,8 +310,7 @@ def emotions_profil_destillieren(lzg_eintraege: list[dict]) -> str:
 
     eintraege: str = "\n".join(
         f"[{row['dimension']}] "
-        f"Emotion: {row['emotion']}, Arousal: {row['arousal']:.2f}, "
-        f"Vektor: {row.get('emotions_vektor') or 'keiner'} "
+        f"Emotion: {row['emotion']}, Arousal: {row['arousal']:.2f} "
         f"(Gewicht: {effektives_gewicht_berechnen(row['gewicht'], row['verstaerkt_am']):.2f}): "
         f"{row['inhalt']}"
         for row in lzg_eintraege

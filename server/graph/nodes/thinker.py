@@ -164,7 +164,6 @@ def create_tools(
                 e.get("subtyp", ""),
                 (e.get("meta") or {}).get("dimension", ""),
                 (e.get("meta") or {}).get("beobachter", ""),
-                (e.get("meta") or {}).get("vektor", ""),
             )
             for e in entries
         )
