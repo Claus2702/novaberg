@@ -1292,13 +1292,26 @@ Perzeption klassifiziert 😍-Katzen-Chat als `gespraechs_modus="emotional"` sta
 **Bezug:** PROMO-DROP1, PROMO-CLUSTER-EI, PROMO-DUAL-IMPL (siehe novaberg-bugs.md, Sektion Datenqualität)
 **Vorbedingung:** Reducer-Umbau (novaberg-reducer-umbau_k.md) abgeschlossen.
 
+### Phasen-Übersicht
+
+| Phase | Inhalt | Status |
+|---|---|---|
+| M1 | Doppelpipeline konsolidieren (PROMO-DUAL-IMPL) | ✅ Chat 77 |
+| M2 | LZG-Schema erweitern (PROMO-DROP1, Schema-Teil) | ⬜ Offen |
+| M3 | Promotion-Code anpassen (PROMO-DROP1, Code-Teil) | ⬜ Offen |
+| M4 Teil 1 | Cluster-Promotion EI-Aggregation — Backfill | ✅ Chat 82 |
+| M4 Teil 2 | Cluster-Promotion EI-Aggregation — Code-Fix | ✅ Chat 83 |
+| M5a | Charakter-Hash profitiert von echten EI-Profilen | ✅ Chat 83 (Backfill-Stand) + Chat 84 (Code-Fix-Stand) |
+| M5b | FaktenManager-Reaktivierung | ⬜ Offen |
+| M5c | Themen-Cluster-Promotion smarter | ⬜ Offen |
+
 ### Hintergrund
 
 Ein Audit der Promotion-Pipeline KZG→LZG in Chat 75 hat drei Datenverluste sichtbar gemacht, die in den Bug-Einträgen einzeln dokumentiert sind. Die drei Befunde hängen zusammen und sollten in einer geschlossenen Sequenz angegangen werden. Sie tangieren die Akten-Vision direkt: Ohne Themen-Persistenz und ohne intakte EI-Felder im LZG sind später keine sinnvollen Akten-Aggregate möglich.
 
 ### Reihenfolge nach dem Reducer-Umbau
 
-**Phase M1 — Doppelpipeline konsolidieren (PROMO-DUAL-IMPL).**
+**Phase M1 — Doppelpipeline konsolidieren (PROMO-DUAL-IMPL) ✅ Chat 77.**
 Verifizieren, ob `services/shadow_agent/tasks/lzg_promotion.py` noch von irgendeinem Pfad aufgerufen wird. Falls nicht: entfernen. Falls doch: Aufrufer migrieren, Legacy entfernen. Eine einzige Promotion-Implementierung als Voraussetzung für die nächsten Phasen.
 
 **Phase M2 — LZG-Schema erweitern (PROMO-DROP1, Schema-Teil).**
@@ -1322,7 +1335,7 @@ Im konsolidierten Promotion-Pfad (nach M1) die drei Felder aus dem KZG-Hash bzw.
 Erst nach M1–M4 abgeschlossen sind, werden die Agenten an die neue Memory-Struktur angepasst:
 - **FaktenManager-Reaktivierung** (heute durch `continue` im Enricher gesperrt seit Chat 71). Voraussetzung: Themen-basierte Verknüpfung im LZG verfügbar (M2/M3).
 - **Themen-Cluster-Promotion** könnte mit echtem `themen[]`-Feld smarter werden (heute nur über Embedding-Cluster).
-- **Charakter-Hash-Generierung** (`charakter_hash`) profitiert von echten EI-Profilen aus Cluster-Promotion (M4) — Profile werden weniger neutral. ✅ **Verifiziert Chat 83.** Empirische Prüfung der `charakter_hash`-Tabelle nach M4-Sprint zeigt vertraute, emotional warme Beziehungsprofile beider Sichten — CHAR-BEZ-STALE damit ebenfalls geschlossen.
+- **Charakter-Hash-Generierung** (`charakter_hash`) profitiert von echten EI-Profilen aus Cluster-Promotion (M4) — Profile werden weniger neutral. ✅ **Verifiziert Chat 83 (Backfill) und Chat 84 (Code-Fix-Bedingung).** Empirische Prüfung der `charakter_hash`-Tabelle nach M4-Sprint zeigt vertraute, emotional warme Beziehungsprofile beider Sichten — CHAR-BEZ-STALE damit ebenfalls geschlossen.
 
 ### Auswirkung auf Akten-Vision
 
@@ -1718,6 +1731,22 @@ Diese Konzeption materialisiert **Typ 1** (Prompt-Skills als Markdown) aus Epic 
 - KZG: 24 fehlerhafte Einträge gegenüber 156 korrekten.
 
 **Eingeordnet:** Nach MIGRATION-PIX-CLEANUP, vor MEMORY-SALIENZ-VERERBUNG Phase 1. Wenn der TTL der bestehenden Einträge schneller abläuft als der Fix umgesetzt wird, erübrigt sich die Bereinigung — dann nur Verifikation.
+
+---
+
+## Cleanup: CHAR-HASH-TEST-LEICHEN — Test-User in `charakter_hash` ohne aktive Pflege
+
+**Status:** Beobachtet
+**Entdeckt:** Chat 84 (Schema-Lookup im Rahmen M5a-Code-Fix-Verifikation)
+
+**Symptom:** 8 Einträge in `charakter_hash` mit leerem `character_id`-Feld:
+`test_agt5`, `test_agt6`, `test_timeline`, `emotional`, `gruender`, `jugendlich`, `formell`, `test_prompt2`. Stempel-Profil: `kern`/`adaptive` aus März/April, `intent`/`emo`/`bez` einheitlich am 01.05. (Backfill-Lauf bei Einführung der drei Profile).
+
+**Auswirkung:** Strukturell kein Schaden — der CharakterAgent scannt mit hartcodierten `[(DEFAULT_USER_ID, ASSISTANT_USER_ID)]` und sieht diese Einträge nie. Sie wachsen nicht weiter, rauschen aber die Tabelle zu und erschweren Tabellen-Inspektionen.
+
+**Lösung:** Einmalige `DELETE FROM charakter_hash WHERE character_id = ''`-Operation in Chat 85+ oder bei nächster Schema-Migration mitnehmen.
+
+**Prio:** Niedrig.
 
 ---
 

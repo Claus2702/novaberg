@@ -383,7 +383,7 @@ Empirisch verifiziert per SQL-Abfrage gegen `charakter_hash`. Beide Beobachter-S
 
 ---
 
-#### PROMO-DUAL-IMPL — Zwei parallele Promotion-Implementierungen mit identischem Verhalten ⬜
+#### PROMO-DUAL-IMPL — Zwei parallele Promotion-Implementierungen mit identischem Verhalten ✅ Behoben Chat 77
 **Entdeckt:** Chat 75, Promotion-Pipeline-Audit
 **Symptom:** Promotion existiert in zwei Codepfaden:
 - Aktiv: `agents/promotion/agent.py` (`PromotionAgent._eintrag_verarbeiten`, `_lzg_eintrag_schreiben`)
@@ -395,6 +395,29 @@ Header der aktiven Datei sagt explizit „Migriert aus: services/shadow_agent/ta
 **Lösung:** Verifizieren ob die Legacy-Variante noch von irgendeinem Pfad aufgerufen wird (`grep -rn "LzgPromotionTask\|lzg_promotion" novaberg/server/`). Falls nicht: Datei entfernen. Falls doch: aktiven Code zur einzigen Quelle machen, Aufrufer migrieren.
 **Vorbedingung:** Sollte VOR PROMO-DROP1 und PROMO-CLUSTER-EI gefixt werden, sonst doppelter Aufwand.
 **Prio:** Mittel.
+
+**Behoben Chat 77:** Audit hat `LzgPromotionTask` als Karteileiche bestätigt (keine aktiven Aufrufer seit Chat 62). Datei `services/shadow_agent/tasks/lzg_promotion.py` (555 Zeilen, 23 KB) entfernt. Siehe Chat-77-Protokoll Abschnitt 1.
+
+#### REDIS-KEY-ASYMMETRY — Inline-Key-Konstruktion ohne Helper, Reader-Setter-Schema-Mismatch ⬜
+**Entdeckt:** Chat 84 (Audit nach Karteileichen-Fund `hash_dirty:nova:nova` plus `drive:short_term:nova:nova` in Redis)
+
+**Symptom:** Drei Setter-Familien teilen identisches strukturelles Bug-Profil:
+- `hash_dirty:{user_id}:{character_id}` — vier produktive Setter (`memory/kzg.py:398`, `agents/kzg/queues.py:120`, `agents/promotion/agent.py:235` und `:696`)
+- `drive:short_term:{user_id}:{character_id}` — `graph/nodes/dispatcher.py:145`
+- `gv:detail:{user_id}:{character_id}` — `graph/nodes/dispatcher.py:174`
+
+**Drei strukturelle Eigenschaften:**
+1. **Inline-Key-Konstruktion ohne zentralen Helper** — alle Setter bauen den Key per f-string, kein Single Point of Modification analog `_kzg_key()` aus `memory/kzg.py`.
+2. **State-Pass-Through ohne Pfad-Unterscheidung** — derselbe Code läuft in Pfad 1 (HumanGraph), Pfad 2 (CharacterGraph) und Pfad 3 (AgentGraph) und nimmt blind, was im State steht.
+3. **Reader-Setter-Asymmetrie** — Reader (`agents/charakter/agent.py:94+248`, `api/drive.py:146`) hartcodieren `(DEFAULT_USER_ID, ASSISTANT_USER_ID)`. Setter nehmen den State, der je nach Pfad davon abweicht.
+
+**Auswirkung:** Wenn ein Aufrufer stromaufwärts `user_id="nova"` durchreicht, entstehen `*:nova:nova`-Keys flächendeckend in allen drei Familien. Reader sehen sie nie — sie werden zu Karteileichen, der CharakterAgent destilliert nicht mehr, das Drive-System verliert seinen Kontext, der Dispatcher liefert keine Detail-Frames.
+
+**Beobachtetes Symptom Chat 84:** `hash_dirty:nova:nova=1` und `drive:short_term:nova:nova` lagen in Redis. Brudi-Setter-Audit fand keinen aktiven Pfad-2-/Pfad-3-Setter mit `user_id="nova"` — die Karteileichen stammen vermutlich aus dem Migrationsskript `tools/migrate_kzg_nova_nova.py` oder aus einer Pre-MIGRATION-PIX-PAIR-Phase (vor Chat 79). Beide Keys gelöscht in Chat 84.
+
+**Lösung:** Zentraler Key-Helper analog `_kzg_key()` aus `memory/kzg.py`, der alle drei Familien bedient. Setter rufen den Helper, Reader rufen denselben Helper — Schema-Drift wird unmöglich. Zusätzlich State-Konstruktor um Assertion erweitern, die `user_id == ASSISTANT_USER_ID` im Setter-Pfad erkennt und loggt.
+
+**Prio:** Mittel — kein akuter Schaden heute, strukturelle Schwachstelle wartet auf nächsten Pfad-Migrations-Bug. Vor jeder weiteren Pfad-2-/Pfad-3-Migration anpacken.
 
 #### THINK-MEM-LOOP — Thinker zykelt im memory_search-Tool ohne Konvergenz ✅ Behoben Chat 82
 

@@ -1,6 +1,6 @@
 # Novaberg — Roadmap (Projektchronik)
 
-**Stand:** Chat 83, 10. Mai 2026
+**Stand:** Chat 84, 10. Mai 2026
 **Pfad:** novaberg/docs/novaberg-roadmap.md
 **Single Source of Truth für abgeschlossene Arbeit.**
 **Offene Punkte → novaberg-backlog.md**
@@ -924,4 +924,28 @@ Bestandsdaten-Korrektur fuer das in Chat 75 entdeckte Hardcoded-Default-Profil i
 
 ---
 
-*Aktualisiert in Chat 83. Offene Punkte → novaberg-backlog.md. Bugs → novaberg-bugs.md.*
+## Chat 84 (10.05.2026) — Sprint 82+83 final bestätigt + Doku-Drift M1 + REDIS-KEY-ASYMMETRY
+
+**Schwerpunkt:** Akzeptanz-Verifikation der M4-Code-Fix-Wirkung in der Praxis, M5a unter Code-Fix-Bedingung schließen, Doku-Drift bei M1 (PROMO-DUAL-IMPL) korrigieren, neuer Strukturbug aus Brudi-Audit dokumentieren.
+
+**Verifikation Sprint 82+83:**
+- M4 Code-Fix in der Praxis: SQL-Akzeptanz-Check ergab 0/26 LZG-Einträge mit Default-Kombi (`emotion='neutral' AND arousal=0.5`) in 24h. Verteilungs-Sanity zeigt vier Emotionen, drei mit echter `arousal`-Streuung (0.10–0.16). Aggregation produziert echte Werte aus echten Cluster-Inputs.
+- M5a unter Code-Fix-Bedingung: `charakter_hash`-Tabelle trägt frische 10.05.-Stempel für `meister:nova` und `nova:meister`, alle 5 Profile destilliert nach M4-Code-Fix. Damit ergänzt Chat 84 die Backfill-Verifikation aus Chat 83 um den Code-Fix-Beweis.
+
+**Doku-Drift M1 aufgedeckt:** Bei der Vorbereitung des geplanten M1-Audits stellte sich heraus, dass M1 (PROMO-DUAL-IMPL) bereits in Chat 77 vollständig erledigt wurde — der Status war weder in `novaberg-bugs.md` noch im Memory-Promotion-Korrektur-Epic in `novaberg-backlog.md` reflektiert. Geplanter Brudi-Audit gegenstandslos. Stattdessen Mini-Doku-Sprint zur Statuskorrektur, mit neuer Phasen-Übersichtstabelle im Epic, damit der nächste Drift sofort sichtbar wird.
+
+**Neuer Bug REDIS-KEY-ASYMMETRY:** Brudi-Setter-Audit für `hash_dirty` lieferte ein strukturelles Pattern: drei Setter-Familien (`hash_dirty`, `drive:short_term`, `gv:detail`) mit Inline-Key-Konstruktion, State-Pass-Through ohne Pfad-Unterscheidung und Reader-Setter-Schema-Asymmetrie. Beobachtet als Karteileichen `hash_dirty:nova:nova` und `drive:short_term:nova:nova` in Redis (beide gelöscht). Lösung: zentraler Key-Helper analog `_kzg_key()`, vor jeder weiteren Pfad-Migration anpacken. Detaillierter Eintrag in `novaberg-bugs.md`.
+
+**Karteileichen-Cleanup:**
+- Redis: `hash_dirty:nova:nova` und `drive:short_term:nova:nova` per `redis-cli DEL` entfernt.
+- Postgres: 8 Test-User in `charakter_hash` mit leerem `character_id` als `CHAR-HASH-TEST-LEICHEN` im Backlog vermerkt (niedrige Prio).
+
+**Stand am Ende:**
+- Sprint 82+83 final ✅
+- M1-Statuskorrektur ✅
+- Neuer Strukturbug REDIS-KEY-ASYMMETRY dokumentiert
+- Chat 85 startet mit M2 (LZG-Schema-Erweiterung um `themen[]`, `gedaechtnistyp`, `kzg_erstellt_am`) als nächstem substantiellen Brocken
+
+---
+
+*Aktualisiert in Chat 84. Offene Punkte → novaberg-backlog.md. Bugs → novaberg-bugs.md.*
