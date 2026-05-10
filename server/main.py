@@ -108,7 +108,7 @@ def schema_migrieren(postgres_url: str) -> None:
         # CREATE TABLE IF NOT EXISTS wird in init.sql behandelt.
         # DROP alter Tabellen + Neuanlage ebenfalls in init.sql (Migrations-Block).
         # Hier nur zukünftige ALTER TABLE Migrationen.
-        # M5: Timeline-Erweiterungen
+        # M2.5a: Timeline-Erweiterungen (Chat 80, e139465-Commit)
         "ALTER TABLE timeline ADD COLUMN IF NOT EXISTS aktiv BOOLEAN NOT NULL DEFAULT TRUE",
         "ALTER TABLE timeline ADD COLUMN IF NOT EXISTS last_touched TIMESTAMPTZ NOT NULL DEFAULT NOW()",
         "ALTER TABLE timeline ADD COLUMN IF NOT EXISTS wiedervorlage_am TIMESTAMPTZ",

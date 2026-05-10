@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** PromotionAgent — KZG-nach-LZG-Promotion (Zwei-Call-Prozess)
-**Stand:** 10. Mai 2026, Chat 83 (Cluster-Promotion EI-Aggregation, `_cluster_insert` gelöscht, `emotions_vektor` aus LZG entfernt)
+**Stand:** 10. Mai 2026, Chat 85 (M3a: Magnet-Aggregation `themen` + `kzg_erstellt_am`; vorher Chat 83: Cluster-Promotion EI-Aggregation, `_cluster_insert` gelöscht, `emotions_vektor` aus LZG entfernt)
 **Pfad:** novaberg/docs/novaberg-pixie-promotion.md
 **Quellen:** nova-05-m-a.md, nova-03-t-b.md
 
@@ -168,6 +168,19 @@ Beim Schreiben des Cluster-Destillats ins LZG werden sieben EI-Felder pro Cluste
 **NULL/Leer-Filter:** `None` und Leerstring werden vor Counter/Mittelwert/Vereinigung ausgefiltert. Bei leerem Counter Fallback `""`.
 
 **Hinweis zu `emotions_vektor`:** Wird im LZG nicht mehr persistiert (siehe `novaberg-mem-lzg.md` §2). Im Loader und in der Aggregation kommt das Feld nicht mehr vor.
+
+### Magnet-Aggregation (Chat 85, M3a)
+
+Beim Cluster-Insert werden zwei Magnet-/Meta-Felder aus den KZG-Mitgliedern aggregiert und ins LZG übertragen — analog zu den sieben EI-Feldern aus M4 Teil 2.
+
+| Feld | Aggregations-Strategie | Begründung |
+|---|---|---|
+| `themen TEXT[]` | **Vereinigung** (`sorted(set().union(*[m.themen]))`) | Cluster-Mitglieder bringen unterschiedliche Themen-Tags mit; alle bleiben erhalten und werden dedupliziert. |
+| `kzg_erstellt_am TIMESTAMPTZ` | **Frühestes** (`min(m.kzg_erstellt_am for m in members if m.kzg_erstellt_am)`) | Der älteste Original-Zeitpunkt eines Cluster-Mitglieds repräsentiert den ersten Auftritt der Erinnerung. |
+
+Der Single-Promotion-Pfad (`_eintrag_verarbeiten`) nutzt dasselbe `sorted({…})`-Pattern für `themen`, sodass für 1-Element-Cluster Single- und Cluster-Pfad identisches Ergebnis liefern.
+
+Drei Cluster-Aufrufer (`_cluster_insert_kohaerenz`, `_cluster_update_kohaerenz`-Insert-Zweig, `_cluster_update`-Insert-Zweig) profitieren über die zentrale Methode `_lzg_eintrag_schreiben` ohne eigenen Code-Diff. Internes Aggregieren statt Signatur-Erweiterung — Pattern-konsistent zu den sieben EI-Feldern aus Chat 83.
 
 ### Querschneidende Cluster
 

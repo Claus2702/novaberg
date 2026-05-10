@@ -368,7 +368,7 @@ Empirisch verifiziert per SQL-Abfrage gegen `charakter_hash`. Beide Beobachter-S
 
 ---
 
-#### PROMO-DROP1 — KZG-Felder werden bei Promotion stillschweigend verworfen ⚠️
+#### PROMO-DROP1 — KZG-Felder werden bei Promotion stillschweigend verworfen ⚠️ Teilweise behoben Chat 85
 **Entdeckt:** Chat 75, Promotion-Pipeline-Audit
 **Symptom:** Drei KZG-Hash-Felder kommen niemals im LZG an:
 - `themen` (Salienz Dim 1) — fließt nur als Embedding-Input ein, kein abfragbares Feld in der DB.
@@ -378,8 +378,33 @@ Empirisch verifiziert per SQL-Abfrage gegen `charakter_hash`. Beide Beobachter-S
 **Ursache:** Das LZG-Schema (`db/init.sql:16-37`) hat keine entsprechenden Spalten. Die Promotion-Pipeline wurde 1:1 aus der Legacy-Variante übernommen, ohne Re-Evaluation. Keine Code-Kommentare, keine Doku-Hinweise — wirkt unbemerkt.
 **Auswirkung:** Mittel. Themen-basierte LZG-Verknüpfung ist nicht möglich, episodisch/semantisch/prozedural-Klassifikation für später nicht nutzbar, "Wann hat der User zuerst von X erzählt?" nicht beantwortbar (chronologisch unscharf um die Promotion-Verzögerung). Blockiert Akten-Architektur (Backlog) und Knowledge-Graph-Integration mit LZG.
 **Lösung:** LZG-Schema um drei Spalten erweitern: `themen TEXT[]` (oder JSON), `gedaechtnistyp VARCHAR(20)`, `kzg_erstellt_am TIMESTAMPTZ`. Promotion-Code in `agents/promotion/agent.py` (beide Pfade — Einzel und Cluster) entsprechend anpassen. Migration für Altbestand: alte Einträge bekommen `NULL` in den neuen Feldern.
+
+**Status Chat 85:** `themen` und `kzg_erstellt_am` ✅ behoben (M3a, Sprint Chat 85 — Promotion-Pfad überträgt beide aus KZG-Hash, Format-Konvertierung trivial). `gedaechtnistyp` weiterhin offen — kein Klassifikator-Pfad vorhanden, wartet auf M5 (Salienz-Pipeline) oder eigenen Klassifikator-Sprint.
+
 **Vorbedingung:** Doppelpipeline klären (siehe PROMO-DUAL-IMPL).
 **Prio:** Mittel.
+
+---
+
+#### PROMO-INHALT-FALLBACK-UNSICHER — Single-Promotion fällt bei TTL-abgelaufenem KZG auf Themen-Tags zurück ⬜
+**Entdeckt:** Chat 85 (M3-B-Side-Finding bei Promotion-Code-Audit)
+
+**Symptom:** In `agents/promotion/agent.py:_eintrag_verarbeiten` wird der LZG-INSERT-Inhalt aus dem KZG-Hash gelesen:
+
+```python
+inhalt: str = _hget("inhalt") or themen
+```
+
+Wenn der KZG-Hash zur Promotion-Zeit nicht mehr existiert (TTL abgelaufen, manueller `DEL`, Redis-Restart ohne Persistenz-Snapshot), gibt `_hget("inhalt")` einen leeren String zurück. Der `or`-Fallback nimmt dann den `themen`-Wert (kommaseparierter Tag-String) und schreibt ihn als `inhalt` ins LZG.
+
+**Auswirkung:** Niedrig in der Praxis (KZG-TTL läuft länger als typische Promotion-Latenz), aber strukturell unsauber. Pseudo-Inhalts-Einträge im LZG, die nicht als solche erkennbar sind. Der Schutz `if not inhalt: return` (Z. 142) fängt nur den Fall, dass beide leer sind — der Fallback-Pfad rutscht durch.
+
+**Ursache:** Pre-Existing-Pattern, vermutlich aus einer frühen Promotion-Variante. Defensiv-Default für den Fall, dass Inhalt fehlt — aber semantisch falscher Default, weil Themen-Tags kein Inhalt sind.
+
+**Lösung:** `or themen` entfernen, durch ehrlichen Fail ersetzen: bei leerem `inhalt` Promotion abbrechen mit WARN-Log. Der Aufrufer sollte solche Aufträge nicht queuen, oder die Cluster-Promotion sollte sie überspringen. Alternative: Sentinel-String `"[KZG-Verlust]"` als Default, dann ist der Pseudo-Charakter explizit.
+
+**Vorbedingung:** Keine.
+**Prio:** Niedrig — Pre-Existing, in der Praxis unwahrscheinlich, aber strukturell unsauber.
 
 ---
 

@@ -1297,8 +1297,9 @@ Perzeption klassifiziert 😍-Katzen-Chat als `gespraechs_modus="emotional"` sta
 | Phase | Inhalt | Status |
 |---|---|---|
 | M1 | Doppelpipeline konsolidieren (PROMO-DUAL-IMPL) | ✅ Chat 77 |
-| M2 | LZG-Schema erweitern (PROMO-DROP1, Schema-Teil) | ⬜ Offen |
-| M3 | Promotion-Code anpassen (PROMO-DROP1, Code-Teil) | ⬜ Offen |
+| M2 | LZG-Schema erweitern (PROMO-DROP1, Schema-Teil) | ✅ Chat 78 |
+| M3a | Promotion-Code: themen + kzg_erstellt_am | ✅ Chat 85 |
+| M3b | Promotion-Code: entitaet_ids + timeline_id (wartet auf M5) | ⬜ blockiert |
 | M4 Teil 1 | Cluster-Promotion EI-Aggregation — Backfill | ✅ Chat 82 |
 | M4 Teil 2 | Cluster-Promotion EI-Aggregation — Code-Fix | ✅ Chat 83 |
 | M5a | Charakter-Hash profitiert von echten EI-Profilen | ✅ Chat 83 (Backfill-Stand) + Chat 84 (Code-Fix-Stand) |
@@ -1314,16 +1315,32 @@ Ein Audit der Promotion-Pipeline KZG→LZG in Chat 75 hat drei Datenverluste sic
 **Phase M1 — Doppelpipeline konsolidieren (PROMO-DUAL-IMPL) ✅ Chat 77.**
 Verifizieren, ob `services/shadow_agent/tasks/lzg_promotion.py` noch von irgendeinem Pfad aufgerufen wird. Falls nicht: entfernen. Falls doch: Aufrufer migrieren, Legacy entfernen. Eine einzige Promotion-Implementierung als Voraussetzung für die nächsten Phasen.
 
-**Phase M2 — LZG-Schema erweitern (PROMO-DROP1, Schema-Teil).**
-DB-Migration: drei neue Spalten in `langzeitgedaechtnis`:
-- `themen TEXT[]` (Themen aus KZG übernommen)
-- `gedaechtnistyp VARCHAR(20)` (episodisch/semantisch/prozedural)
-- `kzg_erstellt_am TIMESTAMPTZ` (KZG-Original-Zeitstempel, getrennt vom Promotion-`erstellt_am`)
+**Phase M2 — LZG-Schema erweitern (PROMO-DROP1, Schema-Teil) ✅ Chat 78.**
+  Vier neue Spalten in `langzeitgedaechtnis` (`themen TEXT[]`, `gedaechtnistyp VARCHAR(20)`, `kzg_erstellt_am TIMESTAMPTZ`, `entitaet_ids INTEGER[]`) plus `timeline_id INTEGER FK timeline(id)` — alle nullable, zugehörige GIN/BTREE-Indizes. Idempotent in `db/init.sql`. **Spiegelung in `main.py:schema_migrieren()` als Schema-Restschuld nachgezogen Chat 85 (M3-A).**
 
-Altbestand bekommt `NULL`. Index auf `themen` (GIN) für spätere Themen-basierte Suche prüfen.
+**Phase M3 — Promotion-Code anpassen.** Zweistufig laut Magnet-Konvention §4.
 
-**Phase M3 — Promotion-Code anpassen (PROMO-DROP1, Code-Teil).**
-Im konsolidierten Promotion-Pfad (nach M1) die drei Felder aus dem KZG-Hash bzw. Queue-Auftrag in die LZG-INSERT übernehmen. Logging ergänzen: pro Promotion eine Zeile mit den übernommenen Werten.
+**M3a — themen + kzg_erstellt_am ✅ Chat 85.** Promotion-Code überträgt beim
+KZG→LZG-Schritt zwei Felder aus dem KZG-Hash:
+- `themen` (kommaseparierter String → `TEXT[]`, Cluster-Pfad: Vereinigung über Mitglieder)
+- `kzg_erstellt_am` (Unix-float-String → `TIMESTAMPTZ`, Cluster-Pfad: frühestes über Mitglieder)
+
+Eingriff an zwei INSERT-Stellen: `_eintrag_verarbeiten` (Single-Promotion) und
+`_lzg_eintrag_schreiben` (Cluster-Pfad zentral). Drei Cluster-Aufrufer profitieren
+über die zentrale Methode. Internes Aggregieren statt Signatur-Erweiterung — kein
+Diff in den drei Aufrufern, identisches Pattern wie für die sieben EI-Felder aus
+M4. Loader `_kzg_partition_laden` um Lade-Pfad für `erstellt_am` erweitert
+(10 Zeilen, identisches Pattern zu `arousal`/`intentionen`). Single-Pfad nutzt
+`sorted({…})` symmetrisch zum Cluster-Pfad — für 1-Element-Cluster identisches
+Ergebnis.
+
+**M3b — entitaet_ids + timeline_id ⬜ blockiert auf M5.** Beide Felder können erst
+übertragen werden, wenn der KZG-Schreibpfad sie selbst befüllt. Magnet-Konvention §4:
+"M5 (Salienz-Pfad pro Turn): KZG-Schreibpfad bekommt aufgelöste entitaet_ids und
+ggf. timeline_id direkt mit." Bis dahin bleiben die beiden Spalten leer.
+
+**`gedaechtnistyp`** (Backlog-Phase-Beschreibung Pre-Chat-85): nicht in M3, weil
+kein Klassifikator-Pfad existiert. M5 oder eigener Klassifikator-Sprint.
 
 **Phase M4 — Cluster-Promotion EI-Aggregation (PROMO-CLUSTER-EI).** Zweistufig.
 
@@ -1349,6 +1366,20 @@ Diese fünf Phasen sind Vorarbeit für die Akten-Architektur (siehe `novaberg-re
 **Entdeckt:** Chat 83 (Brudi-Audit zu PROMO-CLUSTER-EI)
 **Symptom:** Bestätigungs-Updates in `_cluster_update_kohaerenz` (`agents/promotion/agent.py:1141-1151`) und `_cluster_update` (`:939-950`) aktualisieren nur `inhalt`, `embedding`, `gewicht`, `verstaerkt_am`. Die EI-Felder des bestehenden LZG-Eintrags bleiben eingefroren — neue Cluster-Mitglieder fließen nie in das EI-Profil bestehender LZG-Einträge ein.
 **Konzeptionelle Frage:** Soll der Mehrheits-Wert ersetzt, mit dem alten gemittelt, oder gewichtet nach Mitglieder-Anzahl gemerged werden? Nicht trivial.
+
+**Erweitert Chat 85 (M3-B-Side-Finding):** Die UPDATE-Pfade aktualisieren auch
+die Magnet-Felder nicht:
+- `themen` (Cluster-Mitglieder mit neuen Themen-Tags fließen nicht in den
+  bestehenden LZG-Eintrag)
+- `kzg_erstellt_am` (bleibt am ursprünglichen Wert, frühere Cluster-Mitglieder
+  überschreiben den Stand nicht)
+
+Strukturell dasselbe Muster wie für die EI-Felder. Konzeptionelle Frage analog:
+Magneten ersetzen, vereinen, oder gewichten nach Mitglieder-Anzahl? Nicht trivial.
+Bei einer Vereinigungs-Strategie würde sich `themen` über mehrere Bestätigungen
+sukzessive bereichern; bei `kzg_erstellt_am` wäre `LEAST(alt, neu)` semantisch
+plausibel (frühestes Auftreten der Erinnerung).
+
 **Prio:** Mittel.
 
 #### PROMO-CLUSTER-TIE-DETERMINISM — Counter-Tie-Break nicht deterministisch
@@ -1747,6 +1778,26 @@ Diese Konzeption materialisiert **Typ 1** (Prompt-Skills als Markdown) aus Epic 
 **Lösung:** Einmalige `DELETE FROM charakter_hash WHERE character_id = ''`-Operation in Chat 85+ oder bei nächster Schema-Migration mitnehmen.
 
 **Prio:** Niedrig.
+
+---
+
+## Cleanup: LZG-DOKU-DRIFT — `novaberg-mem-lzg.md` reflektiert nicht das Live-Schema
+
+**Status:** Beobachtet
+**Entdeckt:** Chat 85 (M3-D, beim Doku-Synchronisations-Audit)
+
+**Symptom:** Die Schema-Tabelle in `novaberg-mem-lzg.md` §2 listet 13 Spalten, die Live-DB-Tabelle `langzeitgedaechtnis` hat 24 Spalten. Fehlend in der Doku:
+- Fünf Magnet-/Meta-Spalten (`themen`, `gedaechtnistyp`, `kzg_erstellt_am`, `entitaet_ids`, `timeline_id`) — seit Chat 78 im Schema, in M3-D nur die zwei M3-relevanten ergänzt
+- Sechs EI-Metadaten-Spalten (`intentionen`, `emotion`, `modus`, `sprach_stil`, `beziehungs_dynamik`, `tone`) — nur summarisch im Hinweis-Block erwähnt, nicht einzeln tabelliert
+
+**Auswirkung:** Niedrig in der Praxis (Code arbeitet korrekt), aber strukturell unsauber. Neue Mitwirkende oder spätere Audits müssen aus dem Quellcode rekonstruieren, was die Spalten bedeuten. Drift verstärkt sich mit jeder weiteren Schema-Erweiterung, wenn nicht aktiv synchronisiert wird.
+
+**Lösung:** Eigenständiger Doku-Refresh-Sprint — Live-Schema komplett gegen Doku abgleichen, alle Spalten dokumentieren, Schreibpfade pro Spalte benennen (Promotion, Cluster-Promotion, EI-Calc-Node, …), Reader pro Spalte benennen (Retrieval, Charakter-Hash, …). Eventuell auch §5 "Schreibpfade" erweitern um vollständige Pro-Spalte-Provenance.
+
+**Vorbedingung:** Keine.
+**Prio:** Mittel — kein akuter Schaden, aber die Drift hält Doku unzuverlässig.
+
+**Verwandt:** Audit-Empfehlung Chat 84 — alle Convention-Dokumente vollständig lesen, nicht aus Stichproben Schlüsse ziehen. LZG-Doku ist ein Beispiel für nicht-Convention-Doku, die ähnlich aktiv gepflegt werden müsste.
 
 ---
 

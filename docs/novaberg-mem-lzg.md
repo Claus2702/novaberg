@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Modul Langzeitgedächtnis
-**Stand:** 10. Mai 2026, Chat 83 (emotions_vektor entfernt — gehört im LZG nicht persistiert)
+**Stand:** 10. Mai 2026, Chat 85 (M3a: Promotion überträgt `themen` + `kzg_erstellt_am`; vorher Chat 83: `emotions_vektor` aus LZG entfernt)
 **Pfad:** novaberg/docs/novaberg-mem-lzg.md
 **Quellen:** nova-02-m-c.md
 **Datei:** `memory/lzg.py`
@@ -36,8 +36,12 @@ Tabelle: `langzeitgedaechtnis`
 | `aktiv` | BOOLEAN | Soft-Delete Flag (Default: TRUE) |
 | `verstaerkt_am` | TIMESTAMPTZ | Basis für Decay-Berechnung (Reset bei Verstärkung) |
 | `created_at` | TIMESTAMPTZ | Erstellungszeitpunkt |
+| `themen` | TEXT[] | Themen-Magnet aus dem KZG-Hash übernommen (Promotion, Chat 85). Cluster-Pfad: Vereinigung über Mitglieder. |
+| `kzg_erstellt_am` | TIMESTAMPTZ | Original-Erstellungszeitpunkt der Erinnerung im KZG, getrennt vom DB-Default `erstellt_am` (Promotion-Zeitpunkt). |
 
 **Hinweis (Chat 83):** `emotions_vektor` wurde aus dem LZG-Schema entfernt. Das Feld beschreibt eine Trajektorie über mehrere Turns (9 Bewegungs-Labels: `eskalation`, `plateau`, `absturz`, …). Eine LZG-Erinnerung ist ein verdichteter Punkt — eine Trajektorie hat dort keinen sinnvollen Anker. Im KZG, im Session-Turn-Format und im State-Feld lebt das Konzept weiter; dort hat es eine eindeutige Bedeutung pro Einzel-Erinnerung beziehungsweise pro Live-Verlauf.
+
+**Hinweis (Chat 85):** Drei weitere Magnet-Spalten existieren im Schema, sind aber heute leer: `entitaet_ids INTEGER[]`, `timeline_id INTEGER FK timeline(id)`, `gedaechtnistyp VARCHAR(20)`. Befüllung wartet auf M5 (Salienz-Pfad-Erweiterung im KZG-Schreibpfad). Das vollständige Magnet-Modell ist in `novaberg-convention-magneten.md` §4 dokumentiert. Diese Schema-Beschreibung listet bewusst nur die heute befüllten Felder; der vollständige Schema-Refresh ist als eigener Backlog-Sprint vorgesehen (siehe `novaberg-backlog.md`).
 
 **Indexes:**
 - Partial Index `idx_lzg_aktiv` auf `(user_id, character_id) WHERE aktiv = TRUE` — alle Abfragen filtern auf Paar + aktive Einträge (Chat 62)
@@ -110,7 +114,7 @@ Das LZG wird nie direkt aus dem Chat-Graph beschrieben. Alle Schreiboperationen 
 
 | Pfad | Task | Beschreibung |
 |------|------|-------------|
-| **Promotion** | `lzg_promotion` | KZG → LZG. Zwei-Call-Promotion (Klassifikation + Extraktion). Einziger Weg ins LZG. |
+| **Promotion** | `lzg_promotion` | KZG → LZG. Zwei-Call-Promotion (Klassifikation + Extraktion). Einziger Weg ins LZG. Seit Chat 85 (M3a) überträgt die Promotion `themen` und `kzg_erstellt_am` aus dem KZG-Hash. |
 | **Verstärkung** | `lzg_promotion` | Bestehender LZG-Eintrag wird erneut angesprochen → `gewicht` steigt, `verstaerkt_am` wird zurückgesetzt. |
 | **Decay** | `lzg_decay` | Berechnet effektives Gewicht für alle aktiven Einträge, markiert unter-Schwellwert als inaktiv. |
 | **Charakter-Hash** | `charakter_hash` | Liest aktive LZG-Einträge (gewichtet nach effektivem Gewicht) und destilliert 4 Profile (kern_hash, adaptive_hash, beziehungsprofil, intentions_profil). |

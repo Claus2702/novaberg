@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Convention — Drei-Achsen-Modell für die Bündelung von Erinnerungen
-**Stand:** 06. Mai 2026, Chat 78
+**Stand:** 06. Mai 2026 (Chat 78), aktualisiert 10. Mai 2026 (Chat 85)
 **Pfad:** novaberg/docs/novaberg-convention-magneten.md
 **Typ:** Convention
 **Voraussetzung:** M1 (Promotion-Doppelpipeline aufgelöst) ✅, M2 (Schema-Magneten ausgerollt) ✅
@@ -136,15 +136,20 @@ Status nach M2-Schema-Migration und M2.5a-Implementierung:
 | `timeline` | INTEGER[] (vorhanden, leer) | (selbst) | TEXT[] + GIN ✓ |
 | `fakten` | über `subjekt_id`/`objekt_id` (vorhanden) | — | — |
 
-**Befüllungs-Status (Stand Chat 80):**
+**Befüllungs-Status (Stand Chat 85):**
 
 | Speicher | entitaet_ids | timeline_id | themen | Verhaltens-Flags |
 |---|:---:|:---:|:---:|:---:|
-| `langzeitgedaechtnis` | leer | leer | leer | — |
+| `langzeitgedaechtnis` | leer (M5) | leer (M5) | **befüllt seit M3 (Chat 85)** | — |
 | `notizen` | leer | leer | leer | — |
 | KZG (Redis) | leer | leer | befüllt (vor M2) | — |
 | `timeline` | leer (M5) | (selbst) | **befüllt seit M2.5a** | **befüllt seit M2.5a** |
 | `fakten` | (über Subject/Object-FK) | — | — | — |
+
+Stand Chat 85: LZG erhält den `themen`-Magneten beim Promotion-Pfad (M3a). Die zwei
+übrigen Magnete `entitaet_ids` und `timeline_id` warten auf M5 — der Salienz-Pfad
+muss im KZG-Schreibpfad zuerst die Auflösung vornehmen, bevor der Promotion-Pfad
+sie übertragen kann.
 
 Timeline ist die erste Schicht mit produktiv befüllten Magneten. Helper-Funktion `agents/timeline/magneten.py` ist Single Source of Truth für das `event_type → Magnete`-Mapping.
 
