@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** PromotionAgent — KZG-nach-LZG-Promotion (Zwei-Call-Prozess)
-**Stand:** 25. April 2026, Chat 64 (Cluster-Promotion: 4-Phasen-Algorithmus, Mehrfachzuordnung, Kohärenzprüfung)
+**Stand:** 10. Mai 2026, Chat 83 (Cluster-Promotion EI-Aggregation, `_cluster_insert` gelöscht, `emotions_vektor` aus LZG entfernt)
 **Pfad:** novaberg/docs/novaberg-pixie-promotion.md
 **Quellen:** nova-05-m-a.md, nova-03-t-b.md
 
@@ -155,6 +155,20 @@ Einzelgänger und Zweier-Cluster, die Phase 3a nicht bestehen, werden trotzdem g
 
 KZG-Einträge, die in mindestens einem promovierten Cluster waren, werden gelöscht. Ausreißer (vom LLM als "teilweise" markiert) bleiben im KZG. `hash_dirty` wird gesetzt.
 
+### EI-Aggregation (Chat 83)
+
+Beim Schreiben des Cluster-Destillats ins LZG werden sieben EI-Felder pro Cluster aus den Quell-Einträgen aggregiert statt hartcodiert auf Defaults gesetzt (siehe Bug `PROMO-CLUSTER-EI`, behoben Chat 83). Der Loader `_kzg_partition_laden` reicht die EI-Felder pro Cluster-Mitglied durch.
+
+| Feld | Strategie |
+|---|---|
+| `emotion`, `modus`, `sprach_stil`, `tone`, `beziehungs_dynamik` | Counter-Mehrheit (`Counter.most_common(1)`, Insertion-Order-Tie-Break) |
+| `arousal` | Mittelwert über alle nicht-`None`-Werte, Fallback `0.5` |
+| `intentionen` | Mengen-Vereinigung über `set()`, Output sortiert via `json.dumps(sorted(...))` |
+
+**NULL/Leer-Filter:** `None` und Leerstring werden vor Counter/Mittelwert/Vereinigung ausgefiltert. Bei leerem Counter Fallback `""`.
+
+**Hinweis zu `emotions_vektor`:** Wird im LZG nicht mehr persistiert (siehe `novaberg-mem-lzg.md` §2). Im Loader und in der Aggregation kommt das Feld nicht mehr vor.
+
 ### Querschneidende Cluster
 
 Der entscheidende Vorteil gegenüber Themen-basiertem Clustering: Einträge über verschiedene Gemüsesorten ("Blumenkohl-Auflauf", "Gefüllte Paprika") können im selben Cluster landen, weil sie auf der Aussage-Ebene ähnlich sind ("Lieblingsgerichte"). Themen-Strings können das prinzipiell nicht.
@@ -238,9 +252,8 @@ Der entscheidende Vorteil gegenüber Themen-basiertem Clustering: Einträge übe
 - `_parse_kohaerenz_antwort()` — JSON-Parsing
 - `_lzg_thema_suchen()` — Embedding-Suche im LZG
 - `_cluster_update()` — UPDATE ohne Kohärenz (Legacy, für Fallback)
-- `_cluster_insert()` — INSERT ohne Kohärenz (Legacy, für Fallback)
 - `_lzg_eintrag_schreiben()` — SQL INSERT
-- `_destillation_insert()` — LLM-Call ohne Kohärenz
+- `_destillation_insert()` — LLM-Call ohne Kohärenz (seit Chat 83 ohne Aufrufer — siehe Backlog `PROMO-DESTILL-DEAD`)
 - `_destillation_update()` — LLM-Call ohne Kohärenz
 
 ---

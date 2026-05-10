@@ -332,8 +332,8 @@
 
 ---
 
-#### CHAR-BEZ-STALE — Veraltetes Beziehungsprofil im Prompt (Chat 71) ⚠️
-**Status:** ⚠️ Offen
+#### CHAR-BEZ-STALE — Veraltetes Beziehungsprofil im Prompt (Chat 71) ✅ Behoben Chat 83
+**Status:** ✅ Behoben Chat 83
 **Symptom:** Der GV-Node und der Responder erhalten als `nova_beziehung`:
   "Nova sieht ihren Nutzer als eine rein sachliche und effizienzorientierte Instanz,
   mit der sie eine rein funktionale und professionelle Beziehung pflegt."
@@ -350,9 +350,12 @@ Das widerspricht dem tatsächlichen Beziehungsprofil in der DB (User-Perspektive
 **Debug:** `SELECT user_id, character_id, beziehungsprofil FROM charakter_hash;`
   um alle Einträge zu sehen.
 
+**✅ Behoben Chat 83:**
+Empirisch verifiziert per SQL-Abfrage gegen `charakter_hash`. Beide Beobachter-Sichten (`meister → nova` und `nova → meister`) zeigen jetzt vertraute, emotional warme Beziehungsprofile statt der ursprünglichen "rein sachlichen, effizienzorientierten Instanz". Wirkmechanismus: Chat-82-Backfill der 19 Default-EI-Profile (`Korrektur.py` mit Qwen3-32B) plus Chat-83-Cluster-Aggregations-Fix (M4 Teil 2) — beides zusammen liefert dem CharakterAgent jetzt verlässliche Quelldaten.
+
 ---
 
-#### PROMO-CLUSTER-EI — Cluster-Promotion setzt EI-Felder auf Hardcoded-Defaults ⚠️
+#### PROMO-CLUSTER-EI — Cluster-Promotion setzt EI-Felder auf Hardcoded-Defaults ✅ Behoben Chat 83
 **Entdeckt:** Chat 75, Promotion-Pipeline-Audit
 **Symptom:** Bei der Cluster-Promotion (mehrere KZG-Einträge → ein LZG-Eintrag) werden die EI-Metadaten-Felder (`intentionen`, `emotion`, `modus`, `arousal`, `emotions_vektor`, `sprach_stil`, `beziehungs_dynamik`, `tone`) nicht aus den Quell-Einträgen aggregiert, sondern hartcodiert auf Defaults gesetzt: `"neutral"`, `0.5`, `"[]"`, Leerstring. Bei der Einzel-Promotion werden die Felder korrekt durchgereicht — die Inkonsistenz zwischen den Pfaden ist nirgends dokumentiert.
 **Ursache:** `agents/promotion/agent.py:1207-1246` (Cluster-Pfad). Die Mehrheits-Aggregation gibt es nur für `beobachter` und `dimension`. Für die EI-Felder existiert kein Aggregations-Code.
@@ -360,7 +363,7 @@ Das widerspricht dem tatsächlichen Beziehungsprofil in der DB (User-Perspektive
 **Lösung:** Aggregation analog zur `beobachter`/`dimension`-Mehrheits-Logik einbauen — numerisch (Mittelwert für `arousal`) und kategorisch (häufigster Wert für `emotion`/`modus`/`sprach_stil`/`tone`/`beziehungs_dynamik`, Mengen-Vereinigung für `intentionen`).
 **Vorbedingung:** Doppelpipeline klären (siehe PROMO-DUAL-IMPL) — sonst Doppelfix.
 **Messung vor Fix empfohlen:** Wieviele LZG-Einträge tragen heute `emotion="neutral"` und `arousal=0.5`? SQL: `SELECT COUNT(*) FROM langzeitgedaechtnis WHERE emotion='neutral' AND arousal=0.5;`
-**Bestandsdaten via Backfill bereinigt Chat 82:** Messung ergab 19 von 20 LZG-Einträgen mit Default-Profil. Standalone-Skript `Korrektur.py` hat alle 19 per Qwen3-32B-CPU re-klassifiziert (17 automatisch über Skript, 2 händisch nach LLM-Validierungs-Drift). Restwert nach Backfill: 0 Default-Einträge. **Code-Fix offen (M4 Teil 2)** — ohne ihn entstehen bei der nächsten Cluster-Promotion erneut Default-Profile.
+**Bestandsdaten via Backfill bereinigt Chat 82.** **Code-Fix abgeschlossen Chat 83** — sieben EI-Felder werden im Cluster-Pfad aggregiert (Counter-Mehrheit, Mittelwert, Mengen-Vereinigung). `emotions_vektor` wurde im selben Sprint aus dem LZG-Schema entfernt (Trajektorie passt nicht zu verdichtetem Punkt). Schwester-Themen (`PROMO-CLUSTER-EI-UPDATE`, `PROMO-CLUSTER-TIE-DETERMINISM`, `PROMO-INTENTIONEN-FORMAT-DRIFT`) im Backlog.
 **Prio:** Hoch.
 
 ---

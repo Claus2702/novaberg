@@ -362,6 +362,15 @@ Emotions-Baseline.
 | 5i | Zeitparser: Fränkisch + Norddeutsch | ⬜ |
 | DELIVERY-VOICE | Recherche-Destillation klingt nach Referat, nicht nach Nova | ⬜ Delivery-Prompt braucht staerkere Charakter-Durchdringung. Beobachtet Chat 79 |
 
+#### RECH-NO-PERSIST — Recherche-Resultate verschwinden ungenutzt
+
+**Status:** ⬜ Offen
+**Entdeckt:** Chat 83 (Beobachtung am Pixie-Stand)
+**Symptom:** Eine umfassende Recherche dauert ~50 Minuten CPU-Zeit. Das Ergebnis erscheint als Bobble im Chat (Shadow-Stack-Push via Delivery-Service) und ist danach verloren — kein KZG-, kein LZG-, kein Knowledge-Graph-Eintrag. Beim nächsten Gespräch ist das Wissen weg.
+**Auswirkung:** Mittel-Hoch. Recherche kostet sehr viel CPU für ephemeren Output. Verwandt zu `DELIVERY-VOICE` (Recherche-Destillation klingt wie Referat statt Nova) und zur Akten-Vision (Recherche-Resultate könnten Akten-Material sein).
+**Lösung:** Konzeptionell offen — KZG-Push? Eigene Tabelle "Recherche-Akten"? Knowledge-Graph-Anreicherung? Braucht Architektur-Diskussion.
+**Prio:** Mittel.
+
 ### Infrastruktur
 | # | Thema | Status |
 |---|-------|--------|
@@ -1307,23 +1316,52 @@ Im konsolidierten Promotion-Pfad (nach M1) die drei Felder aus dem KZG-Hash bzw.
 
 **Teil 1 — Backfill ✅ Chat 82.** Messung ergab 19 von 20 LZG-Einträgen mit Default-Profil (`emotion='neutral' AND arousal=0.5`). Standalone-Skript `Korrektur.py` hat alle 19 per Qwen3-32B-CPU re-klassifiziert (17 automatisch über Skript, 2 händisch nach LLM-Validierungs-Drift). Restwert nach Backfill: 0 Default-Einträge.
 
-**Teil 2 — Code-Fix ⏳ (offen, geplant Chat 83).** Im Cluster-Pfad (`agents/promotion/agent.py:1207–1246`) die hartcodierten Defaults durch echte Aggregation ersetzen. Pro Feld die passende Aggregations-Strategie:
-- Numerisch (`arousal`): Mittelwert
-- Kategorisch (`emotion`, `modus`, `sprach_stil`, `tone`, `beziehungs_dynamik`): häufigster Wert (Counter-Mehrheit, analog zum bestehenden `beobachter`-Code)
-- Mengen-artig (`intentionen`, falls als Liste/Array): Vereinigung der Quell-Einträge
-- `emotions_vektor`: Vektor-Mittelung oder häufigster Wert (Designentscheidung)
-
-Ohne den Code-Fix entstehen bei der nächsten Cluster-Promotion erneut Default-Profile — der Backfill ist ohne Teil 2 nur eine Momentaufnahme. Nach Implementierung: Audit ob neue Einträge plausible Profile haben.
+**Teil 2 — Code-Fix ✅ Chat 83.** Sieben EI-Felder werden im Cluster-Pfad aggregiert (Counter-Mehrheit, Mittelwert, Mengen-Vereinigung). `emotions_vektor` wurde gleichzeitig aus dem LZG-Schema entfernt — siehe Roadmap-Block Chat 83. Alle drei INSERT-Aufrufer (`_cluster_insert_kohaerenz`, `_cluster_update_kohaerenz` Widerspruchs-Pfad, `_cluster_update` Widerspruchs-Pfad) profitieren über den gemeinsamen `_lzg_eintrag_schreiben`. Einzel-Promotion-INSERT mit-angepasst.
 
 **Phase M5 — Agenten nachziehen.**
 Erst nach M1–M4 abgeschlossen sind, werden die Agenten an die neue Memory-Struktur angepasst:
 - **FaktenManager-Reaktivierung** (heute durch `continue` im Enricher gesperrt seit Chat 71). Voraussetzung: Themen-basierte Verknüpfung im LZG verfügbar (M2/M3).
 - **Themen-Cluster-Promotion** könnte mit echtem `themen[]`-Feld smarter werden (heute nur über Embedding-Cluster).
-- **Charakter-Hash-Generierung** (`charakter_hash`) profitiert von echten EI-Profilen aus Cluster-Promotion (M4) — Profile werden weniger neutral.
+- **Charakter-Hash-Generierung** (`charakter_hash`) profitiert von echten EI-Profilen aus Cluster-Promotion (M4) — Profile werden weniger neutral. ✅ **Verifiziert Chat 83.** Empirische Prüfung der `charakter_hash`-Tabelle nach M4-Sprint zeigt vertraute, emotional warme Beziehungsprofile beider Sichten — CHAR-BEZ-STALE damit ebenfalls geschlossen.
 
 ### Auswirkung auf Akten-Vision
 
 Diese fünf Phasen sind Vorarbeit für die Akten-Architektur (siehe `novaberg-reducer-umbau_k.md` §10 „eigenständige Erweiterung"). Ohne intakte Themen, ohne intakte EI-Profile und ohne ursprünglichen Zeitstempel im LZG fehlen die Schienen, an denen Akten-Aggregate später ansetzen. Der Knowledge Graph (`entitaeten` + `fakten`) hat seine Struktur bereits — ihm fehlt nur die Verknüpfung mit dem korrigierten LZG.
+
+### Folge-Themen aus M4 Teil 2 (Chat 83)
+
+#### PROMO-CLUSTER-EI-UPDATE — UPDATE-Pfade aktualisieren keine EI-Felder
+
+**Status:** ⬜ Offen
+**Entdeckt:** Chat 83 (Brudi-Audit zu PROMO-CLUSTER-EI)
+**Symptom:** Bestätigungs-Updates in `_cluster_update_kohaerenz` (`agents/promotion/agent.py:1141-1151`) und `_cluster_update` (`:939-950`) aktualisieren nur `inhalt`, `embedding`, `gewicht`, `verstaerkt_am`. Die EI-Felder des bestehenden LZG-Eintrags bleiben eingefroren — neue Cluster-Mitglieder fließen nie in das EI-Profil bestehender LZG-Einträge ein.
+**Konzeptionelle Frage:** Soll der Mehrheits-Wert ersetzt, mit dem alten gemittelt, oder gewichtet nach Mitglieder-Anzahl gemerged werden? Nicht trivial.
+**Prio:** Mittel.
+
+#### PROMO-CLUSTER-TIE-DETERMINISM — Counter-Tie-Break nicht deterministisch
+
+**Status:** ⬜ Offen
+**Entdeckt:** Chat 83 (Brudi-Audit zu PROMO-CLUSTER-EI)
+**Symptom:** `Counter.most_common(1)` löst Ties über die Insertion-Order auf. Die heutige Reihenfolge stammt aus `redis_client.keys(...)` und ist nicht semantisch sortiert. Bei zwei gleichhäufigen Werten (z. B. `freude` 3× und `zufriedenheit` 3×) ist nicht reproduzierbar, welcher gewinnt.
+**Auswirkung:** Niedrig — betrifft auch heute schon `beobachter`/`dimension`. Kein Bug, sondern Tech-Debt für künftige Konsistenz.
+**Lösung:** Quell-Liste vor Counter explizit sortieren (z. B. nach `erstellt_am` absteigend → "neuerer Eintrag gewinnt bei Tie").
+**Prio:** Niedrig.
+
+#### PROMO-DESTILL-DEAD — `_destillation_insert` ohne Aufrufer
+
+**Status:** ⬜ Offen
+**Entdeckt:** Chat 83 (Folge des Löschens von `_cluster_insert`)
+**Symptom:** Helper-Methode `_destillation_insert` (`agents/promotion/agent.py:~1317`) wurde nur von `_cluster_insert` aufgerufen. Nach dessen Löschen (Chat 83, ~28 Zeilen) hat `_destillation_insert` keinen Aufrufer mehr.
+**Lösung:** Methode löschen (~35 Zeilen). Vor dem Löschen `grep` zur Sicherung.
+**Prio:** Niedrig — Cleanup-Sprint.
+
+#### PROMO-INTENTIONEN-FORMAT-DRIFT — Einzel- vs. Cluster-Pfad
+
+**Status:** ⬜ Offen
+**Entdeckt:** Chat 83 (Brudi-Bericht, Auffälligkeit 4)
+**Symptom:** Einzel-Promotion reicht den `intentionen`-JSON-String aus dem KZG 1:1 ins LZG-INSERT durch. Cluster-Promotion macht `json.loads → set-merge → json.dumps(sorted(...))`. Das Ergebnis: LZG-Einträge aus dem Cluster-Pfad haben sortierte, deduplizierte Intentionen, Einträge aus dem Einzel-Pfad nicht. Ein zukünftiger Reader, der über `intentionen` filtert oder sich auf Reihenfolge verlässt, würde überrascht.
+**Lösung:** Einzel-Pfad ebenfalls auf parsen + sortieren + json.dumps umstellen. Konsistenz an einer Stelle (`_lzg_eintrag_schreiben` oder ein Pre-Processing-Helper).
+**Prio:** Niedrig.
 
 ---
 

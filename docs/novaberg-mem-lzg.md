@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Modul Langzeitgedächtnis
-**Stand:** 23. April 2026, Chat 62 (Paar-Schema, character_id + beobachter)
+**Stand:** 10. Mai 2026, Chat 83 (emotions_vektor entfernt — gehört im LZG nicht persistiert)
 **Pfad:** novaberg/docs/novaberg-mem-lzg.md
 **Quellen:** nova-02-m-c.md
 **Datei:** `memory/lzg.py`
@@ -32,11 +32,12 @@ Tabelle: `langzeitgedaechtnis`
 | `haeufigkeit` | INTEGER | Verstärkungszähler |
 | `embedding` | VECTOR(768) | nomic-embed-text Embedding |
 | `arousal` | FLOAT | Energie-Intensität zum Zeitpunkt der Speicherung |
-| `emotions_vektor` | TEXT | Emotions-Richtung zum Zeitpunkt der Speicherung |
 | `beobachter` | VARCHAR(20), DEFAULT `'user'` | `"user"` oder `"assistant"` (Chat 62). Bei Promotion aus dem KZG-Eintrag uebernommen. |
 | `aktiv` | BOOLEAN | Soft-Delete Flag (Default: TRUE) |
 | `verstaerkt_am` | TIMESTAMPTZ | Basis für Decay-Berechnung (Reset bei Verstärkung) |
 | `created_at` | TIMESTAMPTZ | Erstellungszeitpunkt |
+
+**Hinweis (Chat 83):** `emotions_vektor` wurde aus dem LZG-Schema entfernt. Das Feld beschreibt eine Trajektorie über mehrere Turns (9 Bewegungs-Labels: `eskalation`, `plateau`, `absturz`, …). Eine LZG-Erinnerung ist ein verdichteter Punkt — eine Trajektorie hat dort keinen sinnvollen Anker. Im KZG, im Session-Turn-Format und im State-Feld lebt das Konzept weiter; dort hat es eine eindeutige Bedeutung pro Einzel-Erinnerung beziehungsweise pro Live-Verlauf.
 
 **Indexes:**
 - Partial Index `idx_lzg_aktiv` auf `(user_id, character_id) WHERE aktiv = TRUE` — alle Abfragen filtern auf Paar + aktive Einträge (Chat 62)
