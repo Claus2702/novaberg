@@ -12,6 +12,7 @@ import json
 import logging
 
 from collections import Counter
+from datetime    import datetime, timezone
 
 import numpy as np
 
@@ -211,6 +212,18 @@ class PromotionAgent(BaseAgent):
             embedding: list[float] = embedding_manager.embed(f"{themen} {inhalt}")
             embedding_str: str = "[" + ",".join(str(x) for x in embedding) + "]"
 
+            themen_list: list[str] = sorted({t.strip() for t in themen.split(",") if t.strip()})
+
+            kzg_erstellt_am_raw: str = _hget("erstellt_am")
+            kzg_erstellt_am: datetime | None
+            try:
+                kzg_erstellt_am = (
+                    datetime.fromtimestamp(float(kzg_erstellt_am_raw), tz=timezone.utc)
+                    if kzg_erstellt_am_raw else None
+                )
+            except ValueError:
+                kzg_erstellt_am = None
+
             db_manager.execute(
                 """
                 INSERT INTO langzeitgedaechtnis
@@ -219,16 +232,18 @@ class PromotionAgent(BaseAgent):
                      embedding, intentionen, emotion, modus,
                      arousal,
                      sprach_stil, beziehungs_dynamik, tone,
+                     themen, kzg_erstellt_am,
                      verstaerkt_am)
                 VALUES
                     (%s, %s, %s, %s, %s, %s, %s, %s::vector, %s, %s, %s, %s,
-                     %s, %s, %s, NOW())
+                     %s, %s, %s, %s, %s, NOW())
                 """,
                 (user_id, character_id, beobachter,
                  dimension, inhalt, min(salienz, 1.0), haeufigkeit,
                  embedding_str, intentionen, emotion, modus,
                  arousal,
-                 sprach_stil, beziehungs_dynamik, tone),
+                 sprach_stil, beziehungs_dynamik, tone,
+                 themen_list, kzg_erstellt_am),
             )
 
             if PIXIE_AKTIV:
@@ -239,6 +254,10 @@ class PromotionAgent(BaseAgent):
             logger.info(
                 f"Promotion: '{themen}' -> LZG als Erinnerung "
                 f"(tags: {entitaets_tags})"
+            )
+            logger.info(
+                f"M3 Single-Promotion: themen={len(themen_list)} Tags, "
+                f"kzg_erstellt_am={kzg_erstellt_am}"
             )
 
     # ─────────────────────────────────────────
@@ -749,6 +768,16 @@ class PromotionAgent(BaseAgent):
 
                 themen: list[str] = [t.strip() for t in themen_raw.split(",") if t.strip()]
 
+                erstellt_am_raw: str = redis_client.hget(key, "erstellt_am") or ""
+                kzg_erstellt_am: datetime | None
+                try:
+                    kzg_erstellt_am = (
+                        datetime.fromtimestamp(float(erstellt_am_raw), tz=timezone.utc)
+                        if erstellt_am_raw else None
+                    )
+                except ValueError:
+                    kzg_erstellt_am = None
+
                 # Embedding frisch erzeugen — Redis-Blob ist durch decode_responses=True korrumpiert
                 entry_embedding: list[float] = embedding_manager.embed(inhalt)
 
@@ -756,6 +785,7 @@ class PromotionAgent(BaseAgent):
                     "key":                key,
                     "inhalt":             inhalt,
                     "themen":             themen,
+                    "kzg_erstellt_am":    kzg_erstellt_am,
                     "salienz":            float(salienz_raw),
                     "beobachter":         beobachter,
                     "dimension":          dimension,
@@ -1277,6 +1307,16 @@ class PromotionAgent(BaseAgent):
                     intentionen_set.add(v)
         intentionen_str: str = json.dumps(sorted(intentionen_set))
 
+        themen_vereinigt: list[str] = sorted({
+            t for e in cluster_eintraege for t in (e.get("themen") or [])
+        })
+
+        kzg_zeiten: list[datetime] = [
+            e["kzg_erstellt_am"] for e in cluster_eintraege
+            if e.get("kzg_erstellt_am")
+        ]
+        kzg_erstellt_am_min: datetime | None = min(kzg_zeiten) if kzg_zeiten else None
+
         logger.info(
             f"Cluster-Promotion: Aggregation fuer '{thema[:40]}' "
             f"(Cluster-Groesse {len(cluster_eintraege)}) — "
@@ -1284,6 +1324,11 @@ class PromotionAgent(BaseAgent):
             f"sprach_stil='{sprach_stil}', tone='{tone}', "
             f"beziehungs_dynamik='{beziehungs_dynamik}', "
             f"intentionen={len(intentionen_set)}"
+        )
+        logger.info(
+            f"M3 Cluster-Promotion: {len(cluster_eintraege)} Mitglieder, "
+            f"themen={len(themen_vereinigt)} Tags (vereinigt), "
+            f"kzg_erstellt_am={kzg_erstellt_am_min} (frühestes)"
         )
 
         db_manager.execute(
@@ -1295,10 +1340,11 @@ class PromotionAgent(BaseAgent):
                  intentionen, emotion, modus,
                  arousal,
                  sprach_stil, beziehungs_dynamik, tone,
+                 themen, kzg_erstellt_am,
                  verstaerkt_am)
             VALUES
                 (%s, %s, %s, %s, %s, %s, %s, %s::vector,
-                 %s, %s, %s, %s, %s, %s, %s, NOW())
+                 %s, %s, %s, %s, %s, %s, %s, %s, %s, NOW())
             """,
             (user_id, character_id, beobachter,
              dimension, zusammenfassung, min(avg_salienz, 1.0),
@@ -1306,7 +1352,8 @@ class PromotionAgent(BaseAgent):
              embedding_str,
              intentionen_str, emotion, modus,
              arousal,
-             sprach_stil, beziehungs_dynamik, tone),
+             sprach_stil, beziehungs_dynamik, tone,
+             themen_vereinigt, kzg_erstellt_am_min),
         )
 
     # ─────────────────────────────────────────

@@ -92,6 +92,18 @@ def schema_migrieren(postgres_url: str) -> None:
         # Partial-Index auf das Paar — loest den alten aktiv-only-Index ab.
         "DROP INDEX IF EXISTS idx_lzg_aktiv",
         "CREATE INDEX IF NOT EXISTS idx_lzg_aktiv ON langzeitgedaechtnis (user_id, character_id) WHERE aktiv = TRUE",
+        # M2: Magnet-Spalten LZG (Chat 78 — Spiegelung von db/init.sql).
+        # Schiene fuer M3 (Promotion-Code) und M5 (Salienz-Pfad).
+        # Alle Spalten bewusst nullable — Befuellung gestaffelt ueber M3, M4, M5.
+        "ALTER TABLE langzeitgedaechtnis ADD COLUMN IF NOT EXISTS themen TEXT[]",
+        "ALTER TABLE langzeitgedaechtnis ADD COLUMN IF NOT EXISTS gedaechtnistyp VARCHAR(20)",
+        "ALTER TABLE langzeitgedaechtnis ADD COLUMN IF NOT EXISTS kzg_erstellt_am TIMESTAMPTZ",
+        "ALTER TABLE langzeitgedaechtnis ADD COLUMN IF NOT EXISTS entitaet_ids INTEGER[]",
+        "ALTER TABLE langzeitgedaechtnis ADD COLUMN IF NOT EXISTS timeline_id INTEGER REFERENCES timeline(id) ON DELETE SET NULL",
+        "CREATE INDEX IF NOT EXISTS idx_lzg_themen ON langzeitgedaechtnis USING GIN (themen)",
+        "CREATE INDEX IF NOT EXISTS idx_lzg_entitaet_ids ON langzeitgedaechtnis USING GIN (entitaet_ids)",
+        "CREATE INDEX IF NOT EXISTS idx_lzg_kzg_erstellt_am ON langzeitgedaechtnis (kzg_erstellt_am)",
+        "CREATE INDEX IF NOT EXISTS idx_lzg_timeline_id ON langzeitgedaechtnis (timeline_id)",
         # M2: Entitäten + Fakten Tabellen
         # CREATE TABLE IF NOT EXISTS wird in init.sql behandelt.
         # DROP alter Tabellen + Neuanlage ebenfalls in init.sql (Migrations-Block).
