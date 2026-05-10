@@ -1303,14 +1303,17 @@ Altbestand bekommt `NULL`. Index auf `themen` (GIN) für spätere Themen-basiert
 **Phase M3 — Promotion-Code anpassen (PROMO-DROP1, Code-Teil).**
 Im konsolidierten Promotion-Pfad (nach M1) die drei Felder aus dem KZG-Hash bzw. Queue-Auftrag in die LZG-INSERT übernehmen. Logging ergänzen: pro Promotion eine Zeile mit den übernommenen Werten.
 
-**Phase M4 — Cluster-Promotion EI-Aggregation (PROMO-CLUSTER-EI).**
-Im Cluster-Pfad die hartcodierten Defaults durch echte Aggregation ersetzen. Pro Feld die passende Aggregations-Strategie:
+**Phase M4 — Cluster-Promotion EI-Aggregation (PROMO-CLUSTER-EI).** Zweistufig.
+
+**Teil 1 — Backfill ✅ Chat 82.** Messung ergab 19 von 20 LZG-Einträgen mit Default-Profil (`emotion='neutral' AND arousal=0.5`). Standalone-Skript `Korrektur.py` hat alle 19 per Qwen3-32B-CPU re-klassifiziert (17 automatisch über Skript, 2 händisch nach LLM-Validierungs-Drift). Restwert nach Backfill: 0 Default-Einträge.
+
+**Teil 2 — Code-Fix ⏳ (offen, geplant Chat 83).** Im Cluster-Pfad (`agents/promotion/agent.py:1207–1246`) die hartcodierten Defaults durch echte Aggregation ersetzen. Pro Feld die passende Aggregations-Strategie:
 - Numerisch (`arousal`): Mittelwert
 - Kategorisch (`emotion`, `modus`, `sprach_stil`, `tone`, `beziehungs_dynamik`): häufigster Wert (Counter-Mehrheit, analog zum bestehenden `beobachter`-Code)
 - Mengen-artig (`intentionen`, falls als Liste/Array): Vereinigung der Quell-Einträge
 - `emotions_vektor`: Vektor-Mittelung oder häufigster Wert (Designentscheidung)
 
-Vor Implementierung: Messung wieviele Cluster-Einträge heute mit Default-Profil existieren (SQL aus PROMO-CLUSTER-EI-Bug). Nach Implementierung: Audit ob neue Einträge plausible Profile haben.
+Ohne den Code-Fix entstehen bei der nächsten Cluster-Promotion erneut Default-Profile — der Backfill ist ohne Teil 2 nur eine Momentaufnahme. Nach Implementierung: Audit ob neue Einträge plausible Profile haben.
 
 **Phase M5 — Agenten nachziehen.**
 Erst nach M1–M4 abgeschlossen sind, werden die Agenten an die neue Memory-Struktur angepasst:

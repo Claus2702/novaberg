@@ -360,6 +360,7 @@ Das widerspricht dem tatsächlichen Beziehungsprofil in der DB (User-Perspektive
 **Lösung:** Aggregation analog zur `beobachter`/`dimension`-Mehrheits-Logik einbauen — numerisch (Mittelwert für `arousal`) und kategorisch (häufigster Wert für `emotion`/`modus`/`sprach_stil`/`tone`/`beziehungs_dynamik`, Mengen-Vereinigung für `intentionen`).
 **Vorbedingung:** Doppelpipeline klären (siehe PROMO-DUAL-IMPL) — sonst Doppelfix.
 **Messung vor Fix empfohlen:** Wieviele LZG-Einträge tragen heute `emotion="neutral"` und `arousal=0.5`? SQL: `SELECT COUNT(*) FROM langzeitgedaechtnis WHERE emotion='neutral' AND arousal=0.5;`
+**Bestandsdaten via Backfill bereinigt Chat 82:** Messung ergab 19 von 20 LZG-Einträgen mit Default-Profil. Standalone-Skript `Korrektur.py` hat alle 19 per Qwen3-32B-CPU re-klassifiziert (17 automatisch über Skript, 2 händisch nach LLM-Validierungs-Drift). Restwert nach Backfill: 0 Default-Einträge. **Code-Fix offen (M4 Teil 2)** — ohne ihn entstehen bei der nächsten Cluster-Promotion erneut Default-Profile.
 **Prio:** Hoch.
 
 ---
