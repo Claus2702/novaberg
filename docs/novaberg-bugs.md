@@ -410,6 +410,36 @@ Wenn der KZG-Hash zur Promotion-Zeit nicht mehr existiert (TTL abgelaufen, manue
 
 ---
 
+#### PROMO-FAKT-LEER — Fakt-klassifizierte Einträge ohne Fakten fallen aus dem LZG-Schreib-Pfad
+
+**Status:** ⬜ Offen
+**Entdeckt:** Chat 85 (durch EVA-Audit-Logging nach Pixie-EVA-Härtung sichtbar geworden)
+
+**Symptom:** KZG-Einträge werden in Call 1 als `klassifikation="fakt"` klassifiziert. Call 2 extrahiert anschließend 0 Fakten-Tripel (weil der Inhalt keine extrahierbaren Tripel enthält — typisch für Beobachtungen über Interaktionsstil, Selbstdarstellung, abstrakte Eigenschaften). Da der LZG-Schreib-Pfad an die Bedingung `klassifikation in ("erinnerung", "gemischt")` gebunden ist, wird weder ein LZG-Eintrag noch ein Knowledge-Graph-Eintrag geschrieben. Der KZG-Eintrag geht verloren.
+
+**Beispiele (Chat 85, 11.05.26, Audit-Logs):**
+
+- `kzg:meister:nova:1778440554756` — themen=`Selbstbewusstsein, Intelligenz`, salienz=0.7, klassifikation=fakt, 0 Fakten
+- `kzg:meister:nova:1778440555618` — themen=`Schwertkampf, Strategie, Angriff und Verteidigung, Taktik des Lockens`, salienz=0.8, klassifikation=fakt, 0 Fakten
+- `kzg:meister:nova:1778440588602` — themen=`Selbstdarstellung, Spielerische Interaktion`, salienz=0.7, klassifikation=fakt, 0 Fakten
+
+**Ursache:** Der Klassifikator stuft Inhalte mit allgemeinen Beobachtungen als `fakt` ein, obwohl sie keine extrahierbaren Tripel enthalten. Der Promotion-Code hat keinen Auffang-Pfad für diesen Fall: `fakt` schaltet auf Tripel-Extraktion, und wenn diese leer ist, passiert gar nichts mehr.
+
+**Auswirkung:** Mittel. Substanzielle KZG-Einträge mit Salienz 0.7-0.8 gehen verloren, ohne dass sie als Erinnerung im LZG landen. Vor der EVA-Härtung war der Verlust komplett unsichtbar; jetzt wird er als Audit-Eintrag `status='erledigt'` mit `lzg_eintrag_geschrieben=false` protokolliert, aber der Verlust selbst bleibt.
+
+**Lösungsoptionen (eine oder mehrere):**
+
+- (a) Klassifikator: bei Inhalten ohne konkrete Tripel auf `erinnerung` statt `fakt` fallen (Anpassung des Klassifikator-Prompts, sodass abstrakte Beobachtungen explizit als Erinnerung erkannt werden)
+- (b) Promotion-Pfad: bei `klassifikation="fakt"` und 0 extrahierten Fakten automatisch auf `gemischt` umschalten, damit der Erinnerungs-Pfad greift
+- (c) Eigener Auffang-Pfad: Audit-Eintrag `status='fehler'` mit Begründung "Klassifikation 'fakt' ohne extrahierbare Tripel", statt silent Erfolgs-Meldung
+
+**Empfehlung:** (b) als pragmatischer Fix, (a) als nachhaltige Lösung. Reihenfolge: erst (c) für Sichtbarkeit, dann (a) oder (b) für Datenrettung.
+
+**Vorbedingung:** Keine.
+**Prio:** Mittel — kein Datenverlust ohne Audit-Trail mehr (durch EVA-Härtung), aber Datenverlust persistiert bis Fix.
+
+---
+
 #### PROMO-DUAL-IMPL — Zwei parallele Promotion-Implementierungen mit identischem Verhalten ✅ Behoben Chat 77
 **Entdeckt:** Chat 75, Promotion-Pipeline-Audit
 **Symptom:** Promotion existiert in zwei Codepfaden:
