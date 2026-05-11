@@ -1462,6 +1462,20 @@ Erst danach kann `runner.py` selbst und der `discover_tasks()`-Pfad in
 
 **Prio:** Niedrig — kein funktionaler Schaden, reine Code-Hygiene.
 
+### INIT-SQL-VERALTET — init.sql nicht reproduzierbar
+
+**Status:** ⬜ Offen
+**Entdeckt:** Chat 85 (Brudi-Befund bei Promotion-Fix-Recherche)
+
+**Symptom:** `db/init.sql` enthält ALTER-TABLE-Statements und repräsentiert nicht den Soll-Zustand des Schemas. Tabelle `ziele` fehlt komplett (existiert in der Live-DB, wurde aber nie ins `init.sql` aufgenommen).
+
+**Auswirkung:** Setup-from-scratch ist nicht reproduzierbar. Frischer Container plus `init.sql` ergibt kein lauffähiges System.
+
+**Lösung:** `init.sql` neu aufbauen als CREATE-only-Definition aller Tabellen plus Indizes. ALTER-Anweisungen entfernen oder in versioniertes Migrations-Skript verschieben (Alembic empfohlen).
+
+**Vorbedingung:** Keine.
+**Prio:** Mittel — wird im Rahmen des Code-Audit-Sprints adressiert.
+
 ---
 
 ## Designdiskussion: THINKER-TOOL-FORMAT (Chat 75)
@@ -1945,6 +1959,69 @@ Bei Multi-Charakter-Setup würden Aria-Termine bei Nova auftauchen (und umgekehr
 **Was heute fehlt:** Der heutige Sprint NOTIZEN-VOR-TURN-BEZUG hat das Verbot nur für CREATE im Classify-Prompt aufgehoben (Inhalts-Auflösung). Der UPDATE-Pfad hat eine ähnliche Lücke: das `target`-Feld wird nicht aus Vor-Turns aufgelöst, wenn der User ein Bezugs-Pronomen verwendet.
 
 **Strukturelle Lösung:** Frame-Konzept Phase 1b. Frame-Auflöser löst Slots wie `target` deterministisch aus dem Vor-Turn-Kontext auf. Pattern identisch zur Inhalts-Auflösung, nur in anderem Slot.
+
+---
+
+## Sprint: Pixie-EVA-Härtung — PromotionAgent (Chat 85)
+
+**Status:** ✅ Erledigt (Chat 85)
+
+**Hintergrund:** Pixie hing seit 5. April in einer impliziten Schleife: 34 Promotion-Aufträge in `queue:nova` stauten sich an, ihre KZG-Quelldaten waren längst per TTL verfallen, die Promotion-Funktion scheiterte silent ohne `hintergrund_log`-Einträge. Resultat: 5 Wochen ohne LZG-Promotionen (Tabelle leer), `hintergrund_log` seit 5. April ohne Einträge, CPU dauerhaft 55% durch begleitende Recherche-LLM-Calls.
+
+**Diagnose-Pfad (Chat 85):**
+
+- KZG-EXISTS-Check für zwei Stichproben → 0 (TTL abgelaufen)
+- Heartbeat-Logs zeigten: nicht-hängend, nur langsam (~4 min pro Lauf)
+- Code-Analyse: `_hget("inhalt") or themen`-Fallback maskierte tote KZG-Einträge, Promotion lief mit defekten Daten weiter
+
+**Sprint-Inhalt:**
+
+- `_eintrag_verarbeiten` nach EVA-Disziplin umgebaut: drei explizite Vorbedingungs-Checks vor jeder Verarbeitung
+- Neue statische Methode `_audit_log`: schreibt `hintergrund_log` mit Failsafe gegen Endlos-Rekursion (bei Audit-Fehler nur `logger.critical`)
+- Audit-Trail komplett: jeder Auftrag erzeugt `gestartet` → `erledigt`|`fehler` mit klaren Begründungen
+- Fallback `or themen` (PROMO-INHALT-FALLBACK-UNSICHER) entfernt
+
+**Side-Findings (durch EVA jetzt sichtbar):**
+
+- PROMO-FAKT-LEER: KZG-Einträge mit `klassifikation='fakt'` aber 0 extrahierten Fakten fallen aus beiden LZG-Schreib-Pfaden (siehe `novaberg-bugs.md`)
+
+**Folge-Sprint:** Code-Audit-Sprint zur systematischen EVA-Härtung aller Pipeline-Komponenten (siehe Epic unten).
+
+**Lesson:** `novaberg-lesson_l_silent-skip.md`
+
+---
+
+## Epic: Code-Audit-Sprint — EVA-Disziplin im gesamten Code
+
+**Status:** ⬜ Geplant (nach M5)
+**Auslöser:** Chat 85 — Pixie-Schleife durch fehlende EVA-Disziplin
+
+**Erkenntnis:** Der Promotion-Bug war Symptom einer fehlenden Codequalitäts-Übereinkunft. Brudi-erzeugter Code hatte keine verbindlichen EVA-Standards. Allgemeines Lesson in `novaberg-lesson_l_silent-skip.md`.
+
+**Phase 1 — Standards etabliert (Chat 85):**
+
+- `docs/DEVELOPER_HANDBOOK.md` angelegt, 12 Paragraphen
+- §1 Leitprinzipien, §2 Funktionsanatomie, §3 EVA-Disziplin, §4 Logging-Standards, §5 Modul-Struktur, §6 Sprache, §7 Naming, §8 DB-Disziplin, §9 Redis-Disziplin, §10 Worker-Disziplin, §11 Tests, §12 Review-Pflicht
+- Modul-Topologie (§5) zunächst als Platzhalter, wird nach Brudi-Scan konkretisiert
+
+**Phase 2 — Codebase-Inventar (in Vorbereitung):**
+
+- Brudi-Scan über `server/`-Tree, Output in `reviews/codebase-inventar.md` (parallel zu `novaberg/`, außerhalb Repo)
+- Sechs Funktionskategorien: Mathematik, Vektoren/Embeddings, Emotionen, Decay/Zeit, Salienz/Scoring, Plausibilitäts-Checks
+- Pure vs. seiteneffektbehaftete Funktionen markiert
+- Aus Ergebnis: konkrete `lib/`-Topologie ableiten, in Handbuch §5 einbauen
+
+**Phase 3 — Systematische Härtung (Sprint-Block):**
+
+- EVA-Audit aller Pixie-Agenten: Recherche, Decay, Charakter-Hash, Wiedervorlage, Ziel-Decay (Promotion gefixt in Chat 85)
+- EVA-Audit Memory-Pipelines: KZG-Schreiben, LZG-Schreiben, Cluster-Promotion, Salienz-Berechnung
+- EVA-Audit LangGraph-Nodes: HumanGraph, CharacterGraph, AgentGraph
+- `init.sql` neu aufbauen (siehe INIT-SQL-VERALTET): CREATE-only, Tabelle `ziele` ergänzt, ALTER-Anweisungen in versioniertes Migrations-Skript verschieben
+- Setup-from-scratch verifizieren
+
+**Aufwand:** 2-3 Sprints à 1-2 Tage. Reihenfolge: erst Agenten (akute Defekte), dann Memory (größter potenzieller Schaden), dann Graphs, `init.sql` zum Schluss.
+
+**Priorität:** Hoch. Eingeordnet nach M5 (Salienz-Pfad-Erweiterung) und M3b (Magnet-Felder).
 
 ---
 

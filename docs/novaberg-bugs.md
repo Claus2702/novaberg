@@ -386,7 +386,7 @@ Empirisch verifiziert per SQL-Abfrage gegen `charakter_hash`. Beide Beobachter-S
 
 ---
 
-#### PROMO-INHALT-FALLBACK-UNSICHER — Single-Promotion fällt bei TTL-abgelaufenem KZG auf Themen-Tags zurück ⬜
+#### PROMO-INHALT-FALLBACK-UNSICHER — Single-Promotion fällt bei TTL-abgelaufenem KZG auf Themen-Tags zurück ✅ Behoben Chat 85
 **Entdeckt:** Chat 84 (M3-B-Side-Finding bei Promotion-Code-Audit)
 
 **Symptom:** In `agents/promotion/agent.py:_eintrag_verarbeiten` wird der LZG-INSERT-Inhalt aus dem KZG-Hash gelesen:
@@ -405,6 +405,8 @@ Wenn der KZG-Hash zur Promotion-Zeit nicht mehr existiert (TTL abgelaufen, manue
 
 **Vorbedingung:** Keine.
 **Prio:** Niedrig — Pre-Existing, in der Praxis unwahrscheinlich, aber strukturell unsauber.
+
+**Behoben Chat 85** im Rahmen Pixie-EVA-Härtung (siehe Sprint-Chronik). Der Fallback `_hget("inhalt") or themen` wurde entfernt und durch drei explizite Vorbedingungs-Checks ersetzt: KZG-Key vorhanden, KZG-Hash existiert noch in Redis (EXISTS-Check vor jedem `_hget`), Feld `inhalt` gesetzt. Bei jeder Verletzung: `logger.error` + Audit-Eintrag in `hintergrund_log`, Auftrag verworfen.
 
 ---
 
