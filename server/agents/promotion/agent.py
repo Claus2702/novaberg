@@ -64,6 +64,42 @@ class PromotionAgent(BaseAgent):
     def build_graph(self):
         return None
 
+    # ─────────────────────────────────────────
+    # Audit-Log (EVA — Eingabe/Ausgabe-Trail)
+    # ─────────────────────────────────────────
+    @staticmethod
+    def _audit_log(
+        user_id:  str,
+        aufgabe:  str,
+        status:   str,
+        ergebnis: str,
+    ) -> None:
+        """Schreibt einen Audit-Eintrag ins hintergrund_log.
+
+        Failsafe: Bei DB-Fehler wird nur logger.critical gerufen — kein
+        retry, um Endlos-Rekursion bei kaputter Audit-Senke zu vermeiden.
+
+        Args:
+            user_id:  Owner des Auftrags (Queue-Schluessel).
+            aufgabe:  Kurzbezeichnung der Aufgabe (z.B. "promotion:<kzg_key>").
+            status:   "gestartet" | "erledigt" | "fehler".
+            ergebnis: Freitext-Beschreibung des Ausgangs.
+        """
+        try:
+            db_manager.execute(
+                """
+                INSERT INTO hintergrund_log
+                    (user_id, aufgabe, status, ergebnis, verarbeitet_am)
+                VALUES (%s, %s, %s, %s, NOW())
+                """,
+                (user_id, aufgabe, status, ergebnis),
+            )
+        except Exception as ex:
+            logger.critical(
+                f"hintergrund_log-INSERT fehlgeschlagen: {ex} "
+                f"(verlorener Audit-Eintrag: {aufgabe}/{status}/{ergebnis[:100]})"
+            )
+
     def invoke(self, state: AgentState) -> AgentState:
         """Arbeitet die Promotion-Queue komplett ab."""
         user_id: str = state["kontext"].get("context_user_id", DEFAULT_USER_ID)
@@ -104,28 +140,67 @@ class PromotionAgent(BaseAgent):
         return state
 
     # ─────────────────────────────────────────
-    # Eintrag verarbeiten (aus altem execute())
+    # Eintrag verarbeiten (EVA — Eingabe, Verarbeitung, Ausgabe)
     # ─────────────────────────────────────────
     def _eintrag_verarbeiten(self, auftrag: dict, user_id: str) -> None:
-        """Verarbeitet einen einzelnen Queue-Eintrag."""
+        """Verarbeitet einen einzelnen Queue-Eintrag nach EVA-Prinzip.
+
+        Eingabe wird gegen Parameter und Quelldaten validiert, Ausgabe
+        gegen das tatsaechliche Schreibergebnis verifiziert. Jeder Schritt
+        wird ins hintergrund_log auditet (gestartet / erledigt / fehler).
+        """
 
         kzg_key:   str   = auftrag.get("key", "")
         themen:    str   = auftrag.get("themen", "")
         salienz:   float = auftrag.get("salienz", 0.0)
         dimension: str   = auftrag.get("dimension", "kontext")
 
+        aufgabe: str = f"promotion:{kzg_key or '?'}"
+
+        # ── Eingabe-Audit ──────
+        eingabe_zsf: str = (
+            f"kzg_key='{kzg_key}', themen='{themen}', salienz={salienz:.3f}"
+        )
+        logger.info(f"Promotion: gestartet — {eingabe_zsf}")
+        self._audit_log(user_id, aufgabe, "gestartet", eingabe_zsf)
+
+        # ── Vorbedingung 1: KZG-Key vorhanden ──────
         if not kzg_key:
-            logger.warning("Promotion: Kein KZG-Key im Queue-Eintrag — uebersprungen")
+            grund: str = "Auftrag ohne KZG-Key — verworfen"
+            logger.error(f"Promotion: {grund}")
+            self._audit_log(user_id, aufgabe, "fehler", grund)
             return
 
-        # KZG-Daten aus Redis lesen
+        # ── Vorbedingung 2: KZG-Eintrag existiert noch in Redis ──────
+        if not redis_client.exists(kzg_key):
+            grund = (
+                f"KZG-Key '{kzg_key}' nicht mehr vorhanden "
+                f"(TTL abgelaufen) — verworfen"
+            )
+            logger.error(f"Promotion: {grund}")
+            self._audit_log(user_id, aufgabe, "fehler", grund)
+            return
+
+        # ── KZG-Inhalt lesen ──────
         def _hget(field: str, default: str = "") -> str:
             val = redis_client.hget(kzg_key, field)
             if val is None:
                 return default
             return val.decode("utf-8") if isinstance(val, bytes) else val
 
-        inhalt:             str   = _hget("inhalt") or themen
+        inhalt: str = _hget("inhalt")
+
+        # ── Vorbedingung 3: Inhalt nicht leer ──────
+        if not inhalt:
+            grund = (
+                f"KZG-Key '{kzg_key}' existiert, aber Feld 'inhalt' "
+                f"ist leer — verworfen"
+            )
+            logger.error(f"Promotion: {grund}")
+            self._audit_log(user_id, aufgabe, "fehler", grund)
+            return
+
+        # ── Restliche KZG-Felder laden (nach erfolgreicher Validierung) ──
         haeufigkeit:        int   = int(float(_hget("haeufigkeit", "1")))
         intentionen:        str   = _hget("intentionen", "[]")
         emotion:            str   = _hget("emotion")
@@ -139,10 +214,6 @@ class PromotionAgent(BaseAgent):
         # Alt-Eintraege ohne diese Felder: Standardpaar + Beobachter "user".
         character_id: str = _hget("character_id") or ASSISTANT_USER_ID
         beobachter:   str = _hget("beobachter")   or "user"
-
-        if not inhalt:
-            logger.warning(f"Promotion: KZG-Key '{kzg_key}' nicht mehr vorhanden — uebersprungen")
-            return
 
         logger.info(f"LZG: Paar={user_id}:{character_id}, Beobachter={beobachter}")
 
@@ -174,6 +245,7 @@ class PromotionAgent(BaseAgent):
         )
 
         # ── 2. Call 2: Fakten-Extraktion (nur bei fakt/gemischt) ──────
+        extrahierte_fakten_anzahl: int = 0
         if klassifikation in ("fakt", "gemischt"):
             call2_ergebnis: dict = self._extrahiere_fakten(
                 inhalt=inhalt, entitaeten=entitaeten,
@@ -184,7 +256,10 @@ class PromotionAgent(BaseAgent):
             )
 
             extrahierte_fakten: list[dict] = call2_ergebnis.get("fakten", [])
-            logger.info(f"Promotion Call 2: {len(extrahierte_fakten)} Fakten extrahiert")
+            extrahierte_fakten_anzahl = len(extrahierte_fakten)
+            logger.info(
+                f"Promotion Call 2: {extrahierte_fakten_anzahl} Fakten extrahiert"
+            )
 
             if extrahierte_fakten:
                 try:
@@ -204,6 +279,7 @@ class PromotionAgent(BaseAgent):
                     logger.error(f"Promotion: Fehler bei Fakten-Verarbeitung: {ex}", exc_info=True)
 
         # ── 3. Erinnerung ins LZG (bei erinnerung/gemischt) ──────
+        lzg_eintrag_geschrieben: bool = False
         if klassifikation in ("erinnerung", "gemischt"):
             entitaets_tags: list[str] = [
                 e["name"] for e in entitaeten if e.get("ist_referenz", False)
@@ -245,6 +321,7 @@ class PromotionAgent(BaseAgent):
                  sprach_stil, beziehungs_dynamik, tone,
                  themen_list, kzg_erstellt_am),
             )
+            lzg_eintrag_geschrieben = True
 
             if PIXIE_AKTIV:
                 redis_client.set(f"hash_dirty:{user_id}:{character_id}", "1")
@@ -259,6 +336,24 @@ class PromotionAgent(BaseAgent):
                 f"M3 Single-Promotion: themen={len(themen_list)} Tags, "
                 f"kzg_erstellt_am={kzg_erstellt_am}"
             )
+
+        # ── Ausgabe-Verifikation ──────
+        if klassifikation not in ("fakt", "erinnerung", "gemischt"):
+            grund = (
+                f"Klassifikation '{klassifikation}' produziert weder Fakt "
+                f"noch Erinnerung — kein LZG-Schreib-Pfad"
+            )
+            logger.error(f"Promotion: {grund}")
+            self._audit_log(user_id, aufgabe, "fehler", grund)
+            return
+
+        ausgabe_zsf: str = (
+            f"klassifikation={klassifikation}, "
+            f"extrahierte_fakten_anzahl={extrahierte_fakten_anzahl}, "
+            f"lzg_eintrag_geschrieben={str(lzg_eintrag_geschrieben).lower()}"
+        )
+        logger.info(f"Promotion: erledigt — {ausgabe_zsf}")
+        self._audit_log(user_id, aufgabe, "erledigt", ausgabe_zsf)
 
     # ─────────────────────────────────────────
     # Call 1: Klassifikation + Entitaeten
