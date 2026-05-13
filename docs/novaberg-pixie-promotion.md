@@ -2,11 +2,14 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** PromotionAgent — KZG-nach-LZG-Promotion (Zwei-Call-Prozess)
-**Stand:** 10. Mai 2026, Chat 84 (M3a: Magnet-Aggregation `themen` + `kzg_erstellt_am`; vorher Chat 83: Cluster-Promotion EI-Aggregation, `_cluster_insert` gelöscht, `emotions_vektor` aus LZG entfernt)
+**Stand:** 11. Mai 2026, Chat 85 (EVA-Härtung: drei Vorbedingungs-Checks, `_audit_log`-Methode, `hintergrund_log`-Audit-Trail wiederhergestellt; vorher Chat 84: M3a Magnet-Aggregation `themen` + `kzg_erstellt_am`)
 **Pfad:** novaberg/docs/novaberg-pixie-promotion.md
 **Quellen:** nova-05-m-a.md, nova-03-t-b.md
 
 ---
+
+> **Hinweis (Chat 86): Synapsen-Umbau geplant.**
+> Die hier beschriebene Cluster-Promotion mit Aggregat-Schicht wird durch ein assoziatives Netz-Modell ersetzt — siehe Konzept-Dokument `novaberg-memory-synapsen_k.md`. Jeder ehemalige KZG-Eintrag wird künftig zum eigenständigen Knoten in `lzg_knoten`, Cluster werden zu gerichteten Kanten in `lzg_kanten` mit eigenen Decays und Reinforcement-Pfaden. Dieses Dokument beschreibt den heutigen Stand bis zur Umsetzung. Während des Umbaus ruhen alle Promotion-bezogenen Sprints, die nicht unmittelbar Teil des Synapsen-Konzepts sind.
 
 ## 1. Aufgabe
 
@@ -70,6 +73,22 @@ Output: Strukturierte Fakten-Tripel (Subjekt → Attribut → Objekt):
     {"subjekt": "Anna", "attribut": "HAT_BESITZ", "objekt_wert": "Birnbaum"}
 ]
 ```
+
+### EVA-Härtung (Chat 85)
+
+Seit Chat 85 läuft die Einzel-Promotion nach EVA-Disziplin (Eingabe — Verarbeitung — Ausgabe). Drei explizite Vorbedingungs-Checks stehen am Anfang von `_eintrag_verarbeiten`, vor jeder Verarbeitung:
+
+1. **KZG-Key vorhanden** — `not kzg_key` → `logger.error` + Audit `fehler`, Auftrag verworfen.
+2. **KZG-Hash existiert noch in Redis** — `not redis_client.exists(kzg_key)` → `logger.error` + Audit `fehler` mit Begründung "TTL abgelaufen", Auftrag verworfen. KZG hat TTL — wenn der Key abgelaufen ist, sind die Quelldaten unwiederbringlich verloren.
+3. **Feld 'inhalt' gesetzt** — nach `_hget("inhalt")`, ohne Fallback. Bei `not inhalt` → `logger.error` + Audit `fehler`, Auftrag verworfen.
+
+Der frühere Fallback `inhalt = _hget("inhalt") or themen` wurde entfernt. Er hatte tote KZG-Einträge maskiert: bei leerem `inhalt` fiel der Code auf den `themen`-String aus dem Queue-Auftrag zurück, die Promotion lief mit defekten Daten weiter. Resultat war ein silent data loss über sechs Wochen (siehe Lesson `novaberg-lesson_l_silent-skip.md`).
+
+Die übrigen `_hget`-Aufrufe (haeufigkeit, intentionen, emotion, modus, arousal, sprach_stil, beziehungs_dynamik, tone, character_id, beobachter) erfolgen erst NACH den drei Vorbedingungs-Checks. Damit laufen keine Redis-Operationen mehr gegen tote Keys.
+
+**Ausgabe-Verifikation:** Nach erfolgreichem LZG-INSERT wird ein Audit-Eintrag `erledigt` geschrieben mit Ergebnis-Zusammenfassung (klassifikation, extrahierte_fakten_anzahl, lzg_eintrag_geschrieben). Falls die Klassifikation weder `fakt`/`gemischt` noch `erinnerung`/`gemischt` greift (theoretischer Fall, sollte nicht vorkommen): Audit `fehler` mit Begründung "Klassifikation ohne LZG-Schreib-Pfad".
+
+**Bekannte Folge-Lücke:** PROMO-FAKT-LEER (siehe `novaberg-bugs.md`) — KZG-Einträge mit `klassifikation='fakt'` und 0 extrahierten Fakten fallen aus dem LZG-Schreib-Pfad. Durch EVA jetzt protokolliert (`lzg_eintrag_geschrieben=false`), aber der Datenverlust bleibt bis Fix.
 
 ---
 
@@ -188,6 +207,23 @@ Der entscheidende Vorteil gegenüber Themen-basiertem Clustering: Einträge übe
 
 ---
 
+## 7a. Initialgewicht beim LZG-Insert
+
+Beim Schreiben eines neuen LZG-Eintrags (Single- oder Cluster-Promotion) wird das `gewicht`-Feld aus der KZG-Salienz abgeleitet — nicht aus dem Schema-Default `0.5`.
+
+| Pfad | Quelle | Formel | Cap |
+|---|---|---|---|
+| **Single-Promotion** (`_eintrag_verarbeiten`) | Salienz des einzelnen KZG-Eintrags | `gewicht = min(salienz, 1.0)` | 1.0 |
+| **Cluster-Promotion** (`_lzg_eintrag_schreiben`) | Durchschnitt der Salienz aller Cluster-Mitglieder | `gewicht = min(avg_salienz, 1.0)` | 1.0 |
+
+**Update-Regeln** (siehe §8):
+- **Bestätigung:** `LEAST(gewicht + CLUSTER_BESTAETIGUNG_BOOST, 5.0)`, Boost = 0.1
+- **Widerspruch:** `gewicht / CLUSTER_WIDERSPRUCH_DECAY_FAKTOR`, Faktor = 3.0
+
+**Hinweis:** Die Insert-Caps (1.0) und der Update-Cap (5.0) sind heute SQL-Literale in INSERT- und UPDATE-Statements. Es gibt keine `LZG_GEWICHT_INITIAL_CAP`- oder `LZG_GEWICHT_MAX`-Konstanten in `config.py`. Bei künftiger Kalibrierung der Gewichts-Skala (Bestätigungs-Decay zu schnell, Widerspruchs-Decay zu hart) ist diese Hardcoding-Stelle die erste Anpassung.
+
+---
+
 ## 8. Backpropagation — Bestätigung & Widerspruch
 
 ### Bestätigung (positiver Gradient)
@@ -245,6 +281,10 @@ Der entscheidende Vorteil gegenüber Themen-basiertem Clustering: Einträge übe
 ---
 
 ## 10. Methoden
+
+### Hilfs-Methoden
+
+- `_audit_log(user_id, aufgabe, status, ergebnis)` — Statische Helper-Methode, schreibt einen Audit-Eintrag ins `hintergrund_log` (Postgres). Wird bei Vorbedingungs-Verletzungen (Audit `fehler`) und nach erfolgreichem LZG-INSERT (Audit `erledigt`) aufgerufen. Failsafe: bei Exception im DB-Execute wird nur `logger.critical` gerufen, kein erneuter DB-Call (Endlos-Rekursion vermeiden). Seit Chat 85.
 
 ### Einzelpromotion (Modus 1 — bestehend)
 

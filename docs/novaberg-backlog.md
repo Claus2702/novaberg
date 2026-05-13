@@ -1409,6 +1409,67 @@ plausibel (frühestes Auftreten der Erinnerung).
 
 ---
 
+## Epic: Memory-Kern-Umbau (Synapsen-Modell, Chat 86)
+
+**Status:** Konzept-Phase
+**Bezug:** novaberg-memory-synapsen_k.md
+**Vorbedingung:** Keine — Umbau läuft auf grüner Wiese, neue Tabellen parallel zum bestehenden LZG.
+
+### Phasen-Übersicht
+
+| Phase | Inhalt | Status |
+|---|---|---|
+| Punkt 1 | Vision und Leitprinzipien | ✅ Chat 86 |
+| Punkt 2 | Schema (lzg_knoten, lzg_kanten) + Konstanten | ✅ Chat 86 |
+| Punkt 3 | Schreibpfad-Sicht (KZG→LZG mit Kantenbildung) | ⬜ Offen |
+| Punkt 4 | Lesepfad-Sicht (Spreading-Activation, Charakter-Hash) | ⬜ Offen |
+| Punkt 5 | Decay-Logik (Knoten und Kanten) | ⬜ Offen |
+| Punkt 6 | Gesprächs- und Node-Log (Forensik-Schicht) | ⬜ Offen |
+| Punkt 7 | Migration und selektive Bestandsdaten-Übernahme | ⬜ Offen |
+| Punkt 8 | Bug- und Backlog-Reset | ⬜ Offen |
+| Punkt 9 | Implementierungs-Phasen P1-P9 für Brudi-Sprints | ⬜ Offen |
+
+### Hintergrund
+
+Die heutige Cluster-Promotion verdichtet mehrere KZG-Einträge zu einem aggregierten LZG-Eintrag und löscht die Quellen. Cluster-Qualitäts-Diagnose in Chat 86 (LZG-Eintrag 67: Anna+Rosa+Grillen-Vermischung) zeigte strukturelle Grenzen der Aggregat-Schicht: semantisch fremde Inhalte landen in einem Eintrag, weil Embedding-Ähnlichkeit allein keine Entitäts-Trennung kennt. Die Diagnose führte zu einem Konzept-Sprung — das Memory-Modell wechselt von Aggregat zu assoziativem Netz.
+
+Jeder ehemalige KZG-Eintrag bleibt als eigenständiger Knoten in `lzg_knoten` erhalten, Verbindungen leben in `lzg_kanten` mit gerichteten Datensätzen, eigenem Decay und mehrschichtiger Bildungs-Logik (Entität, Timeline, Thema, Embedding). Phänomenologisch näher am menschlichen assoziativen Gedächtnis (Hebbsches Prinzip), strukturell sauberer, mit forensisch nachvollziehbarem Aufbau.
+
+### Verhältnis zum Memory-Promotion-Epic (Chat 75)
+
+Mehrere Phasen des Memory-Promotion-Epics werden durch den Synapsen-Umbau anders gelöst oder obsolet:
+
+- **M3b** (entitaet_ids + timeline_id im Promotion-Code) — wird Teil von Punkt 3 (Schreibpfad-Sicht des Synapsen-Modells)
+- **M5a** (Charakter-Hash profitiert von echten EI-Profilen) — bereits erledigt durch Backfill und Code-Fix in Chat 82/83/84
+- **M5b** (FaktenManager-Reaktivierung) — bleibt separat, hängt nicht direkt am Synapsen-Umbau
+- **M5c** (Themen-Cluster-Promotion smarter) — wird strukturell obsolet, weil keine Themen-Cluster mehr aggregiert werden
+
+### Scope-Definition
+
+**Im Umbau-Scope:** KZG→LZG-Promotion, Synapsen-Graph-Struktur, Decay-Logik für Knoten und Kanten, Reinforcement (Co-Aktivierung und Schicht-basierte Initialisierung), Gesprächs- und Node-Log.
+
+**Außerhalb des Scopes (pausiert):** HumanGraph, CharacterGraph, Salienz-Knoten, KZG-Schreibpfad, Pixie-Plugins, alle Pixie-Agenten außer Promotion, Metakognition, Skills-System.
+
+### Folgewirkung auf offene Bugs
+
+Voraussichtlich strukturell obsolet nach Umbau:
+
+- CLUSTER-THEMEN-DEDUP
+- CLUSTER-META-CONTAMINATION
+- PROMO-CLUSTER-EI-UPDATE
+- PROMO-CLUSTER-TIE-DETERMINISM
+- PROMO-DESTILL-DEAD
+- PROMO-INTENTIONEN-FORMAT-DRIFT
+- LZG-HAEUFIGKEIT-AMBIVALENT (bekommt klare Semantik im neuen Schema)
+
+Endgültige Re-Evaluation in Punkt 8.
+
+### Auswirkung auf Akten-Vision
+
+Der Synapsen-Umbau ist die strukturelle Voraussetzung für die Akten-Architektur. Knoten und Kanten mit ihren Magnet-Feldern (Entitäten, Timeline, Themen) bilden die Anker, an denen Akten-Aggregate später ansetzen können. Ohne intakte assoziative Verbindungen wäre Akten-Logik nur ein zweites Aggregat-System über dem bestehenden — mit dem Umbau wird sie eine natürliche Subgraph-Abfrage.
+
+---
+
 ## Tech-Debt: Reducer-Umbau-Nachzügler (Chat 75)
 
 **Status:** Beobachtet
@@ -1475,6 +1536,24 @@ Erst danach kann `runner.py` selbst und der `discover_tasks()`-Pfad in
 
 **Vorbedingung:** Keine.
 **Prio:** Mittel — wird im Rahmen des Code-Audit-Sprints adressiert.
+
+### LZG-HAEUFIGKEIT-AMBIVALENT
+
+**Status:** Beobachtet
+**Entdeckt:** Chat 86 (Cluster-Qualitäts-Diagnose, Nebenbefund)
+
+**Symptom:** Die UPDATE-Pfade `_cluster_update` und `_cluster_update_kohaerenz` (Bestätigungs-Updates) inkrementieren `langzeitgedaechtnis.haeufigkeit` nicht — modifiziert werden nur `inhalt`, `embedding`, `gewicht`, `verstaerkt_am`. Damit ist `haeufigkeit` kein Verstärkungs-Counter über die Lebenszeit.
+
+**Belegt durch:** ID 60 (`gewicht=1.4`, `haeufigkeit=1`) — das gewicht zeigt mehrfache Bestätigungs-Boosts (Initial-Cap 1.0 plus 4× `+0.1`), `haeufigkeit` blieb auf 1.
+
+**Auswirkung:** Niedrig in der Praxis (Spalte wird heute nirgends als Verstärkungs-Counter gelesen), aber die Spalten-Semantik ist mehrdeutig. Audit-Fragen wie "Wie oft wurde dieser Eintrag verstärkt?" sind aus dem LZG nicht beantwortbar.
+
+**Lösung:** Drei Optionen:
+1. `haeufigkeit` in UPDATE-Pfaden inkrementieren (`haeufigkeit = haeufigkeit + 1`) — wird damit echter Update-Zähler.
+2. Spalte umbenennen oder in zwei Spalten trennen (`cluster_groesse_initial INT`, `verstaerkungen_count INT`).
+3. Status quo dokumentieren, Bedeutung der Spalte in der Code-Doku klarstellen.
+
+**Prio:** Niedrig.
 
 ---
 

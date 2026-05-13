@@ -9,6 +9,9 @@
 
 ---
 
+> **Hinweis (Chat 86): Synapsen-Umbau geplant.**
+> Das hier beschriebene LZG-Modell mit aggregierten Einträgen wird durch ein assoziatives Netz-Modell ersetzt — siehe Konzept-Dokument `novaberg-memory-synapsen_k.md`. Statt verdichteten Aggregat-Einträgen behält jeder ehemalige KZG-Eintrag seine Identität als Knoten in `lzg_knoten`, Verbindungen leben in `lzg_kanten`. `emotions_vektor` kehrt im neuen Schema zurück (in Chat 83 entfernt, weil mit verdichteten Punkten inkompatibel — diese Begründung entfällt im Knoten-Modell). Dieses Dokument beschreibt den heutigen Stand bis zur Umsetzung.
+
 ## 1. Aufgabe
 
 Das LZG ist Novas permanenter Speicher — der Ort, an dem verdichtetes Wissen über Monate und Jahre lebt. Es liegt in PostgreSQL mit pgvector für semantische Suche. Einträge verblassen nach der Ebbinghaus-Kurve, werden bei Wiederholung verstärkt und bei Unterschreitung eines Schwellwerts als inaktiv markiert — nie gelöscht.

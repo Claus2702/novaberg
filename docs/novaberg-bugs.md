@@ -368,6 +368,55 @@ Empirisch verifiziert per SQL-Abfrage gegen `charakter_hash`. Beide Beobachter-S
 
 ---
 
+#### CLUSTER-THEMEN-DEDUP — Semantisch redundante Themen-Strings in Cluster-Promotion
+
+**Status:** ⬜ Offen
+**Entdeckt:** Chat 86 (Cluster-Qualitäts-Diagnose im LZG)
+
+**Symptom:** Cluster-promovierte LZG-Einträge enthalten Themen-Listen mit semantisch redundanten Strings. Beispiele aus dem aktuellen LZG:
+- ID 67: `{"Annas Geburtstag", "Geburtstag", "Geburtstag von Anna", "Geburtstag von Rosa", ...}` — vier Strings, die im Kern dasselbe Konzept ("Geburtstag") fassen.
+- ID 66: `{Datenbanken, PostgreSQL, "PostgreSQL Architektur", Datenbank-Performance, Software-Performance, ...}` — drei Granularitätsstufen desselben Konzepts plus ein Phrasen-Paar mit gemeinsamem Wortstamm.
+
+**Ursache:** Die Cluster-Aggregation in `_lzg_eintrag_schreiben` führt eine Mengen-Vereinigung über alle Cluster-Mitglieds-Themen durch (`sorted(set().union(*[m.themen]))`). Diese Vereinigung dedupliziert nur **String-identische** Themen. Semantische Duplikate ("Geburtstag" vs. "Annas Geburtstag") werden als zwei verschiedene Set-Einträge behandelt.
+
+**Auswirkung:** Mittel. Themen-Listen wachsen aufgebläht, was die Themen-basierte Retrieval-Logik (Themen-Tabelle, Themen-Salienz-Erweiterung) verzerrt. Aufgeblähte Themen-Listen erzeugen Pseudo-Vielfalt — derselbe Inhalt zählt mehrfach als "verschiedenes Thema". Folgen treten bei der Retrieval-Erweiterung im Enricher auf (siehe `novaberg-memory.md` §11).
+
+**Lösung:** Drei Ansätze, von einfach zu robust:
+1. **Lexikalische Normalisierung** vor der Mengen-Vereinigung (Lowercase, Lemma, Stopword-Entfernung). Fängt offensichtliche Duplikate, aber nicht "Annas Geburtstag" vs. "Geburtstag von Anna".
+2. **Embedding-Cluster auf den Themen-Strings**: Themen-Embeddings rechnen, Cosine ≥ Schwellwert → derselbe Cluster, repräsentativster String gewinnt. Analog zur Cluster-Promotion selbst.
+3. **LLM-Konsolidierungs-Call** in der Cluster-Destillation: Mini-Call reduziert die Themen-Liste auf den semantischen Kern. Höchste Recall-Garantie, höhere LLM-Kosten.
+
+**Vorbedingung:** Keine.
+**Prio:** Mittel.
+
+**Status-Update Chat 86:** Beide Bugs werden voraussichtlich durch den Synapsen-Umbau (siehe `novaberg-memory-synapsen_k.md`) strukturell obsolet, weil keine Themen-Aggregation mehr stattfindet. Themen bleiben pro Knoten eingefroren, geteilte Themen werden zur Kanten-Charakterisierung. Bis zur Umsetzung des Umbaus bleibt der Bug-Eintrag bestehen — aktive Mitigation wird zurückgestellt.
+
+---
+
+#### CLUSTER-META-CONTAMINATION — Pipeline-Meta-Begriffe als Themen-Tags
+
+**Status:** ⬜ Offen
+**Entdeckt:** Chat 86 (Cluster-Qualitäts-Diagnose im LZG)
+
+**Symptom:** Cluster-promovierte LZG-Einträge enthalten Themen-Strings, die nicht Inhalts-Begriffe sind, sondern Meta-Beobachtungen über die Interaktion oder Pipeline:
+- ID 67 (beobachter=assistant): `"Ergänzung zur Notiz"`, `"Gedächtnis des Gegenübers"`
+- ID 50 (beobachter=user): `Charakterisierung`, `"Charakterisierung des Gegenübers"`, `"Wahrnehmung der KI"`, `"Wahrnehmung von Fokus und Zielorientierung"`
+
+**Ursache:** Der Themen-Extraktor (Salienz Dim 1) klassifiziert nicht nur Inhalts-Entitäten, sondern auch sprachliche Reflexionen über die Interaktion als Themen. Besonders sichtbar in Assistant-Cluster-Einträgen (Nova-seitige Beobachtungen enthalten häufiger Meta-Reflexion), aber auch user-seitig nachweisbar (ID 50).
+
+**Auswirkung:** Mittel. Meta-Themen ziehen über die Retrieval-Erweiterung im Enricher unverwandte LZG-Einträge in die Akte — "Wahrnehmung" als Tag matched auf jeden Eintrag mit Wahrnehmungs-Reflexion, unabhängig vom Inhalt. Verwässert die Themen-Trennschärfe und untergräbt die Salienz-Träger-Architektur (`novaberg-memory.md` §12).
+
+**Lösung:** Zwei Ansätze, kombinierbar:
+1. **Prompt-Schärfung** in `prompts/default/salienz.aufgabe.txt`: explizite Negativ-Beispiele ("nicht: Wahrnehmung, Gedächtnis, Charakterisierung — diese sind Pipeline-Begriffe, keine Inhalts-Themen").
+2. **Post-Filter-Stopword-Liste** (`SALIENZ_THEMEN_STOPWORDS` in `config.py`) mit Pipeline-Begriffen, angewendet im KZG-Schreibpfad nach der LLM-Extraktion. Robuste Notbremse für den Fall, dass Prompt-Schärfung nicht reicht.
+
+**Vorbedingung:** Keine.
+**Prio:** Mittel.
+
+**Status-Update Chat 86:** Beide Bugs werden voraussichtlich durch den Synapsen-Umbau (siehe `novaberg-memory-synapsen_k.md`) strukturell obsolet, weil keine Themen-Aggregation mehr stattfindet. Themen bleiben pro Knoten eingefroren, geteilte Themen werden zur Kanten-Charakterisierung. Bis zur Umsetzung des Umbaus bleibt der Bug-Eintrag bestehen — aktive Mitigation wird zurückgestellt.
+
+---
+
 #### PROMO-DROP1 — KZG-Felder werden bei Promotion stillschweigend verworfen ⚠️ Teilweise behoben Chat 84
 **Entdeckt:** Chat 75, Promotion-Pipeline-Audit
 **Symptom:** Drei KZG-Hash-Felder kommen niemals im LZG an:
