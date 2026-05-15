@@ -1059,6 +1059,29 @@ def get_node_config(node_name: str) -> dict:
 
 
 # ─────────────────────────────────────────────
+# Pipeline-Log (Synapsen P1, Chat 88)
+# ─────────────────────────────────────────────
+# Zentrale Forensik-Tabelle fuer Node-Entscheidungen. Jeder Eintrag wird
+# zunaechst in einem Buffer gesammelt und periodisch von einem asynchronen
+# Writer-Task in die Datenbank geflusht. Spezifikation in
+# docs/novaberg-memory-synapsen_k.md §10.
+
+# Wie lange das Pipeline-Log vorgehalten wird. Aelter werdende Eintraege
+# werden taeglich von einem Pixie-Task geloescht (Cleanup-Anhang im
+# Decay-Lauf ab P6). Wert ist Stellschraube: 365 Tage (1 Jahr) als
+# Default fuer saisonale Reflexion und Jahresrueckblicke. 180 fuer
+# minimaleren Speicherbedarf, weniger als 30 nur fuer Performance-
+# kritische Setups.
+LZG_PIPELINE_LOG_VORHALTUNG_TAGE: int = int(os.getenv("LZG_PIPELINE_LOG_VORHALTUNG_TAGE", "365"))
+
+# Intervall, in dem der Writer-Task den Buffer in die Datenbank flusht.
+# Bei Server-Absturz gehen maximal die letzten LZG_PIPELINE_LOG_FLUSH_SEKUNDEN
+# Sekunden an Eintraegen verloren — bewusste Designentscheidung. Fuer reine
+# Forensik akzeptabel; bei Hochfrequenz-Bedarf auf 5 oder 3 senken.
+LZG_PIPELINE_LOG_FLUSH_SEKUNDEN: int = int(os.getenv("LZG_PIPELINE_LOG_FLUSH_SEKUNDEN", "10"))
+
+
+# ─────────────────────────────────────────────
 # Prompt-System (Connector-Segregation)
 # ─────────────────────────────────────────────
 from prompt_loader import prompt_laden

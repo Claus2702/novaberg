@@ -272,6 +272,36 @@ CREATE TABLE IF NOT EXISTS verb_mappings (
     UNIQUE (user_id, ausdruck, agent)
 );
 
+-- ───────────────────────────────────────────────
+-- pipeline_log — Forensik-Tabelle für Node-Entscheidungen pro Turn
+-- ───────────────────────────────────────────────
+-- Querschnitts-Infrastruktur. Jeder Eintrag dokumentiert einen Entscheidungs-,
+-- Berechnungs- oder Schreib-Schritt einer Pipeline-Komponente während eines
+-- Konversations- oder Pixie-Turns. Inhalt strukturiert als JSONB, damit sowohl
+-- Mensch als auch LLM die Einträge lesen können.
+--
+-- Keine CHECK-Constraint auf `art` — die gültigen Werte werden per Konvention
+-- durch die Helper-API in server/memory/pipeline_log.py durchgesetzt, nicht
+-- durch DB-Constraints (vermeidet Schema-Änderungen bei zukünftiger
+-- Art-Erweiterung).
+--
+-- Spezifikation: docs/novaberg-memory-synapsen_k.md §10.
+CREATE TABLE IF NOT EXISTS pipeline_log (
+    id              BIGSERIAL    PRIMARY KEY,
+    erstellt_am     TIMESTAMPTZ  NOT NULL DEFAULT NOW(),
+    turn_id         VARCHAR(100) NOT NULL,
+    span_id         UUID         NULL,
+    quelle          VARCHAR(50)  NOT NULL,
+    node            VARCHAR(50)  NOT NULL,
+    art             VARCHAR(30)  NOT NULL,
+    inhalt          JSONB        NOT NULL
+);
+
+CREATE INDEX IF NOT EXISTS idx_pipeline_log_turn     ON pipeline_log (turn_id);
+CREATE INDEX IF NOT EXISTS idx_pipeline_log_span     ON pipeline_log (span_id);
+CREATE INDEX IF NOT EXISTS idx_pipeline_log_node_art ON pipeline_log (node, art);
+CREATE INDEX IF NOT EXISTS idx_pipeline_log_erstellt ON pipeline_log (erstellt_am DESC);
+
 
 -- ═══════════════════════════════════════════════
 -- Indizes

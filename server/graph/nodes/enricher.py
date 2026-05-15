@@ -32,6 +32,14 @@ from memory.kzg          import kzg_entries_retrieve, _kzg_prefix
 from memory.lzg          import lzg_entries_retrieve
 from memory.session      import session_turns_retrieve, _session_key
 from memory.ziele        import ziele_aktive_laden
+from memory.pipeline_log import (
+    span_start,
+    span_end,
+    log_eingang,
+    log_berechnung,
+    log_switch,
+    log_ausgabe,
+)
 from ei.gravitation      import (
     ziel_gravitation_berechnen,
     gravitationsterm_berechnen,
@@ -51,6 +59,17 @@ def enrich(
     user_id:       str
 ) -> ConversationState:
     """Sammelt Kontext aus Kern-Quellen und Plugin-Hooks."""
+
+    # ── Pipeline-Log: Span-Start (Anker 1) ──────
+    # Klammert den gesamten Enricher-Lauf. quelle unterscheidet HumanGraph
+    # (user-Pfad) vom CharacterGraph (Nova-Selbst-Pfad).
+    turn_id_log: str = state.get("turn_id", "unbekannt")
+    quelle_log:  str = "human" if user_id != ASSISTANT_USER_ID else "character"
+    span_id      = span_start(
+        turn_id = turn_id_log,
+        node    = "enricher",
+        quelle  = quelle_log,
+    )
 
     entries: list[ContextEntry] = []
 
@@ -112,6 +131,22 @@ def enrich(
             f"Enricher: Gesprächsmodus={letzter_modus}, "
             f"emotion={letzte_emotion}, intentionen={letzte_intentionen}"
         )
+
+    # ── Pipeline-Log: Eingang (Anker 2) ─────────
+    # Session-Kontext geladen, vor Plugin-Loop und Memory-Suche.
+    log_eingang(
+        turn_id = turn_id_log,
+        node    = "enricher",
+        quelle  = "session",
+        inhalt  = {
+            "user_id":              user_id,
+            "character_id":         character_id,
+            "raw_turns_count":      len(raw_turns) if raw_turns else 0,
+            "filtered_turns_count": len(gefilterte_turns) if gefilterte_turns else 0,
+            "has_summary":          bool(summary),
+        },
+        span_id = span_id,
+    )
 
     # ─────────────────────────────────────────
     # 2. Plugin-Hooks: enrich() aller Manager
@@ -200,13 +235,33 @@ def enrich(
     # User-Turn in der Session ablegen kann (Gravitationsgraph-Panel).
     state["prompt_embedding"] = embedding
 
+    # ── Pipeline-Log: Berechnung (Anker 3) ──────
+    # Prompt-Embedding erzeugt. Dimensions-Check als Plausibilitäts-Anker:
+    # erwartet werden 768 (nomic-embed-text).
+    log_berechnung(
+        turn_id = turn_id_log,
+        node    = "enricher",
+        quelle  = "embedding",
+        inhalt  = {
+            "embed_model":    embed_model,
+            "prompt_length":  len(state.get("user_prompt", "")),
+            "embedding_dim":  len(embedding) if embedding else 0,
+        },
+        span_id = span_id,
+    )
+
+    # Lokale Initialisierung, damit der Switch-Inhalt unten beide Counts
+    # unabhängig vom Pfad sicher referenzieren kann.
+    kzg_entries: list[ContextEntry] = []
+    lzg_entries: list[ContextEntry] = []
+
     if kzg_keys or has_lzg:
         logger.info(
             f"Enricher: {len(kzg_keys)} KZG, LZG={'ja' if has_lzg else 'nein'} — suche Kontext..."
         )
 
         if kzg_keys:
-            kzg_entries: list[ContextEntry] = kzg_entries_retrieve(
+            kzg_entries = kzg_entries_retrieve(
                 redis_client, user_id, character_id, embedding,
             )
             if kzg_entries:
@@ -214,12 +269,40 @@ def enrich(
                 logger.info(f"Enricher: KZG lieferte {len(kzg_entries)} Eintraege")
 
         if has_lzg:
-            lzg_entries: list[ContextEntry] = lzg_entries_retrieve(
+            lzg_entries = lzg_entries_retrieve(
                 postgres_url, user_id, character_id, embedding,
             )
             if lzg_entries:
                 entries.extend(lzg_entries)
                 logger.info(f"Enricher: LZG lieferte {len(lzg_entries)} Eintraege")
+
+        # ── Pipeline-Log: Switch — Memory aktiv (Anker 4a) ──
+        log_switch(
+            turn_id = turn_id_log,
+            node    = "enricher",
+            quelle  = "memory",
+            inhalt  = {
+                "kzg_keys_count":     len(kzg_keys),
+                "has_lzg":            has_lzg,
+                "kzg_entries_count":  len(kzg_entries),
+                "lzg_entries_count":  len(lzg_entries),
+                "zweig":              "memory_aktiv",
+            },
+            span_id = span_id,
+        )
+    else:
+        # ── Pipeline-Log: Switch — Memory uebersprungen (Anker 4b) ──
+        log_switch(
+            turn_id = turn_id_log,
+            node    = "enricher",
+            quelle  = "memory",
+            inhalt  = {
+                "kzg_keys_count":  0,
+                "has_lzg":         False,
+                "zweig":           "memory_uebersprungen",
+            },
+            span_id = span_id,
+        )
 
     # ─────────────────────────────────────────
     # 4. Charakter-Hash (immer)
@@ -324,5 +407,30 @@ def enrich(
         logger.info("Enricher: Pipeline abgeschlossen, 0 Eintraege gesammelt")
     else:
         logger.info(f"Enricher: Pipeline abgeschlossen, {len(entries)} Eintraege gesammelt")
+
+    # ── Pipeline-Log: Ausgabe (Anker 5) ─────────
+    # Zustand des State am Enricher-Ausgang.
+    log_ausgabe(
+        turn_id = turn_id_log,
+        node    = "enricher",
+        quelle  = "state",
+        inhalt  = {
+            "memory_entries_count":              len(state.get("memory_entries", [])),
+            "aktivierte_ziele_count":            len(state.get("aktivierte_ziele", [])),
+            "gravitationsterm":                  state.get("gravitationsterm", 0.0),
+            "emotionale_gravitationspunkte_count": len(
+                state.get("emotionale_gravitationspunkte", [])
+            ),
+        },
+        span_id = span_id,
+    )
+
+    # ── Pipeline-Log: Span-End (Anker 6) ────────
+    span_end(
+        turn_id = turn_id_log,
+        node    = "enricher",
+        quelle  = quelle_log,
+        span_id = span_id,
+    )
 
     return state

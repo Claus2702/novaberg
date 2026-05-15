@@ -37,6 +37,11 @@ from api.drive                  import router as drive_router
 from services.shadow_delivery   import shadow_delivery_loop
 from services.event_consumer    import event_consumer_loop
 
+from memory.pipeline_log        import (
+    init_buffer as pipeline_log_init,
+    writer_loop as pipeline_log_writer,
+)
+
 logger    = logging.getLogger("ki_server")
 scheduler = AsyncIOScheduler()
 
@@ -115,6 +120,11 @@ async def Lifespan(app: FastAPI):
 
     # Event-Loop-Referenz für synchrone Endpoints (broadcast_threadsafe)
     app.state.loop = asyncio.get_running_loop()
+
+    # Pipeline-Log-Buffer initialisieren (Forensik-Infrastruktur).
+    # Muss vor dem ersten Helper-Aufruf passieren, der spätestens im
+    # Enricher des ersten Konversations-Turns kommt.
+    pipeline_log_init(app.state.loop)
 
     # LLM-Provider initialisieren (Ollama oder Claude)
     init_providers(
@@ -264,6 +274,12 @@ async def Lifespan(app: FastAPI):
     )
     logger.info("Event-Consumer gestartet.")
 
+    # Pipeline-Log-Writer als drittes Hintergrund-Task.
+    pipeline_log_task: asyncio.Task = asyncio.create_task(
+        pipeline_log_writer(POSTGRES_URL, shutdown_event)
+    )
+    logger.info("Lifespan: Pipeline-Log-Writer gestartet.")
+
     yield
 
     # ── Shutdown: Event setzen, dann aufräumen ──
@@ -273,6 +289,29 @@ async def Lifespan(app: FastAPI):
     if delivery_task is not None:
         delivery_task.cancel()
     consumer_task.cancel()
+
+    # Pipeline-Log-Writer sauber beenden: shutdown_event ist bereits gesetzt,
+    # der Writer sieht das im nächsten Loop-Tick und führt einen Final-Flush
+    # durch. Wir warten bis zu 30 Sekunden — generös, damit auch ein voller
+    # Buffer noch in die DB kommt.
+    #
+    # Bewusste Abweichung von der Bestandspraxis (delivery_task, consumer_task
+    # werden nur per .cancel() ohne await beendet). Pipeline-Log ist Forensik;
+    # Datenverlust beim Shutdown wäre die schmerzlichste Stelle. Muster gilt
+    # als Vorbild für REFAC-SHUTDOWN-DISZIPLIN (siehe Backlog).
+    try:
+        await asyncio.wait_for(pipeline_log_task, timeout=30.0)
+        logger.info("Lifespan: Pipeline-Log-Writer beendet (regulär).")
+    except asyncio.TimeoutError:
+        logger.warning(
+            "Lifespan: Pipeline-Log-Writer hat Timeout überschritten — Cancel."
+        )
+        pipeline_log_task.cancel()
+        try:
+            await pipeline_log_task
+        except (asyncio.CancelledError, Exception):
+            pass
+
     logger.info("Server gestoppt.")
 
 
