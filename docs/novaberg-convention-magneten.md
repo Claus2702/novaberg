@@ -180,15 +180,18 @@ orthogonale BOOLEAN-Flags:
 
 Drei typische Kombinationen:
 
-| Klasse | binding | remind | conflict_check | Beispiel |
-|---|:---:|:---:|:---:|---|
-| **Termin** | ✓ | ✓ | ✓ | Zahnarzt morgen 14:00, Vortrag halten |
-| **Wiedervorlage** | — | ✓ | — | Hans' Geburtstag, Hochzeitstag, externe Frist |
-| **Bezug** | — | — | — | Wetter heiß heute, *„erstes Quartal schlecht"* |
+| Klasse | event_type-Werte | binding | remind | conflict_check | Beispiel |
+|---|---|:---:|:---:|:---:|---|
+| **Termin** | `termin`, `deadline` | ✓ | ✓ | ✓ | Zahnarzt morgen 14:00, Vortrag halten |
+| **Wiedervorlage** | `geburtstag`, `jahrestag`, `erinnerung` | — | ✓ | — | Hans' Geburtstag, Hochzeitstag, externe Frist |
+| **Bezug** | `erinnerungs_anker` | — | — | — | Wetter heiß heute, *„erstes Quartal schlecht"* |
 
 **Bezug** ist die neue Klasse: still aus der Salienz entstandene Zeit-Anker
 ohne intentionales User-Anliegen. Sie sind nicht über den TimelineAgent
-manipulierbar, dienen nur als Anker für Erinnerungen.
+manipulierbar, dienen nur als Anker für Erinnerungen. Der konkrete
+`event_type`-String der Klasse ist `erinnerungs_anker` (Synapsen P3) —
+gesetzt vom `magnete_aufloesen`-Node im KzgAgent-Subgraph. Helper-Konstante:
+`EVENT_TYPES_ERINNERUNGS_ANKER` in `agents/timeline/magneten.py`.
 
 Drei Flags statt einer Rolle, weil Verhalten orthogonal ist — ein Bürotag
 ganztägig blockt User-Zeit (`binding=TRUE`), aber ohne Konflikt-Check

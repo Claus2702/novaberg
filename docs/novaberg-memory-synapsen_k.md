@@ -1569,27 +1569,43 @@ Die folgenden Abschnitte (13.3 bis 13.12) sind **Stufe 1** der Sprint-Definition
 
 **Ziel.** Beim Schreiben eines KZG-Eintrags werden ab dieser Phase die Magnet-Felder `entitaet_ids` und `timeline_id` mit befüllt. Ohne diese Felder kann die Promotion in P4 die Entitäts- und Timeline-Schichten nicht greifen lassen. Inhaltsgleich mit der vormaligen M5-Roadmap-Position, in den Synapsen-Sprint integriert.
 
-**Abgrenzung.** Keine Änderung an der Promotion-Logik selbst — die kommt in P4. Keine Migration der bestehenden KZG-Einträge in Redis; nur neu entstehende Einträge tragen die Felder. EntityResolver und TimeParser werden nicht angefasst — sie liefern bereits die nötigen Daten, es geht nur um die Übernahme ins KZG-Schreibschema. Salience-Pfad wird nicht erweitert über das hinaus, was zur Befüllung der beiden Felder nötig ist.
+**Abgrenzung.** Keine Änderung an der Promotion-Logik selbst — die kommt in P4. Keine Migration der bestehenden KZG-Einträge in Redis; nur neu entstehende Einträge tragen die Felder. EntityResolver und TimelineRepository werden nur als bestehende Tools genutzt, nicht erweitert. Salience-Prompt wird um zwei Roh-Dimensionen erweitert; die Resolution selbst geschieht in einem neuen Node im KzgAgent-Subgraphen.
 
-**Voraussetzungen.** P1 und P2 abgeschlossen. EntityResolver liefert `entitaet_ids`; TimeParser liefert `timeline_id`. Beides ist im Live-Code vorhanden — bestätigt durch frühere Brudi-Audits.
+**Voraussetzungen.** P1 und P2 abgeschlossen. Salience liefert die Roh-Erkennungen als Strings (`entitaeten_roh`, `zeitausdruck_roh`). EntityResolutionService (`memory/services/entity_resolution.py`) und TimelineRepository (`memory/repositories/timeline_repository.py`) sind im Live-Code vorhanden und werden vom neuen Node direkt aufgerufen.
+
+**Architektur.** Drei-Stufen-Pipeline:
+
+1. **Salience-Erweiterung** — Prompt `prompts/default/salienz.task.txt` bekommt zwei neue Dimensionen: `entitaeten_roh` (Liste von Eigennamen, Pronomen ausgeschlossen) und `zeitausdruck_roh` (ein Zeitausdruck pro Segment). Beides als Roh-Strings, keine Resolution im Salience-Node.
+
+2. **Neuer Node `magnete_aufloesen`** in `server/agents/kzg/magnete.py` — sitzt im KzgAgent-Subgraph zwischen `schwelle_pruefen` und `verdichten` (defensiv: Resolver-Fehler verwerfen den teuren LLM-Call nicht). Entitäten-Pfad via `EntityResolutionService.resolve_batch` plus `create_new_entity` für neue Namen (analog zum bestehenden FaktenManager-Pattern). Timeline-Pfad via `zeit_parsen_vektor` und `TimelineRepository.find_by_date`/`insert` mit `event_type='erinnerungs_anker'` (Klasse Bezug nach `convention-magneten.md` §5).
+
+3. **Clipboard-Pattern** — der `TimelineAgent` schreibt eine im selben Turn angelegte `timeline_id` via `dispatch_timeline._build_return` flach in den `ConversationState` (`state["timeline_id"]`). Der `magnete_aufloesen`-Node übernimmt diesen Wert, wenn vorhanden, statt einen eigenen Erinnerungs-Anker für den gleichen Tag anzulegen.
 
 **Datei-Scopes.**
 
 *Ergänzen:*
 
-- KZG-Schreibfunktion in `server/memory/kzg.py` — Befüllung der neuen Felder beim Schreibvorgang.
-- Aufrufende Stelle des KZG-Schreibpfads (Brudi verifiziert: vermutlich Salience-Node oder Enricher, je nach aktueller Architektur) — Übernahme der beiden Felder aus dem State in den KZG-Schreibvorgang.
-- Pipeline-Log-Eintrag (`art='db_zugriff'`) am Schreibvorgang mit den befüllten Feldwerten zur Forensik.
+- `server/prompts/default/salienz.task.txt` — zwei neue Dimensionen (`entitaeten_roh`, `zeitausdruck_roh`) plus JSON-Schema-Erweiterung.
+- `server/graph/nodes/salience.py` — defensives Normalisieren der neuen Roh-Felder.
+- `server/graph/state.py` (plus `base.py`, `builder.py`) — neuer flacher State-Key `timeline_id: int | None` als Clipboard.
+- `server/agents/kzg/magnete.py` (NEU) — Node `magnete_aufloesen`.
+- `server/agents/kzg/agent.py` — Subgraph-Topologie: neuer Node zwischen `schwelle_pruefen` und `verdichten`.
+- `server/agents/kzg/dispatch.py` — `kontext` um `turn_id` und `timeline_id`-Clipboard erweitert.
+- `server/agents/kzg/speicher.py` (`_neu_anlegen`) und `server/memory/kzg.py` (`kzg_store`) — optionale Parameter `entitaet_ids`, `timeline_id`, `turn_id`. Redis-Serialisierung: `entitaet_ids` als kommagetrennter String (TAG-Feld), `timeline_id` als Numeric — bei `None` aus dem `mapping=` ausgelassen.
+- `server/memory/kzg.py` + `server/agents/kzg/speicher.py` — Pipeline-Log-Eintrag (`art='db_zugriff'`) nach erfolgreichem `rc.hset()`.
+- `server/agents/timeline/dispatch.py` — `_build_return` schreibt `state["timeline_id"]` ins Clipboard.
+- `server/agents/timeline/magneten.py` — neuer `event_type='erinnerungs_anker'`: `EVENT_TYPES_ERINNERUNGS_ANKER`, Flags (False, False, False), `themen_aus_event_type` liefert leere Liste.
 
-*Tabu:* EntityResolver, TimeParser, alle LZG-Dateien (`memory/lzg.py`, künftige Synapsen-Dateien), alle Promotion-Dateien. Salience-Pfad nur insoweit, wie er die beiden Felder in den State legt — keine breitere Salience-Überarbeitung.
+*Tabu:* `EntityResolutionService` und `TimelineRepository` werden nur konsumiert, nicht erweitert. Alle LZG-Dateien (`memory/lzg.py`, `lzg_knoten`/`lzg_kanten`), alle Promotion-Dateien. Salience-Logik ausserhalb des Prompts und des defensive Parsing.
 
 **Abnahme-Tests.**
 
-1. Ein normaler Konversations-Turn, der zu einem KZG-Eintrag führt, erzeugt in Redis einen Eintrag mit befüllten Feldern `entitaet_ids` und `timeline_id`. Inhalt der Felder ist plausibel — Entitäts-IDs sind Integers, die in der `entitaeten`-Tabelle existieren; Timeline-ID ist ein Integer, der in der `timeline`-Tabelle existiert.
-2. Ein Turn ohne erkannte Entitäten erzeugt einen KZG-Eintrag mit leerer Liste `entitaet_ids = []`, kein NULL, kein Fehler.
-3. Ein Turn ohne erkannte Zeit erzeugt einen KZG-Eintrag mit `timeline_id = NULL` (oder gemäß tatsächlicher Konvention — Brudi prüft gegen `convention-magneten.md`), kein Fehler.
-4. Pipeline-Log enthält einen Eintrag des Schreibvorgangs mit allen relevanten Werten im JSONB-`inhalt`.
-5. Bestehende KZG-Einträge in Redis sind unverändert — keine Migration, keine Re-Indexierung.
+1. Ein normaler Konversations-Turn, der zu einem KZG-Eintrag führt, erzeugt in Redis einen Eintrag mit befüllten Feldern `entitaet_ids` und `timeline_id`. Inhalt der Felder ist plausibel — Entitäts-IDs sind Integers, die in der `entitaeten`-Tabelle existieren; Timeline-ID ist ein Integer, der in der `timeline`-Tabelle existiert (event_type=`erinnerungs_anker`).
+2. Ein Turn ohne erkannte Entitäten erzeugt einen KZG-Eintrag mit `entitaet_ids` als leerem String im Hash (TAG-Feld, kommagetrennt — leerer String entspricht „keine Tags"), kein Fehler.
+3. Ein Turn ohne erkannte Zeit erzeugt einen KZG-Eintrag ohne `timeline_id`-Feld im Hash (das Feld wird aus dem `mapping=` ausgelassen, weil NumericField sich am leeren String verschluckt), kein Fehler.
+4. Ein Turn, in dem der TimelineAgent zuvor einen Eintrag angelegt hat (z.B. „Merk dir den 17.10. als Annas Geburtstag"), erzeugt einen KZG-Eintrag mit `timeline_id = <dieselbe ID>` — kein doppelter `erinnerungs_anker` für denselben Tag.
+5. Pipeline-Log enthält einen Eintrag des Schreibvorgangs (`art='db_zugriff'`, `node='kzg_speicher'`, `quelle=user_id`) mit `entitaet_ids` und `timeline_id` im JSONB-`inhalt`.
+6. Bestehende KZG-Einträge in Redis sind unverändert — keine Migration, keine Re-Indexierung.
 
 ### 13.6 P4 — Neue Promotion-Logik schreibt in `lzg_knoten` und `lzg_kanten`
 
