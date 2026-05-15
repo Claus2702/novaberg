@@ -77,6 +77,7 @@ class ConversationState(TypedDict):
     raw_turns:         list[dict]    # Ungefilterte Session-Turns (für EI-Calc)
     char_hash_dict:    dict          # Charakter-Hash als Dict (für EI-Calc)
     session_turn_kern: str           # Komprimierter Turn-Inhalt (vom KZG-Agent, für Session-Turn)
+    timeline_id:       int | None    # Clipboard: vom TimelineAgent gesetzte ID; vom KzgAgent-magnete_aufloesen-Node uebernommen statt einen eigenen Erinnerungs-Anker anzulegen.
 
     # Emotionale Intelligenz (Enricher → Responder)
     emotions_verlauf:     list    # [{emotion: str, gewicht: float}, ...] — gewichtetes Array

@@ -129,6 +129,7 @@ class GraphBase(ABC):
             raw_turns          = [],
             char_hash_dict     = {},
             session_turn_kern  = "",
+            timeline_id        = None,
 
             # Emotionale Intelligenz
             emotions_verlauf     = [],

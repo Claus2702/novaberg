@@ -81,6 +81,11 @@ def dispatch_kzg(
                 "beobachter":   beobachter,
                 "embed_client": embed_client,
                 "embed_model":  embed_model,
+                "turn_id":      state.get("turn_id", ""),
+                # Clipboard: vom TimelineAgent in diesem Turn gesetzte ID;
+                # vom magnete_aufloesen-Node uebernommen statt eigenen
+                # Erinnerungs-Anker anzulegen.
+                "timeline_id":  state.get("timeline_id"),
             },
             "parameter": {
                 "salienz_obj":  salienz_obj,

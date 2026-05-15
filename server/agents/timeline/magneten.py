@@ -10,8 +10,9 @@ import logging
 
 logger = logging.getLogger("ki_server.agents.timeline.magneten")
 
-EVENT_TYPES_TERMIN       = frozenset({"termin", "deadline"})
-EVENT_TYPES_WIEDERVORLAGE = frozenset({"geburtstag", "jahrestag", "erinnerung"})
+EVENT_TYPES_TERMIN            = frozenset({"termin", "deadline"})
+EVENT_TYPES_WIEDERVORLAGE     = frozenset({"geburtstag", "jahrestag", "erinnerung"})
+EVENT_TYPES_ERINNERUNGS_ANKER = frozenset({"erinnerungs_anker"})
 
 
 def themen_aus_event_type(event_type: str) -> list[str]:
@@ -19,7 +20,14 @@ def themen_aus_event_type(event_type: str) -> list[str]:
 
     M2.5a-Variante: ARRAY[event_type]. Reichere thematische Anreicherung
     (z.B. aus Entitaeten-Map) folgt in M3.
+
+    Sonderfall erinnerungs_anker (Klasse Bezug, Synapsen P3): leere Liste,
+    weil der Anker keine inhaltliche Thematik traegt — er ist eine
+    Klassen-Markierung fuer KZG-Magnete, kein semantischer Tag.
     """
+    if event_type in EVENT_TYPES_ERINNERUNGS_ANKER:
+        logger.debug(f"themen_aus_event_type: event_type='{event_type}' -> [] (Klasse Bezug)")
+        return []
     themen: list[str] = [event_type]
     logger.debug(f"themen_aus_event_type: event_type='{event_type}' -> {themen}")
     return themen
@@ -31,12 +39,15 @@ def verhaltens_flags_aus_event_type(event_type: str) -> tuple[bool, bool, bool]:
     Mapping nach Magneten-Convention §5:
       - termin, deadline                       -> (True,  True,  True)
       - geburtstag, jahrestag, erinnerung      -> (False, True,  False)
+      - erinnerungs_anker (Klasse Bezug)       -> (False, False, False)
       - alle anderen                           -> (False, False, False)  (sicherer Default)
     """
     if event_type in EVENT_TYPES_TERMIN:
         flags = (True, True, True)
     elif event_type in EVENT_TYPES_WIEDERVORLAGE:
         flags = (False, True, False)
+    elif event_type in EVENT_TYPES_ERINNERUNGS_ANKER:
+        flags = (False, False, False)
     else:
         logger.warning(
             f"verhaltens_flags_aus_event_type: unbekannter event_type='{event_type}' "

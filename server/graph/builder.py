@@ -99,6 +99,7 @@ def create_initial_state(
         gespraechs_modus   = "",
         user_intentionen   = [],
         user_emotion       = "",
+        timeline_id        = None,
         management_result = "",
         management_detail = "",
         task_block       = "",

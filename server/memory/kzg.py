@@ -32,6 +32,7 @@ from config                                import (
     PIXIE_AKTIV,
 )
 from graph.context_entry                   import ContextEntry
+from memory.pipeline_log                   import log_db_zugriff
 from services.shadow_agent                 import shadow_queue_push
 
 from redis.commands.search.field           import TextField, NumericField, VectorField, TagField
@@ -248,12 +249,24 @@ def kzg_store(
     character_id: str,
     beobachter:   str,
     salienz_obj:  dict,
-    embedding:    list[float]
+    embedding:    list[float],
+    entitaet_ids: list[int] | None = None,
+    timeline_id:  int | None       = None,
+    turn_id:      str              = "",
 ) -> str:
     """
     Speichert einen neuen KZG-Eintrag und verstärkt thematisch verwandte
     Einträge in der Paar-Partition (kein Merge, nur Salienz/Häufigkeit/TTL).
     Gibt den Status zurück: 'neu' oder 'ignoriert'.
+
+    Magnet-Felder (Synapsen P3, optional):
+      entitaet_ids: kommagetrennter String im RediSearch-TagField. Leere
+                    Liste -> leerer String "". Default-Verhalten fuer Legacy-
+                    Aufrufer (Recherche, Shadow): keine Magnete -> leerer
+                    String, kein Index-Bruch.
+      timeline_id:  Integer im RediSearch-NumericField. None -> Feld wird
+                    aus dem mapping= ausgelassen.
+      turn_id:      Pipeline-Log-Korrelation; bei Legacy-Aufrufern leer.
     """
 
     salienz: float = salienz_obj.get("salienz", 0.0)
@@ -282,7 +295,9 @@ def kzg_store(
     arousal:          float = max(0.0, min(1.0, float(salienz_obj.get("arousal", 0.5))))
     emotions_vektor:  str   = salienz_obj.get("emotions_vektor", "")
 
-    redis_client.hset(key, mapping={
+    entitaet_ids_str: str = ",".join(str(eid) for eid in (entitaet_ids or []))
+
+    mapping: dict = {
         "user_id":          user_id,
         "character_id":     character_id,
         "beobachter":       beobachter,
@@ -301,8 +316,13 @@ def kzg_store(
         "beziehungs_dynamik": salienz_obj.get("beziehungs_dynamik", "neutral"),
         "tone":               salienz_obj.get("tone", "sachlich"),
         "erstellt_am":        str(timestamp),
+        "entitaet_ids":       entitaet_ids_str,
         "embedding":        embedding_bytes,
-    })
+    }
+    if timeline_id is not None:
+        mapping["timeline_id"] = str(timeline_id)
+
+    redis_client.hset(key, mapping=mapping)
 
     if salienz >= KZG_SALIENZ_HIGH:
         ttl: int = KZG_TTL_HIGH_SEKUNDEN
@@ -311,6 +331,25 @@ def kzg_store(
     else:
         ttl: int = KZG_TTL_LOW_SEKUNDEN
     redis_client.expire(key, ttl)
+
+    # Pipeline-Log: schreibender DB-Zugriff (Synapsen §10.2).
+    log_db_zugriff(
+        turn_id = turn_id or "kzg-store-unbekannt",
+        node    = "kzg_speicher",
+        quelle  = user_id,
+        inhalt  = {
+            "tabelle":      "kzg",
+            "operation":    "insert",
+            "kzg_key":      key,
+            "entitaet_ids": entitaet_ids or [],
+            "timeline_id":  timeline_id,
+            "themen":       themen_str,
+            "dimension":    dimension,
+            "salienz":      salienz,
+            "ttl":          ttl,
+            "aufrufer":     "kzg_store",
+        },
+    )
 
     if salienz >= KZG_SALIENZ_HIGH:
         if PIXIE_AKTIV:

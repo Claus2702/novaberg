@@ -174,6 +174,20 @@ def analyze(
             if "arousal" in salienz_obj:
                 salienz_obj["arousal"] = max(0.0, min(1.0, float(salienz_obj.get("arousal", 0.5))))
 
+            # Magnet-Roh-Felder defensiv normalisieren (P3, Synapsen-Sprint).
+            # Salience liefert hier nur Roh-Strings; die eigentliche Aufloesung
+            # zu entitaet_ids/timeline_id geschieht im magnete_aufloesen-Node
+            # des KzgAgent-Subgraphen.
+            roh_entitaeten = salienz_obj.get("entitaeten_roh", []) or []
+            if not isinstance(roh_entitaeten, list):
+                roh_entitaeten = []
+            salienz_obj["entitaeten_roh"] = [
+                n.strip() for n in roh_entitaeten
+                if isinstance(n, str) and n.strip()
+            ]
+            roh_zeit = salienz_obj.get("zeitausdruck_roh", "") or ""
+            salienz_obj["zeitausdruck_roh"] = str(roh_zeit).strip()
+
             logger.info(
                 f"Salienz: score={salienz_obj.get('salienz', 0):.2f}, "
                 f"themen={salienz_obj.get('themen', [])}, "
@@ -181,7 +195,9 @@ def analyze(
                 f"typ={salienz_obj.get('gedaechtnistyp', '-')}, "
                 f"intentionen={salienz_obj.get('intentionen', [])}, "
                 f"emotion={salienz_obj.get('emotion', '-')}, "
-                f"modus={salienz_obj.get('modus', '-')}"
+                f"modus={salienz_obj.get('modus', '-')}, "
+                f"entitaeten_roh={salienz_obj.get('entitaeten_roh', [])}, "
+                f"zeitausdruck_roh='{salienz_obj.get('zeitausdruck_roh', '')}'"
             )
 
         except (json.JSONDecodeError, KeyError) as fehler:

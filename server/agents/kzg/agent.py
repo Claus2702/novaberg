@@ -10,6 +10,7 @@ import logging
 
 from agents.base import BaseAgent, AgentState
 from langgraph.graph import StateGraph, END
+from agents.kzg.magnete import magnete_aufloesen
 from agents.kzg.verdichtung import verdichten
 from agents.kzg.speicher import speichern
 from agents.kzg.queues import queues_befuellen
@@ -35,16 +36,21 @@ class KzgAgent(BaseAgent):
     def build_graph(self):
         graph = StateGraph(AgentState)
 
-        graph.add_node("schwelle_pruefen", self._schwelle_pruefen)
-        graph.add_node("verdichten",       verdichten)
-        graph.add_node("speichern",        speichern)
-        graph.add_node("queues",           queues_befuellen)
+        graph.add_node("schwelle_pruefen",  self._schwelle_pruefen)
+        graph.add_node("magnete_aufloesen", magnete_aufloesen)
+        graph.add_node("verdichten",        verdichten)
+        graph.add_node("speichern",         speichern)
+        graph.add_node("queues",            queues_befuellen)
 
         graph.set_entry_point("schwelle_pruefen")
         graph.add_conditional_edges("schwelle_pruefen", self._nach_schwelle)
-        graph.add_edge("verdichten", "speichern")
-        graph.add_edge("speichern",  "queues")
-        graph.add_edge("queues",     END)
+        # Magnet-Aufloesung VOR Verdichtung — defensiv: Resolver-Fehler
+        # verwerfen den teuren LLM-Call nicht; bei Abbruch danach bleibt
+        # kein Waisenkind in der Timeline.
+        graph.add_edge("magnete_aufloesen", "verdichten")
+        graph.add_edge("verdichten",        "speichern")
+        graph.add_edge("speichern",         "queues")
+        graph.add_edge("queues",            END)
 
         return graph.compile()
 
@@ -53,7 +59,7 @@ class KzgAgent(BaseAgent):
     def _nach_schwelle(self, state: AgentState) -> str:
         if state["status"] == "abgelehnt":
             return END
-        return "verdichten"
+        return "magnete_aufloesen"
 
     # --- Nodes ---
 

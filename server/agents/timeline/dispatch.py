@@ -217,9 +217,27 @@ def _build_return(state: dict, result: AgentResult) -> dict:
     logger.debug(f"dispatch_timeline: AgentResult — status='{result.status}', "
                  f"management_result='{management_result[:100]}'")
 
-    return {
+    return_dict: dict = {
         "agent_results": bisherige + [result],
         "agent_name": "",  # Reset — Planner darf neu entscheiden
         "management_result": management_result,
         "management_detail": management_detail,
     }
+
+    # Clipboard fuer KZG-Magnet-Aufloesung (Synapsen P3): wenn der
+    # TimelineAgent in diesem Turn einen Eintrag angelegt/gefunden hat,
+    # geben wir die ID flach in den State, damit der spaetere KzgAgent-
+    # magnete_aufloesen-Node sie uebernehmen kann statt einen eigenen
+    # Erinnerungs-Anker fuer den gleichen Tag anzulegen.
+    if result.status == "abgeschlossen" and result.schritte:
+        letzter_schritt: dict = result.schritte[-1] if isinstance(result.schritte[-1], dict) else {}
+        clipboard_id = (
+            letzter_schritt.get("termin_id")
+            or letzter_schritt.get("neuer_id")
+            or letzter_schritt.get("id")
+        )
+        if isinstance(clipboard_id, int):
+            return_dict["timeline_id"] = clipboard_id
+            logger.info(f"dispatch_timeline: timeline_id={clipboard_id} ins Clipboard geschrieben")
+
+    return return_dict

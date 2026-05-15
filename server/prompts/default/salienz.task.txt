@@ -52,6 +52,24 @@ Analysiere folgende Dimensionen:
    fachgespraech | philosophischer_austausch | alltag | arbeitsmodus |
    emotional | spielerisch | lernmodus | kreativ | beratend | berichtend
 
+9. ENTITAETEN_ROH: Welche Eigennamen kommen vor?
+   Liste von Strings, leer wenn keine.
+   - Personen, Orte, Tiere, Organisationen, benannte Objekte ("Anna",
+     "Berlin", "BMW", "Tandoor") gehoeren dazu.
+   - Pronomen ("er", "sie", "mein Bruder") gehoeren NICHT dazu — keine
+     Eigennamen.
+   - Mehrteilige Eigennamen als ein String ("Maria Magdalena", "New York").
+
+10. ZEITAUSDRUCK_ROH: Welcher Zeitbezug ist im Turn?
+    Ein einzelner String, leer wenn kein Zeitbezug erkennbar.
+    - Genau EIN Zeitausdruck pro Segment — der dominante, falls mehrere.
+    - Explizite Datums-/Wochentags-Bezuege ("17.10.", "morgen", "letzten
+      Freitag", "naechste Woche") gehoeren dazu.
+    - Sub-Tages-Zeitangaben ("14:00", "heute Abend") gehoeren dazu.
+    - "heute" zaehlt als Zeitbezug.
+    - Allgemeine zeitliche Bemerkungen ohne konkreten Anker ("frueher",
+      "vor langer Zeit", "irgendwann") gehoeren NICHT dazu.
+
 Antwortformat:
 {
   "themen": ["thema1", "thema2"],
@@ -66,5 +84,7 @@ Antwortformat:
   "begruendung": "Warum diese Salienz-Bewertung?",
   "intentionen": ["primaere_intention", "optionale_sekundaere"],
   "emotion": "begeisterung|neugier|frustration|...|neutral",
-  "modus": "fachgespraech|philosophischer_austausch|alltag|..."
+  "modus": "fachgespraech|philosophischer_austausch|alltag|...",
+  "entitaeten_roh": ["Anna", "Berlin"],
+  "zeitausdruck_roh": "morgen"
 }

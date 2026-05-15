@@ -24,6 +24,7 @@ from config import (
 )
 from memory.kzg import _kzg_key
 from memory.embedding import embedding_create
+from memory.pipeline_log import log_db_zugriff
 
 logger = logging.getLogger("ki_server.agents.kzg.speicher")
 
@@ -43,6 +44,11 @@ def speichern(state: AgentState) -> dict:
     user_id:      str  = state["kontext"].get("user_id", "")
     character_id: str  = state["kontext"].get("character_id", "")
     beobachter:   str  = state["kontext"].get("beobachter", "user")
+    turn_id:      str  = state["kontext"].get("turn_id", "")
+
+    # Magnete aus dem magnete_aufloesen-Node (Synapsen P3).
+    entitaet_ids: list[int]  = state["parameter"].get("entitaet_ids", []) or []
+    timeline_id:  int | None = state["parameter"].get("timeline_id")
 
     salienz: float = salienz_obj.get("salienz", 0.0)
 
@@ -58,6 +64,9 @@ def speichern(state: AgentState) -> dict:
     ergebnis: dict = _neu_anlegen(
         redis_client, user_id, character_id, beobachter,
         salienz_obj, kern, embedding, salienz,
+        entitaet_ids = entitaet_ids,
+        timeline_id  = timeline_id,
+        turn_id      = turn_id,
     )
 
     neue_themen: set[str] = set(
@@ -214,8 +223,22 @@ def _neu_anlegen(
     kern:         str,
     embedding:    list[float],
     salienz:      float,
+    entitaet_ids: list[int] | None = None,
+    timeline_id:  int | None       = None,
+    turn_id:      str              = "",
 ) -> dict:
-    """Legt einen neuen KZG-Eintrag an."""
+    """Legt einen neuen KZG-Eintrag an.
+
+    Magnet-Felder (Synapsen P3):
+      entitaet_ids: kommagetrennter String im RediSearch-TagField. Leere
+                    Liste -> leerer String "" (RediSearch tolerant).
+      timeline_id:  Integer im RediSearch-NumericField. None -> Feld wird
+                    aus dem mapping= ausgelassen, damit der Index-Update
+                    nicht bricht.
+
+    Pipeline-Log: nach erfolgreichem hset wird ein log_db_zugriff-Eintrag
+    erzeugt (EVA-konform: Forensik nach Verarbeitung).
+    """
 
     embedding_bytes: bytes = np.array(embedding, dtype=np.float32).tobytes()
     timestamp:       float = time.time()
@@ -224,7 +247,9 @@ def _neu_anlegen(
     themen_str: str = ", ".join(salienz_obj.get("themen", []))
     dimension:  str = salienz_obj.get("dimension", "kontext")
 
-    rc.hset(key, mapping={
+    entitaet_ids_str: str = ",".join(str(eid) for eid in (entitaet_ids or []))
+
+    mapping: dict = {
         "user_id":            user_id,
         "character_id":       character_id,
         "beobachter":         beobachter,
@@ -243,8 +268,13 @@ def _neu_anlegen(
         "beziehungs_dynamik": salienz_obj.get("beziehungs_dynamik", "neutral"),
         "tone":               salienz_obj.get("tone", "sachlich"),
         "erstellt_am":        str(timestamp),
+        "entitaet_ids":       entitaet_ids_str,
         "embedding":          embedding_bytes,
-    })
+    }
+    if timeline_id is not None:
+        mapping["timeline_id"] = str(timeline_id)
+
+    rc.hset(key, mapping=mapping)
 
     if salienz >= KZG_SALIENZ_HIGH:
         ttl: int = KZG_TTL_HIGH_SEKUNDEN
@@ -255,7 +285,26 @@ def _neu_anlegen(
     rc.expire(key, ttl)
 
     logger.info(
-        f"KZG: Neuer Eintrag — salienz={salienz:.2f}, themen={themen_str}, TTL={ttl}s"
+        f"KZG: Neuer Eintrag — salienz={salienz:.2f}, themen={themen_str}, "
+        f"entitaet_ids={entitaet_ids or []}, timeline_id={timeline_id}, TTL={ttl}s"
+    )
+
+    # Pipeline-Log: schreibender DB-Zugriff (Synapsen §10.2).
+    log_db_zugriff(
+        turn_id = turn_id or "kzg-unbekannt",
+        node    = "kzg_speicher",
+        quelle  = user_id,
+        inhalt  = {
+            "tabelle":      "kzg",
+            "operation":    "insert",
+            "kzg_key":      key,
+            "entitaet_ids": entitaet_ids or [],
+            "timeline_id":  timeline_id,
+            "themen":       themen_str,
+            "dimension":    dimension,
+            "salienz":      salienz,
+            "ttl":          ttl,
+        },
     )
 
     return {
