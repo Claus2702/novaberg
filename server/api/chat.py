@@ -5,6 +5,7 @@ Chat-Endpunkte — Synchron und SSE-Streaming.
 import json
 import logging
 import time
+import uuid
 
 from fastapi                    import APIRouter, Request
 from fastapi.responses          import JSONResponse, StreamingResponse
@@ -109,6 +110,11 @@ def _sse_event(event_type: str, data: dict) -> str:
 def ChatSenden(anfrage: GespraechAnfrage, request: Request):
     """Prompt durch den Gesprächsgraphen verarbeiten."""
     try:
+        # turn_id: korreliert HumanGraph- und CharacterGraph-Spans desselben
+        # Konversations-Turns im Pipeline-Log. Vor allen Pfaden erzeugt, damit
+        # beide Graphen denselben Wert in den State bekommen.
+        turn_id: str = uuid.uuid4().hex
+
         _user_entitaet_sicherstellen(anfrage.user_id)
         character_id: str = ASSISTANT_USER_ID
 
@@ -124,6 +130,7 @@ def ChatSenden(anfrage: GespraechAnfrage, request: Request):
                 character_id  = character_id,
                 system_prompt = anfrage.system,
                 temperature   = anfrage.temperatur,
+                turn_id       = turn_id,
             )
 
             result: dict = request.app.state.conversation_graph.invoke(initial_state)
@@ -136,6 +143,7 @@ def ChatSenden(anfrage: GespraechAnfrage, request: Request):
             source       = "user",
             typ          = "message",
             payload      = {
+                "turn_id":            turn_id,
                 "user_prompt":        anfrage.prompt,
                 "current_emotion":    result.get("current_emotion", ""),
                 "current_arousal":    result.get("current_arousal", 0.0),

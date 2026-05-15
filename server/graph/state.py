@@ -34,6 +34,7 @@ class ConversationState(TypedDict):
     user_prompt:    str
     user_id:        str
     character_id:   str      # Aktiver Charakter (z.B. "nova") — bildet mit user_id den Session-Key
+    turn_id:        str      # UUID4-Hex zur Korrelation von HumanGraph- und CharacterGraph-Lauf am selben Konversations-Turn. Befüllt im /chat-Handler.
     system_prompt:  str
     temperature:    float
 

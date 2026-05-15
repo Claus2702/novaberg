@@ -400,6 +400,7 @@ async def _event_verarbeiten(
         character_id  = character_id,
         event_source  = event.get("source", "user"),
         event_payload = payload,
+        turn_id       = payload.get("turn_id", ""),
     )
 
     # ── Perzeption-Daten aus Pfad 1 in den State seeden ──

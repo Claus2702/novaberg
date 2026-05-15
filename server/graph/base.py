@@ -90,6 +90,7 @@ class GraphBase(ABC):
             user_prompt   = user_prompt,
             user_id       = user_id,
             character_id  = character_id or ASSISTANT_USER_ID,
+            turn_id       = kwargs.get("turn_id", ""),
             system_prompt = system_prompt,
             temperature   = temperature,
 

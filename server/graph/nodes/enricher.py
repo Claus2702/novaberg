@@ -61,10 +61,11 @@ def enrich(
     """Sammelt Kontext aus Kern-Quellen und Plugin-Hooks."""
 
     # ── Pipeline-Log: Span-Start (Anker 1) ──────
-    # Klammert den gesamten Enricher-Lauf. quelle unterscheidet HumanGraph
-    # (user-Pfad) vom CharacterGraph (Nova-Selbst-Pfad).
+    # Graph-Pfad-Marker fuer die Pipeline-Log-Forensik. ei_calc_rolle ist
+    # der projektweit etablierte Marker — "user" im HumanGraph, "character"
+    # im CharacterGraph (siehe graph/character_graph.py:37, kzg/dispatch.py:42).
     turn_id_log: str = state.get("turn_id", "unbekannt")
-    quelle_log:  str = "human" if user_id != ASSISTANT_USER_ID else "character"
+    quelle_log:  str = state.get("ei_calc_rolle", "user")
     span_id      = span_start(
         turn_id = turn_id_log,
         node    = "enricher",
