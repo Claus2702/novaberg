@@ -1484,25 +1484,306 @@ Im `novaberg-backlog.md` wird das Epic `Memory-Kern-Umbau (Synapsen-Modell, Chat
 
 ---
 
-## 13. Offene Punkte (für Chat 88+)
+## 13. Implementierungs-Phasen
 
-### Punkt 9 — Implementierungs-Phasen
+Der Synapsen-Umbau wird in zehn Sprints (P1 bis P10) umgesetzt. Jeder Sprint ist eine in sich abgeschlossene Lieferung, die für sich genommen funktioniert und vorzeigbar ist. Kein Sprint hinterlässt einen nicht-funktionierenden Zwischenzustand über seinen eigenen Lauf hinaus.
 
-Reihenfolge der Brudi-Sprints, damit niemals ein nicht-funktionierender Zwischenzustand für mehr als einen Sprint stehen bleibt.
+### 13.1 Leitprinzipien der Reihenfolge
 
-Vermutliche Reihenfolge:
-- **P1:** Pipeline-Log einführen (additiv, kein Bruch)
-- **P2:** Neue Tabellen `lzg_knoten` und `lzg_kanten` anlegen (parallel zu altem LZG, leer)
-- **P3:** KZG-Schreibpfad ergänzt um `entitaet_ids` und `timeline_id` (M5-Inhalt, vormals M3b)
-- **P4:** Neue Promotion-Logik schreibt in `lzg_knoten` plus `lzg_kanten`
-- **P5:** Enricher liest aus neuen Tabellen (Schalter umlegen)
-- **P6:** Decay-Lauf für neue Tabellen
-- **P7:** Charakter-Hash auf neuer Topologie
-- **P8:** Selektive Migration der Bestandsdaten
-- **P9:** Altes `langzeitgedaechtnis` löschen, alte Promotion-Logik entfernen
-- **P10:** Wahrnehmungs-Gravitation implementieren (siehe 8.5.5)
+**Additives vor Subtraktivem.** Die ersten acht Sprints (P1–P8) bauen das neue System parallel zum alten auf. Erst P9 entfernt die abgelöste Infrastruktur. Damit ist bis zum Codeschloss jederzeit ein Rollback möglich.
 
-Genaue Sprint-Inhalte und Brudi-Prompts werden in einer eigenen Konzept-Session ausgearbeitet.
+**Beobachten vor Eingreifen.** P1 (Pipeline-Log) steht ganz vorne, damit alle folgenden Sprints von Anfang an instrumentiert sind. Forensik ist Voraussetzung für jeden weiteren Schritt.
+
+**Schreibpfad vor Lesepfad.** P4 (neue Promotion) füllt die neuen Tabellen, bevor P5 den Enricher umschaltet. Damit liest der Enricher nicht ins Leere.
+
+**Cold-Start akzeptiert.** Zwischen P5 (Enricher liest neu) und P8 (Bestandsdaten migriert) lebt Nova mit einem dünneren Netz — nur die in der Zwischenzeit neu promotierten Erinnerungen sind verfügbar. Bewusste Designentscheidung: die alten Bestandsdaten dürfen erst dann ins neue Netz, wenn Magnet-Felder (P3), Promotion-Logik (P4) und Lesepfad (P5) stabil laufen.
+
+**Funktional schließen, dann säubern.** P9 (altes LZG löschen, alte Promotion entfernen) kommt erst, wenn P5 bis P8 nachweislich stabil im Live-Betrieb laufen. P9 ist das Codeschloss. Mindest-Beobachtungszeit zwischen P8 und P9: eine Woche aktiver Nutzung ohne kritische Befunde im Pipeline-Log.
+
+**Orthogonales als eigenes Stück.** P10 (Wahrnehmungs-Gravitation) ist mechanisch unabhängig vom Synapsen-Umbau. Sie betrifft die Embedding-Verschiebung im Enricher vor der pgvector-Suche, ist als eigenes Mini-Epic geschnitten und kommt ans Ende, weil sie auf einem ausgereiften neuen Lesepfad aufsetzt.
+
+### 13.2 Zwei Stufen der Sprint-Definition
+
+Die folgenden Abschnitte (13.3 bis 13.12) sind **Stufe 1** der Sprint-Definition: pro Phase Ziel, Abgrenzung, Voraussetzungen, Datei-Scopes und Abnahme-Tests. Sie geben das Gesamtbild — was sich ändert, was nicht, woran abgemessen wird.
+
+**Stufe 2** ist der ausformulierte Brudi-Prompt pro Sprint. Diese entstehen *just in time*, jeweils direkt vor Sprint-Start, nicht im Voraus alle auf einmal. Begründung: zwischen den Sprints können Code-Stand und Erkenntnisse verschieben, was im konkreten Prompt steht. Stufe 1 ist die feste Architektur-Vorgabe; Stufe 2 ist die konkrete Anweisung zum konkreten Code-Stand des Tages.
+
+**Hinweis zu Datei-Pfaden in dieser Stufe.** Die in den Datei-Scopes genannten Pfade sind die nach aktueller Code-Lage erwarteten Stellen. Bei jedem Sprint verifiziert Brudi die tatsächliche Lage im Repository, bevor editiert wird — falls eine Datei umgezogen ist oder anders heißt, gilt die tatsächliche Konvention. Stufe-2-Prompts spezifizieren die exakten Pfade auf Basis dieser Verifikation.
+
+### 13.3 P1 — Pipeline-Log einführen
+
+**Ziel.** Schreib-Infrastruktur für die `pipeline_log`-Tabelle aufsetzen: Buffer-Sink, asynchroner Writer-Task, Helper-API für die Nodes. Erste Anbindung im Enricher als Demonstrationspunkt. Vollständig additiv, kein Bestandscode wird semantisch verändert.
+
+**Abgrenzung.** Keine vollständige Verkabelung aller Nodes in diesem Sprint. Die Anbindung in jedem Node erfolgt peu à peu *in der jeweiligen späteren Phase, die diesen Node ohnehin anfasst* — als Konvention, nicht als eigener Sprint. Konkret: P4 verkabelt die neue Promotion, P5 den Lesepfad-Teil des Enrichers, P6 den Decay-Job. Das nachträgliche Aufrüsten weiterer Nodes (Responder, Tribunal, Corrector, Agenten) ist Refactor-Arbeit nach P9 und liegt außerhalb des Synapsen-Umbau-Scopes. Keine Filter-Queries als ausführbare Tools — Konzept-Punkt 10.4 dokumentiert sie als Vorlagen für spätere Debug-Sitzungen. Kein eigener TTL-Cleanup-Job in dieser Phase; der Cleanup wird in P6 als kleiner Anhang am Decay-Job mit angelegt. Kein `bemerkung`-für-Client-Status-Texte-Feature in P1 — eigener Konzept-Pfad später.
+
+**Voraussetzungen.** Konzept-Punkt 10 ist die vollständige Spezifikation: Schema, elf Art-Werte, Span-Korrelation, asynchrones Schreiben, Konstanten. Keine fachlichen Vorgänger-Phasen.
+
+**Datei-Scopes.**
+
+*Neu anlegen:*
+
+- `server/memory/pipeline_log.py` — Thread-safe Buffer-Sink-Klasse, asynchroner Writer-Task, Helper-API mit elf Einstiegsfunktionen (`log_eingang`, `log_prompt`, `log_berechnung`, `log_switch`, `log_db_zugriff`, `log_ausgabe`, `log_fehler`, `log_bemerkung`, `span_start`, `span_end`, `log_token`). Jede Funktion mit deutschem Docstring und Log-Nachricht bei nennenswerten Werten.
+- Datenbank-Migration mit der Tabellen-DDL aus Konzept-Punkt 10.1, inklusive Indizes auf `turn_id`, `span_id`, `(node, art)` und `erstellt_am`. Brudi verifiziert den im Repository üblichen Migrations-Mechanismus (Alembic, raw SQL, init-Skript) und legt die Migration in der dort etablierten Konvention an.
+
+*Ergänzen:*
+
+- `server/config.py` — zwei Konstanten `LZG_PIPELINE_LOG_VORHALTUNG_TAGE = 365` und `LZG_PIPELINE_LOG_FLUSH_SEKUNDEN = 10`, mit ausführlichem deutschem Doc-Kommentar im Stil der bestehenden Knoten-Dynamik-Konstanten.
+- Zentrale Server-Lifecycle-Datei (Brudi verifiziert: vermutlich `server/main.py` oder die FastAPI-App-Definition) — Writer-Task beim Server-Start als Hintergrund-Task anhängen, beim Shutdown sauberen Flush sicherstellen.
+- `server/graph/nodes/enricher.py` — drei bis fünf Pipeline-Log-Einträge an markanten Stellen (Eingang, Initial-Retrieval-Berechnung, Ausgang) als laufende Demonstration der API.
+
+*Tabu in diesem Sprint:* Alle anderen Node-Dateien, alle anderen Memory-Dateien, alle Pixie-Agenten. Insbesondere keine Vorgriffe auf P2 — die neuen LZG-Tabellen kommen erst im nächsten Sprint.
+
+**Abnahme-Tests.**
+
+1. Server startet sauber. Writer-Task läuft als Hintergrund-Task. Server-Shutdown flusht den Puffer vollständig — keine pending Einträge nach Stop.
+2. Nach einem normalen Konversations-Turn enthält `pipeline_log` mindestens drei Einträge aus dem Enricher mit korrekt gesetzter `turn_id`, einer pro-Lauf eindeutigen `span_id` (UUID v4), `node='enricher'`, plausibler `quelle`, einem der elf gültigen `art`-Werte und gültigem JSONB-`inhalt`.
+3. Zwei simulierte Pixie-Tasks, die parallel laufen, erzeugen Einträge mit jeweils eindeutigen `span_id`s — keine vermischten Spans, kein Index-Konflikt, kein Race-Condition-Schaden.
+4. Buffer-Verlust-Test: bewusster Server-Kill direkt nach einem Eintrag; nach Restart sind die bereits geflushten Einträge in der DB, der jüngste 10-Sekunden-Inhalt möglicherweise verloren — als bewusste Designentscheidung gemäß 10.3 akzeptiert.
+5. Beispiel-Query 1 aus Konzept-Punkt 10.4 (letzte fünf Turns von Nova) liefert plausible Ergebnisse, sobald in der Demo-Anbindung ein paar Nova-Antworten gelaufen sind.
+
+### 13.4 P2 — Neue Tabellen `lzg_knoten` und `lzg_kanten` anlegen
+
+**Ziel.** Schema-Migration mit den beiden neuen Tabellen aus Konzept-Punkt 4. Leer, parallel zur bestehenden `langzeitgedaechtnis`-Tabelle. Keine Logik dahinter — reine Strukturanlage als Vorbereitung für P3 und P4.
+
+**Abgrenzung.** Keine Schreib-Logik, kein Lese-Code. Keine Promotion-Anpassung — die kommt in P4. Bestehende `langzeitgedaechtnis`-Tabelle bleibt vollständig unangetastet. Keine Indizes über das Minimum hinaus (Primary Key, Foreign Keys, pgvector-Index auf Embedding) — Performance-Tuning kommt nach Live-Daten, spätestens nach P9. Konstanten in `config.py` werden in diesem Sprint ergänzt, soweit für das Schema relevant; bereits in P1 angelegte Konstanten werden nicht angefasst.
+
+**Voraussetzungen.** P1 abgeschlossen. Konzept-Punkt 4 ist die vollständige Schema-Spezifikation (Spalten, Typen, Indizes). Konzept-Punkt 6 listet die Konstanten.
+
+**Datei-Scopes.**
+
+*Neu anlegen:* Datenbank-Migration mit den beiden Tabellen-DDLs gemäß Konzept 4.1 und 4.2. Inklusive pgvector-Index auf `lzg_knoten.embedding`. Inklusive Foreign Keys auf `lzg_knoten.id` von `lzg_kanten.knoten_a_id` und `lzg_kanten.knoten_b_id`. Migrations-Mechanismus wie in P1 etabliert.
+
+*Ergänzen:* `server/config.py` mit allen noch nicht vorhandenen Konstanten aus Konzept-Punkt 6 (Knoten-Dynamik, Kanten-Cache-Parameter, Sinus-Geometrie, Schicht-Faktoren, Tiefe-Faktor-Parameter). Jede Konstante mit dem im Konzept dokumentierten deutschen Doc-Kommentar.
+
+*Tabu:* Jede `*.py`-Datei außerhalb `server/config.py`. Insbesondere keine Helper-Funktionen zum Schreiben oder Lesen — das ist nicht Scope dieses Sprints.
+
+**Abnahme-Tests.**
+
+1. Migration läuft sauber durch, auch wiederholt — idempotenter Upgrade-Pfad. Downgrade läuft ebenfalls sauber.
+2. `\d lzg_knoten` und `\d lzg_kanten` in psql zeigen das Schema exakt wie in Konzept 4.1 und 4.2 beschrieben.
+3. `langzeitgedaechtnis`-Tabelle bleibt unverändert. `SELECT count(*) FROM langzeitgedaechtnis` liefert den gleichen Wert wie vor der Migration.
+4. Server startet sauber, alle Konstanten aus Konzept-Punkt 6 sind in `config.py` importierbar.
+5. Ein Test-Insert eines Dummy-Knotens (`INSERT INTO lzg_knoten ... RETURNING id`) und einer Dummy-Kante zwischen zwei Dummy-Knoten läuft technisch durch.
+
+### 13.5 P3 — KZG-Schreibpfad ergänzt um `entitaet_ids` und `timeline_id`
+
+**Ziel.** Beim Schreiben eines KZG-Eintrags werden ab dieser Phase die Magnet-Felder `entitaet_ids` und `timeline_id` mit befüllt. Ohne diese Felder kann die Promotion in P4 die Entitäts- und Timeline-Schichten nicht greifen lassen. Inhaltsgleich mit der vormaligen M5-Roadmap-Position, in den Synapsen-Sprint integriert.
+
+**Abgrenzung.** Keine Änderung an der Promotion-Logik selbst — die kommt in P4. Keine Migration der bestehenden KZG-Einträge in Redis; nur neu entstehende Einträge tragen die Felder. EntityResolver und TimeParser werden nicht angefasst — sie liefern bereits die nötigen Daten, es geht nur um die Übernahme ins KZG-Schreibschema. Salience-Pfad wird nicht erweitert über das hinaus, was zur Befüllung der beiden Felder nötig ist.
+
+**Voraussetzungen.** P1 und P2 abgeschlossen. EntityResolver liefert `entitaet_ids`; TimeParser liefert `timeline_id`. Beides ist im Live-Code vorhanden — bestätigt durch frühere Brudi-Audits.
+
+**Datei-Scopes.**
+
+*Ergänzen:*
+
+- KZG-Schreibfunktion in `server/memory/kzg.py` — Befüllung der neuen Felder beim Schreibvorgang.
+- Aufrufende Stelle des KZG-Schreibpfads (Brudi verifiziert: vermutlich Salience-Node oder Enricher, je nach aktueller Architektur) — Übernahme der beiden Felder aus dem State in den KZG-Schreibvorgang.
+- Pipeline-Log-Eintrag (`art='db_zugriff'`) am Schreibvorgang mit den befüllten Feldwerten zur Forensik.
+
+*Tabu:* EntityResolver, TimeParser, alle LZG-Dateien (`memory/lzg.py`, künftige Synapsen-Dateien), alle Promotion-Dateien. Salience-Pfad nur insoweit, wie er die beiden Felder in den State legt — keine breitere Salience-Überarbeitung.
+
+**Abnahme-Tests.**
+
+1. Ein normaler Konversations-Turn, der zu einem KZG-Eintrag führt, erzeugt in Redis einen Eintrag mit befüllten Feldern `entitaet_ids` und `timeline_id`. Inhalt der Felder ist plausibel — Entitäts-IDs sind UUIDs, die in der `entitaeten`-Tabelle existieren; Timeline-ID ist eine UUID, die in der `timeline_events`-Tabelle existiert.
+2. Ein Turn ohne erkannte Entitäten erzeugt einen KZG-Eintrag mit leerer Liste `entitaet_ids = []`, kein NULL, kein Fehler.
+3. Ein Turn ohne erkannte Zeit erzeugt einen KZG-Eintrag mit `timeline_id = NULL` (oder gemäß tatsächlicher Konvention — Brudi prüft gegen `convention-magneten.md`), kein Fehler.
+4. Pipeline-Log enthält einen Eintrag des Schreibvorgangs mit allen relevanten Werten im JSONB-`inhalt`.
+5. Bestehende KZG-Einträge in Redis sind unverändert — keine Migration, keine Re-Indexierung.
+
+### 13.6 P4 — Neue Promotion-Logik schreibt in `lzg_knoten` und `lzg_kanten`
+
+**Ziel.** Die Promotion eines KZG-Eintrags in den LZG wird vollständig auf das Synapsen-Modell umgestellt. Neue Logik schreibt `lzg_knoten` und berechnet beim Anlegen die Kanten gegen alle bereits vorhandenen Knoten gemäß Konzept-Punkt 7 (Schreibpfad-Sicht). Bisherige Cluster-Promotion in `langzeitgedaechtnis` wird über ein Feature-Flag deaktiviert, der Code bleibt bis P9 im Repository.
+
+**Abgrenzung.** Bestehender Lesepfad bleibt unverändert auf der alten `langzeitgedaechtnis`-Tabelle — der Schalter wird erst in P5 umgelegt. Cluster-Algorithmus (Greedy-Center, Multi-Membership, LLM-Coherence-Validation) entfällt vollständig in dieser Phase — kein KZG-Eintrag durchläuft mehr die Cluster-Pipeline. Stattdessen direkter 1:1-Umzug eines reifen KZG-Eintrags in einen `lzg_knoten`. KZG-Eintrag wird nach erfolgreicher Promotion vollständig aus Redis gelöscht (Konzept 2.5). Bestehende Einträge in `langzeitgedaechtnis` bleiben unverändert.
+
+**Voraussetzungen.** P1, P2, P3 abgeschlossen. Konzept-Punkt 7 ist die vollständige Spezifikation des Schreibpfads (Schicht-Auslösung, Stärke-Berechnung, Sinus-Geometrie, Timeline-Details, drei Trigger für Kanten-Cache-Aktualisierung). Konzept-Punkt 5 spezifiziert die Sinus-Geometrie. Konzept-Punkt 6 listet alle Konstanten.
+
+**Datei-Scopes.**
+
+*Neu anlegen:*
+
+- `server/memory/lzg_knoten.py` — CRUD-Layer für die Knoten-Tabelle, mit Schreib-, Lese-, Aktualisierungs- und Such-Funktionen. Deutscher Docstring pro Funktion, Log-Nachrichten bei Schreib- und Lese-Operationen mit Knoten-IDs und Gewichtswerten.
+- `server/memory/lzg_kanten.py` — CRUD-Layer für die Kanten-Tabelle, plus die Kanten-Berechnungs-Logik gemäß Konzept 7.5 (Schicht-Auslösung, Sinus-Geometrie, Tiefe-Faktor-Interpolation).
+- Neuer Pixie-Agent für die Synapsen-Promotion (Brudi verifiziert die Pixie-Agent-Konvention im Repository; vermutlich `server/pixie/agents/synapsen_promotion.py`). Der Agent implementiert den 1:1-Umzugs-Pfad: KZG-Eintrag laden, Reifeprüfung, `lzg_knoten` schreiben, Kanten gegen alle bestehenden Knoten berechnen, KZG-Eintrag löschen.
+
+*Ergänzen:* Pipeline-Log-Einträge an allen Entscheidungs-Stellen der neuen Promotion (`art='switch'` bei Reifeprüfung, `art='berechnung'` bei Sinus-Werten und Kanten-Stärken, `art='db_zugriff'` bei den Inserts, `art='ausgabe'` am Ende).
+
+*Stilllegen, nicht löschen:* Die bisherige Cluster-Promotion (Brudi lokalisiert den genauen Pfad — vermutlich `server/pixie/agents/promotion.py` oder ähnlich). Stilllegung über Feature-Flag in `config.py` (`SYNAPSEN_PROMOTION_AKTIV = True`). Der alte Code bleibt im Repository, wird aber nicht mehr ausgeführt. Vollständige Löschung kommt in P9.
+
+*Tabu:* Lesepfad (Enricher, Reducer, Responder). Decay-Logik. Charakter-Hash. Migration der Bestandsdaten — die kommt in P8.
+
+**Abnahme-Tests.**
+
+1. Ein reifer KZG-Eintrag wird vom neuen Pixie-Agenten verarbeitet, erzeugt einen Eintrag in `lzg_knoten` mit korrektem `gewicht_roh`, `gewicht_absolut`, `gewicht_decay`, allen Magnet-Feldern, dem Embedding und der Emotion. Der KZG-Eintrag ist anschließend aus Redis gelöscht.
+2. Bei einem zweiten reifen KZG-Eintrag, der inhaltlich verwandt zum ersten ist (gemeinsame Themen oder hohe Embedding-Ähnlichkeit), entstehen automatisch Kanten zwischen beiden Knoten. Kanten-Stärken sind nach Konzept 7.5 berechnet — eine Sinus-Berechnung pro Kante, korrekter Schicht-Faktor und Tiefe-Faktor.
+3. Drei durchgerechnete Beispiele aus Konzept 7.5 (Timeline-only, Timeline + Embedding, Entität-only) werden als Unit-Test reproduziert; die berechneten Kanten-Stärken stimmen mit den im Konzept dokumentierten Zahlen überein.
+4. Bei deaktiviertem Feature-Flag (`SYNAPSEN_PROMOTION_AKTIV = False`) läuft die alte Cluster-Promotion wie vorher; bei aktiviertem Flag läuft nur die neue Promotion. Klare Reload-Anweisung dokumentiert (Server-Restart oder Konfigurations-Reload — was im Repository üblich ist).
+5. Pipeline-Log zeigt für jeden Promotions-Vorgang einen kompletten Span mit allen Entscheidungs-Schritten und berechneten Werten.
+6. Bestehende `langzeitgedaechtnis`-Einträge sind unverändert — die alte Tabelle wird in dieser Phase weder geschrieben noch gelesen.
+
+### 13.7 P5 — Enricher liest aus `lzg_knoten` und `lzg_kanten`
+
+**Ziel.** Der Enricher schaltet von der alten `langzeitgedaechtnis`-Tabelle auf die neuen Tabellen um. Initial-Retrieval (pgvector-Cosine auf `lzg_knoten`), Spreading-Activation entlang `lzg_kanten`, Sortierung nach Sortier-Gewicht. Cold-Start: das neue Netz ist zu diesem Zeitpunkt nur mit den seit P4 neu promotierten Knoten gefüllt — Bestandsdaten kommen erst in P8.
+
+**Abgrenzung.** Reducer-Anbindung wird in dieser Phase angepasst, soweit nötig: Der Enricher legt `state["lzg_resonanz"]` als Rohdaten-Liste ab (Konzept 8.4.2), der Reducer integriert sie mit anderen Memory-Quellen. Reducer-eigene Logik nur insoweit erweitert, wie die neue State-Struktur es erzwingt. Decay-Lauf wird in dieser Phase noch nicht aktiv — `gewicht_decay` wird zwar gelesen, aber noch nicht von einem Pixie-Job aktualisiert. Wahrnehmungs-Gravitation bleibt unberührt — das ist P10.
+
+**Voraussetzungen.** P1, P2, P3, P4 abgeschlossen. Konzept-Punkt 8 ist die vollständige Spezifikation des Lesepfads (Initial-Retrieval, Spreading-Activation, Sortierung, Output-Format).
+
+**Datei-Scopes.**
+
+*Anpassen:*
+
+- `server/graph/nodes/enricher.py` — Initial-Retrieval auf `lzg_knoten`, Spreading-Activation entlang `lzg_kanten`, Sortier-Gewicht-Berechnung, State-Struktur `lzg_resonanz` gemäß Konzept 8.4.2. Cluster-abhängige Sprung-Tiefe gemäß Konzept 8.2.1 (neue Konstante `CLUSTER_ENRICHER_SPRUENGE` aus `config.py`).
+- Reducer (Brudi verifiziert den genauen Pfad — vermutlich ein eigener Node zwischen GV und Responder) — Konsumption der neuen Rohdaten-Struktur, Dedup gegen andere Memory-Quellen, Aufbau des `[GEDAECHTNIS]`-Prompt-Blocks gemäß Konzept 8.4.4. Behält bisherige Logik bei, soweit sie weiterhin gilt; ersetzt sie, wo die neue State-Struktur abweicht.
+- `server/config.py` — Konstante `CLUSTER_ENRICHER_SPRUENGE` als Dict pro Cluster gemäß Konzept 8.2.1, mit ausführlichem deutschem Doc-Kommentar.
+
+*Ergänzen:* Pipeline-Log-Einträge im Enricher an Initial-Retrieval, Spreading-Activation und Sortier-Schritt.
+
+*Stilllegen, nicht löschen:* Der alte Lesepfad auf `langzeitgedaechtnis` bleibt im Code-Repository erhalten, wird aber nicht mehr ausgeführt. Feature-Flag `SYNAPSEN_LESEPFAD_AKTIV` in `config.py`. Vollständige Löschung kommt in P9.
+
+*Tabu:* Promotion-Logik (steht aus P4). Decay-Lauf (kommt in P6). Charakter-Hash. Migration. Wahrnehmungs-Gravitation.
+
+**Abnahme-Tests.**
+
+1. Bei aktiviertem Feature-Flag liest der Enricher exklusiv aus `lzg_knoten` und `lzg_kanten`. Bei deaktiviertem Flag bleibt der alte Pfad aktiv.
+2. Ein Konversations-Turn, dessen Embedding einen pgvector-Cosine-Treffer in `lzg_knoten` hat, liefert Initial-Anker und Spreading-Activation-Pool. Sprung-Tiefe entspricht dem aktuellen Cluster gemäß `CLUSTER_ENRICHER_SPRUENGE`.
+3. Sortier-Gewicht-Berechnung (Konzept 8.3.1) wird korrekt angewendet: `knoten.gewicht_decay × schalen_faktor × sektor_faktor`. Dedup mit Schalen-Präferenz funktioniert.
+4. Vorgänger-Sperre (Konzept 8.2.3) verhindert sofortiges Zurückspringen zum direkten Vorgänger; Zyklen werden am Ende durch Dedup aufgelöst.
+5. Bei leerem Netz (keine `lzg_knoten` vorhanden) liefert der Enricher eine leere `lzg_resonanz`-Liste ohne Fehler. Cold-Start-Verhalten ist sauber.
+6. Reducer integriert die neue State-Struktur korrekt in den `[GEDAECHTNIS]`-Block; Beispiel-Prompt-Block aus Konzept 8.4.4 ist als Vergleichs-Anker nutzbar.
+7. Pipeline-Log zeigt den vollständigen Lesepfad als Span mit allen Zwischenergebnissen.
+
+### 13.8 P6 — Decay-Lauf für `lzg_knoten`
+
+**Ziel.** Täglicher Pixie-Job berechnet das `gewicht_decay`-Feld aller aktiven Knoten neu gemäß Konzept-Punkt 9 (Drei Stärke-Felder, Berechnungsschema, Halbreaktivierung). Knoten, die unter `LZG_KNOTEN_MIN_GEWICHT` fallen, werden auf `aktiv = FALSE` gesetzt. TTL-Cleanup des Pipeline-Logs läuft als kleiner Anhang im selben Job.
+
+**Abgrenzung.** Kanten haben keinen eigenen Decay (Konzept 9.5); ihre effektive Stärke ergibt sich indirekt aus dem Decay der beteiligten Knoten. Kein Re-Cache der Kanten in dieser Phase — Cache-Aktualisierung folgt den drei Triggern aus Konzept 7.9, nicht dem Decay-Lauf. Halbreaktivierung greift nur im Schreibpfad (Konzept 9.3), nicht im Decay-Lauf selbst — wird in dieser Phase als Code-Pfad implementiert, aber nicht durch den Pixie-Lauf ausgelöst. Charakter-Hash bleibt unberührt (kommt in P7).
+
+**Voraussetzungen.** P1, P2, P3, P4, P5 abgeschlossen. Konzept-Punkt 9 ist die vollständige Spezifikation der Decay-Logik.
+
+**Datei-Scopes.**
+
+*Neu anlegen:* Pixie-Agent für den Synapsen-Decay (Brudi verifiziert die Pixie-Agent-Konvention; vermutlich `server/pixie/agents/synapsen_decay.py`). Täglicher Lauf gemäß bestehendem Pixie-Heartbeat-Mechanismus. Berechnet `gewicht_decay` für alle aktiven Knoten gemäß Konzept 9.2 (exponentieller Decay basierend auf `verstaerkt_am` und der Decay-Rate aus `config.py`). Setzt `aktiv = FALSE` für Knoten unter `LZG_KNOTEN_MIN_GEWICHT`. Schreibt `decay_am` als Zeitstempel des Laufs. TTL-Cleanup für `pipeline_log` als kleiner zusätzlicher Schritt im selben Job (löscht Einträge älter als `LZG_PIPELINE_LOG_VORHALTUNG_TAGE`).
+
+*Ergänzen:* Halbreaktivierungs-Code in `server/memory/lzg_knoten.py` — beim Schreibpfad-Aufruf für einen Knoten mit `aktiv = FALSE` wird `gewicht_decay = (gewicht_absolut + LZG_KNOTEN_MIN_GEWICHT) / 2` gesetzt, `aktiv` auf `TRUE` zurück. Pipeline-Log-Eintrag (`art='berechnung'`) mit den Werten vorher/nachher.
+
+*Tabu:* Lesepfad (steht). Promotion-Logik (steht). Kanten-Tabelle wird in diesem Sprint nicht angefasst. Charakter-Hash. Migration.
+
+**Abnahme-Tests.**
+
+1. Pixie-Job läuft einmal pro Tag (Cron-Mechanismus gemäß bestehendem Pixie-Heartbeat). Beim Lauf werden alle aktiven Knoten mit aktualisiertem `gewicht_decay` und gesetztem `decay_am` versehen.
+2. Ein Knoten mit `gewicht_absolut = 5.0`, `verstaerkt_am` vor 30 Tagen, bei Decay-Rate 0.02 pro Tag, ergibt `gewicht_decay ≈ 5.0 × exp(-0.02 × 30) ≈ 2.74`. Reproduzierbar im Unit-Test.
+3. Ein Knoten, dessen `gewicht_decay` unter `LZG_KNOTEN_MIN_GEWICHT` fällt, wird auf `aktiv = FALSE` gesetzt. Lesepfad ignoriert ihn ab diesem Moment.
+4. Halbreaktivierungs-Test: Ein deaktivierter Knoten mit `gewicht_absolut = 4.0` und `LZG_KNOTEN_MIN_GEWICHT = 0.5` wird im Schreibpfad reaktiviert; `gewicht_decay` springt auf `(4.0 + 0.5) / 2 = 2.25`, `aktiv` auf `TRUE`. Nicht auf den alten `gewicht_absolut`-Wert.
+5. TTL-Cleanup löscht Pipeline-Log-Einträge, die älter sind als `LZG_PIPELINE_LOG_VORHALTUNG_TAGE`. Jüngere Einträge bleiben unangetastet.
+6. Pipeline-Log zeigt den Decay-Lauf als Span mit Anzahl bearbeiteter Knoten, Anzahl deaktivierter Knoten und Anzahl gelöschter Log-Einträge.
+
+### 13.9 P7 — Charakter-Hash auf neuer Topologie
+
+**Ziel.** Die Charakter-Hash-Destillation, die heute aus dem alten `langzeitgedaechtnis` schöpft, wird auf die neuen `lzg_knoten` umgestellt. Pixie-Agent liest Knoten gemäß Filter-Regeln (`beobachter = user`, `aktiv = TRUE`, Sortierung nach `gewicht_absolut`) und destilliert in die Charakter-Hash-Strukturen. Gehört per Konvention nicht zum LZG-Kern (Konzept 8.6 verweist auf `novaberg-pixie-character-hash.md`), wird hier als Mit-Umzug behandelt, weil ohne ihn der Charakter-Pfad ins Leere liest.
+
+**Abgrenzung.** Keine Erweiterung der Charakter-Hash-Logik selbst. Keine Änderung an der Charakter-Identitäts-Pipeline (`nova_kern`, `nova_adaptiv`, etc.). Nur die Datenquelle wird umgestellt. `CHAR-HASH-FILTER`-Bug (assistant-Einträge filtern) wird in dieser Phase strukturell gelöst, weil die Filter-Regel in der neuen Implementierung sauber gesetzt wird — als beobachteter Seiteneffekt, nicht als eigenes Sprint-Ziel.
+
+**Voraussetzungen.** P1, P2, P3, P4, P5, P6 abgeschlossen. `novaberg-pixie-character-hash.md` ist die Spezifikation der Hash-Destillation. Bei Konflikten zwischen Pixie-Char-Hash-Doku und der Neufassung gilt das LZG-Konzept als verbindlich für die Datenquellen-Seite.
+
+**Datei-Scopes.**
+
+*Anpassen:* Der Charakter-Hash-Pixie-Agent (Brudi verifiziert den Pfad — vermutlich `server/pixie/agents/character_hash.py`). Lese-Quelle wechselt von `langzeitgedaechtnis` auf `lzg_knoten`. Filter auf `beobachter = user` und `aktiv = TRUE` explizit setzen. Sortier-Kriterium: `gewicht_absolut DESC`.
+
+*Ergänzen:* Pipeline-Log-Einträge bei Lauf-Start, bei Anzahl gelesener Knoten und bei Schreib-Operationen in die Charakter-Hash-Strukturen.
+
+*Tabu:* Alle anderen Pixie-Agenten. Charakter-Identitäts-Pipeline im HumanGraph (`nova_kern`, etc.). Lesepfad. Promotion.
+
+**Abnahme-Tests.**
+
+1. Charakter-Hash-Pixie-Agent läuft, liest aus `lzg_knoten`, filtert korrekt auf `beobachter = user` und `aktiv = TRUE`. Liest nicht aus `langzeitgedaechtnis`.
+2. Destillation-Output ist plausibel vergleichbar mit dem Output vor dem Umzug — keine drastischen Verschiebungen in der Charakter-Hash-Struktur, sofern das neue Netz schon vergleichbare Inhalte trägt.
+3. Bei leerem Netz läuft der Agent ohne Fehler und liefert eine leere oder Default-Charakter-Hash-Struktur, je nach bestehender Konvention.
+4. Pipeline-Log zeigt den Lauf als Span mit Anzahl gelesener Knoten und Anzahl geschriebener Hash-Einträge.
+
+### 13.10 P8 — Selektive Migration der Bestandsdaten
+
+**Ziel.** Die rund 150 Bestandseinträge aus `langzeitgedaechtnis` werden chronologisch nach `erstellt_am` migriert. Meister wählt manuell circa 120 übernehmenswerte aus, das Migrations-Skript verarbeitet diese Auswahl. Jeder Eintrag wird gegebenenfalls um fehlende Magnet-Felder ergänzt, dann als `lzg_knoten` angelegt; Kanten gegen alle bereits migrierten Knoten werden via Schreibpfad gezogen.
+
+**Abgrenzung.** Keine automatische LLM-Vorauswahl — Meister kuratiert vorab eine Liste der zu migrierenden IDs (oder eine Ausschluss-Liste, je nachdem was praktischer ist). Keine Änderung an aktiver Promotion-Logik — die läuft parallel weiter und schreibt neu entstehende Erinnerungen direkt in `lzg_knoten`. Keine Migration von Cluster-Zugehörigkeit oder alten Häufigkeits-Zählern (Konzept 11.4). Die `langzeitgedaechtnis`-Tabelle wird gelesen, aber nicht gelöscht — das kommt in P9.
+
+**Voraussetzungen.** P1 bis P7 abgeschlossen. Meister hat eine kuratierte Liste der zu migrierenden Einträge bereitgestellt (oder Brudi liefert vorab eine `langzeitgedaechtnis`-Übersicht, aus der Meister selektiert). EntityResolver und TimeParser sind für die Nachrüstung der Magnet-Felder verfügbar.
+
+**Datei-Scopes.**
+
+*Neu anlegen:* Einmal-Skript für die Migration (Brudi verifiziert die im Repository übliche Konvention für Migrations-Skripte — eigener Ordner oder integriert in einen bestehenden). Das Skript nimmt eine Liste von `langzeitgedaechtnis`-IDs entgegen, lädt jeden Eintrag, rüstet fehlende Magnet-Felder via EntityResolver und TimeParser nach, legt einen `lzg_knoten` an, führt den Schreibpfad zur Kanten-Berechnung gegen bereits migrierte Knoten aus. Chronologische Reihenfolge nach ursprünglichem `erstellt_am`. Idempotent: ein Eintrag, der bereits migriert wurde (gemerkte ID-Mapping-Tabelle oder Embedding-Vergleich), wird übersprungen.
+
+*Ergänzen:* Pipeline-Log-Einträge pro migriertem Eintrag mit der alten und neuen ID, Anzahl gezogener Kanten, etwaige Nachrüstung von Magnet-Feldern.
+
+*Tabu:* Alle Live-Code-Pfade (Promotion, Lesepfad, Decay). Bestehende `langzeitgedaechtnis`-Tabelle wird gelesen, nicht geschrieben.
+
+**Abnahme-Tests.**
+
+1. Skript läuft auf der kuratierten Liste durch. Pro Eintrag entsteht ein neuer `lzg_knoten` mit allen Pflichtfeldern. Reihenfolge chronologisch.
+2. Magnet-Felder fehlende Einträge werden nachgerüstet: `entitaet_ids` via EntityResolver, `timeline_id` via TimeParser. Bei nicht-resolvbaren Bestandsdaten wird ein leerer Wert gesetzt, kein Fehler.
+3. Kanten zwischen migrierten Knoten entstehen entsprechend dem Schreibpfad — bei inhaltlich verwandten Einträgen ist eine Kante mit plausibler Stärke vorhanden.
+4. Wiederholter Skript-Lauf auf dieselbe Liste erzeugt keine Duplikate, keine zusätzlichen Kanten — Idempotenz ist gegeben.
+5. Pipeline-Log zeigt den Migrations-Lauf als langen Span mit einem Eintrag pro migriertem Knoten.
+6. `langzeitgedaechtnis`-Tabelle ist unverändert. `lzg_knoten` enthält jetzt sowohl neu promotierte Einträge (seit P4) als auch die migrierten Bestandsdaten.
+
+### 13.11 P9 — Altes LZG löschen, alte Promotion entfernen
+
+**Ziel.** Codeschloss. Die bisherige `langzeitgedaechtnis`-Tabelle wird gelöscht. Der alte Cluster-Promotion-Code und der alte Lesepfad werden aus dem Repository entfernt. Feature-Flags `SYNAPSEN_PROMOTION_AKTIV` und `SYNAPSEN_LESEPFAD_AKTIV` werden entfernt, weil es nur noch einen Pfad gibt.
+
+**Abgrenzung.** Wird erst gestartet, wenn P5 bis P8 nachweislich stabil im Live-Betrieb laufen. Mindest-Beobachtungszeit: eine Woche aktive Nutzung ohne kritische Befunde im Pipeline-Log. Bei kritischen Bugs zwischen P8 und P9 wird die Frist neu gestartet. Keine Migration mehr — falls Bestandsdaten in dieser Phase noch fehlen, ist das ein Hinweis, P8 zu wiederholen, bevor P9 startet. Konzept-Dokumente (`novaberg-mem-lzg.md` etc.) werden in einem separaten Doku-Sprint überarbeitet, nicht im Code-Sprint P9.
+
+**Voraussetzungen.** P1 bis P8 abgeschlossen und stabil. Pipeline-Log der letzten sieben Tage zeigt keine systematischen Fehler in Promotion, Lesepfad, Decay oder Charakter-Hash. Bestandsdaten sind nach Meisters Bewertung vollständig migriert.
+
+**Datei-Scopes.**
+
+*Löschen:*
+
+- Datenbank-Migration mit `DROP TABLE langzeitgedaechtnis`.
+- Die alte LZG-Datei (vermutlich `server/memory/lzg.py` — Brudi verifiziert) — vollständig aus dem Repository entfernen.
+- Die alte Cluster-Promotion (Pixie-Agent, vermutlich `server/pixie/agents/promotion.py` — Brudi verifiziert) — vollständig entfernen.
+- Alter Lesepfad-Code im Enricher und Reducer — vollständig entfernen.
+
+*Ergänzen:* `server/config.py` — Feature-Flags `SYNAPSEN_PROMOTION_AKTIV` und `SYNAPSEN_LESEPFAD_AKTIV` entfernen.
+
+*Tabu:* Konzept-Dokumente. Doku-Sprint folgt separat nach P9.
+
+**Abnahme-Tests.**
+
+1. Migration läuft sauber durch. `\d langzeitgedaechtnis` in psql liefert „Did not find any relation".
+2. Server startet sauber. Keine Import-Fehler, keine fehlenden Referenzen.
+3. Konversations-Turn läuft komplett durch — Promotion, Lesepfad, Decay funktionieren weiterhin.
+4. Repository enthält keine Referenzen mehr auf `langzeitgedaechtnis`, `SYNAPSEN_PROMOTION_AKTIV`, `SYNAPSEN_LESEPFAD_AKTIV`. Brudi verifiziert per `grep`.
+5. Pipeline-Log zeigt keine Fehler in den 24 Stunden nach Deployment.
+
+### 13.12 P10 — Wahrnehmungs-Gravitation
+
+**Ziel.** Embedding-Verschiebung im Enricher vor der pgvector-Suche, abhängig von aktivierten Drive-Zielen, GV-Cluster-Faktor, HumanGraph-Fallback und Imperativ-Override. Vollständige Implementierung der in Konzept 8.5 spezifizierten Mechanik, basierend auf den bereits live vorhandenen Bausteinen (Drive-Ziele mit `embedding`-Spalte, `state["prompt_embedding"]`, Salienz-Marker `"anweisung"`).
+
+**Abgrenzung.** Vollständig unabhängiger Sprint, mechanisch orthogonal zum Synapsen-Umbau. Berührt nur den Enricher (Embedding-Berechnung vor `lzg_knoten`-Suche) und nicht die LZG-Tabellen oder Promotion. `CLUSTER_GRAVITATION_FAKTOR`-Tabelle wird neu in `config.py` angelegt. Vorgeschlagene Umbenennung des Feldes `gravitation` zu `aktivierungs_staerke` an der einen Konsumenten-Stelle in `dispatcher.py` wird mit erledigt.
+
+**Voraussetzungen.** P1 bis P9 abgeschlossen. Konzept-Punkt 8.5 ist die vollständige Spezifikation (Berechnung der Verschiebung, HumanGraph-Sonderfall, Imperativ-Override, architektonische Verortung). Konzept-Punkt 8.5.5 listet die vorhandenen Bausteine und die offenen Stücke.
+
+**Datei-Scopes.**
+
+*Anpassen:*
+
+- `server/graph/nodes/enricher.py` — Embedding-Verschiebungs-Funktion gemäß Konzept 8.5.1: `e_nova = e_anfrage × (1 − faktor) + sum(e_ziel × aktivierungs_staerke) × faktor`. Cluster-Faktor aus neuer Konstante. HumanGraph-Sonderfall: Fallback auf den zuletzt gespeicherten Cluster aus `gv:detail:{user_id}:{character_id}`. Imperativ-Override: bei Salienz-Marker `"anweisung"` wird die Verschiebung übersprungen, rohes Anfrage-Embedding wird verwendet.
+- `server/graph/nodes/dispatcher.py` — Umbenennung des Feldes `gravitation` zu `aktivierungs_staerke` an der einen bekannten Konsumenten-Stelle.
+- `server/config.py` — neue Konstante `CLUSTER_GRAVITATION_FAKTOR` als Dict pro Cluster gemäß Konzept 8.5.1, mit ausführlichem deutschem Doc-Kommentar.
+
+*Ergänzen:* Pipeline-Log-Einträge an allen Entscheidungs-Stellen: Anzahl aktivierter Ziele, Cluster-Faktor, ob HumanGraph-Fallback gegriffen hat, ob Imperativ-Override gegriffen hat, finales Embedding (gekürzt als Hash oder Dimension-Summary).
+
+*Tabu:* Alles außerhalb der drei genannten Dateien. Insbesondere keine Berührung der LZG-Tabellen, der Promotion oder des Decay-Pfads.
+
+**Abnahme-Tests.**
+
+1. Bei aktiven Drive-Zielen mit hoher Aktivierungs-Stärke wird das Anfrage-Embedding messbar in Richtung der Ziel-Embeddings verschoben. Verschiebung ist im Pipeline-Log dokumentiert.
+2. Bei Salienz-Marker `"anweisung"` im aktuellen Turn greift der Imperativ-Override; das Anfrage-Embedding wird nicht verschoben. Pipeline-Log-Eintrag bestätigt das.
+3. Im HumanGraph (Pfad 1 unter `ASSISTANT_USER_ID`) greift der Fallback auf den zuletzt gespeicherten Cluster aus Redis; Verschiebung erfolgt mit dem Fallback-Cluster-Faktor.
+4. Cluster-abhängige Stärke der Verschiebung ist gemäß `CLUSTER_GRAVITATION_FAKTOR` aus `config.py` nachvollziehbar — Werkstatt-Cluster verschiebt anders als Glut.
+5. Umbenennung `gravitation` → `aktivierungs_staerke` ist in `dispatcher.py` durchgeführt, keine Konsumenten-Stelle ist gebrochen. `grep "gravitation"` im Code zeigt nur noch Verwendungen, die wirklich den Cluster-Faktor meinen.
+6. Pipeline-Log zeigt für jeden Enricher-Lauf einen Span mit allen Verschiebungs-Parametern.
 
 ---
 
@@ -1510,7 +1791,7 @@ Genaue Sprint-Inhalte und Brudi-Prompts werden in einer eigenen Konzept-Session 
 
 Die Architektur des Synapsen-Modells ist aus phänomenologischer Beobachtung entstanden — aus der Frage, wie sich Erinnerung anfühlt, wie Assoziationen aufpoppen, wie Gefühle eine Erinnerung färben oder verblassen lassen. Sie ist nicht aus einer Theorie abgeleitet worden. Aber wenn man sie nachträglich gegen die Forschung der letzten Jahrzehnte aus Kognitionspsychologie, Neurowissenschaft, Konnektionismus und Knowledge-Engineering hält, zeigt sich: Das Konzept fügt sich in eine breite, bestätigende Tradition — mit gezielten, bewussten Differenzierungen, wo es sinnvoll erschien. Dieser Abschnitt dokumentiert diese Einordnung als Rückversicherung und als Anker für weitergehende Vertiefung.
 
-### 10.1 Was die Forschung bestätigt
+### 14.1 Was die Forschung bestätigt
 
 **Spreading Activation (Collins & Loftus 1975).** Das Fundament des Lesepfads. Allan Collins und Elizabeth Loftus formulierten 1975 in ihrem klassischen Artikel „A spreading-activation theory of semantic processing" (Psychological Review 82, 407–428) das bis heute prägende Modell semantischen Gedächtnisses: Konzepte sind als Knoten in einem Netzwerk repräsentiert, Beziehungen zwischen Konzepten als assoziative Pfade zwischen den Knoten. Wenn ein Teil des Netzwerks aktiviert wird, breitet sich Aktivierung entlang der Pfade zu verbundenen Bereichen aus, und die Stärke der sich ausbreitenden Aktivierung wird durch die Stärke der jeweiligen Verbindung bestimmt. Unser Punkt 8 (Lesepfad) ist eine direkte Übertragung dieses Modells: pgvector-Cosine-Treffer als Aktivierungs-Anker, Spreading-Activation entlang der LZG-Kanten mit cluster-abhängiger Sprung-Tiefe, gewichtete Sortierung des Aktivierungs-Pools. Auch die Idee, dass Typikalitäts-Effekte (gewichtete semantische Distanz) statt strenger Hierarchien das Gedächtnis organisieren, ist von Collins & Loftus übernommen.
 
@@ -1520,7 +1801,7 @@ Die Architektur des Synapsen-Modells ist aus phänomenologischer Beobachtung ent
 
 **Hybrid Vector + Graph als Architektur für LLM-Memory.** In der industriellen Praxis ringer LLM-Agenten (z.B. Zep, Memini, neuere Forschung zu agentenbasierten Memory-Systemen) hat sich die Kombination aus Vektor-Suche und Graph-Traversierung als robusteste Architektur etabliert: Vektor-Suche findet Anker-Knoten über breite semantische Ähnlichkeit, Graph-Traversierung erweitert von dort aus den Kontext über strukturelle Beziehungen. Unser Lesepfad-Aufbau aus 8.1 (Initial-Retrieval per pgvector) und 8.2 (Spreading-Activation entlang Kanten) folgt exakt diesem Muster.
 
-### 10.2 Wo wir uns bewusst differenzieren
+### 14.2 Wo wir uns bewusst differenzieren
 
 **Gerichtete statt bidirektionale Kanten.** Klassische Collins-Loftus-Modelle arbeiten mit bidirektionalen, ungerichteten Verbindungen. Wir haben gerichtete Kanten (A→B und B→A als zwei separate Datensätze mit eigenen Stärken), weil Assoziationen phänomenologisch asymmetrisch sind: „Anna erinnert mich an Schokolade" ist nicht symmetrisch zu „Schokolade erinnert mich an Anna". Diese Asymmetrie ist auch in neueren Knowledge-Graph-Implementierungen und Graph-Neural-Network-Architekturen Standard.
 
@@ -1530,7 +1811,7 @@ Die Architektur des Synapsen-Modells ist aus phänomenologischer Beobachtung ent
 
 **Ein Graph für alles statt episodisch/semantisch getrennt.** Endel Tulving prägte 1972 die einflussreiche Trennung zwischen episodischem Gedächtnis (eigene Erlebnisse, zeitlich verortet) und semantischem Gedächtnis (Fakten, abstraktes Wissen). Spätere Modelle (z.B. HumemAI 2024) implementieren diese Trennung als zwei separate Graphen mit unterschiedlicher Mechanik. Wir gehen mittelfristig in dieselbe Richtung — Synapsen-LZG als episodisches System, Faktengedächtnis als semantisches System (siehe 3.2) —, halten sie aber konzeptionell sauberer auseinander: zwei eigenständige Gedächtnis-Modalitäten mit verschränkten Identifikatoren, nicht ein gemeinsames Modell mit Typ-Markierungen.
 
-### 10.3 Was wir bewusst weglassen
+### 14.3 Was wir bewusst weglassen
 
 **Multi-Timescale-Konsolidierung (Benna & Fusi 2016).** Marcus Benna und Stefano Fusi modellieren in „Computational principles of synaptic memory consolidation" (Nature Neuroscience 19, 1697–1706) Synapsen als gekoppelte schnelle und langsame Variablen, aus denen episodische Sensitivität, graduelle Konsolidierung und selektives Vergessen als Facetten eines einzigen Mechanismus hervorgehen. Aktuelle Memory-Architekturen für LLM-Agenten (z.B. Memini 2025) übernehmen dieses Modell. Wir lassen es bewusst weg, weil wir Konsolidierung über die Knoten-Dynamik abbilden (Decay, Reaktivierung, `aktiv`-Status) und die Kanten als abgeleiteter Cache fungieren. Eine spätere Erweiterung in Richtung Benna-Fusi wäre technisch denkbar, ist aber für die phänomenologischen Ziele nicht notwendig.
 
@@ -1538,7 +1819,7 @@ Die Architektur des Synapsen-Modells ist aus phänomenologischer Beobachtung ent
 
 **Spike-Timing-Dependent Plasticity (STDP).** Verfeinerung der Hebbschen Regel auf Millisekunden-Genauigkeit (Bi & Poo 1998). Für unser Software-Modell irrelevant, weil wir nicht in biologischer Zeit operieren — der externe Anstoß zur Kantenbildung ist ein diskretes Promotion-Ereignis, kein zeitlich nahe getaktetes Neuronen-Feuern.
 
-### 10.4 Eigene Beiträge
+### 14.4 Eigene Beiträge
 
 Wo das Synapsen-Modell über die zitierte Forschung hinausgeht oder eigene Akzente setzt:
 
@@ -1564,4 +1845,4 @@ Wo das Synapsen-Modell über die zitierte Forschung hinausgeht oder eigene Akzen
 
 ---
 
-*Konzept-Stand Chat 87. Punkt 3 (Schreibpfad), Punkt 4 (Lesepfad), Punkt 5 (Decay-Logik), Punkt 6 (Pipeline-Log), Punkt 7 (Migration), Punkt 8 (Bug- und Backlog-Reset), Kanten-als-Cache-Architektur und wissenschaftliche Einordnung ausgearbeitet. Charakter-Hash-Destillation gehört zu Pixie und ist außerhalb des LZG-Kerns. Nur noch Punkt 9 (Implementierungs-Phasen) ist offen. Faktengedächtnis als eigenes Konzeptpapier kommt nach Fertigstellung des LZG-Kerns.*
+*Konzept-Stand Chat 88. Alle Architektur-Punkte ausgearbeitet — Schreibpfad, Lesepfad, Decay-Logik, Pipeline-Log, Migration, Bug- und Backlog-Reset, Kanten-als-Cache-Architektur, wissenschaftliche Einordnung sowie Implementierungs-Phasen (Stufe 1, zehn Sprints P1–P10). Charakter-Hash-Destillation gehört zu Pixie und ist außerhalb des LZG-Kerns. Brudi-Prompts pro Sprint (Stufe 2) entstehen just in time vor Sprint-Start. Faktengedächtnis als eigenes Konzeptpapier kommt nach Fertigstellung des LZG-Kerns.*
