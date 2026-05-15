@@ -1058,6 +1058,133 @@ def get_node_config(node_name: str) -> dict:
     return config
 
 
+# ============================================================================
+# Synapsen-LZG — Knoten-Dynamik (Synapsen P2, Chat 88)
+# ============================================================================
+# Steuern, wie stark ein LZG-Knoten wachsen, verfallen und reaktiviert
+# werden kann. Wirken auf das gewicht_roh (frei wachsend) und das daraus
+# abgeleitete gewicht_absolut (gedaempft, gekappt). Spezifikation in
+# docs/novaberg-memory-synapsen_k.md §6.
+
+# Maximalwert des gedaempften Knoten-Gewichts. Begrenzt die Wirkung
+# eines Knotens auf die Kantenbildung und die Sinus-Berechnung.
+LZG_KNOTEN_GEWICHT_CAP: float = float(os.getenv("LZG_KNOTEN_GEWICHT_CAP", "10.0"))
+
+# Exponent in der Sin^X-Daempfung. Niedriger Wert = staerkere Daempfung
+# im unteren Bereich, weniger Spreizung; hoeherer Wert = lineare Kurve.
+LZG_KNOTEN_DAEMPFUNG_EXP: float = float(os.getenv("LZG_KNOTEN_DAEMPFUNG_EXP", "0.5"))
+
+# Taegliche exponentielle Decay-Rate des effektiven Knoten-Gewichts.
+# Nicht persistiert, sondern bei Abfrage live aus verstaerkt_am berechnet.
+LZG_KNOTEN_DECAY_RATE: float = float(os.getenv("LZG_KNOTEN_DECAY_RATE", "0.0015"))
+
+# Schwellwert: Unterschreitet das effektive Gewicht diesen Wert,
+# wird der Knoten auf aktiv = FALSE gesetzt. Bleibt reaktivierbar.
+LZG_KNOTEN_MIN_GEWICHT: float = float(os.getenv("LZG_KNOTEN_MIN_GEWICHT", "0.1"))
+
+# Additiver Boost auf gewicht_roh, wenn ein Knoten extern reaktiviert
+# wird (neue Co-Aktivierung im Schreibpfad, nicht im Lesepfad).
+LZG_KNOTEN_REINFORCEMENT_BOOST: float = float(os.getenv("LZG_KNOTEN_REINFORCEMENT_BOOST", "0.5"))
+
+
+# ============================================================================
+# Synapsen-LZG — Kanten-Cache (Synapsen P2, Chat 88)
+# ============================================================================
+# Die Kante hat keine eigene Dynamik — kein Decay, kein Reinforcement, keine
+# Aktivierungs-Haeufigkeit. Sie ist Cache der aktuellen Knoten-Staerken-
+# Konstellation und der eingefrorenen Schicht-Werte. Die folgenden Konstanten
+# steuern nur die Sinus-Berechnung und die Daempfung des Roh-Werts auf den
+# effektiven Wert. Decay-Verhalten der Kante folgt indirekt ueber das Decay
+# der Knoten.
+
+# Maximalwert des gedaempften Kanten-Gewichts. Spiegel zu LZG_KNOTEN_GEWICHT_CAP.
+LZG_KANTEN_GEWICHT_CAP: float = float(os.getenv("LZG_KANTEN_GEWICHT_CAP", "10.0"))
+
+# Exponent in der Sin^X-Daempfung. Spiegel zu LZG_KNOTEN_DAEMPFUNG_EXP.
+LZG_KANTEN_DAEMPFUNG_EXP: float = float(os.getenv("LZG_KANTEN_DAEMPFUNG_EXP", "0.5"))
+
+
+# ============================================================================
+# Synapsen-LZG — Sinus-Geometrie (Synapsen P2, Chat 88)
+# ============================================================================
+# Ziehfaktoren der Sinus-Kurve, abgelesen bei 25% des Weges zwischen den
+# beiden Knoten-Staerken. Asymmetrisch: der schwaechere Knoten wird stark
+# hochgezogen (HOCH), der staerkere nur leicht heruntergezogen (RUNTER).
+
+# sin(0.25 × π/2)^0.85
+LZG_KANTEN_ZIEH_FAKTOR_HOCH: float = float(os.getenv("LZG_KANTEN_ZIEH_FAKTOR_HOCH", "0.444"))
+
+# 1 − sin(0.75 × π/2)^4.5
+LZG_KANTEN_ZIEH_FAKTOR_RUNTER: float = float(os.getenv("LZG_KANTEN_ZIEH_FAKTOR_RUNTER", "0.297"))
+
+# Additiver Bonus auf beide Knoten-Staerken bei mehrfacher Schicht-
+# Uebereinstimmung. Wird nach Schicht-Faktor-Anwendung addiert.
+# Greift einmal: 0.0, greift zweimal: 0.1, dreimal: 0.2, viermal: 0.3.
+LZG_KANTEN_SCHICHT_BONUS: float = float(os.getenv("LZG_KANTEN_SCHICHT_BONUS", "0.1"))
+
+
+# ============================================================================
+# Synapsen-LZG — Schicht-Faktoren (Synapsen P2, Chat 88)
+# ============================================================================
+# Gewichten, wie wertvoll eine Verbindungsquelle fuer die Kantenbildung
+# ist. Die Schicht mit dem hoechsten Faktor unter den greifenden Schichten
+# gewinnt — sie bestimmt den Anker (Schicht-Faktor × Knoten-Staerke)
+# und die anzuwendende Tiefe. Andere greifende Schichten tragen ueber
+# LZG_KANTEN_SCHICHT_BONUS zur Verstaerkung bei, beeinflussen aber weder
+# Anker noch Tiefe.
+#
+# Wenn eine Schicht im Live-Betrieb auffaellig viele unsinnige Kanten
+# erzeugt, ist ihr Faktor die erste Stellschraube.
+
+# Timeline ist eine lose zeitliche Kopplung. Schwaechste der vier
+# Schichten, weil zeitliche Naehe ohne inhaltlichen oder personalen
+# Bezug biographisch wenig aussagt.
+LZG_SCHICHT_FAKTOR_TIMELINE: float = float(os.getenv("LZG_SCHICHT_FAKTOR_TIMELINE", "0.4"))
+
+# Geteilte Themen sind haeufig (mehrere Themen pro Knoten, Ueberlappung
+# wahrscheinlich), tragen aber eine echte semantische Verwandtschaft.
+# Mittlere Wertigkeit.
+LZG_SCHICHT_FAKTOR_THEMEN: float = float(os.getenv("LZG_SCHICHT_FAKTOR_THEMEN", "0.5"))
+
+# Hohe Cosine-Similarity zeigt eine semantische Verwandtschaft jenseits
+# von gemeinsamen Themen-Labels (Interessen, aehnliche Situationen,
+# aehnliche Sprache). Hoch gewichtet, aber unterhalb der Entitaet, weil
+# abstrakt-statistisch und nicht namentlich greifbar.
+LZG_SCHICHT_FAKTOR_EMBEDDING: float = float(os.getenv("LZG_SCHICHT_FAKTOR_EMBEDDING", "0.8"))
+
+# Geteilte Entitaet bedeutet realen, namentlich greifbaren Bezug
+# (gleiche Person, gleicher Ort, gleiches Objekt). Hoechste Wertigkeit.
+# Wenn diese Schicht greift, dominiert sie die Kanten-Berechnung.
+LZG_SCHICHT_FAKTOR_ENTITAET: float = float(os.getenv("LZG_SCHICHT_FAKTOR_ENTITAET", "1.0"))
+
+
+# ============================================================================
+# Synapsen-LZG — Tiefe-Faktor (Synapsen P2, Chat 88)
+# ============================================================================
+# Konfiguriert, wie tief eine Schicht im Einzelfall greift. Der Tiefe-
+# Faktor liegt immer im Bereich [0, 1] und multipliziert die Anhebung
+# zwischen Anker und Sinus-Ergebnis.
+
+# Cosine-Similarity, ab der die Embedding-Schicht greift. Unter diesem
+# Wert: keine Embedding-Schicht. Darueber: Tiefe-Faktor waechst linear bis
+# 1.0 bei Cosine 1.0. Stellschraube — kann auf 0.80 oder 0.75 abgesenkt
+# werden, wenn die Schicht zu selten greift.
+LZG_EMBEDDING_SCHWELLWERT: float = float(os.getenv("LZG_EMBEDDING_SCHWELLWERT", "0.85"))
+
+# Timeline-Schicht — Toleranzen pro Praezisions-Stufe, jeweils ± in
+# eigener Einheit. Distanz innerhalb der Toleranz erzeugt einen Tiefe-
+# Faktor zwischen 1.0 (Distanz 0) und 0.0 (Distanz = Toleranz). Ausserhalb
+# der Toleranz greift die Timeline-Schicht nicht. Praezisions-Gleichheit
+# zwischen beiden Knoten ist harte Voraussetzung — siehe Konzept §7.6.
+LZG_TIMELINE_TOLERANZ_MINUTE:   int = int(os.getenv("LZG_TIMELINE_TOLERANZ_MINUTE",   "7"))    # Tage (Sub-Tages-Praezisionen rechnen in Tagen)
+LZG_TIMELINE_TOLERANZ_STUNDE:   int = int(os.getenv("LZG_TIMELINE_TOLERANZ_STUNDE",   "7"))    # Tage
+LZG_TIMELINE_TOLERANZ_TAG:      int = int(os.getenv("LZG_TIMELINE_TOLERANZ_TAG",      "21"))   # Tage
+LZG_TIMELINE_TOLERANZ_WOCHE:    int = int(os.getenv("LZG_TIMELINE_TOLERANZ_WOCHE",    "8"))    # Wochen
+LZG_TIMELINE_TOLERANZ_MONAT:    int = int(os.getenv("LZG_TIMELINE_TOLERANZ_MONAT",    "6"))    # Monate
+LZG_TIMELINE_TOLERANZ_QUARTAL:  int = int(os.getenv("LZG_TIMELINE_TOLERANZ_QUARTAL",  "4"))    # Quartale
+LZG_TIMELINE_TOLERANZ_JAHR:     int = int(os.getenv("LZG_TIMELINE_TOLERANZ_JAHR",     "2"))    # Jahre
+
+
 # ─────────────────────────────────────────────
 # Pipeline-Log (Synapsen P1, Chat 88)
 # ─────────────────────────────────────────────

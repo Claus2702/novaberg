@@ -106,3 +106,25 @@ END $$;
 
 CREATE INDEX IF NOT EXISTS idx_lzg_timeline_id     ON langzeitgedaechtnis (timeline_id);
 CREATE INDEX IF NOT EXISTS idx_notizen_timeline_id ON notizen (timeline_id);
+
+-- ── lzg_knoten ↔ timeline FK (Synapsen-P2) ──────
+-- Übergangs-Konstrukt analog zu langzeitgedaechtnis_timeline_id_fkey und
+-- notizen_timeline_id_fkey. Die timeline_id-Spalte in lzg_knoten wird im
+-- Kern (db/init.sql) als nackte INTEGER-Spalte angelegt; die FK-Constraint
+-- gehört dem Timeline-Plugin und wird hier nachgezogen.
+--
+-- Bei Umzug von Timeline in den Kern (Backlog: TIMELINE-IN-KERN) wandert
+-- dieser Block in die CREATE-Definition von lzg_knoten in db/init.sql.
+
+ALTER TABLE lzg_knoten ADD COLUMN IF NOT EXISTS timeline_id INTEGER;
+
+DO $$ BEGIN
+    IF NOT EXISTS (
+        SELECT 1 FROM pg_constraint
+        WHERE  conname = 'lzg_knoten_timeline_id_fkey'
+    ) THEN
+        ALTER TABLE lzg_knoten
+            ADD CONSTRAINT lzg_knoten_timeline_id_fkey
+            FOREIGN KEY (timeline_id) REFERENCES timeline(id) ON DELETE SET NULL;
+    END IF;
+END $$;

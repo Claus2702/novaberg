@@ -107,6 +107,98 @@ CREATE TABLE IF NOT EXISTS langzeitgedaechtnis (
 );
 
 -- ───────────────────────────────────────────────
+-- lzg_knoten — Synapsen-Knoten (Synapsen-Modell, P2)
+-- ───────────────────────────────────────────────
+-- Parallel zum bestehenden langzeitgedaechtnis. Trägt die Memory-Knoten
+-- des Synapsen-Modells mit drei Gewichts-Feldern (roh, absolut, decay),
+-- Magnet-Feldern (Entitäten, Themen, Timeline) und vollständiger EI-Kopie
+-- aus dem KZG. Spezifikation in docs/novaberg-memory-synapsen_k.md §4.1.
+--
+-- Bis P9 läuft diese Tabelle parallel zu langzeitgedaechtnis. Promotion
+-- schreibt ab P4 ausschließlich hier hin; Enricher liest ab P5 aus
+-- dieser Tabelle. Das bisherige langzeitgedaechtnis wird in P9 entfernt.
+--
+-- timeline_id: nackte INTEGER-Spalte; FK-Constraint auf timeline(id) wird
+-- in server/agents/timeline/init.sql gesetzt.
+CREATE TABLE IF NOT EXISTS lzg_knoten (
+    -- Identität
+    id                      SERIAL           PRIMARY KEY,
+    kzg_quell_key           TEXT             NOT NULL UNIQUE,
+
+    -- Paar-Partition
+    user_id                 TEXT             NOT NULL,
+    character_id            VARCHAR(50)      NOT NULL DEFAULT 'nova',
+    beobachter              VARCHAR(20)      NOT NULL DEFAULT 'user',
+
+    -- Inhalt
+    inhalt                  TEXT             NOT NULL,
+    embedding               VECTOR(768),
+    dimension               TEXT             NOT NULL,
+
+    -- Knoten-Dynamik
+    gewicht_roh             DOUBLE PRECISION NOT NULL,
+    gewicht_absolut         DOUBLE PRECISION NOT NULL,
+    gewicht_decay           DOUBLE PRECISION NOT NULL,
+    haeufigkeit             INTEGER          NOT NULL DEFAULT 1,
+    aktiv                   BOOLEAN          NOT NULL DEFAULT TRUE,
+    erstellt_am             TIMESTAMPTZ      NOT NULL DEFAULT NOW(),
+    verstaerkt_am           TIMESTAMPTZ      NOT NULL DEFAULT NOW(),
+    decay_am                TIMESTAMPTZ      NOT NULL DEFAULT NOW(),
+    kzg_erstellt_am         TIMESTAMPTZ      NOT NULL,
+
+    -- Salienz-Anker
+    themen                  TEXT[]           NOT NULL DEFAULT '{}',
+    gedaechtnistyp          VARCHAR(20),
+    entitaet_ids            INTEGER[]        NOT NULL DEFAULT '{}',
+    timeline_id             INTEGER,
+
+    -- Emotionale Intelligenz (volle Kopie aus KZG)
+    emotion                 TEXT             NOT NULL DEFAULT '',
+    arousal                 DOUBLE PRECISION NOT NULL DEFAULT 0.5,
+    emotions_vektor         TEXT             NOT NULL DEFAULT '',
+    intentionen             TEXT             NOT NULL DEFAULT '[]',
+    modus                   TEXT             NOT NULL DEFAULT '',
+    sprach_stil             TEXT             NOT NULL DEFAULT '',
+    beziehungs_dynamik      TEXT             NOT NULL DEFAULT '',
+    tone                    TEXT             NOT NULL DEFAULT ''
+);
+
+-- ───────────────────────────────────────────────
+-- lzg_kanten — Synapsen-Kanten (Cache, Synapsen-Modell, P2)
+-- ───────────────────────────────────────────────
+-- Abgeleiteter Cache der Knoten-Verbindungen. Kanten haben keine eigene
+-- Substanz (keine Häufigkeit, kein Decay, keine Reaktivierung) — sie
+-- werden bei drei Triggern neu berechnet: Knoten-Anlage, Knoten-Aktivierung,
+-- Schicht-Daten-Änderung. Spezifikation in docs/novaberg-memory-synapsen_k.md §4.2.
+--
+-- Gerichtete Kanten (A→B und B→A als zwei separate Datensätze möglich),
+-- aber der UNIQUE-Constraint stellt sicher, dass kein Paar dupliziert
+-- existiert.
+CREATE TABLE IF NOT EXISTS lzg_kanten (
+    -- Identität
+    id                       SERIAL           PRIMARY KEY,
+    knoten_a_id              INTEGER          NOT NULL REFERENCES lzg_knoten(id) ON DELETE CASCADE,
+    knoten_b_id              INTEGER          NOT NULL REFERENCES lzg_knoten(id) ON DELETE CASCADE,
+
+    -- Kanten-Stärke
+    gewicht_roh              DOUBLE PRECISION NOT NULL,
+    gewicht_absolut          DOUBLE PRECISION NOT NULL,
+    erstellt_am              TIMESTAMPTZ      NOT NULL DEFAULT NOW(),
+
+    -- Verbindungs-Charakter (eingefroren bei Bildung)
+    verbindungs_gruende      TEXT[]           NOT NULL DEFAULT '{}',
+    geteilte_entitaet_ids    INTEGER[]        NOT NULL DEFAULT '{}',
+    geteilte_themen          TEXT[]           NOT NULL DEFAULT '{}',
+    timeline_naehe_tage      INTEGER,
+    embedding_cosine_initial DOUBLE PRECISION,
+    anzahl_schichten         INTEGER          NOT NULL DEFAULT 1,
+
+    -- Eindeutigkeit
+    CONSTRAINT chk_lzg_kanten_selbst CHECK (knoten_a_id != knoten_b_id),
+    CONSTRAINT uq_lzg_kanten_paar    UNIQUE (knoten_a_id, knoten_b_id)
+);
+
+-- ───────────────────────────────────────────────
 -- charakter_hash
 -- ───────────────────────────────────────────────
 -- character_id Default '' (NICHT 'nova'): entspricht dem Live-Stand.
@@ -323,6 +415,34 @@ CREATE INDEX IF NOT EXISTS idx_lzg_kzg_erstellt_am
     ON langzeitgedaechtnis (kzg_erstellt_am);
 CREATE INDEX IF NOT EXISTS idx_lzg_timeline_id
     ON langzeitgedaechtnis (timeline_id);
+
+-- lzg_knoten (Synapsen P2)
+CREATE INDEX IF NOT EXISTS idx_lzg_knoten_aktiv
+    ON lzg_knoten (user_id, character_id) WHERE aktiv = TRUE;
+CREATE INDEX IF NOT EXISTS idx_lzg_knoten_embedding
+    ON lzg_knoten USING ivfflat (embedding vector_cosine_ops) WITH (lists = 100);
+CREATE INDEX IF NOT EXISTS idx_lzg_knoten_themen
+    ON lzg_knoten USING gin (themen);
+CREATE INDEX IF NOT EXISTS idx_lzg_knoten_entitaet_ids
+    ON lzg_knoten USING gin (entitaet_ids);
+CREATE INDEX IF NOT EXISTS idx_lzg_knoten_timeline_id
+    ON lzg_knoten (timeline_id);
+CREATE INDEX IF NOT EXISTS idx_lzg_knoten_kzg_erstellt_am
+    ON lzg_knoten (kzg_erstellt_am);
+CREATE INDEX IF NOT EXISTS idx_lzg_knoten_user_id
+    ON lzg_knoten (user_id);
+
+-- lzg_kanten (Synapsen P2)
+CREATE INDEX IF NOT EXISTS idx_lzg_kanten_a
+    ON lzg_kanten (knoten_a_id);
+CREATE INDEX IF NOT EXISTS idx_lzg_kanten_b
+    ON lzg_kanten (knoten_b_id);
+CREATE INDEX IF NOT EXISTS idx_lzg_kanten_geteilte_entitaet_ids
+    ON lzg_kanten USING gin (geteilte_entitaet_ids);
+CREATE INDEX IF NOT EXISTS idx_lzg_kanten_geteilte_themen
+    ON lzg_kanten USING gin (geteilte_themen);
+CREATE INDEX IF NOT EXISTS idx_lzg_kanten_verbindungs_gruende
+    ON lzg_kanten USING gin (verbindungs_gruende);
 
 -- entitaeten
 CREATE INDEX IF NOT EXISTS idx_entitaeten_aktiv
