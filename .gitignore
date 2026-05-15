@@ -60,3 +60,6 @@ node_modules/
 
 # Obsidian
 .obsidian
+
+# Claude Code
+CLAUDE.md
