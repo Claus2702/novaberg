@@ -7,6 +7,7 @@ import logging
 import asyncio
 
 from contextlib import asynccontextmanager
+from pathlib    import Path
 
 from fastapi                        import FastAPI
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
@@ -40,135 +41,62 @@ logger    = logging.getLogger("ki_server")
 scheduler = AsyncIOScheduler()
 
 
-def schema_migrieren(postgres_url: str) -> None:
-    """Stellt sicher, dass alle Schema-Erweiterungen vorhanden sind (idempotent)."""
+def _sql_init_pfad_finden() -> Path:
+    """Findet db/init.sql relativ zu dieser Datei.
 
-    migrationen: list[str] = [
-        # langzeitgedaechtnis
-        "ALTER TABLE langzeitgedaechtnis ADD COLUMN IF NOT EXISTS arousal DOUBLE PRECISION NOT NULL DEFAULT 0.5",
-        # emotions_vektor entfernt (PROMO-CLUSTER-EI): Trajektorie passt
-        # semantisch nicht zu einer verdichteten LZG-Erinnerung.
-        "ALTER TABLE langzeitgedaechtnis DROP COLUMN IF EXISTS emotions_vektor",
-        "ALTER TABLE langzeitgedaechtnis ADD COLUMN IF NOT EXISTS intentionen TEXT NOT NULL DEFAULT '[]'",
-        "ALTER TABLE langzeitgedaechtnis ADD COLUMN IF NOT EXISTS emotion TEXT NOT NULL DEFAULT ''",
-        "ALTER TABLE langzeitgedaechtnis ADD COLUMN IF NOT EXISTS modus TEXT NOT NULL DEFAULT ''",
-        "ALTER TABLE langzeitgedaechtnis ADD COLUMN IF NOT EXISTS sprach_stil TEXT NOT NULL DEFAULT ''",
-        "ALTER TABLE langzeitgedaechtnis ADD COLUMN IF NOT EXISTS beziehungs_dynamik TEXT NOT NULL DEFAULT ''",
-        "ALTER TABLE langzeitgedaechtnis ADD COLUMN IF NOT EXISTS tone TEXT NOT NULL DEFAULT ''",
-        # charakter_hash
-        "ALTER TABLE charakter_hash ADD COLUMN IF NOT EXISTS intentions_profil TEXT NOT NULL DEFAULT ''",
-        "ALTER TABLE charakter_hash ADD COLUMN IF NOT EXISTS emotions_profil TEXT NOT NULL DEFAULT ''",
-        "ALTER TABLE charakter_hash ADD COLUMN IF NOT EXISTS beziehungsprofil TEXT NOT NULL DEFAULT ''",
-        # charakter_hash — Paar-Schema (Chat 66)
-        "ALTER TABLE charakter_hash ADD COLUMN IF NOT EXISTS character_id TEXT NOT NULL DEFAULT ''",
-        # Bestehende Daten: user_id='meister' gehoert zu character_id='nova' und umgekehrt
-        f"UPDATE charakter_hash SET character_id = '{ASSISTANT_USER_ID}' WHERE user_id = '{DEFAULT_USER_ID}' AND character_id = ''",
-        f"UPDATE charakter_hash SET character_id = '{DEFAULT_USER_ID}' WHERE user_id = '{ASSISTANT_USER_ID}' AND character_id = ''",
-        # PK auf Paar erweitern (nur wenn noch alter PK)
-        """
-        DO $$
-        BEGIN
-            IF EXISTS (
-                SELECT 1 FROM pg_constraint
-                WHERE conname = 'charakter_hash_pkey'
-                AND conrelid = 'charakter_hash'::regclass
-            ) THEN
-                ALTER TABLE charakter_hash DROP CONSTRAINT charakter_hash_pkey;
-                ALTER TABLE charakter_hash ADD CONSTRAINT charakter_hash_pkey PRIMARY KEY (user_id, character_id);
-            END IF;
-        END $$
-        """,
-        # hintergrund_log
-        "ALTER TABLE hintergrund_log ADD COLUMN IF NOT EXISTS status TEXT NOT NULL DEFAULT 'offen'",
-        "ALTER TABLE hintergrund_log ADD COLUMN IF NOT EXISTS verarbeitet_am TIMESTAMPTZ",
-        # Ebbinghaus-Decay (E1)
-        "ALTER TABLE langzeitgedaechtnis ADD COLUMN IF NOT EXISTS aktiv BOOLEAN NOT NULL DEFAULT TRUE",
-        # Paar-Schema (Chat 62): Gespraech = (user_id, character_id) + Beobachter
-        "ALTER TABLE langzeitgedaechtnis ADD COLUMN IF NOT EXISTS character_id VARCHAR(50) NOT NULL DEFAULT 'nova'",
-        "ALTER TABLE langzeitgedaechtnis ADD COLUMN IF NOT EXISTS beobachter VARCHAR(20) NOT NULL DEFAULT 'user'",
-        # Nova-Eintraege (user_id='nova') ins Paar meister:nova mit Beobachter 'assistant' umschreiben.
-        # Idempotent: nach erstem Lauf matcht WHERE nichts mehr.
-        "UPDATE langzeitgedaechtnis SET user_id = 'meister', character_id = 'nova', beobachter = 'assistant' WHERE user_id = 'nova'",
-        # Partial-Index auf das Paar — loest den alten aktiv-only-Index ab.
-        "DROP INDEX IF EXISTS idx_lzg_aktiv",
-        "CREATE INDEX IF NOT EXISTS idx_lzg_aktiv ON langzeitgedaechtnis (user_id, character_id) WHERE aktiv = TRUE",
-        # M2: Magnet-Spalten LZG (Chat 78 — Spiegelung von db/init.sql).
-        # Schiene fuer M3 (Promotion-Code) und M5 (Salienz-Pfad).
-        # Alle Spalten bewusst nullable — Befuellung gestaffelt ueber M3, M4, M5.
-        "ALTER TABLE langzeitgedaechtnis ADD COLUMN IF NOT EXISTS themen TEXT[]",
-        "ALTER TABLE langzeitgedaechtnis ADD COLUMN IF NOT EXISTS gedaechtnistyp VARCHAR(20)",
-        "ALTER TABLE langzeitgedaechtnis ADD COLUMN IF NOT EXISTS kzg_erstellt_am TIMESTAMPTZ",
-        "ALTER TABLE langzeitgedaechtnis ADD COLUMN IF NOT EXISTS entitaet_ids INTEGER[]",
-        "ALTER TABLE langzeitgedaechtnis ADD COLUMN IF NOT EXISTS timeline_id INTEGER REFERENCES timeline(id) ON DELETE SET NULL",
-        "CREATE INDEX IF NOT EXISTS idx_lzg_themen ON langzeitgedaechtnis USING GIN (themen)",
-        "CREATE INDEX IF NOT EXISTS idx_lzg_entitaet_ids ON langzeitgedaechtnis USING GIN (entitaet_ids)",
-        "CREATE INDEX IF NOT EXISTS idx_lzg_kzg_erstellt_am ON langzeitgedaechtnis (kzg_erstellt_am)",
-        "CREATE INDEX IF NOT EXISTS idx_lzg_timeline_id ON langzeitgedaechtnis (timeline_id)",
-        # M2: Entitäten + Fakten Tabellen
-        # CREATE TABLE IF NOT EXISTS wird in init.sql behandelt.
-        # DROP alter Tabellen + Neuanlage ebenfalls in init.sql (Migrations-Block).
-        # Hier nur zukünftige ALTER TABLE Migrationen.
-        # M2.5a: Timeline-Erweiterungen (Chat 80, e139465-Commit)
-        "ALTER TABLE timeline ADD COLUMN IF NOT EXISTS aktiv BOOLEAN NOT NULL DEFAULT TRUE",
-        "ALTER TABLE timeline ADD COLUMN IF NOT EXISTS last_touched TIMESTAMPTZ NOT NULL DEFAULT NOW()",
-        "ALTER TABLE timeline ADD COLUMN IF NOT EXISTS wiedervorlage_am TIMESTAMPTZ",
-        "ALTER TABLE timeline ADD COLUMN IF NOT EXISTS entitaet_ids INTEGER[]",
-        # M6: Notizen-Erweiterungen
-        "ALTER TABLE notizen ADD COLUMN IF NOT EXISTS zusammenfassung VARCHAR(200)",
-        "ALTER TABLE notizen ADD COLUMN IF NOT EXISTS themen TEXT[]",
-        "ALTER TABLE notizen ADD COLUMN IF NOT EXISTS entitaet_ids INTEGER[]",
-        "ALTER TABLE notizen ADD COLUMN IF NOT EXISTS aktiv BOOLEAN NOT NULL DEFAULT TRUE",
-        "ALTER TABLE notizen ADD COLUMN IF NOT EXISTS last_touched TIMESTAMPTZ NOT NULL DEFAULT NOW()",
-        "ALTER TABLE notizen ADD COLUMN IF NOT EXISTS wiedervorlage_am TIMESTAMPTZ",
-        "ALTER TABLE notizen ADD COLUMN IF NOT EXISTS suchtext TSVECTOR",
-        # Ziele-Tabelle (Drive, Chat 68)
-        """
-        CREATE TABLE IF NOT EXISTS ziele (
-            id              SERIAL PRIMARY KEY,
-            user_id         VARCHAR(50) NOT NULL DEFAULT 'nova',
-            ziel_typ        VARCHAR(20) NOT NULL DEFAULT 'mittelfristig',
-            zielsatz        TEXT NOT NULL,
-            motivation      DOUBLE PRECISION NOT NULL DEFAULT 0.5,
-            emotion         VARCHAR(30) NOT NULL DEFAULT '',
-            arousal         DOUBLE PRECISION NOT NULL DEFAULT 0.5,
-            embedding       vector(768),
-            aktiv           BOOLEAN NOT NULL DEFAULT TRUE,
-            erstellt_am     TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-            aktualisiert_am TIMESTAMPTZ NOT NULL DEFAULT NOW()
-        )
-        """,
-        "CREATE INDEX IF NOT EXISTS idx_ziele_aktiv ON ziele (user_id) WHERE aktiv = TRUE",
-        # Themen-Stichwort fuer den Gravitationsgraph (Region-Label)
-        "ALTER TABLE ziele ADD COLUMN IF NOT EXISTS thema VARCHAR(100) NOT NULL DEFAULT ''",
-        # Seed-Ziele für Nova (idempotent — nur einfügen wenn Tabelle leer)
-        """
-        INSERT INTO ziele (user_id, ziel_typ, zielsatz, motivation, emotion, arousal)
-        SELECT 'nova', 'langfristig',
-               'Ich möchte die Verbindungen zwischen Natur und menschlicher Kultur verstehen — wie Pflanzen, Jahreszeiten und Landschaften das Leben der Menschen formen.',
-               0.8, 'neugierig', 0.6
-        WHERE NOT EXISTS (SELECT 1 FROM ziele WHERE user_id = 'nova' AND ziel_typ = 'langfristig')
-        """,
-        """
-        INSERT INTO ziele (user_id, ziel_typ, zielsatz, motivation, emotion, arousal)
-        SELECT 'nova', 'langfristig',
-               'Ich möchte meinen Menschen wirklich kennenlernen — seine Gedanken, seine Sorgen, was ihn antreibt und was ihn glücklich macht.',
-               0.9, 'neugierig', 0.5
-        WHERE NOT EXISTS (SELECT 1 FROM ziele WHERE user_id = 'nova' AND ziel_typ = 'langfristig' AND id > 1)
-        """,
-    ]
+    Container-Layout: /app/main.py mit Mount /app/db/init.sql.
+    Host-Layout: novaberg/server/main.py mit ../db/init.sql.
+    """
+    hier: Path = Path(__file__).resolve().parent
+    for kandidat in (hier / "db" / "init.sql", hier.parent / "db" / "init.sql"):
+        if kandidat.exists():
+            return kandidat
+    return hier / "db" / "init.sql"  # Default fuers Logging im Fehlerfall
+
+
+SQL_INIT_PFAD: Path = _sql_init_pfad_finden()
+
+
+def schema_migrieren(postgres_url: str) -> None:
+    """Migration: führt db/init.sql gegen die bestehende Live-Datenbank aus.
+
+    db/init.sql ist Single Source of Truth für das Postgres-Schema und enthält
+    alle Statements idempotent (CREATE ... IF NOT EXISTS, ALTER ... IF NOT
+    EXISTS, INSERT ... WHERE NOT EXISTS, DO-Blöcke mit pg_constraint-Check).
+
+    EVA
+    ---
+    E: postgres_url muss erreichbar sein. db/init.sql muss am erwarteten Pfad
+       (server/../db/init.sql) liegen.
+    V: SQL-Inhalt einmalig laden und gegen Postgres mit autocommit=True
+       ausführen, damit DO-Blöcke und unabhängige Statements korrekt
+       transaktioniert werden.
+    A: info-Log mit Pfad und einer groben Statement-Zahl (Semikolon-Zählung).
+       Bei Fehler warning-Log und Rückkehr ohne Re-Raise — Fail-Mode wie
+       bisher in P0.
+    """
+
+    if not SQL_INIT_PFAD.exists():
+        logger.warning(f"Migration: db/init.sql nicht gefunden unter {SQL_INIT_PFAD}")
+        return
+
+    sql_inhalt: str = SQL_INIT_PFAD.read_text(encoding="utf-8")
+    anzahl_stmts: int = sql_inhalt.count(";")
 
     import psycopg2
 
     try:
-        conn   = psycopg2.connect(postgres_url)
+        conn = psycopg2.connect(postgres_url)
+        conn.autocommit = True
         cursor = conn.cursor()
-        for sql in migrationen:
-            cursor.execute(sql)
-        conn.commit()
+        cursor.execute(sql_inhalt)
         conn.close()
-        logger.info(f"Schema-Migration: {len(migrationen)} Statements ausgeführt.")
+        logger.info(
+            f"Migration: db/init.sql ausgeführt "
+            f"({anzahl_stmts} Statements geparst, Pfad {SQL_INIT_PFAD})."
+        )
     except Exception as fehler:
-        logger.warning(f"Schema-Migration fehlgeschlagen: {fehler}")
+        logger.warning(f"Migration: db/init.sql fehlgeschlagen — {fehler}")
 
 
 # ─────────────────────────────────────────────

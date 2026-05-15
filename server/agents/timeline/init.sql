@@ -63,12 +63,46 @@ UPDATE timeline SET binding = FALSE, remind = TRUE, conflict_check = FALSE
   WHERE event_type IN ('geburtstag', 'jahrestag', 'erinnerung');
 
 -- ── M2: timeline_id-Fremdschlüssel auf lzg + notizen ────
--- Wird hier (statt in db/init.sql) angelegt, weil die timeline-Tabelle
--- erst durch dieses Script existiert. Die Spalte selbst zieht den FK direkt mit.
-ALTER TABLE langzeitgedaechtnis
-    ADD COLUMN IF NOT EXISTS timeline_id INTEGER REFERENCES timeline(id) ON DELETE SET NULL;
-ALTER TABLE notizen
-    ADD COLUMN IF NOT EXISTS timeline_id INTEGER REFERENCES timeline(id) ON DELETE SET NULL;
+-- Übergangs-Konstrukt: Diese FK-Constraints werden hier nachträglich gesetzt,
+-- weil die timeline-Tabelle aktuell noch im Plugin-Stand lebt, während die
+-- timeline_id-Spalten in langzeitgedaechtnis und notizen bereits im Kern
+-- (db/init.sql) definiert sind. Die übliche Inline-Form
+--   ALTER TABLE ... ADD COLUMN IF NOT EXISTS ... REFERENCES timeline(id)
+-- greift in diesem Fall nicht, weil Postgres das gesamte Statement überspringt,
+-- wenn die Spalte schon existiert (sie kommt aus db/init.sql).
+--
+-- Bei dem geplanten Umzug von Timeline in den Kern werden diese FKs in die
+-- CREATE-Definitionen von langzeitgedaechtnis und notizen in db/init.sql
+-- konsolidiert; dieser Block entfällt dann.
+
+-- Sicherheitsnetz: Spalten anlegen, falls eine sehr alte Bestandsinstallation
+-- ohne den heutigen db/init.sql-Stand sie noch nicht hat. Bei Frisch- oder
+-- aktueller Bestandsinstallation no-op.
+ALTER TABLE langzeitgedaechtnis ADD COLUMN IF NOT EXISTS timeline_id INTEGER;
+ALTER TABLE notizen             ADD COLUMN IF NOT EXISTS timeline_id INTEGER;
+
+-- FK-Constraints idempotent nachziehen (pg_constraint-Lookup als Guard).
+DO $$ BEGIN
+    IF NOT EXISTS (
+        SELECT 1 FROM pg_constraint
+        WHERE  conname = 'langzeitgedaechtnis_timeline_id_fkey'
+    ) THEN
+        ALTER TABLE langzeitgedaechtnis
+            ADD CONSTRAINT langzeitgedaechtnis_timeline_id_fkey
+            FOREIGN KEY (timeline_id) REFERENCES timeline(id) ON DELETE SET NULL;
+    END IF;
+END $$;
+
+DO $$ BEGIN
+    IF NOT EXISTS (
+        SELECT 1 FROM pg_constraint
+        WHERE  conname = 'notizen_timeline_id_fkey'
+    ) THEN
+        ALTER TABLE notizen
+            ADD CONSTRAINT notizen_timeline_id_fkey
+            FOREIGN KEY (timeline_id) REFERENCES timeline(id) ON DELETE SET NULL;
+    END IF;
+END $$;
 
 CREATE INDEX IF NOT EXISTS idx_lzg_timeline_id     ON langzeitgedaechtnis (timeline_id);
 CREATE INDEX IF NOT EXISTS idx_notizen_timeline_id ON notizen (timeline_id);
