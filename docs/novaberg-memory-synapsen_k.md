@@ -1585,7 +1585,7 @@ Die folgenden Abschnitte (13.3 bis 13.12) sind **Stufe 1** der Sprint-Definition
 
 **Abnahme-Tests.**
 
-1. Ein normaler Konversations-Turn, der zu einem KZG-Eintrag führt, erzeugt in Redis einen Eintrag mit befüllten Feldern `entitaet_ids` und `timeline_id`. Inhalt der Felder ist plausibel — Entitäts-IDs sind UUIDs, die in der `entitaeten`-Tabelle existieren; Timeline-ID ist eine UUID, die in der `timeline_events`-Tabelle existiert.
+1. Ein normaler Konversations-Turn, der zu einem KZG-Eintrag führt, erzeugt in Redis einen Eintrag mit befüllten Feldern `entitaet_ids` und `timeline_id`. Inhalt der Felder ist plausibel — Entitäts-IDs sind Integers, die in der `entitaeten`-Tabelle existieren; Timeline-ID ist ein Integer, der in der `timeline`-Tabelle existiert.
 2. Ein Turn ohne erkannte Entitäten erzeugt einen KZG-Eintrag mit leerer Liste `entitaet_ids = []`, kein NULL, kein Fehler.
 3. Ein Turn ohne erkannte Zeit erzeugt einen KZG-Eintrag mit `timeline_id = NULL` (oder gemäß tatsächlicher Konvention — Brudi prüft gegen `convention-magneten.md`), kein Fehler.
 4. Pipeline-Log enthält einen Eintrag des Schreibvorgangs mit allen relevanten Werten im JSONB-`inhalt`.
