@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** KZG-Agent — LangGraph-Subgraph für Kurzzeitgedächtnis
-**Stand:** 25. April 2026, Chat 64 (KZG-Liberalisierung: 4 Nodes, thematische Verstärkung, sin^0.6-Cap)
+**Stand:** 16. Mai 2026, Chat 88 (Synapsen P3 — neuer Node `magnete_aufloesen` zwischen `schwelle_pruefen` und `verdichten`, KZG-Subgraph jetzt 5 Nodes)
 **Pfad:** novaberg/docs/novaberg-pixie-kzg.md
 **Quellen:** nova-02-m-b.md (KZG-Agent-Abschnitte)
 
@@ -14,23 +14,24 @@ Der KZG-Agent ist die Fachabteilung für Novas Kurzzeitgedächtnis. Er empfängt
 
 Die Salienz bewertet OB etwas relevant ist — der KZG-Agent entscheidet WAS damit passiert. Trennung der Verantwortlichkeiten: Bewertung in der Salienz, Verdichtung im KZG-Agent, Extraktion im WissensAgent.
 
-**Dateien:** `agents/kzg/agent.py`, `agents/kzg/verdichtung.py`, `agents/kzg/speicher.py`, `agents/kzg/queues.py`, `agents/kzg/dispatch.py` (`agents/kzg/aehnlichkeit.py` in Chat 64 entfernt)
+**Dateien:** `agents/kzg/agent.py`, `agents/kzg/magnete.py`, `agents/kzg/verdichtung.py`, `agents/kzg/speicher.py`, `agents/kzg/queues.py`, `agents/kzg/dispatch.py` (`agents/kzg/aehnlichkeit.py` in Chat 64 entfernt)
 
 ---
 
 ## 2. Subgraph-Überblick
 
-Der KZG-Agent ist seit Chat 64 ein 4-Node-LangGraph-Subgraph (vorher 5):
+Der KZG-Agent ist ein 5-Node-LangGraph-Subgraph:
 
 ```
-Schwelle prüfen → Verdichten → Speichern → Queues
+Schwelle prüfen → Magnete auflösen → Verdichten → Speichern → Queues
 ```
 
 | Node | Datei | Aufgabe |
 |------|-------|---------|
 | `schwelle_pruefen` | `agent.py` | Salienz-Score gegen `KZG_SALIENZ_MINIMUM`. Unter Schwelle → kein LLM-Call, kein Store. |
+| `magnete_aufloesen` | `magnete.py` | Resolved Salience-Roh-Strings (`entitaeten_roh`, `zeitausdruck_roh`) zu `entitaet_ids` (via `EntityResolutionService`) und `timeline_id` (via `zeit_parsen_vektor` + `TimelineRepository`, ggf. Anlage eines `erinnerungs_anker`). Übernimmt eine im selben Turn vom TimelineAgent ins Clipboard geschriebene `timeline_id`, statt einen eigenen Anker anzulegen. |
 | `verdichten` | `verdichtung.py` | LLM-Call: Erzeugt `kern` — konkreter Satz mit allen Namen, Orten, Zahlen. |
-| `speichern` | `speicher.py` | Embedding erzeugen, eigenständigen Eintrag schreiben, thematische Verstärkung verwandter Bestandseinträge in der Paar-Partition. TTL nach Salienz (7/14/30 Tage). |
+| `speichern` | `speicher.py` | Embedding erzeugen, eigenständigen Eintrag mit Magnet-Feldern schreiben, thematische Verstärkung verwandter Bestandseinträge in der Paar-Partition. TTL nach Salienz (7/14/30 Tage). Pipeline-Log-Eintrag nach erfolgreichem `hset` (Synapsen P1.1). |
 | `queues_befuellen` | `queues.py` | Promotion-Queue + Shadow-Queue + Dirty-Flag. |
 
 **Routing:**
@@ -38,8 +39,10 @@ Schwelle prüfen → Verdichten → Speichern → Queues
 ```
 schwelle_pruefen
   ├─ abgelehnt (Score < Schwelle) → END
-  └─ angenommen → verdichten → speichern → queues_befuellen → END
+  └─ angenommen → magnete_aufloesen → verdichten → speichern → queues_befuellen → END
 ```
+
+`magnete_aufloesen` läuft bewusst VOR `verdichten` — defensiv: Resolver-Fehler verwerfen den teuren LLM-Call nicht, und bei Abbruch danach bleibt kein Waisenkind in der Timeline (Synapsen P3, siehe Code-Kommentar in `agent.py`).
 
 Der Node `aehnlichkeit_pruefen` und die Datei `aehnlichkeit.py` wurden in Chat 64 entfernt. Es gibt keine Embedding-basierte Schreibzeit-Deduplizierung mehr — jeder Turn landet als eigenständiger Eintrag.
 

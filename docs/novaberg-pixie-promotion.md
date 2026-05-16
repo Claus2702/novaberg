@@ -8,8 +8,8 @@
 
 ---
 
-> **Hinweis (Chat 86): Synapsen-Umbau geplant.**
-> Die hier beschriebene Cluster-Promotion mit Aggregat-Schicht wird durch ein assoziatives Netz-Modell ersetzt — siehe Konzept-Dokument `novaberg-memory-synapsen_k.md`. Jeder ehemalige KZG-Eintrag wird künftig zum eigenständigen Knoten in `lzg_knoten`, Cluster werden zu gerichteten Kanten in `lzg_kanten` mit eigenen Decays und Reinforcement-Pfaden. Dieses Dokument beschreibt den heutigen Stand bis zur Umsetzung. Während des Umbaus ruhen alle Promotion-bezogenen Sprints, die nicht unmittelbar Teil des Synapsen-Konzepts sind.
+> **Hinweis (Chat 88): Synapsen-Umbau im Gang.**
+> Die hier beschriebene Cluster-Promotion mit Aggregat-Schicht wird durch ein assoziatives Netz-Modell ersetzt — siehe Konzept-Dokument `novaberg-memory-synapsen_k.md`. Jeder ehemalige KZG-Eintrag wird künftig zum eigenständigen Knoten in `lzg_knoten`, Cluster werden zu gerichteten Kanten in `lzg_kanten` mit eigenen Decays und Reinforcement-Pfaden. Tabellen `lzg_knoten`/`lzg_kanten` sind seit P2 (Chat 88) angelegt, aber leer — die neue Promotion-Logik kommt in P4 und steht noch aus. Dieses Dokument beschreibt den heutigen Stand der alten Cluster-Promotion bis zur Umsetzung. Während des Umbaus ruhen alle Promotion-bezogenen Sprints, die nicht unmittelbar Teil des Synapsen-Konzepts sind.
 
 ## 1. Aufgabe
 

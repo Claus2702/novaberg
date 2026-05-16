@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** TimelineAgent (Termine, Ereignisse, Zeitachse)
-**Stand:** 08. Mai 2026, Chat 80 (M2.5a — Manager-Cleanup + Magnet-Befüllung)
+**Stand:** 16. Mai 2026, Chat 88 (Synapsen P3 — Event-Type `erinnerungs_anker`, Clipboard-Schreibvorgang in `_build_return`)
 **Pfad:** novaberg/docs/novaberg-agent-timeline.md
 **Quellen:** nova-02-m-e.md, nova-14-k.md, nova-15-k.md
 
@@ -229,8 +229,9 @@ Nach jedem Write ein DB-Read. Ergebnis gegen Erwartung pruefen. Bei Fehler: `Cru
 | `deadline` | Abgabetermine, Fristen | Fristgebunden |
 | `jahrestag` | Wiederkehrende jaehrliche Ereignisse | Jaehrlich wiederkehrend |
 | `erinnerung` | Allgemeine Erinnerungen | Ohne festen Termin-Charakter |
+| `erinnerungs_anker` | "Wetter heiß heute", "erstes Quartal schlecht" | Klasse Bezug (Synapsen P3) — still aus dem KZG-Schreibpfad angelegt, nicht user-erzeugt. Flags (False, False, False). Wird vom `magnete_aufloesen`-Node im KzgAgent-Subgraph gesetzt; siehe `novaberg-convention-magneten.md` §5. |
 
-Der Typ wird vom Classify-Node bestimmt -- nicht vom Nutzer explizit angegeben.
+Der Typ wird vom Classify-Node bestimmt -- nicht vom Nutzer explizit angegeben. Ausnahme `erinnerungs_anker`: setzt der KzgAgent ohne User-Intent, allein anhand des Salience-Roh-Zeitausdrucks.
 
 ---
 
@@ -243,7 +244,7 @@ CREATE TABLE IF NOT EXISTS timeline (
     id              SERIAL PRIMARY KEY,
     user_id         TEXT NOT NULL,
     event_time      TIMESTAMPTZ,
-    event_type      VARCHAR(50),        -- termin, geburtstag, deadline, jahrestag, erinnerung
+    event_type      VARCHAR(50),        -- termin, geburtstag, deadline, jahrestag, erinnerung, erinnerungs_anker
     title           VARCHAR(255),
     details         TEXT,
     recurring       BOOLEAN DEFAULT FALSE,
@@ -252,7 +253,11 @@ CREATE TABLE IF NOT EXISTS timeline (
     aktiv           BOOLEAN NOT NULL DEFAULT TRUE,
     last_touched    TIMESTAMPTZ,        -- Letzter Zugriff (Ebbinghaus)
     wiedervorlage_am TIMESTAMPTZ,       -- Naechster Pixie-Check
-    entitaet_ids    INTEGER[]           -- Referenzierte Entitaeten
+    entitaet_ids    INTEGER[],          -- Referenzierte Entitaeten
+    themen          TEXT[],             -- Magnet-Achse Thema (M2.5a)
+    binding         BOOLEAN,            -- Bindet User-Zeit (Termin-Klasse)
+    remind          BOOLEAN,            -- Wiedervorlage aktiv
+    conflict_check  BOOLEAN             -- Bei Anlage gegen andere Eintraege pruefen
 );
 ```
 
@@ -275,3 +280,5 @@ CREATE TABLE IF NOT EXISTS timeline (
 **Router-Prompt:** `management_action = "agent"` bei Termin-Erkennung. Keine spezifische CRUD-Aktion.
 
 **Resume-TTL:** 300s (Redis `pending_agent:{user_id}`). **Rueckfrage-Pflicht:** Nur bei niedriger Konfidenz oder Konflikt.
+
+**Clipboard-Schreibvorgang (Synapsen P3):** Bei `result.status == "abgeschlossen"` und einer im letzten Schritt vorhandenen ID (`termin_id`, `neuer_id` oder `id`) schreibt `_build_return` (`dispatch.py`) die ID als `state["timeline_id"]` in den `ConversationState`. Der spätere KzgAgent übernimmt diesen Wert im `magnete_aufloesen`-Node, statt einen eigenen `erinnerungs_anker` für denselben Tag anzulegen. Verhindert Anker-Duplikate, wenn der User-Turn sowohl einen TimelineAgent-Auftrag als auch eine implizite Salience-Erkennung des gleichen Datums enthält.

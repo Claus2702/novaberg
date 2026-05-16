@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Pipeline-Node Salienz (Bewertung & Gedächtnisbildung)
-**Stand:** 21. April 2026, Chat 60 (Event-Modell, Graph-Split)
+**Stand:** 16. Mai 2026, Chat 88 (Synapsen P3 — zwei Roh-Dimensionen `entitaeten_roh` und `zeitausdruck_roh` für die Magnet-Auflösung im KzgAgent)
 **Pfad:** novaberg/docs/novaberg-node-salience.md
 **Quellen:** nova-01-m-g.md (Node-Beschreibung), nova-02-t-b.md (Salienz-Technik)
 
@@ -82,7 +82,7 @@ Pro Segment extrahiert die Salienz 11 Dimensionen — nicht nur den Score:
 | Modus | → KZG-Annotation, Intentions-Profil |
 | Valenz | positiv/negativ/neutral — für Embedding-Kontext |
 
-**Aktuell im Analyse-Prompt aktive Dimensionen (8):**
+**Aktuell im Analyse-Prompt aktive Dimensionen (10):**
 
 | # | Dimension | Beschreibung |
 |---|-----------|-------------|
@@ -94,6 +94,8 @@ Pro Segment extrahiert die Salienz 11 Dimensionen — nicht nur den Score:
 | 6 | **Intentionen** | 1–3 aus 16 Kategorien (primäre zuerst) |
 | 7 | **Emotion** | Einzelne Emotion für diesen Turn |
 | 8 | **Modus** | Gesprächsrahmen (fachgespraech, alltag, emotional, ...) |
+| 9 | **entitaeten_roh** | Liste von Eigennamen (Synapsen P3) — Roh-Strings, Pronomen ausgeschlossen. Die Resolution zu `entitaet_ids` geschieht nicht hier, sondern im `magnete_aufloesen`-Node des KzgAgent. |
+| 10 | **zeitausdruck_roh** | Ein Zeitausdruck pro Segment (Synapsen P3) — Roh-String. Die Resolution zu `timeline_id` (ggf. mit Anlage eines `erinnerungs_anker`) geschieht im `magnete_aufloesen`-Node. |
 
 **Entfernte Dimensionen:**
 - Dim 6 „Zusammenfassung" (jetzt `kern` im KZG-Agent — `agents/kzg/verdichtung.py`, Chat 29)
@@ -104,9 +106,9 @@ Pro Segment extrahiert die Salienz 11 Dimensionen — nicht nur den Score:
 
 | Bereich | Bedeutung | Beispiele | Aktion |
 |---------|-----------|-----------|--------|
-| 0.0–0.2 | Beiläufig | „Hallo", „Okay", „Danke" | Nichts |
-| 0.3–0.4 | Informativ | „Was ist Photosynthese?", „Wie wird das Wetter?" | Nichts (unter Schwellwert) |
-| 0.5–0.6 | Moderates Interesse | „Ich war gestern wandern", „Gutes Buch gelesen" | KZG (7 Tage) |
+| 0.0–0.2 | Beiläufig | „Hallo", „Okay", „Danke" | Nichts (unter Schwellwert) |
+| 0.3–0.4 | Informativ | „Was ist Photosynthese?", „Wie wird das Wetter?" | KZG (7 Tage) |
+| 0.5–0.6 | Moderates Interesse | „Ich war gestern wandern", „Gutes Buch gelesen" | KZG (14 Tage) |
 | 0.7–0.8 | Starke Relevanz | „Ich liebe Astronomie!", „Anna wohnt in München" | KZG (30 Tage) + Promotion + Shadow |
 | 0.9–1.0 | Maximale Dringlichkeit | „Ich kann nicht mehr!", Notfall, akute Krise | KZG (30 Tage) + Promotion + Shadow |
 
@@ -230,9 +232,10 @@ Der ursprüngliche P5/P6-Guard unterdrückte bei aktivem Planner die Fakten- und
 
 | Schwellwert | Wert | Wirkung |
 |-------------|------|---------|
-| Ignoriert | < 0.5 | Kein KZG-Eintrag |
-| KZG kurz | 0.5–0.7 | TTL 7 Tage |
-| KZG lang + Promotion | ≥ 0.7 | TTL 30 Tage, Shadow-Queue, hash_dirty |
+| Ignoriert | < 0.3 | Kein KZG-Eintrag (`KZG_SALIENZ_MINIMUM`) |
+| KZG kurz | 0.3–0.5 | TTL 7 Tage |
+| KZG mittel | 0.5–0.7 | TTL 14 Tage |
+| KZG lang + Promotion | ≥ 0.7 | TTL 30 Tage, Promotion-Queue, Shadow-Queue, hash_dirty |
 | Fakten-Mindest-Salienz (O2) | 0.70 | Personen, Orte, Beziehungen → Floor |
 
 ### Emotionale Boosts

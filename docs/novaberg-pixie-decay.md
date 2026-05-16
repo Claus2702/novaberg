@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** DecayAgent — Ebbinghaus-Vergessenskurve
-**Stand:** 17. April 2026, Chat 52 (Code-Alignment)
+**Stand:** 16. Mai 2026, Chat 88 (Decay-Konstanten-Klarstellung für legacy `langzeitgedaechtnis` vs. neue `lzg_knoten`)
 **Pfad:** novaberg/docs/novaberg-pixie-decay.md
 **Quellen:** nova-05-m-a.md, nova-02-t-a.md
 
@@ -125,6 +125,8 @@ Reines Python/SQL. Die Formel ist deterministisch — ein LLM, das gebeten wird 
 | `EBBINGHAUS_DECAY_RATE` | 0.0015 | Lambda — Decay-Rate. Höher = schnelleres Vergessen. |
 | `EBBINGHAUS_MIN_GEWICHT` | 0.1 | Schwellwert für Inaktivierung (Soft-Delete). |
 | `KZG_VERSTAERKUNG_DIVISOR` | 2.0 | Verstärkungs-Stärke. Niedriger = stärkere Verstärkung. |
+
+Die obigen `EBBINGHAUS_*`-Konstanten steuern den Decay der legacy `langzeitgedaechtnis`-Tabelle. Die neue `lzg_knoten`-Tabelle (Synapsen P2) trägt eigene Decay-Konstanten `LZG_KNOTEN_DECAY_RATE` (0.0015) und `LZG_KNOTEN_MIN_GEWICHT` (0.1) in `config.py`. Beide Konstanten-Familien existieren parallel, bis P9 die alte Tabelle entfernt.
 
 ---
 

@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Systemarchitektur, Tech-Stack, Plugin-System
-**Stand:** 21. April 2026, Chat 60 (Event-Modell, Graph-Split, Session-Trennung)
+**Stand:** 16. Mai 2026, Chat 88 (Synapsen P0/P1/P1.1/P2/P3 — `db/init.sql` als SSoT, Pipeline-Log-Forensik, `lzg_knoten`/`lzg_kanten` als parallele Synapsen-Tabellen, KZG-Schreibpfad mit Magnet-Feldern)
 **Pfad:** novaberg/docs/novaberg-architecture.md
 **Quellen:** nova-00-a.md (Architektur-Übersicht), nova-07-a.md (Tech-Stack), nova-07-m-a.md (Plugin-System)
 
@@ -217,7 +217,7 @@ project/
 │   │   ├── timeline/                    #   TimelineAgent (User-Agent, Zeitparser + Resume)
 │   │   ├── charakter_identitaet/        #   CharakterIdentitaetAgent (User-Agent, Resume + init.sql)
 │   │   ├── direktiven/                  #   DirektivenAgent (User-Agent, HITL-Gate + init.sql)
-│   │   ├── kzg/                         #   KZG-Agent (LangGraph-Subgraph, 5 Nodes)
+│   │   ├── kzg/                         #   KZG-Agent (LangGraph-Subgraph, 5 Nodes inkl. magnete_aufloesen)
 │   │   ├── delegation/                  #   DelegationsAgent (Halluzinations-Ventil, init.sql)
 │   │   ├── recherche/                   #   RechercheAgent (Pixie, Web-Recherche)
 │   │   ├── promotion/                   #   PromotionAgent (Pixie, KZG -> LZG)
@@ -238,8 +238,9 @@ project/
 │   │
 │   ├── memory/                          # Gedaechtnis-Schicht
 │   │   ├── embedding.py                 #   Embedding-Erzeugung (nomic-embed-text)
-│   │   ├── kzg.py                       #   Kurzzeitgedaechtnis (Redis, RediSearch-Index)
+│   │   ├── kzg.py                       #   Kurzzeitgedaechtnis (Redis, RediSearch-Index, Magnet-Felder P3)
 │   │   ├── lzg.py                       #   Langzeitgedaechtnis (PostgreSQL, Ebbinghaus)
+│   │   ├── pipeline_log.py              #   Forensik-Sink (Synapsen P1, asynchroner Writer-Task)
 │   │   ├── charakter.py                 #   Charakter-Hash (Read)
 │   │   ├── session.py                   #   Session (_session_key mit character_id, Chat 60)
 │   │   ├── kontext.py                   #   Session-Kontext-Extraktion (LLM-gestuetzt)
@@ -448,7 +449,10 @@ Perzeption und Router bekommen die letzten 5 Session-Turns als Hintergrund-Konte
 | Dual-Emotion Phase 2 (Nova-Empathie, Konflikt-Erkennung) | Implementiert (AP1–3, AP7, AP4 teilw., AP8 teilw.) | novaberg-ei-dual-emotion_k.md |
 | Graph-Pipeline (AgentGraph, 3 Nodes) | Implementiert & getestet | novaberg-graph.md, novaberg-pixie.md |
 | Kurzzeitgedaechtnis (Redis + Vektor) | Implementiert & getestet | novaberg-mem-kzg.md |
+| Kurzzeitgedaechtnis Magnet-Felder (entitaet_ids, timeline_id, Synapsen P3) | Implementiert | novaberg-mem-kzg.md, novaberg-pixie-kzg.md |
 | Langzeitgedaechtnis (PostgreSQL) | Implementiert & getestet | novaberg-mem-lzg.md |
+| Pipeline-Log-Forensik (asynchroner Writer, JSONB-Inhalt, Span-Korrelation) | Implementiert | novaberg-memory-synapsen_k.md §10 |
+| Synapsen-Tabellen (lzg_knoten, lzg_kanten, parallel zum LZG) | Schema angelegt, leer | novaberg-memory-synapsen_k.md §4 |
 | Ebbinghaus-Decay + Soft-Delete | Implementiert & getestet | novaberg-pixie-decay.md |
 | Salienz als Entscheider | Implementiert & getestet | novaberg-node-salience.md |
 | Fakten-Pipeline (Typ 1 + 2, bi-temporal) | Implementiert & getestet | novaberg-mem-knowledge-graph.md |
@@ -771,20 +775,27 @@ Alles Konfigurierbare lebt in `config.py`, gelesen aus Umgebungsvariablen mit De
 
 ## 10. Datenbankschema
 
-Das Kern-Schema lebt in `db/init.sql`. Manager-spezifische Tabellen bei den Plugins.
+Das Kern-Schema lebt in `db/init.sql` als Single Source of Truth (Synapsen P0). Agent-spezifische Tabellen liegen in `server/agents/<agent>/init.sql` und werden beim Agent-Discovery aufgesetzt.
 
 | Tabelle | Quelle | Beschreibung |
 |---------|--------|-------------|
-| `langzeitgedaechtnis` | `db/init.sql` | LZG mit Ebbinghaus-Decay |
+| `langzeitgedaechtnis` | `db/init.sql` | LZG mit Ebbinghaus-Decay (legacy, bleibt bis P9 produktiv) |
+| `lzg_knoten` | `db/init.sql` | Synapsen-Knoten (Synapsen P2, parallel zu `langzeitgedaechtnis`, leer bis P4) |
+| `lzg_kanten` | `db/init.sql` | Synapsen-Kanten-Cache (Synapsen P2, abgeleiteter Cache; drei Trigger zur Neuberechnung) |
+| `pipeline_log` | `db/init.sql` | Forensik-Tabelle für Node-Entscheidungen pro Turn (Synapsen P1, JSONB-Inhalt) |
 | `charakter_hash` | `db/init.sql` | 5 Persoenlichkeitsprofile (kern_hash, adaptive_hash, beziehungsprofil, intentions_profil, emotions_profil), alle im Prompt injiziert (seit Chat 52) |
 | `hintergrund_log` | `db/init.sql` | Pixie-Aufgabenprotokoll |
 | `gespraech_archiv` | `db/init.sql` | Session-Archivierung |
 | `entitaeten` | `db/init.sql` | Knowledge Graph Nodes |
 | `fakten` | `db/init.sql` | Knowledge Graph Edges |
-| `timeline` | `db/init.sql` | Termine und Ereignisse |
-| `notizen` | `db/init.sql` | Merkzettel und Listen |
+| `timeline` | `db/init.sql` (CREATE) / `agents/timeline/init.sql` (FK + Indizes) | Termine und Ereignisse |
+| `notizen` | `db/init.sql` (CREATE) / `agents/timeline/init.sql` (FK auf `timeline_id`) | Merkzettel und Listen |
 
-Alle Migrationen sind idempotent (`IF NOT EXISTS`, `ADD COLUMN IF NOT EXISTS`). Wiederholtes Ausfuehren von init.sql ist sicher. Manager-spezifische Tabellen liegen bei den Plugins (z.B. `plugins/fakten_manager/init.sql`), das Kern-Schema (LZG, Charakter-Hash, Hintergrund-Log) in `db/init.sql`.
+Alle Migrationen sind idempotent (`IF NOT EXISTS`, `ADD COLUMN IF NOT EXISTS`). Wiederholtes Ausfuehren von `init.sql` ist sicher. Konvention seit Synapsen P0: Neue Schema-Änderungen werden als ALTER-Statements im Migrations-Block am Ende von `db/init.sql` ergänzt, NICHT direkt in die ursprüngliche CREATE TABLE-Definition eingearbeitet — damit bleibt nachvollziehbar, was wann hinzugekommen ist. Bei späteren Reviews werden die akkumulierten ALTER-Statements in die CREATE-Definitionen konsolidiert.
+
+Foreign-Key-Spalten von Kern-Tabellen auf Agent-Tabellen (z.B. `timeline_id`) sind in `db/init.sql` als nackte INTEGER-Spalten definiert; der FK-Constraint wird in der jeweiligen Agent-`init.sql` gesetzt, damit die Abhängigkeit erst nach Anlage der Agent-Tabelle realisiert wird.
+
+Das Plugin-System lebt weiter parallel (siehe §4) — `plugins/*/init.sql` für Plugin-spezifische Hilfstabellen ist weiterhin möglich, das primäre Datenbankschema ist aber `db/init.sql` plus die Agent-init-SQL.
 
 ---
 

@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** KZG-Speicher (Redis, Vektorsuche, TTL, Verstärkung)
-**Stand:** 25. April 2026, Chat 64 (KZG-Liberalisierung: 3-Stufen-TTL, thematische Verstärkung, sin^0.6-Cap)
+**Stand:** 16. Mai 2026, Chat 88 (Synapsen P3 — KZG-Schreibpfad trägt Magnet-Felder `entitaet_ids` und `timeline_id`, Pipeline-Log am Schreibvorgang)
 **Pfad:** novaberg/docs/novaberg-mem-kzg.md
 **Quellen:** nova-02-m-b.md (Speicher-Abschnitte)
 
@@ -48,6 +48,8 @@ _kzg_prefix(user_id, character_id)            # Scan-/Match-Prefix
 | `tone` | State | Tonlage aus Perzeption |
 | `character_id` | State | ID des beteiligten Charakters (Paar-Partition) |
 | `beobachter` | Dispatch | `"user"` (HumanGraph, Pfad 1) oder `"assistant"` (CharacterGraph, Pfad 2) — wer hat den Turn beobachtet |
+| `entitaet_ids` | KzgAgent (`magnete_aufloesen`) | Magnet-Achse Entität (Synapsen P3, kommagetrennt; leer = keine Tags) |
+| `timeline_id` | KzgAgent (`magnete_aufloesen`) | Magnet-Achse Zeit (Synapsen P3, optional; bei `None` aus dem Hash ausgelassen) |
 | `embedding` | KZG-Agent | 768-Dim Vektor (nomic-embed-text) |
 | `erstellt_am` | System | Unix-Timestamp |
 
@@ -85,6 +87,8 @@ Redis 7 Stack mit RediSearch-Modul. Der KZG-Index wird beim Server-Start über `
 | `emotions_vektor` | TEXT | Richtungs-Filter |
 | `sprach_stil` | TEXT | Stil-Filter |
 | `tone` | TEXT | Ton-Filter |
+| `entitaet_ids` | TAG | Magnet-Achse Entität (Synapsen P3) — Filter `@entitaet_ids:{<id>}` |
+| `timeline_id` | NUMERIC | Magnet-Achse Zeit (Synapsen P3) — Bereichs-/Gleichheits-Queries |
 | `embedding` | VECTOR | KNN-Suche (Cosine) |
 
 Vor Chat 62 fehlten die sechs EI-Felder (`arousal`, `emotions_vektor`, `sprach_stil`, `tone`, `emotion`, `modus`) — ihre Werte wurden geschrieben, aber nicht indiziert. Queries, die danach filterten, lieferten 0 Treffer. Fix E.1 hat die Felder nachgezogen; die zwei neuen Paar-Felder (`character_id`, `beobachter`) kamen im selben Zug dazu.
@@ -147,6 +151,14 @@ Der KZG-Dispatch (im HumanGraph bzw. CharacterGraph) schreibt einen Eintrag in d
 Log-Zeile beim Schreiben: `KZG-Dispatch: Paar={user_id}:{character_id}, Beobachter={beobachter}`.
 
 Damit gehoert jeder Eintrag einem Gespraechspaar und traegt die Perspektive seiner Herkunft — Basis fuer getrennte Gedaechtnis-Leser (Nova liest ihre Beobachtungen, Meister seine) und fuer spaetere Filter wie CHAR-HASH-FILTER (Backlog, Chat 62).
+
+---
+
+## 4b. Pipeline-Log am Schreibvorgang (Synapsen P1.1)
+
+Beide Schreibpfade — `kzg_store` (`memory/kzg.py`) und `_neu_anlegen` (`agents/kzg/speicher.py`) — schreiben nach erfolgreichem `hset` einen Eintrag in `pipeline_log` (`art=db_zugriff`, `node=kzg_speicher`). Der Eintrag trägt `turn_id` (aus dem Subgraph-Kontext durchgereicht), `kzg_key`, `entitaet_ids`, `timeline_id`, `themen`, `dimension`, `salienz` und `ttl`. Damit ist jeder KZG-Schreibvorgang forensisch nachvollziehbar — Voraussetzung für die Diagnose der KZG-Pipeline-Pfade in den späteren Synapsen-Sprints.
+
+→ Pipeline-Log-Infrastruktur: `novaberg-memory-synapsen_k.md` §10
 
 ---
 

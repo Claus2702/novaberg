@@ -2,15 +2,15 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Modul Langzeitgedächtnis
-**Stand:** 10. Mai 2026, Chat 84 (M3a: Promotion überträgt `themen` + `kzg_erstellt_am`; vorher Chat 83: `emotions_vektor` aus LZG entfernt)
+**Stand:** 16. Mai 2026, Chat 88 (Synapsen P2 — `lzg_knoten`/`lzg_kanten` parallel angelegt, leer bis P4; legacy `langzeitgedaechtnis` bleibt produktiv)
 **Pfad:** novaberg/docs/novaberg-mem-lzg.md
 **Quellen:** nova-02-m-c.md
 **Datei:** `memory/lzg.py`
 
 ---
 
-> **Hinweis (Chat 86): Synapsen-Umbau geplant.**
-> Das hier beschriebene LZG-Modell mit aggregierten Einträgen wird durch ein assoziatives Netz-Modell ersetzt — siehe Konzept-Dokument `novaberg-memory-synapsen_k.md`. Statt verdichteten Aggregat-Einträgen behält jeder ehemalige KZG-Eintrag seine Identität als Knoten in `lzg_knoten`, Verbindungen leben in `lzg_kanten`. `emotions_vektor` kehrt im neuen Schema zurück (in Chat 83 entfernt, weil mit verdichteten Punkten inkompatibel — diese Begründung entfällt im Knoten-Modell). Dieses Dokument beschreibt den heutigen Stand bis zur Umsetzung.
+> **Hinweis (Chat 88): Synapsen-Umbau im Gang.**
+> Das hier beschriebene LZG-Modell mit aggregierten Einträgen wird durch ein assoziatives Netz-Modell ersetzt — siehe Konzept-Dokument `novaberg-memory-synapsen_k.md`. Statt verdichteten Aggregat-Einträgen behält jeder ehemalige KZG-Eintrag seine Identität als Knoten in `lzg_knoten`, Verbindungen leben in `lzg_kanten`. `emotions_vektor` kehrt im neuen Schema zurück (in Chat 83 entfernt, weil mit verdichteten Punkten inkompatibel — diese Begründung entfällt im Knoten-Modell). Tabellen `lzg_knoten`/`lzg_kanten` sind seit P2 (Chat 88) im Schema vorhanden, aber leer. Schreibpfad wechselt erst mit P4, Lesepfad mit P5. Bis dahin bleibt `langzeitgedaechtnis` produktiv und wird in diesem Dokument beschrieben.
 
 ## 1. Aufgabe
 
@@ -84,6 +84,8 @@ effektives_gewicht = gewicht × e^(-decay_rate × tage_seit_verstärkung)
 | 8.80 (Kern-Interesse) | 8.42 | 6.69 | 5.10 | 1.67 |
 
 **Inaktivierung:** Wenn das effektive Gewicht unter `EBBINGHAUS_MIN_GEWICHT` (0.1) fällt, markiert der Pixie-Task `lzg_decay` den Eintrag als `aktiv = FALSE`. Nicht gelöscht — nur aus aktiven Abfragen ausgeschlossen.
+
+**Hinweis (Synapsen P2):** Die hier beschriebenen Konstanten `EBBINGHAUS_DECAY_RATE` und `EBBINGHAUS_MIN_GEWICHT` steuern den Decay der legacy `langzeitgedaechtnis`-Tabelle. Die neue `lzg_knoten`-Tabelle trägt eigene Decay-Konstanten `LZG_KNOTEN_DECAY_RATE` (0.0015) und `LZG_KNOTEN_MIN_GEWICHT` (0.1) in `config.py`. Beide Konstanten-Familien existieren parallel, bis P9 die alte Tabelle entfernt.
 
 → Vollständige Details: novaberg-pixie-decay.md — Ebbinghaus-Decay`
 

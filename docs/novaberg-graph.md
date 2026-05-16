@@ -338,6 +338,7 @@ Novas eigener Emotionsstrang. Wird im CharacterGraph (bei `ei_calc_rolle="charac
 | Feld | Typ | Beschreibung |
 |------|-----|-------------|
 | `session_turn_kern` | `str` | Verdichteter Kern fuer den Session-Turn. Vom KZG-Dispatch geschrieben, vom Dispatcher (Session-Turn-Schreiber) eingesammelt. |
+| `timeline_id` | `int \| None` | Clipboard vom TimelineAgent fuer den `magnete_aufloesen`-Node im KzgAgent (Synapsen P3). Wird in `dispatch_timeline._build_return` flach in den State geschrieben, wenn der TimelineAgent im selben Turn einen Eintrag angelegt/gefunden hat. Der `magnete_aufloesen`-Node uebernimmt den Wert, statt einen eigenen `erinnerungs_anker` fuer denselben Tag anzulegen. |
 
 ### 4.9 PendingWrite TypedDict
 
