@@ -10,6 +10,7 @@ Erweiterungen A1:
 from typing import TypedDict
 
 from graph.context_entry import ContextEntry
+from graph.personality import Personality, InternalPersonality
 
 
 class TribunalVote(TypedDict):
@@ -41,6 +42,10 @@ class ConversationState(TypedDict):
     # ── Event Context ────────────────────────
     event_source:   str      # "user" | "character" — controls EI-Calc empathy switch
     event_payload:  dict     # Free dict from the event (remaining tasks, pending_agent, etc.)
+
+    # ── Personality-Klassen (Phase 1, befüllt ab Phase 2) ──
+    external: Personality          # Gegenüber im Gespräch (User, oder bei Pixie: Nova)
+    internal: InternalPersonality  # Nova selbst
 
     # ── Perzeption ──────────────────────────
     perzeption_rolle:     str     # "user" (Default) oder "assistant"

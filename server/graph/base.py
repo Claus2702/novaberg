@@ -17,6 +17,7 @@ from langgraph.graph.state import CompiledStateGraph
 
 from config                 import ASSISTANT_NAME, ASSISTANT_USER_ID
 from graph.state           import ConversationState
+from graph.personality     import Personality, InternalPersonality
 from graph.nodes.perzeption import perceive
 from graph.nodes.router     import route
 from graph.nodes.enricher  import enrich
@@ -97,6 +98,10 @@ class GraphBase(ABC):
             # Event Context
             event_source  = kwargs.get("event_source", "user"),
             event_payload = kwargs.get("event_payload", {}),
+
+            # Personality-Klassen (Phase 1, befüllt ab Phase 2)
+            external = Personality(),
+            internal = InternalPersonality(),
 
             # Perzeption
             perzeption_rolle    = kwargs.get("perzeption_rolle", "user"),
