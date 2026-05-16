@@ -32,7 +32,7 @@ from config                                import (
     PIXIE_AKTIV,
 )
 from graph.context_entry                   import ContextEntry
-from memory.pipeline_log                   import log_db_zugriff
+from memory.pipeline_log                   import log_db_write
 from services.shadow_agent                 import shadow_queue_push
 
 from redis.commands.search.field           import TextField, NumericField, VectorField, TagField
@@ -333,7 +333,7 @@ def kzg_store(
     redis_client.expire(key, ttl)
 
     # Pipeline-Log: schreibender DB-Zugriff (Synapsen §10.2).
-    log_db_zugriff(
+    log_db_write(
         turn_id = turn_id or "kzg-store-unbekannt",
         node    = "kzg_speicher",
         quelle  = user_id,

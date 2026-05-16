@@ -24,7 +24,7 @@ from config import (
 )
 from memory.kzg import _kzg_key
 from memory.embedding import embedding_create
-from memory.pipeline_log import log_db_zugriff
+from memory.pipeline_log import log_db_write
 
 logger = logging.getLogger("ki_server.agents.kzg.speicher")
 
@@ -236,7 +236,7 @@ def _neu_anlegen(
                     aus dem mapping= ausgelassen, damit der Index-Update
                     nicht bricht.
 
-    Pipeline-Log: nach erfolgreichem hset wird ein log_db_zugriff-Eintrag
+    Pipeline-Log: nach erfolgreichem hset wird ein log_db_write-Eintrag
     erzeugt (EVA-konform: Forensik nach Verarbeitung).
     """
 
@@ -290,7 +290,7 @@ def _neu_anlegen(
     )
 
     # Pipeline-Log: schreibender DB-Zugriff (Synapsen §10.2).
-    log_db_zugriff(
+    log_db_write(
         turn_id = turn_id or "kzg-unbekannt",
         node    = "kzg_speicher",
         quelle  = user_id,

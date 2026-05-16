@@ -398,15 +398,34 @@ def log_switch(
     _log_eintrag("switch", turn_id, node, quelle, inhalt, span_id)
 
 
-def log_db_zugriff(
+def log_db_write(
     turn_id: str,
     node:    str,
     quelle:  str,
     inhalt:  dict[str, Any],
     span_id: uuid.UUID | None = None,
 ) -> None:
-    """Forensik-Eintrag: schreibender Datenbank-Zugriff."""
-    _log_eintrag("db_zugriff", turn_id, node, quelle, inhalt, span_id)
+    """Forensik-Eintrag: schreibender Datenbank-Zugriff.
+
+    Anwendung: Inserts, Updates, Deletes auf PostgreSQL oder Redis.
+    Komplement zu :func:`log_db_read` fuer Lese-Zugriffe.
+    """
+    _log_eintrag("db_write", turn_id, node, quelle, inhalt, span_id)
+
+
+def log_db_read(
+    turn_id: str,
+    node:    str,
+    quelle:  str,
+    inhalt:  dict[str, Any],
+    span_id: uuid.UUID | None = None,
+) -> None:
+    """Forensik-Eintrag: lesender Datenbank-Zugriff.
+
+    Anwendung: SELECTs auf PostgreSQL, GET/HGETALL auf Redis,
+    Cache-Lookups. Komplement zu :func:`log_db_write` fuer Schreib-Zugriffe.
+    """
+    _log_eintrag("db_read", turn_id, node, quelle, inhalt, span_id)
 
 
 def log_ausgabe(
