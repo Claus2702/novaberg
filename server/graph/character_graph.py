@@ -4,10 +4,16 @@ CharacterGraph — Pfad 2: Charakter reagiert.
 Wird durch ein Event ausgelöst (User hat geschrieben oder Self-Trigger).
 Liest den Chat, entscheidet, handelt optional, antwortet, speichert.
 
-Flow:
-  Enricher → Reducer → EI-Calc → Router → [Planner ⇄ Agent]* →
+Flow (PFAD2-PERZEPTION-FIX Phase 2):
+  db_zugriff → EI-Calc → Enricher → Reducer → Router → [Planner ⇄ Agent]* →
   GV-Node → Responder → Thinker → Tribunal → Evaluate →
-  [Corrector]* → Salienz → Dispatcher → END
+  [Corrector]* → perzeption_assistant → ei_calc_persist → Salienz → Dispatcher → END
+
+  db_zugriff laedt Identitaeten und Nova-State, befuellt external/internal.
+  EI-Calc steht vor dem Enricher, damit Enricher Novas modifizierten
+  Zustand fuer die Memory-Auswahl kennt.
+  ei_calc_persist wendet Plausibilitaeten auf Novas Perzeption an und
+  persistiert Novas neun EI-Dimensionen in Redis (nova_state).
 
   [Planner ⇄ Agent]* = nur wenn Router management_action gesetzt hat (sternförmig)
   [Corrector]* = nur wenn Tribunal ablehnt (max 2 Runden)
@@ -44,9 +50,10 @@ class CharacterGraph(GraphBase):
         graph = StateGraph(ConversationState)
 
         # ── Nodes registrieren ─────────────────
+        graph.add_node("db_zugriff",      self._node_db_zugriff)
+        graph.add_node("ei_calc",         self._node_ei_calc)
         graph.add_node("enricher",        self._node_enrich)
         graph.add_node("reducer",         self._node_reduce)
-        graph.add_node("ei_calc",         self._node_ei_calc)
         graph.add_node("router",          self._node_route)
         graph.add_node("planner",         self._node_plan)
         graph.add_node("agent_dispatch",  self._node_agent_dispatch)
@@ -57,14 +64,18 @@ class CharacterGraph(GraphBase):
         graph.add_node("evaluate",        self._node_evaluate)
         graph.add_node("corrector",          self._node_correct)
         graph.add_node("perzeption_assistant", self._node_perceive)
+        graph.add_node("ei_calc_persist",    self._node_ei_calc_persist)
         graph.add_node("salience",           self._node_salience)
         graph.add_node("dispatcher",         self._node_dispatch)
 
         # ── Kanten ─────────────────────────────
-        graph.set_entry_point("enricher")
-        graph.add_edge("enricher",  "reducer")
-        graph.add_edge("reducer",   "ei_calc")
-        graph.add_edge("ei_calc",   "router")
+        # Reihenfolge geaendert (PFAD2-PERZEPTION-FIX Phase 2):
+        # db_zugriff -> ei_calc -> enricher -> reducer -> router
+        graph.set_entry_point("db_zugriff")
+        graph.add_edge("db_zugriff", "ei_calc")
+        graph.add_edge("ei_calc",    "enricher")
+        graph.add_edge("enricher",   "reducer")
+        graph.add_edge("reducer",    "router")
 
         # Router → Planner oder GV-Node
         graph.add_conditional_edges(
@@ -104,7 +115,10 @@ class CharacterGraph(GraphBase):
         )
 
         graph.add_edge("corrector",           "tribunal")
-        graph.add_edge("perzeption_assistant", "salience")
+        # ei_calc_persist konsolidiert und persistiert Nova-EI nach der
+        # Perzeption-Assistant (PFAD2-PERZEPTION-FIX Phase 2).
+        graph.add_edge("perzeption_assistant", "ei_calc_persist")
+        graph.add_edge("ei_calc_persist",     "salience")
         graph.add_edge("salience",            "dispatcher")
         graph.add_edge("dispatcher",          END)
 

@@ -26,7 +26,6 @@ from config import (
 )
 from graph.context_entry import ContextEntry
 from graph.state         import ConversationState
-from memory.charakter    import charakter_hash_retrieve, charakter_hash_retrieve_dict
 from memory.embedding    import embedding_create
 from memory.kzg          import kzg_entries_retrieve, _kzg_prefix
 from memory.lzg          import lzg_entries_retrieve
@@ -175,38 +174,15 @@ def enrich(
             logger.error(f"Enricher: Plugin '{name}' Fehler — {fehler}")
 
     # ─────────────────────────────────────────
-    # 2b. Charakter-Anweisungen + Direktiven laden
+    # 2b. Charakter-Anweisungen + Direktiven: Phase-2-Bridge
+    #     Laden hat sich in den db_zugriff-Node verschoben.
+    #     Hier wird nur noch aus internal.identities/directives in die
+    #     flachen Keys gespiegelt, damit Konsumenten in Phase 2 unverändert
+    #     bleiben können (Phase 3 entfernt die Bridge).
     # ─────────────────────────────────────────
-    from tools.db_manager import db_manager
-
-    try:
-        charakter_rows = db_manager.select(
-            "SELECT anweisung FROM charakter_anweisungen "
-            "WHERE user_id = %s AND aktiv = TRUE ORDER BY erstellt_am",
-            (user_id,),
-        )
-        state["charakter_anweisungen"] = [r["anweisung"] for r in charakter_rows] if charakter_rows else []
-        if state["charakter_anweisungen"]:
-            logger.info(f"Enricher: {len(state['charakter_anweisungen'])} Charakter-Anweisungen geladen")
-    except Exception as fehler:
-        logger.warning(f"Enricher: Charakter-Anweisungen laden fehlgeschlagen: {fehler}")
-        state["charakter_anweisungen"] = []
-
-    try:
-        direktiven_rows = db_manager.select(
-            "SELECT anweisung, kontext FROM direktiven "
-            "WHERE user_id = %s AND aktiv = TRUE ORDER BY erstellt_am",
-            (user_id,),
-        )
-        state["direktiven"] = [
-            {"anweisung": r["anweisung"], "kontext": r.get("kontext", "")}
-            for r in direktiven_rows
-        ] if direktiven_rows else []
-        if state["direktiven"]:
-            logger.info(f"Enricher: {len(state['direktiven'])} Direktiven geladen")
-    except Exception as fehler:
-        logger.warning(f"Enricher: Direktiven laden fehlgeschlagen: {fehler}")
-        state["direktiven"] = []
+    internal_perso = state.get("internal")
+    state["charakter_anweisungen"] = list(internal_perso.identities) if internal_perso else []
+    state["direktiven"]            = list(internal_perso.directives) if internal_perso else []
 
     # ─────────────────────────────────────────
     # 3. KZG/LZG semantische Suche
@@ -306,11 +282,32 @@ def enrich(
         )
 
     # ─────────────────────────────────────────
-    # 4. Charakter-Hash (immer)
+    # 4. Charakter-Hash: Phase-2-Bridge
+    #     Laden hat sich in den db_zugriff-Node verschoben (Pfad 2). Hier
+    #     wird der Hash-Text aus external.character formatiert und in den
+    #     memory_context-Pfad gespiegelt, plus char_hash_dict und die
+    #     fuenf nova_*-Keys aus den Personality-Klassen aufgefuellt.
+    #     Im HumanGraph (Pfad 1) sind die Klassen leer — die alten Konsumenten
+    #     erhalten dann leere Strings, was bis Phase 3 hinnehmbar ist.
     # ─────────────────────────────────────────
-    char_hash: str = charakter_hash_retrieve(postgres_url, user_id, character_id)
-    char_hash_dict: dict = charakter_hash_retrieve_dict(postgres_url, user_id, character_id)
-    state["char_hash_dict"] = char_hash_dict or {}
+    external_perso = state.get("external")
+
+    char_hash: str = ""
+    if external_perso and (external_perso.character.core or external_perso.character.adaptive):
+        parts: list[str] = []
+        if external_perso.character.core:
+            parts.append(f"Kern-Persönlichkeit: {external_perso.character.core}")
+        if external_perso.character.adaptive:
+            parts.append(f"Aktuelle Phase: {external_perso.character.adaptive}")
+        char_hash = "\n".join(parts)
+
+    state["char_hash_dict"] = {
+        "kern":              external_perso.character.core         if external_perso else "",
+        "adaptiv":           external_perso.character.adaptive     if external_perso else "",
+        "beziehungsprofil":  external_perso.character.relationship if external_perso else "",
+        "intentions_profil": external_perso.character.intentions   if external_perso else "",
+        "emotions_profil":   external_perso.character.emotions     if external_perso else "",
+    } if external_perso else {}
 
     if char_hash:
         entries.append({
@@ -320,23 +317,18 @@ def enrich(
             "gewicht": 1.0,
             "meta":    {},
         })
-        logger.info("Enricher: Charakter-Hash geladen (1 Eintrag)")
+        logger.info("Enricher: Charakter-Hash aus external gespiegelt (1 Eintrag)")
 
-    # ── Novas eigener Charakter-Hash ──────────
-    nova_hash_dict: dict = charakter_hash_retrieve_dict(postgres_url, ASSISTANT_USER_ID, user_id)
+    # ── Novas eigener Charakter-Hash (aus internal.character) ──
+    if internal_perso:
+        state["nova_kern"]         = internal_perso.character.core
+        state["nova_beziehung"]    = internal_perso.character.relationship
+        state["nova_adaptiv"]      = internal_perso.character.adaptive
+        state["nova_intentionen"]  = internal_perso.character.intentions
+        state["nova_emotions"]     = internal_perso.character.emotions
 
-    if nova_hash_dict:
-        nova_kern:      str = nova_hash_dict.get("kern", "")
-        nova_beziehung: str = nova_hash_dict.get("beziehungsprofil", "")
-
-        state["nova_kern"]         = nova_kern
-        state["nova_beziehung"]    = nova_beziehung
-        state["nova_adaptiv"]      = nova_hash_dict.get("adaptiv", "")
-        state["nova_intentionen"]  = nova_hash_dict.get("intentions_profil", "")
-        state["nova_emotions"]     = nova_hash_dict.get("emotions_profil", "")
-
-        if nova_kern or nova_beziehung:
-            logger.info("Enricher: Novas Charakter-Hash geladen")
+        if internal_perso.character.core or internal_perso.character.relationship:
+            logger.info("Enricher: Novas Charakter-Hash aus internal gespiegelt")
     else:
         state["nova_kern"]         = ""
         state["nova_beziehung"]    = ""

@@ -6,6 +6,8 @@ import logging
 
 import psycopg2
 
+from config import ASSISTANT_USER_ID
+
 logger = logging.getLogger("ki_server.memory.charakter")
 
 
@@ -71,3 +73,25 @@ def charakter_hash_retrieve_dict(postgres_url: str, user_id: str, character_id: 
     except Exception as fehler:
         logger.error(f"Charakter-Hash-Dict Abruf fehlgeschlagen: {fehler}")
         return {}
+
+
+def nova_charakter_hash_retrieve_dict(postgres_url: str, user_id: str) -> dict:
+    """Laedt Novas Charakter-Hash fuer das Gespraech mit einem bestimmten User.
+
+    Im Paar-Schema lebt Novas Charakter unter (ASSISTANT_USER_ID, user_id):
+    ASSISTANT_USER_ID ist der Schreiber (Subjekt), user_id der Gegenueber.
+    Diese Funktion macht die Argument-Reihenfolge logisch — ohne sie waere
+    der Aufrufer auf den Vertausch von user_id und character_id angewiesen.
+
+    Vorbedingung: user_id ist nicht leer.
+    Nachbedingung: Liefert dict mit den fuenf Hash-Schichten oder {} bei
+    fehlendem Datensatz.
+    """
+
+    # ── Eingabe-Validierung ─────────────────────
+    if not user_id:
+        logger.error("nova_charakter_hash_retrieve_dict: user_id leer — verworfen")
+        return {}
+
+    # ── Verarbeitung ────────────────────────────
+    return charakter_hash_retrieve_dict(postgres_url, ASSISTANT_USER_ID, user_id)

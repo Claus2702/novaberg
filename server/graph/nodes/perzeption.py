@@ -60,10 +60,17 @@ def perceive(
 
     rolle: str = state.get("perzeption_rolle", "user")
 
+    # PFAD2-PERZEPTION-FIX Phase 2: Input-Switch nach Rolle. Bei
+    # "assistant" wird Novas finale Antwort analysiert, sonst der
+    # User-Prompt.
     if rolle == "assistant":
-        logger.info(f"Perzeption: Analysiere Assistant-Antwort ({len(state['user_prompt'])} Zeichen)")
+        eingabe_text: str = state.get("response", "")
     else:
-        logger.info(f"Perzeption: Analysiere Prompt ({len(state['user_prompt'])} Zeichen)")
+        eingabe_text = state.get("user_prompt", "")
+
+    logger.info(
+        f"Perzeption: rolle={rolle}, eingabe_laenge={len(eingabe_text)}"
+    )
 
     today: str = datetime.now().strftime("%d.%m.%Y, %H:%M Uhr")
 
@@ -88,7 +95,7 @@ def perceive(
     provider = get_chat_provider()
     antwort  = provider.chat(
         messages = [
-            {"role": "user", "content": state["user_prompt"]},
+            {"role": "user", "content": eingabe_text},
         ],
         system            = system_prompt,
         temperature       = node_cfg.get("temperature", 0.05),

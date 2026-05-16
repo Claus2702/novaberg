@@ -110,10 +110,30 @@ def analyze(
     Schreibt NICHT in die DB — das macht der KZG-Agent via Dispatcher.
     """
 
-    logger.info("Salienz: Analysiere Gespraechs-Turn...")
+    # PFAD2-PERZEPTION-FIX Phase 2: Input-Switch nach ei_calc_rolle.
+    # CharacterGraph (rolle="character") bewertet Novas Antwort, der
+    # User-Prompt wird nur als [LAGEBILD]-Hintergrund mitgegeben.
+    # HumanGraph (rolle="user") bewertet weiterhin den User-Prompt; die
+    # Assistant-Antwort fehlt im Pfad 1 ohnehin.
+    rolle: str = state.get("ei_calc_rolle", "user")
+    if rolle == "character":
+        bewertungs_text: str = state.get("response", "")
+        lagebild_text:   str = state.get("user_prompt", "")
+        lagebild_label:  str = "Dies ist die Eingabe des Nutzers."
+        eingabe_label:   str = "Antwort der Assistentin"
+    else:
+        bewertungs_text = state.get("user_prompt", "")
+        lagebild_text   = state.get("response", "")
+        lagebild_label  = "Dies ist die Antwort des Assistenten."
+        eingabe_label   = "Eingabe des Nutzers"
+
+    logger.info(
+        f"Salienz: rolle={rolle}, bewertungs_laenge={len(bewertungs_text)}, "
+        f"lagebild_laenge={len(lagebild_text)}"
+    )
 
     # ── Prompt segmentieren ──────────────────
-    segmente: list[str] = _prompt_segmentieren(state["user_prompt"])
+    segmente: list[str] = _prompt_segmentieren(bewertungs_text)
 
     pending:       list[dict] = state.get("pending_writes", []) or []
     gesamt_tokens: int        = 0
@@ -136,12 +156,11 @@ def analyze(
             )
 
         lagebild: str = ""
-        if state.get("response"):
+        if lagebild_text:
             lagebild = (
                 "[LAGEBILD]\n"
-                "Hintergrund — nicht bewerten. "
-                "Dies ist die Antwort des Assistenten.\n\n"
-                f"{state['response']}\n\n"
+                f"Hintergrund — nicht bewerten. {lagebild_label}\n\n"
+                f"{lagebild_text}\n\n"
             )
 
         analyse_prompt: str = (
@@ -149,7 +168,7 @@ def analyze(
             "[BEWERTUNGSOBJEKT]\n"
             "Analysiere und bewerte NUR den folgenden Teil.\n"
             f"{segment_hinweis}"
-            f"Eingabe des Nutzers:\n{segment}"
+            f"{eingabe_label}:\n{segment}"
         )
 
         node_cfg = get_node_config("salienz")

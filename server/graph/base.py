@@ -241,3 +241,13 @@ class GraphBase(ABC):
     def _node_gespraechsvektor(self, state: ConversationState) -> ConversationState:
         from graph.nodes.gespraechsvektor import gespraechsvektor as _gv_fn
         return _gv_fn(state)
+
+    # CharacterGraph-Eingangsnode (PFAD2-PERZEPTION-FIX Phase 2)
+    def _node_db_zugriff(self, state: ConversationState) -> ConversationState:
+        from graph.nodes.db_zugriff import db_zugriff
+        return db_zugriff(state)
+
+    # CharacterGraph-Persistierungs-Node (PFAD2-PERZEPTION-FIX Phase 2)
+    def _node_ei_calc_persist(self, state: ConversationState) -> ConversationState:
+        from graph.nodes.ei_calc_persist import ei_calc_persist
+        return ei_calc_persist(state)
