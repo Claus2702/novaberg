@@ -2358,6 +2358,95 @@ Zwei Redis-`LRANGE`-Calls pro User-Turn für identische Daten. Im CG analog, dor
 
 ---
 
+## Refactor: REDUCER-LOGGER-NAME-KONVENTION — Logger-Namen weichen von der Codebase-Konvention ab (Chat 90)
+
+**Status:** ⬜ Latent (Audit-Befund), nicht implementiert
+**Prio:** Niedrig
+**Auslöser:** Reducer-Audit (Chat 90, Doku-Sync-Nachzug)
+**Sprint-Empfehlung:** Opportunismus — beim nächsten Anfassen des Reducer- oder Formatter-Codes mit-korrigieren, kein eigener Sprint.
+
+**Beobachtung:** Reducer und Formatter nutzen `logging.getLogger(__name__)`, was zu Logger-Namen `graph.nodes.reducer` und `graph.format.memory_context` führt. Die etablierte Codebase-Konvention ist `ki_server.` (z.B. `human_graph.py:27` mit `getLogger("ki_server.graph.human")`).
+
+**Stellen:**
+- `reducer.py:18` — `logger = logging.getLogger(__name__)`
+- `format/memory_context.py:21` — `logger = logging.getLogger(__name__)`
+
+**Wirkung:** Inkonsistente Log-Namen erschweren das Filtern in zentralen Log-Aggregatoren. Funktional kein Bug — Logs werden geschrieben, nur unter einem nicht-konventionellen Namen.
+
+**Tech-Debt seit Chat 75** (im damaligen Implementierungs-Bericht `docs/archive/novaberg-reducer-umbau_k.md` §13 dokumentiert, bis heute nicht abgetragen).
+
+**Lösungsraum:**
+
+(a) **Beide Logger umbenennen** auf `ki_server.graph.reducer` und `ki_server.graph.format.memory_context`. Zwei Zeilen, keine API-Auswirkung.
+
+(b) **Allgemeiner Logger-Konvention-Sweep** — alle Module mit `getLogger(__name__)` auf die `ki_server`-Konvention ziehen. Größerer Refactor, gehört eher zum Code-Audit-Sprint-Epic (Phase 3).
+
+**Empfehlung:** (a) opportunistisch beim nächsten Reducer-Anfassen. (b) als Erweiterung des Code-Audit-Epics, wenn die Inkonsistenz auch in anderen Modulen identifiziert wird.
+
+---
+
+## Refactor: REDUCER-CONFIG-DEAD-KONSTANTEN — Tote Konstanten in config.py (Chat 90)
+
+**Status:** ⬜ Latent (Audit-Befund), nicht implementiert
+**Prio:** Niedrig
+**Auslöser:** Reducer-Audit (Chat 90, Doku-Sync-Nachzug)
+**Sprint-Empfehlung:** Opportunismus — bei nächster config.py-Berührung mit-entfernen.
+
+**Beobachtung:** Zwei Konstanten existieren weiterhin in `config.py`, werden aber nirgends im Code gelesen:
+
+- `config.py:1022` — `REDUCER_AKTIV: bool = True`
+- `config.py:1027` — `REDUCER_LOG_REMOVED: bool = True`
+
+`grep` über `reducer.py` und die gesamte `server/`-Tree liefert für beide Konstanten null Treffer (außer den Definitions-Zeilen selbst).
+
+**Tech-Debt seit Chat 75** (im damaligen Implementierungs-Bericht `docs/archive/novaberg-reducer-umbau_k.md` §13 dokumentiert, bis heute nicht abgetragen).
+
+**Wirkung:** Karteileichen erzeugen Verwirrung — wer die config.py durchgeht und „Reducer aktivieren?" liest, vermutet einen Kill-Switch, der nicht existiert.
+
+**Lösungsraum:**
+
+(a) **Entfernen** — zwei Zeilen aus config.py raus, knapper Commit-Body-Kommentar zur Historie.
+
+(b) **Wieder verdrahten** — `REDUCER_AKTIV` als echter Kill-Switch im Reducer (`if not REDUCER_AKTIV: return state`), `REDUCER_LOG_REMOVED` als Detail-Log-Verbose-Toggle. Symbolismus-Risiko, weil der Reducer in Chat 75 als unbedingt-aktiv eingestuft wurde.
+
+**Empfehlung:** (a). Tote Konstanten sind echte Karteileichen, kein potentieller Ein-Aus-Mechanismus.
+
+---
+
+## Audit: SESSION-SUMMARY-PFAD-INAKTIV — Memory-Quelle "summary" wird im Formatter behandelt, aber nirgends produziert (Chat 90)
+
+**Status:** ⬜ Latent (Audit-Befund), nicht verifiziert
+**Prio:** Niedrig
+**Auslöser:** Reducer-Audit (Chat 90, Doku-Sync-Nachzug)
+**Scope:** Außerhalb Reducer/Formatter — Memory-Pipeline-Sprint-relevant.
+
+**Beobachtung:** Der Formatter (`format/memory_context.py:64-65, 92-93`) behandelt `quelle="summary"`-Einträge mit eigenem Format (`═══ BISHERIGER GESPRÄCHSVERLAUF ═══\n{inhalt}`). Aber im Audit wurde kein Code-Pfad gefunden, der ein `ContextEntry` mit `quelle="summary"` produziert.
+
+**Anker:**
+- `format/memory_context.py:62-77` — Bucket-Behandlung inklusive `summary`
+- Konzept-Hintergrund: `docs/archive/novaberg-reducer-umbau_k.md` §13 (Chat-75-Bericht: „Gruppe summary: 0 durchgehend")
+- Vermuteter Produzent: `session_summarize_if_needed()` aus `memory/session.py` (siehe `novaberg-mem-session.md` §3.3) — produziert eine Session-Summary, schreibt sie aber möglicherweise nicht als `ContextEntry` in den Enricher-Output.
+
+**Wirkung:** Eine Memory-Quelle (Session-Summary) wird konzeptuell unterstützt, fließt aber nie in den Responder-Context. Bei langen Gesprächen (> 25 Turns) entsteht ggf. eine Summary, die nirgendwo angezeigt wird.
+
+**Prüf-Auftrag:**
+
+1. Wird `session_summarize_if_needed()` tatsächlich aufgerufen? Wo?
+2. Falls ja: Schreibt es das Ergebnis irgendwo, oder verschwindet die Summary im Stack?
+3. Falls nein: Ist Session-Summary noch ein gewolltes Feature, oder ist es seit längerem inaktiv und das Konzept-Doku ist veraltet?
+
+**Lösungsraum:** Abhängig vom Prüf-Ergebnis.
+
+(a) Wenn Summary aktiv produziert wird, aber nicht in ContextEntry-Form fließt: Enricher um einen Summary-Hook ergänzen, der `quelle="summary"` schreibt.
+
+(b) Wenn Summary inaktiv ist: Entweder reaktivieren oder den Formatter-Code für `summary` entfernen (toter Pfad).
+
+(c) Wenn Summary semantisch obsolet ist (z.B. ersetzt durch LZG-Konsolidierung): Formatter-Code entfernen und im Konzept klar markieren.
+
+**Empfehlung:** Prüfung im Rahmen des nächsten Memory-Pipeline-Sprints (z.B. Synapsen P5 Reader-Migration) mit-erledigen. Eigener Sprint ist nicht nötig.
+
+---
+
 ## 8. Offene Bugs
 
 Vollständige Bug-Dokumentation → `novaberg-bugs.md`
