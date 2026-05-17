@@ -1,16 +1,26 @@
 """
-Enricher Node — Reichert den State mit Kontext aus dem Gedächtnis an.
+Enricher Node — Reichert den State mit Kontext aus dem Gedaechtnis an.
 
-Kern-Quellen (immer):
+Dispatcher-Architektur (Phase 4):
+  enrich()             — Dispatcher nach ei_calc_rolle
+  _enrich_human()      — Schlanker HumanGraph-Lauf (nur produktive Outputs)
+  _enrich_character()  — Voller CharacterGraph-Lauf (1:1 zum bisherigen
+                         enrich-Verhalten)
+
+Kern-Quellen im CG-Lauf:
   1. Session-Kontext
-  2. KZG/LZG (nur wenn Einträge existieren)
+  2. KZG/LZG (nur wenn Eintraege existieren)
   3. Charakter-Hash
 
-Plugin-Quellen (dynamisch):
+Plugin-Quellen (dynamisch, nur im CG-Lauf):
   4. Jeder registrierte Manager mit enrich()-Hook
      z.B. FaktenManager → Fakten laden
           TimelineManager → anstehende Termine
           NotizenManager → betroffene Notiz bei Management-Intent
+
+Im HG-Lauf entfallen Plugin-Hooks, Memory-Search (KZG/LZG), Charakter-
+Hash-ContextEntry und emotionale Gravitation — kein HG-Konsument liest
+diese Felder.
 
 Kein LLM-Aufruf — nur Datenzugriff und Embedding-Erzeugung.
 """
@@ -49,23 +59,282 @@ from plugins             import get_registry
 logger = logging.getLogger("ki_server.enricher")
 
 
+# ═══════════════════════════════════════════════════════════════════
+# Dispatcher
+# ═══════════════════════════════════════════════════════════════════
+
 def enrich(
-    state:         ConversationState,
+    state:        ConversationState,
     embed_client: ollama.Client,
-    embed_model:   str,
-    redis_client:  redis.Redis,
-    postgres_url:  str,
-    user_id:       str
+    embed_model:  str,
+    redis_client: redis.Redis,
+    postgres_url: str,
+    user_id:      str,
 ) -> ConversationState:
-    """Sammelt Kontext aus Kern-Quellen und Plugin-Hooks."""
+    """Dispatcher: verzweigt nach ei_calc_rolle in HG- oder CG-Pfad.
+
+    Vorbedingung: state ist ein valider ConversationState.
+    Nachbedingung: bei rolle="user" sind die produktiven HG-Outputs
+                   gesetzt; bei rolle="character" (oder fehlendem/
+                   unbekanntem Marker) der volle CG-Lauf.
+    Fallback: fehlt oder ist der Marker unbekannt, laeuft der CG-
+              Vollpfad — sicherer Default, kein Funktionsverlust.
+    """
+
+    # ── Eingabe-Validierung ─────────────────────
+    rolle: str = state.get("ei_calc_rolle", "character")
+
+    # ── Verarbeitung ────────────────────────────
+    if rolle == "user":
+        return _enrich_human(
+            state, embed_client, embed_model,
+            redis_client, postgres_url, user_id,
+        )
+
+    return _enrich_character(
+        state, embed_client, embed_model,
+        redis_client, postgres_url, user_id,
+    )
+
+
+# ═══════════════════════════════════════════════════════════════════
+# Helper — gemeinsame produktive Schritte
+# ═══════════════════════════════════════════════════════════════════
+
+def _load_raw_turns(
+    redis_client: redis.Redis,
+    user_id:      str,
+    character_id: str,
+) -> list[dict]:
+    """Laedt rohe Session-Turns aus Redis.
+
+    Vorbedingung: Redis-Client ist verbunden.
+    Nachbedingung: liefert Turn-Liste (kann leer sein bei Cold-Start).
+    """
+    return session_turns_retrieve(redis_client, user_id, character_id)
+
+
+def _extract_user_intentionen(raw_turns: list[dict]) -> list:
+    """Liest Intentionen aus dem juengsten User-Turn mit modus.
+
+    Vorbedingung: raw_turns ist eine Liste (kann leer sein).
+    Nachbedingung: Liste der Intentionen aus dem juengsten User-Turn
+                   mit gesetztem modus; leere Liste falls keiner.
+    """
+
+    # ── Verarbeitung ────────────────────────────
+    for turn in reversed(raw_turns):
+        if turn.get("rolle") == "user" and turn.get("modus"):
+            return turn.get("intentionen", [])
+
+    # ── Ausgabe ─────────────────────────────────
+    return []
+
+
+def _create_prompt_embedding(
+    state:        ConversationState,
+    embed_client: ollama.Client,
+    embed_model:  str,
+) -> list[float]:
+    """Erzeugt das Embedding fuer den aktuellen User-Prompt.
+
+    Vorbedingung: state["user_prompt"] vorhanden und nicht leer.
+    Nachbedingung: liefert Embedding-Vektor.
+    """
+    return embedding_create(
+        state["user_prompt"], embed_client, embed_model,
+    )
+
+
+def _compute_ziele_und_gravitation(
+    embedding:    list[float],
+    postgres_url: str,
+) -> tuple[list[dict], float]:
+    """Laedt aktive Ziele, berechnet Aktivierung und Gravitationsterm.
+
+    Vorbedingung: embedding gueltig, postgres_url verbunden.
+    Nachbedingung: Tupel (aktivierte_ziele_dicts, gravitationsterm).
+                   Beide leer / 0.0, wenn keine Ziele vorhanden sind.
+    """
+
+    # ── Eingabe-Validierung ─────────────────────
+    ziele: list[dict] = ziele_aktive_laden(postgres_url, user_id=ASSISTANT_USER_ID)
+
+    if not ziele:
+        return [], 0.0
+
+    # ── Verarbeitung ────────────────────────────
+    aktiviert: list = ziel_gravitation_berechnen(embedding, ziele)
+
+    aktivierte_dicts: list[dict] = [
+        {
+            "ziel_id":     g.ziel_id,
+            "ziel_typ":    g.ziel_typ,
+            "zielsatz":    g.zielsatz,
+            "motivation":  g.motivation,
+            "emotion":     g.emotion,
+            "arousal":     g.arousal,
+            "similarity":  g.similarity,
+            "gravitation": g.gravitation,
+        }
+        for g in aktiviert
+    ]
+    grav: float = gravitationsterm_berechnen(aktiviert)
+
+    # ── Ausgabe ─────────────────────────────────
+    return aktivierte_dicts, grav
+
+
+# ═══════════════════════════════════════════════════════════════════
+# HumanGraph-Pfad — schlanker Lauf
+# ═══════════════════════════════════════════════════════════════════
+
+def _enrich_human(
+    state:        ConversationState,
+    embed_client: ollama.Client,
+    embed_model:  str,
+    redis_client: redis.Redis,
+    postgres_url: str,
+    user_id:      str,
+) -> ConversationState:
+    """Schlanker HumanGraph-Lauf — schreibt nur produktive Outputs.
+
+    Produktive Felder im HG: raw_turns, user_intentionen,
+       prompt_embedding, aktivierte_ziele, gravitationsterm.
+
+    Bewusst nicht geschrieben (kein HG-Konsument): session_turns,
+       memory_entries, memory_context, emotionale_gravitationspunkte,
+       Plugin-Outputs, KZG/LZG-Eintraege, Charakter-Hash.
+
+    Vorbedingung: state["ei_calc_rolle"] == "user", state["user_prompt"]
+                  vorhanden.
+    Nachbedingung: die fuenf produktiven Felder oben sind im state
+                   gesetzt.
+    """
+
+    # ── Pipeline-Log: Span-Start ────────────────
+    turn_id_log:  str = state.get("turn_id", "unbekannt")
+    quelle_log:   str = state.get("ei_calc_rolle", "user")
+    character_id: str = state.get("character_id", "")
+    span_id           = span_start(
+        turn_id = turn_id_log,
+        node    = "enricher",
+        quelle  = quelle_log,
+    )
+
+    # ── Verarbeitung ────────────────────────────
+
+    # 1. Rohe Session-Turns aus Redis.
+    raw_turns: list[dict] = _load_raw_turns(redis_client, user_id, character_id)
+    state["raw_turns"] = raw_turns
+
+    # 2. User-Intentionen aus juengstem User-Turn.
+    letzte_intentionen: list = _extract_user_intentionen(raw_turns)
+    state["user_intentionen"] = letzte_intentionen
+
+    if letzte_intentionen:
+        logger.info(
+            f"Enricher (HG): User-Intentionen aus letztem Turn: {letzte_intentionen}"
+        )
+
+    log_eingang(
+        turn_id = turn_id_log,
+        node    = "enricher",
+        quelle  = "session",
+        inhalt  = {
+            "user_id":         user_id,
+            "character_id":    character_id,
+            "raw_turns_count": len(raw_turns) if raw_turns else 0,
+        },
+        span_id = span_id,
+    )
+
+    # 3. Prompt-Embedding (fuer Ziel-Gravitation).
+    embedding: list[float] = _create_prompt_embedding(state, embed_client, embed_model)
+    state["prompt_embedding"] = embedding
+
+    log_berechnung(
+        turn_id = turn_id_log,
+        node    = "enricher",
+        quelle  = "embedding",
+        inhalt  = {
+            "embed_model":   embed_model,
+            "prompt_length": len(state.get("user_prompt", "")),
+            "embedding_dim": len(embedding) if embedding else 0,
+        },
+        span_id = span_id,
+    )
+
+    # 4 + 5. Aktivierte Ziele + Gravitationsterm.
+    aktivierte_ziele, gravitationsterm = _compute_ziele_und_gravitation(
+        embedding, postgres_url,
+    )
+    state["aktivierte_ziele"] = aktivierte_ziele
+    state["gravitationsterm"] = gravitationsterm
+
+    if aktivierte_ziele:
+        logger.info(
+            f"Enricher (HG): {len(aktivierte_ziele)} Ziele aktiviert, "
+            f"Gravitationsterm={gravitationsterm:.3f}"
+        )
+
+    # ── Ausgabe-Verifikation ────────────────────
+    log_ausgabe(
+        turn_id = turn_id_log,
+        node    = "enricher",
+        quelle  = "state",
+        inhalt  = {
+            "raw_turns_count":        len(state.get("raw_turns", [])),
+            "user_intentionen_count": len(state.get("user_intentionen", [])),
+            "embedding_dim":          len(state.get("prompt_embedding") or []),
+            "aktivierte_ziele_count": len(state.get("aktivierte_ziele", [])),
+            "gravitationsterm":       state.get("gravitationsterm", 0.0),
+        },
+        span_id = span_id,
+    )
+
+    span_end(
+        turn_id = turn_id_log,
+        node    = "enricher",
+        quelle  = quelle_log,
+        span_id = span_id,
+    )
+
+    return state
+
+
+# ═══════════════════════════════════════════════════════════════════
+# CharacterGraph-Pfad — voller Lauf (1:1 zum bisherigen enrich)
+# ═══════════════════════════════════════════════════════════════════
+
+def _enrich_character(
+    state:        ConversationState,
+    embed_client: ollama.Client,
+    embed_model:  str,
+    redis_client: redis.Redis,
+    postgres_url: str,
+    user_id:      str,
+) -> ConversationState:
+    """Voller CharacterGraph-Lauf — funktional 1:1 zum bisherigen enrich.
+
+    Sammelt Kontext aus Kern-Quellen (Session, KZG/LZG, Charakter-Hash),
+    laesst Plugin-Hooks laufen, baut Ziel- und emotionale Gravitation
+    und schreibt memory_entries fuer den nachgelagerten Reducer.
+
+    Vorbedingung: state ist valider ConversationState, state["user_prompt"]
+                  und character_id gesetzt.
+    Nachbedingung: alle CG-konsumierten Felder im state gesetzt
+                   (raw_turns, session_turns, user_intentionen,
+                   prompt_embedding, memory_entries, aktivierte_ziele,
+                   gravitationsterm, emotionale_gravitationspunkte).
+    """
 
     # ── Pipeline-Log: Span-Start (Anker 1) ──────
-    # Graph-Pfad-Marker fuer die Pipeline-Log-Forensik. ei_calc_rolle ist
-    # der projektweit etablierte Marker — "user" im HumanGraph, "character"
-    # im CharacterGraph (siehe graph/character_graph.py:37, kzg/dispatch.py:42).
+    # ei_calc_rolle ist projektweit etablierter Marker (siehe
+    # graph/character_graph.py:43, kzg/dispatch.py:42).
     turn_id_log: str = state.get("turn_id", "unbekannt")
     quelle_log:  str = state.get("ei_calc_rolle", "user")
-    span_id      = span_start(
+    span_id          = span_start(
         turn_id = turn_id_log,
         node    = "enricher",
         quelle  = quelle_log,
@@ -77,10 +346,10 @@ def enrich(
     # 1. Session-Kontext (immer, als erstes)
     # ─────────────────────────────────────────
 
-    # Session-Summary in den Kontext (ältere Turns, zusammengefasst)
+    # Session-Summary in den Kontext (aeltere Turns, zusammengefasst)
     character_id: str = state.get("character_id", "")
-    summary_key: str = _session_key(user_id, character_id, "summary")
-    summary:     str = redis_client.get(summary_key) or ""
+    summary_key: str  = _session_key(user_id, character_id, "summary")
+    summary:     str  = redis_client.get(summary_key) or ""
 
     if summary:
         entries.append({
@@ -93,7 +362,7 @@ def enrich(
         logger.info("Enricher: Session-Summary geladen (1 Eintrag)")
 
     # Rohe Turns laden
-    raw_turns: list[dict] = session_turns_retrieve(redis_client, user_id, character_id)
+    raw_turns: list[dict] = _load_raw_turns(redis_client, user_id, character_id)
     state["raw_turns"] = raw_turns
 
     # Session-Turns vollstaendig durchreichen — kein Datenverlust.
@@ -112,13 +381,7 @@ def enrich(
     # Intentionen aus dem letzten User-Turn ableiten (vom Dispatcher
     # gelesen). Modus und Emotion liegen seit Phase 3 in den Personality-
     # Klassen — keine Spiegelung mehr.
-    letzte_intentionen: list = []
-
-    for turn in reversed(raw_turns):
-        if turn.get("rolle") == "user" and turn.get("modus"):
-            letzte_intentionen = turn.get("intentionen", [])
-            break
-
+    letzte_intentionen: list = _extract_user_intentionen(raw_turns)
     state["user_intentionen"] = letzte_intentionen
 
     if letzte_intentionen:
@@ -186,17 +449,15 @@ def enrich(
     except Exception:
         pass
 
-    # Prompt-Embedding (für KZG/LZG + Gravitation)
-    embedding: list[float] = embedding_create(
-        state["user_prompt"], embed_client, embed_model,
-    )
+    # Prompt-Embedding (fuer KZG/LZG + Gravitation)
+    embedding: list[float] = _create_prompt_embedding(state, embed_client, embed_model)
 
     # In den State stellen, damit der Dispatcher es spaeter neben dem
     # User-Turn in der Session ablegen kann (Gravitationsgraph-Panel).
     state["prompt_embedding"] = embedding
 
     # ── Pipeline-Log: Berechnung (Anker 3) ──────
-    # Prompt-Embedding erzeugt. Dimensions-Check als Plausibilitäts-Anker:
+    # Prompt-Embedding erzeugt. Dimensions-Check als Plausibilitaets-Anker:
     # erwartet werden 768 (nomic-embed-text).
     log_berechnung(
         turn_id = turn_id_log,
@@ -211,7 +472,7 @@ def enrich(
     )
 
     # Lokale Initialisierung, damit der Switch-Inhalt unten beide Counts
-    # unabhängig vom Pfad sicher referenzieren kann.
+    # unabhaengig vom Pfad sicher referenzieren kann.
     kzg_entries: list[ContextEntry] = []
     lzg_entries: list[ContextEntry] = []
 
@@ -277,7 +538,7 @@ def enrich(
     if external_perso and (external_perso.character.core or external_perso.character.adaptive):
         parts: list[str] = []
         if external_perso.character.core:
-            parts.append(f"Kern-Persönlichkeit: {external_perso.character.core}")
+            parts.append(f"Kern-Persoenlichkeit: {external_perso.character.core}")
         if external_perso.character.adaptive:
             parts.append(f"Aktuelle Phase: {external_perso.character.adaptive}")
         char_hash = "\n".join(parts)
@@ -295,34 +556,17 @@ def enrich(
     # ─────────────────────────────────────────
     # 5. Ziele + Gravitation (Drive)
     # ─────────────────────────────────────────
-    ziele: list[dict] = ziele_aktive_laden(postgres_url, user_id=ASSISTANT_USER_ID)
+    aktivierte_ziele, gravitationsterm = _compute_ziele_und_gravitation(
+        embedding, postgres_url,
+    )
+    state["aktivierte_ziele"] = aktivierte_ziele
+    state["gravitationsterm"] = gravitationsterm
 
-    if ziele:
-        aktiviert: list = ziel_gravitation_berechnen(embedding, ziele)
-
-        state["aktivierte_ziele"] = [
-            {
-                "ziel_id":     g.ziel_id,
-                "ziel_typ":    g.ziel_typ,
-                "zielsatz":    g.zielsatz,
-                "motivation":  g.motivation,
-                "emotion":     g.emotion,
-                "arousal":     g.arousal,
-                "similarity":  g.similarity,
-                "gravitation": g.gravitation,
-            }
-            for g in aktiviert
-        ]
-        state["gravitationsterm"] = gravitationsterm_berechnen(aktiviert)
-
-        if aktiviert:
-            logger.info(
-                f"Enricher: {len(aktiviert)} Ziele aktiviert, "
-                f"Gravitationsterm={state['gravitationsterm']:.3f}"
-            )
-    else:
-        state["aktivierte_ziele"] = []
-        state["gravitationsterm"] = 0.0
+    if aktivierte_ziele:
+        logger.info(
+            f"Enricher: {len(aktivierte_ziele)} Ziele aktiviert, "
+            f"Gravitationsterm={gravitationsterm:.3f}"
+        )
 
     # ─────────────────────────────────────────
     # 6. Emotionale Gravitation (EI Phase 3)
@@ -340,7 +584,7 @@ def enrich(
     if emotionale_punkte:
         logger.info(
             f"Enricher: {len(emotionale_punkte)} emotionale Gravitationspunkte — "
-            f"stärkster: {emotionale_punkte[0].get('emotion', '?')} "
+            f"staerkster: {emotionale_punkte[0].get('emotion', '?')} "
             f"(grav={emotionale_punkte[0].get('gravitation', 0):.3f}, "
             f"quelle={emotionale_punkte[0].get('quelle', '?')})"
         )
