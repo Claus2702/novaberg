@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Modul Session-Gedächtnis
-**Stand:** 21. April 2026, Chat 60 (Session-Trennung: character_id, Dispatcher schreibt Turns)
+**Stand:** 17. Mai 2026, Chat 90 (PFAD2-PERZEPTION-FIX abgeschlossen, HumanGraph-Slimming Phase 4)
 **Pfad:** novaberg/docs/novaberg-mem-session.md
 **Quellen:** nova-02-m-a.md
 **Datei:** `memory/session.py`
@@ -25,6 +25,7 @@ Das Session-Gedächtnis ist Novas Arbeitsgedächtnis für das laufende Gespräch
 |-----|-----|-----|-------------|
 | `session:{user_id}:{character_id}:turns` | List | 7200s (2h) | Geordnete Liste aller Turns |
 | `session:{user_id}:{character_id}:summary` | String | 7200s (2h) | Zusammenfassung älterer Turns |
+| `nova_state:{user_id}:{character_id}` | Hash | kein TTL | Persistierter Nova-Zustand (Default Mode Network, Chat 89) |
 
 Seit Chat 60: Session-Key enthält `character_id`. Die Session repräsentiert das Gespräch zwischen einem bestimmten User und einem bestimmten Charakter (z.B. `session:meister:nova:turns`). Helfer: `_session_key(user_id, character_id, suffix)`.
 
@@ -34,6 +35,7 @@ Jeder Turn ist ein JSON-Objekt in der Redis-Liste:
 
 ```json
 {
+    "turn_id": "97b0d23ba3b1495ea6f44c0ce000a86b",
     "rolle": "user|assistant",
     "inhalt": "Der Wortlaut des Turns",
     "zeit": 1711234567.89,
@@ -51,10 +53,60 @@ Jeder Turn ist ein JSON-Objekt in der Redis-Liste:
 }
 ```
 
+**`turn_id`-Korrelation (Chat 88/90):** Jeder Turn trägt eine UUID-Hex,
+die im `/chat`- bzw. `/chat/stream`-Handler erzeugt und durch HumanGraph
+und CharacterGraph als Korrelations-Marker durchgereicht wird. Damit
+korrelieren Pipeline-Log-Spans aller Nodes eines Turns über dieselbe
+`turn_id`. Ausführlich: `novaberg-memory-synapsen_k.md` §10.
+
+**Personality-Quellen (Chat 89):** Die emotion-/modus-/stil-/dynamik-/
+tone-Felder werden je nach Turn-Rolle aus den Personality-Klassen
+befüllt:
+
+| Turn-Rolle | Quelle |
+|-----------|--------|
+| `user` | `state["external"].emotion.*` (Perzeption im HumanGraph) |
+| `assistant` | `state["internal"].emotion.*` (Perzeption-Assistant + EI-Calc-Persist im CharacterGraph) |
+
+Der Turn ist also nach Speicherung der konsolidierte Schnappschuss der
+jeweiligen Personality-Klasse zum Zeitpunkt des Dispatcher-Laufs.
+
 **Drei Zustände eines User-Turns:**
 1. **Frisch gespeichert:** `intentionen`, `emotion`, `modus`, `kern` sind leer — die Salienz hat noch nicht annotiert.
 2. **Annotiert:** Die Salienz hat den Turn nachträglich angereichert (`session_turn_annotate`). Der Enricher sieht dann den destillierten `kern` statt des rohen `inhalt`.
 3. **Aktions-markiert (Chat 43):** Nach Agent-Dispatch via `session_turn_mark_action`. Felder `aktion_erledigt` + `aktion_erfolgreich` gesetzt.
+
+### 2.3 nova_state-Persistierung (Default Mode Network, Chat 89)
+
+Am Ende jedes CharacterGraph-Laufs schreibt der `ei_calc_persist`-Node
+Novas konsolidierten Emotions-Zustand in einen Redis-Hash:
+
+| Feld | Quelle |
+|------|--------|
+| `emotion` | `state["internal"].emotion.emotion` |
+| `arousal` | `state["internal"].emotion.arousal` |
+| `emotions_vector` | `state["internal"].emotion.emotions_vector` |
+| `mode` | `state["internal"].emotion.mode` |
+| `language_style` | `state["internal"].emotion.language_style` |
+| `relationship_dynamic` | `state["internal"].emotion.relationship_dynamic` |
+| `tone` | `state["internal"].emotion.tone` |
+| `intent` | `state["internal"].emotion.intent` |
+| `prompt_topic` | `state["internal"].emotion.prompt_topic` |
+
+**Kein TTL.** Der Hash überlebt zwischen Turns und Server-Restarts. Das
+ist die strukturelle Grundlage des Default Mode Network: Pixie-Pfade
+(Träumen, Recherche, Reflexion) laufen ebenfalls durch den CharacterGraph
+und schreiben in denselben Hash — Novas Innenleben moduliert ihre
+Stimmung zwischen User-Turns.
+
+Beim Start des nächsten CharacterGraph-Laufs lädt der `db_zugriff`-Node
+diesen Hash und befüllt damit `state["internal"].emotion`. Beim
+allerersten Turn pro User-Charakter-Paar greifen Defaults
+(`emotion="neutral"`, `arousal=0.5`, `mode="alltag"`, etc.).
+
+→ Schreib-Pfad: `novaberg-node-ei-calc-persist.md`
+→ Lese-Pfad: `novaberg-node-db-zugriff.md`
+→ Architektonischer Kontext: `novaberg-path2-perzeption_k.md` §2.3
 
 ---
 
@@ -147,6 +199,8 @@ Seit Chat 60: Der Dispatcher (`graph/nodes/dispatcher.py`) schreibt alle Session
 |------|-------------|
 | **Dispatcher** | Schreibt User- und Assistant-Turns vollständig via `session_turn_store` (seit Chat 60) |
 | **Enricher** | Liest Turns via `session_turns_retrieve`, destilliert sie, blendet Shadow-Impulse aus |
+| **db_zugriff** | Liest `nova_state:{user_id}:{character_id}` am CG-Eingang, befüllt `state["internal"].emotion` (Chat 89) |
+| **ei_calc_persist** | Schreibt `nova_state:{user_id}:{character_id}` am CG-Ausgang (Chat 89) |
 | **Salienz** | Legacy-Annotation via `session_turn_annotate` (perspektivisch deprecated, Chat 60) |
 | **API-Layer** (`api/chat.py`) | Markiert User-Turns nach Agent-Dispatch via `session_turn_mark_action` |
 | **Responder** | Sieht die destillierten Turns (über den Enricher, nicht direkt) |
@@ -165,4 +219,7 @@ Seit Chat 60: Der Dispatcher (`graph/nodes/dispatcher.py`) schreibt alle Session
 
 → Enricher (nutzt Session): novaberg-node-enricher.md
 → Salienz (annotiert Turns): novaberg-node-salience.md
+→ db_zugriff (lädt nova_state): novaberg-node-db-zugriff.md
+→ ei_calc_persist (schreibt nova_state): novaberg-node-ei-calc-persist.md
+→ Personality-Klassen: novaberg-personality.md
 → Gedächtnis-Konzept: novaberg-memory.md

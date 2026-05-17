@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** DirektivenAgent (Verhaltensanweisungen, Arbeitsvertrag)
-**Stand:** 21. April 2026, Chat 60 (Session-Trennung: character_id im Kontext)
+**Stand:** 17. Mai 2026, Chat 90 (PFAD2-PERZEPTION-FIX abgeschlossen, HumanGraph-Slimming Phase 4)
 **Pfad:** novaberg/docs/novaberg-agent-directives.md
 **Quellen:** nova-12-k.md, nova-14-k.md, nova-15-k.md
 
@@ -196,7 +196,12 @@ Diese MUESSEN befolgt werden -- sie sind dein Vertrag mit dem Nutzer:
 
 ### 8.2 Laden und Einbau
 
-Die aktiven Direktiven werden vom Enricher aus der Datenbank geladen und im State bereitgestellt. Der Responder integriert sie in den System-Prompt innerhalb der Funktion `_build_system_prompt()` in `graph/nodes/responder.py`.
+Die aktiven Direktiven werden vom `db_zugriff`-Node am
+CharacterGraph-Eingang aus der Datenbank geladen und in
+`state["internal"].directives` als `list[dict]` bereitgestellt
+(PFAD2-PERZEPTION-FIX Phase 2, Chat 89). Der Responder integriert sie
+in den System-Prompt innerhalb der Funktion `_build_system_prompt()` in
+`graph/nodes/responder.py`.
 
 SQL beim Laden:
 
@@ -206,7 +211,12 @@ WHERE user_id = %s AND aktiv = TRUE
 ORDER BY erstellt_am;
 ```
 
-Kein Embedding, keine Vektorsuche -- Direktiven sind wenige, kurze Regeln. Komplett laden ist effizienter und vermeidet das Risiko, relevante Regeln durch Embedding-Schwaechen zu verpassen.
+Kein Embedding, keine Vektorsuche — Direktiven sind wenige, kurze
+Regeln. Komplett laden ist effizienter und vermeidet das Risiko,
+relevante Regeln durch Embedding-Schwächen zu verpassen.
+
+→ Lade-Pfad: `novaberg-node-db-zugriff.md`
+→ Ablage-Konvention: `novaberg-personality.md`
 
 ### 8.3 Tribunal: Jurist prueft, Ethik > Direktiven
 
@@ -256,7 +266,7 @@ CREATE INDEX IF NOT EXISTS idx_direktiven_user_aktiv
 
 **Dateien:** `agents/direktiven/agent.py`, `agents/direktiven/klassifikation.py`, `agents/direktiven/crud.py` (enthaelt `validieren_gegen_db`), `agents/direktiven/dispatch.py`, `agents/direktiven/init.sql`, `agents/direktiven/AGENT.md`
 
-**Plugin:** `plugins/direktiven_manager/` (liefert Router-Prompt; das Laden der aktiven Direktiven erfolgt im Enricher, der Einbau in den Prompt im Responder)
+**Plugin:** `plugins/direktiven_manager/` (liefert Router-Prompt; das Laden der aktiven Direktiven erfolgt im db_zugriff-Node am CG-Eingang, der Einbau in den Prompt im Responder)
 
 **Router-Prompt:** `management_action = "agent"` bei Direktiven-Erkennung. Erkennungsmuster: Imperative mit "nie", "immer", "ab jetzt", "ab sofort"; Verbote: "nicht mehr", "hoer auf", "lass das".
 

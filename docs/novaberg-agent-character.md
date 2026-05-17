@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** CharakterIdentitaetAgent (Persoenlichkeits-Saatgut)
-**Stand:** 21. April 2026, Chat 60 (Session-Trennung: character_id im Kontext)
+**Stand:** 17. Mai 2026, Chat 90 (PFAD2-PERZEPTION-FIX abgeschlossen, HumanGraph-Slimming Phase 4)
 **Pfad:** novaberg/docs/novaberg-agent-character.md
 **Quellen:** nova-12-k.md, nova-14-k.md, nova-15-k.md
 
@@ -217,7 +217,12 @@ Die Rahmung im Prompt: **"Dein Wesen, wie es dir mitgegeben wurde:"** -- die Anw
 
 ### 8.2 Laden und Einbau
 
-Die aktiven Charakter-Anweisungen werden vom Enricher aus der Datenbank geladen und im State bereitgestellt. Der Responder integriert sie in den System-Prompt innerhalb der Funktion `_build_system_prompt()` in `graph/nodes/responder.py`.
+Die aktiven Charakter-Anweisungen werden vom `db_zugriff`-Node am
+CharacterGraph-Eingang aus der Datenbank geladen und in
+`state["internal"].identities` als `list[str]` bereitgestellt
+(PFAD2-PERZEPTION-FIX Phase 2, Chat 89). Der Responder integriert sie
+in den System-Prompt innerhalb der Funktion `_build_system_prompt()` in
+`graph/nodes/responder.py`.
 
 SQL beim Laden:
 
@@ -227,7 +232,12 @@ WHERE user_id = %s AND aktiv = TRUE
 ORDER BY erstellt_am;
 ```
 
-Kein Embedding, keine Vektorsuche -- Charakter-Anweisungen sind wenige pro User. Kein Decay, kein `last_touched` -- der Charakter verfaellt nicht.
+Kein Embedding, keine Vektorsuche — Charakter-Anweisungen sind wenige
+pro User. Kein Decay, kein `last_touched` — der Charakter verfällt
+nicht.
+
+→ Lade-Pfad: `novaberg-node-db-zugriff.md`
+→ Ablage-Konvention: `novaberg-personality.md`
 
 ### 8.3 Kein aktiver Eintrag == kein Fehlerfall
 
@@ -283,7 +293,7 @@ Kein Embedding noetig -- wenige Eintraege pro User, komplett laden. Kein Decay, 
 
 **Dateien:** `agents/charakter_identitaet/agent.py`, `agents/charakter_identitaet/klassifikation.py`, `agents/charakter_identitaet/crud.py` (enthaelt `validieren_gegen_db`), `agents/charakter_identitaet/dispatch.py`, `agents/charakter_identitaet/init.sql`, `agents/charakter_identitaet/AGENT.md`
 
-**Plugin:** `plugins/charakter_identitaet_manager/` (liefert Router-Prompt; das Laden der aktiven Anweisungen erfolgt im Enricher, der Einbau in den Prompt im Responder)
+**Plugin:** `plugins/charakter_identitaet_manager/` (liefert Router-Prompt; das Laden der aktiven Anweisungen erfolgt im db_zugriff-Node am CG-Eingang, der Einbau in den Prompt im Responder)
 
 **Router-Prompt:** `management_action = "agent"` bei Charakter-Erkennung. Trigger: "Du bist ab jetzt...", "Sei mehr...", "Vergiss den Charakter". NICHT triggern bei emotionalen Ausdruecken ("Du bist toll!") oder Einmal-Rollenspielen ("Antworte mal als Pirat").
 
