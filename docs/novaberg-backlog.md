@@ -2250,6 +2250,34 @@ char_hash_dict = {
 
 ---
 
+## Bug: AUDIT-PIXIE-TURN-ID — Pixie-Pfad-turn_id-Auflösung ungeprüft (Chat 90)
+
+**Status:** ⬜ Latent (PIXIE_AKTIV=False), Audit bei Re-Aktivierung
+**Prio:** Niedrig
+**Auslöser:** TURN-ID-FIX-Sprint, Audit-Bericht Chat 90 — Pixie-Pfad explizit als Audit-Lücke markiert
+
+**Beobachtung:** Der TURN-ID-FIX-Sprint (Chat 90) hat zwei Defekte behoben: `/chat/stream` durchreicht jetzt `turn_id`, und `_log_eintrag` warnt loud bei leerem Wert. Der Audit-Bericht hat dabei drei Pixie-bezogene Stellen offen markiert, die im aktuellen Sprint nicht durchverfolgt wurden:
+
+- `services/pixie/dispatch.py:80` — `agent.invoke(agent_state)`-Aufruf in den Pixie-Sub-Agenten. Pixie-Agenten laufen außerhalb des CharacterGraphs, ihre `turn_id`-Befüllung wurde nicht auditiert.
+- `services/event_consumer.py:519-523` — auskommentierter Self-Trigger-Pfad, der das Event-Payload aus dem State wieder anhängt. Falls dieser Pfad reaktiviert wird, könnte er `turn_id` indirekt durchschleusen oder verlieren.
+- Falls Pixie eigene Events in die Queue schreibt, die im CharacterGraph landen, ist der `turn_id`-Fluss durch diese Events unverifiziert.
+
+**Akutes Risiko:** Aktuell keines. `PIXIE_AKTIV = False` in `server/config.py` seit längerem. Solange der Pixie-Pfad inaktiv ist, schreibt er keine Pipeline-Log-Einträge, und der `or "kzg-unbekannt"`-Fallback in `agents/kzg/speicher.py:294` greift bei Pixie-getriggerten KZG-Writes ohnehin nicht.
+
+**Aufgabe (bei Pixie-Re-Aktivierung):**
+
+1. Audit der drei Stellen oben — wo entsteht `turn_id` für einen Pixie-Lauf? Neuer UUID4 pro Pixie-Task, oder Übernahme aus dem auslösenden User-Turn?
+2. Pipeline-Log-Stichprobe nach erstem Pixie-Live-Lauf — sind `enricher`, `db_zugriff`, `ei_calc_persist` und `kzg_speicher` im Pixie-Pfad korrelations-stabil?
+3. Falls Pixie eine eigene `turn_id`-Quelle hat (z.B. `task_id`-Wiederverwendung): Doku-Update in `novaberg-pixie.md` oder neuem Konzept-Snippet.
+
+**Verwandte Themen:**
+
+- TURN-ID-FIX-Sprint (Chat 90) — behebt `/chat/stream`. Pixie-Pfad ist separater Trigger-Weg und braucht eigene Verifikation.
+- `novaberg-lesson_l_silent-skip.md` — Pattern-Geschwister: stille Defaults maskieren strukturelle Bugs. Bei Pixie-Re-Aktivierung das `_log_eintrag`-Warning beobachten.
+- Re-Aktivierungs-Sprint Pixie (offene Aufgabe, kein Datum) — natürlicher Container für diesen Audit.
+
+---
+
 ## 8. Offene Bugs
 
 Vollständige Bug-Dokumentation → `novaberg-bugs.md`
@@ -2277,6 +2305,7 @@ Kurzübersicht aktiver Bugs:
 | RECH-CHARAKTER | Mittel | RechercheAgent ist charakter-blind — kein Zugang zum Charakter-Hash, kein [IDENTITAET]-Block, kein Responder. Grundursache von DELIVERY-VOICE. Loesung: PIXIE-GRAPH-MERGE (Pfad 3 durch CharacterGraph-Instanz). Beobachtet Chat 79 |
 | DELIVERY-DEDUP | Niedrig | Mehrfach identische proaktive Nachrichten zum selben Thema. Delivery-Pfad prueft nicht ob kuerzlich eine thematisch aehnliche Nachricht gesendet wurde. Beobachtet Chat 79 (4× Feng-Shui-Delivery) |
 | SPRACH-STIL-DEFENSIV-STUMM | Niedrig | `_sprach_stil_erkennen` fällt ohne Warning auf "neutral" bei leerem charakter_hash (Verstoß gegen "fail loud", Chat 89/90) |
+| AUDIT-PIXIE-TURN-ID | 👁 | Pixie-Pfad turn_id-Auflösung nicht auditiert (latent, akut keine Wirkung wegen PIXIE_AKTIV=False, Chat 90) |
 
 Details, Ursachen und Lösungsansätze → `novaberg-bugs.md`
 
