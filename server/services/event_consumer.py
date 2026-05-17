@@ -61,10 +61,12 @@ def _stage_detail_bauen(node_name: str, node_state: dict) -> str:
     Returns:
         Formatierter Detail-String, oder "—" wenn keine Details verfügbar.
     """
+    external = node_state.get("external")
+
     if node_name == "enricher":
         hat_kontext: bool = bool(node_state.get("memory_context", ""))
-        modus:       str  = (node_state.get("gespraechs_modus") or "").capitalize()
-        emotion:     str  = (node_state.get("user_emotion") or "").capitalize()
+        modus:       str  = (external.emotion.mode    if external else "").capitalize()
+        emotion:     str  = (external.emotion.emotion if external else "").capitalize()
         intentionen: list = node_state.get("user_intentionen", [])
         detail: str = f"Kontext: {'gefunden' if hat_kontext else 'keiner'}"
         if modus or emotion:
@@ -77,10 +79,10 @@ def _stage_detail_bauen(node_name: str, node_state: dict) -> str:
 
     if node_name == "ei_calc":
         ev:        list = node_state.get("emotions_verlauf", [])
-        vektor:     str = node_state.get("emotions_vektor", "") or ""
-        stil:       str = node_state.get("sprach_stil", "") or ""
-        modus_korr: str = node_state.get("gespraechs_modus", "") or ""
-        has_bez:   bool = bool(node_state.get("beziehungs_kontext", ""))
+        vektor:     str = external.emotion.emotions_vector if external else ""
+        stil:       str = external.emotion.language_style  if external else ""
+        modus_korr: str = external.emotion.mode            if external else ""
+        has_bez:   bool = bool(external.character.relationship if external else "")
 
         ei_teile: list[str] = []
         if ev:
@@ -112,8 +114,8 @@ def _stage_detail_bauen(node_name: str, node_state: dict) -> str:
 
     if node_name == "router":
         return (
-            f"Intent: {node_state.get('intent', '?')}, "
-            f"Ton: {node_state.get('tone', '?')}, "
+            f"Intent: {external.emotion.intent if external else '?'}, "
+            f"Ton: {external.emotion.tone if external else '?'}, "
             f"Momentum: {node_state.get('momentum', '?')}"
         )
 
@@ -196,9 +198,11 @@ def _stage_detail_bauen(node_name: str, node_state: dict) -> str:
         return hypothese
 
     if node_name == "perzeption_assistant":
-        emotion: str   = (node_state.get("current_emotion") or "").capitalize()
-        arousal: float = node_state.get("current_arousal", 0.0)
-        modus:   str   = (node_state.get("gespraechs_modus") or "").capitalize()
+        # Nova-Wahrnehmung der eigenen Antwort aus internal.emotion
+        internal = node_state.get("internal")
+        emotion: str   = (internal.emotion.emotion if internal else "").capitalize()
+        arousal: float = internal.emotion.arousal if internal else 0.0
+        modus:   str   = (internal.emotion.mode    if internal else "").capitalize()
 
         teile: list[str] = []
 
@@ -403,25 +407,15 @@ async def _event_verarbeiten(
         turn_id       = payload.get("turn_id", ""),
     )
 
-    # ── Perzeption-Daten aus Pfad 1 in den State seeden ──
-    # Die Perzeption lief in Pfad 1 (HumanGraph). Ihre Ergebnisse wurden
-    # im Event-Payload transportiert und werden hier in den Pfad-2-State
-    # übernommen, damit EI-Calc, Router und GV-Node sie sehen.
-    perzeption_felder: list[str] = [
-        "current_emotion", "current_arousal", "gespraechs_modus",
-        "intent", "tone", "sprach_stil", "beziehungs_dynamik",
-        "emotions_vektor",
-    ]
-    for feld in perzeption_felder:
-        wert = payload.get(feld)
-        if wert is not None:
-            state[feld] = wert
-
+    # Hinweis: Die Perzeption-Daten aus dem Pfad-1-Payload werden vom
+    # db_zugriff-Node direkt aus event_payload in state["external"].emotion
+    # gelesen — keine separate Seeding-Bridge mehr noetig.
     logger.debug(
-        f"Event-Consumer: Perzeption-Daten geseedet — "
-        f"emotion={state.get('current_emotion', '')}, "
-        f"arousal={state.get('current_arousal', 0.0)}, "
-        f"modus={state.get('gespraechs_modus', '')}"
+        f"Event-Consumer: Payload enthaelt "
+        f"emotion={payload.get('current_emotion', '')}, "
+        f"arousal={payload.get('current_arousal', 0.0)}, "
+        f"modus={payload.get('gespraechs_modus', '')} — "
+        f"wird von db_zugriff in external.emotion geladen"
     )
 
     # ── Event-Loop-Referenz für threadsichere WebSocket-Sends ──
@@ -461,25 +455,29 @@ async def _event_verarbeiten(
     response: str = result.get("response", "")
 
     if response and websocket_map.get(user_id):
+        # WebSocket-Payload zeigt Novas Wahrnehmung ihrer eigenen Antwort
+        # (internal.emotion, von perzeption_assistant + ei_calc_persist
+        # gesetzt). nova_emotions_vector wandert in internal.emotion.
+        result_internal = result.get("internal")
         response_payload: str = json.dumps({
             "typ":                "character_response",
             "nachricht":          response,
             "modell":             result.get("model", ""),
             "token_total":        result.get("token_total", 0),
-            "emotion":            result.get("current_emotion", ""),
-            "arousal":            result.get("current_arousal", 0.0),
-            "emotions_vektor":    result.get("emotions_vektor", ""),
+            "emotion":            result_internal.emotion.emotion              if result_internal else "",
+            "arousal":            result_internal.emotion.arousal              if result_internal else 0.0,
+            "emotions_vektor":    result_internal.emotion.emotions_vector      if result_internal else "",
             "emotions_verlauf":   result.get("emotions_verlauf", []),
-            "sprach_stil":        result.get("sprach_stil", ""),
-            "beziehungs_dynamik": result.get("beziehungs_dynamik", ""),
+            "sprach_stil":        result_internal.emotion.language_style       if result_internal else "",
+            "beziehungs_dynamik": result_internal.emotion.relationship_dynamic if result_internal else "",
             "nova_emotion":           result.get("nova_emotions_verlauf", [{}])[0].get("emotion", "") if result.get("nova_emotions_verlauf") else "",
             "nova_arousal":           result.get("nova_emotions_verlauf", [{}])[0].get("arousal", 0.0) if result.get("nova_emotions_verlauf") else 0.0,
             "nova_emotions_verlauf":  result.get("nova_emotions_verlauf", []),
-            "nova_emotions_vektor":   result.get("nova_emotions_vektor", ""),
+            "nova_emotions_vektor":   result_internal.emotion.emotions_vector if result_internal else "",
             "nova_emotion_konflikt":  result.get("nova_emotion_konflikt", False),
-            "intent":             result.get("intent", ""),
-            "tone":               result.get("tone", ""),
-            "gespraechs_modus":   result.get("gespraechs_modus", ""),
+            "intent":             result_internal.emotion.intent if result_internal else "",
+            "tone":               result_internal.emotion.tone   if result_internal else "",
+            "gespraechs_modus":   result_internal.emotion.mode   if result_internal else "",
             "user_intentionen":   result.get("user_intentionen", []),
             "momentum":           result.get("momentum", ""),
             "gespraechsvektor":   result.get("gespraechsvektor", ""),

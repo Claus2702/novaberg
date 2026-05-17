@@ -43,20 +43,16 @@ class ConversationState(TypedDict):
     event_source:   str      # "user" | "character" — controls EI-Calc empathy switch
     event_payload:  dict     # Free dict from the event (remaining tasks, pending_agent, etc.)
 
-    # ── Personality-Klassen (Phase 1, befüllt ab Phase 2) ──
+    # ── Personality-Klassen (PFAD2-PERZEPTION-FIX Phase 3) ──
+    # Single source of truth fuer die neun EI-Dimensionen plus
+    # Charakter-Hashes. Loesen die frueheren flachen Keys ab.
     external: Personality          # Gegenüber im Gespräch (User, oder bei Pixie: Nova)
     internal: InternalPersonality  # Nova selbst
 
-    # ── Perzeption ──────────────────────────
+    # ── Rollen-Marker fuer Graph-Switches ─────
     perzeption_rolle:     str     # "user" (Default) oder "assistant"
     # Welcher Graph ruft den EI-Calc auf: "user" (HumanGraph) oder "character" (CharacterGraph)
     ei_calc_rolle: str
-    intent:               str     # smalltalk | knowledge | personal | task | creative | meta
-    tone:                 str     # empathisch | sachlich | kreativ | direkt
-    prompt_thema:         str     # Kurzbeschreibung des Themas (2-5 Worte)
-    current_emotion:      str     # Dominante Emotion des aktuellen Prompts
-    current_arousal:      float   # Energie-Level: 0.0 (flach) bis 1.0 (maximal)
-    beziehungs_dynamik:   str     # "vertrauen", "distanz", "angriff", "hilfesuchend", "dankbar", "neutral"
 
     # ── Router ───────────────────────────────
     needs_memory:   bool
@@ -76,31 +72,20 @@ class ConversationState(TypedDict):
     memory_entries_raw: list[ContextEntry]   # Ungekuerzte Eintraege vor Reducer-Dedup (Debug)
     web_context:       str
     session_turns:     list   # list[dict] — destillierte Turns für den Responder
-    gespraechs_modus:  str    # Aktueller Modus aus letzten Turns
-    user_intentionen:  list   # Intentionen des aktuellen Turns
-    user_emotion:      str    # Emotion des aktuellen Turns
+    user_intentionen:  list   # Intentionen des aktuellen Turns (aus letztem User-Turn)
     raw_turns:         list[dict]    # Ungefilterte Session-Turns (für EI-Calc)
-    char_hash_dict:    dict          # Charakter-Hash als Dict (für EI-Calc)
     session_turn_kern: str           # Komprimierter Turn-Inhalt (vom KZG-Agent, für Session-Turn)
     timeline_id:       int | None    # Clipboard: vom TimelineAgent gesetzte ID; vom KzgAgent-magnete_aufloesen-Node uebernommen statt einen eigenen Erinnerungs-Anker anzulegen.
 
-    # Emotionale Intelligenz (Enricher → Responder)
+    # Emotionale Intelligenz (EI-Calc → Responder)
     emotions_verlauf:     list    # [{emotion: str, gewicht: float}, ...] — gewichtetes Array
-    emotions_vektor:      str     # Richtung: "absturz", "spirale", "erholung", etc.
-    sprach_stil:          str     # Erkannter Sprachstil ("locker", "formell", "fachlich", "emotional", "jugendlich")
-    beziehungs_kontext:   str     # Beziehungsprofil-Text aus dem Charakter-Hash
 
-    # Nova-Emotion (Dual-Emotion Phase 2 — EI-Calc → Responder)
+    # Nova-Emotion (Dual-Emotion — EI-Calc → Responder)
+    # nova_emotions_vektor wandert in internal.emotion.emotions_vector;
+    # diese zwei bleiben flach, weil sie nicht in die Emotion-Klasse passen
+    # (Verlauf-Liste mit Empathie-Modulation, Konflikt-Bool).
     nova_emotions_verlauf:  list[dict]   # Novas gewichteter Emotions-Verlauf (mit Empathie)
-    nova_emotions_vektor:   str          # Novas Emotions-Vektor (Richtung)
     nova_emotion_konflikt:  bool         # Empathie-Vektor vs. eigener Zustand
-
-    # Novas eigener Charakter (Enricher → Responder)
-    nova_kern:            str     # Novas gewachsene Persönlichkeit (kern_hash der Assistentin, ASSISTANT_USER_ID)
-    nova_beziehung:       str     # Novas Bild vom Nutzer (beziehungsprofil der Assistentin, ASSISTANT_USER_ID)
-    nova_adaptiv:         str     # Novas aktuelle Themen (adaptiv_hash der Assistentin, ASSISTANT_USER_ID)
-    nova_intentionen:     str     # Novas Kommunikationsstil (intentions_profil der Assistentin, ASSISTANT_USER_ID)
-    nova_emotions:        str     # Novas emotionale Grundstimmung (emotions_profil der Assistentin, ASSISTANT_USER_ID)
 
     # ── Planner (Management Plan-Phase) ──────
     management_result:  str
@@ -128,10 +113,6 @@ class ConversationState(TypedDict):
     # ── Agent-System (Epic 11) ───────────────────
     agent_name:    str    # Vom Planner gesetzt — welcher Agent soll arbeiten
     agent_results: list   # Liste von AgentResult-Objekten — Ergebnisse aller Agenten dieses Turns
-
-    # ── Charakter-Identität + Direktiven ────────────
-    charakter_anweisungen: list[str]        # Aktive Charakter-Anweisungen
-    direktiven: list[dict]                   # Aktive Direktiven [{"anweisung": "...", "kontext": "..."}]
 
     # ── Gesprächsvektor (Epic 9) ───────────────────
     gespraechsvektor: str

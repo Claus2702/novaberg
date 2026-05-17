@@ -35,14 +35,15 @@ def _build_router_prompt(
     MITTE:  [KONTEXT] (Session-Turns) -> [AGENTEN] (Plugin-Regeln)
     UNTEN:  [REGELN] (direkt vor der User-Message)
     """
+    external = state.get("external")
     bloecke: list[str] = [
         PROMPTS["router.identity"].format(
             today              = datetime.now().strftime("%d.%m.%Y, %H:%M Uhr"),
-            intent             = state.get("intent", "smalltalk"),
-            emotion            = state.get("current_emotion", "neutral"),
-            arousal            = state.get("current_arousal", 0.5),
-            modus              = state.get("gespraechs_modus", "alltag"),
-            beziehungs_dynamik = state.get("beziehungs_dynamik", "neutral"),
+            intent             = external.emotion.intent               if external else "smalltalk",
+            emotion            = external.emotion.emotion              if external else "neutral",
+            arousal            = external.emotion.arousal              if external else 0.5,
+            modus              = external.emotion.mode                 if external else "alltag",
+            beziehungs_dynamik = external.emotion.relationship_dynamic if external else "neutral",
         ),
         PROMPTS["router.task"],
     ]

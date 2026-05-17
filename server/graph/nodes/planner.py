@@ -210,7 +210,12 @@ def plan(
         state["management_action"] = ""
         return state
 
-    logger.info(f"Planner: action={action}, target={state.get('management_target', '')}, intent={state.get('intent', '')}")
+    external = state.get("external")
+    user_intent: str = external.emotion.intent if external else ""
+    logger.info(
+        f"Planner: action={action}, target={state.get('management_target', '')}, "
+        f"intent={user_intent}"
+    )
 
     # ── Manager finden ──────────────────────────
     registry: dict = get_registry()
@@ -226,7 +231,7 @@ def plan(
 
     # Priorität 2: Intent-Match
     if not zustaendiger:
-        intent: str = state.get("intent", "")
+        intent: str = user_intent
         if intent:
             for manager in registry.values():
                 if intent in manager.router_intents:
@@ -266,7 +271,7 @@ def plan(
     if not zustaendiger:
         logger.warning(
             f"Planner: Kein Manager gefunden "
-            f"(intent='{state.get('intent')}', target='{state.get('management_target')}', "
+            f"(intent='{user_intent}', target='{state.get('management_target')}', "
             f"action='{state.get('management_action')}')"
         )
         state["node_annotations"].append(f"Planner: Kein Manager gefunden")

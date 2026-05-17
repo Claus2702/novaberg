@@ -136,6 +136,7 @@ def ChatSenden(anfrage: GespraechAnfrage, request: Request):
             result: dict = request.app.state.conversation_graph.invoke(initial_state)
 
         # ── Event erzeugen — löst CharacterGraph (Pfad 2) im Consumer aus ──
+        result_external = result.get("external")
         event_erzeugen(
             redis_client = redis_client,
             user_id      = anfrage.user_id,
@@ -145,14 +146,15 @@ def ChatSenden(anfrage: GespraechAnfrage, request: Request):
             payload      = {
                 "turn_id":            turn_id,
                 "user_prompt":        anfrage.prompt,
-                "current_emotion":    result.get("current_emotion", ""),
-                "current_arousal":    result.get("current_arousal", 0.0),
-                "gespraechs_modus":   result.get("gespraechs_modus", ""),
-                "intent":             result.get("intent", ""),
-                "tone":               result.get("tone", ""),
-                "sprach_stil":        result.get("sprach_stil", ""),
-                "beziehungs_dynamik": result.get("beziehungs_dynamik", ""),
-                "emotions_vektor":    result.get("emotions_vektor", ""),
+                "current_emotion":    result_external.emotion.emotion              if result_external else "",
+                "current_arousal":    result_external.emotion.arousal              if result_external else 0.0,
+                "gespraechs_modus":   result_external.emotion.mode                 if result_external else "",
+                "intent":             result_external.emotion.intent               if result_external else "",
+                "tone":               result_external.emotion.tone                 if result_external else "",
+                "sprach_stil":        result_external.emotion.language_style       if result_external else "",
+                "beziehungs_dynamik": result_external.emotion.relationship_dynamic if result_external else "",
+                "emotions_vektor":    result_external.emotion.emotions_vector      if result_external else "",
+                "prompt_thema":       result_external.emotion.prompt_topic         if result_external else "",
             },
         )
 
@@ -188,8 +190,8 @@ def ChatSenden(anfrage: GespraechAnfrage, request: Request):
         return {
             "status":    "processing",
             "nachricht": "Nachricht empfangen, Charakter-Antwort folgt per WebSocket.",
-            "emotion":   result.get("current_emotion", ""),
-            "arousal":   result.get("current_arousal", 0.0),
+            "emotion":   result_external.emotion.emotion if result_external else "",
+            "arousal":   result_external.emotion.arousal if result_external else 0.0,
         }
 
     except Exception as fehler:
@@ -236,11 +238,14 @@ def ChatStreamSenden(anfrage: GespraechAnfrage, request: Request):
                         label:  str = NODE_LABELS.get(node_name, node_name)
                         detail: str = ""
 
+                        node_external = node_state.get("external")
+                        node_internal = node_state.get("internal")
+
                         if node_name == "perzeption":
-                            emotion:  str = (node_state.get("current_emotion") or "").capitalize()
-                            arousal: float = node_state.get("current_arousal", 0.0)
-                            modus:    str = (node_state.get("gespraechs_modus") or "").capitalize()
-                            dynamik:  str = (node_state.get("beziehungs_dynamik") or "").capitalize()
+                            emotion:  str = (node_external.emotion.emotion              if node_external else "").capitalize()
+                            arousal: float = node_external.emotion.arousal              if node_external else 0.0
+                            modus:    str = (node_external.emotion.mode                 if node_external else "").capitalize()
+                            dynamik:  str = (node_external.emotion.relationship_dynamic if node_external else "").capitalize()
 
                             arousal_text: str = (
                                 "ruhig" if arousal < 0.3
@@ -262,8 +267,8 @@ def ChatStreamSenden(anfrage: GespraechAnfrage, request: Request):
 
                         elif node_name == "enricher":
                             hat_kontext: bool = bool(node_state.get("memory_context", ""))
-                            modus:       str  = (node_state.get("gespraechs_modus") or "").capitalize()
-                            emotion:     str  = (node_state.get("user_emotion") or "").capitalize()
+                            modus:       str  = (node_external.emotion.mode    if node_external else "").capitalize()
+                            emotion:     str  = (node_external.emotion.emotion if node_external else "").capitalize()
                             intentionen: list = node_state.get("user_intentionen", [])
                             detail = f"Kontext: {'gefunden' if hat_kontext else 'keiner'}"
                             if modus or emotion:
@@ -275,10 +280,10 @@ def ChatStreamSenden(anfrage: GespraechAnfrage, request: Request):
 
                         elif node_name == "ei_calc":
                             ev:            list = node_state.get("emotions_verlauf", [])
-                            vektor:         str = node_state.get("emotions_vektor", "") or ""
-                            stil:           str = node_state.get("sprach_stil", "") or ""
-                            modus_korr:     str = node_state.get("gespraechs_modus", "") or ""
-                            has_bez:       bool = bool(node_state.get("beziehungs_kontext", ""))
+                            vektor:         str = node_external.emotion.emotions_vector if node_external else ""
+                            stil:           str = node_external.emotion.language_style  if node_external else ""
+                            modus_korr:     str = node_external.emotion.mode            if node_external else ""
+                            has_bez:       bool = bool(node_external.character.relationship if node_external else "")
 
                             ei_teile: list[str] = []
                             if ev:
@@ -318,6 +323,9 @@ def ChatStreamSenden(anfrage: GespraechAnfrage, request: Request):
                         letzter_state = node_state
 
             # ── Event erzeugen — löst CharacterGraph (Pfad 2) im Consumer aus ──
+            # User-Werte aus state["external"].emotion ins Payload — db_zugriff
+            # liest sie dort wieder und befuellt damit external.emotion im CG.
+            letzter_external = letzter_state.get("external")
             event_erzeugen(
                 redis_client = redis_client,
                 user_id      = anfrage.user_id,
@@ -326,14 +334,15 @@ def ChatStreamSenden(anfrage: GespraechAnfrage, request: Request):
                 typ          = "message",
                 payload      = {
                     "user_prompt":        anfrage.prompt,
-                    "current_emotion":    letzter_state.get("current_emotion", ""),
-                    "current_arousal":    letzter_state.get("current_arousal", 0.0),
-                    "gespraechs_modus":   letzter_state.get("gespraechs_modus", ""),
-                    "intent":             letzter_state.get("intent", ""),
-                    "tone":               letzter_state.get("tone", ""),
-                    "sprach_stil":        letzter_state.get("sprach_stil", ""),
-                    "beziehungs_dynamik": letzter_state.get("beziehungs_dynamik", ""),
-                    "emotions_vektor":    letzter_state.get("emotions_vektor", ""),
+                    "current_emotion":    letzter_external.emotion.emotion              if letzter_external else "",
+                    "current_arousal":    letzter_external.emotion.arousal              if letzter_external else 0.0,
+                    "gespraechs_modus":   letzter_external.emotion.mode                 if letzter_external else "",
+                    "intent":             letzter_external.emotion.intent               if letzter_external else "",
+                    "tone":               letzter_external.emotion.tone                 if letzter_external else "",
+                    "sprach_stil":        letzter_external.emotion.language_style       if letzter_external else "",
+                    "beziehungs_dynamik": letzter_external.emotion.relationship_dynamic if letzter_external else "",
+                    "emotions_vektor":    letzter_external.emotion.emotions_vector      if letzter_external else "",
+                    "prompt_thema":       letzter_external.emotion.prompt_topic         if letzter_external else "",
                 },
             )
 
@@ -373,8 +382,8 @@ def ChatStreamSenden(anfrage: GespraechAnfrage, request: Request):
             yield _sse_event("processing", {
                 "status":    "event_created",
                 "nachricht": "Charakter-Antwort folgt per WebSocket.",
-                "emotion":   letzter_state.get("current_emotion", ""),
-                "arousal":   letzter_state.get("current_arousal", 0.0),
+                "emotion":   letzter_external.emotion.emotion if letzter_external else "",
+                "arousal":   letzter_external.emotion.arousal if letzter_external else 0.0,
             })
 
         except Exception as fehler:

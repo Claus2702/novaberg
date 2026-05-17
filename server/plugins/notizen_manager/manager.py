@@ -143,7 +143,8 @@ Falls keine Notiz erkennbar: "snippet": null
         if not user_id:
             return []
 
-        intent:            str               = state.get("intent", "")
+        external = state.get("external")
+        intent:            str               = external.emotion.intent if external else ""
         management_target: str               = state.get("management_target", "")
         entries:           list[ContextEntry] = []
 

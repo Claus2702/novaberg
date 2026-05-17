@@ -20,6 +20,7 @@ from ei.berechnung import (
     _nova_empathie_berechnen,
 )
 from ei.gravitation import emotionale_gravitation_auf_verlauf_anwenden
+from graph.personality import InternalPersonality, Personality
 from graph.state import ConversationState
 
 logger = logging.getLogger("ki_server.ei_calc")
@@ -52,20 +53,25 @@ def ei_calc(state: ConversationState) -> ConversationState:
 def _ei_calc_user(state: ConversationState) -> None:
     """User-EI-Block — für Pfad 1 (HumanGraph).
 
-    Berechnet Emotions-Verlauf, Vektor, Arousal-Korrektur, Modus-Plausibilität,
-    Sprachstil und Beziehungs-Kontext aus den vom Enricher geladenen Daten.
+    Liest die User-Wahrnehmung aus ``state["external"]`` (von perzeption
+    gesetzt) und schreibt Emotions-Verlauf, Vektor und korrigierte
+    Modus-/Stil-Werte zurueck in dieselbe Personality.
     Keine Nova-Berechnung hier — das passiert in Pfad 2.
     """
-    raw_turns:      list[dict] = state.get("raw_turns", [])
-    char_hash_dict: dict       = state.get("char_hash_dict", {})
+    raw_turns: list[dict] = state.get("raw_turns", [])
 
-    current_emotion:    str   = state.get("current_emotion", "neutral")
-    current_arousal:    float = state.get("current_arousal", 0.5)
-    beziehungs_dynamik: str   = state.get("beziehungs_dynamik", "neutral")
-    intent:             str   = state.get("intent", "smalltalk")
-    tone:               str   = state.get("tone", "sachlich")
-    perzeption_modus:   str   = state.get("gespraechs_modus", "alltag")
-    perzeption_stil:    str   = state.get("sprach_stil", "neutral")
+    external = state.get("external")
+    if external is None:
+        external = Personality()
+        state["external"] = external
+
+    current_emotion:    str   = external.emotion.emotion
+    current_arousal:    float = external.emotion.arousal
+    beziehungs_dynamik: str   = external.emotion.relationship_dynamic
+    intent:             str   = external.emotion.intent
+    tone:               str   = external.emotion.tone
+    perzeption_modus:   str   = external.emotion.mode
+    perzeption_stil:    str   = external.emotion.language_style
 
     # 1. Emotions-Verlauf (logarithmischer Decay, mit current_emotion als Turn 0)
     emotions_verlauf: list[dict] = _emotions_verlauf_berechnen(
@@ -73,35 +79,41 @@ def _ei_calc_user(state: ConversationState) -> None:
     )
     state["emotions_verlauf"] = emotions_verlauf
 
-    # 2. Emotions-Vektor
+    # 2. Emotions-Vektor (in external.emotion.emotions_vector)
     emotions_vektor: str = _emotions_vektor_bestimmen(
         raw_turns, current_emotion, rolle="user",
     )
-    state["emotions_vektor"] = emotions_vektor
+    external.emotion.emotions_vector = emotions_vektor
 
     # 3. EI-Arousal
     ei_arousal: float = _ei_arousal_berechnen(
         current_arousal, beziehungs_dynamik, intent, tone,
     )
 
-    # 4. Modus-Plausibilität
+    # 4. Modus-Plausibilität (korrigiert external.emotion.mode)
     korrigierter_modus: str = _modus_plausibilitaet(
         current_emotion, ei_arousal, perzeption_modus,
     )
-    state["gespraechs_modus"] = korrigierter_modus
+    external.emotion.mode = korrigierter_modus
 
-    # 5. Sprachstil-Plausibilität
+    # 5. Sprachstil-Plausibilität (Tiebreaker-Hash aus external.character)
+    char_hash_dict: dict = {
+        "kern":              external.character.core,
+        "adaptiv":           external.character.adaptive,
+        "beziehungsprofil":  external.character.relationship,
+        "intentions_profil": external.character.intentions,
+        "emotions_profil":   external.character.emotions,
+    }
     regelbasiert_stil: str = _sprach_stil_erkennen(
-        raw_turns, char_hash_dict or None,
+        raw_turns,
+        char_hash_dict if any(char_hash_dict.values()) else None,
+        rolle="user",
     )
     sprach_stil: str = _stil_plausibilitaet(
         current_emotion, ei_arousal, perzeption_stil,
         regelbasiert_stil, tone,
     )
-    state["sprach_stil"] = sprach_stil
-
-    # 6. Beziehungs-Kontext
-    state["beziehungs_kontext"] = char_hash_dict.get("beziehungsprofil", "")
+    external.emotion.language_style = sprach_stil
 
     # Logging
     if emotions_verlauf:
@@ -117,8 +129,8 @@ def _ei_calc_user(state: ConversationState) -> None:
     if sprach_stil and sprach_stil != "neutral":
         logger.info(f"EI-Calc/User: Sprachstil — {sprach_stil}")
 
-    if state.get("beziehungs_kontext"):
-        logger.info("EI-Calc/User: Beziehungs-Kontext gesetzt")
+    if external.character.relationship:
+        logger.info("EI-Calc/User: Beziehungs-Kontext (external.character.relationship) gesetzt")
 
 
 def _ei_calc_character(state: ConversationState) -> None:
@@ -133,8 +145,9 @@ def _ei_calc_character(state: ConversationState) -> None:
 
     # User-Werte werden gelesen, aber NICHT als Turn 0 in Novas Verlauf injiziert.
     # Sie werden nur für die Empathie-Berechnung gebraucht.
-    current_emotion: str   = state.get("current_emotion", "neutral")
-    current_arousal: float = state.get("current_arousal", 0.5)
+    external = state.get("external")
+    current_emotion: str   = external.emotion.emotion if external else "neutral"
+    current_arousal: float = external.emotion.arousal if external else 0.5
 
     # Kraft 1: Novas vorheriger Zustand mit Decay (rein auf historischen Nova-Turns)
     nova_turns: list[dict] = [
@@ -181,11 +194,15 @@ def _ei_calc_character(state: ConversationState) -> None:
         state["nova_emotion_konflikt"] = False
         logger.info("EI-Calc/Character: Nova-Empathie übersprungen (event_source=character, nur Decay)")
 
-    # Novas Emotions-Vektor
+    # Novas Emotions-Vektor (in internal.emotion.emotions_vector)
     nova_emotions_vektor: str = _emotions_vektor_bestimmen(
         nova_turns, rolle="assistant", inject_current=False,
     )
-    state["nova_emotions_vektor"] = nova_emotions_vektor
+    internal = state.get("internal")
+    if internal is None:
+        internal = InternalPersonality()
+        state["internal"] = internal
+    internal.emotion.emotions_vector = nova_emotions_vektor
 
     if state["nova_emotions_verlauf"]:
         nova_top: str = ", ".join(

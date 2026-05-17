@@ -165,6 +165,9 @@ def _build_system_prompt(state: ConversationState) -> str:
 
     parts: list[str] = []
 
+    external = state.get("external")
+    internal = state.get("internal")
+
     # ── [IDENTITAET] ── Primacy: Wer bin ich ──
     jetzt = datetime.now()
     identitaet_parts: list[str] = [
@@ -173,7 +176,7 @@ def _build_system_prompt(state: ConversationState) -> str:
     ]
 
     # Charakter-Anweisungen (vom User definierte Grundidentitaet)
-    charakter_anweisungen: list[str] = state.get("charakter_anweisungen", [])
+    charakter_anweisungen: list[str] = list(internal.identities) if internal else []
     if charakter_anweisungen:
         zeilen: list[str] = ["Dein Wesen, wie es dir mitgegeben wurde:"]
         for anweisung in charakter_anweisungen:
@@ -181,28 +184,28 @@ def _build_system_prompt(state: ConversationState) -> str:
         identitaet_parts.append("\n".join(zeilen))
         logger.info(f"Responder: {len(charakter_anweisungen)} Charakter-Anweisungen in [IDENTITAET]")
 
-    # Gewachsene Persoenlichkeit (nova_kern aus LZG-Destillation)
-    nova_kern: str = state.get("nova_kern", "")
+    # Gewachsene Persoenlichkeit (kern aus LZG-Destillation, internal.character.core)
+    nova_kern: str = internal.character.core if internal else ""
     if nova_kern:
         identitaet_parts.append(f"Deine gewachsene Persoenlichkeit:\n{nova_kern}")
 
-    # Was Nova gerade beschaeftigt (adaptiv_hash aus KZG-Destillation)
-    nova_adaptiv: str = state.get("nova_adaptiv", "")
+    # Was Nova gerade beschaeftigt (adaptive aus KZG-Destillation)
+    nova_adaptiv: str = internal.character.adaptive if internal else ""
     if nova_adaptiv:
         identitaet_parts.append(f"Was dich gerade beschaeftigt:\n{nova_adaptiv}")
 
     # Emotionale Grundstimmung (emotions_profil aus LZG-Destillation)
-    nova_emotions: str = state.get("nova_emotions", "")
+    nova_emotions: str = internal.character.emotions if internal else ""
     if nova_emotions:
         identitaet_parts.append(f"Deine emotionale Grundstimmung:\n{nova_emotions}")
 
     # Wie Nova kommuniziert (intentions_profil aus LZG-Destillation)
-    nova_intentionen: str = state.get("nova_intentionen", "")
+    nova_intentionen: str = internal.character.intentions if internal else ""
     if nova_intentionen:
         identitaet_parts.append(f"Deine Art zu kommunizieren:\n{nova_intentionen}")
 
-    # Bild vom Nutzer (nova_beziehung aus LZG-Destillation)
-    nova_beziehung: str = state.get("nova_beziehung", "")
+    # Bild vom Nutzer (beziehungsprofil aus LZG-Destillation)
+    nova_beziehung: str = internal.character.relationship if internal else ""
     if nova_beziehung:
         identitaet_parts.append(f"So siehst du deinen Nutzer:\n{nova_beziehung}")
 
@@ -273,16 +276,15 @@ def _build_system_prompt(state: ConversationState) -> str:
 
     # ── [KOMMUNIKATION] ── EI + Tonalitaet + Stil ──
     emotions_verlauf:   list = state.get("emotions_verlauf", [])
-    emotions_vektor:    str  = state.get("emotions_vektor", "")
-    sprach_stil:        str  = state.get("sprach_stil", "")
-    beziehungs_kontext: str  = state.get("beziehungs_kontext", "")
-    gespraechs_modus:   str  = state.get("gespraechs_modus", "")
-    user_emotion:       str  = state.get("user_emotion", "")
     user_intentionen:   list = state.get("user_intentionen", [])
 
-    current_emotion: str   = state.get("current_emotion", "neutral")
-    current_arousal: float = state.get("current_arousal", 0.5)
-    beziehungs_dynamik: str = state.get("beziehungs_dynamik", "neutral")
+    emotions_vektor:    str  = external.emotion.emotions_vector      if external else ""
+    sprach_stil:        str  = external.emotion.language_style       if external else ""
+    beziehungs_kontext: str  = external.character.relationship       if external else ""
+    gespraechs_modus:   str  = external.emotion.mode                 if external else ""
+    current_emotion:    str  = external.emotion.emotion              if external else "neutral"
+    current_arousal:    float= external.emotion.arousal              if external else 0.5
+    beziehungs_dynamik: str  = external.emotion.relationship_dynamic if external else "neutral"
 
     komm_parts: list[str] = ["[KOMMUNIKATION]\nSo nimmt der Nutzer gerade am Gespraech teil:"]
 
@@ -293,8 +295,8 @@ def _build_system_prompt(state: ConversationState) -> str:
             for e in emotions_verlauf[:4]
         )
         komm_parts.append(f"Emotionaler Zustand: {emotions_text}")
-    elif user_emotion:
-        komm_parts.append(f"Aktuelle Emotion: {user_emotion}")
+    elif current_emotion and current_emotion != "neutral":
+        komm_parts.append(f"Aktuelle Emotion: {current_emotion}")
 
     # Vektor-Beschreibung
     if emotions_vektor and emotions_vektor in EMOTIONS_VEKTOREN:
@@ -347,7 +349,8 @@ def _build_system_prompt(state: ConversationState) -> str:
         komm_parts.append(f"Intentionen: {', '.join(user_intentionen)}")
 
     # Tonalitaet
-    tone_text: str = TONE_INSTRUCTIONS.get(state["tone"], TONE_INSTRUCTIONS["sachlich"])
+    user_tone: str = external.emotion.tone if external else "sachlich"
+    tone_text: str = TONE_INSTRUCTIONS.get(user_tone, TONE_INSTRUCTIONS["sachlich"])
     komm_parts.append(f"Antwortton: {tone_text}")
 
     # Beziehungsdynamik
@@ -454,7 +457,7 @@ def _build_system_prompt(state: ConversationState) -> str:
     parts.append(PROMPTS["responder.rules"])
 
     # ── [DIREKTIVEN] ── Absolute Verhaltensanweisungen vom Nutzer ──
-    direktiven: list[dict] = state.get("direktiven", [])
+    direktiven: list[dict] = list(internal.directives) if internal else []
     if direktiven:
         dir_zeilen: list[str] = [PROMPTS["responder.direktiven"]]
         for d in direktiven:
@@ -474,7 +477,10 @@ def respond(
 
     system_prompt: str = _build_system_prompt(state)
 
-    logger.info(f"Responder: Generiere Antwort (intent={state['intent']}, tone={state['tone']})")
+    external = state.get("external")
+    log_intent: str = external.emotion.intent if external else ""
+    log_tone:   str = external.emotion.tone   if external else ""
+    logger.info(f"Responder: Generiere Antwort (intent={log_intent}, tone={log_tone})")
 
     # Messages aus Session-History aufbauen
     messages: list[dict] = []

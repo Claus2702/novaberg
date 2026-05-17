@@ -217,12 +217,13 @@ def achsen_berechnen(state: ConversationState) -> dict:
     Returns:
         Dict mit Rohwerten und binaeren Werten fuer alle 6 Achsen.
     """
-    arousal:  float = state.get("current_arousal", 0.5)
-    vektor:   str   = state.get("emotions_vektor", "plateau")
-    emotion:  str   = state.get("current_emotion", "neutral")
-    dynamik:  str   = state.get("beziehungs_dynamik", "neutral")
-    stil:     str   = state.get("sprach_stil", "neutral")
-    modus:    str   = state.get("gespraechs_modus", "alltag")
+    internal = state.get("internal")
+    arousal:  float = internal.emotion.arousal              if internal else 0.5
+    vektor:   str   = (internal.emotion.emotions_vector or "plateau") if internal else "plateau"
+    emotion:  str   = internal.emotion.emotion              if internal else "neutral"
+    dynamik:  str   = internal.emotion.relationship_dynamic if internal else "neutral"
+    stil:     str   = internal.emotion.language_style       if internal else "neutral"
+    modus:    str   = internal.emotion.mode                 if internal else "alltag"
 
     # ── E: Energie ──
     energie_roh:  float = arousal
@@ -382,12 +383,13 @@ def charakter_gewichtung_berechnen(state: ConversationState) -> dict[str, float]
     """
     global _strategie_embeddings_cache
 
+    internal = state.get("internal")
     charakter_text: str = " ".join(filter(None, [
-        state.get("nova_kern", ""),
-        state.get("nova_beziehung", ""),
-        state.get("nova_intentionen", ""),
-        state.get("nova_emotions", ""),
-        state.get("nova_adaptiv", ""),
+        internal.character.core         if internal else "",
+        internal.character.relationship if internal else "",
+        internal.character.intentions   if internal else "",
+        internal.character.emotions     if internal else "",
+        internal.character.adaptive     if internal else "",
     ]))
 
     if not charakter_text.strip():

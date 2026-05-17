@@ -136,14 +136,15 @@ def farbton_berechnen(state: ConversationState) -> str:
     Das Ergebnis sind 2-5 Saetze die dem LLM die emotionale und
     kognitive Landschaft beschreiben, ohne Handlungsanweisungen.
     """
-    emotion: str   = state.get("current_emotion", "neutral")
-    arousal: float = state.get("current_arousal", 0.5)
-    vektor:  str   = state.get("emotions_vektor", "")
-    modus:   str   = state.get("gespraechs_modus", "alltag")
-    intent:  str   = state.get("intent", "")
-    dynamik: str   = state.get("beziehungs_dynamik", "neutral")
-    stil:    str   = state.get("sprach_stil", "neutral")
-    tone:    str   = state.get("tone", "sachlich")
+    internal = state.get("internal")
+    emotion: str   = internal.emotion.emotion              if internal else "neutral"
+    arousal: float = internal.emotion.arousal              if internal else 0.5
+    vektor:  str   = internal.emotion.emotions_vector      if internal else ""
+    modus:   str   = internal.emotion.mode                 if internal else "alltag"
+    intent:  str   = internal.emotion.intent               if internal else ""
+    dynamik: str   = internal.emotion.relationship_dynamic if internal else "neutral"
+    stil:    str   = internal.emotion.language_style       if internal else "neutral"
+    tone:    str   = internal.emotion.tone                 if internal else "sachlich"
 
     farben: list[str] = [
         _farbe_intent(intent),

@@ -49,7 +49,8 @@ def _ist_skip(state: ConversationState) -> bool:
     Management-Intents werden NICHT uebersprungen —
     auch bei Tasks kann Nova vorausdenken (Zahnarzt → Metzgerei).
     """
-    intent: str = state.get("intent", "")
+    external = state.get("external")
+    intent: str = external.emotion.intent if external else ""
     if intent in ("begruessung", "meta", "system"):
         return True
     return False
@@ -72,12 +73,13 @@ def _vektor_laenge_berechnen(state: ConversationState) -> int:
       - Sprachstil (locker/formell) → Feintuning
       - Emotions-Vektor (Krise) → Notbremse auf 0
     """
-    arousal:  float = state.get("current_arousal", 0.5)
-    emotion:  str   = state.get("current_emotion", "neutral")
-    modus:    str   = state.get("gespraechs_modus", "alltag")
-    dynamik:  str   = state.get("beziehungs_dynamik", "neutral")
-    stil:     str   = state.get("sprach_stil", "neutral")
-    vektor:   str   = state.get("emotions_vektor", "")
+    external = state.get("external")
+    arousal:  float = external.emotion.arousal              if external else 0.5
+    emotion:  str   = external.emotion.emotion              if external else "neutral"
+    modus:    str   = external.emotion.mode                 if external else "alltag"
+    dynamik:  str   = external.emotion.relationship_dynamic if external else "neutral"
+    stil:     str   = external.emotion.language_style       if external else "neutral"
+    vektor:   str   = external.emotion.emotions_vector      if external else ""
 
     # Krise → sofort 0 (nur Empathie, keine Antizipation)
     if vektor in ("spirale", "absturz") and arousal >= 0.7:
@@ -132,9 +134,10 @@ def _entity_kontext_laden(state: ConversationState) -> str:
     Gibt formatierten Text zurueck fuer den LLM-Prompt.
     """
     user_id: str = state.get("user_id", "")
-    # Schluessel: management_target (bei Tasks) oder prompt_thema (bei Chat)
+    # Schluessel: management_target (bei Tasks) oder prompt_topic (bei Chat)
+    external = state.get("external")
     management_target: str = state.get("management_target", "")
-    prompt_thema:      str = state.get("prompt_thema", "")
+    prompt_thema:      str = external.emotion.prompt_topic if external else ""
     schluessel:        str = management_target or prompt_thema
 
     if not schluessel or not schluessel.strip():
@@ -253,18 +256,20 @@ def _hypothese_destillieren(
     else:
         verlauf_text = "(Erster Turn — kein Verlauf)"
 
-    # Emotions-Kontext
-    emotion:     str   = state.get("current_emotion", "neutral")
-    arousal:     float = state.get("current_arousal", 0.5)
-    vektor:      str   = state.get("emotions_vektor", "")
-    modus:       str   = state.get("gespraechs_modus", "alltag")
-    dynamik:     str   = state.get("beziehungs_dynamik", "neutral")
+    # Emotions-Kontext (User-Sicht aus external)
+    external = state.get("external")
+    emotion:     str   = external.emotion.emotion              if external else "neutral"
+    arousal:     float = external.emotion.arousal              if external else 0.5
+    vektor:      str   = external.emotion.emotions_vector      if external else ""
+    modus:       str   = external.emotion.mode                 if external else "alltag"
+    dynamik:     str   = external.emotion.relationship_dynamic if external else "neutral"
     intentionen: list  = state.get("user_intentionen", [])
     user_prompt: str   = state.get("user_prompt", "")
 
-    # Charakter
-    nova_kern:      str = state.get("nova_kern", "")
-    nova_beziehung: str = state.get("nova_beziehung", "")
+    # Charakter (Nova-Linse aus internal.character)
+    internal = state.get("internal")
+    nova_kern:      str = internal.character.core         if internal else ""
+    nova_beziehung: str = internal.character.relationship if internal else ""
 
     # --- System-Prompt ---
     system_parts: list[str] = [PROMPTS["gv.identity"]]

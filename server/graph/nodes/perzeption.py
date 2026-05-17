@@ -10,12 +10,19 @@ Laeuft VOR dem Router. Liefert ein vollstaendiges Bild des Prompts,
 auf dessen Basis der Router Routing-Entscheidungen trifft.
 
 Prompt-Schema: [BLOCKNAME]-Format (nova-01-t-d, Chat 27).
+
+Phase-3-Output-Switch (PFAD2-PERZEPTION-FIX):
+  rolle="user":      Werte landen in ``state["external"].emotion``.
+  rolle="assistant": Werte landen in ``state["internal"].emotion``
+                     (Novas eigene Wahrnehmung ihrer Antwort).
+  ``emotions_vector`` wird hier nicht gesetzt — entsteht im EI-Calc.
 """
 
 import json
 import logging
 from datetime import datetime
 
+from graph.personality import Personality, InternalPersonality
 from graph.state import ConversationState
 from config import redis_client, get_node_config, PROMPTS
 from memory.session import session_turns_retrieve, format_session_turns_numbered
@@ -56,7 +63,9 @@ def _build_system_prompt(today: str, session_turns: str | None = None, rolle: st
 def perceive(
     state: ConversationState,
 ) -> ConversationState:
-    """Analysiert den User-Prompt auf rationaler, emotionaler und psychologischer Ebene."""
+    """Analysiert den User-Prompt oder die Nova-Antwort und schreibt die
+    klassifizierten EI-Dimensionen in die rollen-spezifische Personality.
+    """
 
     rolle: str = state.get("perzeption_rolle", "user")
 
@@ -71,6 +80,22 @@ def perceive(
     logger.info(
         f"Perzeption: rolle={rolle}, eingabe_laenge={len(eingabe_text)}"
     )
+
+    # PFAD2-PERZEPTION-FIX Phase 3: Output-Switch nach Rolle. Die acht
+    # klassifizierten Felder landen in der rollen-spezifischen Personality
+    # (external fuer User-Sicht, internal fuer Novas eigene Wahrnehmung
+    # ihrer Antwort). emotions_vector bleibt unangetastet — den setzt
+    # EI-Calc aus dem Emotionsverlauf.
+    if rolle == "assistant":
+        ziel_personality = state.get("internal")
+        if ziel_personality is None:
+            ziel_personality = InternalPersonality()
+            state["internal"] = ziel_personality
+    else:
+        ziel_personality = state.get("external")
+        if ziel_personality is None:
+            ziel_personality = Personality()
+            state["external"] = ziel_personality
 
     today: str = datetime.now().strftime("%d.%m.%Y, %H:%M Uhr")
 
@@ -116,29 +141,19 @@ def perceive(
         tone:   str = rational.get("tone", "sachlich")
         thema:  str = rational.get("thema", "")
 
-        state["intent"]       = intent
-        state["tone"]         = tone
-        state["prompt_thema"] = thema
-
         # Emotional
         emotion: str = emotional.get("emotion", "neutral")
-        state["current_emotion"] = emotion
 
         raw_arousal = emotional.get("arousal", 0.5)
         try:
             arousal: float = max(0.0, min(1.0, float(raw_arousal)))
         except (ValueError, TypeError):
             arousal = 0.5
-        state["current_arousal"] = arousal
 
         # Psychologisch
         modus:               str = psychologisch.get("modus", "alltag")
         sprach_stil:         str = psychologisch.get("sprach_stil", "neutral")
         beziehungs_dynamik:  str = psychologisch.get("beziehungs_dynamik", "neutral")
-
-        state["gespraechs_modus"]    = modus
-        state["sprach_stil"]         = sprach_stil
-        state["beziehungs_dynamik"]  = beziehungs_dynamik
 
     except (json.JSONDecodeError, KeyError) as fehler:
         logger.warning(f"Perzeption: JSON-Parsing fehlgeschlagen ({fehler}), Fallback")
@@ -152,17 +167,19 @@ def perceive(
         sprach_stil        = "neutral"
         beziehungs_dynamik = "neutral"
 
-        state["intent"]              = intent
-        state["tone"]                = tone
-        state["prompt_thema"]        = thema
-        state["current_emotion"]     = emotion
-        state["current_arousal"]     = arousal
-        state["gespraechs_modus"]    = modus
-        state["sprach_stil"]         = sprach_stil
-        state["beziehungs_dynamik"]  = beziehungs_dynamik
+    ziel_personality.emotion.intent               = intent
+    ziel_personality.emotion.tone                 = tone
+    ziel_personality.emotion.prompt_topic         = thema
+    ziel_personality.emotion.emotion              = emotion
+    ziel_personality.emotion.arousal              = arousal
+    ziel_personality.emotion.mode                 = modus
+    ziel_personality.emotion.language_style       = sprach_stil
+    ziel_personality.emotion.relationship_dynamic = beziehungs_dynamik
 
+    ziel_name: str = "internal" if rolle == "assistant" else "external"
     logger.info(
-        f"Perzeption: rational=({intent}, {tone}, {thema}) | "
+        f"Perzeption: rolle={rolle}, ziel={ziel_name} | "
+        f"rational=({intent}, {tone}, {thema}) | "
         f"emotional=({emotion}, a={arousal:.2f}) | "
         f"psychologisch=({modus}, {sprach_stil}, {beziehungs_dynamik})"
     )

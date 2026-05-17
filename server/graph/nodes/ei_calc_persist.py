@@ -10,13 +10,6 @@ Hash und befuellt ``internal.emotion`` damit. Pixie-Pfade schreiben in
 denselben Hash — Novas Default Mode Network.
 
 Konzept: docs/novaberg-path2-perzeption_k.md §4.6.
-
-Hinweis Phase 2: Bis Phase 3 wird die Perzeption-Assistant-Antwort noch
-in die flachen Keys geschrieben (perzeption.py). Dieser Node liest die
-Werte primaer aus den flachen Keys und spiegelt sie zustzlich in
-``internal.emotion``, damit die Persistierung mit der frischen Nova-
-Perzeption arbeitet. Phase 3 dreht das um: perzeption schreibt direkt
-in ``internal.emotion``, dieser Node liest nur noch von dort.
 """
 
 import logging
@@ -42,9 +35,9 @@ logger = logging.getLogger("ki_server.ei_calc_persist")
 def ei_calc_persist(state: ConversationState) -> ConversationState:
     """Plausibilitaeten auf Nova-EI anwenden und in Redis persistieren.
 
-    Vorbedingung: ``state["internal"]`` ist befuellt (durch db_zugriff)
-    und die Perzeption-Assistant-Werte liegen entweder in
-    ``internal.emotion`` (Phase 3) oder den flachen Keys (Phase 2).
+    Vorbedingung: ``state["internal"]`` ist befuellt (durch db_zugriff) und
+    die Perzeption-Assistant-Werte liegen in ``internal.emotion``
+    (perzeption schreibt seit Phase 3 direkt dort hinein).
 
     Nachbedingung: Plausibilitaets-korrigierte Werte sind in
     ``internal.emotion`` und ``redis:nova_state:{user_id}:{character_id}``.
@@ -75,23 +68,6 @@ def ei_calc_persist(state: ConversationState) -> ConversationState:
         node    = "ei_calc_persist",
         quelle  = "character",
     )
-
-    # Phase-2-Bridge: Perzeption-Assistant schreibt heute noch in flache
-    # Keys. Wir spiegeln sie in internal.emotion bevor wir konsolidieren,
-    # damit die Persistierung mit den frischen Nova-Werten arbeitet.
-    # Phase 3 ersetzt diesen Block durch direktes Lesen aus internal.
-    internal.emotion.emotion              = state.get("current_emotion",     internal.emotion.emotion)
-    try:
-        internal.emotion.arousal          = float(state.get("current_arousal", internal.emotion.arousal))
-    except (ValueError, TypeError):
-        pass
-    internal.emotion.mode                 = state.get("gespraechs_modus",    internal.emotion.mode)
-    internal.emotion.language_style       = state.get("sprach_stil",         internal.emotion.language_style)
-    internal.emotion.relationship_dynamic = state.get("beziehungs_dynamik",  internal.emotion.relationship_dynamic)
-    internal.emotion.tone                 = state.get("tone",                internal.emotion.tone)
-    internal.emotion.intent               = state.get("intent",              internal.emotion.intent)
-    internal.emotion.prompt_topic         = state.get("prompt_thema",        internal.emotion.prompt_topic)
-    internal.emotion.emotions_vector      = state.get("nova_emotions_vektor", internal.emotion.emotions_vector)
 
     logger.info(
         f"ei_calc_persist start — paar={user_id}:{character_id}, "
@@ -141,16 +117,8 @@ def ei_calc_persist(state: ConversationState) -> ConversationState:
     )
     internal.emotion.mode = korrigierter_modus
 
-    # Schritt 3: Sprachstil-Plausibilitaet anwenden.
-    # Phase 2 Workaround: _sprach_stil_erkennen filtert intern auf
-    # rolle="user", deshalb verkleiden wir Novas Assistant-Turns als
-    # "user", damit der Feature-Scorer auf ihrem Text laeuft. Phase 3
-    # parametrisiert die Funktion mit rolle="assistant".
-    nova_turns_renamed: list[dict] = [
-        {**t, "rolle": "user"}
-        for t in raw_turns
-        if t.get("rolle") == "assistant"
-    ]
+    # Schritt 3: Sprachstil-Plausibilitaet anwenden. Tiebreaker-Quelle
+    # ist Novas eigener Charakter (internal.character).
     nova_char_dict: dict = {
         "kern":              internal.character.core,
         "adaptiv":           internal.character.adaptive,
@@ -159,8 +127,9 @@ def ei_calc_persist(state: ConversationState) -> ConversationState:
         "emotions_profil":   internal.character.emotions,
     }
     regelbasiert_stil: str = _sprach_stil_erkennen(
-        nova_turns_renamed,
+        raw_turns,
         nova_char_dict if any(nova_char_dict.values()) else None,
+        rolle="assistant",
     )
     korrigierter_stil: str = _stil_plausibilitaet(
         internal.emotion.emotion,

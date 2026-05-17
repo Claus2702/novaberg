@@ -20,10 +20,14 @@ def correct(state: ConversationState) -> ConversationState:
     logger.info(f"Corrector: Korrektur-Runde {state['correction_round']} "
                 f"(verdict={state['tribunal_verdict']})")
 
+    external = state.get("external")
+    user_intent: str = external.emotion.intent if external else "smalltalk"
+    user_tone:   str = external.emotion.tone   if external else "sachlich"
+
     korrektur_prompt: str = (
         f"═══ LAGEBILD (Hintergrund) ═══\n"
-        f"Intent: {state['intent']}\n"
-        f"Gewünschter Ton: {state['tone']}\n"
+        f"Intent: {user_intent}\n"
+        f"Gewünschter Ton: {user_tone}\n"
     )
 
     if state.get("memory_context"):
@@ -32,8 +36,9 @@ def correct(state: ConversationState) -> ConversationState:
             f"{state['memory_context']}\n"
         )
 
-    # Direktiven fuer den Corrector
-    direktiven: list = state.get("direktiven", [])
+    # Direktiven fuer den Corrector (aus internal.directives)
+    internal = state.get("internal")
+    direktiven: list = list(internal.directives) if internal else []
     if direktiven:
         korrektur_prompt += "\n[DIREKTIVEN]\n"
         korrektur_prompt += "ACHTUNG — Verhaltensregeln vom Nutzer (Arbeitsvertrag).\n"

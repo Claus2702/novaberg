@@ -591,27 +591,37 @@ def _hash_stil_extrahieren(charakter_hash: dict) -> str:
     return "neutral"
 
 
-def _sprach_stil_erkennen(turns: list[dict], charakter_hash: dict | None) -> str:
+def _sprach_stil_erkennen(
+    turns: list[dict],
+    charakter_hash: dict | None,
+    rolle: str = "user",
+) -> str:
     """
-    Erkennt den Sprachstil des Users via Feature-Scoring (kein LLM).
+    Erkennt den Sprachstil per Feature-Scoring (kein LLM).
 
-    Analysiert die letzten STIL_ANALYSE_TURNS User-Turns. Jeder Turn
-    wird einzeln bewertet, die Scores werden über das Fenster akkumuliert.
-    Bei Ambiguität dient der Charakter-Hash als Tiebreaker.
+    Analysiert die letzten STIL_ANALYSE_TURNS Turns der angegebenen Rolle.
+    Jeder Turn wird einzeln bewertet, die Scores werden ueber das Fenster
+    akkumuliert. Bei Ambiguitaet dient der Charakter-Hash als Tiebreaker.
+
+    Args:
+        turns: Session-Turns (Liste von Dicts mit ``rolle``/``inhalt``).
+        charakter_hash: Optionaler Charakter-Hash fuer Tiebreaker.
+        rolle: Rolle der zu analysierenden Turns. ``"user"`` (Default,
+            HumanGraph) oder ``"assistant"`` (CharacterGraph, Nova-Selbst).
 
     Returns:
-        Stilbegriff: "locker", "formell", "fachlich", "emotional",
-                     "jugendlich", "neutral"
+        Stilbegriff: ``"locker"``, ``"formell"``, ``"fachlich"``,
+        ``"emotional"``, ``"jugendlich"``, ``"neutral"``.
     """
 
-    # 1. Letzte N User-Turns (Originaltext, nicht lowercased)
-    user_turns: list[str] = [
+    # 1. Letzte N Turns der angefragten Rolle (Originaltext, nicht lowercased)
+    rolle_turns: list[str] = [
         t.get("inhalt", "")
         for t in turns
-        if t.get("rolle") == "user" and t.get("inhalt")
+        if t.get("rolle") == rolle and t.get("inhalt")
     ][-STIL_ANALYSE_TURNS:]
 
-    if not user_turns:
+    if not rolle_turns:
         return "neutral"
 
     # 2. Per-Turn Scoring + Akkumulation
@@ -620,7 +630,7 @@ def _sprach_stil_erkennen(turns: list[dict], charakter_hash: dict | None) -> str
         "emotional": 0.0, "jugendlich": 0.0,
     }
 
-    for turn_text in user_turns:
+    for turn_text in rolle_turns:
         turn_scores: dict[str, float] = _turn_features_bewerten(turn_text)
         for stil, score in turn_scores.items():
             gesamt_scores[stil] += score

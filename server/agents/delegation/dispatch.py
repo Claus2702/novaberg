@@ -53,6 +53,9 @@ def dispatch_delegation(
     # Session-Turns (letzte 10) fuer Seiten-Auszug
     session_turns: list = state.get("session_turns", [])[-10:]
 
+    # Delegations-Trigger arbeitet immer mit User-Werten (external).
+    external = state.get("external")
+
     # AgentState bauen
     agent_state: AgentState = {
         "aufgabe":     "delegation",
@@ -69,14 +72,14 @@ def dispatch_delegation(
             "trigger":             trigger,
             "user_prompt":         state.get("user_prompt", ""),
             "response":            state.get("response", ""),
-            "current_emotion":     state.get("current_emotion", "neutral"),
-            "current_arousal":     state.get("current_arousal", 0.5),
-            "emotions_vektor":     state.get("emotions_vektor", ""),
+            "current_emotion":     external.emotion.emotion              if external else "neutral",
+            "current_arousal":     external.emotion.arousal              if external else 0.5,
+            "emotions_vektor":     external.emotion.emotions_vector      if external else "",
             "emotions_verlauf":    state.get("emotions_verlauf", []),
-            "sprach_stil":         state.get("sprach_stil", "neutral"),
-            "beziehungs_dynamik":  state.get("beziehungs_dynamik", "neutral"),
-            "tone":                state.get("tone", "sachlich"),
-            "gespraechs_modus":    state.get("gespraechs_modus", ""),
+            "sprach_stil":         external.emotion.language_style       if external else "neutral",
+            "beziehungs_dynamik":  external.emotion.relationship_dynamic if external else "neutral",
+            "tone":                external.emotion.tone                 if external else "sachlich",
+            "gespraechs_modus":    external.emotion.mode                 if external else "",
             "user_intentionen":    state.get("user_intentionen", []),
             "session_turns":       session_turns,
         },
@@ -97,7 +100,7 @@ def dispatch_delegation(
     # Beruhigungs-Signal: nur bei neuer Akte, nicht bei Anreicherung
     signal: str = ""
     if not anreicherung:
-        emotions_vektor: str = state.get("emotions_vektor", "")
+        emotions_vektor: str = external.emotion.emotions_vector if external else ""
         signal = _beruhigungs_signal(trigger, emotions_vektor)
 
     # AgentResult bauen

@@ -63,12 +63,19 @@ def dispatch_kzg(
             logger.warning("KZG-Dispatch: salienz_obj fehlt — uebersprungen")
             continue
 
-        # EI-Felder aus State in salienz_obj einfuegen
-        salienz_obj["arousal"]            = state.get("current_arousal", 0.5)
-        salienz_obj["emotions_vektor"]    = state.get("emotions_vektor", "")
-        salienz_obj["sprach_stil"]        = state.get("sprach_stil", "neutral")
-        salienz_obj["beziehungs_dynamik"] = state.get("beziehungs_dynamik", "neutral")
-        salienz_obj["tone"]               = state.get("tone", "sachlich")
+        # EI-Felder aus Personality-Klassen einfuegen. Assistant-Beobachter
+        # liest aus internal (Novas Wahrnehmung der eigenen Antwort), sonst
+        # aus external (User-Wahrnehmung). Behebt PFAD2-EMO-MIX strukturell.
+        if beobachter == "assistant":
+            quelle = state.get("internal")
+        else:
+            quelle = state.get("external")
+
+        salienz_obj["arousal"]            = quelle.emotion.arousal              if quelle else 0.5
+        salienz_obj["emotions_vektor"]    = quelle.emotion.emotions_vector      if quelle else ""
+        salienz_obj["sprach_stil"]        = quelle.emotion.language_style       if quelle else "neutral"
+        salienz_obj["beziehungs_dynamik"] = quelle.emotion.relationship_dynamic if quelle else "neutral"
+        salienz_obj["tone"]               = quelle.emotion.tone                 if quelle else "sachlich"
 
         # AgentState bauen
         agent_state: AgentState = {

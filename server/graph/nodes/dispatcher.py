@@ -44,8 +44,9 @@ def _delegation_trigger_pruefen(state: ConversationState) -> str:
     if state.get("user_id") == ASSISTANT_USER_ID:
         return ""
 
+    external = state.get("external")
     emotions_verlauf: list = state.get("emotions_verlauf", [])
-    emotions_vektor:  str  = state.get("emotions_vektor", "")
+    emotions_vektor:  str  = external.emotion.emotions_vector if external else ""
     valenz:        str   = ""
     salienz_score: float = 0.0
 
@@ -209,6 +210,23 @@ def _session_turn_schreiben(state: ConversationState) -> None:
         logger.warning(f"Dispatcher: Session-Turn nicht geschrieben — kein Inhalt (rolle={rolle})")
         return
 
+    # Quelle der EI-Felder waehlen: Assistant-Turn liest aus internal
+    # (Novas eigene Wahrnehmung, von perzeption_assistant gesetzt),
+    # User-Turn liest aus external.
+    if rolle == "assistant":
+        quelle = state.get("internal")
+    else:
+        quelle = state.get("external")
+
+    turn_emotion: str   = quelle.emotion.emotion              if quelle else "neutral"
+    turn_arousal: float = quelle.emotion.arousal              if quelle else 0.5
+    turn_modus:   str   = quelle.emotion.mode                 if quelle else ""
+    turn_vektor:  str   = quelle.emotion.emotions_vector      if quelle else ""
+    turn_stil:    str   = quelle.emotion.language_style       if quelle else ""
+    turn_dynamik: str   = quelle.emotion.relationship_dynamic if quelle else ""
+    turn_tone:    str   = quelle.emotion.tone                 if quelle else "sachlich"
+    turn_topic:   str   = (quelle.emotion.prompt_topic        if quelle else "").strip()
+
     # Embedding nur fuer User-Turns durchreichen — der Enricher berechnet
     # eines fuer Novas eigene Antworten nicht, und der Gravitationsgraph
     # braucht es auch nur fuer die User-Punkte.
@@ -216,13 +234,10 @@ def _session_turn_schreiben(state: ConversationState) -> None:
     themen: list[str] | None = None
     if rolle == "user":
         embedding = state.get("prompt_embedding") or None
-        # Perzeption setzt ``prompt_thema`` als String (Singular). Wir
-        # heben das auf eine Liste, weil session_turn_store ein themen-
-        # Array erwartet und der Gravitationsgraph mehrere Topics pro
-        # Turn unterstuetzt.
-        prompt_thema: str = (state.get("prompt_thema") or "").strip()
-        if prompt_thema:
-            themen = [prompt_thema]
+        # prompt_topic kommt von perzeption als String (Singular); fuer den
+        # Gravitationsgraph wird daraus ein Themen-Array.
+        if turn_topic:
+            themen = [turn_topic]
 
     session_turn_store(
         redis_client       = cfg_redis_client,
@@ -231,14 +246,14 @@ def _session_turn_schreiben(state: ConversationState) -> None:
         rolle              = rolle,
         inhalt             = inhalt,
         intentionen        = state.get("user_intentionen", []),
-        emotion            = state.get("current_emotion", "neutral"),
-        arousal            = state.get("current_arousal", 0.5),
-        modus              = state.get("gespraechs_modus", ""),
+        emotion            = turn_emotion,
+        arousal            = turn_arousal,
+        modus              = turn_modus,
         kern               = state.get("session_turn_kern", ""),
-        emotions_vektor    = state.get("emotions_vektor", ""),
-        sprach_stil        = state.get("sprach_stil", ""),
-        beziehungs_dynamik = state.get("beziehungs_dynamik", ""),
-        tone               = state.get("tone", "sachlich"),
+        emotions_vektor    = turn_vektor,
+        sprach_stil        = turn_stil,
+        beziehungs_dynamik = turn_dynamik,
+        tone               = turn_tone,
         themen             = themen,
         embedding          = embedding,
     )

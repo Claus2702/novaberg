@@ -109,27 +109,21 @@ def enrich(
 
     state["session_turns"] = gefilterte_turns
 
-    # Gesprächsmodus + Emotion aus den letzten User-Turns ableiten
-    letzter_modus:   str = ""
-    letzte_emotion:  str = ""
+    # Intentionen aus dem letzten User-Turn ableiten (vom Dispatcher
+    # gelesen). Modus und Emotion liegen seit Phase 3 in den Personality-
+    # Klassen — keine Spiegelung mehr.
     letzte_intentionen: list = []
 
     for turn in reversed(raw_turns):
         if turn.get("rolle") == "user" and turn.get("modus"):
-            letzter_modus      = turn["modus"]
-            letzte_emotion     = turn.get("emotion", "neutral")
             letzte_intentionen = turn.get("intentionen", [])
             break
 
-    if letzter_modus:
-        state["gespraechs_modus"] = letzter_modus
-    state["user_intentionen"]  = letzte_intentionen
-    state["user_emotion"]      = letzte_emotion
+    state["user_intentionen"] = letzte_intentionen
 
-    if letzter_modus:
+    if letzte_intentionen:
         logger.info(
-            f"Enricher: Gesprächsmodus={letzter_modus}, "
-            f"emotion={letzte_emotion}, intentionen={letzte_intentionen}"
+            f"Enricher: User-Intentionen aus letztem Turn: {letzte_intentionen}"
         )
 
     # ── Pipeline-Log: Eingang (Anker 2) ─────────
@@ -172,17 +166,6 @@ def enrich(
 
         except Exception as fehler:
             logger.error(f"Enricher: Plugin '{name}' Fehler — {fehler}")
-
-    # ─────────────────────────────────────────
-    # 2b. Charakter-Anweisungen + Direktiven: Phase-2-Bridge
-    #     Laden hat sich in den db_zugriff-Node verschoben.
-    #     Hier wird nur noch aus internal.identities/directives in die
-    #     flachen Keys gespiegelt, damit Konsumenten in Phase 2 unverändert
-    #     bleiben können (Phase 3 entfernt die Bridge).
-    # ─────────────────────────────────────────
-    internal_perso = state.get("internal")
-    state["charakter_anweisungen"] = list(internal_perso.identities) if internal_perso else []
-    state["direktiven"]            = list(internal_perso.directives) if internal_perso else []
 
     # ─────────────────────────────────────────
     # 3. KZG/LZG semantische Suche
@@ -282,13 +265,11 @@ def enrich(
         )
 
     # ─────────────────────────────────────────
-    # 4. Charakter-Hash: Phase-2-Bridge
-    #     Laden hat sich in den db_zugriff-Node verschoben (Pfad 2). Hier
-    #     wird der Hash-Text aus external.character formatiert und in den
-    #     memory_context-Pfad gespiegelt, plus char_hash_dict und die
-    #     fuenf nova_*-Keys aus den Personality-Klassen aufgefuellt.
-    #     Im HumanGraph (Pfad 1) sind die Klassen leer — die alten Konsumenten
-    #     erhalten dann leere Strings, was bis Phase 3 hinnehmbar ist.
+    # 4. Charakter-Hash als ContextEntry
+    #     Der Hash-String wird inline aus external.character.core/adaptive
+    #     formatiert und in memory_entries gehaengt. Geladen wird er im
+    #     db_zugriff-Node (CharacterGraph) — im HumanGraph ist external
+    #     leer und der Eintrag entfaellt.
     # ─────────────────────────────────────────
     external_perso = state.get("external")
 
@@ -301,14 +282,6 @@ def enrich(
             parts.append(f"Aktuelle Phase: {external_perso.character.adaptive}")
         char_hash = "\n".join(parts)
 
-    state["char_hash_dict"] = {
-        "kern":              external_perso.character.core         if external_perso else "",
-        "adaptiv":           external_perso.character.adaptive     if external_perso else "",
-        "beziehungsprofil":  external_perso.character.relationship if external_perso else "",
-        "intentions_profil": external_perso.character.intentions   if external_perso else "",
-        "emotions_profil":   external_perso.character.emotions     if external_perso else "",
-    } if external_perso else {}
-
     if char_hash:
         entries.append({
             "quelle":  "charakter",
@@ -317,24 +290,7 @@ def enrich(
             "gewicht": 1.0,
             "meta":    {},
         })
-        logger.info("Enricher: Charakter-Hash aus external gespiegelt (1 Eintrag)")
-
-    # ── Novas eigener Charakter-Hash (aus internal.character) ──
-    if internal_perso:
-        state["nova_kern"]         = internal_perso.character.core
-        state["nova_beziehung"]    = internal_perso.character.relationship
-        state["nova_adaptiv"]      = internal_perso.character.adaptive
-        state["nova_intentionen"]  = internal_perso.character.intentions
-        state["nova_emotions"]     = internal_perso.character.emotions
-
-        if internal_perso.character.core or internal_perso.character.relationship:
-            logger.info("Enricher: Novas Charakter-Hash aus internal gespiegelt")
-    else:
-        state["nova_kern"]         = ""
-        state["nova_beziehung"]    = ""
-        state["nova_adaptiv"]      = ""
-        state["nova_intentionen"]  = ""
-        state["nova_emotions"]     = ""
+        logger.info("Enricher: Charakter-Hash aus external.character als ContextEntry")
 
     # ─────────────────────────────────────────
     # 5. Ziele + Gravitation (Drive)

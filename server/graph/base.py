@@ -99,19 +99,13 @@ class GraphBase(ABC):
             event_source  = kwargs.get("event_source", "user"),
             event_payload = kwargs.get("event_payload", {}),
 
-            # Personality-Klassen (Phase 1, befüllt ab Phase 2)
+            # Personality-Klassen (Single source of truth nach Phase 3)
             external = Personality(),
             internal = InternalPersonality(),
 
-            # Perzeption
-            perzeption_rolle    = kwargs.get("perzeption_rolle", "user"),
-            ei_calc_rolle       = kwargs.get("ei_calc_rolle", "user"),
-            intent              = "",
-            tone                = "sachlich",
-            prompt_thema        = "",
-            current_emotion     = "neutral",
-            current_arousal     = 0.5,
-            beziehungs_dynamik  = "neutral",
+            # Rollen-Marker fuer Graph-Switches
+            perzeption_rolle = kwargs.get("perzeption_rolle", "user"),
+            ei_calc_rolle    = kwargs.get("ei_calc_rolle", "user"),
 
             # Router
             needs_memory   = False,
@@ -128,28 +122,16 @@ class GraphBase(ABC):
             memory_context     = "",
             web_context        = "",
             session_turns      = [],
-            gespraechs_modus   = "",
             user_intentionen   = [],
-            user_emotion       = "",
             raw_turns          = [],
-            char_hash_dict     = {},
             session_turn_kern  = "",
             timeline_id        = None,
 
-            # Emotionale Intelligenz
+            # Emotionale Intelligenz (berechnete Hilfsfelder, nicht in Klassen)
             emotions_verlauf     = [],
-            emotions_vektor      = "",
-            sprach_stil          = "",
-            beziehungs_kontext   = "",
-            nova_kern            = "",
-            nova_beziehung       = "",
-            nova_adaptiv         = "",
-            nova_intentionen     = "",
-            nova_emotions        = "",
 
-            # Nova-Emotion (Dual-Emotion Phase 2)
+            # Nova-Emotion (bleibt flach: Liste mit Empathie-Modulation + Konflikt-Bool)
             nova_emotions_verlauf  = [],
-            nova_emotions_vektor   = "",
             nova_emotion_konflikt  = False,
 
             # Planner (Management Plan-Phase)
@@ -181,10 +163,6 @@ class GraphBase(ABC):
             # Agent-System (Epic 11)
             agent_name    = "",
             agent_results = [],
-
-            # Charakter-Identität + Direktiven
-            charakter_anweisungen = [],
-            direktiven = [],
 
             # Gesprächsvektor (Epic 9)
             gespraechsvektor = "",

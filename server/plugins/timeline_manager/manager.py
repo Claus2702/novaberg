@@ -106,7 +106,8 @@ und der aktuelle Prompt sich darauf bezieht.
         if not user_id:
             return []
 
-        intent:   str               = state.get("intent", "")
+        external = state.get("external")
+        intent:   str               = external.emotion.intent if external else ""
         tl_query: dict              = state.get("timeline_query", {})
         entries:  list[ContextEntry] = []
 

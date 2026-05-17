@@ -201,8 +201,9 @@ def wissensluecken_finden(
     user_id:      str = state.get("user_id", "")
     character_id: str = state.get("character_id", "nova")
     user_prompt:  str = state.get("user_prompt", "")
-    modus:        str = state.get("gespraechs_modus", "alltag")
-    dynamik:      str = state.get("beziehungs_dynamik", "neutral")
+    internal = state.get("internal")
+    modus:        str = internal.emotion.mode                 if internal else "alltag"
+    dynamik:      str = internal.emotion.relationship_dynamic if internal else "neutral"
 
     if not user_prompt or not user_id:
         return []
@@ -286,7 +287,7 @@ def wissensluecken_finden(
         k["register"]      = register
 
     # ── 5. Charakter-Filter ──
-    nova_kern: str = state.get("nova_kern", "")
+    nova_kern: str = internal.character.core if internal else ""
     if nova_kern:
         try:
             kern_embedding: list[float] = embedding_create(

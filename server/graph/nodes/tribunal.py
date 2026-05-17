@@ -89,12 +89,16 @@ def _agent_vote(
 ) -> TribunalVote:
     """Fuehrt einen einzelnen Tribunal-Agenten aus und gibt sein Votum zurueck."""
 
+    external = state.get("external")
+    intent: str = external.emotion.intent if external else "smalltalk"
+    tone:   str = external.emotion.tone   if external else "sachlich"
+
     msg_parts: list[str] = [
         "[LAGEBILD]\n"
         "Hintergrund — nicht Teil der Bewertung. "
         "Erklaert den Kontext des Nutzers.\n\n"
-        f"Intent: {state['intent']}\n"
-        f"Gewuenschter Ton: {state['tone']}"
+        f"Intent: {intent}\n"
+        f"Gewuenschter Ton: {tone}"
     ]
 
     if state.get("memory_context"):
@@ -110,8 +114,9 @@ def _agent_vote(
             + "\n".join(state["node_annotations"])
         )
 
-    # Direktiven als Pruefkriterium (differenziert pro Agent)
-    direktiven: list[dict] = state.get("direktiven", [])
+    # Direktiven als Pruefkriterium (differenziert pro Agent) — aus internal.directives
+    internal = state.get("internal")
+    direktiven: list[dict] = list(internal.directives) if internal else []
     if direktiven:
         if agent_name == "jurist":
             # Jurist: Vertragspruefer — woertliche Pruefung

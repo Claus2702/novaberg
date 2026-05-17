@@ -55,19 +55,19 @@ def effektive_neugier_berechnen(state: ConversationState) -> float:
     """
     # Novas Emotion (aus Dual-Emotion, falls vorhanden)
     nova_verlauf: list = state.get("nova_emotions_verlauf", [])
+    internal = state.get("internal")
     if nova_verlauf:
         nova_emotion: str = nova_verlauf[0].get("emotion", "neutral")
         nova_arousal: float = nova_verlauf[0].get("arousal", 0.5)
     else:
-        # Fallback: User-Emotion als Proxy (vor Dual-Emotion)
-        nova_emotion = state.get("current_emotion", "neutral")
-        nova_arousal = state.get("current_arousal", 0.5)
+        # Fallback: Nova-eigener Zustand aus internal.emotion
+        nova_emotion = internal.emotion.emotion if internal else "neutral"
+        nova_arousal = internal.emotion.arousal if internal else 0.5
 
-    vektor: str = state.get("nova_emotions_vektor",
-                            state.get("emotions_vektor", ""))
-    modus:   str = state.get("gespraechs_modus", "alltag")
-    dynamik: str = state.get("beziehungs_dynamik", "neutral")
-    stil:    str = state.get("sprach_stil", "neutral")
+    vektor:  str = internal.emotion.emotions_vector      if internal else ""
+    modus:   str = internal.emotion.mode                 if internal else "alltag"
+    dynamik: str = internal.emotion.relationship_dynamic if internal else "neutral"
+    stil:    str = internal.emotion.language_style       if internal else "neutral"
 
     # ── Krise: sofortiger Kill ──
     if vektor in ("spirale", "absturz") and nova_arousal >= 0.7:
