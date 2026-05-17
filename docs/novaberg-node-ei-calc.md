@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Node-Referenz EI-Calc (Emotionale Intelligenz — Berechnungsschicht)
-**Stand:** 21. April 2026, Chat 60 (Empathie-Switch nach event_source, in beiden Graphen)
+**Stand:** 17. Mai 2026, Chat 90 (PFAD2-PERZEPTION-FIX abgeschlossen, HumanGraph-Slimming Phase 4)
 **Pfad:** novaberg/docs/novaberg-node-ei-calc.md
 **Quellen:** Chat 58 (Konzept-Split), Chat 59 (Implementierung)
 **Datei:** `graph/nodes/ei_calc.py`
@@ -11,31 +11,24 @@
 
 ## 1. Aufgabe
 
-Der EI-Calc-Node ist die Berechnungsschicht der emotionalen Intelligenz. Er nimmt die vom Enricher geladenen Rohdaten (Session-Turns, Charakter-Hash-Dict) zusammen mit den Perzeptionsergebnissen (Emotion, Arousal, Beziehungsdynamik, Intent, Tone, Modus, Stil) und berechnet daraus den vollständigen EI-Zustand eines Turns.
+Der EI-Calc-Node ist die Berechnungsschicht der emotionalen Intelligenz. Er berechnet pro Aufruf **entweder** die User-EI (Pfad 1, HumanGraph) **oder** Novas Empathie-modulierten Emotionsstrang (Pfad 2, CharacterGraph). Welcher Block läuft, entscheidet `state["ei_calc_rolle"]`.
 
-Er ist der einzige Node, der sowohl die **User-EI** als auch die **Nova-Emotion** in einem Durchlauf berechnet — beide Kräfte des Dual-Emotion-Modells (Phase 2).
+Eingangsdaten: die vom Enricher gelieferten `raw_turns` und die Perzeptionsergebnisse aus der `Emotion`-Klasse (`state["external"].emotion` für den User-Pfad, `state["internal"].emotion` als Vorzustand für den Character-Pfad).
 
 **Kein LLM-Call, kein I/O.** Reine Python-Vektorarithmetik. Sub-100ms, deterministisch, reproduzierbar.
 
 ---
 
-## Rollen-Split: User vs. Character
-
-Seit Chat 61 hat EI-Calc einen klaren Rollen-Split via State-Flag `ei_calc_rolle`:
-
-- **`"user"` (HumanGraph):** Berechnet nur den User-Emotionsstrom. Liest User-Perzeptions-Daten, rechnet User-Verlauf, User-Vektor.
-- **`"character"` (CharacterGraph):** Berechnet nur Nova's Emotionsstrom. Liest Nova-Perzeptions-Daten (falls schon vorhanden via `perzeption_assistant`), rechnet Nova-Verlauf mit Empathie-Modulation vom User, Nova-Vektor.
-
-Die internen Funktionen `_ei_calc_user()` und `_ei_calc_character()` sind entsprechend separiert.
+## Akkumulation und Glättung
 
 ### `inject_current: bool` Parameter
 
-Funktionen `_emotions_verlauf_berechnen()` und `_emotions_vektor_bestimmen()` haben einen neuen Parameter `inject_current`:
+Funktionen `_emotions_verlauf_berechnen()` und `_emotions_vektor_bestimmen()` haben einen Parameter `inject_current`:
 
-- **`True` (Default, Pfad 1):** Der aktuelle User-Turn wird als "virtueller Turn 0" in den Verlauf eingefügt, bevor der Decay rückwärts läuft. So zählt die frische User-Emotion voll.
-- **`False` (Pfad 2):** Nova's aktuelle Emotion ist noch nicht perzipiert (das passiert erst am Ende des CharacterGraphs durch `perzeption_assistant`). Der Verlauf wird nur aus historischen Nova-Turns berechnet — die Empathie-Modulation ersetzt die Rolle des "aktuellen Turns".
+- **`True` (Default, User-Pfad):** Der aktuelle User-Turn wird als „virtueller Turn 0" in den Verlauf eingefügt, bevor der Decay rückwärts läuft. So zählt die frische User-Emotion voll.
+- **`False` (Character-Pfad):** Novas aktuelle Emotion ist noch nicht perzipiert (das passiert erst am Ende des CharacterGraphs durch `perzeption_assistant`). Der Verlauf wird nur aus historischen Nova-Turns berechnet — die Empathie-Modulation ersetzt die Rolle des „aktuellen Turns".
 
-### Akkumulation und Glättung (seit Chat 61)
+### Drei biologische Mechanismen (seit Chat 61)
 
 Die Akkumulation folgt drei biologisch motivierten Mechanismen:
 
@@ -52,15 +45,24 @@ Die Funktion ist in `server/ei/berechnung.py` als `_glaettung()` implementiert. 
 ## 2. Position im Graph
 
 ```
-HumanGraph (Pfad 1):    Perzeption → Enricher → ▶ EI-Calc ◀ → Salienz → Dispatcher → END
-CharacterGraph (Pfad 2): Enricher → ▶ EI-Calc ◀ → Router → [Planner ⇄ Agent] → GV-Node → ...
+HumanGraph (Pfad 1, 5 Nodes):
+perzeption → enricher → ▶ ei_calc ◀ → salience → dispatcher
+
+CharacterGraph (Pfad 2, 17 Nodes):
+db_zugriff → ▶ ei_calc ◀ → enricher → reducer → router → planner → agent_dispatch
+          → gv_node → responder → thinker → tribunal → evaluate → corrector
+          → perzeption_assistant → ei_calc_persist → salience → dispatcher
 ```
 
-In beiden Graphen. Berechnet User-EI und Nova-Emotion.
+**HumanGraph:** Dritter Node, nach `perzeption → enricher`. Berechnet den User-Pfad.
 
-**Input:** State mit Perzeptionsergebnissen (Emotion, Arousal, Modus, Stil, Intent, Tone, Beziehungsdynamik) und den vom Enricher geladenen Rohdaten (`raw_turns`, `char_hash_dict`).
+**CharacterGraph:** Zweiter Node, nach `db_zugriff`. Berechnet den Character-Pfad.
 
-**Output:** State angereichert mit `emotions_verlauf`, `emotions_vektor`, korrigiertem `gespraechs_modus` und `sprach_stil`, `beziehungs_kontext` sowie den Nova-Feldern `nova_emotions_verlauf`, `nova_emotions_vektor`, `nova_emotion_konflikt`.
+**Reihenfolge-Logik (Phase 2):** Im CharacterGraph läuft EI-Calc **vor** dem Enricher, damit das Empathie-Update gegen Novas persistierten Vorzustand (`state["internal"].emotion`, geladen vom `db_zugriff`) berechnet wird, bevor Memory-Resonanz im Enricher hinzukommt.
+
+**Input:** State mit Perzeptionsergebnissen (Emotion, Arousal, Modus, Stil, Intent, Tone, Beziehungsdynamik) in den Personality-Klassen und den vom Enricher gelieferten `raw_turns`.
+
+**Output:** Pro Rolle entweder die User-Felder (`state["external"].emotion.emotions_vector`, `.mode`, `.language_style`, plus `state["emotions_verlauf"]`) oder die Nova-Felder (`state["internal"].emotion.emotions_vector`, plus `state["nova_emotions_verlauf"]`, `state["nova_emotion_konflikt"]`).
 
 ---
 
@@ -70,10 +72,10 @@ In beiden Graphen. Berechnet User-EI und Nova-Emotion.
 
 Die bisherigen Enricher-Berechnungen sind vollständig nach EI-Calc gewandert (Chat 59, AP2). Sechs Schritte, alle auf den User-Turns:
 
-1. **Emotions-Verlauf** — `_emotions_verlauf_berechnen(raw_turns, current_emotion, current_arousal)`
+1. **Emotions-Verlauf** — `_emotions_verlauf_berechnen(raw_turns, current_emotion, current_arousal, rolle="user")`
    Logarithmischer Decay über alle User-Turns, Turn 0 aus Perzeption, sektorabhängige Normalisierung.
 
-2. **Emotions-Vektor** — `_emotions_vektor_bestimmen(raw_turns, current_emotion)`
+2. **Emotions-Vektor** — `_emotions_vektor_bestimmen(raw_turns, current_emotion, rolle="user")`
    Einer der 9 Vektoren (absturz, spirale, stabilisierung, erholung, aufbluehen, eskalation, abkuehlung, einbruch, plateau).
 
 3. **EI-Arousal** — `_ei_arousal_berechnen(current_arousal, beziehungs_dynamik, intent, tone)`
@@ -82,20 +84,20 @@ Die bisherigen Enricher-Berechnungen sind vollständig nach EI-Calc gewandert (C
 4. **Modus-Plausibilität** — `_modus_plausibilitaet(current_emotion, ei_arousal, perzeption_modus)`
    Matrix-Lookup korrigiert den Perzeption-Modus. Negative Emotion + hoher EI-Arousal → `emotional` erzwungen. Neutrale Emotion → `emotional` blockiert.
 
-5. **Sprachstil-Erkennung** — `_sprach_stil_erkennen(raw_turns, char_hash_dict)`
-   Per-Turn Feature-Scoring über 13 Merkmale.
+5. **Sprachstil-Erkennung** — `_sprach_stil_erkennen(raw_turns, charakter_hash, rolle="user")`
+   Per-Turn Feature-Scoring über 13 Merkmale. `charakter_hash` wird inline aus `state["external"].character` gebaut. Wenn keines der fünf Character-Felder gesetzt ist (typisch im HG), ist `charakter_hash=None` und der Tiebreaker greift nicht — siehe Backlog REFAC-HG-CHAR-HASH-LOAD.
 
 6. **Stil-Plausibilität** — `_stil_plausibilitaet(current_emotion, ei_arousal, perzeption_stil, regelbasiert_stil, tone)`
    Gegencheck Perzeption-Stil gegen regelbasierte Marker.
 
-7. **Beziehungs-Kontext** — direkt aus `char_hash_dict["beziehungsprofil"]`.
+7. **Beziehungs-Kontext** — Konsumiert `state["external"].character.relationship` (befüllt vom `db_zugriff` aus dem `beziehungsprofil`-Hash). EI-Calc schreibt selbst kein `beziehungs_kontext`-Feld — die Information wird vom Responder direkt aus der Personality-Klasse gelesen.
 
 ### 3.2 Nova-Emotion (Kraft 2, Phase 2, Chat 59)
 
 Novas emotionaler Zustand entsteht aus zwei Kräften, die in Folge berechnet werden:
 
-1. **Eigener Decay** — `_emotions_verlauf_berechnen(nova_turns, rolle="assistant")`
-   Nova-Turns werden mit demselben Decay-Verfahren wie User-Turns verarbeitet. Der `rolle`-Parameter schaltet die Turn-Filterung um.
+1. **Eigener Decay** — `_emotions_verlauf_berechnen(nova_turns, rolle="assistant", inject_current=False)`
+   Nova-Turns werden mit demselben Decay-Verfahren wie User-Turns verarbeitet. Der `rolle`-Parameter schaltet die Turn-Filterung um, `inject_current=False` unterdrückt den Turn-0-Trick (Novas aktuelle Emotion ist beim CG-Lauf noch nicht perzipiert).
 
 2. **Asymmetrische Empathie** — `_nova_empathie_berechnen(nova_verlauf_basis, current_emotion, current_arousal)`
    Novas Zustand wird durch die Emotion des Users moduliert. Der Empathie-Koeffizient α hängt von der Sektor-Distanz im Plutchik-Oktagon ab:
@@ -112,7 +114,7 @@ Novas emotionaler Zustand entsteht aus zwei Kräften, die in Folge berechnet wer
 
 3. **Konflikt-Erkennung** — Wenn Novas eigener Zustand und der User-Vektor auf gegenüberliegende Sektoren zeigen UND beide mindestens `EMPATHIE_KONFLIKT_MIN_AROUSAL = 0.4` Arousal haben, wird `nova_emotion_konflikt = True` gesetzt. Beispiel: „Ich freue mich für dich, und gleichzeitig mache ich mir Sorgen."
 
-4. **Nova-Emotions-Vektor** — `_emotions_vektor_bestimmen(nova_turns, rolle="assistant")`
+4. **Nova-Emotions-Vektor** — `_emotions_vektor_bestimmen(nova_turns, rolle="assistant", inject_current=False)`
    Richtung von Novas eigenem emotionalen Bogen, unabhängig vom User-Vektor.
 
 > **Designentscheidung (Chat 59): Kein doppelter Decay.** Novas Antwort wird im async-Pfad (`services/nachbearbeitung.py`) per Perzeption analysiert und als Emotion + Arousal in den Session-Turn annotiert — genau wie beim User. Der Decay läuft beim Lesen im synchronen EI-Calc des nächsten Turns. Eine Berechnung, nicht zwei.
@@ -138,46 +140,51 @@ Bei `event_source == "character"` wird `state["nova_emotions_verlauf"]` auf die 
 
 ### Gelesen
 
-| Feld | Quelle | Beschreibung |
-|------|--------|-------------|
-| `raw_turns` | Enricher | Ungefilterte Session-Turns (User + Assistant) |
-| `char_hash_dict` | Enricher | Charakter-Hash als Dict für Stilanalyse + Beziehungsprofil |
-| `current_emotion` | Perzeption | Dominante Emotion des aktuellen Prompts |
-| `current_arousal` | Perzeption | Energie-Intensität 0.0–1.0 |
-| `beziehungs_dynamik` | Perzeption | vertrauen / distanz / angriff / hilfesuchend / dankbar / neutral |
-| `intent` | Perzeption | smalltalk / knowledge / personal / task / creative / meta |
-| `tone` | Perzeption | empathisch / sachlich / kreativ / direkt |
-| `gespraechs_modus` | Perzeption | Perzeption-Modus (wird ggf. korrigiert) |
-| `sprach_stil` | Perzeption | Perzeption-Stil (wird ggf. durch regelbasierten Wert überstimmt) |
+| State-Quelle | Typ | Beschreibung |
+|---|---|---|
+| `state["ei_calc_rolle"]` | str | Dispatcher-Switch (Default: `"user"`) |
+| `state["raw_turns"]` | list[dict] | Vom Enricher bereitgestellte Session-Turns |
+| `state["external"].emotion.emotion` | str | Aktuelle Emotion (aus Perzeption) |
+| `state["external"].emotion.arousal` | float | Aktueller Arousal |
+| `state["external"].emotion.relationship_dynamic` | str | Beziehungsdynamik |
+| `state["external"].emotion.intent` | str | Intent |
+| `state["external"].emotion.tone` | str | Tone |
+| `state["external"].emotion.mode` | str | Modus aus Perzeption |
+| `state["external"].emotion.language_style` | str | Sprachstil aus Perzeption |
+| `state["external"].character.*` | Character (5 Felder) | Char-Hash-Tiebreaker (inline-konstruiertes Dict) |
+| `state["event_source"]` | str | Empathie-Switch (`"user"` / `"character"`) |
+| `state["emotionale_gravitationspunkte"]` | list[dict] | Gravitations-Modulation des Verlaufs |
 
 ### Geschrieben
 
-| Feld | Typ | Beschreibung |
-|------|-----|-------------|
-| `emotions_verlauf` | `list[dict]` | Gewichteter User-Verlauf mit Decay + sektorabhängiger Normalisierung |
-| `emotions_vektor` | `str` | Einer der 9 Richtungsvektoren |
-| `gespraechs_modus` | `str` | Durch Matrix-Lookup korrigierter Modus |
-| `sprach_stil` | `str` | Regelbasierter oder bestätigter Stil |
-| `beziehungs_kontext` | `str` | Beziehungsprofil-Text aus Charakter-Hash |
-| `nova_emotions_verlauf` | `list[dict]` | Novas gewichteter Emotions-Verlauf nach Empathie-Modulation |
-| `nova_emotions_vektor` | `str` | Richtung von Novas eigenem Bogen |
-| `nova_emotion_konflikt` | `bool` | True wenn Nova und User in gegenüberliegenden Sektoren bei hohem Arousal |
+| State-Ziel | Typ | Bewusst flach? | Beschreibung |
+|---|---|---|---|
+| `state["external"].emotion.emotions_vector` | str | Nein (Klassen-Feld) | Einer der 9 Vektoren (User-Pfad) |
+| `state["external"].emotion.mode` | str | Nein (Klassen-Feld) | Plausibilitäts-korrigierter Modus |
+| `state["external"].emotion.language_style` | str | Nein (Klassen-Feld) | Plausibilitäts-korrigierter Stil |
+| `state["emotions_verlauf"]` | list[dict] | Ja — Verlaufs-Liste passt nicht in Emotion-Klasse (`state.py:84`) | Decay-gewichteter User-Verlauf |
+| `state["internal"].emotion.emotions_vector` | str | Nein (Klassen-Feld) | Novas Vektor (Character-Pfad) |
+| `state["nova_emotions_verlauf"]` | list[dict] | Ja — Verlaufs-Liste passt nicht in Emotion-Klasse (`state.py:87`) | Empathie-modulierter Verlauf |
+| `state["nova_emotion_konflikt"]` | bool | Ja — Berechnungs-Ableitung, kein Persönlichkeits-Zustand (`state.py:88`) | Konflikt-Flag bei gegenüberliegenden Sektoren |
+
+**Was EI-Calc nicht (mehr) schreibt:** `beziehungs_kontext` (wird nur konsumiert, s. §3.1 Punkt 7), `nova_emotions_vektor` (sitzt in `internal.emotion.emotions_vector`), `gespraechs_modus` / `sprach_stil` (sitzen in `external.emotion.mode` / `language_style`).
 
 ---
 
 ## 5. Abhängigkeiten
 
-Sieben Funktionen aus `ei/berechnung.py`:
+Sieben Funktionen aus `ei/berechnung.py` plus eine aus `ei/gravitation.py`:
 
-| Funktion | Zweck |
-|----------|-------|
-| `_emotions_verlauf_berechnen` | Log-Decay über Turns, sektorabhängige Normalisierung, `rolle`-Parameter |
-| `_emotions_vektor_bestimmen` | Richtung aus älteren vs. neueren Turns, `rolle`-Parameter |
-| `_ei_arousal_berechnen` | Gewichteter Kombinationsfaktor (Dynamik, Intent, Tone) |
-| `_modus_plausibilitaet` | Matrix-Lookup Emotion × Arousal → Modus |
-| `_sprach_stil_erkennen` | Per-Turn Feature-Scoring über 13 Merkmale |
-| `_stil_plausibilitaet` | Gegencheck Perzeption-Stil gegen regelbasierten Wert |
-| `_nova_empathie_berechnen` | Asymmetrische Empathie, α-Koeffizienten, Konflikt-Erkennung |
+| Funktion | Modul | Zweck |
+|----------|-------|-------|
+| `_emotions_verlauf_berechnen` | `ei/berechnung.py` | Log-Decay über Turns, sektorabhängige Normalisierung, `rolle`-Parameter |
+| `_emotions_vektor_bestimmen` | `ei/berechnung.py` | Richtung aus älteren vs. neueren Turns, `rolle`-Parameter |
+| `_ei_arousal_berechnen` | `ei/berechnung.py` | Gewichteter Kombinationsfaktor (Dynamik, Intent, Tone) |
+| `_modus_plausibilitaet` | `ei/berechnung.py` | Matrix-Lookup Emotion × Arousal → Modus |
+| `_sprach_stil_erkennen` | `ei/berechnung.py` | Per-Turn Feature-Scoring über 13 Merkmale |
+| `_stil_plausibilitaet` | `ei/berechnung.py` | Gegencheck Perzeption-Stil gegen regelbasierten Wert |
+| `_nova_empathie_berechnen` | `ei/berechnung.py` | Asymmetrische Empathie, α-Koeffizienten, Konflikt-Erkennung |
+| `emotionale_gravitation_auf_verlauf_anwenden(verlauf, punkte)` | `ei/gravitation.py` | Moduliert Verlauf an hoch-arousal KZG-Treffern (`ei_calc.py:22` importiert) |
 
 **Keine** Imports aus `config` außer über die Funktionen selbst. **Keine** Redis-, PostgreSQL- oder Ollama-Zugriffe.
 
@@ -195,29 +202,28 @@ Schneller, exakter, reproduzierbar. Kein Token-Verbrauch. Kein Lock-Wettbewerb u
 
 Bis Chat 58 lief beides im Enricher: Datenzugriffe + EI-Berechnungen in einem Node. Der Split (Chat 59, AP2) macht sichtbar, was vorher verborgen war:
 
-- **Enricher:** Lädt alles aus Redis/PostgreSQL. Schreibt `raw_turns`, `char_hash_dict`, Plugin-Kontext, Session-Turns.
-- **EI-Calc:** Liest nur aus dem State. Rechnet. Schreibt EI-Ergebnisse zurück.
+- **Enricher:** Lädt alles aus Redis/PostgreSQL. Schreibt `raw_turns`, Plugin-Kontext, Session-Turns, `memory_entries`.
+- **EI-Calc:** Liest nur aus dem State (`raw_turns`, Personality-Klassen). Rechnet. Schreibt EI-Ergebnisse zurück (Klassen-Felder plus die drei zulässigen Verlaufs-Brücken).
 
 Kein I/O im EI-Calc bedeutet: Unit-tests mit reinem State-Dict. Keine Mocks für Redis oder Postgres.
 
-### 6.3 Position vor dem Router (Chat 59)
+### 6.3 Position vor dem Router (Chat 59, aktualisiert Phase 2)
 
-Die neue Reihenfolge `Enricher → EI-Calc → Router` adressiert ROUTE-MISS1 strukturell. Der Router sieht beim Routing bereits:
+Die Routing-Entscheidung im Router liest EI-Werte, die EI-Calc bereits gesetzt hat. Die Reihenfolge unterscheidet sich pro Graph:
 
-- Session-, KZG-, LZG-Kontext (aus Enricher)
-- EI-Verlauf, Vektor, korrigierten Modus (aus EI-Calc)
-- Charakter-Hash, Direktiven (aus Enricher)
+- **HumanGraph:** `enricher → ei_calc → salience` (kein Router auf diesem Pfad).
+- **CharacterGraph:** `db_zugriff → ei_calc → enricher → reducer → router`. Der Router sieht beim Routing bereits Novas Empathie-modulierten Vektor (EI-Calc), die geladenen Personality-Klassen (db_zugriff) und den vom Enricher aufgebauten Memory-Kontext.
 
 Vor Chat 59 routete der Router blind auf Perzeptionsergebnissen. Jetzt hat er die volle emotionale und historische Landschaft zur Verfügung.
 
 ---
 
-## 7. Dual-Modus — User-EI + Nova-Empathie in einem Node
+## 7. Rollen-Split: User vs. Character
 
-EI-Calc ist der erste Node, der Novas eigenen Emotionszustand berechnet. Das ist bewusst:
+EI-Calc führt pro Aufruf genau einen der zwei Blöcke aus — User-Pfad oder Character-Pfad. Das Flag `state["ei_calc_rolle"]` entscheidet. Im HumanGraph läuft der User-Block, im CharacterGraph der Character-Block. Der jeweils andere Akteur wird nicht angefasst. Die internen Funktionen `_ei_calc_user()` und `_ei_calc_character()` sind entsprechend separiert.
 
 - **Symmetrie:** Die gleiche Decay-Funktion wirkt auf User- und Nova-Turns. Nur der `rolle`-Parameter unterscheidet sie.
-- **Sichtbarkeit:** `nova_emotions_verlauf` ist ab sofort im State verfügbar — für den Responder (EIGENE_EMOTION-Block, AP8), für den Client (API-Response + SSE, teilweise AP8).
+- **Sichtbarkeit:** `nova_emotions_verlauf` ist im CG-Lauf im State verfügbar — für den Responder (EIGENE_EMOTION-Block, AP8), für den Client (API-Response + SSE, teilweise AP8).
 - **Konflikt-Flag:** `nova_emotion_konflikt` gibt dem Responder ein direktes Signal: „Du bist emotional nicht kongruent mit dem User — mach das explizit."
 
 → Dual-Emotion-Konzept: `novaberg-ei-dual-emotion_k.md`
@@ -242,8 +248,10 @@ Logs über eine Testsession zeigen Novas Empathie-Bogen:
 ---
 
 → Enricher (liefert Rohdaten): `novaberg-node-enricher.md`
+→ EI-Persist (konsolidiert internal.emotion und persistiert `nova_state` am CG-Ausgang, Chat 89): `novaberg-node-ei-calc-persist.md`
+→ DB-Zugriff (lädt `internal.emotion` und `external.character` am CG-Eingang, Chat 89): `novaberg-node-db-zugriff.md`
+→ Personality-Klassen (Character, Emotion): `novaberg-personality.md`
 → EI-Gesamtkonzept: `novaberg-ei.md`
 → Dual-Emotion Phase 2: `novaberg-ei-dual-emotion_k.md`
 → Plutchik-Oktagon + Sektor-Distanzen: `novaberg-ei-plutchik.md`
-→ Async-Pfad (Nova-Perzeption als Quelle für spätere EI-Calcs): `novaberg-service-nachbearbeitung.md`
 → Perzeption (rolle-Flag): `novaberg-node-perception.md`

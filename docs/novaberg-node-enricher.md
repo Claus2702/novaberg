@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Node-Referenz Enricher
-**Stand:** 21. April 2026, Chat 60 (Event-Modell, Graph-Split)
+**Stand:** 17. Mai 2026, Chat 90 (PFAD2-PERZEPTION-FIX abgeschlossen, HumanGraph-Slimming Phase 4)
 **Pfad:** novaberg/docs/novaberg-node-enricher.md
 **Quellen:** nova-01-m-c.md
 **Datei:** `graph/nodes/enricher.py`
@@ -11,7 +11,7 @@
 
 ## 1. Aufgabe
 
-Der Enricher ist Novas Gedächtnis-Schnittstelle — seit Chat 59 ein **reiner I/O-Node**. Er lädt den gesamten verfügbaren Kontext — Session, KZG, LZG, Charakter-Hash, Plugin-Daten — und stellt ihn dem Graph zur Verfügung. Die emotionale Intelligenz wird **nicht mehr** hier berechnet, sondern im nachgelagerten EI-Calc-Node.
+Der Enricher ist Novas Gedächtnis-Schnittstelle — seit Chat 59 ein **reiner I/O-Node**. Er lädt den Memory-Kontext — Session, KZG, LZG, Plugin-Daten — und stellt ihn dem Graph zur Verfügung. Die emotionale Intelligenz wird **nicht mehr** hier berechnet, sondern im nachgelagerten EI-Calc-Node. Charakter-/Identitäts-Daten lädt seit Phase 2 (Chat 89) der `db_zugriff`-Node am CG-Eingang.
 
 **Kein LLM-Call.** Der Enricher macht ausschließlich Datenzugriffe und Embedding-Erzeugung.
 
@@ -24,21 +24,38 @@ Der Enricher ist Novas Gedächtnis-Schnittstelle — seit Chat 59 ein **reiner I
 ## 2. Position im Graph
 
 ```
-HumanGraph (Pfad 1):    Perzeption → ▶ Enricher ◀ → EI-Calc → Salienz → Dispatcher → END
-CharacterGraph (Pfad 2): ▶ Enricher ◀ → EI-Calc → Router → [Planner ⇄ Agent] → GV-Node → ...
+HumanGraph (Pfad 1, 5 Nodes):
+perzeption → ▶ enricher ◀ → ei_calc → salience → dispatcher
+
+CharacterGraph (Pfad 2, 17 Nodes):
+db_zugriff → ei_calc → ▶ enricher ◀ → reducer → router → planner → agent_dispatch
+          → gv_node → responder → thinker → tribunal → evaluate → corrector
+          → perzeption_assistant → ei_calc_persist → salience → dispatcher
 ```
 
-**Seit Chat 60 in beiden Graphen.** Im HumanGraph als zweiter Node (nach Perzeption), im CharacterGraph als Entry-Point. Lädt in beiden Fällen den vollen Kontext: Session, KZG, LZG, Charakter-Hash, Plugin-Daten.
+**HumanGraph:** Zweiter Node, nach Perzeption (unverändert seit Phase 4).
+
+**CharacterGraph:** Vierter Node, nach `db_zugriff → ei_calc`. Der Enricher liest aus `state["external"].character` (vom `db_zugriff` befüllt) und aus `state["internal"].emotion` (vom `ei_calc` aktualisiert mit Empathie-Modulation).
+
+**Reihenfolge-Logik (Phase 2):** EI-Calc läuft im CG **vor** dem Enricher, weil das Empathie-Update gegen Novas persistierten Vorzustand berechnet wird, bevor Memory-Resonanz hinzukommt.
 
 **Input:** State mit Perzeptionsergebnissen (Emotion, Arousal, Modus). Router-Flags (`needs_memory`, `needs_timeline`) spielen hier keine Rolle mehr, weil der Enricher jetzt vor dem Router läuft — er lädt alles, was später gebraucht werden könnte.
 
-**Output:** State angereichert mit `memory_context`, `session_turns` (vollständige Turn-Dicts, nur Shadow-Impulse gefiltert), `raw_turns` (ungefiltert für EI-Calc), `char_hash_dict` (als Dict für EI-Calc), Nova-Profile aus dem Charakter-Hash.
+**Output:**
+
+**HumanGraph (`_enrich_human`, 5 produktive Felder):**
+`raw_turns`, `user_intentionen`, `prompt_embedding`, `aktivierte_ziele`, `gravitationsterm`
+
+**CharacterGraph (`_enrich_character`, 7 produktive Felder):**
+`raw_turns`, `session_turns` (Shadow-Impulse gefiltert), `user_intentionen`, `prompt_embedding`, `aktivierte_ziele` + `gravitationsterm`, `emotionale_gravitationspunkte`, `memory_entries`
+
+→ Vollständige Tabelle: §4 Geschrieben.
 
 ---
 
 ## 3. Vier Kontextquellen
 
-**Hinweis (seit Chat 59):** Der fünfte Abschnitt „Emotionale Intelligenz" wurde entfernt. Alle EI-Berechnungen laufen jetzt im EI-Calc-Node (→ `novaberg-node-ei-calc.md`). Der Enricher übergibt nur noch die Rohdaten (`raw_turns`, `char_hash_dict`) an den State.
+**Hinweis (seit Chat 59, vereinfacht in Phase 3):** Der fünfte Abschnitt „Emotionale Intelligenz" wurde entfernt. Alle EI-Berechnungen laufen jetzt im EI-Calc-Node (→ `novaberg-node-ei-calc.md`). Der Enricher übergibt als Brücke nur noch `raw_turns` an den State.
 
 
 
@@ -69,11 +86,11 @@ Jeder konsumierende Node formatiert die Turn-Dicts selbst:
 
 ### 3.2 Plugin-Hooks (dynamisch)
 
-Der Enricher iteriert über alle registrierten Manager-Plugins und ruft `manager.enrich(state, postgres_url)` auf. Jeder Manager entscheidet selbst, ob er Kontext liefert:
+Der Enricher iteriert über alle registrierten Manager-Plugins und ruft den Hook `manager.enrich_entries(state, postgres_url)` auf. Jeder Manager entscheidet selbst, ob er Kontext liefert:
 
 | Manager | Liefert |
 |---------|---------|
-| FaktenManager | Relevante Fakten zur aktuellen Anfrage |
+| FaktenManager | **Deaktiviert seit Chat 71** (`enricher.py:416-419`) — Hook wird übersprungen |
 | TimelineManager | Anstehende Termine, heutige Ereignisse |
 | NotizenManager | Betroffene Notiz bei Management-Intent |
 | KzgManager | (kein enrich-Hook, KZG wird direkt geladen) |
@@ -90,20 +107,24 @@ Nur wenn Einträge existieren (Vor-Check zur Kostenoptimierung):
 
 > **Designentscheidung (Chat 3):** Der Vor-Check vermeidet teure Embedding-Berechnungen bei leeren Speichern. Ohne Gedächtnis: ~0ms. Mit Gedächtnis: ~1.6s (Embedding) + Suche.
 
-### 3.4 Charakter-Hash (immer)
+### 3.4 Charakter-Hash (nicht mehr geladen, seit Phase 2)
 
-Lädt den Charakter-Hash als String (`charakter_hash_retrieve`) und als Dict (`charakter_hash_retrieve_dict`). Der String fließt in den `memory_context`, das Dict wird für Stilanalyse und Beziehungsprofil verwendet.
+Der Enricher lädt den Charakter-Hash nicht mehr selbst. Seit Chat 89 (PFAD2-PERZEPTION-FIX Phase 2) ist das Laden in den `db_zugriff`-Node gewandert, der am CG-Entry läuft. Der Enricher konsumiert `state["external"].character` direkt (nur für die Hash-Formatierung im `memory_entries`-Akkumulator; im HG bleibt `external.character` leer und der Eintrag entfällt).
 
-### 3.5 Rohdaten für den EI-Calc (seit Chat 59)
+→ Lade-Pfad: `novaberg-node-db-zugriff.md`
+→ Ablage-Konvention: `novaberg-personality.md`
 
-Der Enricher schreibt zwei Brücken-Felder in den State, die der nachfolgende EI-Calc-Node konsumiert:
+### 3.5 Rohdaten für den EI-Calc (seit Chat 59, vereinfacht in Phase 3)
+
+Der Enricher schreibt eine Brücke in den State, die der nachfolgende EI-Calc-Node konsumiert:
 
 | Feld | Quelle | Inhalt |
 |------|--------|--------|
-| `raw_turns` | `session_turns_retrieve()` | Ungefilterte Session-Turns (User + Assistant) für Verlauf, Vektor, Stilanalyse |
-| `char_hash_dict` | `charakter_hash_retrieve_dict()` | Charakter-Hash als Dict für Stil-Tiebreaker und Beziehungsprofil |
+| `raw_turns` | `session_turns_retrieve()` | Ungefilterte Session-Turns für Verlauf, Vektor, Stilanalyse |
 
-Die eigentliche Berechnung (Verlauf, Vektor, EI-Arousal, Modus-/Stil-Plausibilität, Nova-Empathie, Beziehungs-Kontext) passiert im EI-Calc-Node.
+Der frühere Brücken-Eintrag `char_hash_dict` ist mit Phase 3 entfallen — EI-Calc baut sich das Dict bei Bedarf inline aus `state["external"].character` (`ei_calc.py:100-106`).
+
+Die eigentliche Berechnung (Verlauf, Vektor, EI-Arousal, Modus-/Stil-Plausibilität, Nova-Empathie) passiert im EI-Calc-Node.
 
 → Vollständige Beschreibung aller EI-Berechnungen: `novaberg-node-ei-calc.md`
 → Fensterbreiten (`EMOTION_MAX_TURNS`, `EMOTION_VEKTOR_TURNS`, `STIL_ANALYSE_TURNS`): dort im Detail
@@ -114,32 +135,41 @@ Die eigentliche Berechnung (Verlauf, Vektor, EI-Arousal, Modus-/Stil-Plausibilit
 
 ### Gelesen
 
-| Feld | Quelle | Beschreibung |
-|------|--------|-------------|
-| `user_id` | API | Gedächtnis-Partition |
-| `user_prompt` | API | Für Embedding-Erzeugung |
-
-Die Perzeptionsergebnisse (`current_emotion`, `current_arousal`, `sprach_stil`) werden vom Enricher nicht mehr gelesen — sie sind Eingang für den EI-Calc-Node.
+| State-Quelle | Typ | Beschreibung |
+|---|---|---|
+| `user_id` | str | Gedächtnis-Partition |
+| `character_id` | str | Paar-Partition (seit Chat 60) |
+| `user_prompt` | str | Für Embedding-Erzeugung |
+| `ei_calc_rolle` | str | Dispatcher-Switch (`"user"` → HG, `"character"` → CG; Default: `"character"`) |
+| `turn_id` | str | Pipeline-Log-Korrelation (Chat 88 P1.1) |
+| `state["external"].character` | Character | Charakter-Hash-Formatierung für `memory_entries` (nur CG, im HG leer) |
 
 ### Geschrieben
 
-| Feld | Typ | Beschreibung |
-|------|-----|-------------|
-| `memory_context` | `str` | Zusammengeführter Kontext aller Quellen |
-| `session_turns` | `list[dict]` | Vollständige Turn-Dicts (nur Shadow-Impulse gefiltert) |
-| `raw_turns` | `list[dict]` | Ungefilterte Session-Turns als Brücke zum EI-Calc (seit Chat 59) |
-| `char_hash_dict` | `dict` | Charakter-Hash als Dict als Brücke zum EI-Calc (seit Chat 59) |
-| `user_intentionen` | `list[str]` | Letzte erkannte Intentionen |
-| `user_emotion` | `str` | Letzte annotierte Emotion |
-| `charakter_anweisungen` | `list[str]` | Aktive Charakter-Anweisungen aus DB (seit Chat 40) |
-| `direktiven` | `list[dict]` | Aktive Verhaltens-Direktiven aus DB (seit Chat 40) |
-| `nova_kern` | `str` | Novas Kern-Hash (user_id="nova", seit Chat 20) |
-| `nova_adaptiv` | `str` | Novas Adaptiv-Hash |
-| `nova_beziehung` | `str` | Novas Beziehungsprofil |
-| `nova_intentionen` | `str` | Novas Intentions-Profil (seit Chat 45) |
-| `nova_emotions` | `str` | Novas emotionale Grundstimmung (seit Chat 52) |
+**HumanGraph (`_enrich_human`):**
 
-**Entfernt (seit Chat 59):** `emotions_verlauf`, `emotions_vektor`, `gespraechs_modus`, `sprach_stil`, `beziehungs_kontext` werden jetzt vom EI-Calc-Node geschrieben.
+| State-Ziel | Typ | Bewusst flach? | Beschreibung |
+|---|---|---|---|
+| `state["raw_turns"]` | list[dict] | n.a. (Brücken-Datenstruktur, kein Personality-Wert) | Ungefilterte Session-Turns |
+| `state["user_intentionen"]` | list[str] | n.a. | Letzte Intentionen aus User-Turn |
+| `state["prompt_embedding"]` | list[float] | n.a. | 768-dim Vektor aus `user_prompt` |
+| `state["aktivierte_ziele"]` | list[dict] | n.a. | Ziele über Gravitations-Schwelle |
+| `state["gravitationsterm"]` | float | n.a. | Aggregierter Drive-Term |
+
+**CharacterGraph (`_enrich_character`):**
+
+| State-Ziel | Typ | Bewusst flach? | Beschreibung |
+|---|---|---|---|
+| `state["raw_turns"]` | list[dict] | n.a. | Ungefilterte Session-Turns |
+| `state["session_turns"]` | list[dict] | n.a. | Shadow-Impulse gefiltert |
+| `state["user_intentionen"]` | list[str] | n.a. | Letzte Intentionen aus User-Turn |
+| `state["prompt_embedding"]` | list[float] | n.a. | 768-dim Vektor |
+| `state["aktivierte_ziele"]` | list[dict] | n.a. | Ziele über Schwelle |
+| `state["gravitationsterm"]` | float | n.a. | Aggregierter Drive-Term |
+| `state["emotionale_gravitationspunkte"]` | list[dict] | n.a. | KZG-Scan auf hoch-arousal Treffer |
+| `state["memory_entries"]` | list[ContextEntry] | n.a. | Akkumulierte Memory-Quellen für den Reducer |
+
+**Phase 3 entfernt:** `char_hash_dict`, `user_emotion`, `charakter_anweisungen`, `direktiven`, `nova_kern`, `nova_adaptiv`, `nova_beziehung`, `nova_intentionen`, `nova_emotions`. Diese Felder werden vom Enricher nicht mehr geschrieben. Charakter-/Identitäts-Daten liegen in den Personality-Klassen (`state["external"].character`, `state["internal"].character`/`identities`/`directives`), befüllt vom `db_zugriff`-Node am CG-Eingang.
 
 ---
 
@@ -151,19 +181,23 @@ Die Perzeptionsergebnisse (`current_emotion`, `current_arousal`, `sprach_stil`) 
 
 **Kein LLM-Call:** Der Enricher ist bewusst LLM-frei. Alle Operationen sind deterministisch: Datenbankabfragen, Embedding-Erzeugung (via Ollama, aber das ist kein generativer Call). Das macht ihn schnell, reproduzierbar und testbar.
 
-**Reiner I/O-Node (seit Chat 59):** Keine Python-Berechnungen mehr — alles was rechnet, steht im EI-Calc. Der Enricher lädt. Punkt.
+**Reiner I/O-Node (seit Chat 59):** Keine Python-Berechnungen mehr — alles was rechnet, steht im EI-Calc. Der Enricher lädt Session-Turns aus Redis, erzeugt Embeddings via Ollama-Embed-Modell, liest aktivierte Ziele aus Postgres (`ziele`-Tabelle). Punkt.
 
-**Plugin-Erweiterbarkeit:** Neue Manager können Kontext liefern ohne den Enricher zu ändern. Der Hook `manager.enrich(state, postgres_url)` ist das einzige Interface.
+**Plugin-Erweiterbarkeit:** Neue Manager können Kontext liefern ohne den Enricher zu ändern. Der Hook `manager.enrich_entries(state, postgres_url)` ist das einzige Interface.
 
 ---
 
-→ Konzept: novaberg-graph.md — Graph-Konzept`
-→ Architektur: novaberg-graph.md — Graph-Architektur`
-→ Emotionale Intelligenz: novaberg-ei.md — EI-Konzept`, `novaberg-node-perception.md — Perzeption & Emotions-Vektoren`
-→ Plutchik-Emotionsmodell: novaberg-ei-plutchik.md
-→ Lesson Timing-Bug: novaberg-node-perception.md (Turn-0-Fix)
-→ Lesson Session-Kontamination: novaberg-pixie_l_kontamination.md
-→ Profil-Pipeline (CAT + Destillation): novaberg-ei-character-profiles.md
+→ Konzept: `novaberg-graph.md` — Graph-Konzept
+→ Architektur: `novaberg-graph.md` — Graph-Architektur
+→ Emotionale Intelligenz: `novaberg-ei.md` — EI-Konzept, `novaberg-node-perception.md` — Perzeption & Emotions-Vektoren
+→ EI-Berechnung: `novaberg-node-ei-calc.md` — User-/Character-Pfad, Empathie-Switch
+→ EI-Persist: `novaberg-node-ei-calc-persist.md` — Konsolidiert `internal.emotion` und persistiert am CG-Ausgang (Chat 89)
+→ DB-Zugriff: `novaberg-node-db-zugriff.md` — Lädt `internal.emotion` und `external.character` am CG-Eingang (Chat 89)
+→ Personality-Klassen: `novaberg-personality.md` — Character, Emotion, InternalPersonality
+→ Plutchik-Emotionsmodell: `novaberg-ei-plutchik.md`
+→ Lesson Timing-Bug: `novaberg-node-perception.md` (Turn-0-Fix)
+→ Lesson Session-Kontamination: `novaberg-pixie_l_kontamination.md`
+→ Profil-Pipeline (CAT + Destillation): `novaberg-ei-character-profiles.md`
 
 ---
 
@@ -173,22 +207,8 @@ Die regelbasierte Stil-Erkennung wurde im Zuge von AP2 (Chat 59) aus dem Enriche
 
 → Details: `novaberg-node-ei-calc.md`
 
-### Novas eigener Hash (seit Chat 20, erweitert Chat 45, erweitert Chat 52)
+### Novas eigener Hash (verschoben nach db_zugriff)
 
-Der Enricher laedt Novas Charakter-Hash (`charakter_hash_retrieve_dict`
-mit `user_id="nova"`). Fünf Felder werden in den State geschrieben:
+Seit Phase 2 (Chat 89) lädt der `db_zugriff`-Node Novas Charakter-Hash und schreibt ihn nach `state["internal"].character`. Der Enricher konsumiert diese Daten nicht direkt — der Responder liest sie für die `[IDENTITAET]`-Block-Konstruktion.
 
-- `nova_kern` = `kern_hash` — Gewachsene Persoenlichkeit
-- `nova_adaptiv` = `adaptive_hash` — Aktuelle Themen
-- `nova_intentionen` = `intentions_profil` — Kommunikationsstil
-- `nova_beziehung` = `beziehungsprofil` — Bild vom Nutzer
-- `nova_emotions` = `emotions_profil` — Emotionale Grundstimmung (seit Chat 52)
-
-Voraussetzung: Alle fünf Felder muessen im `ConversationState` TypedDict
-deklariert sein (STATE1-Fix Chat 20, erweitert Chat 45, Chat 52).
-
-`charakter_hash_retrieve_dict` wurde in Chat 45 erweitert: SQL-Query
-laedt jetzt 4 statt 3 Spalten (+ `intentions_profil`), Return-Dict
-enthaelt den Key `intentions_profil`. In Chat 52 erweitert auf
-5 Spalten (+ `emotions_profil`) — alle destillierten Profile fliessen
-jetzt in den Prompt.
+→ `novaberg-node-db-zugriff.md`
