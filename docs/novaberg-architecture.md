@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Systemarchitektur, Tech-Stack, Plugin-System
-**Stand:** 16. Mai 2026, Chat 88 (Synapsen P0/P1/P1.1/P2/P3 — `db/init.sql` als SSoT, Pipeline-Log-Forensik, `lzg_knoten`/`lzg_kanten` als parallele Synapsen-Tabellen, KZG-Schreibpfad mit Magnet-Feldern)
+**Stand:** 17. Mai 2026, Chat 90 (PFAD2-PERZEPTION-FIX, HumanGraph-Slimming Phase 4, TURN-ID-FIX)
 **Pfad:** novaberg/docs/novaberg-architecture.md
 **Quellen:** nova-00-a.md (Architektur-Übersicht), nova-07-a.md (Tech-Stack), nova-07-m-a.md (Plugin-System)
 
@@ -190,14 +190,18 @@ project/
 │   ├── graph/                           # LangGraph Graphen + State (Chat 60: Graph-Split)
 │   │   ├── base.py                      #   GraphBase (abstrakt, create_state)
 │   │   ├── human_graph.py               #   HumanGraph (Pfad 1, 5 Nodes)
-│   │   ├── character_graph.py           #   CharacterGraph (Pfad 2, 14 Nodes, Chat 60/61)
+│   │   ├── character_graph.py           #   CharacterGraph (Pfad 2, 17 Nodes, Chat 60/61/89)
 │   │   ├── agent_graph.py               #   AgentGraph (Pixie-Pipeline, 3 Nodes)
 │   │   ├── builder.py                   #   Fassade, Plugin-Init
+│   │   ├── personality.py               #   Personality-Klassen (Character, Emotion, Personality, InternalPersonality)
 │   │   ├── state.py                     #   State-Definition, PendingWrite
-│   │   └── nodes/                       #   13 Node-Dateien, von den drei Graphen geteilt
+│   │   └── nodes/                       #   16 Node-Dateien, von den drei Graphen geteilt
 │   │       ├── perzeption.py            #     → novaberg-node-perception.md (rolle user/assistant)
-│   │       ├── enricher.py              #     → novaberg-node-enricher.md
+│   │       ├── db_zugriff.py            #     → novaberg-node-db-zugriff.md (CG-Entry, lädt Personality)
+│   │       ├── enricher.py              #     → novaberg-node-enricher.md (Methodensplit nach Phase 4)
+│   │       ├── reducer.py               #     Dedupliziert memory_entries → memory_context (nur CG, seit Chat 75)
 │   │       ├── ei_calc.py               #     → novaberg-node-ei-calc.md (rolle user/character)
+│   │       ├── ei_calc_persist.py       #     → novaberg-node-ei-calc-persist.md (CG-Ausgang, nova_state-Persistierung)
 │   │       ├── router.py                #     → novaberg-node-router.md
 │   │       ├── planner.py               #     → novaberg-node-planner.md
 │   │       ├── responder.py             #     → novaberg-node-responder.md
@@ -293,7 +297,7 @@ Seit Chat 60 sind User und Charakter zwei unabhängige Akteure:
 | Pfad | Graph | Nodes | Aufgabe |
 |------|-------|-------|---------|
 | Pfad 1 | HumanGraph | 5 | User schreibt: Wahrnehmung + Speicherung |
-| Pfad 2 | CharacterGraph | 14 | Charakter reagiert: Lesen + Entscheiden + Antworten + Perzeption(Nova) + Speichern |
+| Pfad 2 | CharacterGraph | 17 | Charakter reagiert: Identität laden + Lesen + Entscheiden + Antworten + Perzeption(Nova) + Konsolidieren + Speichern |
 
 Verbunden durch eine Redis-Event-Queue (`event_queue:{user_id}:{character_id}`). Ein Event-Consumer (`services/event_consumer.py`) pollt die Queue und startet CharacterGraph-Durchlaeufe. Antworten erreichen den Client per WebSocket.
 
@@ -443,15 +447,17 @@ Perzeption und Router bekommen die letzten 5 Session-Turns als Hintergrund-Konte
 
 | Feature | Status | Referenz |
 |---------|--------|----------|
-| Graph-Pipeline (HumanGraph: 5 Nodes Pfad 1 | CharacterGraph: 14 Nodes Pfad 2 | AgentGraph: 3 Nodes) | Implementiert & getestet | novaberg-graph.md, novaberg-node-*.md |
-| Async-Block (Salienz + Dispatcher + Nova-Pfad) | Implementiert & validiert | novaberg-service-nachbearbeitung.md |
+| Graph-Pipeline (HumanGraph: 5 Nodes Pfad 1 | CharacterGraph: 17 Nodes Pfad 2 | AgentGraph: 3 Nodes) | Implementiert & getestet | novaberg-graph.md, novaberg-node-*.md |
+| PFAD2-PERZEPTION-FIX Phase 2 (db_zugriff + ei_calc_persist als CG-Klammer) | Implementiert & validiert (Chat 89) | novaberg-node-db-zugriff.md, novaberg-node-ei-calc-persist.md, novaberg-pfad2-perzeption_k.md |
+| PFAD2-PERZEPTION-FIX Phase 3 (Personality-Klassen-Schicht: external/internal mit emotion/character/identities/directives) | Implementiert & validiert (Chat 89) | novaberg-personality.md, DEVELOPER_HANDBOOK.md §6, novaberg-lesson_l_klassen-statt-flache-keys.md |
+| HumanGraph-Slimming Phase 4 (Enricher-Methodensplit, Reducer aus HG raus, kein KZG/LZG-Lauf im HG) | Implementiert & validiert (Chat 90) | novaberg-graph.md §3.1, novaberg-node-enricher.md |
 | EI-Calc-Node (reine Python-Berechnung, Dual-Modus User + Nova) | Implementiert & validiert | novaberg-node-ei-calc.md |
 | Dual-Emotion Phase 2 (Nova-Empathie, Konflikt-Erkennung) | Implementiert (AP1–3, AP7, AP4 teilw., AP8 teilw.) | novaberg-ei-dual-emotion_k.md |
 | Graph-Pipeline (AgentGraph, 3 Nodes) | Implementiert & getestet | novaberg-graph.md, novaberg-pixie.md |
 | Kurzzeitgedaechtnis (Redis + Vektor) | Implementiert & getestet | novaberg-mem-kzg.md |
 | Kurzzeitgedaechtnis Magnet-Felder (entitaet_ids, timeline_id, Synapsen P3) | Implementiert | novaberg-mem-kzg.md, novaberg-pixie-kzg.md |
 | Langzeitgedaechtnis (PostgreSQL) | Implementiert & getestet | novaberg-mem-lzg.md |
-| Pipeline-Log-Forensik (asynchroner Writer, JSONB-Inhalt, Span-Korrelation) | Implementiert | novaberg-memory-synapsen_k.md §10 |
+| Pipeline-Log-Forensik (asynchroner Writer, JSONB-Inhalt, Span-Korrelation, turn_id über /chat + /chat/stream + fail-loud bei leerem turn_id) | Implementiert (Chat 88 P1.1, vervollständigt Chat 90 TURN-ID-FIX) | novaberg-memory-synapsen_k.md §10 |
 | Synapsen-Tabellen (lzg_knoten, lzg_kanten, parallel zum LZG) | Schema angelegt, leer | novaberg-memory-synapsen_k.md §4 |
 | Ebbinghaus-Decay + Soft-Delete | Implementiert & getestet | novaberg-pixie-decay.md |
 | Salienz als Entscheider | Implementiert & getestet | novaberg-node-salience.md |
@@ -527,13 +533,15 @@ Das Handbuch ist nach Betrachtungstiefen organisiert. Tiefe 0 ist der Einstiegsp
 | novaberg-ei.md | Emotionale Intelligenz Ueberblick |
 | novaberg-pixie.md | Pixie-System, Scheduling, Queue/Stack/Delivery |
 
-### Tiefe 2 — Pipeline-Nodes (13)
+### Tiefe 2 — Pipeline-Nodes (15)
 
 | Dokument | Beschreibung |
 |----------|-------------|
 | novaberg-node-perception.md | Perzeption (Emotion, Arousal, Intent, Plutchik-Oktagon, Dual-Modus User/Nova) |
-| novaberg-node-enricher.md | Enricher (Kontext-Laden, Plugin-Hooks, reines I/O) |
+| novaberg-node-db-zugriff.md | db_zugriff (CG-Entry, lädt Personality-Klassen aus PostgreSQL/Redis) |
+| novaberg-node-enricher.md | Enricher (Methodensplit nach Phase 4: _enrich_human schlank, _enrich_character voll, Plugin-Hooks im CG) |
 | novaberg-node-ei-calc.md | EI-Calc (Python-Berechnung: Verlauf, Vektor, Nova-Empathie, kein LLM) |
+| novaberg-node-ei-calc-persist.md | ei_calc_persist (CG-Ausgang, konsolidiert internal.emotion, persistiert nova_state) |
 | novaberg-node-router.md | Router (Routing, Agenten-Delegation) |
 | novaberg-node-planner.md | Planner (Agent-Loop, Resume-Flow) |
 | novaberg-node-agent-dispatch.md | Agent-Dispatch (Zentraler Entry-Point) |
@@ -542,9 +550,8 @@ Das Handbuch ist nach Betrachtungstiefen organisiert. Tiefe 0 ist der Einstiegsp
 | novaberg-node-thinker.md | Thinker (Faktenpruefung, Web-Suche) |
 | novaberg-node-tribunal.md | Tribunal (Drei-Perspektiven-Bewertung, Score-System) |
 | novaberg-node-corrector.md | Corrector (Korrekturschleife) |
-| novaberg-node-salience.md | Salienz (Bewertung, pending_writes — asynchron seit Chat 59) |
-| novaberg-node-dispatcher.md | Dispatcher (Schreiboperationen verteilen — asynchron seit Chat 59) |
-| novaberg-service-nachbearbeitung.md | Async-Service (User-Pfad + Nova-Pfad parallel nach Antwort-Auslieferung) |
+| novaberg-node-salience.md | Salienz (Bewertung, pending_writes, Input-Switch nach ei_calc_rolle) |
+| novaberg-node-dispatcher.md | Dispatcher (Session-Turn-Schreiben, KZG-Dispatch, Schreiboperationen verteilen) |
 
 ### Tiefe 2 — User-Agenten (4)
 
