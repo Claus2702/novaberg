@@ -4,7 +4,7 @@
 **Dokument:** Graph-Architektur, HumanGraph, AgentGraph, Agent-System
 **Stand:** 17. Mai 2026, Chat 90 (HumanGraph-Slimming Phase 4, TURN-ID-FIX)
 **Pfad:** novaberg/docs/novaberg-graph.md
-**Quellen:** nova-01-k.md (Graph-Konzept), nova-01-a.md (Graph-Architektur), nova-11-k.md (Agent-Workflow-Konzept), nova-11-a.md (Agent-Architektur), novaberg-pfad2-perzeption_k.md (PFAD2-PERZEPTION-FIX, Personality-Klassen-Schicht)
+**Quellen:** nova-01-k.md (Graph-Konzept), nova-01-a.md (Graph-Architektur), nova-11-k.md (Agent-Workflow-Konzept), nova-11-a.md (Agent-Architektur), novaberg-path2-perzeption_k.md (PFAD2-PERZEPTION-FIX, Personality-Klassen-Schicht)
 
 ---
 

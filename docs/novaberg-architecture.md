@@ -448,7 +448,7 @@ Perzeption und Router bekommen die letzten 5 Session-Turns als Hintergrund-Konte
 | Feature | Status | Referenz |
 |---------|--------|----------|
 | Graph-Pipeline (HumanGraph: 5 Nodes Pfad 1 | CharacterGraph: 17 Nodes Pfad 2 | AgentGraph: 3 Nodes) | Implementiert & getestet | novaberg-graph.md, novaberg-node-*.md |
-| PFAD2-PERZEPTION-FIX Phase 2 (db_zugriff + ei_calc_persist als CG-Klammer) | Implementiert & validiert (Chat 89) | novaberg-node-db-zugriff.md, novaberg-node-ei-calc-persist.md, novaberg-pfad2-perzeption_k.md |
+| PFAD2-PERZEPTION-FIX Phase 2 (db_zugriff + ei_calc_persist als CG-Klammer) | Implementiert & validiert (Chat 89) | novaberg-node-db-zugriff.md, novaberg-node-ei-calc-persist.md, novaberg-path2-perzeption_k.md |
 | PFAD2-PERZEPTION-FIX Phase 3 (Personality-Klassen-Schicht: external/internal mit emotion/character/identities/directives) | Implementiert & validiert (Chat 89) | novaberg-personality.md, DEVELOPER_HANDBOOK.md §6, novaberg-lesson_l_klassen-statt-flache-keys.md |
 | HumanGraph-Slimming Phase 4 (Enricher-Methodensplit, Reducer aus HG raus, kein KZG/LZG-Lauf im HG) | Implementiert & validiert (Chat 90) | novaberg-graph.md §3.1, novaberg-node-enricher.md |
 | EI-Calc-Node (reine Python-Berechnung, Dual-Modus User + Nova) | Implementiert & validiert | novaberg-node-ei-calc.md |

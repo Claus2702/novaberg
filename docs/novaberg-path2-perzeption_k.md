@@ -3,7 +3,7 @@
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Konzept — PFAD2-PERZEPTION-FIX
 **Stand:** 16. Mai 2026, Chat 89
-**Pfad:** novaberg/docs/novaberg-pfad2-perzeption_k.md
+**Pfad:** novaberg/docs/novaberg-path2-perzeption_k.md
 **Typ:** Konzept (K)
 **Vorgänger-Audits:** PFAD2-EMO-MIX-Audit, Perzeption-Audit, Vor-Audit (alle Chat 89)
 **Voraussetzung für:** P4 (Synapsen-Promotion, `novaberg-memory-synapsen_k.md` §13.6)
