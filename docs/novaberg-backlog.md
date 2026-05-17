@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Backlog — Konzipierte, noch nicht implementierte Features
-**Stand:** 09. Mai 2026, Chat 78
+**Stand:** 17. Mai 2026, Chat 90
 **Pfad:** novaberg/docs/novaberg-backlog.md
 **Quellen:** nova-08-k.md (Kognitive Anreicherung), nova-10-k-backlog.md (Skill-System), nova-01-t-c-backlog.md (Node-Konfiguration)
 
@@ -2172,6 +2172,84 @@ Architektonisch ist das eine Asymmetrie zur jetzt sauberen Phase-3-Pipeline: die
 
 ---
 
+## Refactor: REFAC-HG-CHAR-HASH-LOAD — Char-Hash-Tiebreaker im HumanGraph aktivieren (Chat 90)
+
+**Status:** ⬜ Geplant, bewusst nicht in Phase 4
+**Prio:** Niedrig
+**Auslöser:** HG-Slimming Pre-Audit (Chat 90, 17.05.2026)
+
+**Beobachtung:** Im HumanGraph läuft `_sprach_stil_erkennen` heute ohne wirksamen Charakter-Hash-Tiebreaker. `state["external"].character` ist im HG-Lauf immer leer, weil der `db_zugriff`-Node nur im CharacterGraph eingehängt ist. Folge: bei ambigen Sessions (Top-1/Top-2-Feature-Scoring-Differenz `< 2.0`) greift der Tiebreaker-Block nicht, Fallback ist reines Feature-Scoring-Top-1. Stil-Output verschiebt sich um eine Stufe gegenüber einem Lauf mit echtem User-Hash. Numerisch klein, semantisch sichtbar — der Stil-Wert wandert via Event-Payload als `language_style` in den CG-Seed und beeinflusst Router und Responder.
+
+**Belegstelle Chat 90 (AUDIT-HG-SLIMMING, Frage 3 & 5):**
+
+In `ei_calc.py:103-114` wird das lokale `char_hash_dict` aus `state["external"].character.*` gebaut. Im HG sind alle Felder leer:
+
+```python
+char_hash_dict = {
+    "kern": "", "adaptiv": "", "beziehungsprofil": "",
+    "intentions_profil": "", "emotions_profil": "",
+}
+# → if any(char_hash_dict.values()) else None  → None im HG
+```
+
+`_sprach_stil_erkennen` Zeile 644 hat den Tiebreaker-Block `if abstand < 2.0 and charakter_hash:` — `None` wird durch den `and`-Check abgefangen, der Tiebreaker greift nicht.
+
+**Lösungsraum:**
+
+(a) **Akzeptieren:** Backlog-Eintrag bleibt offen, Phase 4 nicht erweitern. *(Entscheidung Chat 90.)*
+
+(b) **Mini-Loader im HumanGraph:** Schmaler Lade-Schritt vor dem HG-EI-Calc führt einen einzigen `charakter_hash_retrieve_dict(user_id)`-Aufruf aus und schreibt in `state["external"].character`. Ein Postgres-Read pro User-Turn mehr.
+
+(c) **`db_zugriff` auch im HG:** Den `db_zugriff`-Node strukturell auch im HG-Pfad einhängen, aber nur die User-Seite laden. Architektonisch sauberer, größeres Refactoring-Scope.
+
+**Empfehlung:** (b) als pragmatische Standard-Lösung — minimaler Code-Eingriff, klare semantische Wirkung. (c) erst, wenn ein größeres HG-Topologie-Audit ohnehin ansteht.
+
+**Verwandte Themen:**
+
+- SPRACH-STIL-DEFENSIV-STUMM (Bug) — bei leerem Hash bricht die Funktion ohne Warning ab. Beide Punkte sind komplementär: SPRACH-STIL-DEFENSIV-STUMM löst das Logging, REFAC-HG-CHAR-HASH-LOAD löst die Datenquelle.
+- Phase 4 (HumanGraph-Slimming) — bewusst nicht um diesen Fix erweitert; Slimming bleibt scope-rein.
+
+---
+
+## Bug: SPRACH-STIL-DEFENSIV-STUMM — `_sprach_stil_erkennen` bricht stumm auf "neutral" zurück (Chat 89/90)
+
+**Status:** ⬜ Beobachtet, nicht implementiert
+**Prio:** Niedrig
+**Auslöser:** Phase-2-Audit PFAD2-PERZEPTION-FIX (Chat 89), bestätigt im HG-Slimming Pre-Audit (Chat 90)
+
+**Beobachtung:** `_sprach_stil_erkennen` in `ei/berechnung.py` fällt bei leerem oder fehlendem `charakter_hash`-Argument defensiv auf den Default `"neutral"` zurück — ohne Logging, ohne Warning. Verstößt gegen das „fail loud"-Prinzip aus dem Entwicklerhandbuch §1 (Leitprinzipien).
+
+**Wirkung:** Symptom-frei, deshalb leicht zu übersehen. Bei strukturellen Änderungen am Charakter-Hash-Lade-Pfad (Phase 2/3 PFAD2-PERZEPTION-FIX) wurde die Stil-Verschiebung erst beim Folge-Audit sichtbar. Ein Warning hätte den Bug sofort bei der Phase-2-Verifikation gezeigt.
+
+**Lösung:** Loud Fallback. Wenn `charakter_hash` leer oder None ist, einmal pro Aufruf ein `logger.warning("_sprach_stil_erkennen ohne charakter_hash aufgerufen — Tiebreaker inaktiv, rolle=%s", rolle)`. Beim nächsten Code-Audit-Sprint (EVA-Disziplin) mit aufnehmen.
+
+**Verwandte Themen:**
+
+- REFAC-HG-CHAR-HASH-LOAD (Refactor) — der eigentliche strukturelle Auslöser im HumanGraph.
+- Epic: Code-Audit-Sprint — EVA-Disziplin im gesamten Code — natürlicher Sprint-Container für diesen Fix.
+- `novaberg-lesson_l_silent-skip.md` — Schwester-Pattern (stille Skips ohne Audit-Trail).
+
+---
+
+## Refactor: EI-CALC-ROLLE-RENAME — `ei_calc_rolle` semantisch zu eng (Chat 89)
+
+**Status:** ⬜ Geplant, nach Phase 4
+**Prio:** Niedrig
+**Auslöser:** Sprint PFAD2-PERZEPTION-FIX (Chat 89)
+
+**Beobachtung:** Der State-Key `ei_calc_rolle` wird von vielen Nodes außerhalb des EI-Calc-Pfads gelesen (Perzeption, Salience, Dispatcher, KZG-Dispatch, ab Phase 4 zusätzlich der Enricher zur Pfad-Verzweigung). Der Name suggeriert EI-Calc-Lokalität, ist aber faktisch ein **Graph-Level**-Marker für die Rolle, in der ein Lauf durchgeführt wird (User-Turn vs. Assistant-Turn).
+
+**Vorschlag:** Umbenennung zu `graph_rolle` (oder schlicht `rolle`). Werte bleiben `"user"` / `"character"`. Strukturell trivial — Suchen-Ersetzen über das gesamte Repo plus State-Definition in `graph/state.py`.
+
+**Sprint-Reihenfolge:** Nach Phase 4 ausführen. Phase 4 nutzt diesen Marker für die Enricher-Verzweigung — zwei gleichzeitige Refactorings auf demselben Marker wären unnötig kollisions-anfällig.
+
+**Verwandte Themen:**
+
+- Symmetrische Frage: gibt es weitere eng-benannte State-Keys, die sich besser als Graph-Level-Marker lesen lassen? Mini-Audit als erster Sprint-Schritt sinnvoll.
+- Ähnlich pattern-konsistent wäre `perzeption_rolle` → `perzeption_quelle` zu prüfen.
+
+---
+
 ## 8. Offene Bugs
 
 Vollständige Bug-Dokumentation → `novaberg-bugs.md`
@@ -2198,6 +2276,7 @@ Kurzübersicht aktiver Bugs:
 | RECH-SPIRAL | Mittel | RechercheAgent erzeugt Folge-Recherchen zum selben Thema ohne Konvergenz. Selbstfuetternde Kette: Recherche → Destillation → Queue-Eintrag → gleiche Recherche. Braucht Themen-Aehnlichkeits-Check in shadow_queue_push gegen die letzten N Eintraege. Beobachtet Chat 79 (Feng-Shui-Spirale: 4× Vertiefen + 1× Folge-Recherche zum identischen Thema) |
 | RECH-CHARAKTER | Mittel | RechercheAgent ist charakter-blind — kein Zugang zum Charakter-Hash, kein [IDENTITAET]-Block, kein Responder. Grundursache von DELIVERY-VOICE. Loesung: PIXIE-GRAPH-MERGE (Pfad 3 durch CharacterGraph-Instanz). Beobachtet Chat 79 |
 | DELIVERY-DEDUP | Niedrig | Mehrfach identische proaktive Nachrichten zum selben Thema. Delivery-Pfad prueft nicht ob kuerzlich eine thematisch aehnliche Nachricht gesendet wurde. Beobachtet Chat 79 (4× Feng-Shui-Delivery) |
+| SPRACH-STIL-DEFENSIV-STUMM | Niedrig | `_sprach_stil_erkennen` fällt ohne Warning auf "neutral" bei leerem charakter_hash (Verstoß gegen "fail loud", Chat 89/90) |
 
 Details, Ursachen und Lösungsansätze → `novaberg-bugs.md`
 
