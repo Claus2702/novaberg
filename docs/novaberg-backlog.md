@@ -2122,6 +2122,18 @@ Bei Multi-Charakter-Setup würden Aria-Termine bei Nova auftauchen (und umgekehr
 - `init.sql` neu aufbauen (siehe INIT-SQL-VERALTET): CREATE-only, Tabelle `ziele` ergänzt, ALTER-Anweisungen in versioniertes Migrations-Skript verschieben
 - Setup-from-scratch verifizieren
 
+**Konkrete Stellen aus Welle-B-Audit (Chat 90, Doku-Sync Teil 2):**
+
+Fünf identifizierte EVA-/Fail-Loud-Verstöße in den Graph-Nodes, die beim Code-Audit mit-bearbeitet werden sollten:
+
+- `enricher.py:431` — Plugin-Exception wird gefangen, mit `logger.error` gemeldet, aber ohne `hintergrund_log`-Audit-Eintrag. Plugin-Manager-Liste läuft schweigend weiter.
+- `perzeption.py:159` — JSON-Decode-Fehler werden mit `logger.warning` geloggt, dann fallen Default-Werte ins State. Kein Audit, kein Fail-Loud — Symptom-frei genau wie SPRACH-STIL-DEFENSIV-STUMM.
+- `ei_calc.py:46` — Unbekannte Rolle führt zu `logger.warning` + Silent-Fallback auf `_ei_calc_user`. Verstößt gegen „fail loud" (Handbuch §1).
+- `ei_calc.py:64-66, 201-204` — `external` und `internal` werden bei Bedarf spontan via `Personality()` / `InternalPersonality()` instanziiert. EVA-Disziplin (Handbuch §3) würde harte Vorbedingungs-Prüfung + Fail-Loud verlangen, weil eine fehlende Personality strukturell auf einen kaputten Lade-Pfad hindeutet (z.B. `db_zugriff` nicht gelaufen).
+- `salience.py:85` — Catch-all `Exception` im Segmentierer, nur `logger.warning`, kein Audit-Eintrag.
+
+Diese fünf Stellen sind Pattern-Geschwister zu `_sprach_stil_erkennen` (siehe Bug SPRACH-STIL-DEFENSIV-STUMM, Chat 89/90). Gemeinsame Ursache: Stille Defaults und Catch-all-Exceptions, die strukturelle Drift maskieren.
+
 **Aufwand:** 2-3 Sprints à 1-2 Tage. Reihenfolge: erst Agenten (akute Defekte), dann Memory (größter potenzieller Schaden), dann Graphs, `init.sql` zum Schluss.
 
 **Priorität:** Hoch. Eingeordnet nach M5 (Salienz-Pfad-Erweiterung) und M3b (Magnet-Felder).
@@ -2278,6 +2290,74 @@ char_hash_dict = {
 
 ---
 
+## Bug: EI-CALC-ROLLE-DEFAULT-ASYMMETRIE — Inkonsistente Defaults beim Rollen-Dispatch (Chat 90)
+
+**Status:** ⬜ Latent (Audit-Befund), nicht implementiert
+**Prio:** Niedrig
+**Auslöser:** Welle-B-Audit (Chat 90, Doku-Sync Teil 2)
+
+**Beobachtung:** Drei Nodes lesen `state["ei_calc_rolle"]` mit unterschiedlichen Default-Werten:
+
+| Node | Datei:Zeile | Default bei fehlendem Marker |
+|------|-------------|-------------------------------|
+| Enricher (`enrich()`) | `enricher.py:85` | `"character"` (CG-Vollpfad) |
+| EI-Calc (`ei_calc()`) | `ei_calc.py:38` | `"user"` (HG-Pfad) |
+| Salience (`analyze()`) | `salience.py:118` | impliziter `"user"` |
+
+**Wirkung:** Wenn `ei_calc_rolle` aus irgendeinem Grund nicht gesetzt ist (z.B. künftiger Self-Trigger-Pfad oder Test-Setup), läuft die Pipeline inkonsistent: Enricher meint, er sei im CG-Vollpfad, EI-Calc und Salience meinen, sie seien im HG. Das produziert keine direkten Crashes — die Nodes laufen mit den falschen Quellen weiter. Folge: subtile Datenverluste oder doppelte Reads, die nur über Pipeline-Log-Forensik sichtbar werden.
+
+Heute schreibt jeder Graph den Marker beim `create_state()` (CG in `character_graph.py` setzt `"character"`, HG-Default in `graph/base.py` setzt `"user"`). Die Default-Asymmetrie ist also momentan kein akuter Bug — sie ist Latent-Risiko für künftige Trigger-Pfade.
+
+**Lösungsraum:**
+
+(a) **Defaults vereinheitlichen.** Alle drei Nodes auf denselben Default — entweder „fail-loud bei fehlendem Marker" (KeyError werfen) oder konsistent `"user"`/`"character"`. Empfohlen: fail-loud, weil der Marker semantisch immer gesetzt sein sollte.
+
+(b) **Marker im TypedDict als Required.** State-Definition in `graph/state.py` ändert sich, `create_state()` erzwingt den Parameter. Strukturelle Lösung, mehr Refactoring-Aufwand.
+
+(c) **Notiz in DEVELOPER_HANDBOOK §6.** Konvention dokumentieren: „Rollen-Marker müssen explizit gesetzt sein. Defaults sind nur Sicherheitsnetz, kein normaler Pfad." Plus fail-loud-Warning in den drei Nodes.
+
+**Empfehlung:** (c) als Minimal-Eingriff plus (a) bei nächster Berührung dieser Code-Stellen. (b) erst, wenn ein größerer Refactor am State-Modell ansteht.
+
+**Verwandte Themen:**
+
+- EI-CALC-ROLLE-RENAME (Refactor, Chat 90) — Identifier semantisch zu eng. Beide Themen lassen sich in einem gemeinsamen Sprint behandeln.
+- Code-Audit-Sprint-Epic — Default-Asymmetrie ist exemplarisch für die fehlende EVA-Disziplin in den Graph-Nodes.
+
+---
+
+## Performance: DOPPEL-SESSION-LOAD — Session-Turns werden im HG zweimal aus Redis gelesen (Chat 90)
+
+**Status:** ⬜ Beobachtet, nicht implementiert
+**Prio:** Niedrig
+**Auslöser:** Welle-B-Audit (Chat 90, Doku-Sync Teil 2)
+
+**Beobachtung:** Im HumanGraph werden dieselben Session-Turns innerhalb eines Turns zweimal aus Redis geladen:
+
+| Node | Datei:Zeile | Aufruf |
+|------|-------------|--------|
+| Perzeption | `perzeption.py:108` | `session_turns_retrieve(...)` für LLM-Eingabe-Kontext |
+| Enricher | `enricher.py:228` / `365` | `session_turns_retrieve(...)` für `raw_turns`-Schreibung |
+
+Zwei Redis-`LRANGE`-Calls pro User-Turn für identische Daten. Im CG analog, dort vermutlich auch (Perzeption-Assistant + CG-Enricher).
+
+**Wirkung:** Reine Performance-Kosten. Redis-`LRANGE` ist günstig (~1-3ms), aber pro Turn zweifach. Konsistenz-Risiko theoretisch (zwischen den zwei Reads könnte ein neuer Turn dazwischengeschoben werden — in der Praxis unwahrscheinlich, weil HG synchron im `llm_lock` läuft).
+
+**Lösungsraum:**
+
+(a) **State-Cache in der Perzeption.** Perzeption legt geladene Turns nach `state["_raw_turns_cache"]` oder ähnlichem ab, Enricher liest aus State statt aus Redis. Minimal-Eingriff. Nachteil: State-Vermüllung mit privaten Cache-Feldern.
+
+(b) **Enricher liest aus Session-Cache am State.** Wenn Perzeption die Turns schon in State legt (z.B. als `state["raw_turns"]` — Brücken-Feld existiert), Enricher prüft erst State, dann Redis.
+
+(c) **Belassen.** Performance-Kosten vernachlässigbar, Code bleibt klar getrennt.
+
+**Empfehlung:** (c) bis zum nächsten Performance-Audit. Bei Latenz-Problemen im HG (z.B. PATH1-LATENZ-Bug eskaliert) zu (a)/(b) eskalieren.
+
+**Verwandte Themen:**
+
+- PATH1-LATENZ (Bug, beobachtet) — bei GPU-Druck kann der HG-Pfad auf 55+ Sekunden gehen. Doppelte Redis-Reads sind kein Treiber, aber Aufräum-Material bei einer Optimierungs-Welle.
+
+---
+
 ## 8. Offene Bugs
 
 Vollständige Bug-Dokumentation → `novaberg-bugs.md`
@@ -2306,6 +2386,7 @@ Kurzübersicht aktiver Bugs:
 | DELIVERY-DEDUP | Niedrig | Mehrfach identische proaktive Nachrichten zum selben Thema. Delivery-Pfad prueft nicht ob kuerzlich eine thematisch aehnliche Nachricht gesendet wurde. Beobachtet Chat 79 (4× Feng-Shui-Delivery) |
 | SPRACH-STIL-DEFENSIV-STUMM | Niedrig | `_sprach_stil_erkennen` fällt ohne Warning auf "neutral" bei leerem charakter_hash (Verstoß gegen "fail loud", Chat 89/90) |
 | AUDIT-PIXIE-TURN-ID | 👁 | Pixie-Pfad turn_id-Auflösung nicht auditiert (latent, akut keine Wirkung wegen PIXIE_AKTIV=False, Chat 90) |
+| EI-CALC-ROLLE-DEFAULT-ASYMMETRIE | Niedrig | Inkonsistente Defaults beim Rollen-Dispatch in Enricher/EI-Calc/Salience (Chat 90) |
 
 Details, Ursachen und Lösungsansätze → `novaberg-bugs.md`
 
@@ -2337,3 +2418,5 @@ Details, Ursachen und Lösungsansätze → `novaberg-bugs.md`
 *Aktualisiert Chat 88 (P3): KZG-Schreibpfad ergänzt um Magnet-Felder `entitaet_ids` und `timeline_id`. Salience extrahiert pro Turn zwei neue Roh-Dimensionen (`entitaeten_roh`, `zeitausdruck_roh`). Neuer Node `magnete_aufloesen` im KzgAgent-Subgraph zwischen `schwelle_pruefen` und `verdichten` resolviert via EntityResolutionService und TimelineRepository — bei nicht-Treffer wird via `create_new_entity` bzw. `TimelineRepository.insert` mit `event_type='erinnerungs_anker'` angelegt. Clipboard-Pattern: TimelineAgent schreibt `state["timeline_id"]` ins ConversationState; `magnete_aufloesen` übernimmt diesen Wert statt einen doppelten Erinnerungs-Anker anzulegen. Beide KZG-Schreibfunktionen (`_neu_anlegen`, `kzg_store`) um optionale Parameter erweitert, Default-Werte sichern Backward-Compat für Recherche-Agent, Shadow-Tasks und KzgManager. Pipeline-Log `log_db_zugriff` in beiden Schreibfunktionen. Neuer Backlog-Eintrag REFAC-KZG-CODE-DUPLIKAT — fast identische Hash-Mapping-Logik in beiden Schreibfunktionen sollte konsolidiert werden. Konzept-Doku §13.5 ausführlich nachgezogen (Architektur statt der vorigen falschen Vorbedingung „EntityResolver liefert entitaet_ids"). Convention-Magneten §5 dokumentiert jetzt den konkreten `event_type`-String `erinnerungs_anker` für die Klasse Bezug.*
 
 *V7-Befund (Clipboard-Test): Der Test-Turn "Merk dir bitte den 17. Oktober als Annas Geburtstag" erzeugte einen `erinnerungs_anker` statt eines `geburtstag`-Eintrags, weil der Planner den expliziten Timeline-Intent nicht erkannt hat. Das Clipboard-Pattern ist strukturell vorbereitet, aber im Live-Betrieb selten getriggert. Eingetragen als PLANNER-TIMELINE-INTENT-MISS — strukturelle Klärung nach P9.*
+
+*Aktualisiert in Chat 90: PFAD2-PERZEPTION-FIX abgeschlossen (Phase 2/3, Chat 89), HumanGraph-Slimming Phase 4 + TURN-ID-FIX (Chat 90), drei neue Backlog-Einträge aus Welle-B-Audit (BUG-EI-CALC-ROLLE-DEFAULT-ASYMMETRIE, PERF-DOPPEL-SESSION-LOAD, plus fünf konkrete Stellen am Code-Audit-Sprint-Epic), Stand-Datum auf 17. Mai 2026.*
