@@ -2,9 +2,9 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Graph-Architektur, HumanGraph, AgentGraph, Agent-System
-**Stand:** 21. April 2026, Chat 60 (Event-Modell, Graph-Split: HumanGraph + CharacterGraph)
+**Stand:** 17. Mai 2026, Chat 90 (HumanGraph-Slimming Phase 4, TURN-ID-FIX)
 **Pfad:** novaberg/docs/novaberg-graph.md
-**Quellen:** nova-01-k.md (Graph-Konzept), nova-01-a.md (Graph-Architektur), nova-11-k.md (Agent-Workflow-Konzept), nova-11-a.md (Agent-Architektur)
+**Quellen:** nova-01-k.md (Graph-Konzept), nova-01-a.md (Graph-Architektur), nova-11-k.md (Agent-Workflow-Konzept), nova-11-a.md (Agent-Architektur), novaberg-pfad2-perzeption_k.md (PFAD2-PERZEPTION-FIX, Personality-Klassen-Schicht)
 
 ---
 
@@ -87,78 +87,76 @@ Perzeption → Enricher → EI-Calc → Salienz → Dispatcher → END
 **Datei:** `graph/human_graph.py`
 **Entry-Point:** Perzeption.
 **LLM-Calls:** 2 (Perzeption + Salienz).
-**Aufgabe:** Nimmt wahr, laedt Kontext, berechnet EI, bewertet Salienz, schreibt Session-Turn + KZG. Kein Responder — der Charakter antwortet separat.
+**Aufgabe:** Nimmt den User-Prompt wahr, laedt schlanken Pfad-1-Kontext (Session-Turns, Drive-Ziele, Embedding), berechnet User-EI, bewertet Salienz, schreibt Session-Turn + KZG. Kein Responder — der Charakter antwortet separat im CharacterGraph.
 
 | # | Node | LLM? | Aufgabe |
 |---|------|------|---------|
-| 1 | Perzeption | GPU | Analysiert User-Prompt: Intent, Emotion, Arousal, Modus, Beziehungsdynamik |
-| 2 | Enricher | Nein | Laedt Session, KZG, LZG, Charakter-Hash, Plugin-Hooks |
-| 3 | EI-Calc | Nein | Emotions-Verlauf, Vektor, Modus/Stil-Plausibilitaet, Nova-Empathie |
-| 4 | Salienz | GPU | Bewertet Speicherwuerdigkeit, erzeugt pending_writes |
-| 5 | Dispatcher | Nein | Schreibt Session-Turn (komplett) + KZG + Delegation. Session-Zusammenfassung. |
+| 1 | Perzeption | GPU | Analysiert User-Prompt: Intent, Emotion, Arousal, Modus, Beziehungsdynamik. Schreibt nach `state["external"].emotion` (perzeption_rolle="user"). |
+| 2 | Enricher | Nein | HG-Methodensplit `_enrich_human`: laedt `raw_turns`, erzeugt `prompt_embedding`, ermittelt `aktivierte_ziele` und `gravitationsterm`. Kein KZG/LZG, kein Charakter-Hash, kein Reducer (Phase 4, Chat 90). |
+| 3 | EI-Calc | Nein | `_ei_calc_user`: Emotions-Verlauf, Vektor, Modus-/Stil-Plausibilitaet. Keine Nova-Empathie im HG (Rollen-Split Chat 61). |
+| 4 | Salienz | GPU | Bewertet Speicherwuerdigkeit des User-Prompts, erzeugt `pending_writes` mit `ziel="kzg"`. |
+| 5 | Dispatcher | Nein | Schreibt Session-Turn (komplett) + KZG + Delegation. Session-Zusammenfassung bei Bedarf. |
 
 Gerade Linie, keine Conditional Edges.
 
+> **Asymmetrie HG ↔ CG (seit Chat 89):** Im HumanGraph laeuft EI-Calc **nach** Enricher (Reihenfolge seit Chat 59). Im CharacterGraph laeuft EI-Calc **vor** Enricher (PFAD2-PERZEPTION-FIX Phase 2). Begruendung: nur der CG hat einen Nova-Zustand, den EI-Calc moduliert und der danach in die Erinnerungs-Auswahl des Enrichers einfliessen soll (Voraussetzung fuer P5, Synapsen-Lesepfad). Der HG hat weder `db_zugriff` noch Char-Hash-Tiebreaker — `REFAC-HG-CHAR-HASH-LOAD` ist bewusst aufgeschoben (siehe `novaberg-backlog.md`).
+
 Nach dem HumanGraph erzeugt `chat.py` ein Event in der Event-Queue (`event_queue:{user_id}:{character_id}`), das den CharacterGraph ausloest.
 
-### 3.2 CharacterGraph — Pfad 2: Charakter reagiert (14 Nodes)
+### 3.2 CharacterGraph — Pfad 2: Charakter reagiert (17 Nodes)
 
 ```
-Enricher → EI-Calc(character) → Router ──────────────+
-                        |                              |
-                        +── management_action?         |
-                        |   +── ja → Planner ──+       |
-                        |            |          |       |
-                        |            +── agent? |       |
-                        |            |   +── Agent-Dispatch
-                        |            |         |       |
-                        |            |         +── Planner
-                        |            |          (Schleife)
-                        |            |              |
-                        |            +── kein Agent |
-                        |                    |      |
-                        v                    v      |
-GV-Node <────────────────────────────────────+      |
-    |                                               |
-    v                                               |
-Responder                                           |
-    |                                               |
-    v                                               |
-Thinker                                             |
-    |                                               |
-    v                                               |
-Tribunal → Evaluate                                 |
-                |                                   |
-                +── ok → perzeption_assistant →    |
-                |              Salienz → Dispatcher → END
-                |                                   |
-                +── ablehnen → Corrector → Tribunal |
-                                  (max 2 Iterationen)
+db_zugriff → EI-Calc(character) → Enricher → Reducer → Router ────────────+
+                                                            |              |
+                                                            +── management_action?
+                                                            |   +── ja → Planner ──+
+                                                            |            |          |
+                                                            |            +── agent? |
+                                                            |            |   +── Agent-Dispatch
+                                                            |            |         |       |
+                                                            |            |         +── Planner (Schleife)
+                                                            |            |              |
+                                                            |            +── kein Agent |
+                                                            |                    |      |
+                                                            v                    v      |
+                                              GV-Node <────────────────────────────────+
+                                                  |
+                                                  v
+                                              Responder → Thinker → Tribunal → Evaluate
+                                                                                    |
+            +───────────────────────────────────────────────────────────────────────+
+            |
+            +── ok / fallback → perzeption_assistant → ei_calc_persist → Salienz → Dispatcher → END
+            |
+            +── correct → Corrector → Tribunal (max 2 Iterationen)
 ```
 
 **Datei:** `graph/character_graph.py`
-**Entry-Point:** Enricher (keine Perzeption am Anfang — die User-Perzeption ist in Pfad 1 passiert).
+**Entry-Point:** `db_zugriff` (seit Chat 89, PFAD2-PERZEPTION-FIX Phase 2). Lädt Identitäten und Nova-State, befüllt `state["external"]` und `state["internal"]`.
 **LLM-Calls:** 6-8 (Router + evtl. Planner/Agent + GV + Responder + Thinker + perzeption_assistant + Salienz).
-**Aufgabe:** Liest den Chat, entscheidet, handelt optional, antwortet, perzipiert die eigene Antwort, speichert.
+**Aufgabe:** Laedt Identitaeten und persistierten Nova-Zustand, modulert Nova-Emotion durch User-Empathie, sammelt Erinnerungen, entscheidet, handelt optional, antwortet, perzipiert die eigene Antwort, konsolidiert + persistiert Nova-State, speichert.
 
 | # | Node | LLM? | Aufgabe |
 |---|------|------|---------|
-| 1 | Enricher | Nein | Laedt Session, KZG, LZG, Charakter-Hash |
-| 2 | EI-Calc | Nein | Nova-Emotion mit Empathie-Modulation (`ei_calc_rolle="character"`) |
-| 3 | Router | GPU | Routing-Entscheidungen, Pending-Agent-Check |
-| 4 | Planner | GPU | Bei Management: Agent finden, Aktion planen |
-| 5 | Agent-Dispatch | Nein | Delegiert an agenten-spezifischen Dispatch |
-| 6 | GV-Node | GPU | Gespraechsvektor-Hypothese |
-| 7 | Responder | GPU | Antwort generieren |
-| 8 | Thinker | GPU (opt.) | Faktencheck, Web-Suche |
-| 9 | Tribunal | GPU | Drei-Perspektiven-Bewertung |
-| 10 | Evaluate | Nein | Vote-Aggregation |
-| 11 | Corrector | GPU | Korrektur bei Ablehnung |
-| 12 | perzeption_assistant | GPU | Analysiert Novas finale Antwort (`perzeption_rolle="assistant"`, seit Chat 61) |
-| 13 | Salienz | GPU | Bewertung der Charakter-Antwort |
-| 14 | Dispatcher | Nein | Schreibt Session-Turn (komplett) + KZG |
+| 1 | db_zugriff | Nein | Lädt Charakter-Hashes (User + Nova), Identitäten, Direktiven, persistierten Nova-State (`nova_state:{user_id}:{character_id}`) aus PostgreSQL/Redis in `state["external"]` / `state["internal"]`. Pixie-Sonderfall: bei `event_source != "user"` wird `external` als Kopie von `internal` befüllt. (Chat 89, Phase 2.) |
+| 2 | EI-Calc | Nein | `_ei_calc_character`: berechnet `nova_emotions_verlauf` (Decay + asymmetrische Empathie zu `state["external"].emotion`), schreibt `state["internal"].emotion.emotions_vector`, setzt `nova_emotion_konflikt`. Empathie-Switch nach `event_source` (siehe §3.6). |
+| 3 | Enricher | Nein | `_enrich_character`-Voll-Lauf: KZG/LZG-Resonanz, Session-Turns, Plugin-`enrich()`-Hooks, Drive-Ziele, baut `memory_entries`. Liest Novas modifizierten EI-Zustand fuer Sektor-Affinitaet (vorbereitet fuer P5). |
+| 4 | Reducer | Nein | Dedupliziert `memory_entries` (Exakt- + Substring-Dedup) und baut `memory_context` fuer den Responder. CG-only seit Chat 75 (im HG durch Phase 4 entfernt). |
+| 5 | Router | GPU | Routing-Entscheidungen, Pending-Agent-Check, setzt `management_action`. |
+| 6 | Planner | GPU | Bei Management: Agent finden, Aktion planen. Conditional ⇄ Agent-Dispatch. |
+| 7 | Agent-Dispatch | Nein | Delegiert an agenten-spezifischen Dispatch, kehrt zum Planner zurueck (Schleife). |
+| 8 | GV-Node | GPU | Gespraechsvektor-Hypothese (Farbmisch + Entity-Hop). |
+| 9 | Responder | GPU | Antwort generieren — liest `internal.character`, `internal.identities`, `internal.directives` aus `state["internal"]`. |
+| 10 | Thinker | GPU (opt.) | Faktencheck, Web-Suche. |
+| 11 | Tribunal | GPU | Drei-Perspektiven-Bewertung (Jurist/Psychologe/Ethiker). |
+| 12 | Evaluate | Nein | Vote-Aggregation. Conditional → ok/fallback/correct. |
+| 13 | Corrector | GPU | Korrektur bei Ablehnung, zurueck zum Tribunal (max 2 Runden). |
+| 14 | perzeption_assistant | GPU | Analysiert Novas finale Antwort (`perzeption_rolle="assistant"`, liest `state["response"]`). Schreibt nach `state["internal"].emotion`. (Bugfix Chat 89: liest jetzt `response`, vorher faelschlich `user_prompt`.) |
+| 15 | ei_calc_persist | Nein | Konsolidiert Plausibilitaeten auf `state["internal"].emotion` (Modus, Sprach-Stil, EI-Arousal) und persistiert Novas neun EI-Dimensionen in Redis als `nova_state:{user_id}:{character_id}` (Default Mode Network). (Chat 89, Phase 2.) |
+| 16 | Salienz | GPU | Bewertung der Charakter-Antwort — Bewertungsobjekt ist `state["response"]` (Switch nach `ei_calc_rolle="character"`). Erzeugt `pending_writes` mit `ziel="kzg"`. |
+| 17 | Dispatcher | Nein | Schreibt Session-Turn (komplett, aus `state["internal"].emotion`) + KZG. |
 
-Salienz und Dispatcher sind wieder Teil des Graphen (nicht mehr async). Der Charakter-Turn wird vollstaendig geschrieben — Text, Emotion, Arousal, Modus, alles. Die Nova-Perzeption (Schritt 12, seit Chat 61) sorgt für Symmetrie zu Pfad 1: Novas eigene Aussage wird mit demselben Apparat analysiert wie der User-Prompt.
+Salienz und Dispatcher sind seit Chat 60 wieder synchron im Graphen. Der Charakter-Turn wird vollstaendig aus `state["internal"]` geschrieben — Text, Emotion, Arousal, Modus, alles. Die Nova-Perzeption (Schritt 14, seit Chat 61) sorgt fuer Symmetrie zu Pfad 1; `ei_calc_persist` (Schritt 15, seit Chat 89) konsolidiert und persistiert Novas Zustand zwischen User-Turns.
 
 ### Perzeption-Symmetrie (seit Chat 61)
 
@@ -208,18 +206,26 @@ Helfer: `_session_key(user_id, character_id, suffix)` in `memory/session.py`.
 
 ### 3.5 Dispatcher als zentraler Schreiber (Chat 60)
 
-Der Dispatcher schreibt den Session-Turn vollstaendig — Text, Emotion, Arousal, Modus, Intentionen, Stil, Beziehungsdynamik. Kein nachtraegliches Annotieren. Die alten Funktionen `session_turn_annotate()` und `session_assistant_turn_annotate()` sind deprecated.
+Der Dispatcher schreibt den Session-Turn vollstaendig — Text, Emotion, Arousal, Modus, Intentionen, Stil, Beziehungsdynamik. Im CG bezieht er die EI-Felder seit Chat 89 aus `state["internal"].emotion` (Assistant-Turn) bzw. `state["external"].emotion` (User-Turn im HG). Kein nachtraegliches Annotieren. Die alten Funktionen `session_turn_annotate()` und `session_assistant_turn_annotate()` sind deprecated.
 
 Der KZG-Dispatch schreibt den `kern` in den State (`session_turn_kern`), der Dispatcher sammelt ihn ein.
 
-### 3.6 EI-Calc Empathie-Switch (Chat 60)
+**Zwei Schreiber, zwei Ziele (seit Chat 89):** Der Dispatcher schreibt den **Session-Turn** (Redis-Liste `session:{user_id}:{character_id}:turns`). Der `ei_calc_persist`-Node schreibt den **persistierten Nova-State** (Redis-Hash `nova_state:{user_id}:{character_id}`). Der Hash ueberlebt das TTL der Session und dient als Default Mode Network — Nova wacht beim naechsten CG-Lauf (User-Turn oder Pixie-Trigger) mit dem Zustand auf, mit dem sie eingeschlafen ist.
 
-`event_source` im State steuert die Nova-Empathie:
+### 3.6 EI-Calc Empathie-Switch (Chat 60, aufgeteilt Chat 89)
+
+`event_source` steuert das Verhalten an **zwei** Stellen im CharacterGraph:
+
+**1. `db_zugriff` (Pixie-Sonderfall, Chat 89):** Bei `event_source != "user"` wird `state["external"]` als Kopie von `state["internal"]` befuellt — Nova spricht mit sich selbst, beide Personalities tragen denselben Zustand. Bei `event_source == "user"` traegt `external` die User-Werte aus dem Event-Payload (vom HumanGraph berechnet).
+
+**2. `ei_calc` (Empathie-An/Aus, Chat 60):** Steuert, ob die Nova-Empathie aktiv moduliert wird:
 
 | event_source | Empathie | Decay | Situation |
 |---|---|---|---|
 | `"user"` | Ja (User-Vektor × α) | Ja | Charakter reagiert auf User |
-| `"character"` | Nein | Ja | Charakter schreibt weiter (Self-Trigger) |
+| `"character"` | Nein (nur Decay-Basis, Konflikt-Flag bleibt False) | Ja | Charakter schreibt weiter (Self-Trigger oder Pixie-Reflexion) |
+
+Beim Pixie-Lauf ist `external.emotion == internal.emotion` (durch `db_zugriff`), die Empathie-Differenz waere strukturell null — der Switch in `ei_calc` macht es explizit. Veraenderung kommt im Pixie-Pfad durch Reflexion (Responder, Salience, `perzeption_assistant`), nicht durch Empathie.
 
 ### 3.7 GraphBase — Gemeinsame Infrastruktur
 
@@ -243,8 +249,10 @@ Das State-Dict durchlaeuft alle Nodes. Jeder Node liest was er braucht und schre
 |------|-----|-------------|-------------|
 | `user_id` | `str` | API-Layer | Alle Nodes |
 | `character_id` | `str` | API-Layer / `create_state` | Alle Nodes (Paar-Partitionierung, seit Chat 60) |
-| `user_input` | `str` | API-Layer | Perzeption, Router, Salienz |
-| `session_id` | `str` | API-Layer | Session-Management |
+| `user_prompt` | `str` | API-Layer | Perzeption (HG), Router, Salienz (HG) |
+| `turn_id` | `str` | API-Layer (`/chat`, `/chat/stream`) | Pipeline-Log-Korrelation aller Nodes eines Konversations-Turns — derselbe Wert durch HumanGraph und CharacterGraph (Chat 88 P1.1, vervollstaendigt Chat 90 TURN-ID-FIX) |
+| `system_prompt` | `str` | API-Layer | Responder |
+| `temperature` | `float` | API-Layer | LLM-Calls |
 
 ### 4.1a Event- und Rollen-Flags (Chat 60/62)
 
@@ -257,17 +265,28 @@ Felder, die den Graph-Zweig und die Akteurs-Perspektive steuern.
 | `perzeption_rolle` | `str` | `create_state` | `"user"` (HumanGraph) oder `"assistant"` (CharacterGraph, `perzeption_assistant`) — steuert, welchen Text die Perzeption liest |
 | `ei_calc_rolle` | `str` | `create_state` | `"user"` (Pfad 1) oder `"character"` (Pfad 2, Nova-Empathie) — auch Quelle fuer `beobachter` im KZG-Dispatch (Chat 62) |
 
-### 4.2 Perzeption -> Router
+### 4.2 Perzeption → Personality-Klasse (seit Chat 89, Phase 3)
 
-| Feld | Typ | Beschreibung |
+Die Perzeption schreibt strukturiert in eine `Emotion`-Klasse innerhalb einer Personality — abhaengig von `perzeption_rolle`:
+
+- **`perzeption_rolle="user"` (HumanGraph):** Output landet in `state["external"].emotion`. Bewertungsobjekt ist `state["user_prompt"]`.
+- **`perzeption_rolle="assistant"` (CharacterGraph, `perzeption_assistant`):** Output landet in `state["internal"].emotion`. Bewertungsobjekt ist `state["response"]` (seit Bugfix Chat 89).
+
+Felder der `Emotion`-Klasse (`graph/personality.py`):
+
+| Klassen-Feld | Typ | Beschreibung |
 |------|-----|-------------|
-| `intent` | `str` | smalltalk, knowledge, task, emotional, ... |
-| `tone` | `str` | Erkannter Ton (sachlich, emotional, draengend, ...) |
-| `thema` | `str` | Thematischer Kern der Nachricht |
-| `current_emotion` | `str` | Aktuelle Emotion (freude, traurigkeit, aerger, ...) |
-| `current_arousal` | `float` | Arousal 0.0-1.0 |
-| `modus` | `str` | Gespraechsmodus (alltag, emotional, fachlich, ...) |
-| `berne_position` | `str` | Transaktionsanalyse (eltern_ich, erwachsenen_ich, kind_ich) |
+| `.emotion` | `str` | Dominante Emotion (16+1 Kategorien, kanonisch) |
+| `.arousal` | `float` | Energie-Intensitaet 0.0–1.0 |
+| `.intent` | `str` | smalltalk, knowledge, personal, task, creative, meta |
+| `.tone` | `str` | empathisch, sachlich, kreativ, direkt |
+| `.mode` | `str` | Gespraechsmodus (alltag, emotional, fachlich, ...) — wird in EI-Calc plausibilitaetsgeprueft |
+| `.language_style` | `str` | Sprachstil (locker, formell, fachlich, ...) — wird in EI-Calc plausibilitaetsgeprueft |
+| `.relationship_dynamic` | `str` | Beziehungsdynamik (vertrauen, distanz, angriff, hilfesuchend, dankbar, neutral) |
+| `.prompt_topic` | `str` | Thematischer Kern der Nachricht |
+| `.emotions_vector` | `str` | Wird von EI-Calc gesetzt (9 Vektoren), nicht von der Perzeption |
+
+→ Vollstaendige Klassen-Definitionen: `novaberg-personality.md` bzw. `server/graph/personality.py`.
 
 ### 4.3 Router -> Enricher
 
@@ -280,30 +299,92 @@ Felder, die den Graph-Zweig und die Akteurs-Perspektive steuern.
 | `management_action` | `str` | "agent" (Plugin-gesteuert) / "resume" / "" |
 | `management_target` | `str` | Agent-Name (seit Chat 40, von Plugin-Prompt gesetzt) |
 
-### 4.4 Enricher -> GV-Node -> Responder
+### 4.4 db_zugriff + Enricher + Reducer (CharacterGraph-Pre-Router-Block)
+
+Im CharacterGraph laden seit Chat 89 drei aufeinanderfolgende Nodes den vollstaendigen Kontext, getrennt nach Verantwortungen.
+
+#### db_zugriff (nur CharacterGraph, Entry-Point)
+
+| Ablage / Feld | Quelle | Beschreibung |
+|------|--------|-------------|
+| `state["external"]` (`Personality`) | Event-Payload (User-Werte vom HG) | Befuellt `.emotion` aus den acht Perzeptions-Feldern des HG. Bei Pixie (`event_source != "user"`): Kopie von `internal`. |
+| `state["external"].character` | PostgreSQL `charakter_hash` | User-Charakter (5 destillierte Schichten) via `charakter_hash_retrieve_dict(user_id, character_id)`. |
+| `state["internal"]` (`InternalPersonality`) | Redis `nova_state:{user_id}:{character_id}` | Befuellt `.emotion` aus persistiertem Nova-State (Cold-Start: dataclass-Defaults). |
+| `state["internal"].character` | PostgreSQL `charakter_hash` | Novas Charakter via `nova_charakter_hash_retrieve_dict(user_id)`. |
+| `state["internal"].identities` | PostgreSQL `charakter_anweisungen` | Aktive Charakter-Anweisungen (`aktiv = TRUE`, geordnet nach `erstellt_am`). |
+| `state["internal"].directives` | PostgreSQL `direktiven` | Aktive Direktiven (`aktiv = TRUE`). |
+
+#### Enricher
+
+Methoden-Split nach `ei_calc_rolle`:
+
+**HumanGraph (`_enrich_human`) — fuenf produktive Felder:**
 
 | Feld | Typ | Beschreibung |
 |------|-----|-------------|
-| `memory_context` | `str` | Destillierter Gedaechtnis-Kontext (KZG, LZG, Fakten, Timeline, Notizen) |
-| `emotions_verlauf` | `list[dict]` | Turn-Emotionen + logarithmischem Decay-Gewicht |
-| `sprach_stil` | `dict` | Regelbasiert erkannter Sprachstil |
-| `beziehungs_kontext` | `dict` | Beziehungsprofil aus Charakter-Hash |
-| `emotions_vektor` | `str` | Einer der 9 Vektoren (spirale, erholung, absturz, ...) |
-| `session_turns` | `list[dict]` | Vollstaendige Turn-Dicts (seit Chat 30) |
-| `raw_turns` | `list[dict]` | Vollstaendige Turn-Dicts (ungekuerzt, fuer EI-Calc + Analyse) |
-| `char_hash_dict` | `dict` | Charakter-Hash als Dict (alle fuenf Profile) |
-| `charakter_anweisungen` | `list[str]` | User-definierte Charakter-Anweisungen (seit Chat 40) |
-| `direktiven` | `list[dict]` | Aktive Verhaltens-Direktiven (seit Chat 40) |
+| `raw_turns` | `list[dict]` | Ungefilterte Session-Turns fuer EI-Calc. |
+| `user_intentionen` | `list` | Intentionen aus dem letzten User-Turn. |
+| `prompt_embedding` | `list[float]` | 768-dim Embedding des `user_prompt`. |
+| `aktivierte_ziele` | `list[dict]` | Drive-Ziele ueber Gravitationsschwelle. |
+| `gravitationsterm` | `float` | Salienz-Boost aus Ziel-Gravitation. |
 
-### 4.4a EI-Calc (Nova-Empathie, Chat 59/60)
+Kein KZG/LZG-Read, kein Charakter-Hash, kein Reducer, kein `memory_context` (Phase 4, Chat 90).
 
-Novas eigener Emotionsstrang. Wird im CharacterGraph (bei `ei_calc_rolle="character"`) gefuellt.
+**CharacterGraph (`_enrich_character`) — Voll-Lauf:**
 
 | Feld | Typ | Beschreibung |
 |------|-----|-------------|
-| `nova_emotions_verlauf` | `list[dict]` | Novas Emotions-Verlauf (Decay + Empathie) |
-| `nova_emotions_vektor` | `str` | Novas Emotions-Vektor (9 Richtungen) |
-| `nova_emotion_konflikt` | `bool` | Konflikt-Flag bei gegenlaeufigen Stroemen (gegenueberliegende Plutchik-Sektoren + Arousal ≥ 0.4) |
+| `raw_turns` | `list[dict]` | Wie HG. |
+| `user_intentionen` | `list` | Wie HG. |
+| `prompt_embedding` | `list[float]` | Wie HG. |
+| `aktivierte_ziele` | `list[dict]` | Wie HG. |
+| `gravitationsterm` | `float` | Wie HG. |
+| `session_turns` | `list[dict]` | Vollstaendige Turn-Dicts (Shadow-gefiltert, seit Chat 30). |
+| `memory_entries_raw` | `list[ContextEntry]` | Akkumulator: KZG-Resonanz + LZG-Resonanz + Plugin-`enrich()`-Hooks. |
+| `web_context` | `str` | Web-Kontext (optional). |
+| `emotionale_gravitationspunkte` | `list[dict]` | Emotional aufgeladene Erinnerungen (Sektor-Affinitaet von `state["internal"].emotion`). |
+
+#### Reducer (nur CharacterGraph)
+
+| Feld | Typ | Beschreibung |
+|------|-----|-------------|
+| `memory_entries` | `list[ContextEntry]` | `memory_entries_raw` nach Exakt- + Substring-Dedup. |
+| `memory_context` | `str` | Destillierter String fuer den Responder-Prompt. |
+
+→ Details: `novaberg-node-db-zugriff.md`, `novaberg-node-enricher.md`. Der Reducer hat keine eigene Modul-Doku — die Logik lebt in `server/graph/nodes/reducer.py` und ist in §3.2 + §4.4 dieses Dokuments zusammengefasst.
+
+### 4.4a EI-Calc (Chat 59/60, Rollen-Split Chat 61, Personality-Migration Chat 89)
+
+EI-Calc dispatcht nach `ei_calc_rolle`:
+
+**`ei_calc_rolle="user"` (HumanGraph, `_ei_calc_user`):** Berechnet User-Verlauf und plausibilisiert den User-Modus / -Sprachstil. Schreibt nach `state["external"].emotion`:
+
+| Klassen-Feld | Beschreibung |
+|------|-------------|
+| `external.emotion.emotions_vector` | Einer der 9 Vektoren (spirale, erholung, absturz, ...). |
+| `external.emotion.mode` | Durch Matrix-Lookup korrigierter Modus. |
+| `external.emotion.language_style` | Regelbasiert ueberstimmter oder bestaetigter Stil. |
+
+Plus flacher Verlauf-Key (passt nicht in die `Emotion`-Klasse):
+
+| Feld | Typ | Beschreibung |
+|------|-----|-------------|
+| `emotions_verlauf` | `list[dict]` | User-Turn-Emotionen mit logarithmischem Decay-Gewicht. |
+
+**`ei_calc_rolle="character"` (CharacterGraph, `_ei_calc_character`):** Berechnet Novas Emotionsstrang (Decay + asymmetrische Empathie zu `state["external"].emotion`). Schreibt nach `state["internal"].emotion`:
+
+| Klassen-Feld | Beschreibung |
+|------|-------------|
+| `internal.emotion.emotions_vector` | Novas Emotions-Vektor (9 Richtungen, unabhaengig vom User-Vektor). |
+
+Plus zwei flache Keys (bewusst flach, siehe Kommentar in `graph/state.py`):
+
+| Feld | Typ | Beschreibung |
+|------|-----|-------------|
+| `nova_emotions_verlauf` | `list[dict]` | Novas gewichteter Emotions-Verlauf nach Empathie-Modulation. Verlauf-Liste passt nicht in die `Emotion`-Klasse. |
+| `nova_emotion_konflikt` | `bool` | True wenn Nova und User in gegenueberliegenden Plutchik-Sektoren bei Arousal ≥ 0.4. |
+
+Die Modus-/Stil-Plausibilitaet fuer `internal.emotion` wird **nicht** hier gemacht, sondern erst in `ei_calc_persist` (Schritt 15 im CG, nach `perzeption_assistant`).
 
 ### 4.5 GV-Node (seit Chat 39)
 
@@ -326,6 +407,8 @@ Novas eigener Emotionsstrang. Wird im CharacterGraph (bei `ei_calc_rolle="charac
 | Feld | Typ | Beschreibung |
 |------|-----|-------------|
 | `response` | `str` | Generierte Antwort |
+
+**Lese-Quellen (seit Chat 89, Phase 3):** Der Responder liest umfangreich aus den Personality-Klassen — `state["internal"].character.{core, adaptive, relationship, intentions, emotions}` fuer den `[IDENTITAET]`-Block, `state["internal"].identities` fuer Charakter-Anweisungen, `state["internal"].directives` fuer den `[DIREKTIVEN]`-Block, `state["external"].emotion.{emotion, arousal, mode, language_style, relationship_dynamic, tone, intent}` fuer EI-MIKRO und Stil-Adaption. Vollstaendige Klassen-Definitionen: `novaberg-personality.md`.
 
 ### 4.8 Salienz (nach Tribunal)
 
@@ -576,6 +659,10 @@ def domain_language(self) -> dict:
 | **Chat 44** (12. April) | Epic 15 Rollout: Domain-Language-Normalisierung auf DirektivenAgent, CharakterIdentitaetAgent, TimelineAgent. DELEG-REG gefixt (Einzeiler). Verb-Mappings: Rolle verschoben zu sekundaerer Konfidenz-Pruefung. |
 | **Chat 59** (20. April) | **Enricher vor Router.** EI-Calc als eigener Python-Node zwischen Enricher und Router eingefuegt. Salienz + Dispatcher aus dem sync-Graph entfernt — laufen asynchron in `services/nachbearbeitung.py`. Nova-Pfad (Perzeption(Nova) → Enricher(Nova) → Turn-Annotation) parallel zum User-Pfad. `perzeption_rolle`-Flag schaltet Perzeption zwischen User- und Assistant-Prompt. 13 Nodes (11 sync + 2 async). |
 | **Chat 60** (21. April) | **Event-Modell + Graph-Split.** Session-Trennung: `session:{user_id}:{character_id}:turns` (23 Dateien). HumanGraph (5 Nodes, Pfad 1: Wahrnehmung + Speicherung) + CharacterGraph (13 Nodes, Pfad 2: Lesen + Entscheiden + Antworten). Event-Queue (Redis FIFO) + Event-Consumer (async-Loop). Dispatcher als zentraler Session-Turn-Schreiber (komplett, kein Annotieren). EI-Calc Empathie-Switch nach `event_source`. `nachbearbeitung.py` deprecated. Zwei unabhaengige Akteure statt synchronem Monolith. |
+| **Chat 61** (22. April) | **Perzeption-Symmetrie + EI-Calc Rollen-Split.** `perzeption_assistant` als Node am CG-Ende, analysiert Novas finale Antwort. `ei_calc_rolle` (`"user"`/`"character"`) trennt `_ei_calc_user` und `_ei_calc_character`. Akkumulations-Refactor mit Historien-Gewicht 0.15 und sin^0.5-Glaettung. |
+| **Chat 88** (16. Mai) | **Synapsen-Sprint P0/P1/P1.1/P2/P3.** `db/init.sql` als Single Source of Truth (P0). Pipeline-Log-Forensik (`pipeline_log`-Tabelle, asynchroner Writer, P1). `turn_id` als UUID4-Hex korreliert HG- und CG-Lauf (P1.1). Neue Tabellen `lzg_knoten`/`lzg_kanten` als Synapsen-Schema, parallel zu `langzeitgedaechtnis` (P2). KZG-Schreibpfad um Magnet-Felder `entitaet_ids`/`timeline_id` erweitert, neuer Node `magnete_aufloesen` im KzgAgent-Subgraph (P3). |
+| **Chat 89** (16./17. Mai) | **PFAD2-PERZEPTION-FIX (Phase 1-3).** Personality-Klassen-Schicht: `state["external"]` (Gegenueber) und `state["internal"]` (Nova) als Single Source of Truth fuer EI-Dimensionen + Charakter-Hashes; acht flache EI-Keys und fuenf `nova_*`-Profil-Keys entfernt. Neuer `db_zugriff`-Node am CG-Eingang laedt Hashes, Identitaeten, Direktiven, persistierten Nova-State; entlastet Enricher. Neuer `ei_calc_persist`-Node konsolidiert Plausibilitaeten und persistiert `nova_state:{user_id}:{character_id}` als Default Mode Network. Bugfix `perzeption.py`: `perzeption_assistant` liest jetzt `state["response"]` statt `user_prompt`. Behebt PFAD2-EMO-MIX strukturell. |
+| **Chat 90** (17. Mai) | **HumanGraph-Slimming (Phase 4) + TURN-ID-FIX.** Enricher-Methodensplit: `enrich()` dispatcht nach `ei_calc_rolle`; `_enrich_human` schreibt nur fuenf produktive Felder (`raw_turns`, `prompt_embedding`, `user_intentionen`, `aktivierte_ziele`, `gravitationsterm`), kein KZG/LZG/Char-Hash, kein Reducer mehr im HG. `_enrich_character` bleibt Voll-Lauf im CG. `/chat/stream`-Endpoint reicht `turn_id` durch (war vorher leer); `_log_eintrag` warnt fail-loud bei leerem `turn_id`. Vier neue Backlog-Eintraege: REFAC-HG-CHAR-HASH-LOAD, SPRACH-STIL-DEFENSIV-STUMM, EI-CALC-ROLLE-RENAME, AUDIT-PIXIE-TURN-ID. |
 
 Die Richtung war immer gleich: Von einem monolithischen Pfad zu spezialisierten Nodes mit klarer Verantwortungstrennung. Jeder Umbau wurde durch ein konkretes Problem motiviert — nie praeventiv.
 
