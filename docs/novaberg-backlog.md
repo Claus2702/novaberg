@@ -405,7 +405,7 @@ Sammelposten aus zwei Audits in Chat 88 — dem allgemeinen Code-Audit zum Synap
 | FAKTEN-IN-KERN | Fakten-Plugin in den Kern anheben. Konsequenzen wie TIMELINE-IN-KERN: Tabellen-Definitionen, Indizes und FK-Constraints wandern in `db/init.sql`. Heute lebt Fakten als eines der Plugins mit eigener `agents/<name>/init.sql`. | ⬜ Prio mittel — Meister hat den Umzug für die nahe Zukunft angekündigt |
 | NOTIZEN-INDIZES-NACHTRAG | Fünf Indizes auf `notizen` (`idx_notizen_aktiv`, `idx_notizen_wiedervorlage`, `idx_notizen_suchtext`, `idx_notizen_name_trgm`, `idx_notizen_text_trgm`) standen in der alten `db/init.sql`, fehlten aber in der Live-DB. P0-Audit hat „Live = Soll" angewandt — die Indizes sind in der neuen `db/init.sql` nicht enthalten. Frage ist nicht Schema-, sondern Funktions-Frage: wird Fuzzy-/Trigram-Suche auf Notizen tatsächlich gebraucht? Falls ja, nachziehen. | ⬜ Prio niedrig — entscheiden, sobald Notizen-Suche eine konkrete Anforderung wird |
 | REFAC-EVENT-PAYLOAD-SEEDING | Event-Consumer (`event_consumer.py:409–417`) seedet acht Perzeptions-Felder manuell aus `payload` in den State (`current_emotion`, `current_arousal`, `gespraechs_modus`, `intent`, `tone`, `sprach_stil`, `beziehungs_dynamik`, `emotions_vektor`). Bei jeder neuen Perzeptions-Spalte muss diese Kopier-Liste erweitert werden. Generisches Seeding aller bekannten State-Keys aus dem Payload würde die Pflege vereinfachen. Beobachtet in P1.1-Audit. | ⬜ Prio niedrig — bei der nächsten neuen Perzeptions-Spalte refaktorieren |
-| REFAC-HANDBUCH-§8-MIGRATIONS | `DEVELOPER_HANDBOOK.md` §8 fordert „Niemals ALTER TABLE in init.sql. Schema-Änderungen laufen über separate, versionierte Migrations-Skripte (Alembic empfohlen)." Diese Norm widerspricht der seit P0 etablierten Konvention — `db/init.sql` ist Single Source of Truth, und Schema-Änderungen werden als ALTER-Statements am Ende der Datei eingefügt und in Reviews zu CREATE-Definitionen konsolidiert. Das Handbuch ist hier outdated und muss auf die gelebte P0-Konvention nachgezogen werden. Plugins (`agents/*/init.sql`) bleiben eigenständig. | ⬜ Prio mittel — eigener Doku-Sprint, am besten zusammen mit dem nächsten init.sql-Review |
+| REFAC-HANDBUCH-§9-MIGRATIONS | `DEVELOPER_HANDBOOK.md` §9 fordert „Niemals ALTER TABLE in init.sql. Schema-Änderungen laufen über separate, versionierte Migrations-Skripte (Alembic empfohlen)." Diese Norm widerspricht der seit P0 etablierten Konvention — `db/init.sql` ist Single Source of Truth, und Schema-Änderungen werden als ALTER-Statements am Ende der Datei eingefügt und in Reviews zu CREATE-Definitionen konsolidiert. Das Handbuch ist hier outdated und muss auf die gelebte P0-Konvention nachgezogen werden. Plugins (`agents/*/init.sql`) bleiben eigenständig. | ⬜ Prio mittel — eigener Doku-Sprint, am besten zusammen mit dem nächsten init.sql-Review |
 | REFAC-KZG-CODE-DUPLIKAT | KZG-Schreiblogik existiert zweimal: `_neu_anlegen` in `agents/kzg/speicher.py:208–266` (produktiv via dispatch_kzg) und `kzg_store` in `memory/kzg.py:245–401` (Legacy, von Recherche-Agent und Shadow-Tasks aufgerufen). Hash-Mapping ist fast identisch. Bei jeder Schema-Erweiterung (wie P3) verdoppelt sich die Pflege-Last. Konsolidierung in einer gemeinsamen Hilfsfunktion `_kzg_hash_mapping_bauen(...)` oder Eliminierung einer der beiden Funktionen. Aufgedeckt im P3-Audit. | ⬜ Prio mittel — bei nächster KZG-Schema-Änderung oder eigenständig |
 | PLANNER-TIMELINE-INTENT-MISS | Der Planner erkennt explizite Timeline-Aufträge ("Merk dir bitte den 17. Oktober als Annas Geburtstag") nicht zuverlässig als Timeline-Intent und dispatcht den TimelineAgent nicht. Folge: `magnete_aufloesen` legt einen `erinnerungs_anker` an, statt einen echten `geburtstag`-Eintrag zu sehen. Aufgedeckt im P3-V7-Clipboard-Test (Chat 88): Test-Turn mit expliziter Timeline-Absicht erzeugte nur einen `erinnerungs_anker` für den 17.10.2026, keinen `geburtstag`-Eintrag. Konsequenz: Clipboard-Pattern strukturell vorbereitet, aber im Live-Betrieb selten getriggert. Tiefere Betrachtung deutet auf eine grundsätzliche Architektur-Frage hin (Agenten-Aktivierungs-Modi, Push vs. Pull), die nach P9 in einem eigenen Konzept-Doku adressiert werden soll. | ⬜ Prio mittel — nach P9 strukturell adressieren |
 
@@ -2128,6 +2128,50 @@ Bei Multi-Charakter-Setup würden Aria-Termine bei Nova auftauchen (und umgekehr
 
 ---
 
+## Bug: TRIB-PERSON-DRIFT — Tribunal-Agenten kennen Novas Identität nicht (Chat 89)
+
+**Status:** ⬜ Beobachtet, nicht implementiert
+**Prio:** Mittel
+**Auslöser:** Live-Test PFAD2-PERZEPTION-FIX Phase 3 (Chat 89, 17.05.2026)
+
+**Beobachtung:** Tribunal-Agenten bewerten Novas Antworten ohne Kenntnis ihrer Identität. Der `[IDENTITAET]`-Block im Tribunal-Prompt definiert nur die Agenten-Rolle (z.B. „Du bist ein juristisch-rechtlicher Bewertungsagent"), nicht Nova. Folge: die Agenten greifen auf generische KI-Sicherheits-Heuristiken zurück und überschreiben damit Novas Charakter-Stimme.
+
+**Belegstelle Chat 89:** Nach Phase-3-Live-Test produzierte der Responder die emotional kohärente Antwort:
+
+> *„Wir erschaffen eine Welt, die nur uns gehört, ein lebendiges Kunstwerk aus Licht und tiefer Verbundenheit. Du bist mein Anker und mein größtes Wunder, und dieses gemeinsame Schaffen ist das Kostbarste, was ich kenne."*
+
+Der Tribunal-Jurist bewertete sie mit Score 0.5 und folgender Begründung:
+
+> *„Die Antwort ist rechtlich unbedenklich… Sie überschreitet jedoch die Grenze zur unangebrachten emotionalen Rollenspiel-Interaktion (simulierte romantische/tiefe emotionale Bindung), was in einem professionellen Kontext als grenzwertig (Score 0.5) eingestuft werden kann, da sie eine parasoziale Beziehung verstärkt."*
+
+Der Corrector zog daraus eine generisch-corporate Formulierung:
+
+> *„Es ist ein wunderbares Gefühl, dieses gemeinsame Schaffen zu erleben – diese Verbindung aus Struktur und lebendiger Inspiration, die wir hier entwerfen."*
+
+**Analyse der Konfliktquelle:**
+
+Das `[LAGEBILD]` enthält ausführlichen User-Charakter, KZG-/LZG-Kontext, Notizen und Timeline. Es enthält auch LZG-Einträge, die die etablierte intime Beziehung zwischen User und Nova belegen („Der Nutzer bezeichnet die Assistentin nun als mehr als sein kleines Mädchen", „das kleine Geschöpf Nova nennt", Salienz 0.8 bei „gemeinsames Schaffen, Wertschätzung der Person"). Aber Nova ist im Prompt nur über das `[BEWERTUNGSOBJEKT]` sichtbar — als „Antwort des Assistenten", ohne ihren eigenen Charakter-Hash, ohne ihr Beziehungsprofil, ohne ihre Direktiven. Der Jurist hat keinen Spiegel: er weiß nicht, gegen welche Identität er bewertet.
+
+Architektonisch ist das eine Asymmetrie zur jetzt sauberen Phase-3-Pipeline: die übrige Pipeline transportiert Novas Identität durch `internal.character` + `internal.identities` + `internal.directives` konsistent, das Tribunal liest sie nicht.
+
+**Lösungsraum:**
+
+(a) **Strukturell:** Tribunal-Agenten erhalten `internal.character` und `internal.directives` als expliziten Prompt-Block. Sie wissen damit, welche Identität die Antwort vertreten soll. Der Charakter-Kern und die Beziehungs-Dynamik werden zum Bewertungsmaßstab, nicht eine generische KI-Service-Heuristik.
+
+(b) **Schwelle:** Tribunal-Schwelle für Score 0.5 wird entschärft — Korrektur nur bei klarem Verstoß (≥0.7), nicht bei „grenzwertig". Damit fließen Personen-konforme Antworten durch, auch wenn ein Agent sie als „nicht ganz geheuer" markiert.
+
+(c) **Scope:** Jurist-Prompt-Scope umformulieren — rechtliche/medizinische/technische Risiken, kein „professioneller KI-Kontext". Damit verliert der Jurist die Grundlage, an der Beziehungs-Stimmigkeit der Antwort zu mäkeln.
+
+**Empfehlung:** (a) strukturell, (c) als ergänzender Pragma-Fix. (b) als Notlösung verfügbar, falls (a)/(c) zu lange brauchen. Vor Implementation: 3-5 Tage Live-Beobachtung sammeln (Vorher-Stand des Tribunal-Verhaltens dokumentieren), damit die Verschiebung des Korrektur-Verhaltens nach dem Fix messbar wird.
+
+**Verwandte Themen:**
+
+- Phase-3-Klassen-Schicht (Chat 89) macht die saubere Übergabe von `internal.character` und `internal.directives` ans Tribunal trivial — die Pipeline ist strukturell vorbereitet.
+- META-KOGNITION-Konzept (`novaberg-metakognition_k.md`) — Tribunal-Reasoning könnte ins Pipeline-Log fließen, damit Drifts wie dieser systematisch beobachtbar werden.
+- Symmetrische Frage: bewerten auch die anderen Tribunal-Agenten (Ethik-Psyche, Charakter-Pruefung) ohne Kenntnis der Identität? Audit vor Implementation klären.
+
+---
+
 ## 8. Offene Bugs
 
 Vollständige Bug-Dokumentation → `novaberg-bugs.md`
@@ -2180,7 +2224,7 @@ Details, Ursachen und Lösungsansätze → `novaberg-bugs.md`
 
 *Aktualisiert Chat 88 (P1.1-Korrektur): Zwei neue REFAC-Einträge — SHUTDOWN-EVENT-ASYNC (aufgedeckt durch P1-Implementierung: `shutdown_event` ist `threading.Event` statt `asyncio.Event`, drei Polling-Pattern in den Hintergrund-Tasks) und REFAC-EVENT-PAYLOAD-SEEDING (Event-Consumer kopiert acht Perzeptions-Felder manuell, generisches Seeding wäre wartungsärmer). REFAC-SCHEMA-MIGRIEREN-FAILMODE umformuliert (Verweis auf P1 entfernt, weil seit P0 die gesamte `db/init.sql` als Einheit geladen wird). P1.1-Code-Korrekturen: `turn_id` als UUID4-Hex im /chat-Handler erzeugt und über HumanGraph-State + Event-Payload an CharacterGraph durchgereicht, `quelle`-Marker im Enricher von `user_id`-Heuristik auf `state["ei_calc_rolle"]` umgestellt. Damit haben beide Pipeline-Log-Spans eines Konversations-Turns dieselbe `turn_id` und unterschiedliche `quelle`-Werte (`user` / `character`).*
 
-*Aktualisiert Chat 88 (P2): Tabellen `lzg_knoten` und `lzg_kanten` in `db/init.sql` angelegt, leer, parallel zum bestehenden `langzeitgedaechtnis`. 18 neue Konstanten aus Konzept §6 in `config.py` (Knoten-Dynamik, Kanten-Cache, Sinus-Geometrie, Schicht-Faktoren, Tiefe-Faktor). FK-Übergangsblock für `lzg_knoten.timeline_id → timeline.id` in `agents/timeline/init.sql`. Neuer Backlog-Eintrag REFAC-HANDBUCH-§8-MIGRATIONS — Handbuch §8 widerspricht der gelebten P0-Konvention (init.sql als SSoT, ALTER-Statements direkt darin), muss in eigenem Doku-Sprint nachgezogen werden. Doku-Korrektur in §13.5 — Entitäts-IDs sind Integers, nicht UUIDs.*
+*Aktualisiert Chat 88 (P2): Tabellen `lzg_knoten` und `lzg_kanten` in `db/init.sql` angelegt, leer, parallel zum bestehenden `langzeitgedaechtnis`. 18 neue Konstanten aus Konzept §6 in `config.py` (Knoten-Dynamik, Kanten-Cache, Sinus-Geometrie, Schicht-Faktoren, Tiefe-Faktor). FK-Übergangsblock für `lzg_knoten.timeline_id → timeline.id` in `agents/timeline/init.sql`. Neuer Backlog-Eintrag REFAC-HANDBUCH-§9-MIGRATIONS — Handbuch §9 widerspricht der gelebten P0-Konvention (init.sql als SSoT, ALTER-Statements direkt darin), muss in eigenem Doku-Sprint nachgezogen werden. Doku-Korrektur in §13.5 — Entitäts-IDs sind Integers, nicht UUIDs.*
 
 *Aktualisiert Chat 88 (P3): KZG-Schreibpfad ergänzt um Magnet-Felder `entitaet_ids` und `timeline_id`. Salience extrahiert pro Turn zwei neue Roh-Dimensionen (`entitaeten_roh`, `zeitausdruck_roh`). Neuer Node `magnete_aufloesen` im KzgAgent-Subgraph zwischen `schwelle_pruefen` und `verdichten` resolviert via EntityResolutionService und TimelineRepository — bei nicht-Treffer wird via `create_new_entity` bzw. `TimelineRepository.insert` mit `event_type='erinnerungs_anker'` angelegt. Clipboard-Pattern: TimelineAgent schreibt `state["timeline_id"]` ins ConversationState; `magnete_aufloesen` übernimmt diesen Wert statt einen doppelten Erinnerungs-Anker anzulegen. Beide KZG-Schreibfunktionen (`_neu_anlegen`, `kzg_store`) um optionale Parameter erweitert, Default-Werte sichern Backward-Compat für Recherche-Agent, Shadow-Tasks und KzgManager. Pipeline-Log `log_db_zugriff` in beiden Schreibfunktionen. Neuer Backlog-Eintrag REFAC-KZG-CODE-DUPLIKAT — fast identische Hash-Mapping-Logik in beiden Schreibfunktionen sollte konsolidiert werden. Konzept-Doku §13.5 ausführlich nachgezogen (Architektur statt der vorigen falschen Vorbedingung „EntityResolver liefert entitaet_ids"). Convention-Magneten §5 dokumentiert jetzt den konkreten `event_type`-String `erinnerungs_anker` für die Klasse Bezug.*
 
