@@ -3,10 +3,11 @@
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Konzept — PFAD2-PERZEPTION-FIX
 **Stand:** 16. Mai 2026, Chat 89
-**Pfad:** novaberg/docs/novaberg-path2-perzeption_k.md
+**Pfad:** novaberg/docs/archive/novaberg-path2-perzeption_k.md
 **Typ:** Konzept (K)
 **Vorgänger-Audits:** PFAD2-EMO-MIX-Audit, Perzeption-Audit, Vor-Audit (alle Chat 89)
 **Voraussetzung für:** P4 (Synapsen-Promotion, `novaberg-memory-synapsen_k.md` §13.6)
+**Status:** Umgesetzt in Chat 89 (Phasen 1/1.5/2/3), ergänzt durch HumanGraph-Slimming Chat 90 (Phase 4) — archiviert nach Doku-Sync Welle D.
 
 ---
 
@@ -26,7 +27,7 @@ Der Sprint ist Voraussetzung für P4: ohne saubere Pfad-2-Werte würden die erst
 
 ### 2.1 Symmetrie zwischen den Pfaden
 
-Der HumanGraph ist eine Vorverarbeitung: Perzeption → EI-Calc → Salience → Dispatcher. Er interpretiert die User-Eingabe und schiebt das Ergebnis als Event in die Queue. Der CharacterGraph holt das Event ab und produziert Novas Antwort plus eine Perzeption auf diese Antwort. Beide Pfade nutzen dieselben Berechnungs-Funktionen (Perzeption-LLM, EI-Calc-Plausibilitäten, Salience-Klassifikation) — sie unterscheiden sich nur im Eingabe-Text und im Rollen-Kontext.
+Der HumanGraph ist eine Vorverarbeitung: Perzeption → Enricher → EI-Calc → Salience → Dispatcher (5 Nodes nach HumanGraph-Slimming, Chat 90). Er interpretiert die User-Eingabe und schiebt das Ergebnis als Event in die Queue. Der CharacterGraph holt das Event ab und produziert Novas Antwort plus eine Perzeption auf diese Antwort. Beide Pfade nutzen dieselben Berechnungs-Funktionen (Perzeption-LLM, EI-Calc-Plausibilitäten, Salience-Klassifikation) — sie unterscheiden sich nur im Eingabe-Text und im Rollen-Kontext.
 
 Der Eingangspfad für den User ist der Ausgangspfad für Nova. Dieselbe Funktion, dieselben Felder, andere Eingabedaten.
 
