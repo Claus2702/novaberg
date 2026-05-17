@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Pipeline-Node Perzeption (Emotionale + rationale Analyse)
-**Stand:** 21. April 2026, Chat 60 (Event-Modell, Graph-Split)
+**Stand:** 17. Mai 2026, Chat 90 (PFAD2-PERZEPTION-FIX abgeschlossen, HumanGraph-Slimming Phase 4)
 **Pfad:** novaberg/docs/novaberg-node-perception.md
 **Quellen:** nova-01-m-a.md (Node-Beschreibung), nova-04-m-a.md (Emotions-Vektoren, Plutchik-Details)
 
@@ -12,7 +12,7 @@
 
 Die Perzeption ist Novas Wahrnehmungsapparat — der erste Node im HumanGraph. Sie analysiert Eingaben auf drei Ebenen und liefert ein vollständiges Bild, auf dessen Basis alle nachfolgenden Nodes arbeiten. Sie trifft keine Entscheidungen und steuert keine Pfade — sie nimmt wahr und klassifiziert.
 
-**Dual-Modus (seit Chat 59):** Dieselbe Funktion analysiert wahlweise einen User-Prompt (sync-Graph) oder Novas eigene Antwort (async-Pfad). Das State-Feld `perzeption_rolle` schaltet zwischen beiden Modi um — gleiche JSON-Ausgabestruktur, anderer Fokus.
+**Dual-Modus (seit Chat 59):** Dieselbe Funktion analysiert wahlweise einen User-Prompt (HumanGraph-Entry) oder Novas eigene Antwort (`perzeption_assistant`-Node im CharacterGraph). Das State-Feld `perzeption_rolle` schaltet zwischen beiden Modi um — gleiche JSON-Ausgabestruktur, anderer Fokus.
 
 ---
 
@@ -20,10 +20,10 @@ Die Perzeption ist Novas Wahrnehmungsapparat — der erste Node im HumanGraph. S
 
 Seit Chat 61 läuft Perzeption symmetrisch in beiden Graphen:
 
-- **HumanGraph (Pfad 1):** Perzeption läuft als erster Node und analysiert den User-Prompt. Flag `perzeption_rolle: "user"`.
-- **CharacterGraph (Pfad 2):** Perzeption läuft nach Corrector/Evaluate als `perzeption_assistant`-Node und analysiert Nova's finale Antwort. Flag `perzeption_rolle: "assistant"`.
+- **HumanGraph (Pfad 1):** Perzeption läuft als erster Node und analysiert den User-Prompt. Flag `perzeption_rolle: "user"`. Aufgerufen direkt vom `HumanGraph.invoke()` als Entry-Point (`graph/base.py`).
+- **CharacterGraph (Pfad 2):** Perzeption läuft als `perzeption_assistant`-Node nach `corrector` und vor `ei_calc_persist`. Der Wrapper setzt `state["perzeption_rolle"] = "assistant"` und ruft `perceive(state)` auf (`character_graph.py:66`, `add_edge("perzeption_assistant", "ei_calc_persist")`).
 
-Das Flag `perzeption_rolle` wird in `create_state()` des jeweiligen Graphen gesetzt (siehe `graph/base.py` und `graph/character_graph.py`). Der Perzeption-Node prüft das Flag und liest entweder den User-Prompt oder die gerade generierte Nova-Antwort.
+Das Flag `perzeption_rolle` wird in `create_state()` des jeweiligen Graphen vorgesetzt (siehe `graph/base.py` und `graph/character_graph.py:44`). Der Perzeption-Node prüft das Flag und liest entweder den User-Prompt oder die gerade generierte Nova-Antwort.
 
 **Konsequenz:** Nach jedem Turn sind sowohl User-Emotion als auch Nova-Emotion im Session-Turn annotiert. Der nächste Turn kann beide als Historie nutzen.
 
@@ -32,12 +32,18 @@ Das Flag `perzeption_rolle` wird in `create_state()` des jeweiligen Graphen gese
 ## 2. Position im Graph
 
 ```
-HumanGraph (Pfad 1): ▶ Perzeption ◀ → Enricher → EI-Calc → Salienz → Dispatcher → END
+HumanGraph (Pfad 1, 5 Nodes):
+▶ perzeption ◀ → enricher → ei_calc → salience → dispatcher
+
+CharacterGraph (Pfad 2, 17 Nodes):
+db_zugriff → ei_calc → enricher → reducer → router → planner → agent_dispatch
+          → gv_node → responder → thinker → tribunal → evaluate → corrector
+          → ▶ perzeption_assistant ◀ → ei_calc_persist → salience → dispatcher
 ```
 
-Nur im HumanGraph. Der CharacterGraph beginnt beim Enricher — die User-Perzeption ist in Pfad 1 passiert, die Ergebnisse liegen annotiert in der Session.
+**HumanGraph:** Entry-Point. Sieht den rohen User-Prompt und den Session-Kontext (letzte 5 Turns aus Redis). Kein KZG, kein LZG, kein Charakter-Hash.
 
-**Entry-Point** des HumanGraph. Sieht den rohen User-Prompt und den Session-Kontext (letzte 5 Turns aus Redis). Kein KZG, kein LZG, kein Charakter-Hash. Session-Turns werden mit `character_id` aus dem State geladen (seit Chat 60).
+**CharacterGraph:** Vorletzter Berechnungs-Node vor `ei_calc_persist` / `salience` / `dispatcher`. Analysiert Novas finale, vom Tribunal freigegebene Antwort. Der CG selbst beginnt nicht hier — Entry-Point ist `db_zugriff`. Session-Turns werden mit `character_id` aus dem State geladen (seit Chat 60).
 
 ---
 
@@ -159,24 +165,29 @@ Der rohe `user_prompt` als einzige User-Message — ohne Vorverarbeitung.
 
 ### Gelesen
 
-| Feld | Quelle | Beschreibung |
-|------|--------|-------------|
-| `user_prompt` | API / async-Pfad | Der zu analysierende Text (User-Prompt oder Novas Antwort) |
-| `user_id` | API | User-ID für Redis-Session-Lookup |
-| `perzeption_rolle` | create_state (`"user"`) / Nachbearbeitung (`"assistant"`) | Schaltet zwischen Task-Prompts um (seit Chat 59) |
+| State-Quelle | Typ | Beschreibung |
+|---|---|---|
+| `user_id` | str | Gedächtnis-Partition |
+| `character_id` | str | Paar-Partition (für Session-Turns) |
+| `user_prompt` | str | Eingabe bei `perzeption_rolle="user"` |
+| `response` | str | Eingabe bei `perzeption_rolle="assistant"` |
+| `perzeption_rolle` | str | Input-/Output-Switch (`"user"` / `"assistant"`, Default: `"user"`) |
+| `session_turns` | list[dict] | Historischer Kontext für die LLM-Eingabe |
 
 ### Geschrieben
 
-| Feld | Typ | Beschreibung |
-|------|-----|-------------|
-| `intent` | `str` | Kommunikationsabsicht |
-| `tone` | `str` | Gewünschter Antwort-Ton (User-Modus) / Ton der Antwort (Assistant-Modus) |
-| `prompt_thema` | `str` | Thematischer Kern |
-| `current_emotion` | `str` | Dominante Emotion |
-| `current_arousal` | `float` | Energie-Intensität (0.0–1.0) |
-| `gespraechs_modus` | `str` | Kommunikationsregister |
-| `sprach_stil` | `str` | Erkannter Formulierungsstil |
-| `beziehungs_dynamik` | `str` | Beziehungspositionierung |
+Output-Switch nach Rolle: `ziel_personality` ist `state["external"]` bei `perzeption_rolle="user"` (HG), sonst `state["internal"]` (CG, gesetzt vom `perzeption_assistant`-Wrapper). `emotions_vector` wird hier NICHT gesetzt — diesen Wert berechnet EI-Calc aus dem Verlauf.
+
+| State-Ziel | Typ | Bewusst flach? | Beschreibung |
+|---|---|---|---|
+| `ziel_personality.emotion.emotion` | str | Nein (Klassen-Feld) | Aktuelle Emotion (16+1 Plutchik-Kategorien) |
+| `ziel_personality.emotion.arousal` | float | Nein (Klassen-Feld) | Erregungs-Wert 0.0–1.0 |
+| `ziel_personality.emotion.mode` | str | Nein (Klassen-Feld) | Gesprächs-Modus (`alltag`, `emotional`, …) |
+| `ziel_personality.emotion.language_style` | str | Nein (Klassen-Feld) | Erkannter Sprachstil |
+| `ziel_personality.emotion.relationship_dynamic` | str | Nein (Klassen-Feld) | Beziehungs-Dynamik (`vertrauen`, `distanz`, `angriff`, …) |
+| `ziel_personality.emotion.tone` | str | Nein (Klassen-Feld) | Tone (`sachlich`, `emotional`, `drängend`, …) |
+| `ziel_personality.emotion.intent` | str | Nein (Klassen-Feld) | Intent (`smalltalk`, `knowledge`, `task`, …) |
+| `ziel_personality.emotion.prompt_topic` | str | Nein (Klassen-Feld) | Thematischer Kern |
 
 ---
 
@@ -219,19 +230,18 @@ Langfristig sollen die drei Ebenen in drei parallele Nodes aufgeteilt werden —
 
 ### Dual-Modus: User-Prompt vs. Assistant-Antwort (seit Chat 59)
 
-Die Perzeption wird zweimal pro Turn aufgerufen — einmal synchron auf den User-Prompt, einmal asynchron auf Novas Antwort. Statt zwei Nodes mit duplizierter JSON-Parsing-Logik schaltet ein Flag im State zwischen zwei Task-Prompts um:
+Die Perzeption wird zweimal pro Turn aufgerufen — einmal im HumanGraph auf den User-Prompt, einmal im CharacterGraph auf Novas Antwort. Beide Aufrufe laufen synchron im jeweiligen Graph-Lauf. Statt zwei Nodes mit duplizierter JSON-Parsing-Logik schaltet ein Flag im State zwischen zwei Task-Prompts um:
 
 | `perzeption_rolle` | Aufgerufen von | Task-Prompt | Fokus |
 |--------------------|----------------|-------------|-------|
-| `"user"` (Default) | HumanGraph sync | `perzeption.task` | „Analysiere den Prompt des Nutzers" |
-| `"assistant"` | `services/nachbearbeitung.py` async | `perzeption.assistant_task` | „Analysiere die folgende Antwort der Assistentin" |
+| `"user"` (Default) | HumanGraph sync (Entry-Point) | `perzeption.task` | „Analysiere den Prompt des Nutzers" |
+| `"assistant"` | `perzeption_assistant`-Node im CharacterGraph (synchron, nach `corrector`) | `perzeption.assistant_task` | „Analysiere die folgende Antwort der Assistentin" |
 
 Die JSON-Ausgabestruktur ist in beiden Modi identisch (rational, emotional, psychologisch). Der Assistant-Modus interpretiert die Felder bezogen auf Novas Formulierung — Modus, Stil, Beziehungsdynamik beschreiben den Ton **ihrer** Antwort, nicht den des Users.
 
 > **Warum ein Flag statt zwei Nodes?** Derselbe JSON-Parser, dieselbe Fallback-Logik, dieselbe Kanonisierung. Nur der Auftrag am LLM ändert sich. Generalisierung mit Flag statt Duplizierung — bewusst umgekehrt zum „Spezialisierung schlägt Generalisierung"-Prinzip (Pixie), weil hier die Fachlichkeit identisch ist.
 
-→ Async-Pfad: `novaberg-service-nachbearbeitung.md`
-→ EI-Calc nutzt die Assistant-Ergebnisse im nächsten Turn: `novaberg-node-ei-calc.md`
+→ CG-Konsumenten der Assistant-Perzeption: `novaberg-node-ei-calc-persist.md` (konsolidiert `internal.emotion`), `novaberg-node-ei-calc.md` (im nächsten Turn als Vorzustand)
 
 ---
 
@@ -256,73 +266,18 @@ Die Sektorreihenfolge folgt seit Chat 19 dem Plutchik-Original: positiv/negativ 
 
 ---
 
-## 9. Kanonisierung: Emotions-Mapping
+## 9. Folge-Verarbeitung (EI-Calc)
 
-Vor der Verlaufsberechnung wird jede Emotion über `_emotion_kanonisieren()` auf die 16 kanonischen Emotionen gemappt:
+Die Perzeptions-Outputs sind Rohdaten. Die emotionale Verarbeitung — Kanonisierung über `EMOTION_SYNONYM_MAP`, logarithmischer Verlauf-Decay, sektor-abhängige Normalisierung, EI-Arousal aus Beziehung/Intent/Tone, Modus- und Stil-Plausibilität — erfolgt im EI-Calc-Node mit den Funktionen aus `ei/berechnung.py`.
 
-1. **Kanonisch:** Emotion ist eine der 16 — direkt verwenden.
-2. **Synonym:** Emotion steht in `EMOTION_SYNONYM_MAP` — auf kanonische Form mappen (z.B. `nachdenklich` → `traurigkeit`, `angst` → `stress`).
-3. **Unbekannt:** Error-Log erzeugen, damit die Emotion ergänzt werden kann.
-
-Das Synonym-Mapping fängt sowohl Varianten der Perzeption (z.B. `neugier` vs. `neugierig`) als auch entfernte Emotionen (z.B. `resignation` → `traurigkeit`) ab.
-
-→ Vollständiges Mapping: `novaberg-ei-plutchik.md`, Abschnitt 3.1
+→ `novaberg-node-ei-calc.md` §3 (Berechnungs-Blöcke), `novaberg-ei-plutchik.md` (Distanzmatrix, Synonym-Mapping)
 
 ---
 
-## 10. Sektorabhängige Normalisierung (seit Chat 18)
-
-Nach dem Decay wird das Emotions-Array normalisiert — aber nicht uniform. Die Normalisierung nutzt eine Potenz-Transformation, deren Exponent von der Sektor-Distanz zur dominanten Emotion abhängt (Plutchik-Oktagon):
-
-| Distanz auf dem Oktagon | Basis-Exponent | Effekt |
-|-------------------------|----------------|--------|
-| 0 (selbst) | — | Wird auf 1.0 normalisiert |
-| 1 (benachbart) | 0.7 | Geschützt — benachbarte Emotionen stützen sich |
-| 2 (nah-diagonal) | 1.0 | Neutral — wie bisherige uniforme Normalisierung |
-| 3 (fern-diagonal) | 1.2 | Leicht gedrückt |
-| 4 (gegenüber) | 1.4 | Stark gedrückt — Antagonisten verdrängen sich |
-
-Die Exponenten skalieren zusätzlich mit dem Arousal der dominanten Emotion:
-```
-effektiver_exponent = 1.0 + (basis_exponent - 1.0) × arousal_dominante
-```
-
-**Effekt:** Bei niedrigem Arousal (Zentrum des Radars) nähern sich alle Exponenten 1.0 an — Emotionen koexistieren. Bei hohem Arousal (Rand des Radars) verstärkt sich die Separation — Gegenüber verdrängen sich, Nachbarn stützen sich.
-
-Emotionen unter `EMOTION_MIN_WEIGHT` werden gefiltert. Das Ergebnis: Ein Array sortiert nach Gewicht.
-
-→ Vollständige Distanzmatrix und Algorithmus: `novaberg-ei-plutchik.md`
-
----
-
-## 11. Arousal-Berechnung pro Sektor
-
-### 11.1 Abwärtskompatibilität
-
-Ältere Session-Turns können `arousal` als String (`"high"/"mid"/"low"`) enthalten. `_arousal_to_float()` konvertiert:
-
-| String | Float |
-|--------|-------|
-| `"high"` | 0.8 |
-| `"mid"` | 0.5 |
-| `"low"` | 0.2 |
-
-Unbekannte Werte → Default-Arousal pro Emotion aus `EMOTION_DEFAULT_AROUSAL` (config.py).
-
-**Kanonisierung (seit Chat 18):** `EMOTION_DEFAULT_AROUSAL` enthält nur noch die 16 kanonischen Emotionen + neutral. Für nicht-kanonische Emotionen in älteren Session-Turns greift zuerst `_emotion_kanonisieren()`, dann der Default-Arousal der kanonischen Form.
-
-### 11.2 Arousal im Verlauf
-
-Für jede Emotion im Verlauf wird der Arousal des *neuesten* Vorkommens gespeichert. Wenn Frustration in Turn 0 (Arousal 0.8) und Turn 3 (Arousal 0.5) vorkommt, zeigt der Verlauf Arousal 0.8 — der aktuelle Zustand zählt.
-
-### 11.3 Verstärkung im KZG
-
-Bei Verstärkung eines KZG-Eintrags: Arousal = Durchschnitt(alt, neu). Vektor = neuester überschreibt. Das bildet ab: Arousal mittelt sich über die Zeit, die Richtung wird vom aktuellen Zustand bestimmt.
-
----
-
-→ Router (nächster Node): `novaberg-node-router.md`
-→ Enricher (nutzt Perzeptionsdaten): `novaberg-node-enricher.md`
+→ EI-Calc (verarbeitet Perzeptions-Output zu Verlauf/Vektor/Plausibilitäten): `novaberg-node-ei-calc.md`
+→ Router (nächster Node im HG nach Enricher/EI-Calc/Salience-Pfad): `novaberg-node-router.md`
+→ EI-Calc-Persist (konsolidiert `internal.emotion` am CG-Ausgang): `novaberg-node-ei-calc-persist.md`
+→ Personality-Klassen (Emotion-Klasse mit 9 Feldern): `novaberg-personality.md`
 → Session-Turns (zentrale Formatierung): `memory/session.py` → `format_session_turns_numbered()`
 → EI-Konzept: `novaberg-ei.md`
 → Emotions-Vektoren: `nova-04-m-a.md`

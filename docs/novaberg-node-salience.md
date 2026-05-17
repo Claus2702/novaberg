@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Pipeline-Node Salienz (Bewertung & Gedächtnisbildung)
-**Stand:** 16. Mai 2026, Chat 88 (Synapsen P3 — zwei Roh-Dimensionen `entitaeten_roh` und `zeitausdruck_roh` für die Magnet-Auflösung im KzgAgent)
+**Stand:** 17. Mai 2026, Chat 90 (PFAD2-PERZEPTION-FIX abgeschlossen, HumanGraph-Slimming Phase 4)
 **Pfad:** novaberg/docs/novaberg-node-salience.md
 **Quellen:** nova-01-m-g.md (Node-Beschreibung), nova-02-t-b.md (Salienz-Technik)
 
@@ -23,8 +23,13 @@ Salienz ist Novas Aufmerksamkeitsfilter — das Äquivalent zur menschlichen Amy
 ## 2. Position im Graph
 
 ```
-HumanGraph (Pfad 1):    ... → EI-Calc → ▶ Salienz ◀ → Dispatcher → END
-CharacterGraph (Pfad 2): ... → Evaluate → ok → ▶ Salienz ◀ → Dispatcher → END
+HumanGraph (Pfad 1, 5 Nodes):
+perzeption → enricher → ei_calc → ▶ salience ◀ → dispatcher
+
+CharacterGraph (Pfad 2, 17 Nodes):
+db_zugriff → ei_calc → enricher → reducer → router → planner → agent_dispatch
+          → gv_node → responder → thinker → tribunal → evaluate → corrector
+          → perzeption_assistant → ei_calc_persist → ▶ salience ◀ → dispatcher
 ```
 
 Seit Chat 60 wieder Teil beider Graphen (HumanGraph und CharacterGraph). Nicht mehr asynchron.
@@ -66,23 +71,7 @@ Salienz-Bewertung (0.0 – 1.0)
 
 ### 3.1 Extrahierte Dimensionen
 
-Pro Segment extrahiert die Salienz 11 Dimensionen — nicht nur den Score:
-
-| Dimension | Zweck im Gedächtnis |
-|-----------|-------------------|
-| Salienz-Score | Steuert KZG-TTL, Promotion, Shadow-Queue |
-| Themen | KZG-Schlüsselwörter, Themen-Overlap bei Verstärkung |
-| Zusammenfassung | Inhalt des KZG-Eintrags (mit allen konkreten Details) |
-| Fakten-Tripel | → FaktenManager (Knowledge Graph) |
-| Temporaler Fakt | → TimelineManager (Termine, Geburtstage) |
-| Gedächtnistyp | `kurz` vs. `lang` — beeinflusst LZG-Promotion-Priorisierung |
-| Dimension | kognition/emotion/werte/interessen/kommunikation/kontext — LZG-Kategorie |
-| Intentionen | → Shadow-Queue-Aufgabe, Charakter-Hash |
-| Emotion | → KZG-Annotation, Emotions-Profil |
-| Modus | → KZG-Annotation, Intentions-Profil |
-| Valenz | positiv/negativ/neutral — für Embedding-Kontext |
-
-**Aktuell im Analyse-Prompt aktive Dimensionen (10):**
+Pro Segment extrahiert die Salienz 10 Dimensionen — nicht nur den Score (verifiziert gegen `prompts/default/salienz.task.txt`):
 
 | # | Dimension | Beschreibung |
 |---|-----------|-------------|
@@ -97,10 +86,11 @@ Pro Segment extrahiert die Salienz 11 Dimensionen — nicht nur den Score:
 | 9 | **entitaeten_roh** | Liste von Eigennamen (Synapsen P3) — Roh-Strings, Pronomen ausgeschlossen. Die Resolution zu `entitaet_ids` geschieht nicht hier, sondern im `magnete_aufloesen`-Node des KzgAgent. |
 | 10 | **zeitausdruck_roh** | Ein Zeitausdruck pro Segment (Synapsen P3) — Roh-String. Die Resolution zu `timeline_id` (ggf. mit Anlage eines `erinnerungs_anker`) geschieht im `magnete_aufloesen`-Node. |
 
-**Entfernte Dimensionen:**
-- Dim 6 „Zusammenfassung" (jetzt `kern` im KZG-Agent — `agents/kzg/verdichtung.py`, Chat 29)
-- Dim 7 „Fakten-Tripel" (vorübergehend deaktiviert, kommt über WissensAgent, Chat 28)
-- Dim 8 „Temporaler Fakt" (läuft über TimelineAgent, Chat 28)
+**Entfernte Dimensionen (historischer Kontext, warum nur 10 statt 12+):**
+
+- „Zusammenfassung" (jetzt `kern` im KZG-Agent — `agents/kzg/verdichtung.py`, Chat 29)
+- „Fakten-Tripel" (vorübergehend deaktiviert, kommt über WissensAgent, Chat 28)
+- „Temporaler Fakt" (läuft über TimelineAgent, Chat 28)
 
 ### 3.2 Bewertungsskala
 
@@ -146,7 +136,11 @@ Die Salienz extrahiert nicht nur den Score, sondern auch Intentionen. Die primä
 
 ### 4.1 Lagebild / Bewertungsobjekt ([BLOCKNAME]-Schema)
 
-Der Analyse-Prompt folgt der Kontaminations-Trennung ([BLOCKNAME]-Schema seit Chat 27):
+Der Prompt-Aufbau folgt der Kontaminations-Trennung ([BLOCKNAME]-Schema seit Chat 27) und ist gespiegelt je nach `ei_calc_rolle`:
+
+#### HumanGraph (`rolle="user"`)
+
+User-Turn wird bewertet, Nova-Antwort (falls vorhanden) als Lagebild.
 
 ```
 [LAGEBILD]
@@ -158,7 +152,23 @@ Analysiere und bewerte NUR den folgenden Teil.
 Eingabe des Nutzers: {segment}
 ```
 
-**Bewertungsobjekt zuletzt:** Die User-Eingabe steht am Ende des Prompts — nutzt den Recency Bias des LLM. Die Assistenten-Antwort steht im Lagebild oben: kontextgebend, aber nicht dominant.
+Im HG ist `state["response"]` typischerweise leer — der Lagebild-Block entfällt dann komplett, nicht nur das Label wechselt.
+
+#### CharacterGraph (`rolle="character"`)
+
+Nova-Antwort wird bewertet, User-Prompt als Lagebild.
+
+```
+[LAGEBILD]
+Hintergrund — nicht bewerten. Dies ist die Eingabe des Nutzers.
+{user_prompt}
+
+[BEWERTUNGSOBJEKT]
+Analysiere und bewerte NUR den folgenden Teil.
+Antwort der Assistentin: {segment}
+```
+
+**Bewertungsobjekt zuletzt:** Das zu bewertende Segment steht am Ende des Prompts — nutzt den Recency Bias des LLM. Der gegenüberliegende Akteur steht im Lagebild oben: kontextgebend, aber nicht dominant.
 
 > **Lesson gelernt (Chat 3):** Ohne Trennung mittelte die Salienz über den gesamten Turn. „Ich bin total überfordert!" (kurz, emotional) + Novas Antwort (200 Wörter, sachlich) = Salienz 0.40 statt 0.70. Die Trennung + die explizite Anweisung „bewerte nur die Eingabe des Nutzers" löste das Problem. → `novaberg-node-salience_l.md`
 
@@ -193,20 +203,23 @@ Die Salienz entscheidet *was* gespeichert wird. Sie führt *nichts* aus. Alle Er
 
 ### 6.2 Geschriebene State-Felder
 
-| Feld | Beschreibung |
-|------|-------------|
-| `pending_writes` | Ergänzt um KZG-Writes (`ziel: "kzg"`). Keine Fakten- oder Timeline-Writes mehr. |
-| `token_total` | Aufaddiert |
+| State-Ziel | Typ | Bewusst flach? | Beschreibung |
+|---|---|---|---|
+| `pending_writes` | list[PendingWrite] | n.a. (Brücken-Datenstruktur) | Ergänzt um KZG-Writes (`ziel: "kzg"`). Keine Fakten- oder Timeline-Writes mehr. |
+| `token_total` | int | n.a. (Counter, kein Personality-Wert) | Aufaddiert |
 
 ### 6.3 Gelesene State-Felder
 
-| Feld | Quelle | Beschreibung |
-|------|--------|-------------|
-| `user_prompt` | API | Für Segmentierung + Analyse |
-| `response` | Responder | Als Lagebild im Analyse-Prompt |
-| `current_arousal` | Perzeption | Wird vom Dispatcher in salienz_obj eingefügt |
-| `emotions_vektor` | Enricher | Wird vom Dispatcher in salienz_obj eingefügt |
-| `pending_writes` | Planner (optional) | Wird ergänzt, nicht ersetzt |
+| State-Quelle | Typ | Beschreibung |
+|---|---|---|
+| `ei_calc_rolle` | str | Input-Switch (`"user"` → User-Prompt bewerten, `"character"` → Nova-Antwort bewerten; impliziter Default `"user"`) |
+| `user_prompt` | str | Bewertungsobjekt (HG) bzw. Lagebild (CG) |
+| `response` | str | Bewertungsobjekt (CG) bzw. (leeres) Lagebild (HG) |
+| `gravitationsterm` | float | Salienz-Boost-Modulation |
+| `pending_writes` | list[PendingWrite] | Akkumulator (read-modify-write) |
+| `token_total` | int | Token-Counter (read-modify-write) |
+
+**Was Salience bewusst NICHT liest:** Memory-Daten, Charakter-Daten, Personality-Klassen-Felder. Salience bewertet ausschließlich den Text plus den Drive-Term. Das ist Designprinzip — Bewertung soll text-immanent erfolgen, nicht durch Charakter-Kontext gefärbt werden.
 
 ### 6.4 Session-Turn-Annotation
 
@@ -270,6 +283,8 @@ Neue Dimension `direktive` in der Salienz-Klassifikation. An Nova gerichtete Imp
 ---
 
 → Dispatcher (führt aus): `novaberg-node-dispatcher.md`
+→ EI-Calc-Persist (CG-Vorgänger, konsolidiert `internal.emotion` vor der Salience-Bewertung): `novaberg-node-ei-calc-persist.md`
+→ Personality-Klassen (Schicht-Konvention — Salience liest sie bewusst nicht): `novaberg-personality.md`
 → KZG-Agent (verdichtet + speichert): novaberg-mem-kzg.md / novaberg-pixie-kzg.md
 → LZG (Promotion-Ziel): novaberg-mem-lzg.md
 → Pixie (Shadow-Queue): `novaberg-pixie.md`
