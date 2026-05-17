@@ -322,6 +322,8 @@ def _log_eintrag(
     """Interne Eintrag-Erzeugung. Wird von allen Helper-Funktionen aufgerufen.
 
     Bei nicht-initialisiertem Buffer: warning-Log, Eintrag verworfen.
+    Bei leerem turn_id: warning-Log (fail-loud), Eintrag wird trotzdem
+    geschrieben — keine silent Log-Luecke.
     Sonst: nicht-blockierender put in den Buffer.
     """
     buffer: PipelineLogBuffer | None = get_buffer()
@@ -332,6 +334,17 @@ def _log_eintrag(
             turn_id, node, art,
         )
         return
+
+    # Fail-loud: leerer turn_id ist ein struktureller Defekt im Aufrufer-
+    # Pfad (DEVELOPER_HANDBOOK §1). Wir schreiben den Eintrag trotzdem,
+    # damit keine Pipeline-Log-Luecke entsteht, aber markieren die Drift
+    # sichtbar. Geschwister von SPRACH-STIL-DEFENSIV-STUMM (Backlog).
+    if not turn_id:
+        logger.warning(
+            "PipelineLog: leerer turn_id beim Schreiben — "
+            "node=%s, quelle=%s, art=%s",
+            node, quelle, art,
+        )
 
     eintrag = PipelineLogEintrag(
         turn_id = turn_id,

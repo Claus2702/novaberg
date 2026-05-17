@@ -214,6 +214,12 @@ def ChatStreamSenden(anfrage: GespraechAnfrage, request: Request):
         try:
             character_id: str = ASSISTANT_USER_ID
 
+            # turn_id: korreliert HumanGraph- und CharacterGraph-Spans desselben
+            # Konversations-Turns im Pipeline-Log. Analog zu ChatSenden:116 —
+            # vor allen Pfaden erzeugt, damit beide Graphen denselben Wert in
+            # den State und ins Event-Payload bekommen.
+            turn_id: str = uuid.uuid4().hex
+
             # Shadow Delivery: Aktivität melden + Cooldown zurücksetzen
             redis_client.set(f"last_activity:{anfrage.user_id}", str(time.time()), ex=7200)
             shadow_cooldown_reset(redis_client, anfrage.user_id)
@@ -225,6 +231,7 @@ def ChatStreamSenden(anfrage: GespraechAnfrage, request: Request):
                     character_id  = character_id,
                     system_prompt = anfrage.system,
                     temperature   = anfrage.temperatur,
+                    turn_id       = turn_id,
                 )
 
                 letzter_state: dict = initial_state
@@ -333,6 +340,7 @@ def ChatStreamSenden(anfrage: GespraechAnfrage, request: Request):
                 source       = "user",
                 typ          = "message",
                 payload      = {
+                    "turn_id":            turn_id,
                     "user_prompt":        anfrage.prompt,
                     "current_emotion":    letzter_external.emotion.emotion              if letzter_external else "",
                     "current_arousal":    letzter_external.emotion.arousal              if letzter_external else 0.0,
