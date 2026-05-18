@@ -7,7 +7,6 @@ import json
 import logging
 
 from agents.base import AgentState
-from memory.kzg import PROMOTION_THRESHOLD
 from services.shadow_agent.utils import shadow_queue_push
 from config import ASSISTANT_USER_ID, redis_client, KZG_SALIENZ_HIGH, KZG_VERTIEFUNG_HAEUFIGKEIT, PIXIE_AKTIV
 
@@ -69,7 +68,7 @@ def queues_befuellen(state: AgentState) -> dict:
 
     if speicher_status == "verstaerkt":
         # Promotion bei hoher Salienz
-        if neue_salienz >= PROMOTION_THRESHOLD:
+        if neue_salienz >= KZG_SALIENZ_HIGH:
             existing = state["parameter"].get("existing", {})
             redis_client.rpush(f"queue:{user_id}", json.dumps({
                 "aufgabe":   "lzg_promotion",

@@ -46,7 +46,11 @@ logger = logging.getLogger("ki_server.memory.kzg")
 # ─────────────────────────────────────────────
 EMBEDDING_DIM:        int   = 768
 SIMILARITY_THRESHOLD: float = 0.85
-PROMOTION_THRESHOLD:  float = 0.8
+# DEAD CODE (Chat 91, Pre-P4-Fix): Ersetzt durch KZG_SALIENZ_HIGH (= 0.7)
+# in config.py. Wird mit dem Rest der alten Promotion in P9 entfernt.
+# Nicht löschen vor P9 — könnte noch in nicht-aktivem Legacy-Code
+# referenziert sein.
+PROMOTION_THRESHOLD: float = 0.8  # Legacy, nicht mehr verwendet
 KZG_INDEX_NAME:       str   = "idx:kzg"
 KZG_PREFIX:           str   = "kzg:"
 
