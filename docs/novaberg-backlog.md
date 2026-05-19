@@ -383,7 +383,7 @@ Emotions-Baseline.
 | D9 | Burst-Deduplizierung (KZG-Klebrigkeit) | ⬜ |
 | TEST1 | Testumgebung vervollständigen | ⚠️ Phase 0+4 fehlen |
 | SHADOW-DEAD | Toten Code in services/shadow_agent/utils.py bereinigen | ⬜ stack_push, shadow_stack_pop, shadow_stack_peek, log_schreiben, nova_vorwissen_laden sind nicht extern referenziert. Nur shadow_queue_push lebt. |
-| PIX-GPU-IDLE | Pixie GPU bei Inaktivitaet | ✅ Chat 79 — Sprach-Calls auf gemma4-gpu bei > 5 Min Inaktivitaet, Analyse bleibt Qwen-CPU. Feature-Flag PIXIE_GPU_IDLE |
+| PIX-GPU-IDLE | Pixie GPU bei Inaktivitaet | ⚠️ Chat 79 — Sprach-Calls auf gemma4-gpu bei > 5 Min Inaktivitaet, Analyse bleibt Qwen-CPU. Feature-Flag PIXIE_GPU_IDLE. **Chat 91:** Mechanik wird durch Microservice-Modell-Queue (eigenes Epic) abgelöst — Queue-Priorität ersetzt Idle-Schalter. Code entfällt mit MS-Welle. |
 
 ### Refactoring & Code-Hygiene (Chat 88)
 
@@ -1435,9 +1435,9 @@ plausibel (frühestes Auftreten der Erinnerung).
 
 ## Epic: Memory-Kern-Umbau (Synapsen-Modell, Chat 86)
 
-**Status:** Konzept-Phase
-**Bezug:** novaberg-memory-synapsen_k.md
-**Vorbedingung:** Keine — Umbau läuft auf grüner Wiese, neue Tabellen parallel zum bestehenden LZG.
+**Status:** P0–P3 implementiert, P4 architektonisch geklärt (Chat 91), wartet auf MS-Welle
+**Bezug:** novaberg-memory-synapsen_k.md, novaberg-memory-synapsen-p4-entscheidungen_k.md (Chat 91)
+**Vorbedingung:** Microservice-Modell-Queue (eigenes Epic, Chat 91). P4 setzt auf der MS-Welle auf — Embedding-Konsolidierung und `pixie_llm_call`-Konsolidierung sind strukturelle Blocker.
 
 ### Phasen-Übersicht
 
@@ -1445,13 +1445,14 @@ plausibel (frühestes Auftreten der Erinnerung).
 |---|---|---|
 | Punkt 1 | Vision und Leitprinzipien | ✅ Chat 86 |
 | Punkt 2 | Schema (lzg_knoten, lzg_kanten) + Konstanten | ✅ Chat 86 |
-| Punkt 3 | Schreibpfad-Sicht (KZG→LZG mit Kantenbildung) | ⬜ Offen |
-| Punkt 4 | Lesepfad-Sicht (Spreading-Activation, Charakter-Hash) | ⬜ Offen |
-| Punkt 5 | Decay-Logik (Knoten und Kanten) | ⬜ Offen |
-| Punkt 6 | Gesprächs- und Node-Log (Forensik-Schicht) | ⬜ Offen |
-| Punkt 7 | Migration und selektive Bestandsdaten-Übernahme | ⬜ Offen |
-| Punkt 8 | Bug- und Backlog-Reset | ⬜ Offen |
-| Punkt 9 | Implementierungs-Phasen P1-P9 für Brudi-Sprints | ⬜ Offen |
+| Punkt 3 | Schreibpfad-Sicht (KZG→LZG mit Kantenbildung) | ✅ Chat 86 |
+| Punkt 4 | Lesepfad-Sicht (Spreading-Activation, Charakter-Hash) | ✅ Chat 86 |
+| Punkt 5 | Decay-Logik (Knoten und Kanten) | ✅ Chat 86 |
+| Punkt 6 | Gesprächs- und Node-Log (Forensik-Schicht) | ✅ Chat 86 |
+| Punkt 7 | Migration und selektive Bestandsdaten-Übernahme | ✅ Chat 86 |
+| Punkt 8 | Bug- und Backlog-Reset | ✅ Chat 86 |
+| Punkt 9 | Implementierungs-Phasen P1-P9 für Brudi-Sprints | 🔧 In Umsetzung (P0–P3 ✅, P4 architektonisch geklärt Chat 91, blockiert auf MS-Welle) |
+| Punkt 10 | P4-Klärungspunkte (K1–K10) | ✅ Chat 91 — `novaberg-memory-synapsen-p4-entscheidungen_k.md` |
 
 ### Hintergrund
 
@@ -1465,7 +1466,7 @@ Mehrere Phasen des Memory-Promotion-Epics werden durch den Synapsen-Umbau anders
 
 - **M3b** (entitaet_ids + timeline_id im Promotion-Code) — wird Teil von Punkt 3 (Schreibpfad-Sicht des Synapsen-Modells)
 - **M5a** (Charakter-Hash profitiert von echten EI-Profilen) — bereits erledigt durch Backfill und Code-Fix in Chat 82/83/84
-- **M5b** (FaktenManager-Reaktivierung) — bleibt separat, hängt nicht direkt am Synapsen-Umbau
+- **M5b** (FaktenManager-Reaktivierung) — bleibt separat, hängt nicht direkt am Synapsen-Umbau. **Chat 91:** wird als M2.5b geführt (FaktenAgent als eigenständige Fachabteilung analog TimelineAgent, kein Plugin mehr). Schreibpfad in `fakten`-Tabelle bleibt orthogonal zum Synapsen-Modell. Verschoben auf nach Synapsen-Umbau, eigenes Faktengedächtnis-Konzeptpapier siehe Synapsen-§3.2.
 - **M5c** (Themen-Cluster-Promotion smarter) — wird strukturell obsolet, weil keine Themen-Cluster mehr aggregiert werden
 
 ### Scope-Definition
@@ -1491,6 +1492,93 @@ Endgültige Re-Evaluation in Punkt 8.
 ### Auswirkung auf Akten-Vision
 
 Der Synapsen-Umbau ist die strukturelle Voraussetzung für die Akten-Architektur. Knoten und Kanten mit ihren Magnet-Feldern (Entitäten, Timeline, Themen) bilden die Anker, an denen Akten-Aggregate später ansetzen können. Ohne intakte assoziative Verbindungen wäre Akten-Logik nur ein zweites Aggregat-System über dem bestehenden — mit dem Umbau wird sie eine natürliche Subgraph-Abfrage.
+
+---
+
+## Epic: Microservice-Modell-Queue (Chat 91)
+
+**Status:** Konzept-Phase, blockierend vor Synapsen P4
+**Bezug:** novaberg-memory-synapsen-p4-entscheidungen_k.md (Chat 91), Audit-Ausgaben Chat 91
+**Vorbedingung:** Keine — kann parallel zur Bestands-Pipeline aufgebaut werden, Migration erfolgt Pfad für Pfad.
+
+### Phasen-Übersicht
+
+| Phase | Inhalt | Status |
+|---|---|---|
+| Punkt 1 | Konzeptpapier `novaberg-microservice-modell-queue_k.md` | ⬜ Offen |
+| Punkt 2 | Audit-Konsolidierung (Temperatur-pro-Call ✅ Chat 91, Microservice-Vorbereitung ✅ Chat 91) | ✅ Chat 91 |
+| Block 1 | Embedding-Konsolidierung (zwei Pfade → einer, Queue/Worker) | ⬜ Offen |
+| Block 2 | `pixie_llm_call`-Konsolidierung (zusammenführen mit `provider.chat`, system + alle Parameter durchreichen) | ⬜ Offen |
+| Block 3 | `think`-Parameter pro Call (Hartkodierung entfernen, node-spezifische Politik) | ⬜ Offen |
+| Block 4 | Connector-Erweiterung für Qwen 3.6 (neuer Connector `qwen36`) | ⬜ Offen |
+| Block 5 | `num_ctx` pro Call durchreichbar machen | ⬜ Offen |
+| Punkt 8 | Inbetriebnahme — Modell-Konsolidierung auf Qwen 3.6, Löschung alter CPU-Modelle (Gemma4-CPU, Qwen3-32B-CPU, Mistral-Varianten) | ⬜ Offen |
+| Punkt 9 | Pixie-Reaktivierung (`PIXIE_AKTIV=True`) | ⬜ Nach Punkt 8 |
+
+### Hintergrund
+
+Audit 3 (Temperatur-pro-Call, Chat 91) hat bestätigt: das Pattern „ein Modell, viele Temperaturen pro Call" trägt für die Chat-Pipeline produktiv — `gemma4-gpu` läuft mit sieben verschiedenen Temperaturen aus 18 verschiedenen Aufrufer-Stellen, alle Parameter sauber durch `_build_options` ins Ollama-`options`-Dict. Damit ist die Architektur-Voraussetzung für die Modell-Konsolidierung gegeben.
+
+Audit 4 (Microservice-Vorbereitung, Chat 91) hat fünf strukturelle Defizite aufgedeckt, die die Konsolidierung blockieren würden:
+
+1. **Zwei parallele Embedding-Pfade** — `embedding_manager` (Singleton, Pixie-Pfade) und freie Funktion `embedding_create()` (Live-Pipeline) tun dasselbe gegen denselben GPU-Client, ohne Konkurrenz-Schutz. Embeddings können mit Chat-LLM-Calls auf demselben Client kollidieren, ohne dass `llm_lock` greift.
+2. **`pixie_llm_call` als zweite Aufruf-Schicht** — umgeht `get_node_config`, reicht `system` nicht durch, ignoriert fünf von acht Generation-Parametern (`top_p`, `repeat_penalty`, `presence_penalty`, `max_output_tokens`, `num_ctx`).
+3. **`think=False` hartkodiert** in `OllamaProvider.chat:202` — `OLLAMA_THINK_DEFAULT` aus dem Connector wird in `get_node_config` eingewoben, aber im Provider überschrieben. `NODE_LLM_CONFIG[thinker]["think"] = True` ist toter Code.
+4. **`num_ctx` provider-fix**, nicht pro Call — Edge-Cases (kurze Klassifikation vs. lange Destillation) nicht differenzierbar.
+5. **Konnektoren noch auf alte Modell-Topologie** — neuer Connector `qwen36` muss eingeführt werden, damit Pixie auf das in Chat 91 verifizierte Qwen 3.6-35B-A3B umstellen kann.
+
+### Verifizierte Modell-Wahl Qwen 3.6 (Chat 91)
+
+Sieben Tests gegen `qwen3.6:35b-a3b` (Q4_K_M, 23 GB) auf der CPU haben das Modell für alle Pixie-Workloads validiert:
+
+| Test | Modus | Zeit | Befund |
+|---|---|---|---|
+| A1 | Klassifikation Grenzfall, think | 4–5 min | Interpretativ („erinnerung"), abweichend von Regel-Schema |
+| A1 | Klassifikation Grenzfall, nothink | 13 s | Regelkonform („gemischt"), strikter |
+| A2 | Klassifikation eindeutig, think | 2:16 min | „fakt" — null Reasoning-Mehrwert sichtbar |
+| B1 | Destillation Apfelbaum, think | 4–5 min | Abstrakt, sachlich |
+| B1 | Destillation Apfelbaum, nothink | 6 s | Konkreter, alle Aspekte abgedeckt |
+| B2 | Destillation Frust, nothink | 8 s | Emotionalen Kern getroffen, idiomatisch |
+| C1/C2 | Aussagen-Vergleich, think vs nothink | 2:30 min vs. 15 s | Identische Antwort, Konfidenz identisch |
+| C2b | Echte Unabhängigkeit, nothink | 18 s | Sauber „unabhaengig", Konfidenz 1.0 |
+
+**Konsolidiertes Verdikt:** JSON-Stabilität perfekt, deutsches funktionales Deutsch idiomatisch, Reasoning bei klaren Aufgaben zuverlässig, CPU-Last 51% bei 62 °C (statt vorher 90 °C bei Zwei-Modell-Setup). Geschwindigkeit ohne Thinking 6–18 s — interaktiv brauchbar.
+
+**Think-Politik empirisch begründet:** Thinking ist bei Klassifikation/Destillation kontraproduktiv (führt zu Über-Interpretation der Aufgabe). Default `think=False` für alle Pixie-Nodes. `think=True` nur für explizit reasoning-bedürftige Nodes (`thinker` — Recherche-Planung).
+
+### Modell-Topologie nach Inbetriebnahme
+
+| Rolle | Modell heute | Modell nach MS-Welle |
+|---|---|---|
+| Live-Konversation (Nova-Stimme) | gemma4-gpu | gemma4-gpu (unverändert) |
+| Pixie Sprache | gemma4-cpu | **qwen36-cpu** |
+| Pixie Analyse | qwen3-32b-cpu | **qwen36-cpu** (selbes Modell!) |
+| Embedding | nomic-embed-text (GPU) | nomic-embed-text (GPU, unverändert) |
+| Fallback Mistral | mistral-small3.2-* | gelöscht |
+
+**Plattenplatz-Gewinn:** ~52 GB nach Löschung der vier abgelösten Modelle (gemma4-cpu 17 GB, qwen3-32b-cpu 20 GB, drei Mistral-Varianten 45 GB).
+
+### Scope-Definition
+
+**Im Welle-Scope:** Konzeptpapier, Embedding-Konsolidierung, `pixie_llm_call`-Konsolidierung, `think`-Politik pro Call, Connector-Erweiterung, `num_ctx`-Durchreichung, Modell-Konsolidierung, Pixie-Reaktivierung.
+
+**Außerhalb des Scopes:** Synapsen P4 (eigenes Epic, wartet darauf), CharacterGraph-Strukturen, KZG-Schreibpfad, Pipeline-Log-Architektur, sternförmiger Orchestrator-Graph (Vision für später).
+
+### Folgewirkung auf offene Bugs
+
+Voraussichtlich strukturell obsolet oder gelöst nach Umbau:
+
+- **PIX-GPU-IDLE** — Mechanik wird durch Queue-Priorität ersetzt. Feature-Flag und Code entfallen.
+- **PROMO-QUEUE-SCHWELLE-ASYMMETRIE** — bereits durch Pre-P4-Fix erledigt, Doku-Drift wird Teil der MS-Welle.
+- Zwei Embedding-Pfade und Kapselungs-Bruch in PromotionAgent (`embedding_manager._client/._model`).
+
+Endgültige Re-Evaluation in Punkt 9 (Pixie-Reaktivierung).
+
+### Verhältnis zum Synapsen-Memory-Kern-Umbau
+
+P4 setzt **strukturell** auf der MS-Welle auf: der neue Pixie-Agent `synapsen_promotion` ruft Embedding über die konsolidierte Schnittstelle, schreibt in `lzg_knoten`/`lzg_kanten` über die Microservice-Queue. Ohne MS-Welle würde P4 auf brüchiger Grundlage aufsetzen — zwei Embedding-Pfade in einem neuen Agent, `think=False`-Hartkodierung blockiert Qwen-3.6-Thinking für die Klassifikations-Logik.
+
+K-Punkte für P4 sind unabhängig von der MS-Welle bereits in Chat 91 abgeschlossen (`novaberg-memory-synapsen-p4-entscheidungen_k.md`). Implementation wartet auf MS-Welle-Abschluss.
 
 ---
 
@@ -1827,6 +1915,51 @@ Diese Konzeption materialisiert **Typ 1** (Prompt-Skills als Markdown) aus Epic 
 **Priorität:** Hoch. Die kognitive Schwester der emotionalen Pipeline ist heute der größte blinde Fleck im System. Task-Orchestration Phase 1 ist der natürliche Erst-Sprint, weil sie unabhängig vorausgehen kann und mehrere alte Bugs strukturell löst, bevor die Cognitive Pipeline darüberkommt.
 
 **Risiken:** Latenz-Explosion durch viele LLM-Calls (mitigiert durch Cache-Hierarchie und LLM-Queue), Migrationsbruch in der Event-Queue (mitigiert durch rückwärtskompatible Schema-Erweiterung), Skill-Inflation (mitigiert durch 1:1-Invariante), Werkzeug-Schicht-Aushebelung durch Skills (mitigiert durch Modulations-Disziplin), Worker-Crash mit verlorenem Auftrag (mitigiert durch Watchdog).
+
+---
+
+## Konzept: CHRONIK — Vollständiges Turn-Log als episodisches Nachschlagewerk (Chat 91)
+
+**Status:** Konzept-Idee, eigenes Konzeptpapier nach P4–P9 vorgesehen
+**Auslöser:** K9-Diskussion (Chat 91) zur Embedding-Quelle in Synapsen P4
+**Wissenschaftliche Basis:** Tulving — episodisches vs. semantisches Gedächtnis
+
+### Idee
+
+Das Synapsen-Modell etabliert das LZG als **semantisches** Gedächtnis: kondensierte Knoten mit Verbindungen, phänomenologisch verdichtet, zeitlich entkernt. Was fehlt, ist das **episodische** Gegenstück — die konkrete Situation, in der eine Erinnerung entstand.
+
+Die CHRONIK wäre eine **vierte Speicher-Modalität** neben Session (TTL), KZG (Übergangs-Gedächtnis), LZG (Synapsen-Netz):
+
+- **Vollständige Turn-Verbatim-Sammlung**, dauerhaft, chronologisch indiziert
+- `turn_id`-basierte Brücke: jeder `lzg_knoten.kzg_quell_key` referenziert einen KZG-Eintrag, der wiederum aus einem Turn entstand. Über die CHRONIK ließe sich der Turn samt Nachbar-Turns zurückholen.
+- Nicht als Erinnerungs-Gedächtnis konzipiert, sondern als **Kontext-Lexikon** — ein rationales Nachschlagewerk, das einen entkernten Knoten („Der Nutzer bestätigt das.") über chronologischen Kontext kontextualisieren kann.
+
+### Phänomenologische Analogie
+
+Menschen erinnern sich vage an einen Gesprächsfetzen, wissen aber nicht mehr genau worum es ging — bis sie sich erinnern, *wann* das war, und dann tauchen die umliegenden Erinnerungen mit auf. Dieser Mechanismus ist die CHRONIK: Zeit als Schlüssel zum verlorenen Kontext.
+
+### Volumen-Abschätzung
+
+Bei 2 h Konversation/Tag und 30 s/Turn entstehen ca. 240 Turns/Tag = ~7.200/Monat = ~88.000/Jahr. Bei doppelter Eintragung (User + Nova) sind das ~176.000 Datensätze/Jahr. Pro Datensatz ca. 300 Bytes (Turn-Text + `turn_id` + Timestamp + Metadaten) — das sind **~50 MB/Jahr**, eine Million Datensätze nach **~5,7 Jahren**. PostgreSQL mit BRIN-Index auf Timestamp macht das ohne Bauchschmerzen. Retention-Politik ist eine Optimierungs-Frage für später, nicht für die initiale Architektur.
+
+### Offene Architektur-Fragen (für das spätere Konzeptpapier)
+
+- Schema-Frage: PostgreSQL-Tabelle? Append-only-Log? Ein Datensatz pro Turn oder Speaker?
+- Schreibpfad: Dispatcher schreibt jeden Turn? An welcher Stelle in der Pipeline?
+- Lesepfad: direkter `turn_id`-Lookup? Auch Vektor-Suche?
+- Embeddings: ja oder nein? (CHRONIK braucht sie nicht notwendigerweise, weil sie über `turn_id` angesprochen wird, nicht über Ähnlichkeit.)
+- Privacy-Implikationen vollständiger Transkripte dauerhaft.
+
+### Verhältnis zu KZG-VERDICHTER-KONTEXT-VERLUST
+
+Beide Konzepte sind komplementär:
+
+- **KZG-Verdichter-Fix** verhindert, dass entkernte Inhalte überhaupt entstehen — angesetzt am Verdichter-Prompt.
+- **CHRONIK** liefert das Sicherheitsnetz für die Fälle, die trotzdem durchrutschen — Kontext über den ursprünglichen Turn rückholbar.
+
+### Verhältnis zu Synapsen P4
+
+Außerhalb des P4-Scope. P4 baut das semantische Netz, CHRONIK ist das episodische Gegenstück. Reihenfolge: Konzeptpapier nach P9 (vollständiger Synapsen-Umbau abgeschlossen). Vorher: Backlog-Position halten.
 
 ---
 
@@ -2444,6 +2577,120 @@ Zwei Redis-`LRANGE`-Calls pro User-Turn für identische Daten. Im CG analog, dor
 (c) Wenn Summary semantisch obsolet ist (z.B. ersetzt durch LZG-Konsolidierung): Formatter-Code entfernen und im Konzept klar markieren.
 
 **Empfehlung:** Prüfung im Rahmen des nächsten Memory-Pipeline-Sprints (z.B. Synapsen P5 Reader-Migration) mit-erledigen. Eigener Sprint ist nicht nötig.
+
+---
+
+## Bug: KZG-VERDICHTER-KONTEXT-VERLUST — Verdichter produziert entkernte KZG-Inhalte (Chat 91)
+
+**Status:** ⬜ Beobachtet, nicht implementiert
+**Prio:** Mittel
+**Auslöser:** K9-Diskussion (Chat 91) zur Embedding-Quelle in Synapsen P4
+
+**Beobachtung:** Der KZG-Verdichter destilliert Roh-Turns zu einer Ein-Satz-Form, die im `inhalt`-Feld des KZG-Hashes landet. Bei manchen Turns ist die Verdichtung so radikal, dass die Substanz verloren geht — Beispiel: ein Nutzer-Turn „Ja, genau!" wird zu „Der Nutzer bestätigt das.". Ohne Session-Kontext ist der Eintrag bedeutungslos.
+
+**Auswirkung:** Doppelt:
+
+1. **Synapsen P4 / Embedding-Schicht:** Solche entkernten Inhalte produzieren Embeddings, die kaum diskriminieren — der Eintrag matcht thematisch breit gegen viele Knoten, ohne dass das semantisch gerechtfertigt wäre. Embedding-Schicht der Kanten-Bildung verschwendet Aktivierung an inhaltslose Knoten.
+2. **Späterer Spreading-Activation-Lesepfad (P5):** Konsument sieht „Der Nutzer bestätigt das." als Knoten-Inhalt — keine nutzbare Information, kein Anker für die Antwort-Konstruktion.
+
+**Lösungsraum:**
+
+(a) **Verdichter-Prompt-Refinement:** Verdichter wird angewiesen, kontext-vollständige Sätze zu produzieren (z.B. „Der Nutzer bestätigt die Empfehlung zum Gräser-Stutzen im Frühjahr."). Erfordert Prompt-Engineering und ggf. mehr Kontext-Zugriff beim Verdichter (mindestens den vorherigen Turn).
+
+(b) **CHRONIK als Sicherheitsnetz:** entkernte Einträge bleiben, der Kontext-Lookup läuft über die CHRONIK-Tabelle (eigenes Konzeptpapier nach P9). Komplementär zu (a), nicht Ersatz.
+
+**Empfehlung:** Beide Pfade — (a) reduziert das Problem an der Quelle, (b) deckt Restfälle ab. (a) ist nach P9 als eigener Prompt-Refinement-Sprint sinnvoll.
+
+**Verwandte Themen:**
+
+- KONZEPT: CHRONIK (Chat 91) — episodisches Nachschlagewerk, komplementär.
+- Synapsen P4 K9-Entscheidung — Embedding aus `inhalt` allein, ohne Themen-Anreicherung. Pfad C (Themen mit ins Embedding) wurde explizit verworfen, weil er die Schicht-Orthogonalität kompromittiert.
+
+---
+
+## Refactor: CONFIG-PIXIE-AKTIV-HARDCODED — `PIXIE_AKTIV` nicht env-konfigurierbar (Chat 91)
+
+**Status:** ⬜ Offen, vor Pixie-Reaktivierung relevant
+**Prio:** Niedrig
+**Auslöser:** Audit 1 Beifang Chat 91
+
+**Beobachtung:** `PIXIE_AKTIV = False` ist in `novaberg/server/config.py` hartcodiert. Alle anderen Pixie-Konstanten (`PIXIE_PROMOTION_INTERVALL_SEKUNDEN`, `PIXIE_GPU_IDLE`, etc.) sind env-konfigurierbar (`os.getenv(...)`). Asymmetrie.
+
+**Auswirkung:** Pixie-Reaktivierung nach MS-Welle-Inbetriebnahme erfordert Code-Edit statt Env-Variable. Inkonsistent zum üblichen Konfigurations-Pattern.
+
+**Lösungsraum:** Trivial. `PIXIE_AKTIV: bool = os.getenv("PIXIE_AKTIV", "false").lower() == "true"`. Eine Zeile.
+
+**Empfehlung:** Im Rahmen der MS-Welle-Inbetriebnahme (Punkt 9 des MS-Welle-Epics) mit erledigen — exakt der Zeitpunkt, an dem `PIXIE_AKTIV=True` produktiv gesetzt werden soll.
+
+---
+
+## Doku-Sprint: DOKU-DRIFT-WELLE-PROMOTION — Sieben Drift-Punkte aus PromotionAgent-Audit (Chat 91)
+
+**Status:** ⬜ Beobachtet, nicht implementiert
+**Prio:** Niedrig — Doku stirbt mit dem alten Code in P9
+**Auslöser:** PromotionAgent-Audit 1 (Chat 91)
+
+**Beobachtung:** Audit 1 hat sieben konkrete Drift-Stellen zwischen `novaberg/docs/novaberg-pixie-promotion.md` und dem Live-Code im alten `PromotionAgent` aufgedeckt:
+
+1. **Methoden-Namen:** Doku §10 nennt `_call1_klassifizieren` / `_call2_fakten_extrahieren`, Code hat `_klassifiziere` / `_extrahiere_fakten`.
+2. **Schwellen-Widerspruch:** Doku §7.1 nennt `CLUSTER_THEMEN_SIMILARITY = 0.75`, Doku §9 listet korrekt 0.85, Code nutzt 0.85.
+3. **Modell-Trennung:** Doku §9 trennt Analyse- und Sprach-Modell für die zwei Calls, Code geht für beide Calls über `get_background_provider()` (selbes Modell).
+4. **Prompt-Lokation:** Audit-Vorlage erwartete Prompts in `prompts/default/...`, alle Promotion-Prompts sind als f-Strings im Code hartkodiert.
+5. **`hash_dirty` paar-spezifisch:** Code nutzt `hash_dirty:{user_id}:{character_id}`, Doku §6 dokumentiert vereinfacht `hash_dirty:{user_id}`.
+6. **O6-Filter:** Doku §4 beschreibt Interface-Regel als separate Python-Prüfung; im Code ist sie ausschließlich LLM-Prompt-Regel.
+7. **Entitäts-Typen:** Doku §3 listet `person | ort | organisation | tier | objekt`, Call 1-Prompt liefert nur `person | ort | organisation | objekt` (kein `tier`).
+
+**Empfehlung:** Doku-Sprint erst nach P9 sinnvoll — der alte Code (inklusive der dokumentierten Mechanik) wird mit der vollständigen Synapsen-Umstellung gelöscht. Bis dahin: alle sieben Punkte als Markdown-Anmerkung in `novaberg-pixie-promotion.md` einleiten, damit jemand mit dem Code arbeitet, ohne der Doku zu blind zu vertrauen. Vollständiger Doku-Sweep stirbt mit dem Code in P9.
+
+---
+
+## Sammelposten: AUDIT-1-BEIFANG-PROMOTION — Tote Pfade und Beobachtungen aus PromotionAgent-Audit (Chat 91)
+
+**Status:** ⬜ Strukturell offen, größtenteils mit P9-Löschung erledigt
+**Prio:** Niedrig
+**Auslöser:** PromotionAgent-Audit 1 (Chat 91)
+
+Sieben Beifang-Punkte aus dem Audit-Sweep, die nicht zur P4-Klärung beitrugen, aber dokumentiert sein müssen:
+
+| # | Beobachtung | Schicksal nach P9 |
+|---|---|---|
+| EMOTIONS-VEKTOR-LEER | `lzg_knoten.emotions_vektor` ist NOT NULL DEFAULT '', wird vom Salience-Node leer gelassen. Spalte kehrt aus Chat-83-Entfernung zurück. | Eigener Salience-Sprint später |
+| KZG-ERSTELLT-AM-PARSE-HÄRTE | Spalte ist NOT NULL im neuen Schema, alter Code fing Parse-Fehler ab und schrieb `None`. Neuer Agent braucht Vorbedingungs-Check. | In P4-Implementation einbauen |
+| GEDACHTNISTYP-DEFAULT-BEFÜLLT | `lzg_knoten.gedaechtnistyp` wird vom neuen Pfad mit KZG-Wert befüllt (heute oft `"kurz"`), alter Pfad hatte NULL gelassen. | P5-Lesepfad muss darauf vorbereitet sein |
+| TRIGGER-2-RECACHE-KONZEPT-LÜCKE | Konzept §7.9.2 Trigger 2 (Knoten-Aktivierung) ist semantisch unklar im 1:1-Umzug — jeder neue KZG-Eintrag entsteht als neuer Knoten, „echte Aktivierung" passiert erst beim Reinforcement-Match (K10). | Konzept-Klärung später, faktisch P6+-Problem |
+| FAKTEN-TABELLE-ENTITY-MERGE | `fakten`-Tabellen-Konsistenz bei Entity-Merge — `entitaeten.id` wird sowohl in `lzg_knoten.entitaet_ids` als auch in `fakten`-Tripeln referenziert, aber Konsistenz-Pflege bei Merge nur für `lzg_kanten` definiert. | Eigenes Faktengedächtnis-Konzept |
+| TIMELINE-FK-DOKU-DRIFT | Konzept §4.1 listet `timeline_id INTEGER REFERENCES timeline(id) ON DELETE SET NULL`, Live `init.sql` hat bare INTEGER ohne FK (FK lebt in `agents/timeline/init.sql`). Funktional gleichwertig, dokumentarisch abweichend. | Doku-Sync mit TIMELINE-IN-KERN |
+| REFAC-MAGNETE-AUDIT | `magnete_aufloesen`-Node (P3) hat keinen `_audit_log`- oder `pipeline_log`-Eintrag. Resolver-Fehler erscheinen nur in `logger.warning`. Drift schwer diagnostizierbar. | Separater Refactor-Sprint |
+
+**Empfehlung:** Liste als Beobachtungs-Anker erhalten. Sechs der sieben Punkte sind entweder mit P9-Löschung erledigt oder in Folge-Sprints (P5, Faktengedächtnis, TIMELINE-IN-KERN) integriert. `REFAC-MAGNETE-AUDIT` als eigenständiger kleiner Sprint übrig.
+
+---
+
+## Bug: AUDIT-DOKU-DRIFT-MS — Drift-Befunde aus Microservice-Vorbereitungs-Audit (Chat 91)
+
+**Status:** ⬜ Beobachtet, mit MS-Welle erledigt
+**Prio:** Niedrig
+**Auslöser:** Audit 4 (Microservice-Vorbereitung, Chat 91)
+
+**Beobachtung:** Audit 4 hat sechs strukturelle Drift-Befunde aufgedeckt, die nicht direkt zu den fünf MS-Welle-Blöcken gehören, aber im Rahmen der Welle mit-aufgeräumt werden sollten:
+
+1. **Zwei parallele Embedding-Pfade:** `embedding_manager` Singleton (Pixie) und freie Funktion `embedding_create()` (Live-Pipeline). Beide tun dasselbe. — Wird mit Block 1 erledigt.
+
+2. **`pixie_llm_call` als parallele Aufruf-Schicht:** Existenz ist im Code-Bestand nicht in `novaberg-pixie.md` oder vergleichbarer Doku dokumentiert. — Mit Block 2 entfällt der Sonderpfad strukturell.
+
+3. **`init_providers` nicht idempotent:** Doppel-Aufruf überschreibt Singletons silent. Praktisch heute irrelevant (nur ein Aufruf im Lifespan), aber strukturell ein Footgun.
+
+4. **`_pixie_idle_provider` redundant mit `_chat_provider`:** identische Konfiguration (gleicher Client, Modell, num_ctx), separate Instanz. Möglicherweise als Lock-Vorbereitung gedacht, aber undokumentiert.
+
+5. **Kommentar-Drift `agents/recherche/destillation.py:181`:** Kommentar nennt „MISTRAL, nicht Qwen", produktiv läuft im `gemma4`-Connector aber `gemma4-cpu`.
+
+6. **Asymmetrie zwischen `OllamaProvider` und `AnthropicProvider` bei JSON-Reparatur:** Ollama-Pfad ruft drei Helper auf (`_clean_json_response`, `_deduplicate_repetition`, `_repair_truncated_json`), Anthropic-Pfad nur den ersten.
+
+**Empfehlung:** Befunde 1+2 sind durch MS-Welle strukturell erledigt. Befund 3 (Idempotenz) als Mini-Schutz im Rahmen der MS-Welle-Konzeptarbeit einbauen — `init_providers` sollte beim zweiten Aufruf warnen oder no-op sein. Befunde 4–6 als Doku-Korrektur in derselben Welle aufnehmen.
+
+**Verwandte Themen:**
+
+- Epic: Microservice-Modell-Queue (Chat 91) — alle sechs Befunde lösen sich strukturell oder werden im Rahmen der Welle erledigt.
 
 ---
 
