@@ -11,9 +11,6 @@ Aufbau:
   services/        — Entity Resolution
 """
 
-# Embedding
-from memory.embedding import embedding_create
-
 # KZG
 from memory.kzg import (
     kzg_index_create,

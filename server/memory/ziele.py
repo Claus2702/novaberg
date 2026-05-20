@@ -10,6 +10,8 @@ from datetime import datetime, timezone
 
 import psycopg2
 
+from services.model_services import model_service, EmbedRequest
+
 logger = logging.getLogger("ki_server.memory.ziele")
 
 
@@ -206,19 +208,19 @@ def ziel_deaktivieren(postgres_url: str, ziel_id: int) -> bool:
         return False
 
 
-def ziele_embeddings_sicherstellen(
+async def ziele_embeddings_sicherstellen(
     postgres_url: str,
-    embed_client,
-    embed_model: str,
 ) -> None:
     """Erzeugt Embeddings für Ziele die noch keins haben (Startup-Repair).
 
     Analog zu entitaeten_embeddings_sicherstellen in chat.py.
 
+    Läuft im FastAPI-Lifespan im Haupt-Event-Loop und nutzt deshalb die
+    async-API des EmbedWorkers direkt (submit), nicht die sync-Brücke
+    (submit_sync würde den eigenen Loop blockierend belauern → Deadlock).
+
     Args:
         postgres_url: PostgreSQL-Verbindungs-URL.
-        embed_client: Ollama-Client für Embedding-Berechnung.
-        embed_model: Modellname für Embeddings (z.B. "nomic-embed-text").
     """
     try:
         conn   = psycopg2.connect(postgres_url)
@@ -239,12 +241,15 @@ def ziele_embeddings_sicherstellen(
         logger.debug("Ziele Embedding-Repair: Alle Ziele haben Embeddings")
         return
 
-    from memory.embedding import embedding_create
-
     for ziel_id, zielsatz in rows:
         try:
-            embedding: list[float] = embedding_create(
-                zielsatz, embed_client, embed_model,
+            request = EmbedRequest(text=zielsatz)
+            embed_response = await model_service.embed.submit(request)
+            embedding: list[float] = embed_response.embedding
+            logger.debug(
+                "Ziele-Repair: Embedding via EmbedWorker (Dim: %d, Dauer: %.3fs)",
+                len(embedding),
+                embed_response.duration_seconds,
             )
 
             conn   = psycopg2.connect(postgres_url)

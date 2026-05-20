@@ -11,15 +11,11 @@ Drei Quellen in Reihenfolge:
 import json
 import logging
 from dataclasses import dataclass, field
-from typing import TYPE_CHECKING
 
 import redis
 
-from memory.embedding import embedding_create
 from memory.repositories.entitaeten_repository import EntitaetenRepository
-
-if TYPE_CHECKING:
-    import ollama
+from services.model_services import model_service, EmbedRequest
 
 logger = logging.getLogger("ki_server.memory.services.entity_resolution")
 
@@ -73,8 +69,6 @@ class EntityResolutionService:
         user_id:        str,
         redis_client:   "redis.Redis",
         turn_id:        str | None = None,
-        embed_client:  "ollama.Client | None" = None,
-        embed_model:    str = "",
     ) -> ResolutionResult:
         """
         Löst eine Liste von Entitäten auf (aus Call 1 der Promotion).
@@ -164,31 +158,25 @@ class EntityResolutionService:
 
             if len(treffer) == 0:
                 # ── 5. Fallback: Embedding-Similarity ──────
-                if embed_client and embed_model:
-                    ähnliche: list[dict] = EntityResolutionService._search_by_embedding(
-                        postgres_url, user_id, name,
-                        embed_client, embed_model
-                    )
-                    logger.info(
-                        f"Entity Resolution: '{name}'"
-                        f" → Embedding-Suche ({len(ähnliche)} Treffer)"
-                    )
+                # Block 1 Cleanup-Sprint: Embedding-Fallback läuft jetzt
+                # immer (Worker steht zentral), Feature-Flag entkernt.
+                ähnliche: list[dict] = EntityResolutionService._search_by_embedding(
+                    postgres_url, user_id, name,
+                )
+                logger.info(
+                    f"Entity Resolution: '{name}'"
+                    f" → Embedding-Suche ({len(ähnliche)} Treffer)"
+                )
 
-                    if len(ähnliche) == 1:
-                        result.aufgeloest.append(ResolvedEntity(
-                            name=name, typ=typ,
-                            bekannte_id=ähnliche[0]["id"]
-                        ))
-                        continue
-                    elif len(ähnliche) > 1:
-                        treffer = ähnliche
-                        # Weiter zur Disambiguierung unten
-                    else:
-                        result.aufgeloest.append(ResolvedEntity(
-                            name=name, typ=typ, ist_neu=True
-                        ))
-                        logger.info(f"Entity Resolution: '{name}' → neue Entität")
-                        continue
+                if len(ähnliche) == 1:
+                    result.aufgeloest.append(ResolvedEntity(
+                        name=name, typ=typ,
+                        bekannte_id=ähnliche[0]["id"]
+                    ))
+                    continue
+                elif len(ähnliche) > 1:
+                    treffer = ähnliche
+                    # Weiter zur Disambiguierung unten
                 else:
                     result.aufgeloest.append(ResolvedEntity(
                         name=name, typ=typ, ist_neu=True
@@ -223,8 +211,6 @@ class EntityResolutionService:
         user_id:        str,
         redis_client:   "redis.Redis",
         turn_id:        str | None = None,
-        embed_client:  "ollama.Client | None" = None,
-        embed_model:    str = "",
     ) -> ResolvedEntity:
         """Löst eine einzelne Entität auf. Convenience-Wrapper um resolve_batch."""
         batch_result: ResolutionResult = EntityResolutionService.resolve_batch(
@@ -233,8 +219,6 @@ class EntityResolutionService:
             user_id=user_id,
             redis_client=redis_client,
             turn_id=turn_id,
-            embed_client=embed_client,
-            embed_model=embed_model,
         )
         if batch_result.aufgeloest:
             return batch_result.aufgeloest[0]
@@ -321,8 +305,6 @@ class EntityResolutionService:
         postgres_url:   str,
         user_id:        str,
         name:           str,
-        embed_client:  "ollama.Client",
-        embed_model:    str,
         threshold:      float = 0.80,
     ) -> list[dict]:
         """
@@ -331,8 +313,13 @@ class EntityResolutionService:
         Filtert Treffer zusätzlich per Name-Plausibilität.
         """
         try:
-            embedding: list[float] = embedding_create(
-                name, embed_client, embed_model
+            request = EmbedRequest(text=name)
+            embed_response = model_service.embed.submit_sync(request)
+            embedding: list[float] = embed_response.embedding
+            logger.debug(
+                "Entity-Resolution: Similarity-Suche Embedding via EmbedWorker (Dim: %d, Dauer: %.3fs)",
+                len(embedding),
+                embed_response.duration_seconds,
             )
             treffer: list[dict] = EntitaetenRepository.find_similar(
                 postgres_url, user_id, embedding, threshold=threshold
@@ -394,23 +381,30 @@ class EntityResolutionService:
         name:            str,
         typ:             str = "sonstiges",
         zusammenfassung: str | None = None,
-        embed_client:   "ollama.Client | None" = None,
-        embed_model:     str = "",
     ) -> int:
         """
         Legt eine neue Entität in der DB an.
-        Erzeugt optional ein Embedding für Name + Zusammenfassung.
+        Erzeugt ein Embedding für Name + Zusammenfassung.
+
+        Block 1 Cleanup-Sprint: Embedding läuft jetzt immer (Worker steht
+        zentral), Feature-Flag entkernt.
         """
         embedding: list[float] | None = None
 
-        if embed_client and embed_model:
-            try:
-                embed_text: str = name
-                if zusammenfassung:
-                    embed_text = f"{name}: {zusammenfassung}"
-                embedding = embedding_create(embed_text, embed_client, embed_model)
-            except Exception as fehler:
-                logger.warning(f"Embedding-Erzeugung fehlgeschlagen: {fehler}")
+        try:
+            embed_text: str = name
+            if zusammenfassung:
+                embed_text = f"{name}: {zusammenfassung}"
+            request = EmbedRequest(text=embed_text)
+            embed_response = model_service.embed.submit_sync(request)
+            embedding = embed_response.embedding
+            logger.debug(
+                "Entity-Resolution: Neue Entität Embedding via EmbedWorker (Dim: %d, Dauer: %.3fs)",
+                len(embedding),
+                embed_response.duration_seconds,
+            )
+        except Exception as fehler:
+            logger.warning(f"Embedding-Erzeugung fehlgeschlagen: {fehler}")
 
         entitaet_id: int = EntitaetenRepository.insert(
             postgres_url=postgres_url,
