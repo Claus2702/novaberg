@@ -10,8 +10,8 @@ import logging
 import numpy as np
 
 from agents.base import AgentState
-from memory.embedding import embedding_create
 from config import postgres_verbinden, DELEGATION_SIMILARITY_SCHWELLE
+from services.model_services import model_service, EmbedRequest
 
 logger = logging.getLogger("ki_server.agents.delegation.deduplizierung")
 
@@ -27,10 +27,14 @@ def duplikat_pruefen(state: AgentState) -> dict:
     embed_text: str = f"{themen}. {zusammenfassung}" if zusammenfassung else themen
 
     # Embedding erzeugen
-    embed_client = state["kontext"].get("embed_client")
-    embed_model:  str = state["kontext"].get("embed_model", "")
-
-    embedding: list[float] = embedding_create(embed_text, embed_client, embed_model)
+    request = EmbedRequest(text=embed_text)
+    embed_response = model_service.embed.submit_sync(request)
+    embedding: list[float] = embed_response.embedding
+    logger.debug(
+        "Delegation-Dedup: Embedding via EmbedWorker (Dim: %d, Dauer: %.3fs)",
+        len(embedding),
+        embed_response.duration_seconds,
+    )
 
     # pgvector Cosine-Similarity gegen offene Akten
     bestehende_akte_id: int | None = None

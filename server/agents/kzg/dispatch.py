@@ -17,8 +17,6 @@ logger = logging.getLogger("ki_server.agents.kzg.dispatch")
 def dispatch_kzg(
     state: dict,
     writes: list[dict],
-    embed_client=None,
-    embed_model: str = "",
 ) -> dict:
     """Verarbeitet alle KZG-Writes als Batch.
 
@@ -28,8 +26,6 @@ def dispatch_kzg(
     Args:
         state: ConversationState (fuer user_prompt, response, EI-Felder)
         writes: Liste von pending_writes mit ziel="kzg"
-        embed_client: Ollama-Client fuer Embeddings
-        embed_model: Embedding-Modell-Name
 
     Returns:
         Dict mit kzg_verarbeitet (Anzahl verarbeiteter Segmente)
@@ -86,8 +82,6 @@ def dispatch_kzg(
                 "user_id":      user_id,
                 "character_id": character_id,
                 "beobachter":   beobachter,
-                "embed_client": embed_client,
-                "embed_model":  embed_model,
                 "turn_id":      state.get("turn_id", ""),
                 # Clipboard: vom TimelineAgent in diesem Turn gesetzte ID;
                 # vom magnete_aufloesen-Node uebernommen statt eigenen

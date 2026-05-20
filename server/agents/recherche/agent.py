@@ -18,14 +18,12 @@ from config import (
     ASSISTANT_USER_ID,
     DEFAULT_USER_ID,
     redis_client,
-    ollama_cpu_client,
-    EMBED_MODEL,
     POSTGRES_URL,
     ZIEL_MAX_MITTELFRISTIG,
     PIXIE_RECHERCHE_MAX_ITERATIONEN,
 )
 from memory.ziele import ziel_speichern, ziele_aktive_laden
-from memory.embedding import embedding_create
+from services.model_services import model_service, EmbedRequest
 
 logger = logging.getLogger("ki_server.agents.recherche")
 
@@ -261,15 +259,12 @@ class RechercheAgent(BaseAgent):
                 aufgabe="recherche",
                 thema=thema or session_kontext.get("thema_kern", ""),
                 inhalt=destillat,
-                embed_client=ollama_cpu_client,
-                embed_model=EMBED_MODEL,
             )
         except Exception as e:
             logger.warning(f"RechercheAgent: Stack-Push fehlgeschlagen — {e}")
 
         # -- 7. In Novas KZG speichern (Post-Hook nova_gedaechtnis) --
         try:
-            from tools.embedding_manager import embedding_manager
             from memory.kzg import kzg_store
 
             salienz_obj: dict = {
@@ -282,7 +277,15 @@ class RechercheAgent(BaseAgent):
                 "dimension": "kontext",
             }
 
-            embedding: list[float] = embedding_manager.embed(destillat)
+            embed_response = model_service.embed.submit_sync(
+                EmbedRequest(text=destillat)
+            )
+            embedding: list[float] = embed_response.embedding
+            logger.debug(
+                "Recherche: Destillat Embedding via EmbedWorker (Dim: %d, Dauer: %.3fs)",
+                len(embedding),
+                embed_response.duration_seconds,
+            )
 
             # Recherche-Erkenntnisse ins Paar (user_id, nova) — Beobachter "assistant".
             kzg_store(
@@ -310,8 +313,14 @@ class RechercheAgent(BaseAgent):
 
                 if ziel_extrakt:
                     try:
-                        ziel_emb: list[float] = embedding_create(
-                            ziel_extrakt["zielsatz"], ollama_cpu_client, EMBED_MODEL,
+                        ziel_response = model_service.embed.submit_sync(
+                            EmbedRequest(text=ziel_extrakt["zielsatz"])
+                        )
+                        ziel_emb: list[float] | None = ziel_response.embedding
+                        logger.debug(
+                            "Recherche: Ziel-Extrakt Embedding via EmbedWorker (Dim: %d, Dauer: %.3fs)",
+                            len(ziel_emb),
+                            ziel_response.duration_seconds,
                         )
                     except Exception:
                         ziel_emb = None

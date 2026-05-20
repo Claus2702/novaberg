@@ -29,7 +29,7 @@ from config import (
 from services.llm_provider import get_background_provider
 from memory.repositories.entitaeten_repository import EntitaetenRepository
 from memory.kzg import _kzg_prefix
-from tools.embedding_manager import embedding_manager
+from services.model_services import model_service, EmbedRequest
 from tools.db_manager import db_manager
 
 logger = logging.getLogger("ki_server.agents.promotion")
@@ -272,8 +272,6 @@ class PromotionAgent(BaseAgent):
                         user_id=user_id,
                         postgres_url=POSTGRES_URL,
                         redis_client=redis_client,
-                        embed_client=embedding_manager._client,
-                        embed_model=embedding_manager._model,
                     )
                 except Exception as ex:
                     logger.error(f"Promotion: Fehler bei Fakten-Verarbeitung: {ex}", exc_info=True)
@@ -285,7 +283,15 @@ class PromotionAgent(BaseAgent):
                 e["name"] for e in entitaeten if e.get("ist_referenz", False)
             ]
 
-            embedding: list[float] = embedding_manager.embed(f"{themen} {inhalt}")
+            embed_response = model_service.embed.submit_sync(
+                EmbedRequest(text=f"{themen} {inhalt}")
+            )
+            embedding: list[float] = embed_response.embedding
+            logger.debug(
+                "Promotion: LZG-INSERT Embedding via EmbedWorker (Dim: %d, Dauer: %.3fs)",
+                len(embedding),
+                embed_response.duration_seconds,
+            )
             embedding_str: str = "[" + ",".join(str(x) for x in embedding) + "]"
 
             themen_list: list[str] = sorted({t.strip() for t in themen.split(",") if t.strip()})
@@ -874,7 +880,15 @@ class PromotionAgent(BaseAgent):
                     kzg_erstellt_am = None
 
                 # Embedding frisch erzeugen — Redis-Blob ist durch decode_responses=True korrumpiert
-                entry_embedding: list[float] = embedding_manager.embed(inhalt)
+                embed_response = model_service.embed.submit_sync(
+                    EmbedRequest(text=inhalt)
+                )
+                entry_embedding: list[float] = embed_response.embedding
+                logger.debug(
+                    "Promotion: KZG-Re-Embedding Embedding via EmbedWorker (Dim: %d, Dauer: %.3fs)",
+                    len(entry_embedding),
+                    embed_response.duration_seconds,
+                )
 
                 eintrag: dict = {
                     "key":                key,
@@ -1012,7 +1026,13 @@ class PromotionAgent(BaseAgent):
         Schwelle: CLUSTER_LZG_SIMILARITY (0.80, etwas lockerer als KZG,
         da LZG-Eintraege bereits destilliert und abstrakter sind).
         """
-        thema_embedding: list[float] = embedding_manager.embed(thema)
+        embed_response = model_service.embed.submit_sync(EmbedRequest(text=thema))
+        thema_embedding: list[float] = embed_response.embedding
+        logger.debug(
+            "Promotion: LZG-Thema-Suche Embedding via EmbedWorker (Dim: %d, Dauer: %.3fs)",
+            len(thema_embedding),
+            embed_response.duration_seconds,
+        )
         embedding_str: str = "[" + ",".join(str(x) for x in thema_embedding) + "]"
 
         try:
@@ -1076,7 +1096,15 @@ class PromotionAgent(BaseAgent):
             logger.warning(f"Cluster-Promotion: Leere Destillation fuer '{thema}' — uebersprungen")
             return
 
-        neues_embedding: list[float] = embedding_manager.embed(zusammenfassung)
+        embed_response = model_service.embed.submit_sync(
+            EmbedRequest(text=zusammenfassung)
+        )
+        neues_embedding: list[float] = embed_response.embedding
+        logger.debug(
+            "Promotion: Cluster-Widerspruch Embedding via EmbedWorker (Dim: %d, Dauer: %.3fs)",
+            len(neues_embedding),
+            embed_response.duration_seconds,
+        )
         embedding_str: str = "[" + ",".join(str(x) for x in neues_embedding) + "]"
 
         if ist_widerspruch:
@@ -1180,7 +1208,15 @@ class PromotionAgent(BaseAgent):
             )
             return ergebnis
 
-        neues_embedding: list[float] = embedding_manager.embed(zusammenfassung)
+        embed_response = model_service.embed.submit_sync(
+            EmbedRequest(text=zusammenfassung)
+        )
+        neues_embedding: list[float] = embed_response.embedding
+        logger.debug(
+            "Promotion: Cluster-Kohärenz Embedding via EmbedWorker (Dim: %d, Dauer: %.3fs)",
+            len(neues_embedding),
+            embed_response.duration_seconds,
+        )
         embedding_str: str = "[" + ",".join(str(x) for x in neues_embedding) + "]"
 
         ausreisser_set: set[str] = set(ergebnis.get("ausreisser", []))
@@ -1271,7 +1307,15 @@ class PromotionAgent(BaseAgent):
         if kohaerenz == "nein" or not zusammenfassung:
             return ergebnis
 
-        neues_embedding: list[float] = embedding_manager.embed(zusammenfassung)
+        embed_response = model_service.embed.submit_sync(
+            EmbedRequest(text=zusammenfassung)
+        )
+        neues_embedding: list[float] = embed_response.embedding
+        logger.debug(
+            "Promotion: Cluster-generisch Embedding via EmbedWorker (Dim: %d, Dauer: %.3fs)",
+            len(neues_embedding),
+            embed_response.duration_seconds,
+        )
         embedding_str: str = "[" + ",".join(str(x) for x in neues_embedding) + "]"
 
         if ist_widerspruch:

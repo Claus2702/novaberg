@@ -8,7 +8,7 @@ Eingabe (aus state["parameter"]["salienz_obj"]):
   - zeitausdruck_roh: str      -- Zeitausdruck, Salience-Extraktion
 
 Eingabe (aus state["kontext"]):
-  - user_id, embed_client, embed_model, turn_id
+  - user_id, turn_id
   - timeline_id (optional Clipboard): vom TimelineAgent in diesem Turn
     gesetzte ID. Wenn vorhanden, wird sie uebernommen statt einen
     eigenen Erinnerungs-Anker anzulegen.
@@ -72,17 +72,13 @@ def magnete_aufloesen(state: AgentState) -> dict:
     zeitausdruck_roh: str       = salienz_obj.get("zeitausdruck_roh", "") or ""
     clipboard_tlid:   int | None = state["kontext"].get("timeline_id")
 
-    embed_client = state["kontext"].get("embed_client")
-    embed_model:  str = state["kontext"].get("embed_model", "")
-    turn_id:      str = state["kontext"].get("turn_id", "")
+    turn_id: str = state["kontext"].get("turn_id", "")
 
     # ── Verarbeitung: Entitaeten ───────────────
     entitaet_ids: list[int] = _entitaeten_aufloesen(
-        roh_namen    = entitaeten_roh,
-        user_id      = user_id,
-        embed_client = embed_client,
-        embed_model  = embed_model,
-        turn_id      = turn_id,
+        roh_namen = entitaeten_roh,
+        user_id   = user_id,
+        turn_id   = turn_id,
     )
 
     # ── Verarbeitung: Timeline ─────────────────
@@ -115,11 +111,9 @@ def magnete_aufloesen(state: AgentState) -> dict:
 
 
 def _entitaeten_aufloesen(
-    roh_namen:    list[str],
-    user_id:      str,
-    embed_client,
-    embed_model:  str,
-    turn_id:      str,
+    roh_namen: list[str],
+    user_id:   str,
+    turn_id:   str,
 ) -> list[int]:
     """Loest eine Liste von Roh-Eigennamen zu Entitaets-IDs auf.
 
@@ -143,8 +137,6 @@ def _entitaeten_aufloesen(
         user_id      = user_id,
         redis_client = redis_client,
         turn_id      = turn_id or None,
-        embed_client = embed_client,
-        embed_model  = embed_model,
     )
 
     if resolution.braucht_klärung:
@@ -164,8 +156,6 @@ def _entitaeten_aufloesen(
                     user_id      = user_id,
                     name         = ent.name,
                     typ          = ent.typ,
-                    embed_client = embed_client,
-                    embed_model  = embed_model,
                 )
                 logger.info(
                     f"magnete_aufloesen: Neue Entitaet '{ent.name}' "

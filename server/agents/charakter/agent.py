@@ -30,7 +30,7 @@ from agents.charakter.destillation import (
     langfristige_ziele_destillieren,
 )
 from memory.ziele import ziel_speichern, ziele_aktive_laden, ziel_deaktivieren
-from memory.embedding import embedding_create
+from services.model_services import model_service, EmbedRequest
 
 logger = logging.getLogger("ki_server.agents.charakter")
 
@@ -210,8 +210,13 @@ class CharakterAgent(BaseAgent):
                                 # Neue Ziele speichern (mit Embedding)
                                 for z in neue_ziele[:ZIEL_MAX_LANGFRISTIG]:
                                     try:
-                                        emb: list[float] = embedding_create(
-                                            z["zielsatz"], ollama_gpu_client, EMBED_MODEL,
+                                        request = EmbedRequest(text=z["zielsatz"])
+                                        embed_response = model_service.embed.submit_sync(request)
+                                        emb: list[float] | None = embed_response.embedding
+                                        logger.debug(
+                                            "CharakterAgent: Langfrist-Ziel Embedding via EmbedWorker (Dim: %d, Dauer: %.3fs)",
+                                            len(emb),
+                                            embed_response.duration_seconds,
                                         )
                                     except Exception:
                                         emb = None

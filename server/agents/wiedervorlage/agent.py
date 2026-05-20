@@ -18,8 +18,6 @@ from config import (
     PIXIE_WIEDERVORLAGE_INTERVALL_SEKUNDEN,
     PIXIE_WIEDERVORLAGE_SNOOZE_TAGE,
     redis_client,
-    ollama_cpu_client,
-    EMBED_MODEL,
     get_node_config,
 )
 from services.llm_provider import get_background_provider
@@ -115,8 +113,6 @@ class WiedervorlageAgent(BaseAgent):
                         aufgabe="wiedervorlage",
                         thema=eintrag["titel"],
                         inhalt=nachfrage,
-                        embed_client=ollama_cpu_client,
-                        embed_model=EMBED_MODEL,
                     )
                 except Exception as ex:
                     logger.error(f"WiedervorlageAgent: Stack-Push fehlgeschlagen — {ex}")

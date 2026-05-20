@@ -69,8 +69,7 @@ async def agent_ausfuehren(agent_name: str, kandidat: dict, app_state) -> bool:
             "fehler":      None,
         }
 
-    # PIX-GPU-IDLE: aktiven User fuer pixie_llm_call() vermerken, damit
-    # _ist_pixie_gpu_idle() den richtigen last_activity-Key liest.
+    # Aktiven User fuer pixie_llm_call() vermerken (fuers Logging).
     user_id_pixie: str = (
         agent_state["kontext"].get("user_id", "") or DEFAULT_USER_ID
     )

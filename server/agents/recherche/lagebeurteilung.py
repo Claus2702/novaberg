@@ -17,8 +17,8 @@ from config import (
 )
 from memory.kontext import session_kontext_extrahieren
 from tools.db_manager import db_manager
-from tools.embedding_manager import embedding_manager
 from services.llm_provider import pixie_llm_call
+from services.model_services import model_service, EmbedRequest
 from config import redis_client
 
 logger = logging.getLogger("ki_server.pixie.lagebeurteilung")
@@ -76,7 +76,13 @@ def kontext_paket_bauen(
 def _lzg_vorwissen_laden(thema: str, user_id: str, limit: int) -> list[dict]:
     """Laedt LZG-Eintraege via Embedding-Suche."""
     try:
-        thema_embedding: list[float] = embedding_manager.embed(thema)
+        embed_response = model_service.embed.submit_sync(EmbedRequest(text=thema))
+        thema_embedding: list[float] = embed_response.embedding
+        logger.debug(
+            "Lagebeurteilung: LZG-Vorwissen Embedding via EmbedWorker (Dim: %d, Dauer: %.3fs)",
+            len(thema_embedding),
+            embed_response.duration_seconds,
+        )
         embedding_str: str = "[" + ",".join(str(x) for x in thema_embedding) + "]"
 
         treffer = db_manager.select(

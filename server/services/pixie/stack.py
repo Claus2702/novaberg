@@ -10,6 +10,7 @@ from datetime import datetime
 import redis
 
 from config import PIXIE_AKTIV
+from services.model_services import model_service, EmbedRequest
 
 logger = logging.getLogger("ki_server.pixie.stack")
 
@@ -20,8 +21,6 @@ def stack_push(
     aufgabe:       str,
     thema:         str,
     inhalt:        str,
-    embed_client,
-    embed_model:   str,
     intentionen:   list = None,
     emotion:       str  = "",
     modus:         str  = "",
@@ -34,14 +33,13 @@ def stack_push(
 
     embed_text: str = f"{thema} {inhalt[:200]}"
 
-    try:
-        embedding: list[float] = embed_client.embed(
-            model = embed_model,
-            input = embed_text,
-        )["embeddings"][0]
-    except Exception as fehler:
-        logger.warning(f"Shadow-Stack: Embedding fehlgeschlagen — {fehler}")
-        embedding = []
+    embed_response = model_service.embed.submit_sync(EmbedRequest(text=embed_text))
+    embedding: list[float] = embed_response.embedding
+    logger.debug(
+        "Stack-Push: Embedding via EmbedWorker (Dim: %d, Dauer: %.3fs)",
+        len(embedding),
+        embed_response.duration_seconds,
+    )
 
     eintrag: dict = {
         "aufgabe":     aufgabe,

@@ -26,19 +26,13 @@ def _beruhigungs_signal(trigger: str, emotions_vektor: str) -> str:
     return DELEGATION_SIGNALE_FALLBACK.get(trigger, "")
 
 
-def dispatch_delegation(
-    state: dict,
-    embed_client=None,
-    embed_model: str = "",
-) -> None:
+def dispatch_delegation(state: dict) -> None:
     """Baut AgentState, ruft DelegationsAgent auf, schreibt AgentResult.
 
     Mutiert state["agent_results"] direkt (wie dispatch_kzg).
 
     Args:
         state: ConversationState
-        embed_client: Ollama-Client fuer Embeddings
-        embed_model: Embedding-Modell-Name
     """
 
     user_id: str = state.get("user_id", "")
@@ -64,8 +58,6 @@ def dispatch_delegation(
         "kontext": {
             "user_id":      user_id,
             "character_id": state.get("character_id", ""),
-            "embed_client": embed_client,
-            "embed_model":  embed_model,
         },
         "parameter": {
             "salienz_obj":         salienz_obj,

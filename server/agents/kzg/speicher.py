@@ -23,8 +23,8 @@ from config import (
     redis_client,
 )
 from memory.kzg import _kzg_key
-from memory.embedding import embedding_create
 from memory.pipeline_log import log_db_write
+from services.model_services import model_service, EmbedRequest
 
 logger = logging.getLogger("ki_server.agents.kzg.speicher")
 
@@ -56,10 +56,14 @@ def speichern(state: AgentState) -> dict:
     themen:     str = " ".join(salienz_obj.get("themen", []))
     embed_text: str = f"Thema: {themen}. Valenz: {valenz}. Aussage: {kern}"
 
-    embed_client = state["kontext"].get("embed_client")
-    embed_model:  str = state["kontext"].get("embed_model", "")
-
-    embedding: list[float] = embedding_create(embed_text, embed_client, embed_model)
+    request = EmbedRequest(text=embed_text)
+    embed_response = model_service.embed.submit_sync(request)
+    embedding: list[float] = embed_response.embedding
+    logger.debug(
+        "KZG-Speicher: Embedding via EmbedWorker (Dim: %d, Dauer: %.3fs)",
+        len(embedding),
+        embed_response.duration_seconds,
+    )
 
     ergebnis: dict = _neu_anlegen(
         redis_client, user_id, character_id, beobachter,
