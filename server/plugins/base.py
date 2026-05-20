@@ -163,8 +163,6 @@ class BaseManager(ABC):
         user_id:      str,
         redis_client: redis.Redis,
         postgres_url: str,
-        embed_client = None,
-        embed_model:  str = ""
     ) -> int:
         """
         Führt die DB-Operationen aus.

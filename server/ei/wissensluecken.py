@@ -25,7 +25,7 @@ from config import (
     GV_LUECKEN_SIM_OBERGRENZE,
 )
 from graph.state import ConversationState
-from memory.embedding import embedding_create
+from services.model_services import model_service, EmbedRequest
 from ei.utils import cosine_similarity
 from ei.neugier import register_kompatibilitaet
 
@@ -213,8 +213,13 @@ def wissensluecken_finden(
     turn_embedding: list[float] = state.get("prompt_embedding") or []
     if not turn_embedding:
         try:
-            turn_embedding = embedding_create(
-                user_prompt, ollama_gpu_client, EMBED_MODEL
+            request = EmbedRequest(text=user_prompt)
+            embed_response = model_service.embed.submit_sync(request)
+            turn_embedding = embed_response.embedding
+            logger.debug(
+                "Wissensluecken: GV4-Fallback Embedding via EmbedWorker (Dim: %d, Dauer: %.3fs)",
+                len(turn_embedding),
+                embed_response.duration_seconds,
             )
         except Exception as fehler:
             logger.warning(f"GV4: Embedding fehlgeschlagen: {fehler}")
@@ -290,8 +295,13 @@ def wissensluecken_finden(
     nova_kern: str = internal.character.core if internal else ""
     if nova_kern:
         try:
-            kern_embedding: list[float] = embedding_create(
-                nova_kern, ollama_gpu_client, EMBED_MODEL
+            request = EmbedRequest(text=nova_kern)
+            embed_response = model_service.embed.submit_sync(request)
+            kern_embedding: list[float] = embed_response.embedding
+            logger.debug(
+                "Wissensluecken: Charakter-Kern Embedding via EmbedWorker (Dim: %d, Dauer: %.3fs)",
+                len(kern_embedding),
+                embed_response.duration_seconds,
             )
             for k in gefiltert:
                 # Turn-Embedding als Proxy fuer Luecken-Embedding

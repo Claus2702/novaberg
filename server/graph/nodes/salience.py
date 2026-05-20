@@ -98,8 +98,6 @@ def _build_salienz_prompt() -> str:
 
 def analyze(
     state:        ConversationState,
-    embed_client,
-    embed_model:  str,
     redis_client: redis.Redis,
     user_id:      str,
     postgres_url: str = ""

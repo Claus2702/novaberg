@@ -14,7 +14,7 @@ from config                     import redis_client, ollama_gpu_client, EMBED_MO
 from api.models                 import GespraechAnfrage
 from api.websocket              import broadcast_threadsafe
 from services.events            import event_erzeugen
-from memory.embedding           import embedding_create
+from services.model_services    import model_service, EmbedRequest
 from memory.repositories.entitaeten_repository import EntitaetenRepository
 
 from services.shadow_delivery   import shadow_cooldown_reset
@@ -34,8 +34,13 @@ def _user_entitaet_sicherstellen(user_id: str) -> None:
     if not user_existiert:
         zusammenfassung: str = f"Der User. Login: {user_id}"
         try:
-            embedding: list[float] = embedding_create(
-                f"{user_id} {zusammenfassung}", ollama_gpu_client, EMBED_MODEL
+            request = EmbedRequest(text=f"{user_id} {zusammenfassung}")
+            embed_response = model_service.embed.submit_sync(request)
+            embedding: list[float] | None = embed_response.embedding
+            logger.debug(
+                "Chat: User-Entität Embedding via EmbedWorker (Dim: %d, Dauer: %.3fs)",
+                len(embedding),
+                embed_response.duration_seconds,
             )
         except Exception as fehler:
             logger.warning(f"Embedding für User-Entität fehlgeschlagen: {fehler}")
@@ -54,8 +59,14 @@ def _user_entitaet_sicherstellen(user_id: str) -> None:
     redis_client.set(cache_key, "1", ex=86400)
 
 
-def entitaeten_embeddings_sicherstellen() -> None:
-    """Erzeugt Embeddings für alle Entitäten die noch keins haben (Startup-Repair)."""
+async def entitaeten_embeddings_sicherstellen() -> None:
+    """Erzeugt Embeddings für alle Entitäten die noch keins haben (Startup-Repair).
+
+    Läuft im FastAPI-Lifespan im Haupt-Event-Loop und nutzt deshalb die
+    async-API des EmbedWorkers direkt (submit), nicht die sync-Brücke
+    (submit_sync würde den eigenen Loop blockierend belauern → Deadlock).
+    Identisches Muster wie ziele_embeddings_sicherstellen.
+    """
     import psycopg2
 
     try:
@@ -77,8 +88,13 @@ def entitaeten_embeddings_sicherstellen() -> None:
             continue
 
         try:
-            embedding: list[float] = embedding_create(
-                embed_text, ollama_gpu_client, EMBED_MODEL
+            request = EmbedRequest(text=embed_text)
+            embed_response = await model_service.embed.submit(request)
+            embedding: list[float] = embed_response.embedding
+            logger.debug(
+                "Chat: Entitäten-Repair Embedding via EmbedWorker (Dim: %d, Dauer: %.3fs)",
+                len(embedding),
+                embed_response.duration_seconds,
             )
             EntitaetenRepository.update_embedding(POSTGRES_URL, entitaet_id, embedding)
             logger.info(f"Entität '{name}' (id={entitaet_id}): Embedding nachträglich erzeugt")

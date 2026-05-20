@@ -20,35 +20,29 @@ logger = logging.getLogger("ki_server.graph")
 
 
 def build_human_graph(
-    embed_client,
-    embed_model:  str,
     redis_client: redis.Redis,
     postgres_url: str,
 ) -> tuple[CompiledStateGraph, HumanGraph]:
     """Baut den vollständigen Gesprächsgraphen für menschliche User."""
-    graph = HumanGraph(embed_client, embed_model, redis_client, postgres_url)
+    graph = HumanGraph(redis_client, postgres_url)
     return graph.build(), graph
 
 
 def build_agent_graph(
-    embed_client,
-    embed_model:  str,
     redis_client: redis.Redis,
     postgres_url: str,
 ) -> tuple[CompiledStateGraph, AgentGraph]:
     """Baut den Analyse-Graphen für KI-User (Nova, etc.)."""
-    graph = AgentGraph(embed_client, embed_model, redis_client, postgres_url)
+    graph = AgentGraph(redis_client, postgres_url)
     return graph.build(), graph
 
 
 def build_character_graph(
-    embed_client,
-    embed_model:  str,
     redis_client: redis.Redis,
     postgres_url: str,
 ) -> tuple[CompiledStateGraph, CharacterGraph]:
     """Baut den Charakter-Graphen (Pfad 2: Charakter reagiert)."""
-    graph = CharacterGraph(embed_client, embed_model, redis_client, postgres_url)
+    graph = CharacterGraph(redis_client, postgres_url)
     return graph.build(), graph
 
 

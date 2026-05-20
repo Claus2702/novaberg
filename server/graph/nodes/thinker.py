@@ -35,9 +35,9 @@ from graph.nodes.thinker_cache import ThinkerToolCache
 from graph.state         import ConversationState
 from memory.repositories.timeline_repository import TimelineRepository
 from memory.lzg          import lzg_entries_retrieve
-from memory.embedding    import embedding_create
 from config              import get_node_config, PROMPTS
 from services.llm_provider import get_chat_provider
+from services.model_services import model_service, EmbedRequest
 
 logger = logging.getLogger("ki_server.thinker")
 
@@ -55,8 +55,6 @@ def create_tools(
     postgres_url:  str,
     user_id:       str,
     character_id:  str,
-    embed_client,
-    embed_model:   str,
     cache:         ThinkerToolCache,
 ) -> list:
     """Erzeugt die Tools für den Thinker-Agent.
@@ -142,7 +140,14 @@ def create_tools(
 
         logger.info(f"Thinker.memory_search: query={frage[:60]}")
 
-        embedding: list[float] = embedding_create(frage, embed_client, embed_model)
+        request = EmbedRequest(text=frage)
+        embed_response = model_service.embed.submit_sync(request)
+        embedding: list[float] = embed_response.embedding
+        logger.debug(
+            "Thinker: Embedding via EmbedWorker (Dim: %d, Dauer: %.3fs)",
+            len(embedding),
+            embed_response.duration_seconds,
+        )
 
         entries: list[ContextEntry] = lzg_entries_retrieve(
             postgres_url=postgres_url,
@@ -312,8 +317,6 @@ def _build_verarbeitungs_block(agent_results: list) -> str:
 # ─────────────────────────────────────────────
 def think(
     state:         ConversationState,
-    embed_client,
-    embed_model:   str,
     redis_client:  redis.Redis,
     postgres_url:  str,
     user_id:       str
@@ -365,7 +368,7 @@ def think(
     logger.info("Thinker: Per-Turn-Tool-Cache instanziiert")
 
     tools: list = create_tools(
-        postgres_url, user_id, character_id, embed_client, embed_model, tool_cache
+        postgres_url, user_id, character_id, tool_cache
     )
   
     # ── Reasoning-Prompt zusammenbauen ───────

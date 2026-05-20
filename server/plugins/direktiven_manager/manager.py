@@ -67,8 +67,6 @@ BEISPIELE (alle → management_action = "agent"):
         user_id:      str,
         redis_client: redis.Redis,
         postgres_url: str,
-        embed_client=None,
-        embed_model:  str = "",
     ) -> int:
         """Kein execute noetig — CRUD laeuft ueber den Agent."""
         return 0

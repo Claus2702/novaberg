@@ -23,7 +23,7 @@ from config import (
     GV_TIEFE_MODUS,
 )
 from graph.state import ConversationState
-from memory.embedding import embedding_create
+from services.model_services import model_service, EmbedRequest
 from ei.utils import cosine_similarity
 
 logger = logging.getLogger("ki_server.ei.dreischicht")
@@ -400,12 +400,22 @@ def charakter_gewichtung_berechnen(state: ConversationState) -> dict[str, float]
         if not _strategie_embeddings_cache:
             logger.info("GV-Charakter-Gewichtung: Erstelle Strategie-Embeddings (einmalig)")
             for strat_id, beschreibung in STRATEGIE_BESCHREIBUNGEN.items():
-                _strategie_embeddings_cache[strat_id] = embedding_create(
-                    beschreibung, ollama_gpu_client, EMBED_MODEL
+                request = EmbedRequest(text=beschreibung)
+                embed_response = model_service.embed.submit_sync(request)
+                _strategie_embeddings_cache[strat_id] = embed_response.embedding
+                logger.debug(
+                    "Dreischicht: Strategie-Cache Embedding via EmbedWorker (Dim: %d, Dauer: %.3fs)",
+                    len(embed_response.embedding),
+                    embed_response.duration_seconds,
                 )
 
-        char_embedding: list[float] = embedding_create(
-            charakter_text, ollama_gpu_client, EMBED_MODEL
+        char_request = EmbedRequest(text=charakter_text)
+        char_response = model_service.embed.submit_sync(char_request)
+        char_embedding: list[float] = char_response.embedding
+        logger.debug(
+            "Dreischicht: Charakter-Embedding via EmbedWorker (Dim: %d, Dauer: %.3fs)",
+            len(char_embedding),
+            char_response.duration_seconds,
         )
 
         gewichtung: dict[str, float] = {}

@@ -237,8 +237,6 @@ und der aktuelle Prompt sich darauf bezieht.
         user_id:      str,
         redis_client: "redis.Redis",
         postgres_url: str,
-        embed_client = None,
-        embed_model:  str = "",
     ) -> int:
         """Loud-Failure-Stub.
 

@@ -31,8 +31,6 @@ class KzgManager(BaseManager):
         user_id:       str,
         redis_client:  redis.Redis,
         postgres_url:  str,
-        embed_client  = None,
-        embed_model:   str = ""
     ) -> int:
         """Speichert oder verstärkt KZG-Einträge.
 

@@ -47,13 +47,9 @@ class GraphBase(ABC):
 
     def __init__(
         self,
-        embed_client,
-        embed_model:  str,
         redis_client: redis.Redis,
         postgres_url: str,
     ) -> None:
-        self.embed_client = embed_client
-        self.embed_model  = embed_model
         self.redis_client = redis_client
         self.postgres_url = postgres_url
 
@@ -180,7 +176,7 @@ class GraphBase(ABC):
         return route(state)
 
     def _node_enrich(self, state: ConversationState) -> ConversationState:
-        return enrich(state, self.embed_client, self.embed_model, self.redis_client, self.postgres_url, state["user_id"])
+        return enrich(state, self.redis_client, self.postgres_url, state["user_id"])
 
     def _node_ei_calc(self, state: ConversationState) -> ConversationState:
         return ei_calc(state)
@@ -192,7 +188,7 @@ class GraphBase(ABC):
         return respond(state)
 
     def _node_think(self, state: ConversationState) -> ConversationState:
-        return think(state, self.embed_client, self.embed_model, self.redis_client, self.postgres_url, state["user_id"])
+        return think(state, self.redis_client, self.postgres_url, state["user_id"])
 
     def _node_judge(self, state: ConversationState) -> ConversationState:
         return judge(state)
@@ -204,10 +200,10 @@ class GraphBase(ABC):
         return correct(state)
 
     def _node_salience(self, state: ConversationState) -> ConversationState:
-        return analyze(state, self.embed_client, self.embed_model, self.redis_client, state["user_id"], self.postgres_url)
+        return analyze(state, self.redis_client, state["user_id"], self.postgres_url)
 
     def _node_dispatch(self, state: ConversationState) -> ConversationState:
-        return dispatch(state, self.redis_client, self.postgres_url, self.embed_client, self.embed_model)
+        return dispatch(state, self.redis_client, self.postgres_url)
 
     def _node_agent_dispatch(self, state: ConversationState) -> ConversationState:
         return agent_dispatch_node(state)

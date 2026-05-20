@@ -10,13 +10,12 @@ Erweitert um:
 """
 
 import logging
-from typing import TYPE_CHECKING
 
 import redis
 
 from graph.context_entry import ContextEntry
 from plugins.base import BaseManager
-from memory.embedding import embedding_create
+from services.model_services import model_service, EmbedRequest
 from memory.repositories.entitaeten_repository import EntitaetenRepository
 from memory.repositories.fakten_repository import FaktenRepository
 from memory.services.entity_resolution import (
@@ -24,9 +23,6 @@ from memory.services.entity_resolution import (
     ResolvedEntity,
     ResolutionResult,
 )
-
-if TYPE_CHECKING:
-    import ollama
 
 logger = logging.getLogger("ki_server.plugins.fakten")
 
@@ -306,8 +302,6 @@ Trigger-Phrasen: "das stimmt nicht", "korrigiere", "vergiss das",
         user_id:       str,
         redis_client:  redis.Redis,
         postgres_url:  str,
-        embed_client  = None,
-        embed_model:   str = ""
     ) -> int:
         """
         Verarbeitet pending_writes für Fakten.
@@ -328,8 +322,6 @@ Trigger-Phrasen: "das stimmt nicht", "korrigiere", "vergiss das",
                     user_id=user_id,
                     postgres_url=postgres_url,
                     redis_client=redis_client,
-                    embed_client=embed_client,
-                    embed_model=embed_model,
                     turn_id=daten.get("turn_id"),
                 )
                 if ergebnis.get("erfolg"):
@@ -354,8 +346,6 @@ Trigger-Phrasen: "das stimmt nicht", "korrigiere", "vergiss das",
                         user_id      = user_id,
                         postgres_url = postgres_url,
                         redis_client = redis_client,
-                        embed_client = embed_client,
-                        embed_model  = embed_model,
                     )
 
                     if ergebnis.get("erfolg"):
@@ -381,8 +371,6 @@ Trigger-Phrasen: "das stimmt nicht", "korrigiere", "vergiss das",
                     postgres_url=postgres_url,
                     user_id=user_id,
                     redis_client=redis_client,
-                    embed_client=embed_client,
-                    embed_model=embed_model,
                     turn_id=daten.get("turn_id"),
                 )
                 verarbeitet += 1
@@ -413,8 +401,6 @@ Trigger-Phrasen: "das stimmt nicht", "korrigiere", "vergiss das",
         user_id:        str,
         postgres_url:   str,
         redis_client:   "redis.Redis",
-        embed_client:  "ollama.Client | None" = None,
-        embed_model:    str = "",
         turn_id:        str | None = None,
     ) -> dict:
         """
@@ -430,8 +416,6 @@ Trigger-Phrasen: "das stimmt nicht", "korrigiere", "vergiss das",
             user_id=user_id,
             redis_client=redis_client,
             turn_id=turn_id,
-            embed_client=embed_client,
-            embed_model=embed_model,
         )
 
         # Bei Klärungsbedarf → Rückfrage, kein CRUD
@@ -467,8 +451,6 @@ Trigger-Phrasen: "das stimmt nicht", "korrigiere", "vergiss das",
                     user_id=user_id,
                     name=entity.name,
                     typ=entity.typ,
-                    embed_client=embed_client,
-                    embed_model=embed_model,
                 )
                 entity.bekannte_id = neue_id
                 entity.ist_neu = False
@@ -545,10 +527,15 @@ Trigger-Phrasen: "das stimmt nicht", "korrigiere", "vergiss das",
 
             # ── Embedding erzeugen ──────
             embedding: list[float] | None = None
-            if embed_client and embed_model and fakt_text:
+            if fakt_text:
                 try:
-                    embedding = embedding_create(
-                        fakt_text, embed_client, embed_model
+                    request = EmbedRequest(text=fakt_text)
+                    embed_response = model_service.embed.submit_sync(request)
+                    embedding = embed_response.embedding
+                    logger.debug(
+                        "FaktenManager: Fakt Embedding via EmbedWorker (Dim: %d, Dauer: %.3fs)",
+                        len(embedding),
+                        embed_response.duration_seconds,
                     )
                 except Exception as fehler:
                     logger.warning(f"Fakt-Embedding fehlgeschlagen: {fehler}")
@@ -584,8 +571,6 @@ Trigger-Phrasen: "das stimmt nicht", "korrigiere", "vergiss das",
         postgres_url:   str,
         user_id:        str,
         redis_client:   "redis.Redis",
-        embed_client:  "ollama.Client | None" = None,
-        embed_model:    str = "",
         turn_id:        str | None = None,
     ) -> dict:
         """
@@ -598,7 +583,6 @@ Trigger-Phrasen: "das stimmt nicht", "korrigiere", "vergiss das",
             name=entitaet_name, typ="sonstiges",
             postgres_url=postgres_url, user_id=user_id,
             redis_client=redis_client, turn_id=turn_id,
-            embed_client=embed_client, embed_model=embed_model,
         )
 
         if resolved.braucht_klärung:
@@ -644,8 +628,6 @@ Trigger-Phrasen: "das stimmt nicht", "korrigiere", "vergiss das",
         postgres_url:   str,
         user_id:        str,
         redis_client:   "redis.Redis",
-        embed_client:  "ollama.Client | None" = None,
-        embed_model:    str = "",
         turn_id:        str | None = None,
     ) -> dict:
         """
@@ -659,7 +641,6 @@ Trigger-Phrasen: "das stimmt nicht", "korrigiere", "vergiss das",
             name=entitaet_name, typ="sonstiges",
             postgres_url=postgres_url, user_id=user_id,
             redis_client=redis_client, turn_id=turn_id,
-            embed_client=embed_client, embed_model=embed_model,
         )
 
         if resolved.braucht_klärung:

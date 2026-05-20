@@ -27,7 +27,6 @@ Kein LLM-Aufruf — nur Datenzugriff und Embedding-Erzeugung.
 
 import logging
 
-import ollama
 import psycopg2
 import redis
 
@@ -36,7 +35,6 @@ from config import (
 )
 from graph.context_entry import ContextEntry
 from graph.state         import ConversationState
-from memory.embedding    import embedding_create
 from memory.kzg          import kzg_entries_retrieve, _kzg_prefix
 from memory.lzg          import lzg_entries_retrieve
 from memory.session      import session_turns_retrieve, _session_key
@@ -55,6 +53,7 @@ from ei.gravitation      import (
     emotionale_gravitation_scannen,
 )
 from plugins             import get_registry
+from services.model_services import model_service, EmbedRequest
 
 logger = logging.getLogger("ki_server.enricher")
 
@@ -65,8 +64,6 @@ logger = logging.getLogger("ki_server.enricher")
 
 def enrich(
     state:        ConversationState,
-    embed_client: ollama.Client,
-    embed_model:  str,
     redis_client: redis.Redis,
     postgres_url: str,
     user_id:      str,
@@ -87,13 +84,11 @@ def enrich(
     # ── Verarbeitung ────────────────────────────
     if rolle == "user":
         return _enrich_human(
-            state, embed_client, embed_model,
-            redis_client, postgres_url, user_id,
+            state, redis_client, postgres_url, user_id,
         )
 
     return _enrich_character(
-        state, embed_client, embed_model,
-        redis_client, postgres_url, user_id,
+        state, redis_client, postgres_url, user_id,
     )
 
 
@@ -132,18 +127,22 @@ def _extract_user_intentionen(raw_turns: list[dict]) -> list:
 
 
 def _create_prompt_embedding(
-    state:        ConversationState,
-    embed_client: ollama.Client,
-    embed_model:  str,
+    state: ConversationState,
 ) -> list[float]:
     """Erzeugt das Embedding fuer den aktuellen User-Prompt.
 
     Vorbedingung: state["user_prompt"] vorhanden und nicht leer.
     Nachbedingung: liefert Embedding-Vektor.
     """
-    return embedding_create(
-        state["user_prompt"], embed_client, embed_model,
+    request = EmbedRequest(text=state["user_prompt"])
+    embed_response = model_service.embed.submit_sync(request)
+    embedding = embed_response.embedding
+    logger.debug(
+        "Enricher: Prompt-Embedding via EmbedWorker (Dim: %d, Dauer: %.3fs)",
+        len(embedding),
+        embed_response.duration_seconds,
     )
+    return embedding
 
 
 def _compute_ziele_und_gravitation(
@@ -191,8 +190,6 @@ def _compute_ziele_und_gravitation(
 
 def _enrich_human(
     state:        ConversationState,
-    embed_client: ollama.Client,
-    embed_model:  str,
     redis_client: redis.Redis,
     postgres_url: str,
     user_id:      str,
@@ -250,7 +247,7 @@ def _enrich_human(
     )
 
     # 3. Prompt-Embedding (fuer Ziel-Gravitation).
-    embedding: list[float] = _create_prompt_embedding(state, embed_client, embed_model)
+    embedding: list[float] = _create_prompt_embedding(state)
     state["prompt_embedding"] = embedding
 
     log_berechnung(
@@ -258,7 +255,6 @@ def _enrich_human(
         node    = "enricher",
         quelle  = "embedding",
         inhalt  = {
-            "embed_model":   embed_model,
             "prompt_length": len(state.get("user_prompt", "")),
             "embedding_dim": len(embedding) if embedding else 0,
         },
@@ -309,8 +305,6 @@ def _enrich_human(
 
 def _enrich_character(
     state:        ConversationState,
-    embed_client: ollama.Client,
-    embed_model:  str,
     redis_client: redis.Redis,
     postgres_url: str,
     user_id:      str,
@@ -450,7 +444,7 @@ def _enrich_character(
         pass
 
     # Prompt-Embedding (fuer KZG/LZG + Gravitation)
-    embedding: list[float] = _create_prompt_embedding(state, embed_client, embed_model)
+    embedding: list[float] = _create_prompt_embedding(state)
 
     # In den State stellen, damit der Dispatcher es spaeter neben dem
     # User-Turn in der Session ablegen kann (Gravitationsgraph-Panel).
@@ -464,7 +458,6 @@ def _enrich_character(
         node    = "enricher",
         quelle  = "embedding",
         inhalt  = {
-            "embed_model":    embed_model,
             "prompt_length":  len(state.get("user_prompt", "")),
             "embedding_dim":  len(embedding) if embedding else 0,
         },

@@ -268,8 +268,6 @@ def dispatch(
     state:         ConversationState,
     redis_client:  redis.Redis,
     postgres_url:  str,
-    embed_client = None,
-    embed_model:   str = ""
 ) -> ConversationState:
     """
     Verteilt alle pending_writes an die zustaendigen Manager/Agenten.
@@ -304,11 +302,7 @@ def dispatch(
         # ── KZG-Agent (ersetzt KzgManager seit Chat 29) ──
         if ziel == "kzg":
             try:
-                result: dict = dispatch_kzg(
-                    state, ziel_writes,
-                    embed_client=embed_client,
-                    embed_model=embed_model,
-                )
+                result: dict = dispatch_kzg(state, ziel_writes)
                 count: int = result.get("kzg_verarbeitet", 0)
                 gesamt += count
                 logger.info(f"Dispatcher: 'kzg' -> KZG-Agent, {count} Segmente verarbeitet")
@@ -329,8 +323,6 @@ def dispatch(
                 user_id       = user_id,
                 redis_client  = redis_client,
                 postgres_url  = postgres_url,
-                embed_client = embed_client,
-                embed_model   = embed_model,
             )
 
             gesamt += count
@@ -349,7 +341,7 @@ def dispatch(
                 if salienz_obj:
                     state["salienz_obj_aktuell"] = salienz_obj
                     break
-            dispatch_delegation(state, embed_client=embed_client, embed_model=embed_model)
+            dispatch_delegation(state)
             logger.info(f"Dispatcher: DelegationsAgent gefeuert (trigger={trigger})")
         except Exception as fehler:
             logger.error(f"Dispatcher: Fehler bei DelegationsAgent — {fehler}")

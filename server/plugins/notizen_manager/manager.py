@@ -15,7 +15,6 @@ Erweitert um:
 
 import json
 import logging
-from typing import TYPE_CHECKING
 
 import psycopg2
 import redis
@@ -28,9 +27,6 @@ from memory.services.entity_resolution import (
     EntityResolutionService,
     ResolutionResult,
 )
-
-if TYPE_CHECKING:
-    import ollama
 
 from config import get_node_config
 from services.llm_provider import get_chat_provider
@@ -408,8 +404,6 @@ Falls keine Notiz erkennbar: "snippet": null
         user_id:       str,
         redis_client:  redis.Redis,
         postgres_url:  str,
-        embed_client  = None,
-        embed_model:   str = ""
     ) -> int:
         """
         Führt Notiz-CRUD aus.
@@ -429,8 +423,6 @@ Falls keine Notiz erkennbar: "snippet": null
                         user_id=user_id,
                         postgres_url=postgres_url,
                         redis_client=redis_client,
-                        embed_client=embed_client,
-                        embed_model=embed_model,
                         turn_id=daten.get("turn_id"),
                     )
                     if ergebnis.get("erfolg"):
@@ -449,8 +441,6 @@ Falls keine Notiz erkennbar: "snippet": null
                             user_id=user_id,
                             postgres_url=postgres_url,
                             redis_client=redis_client,
-                            embed_client=embed_client,
-                            embed_model=embed_model,
                             turn_id=daten.get("turn_id"),
                         )
                         if ergebnis.get("erfolg"):
@@ -484,8 +474,6 @@ Falls keine Notiz erkennbar: "snippet": null
         user_id:        str,
         postgres_url:   str,
         redis_client:   "redis.Redis",
-        embed_client:  "ollama.Client | None" = None,
-        embed_model:    str = "",
         turn_id:        str | None = None,
     ) -> dict:
         """
