@@ -126,6 +126,10 @@ async def Lifespan(app: FastAPI):
     # Enricher des ersten Konversations-Turns kommt.
     pipeline_log_init(app.state.loop)
 
+    # Model-Service-Worker starten (Phase 2: EmbedWorker)
+    from services.model_services import model_service
+    await model_service.startup()
+
     # LLM-Provider initialisieren (Ollama oder Claude)
     init_providers(
         profile               = LLM_PROFILE,
@@ -158,8 +162,8 @@ async def Lifespan(app: FastAPI):
 
     # Embedding-Repair: Entitäten ohne Embedding nachträglich versorgen
     if postgres_ok and ollama_ok:
-        entitaeten_embeddings_sicherstellen()
-        ziele_embeddings_sicherstellen(POSTGRES_URL, ollama_gpu_client, EMBED_MODEL)
+        await entitaeten_embeddings_sicherstellen()
+        await ziele_embeddings_sicherstellen(POSTGRES_URL)
 
     # Epic 11: Agent-Discovery
     from agents import discover_agents, AgentRegistry
@@ -215,8 +219,6 @@ async def Lifespan(app: FastAPI):
 
     # Graphen kompilieren
     compiled_human, human_graph = build_human_graph(
-        embed_client = ollama_gpu_client,
-        embed_model  = EMBED_MODEL,
         redis_client = redis_client,
         postgres_url = POSTGRES_URL,
     )
@@ -225,8 +227,6 @@ async def Lifespan(app: FastAPI):
     logger.info("HumanGraph initialisiert.")
 
     compiled_agent, agent_graph = build_agent_graph(
-        embed_client = ollama_gpu_client,
-        embed_model  = EMBED_MODEL,
         redis_client = redis_client,
         postgres_url = POSTGRES_URL,
     )
@@ -235,8 +235,6 @@ async def Lifespan(app: FastAPI):
     logger.info("AgentGraph initialisiert.")
 
     compiled_character, character_graph = build_character_graph(
-        embed_client = ollama_gpu_client,
-        embed_model  = EMBED_MODEL,
         redis_client = redis_client,
         postgres_url = POSTGRES_URL,
     )
@@ -249,8 +247,6 @@ async def Lifespan(app: FastAPI):
         delivery_task = asyncio.create_task(
             shadow_delivery_loop(
                 redis_client         = redis_client,
-                embed_client         = ollama_gpu_client,
-                embed_model          = EMBED_MODEL,
                 websocket_map        = aktive_verbindungen,
                 llm_lock             = llm_lock,
                 compiled_agent_graph = compiled_agent,
@@ -311,6 +307,9 @@ async def Lifespan(app: FastAPI):
             await pipeline_log_task
         except (asyncio.CancelledError, Exception):
             pass
+
+    # Model-Service-Worker sauber beenden
+    await model_service.shutdown()
 
     logger.info("Server gestoppt.")
 
