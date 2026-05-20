@@ -135,8 +135,6 @@ def pixie_llm_call(prompt: str, modus: str = "analyse", ...) -> str:
 
 Statisches Routing pro Workflow-Schritt. CJK-Guard fuer Qwen-Output. JSON-Fallback bei Parse-Fehlern.
 
-**GPU-Idle-Modus (Chat 79):** Bei User-Inaktivitaet > 300s routet `pixie_llm_call` Sprach-Calls (`modus=sprache`) auf den GPU-Provider (`gemma4-gpu`, Port 11434). Analyse-Calls bleiben auf Qwen3-32B-CPU. Vierter Provider `_pixie_idle_provider` wird in `init_providers` gebaut (`None` im Claude-Profil). Modul-Cache `_aktiver_pixie_user` transportiert die User-ID vom Dispatcher zu `pixie_llm_call` ohne Parameter-Welle. Config: `PIXIE_GPU_IDLE`, `PIXIE_IDLE_SCHWELLE_SEKUNDEN`.
-
 ### 2.6 Embedding
 
 Embedding (`nomic-embed-text`) ist bewusst **nicht** Teil der Provider-Abstraktion. Es bleibt direkt auf Ollama via `embed_client`. Grund: Vektorkonsistenz — ein Wechsel des Embedding-Modells wuerde alle gespeicherten Vektoren invalidieren.
@@ -151,8 +149,6 @@ Embedding (`nomic-embed-text`) ist bewusst **nicht** Teil der Provider-Abstrakti
 | `PIXIE_MODELL_ANALYSE` | `"qwen3-32b-cpu"` | Pixie Analyse-Modell |
 | `PIXIE_MODELL_SPRACHE` | `"mistral-small3.2-cpu"` | Pixie Sprach-Modell |
 | `OLLAMA_CONNECTOR` | `"gemma4"` | Aktiver Modell-Connector (`gemma4` oder `mistral`) |
-| `PIXIE_GPU_IDLE` | `True` | Feature-Flag: Sprach-Calls auf GPU bei Inaktivitaet |
-| `PIXIE_IDLE_SCHWELLE_SEKUNDEN` | `300` | Sekunden Inaktivitaet bevor GPU-Routing greift |
 
 ### 2.8 Bekannter Bug: Ollama think+format (Chat 46)
 
@@ -161,6 +157,29 @@ Ollama Issue #15260: Bei Gemma4 (und Qwen3.5) bricht `think=false` den `format="
 Workaround: `think=False` immer senden, `format="json"` NICHT senden. JSON-Einhaltung erfolgt ueber Prompt-Overrides (Gemma4-spezifische `[REGELN]`) + Cleanup-Pipeline (`_clean_json_response` + `_deduplicate_repetition` + `_repair_truncated_json`) im `OllamaProvider`.
 
 Status: Ollama-Bug offen (Stand 15.04.2026).
+
+### 2.9 Model-Service-Schicht (seit Chat 92)
+
+Modell-Aufrufe laufen über eine In-Process-Microservice-Architektur in `server/services/model_services/`. Konsumenten kennen keine Modelle, nur abstrakte Rollen; ein Worker pro Modell-Endpoint vermittelt zwischen Konsument-Absicht und Ollama-Aufruf über eine FIFO-Queue.
+
+**Komponenten:**
+
+- `types.py` — EmbedRequest / EmbedResponse (typisierte Übergabe)
+- `worker_base.py` — ModelWorker-Basisklasse mit FIFO-Queue, submit (async) und submit_sync (Brücke für Worker-Thread-Konsumenten)
+- `embed_worker.py` — EmbedWorker für die Rolle `embed` (nomic-embed-text auf GPU), geteilt von Nova und Pixie
+- `registry.py` — ModelServiceRegistry, Lifecycle (startup/shutdown im FastAPI-Lifespan), Singleton model_service
+
+**Aufruf-Konvention:**
+
+Konsumenten im Worker-Thread (LangGraph-Nodes, die meisten Agenten):
+
+  `model_service.embed.submit_sync(EmbedRequest(text=...))`
+
+Konsumenten im Haupt-Event-Loop (Lifespan-Repair, shadow_delivery_loop):
+
+  `await model_service.embed.submit(EmbedRequest(text=...))`
+
+**Stand Chat 92:** Block 1 der Microservice-Welle abgeschlossen — nur die Rolle `embed` ist implementiert. Block 2 ergänzt die Rollen `chat` (gemma4-gpu) und `background` (qwen36-cpu). Details: novaberg-microservice-modell-queue_k.md.
 
 ---
 

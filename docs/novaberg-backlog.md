@@ -1497,21 +1497,21 @@ Der Synapsen-Umbau ist die strukturelle Voraussetzung für die Akten-Architektur
 
 ## Epic: Microservice-Modell-Queue (Chat 91)
 
-**Status:** Konzept-Phase, blockierend vor Synapsen P4
-**Bezug:** novaberg-memory-synapsen-p4-entscheidungen_k.md (Chat 91), Audit-Ausgaben Chat 91
+**Status:** Block 1 abgeschlossen Chat 92 — **Block 2 (LLM-Konsolidierung) ist der nächste konkrete Schritt**
+**Bezug:** novaberg-memory-synapsen-p4-entscheidungen_k.md (Chat 91), Audit-Ausgaben Chat 91, novaberg-microservice-modell-queue_k.md
 **Vorbedingung:** Keine — kann parallel zur Bestands-Pipeline aufgebaut werden, Migration erfolgt Pfad für Pfad.
 
 ### Phasen-Übersicht
 
 | Phase | Inhalt | Status |
 |---|---|---|
-| Punkt 1 | Konzeptpapier `novaberg-microservice-modell-queue_k.md` | ⬜ Offen |
+| Punkt 1 | Konzeptpapier `novaberg-microservice-modell-queue_k.md` | ✅ Chat 92 |
 | Punkt 2 | Audit-Konsolidierung (Temperatur-pro-Call ✅ Chat 91, Microservice-Vorbereitung ✅ Chat 91) | ✅ Chat 91 |
-| Block 1 | Embedding-Konsolidierung (zwei Pfade → einer, Queue/Worker) | ⬜ Offen |
-| Block 2 | `pixie_llm_call`-Konsolidierung (zusammenführen mit `provider.chat`, system + alle Parameter durchreichen) | ⬜ Offen |
+| Block 1 | Embedding-Konsolidierung (zwei Pfade → einer, Queue/Worker) | ✅ Chat 92 |
+| **Block 2** | **`pixie_llm_call`- und `OllamaProvider.chat`-Konsolidierung zu Worker-Schnittstelle: ChatWorker (gemma4-gpu) + BackgroundWorker (qwen36-cpu). system-Prompt + vollständigen Parameter-Satz durchreichen, CJK-Guard und JSON-Validierung in den Worker heben. Vorbild: EmbedWorker aus Block 1.** | ⬜ **Nächster Schritt** |
 | Block 3 | `think`-Parameter pro Call (Hartkodierung entfernen, node-spezifische Politik) | ⬜ Offen |
-| Block 4 | Connector-Erweiterung für Qwen 3.6 (neuer Connector `qwen36`) | ⬜ Offen |
 | Block 5 | `num_ctx` pro Call durchreichbar machen | ⬜ Offen |
+| Block 4 | Connector-Erweiterung für Qwen 3.6 (neuer Connector `qwen36`) — bleibt ans Ende der MS-Welle terminiert | ⬜ Offen |
 | Punkt 8 | Inbetriebnahme — Modell-Konsolidierung auf Qwen 3.6, Löschung alter CPU-Modelle (Gemma4-CPU, Qwen3-32B-CPU, Mistral-Varianten) | ⬜ Offen |
 | Punkt 9 | Pixie-Reaktivierung (`PIXIE_AKTIV=True`) | ⬜ Nach Punkt 8 |
 
@@ -2756,3 +2756,5 @@ Details, Ursachen und Lösungsansätze → `novaberg-bugs.md`
 *V7-Befund (Clipboard-Test): Der Test-Turn "Merk dir bitte den 17. Oktober als Annas Geburtstag" erzeugte einen `erinnerungs_anker` statt eines `geburtstag`-Eintrags, weil der Planner den expliziten Timeline-Intent nicht erkannt hat. Das Clipboard-Pattern ist strukturell vorbereitet, aber im Live-Betrieb selten getriggert. Eingetragen als PLANNER-TIMELINE-INTENT-MISS — strukturelle Klärung nach P9.*
 
 *Aktualisiert in Chat 90: PFAD2-PERZEPTION-FIX abgeschlossen (Phase 2/3, Chat 89), HumanGraph-Slimming Phase 4 + TURN-ID-FIX (Chat 90), drei neue Backlog-Einträge aus Welle-B-Audit (BUG-EI-CALC-ROLLE-DEFAULT-ASYMMETRIE, PERF-DOPPEL-SESSION-LOAD, plus fünf konkrete Stellen am Code-Audit-Sprint-Epic), Stand-Datum auf 17. Mai 2026.*
+
+- ✅ **MS-Welle Block 1 — Embedding-Konsolidierung** (Chat 92): EmbedWorker in services/model_services/ als In-Process-Microservice mit FIFO-Queue. 24+ Aufruf-Stellen migriert (G1-G8), Cleanup-Sprint, drei Main-Loop-Blocker und zwei Silent-Skip-Bugs nebenbei behoben, CPU-Embedding-Sonderpfad und Pixie-Idle-Provider rückgebaut. Drei Lessons archiviert.

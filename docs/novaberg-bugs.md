@@ -1,6 +1,6 @@
 # Novaberg — Bugs & Limitationen
 
-**Stand:** 08. Mai 2026, Chat 80
+**Stand:** 19. Mai 2026, Chat 92
 **Quelle:** Testlauf "Karrierekrise" (200 Prompts) + Gedächtnis-Epic (Chat 11) + Epic 11 Agent-System (Chats 22–32) + Persona Smoke-Tests (Chats 31–32) + RechercheAgent-Test (Chat 35) + Doku-Audit (Chat 36) + PRIO0-Fix + Client-Observability (Chat 37) + Claude API-Test + STREAM1-Fix + Gesprächsvektor (Chat 39) + CharakterIdentitaetAgent + DirektivenAgent + Tribunal Score-System (Chat 40) + Telegram Bot + Zeitparser-Fixes (Chat 41) + CRUD-Härtung + Telegram-Chat-Analyse + DB-Report (Chat 42) + KONTEXT1-Fix + Resume-Bug + Epic 15 Pilot (Chat 43) + Epic 15 Rollout + DELEG-REG Fix + KZG-Klebrigkeit (Chat 44) + RESP-CHAR1 Fix (Chat 45) + CLASSIFY-REJECTED + Gemma4 Live-Tests (Chat 48) + Telegram-Konversation "frecher Charakter" (Chat 49) + RESUME-REJECT Fix + Live-Tests (Chat 50) + Neugier-Konzept + Projektinfrastruktur (Chat 51) + Doku-Alignment + emotions_profil (Chat 52) + Antrieb-Konzept + Dual-Emotion (Chat 53) + HALL2-Fix + Planner-Refactor (Chat 54) + PySide6 verworfen + GTK4-Entscheidung (Chat 55) + GTK4-Client + Panel-Infrastruktur (Chat 56) + Web-Tool-Doku + SEARX1-Diagnose (Chat 57) + Chat 61 (Perzeption-Symmetrie, Akkumulations-Refactor, Paper-Portfolio, Lumi, urllib3-Doppel-Turn beobachtet) + Paper I + urllib3-RETRY + ROUTE-CHAR-NOTIZ + RESP-DEAD + PIXIE-GHOST (Chat 65) + WS-SINGLE Fix + ClientConnection + User-Message-Broadcast (Chat 68) + Dreischicht-Integration + GV-Refactoring + MODUS-LEER + VEKTOR-LEER + AROUSAL-330 + ZIEL-LABEL-LEER Fixes (Chat 72) + Promotion-Pipeline-Audit (Chat 75) + Reducer-Umbau Smoke-Tests (Chat 75) + Chat 79 (THINK-MEM-CONFLICT, CHAR-LZG-LEAK, MIGRATION-PIX-PAIR, MIGRATION-AGENTGRAPH-PAIR, PIX-CLEAN, KZG-CLEANUP)
 
 ---
@@ -977,4 +977,64 @@ Dann Requests über diese Session abwickeln statt direkt `requests.post()`.
 
 ---
 
+### Chat 92 — Block 1 Phase 3 Vorbereitung
+
+#### SHADOW-DELIVERY-BLOCKING-INVOKE — `compiled_agent_graph.invoke()` blockiert den Haupt-Event-Loop ✅ Behoben Chat 92
+
+**Entdeckt:** Chat 92, Block 1 Phase 3 Vorbereitung — tangentialer Fund bei der Inventur der Embedding-Aufrufer.
+
+**Klasse:** Async-Concurrency-Verstoß — sync-`.invoke()` aus async-Kontext ohne `to_thread`, Severity Mittel.
+
+**Symptom:** `services/shadow_delivery.py:554` ruft `compiled_agent_graph.invoke(agent_state)` direkt aus dem async-Kontext `shadow_delivery_loop`, ohne `asyncio.to_thread`. Das blockiert den Haupt-Event-Loop für die volle Dauer des Graph-Laufs (Embedding + LLM-Calls + Persistierung).
+
+**Vergleich:** `services/event_consumer.py:444` (in `_event_verarbeiten`, aufgerufen aus `event_consumer_loop`) und `services/pixie/dispatch.py:80` nutzen beide `await asyncio.to_thread(...)` — das ist das korrekte Muster.
+
+**Auswirkung:** Während ein Shadow-Delivery-Lauf läuft, kann der Server keine neuen Events verarbeiten, keine WebSocket-Nachrichten broadcasten, keine Heartbeats senden.
+
+**Behoben Chat 92 (G8, Block 1 Embedding-Konsolidierung):** Im Zuge der Embedding-Migration wurde `_gespraechs_embedding` async-isiert und der Embedding-Call auf `await model_service.embed.submit(...)` umgestellt. Die blockierende `.invoke()`-Stelle (vormals Z. 554) ist im Rahmen des Umbaus strukturell mitbehoben worden — der Pfad läuft jetzt vollständig async, ohne Main-Loop-Block.
+
+---
+
 *Aktualisiert Chat 80: TIMELINE-PAIR-MISSING aufgenommen (Schema-Lücke, im Zuge M2.5a-Phase-2 entdeckt). Lösungsweg in zwei Sprints im Backlog. Ergänzt Chat 80: NOTIZEN-PAIR-MISSING, FAKTEN-PAIR-IGNORED, ZIELE-PAIR-MISSING aus character_id-Inventur — gemeinsamer Migrations-Sprint im Backlog. Ergänzt Chat 80 (Live-Test B): NOTIZEN-KONTEXT-REKONSTRUKTION, NOTIZEN-CONTAINER-WECHSEL, NOTIZEN-SKILL-MANIFEST, NOTIZEN-UPDATE-TARGET-LEER — alle vier strukturell durch Frame-Konzept Phase 1b adressiert.*
+
+---
+
+### Chat 92 — Block 1 Embedding-Konsolidierung (Folgebugs nebenbei behoben)
+
+#### STACK-PUSH-SILENT-EMBED — `stack_push` schrieb bei Embedding-Fehler einen leeren Vektor in Redis ✅ Behoben Chat 92
+
+**Entdeckt:** Chat 92, Block 1 Phase 7 (Cleanup-Sprint G7)
+
+**Klasse:** Silent-Skip — Verletzung von "Fail loud, fail logged", Severity Mittel.
+
+**Symptom:** `stack_push` hatte bei Embedding-Erzeugungs-Fehler einen Silent-Skip: statt die Exception zu propagieren, wurde ein leerer Vektor in den Redis-Hash geschrieben. Folgekonsumenten (Vektor-Suche, Promotion) bekamen einen scheinbar gültigen Eintrag mit nutzlosem Embedding, ohne dass irgendwo ein Fehler-Log auftauchte.
+
+**Behoben Chat 92 (G7):** Exception propagiert jetzt. Aufrufer fangen sie in vorhandenem try/except-Block. Damit landen Embedding-Fehler im Log und im Audit, statt unsichtbar weitergereicht zu werden.
+
+---
+
+#### SHADOW-DELIVERY-SILENT-EMBED — `_gespraechs_embedding` hatte dasselbe Silent-Skip-Pattern ✅ Behoben Chat 92
+
+**Entdeckt:** Chat 92, Block 1 Phase 8 (G8)
+
+**Klasse:** Silent-Skip — identische Struktur wie STACK-PUSH-SILENT-EMBED, Severity Mittel.
+
+**Symptom:** `_gespraechs_embedding` in `services/shadow_delivery.py` gab bei Embedding-Fehler `return []` zurück, ohne Log und ohne Exception. Aufrufer hatten keine Möglichkeit zu unterscheiden, ob ein leerer Vektor das Ergebnis einer echten Berechnung oder eines stillen Fehlers war.
+
+**Behoben Chat 92 (G8):** Funktion async-isiert, Embedding-Call auf `await model_service.embed.submit(...)` umgestellt. Bei Fehler propagiert jetzt die Exception statt eines leeren Vektors. Schwesterbug zu STACK-PUSH-SILENT-EMBED — beide aus derselben Klasse, beide im Cleanup-Sprint mitbehoben.
+
+---
+
+#### LIFESPAN-EMBED-BLOCK — Lifespan-Embedding-Repair blockierte den Main-Event-Loop ✅ Behoben Chat 92
+
+**Entdeckt:** Chat 92, Block 1 Phase 1/2 (G1/G2)
+
+**Klasse:** Async-Concurrency-Verstoß — sync-Embedding-Call aus FastAPI-Lifespan, Severity Mittel.
+
+**Symptom:** `ziele_embeddings_sicherstellen` und `entitaeten_embeddings_sicherstellen` liefen im FastAPI-Lifespan synchron und blockierten damit den Main-Event-Loop für die Dauer aller Embedding-Aufrufe. Bei größerem Backlog (viele Ziele oder Entitäten ohne Embedding) konnte der Server-Start dadurch spürbar verzögert werden, ohne dass parallele Initialisierungsschritte fortlaufen konnten.
+
+**Behoben Chat 92 (G1/G2):** Beide Funktionen async-isiert und auf `await model_service.embed.submit(...)` umgestellt. Lifespan-Repair läuft jetzt non-blocking, andere Initialisierungs-Tasks können parallel fortschreiten.
+
+---
+
+*Aktualisiert Chat 92: Block 1 (Embedding-Konsolidierung) der MS-Welle abgeschlossen. SHADOW-DELIVERY-BLOCKING-INVOKE im Zuge G8 strukturell mitbehoben. Drei neue ✅-Einträge (STACK-PUSH-SILENT-EMBED, SHADOW-DELIVERY-SILENT-EMBED, LIFESPAN-EMBED-BLOCK) — Silent-Skip- und Main-Loop-Blocker, die im Cleanup-Sprint mitgefallen sind.*
