@@ -9,7 +9,6 @@ Embedding ist NICHT Teil dieser Abstraktion — bleibt immer Ollama.
 
 import logging
 import re
-import time
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from typing import Optional
@@ -20,9 +19,6 @@ from config import (
     ANTHROPIC_PRICE_INPUT_PER_M,
     ANTHROPIC_PRICE_OUTPUT_PER_M,
     DEFAULT_USER_ID,
-    PIXIE_GPU_IDLE,
-    PIXIE_IDLE_SCHWELLE_SEKUNDEN,
-    redis_client,
 )
 
 logger = logging.getLogger("ki_server.llm_provider")
@@ -419,10 +415,6 @@ def _repair_truncated_json(text: str) -> str:
 _chat_provider:               Optional[LLMProvider] = None
 _background_provider:         Optional[LLMProvider] = None
 _background_analyse_provider: Optional[LLMProvider] = None
-# GPU-Idle-Provider (Chat 79, PIX-GPU-IDLE): wird im Profil "lokal" mit dem
-# GPU-Modell + GPU-Client gebaut. Im Profil "claude" bleibt None — dann
-# fallback auf den regulaeren background_provider.
-_pixie_idle_provider:         Optional[LLMProvider] = None
 
 # Welcher User laeuft gerade in einem Pixie-Agent? Wird vom Pixie-Dispatcher
 # gesetzt (services/pixie/dispatch.py) bevor agent.invoke() startet, und im
@@ -460,7 +452,6 @@ def init_providers(
     Wird einmal beim Server-Start aufgerufen (Lifespan).
     """
     global _chat_provider, _background_provider, _background_analyse_provider
-    global _pixie_idle_provider
 
     if profile == "lokal":
         _chat_provider       = OllamaProvider(ollama_gpu_client, ollama_gpu_model, ollama_gpu_num_ctx)
@@ -479,24 +470,12 @@ def init_providers(
             _background_analyse_provider = _background_provider
             logger.info("LLM-Provider: lokal (Ollama GPU + CPU)")
 
-        # PIX-GPU-IDLE: Sprach-Calls gehen bei User-Inaktivitaet auf das GPU-Modell.
-        _pixie_idle_provider = OllamaProvider(
-            ollama_gpu_client, ollama_gpu_model, ollama_gpu_num_ctx,
-        )
-        logger.info(
-            f"Pixie-Idle-Provider: GPU ({ollama_gpu_model}) — wird bei "
-            f"User-Inaktivitaet > {PIXIE_IDLE_SCHWELLE_SEKUNDEN}s fuer "
-            f"Sprach-Calls genutzt"
-        )
-
     elif profile == "claude":
         if not anthropic_api_key:
             raise ValueError("ANTHROPIC_API_KEY muss gesetzt sein fuer Profil 'claude'")
         _chat_provider               = AnthropicProvider(anthropic_model, anthropic_api_key)
         _background_provider         = AnthropicProvider(anthropic_model, anthropic_api_key)
         _background_analyse_provider = _background_provider
-        # Im Claude-Profil keine GPU/CPU-Trennung — Idle-Override unwirksam.
-        _pixie_idle_provider         = None
         logger.info(f"LLM-Provider: claude ({anthropic_model})")
 
     else:
@@ -531,30 +510,6 @@ def get_background_analyse_provider() -> LLMProvider:
 _CJK_RANGE = re.compile(r'[\u4e00-\u9fff\u3400-\u4dbf]')
 
 
-def _ist_pixie_gpu_idle() -> bool:
-    """Prueft ob der aktive User lange genug inaktiv ist fuer GPU-Nutzung.
-
-    Liest last_activity:{user_id} aus Redis (gesetzt von api/chat.py bei
-    jedem User-Turn). Gibt False zurueck, wenn der GPU-Idle-Modus
-    deaktiviert ist oder kein Idle-Provider gebaut wurde (z.B. Claude-Profil).
-    """
-    if not PIXIE_GPU_IDLE or _pixie_idle_provider is None:
-        return False
-
-    user_id: str = get_aktiver_pixie_user()
-    letzter_chat = redis_client.get(f"last_activity:{user_id}")
-    if letzter_chat is None:
-        # Kein Chat in den letzten 2h (TTL) \u2014 GPU frei.
-        return True
-
-    try:
-        idle_sekunden: float = time.time() - float(letzter_chat)
-    except (TypeError, ValueError):
-        return False
-
-    return idle_sekunden > PIXIE_IDLE_SCHWELLE_SEKUNDEN
-
-
 def pixie_llm_call(
     prompt: str,
     modus: str = "analyse",
@@ -568,9 +523,6 @@ def pixie_llm_call(
     Args:
         modus: "analyse" -> Qwen3-32B (Reasoning, JSON)
                "sprache" -> Mistral/Gemma CPU (Fliesstext, Deutsch).
-                            Bei User-Inaktivitaet > PIXIE_IDLE_SCHWELLE_SEKUNDEN
-                            wird automatisch das GPU-Modell genutzt
-                            (PIX-GPU-IDLE, Chat 79).
         json_output: True -> format_json + JSON-Validierung mit Fallback
         max_retries: Wiederholungen bei CJK-Erkennung oder JSON-Fehler
 
@@ -581,22 +533,17 @@ def pixie_llm_call(
 
     # Modell-Auswahl:
     # - Analyse-Calls: IMMER Qwen3-32B-CPU (Reasoning-Qualitaet, GPU-Modell ersetzt das nicht).
-    # - Sprach-Calls bei User-Inaktivitaet: GPU-Modell (10x schneller, GPU sonst idle).
-    # - Sprach-Calls bei aktivem Chat: CPU-Sprach-Modell (GPU bleibt fuer Chat frei).
+    # - Sprach-Calls: CPU-Sprach-Modell (Block 1 Cleanup-Sprint: Idle-Override
+    #   entfernt — Pixie-Sprache laeuft kuenftig ueber die Output-Queue an den
+    #   chat-Worker, siehe novaberg-microservice-modell-queue_k.md §5).
     if modus == "analyse":
         provider = get_background_analyse_provider()
-        gpu_idle = False
-    elif _ist_pixie_gpu_idle():
-        provider = _pixie_idle_provider
-        gpu_idle = True
     else:
         provider = get_background_provider()
-        gpu_idle = False
 
     logger.info(
         f"pixie_llm_call [{caller or 'pixie_' + modus}]: "
-        f"modus={modus}, gpu_idle={gpu_idle if modus == 'sprache' else 'n/a'}, "
-        f"user={get_aktiver_pixie_user()}"
+        f"modus={modus}, user={get_aktiver_pixie_user()}"
     )
 
     for versuch in range(1 + max_retries):

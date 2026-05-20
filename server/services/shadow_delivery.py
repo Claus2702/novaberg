@@ -26,6 +26,7 @@ from api.websocket import broadcast
 from config         import ASSISTANT_NAME, ASSISTANT_USER_ID, shutdown_event
 from memory.session import session_turns_retrieve, session_turn_store
 from services.llm_provider import get_chat_provider
+from services.model_services import model_service, EmbedRequest
 
 logger = logging.getLogger("ki_server.shadow_delivery")
 
@@ -140,10 +141,8 @@ def _modus_kompatibel(
 # ─────────────────────────────────────────────
 # Gesprächs-Embedding berechnen
 # ─────────────────────────────────────────────
-def _gespraechs_embedding(
+async def _gespraechs_embedding(
     redis_client:  redis.Redis,
-    embed_client,
-    embed_model:   str,
     user_id:       str,
     character_id:  str = "",
 ) -> list[float]:
@@ -161,15 +160,14 @@ def _gespraechs_embedding(
     if not kontext.strip():
         return []
 
-    try:
-        result: dict = embed_client.embed(
-            model = embed_model,
-            input = kontext,
-        )
-        return result["embeddings"][0]
-    except Exception as fehler:
-        logger.warning(f"Delivery: Gesprächs-Embedding fehlgeschlagen — {fehler}")
-        return []
+    embed_response = await model_service.embed.submit(EmbedRequest(text=kontext))
+    embedding: list[float] = embed_response.embedding
+    logger.debug(
+        "Shadow-Delivery: Embedding via EmbedWorker (Dim: %d, Dauer: %.3fs)",
+        len(embedding),
+        embed_response.duration_seconds,
+    )
+    return embedding
 
 
 # ─────────────────────────────────────────────
@@ -445,8 +443,6 @@ def _delivery_formulieren(eintrag: dict) -> str:
 # ─────────────────────────────────────────────
 async def _delivery_ausfuehren(
     redis_client:  redis.Redis,
-    embed_client,
-    embed_model:   str,
     user_id:       str,
     websocket_map: dict,
     compiled_agent_graph = None,
@@ -464,8 +460,8 @@ async def _delivery_ausfuehren(
     """
 
     # Gesprächskontext als Embedding
-    gespraechs_vector: list[float] = _gespraechs_embedding(
-        redis_client, embed_client, embed_model, user_id, ASSISTANT_USER_ID,
+    gespraechs_vector: list[float] = await _gespraechs_embedding(
+        redis_client, user_id, ASSISTANT_USER_ID,
     )
 
     if not gespraechs_vector:
@@ -569,8 +565,6 @@ async def _delivery_ausfuehren(
 # ─────────────────────────────────────────────
 async def shadow_delivery_loop(
     redis_client:  redis.Redis,
-    embed_client,
-    embed_model:   str,
     websocket_map: dict,
     llm_lock,
     compiled_agent_graph = None,
@@ -673,8 +667,7 @@ async def shadow_delivery_loop(
 
                 try:
                     gesendet: bool = await _delivery_ausfuehren(
-                        redis_client, embed_client,
-                        embed_model, user_id, websocket_map,
+                        redis_client, user_id, websocket_map,
                         compiled_agent_graph, agent_graph,
                     )
 
