@@ -111,6 +111,21 @@ OLLAMA_THINK_DEFAULT:  bool = _connector["think"]
 EMBED_MODEL: str = os.getenv("EMBED_MODEL", "nomic-embed-text")
 
 # ─────────────────────────────────────────────
+# Per-Worker-Backend-Wahl (Microservice-Welle Block 2)
+# ─────────────────────────────────────────────
+# Jeder LLM-Worker (chat, background_analyse, background_sprache) waehlt sein
+# Backend per Env-Variable. Erlaubte Werte: "ollama_gpu", "ollama_cpu_analyse",
+# "ollama_cpu_sprache", "anthropic".
+# Hinweis: "anthropic" ist im Schema waehlbar, aber Block 2 testet das noch
+# nicht smoke — vor der ersten Claude-Runde muss ein eigenes Smoke laufen.
+# Architektur-Doku: docs/novaberg-microservice-modell-queue_k.md.
+MODEL_WORKER_BACKENDS: dict[str, str] = {
+    "chat":               os.getenv("WORKER_BACKEND_CHAT",       "ollama_gpu"),
+    "background_analyse": os.getenv("WORKER_BACKEND_BG_ANALYSE", "ollama_cpu_analyse"),
+    "background_sprache": os.getenv("WORKER_BACKEND_BG_SPRACHE", "ollama_cpu_sprache"),
+}
+
+# ─────────────────────────────────────────────
 # Profil "claude" — Anthropic API
 # ─────────────────────────────────────────────
 ANTHROPIC_API_KEY:            str   = os.getenv("ANTHROPIC_API_KEY",   "")
