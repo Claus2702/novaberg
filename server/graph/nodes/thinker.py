@@ -42,6 +42,14 @@ logger = logging.getLogger("ki_server.thinker")
 
 from tools.web.search import web_search_manager
 from tools.web.fetch import page_fetch
+from tools.thinking_normalizer import get_thinking_normalizer
+
+
+# Block 3 Teil B: Nachfass-Iteration bei Ollama-thinking/content-Split.
+# Separate Haertung -- zaehlt NICHT gegen max_iterations, lieber einmal zu
+# viel, dann Schluss. Wortlaut + Limit dokumentiert in
+# tools/thinking_normalizer.py.
+NACHFASS_MAX: int = 2
 
 
 # ─────────────────────────────────────────────
@@ -430,6 +438,13 @@ def think(
     tool_map:       dict = {t.name: t for t in tools}
     node_cfg = get_node_config("thinker")
 
+    # Block 3 Teil B: Normalizer einmal holen (per-Connector, siehe
+    # tools/thinking_normalizer.py). Nachfass-Zaehler ist turn-weit und
+    # zaehlt NICHT gegen max_iterations — total max NACHFASS_MAX Nachfass-
+    # Calls in diesem think()-Aufruf.
+    normalizer = get_thinking_normalizer()
+    nachfass_versuche: int = 0
+
     # ── LLM-Call via ChatWorker (Microservice-Welle Block 2 Phase 4, G2) ──
     # think() laeuft im CharacterGraph (services/event_consumer.py ruft den
     # Graphen via asyncio.to_thread(_graph_streamen, ...) im Worker-Thread).
@@ -457,6 +472,54 @@ def think(
         messages.append({"role": "assistant", "content": content})
 
         state["token_total"] += response.token_total
+
+        # ── Block 3 Teil B: Nachfass bei Ollama-thinking/content-Split ──
+        # Ollama legt bei think=True den Output nicht-deterministisch mal in
+        # content, mal NUR ins thinking-Feld. Der Normalizer erkennt das und
+        # weist eine Nachfass-Iteration an, die das Reasoning als Material
+        # gibt und das Steuer-FORMAT exakt einfordert. Nachfass laeuft mit
+        # think=False, damit der Reparatur-Call nicht wieder ins thinking
+        # driftet. Der Nachfass-content faellt in DERSELBEN max_iterations-
+        # Runde durch die unten folgenden TOOL:/ERGEBNIS:-Pruefungen.
+        befund = normalizer.pruefen(content, response.thinking)
+        if befund.braucht_nachfass and nachfass_versuche < NACHFASS_MAX:
+            nachfass_versuche += 1
+            logger.info(
+                "Thinker: content leer, thinking gefuellt (Ollama-Split) — "
+                "Nachfass-Iteration %d/%d",
+                nachfass_versuche,
+                NACHFASS_MAX,
+            )
+
+            # Wortlaut bewusst minimal — die Marker MUESSEN exakt zu den
+            # Pruefungen unten passen (TOOL:, ERGEBNIS: OK, ERGEBNIS:
+            # KORREKTUR, PROBLEME:, KORRIGIERTE ANTWORT:). Aenderung hier
+            # waere ein Bruch der Loop-Logik.
+            nachfass_prompt: str = (
+                "Du hast bereits analysiert. Deine bisherige Analyse:\n\n"
+                f"{befund.thinking_material}\n\n"
+                "Gib jetzt AUSSCHLIESSLICH deine Entscheidung in genau einem "
+                "dieser Formate aus, ohne weiteren Text:\n"
+                "TOOL: toolname(parameter)\n"
+                "ERGEBNIS: OK\n"
+                "ERGEBNIS: KORREKTUR\n"
+                "PROBLEME: <stichpunkte>\n"
+                "KORRIGIERTE ANTWORT: <die verbesserte Antwort>"
+            )
+            messages.append({"role": "user", "content": nachfass_prompt})
+
+            nachfass_request = ChatRequest(
+                messages          = messages,
+                system            = system_prompt,
+                temperature       = node_cfg.get("temperature", 0.15),
+                max_output_tokens = node_cfg.get("max_output_tokens"),
+                think             = False,
+                caller            = "thinker_nachfass",
+            )
+            nachfass_response = model_service.chat.submit_sync(nachfass_request)
+            content = nachfass_response.text
+            messages.append({"role": "assistant", "content": content})
+            state["token_total"] += nachfass_response.token_total
 
         # Tool-Aufruf erkennen
         if "TOOL:" in content:
