@@ -6,14 +6,15 @@ Haelt zwei Backends parallel:
     - sprache: Fliesstext-/Deutsch-Calls (Mistral/Gemma-CPU im Lokal-Profil)
 
 Konsumenten waehlen pro Anfrage ueber `BackgroundRequest.modus`. Block 4
-laesst beide auf qwen36 zeigen (No-Op-Routing). Bis dahin bleibt die
-Dual-Modell-Logik aus `services.llm_provider.pixie_llm_call` als
-Worker-internes Routing erhalten.
+laesst beide auf qwen36 zeigen (No-Op-Routing). Bis dahin uebernimmt der
+Worker das Dual-Modell-Routing — die Logik geht historisch auf den in
+Block 2 entfernten `services.llm_provider.pixie_llm_call`-Wrapper zurueck.
 
 CJK-Guard: Qwen leakt bei laengeren deutschen Prompts gelegentlich
 chinesische Schriftzeichen. Die Schleife versucht max_cjk_retries Retries
 mit verschaerftem Sprach-Hinweis; ein finaler Retry strippt die CJK-
-Zeichen hart. Logik orientiert sich an `pixie_llm_call`.
+Zeichen hart. Die Schleifen-Logik stammt urspruenglich aus dem ehemaligen
+`pixie_llm_call` und wurde mit Block 2 in den Worker gehoben.
 
 Architektur-Doku: docs/novaberg-microservice-modell-queue_k.md §3.
 """

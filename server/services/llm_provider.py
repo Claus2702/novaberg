@@ -482,118 +482,18 @@ def init_providers(
         raise ValueError(f"Unbekanntes LLM-Profil: {profile}")
 
 
-def get_chat_provider() -> LLMProvider:
-    """Gibt den Provider fuer Chat-LLM-Calls zurueck (GPU bei lokal, Claude bei claude)."""
-    if _chat_provider is None:
-        raise RuntimeError("LLM-Provider nicht initialisiert. init_providers() aufrufen.")
-    return _chat_provider
+# get_chat_provider / get_background_provider / get_background_analyse_provider
+# entfernt -- Microservice-Welle Block 2 Phase 5. Nach G6 ohne aktive Aufrufer
+# (sourcetree-Grep leer). LLM-Pfade laufen jetzt ueber die Worker-Schicht
+# (services/model_services/), die ihre Backends direkt via _build_backend in
+# der Registry-Factory instanziiert. init_providers + die Modul-Variablen
+# _chat_provider / _background_provider / _background_analyse_provider bleiben
+# bewusst stehen (Block-2-Grenze: nicht angefasst) — strukturell tote
+# Zustandshaltung, finale Aufraeumung in Block 3.
+
+# pixie_llm_call und _CJK_RANGE entfernt -- Microservice-Welle Block 2 Phase 4
+# (G4). Die Pixie-Konsumenten laufen jetzt ueber den BackgroundWorker
+# (services.model_services.background_worker), der die Dual-Backend-Wahl
+# (analyse/sprache) und den CJK-Retry uebernimmt.
 
 
-def get_background_provider() -> LLMProvider:
-    """Gibt den Provider fuer Hintergrund-LLM-Calls zurueck (CPU bei lokal, Claude bei claude)."""
-    if _background_provider is None:
-        raise RuntimeError("LLM-Provider nicht initialisiert. init_providers() aufrufen.")
-    return _background_provider
-
-
-def get_background_analyse_provider() -> LLMProvider:
-    """Gibt den Provider fuer Pixie-Analyse-Calls zurueck (Qwen3-32B bei lokal).
-
-    Fuer Planungs-, Bewertungs- und Klassifikations-Aufgaben.
-    Fallback auf background_provider wenn kein Analyse-Modell konfiguriert.
-    """
-    if _background_analyse_provider is None:
-        raise RuntimeError("LLM-Provider nicht initialisiert. init_providers() aufrufen.")
-    return _background_analyse_provider
-
-
-_CJK_RANGE = re.compile(r'[\u4e00-\u9fff\u3400-\u4dbf]')
-
-
-def pixie_llm_call(
-    prompt: str,
-    modus: str = "analyse",
-    temperatur: float = 0.1,
-    json_output: bool = False,
-    caller: str = "",
-    max_retries: int = 1,
-) -> str:
-    """Einheitlicher LLM-Call fuer Pixie-Agenten mit Dual-Modell-Routing.
-
-    Args:
-        modus: "analyse" -> Qwen3-32B (Reasoning, JSON)
-               "sprache" -> Mistral/Gemma CPU (Fliesstext, Deutsch).
-        json_output: True -> format_json + JSON-Validierung mit Fallback
-        max_retries: Wiederholungen bei CJK-Erkennung oder JSON-Fehler
-
-    Returns:
-        LLM-Antwort als String (bei json_output: validiertes JSON-String)
-    """
-    import json as _json
-
-    # Modell-Auswahl:
-    # - Analyse-Calls: IMMER Qwen3-32B-CPU (Reasoning-Qualitaet, GPU-Modell ersetzt das nicht).
-    # - Sprach-Calls: CPU-Sprach-Modell (Block 1 Cleanup-Sprint: Idle-Override
-    #   entfernt — Pixie-Sprache laeuft kuenftig ueber die Output-Queue an den
-    #   chat-Worker, siehe novaberg-microservice-modell-queue_k.md §5).
-    if modus == "analyse":
-        provider = get_background_analyse_provider()
-    else:
-        provider = get_background_provider()
-
-    logger.info(
-        f"pixie_llm_call [{caller or 'pixie_' + modus}]: "
-        f"modus={modus}, user={get_aktiver_pixie_user()}"
-    )
-
-    for versuch in range(1 + max_retries):
-        antwort = provider.chat(
-            messages=[{"role": "user", "content": prompt}],
-            temperature=temperatur,
-            format_json=json_output,
-            caller=caller or f"pixie_{modus}",
-        )
-        text = antwort.content.strip()
-
-        # --- CJK-Guard ---
-        if _CJK_RANGE.search(text):
-            logger.warning(
-                f"pixie_llm_call [{caller}]: Chinesische Zeichen erkannt "
-                f"(Versuch {versuch + 1}/{1 + max_retries})"
-            )
-            if versuch < max_retries:
-                prompt = prompt + "\n\n[WICHTIG] Antworte AUSSCHLIESSLICH auf Deutsch. Keine chinesischen Schriftzeichen."
-                continue
-            # Letzter Versuch: CJK-Zeichen entfernen
-            text = _CJK_RANGE.sub('', text)
-            logger.warning(f"pixie_llm_call [{caller}]: CJK-Zeichen entfernt, weiter mit bereinigtem Text")
-
-        # --- JSON-Validierung ---
-        if json_output:
-            try:
-                _json.loads(text)
-                return text  # Valides JSON
-            except _json.JSONDecodeError:
-                # Fallback: extrahiere {...} aus dem Text
-                match = re.search(r'\{.*\}', text, re.DOTALL)
-                if match:
-                    try:
-                        _json.loads(match.group())
-                        logger.debug(f"pixie_llm_call [{caller}]: JSON via Regex-Extraktion repariert")
-                        return match.group()
-                    except _json.JSONDecodeError:
-                        pass
-                logger.warning(
-                    f"pixie_llm_call [{caller}]: Invalides JSON "
-                    f"(Versuch {versuch + 1}/{1 + max_retries})"
-                )
-                if versuch < max_retries:
-                    prompt = prompt + "\n\n[WICHTIG] Antworte NUR mit validem JSON. Kein Markdown, keine Backticks."
-                    continue
-                # Letzter Versuch gescheitert — Rohtext zurueckgeben
-                logger.error(f"pixie_llm_call [{caller}]: JSON-Parse endgueltig fehlgeschlagen")
-                return text
-
-        return text
-
-    return text  # Sollte nicht erreicht werden
