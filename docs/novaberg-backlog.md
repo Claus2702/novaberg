@@ -408,6 +408,8 @@ Sammelposten aus zwei Audits in Chat 88 — dem allgemeinen Code-Audit zum Synap
 | REFAC-HANDBUCH-§9-MIGRATIONS | `DEVELOPER_HANDBOOK.md` §9 fordert „Niemals ALTER TABLE in init.sql. Schema-Änderungen laufen über separate, versionierte Migrations-Skripte (Alembic empfohlen)." Diese Norm widerspricht der seit P0 etablierten Konvention — `db/init.sql` ist Single Source of Truth, und Schema-Änderungen werden als ALTER-Statements am Ende der Datei eingefügt und in Reviews zu CREATE-Definitionen konsolidiert. Das Handbuch ist hier outdated und muss auf die gelebte P0-Konvention nachgezogen werden. Plugins (`agents/*/init.sql`) bleiben eigenständig. | ⬜ Prio mittel — eigener Doku-Sprint, am besten zusammen mit dem nächsten init.sql-Review |
 | REFAC-KZG-CODE-DUPLIKAT | KZG-Schreiblogik existiert zweimal: `_neu_anlegen` in `agents/kzg/speicher.py:208–266` (produktiv via dispatch_kzg) und `kzg_store` in `memory/kzg.py:245–401` (Legacy, von Recherche-Agent und Shadow-Tasks aufgerufen). Hash-Mapping ist fast identisch. Bei jeder Schema-Erweiterung (wie P3) verdoppelt sich die Pflege-Last. Konsolidierung in einer gemeinsamen Hilfsfunktion `_kzg_hash_mapping_bauen(...)` oder Eliminierung einer der beiden Funktionen. Aufgedeckt im P3-Audit. | ⬜ Prio mittel — bei nächster KZG-Schema-Änderung oder eigenständig |
 | PLANNER-TIMELINE-INTENT-MISS | Der Planner erkennt explizite Timeline-Aufträge ("Merk dir bitte den 17. Oktober als Annas Geburtstag") nicht zuverlässig als Timeline-Intent und dispatcht den TimelineAgent nicht. Folge: `magnete_aufloesen` legt einen `erinnerungs_anker` an, statt einen echten `geburtstag`-Eintrag zu sehen. Aufgedeckt im P3-V7-Clipboard-Test (Chat 88): Test-Turn mit expliziter Timeline-Absicht erzeugte nur einen `erinnerungs_anker` für den 17.10.2026, keinen `geburtstag`-Eintrag. Konsequenz: Clipboard-Pattern strukturell vorbereitet, aber im Live-Betrieb selten getriggert. Tiefere Betrachtung deutet auf eine grundsätzliche Architektur-Frage hin (Agenten-Aktivierungs-Modi, Push vs. Pull), die nach P9 in einem eigenen Konzept-Doku adressiert werden soll. | ⬜ Prio mittel — nach P9 strukturell adressieren |
+| TEST-WORKER-SHUTDOWN-COROUTINE | 4 von 15 ModelService-Tests rot: ChatWorker- und BackgroundWorker-Exception- + ExpectJsonFail-Tests scheitern im `asyncTearDown` an `worker.shutdown()` → `await self._task` → `RuntimeError: cannot reuse already awaited coroutine` (`worker_base.py:92`). Tritt nur in Pfaden auf, wo `_call_model` eine Exception wirft. `shutdown()` muss den Task-Zustand prüfen / `CancelledError` schlucken. Vorbestehend, NICHT durch Block 3 verursacht (`worker_base.py` wurde nicht angefasst). Kein Produktionsrisiko (Server läuft, Exception-Propagation funktioniert), aber Lücke im Test-Sicherheitsnetz für Fehlerpfade. Beobachtet Chat 93. | ⬜ Prio mittel — Test-Härtung |
+| NODE-TOKEN-AUSLASTUNG-FALLBACK | Beifund Block 3 Teil A (Chat 93): OllamaProvider Token-Auswertung hat undokumentierten Fallback — `prompt_eval_count` mal im `message`-Dict, mal Top-Level. Wirkt wie alter Ollama-Versions-Workaround. Beim Heben des Token-Loggings auf Node-Ebene (Token-Auslastung pro Node) mitdokumentieren oder mit-aufräumen. _(Hinweis: ein übergeordnetes NODE-TOKEN-AUSLASTUNG-Item existiert noch nicht; verwandt zu TOK1 in §7 Infrastruktur. Sobald das Token-Logging-Sprint anlegt wird, dort einhängen.)_ | ⬜ Prio niedrig — opportunistisch beim Token-Logging-Heben |
 
 ### DateienAgent / ProjektAgent (Chat 45)
 
@@ -1580,6 +1582,14 @@ P4 setzt **strukturell** auf der MS-Welle auf: der neue Pixie-Agent `synapsen_pr
 
 K-Punkte für P4 sind unabhängig von der MS-Welle bereits in Chat 91 abgeschlossen (`novaberg-memory-synapsen-p4-entscheidungen_k.md`). Implementation wartet auf MS-Welle-Abschluss.
 
+### Block 3 — Offene Restpunkte (Chat 93)
+
+Block 3 (think pro Call + Thinking-Normalizer + Self-Trigger) ist code-vollständig. Zwei Rest-Sprints und ein Beobachtungs-Punkt bleiben:
+
+- **Block 3 Teil 2 — Kahlschlag (offen):** `generate` aus OllamaProvider + AnthropicProvider + LLMProvider-ABC entfernen (belegt tot, Worker nutzen nur `chat`); tote `format_json`-Pfade in beiden Providern; die drei Postprocess-Duplikate (`_clean_json_response` / `_deduplicate_repetition` / `_repair_truncated_json`); `init_providers` + tote Modul-Variablen (`_chat` / `_background` / `_background_analyse_provider`); `OLLAMA_THINK_DEFAULT` + `node_cfg["think"]` + Connector-`think`-Feld; Worker-interne `parsed`-Type-Hints auf `Optional[Any]` nachziehen. Reiner Code-Tod, verhaltensneutral. Vor dem Löschen frischer Verifikations-Grep — die Datei hat sich seit Block-3-Audit durch das `thinking`-Feld + Normalizer geändert.
+- **Block 3 Diagnose-Logging-Ausbau (offen):** `DIAGNOSE`- und `DIAGNOSE-VOLL`-Logging in `OllamaProvider.chat` entfernen. Gekoppelt an THINKER-DOPPELFEHLSCHLAG-LIVE-VERIFIKATION (s.u.) — erst entfernen, wenn der Self-Trigger-Pfad einmal live gefeuert hat. Gut mit dem Kahlschlag zusammenlegbar.
+- **THINKER-DOPPELFEHLSCHLAG-LIVE-VERIFIKATION (offen, abwartend):** Self-Trigger-Notnagel (Block 3 Teil D+E+F) ist gebaut und logisch belegt, aber der Doppel-Fehlschlag (beide Nachfass-Iterationen liefern leeren `content`) ist im Live-Betrieb noch nie gefeuert. Abwarten — tritt im Normalbetrieb auf, wenn `gemma4` zweimal hintereinander ins `thinking`-Feld driftet. Verifikations-Log: „Doppel-Fehlschlag — Self-Trigger gesetzt" → „continue erzeugt" → „Unsicherheits-Retry erkannt". Erwartetes User-Erlebnis: erste Antwort + „Hmm... ich muss das nochmal durchgehen.", dann zweite Nachricht mit Klärung. Kein eigener Bau — nur Beobachtung. Löst den Diagnose-Logging-Ausbau aus.
+
 ---
 
 ## Tech-Debt: Reducer-Umbau-Nachzügler (Chat 75)
@@ -2605,6 +2615,29 @@ Zwei Redis-`LRANGE`-Calls pro User-Turn für identische Daten. Im CG analog, dor
 
 - KONZEPT: CHRONIK (Chat 91) — episodisches Nachschlagewerk, komplementär.
 - Synapsen P4 K9-Entscheidung — Embedding aus `inhalt` allein, ohne Themen-Anreicherung. Pfad C (Themen mit ins Embedding) wurde explizit verworfen, weil er die Schicht-Orthogonalität kompromittiert.
+
+---
+
+## Bug: SALIENZ-VERDICHTUNG-MEHRFACH — Salienz- und Verdichtungs-Calls mehrfach pro Turn (Chat 93)
+
+**Status:** ⬜ Beobachtet, Audit-first
+**Prio:** Mittel (Performance)
+**Auslöser:** Beifund im Chat-93-Log während MS-Welle Block 3
+
+**Beobachtung:** Pro User-Turn liefen im Chat-93-Log der Salienz-Node 4× (leicht variierender Output) und `kzg/verdichtung` 4× (byte-identischer Output). Ursache unklar — Schleife, Mehrfach-Dispatch oder legitime Segment-Verarbeitung?
+
+**Auswirkung:** Reine Performance-Kosten heute. Vier Verdichtungs-Calls pro Turn auf qwen36-cpu sind teuer. Bei byte-identischem Verdichtungs-Output vermeidbar.
+
+**Reihenfolge:** ERST Audit (warum 4×?), DANN Lösung:
+
+- Cache nur falls echte Doppelung — als Performance-Maßnahme legitim, byte-identische Verdichtungs-Calls belegt.
+- Schleifen-Fix falls struktureller Fehler.
+
+**Einordnung:** Vorbestehend, nicht durch Block 3 verursacht — fiel nur im selben Log auf.
+
+**Verwandte Themen:**
+
+- KZG-VERDICHTER-KONTEXT-VERLUST (Bug, Chat 91) — selber Code-Bereich (Verdichter), unabhängiges Symptom.
 
 ---
 

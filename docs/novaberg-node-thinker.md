@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Node-Referenz Thinker
-**Stand:** 21. April 2026, Chat 60 (Event-Modell, Graph-Split)
+**Stand:** 21. Mai 2026, Chat 93 (MS-Welle Block 3: `think` pro Call, ThinkingNormalizer, Self-Trigger-Notnagel)
 **Pfad:** novaberg/docs/novaberg-node-thinker.md
 **Quellen:** nova-01-m-f.md
 **Datei:** `graph/nodes/thinker.py`
@@ -37,6 +37,8 @@ Denken → Tool aufrufen → Ergebnis beobachten → Weiterdenken → ...
 
 Wenn nach 5 Durchläufen kein Ergebnis vorliegt, bleibt die Antwort unverändert.
 
+**`think=True` — nur hier.** Der Thinker ist der einzige Node, der mit echtem Reasoning läuft. Alle anderen Nodes laufen `think=False`. `think` folgt aus der Funktion des Nodes, ist keine Config-Schraube — der Thinker setzt `think=True` lokal als Literal im `ChatRequest`. Konsequenz: der Thinker-Call ist deutlich langsamer (~1 Min), weil das Modell eine echte Reasoning-Kette generiert. Das ist gewollt — seine Funktion IST Reasoning.
+
 ### 3.1 Schnell-Check
 
 Vor dem Reasoning-Loop prüft der Thinker, ob die Antwort überhaupt prüfbare Fakten enthält. Eine Liste von Indikatoren wird gegen Antwort und Prompt gematcht:
@@ -63,6 +65,30 @@ Defense-in-Depth-Loesung in zwei Stufen, gebuendelt in `ThinkerToolCache` (siehe
 **Designentscheidung — Cache strikt lokal in `think()` instanziiert.** Im Gegensatz zu `_aktiver_pixie_user` (Modul-Cache in `services/llm_provider.py`) lebt der Thinker-Cache als lokale Variable in `think()`, nicht auf Modul-Ebene und nicht im `ConversationState`. Begruendung: Pixie-Aufrufe sind durch den Pixie-Lock `pixie:running` serialisiert; der Thinker laeuft potenziell parallel pro `(user_id, character_id)`-Paar. Strikte Lokalitaet macht es strukturell unmoeglich, dass Caches zwischen Graph-Laeufen verschmutzen — Lebensdauer = Lebensdauer von `think()`.
 
 Datenstruktur: `OrderedDict` mit `MAX_GROESSE=20` und FIFO-Verdraengung via `popitem(last=False)`, damit der Cache nicht unbegrenzt waechst. Der STRUCT-5c-Format-Vertrag bleibt unangetastet — Stufe 2 hasht *vor* dem `format_memory_entries()`-Call ueber die strukturierten Entries.
+
+### 3.4 content/thinking-Split + ThinkingNormalizer
+
+**Problem.** Ollama legt bei `think=True` den Modell-Output nicht-deterministisch mal in `content`, mal ausschließlich ins `thinking`-Feld — `content` bleibt dann leer. Belegt: Ollama #10976, LiteLLM #18922. Der Effekt tritt bei `gemma4` UND `qwen3` auf — Ollama-spezifisch, nicht modell-spezifisch. Der Reasoning-Loop liest `content`; bei leerem `content` findet er keinen Steuer-Token (`TOOL:`, `ERGEBNIS:`, `KORREKTUR:`) und würde blind bis `max_iterations` weiterlaufen.
+
+**Lösung — ThinkingNormalizer.** Code in `tools/thinking_normalizer.py`. Basisklasse `ThinkingNormalizer` (No-Op: `content` gilt immer als brauchbar) plus erbende Klasse `ThinkSplitNormalizer` (behandelt den Split). Auswahl über eine Connector-Factory `get_thinking_normalizer()` — das modell-spezifische Verhalten ist hinter der Factory gekapselt; der Thinker selbst bleibt modell-agnostisch.
+
+**Datenfluss.** Das `thinking`-Feld kommt durch die Kette: Provider liest `message["thinking"]` → `LLMAntwort` → `ChatResponse`. Der Thinker liest `response.thinking` und reicht beide Felder (`content`, `thinking`) an den Normalizer.
+
+**Nachfass-Iteration.** Erkennt der Normalizer `content`-leer + `thinking`-voll, stößt der Thinker eine Nachfass-Iteration an: ein Folge-Call mit `think=False` (damit der Reparatur-Call nicht erneut ins `thinking` driftet), der das bereits erzeugte Reasoning als Material mitgibt und AUSSCHLIESSLICH die Entscheidung im Steuer-Format einfordert. Der Nachfass-`content` fällt in derselben `max_iterations`-Runde durch die normalen `TOOL:`/`ERGEBNIS:`-Prüfungen.
+
+**Limit.** `NACHFASS_MAX = 2`, turn-weit. Zählt NICHT gegen `max_iterations` (Reparatur, kein Reasoning). Caller-Tag im Log: `thinker_nachfass`.
+
+### 3.5 Self-Trigger-Notnagel bei Doppel-Fehlschlag
+
+**Doppel-Fehlschlag.** Wenn auch beide Nachfass-Iterationen keinen verwertbaren Steuer-Token liefern (`content` bleibt leer), greift der Notnagel.
+
+**Mechanik.** Die Original-Antwort des Responders BLEIBT erhalten. Angehängt wird eine neutrale Geste: „Hmm... ich muss das nochmal durchgehen." Die Formulierung ist bewusst neutral gewählt — sie läuft NICHT durch Responder-Direktiven und kann gegen keine Siezen/Duzen-Direktive verstoßen.
+
+**Self-Trigger über die Event-Queue.** KEIN neuer Node, KEINE neue Graph-Kante — der Self-Trigger ist ein Event-Queue-Mechanismus, kein zusätzlicher Pfad im Graph (§2 bleibt unverändert). Der Thinker setzt `state["self_trigger"] = True` plus `self_trigger_payload` (`user_prompt`, `turn_id`, `thinker_unsicher_retry=True`). Der Event-Consumer (siehe Event-Modell, Chat 60) erzeugt daraus einen `continue`-Event (`source="character"`, `trigger_count + 1`). Der zweite Durchlauf läuft normal vorwärts und beantwortet die Frage erneut — er geht durch den Gesprächsverlauf (erste Antwort + Geste steht via Dispatcher drin) natürlich auf die Geste ein. Kein Responder-Sondercode.
+
+**Härtung gegen Endlos-Schleife.** Der Thinker im zweiten Durchlauf erkennt am `event_payload`-Marker (`thinker_unsicher_retry`), dass er bereits im Retry ist, und setzt KEINEN weiteren Self-Trigger — ein Retry, dann definitiv Schluss. Zusätzlich die vorhandenen Sperren im Event-Consumer (`pending_agent`, `MAX_SELF_TRIGGERS = 3`).
+
+**Prinzip.** Wenn der Notnagel zieht, bleibt es Nova — sie sagt mit ihren Worten, dass sie nochmal schauen muss, statt dass ein steriles Modell-Urteil ihre Stimme ersetzt.
 
 ---
 
