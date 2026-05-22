@@ -24,7 +24,7 @@ import redis
 
 from graph.state import ConversationState
 from config import get_node_config, PROMPTS
-from services.llm_provider import get_chat_provider
+from services.model_services import model_service, ChatRequest
 
 logger = logging.getLogger("ki_server.salience")
 
@@ -42,25 +42,28 @@ def _prompt_segmentieren(prompt: str) -> list[str]:
 
     try:
         node_cfg = get_node_config("salienz")
-        provider = get_chat_provider()
-        antwort  = provider.chat(
-            messages = [
-                {"role": "user", "content": prompt},
-            ],
+
+        # ── LLM-Call via ChatWorker (Microservice-Welle Block 2 Phase 4, G1) ──
+        # _prompt_segmentieren() laeuft im HumanGraph aus
+        # api/chat.py:ChatSenden (sync def im FastAPI-Threadpool). Kein
+        # Event-Loop im aufrufenden Thread → submit_sync bruckt in den
+        # Worker-Loop (Loop-Binding-Lesson).
+        chat_request = ChatRequest(
+            messages          = [{"role": "user", "content": prompt}],
             system            = "\n\n".join([
                 PROMPTS["salienz_segment.identity"],
                 PROMPTS["salienz_segment.task"],
                 PROMPTS["salienz_segment.rules"],
             ]),
             temperature       = node_cfg.get("temperature", 0.05),
-            format_json       = True,
+            expect_json       = True,
             max_output_tokens = node_cfg.get("max_output_tokens"),
             caller            = "salienz/segment",
         )
+        response = model_service.chat.submit_sync(chat_request)
 
-        raw: str = antwort.content
-        logger.debug(f"Salienz RAW: '{antwort.content[:500]}'")
-        parsed = json.loads(raw)
+        logger.debug(f"Salienz RAW: '{response.text[:500]}'")
+        parsed = response.parsed
 
         # JSON koennte ein Array oder ein Objekt mit Array sein
         if isinstance(parsed, list):
@@ -170,23 +173,25 @@ def analyze(
         )
 
         node_cfg = get_node_config("salienz")
-        provider = get_chat_provider()
-        antwort  = provider.chat(
-            messages = [
-                {"role": "user", "content": analyse_prompt},
-            ],
+
+        # ── LLM-Call via ChatWorker (Microservice-Welle Block 2 Phase 4, G1) ──
+        # analyze() laeuft im HumanGraph aus api/chat.py:ChatSenden (sync def
+        # im FastAPI-Threadpool). Kein Event-Loop im aufrufenden Thread →
+        # submit_sync bruckt in den Worker-Loop (Loop-Binding-Lesson).
+        chat_request = ChatRequest(
+            messages          = [{"role": "user", "content": analyse_prompt}],
             system            = salienz_prompt,
             temperature       = node_cfg.get("temperature", 0.05),
-            format_json       = True,
+            expect_json       = True,
             max_output_tokens = node_cfg.get("max_output_tokens"),
             caller            = "salienz",
         )
 
-        gesamt_tokens += antwort.token_total
-
         try:
-            logger.debug(f"Salienz RAW: '{antwort.content[:500]}'")
-            salienz_obj: dict = json.loads(antwort.content)
+            response = model_service.chat.submit_sync(chat_request)
+            gesamt_tokens += response.token_total
+            logger.debug(f"Salienz RAW: '{response.text[:500]}'")
+            salienz_obj: dict = response.parsed
 
             if "arousal" in salienz_obj:
                 salienz_obj["arousal"] = max(0.0, min(1.0, float(salienz_obj.get("arousal", 0.5))))

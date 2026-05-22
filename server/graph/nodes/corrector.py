@@ -7,7 +7,7 @@ import logging
 
 from graph.state import ConversationState
 from config import get_node_config, PROMPTS
-from services.llm_provider import get_chat_provider
+from services.model_services import model_service, ChatRequest
 
 logger = logging.getLogger("ki_server.corrector")
 
@@ -62,19 +62,23 @@ def correct(state: ConversationState) -> ConversationState:
     )
 
     node_cfg = get_node_config("corrector")
-    provider = get_chat_provider()
-    antwort  = provider.chat(
-        messages = [
-            {"role": "user", "content": korrektur_prompt}
-        ],
+
+    # ── LLM-Call via ChatWorker (Microservice-Welle Block 2 Phase 4, G2) ──
+    # correct() laeuft im CharacterGraph (services/event_consumer.py ruft
+    # den Graphen via asyncio.to_thread(_graph_streamen, ...) im Worker-
+    # Thread). Kein Event-Loop im aufrufenden Thread → submit_sync bruckt in
+    # den Worker-Loop (Loop-Binding-Lesson).
+    chat_request = ChatRequest(
+        messages          = [{"role": "user", "content": korrektur_prompt}],
         system            = PROMPTS["corrector.system"],
         temperature       = node_cfg.get("temperature", 0.5),
         max_output_tokens = node_cfg.get("max_output_tokens"),
         caller            = "corrector",
     )
+    response = model_service.chat.submit_sync(chat_request)
 
-    state["response"]     = antwort.content
-    state["token_total"] += antwort.token_total
+    state["response"]     = response.text
+    state["token_total"] += response.token_total
 
     logger.info(f"Corrector: Antwort überarbeitet ({state['token_total']} Tokens gesamt)")
 

@@ -69,7 +69,10 @@ async def agent_ausfuehren(agent_name: str, kandidat: dict, app_state) -> bool:
             "fehler":      None,
         }
 
-    # Aktiven User fuer pixie_llm_call() vermerken (fuers Logging).
+    # Aktiven User fuer Pixie-Logging vermerken (historisch fuer
+    # pixie_llm_call; seit Block 2 nutzen die Pixie-Agenten den
+    # BackgroundWorker, set_aktiver_pixie_user bleibt fuer die User-
+    # Korrelation im Token-Log erhalten).
     user_id_pixie: str = (
         agent_state["kontext"].get("user_id", "") or DEFAULT_USER_ID
     )

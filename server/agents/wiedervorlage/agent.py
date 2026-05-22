@@ -20,7 +20,7 @@ from config import (
     redis_client,
     get_node_config,
 )
-from services.llm_provider import get_background_provider
+from services.model_services import model_service, BackgroundRequest
 from services.pixie.stack import stack_push
 from memory.repositories import (
     EntitaetenRepository,
@@ -210,16 +210,20 @@ Nenne den konkreten Inhalt. Formuliere NUR die Erinnerung, kein weiterer Text.""
 
         try:
             node_cfg = get_node_config("wiedervorlage")
-            provider = get_background_provider()
-            antwort  = provider.chat(
-                messages=[{"role": "user", "content": prompt}],
-                system=BUTLER_SYSTEM_PROMPT,
-                temperature=node_cfg.get("temperature", 0.2),
-                max_output_tokens=node_cfg.get("max_output_tokens"),
-                caller="pixie/wiedervorlage",
-            )
+            # ── BackgroundWorker (Microservice-Welle Block 2 Phase 4, G5) ──
+            # Sync invoke via Pixie/CharacterGraph asyncio.to_thread →
+            # submit_sync. modus="sprache" — CPU-Sprachmodell, passend zur
+            # Fliesstext-Erinnerung an den User.
+            response = model_service.background.submit_sync(BackgroundRequest(
+                messages          = [{"role": "user", "content": prompt}],
+                modus             = "sprache",
+                system            = BUTLER_SYSTEM_PROMPT,
+                temperature       = node_cfg.get("temperature", 0.2),
+                max_output_tokens = node_cfg.get("max_output_tokens"),
+                caller            = "pixie/wiedervorlage",
+            ))
 
-            return antwort.content.strip()
+            return response.text.strip()
 
         except Exception as fehler:
             logger.error(f"WiedervorlageAgent: LLM-Formulierung fehlgeschlagen — {fehler}")

@@ -1,13 +1,13 @@
 """Planung — LLM generiert Recherche-Ziel, Queries und Kriterien.
 
-Nutzt Qwen3-32B (Analyse-Modell) via pixie_llm_call().
+Nutzt das Analyse-Backend (Qwen3-32B im Lokal-Profil) via BackgroundWorker.
 Bekommt die Lagebeurteilung als Kontext fuer gezielte Queries.
 """
 
 import json
 import logging
 
-from services.llm_provider import pixie_llm_call
+from services.model_services import model_service, BackgroundRequest
 
 logger = logging.getLogger("ki_server.agents.recherche")
 
@@ -92,15 +92,21 @@ def recherche_planen(thema: str, session_kontext: dict, lage: dict = None) -> di
         ausschluss=ausschluss_str,
     )
 
+    # ── LLM-Call via BackgroundWorker (Microservice-Welle Block 2 Phase 4, G4) ──
+    # recherche_planen() laeuft im RechercheAgent. Der Agent wird sync invoked
+    # aus services/pixie/dispatch.py via asyncio.to_thread(agent.invoke, ...)
+    # — Worker-Thread ohne Event-Loop → submit_sync. JSON-Validierung +
+    # CJK-Guard erledigt jetzt der BackgroundWorker (parse_json_strict +
+    # contains_cjk/strip_cjk-Retry). Caller-seitiger json.loads entfaellt.
     try:
-        antwort = pixie_llm_call(
-            prompt=prompt,
-            modus="analyse",
-            temperatur=0.2,
-            json_output=True,
-            caller="recherche/planung",
-        )
-        plan: dict = json.loads(antwort)
+        response = model_service.background.submit_sync(BackgroundRequest(
+            messages    = [{"role": "user", "content": prompt}],
+            modus       = "analyse",
+            temperature = 0.2,
+            expect_json = True,
+            caller      = "recherche/planung",
+        ))
+        plan: dict = response.parsed
         logger.info(f"Recherche-Planung: Ziel={plan.get('ziel', '?')}")
         return plan
 

@@ -12,7 +12,7 @@ import time
 
 from config import ASSISTANT_USER_ID, DEFAULT_USER_ID, get_node_config
 from memory.lzg import effektives_gewicht_berechnen
-from services.llm_provider import get_background_provider, pixie_llm_call
+from services.model_services import model_service, BackgroundRequest
 
 logger = logging.getLogger("ki_server.agents.charakter.destillation")
 
@@ -198,16 +198,25 @@ def _antwort_bereinigen(text: str) -> str:
 def _llm_call(prompt: str, profil_name: str) -> str:
     """Fuehrt einen LLM-Call durch und gibt den bereinigten Text zurueck."""
     node_cfg = get_node_config("charakter_hash")
-    provider = get_background_provider()
 
-    antwort = provider.chat(
-        messages=[{"role": "user", "content": prompt}],
-        temperature=node_cfg.get("temperature", 0.2),
-        max_output_tokens=node_cfg.get("max_output_tokens"),
-        caller="pixie/hash",
-    )
+    # ── BackgroundWorker (Microservice-Welle Block 2 Phase 4, G5) ──
+    # _llm_call() ist Helfer fuer 5 Destillations-Funktionen (kern_hash,
+    # adaptive_hash, intentions_profil, emotions_profil, beziehungsprofil).
+    # Sync invoke via Pixie-Dispatch (asyncio.to_thread) → submit_sync.
+    # modus="sprache" (heutiger get_background_provider mappt darauf).
+    # KEIN system-Prompt: Beifund-Markierung — die Helfer-Signatur kennt
+    # keinen, das war auch vor der Migration so (PIXIE-LLM-PARAM-LEAK
+    # historisch). _antwort_bereinigen bleibt aktiv, da es auch Quote-
+    # Strip macht, was der Worker im expect_json=False-Pfad nicht tut.
+    response = model_service.background.submit_sync(BackgroundRequest(
+        messages          = [{"role": "user", "content": prompt}],
+        modus             = "sprache",
+        temperature       = node_cfg.get("temperature", 0.2),
+        max_output_tokens = node_cfg.get("max_output_tokens"),
+        caller            = "pixie/hash",
+    ))
 
-    ergebnis = _antwort_bereinigen(antwort.content)
+    ergebnis = _antwort_bereinigen(response.text)
     logger.info(f"{profil_name} destilliert: '{ergebnis[:80]}...'")
     return ergebnis
 
@@ -400,16 +409,21 @@ def langfristige_ziele_destillieren(kern_hash: str, user_id: str = "nova") -> li
         "- Keine generischen Ziele ('Ich möchte helfen') — spezifisch aus dem Kern"
     )
 
+    # ── LLM-Call via BackgroundWorker (Microservice-Welle Block 2 Phase 4, G4) ──
+    # langfristige_ziele_destillieren() laeuft im CharakterAgent, sync invoked
+    # aus services/pixie/dispatch.py via asyncio.to_thread → submit_sync.
+    # expect_json=True → response.parsed; das Modell antwortet hier mit einem
+    # JSON-Array auf Top-Level, daher kann response.parsed faktisch eine Liste
+    # sein (Type-Hint Optional[dict] des Workers ist hier breit gefasst).
     try:
-        import json
-        antwort = pixie_llm_call(
-            prompt=prompt,
-            modus="analyse",
-            temperatur=0.3,
-            json_output=True,
-            caller="charakter/ziele",
-        )
-        ziele: list[dict] = json.loads(antwort)
+        response = model_service.background.submit_sync(BackgroundRequest(
+            messages    = [{"role": "user", "content": prompt}],
+            modus       = "analyse",
+            temperature = 0.3,
+            expect_json = True,
+            caller      = "charakter/ziele",
+        ))
+        ziele = response.parsed
 
         if not isinstance(ziele, list):
             ziele = [ziele]

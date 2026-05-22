@@ -9,7 +9,7 @@ import time
 
 import redis
 
-from services.llm_provider import get_chat_provider
+from services.model_services import model_service, ChatRequest
 
 logger = logging.getLogger("ki_server.memory.session")
 
@@ -174,17 +174,22 @@ def session_summarize_if_needed(
     zusammenfassung_prompt += "\n".join(alte_turns)
 
     try:
-        provider = get_chat_provider()
-        antwort  = provider.chat(
-            messages = [
-                {"role": "user", "content": zusammenfassung_prompt},
-            ],
+        # ── LLM-Call via ChatWorker (Microservice-Welle Block 2 Phase 4, G3) ──
+        # session_summarize_if_needed() wird vom CharacterGraph-dispatcher-Node
+        # gerufen ([dispatcher.py:264]) — der CharacterGraph laeuft in
+        # event_consumer.py via asyncio.to_thread(_graph_streamen, ...).
+        # Kein Event-Loop im aufrufenden Thread → submit_sync. Einzige
+        # nicht-Pixie-getriggerte G3-Stelle und damit live-verifizierbar
+        # ohne Block 4.
+        chat_request = ChatRequest(
+            messages    = [{"role": "user", "content": zusammenfassung_prompt}],
             system      = "Du fasst Gespräche zusammen. Kurz, präzise, keine Details verlieren.",
             temperature = 0.2,
             caller      = "session/summary",
         )
+        response = model_service.chat.submit_sync(chat_request)
 
-        neue_summary: str = antwort.content.strip()
+        neue_summary: str = response.text.strip()
 
         redis_client.set(summary_key, neue_summary)
         redis_client.expire(summary_key, SESSION_TTL)

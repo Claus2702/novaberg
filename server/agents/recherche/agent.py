@@ -23,7 +23,7 @@ from config import (
     PIXIE_RECHERCHE_MAX_ITERATIONEN,
 )
 from memory.ziele import ziel_speichern, ziele_aktive_laden
-from services.model_services import model_service, EmbedRequest
+from services.model_services import model_service, EmbedRequest, BackgroundRequest
 
 logger = logging.getLogger("ki_server.agents.recherche")
 
@@ -66,17 +66,19 @@ def _ziel_aus_recherche_extrahieren(recherche_ziel: str, destillat: str) -> dict
         "- Sprache: Deutsch, Ich-Perspektive"
     )
 
+    # ── LLM-Call via BackgroundWorker (Microservice-Welle Block 2 Phase 4, G4) ──
+    # _ziel_aus_recherche_extrahieren() laeuft im RechercheAgent, sync invoked
+    # aus services/pixie/dispatch.py via asyncio.to_thread → submit_sync.
+    # expect_json=True → response.parsed.
     try:
-        from services.llm_provider import pixie_llm_call
-
-        antwort = pixie_llm_call(
-            prompt=prompt,
-            modus="analyse",
-            temperatur=0.3,
-            json_output=True,
-            caller="recherche/ziel",
-        )
-        ziel: dict = json.loads(antwort)
+        response = model_service.background.submit_sync(BackgroundRequest(
+            messages    = [{"role": "user", "content": prompt}],
+            modus       = "analyse",
+            temperature = 0.3,
+            expect_json = True,
+            caller      = "recherche/ziel",
+        ))
+        ziel: dict = response.parsed
 
         if not ziel.get("zielsatz"):
             logger.info("RechercheAgent: Kein Folgeziel aus Recherche")

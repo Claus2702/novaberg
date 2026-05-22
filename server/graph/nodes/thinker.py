@@ -36,8 +36,7 @@ from graph.state         import ConversationState
 from memory.repositories.timeline_repository import TimelineRepository
 from memory.lzg          import lzg_entries_retrieve
 from config              import get_node_config, PROMPTS
-from services.llm_provider import get_chat_provider
-from services.model_services import model_service, EmbedRequest
+from services.model_services import model_service, ChatRequest, EmbedRequest
 
 logger = logging.getLogger("ki_server.thinker")
 
@@ -430,23 +429,29 @@ def think(
     max_iterations: int = 5
     tool_map:       dict = {t.name: t for t in tools}
     node_cfg = get_node_config("thinker")
-    provider = get_chat_provider()
 
+    # ── LLM-Call via ChatWorker (Microservice-Welle Block 2 Phase 4, G2) ──
+    # think() laeuft im CharacterGraph (services/event_consumer.py ruft den
+    # Graphen via asyncio.to_thread(_graph_streamen, ...) im Worker-Thread).
+    # Kein Event-Loop im aufrufenden Thread → submit_sync bruckt in den
+    # Worker-Loop (Loop-Binding-Lesson). Schleifenlogik unveraendert: ein
+    # submit_sync pro Iteration, gleicher messages-/Tool-Zyklus.
     for i in range(max_iterations):
         logger.info(f"Thinker: Reasoning-Iteration {i + 1}")
 
-        antwort = provider.chat(
+        chat_request = ChatRequest(
             messages          = messages,
             system            = system_prompt,
             temperature       = node_cfg.get("temperature", 0.15),
             max_output_tokens = node_cfg.get("max_output_tokens"),
             caller            = "thinker",
         )
+        response = model_service.chat.submit_sync(chat_request)
 
-        content: str = antwort.content
+        content: str = response.text
         messages.append({"role": "assistant", "content": content})
 
-        state["token_total"] += antwort.token_total
+        state["token_total"] += response.token_total
 
         # Tool-Aufruf erkennen
         if "TOOL:" in content:

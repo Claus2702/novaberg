@@ -29,7 +29,7 @@ from memory.services.entity_resolution import (
 )
 
 from config import get_node_config
-from services.llm_provider import get_chat_provider
+from services.model_services import model_service, ChatRequest
 
 logger = logging.getLogger("ki_server.plugins.notizen")
 
@@ -299,12 +299,13 @@ Falls keine Notiz erkennbar: "snippet": null
 
         if action == "create":
             # LLM extrahiert Name, Typ und Inhalt
-            provider = get_chat_provider()
-            antwort = provider.chat(
-                messages = [
-                    {"role": "user", "content": prompt},
-                ],
-                system = (
+            # ── LLM-Call via ChatWorker (Microservice-Welle Block 2 Phase 4, G3) ──
+            # plan() laeuft im CharacterGraph-planner-Node, der seinerseits
+            # in event_consumer.py via asyncio.to_thread(_graph_streamen, ...)
+            # laeuft. Kein Event-Loop im aufrufenden Thread → submit_sync.
+            chat_request = ChatRequest(
+                messages          = [{"role": "user", "content": prompt}],
+                system            = (
                     "Extrahiere aus dem folgenden Text eine Notiz. "
                     "Antworte NUR mit JSON: "
                     '{"name": "Kurzname", "typ": "einkauf|todo|merkliste|notiz|entwurf|idee", '
@@ -312,13 +313,14 @@ Falls keine Notiz erkennbar: "snippet": null
                     '"themen": ["thema1", "thema2"]}'
                 ),
                 temperature       = get_node_config("planner").get("temperature", 0.2),
-                format_json       = True,
+                expect_json       = True,
                 max_output_tokens = get_node_config("planner").get("max_output_tokens"),
                 caller            = "planner/notizen",
             )
 
             try:
-                notiz: dict = json.loads(antwort.content)
+                response = model_service.chat.submit_sync(chat_request)
+                notiz: dict = response.parsed
                 pending.append({
                     "ziel":         "notizen",
                     "aktion":       "create",
@@ -338,16 +340,18 @@ Falls keine Notiz erkennbar: "snippet": null
                 result = f"Notiz '{target}' nicht gefunden"
             else:
                 # LLM erzeugt die aktualisierte Version
-                provider = get_chat_provider()
-                antwort = provider.chat(
-                    messages = [
+                # ── LLM-Call via ChatWorker (G3) — gleicher Kontext wie create-Pfad
+                # oben (CharacterGraph-planner-Node, sync to_thread). expect_json
+                # bleibt False — die Antwort ist der neue Notiz-Fliesstext.
+                chat_request = ChatRequest(
+                    messages          = [
                         {"role": "user", "content": (
                             f"Aktuelle Notiz:\n{kontext}\n\n"
                             f"Änderungswunsch: {prompt}\n\n"
                             f"Neuer Notiz-Inhalt:"
                         )},
                     ],
-                    system = (
+                    system            = (
                         "Du bearbeitest eine Notiz. Führe die gewünschte Änderung durch. "
                         "Antworte NUR mit dem neuen, vollständigen Notiz-Text. "
                         "Keine Erklärungen, kein Markdown — nur der reine Inhalt."
@@ -356,8 +360,9 @@ Falls keine Notiz erkennbar: "snippet": null
                     max_output_tokens = get_node_config("planner").get("max_output_tokens"),
                     caller            = "planner/notizen",
                 )
+                response = model_service.chat.submit_sync(chat_request)
 
-                neuer_text: str = antwort.content.strip()
+                neuer_text: str = response.text.strip()
                 pending.append({
                     "ziel":         "notizen",
                     "aktion":       "update",

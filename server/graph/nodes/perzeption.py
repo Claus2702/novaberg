@@ -26,7 +26,7 @@ from graph.personality import Personality, InternalPersonality
 from graph.state import ConversationState
 from config import redis_client, get_node_config, PROMPTS
 from memory.session import session_turns_retrieve, format_session_turns_numbered
-from services.llm_provider import get_chat_provider
+from services.model_services import model_service, ChatRequest
 
 logger = logging.getLogger("ki_server.perzeption")
 
@@ -117,20 +117,24 @@ def perceive(
     logger.info(f"Perzeption: System-Prompt:\n{system_prompt}")
 
     node_cfg = get_node_config("perzeption")
-    provider = get_chat_provider()
-    antwort  = provider.chat(
-        messages = [
-            {"role": "user", "content": eingabe_text},
-        ],
+
+    # ── LLM-Call via ChatWorker (Microservice-Welle Block 2 Phase 4, G1) ──
+    # perceive() laeuft im HumanGraph aus api/chat.py:ChatSenden (sync def im
+    # FastAPI-Threadpool). Kein Event-Loop im aufrufenden Thread →
+    # submit_sync nutzt die Bruecke ueber asyncio.run_coroutine_threadsafe
+    # in den Haupt-Loop des Workers (Loop-Binding-Lesson).
+    chat_request = ChatRequest(
+        messages          = [{"role": "user", "content": eingabe_text}],
         system            = system_prompt,
         temperature       = node_cfg.get("temperature", 0.05),
-        format_json       = True,
+        expect_json       = True,
         max_output_tokens = node_cfg.get("max_output_tokens"),
         caller            = "perzeption",
     )
 
     try:
-        ergebnis: dict = json.loads(antwort.content)
+        response = model_service.chat.submit_sync(chat_request)
+        ergebnis: dict = response.parsed
 
         rational:       dict = ergebnis.get("rational", {})
         emotional:      dict = ergebnis.get("emotional", {})

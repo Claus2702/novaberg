@@ -17,7 +17,7 @@ from config import (
     PIXIE_RECHERCHE_SESSION_TURNS,
     redis_client,
 )
-from services.llm_provider import get_background_provider
+from services.model_services import model_service, BackgroundRequest
 
 logger = logging.getLogger(__name__)
 
@@ -91,17 +91,22 @@ def session_kontext_extrahieren(
     # -- LLM-Call (CPU-Modell) --
     prompt: str = _kontext_prompt(turn_block, turn_count)
 
+    # ── LLM-Call via BackgroundWorker (Microservice-Welle Block 2 Phase 4, G5) ──
+    # session_kontext_extrahieren() laeuft sync aus Pixie- oder
+    # CharacterGraph-Pfaden via asyncio.to_thread → submit_sync. modus=
+    # "sprache", weil der heutige get_background_provider auf das CPU-
+    # Sprachmodell mappt (gemma4-cpu). Beifund: JSON ueber Sprachmodell —
+    # nicht im Rahmen dieser Phase korrigiert.
     try:
-        provider = get_background_provider()
-        antwort = provider.chat(
-            messages=[{"role": "user", "content": prompt}],
-            system=_SYSTEM_PROMPT,
-            temperature=0.1,
-            format_json=True,
-            caller="kontext",
-        )
-
-        ergebnis: dict = json.loads(antwort.content)
+        response = model_service.background.submit_sync(BackgroundRequest(
+            messages    = [{"role": "user", "content": prompt}],
+            modus       = "sprache",
+            system      = _SYSTEM_PROMPT,
+            temperature = 0.1,
+            expect_json = True,
+            caller      = "kontext",
+        ))
+        ergebnis: dict = response.parsed
 
         logger.info(
             f"Kontext: {turn_count} Turns analysiert — "

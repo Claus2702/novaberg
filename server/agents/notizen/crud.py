@@ -87,7 +87,7 @@ def _create(state: AgentState) -> dict:
     """Neue Notiz anlegen -- LLM extrahiert Name, Typ, Text, Themen."""
     from config import POSTGRES_URL, get_node_config
     from memory.repositories.notizen_repository import NotizenRepository
-    from services.llm_provider import get_chat_provider
+    from services.model_services import model_service, ChatRequest
 
     user_id = state["kontext"].get("user_id", "")
     prompt = state["aufgabe"]
@@ -102,10 +102,14 @@ def _create(state: AgentState) -> dict:
     else:
         user_content = prompt
 
-    provider = get_chat_provider()
-    antwort = provider.chat(
-        messages=[{"role": "user", "content": user_content}],
-        system=(
+    # ── LLM-Call via ChatWorker (Microservice-Welle Block 2 Phase 4, G3) ──
+    # _create() laeuft im NotizenAgent (sync invoke), aufgerufen entweder
+    # aus dem CharacterGraph via agent_dispatch_node oder aus
+    # services/pixie/dispatch.py — beide Pfade nutzen asyncio.to_thread.
+    # Kein Event-Loop im aufrufenden Thread → submit_sync.
+    chat_request = ChatRequest(
+        messages          = [{"role": "user", "content": user_content}],
+        system            = (
             "Extrahiere aus dem folgenden Text eine Notiz. "
             "Antworte NUR mit JSON: "
             '{"name": "Kurzname", "typ": "einkauf|todo|merkliste|notiz|entwurf|idee", '
@@ -123,14 +127,15 @@ def _create(state: AgentState) -> dict:
             "WICHTIG fuer 'name': Verwende den EXAKTEN Wortlaut des Users oder der Anweisung. "
             "Kuerze nicht, optimiere nicht, interpretiere nicht."
         ),
-        temperature=get_node_config("planner").get("temperature", 0.2),
-        format_json=True,
-        max_output_tokens=get_node_config("planner").get("max_output_tokens"),
-        caller="agent/notizen/create",
+        temperature       = get_node_config("planner").get("temperature", 0.2),
+        expect_json       = True,
+        max_output_tokens = get_node_config("planner").get("max_output_tokens"),
+        caller            = "agent/notizen/create",
     )
 
     try:
-        notiz_daten = json.loads(antwort.content)
+        response = model_service.chat.submit_sync(chat_request)
+        notiz_daten = response.parsed
     except (json.JSONDecodeError, KeyError) as fehler:
         logger.warning(f"NotizenAgent: JSON-Fehler bei create -- {fehler}")
         return {
@@ -195,7 +200,7 @@ def _update(state: AgentState) -> dict:
     """
     from config import POSTGRES_URL, get_node_config
     from memory.repositories.notizen_repository import NotizenRepository
-    from services.llm_provider import get_chat_provider
+    from services.model_services import model_service, ChatRequest
 
     notiz = state["parameter"].get("notiz", {})
     notiz_id = notiz.get("id")
@@ -220,9 +225,14 @@ def _update(state: AgentState) -> dict:
     else:
         aenderungswunsch = prompt
 
-    provider = get_chat_provider()
-    antwort = provider.chat(
-        messages=[{
+    # ── LLM-Call via ChatWorker (Microservice-Welle Block 2 Phase 4, G3) ──
+    # _update() laeuft im NotizenAgent (sync invoke), aufgerufen entweder
+    # aus dem CharacterGraph via agent_dispatch_node oder aus
+    # services/pixie/dispatch.py — beide Pfade nutzen asyncio.to_thread.
+    # Kein Event-Loop im aufrufenden Thread → submit_sync. expect_json
+    # bleibt False — die Antwort ist der neue Notiz-Fliesstext.
+    chat_request = ChatRequest(
+        messages          = [{
             "role": "user",
             "content": (
                 f"AKTUELLER INHALT DER NOTIZ:\n{aktueller_text}\n\n"
@@ -230,7 +240,7 @@ def _update(state: AgentState) -> dict:
                 f"NEUER VOLLSTÄNDIGER NOTIZ-TEXT:"
             ),
         }],
-        system=(
+        system            = (
             "Du bearbeitest eine Notiz. Der Nutzer gibt dir den AKTUELLEN Inhalt "
             "und einen ÄNDERUNGSWUNSCH in natürlicher Sprache.\n\n"
             "Deine Aufgabe:\n"
@@ -243,12 +253,13 @@ def _update(state: AgentState) -> dict:
             "Gib NIEMALS den Aenderungswunsch woertlich als Notiz-Text zurueck.\n\n"
             "Keine Erklaerungen, kein Markdown -- nur der reine Inhalt."
         ),
-        temperature=get_node_config("planner").get("temperature", 0.2),
-        max_output_tokens=get_node_config("planner").get("max_output_tokens"),
-        caller=f"agent/notizen/{action}",
+        temperature       = get_node_config("planner").get("temperature", 0.2),
+        max_output_tokens = get_node_config("planner").get("max_output_tokens"),
+        caller            = f"agent/notizen/{action}",
     )
+    response = model_service.chat.submit_sync(chat_request)
 
-    neuer_text = antwort.content.strip()
+    neuer_text = response.text.strip()
     zusammenfassung = _zusammenfassung_generieren(neuer_text)
 
     NotizenRepository.update(

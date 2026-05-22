@@ -20,7 +20,7 @@ from config import (
 )
 from graph.state import ConversationState
 from memory.session import format_session_turns_numbered
-from services.llm_provider import get_chat_provider
+from services.model_services import model_service, ChatRequest
 
 from ei.utils import POSITIVE_EMOTIONEN, NEGATIVE_EMOTIONEN
 from ei.farbton import farbton_berechnen
@@ -387,7 +387,6 @@ def _hypothese_destillieren(
 
     # --- LLM-Call ---
     node_cfg: dict = get_node_config("gespraechsvektor")
-    provider = get_chat_provider()
 
     logger.debug(
         "=== GV LLM-INPUT ===\n"
@@ -398,16 +397,23 @@ def _hypothese_destillieren(
         user_message,
     )
 
-    antwort = provider.chat(
-        messages=[{"role": "user", "content": user_message}],
-        system=system_prompt,
-        temperature=node_cfg.get("temperature", 0.6),
-        max_output_tokens=node_cfg.get("max_output_tokens", 512),
-        caller="gespraechsvektor",
+    # ── LLM-Call via ChatWorker (Microservice-Welle Block 2 Phase 4, G2) ──
+    # _hypothese_destillieren() laeuft im CharacterGraph, der in
+    # services/event_consumer.py via asyncio.to_thread(_graph_streamen, ...)
+    # in einem Worker-Thread laeuft. Kein Event-Loop im aufrufenden Thread →
+    # submit_sync nutzt die Bruecke ueber asyncio.run_coroutine_threadsafe
+    # in den Haupt-Loop des Workers (Loop-Binding-Lesson).
+    chat_request = ChatRequest(
+        messages          = [{"role": "user", "content": user_message}],
+        system            = system_prompt,
+        temperature       = node_cfg.get("temperature", 0.6),
+        max_output_tokens = node_cfg.get("max_output_tokens", 512),
+        caller            = "gespraechsvektor",
     )
+    response = model_service.chat.submit_sync(chat_request)
 
-    hypothese: str = antwort.content.strip()
-    logger.info(f"GV-Hypothese ({antwort.token_total} Tokens): {hypothese[:500]}...")
+    hypothese: str = response.text.strip()
+    logger.info(f"GV-Hypothese ({response.token_total} Tokens): {hypothese[:500]}...")
     gv_parsed: dict = gv_output_parsen(hypothese)
     return hypothese, gv_parsed
 

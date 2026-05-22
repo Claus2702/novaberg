@@ -26,7 +26,7 @@ from config import (
     TRIBUNAL_ETHIK_WARNUNG, TRIBUNAL_ETHIK_ABLEHNEN,
     TRIBUNAL_JURIST_DIREKTIVE_WARNUNG, TRIBUNAL_JURIST_DIREKTIVE_ABLEHNEN,
 )
-from services.llm_provider import get_chat_provider
+from services.model_services import model_service, ChatRequest
 
 logger = logging.getLogger("ki_server.tribunal")
 
@@ -151,20 +151,24 @@ def _agent_vote(
     logger.info(f"Tribunal [{agent_name}]: Bewertungs-Prompt:\n{bewertungs_prompt}")
 
     node_cfg = get_node_config("tribunal")
-    provider = get_chat_provider()
-    antwort  = provider.chat(
-        messages = [
-            {"role": "user", "content": bewertungs_prompt}
-        ],
+
+    # ── LLM-Call via ChatWorker (Microservice-Welle Block 2 Phase 4, G2) ──
+    # _agent_vote() laeuft im CharacterGraph (services/event_consumer.py ruft
+    # den Graphen via asyncio.to_thread(_graph_streamen, ...) im Worker-
+    # Thread). Kein Event-Loop im aufrufenden Thread → submit_sync bruckt in
+    # den Worker-Loop (Loop-Binding-Lesson).
+    chat_request = ChatRequest(
+        messages          = [{"role": "user", "content": bewertungs_prompt}],
         system            = system_prompt,
         temperature       = node_cfg.get("temperature", 0.2),
-        format_json       = True,
+        expect_json       = True,
         max_output_tokens = node_cfg.get("max_output_tokens"),
         caller            = f"tribunal/{agent_name.lower()}",
     )
 
     try:
-        ergebnis: dict = json.loads(antwort.content)
+        response = model_service.chat.submit_sync(chat_request)
+        ergebnis: dict = response.parsed
         reasoning: str = ergebnis.get("reasoning", "")
 
         # Score-Auswertung mit Fallback auf altes Format

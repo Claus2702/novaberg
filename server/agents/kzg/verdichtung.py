@@ -8,7 +8,7 @@ import logging
 
 from agents.base import AgentState
 from config import get_node_config, PROMPTS
-from services.llm_provider import get_chat_provider
+from services.model_services import model_service, ChatRequest
 
 logger = logging.getLogger("ki_server.agents.kzg.verdichtung")
 
@@ -37,17 +37,24 @@ def verdichten(state: AgentState) -> dict:
     )
 
     node_cfg = get_node_config("kzg_verdichtung")
-    provider = get_chat_provider()
-    antwort  = provider.chat(
+
+    # ── LLM-Call via ChatWorker (Microservice-Welle Block 2 Phase 4, G2) ──
+    # verdichten() laeuft im KzgAgent-Subgraphen, der vom CharacterGraph-
+    # dispatcher-Node aus aufgerufen wird; der CharacterGraph wiederum
+    # laeuft in services/event_consumer.py via asyncio.to_thread(...) im
+    # Worker-Thread. Kein Event-Loop im aufrufenden Thread → submit_sync
+    # bruckt in den Worker-Loop (Loop-Binding-Lesson). format_json war
+    # vorher explizit False (Fliesstext) → expect_json bleibt False.
+    chat_request = ChatRequest(
         messages          = [{"role": "user", "content": user_message}],
         system            = _build_verdichtung_prompt(),
         temperature       = node_cfg.get("temperature", 0.1),
-        format_json       = False,
         max_output_tokens = node_cfg.get("max_output_tokens", 256),
         caller            = "kzg/verdichtung",
     )
+    response = model_service.chat.submit_sync(chat_request)
 
-    kern: str = antwort.content.strip()
+    kern: str = response.text.strip()
     logger.info(f"KZG-Verdichtung: kern='{kern}'")
 
     return {

@@ -17,7 +17,7 @@ from config import (
 )
 from memory.kontext import session_kontext_extrahieren
 from tools.db_manager import db_manager
-from services.llm_provider import pixie_llm_call
+from services.model_services import model_service, BackgroundRequest
 from services.model_services import model_service, EmbedRequest
 from config import redis_client
 
@@ -322,17 +322,21 @@ def lagebeurteilung_erstellen(
         suchmodus_beschreibung=suchmodus_beschreibung,
     )
 
-    antwort = pixie_llm_call(
-        prompt=prompt,
-        modus="analyse",
-        temperatur=0.1,
-        json_output=True,
-        caller="lagebeurteilung",
-    )
-
-    # JSON parsen
+    # ── LLM-Call via BackgroundWorker (Microservice-Welle Block 2 Phase 4, G4) ──
+    # lagebeurteilung_erstellen() laeuft im RechercheAgent, sync invoked aus
+    # services/pixie/dispatch.py via asyncio.to_thread → submit_sync.
+    # expect_json=True → response.parsed; bestehender JSONDecodeError-
+    # Fallback fangt jetzt die Worker-Propagation (parse_json_strict wirft
+    # bei kaputtem JSON statt {}-Fallback).
     try:
-        lage = json.loads(antwort)
+        response = model_service.background.submit_sync(BackgroundRequest(
+            messages    = [{"role": "user", "content": prompt}],
+            modus       = "analyse",
+            temperature = 0.1,
+            expect_json = True,
+            caller      = "lagebeurteilung",
+        ))
+        lage = response.parsed
     except json.JSONDecodeError:
         logger.error("Lagebeurteilung: JSON-Parse fehlgeschlagen, Fallback")
         lage = {

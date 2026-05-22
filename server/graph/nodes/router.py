@@ -19,7 +19,7 @@ from graph.state import ConversationState
 from plugins     import get_combined_router_prompt
 from config import redis_client, get_node_config, PROMPTS
 from memory.session import session_turns_retrieve, format_session_turns_numbered
-from services.llm_provider import get_chat_provider
+from services.model_services import model_service, ChatRequest
 
 logger = logging.getLogger("ki_server.router")
 
@@ -117,21 +117,25 @@ def route(
     logger.info(f"Router: System-Prompt:\n{system_prompt}")
 
     node_cfg = get_node_config("router")
-    provider = get_chat_provider()
-    antwort  = provider.chat(
-        messages = [
-            {"role": "user", "content": state["user_prompt"]},
-        ],
+
+    # ── LLM-Call via ChatWorker (Microservice-Welle Block 2 Phase 3) ──
+    # route() laeuft im FastAPI-Threadpool (api/chat.py:ChatSenden ist eine
+    # sync def). Kein Event-Loop im aufrufenden Thread → submit_sync nutzt
+    # die Bruecke ueber asyncio.run_coroutine_threadsafe in den Haupt-Loop
+    # des Workers (Loop-Binding-Lesson, novaberg-lesson_l_loop-binding.md).
+    chat_request = ChatRequest(
+        messages          = [{"role": "user", "content": state["user_prompt"]}],
         system            = system_prompt,
         temperature       = node_cfg.get("temperature", 0.05),
-        format_json       = True,
+        expect_json       = True,
         max_output_tokens = node_cfg.get("max_output_tokens"),
         caller            = "router",
     )
 
     try:
-        logger.debug(f"Router RAW: '{antwort.content[:500]}'")
-        routing: dict = json.loads(antwort.content)
+        response = model_service.chat.submit_sync(chat_request)
+        logger.debug(f"Router RAW: '{response.text[:500]}'")
+        routing: dict = response.parsed
 
         state["needs_memory"]   = routing.get("needs_memory", False)
         state["needs_web"]      = routing.get("needs_web", False)

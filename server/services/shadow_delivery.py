@@ -25,8 +25,7 @@ import redis
 from api.websocket import broadcast
 from config         import ASSISTANT_NAME, ASSISTANT_USER_ID, shutdown_event
 from memory.session import session_turns_retrieve, session_turn_store
-from services.llm_provider import get_chat_provider
-from services.model_services import model_service, EmbedRequest
+from services.model_services import model_service, EmbedRequest, ChatRequest
 
 logger = logging.getLogger("ki_server.shadow_delivery")
 
@@ -379,7 +378,7 @@ def _burst_erhoehen(redis_client: redis.Redis, user_id: str) -> None:
 # ─────────────────────────────────────────────
 # Delivery formulieren (GPU-Modell)
 # ─────────────────────────────────────────────
-def _delivery_formulieren(eintrag: dict) -> str:
+async def _delivery_formulieren(eintrag: dict) -> str:
     """Lässt Nova den Impuls als natürliche Chat-Nachricht formulieren."""
 
     thema:    str = eintrag.get("thema", "")
@@ -420,18 +419,23 @@ def _delivery_formulieren(eintrag: dict) -> str:
         f"Formuliere daraus eine kurze, natürliche Chat-Nachricht an den Nutzer."
     )
 
+    # ── LLM-Call via ChatWorker (Microservice-Welle Block 2 Phase 4, G6) ──
+    # _delivery_formulieren laeuft in shadow_delivery_loop, das als
+    # asyncio.create_task() im Haupt-Event-Loop liegt (main.py:247). KEIN
+    # submit_sync hier: der Haupt-Loop wuerde blockierend auf sich selbst
+    # warten (Deadlock). Stattdessen native async-API
+    # `await model_service.chat.submit(...)` — der Worker laeuft in seinem
+    # eigenen Task im selben Loop und gibt sauber zurueck.
+    # Lesson: novaberg-lesson_l_async-bruecken.md.
     try:
-        provider = get_chat_provider()
-        antwort = provider.chat(
-            messages = [
-                {"role": "user", "content": prompt},
-            ],
+        response = await model_service.chat.submit(ChatRequest(
+            messages    = [{"role": "user", "content": prompt}],
             system      = DELIVERY_SYSTEM_PROMPT,
             temperature = 0.6,
             caller      = "shadow/delivery",
-        )
+        ))
 
-        return antwort.content.strip()
+        return response.text.strip()
 
     except Exception as fehler:
         logger.error(f"Delivery: Formulierung fehlgeschlagen — {fehler}")
@@ -488,8 +492,9 @@ async def _delivery_ausfuehren(
     if eintrag is None:
         return False
 
-    # Formulieren
-    nachricht: str = _delivery_formulieren(eintrag)
+    # Formulieren — async-Aufruf, weil _delivery_formulieren jetzt async
+    # ist (G6, ehemals sync → blockierte den Haupt-Loop).
+    nachricht: str = await _delivery_formulieren(eintrag)
 
     if not nachricht:
         return False
@@ -547,7 +552,16 @@ async def _delivery_ausfuehren(
                 ei_calc_rolle  = "character",
             )
             logger.info(f"Delivery: AgentGraph — State erzeugt, starte invoke...")
-            compiled_agent_graph.invoke(agent_state)
+            # ── Graph-Invoke async-isiert (Microservice-Welle Block 2 Phase 4, G6) ──
+            # compiled_agent_graph.invoke ist ein kompletter sync LangGraph-
+            # Durchlauf — die migrierten Worker-Calls darin (submit_sync) sind
+            # genau dann KORREKT, wenn der Graph in einem Worker-Thread laeuft,
+            # weil submit_sync aus dem Worker-Thread in den Worker-Loop bruckt.
+            # asyncio.to_thread schiebt den ganzen invoke in den to_thread-Pool,
+            # damit der Haupt-Loop nicht blockiert wird (async-Bruecken-Lesson).
+            # Rueckgabewert wird wie zuvor verworfen — nur Seiteneffekte (Salienz,
+            # pending_writes, Dispatcher-Writes) sind relevant.
+            await asyncio.to_thread(compiled_agent_graph.invoke, agent_state)
             logger.info(f"Delivery: AgentGraph — Analyse abgeschlossen für '{eintrag.get('thema', '')[:40]}'")
         except Exception as agent_fehler:
             logger.error(f"Delivery: AgentGraph-Fehler — {type(agent_fehler).__name__}: {agent_fehler}", exc_info=True)

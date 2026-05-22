@@ -7,7 +7,7 @@ Zwei Funktionen, zwei Modelle:
 
 import logging
 
-from services.llm_provider import pixie_llm_call
+from services.model_services import model_service, BackgroundRequest
 
 logger = logging.getLogger("ki_server.agents.recherche")
 
@@ -63,13 +63,19 @@ def zwischen_destillieren(
         ergebnisse_text=ergebnisse_text,
     )
 
+    # ── LLM-Call via BackgroundWorker (Microservice-Welle Block 2 Phase 4, G4) ──
+    # zwischen_destillieren() laeuft im RechercheAgent, sync invoked aus
+    # services/pixie/dispatch.py via asyncio.to_thread → Worker-Thread ohne
+    # Event-Loop → submit_sync. expect_json=False, da Fliesstext-Zusammen-
+    # fassung. CJK-Guard bleibt im Worker.
     try:
-        zusammenfassung = pixie_llm_call(
-            prompt=prompt,
-            modus="analyse",
-            temperatur=0.1,
-            caller="recherche/zwischen",
-        )
+        response = model_service.background.submit_sync(BackgroundRequest(
+            messages    = [{"role": "user", "content": prompt}],
+            modus       = "analyse",
+            temperature = 0.1,
+            caller      = "recherche/zwischen",
+        ))
+        zusammenfassung = response.text
         logger.info(f"Zwischen-Destillation: {len(zusammenfassung)} Zeichen")
         return zusammenfassung
 
@@ -175,13 +181,20 @@ def ergebnisse_destillieren(
         user_mehrwert=user_mehrwert or "Keine spezifische Mehrwert-Einschaetzung.",
     )
 
+    # ── LLM-Call via BackgroundWorker (Microservice-Welle Block 2 Phase 4, G4) ──
+    # ergebnisse_destillieren() laeuft im RechercheAgent, sync invoked aus
+    # services/pixie/dispatch.py via asyncio.to_thread → Worker-Thread ohne
+    # Event-Loop → submit_sync. modus="sprache" → Mistral/Gemma-CPU (nicht
+    # Qwen). expect_json=False, Fliesstext fuer den User-Charakter. CJK-
+    # Guard im Worker — kritisch fuer user-faceende Sprach-Ausgabe.
     try:
-        destillat = pixie_llm_call(
-            prompt=prompt,
-            modus="sprache",  # MISTRAL, nicht Qwen
-            temperatur=0.3,
-            caller="recherche/destillation",
-        )
+        response = model_service.background.submit_sync(BackgroundRequest(
+            messages    = [{"role": "user", "content": prompt}],
+            modus       = "sprache",
+            temperature = 0.3,
+            caller      = "recherche/destillation",
+        ))
+        destillat = response.text
         logger.info(f"Recherche-Destillation: {len(destillat)} Zeichen")
         return destillat
 

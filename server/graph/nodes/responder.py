@@ -18,7 +18,7 @@ import re
 from datetime    import datetime
 from config      import ASSISTANT_NAME, BEZIEHUNG_EINFLUSS, EMOTIONS_VEKTOREN, EMOTIONS_VEKTOREN_NOVA, PROMPTS, get_node_config
 from graph.state import ConversationState
-from services.llm_provider import get_chat_provider
+from services.model_services import model_service, ChatRequest
 
 logger = logging.getLogger("ki_server.responder")
 
@@ -570,8 +570,15 @@ def respond(
     )
 
     node_cfg = get_node_config("responder")
-    provider = get_chat_provider()
-    antwort  = provider.chat(
+
+    # ── LLM-Call via ChatWorker (Microservice-Welle Block 2 Phase 4, G2) ──
+    # respond() laeuft im CharacterGraph (services/event_consumer.py ruft
+    # den Graphen via asyncio.to_thread(_graph_streamen, ...) im Worker-
+    # Thread). Kein Event-Loop im aufrufenden Thread → submit_sync bruckt
+    # in den Worker-Loop (Loop-Binding-Lesson). Alle fuenf Sampling-
+    # Parameter aus node_cfg werden 1:1 durchgereicht; None-Werte filtert
+    # der ChatWorker beim Backend-Call, sodass Provider-Defaults greifen.
+    chat_request = ChatRequest(
         messages          = messages,
         system            = system_prompt,
         temperature       = node_cfg.get("temperature", 0.7),
@@ -581,10 +588,11 @@ def respond(
         max_output_tokens = node_cfg.get("max_output_tokens"),
         caller            = "responder",
     )
+    response = model_service.chat.submit_sync(chat_request)
 
-    state["response"]    = antwort.content
-    state["model"]       = "provider"
-    state["token_total"] = antwort.token_total
+    state["response"]    = response.text
+    state["model"]       = "chat_worker"
+    state["token_total"] = response.token_total
 
     logger.info(f"Responder: Antwort generiert ({state['token_total']} Tokens)")
 

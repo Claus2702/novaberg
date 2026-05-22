@@ -24,7 +24,7 @@ from agents.crud_validation import (
 from agents.charakter_identitaet.crud import _read_aktive, _read_inaktive, _count_aktive
 from config import redis_client, get_node_config, PROMPTS
 from memory.session import session_turns_retrieve, format_session_turns_numbered
-from services.llm_provider import get_chat_provider
+from services.model_services import model_service, ChatRequest
 
 logger = logging.getLogger("ki_server.agents.charakter_identitaet.klassifikation")
 
@@ -110,19 +110,25 @@ def klassifizieren(state: AgentState) -> dict:
     logger.info(f"klassifizieren: System-Prompt:\n{system_prompt}")
 
     node_cfg = get_node_config("router")
-    provider = get_chat_provider()
-    antwort = provider.chat(
-        messages=[{"role": "user", "content": prompt}],
-        system=system_prompt,
-        temperature=node_cfg.get("temperature", 0.05),
-        format_json=True,
-        max_output_tokens=node_cfg.get("max_output_tokens"),
-        caller="agent/charakter_identitaet/klassifikation",
+
+    # ── LLM-Call via ChatWorker (Microservice-Welle Block 2 Phase 4, G3) ──
+    # klassifizieren() laeuft im CharakterIdentitaetAgent (sync invoke),
+    # aufgerufen aus CharacterGraph agent_dispatch oder services/pixie/
+    # dispatch.py — beide Pfade nutzen asyncio.to_thread. Kein Event-Loop
+    # im aufrufenden Thread → submit_sync.
+    chat_request = ChatRequest(
+        messages          = [{"role": "user", "content": prompt}],
+        system            = system_prompt,
+        temperature       = node_cfg.get("temperature", 0.05),
+        expect_json       = True,
+        max_output_tokens = node_cfg.get("max_output_tokens"),
+        caller            = "agent/charakter_identitaet/klassifikation",
     )
 
     # --- JSON parsen ---
     try:
-        ergebnis: dict = json.loads(antwort.content)
+        response = model_service.chat.submit_sync(chat_request)
+        ergebnis: dict = response.parsed
         action = ergebnis.get("action", "")
 
         # --- REJECTED: Classify hat Prompt als Nicht-Auftrag erkannt ---

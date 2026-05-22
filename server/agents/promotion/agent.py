@@ -26,10 +26,9 @@ from config import (
     CLUSTER_BESTAETIGUNG_BOOST,
     PIXIE_AKTIV,
 )
-from services.llm_provider import get_background_provider
 from memory.repositories.entitaeten_repository import EntitaetenRepository
 from memory.kzg import _kzg_prefix
-from services.model_services import model_service, EmbedRequest
+from services.model_services import model_service, EmbedRequest, BackgroundRequest
 from tools.db_manager import db_manager
 
 logger = logging.getLogger("ki_server.agents.promotion")
@@ -429,26 +428,29 @@ class PromotionAgent(BaseAgent):
         )
 
         node_cfg = get_node_config("lzg_promotion")
-        provider = get_background_provider()
-        antwort  = provider.chat(
-            messages=[{"role": "user", "content": user_prompt}],
-            system=system_prompt,
-            temperature=node_cfg.get("temperature", 0.1),
-            max_output_tokens=node_cfg.get("max_output_tokens"),
-            caller="pixie/promotion/call1",
-        )
 
-        raw: str = antwort.content.strip()
-        if raw.startswith("```"):
-            raw = raw.split("\n", 1)[1] if "\n" in raw else raw[3:]
-        if raw.endswith("```"):
-            raw = raw[:-3]
-        raw = raw.strip()
-
+        # ── BackgroundWorker (Microservice-Welle Block 2 Phase 4, G5) ──
+        # _klassifiziere() laeuft im PromotionAgent, sync invoked aus
+        # services/pixie/dispatch.py via asyncio.to_thread → submit_sync.
+        # modus="sprache" — der bisherige get_background_provider mappt auf
+        # das CPU-Sprachmodell. Beifund: JSON-Erwartung via Sprachmodell;
+        # Routing-Korrektur nicht Teil von G5. Caller-seitiger Markdown-
+        # Strip + json.loads entfernt — der Worker uebernimmt das via
+        # parse_json_strict bei expect_json=True. Hardcoded Klassifikations-
+        # Fallback bleibt unangetastet (HARTE GRENZE: Promotion-Logik).
         try:
-            return json.loads(raw)
-        except json.JSONDecodeError:
-            logger.error(f"Promotion Call 1: Ungueltiges JSON: {raw[:200]}")
+            response = model_service.background.submit_sync(BackgroundRequest(
+                messages          = [{"role": "user", "content": user_prompt}],
+                modus             = "sprache",
+                system            = system_prompt,
+                temperature       = node_cfg.get("temperature", 0.1),
+                expect_json       = True,
+                max_output_tokens = node_cfg.get("max_output_tokens"),
+                caller            = "pixie/promotion/call1",
+            ))
+            return response.parsed
+        except json.JSONDecodeError as fehler:
+            logger.error(f"Promotion Call 1: Ungueltiges JSON: {fehler}")
             return {"klassifikation": "erinnerung", "entitaeten": []}
 
     # ─────────────────────────────────────────
@@ -509,26 +511,25 @@ class PromotionAgent(BaseAgent):
         )
 
         node_cfg = get_node_config("lzg_promotion")
-        provider = get_background_provider()
-        antwort  = provider.chat(
-            messages=[{"role": "user", "content": user_prompt}],
-            system=system_prompt,
-            temperature=node_cfg.get("temperature", 0.1),
-            max_output_tokens=node_cfg.get("max_output_tokens"),
-            caller="pixie/promotion/call2",
-        )
 
-        raw: str = antwort.content.strip()
-        if raw.startswith("```"):
-            raw = raw.split("\n", 1)[1] if "\n" in raw else raw[3:]
-        if raw.endswith("```"):
-            raw = raw[:-3]
-        raw = raw.strip()
-
+        # ── BackgroundWorker (Microservice-Welle Block 2 Phase 4, G5) ──
+        # _extrahiere_fakten() laeuft im PromotionAgent, gleicher to_thread-
+        # Kontext wie _klassifiziere. modus="sprache" analog (Routing-
+        # Beifund). HARTE GRENZE: Hardcoded Fakten-Fallback bleibt — die
+        # Fakten-Extraktions-Logik wird nicht angefasst (PROMO-FAKT-LEER).
         try:
-            return json.loads(raw)
-        except json.JSONDecodeError:
-            logger.error(f"Promotion Call 2: Ungueltiges JSON: {raw[:200]}")
+            response = model_service.background.submit_sync(BackgroundRequest(
+                messages          = [{"role": "user", "content": user_prompt}],
+                modus             = "sprache",
+                system            = system_prompt,
+                temperature       = node_cfg.get("temperature", 0.1),
+                expect_json       = True,
+                max_output_tokens = node_cfg.get("max_output_tokens"),
+                caller            = "pixie/promotion/call2",
+            ))
+            return response.parsed
+        except json.JSONDecodeError as fehler:
+            logger.error(f"Promotion Call 2: Ungueltiges JSON: {fehler}")
             return {"fakten": []}
 
     # ─────────────────────────────────────────
@@ -1187,16 +1188,26 @@ class PromotionAgent(BaseAgent):
         user_prompt: str = f"Beobachtungen:\n{kerne_formatiert}"
 
         node_cfg = get_node_config("cluster_destillation")
-        provider = get_background_provider()
-        antwort = provider.chat(
-            messages=[{"role": "user", "content": user_prompt}],
-            system=system_prompt,
-            temperature=node_cfg.get("temperature", 0.1),
-            max_output_tokens=node_cfg.get("max_output_tokens"),
-            caller="pixie/promotion/cluster_insert_kohaerenz",
-        )
 
-        ergebnis: dict = self._parse_kohaerenz_antwort(antwort.content)
+        # ── BackgroundWorker (Microservice-Welle Block 2 Phase 4, G5) ──
+        # _cluster_insert_kohaerenz() laeuft im PromotionAgent, sync invoke
+        # via Pixie-asyncio.to_thread → submit_sync. modus="sprache"
+        # (Routing-Beifund). expect_json=False (Brief-DEVIATION von TRUE):
+        # _parse_kohaerenz_antwort enthaelt eine Recovery-Fallback-Logik,
+        # die einen Nicht-JSON-Text in {"kohaerenz":"ja","zusammenfassung":
+        # raw} hochstuft — das ist Promotion-Klassifikations-Logik (HARTE
+        # GRENZE) und muss unangetastet bleiben. Daher Worker-Text-Pfad
+        # + Helfer beibehalten.
+        response = model_service.background.submit_sync(BackgroundRequest(
+            messages          = [{"role": "user", "content": user_prompt}],
+            modus             = "sprache",
+            system            = system_prompt,
+            temperature       = node_cfg.get("temperature", 0.1),
+            max_output_tokens = node_cfg.get("max_output_tokens"),
+            caller            = "pixie/promotion/cluster_insert_kohaerenz",
+        ))
+
+        ergebnis: dict = self._parse_kohaerenz_antwort(response.text)
 
         kohaerenz: str = ergebnis.get("kohaerenz", "nein")
         zusammenfassung: str = ergebnis.get("zusammenfassung", "")
@@ -1289,16 +1300,21 @@ class PromotionAgent(BaseAgent):
         )
 
         node_cfg = get_node_config("cluster_destillation")
-        provider = get_background_provider()
-        antwort = provider.chat(
-            messages=[{"role": "user", "content": user_prompt}],
-            system=system_prompt,
-            temperature=node_cfg.get("temperature", 0.1),
-            max_output_tokens=node_cfg.get("max_output_tokens"),
-            caller="pixie/promotion/cluster_update_kohaerenz",
-        )
 
-        ergebnis: dict = self._parse_kohaerenz_antwort(antwort.content)
+        # ── BackgroundWorker (Microservice-Welle Block 2 Phase 4, G5) ──
+        # _cluster_update_kohaerenz(): analog _cluster_insert_kohaerenz.
+        # expect_json=False (Brief-DEVIATION) zum Erhalt von
+        # _parse_kohaerenz_antwort-Fallback (HARTE GRENZE).
+        response = model_service.background.submit_sync(BackgroundRequest(
+            messages          = [{"role": "user", "content": user_prompt}],
+            modus             = "sprache",
+            system            = system_prompt,
+            temperature       = node_cfg.get("temperature", 0.1),
+            max_output_tokens = node_cfg.get("max_output_tokens"),
+            caller            = "pixie/promotion/cluster_update_kohaerenz",
+        ))
+
+        ergebnis: dict = self._parse_kohaerenz_antwort(response.text)
 
         kohaerenz: str = ergebnis.get("kohaerenz", "nein")
         zusammenfassung: str = ergebnis.get("zusammenfassung", "")
@@ -1524,16 +1540,21 @@ class PromotionAgent(BaseAgent):
         )
 
         node_cfg = get_node_config("cluster_destillation")
-        provider = get_background_provider()
-        antwort  = provider.chat(
-            messages=[{"role": "user", "content": user_prompt}],
-            system=system_prompt,
-            temperature=node_cfg.get("temperature", 0.1),
-            max_output_tokens=node_cfg.get("max_output_tokens"),
-            caller="pixie/promotion/cluster_insert",
-        )
 
-        return antwort.content.strip()
+        # ── BackgroundWorker (Microservice-Welle Block 2 Phase 4, G5) ──
+        # _destillation_insert(): Sync Pixie-Pfad via asyncio.to_thread →
+        # submit_sync. modus="sprache" (Routing-Beifund). expect_json=False
+        # (Brief), liefert reine Zusammenfassung als Fliesstext.
+        response = model_service.background.submit_sync(BackgroundRequest(
+            messages          = [{"role": "user", "content": user_prompt}],
+            modus             = "sprache",
+            system            = system_prompt,
+            temperature       = node_cfg.get("temperature", 0.1),
+            max_output_tokens = node_cfg.get("max_output_tokens"),
+            caller            = "pixie/promotion/cluster_insert",
+        ))
+
+        return response.text.strip()
 
     @staticmethod
     def _destillation_update(
@@ -1571,16 +1592,25 @@ class PromotionAgent(BaseAgent):
         )
 
         node_cfg = get_node_config("cluster_destillation")
-        provider = get_background_provider()
-        antwort  = provider.chat(
-            messages=[{"role": "user", "content": user_prompt}],
-            system=system_prompt,
-            temperature=node_cfg.get("temperature", 0.1),
-            max_output_tokens=node_cfg.get("max_output_tokens"),
-            caller="pixie/promotion/cluster_update",
-        )
 
-        raw: str = antwort.content.strip()
+        # ── BackgroundWorker (Microservice-Welle Block 2 Phase 4, G5) ──
+        # _destillation_update(): Sync Pixie-Pfad via asyncio.to_thread →
+        # submit_sync. modus="sprache" (Routing-Beifund). expect_json=False
+        # (Brief-DEVIATION von TRUE): der bestehende JSONDecodeError-
+        # Fallback nutzt den raw-Text als zusammenfassung — das ist
+        # Promotion-Schreiblogik (HARTE GRENZE), die unangetastet bleibt.
+        # Daher Worker-Text-Pfad + inline Markdown-Strip + json.loads + try
+        # beibehalten.
+        response = model_service.background.submit_sync(BackgroundRequest(
+            messages          = [{"role": "user", "content": user_prompt}],
+            modus             = "sprache",
+            system            = system_prompt,
+            temperature       = node_cfg.get("temperature", 0.1),
+            max_output_tokens = node_cfg.get("max_output_tokens"),
+            caller            = "pixie/promotion/cluster_update",
+        ))
+
+        raw: str = response.text.strip()
         if raw.startswith("```"):
             raw = raw.split("\n", 1)[1] if "\n" in raw else raw[3:]
         if raw.endswith("```"):

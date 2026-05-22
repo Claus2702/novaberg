@@ -1,13 +1,13 @@
 """Bewertung — LLM prueft ob die Ergebnisse das Ziel abdecken.
 
-Nutzt Qwen3-32B (Analyse-Modell) via pixie_llm_call().
+Nutzt das Analyse-Backend (Qwen3-32B im Lokal-Profil) via BackgroundWorker.
 Bewertet gegen Kriterien UND bekanntes Vorwissen UND User-Relevanz.
 """
 
 import json
 import logging
 
-from services.llm_provider import pixie_llm_call
+from services.model_services import model_service, BackgroundRequest
 
 logger = logging.getLogger("ki_server.agents.recherche")
 
@@ -90,15 +90,20 @@ def ergebnisse_bewerten(
         zusammenfassung=zusammenfassung,
     )
 
+    # ── LLM-Call via BackgroundWorker (Microservice-Welle Block 2 Phase 4, G4) ──
+    # ergebnisse_bewerten() laeuft im RechercheAgent, sync invoked aus
+    # services/pixie/dispatch.py via asyncio.to_thread → submit_sync.
+    # expect_json=True → response.parsed liefert das Dict; JSON-Validierung
+    # uebernimmt der BackgroundWorker via parse_json_strict.
     try:
-        antwort = pixie_llm_call(
-            prompt=prompt,
-            modus="analyse",
-            temperatur=0.1,
-            json_output=True,
-            caller="recherche/bewertung",
-        )
-        bewertung: dict = json.loads(antwort)
+        response = model_service.background.submit_sync(BackgroundRequest(
+            messages    = [{"role": "user", "content": prompt}],
+            modus       = "analyse",
+            temperature = 0.1,
+            expect_json = True,
+            caller      = "recherche/bewertung",
+        ))
+        bewertung: dict = response.parsed
         logger.info(
             f"Recherche-Bewertung: status={bewertung.get('status', '?')}, "
             f"neues_wissen={bewertung.get('pruefung_neues_wissen', '?')}, "
