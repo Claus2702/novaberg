@@ -340,6 +340,19 @@ def think(
     response: str = state["response"]
     prompt:   str = state["user_prompt"]
 
+    # Block 3 Teil D: Erkennen, ob wir bereits im Unsicherheits-Retry sind.
+    # Der Self-Trigger aus dem ersten Doppel-Fehlschlag legt diesen Marker
+    # ins event_payload (siehe Self-Trigger-Block unten). Im Retry darf der
+    # Thinker KEINEN zweiten Trigger setzen — ein Retry, dann definitiv
+    # Schluss, lieber unsichere Antwort raus als Endlosschleife.
+    event_payload: dict = state.get("event_payload") or {}
+    ist_unsicher_retry: bool = bool(event_payload.get("thinker_unsicher_retry", False))
+    if ist_unsicher_retry:
+        logger.info(
+            "Thinker: Unsicherheits-Retry erkannt (event_payload.thinker_unsicher_retry=True) "
+            "— ein weiterer Self-Trigger wird bei Doppel-Fehlschlag NICHT gesetzt"
+        )
+
     fact_indicators: list[str] = [
         "am ", "um ", "20", "19", "Uhr", "Termin", "Datum",
         "März", "April", "Mai", "Juni", "Juli", "August",
@@ -520,6 +533,50 @@ def think(
             content = nachfass_response.text
             messages.append({"role": "assistant", "content": content})
             state["token_total"] += nachfass_response.token_total
+
+        elif befund.braucht_nachfass:
+            # Doppel-Fehlschlag: Nachfass-Limit ist erschoepft.
+            if ist_unsicher_retry:
+                # Bereits im Retry — KEIN weiterer Self-Trigger (Haertung gegen
+                # Endlos-Schleifen "Hmm... — Hmm... — Hmm..."). Antwort bleibt
+                # unveraendert, wie das heutige max_iterations-Verhalten.
+                logger.warning(
+                    "Thinker: Nachfass-Limit erreicht (%d) im Unsicherheits-Retry "
+                    "— kein weiterer Self-Trigger, Antwort bleibt unveraendert",
+                    NACHFASS_MAX,
+                )
+                state["node_annotations"].append(
+                    "[Thinker] Nachfass erschoepft im Retry — gebe beste Antwort "
+                    "ohne weiteren Trigger"
+                )
+                return state
+
+            # Erster Durchlauf, Doppel-Fehlschlag — Original-Antwort erhalten,
+            # neutrale Geste anhaengen (laeuft NICHT durch Responder-Direktiven,
+            # kann gegen keine Siezen/Duzen-Direktive verstossen), Self-Trigger
+            # via Event-Queue setzen.
+            geste: str = "Hmm... ich muss das nochmal durchgehen."
+            bestehende_antwort: str = state.get("response") or ""
+            if bestehende_antwort:
+                state["response"] = f"{bestehende_antwort}\n\n{geste}"
+            else:
+                state["response"] = geste
+
+            state["self_trigger"] = True
+            state["self_trigger_payload"] = {
+                "user_prompt":            state["user_prompt"],
+                "turn_id":                state.get("turn_id", ""),
+                "thinker_unsicher_retry": True,
+            }
+
+            logger.warning(
+                "Thinker: Doppel-Fehlschlag — Self-Trigger fuer Klaerung gesetzt "
+                "(Antwort + Geste, Folge-Durchlauf laeuft normal vorwaerts)"
+            )
+            state["node_annotations"].append(
+                "[Thinker] Doppel-Fehlschlag — Self-Trigger fuer Klaerung gesetzt"
+            )
+            return state
 
         # Tool-Aufruf erkennen
         if "TOOL:" in content:

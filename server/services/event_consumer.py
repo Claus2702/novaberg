@@ -513,15 +513,24 @@ async def _event_verarbeiten(
     if not event_self_trigger_erlaubt(trigger_count):
         return
 
-    # Platzhalter für spätere Erweiterung:
-    #
-    # if result.get("self_trigger"):
-    #     event_erzeugen(
-    #         redis_client, user_id, character_id,
-    #         source="character",
-    #         typ="continue",
-    #         payload=result.get("self_trigger_payload", {}),
-    #         trigger_count=trigger_count + 1,
-    #     )
+    # Block 3 Teil D: Self-Trigger aktiviert. Aufrufer (heute: Thinker bei
+    # Doppel-Fehlschlag, siehe graph/nodes/thinker.py) signalisiert via
+    # result["self_trigger"] und liefert das Payload fuer den Folge-
+    # Durchlauf ueber result["self_trigger_payload"]. Die vorhandenen
+    # Haertungen (pending_agent, MAX_SELF_TRIGGERS) greifen bereits oben.
+    if result.get("self_trigger"):
+        event_erzeugen(
+            redis_client, user_id, character_id,
+            source="character",
+            typ="continue",
+            payload=result.get("self_trigger_payload", {}),
+            trigger_count=trigger_count + 1,
+        )
+        logger.info(
+            "Event-Consumer: Self-Trigger gesetzt (Thinker-Unsicherheit) — "
+            "Folge-Durchlauf mit trigger_count=%d",
+            trigger_count + 1,
+        )
+        return
 
     logger.info("Event-Consumer: Durchlauf abgeschlossen, kein Self-Trigger")
