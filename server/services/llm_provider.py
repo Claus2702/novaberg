@@ -62,6 +62,7 @@ class LLMProvider(ABC):
         repeat_penalty:    Optional[float] = None,
         presence_penalty:  Optional[float] = None,
         max_output_tokens: Optional[int]   = None,
+        think:             bool            = False,
         caller:            str             = "",
     ) -> LLMAntwort:
         """Chat-Completion mit Nachrichtenverlauf."""
@@ -182,6 +183,7 @@ class OllamaProvider(LLMProvider):
         repeat_penalty:    Optional[float] = None,
         presence_penalty:  Optional[float] = None,
         max_output_tokens: Optional[int]   = None,
+        think:             bool            = False,
         caller:            str             = "",
     ) -> LLMAntwort:
         chat_messages: list[dict] = []
@@ -189,15 +191,96 @@ class OllamaProvider(LLMProvider):
             chat_messages.append({"role": "system", "content": system})
         chat_messages.extend(messages)
 
+        # #15260-Guard: Reasoning-Output und format="json" sind in Ollama nicht
+        # kombinierbar — das Modell bricht den JSON-Stream mit dem Reasoning-
+        # Token ab. think wird in dem Fall hart auf False gezwungen; die
+        # Caller-Pipeline muss dann ueber den nachgelagerten Cleanup ihre
+        # JSON-Bereinigung machen (Worker-Schicht uebernimmt das).
+        if think and format_json:
+            logger.warning(
+                "OllamaProvider.chat: think=True mit format_json=True nicht "
+                "moeglich (Ollama #15260) -- think auf False gesetzt "
+                f"(caller={caller!r})"
+            )
+            think = False
+
         kwargs: dict = {
             "model":    self._model,
             "messages": chat_messages,
             "options":  self._build_options(temperature, top_p, repeat_penalty, presence_penalty, max_output_tokens),
+            "think":    think,
         }
-        
-        kwargs["think"] = False
 
         response: dict = self._client.chat(**kwargs)
+
+        # === DIAGNOSE-LOGGING Block 3 (temporaer, wird nach Auswertung entfernt) ===
+        # Zeigt die rohen Felder von response["message"]: content vs. thinking.
+        # Defensiv -- message kann je nach ollama-Client-Version dict oder Objekt
+        # sein; Logging darf den Call nie brechen.
+        try:
+            _diag_msg = (
+                response.get("message")
+                if isinstance(response, dict)
+                else getattr(response, "message", None)
+            )
+            if isinstance(_diag_msg, dict):
+                _diag_has_thinking = "thinking" in _diag_msg
+                _diag_content      = _diag_msg.get("content", "") or ""
+                _diag_thinking     = _diag_msg.get("thinking", "") or ""
+            else:
+                _diag_has_thinking = hasattr(_diag_msg, "thinking")
+                _diag_content      = getattr(_diag_msg, "content", "") or ""
+                _diag_thinking     = getattr(_diag_msg, "thinking", "") or ""
+            logger.info(
+                "OllamaProvider.chat DIAGNOSE [caller=%s, think=%s]: "
+                "has_thinking_field=%s, content_len=%d, thinking_len=%d | "
+                "content[:200]=%r | thinking[:200]=%r",
+                caller, kwargs.get("think"), _diag_has_thinking,
+                len(_diag_content), len(_diag_thinking),
+                _diag_content[:200], _diag_thinking[:200],
+            )
+        except Exception as _diag_err:  # noqa: BLE001 -- Diagnose darf nicht crashen
+            logger.info(
+                "OllamaProvider.chat DIAGNOSE [caller=%s, think=%s]: "
+                "Diagnose-Logging fehlgeschlagen: %r",
+                caller, kwargs.get("think"), _diag_err,
+            )
+
+        # === DIAGNOSE-VOLL Block 3 (temporaer): vollstaendiges thinking-Feld ===
+        # Feuert NUR wenn think=True + content_len==0 + thinking_len>0.
+        # Hintergrund: Qwen3/Ollama #10976 + LiteLLM #18922 -- nicht-deterministisch
+        # landet der gesamte Output im thinking-Feld, content bleibt leer. Wir
+        # wollen das vollstaendige thinking sehen (inkl. Ende), um zu klaeren, ob
+        # der Steuer-Token (TOOL:/ERGEBNIS:/KORREKTUR:) drinsteckt.
+        try:
+            _voll_msg = (
+                response.get("message")
+                if isinstance(response, dict)
+                else getattr(response, "message", None)
+            )
+            if isinstance(_voll_msg, dict):
+                _voll_content_raw  = _voll_msg.get("content", "")
+                _voll_thinking_raw = _voll_msg.get("thinking", "")
+            else:
+                _voll_content_raw  = getattr(_voll_msg, "content", "")
+                _voll_thinking_raw = getattr(_voll_msg, "thinking", "")
+            _voll_content  = _voll_content_raw  if isinstance(_voll_content_raw,  str) else ""
+            _voll_thinking = _voll_thinking_raw if isinstance(_voll_thinking_raw, str) else ""
+            if kwargs.get("think") and len(_voll_content) == 0 and len(_voll_thinking) > 0:
+                logger.info(
+                    "OllamaProvider.chat DIAGNOSE-VOLL [caller=%s]: "
+                    "content LEER bei think=True, thinking VOLLSTAENDIG folgt:\n"
+                    "=== THINKING START ===\n%s\n=== THINKING ENDE ===",
+                    caller, _voll_thinking,
+                )
+        except Exception as _voll_err:  # noqa: BLE001 -- Diagnose darf nicht crashen
+            logger.info(
+                "OllamaProvider.chat DIAGNOSE-VOLL [caller=%s]: "
+                "VOLL-Logging fehlgeschlagen: %r",
+                caller, _voll_err,
+            )
+        # === Ende DIAGNOSE-LOGGING ===
+
 
         input_tokens = response.get("prompt_eval_count", 0)
         if not input_tokens:
@@ -310,8 +393,19 @@ class AnthropicProvider(LLMProvider):
         repeat_penalty:    Optional[float] = None,
         presence_penalty:  Optional[float] = None,
         max_output_tokens: Optional[int]   = None,
+        think:             bool            = False,
         caller:            str             = "",
     ) -> LLMAntwort:
+        # Claude kennt keinen Reasoning-Toggle in der API. think wird daher
+        # akzeptiert (Signatur-Konsistenz mit OllamaProvider) und ignoriert.
+        # Bei think=True ein Debug-Log, damit ein versehentlicher Konsumenten-
+        # Wechsel sichtbar wird.
+        if think:
+            logger.debug(
+                "AnthropicProvider.chat: think=True ignoriert "
+                f"(Claude-API kennt keinen Reasoning-Toggle, caller={caller!r})"
+            )
+
         effective_system: str = system
         if format_json:
             json_instruction: str = (

@@ -439,11 +439,16 @@ def think(
     for i in range(max_iterations):
         logger.info(f"Thinker: Reasoning-Iteration {i + 1}")
 
+        # Der Thinker ist der einzige Node mit echter Reasoning-Kette —
+        # think=True ist hier Funktion, nicht Konfiguration. Default aller
+        # anderen Nodes ist False. Nicht aus node_cfg lesen: think folgt aus
+        # der Rolle des Nodes, nicht aus einer Config-Schraube (Block 3).
         chat_request = ChatRequest(
             messages          = messages,
             system            = system_prompt,
             temperature       = node_cfg.get("temperature", 0.15),
             max_output_tokens = node_cfg.get("max_output_tokens"),
+            think             = True,
             caller            = "thinker",
         )
         response = model_service.chat.submit_sync(chat_request)

@@ -94,24 +94,29 @@ class ChatWorker(ModelWorker[ChatRequest, ChatResponse]):
 
         caller_label: str = request.caller or "chat_worker"
         logger.info(
-            "ChatWorker '%s': caller=%s, messages=%d, expect_json=%s, backend=%s",
+            "ChatWorker '%s': caller=%s, messages=%d, expect_json=%s, "
+            "think=%s, backend=%s",
             self._name,
             caller_label,
             len(request.messages),
             request.expect_json,
+            request.think,
             type(self._backend).__name__,
         )
 
         # ── Verarbeitung ────────────────────────────
+        # think wird IMMER mitgegeben (bool, Default False) — der Provider-
+        # Default-Pfad ist damit eindeutig: ohne think-Override sieht der
+        # Provider explizit think=False. Die optionalen Sampling-Parameter
+        # (system, temperature, top_p, ...) hingegen nur dann, wenn der
+        # Konsument sie wirklich gesetzt hat — so greifen Provider-Defaults
+        # bei None.
         kwargs: dict[str, Any] = {
             "messages":    request.messages,
             "format_json": False,             # Worker besitzt JSON-Post-Processing
+            "think":       request.think,
             "caller":      caller_label,
         }
-        # Nur explizit gesetzte Overrides durchreichen — sonst greift der
-        # Provider-Default (LLMProvider.chat hat system="" und temperature=0.7
-        # als Default, die wir nicht ueberschreiben wollen, wenn die Anfrage
-        # die Werte nicht spezifiziert).
         if request.system is not None:
             kwargs["system"] = request.system
         if request.temperature is not None:

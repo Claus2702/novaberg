@@ -90,6 +90,11 @@ class ChatRequest:
                      belegt `parsed`. Fehlerhaft → Future wirft.
         top_p, repeat_penalty, presence_penalty, max_output_tokens:
                      Optionale Sampling-Overrides. None ⇒ Provider-Default.
+        think: Reasoning-Modus des Backends. Default False (systemweit). Nur
+               Nodes, deren Funktion eine echte Reasoning-Kette ist (Thinker),
+               setzen True. Achtung: think=True und expect_json=True schliessen
+               sich aus (Ollama #15260) — der Provider greift mit einem Guard
+               ein, falls beide gleichzeitig kommen.
         caller: Freitext zur Identifikation im Token-Log (z.B. "agent.chat",
                 "promotion_klassifikation"). Wird im Worker an den Provider
                 durchgereicht.
@@ -106,6 +111,7 @@ class ChatRequest:
     repeat_penalty:    Optional[float] = None
     presence_penalty:  Optional[float] = None
     max_output_tokens: Optional[int]   = None
+    think:             bool            = False
     caller:            str             = ""
     future:            Optional[asyncio.Future] = None
 

@@ -52,6 +52,7 @@ class FakeProvider(LLMProvider):
         repeat_penalty:    Optional[float] = None,
         presence_penalty:  Optional[float] = None,
         max_output_tokens: Optional[int]   = None,
+        think:             bool            = False,
         caller:            str             = "",
     ) -> LLMAntwort:
         """Stub-Implementierung fuer LLMProvider.chat."""
@@ -64,6 +65,7 @@ class FakeProvider(LLMProvider):
             "repeat_penalty":    repeat_penalty,
             "presence_penalty":  presence_penalty,
             "max_output_tokens": max_output_tokens,
+            "think":             think,
             "caller":            caller,
         })
 
