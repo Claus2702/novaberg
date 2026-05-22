@@ -219,10 +219,15 @@ class BackgroundWorker(ModelWorker[BackgroundRequest, BackgroundResponse]):
             parsed is not None,
         )
 
+        # thinking heute immer leer (BackgroundRequest kennt kein think) -- Feld
+        # als Anschluss fuer PixieGraph-Thinker. Trotzdem aus antwort.thinking
+        # uebernehmen, damit der Datenfluss symmetrisch ist und ein kuenftiger
+        # think=True-Pfad keinen zusaetzlichen Refactor braucht.
         return BackgroundResponse(
             text=text,
             parsed=parsed,
             token_total=antwort.token_total,
+            thinking=antwort.thinking,
         )
 
     def _kwargs_fuer_call(

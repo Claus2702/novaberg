@@ -163,8 +163,12 @@ class ChatWorker(ModelWorker[ChatRequest, ChatResponse]):
             parsed is not None,
         )
 
+        # thinking aus LLMAntwort uebernehmen — Anschluss fuer ThinkingNormalizer
+        # (Teil B). Bei think=False oder Anthropic-Backend immer "" (Provider
+        # liefert das so). Kein eigenes Post-Processing auf thinking.
         return ChatResponse(
             text=text,
             parsed=parsed,
             token_total=antwort.token_total,
+            thinking=antwort.thinking,
         )

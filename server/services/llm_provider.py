@@ -27,9 +27,21 @@ logger_tokens = logging.getLogger("ki_server.llm")
 
 @dataclass
 class LLMAntwort:
-    """Ergebnis eines LLM-Aufrufs."""
+    """Ergebnis eines LLM-Aufrufs.
+
+    Felder:
+        content: Eigentliche Modell-Antwort (User-sichtbarer Text bzw.
+                 JSON-Body).
+        token_total: Input- + Output-Tokens dieses Calls.
+        thinking: Reasoning-Trace bei think=True (Ollama liefert thinking
+                  separat zum content; siehe Ollama #10976, LiteLLM #18922).
+                  Leer bei think=False und bei Claude (Claude hat kein
+                  separates thinking-Feld in der Chat-Response). Default ""
+                  — additiv, bricht keine bestehende Konstruktion.
+    """
     content:     str
     token_total: int
+    thinking:    str = ""
 
 
 class LLMProvider(ABC):
@@ -294,6 +306,20 @@ class OllamaProvider(LLMProvider):
         raw_content: str = response["message"]["content"]
         logger.debug(f"OLLAMA RAW [{caller}]: '{raw_content[:500]}'")
 
+        # thinking-Feld additiv auslesen — Ollama trennt Reasoning vom content
+        # bei think=True (Ollama #10976). Defensiv: message kann dict oder
+        # Objekt sein; fehlt das Feld → "". Kein Crash bei unerwartetem Typ.
+        _thinking_msg = (
+            response.get("message")
+            if isinstance(response, dict)
+            else getattr(response, "message", None)
+        )
+        if isinstance(_thinking_msg, dict):
+            _thinking_raw = _thinking_msg.get("thinking", "")
+        else:
+            _thinking_raw = getattr(_thinking_msg, "thinking", "")
+        raw_thinking: str = _thinking_raw if isinstance(_thinking_raw, str) else ""
+
         # JSON-Bereinigung: Markdown-Codeblöcke und Preamble entfernen
         if format_json:
             raw_content = _clean_json_response(raw_content)
@@ -303,6 +329,7 @@ class OllamaProvider(LLMProvider):
         return LLMAntwort(
             content=raw_content,
             token_total=total_tokens,
+            thinking=raw_thinking,
         )
 
 
@@ -443,9 +470,15 @@ class AnthropicProvider(LLMProvider):
         if format_json:
             result = _clean_json_response(result)
 
+        # thinking bleibt leer: Claude hat in der Chat-Response kein separates
+        # thinking-Feld -- bei Extended Thinking ist der Reasoning-Trace als
+        # eigener Content-Block (type="thinking") strukturiert, nicht als
+        # Feld neben dem Text. Wir bilden das hier bewusst nicht ab (Block 3
+        # Teil A ist nur Datenfluss fuer den Ollama-Fall); Symmetrie-Default.
         return LLMAntwort(
             content=result,
             token_total=input_tokens + output_tokens,
+            thinking="",
         )
 
 

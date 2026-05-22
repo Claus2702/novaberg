@@ -16,7 +16,7 @@ import logging
 import time
 import uuid
 from dataclasses import dataclass, field
-from typing import Optional
+from typing import Any, Optional
 
 logger = logging.getLogger(__name__)
 
@@ -123,13 +123,21 @@ class ChatResponse:
     Attribute:
         text: Roh-Text aus dem Provider (bei expect_json bereits gesaeubert
               durch postprocess.parse_json_strict, aber als JSON-String).
-        parsed: Geparstes JSON-Dict, falls expect_json=True. Sonst None.
+        parsed: Geparstes JSON-Ergebnis, falls expect_json=True. Sonst None.
+                Kann dict ODER list sein — der Typ richtet sich nach dem
+                json.loads-Ergebnis (manche Modelle liefern Top-Level-Arrays,
+                z.B. salienz/segment oder charakter/ziele).
         token_total: Gesamt-Token-Verbrauch (input + output) aus dem Provider.
+        thinking: Reasoning-Trace des Modells bei think=True (Ollama trennt
+                  thinking vom content). Leer bei think=False. Anschluss
+                  fuer ThinkingNormalizer (Chat-Pfad) und kuenftigen
+                  PixieGraph-Thinker.
     """
 
     text:        str
-    parsed:      Optional[dict] = None
-    token_total: int            = 0
+    parsed:      Optional[Any] = None
+    token_total: int           = 0
+    thinking:    str           = ""
 
 
 # ─────────────────────────────────────────────────────
@@ -175,10 +183,17 @@ class BackgroundResponse:
     Attribute:
         text: Roh-Text aus dem Provider (CJK-bereinigt, falls die Schleife
               das durchgefuehrt hat).
-        parsed: Geparstes JSON-Dict, falls expect_json=True. Sonst None.
+        parsed: Geparstes JSON-Ergebnis, falls expect_json=True. Sonst None.
+                Kann dict ODER list sein — der Typ richtet sich nach dem
+                json.loads-Ergebnis (manche Modelle liefern Top-Level-Arrays).
         token_total: Gesamt-Token-Verbrauch (input + output) aus dem Provider.
+        thinking: Reasoning-Trace des Modells bei think=True (Ollama trennt
+                  thinking vom content). Leer bei think=False. Anschluss
+                  fuer ThinkingNormalizer (Chat-Pfad) und kuenftigen
+                  PixieGraph-Thinker.
     """
 
     text:        str
-    parsed:      Optional[dict] = None
-    token_total: int            = 0
+    parsed:      Optional[Any] = None
+    token_total: int           = 0
+    thinking:    str           = ""
