@@ -2,10 +2,10 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Konzept — In-Process-Microservice-Architektur für die Modell-Schicht
-**Stand:** 23. Mai 2026, Chat 94
+**Stand:** 23. Mai 2026, Chat 96
 **Pfad:** novaberg/docs/novaberg-microservice-modell-queue_k.md
 **Vorgänger-Konzepte:** Audit 4 aus Chat 91 (fünf strukturelle Defizite), Pixie-Graph-Merge (Chat 79), Connector-Architektur (`config.py`)
-**Status:** Block 1 (Embedding) abgeschlossen Chat 92, Block 2 (LLM-Konsolidierung) + Block 3 (think pro Call) abgeschlossen Chat 93/94 — Block 5 (num_ctx pro Call) als nächster Schritt, dann Block 4 (Qwen 3.6)
+**Status:** Block 1 (Embedding) abgeschlossen Chat 92, Block 2 (LLM-Konsolidierung) + Block 3 (think pro Call) abgeschlossen Chat 93/94, Block 5 (num_ctx pro Call) abgeschlossen Chat 96 — Block 4 (Qwen 3.6) als letzter Schritt der MS-Welle
 
 ---
 
@@ -250,6 +250,8 @@ Die Architektur entsteht in fünf Sprints. Reihenfolge ist nicht beliebig: Block
 
 **Aufräum-Arbeiten:** `_default_num_ctx` bleibt im Worker als Default-Wert. Wer nichts überschreibt, bekommt den Default. `num_ctx` wird als optionaler Override in `ModelRequest` aufgenommen. Konsumenten, die ihre Prompt-Länge kennen, geben einen passenden Wert mit. Edge-Cases werden in der Worker-Schicht dokumentiert: kurze Klassifikations-Prompts mit `num_ctx=4096` (schneller, geringere Hardware-Last), lange Destillations-Prompts mit `num_ctx=32768` (voller Kontext), Standard-Chat mit dem Default.
 
+**Stand Chat 96 — abgeschlossen.** `num_ctx` ist optionaler Override-Parameter auf `ChatRequest` und `BackgroundRequest` (`Optional[int] = None`, max_output_tokens-Muster). Beide Worker reichen ihn per `is not None`-Guard durch; `OllamaProvider._build_options` fällt bei `None` auf `self._default_num_ctx` zurück. `AnthropicProvider.chat` akzeptiert und ignoriert das Feld (Signatur-Symmetrie, kein num_ctx-Äquivalent in der Claude-API). Verhaltensneutral, da noch kein Konsument einen Wert setzt — der Mechanismus steht, die einzelnen Call-Site-Overrides (kurze Klassifikation `num_ctx=4096` etc.) sind ein separater Folgeschritt. Verifiziert per Import-Smoke-Test.
+
 ---
 
 ## 7. Migration und Reihenfolge
@@ -303,4 +305,4 @@ Die MS-Welle räumt die **Modell-Schicht** auf, nicht die Memory-Schicht und nic
 
 ---
 
-*Konzept-Stand Chat 94. Block 1 (Embedding), Block 2 (LLM-Konsolidierung) und Block 3 (think pro Call) abgeschlossen. Block 2: Chat-Pfad über ChatWorker/BackgroundWorker, init_providers + Provider-Singletons entfernt, llm_provider.py ist reine Klassen-Definitions-Datei (Block-2-Abschluss formal besiegelt). Block 3: think durchgereicht + ThinkingNormalizer (Chat 93), Teil-2-Kahlschlag (Chat 94: generate(), format_json, tote think-Konfig entfernt). Ein Zirkular-Import (postprocess) an der Wurzel gelöst — postprocess als Top-Level-Util aus dem model_services-Paket gelöst (Lesson novaberg-lesson_l_paket-init-zyklus.md). Vier Lessons archiviert (pattern-vor-namen-suche, async-bruecken, loop-binding, paket-init-zyklus). Nächster Schritt: Block 5 (num_ctx pro Call), dann Block 4 (Qwen-3.6-Switch, ans Ende der MS-Welle terminiert).*
+*Konzept-Stand Chat 96. Block 1 (Embedding), Block 2 (LLM-Konsolidierung), Block 3 (think pro Call) und Block 5 (num_ctx pro Call) abgeschlossen. Block 2: Chat-Pfad über ChatWorker/BackgroundWorker, init_providers + Provider-Singletons entfernt, llm_provider.py ist reine Klassen-Definitions-Datei (Block-2-Abschluss formal besiegelt). Block 3: think durchgereicht + ThinkingNormalizer (Chat 93), Teil-2-Kahlschlag (Chat 94: generate(), format_json, tote think-Konfig entfernt). Block 5: num_ctx als optionaler Override auf ChatRequest + BackgroundRequest, Worker-Guard, Provider-Default-Fallback in _build_options, von Anthropic akzeptiert + ignoriert (Chat 96, verhaltensneutral). Ein Zirkular-Import (postprocess) an der Wurzel gelöst — postprocess als Top-Level-Util aus dem model_services-Paket gelöst (Lesson novaberg-lesson_l_paket-init-zyklus.md). Vier Lessons archiviert (pattern-vor-namen-suche, async-bruecken, loop-binding, paket-init-zyklus). Nächster Schritt: Block 4 (Qwen-3.6-Switch, ans Ende der MS-Welle terminiert).*
