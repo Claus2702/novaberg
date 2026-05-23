@@ -43,8 +43,8 @@ def verdichten(state: AgentState) -> dict:
     # dispatcher-Node aus aufgerufen wird; der CharacterGraph wiederum
     # laeuft in services/event_consumer.py via asyncio.to_thread(...) im
     # Worker-Thread. Kein Event-Loop im aufrufenden Thread → submit_sync
-    # bruckt in den Worker-Loop (Loop-Binding-Lesson). format_json war
-    # vorher explizit False (Fliesstext) → expect_json bleibt False.
+    # bruckt in den Worker-Loop (Loop-Binding-Lesson). expect_json bleibt
+    # False — die Verdichtung erwartet Fliesstext, kein JSON.
     chat_request = ChatRequest(
         messages          = [{"role": "user", "content": user_message}],
         system            = _build_verdichtung_prompt(),

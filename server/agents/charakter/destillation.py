@@ -203,7 +203,7 @@ def _llm_call(prompt: str, profil_name: str) -> str:
     # _llm_call() ist Helfer fuer 5 Destillations-Funktionen (kern_hash,
     # adaptive_hash, intentions_profil, emotions_profil, beziehungsprofil).
     # Sync invoke via Pixie-Dispatch (asyncio.to_thread) → submit_sync.
-    # modus="sprache" (heutiger get_background_provider mappt darauf).
+    # modus="sprache" (sprache-Backend des BackgroundWorker zeigt darauf).
     # KEIN system-Prompt: Beifund-Markierung — die Helfer-Signatur kennt
     # keinen, das war auch vor der Migration so (PIXIE-LLM-PARAM-LEAK
     # historisch). _antwort_bereinigen bleibt aktiv, da es auch Quote-

@@ -1,17 +1,11 @@
 """
 Post-Processing-Helfer fuer Modell-Worker-Antworten.
 
-Zentralisiert die JSON- und CJK-Workarounds, die als private Funktionen
-in `services.llm_provider` als historische Vorbilder existierten
-(`_clean_json_response`, `_deduplicate_repetition`, `_repair_truncated_json`)
-plus die ehemalige CJK-Erkennung aus dem in Block 2 entfernten
-`pixie_llm_call`-Wrapper.
-
-Parallel-Pfad-Strategie (Microservice-Welle Block 2, Phase 2):
-    Die analogen privaten Helfer in `llm_provider.py` leben noch ueber den
-    Provider-internen `format_json`-Zweig (OllamaProvider / AnthropicProvider).
-    Ihre Konsolidierung erfolgt in Block 3 zusammen mit dem Aufraeumen der
-    format_json-Logik. Bis dahin: bewusste, dokumentierte Duplikation.
+Zentralisiert die JSON- und CJK-Workarounds. Diese Helfer sind seit Block 3
+die einzige Quelle: die frueher in `services.llm_provider` als private
+Funktionen gefuehrten Duplikate (JSON-Bereinigung) und die ehemalige
+CJK-Erkennung aus dem `pixie_llm_call`-Wrapper sind entfernt. Der gesamte
+JSON-Pfad laeuft ueber den Worker (`expect_json` → `parse_json_strict`).
 
 EVA-Prinzip (Developer-Handbook §1, §3):
     `parse_json_strict` propagiert JSONDecodeError bewusst — kein stiller

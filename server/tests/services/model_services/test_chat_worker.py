@@ -50,7 +50,6 @@ class ChatWorkerBasicSubmitTest(_BaseChatWorkerTest):
         self.assertEqual(response.token_total, self.backend.token_total)
         self.assertEqual(len(self.backend.aufrufe), 1)
         self.assertEqual(self.backend.aufrufe[0]["caller"], "chat_worker")
-        self.assertFalse(self.backend.aufrufe[0]["format_json"])
 
 
 class ChatWorkerFifoTest(_BaseChatWorkerTest):

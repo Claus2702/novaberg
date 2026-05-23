@@ -432,7 +432,7 @@ class PromotionAgent(BaseAgent):
         # ── BackgroundWorker (Microservice-Welle Block 2 Phase 4, G5) ──
         # _klassifiziere() laeuft im PromotionAgent, sync invoked aus
         # services/pixie/dispatch.py via asyncio.to_thread → submit_sync.
-        # modus="sprache" — der bisherige get_background_provider mappt auf
+        # modus="sprache" — das sprache-Backend des BackgroundWorker zeigt auf
         # das CPU-Sprachmodell. Beifund: JSON-Erwartung via Sprachmodell;
         # Routing-Korrektur nicht Teil von G5. Caller-seitiger Markdown-
         # Strip + json.loads entfernt — der Worker uebernimmt das via

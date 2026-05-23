@@ -21,7 +21,6 @@ from config import (
     PIXIE_INTERVALL_MIN, PIXIE_AKTIV, shutdown_event,
     DEFAULT_USER_ID, ASSISTANT_USER_ID,
 )
-from services.llm_provider import init_providers
 from graph.builder              import build_human_graph, build_agent_graph, build_character_graph
 
 # API-Router
@@ -129,21 +128,6 @@ async def Lifespan(app: FastAPI):
     # Model-Service-Worker starten (Phase 2: EmbedWorker)
     from services.model_services import model_service
     await model_service.startup()
-
-    # LLM-Provider initialisieren (Ollama oder Claude)
-    init_providers(
-        profile               = LLM_PROFILE,
-        ollama_gpu_client     = ollama_gpu_client,
-        ollama_cpu_client     = ollama_cpu_client,
-        ollama_gpu_model      = OLLAMA_MODEL,
-        ollama_cpu_model      = SHADOW_MODEL,
-        ollama_gpu_num_ctx    = OLLAMA_GPU_NUM_CTX,
-        ollama_cpu_num_ctx    = OLLAMA_CPU_NUM_CTX,
-        anthropic_api_key     = ANTHROPIC_API_KEY,
-        anthropic_model       = ANTHROPIC_MODEL,
-        pixie_analyse_model   = PIXIE_ANALYSE_MODEL,
-        pixie_analyse_num_ctx = PIXIE_ANALYSE_NUM_CTX,
-    )
 
     # Verbindungstests
     ollama_ok:   bool = ollama_testen()

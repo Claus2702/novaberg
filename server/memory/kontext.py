@@ -94,8 +94,8 @@ def session_kontext_extrahieren(
     # ── LLM-Call via BackgroundWorker (Microservice-Welle Block 2 Phase 4, G5) ──
     # session_kontext_extrahieren() laeuft sync aus Pixie- oder
     # CharacterGraph-Pfaden via asyncio.to_thread → submit_sync. modus=
-    # "sprache", weil der heutige get_background_provider auf das CPU-
-    # Sprachmodell mappt (gemma4-cpu). Beifund: JSON ueber Sprachmodell —
+    # "sprache", weil das sprache-Backend des BackgroundWorker auf das CPU-
+    # Sprachmodell zeigt (gemma4-cpu). Beifund: JSON ueber Sprachmodell —
     # nicht im Rahmen dieser Phase korrigiert.
     try:
         response = model_service.background.submit_sync(BackgroundRequest(

@@ -6,7 +6,7 @@ Pixie-Sprach-Calls nach Konsolidierung in Block 4). Im Gegensatz zu Embed
 ist Chat textproduzierend und kann strikt-JSON-Output erwarten (Klassifika-
 tionen, strukturierte Tools). JSON-Post-Processing lebt im Worker, nicht im
 Provider — damit der Provider dumb bleibt und alle Workarounds an einer
-Stelle stehen (`services.model_services.postprocess`).
+Stelle stehen (`services.postprocess`).
 
 CJK-Guard: bewusst NICHT im ChatWorker. CJK ist ein Qwen-Problem
 (Reasoning-Backend); GPU-Chat-Modelle (Mistral/Gemma) leaken kein CJK,
@@ -24,7 +24,7 @@ from json import JSONDecodeError
 from typing import Any
 
 from services.llm_provider import LLMAntwort, LLMProvider
-from services.model_services import postprocess
+from services import postprocess
 from services.model_services.types import ChatRequest, ChatResponse
 from services.model_services.worker_base import ModelWorker
 
@@ -113,7 +113,6 @@ class ChatWorker(ModelWorker[ChatRequest, ChatResponse]):
         # bei None.
         kwargs: dict[str, Any] = {
             "messages":    request.messages,
-            "format_json": False,             # Worker besitzt JSON-Post-Processing
             "think":       request.think,
             "caller":      caller_label,
         }

@@ -56,9 +56,12 @@ llm_lock:       threading.Lock  = threading.Lock()
 shutdown_event: threading.Event = threading.Event()
 
 # ─────────────────────────────────────────────
-# LLM-Profil — Schalter
+# LLM-Modell-Auswahl
 # ─────────────────────────────────────────────
-# "lokal" = Ollama (GPU + CPU), "claude" = Anthropic API
+# Backend-Wahl läuft pro Worker über MODEL_WORKER_BACKENDS (siehe unten),
+# nicht mehr global über ein Profil. LLM_PROFILE ist nur noch ein Schalter
+# für den ThinkingNormalizer: bei != "lokal" läuft dieser als No-Op (Anthropic
+# sendet keinen <think>-Block, also kein Ollama-Split nötig).
 LLM_PROFILE: str = os.getenv("LLM_PROFILE", "lokal")
 
 # Connector innerhalb "lokal" — bestimmt welche Modelle geladen werden
@@ -67,7 +70,7 @@ LLM_PROFILE: str = os.getenv("LLM_PROFILE", "lokal")
 OLLAMA_CONNECTOR: str = os.getenv("OLLAMA_CONNECTOR", "gemma4")
 
 # ─────────────────────────────────────────────
-# Profil "lokal" — Ollama
+# Ollama — Verbindungen + Connector-Modelle (immer aktiv)
 # ─────────────────────────────────────────────
 # Verbindungen
 OLLAMA_GPU_URL:     str           = os.getenv("OLLAMA_GPU_URL", "http://localhost:11434")
@@ -75,7 +78,7 @@ OLLAMA_CPU_URL:     str           = os.getenv("OLLAMA_CPU_URL", "http://localhos
 ollama_gpu_client:  ollama.Client = ollama.Client(host=OLLAMA_GPU_URL)
 ollama_cpu_client:  ollama.Client = ollama.Client(host=OLLAMA_CPU_URL)
 
-# Connector-Definitionen (Modelle + Context + Think-Default)
+# Connector-Definitionen (Modelle + Context)
 OLLAMA_CONNECTORS: dict = {
     "mistral": {
         "gpu_model":       "mistral-small3.2-gpu",
@@ -84,7 +87,6 @@ OLLAMA_CONNECTORS: dict = {
         "cpu_num_ctx":     32768,
         "analyse_model":   "qwen3-32b-cpu",
         "analyse_num_ctx": 32768,
-        "think":           False,
     },
     "gemma4": {
         "gpu_model":       "gemma4-gpu",
@@ -93,7 +95,6 @@ OLLAMA_CONNECTORS: dict = {
         "cpu_num_ctx":     32768,
         "analyse_model":   "qwen3-32b-cpu",
         "analyse_num_ctx": 32768,
-        "think":           False,
     },
 }
 
@@ -105,9 +106,8 @@ SHADOW_MODEL:          str  = _connector["cpu_model"]
 OLLAMA_CPU_NUM_CTX:    int  = _connector["cpu_num_ctx"]
 PIXIE_ANALYSE_MODEL:   str  = _connector["analyse_model"]
 PIXIE_ANALYSE_NUM_CTX: int  = _connector["analyse_num_ctx"]
-OLLAMA_THINK_DEFAULT:  bool = _connector["think"]
 
-# Embedding (immer Ollama, auch bei Profil "claude")
+# Embedding (immer Ollama, GPU-fix — backend-unabhängig)
 EMBED_MODEL: str = os.getenv("EMBED_MODEL", "nomic-embed-text")
 
 # ─────────────────────────────────────────────
@@ -126,7 +126,7 @@ MODEL_WORKER_BACKENDS: dict[str, str] = {
 }
 
 # ─────────────────────────────────────────────
-# Profil "claude" — Anthropic API
+# Anthropic — Backend "anthropic" (per Worker wählbar, siehe MODEL_WORKER_BACKENDS)
 # ─────────────────────────────────────────────
 ANTHROPIC_API_KEY:            str   = os.getenv("ANTHROPIC_API_KEY",   "")
 ANTHROPIC_MODEL:              str   = os.getenv("ANTHROPIC_MODEL",     "claude-sonnet-4-6")
@@ -859,7 +859,6 @@ NODE_LLM_CONFIG: dict = {
     "thinker": {
         "temperature": 0.15,
         "max_output_tokens": 2048,
-        "think": True,
     },
     "tribunal": {
         "temperature": 0.2,
@@ -1053,12 +1052,8 @@ def get_node_config(node_name: str) -> dict:
     Gibt die LLM-Parameter für einen Node zurück.
 
     Unbekannte Nodes bekommen sichere Defaults.
-    Think-Parameter: Wenn im Node nicht explizit gesetzt,
-    wird OLLAMA_THINK_DEFAULT aus dem aktiven Connector verwendet.
     """
     config: dict = NODE_LLM_CONFIG.get(node_name, {"temperature": 0.3, "max_output_tokens": 1024}).copy()
-    if "think" not in config:
-        config["think"] = OLLAMA_THINK_DEFAULT
     return config
 
 

@@ -28,7 +28,7 @@ from json import JSONDecodeError
 from typing import Any
 
 from services.llm_provider import LLMAntwort, LLMProvider
-from services.model_services import postprocess
+from services import postprocess
 from services.model_services.types import BackgroundRequest, BackgroundResponse
 from services.model_services.worker_base import ModelWorker
 
@@ -240,11 +240,9 @@ class BackgroundWorker(ModelWorker[BackgroundRequest, BackgroundResponse]):
 
         Nur explizit gesetzte Overrides werden durchgereicht — Provider-
         Defaults greifen, wenn die Anfrage einen Wert nicht spezifiziert.
-        format_json=False, weil der Worker das JSON-Post-Processing besitzt.
         """
         kwargs: dict[str, Any] = {
             "messages":    messages,
-            "format_json": False,
             "caller":      caller_label,
         }
         if request.system is not None:

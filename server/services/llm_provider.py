@@ -20,6 +20,11 @@ from config import (
     ANTHROPIC_PRICE_OUTPUT_PER_M,
     DEFAULT_USER_ID,
 )
+from services.postprocess import (
+    clean_json_response,
+    deduplicate_repetition,
+    repair_truncated_json,
+)
 
 logger = logging.getLogger("ki_server.llm_provider")
 logger_tokens = logging.getLogger("ki_server.llm")
@@ -48,28 +53,11 @@ class LLMProvider(ABC):
     """Abstrakte Basisklasse fuer LLM-Zugriffe."""
 
     @abstractmethod
-    def generate(
-        self,
-        prompt:            str,
-        system:            str             = "",
-        temperature:       float           = 0.7,
-        format_json:       bool            = False,
-        top_p:             Optional[float] = None,
-        repeat_penalty:    Optional[float] = None,
-        presence_penalty:  Optional[float] = None,
-        max_output_tokens: Optional[int]   = None,
-        caller:            str             = "",
-    ) -> LLMAntwort:
-        """Generiert eine Antwort auf einen einzelnen Prompt."""
-        ...
-
-    @abstractmethod
     def chat(
         self,
         messages:          list[dict],
         system:            str             = "",
         temperature:       float           = 0.7,
-        format_json:       bool            = False,
         top_p:             Optional[float] = None,
         repeat_penalty:    Optional[float] = None,
         presence_penalty:  Optional[float] = None,
@@ -142,55 +130,11 @@ class OllamaProvider(LLMProvider):
                 f"({usage_pct:.0f}% von {ctx_limit:,})"
             )
 
-    def generate(
-        self,
-        prompt:            str,
-        system:            str             = "",
-        temperature:       float           = 0.7,
-        format_json:       bool            = False,
-        top_p:             Optional[float] = None,
-        repeat_penalty:    Optional[float] = None,
-        presence_penalty:  Optional[float] = None,
-        max_output_tokens: Optional[int]   = None,
-        caller:            str             = "",
-    ) -> LLMAntwort:
-        kwargs: dict = {
-            "model":   self._model,
-            "prompt":  prompt,
-            "system":  system,
-            "options": self._build_options(temperature, top_p, repeat_penalty, presence_penalty, max_output_tokens),
-        }
-        if format_json:
-            kwargs["format"] = "json"
-
-        response: dict = self._client.generate(**kwargs)
-
-        input_tokens  = response.get("prompt_eval_count", 0)
-        output_tokens = response.get("eval_count", 0)
-        total_tokens  = input_tokens + output_tokens
-        ctx_limit     = self._default_num_ctx
-        caller_label  = f" [{caller}]" if caller else ""
-        self._log_token_usage(caller_label, input_tokens, output_tokens, total_tokens, ctx_limit)
-
-        raw_content: str = response["response"]
-
-        # JSON-Bereinigung: Markdown-Codeblöcke und Preamble entfernen
-        if format_json:
-            raw_content = _clean_json_response(raw_content)
-            raw_content = _deduplicate_repetition(raw_content)
-            raw_content = _repair_truncated_json(raw_content)
-
-        return LLMAntwort(
-            content=raw_content,
-            token_total=total_tokens,
-        )
-
     def chat(
         self,
         messages:          list[dict],
         system:            str             = "",
         temperature:       float           = 0.7,
-        format_json:       bool            = False,
         top_p:             Optional[float] = None,
         repeat_penalty:    Optional[float] = None,
         presence_penalty:  Optional[float] = None,
@@ -202,19 +146,6 @@ class OllamaProvider(LLMProvider):
         if system:
             chat_messages.append({"role": "system", "content": system})
         chat_messages.extend(messages)
-
-        # #15260-Guard: Reasoning-Output und format="json" sind in Ollama nicht
-        # kombinierbar — das Modell bricht den JSON-Stream mit dem Reasoning-
-        # Token ab. think wird in dem Fall hart auf False gezwungen; die
-        # Caller-Pipeline muss dann ueber den nachgelagerten Cleanup ihre
-        # JSON-Bereinigung machen (Worker-Schicht uebernimmt das).
-        if think and format_json:
-            logger.warning(
-                "OllamaProvider.chat: think=True mit format_json=True nicht "
-                "moeglich (Ollama #15260) -- think auf False gesetzt "
-                f"(caller={caller!r})"
-            )
-            think = False
 
         kwargs: dict = {
             "model":    self._model,
@@ -320,12 +251,6 @@ class OllamaProvider(LLMProvider):
             _thinking_raw = getattr(_thinking_msg, "thinking", "")
         raw_thinking: str = _thinking_raw if isinstance(_thinking_raw, str) else ""
 
-        # JSON-Bereinigung: Markdown-Codeblöcke und Preamble entfernen
-        if format_json:
-            raw_content = _clean_json_response(raw_content)
-            raw_content = _deduplicate_repetition(raw_content)
-            raw_content = _repair_truncated_json(raw_content)
-
         return LLMAntwort(
             content=raw_content,
             token_total=total_tokens,
@@ -361,61 +286,11 @@ class AnthropicProvider(LLMProvider):
             f"| ${cost_call:.4f} (Σ ${AnthropicProvider._session_cost_usd:.4f})"
         )
 
-    def generate(
-        self,
-        prompt:            str,
-        system:            str             = "",
-        temperature:       float           = 0.7,
-        format_json:       bool            = False,
-        top_p:             Optional[float] = None,
-        repeat_penalty:    Optional[float] = None,
-        presence_penalty:  Optional[float] = None,
-        max_output_tokens: Optional[int]   = None,
-        caller:            str             = "",
-    ) -> LLMAntwort:
-        effective_system: str = system
-        if format_json:
-            json_instruction: str = (
-                "\n\n[AUSGABEFORMAT]\n"
-                "Antworte AUSSCHLIESSLICH mit einem validen JSON-Objekt.\n"
-                "Kein Markdown, kein Fliesstext, keine Backticks, keine Erklaerung.\n"
-                "Nur das nackte JSON-Objekt."
-            )
-            effective_system = (effective_system + json_instruction) if effective_system else json_instruction.strip()
-
-        messages: list[dict] = [{"role": "user", "content": prompt}]
-
-        kwargs: dict = {
-            "model":       self._model,
-            "max_tokens":  max_output_tokens or self._max_tokens,
-            "system":      effective_system if effective_system else anthropic.NOT_GIVEN,
-            "temperature": temperature,
-            "messages":    messages,
-        }
-        # Claude erlaubt nicht temperature + top_p gleichzeitig — top_p ignorieren
-
-        response = self._client.messages.create(**kwargs)
-
-        input_tokens:  int = response.usage.input_tokens
-        output_tokens: int = response.usage.output_tokens
-        caller_label:  str = f" [{caller}]" if caller else ""
-        self._log_token_usage(caller_label, input_tokens, output_tokens)
-
-        result: str = response.content[0].text
-        if format_json:
-            result = _clean_json_response(result)
-
-        return LLMAntwort(
-            content=result,
-            token_total=input_tokens + output_tokens,
-        )
-
     def chat(
         self,
         messages:          list[dict],
         system:            str             = "",
         temperature:       float           = 0.7,
-        format_json:       bool            = False,
         top_p:             Optional[float] = None,
         repeat_penalty:    Optional[float] = None,
         presence_penalty:  Optional[float] = None,
@@ -434,14 +309,6 @@ class AnthropicProvider(LLMProvider):
             )
 
         effective_system: str = system
-        if format_json:
-            json_instruction: str = (
-                "\n\n[AUSGABEFORMAT]\n"
-                "Antworte AUSSCHLIESSLICH mit einem validen JSON-Objekt.\n"
-                "Kein Markdown, kein Fliesstext, keine Backticks, keine Erklaerung.\n"
-                "Nur das nackte JSON-Objekt."
-            )
-            effective_system = (effective_system + json_instruction) if effective_system else json_instruction.strip()
 
         # System-Messages filtern — Claude erwartet system als Parameter
         clean_messages: list[dict] = [m for m in messages if m.get("role") != "system"]
@@ -467,8 +334,6 @@ class AnthropicProvider(LLMProvider):
         self._log_token_usage(caller_label, input_tokens, output_tokens)
 
         result: str = response.content[0].text
-        if format_json:
-            result = _clean_json_response(result)
 
         # thinking bleibt leer: Claude hat in der Chat-Response kein separates
         # thinking-Feld -- bei Extended Thinking ist der Reasoning-Trace als
@@ -481,67 +346,6 @@ class AnthropicProvider(LLMProvider):
             thinking="",
         )
 
-
-def _clean_json_response(text: str) -> str:
-    """Entfernt Markdown-Backticks und Whitespace um JSON-Antworten."""
-    cleaned: str = text.strip()
-    if cleaned.startswith("```json"):
-        cleaned = cleaned[7:]
-    elif cleaned.startswith("```"):
-        cleaned = cleaned[3:]
-    if cleaned.endswith("```"):
-        cleaned = cleaned[:-3]
-    return cleaned.strip()
-
-
-def _deduplicate_repetition(text: str) -> str:
-    """Entfernt sich wiederholende Muster aus LLM-Output.
-
-    Gemma4 neigt bei JSON-Reasoning-Feldern zu Endlos-Wiederholungen
-    ('Wallberg-Wallberg-Wallberg', 'ist-Guts-ist-Guts-ist-Guts').
-    Findet Muster von 8-50 Zeichen die sich 3+ mal wiederholen
-    und behaelt das Muster nur einmal.
-    """
-    if not text:
-        return text
-    match = re.search(r'(.{8,50}?)\1{2,}', text)
-    if match:
-        text = text[:match.start() + len(match.group(1))]
-    return text
-
-
-def _repair_truncated_json(text: str) -> str:
-    """Repariert JSON das durch Token-Limit oder Deduplizierung abgeschnitten wurde.
-
-    Schliesst offene Strings, Objekte und Arrays damit json.loads() nicht
-    an unterminierten Strukturen scheitert. Der Inhalt abgeschnittener
-    Strings ist unvollstaendig, aber die Struktur wird parsbar.
-    """
-    text = text.strip()
-    if not text:
-        return text
-
-    # Unterminated String: ungerade Anzahl Quotes → schliessen
-    if text.count('"') % 2 != 0:
-        text = text + '"'
-
-    # Offene Klammern/Brackets zaehlen und schliessen
-    open_braces:   int = text.count('{') - text.count('}')
-    open_brackets: int = text.count('[') - text.count(']')
-
-    if open_braces > 0:
-        text = text + '}' * open_braces
-    if open_brackets > 0:
-        text = text + ']' * open_brackets
-
-    return text
-
-
-# --- Singleton-Provider-Instanzen ---
-
-_chat_provider:               Optional[LLMProvider] = None
-_background_provider:         Optional[LLMProvider] = None
-_background_analyse_provider: Optional[LLMProvider] = None
 
 # Welcher User laeuft gerade in einem Pixie-Agent? Wird vom Pixie-Dispatcher
 # gesetzt (services/pixie/dispatch.py) bevor agent.invoke() startet, und im
@@ -560,63 +364,6 @@ def get_aktiver_pixie_user() -> str:
     """Gibt den aktiven Pixie-User zurueck (oder DEFAULT_USER_ID als Fallback)."""
     return _aktiver_pixie_user or DEFAULT_USER_ID
 
-
-def init_providers(
-    profile:              str,
-    ollama_gpu_client:    ollama.Client,
-    ollama_cpu_client:    ollama.Client,
-    ollama_gpu_model:     str,
-    ollama_cpu_model:     str,
-    ollama_gpu_num_ctx:   int,
-    ollama_cpu_num_ctx:   int,
-    anthropic_api_key:    str = "",
-    anthropic_model:      str = "claude-sonnet-4-20250514",
-    pixie_analyse_model:  str = "",
-    pixie_analyse_num_ctx: int = 32768,
-) -> None:
-    """
-    Initialisiert die Provider basierend auf dem gewaehlten Profil.
-    Wird einmal beim Server-Start aufgerufen (Lifespan).
-    """
-    global _chat_provider, _background_provider, _background_analyse_provider
-
-    if profile == "lokal":
-        _chat_provider       = OllamaProvider(ollama_gpu_client, ollama_gpu_model, ollama_gpu_num_ctx)
-        _background_provider = OllamaProvider(ollama_cpu_client, ollama_cpu_model, ollama_cpu_num_ctx)
-
-        # Pixie Analyse-Modell (optional, Fallback auf background_provider)
-        if pixie_analyse_model:
-            _background_analyse_provider = OllamaProvider(
-                ollama_cpu_client, pixie_analyse_model, pixie_analyse_num_ctx
-            )
-            logger.info(
-                f"LLM-Provider: lokal (GPU: {ollama_gpu_model}, "
-                f"CPU-Sprache: {ollama_cpu_model}, CPU-Analyse: {pixie_analyse_model})"
-            )
-        else:
-            _background_analyse_provider = _background_provider
-            logger.info("LLM-Provider: lokal (Ollama GPU + CPU)")
-
-    elif profile == "claude":
-        if not anthropic_api_key:
-            raise ValueError("ANTHROPIC_API_KEY muss gesetzt sein fuer Profil 'claude'")
-        _chat_provider               = AnthropicProvider(anthropic_model, anthropic_api_key)
-        _background_provider         = AnthropicProvider(anthropic_model, anthropic_api_key)
-        _background_analyse_provider = _background_provider
-        logger.info(f"LLM-Provider: claude ({anthropic_model})")
-
-    else:
-        raise ValueError(f"Unbekanntes LLM-Profil: {profile}")
-
-
-# get_chat_provider / get_background_provider / get_background_analyse_provider
-# entfernt -- Microservice-Welle Block 2 Phase 5. Nach G6 ohne aktive Aufrufer
-# (sourcetree-Grep leer). LLM-Pfade laufen jetzt ueber die Worker-Schicht
-# (services/model_services/), die ihre Backends direkt via _build_backend in
-# der Registry-Factory instanziiert. init_providers + die Modul-Variablen
-# _chat_provider / _background_provider / _background_analyse_provider bleiben
-# bewusst stehen (Block-2-Grenze: nicht angefasst) — strukturell tote
-# Zustandshaltung, finale Aufraeumung in Block 3.
 
 # pixie_llm_call und _CJK_RANGE entfernt -- Microservice-Welle Block 2 Phase 4
 # (G4). Die Pixie-Konsumenten laufen jetzt ueber den BackgroundWorker

@@ -47,7 +47,6 @@ class FakeProvider(LLMProvider):
         messages:          list[dict],
         system:            str             = "",
         temperature:       float           = 0.7,
-        format_json:       bool            = False,
         top_p:             Optional[float] = None,
         repeat_penalty:    Optional[float] = None,
         presence_penalty:  Optional[float] = None,
@@ -60,7 +59,6 @@ class FakeProvider(LLMProvider):
             "messages":          messages,
             "system":            system,
             "temperature":       temperature,
-            "format_json":       format_json,
             "top_p":             top_p,
             "repeat_penalty":    repeat_penalty,
             "presence_penalty":  presence_penalty,
@@ -79,20 +77,3 @@ class FakeProvider(LLMProvider):
 
         index: int = min(len(self.aufrufe) - 1, len(self.contents) - 1)
         return LLMAntwort(content=self.contents[index], token_total=self.token_total)
-
-    def generate(
-        self,
-        prompt:            str,
-        system:            str             = "",
-        temperature:       float           = 0.7,
-        format_json:       bool            = False,
-        top_p:             Optional[float] = None,
-        repeat_penalty:    Optional[float] = None,
-        presence_penalty:  Optional[float] = None,
-        max_output_tokens: Optional[int]   = None,
-        caller:            str             = "",
-    ) -> LLMAntwort:
-        """generate() ist im Worker-Skelett nicht benutzt — wirft, falls doch."""
-        raise AssertionError(
-            "FakeProvider.generate() darf in Worker-Tests nicht aufgerufen werden"
-        )
