@@ -2727,6 +2727,34 @@ Sieben Beifang-Punkte aus dem Audit-Sweep, die nicht zur P4-Klärung beitrugen, 
 
 ---
 
+## Bug: TOK-DRIFT-SALIENCE — Token-Akkumulator zählt fehlgeschlagene Segmente nicht (Chat 94)
+
+**Entdeckt:** Chat 94 (Code-Audit `salience.py`, Antwort auf die offene Chat-93-Frage zu `gesamt_tokens`)
+**Klasse:** Metrik-Ungenauigkeit — kein funktionaler Defekt, kein Dead Code
+**Severity:** Niedrig
+
+**Symptom:** `gesamt_tokens` (`salience.py:140/192/259`) akkumuliert nur im Erfolgsfall. Bei `JSONDecodeError`/`KeyError` springt die Segment-Schleife per `continue` (225-227) vor das `gesamt_tokens += response.token_total` (192). Das fehlgeschlagene Segment trägt seine Input-Tokens nicht bei → `state["token_total"]` ist minimal zu niedrig.
+
+**Folgenlos heute:** `state["token_total"]` ist reine Beobachtung (Turn-Ende-Log, Auslastungs-Statistik). Keine Schwelle, kein Early-Exit, kein Alert. Abweichung unter Promille-Niveau.
+
+**Reaktivierungs-Trigger:** Sobald an `state["token_total"]` ein Token-Budget-Schwellwert oder ein Limit-Alert hängt — Territorium von Block 5 NODE-TOKEN-AUSLASTUNG. Der Fix gehört dann dorthin, nicht isoliert. Bewusst nicht jetzt behoben (Trennung Code-Tod ≠ Feature-Arbeit).
+
+---
+
+## Bug: TEST-RUNNER-FEHLT-CONTAINER — pytest im server-Container nicht installiert (Chat 94)
+
+**Entdeckt:** Chat 94 (Verifikation des MS-Welle-Kahlschlags — `docker compose exec server pytest` schlägt fehl, pytest fehlt im Image)
+**Klasse:** Test-Infrastruktur — Verifikations-Lücke
+**Severity:** Mittel
+
+**Symptom:** Im `server`-Container ist `pytest` nicht installiert. Der im Handover dokumentierte Verifikations-Befehl `docker compose exec server pytest …` läuft nicht. Die Verifikation des Kahlschlags (Chat 94) erfolgte ersatzweise per Import-Smoke-Test (`python -c "import …"` über alle berührten Module + `main`) plus pattern-basierte Greps.
+
+**Was fehlt:** Ein lauffähiger Test-Runner im Container. Solange er fehlt, ist der Status der „4 vorbestehenden TEST-WORKER-SHUTDOWN-COROUTINE-Fails" unbestätigt — sie wurden zuletzt mit einem Runner festgestellt, der aktuell nicht reproduzierbar ist.
+
+**Reaktivierungs-Trigger / Frist:** Vor Block 4 der MS-Welle (Pixie-Reaktivierung, erste Live-Verifikation des Background-Pfads G3–G6) klären — entweder pytest ins server-Image (requirements/Dockerfile) oder dokumentieren, wie die Suite tatsächlich gelaufen wird. Block 4 ist der Punkt, an dem die Suite am dringendsten gebraucht wird.
+
+---
+
 ## 8. Offene Bugs
 
 Vollständige Bug-Dokumentation → `novaberg-bugs.md`
@@ -2756,6 +2784,8 @@ Kurzübersicht aktiver Bugs:
 | SPRACH-STIL-DEFENSIV-STUMM | Niedrig | `_sprach_stil_erkennen` fällt ohne Warning auf "neutral" bei leerem charakter_hash (Verstoß gegen "fail loud", Chat 89/90) |
 | AUDIT-PIXIE-TURN-ID | 👁 | Pixie-Pfad turn_id-Auflösung nicht auditiert (latent, akut keine Wirkung wegen PIXIE_AKTIV=False, Chat 90) |
 | EI-CALC-ROLLE-DEFAULT-ASYMMETRIE | Niedrig | Inkonsistente Defaults beim Rollen-Dispatch in Enricher/EI-Calc/Salience (Chat 90) |
+| TOK-DRIFT-SALIENCE | Niedrig | `gesamt_tokens` zählt bei JSON-Fehler fehlgeschlagene Segmente nicht → `state["token_total"]` minimal zu niedrig; folgenlos solange reine Metrik. Reaktivierung bei Token-Budget/Alert → Block 5. Chat 94 |
+| TEST-RUNNER-FEHLT-CONTAINER | Mittel | pytest im server-Container nicht installiert → `docker compose exec server pytest` schlägt fehl. Kahlschlag-Verifikation ersatzweise per Import-Smoke-Test. Vor Block 4 klären. Chat 94 |
 
 Details, Ursachen und Lösungsansätze → `novaberg-bugs.md`
 

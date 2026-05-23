@@ -2,10 +2,10 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Konzept — In-Process-Microservice-Architektur für die Modell-Schicht
-**Stand:** 19. Mai 2026, Chat 92
+**Stand:** 23. Mai 2026, Chat 94
 **Pfad:** novaberg/docs/novaberg-microservice-modell-queue_k.md
 **Vorgänger-Konzepte:** Audit 4 aus Chat 91 (fünf strukturelle Defizite), Pixie-Graph-Merge (Chat 79), Connector-Architektur (`config.py`)
-**Status:** Block 1 (Embedding-Konsolidierung) abgeschlossen Chat 92 — Block 2 (LLM-Konsolidierung) als nächster Schritt
+**Status:** Block 1 (Embedding) abgeschlossen Chat 92, Block 2 (LLM-Konsolidierung) + Block 3 (think pro Call) abgeschlossen Chat 93/94 — Block 5 (num_ctx pro Call) als nächster Schritt, dann Block 4 (Qwen 3.6)
 
 ---
 
@@ -303,4 +303,4 @@ Die MS-Welle räumt die **Modell-Schicht** auf, nicht die Memory-Schicht und nic
 
 ---
 
-*Konzept-Stand Chat 92. Block 1 (Embedding-Konsolidierung) vollständig abgeschlossen: EmbedWorker live, alle Konsumenten migriert, Anwendungscode hat null direkte Ollama-Embedding-Calls außerhalb services/model_services/. Erkenntnisse aus dem Sprint in drei Lessons archiviert (novaberg-lesson_l_pattern-vor-namen-suche.md, novaberg-lesson_l_async-bruecken.md, novaberg-lesson_l_loop-binding.md). Nächster Schritt: Block 2 (pixie_llm_call-Konsolidierung → ChatWorker + BackgroundWorker). Block 4 (Qwen-3.6-Switch) bleibt ans Ende der MS-Welle terminiert.*
+*Konzept-Stand Chat 94. Block 1 (Embedding), Block 2 (LLM-Konsolidierung) und Block 3 (think pro Call) abgeschlossen. Block 2: Chat-Pfad über ChatWorker/BackgroundWorker, init_providers + Provider-Singletons entfernt, llm_provider.py ist reine Klassen-Definitions-Datei (Block-2-Abschluss formal besiegelt). Block 3: think durchgereicht + ThinkingNormalizer (Chat 93), Teil-2-Kahlschlag (Chat 94: generate(), format_json, tote think-Konfig entfernt). Ein Zirkular-Import (postprocess) an der Wurzel gelöst — postprocess als Top-Level-Util aus dem model_services-Paket gelöst (Lesson novaberg-lesson_l_paket-init-zyklus.md). Vier Lessons archiviert (pattern-vor-namen-suche, async-bruecken, loop-binding, paket-init-zyklus). Nächster Schritt: Block 5 (num_ctx pro Call), dann Block 4 (Qwen-3.6-Switch, ans Ende der MS-Welle terminiert).*

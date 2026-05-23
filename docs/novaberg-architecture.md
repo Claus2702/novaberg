@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Systemarchitektur, Tech-Stack, Plugin-System
-**Stand:** 17. Mai 2026, Chat 90 (PFAD2-PERZEPTION-FIX, HumanGraph-Slimming Phase 4, TURN-ID-FIX)
+**Stand:** 23. Mai 2026, Chat 94 (Microservice-Welle Block 2+3: Provider→Worker-Schicht, §2 konsolidiert)
 **Pfad:** novaberg/docs/novaberg-architecture.md
 **Quellen:** nova-00-a.md (Architektur-Übersicht), nova-07-a.md (Tech-Stack), nova-07-m-a.md (Plugin-System)
 
@@ -98,88 +98,106 @@ Alle LLM-Prompts aus Python-Code extrahiert (Chat 46: Perzeption, Router, Salien
 
 ### 2.2 Provider-Architektur
 
-```
-Nodes / Manager
-    -> get_chat_provider()        # Chat-Pipeline (GPU oder Claude API)
-    -> get_background_provider()  # Pixie-Tasks (CPU Mistral)
-    -> embed_client               # Embedding (immer Ollama, nicht abstrahiert)
+Seit der Microservice-Welle (Chat 92-94) laufen alle Modell-Aufrufe über eine
+Worker-Schicht (`services/model_services/`). Konsumenten rufen nicht mehr Provider
+direkt, sondern reichen typisierte Requests an einen der drei Worker — `submit(...)`
+async aus dem Haupt-Loop, `submit_sync(...)` aus Worker-Threads (CharacterGraph via
+`asyncio.to_thread`). Jeder Worker besitzt eine FIFO-Queue (`worker_base.py`).
 
-Pixie-Agenten (seit Chat 38)
-    -> pixie_llm_call(modus="analyse")   # Qwen3-32B (Reasoning, JSON)
-    -> pixie_llm_call(modus="sprache")   # Mistral CPU (Fliesstext, Deutsch)
 ```
+Producers ──submit / submit_sync──▶  model_service.{ embed | chat | background }
+                                          │           │            │
+                                          ▼           ▼            ▼
+                                     EmbedWorker  ChatWorker  BackgroundWorker
+                                     (GPU fix)    (1 Backend)  (analyse + sprache)
+                                          │           │            │
+                                          └───────────┴────────────┘
+                                                       │
+                                              _build_backend(kind)
+                                          kind ← MODEL_WORKER_BACKENDS (Config)
+                                                       │
+                  ┌────────────────────────────────────┼──────────────────────────┐
+                  ▼                                    ▼                          ▼
+          ollama_gpu_client                    ollama_cpu_client          AnthropicProvider
+          (OLLAMA_MODEL)            (PIXIE_ANALYSE_MODEL / SHADOW_MODEL)  (ANTHROPIC_MODEL)
+```
+
+Backend-Wahl pro Worker ist config-gesteuert (`MODEL_WORKER_BACKENDS`), nicht
+hartverdrahtet: `ChatWorker` ist single-backend, `BackgroundWorker` dual-backend
+(`analyse` für Reasoning/JSON, `sprache` für Fliesstext), `EmbedWorker` fest auf GPU.
+Der JSON-Workaround (Ollama #15260) ist im Worker konzentriert: `expect_json` →
+`parse_json_strict` (`services/postprocess.py`), kein `format="json"` an Ollama.
 
 ### 2.3 Klassen
 
 | Klasse | Beschreibung |
 |--------|-------------|
-| `LLMProvider` (ABC) | Abstrakte Basisklasse mit `generate()` und `chat()` |
+| `LLMProvider` (ABC) | Abstrakte Basisklasse mit `chat()` (die `generate()`-Methode wurde in der MS-Welle entfernt — alle Pfade nutzen `chat`) |
 | `OllamaProvider` | Wrapper um `ollama.Client` — kapselt model, num_ctx, options. `think=False` nativ. |
 | `AnthropicProvider` | Wrapper um `anthropic.Anthropic` — Token-Logging mit Kosten, `[AUSGABEFORMAT]`-Block provider-intern, `top_p`-Ignorierung (Anthropic erlaubt nicht `temperature` + `top_p` gleichzeitig). |
 
-### 2.4 Profile
+### 2.4 Embedding
 
-Umschaltbar ueber `LLM_PROFILE` in `config.py` / `.env`:
+Embedding (`nomic-embed-text`) ist bewusst **nicht** Teil der Backend-Wahl. Es läuft fest auf GPU über den `EmbedWorker` (Rolle `embed`, siehe §2.7). Grund: Vektorkonsistenz — ein Wechsel des Embedding-Modells würde alle gespeicherten Vektoren invalidieren, daher kein Config-Hook.
 
-| Profil | Chat-Provider | Background-Provider | Use Case |
-|--------|--------------|--------------------|---------|
-| `lokal` | OllamaProvider (GPU, Mistral) | OllamaProvider (CPU, Mistral) | Produktivbetrieb (Standard) |
-| `claude` | AnthropicProvider (Sonnet) | OllamaProvider (CPU, Mistral) | Evaluierung, Prompt-Tuning, Vergleichstests |
-
-### 2.5 Pixie Dual-Modell-Routing (seit Chat 38)
-
-```python
-def pixie_llm_call(prompt: str, modus: str = "analyse", ...) -> str:
-    """modus: 'analyse' -> Qwen3-32B, 'sprache' -> Mistral Q5"""
-```
-
-Statisches Routing pro Workflow-Schritt. CJK-Guard fuer Qwen-Output. JSON-Fallback bei Parse-Fehlern.
-
-### 2.6 Embedding
-
-Embedding (`nomic-embed-text`) ist bewusst **nicht** Teil der Provider-Abstraktion. Es bleibt direkt auf Ollama via `embed_client`. Grund: Vektorkonsistenz — ein Wechsel des Embedding-Modells wuerde alle gespeicherten Vektoren invalidieren.
-
-### 2.7 Konfigurationsvariablen (LLM)
+### 2.5 Konfigurationsvariablen (LLM)
 
 | Variable | Default | Beschreibung |
 |----------|---------|-------------|
-| `LLM_PROFILE` | `"lokal"` | Aktives Profil (`lokal` oder `claude`) |
-| `ANTHROPIC_API_KEY` | `""` | API-Key fuer Claude (aus `.env`) |
-| `ANTHROPIC_MODEL` | `"claude-sonnet-4-6"` | Claude-Modell |
-| `PIXIE_MODELL_ANALYSE` | `"qwen3-32b-cpu"` | Pixie Analyse-Modell |
-| `PIXIE_MODELL_SPRACHE` | `"mistral-small3.2-cpu"` | Pixie Sprach-Modell |
-| `OLLAMA_CONNECTOR` | `"gemma4"` | Aktiver Modell-Connector (`gemma4` oder `mistral`) |
+| `OLLAMA_CONNECTOR` | `"gemma4"` | Aktiver Modell-Connector (`gemma4` oder `mistral`) — bestimmt die geladenen Ollama-Modelle |
+| `PIXIE_ANALYSE_MODEL` | aus Connector (`qwen3-32b-cpu`) | Pixie Analyse-Modell (Backend `ollama_cpu_analyse`) |
+| `SHADOW_MODEL` | aus Connector (`gemma4-cpu`) | Pixie Sprach-Modell (Backend `ollama_cpu_sprache`) |
+| `WORKER_BACKEND_CHAT` | `"ollama_gpu"` | Backend des ChatWorker (siehe §2.7) |
+| `WORKER_BACKEND_BG_ANALYSE` | `"ollama_cpu_analyse"` | Analyse-Backend des BackgroundWorker |
+| `WORKER_BACKEND_BG_SPRACHE` | `"ollama_cpu_sprache"` | Sprach-Backend des BackgroundWorker |
+| `LLM_PROFILE` | `"lokal"` | Nur noch Schalter für den ThinkingNormalizer: bei `!= "lokal"` läuft dieser als No-Op (kein Ollama-`<think>`-Split nötig). Die alte globale Profil-Umschaltung ist durch `WORKER_BACKEND_*` ersetzt. |
+| `ANTHROPIC_API_KEY` | `""` | API-Key für Claude (aus `.env`) |
+| `ANTHROPIC_MODEL` | `"claude-sonnet-4-6"` | Claude-Modell (Backend `anthropic`) |
 
-### 2.8 Bekannter Bug: Ollama think+format (Chat 46)
+### 2.6 Bekannter Bug: Ollama think+format (Chat 46)
 
-Ollama Issue #15260: Bei Gemma4 (und Qwen3.5) bricht `think=false` den `format="json"`-Constraint — JSON wird stillschweigend ignoriert.
+Ollama Issue #15260: Bei Gemma4 (und Qwen 3.6) bricht `think=false` den `format="json"`-Constraint — JSON wird stillschweigend ignoriert.
 
-Workaround: `think=False` immer senden, `format="json"` NICHT senden. JSON-Einhaltung erfolgt ueber Prompt-Overrides (Gemma4-spezifische `[REGELN]`) + Cleanup-Pipeline (`_clean_json_response` + `_deduplicate_repetition` + `_repair_truncated_json`) im `OllamaProvider`.
+Workaround: `think=False` senden, `format="json"` NICHT senden. JSON-Einhaltung erfolgt über Prompt-Overrides (Gemma4-spezifische `[REGELN]`) + die Cleanup-Pipeline in `services/postprocess.py` (`clean_json_response` → `deduplicate_repetition` → `repair_truncated_json`, gebündelt in `parse_json_strict`). Die Pipeline läuft seit der MS-Welle im Worker (`expect_json`-Pfad), nicht mehr im Provider.
 
 Status: Ollama-Bug offen (Stand 15.04.2026).
 
-### 2.9 Model-Service-Schicht (seit Chat 92)
+### 2.7 Model-Service-Schicht (seit Chat 92, erweitert Chat 94)
 
-Modell-Aufrufe laufen über eine In-Process-Microservice-Architektur in `server/services/model_services/`. Konsumenten kennen keine Modelle, nur abstrakte Rollen; ein Worker pro Modell-Endpoint vermittelt zwischen Konsument-Absicht und Ollama-Aufruf über eine FIFO-Queue.
+Alle Modell-Aufrufe laufen über eine In-Process-Microservice-Architektur in `server/services/model_services/`. Konsumenten kennen keine Modelle, nur drei abstrakte Rollen; ein Worker pro Rolle vermittelt zwischen Konsument-Absicht und Modell-Aufruf über eine FIFO-Queue. Die Provider-Klassen (`OllamaProvider`/`AnthropicProvider`, §2.3) werden nur noch von der Registry instanziiert — kein Konsument ruft sie direkt.
+
+**Drei Rollen:**
+
+| Rolle | Worker | Backend(s) | Modell (Connector `gemma4`) |
+|-------|--------|-----------|------------------------------|
+| `embed` | `EmbedWorker` | fest GPU | `nomic-embed-text` |
+| `chat` | `ChatWorker` | single, `WORKER_BACKEND_CHAT` | `gemma4-gpu` |
+| `background` | `BackgroundWorker` | dual: `analyse` + `sprache` | `qwen3-32b-cpu` / `gemma4-cpu` |
+
+**Backend-Wahl** ist config-gesteuert über `MODEL_WORKER_BACKENDS` (`config.py`), nicht hartverdrahtet. `_build_backend(kind)` in `registry.py` baut aus dem Schlüssel die Provider-Instanz; gültige Schlüssel: `ollama_gpu`, `ollama_cpu_analyse`, `ollama_cpu_sprache`, `anthropic` (fail-loud bei unbekanntem Schlüssel). Das ersetzt das alte globale `LLM_PROFILE`-Schema feinkörnig — eine Rolle kann auf Claude laufen, während die anderen lokal bleiben (z. B. Chat-Eval auf `anthropic`, Background weiter lokal).
 
 **Komponenten:**
 
-- `types.py` — EmbedRequest / EmbedResponse (typisierte Übergabe)
-- `worker_base.py` — ModelWorker-Basisklasse mit FIFO-Queue, submit (async) und submit_sync (Brücke für Worker-Thread-Konsumenten)
-- `embed_worker.py` — EmbedWorker für die Rolle `embed` (nomic-embed-text auf GPU), geteilt von Nova und Pixie
-- `registry.py` — ModelServiceRegistry, Lifecycle (startup/shutdown im FastAPI-Lifespan), Singleton model_service
+- `types.py` — typisierte Requests/Responses: `EmbedRequest`/`EmbedResponse`, `ChatRequest`/`ChatResponse`, `BackgroundRequest`/`BackgroundResponse`
+- `worker_base.py` — `ModelWorker`-Basisklasse mit FIFO-Queue, `submit` (async, aus dem Haupt-Loop) und `submit_sync` (Brücke für Worker-Thread-Konsumenten)
+- `embed_worker.py` — `EmbedWorker` (Rolle `embed`, GPU-fix), geteilt von Nova und Pixie
+- `chat_worker.py` — `ChatWorker` (Rolle `chat`, single-backend), `expect_json` → `parse_json_strict`
+- `background_worker.py` — `BackgroundWorker` (Rolle `background`, dual-backend analyse/sprache), CJK-Guard für Qwen-Output, `expect_json`-Pfad
+- `registry.py` — `ModelServiceRegistry`, Lifecycle (`startup`/`shutdown` im FastAPI-Lifespan), Singleton `model_service`, `_build_backend`
+
+JSON-Post-Processing liegt in `services/postprocess.py` (zustandsloser Util, bewusst außerhalb des `model_services`-Pakets — siehe Lesson `paket-init-zyklus`).
 
 **Aufruf-Konvention:**
 
 Konsumenten im Worker-Thread (LangGraph-Nodes, die meisten Agenten):
 
-  `model_service.embed.submit_sync(EmbedRequest(text=...))`
+  `model_service.chat.submit_sync(ChatRequest(...))`
 
-Konsumenten im Haupt-Event-Loop (Lifespan-Repair, shadow_delivery_loop):
+Konsumenten im Haupt-Event-Loop (Lifespan-Repair, `shadow_delivery_loop`):
 
-  `await model_service.embed.submit(EmbedRequest(text=...))`
+  `await model_service.chat.submit(ChatRequest(...))`
 
-**Stand Chat 92:** Block 1 der Microservice-Welle abgeschlossen — nur die Rolle `embed` ist implementiert. Block 2 ergänzt die Rollen `chat` (gemma4-gpu) und `background` (qwen36-cpu). Details: novaberg-microservice-modell-queue_k.md.
+**Stand Chat 94:** Block 1 (`embed`), Block 2 (`chat` + `background`) und Block 3 (`think` pro Call) abgeschlossen. Backend-Switch zu Qwen 3.6 (`qwen36-cpu`) folgt in Block 4. Details: `novaberg-microservice-modell-queue_k.md`.
 
 ---
 
@@ -254,13 +272,12 @@ project/
 │   ├── tools/                           # Tool-Manager (Epic 11)
 │   │   ├── db_manager.py                #   PostgreSQL + Connection Pool
 │   │   ├── redis_manager.py             #   Redis (nativ threadsafe)
-│   │   ├── embedding_manager.py         #   Ollama Embeddings
 │   │   └── web/                         #   Web-Infrastruktur (Chat 35)
 │   │       ├── search.py                #     WebSearchManager (SearXNG)
 │   │       └── fetch.py                 #     PageFetcher (trafilatura + BS4)
 │   │
 │   ├── memory/                          # Gedaechtnis-Schicht
-│   │   ├── embedding.py                 #   Embedding-Erzeugung (nomic-embed-text)
+│   │   ├── embedding.py                 #   Stub: EMBEDDING_DIM-Konstante (Logik in Block 1 → EmbedWorker migriert)
 │   │   ├── kzg.py                       #   Kurzzeitgedaechtnis (Redis, RediSearch-Index, Magnet-Felder P3)
 │   │   ├── lzg.py                       #   Langzeitgedaechtnis (PostgreSQL, Ebbinghaus)
 │   │   ├── pipeline_log.py              #   Forensik-Sink (Synapsen P1, asynchroner Writer-Task)
@@ -288,7 +305,15 @@ project/
 │   │   └── direktiven_manager/          #   Direktiven (Router-Prompt)
 │   │
 │   └── services/                        # Dienste
-│       ├── llm_provider.py              #   LLM-Provider-Abstraktion (Ollama + Anthropic)
+│       ├── llm_provider.py              #   LLM-Provider-Klassen (LLMProvider-ABC, OllamaProvider, AnthropicProvider) — nur Instanziierung durch Registry
+│       ├── postprocess.py               #   JSON/CJK-Postprocess-Util (zustandslos, aus model_services gelöst — Lesson paket-init-zyklus)
+│       ├── model_services/              #   Model-Service-Schicht (In-Process-Microservice, §2.7)
+│       │   ├── types.py                 #     Typisierte Requests/Responses (Embed/Chat/Background)
+│       │   ├── worker_base.py           #     ModelWorker-Basis (FIFO-Queue, submit / submit_sync)
+│       │   ├── embed_worker.py          #     EmbedWorker (Rolle embed, GPU-fix)
+│       │   ├── chat_worker.py           #     ChatWorker (Rolle chat, single-backend)
+│       │   ├── background_worker.py     #     BackgroundWorker (Rolle background, dual analyse/sprache, CJK-Guard)
+│       │   └── registry.py              #     ModelServiceRegistry, _build_backend, Singleton model_service
 │       ├── events.py                    #   Event-Queue (Redis FIFO, Self-Trigger-Schutz, Chat 60)
 │       ├── event_consumer.py            #   Event-Consumer (async-Loop, WebSocket-Delivery, Chat 60)
 │       ├── shadow_delivery.py           #   Pixie -> Chat-Einspeisung
@@ -358,7 +383,7 @@ Das Plugin-System ist Novas Erweiterungsmechanismus fuer strukturiertes Wissen. 
 | `salienz_prompt` | `str` | Ergaenzung zum Salienz-Prompt | Salienz |
 | `enricher_prompt` | `str` | Kontext-Beschreibung | Enricher |
 | `enrich(state, postgres_url)` | `str` | Kontext liefern (Fakten, Termine, Notizen) | Enricher |
-| `plan(state, postgres_url)` | `dict` | Management-Aktion planen (LLM via `get_chat_provider()`) | Planner |
+| `plan(state, postgres_url)` | `dict` | Management-Aktion planen (LLM via `model_service.chat`) | Planner |
 | `execute(writes, user_id, redis_client, postgres_url, embed_client, embed_model)` | `int` | DB-Writes ausfuehren | Dispatcher |
 | `setup(postgres_url, redis_client=None)` | — | Schema anlegen (`init.sql` ausfuehren), optional Redis-Init | GraphBase beim Start |
 
@@ -736,7 +761,7 @@ Docker-Container erreichen den Host via `host.docker.internal`. Ollama muss expl
 2. systemd -> Ollama CPU (Port 11435)
 3. docker compose up -> postgres, redis, searxng
 4. docker compose up -> server
-   ├── Lifespan: init_providers() -> LLM-Abstraktion
+   ├── Lifespan: model_service.startup() -> Worker-Schicht (embed, chat, background)
    ├── Lifespan: Plugin Discovery + Manager Setup
    ├── init.sql -> Schema-Migrationen (idempotent)
    ├── build_human_graph() + build_agent_graph()
@@ -792,7 +817,7 @@ Alles Konfigurierbare lebt in `config.py`, gelesen aus Umgebungsvariablen mit De
 | Decay | `EBBINGHAUS_DECAY_RATE` (0.0015), `EBBINGHAUS_MIN_GEWICHT` (0.1) |
 | Namen | `ASSISTANT_NAME` ("Nova"), `BACKGROUND_NAME` ("Pixie") |
 | Zeitzonen | `TIMEZONE` ("Europe/Berlin") |
-| LLM-Profil | `LLM_PROFILE` (lokal), `ANTHROPIC_API_KEY`, `ANTHROPIC_MODEL` |
+| LLM-Backends | `WORKER_BACKEND_CHAT` (ollama_gpu), `WORKER_BACKEND_BG_ANALYSE`, `WORKER_BACKEND_BG_SPRACHE`, `ANTHROPIC_API_KEY`, `ANTHROPIC_MODEL`, `LLM_PROFILE` (lokal — nur noch ThinkingNormalizer-Schalter, siehe §2.5/§2.7) |
 | Web-Suche | `SEARXNG_URL` (http://searxng:8080), `SEARXNG_TIMEOUT` (10.0), `SEARXNG_MAX_RESULTS` (10) |
 
 **Keine Magic Numbers im Code.** Alle Schwellwerte, Raten und Gewichtungen sind konfigurierbar.
