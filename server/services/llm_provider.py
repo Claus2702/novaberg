@@ -64,6 +64,7 @@ class LLMProvider(ABC):
         max_output_tokens: Optional[int]   = None,
         think:             bool            = False,
         caller:            str             = "",
+        num_ctx:           Optional[int]   = None,
     ) -> LLMAntwort:
         """Chat-Completion mit Nachrichtenverlauf."""
         ...
@@ -84,11 +85,16 @@ class OllamaProvider(LLMProvider):
         repeat_penalty:    Optional[float] = None,
         presence_penalty:  Optional[float] = None,
         max_output_tokens: Optional[int]   = None,
+        num_ctx:           Optional[int]   = None,
     ) -> dict:
-        """Baut das Ollama-Options-Dict mit optionalen Sampling-Parametern."""
+        """Baut das Ollama-Options-Dict mit optionalen Sampling-Parametern.
+
+        num_ctx: None ⇒ Provider-Default (self._default_num_ctx) greift.
+        Ein expliziter Wert vom Konsumenten überschreibt den Default pro Call.
+        """
         options: dict = {
             "temperature": temperature,
-            "num_ctx":     self._default_num_ctx,
+            "num_ctx":     num_ctx if num_ctx is not None else self._default_num_ctx,
         }
         if top_p is not None:
             options["top_p"] = top_p
@@ -141,6 +147,7 @@ class OllamaProvider(LLMProvider):
         max_output_tokens: Optional[int]   = None,
         think:             bool            = False,
         caller:            str             = "",
+        num_ctx:           Optional[int]   = None,
     ) -> LLMAntwort:
         chat_messages: list[dict] = []
         if system:
@@ -150,7 +157,7 @@ class OllamaProvider(LLMProvider):
         kwargs: dict = {
             "model":    self._model,
             "messages": chat_messages,
-            "options":  self._build_options(temperature, top_p, repeat_penalty, presence_penalty, max_output_tokens),
+            "options":  self._build_options(temperature, top_p, repeat_penalty, presence_penalty, max_output_tokens, num_ctx),
             "think":    think,
         }
 
@@ -297,6 +304,7 @@ class AnthropicProvider(LLMProvider):
         max_output_tokens: Optional[int]   = None,
         think:             bool            = False,
         caller:            str             = "",
+        num_ctx:           Optional[int]   = None,
     ) -> LLMAntwort:
         # Claude kennt keinen Reasoning-Toggle in der API. think wird daher
         # akzeptiert (Signatur-Konsistenz mit OllamaProvider) und ignoriert.
@@ -306,6 +314,14 @@ class AnthropicProvider(LLMProvider):
             logger.debug(
                 "AnthropicProvider.chat: think=True ignoriert "
                 f"(Claude-API kennt keinen Reasoning-Toggle, caller={caller!r})"
+            )
+        # num_ctx wird zur Signatur-Konsistenz mit OllamaProvider akzeptiert,
+        # aber ignoriert — die Claude-API hat kein Context-Window-Äquivalent.
+        if num_ctx is not None:
+            logger.debug(
+                "AnthropicProvider.chat: num_ctx=%s ignoriert "
+                "(Claude-API kennt kein num_ctx-Äquivalent, caller=%r)",
+                num_ctx, caller,
             )
 
         effective_system: str = system

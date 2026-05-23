@@ -251,6 +251,8 @@ class BackgroundWorker(ModelWorker[BackgroundRequest, BackgroundResponse]):
             kwargs["temperature"] = request.temperature
         if request.max_output_tokens is not None:
             kwargs["max_output_tokens"] = request.max_output_tokens
+        if request.num_ctx is not None:
+            kwargs["num_ctx"] = request.num_ctx
         return kwargs
 
     def _mit_cjk_nachfasser(self, messages: list[dict]) -> list[dict]:

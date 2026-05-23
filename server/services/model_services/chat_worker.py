@@ -128,6 +128,8 @@ class ChatWorker(ModelWorker[ChatRequest, ChatResponse]):
             kwargs["presence_penalty"] = request.presence_penalty
         if request.max_output_tokens is not None:
             kwargs["max_output_tokens"] = request.max_output_tokens
+        if request.num_ctx is not None:
+            kwargs["num_ctx"] = request.num_ctx
 
         # Provider-chat ist sync — in Thread auslagern, damit die Worker-
         # Schleife nicht blockiert (gleiches Muster wie EmbedWorker).

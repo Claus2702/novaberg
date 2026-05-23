@@ -95,6 +95,8 @@ class ChatRequest:
                setzen True. Achtung: think=True und expect_json=True schliessen
                sich aus (Ollama #15260) — der Provider greift mit einem Guard
                ein, falls beide gleichzeitig kommen.
+        num_ctx: Optionaler Context-Window-Override pro Call. None ⇒
+                 Provider-Default.
         caller: Freitext zur Identifikation im Token-Log (z.B. "agent.chat",
                 "promotion_klassifikation"). Wird im Worker an den Provider
                 durchgereicht.
@@ -112,6 +114,7 @@ class ChatRequest:
     presence_penalty:  Optional[float] = None
     max_output_tokens: Optional[int]   = None
     think:             bool            = False
+    num_ctx:           Optional[int]   = None
     caller:            str             = ""
     future:            Optional[asyncio.Future] = None
 
@@ -162,6 +165,10 @@ class BackgroundRequest:
         temperature: Sampling-Temperatur. None ⇒ Provider-Default.
         expect_json: True ⇒ JSON-Parsing wie beim ChatWorker.
         max_output_tokens: Optionales Token-Limit fuer die Antwort.
+        num_ctx: Optionaler Context-Window-Override pro Call. None ⇒
+                 Provider-Default. Kurze Klassifikations-Prompts koennen
+                 hier ein kleines num_ctx setzen, lange Destillation den
+                 vollen Kontext.
         caller: Freitext fuer das Token-Log.
         future: Wird vom Worker beim Submit angelegt (Loop-Binding-Lesson).
     """
@@ -172,6 +179,7 @@ class BackgroundRequest:
     temperature:       Optional[float] = None
     expect_json:       bool            = False
     max_output_tokens: Optional[int]   = None
+    num_ctx:           Optional[int]   = None
     caller:            str             = ""
     future:            Optional[asyncio.Future] = None
 
