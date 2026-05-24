@@ -67,6 +67,7 @@ LLM_PROFILE: str = os.getenv("LLM_PROFILE", "lokal")
 # Connector innerhalb "lokal" — bestimmt welche Modelle geladen werden
 # "mistral" = Mistral Small 3.2 (bisheriger Standard)
 # "gemma4"  = Google Gemma 4 26B-A4B (MoE, 3.8B aktiv)
+# "qwen36"  = Qwen 3.6 35B-A3B (MoE, 3B aktiv)
 OLLAMA_CONNECTOR: str = os.getenv("OLLAMA_CONNECTOR", "gemma4")
 
 # ─────────────────────────────────────────────
@@ -94,6 +95,14 @@ OLLAMA_CONNECTORS: dict = {
         "cpu_model":       "gemma4-cpu",
         "cpu_num_ctx":     32768,
         "analyse_model":   "qwen3-32b-cpu",
+        "analyse_num_ctx": 32768,
+    },
+    "qwen36": {
+        "gpu_model":       "gemma4-gpu",
+        "gpu_num_ctx":     32768,
+        "cpu_model":       "qwen36-cpu",
+        "cpu_num_ctx":     32768,
+        "analyse_model":   "qwen36-cpu",
         "analyse_num_ctx": 32768,
     },
 }
