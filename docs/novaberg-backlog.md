@@ -1498,9 +1498,9 @@ Der Synapsen-Umbau ist die strukturelle Voraussetzung für die Akten-Architektur
 
 ---
 
-## Epic: Microservice-Modell-Queue (Chat 91)
+## Epic: Microservice-Modell-Queue (Chat 91) — ✅ abgeschlossen Chat 97
 
-**Status:** Block 1 (Chat 92), Block 2 + Block 3 (Chat 93/94) und Block 5 (Chat 96) abgeschlossen — **Block 4 (Qwen-3.6-Connector) ist der nächste konkrete Schritt**
+**Status:** ✅ MS-Welle vollständig abgeschlossen (Block 1–5). Block 1 (Chat 92), Block 2 + Block 3 (Chat 93/94), Block 5 (Chat 96), Block 4 + Inbetriebnahme + Pixie-Reaktivierung (Chat 97).
 **Bezug:** novaberg-memory-synapsen-p4-entscheidungen_k.md (Chat 91), Audit-Ausgaben Chat 91, novaberg-microservice-modell-queue_k.md
 **Vorbedingung:** Keine — kann parallel zur Bestands-Pipeline aufgebaut werden, Migration erfolgt Pfad für Pfad.
 
@@ -1514,9 +1514,9 @@ Der Synapsen-Umbau ist die strukturelle Voraussetzung für die Akten-Architektur
 | Block 2 | `pixie_llm_call`- und `OllamaProvider.chat`-Konsolidierung zu Worker-Schnittstelle: ChatWorker (gemma4-gpu) + BackgroundWorker (qwen36-cpu). system-Prompt + vollständigen Parameter-Satz durchreichen, CJK-Guard und JSON-Validierung in den Worker heben. Vorbild: EmbedWorker aus Block 1. | ✅ Chat 93/94 |
 | Block 3 | `think`-Parameter pro Call (Hartkodierung entfernen, node-spezifische Politik) — inkl. Teil-2-Kahlschlag | ✅ Chat 93/94 |
 | Block 5 | `num_ctx` pro Call durchreichbar machen | ✅ Chat 96 |
-| **Block 4** | **Connector-Erweiterung für Qwen 3.6 (neuer Connector `qwen36`) — bleibt ans Ende der MS-Welle terminiert** | ⬜ **Nächster Schritt** |
-| Punkt 8 | Inbetriebnahme — Modell-Konsolidierung auf Qwen 3.6, Löschung alter CPU-Modelle (Gemma4-CPU, Qwen3-32B-CPU, Mistral-Varianten) | ⬜ Offen |
-| Punkt 9 | Pixie-Reaktivierung (`PIXIE_AKTIV=True`) | ⬜ Nach Punkt 8 |
+| Block 4 | Connector-Erweiterung für Qwen 3.6 (neuer Connector `qwen36`, GPU=`gemma4-gpu` / CPU=`qwen36-cpu`) — bewusst ans Ende der MS-Welle terminiert | ✅ Chat 97 |
+| Punkt 8 | Inbetriebnahme — `OLLAMA_CONNECTOR: qwen36` als Compose-Env aktiviert (Code-Default bleibt `gemma4` als Fallback-Anker), alte CPU-Modelle gelöscht (Gemma4-CPU, Qwen3-32B-CPU, drei Mistral-Varianten, ~105 GB) | ✅ Chat 97 |
+| Punkt 9 | Pixie-Reaktivierung (`PIXIE_AKTIV=True` per Env) — Pixie verifiziert auf qwen36-cpu, BackgroundWorker-Submit-Timeout-Default auf 300 s (Variante B, pro Call überschreibbar, Chat/Embed bleiben bei 60 s) | ✅ Chat 97 |
 
 ### Hintergrund
 
@@ -2642,9 +2642,28 @@ Zwei Redis-`LRANGE`-Calls pro User-Turn für identische Daten. Im CG analog, dor
 
 ---
 
-## Refactor: CONFIG-PIXIE-AKTIV-HARDCODED — `PIXIE_AKTIV` nicht env-konfigurierbar (Chat 91)
+## Refactor: WORKER-TIMEOUT-MUSTER-DIVERGENZ — `num_ctx` (Per-Call) vs. `submit_timeout` (Worker-Default) (Chat 97)
 
-**Status:** ⬜ Offen, vor Pixie-Reaktivierung relevant
+**Status:** ⬜ Offen
+**Prio:** Niedrig — beide Muster funktional korrekt, reine Konsistenz-Frage
+**Auslöser:** Block 4 (Chat 97) — Einführung `MODEL_BACKGROUND_TIMEOUT_S`
+
+**Beobachtung:** Die MS-Welle hat zwei konzeptionell gleiche Sachverhalte (Worker-Parameter mit sinnvollem Default + pro Call überschreibbar) mit zwei unterschiedlichen Mustern gelöst:
+
+- `num_ctx` (Block 5): reines Per-Call-Override am Request-Dataclass (`BackgroundRequest.num_ctx: Optional[int] = None`, `ChatRequest.num_ctx`), Worker reicht via `is not None`-Guard durch, Provider-Default greift wenn nichts gesetzt. **Variante A** — kein Worker-Default.
+- `submit_timeout` (Block 4, Chat 97): Worker-Instanz-Default per Konstruktor injiziert (`BackgroundWorker._default_submit_timeout`), `submit_sync`-Override mit `timeout: float | None = None` fällt auf den Instanz-Default zurück. **Variante B** — Worker-Default plus pro Call überschreibbar.
+
+**Auswirkung:** Keine funktionale — beide Muster tun das Richtige. Dokumentationelle und kognitive Last: ein Leser muss sich zwei Muster für dieselbe Klasse von Problem merken, und neue Worker-Parameter brauchen jedes Mal eine Stil-Entscheidung.
+
+**Lösungsraum:** Konsistenz-Option ist, `num_ctx` später auf das Worker-Default-Muster (B) nachzuziehen — Konstruktor-Parameter `default_num_ctx`, Instanz-Feld `_default_num_ctx`, im `_kwargs_fuer_call`-Helfer auf den Instanz-Default zurückfallen wenn `request.num_ctx is None`. Konfigurations-Konstante `MODEL_BACKGROUND_NUM_CTX_DEFAULT` analog zu `MODEL_BACKGROUND_TIMEOUT_S`.
+
+**Empfehlung:** Niedrige Prio — nicht eilig. Aufgreifen, wenn ohnehin am `num_ctx`-Pfad gearbeitet wird, oder als Aufräum-Sprint nach P4-Stabilisierung.
+
+---
+
+## Refactor: [GELÖST Chat 97] CONFIG-PIXIE-AKTIV-HARDCODED — `PIXIE_AKTIV` nicht env-konfigurierbar (Chat 91)
+
+**Status:** ✅ Gelöst Chat 97
 **Prio:** Niedrig
 **Auslöser:** Audit 1 Beifang Chat 91
 
@@ -2655,6 +2674,8 @@ Zwei Redis-`LRANGE`-Calls pro User-Turn für identische Daten. Im CG analog, dor
 **Lösungsraum:** Trivial. `PIXIE_AKTIV: bool = os.getenv("PIXIE_AKTIV", "false").lower() == "true"`. Eine Zeile.
 
 **Empfehlung:** Im Rahmen der MS-Welle-Inbetriebnahme (Punkt 9 des MS-Welle-Epics) mit erledigen — exakt der Zeitpunkt, an dem `PIXIE_AKTIV=True` produktiv gesetzt werden soll.
+
+**Lösung (Chat 97):** Genau wie im Lösungsraum skizziert. `PIXIE_AKTIV: bool = os.getenv("PIXIE_AKTIV", "false").lower() == "true"` — Commit `87adcb2`. Default bleibt `false`, Aktivierung über `PIXIE_AKTIV: "true"` in der echten `docker-compose.yml`. Kein Code-Edit mehr nötig, um Pixie zu schalten.
 
 ---
 
@@ -2824,3 +2845,4 @@ Details, Ursachen und Lösungsansätze → `novaberg-bugs.md`
 *Aktualisiert in Chat 90: PFAD2-PERZEPTION-FIX abgeschlossen (Phase 2/3, Chat 89), HumanGraph-Slimming Phase 4 + TURN-ID-FIX (Chat 90), drei neue Backlog-Einträge aus Welle-B-Audit (BUG-EI-CALC-ROLLE-DEFAULT-ASYMMETRIE, PERF-DOPPEL-SESSION-LOAD, plus fünf konkrete Stellen am Code-Audit-Sprint-Epic), Stand-Datum auf 17. Mai 2026.*
 
 - ✅ **MS-Welle Block 1 — Embedding-Konsolidierung** (Chat 92): EmbedWorker in services/model_services/ als In-Process-Microservice mit FIFO-Queue. 24+ Aufruf-Stellen migriert (G1-G8), Cleanup-Sprint, drei Main-Loop-Blocker und zwei Silent-Skip-Bugs nebenbei behoben, CPU-Embedding-Sonderpfad und Pixie-Idle-Provider rückgebaut. Drei Lessons archiviert.
+- ✅ **MS-Welle Block 4 + Inbetriebnahme + Pixie-Reaktivierung — MS-Welle abgeschlossen** (Chat 97): Connector `qwen36` live (GPU=`gemma4-gpu`, CPU=`qwen36-cpu` für Sprache und Analyse), aktiviert über `OLLAMA_CONNECTOR: qwen36` in der echten `docker-compose.yml` (Code-Default in `config.py` bleibt `gemma4` als Fallback-Anker). GPU-Connector-Fehlgriff (`gpu_model` zunächst fälschlich auf `qwen3.6:35b-a3b`) noch vor Aktivierung gegen die Block-4-Spec korrigiert. Alte CPU-Modelle nach verifiziertem Background-Pfad gelöscht (Gemma4-CPU, Qwen3-32B-CPU, drei Mistral-Varianten, ~105 GB). `PIXIE_AKTIV` env-konfigurierbar gemacht (CONFIG-PIXIE-AKTIV-HARDCODED gelöst) und Pixie reaktiviert + verifiziert. BackgroundWorker-Submit-Timeout-Default 300 s (Variante B: Worker-Instanz-Default per Konstruktor, pro Call überschreibbar; Chat/Embed behalten 60 s). Neuer Backlog-Eintrag WORKER-TIMEOUT-MUSTER-DIVERGENZ als Konsistenz-Beobachtung. MS-Welle damit vollständig abgeschlossen (Block 1–5), P4 darf loslegen.
