@@ -1095,9 +1095,24 @@ LZG_KNOTEN_DECAY_RATE: float = float(os.getenv("LZG_KNOTEN_DECAY_RATE", "0.0015"
 # wird der Knoten auf aktiv = FALSE gesetzt. Bleibt reaktivierbar.
 LZG_KNOTEN_MIN_GEWICHT: float = float(os.getenv("LZG_KNOTEN_MIN_GEWICHT", "0.1"))
 
-# Additiver Boost auf gewicht_roh, wenn ein Knoten extern reaktiviert
-# wird (neue Co-Aktivierung im Schreibpfad, nicht im Lesepfad).
-LZG_KNOTEN_REINFORCEMENT_BOOST: float = float(os.getenv("LZG_KNOTEN_REINFORCEMENT_BOOST", "0.5"))
+# Additiver Boost auf gewicht_roh bei Match-Reinforcement im Schreibpfad:
+# trifft ein neuer KZG-Eintrag einen bestehenden Knoten, wird dessen Roh-
+# Gewicht um diesen Wert erhoeht, statt einen neuen Knoten anzulegen.
+# Wert 0.1 vom KZG-Boost uebernommen (war exemplarisch 0.5).
+LZG_KNOTEN_REINFORCEMENT_BOOST: float = float(os.getenv("LZG_KNOTEN_REINFORCEMENT_BOOST", "0.1"))
+
+# Cosine-Schwelle, ab der ein neuer KZG-Eintrag als Quasi-Dublette eines
+# bestehenden Knotens gilt und diesen verstaerkt, statt einen neuen Knoten
+# anzulegen. Bewusst hoch — Standardfall ist Knoten-Erhalt, nur echte
+# Identitaet verstaerkt. Stellschraube, ggf. auf 0.9 anheben, wenn der
+# Match auf bloss verwandte Eintraege feuert.
+LZG_KNOTEN_MATCH_SCHWELLE: float = float(os.getenv("LZG_KNOTEN_MATCH_SCHWELLE", "0.85"))
+
+# Feature-Flag Synapsen P4. False = alte Cluster-Promotion (Tabelle
+# langzeitgedaechtnis) aktiv. True = neue Synapsen-Promotion (lzg_knoten/
+# lzg_kanten). Auf True erst nach P4-Test. Beide Code-Pfade bleiben bis
+# P9 im Repository.
+SYNAPSEN_PROMOTION_AKTIV: bool = os.getenv("SYNAPSEN_PROMOTION_AKTIV", "false").lower() == "true"
 
 
 # ============================================================================
