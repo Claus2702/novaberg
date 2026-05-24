@@ -2699,6 +2699,29 @@ Zwei Redis-`LRANGE`-Calls pro User-Turn für identische Daten. Im CG analog, dor
 
 ---
 
+## Doku-Sprint: CHRONIK-BACKFILL — Lücken in Roadmap- und Backlog-Chronik (Chat 97)
+
+**Status:** ⬜ Offen
+**Prio:** Niedrig
+**Auslöser:** Brudi-Befund beim Chat-97-Abschluss
+
+**Beobachtung:** Zwei vorbestehende Chronik-Lücken sind beim Chat-97-Abschluss-Sweep sichtbar geworden:
+
+1. **Roadmap-Chronik:** `novaberg-roadmap.md` springt von Chat 93 direkt auf Chat 97 — Chat 94/95/96 fehlen ganz.
+2. **Backlog-Chronik:** Die Sammelliste am Datei-Ende enthält bisher nur MS-Welle Block 1 und Block 4 — Block 2/3/5 wurden nie als Chronik-Eintrag nachgezogen.
+
+Beide Lücken sind nicht durch Chat 97 verursacht; sie wurden beim Abschluss nur sichtbar.
+
+**Auswirkung:** Sucharbeit beim späteren Nachschlagen — wer „was war in Chat 95?" über die Roadmap rekonstruieren will, findet nichts. Folgewirkung für jede künftige Doku, die auf Chronik-Einträge verlinkt oder „Stand laut Roadmap" als Referenz nimmt.
+
+**Lösungsraum:** Backfill aus den echten Protokollen unter `/mnt/project/Chat_94..96__Protokoll.md` und den entsprechenden Block-2/3/5-Chat-Logs. Sorgfaltsarbeit mit eigenem Audit pro Chat — was wurde tatsächlich gebaut, welche Lessons fielen ab, welche Bugs entstanden. Nicht zwischen Tür und Angel zu erledigen.
+
+**Empfehlung:** Eigener Doku-Sprint, nicht als Nebenarbeit. Alternativ opportunistisch auffüllen — wenn jemand sowieso ein 94/95/96-Detail nachschlagen muss, beim Lesen gleich den Chronik-Eintrag schreiben.
+
+**Verwandt:** ROADMAP-CHRONIK-DOPPELFÜHRUNG — Chronik wird doppelt geführt (Roadmap UND Backlog), was strukturelles Drift-Risiko erzeugt. Separates Thema.
+
+---
+
 ## Sammelposten: AUDIT-1-BEIFANG-PROMOTION — Tote Pfade und Beobachtungen aus PromotionAgent-Audit (Chat 91)
 
 **Status:** ⬜ Strukturell offen, größtenteils mit P9-Löschung erledigt
