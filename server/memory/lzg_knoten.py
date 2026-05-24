@@ -253,3 +253,41 @@ def knoten_verstaerken(postgres_url: str, knoten_id: int) -> Optional[float]:
         return None
     finally:
         conn.close()
+
+
+def knoten_laden(postgres_url: str, knoten_id: int) -> Optional[dict]:
+    """
+    Laedt einen einzelnen Knoten mit seinem Timeline-Bezug in derselben Form
+    wie ein Kandidat aus kandidaten_mit_cosine_laden (ohne cosine). Dient der
+    Kantenbildung des frisch angelegten Knotens (Trigger 1): der neue Knoten
+    muss fuer schichten_ermitteln dieselben Felder tragen wie die Kandidaten
+    (gewicht_absolut, entitaet_ids, themen, timeline_praezision,
+    timeline_event_time).
+
+    Rueckgabe: Knoten-Dict oder None (nicht gefunden / Fehler).
+    """
+    conn = psycopg2.connect(postgres_url)
+    try:
+        with conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cur:
+            cur.execute(
+                """
+                SELECT k.id, k.gewicht_absolut, k.entitaet_ids, k.themen,
+                       k.timeline_id,
+                       t.event_time AS timeline_event_time,
+                       t.precision  AS timeline_praezision
+                FROM lzg_knoten k
+                LEFT JOIN timeline t ON t.id = k.timeline_id
+                WHERE k.id = %s
+                """,
+                (knoten_id,),
+            )
+            zeile = cur.fetchone()
+        if zeile is None:
+            logger.error("knoten_laden: Knoten %s nicht gefunden", knoten_id)
+            return None
+        return dict(zeile)
+    except psycopg2.Error as exc:
+        logger.error("knoten_laden fehlgeschlagen id=%s: %s", knoten_id, exc)
+        return None
+    finally:
+        conn.close()
