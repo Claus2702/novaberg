@@ -88,10 +88,20 @@ class ModelWorker(Generic[TRequest, TResponse]):
         self._running = False
         self._task.cancel()
 
+        # Nur awaiten, wenn der Task noch nicht abgeschlossen ist. Ist die
+        # Schleife bereits über einen Exception-Pfad in _call_model beendet,
+        # ist der Task fertig; ein erneutes await auf die konsumierte
+        # zugrunde liegende Coroutine wirft RuntimeError
+        # ("cannot reuse already awaited coroutine"). Der done()-Guard
+        # schneidet diesen Pfad ab; CancelledError aus dem regulaeren
+        # Cancel-Pfad wird weiterhin geschluckt.
         try:
-            await self._task
+            if not self._task.done():
+                await self._task
         except asyncio.CancelledError:
             pass
+        finally:
+            self._task = None
 
         logger.info("ModelWorker '%s' beendet", self._name)
 
