@@ -117,6 +117,19 @@ class SynapsenPromotionAgent(BaseAgent):
 
     def invoke(self, state: AgentState) -> AgentState:
         """Arbeitet die Promotion-Queue vollstaendig ab (KZG hat TTL)."""
+        # Feature-Flag-Gate (P4): Selbst wenn der Queue-Peek diesen Agenten
+        # ueber die umgeleitete lzg_promotion-Route invoked, bleibt er bei
+        # ausgeschaltetem Flag wirkungslos — er leert die Queue nicht. Der
+        # Flag ist damit der einzige Schalter fuer das gesamte Subsystem.
+        if not SYNAPSEN_PROMOTION_AKTIV:
+            logger.debug(
+                "Synapsen-Promotion: inaktiv (SYNAPSEN_PROMOTION_AKTIV=False) — "
+                "Queue nicht geleert"
+            )
+            state["ergebnis"] = {"promotet": 0, "fehler": 0, "inaktiv": True}
+            state["status"] = "abgeschlossen"
+            return state
+
         user_id: str = state["kontext"].get("context_user_id", DEFAULT_USER_ID)
         queue_key: str = f"queue:{user_id}"
         promotet: int = 0

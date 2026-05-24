@@ -10,7 +10,7 @@ logger = logging.getLogger("ki_server.pixie")
 
 # Mapping: Queue-Aufgabe -> Agent-Name
 _QUEUE_ROUTING: dict[str, str] = {
-    "lzg_promotion": "promotion",
+    "lzg_promotion": "synapsen_promotion",  # Synapsen P4: Queue-Promotion auf neuen Agenten
     "recherche":     "recherche",
     "vertiefen":     "vertiefung",
     "nachfragen":    "nachfragen",
@@ -20,6 +20,7 @@ _QUEUE_ROUTING: dict[str, str] = {
 # Mapping: Periodische Aufgabe (Schedule-Key-Suffix) -> Agent-Name
 _PERIODISCH_ROUTING: dict[str, str] = {
     "promotion":      "promotion",
+    "synapsen_promotion": "synapsen_promotion",  # Synapsen P4
     "decay":          "decay",
     "charakter_hash": "charakter",
     "wiedervorlage":  "wiedervorlage",

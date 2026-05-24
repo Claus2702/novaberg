@@ -53,12 +53,11 @@ class PromotionAgent(BaseAgent):
         return "user"
 
     def periodic_task(self) -> PeriodicTask | None:
-        return PeriodicTask(
-            name="promotion",
-            priority=PIXIE_PROMOTION_PRIORITAET,
-            interval=PIXIE_PROMOTION_INTERVALL_SEKUNDEN,
-            description="KZG -> LZG Promotion (Zwei-Call, Fakten-Extraktion)",
-        )
+        # Synapsen P4: deaktiviert. Der Cluster-Promotion-Pfad ist durch den
+        # SynapsenPromotionAgent abgeloest. None = keine Anmeldung beim
+        # Pixie-Scheduler. Der Queue-Pfad ist via router.py ebenfalls auf den
+        # neuen Agenten umgeleitet. Agent bleibt bis P9 im Repo (dormant).
+        return None
 
     def build_graph(self):
         return None
