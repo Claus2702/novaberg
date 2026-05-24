@@ -27,6 +27,7 @@ import logging
 from json import JSONDecodeError
 from typing import Any
 
+from config import MODEL_BACKGROUND_TIMEOUT_S
 from services.llm_provider import LLMAntwort, LLMProvider
 from services import postprocess
 from services.model_services.types import BackgroundRequest, BackgroundResponse
@@ -48,15 +49,19 @@ class BackgroundWorker(ModelWorker[BackgroundRequest, BackgroundResponse]):
 
     def __init__(
         self,
-        name:             str,
-        analyse_backend:  LLMProvider,
-        sprache_backend:  LLMProvider,
-        max_cjk_retries:  int = 2,
+        name:                   str,
+        analyse_backend:        LLMProvider,
+        sprache_backend:        LLMProvider,
+        max_cjk_retries:        int   = 2,
+        default_submit_timeout: float = MODEL_BACKGROUND_TIMEOUT_S,
     ) -> None:
         """Initialisiert den BackgroundWorker mit beiden Backends.
 
         Vorbedingung: beide Backends sind initialisierte LLMProvider.
-        `max_cjk_retries` ist >= 0.
+        `max_cjk_retries` ist >= 0. `default_submit_timeout` ist > 0 und
+        bemisst die Default-Wartezeit fuer `submit_sync`-Calls (pro Call
+        ueberschreibbar). CPU-Destillationen brauchen deutlich mehr als
+        den 60s-Basis-Default in `ModelWorker.submit_sync`.
         Nachbedingung: Worker bereit fuer `start()`.
         """
 
@@ -73,23 +78,53 @@ class BackgroundWorker(ModelWorker[BackgroundRequest, BackgroundResponse]):
                 f"BackgroundWorker: max_cjk_retries muss >= 0 sein "
                 f"(war {max_cjk_retries})"
             )
+        if default_submit_timeout <= 0:
+            raise ValueError(
+                f"BackgroundWorker: default_submit_timeout muss > 0 sein "
+                f"(war {default_submit_timeout})"
+            )
 
         # ── Verarbeitung ────────────────────────────
         super().__init__(name=name)
-        self._analyse_backend: LLMProvider = analyse_backend
-        self._sprache_backend: LLMProvider = sprache_backend
-        self._max_cjk_retries: int         = max_cjk_retries
+        self._analyse_backend:        LLMProvider = analyse_backend
+        self._sprache_backend:        LLMProvider = sprache_backend
+        self._max_cjk_retries:        int         = max_cjk_retries
+        self._default_submit_timeout: float       = default_submit_timeout
 
         analyse_modell: str = getattr(analyse_backend, "_model", "?")
         sprache_modell: str = getattr(sprache_backend, "_model", "?")
         logger.info(
             "BackgroundWorker '%s' konfiguriert: "
-            "analyse=%s/%s, sprache=%s/%s, max_cjk_retries=%d",
+            "analyse=%s/%s, sprache=%s/%s, max_cjk_retries=%d, "
+            "default_submit_timeout=%.1fs",
             name,
             type(analyse_backend).__name__, analyse_modell,
             type(sprache_backend).__name__, sprache_modell,
             max_cjk_retries,
+            default_submit_timeout,
         )
+
+    def submit_sync(
+        self,
+        request: BackgroundRequest,
+        timeout: float | None = None,
+    ) -> BackgroundResponse:
+        """Sync-Bruecke mit Background-eigenem Timeout-Default.
+
+        Vorbedingung: Worker via `start()` initialisiert.
+        Nachbedingung: BackgroundResponse oder TimeoutError nach effektivem
+        Timeout. `timeout=None` ⇒ Instanz-Default `_default_submit_timeout`
+        greift (per Konstruktor injiziert). Pro Call ueberschreibbar.
+
+        CPU-Destillationen (qwen36-cpu 36B MoE) brauchen deutlich laenger
+        als der 60s-Basis-Default in `ModelWorker.submit_sync`. Chat- und
+        Embed-Worker bleiben unberuehrt — sie erben weiter den 60s-Default
+        und behalten ihre Fruehwarn-Eigenschaft.
+        """
+        effektiver_timeout: float = (
+            timeout if timeout is not None else self._default_submit_timeout
+        )
+        return super().submit_sync(request, timeout=effektiver_timeout)
 
     def _backend_fuer_modus(self, modus: str) -> LLMProvider:
         """Liefert das Backend fuer einen Modus. Fail-loud bei Unbekanntem."""

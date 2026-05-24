@@ -134,6 +134,11 @@ MODEL_WORKER_BACKENDS: dict[str, str] = {
     "background_sprache": os.getenv("WORKER_BACKEND_BG_SPRACHE", "ollama_cpu_sprache"),
 }
 
+# Submit-Timeout fuer Background-Worker (CPU-Generation, z.B. qwen36-cpu 36B MoE).
+# Deutlich hoeher als der 60s-Basis-Default, weil CPU-Destillationen ~2min dauern.
+# Chat/Embed behalten den 60s-Basis-Default (Fruehwarn-Eigenschaft).
+MODEL_BACKGROUND_TIMEOUT_S: float = float(os.getenv("MODEL_BACKGROUND_TIMEOUT_S", "300"))
+
 # ─────────────────────────────────────────────
 # Anthropic — Backend "anthropic" (per Worker wählbar, siehe MODEL_WORKER_BACKENDS)
 # ─────────────────────────────────────────────
