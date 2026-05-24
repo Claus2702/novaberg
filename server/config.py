@@ -1108,11 +1108,11 @@ LZG_KNOTEN_REINFORCEMENT_BOOST: float = float(os.getenv("LZG_KNOTEN_REINFORCEMEN
 # Match auf bloss verwandte Eintraege feuert.
 LZG_KNOTEN_MATCH_SCHWELLE: float = float(os.getenv("LZG_KNOTEN_MATCH_SCHWELLE", "0.85"))
 
-# Feature-Flag Synapsen P4. False = alte Cluster-Promotion (Tabelle
-# langzeitgedaechtnis) aktiv. True = neue Synapsen-Promotion (lzg_knoten/
-# lzg_kanten). Auf True erst nach P4-Test. Beide Code-Pfade bleiben bis
-# P9 im Repository.
-SYNAPSEN_PROMOTION_AKTIV: bool = os.getenv("SYNAPSEN_PROMOTION_AKTIV", "false").lower() == "true"
+# Feature-Flag Synapsen P4. Jetzt aktiv (Chat 98): Live-Promotion laeuft
+# ueber den SynapsenPromotionAgent (lzg_knoten/lzg_kanten); der alte
+# Cluster-Pfad (Tabelle langzeitgedaechtnis) ist deaktiviert. Beide
+# Code-Pfade bleiben bis P9 im Repo.
+SYNAPSEN_PROMOTION_AKTIV: bool = os.getenv("SYNAPSEN_PROMOTION_AKTIV", "true").lower() == "true"
 
 
 # ============================================================================
