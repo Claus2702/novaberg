@@ -276,10 +276,10 @@ Die fünf Blöcke werden in folgender Reihenfolge umgesetzt: Block 1 (Embedding)
 
 Nach Abschluss aller fünf Blöcke:
 
-1. **Connector-Switch.** `OLLAMA_CONNECTOR=qwen36` als Default in `config.py`.
-2. **Alte CPU-Modelle löschen.** `gemma4-cpu`, `qwen3-32b-cpu`, drei Mistral-Varianten — zusammen ~52 GB Plattenplatz frei.
-3. **Pixie reaktivieren.** `PIXIE_AKTIV=True` setzen, kombiniert mit dem Hardcoded-Fix `CONFIG-PIXIE-AKTIV-HARDCODED`. Pixie war seit der Hardware-Notfall-Abschaltung deaktiviert; mit Qwen 3.6 ist die Last-Situation entspannt genug, um sie wieder laufen zu lassen.
-4. **Pixie-Reaktivierung verifizieren.** Heartbeat-Tick, eine Recherche-Aufgabe durchlaufen lassen, Promotion-Lauf ansehen, `_audit_log` auf Stille prüfen. Wenn alles grün ist, ist die MS-Welle abgeschlossen und P4 darf loslegen.
+1. **Connector-Switch.** `OLLAMA_CONNECTOR: qwen36` als Env in der echten `docker-compose.yml`. Der `config.py`-Default bleibt bewusst `gemma4` — er ist der Fallback-Anker für den Standard-Betrieb ohne Env, nicht der aktive Schalter. Aktivierung über Env, nicht über den Code-Default.
+2. **Pixie reaktivieren.** `PIXIE_AKTIV=True` setzen, kombiniert mit dem Hardcoded-Fix `CONFIG-PIXIE-AKTIV-HARDCODED`. Pixie war seit der Hardware-Notfall-Abschaltung deaktiviert; mit Qwen 3.6 ist die Last-Situation entspannt genug, um sie wieder laufen zu lassen.
+3. **Pixie-Reaktivierung verifizieren.** Heartbeat-Tick, eine Recherche-Aufgabe durchlaufen lassen, Promotion-Lauf ansehen, `_audit_log` auf Stille prüfen. Wenn alles grün ist, ist die MS-Welle abgeschlossen und P4 darf loslegen.
+4. **Alte CPU-Modelle löschen.** `gemma4-cpu`, `qwen3-32b-cpu`, drei Mistral-Varianten — zusammen ~52 GB Plattenplatz frei. Löschen zuletzt — die alten CPU-Modelle bleiben Fallback, bis der Background-Pfad auf `qwen36-cpu` verifiziert durchläuft.
 
 ---
 
