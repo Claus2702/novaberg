@@ -8,7 +8,7 @@ import logging
 
 from agents.base import AgentState
 from services.shadow_agent.utils import shadow_queue_push
-from config import ASSISTANT_USER_ID, redis_client, KZG_SALIENZ_HIGH, KZG_VERTIEFUNG_HAEUFIGKEIT, PIXIE_AKTIV
+from config import ASSISTANT_USER_ID, redis_client, KZG_SALIENZ_HIGH, PIXIE_AKTIV
 
 logger = logging.getLogger("ki_server.agents.kzg.queues")
 
@@ -59,39 +59,14 @@ def queues_befuellen(state: AgentState) -> dict:
 
     # Exakte Werte aus speicher.py
     neue_salienz:     float = state["parameter"].get("neue_salienz", salienz)
-    neue_haeufigkeit: int   = state["parameter"].get("neue_haeufigkeit", 1)
     kzg_key:          str   = state["parameter"].get("kzg_key", "")
     kzg_themen_str:   str   = state["parameter"].get("kzg_themen_str", "")
     kzg_dimension:    str   = state["parameter"].get("kzg_dimension", "")
 
     aktionen: list[str] = []
 
-    if speicher_status == "verstaerkt":
-        # Promotion bei hoher Salienz
-        if neue_salienz >= KZG_SALIENZ_HIGH:
-            existing = state["parameter"].get("existing", {})
-            redis_client.rpush(f"queue:{user_id}", json.dumps({
-                "aufgabe":   "lzg_promotion",
-                "key":       kzg_key,
-                "salienz":   neue_salienz,
-                "themen":    existing.get("themen", ""),
-                "dimension": existing.get("dimension", ""),
-            }))
-            aktionen.append("promotion")
-
-        # Shadow bei haeufiger Wiederholung
-        if neue_haeufigkeit >= KZG_VERTIEFUNG_HAEUFIGKEIT and neue_salienz >= KZG_SALIENZ_HIGH and user_id != ASSISTANT_USER_ID:
-            existing = state["parameter"].get("existing", {})
-            shadow_queue_push(
-                redis_client=redis_client, user_id=user_id,
-                aufgabe="vertiefen", thema=existing.get("themen", ""),
-                kontext=existing.get("inhalt", ""),
-                prioritaet=neue_salienz,
-                intentionen=intentionen, emotion=emotion, modus=modus,
-            )
-            aktionen.append("shadow_vertiefen")
-
-    elif speicher_status == "neu":
+    # Promotion + Shadow fuer den frisch angelegten Eintrag.
+    if speicher_status == "neu":
         kern: str = state["parameter"].get("kern", "")
 
         if neue_salienz >= KZG_SALIENZ_HIGH:
@@ -114,6 +89,21 @@ def queues_befuellen(state: AgentState) -> dict:
                     emotion=emotion, modus=modus,
                 )
                 aktionen.append(f"shadow_{aufgabe}")
+
+    # Promotion fuer thematisch verstaerkte Nachbarn, die durch den Boost
+    # ueber KZG_SALIENZ_HIGH gestiegen sind (PROMO-VERSTAERKT-BLIND-Fix).
+    # Laeuft unabhaengig vom speicher_status: ein Turn legt einen neuen
+    # Eintrag an UND hebt ggf. mehrere Nachbarn ueber die Schwelle.
+    for verstaerkt_eintrag in state["parameter"].get("verstaerkte_eintraege", []):
+        if verstaerkt_eintrag["salienz"] >= KZG_SALIENZ_HIGH:
+            redis_client.rpush(f"queue:{user_id}", json.dumps({
+                "aufgabe":   "lzg_promotion",
+                "key":       verstaerkt_eintrag["key"],
+                "salienz":   verstaerkt_eintrag["salienz"],
+                "themen":    verstaerkt_eintrag.get("themen", ""),
+                "dimension": "",
+            }))
+            aktionen.append("promotion_verstaerkt")
 
     # Dirty-Flag fuer Hash-Destillation
     redis_client.set(f"hash_dirty:{user_id}:{character_id}", "1")

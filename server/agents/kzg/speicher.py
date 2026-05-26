@@ -76,10 +76,10 @@ def speichern(state: AgentState) -> dict:
     neue_themen: set[str] = set(
         t.strip().lower() for t in salienz_obj.get("themen", []) if t.strip()
     )
-    verstaerkt_count: int = 0
+    verstaerkte_eintraege: list[dict] = []
 
     if neue_themen:
-        verstaerkt_count = _thematisch_verstaerken(
+        verstaerkte_eintraege = _thematisch_verstaerken(
             user_id, character_id, ergebnis.get("key", ""),
             neue_themen, salienz,
         )
@@ -94,11 +94,12 @@ def speichern(state: AgentState) -> dict:
             "kzg_dimension":       ergebnis.get("dimension", ""),
             "neue_salienz":        salienz,
             "neue_haeufigkeit":    1,
-            "verstaerkt_verwandt": verstaerkt_count,
+            "verstaerkt_verwandt": len(verstaerkte_eintraege),
+            "verstaerkte_eintraege": verstaerkte_eintraege,
         },
         "schritte": state["schritte"] + [
             {"node": "speichern", "ergebnis": ergebnis["status"],
-             "verstaerkt_verwandt": verstaerkt_count}
+             "verstaerkt_verwandt": len(verstaerkte_eintraege)}
         ],
     }
 
@@ -132,7 +133,7 @@ def _thematisch_verstaerken(
     eigener_key:   str,
     neue_themen:   set[str],
     salienz:       float,
-) -> int:
+) -> list[dict]:
     """Verstärkt thematisch verwandte KZG-Einträge in der Paar-Partition.
 
     Verstärkungsschema (KZG):
@@ -144,11 +145,13 @@ def _thematisch_verstaerken(
     Der scharfe Kern jedes Eintrags bleibt exakt erhalten.
 
     Returns:
-        Anzahl verstärkter Einträge.
+        Liste der verstärkten Einträge als Dicts mit key, salienz, themen.
+        Jeder Eintrag, dessen geboostete Salienz KZG_SALIENZ_HIGH erreicht,
+        wird in queues_befuellen zur Promotion eingereiht.
     """
     prefix: str = f"kzg:{user_id}:{character_id}:"
     keys: list = redis_client.keys(f"{prefix}*")
-    verstaerkt: int = 0
+    verstaerkte: list[dict] = []
 
     for key in keys:
         if isinstance(key, bytes):
@@ -196,7 +199,11 @@ def _thematisch_verstaerken(
             effektiver_ttl: int = max(verbleibend, neuer_ttl)
             redis_client.expire(key, effektiver_ttl)
 
-            verstaerkt += 1
+            verstaerkte.append({
+                "key":     key,
+                "salienz": neue_salienz,
+                "themen":  existing_themen_raw,
+            })
 
             logger.info(
                 f"KZG Verstärkung: {key} — "
@@ -209,13 +216,13 @@ def _thematisch_verstaerken(
         except Exception as ex:
             logger.warning(f"KZG Verstärkung: Fehler bei {key}: {ex}")
 
-    if verstaerkt > 0:
+    if verstaerkte:
         logger.info(
-            f"KZG Verstärkung: {verstaerkt} verwandte Einträge verstärkt "
+            f"KZG Verstärkung: {len(verstaerkte)} verwandte Einträge verstärkt "
             f"für {user_id}:{character_id}"
         )
 
-    return verstaerkt
+    return verstaerkte
 
 
 def _neu_anlegen(
