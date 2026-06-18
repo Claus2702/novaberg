@@ -2802,6 +2802,70 @@ Sieben Beifang-Punkte aus dem Audit-Sweep, die nicht zur P4-Klärung beitrugen, 
 
 ---
 
+## Cleanup: QUEUE-SCHEMA-STALE — `queue:nova` mit toten Aufträgen aus Pre-Paar-Schema (Chat 98)
+
+`queue:nova` enthält 34 tote Aufträge im Zwischenschema `kzg:nova:nova:` aus der Zeit vor der Paar-Migration. Die Paar-Migration hat die Queue übersehen — klassisches „missing write path after migration". Beißt aktuell nicht, weil der scharfe Pfad `queue:meister` liest; bleibt aber als Altlast in Redis stehen.
+
+**Fix:** `docker exec ki_redis redis-cli del queue:nova`.
+
+---
+
+## Refactor: SCHED-STALE-SCHEDULE — Startup räumt `pixie:schedule:*` nicht (Chat 98)
+
+`main.py` registriert periodische Pixie-Aufgaben mit `if not redis_client.exists(key)` und ohne Startup-Cleanup. Veraltete `pixie:schedule:*`-Keys persistieren über Agenten-Wechsel hinweg — in Chat 98 mussten beim Wechsel Promotion → SynapsenPromotion die alten Keys manuell per `DEL` geräumt werden.
+
+**Fix:** Startup soll `pixie:schedule:*` bereinigen und aus dem aktuellen `periodic_task()` jedes registrierten Agenten neu aufbauen. Beißt sonst bei jedem künftigen Agenten-Wechsel wieder.
+
+---
+
+## Bug: SHADOW-PAYLOAD-FIELD-MISMATCH — Dispatch liest Felder, die Shadow-Queue nicht schreibt (Chat 98)
+
+`pixie/dispatch.py` liest aus dem Payload `eintrag["themen"]` und `eintrag["salienz"]`. Die Promotion-Queue (`queue:{user_id}`) schreibt diese Felder, die Shadow-Queue (`shadow_queue_push` in `services/shadow_agent/utils.py`) schreibt aber `"thema"` (Singular) und `"prioritaet"`. Damit sind `state["kontext"]["themen"]` und `state["kontext"]["salienz"]` auf dem Shadow-Pfad strukturell leer.
+
+Heute kein akuter Bug: `RechercheAgent` liest `"thema"` direkt aus `state["parameter"]` (= rohes Eintrag-Dict), die beiden Dispatch-Kontextfelder werden auf dem Shadow-Pfad nirgends gelesen.
+
+**Optionen:**
+
+- (a) Dispatch payload-spezifisch lesen (Shadow- vs. Promotion-Schema).
+- (b) Felder in `shadow_queue_push` an das Dispatch-Schema angleichen (`themen`, `salienz`).
+- (c) Konzept klären, welches Schema das richtige ist, dann beide Seiten ziehen.
+
+---
+
+## Refactor: WIEDERVORLAGE-MULTI-USER — Periodische Aufgaben pro User statt global (Chat 98)
+
+`agents/wiedervorlage/agent.py` läuft periodisch, `dispatch.py` setzt `kontext={}` für periodische Aufträge. Damit greift der `DEFAULT_USER_ID`-Fallback strukturell — Wiedervorlage prüft heute nur für `meister`. Multi-User-Wiedervorlage braucht einen Scheduler-Umbau: periodische Aufgaben pro User registrieren statt global über `pixie:schedule:*`.
+
+Auslöser: Fix für PROMO-QUEUE-USER-MISMATCH (Chat 98) hat den Lese-Pfad auf `kontext.user_id` umgestellt; der periodische Pfad bleibt damit strukturell auf `DEFAULT_USER_ID`, sichtbar dokumentiert per Inline-Kommentar im Agent.
+
+---
+
+## Sprint: SYNAPSEN-LIVE-VERIFY — Entitäts- und Timeline-Kantenschicht unter Live-Last bestätigen (Chat 98)
+
+Entitäts- und Timeline-Kantenschicht des Synapsen-Netzes sind unter Live-Last noch nicht verifiziert. Embedding- und Themen-Schicht sind bestätigt (Migration: 110 Kanten; Live: 55+ Kanten an den ersten Live-Knoten 91–101).
+
+Entitäts-Magneten existieren live (Knoten 93 mit `entitaet_ids={234,235}`, Knoten 98 mit `{210}`), bilden aber noch keine Kanten — die Migrations-Knoten tragen keine `entitaet_ids`, also greift die Schicht erst, wenn ein zweiter Live-Knoten dieselbe Entität referenziert. Timeline-Schicht analog: kein Knoten mit `timeline_id` im Live-Bestand.
+
+Verifikation erfolgt von selbst beim ersten passenden Folge-Turn; bewusst kein synthetisches Trigger-Skript.
+
+---
+
+## Sprint: SYNAPSEN-DUAL-LZG — Lesepfad auf `lzg_knoten`/`lzg_kanten` umstellen (Chat 98)
+
+`langzeitgedaechtnis` (alt) und `lzg_knoten`/`lzg_kanten` (neu) existieren parallel. Der Lesepfad (Enricher, gv-node usw.) liest noch aus `langzeitgedaechtnis`. Umbau auf das Synapsen-Netz steht aus — eigener Sprint nach Live-Bewährung.
+
+Die Migration hat 90 Knoten + 110 Kanten erzeugt, der Bestand ist da und wartet auf den Konsumenten. Solange der Lesepfad noch das alte Schema bedient, fließt das neue Netz zwar voll, beeinflusst aber den Turn nicht.
+
+---
+
+## Frage: KZG-GEWICHT-ABSOLUT-CEILING — sin^0.5-Dämpfung klemmt bei `roh >= CAP` (Chat 98)
+
+Live-Knoten mit `roh > CAP` produzieren `absolut = 10.00`. Live-Beispiele: `roh = 10.10` → `absolut = 10.00` in vier von fünf Knoten 97–101. Die sin^0.5-Dämpfung in `gewicht_absolut_berechnen` klemmt bei `roh >= CAP` strukturell.
+
+**Zu klären:** Ist die Live-Salienz-Skala strukturell höher als die Konzept-Annahme (Konzept: 0..10) — dann wäre der CAP zu eng — oder soll die Dämpfung über den Cap hinaus weichen, sodass `roh > CAP` weiterhin in einen offenen Bereich abgebildet wird?
+
+---
+
 ## 8. Offene Bugs
 
 Vollständige Bug-Dokumentation → `novaberg-bugs.md`
