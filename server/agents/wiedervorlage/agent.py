@@ -85,7 +85,11 @@ class WiedervorlageAgent(BaseAgent):
     def invoke(self, state: AgentState) -> AgentState:
         """Prueft faellige Wiedervorlagen und erstellt Erinnerungen."""
 
-        user_id: str = state["kontext"].get("context_user_id", DEFAULT_USER_ID)
+        # Periodischer Pfad: dispatch.py setzt kontext={}, daher greift hier
+        # strukturell der DEFAULT_USER_ID-Fallback. Multi-User-Wiedervorlage
+        # braucht Scheduler-Umbau (Aufgaben pro User) — Backlog
+        # WIEDERVORLAGE-MULTI-USER.
+        user_id: str = state["kontext"].get("user_id", "") or DEFAULT_USER_ID
 
         # ── Faellige sammeln ─────────────────
         faellige: list[dict] = self._faellige_sammeln(user_id)

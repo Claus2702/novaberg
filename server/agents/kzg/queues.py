@@ -72,6 +72,7 @@ def queues_befuellen(state: AgentState) -> dict:
         if neue_salienz >= KZG_SALIENZ_HIGH:
             redis_client.rpush(f"queue:{user_id}", json.dumps({
                 "aufgabe":   "lzg_promotion",
+                "user_id":   user_id,
                 "key":       kzg_key,
                 "salienz":   neue_salienz,
                 "themen":    kzg_themen_str,
@@ -98,6 +99,7 @@ def queues_befuellen(state: AgentState) -> dict:
         if verstaerkt_eintrag["salienz"] >= KZG_SALIENZ_HIGH:
             redis_client.rpush(f"queue:{user_id}", json.dumps({
                 "aufgabe":   "lzg_promotion",
+                "user_id":   user_id,
                 "key":       verstaerkt_eintrag["key"],
                 "salienz":   verstaerkt_eintrag["salienz"],
                 "themen":    verstaerkt_eintrag.get("themen", ""),

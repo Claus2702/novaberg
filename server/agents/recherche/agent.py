@@ -130,7 +130,7 @@ class RechercheAgent(BaseAgent):
         6. Destillation (LLM)
         7. Ergebnis -> Shadow-Stack + Novas KZG
         """
-        user_id: str = state["kontext"].get("context_user_id", DEFAULT_USER_ID)
+        user_id: str = state["kontext"].get("user_id", "") or DEFAULT_USER_ID
         queue_eintrag: dict = state.get("parameter", {})
         thema: str = queue_eintrag.get("thema", "")
 

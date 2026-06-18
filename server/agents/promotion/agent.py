@@ -100,7 +100,7 @@ class PromotionAgent(BaseAgent):
 
     def invoke(self, state: AgentState) -> AgentState:
         """Arbeitet die Promotion-Queue komplett ab."""
-        user_id: str = state["kontext"].get("context_user_id", DEFAULT_USER_ID)
+        user_id: str = state["kontext"].get("user_id", "") or DEFAULT_USER_ID
         queue_key: str = f"queue:{user_id}"
         promotet: int = 0
         fehler:   int = 0

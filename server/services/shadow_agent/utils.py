@@ -33,6 +33,7 @@ def shadow_queue_push(
 
     eintrag: dict = {
         "aufgabe":     aufgabe,
+        "user_id":     user_id,
         "thema":       thema,
         "kontext":     kontext,
         "prioritaet":  prioritaet,
