@@ -172,6 +172,32 @@ CLUSTER_FRAGEN: dict[str, str] = {
 
 
 # ─────────────────────────────────────────────
+# Spreading-Activation: Sprung-Tiefe pro GV-Cluster
+# ─────────────────────────────────────────────
+# Steuert, wie weit der Synapsen-Lesepfad ueber die Kanten von den
+# Initial-Treffern aus assoziativ weiterschweift (Konzept §8.2.1).
+# 0 = keine Assoziation (Fokus-Cluster, nur Direkt-Treffer);
+# hoehere Werte = weiteres assoziatives Schweifen ueber mehr Kanten-Spruenge.
+
+CLUSTER_ENRICHER_SPRUENGE: dict[str, int] = {
+    "feuerwerk":     3,
+    "kissenschlacht":2,
+    "werkstatt":     0,
+    "glut":          3,
+    "bier":          2,
+    "foyer":         0,
+    "regen":         1,
+    "schmollen":     1,
+    "nebel":         1,
+    "gewitter":      1,
+    "schlachtfeld":  0,
+    "beichte":       1,
+    "wartezimmer":   1,
+    "paradox":       1,
+}
+
+
+# ─────────────────────────────────────────────
 # Strategie-Beschreibungen (fuer Charakter-Gewichtung)
 # ─────────────────────────────────────────────
 # Diese Texte werden embedded und gegen den Charakter-Hash verglichen.
