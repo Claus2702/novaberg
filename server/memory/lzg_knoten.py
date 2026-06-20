@@ -30,6 +30,8 @@ from config import (
     LZG_KNOTEN_DAEMPFUNG_EXP,
     LZG_KNOTEN_REINFORCEMENT_BOOST,
     LZG_KNOTEN_MATCH_SCHWELLE,
+    EMOTION_SEKTOR_MAP,
+    EMOTION_SYNONYM_MAP,
 )
 
 logger = logging.getLogger(__name__)
@@ -363,3 +365,309 @@ def knoten_laden(postgres_url: str, knoten_id: int) -> Optional[dict]:
         return None
     finally:
         conn.close()
+
+
+# ════════════════════════════════════════════════════════════════════════
+# Synapsen-Lesepfad — Spreading-Activation (Synapsen P5, Konzept §8.2/§8.3)
+# ════════════════════════════════════════════════════════════════════════
+# Das Sortier-Gewicht einer Erinnerung ist gewicht_decay × SCHALEN_FAKTOR ×
+# Plutchik-Sektor-Faktor (§8.3.1). Die folgenden Modul-Konstanten parametrieren
+# die Geometrie des Schweifens.
+
+# Daempfung pro Schale (Sprung-Distanz vom Anker): direkte Treffer voll,
+# entferntere Assoziationen zunehmend gedaempft (§8.3.1).
+SCHALEN_FAKTOR: dict[int, float] = {0: 1.0, 1: 0.75, 2: 0.50, 3: 0.25}
+
+# K pro Schale (§8.2.2): wie viele staerkste Kanten pro Knoten je Sprung
+# verfolgt werden. Schale 1 faechert breiter auf als die tieferen Schalen.
+K_PRO_TIEFE: dict[int, int] = {0: 0, 1: 3, 2: 2, 3: 2}
+
+# Ring-Abstand (0-4) zweier Plutchik-Sektoren -> Affinitaets-Faktor (§8.3.1).
+SEKTOR_ABSTAND_FAKTOR: dict[int, float] = {0: 1.0, 1: 0.9, 2: 0.8, 3: 0.7, 4: 0.6}
+
+
+def _sektor_faktor(emotion_a: str, emotion_b: str) -> float:
+    """
+    Plutchik-Affinitaet zweier Emotionen (§8.3.1): wie aehnlich faerbt die
+    aktuelle Stimmung (a) eine erinnerte Emotion (b).
+
+    Beide Labels werden via EMOTION_SYNONYM_MAP kanonisiert und ueber
+    EMOTION_SEKTOR_MAP auf ihren Plutchik-Sektor (1-8) abgebildet. Hat eine
+    Seite keinen Sektor (neutral/leer/unbekannt), faerbt sie nicht: Faktor 1.0
+    ("Sachliches Denken faerbt Erinnerungen nicht").
+
+    Der Ring-Abstand wird hier selbst gerechnet (min(|d|, 8-|d|)), weil
+    EMOTION_SEKTOR_DISTANZ aus config.py Normalisierungs-Exponenten liefert,
+    nicht den reinen Ring-Abstand.
+    """
+    def _sektor(emotion: str) -> Optional[int]:
+        label = (emotion or "").strip().lower()
+        if not label or label == "neutral":
+            return None
+        label = EMOTION_SYNONYM_MAP.get(label, label)
+        return EMOTION_SEKTOR_MAP.get(label)
+
+    sektor_a = _sektor(emotion_a)
+    sektor_b = _sektor(emotion_b)
+    if sektor_a is None or sektor_b is None:
+        return 1.0
+    direkt = abs(sektor_a - sektor_b)
+    abstand = min(direkt, 8 - direkt)
+    return SEKTOR_ABSTAND_FAKTOR[abstand]
+
+
+def _kanten_nachbarn(
+    postgres_url: str,
+    knoten_id: int,
+    vorgaenger_knoten_id: Optional[int],
+    top_k: int,
+) -> list[dict]:
+    """
+    Laedt die staerksten AUSGEHENDEN Kanten eines Knotens fuer das Spreading
+    (§8.2.2).
+
+    lzg_kanten ist gerichtet (knoten_a_id = Quelle, knoten_b_id = Ziel; A->B
+    und B->A sind separate Zeilen mit verschiedenen Gewichten). Es werden nur
+    ausgehende Kanten verfolgt (knoten_a_id = X); der Nachbar ist stets das
+    Ziel knoten_b_id. Die Vorgaenger-Sperre (§8.2.3) verhindert den direkten
+    Ruecksprung: die ausgehende Kante, deren Ziel der Vorgaenger-Knoten ist,
+    wird ausgeschlossen (vorgaenger_knoten_id, falls gesetzt). Der Ruecksprung
+    B->A ist eine eigene gerichtete Kante, daher knoten- statt kanten-id-basiert.
+    Kanten-Gewicht ist gewicht_absolut (§8.2.2/§9.5: Kanten referenzieren die
+    Anker-Staerke), absteigend sortiert, max top_k.
+
+    Rueckgabe pro Nachbar-Kante: {nachbar_knoten_id, kante_id, gewicht_absolut,
+    verbindungs_gruende, geteilte_entitaet_ids, geteilte_themen}. Leere Liste
+    bei DB-Fehler.
+    """
+    conn = psycopg2.connect(postgres_url)
+    try:
+        with conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cur:
+            cur.execute(
+                """
+                SELECT id, knoten_a_id, knoten_b_id, gewicht_absolut,
+                       verbindungs_gruende, geteilte_entitaet_ids, geteilte_themen
+                FROM lzg_kanten
+                WHERE knoten_a_id = %s
+                  AND (%s::int IS NULL OR knoten_b_id <> %s::int)
+                ORDER BY gewicht_absolut DESC
+                LIMIT %s
+                """,
+                (knoten_id, vorgaenger_knoten_id, vorgaenger_knoten_id, top_k),
+            )
+            kanten = [dict(row) for row in cur.fetchall()]
+        nachbarn: list[dict] = []
+        for kante in kanten:
+            # Gerichtete Kante: knoten_a_id = X (Quelle), Nachbar = Ziel knoten_b_id.
+            nachbarn.append({
+                "nachbar_knoten_id":     kante["knoten_b_id"],
+                "kante_id":              kante["id"],
+                "gewicht_absolut":       kante["gewicht_absolut"],
+                "verbindungs_gruende":   kante["verbindungs_gruende"],
+                "geteilte_entitaet_ids": kante["geteilte_entitaet_ids"],
+                "geteilte_themen":       kante["geteilte_themen"],
+            })
+        logger.debug("Kanten-Nachbarn: knoten=%s vorgaenger=%s -> %d ausgehende Nachbarn",
+                     knoten_id, vorgaenger_knoten_id, len(nachbarn))
+        return nachbarn
+    except psycopg2.Error as exc:
+        logger.error("_kanten_nachbarn fehlgeschlagen knoten=%s: %s", knoten_id, exc)
+        return []
+    finally:
+        conn.close()
+
+
+def _knoten_details_laden(postgres_url: str, knoten_id: int) -> Optional[dict]:
+    """
+    Laedt die Lesepfad-Detailfelder eines Knotens (§8.4.2 Erinnerungs-Ebene):
+    id, inhalt, dimension, gewicht_decay, emotion, arousal, themen,
+    entitaet_ids, erstellt_am. Nur aktive Knoten (§8.3.1).
+
+    Eigene Quelle statt knoten_laden, weil knoten_laden fuer die Kantenbildung
+    gewicht_absolut (ohne emotion/inhalt) liefert; der Lesepfad braucht die
+    aktuelle Praesenz gewicht_decay und die emotionalen/inhaltlichen Felder.
+
+    Rueckgabe: Knoten-Dict oder None (inaktiv, geloescht oder DB-Fehler).
+    """
+    conn = psycopg2.connect(postgres_url)
+    try:
+        with conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cur:
+            cur.execute(
+                """
+                SELECT id, inhalt, dimension, gewicht_decay, emotion,
+                       arousal, themen, entitaet_ids, erstellt_am
+                FROM lzg_knoten
+                WHERE id = %s AND aktiv = TRUE
+                """,
+                (knoten_id,),
+            )
+            zeile = cur.fetchone()
+        if zeile is None:
+            logger.debug("_knoten_details_laden: Knoten %s nicht gefunden/inaktiv", knoten_id)
+            return None
+        return dict(zeile)
+    except psycopg2.Error as exc:
+        logger.error("_knoten_details_laden fehlgeschlagen id=%s: %s", knoten_id, exc)
+        return None
+    finally:
+        conn.close()
+
+
+def _sortier_gewicht(
+    gewicht_decay: float,
+    schale: int,
+    nova_emotion: str,
+    knoten_emotion: str,
+) -> float:
+    """
+    Sortier-Gewicht einer Erinnerung im Lesepfad (§8.3.1):
+    gewicht_decay × SCHALEN_FAKTOR[schale] × _sektor_faktor(nova, knoten).
+    """
+    return (
+        (gewicht_decay or 0.0)
+        * SCHALEN_FAKTOR.get(schale, 0.0)
+        * _sektor_faktor(nova_emotion, knoten_emotion)
+    )
+
+
+def spreading_lesen(
+    postgres_url: str,
+    user_id: str,
+    character_id: str,
+    embedding_str: str,
+    cluster: str,
+    nova_emotion: str,
+    *,
+    anker_anzahl: int = 3,
+) -> list[dict]:
+    """
+    Herzstueck des Synapsen-Lesepfads (Konzept §8.2/§8.3): holt die Anker
+    (anker_retrieval, Schale 0), schweift cluster-abhaengig tief ueber
+    lzg_kanten (Spreading-Activation mit Vorgaenger-Sperre und K pro Schale),
+    gewichtet (gewicht_decay × Schale × Plutchik-Sektor), dedupliziert mit
+    Schalen-Praeferenz und liefert die Top-3 Erinnerungen inklusive
+    Pfad-Information (§8.4.2 Erinnerungs-Ebene).
+
+    Die umgebende State-Struktur (sprung_tiefe, cluster, nova_sektor, ...) baut
+    der Enricher (Teil 4); diese Funktion liefert nur die Erinnerungs-Liste.
+    Leerer Anker-Pool (kein Cosine-Treffer) -> leere Liste (Cold-Start).
+    """
+    from ei.dreischicht import CLUSTER_ENRICHER_SPRUENGE
+
+    # 1. Sprung-Tiefe aus dem GV-Cluster (Default 1 = paradox-Fallback bei
+    #    unbekanntem Cluster).
+    tiefe = CLUSTER_ENRICHER_SPRUENGE.get(cluster, 1)
+
+    # 2. Anker (Schale 0). Kein Treffer -> sauberer Cold-Start.
+    anker = anker_retrieval(
+        postgres_url, user_id, character_id, embedding_str, top_k=anker_anzahl
+    )
+    if not anker:
+        logger.info("Spreading-Lesen: 0 Anker (Cold-Start) paar=%s/%s cluster=%s",
+                    user_id, character_id, cluster)
+        return []
+
+    pool: list[dict] = []
+    for a in anker:
+        pool.append({
+            "knoten_id":         a["id"],
+            "inhalt":            a.get("inhalt"),
+            "themen":            a.get("themen"),
+            "entitaet_ids":      a.get("entitaet_ids"),
+            "emotion":           a.get("emotion") or "",
+            "erstellt_am":       a.get("erstellt_am"),
+            "gewicht_decay":     a.get("gewicht_decay") or 0.0,
+            "schale":            0,
+            "pfad":              [],
+            "vorgaenger_knoten_id": None,
+        })
+
+    # 4. Spreading-Schleife Schale 1..tiefe. Von jedem Knoten der Vorschale aus
+    #    die K staerksten ausgehenden Kanten verfolgen; der Ruecksprung zum
+    #    Vorgaenger-Knoten ist gesperrt.
+    vorschale: list[dict] = list(pool)
+    for schale in range(1, tiefe + 1):
+        k = K_PRO_TIEFE.get(schale, 0)
+        naechste: list[dict] = []
+        for knoten in vorschale:
+            nachbarn = _kanten_nachbarn(
+                postgres_url, knoten["knoten_id"],
+                vorgaenger_knoten_id=knoten["vorgaenger_knoten_id"], top_k=k,
+            )
+            for nachbar in nachbarn:
+                detail = _knoten_details_laden(postgres_url, nachbar["nachbar_knoten_id"])
+                if detail is None:
+                    continue  # inaktiv/geloescht -> Sackgasse, kein Fehler
+                schritt = {
+                    "von_knoten_id":         knoten["knoten_id"],
+                    "kante_id":              nachbar["kante_id"],
+                    "verbindungs_gruende":   nachbar["verbindungs_gruende"],
+                    "geteilte_entitaet_ids": nachbar["geteilte_entitaet_ids"],
+                    "geteilte_themen":       nachbar["geteilte_themen"],
+                }
+                naechste.append({
+                    "knoten_id":         detail["id"],
+                    "inhalt":            detail.get("inhalt"),
+                    "themen":            detail.get("themen"),
+                    "entitaet_ids":      detail.get("entitaet_ids"),
+                    "emotion":           detail.get("emotion") or "",
+                    "erstellt_am":       detail.get("erstellt_am"),
+                    "gewicht_decay":     detail.get("gewicht_decay") or 0.0,
+                    "schale":            schale,
+                    "pfad":              knoten["pfad"] + [schritt],
+                    "vorgaenger_knoten_id": knoten["knoten_id"],
+                })
+        pool.extend(naechste)
+        vorschale = naechste
+        if not vorschale:
+            break  # nichts Neues erreicht -> tiefer schweifen sinnlos
+
+    groesse_vor_dedup = len(pool)
+
+    # 5. Dedup mit Schalen-Praeferenz (§8.3.2): pro knoten_id den Eintrag mit
+    #    der kleinsten Schale behalten; bei Gleichstand den ersten.
+    bestes: dict[int, dict] = {}
+    for eintrag in pool:
+        vorhanden = bestes.get(eintrag["knoten_id"])
+        if vorhanden is None or eintrag["schale"] < vorhanden["schale"]:
+            bestes[eintrag["knoten_id"]] = eintrag
+    dedup = list(bestes.values())
+
+    # 6. Sortier-Gewicht je Eintrag.
+    for eintrag in dedup:
+        eintrag["sortier_gewicht"] = _sortier_gewicht(
+            eintrag["gewicht_decay"], eintrag["schale"], nova_emotion, eintrag["emotion"]
+        )
+
+    # 7. Absteigend nach Sortier-Gewicht, Top 3.
+    dedup.sort(key=lambda e: e["sortier_gewicht"], reverse=True)
+    top = dedup[:3]
+
+    # 8. Erinnerungs-Ebene (§8.4.2) mit Rang.
+    ergebnis: list[dict] = []
+    for rang, eintrag in enumerate(top, start=1):
+        ergebnis.append({
+            "rang":            rang,
+            "knoten_id":       eintrag["knoten_id"],
+            "inhalt":          eintrag["inhalt"],
+            "themen":          eintrag["themen"],
+            "entitaet_ids":    eintrag["entitaet_ids"],
+            "emotion":         eintrag["emotion"],
+            "erstellt_am":     eintrag["erstellt_am"],
+            "gewicht_decay":   eintrag["gewicht_decay"],
+            "schale":          eintrag["schale"],
+            "sortier_gewicht": eintrag["sortier_gewicht"],
+            "pfad":            eintrag["pfad"],
+        })
+
+    logger.info(
+        "Spreading-Lesen: paar=%s/%s cluster=%s tiefe=%d anker=%d "
+        "pool_vor_dedup=%d nach_dedup=%d top=%d",
+        user_id, character_id, cluster, tiefe, len(anker),
+        groesse_vor_dedup, len(dedup), len(ergebnis),
+    )
+    for eintrag in ergebnis:
+        logger.info("  Top-%d knoten=%s schale=%d sortier_gewicht=%.4f",
+                    eintrag["rang"], eintrag["knoten_id"],
+                    eintrag["schale"], eintrag["sortier_gewicht"])
+    return ergebnis
