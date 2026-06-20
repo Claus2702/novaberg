@@ -135,23 +135,26 @@ class ThinkSplitNormalizer(ThinkingNormalizer):
 # unveraendert laeuft. Bei LLM_PROFILE="claude" ist der Ollama-Split kein
 # Thema → immer No-Op.
 
-# Welche Connectoren (innerhalb LLM_PROFILE="lokal") brauchen den
-# ThinkSplitNormalizer? Heute nur gemma4 (Bug-Verhalten bewiesen Chat 93).
-_CONNECTOREN_MIT_SPLIT: frozenset[str] = frozenset({"gemma4"})
+# Modelle (GPU), die den Ollama content/thinking-Split zeigen (Ollama #10976).
+# Match gegen das aufgeloeste Modell, NICHT gegen den Connector-Namen:
+# der qwen36-Connector faehrt im CharacterGraph gemma4-gpu auf der GPU und
+# zeigt den Split, obwohl der Connector nicht "gemma4" heisst. Substring,
+# damit "gemma4-gpu" UND "gemma4-cpu" greifen.
+_MODELLE_MIT_SPLIT: tuple[str, ...] = ("gemma4",)
 
 
 def get_thinking_normalizer() -> ThinkingNormalizer:
-    """Liefert den Normalizer fuer den aktuell konfigurierten Connector.
+    """Liefert den Normalizer fuer das aktuell konfigurierte Modell.
 
-    Vorbedingung: config-Modul geladen (LLM_PROFILE, OLLAMA_CONNECTOR).
+    Vorbedingung: config-Modul geladen (LLM_PROFILE, OLLAMA_MODEL).
     Nachbedingung: ThinkingNormalizer-Instanz (ThinkSplitNormalizer fuer
-                   bekannte Split-Connectoren, sonst No-Op-Basis).
+                   bekannte Split-Modelle, sonst No-Op-Basis).
     Fehlerfaelle: keine — bei unbekanntem Connector greift der No-Op-Pfad,
                   fail-safe in Richtung "Loop laeuft wie heute weiter".
     """
     # Lokaler Import: vermeidet einen Modul-Import-Zyklus, wenn tools/
     # spaeter aus config heraus referenziert wird.
-    from config import LLM_PROFILE, OLLAMA_CONNECTOR
+    from config import LLM_PROFILE, OLLAMA_MODEL
 
     if LLM_PROFILE != "lokal":
         logger.info(
@@ -160,16 +163,16 @@ def get_thinking_normalizer() -> ThinkingNormalizer:
         )
         return ThinkingNormalizer()
 
-    if OLLAMA_CONNECTOR in _CONNECTOREN_MIT_SPLIT:
+    if any(stamm in OLLAMA_MODEL for stamm in _MODELLE_MIT_SPLIT):
         logger.info(
-            "ThinkingNormalizer: Connector=%r — ThinkSplitNormalizer aktiv "
+            "ThinkingNormalizer: Modell=%r — ThinkSplitNormalizer aktiv "
             "(content/thinking-Split wird abgefangen)",
-            OLLAMA_CONNECTOR,
+            OLLAMA_MODEL,
         )
         return ThinkSplitNormalizer()
 
     logger.info(
-        "ThinkingNormalizer: Connector=%r — No-Op (kein bekannter Split)",
-        OLLAMA_CONNECTOR,
+        "ThinkingNormalizer: Modell=%r — No-Op (kein bekannter Split)",
+        OLLAMA_MODEL,
     )
     return ThinkingNormalizer()
