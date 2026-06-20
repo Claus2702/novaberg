@@ -237,6 +237,7 @@ CREATE INDEX idx_lzg_kanten_verbindungs_gruende
 
 **Erläuterungen:**
 
+- **Kanten sind gerichtet.** `knoten_a_id` ist die Quelle (von), `knoten_b_id` das Ziel (nach). Pro Knotenpaar werden **zwei** Zeilen geschrieben — A→B und B→A — mit **asymmetrischen** Gewichten: `kanten_staerke_berechnen` liefert ein Tupel `(roh_ab, roh_ba)`, beide am schwächeren Anker verankert, aber wegen `ZIEH_HOCH ≠ ZIEH_RUNTER` richtungsverschieden. Das `UNIQUE (knoten_a_id, knoten_b_id)` verhindert nur exakte Duplikate je Richtung, nicht die Gegenkante. Phänomenologisch: „von Knoten A assoziiere ich B über die ausgehende Kante A→B"; die Gegenrichtung B→A gilt, wenn B der aktive Knoten ist (siehe auch die Design-Begründung „Gerichtete statt bidirektionale Kanten"). Konsequenz für den Lesepfad: Spreading folgt nur **ausgehenden** Kanten (`WHERE knoten_a_id = X`, Nachbar = `knoten_b_id`); die Vorgänger-Sperre ist **knoten-basiert** (Rücksprung-Ziel = Vorgänger-Knoten), nicht kanten-id-basiert.
 - **Kanten haben keine eigene Substanz.** Die Erinnerung steckt im Knoten, die Kante ist die *Assoziation* — eine strukturelle Konsequenz der Knoten-Beziehung, kein eigenständiges Gedächtnis. Sie hat keine eigene Aktivierungs-Historie, kein eigenes Decay, kein eigenes Reinforcement. Daher keine Felder `haeufigkeit`, `verstaerkt_am` oder `aktiv` am Kanten-Schema.
 - **`gewicht_roh` und `gewicht_absolut` sind Cache** der aktuellen Knoten-Stärken-Konstellation und der eingefrorenen Schicht-Werte. Namensgleichheit mit den Knoten-Feldern ist Absicht — die Berechnungs-Logik ist konsistent. Die Kante hat *kein* `gewicht_decay`, weil sie keinem eigenen Decay unterliegt.
 - **Cache-Aktualisierung** geschieht bei drei Triggern:
@@ -359,8 +360,10 @@ LZG_KNOTEN_DAEMPFUNG_EXP          = 0.5
 # im unteren Bereich, weniger Spreizung; höherer Wert = lineare Kurve.
 
 LZG_KNOTEN_DECAY_RATE             = 0.0015
-# Tägliche exponentielle Decay-Rate des effektiven Knoten-Gewichts.
-# Nicht persistiert, sondern bei Abfrage live aus verstaerkt_am berechnet.
+# Tägliche exponentielle Decay-Rate des Knoten-Präsenz-Werts gewicht_decay.
+# gewicht_decay ist ein PERSISTIERTES Feld: der tägliche Pixie-Decay-Lauf (P6)
+# zieht es nach — gewicht_decay = gewicht_absolut × exp(-RATE × tage_seit_verstaerkung) —,
+# der Lesepfad liest den gespeicherten Wert. NICHT live bei Abfrage berechnet (siehe 9.2).
 
 LZG_KNOTEN_MIN_GEWICHT             = 0.1
 # Schwellwert: Unterschreitet das effektive Gewicht diesen Wert,
