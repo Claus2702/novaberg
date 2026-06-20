@@ -24,7 +24,10 @@ logger = logging.getLogger(__name__)
 _SUMMARY_HEADER: str = "═══ BISHERIGER GESPRÄCHSVERLAUF ═══"
 
 
-def format_memory_entries(entries: list[ContextEntry]) -> str:
+def format_memory_entries(
+    entries: list[ContextEntry],
+    lzg_resonanz: dict | None = None,
+) -> str:
     """Baut den finalen memory_context-String aus strukturierten Entries.
 
     Sortiert die Entries nach Quellen-Reihenfolge (siehe Konzept §9 R5),
@@ -38,17 +41,25 @@ def format_memory_entries(entries: list[ContextEntry]) -> str:
         4. plugin_*  — alle, in Eingangsreihenfolge
         5. unbekannte Quellen — am Ende, in Eingangsreihenfolge,
            mit Logging-Warnung pro Eintrag (kein Crash)
+        6. LZG-Resonanz — optionaler [GEDAECHTNIS]-Block ganz am Ende
+           (assoziative Spreading-Erinnerungen mit Pfad-Begruendung, §8.4.4)
 
     Args:
         entries: Liste strukturierter ContextEntry-Eintraege, vorsortiert
                  oder unsortiert. Die Funktion uebernimmt die Sortierung.
+        lzg_resonanz: Optionale Resonanz-Struktur aus dem Enricher (§8.4.2).
+                 Enthaelt sie Erinnerungen, wird der §8.4.4-Block am Ende
+                 angehaengt. None / ohne Erinnerungen -> kein Block (rueckwaerts-
+                 kompatibel zu Aufrufern, die nur entries uebergeben).
 
     Returns:
-        Der finale memory_context-String. Leerstring, wenn entries leer.
+        Der finale memory_context-String. Leerstring, wenn weder Entries noch
+        Resonanz-Erinnerungen vorliegen.
     """
     logger.info(f"format_memory_entries: {len(entries)} Eintraege erhalten")
 
-    if not entries:
+    hat_resonanz: bool = bool(lzg_resonanz and lzg_resonanz.get("erinnerungen"))
+    if not entries and not hat_resonanz:
         logger.info("format_memory_entries: Output-Laenge 0 Zeichen")
         return ""
 
@@ -106,6 +117,13 @@ def format_memory_entries(entries: list[ContextEntry]) -> str:
 
     for entry in unknown_group:
         blocks.append(_format_unknown(entry))
+
+    # LZG-Resonanz (§8.4.4): assoziative Spreading-Erinnerungen ganz am Ende,
+    # direkt vor dem, was der Responder zuletzt liest. Zusaetzlich, ersetzt nichts.
+    if lzg_resonanz and lzg_resonanz.get("erinnerungen"):
+        resonanz_block: str = _format_lzg_resonanz(lzg_resonanz)
+        if resonanz_block:
+            blocks.append(resonanz_block)
 
     result: str = "\n".join(blocks)
     logger.info(f"format_memory_entries: Output-Laenge {len(result)} Zeichen")
@@ -214,3 +232,96 @@ def _format_unknown(entry: ContextEntry) -> str:
     if "\n" in inhalt:
         return f"[{quelle}]\n{inhalt}"
     return f"[{quelle}] {inhalt}"
+
+
+# ─────────────────────────────────────────────
+# LZG-Resonanz-Block (§8.4.4)
+# ─────────────────────────────────────────────
+_ANZAHL_WOERTER: dict[int, str] = {1: "Eine", 2: "Zwei", 3: "Drei"}
+
+
+def _schritt_verbalisieren(schritt: dict) -> str:
+    """Verbalisiert einen einzelnen Pfad-Schritt aus seinen Verbindungs-Gruenden.
+
+    Schritt-Felder: verbindungs_gruende (welche Schichten griffen) plus die
+    konkreten geteilten Werte. Themen werden mit Namen ausgegeben; Entitaeten
+    liegen nur als IDs vor (keine Namens-Aufloesung hier) und werden daher nur
+    generisch erwaehnt (Backlog LZG-RESONANZ-ENTITAET-NAMEN).
+    """
+    gruende: list = schritt.get("verbindungs_gruende") or []
+    teile: list[str] = []
+
+    if "themen" in gruende:
+        geteilte_themen: list = schritt.get("geteilte_themen") or []
+        if geteilte_themen:
+            teile.append(f"gemeinsames Thema {', '.join(geteilte_themen)}")
+
+    if "entitaet" in gruende and not teile:
+        # geteilte_entitaet_ids sind IDs (INTEGER[]), keine Namen — generisch.
+        geteilte_ent: list = schritt.get("geteilte_entitaet_ids") or []
+        if geteilte_ent:
+            teile.append("eine gemeinsame Person/Sache")
+
+    if "timeline" in gruende:
+        teile.append("zeitliche Naehe")
+
+    if "embedding" in gruende:
+        teile.append("aehnlichen Inhalt")
+
+    if not teile:
+        return "eine Assoziation"
+    return " und ".join(teile)
+
+
+def _herkunft_zeile(pfad: list) -> str:
+    """Baut die Herkunfts-Zeile einer Erinnerung aus ihrem Spreading-Pfad.
+
+    Leerer Pfad (Schale 0) = Direkttreffer. Sonst werden alle Pfad-Schritte
+    mit ' -> ' verkettet, sodass die assoziative Kette nachvollziehbar ist
+    (§8.4.4: alle Pfad-Schritte aufgefuehrt).
+    """
+    if not pfad:
+        return "Sie kam dir direkt zur Frage in den Sinn"
+    schritte: list[str] = [_schritt_verbalisieren(s) for s in pfad]
+    return "Sie ist dir eingefallen ueber: " + " -> ".join(schritte)
+
+
+def _format_lzg_resonanz(resonanz: dict) -> str:
+    """Rendert den [GEDAECHTNIS]-Block der assoziativen Resonanz (§8.4.4).
+
+    Reihenfolge: nach sortier_gewicht AUFSTEIGEND (am wenigsten praesente
+    zuerst, staerkste am Ende — Recency). Die Eingabe kommt vom Enricher
+    absteigend (rang 1 = staerkste), wird hier also umgekehrt.
+
+    Interne Werte (Gewicht, Schale, knoten_id) erscheinen NICHT im Output;
+    erstellt_am wird nicht verwendet. Leere Erinnerungs-Liste -> Leerstring
+    (kein leerer Header).
+    """
+    erinnerungen: list = resonanz.get("erinnerungen") or []
+    if not erinnerungen:
+        return ""
+
+    geordnet: list = sorted(erinnerungen, key=lambda e: e.get("sortier_gewicht", 0.0))
+    anzahl: int = len(geordnet)
+
+    if anzahl == 1:
+        einleitung: str = "Eine Erinnerung ist dir gerade da."
+    else:
+        einleitung = (
+            f"{_ANZAHL_WOERTER.get(anzahl, str(anzahl))} Erinnerungen sind dir gerade da. "
+            "Die am wenigsten praesente zuerst, die staerkste am Ende."
+        )
+
+    zeilen: list[str] = ["[GEDAECHTNIS]", einleitung]
+    for nummer, erinnerung in enumerate(geordnet, start=1):
+        zeilen.append(f"----- Erinnerung {nummer} -----")
+        inhalt: str = (erinnerung.get("inhalt") or "").strip()
+        zeilen.append(f'"{inhalt}"')
+
+        emotion: str = (erinnerung.get("emotion") or "").strip()
+        if emotion and emotion.lower() != "neutral":
+            zeilen.append(f"Du fuehlst dazu: {emotion.capitalize()}")
+
+        zeilen.append(_herkunft_zeile(erinnerung.get("pfad") or []))
+
+    return "\n".join(zeilen)
