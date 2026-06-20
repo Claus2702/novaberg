@@ -48,7 +48,25 @@ def reduce_memory(state: dict) -> dict:
     # Backup vor jeder Veraenderung
     raw_backup: list[ContextEntry] = list(entries)
 
+    # Resonanz-Akte (§8.4.4) — Clipboard-Prinzip: der Reducer nimmt aus dem
+    # State, was der Formatter braucht. Kein Pflichtfeld (AgentGraph/Cold-Start
+    # → None, dann rendert der Formatter keinen Resonanz-Block).
+    lzg_resonanz = state.get("lzg_resonanz")
+    resonanz_anzahl: int = len((lzg_resonanz or {}).get("erinnerungen", []))
+
     if not entries:
+        # Resonanz-only-Turn: Spreading-Erinnerungen ohne KZG/Charakter-Treffer.
+        # Der Block darf NICHT verschluckt werden — Formatter trotzdem aufrufen.
+        if resonanz_anzahl > 0:
+            logger.info(
+                f"Reducer: Keine Eintraege, aber lzg_resonanz mit {resonanz_anzahl} "
+                f"Erinnerungen — nur Resonanz-Block"
+            )
+            return {
+                "memory_entries_raw": raw_backup,
+                "memory_entries": [],
+                "memory_context": format_memory_entries([], lzg_resonanz=lzg_resonanz),
+            }
         logger.info("Reducer: Keine Eintraege — leerer memory_context")
         return {
             "memory_entries_raw": raw_backup,
@@ -68,8 +86,13 @@ def reduce_memory(state: dict) -> dict:
     if entfernt_stufe2 > 0:
         logger.info(f"Reducer: Stufe 2 (Substring-Dedup) entfernte {entfernt_stufe2} Eintraege")
 
-    # Formatter aufrufen — einziger Ort, an dem Format-Wissen lebt
-    memory_context: str = format_memory_entries(nach_stufe2)
+    # Formatter aufrufen — einziger Ort, an dem Format-Wissen lebt.
+    # lzg_resonanz wird durchgereicht (§8.4.4-Block); None -> kein Block.
+    if resonanz_anzahl > 0:
+        logger.info(f"Reducer: lzg_resonanz mit {resonanz_anzahl} Erinnerungen an Formatter")
+    else:
+        logger.info("Reducer: keine lzg_resonanz")
+    memory_context: str = format_memory_entries(nach_stufe2, lzg_resonanz=lzg_resonanz)
 
     logger.info(
         f"Reducer: Abgeschlossen — {eingangsanzahl} → {len(nach_stufe2)} Eintraege "
