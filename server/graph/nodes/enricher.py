@@ -347,36 +347,6 @@ def _vorturn_cluster_lesen(
     return SPREADING_DEFAULT_CLUSTER
 
 
-def _erinnerung_zu_context_entry(erinnerung: dict) -> ContextEntry:
-    """Baut aus einer Spreading-Erinnerung (§8.4.2) einen ContextEntry.
-
-    Kompatibel zum bisherigen lzg_entries_retrieve-Mapping, damit Reducer,
-    Responder und Formatter unveraendert konsumieren. ``gewicht`` traegt das
-    ``sortier_gewicht`` (turn-relevante Praesenz inkl. Schale + Sektor; vom
-    Reducer zur Konflikt-Aufloesung genutzt). ``erstellt_am`` wird wie zuvor
-    als Unix-Timestamp (float) abgelegt; ``subtyp`` bleibt leer, da der
-    Spreading-Lesepfad keine Dimension fuehrt.
-    """
-    erstellt_am = erinnerung.get("erstellt_am")
-    erstellt_ts: float = erstellt_am.timestamp() if erstellt_am else 0.0
-    return {
-        "quelle":  "lzg",
-        "subtyp":  "",
-        "inhalt":  erinnerung.get("inhalt") or "",
-        "gewicht": erinnerung.get("sortier_gewicht", 0.0),
-        "meta": {
-            "emotion":       erinnerung.get("emotion", ""),
-            "themen":        erinnerung.get("themen") or [],
-            "entitaet_ids":  erinnerung.get("entitaet_ids") or [],
-            "erstellt_am":   erstellt_ts,
-            "gewicht_decay": erinnerung.get("gewicht_decay", 0.0),
-            "schale":        erinnerung.get("schale", 0),
-            "knoten_id":     erinnerung.get("knoten_id"),
-            "pfad":          erinnerung.get("pfad") or [],
-        },
-    }
-
-
 def _enrich_character(
     state:        ConversationState,
     redis_client: redis.Redis,
@@ -538,10 +508,10 @@ def _enrich_character(
         span_id = span_id,
     )
 
-    # Lokale Initialisierung, damit der Switch-Inhalt unten beide Counts
-    # unabhaengig vom Pfad sicher referenzieren kann.
+    # Lokale Initialisierung, damit der Switch-Inhalt unten den KZG-Count
+    # unabhaengig vom Pfad sicher referenzieren kann. Die Spreading-Erinnerungen
+    # zaehlt der Switch aus state["lzg_resonanz"] (kein memory_entries-Akkumulator).
     kzg_entries: list[ContextEntry] = []
-    lzg_entries: list[ContextEntry] = []
 
     if kzg_keys or has_lzg:
         logger.info(
@@ -574,6 +544,9 @@ def _enrich_character(
             )
 
             # §8.4.2: lzg_resonanz — Kontext-Rahmen + Top-3-Erinnerungen mit Pfad.
+            # Einzige Transport-Quelle der Spreading-Erinnerungen: der Reducer
+            # reicht sie an den Formatter, der den [GEDAECHTNIS]-Block rendert
+            # (§8.4.3/§8.4.4). Keine flache Einspeisung in memory_entries mehr.
             state["lzg_resonanz"] = {
                 "anker_anzahl": 3,
                 "sprung_tiefe": CLUSTER_ENRICHER_SPRUENGE.get(cluster, 1),
@@ -581,14 +554,10 @@ def _enrich_character(
                 "nova_sektor":  nova_emotion,
                 "erinnerungen": erinnerungen,
             }
-
-            # Weiterhin als ContextEntry in memory_entries einspeisen (Reducer/
-            # Responder konsumieren wie bisher; Resonanz-Veredelung §8.4.3 folgt).
-            for erinnerung in erinnerungen:
-                lzg_entries.append(_erinnerung_zu_context_entry(erinnerung))
-            if lzg_entries:
-                entries.extend(lzg_entries)
-                logger.info(f"Enricher: Spreading-Lesepfad lieferte {len(lzg_entries)} Erinnerungen")
+            logger.info(
+                f"Enricher: Spreading-Lesepfad lieferte {len(erinnerungen)} "
+                f"Erinnerungen (lzg_resonanz)"
+            )
 
         # ── Pipeline-Log: Switch — Memory aktiv (Anker 4a) ──
         log_switch(
@@ -599,7 +568,7 @@ def _enrich_character(
                 "kzg_keys_count":     len(kzg_keys),
                 "has_lzg":            has_lzg,
                 "kzg_entries_count":  len(kzg_entries),
-                "lzg_entries_count":  len(lzg_entries),
+                "lzg_resonanz_count": len((state.get("lzg_resonanz") or {}).get("erinnerungen", [])),
                 "zweig":              "memory_aktiv",
             },
             span_id = span_id,
