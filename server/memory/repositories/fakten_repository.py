@@ -9,6 +9,8 @@ from datetime import datetime
 import psycopg2
 import psycopg2.extras
 
+from memory.utils import embedding_zu_pgvector_str
+
 logger = logging.getLogger("ki_server.memory.repositories.fakten")
 
 
@@ -38,7 +40,7 @@ class FaktenRepository:
             )
 
         embedding_str: str | None = (
-            "[" + ",".join(str(x) for x in embedding) + "]"
+            embedding_zu_pgvector_str(embedding)
             if embedding else None
         )
 
@@ -146,7 +148,7 @@ class FaktenRepository:
         Ähnliche Fakten per Embedding-Similarity suchen (aktive).
         Gibt Liste von dicts mit 'similarity' zurück.
         """
-        embedding_str: str = "[" + ",".join(str(x) for x in embedding) + "]"
+        embedding_str: str = embedding_zu_pgvector_str(embedding)
 
         conn = psycopg2.connect(postgres_url)
         try:

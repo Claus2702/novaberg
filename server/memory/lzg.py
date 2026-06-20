@@ -11,6 +11,7 @@ import psycopg2
 
 from config              import EBBINGHAUS_DECAY_RATE
 from graph.context_entry import ContextEntry
+from memory.utils        import embedding_zu_pgvector_str
 
 logger = logging.getLogger("ki_server.memory.lzg")
 
@@ -98,7 +99,7 @@ def lzg_entries_retrieve(
 
     logger.info(f"LZG-Entries-Retrieve: Paar={user_id}:{character_id}, Limit={top_k}")
 
-    embedding_str: str = "[" + ",".join(str(x) for x in embedding) + "]"
+    embedding_str: str = embedding_zu_pgvector_str(embedding)
 
     entries: list[ContextEntry] = []
 

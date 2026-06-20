@@ -11,6 +11,7 @@ from datetime import datetime, timezone
 import psycopg2
 
 from services.model_services import model_service, EmbedRequest
+from memory.utils import embedding_zu_pgvector_str
 
 logger = logging.getLogger("ki_server.memory.ziele")
 
@@ -111,7 +112,7 @@ def ziel_speichern(
 
         embedding_str: str | None = None
         if embedding:
-            embedding_str = "[" + ",".join(str(x) for x in embedding) + "]"
+            embedding_str = embedding_zu_pgvector_str(embedding)
 
         cursor.execute(
             """
@@ -255,7 +256,7 @@ async def ziele_embeddings_sicherstellen(
             conn   = psycopg2.connect(postgres_url)
             cursor = conn.cursor()
 
-            embedding_str: str = "[" + ",".join(str(x) for x in embedding) + "]"
+            embedding_str: str = embedding_zu_pgvector_str(embedding)
             cursor.execute(
                 "UPDATE ziele SET embedding = %s::vector WHERE id = %s",
                 (embedding_str, ziel_id),

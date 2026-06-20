@@ -9,6 +9,8 @@ from datetime import datetime
 import psycopg2
 import psycopg2.extras
 
+from memory.utils import embedding_zu_pgvector_str
+
 logger = logging.getLogger("ki_server.memory.repositories.entitaeten")
 
 
@@ -30,7 +32,7 @@ class EntitaetenRepository:
         Setzt last_touched und t_created auf NOW().
         """
         embedding_str: str | None = (
-            "[" + ",".join(str(x) for x in embedding) + "]"
+            embedding_zu_pgvector_str(embedding)
             if embedding else None
         )
 
@@ -157,7 +159,7 @@ class EntitaetenRepository:
         Gibt Liste von dicts mit zusätzlichem Feld 'similarity' zurück.
         Sortiert nach Similarity absteigend.
         """
-        embedding_str: str = "[" + ",".join(str(x) for x in embedding) + "]"
+        embedding_str: str = embedding_zu_pgvector_str(embedding)
 
         conn = psycopg2.connect(postgres_url)
         try:
@@ -189,7 +191,7 @@ class EntitaetenRepository:
         Setzt last_touched auf NOW(). Aktualisiert suchtext.
         """
         embedding_str: str | None = (
-            "[" + ",".join(str(x) for x in embedding) + "]"
+            embedding_zu_pgvector_str(embedding)
             if embedding else None
         )
 
@@ -228,7 +230,7 @@ class EntitaetenRepository:
         embedding:    list[float],
     ) -> None:
         """Aktualisiert das Embedding einer Entität."""
-        embedding_str: str = "[" + ",".join(str(x) for x in embedding) + "]"
+        embedding_str: str = embedding_zu_pgvector_str(embedding)
 
         conn = psycopg2.connect(postgres_url)
         try:
