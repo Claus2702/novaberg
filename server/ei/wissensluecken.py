@@ -78,9 +78,9 @@ def lzg_kandidaten_suchen(
             """
             SELECT inhalt,
                    1 - (embedding <=> %s::vector) AS similarity,
-                   gewicht,
+                   gewicht_decay,
                    COALESCE(arousal, 0.3) AS gap_arousal
-            FROM langzeitgedaechtnis
+            FROM lzg_knoten
             WHERE user_id = %s
               AND character_id = %s
               AND aktiv = TRUE
