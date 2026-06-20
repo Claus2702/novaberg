@@ -434,7 +434,7 @@ def _enrich_character(
         conn   = psycopg2.connect(postgres_url)
         cursor = conn.cursor()
         cursor.execute(
-            "SELECT EXISTS(SELECT 1 FROM langzeitgedaechtnis "
+            "SELECT EXISTS(SELECT 1 FROM lzg_knoten "
             "WHERE user_id = %s AND character_id = %s AND aktiv = TRUE)",
             (user_id, character_id),
         )
