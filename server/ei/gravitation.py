@@ -414,9 +414,9 @@ def _lzg_emotionale_eintraege(
         cursor = conn.cursor()
 
         cursor.execute("""
-            SELECT inhalt, emotion, arousal, gewicht, verstaerkt_am,
+            SELECT inhalt, emotion, arousal, gewicht_decay, verstaerkt_am,
                    1 - (embedding <=> %s::vector) AS similarity
-            FROM langzeitgedaechtnis
+            FROM lzg_knoten
             WHERE user_id = %s
               AND character_id = %s
               AND aktiv = TRUE
