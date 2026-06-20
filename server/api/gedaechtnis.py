@@ -90,18 +90,18 @@ def LzgAbrufen(
 
         if beobachter:
             cursor.execute("""
-                SELECT dimension, inhalt, gewicht, haeufigkeit,
+                SELECT dimension, inhalt, gewicht_decay, haeufigkeit,
                        erstellt_am, verstaerkt_am, beobachter
-                FROM langzeitgedaechtnis
+                FROM lzg_knoten
                 WHERE user_id = %s AND character_id = %s
                   AND beobachter = %s AND aktiv = TRUE
                 ORDER BY verstaerkt_am DESC
             """, (user_id, character_id, beobachter))
         else:
             cursor.execute("""
-                SELECT dimension, inhalt, gewicht, haeufigkeit,
+                SELECT dimension, inhalt, gewicht_decay, haeufigkeit,
                        erstellt_am, verstaerkt_am, beobachter
-                FROM langzeitgedaechtnis
+                FROM lzg_knoten
                 WHERE user_id = %s AND character_id = %s AND aktiv = TRUE
                 ORDER BY verstaerkt_am DESC
             """, (user_id, character_id))
