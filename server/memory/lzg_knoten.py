@@ -192,6 +192,78 @@ def kandidaten_mit_cosine_laden(
         conn.close()
 
 
+def anker_retrieval(
+    postgres_url: str,
+    user_id: str,
+    character_id: str,
+    embedding_str: str,
+    *,
+    top_k: int = 3,
+    min_similarity: float = 0.5,
+) -> list[dict]:
+    """
+    Initial-Retrieval des Synapsen-Lesepfads (Konzept §8.1): liefert die
+    Top-K (default 3) Anker-Knoten einer Paar-Partition per pgvector-Cosine.
+
+    Geladen werden nur aktive Knoten mit Embedding; nach dem Fetch werden
+    Treffer unter min_similarity verworfen (ein schwacher Cosine ist kein
+    sinnvoller Anker, analog zur 0.5-Schwelle des alten B2-Reads).
+
+    Bewusster Unterschied zu kandidaten_mit_cosine_laden (die der Kanten-
+    bildung §7.2 dient): hier zaehlt die aktuelle Praesenz, daher
+    gewicht_decay statt gewicht_absolut (Konzept §8.3.1/§9.4), eine
+    Similarity-Schwelle und ein Top-K-Limit. embedding selbst wird nicht
+    zurueckgegeben (nur fuer die Sortierung genutzt).
+
+    Rueckgabe: list[dict], nach Cosine absteigend, max top_k Eintraege ueber
+    der Schwelle. Leere Liste bei keinen Treffern oder DB-Fehler.
+    """
+    conn = psycopg2.connect(postgres_url)
+    try:
+        with conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cur:
+            cur.execute(
+                """
+                SELECT
+                    id,
+                    inhalt,
+                    dimension,
+                    gewicht_decay,
+                    emotion,
+                    arousal,
+                    themen,
+                    entitaet_ids,
+                    erstellt_am,
+                    1 - (embedding <=> %s::vector) AS cosine
+                FROM lzg_knoten
+                WHERE user_id = %s
+                  AND character_id = %s
+                  AND aktiv = TRUE
+                  AND embedding IS NOT NULL
+                ORDER BY embedding <=> %s::vector
+                LIMIT %s
+                """,
+                (embedding_str, user_id, character_id, embedding_str, top_k),
+            )
+            roh = [dict(row) for row in cur.fetchall()]
+        # Schwellen-Filter (§8.1): schwache Cosine-Treffer sind keine Anker.
+        anker = [a for a in roh if a["cosine"] is not None and a["cosine"] >= min_similarity]
+        logger.info(
+            "Anker-Retrieval: paar=%s/%s anker=%d/%d (Schwelle %.2f) top_cosine=%.4f min_cosine=%.4f",
+            user_id, character_id, len(anker), len(roh), min_similarity,
+            anker[0]["cosine"] if anker else float("nan"),
+            anker[-1]["cosine"] if anker else float("nan"),
+        )
+        for a in anker:
+            logger.debug("Anker: knoten=%s cosine=%.4f gewicht_decay=%.3f",
+                         a["id"], a["cosine"], a["gewicht_decay"])
+        return anker
+    except psycopg2.Error as exc:
+        logger.error("anker_retrieval fehlgeschlagen paar=%s/%s: %s", user_id, character_id, exc)
+        return []
+    finally:
+        conn.close()
+
+
 def match_pruefen(kandidaten: list[dict]) -> Optional[dict]:
     """
     Prueft, ob unter den (nach Cosine sortierten) Kandidaten eine Quasi-Dublette
