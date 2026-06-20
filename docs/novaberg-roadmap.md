@@ -1326,4 +1326,19 @@ Drei Cluster-Aufrufer profitieren über die zentrale Methode. Internes Aggregier
 
 ---
 
-*Aktualisiert in Chat 98. Offene Punkte → novaberg-backlog.md. Bugs → novaberg-bugs.md.*
+### Synapsen P5 — Lesepfad live (Chat 99, 20.–21. Juni 2026)
+
+- ✅ Alle LZG-Reads auf `lzg_knoten` umgestellt — die flachen Reads lesen das Synapsen-Netz statt `langzeitgedaechtnis`, `gewicht` → `gewicht_decay` (aktuelle Präsenz, Konzept §8.3.1/§9.4): B1 Enricher-Existenz-Gate (Commit `77730e9`), B3 LZG-REST-Endpunkt `LzgAbrufen` (`6aa096f`), B4 Postgres-Healthcheck (`7d14b2d`), B12 emotionale Gravitation (`36c311e`), B13 Wissenslücken-Suche (`0ffd1db`)
+- ✅ B2 als gerichtetes Spreading-Activation statt flachem Read:
+  - Initial-Retrieval `anker_retrieval` — Top-3 Cosine-Anker, `gewicht_decay`, aktiv-only, Similarity-Schwelle (Commit `ce0947d`)
+  - Sprung-Tiefe-Tabelle `CLUSTER_ENRICHER_SPRUENGE` pro GV-Cluster (`628bd70`)
+  - `spreading_lesen` — Traversierung entlang **gerichteter** `lzg_kanten` (ausgehend, Vorgänger-Knoten-Sperre), Sortier-Gewicht = `gewicht_decay` × Schalen-Faktor × Plutchik-Sektor-Faktor, Dedup mit Schalen-Präferenz, Top-3 mit Pfad (`4416b69`)
+  - zentraler Helfer `embedding_zu_pgvector_str` — 9 inline-Duplikate konsolidiert (`7c91e0f`)
+  - Enricher-Anbindung — Cluster aus Redis-Vorturn `gv:detail` (§8.2.1), `nova_emotion` aus `nova_emotions_verlauf[0]` (empty-guarded), `state["lzg_resonanz"]` (`293c74b`)
+- ✅ Reducer-Veredelung — Formatter rendert den `[GEDAECHTNIS]`-Block mit Pfad-Begründung („direkt zur Frage" / „eingefallen über: gemeinsames Thema …"), Recency-Reihenfolge, keine internen Werte (Gewicht/Schale/IDs) im Prompt (5a, `7e0fbc3`); Reducer reicht `lzg_resonanz` an den Formatter durch, Resonanz-only-Turn abgedeckt (5b, `9f4179a`); ContextEntry-Brücke entfernt — Spreading-Erinnerungen fließen verlustfrei nur noch über `lzg_resonanz`, keine Doppelung (5c, `14c027b`)
+
+Offen → Backlog `SYNAPSEN-DUAL-LZG`: P6 (`synapsen_decay`-Agent + Halbreaktivierung), P7 (Charakter-Hash B9/B10/B11). B2-Altpfad `lzg_entries_retrieve` (noch von `thinker.py` genutzt) + Drop von `langzeitgedaechtnis` → P9.
+
+---
+
+*Aktualisiert in Chat 99. Offene Punkte → novaberg-backlog.md. Bugs → novaberg-bugs.md.*

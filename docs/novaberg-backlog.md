@@ -2856,6 +2856,8 @@ Verifikation erfolgt von selbst beim ersten passenden Folge-Turn; bewusst kein s
 
 Die Migration hat 90 Knoten + 110 Kanten erzeugt, der Bestand ist da und wartet auf den Konsumenten. Solange der Lesepfad noch das alte Schema bedient, fließt das neue Netz zwar voll, beeinflusst aber den Turn nicht.
 
+**Status (Chat 99):** P5 (Lesepfad) abgeschlossen — alle Reads auf `lzg_knoten`, B2 mit Spreading-Activation. OFFEN: P6 (`synapsen_decay`-Agent + Halbreaktivierung, neu), P7 (Char-Hash B9/B10/B11 auf `gewicht_absolut`). Reihenfolge bestätigt P5→P6→P7.
+
 ---
 
 ## Frage: KZG-GEWICHT-ABSOLUT-CEILING — sin^0.5-Dämpfung klemmt bei `roh >= CAP` (Chat 98)
