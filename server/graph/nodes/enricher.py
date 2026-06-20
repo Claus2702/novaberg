@@ -25,6 +25,7 @@ diese Felder.
 Kein LLM-Aufruf — nur Datenzugriff und Embedding-Erzeugung.
 """
 
+import json
 import logging
 
 import psycopg2
@@ -36,7 +37,8 @@ from config import (
 from graph.context_entry import ContextEntry
 from graph.state         import ConversationState
 from memory.kzg          import kzg_entries_retrieve, _kzg_prefix
-from memory.lzg          import lzg_entries_retrieve
+from memory.lzg_knoten   import spreading_lesen
+from memory.utils        import embedding_zu_pgvector_str
 from memory.session      import session_turns_retrieve, _session_key
 from memory.ziele        import ziele_aktive_laden
 from memory.pipeline_log import (
@@ -52,10 +54,15 @@ from ei.gravitation      import (
     gravitationsterm_berechnen,
     emotionale_gravitation_scannen,
 )
+from ei.dreischicht      import CLUSTER_ENRICHER_SPRUENGE
 from plugins             import get_registry
 from services.model_services import model_service, EmbedRequest
 
 logger = logging.getLogger("ki_server.enricher")
+
+# Default-Cluster fuer den Spreading-Lesepfad (§8.2.1), wenn der Vorturn-Cluster
+# nicht aus Redis gv:detail gelesen werden kann. paradox = Konzept-Default, Tiefe 1.
+SPREADING_DEFAULT_CLUSTER: str = "paradox"
 
 
 # ═══════════════════════════════════════════════════════════════════
@@ -303,6 +310,73 @@ def _enrich_human(
 # CharacterGraph-Pfad — voller Lauf (1:1 zum bisherigen enrich)
 # ═══════════════════════════════════════════════════════════════════
 
+def _vorturn_cluster_lesen(
+    redis_client: redis.Redis,
+    user_id:      str,
+    character_id: str,
+) -> str:
+    """Liest den GV-Cluster des vorigen Turns aus Redis (§8.2.1).
+
+    Der GV-Node laeuft nach dem Enricher, daher ist der Cluster des aktuellen
+    Turns noch nicht berechnet. Der Dispatcher des Vorturns legt ihn unter
+    ``gv:detail:{user_id}:{character_id}`` als JSON ab (Feld ``cluster``).
+
+    Fallback bei fehlendem Key, Parse-Fehler oder fehlendem Feld:
+    SPREADING_DEFAULT_CLUSTER (paradox, Tiefe 1).
+    """
+    key: str = f"gv:detail:{user_id}:{character_id}"
+    try:
+        roh = redis_client.get(key)
+        if roh:
+            cluster = (json.loads(roh) or {}).get("cluster")
+            if cluster:
+                logger.info(f"Spreading: Cluster '{cluster}' aus Redis-Vorturn ({key})")
+                return cluster
+            logger.info(
+                f"Spreading: gv:detail ohne 'cluster' — Default '{SPREADING_DEFAULT_CLUSTER}'"
+            )
+        else:
+            logger.info(
+                f"Spreading: kein gv:detail im Vorturn — Default '{SPREADING_DEFAULT_CLUSTER}'"
+            )
+    except Exception as exc:
+        logger.warning(
+            f"Spreading: gv:detail-Lesen/Parse fehlgeschlagen ({exc}) — "
+            f"Default '{SPREADING_DEFAULT_CLUSTER}'"
+        )
+    return SPREADING_DEFAULT_CLUSTER
+
+
+def _erinnerung_zu_context_entry(erinnerung: dict) -> ContextEntry:
+    """Baut aus einer Spreading-Erinnerung (§8.4.2) einen ContextEntry.
+
+    Kompatibel zum bisherigen lzg_entries_retrieve-Mapping, damit Reducer,
+    Responder und Formatter unveraendert konsumieren. ``gewicht`` traegt das
+    ``sortier_gewicht`` (turn-relevante Praesenz inkl. Schale + Sektor; vom
+    Reducer zur Konflikt-Aufloesung genutzt). ``erstellt_am`` wird wie zuvor
+    als Unix-Timestamp (float) abgelegt; ``subtyp`` bleibt leer, da der
+    Spreading-Lesepfad keine Dimension fuehrt.
+    """
+    erstellt_am = erinnerung.get("erstellt_am")
+    erstellt_ts: float = erstellt_am.timestamp() if erstellt_am else 0.0
+    return {
+        "quelle":  "lzg",
+        "subtyp":  "",
+        "inhalt":  erinnerung.get("inhalt") or "",
+        "gewicht": erinnerung.get("sortier_gewicht", 0.0),
+        "meta": {
+            "emotion":       erinnerung.get("emotion", ""),
+            "themen":        erinnerung.get("themen") or [],
+            "entitaet_ids":  erinnerung.get("entitaet_ids") or [],
+            "erstellt_am":   erstellt_ts,
+            "gewicht_decay": erinnerung.get("gewicht_decay", 0.0),
+            "schale":        erinnerung.get("schale", 0),
+            "knoten_id":     erinnerung.get("knoten_id"),
+            "pfad":          erinnerung.get("pfad") or [],
+        },
+    }
+
+
 def _enrich_character(
     state:        ConversationState,
     redis_client: redis.Redis,
@@ -483,12 +557,38 @@ def _enrich_character(
                 logger.info(f"Enricher: KZG lieferte {len(kzg_entries)} Eintraege")
 
         if has_lzg:
-            lzg_entries = lzg_entries_retrieve(
-                postgres_url, user_id, character_id, embedding,
+            # B2 (§8.1-8.4): gerichteter Spreading-Lesepfad statt flachem LZG-Read.
+            # Cluster aus dem Redis-Vorturn (GV-Node laeuft nach dem Enricher, §8.2.1).
+            cluster: str = _vorturn_cluster_lesen(redis_client, user_id, character_id)
+
+            # Novas dominante Emotion des aktuellen Turns: [0] ist die staerkste
+            # (Verlauf in allen ei_calc-Pfaden absteigend nach Gewicht sortiert).
+            # Empty-Guard: leer/fehlend -> "" (Neutral-Faktor 1.0 in _sektor_faktor).
+            nova_verlauf: list = state.get("nova_emotions_verlauf") or []
+            nova_emotion: str = nova_verlauf[0]["emotion"] if nova_verlauf else ""
+
+            embedding_str: str = embedding_zu_pgvector_str(embedding)
+            erinnerungen: list[dict] = spreading_lesen(
+                postgres_url, user_id, character_id, embedding_str,
+                cluster=cluster, nova_emotion=nova_emotion,
             )
+
+            # §8.4.2: lzg_resonanz — Kontext-Rahmen + Top-3-Erinnerungen mit Pfad.
+            state["lzg_resonanz"] = {
+                "anker_anzahl": 3,
+                "sprung_tiefe": CLUSTER_ENRICHER_SPRUENGE.get(cluster, 1),
+                "cluster":      cluster,
+                "nova_sektor":  nova_emotion,
+                "erinnerungen": erinnerungen,
+            }
+
+            # Weiterhin als ContextEntry in memory_entries einspeisen (Reducer/
+            # Responder konsumieren wie bisher; Resonanz-Veredelung §8.4.3 folgt).
+            for erinnerung in erinnerungen:
+                lzg_entries.append(_erinnerung_zu_context_entry(erinnerung))
             if lzg_entries:
                 entries.extend(lzg_entries)
-                logger.info(f"Enricher: LZG lieferte {len(lzg_entries)} Eintraege")
+                logger.info(f"Enricher: Spreading-Lesepfad lieferte {len(lzg_entries)} Erinnerungen")
 
         # ── Pipeline-Log: Switch — Memory aktiv (Anker 4a) ──
         log_switch(
