@@ -60,7 +60,7 @@ def postgres_testen() -> bool:
             conn.close()
             return False
 
-        cursor.execute("SELECT COUNT(*) FROM langzeitgedaechtnis;")
+        cursor.execute("SELECT COUNT(*) FROM lzg_knoten;")
         logger.debug("PostgreSQL + pgvector erreichbar. Schema vorhanden.")
         conn.close()
         return True
