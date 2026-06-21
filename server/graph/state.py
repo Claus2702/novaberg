@@ -69,6 +69,7 @@ class ConversationState(TypedDict):
     # ── Enricher ─────────────────────────────
     memory_context:    str
     memory_entries:    list[ContextEntry]   # Strukturierte Eintraege (vor Reducer-Dedup, vor Formatter)
+    lzg_resonanz: dict | None  # Assoziative Spreading-Resonanz (Synapsen §8.4.2): Enricher schreibt {anker_anzahl, sprung_tiefe, cluster, nova_sektor, erinnerungen[]}, Reducer/Formatter lesen. MUSS als Channel deklariert sein — StateGraph(ConversationState) rekonstruiert den State pro Node aus den Channels; ein undeklarierter Key wird am Node-Uebergang (Enricher → Reducer) still verworfen, nicht durchgereicht.
     memory_entries_raw: list[ContextEntry]   # Ungekuerzte Eintraege vor Reducer-Dedup (Debug)
     web_context:       str
     session_turns:     list   # list[dict] — destillierte Turns für den Responder
