@@ -287,7 +287,11 @@ def _herkunft_zeile(pfad: list) -> str:
 
 
 def _format_lzg_resonanz(resonanz: dict) -> str:
-    """Rendert den [GEDAECHTNIS]-Block der assoziativen Resonanz (§8.4.4).
+    """Rendert die assoziative Resonanz als Erinnerungs-Block (§8.4.4).
+
+    Setzt KEINEN [GEDAECHTNIS]-Header — der Responder wickelt den gesamten
+    memory_context bereits in das Template responder.gedaechtnis.txt, das
+    selbst mit [GEDAECHTNIS] beginnt. Ein innerer Header waere eine Dopplung.
 
     Reihenfolge: nach sortier_gewicht AUFSTEIGEND (am wenigsten praesente
     zuerst, staerkste am Ende — Recency). Die Eingabe kommt vom Enricher
@@ -295,7 +299,7 @@ def _format_lzg_resonanz(resonanz: dict) -> str:
 
     Interne Werte (Gewicht, Schale, knoten_id) erscheinen NICHT im Output;
     erstellt_am wird nicht verwendet. Leere Erinnerungs-Liste -> Leerstring
-    (kein leerer Header).
+    (keine Einleitungszeile).
     """
     erinnerungen: list = resonanz.get("erinnerungen") or []
     if not erinnerungen:
@@ -312,7 +316,7 @@ def _format_lzg_resonanz(resonanz: dict) -> str:
             "Die am wenigsten praesente zuerst, die staerkste am Ende."
         )
 
-    zeilen: list[str] = ["[GEDAECHTNIS]", einleitung]
+    zeilen: list[str] = [einleitung]
     for nummer, erinnerung in enumerate(geordnet, start=1):
         zeilen.append(f"----- Erinnerung {nummer} -----")
         inhalt: str = (erinnerung.get("inhalt") or "").strip()
