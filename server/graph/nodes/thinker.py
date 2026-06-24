@@ -29,12 +29,11 @@ import redis
 from langchain_core.tools import tool
 
 from agents.timeline.event_time import precision_has_time, precision_format
-from graph.context_entry import ContextEntry
-from graph.format        import format_memory_entries
 from graph.nodes.thinker_cache import ThinkerToolCache
 from graph.state         import ConversationState
 from memory.repositories.timeline_repository import TimelineRepository
-from memory.lzg          import lzg_entries_retrieve
+from memory.lzg_knoten    import anker_retrieval
+from memory.utils         import embedding_zu_pgvector_str
 from config              import get_node_config, PROMPTS
 from services.model_services import model_service, ChatRequest, EmbedRequest
 
@@ -139,11 +138,11 @@ def create_tools(
         """Durchsuche das Langzeitgedächtnis des Nutzers nach relevanten Informationen.
         Nutze dieses Tool wenn du Fakten über den Nutzer prüfen willst,
         z.B. ob eine Behauptung in der Antwort mit dem übereinstimmt, was bekannt ist."""
-        # Implementierung (STRUCT-5c): nutzt die strukturierte ContextEntry-Pipeline.
-        # 1. Embedding der Query erzeugen.
-        # 2. lzg_entries_retrieve() liefert list[ContextEntry].
-        # 3. format_memory_entries() baut den finalen String fuer das LLM.
-        # Damit ist das Tool-Output-Format identisch zum memory_context im Responder.
+        # Implementierung (Faktencheck-Read): liest direkt die lzg_knoten.
+        # 1. Embedding der Query erzeugen, in pgvector-Literal wandeln.
+        # 2. anker_retrieval() liefert die Top-20 lzg_knoten-Dicts (Cosine-sortiert,
+        #    ohne Similarity-Filter — der Faktencheck soll auch schwache Treffer sehen).
+        # 3. _format_faktencheck_treffer() baut den schlanken Faktencheck-Block.
 
         logger.info(f"Thinker.memory_search: query={frage[:60]}")
 
@@ -156,29 +155,24 @@ def create_tools(
             embed_response.duration_seconds,
         )
 
-        entries: list[ContextEntry] = lzg_entries_retrieve(
+        embedding_str: str = embedding_zu_pgvector_str(embedding)
+        treffer: list[dict] = anker_retrieval(
             postgres_url=postgres_url,
             user_id=user_id,
             character_id=character_id,
-            embedding=embedding,
-            top_k=5,
+            embedding_str=embedding_str,
+            top_k=20,
+            min_similarity=0.0,
         )
 
         # Stufe 2 (THINK-MEM-LOOP): Result-Hash ueber stabile, identifizierende
         # Felder. Effektives Gewicht und Arousal sind Decay-volatil bzw.
         # Float-instabil — bewusst ausgeschlossen, sonst waere der Hash
         # zwischen zwei Aufrufen wackelig. Reihenfolge bleibt wie aus
-        # lzg_entries_retrieve geliefert (pgvector-Sortierung deterministisch
-        # bei identischer Query).
-        hash_input: tuple = tuple(
-            (
-                e.get("inhalt", ""),
-                e.get("subtyp", ""),
-                (e.get("meta") or {}).get("dimension", ""),
-                (e.get("meta") or {}).get("beobachter", ""),
-            )
-            for e in entries
-        )
+        # anker_retrieval geliefert (pgvector-Sortierung deterministisch
+        # bei identischer Query). Die lzg_knoten-id (PK) ist der stabile
+        # Identifikator.
+        hash_input: tuple = tuple(e.get("id") for e in treffer)
         result_hash: str = hashlib.sha256(repr(hash_input).encode()).hexdigest()
 
         if cache.stufe2_kennt(result_hash):
@@ -194,13 +188,13 @@ def create_tools(
 
         cache.stufe2_speichern(result_hash)
 
-        if not entries:
+        if not treffer:
             logger.info("Thinker.memory_search: keine Treffer")
             return "Keine relevanten Einträge im Langzeitgedächtnis gefunden."
 
-        formatierter_kontext: str = format_memory_entries(entries)
+        formatierter_kontext: str = _format_faktencheck_treffer(treffer)
         logger.info(
-            f"Thinker.memory_search: {len(entries)} Treffer, "
+            f"Thinker.memory_search: {len(treffer)} Treffer, "
             f"Output-Laenge {len(formatierter_kontext)}"
         )
         return formatierter_kontext
@@ -317,6 +311,48 @@ def _build_verarbeitungs_block(agent_results: list) -> str:
 
     logger.debug(f"Thinker: Verarbeitungs-Block gebaut ({len(successes)} Operation(en))")
     return block
+
+
+# ─────────────────────────────────────────────
+# Faktencheck-Treffer (anker_retrieval → Prompt)
+# ─────────────────────────────────────────────
+def _format_faktencheck_treffer(treffer: list[dict]) -> str:
+    """Formatiert anker_retrieval-Knoten fuer den Thinker-Faktencheck.
+
+    Schlank und faktenorientiert: nur inhalt + dimension, geordnet nach
+    Cosine-Naehe (Reihenfolge aus der SQL erhalten, NICHT nach Gewicht
+    umsortiert). Kein Gewichtswert im Output — ein Faktencheck prueft
+    Wahrheit, nicht emotionale Salienz; das Gewicht waere Rauschen und
+    koennte das LLM verleiten, Schwere mit Korrektheit zu verwechseln.
+
+    Mit ausgegeben wird der beobachter (Schreiber der Erinnerung), weil er die
+    Evidenzbewertung beim Faktencheck beeinflusst — eine User-Aussage ist
+    andere Evidenz als eine Nova-Aussage.
+
+    Args:
+        treffer: list[dict] aus anker_retrieval (Keys: inhalt, dimension,
+                 beobachter, cosine, ...). Bereits cosine-absteigend sortiert.
+
+    Returns:
+        Formatierter Prompt-Block. Leere Liste -> "".
+    """
+
+    # ── Eingabe-Validierung ─────────────────────
+    if not treffer:
+        return ""
+
+    # ── Verarbeitung ────────────────────────────
+    zeilen: list[str] = []
+    for t in treffer:
+        inhalt: str = t.get("inhalt", "")
+        dimension: str = t.get("dimension", "")
+        beobachter: str = t.get("beobachter", "")
+        if not inhalt:
+            continue
+        zeilen.append(f"[LZG/{dimension}, Quelle: {beobachter}]: {inhalt}")
+
+    # ── Ausgabe ─────────────────────────────────
+    return "\n".join(zeilen)
 
 
 # ─────────────────────────────────────────────

@@ -229,6 +229,7 @@ def anker_retrieval(
                     id,
                     inhalt,
                     dimension,
+                    beobachter,
                     gewicht_decay,
                     emotion,
                     arousal,
