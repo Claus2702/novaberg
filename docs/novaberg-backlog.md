@@ -371,6 +371,16 @@ Emotions-Baseline.
 **Lösung:** Konzeptionell offen — KZG-Push? Eigene Tabelle "Recherche-Akten"? Knowledge-Graph-Anreicherung? Braucht Architektur-Diskussion.
 **Prio:** Mittel.
 
+#### AGENT-RUECKFRAGE-LOOP — Nicht-terminierende Planner→Agent-Rückfrage-Schleife
+
+**Status:** ⬜ Offen
+**Entdeckt:** Chat 100
+**Symptom:** Planner und Notizen-Agent bilden eine nicht-terminierende Schleife. Der Agent gibt `rueckfrage` zurück, der Folge-Durchlauf erkennt den nächsten Prompt nicht als Antwort auf die Rückfrage, plant neu und fragt erneut — die `notizen: rueckfrage`-Kette akkumuliert pro Iteration ein Glied. Beobachtet bei Prompt „… Du musst Dir nur merken, dass ich Claus heiße".
+**Auswirkung:** Betriebsgefährdend — die Schleife terminiert nicht von selbst.
+**Verwandt:** Vermutlich PENDING-RELEVANZ (Router prüft nicht, ob ein Prompt die Antwort auf eine Rückfrage ist) — gleiche Wurzel, andere Manifestation.
+**Lösung:** Offen — noch nicht untersucht.
+**Prio:** Hoch (betriebsgefährdend).
+
 ### Infrastruktur
 | # | Thema | Status |
 |---|-------|--------|
@@ -2874,12 +2884,11 @@ Acht Folgepunkte aus dem P5-Lesepfad-Umbau plus die Live-Abnahme als nächster S
 
 | # | Thema | Status |
 |---|-------|--------|
-| P5-LIVE-ABNAHME | Echter Turn mit Pipeline-Log, der beweist, dass Spreading auf echten `lzg_knoten`-Daten greift — reale Pfade, `[GEDAECHTNIS]`-Block im Prompt. Bisher nur Import-Smokes + Mock-Funktionstests. | ⬜ Prio hoch — nächster Schritt |
+| P5-LIVE-ABNAHME | Echter Turn mit Pipeline-Log, der beweist, dass Spreading auf echten `lzg_knoten`-Daten greift — reale Pfade, `[GEDAECHTNIS]`-Block im Prompt. Bisher nur Import-Smokes + Mock-Funktionstests. | ✅ Chat 100 — P5-Lesepfad live abgenommen: Resonanz erreicht den Prompt, Spreading traversiert real (Schale ≥1, „eingefallen über …") |
 | KANTEN-RICHTUNG-UNDOKUMENTIERT | `lzg_kanten` sind gerichtet (Spaltenposition: `knoten_a_id`=Quelle, `knoten_b_id`=Ziel; A→B und B→A separate Zeilen mit asymmetrischen Gewichten, by design in `lzg_kanten.py` `_kante_upsert`). Konzept-Schema §4.2 dokumentiert das nicht — ein früherer Schema-Audit las „ungerichtet", was in Chat 99 eine Audit-Runde gekostet hat. §4.2 muss die Richtungssemantik explizit machen (Konzept-Fix separat). | ⬜ Prio mittel |
 | SPREADING-RELEVANZ-BEOBACHTEN | Im Live-Betrieb prüfen, ob die assoziativen Erinnerungen das Gespräch bereichern oder Nova vom Thema wegziehen. Bei dominierenden Ausreißern ZUERST an `CLUSTER_ENRICHER_SPRUENGE` (Sprungtiefe) und den Sektor-/Schalen-Faktoren drehen, BEVOR ein zusätzlicher Relevanz-Filter erwogen wird. Empirisch entscheiden, nicht vorab lösen. | ⬜ Prio mittel — Test-Aufgabe |
-| THINKER-LZG-FLAT-READ | `thinker.py:159` ruft noch `lzg_entries_retrieve` (flacher Read auf `langzeitgedaechtnis`). Eigener Repoint-Kandidat auf `lzg_knoten`/Spreading; kein P9-Waise (aktiver Konsument). War nicht Teil von P5. | ⬜ Prio mittel |
 | LZG-RESONANZ-DATETIME | `erstellt_am` in `lzg_resonanz.erinnerungen` ist ein `datetime`-Objekt (`spreading_lesen` liefert es roh), nicht JSON-nativ. Aktuell folgenlos (Formatter nutzt `erstellt_am` nicht). Relevant, falls `lzg_resonanz` künftig serialisiert wird. | ⬜ Prio niedrig |
-| LZG-RESONANZ-STATE-DEKL | `lzg_resonanz` ist nicht im `ConversationState`-TypedDict (`state.py`) deklariert; läuft zur Laufzeit (TypedDict nicht runtime-enforced). Deklaration nachziehen. | ⬜ Prio niedrig |
+| LZG-RESONANZ-STATE-DEKL | `lzg_resonanz` ist nicht im `ConversationState`-TypedDict (`state.py`) deklariert; läuft zur Laufzeit (TypedDict nicht runtime-enforced). Deklaration nachziehen. | ✅ Chat 100 behoben (jetzt in bugs.md geführt, `dd0811b`). „Prio niedrig / läuft zur Laufzeit" widerlegt — war die Wurzel des P5-Render-Ausfalls, nicht harmlos: undeklarierte Keys werden bei `StateGraph(TypedDict)` am Node-Übergang still verworfen (Reducer sah `None`, kein Resonanz-Block) |
 | LZG-RESONANZ-ENTITAET-NAMEN | Im `[GEDAECHTNIS]`-Block werden geteilte Entitäten generisch („eine gemeinsame Person/Sache") statt mit Namen gerendert, weil `geteilte_entitaet_ids` IDs sind und keine Namens-Auflösung vorliegt. §8.4.4-Beispiel zeigt „gemeinsame Entitaet Anna" — dafür Join auf `entitaeten` nötig. Themen werden bereits mit Namen verbalisiert. | ⬜ Prio niedrig |
 | LIB-VECTORS-MIGRATION | `embedding_zu_pgvector_str` liegt provisorisch in `memory/utils.py`. Norm-Ziel laut Handbuch §5 ist `lib/vectors/` (existiert noch nicht). Bei Anlage der `lib/`-Struktur dorthin migrieren (perspektivisch auch `cosine_similarity`/`sin_sqrt_norm` aus `ei/utils.py`). | ⬜ Prio niedrig |
 | B3-API-KEY-SEMANTIK | Der REST-Endpunkt `/gedaechtnis/lzg` liefert weiterhin den Antwort-Key `gewicht`, der jetzt aber `gewicht_decay` trägt (Quelle auf `lzg_knoten` umgestellt). Key-Name bewusst gewahrt (Contract-Stabilität); semantisch leicht irreführend. Umbenennung bräuchte Client-Abstimmung. | ⬜ Prio niedrig |

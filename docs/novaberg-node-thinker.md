@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Node-Referenz Thinker
-**Stand:** 21. Mai 2026, Chat 93 (MS-Welle Block 3: `think` pro Call, ThinkingNormalizer, Self-Trigger-Notnagel)
+**Stand:** 24. Juni 2026, Chat 100 (Thinker-Read-Migration auf `lzg_knoten`/`anker_retrieval` + Faktencheck-Formatter, NORMALIZER-CONNECTOR-NOOP-Fix)
 **Pfad:** novaberg/docs/novaberg-node-thinker.md
 **Quellen:** nova-01-m-f.md
 **Datei:** `graph/nodes/thinker.py`
@@ -60,17 +60,19 @@ Der ReAct-Loop hatte bis Chat 82 keine Wiederholungs-Erkennung. Tool-Outputs leb
 Defense-in-Depth-Loesung in zwei Stufen, gebuendelt in `ThinkerToolCache` (siehe `graph/nodes/thinker_cache.py`):
 
 - **Stufe 1 (generisch, alle 5 Tools):** Argument-Cache in `_execute_tool_call`. Schluessel `f"{tool_name}::{json.dumps(args, sort_keys=True, default=str)}"`. Bei Treffer wird das Tool nicht erneut aufgerufen; statt des Outputs gibt der Thinker einen Hinweis-String zurueck.
-- **Stufe 2 (nur `memory_search`):** Result-Hash ueber stabile Felder `(inhalt, subtyp, dimension, beobachter, vektor)` der entries-Liste. Effektives Gewicht und Arousal sind Decay-volatil bzw. Float-instabil und bewusst ausgeschlossen — sonst waere der Hash zwischen zwei identischen Anfragen wackelig. Faengt den Fall semantisch aequivalenter Queries ab, der Stufe 1 nicht erreicht (unterschiedliche Wortlaute, identische Treffer).
+- **Stufe 2 (nur `memory_search`):** Result-Hash ueber die stabile Knoten-`id` (PK) der Treffer-Liste. Seit Chat 100 liest `memory_search` `anker_retrieval`-Dicts (`lzg_knoten`), die kein `subtyp`/`meta` tragen, aber eine stabile `id` — der Hash ueber die `id` ist deterministischer als der alte Feld-Tupel `(inhalt, subtyp, dimension, beobachter, vektor)`. Faengt den Fall semantisch aequivalenter Queries ab, der Stufe 1 nicht erreicht (unterschiedliche Wortlaute, identische Treffer).
 
 **Designentscheidung — Cache strikt lokal in `think()` instanziiert.** Im Gegensatz zu `_aktiver_pixie_user` (Modul-Cache in `services/llm_provider.py`) lebt der Thinker-Cache als lokale Variable in `think()`, nicht auf Modul-Ebene und nicht im `ConversationState`. Begruendung: Pixie-Aufrufe sind durch den Pixie-Lock `pixie:running` serialisiert; der Thinker laeuft potenziell parallel pro `(user_id, character_id)`-Paar. Strikte Lokalitaet macht es strukturell unmoeglich, dass Caches zwischen Graph-Laeufen verschmutzen — Lebensdauer = Lebensdauer von `think()`.
 
-Datenstruktur: `OrderedDict` mit `MAX_GROESSE=20` und FIFO-Verdraengung via `popitem(last=False)`, damit der Cache nicht unbegrenzt waechst. Der STRUCT-5c-Format-Vertrag bleibt unangetastet — Stufe 2 hasht *vor* dem `format_memory_entries()`-Call ueber die strukturierten Entries.
+Datenstruktur: `OrderedDict` mit `MAX_GROESSE=20` und FIFO-Verdraengung via `popitem(last=False)`, damit der Cache nicht unbegrenzt waechst. Stufe 2 hasht *vor* der Formatierung — ueber die Roh-Dicts aus `anker_retrieval`, nicht ueber den `_format_faktencheck_treffer()`-Output.
 
 ### 3.4 content/thinking-Split + ThinkingNormalizer
 
 **Problem.** Ollama legt bei `think=True` den Modell-Output nicht-deterministisch mal in `content`, mal ausschließlich ins `thinking`-Feld — `content` bleibt dann leer. Belegt: Ollama #10976, LiteLLM #18922. Der Effekt tritt bei `gemma4` UND `qwen3` auf — Ollama-spezifisch, nicht modell-spezifisch. Der Reasoning-Loop liest `content`; bei leerem `content` findet er keinen Steuer-Token (`TOOL:`, `ERGEBNIS:`, `KORREKTUR:`) und würde blind bis `max_iterations` weiterlaufen.
 
 **Lösung — ThinkingNormalizer.** Code in `tools/thinking_normalizer.py`. Basisklasse `ThinkingNormalizer` (No-Op: `content` gilt immer als brauchbar) plus erbende Klasse `ThinkSplitNormalizer` (behandelt den Split). Auswahl über eine Connector-Factory `get_thinking_normalizer()` — das modell-spezifische Verhalten ist hinter der Factory gekapselt; der Thinker selbst bleibt modell-agnostisch.
+
+**Connector-Auswahl — Match aufs aufgelöste Modell, nicht den Connector-Namen (Chat 100).** `get_thinking_normalizer()` matcht jetzt per Substring gegen das aufgelöste GPU-Modell (`OLLAMA_MODEL`, z. B. `gemma4-gpu`), nicht mehr gegen den Connector-Namen. Grund: Der live aktive `qwen36`-Connector fährt im CharacterGraph `gemma4-gpu` und zeigt den Split — hieß aber nicht „gemma4", sodass der alte Connector-Name-Match ihn fälschlich auf den No-Op-`ThinkingNormalizer` fallen ließ (Bug NORMALIZER-CONNECTOR-NOOP, `novaberg-bugs.md`). Der Match aufs Modell ist die ehrliche Bedingung: Der Split hängt am Modell, nicht am Profilnamen.
 
 **Datenfluss.** Das `thinking`-Feld kommt durch die Kette: Provider liest `message["thinking"]` → `LLMAntwort` → `ChatResponse`. Der Thinker liest `response.thinking` und reicht beide Felder (`content`, `thinking`) an den Normalizer.
 
@@ -123,7 +125,17 @@ memory_search("Wo wohnt Anna?")
 
 Durchsucht das Langzeitgedächtnis per Embedding-Suche. Prüft ob Behauptungen in der Antwort mit dem gespeicherten Wissen übereinstimmen.
 
-**Hinweis (Chat 75):** Seit dem Reducer-Umbau (`novaberg-reducer-umbau_k.md`) nutzt das Tool `lzg_entries_retrieve()` plus `format_memory_entries()` (aus `graph/format/memory_context.py`) statt `lzg_context_retrieve()` direkt aufzurufen. Der Format-Vertrag des Tool-Outputs ist identisch zum Responder-`memory_context`.
+**Hinweis (Chat 100) — Read auf `lzg_knoten` migriert.** Bis Chat 99 las das Tool über `lzg_entries_retrieve()` (`memory/lzg.py`) plus `format_memory_entries()` flach aus `langzeitgedaechtnis` (Reducer-Umbau-Verkabelung seit Chat 75, `novaberg-reducer-umbau_k.md`). Seit Chat 100 ruft `memory_search` `anker_retrieval()` (`memory/lzg_knoten.py`) gegen das Synapsen-Netz `lzg_knoten`.
+
+- **Parameter:** `top_k=20`, `min_similarity=0.0`. Kein Schwellwert-Filter — anders als der Enricher-Lesepfad soll der Faktencheck auch semantisch entferntere Treffer sehen: ein Widerspruch hat nicht zwingend hohe Cosine-Nähe, deshalb darf kein schwacher Treffer vorab verworfen werden.
+- **Stufe-2-Dedup (THINK-MEM-LOOP, §3.3):** Der Result-Hash läuft jetzt über die stabile Knoten-`id` (PK) statt über `inhalt` + Meta-Felder — deterministischer, und die alten `subtyp`/`meta`-Felder existieren auf den `lzg_knoten`-Dicts gar nicht.
+- **Kein Spreading.** Der Thinker traversiert bewusst KEINE Kanten (kein `spreading_lesen`): Der Faktencheck ist ein Python-getriebener Verifikations-Read, kein phänomenaler Read. Assoziative Verschiebung („eingefallen über …") gehört nur zu Reads aus echtem User-Input (Enricher). Der Thinker nutzt deshalb nur die flache Anker-Stufe `anker_retrieval`.
+
+**Eigener Formatter `_format_faktencheck_treffer` (Chat 100, statt `format_memory_entries`).** Modul-Funktion im Thinker — schlank und faktenorientiert:
+
+- **Cosine-Ordnung statt Gewicht.** Der Formatter erhält die SQL-Reihenfolge (Cosine-Nähe, absteigend) und sortiert NICHT nach emotionalem Gewicht um. `format_memory_entries` täte genau das — für einen Faktencheck schädlich, weil es den semantisch relevantesten Treffer nach unten drücken kann, wo das LLM ihn überliest. Ein Fakt ist wahr oder falsch, unabhängig von emotionaler Salienz.
+- **Quelle im Output.** Jede Zeile trägt den `beobachter` als Quelle: `[LZG/{dimension}, Quelle: {beobachter}]: {inhalt}`. Die Quelle ändert die Evidenzbewertung — eine User-Aussage ist bei der Wahrheitsprüfung andere Evidenz als eine Nova-Aussage. `anker_retrieval` selektiert `beobachter` dafür zusätzlich.
+- **Kein Gewichtswert im Output.** Das Gewicht (in der alten `[LZG/…]`-Zeile noch enthalten) ist entfernt — es verhindert, dass das LLM Schwere mit Korrektheit verwechselt.
 
 ### 4.4 web_search (mit Auto-Fetch)
 

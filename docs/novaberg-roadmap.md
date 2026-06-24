@@ -1341,4 +1341,12 @@ Offen → Backlog `SYNAPSEN-DUAL-LZG`: P6 (`synapsen_decay`-Agent + Halbreaktivi
 
 ---
 
-*Aktualisiert in Chat 99. Offene Punkte → novaberg-backlog.md. Bugs → novaberg-bugs.md.*
+### Synapsen P5 — Live-Abnahme + Folge-Fixes (Chat 100, 22.–24. Juni 2026)
+
+- ✅ **P5-Lesepfad live abgenommen** — Resonanz erreicht den Prompt, Spreading traversiert real (Schale ≥1, „eingefallen über …"). Der eigentliche Meilenstein gegenüber Chat 99 (dort nur Import-Smoke/Mock). Wurzel-Fix: `lzg_resonanz` als Channel im `ConversationState`-TypedDict deklariert — der Enricher-Mutations-Key wurde sonst am Übergang Enricher→Reducer still verworfen (Bug LZG-RESONANZ-STATE-DEKL, `dd0811b`); zusätzlich Doppel-`[GEDAECHTNIS]`-Header entfernt (`2f8c441`)
+- ✅ **NORMALIZER-CONNECTOR-NOOP gefixt** — `get_thinking_normalizer()` matcht jetzt per Substring gegen das aufgelöste `OLLAMA_MODEL` (`gemma4-gpu`) statt gegen den Connector-Namen `qwen36`; der Ollama content/thinking-Split (#10976) wird unter dem live aktiven `qwen36`-Connector wieder normalisiert statt als No-Op behandelt
+- ✅ **THINKER-LZG-FLAT-READ erledigt** — letzter flacher `langzeitgedaechtnis`-Leser im Chat-Pfad auf `lzg_knoten` migriert: `memory_search` liest über `anker_retrieval` (top_k=20, `beobachter`-Quelle in der Faktencheck-Zeile, Cosine-Ordnung erhalten), deterministisch verifiziert via `scripts/test_anker_retrieval.py` (Commits `04147d3`, `51a356a`)
+
+---
+
+*Aktualisiert in Chat 100. Offene Punkte → novaberg-backlog.md. Bugs → novaberg-bugs.md.*
