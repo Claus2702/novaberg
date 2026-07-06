@@ -373,13 +373,21 @@ Emotions-Baseline.
 
 #### AGENT-RUECKFRAGE-LOOP — Nicht-terminierende Planner→Agent-Rückfrage-Schleife
 
-**Status:** ⬜ Offen
+**Status:** ⬜ Nicht reproduzierbar (Chat 101). Fünf Turns verschiedener Statustypen (rejected/abgeschlossen/fehler/read) terminierten alle über den `bereits_gelaufen`-Guard. Vermutlich durch Zwischen-Fix in `dispatch.py` (`_build_return` setzt `agent_name=""`, `agent_results` akkumuliert sauber) erledigt. Nicht geschlossen — falls unter anderen Bedingungen doch auftretend, hier wieder aufnehmen. Vorsorge-Konzept: `iteration-control_k` (geparkt).
 **Entdeckt:** Chat 100
 **Symptom:** Planner und Notizen-Agent bilden eine nicht-terminierende Schleife. Der Agent gibt `rueckfrage` zurück, der Folge-Durchlauf erkennt den nächsten Prompt nicht als Antwort auf die Rückfrage, plant neu und fragt erneut — die `notizen: rueckfrage`-Kette akkumuliert pro Iteration ein Glied. Beobachtet bei Prompt „… Du musst Dir nur merken, dass ich Claus heiße".
 **Auswirkung:** Betriebsgefährdend — die Schleife terminiert nicht von selbst.
 **Verwandt:** Vermutlich PENDING-RELEVANZ (Router prüft nicht, ob ein Prompt die Antwort auf eine Rückfrage ist) — gleiche Wurzel, andere Manifestation.
 **Lösung:** Offen — noch nicht untersucht.
-**Prio:** Hoch (betriebsgefährdend).
+**Prio:** Herabgestuft (Chat 101) — siehe Status; nicht mehr betriebsgefährdend, da im aktuellen Codestand nicht reproduzierbar.
+
+#### NOTIZEN-VOR-TURN-BEZUG — Klassifikator löst Rückbezüge aus dem Verlauf nicht auf (Chat 101)
+
+**Status:** ⬜ Offen, reproduzierbar
+**Entdeckt:** Chat 101
+**Symptom:** Der Notizen-Klassifikator löst Rückbezüge aus dem Verlauf nicht auf. Beleg: „Die andere ist die mit dem Grillkäse" wurde als `rejected` klassifiziert, obwohl der Verlauf die gemeinte Lösch-Aktion eindeutig machte — trotz Prompt-Anweisung „Nutze den Verlauf für Target-Auflösung".
+**Verwandt:** Wiederauftreten der Klasse des abgeschlossenen Chat-80-Sprints `NOTIZEN-VOR-TURN-BEZUG` (Inhalts-Auflösung im Classify-Node, weiter unten in diesem Dokument) und von `NOTIZEN-UPDATE-TARGET-LEER` — hier auf einer Lösch-/Target-Auflösung. Regressions-Charakter: Der Chat-80-Sprint galt als abgeschlossen, doch dieser Pfad (Lösch-/Target-Auflösung nach vorheriger Rückfrage) tritt erneut auf. Zu klären, ob der Chat-80-Fix regrediert ist oder diesen Pfad nie abdeckte.
+**Prio:** Mittel.
 
 ### Infrastruktur
 | # | Thema | Status |
