@@ -1337,7 +1337,7 @@ Drei Cluster-Aufrufer profitieren über die zentrale Methode. Internes Aggregier
   - Enricher-Anbindung — Cluster aus Redis-Vorturn `gv:detail` (§8.2.1), `nova_emotion` aus `nova_emotions_verlauf[0]` (empty-guarded), `state["lzg_resonanz"]` (`293c74b`)
 - ✅ Reducer-Veredelung — Formatter rendert den `[GEDAECHTNIS]`-Block mit Pfad-Begründung („direkt zur Frage" / „eingefallen über: gemeinsames Thema …"), Recency-Reihenfolge, keine internen Werte (Gewicht/Schale/IDs) im Prompt (5a, `7e0fbc3`); Reducer reicht `lzg_resonanz` an den Formatter durch, Resonanz-only-Turn abgedeckt (5b, `9f4179a`); ContextEntry-Brücke entfernt — Spreading-Erinnerungen fließen verlustfrei nur noch über `lzg_resonanz`, keine Doppelung (5c, `14c027b`)
 
-Offen → Backlog `SYNAPSEN-DUAL-LZG`: P6 (`synapsen_decay`-Agent + Halbreaktivierung), P7 (Charakter-Hash B9/B10/B11). B2-Altpfad `lzg_entries_retrieve` (noch von `thinker.py` genutzt) + Drop von `langzeitgedaechtnis` → P9.
+Offen → Backlog `SYNAPSEN-DUAL-LZG`: P7 (Charakter-Hash B9/B10/B11 auf `gewicht_absolut`). B2-Altpfad `lzg_entries_retrieve` + Drop von `langzeitgedaechtnis` → P9.
 
 ---
 
@@ -1346,6 +1346,17 @@ Offen → Backlog `SYNAPSEN-DUAL-LZG`: P6 (`synapsen_decay`-Agent + Halbreaktivi
 - ✅ **P5-Lesepfad live abgenommen** — Resonanz erreicht den Prompt, Spreading traversiert real (Schale ≥1, „eingefallen über …"). Der eigentliche Meilenstein gegenüber Chat 99 (dort nur Import-Smoke/Mock). Wurzel-Fix: `lzg_resonanz` als Channel im `ConversationState`-TypedDict deklariert — der Enricher-Mutations-Key wurde sonst am Übergang Enricher→Reducer still verworfen (Bug LZG-RESONANZ-STATE-DEKL, `dd0811b`); zusätzlich Doppel-`[GEDAECHTNIS]`-Header entfernt (`2f8c441`)
 - ✅ **NORMALIZER-CONNECTOR-NOOP gefixt** — `get_thinking_normalizer()` matcht jetzt per Substring gegen das aufgelöste `OLLAMA_MODEL` (`gemma4-gpu`) statt gegen den Connector-Namen `qwen36`; der Ollama content/thinking-Split (#10976) wird unter dem live aktiven `qwen36`-Connector wieder normalisiert statt als No-Op behandelt
 - ✅ **THINKER-LZG-FLAT-READ erledigt** — letzter flacher `langzeitgedaechtnis`-Leser im Chat-Pfad auf `lzg_knoten` migriert: `memory_search` liest über `anker_retrieval` (top_k=20, `beobachter`-Quelle in der Faktencheck-Zeile, Cosine-Ordnung erhalten), deterministisch verifiziert via `scripts/test_anker_retrieval.py` (Commits `04147d3`, `51a356a`)
+
+---
+
+### Synapsen P6 — Decay-Agent + Halbreaktivierung (Chat 102, 7. Juli 2026)
+
+- ✅ **Fundament** — `run_node_decay` (globaler Bulk-UPDATE, materialisiert `gewicht_decay` aus `verstaerkt_am` gemaess §9.2, deaktiviert unter `LZG_KNOTEN_MIN_GEWICHT`), `delete_expired_entries` (pipeline_log-TTL-Cleanup), Feature-Flag `SYNAPSEN_DECAY_AKTIV` (Default true, gated durch `PIXIE_AKTIV`) (Commit `3e2389d`)
+- ✅ **Decay-Agent** `synapsen_decay` — taeglicher Pixie-Orchestrator, kein LangGraph (Arbeit in `invoke`), Doppel-Gate, `hintergrund_log`-Lebenszyklus, zwei `pipeline_log`-Forensikzeilen pro Lauf (start/ende, best-effort), `periodic_task(interval=86400, priority=PIXIE_DECAY_PRIORITAET)` (Commit `f78235b`)
+- ✅ **Halbreaktivierung (§9.3)** — `include_inactive`-Schalter auf `kandidaten_mit_cosine_laden` (Commit `5301183`), `reactivate_node` (halber `gewicht_decay`, `aktiv=TRUE`, Zeitstempel-Reset, `gewicht_absolut`/`gewicht_roh` unberuehrt — geweckt, nicht verstaerkt; Commit `ec17529`), Verdrahtung im Promotion-Schreibpfad (Match nach aktiv/inaktiv aufgeteilt; Reaktivierung ruft KEIN `kanten_neuberechnen` — `gewicht_absolut` unveraendert, kein Trigger 2 §7.9.2/§9.5; Commit `4bce981`)
+- ✅ **Live-Abnahme Decay-Kern** — `run_node_decay` gegen echte DB: `gewicht_absolut=5.0`, 30 Tage, Rate 0.02 → `gewicht_decay=2.7441` (§13.8 Abnahmetest 2 exakt), `absolut` unveraendert, `aktiv` bleibt, `decay_am` neu; globaler Lauf ueber 175 aktive Knoten sauber
+
+Offen → Backlog: Beobachtungspunkte SYNAPSEN-DECAY-SCHEDULE-LIVE (Heartbeat legt `pixie:schedule:synapsen_decay` an?) und HALBREAKTIVIERUNG-LIVE (erster inaktiver Match). P7 (Charakter-Hash) ist naechster Sprint.
 
 ---
 
