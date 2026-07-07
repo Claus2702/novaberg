@@ -336,6 +336,84 @@ def knoten_verstaerken(postgres_url: str, knoten_id: int) -> Optional[float]:
         conn.close()
 
 
+def reactivate_node(postgres_url: str, knoten_id: int) -> Optional[dict]:
+    """
+    Halbreaktivierung (§9.3): Weckt einen durch Decay deaktivierten Knoten.
+
+    gewicht_decay springt auf den Halbwert zwischen Anker-Staerke und
+    Deaktivierungs-Schwelle: (gewicht_absolut + LZG_KNOTEN_MIN_GEWICHT) / 2 —
+    klar ueber der Schwelle, deutlich unter dem alten Anker. Der Knoten ist
+    wieder praesent, aber nicht sofort an der Spitze; weitere echte
+    Aktivierungen naehern ihn seinem alten Niveau an.
+
+    Unangetastet: gewicht_roh (Akkumulator), gewicht_absolut (Anker-Staerke),
+    haeufigkeit. Der Knoten wird geweckt, nicht verstaerkt — kein
+    REINFORCEMENT_BOOST (der greift erst bei der naechsten echten Aktivierung
+    im normalen Pfad).
+
+    decay_am = NOW() wird mitgesetzt, damit der naechste run_node_decay den
+    Verfall ab jetzt rechnet (run_node_decay rechnet aus verstaerkt_am, das
+    ebenfalls auf NOW() gesetzt wird — beide konsistent zurueckgesetzt).
+
+    Liefert ein Dict {knoten_id, gewicht_absolut, decay_alt, decay_neu} fuer die
+    pipeline_log-Forensik (vorher/nachher) oder None bei Fehler/nicht gefunden.
+    """
+    conn = psycopg2.connect(postgres_url)
+    try:
+        with conn.cursor() as cur:
+            cur.execute(
+                "SELECT gewicht_absolut, gewicht_decay, aktiv FROM lzg_knoten WHERE id = %s",
+                (knoten_id,),
+            )
+            zeile = cur.fetchone()
+            if zeile is None:
+                logger.error("reactivate_node: Knoten %s nicht gefunden", knoten_id)
+                return None
+            gewicht_absolut = zeile[0]
+            decay_alt = zeile[1]
+            war_aktiv = zeile[2]
+            # Plausibilitaet (EVA): Halbreaktivierung gilt nur fuer deaktivierte
+            # Knoten. Ein aktiver Knoten gehoert in den normalen Reinforcement-
+            # Pfad (knoten_verstaerken) — hier waere er ein Logikfehler des
+            # Aufrufers, also nicht schweigend halbieren.
+            if war_aktiv:
+                logger.warning(
+                    "reactivate_node: Knoten %s ist bereits aktiv — "
+                    "Halbreaktivierung uebersprungen (gehoert in knoten_verstaerken)",
+                    knoten_id,
+                )
+                return None
+            decay_neu = (gewicht_absolut + LZG_KNOTEN_MIN_GEWICHT) / 2
+            cur.execute(
+                """
+                UPDATE lzg_knoten
+                SET gewicht_decay = %s,
+                    aktiv = TRUE,
+                    verstaerkt_am = NOW(),
+                    decay_am = NOW()
+                WHERE id = %s
+                """,
+                (decay_neu, knoten_id),
+            )
+        conn.commit()
+        logger.info(
+            "Knoten halbreaktiviert: id=%s absolut=%.3f decay %.3f -> %.3f (Schwelle %.2f)",
+            knoten_id, gewicht_absolut, decay_alt, decay_neu, LZG_KNOTEN_MIN_GEWICHT,
+        )
+        return {
+            "knoten_id": knoten_id,
+            "gewicht_absolut": gewicht_absolut,
+            "decay_alt": decay_alt,
+            "decay_neu": decay_neu,
+        }
+    except psycopg2.Error as exc:
+        conn.rollback()
+        logger.error("reactivate_node fehlgeschlagen id=%s: %s", knoten_id, exc)
+        return None
+    finally:
+        conn.close()
+
+
 def run_node_decay(
     postgres_url: str,
     decay_rate: float | None = None,
