@@ -1114,6 +1114,12 @@ LZG_KNOTEN_MATCH_SCHWELLE: float = float(os.getenv("LZG_KNOTEN_MATCH_SCHWELLE", 
 # Code-Pfade bleiben bis P9 im Repo.
 SYNAPSEN_PROMOTION_AKTIV: bool = os.getenv("SYNAPSEN_PROMOTION_AKTIV", "true").lower() == "true"
 
+# Feature-Flag: Synapsen-Decay-Agent (P6). Taeglicher Lauf materialisiert
+# gewicht_decay je aktivem Knoten und deaktiviert Knoten unter
+# LZG_KNOTEN_MIN_GEWICHT; plus pipeline_log-TTL-Cleanup. Default true analog
+# SYNAPSEN_PROMOTION_AKTIV; wirkt nur, wenn PIXIE_AKTIV gesetzt ist.
+SYNAPSEN_DECAY_AKTIV: bool = os.getenv("SYNAPSEN_DECAY_AKTIV", "true").lower() == "true"
+
 
 # ============================================================================
 # Synapsen-LZG — Kanten-Cache (Synapsen P2, Chat 88)

@@ -30,6 +30,8 @@ from config import (
     LZG_KNOTEN_DAEMPFUNG_EXP,
     LZG_KNOTEN_REINFORCEMENT_BOOST,
     LZG_KNOTEN_MATCH_SCHWELLE,
+    LZG_KNOTEN_DECAY_RATE,
+    LZG_KNOTEN_MIN_GEWICHT,
     EMOTION_SEKTOR_MAP,
     EMOTION_SYNONYM_MAP,
 )
@@ -328,6 +330,122 @@ def knoten_verstaerken(postgres_url: str, knoten_id: int) -> Optional[float]:
         return None
     finally:
         conn.close()
+
+
+def run_node_decay(
+    postgres_url: str,
+    decay_rate: float | None = None,
+    min_weight: float | None = None,
+) -> dict:
+    """Materialisiert gewicht_decay fuer alle aktiven Knoten (globaler Lauf).
+
+    Exponentieller Verfall aus verstaerkt_am gemaess Konzept synapsen_k §9.2:
+        gewicht_decay = gewicht_absolut * exp(-decay_rate * tage_seit_verstaerkung)
+    gewicht_absolut bleibt unangetastet (Anker-Stärke). Knoten, deren neuer
+    gewicht_decay unter min_weight faellt, werden auf aktiv = FALSE gesetzt
+    (Soft-Delete, reaktivierbar via Halbreaktivierung §9.3).
+
+    Laeuft global ueber alle Paar-Partitionen (WHERE aktiv = TRUE) — die Formel
+    ist knoten-lokal, ein globaler Sweep ist bit-identisch zur Paar-Schleife.
+
+    Args:
+        postgres_url: Postgres-Verbindungsstring (Hausstil: pro Funktion
+            explizit uebergeben, wie kandidaten_mit_cosine_laden).
+        decay_rate: Verfallsrate pro Tag. None -> config-Default. Explizit
+            setzbar fuer Unit-Tests (Formel-Pruefung statt Live-Wert).
+        min_weight: Deaktivierungs-Schwelle. None -> config-Default.
+
+    Returns:
+        dict mit total_processed (int), deactivated_count (int),
+        deactivated_ids (list[int]), error (str | None).
+    """
+    # --- Eingabe (EVA): Defaults aufloesen + validieren ---
+    if decay_rate is None:
+        decay_rate = LZG_KNOTEN_DECAY_RATE   # (3) config-konform referenzieren
+    if min_weight is None:
+        min_weight = LZG_KNOTEN_MIN_GEWICHT  # (3) config-konform referenzieren
+
+    result = {
+        "total_processed": 0,
+        "deactivated_count": 0,
+        "deactivated_ids": [],
+        "error": None,
+    }
+
+    if decay_rate < 0:
+        logger.error(f"Decay-Lauf abgebrochen: ungueltige decay_rate={decay_rate} (< 0)")
+        result["error"] = "decay_rate < 0"
+        return result
+    if min_weight < 0:
+        logger.error(f"Decay-Lauf abgebrochen: ungueltiges min_weight={min_weight} (< 0)")
+        result["error"] = "min_weight < 0"
+        return result
+
+    logger.info(
+        f"Decay-Lauf startet (global): decay_rate={decay_rate}, "
+        f"min_weight={min_weight}"
+    )
+
+    # --- Verarbeitung ---
+    conn = None
+    try:
+        conn = psycopg2.connect(postgres_url)  # (2) Muster aus kandidaten_mit_cosine_laden
+        with conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cur:
+            # Statement 1: gewicht_decay + decay_am fuer alle aktiven Knoten
+            # materialisieren. Verfall komplett in SQL (deterministisch, kein LLM).
+            cur.execute(
+                """
+                UPDATE lzg_knoten
+                SET gewicht_decay = gewicht_absolut
+                        * exp(-%s * (EXTRACT(EPOCH FROM (NOW() - verstaerkt_am)) / 86400.0)),
+                    decay_am = NOW()
+                WHERE aktiv = TRUE
+                """,
+                (decay_rate,),
+            )
+            total_processed = cur.rowcount
+            logger.info(f"Decay-Lauf: gewicht_decay materialisiert fuer {total_processed} aktive Knoten")
+
+            # Statement 2: Knoten unter der Schwelle deaktivieren. Liest die in
+            # Statement 1 frisch geschriebenen Werte (read-your-writes, selbe TX).
+            cur.execute(
+                """
+                UPDATE lzg_knoten
+                SET aktiv = FALSE
+                WHERE aktiv = TRUE AND gewicht_decay < %s
+                RETURNING id
+                """,
+                (min_weight,),
+            )
+            deactivated_ids = [row["id"] for row in cur.fetchall()]
+
+        conn.commit()
+
+        # --- Ausgabe (EVA): Ergebnis konsolidieren + Plausibilitaet ---
+        deactivated_count = len(deactivated_ids)
+        if deactivated_count > total_processed:
+            logger.warning(
+                f"Decay-Lauf: deaktiviert ({deactivated_count}) > verarbeitet ({total_processed}) — "
+                f"unerwartet, bitte pruefen"
+            )
+        result["total_processed"] = total_processed
+        result["deactivated_count"] = deactivated_count
+        result["deactivated_ids"] = deactivated_ids
+        logger.info(
+            f"Decay-Lauf abgeschlossen: {total_processed} verarbeitet, {deactivated_count} deaktiviert "
+            f"(ids={deactivated_ids})"
+        )
+        return result
+
+    except psycopg2.Error as ex:
+        if conn is not None:
+            conn.rollback()
+        logger.error(f"Decay-Lauf DB-Fehler, Rollback: {ex}")
+        result["error"] = str(ex)
+        return result
+    finally:
+        if conn is not None:
+            conn.close()
 
 
 def knoten_laden(postgres_url: str, knoten_id: int) -> Optional[dict]:

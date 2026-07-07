@@ -41,7 +41,7 @@ from typing import Any
 import psycopg2
 from psycopg2.extras import execute_values
 
-from config import LZG_PIPELINE_LOG_FLUSH_SEKUNDEN
+from config import LZG_PIPELINE_LOG_FLUSH_SEKUNDEN, LZG_PIPELINE_LOG_VORHALTUNG_TAGE
 
 logger = logging.getLogger("ki_server.memory.pipeline_log")
 
@@ -305,6 +305,76 @@ def _batch_insert_sync(
             )
     finally:
         conn.close()
+
+
+def delete_expired_entries(
+    postgres_url: str,
+    retention_days: int | None = None,
+) -> dict:
+    """Loescht pipeline_log-Eintraege aelter als die Vorhaltefrist (TTL-Cleanup).
+
+    Wird taeglich vom synapsen_decay-Agenten als Anhang zum Decay-Lauf
+    aufgerufen. Loescht alle Eintraege mit erstellt_am aelter als
+    retention_days; indexgestuetzt ueber idx_pipeline_log_erstellt.
+
+    Args:
+        postgres_url: Verbindungs-URL (Hausstil: Parameter, kein Modul-Global).
+        retention_days: Aufbewahrungsdauer in Tagen. None -> config-Default
+            (LZG_PIPELINE_LOG_VORHALTUNG_TAGE). Explizit setzbar fuer Unit-Tests.
+
+    Returns:
+        dict mit deleted_count (int), error (str | None).
+    """
+    # --- Eingabe (EVA): Default aufloesen + validieren ---
+    if retention_days is None:
+        retention_days = LZG_PIPELINE_LOG_VORHALTUNG_TAGE
+
+    result = {"deleted_count": 0, "error": None}
+
+    if retention_days < 0:
+        # Negative Frist wuerde NOW() - INTERVAL in die ZUKUNFT schieben und damit
+        # ALLE Eintraege loeschen -> harter Abbruch, kein DELETE ausfuehren.
+        logger.error(
+            f"TTL-Cleanup abgebrochen: ungueltige retention_days={retention_days} (< 0)"
+        )
+        result["error"] = "retention_days < 0"
+        return result
+
+    logger.info(f"TTL-Cleanup startet: pipeline_log-Vorhaltung={retention_days} Tage")
+
+    # --- Verarbeitung ---
+    conn = None
+    try:
+        conn = psycopg2.connect(postgres_url)
+        with conn.cursor() as cur:
+            # Indexgestuetzter Range-DELETE (idx_pipeline_log_erstellt).
+            # make_interval parametrisiert -> kein SQL-String-Bau, injektionssicher.
+            cur.execute(
+                """
+                DELETE FROM pipeline_log
+                WHERE erstellt_am < NOW() - make_interval(days => %s)
+                """,
+                (retention_days,),
+            )
+            deleted_count = cur.rowcount
+        conn.commit()
+
+        # --- Ausgabe (EVA) ---
+        result["deleted_count"] = deleted_count
+        logger.info(
+            f"TTL-Cleanup abgeschlossen: {deleted_count} pipeline_log-Eintraege geloescht"
+        )
+        return result
+
+    except psycopg2.Error as ex:
+        if conn is not None:
+            conn.rollback()
+        logger.error(f"TTL-Cleanup DB-Fehler, Rollback: {ex}")
+        result["error"] = str(ex)
+        return result
+    finally:
+        if conn is not None:
+            conn.close()
 
 
 # ─────────────────────────────────────────────
