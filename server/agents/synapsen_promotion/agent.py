@@ -262,12 +262,42 @@ class SynapsenPromotionAgent(BaseAgent):
         )
 
         # ── Kandidaten der Paar-Partition mit SQL-Cosine (Match + Kantenbildung) ──
+        # include_inactive=True: deaktivierte Knoten muessen als Match sichtbar
+        # sein, damit die Halbreaktivierung (§9.3) sie wecken kann statt eine
+        # Dublette neu anzulegen.
         kandidaten: list[dict] = lzg_knoten.kandidaten_mit_cosine_laden(
             POSTGRES_URL, user_id, character_id, embedding_str,
+            include_inactive=True,
         )
         match: dict | None = lzg_knoten.match_pruefen(kandidaten)
 
-        if match is not None:
+        if match is not None and match["aktiv"] is False:
+            # ── Halbreaktivierungs-Pfad (§9.3) ──────
+            # Deaktivierter Knoten wird geweckt (halber gewicht_decay, aktiv=TRUE).
+            # KEINE Kanten-Neuberechnung: gewicht_absolut bleibt unveraendert,
+            # also kein Trigger 2 (§7.9.2) — die Kanten bleiben voll wirksam (§9.5).
+            knoten_id: int = match["id"]
+            reaktiv = lzg_knoten.reactivate_node(POSTGRES_URL, knoten_id)
+            aktion: str = "halbreaktivierung"
+            if reaktiv is not None:
+                info: str = (
+                    f"knoten={knoten_id} cosine={match['cosine']:.4f} "
+                    f"decay {reaktiv['decay_alt']:.3f} -> {reaktiv['decay_neu']:.3f}"
+                )
+                pipeline_log.log_berechnung(
+                    turn_id=kzg_key, node=NODE, quelle=QUELLE, span_id=span_id,
+                    inhalt={"aktion": aktion, **reaktiv,
+                            "paar": f"{user_id}:{character_id}"},
+                )
+            else:
+                # reactivate_node scheiterte (nicht gefunden / bereits aktiv /
+                # DB-Fehler) — fail-loud im Log, kein Abbruch des Promotion-Laufs.
+                info: str = f"knoten={knoten_id} cosine={match['cosine']:.4f} reaktivierung_fehlgeschlagen"
+                logger.warning(
+                    "Halbreaktivierung fehlgeschlagen: knoten=%s paar=%s/%s",
+                    knoten_id, user_id, character_id,
+                )
+        elif match is not None:
             # ── Reinforcement-Pfad (K10) ──────
             lzg_knoten.knoten_verstaerken(POSTGRES_URL, match["id"])
             kanten_neu: int = lzg_kanten.kanten_neuberechnen_fuer_knoten(POSTGRES_URL, match["id"])
