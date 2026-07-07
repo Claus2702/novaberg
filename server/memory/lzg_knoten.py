@@ -146,6 +146,7 @@ def kandidaten_mit_cosine_laden(
     embedding_str: str,
     *,
     ausschluss_id: Optional[int] = None,
+    include_inactive: bool = False,
 ) -> list[dict]:
     """
     Laedt alle aktiven Knoten der Paar-Partition (user_id, character_id) mit
@@ -167,16 +168,19 @@ def kandidaten_mit_cosine_laden(
     conn = psycopg2.connect(postgres_url)
     try:
         with conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cur:
+            # aktiv-Filter bedingt: Standard nur aktive Knoten (Lese-/Match-Pfad),
+            # mit include_inactive auch deaktivierte (Halbreaktivierung §9.3).
+            aktiv_klausel = "" if include_inactive else "AND k.aktiv = TRUE"
             cur.execute(
-                """
-                SELECT k.id, k.gewicht_absolut, k.entitaet_ids, k.themen,
+                f"""
+                SELECT k.id, k.gewicht_absolut, k.aktiv, k.entitaet_ids, k.themen,
                        k.timeline_id,
                        t.event_time AS timeline_event_time,
                        t.precision  AS timeline_praezision,
                        1 - (k.embedding <=> %s::vector) AS cosine
                 FROM lzg_knoten k
                 LEFT JOIN timeline t ON t.id = k.timeline_id
-                WHERE k.user_id = %s AND k.character_id = %s AND k.aktiv = TRUE
+                WHERE k.user_id = %s AND k.character_id = %s {aktiv_klausel}
                   AND (%s::int IS NULL OR k.id <> %s::int)
                 ORDER BY cosine DESC
                 """,
@@ -184,8 +188,8 @@ def kandidaten_mit_cosine_laden(
             )
             kandidaten = [dict(row) for row in cur.fetchall()]
         logger.info(
-            "Kandidaten geladen: paar=%s/%s anzahl=%d top_cosine=%.4f",
-            user_id, character_id, len(kandidaten),
+            "Kandidaten geladen: paar=%s/%s include_inactive=%s anzahl=%d top_cosine=%.4f",
+            user_id, character_id, include_inactive, len(kandidaten),
             kandidaten[0]["cosine"] if kandidaten else float("nan"),
         )
         return kandidaten
