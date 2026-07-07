@@ -2874,7 +2874,7 @@ Verifikation erfolgt von selbst beim ersten passenden Folge-Turn; bewusst kein s
 
 Die Migration hat 90 Knoten + 110 Kanten erzeugt, der Bestand ist da und wartet auf den Konsumenten. Solange der Lesepfad noch das alte Schema bedient, fließt das neue Netz zwar voll, beeinflusst aber den Turn nicht.
 
-**Status (Chat 99):** P5 (Lesepfad) abgeschlossen — alle Reads auf `lzg_knoten`, B2 mit Spreading-Activation. OFFEN: P6 (`synapsen_decay`-Agent + Halbreaktivierung, neu), P7 (Char-Hash B9/B10/B11 auf `gewicht_absolut`). Reihenfolge bestätigt P5→P6→P7.
+**Status (Chat 102):** P5 (Lesepfad) + P6 (`synapsen_decay`-Agent §9.2 + Halbreaktivierung §9.3) abgeschlossen und committet, Decay-Kern live abgenommen. OFFEN: P7 (Char-Hash B9/B10/B11 auf `gewicht_absolut`). B2-Altpfad `lzg_entries_retrieve` + Drop von `langzeitgedaechtnis` → P9.
 
 ---
 
@@ -2970,3 +2970,66 @@ Details, Ursachen und Lösungsansätze → `novaberg-bugs.md`
 
 - ✅ **MS-Welle Block 1 — Embedding-Konsolidierung** (Chat 92): EmbedWorker in services/model_services/ als In-Process-Microservice mit FIFO-Queue. 24+ Aufruf-Stellen migriert (G1-G8), Cleanup-Sprint, drei Main-Loop-Blocker und zwei Silent-Skip-Bugs nebenbei behoben, CPU-Embedding-Sonderpfad und Pixie-Idle-Provider rückgebaut. Drei Lessons archiviert.
 - ✅ **MS-Welle Block 4 + Inbetriebnahme + Pixie-Reaktivierung — MS-Welle abgeschlossen** (Chat 97): Connector `qwen36` live (GPU=`gemma4-gpu`, CPU=`qwen36-cpu` für Sprache und Analyse), aktiviert über `OLLAMA_CONNECTOR: qwen36` in der echten `docker-compose.yml` (Code-Default in `config.py` bleibt `gemma4` als Fallback-Anker). GPU-Connector-Fehlgriff (`gpu_model` zunächst fälschlich auf `qwen3.6:35b-a3b`) noch vor Aktivierung gegen die Block-4-Spec korrigiert. Alte CPU-Modelle nach verifiziertem Background-Pfad gelöscht (Gemma4-CPU, Qwen3-32B-CPU, drei Mistral-Varianten, ~105 GB). `PIXIE_AKTIV` env-konfigurierbar gemacht (CONFIG-PIXIE-AKTIV-HARDCODED gelöst) und Pixie reaktiviert + verifiziert. BackgroundWorker-Submit-Timeout-Default 300 s (Variante B: Worker-Instanz-Default per Konstruktor, pro Call überschreibbar; Chat/Embed behalten 60 s). Neuer Backlog-Eintrag WORKER-TIMEOUT-MUSTER-DIVERGENZ als Konsistenz-Beobachtung. MS-Welle damit vollständig abgeschlossen (Block 1–5), P4 darf loslegen.
+
+---
+
+## Refactor: BEZEICHNER-WAR-AKTIV — was_active statt war_aktiv (Chat 102)
+
+`reactivate_node` in `memory/lzg_knoten.py` nutzt die lokale Variable
+`war_aktiv` (deutsch). Die Sprach-Regel verlangt englische Bezeichner —
+`was_active`. Kein Einzelfix: gebuendelter Bezeichner-Angleich beim naechsten
+Anfassen der Datei (auch `zeile`, `neuer_roh` etc. im Umfeld sind gemischt).
+
+---
+
+## Fix: CONFIG-DECAY-RATE-KOMMENTAR-DRIFT — falscher Kommentar bei LZG_KNOTEN_DECAY_RATE (Chat 102)
+
+`config.py` (~Z.1092) kommentiert `LZG_KNOTEN_DECAY_RATE` mit "nicht persistiert,
+live berechnet". Falsch: `gewicht_decay` ist eine persistierte Spalte
+(`db/init.sql:141`), die der synapsen_decay-Agent taeglich materialisiert — der
+Lesepfad rechnet keinen Decay live (grep: kein `exp(` in `lzg_knoten.py`).
+Alt-Text aus dem Ebbinghaus-Modell (`pixie-decay.md`). Reiner Kommentar-Fix,
+fremder Ort → eigener Commit.
+
+---
+
+## Frage: PATTERN-DOMAIN-LANGUAGE-RECONCILE — deutsche Domaenensprache vs. Englisch-Regel (Chat 102)
+
+`novaberg-pattern-domain-language.md` kodifiziert (soweit in Chat 102 referenziert)
+deutsche Domaenen-Verben als Muster. Das widerspricht der Regel "Bezeichner
+englisch". **Zu klaeren:** Inhalt der Datei verifizieren, dann Update oder
+Rueckzug. Reichweite: codebase-weit (bestehende deutsche Funktionsnamen wie
+`knoten_verstaerken`), also eigener Sprint, kein Beifang.
+
+---
+
+## Frage: SYNAPSEN-DECAY-SCHEDULE-LIVE — Heartbeat legt Schedule-Key an? (Chat 102, beobachtend)
+
+Der `synapsen_decay`-Agent ist registriert (Discovery: 14 Agenten). Ob der
+Pixie-Heartbeat beim naechsten Serverstart den Redis-Key
+`pixie:schedule:synapsen_decay` anlegt, ist noch nicht live verifiziert —
+Registrierung greift nur `if not redis_client.exists(_key)`. **Zu pruefen beim
+naechsten Start:** `docker compose exec redis redis-cli exists
+pixie:schedule:synapsen_decay` bzw. Startup-Log "Agent registriert:
+synapsen_decay".
+
+---
+
+## Frage: HALBREAKTIVIERUNG-LIVE — erster inaktiver Match feuert reactivate_node? (Chat 102, beobachtend)
+
+Der Reaktivierungs-Pfad (§9.3) ist verdrahtet, aber noch nie an einem echten
+gematchten inaktiven Knoten gelaufen (setzt einen durch Decay deaktivierten
+Knoten voraus, den ein spaeterer Promotion-Turn mit cosine ≥ 0.85 trifft).
+**Zu beobachten:** entsteht die `berechnung`-Forensikzeile mit `decay_alt`/
+`decay_neu`? Grep: `docker compose logs server 2>&1 | grep -E "Knoten
+halbreaktiviert|halbreaktivierung"`.
+
+---
+
+## Frage: SYNAPSEN-REAKTIV-SCHWELLE — eigene Match-Schwelle fuer Reaktivierung? (Chat 102)
+
+Die Halbreaktivierung nutzt dieselbe `LZG_KNOTEN_MATCH_SCHWELLE` (0.85) wie
+normales Reinforcement (YAGNI-Entscheidung Chat 102). **Zu beobachten:** Falls
+Live zeigt, dass 0.85 zu leicht falsche inaktive Knoten weckt, waere eine
+getrennte, hoehere Reaktivierungs-Schwelle ein zusaetzlicher Parameter an
+`match_pruefen` — nachruestbar.
