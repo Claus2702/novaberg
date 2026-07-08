@@ -11,7 +11,6 @@ import math
 import time
 
 from config import ASSISTANT_USER_ID, DEFAULT_USER_ID, get_node_config
-from memory.lzg import effektives_gewicht_berechnen
 from services.model_services import model_service, BackgroundRequest
 
 logger = logging.getLogger("ki_server.agents.charakter.destillation")
@@ -232,7 +231,7 @@ def kern_hash_destillieren(lzg_eintraege: list[dict], user_id: str = DEFAULT_USE
 
     eintraege: str = "\n".join(
         f"[{row['dimension']}] "
-        f"(Gewicht: {effektives_gewicht_berechnen(row['gewicht'], row['verstaerkt_am']):.2f}, "
+        f"(Gewicht: {row['gewicht_absolut']:.2f}, "
         f"Häufigkeit: {row['haeufigkeit']}): {row['inhalt']}"
         for row in lzg_eintraege
     )
@@ -320,7 +319,7 @@ def emotions_profil_destillieren(lzg_eintraege: list[dict]) -> str:
     eintraege: str = "\n".join(
         f"[{row['dimension']}] "
         f"Emotion: {row['emotion']}, Arousal: {row['arousal']:.2f} "
-        f"(Gewicht: {effektives_gewicht_berechnen(row['gewicht'], row['verstaerkt_am']):.2f}): "
+        f"(Gewicht: {row['gewicht_absolut']:.2f}): "
         f"{row['inhalt']}"
         for row in lzg_eintraege
     )

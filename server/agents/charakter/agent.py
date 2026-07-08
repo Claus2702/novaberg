@@ -266,7 +266,7 @@ class CharakterAgent(BaseAgent):
         character_id: str,
         beobachter:   str,
     ) -> list[dict]:
-        """Laedt LZG-Eintraege fuer Kern-Hash (gewichtet nach Gewicht + Haeufigkeit).
+        """Laedt Knoten fuer Kern-Hash (gewichtet nach Anker-Staerke gewicht_absolut + Haeufigkeit).
 
         Filtert auf das kanonische Paar (user_id, character_id) und die
         gewuenschte Perspektive (beobachter). Spiegelung des KZG-Lesepfads
@@ -278,11 +278,11 @@ class CharakterAgent(BaseAgent):
         )
         return db_manager.select(
             """
-            SELECT dimension, inhalt, gewicht, haeufigkeit, verstaerkt_am
-            FROM langzeitgedaechtnis
+            SELECT dimension, inhalt, gewicht_absolut, haeufigkeit
+            FROM lzg_knoten
             WHERE user_id = %s AND character_id = %s AND beobachter = %s
               AND aktiv = TRUE
-            ORDER BY gewicht DESC, haeufigkeit DESC
+            ORDER BY gewicht_absolut DESC, haeufigkeit DESC
             LIMIT %s
             """,
             (user_id, character_id, beobachter, PIXIE_CHARAKTER_LZG_LIMIT),
@@ -303,11 +303,11 @@ class CharakterAgent(BaseAgent):
             """
             SELECT intentionen, emotion, modus, sprach_stil, tone,
                    dimension, inhalt
-            FROM langzeitgedaechtnis
+            FROM lzg_knoten
             WHERE user_id = %s AND character_id = %s AND beobachter = %s
               AND aktiv = TRUE
               AND (intentionen != '[]' OR emotion != '' OR sprach_stil != '')
-            ORDER BY gewicht DESC
+            ORDER BY gewicht_absolut DESC
             LIMIT %s
             """,
             (user_id, character_id, beobachter, PIXIE_CHARAKTER_LZG_LIMIT),
@@ -327,11 +327,11 @@ class CharakterAgent(BaseAgent):
         return db_manager.select(
             """
             SELECT emotion, arousal,
-                   dimension, inhalt, gewicht, verstaerkt_am
-            FROM langzeitgedaechtnis
+                   dimension, inhalt, gewicht_absolut
+            FROM lzg_knoten
             WHERE user_id = %s AND character_id = %s AND beobachter = %s
               AND aktiv = TRUE AND emotion != ''
-            ORDER BY gewicht DESC
+            ORDER BY gewicht_absolut DESC
             LIMIT %s
             """,
             (user_id, character_id, beobachter, PIXIE_CHARAKTER_LZG_LIMIT),
