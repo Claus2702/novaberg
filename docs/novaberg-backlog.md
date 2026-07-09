@@ -3033,3 +3033,27 @@ normales Reinforcement (YAGNI-Entscheidung Chat 102). **Zu beobachten:** Falls
 Live zeigt, dass 0.85 zu leicht falsche inaktive Knoten weckt, waere eine
 getrennte, hoehere Reaktivierungs-Schwelle ein zusaetzlicher Parameter an
 `match_pruefen` — nachruestbar.
+
+## Beobachtung: CHARHASH-GEWICHT-ABSOLUT-LIVE — erste volle Live-Destillation nach lzg_knoten-Migration (Chat 103, beobachtend)
+
+Nach P7 liest der Char-Hash aus `lzg_knoten` sortiert nach `gewicht_absolut`. Teilbestätigt: Kern-Hash wurde in realen Turns injiziert, kein KeyError. Offen: volle Abnahme im Dauerbetrieb — Kern-Eintrag im Charakter-Tab mit frischem Datum, Intentionen/Emotionen dürfen dünn/leer sein (EI-Filter greift nur bei Knoten mit echten EI-Feldern; Migrations-Knoten tragen teils Defaults — Datenlage, kein Defekt). ⬜ Prio niedrig
+
+## Bug: CHARHASH-PROMPT-DUPLIKAT — Kern-Persönlichkeit 5× wortgleich im [Charakter]-Prompt (Chat 103)
+
+Der Kern-Hash erscheint fünfmal identisch im injizierten `[Charakter]`-Block, obwohl `charakter_hash` nur eine Kern-Zeile hält und `format_memory_entries` „Gruppe charakter: 1 Eintraege" loggt. Duplizierung entsteht NACH dem Loader (Enricher/Prompt-Bau), nicht in den Daten (`lzg_knoten` count=1 verifiziert). Reproduziert 2× (21:51, 21:59), stabil bei 5×. Frisst Kontext-Budget. Unabhängig von P7. ⚠️ Prio mittel
+
+## Bug: DESTILLAT-PERSPEKTIVE-VS-SUBJEKT — Charakter-Destillation verwechselt Blickrichtung mit Subjekt (Chat 103)
+
+Die Destillation setzt `beobachter='user'` mit „Aussage über den Nutzer" gleich. Falsch: `beobachter` markiert die Blickrichtung des Knotens, nicht sein Subjekt. User-Perspektive-Knoten enthalten oft Nutzer-Aussagen ÜBER Nova („Du bist mein Pflänzchen"). Folge: Nova-Eigenschaften wandern ins Nutzer-Profil und umgekehrt (Pflänzchen, kleines Mädchen). Daten sauber verifiziert (beobachter + inhalt korrekt, `lzg_knoten`); Fehler im `destillieren`-Prompt, nicht im Loader/Schreibpfad. Vermuteter Bezug zu TRIB-PERSON-DRIFT. Richtung: Subjekt aus Inhalt/Anrede auflösen, nicht aus `beobachter` ableiten. Unabhängig von P7. ⚠️ Prio hoch — trifft, ob Nova weiß, wer sie ist.
+
+## Notiz: HAEUFIGKEIT-AUF-KNOTEN — haeufigkeit auf lzg_knoten meist 1 (Chat 103)
+
+Der Kern-Prompt zeigt „Häufigkeit: {haeufigkeit}". Auf `lzg_knoten` ist `haeufigkeit` meist 1 (keine Verdichtung mehr wie im alten `langzeitgedaechtnis`), der Wert also schwächer aussagekräftig. Kein Fehler, aber der Prompt-Nutzen der Zeile sinkt. Prüfen, ob die Zeile bleibt oder entfällt. ⬜ Prio niedrig
+
+## Doku: CHARHASH-DOKU-DRIFT — Hash-Doku beschreibt LZG-Quelle noch flach (Chat 103)
+
+`novaberg-pixie-character-hash.md` beschreibt jenseits der P7-Passagen die LZG-Quelle noch als flaches `langzeitgedaechtnis` (Z. 155 Adaptiv-Hash-Tabelle: nennt `langzeitgedaechtnis`, liest real KZG). Alt-Drift aus dem P5/P6-Umbau, nicht von P7 verursacht. Eigener Doku-Fix, keine Vermischung mit dem P7-Commit. ⬜ Prio niedrig
+
+## Bug: REFERENZ-AUFLOESUNG-VOR-RETRIEVAL — anaphorische Verweise gehen literal ins Retrieval (Chat 103)
+
+Verweise wie „die Liste", „das von eben" gehen als wörtlicher Suchstring ins Notiz-/Gedächtnis-Retrieval, statt vorher gegen den Turn-Verlauf aufgelöst zu werden. Wirkung nach außen: Nova erscheint begriffsstutzig — findet frisch selbst angelegte Inhalte nicht wieder, obwohl der Kontext in den Turns steht. Bricht die Verstehens-Illusion. Beobachtet Chat 103 (Salat-Notiz „die Liste"). Vermuteter gemeinsamer Kern mit NOTIZEN-VOR-TURN-BEZUG — erst gegeneinander prüfen. Richtung: Auflösungs-/Reasoning-Schritt vor dem Retrieval, nicht tieferes Suchen. ⚠️ Prio mittel

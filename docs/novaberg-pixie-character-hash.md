@@ -39,7 +39,7 @@ Kein dirty Flag → sofort return. Fehlerbehandlung pro Profil (try/except).
 ### 3.1 Kern-Hash (LZG, Monate)
 
 **Frage:** Wer ist dieser Mensch?
-**Quelle:** Langzeitgedächtnis (PostgreSQL), gewichtet nach effektivem Ebbinghaus-Gewicht.
+**Quelle:** Langzeitgedächtnis (`lzg_knoten`, PostgreSQL), selektiert und gewichtet nach Anker-Stärke `gewicht_absolut` (nicht nach Präsenz/Decay). Seit Synapsen P7 (Chat 103). Der Kern beschreibt, wer jemand *dauerhaft* ist — die stärkste Verankerung, nicht die momentane Präsenz.
 **Stabilität:** Verändert sich langsam.
 
 **Beispiel:**
@@ -92,7 +92,7 @@ Kein dirty Flag → sofort return. Fehlerbehandlung pro Profil (try/except).
 ```
 hash_dirty = TRUE in Redis?
     │
-    Ja → LZG-Einträge laden (aktiv = TRUE, gewichtet nach effektivem Gewicht)
+    Ja → lzg_knoten laden (aktiv = TRUE, sortiert nach gewicht_absolut DESC)
     │    KZG-Einträge laden (für Adaptiv-Hash)
     │
     ▼
@@ -116,7 +116,7 @@ Jedes Profil ist komprimierter Fließtext (2–5 Sätze). Keine Listen, keine St
 
 Die User-Destillation (meister) bleibt unveraendert.
 
-**Gewichtung:** Hohe Ebbinghaus-Gewichte dominieren das Profil. Niedrige fließen leise ein oder fehlen. Inaktive Einträge werden nicht geladen.
+**Gewichtung:** Hohe Anker-Stärken (`gewicht_absolut`) dominieren das Profil — was sich als dauerhaft prägend verankert hat, nicht was gerade präsent ist. `aktiv = TRUE` bleibt als Gate: inaktive (decay-deaktivierte) Knoten werden nicht geladen. Präsenz gated, Anker-Stärke ranked. Angezeigtes Gewicht im Kern-/Emotions-Prompt ist `gewicht_absolut` direkt (kein Read-Time-Decay mehr; `effektives_gewicht_berechnen` an diesen Stellen entfernt).
 
 ---
 

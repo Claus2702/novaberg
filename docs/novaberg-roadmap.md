@@ -1360,4 +1360,14 @@ Offen → Backlog: Beobachtungspunkte SYNAPSEN-DECAY-SCHEDULE-LIVE (Heartbeat le
 
 ---
 
-*Aktualisiert in Chat 100. Offene Punkte → novaberg-backlog.md. Bugs → novaberg-bugs.md.*
+### Synapsen P7 — Char-Hash auf Anker-Stärke (Chat 103, 8. Juli 2026)
+
+- ✅ **Migration `langzeitgedaechtnis` → `lzg_knoten`** — die drei Char-Hash-Loader (`_lzg_kern_laden`, `_lzg_intentionen_laden`, `_lzg_emotionen_laden` in `agents/charakter/agent.py`) lesen jetzt aus dem Synapsen-Speicher. Damit sind drei der letzten Legacy-Leser entfernt (P9-Vorbereitung)
+- ✅ **Gewichts-Semantik Präsenz → Anker-Stärke** — Selektion/Sortierung auf `gewicht_absolut DESC` statt roher `gewicht`-Spalte; `aktiv = TRUE` bleibt (Präsenz gated, Anker-Stärke ranked). Angezeigtes Gewicht im Prompt ist `gewicht_absolut` direkt — `effektives_gewicht_berechnen` (Read-Time-Decay) an den zwei Destillations-Sites entfernt; frühere Divergenz Sortierung-roh/Anzeige-decayed aufgelöst (Commit `08c9d08`)
+- ✅ **Abnahme** — Test-Suite grün (36 Tests), Import + AST valide; Live teilbestätigt: Kern-Hash in realen Turns injiziert, kein KeyError auf `row['gewicht_absolut']`
+
+Offen → Backlog: `CHARHASH-GEWICHT-ABSOLUT-LIVE` (volle Live-Abnahme im Dauerbetrieb), `CHARHASH-PROMPT-DUPLIKAT`, `DESTILLAT-PERSPEKTIVE-VS-SUBJEKT`, `HAEUFIGKEIT-AUF-KNOTEN`. Char-Hash-Doku trägt Alt-Drift jenseits P7 (Z. 155 Adaptiv-Hash nennt `langzeitgedaechtnis`, liest real KZG) → eigener Doku-Fix `CHARHASH-DOKU-DRIFT`.
+
+---
+
+*Aktualisiert in Chat 103. Offene Punkte → novaberg-backlog.md. Bugs → novaberg-bugs.md.*
