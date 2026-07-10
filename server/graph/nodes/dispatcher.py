@@ -20,6 +20,7 @@ DelegationsAgent (Chat 32, VENT1):
 import json
 import logging
 from datetime import datetime, timezone
+from typing import Any
 
 import redis
 
@@ -35,6 +36,7 @@ from config import (
     redis_client as cfg_redis_client,
 )
 from memory.session import session_turn_store, session_summarize_if_needed
+from memory.pipeline_log import log_turn_roh, log_fehler
 
 logger = logging.getLogger("ki_server.dispatcher")
 
@@ -264,6 +266,75 @@ def _session_turn_schreiben(state: ConversationState) -> None:
     session_summarize_if_needed(cfg_redis_client, user_id, character_id)
 
 
+def _turn_roh_schreiben(state: ConversationState) -> None:
+    """Schreibt das vollstaendige Reiz-Reaktions-Paar (a-d) roh ins pipeline_log.
+
+    Die dauerhafte, nicht-wiederherstellbare Quelle fuer die Charakter-
+    Destillation: User-Input + User-Emotion (Reiz) und Nova-Antwort +
+    Nova-Emotion (Reaktion), ungekuerzt. Laeuft im Dispatcher (letzter Node),
+    wo alle vier Groessen sicher im State liegen.
+
+    Robustheit: Ohne beide Personality-Objekte (external UND internal) gibt es
+    kein sinnvolles Paar — dann wird NICHT geschrieben, sondern laut gewarnt
+    (kein wertloser Pseudo-Turn). Ein Serialisierungs-Fehler kracht sichtbar ins
+    Log, reisst aber weder den Turn-Abschluss noch die uebrigen Persist-Schritte.
+    """
+    user_id:      str = state.get("user_id", "")
+    character_id: str = state.get("character_id", "")
+    if not user_id or not character_id:
+        logger.warning("Dispatcher: turn_roh nicht geschrieben — user_id oder character_id fehlt")
+        return
+
+    external = state.get("external")
+    internal = state.get("internal")
+    if external is None or internal is None:
+        logger.warning(
+            "Dispatcher: turn_roh uebersprungen — external oder internal fehlt "
+            f"(external={external is not None}, internal={internal is not None})"
+        )
+        return
+
+    response: str = state.get("response", "")
+    if not response:
+        logger.warning("Dispatcher: turn_roh uebersprungen — keine Nova-Antwort (response leer)")
+        return
+
+    try:
+        inhalt: dict[str, Any] = {
+            "user_prompt": state.get("user_prompt", ""),
+            "response":    response,
+            "user_emotion": external.emotion.to_dict(),
+            "nova_emotion": internal.emotion.to_dict(),
+        }
+        log_turn_roh(
+            turn_id      = state.get("turn_id", ""),
+            node         = "dispatcher",
+            quelle       = "character",
+            inhalt       = inhalt,
+            user_id      = user_id,
+            character_id = character_id,
+        )
+        logger.info(
+            f"Dispatcher: turn_roh geschrieben — paar={user_id}:{character_id}, "
+            f"prompt={len(inhalt['user_prompt'])} Z., response={len(response)} Z."
+        )
+    except Exception as ex:
+        # Fail-loud: der Rohturn ist wichtig, aber kein Grund, den Turn-Abschluss
+        # zu reissen. Sichtbar loggen (error + Forensik), dann weiterlaufen lassen.
+        logger.error(f"Dispatcher: turn_roh-Schreiben fehlgeschlagen: {ex}", exc_info=True)
+        try:
+            log_fehler(
+                turn_id      = state.get("turn_id", ""),
+                node         = "dispatcher",
+                quelle       = "character",
+                inhalt       = {"grund": "turn_roh_write_failed", "fehler": str(ex)},
+                user_id      = user_id,
+                character_id = character_id,
+            )
+        except Exception:
+            pass  # Wenn selbst das Fehler-Logging bricht: nicht den Turn mitreissen.
+
+
 def dispatch(
     state:         ConversationState,
     redis_client:  redis.Redis,
@@ -348,6 +419,7 @@ def dispatch(
 
     # ── Session-Turn schreiben (nach allen Writes, damit kern verfügbar ist) ──
     _session_turn_schreiben(state)
+    _turn_roh_schreiben(state)
 
     logger.info(
         f"Dispatcher: gv_detail={'vorhanden' if state.get('gv_detail') else 'LEER'}, "
