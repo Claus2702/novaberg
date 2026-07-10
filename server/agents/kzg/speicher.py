@@ -316,6 +316,8 @@ def _neu_anlegen(
             "salienz":      salienz,
             "ttl":          ttl,
         },
+        user_id      = user_id,
+        character_id = character_id,
     )
 
     return {
