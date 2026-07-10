@@ -3075,3 +3075,11 @@ Novas Charakter wird heute aus der falschen Quelle destilliert: `lzg_knoten` ent
 ## Feature: ASSISTENT-GESCHLECHT-PRONOMEN — Pronomen bei Namenswechsel (Chat 103)
 
 Bei wechselndem Assistenten-Namen müssen Pronomen (sie/er, ihr/sein) durch die Charakter-Prompts mitgeführt werden; braucht ein Geschlechts-Attribut am Charakter. Der Genitiv des Namens ist in Chat 103 gelöst (`_genitiv_bilden`, s/Apostroph-Regel), Pronomen sind offen; die Prompts sind vorerst pronomen-arm formuliert. ⬜ Prio niedrig
+
+## Nacharbeit: PIPELINE-LOG-BACKFILL-PAAR — Alt-Forensik ohne Paar-Schlüssel (Chat 104)
+
+Bestehende `pipeline_log`-Zeilen (vor Chat 104) haben `user_id`/`character_id = NULL`. Optionaler Backfill für die `pipeline_search`-Selbstreflexion über Alt-Forensik. KRITISCH richtungssensitiv: produktiv liefen beide Beobachter-Richtungen (meister→nova UND nova→meister, bestätigt via `charakter_hash`). Kein pauschales `SET` eines Paares — sonst wird eine Perspektive plattgemacht. Der Filter (welche `art`/`node` paar-gebunden vs. herrenlos sind) steht seit dem H1.5-Inventar fest; Wartungszeilen (`synapsen_decay`-Cleanup, Decay-Lauf) bleiben bewusst NULL. Kein Blocker — `turn_roh` liefert die charakter-relevanten Daten vorwärts, Altzeilen sind nur Forensik. ⬜ Prio niedrig
+
+## Refactor: KZG-QUELLE-IST-USER-ID — `quelle` trägt `user_id` statt Node-Namen (Chat 104)
+
+In `memory/kzg.py` (`kzg_store`, Z.~343) und `agents/kzg/speicher.py` (`_neu_anlegen`, Z.~307) wird das `pipeline_log`-Feld `quelle` mit `user_id` befüllt statt mit einem Node-Namen (sonst überall node-basiert). Bestehende Eigenart, in Chat 104 bei der Paar-Verkabelung gesichtet, bewusst NICHT mitgeändert. Bei nächster Berührung dieser Writes prüfen: Node-Name als `quelle`, `user_id` nur im `inhalt`. ⬜ Prio niedrig
