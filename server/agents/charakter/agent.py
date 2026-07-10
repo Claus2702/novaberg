@@ -165,7 +165,7 @@ class CharakterAgent(BaseAgent):
                     logger.error(f"CharakterAgent: Intentions-Profil fehlgeschlagen fuer {subjekt_user_id}: {ex}")
 
                 try:
-                    ergebnis["emotions_profil"] = emotions_profil_destillieren(lzg_emotionen)
+                    ergebnis["emotions_profil"] = emotions_profil_destillieren(lzg_emotionen, user_id=subjekt_user_id)
                 except Exception as ex:
                     logger.error(f"CharakterAgent: Emotions-Profil fehlgeschlagen fuer {subjekt_user_id}: {ex}")
 

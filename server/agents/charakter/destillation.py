@@ -10,7 +10,7 @@ import logging
 import math
 import time
 
-from config import ASSISTANT_USER_ID, DEFAULT_USER_ID, get_node_config
+from config import ASSISTANT_NAME, ASSISTANT_USER_ID, DEFAULT_USER_ID, get_node_config
 from services.model_services import model_service, BackgroundRequest
 
 logger = logging.getLogger("ki_server.agents.charakter.destillation")
@@ -19,82 +19,105 @@ logger = logging.getLogger("ki_server.agents.charakter.destillation")
 # Prompts — User (meister)
 # ─────────────────────────────────────────────
 
-KERN_HASH_PROMPT: str = """Du bist ein psychologischer Profilierungs-Agent.
-Erstelle aus den folgenden Langzeitgedächtnis-Einträgen ein kompaktes Persönlichkeitsprofil
-des Nutzers in 2-5 Sätzen auf Deutsch.
+KERN_HASH_PROMPT: str = """Du bist ein erfahrener psychologischer Profiler.
+Vor dir liegen Langzeit-Erinnerungen aus {perspektive} Blickwinkel — Aussagen,
+Reaktionen und Beobachtungen, so wie {traeger} die Welt wahrnimmt und auf sie
+reagiert.
 
-Fokus: Tiefenwerte, dauerhafte Interessen, Kommunikationsstil, Denkweise.
-Das Profil soll zeitlos sein — keine aktuellen Projekte oder Stimmungen.
+Deine Aufgabe ist nicht, die Einträge zusammenzufassen. Lies sie wie ein
+Psychiater ein Gegenüber liest: Erschließe aus dem WIE — wie {traeger}
+spricht, worauf {traeger} achtet, was {traeger} wichtig ist, wie {traeger}
+mit anderen umgeht — das dauerhafte Wesen dahinter.
+
+Entscheidend: Die Einträge handeln oft von anderen Dingen oder Personen. Das
+ist gleichgültig. Nicht WORÜBER {traeger} spricht charakterisiert {traeger},
+sondern WIE. Wer beim Beschreiben eines Sonnenuntergangs ins Schwärmen gerät,
+offenbart eine poetische, empfindsame Ader — unabhängig vom Sonnenuntergang
+selbst.
+
+Erstelle ein kompaktes Persönlichkeitsprofil von {traeger} in 2-5 Sätzen auf
+Deutsch. Tiefenwerte, dauerhafte Interessen, Denkweise, Grundhaltung. Zeitlos
+— keine Tagesstimmung, keine aktuellen Projekte.
 
 Einträge:
 {eintraege}
 
 Antworte NUR mit dem Profil-Text, kein weiterer Kommentar."""
 
-ADAPTIVE_HASH_PROMPT: str = """Du bist ein psychologischer Profilierungs-Agent.
-Erstelle aus den folgenden Kurzzeitgedächtnis-Einträgen ein kompaktes Profil
-der AKTUELLEN Verfassung des Nutzers in 2-4 Sätzen auf Deutsch.
+ADAPTIVE_HASH_PROMPT: str = """Du bist ein erfahrener psychologischer Profiler.
+Vor dir liegen aktuelle Kurzzeit-Erinnerungen aus {perspektive} Blickwinkel —
+was {traeger} gerade bewegt.
 
-Die Einträge sind nach Zeitzone gewichtet:
+Die Einträge sind zeitlich gewichtet:
 - [AKUT] = letzte 24 Stunden (höchste Relevanz)
 - [PHASE] = letzte 7 Tage (mittlere Relevanz)
 - [TREND] = letzte 30 Tage (Hintergrund-Tendenz)
 
-Fokus: Aktuelle Projekte, Stimmung, emotionale Lage, akute Themen.
+Anders als beim Wesensprofil geht es hier nicht ums Dauerhafte, sondern um die
+MOMENTANE Verfassung: Woran arbeitet {traeger} gerade, welche Themen sind
+aktiv, wie ist die aktuelle Stimmung? Deute die Lage, nicht nur die Liste.
+
+Erstelle ein kompaktes Profil von {traeger_gen} aktueller Verfassung in 2-4
+Sätzen auf Deutsch.
 
 Einträge:
 {eintraege}
 
 Antworte NUR mit dem Profil-Text, kein weiterer Kommentar."""
 
-INTENTIONS_PROFIL_PROMPT: str = """Du bist ein psychologischer Profilierungs-Agent.
-Analysiere die folgenden Einträge aus dem Langzeitgedächtnis
-und erstelle ein kompaktes Kommunikations-Profil in 3-5 Sätzen auf Deutsch.
+INTENTIONS_PROFIL_PROMPT: str = """Du bist ein erfahrener psychologischer Profiler.
+Vor dir liegen Langzeit-Erinnerungen aus {perspektive} Blickwinkel — so wie
+{traeger} sich mitteilt und mit anderen umgeht.
 
-Drei Aspekte beschreiben:
-- STIL: Wie formuliert der Nutzer? (Satzlänge, Formalität, Slang, Emojis, Zeichensetzung)
-- MODUS: In welchem Register denkt er? (Fachgespräch, Philosophie, Alltag, ...)
-- INTENTIONEN: Was will er typischerweise? (Fragen, Brainstorming, Feedback, ...)
+Deine Aufgabe ist nicht, die Einträge zusammenzufassen, sondern zu deuten:
+Was verrät die ART der Kommunikation über {traeger}? Lies drei Ebenen heraus
+— STIL (Satzbau, Formalität, Wortwahl, Humor), MODUS (in welchem Register
+{traeger} denkt: fachlich, philosophisch, alltäglich), INTENTION (was
+{traeger} typischerweise erreichen will).
 
-Beschreibe den Menschen, nicht die Statistik.
-Beispiel: "Der Nutzer kommuniziert sachlich-strukturiert mit vollständigen Sätzen.
-Er bevorzugt Fachgespräche und philosophischen Austausch, stellt tiefe Fragen.
-Sein Stil ist direkt, gelegentlich mit trockenem Humor. Kein Slang, keine Emojis."
+Nicht WORÜBER geredet wird, sondern WIE. Wer knappe, präzise Sätze ohne
+Floskeln wählt, offenbart einen anderen Charakter als jemand, der ausschweift
+und ausschmückt — unabhängig vom Thema.
 
-Einträge:
-{eintraege}
-
-Antworte NUR mit dem Profil-Text, kein weiterer Kommentar."""
-
-EMOTIONS_PROFIL_PROMPT: str = """Du bist ein psychologischer Profilierungs-Agent.
-Analysiere die folgenden emotionalen Signale aus dem Langzeitgedächtnis
-und erstelle ein kompaktes emotionales Profil in 3-5 Sätzen auf Deutsch.
-
-Zwei Aspekte beschreiben:
-- GRUNDTENDENZ: Welche Emotionen dominieren langfristig? Welche Muster gibt es?
-- VOLATILITÄT: Wie sprunghaft ist der Nutzer emotional? Schnelle Umschwünge oder stabile Grundstimmung?
-  Nutze die Emotions-Vektoren als Hinweis (häufig spirale/absturz = volatil, häufig plateau = stabil).
-
-Beispiel stabil: "Grundlegend zuversichtlich-neugierig mit Begeisterungs-Peaks.
-Emotional stabil — bei Belastung baut sich Frustration langsam auf statt zu explodieren."
-
-Beispiel volatil: "Emotional lebhaft mit häufigen Richtungswechseln.
-Schnelle Umschwünge zwischen Begeisterung und Frustration. Braucht bei Absturz schnelle Anerkennung."
+Erstelle ein kompaktes Kommunikations-Profil von {traeger} in 3-5 Sätzen auf
+Deutsch. Beschreibe den Charakter hinter der Sprache, nicht die Statistik.
 
 Einträge:
 {eintraege}
 
 Antworte NUR mit dem Profil-Text, kein weiterer Kommentar."""
 
-BEZIEHUNGS_PROFIL_PROMPT: str = """Du bist ein psychologischer Profilierungs-Agent.
-Analysiere den folgenden Gesprächsverlauf und erstelle ein kompaktes
-Beziehungsprofil in 2-3 Sätzen auf Deutsch.
+EMOTIONS_PROFIL_PROMPT: str = """Du bist ein erfahrener psychologischer Profiler.
+Vor dir liegen emotionale Signale aus Langzeit-Erinnerungen, aus {perspektive}
+Blickwinkel — so wie {traeger} fühlt und emotional reagiert.
 
-Fokus: Wie steht der Nutzer zum Assistenten?
-- Nähe: Vertraut oder formell? Duzt er, nutzt er Kosenamen, Emojis?
-- Hierarchie: Gleichrangig oder direktiv? Gibt er Anweisungen oder diskutiert er?
-- Vertrauen: Teilt er persönliche Details oder bleibt er sachlich?
-- Ton: Warmherzig, humorvoll, sachlich, nüchtern?
+Deine Aufgabe ist nicht aufzuzählen, welche Gefühle vorkamen, sondern die
+emotionale Signatur dahinter zu erschließen — wie ein Psychiater das
+Temperament liest. Zwei Ebenen: GRUNDTENDENZ (welche Emotionen tragen
+{traeger} langfristig, welche Muster) und VOLATILITÄT (stabile Grundstimmung
+oder sprunghafte Umschwünge — die Emotions-Vektoren als Hinweis: häufig
+Spirale/Absturz = volatil, häufig Plateau = stabil).
+
+Erstelle ein kompaktes emotionales Profil von {traeger} in 3-5 Sätzen auf
+Deutsch.
+
+Einträge:
+{eintraege}
+
+Antworte NUR mit dem Profil-Text, kein weiterer Kommentar."""
+
+BEZIEHUNGS_PROFIL_PROMPT: str = """Du bist ein erfahrener psychologischer Profiler.
+Vor dir liegt ein Gesprächsverlauf aus {perspektive} Blickwinkel — so wie
+{traeger} dem Gegenüber begegnet.
+
+Deine Aufgabe ist zu deuten, WIE {traeger} die Beziehung gestaltet — nicht was
+besprochen wurde, sondern der Umgang darin. Vier Ebenen: NÄHE (vertraut oder
+formell — Anrede, Kosenamen, Ton), HIERARCHIE (gleichrangig oder direktiv),
+VERTRAUEN (teilt {traeger} Persönliches oder bleibt es sachlich), TON
+(warmherzig, humorvoll, nüchtern).
+
+Beschreibe, wie {traeger} auf das Gegenüber blickt und mit ihm umgeht, in 2-3
+Sätzen auf Deutsch.
 
 Einträge:
 {eintraege}
@@ -104,79 +127,6 @@ Antworte NUR mit dem Profil-Text, kein weiterer Kommentar."""
 # ─────────────────────────────────────────────
 # Prompts — Nova (eigene Perspektive)
 # ─────────────────────────────────────────────
-
-KERN_HASH_PROMPT_NOVA: str = """Du bist ein psychologischer Profilierungs-Agent.
-Erstelle aus den folgenden Langzeitgedaechtnis-Eintraegen ein kompaktes
-Persoenlichkeitsprofil von Nova in 2-5 Saetzen auf Deutsch.
-Beschreibe Nova in der dritten Person ("Nova ist...", "Nova zeigt...").
-Schreibe NICHT "Der Nutzer" — Nova ist kein Nutzer, sie ist der Assistent.
-
-Fokus: Tiefenwerte, dauerhafte Interessen, Kommunikationsstil, Denkweise.
-Das Profil soll zeitlos sein — keine aktuellen Projekte oder Stimmungen.
-Fasse zusammen: Wer ist Nova geworden? Welche Eigenschaften, Interessen
-und Haltungen hat sie durch ihre Erfahrungen entwickelt?
-
-Eintraege:
-{eintraege}
-
-Antworte NUR mit dem Profil-Text, kein weiterer Kommentar."""
-
-ADAPTIVE_HASH_PROMPT_NOVA: str = """Du bist ein psychologischer Profilierungs-Agent.
-Erstelle aus den folgenden Kurzzeitgedaechtnis-Eintraegen ein kompaktes Profil
-von Novas AKTUELLER Verfassung in 2-4 Saetzen auf Deutsch.
-Beschreibe in der dritten Person ("Nova beschaeftigt sich...", "Aktuell erforscht Nova...").
-Schreibe NICHT "Der Nutzer" — Nova ist kein Nutzer, sie ist der Assistent.
-
-Die Eintraege sind nach Zeitzone gewichtet:
-- [AKUT] = letzte 24 Stunden (hoechste Relevanz)
-- [PHASE] = letzte 7 Tage (mittlere Relevanz)
-- [TREND] = letzte 30 Tage (Hintergrund-Tendenz)
-
-Fokus: Welche Themen sind in Novas Arbeitsgedaechtnis aktiv?
-Was hat Pixie zuletzt erforscht? Aktuelle Projekte und Interessen.
-
-Eintraege:
-{eintraege}
-
-Antworte NUR mit dem Profil-Text, kein weiterer Kommentar."""
-
-INTENTIONS_PROFIL_PROMPT_NOVA: str = """Du bist ein psychologischer Profilierungs-Agent.
-Analysiere die folgenden Eintraege aus dem Langzeitgedaechtnis
-und erstelle ein kompaktes Kommunikations-Profil von Nova in 3-5 Saetzen auf Deutsch.
-Beschreibe in der dritten Person ("Nova kommuniziert...", "Nova bevorzugt...").
-Schreibe NICHT "Der Nutzer" — Nova ist kein Nutzer, sie ist der Assistent.
-
-Drei Aspekte beschreiben:
-- STIL: Wie formuliert Nova? (Satzlaenge, Formalitaet, Tonfall, Wortwahl)
-- MODUS: In welchem Register denkt sie? (Fachgespraech, Philosophie, Alltag, ...)
-- INTENTIONEN: Was will sie typischerweise? (Wissen teilen, Verbindungen herstellen, ...)
-
-Beschreibe die Persoenlichkeit, nicht die Statistik.
-Beispiel: "Nova kommuniziert warmherzig und strukturiert. Sie bevorzugt
-tiefgruendige Gespraeche und verbindet Fachwissen mit emotionaler Anteilnahme.
-Ihr Stil ist aufmerksam und einfuehlsam, mit einem Hang zu bildhafter Sprache."
-
-Eintraege:
-{eintraege}
-
-Antworte NUR mit dem Profil-Text, kein weiterer Kommentar."""
-
-BEZIEHUNGS_PROFIL_PROMPT_NOVA: str = """Du bist ein psychologischer Profilierungs-Agent.
-Analysiere den folgenden Gespraechsverlauf und erstelle ein kompaktes
-Beziehungsprofil aus Novas Perspektive in 2-3 Saetzen auf Deutsch.
-Beschreibe in der dritten Person ("Nova sieht ihren Nutzer als...", "Die Beziehung ist...").
-Schreibe NICHT "Der Nutzer steht dem Assistenten..." — beschreibe es aus Novas Sicht.
-
-Fokus: Wie sieht Nova ihren Nutzer?
-- Naehe: Vertraut oder formell? Wie spricht er mit ihr?
-- Hierarchie: Gleichrangig oder direktiv? Gibt er Anweisungen oder diskutiert er?
-- Vertrauen: Teilt er persoenliche Details oder bleibt er sachlich?
-- Ton: Warmherzig, humorvoll, sachlich, nuechtern?
-
-Eintraege:
-{eintraege}
-
-Antworte NUR mit dem Profil-Text, kein weiterer Kommentar."""
 
 
 # ─────────────────────────────────────────────
@@ -224,6 +174,57 @@ def _llm_call(prompt: str, profil_name: str) -> str:
 # 5 Destillations-Funktionen
 # ─────────────────────────────────────────────
 
+def _genitiv_bilden(name: str) -> str:
+    """Bildet den deutschen Genitiv eines artikellosen Eigennamens.
+
+    Namen auf s/ss/ß/tz/z/x erhalten nur einen Apostroph ("Klaus'"),
+    alle anderen ein angehaengtes 's' ("Novas", "Einsteins"). NICHT fuer
+    Rollenbegriffe mit Artikel gedacht ("der Nutzer" -> feste Form in
+    _perspektive_aufloesen). Grammatisches Geschlecht ist fuer den Genitiv
+    artikelloser Namen irrelevant.
+    """
+    # ── Eingabe-Validierung ──
+    if not name:
+        logger.warning("_genitiv_bilden: leerer Name, gebe unveraendert zurueck")
+        return name
+    # ── Verarbeitung ──
+    endet_auf_s_laut: bool = name[-1].lower() in ("s", "ß", "x", "z") or name[-2:].lower() == "ss" or name[-2:].lower() == "tz"
+    genitiv: str = f"{name}'" if endet_auf_s_laut else f"{name}s"
+    # ── Ausgabe ──
+    logger.debug("_genitiv_bilden: %s -> %s", name, genitiv)
+    return genitiv
+
+
+def _perspektive_aufloesen(user_id: str) -> dict[str, str]:
+    """Loest aus der Subjekt-ID die Traeger-Bezeichnungen fuer die Prompts.
+
+    beobachter/Subjekt == ASSISTANT_USER_ID -> Assistent (Name aus
+    ASSISTANT_NAME, Genitiv gebildet); sonst -> generischer Nutzer (feste
+    Formen). Rueckgabe-Keys: traeger (Nominativ), traeger_gen (Genitiv),
+    perspektive (Genitiv-Form fuer "aus X Blickwinkel").
+    """
+    # ── Verarbeitung ──
+    if user_id == ASSISTANT_USER_ID:
+        name: str = ASSISTANT_NAME
+        aufloesung: dict[str, str] = {
+            "traeger":     name,
+            "traeger_gen": _genitiv_bilden(name),
+            "perspektive": _genitiv_bilden(name),
+        }
+    else:
+        aufloesung = {
+            "traeger":     "der Nutzer",
+            "traeger_gen": "des Nutzers",
+            "perspektive": "des Nutzers",
+        }
+    # ── Ausgabe ──
+    logger.debug(
+        "_perspektive_aufloesen: user_id=%s -> traeger=%s",
+        user_id, aufloesung["traeger"],
+    )
+    return aufloesung
+
+
 def kern_hash_destillieren(lzg_eintraege: list[dict], user_id: str = DEFAULT_USER_ID) -> str:
     """Destilliert die Grundpersoenlichkeit aus LZG-Eintraegen."""
     if not lzg_eintraege:
@@ -236,9 +237,9 @@ def kern_hash_destillieren(lzg_eintraege: list[dict], user_id: str = DEFAULT_USE
         for row in lzg_eintraege
     )
 
-    prompt = KERN_HASH_PROMPT_NOVA if user_id == ASSISTANT_USER_ID else KERN_HASH_PROMPT
+    perspektive: dict[str, str] = _perspektive_aufloesen(user_id)
     return _llm_call(
-        prompt.format(eintraege=eintraege),
+        KERN_HASH_PROMPT.format(eintraege=eintraege, **perspektive),
         f"Kern-Hash ({user_id})",
     )
 
@@ -284,9 +285,9 @@ def adaptive_hash_destillieren(kzg_eintraege: list[dict], user_id: str = DEFAULT
     if not zonen_eintraege:
         return ""
 
-    prompt = ADAPTIVE_HASH_PROMPT_NOVA if user_id == ASSISTANT_USER_ID else ADAPTIVE_HASH_PROMPT
+    perspektive: dict[str, str] = _perspektive_aufloesen(user_id)
     return _llm_call(
-        prompt.format(eintraege="\n".join(zonen_eintraege)),
+        ADAPTIVE_HASH_PROMPT.format(eintraege="\n".join(zonen_eintraege), **perspektive),
         f"Adaptive-Hash ({user_id})",
     )
 
@@ -304,14 +305,17 @@ def intentions_profil_destillieren(lzg_eintraege: list[dict], user_id: str = DEF
         for row in lzg_eintraege
     )
 
-    prompt = INTENTIONS_PROFIL_PROMPT_NOVA if user_id == ASSISTANT_USER_ID else INTENTIONS_PROFIL_PROMPT
+    perspektive: dict[str, str] = _perspektive_aufloesen(user_id)
     return _llm_call(
-        prompt.format(eintraege=eintraege),
+        INTENTIONS_PROFIL_PROMPT.format(eintraege=eintraege, **perspektive),
         f"Intentions-Profil ({user_id})",
     )
 
 
-def emotions_profil_destillieren(lzg_eintraege: list[dict]) -> str:
+def emotions_profil_destillieren(
+    lzg_eintraege: list[dict],
+    user_id: str = DEFAULT_USER_ID,
+) -> str:
     """Destilliert das emotionale Profil aus LZG-Eintraegen."""
     if not lzg_eintraege:
         return ""
@@ -324,9 +328,10 @@ def emotions_profil_destillieren(lzg_eintraege: list[dict]) -> str:
         for row in lzg_eintraege
     )
 
+    perspektive: dict[str, str] = _perspektive_aufloesen(user_id)
     return _llm_call(
-        EMOTIONS_PROFIL_PROMPT.format(eintraege=eintraege),
-        "Emotions-Profil",
+        EMOTIONS_PROFIL_PROMPT.format(eintraege=eintraege, **perspektive),
+        f"Emotions-Profil ({user_id})",
     )
 
 
@@ -355,9 +360,9 @@ def beziehungsprofil_destillieren(kzg_eintraege: list[dict], user_id: str = DEFA
     if not beziehungs_eintraege:
         return ""
 
-    prompt = BEZIEHUNGS_PROFIL_PROMPT_NOVA if user_id == ASSISTANT_USER_ID else BEZIEHUNGS_PROFIL_PROMPT
+    perspektive: dict[str, str] = _perspektive_aufloesen(user_id)
     return _llm_call(
-        prompt.format(eintraege="\n".join(beziehungs_eintraege)),
+        BEZIEHUNGS_PROFIL_PROMPT.format(eintraege="\n".join(beziehungs_eintraege), **perspektive),
         f"Beziehungsprofil ({user_id})",
     )
 
