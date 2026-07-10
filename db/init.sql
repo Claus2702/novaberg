@@ -386,13 +386,16 @@ CREATE TABLE IF NOT EXISTS pipeline_log (
     quelle          VARCHAR(50)  NOT NULL,
     node            VARCHAR(50)  NOT NULL,
     art             VARCHAR(30)  NOT NULL,
-    inhalt          JSONB        NOT NULL
+    inhalt          JSONB        NOT NULL,
+    user_id         VARCHAR(50)  NULL,
+    character_id    VARCHAR(50)  NULL
 );
 
 CREATE INDEX IF NOT EXISTS idx_pipeline_log_turn     ON pipeline_log (turn_id);
 CREATE INDEX IF NOT EXISTS idx_pipeline_log_span     ON pipeline_log (span_id);
 CREATE INDEX IF NOT EXISTS idx_pipeline_log_node_art ON pipeline_log (node, art);
 CREATE INDEX IF NOT EXISTS idx_pipeline_log_erstellt ON pipeline_log (erstellt_am DESC);
+CREATE INDEX IF NOT EXISTS idx_pipeline_log_paar     ON pipeline_log (user_id, character_id);
 
 
 -- ═══════════════════════════════════════════════
