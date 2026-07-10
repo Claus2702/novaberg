@@ -178,6 +178,7 @@ class SynapsenPromotionAgent(BaseAgent):
         span_id = pipeline_log.span_start(
             turn_id=kzg_key, node=NODE, quelle=QUELLE,
             inhalt={"phase": "start", "themen": themen_str, "trigger_salienz": trigger_salienz},
+            user_id=user_id, character_id=ASSISTANT_USER_ID,
         )
 
         # ── Vorbedingung 1: KZG-Key vorhanden ──────
@@ -259,6 +260,7 @@ class SynapsenPromotionAgent(BaseAgent):
         pipeline_log.log_berechnung(
             turn_id=kzg_key, node=NODE, quelle=QUELLE, span_id=span_id,
             inhalt={"embedding_dim": len(embedding), "dauer_s": embed_response.duration_seconds},
+            user_id=user_id, character_id=character_id,
         )
 
         # ── Kandidaten der Paar-Partition mit SQL-Cosine (Match + Kantenbildung) ──
@@ -288,6 +290,7 @@ class SynapsenPromotionAgent(BaseAgent):
                     turn_id=kzg_key, node=NODE, quelle=QUELLE, span_id=span_id,
                     inhalt={"aktion": aktion, **reaktiv,
                             "paar": f"{user_id}:{character_id}"},
+                    user_id=user_id, character_id=character_id,
                 )
             else:
                 # reactivate_node scheiterte (nicht gefunden / bereits aktiv /
@@ -348,10 +351,12 @@ class SynapsenPromotionAgent(BaseAgent):
                 "aktion": aktion, "knoten_id": knoten_id, "info": info,
                 "paar": f"{user_id}:{character_id}", "gewicht_roh": salienz,
             },
+            user_id=user_id, character_id=character_id,
         )
         pipeline_log.span_end(
             turn_id=kzg_key, node=NODE, quelle=QUELLE, span_id=span_id,
             inhalt={"aktion": aktion, "knoten_id": knoten_id},
+            user_id=user_id, character_id=character_id,
         )
 
     def _fehler(self, user_id: str, aufgabe: str, kzg_key: str, span_id, grund: str) -> None:
@@ -361,8 +366,10 @@ class SynapsenPromotionAgent(BaseAgent):
         pipeline_log.log_fehler(
             turn_id=kzg_key or "?", node=NODE, quelle=QUELLE, span_id=span_id,
             inhalt={"grund": grund},
+            user_id=user_id, character_id=ASSISTANT_USER_ID,
         )
         pipeline_log.span_end(
             turn_id=kzg_key or "?", node=NODE, quelle=QUELLE, span_id=span_id,
             inhalt={"status": "fehler"},
+            user_id=user_id, character_id=ASSISTANT_USER_ID,
         )
