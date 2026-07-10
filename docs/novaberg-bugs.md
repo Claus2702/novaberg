@@ -263,6 +263,7 @@
 #### kern_hash beschreibt User statt Nova ⬜
 **Entdeckt:** Chat 27
 **Prio:** Niedrig — Destillations-Thema.
+→ Chat 103: Wurzel ist nicht die Destillation, sondern die Datenquelle — Novas Stimme wird nirgends persistent gespeichert (Redis-Turns 2h TTL, gespraech_archiv verwaist). Siehe Backlog NOVA-STIMME-NICHT-PERSISTENT.
 
 ---
 
@@ -281,6 +282,46 @@
 #### BUG3 — "Bruder" als Verwandtschaft statt Anrede-Slang ⬜
 **Entdeckt:** Chat 19
 **Prio:** Niedrig — kosmetisch, nur bei jugendlichem Stil.
+
+---
+
+#### AGENT-RUECKFRAGE-LOOP — Resume-Rückfrage rekursiert bis Recursion-Limit ⚠️ Reproduziert Chat 103
+
+Bei einer Notiz-Disambiguierungs-Rückfrage (`_resume_duplikat`) führt eine
+Antwort, die die Rückfrage nicht auflöst, zur Endlos-Rekursion: `resume`
+liefert `status='rueckfrage'`, `dispatch_notizen` löscht den Pending-Key und
+setzt ihn sofort neu, der `Planner` resumt **im selben Turn** erneut mit
+derselben `user_answer` (`resume=True`), `_resume_duplikat` findet sie wieder
+„unklar" → identische Rückfrage. ~60 Iterationen in ~230 ms bis
+LangGraph `Recursion limit of 25 reached` → Graph-Crash, keine Antwort an den
+User (über Telegram beobachtet).
+
+Reproduktion Chat 103: Rückfrage „Es gibt bereits eine Notiz 'Neue Notiz
+anlegen'…", User antwortet „Was steht in dieser Notiz?" (Gegenfrage statt
+Wahl) → Loop → Crash.
+
+Regression zu AGT-FIX3 (Chat 22, „Endlosschleife Planner ↔ Agent-Dispatch,
+Recursion 25", gelöst via `bereits_gelaufen`-Dict): Der Schleifen-Schutz
+greift für den Resume-Pfad nicht (mehr). Fix-Richtung: (1) Bei
+`status='rueckfrage'` Turn beenden und auf echten nächsten User-Turn warten,
+NICHT im selben Turn re-dispatchen; und/oder (2) `bereits_gelaufen`-Guard auf
+den Resume-Pfad ausdehnen / Iterations-Budget im Resume. Ausgelöst durch
+NOTIZ-BEFEHL-ALS-TITEL (Duplikate erzeugen die Disambiguierung überhaupt erst).
+
+---
+
+#### NOTIZ-BEFEHL-ALS-TITEL — Meta-Befehl wird als Notiz-Name gespeichert ⬜ Chat 103
+
+Der Notiz-Klassifikator speichert die Meta-Formulierung des Befehls als Name
+(Spalte `name`, nicht `titel`) statt sie als Anweisung aufzulösen. Belegt
+Chat 103: notizen `id 3` und `id 4` tragen den Namen „Neue Notiz anlegen"
+(id 4 enthält den kompletten P1–P10-Migrationsplan als Inhalt), zwei weitere
+„Neue Notiz". Folge: viele Namens-Duplikate → Disambiguierungs-Rückfragen →
+Auslöser für AGENT-RUECKFRAGE-LOOP. Verwandt mit
+REFERENZ-AUFLOESUNG-VOR-RETRIEVAL / NOTIZEN-VOR-TURN-BEZUG (anaphorische
+Auflösung vor dem Retrieval fehlt). Fix-Richtung: Klassifikator muss
+Meta-Befehle („neue Notiz anlegen", „das festhalten") vom Namens-Inhalt
+trennen; Name aus dem Sach-Inhalt ableiten.
 
 ---
 
