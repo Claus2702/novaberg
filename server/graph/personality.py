@@ -16,6 +16,7 @@ Siehe docs/novaberg-path2-perzeption_k.md §3.
 """
 
 from dataclasses import dataclass, field
+from typing import Any
 
 
 @dataclass
@@ -54,6 +55,26 @@ class Emotion:
     tone: str                 = "sachlich"
     intent: str               = "smalltalk"
     prompt_topic: str         = ""
+
+    def to_dict(self) -> dict[str, Any]:
+        """Serialisiert alle neun EI-Dimensionen in ein dict.
+
+        Explizite Feld-Abbildung (kein dataclasses.asdict) — ein neu
+        hinzugefuegtes Emotion-Feld landet nur dann im Serialisat, wenn
+        es hier bewusst ergaenzt wird. Verhindert unbeabsichtigtes Lecken
+        interner Felder in dauerhafte Speicher (z.B. turn_roh).
+        """
+        return {
+            "emotion":              self.emotion,
+            "arousal":              self.arousal,
+            "emotions_vector":      self.emotions_vector,
+            "mode":                 self.mode,
+            "language_style":       self.language_style,
+            "relationship_dynamic": self.relationship_dynamic,
+            "tone":                 self.tone,
+            "intent":               self.intent,
+            "prompt_topic":         self.prompt_topic,
+        }
 
 
 @dataclass
