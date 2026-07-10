@@ -54,7 +54,7 @@ logger = logging.getLogger("ki_server.memory.pipeline_log")
 class PipelineLogEintrag:
     """Ein einzelner Pipeline-Log-Eintrag im Buffer.
 
-    Die acht Spalten-Pendants zur pipeline_log-Tabelle. erstellt_am wird
+    Die zehn Spalten-Pendants zur pipeline_log-Tabelle. erstellt_am wird
     bei Buffer-Aufnahme gesetzt; id wird beim DB-Insert von BIGSERIAL
     vergeben.
     """
@@ -65,7 +65,9 @@ class PipelineLogEintrag:
     node:        str
     art:         str
     inhalt:      dict[str, Any]
-    erstellt_am: datetime = field(default_factory=lambda: datetime.now(timezone.utc))
+    erstellt_am:  datetime = field(default_factory=lambda: datetime.now(timezone.utc))
+    user_id:      str | None = None
+    character_id: str | None = None
 
 
 # ─────────────────────────────────────────────
@@ -287,6 +289,8 @@ def _batch_insert_sync(
             eintrag.node,
             eintrag.art,
             json.dumps(eintrag.inhalt),
+            eintrag.user_id,
+            eintrag.character_id,
         )
         for eintrag in eintraege
     ]
@@ -298,7 +302,7 @@ def _batch_insert_sync(
                 cursor,
                 """
                 INSERT INTO pipeline_log
-                    (erstellt_am, turn_id, span_id, quelle, node, art, inhalt)
+                    (erstellt_am, turn_id, span_id, quelle, node, art, inhalt, user_id, character_id)
                 VALUES %s
                 """,
                 werte,
@@ -387,7 +391,9 @@ def _log_eintrag(
     node:    str,
     quelle:  str,
     inhalt:  dict[str, Any],
-    span_id: uuid.UUID | None = None,
+    span_id:      uuid.UUID | None = None,
+    user_id:      str | None = None,
+    character_id: str | None = None,
 ) -> None:
     """Interne Eintrag-Erzeugung. Wird von allen Helper-Funktionen aufgerufen.
 
@@ -423,6 +429,8 @@ def _log_eintrag(
         node    = node,
         art     = art,
         inhalt  = inhalt,
+        user_id      = user_id,
+        character_id = character_id,
     )
 
     # Cross-context-sicher: aus async-Code geht put() direkt, aus
@@ -443,9 +451,11 @@ def log_eingang(
     quelle:  str,
     inhalt:  dict[str, Any],
     span_id: uuid.UUID | None = None,
+    user_id:      str | None = None,
+    character_id: str | None = None,
 ) -> None:
     """Forensik-Eintrag: Eingang von Daten in einen Node."""
-    _log_eintrag("eingang", turn_id, node, quelle, inhalt, span_id)
+    _log_eintrag("eingang", turn_id, node, quelle, inhalt, span_id, user_id, character_id)
 
 
 def log_prompt(
@@ -454,9 +464,11 @@ def log_prompt(
     quelle:  str,
     inhalt:  dict[str, Any],
     span_id: uuid.UUID | None = None,
+    user_id:      str | None = None,
+    character_id: str | None = None,
 ) -> None:
     """Forensik-Eintrag: an ein LLM gesendeter Prompt."""
-    _log_eintrag("prompt", turn_id, node, quelle, inhalt, span_id)
+    _log_eintrag("prompt", turn_id, node, quelle, inhalt, span_id, user_id, character_id)
 
 
 def log_berechnung(
@@ -465,9 +477,11 @@ def log_berechnung(
     quelle:  str,
     inhalt:  dict[str, Any],
     span_id: uuid.UUID | None = None,
+    user_id:      str | None = None,
+    character_id: str | None = None,
 ) -> None:
     """Forensik-Eintrag: berechnete Werte (Embeddings, Scores, etc.)."""
-    _log_eintrag("berechnung", turn_id, node, quelle, inhalt, span_id)
+    _log_eintrag("berechnung", turn_id, node, quelle, inhalt, span_id, user_id, character_id)
 
 
 def log_switch(
@@ -476,9 +490,11 @@ def log_switch(
     quelle:  str,
     inhalt:  dict[str, Any],
     span_id: uuid.UUID | None = None,
+    user_id:      str | None = None,
+    character_id: str | None = None,
 ) -> None:
     """Forensik-Eintrag: Entscheidungs-Verzweigung im Code-Pfad."""
-    _log_eintrag("switch", turn_id, node, quelle, inhalt, span_id)
+    _log_eintrag("switch", turn_id, node, quelle, inhalt, span_id, user_id, character_id)
 
 
 def log_db_write(
@@ -487,13 +503,15 @@ def log_db_write(
     quelle:  str,
     inhalt:  dict[str, Any],
     span_id: uuid.UUID | None = None,
+    user_id:      str | None = None,
+    character_id: str | None = None,
 ) -> None:
     """Forensik-Eintrag: schreibender Datenbank-Zugriff.
 
     Anwendung: Inserts, Updates, Deletes auf PostgreSQL oder Redis.
     Komplement zu :func:`log_db_read` fuer Lese-Zugriffe.
     """
-    _log_eintrag("db_write", turn_id, node, quelle, inhalt, span_id)
+    _log_eintrag("db_write", turn_id, node, quelle, inhalt, span_id, user_id, character_id)
 
 
 def log_db_read(
@@ -502,13 +520,15 @@ def log_db_read(
     quelle:  str,
     inhalt:  dict[str, Any],
     span_id: uuid.UUID | None = None,
+    user_id:      str | None = None,
+    character_id: str | None = None,
 ) -> None:
     """Forensik-Eintrag: lesender Datenbank-Zugriff.
 
     Anwendung: SELECTs auf PostgreSQL, GET/HGETALL auf Redis,
     Cache-Lookups. Komplement zu :func:`log_db_write` fuer Schreib-Zugriffe.
     """
-    _log_eintrag("db_read", turn_id, node, quelle, inhalt, span_id)
+    _log_eintrag("db_read", turn_id, node, quelle, inhalt, span_id, user_id, character_id)
 
 
 def log_ausgabe(
@@ -517,9 +537,11 @@ def log_ausgabe(
     quelle:  str,
     inhalt:  dict[str, Any],
     span_id: uuid.UUID | None = None,
+    user_id:      str | None = None,
+    character_id: str | None = None,
 ) -> None:
     """Forensik-Eintrag: Ausgang von Daten aus einem Node."""
-    _log_eintrag("ausgabe", turn_id, node, quelle, inhalt, span_id)
+    _log_eintrag("ausgabe", turn_id, node, quelle, inhalt, span_id, user_id, character_id)
 
 
 def log_fehler(
@@ -528,9 +550,11 @@ def log_fehler(
     quelle:  str,
     inhalt:  dict[str, Any],
     span_id: uuid.UUID | None = None,
+    user_id:      str | None = None,
+    character_id: str | None = None,
 ) -> None:
     """Forensik-Eintrag: aufgetretener Fehler."""
-    _log_eintrag("fehler", turn_id, node, quelle, inhalt, span_id)
+    _log_eintrag("fehler", turn_id, node, quelle, inhalt, span_id, user_id, character_id)
 
 
 def log_bemerkung(
@@ -539,9 +563,11 @@ def log_bemerkung(
     quelle:  str,
     inhalt:  dict[str, Any],
     span_id: uuid.UUID | None = None,
+    user_id:      str | None = None,
+    character_id: str | None = None,
 ) -> None:
     """Forensik-Eintrag: freie Reflexion oder Client-Status-Text."""
-    _log_eintrag("bemerkung", turn_id, node, quelle, inhalt, span_id)
+    _log_eintrag("bemerkung", turn_id, node, quelle, inhalt, span_id, user_id, character_id)
 
 
 def log_token(
@@ -550,9 +576,11 @@ def log_token(
     quelle:  str,
     inhalt:  dict[str, Any],
     span_id: uuid.UUID | None = None,
+    user_id:      str | None = None,
+    character_id: str | None = None,
 ) -> None:
     """Forensik-Eintrag: Token-Verbrauch (prompt, completion, total)."""
-    _log_eintrag("token", turn_id, node, quelle, inhalt, span_id)
+    _log_eintrag("token", turn_id, node, quelle, inhalt, span_id, user_id, character_id)
 
 
 def span_start(
@@ -560,6 +588,8 @@ def span_start(
     node:    str,
     quelle:  str,
     inhalt:  dict[str, Any] | None = None,
+    user_id:      str | None = None,
+    character_id: str | None = None,
 ) -> uuid.UUID:
     """Forensik-Eintrag: Start eines Node-Spans. Liefert die span_id.
 
@@ -568,7 +598,7 @@ def span_start(
     sind alle Einträge eines Node-Laufs eindeutig korrelierbar.
     """
     span_id: uuid.UUID = uuid.uuid4()
-    _log_eintrag("span_start", turn_id, node, quelle, inhalt or {}, span_id)
+    _log_eintrag("span_start", turn_id, node, quelle, inhalt or {}, span_id, user_id, character_id)
     return span_id
 
 
@@ -578,10 +608,12 @@ def span_end(
     quelle:  str,
     span_id: uuid.UUID,
     inhalt:  dict[str, Any] | None = None,
+    user_id:      str | None = None,
+    character_id: str | None = None,
 ) -> None:
     """Forensik-Eintrag: Ende eines Node-Spans.
 
     Klammer zu span_start. inhalt kann optional Span-Metadaten enthalten
     (z.B. Anzahl bearbeiteter Einheiten); standardmäßig leer.
     """
-    _log_eintrag("span_end", turn_id, node, quelle, inhalt or {}, span_id)
+    _log_eintrag("span_end", turn_id, node, quelle, inhalt or {}, span_id, user_id, character_id)
