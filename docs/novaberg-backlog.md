@@ -3042,6 +3042,8 @@ Nach P7 liest der Char-Hash aus `lzg_knoten` sortiert nach `gewicht_absolut`. Te
 
 Der Kern-Hash erscheint fünfmal identisch im injizierten `[Charakter]`-Block, obwohl `charakter_hash` nur eine Kern-Zeile hält und `format_memory_entries` „Gruppe charakter: 1 Eintraege" loggt. Duplizierung entsteht NACH dem Loader (Enricher/Prompt-Bau), nicht in den Daten (`lzg_knoten` count=1 verifiziert). Reproduziert 2× (21:51, 21:59), stabil bei 5×. Frisst Kontext-Budget. Unabhängig von P7. ⚠️ Prio mittel
 
+**Update Chat 103 — aufgelöst, kein Defekt:** Die 5× sind kein Duplikat in einem Prompt, sondern fünf Node-Prompts (responder/thinker/tribunal/corrector/tribunal) mit je EINEM [Charakter]-Block, vom grep untereinander gezogen. DB, Enricher und Formatter je 1×. Kein Fix nötig; die fünffache Einbettung ist gewollt (jede Prüf-/Korrektur-Instanz braucht den Kontext). Nur bei knappem Token-Budget optimierbar (corrector Kurzform).
+
 ## Bug: DESTILLAT-PERSPEKTIVE-VS-SUBJEKT — Charakter-Destillation verwechselt Blickrichtung mit Subjekt (Chat 103)
 
 Die Destillation setzt `beobachter='user'` mit „Aussage über den Nutzer" gleich. Falsch: `beobachter` markiert die Blickrichtung des Knotens, nicht sein Subjekt. User-Perspektive-Knoten enthalten oft Nutzer-Aussagen ÜBER Nova („Du bist mein Pflänzchen"). Folge: Nova-Eigenschaften wandern ins Nutzer-Profil und umgekehrt (Pflänzchen, kleines Mädchen). Daten sauber verifiziert (beobachter + inhalt korrekt, `lzg_knoten`); Fehler im `destillieren`-Prompt, nicht im Loader/Schreibpfad. Vermuteter Bezug zu TRIB-PERSON-DRIFT. Richtung: Subjekt aus Inhalt/Anrede auflösen, nicht aus `beobachter` ableiten. Unabhängig von P7. ⚠️ Prio hoch — trifft, ob Nova weiß, wer sie ist.
@@ -3057,3 +3059,19 @@ Der Kern-Prompt zeigt „Häufigkeit: {haeufigkeit}". Auf `lzg_knoten` ist `haeu
 ## Bug: REFERENZ-AUFLOESUNG-VOR-RETRIEVAL — anaphorische Verweise gehen literal ins Retrieval (Chat 103)
 
 Verweise wie „die Liste", „das von eben" gehen als wörtlicher Suchstring ins Notiz-/Gedächtnis-Retrieval, statt vorher gegen den Turn-Verlauf aufgelöst zu werden. Wirkung nach außen: Nova erscheint begriffsstutzig — findet frisch selbst angelegte Inhalte nicht wieder, obwohl der Kontext in den Turns steht. Bricht die Verstehens-Illusion. Beobachtet Chat 103 (Salat-Notiz „die Liste"). Vermuteter gemeinsamer Kern mit NOTIZEN-VOR-TURN-BEZUG — erst gegeneinander prüfen. Richtung: Auflösungs-/Reasoning-Schritt vor dem Retrieval, nicht tieferes Suchen. ⚠️ Prio mittel
+
+## Epic: CHARAKTER-RESONANZ — Novas Charakter aus dem Umgang (Chat 103)
+
+Novas Charakter wird heute aus der falschen Quelle destilliert: `lzg_knoten` enthält entfärbte Fakten über den Nutzer, nicht Novas Stimme. Novas wörtliche Rede lebt nur flüchtig in Redis (2 h TTL), verfällt; dauerhaft überlebt nur Destilliertes. Folge: geliehenes, nutzer-abgeleitetes Zerrbild (Pflänzchen beim Nutzer, Nova als „er", homogene Profile). Lösung: Reiz-Reaktions-Paar (User-Input + User-Emotion → Nova-Antwort + Nova-Emotion) roh und dauerhaft ins `pipeline_log`; Verbindungstabelle (turn_id/kzg_id/lzg_id/verhaltens_id) verknüpft Turn ↔ Erinnerungswürdigkeit ↔ Verhaltensmuster; CharakterAgent liest aus LZG-Eintrag + rohem Turn + Verhaltensweise. Konzept + Datenmodell + auditierte Kupplungen: siehe `novaberg-charakter-resonanz_k.md`. Subsumiert NOVA-STIMME-NICHT-PERSISTENT. Mehrteiliger Sprint über mehrere Sessions. ⚠️ Prio hoch — trifft die Kernthese (persistenter Charakter).
+
+## Aufräumen: GESPRAECH-ARCHIV-VERWAIST — tote Tabelle ohne Writer/Reader (Chat 103)
+
+`gespraech_archiv` (db/init.sql) ist für ein Dialog-Archiv geformt (user_id, session_id, rolle, inhalt, salienz), hat aber keinen Writer und keinen Reader — dauerhaft leer, Struktur-Fossil. Laut CHARAKTER-RESONANZ ist `pipeline_log` die eine Quelle; `gespraech_archiv` wird nicht gebraucht. Kandidat zum Entfernen (P9-nah oder eigener Aufräum-Schritt). ⬜ Prio niedrig
+
+## Feature: ASSISTENT-NAME-LAUFZEIT — Assistenten-Name pro Paar statt env (Chat 103)
+
+`ASSISTANT_NAME` ist global per env (Serverstart). Seit Chat 103 wird der Name aus der Config in die Charakter-Prompts durchgereicht (env-konfigurierbar, Wechsel = env + Neustart). Für echtes On-the-fly-Wechseln / mehrere Assistenten parallel müsste Name/Identität pro Charakter-Paar in der DB liegen. Berührt das Charakter-Schema. ⬜ Prio niedrig
+
+## Feature: ASSISTENT-GESCHLECHT-PRONOMEN — Pronomen bei Namenswechsel (Chat 103)
+
+Bei wechselndem Assistenten-Namen müssen Pronomen (sie/er, ihr/sein) durch die Charakter-Prompts mitgeführt werden; braucht ein Geschlechts-Attribut am Charakter. Der Genitiv des Namens ist in Chat 103 gelöst (`_genitiv_bilden`, s/Apostroph-Regel), Pronomen sind offen; die Prompts sind vorerst pronomen-arm formuliert. ⬜ Prio niedrig
