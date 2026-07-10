@@ -353,6 +353,8 @@ def kzg_store(
             "ttl":          ttl,
             "aufrufer":     "kzg_store",
         },
+        user_id      = user_id,
+        character_id = character_id,
     )
 
     if salienz >= KZG_SALIENZ_HIGH:
