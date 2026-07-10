@@ -74,6 +74,8 @@ def db_zugriff(state: ConversationState) -> ConversationState:
         turn_id = turn_id,
         node    = "db_zugriff",
         quelle  = quelle_log,
+        user_id      = user_id,
+        character_id = character_id,
     )
     logger.info(
         f"db_zugriff start — paar={user_id}:{character_id}, "
@@ -117,6 +119,8 @@ def db_zugriff(state: ConversationState) -> ConversationState:
             "exists":  bool(nova_state_raw),
         },
         span_id = span_id,
+        user_id      = user_id,
+        character_id = character_id,
     )
 
     if nova_state_raw:
@@ -160,6 +164,8 @@ def db_zugriff(state: ConversationState) -> ConversationState:
             "hat_treffer":  bool(external_hash_dict),
         },
         span_id = span_id,
+        user_id      = user_id,
+        character_id = character_id,
     )
     external_character: Character = Character(
         core         = external_hash_dict.get("kern",              ""),
@@ -185,6 +191,8 @@ def db_zugriff(state: ConversationState) -> ConversationState:
             "hat_treffer":  bool(internal_hash_dict),
         },
         span_id = span_id,
+        user_id      = user_id,
+        character_id = character_id,
     )
     internal_character: Character = Character(
         core         = internal_hash_dict.get("kern",              ""),
@@ -224,6 +232,8 @@ def db_zugriff(state: ConversationState) -> ConversationState:
             "count":   len(identities),
         },
         span_id = span_id,
+        user_id      = user_id,
+        character_id = character_id,
     )
 
     # Schritt 4b: directives aus PostgreSQL (direktiven).
@@ -252,6 +262,8 @@ def db_zugriff(state: ConversationState) -> ConversationState:
             "count":   len(directives),
         },
         span_id = span_id,
+        user_id      = user_id,
+        character_id = character_id,
     )
     logger.info(
         f"db_zugriff Schritt 4 — Anweisungen geladen: "
@@ -299,6 +311,8 @@ def db_zugriff(state: ConversationState) -> ConversationState:
                 "zweig":     "pixie_pfad_external_aus_internal",
             },
             span_id = span_id,
+            user_id      = user_id,
+            character_id = character_id,
         )
         logger.info("db_zugriff — Pixie-Pfad: external = Kopie von internal")
     else:
@@ -316,6 +330,8 @@ def db_zugriff(state: ConversationState) -> ConversationState:
                 "zweig":     "user_pfad",
             },
             span_id = span_id,
+            user_id      = user_id,
+            character_id = character_id,
         )
 
     # ── Ausgabe-Verifikation ────────────────────
@@ -327,6 +343,8 @@ def db_zugriff(state: ConversationState) -> ConversationState:
         node    = "db_zugriff",
         quelle  = quelle_log,
         span_id = span_id,
+        user_id      = user_id,
+        character_id = character_id,
     )
     logger.info("db_zugriff fertig — external und internal befuellt")
 
