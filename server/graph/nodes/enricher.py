@@ -224,6 +224,8 @@ def _enrich_human(
         turn_id = turn_id_log,
         node    = "enricher",
         quelle  = quelle_log,
+        user_id      = user_id,
+        character_id = character_id,
     )
 
     # ── Verarbeitung ────────────────────────────
@@ -251,6 +253,8 @@ def _enrich_human(
             "raw_turns_count": len(raw_turns) if raw_turns else 0,
         },
         span_id = span_id,
+        user_id      = user_id,
+        character_id = character_id,
     )
 
     # 3. Prompt-Embedding (fuer Ziel-Gravitation).
@@ -266,6 +270,8 @@ def _enrich_human(
             "embedding_dim": len(embedding) if embedding else 0,
         },
         span_id = span_id,
+        user_id      = user_id,
+        character_id = character_id,
     )
 
     # 4 + 5. Aktivierte Ziele + Gravitationsterm.
@@ -294,6 +300,8 @@ def _enrich_human(
             "gravitationsterm":       state.get("gravitationsterm", 0.0),
         },
         span_id = span_id,
+        user_id      = user_id,
+        character_id = character_id,
     )
 
     span_end(
@@ -301,6 +309,8 @@ def _enrich_human(
         node    = "enricher",
         quelle  = quelle_log,
         span_id = span_id,
+        user_id      = user_id,
+        character_id = character_id,
     )
 
     return state
@@ -376,6 +386,8 @@ def _enrich_character(
         turn_id = turn_id_log,
         node    = "enricher",
         quelle  = quelle_log,
+        user_id      = user_id,
+        character_id = character_id,
     )
 
     entries: list[ContextEntry] = []
@@ -441,6 +453,8 @@ def _enrich_character(
             "has_summary":          bool(summary),
         },
         span_id = span_id,
+        user_id      = user_id,
+        character_id = character_id,
     )
 
     # ─────────────────────────────────────────
@@ -506,6 +520,8 @@ def _enrich_character(
             "embedding_dim":  len(embedding) if embedding else 0,
         },
         span_id = span_id,
+        user_id      = user_id,
+        character_id = character_id,
     )
 
     # Lokale Initialisierung, damit der Switch-Inhalt unten den KZG-Count
@@ -572,6 +588,8 @@ def _enrich_character(
                 "zweig":              "memory_aktiv",
             },
             span_id = span_id,
+            user_id      = user_id,
+            character_id = character_id,
         )
     else:
         # ── Pipeline-Log: Switch — Memory uebersprungen (Anker 4b) ──
@@ -585,6 +603,8 @@ def _enrich_character(
                 "zweig":           "memory_uebersprungen",
             },
             span_id = span_id,
+            user_id      = user_id,
+            character_id = character_id,
         )
 
     # ─────────────────────────────────────────
@@ -678,6 +698,8 @@ def _enrich_character(
             ),
         },
         span_id = span_id,
+        user_id      = user_id,
+        character_id = character_id,
     )
 
     # ── Pipeline-Log: Span-End (Anker 6) ────────
@@ -686,6 +708,8 @@ def _enrich_character(
         node    = "enricher",
         quelle  = quelle_log,
         span_id = span_id,
+        user_id      = user_id,
+        character_id = character_id,
     )
 
     return state
