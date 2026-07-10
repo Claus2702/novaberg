@@ -382,6 +382,7 @@ def _enrich_character(
     # graph/character_graph.py:43, kzg/dispatch.py:42).
     turn_id_log: str = state.get("turn_id", "unbekannt")
     quelle_log:  str = state.get("ei_calc_rolle", "user")
+    character_id: str = state.get("character_id", "")
     span_id          = span_start(
         turn_id = turn_id_log,
         node    = "enricher",
@@ -397,7 +398,6 @@ def _enrich_character(
     # ─────────────────────────────────────────
 
     # Session-Summary in den Kontext (aeltere Turns, zusammengefasst)
-    character_id: str = state.get("character_id", "")
     summary_key: str  = _session_key(user_id, character_id, "summary")
     summary:     str  = redis_client.get(summary_key) or ""
 
