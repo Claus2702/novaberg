@@ -67,6 +67,8 @@ def ei_calc_persist(state: ConversationState) -> ConversationState:
         turn_id = turn_id,
         node    = "ei_calc_persist",
         quelle  = "character",
+        user_id      = user_id,
+        character_id = character_id,
     )
 
     logger.info(
@@ -96,6 +98,8 @@ def ei_calc_persist(state: ConversationState) -> ConversationState:
             "tone":        internal.emotion.tone,
         },
         span_id = span_id,
+        user_id      = user_id,
+        character_id = character_id,
     )
 
     # Schritt 2: Modus-Plausibilitaet anwenden.
@@ -114,6 +118,8 @@ def ei_calc_persist(state: ConversationState) -> ConversationState:
             "korrigiert": korrigierter_modus,
         },
         span_id = span_id,
+        user_id      = user_id,
+        character_id = character_id,
     )
     internal.emotion.mode = korrigierter_modus
 
@@ -149,6 +155,8 @@ def ei_calc_persist(state: ConversationState) -> ConversationState:
             "korrigiert":   korrigierter_stil,
         },
         span_id = span_id,
+        user_id      = user_id,
+        character_id = character_id,
     )
     internal.emotion.language_style = korrigierter_stil
 
@@ -178,6 +186,8 @@ def ei_calc_persist(state: ConversationState) -> ConversationState:
             "felder":    list(nova_state_mapping.keys()),
         },
         span_id = span_id,
+        user_id      = user_id,
+        character_id = character_id,
     )
 
     # ── Ausgabe-Verifikation ────────────────────
@@ -192,5 +202,7 @@ def ei_calc_persist(state: ConversationState) -> ConversationState:
         node    = "ei_calc_persist",
         quelle  = "character",
         span_id = span_id,
+        user_id      = user_id,
+        character_id = character_id,
     )
     return state
