@@ -321,6 +321,10 @@ def delete_expired_entries(
     aufgerufen. Loescht alle Eintraege mit erstellt_am aelter als
     retention_days; indexgestuetzt ueber idx_pipeline_log_erstellt.
 
+    Ausnahme: art='turn_roh' wird NICHT geloescht (WHERE art <> 'turn_roh').
+    Die Rohturns bleiben dauerhaft — sie sind die nicht-wiederherstellbare
+    Quelle der Charakter-Destillation. Nur die Forensik-Arten verfallen.
+
     Args:
         postgres_url: Verbindungs-URL (Hausstil: Parameter, kein Modul-Global).
         retention_days: Aufbewahrungsdauer in Tagen. None -> config-Default
@@ -357,6 +361,7 @@ def delete_expired_entries(
                 """
                 DELETE FROM pipeline_log
                 WHERE erstellt_am < NOW() - make_interval(days => %s)
+                  AND art <> 'turn_roh'
                 """,
                 (retention_days,),
             )
@@ -634,9 +639,9 @@ def log_turn_roh(
     herstellbare Quelle fuer die Charakter-Destillation und ohne Paar
     wertlos. Kein span_id (der Dispatcher fuehrt keinen Span).
 
-    RETENTION (noch offen, Chat-104-Sprint T3): 'turn_roh' SOLL dauerhaft
-    bleiben und von delete_expired_entries ausgenommen werden. Solange der
-    art-Filter dort fehlt, verfaellt der Rohturn noch nach
-    LZG_PIPELINE_LOG_VORHALTUNG_TAGE — die Ausnahme wird in T3 nachgezogen.
+    RETENTION: 'turn_roh' ist von delete_expired_entries ausgenommen
+    (WHERE art <> 'turn_roh') und bleibt dauerhaft — die nicht-wieder-
+    herstellbare Quelle der Charakter-Destillation. Die Forensik-Arten
+    verfallen weiter nach LZG_PIPELINE_LOG_VORHALTUNG_TAGE.
     """
     _log_eintrag("turn_roh", turn_id, node, quelle, inhalt, None, user_id, character_id)
