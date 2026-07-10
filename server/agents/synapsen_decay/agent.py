@@ -121,6 +121,9 @@ class SynapsenDecayAgent(BaseAgent):
         logger.warning statt Weiterreichen der Exception.
         """
         try:
+            # Bewusst paar-los (Kategorie C, Chat 104): Der Decay-Lauf ist ein
+            # Wartungslauf ueber ALLE Paare, kein Turn — user_id/character_id bleiben
+            # NULL. Kein vergessener Anschluss, sondern korrekte Semantik.
             pipeline_log.log_berechnung(
                 turn_id=run_id, node=NODE, quelle=QUELLE, inhalt=inhalt
             )
