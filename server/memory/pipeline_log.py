@@ -617,3 +617,26 @@ def span_end(
     (z.B. Anzahl bearbeiteter Einheiten); standardmäßig leer.
     """
     _log_eintrag("span_end", turn_id, node, quelle, inhalt or {}, span_id, user_id, character_id)
+
+
+def log_turn_roh(
+    turn_id:      str,
+    node:         str,
+    quelle:       str,
+    inhalt:       dict[str, Any],
+    user_id:      str,
+    character_id: str,
+) -> None:
+    """Turn-Rohdaten: das vollstaendige Reiz-Reaktions-Paar, dauerhaft.
+
+    Anders als die Forensik-Wrapper traegt der Rohturn das Paar
+    (user_id/character_id) VERPFLICHTEND — er ist die nicht-wieder-
+    herstellbare Quelle fuer die Charakter-Destillation und ohne Paar
+    wertlos. Kein span_id (der Dispatcher fuehrt keinen Span).
+
+    RETENTION (noch offen, Chat-104-Sprint T3): 'turn_roh' SOLL dauerhaft
+    bleiben und von delete_expired_entries ausgenommen werden. Solange der
+    art-Filter dort fehlt, verfaellt der Rohturn noch nach
+    LZG_PIPELINE_LOG_VORHALTUNG_TAGE — die Ausnahme wird in T3 nachgezogen.
+    """
+    _log_eintrag("turn_roh", turn_id, node, quelle, inhalt, None, user_id, character_id)
