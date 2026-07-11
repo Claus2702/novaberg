@@ -30,7 +30,7 @@ Nur im CharacterGraph (Pfad 2). Seit Chat 60 nicht mehr im HumanGraph.
 Der System-Prompt wird dynamisch aus dem State zusammengebaut (`_build_system_prompt`). Er folgt dem einheitlichen [BLOCKNAME]-Schema (`nova-01-t-d`, Chat 27). Reihenfolge: Primacy → Kontext → Recency.
 
 1. **[IDENTITAET]** — "Du bist Nova." + Charakter-Anweisung (Saatgut, statisch) + Gewachsene Persönlichkeit (nova_kern) + Aktuelle Themen (nova_adaptiv) + Emotionale Grundstimmung (nova_emotions, seit Chat 52) + Kommunikationsstil (nova_intentionen) + Bild vom Nutzer (nova_beziehung) + Datum/Uhrzeit + Rollenklarheit + Web-Zugriff
-2. **[EIGENE_EMOTION]** *(seit Dual-Emotion Phase 2)* — Novas berechneter Emotionszustand: `nova_emotion_label`, `nova_arousal`, `nova_emotions_vektor`. Aus EI-Calc (State-Felder). Gibt Nova eine eigene emotionale Grundfärbung pro Turn — beeinflusst, diktiert nicht.
+2. **[EIGENE_EMOTION]** *(seit Dual-Emotion Phase 2; Vektor-Quelle korrigiert Chat 106)* — Novas berechneter Emotionszustand: Verlauf aus `nova_emotions_verlauf` (State-Feld), Vektor aus `internal.emotion.emotions_vector` (Personality-Klasse — NICHT aus einem flachen State-Key; der alte Lesepfad `state.get("nova_emotions_vektor")` war seit dem Personality-Umbau tot, die Zeile erschien nie: RESPONDER-VEKTOR-TOT), Konflikt-Flag aus `nova_emotion_konflikt`. Gibt Nova eine eigene emotionale Grundfärbung pro Turn — beeinflusst, diktiert nicht. Jeder Vektor-Ausfallweg ist seit Chat 106 einzeln laut: `internal`/`emotion` fehlt → error, Vektor leer (Kaltstart / ei_calc lief nicht) → warning, Vektor unbekannt (nicht in `EMOTIONS_VEKTOREN_NOVA`) → error. Der Zustand „Zeile fehlt still" existiert nicht mehr.
 3. **[AUFGABE]** *(bedingt, seit Chat 54 aus State)* — Wird vom Planner als fertiger Block in `task_block` geschrieben. Fünf Varianten: Rückfrage, Erfolg, Verworfen (dismissed), Fehler, Legacy-Management. Der Responder setzt den Block ein ohne eigene Interpretation. Kontext-Schnitt (Gedächtnis/Web weglassen) wird über `task_context_cut` gesteuert.
 4. **[KOMMUNIKATION]** — Emotionaler Zustand, Vektor, EI-MIKRO, Sprachstil, Beziehungsdynamik, Tonalität
 5. **[GESPRAECHSVEKTOR]** *(seit Chat 39)* — Landschaftsbeschreibung aus dem GV-Node
@@ -320,7 +320,7 @@ Ich bin so hyped gerade, das ist nicht real!
 | `gespraechs_modus` | EI-Calc (seit Chat 59, korrigiert Perzeption) | Kommunikationsregister |
 | `user_intentionen` | Enricher | Erkannte Intentionen |
 | `nova_emotions_verlauf` | EI-Calc (seit Chat 59) | Novas eigener Emotions-Verlauf nach Empathie-Modulation — Quelle für den `[EIGENE_EMOTION]`-Block |
-| `nova_emotions_vektor` | EI-Calc (seit Chat 59) | Richtung von Novas eigenem Bogen |
+| `internal.emotion.emotions_vector` | EI-Calc (Klassen-Feld; Lesepfad korrigiert Chat 106 — der flache Key `nova_emotions_vektor` ist seit dem Personality-Umbau tot) | Richtung von Novas eigenem Bogen |
 | `nova_emotion_konflikt` | EI-Calc (seit Chat 59) | True wenn Nova und User in gegenüberliegenden Sektoren mit hohem Arousal — Signal für Responder, Inkongruenz explizit zu machen |
 | `task_block` | Planner (seit Chat 54) | Fertiger [AUFGABE]-Block, direkt einsetzbar |
 | `task_context_cut` | Planner (seit Chat 54) | Kontext-Schnitt-Flag (ersetzt `hat_agent_erfolg`) |

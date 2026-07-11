@@ -243,14 +243,30 @@ def event_consumer_loop(redis_client, human_graph, ...):
             state["event_payload"] = event.get("payload", {})
             result = charakter_graph.invoke(state)
 
-        # Self-Trigger?
-        if result.get("self_event"):
+        # Self-Trigger? (Key heisst self_trigger — Chat 106, vorher stand hier
+        # faelschlich self_event; wer nach diesem Dokument baut, baute ins Leere)
+        logger.info(
+            "Event-Consumer: Self-Trigger im Result — vorhanden=%s, wert=%r",
+            "self_trigger" in result, result.get("self_trigger"),
+        )
+        if result.get("self_trigger"):
             event_erzeugen(
                 ...,
+                typ="continue",
                 source="character",
+                payload=result.get("self_trigger_payload", {}),
                 trigger_count=event["trigger_count"] + 1,
             )
 ```
+
+**Drei Beobachtbarkeits-Regeln (Chat 106, `44e050a`):** (1) `self_trigger` und
+`self_trigger_payload` sind deklarierte `ConversationState`-Channels — ohne Deklaration
+wird der Wert an der ersten Node-Grenze still verworfen (THINKER-SELFTRIGGER-KANALLOS,
+live bewiesen). (2) Der Consumer loggt JEDE Ankunft, nicht nur den Erfolgsfall — sonst
+ist ein toter Kanal von „kein Trigger nötig" nicht unterscheidbar. (3) Der
+`MAX_SELF_TRIGGERS`-Deckel greift laut: Ein Verwurf am Limit wird mit `trigger_count`,
+Limit und Paar (`user_id:character_id`) als warning geloggt — der Deckel greift bewusst,
+aber nicht heimlich.
 
 ### 7.2 GPU-Locking
 

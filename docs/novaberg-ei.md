@@ -213,7 +213,7 @@ CharacterGraph (Pfad 2):
 Enricher → EI-Calc → Router → [Planner ⇄ Agent] → GV-Node → Responder → Thinker → Tribunal → ... → Salienz → Dispatcher → END
 ```
 
-EI-Calc berechnet in beiden Graphen: emotions_verlauf (log decay), emotions_vektor (9 Richtungen), sprach_stil (Feature-Scoring), beziehungs_kontext, Modus-/Stil-Plausibilitaet, nova_emotions_verlauf (Decay + Empathie), nova_emotions_vektor, nova_emotion_konflikt. Empathie-Switch über `event_source` (siehe `novaberg-node-ei-calc.md` §3.3).
+EI-Calc berechnet in beiden Graphen: emotions_verlauf (log decay), emotions_vektor (9 Richtungen), sprach_stil (Feature-Scoring), beziehungs_kontext, Modus-/Stil-Plausibilitaet, nova_emotions_verlauf (Decay + Empathie), Novas Richtungsvektor (nach `internal.emotion.emotions_vector` — Klassen-Feld, kein flacher Key; Chat 106), nova_emotion_konflikt. Empathie-Switch über `event_source` (siehe `novaberg-node-ei-calc.md` §3.3).
 
 Das LLM liefert die Rohdaten (Emotion, Arousal, Beziehungsdynamik pro Turn via Perzeption). Python berechnet Verlauf, Vektor und Stil. Das LLM bekommt die Ergebnisse als Klartext im Responder-Prompt. Schneller, exakter, reproduzierbar.
 

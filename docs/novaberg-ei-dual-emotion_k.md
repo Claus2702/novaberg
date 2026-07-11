@@ -177,7 +177,7 @@ Gehört zur Perzeption — erst wahrnehmen, dann berechnen. Dieselben Funktionen
 - `_emotions_vektor_bestimmen()` auf Novas Session-Turns
 - Empathie-Berechnung: Novas neuer Vektor unter Einfluss des User-Vektors
 
-Schreibt: `nova_emotions_verlauf`, `nova_emotions_vektor` in den State.
+Schreibt: `nova_emotions_verlauf` in den State; den Vektor nach `internal.emotion.emotions_vector` (Personality-Klasse — ein flacher State-Key `nova_emotions_vektor` existiert seit dem Personality-Umbau nicht mehr; der Responder liest seit Chat 106 direkt aus der Klasse, RESPONDER-VEKTOR-TOT).
 
 ### 6.4 Router(Nova)
 
@@ -223,7 +223,7 @@ Alles asynchron — der User sieht die Antwort sofort nach dem Tribunal.
 | `nova_response_modus` | `str` | Perzeption(Nova) | Novas Kommunikationsregister |
 | `nova_response_intent` | `str` | Perzeption(Nova) | Novas Kommunikationsabsicht |
 | `nova_emotions_verlauf` | `list[dict]` | EI-Calc(Nova) | Gewichteter Verlauf mit Decay |
-| `nova_emotions_vektor` | `str` | EI-Calc(Nova) | Richtungsvektor (9 Werte) |
+| `internal.emotion.emotions_vector` | `str` | EI-Calc(Nova) | Richtungsvektor (9 Werte) — Klassen-Feld, kein flacher Key (Chat 106) |
 | `nova_emotion_konflikt` | `bool` | EI-Calc | Empathie vs. eigener Zustand |
 
 ---

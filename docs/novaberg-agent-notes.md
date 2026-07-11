@@ -307,8 +307,16 @@ NotizenAgent erfordert Rueckfrage nur bei niedriger Konfidenz oder Konflikt (and
 1. Agent setzt `status=rueckfrage` + formuliert Rueckfrage-Text
 2. Dispatch speichert `pending_agent:{user_id}` in Redis (TTL 300s)
 3. Router erkennt im naechsten Turn den Pending-Agent → `management_action=resume`
-4. Planner sieht `resume` → setzt `agent_name` aus Redis
+4. Planner sieht `resume` → Schleifen-Schutz `_agent_bereits_gelaufen()` (Chat 106), dann `agent_name` aus Redis
 5. Agent._resume bearbeitet die Antwort
+
+**Terminierung bei Rueckfrage-auf-Rueckfrage (Chat 106):** Liefert `_resume` erneut
+`status=rueckfrage` (Antwort unklar, kein Match), schreibt der Dispatch den Pending-Key
+sofort wieder nach Redis — die Terminierung besorgt dann der Planner-Guard: Der Agent
+lief in diesem Turn bereits, der Turn endet, der Responder stellt die neue Rueckfrage,
+der Pending-Key wartet auf den naechsten echten User-Turn. Ohne den Guard rekursierte
+genau dieser Fall bis Recursion-Limit 25 (AGENT-RUECKFRAGE-LOOP, gefixt `1a44fbf`).
+Details: `novaberg-node-planner.md` §3.1.
 
 ### Rueckfrage-Szenarien
 

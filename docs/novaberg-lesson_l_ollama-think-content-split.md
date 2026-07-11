@@ -80,3 +80,22 @@ Der `text_len=0`-Bug kostete bei jedem Auftreten bis zu fünf vergebliche Iterat
 → Modul-Dokument: `novaberg-node-thinker.md` §3.4 (ThinkingNormalizer + Nachfass) / §3.5 (Self-Trigger-Notnagel)
 → Konzept-Dokument: `novaberg-microservice-modell-queue_k.md`
 → Externe Belege: Ollama #10976, LiteLLM #18922, verwandt mit #15260
+
+---
+
+## ⚠ Nachtrag (Chat 106, 11.7.2026)
+
+Der oben beschriebene Self-Trigger-Notnagel („läuft ein zweiter, vollständiger
+Durchlauf") hat zum Zeitpunkt dieser Lesson **nie funktioniert**. `self_trigger` und
+`self_trigger_payload` waren nicht als Channel deklariert und wurden an der ersten
+Node-Grenze (Thinker → Tribunal) still verworfen. Live belegt Chat 106, 18:35:22.
+Fix: `44e050a`.
+
+Diese Lesson wurde in gutem Glauben geschrieben — der Thinker loggte
+`"Self-Trigger fuer Klaerung gesetzt"`. Das Log log.
+
+Der Text bleibt unverändert stehen. Er ist das Zeugnis dafür, dass ein lügendes Log
+nicht nur das Debugging in die Irre führt, sondern ein Dokument erzeugt, das die Lüge
+beglaubigt und archiviert.
+
+→ siehe novaberg-lesson_l_log-behauptet-was-es-weiss.md

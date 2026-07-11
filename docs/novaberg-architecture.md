@@ -688,6 +688,10 @@ Lessons leben als `{modul}_l.md` oder `{modul}_l_{thema}.md` neben ihrem Modul-D
 | novaberg-tool-timeparser_l_vektor.md | Vektor-Modus Zeitparser |
 | novaberg-lesson_l_miss-als-sicherung.md | Der Miss ist manchmal die Sicherung (Router-Miss als Schutz vor defektem Pfad) |
 | novaberg-lesson_l_default-wie-fehlschlag.md | Ein Default darf nie wie ein Fehlschlag aussehen (nie geladen vs. leer geladen) |
+| novaberg-lesson_l_log-behauptet-was-es-weiss.md | Ein Log darf nur behaupten, was es weiß (lügende Logs, broadcast-Wurzel) |
+| novaberg-lesson_l_stichprobe-trifft-den-pfad.md | Die Stichprobe ist repräsentativ für den Pfad, den sie trifft |
+| novaberg-lesson_l_fehlschlag-als-absicht.md | Ein Fehlschlag darf nie wie eine Absicht aussehen (der getarnte Miss) |
+| novaberg-lesson_l_analyse-ersetzt-keine-messung.md | Ein Analyse-Upgrade ersetzt keine Messung |
 
 ### Uebergreifend
 

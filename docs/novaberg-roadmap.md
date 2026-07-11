@@ -1390,4 +1390,13 @@ Offen → Backlog: `CHARHASH-GEWICHT-ABSOLUT-LIVE` (volle Live-Abnahme im Dauerb
 
 ---
 
-*Aktualisiert in Chat 105. Offene Punkte → novaberg-backlog.md. Bugs → novaberg-bugs.md.*
+### Drei Bugs, drei Arten zu scheitern: Loop, Kanal, Lesepfad (Chat 106, 11. Juli 2026)
+
+- ✅ AGENT-RUECKFRAGE-LOOP gefixt (`1a44fbf`) — der `bereits_gelaufen`-Guard war nie kaputt, er wurde nie gefragt: Der Resume-Pfad (Priorität 0) kehrte vor ihm zurück. Helfer `_agent_bereits_gelaufen()` an beiden Stellen; Turn endet bei Rückfrage-auf-Rückfrage, Pending-Key bleibt für den nächsten echten User-Turn. Live bewiesen 11.7. 18:14:01 nach gezielter Provokation (Gegenfrage statt Wahl): 5 ms, ein Durchlauf — vorher 60 Iterationen in 230 ms. Wirkt zentral für alle vier User-Agenten
+- ✅ THINKER-SELFTRIGGER-KANALLOS gefixt (`44e050a`) — `self_trigger`/`self_trigger_payload` waren keine deklarierten Channels und wurden an der Node-Grenze Thinker → Tribunal still verworfen; der Klärungs-Notnagel hat seit Einbau nie funktioniert, während das Log „gesetzt" behauptete. Live bewiesen 18:35:22 (Thinker vorhanden=True → Tribunal vorhanden=False) über deterministisch erzwungenen Zweig. Kanäle deklariert, Logs ehrlich (Sender loggt Write, Consumer loggt jede Ankunft, MAX_SELF_TRIGGERS-Verwurf laut)
+- ✅ RESPONDER-VEKTOR-TOT gefixt (`4416a23`) — der Responder las Novas Emotions-Vektor aus einem flachen Key, den seit dem Personality-Umbau niemand schreibt; der Wert lag in `internal.emotion.emotions_vector`. Live bewiesen 19:11:43 (flach=None, Klasse='eskalation'), Abnahme 19:19:51: Vektor-Zeile erstmals im [EIGENE_EMOTION]-Block, zwei verschiedene Vektoren im selben Prompt (Nova eskalation, User plateau), Konfliktzeile lebt — die Dual-Emotion-Architektur spricht erstmals seit Chat 89. Drei laute Ausfall-Zweige ersetzen den stillen Miss
+- Keiner der drei wurde durch Code-Lesung gefunden — alle drei durch eine Log-Zeile, die vorher nicht da war. Vier Lessons: log-behauptet-was-es-weiss, stichprobe-trifft-den-pfad, fehlschlag-als-absicht, analyse-ersetzt-keine-messung
+
+---
+
+*Aktualisiert in Chat 106. Offene Punkte → novaberg-backlog.md. Bugs → novaberg-bugs.md.*

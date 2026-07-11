@@ -17,7 +17,7 @@ Der Planner ist die Schaltstelle für Management-Aktionen. Er hat zwei Pfade:
 
 2. **Manager-Pfad (Legacy):** Findet den zuständigen Manager über vier Prioritätsstufen, delegiert `manager.plan()` und erzeugt `pending_writes`. Wird nur noch für nicht-migrierte Manager verwendet (FaktenManager, KzgManager).
 
-3. **Resume-Pfad (seit Chat 23):** Bei `management_action=resume` lädt der Planner den wartenden Agent aus Redis und setzt `agent_name` direkt — keine Manager-Auflösung nötig.
+3. **Resume-Pfad (seit Chat 23, Schleifen-Schutz seit Chat 106):** Bei `management_action=resume` lädt der Planner den wartenden Agent aus Redis und setzt `agent_name` direkt — keine Manager-Auflösung nötig. VOR dem Setzen prüft `_agent_bereits_gelaufen()`, ob der Agent in diesem Turn schon lief — wenn ja, endet der Turn (AGENT-RUECKFRAGE-LOOP-Fix).
 
 4. **Task-Block-Aufbereitung (seit Chat 54):** An jedem Austrittspunkt interpretiert der Planner die `agent_results` und baut einen fertigen `[AUFGABE]`-Block für den Responder. Reine Python-Logik, kein LLM-Call. Der Responder konsumiert nur noch — keine eigene Ergebnis-Interpretation.
 
@@ -44,10 +44,14 @@ Nur im CharacterGraph (Pfad 2). Seit Chat 60 nicht mehr im HumanGraph.
 ```python
 if action == "resume":
     pending = redis_manager.get_json(f"pending_agent:{user_id}")
-    → agent_name aus Redis, management_result/detail leer
+    → Guard: _agent_bereits_gelaufen(state, agent_name)?
+        ja  → _write_task_block, Turn endet (Responder stellt die Rückfrage)
+        nein → agent_name aus Redis, management_result/detail leer
 ```
 
 Wenn ein Agent auf eine Antwort wartet (Redis-Pending, TTL 300s), wird der LLM-Call im Router übersprungen und der Planner setzt den Agent-Namen direkt. Kein Manager, keine Prioritätsstufen.
+
+**Schleifen-Schutz (Chat 106, AGENT-RUECKFRAGE-LOOP):** VOR dem Setzen von `agent_name` prüft der Helfer `_agent_bereits_gelaufen()` (Modul-Ebene), ob der Agent in diesem Turn bereits lief. Wenn ja, endet der Turn: `_write_task_block` baut den inquiry-Block, der Responder stellt die Rückfrage, der Redis-Pending-Key bleibt für den nächsten **echten** User-Turn stehen. Ohne diesen Guard rekursierte der Pfad bis LangGraph-Recursion-Limit 25: Der Dispatch schreibt bei erneuter Rückfrage den Pending-Key sofort wieder nach Redis, die unbedingte Kante führt zurück zum Planner, `management_action` bleibt `"resume"` — derselbe Zyklus mit identischer `user_answer`. Der alte AGT-FIX3-Guard (§3.3) saß NUR im Agent-Pfad; der Resume-Zweig kehrte zurück, bevor er erreicht wurde — „der Guard war nie kaputt, er wurde nur nie gefragt" (Chat-106-Protokoll §2).
 
 ### 3.2 Manager-Auflösung (vier Prioritätsstufen)
 
@@ -70,7 +74,7 @@ agent = AgentRegistry.finden(zustaendiger.ziel)
 
 **Agent gefunden + noch nicht gelaufen:** Agent-Pfad. `agent_name` wird gesetzt, management_result/detail bleiben leer. Der Agent-Dispatch-Node übernimmt.
 
-**Agent gefunden + bereits gelaufen:** Schleifen-Schutz (`bereits_gelaufen`-Dict aus `agent_results`). Kein erneuter Aufruf, direkt weiter zum Responder. Verhindert Endlosschleifen (AGT-FIX3, Chat 22).
+**Agent gefunden + bereits gelaufen:** Schleifen-Schutz über den Helfer `_agent_bereits_gelaufen()` (seit Chat 106 auf Modul-Ebene, aufgerufen an BEIDEN Stellen: hier im Agent-Pfad UND im Resume-Zweig, §3.1). Kein erneuter Aufruf, direkt weiter zum Responder. Verhindert Endlosschleifen (AGT-FIX3, Chat 22; Resume-Ausdehnung Chat 106).
 
 **Kein Agent:** Manager-Pfad (Legacy). `manager.plan()` wird aufgerufen, erzeugt `pending_writes`.
 
@@ -133,10 +137,11 @@ Am Ende jedes Planner-Durchlaufs (sofern Agent-Ergebnisse vorliegen könnten) ru
 
 `rejected` (Classify-Vorprüfung) wird ignoriert — ist ein Nicht-Ereignis für den Responder.
 
-**Drei Austrittspunkte mit `_write_task_block()`:**
-1. Resume-Fallback (kein pending Agent in Redis, aber agent_results vorhanden)
-2. Agent bereits gelaufen (Schleifen-Schutz, Hauptfall)
-3. Legacy-Manager (nach try/except)
+**Vier Austrittspunkte mit `_write_task_block()` (vierter seit Chat 106):**
+1. Resume-Guard (Agent lief bereits in diesem Turn — Schleifen-Schutz im Resume-Zweig, §3.1)
+2. Resume-Fallback (kein pending Agent in Redis, aber agent_results vorhanden)
+3. Agent bereits gelaufen (Schleifen-Schutz im Agent-Pfad, Hauptfall)
+4. Legacy-Manager (nach try/except)
 
 > **Architektur-Entscheidung (Chat 54):** Die [AUFGABE]-Block-Erstellung lag vorher im Responder (Zeilen 229–296). Das verletzte Separation of Concerns: Der Responder interpretierte Agent-Ergebnisse statt sie zu konsumieren. HALL2-Reject entstand, weil `status="abgeschlossen"` mit Text "Okay, lasse ich." ambig war — der Responder löste die Ambiguität falsch auf. Fix: Planner interpretiert (Python), Responder konsumiert (LLM).
 
