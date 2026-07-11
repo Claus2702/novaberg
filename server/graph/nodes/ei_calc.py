@@ -10,6 +10,7 @@ Position im Graph: Nach Enricher, vor Router.
 
 import logging
 
+from config import redis_client
 from ei.berechnung import (
     _emotions_verlauf_berechnen,
     _emotions_vektor_bestimmen,
@@ -22,6 +23,7 @@ from ei.berechnung import (
 from ei.gravitation import emotionale_gravitation_auf_verlauf_anwenden
 from graph.personality import InternalPersonality, Personality
 from graph.state import ConversationState
+from memory.session import session_turns_retrieve
 
 logger = logging.getLogger("ki_server.ei_calc")
 
@@ -141,7 +143,31 @@ def _ei_calc_character(state: ConversationState) -> None:
     Kein virtueller Turn 0 — Novas aktuelle Emotion wird erst nach
     der Antwort-Generierung durch die Perzeption analysiert.
     """
-    raw_turns: list[dict] = state.get("raw_turns", [])
+    # ── Eingabe (EVA): Session-Turns selbst laden ──
+    # Im CG laeuft ei_calc VOR dem Enricher (Reihenfolge aus 630d357) —
+    # state["raw_turns"] ist zu diesem Zeitpunkt immer leer. Der Konsument
+    # beschafft seinen Emotionsverlauf deshalb selbst aus Redis. Bewusst NICHT
+    # nach state["raw_turns"] geschrieben: Der Key gehoert dem Enricher, ein
+    # zweiter Schreiber waere Doppelbesitz.
+    user_id:      str = state.get("user_id", "")
+    character_id: str = state.get("character_id", "")
+
+    raw_turns: list[dict] = []
+    if not user_id or not character_id:
+        logger.error(
+            "EI-Calc/Character: Session-Turns nicht ladbar — Paar unvollstaendig "
+            "(user_id='%s', character_id='%s'); rechne mit leerem Verlauf",
+            user_id, character_id,
+        )
+    else:
+        try:
+            raw_turns = session_turns_retrieve(redis_client, user_id, character_id)
+        except Exception as fehler:
+            logger.error(
+                "EI-Calc/Character: Session-Turns-Read fehlgeschlagen (%s:%s) — %s; "
+                "rechne mit leerem Verlauf",
+                user_id, character_id, fehler,
+            )
 
     # User-Werte werden gelesen, aber NICHT als Turn 0 in Novas Verlauf injiziert.
     # Sie werden nur für die Empathie-Berechnung gebraucht.
@@ -156,6 +182,21 @@ def _ei_calc_character(state: ConversationState) -> None:
     nova_verlauf_basis: list[dict] = _emotions_verlauf_berechnen(
         nova_turns, rolle="assistant", inject_current=False,
     )
+
+    # Sichtbarkeit Kraft 1: seit 630d357 war diese Basis immer leer — die Zeile
+    # zeigt, WORAUF die historische Emotions-Gravitation rechnet. Bewusst ohne
+    # Gate: eine leere Basis wird sichtbar ausgegeben, nicht verschluckt.
+    if nova_verlauf_basis:
+        basis_top: str = ", ".join(
+            f"{e['emotion']}({e['gewicht']:.2f},a={e.get('arousal', 0.5):.2f})"
+            for e in nova_verlauf_basis[:4]
+        )
+        logger.info("EI-Calc/Character: Emotions-Verlauf — %s", basis_top)
+    else:
+        logger.info(
+            "EI-Calc/Character: Emotions-Verlauf — (leer, %d Nova-Turns)",
+            len(nova_turns),
+        )
 
     # Kraft 2: Asymmetrische Empathie vom User-Vektor
     event_source: str = state.get("event_source", "user")
