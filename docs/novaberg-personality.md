@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Modul Personality-Klassen (typisierte State-Schicht für Akteurs-Verbunde)
-**Stand:** 17. Mai 2026, Chat 89 (PFAD2-PERZEPTION-FIX abgeschlossen)
+**Stand:** 11. Juli 2026, Chat 104 (Emotion.to_dict() ergänzt)
 **Pfad:** novaberg/docs/novaberg-personality.md
 **Quellen:** novaberg-path2-perzeption_k.md (archiviert), novaberg-lesson_l_klassen-statt-flache-keys.md
 **Datei:** `graph/personality.py`
@@ -88,6 +88,9 @@ class Emotion:
     tone:                 str   = "sachlich"
     intent:               str   = "smalltalk"
     prompt_topic:         str   = ""
+
+    def to_dict(self) -> dict[str, Any]:
+        """Serialisiert alle neun EI-Dimensionen in ein dict."""
 ```
 
 Felddetails:
@@ -105,6 +108,10 @@ Felddetails:
 | `prompt_topic` | str | Thematischer Kern (Freitext, 2-5 Wörter) |
 
 Vollständige Werte-Listen leben in den Perzeption-Prompts (`prompts/default/perzeption.task.txt`, `perzeption.assistant_task.txt`) und in den Plausibilitäts-Funktionen (`ei/berechnung.py`). Die `Emotion`-Klasse ist Vertrag, nicht Enum-Definition.
+
+**`to_dict()` — Serialisierung (Chat 104).** Bildet alle neun Felder **explizit** ab, bewusst **nicht** über `dataclasses.asdict`: Ein später ergänztes `Emotion`-Feld landet nur dann im Serialisat, wenn es hier bewusst nachgetragen wird. Schutz gegen unbeabsichtigtes Lecken interner Felder in dauerhafte Speicher — konkret in die Turn-Rohdaten (`art='turn_roh'`, siehe `novaberg-charakter-resonanz_k.md`), die die nicht-wiederherstellbare Quelle der Charakter-Destillation sind. Erster Konsument: `dispatcher._turn_roh_schreiben()` (beide Seiten des Reiz-Reaktions-Paars).
+
+*Tech-Debt:* Drei ältere Stellen bilden `Emotion` weiterhin von Hand ab (`dispatcher._session_turn_schreiben`, `db_zugriff` bei der Konstruktion aus Redis, `ei_calc_persist` beim `nova_state_mapping`) — je unvollständig und dupliziert. `to_dict()` kann sie perspektivisch ablösen.
 
 ### 3.3 Personality
 
