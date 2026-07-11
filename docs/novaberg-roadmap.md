@@ -1382,4 +1382,12 @@ Offen → Backlog: `CHARHASH-GEWICHT-ABSOLUT-LIVE` (volle Live-Abnahme im Dauerb
 
 ---
 
-*Aktualisiert in Chat 104. Offene Punkte → novaberg-backlog.md. Bugs → novaberg-bugs.md.*
+### Audit-Kaskade: Vektor-Vertrag, Pixie-Routing, Nova-Verlauf (Chat 105, 11. Juli 2026)
+
+- ✅ EMOTIONS-VECTOR-WERTE-DRIFT gelöst — kein Code-Problem: `emotions_vector` wird deterministisch berechnet (geschlossener Wertebereich, 9 Werte), die Doku war falsch (Werte UND Quellen-Zuordnung); Doku-Fix in `78abc63`
+- ✅ PIXIE-DECAY-KEIN-AGENT gefixt (`1e438e0`) — fehlender `_PERIODISCH_ROUTING`-Eintrag; P6 (Knoten-Decay + `delete_expired_entries`) läuft erstmals seit dem Chat-102-Sprint
+- ✅ NOVA-VERLAUF-LEER gefixt (`db02526` / `e54092d` / `546e472`) — `_ei_calc_character` lädt die Session-Turns selbst aus Redis statt des leeren State-Defaults (Chat-89-Lücke aus 630d357); `emotions_vector` bewegt sich erstmals (Live-Abnahme: plateau → eskalation → absturz → eskalation in vier Turns); Kraft 1 (historische Emotions-Gravitation) rechnet erstmals seit Chat 89
+
+---
+
+*Aktualisiert in Chat 105. Offene Punkte → novaberg-backlog.md. Bugs → novaberg-bugs.md.*
