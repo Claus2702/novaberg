@@ -3179,3 +3179,19 @@ Toter Code, Doppelregistry-Muster. Aus novaberg-bugs.md hierher verschoben (Tren
 ## Doku: LESSON-INDEX-LUECKE — zwölf ältere lesson_l-Dateien fehlen im Architektur-Index (Chat 106)
 
 Der Lesson-Index in `novaberg-architecture.md` listet die Legacy-`{modul}_l.md`-Dateien und die zuletzt verlinkten Lessons — zwölf ältere `novaberg-lesson_l_*`-Dateien fehlen komplett (Seitenbefund aus Chat 105, Commit `8e455c5`; die zwei Chat-105- und vier Chat-106-Lessons wurden beim Anlegen verlinkt, der Altbestand nicht nachgezogen). Doku-Lücke, kein Code-Bezug: Wer Lessons über den Index sucht, findet den Altbestand nicht. Nachzug ist ein mechanischer Fünf-Minuten-Fix, gehört aber in einen bewussten Doku-Commit. ⬜ Prio niedrig
+
+## Doku: DOKU-DUPLIKATE-CHAT80 — 8 Bezeichner stehen in bugs.md UND backlog.md (Chat 106)
+
+**Entdeckt:** Chat 106 (Gegenprobe nach der Bug/Backlog-Trennung). ⬜ Prio niedrig
+
+**Befund:** Kurz-Eintrag in bugs.md + Lang-Eintrag in backlog.md, mit Verweis („Ausführliche Beschreibung: novaberg-backlog.md → Bug X"). Damals absichtlich, seit der Chat-106-Regel („ein Eintrag steht in GENAU EINEM Dokument") ein Verstoß.
+
+**Betroffen:** FAKTEN-PAIR-IGNORED, NOTIZEN-CONTAINER-WECHSEL, NOTIZEN-KONTEXT-REKONSTRUKTION, NOTIZEN-PAIR-MISSING, NOTIZEN-SKILL-MANIFEST, NOTIZEN-UPDATE-TARGET-LEER, TIMELINE-PAIR-MISSING, ZIELE-PAIR-MISSING
+
+**Auswirkung:** Doppelregistry-Muster in der Doku — zwei Orte, die zusammen gepflegt werden müssen, driften still auseinander. Dasselbe Muster wie PIXIE-ROUTING-DOPPELREGISTRY.
+
+**Vorschlag zur Auflösung (Entscheidung offen):**
+
+- Die vier *-PAIR-* sind EINE Sache, viermal manifestiert → ein Backlog-Eintrag „Paar-Schema nicht durchgezogen" mit vier Fundstellen.
+- Die drei NOTIZEN-Verhaltensfälle → bugs.md. ⚠ NOTIZEN-UPDATE-TARGET-LEER lebt noch: NOTIZ-RESUME-TARGET-VERLUST (Chat 106) hat denselben Kern (`parameter["target"]` leer).
+- NOTIZEN-SKILL-MANIFEST → Inhalt prüfen, klingt nach Konzept (Epic 10).
