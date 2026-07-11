@@ -203,6 +203,10 @@ def _ei_calc_character(state: ConversationState) -> None:
         internal = InternalPersonality()
         state["internal"] = internal
     internal.emotion.emotions_vector = nova_emotions_vektor
+    logger.info(
+        "EI-Calc/Character: Emotions-Vektor — %s (nova_turns=%d)",
+        nova_emotions_vektor, len(nova_turns),
+    )
 
     if state["nova_emotions_verlauf"]:
         nova_top: str = ", ".join(
