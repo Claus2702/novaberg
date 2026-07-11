@@ -230,8 +230,32 @@ def _build_system_prompt(state: ConversationState) -> str:
 
     # ── [EIGENE_EMOTION] ── Novas eigener Emotionszustand (Dual-Emotion Phase 2) ──
     nova_emotions_verlauf: list = state.get("nova_emotions_verlauf", [])
-    nova_emotions_vektor:  str  = state.get("nova_emotions_vektor", "")
+    # RESPONDER-VEKTOR-TOT (Chat 106): Der Vektor liegt seit dem
+    # Personality-Umbau in internal.emotion.emotions_vector, NICHT in einem
+    # flachen State-Key. Der alte Lesepfad `state.get("nova_emotions_vektor")`
+    # fiel still auf "" — die Vektor-Zeile erschien nie im Prompt.
+    # `internal` ist weiter oben in dieser Funktion bereits belegt.
+    nova_emotions_vektor: str = ""
+    if internal is not None and internal.emotion is not None:
+        nova_emotions_vektor = internal.emotion.emotions_vector or ""
+    else:
+        logger.error(
+            "Responder: internal/emotion fehlt — Novas Emotions-Vektor "
+            "nicht verfuegbar, [EIGENE_EMOTION] bleibt ohne Vektor-Zeile"
+        )
     nova_emotion_konflikt: bool = state.get("nova_emotion_konflikt", False)
+
+    if not nova_emotions_vektor:
+        logger.warning(
+            "Responder: Novas Emotions-Vektor ist leer — [EIGENE_EMOTION] "
+            "ohne Vektor-Zeile (Kaltstart oder ei_calc lief nicht)"
+        )
+    elif nova_emotions_vektor not in EMOTIONS_VEKTOREN_NOVA:
+        logger.error(
+            "Responder: Unbekannter Emotions-Vektor '%s' — nicht in "
+            "EMOTIONS_VEKTOREN_NOVA, Zeile entfaellt",
+            nova_emotions_vektor,
+        )
 
     if nova_emotions_verlauf:
         eigene_emo_parts: list[str] = ["[EIGENE_EMOTION]\nDein aktueller emotionaler Zustand:"]
