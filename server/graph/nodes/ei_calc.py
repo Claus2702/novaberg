@@ -1,11 +1,20 @@
 """
-EI-Calc Node — Berechnet Emotionale Intelligenz aus den geladenen Daten.
+EI-Calc Node — Berechnet Emotionale Intelligenz, rollenabhängig.
 
-Reiner Berechnungs-Node. Kein LLM-Call, kein I/O.
-Liest aus dem State, was der Enricher geladen hat.
+Position im Graph — UNTERSCHIEDLICH je Graph:
+  HumanGraph:     perzeption → enricher → ei_calc
+                  raw_turns liegt im State (der Enricher lief davor).
+  CharacterGraph: db_zugriff → ei_calc → enricher
+                  raw_turns liegt NICHT im State — _ei_calc_character lädt die
+                  Session-Turns selbst aus Redis (session_turns_retrieve).
+
+Die CG-Reihenfolge ist bewusst so (Commit 630d357, Chat 89): Der Enricher
+liest nova_emotions_verlauf, das ei_calc erzeugt — die Erinnerungs-Auswahl
+soll auf Novas empathie-modifizierter Lage stehen, nicht auf der des
+Vorturns. Deshalb lädt der Konsument selbst, statt die Kanten zu tauschen.
+
+I/O: ein Redis-Read (Session-Turns) auf der Character-Seite. Kein LLM-Call.
 Schreibt EI-Ergebnisse zurück in den State.
-
-Position im Graph: Nach Enricher, vor Router.
 """
 
 import logging
