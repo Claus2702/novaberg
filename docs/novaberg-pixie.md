@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Pixie — Hintergrundverarbeitung (Übersicht)
-**Stand:** 07. Mai 2026, Chat 79
+**Stand:** 11. Juli 2026, Chat 105 (Routing-Doppelregistry dokumentiert, synapsen_decay verdrahtet)
 **Pfad:** novaberg/docs/novaberg-pixie.md
 **Quellen:** nova-05-k.md (Pixie-Konzept), nova-05-a.md (AgentGraph), nova-05-t-a.md (Queue/Stack/Delivery), nova-05-m-a.md (Agenten-Referenz)
 
@@ -29,6 +29,16 @@ Pro Heartbeat werden Kandidaten aus zwei Quellen gesammelt:
 **Faellige periodische Aufgaben:** Jeder Agent meldet beim Serverstart seine periodische Aufgabe an (Redis `pixie:schedule:{name}` mit Priority, Interval, next_run). Alle Eintraege mit `next_run <= now()` sind Kandidaten.
 
 Die hoechste Prioritaet gewinnt — Queue-Kandidat gegen periodischen Kandidaten, keine Normalisierung. Genau ein Agent wird pro Zyklus ausgefuehrt. Bei Fehler: Retry-Counter (max 3), danach verwerfen und loggen.
+
+### Routing: Kandidat → Agent (Chat 105)
+
+Der gewinnende Kandidat wird in `services/pixie/router.py` auf einen Agent-Namen gemappt — fuer periodische Aufgaben ueber das handgepflegte Dict `_PERIODISCH_ROUTING`. **Achtung, Doppelregistry:** Der Router fuehrt damit eine zweite, manuelle Registry neben der automatischen Agent-Discovery. Genau das ist die Fehlerquelle: Ein Agent kann vollstaendig implementiert, per Discovery registriert und korrekt geschedult sein (`pixie:schedule:{name}` entsteht, der Kandidat gewinnt den Heartbeat) — und trotzdem **nie laufen**, weil der Router-Lookup `None` liefert. Sichtbar nur als `warning` „Kein Agent fuer periodische Aufgabe". → Backlog PIXIE-ROUTING-DOPPELREGISTRY.
+
+Stand der Tabelle:
+
+- **`synapsen_decay` ist seit 1e438e0 (Chat 105) verdrahtet** — davor lief P6 (Knoten-Decay + `delete_expired_entries`, einziger Aufrufer der pipeline_log-Retention) seit seiner Implementierung in Chat 102 **nie**.
+- **`ziel_decay` fehlt weiterhin BEWUSST:** Die Decay-Formel des Agenten ist kumulativ defekt (multipliziert den gespeicherten Wert mit einem Faktor aus dem Gesamtalter; erster Lauf wuerde praktisch alle nicht-langfristigen Ziele deaktivieren). Der Router-Miss ist dort die **Sicherung, nicht der Fehler** — erst die Formel reparieren, dann verdrahten. → Backlog ZIEL-DECAY-FORMEL-KUMULATIV.
+- **Tote Keys:** `"promotion"` (Agent seit P4 dormant, `periodic_task()` liefert None) und `"aufraeumen"` (kein Agent meldet diesen Namen) — harmlos, aber Bestandteil der Doppelregistry-Pflegelast.
 
 ---
 
