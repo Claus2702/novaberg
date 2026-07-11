@@ -169,6 +169,35 @@ def _write_task_block(state: ConversationState) -> None:
         logger.info(f"Planner: task_block erstellt (context_cut={cut}, {len(block)} Zeichen)")
 
 
+def _agent_bereits_gelaufen(state: ConversationState, agent_name: str):
+    """Prüft, ob ein Agent in diesem Turn bereits gelaufen ist.
+
+    Schleifen-Schutz (AGT-FIX3, Chat 22). Liest die in diesem Turn
+    angefallenen `agent_results` und liefert das Ergebnis des Agenten
+    zurück, falls er bereits lief.
+
+    Args:
+        state: Der ConversationState des laufenden Turns.
+        agent_name: Name des Agenten, der geprüft wird.
+
+    Returns:
+        Das vorherige AgentResult, oder None wenn der Agent noch nicht lief.
+    """
+    if not agent_name:
+        logger.warning("Planner/Guard: Leerer agent_name übergeben — behandle als 'nicht gelaufen'")
+        return None
+
+    bisherige = state.get("agent_results", [])
+    bereits_gelaufen = {r.agent_name: r for r in bisherige if hasattr(r, "agent_name")}
+    vorheriges = bereits_gelaufen.get(agent_name)
+
+    logger.debug(
+        "Planner/Guard: agent='%s', results_im_turn=%d, bereits_gelaufen=%s",
+        agent_name, len(bisherige), vorheriges is not None,
+    )
+    return vorheriges
+
+
 def plan(
     state:        ConversationState,
     postgres_url: str
@@ -195,6 +224,20 @@ def plan(
             agent_name = pending.get("agent_name", "")
             agent = AgentRegistry.finden(agent_name)
             if agent:
+                # Schleifen-Schutz im Resume-Pfad (AGENT-RUECKFRAGE-LOOP):
+                # Der Dispatch schreibt bei erneuter Rückfrage den Pending-Key
+                # sofort wieder nach Redis. Ohne diese Prüfung läse der Planner
+                # ihn im SELBEN Turn erneut und dispatchte mit identischem
+                # user_prompt → Rekursion bis Recursion-Limit 25.
+                vorheriges = _agent_bereits_gelaufen(state, agent_name)
+                if vorheriges:
+                    logger.info(
+                        "Planner: Resume — Agent '%s' lief bereits in diesem Turn (status=%s) — Turn beenden, weiter zum Responder",
+                        agent_name, vorheriges.status,
+                    )
+                    _write_task_block(state)
+                    return state
+
                 logger.info(f"Planner: Resume-Flow — Agent '{agent_name}'")
                 state["agent_name"] = agent_name
                 state["management_result"] = ""
@@ -280,12 +323,9 @@ def plan(
     logger.info(f"Planner: Delegiere an '{zustaendiger.ziel}'")
 
     # Epic 11: Prüfe ob ein Agent den Manager ersetzt
-    bisherige = state.get("agent_results", [])
-    bereits_gelaufen = {r.agent_name: r for r in bisherige if hasattr(r, "agent_name")}
-
     agent = AgentRegistry.finden(zustaendiger.ziel)
     if agent:
-        vorheriges = bereits_gelaufen.get(agent.name)
+        vorheriges = _agent_bereits_gelaufen(state, agent.name)
         if vorheriges:
             # Agent ist schon gelaufen — nicht nochmal aufrufen
             # Ergebnis liegt bereits in agent_results, management_result ist gesetzt
