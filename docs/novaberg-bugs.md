@@ -1138,26 +1138,7 @@ unsichtbar, weil der Block wie „Vektor absichtlich leer" aussah
 
 ---
 
-#### PIPELINE-LOG-ART-DOKU-DRIFT — Forensik-Queries der Synapsen-Doku laufen gegen reale `art`-Werte ins Leere ⚠️
-
-**Entdeckt:** Chat 106, systematischer Doku-Code-Abgleich (Fund über `novaberg-memory-synapsen_k.md` §10.1/§10.2/§13.5)
-
-**Klasse:** Doku-Code-Drift an der Forensik-Schnittstelle, Severity **Mittel** — blockiert nichts im Betrieb, aber verminte Forensik
-
-**Symptom:** Die Synapsen-Doku definiert für schreibende DB-Zugriffe den `art`-Wert `db_zugriff` und behauptet „Lesen wird nicht geloggt". Der Code schreibt tatsächlich `db_write`, `db_read` (Lesen WIRD geloggt) und `turn_roh`. Die in §13.5 dokumentierten Forensik-Queries (`WHERE art = 'db_zugriff'`) liefern gegen reale Daten 0 Zeilen. Dazu zwei Nachbar-Drifts im selben Kapitel: Das §10.1-Schema führt die real existierenden Spalten `user_id`/`character_id` nicht, und die §10.5-Retention (365 Tage) verschweigt die dauerhafte Ausnahme für `turn_roh`.
-
-**Beleg (Datei:Funktion):**
-
-- `memory/pipeline_log.py` → `log_db_write` (schreibt `art="db_write"`, Z. 505/519), `log_db_read` (`art="db_read"`, Z. 522/536), `log_turn_roh` (`art="turn_roh"`, Z. 627/647)
-- Produktive Schreiber: `memory/kzg.py` → `kzg_store` (via `log_db_write`, Z. 340); `agents/kzg/speicher.py` → `_neu_anlegen` (Z. 304)
-- Spalten: `memory/pipeline_log.py` → `_insert` mit `user_id`/`character_id` (Z. 303–306); Schema `db/init.sql:381ff`
-- Retention-Ausnahme: `memory/pipeline_log.py` → `delete_expired_entries` (`AND art <> 'turn_roh'`, Z. 362–365)
-
-**Auswirkung:** Wer nach der Doku debuggt oder Forensik betreibt, bekommt leere Ergebnismengen und zieht falsche Schlüsse („keine DB-Writes geloggt"); die undokumentierte `turn_roh`-Ausnahme lässt Speicherwachstum an einer Stelle zu, an der die Doku Löschung verspricht. Fix bewusst offen — Klärung, ob Doku oder `art`-Taxonomie führt, kommt nach eigenem Audit.
-
----
-
-*Aktualisiert Chat 106: Doku-Code-Abgleich über 46 Dokumente (Bericht: `~/ki-assistent/doku-code-abweichungen-chat106.md`, außerhalb des Repos). Zwei Code-Funde als offene Bugs aufgenommen (RESPONDER-VEKTOR-TOT, PIPELINE-LOG-ART-DOKU-DRIFT) — beide ohne Fix-Vorschlag, Fix nach eigenem Audit. Die übrigen ~60 Befunde sind Doku-Drift und gehören in die Doku-Pflege, nicht hierher.*
+*Aktualisiert Chat 106: Doku-Code-Abgleich über 46 Dokumente (Bericht: `~/ki-assistent/doku-code-abweichungen-chat106.md`, außerhalb des Repos). Code-Fund RESPONDER-VEKTOR-TOT als Bug aufgenommen. PIPELINE-LOG-ART-DOKU-DRIFT → novaberg-backlog.md (Doku-Drift, kein Code-Defekt — der Code ist richtig, das Konzeptdokument falsch; ⚠ Sperrvermerk dort: vor CHARAKTER-RESONANZ Teil 2 klären). Die übrigen ~60 Befunde sind Doku-Drift und gehören in die Doku-Pflege, nicht hierher.*
 
 ---
 
@@ -1376,73 +1357,18 @@ ohne Auswirkung, weil `resume.py` sich `create` aus den Parametern holt — Fehl
 
 **Auswirkung:** Rückfragen werden mit jedem Resume-Zyklus unverständlicher.
 
-#### DELEGATION-STATE-UNDEKLARIERT — Landmine für den Delegations-Node-Split ⚠️
-
-**Entdeckt:** Chat 106, Audit tote State-Keys. **Landmine — SPERRVERMERK für den
-Delegations-Node-Split.**
-
-**Symptom:** `salienz_obj_aktuell` und `_delegation_trigger` sind undeklarierte
-State-Keys, funktionieren aber NUR, weil Schreiben und Lesen im selben
-Dispatcher-Node-Aufruf passieren. Bräche STILL, sobald die Delegation ein eigener Node
-wird — bei einem Refactoring, das architektonisch richtig ist. Exakt der
-THINKER-SELFTRIGGER-KANALLOS-Mechanismus, nur noch nicht scharf.
-
-**Beleg:** `graph/nodes/dispatcher.py` (Schreiben + synchroner
-`dispatch_delegation(state)`-Aufruf im selben Node), `agents/delegation/dispatch.py`
-(Lesen).
-
-**Auswirkung:** Heute keine — der Sperrvermerk IST die Maßnahme.
-
-#### PLANNER-AKTIV-RELIKT — Stage-Anzeige liest nie geschriebenen Key ⚠️
-
-**Entdeckt:** Chat 106, Audit tote State-Keys. **Prio niedrig — LÖSCHEN, nicht fixen.**
-
-**Symptom:** Der Stage-Formatter liest `planner_aktiv` — es gab nie einen Schreiber
-(P5/P6-Guard-Relikt, seit Chat 28/29 obsolet). Die Planner-Stage meldet dem Client
-immer „Kein Agent nötig", auch wenn ein Agent dispatcht wurde.
-
-**Beleg:** `services/event_consumer.py`, Stage-Formatter für den Planner-Node.
-
-**Auswirkung:** Observability lügt an der Stelle, an der man den Agent-Pfad beobachten will.
-
-#### WEB-CONTEXT-ALTPFAD — toter [WEB]-Block, Nachfolger läuft über Thinker ⚠️
-
-**Entdeckt:** Chat 106, Audit tote State-Keys. **Prio niedrig — LÖSCHEN, nicht fixen.**
-⚠ Erst nach Prüfung von WEB-EXTRAKTION-STILL-LEER.
-
-**Symptom:** `web_context` ist deklariert, wird aber nur mit `""` initialisiert — kein
-Node schreibt je einen Wert; der `[WEB]`-Block des Responders rendert nie. Der Nachfolger
-läuft längst über `needs_web` → Thinker-Tools (`web_search`/`web_fetch`, Ergebnis als
-`[VERARBEITUNG]`-Block).
-
-**Beleg:** `graph/state.py` (Deklaration), `graph/base.py`/`graph/builder.py` (Init),
-`graph/nodes/responder.py` (toter Lesepfad), `graph/nodes/thinker.py` (Nachfolge-Pfad).
-
-**Auswirkung:** Toter Code-Pfad + toter Prompt-Block; von außen wie „keine Web-Suche
-nötig" aussehend.
-
-#### BUILDER-CREATE-INITIAL-STATE-TOT — aufruferloser State-Builder als Doppelregistry ⚠️
-
-**Entdeckt:** Chat 106, Audit tote State-Keys / Doku-Abgleich. **Prio niedrig.**
-
-**Symptom:** `builder.create_initial_state` ist deprecated und aufruferlos, muss aber bei
-jedem Kanal-Umbau mitgepflegt werden (beim self_trigger-Fix geschehen) — es initialisiert
-zudem Alt-Keys, die im heutigen TypedDict nicht mehr deklariert sind. Doppelregistry-Muster.
-
-**Beleg:** `graph/builder.py`, `create_initial_state` (DeprecationWarning, keine Aufrufer).
-
-**Auswirkung:** Pflegeaufwand ohne Nutzen, Drift-Quelle bei jedem Channel-Umbau.
-
----
-
 *Aktualisiert Chat 106 (Abschluss, Quelle: Chat-106-Protokoll): Drei Bugs live bewiesen
 und geschlossen — AGENT-RUECKFRAGE-LOOP (`1a44fbf`, 18:14:01), THINKER-SELFTRIGGER-KANALLOS
 (`44e050a`, 18:35:22), RESPONDER-VEKTOR-TOT (`4416a23`, 19:11:43/Abnahme 19:19:51). Keiner
 wurde durch Code-Lesung gefunden — alle drei durch eine Log-Zeile, die vorher nicht da war.
-PIPELINE-LOG-ART-DOKU-DRIFT bleibt offen (⚠ vor CHARAKTER-RESONANZ Teil 2 klären).
 NOVA-SYKOPHANZ-BESTAETIGT auf Protokoll-§7-Wortlaut gezogen. Neu aufgenommen: 6 Einträge
 aus dem Lügende-Logs-Audit (BROADCAST-VERSCHLUCKT-FEHLER als Wurzel,
 SHADOW-DELIVERY-DATENVERLUST und WIEDERVORLAGE-SNOOZE-OHNE-WIRKUNG als Datenverlust-Fälle)
-und 7 aus dem Tagesgeschäft (darunter DELEGATION-STATE-UNDEKLARIERT mit Sperrvermerk für
-den Node-Split). NOTIZ-BEFEHL-ALS-TITEL bleibt offen — der Auslöser der Duplikate, die die
+und 3 aus dem Tagesgeschäft (EI-VEKTOR-TEXT-EMOTIONSFEST, GV-STRATEGIE-VEHIKEL-LEER,
+NOTIZ-RESUME-TARGET-VERLUST). Nach der Trennungsregel (bugs = der Code tut etwas Falsches;
+backlog = Konzepte/Refactors/Doku-Drift/toter Code; ein Eintrag in GENAU EINEM Dokument)
+nach novaberg-backlog.md verschoben: PIPELINE-LOG-ART-DOKU-DRIFT (Doku-Drift),
+DELEGATION-STATE-UNDEKLARIERT (Landmine/Sperrvermerk), PLANNER-AKTIV-RELIKT,
+WEB-CONTEXT-ALTPFAD, BUILDER-CREATE-INITIAL-STATE-TOT (toter Code).
+NOTIZ-BEFEHL-ALS-TITEL bleibt offen — der Auslöser der Duplikate, die die
 Disambiguierung erzeugen, die den Loop auslöste: der Crash ist behoben, nicht die Ursache.*

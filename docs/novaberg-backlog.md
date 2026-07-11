@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Backlog — Konzipierte, noch nicht implementierte Features
-**Stand:** 17. Mai 2026, Chat 90
+**Stand:** 11. Juli 2026, Chat 106
 **Pfad:** novaberg/docs/novaberg-backlog.md
 **Quellen:** nova-08-k.md (Kognitive Anreicherung), nova-10-k-backlog.md (Skill-System), nova-01-t-c-backlog.md (Node-Konfiguration)
 
@@ -3108,3 +3108,74 @@ Bestehende `pipeline_log`-Zeilen (vor Chat 104) haben `user_id`/`character_id = 
 ## Refactor: KZG-QUELLE-IST-USER-ID — `quelle` trägt `user_id` statt Node-Namen (Chat 104)
 
 In `memory/kzg.py` (`kzg_store`, Z.~343) und `agents/kzg/speicher.py` (`_neu_anlegen`, Z.~307) wird das `pipeline_log`-Feld `quelle` mit `user_id` befüllt statt mit einem Node-Namen (sonst überall node-basiert). Bestehende Eigenart, in Chat 104 bei der Paar-Verkabelung gesichtet, bewusst NICHT mitgeändert. Bei nächster Berührung dieser Writes prüfen: Node-Name als `quelle`, `user_id` nur im `inhalt`. ⬜ Prio niedrig
+
+## Doku: PIPELINE-LOG-ART-DOKU-DRIFT — Forensik-Queries der Synapsen-Doku laufen gegen reale `art`-Werte ins Leere (Chat 106)
+
+Kein Code-Defekt — der Code ist RICHTIG (`db_write`/`db_read`/`turn_roh`), das Konzeptdokument ist falsch (`db_zugriff`). Aus novaberg-bugs.md hierher verschoben (Trennungsregel Chat 106). ⚠️ **Sperrvermerk: vor CHARAKTER-RESONANZ Teil 2 zu klären** — `pipeline_log` ist die Quelle für den Destillator; wer ihn nach dem Konzeptdokument baut, baut gegen ein Schema, das es nicht gibt.
+
+**Entdeckt:** Chat 106, systematischer Doku-Code-Abgleich (Fund über `novaberg-memory-synapsen_k.md` §10.1/§10.2/§13.5)
+
+**Klasse:** Doku-Code-Drift an der Forensik-Schnittstelle, Severity **Mittel** — blockiert nichts im Betrieb, aber verminte Forensik
+
+**Symptom:** Die Synapsen-Doku definiert für schreibende DB-Zugriffe den `art`-Wert `db_zugriff` und behauptet „Lesen wird nicht geloggt". Der Code schreibt tatsächlich `db_write`, `db_read` (Lesen WIRD geloggt) und `turn_roh`. Die in §13.5 dokumentierten Forensik-Queries (`WHERE art = 'db_zugriff'`) liefern gegen reale Daten 0 Zeilen. Dazu zwei Nachbar-Drifts im selben Kapitel: Das §10.1-Schema führt die real existierenden Spalten `user_id`/`character_id` nicht, und die §10.5-Retention (365 Tage) verschweigt die dauerhafte Ausnahme für `turn_roh`.
+
+**Beleg (Datei:Funktion):**
+
+- `memory/pipeline_log.py` → `log_db_write` (schreibt `art="db_write"`, Z. 505/519), `log_db_read` (`art="db_read"`, Z. 522/536), `log_turn_roh` (`art="turn_roh"`, Z. 627/647)
+- Produktive Schreiber: `memory/kzg.py` → `kzg_store` (via `log_db_write`, Z. 340); `agents/kzg/speicher.py` → `_neu_anlegen` (Z. 304)
+- Spalten: `memory/pipeline_log.py` → `_insert` mit `user_id`/`character_id` (Z. 303–306); Schema `db/init.sql:381ff`
+- Retention-Ausnahme: `memory/pipeline_log.py` → `delete_expired_entries` (`AND art <> 'turn_roh'`, Z. 362–365)
+
+**Auswirkung:** Wer nach der Doku debuggt oder Forensik betreibt, bekommt leere Ergebnismengen und zieht falsche Schlüsse („keine DB-Writes geloggt"); die undokumentierte `turn_roh`-Ausnahme lässt Speicherwachstum an einer Stelle zu, an der die Doku Löschung verspricht. Fix bewusst offen — Klärung, ob Doku oder `art`-Taxonomie führt, kommt nach eigenem Audit.
+
+## Landmine: DELEGATION-STATE-UNDEKLARIERT — Sperrvermerk für den Delegations-Node-Split (Chat 106)
+
+Kein Defekt — funktioniert heute. Gehört zu den Refactor-Vorbedingungen. Aus novaberg-bugs.md hierher verschoben (Trennungsregel Chat 106).
+
+**Entdeckt:** Chat 106, Audit tote State-Keys. **Landmine — SPERRVERMERK für den Delegations-Node-Split.**
+
+**Symptom:** `salienz_obj_aktuell` und `_delegation_trigger` sind undeklarierte State-Keys, funktionieren aber NUR, weil Schreiben und Lesen im selben Dispatcher-Node-Aufruf passieren. Bräche STILL, sobald die Delegation ein eigener Node wird — bei einem Refactoring, das architektonisch richtig ist. Exakt der THINKER-SELFTRIGGER-KANALLOS-Mechanismus, nur noch nicht scharf.
+
+**Beleg:** `graph/nodes/dispatcher.py` (Schreiben + synchroner `dispatch_delegation(state)`-Aufruf im selben Node), `agents/delegation/dispatch.py` (Lesen).
+
+**Auswirkung:** Heute keine — der Sperrvermerk IST die Maßnahme.
+
+## Aufräumen: PLANNER-AKTIV-RELIKT — Stage-Anzeige liest nie geschriebenen Key (Chat 106)
+
+Toter Code — **löschen, nicht fixen**. Aus novaberg-bugs.md hierher verschoben (Trennungsregel Chat 106).
+
+**Entdeckt:** Chat 106, Audit tote State-Keys. **Prio niedrig — LÖSCHEN, nicht fixen.**
+
+**Symptom:** Der Stage-Formatter liest `planner_aktiv` — es gab nie einen Schreiber (P5/P6-Guard-Relikt, seit Chat 28/29 obsolet). Die Planner-Stage meldet dem Client immer „Kein Agent nötig", auch wenn ein Agent dispatcht wurde.
+
+**Beleg:** `services/event_consumer.py`, Stage-Formatter für den Planner-Node.
+
+**Auswirkung:** Observability lügt an der Stelle, an der man den Agent-Pfad beobachten will.
+
+## Aufräumen: WEB-CONTEXT-ALTPFAD — toter [WEB]-Block, Nachfolger läuft über Thinker (Chat 106)
+
+Toter Code — **löschen, nicht fixen**. ⚠️ **Erst nach Prüfung von WEB-EXTRAKTION-STILL-LEER.** Aus novaberg-bugs.md hierher verschoben (Trennungsregel Chat 106).
+
+**Entdeckt:** Chat 106, Audit tote State-Keys. **Prio niedrig — LÖSCHEN, nicht fixen.** ⚠ Erst nach Prüfung von WEB-EXTRAKTION-STILL-LEER.
+
+**Symptom:** `web_context` ist deklariert, wird aber nur mit `""` initialisiert — kein Node schreibt je einen Wert; der `[WEB]`-Block des Responders rendert nie. Der Nachfolger läuft längst über `needs_web` → Thinker-Tools (`web_search`/`web_fetch`, Ergebnis als `[VERARBEITUNG]`-Block).
+
+**Beleg:** `graph/state.py` (Deklaration), `graph/base.py`/`graph/builder.py` (Init), `graph/nodes/responder.py` (toter Lesepfad), `graph/nodes/thinker.py` (Nachfolge-Pfad).
+
+**Auswirkung:** Toter Code-Pfad + toter Prompt-Block; von außen wie „keine Web-Suche nötig" aussehend.
+
+## Aufräumen: BUILDER-CREATE-INITIAL-STATE-TOT — aufruferloser State-Builder als Doppelregistry (Chat 106)
+
+Toter Code, Doppelregistry-Muster. Aus novaberg-bugs.md hierher verschoben (Trennungsregel Chat 106).
+
+**Entdeckt:** Chat 106, Audit tote State-Keys / Doku-Abgleich. **Prio niedrig.**
+
+**Symptom:** `builder.create_initial_state` ist deprecated und aufruferlos, muss aber bei jedem Kanal-Umbau mitgepflegt werden (beim self_trigger-Fix geschehen) — es initialisiert zudem Alt-Keys, die im heutigen TypedDict nicht mehr deklariert sind. Doppelregistry-Muster.
+
+**Beleg:** `graph/builder.py`, `create_initial_state` (DeprecationWarning, keine Aufrufer).
+
+**Auswirkung:** Pflegeaufwand ohne Nutzen, Drift-Quelle bei jedem Channel-Umbau.
+
+## Doku: LESSON-INDEX-LUECKE — zwölf ältere lesson_l-Dateien fehlen im Architektur-Index (Chat 106)
+
+Der Lesson-Index in `novaberg-architecture.md` listet die Legacy-`{modul}_l.md`-Dateien und die zuletzt verlinkten Lessons — zwölf ältere `novaberg-lesson_l_*`-Dateien fehlen komplett (Seitenbefund aus Chat 105, Commit `8e455c5`; die zwei Chat-105- und vier Chat-106-Lessons wurden beim Anlegen verlinkt, der Altbestand nicht nachgezogen). Doku-Lücke, kein Code-Bezug: Wer Lessons über den Index sucht, findet den Altbestand nicht. Nachzug ist ein mechanischer Fünf-Minuten-Fix, gehört aber in einen bewussten Doku-Commit. ⬜ Prio niedrig
