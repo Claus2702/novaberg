@@ -55,37 +55,59 @@ Pro Turn, pro Node **eine** kompakte Entscheidungs-Zeile. Nicht das gesamte Debu
 ### 2.2 Datenbank-Schema
 
 ```sql
-CREATE TABLE pipeline_log (
-    id              BIGSERIAL PRIMARY KEY,
+CREATE TABLE IF NOT EXISTS pipeline_log (
+    id              BIGSERIAL    PRIMARY KEY,
+    erstellt_am     TIMESTAMPTZ  NOT NULL DEFAULT NOW(),
     turn_id         VARCHAR(100) NOT NULL,
-    user_id         VARCHAR(50) NOT NULL,
-    character_id    VARCHAR(50) NOT NULL,
-    event_source    VARCHAR(20) NOT NULL,
-    node_name       VARCHAR(50) NOT NULL,
-    entscheidung    TEXT NOT NULL,
-    details         JSONB,
-    erstellt_am     TIMESTAMP DEFAULT NOW()
+    span_id         UUID         NULL,
+    quelle          VARCHAR(50)  NOT NULL,
+    node            VARCHAR(50)  NOT NULL,
+    art             VARCHAR(30)  NOT NULL,
+    inhalt          JSONB        NOT NULL,
+    user_id         VARCHAR(50)  NULL,      -- Chat 104
+    character_id    VARCHAR(50)  NULL       -- Chat 104
 );
 
-CREATE INDEX idx_pipeline_log_turn    ON pipeline_log (turn_id);
-CREATE INDEX idx_pipeline_log_user    ON pipeline_log (user_id, character_id);
-CREATE INDEX idx_pipeline_log_node    ON pipeline_log (node_name);
-CREATE INDEX idx_pipeline_log_zeit    ON pipeline_log (erstellt_am);
+CREATE INDEX IF NOT EXISTS idx_pipeline_log_turn     ON pipeline_log (turn_id);
+CREATE INDEX IF NOT EXISTS idx_pipeline_log_span     ON pipeline_log (span_id);
+CREATE INDEX IF NOT EXISTS idx_pipeline_log_node_art ON pipeline_log (node, art);
+CREATE INDEX IF NOT EXISTS idx_pipeline_log_erstellt ON pipeline_log (erstellt_am DESC);
+CREATE INDEX IF NOT EXISTS idx_pipeline_log_paar     ON pipeline_log (user_id, character_id);
 ```
+
+**Doku-Drift-Hinweis (Chat 104):** Das hier zuvor dokumentierte Schema
+(`event_source`/`node_name`/`entscheidung`/`details`) existierte in dieser Form
+nie live. Maßgeblich ist `db/init.sql` — „Lies den Code, nicht die Doku."
+
+**`art` — die Taxonomie.** Keine CHECK-Constraint; gültige Werte werden per
+Helper-API durchgesetzt (je ein Wrapper in `memory/pipeline_log.py`):
+`eingang`, `prompt`, `berechnung`, `switch`, `db_write`, `db_read`, `ausgabe`,
+`fehler`, `bemerkung`, `token`, `span_start`, `span_end` — plus seit Chat 104
+**`turn_roh`** (Turn-Rohdaten, kein Forensik-Eintrag; dauerhaft, von
+`delete_expired_entries` ausgenommen; siehe `novaberg-charakter-resonanz_k.md`).
+
+**Paar-Spalten (Chat 104).** `user_id`/`character_id` sind nullable: Turn-Nodes
+und paar-gebundene Hintergrund-Agenten tragen sie, Wartungsläufe über *alle*
+Paare (`synapsen_decay`) lassen sie bewusst NULL — ein Halb-Paar wäre schlimmer
+als beides-NULL, weil es bei `WHERE user_id=… AND character_id=…` durchs Raster
+fiele. Der Row-Scope ist immer das **Node-Paar aus dem State**, konsistent über
+alle Zeilen eines Turns; getauschte IDs einzelner Sub-Operationen (z.B.
+`charakter_hash`-Lookup `beobachter=internal`) bleiben im `inhalt`-Payload.
 
 ### 2.3 Schreib-Pattern
 
 ```python
-from memory.pipeline_log import log_entscheidung
+from memory.pipeline_log import log_berechnung
 
-log_entscheidung(
-    turn_id=state["turn_id"],
-    user_id=state["user_id"],
-    character_id=state["character_id"],
-    event_source=state.get("event_source", "user"),
-    node_name="ei_calc",
-    entscheidung=f"emotion={emotion.name}({emotion.intensity:.2f}), arousal={arousal:.2f}, akku={delta:+.2f} ({akku_grund})",
-    details={"emotion": emotion.name, "intensity": emotion.intensity, "arousal": arousal, "vektor": emotions_vektor},
+log_berechnung(
+    turn_id      = turn_id,
+    node         = "ei_calc",
+    quelle       = "character",
+    inhalt       = {"schritt": "ei_arousal", "emotion": emotion.emotion,
+                    "arousal": arousal, "vektor": emotion.emotions_vector},
+    span_id      = span_id,
+    user_id      = user_id,       # Chat 104 — Paar-Scope
+    character_id = character_id,
 )
 ```
 

@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Node-Referenz Dispatcher
-**Stand:** 21. April 2026, Chat 60 (Event-Modell, Graph-Split)
+**Stand:** 11. Juli 2026, Chat 104 (Turn-Rohdaten-Schreiber ergänzt)
 **Pfad:** novaberg/docs/novaberg-node-dispatcher.md
 **Quellen:** nova-01-m-h.md
 **Datei:** `graph/nodes/dispatcher.py`
@@ -11,7 +11,7 @@
 
 ## 1. Aufgabe
 
-Der Dispatcher ist der letzte Node in beiden Graphen (HumanGraph und CharacterGraph). Er nimmt die `pending_writes` aus dem State, verteilt sie an Manager/Agenten, und schreibt den Session-Turn vollständig (seit Chat 60). Er ist reiner Arbeiter — keine Bewertung, keine Entscheidung, keine LLM-Calls.
+Der Dispatcher ist der letzte Node in beiden Graphen (HumanGraph und CharacterGraph). Er nimmt die `pending_writes` aus dem State, verteilt sie an Manager/Agenten, schreibt den Session-Turn vollständig (seit Chat 60) und legt seit Chat 104 die **Turn-Rohdaten** dauerhaft ab (§8). Er ist reiner Arbeiter — keine Bewertung, keine Entscheidung, keine LLM-Calls.
 
 **Zwei Agent-Dispatcher.** Seit Chat 29 ruft der Dispatcher für das Ziel `"kzg"` direkt `dispatch_kzg()` auf. Seit Chat 32 feuert er zusätzlich den DelegationsAgent (`dispatch_delegation()`) über eine ODER-Trigger-Prüfung auf den emotionalen State.
 
@@ -89,6 +89,10 @@ Wenn ein Trigger greift, wird `_delegation_trigger` und `salienz_obj_aktuell` in
 | `user_id` | API | Für Manager-Aufrufe + Delegation-Ausschluss |
 | `emotions_verlauf` | Enricher | Top-Emotion für Effektivwert-Berechnung |
 | `emotions_vektor` | Enricher | Vektor-Richtung (eskalation/deeskalation/plateau) |
+| `user_prompt` | API | Turn-Rohdaten (a) — §8 |
+| `response` | Responder | Turn-Rohdaten (c) + Rollen-Erkennung Session-Turn — §8 |
+| `external` / `internal` | db_zugriff / ei_calc(_persist) | Turn-Rohdaten (b)/(d), Emotions-Paar — §8 |
+| `character_id` | API / `create_state` | Paar-Scope aller Writes — §8 |
 
 ### Geschrieben
 
@@ -134,6 +138,45 @@ Seit Chat 60 schreibt der Dispatcher den Session-Turn als letzte Aktion — voll
 **Session-Zusammenfassung:** Nach dem Turn-Store wird `session_summarize_if_needed()` aufgerufen — älteste Turns werden komprimiert wenn der Stack > 25 Turns hat.
 
 Funktion: `_session_turn_schreiben()` in `dispatcher.py`.
+
+---
+
+## 8. Turn-Rohdaten-Schreiber (Chat 104)
+
+Der Dispatcher schreibt pro Turn das vollständige **Reiz-Reaktions-Paar** roh ins
+`pipeline_log` (`art='turn_roh'`) — die dauerhafte, nicht-wiederherstellbare Quelle
+für Novas Charakter-Destillation. Funktion: `_turn_roh_schreiben()`, aufgerufen
+nach `_session_turn_schreiben()`.
+
+**Warum hier und nicht früher:** Erst im Dispatcher liegen alle vier Größen
+gleichzeitig vor — User-Input (a) und User-Emotion (b) ab `ei_calc`, Nova-Antwort (c)
+erst ab dem Responder, Nova-Emotion (d) final konsolidiert erst nach
+`ei_calc_persist`. Der ursprüngliche Konzept-Entwurf sah den Reducer vor; der läuft
+aber **vor** dem Responder und sieht `state["response"]` nie.
+
+**Inhalt (JSONB):** `user_prompt`, `response` (ungekürzt), `user_emotion`,
+`nova_emotion` — beide Emotionen mit allen neun EI-Dimensionen via
+`Emotion.to_dict()`. Der Wortlaut allein ist mehrdeutig („Na super." = Freude oder
+Sarkasmus); erst der Emotionszustand *neben* der Äußerung gibt ihr eine Stimme.
+
+**Drei Guards, alle laut (kein Silent-Skip):**
+
+| Bedingung | Verhalten |
+|---|---|
+| `user_id` oder `character_id` fehlt | `warning`, kein Write |
+| `external` oder `internal` fehlt | `warning`, kein Write (kein Pseudo-Turn ohne echtes Emotionspaar) |
+| `response` leer | `warning`, kein Write — markiert den HumanGraph-Durchlauf (kein Reiz-Reaktions-**Paar** ohne Reaktion) |
+
+**Fehlerverhalten:** Ein Serialisierungsfehler kracht sichtbar ins Log
+(`logger.error` + Forensik-`log_fehler`), reißt aber weder den Turn-Abschluss noch
+die folgenden Persistenz-Schritte — der Rohturn ist wichtig, aber kein Grund, die
+Hauptsache mitzunehmen.
+
+**Retention:** `art='turn_roh'` ist von `delete_expired_entries` ausgenommen
+(`AND art <> 'turn_roh'`) und bleibt dauerhaft. Forensik-Arten verfallen weiter nach
+`LZG_PIPELINE_LOG_VORHALTUNG_TAGE`.
+
+→ Konzept: `novaberg-charakter-resonanz_k.md`
 
 ---
 

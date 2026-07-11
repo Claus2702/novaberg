@@ -1370,4 +1370,16 @@ Offen → Backlog: `CHARHASH-GEWICHT-ABSOLUT-LIVE` (volle Live-Abnahme im Dauerb
 
 ---
 
-*Aktualisiert in Chat 103. Offene Punkte → novaberg-backlog.md. Bugs → novaberg-bugs.md.*
+### pipeline_log-Paar-Verkabelung + Charakter-Resonanz: Schreibpfad (Chat 104, 11. Juli 2026)
+
+- ✅ `pipeline_log` um `user_id`/`character_id` erweitert (nullable + Index `idx_pipeline_log_paar`); Writer durchgängig paar-fähig (Dataclass, `_log_eintrag`, 12 Wrapper, Batch-INSERT)
+- ✅ Alle 36 paar-gebundenen Schreib-Call-Sites verkabelt (db_zugriff, ei_calc_persist, enricher, kzg, kzg/speicher, synapsen_promotion); `synapsen_decay` bewusst paar-los (Wartungslauf über alle Paare) und als solcher dokumentiert. Vollständigkeit pattern-basiert gegengeprüft: 0 übersehene Call-Sites
+- ✅ `Emotion.to_dict()` (neun EI-Dimensionen, explizite Feldabbildung statt `asdict`)
+- ✅ Neue `art='turn_roh'`: Der **Dispatcher** schreibt pro Turn das volle Reiz-Reaktions-Paar (User-Input + User-Emotion → Nova-Antwort + Nova-Emotion) roh und dauerhaft ins `pipeline_log`. Schreibpunkt gegenüber dem Konzept korrigiert (nicht der Reducer — der läuft vor dem Responder)
+- ✅ Retention differenziert: `delete_expired_entries` schützt `art='turn_roh'` (`AND art <> 'turn_roh'`), Forensik verfällt weiter
+- ✅ Live abgenommen: erstes Paar in der DB (`meister:nova`, a–d vollständig, echte EI-Werte, genau eine Zeile pro Turn)
+- ✅ Regression gefunden+gefixt: `UnboundLocalError` in `_enrich_character` (Bindung nach Nutzung) → Lesson `novaberg-lesson_l_lokale-bindung-vor-nutzung.md`
+
+---
+
+*Aktualisiert in Chat 104. Offene Punkte → novaberg-backlog.md. Bugs → novaberg-bugs.md.*

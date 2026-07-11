@@ -141,6 +141,20 @@ Plus ein latenter Befund außerhalb Reducer-Scope, beim Doku-Bau aufgefallen:
 
 ---
 
+## 9a. Nicht der Turn-Rohdaten-Schreiber (Chat 104)
+
+Ein früher Entwurf von `novaberg-charakter-resonanz_k.md` sah den Reducer als
+Schreibpunkt für die Turn-Rohdaten (Reiz-Reaktions-Paar) vor. **Das ist falsch und
+wurde in Chat 104 korrigiert:** Der Reducer läuft an Position 4 des CharacterGraph
+(`enricher → reducer → router`), also **vor** dem Responder — `state["response"]`
+existiert zu diesem Zeitpunkt noch nicht. Der Schreibpunkt ist der **Dispatcher**
+(letzter Node); siehe `novaberg-node-dispatcher.md` §8.
+
+Der Reducer bleibt, was er ist: ein schlanker, I/O-freier In-Memory-Node
+(REFAC-PIPELINE-LOG-VOLLVERKABELUNG, §9, bleibt davon unberührt).
+
+---
+
 ## 10. Querverweise
 
 ```

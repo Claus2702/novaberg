@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Charakter-Resonanz — woraus Novas Charakter entsteht
-**Stand:** 10. Juli 2026, Chat 103 (Entwurf — Datenmodell steht, turn_id-Kupplungen noch zu verifizieren)
+**Stand:** 11. Juli 2026, Chat 104 (Schreibpfad implementiert + live abgenommen; Verbindungstabelle/Verdichten/Lesen offen)
 **Pfad:** novaberg/docs/novaberg-charakter-resonanz_k.md
 **Abgrenzung:**
 - Saatgut / explizite Anweisungen → `novaberg-agent-character.md`
@@ -34,7 +34,7 @@ Das heutige Charakter-System leistet diese These **nicht** — und der Grund ist
 **Wurzel:** Novas wörtliche Rede (Responder) und ihr Denken (Thinker) werden **nirgends dauerhaft gespeichert**:
 - Session-Turns leben nur in Redis (`session:*:turns`, TTL 7200s / 2h) und verfallen.
 - `gespraech_archiv` ist die exakt dafür geformte Tabelle (user_id, session_id, rolle, inhalt, salienz) — aber ohne Writer/Reader, dauerhaft leer (Struktur-Fossil aus `db/init.sql`).
-- `pipeline_log` ist Ausführungs-Forensik (Spans, Timings, DB), kein Transkript — und 90-Tage-TTL.
+- `pipeline_log` ist Ausführungs-Forensik (Spans, Timings, DB), kein Transkript — und TTL-behaftet (`LZG_PIPELINE_LOG_VORHALTUNG_TAGE`, Live-Default 365 Tage).
 
 Dauerhaft überlebt nur die **destillierte Ableitung** (LZG-Fakten, Hashes, Ziele), nie die Stimme. Der Spiegel, in dem sich Novas Charakter zeigen würde, wird jeden Turn erzeugt und sofort zerbrochen.
 
@@ -70,7 +70,7 @@ Drei Speicher, drei Rollen — **verbunden statt kopiert**. Die Turn-Referenz re
 **`pipeline_log` — die rohe Stimme, dauerhaft.**
 Der wortgetreue Turn, so wie im Client angezeigt (Novas Worte ungekürzt, plus das Paar a–d). Die Zusammenfassung würde Novas Worte wegkürzen — deshalb bleibt der Rohturn erhalten.
 
-**Retention differenziert nach `art` — nicht pauschal.** Die heutige 90-Tage-TTL (`LZG_PIPELINE_LOG_VORHALTUNG_TAGE`, täglicher `delete_expired_entries`) fällt für die Turn-Rohdaten weg: Sie bleiben **dauerhaft** (Jahre), weil Novas Charakter über genau diese Zeiträume entsteht und der Rohturn die nicht-wiederherstellbare Quelle ist — einmal gelöscht, für immer weg. Die **Forensik-Arten** (`span_start`, `span_end`, `berechnung`, `db_write`, `switch` — allein `synapsen_promotion` produziert ~1400 Zeilen pro Durchlauf-Welle) verfallen dagegen weiter. `delete_expired_entries` bekommt also einen `WHERE art IN (…Forensik…)`-Filter, statt pauschal nach Alter zu löschen. Kein neuer Mechanismus, nur eine Differenzierung der bestehenden Routine.
+**Retention differenziert nach `art` — implementiert in Chat 104.** Die TTL (`LZG_PIPELINE_LOG_VORHALTUNG_TAGE`, Live-Default 365 Tage, täglicher `delete_expired_entries`) greift für die Turn-Rohdaten nicht mehr: Sie bleiben **dauerhaft** (Jahre), weil Novas Charakter über genau diese Zeiträume entsteht und der Rohturn die nicht-wiederherstellbare Quelle ist — einmal gelöscht, für immer weg. Die **Forensik-Arten** (`span_start`, `span_end`, `berechnung`, `db_write`, `switch` — allein `synapsen_promotion` produziert ~1400 Zeilen pro Durchlauf-Welle) verfallen dagegen weiter. `delete_expired_entries` trägt seit Chat 104 die Klausel `AND art <> 'turn_roh'`. Bewusst als **Umkehrung** statt als Positiv-Liste (`WHERE art IN (…Forensik…)`): Die `art`-Spalte hat keine CHECK-Constraint und die Taxonomie wächst — eine Positiv-Liste müsste bei jeder neuen Forensik-Art nachgetragen werden, sonst überlebte sie versehentlich ewig. Geschützt wird genau ein Wert; alles andere verfällt automatisch. Kein neuer Mechanismus, nur ein Prädikat mehr in der bestehenden Routine.
 
 **Volumen:** Turn-Rohdaten wachsen über Jahre potenziell auf Hunderttausende Zeilen (Wortlaut + zwei Emotionsvektoren je Turn) — für Postgres handhabbar. Beim **Lesen** liest der Charakter-Pfad nie alle Turns, sondern nur die, die über `verbindung` an erinnerungswürdige LZG-Einträge hängen. Gewicht/Decay ist damit zugleich der Volumen-Filter: alles aufheben, nur das Gewichtete lesen.
 
@@ -109,7 +109,11 @@ verbindung
 
 ## 5. Die drei Pfade
 
-**Schreiben.** Der Reducer legt pro Turn das volle Paar (a–d) roh ins `pipeline_log`. Novas Antwort und beide Emotionen kommen mit (heute fehlen sie im `zusammenfassung`-Payload). Der KZG-Schreib-/Ähnlichkeitspfad ergänzt bei jedem Treffer eine `verbindung`-Zeile (turn_id + kzg_id).
+**Schreiben — implementiert Chat 104 (Schreibpunkt korrigiert).** Der **Dispatcher** (nicht der Reducer) legt pro Turn das volle Paar (a–d) roh ins `pipeline_log` (`art='turn_roh'`). Die ursprüngliche Konzept-Annahme (§3, „Graph-Reihenfolge `ei_calc → thinker → responder → reducer`") war falsch: Der Live-CharacterGraph führt `… → enricher → reducer → router → … → responder → …` — der Reducer läuft an Position 4, **vor** dem Responder, und sieht `state["response"]` nie. (Auch der Key heißt `response`, nicht `final_response`.) Der Dispatcher ist der letzte Node; dort liegen alle vier Größen sicher vor, `internal.emotion` ist nach `ei_calc_persist` final konsolidiert, und er ist ohnehin der Persistenz-Node. Serialisierung über `Emotion.to_dict()` (alle neun EI-Dimensionen je Seite, explizite Feldabbildung statt `asdict`, damit kein künftiges Feld ungefragt in die dauerhafte Quelle leckt).
+
+Der Rohturn wird nur geschrieben, wenn Paar, `external`, `internal` **und** eine Nova-Antwort vorliegen — ein leerer `response` markiert den HumanGraph-Durchlauf und wird laut übersprungen (kein Pseudo-Turn ohne Reaktion). Verifiziert: genau eine `turn_roh`-Zeile je Turn.
+
+Der KZG-Schreib-/Ähnlichkeitspfad ergänzt bei jedem Treffer eine `verbindung`-Zeile (turn_id + kzg_id) — **noch offen**, siehe §7.
 
 **Verdichten.** Ein periodischer Pixie-Agent (analog `synapsen_decay` / `charakter_hash`) destilliert aus erinnerungswürdigen Turn-Paaren die Verhaltensweise:
 - Turn laden (über `verbindung.turn_id` aus `pipeline_log`).
@@ -136,7 +140,7 @@ Die `verbindung`-Zeile (turn_id + kzg_id) selbst entsteht früher — am KZG-Boo
 
 **Themen- vs. Embedding-Ähnlichkeit (offener Designpunkt):** Die heutige KZG-Verstärkung läuft **themen-basiert** (Mengen-Schnitt), nicht embedding-basiert. `kzg_similar_find` (Embedding-KNN) existiert, hat aber **keinen Aufrufer** (brachliegend). Für die `verbindung`-Zeile irrelevant (entsteht am Boost-Punkt unabhängig vom Auslöser). Für die **Verhaltensweisen-Zusammenführung** (Variante B) ist zu entscheiden: themen-basiert wie der Rest, das brachliegende `kzg_similar_find` aktivieren, oder auf der pgvector-Seite (`lzg_knoten`-Muster) ansetzen. Infrastruktur für alle drei vorhanden.
 
-**Retention — ✅ entschieden (siehe §4.1):** Turn-Rohdaten dauerhaft (Jahre), Forensik-Arten verfallen weiter, `delete_expired_entries` differenziert nach `art`. Löschroutinen gehören dokumentiert.
+**Retention — ✅ implementiert Chat 104 (siehe §4.1):** Turn-Rohdaten dauerhaft (Jahre), Forensik-Arten verfallen weiter, `delete_expired_entries` schützt `art='turn_roh'`.
 
 **Verhaltensweisen-Zusammenführung:** Variante B (Belegzahl = Gewicht) gewählt. Offen: Ähnlichkeits-Schwellwert; ob eine Verhaltensweise selbst decayt; und der Themen-vs-Embedding-Designpunkt (oben).
 
@@ -145,3 +149,23 @@ Die `verbindung`-Zeile (turn_id + kzg_id) selbst entsteht früher — am KZG-Boo
 - Hash-Mechanik (`pixie-character-hash.md`): wird nach Fertigstellung dieses Moduls komplett überarbeitet.
 
 **Sprint-Größe:** Mehrteilig, über mehrere Sessions — zwei neue Tabellen, Eingriff in KZG-Ähnlichkeits-Schreibpfad, Promotion-Nachtrag (`lzg_id`), Verhaltensweisen-Destillator mit Embedding-Dedup, umgebauter CharakterAgent-Lesepfad, Retention-Differenzierung.
+
+---
+
+## 7. Stand Chat 104 — was steht, was fehlt
+
+**Steht (live abgenommen):**
+
+- `pipeline_log` trägt `user_id`/`character_id` (nullable, Index `idx_pipeline_log_paar`). Alle 36 paar-gebundenen Schreib-Call-Sites verkabelt; `synapsen_decay` bleibt bewusst paar-los (Wartungslauf über alle Paare, kein Turn).
+- `Emotion.to_dict()` — neun Felder, explizit.
+- `log_turn_roh()` — Paar ist **Pflicht**-Parameter (kein `None`-Default wie bei den Forensik-Wrappern): Ein Rohturn ohne Paar wäre für die Destillation wertlos.
+- Dispatcher schreibt `turn_roh` pro Turn; Retention nimmt ihn aus.
+- Abnahme: erstes Paar in der DB, `meister:nova`, a–d vollständig, echte EI-Werte (User „aufbluehen/locker" 0.5 → Nova „plateau/emotional/empathisch" 0.6). Genau eine Zeile pro Turn.
+
+**Fehlt (nächster Sprint-Teil):**
+
+- Tabelle `verbindung` (§4.2) — Schema + Schreibpfad am KZG-Boost-Punkt.
+- Tabelle `verhaltensweisen` + Destillations-Agent (§5 „Verdichten"), inkl. Embedding-Dedup.
+- `lzg_id`-Nachtrag bei KZG→LZG-Promotion.
+- CharakterAgent-Lesepfad (§5 „Lesen").
+- Offener Designpunkt unverändert: KZG-Verstärkung themen- statt embedding-basiert (`kzg_similar_find` ohne Aufrufer).
