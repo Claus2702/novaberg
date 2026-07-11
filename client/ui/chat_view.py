@@ -110,7 +110,14 @@ body {{
     font-size: 12px;
     color: {STAGE_TEXT_COLOR};
     font-style: italic;
-    padding: 4px 0;
+    padding: 1px 0;
+}}
+
+/* Aufeinanderfolgende Stage-Zeilen enger setzen: nimmt den 8px-Container-gap
+   zwischen zwei Stages weitgehend zurueck, ohne die Message-Bubble-Abstaende
+   anzufassen. Netto-Abstand Stage↔Stage ~4px statt ~16px. */
+.stage + .stage {{
+    margin-top: -6px;
 }}
 
 /* Markdown-Elemente in Assistant-/Impuls-Bubbles */
