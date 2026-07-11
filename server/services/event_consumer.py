@@ -19,6 +19,7 @@ from services.events import (
     event_naechstes,
     event_erzeugen,
     event_self_trigger_erlaubt,
+    MAX_SELF_TRIGGERS,
 )
 
 logger = logging.getLogger("ki_server.event_consumer")
@@ -511,6 +512,11 @@ async def _event_verarbeiten(
         return
 
     if not event_self_trigger_erlaubt(trigger_count):
+        logger.warning(
+            "Event-Consumer: Self-Trigger verworfen — Limit erreicht "
+            "(trigger_count=%d, MAX_SELF_TRIGGERS=%d, paar=%s:%s)",
+            trigger_count, MAX_SELF_TRIGGERS, user_id, character_id,
+        )
         return
 
     # Block 3 Teil D: Self-Trigger aktiviert. Aufrufer (heute: Thinker bei
@@ -518,6 +524,10 @@ async def _event_verarbeiten(
     # result["self_trigger"] und liefert das Payload fuer den Folge-
     # Durchlauf ueber result["self_trigger_payload"]. Die vorhandenen
     # Haertungen (pending_agent, MAX_SELF_TRIGGERS) greifen bereits oben.
+    logger.info(
+        "Event-Consumer: Self-Trigger im Result — vorhanden=%s, wert=%r",
+        "self_trigger" in result, result.get("self_trigger"),
+    )
     if result.get("self_trigger"):
         event_erzeugen(
             redis_client, user_id, character_id,

@@ -606,11 +606,12 @@ def think(
             }
 
             logger.warning(
-                "Thinker: Doppel-Fehlschlag — Self-Trigger fuer Klaerung gesetzt "
-                "(Antwort + Geste, Folge-Durchlauf laeuft normal vorwaerts)"
+                "Thinker: Doppel-Fehlschlag — Self-Trigger im State gesetzt "
+                "(self_trigger=True) — Auslieferung haengt am Event-Consumer"
             )
             state["node_annotations"].append(
-                "[Thinker] Doppel-Fehlschlag — Self-Trigger fuer Klaerung gesetzt"
+                "[Thinker] Doppel-Fehlschlag — Self-Trigger im State gesetzt "
+                "(self_trigger=True) — Auslieferung haengt am Event-Consumer"
             )
             return state
 

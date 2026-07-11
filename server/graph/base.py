@@ -144,6 +144,10 @@ class GraphBase(ABC):
             model       = "",
             token_total = 0,
 
+            # Thinker / Self-Trigger
+            self_trigger         = False,
+            self_trigger_payload = {},
+
             # Tribunal
             tribunal_votes   = [],
             tribunal_verdict = "",

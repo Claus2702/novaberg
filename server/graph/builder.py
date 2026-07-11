@@ -102,6 +102,8 @@ def create_initial_state(
         response    = "",
         model       = "",
         token_total = 0,
+        self_trigger         = False,
+        self_trigger_payload = {},
         tribunal_votes   = [],
         tribunal_verdict = "",
         tribunal_summary = "",

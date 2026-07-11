@@ -99,6 +99,10 @@ class ConversationState(TypedDict):
     model:       str
     token_total: int
 
+    # ── Thinker / Self-Trigger ───────────────
+    self_trigger:         bool          # True = Folge-Durchlauf zur Klaerung anfordern. MUSS als Channel deklariert sein — StateGraph rekonstruiert den State pro Node aus den Channels. Ohne Deklaration wird der Wert am Node-Uebergang (Thinker → Tribunal) still verworfen und erreicht das finale Result nie. Live belegt Chat 106.
+    self_trigger_payload: dict          # Payload fuer den Folge-Durchlauf (user_prompt, turn_id, ...)
+
     # ── Tribunal ─────────────────────────────
     tribunal_votes:   list[TribunalVote]
     tribunal_verdict: str   # ok | warnung | ablehnen
