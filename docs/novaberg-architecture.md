@@ -660,7 +660,7 @@ Das Handbuch ist nach Betrachtungstiefen organisiert. Tiefe 0 ist der Einstiegsp
 | novaberg-pattern-prompt-schema.md | Prompt-Schema [BLOCKNAME] (Konvention) |
 | novaberg-pattern-entity-resolution.md | Entity Resolution (Name-Match, Embedding) |
 
-### Lessons (20)
+### Lessons (22)
 
 Lessons leben als `{modul}_l.md` oder `{modul}_l_{thema}.md` neben ihrem Modul-Dokument:
 
@@ -686,6 +686,8 @@ Lessons leben als `{modul}_l.md` oder `{modul}_l_{thema}.md` neben ihrem Modul-D
 | novaberg-tool-timeparser_l_timezone.md | Timezone UTC vs. Lokal |
 | novaberg-tool-timeparser_l_evolution.md | Zeitparser-Evolution |
 | novaberg-tool-timeparser_l_vektor.md | Vektor-Modus Zeitparser |
+| novaberg-lesson_l_miss-als-sicherung.md | Der Miss ist manchmal die Sicherung (Router-Miss als Schutz vor defektem Pfad) |
+| novaberg-lesson_l_default-wie-fehlschlag.md | Ein Default darf nie wie ein Fehlschlag aussehen (nie geladen vs. leer geladen) |
 
 ### Uebergreifend
 
