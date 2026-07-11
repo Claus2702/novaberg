@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Node-Referenz EI-Calc (Emotionale Intelligenz — Berechnungsschicht)
-**Stand:** 17. Mai 2026, Chat 90 (PFAD2-PERZEPTION-FIX abgeschlossen, HumanGraph-Slimming Phase 4)
+**Stand:** 11. Juli 2026, Chat 105 (CG lädt Session-Turns selbst — Kraft-1-Historie repariert)
 **Pfad:** novaberg/docs/novaberg-node-ei-calc.md
 **Quellen:** Chat 58 (Konzept-Split), Chat 59 (Implementierung)
 **Datei:** `graph/nodes/ei_calc.py`
@@ -13,9 +13,9 @@
 
 Der EI-Calc-Node ist die Berechnungsschicht der emotionalen Intelligenz. Er berechnet pro Aufruf **entweder** die User-EI (Pfad 1, HumanGraph) **oder** Novas Empathie-modulierten Emotionsstrang (Pfad 2, CharacterGraph). Welcher Block läuft, entscheidet `state["ei_calc_rolle"]`.
 
-Eingangsdaten: die vom Enricher gelieferten `raw_turns` und die Perzeptionsergebnisse aus der `Emotion`-Klasse (`state["external"].emotion` für den User-Pfad, `state["internal"].emotion` als Vorzustand für den Character-Pfad).
+Eingangsdaten: die Session-Turns (`raw_turns`) und die Perzeptionsergebnisse aus der `Emotion`-Klasse (`state["external"].emotion` für den User-Pfad, `state["internal"].emotion` als Vorzustand für den Character-Pfad). Die Turn-Beschaffung unterscheidet sich je Graph: Im HumanGraph liefert sie der Enricher über `state["raw_turns"]` (er läuft davor); im CharacterGraph lädt `_ei_calc_character` sie **selbst** aus Redis (`session_turns_retrieve`, seit e54092d/Chat 105) — der Enricher läuft dort erst danach.
 
-**Kein LLM-Call, kein I/O.** Reine Python-Vektorarithmetik. Sub-100ms, deterministisch, reproduzierbar.
+**Kein LLM-Call.** Ein Redis-Read (Session-Turns) auf der Character-Seite; sonst reine Python-Vektorarithmetik. Sub-100ms, deterministisch, reproduzierbar.
 
 ---
 
@@ -58,9 +58,11 @@ db_zugriff → ▶ ei_calc ◀ → enricher → reducer → router → planner �
 
 **CharacterGraph:** Zweiter Node, nach `db_zugriff`. Berechnet den Character-Pfad.
 
-**Reihenfolge-Logik (Phase 2):** Im CharacterGraph läuft EI-Calc **vor** dem Enricher, damit das Empathie-Update gegen Novas persistierten Vorzustand (`state["internal"].emotion`, geladen vom `db_zugriff`) berechnet wird, bevor Memory-Resonanz im Enricher hinzukommt.
+**Reihenfolge-Logik (Phase 2, präzisiert Chat 105):** Im CharacterGraph läuft EI-Calc **vor** dem Enricher — bewusst (630d357): Der Enricher liest `nova_emotions_verlauf`, das EI-Calc erzeugt; die Erinnerungs-Auswahl (Spreading-Sektor-Faktor, `enricher.py` §8.4-Pfad) soll auf Novas empathie-modifizierter Lage stehen, nicht auf der des Vorturns. Die Abhängigkeit besteht damit in **beide** Richtungen: EI-Calc braucht Session-Turns, der Enricher braucht EI-Calc-Output. Aufgelöst wird sie, indem der Konsument selbst lädt — nicht durch Kantentausch.
 
-**Input:** State mit Perzeptionsergebnissen (Emotion, Arousal, Modus, Stil, Intent, Tone, Beziehungsdynamik) in den Personality-Klassen und den vom Enricher gelieferten `raw_turns`.
+**Konsequenz für raw_turns (seit e54092d):** Im CG liegt `state["raw_turns"]` zum EI-Calc-Zeitpunkt noch leer (create_state-Default). `_ei_calc_character` lädt die Session-Turns deshalb selbst aus Redis (`session_turns_retrieve`), mit EVA-Disziplin: Paar-Check (user_id/character_id vorhanden?), Redis-Read im try/except, bei Fehler `logger.error` mit Kontext und Weiterrechnen mit leerer Liste — der Turn stirbt nicht am fehlenden Emotionsverlauf, aber der Ausfall ist laut. Die geladene Liste bleibt **lokal**: `state["raw_turns"]` gehört weiterhin dem Enricher, kein zweiter Schreiber. `_ei_calc_user` (HG) liest unverändert aus `state["raw_turns"]`.
+
+**Input:** State mit Perzeptionsergebnissen (Emotion, Arousal, Modus, Stil, Intent, Tone, Beziehungsdynamik) in den Personality-Klassen; Session-Turns je Graph wie oben (HG: `state["raw_turns"]` vom Enricher, CG: eigener Redis-Read).
 
 **Output:** Pro Rolle entweder die User-Felder (`state["external"].emotion.emotions_vector`, `.mode`, `.language_style`, plus `state["emotions_verlauf"]`) oder die Nova-Felder (`state["internal"].emotion.emotions_vector`, plus `state["nova_emotions_verlauf"]`, `state["nova_emotion_konflikt"]`).
 
@@ -143,7 +145,7 @@ Bei `event_source == "character"` wird `state["nova_emotions_verlauf"]` auf die 
 | State-Quelle | Typ | Beschreibung |
 |---|---|---|
 | `state["ei_calc_rolle"]` | str | Dispatcher-Switch (Default: `"user"`) |
-| `state["raw_turns"]` | list[dict] | Vom Enricher bereitgestellte Session-Turns |
+| `state["raw_turns"]` | list[dict] | Session-Turns — nur HG-Pfad (vom Enricher); der CG-Pfad lädt selbst aus Redis, s. §2 |
 | `state["external"].emotion.emotion` | str | Aktuelle Emotion (aus Perzeption) |
 | `state["external"].emotion.arousal` | float | Aktueller Arousal |
 | `state["external"].emotion.relationship_dynamic` | str | Beziehungsdynamik |
@@ -186,7 +188,7 @@ Sieben Funktionen aus `ei/berechnung.py` plus eine aus `ei/gravitation.py`:
 | `_nova_empathie_berechnen` | `ei/berechnung.py` | Asymmetrische Empathie, α-Koeffizienten, Konflikt-Erkennung |
 | `emotionale_gravitation_auf_verlauf_anwenden(verlauf, punkte)` | `ei/gravitation.py` | Moduliert Verlauf an hoch-arousal KZG-Treffern (`ei_calc.py:22` importiert) |
 
-**Keine** Imports aus `config` außer über die Funktionen selbst. **Keine** Redis-, PostgreSQL- oder Ollama-Zugriffe.
+Dazu seit e54092d: `session_turns_retrieve` (`memory/session.py`) und `redis_client` aus `config` — der eine Redis-Read der Character-Seite (s. §2). **Keine** PostgreSQL- oder Ollama-Zugriffe, kein LLM-Call.
 
 ---
 
@@ -205,7 +207,7 @@ Bis Chat 58 lief beides im Enricher: Datenzugriffe + EI-Berechnungen in einem No
 - **Enricher:** Lädt alles aus Redis/PostgreSQL. Schreibt `raw_turns`, Plugin-Kontext, Session-Turns, `memory_entries`.
 - **EI-Calc:** Liest nur aus dem State (`raw_turns`, Personality-Klassen). Rechnet. Schreibt EI-Ergebnisse zurück (Klassen-Felder plus die drei zulässigen Verlaufs-Brücken).
 
-Kein I/O im EI-Calc bedeutet: Unit-tests mit reinem State-Dict. Keine Mocks für Redis oder Postgres.
+Für die User-Seite gilt weiterhin: Unit-Tests mit reinem State-Dict, keine Mocks. Die Character-Seite trägt seit e54092d die eine, bewusste Ausnahme — den eigenen Session-Turns-Read (s. §2), erzwungen durch die CG-Reihenfolge aus 630d357. Tests dieses Pfads mocken `session_turns_retrieve` oder akzeptieren die laut geloggte Leer-Liste.
 
 ### 6.3 Position vor dem Router (Chat 59, aktualisiert Phase 2)
 
@@ -229,6 +231,32 @@ EI-Calc führt pro Aufruf genau einen der zwei Blöcke aus — User-Pfad oder Ch
 → Dual-Emotion-Konzept: `novaberg-ei-dual-emotion_k.md`
 → Plutchik-Oktagon: `novaberg-ei-plutchik.md`
 → Charakter-Profile: `novaberg-ei-character-profiles.md`
+
+---
+
+## 7a. Historie — was seit Chat 89 nicht lief
+
+Von 630d357 (Chat 89, Topologie-Drehung) bis e54092d (Chat 105) las `_ei_calc_character` **immer** ein leeres `raw_turns`: Die Drehung stellte den Enricher hinter EI-Calc, übersah aber, dass EI-Calc dessen `raw_turns` brauchte — im CG-State lag ab da nur noch der create_state-Default `[]`.
+
+Zwei Folgen, die zweite schwerer als die erste:
+
+- `nova_turns=0` → `emotions_vector` konstant `"plateau"` — live belegt mit **33 von 33** `turn_roh`-Zeilen.
+- `nova_verlauf_basis` ebenfalls leer → **Kraft 1 (historische Emotions-Gravitation) rechnete nie.** Novas einzige emotionale Kraft war 16 Chats lang die Empathie (Kraft 2) — der Live-Beweis in §8 dokumentiert damit den Stand *vor* Chat 89.
+
+Der Defekt war unsichtbar, weil die Funktion still auf den Default fiel: Kein Log, kein Fehler, plausible Werte. Sichtbar wurde er erst über die `turn_roh`-Rohdaten (Chat 104) und die nachgerüstete `nova_turns=%d`-Log-Zeile.
+
+---
+
+## 7b. Logging (Chat 105)
+
+Zwei Zeilen machen die Character-Seite sichtbar — beide **bewusst ungegated**:
+
+```
+EI-Calc/Character: Emotions-Verlauf — <emotion>(<gewicht>,a=<arousal>), …   (leer: "(leer, N Nova-Turns)")
+EI-Calc/Character: Emotions-Vektor — <vektor> (nova_turns=<N>)
+```
+
+Die Verlaufs-Zeile zeigt, **worauf** Kraft 1 rechnet (Top-4 mit Gewicht/Arousal, analog `EI-Calc/User: Emotions-Verlauf`); eine leere Basis wird sichtbar ausgegeben statt verschluckt. Die Vektor-Zeile trägt die Verlaufslänge — `nova_turns=0` entlarvt den Zu-kurz-Fallback sofort. Zum Kontrast: Die User-Seite gated `plateau` weg (`ei_calc.py:126`, `!= "plateau"`) — genau dieses Gate hat den Chat-89-Defekt mit versteckt → Backlog EI-VEKTOR-LOG-GATE.
 
 ---
 
