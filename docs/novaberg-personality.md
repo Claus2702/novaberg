@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Modul Personality-Klassen (typisierte State-Schicht für Akteurs-Verbunde)
-**Stand:** 11. Juli 2026, Chat 104 (Emotion.to_dict() ergänzt)
+**Stand:** 11. Juli 2026, Chat 105 (Werte-Listen korrigiert)
 **Pfad:** novaberg/docs/novaberg-personality.md
 **Quellen:** novaberg-path2-perzeption_k.md (archiviert), novaberg-lesson_l_klassen-statt-flache-keys.md
 **Datei:** `graph/personality.py`
@@ -16,7 +16,7 @@ Die Personality-Klassen-Schicht ist die typisierte Repräsentation der zwei Akte
 
 Eine `Personality` kombiniert ein statisches `Character`-Profil (fünf destillierte Identitäts-Schichten) mit einer dynamischen `Emotion` (neun EI-Dimensionen pro Turn). Nova trägt zusätzlich `identities` und `directives` als Handlungsanweisungen — sie wird durch `InternalPersonality` repräsentiert, die von `Personality` erbt.
 
-Die Klassen sind reine Daten-Container: keine Methoden, keine Domain-Logik, keine `__post_init__`. Berechnungen und Validierung leben in den Funktionen, die mit ihnen arbeiten, nicht in den Klassen selbst.
+Die Klassen sind reine Daten-Container: keine Domain-Logik, keine Berechnung, keine `__post_init__`. Berechnungen und Validierung leben in den Funktionen, die mit ihnen arbeiten, nicht in den Klassen selbst. Einzige Ausnahme ist `Emotion.to_dict()` — Serialisierung, keine Domain-Logik; die Begründung steht in §3.2.
 
 ---
 
@@ -99,15 +99,15 @@ Felddetails:
 |---|---|---|
 | `emotion` | str | Plutchik-Basisemotion. Gültig: `begeisterung`, `freude`, `dankbarkeit`, `zufriedenheit`, `stress`, `unsicherheit`, `ueberrascht`, `verwundert`, `verzweiflung`, `traurigkeit`, `frustration`, `enttaeuschung`, `wut`, `aerger`, `hoffnung`, `neugierig`, `neutral` |
 | `arousal` | float | 0.0 (vollständig ruhig) bis 1.0 (maximal erregt) |
-| `emotions_vector` | str | Verlaufs-Form. Gültig: `plateau`, `aufschwung`, `abschwung`, `peak`, `tal`, leer |
+| `emotions_vector` | str | Verlaufs-Form. Deterministisch berechnet, NICHT vom LLM geliefert (`ei/berechnung.py::_emotions_vektor_bestimmen`). Gültig: `absturz`, `spirale`, `stabilisierung`, `erholung`, `aufbluehen`, `eskalation`, `abkuehlung`, `einbruch`, `plateau`; Default leer |
 | `mode` | str | Gespräch-Modus. Gültig: `fachgespraech`, `philosophischer_austausch`, `alltag`, `arbeitsmodus`, `emotional`, `spielerisch`, `lernmodus`, `kreativ`, `beratend`, `berichtend` |
-| `language_style` | str | Stil-Klassifikation. Gültig: `fachlich`, `formell`, `neutral`, `locker`, `emotional` |
-| `relationship_dynamic` | str | Beziehungs-Stimmung. Gültig: `vertrauen`, `neutral`, `distanz`, `konflikt` |
-| `tone` | str | Gewünschter Antwort-Tone. Gültig: `empathisch`, `sachlich`, `kreativ`, `direkt`, `warmherzig` |
+| `language_style` | str | Stil-Klassifikation. Gültig: `fachlich`, `formell`, `neutral`, `locker`, `emotional`, `jugendlich` |
+| `relationship_dynamic` | str | Beziehungs-Stimmung. Gültig: `vertrauen`, `distanz`, `angriff`, `hilfesuchend`, `dankbar`, `neutral` |
+| `tone` | str | Gewünschter Antwort-Tone. Gültig: `empathisch`, `sachlich`, `kreativ`, `direkt` |
 | `intent` | str | Kommunikations-Absicht. Gültig: `smalltalk`, `knowledge`, `personal`, `task`, `creative`, `meta` |
 | `prompt_topic` | str | Thematischer Kern (Freitext, 2-5 Wörter) |
 
-Vollständige Werte-Listen leben in den Perzeption-Prompts (`prompts/default/perzeption.task.txt`, `perzeption.assistant_task.txt`) und in den Plausibilitäts-Funktionen (`ei/berechnung.py`). Die `Emotion`-Klasse ist Vertrag, nicht Enum-Definition.
+Die LLM-gelieferten Felder haben ihre Werte-Listen im JSON-Schema von `prompts/default/perzeption.task.txt` und `perzeption.assistant_task.txt` (identisch; kein Connector-Profil überschreibt sie). `emotions_vector` ist das einzige Feld, das NICHT abgefragt, sondern in `ei/berechnung.py::_emotions_vektor_bestimmen` aus dem Emotionsverlauf berechnet wird — geschlossener Wertebereich per Konstruktion. Laufzeit-geprüft wird nur `emotion` (`EMOTION_KANON`, `config.py`; unbekannter Wert → `logger.error`, der Wert wird dennoch durchgereicht). `mode` und `language_style` werden semantisch korrigiert, aber nicht gegen eine Liste geprüft; `relationship_dynamic`, `tone`, `intent`, `prompt_topic` werden überhaupt nicht geprüft — siehe Backlog EI-KANON-FEHLT. Die `Emotion`-Klasse ist Vertrag, nicht Enum-Definition.
 
 **`to_dict()` — Serialisierung (Chat 104).** Bildet alle neun Felder **explizit** ab, bewusst **nicht** über `dataclasses.asdict`: Ein später ergänztes `Emotion`-Feld landet nur dann im Serialisat, wenn es hier bewusst nachgetragen wird. Schutz gegen unbeabsichtigtes Lecken interner Felder in dauerhafte Speicher — konkret in die Turn-Rohdaten (`art='turn_roh'`, siehe `novaberg-charakter-resonanz_k.md`), die die nicht-wiederherstellbare Quelle der Charakter-Destillation sind. Erster Konsument: `dispatcher._turn_roh_schreiben()` (beide Seiten des Reiz-Reaktions-Paars).
 
@@ -196,6 +196,8 @@ intent: str = external.emotion.intent if external else "smalltalk"
 ```
 
 `external` und `internal` sollten nie `None` sein, weil `create_state()` sie initialisiert — aber der defensive Lookup kostet nichts und schützt gegen Edge-Cases (z.B. wenn ein neuer Node-Pfad sie versehentlich umgeht).
+
+**Hinweis (Chat 105):** Dieses Muster lässt einen Vertragsbruch (fehlender Slot) still auf einen Neutral-Default fallen und steht damit gegen `novaberg-lesson_l_silent-skip.md` — 39 von 41 Lesestellen im Code verhalten sich so, nur `ei_calc_persist` (`logger.error`) und der `turn_roh`-Guard (`logger.warning`) sind laut. Offener Punkt, siehe Backlog SILENT-SKIP-EI-DEFAULTS; der Code-Stand ist hier unverändert dokumentiert.
 
 ---
 
