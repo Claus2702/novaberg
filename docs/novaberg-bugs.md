@@ -1,7 +1,7 @@
 # Novaberg — Bugs & Limitationen
 
-**Stand:** 19. Mai 2026, Chat 92
-**Quelle:** Testlauf "Karrierekrise" (200 Prompts) + Gedächtnis-Epic (Chat 11) + Epic 11 Agent-System (Chats 22–32) + Persona Smoke-Tests (Chats 31–32) + RechercheAgent-Test (Chat 35) + Doku-Audit (Chat 36) + PRIO0-Fix + Client-Observability (Chat 37) + Claude API-Test + STREAM1-Fix + Gesprächsvektor (Chat 39) + CharakterIdentitaetAgent + DirektivenAgent + Tribunal Score-System (Chat 40) + Telegram Bot + Zeitparser-Fixes (Chat 41) + CRUD-Härtung + Telegram-Chat-Analyse + DB-Report (Chat 42) + KONTEXT1-Fix + Resume-Bug + Epic 15 Pilot (Chat 43) + Epic 15 Rollout + DELEG-REG Fix + KZG-Klebrigkeit (Chat 44) + RESP-CHAR1 Fix (Chat 45) + CLASSIFY-REJECTED + Gemma4 Live-Tests (Chat 48) + Telegram-Konversation "frecher Charakter" (Chat 49) + RESUME-REJECT Fix + Live-Tests (Chat 50) + Neugier-Konzept + Projektinfrastruktur (Chat 51) + Doku-Alignment + emotions_profil (Chat 52) + Antrieb-Konzept + Dual-Emotion (Chat 53) + HALL2-Fix + Planner-Refactor (Chat 54) + PySide6 verworfen + GTK4-Entscheidung (Chat 55) + GTK4-Client + Panel-Infrastruktur (Chat 56) + Web-Tool-Doku + SEARX1-Diagnose (Chat 57) + Chat 61 (Perzeption-Symmetrie, Akkumulations-Refactor, Paper-Portfolio, Lumi, urllib3-Doppel-Turn beobachtet) + Paper I + urllib3-RETRY + ROUTE-CHAR-NOTIZ + RESP-DEAD + PIXIE-GHOST (Chat 65) + WS-SINGLE Fix + ClientConnection + User-Message-Broadcast (Chat 68) + Dreischicht-Integration + GV-Refactoring + MODUS-LEER + VEKTOR-LEER + AROUSAL-330 + ZIEL-LABEL-LEER Fixes (Chat 72) + Promotion-Pipeline-Audit (Chat 75) + Reducer-Umbau Smoke-Tests (Chat 75) + Chat 79 (THINK-MEM-CONFLICT, CHAR-LZG-LEAK, MIGRATION-PIX-PAIR, MIGRATION-AGENTGRAPH-PAIR, PIX-CLEAN, KZG-CLEANUP)
+**Stand:** 11. Juli 2026, Chat 106
+**Quelle:** Testlauf "Karrierekrise" (200 Prompts) + Gedächtnis-Epic (Chat 11) + Epic 11 Agent-System (Chats 22–32) + Persona Smoke-Tests (Chats 31–32) + RechercheAgent-Test (Chat 35) + Doku-Audit (Chat 36) + PRIO0-Fix + Client-Observability (Chat 37) + Claude API-Test + STREAM1-Fix + Gesprächsvektor (Chat 39) + CharakterIdentitaetAgent + DirektivenAgent + Tribunal Score-System (Chat 40) + Telegram Bot + Zeitparser-Fixes (Chat 41) + CRUD-Härtung + Telegram-Chat-Analyse + DB-Report (Chat 42) + KONTEXT1-Fix + Resume-Bug + Epic 15 Pilot (Chat 43) + Epic 15 Rollout + DELEG-REG Fix + KZG-Klebrigkeit (Chat 44) + RESP-CHAR1 Fix (Chat 45) + CLASSIFY-REJECTED + Gemma4 Live-Tests (Chat 48) + Telegram-Konversation "frecher Charakter" (Chat 49) + RESUME-REJECT Fix + Live-Tests (Chat 50) + Neugier-Konzept + Projektinfrastruktur (Chat 51) + Doku-Alignment + emotions_profil (Chat 52) + Antrieb-Konzept + Dual-Emotion (Chat 53) + HALL2-Fix + Planner-Refactor (Chat 54) + PySide6 verworfen + GTK4-Entscheidung (Chat 55) + GTK4-Client + Panel-Infrastruktur (Chat 56) + Web-Tool-Doku + SEARX1-Diagnose (Chat 57) + Chat 61 (Perzeption-Symmetrie, Akkumulations-Refactor, Paper-Portfolio, Lumi, urllib3-Doppel-Turn beobachtet) + Paper I + urllib3-RETRY + ROUTE-CHAR-NOTIZ + RESP-DEAD + PIXIE-GHOST (Chat 65) + WS-SINGLE Fix + ClientConnection + User-Message-Broadcast (Chat 68) + Dreischicht-Integration + GV-Refactoring + MODUS-LEER + VEKTOR-LEER + AROUSAL-330 + ZIEL-LABEL-LEER Fixes (Chat 72) + Promotion-Pipeline-Audit (Chat 75) + Reducer-Umbau Smoke-Tests (Chat 75) + Chat 79 (THINK-MEM-CONFLICT, CHAR-LZG-LEAK, MIGRATION-PIX-PAIR, MIGRATION-AGENTGRAPH-PAIR, PIX-CLEAN, KZG-CLEANUP) + Doku-Code-Abgleich (Chat 106)
 
 ---
 
@@ -1082,3 +1082,47 @@ Dann Requests über diese Session abwickeln statt direkt `requests.post()`.
 ---
 
 *Aktualisiert Chat 92: Block 1 (Embedding-Konsolidierung) der MS-Welle abgeschlossen. SHADOW-DELIVERY-BLOCKING-INVOKE im Zuge G8 strukturell mitbehoben. Drei neue ✅-Einträge (STACK-PUSH-SILENT-EMBED, SHADOW-DELIVERY-SILENT-EMBED, LIFESPAN-EMBED-BLOCK) — Silent-Skip- und Main-Loop-Blocker, die im Cleanup-Sprint mitgefallen sind.*
+
+---
+
+### Chat 106 — Doku-Code-Abgleich (Code-Funde)
+
+#### RESPONDER-VEKTOR-TOT — Novas Emotions-Vektor erreicht den Responder-Prompt nie ⚠️
+
+**Entdeckt:** Chat 106, systematischer Doku-Code-Abgleich (Fund über `novaberg-node-responder.md` §3/§5)
+
+**Klasse:** Toter Lesepfad — State-Key ohne Schreiber nach dem Personality-Klassen-Umbau (Chat 105), Severity **Hoch** — kritischer Pfad, entwertet den NOVA-VERLAUF-LEER-Fix
+
+**Symptom:** Die Vektor-Zeile im `[EIGENE_EMOTION]`-Block des Responder-System-Prompts erscheint nie. Der Responder liest `state.get("nova_emotions_vektor", "")` und rendert die Beschreibung nur, wenn der Wert gesetzt und in `EMOTIONS_VEKTOREN_NOVA` enthalten ist — aber kein Node im gesamten Server schreibt diesen State-Key. Der EI-Calc legt den Wert stattdessen in `internal.emotion.emotions_vector` ab; `graph/state.py` dokumentiert diese Wanderung sogar als Kommentar.
+
+**Beleg (Datei:Funktion):**
+
+- Leser (toter Pfad): `graph/nodes/responder.py` → `_build_system_prompt` (Lesestelle Z. 233, Render-Bedingung Z. 247–248)
+- Schreiber (anderer Kanal): `graph/nodes/ei_calc.py` → `_ei_calc_character` (`internal.emotion.emotions_vector = nova_emotions_vektor`, Z. 255)
+- Bestätigung der Wanderung: `graph/state.py:85` („nova_emotions_vektor wandert in internal.emotion.emotions_vector")
+- Korrekt migrierter Vergleichspfad: `services/event_consumer.py:476` liest für die API-Response richtig aus `result_internal.emotion.emotions_vector`
+
+**Auswirkung:** Nova bekommt die Richtung ihres eigenen emotionalen Bogens (plateau, eskalation, absturz, …) in keiner Antwortgenerierung zu sehen — betrifft jeden CharacterGraph-Turn. Der NOVA-VERLAUF-LEER-Fix (`db02526`/`e54092d`/`546e472`, Roadmap) hat den Vektor erstmals beweglich gemacht; durch diesen Lesepfad-Bruch bleibt die Bewegung für die Antwortqualität unsichtbar. Fix bewusst offen — kommt nach eigenem Audit, nicht aus dem Doku-Abgleich.
+
+---
+
+#### PIPELINE-LOG-ART-DOKU-DRIFT — Forensik-Queries der Synapsen-Doku laufen gegen reale `art`-Werte ins Leere ⚠️
+
+**Entdeckt:** Chat 106, systematischer Doku-Code-Abgleich (Fund über `novaberg-memory-synapsen_k.md` §10.1/§10.2/§13.5)
+
+**Klasse:** Doku-Code-Drift an der Forensik-Schnittstelle, Severity **Mittel** — blockiert nichts im Betrieb, aber verminte Forensik
+
+**Symptom:** Die Synapsen-Doku definiert für schreibende DB-Zugriffe den `art`-Wert `db_zugriff` und behauptet „Lesen wird nicht geloggt". Der Code schreibt tatsächlich `db_write`, `db_read` (Lesen WIRD geloggt) und `turn_roh`. Die in §13.5 dokumentierten Forensik-Queries (`WHERE art = 'db_zugriff'`) liefern gegen reale Daten 0 Zeilen. Dazu zwei Nachbar-Drifts im selben Kapitel: Das §10.1-Schema führt die real existierenden Spalten `user_id`/`character_id` nicht, und die §10.5-Retention (365 Tage) verschweigt die dauerhafte Ausnahme für `turn_roh`.
+
+**Beleg (Datei:Funktion):**
+
+- `memory/pipeline_log.py` → `log_db_write` (schreibt `art="db_write"`, Z. 505/519), `log_db_read` (`art="db_read"`, Z. 522/536), `log_turn_roh` (`art="turn_roh"`, Z. 627/647)
+- Produktive Schreiber: `memory/kzg.py` → `kzg_store` (via `log_db_write`, Z. 340); `agents/kzg/speicher.py` → `_neu_anlegen` (Z. 304)
+- Spalten: `memory/pipeline_log.py` → `_insert` mit `user_id`/`character_id` (Z. 303–306); Schema `db/init.sql:381ff`
+- Retention-Ausnahme: `memory/pipeline_log.py` → `delete_expired_entries` (`AND art <> 'turn_roh'`, Z. 362–365)
+
+**Auswirkung:** Wer nach der Doku debuggt oder Forensik betreibt, bekommt leere Ergebnismengen und zieht falsche Schlüsse („keine DB-Writes geloggt"); die undokumentierte `turn_roh`-Ausnahme lässt Speicherwachstum an einer Stelle zu, an der die Doku Löschung verspricht. Fix bewusst offen — Klärung, ob Doku oder `art`-Taxonomie führt, kommt nach eigenem Audit.
+
+---
+
+*Aktualisiert Chat 106: Doku-Code-Abgleich über 46 Dokumente (Bericht: `~/ki-assistent/doku-code-abweichungen-chat106.md`, außerhalb des Repos). Zwei Code-Funde als offene Bugs aufgenommen (RESPONDER-VEKTOR-TOT, PIPELINE-LOG-ART-DOKU-DRIFT) — beide ohne Fix-Vorschlag, Fix nach eigenem Audit. Die übrigen ~60 Befunde sind Doku-Drift und gehören in die Doku-Pflege, nicht hierher.*
