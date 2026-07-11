@@ -21,6 +21,7 @@ _QUEUE_ROUTING: dict[str, str] = {
 _PERIODISCH_ROUTING: dict[str, str] = {
     "promotion":      "promotion",
     "synapsen_promotion": "synapsen_promotion",  # Synapsen P4
+    "synapsen_decay": "synapsen_decay",  # Synapsen P6
     "decay":          "decay",
     "charakter_hash": "charakter",
     "wiedervorlage":  "wiedervorlage",
