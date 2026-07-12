@@ -468,12 +468,24 @@ def anker_retrieval(
             roh = [dict(row) for row in cur.fetchall()]
         # Schwellen-Filter (§8.1): schwache Cosine-Treffer sind keine Anker.
         anker = [a for a in roh if a["cosine"] is not None and a["cosine"] >= min_similarity]
-        logger.info(
-            "Anker-Retrieval: paar=%s/%s anker=%d/%d (Schwelle %.2f) top_cosine=%.4f min_cosine=%.4f",
-            user_id, character_id, len(anker), len(roh), min_similarity,
-            anker[0]["cosine"] if anker else float("nan"),
-            anker[-1]["cosine"] if anker else float("nan"),
-        )
+        # Das Log zeigt die ROHEN Cosines VOR dem Schwellenfilter — nicht die
+        # gefilterten. Der fruehere float("nan")-Platzhalter bei leerer Anker-
+        # Liste hat behauptet, was er nicht wusste, und den IVFFLAT-RECALL-
+        # KOLLAPS als Nullvektor-Verdacht verkleidet (Chat 107;
+        # lesson_l_log-behauptet-was-es-weiss).
+        if roh:
+            logger.info(
+                "Anker-Retrieval: paar=%s/%s %d Kandidaten geladen "
+                "(beste Roh-Cosine %.4f, schwaechste %.4f), %d ueber Schwelle %.2f",
+                user_id, character_id, len(roh),
+                roh[0]["cosine"], roh[-1]["cosine"], len(anker), min_similarity,
+            )
+        else:
+            logger.info(
+                "Anker-Retrieval: paar=%s/%s 0 Kandidaten geladen — Partition leer "
+                "oder kein Knoten mit Embedding",
+                user_id, character_id,
+            )
         for a in anker:
             logger.debug("Anker: knoten=%s cosine=%.4f gewicht_decay=%.3f",
                          a["id"], a["cosine"], a["gewicht_decay"])

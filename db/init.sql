@@ -405,9 +405,16 @@ CREATE INDEX IF NOT EXISTS idx_pipeline_log_paar     ON pipeline_log (user_id, c
 -- langzeitgedaechtnis
 CREATE INDEX IF NOT EXISTS idx_lzg_user_id
     ON langzeitgedaechtnis (user_id);
-CREATE INDEX IF NOT EXISTS idx_lzg_embedding
-    ON langzeitgedaechtnis USING ivfflat (embedding vector_cosine_ops)
-    WITH (lists = 100);
+-- Vektor-Index (ivfflat) manuell anlegen wenn > ~10k Einträge vorhanden
+-- (dann lists ≈ rows/1000 waehlen und ivfflat.probes mitkalibrieren):
+-- ivfflat mit lists=100 bei ~300 Zeilen und probes=1 durchsucht eine einzige
+-- Zentroid-Liste mit ~3 Mitgliedern — der Recall bricht auf nahezu null ein
+-- (IVFFLAT-RECALL-KOLLAPS, Chat 107). Seq-Scan ist bei dieser Groesse exakt
+-- und < 1 ms. entitaeten/fakten funktionierten von Anfang an GERADE WEIL sie
+-- diesen Index nie hatten.
+-- CREATE INDEX idx_lzg_embedding
+--     ON langzeitgedaechtnis USING ivfflat (embedding vector_cosine_ops)
+--     WITH (lists = 100);
 CREATE INDEX IF NOT EXISTS idx_lzg_aktiv
     ON langzeitgedaechtnis (user_id, character_id) WHERE aktiv = TRUE;
 CREATE INDEX IF NOT EXISTS idx_lzg_themen
@@ -422,8 +429,15 @@ CREATE INDEX IF NOT EXISTS idx_lzg_timeline_id
 -- lzg_knoten (Synapsen P2)
 CREATE INDEX IF NOT EXISTS idx_lzg_knoten_aktiv
     ON lzg_knoten (user_id, character_id) WHERE aktiv = TRUE;
-CREATE INDEX IF NOT EXISTS idx_lzg_knoten_embedding
-    ON lzg_knoten USING ivfflat (embedding vector_cosine_ops) WITH (lists = 100);
+-- Vektor-Index (ivfflat) manuell anlegen wenn > ~10k Einträge vorhanden
+-- (dann lists ≈ rows/1000 waehlen und ivfflat.probes mitkalibrieren):
+-- ivfflat mit lists=100 bei 306 Zeilen und probes=1 durchsucht eine einzige
+-- Zentroid-Liste mit ~3 Mitgliedern — der Recall bricht auf nahezu null ein.
+-- Belegt Chat 107 (IVFFLAT-RECALL-KOLLAPS): "Was weißt du über Lumi?" lieferte
+-- 0 Treffer ueber den Index, aber 118/308/102 mit Cosine 0.67-0.74 ueber den
+-- Seq-Scan. Seq-Scan ist bei dieser Groesse exakt und < 1 ms.
+-- CREATE INDEX idx_lzg_knoten_embedding
+--     ON lzg_knoten USING ivfflat (embedding vector_cosine_ops) WITH (lists = 100);
 CREATE INDEX IF NOT EXISTS idx_lzg_knoten_themen
     ON lzg_knoten USING gin (themen);
 CREATE INDEX IF NOT EXISTS idx_lzg_knoten_entitaet_ids
