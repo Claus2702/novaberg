@@ -93,15 +93,19 @@ def akte_erstellen(state: AgentState) -> dict:
         conn = postgres_verbinden()
         cursor = conn.cursor()
 
-        # Header
+        # Header. zusammenfassung ist der zweite Baustein des Embed-Texts
+        # (duplikat_pruefen: "{themen}. {zusammenfassung}") — sie wird
+        # mitpersistiert, damit der Vektor aus dem gespeicherten Zustand
+        # rekonstruierbar bleibt (Chat 107).
         cursor.execute(
             """
             INSERT INTO delegations_akten (
-                user_id, themen, themen_embedding, trigger, prioritaet, seiten
-            ) VALUES (%s, %s, %s::vector, %s, %s, 1)
+                user_id, themen, zusammenfassung, themen_embedding,
+                trigger, prioritaet, seiten
+            ) VALUES (%s, %s, %s, %s::vector, %s, %s, 1)
             RETURNING id
             """,
-            (user_id, themen, embedding_str, trigger, prioritaet),
+            (user_id, themen, seite["zusammenfassung"], embedding_str, trigger, prioritaet),
         )
         akte_id = cursor.fetchone()[0]
 
@@ -234,7 +238,12 @@ def akte_anreichern(state: AgentState) -> dict:
         if trigger_rang.get(trigger, 0) > trigger_rang.get(alter_trigger, 0):
             neuer_trigger = trigger
 
-        # Header updaten
+        # Header updaten. Bewusst NICHT dabei: themen, zusammenfassung,
+        # themen_embedding — alle drei sind auf den Anlege-Zeitpunkt
+        # eingefroren. Der Vektor wird beim Anreichern nicht neu erzeugt;
+        # den Header-Text nachzuziehen, ohne neu zu embedden, wuerde Text
+        # und Vektor auseinandertreiben (Chat 107). Die Zusammenfassung des
+        # neuen Turns steht in der neuen Seite.
         cursor.execute(
             """
             UPDATE delegations_akten
