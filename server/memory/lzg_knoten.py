@@ -156,6 +156,61 @@ def knoten_anlegen(
         conn.close()
 
 
+def knoten_embedding_aktualisieren(
+    postgres_url: str,
+    knoten_id: int,
+    embedding_str: str,
+) -> bool:
+    """
+    Ueberschreibt das Embedding eines bestehenden lzg_knoten — das bis
+    Chat 107 im Repo fehlende UPDATE (Re-Embedding-Pfad, EMBEDDING-
+    CASING-BLIND Phase 2). Live schreibt nur knoten_anlegen initial;
+    dieses UPDATE gehoert dem Migrations-/Re-Embedding-Werkzeug.
+
+    Vorbedingung: knoten_id > 0, embedding_str ist ein pgvector-Literal
+    ("[v1,v2,...]"). Nachbedingung: genau eine Zeile aktualisiert.
+    Fehlerfaelle: unplausible Eingabe, unbekannte knoten_id (rowcount 0),
+    DB-Fehler — jeweils logger.error und False.
+    """
+
+    # ── Eingabe-Validierung ─────────────────────
+    if not isinstance(knoten_id, int) or knoten_id <= 0:
+        logger.error("knoten_embedding_aktualisieren: unplausible knoten_id=%r — verworfen", knoten_id)
+        return False
+    if not embedding_str or not embedding_str.startswith("["):
+        logger.error(
+            "knoten_embedding_aktualisieren: embedding_str ist kein pgvector-Literal (knoten=%s) — verworfen",
+            knoten_id,
+        )
+        return False
+
+    # ── Verarbeitung ────────────────────────────
+    conn = psycopg2.connect(postgres_url)
+    try:
+        with conn.cursor() as cur:
+            cur.execute(
+                "UPDATE lzg_knoten SET embedding = %s::vector WHERE id = %s",
+                (embedding_str, knoten_id),
+            )
+            aktualisiert: int = cur.rowcount
+        conn.commit()
+    except psycopg2.Error as exc:
+        conn.rollback()
+        logger.error("knoten_embedding_aktualisieren fehlgeschlagen knoten=%s: %s", knoten_id, exc)
+        return False
+    finally:
+        conn.close()
+
+    # ── Ausgabe-Verifikation ────────────────────
+    if aktualisiert != 1:
+        logger.error(
+            "knoten_embedding_aktualisieren: rowcount=%d fuer knoten=%s (erwartet 1) — Knoten existiert nicht?",
+            aktualisiert, knoten_id,
+        )
+        return False
+    return True
+
+
 def kandidaten_mit_cosine_laden(
     postgres_url: str,
     user_id: str,

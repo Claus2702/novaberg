@@ -405,6 +405,83 @@ def kanten_neuberechnen_fuer_knoten(postgres_url: str, knoten_id: int) -> int:
         conn.close()
 
 
+def embedding_cosine_alle_aktualisieren(postgres_url: str) -> int:
+    """
+    Frischt embedding_cosine_initial ALLER Kanten aus den aktuellen
+    Knoten-Embeddings auf und berechnet danach die Kanten-Gewichte neu
+    (Re-Embedding-Pfad, EMBEDDING-CASING-BLIND Phase 2, Chat 107).
+
+    Hintergrund: kanten_neuberechnen_fuer_knoten (Trigger 2) nutzt die
+    EINGEFRORENE Initial-Cosine — nach einem Re-Embedding der Knoten
+    waeren das Alt-Werte aus einem fremden Vektorraum. Diese Funktion
+    setzt die Cosine per Set-UPDATE aus den frischen Embeddings neu
+    (1 - (a.embedding <=> b.embedding)) und ruft anschliessend fuer
+    jeden beteiligten Knoten den bestehenden Gewichts-Baustein auf.
+    Kein Struktureingriff: verbindungs_gruende bleiben; faellt eine neue
+    Cosine unter LZG_EMBEDDING_SCHWELLWERT, liefert embedding_tiefe 0.0
+    und die Kante verliert nur Gewicht.
+
+    Vorbedingung: lzg_knoten.embedding traegt bereits die NEUEN Vektoren.
+    Nachbedingung: jede Kante mit gesetzter Initial-Cosine und zwei
+    bebilderten Endknoten traegt den frischen Wert; Gewichte neu.
+    Fehlerfaelle: DB-Fehler -> logger.error, Rueckgabe 0 (nichts halb).
+
+    Liefert die Anzahl aufgefrischter Kanten.
+    """
+
+    # ── Eingabe-Validierung / Verarbeitung Teil 1: Cosine-Refresh ──────
+    conn = psycopg2.connect(postgres_url)
+    try:
+        with conn.cursor() as cur:
+            cur.execute(
+                """
+                UPDATE lzg_kanten k
+                SET embedding_cosine_initial = 1 - (a.embedding <=> b.embedding)
+                FROM lzg_knoten a, lzg_knoten b
+                WHERE a.id = k.knoten_a_id
+                  AND b.id = k.knoten_b_id
+                  AND k.embedding_cosine_initial IS NOT NULL
+                  AND a.embedding IS NOT NULL
+                  AND b.embedding IS NOT NULL
+                """
+            )
+            aufgefrischt: int = cur.rowcount
+
+            # Beteiligte Knoten fuer den Gewichts-Neuaufbau einsammeln.
+            cur.execute(
+                "SELECT DISTINCT knoten_a_id FROM lzg_kanten "
+                "UNION SELECT DISTINCT knoten_b_id FROM lzg_kanten"
+            )
+            knoten_ids: list[int] = [row[0] for row in cur.fetchall()]
+        conn.commit()
+    except psycopg2.Error as exc:
+        conn.rollback()
+        logger.error("embedding_cosine_alle_aktualisieren fehlgeschlagen: %s", exc)
+        return 0
+    finally:
+        conn.close()
+
+    # ── Verarbeitung Teil 2: Gewichte ueber den bestehenden Baustein ───
+    # Pro Knoten werden alle anliegenden Kanten neu berechnet; Kanten
+    # zwischen zwei Knoten laufen dabei zweimal — idempotent, kein Schaden.
+    gewichte_gesamt: int = 0
+    for knoten_id in knoten_ids:
+        gewichte_gesamt += kanten_neuberechnen_fuer_knoten(postgres_url, knoten_id)
+
+    # ── Ausgabe-Verifikation ────────────────────
+    logger.info(
+        "Kanten-Cosine-Refresh: %d Kanten aufgefrischt, %d Gewichts-Neuberechnungen ueber %d Knoten",
+        aufgefrischt, gewichte_gesamt, len(knoten_ids),
+    )
+    if aufgefrischt == 0 and knoten_ids:
+        logger.error(
+            "Kanten-Cosine-Refresh: 0 Kanten aufgefrischt trotz %d beteiligter Knoten — "
+            "Initial-Cosines fehlen oder Knoten ohne Embedding?",
+            len(knoten_ids),
+        )
+    return aufgefrischt
+
+
 def _schicht_tiefen_aus_frozen(kante: dict) -> dict[str, float]:
     """
     Rekonstruiert die schicht_tiefen einer bestehenden Kante aus ihren
