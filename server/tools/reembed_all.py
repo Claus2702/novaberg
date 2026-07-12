@@ -24,11 +24,23 @@ Selbstkontrolle nach --commit (Ziel lzg_knoten): drei Referenzpaare aus der
 Chat-107-Kalibrierung werden direkt in der DB nachgerechnet
 (1 - (a.embedding <=> b.embedding)); Abweichung > 0.01 wird laut gemeldet.
 
-Ziele (--target, mehrfach; "all" = alle ausser legacy):
-  lzg_knoten entitaeten fakten ziele delegation kzg shadow kanten legacy
+Ziele (--target, mehrfach; "all" = alle ausser legacy, reset, kanten_rebuild):
+  lzg_knoten entitaeten fakten ziele delegation kzg shadow kanten
+  reset kanten_rebuild legacy
   - Reihenfolge in "all": lzg_knoten -> ... -> kzg -> shadow -> kanten.
     kanten IMMER zuletzt (rechnet Cosines aus den frischen Knoten-Vektoren).
   - shadow wird GELOESCHT, nicht re-embedded (kurzlebig, kein Verlust).
+  - reset (NICHT in "all" — bewusste Entscheidung, kein Automatismus):
+    setzt alle Knoten-Gewichte auf den rekonstruierten Anlagezustand
+    zurueck und loescht die Kanten. Anlass: 2910 Reinforcements (93 %)
+    aus Skelett-Kollisionen — Zufallsgewichte, die ueber gewicht_absolut
+    die Charakter-Destillation speisen.
+  - kanten_rebuild (NICHT in "all"): baut das Kantennetz chronologisch
+    neu auf. Zwingend NACH Re-Embedding UND Reset — kanten_staerke_
+    berechnen liest gewicht_absolut, ein frueherer Aufbau wuerde die
+    Zufallsgewichte in die Kanten einfrieren.
+    Phase-B-Kette: lzg_knoten -> reset -> kanten_rebuild
+    (kanten/Cosine-Refresh bleibt fuer Refresh-OHNE-Reset erhalten).
   - legacy (langzeitgedaechtnis) nur explizit — hat keinen Live-Aufrufer
     und KEINE embed_text_bauen-Formel; der Handler verweigert laut, statt
     eine Formel im Tool zu improvisieren (Entscheidung noetig).
@@ -83,9 +95,19 @@ KONTROLL_TOLERANZ: float = 0.01
 
 ZIEL_REIHENFOLGE: list[str] = [
     "lzg_knoten", "entitaeten", "fakten", "ziele",
-    "delegation", "kzg", "legacy", "shadow", "kanten",
+    "delegation", "kzg", "legacy", "shadow",
+    "reset", "kanten", "kanten_rebuild",
 ]
-ALL_ZIELE: list[str] = [z for z in ZIEL_REIHENFOLGE if z != "legacy"]
+# reset und kanten_rebuild laufen NICHT in "all" mit — der Gewichts-Reset ist
+# eine bewusste Entscheidung, kein Automatismus; der Rebuild gehoert zwingend
+# HINTER den Reset (kanten_staerke_berechnen liest gewicht_absolut — ein
+# Rebuild vor dem Reset wuerde die Zufallsgewichte in die Kanten einfrieren).
+ALL_ZIELE: list[str] = [z for z in ZIEL_REIHENFOLGE if z not in ("legacy", "reset", "kanten_rebuild")]
+
+# Beispielknoten fuer die Reset-Vorschau: die drei bekannten Kollisions-Opfer
+# (108: 179x "exquisit und blumig", 121: 121x OXTR-Frage, 167: 61x "Der Nutzer
+# heisst Claus").
+RESET_BEISPIEL_IDS: list[int] = [108, 121, 167]
 
 # Redis ohne Auto-Decode: HGET auf Embedding-Bytes wuerde sonst
 # UnicodeDecodeError werfen (Muster aus migrate_kzg_keys.py).
@@ -370,6 +392,95 @@ def ziel_shadow(commit: bool) -> dict:
     return stats
 
 
+def ziel_reset(commit: bool) -> dict:
+    """Gewichts-Reset + Kanten-Loeschung (Migrations-Reset, Phase B Schritt 2).
+
+    Rechnet den Anlagezustand ueber die ECHTE Initialisierungslogik zurueck
+    (memory/lzg_knoten.py::knoten_gewichte_zuruecksetzen — dieselbe
+    gewicht_absolut_berechnen wie knoten_anlegen, Boost aus der config).
+    Bricht den GESAMTEN Lauf ab, wenn die Rekonstruktion bei irgendeinem
+    Knoten initial_roh <= 0 ergaebe. Loescht bei --commit alle lzg_kanten
+    (Neuaufbau: --target kanten_rebuild).
+    """
+    stats: dict = {"gelesen": 0, "embedded": 0, "geschrieben": 0, "uebersprungen": 0}
+
+    ergebnis: dict = lzg_knoten.knoten_gewichte_zuruecksetzen(
+        POSTGRES_URL, commit=commit, beispiel_ids=RESET_BEISPIEL_IDS,
+    )
+    stats["gelesen"] = ergebnis["knoten"]
+    stats["geschrieben"] = ergebnis["geschrieben"]
+
+    if ergebnis["error"]:
+        raise SystemExit(1)  # Verletzungen bereits einzeln als error geloggt
+
+    for b in ergebnis["beispiele"]:
+        logger.info(
+            "[reset] Knoten %s VORHER: roh=%.3f absolut=%.3f decay=%.3f haeufigkeit=%d verstaerkt_am=%s",
+            b["id"], b["vorher"]["roh"], b["vorher"]["absolut"], b["vorher"]["decay"],
+            b["vorher"]["haeufigkeit"], b["vorher"]["verstaerkt_am"],
+        )
+        logger.info(
+            "[reset] Knoten %s NACHHER: roh=%.3f absolut=%.3f decay=%.3f haeufigkeit=%d verstaerkt_am=%s",
+            b["id"], b["nachher"]["roh"], b["nachher"]["absolut"], b["nachher"]["decay"],
+            b["nachher"]["haeufigkeit"], b["nachher"]["verstaerkt_am"],
+        )
+
+    conn = psycopg2.connect(POSTGRES_URL)
+    try:
+        with conn.cursor() as cur:
+            cur.execute("SELECT COUNT(*) FROM lzg_kanten")
+            kanten_anzahl: int = cur.fetchone()[0]
+    finally:
+        conn.close()
+
+    if commit:
+        geloescht: int = lzg_kanten.kanten_alle_loeschen(POSTGRES_URL)
+        if geloescht < 0:
+            raise SystemExit(1)
+        logger.info("[reset] %d Kanten geloescht — Neuaufbau via --target kanten_rebuild", geloescht)
+    else:
+        logger.info("[reset] %d Kanten wuerden geloescht (Neuaufbau via --target kanten_rebuild)", kanten_anzahl)
+    return stats
+
+
+def ziel_kanten_rebuild(commit: bool, reset_dabei: bool) -> dict:
+    """Kanten-Neuaufbau nach Reset (Phase B Schritt 3, IMMER als letztes).
+
+    Chronologisch ueber kzg_erstellt_am, echte Bausteine
+    (kandidaten_mit_cosine_laden + kanten_fuer_neuen_knoten_bilden) —
+    siehe memory/lzg_kanten.py::kanten_alle_neu_aufbauen.
+    """
+    if not reset_dabei:
+        logger.warning(
+            "[kanten_rebuild] reset ist NICHT Teil dieses Laufs — der Aufbau friert "
+            "die AKTUELLEN gewicht_absolut-Werte in die Kantenstaerken ein. Nur "
+            "sinnvoll, wenn der Reset bereits vorher gelaufen ist."
+        )
+    stats: dict = {"gelesen": 0, "embedded": 0, "geschrieben": 0, "uebersprungen": 0}
+    conn = psycopg2.connect(POSTGRES_URL)
+    try:
+        with conn.cursor() as cur:
+            cur.execute("SELECT COUNT(*) FROM lzg_knoten WHERE aktiv = TRUE AND embedding IS NOT NULL")
+            stats["gelesen"] = cur.fetchone()[0]
+            cur.execute("SELECT COUNT(*) FROM lzg_kanten")
+            bestand: int = cur.fetchone()[0]
+    finally:
+        conn.close()
+
+    if not commit:
+        logger.info(
+            "[kanten_rebuild] wuerde das Netz fuer %d aktive Knoten chronologisch neu "
+            "aufbauen (aktueller Kanten-Bestand: %d)", stats["gelesen"], bestand,
+        )
+        return stats
+
+    ergebnis: dict = lzg_kanten.kanten_alle_neu_aufbauen(POSTGRES_URL)
+    if ergebnis["error"]:
+        raise SystemExit(1)
+    stats["geschrieben"] = ergebnis["paare"]
+    return stats
+
+
 def ziel_kanten(commit: bool, lzg_dabei: bool) -> dict:
     """lzg_kanten.embedding_cosine_initial — Refresh + Gewichts-Neuberechnung."""
     if not lzg_dabei:
@@ -504,7 +615,9 @@ def main() -> int:
         "kzg":        lambda: ziel_kzg(args.commit),
         "legacy":     lambda: ziel_legacy(args.commit),
         "shadow":     lambda: ziel_shadow(args.commit),
+        "reset":      lambda: ziel_reset(args.commit),
         "kanten":     lambda: ziel_kanten(args.commit, lzg_dabei="lzg_knoten" in ziele),
+        "kanten_rebuild": lambda: ziel_kanten_rebuild(args.commit, reset_dabei="reset" in ziele),
     }
     bilanz: dict[str, dict] = {}
     for ziel in ziele:

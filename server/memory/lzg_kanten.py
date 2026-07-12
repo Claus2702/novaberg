@@ -482,6 +482,114 @@ def embedding_cosine_alle_aktualisieren(postgres_url: str) -> int:
     return aufgefrischt
 
 
+def kanten_alle_loeschen(postgres_url: str) -> int:
+    """
+    Loescht ALLE Kanten (Migrations-Reset, Chat 107). Gefahrlos belegt:
+    Kanten referenzieren nur Knoten (ON DELETE CASCADE dort), nichts
+    referenziert lzg_kanten. Nach dem Loeschen entstehen Kanten fuer
+    Bestandsknoten NICHT von selbst (Trigger 1 laeuft nur beim Anlegen) —
+    kanten_alle_neu_aufbauen ist der Gegenpart.
+
+    Liefert die Anzahl geloeschter Kanten; -1 bei DB-Fehler.
+    """
+
+    # ── Verarbeitung ────────────────────────────
+    conn = psycopg2.connect(postgres_url)
+    try:
+        with conn.cursor() as cur:
+            cur.execute("DELETE FROM lzg_kanten")
+            geloescht: int = cur.rowcount
+        conn.commit()
+    except psycopg2.Error as exc:
+        conn.rollback()
+        logger.error("kanten_alle_loeschen fehlgeschlagen: %s", exc)
+        return -1
+    finally:
+        conn.close()
+
+    # ── Ausgabe ─────────────────────────────────
+    logger.info("Kanten-Reset: %d Kanten geloescht", geloescht)
+    return geloescht
+
+
+def kanten_alle_neu_aufbauen(postgres_url: str) -> dict:
+    """
+    Baut das Kantennetz fuer den Bestand neu auf (Migrations-Rebuild,
+    Chat 107) — chronologisch ueber kzg_erstellt_am, exakt wie der Bestand
+    entstanden waere: pro Knoten werden nur FRUEHERE Knoten als Kandidaten
+    betrachtet (Migrationstool-Semantik), Kandidaten kommen aus der echten
+    kandidaten_mit_cosine_laden, die Kantenbildung aus dem echten Trigger 1
+    (kanten_fuer_neuen_knoten_bilden). Keine nachgebaute Formel.
+
+    ⚠ Reihenfolge zwingend (kein Stil): kanten_staerke_berechnen liest
+    gewicht_absolut — ein Rebuild VOR dem Gewichts-Reset wuerde die
+    Zufallsgewichte in die Kantenstaerken einfrieren. Ebenso muessen die
+    Embeddings frisch sein (Cosine der Embedding-Schicht). Also:
+    Re-Embedding -> Reset -> Rebuild.
+
+    Nur aktive Knoten — deckungsgleich mit dem Live-Anlegen (Kandidaten
+    sind dort ebenfalls nur aktive). Liefert {knoten, paare, error}.
+    """
+
+    # ── Eingabe-Validierung: Bestand chronologisch laden ───────────────
+    ergebnis: dict = {"knoten": 0, "paare": 0, "error": None}
+    conn = psycopg2.connect(postgres_url)
+    try:
+        with conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cur:
+            cur.execute(
+                """
+                SELECT k.id, k.user_id, k.character_id, k.gewicht_absolut,
+                       k.entitaet_ids, k.themen, k.timeline_id, k.kzg_erstellt_am,
+                       k.embedding::text AS embedding_str,
+                       t.event_time AS timeline_event_time,
+                       t.precision  AS timeline_praezision
+                FROM lzg_knoten k
+                LEFT JOIN timeline t ON t.id = k.timeline_id
+                WHERE k.aktiv = TRUE AND k.embedding IS NOT NULL
+                ORDER BY k.kzg_erstellt_am, k.id
+                """
+            )
+            knoten = [dict(r) for r in cur.fetchall()]
+    finally:
+        conn.close()
+
+    ergebnis["knoten"] = len(knoten)
+    if not knoten:
+        logger.error("Kanten-Rebuild: keine aktiven Knoten mit Embedding — nichts aufzubauen")
+        ergebnis["error"] = "kein_bestand"
+        return ergebnis
+
+    # ── Verarbeitung: Trigger 1 pro Knoten, nur fruehere Kandidaten ────
+    from memory.lzg_knoten import kandidaten_mit_cosine_laden  # zyklusfrei: lokaler Import
+
+    for i, k in enumerate(knoten, start=1):
+        kandidaten = kandidaten_mit_cosine_laden(
+            postgres_url, k["user_id"], k["character_id"], k["embedding_str"],
+        )
+        fruehere_ids: set[int] = {
+            f["id"] for f in knoten[: i - 1]
+            if f["user_id"] == k["user_id"] and f["character_id"] == k["character_id"]
+        }
+        kandidaten = [c for c in kandidaten if c["id"] in fruehere_ids]
+        if kandidaten:
+            ergebnis["paare"] += kanten_fuer_neuen_knoten_bilden(postgres_url, k, kandidaten)
+        if i % 25 == 0:
+            logger.info("Kanten-Rebuild: %d/%d Knoten verarbeitet, %d Paare", i, len(knoten), ergebnis["paare"])
+
+    # ── Ausgabe-Verifikation ────────────────────
+    logger.info(
+        "Kanten-Rebuild abgeschlossen: %d Knoten, %d Kanten-Paare gebildet",
+        ergebnis["knoten"], ergebnis["paare"],
+    )
+    if ergebnis["paare"] == 0:
+        logger.error(
+            "Kanten-Rebuild: 0 Paare bei %d Knoten — greift keine Schicht? "
+            "Gewichte/Embeddings pruefen (Reihenfolge Re-Embedding -> Reset -> Rebuild eingehalten?)",
+            ergebnis["knoten"],
+        )
+    return ergebnis
+
+
 def _schicht_tiefen_aus_frozen(kante: dict) -> dict[str, float]:
     """
     Rekonstruiert die schicht_tiefen einer bestehenden Kante aus ihren

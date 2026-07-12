@@ -265,11 +265,32 @@ pgvector merkt nichts.
    `EMBED_MODEL`-Import in `main.py` entfernt.
    ⚠ Phase B muss den Container NEU ERZEUGEN (`docker compose up -d`) —
    ein bloßer Restart liest die Compose-Env nicht neu.
-4. Re-Embedding laufen lassen (Dry-Run → Diff prüfen → `--commit`)
-5. `lzg_kanten` neu berechnen (`kanten_neuberechnen_fuer_knoten`) — die
-   `embedding_cosine_initial` sind sonst eingefrorene Alt-Werte
-6. Shadow-Stack leeren (kurzlebig, kein Verlust)
-7. **Server starten** → löst nebenbei den `_strategie_embeddings_cache`
+4. Re-Embedding laufen lassen (Dry-Run → Diff prüfen → `--commit`) —
+   `python -m tools.reembed_all --commit` (deckt inkl. Shadow-Leerung alles ab;
+   Werkzeug ✅ Chat 107, Commit `e6671d4`)
+5. **Gewichts-Reset** — `--target reset` (✅ gebaut Chat 107, NICHT in "all"):
+   2910 Reinforcements (93 %) entstanden durch Skelett-Kollisionen
+   (cosine_max = 1.0000 im pipeline_log); `haeufigkeit` speist
+   `gewicht_absolut`, `gewicht_absolut` speist die Charakter-Destillation —
+   Nova trägt einen Charakter aus Zufallsgewichten. Der Reset rechnet den
+   Anlagezustand EXAKT zurück (`initial_roh = roh − (haeufigkeit−1) × Boost`,
+   dann die echte `gewicht_absolut_berechnen`; belegt: einziger Schreiber ist
+   `knoten_verstaerken`, Boost seit Einführung unverändert 0.1) und setzt
+   `verstaerkt_am := erstellt_am` — der Verfallsanker war von den
+   Zufalls-Reinforcements auf „frisch" gezogen. Löscht zugleich alle
+   `lzg_kanten` (1378 Stand 12.7.).
+6. **Kanten-Neuaufbau** — `--target kanten_rebuild` (✅ gebaut Chat 107,
+   NICHT in "all"). ⚠ **Reihenfolge zwingend, kein Stil:**
+   `kanten_staerke_berechnen` liest `gewicht_absolut` — ein Aufbau VOR dem
+   Reset würde die Zufallsgewichte in die Kantenstärken einfrieren (der
+   Zufall wanderte aus den Knoten in die Kanten, wo ihn niemand mehr sucht).
+   Also: **Re-Embedding → Reset → Rebuild.** Chronologisch über
+   `kzg_erstellt_am` mit den echten Bausteinen (`kandidaten_mit_cosine_laden`
+   + Trigger 1). Der bloße Cosine-Refresh (`--target kanten`) bleibt für
+   Refresh-OHNE-Reset-Szenarien erhalten, wird in Phase B aber durch den
+   Rebuild ersetzt.
+7. **Server-Container NEU ERZEUGEN** (`docker compose up -d`, kein blosser
+   Restart) → löst nebenbei den `_strategie_embeddings_cache`
 
 ### Phase 4 — Abnahme
 - Live-Turn: Anker-Retrieval liefert Treffer? Spreading feuert?

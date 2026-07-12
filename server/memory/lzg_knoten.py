@@ -211,6 +211,132 @@ def knoten_embedding_aktualisieren(
     return True
 
 
+def knoten_gewichte_zuruecksetzen(
+    postgres_url: str,
+    *,
+    commit: bool,
+    beispiel_ids: list[int] | None = None,
+) -> dict:
+    """
+    Setzt alle Knoten-Gewichte auf den rekonstruierten Anlagezustand zurueck
+    (Migrations-Reset, EMBEDDING-CASING-BLIND Phase B, Chat 107). Anlass:
+    2910 Reinforcements (93 %) entstanden durch Skelett-Kollisionen im
+    casing-blinden Raum — die Gewichte sind Zufall. Ein Gewicht, von dem
+    wir wissen, dass es Zufall ist, richtet mehr Schaden an als kein Gewicht.
+
+    Rekonstruktion (exakt, kein Standardwert — Beleg: einziger Schreiber
+    von gewicht_roh/haeufigkeit ist knoten_verstaerken, Boost seit
+    Einfuehrung unveraendert, beide Felder aendern sich atomar gemeinsam):
+
+        initial_roh     = gewicht_roh - (haeufigkeit - 1) * BOOST
+        gewicht_absolut = gewicht_absolut_berechnen(initial_roh)  # ECHTE Funktion
+        gewicht_decay   = gewicht_absolut
+        haeufigkeit     = 1
+        verstaerkt_am   = erstellt_am
+
+    verstaerkt_am := erstellt_am, weil verstaerkt_am der Anker des Verfalls
+    ist: Jedes Zufalls-Reinforcement hat ihn auf NOW() gezogen — ein Mai-
+    Knoten, der im Juli faelschlich verstaerkt wurde, gilt heute als frisch;
+    der Decay wuerde von einer Luege aus rechnen. NOW() fuer alle waere die
+    schlechteste Variante: Kernfakt aus dem Mai und Randbemerkung von gestern
+    haetten dieselbe Verfallsuhr. Das Alter ist Information — es liegt in
+    erstellt_am. aktiv bleibt unangetastet.
+
+    Idempotent: Nach einem Reset ist haeufigkeit 1 -> initial_roh == gewicht_roh.
+    Vorbedingung/Abbruch (fail loud): Wird initial_roh bei irgendeinem Knoten
+    <= 0, stimmt die Rekonstruktionsannahme nicht — ABBRUCH ohne jede
+    Schreibaktion, die betroffenen Knoten werden aufgelistet.
+
+    commit=False rechnet nur (Dry-Run). beispiel_ids: Knoten, fuer die
+    vorher/nachher-Werte zurueckgegeben werden. Rueckgabe:
+    {knoten, verletzungen, beispiele, geschrieben, error}.
+    """
+
+    # ── Eingabe-Validierung: Bestand laden, Reset-Plan pruefen ─────────
+    ergebnis: dict = {"knoten": 0, "verletzungen": [], "beispiele": [], "geschrieben": 0, "error": None}
+    beispiel_menge: set[int] = set(beispiel_ids or [])
+
+    conn = psycopg2.connect(postgres_url)
+    try:
+        with conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cur:
+            cur.execute(
+                "SELECT id, gewicht_roh, gewicht_absolut, gewicht_decay, haeufigkeit, "
+                "       verstaerkt_am, erstellt_am "
+                "FROM lzg_knoten ORDER BY id"
+            )
+            knoten = [dict(r) for r in cur.fetchall()]
+    finally:
+        conn.close()
+
+    ergebnis["knoten"] = len(knoten)
+    plan: list[tuple[float, float, int]] = []  # (initial_roh, initial_absolut, id)
+    for k in knoten:
+        initial_roh: float = k["gewicht_roh"] - (k["haeufigkeit"] - 1) * LZG_KNOTEN_REINFORCEMENT_BOOST
+        if initial_roh <= 0:
+            ergebnis["verletzungen"].append(
+                {"id": k["id"], "gewicht_roh": k["gewicht_roh"], "haeufigkeit": k["haeufigkeit"],
+                 "initial_roh": initial_roh}
+            )
+            continue
+        initial_absolut: float = gewicht_absolut_berechnen(initial_roh)
+        plan.append((initial_roh, initial_absolut, k["id"]))
+        if k["id"] in beispiel_menge:
+            ergebnis["beispiele"].append({
+                "id": k["id"],
+                "vorher": {"roh": k["gewicht_roh"], "absolut": k["gewicht_absolut"],
+                           "decay": k["gewicht_decay"], "haeufigkeit": k["haeufigkeit"],
+                           "verstaerkt_am": str(k["verstaerkt_am"])},
+                "nachher": {"roh": initial_roh, "absolut": initial_absolut,
+                            "decay": initial_absolut, "haeufigkeit": 1,
+                            "verstaerkt_am": str(k["erstellt_am"])},
+            })
+
+    if ergebnis["verletzungen"]:
+        for v in ergebnis["verletzungen"]:
+            logger.error(
+                "Gewichts-Reset: Rekonstruktion verletzt bei Knoten %s — roh=%.3f, "
+                "haeufigkeit=%d ergaebe initial_roh=%.3f (<= 0). ABBRUCH, nichts geschrieben.",
+                v["id"], v["gewicht_roh"], v["haeufigkeit"], v["initial_roh"],
+            )
+        ergebnis["error"] = "rekonstruktion_verletzt"
+        return ergebnis
+
+    # ── Verarbeitung: nur bei commit, atomar in einer Transaktion ──────
+    if commit and plan:
+        conn = psycopg2.connect(postgres_url)
+        try:
+            with conn.cursor() as cur:
+                psycopg2.extras.execute_batch(
+                    cur,
+                    """
+                    UPDATE lzg_knoten
+                    SET gewicht_roh = %s,
+                        gewicht_absolut = %s,
+                        gewicht_decay = %s,
+                        haeufigkeit = 1,
+                        verstaerkt_am = erstellt_am
+                    WHERE id = %s
+                    """,
+                    plan,
+                )
+            conn.commit()
+            ergebnis["geschrieben"] = len(plan)
+        except psycopg2.Error as exc:
+            conn.rollback()
+            logger.error("Gewichts-Reset fehlgeschlagen: %s — Rollback, nichts geschrieben", exc)
+            ergebnis["error"] = str(exc)
+            return ergebnis
+        finally:
+            conn.close()
+
+    # ── Ausgabe ─────────────────────────────────
+    logger.info(
+        "Gewichts-Reset: %d Knoten geplant, %d geschrieben (commit=%s)",
+        len(plan), ergebnis["geschrieben"], commit,
+    )
+    return ergebnis
+
+
 def kandidaten_mit_cosine_laden(
     postgres_url: str,
     user_id: str,
