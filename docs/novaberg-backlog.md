@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Backlog — Konzipierte, noch nicht implementierte Features
-**Stand:** 11. Juli 2026, Chat 106
+**Stand:** 12. Juli 2026, Chat 107
 **Pfad:** novaberg/docs/novaberg-backlog.md
 **Quellen:** nova-08-k.md (Kognitive Anreicherung), nova-10-k-backlog.md (Skill-System), nova-01-t-c-backlog.md (Node-Konfiguration)
 
@@ -3195,3 +3195,36 @@ Der Lesson-Index in `novaberg-architecture.md` listet die Legacy-`{modul}_l.md`-
 - Die vier *-PAIR-* sind EINE Sache, viermal manifestiert → ein Backlog-Eintrag „Paar-Schema nicht durchgezogen" mit vier Fundstellen.
 - Die drei NOTIZEN-Verhaltensfälle → bugs.md. ⚠ NOTIZEN-UPDATE-TARGET-LEER lebt noch: NOTIZ-RESUME-TARGET-VERLUST (Chat 106) hat denselben Kern (`parameter["target"]` leer).
 - NOTIZEN-SKILL-MANIFEST → Inhalt prüfen, klingt nach Konzept (Epic 10).
+
+## Feature: LOG-TUERKLINGEL — Warn-/Fehler-Lampen mit Sitzungszähler in der Client-StatusBar (Chat 107)
+
+**Priorität hoch — bauen nach Phase B der Embedding-Migration.** Spezifikation final (dieser Eintrag), Draht-Audit abgeschlossen.
+
+**Anlass:** GV-ENTITY-HOP-TOT — der Entity-Hop schrieb vier Monate lang bei jedem Turn ein Warning. Niemand hat es bemerkt: nicht weil es fehlte, sondern weil nichts darauf aufmerksam machte.
+
+**Kernbefund aus dem Draht-Audit (Chat 107):** Es gibt zwei Log-Kanäle, und keiner erreicht den Client.
+
+- `log_fehler` → `pipeline_log`: nur 3 explizite Aufrufstellen (~2 % Abdeckung). ⚠ `pipeline_log` ist KEIN Fehler-Log, sondern Forensik für Node-Entscheidungen — eine Klingel an diesem Draht wäre beim Entity-Hop stumm geblieben (der schrieb `logger.warning`, nie `log_fehler`).
+- `logger.*` → Container-Log: 153 `error`/`critical`- + 156 `warning`-Stellen, sonst nirgends.
+- Der Client bekommt nur WS-Events mit `typ`-Feld; ein Log-Typ existiert nicht.
+
+**Lösung:** Zwei Anzeigen am Client-Rand (die StatusBar hat bereits Verbindungs- und Pixie-Label), je mit Zähler: gelb `[ n ]` Warnungen dieser Sitzung, rot `[ n ]` Fehler dieser Sitzung.
+
+**Verhalten:**
+
+- Lampe an, sobald WARNING bzw. ERROR geloggt wird; Zähler zählt hoch. Der Zähler zeigt, ob es EINMAL passiert ist oder DAUERND — der Unterschied zwischen „ein Fehler" und „etwas ist kaputt" (883 statt 1).
+- Client-Neustart = 0. Der Zähler misst diese Sitzung, nicht die Geschichte.
+- Tooltip zeigt den Logger-Namen der letzten Meldung — nicht den Text, keine Historie. Nur: wo nachsehen (Server-Log oder Client-Log).
+
+**Bewusst NICHT dabei:** keine Gruppierung, keine Statistik, keine Bewertung, kein Persistieren. Nachgelesen wird im Log. Das Werkzeug bewertet nicht — es klingelt und zählt. Der Meister klassifiziert und entscheidet, ob der Log-Level an der Stelle bleibt, eskaliert oder herabgestuft wird.
+
+**Verdrahtung (aus dem Audit):** `logging.Handler` am ROOT-Logger (Filter `level >= WARNING`) → WS-Event `typ="log_signal"` mit Level + Logger-Name → über bestehenden `broadcast`/`broadcast_threadsafe` → Client-Dispatch in `stream_handler.py`, Zähler in der StatusBar. Der Root-Logger ist der Punkt: Der Handler hängt per Konstruktion vor jedem heutigen UND künftigen `logger.warning/error` — nichts muss instrumentiert werden, ein zweites GV-ENTITY-HOP-TOT ist strukturell ausgeschlossen. Das ist der eigentliche Wert, nicht die Lampe. Quellen: Server UND Client (der GTK-Client loggt selbst) — beide speisen dieselben zwei Lampen.
+
+**Vier Stolperdrähte:**
+
+1. `ki_server.llm` hat `propagate=False` (einzige Stelle im Repo) — Handler muss dort ZUSÄTZLICH hängen, sonst ist das Token-Tracking blind.
+2. Rückkopplung: `broadcast()` loggt bei Sendefehlern selbst → Klingel → sendet → scheitert → loggt → Endlosschleife. Reentrancy-Sperre nötig; Records aus `ki_server.websocket` ausnehmen. ⚠ Ehrliche Grenze: Über ihren eigenen kaputten Draht kann die Klingel nicht klingeln — Physik, kein Designfehler. Zusätzliches Argument, BROADCAST-VERSCHLUCKT-FEHLER bald anzugehen.
+3. Threading: Warnings entstehen in Worker-Threads → `broadcast_threadsafe`, Muster im Repo etabliert.
+4. Adressierung: `broadcast` ist user-scoped, die Klingel ist global → `log_signal` an alle aktiven Verbindungen; Telegram ignoriert unbekannte Typen.
+
+**Zusammenhang:** GV-ENTITY-HOP-TOT (Anlass) · BROADCAST-VERSCHLUCKT-FEHLER (Stolperdraht 2) · Silent-Skip-Antipattern.
