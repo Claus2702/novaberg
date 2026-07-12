@@ -3228,3 +3228,13 @@ Der Lesson-Index in `novaberg-architecture.md` listet die Legacy-`{modul}_l.md`-
 4. Adressierung: `broadcast` ist user-scoped, die Klingel ist global → `log_signal` an alle aktiven Verbindungen; Telegram ignoriert unbekannte Typen.
 
 **Zusammenhang:** GV-ENTITY-HOP-TOT (Anlass) · BROADCAST-VERSCHLUCKT-FEHLER (Stolperdraht 2) · Silent-Skip-Antipattern.
+
+## Bug: ENTITAET-EMBED-DREIFACH — Entitäts-Suchpfad embeddet anderen Text als der Schreibpfad (Chat 107)
+
+**Entdeckt:** Chat 107, Bau-Audit für die `embed_text_bauen`-Vereinheitlichung. TODO-Kommentar mit diesem Bug-Namen steht an der Fundstelle.
+
+**Befund:** `memory/services/entity_resolution.py::_search_by_embedding` embeddet nur den nackten `name` und vergleicht per Cosine gegen Vektoren, die aus `EntitaetenRepository.embed_text_bauen(name, zusammenfassung)` — also Name **plus** Zusammenfassung — erzeugt wurden. Suchvektor und Bestandsvektoren leben in unterschiedlichen Textformen; der Threshold (Default 0.80) bewertet damit systematisch verschobene Ähnlichkeiten. Historisch existierten sogar drei Formeln (Erzeugung `"{name}: {zusammenfassung}"`, Backfill `"{name} {zusammenfassung}"`, Suche `name`); seit Commit `5d58b66` sind Schreib- und Backfill-Pfad auf die eine Bauer-Funktion vereinheitlicht — **nur der Suchpfad weicht noch ab, absichtlich.**
+
+**Warum nicht sofort gefixt:** Die Umstellung ändert das Suchverhalten der Magnet-/Entitätsauflösung und gehört gemessen (Trefferquote vorher/nachher am echten Bestand), nicht nebenbei gemacht — dieselbe Regel wie bei den Prompt↔Knoten-Schwellwerten der Embedding-Migration. Sinnvoller Zeitpunkt: zusammen mit der Schwellwert-Kalibrierung nach dem Modellwechsel (EMBEDDING-CASING-BLIND Phase 0/4), weil sich dort ohnehin jede Ähnlichkeitsverteilung ändert.
+
+**Zusammenhang:** EMBEDDING-CASING-BLIND (Schwellwert-Kalibrierung) · RECHERCHE-KZG-INHALT-LEER (bugs.md, gleiche Sichtung).

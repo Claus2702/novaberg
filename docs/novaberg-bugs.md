@@ -1394,3 +1394,24 @@ Disambiguierung erzeugen, die den Loop auslöste: der Crash ist behoben, nicht d
 **Auswirkung:** Der GV-Node bekam nie Entity-Kontext (Hop-1-/Hop-2-Faktenkanten) für die Hypothesen-Destillation — betrifft jeden Turn mit `management_target` oder `prompt_topic`.
 
 **Behoben Chat 107 (Commit `1c6332b`):** `f.beziehung` → `f.attribut` in beiden Queries. Fehlerbehandlung nach dem Fail-loud-Muster des Dispatchers getrennt: `psycopg2.Error` → `logger.error` mit `exc_info` + `log_fehler`-Forensik (`grund=entity_hop_db_fehler`), Turn läuft ohne Entity-Kontext weiter; das pauschale `except Exception` ist weg — echte Python-Fehler krachen jetzt. Legitime Leerfälle (kein Schlüssel, keine Entitäten, 0 Fakten) loggen `info`/`debug` und liefern weiterhin `""`. Verbindung schließt im `finally` (leckte vorher im Fehlerfall). **Live bewiesen 12.7.** (echte Funktion, read-only gegen Live-DB): Schlüssel `Nova` (user `meister`) → 23 deduplizierte Faktenkanten statt `""`; Gegenprobe mit Fantasie-Schlüssel → `info`-Log + `""`. Design-Grenze dokumentiert, kein Bug: Der Hop erfasst nur Entität→Entität-Fakten (`objekt_id` gesetzt, live 47 von 411); Wert-Fakten (`objekt_wert`, 364) sind konstruktionsbedingt nicht hüpfbar.
+
+---
+
+### Chat 107 — Embed-Text-Vereinheitlichung (Code-Fund)
+
+#### RECHERCHE-KZG-INHALT-LEER — Recherche-KZG-Einträge tragen Vektor ohne Text ⚠️
+
+**Entdeckt:** Chat 107, Sichtung aller Embed-Text-Kompositionsstellen für die `embed_text_bauen`-Vereinheitlichung (Commit `5d58b66`).
+
+**Klasse:** Datenverlust durch Schnittstellen-Mismatch zweier Legacy-Bausteine, Severity **Mittel** — die Einträge existieren, sind aber inhaltsleer und ihre Vektoren für immer unrekonstruierbar.
+
+**Symptom:** Der RechercheAgent (Post-Hook `nova_gedaechtnis`) embeddet das rohe `destillat` und übergibt ein selbstgebautes `salienz_obj` an `memory/kzg.py::kzg_store`. `kzg_store` persistiert als `inhalt` aber `salienz_obj["zusammenfassung"]` (Fallback `begruendung`) — beide Schlüssel befüllt der Recherche-Aufrufer nie. Ergebnis: KZG-Hash mit gültigem Embedding und leerem `inhalt`. **Live gemessen 12.7.: 94 von 780 KZG-Hashes haben ein leeres `inhalt`-Feld.**
+
+**Beleg (Datei:Funktion):**
+
+- Erzeuger: `agents/recherche/agent.py` → Schritt 7 im `invoke`-Ablauf (TODO-Kommentar `RECHERCHE-KZG-INHALT-LEER` an der Stelle)
+- Senke: `memory/kzg.py` → `kzg_store` (`"inhalt": salienz_obj.get("zusammenfassung", salienz_obj.get("begruendung", ""))`)
+
+**Auswirkung:** Die 94 Einträge sind im Retrieval als Kontext wertlos (leerer Inhalt) und beim Re-Embedding (EMBEDDING-CASING-BLIND Phase 2/3) nicht neu erzeugbar — es gibt keinen Text, aus dem der Vektor wieder entstehen könnte. Verwandt mit der Formel-Frage: Der Pfad nutzt weder die KZG-Formel (`Thema: … Aussage: …`) noch persistiert er seinen eigenen Embed-Text.
+
+**Fix bewusst offen (Entscheidung Chat 107):** Die Umstellung auf `embed_text_bauen` + Befüllung von `zusammenfassung = destillat` ändert Embed-Text UND Speicherverhalten des Live-Pfads — gehört gemessen, nicht nebenbei gemacht. Für den Bestand: Die 94 Alt-Einträge sind TTL-begrenzt und verfallen von selbst; beim Re-Embedding-Lauf werden Einträge ohne Quelltext übersprungen und laut gezählt.
