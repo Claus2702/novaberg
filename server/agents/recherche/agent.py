@@ -22,6 +22,7 @@ from config import (
     ZIEL_MAX_MITTELFRISTIG,
     PIXIE_RECHERCHE_MAX_ITERATIONEN,
 )
+from agents.kzg.speicher import embed_text_bauen as kzg_embed_text_bauen
 from memory.ziele import ziel_speichern, ziele_aktive_laden
 from memory.ziele import embed_text_bauen as ziel_embed_text_bauen
 from services.model_services import model_service, EmbedRequest, BackgroundRequest
@@ -270,9 +271,17 @@ class RechercheAgent(BaseAgent):
         try:
             from memory.kzg import kzg_store
 
+            themen_list: list = session_kontext.get("themen", [])
+
+            # zusammenfassung = destillat: kzg_store persistiert daraus das
+            # inhalt-Feld. Ohne diesen Schluessel entstanden Vektoren ohne
+            # Quelltext (RECHERCHE-WISSEN-ERREICHT-LZG-NIE, Chat 107) — die
+            # Synapsen-Promotion verwarf jeden dieser Eintraege in
+            # Vorbedingung 3, Recherche-Wissen erreichte das LZG nie.
             salienz_obj: dict = {
                 "salienz": 0.7,
-                "themen": session_kontext.get("themen", []),
+                "themen": themen_list,
+                "zusammenfassung": destillat,
                 "intentionen": ["information_teilen"],
                 "emotion": "neutral",
                 "modus": session_kontext.get("modus", ""),
@@ -280,16 +289,12 @@ class RechercheAgent(BaseAgent):
                 "dimension": "kontext",
             }
 
-            # TODO RECHERCHE-KZG-INHALT-LEER: Dieser Pfad embeddet das rohe
-            # destillat, aber kzg_store persistiert als inhalt
-            # salienz_obj["zusammenfassung"] — die hier fehlt. Ergebnis:
-            # Vektor ohne Text (live 94 von 780 KZG-Hashes mit leerem
-            # inhalt), nicht rekonstruierbar. Bewusst NICHT auf
-            # embed_text_bauen umgestellt (Chat 107) — die Umstellung
-            # aendert Embed-Text UND Speicherverhalten und gehoert
-            # gemessen, nicht nebenbei gemacht.
+            # Embed-Text ueber die eine KZG-Formel — kommagetrennte Themen
+            # wie im Hash persistiert, kern = destillat. Damit ist der
+            # Vektor aus den gespeicherten Feldern rekonstruierbar.
+            themen_str: str = ", ".join(themen_list)
             embed_response = model_service.embed.submit_sync(
-                EmbedRequest(text=destillat)
+                EmbedRequest(text=kzg_embed_text_bauen(themen_str, destillat))
             )
             embedding: list[float] = embed_response.embedding
             logger.debug(

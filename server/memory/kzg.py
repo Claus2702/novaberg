@@ -533,6 +533,23 @@ def kzg_entries_retrieve(
 
             subtyp:  str   = getattr(doc, "dimension", "") or ""
             inhalt:  str   = getattr(doc, "inhalt", "") or ""
+
+            # Plausibilitaetspruefung am Lesepfad (Chat 107): Ein Eintrag ohne
+            # Text darf nicht in den Kontext — egal woher er kommt und wie gut
+            # sein Vektor matcht. Der Formatter wuerde sonst "[KZG] ...: " mit
+            # baumelndem Doppelpunkt rendern. Laut verwerfen, damit sichtbar
+            # wird, wenn irgendeine Quelle wieder textlose Eintraege schreibt.
+            if not inhalt.strip():
+                logger.warning(
+                    "KZG-Entries-Retrieve: Eintrag ohne inhalt verworfen — key=%s, "
+                    "themen='%s', beobachter=%s, similarity=%.3f",
+                    doc.id,
+                    getattr(doc, "themen", "") or "",
+                    getattr(doc, "beobachter", "") or "",
+                    similarity,
+                )
+                continue
+
             gewicht: float = float(getattr(doc, "salienz", 0.0) or 0.0)
 
             erstellt_am_raw = getattr(doc, "erstellt_am", "") or ""
