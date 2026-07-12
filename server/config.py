@@ -116,8 +116,16 @@ OLLAMA_CPU_NUM_CTX:    int  = _connector["cpu_num_ctx"]
 PIXIE_ANALYSE_MODEL:   str  = _connector["analyse_model"]
 PIXIE_ANALYSE_NUM_CTX: int  = _connector["analyse_num_ctx"]
 
-# Embedding (immer Ollama, GPU-fix — backend-unabhängig)
-EMBED_MODEL: str = os.getenv("EMBED_MODEL", "nomic-embed-text")
+# Embedding (immer Ollama, GPU-fix — backend-unabhängig).
+# v2-moe seit A4 (Chat 107, EMBEDDING-CASING-BLIND): v1 trug ein uncased-
+# Vokabular ohne do_lower_case — jedes großgeschriebene Wort fiel auf [UNK].
+# OHNE Task-Präfixe ("search_document:"/"search_query:"): Das Datenblatt
+# empfiehlt sie, die Messung (Chat 107) zeigt konsistent Schaden bei allen
+# Modellen — die Messung schlägt das Datenblatt.
+# ⚠ Wirksam ist die Env-Variable aus ~/ki-assistent/docker-compose.yml
+# (außerhalb des Repos) — dieser Default greift nur ohne Env.
+# Provisionierung (keine Pull-Automatik): ollama pull nomic-embed-text-v2-moe
+EMBED_MODEL: str = os.getenv("EMBED_MODEL", "nomic-embed-text-v2-moe")
 
 # ─────────────────────────────────────────────
 # Per-Worker-Backend-Wahl (Microservice-Welle Block 2)

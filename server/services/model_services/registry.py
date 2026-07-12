@@ -78,7 +78,7 @@ class ModelServiceRegistry:
     """Container fuer alle Model-Worker.
 
     Worker-Set in Block 2:
-        - embed (Phase 2 Block 1): nomic-embed-text auf GPU
+        - embed (Phase 2 Block 1): nomic-embed-text-v2-moe auf GPU (A4 Chat 107)
         - chat (Phase 2 Block 2): Chat-Antworten, Backend laut Config
         - background (Phase 2 Block 2): Pixie-Hintergrund, Dual-Backend
     """

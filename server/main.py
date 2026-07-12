@@ -15,7 +15,7 @@ from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from config import (
     redis_client, ollama_gpu_client, ollama_cpu_client, llm_lock,
     OLLAMA_MODEL, OLLAMA_GPU_NUM_CTX, OLLAMA_CPU_NUM_CTX,
-    SHADOW_MODEL, EMBED_MODEL, POSTGRES_URL,
+    SHADOW_MODEL, POSTGRES_URL,
     LLM_PROFILE, ANTHROPIC_API_KEY, ANTHROPIC_MODEL,
     PIXIE_ANALYSE_MODEL, PIXIE_ANALYSE_NUM_CTX,
     PIXIE_INTERVALL_MIN, PIXIE_AKTIV, shutdown_event,

@@ -1,8 +1,10 @@
 """
-EmbedWorker — bedient die Rolle `embed` (Nomic-Embed-Text auf GPU).
+EmbedWorker — bedient die Rolle `embed` (Embedding-Modell auf GPU).
 
 Konkrete Eigenschaften:
-  - Modell: nomic-embed-text (aus config.EMBED_MODEL)
+  - Modell: nomic-embed-text-v2-moe (aus config.EMBED_MODEL; seit A4
+    Chat 107 — v1 war casing-blind, siehe EMBEDDING-CASING-BLIND).
+    Ohne Task-Praefixe — die Messung schlaegt das Datenblatt.
   - Endpoint: config.ollama_gpu_client (Port 11434)
   - API-Stil: client.embed(model=..., input=...)["embeddings"][0]
     (neuere Ollama-API; die alte .embeddings(prompt=...)["embedding"] ist

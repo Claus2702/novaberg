@@ -80,7 +80,9 @@ services:
       REDIS_URL:         redis://redis:6379
       POSTGRES_URL:      postgresql://ki:ki@postgres:5432/gedaechtnis
       OLLAMA_CONNECTOR:  gemma4
-      EMBED_MODEL:       nomic-embed-text
+      # v2-moe seit A4 (Chat 107, EMBEDDING-CASING-BLIND). Vor dem ersten Start:
+      # ollama pull nomic-embed-text-v2-moe  (955 MB VRAM, passt neben gemma4-gpu)
+      EMBED_MODEL:       nomic-embed-text-v2-moe
       SEARXNG_URL:       http://searxng:8080
     extra_hosts:
       - "host.docker.internal:host-gateway"

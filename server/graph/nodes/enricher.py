@@ -509,8 +509,9 @@ def _enrich_character(
     state["prompt_embedding"] = embedding
 
     # ── Pipeline-Log: Berechnung (Anker 3) ──────
-    # Prompt-Embedding erzeugt. Dimensions-Check als Plausibilitaets-Anker:
-    # erwartet werden 768 (nomic-embed-text).
+    # Prompt-Embedding erzeugt. Die Dimension wird hier nur GELOGGT, nicht
+    # geprueft — erwartet werden 768 (nomic-embed-text-v2-moe, A4 Chat 107).
+    # Harter Check fehlt repo-weit: EMBED-DIMENSIONSCHECK-FEHLT (Backlog).
     log_berechnung(
         turn_id = turn_id_log,
         node    = "enricher",
