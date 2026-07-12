@@ -3093,6 +3093,8 @@ Novas Charakter wird heute aus der falschen Quelle destilliert: `lzg_knoten` ent
 
 `gespraech_archiv` (db/init.sql) ist für ein Dialog-Archiv geformt (user_id, session_id, rolle, inhalt, salienz), hat aber keinen Writer und keinen Reader — dauerhaft leer, Struktur-Fossil. Laut CHARAKTER-RESONANZ ist `pipeline_log` die eine Quelle; `gespraech_archiv` wird nicht gebraucht. Kandidat zum Entfernen (P9-nah oder eigener Aufräum-Schritt). ⬜ Prio niedrig
 
+⚠ **Überholt durch GESPRAECH-ARCHIV-LEER (Chat 107, weiter unten):** Die Neubewertung dreht die Richtung — nicht Tabelle entfernen, sondern Writer bauen; ohne ihn verfällt täglich Rohmaterial. Dieser Eintrag bleibt nur als Verweis stehen; die Sache lebt unter GESPRAECH-ARCHIV-LEER.
+
 ## Feature: ASSISTENT-NAME-LAUFZEIT — Assistenten-Name pro Paar statt env (Chat 103)
 
 `ASSISTANT_NAME` ist global per env (Serverstart). Seit Chat 103 wird der Name aus der Config in die Charakter-Prompts durchgereicht (env-konfigurierbar, Wechsel = env + Neustart). Für echtes On-the-fly-Wechseln / mehrere Assistenten parallel müsste Name/Identität pro Charakter-Paar in der DB liegen. Berührt das Charakter-Schema. ⬜ Prio niedrig
@@ -3238,3 +3240,55 @@ Der Lesson-Index in `novaberg-architecture.md` listet die Legacy-`{modul}_l.md`-
 **Warum nicht sofort gefixt:** Die Umstellung ändert das Suchverhalten der Magnet-/Entitätsauflösung und gehört gemessen (Trefferquote vorher/nachher am echten Bestand), nicht nebenbei gemacht — dieselbe Regel wie bei den Prompt↔Knoten-Schwellwerten der Embedding-Migration. Sinnvoller Zeitpunkt: zusammen mit der Schwellwert-Kalibrierung nach dem Modellwechsel (EMBEDDING-CASING-BLIND Phase 0/4), weil sich dort ohnehin jede Ähnlichkeitsverteilung ändert.
 
 **Zusammenhang:** EMBEDDING-CASING-BLIND (Schwellwert-Kalibrierung) · RECHERCHE-KZG-INHALT-LEER (bugs.md, gleiche Sichtung).
+
+**Ergänzung (Chat 107, Live-Messung):** Entitäts-Texte sind maximal 50 Zeichen — bei so kurzen Texten misst das Embedding fast nur Wortform. Die neue Schwelle 0.70 ist dort ein Schuss ins Blaue. → Nach dem Re-Embedding die 182 Entitätsnamen gegeneinander messen, dann steht die Magnet-Schwelle auf Boden. Priorität hoch.
+
+## Konzept: DESTILLAT-ASYMMETRIE — Prompts und Knoten leben in verschiedenen Sprachformen (Chat 107)
+
+**Gemessen (Chat 107, 100 echte Prompts gegen 302 Knoten):** Prompts sind Rohsprache, Knoten sind destillierte Protokollsätze in dritter Person. Ein KORREKTER Treffer liegt dadurch unter der Schwelle: „Hast Du mich denn vermisst?" ↔ „Der Nutzer fragt, ob er abwesend sei." = **0.3366**. Die HOHEN Werte im Korpus sind Wortüberlappung, nicht Verständnis: „Harry Potter und Die 7 Samurai kommt auf die Liste" ↔ „Harry Potter und Die 7 Samurai kommen auf eine neue Liste." = **0.9357**.
+
+**Wird durch den Modellwechsel NICHT behoben** — es ist eine Formfrage, keine Modellschwäche. Mögliche Wege: Prompt-Rewriting vor dem Retrieval (Koreferenz/Protokollform), oder Knoten zusätzlich in Rohform embedden. Nach der Migration angehen. ⬜ Prio hoch
+
+**Zusammenhang:** EMBEDDING-CASING-BLIND Phase 0 (Prompt↔Knoten-Kalibrierung) · REFERENZ-AUFLOESUNG-VOR-RETRIEVAL (Chat 103, verwandter Rewriting-Gedanke).
+
+## Feature: GESPRAECH-ARCHIV-LEER — kein Writer, Rohgespräche verfallen täglich (Chat 107)
+
+**Zeitkritisch, Prio hoch.** `gespraech_archiv` existiert als Tabelle, hat 0 Zeilen und keinen Writer (bestätigt Chat 107). Novas eigene Worte leben nur in den Redis-Session-Turns (2h TTL) und verfallen. Rohgespräche vor dem 10.07. existieren nicht mehr — für alles davor sind die Destillate die einzige Quelle. **Jeder Tag ohne Writer kostet unwiederbringlich Rohmaterial.**
+
+Ersetzt die alte Einschätzung GESPRAECH-ARCHIV-VERWAIST (Chat 103, „Kandidat zum Entfernen") — die Richtung hat sich umgekehrt: Writer bauen, nicht Tabelle löschen.
+
+## Fix: EMBED-DIMENSIONSCHECK-FEHLT — kein harter Dimensions-Check im Live-Pfad (Chat 107)
+
+Kein einziger harter Check im Repo (Audit Chat 107): kein `== 768`, kein `assert`. Der Enricher-Kommentar verspricht einen „Plausibilitäts-Anker", tatsächlich wird nur `len()` geloggt. In Postgres fällt ein falsch dimensionierter Vektor beim INSERT auf — in Redis (FLAT-Index, rohe Bytes) unter Umständen **gar nicht**. Verstoß gegen EVA/fail-loud. Im `reembed_all.py` bereits als Pflicht spezifiziert — muss auch in den Live-Pfad (natürlicher Ort: `EmbedWorker._call_model`, ein Check für alle Konsumenten). ⬜ Prio mittel
+
+## Nacharbeit: PIPELINE-LOG-MERGE-BLIND — Reinforcement loggt den geschluckten Inhalt nicht (Chat 107)
+
+`synapsen_promotion` loggt bei `aktion="reinforcement"` nur `knoten_id`, `cosine`, `gewicht_roh` — NICHT den geschluckten KZG-Inhalt. Die Merge-Historie ist damit unrekonstruierbar (2910 Reinforcements, Stand Chat 107): Welcher KZG-Eintrag in welchem Knoten aufging, weiß niemand mehr. → Beim nächsten Anfassen: `kzg_key` mitloggen. Kostet nichts, rettet alles. ⬜ Prio mittel
+
+## Konzept: DELEG-VEKTOR-EINGEFROREN — Akten-Vektor beschreibt nach zehn Seiten die Akte nicht mehr (Chat 107)
+
+`akte_anreichern` erzeugt `themen_embedding` nie neu (Bau-Audit Chat 107; das Einfrieren ist seit Commit `ce0efc8` bewusst und kommentiert — Text und Vektor bleiben konsistent auf dem Anlege-Zeitpunkt). Die Kehrseite: Eine Akte, die sich über zehn Seiten thematisch verschiebt, wird für immer über ihren ersten Turn gefunden; `duplikat_pruefen` (Schwelle 0.75 nach Rekalibrierung) prüft neue Turns gegen einen Vektor, der die Akte womöglich nicht mehr beschreibt. Lösung wäre Re-Embedding beim Anreichern (Header-Text + Vektor gemeinsam nachziehen) — **Verhaltensänderung, eigener Sprint, nicht nebenbei.** ⬜ Prio mittel
+
+## Fix: LZG-MIGRATION-REVIEW-NICHT-IN-INIT — Live-Tabelle ohne Schema-Definition (Chat 107)
+
+`lzg_migration_review` existiert live (17 Spalten, genutzt von `tools/migrate_lzg_synapsen.py`), steht aber in keiner init.sql. Frisches Setup ⇒ Migrationstool bricht. Bricht die Handbuch-Zusage „frischer Container + init.sql = lauffähiges System". ⬜ Prio mittel
+
+## Fix: IDX-TIMELINE-TYPE-NICHT-IN-INIT — Live-Index ohne Definition im Repo (Chat 107)
+
+`idx_timeline_type` auf `timeline(user_id, event_type)` existiert live, steht in keiner init.sql — manuell angelegt. Bei Setup-from-scratch fehlt er. Performance, nicht Korrektheit. ⬜ Prio niedrig
+
+## Aufräumen: DELEG-SEITEN-VALENZ-TOT — persistiert, nie gelesen (Chat 107)
+
+`delegations_seiten.valenz`: 1692 Zeilen persistiert (positiv 1367 / neutral 207 / negativ 118), von keinem Code je gelesen — aus der Tabelle wird nur `MAX(arousal)` gelesen. Entweder verwenden oder entfernen. Passt zur Chat-107-Linie „Metadaten gehören nicht in den Vektor, strukturierte Felder entscheiden" — falls die Delegations-Priorisierung je Valenz braucht, liegt sie hier bereit. ⬜ Prio niedrig
+
+## Doku: HANDBUCH-§9-VERALTET — Migrations-Absatz widerspricht der geltenden Projektregel (Chat 107)
+
+§9 fordert „niemals ALTER TABLE in init.sql, Alembic empfohlen". Geltende Projektregel (bestätigt Chat 107) ist das Gegenteil: init.sql IST die Single Source of Truth, Änderungen dort, idempotent, Anwendung aufs Live-System von Hand. Fragmentierte Migrationsdateien wurden bewusst abgeschafft — sie führten zu abweichenden Datenbankzuständen. **§9 gehört an die Realität angepasst, nicht die Realität an §9.** ⬜ Prio niedrig, nächster Docs-Commit
+
+## Doku: REDUCER-DOKU-DRIFT — drei Drifts aus dem Reducer-Audit (Chat 107)
+
+(a) Docstring von `reducer.py` verweist auf `novaberg-reducer-umbau_k.md` — existiert nicht; real ist `novaberg-node-reducer.md`. (b) Docstring: „zwischen Enricher und EI-Calc" — real läuft EI-Calc VOR dem Enricher, der Reducer sitzt vor dem Router. (c) Node-Doku §9: „kein Produzent erzeugt summary-Einträge" — der Produzent existiert im Enricher und feuert, sobald Redis eine Session-Summary hält. ⬜ Prio niedrig, nächster Docs-Commit
+
+## Doku: DOKU-NOTIZEN-INIT-SQL — Verweis auf nicht existierende Datei (Chat 107)
+
+`novaberg-agent-notes.md` behauptet, `notizen` werde via `agents/notizen/init.sql` angelegt. Die Datei existiert nicht — `notizen` steht in `db/init.sql`. ⬜ Prio niedrig, nächster Docs-Commit

@@ -1415,3 +1415,37 @@ Disambiguierung erzeugen, die den Loop auslöste: der Crash ist behoben, nicht d
 **Auswirkung:** Die 94 Einträge sind im Retrieval als Kontext wertlos (leerer Inhalt) und beim Re-Embedding (EMBEDDING-CASING-BLIND Phase 2/3) nicht neu erzeugbar — es gibt keinen Text, aus dem der Vektor wieder entstehen könnte. Verwandt mit der Formel-Frage: Der Pfad nutzt weder die KZG-Formel (`Thema: … Aussage: …`) noch persistiert er seinen eigenen Embed-Text.
 
 **Fix bewusst offen (Entscheidung Chat 107):** Die Umstellung auf `embed_text_bauen` + Befüllung von `zusammenfassung = destillat` ändert Embed-Text UND Speicherverhalten des Live-Pfads — gehört gemessen, nicht nebenbei gemacht. Für den Bestand: Die 94 Alt-Einträge sind TTL-begrenzt und verfallen von selbst; beim Re-Embedding-Lauf werden Einträge ohne Quelltext übersprungen und laut gezählt.
+
+---
+
+### Chat 107 — Reducer-Audit und GV-Nacharbeit
+
+#### REDUCER-SIEHT-LZG-NICHT — LZG-Erinnerungen durchlaufen nie den Dedup ⚠️
+
+**Entdeckt:** Chat 107, Reducer-Audit (Code-Lesung des Live-Pfads, keine Vermutung).
+
+**Klasse:** Architektur-Lücke im Lesepfad, Severity **Hoch** — derselbe Fakt kann doppelt im Kontext landen, und keine Schicht ist zuständig.
+
+**Symptom:** `spreading_lesen` schreibt nach `state["lzg_resonanz"]`; der Reducer reicht das Objekt unangetastet an den Formatter durch („Keine flache Einspeisung in memory_entries mehr"). Dedupliziert werden nur Session-Summary, KZG-Retrieval und Charakter — **LZG-Erinnerungen nie**. Und selbst wenn sie durchliefen: Der Reducer prüft nur Textgleichheit/Substring, keine Paraphrasen.
+
+**Tragweite (Kalibrierungsmessung Chat 107):** Im LZG liegen Paraphrasen-Dubletten als getrennte Knoten — `0.9254` für `[150]/[151]` („Der Nutzer lobt/mag die Tiefe, die Worte, die Farben"), `0.9135` für `[102]/[103]` („Lumi stirbt bald" / „Lumi wird nicht mehr lange leben"). Nova bekommt denselben Fakt doppelt in den Kontext.
+
+**Doppelter Boden fehlt beidseitig:** Schreibseitig hat `LZG_KNOTEN_MATCH_SCHWELLE` (0.85) im casing-blinden Raum nie verstärkt (0,06 % Passierquote); leseseitig sieht der Reducer die Einträge gar nicht.
+
+**Beleg (Datei:Funktion):** `graph/nodes/reducer.py` → `reduce_memory` (Resonanz-Durchreiche); `graph/nodes/enricher.py` → `_enrich_character` (`state["lzg_resonanz"]`, bewusst an `memory_entries` vorbei).
+
+**Zuordnung:** Gehört in den Reducer-Ausbau der Synapsen-Reihe (P8/P9), kein eigener Sprint. Nach dem Re-Embedding messen, wie viele Dubletten tatsächlich gemeinsam im Kontext landen.
+
+#### GV-WERT-FAKTEN-BLIND — 364 von 411 Fakten erreichen den Gesprächsvektor nie ⚠️
+
+**Entdeckt:** Chat 107, beim GV-Entity-Hop-Fix (GV-ENTITY-HOP-TOT) als Design-Grenze dokumentiert; hier als eigener Bug erfasst.
+
+**Klasse:** Blinder Fleck im Entity-Hop, Severity **Mittel** — der Hop funktioniert, aber auf 11 % des Faktenbestands.
+
+**Symptom:** `_entity_kontext_laden` nutzt `INNER JOIN entitaeten e2 ON f.objekt_id = e2.id` — erfasst nur Entität→Entität-Fakten (live 47 von 411). Die 364 Wert-Fakten (`objekt_wert`, per Check-Constraint XOR zu `objekt_id`) erreichen den Gesprächsvektor nie.
+
+**Beleg (Datei:Funktion):** `graph/nodes/gespraechsvektor.py` → `_entity_kontext_laden` (beide Hop-Queries).
+
+**Auswirkung:** Genau die Fakten, die Nova für ihre Haltung braucht — „Der Nutzer heißt Claus", „Lumi ist krank", Ortsangaben — fehlen im Entity-Kontext.
+
+**Lösungsrichtung:** Auf einen Wert kann man nicht weiterhüpfen — aber man kann ihn als **Kontext mitlesen**, wenn man ohnehin bei der Entität ist: `LEFT JOIN` + `COALESCE(e2.name, f.objekt_wert)`, ohne die Hop-Logik zu ändern (Hop 2 weiter nur über echte `objekt_id`-Kanten).
