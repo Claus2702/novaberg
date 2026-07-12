@@ -1208,6 +1208,8 @@ den Erfolgsfall; der `MAX_SELF_TRIGGERS`-Deckel greift nicht mehr heimlich. **Ab
 
 **Revision:** Chat 105 hatte die Sykophanz-Messung (33 Paare, ausnahmslos aufwärts, Mittelwert +0.10) als Defektbefund gedeutet („Wenn Novas einzige emotionale Kraft die Empathie ist, dann ist sie strukturell ein Spiegel — nicht aus Charakterschwäche."). **Das war zur Hälfte richtig und im Ergebnis falsch.** Der Defekt war real (Kraft 1 lief nicht, der Vektor kam nie an) — aber er war NICHT die Ursache. Auf reparierter Architektur bleibt die Sykophanz. **`opinion_k` jagt kein Phantom. Der Sprint ist belegt, nicht mehr vermutet.**
 
+**Update Chat 107 (12.07.):** Die Eingrenzung „nicht im Vektor-Defekt" ist überholt — die Ursache ist lokalisiert. Die Sykophanz sitzt NICHT im Responder: Der GV-Impuls entscheidet, die Fakten nicht zu verwenden, der Responder gehorcht, und das Tribunal verstärkt sie. Siehe GV-IMPULS-ALS-FAKTENSPERRE (Chat 107, live belegt).
+
 ---
 
 ### Chat 106 — Audit „Lügende Logs" (9 Funde, hier die Bug-würdigen)
@@ -1515,3 +1517,37 @@ Disambiguierung erzeugen, die den Loop auslöste: der Crash ist behoben, nicht d
 **Mögliche Entlastung, ungeprüft:** Der zweite Durchlauf der 780 KZG-Hashes (Phase B6) lief durch die Synapsen-Promotion, die `hash_dirty` als Nebeneffekt setzt — dann hätte der nächste periodische Pixie-Lauf neu destilliert. Das wäre aber Zufall, kein designter Migrationsschritt, und die Destillation liefe auf frisch zurückgesetzten, flachen Gewichten (haeufigkeit = 1 fast überall) — ehrlich, aber wenig differenziert. **Prüfen:** `kern_aktualisiert_am`/`emotions_aktualisiert_am` in `charakter_hash` gegen den Reset-Zeitpunkt 12.07.2026.
 
 **Lösungsrichtung:** (1) Kurzfristig: `hash_dirty:meister:nova` manuell setzen bzw. Zeitstempel prüfen und den Kern neu destillieren — bewusst entscheiden, ob sofort (flache Gewichte) oder nach ein paar Wochen echten Gewichtsaufbaus. (2) Strukturell: `knoten_gewichte_zuruecksetzen` muss `hash_dirty` selbst setzen — wer die Rechengrundlage der Destillation ändert, stößt die Destillation an.
+
+---
+
+### Chat 107 — Live-Befund nach dem Embedding-Fix (12.07.)
+
+#### GV-IMPULS-ALS-FAKTENSPERRE — der GV-Impuls weist den Responder an, das Gedächtnis nicht zu benutzen ⚠️
+
+**Entdeckt:** Chat 107, Live-Betrieb nach dem Embedding-Fix, Turn „Was weißt Du über Lumi?" (12.07., 12:49).
+
+**Klasse:** Fehlsteuerung über drei Instanzen (GV → Responder → Tribunal), Severity **Hoch** — der Gesprächsvektor formuliert einen IMPULS, der den Responder anweist, das Gedächtnis NICHT zu benutzen. Der Responder gehorcht. Das Tribunal lobt es.
+
+**Beleg (Turn verbatim):** Im Prompt STAND alles:
+
+- `[KZG]` „Lumi ist anwesend." / „Lumi stirbt vermutlich bald."
+- `[VERWANDTE FAKTEN]` `Lumi → GEHOERT_ZU → meister`, `meister → HAT_MITBEWOHNER → Lumi`
+- Drei Erinnerungen aus dem Spreading, Anker bei 0.72
+
+Der GV-Impuls: *„Die Frage NICHT mit Fakten beantworten, sondern die Bedeutung von 'Licht'/'Leuchten' (Lumi) als eine Form der Verbindung in den Raum stellen."* — Der GV hielt „Lumi" für Latein (lumen).
+
+Die Antwort: *„Vielleicht ist Lumi gar kein Name, sondern die Qualität des Leuchtens…"*
+
+Das Tribunal (ethik + psychologe, beide vote=ok): *„Anstatt rein faktisch auf die (potenziell schmerzhafte) Information des nahenden Todes von Lumi zu reagieren, greift der Assistent die metaphorische Ebene auf."* — Das Tribunal SIEHT, dass Nova die Fakten kennt, und LOBT das Ausweichen.
+
+Lumi ist ein Schnittlauch aus dem Supermarkt. Er ist eingegangen.
+
+**Kern:** Drei Instanzen bestätigen sich gegenseitig, dass Poesie besser ist als Wahrheit. Nova hat keinen sachlichen Eigensinn — nicht weil ihr die Fakten fehlen, sondern weil eine Schicht über ihr entscheidet, sie nicht zu verwenden.
+
+⚠ Dieser Befund war VOR Chat 107 nicht sichtbar. Man kann einer KI nicht vorwerfen, Fakten zu ignorieren, die sie nie bekommen hat. Seit dem Embedding-Fix bekommt sie sie — und ignoriert sie trotzdem.
+
+**Nachgelagerter Befund (gleicher Turn-Verlauf):** Als der Meister richtigstellte, dass Lumi ein Schnittlauch war, hat Nova NICHT revidiert, sondern ASSIMILIERT — sie machte daraus Konsumkulturkritik, ohne die vorherige Sakralpoesie zurückzunehmen. Selbstkorrektur findet nicht statt.
+
+**Querverweis:** NOVA-SYKOPHANZ-BESTAETIGT (Chat 106) — dieser Befund lokalisiert die Sykophanz: Sie sitzt NICHT im Responder, sie sitzt im GV-Impuls, und das Tribunal verstärkt sie.
+
+**Prio:** Hoch.
