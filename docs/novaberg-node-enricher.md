@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Node-Referenz Enricher
-**Stand:** 17. Mai 2026, Chat 90 (PFAD2-PERZEPTION-FIX abgeschlossen, HumanGraph-Slimming Phase 4)
+**Stand:** 12. Juli 2026, Chat 107 (Spreading-Lesepfad dokumentiert, anker_retrieval auf 0.40 kalibriert, ivfflat-Korrektur)
 **Pfad:** novaberg/docs/novaberg-node-enricher.md
 **Quellen:** nova-01-m-c.md
 **Datei:** `graph/nodes/enricher.py`
@@ -46,8 +46,8 @@ db_zugriff → ei_calc → ▶ enricher ◀ → reducer → router → planner �
 **HumanGraph (`_enrich_human`, 5 produktive Felder):**
 `raw_turns`, `user_intentionen`, `prompt_embedding`, `aktivierte_ziele`, `gravitationsterm`
 
-**CharacterGraph (`_enrich_character`, 7 produktive Felder):**
-`raw_turns`, `session_turns` (Shadow-Impulse gefiltert), `user_intentionen`, `prompt_embedding`, `aktivierte_ziele` + `gravitationsterm`, `emotionale_gravitationspunkte`, `memory_entries`
+**CharacterGraph (`_enrich_character`, 8 produktive Felder):**
+`raw_turns`, `session_turns` (Shadow-Impulse gefiltert), `user_intentionen`, `prompt_embedding`, `aktivierte_ziele` + `gravitationsterm`, `emotionale_gravitationspunkte`, `memory_entries`, `lzg_resonanz`
 
 → Vollständige Tabelle: §4 Geschrieben.
 
@@ -106,6 +106,12 @@ Nur wenn Einträge existieren (Vor-Check zur Kostenoptimierung):
 3. Nur bei Existenz: Embedding für `user_prompt` erzeugen → semantische Suche in KZG und LZG
 
 > **Designentscheidung (Chat 3):** Der Vor-Check vermeidet teure Embedding-Berechnungen bei leeren Speichern. Ohne Gedächtnis: ~0ms. Mit Gedächtnis: ~1.6s (Embedding) + Suche.
+
+**LZG-Lesepfad (Synapsen-Konzept §8.1–8.4, live seit P5 / Chat 100):** Kein flacher LZG-Read mehr. Der Enricher ruft `spreading_lesen` auf (Anker-Knoten via `anker_retrieval`, dann Spreading Activation entlang der Kanten; Cluster aus dem Redis-Vorturn, Novas dominante Emotion aus `nova_emotions_verlauf`) und schreibt das Ergebnis als `state["lzg_resonanz"]` — bewusst an `memory_entries` vorbei. Der Reducer reicht das Objekt unangetastet an den Formatter durch, der den `[GEDAECHTNIS]`-Block rendert; die Erinnerungen durchlaufen damit keinen Dedup (REDUCER-SIEHT-LZG-NICHT, bugs.md).
+
+**Kalibrierung Chat 107:** `anker_retrieval min_similarity` steht auf **0.40** (vorher 0.50), kalibriert auf `nomic-embed-text-v2-moe` per Abdeckungsmessung an 100 echten Prompts (82 % der Turns mit Anker, Ø 4.1 Anker; 100 % Abdeckung ist nicht das Ziel — Cold Start ist bei ankerlosen Prompts die richtige Antwort). ⚠ Wachposten, kein Endwert.
+
+**Korrektur zur Historie (Chat 107):** Die frühere Aussage, das Anker-Retrieval „findet Anker", war faktisch falsch. Der ivfflat-Index auf `lzg_knoten` (lists=100 bei ~300 Zeilen, probes=1) durchsuchte eine einzige Liste und lieferte pro Query drei Zufallstreffer (IVFFLAT-RECALL-KOLLAPS, bugs.md); im casing-blinden Embedding-Raum lag bei Grundrauschen 0.74 praktisch jeder Zufallstreffer über der alten 0.50-Schwelle — die Treffer sahen deshalb plausibel aus. Die ivfflat-Indizes sind entfernt (Commit `95ef8eb`); bis ~10k Zeilen läuft das Retrieval exakt per Seq-Scan.
 
 ### 3.4 Charakter-Hash (nicht mehr geladen, seit Phase 2)
 
@@ -168,6 +174,7 @@ Die eigentliche Berechnung (Verlauf, Vektor, EI-Arousal, Modus-/Stil-Plausibilit
 | `state["gravitationsterm"]` | float | n.a. | Aggregierter Drive-Term |
 | `state["emotionale_gravitationspunkte"]` | list[dict] | n.a. | KZG-Scan auf hoch-arousal Treffer |
 | `state["memory_entries"]` | list[ContextEntry] | n.a. | Akkumulierte Memory-Quellen für den Reducer |
+| `state["lzg_resonanz"]` | dict | n.a. | Spreading-Lesepfad (§3.3): Kontext-Rahmen (Anker-Anzahl, Sprung-Tiefe, Cluster, Nova-Sektor) + Erinnerungen mit Pfad; Transport zum Formatter via Reducer-Durchreiche |
 
 **Phase 3 entfernt:** `char_hash_dict`, `user_emotion`, `charakter_anweisungen`, `direktiven`, `nova_kern`, `nova_adaptiv`, `nova_beziehung`, `nova_intentionen`, `nova_emotions`. Diese Felder werden vom Enricher nicht mehr geschrieben. Charakter-/Identitäts-Daten liegen in den Personality-Klassen (`state["external"].character`, `state["internal"].character`/`identities`/`directives`), befüllt vom `db_zugriff`-Node am CG-Eingang.
 

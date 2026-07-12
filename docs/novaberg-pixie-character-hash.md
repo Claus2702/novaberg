@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** CharakterAgent — Charakter-Hash aus KZG/LZG destillieren
-**Stand:** 07. Mai 2026, Chat 79
+**Stand:** 12. Juli 2026, Chat 107 (⚠ Fundament-Warnung nach Gewichts-Reset, siehe Kasten in §3. Kern: Chat 79, P7-Update Chat 103)
 **Pfad:** novaberg/docs/novaberg-pixie-character-hash.md
 **Quellen:** nova-05-m-a.md, nova-04-m-b.md, nova-04-t-b.md
 
@@ -35,6 +35,8 @@ Kein dirty Flag → sofort return. Fehlerbehandlung pro Profil (try/except).
 ---
 
 ## 3. Fünf Profile
+
+> **⚠ Fundament-Warnung (Chat 107, 12.07.2026):** Bis zum Gewichts-Reset am 12.07.2026 rechnete die Destillation auf **Zufallsgewichten** — im casing-blinden Embedding-Raum hatten 2910 Skelett-Kollisionen die `gewicht_absolut`-Ordnung bedeutungslos gemacht (EMBEDDING-CASING-BLIND; „Der Nutzer heißt Claus" stand bei 61, „Der Nutzer beobachtet dich" bei 44). Der bestehende `charakter_hash` — insbesondere `kern_hash` und `emotions_profil` — ist auf diesem Fundament entstanden und muss neu destilliert werden. **Der Reset stößt das nicht automatisch an:** Die Destillation läuft nur bei `hash_dirty`, und die Reset-/Re-Embed-Tools setzen das Flag nicht — offener Punkt CHARHASH-RESET-TRIGGER-FEHLT (bugs.md).
 
 ### 3.1 Kern-Hash (LZG, Monate)
 

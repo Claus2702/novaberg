@@ -1497,3 +1497,21 @@ Disambiguierung erzeugen, die den Loop auslöste: der Crash ist behoben, nicht d
 **Mitschuldiger — das eigene Log:** `anker_retrieval` loggte `anker[0]["cosine"] if anker else float("nan")` — ein Platzhalter, der als Messwert auftrat. Er behauptete NaN, wo er „0 über Schwelle, Roh-Werte unbekannt" meinte, und schickte den Audit auf die Nullvektor-Fährte. Verstoß gegen `lesson_l_log-behauptet-was-es-weiss` — die Lesson war einen Tag alt.
 
 **Behoben Chat 107 (Commit `95ef8eb`):** Index **entfernt**, nicht getunt — bei ~300 Zeilen ist der Seq-Scan exakt und < 1 ms; ein approximativer Index bringt keinen Zeitgewinn, nur Recall-Verlust. Ebenso `idx_lzg_embedding` (Legacy) gedroppt. `db/init.sql` kommentiert beide aus, mit Vorfall, Beleg und Wiederanlage-Schwelle (~10k Zeilen, `lists ≈ rows/1000`, `probes` mitkalibrieren) — dieselbe Konsistenz, die bei entitaeten/fakten immer galt. Log ehrlich gemacht: zeigt jetzt die **rohen** Cosines vor dem Schwellenfilter. **Nachweis live:** `anker_retrieval("Was weißt du über Lumi?")` → 118 (0.7377), 308 (0.6820), 102 (0.6742) — „3 Kandidaten geladen (beste Roh-Cosine 0.7377, schwaechste 0.6742), 3 ueber Schwelle 0.40". Das Retrieval lebt. VITALZEICHEN-Bezug: Das Retrieval-Vitalzeichen hätte den Kollaps gefangen — der Backlog-Eintrag entstand drei Stunden vor dem Vorfall.
+
+---
+
+### Chat 107 — Migrationsrest (aufgedeckt im Docs-Commit 12.07.2026)
+
+#### CHARHASH-RESET-TRIGGER-FEHLT — Neu-Destillation nach dem Gewichts-Reset ist nicht angestoßen ⚠️
+
+**Entdeckt:** 12.07.2026, Docs-Commit nach Chat 107 — statische Prüfung der Trigger-Kette (Live-DB in der Prüf-Umgebung nicht erreichbar, Zeitstempel-Verifikation steht aus).
+
+**Klasse:** Offener Migrationsrest von EMBEDDING-CASING-BLIND, Severity **Hoch** — der produktive `charakter_hash` ist auf dem alten Fundament entstanden.
+
+**Symptom:** Die Charakter-Destillation (P7) selektiert und rankt nach `gewicht_absolut` — bis zum Reset am 12.07.2026 waren diese Gewichte Zufall (2910 Skelett-Kollisionen, `cosine_max = 1.0000`; siehe EMBEDDING-CASING-BLIND und den Historien-Bruch in `novaberg-memory-synapsen_k.md` §9). Der bestehende `charakter_hash` — insbesondere `kern_hash` und `emotions_profil`, die auf LZG-Gewichten rechnen — ist also aus Zufallsgewichten destilliert. Der CharakterAgent destilliert nur bei gesetztem `hash_dirty:{user_id}:{character_id}` — und **weder `knoten_gewichte_zuruecksetzen` noch `kanten_alle_neu_aufbauen` noch `reembed_all.py` setzen dieses Flag.** Der Reset hat die Rechengrundlage der Destillation geändert, ohne die Destillation anzustoßen.
+
+**Beleg (Datei:Funktion):** `agents/charakter/agent.py` → `invoke` (Dirty-Check, `continue` ohne Flag); `memory/lzg_knoten.py` → `knoten_gewichte_zuruecksetzen` (kein hash_dirty-Setzer); `tools/reembed_all.py` (ebenso). Setzer existieren nur in `agents/kzg/queues.py`, `agents/promotion/agent.py`, `agents/synapsen_promotion/agent.py`, `memory/kzg.py`.
+
+**Mögliche Entlastung, ungeprüft:** Der zweite Durchlauf der 780 KZG-Hashes (Phase B6) lief durch die Synapsen-Promotion, die `hash_dirty` als Nebeneffekt setzt — dann hätte der nächste periodische Pixie-Lauf neu destilliert. Das wäre aber Zufall, kein designter Migrationsschritt, und die Destillation liefe auf frisch zurückgesetzten, flachen Gewichten (haeufigkeit = 1 fast überall) — ehrlich, aber wenig differenziert. **Prüfen:** `kern_aktualisiert_am`/`emotions_aktualisiert_am` in `charakter_hash` gegen den Reset-Zeitpunkt 12.07.2026.
+
+**Lösungsrichtung:** (1) Kurzfristig: `hash_dirty:meister:nova` manuell setzen bzw. Zeitstempel prüfen und den Kern neu destillieren — bewusst entscheiden, ob sofort (flache Gewichte) oder nach ein paar Wochen echten Gewichtsaufbaus. (2) Strukturell: `knoten_gewichte_zuruecksetzen` muss `hash_dirty` selbst setzen — wer die Rechengrundlage der Destillation ändert, stößt die Destillation an.

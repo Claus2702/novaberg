@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Gedächtnis-System (Übersicht)
-**Stand:** 6. Mai 2026, Chat 78
+**Stand:** 12. Juli 2026, Chat 107 (Embedding-Migration: Modellwechsel auf nomic-embed-text-v2-moe)
 **Pfad:** novaberg/docs/novaberg-memory.md
 **Quellen:** nova-02-k.md (Gedächtnis-Konzept)
 
@@ -30,6 +30,8 @@ Das Gedächtnis bildet den menschlichen Gedächtnisweg architektonisch nach: Wah
 
 Jede Schicht verwendet die Technologie, die ihren Anforderungen am besten entspricht: RAM fuer Fluechtige, Redis fuer TTL-faehiges, PostgreSQL fuer Persistentes. Das Mehrspeichermodell von Atkinson und Shiffrin (1968) und Tulvings Trennung in episodisches und semantisches Gedaechtnis (1972) bilden die wissenschaftliche Grundlage.
 
+> **Embedding-Migration (Chat 107, 12.07.2026):** Das Embedding-Modell aller Schichten ist `EMBED_MODEL = nomic-embed-text-v2-moe` (vorher `nomic-embed-text` v1, das durch einen GGUF-Konvertierungsfehler casing-blind war — EMBEDDING-CASING-BLIND, Befund in `novaberg-embedding-casing-blind_k.md`). Der gesamte Vektorbestand wurde am 12.07.2026 neu gerechnet (`server/tools/reembed_all.py`), die `lzg_knoten`-Gewichte zurückgesetzt, `lzg_kanten` neu aufgebaut; ivfflat-Indizes auf `lzg_knoten`/`langzeitgedaechtnis` sind entfernt (IVFFLAT-RECALL-KOLLAPS). Für jedes Speicherziel existiert eine benannte `embed_text_bauen()`-Funktion im jeweiligen Modul — **eine** Formel, die Live-Pfad und Migrationstool gemeinsam nutzen (→ `novaberg-convention-embedding.md`).
+
 ---
 
 ## 2. Session
@@ -44,7 +46,7 @@ Der Session-Kontext lebt nur im Python-RAM und ist an den aktuellen Turn gebunde
 
 ## 3. Kurzzeitgedaechtnis (KZG)
 
-Das KZG lebt in Redis 7 Stack mit dreistufigem TTL (7/14/30 Tage, abhaengig von der Salienz). Jeder Eintrag hat ein Embedding (nomic-embed-text, 768 Dimensionen) fuer semantische Vektorsuche. Seit Chat 64 wird jeder Eintrag als eigenstaendiger Eintrag mit seinem scharfen Kern gespeichert — keine Zusammenfuehrung im KZG. Eintraege mit thematischem Overlap werden in Salienz und Haeufigkeit geboosted (Verstaerkungsformel: `boost = salienz / KZG_VERSTAERKUNG_DIVISOR`, gedaempft durch sin^0.6-Kurve, Cap 10.0), aber der Inhalt bleibt exakt. Die Zusammenfuehrung passiert erst bei der Cluster-Promotion ins LZG (4-Phasen-Algorithmus mit LLM-Kohaerenzpruefung).
+Das KZG lebt in Redis 7 Stack mit dreistufigem TTL (7/14/30 Tage, abhaengig von der Salienz). Jeder Eintrag hat ein Embedding (`nomic-embed-text-v2-moe` seit 12.07.2026, 768 Dimensionen) fuer semantische Vektorsuche. Seit Chat 64 wird jeder Eintrag als eigenstaendiger Eintrag mit seinem scharfen Kern gespeichert — keine Zusammenfuehrung im KZG. Eintraege mit thematischem Overlap werden in Salienz und Haeufigkeit geboosted (Verstaerkungsformel: `boost = salienz / KZG_VERSTAERKUNG_DIVISOR`, gedaempft durch sin^0.6-Kurve, Cap 10.0), aber der Inhalt bleibt exakt. Die Zusammenfuehrung passiert erst bei der Cluster-Promotion ins LZG (4-Phasen-Algorithmus mit LLM-Kohaerenzpruefung).
 
 Seit Chat 62 nutzt das KZG ein **Paar-Schema** — der Redis-Key lautet `kzg:{user_id}:{character_id}:{entry_id}`. Jeder Eintrag gehoert zu einem Gespraechspaar (User × Charakter), nicht zu einem einzelnen User. Ein zusaetzliches Feld `beobachter` (`"user"` oder `"assistant"`) haelt fest, aus wessen Perspektive der Inhalt stammt: Nova beobachtet im CharacterGraph (Pfad 2), Meister im HumanGraph (Pfad 1). Das ermoeglicht getrennte Gedaechtnis-Perspektiven — Nova kann sich an ihre eigenen Beobachtungen erinnern, Meister an seine.
 

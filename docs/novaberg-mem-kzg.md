@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** KZG-Speicher (Redis, Vektorsuche, TTL, Verstärkung)
-**Stand:** 16. Mai 2026, Chat 88 (Synapsen P3 — KZG-Schreibpfad trägt Magnet-Felder `entitaet_ids` und `timeline_id`, Pipeline-Log am Schreibvorgang)
+**Stand:** 12. Juli 2026, Chat 107 (Embedding-Migration: Modellwechsel auf nomic-embed-text-v2-moe, eine Embed-Formel via `embed_text_bauen()`, Retrieval-Schwelle 0.40)
 **Pfad:** novaberg/docs/novaberg-mem-kzg.md
 **Quellen:** nova-02-m-b.md (Speicher-Abschnitte)
 
@@ -50,7 +50,7 @@ _kzg_prefix(user_id, character_id)            # Scan-/Match-Prefix
 | `beobachter` | Dispatch | `"user"` (HumanGraph, Pfad 1) oder `"assistant"` (CharacterGraph, Pfad 2) — wer hat den Turn beobachtet |
 | `entitaet_ids` | KzgAgent (`magnete_aufloesen`) | Magnet-Achse Entität (Synapsen P3, kommagetrennt; leer = keine Tags) |
 | `timeline_id` | KzgAgent (`magnete_aufloesen`) | Magnet-Achse Zeit (Synapsen P3, optional; bei `None` aus dem Hash ausgelassen) |
-| `embedding` | KZG-Agent | 768-Dim Vektor (nomic-embed-text) |
+| `embedding` | KZG-Agent | 768-Dim Vektor (`EMBED_MODEL`, seit 12.07.2026 `nomic-embed-text-v2-moe`); Embed-Text via `embed_text_bauen(themen, kern)` — siehe §6 |
 | `erstellt_am` | System | Unix-Timestamp |
 
 ---
@@ -172,11 +172,13 @@ Einträge verfallen automatisch per Redis TTL. Kein Cron-Job, kein manuelles Lö
 
 ## 6. Embedding-Erzeugung
 
-**Modell:** nomic-embed-text (768 Dimensionen), auf GPU via Ollama.
+**Modell:** `nomic-embed-text-v2-moe` (768 Dimensionen), auf GPU via Ollama. Gewechselt am 12.07.2026 (EMBEDDING-CASING-BLIND: der Vorgänger `nomic-embed-text` v1 war durch einen GGUF-Konvertierungsfehler casing-blind — `embed("Hund") == embed("Katze")` bit-identisch; Befund in `novaberg-embedding-casing-blind_k.md`). Der gesamte Bestand (780 KZG-Hashes + alle Postgres-Embedding-Spalten) wurde per `server/tools/reembed_all.py` neu gerechnet.
+
+**Embed-Text (Chat 107):** `embed_text_bauen(themen, kern)` in `agents/kzg/speicher.py` ist die **einzige** Formel für das `embedding`-Feld — `"Thema: {themen}. Aussage: {kern}"`. Live-Pfad und Migrationstool rufen dieselbe Funktion; der Text ist aus den persistierten Hash-Feldern vollständig rekonstruierbar. `valenz` steht bewusst **nicht** mehr im Embed-Text: bei 81 % „positiv" war es ein nahezu konstanter Token, der den Raum verschiebt statt zu schärfen (→ `novaberg-convention-embedding.md`).
 
 **Funktion:** `memory.embedding.embedding_create(text, client, model)` — erzeugt den Vektor für Ähnlichkeitssuche und Verstärkung.
 
-**Wichtig: Embedding ist NICHT abstrahiert** (anders als LLM-Calls). Ein Wechsel des Embedding-Modells würde alle gespeicherten Vektoren invalidieren.
+**Wichtig: Embedding ist NICHT abstrahiert** (anders als LLM-Calls). Ein Wechsel des Embedding-Modells invalidiert alle gespeicherten Vektoren — am 12.07.2026 real eingetreten: der Modellwechsel erforderte das Re-Embedding des gesamten Bestands bei gestopptem Server (kein Turn darf in den Mischzustand aus alten und neuen Vektoren fallen).
 
 ---
 
@@ -208,7 +210,7 @@ Der RedisManager mit `decode_responses=True` bricht binäre Vektorsuche und Embe
 | `KZG_VERSTAERKUNG_DIVISOR` | 2.0 | `config.py` | Verstärkungs-Stärke (Roh-Boost vor sin^0.6-Dämpfung) |
 | `KZG_VERTIEFUNG_HAEUFIGKEIT` | 3 | `config.py` | Ab dieser Wiederholungszahl Vertiefungs-Trigger |
 | `PIXIE_PROMOTION_PRIORITAET` | 0.9 | `config.py` | Scheduler-Priorität für periodischen Promotion-Task |
-| `EMBEDDING_DIM` | 768 | — | nomic-embed-text Dimensionen |
+| `EMBEDDING_DIM` | 768 | — | Embedding-Dimensionen (`nomic-embed-text-v2-moe`) |
 
 `SIMILARITY_THRESHOLD` und `PROMOTION_THRESHOLD` in `memory/kzg.py` existieren noch als Konstanten, werden aber von der KZG-Schreib-Pipeline nicht mehr genutzt. Der Promotion-Push gegen die Queue läuft jetzt über `KZG_SALIENZ_HIGH`.
 

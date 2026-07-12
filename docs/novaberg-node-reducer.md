@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Pipeline-Node `reducer` (Memory-Konsolidierung im CharacterGraph)
-**Stand:** 17. Mai 2026, Chat 90 (Doku-Sync Teil 2 abgeschlossen)
+**Stand:** 12. Juli 2026, Chat 107 (Reducer-Audit: lzg_resonanz-Durchreiche, Summary-Produzent-Korrektur)
 **Pfad:** novaberg/docs/novaberg-node-reducer.md
 **Datei:** `server/graph/nodes/reducer.py` (Wrapper in `server/graph/base.py:215-216`)
 **Formatter:** `server/graph/format/memory_context.py`
@@ -41,8 +41,9 @@ Der Reducer läuft als Node im CharacterGraph zwischen Enricher und Router. Regi
 | State-Quelle | Typ | Beschreibung |
 |---|---|---|
 | `state["memory_entries"]` | `list[ContextEntry]` | Vom Enricher gesammelte strukturierte Memory-Einträge |
+| `state["lzg_resonanz"]` | `dict \| None` | Spreading-Erinnerungen (§8.4.4 Resonanz-Akte, Clipboard-Prinzip) — wird **unangetastet** an den Formatter durchgereicht, durchläuft **keinen** Dedup (Bug REDUCER-SIEHT-LZG-NICHT, siehe §9) |
 
-Der Reducer liest keine Personality-Felder, keine DB-/Redis-Daten und keine Konstanten aus `config.py`. Eingabe ist ausschließlich der `memory_entries`-State.
+Der Reducer liest keine Personality-Felder, keine DB-/Redis-Daten und keine Konstanten aus `config.py`. Dedupliziert wird ausschließlich der `memory_entries`-State; `lzg_resonanz` ist reine Durchreiche.
 
 Welche `ContextEntry`-Felder der Reducer tatsächlich auswertet vs. nur durchreicht:
 
@@ -135,9 +136,11 @@ Drei latente Backlog-Punkte beim Reducer (Prio Niedrig, Backlog-Einträge werden
 - **REDUCER-CONFIG-DEAD-KONSTANTEN** — `REDUCER_AKTIV` und `REDUCER_LOG_REMOVED` in `config.py:1022/1027` werden seit dem STRUCT-Sprint (Chat 75) nicht mehr gelesen. Bei nächster `config.py`-Berührung mit-entfernen oder bewusst wieder verdrahten (z.B. als Kill-Switch).
 - **REFAC-PIPELINE-LOG-VOLLVERKABELUNG** (übergreifend) — Der Reducer schreibt keine Pipeline-Log-Spans. Einer der Nodes ohne Anbindung an die Forensik-Infrastruktur aus Chat 88 P1/P1.1.
 
-Plus ein latenter Befund außerhalb Reducer-Scope, beim Doku-Bau aufgefallen:
+Plus ein Befund aus dem Reducer-Audit (Chat 107):
 
-- **SESSION-SUMMARY-PFAD-INAKTIV** — Der Formatter behandelt `quelle="summary"`-Entries ([format/memory_context.py:64-65, 92-93](novaberg/server/graph/format/memory_context.py#L64)), aber kein Produzent im Codebase erzeugt solche Einträge. Smoke-Test im STRUCT-Sprint (Chat 75) zeigte „Gruppe summary: 0 Einträge" durchgehend. Audit-Eintrag zur Klärung im Memory-Pipeline-Sprint.
+- **REDUCER-SIEHT-LZG-NICHT** (bugs.md) — LZG-Erinnerungen durchlaufen nie den Dedup. `spreading_lesen` schreibt nach `state["lzg_resonanz"]`; der Reducer reicht das Objekt unangetastet an den Formatter durch (siehe §3.1). Dedupliziert werden nur Session-Summary, KZG-Retrieval und Charakter. Gehört in den Reducer-Ausbau der Synapsen-Reihe (P8/P9); nach dem Re-Embedding messen, wie viele Paraphrasen-Dubletten tatsächlich gemeinsam im Kontext landen.
+
+Korrigiert (Chat 107, Reducer-Audit): Die frühere Notiz **SESSION-SUMMARY-PFAD-INAKTIV** („kein Produzent im Codebase erzeugt `quelle="summary"`-Entries") ist überholt — der Produzent existiert im Enricher und feuert, sobald Redis eine Session-Summary hält (`_session_key(..., "summary")` in `enricher.py`). Der Smoke-Test im STRUCT-Sprint (Chat 75) lief schlicht ohne vorhandene Summary.
 
 ---
 

@@ -1,13 +1,13 @@
 """Reducer — dedupliziert memory_entries und baut den finalen memory_context.
 
-Sitzt im Graph zwischen Enricher und EI-Calc. Liest die strukturierten
+Sitzt im Graph zwischen Enricher und Router (db_zugriff -> ei_calc ->
+enricher -> reducer -> router). Liest die strukturierten
 ContextEntry-Eintraege, die der Enricher gesammelt hat, dedupliziert sie
 in zwei Stufen (Exakt-Dedup + Substring-Dedup), und ruft den zentralen
 Formatter auf, der den finalen memory_context-String fuer den Responder
 und nachfolgende Konsumenten baut.
 
-Konzept: novaberg-reducer-umbau_k.md, Abschnitte 6 (Format-Vertrag) und
-7 (Reducer-Funktionalitaet).
+Doku: novaberg-node-reducer.md (Format-Vertrag und Dedup-Mechanik).
 """
 
 import logging

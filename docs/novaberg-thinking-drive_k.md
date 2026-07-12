@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Antrieb — Ziele, Motivation, Gravitation, Dual-Emotion-Architektur (Konzept)
-**Stand:** 22. April 2026, Chat 62 (Emotionale Gravitation ergänzt — KZG + Session)
+**Stand:** 12. Juli 2026, Chat 107 (Gravitations-Schwellen auf 0.40 rekalibriert — nomic-embed-text-v2-moe. Kern: Chat 62, Emotionale Gravitation ergänzt)
 **Pfad:** novaberg/docs/novaberg-thinking-drive_k.md
 **Quellen:** Chat 53 (Grundkonzept Antrieb, Zielpyramide, Gravitation, Dual-Emotion), Chat 51 (Neugier-Mechanismus), Chat 39 (Gesprächsvektor), Chat 45 (Nova-Destillation), Chat 10 (Traum-Modus-Entscheidung)
 
@@ -350,7 +350,7 @@ Beide Gravitationsarten können gleichzeitig wirken. Beim Schnittlauch-Beispiel 
 
 Gespräche sollen nicht ständig in alte emotionale Erinnerungen abrutschen. Drei Mechanismen schützen dagegen:
 
-1. **Hohe Schwelle:** `EMOTIONALE_GRAVITATIONS_SCHWELLE` liegt höher als `GRAVITATIONS_SCHWELLE` (z.B. 0.5 statt 0.3). Nur wirklich relevante Erinnerungen werden aktiviert.
+1. **Schwelle:** `EMOTIONALE_GRAVITATIONS_SCHWELLE` filtert auf wirklich relevante Erinnerungen. (Ursprüngliches Design: höher als `GRAVITATIONS_SCHWELLE`, z.B. 0.5 statt 0.3. Seit der Rekalibrierung Chat 107 stehen beide auf 0.40 — im neuen, weiter gespreizten Vektorraum ist 0.40 bereits ein hoher Wert: p99 der Prompt↔Knoten-Verteilung liegt bei 0.57.)
 2. **Zeit-Dekay:** Frische Erinnerungen wirken stärker, alte verblassen. Ein Verlust von vor 5 Jahren ist weniger präsent als einer von letzter Woche.
 3. **Maximale Aktivierungen pro Turn:** Höchstens zwei emotionale Gravitationseffekte pro Turn, quellenübergreifend. Bei mehr möglichen Treffern werden die mit der höchsten Gravitationskraft gewählt — unabhängig davon, ob sie aus Session, KZG oder LZG stammen. Dadurch gewinnen frische, stark aufgeladene Einträge meist Vorrang, aber ein sehr ähnlicher LZG-Eintrag kann auch durchbrechen.
 
@@ -667,7 +667,7 @@ Klingers Forschung zeigt: Wenn die Umstände ungünstig für zielgerichtetes ope
 
 | Parameter | Typ | Default | Beschreibung |
 |-----------|-----|---------|-------------|
-| `GRAVITATIONS_SCHWELLE` | float | 0.3 | Minimum-Gravitation, ab der ein Ziel aktiviert wird |
+| `GRAVITATIONS_SCHWELLE` | float | 0.40 | Minimum-Gravitation, ab der ein Ziel aktiviert wird. Historie: 0.3 (Konzept) → 0.75 (Chat 69) → 0.60 → **0.40** (Chat 107, Rekalibrierung auf `nomic-embed-text-v2-moe` — im alten casing-blinden Raum lag 0.60 unter dem Grundrauschen 0.74 und feuerte immer) |
 | `GRAVITATIONS_SALIENZ_FAKTOR` | float | 0.5 | Skalierungsfaktor für den Salienz-Boost |
 | `NOVA_EMOTION_DECAY` | float | 0.85 | Decay-Rate für Novas Emotion pro Turn (→ Neutralität, pro Dimension) |
 | `NOVA_EMPATHIE_BENACHBART` | float | 0.15 | α bei Sektor-Distanz 0–1 (gleichgerichtete Emotionen bestätigen leicht) |
@@ -676,7 +676,7 @@ Klingers Forschung zeigt: Wenn die Umstände ungünstig für zielgerichtetes ope
 | `ZIEL_MITTELFRISTIG_DECAY_TAGE` | int | 14 | Halbwertszeit mittelfristiger Ziele in Tagen |
 | `ZIEL_MAX_MITTELFRISTIG` | int | 5 | Maximale Anzahl aktiver mittelfristiger Ziele |
 | `ZIEL_MAX_LANGFRISTIG` | int | 2 | Maximale Anzahl langfristiger Ziele |
-| `EMOTIONALE_GRAVITATIONS_SCHWELLE` | float | 0.5 | Minimum-Gravitation, ab der eine emotionale Erinnerung aktiviert wird |
+| `EMOTIONALE_GRAVITATIONS_SCHWELLE` | float | 0.40 | Minimum-Gravitation, ab der eine emotionale Erinnerung aktiviert wird. Historie: 0.5 → **0.40** (Chat 107, Rekalibrierung auf `nomic-embed-text-v2-moe`) |
 | `EMOTIONALE_GRAVITATION_ZEIT_HALBWERT` | int | 180 | Halbwertszeit emotionaler Gravitation in Tagen |
 | `EMOTIONALE_GRAVITATION_MAX_PRO_TURN` | int | 2 | Maximale Anzahl aktivierter emotionaler Erinnerungen pro Turn |
 | `EMOTIONALE_GRAVITATION_FAKTOR_SESSION` | float | 1.0 | Quellen-Faktor für Session-Einträge (frisch, voll wirkend) |

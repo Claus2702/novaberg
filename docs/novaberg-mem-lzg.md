@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Modul Langzeitgedächtnis
-**Stand:** 16. Mai 2026, Chat 88 (Synapsen P2 — `lzg_knoten`/`lzg_kanten` parallel angelegt, leer bis P4; legacy `langzeitgedaechtnis` bleibt produktiv)
+**Stand:** 12. Juli 2026, Chat 107 (Embedding-Migration: Modellwechsel auf nomic-embed-text-v2-moe, ivfflat-Indizes entfernt, Retrieval-Schwelle 0.40)
 **Pfad:** novaberg/docs/novaberg-mem-lzg.md
 **Quellen:** nova-02-m-c.md
 **Datei:** `memory/lzg.py`
@@ -11,6 +11,9 @@
 
 > **Hinweis (Chat 88): Synapsen-Umbau im Gang.**
 > Das hier beschriebene LZG-Modell mit aggregierten Einträgen wird durch ein assoziatives Netz-Modell ersetzt — siehe Konzept-Dokument `novaberg-memory-synapsen_k.md`. Statt verdichteten Aggregat-Einträgen behält jeder ehemalige KZG-Eintrag seine Identität als Knoten in `lzg_knoten`, Verbindungen leben in `lzg_kanten`. `emotions_vektor` kehrt im neuen Schema zurück (in Chat 83 entfernt, weil mit verdichteten Punkten inkompatibel — diese Begründung entfällt im Knoten-Modell). Tabellen `lzg_knoten`/`lzg_kanten` sind seit P2 (Chat 88) im Schema vorhanden, aber leer. Schreibpfad wechselt erst mit P4, Lesepfad mit P5. Bis dahin bleibt `langzeitgedaechtnis` produktiv und wird in diesem Dokument beschrieben.
+
+> **Hinweis (Chat 107, 12.07.2026): Embedding-Migration EMBEDDING-CASING-BLIND.**
+> Das Embedding-Modell ist auf **`nomic-embed-text-v2-moe`** gewechselt (weiterhin 768 Dimensionen). Alle Embedding-Spalten des Bestands wurden per `server/tools/reembed_all.py` neu gerechnet, die Gewichte der `lzg_knoten` zurückgesetzt und `lzg_kanten` komplett neu aufgebaut — Befund und Beweiskette in `novaberg-embedding-casing-blind_k.md`, der Reset-Bruch in `novaberg-memory-synapsen_k.md`. Neue Wartungs-/Migrationsfunktionen: `knoten_embedding_aktualisieren` und `knoten_gewichte_zuruecksetzen` in `memory/lzg_knoten.py`; `embedding_cosine_alle_aktualisieren`, `kanten_alle_loeschen` und `kanten_alle_neu_aufbauen` in `memory/lzg_kanten.py`. Für jedes Speicherziel existiert seitdem eine benannte `embed_text_bauen()`-Funktion im jeweiligen Modul — **eine** Formel, Live-Pfad und Migrationstool rufen dieselbe (→ `novaberg-convention-embedding.md`).
 
 ## 1. Aufgabe
 
@@ -33,7 +36,7 @@ Tabelle: `langzeitgedaechtnis`
 | `dimension` | TEXT | kognition / emotion / werte / interessen / kommunikation / kontext |
 | `gewicht` | DOUBLE | Basis-Gewicht (steigt bei Verstärkung, wird nie durch Decay reduziert) |
 | `haeufigkeit` | INTEGER | Verstärkungszähler |
-| `embedding` | VECTOR(768) | nomic-embed-text Embedding |
+| `embedding` | VECTOR(768) | Embedding aus `EMBED_MODEL` (seit 12.07.2026 `nomic-embed-text-v2-moe`, Bestand re-embedded) |
 | `arousal` | FLOAT | Energie-Intensität zum Zeitpunkt der Speicherung |
 | `beobachter` | VARCHAR(20), DEFAULT `'user'` | `"user"` oder `"assistant"` (Chat 62). Bei Promotion aus dem KZG-Eintrag uebernommen. |
 | `aktiv` | BOOLEAN | Soft-Delete Flag (Default: TRUE) |
@@ -48,7 +51,7 @@ Tabelle: `langzeitgedaechtnis`
 
 **Indexes:**
 - Partial Index `idx_lzg_aktiv` auf `(user_id, character_id) WHERE aktiv = TRUE` — alle Abfragen filtern auf Paar + aktive Einträge (Chat 62)
-- pgvector-Index auf `embedding` für KNN-Suche
+- **Kein Vektor-Index mehr** (seit 12.07.2026): Die ivfflat-Indizes auf `langzeitgedaechtnis` und `lzg_knoten` wurden entfernt (Commit `95ef8eb`) — ivfflat mit lists=100 bei ~300 Zeilen und probes=1 durchsuchte eine einzige Liste und lieferte Zufallstreffer statt Nearest Neighbors (IVFFLAT-RECALL-KOLLAPS, bugs.md). Bis ~10k Zeilen läuft die KNN-Suche exakt per Seq-Scan; erst danach wieder einen Index anlegen (dann lists ≈ rows/1000 und `ivfflat.probes` mitkalibrieren, siehe Kommentar in `db/init.sql`)
 
 Zusätzliche EI-Metadaten-Spalten (intentionen, emotion, modus, sprach_stil, beziehungs_dynamik, tone) werden bei der Promotion aus dem KZG-Eintrag übernommen und per `ALTER TABLE ADD COLUMN` hinzugefügt.
 
@@ -99,7 +102,7 @@ Der Enricher ruft die relevantesten LZG-Einträge per pgvector-Similarity-Suche 
 2. `ORDER BY embedding <=> suchvektor` (Cosine Distance)
 3. Nur `aktiv = TRUE` Einträge
 4. Top-K (Default: 10)
-5. Similarity-Filter: Nur Einträge mit Similarity ≥ 0.5
+5. Similarity-Filter: Nur Einträge mit Similarity ≥ 0.40 (kalibriert auf `nomic-embed-text-v2-moe`, Chat 107; vorher 0.5 im casing-blinden Raum)
 
 **Hinweis (Chat 75):** Seit dem Reducer-Umbau (`novaberg-reducer-umbau_k.md`) liefert die Funktion eine Liste strukturierter `ContextEntry`-Dicts. Der unten gezeigte Format-String wird vom Formatter (`graph/format/memory_context.py`, `format_memory_entries()`) gebaut, nicht mehr von der Retrieve-Funktion selbst.
 

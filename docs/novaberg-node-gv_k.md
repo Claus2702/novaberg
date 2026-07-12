@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Konzept — Gesprächsvektor
-**Stand:** 21. April 2026, Chat 60 (Event-Modell, Graph-Split)
+**Stand:** 12. Juli 2026, Chat 107 (Entity-Hop-Historie: GV-ENTITY-HOP-TOT behoben, Design-Grenze Wert-Fakten dokumentiert)
 **Pfad:** novaberg/docs/novaberg-node-gv_k.md
 **Quellen:** nova-09-k.md
 
@@ -651,6 +651,10 @@ Der existierende Task `vertiefen` ist konzeptionell der richtige Ort für den Ge
 3. [Python] Entity-Hop: 2-Stufen-Traversierung über `fakten`-Tabelle
 4. [LLM] Hypothese destillieren (Session + Emotion + Charakter + Fakten + KZG)
 5. [State] `gespraechsvektor_block` → Responder liest als `[GESPRAECHSVEKTOR]`-Block
+
+**⚠ Entity-Hop-Historie (Chat 107):** Der Entity-Hop war von seiner Einführung bis zum 12.07.2026 **tot**. Beide Fakten-Queries in `_entity_kontext_laden` selektierten `f.beziehung` — eine Spalte, die nie existierte (sie heißt seit Bestehen der `fakten`-Tabelle `attribut`). Jede Ausführung warf `UndefinedColumn`; das pauschale `except Exception` degradierte den Crash zu `logger.warning` und gab `""` zurück — der Entity-Kontext hat den GV-Prompt **nie** erreicht (411 aktive Fakten, keiner je geliefert). Behoben in Commit `1c6332b` (GV-ENTITY-HOP-TOT, bugs.md), live belegt am 12.07.2026.
+
+**Design-Grenze (bleibt, als GV-WERT-FAKTEN-BLIND in bugs.md erfasst):** Der Hop nutzt `INNER JOIN entitaeten e2 ON f.objekt_id = e2.id` und erfasst damit nur Entität→Entität-Fakten — live 47 von 411. Die 364 Wert-Fakten (`objekt_wert`, per Check-Constraint XOR zu `objekt_id`) erreichen den Gesprächsvektor nicht; genau dort liegen Fakten wie „Der Nutzer heißt Claus". Lösungsrichtung: `LEFT JOIN` + `COALESCE(e2.name, f.objekt_wert)` als mitgelesener Kontext, ohne die Hop-Logik zu ändern.
 
 **Farbmisch-System:** Statt eines if/elif-Decision-Trees: 8 unabhängige Funktionen, jede gibt einen Satz oder Stille zurück. Neutral = leerer String — nur salient Dimensionen tragen bei.
 

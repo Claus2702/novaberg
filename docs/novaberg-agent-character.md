@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** CharakterIdentitaetAgent (Persoenlichkeits-Saatgut)
-**Stand:** 17. Mai 2026, Chat 90 (PFAD2-PERZEPTION-FIX abgeschlossen, HumanGraph-Slimming Phase 4)
+**Stand:** 12. Juli 2026, Chat 107 (Boden-Warnung: Destillation rechnete bis zum Reset auf Zufallsgewichten, siehe §2)
 **Pfad:** novaberg/docs/novaberg-agent-character.md
 **Quellen:** nova-12-k.md, nova-14-k.md, nova-15-k.md
 
@@ -31,6 +31,8 @@ Die Charakter-Anweisung ist das Saatgut, die Destillations-Schichten sind der Bo
 | Beispiel | "Freches Maedel vom Land, liebt Botanik" | nova_kern + nova_beziehung + nova_adaptiv + nova_intentionen |
 
 Seit RESP-CHAR1 (Chat 45) sind die Destillations-Schichten (nova_kern, nova_beziehung, nova_adaptiv, nova_intentionen) direkt im `[IDENTITAET]`-Block konsolidiert, nicht mehr in einem separaten `[CHARAKTER]`-Block. Diese Konsolidierung hat eine wichtige Eigenschaft sichtbar gemacht:
+
+> **⚠ Boden-Warnung (Chat 107, 12.07.2026):** Die Destillation, die diesen „Boden" liefert, rechnete bis zum Gewichts-Reset am 12.07.2026 auf **Zufallsgewichten** (2910 Skelett-Kollisionen im casing-blinden Embedding-Raum, EMBEDDING-CASING-BLIND). Der bestehende `charakter_hash` ist auf altem Fundament entstanden; der Kern muss neu destilliert werden, und der Reset stößt das nicht automatisch an — siehe CHARHASH-RESET-TRIGGER-FEHLT (bugs.md) und die Fundament-Warnung in `novaberg-pixie-character-hash.md` §3.
 
 ### 2.1 Basis-Persoenlichkeit ohne aktive Anweisung (Chat 49)
 

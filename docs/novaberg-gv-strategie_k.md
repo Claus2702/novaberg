@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Gesprächslandschaft — 64 Zustände, 6 Achsen, 13 Cluster, 7 Strategien, 4 Absichten, 3 Vehikel (Konzept)
-**Stand:** 30. April 2026, Chat 71
+**Stand:** 12. Juli 2026, Chat 107 (Anhang A: Charakter-Filter nur bei prüfbarer Resonanz — resonanz_pruefbar. Kern: Chat 71)
 **Pfad:** novaberg/docs/novaberg-gv-strategie_k.md
 **Quellen:** Chat 71 (GV3+4, Strategie-Analyse, 64-Sektoren-Validierung, Dreischicht-Architektur), Chat 39 (GV-Grundkonzept), Chat 53 (Drive/Neugier), Chat 7 (6-Säulen-Wahrnehmung)
 
@@ -619,8 +619,10 @@ QF:                 0.6 einheitlich
 neugier_boost:      max(ziel_sim × motivation)       Schwelle 0.30
 effektive_neugier:  sin^0.5(rohwert/2.5 × π/2)      6 Säulen, [0,1]
 register:           sachlich↑neutral↓emotional / offen↑emotional
-charakter_filter:   kern_hash-Resonanz ≥ 0.40
+charakter_filter:   kern_hash-Resonanz ≥ 0.40   (GV_CHARAKTER_RESONANZ_SCHWELLE)
 ```
+
+**Ehrlicher Charakter-Filter (Chat 107, GV-RESONANZ-FALLBACK-LUEGT):** Der Filter greift nur, wenn die Resonanz überhaupt prüfbar ist (`resonanz_pruefbar`-Flag in `ei/wissensluecken.py`). Vorher setzte der Code bei fehlendem Charakter-Kern (Cold-Start) oder fehlgeschlagenem Kern-Embedding lautlos `charakter_resonanz = 0.5` — ein erfundener Wert über der Schwelle, der „nicht anwendbar" als „passt hervorragend" verkleidete. Jetzt: ohne prüfbare Resonanz qualifizieren sich Kandidaten allein über die Relevanz, Cold-Start loggt `warning`, Embedding-Defekt loggt `error`. Kein Verhaltenswechsel, ehrliche Verbuchung (behoben in Commit `deb6199`, Details in bugs.md).
 
 ### A.2 Sechs Systeme
 

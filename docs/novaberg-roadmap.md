@@ -1399,4 +1399,14 @@ Offen → Backlog: `CHARHASH-GEWICHT-ABSOLUT-LIVE` (volle Live-Abnahme im Dauerb
 
 ---
 
-*Aktualisiert in Chat 106. Offene Punkte → novaberg-backlog.md. Bugs → novaberg-bugs.md.*
+### Embedding-Migration EMBEDDING-CASING-BLIND + Fix-Welle (Chat 107, 12. Juli 2026)
+
+- ✅ **EMBEDDING-CASING-BLIND behoben — Modellwechsel + Re-Embedding + Gewichts-Reset + Kanten-Rebuild** (12.07.2026, abgenommen). `nomic-embed-text` v1 war durch einen GGUF-Konvertierungsfehler casing-blind (`embed("Hund") == embed("Katze")` bit-identisch); vier Monate lang liefen Retrieval, Dedup und Gewichtsaufbau auf Skelett-Vektoren. Migration: `EMBED_MODEL` auf `nomic-embed-text-v2-moe` an allen drei Orten (`889b411`), `reembed_all.py` gebaut (`e6671d4`), Bestand re-embedded, `lzg_knoten`-Gewichte zurückgesetzt + `lzg_kanten` neu aufgebaut (`87feb6f`, Reset-Tupel-Fix `7199ba9`), Schwellwerte auf den neuen Raum rekalibriert (u.a. `anker_retrieval` 0.40, `GRAVITATIONS_SCHWELLE` 0.40). **Abnahme:** Selbstkontrolle exakt (bekannte Kalibrierungs-Paare direkt aus der DB nachgerechnet, Abweichung < 0.01), Live-Turn belegt (Anker-Retrieval liefert echte Treffer). Befund: `novaberg-embedding-casing-blind_k.md`; Konventionen daraus: `novaberg-convention-embedding.md`; Historien-Bruch: `novaberg-memory-synapsen_k.md` §9
+- ✅ **GV-ENTITY-HOP-TOT gefixt** (`1c6332b`) — beide Fakten-Queries in `_entity_kontext_laden` selektierten die nie existente Spalte `f.beziehung` (real: `attribut`); das pauschale `except` degradierte den Crash zu `warning` und lieferte `""` — der Entity-Kontext hat den GV-Prompt nie erreicht. Live belegt: 23 deduplizierte Fakten-Kanten für „Nova". Design-Grenze bleibt als GV-WERT-FAKTEN-BLIND erfasst (INNER JOIN sieht nur Entität→Entität, 47 von 411 Fakten)
+- ✅ **RECHERCHE-WISSEN-ERREICHT-LZG-NIE gefixt** (`36c4f0b`) — Recherche-KZG-Einträge mit leerem `inhalt` wurden von der Promotion korrekt verworfen (159 + 155 protokollierte Fehler, wochenlang ungehört): Nova konnte nicht lernen, was sie nachschlägt. Schreibpfad befüllt `inhalt` jetzt mit dem Destillat, Embedding über die eine KZG-Formel; Lesepfad verwirft textlose Einträge laut
+- ✅ **IVFFLAT-RECALL-KOLLAPS gefixt** (`95ef8eb`) — ivfflat mit lists=100 bei ~300 Zeilen und probes=1 durchsuchte eine einzige Zentroid-Liste: Schale 0 der Spreading Activation lief seit jeher auf einer ~3er-Zufallsstichprobe, unsichtbar, solange das casing-blinde Rauschen (0.74) jeden Zufallstreffer über die Schwelle hob. Indizes entfernt statt getunt (Seq-Scan exakt und < 1 ms bis ~10k Zeilen), Anker-Log ehrlich gemacht
+- ✅ **GV-RESONANZ-FALLBACK-LUEGT gefixt** (`deb6199`) — erfundene `charakter_resonanz = 0.5` bei Cold-Start/Embedding-Fehler verkleidete „nicht anwendbar" als „passt hervorragend"; ersetzt durch `resonanz_pruefbar`-Flag mit lauten Ausfall-Zweigen
+
+---
+
+*Aktualisiert in Chat 107 (Docs-Commit 12.07.2026). Offene Punkte → novaberg-backlog.md. Bugs → novaberg-bugs.md.*

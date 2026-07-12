@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Systemarchitektur, Tech-Stack, Plugin-System
-**Stand:** 23. Mai 2026, Chat 94 (Microservice-Welle Block 2+3: Provider→Worker-Schicht, §2 konsolidiert)
+**Stand:** 12. Juli 2026, Chat 107 (Embedding-Modellwechsel auf nomic-embed-text-v2-moe, §2.4. Kern: Chat 94, Microservice-Welle Block 2+3)
 **Pfad:** novaberg/docs/novaberg-architecture.md
 **Quellen:** nova-00-a.md (Architektur-Übersicht), nova-07-a.md (Tech-Stack), nova-07-m-a.md (Plugin-System)
 
@@ -59,7 +59,7 @@ ROCm-Versionen im Docker-Image und auf dem Host sind inkompatibel. Ollama muss d
 | Qwen3-32B | `qwen3-32b-cpu` | RAM | 32768 | ~19 GB (Q4) | Pixie Analyse (Reasoning, JSON, Planung) |
 | Mistral Small 3.2 (24B) | `mistral-small3.2-gpu` | VRAM | 16384 | ~14 GB (Q4) | Chat (HumanGraph) — Fallback-Connector |
 | Mistral Small 3.2 (24B) | `mistral-small3.2-cpu` | RAM | 32768 | ~17 GB (Q5) | Pixie Sprache — Fallback-Connector |
-| Nomic Embed Text | `nomic-embed-text` | VRAM | 2048 | ~0.6 GB | Embedding-Erzeugung |
+| Nomic Embed Text v2 MoE | `nomic-embed-text-v2-moe` | VRAM | 512 (Modell-Limit) | ~1.0 GB (netto +351 MB ggü. v1) | Embedding-Erzeugung (seit 12.07.2026; v1 war casing-blind, siehe §2.4) |
 | Claude Sonnet | — (API) | extern | — | ~$0.02/Turn | Alternativer Chat-Provider (Profil `claude`) |
 
 Modelle werden ueber das **Connector-System** in `config.py` gesteuert (`OLLAMA_CONNECTOR`). Aktuell verfuegbar: `gemma4` (Standard) und `mistral` (Fallback). Umschalten ueber Env-Variable, Neustart genuegt. Mistral bleibt als Connector verfuegbar und wird nicht geloescht.
@@ -138,7 +138,17 @@ Der JSON-Workaround (Ollama #15260) ist im Worker konzentriert: `expect_json` �
 
 ### 2.4 Embedding
 
-Embedding (`nomic-embed-text`) ist bewusst **nicht** Teil der Backend-Wahl. Es läuft fest auf GPU über den `EmbedWorker` (Rolle `embed`, siehe §2.7). Grund: Vektorkonsistenz — ein Wechsel des Embedding-Modells würde alle gespeicherten Vektoren invalidieren, daher kein Config-Hook.
+Embedding (`nomic-embed-text-v2-moe` seit 12.07.2026) ist bewusst **nicht** Teil der Backend-Wahl. Es läuft fest auf GPU über den `EmbedWorker` (Rolle `embed`, siehe §2.7). Grund: Vektorkonsistenz — ein Wechsel des Embedding-Modells invalidiert alle gespeicherten Vektoren, daher kein Config-Hook.
+
+**Modellwechsel Chat 107 (EMBEDDING-CASING-BLIND):** `nomic-embed-text` v1 war durch einen GGUF-Konvertierungsfehler casing-blind (Großbuchstaben-Wörter kollabierten zu `[UNK]`-Skeletten; `embed("Hund") == embed("Katze")` bit-identisch). Der Wechsel auf v2-moe erforderte genau das, wovor dieser Absatz immer gewarnt hat: Re-Embedding des gesamten Bestands bei gestopptem Server, plus Gewichts-Reset und Kanten-Rebuild (Befund: `novaberg-embedding-casing-blind_k.md`).
+
+⚠ **`EMBED_MODEL` steht an DREI Orten** — wer nur einen ändert, tauscht das Modell nicht:
+
+| Ort | Rolle |
+|---|---|
+| `~/ki-assistent/docker-compose.yml` | **WIRKSAM** — Env schlägt Config-Default. Liegt **außerhalb** dieses Repos! |
+| `novaberg/docker-compose.template.yml` | Vorlage, muss mitgezogen werden |
+| `novaberg/server/config.py` | nur der Default (`os.getenv`-Fallback) |
 
 ### 2.5 Konfigurationsvariablen (LLM)
 
@@ -170,7 +180,7 @@ Alle Modell-Aufrufe laufen über eine In-Process-Microservice-Architektur in `se
 
 | Rolle | Worker | Backend(s) | Modell (Connector `gemma4`) |
 |-------|--------|-----------|------------------------------|
-| `embed` | `EmbedWorker` | fest GPU | `nomic-embed-text` |
+| `embed` | `EmbedWorker` | fest GPU | `nomic-embed-text-v2-moe` |
 | `chat` | `ChatWorker` | single, `WORKER_BACKEND_CHAT` | `gemma4-gpu` |
 | `background` | `BackgroundWorker` | dual: `analyse` + `sprache` | `qwen3-32b-cpu` / `gemma4-cpu` |
 

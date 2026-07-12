@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Konzept — Synapsen-Modell für das Langzeitgedächtnis
-**Stand:** 14. Mai 2026, Chat 87 (Punkt 1+2+3+4+5+6+7+8 vollständig ausgearbeitet; 8.5 Wahrnehmungs-Gravitation als Konzept, Implementierung steht aus; Charakter-Hash-Destillation außerhalb des LZG-Kerns bei Pixie verortet; Kanten als Cache geklärt — nur Punkt 9 offen)
+**Stand:** 12. Juli 2026, Chat 107 (Gewichts-Reset des Bestands am 12.07.2026 dokumentiert — Bruch in der Historie, siehe §9; ivfflat-Index entfernt. Zuvor: Chat 87, Punkt 1–8 vollständig ausgearbeitet)
 **Pfad:** novaberg/docs/novaberg-memory-synapsen_k.md
 **Vorgänger-Konzepte:** novaberg-kzg-liberalisierung_k.md (Chat 64), novaberg-pixie-promotion.md
 
@@ -175,8 +175,11 @@ CREATE TABLE IF NOT EXISTS lzg_knoten (
 
 CREATE INDEX idx_lzg_knoten_aktiv 
     ON lzg_knoten (user_id, character_id) WHERE aktiv = TRUE;
-CREATE INDEX idx_lzg_knoten_embedding 
-    ON lzg_knoten USING ivfflat (embedding vector_cosine_ops) WITH (lists = 100);
+-- KEIN Vektor-Index mehr (12.07.2026): idx_lzg_knoten_embedding (ivfflat,
+-- lists=100) wurde entfernt — bei ~300 Zeilen und probes=1 durchsuchte er
+-- eine einzige Liste und lieferte Zufallstreffer statt Nearest Neighbors
+-- (IVFFLAT-RECALL-KOLLAPS, bugs.md). Bis ~10k Zeilen exakter Seq-Scan;
+-- danach Index neu anlegen mit lists ≈ rows/1000 und kalibrierten probes.
 CREATE INDEX idx_lzg_knoten_themen 
     ON lzg_knoten USING gin (themen);
 CREATE INDEX idx_lzg_knoten_entitaet_ids 
@@ -1075,6 +1078,10 @@ Die Destillation des Charakter-Hash-Profils ist nicht Teil des LZG-Kerns. Sie l�
 Knoten verfallen mit der Zeit. Was nicht angesprochen wird, verblasst — bleibt aber erhalten, schläft, kann durch externen Anstoß wieder geweckt werden. Nichts wird hart gelöscht.
 
 Phänomenologisch: Eine Erinnerung verschwindet nicht, wenn niemand sie ruft. Sie wird nur weniger präsent. Wenn etwas sie weckt, ist sie wieder da — aber sie braucht den Anstoß. Erinnern ist ein aktiver Akt, kein passiver Zustand.
+
+> **⚠ Bruch in der Gewichts-Historie (12.07.2026, Chat 107):** Im Zuge der Embedding-Migration EMBEDDING-CASING-BLIND wurden die Gewichte des gesamten `lzg_knoten`-Bestands zurückgesetzt (`knoten_gewichte_zuruecksetzen`: `haeufigkeit = 1`, `gewicht_roh`/`gewicht_absolut`/`gewicht_decay` auf Initialwerte; `lzg_kanten` komplett gelöscht und aus den frischen Vektoren neu aufgebaut). Grund: Die bis dahin akkumulierten Gewichte waren **Zufall** — im casing-blinden Embedding-Raum fand praktisch jeder neue KZG-Eintrag irgendwo einen Skelett-Zwilling über der Match-Schwelle (2910 Reinforcements auf 302 Knoten, `cosine_max = 1.0000` in der Produktionshistorie); die Attraktoren waren Satzformen, keine Bestätigungen. Ein Gewicht, von dem man weiß, dass es Zufall ist, richtet mehr Schaden an als kein Gewicht.
+>
+> **Konsequenz für jede Zeitreihen-Auswertung:** Gewichts- und Häufigkeitswerte vor dem 12.07.2026 sind mit den Werten danach nicht vergleichbar. Alle Bestandsknoten starteten bei `haeufigkeit = 1`; der zweite Durchlauf der geretteten KZG-Hashes (30-Tage-TTL) hat nur die jüngste Historie nachgezogen — ältere Knoten bleiben bei 1. Das ist eine ehrliche Schieflage, die der Decay über die Zeit angleicht. Befund und Beweiskette: `novaberg-embedding-casing-blind_k.md`.
 
 ### 9.1 Drei Stärke-Felder am Knoten
 

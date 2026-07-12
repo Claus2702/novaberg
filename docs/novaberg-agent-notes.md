@@ -346,7 +346,7 @@ Der Typ wird vom LLM beim Erstellen klassifiziert — nicht vom Nutzer explizit 
 
 ## 9. DB-Schema
 
-Tabelle: `notizen` (angelegt via `agents/notizen/init.sql`)
+Tabelle: `notizen` (angelegt via `db/init.sql`; eine eigene `agents/notizen/init.sql` existiert nicht)
 
 | Spalte | Typ | Beschreibung |
 |--------|-----|-------------|
