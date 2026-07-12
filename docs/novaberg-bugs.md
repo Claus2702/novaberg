@@ -1399,7 +1399,7 @@ Disambiguierung erzeugen, die den Loop auslöste: der Crash ist behoben, nicht d
 
 ### Chat 107 — Embed-Text-Vereinheitlichung (Code-Fund)
 
-#### RECHERCHE-KZG-INHALT-LEER — Recherche-KZG-Einträge tragen Vektor ohne Text ⚠️
+#### RECHERCHE-KZG-INHALT-LEER — Recherche-KZG-Einträge tragen Vektor ohne Text ✅ Behoben Chat 107
 
 **Entdeckt:** Chat 107, Sichtung aller Embed-Text-Kompositionsstellen für die `embed_text_bauen`-Vereinheitlichung (Commit `5d58b66`).
 
@@ -1414,7 +1414,7 @@ Disambiguierung erzeugen, die den Loop auslöste: der Crash ist behoben, nicht d
 
 **Auswirkung:** Die 94 Einträge sind im Retrieval als Kontext wertlos (leerer Inhalt) und beim Re-Embedding (EMBEDDING-CASING-BLIND Phase 2/3) nicht neu erzeugbar — es gibt keinen Text, aus dem der Vektor wieder entstehen könnte. Verwandt mit der Formel-Frage: Der Pfad nutzt weder die KZG-Formel (`Thema: … Aussage: …`) noch persistiert er seinen eigenen Embed-Text.
 
-**Fix bewusst offen (Entscheidung Chat 107):** Die Umstellung auf `embed_text_bauen` + Befüllung von `zusammenfassung = destillat` ändert Embed-Text UND Speicherverhalten des Live-Pfads — gehört gemessen, nicht nebenbei gemacht. Für den Bestand: Die 94 Alt-Einträge sind TTL-begrenzt und verfallen von selbst; beim Re-Embedding-Lauf werden Einträge ohne Quelltext übersprungen und laut gezählt.
+**Behoben Chat 107 (Commit `36c4f0b`), nach eigenem Audit statt nebenbei:** Das Folge-Audit ergab Fall A — der Text (`destillat`) existierte zur Schreibzeit, wurde nur nicht ins Feld gelegt. Fix: `salienz_obj["zusammenfassung"] = destillat` (→ `inhalt` befüllt) + Embedding über die eine KZG-Formel `embed_text_bauen(themen, kern)`. Dazu Leer-Filter im Lesepfad (siehe RECHERCHE-WISSEN-ERREICHT-LZG-NIE für die volle Tragweite und den Nachweis). Die 94 Alt-Einträge bleiben unangetastet und verfallen per TTL.
 
 ---
 
@@ -1449,3 +1449,19 @@ Disambiguierung erzeugen, die den Loop auslöste: der Crash ist behoben, nicht d
 **Auswirkung:** Genau die Fakten, die Nova für ihre Haltung braucht — „Der Nutzer heißt Claus", „Lumi ist krank", Ortsangaben — fehlen im Entity-Kontext.
 
 **Lösungsrichtung:** Auf einen Wert kann man nicht weiterhüpfen — aber man kann ihn als **Kontext mitlesen**, wenn man ohnehin bei der Entität ist: `LEFT JOIN` + `COALESCE(e2.name, f.objekt_wert)`, ohne die Hop-Logik zu ändern (Hop 2 weiter nur über echte `objekt_id`-Kanten).
+
+---
+
+### Chat 107 — Recherche-KZG-Folgeaudit
+
+#### RECHERCHE-WISSEN-ERREICHT-LZG-NIE — Recherche-Wissen erreichte das Langzeitgedächtnis nie ✅ Behoben Chat 107
+
+**Entdeckt:** Chat 107, Folge-Audit zu RECHERCHE-KZG-INHALT-LEER (Frage: „Was passiert mit diesen Einträgen?").
+
+**Klasse:** Datenverlust-Kette über zwei korrekt arbeitende Komponenten, Severity **Hoch** — Nova konnte nicht lernen, was sie nachschlägt.
+
+**Symptom:** `RechercheAgent.invoke` (Schritt 7) schrieb KZG-Einträge mit leerem `inhalt`-Feld (Text nie ins Salienz-Objekt gelegt). Mit `salienz = 0.7` und `KZG_SALIENZ_HIGH = 0.7` schob der `>=`-Vergleich **jeden** dieser Einträge in die `lzg_promotion`-Queue — wo die Synapsen-Promotion sie in Vorbedingung 3 verwarf („Feld 'inhalt' ist leer — verworfen"). **Live nachgezählt: 159 `hintergrund_log`- + 155 `pipeline_log`-Fehler.** Zusätzlich gerieten die textlosen Einträge über das Enricher-Retrieval in Novas Kontext (KNN-Probe: Top-10 allesamt leer, Similarity 0.91–1.00, gerendert als `[KZG] …: ` mit baumelndem Doppelpunkt).
+
+**Der Code hat alles richtig gemacht:** fail loud, forensisch protokolliert, in zwei Speicher geschrieben. Er hat wochenlang geschrien — und niemand war da, um es zu hören. Dieser Eintrag dient als Beleg und als Argument für LOG-TUERKLINGEL.
+
+**Behoben Chat 107 (Commit `36c4f0b`):** Schreibpfad: `zusammenfassung = destillat` → `inhalt` befüllt, Embedding über `embed_text_bauen(themen, kern)` — Vektor aus Hash-Feldern rekonstruierbar. Lesepfad: `kzg_entries_retrieve` verwirft Einträge ohne `inhalt` **laut** (`logger.warning` mit Key, Themen, Beobachter, Similarity) — fängt auch künftige textlose Quellen, nicht nur diese. **Nachweis:** Lesepfad live read-only (10/10 leere Treffer verworfen, 0 im Ergebnis); Schreibpfad gegen Redis-Stub (`inhalt == destillat`, Embed-Text aus Hash exakt reproduzierbar). Live-Bestätigung eines frischen Recherche-Eintrags folgt nach dem Phase-B-Neustart — der laufende Server trägt noch den alten Code.

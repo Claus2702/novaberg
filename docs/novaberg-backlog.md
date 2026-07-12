@@ -3229,7 +3229,9 @@ Der Lesson-Index in `novaberg-architecture.md` listet die Legacy-`{modul}_l.md`-
 3. Threading: Warnings entstehen in Worker-Threads → `broadcast_threadsafe`, Muster im Repo etabliert.
 4. Adressierung: `broadcast` ist user-scoped, die Klingel ist global → `log_signal` an alle aktiven Verbindungen; Telegram ignoriert unbekannte Typen.
 
-**Zusammenhang:** GV-ENTITY-HOP-TOT (Anlass) · BROADCAST-VERSCHLUCKT-FEHLER (Stolperdraht 2) · Silent-Skip-Antipattern.
+**Zusammenhang:** GV-ENTITY-HOP-TOT (Anlass) · BROADCAST-VERSCHLUCKT-FEHLER (Stolperdraht 2) · Silent-Skip-Antipattern · RECHERCHE-WISSEN-ERREICHT-LZG-NIE (zweiter Beleg).
+
+**Zweiter Beleg (Chat 107):** 314 `logger.error`-Einträge zu RECHERCHE-WISSEN-ERREICHT-LZG-NIE (159 `hintergrund_log` + 155 `pipeline_log`), wochenlang ungesehen. Der Code hat korrekt fail-loud gemeldet. **Fail loud nützt nichts, wenn niemand zuhört. Die Lautstärke war nie das Problem.**
 
 ## Bug: ENTITAET-EMBED-DREIFACH — Entitäts-Suchpfad embeddet anderen Text als der Schreibpfad (Chat 107)
 
@@ -3292,3 +3294,7 @@ Kein einziger harter Check im Repo (Audit Chat 107): kein `== 768`, kein `assert
 ## Doku: DOKU-NOTIZEN-INIT-SQL — Verweis auf nicht existierende Datei (Chat 107)
 
 `novaberg-agent-notes.md` behauptet, `notizen` werde via `agents/notizen/init.sql` angelegt. Die Datei existiert nicht — `notizen` steht in `db/init.sql`. ⬜ Prio niedrig, nächster Docs-Commit
+
+## Frage: KZG-SALIENZ-GRENZWERT-UNKLAR — soll jede Recherche ins Langzeitgedächtnis? (Chat 107)
+
+Recherche schreibt mit `salienz = 0.7`. `KZG_SALIENZ_HIGH = 0.7`. Der `>=`-Vergleich in `kzg_store` schiebt damit **jeden** Recherche-Eintrag in die `lzg_promotion`-Queue. Ist das gewollt? Soll wirklich jede Recherche ins Langzeitgedächtnis? Kein Bug — eine ungeklärte Entscheidung, die bisher niemand getroffen hat (sie war unsichtbar, solange die Promotion alle Einträge wegen leerem `inhalt` verwarf — siehe RECHERCHE-WISSEN-ERREICHT-LZG-NIE). **Nach dem Re-Embedding neu bewerten:** Dann promoten die Einträge tatsächlich, und wir sehen, was das bedeutet. ⬜ Prio mittel
