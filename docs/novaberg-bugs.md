@@ -1,7 +1,7 @@
 # Novaberg — Bugs & Limitationen
 
-**Stand:** 11. Juli 2026, Chat 106
-**Quelle:** Testlauf "Karrierekrise" (200 Prompts) + Gedächtnis-Epic (Chat 11) + Epic 11 Agent-System (Chats 22–32) + Persona Smoke-Tests (Chats 31–32) + RechercheAgent-Test (Chat 35) + Doku-Audit (Chat 36) + PRIO0-Fix + Client-Observability (Chat 37) + Claude API-Test + STREAM1-Fix + Gesprächsvektor (Chat 39) + CharakterIdentitaetAgent + DirektivenAgent + Tribunal Score-System (Chat 40) + Telegram Bot + Zeitparser-Fixes (Chat 41) + CRUD-Härtung + Telegram-Chat-Analyse + DB-Report (Chat 42) + KONTEXT1-Fix + Resume-Bug + Epic 15 Pilot (Chat 43) + Epic 15 Rollout + DELEG-REG Fix + KZG-Klebrigkeit (Chat 44) + RESP-CHAR1 Fix (Chat 45) + CLASSIFY-REJECTED + Gemma4 Live-Tests (Chat 48) + Telegram-Konversation "frecher Charakter" (Chat 49) + RESUME-REJECT Fix + Live-Tests (Chat 50) + Neugier-Konzept + Projektinfrastruktur (Chat 51) + Doku-Alignment + emotions_profil (Chat 52) + Antrieb-Konzept + Dual-Emotion (Chat 53) + HALL2-Fix + Planner-Refactor (Chat 54) + PySide6 verworfen + GTK4-Entscheidung (Chat 55) + GTK4-Client + Panel-Infrastruktur (Chat 56) + Web-Tool-Doku + SEARX1-Diagnose (Chat 57) + Chat 61 (Perzeption-Symmetrie, Akkumulations-Refactor, Paper-Portfolio, Lumi, urllib3-Doppel-Turn beobachtet) + Paper I + urllib3-RETRY + ROUTE-CHAR-NOTIZ + RESP-DEAD + PIXIE-GHOST (Chat 65) + WS-SINGLE Fix + ClientConnection + User-Message-Broadcast (Chat 68) + Dreischicht-Integration + GV-Refactoring + MODUS-LEER + VEKTOR-LEER + AROUSAL-330 + ZIEL-LABEL-LEER Fixes (Chat 72) + Promotion-Pipeline-Audit (Chat 75) + Reducer-Umbau Smoke-Tests (Chat 75) + Chat 79 (THINK-MEM-CONFLICT, CHAR-LZG-LEAK, MIGRATION-PIX-PAIR, MIGRATION-AGENTGRAPH-PAIR, PIX-CLEAN, KZG-CLEANUP) + Doku-Code-Abgleich (Chat 106)
+**Stand:** 12. Juli 2026, Chat 107
+**Quelle:** Testlauf "Karrierekrise" (200 Prompts) + Gedächtnis-Epic (Chat 11) + Epic 11 Agent-System (Chats 22–32) + Persona Smoke-Tests (Chats 31–32) + RechercheAgent-Test (Chat 35) + Doku-Audit (Chat 36) + PRIO0-Fix + Client-Observability (Chat 37) + Claude API-Test + STREAM1-Fix + Gesprächsvektor (Chat 39) + CharakterIdentitaetAgent + DirektivenAgent + Tribunal Score-System (Chat 40) + Telegram Bot + Zeitparser-Fixes (Chat 41) + CRUD-Härtung + Telegram-Chat-Analyse + DB-Report (Chat 42) + KONTEXT1-Fix + Resume-Bug + Epic 15 Pilot (Chat 43) + Epic 15 Rollout + DELEG-REG Fix + KZG-Klebrigkeit (Chat 44) + RESP-CHAR1 Fix (Chat 45) + CLASSIFY-REJECTED + Gemma4 Live-Tests (Chat 48) + Telegram-Konversation "frecher Charakter" (Chat 49) + RESUME-REJECT Fix + Live-Tests (Chat 50) + Neugier-Konzept + Projektinfrastruktur (Chat 51) + Doku-Alignment + emotions_profil (Chat 52) + Antrieb-Konzept + Dual-Emotion (Chat 53) + HALL2-Fix + Planner-Refactor (Chat 54) + PySide6 verworfen + GTK4-Entscheidung (Chat 55) + GTK4-Client + Panel-Infrastruktur (Chat 56) + Web-Tool-Doku + SEARX1-Diagnose (Chat 57) + Chat 61 (Perzeption-Symmetrie, Akkumulations-Refactor, Paper-Portfolio, Lumi, urllib3-Doppel-Turn beobachtet) + Paper I + urllib3-RETRY + ROUTE-CHAR-NOTIZ + RESP-DEAD + PIXIE-GHOST (Chat 65) + WS-SINGLE Fix + ClientConnection + User-Message-Broadcast (Chat 68) + Dreischicht-Integration + GV-Refactoring + MODUS-LEER + VEKTOR-LEER + AROUSAL-330 + ZIEL-LABEL-LEER Fixes (Chat 72) + Promotion-Pipeline-Audit (Chat 75) + Reducer-Umbau Smoke-Tests (Chat 75) + Chat 79 (THINK-MEM-CONFLICT, CHAR-LZG-LEAK, MIGRATION-PIX-PAIR, MIGRATION-AGENTGRAPH-PAIR, PIX-CLEAN, KZG-CLEANUP) + Doku-Code-Abgleich (Chat 106) + init.sql-Audit (Chat 107)
 
 ---
 
@@ -1372,3 +1372,25 @@ DELEGATION-STATE-UNDEKLARIERT (Landmine/Sperrvermerk), PLANNER-AKTIV-RELIKT,
 WEB-CONTEXT-ALTPFAD, BUILDER-CREATE-INITIAL-STATE-TOT (toter Code).
 NOTIZ-BEFEHL-ALS-TITEL bleibt offen — der Auslöser der Duplikate, die die
 Disambiguierung erzeugen, die den Loop auslöste: der Crash ist behoben, nicht die Ursache.*
+
+---
+
+### Chat 107 — init.sql-Audit (Code-Fund)
+
+#### GV-ENTITY-HOP-TOT — Entity-Kontext im Gesprächsvektor seit Einführung tot ✅ Behoben Chat 107
+
+**Entdeckt:** Chat 107, init.sql-Audit (systematischer Abgleich aller SQL-Literale im Code gegen das in `db/init.sql` + `agents/*/init.sql` definierte Schema, Gegenprobe gegen die Live-DB).
+
+**Klasse:** Schema-Mismatch hinter Silent Skip — Query gegen eine Spalte, die es nie gab, Fehler vier Monate lang als Warning degradiert. Severity **Hoch** — der GV-Node verlor eine seiner beiden eigenen Wissensquellen (Entity-Hops), ohne dass es je eine Fehlermeldung gab.
+
+**Symptom:** Beide Fakten-Queries in `_entity_kontext_laden` selektierten `f.beziehung` aus `fakten` — die Spalte heißt in `db/init.sql` und live seit jeher `attribut`. Jede Ausführung warf `UndefinedColumn`; der umschließende `except Exception` stufte auf `logger.warning("GV-Entity-Hop fehlgeschlagen")` ab und lieferte `""`. 411 aktive Fakten, nie einer im Gesprächsvektor angekommen. Das Warning sah aus wie ein legitimer Leerfall (lesson_l_default-wie-fehlschlag, gleiche Klasse wie RESPONDER-VEKTOR-TOT).
+
+**Beleg (Datei:Funktion):**
+
+- Leser (beide Queries): `graph/nodes/gespraechsvektor.py` → `_entity_kontext_laden` (Hop 1 und Hop 2)
+- Schema: `db/init.sql`, Tabelle `fakten` (`attribut`, kein `beziehung`; Live-DB deckungsgleich)
+- Silent Skip: `except Exception` → `logger.warning` → `return ""`
+
+**Auswirkung:** Der GV-Node bekam nie Entity-Kontext (Hop-1-/Hop-2-Faktenkanten) für die Hypothesen-Destillation — betrifft jeden Turn mit `management_target` oder `prompt_topic`.
+
+**Behoben Chat 107 (Commit `1c6332b`):** `f.beziehung` → `f.attribut` in beiden Queries. Fehlerbehandlung nach dem Fail-loud-Muster des Dispatchers getrennt: `psycopg2.Error` → `logger.error` mit `exc_info` + `log_fehler`-Forensik (`grund=entity_hop_db_fehler`), Turn läuft ohne Entity-Kontext weiter; das pauschale `except Exception` ist weg — echte Python-Fehler krachen jetzt. Legitime Leerfälle (kein Schlüssel, keine Entitäten, 0 Fakten) loggen `info`/`debug` und liefern weiterhin `""`. Verbindung schließt im `finally` (leckte vorher im Fehlerfall). **Live bewiesen 12.7.** (echte Funktion, read-only gegen Live-DB): Schlüssel `Nova` (user `meister`) → 23 deduplizierte Faktenkanten statt `""`; Gegenprobe mit Fantasie-Schlüssel → `info`-Log + `""`. Design-Grenze dokumentiert, kein Bug: Der Hop erfasst nur Entität→Entität-Fakten (`objekt_id` gesetzt, live 47 von 411); Wert-Fakten (`objekt_wert`, 364) sind konstruktionsbedingt nicht hüpfbar.
