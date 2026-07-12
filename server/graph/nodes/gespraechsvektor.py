@@ -19,6 +19,7 @@ from config import (
     GV_STRATEGIE_MIN_LAENGE,
 )
 from graph.state import ConversationState
+from memory.pipeline_log import log_fehler
 from memory.session import format_session_turns_numbered
 from services.model_services import model_service, ChatRequest
 
@@ -131,7 +132,13 @@ def _entity_kontext_laden(state: ConversationState) -> str:
     Hop 1: Schluesselentitaet → deren Fakten
     Hop 2: Verknuepfte Entitaeten → deren Fakten (Orts-/Themen-Verknuepfung)
 
-    Gibt formatierten Text zurueck fuer den LLM-Prompt.
+    Nur Entitaet→Entitaet-Fakten (objekt_id gesetzt): auf einen objekt_wert
+    kann nicht weitergehuepft werden, Wert-Fakten bleiben daher aussen vor.
+
+    Gibt formatierten Text zurueck fuer den LLM-Prompt. Leerfaelle (kein
+    Schluessel, keine Entitaeten, keine Fakten) sind legitim und liefern "";
+    DB-Fehler sind Programmier-/Infrastrukturfehler und krachen laut
+    (logger.error + Forensik), statt als Warning unterzugehen.
     """
     user_id: str = state.get("user_id", "")
     # Schluessel: management_target (bei Tasks) oder prompt_topic (bei Chat)
@@ -141,8 +148,10 @@ def _entity_kontext_laden(state: ConversationState) -> str:
     schluessel:        str = management_target or prompt_thema
 
     if not schluessel or not schluessel.strip():
+        logger.debug("GV-Entity-Hop: kein Schluessel (weder management_target noch prompt_topic) — uebersprungen")
         return ""
 
+    conn = None
     try:
         conn = psycopg2.connect(POSTGRES_URL)
         cursor = conn.cursor()
@@ -161,7 +170,7 @@ def _entity_kontext_laden(state: ConversationState) -> str:
         hop1_entitaeten: list[tuple] = cursor.fetchall()
 
         if not hop1_entitaeten:
-            conn.close()
+            logger.info("GV-Entity-Hop: keine Entitaeten zum Schluessel '%s' — leerer Kontext", schluessel)
             return ""
 
         hop1_ids: list[int] = [e[0] for e in hop1_entitaeten]
@@ -169,7 +178,7 @@ def _entity_kontext_laden(state: ConversationState) -> str:
         # --- Fakten zu Hop-1-Entitaeten laden ---
         cursor.execute(
             """
-            SELECT e1.name, f.beziehung, e2.name, e2.id, e2.zusammenfassung
+            SELECT e1.name, f.attribut, e2.name, e2.id, e2.zusammenfassung
             FROM fakten f
             JOIN entitaeten e1 ON f.subjekt_id = e1.id
             JOIN entitaeten e2 ON f.objekt_id = e2.id
@@ -188,7 +197,7 @@ def _entity_kontext_laden(state: ConversationState) -> str:
         if hop2_ids:
             cursor.execute(
                 """
-                SELECT e1.name, f.beziehung, e2.name, e2.id, e2.zusammenfassung
+                SELECT e1.name, f.attribut, e2.name, e2.id, e2.zusammenfassung
                 FROM fakten f
                 JOIN entitaeten e1 ON f.subjekt_id = e1.id
                 JOIN entitaeten e2 ON f.objekt_id = e2.id
@@ -200,33 +209,54 @@ def _entity_kontext_laden(state: ConversationState) -> str:
             )
             hop2_fakten = cursor.fetchall()
 
-        conn.close()
-
-        # --- Formatieren ---
-        alle_fakten: list[tuple] = hop1_fakten + hop2_fakten
-        if not alle_fakten:
-            return ""
-
-        # Deduplizieren (gleiche Kante nicht doppelt)
-        gesehen: set[str] = set()
-        zeilen: list[str] = []
-        for subjekt, beziehung, objekt, _, zusammenfassung in alle_fakten:
-            kante: str = f"{subjekt}|{beziehung}|{objekt}"
-            if kante in gesehen:
-                continue
-            gesehen.add(kante)
-            zeile: str = f"  {subjekt} → {beziehung} → {objekt}"
-            if zusammenfassung:
-                zeile += f" ({zusammenfassung})"
-            zeilen.append(zeile)
-
-        entity_text: str = "\n".join(zeilen)
-        logger.info(f"GV-Entity-Hop: {len(zeilen)} Fakten geladen (Schluessel: '{schluessel}')")
-        return entity_text
-
-    except Exception as fehler:
-        logger.warning(f"GV-Entity-Hop fehlgeschlagen: {fehler}")
+    except psycopg2.Error as fehler:
+        # Kein Laufzeitzufall: UndefinedColumn & Co. sind Programmierfehler,
+        # Verbindungsfehler Infrastrukturdefekte. Laut protokollieren
+        # (Fail loud), der Turn laeuft ohne Entity-Kontext weiter —
+        # gleiches Muster wie turn_roh im Dispatcher.
+        logger.error(
+            "GV-Entity-Hop: DB-Zugriff fehlgeschlagen (Schluessel '%s'): %s",
+            schluessel, fehler, exc_info=True,
+        )
+        log_fehler(
+            turn_id      = state.get("turn_id", ""),
+            node         = "gespraechsvektor",
+            quelle       = "fakten",
+            inhalt       = {
+                "grund":      "entity_hop_db_fehler",
+                "fehler":     str(fehler),
+                "schluessel": schluessel,
+            },
+            user_id      = user_id,
+            character_id = state.get("character_id", ""),
+        )
         return ""
+    finally:
+        if conn is not None:
+            conn.close()
+
+    # --- Formatieren ---
+    alle_fakten: list[tuple] = hop1_fakten + hop2_fakten
+    if not alle_fakten:
+        logger.info("GV-Entity-Hop: 0 Fakten zu Schluessel '%s' — leerer Kontext", schluessel)
+        return ""
+
+    # Deduplizieren (gleiche Kante nicht doppelt)
+    gesehen: set[str] = set()
+    zeilen: list[str] = []
+    for subjekt, attribut, objekt, _, zusammenfassung in alle_fakten:
+        kante: str = f"{subjekt}|{attribut}|{objekt}"
+        if kante in gesehen:
+            continue
+        gesehen.add(kante)
+        zeile: str = f"  {subjekt} → {attribut} → {objekt}"
+        if zusammenfassung:
+            zeile += f" ({zusammenfassung})"
+        zeilen.append(zeile)
+
+    entity_text: str = "\n".join(zeilen)
+    logger.info("GV-Entity-Hop: %d Fakten geladen (Schluessel: '%s')", len(zeilen), schluessel)
+    return entity_text
 
 
 # ─────────────────────────────────────────────
