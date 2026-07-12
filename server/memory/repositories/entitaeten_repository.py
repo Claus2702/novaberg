@@ -18,6 +18,26 @@ class EntitaetenRepository:
     """Datenzugriffsschicht für die entitaeten-Tabelle. Keine Business-Logik."""
 
     @staticmethod
+    def embed_text_bauen(name: str, zusammenfassung: str | None = None) -> str:
+        """
+        Baut den Embed-Text einer Entität — die EINZIGE Formel für diese
+        Spalte (Chat 107). Vorher existierten drei Formeln nebeneinander
+        (create_new_entity, zwei Varianten in api/chat.py); der Text ist
+        jetzt aus den persistierten Spalten name + zusammenfassung
+        vollständig rekonstruierbar.
+
+        E: name muss nicht-leer sein; zusammenfassung ist optional und
+           entfällt bei leerem Wert sauber aus dem Text.
+        V: Formel des Erzeugungs-Pfads: "{name}: {zusammenfassung}".
+        A: "{name}: {zusammenfassung}" oder nur "{name}".
+        """
+        if not name or not name.strip():
+            raise ValueError("embed_text_bauen(entitaeten): name ist leer — kein Embed-Text baubar")
+        if zusammenfassung and zusammenfassung.strip():
+            return f"{name}: {zusammenfassung}"
+        return name
+
+    @staticmethod
     def insert(
         postgres_url:    str,
         user_id:         str,

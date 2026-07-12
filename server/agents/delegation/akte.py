@@ -19,6 +19,27 @@ from config import (
 logger = logging.getLogger("ki_server.agents.delegation.akte")
 
 
+def embed_text_bauen(themen: str, zusammenfassung: str = "") -> str:
+    """
+    Baut den Embed-Text einer Delegations-Akte — die EINZIGE Formel für
+    themen_embedding (Chat 107). Der Text ist aus den persistierten
+    Header-Spalten themen + zusammenfassung vollständig rekonstruierbar.
+
+    E: mindestens eines der beiden Felder muss nicht-leer sein.
+    V: Live-Formel aus duplikat_pruefen: "{themen}. {zusammenfassung}";
+       ein leeres Optionalfeld entfällt sauber aus dem Text.
+    A: "{themen}. {zusammenfassung}", nur "{themen}" oder nur
+       "{zusammenfassung}".
+    """
+    hat_themen = bool(themen and themen.strip())
+    hat_zusammenfassung = bool(zusammenfassung and zusammenfassung.strip())
+    if not hat_themen and not hat_zusammenfassung:
+        raise ValueError("embed_text_bauen(delegation): themen und zusammenfassung sind leer — kein Embed-Text baubar")
+    if hat_themen and hat_zusammenfassung:
+        return f"{themen}. {zusammenfassung}"
+    return themen if hat_themen else zusammenfassung
+
+
 def _seiten_dict(state: AgentState) -> dict:
     """Baut das Seiten-Dict aus den State-Parametern."""
     param:       dict = state["parameter"]

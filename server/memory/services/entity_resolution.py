@@ -313,6 +313,12 @@ class EntityResolutionService:
         Filtert Treffer zusätzlich per Name-Plausibilität.
         """
         try:
+            # TODO ENTITAET-EMBED-DREIFACH: Der Suchpfad embeddet nur den
+            # Namen, vergleicht aber gegen Vektoren aus
+            # EntitaetenRepository.embed_text_bauen(name, zusammenfassung).
+            # Bewusst NICHT auf die Bauer-Funktion umgestellt (Chat 107) —
+            # eine Aenderung hier veraendert das Suchverhalten und gehoert
+            # gemessen, nicht nebenbei gemacht.
             request = EmbedRequest(text=name)
             embed_response = model_service.embed.submit_sync(request)
             embedding: list[float] = embed_response.embedding
@@ -392,9 +398,7 @@ class EntityResolutionService:
         embedding: list[float] | None = None
 
         try:
-            embed_text: str = name
-            if zusammenfassung:
-                embed_text = f"{name}: {zusammenfassung}"
+            embed_text: str = EntitaetenRepository.embed_text_bauen(name, zusammenfassung)
             request = EmbedRequest(text=embed_text)
             embed_response = model_service.embed.submit_sync(request)
             embedding = embed_response.embedding

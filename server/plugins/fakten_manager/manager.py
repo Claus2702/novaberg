@@ -529,7 +529,7 @@ Trigger-Phrasen: "das stimmt nicht", "korrigiere", "vergiss das",
             embedding: list[float] | None = None
             if fakt_text:
                 try:
-                    request = EmbedRequest(text=fakt_text)
+                    request = EmbedRequest(text=FaktenRepository.embed_text_bauen(fakt_text))
                     embed_response = model_service.embed.submit_sync(request)
                     embedding = embed_response.embedding
                     logger.debug(

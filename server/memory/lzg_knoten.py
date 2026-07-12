@@ -39,6 +39,23 @@ from config import (
 logger = logging.getLogger(__name__)
 
 
+def embed_text_bauen(inhalt: str) -> str:
+    """
+    Baut den Embed-Text eines lzg_knoten — die EINZIGE Formel fuer diese
+    Spalte (Chat 107). Live-Pfad und Migrations-/Re-Embedding-Werkzeuge
+    rufen dieselbe Funktion; der Text ist aus der persistierten Spalte
+    `inhalt` vollstaendig rekonstruierbar.
+
+    E: inhalt muss nicht-leer sein — ein leerer Pflichttext ist ein
+       Fehler im Aufrufer, kein Leerstring-Embedding.
+    V: Formel ist die Identitaet (Live-Formel seit Synapsen P4).
+    A: der unveraenderte inhalt.
+    """
+    if not inhalt or not inhalt.strip():
+        raise ValueError("embed_text_bauen(lzg_knoten): inhalt ist leer — kein Embed-Text baubar")
+    return inhalt
+
+
 def gewicht_absolut_berechnen(gewicht_roh: float) -> float:
     """
     Daempft das frei wachsende gewicht_roh auf den gekappten Anker-Wert

@@ -18,6 +18,21 @@ class FaktenRepository:
     """Datenzugriffsschicht für die fakten-Tabelle. Keine Business-Logik."""
 
     @staticmethod
+    def embed_text_bauen(fakt_text: str) -> str:
+        """
+        Baut den Embed-Text eines Fakts — die EINZIGE Formel für diese
+        Spalte (Chat 107). Der Text ist aus der persistierten Spalte
+        fakt_text vollständig rekonstruierbar.
+
+        E: fakt_text muss nicht-leer sein.
+        V: Formel ist die Identität (Live-Formel des FaktenManagers).
+        A: der unveränderte fakt_text.
+        """
+        if not fakt_text or not fakt_text.strip():
+            raise ValueError("embed_text_bauen(fakten): fakt_text ist leer — kein Embed-Text baubar")
+        return fakt_text
+
+    @staticmethod
     def insert(
         postgres_url: str,
         user_id:      str,

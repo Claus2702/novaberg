@@ -23,6 +23,7 @@ from config import (
     PIXIE_RECHERCHE_MAX_ITERATIONEN,
 )
 from memory.ziele import ziel_speichern, ziele_aktive_laden
+from memory.ziele import embed_text_bauen as ziel_embed_text_bauen
 from services.model_services import model_service, EmbedRequest, BackgroundRequest
 
 logger = logging.getLogger("ki_server.agents.recherche")
@@ -279,6 +280,14 @@ class RechercheAgent(BaseAgent):
                 "dimension": "kontext",
             }
 
+            # TODO RECHERCHE-KZG-INHALT-LEER: Dieser Pfad embeddet das rohe
+            # destillat, aber kzg_store persistiert als inhalt
+            # salienz_obj["zusammenfassung"] — die hier fehlt. Ergebnis:
+            # Vektor ohne Text (live 94 von 780 KZG-Hashes mit leerem
+            # inhalt), nicht rekonstruierbar. Bewusst NICHT auf
+            # embed_text_bauen umgestellt (Chat 107) — die Umstellung
+            # aendert Embed-Text UND Speicherverhalten und gehoert
+            # gemessen, nicht nebenbei gemacht.
             embed_response = model_service.embed.submit_sync(
                 EmbedRequest(text=destillat)
             )
@@ -316,7 +325,7 @@ class RechercheAgent(BaseAgent):
                 if ziel_extrakt:
                     try:
                         ziel_response = model_service.embed.submit_sync(
-                            EmbedRequest(text=ziel_extrakt["zielsatz"])
+                            EmbedRequest(text=ziel_embed_text_bauen(ziel_extrakt["zielsatz"]))
                         )
                         ziel_emb: list[float] | None = ziel_response.embedding
                         logger.debug(

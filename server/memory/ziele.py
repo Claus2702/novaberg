@@ -16,6 +16,22 @@ from memory.utils import embedding_zu_pgvector_str
 logger = logging.getLogger("ki_server.memory.ziele")
 
 
+def embed_text_bauen(zielsatz: str) -> str:
+    """
+    Baut den Embed-Text eines Ziels — die EINZIGE Formel für diese Spalte
+    (Chat 107). Der Text ist aus der persistierten Spalte zielsatz
+    vollständig rekonstruierbar; alle Erzeuger (CharakterAgent,
+    RechercheAgent, Startup-Backfill) rufen dieselbe Funktion.
+
+    E: zielsatz muss nicht-leer sein.
+    V: Formel ist die Identität (Live-Formel aller drei Erzeuger).
+    A: der unveränderte zielsatz.
+    """
+    if not zielsatz or not zielsatz.strip():
+        raise ValueError("embed_text_bauen(ziele): zielsatz ist leer — kein Embed-Text baubar")
+    return zielsatz
+
+
 def ziele_aktive_laden(postgres_url: str, user_id: str = "nova") -> list[dict]:
     """Lädt alle aktiven Ziele eines Users mit Embedding.
 
@@ -244,7 +260,7 @@ async def ziele_embeddings_sicherstellen(
 
     for ziel_id, zielsatz in rows:
         try:
-            request = EmbedRequest(text=zielsatz)
+            request = EmbedRequest(text=embed_text_bauen(zielsatz))
             embed_response = await model_service.embed.submit(request)
             embedding: list[float] = embed_response.embedding
             logger.debug(

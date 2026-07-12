@@ -10,6 +10,7 @@ import logging
 import numpy as np
 
 from agents.base import AgentState
+from agents.delegation.akte import embed_text_bauen
 from config import postgres_verbinden, DELEGATION_SIMILARITY_SCHWELLE
 from services.model_services import model_service, EmbedRequest
 
@@ -24,7 +25,7 @@ def duplikat_pruefen(state: AgentState) -> dict:
 
     themen: str = ", ".join(salienz_obj.get("themen", []))
     zusammenfassung: str = salienz_obj.get("zusammenfassung", "")
-    embed_text: str = f"{themen}. {zusammenfassung}" if zusammenfassung else themen
+    embed_text: str = embed_text_bauen(themen, zusammenfassung)
 
     # Embedding erzeugen
     request = EmbedRequest(text=embed_text)

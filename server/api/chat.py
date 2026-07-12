@@ -34,7 +34,7 @@ def _user_entitaet_sicherstellen(user_id: str) -> None:
     if not user_existiert:
         zusammenfassung: str = f"Der User. Login: {user_id}"
         try:
-            request = EmbedRequest(text=f"{user_id} {zusammenfassung}")
+            request = EmbedRequest(text=EntitaetenRepository.embed_text_bauen(user_id, zusammenfassung))
             embed_response = model_service.embed.submit_sync(request)
             embedding: list[float] | None = embed_response.embedding
             logger.debug(
@@ -83,12 +83,14 @@ async def entitaeten_embeddings_sicherstellen() -> None:
         return
 
     for entitaet_id, name, zusammenfassung in rows:
-        embed_text: str = f"{name or ''} {zusammenfassung or ''}".strip()
-        if not embed_text:
+        # name ist Schema-Pflicht (NOT NULL) — eine leere Zeile ist ein
+        # Datendefekt und wird laut gemeldet, nicht still uebersprungen.
+        if not name or not name.strip():
+            logger.error("Embedding-Repair: Entität id=%s ohne Namen — übersprungen", entitaet_id)
             continue
 
         try:
-            request = EmbedRequest(text=embed_text)
+            request = EmbedRequest(text=EntitaetenRepository.embed_text_bauen(name, zusammenfassung))
             embed_response = await model_service.embed.submit(request)
             embedding: list[float] = embed_response.embedding
             logger.debug(

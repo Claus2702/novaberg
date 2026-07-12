@@ -152,7 +152,7 @@ def dry_run(eintraege: list[dict], schwelle: float) -> None:
     merges = 0
 
     for e in eintraege:
-        emb = np.asarray(embedding_berechnen(e["text"]), dtype=np.float32)
+        emb = np.asarray(embedding_berechnen(lzg_knoten.embed_text_bauen(e["text"])), dtype=np.float32)
         bester_id = None
         bester_cos = -1.0
         for s in simuliert:
@@ -199,7 +199,7 @@ def commit_run(eintraege: list[dict], schwelle: float) -> None:
 
     for e in eintraege:
         try:
-            emb = embedding_berechnen(e["text"])
+            emb = embedding_berechnen(lzg_knoten.embed_text_bauen(e["text"]))
             emb_str = embedding_str_bauen(emb)
 
             kandidaten = lzg_knoten.kandidaten_mit_cosine_laden(

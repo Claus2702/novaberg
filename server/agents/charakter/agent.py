@@ -30,6 +30,7 @@ from agents.charakter.destillation import (
     langfristige_ziele_destillieren,
 )
 from memory.ziele import ziel_speichern, ziele_aktive_laden, ziel_deaktivieren
+from memory.ziele import embed_text_bauen as ziel_embed_text_bauen
 from services.model_services import model_service, EmbedRequest
 
 logger = logging.getLogger("ki_server.agents.charakter")
@@ -210,7 +211,7 @@ class CharakterAgent(BaseAgent):
                                 # Neue Ziele speichern (mit Embedding)
                                 for z in neue_ziele[:ZIEL_MAX_LANGFRISTIG]:
                                     try:
-                                        request = EmbedRequest(text=z["zielsatz"])
+                                        request = EmbedRequest(text=ziel_embed_text_bauen(z["zielsatz"]))
                                         embed_response = model_service.embed.submit_sync(request)
                                         emb: list[float] | None = embed_response.embedding
                                         logger.debug(

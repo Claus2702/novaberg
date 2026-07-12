@@ -254,7 +254,9 @@ class SynapsenPromotionAgent(BaseAgent):
         )
 
         # ── Embedding aus inhalt ALLEIN (K9 — keine Themen-Anreicherung) ──────
-        embed_response = model_service.embed.submit_sync(EmbedRequest(text=inhalt))
+        embed_response = model_service.embed.submit_sync(
+            EmbedRequest(text=lzg_knoten.embed_text_bauen(inhalt))
+        )
         embedding: list[float] = embed_response.embedding
         embedding_str: str = "[" + ",".join(str(x) for x in embedding) + "]"
         pipeline_log.log_berechnung(

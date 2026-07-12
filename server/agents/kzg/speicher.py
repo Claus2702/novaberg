@@ -29,6 +29,32 @@ from services.model_services import model_service, EmbedRequest
 logger = logging.getLogger("ki_server.agents.kzg.speicher")
 
 
+def embed_text_bauen(themen: str, kern: str) -> str:
+    """
+    Baut den Embed-Text eines KZG-Eintrags — die EINZIGE Formel für das
+    embedding-Feld im KZG-Hash (Chat 107). Der Text ist aus den
+    persistierten Hash-Feldern themen + inhalt vollständig
+    rekonstruierbar; themen kommt in der persistierten, kommagetrennten
+    Form herein (", ".join — dieselbe, die im Hash liegt).
+
+    Valenz steht bewusst NICHT mehr im Text (Entscheidung Chat 107):
+    Metadaten gehören nicht in den Vektor — bei 81 % "positiv" war es ein
+    nahezu konstanter Token, der den Raum verschiebt statt zu schärfen.
+    Der Vektor findet den Kandidatenraum; strukturierte Felder entscheiden
+    danach exakt.
+
+    E: kern muss nicht-leer sein; themen ist optional und entfällt bei
+       leerem Wert sauber aus dem Text.
+    V: "Thema: {themen}. Aussage: {kern}".
+    A: mit oder ohne Themen-Segment, nie mit leerem Segment.
+    """
+    if not kern or not kern.strip():
+        raise ValueError("embed_text_bauen(kzg): kern ist leer — kein Embed-Text baubar")
+    if themen and themen.strip():
+        return f"Thema: {themen}. Aussage: {kern}"
+    return f"Aussage: {kern}"
+
+
 def speichern(state: AgentState) -> dict:
     """Speichert neuen KZG-Eintrag und verstärkt thematisch verwandte Einträge.
 
@@ -52,9 +78,10 @@ def speichern(state: AgentState) -> dict:
 
     salienz: float = salienz_obj.get("salienz", 0.0)
 
-    valenz:     str = salienz_obj.get("emotionen", {}).get("valenz", "neutral")
-    themen:     str = " ".join(salienz_obj.get("themen", []))
-    embed_text: str = f"Thema: {themen}. Valenz: {valenz}. Aussage: {kern}"
+    # Kommagetrennt wie im Hash persistiert (_neu_anlegen) — der Embed-Text
+    # muss aus den gespeicherten Feldern rekonstruierbar sein (Chat 107).
+    themen:     str = ", ".join(salienz_obj.get("themen", []))
+    embed_text: str = embed_text_bauen(themen, kern)
 
     request = EmbedRequest(text=embed_text)
     embed_response = model_service.embed.submit_sync(request)
