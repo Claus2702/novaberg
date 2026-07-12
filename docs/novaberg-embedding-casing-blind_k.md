@@ -169,7 +169,7 @@ echte Baseline war 0.74. Auch das war schon falsch.
 aber **unter** der Verwechslung (Matcha/Kakao bei 0.98).
 → **Der Match hat systematisch die *falschen* Knoten verstärkt.**
 
-### 4.1 Abgeleitete Werte (Knoten ↔ Knoten — gemessen)
+### 4.1 Abgeleitete Werte (Knoten ↔ Knoten — gemessen) ✅ Gesetzt Chat 107 (Commit `f07e760`)
 
 | Schwellwert | Ort | alt | **neu** | Begründung |
 |---|---|---|---|---|
@@ -186,35 +186,43 @@ aber **unter** der Verwechslung (Matcha/Kakao bei 0.98).
 | `_FORCE_ATTRACT_THRESHOLD` | `api/drive.py` | 0.10 | **0.25** | nur Visualisierung |
 | `migrate_lzg_synapsen.py --schwelle` | Tool | 0.90 | **0.85** | |
 
-### 4.2 ⚠ NICHT ableitbar — Blocker
+### 4.2 Prompt ↔ Knoten — Startwerte gesetzt, Wachposten aktiv ✅ Chat 107 (Commit `f07e760`)
 
-Diese Werte vergleichen **Prompt ↔ Knoten**, nicht Knoten ↔ Knoten. Prompts sind
-kürzer und anders formuliert; die Verteilung kann verschoben sein. **Nicht raten.**
+Diese Werte vergleichen **Prompt ↔ Knoten**, nicht Knoten ↔ Knoten. Die
+Abdeckungsmessung (100 echte User-Prompts gegen 302 Knoten) hat den Blocker
+aufgelöst — für `anker_retrieval` liegt eine echte Messung vor, die übrigen
+sind **begründete Startwerte, keine Messergebnisse** und tragen im Code
+Wachposten-Kommentare.
 
-| Schwellwert | Ort | alt |
-|---|---|---|
-| `anker_retrieval` `min_similarity` | `memory/lzg_knoten.py` | 0.50 |
-| `kzg_entries_retrieve` | `memory/kzg.py` | 0.50 (hartkodiert) |
-| `GRAVITATIONS_SCHWELLE` | `config.py` | 0.60 |
-| `EMOTIONALE_GRAVITATIONS_SCHWELLE` | `config.py` | 0.50 |
-| `GV_CHARAKTER_RESONANZ_SCHWELLE` | `config.py` | 0.40 (Fallback 0.5) |
-| `GV_NEUGIER_BOOST_SCHWELLE` | `config.py` | 0.30 |
-| `shadow_delivery` `SIMILARITY_THRESHOLD` | `shadow_delivery.py` | 0.40 |
+| Schwellwert | Ort | alt | **gesetzt** |
+|---|---|---|---|
+| `anker_retrieval` `min_similarity` | `memory/lzg_knoten.py` | 0.50 | **0.40** (gemessen: 82 % Turns mit Anker, Ø 4.1 — bei 0.50 nur 53 %/Ø 0.9; bei 0.35 beginnt Rauschen) |
+| `kzg_entries_retrieve` | `memory/kzg.py` | 0.50 (hartkodiert) | **0.40** |
+| `GRAVITATIONS_SCHWELLE` | `config.py` | 0.60 | **0.40** |
+| `EMOTIONALE_GRAVITATIONS_SCHWELLE` | `config.py` | 0.50 | **0.40** |
+| `GV_CHARAKTER_RESONANZ_SCHWELLE` | `config.py` | 0.40 (Fallback 0.5) | **0.40** (geprüft, bewusst unverändert) |
+| `GV_NEUGIER_BOOST_SCHWELLE` | `config.py` | 0.30 | **0.30** (geprüft, bewusst unverändert) |
+| `shadow_delivery` `SIMILARITY_THRESHOLD` | `shadow_delivery.py` | 0.40 | **0.40** (geprüft, bewusst unverändert) |
 
 > **`anker_retrieval` ist der wichtigste Einzelwert im System — an ihm hängt Schale 0
-> der gesamten Spreading Activation.** Wird er zu hoch gesetzt: Cold-Start bei jedem
-> Turn. Zu niedrig: Rauschen im Kontext.
+> der gesamten Spreading Activation.** 100 % Abdeckung ist NICHT das Ziel: „Hast Du
+> mich denn vermisst?" braucht keinen Anker — Cold Start ist dort die richtige
+> Antwort, kein Ausfall. (Alter Raum bei 0.50: 100 % Abdeckung, Ø 299,6 von 302 —
+> jeder Turn bekam praktisch den gesamten Korpus.)
 
-**→ Phase 0: zweite Kalibrierung, echte User-Prompts aus `pipeline_log`
-(`art='eingang'`) gegen den Knoten-Korpus. Dieselbe Methode, andere Achse.**
+**Wachposten:** Ziele und `nova_kern` wurden nicht gemessen; nach Live-Betrieb
+prüfen. Der `charakter_resonanz`-Fallback 0.5 (bei fehlendem Kern-Embedding) passiert
+die 0.40-Schwelle weiterhin immer — im neuen Raum ist 0.5 ein semantisch hoher Wert
+(Default-wie-Erfolg-Muster, bei der Nachmessung mitprüfen).
 
 ---
 
 ## 5. Sprint-Plan
 
-### Phase 0 — Prompt↔Knoten-Kalibrierung  ⚠ Blocker
-Echte Prompts aus `pipeline_log` ziehen, gegen die 302 Knoten messen, Verteilung
-auslesen. Liefert die 7 fehlenden Schwellwerte. Kein Repo-Code.
+### Phase 0 — Prompt↔Knoten-Kalibrierung  ✅ teilerledigt Chat 107
+Abdeckungsmessung (100 Prompts × 302 Knoten) durchgeführt; `anker_retrieval`
+gemessen gesetzt, die übrigen 6 als begründete Startwerte mit
+Wachposten-Kommentar (§4.2). Rest-Nachmessung nach Live-Betrieb.
 
 ### Phase 1 — Längen-Vorprüfung der übrigen fünf Spalten  ⚠ offen
 Nur `lzg_knoten` wurde gegen das 512-Token-Limit geprüft. **`entitaeten`, `fakten`,
@@ -242,7 +250,9 @@ liegen in verschiedenen Räumen, der Kosinus zwischen ihnen ist bedeutungslos, u
 pgvector merkt nichts.
 
 1. **Server stoppen** (kein Turn darf in den Mischzustand fallen)
-2. Schwellwerte setzen (Phase 0 + §4.1) — Code-Commit
+2. Schwellwerte setzen (Phase 0 + §4.1) — ✅ Code-Commit `f07e760` (Chat 107).
+   ⚠ Ab hier gilt: KEIN Server-Neustart vor Schritt 3 (Modellwechsel) — die
+   neuen Schwellen gegen den alten Raum ließen das Retrieval komplett tot laufen.
 3. `EMBED_MODEL` umschalten an **drei** Orten:
    - `~/ki-assistent/docker-compose.yml` (**wirksam** — Env schlägt Config-Default!)
    - `novaberg/docker-compose.template.yml`
