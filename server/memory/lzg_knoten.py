@@ -269,7 +269,10 @@ def knoten_gewichte_zuruecksetzen(
         conn.close()
 
     ergebnis["knoten"] = len(knoten)
-    plan: list[tuple[float, float, int]] = []  # (initial_roh, initial_absolut, id)
+    # 4-Tupel passend zu den 4 Platzhaltern des UPDATE: roh, absolut,
+    # decay (= absolut, wie bei knoten_anlegen), id. Ein 3-Tupel liess
+    # execute_batch/mogrify mit IndexError scheitern (Chat 107).
+    plan: list[tuple[float, float, float, int]] = []
     for k in knoten:
         initial_roh: float = k["gewicht_roh"] - (k["haeufigkeit"] - 1) * LZG_KNOTEN_REINFORCEMENT_BOOST
         if initial_roh <= 0:
@@ -279,7 +282,7 @@ def knoten_gewichte_zuruecksetzen(
             )
             continue
         initial_absolut: float = gewicht_absolut_berechnen(initial_roh)
-        plan.append((initial_roh, initial_absolut, k["id"]))
+        plan.append((initial_roh, initial_absolut, initial_absolut, k["id"]))
         if k["id"] in beispiel_menge:
             ergebnis["beispiele"].append({
                 "id": k["id"],
