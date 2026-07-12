@@ -3298,3 +3298,27 @@ Kein einziger harter Check im Repo (Audit Chat 107): kein `== 768`, kein `assert
 ## Frage: KZG-SALIENZ-GRENZWERT-UNKLAR — soll jede Recherche ins Langzeitgedächtnis? (Chat 107)
 
 Recherche schreibt mit `salienz = 0.7`. `KZG_SALIENZ_HIGH = 0.7`. Der `>=`-Vergleich in `kzg_store` schiebt damit **jeden** Recherche-Eintrag in die `lzg_promotion`-Queue. Ist das gewollt? Soll wirklich jede Recherche ins Langzeitgedächtnis? Kein Bug — eine ungeklärte Entscheidung, die bisher niemand getroffen hat (sie war unsichtbar, solange die Promotion alle Einträge wegen leerem `inhalt` verwarf — siehe RECHERCHE-WISSEN-ERREICHT-LZG-NIE). **Nach dem Re-Embedding neu bewerten:** Dann promoten die Einträge tatsächlich, und wir sehen, was das bedeutet. ⬜ Prio mittel
+
+## Feature: VITALZEICHEN — täglicher Pixie-Agent prüft Output-Qualität statt Fehlerfreiheit (Chat 107)
+
+**Priorität hoch.**
+
+**Problem:** Chat 107 hat drei Defekte gefunden. Zwei davon haben korrekt gemeldet und wurden nicht gehört (GV-ENTITY-HOP-TOT, RECHERCHE-WISSEN-ERREICHT-LZG-NIE) — dagegen hilft LOG-TUERKLINGEL. Der dritte hat **nie** gemeldet: EMBEDDING-CASING-BLIND lieferte 768 saubere Floats, pgvector rechnete Ähnlichkeiten, das Retrieval fand Treffer, jede Pipeline meldete Erfolg. Kein Bauteil hat gelogen. Das System als Ganzes war blind.
+
+> Fehlerfrei laufen und richtig arbeiten sind zwei verschiedene Fragen. Wir haben bisher nur die erste gestellt.
+
+Ein Log fängt, was sich als Fehler meldet. Es fängt nicht, was erfolgreich falsch ist.
+
+**Lösung:** Ein täglicher Pixie-Agent, der prüft, ob die Grundfunktionen noch das TUN, was sie sollen — nicht, ob sie fehlerfrei laufen. Bekannte Eingaben, bekannte erwartete Ordnung, Alarm wenn sie kippt.
+
+**Kandidaten für Vitalzeichen (Startmenge, erweiterbar):**
+
+- **Embedding:** `embed("Hund") != embed("Katze")` — hätte den Bug in 1 Sekunde gefunden, an jedem einzelnen Tag der letzten 4 Monate. Dazu: `sim(bekanntes Paraphrasen-Paar) > sim(bekanntes Fremd-Paar)` mit Referenzpaaren aus der Kalibrierung Chat 107 (`lzg_knoten` 102 ↔ 103 → ~0.91 Paraphrase; 47 ↔ 83 → ~0.79 verschiedene Termine). Weicht ein Wert um mehr als 0.05 ab: Alarm.
+- **Retrieval:** Ein bekannter Prompt findet seinen bekannten Knoten. Liefert `anker_retrieval` überhaupt noch Treffer, oder ist die Trefferzahl über Nacht auf null gefallen?
+- **Schreibpfade:** Ist in den letzten 24h überhaupt ein `lzg_knoten` entstanden? Ein Schreibpfad, der still versiegt, sieht aus wie ein ruhiger Tag.
+
+**Prinzip:** Der Agent misst OUTPUT-QUALITÄT, nicht Fehlerfreiheit. Er fragt nicht „lief es durch", sondern „kam das Richtige heraus". Bewusst kein Dashboard — ein Alarm, wenn ein Vitalzeichen kippt, mehr nicht. Angezeigt über denselben Draht wie LOG-TUERKLINGEL.
+
+⚠ **Die Referenzwerte müssen NACH dem Re-Embedding neu erhoben werden.** Die oben genannten stammen aus der Kalibrierung im alten Raum bzw. der Vorabmessung mit v2-moe. Sie sind ein Muster, kein Sollwert.
+
+**Zusammenhang:** EMBEDDING-CASING-BLIND (der Anlass) · LOG-TUERKLINGEL (die andere Hälfte: fängt Meldungen, nicht stille Fehlfunktion).
