@@ -253,10 +253,18 @@ pgvector merkt nichts.
 2. Schwellwerte setzen (Phase 0 + §4.1) — ✅ Code-Commit `f07e760` (Chat 107).
    ⚠ Ab hier gilt: KEIN Server-Neustart vor Schritt 3 (Modellwechsel) — die
    neuen Schwellen gegen den alten Raum ließen das Retrieval komplett tot laufen.
-3. `EMBED_MODEL` umschalten an **drei** Orten:
+3. `EMBED_MODEL` umschalten an **drei** Orten — ✅ Chat 107 (Commit `889b411`):
    - `~/ki-assistent/docker-compose.yml` (**wirksam** — Env schlägt Config-Default!)
-   - `novaberg/docker-compose.template.yml`
-   - `novaberg/server/config.py` (Default)
+     ⚠ Liegt AUSSERHALB des Repos und wurde **von Hand geändert** — im Repo
+     nicht zu finden, nicht danach suchen.
+   - `novaberg/docker-compose.template.yml` ✅
+   - `novaberg/server/config.py` (Default) ✅ — samt Begründungs-Kommentar
+     (Casing-Blindheit, keine Task-Präfixe, Pull-Schritt).
+   Mitgezogen: READMEs (Architektur, VRAM-Tabelle, `ollama pull`-Block),
+   Docstrings embed_worker/registry, Enricher-Kommentar; toter
+   `EMBED_MODEL`-Import in `main.py` entfernt.
+   ⚠ Phase B muss den Container NEU ERZEUGEN (`docker compose up -d`) —
+   ein bloßer Restart liest die Compose-Env nicht neu.
 4. Re-Embedding laufen lassen (Dry-Run → Diff prüfen → `--commit`)
 5. `lzg_kanten` neu berechnen (`kanten_neuberechnen_fuer_knoten`) — die
    `embedding_cosine_initial` sind sonst eingefrorene Alt-Werte

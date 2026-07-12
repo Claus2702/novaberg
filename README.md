@@ -81,7 +81,7 @@ Five distilled personality profiles, shown here for Nova herself. These are not 
 - **Backend:** Python, FastAPI, LangGraph, APScheduler
 - **Databases:** PostgreSQL 16 with pgvector, Redis Stack
 - **LLM:** Ollama (local) with Gemma 4 or Mistral Small 3.2; optional Anthropic Claude API
-- **Embedding:** `nomic-embed-text` via Ollama
+- **Embedding:** `nomic-embed-text-v2-moe` via Ollama
 - **Search engine:** SearXNG (Docker)
 - **Desktop client:** GTK4 (PyGObject) + WebKitGTK with SSE pipeline visualization
 - **Chat integration:** Telegram Bot (long polling, whitelist)
@@ -107,7 +107,7 @@ Nova runs three language models plus one embedding model in parallel:
 | Model | Execution | Purpose | Size |
 |-------|----------|---------|------|
 | `gemma4-gpu` | GPU (VRAM) | Chat, agents, responder | ~17 GB |
-| `nomic-embed-text` | GPU (VRAM) | Embeddings for STM/LTM/entity resolution | ~0.6 GB |
+| `nomic-embed-text-v2-moe` | GPU (VRAM) | Embeddings for STM/LTM/entity resolution | ~1.0 GB |
 | `gemma4-cpu` | CPU (RAM) | Pixie — language tasks in the background | ~17 GB |
 | `qwen3-32b-cpu` | CPU (RAM) | Pixie — analysis tasks (promotion, research evaluation) | ~20 GB |
 
@@ -167,7 +167,7 @@ Pull all four models:
 ```bash
 # GPU — chat and embedding
 ollama pull gemma4-gpu
-ollama pull nomic-embed-text
+ollama pull nomic-embed-text-v2-moe
 
 # CPU — Pixie background work
 ollama pull gemma4-cpu

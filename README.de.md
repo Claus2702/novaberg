@@ -81,7 +81,7 @@ Fünf destillierte Persönlichkeitsprofile, hier für Nova selbst. Das sind kein
 - **Backend:** Python, FastAPI, LangGraph, APScheduler
 - **Datenbanken:** PostgreSQL 16 mit pgvector, Redis Stack
 - **LLM:** Ollama (lokal) mit Gemma 4 oder Mistral Small 3.2; optional Anthropic Claude API
-- **Embedding:** `nomic-embed-text` via Ollama
+- **Embedding:** `nomic-embed-text-v2-moe` via Ollama
 - **Suchmaschine:** SearXNG (Docker)
 - **Desktop-Client:** GTK4 (PyGObject) + WebKitGTK mit SSE-Pipeline-Visualisierung
 - **Chat-Integration:** Telegram Bot (Long Polling, Whitelist)
@@ -107,7 +107,7 @@ Nova betreibt parallel drei Sprachmodelle plus ein Embedding-Modell:
 | Modell | Ausführung | Zweck | Größe |
 |--------|-----------|-------|-------|
 | `gemma4-gpu` | GPU (VRAM) | Chat, Agenten, Responder | ~17 GB |
-| `nomic-embed-text` | GPU (VRAM) | Embeddings für KZG/LZG/Entity Resolution | ~0,6 GB |
+| `nomic-embed-text-v2-moe` | GPU (VRAM) | Embeddings für KZG/LZG/Entity Resolution | ~1,0 GB |
 | `gemma4-cpu` | CPU (RAM) | Pixie — Sprachaufgaben im Hintergrund | ~17 GB |
 | `qwen3-32b-cpu` | CPU (RAM) | Pixie — Analyseaufgaben (Promotion, Recherche-Bewertung) | ~20 GB |
 
@@ -167,7 +167,7 @@ Modelle laden:
 ```bash
 # GPU — Chat und Embedding
 ollama pull gemma4-gpu
-ollama pull nomic-embed-text
+ollama pull nomic-embed-text-v2-moe
 
 # CPU — Pixie-Hintergrundarbeit
 ollama pull gemma4-cpu
