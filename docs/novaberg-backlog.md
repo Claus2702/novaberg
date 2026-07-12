@@ -3314,8 +3314,9 @@ Ein Log fängt, was sich als Fehler meldet. Es fängt nicht, was erfolgreich fal
 **Kandidaten für Vitalzeichen (Startmenge, erweiterbar):**
 
 - **Embedding:** `embed("Hund") != embed("Katze")` — hätte den Bug in 1 Sekunde gefunden, an jedem einzelnen Tag der letzten 4 Monate. Dazu: `sim(bekanntes Paraphrasen-Paar) > sim(bekanntes Fremd-Paar)` mit Referenzpaaren aus der Kalibrierung Chat 107 (`lzg_knoten` 102 ↔ 103 → ~0.91 Paraphrase; 47 ↔ 83 → ~0.79 verschiedene Termine). Weicht ein Wert um mehr als 0.05 ab: Alarm.
-- **Retrieval:** Ein bekannter Prompt findet seinen bekannten Knoten. Liefert `anker_retrieval` überhaupt noch Treffer, oder ist die Trefferzahl über Nacht auf null gefallen?
+- **Retrieval:** Ein bekannter Prompt findet seinen bekannten Knoten. Liefert `anker_retrieval` überhaupt noch Treffer, oder ist die Trefferzahl über Nacht auf null gefallen? **Bestätigt durch IVFFLAT-RECALL-KOLLAPS (bugs.md): genau dieses Vitalzeichen hätte den Kollaps gefangen — der Eintrag hier wurde drei Stunden VOR dem Vorfall geschrieben.** Referenz-Probe seit Chat 107: `anker_retrieval("Was weißt du über Lumi?")` muss die Lumi-Knoten (118/308/102, Cosine ~0.67–0.74) liefern.
 - **Schreibpfade:** Ist in den letzten 24h überhaupt ein `lzg_knoten` entstanden? Ein Schreibpfad, der still versiegt, sieht aus wie ein ruhiger Tag.
+- **Index-Recall (vierter Kandidat, aus IVFFLAT-RECALL-KOLLAPS):** Dieselbe bekannte Query einmal über den Standard-Lesepfad und einmal exakt (Seq-Scan bzw. `probes=lists`) — weichen die Treffermengen ab, frisst ein approximativer Index still Recall. Relevant, sobald ab ~10k Zeilen wieder ein Vektor-Index angelegt wird.
 
 **Prinzip:** Der Agent misst OUTPUT-QUALITÄT, nicht Fehlerfreiheit. Er fragt nicht „lief es durch", sondern „kam das Richtige heraus". Bewusst kein Dashboard — ein Alarm, wenn ein Vitalzeichen kippt, mehr nicht. Angezeigt über denselben Draht wie LOG-TUERKLINGEL.
 

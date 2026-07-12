@@ -1479,3 +1479,21 @@ Disambiguierung erzeugen, die den Loop auslöste: der Crash ist behoben, nicht d
 **Symptom:** `ei/wissensluecken.py::wissensluecken_finden` setzte bei fehlendem Charakter-Kern (legitimer Cold-Start) UND bei fehlgeschlagenem Kern-Embedding (Infrastrukturdefekt) für jeden Kandidaten `charakter_resonanz = 0.5` — lautlos, über der 0.40-Schwelle, jeder Kandidat passierte. Der erfundene Wert hat nie etwas entschieden; er hat nur die Buchführung belogen und den Fehlerfall zum Erfolg umlackiert.
 
 **Behoben Chat 107 (Commit `deb6199`):** `resonanz_pruefbar`-Flag statt Zahlen-Fallback — der Filter prüft die Resonanz-Bedingung nur, wenn das Flag steht. Zweig 1 (kein Kern, Cold-Start): `logger.warning` einmal pro Aufruf mit `user_id`, Kandidaten qualifizieren sich allein über die Relevanz. Zweig 2 (Kern da, Embedding scheitert): `logger.error` mit `exc_info`, Turn läuft weiter — der Defekt schreit, die LOG-TUERKLINGEL wird ihn fangen. Kein Verhaltenswechsel, ehrliche Verbuchung. Fallback 0.0 bewusst verworfen: hätte die Neugier beim frischen Paar bis zur ersten Destillation abgewürgt — ein Feature abwürgen, um eine Buchführung zu reparieren, wäre der falsche Tausch.
+
+---
+
+### Chat 107 — Phase-B-Abnahme
+
+#### IVFFLAT-RECALL-KOLLAPS — der Vektor-Index hat das LZG-Retrieval seit Tag eins verhungern lassen ✅ Behoben Chat 107
+
+**Entdeckt:** Chat 107, Phase-B-Abnahme: nach der Migration `anker=0/3` bei jedem Turn, `top_cosine=nan`. Der NaN-Verdacht (Nullvektor) war eine Fährte des eigenen Logs — siehe unten.
+
+**Klasse:** Struktureller Recall-Defekt im Index, seit Anlage des Index vorhanden, Severity **Hoch** — Schale 0 der Spreading Activation lief seit jeher auf einer Zufallsstichprobe.
+
+**Symptom:** `idx_lzg_knoten_embedding` war ivfflat mit `lists = 100` bei 306 Zeilen, abgefragt mit Default `ivfflat.probes = 1` — jede Anker-Query durchsuchte eine **einzige Zentroid-Liste mit ~3 Mitgliedern**. Belegt: „Was weißt du über Lumi?" lieferte über den Index **0 Zeilen** (bzw. 3 Rausch-Kandidaten je nach getroffener Liste), über den Seq-Scan aber 118 „Lumi ist da." (0.7377), 308 (0.6820), 102 „Lumi stirbt vermutlich bald." (0.6742) — weit über der 0.40-Schwelle.
+
+**Zwei Defekte haben sich gegenseitig verdeckt:** Im casing-blinden Raum (Grundrauschen 0.74) lag *jeder* der ~3 Zufalls-Kandidaten über der alten 0.5-Schwelle — `anker=3/3` bei jedem Turn, Müll, aber nie null. Erst als das Embedding sehend wurde (A4/A5), wurde der Index sichtbar. Und: **entitaeten/fakten waren nie betroffen — gerade weil sie keinen Vektor-Index haben** (Seq-Scan = exakt); KZG rechnet, weil der Redis-Index FLAT ist.
+
+**Mitschuldiger — das eigene Log:** `anker_retrieval` loggte `anker[0]["cosine"] if anker else float("nan")` — ein Platzhalter, der als Messwert auftrat. Er behauptete NaN, wo er „0 über Schwelle, Roh-Werte unbekannt" meinte, und schickte den Audit auf die Nullvektor-Fährte. Verstoß gegen `lesson_l_log-behauptet-was-es-weiss` — die Lesson war einen Tag alt.
+
+**Behoben Chat 107 (Commit `95ef8eb`):** Index **entfernt**, nicht getunt — bei ~300 Zeilen ist der Seq-Scan exakt und < 1 ms; ein approximativer Index bringt keinen Zeitgewinn, nur Recall-Verlust. Ebenso `idx_lzg_embedding` (Legacy) gedroppt. `db/init.sql` kommentiert beide aus, mit Vorfall, Beleg und Wiederanlage-Schwelle (~10k Zeilen, `lists ≈ rows/1000`, `probes` mitkalibrieren) — dieselbe Konsistenz, die bei entitaeten/fakten immer galt. Log ehrlich gemacht: zeigt jetzt die **rohen** Cosines vor dem Schwellenfilter. **Nachweis live:** `anker_retrieval("Was weißt du über Lumi?")` → 118 (0.7377), 308 (0.6820), 102 (0.6742) — „3 Kandidaten geladen (beste Roh-Cosine 0.7377, schwaechste 0.6742), 3 ueber Schwelle 0.40". Das Retrieval lebt. VITALZEICHEN-Bezug: Das Retrieval-Vitalzeichen hätte den Kollaps gefangen — der Backlog-Eintrag entstand drei Stunden vor dem Vorfall.
