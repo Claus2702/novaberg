@@ -1465,3 +1465,17 @@ Disambiguierung erzeugen, die den Loop auslöste: der Crash ist behoben, nicht d
 **Der Code hat alles richtig gemacht:** fail loud, forensisch protokolliert, in zwei Speicher geschrieben. Er hat wochenlang geschrien — und niemand war da, um es zu hören. Dieser Eintrag dient als Beleg und als Argument für LOG-TUERKLINGEL.
 
 **Behoben Chat 107 (Commit `36c4f0b`):** Schreibpfad: `zusammenfassung = destillat` → `inhalt` befüllt, Embedding über `embed_text_bauen(themen, kern)` — Vektor aus Hash-Feldern rekonstruierbar. Lesepfad: `kzg_entries_retrieve` verwirft Einträge ohne `inhalt` **laut** (`logger.warning` mit Key, Themen, Beobachter, Similarity) — fängt auch künftige textlose Quellen, nicht nur diese. **Nachweis:** Lesepfad live read-only (10/10 leere Treffer verworfen, 0 im Ergebnis); Schreibpfad gegen Redis-Stub (`inhalt == destillat`, Embed-Text aus Hash exakt reproduzierbar). Live-Bestätigung eines frischen Recherche-Eintrags folgt nach dem Phase-B-Neustart — der laufende Server trägt noch den alten Code.
+
+---
+
+### Chat 107 — Randbefund der Schwellwert-Kalibrierung (A3)
+
+#### GV-RESONANZ-FALLBACK-LUEGT — erfundener Resonanz-Wert verkleidet „nicht anwendbar" als „passt hervorragend" ✅ Behoben Chat 107
+
+**Entdeckt:** Chat 107, Randbefund bei A3 (Schwellwert-Kalibrierung) — aufgefallen, weil 0.5 im neuen Vektorraum ein HOHER Wert ist (p99 = 0.57). Ab dem Modellwechsel hätte der Fallback jeden Kandidaten durchgewinkt — **angelastet worden wäre es dem neuen Embedding.**
+
+**Klasse:** Der Kern in einem Satz: **Ein Default, der wie ein voller ERFOLG aussieht.** Gegenrichtung zur Lesson „Ein Default darf nie wie ein Fehlschlag aussehen" (`lesson_l_default-wie-fehlschlag`) — und mindestens genauso gefährlich, weil er nicht auffällt. Severity **Mittel** (im alten Raum verhaltensneutral, ab A4 aktiv falsch).
+
+**Symptom:** `ei/wissensluecken.py::wissensluecken_finden` setzte bei fehlendem Charakter-Kern (legitimer Cold-Start) UND bei fehlgeschlagenem Kern-Embedding (Infrastrukturdefekt) für jeden Kandidaten `charakter_resonanz = 0.5` — lautlos, über der 0.40-Schwelle, jeder Kandidat passierte. Der erfundene Wert hat nie etwas entschieden; er hat nur die Buchführung belogen und den Fehlerfall zum Erfolg umlackiert.
+
+**Behoben Chat 107 (Commit `deb6199`):** `resonanz_pruefbar`-Flag statt Zahlen-Fallback — der Filter prüft die Resonanz-Bedingung nur, wenn das Flag steht. Zweig 1 (kein Kern, Cold-Start): `logger.warning` einmal pro Aufruf mit `user_id`, Kandidaten qualifizieren sich allein über die Relevanz. Zweig 2 (Kern da, Embedding scheitert): `logger.error` mit `exc_info`, Turn läuft weiter — der Defekt schreit, die LOG-TUERKLINGEL wird ihn fangen. Kein Verhaltenswechsel, ehrliche Verbuchung. Fallback 0.0 bewusst verworfen: hätte die Neugier beim frischen Paar bis zur ersten Destillation abgewürgt — ein Feature abwürgen, um eine Buchführung zu reparieren, wäre der falsche Tausch.
