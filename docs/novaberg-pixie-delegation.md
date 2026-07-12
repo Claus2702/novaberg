@@ -81,7 +81,7 @@ Wenn keiner der drei Trigger zündet — Smalltalk, Plateau mit neutraler Valenz
 | `arousal` | `current_arousal` | Aktueller Arousal-Wert |
 | `effektivwert` | Berechnet | gewicht * arousal^n der dominanten Emotion |
 | `salienz` | `salienz_obj["salienz"]` | Salienz-Score |
-| `valenz` | `salienz_obj["valenz"]` | positiv / negativ / neutral |
+| `valenz` | `salienz_obj["emotionen"]["valenz"]` | positiv / negativ / neutral — verschachtelt unter `emotionen`, nicht top-level |
 | `trigger` | Berechnet | Welches der drei Kriterien hat ausgelöst |
 
 ### Queue-Format
