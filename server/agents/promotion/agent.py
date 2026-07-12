@@ -1023,8 +1023,9 @@ class PromotionAgent(BaseAgent):
         """Sucht im LZG nach einem bestehenden Eintrag zum Cluster-Thema.
 
         Verwendet Embedding-Suche mit pgvector.
-        Schwelle: CLUSTER_LZG_SIMILARITY (0.80, etwas lockerer als KZG,
-        da LZG-Eintraege bereits destilliert und abstrakter sind).
+        Schwelle: CLUSTER_LZG_SIMILARITY (etwas lockerer als KZG, da
+        LZG-Eintraege bereits destilliert und abstrakter sind; Wert siehe
+        config.py — Chat 107 auf v2-moe kalibriert).
         """
         embed_response = model_service.embed.submit_sync(EmbedRequest(text=thema))
         thema_embedding: list[float] = embed_response.embedding

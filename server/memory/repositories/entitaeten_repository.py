@@ -171,7 +171,13 @@ class EntitaetenRepository:
         postgres_url: str,
         user_id:      str,
         embedding:    list[float],
-        threshold:    float = 0.80,
+        # Kalibriert auf nomic-embed-text-v2-moe (Chat 107), vorher 0.80 im
+        # casing-blinden Raum — funktionslos. 0.70 konservativ gewählt:
+        # Entitäts-Texte sind kurz (max. 50 Zeichen), der Raum dort enger.
+        # ⚠ Wachposten: kurze Texte wurden nicht eigens gemessen — Startwert;
+        # nach dem Re-Embedding die 182 Namen gegeneinander messen
+        # (ENTITAET-EMBED-DREIFACH).
+        threshold:    float = 0.70,
         limit:        int = 5,
     ) -> list[dict]:
         """

@@ -305,7 +305,11 @@ class EntityResolutionService:
         postgres_url:   str,
         user_id:        str,
         name:           str,
-        threshold:      float = 0.80,
+        # Kalibriert auf nomic-embed-text-v2-moe (Chat 107), vorher 0.80 —
+        # synchron zum find_similar-Default. ⚠ Wachposten: Suchpfad embeddet
+        # nur den Namen (ENTITAET-EMBED-DREIFACH), kurze Texte nicht gemessen
+        # — begruendeter Startwert, nach dem Re-Embedding messen.
+        threshold:      float = 0.70,
     ) -> list[dict]:
         """
         Sucht ähnliche Entitäten per Embedding-Similarity.

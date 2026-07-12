@@ -259,8 +259,11 @@ def main() -> int:
     parser = argparse.ArgumentParser(description="Migration langzeitgedaechtnis -> Synapsen-Netz")
     parser.add_argument("--commit", action="store_true",
                         help="Tatsaechlich schreiben (sonst Dry-Run)")
-    parser.add_argument("--schwelle", type=float, default=0.90,
-                        help="Match-Schwelle (Default 0.90). Cosine >= Schwelle -> Verstaerkung statt Neuanlage")
+    # Kalibriert auf nomic-embed-text-v2-moe (Chat 107), vorher 0.90 im
+    # casing-blinden Raum. Bleibt strenger als die Live-Konstante
+    # LZG_KNOTEN_MATCH_SCHWELLE (0.82), wie urspruenglich entschieden.
+    parser.add_argument("--schwelle", type=float, default=0.85,
+                        help="Match-Schwelle (Default 0.85). Cosine >= Schwelle -> Verstaerkung statt Neuanlage")
     args = parser.parse_args()
 
     eintraege = eintraege_laden()

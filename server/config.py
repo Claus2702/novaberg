@@ -201,8 +201,12 @@ KZG_SALIENZ_DAEMPFUNG_EXP:    float = float(os.getenv("KZG_SALIENZ_DAEMPFUNG_EXP
 
 # ─── Cluster-Promotion ─────────────────────
 CLUSTER_MIN_EINTRAEGE:              int   = int(os.getenv("CLUSTER_MIN_EINTRAEGE", "3"))
-CLUSTER_THEMEN_SIMILARITY:          float = float(os.getenv("CLUSTER_THEMEN_SIMILARITY", "0.85"))
-CLUSTER_LZG_SIMILARITY:             float = float(os.getenv("CLUSTER_LZG_SIMILARITY", "0.80"))
+# Kalibriert auf nomic-embed-text-v2-moe (Chat 107).
+# Grundrauschen 0.16, Median 0.26, p99 0.57 — gemessen an 302 lzg_knoten.
+# Vorher 0.85/0.80 im casing-blinden Raum (Grundrauschen 0.74) — funktionslos.
+# Alt-Cluster-Pfad (deaktiviert seit Chat 98), trotzdem mitgezogen.
+CLUSTER_THEMEN_SIMILARITY:          float = float(os.getenv("CLUSTER_THEMEN_SIMILARITY", "0.82"))
+CLUSTER_LZG_SIMILARITY:             float = float(os.getenv("CLUSTER_LZG_SIMILARITY", "0.75"))
 CLUSTER_WIDERSPRUCH_DECAY_FAKTOR:   float = float(os.getenv("CLUSTER_WIDERSPRUCH_DECAY_FAKTOR", "3.0"))
 CLUSTER_BESTAETIGUNG_BOOST:         float = float(os.getenv("CLUSTER_BESTAETIGUNG_BOOST", "0.1"))
 
@@ -211,7 +215,10 @@ PIXIE_VERTIEFUNG_LZG_LIMIT:  int = int(os.getenv("PIXIE_VERTIEFUNG_LZG_LIMIT", "
 PIXIE_VERTIEFUNG_KZG_LIMIT:  int = int(os.getenv("PIXIE_VERTIEFUNG_KZG_LIMIT", "10"))
 
 # ─── Delegation ────────────────────────────────
-DELEGATION_SIMILARITY_SCHWELLE: float = float(os.getenv("DELEGATION_SIMILARITY_SCHWELLE", "0.82"))
+# Kalibriert auf nomic-embed-text-v2-moe (Chat 107).
+# Grundrauschen 0.16, Median 0.26, p99 0.57 — gemessen an 302 lzg_knoten.
+# Vorher 0.82 im casing-blinden Raum (Grundrauschen 0.74) — funktionslos.
+DELEGATION_SIMILARITY_SCHWELLE: float = float(os.getenv("DELEGATION_SIMILARITY_SCHWELLE", "0.75"))
 
 # ─── Notizen-Suche ─────────────────────────────
 NOTIZEN_SUCHE_MIN_SIMILARITY:        float = float(os.getenv("NOTIZEN_SUCHE_MIN_SIMILARITY", "0.15"))
@@ -650,14 +657,27 @@ EMPATHIE_KONFLIKT_MIN_AROUSAL: float = 0.4  # Beide müssen mindestens diesen Ar
 # ─────────────────────────────────────────────
 # Drive / Gravitation
 # ─────────────────────────────────────────────
-GRAVITATIONS_SCHWELLE:        float = 0.60   # Minimum gravitation (sim × mot) für Aktivierung — Baseline von nomic-embed-text liegt ~0.55–0.60, niedriger feuert bei jedem Turn
+# Minimum gravitation (sim × mot) für Aktivierung.
+# Kalibriert auf nomic-embed-text-v2-moe (Chat 107).
+# Grundrauschen 0.16, Median 0.26, p99 0.57 — gemessen an 302 lzg_knoten.
+# Vorher 0.60, begründet mit "Baseline ~0.55–0.60" — die echte Baseline des
+# casing-blinden Raums war 0.74, der Wert feuerte IMMER. Funktionslos.
+# ⚠ Wachposten: Prompt↔Ziel-Wert, andere Textsorte als die Knoten↔Knoten-
+# Kalibrierung; Ziele wurden nicht gemessen — begründeter Startwert, kein
+# Messergebnis. Nach Live-Betrieb prüfen.
+GRAVITATIONS_SCHWELLE:        float = 0.40
 GRAVITATIONS_SALIENZ_FAKTOR:  float = 0.5    # Skalierung des Gravitationsterms auf die Salienz
 ZIEL_MITTELFRISTIG_DECAY_TAGE: int  = 14     # Halbwertszeit mittelfristiger Ziele in Tagen
 ZIEL_MAX_MITTELFRISTIG:         int = 5      # Max aktive mittelfristige Ziele
 ZIEL_MAX_LANGFRISTIG:           int = 2      # Max langfristige Ziele
 
 # Emotionale Gravitation (EI Phase 3)
-EMOTIONALE_GRAVITATIONS_SCHWELLE:       float = 0.5    # Höher als Ziel-Gravitation (0.3) — nur starke Matches
+# Kalibriert auf nomic-embed-text-v2-moe (Chat 107). Vorher 0.5 im
+# casing-blinden Raum — funktionslos. Der alte Kommentar („höher als
+# Ziel-Gravitation 0.3") beschrieb zudem einen Wert, den es nie gab.
+# ⚠ Wachposten: Prompt↔Eintrag-Wert (gravitation = sim × gewicht × decay ×
+# faktor), nicht gemessen — begründeter Startwert, kein Messergebnis.
+EMOTIONALE_GRAVITATIONS_SCHWELLE:       float = 0.40
 EMOTIONALE_GRAVITATION_ZEIT_HALBWERT:   int   = 180    # Halbwertszeit in Tagen
 EMOTIONALE_GRAVITATION_MAX_PRO_TURN:    int   = 2      # Max aktivierte Erinnerungen pro Turn
 EMOTIONALE_GRAVITATION_FAKTOR_SESSION:  float = 1.0    # Session-Einträge: frisch, volle Wirkung
@@ -935,8 +955,15 @@ NODE_LLM_CONFIG: dict = {
 NOVA_NEUGIER:                    float = 0.5    # Novas Grund-Neugier (Persoenlichkeitsparameter)
 GV_LUECKEN_MAX:                  int   = 8      # Erweitert Chat 71 (vorher 3)
 GV_LUECKEN_MIN_RELEVANZ:         float = 0.15   # Mindest-Gesamtrelevanz
-GV_NEUGIER_BOOST_SCHWELLE:       float = 0.30   # Mindest-Gravitation fuer Ziel-Boost
-GV_CHARAKTER_RESONANZ_SCHWELLE:  float = 0.40   # Mindest-Cosine zum kern_hash
+# Mindest-Gravitation fuer Ziel-Boost. Chat 107 geprueft und BEWUSST nicht
+# geaendert (Kalibrierung nomic-embed-text-v2-moe) — nicht vergessen.
+# ⚠ Wachposten: gravitationsabgeleiteter Wert, nicht gemessen — Startwert.
+GV_NEUGIER_BOOST_SCHWELLE:       float = 0.30
+# Mindest-Cosine zum kern_hash. Chat 107 geprueft und BEWUSST nicht geaendert
+# (Kalibrierung nomic-embed-text-v2-moe) — nicht vergessen.
+# ⚠ Wachposten: Kandidat↔nova_kern-Wert, nova_kern wurde nicht gemessen —
+# begruendeter Startwert, kein Messergebnis. Nach Live-Betrieb pruefen.
+GV_CHARAKTER_RESONANZ_SCHWELLE:  float = 0.40
 GV_QUELLEN_FAKTOR:               float = 0.6    # Einheitlich fuer alle Quellen
 GV_SESSION_AKT_CAP:              int   = 25     # Session-Decay: nach 25 Turns = 0
 GV_NEUGIER_CAP:                  float = 2.5    # sin^0.5 Normalisierung: Rohwert-Obergrenze
@@ -1104,9 +1131,13 @@ LZG_KNOTEN_REINFORCEMENT_BOOST: float = float(os.getenv("LZG_KNOTEN_REINFORCEMEN
 # Cosine-Schwelle, ab der ein neuer KZG-Eintrag als Quasi-Dublette eines
 # bestehenden Knotens gilt und diesen verstaerkt, statt einen neuen Knoten
 # anzulegen. Bewusst hoch — Standardfall ist Knoten-Erhalt, nur echte
-# Identitaet verstaerkt. Stellschraube, ggf. auf 0.9 anheben, wenn der
-# Match auf bloss verwandte Eintraege feuert.
-LZG_KNOTEN_MATCH_SCHWELLE: float = float(os.getenv("LZG_KNOTEN_MATCH_SCHWELLE", "0.85"))
+# Identitaet verstaerkt.
+# Kalibriert auf nomic-embed-text-v2-moe (Chat 107): 0.82 liegt ueber dem
+# Termin-Fehlpaar (0.788) und unter dem echten Duplikat (0.830).
+# Vorher 0.85 im casing-blinden Raum (Grundrauschen 0.74) — funktionslos:
+# 0,06 % Passierquote, der Match verstaerkte systematisch die FALSCHEN Knoten
+# (Matcha/Kakao 0.98 lag ueber der Schwelle, Paraphrasen bei 0.78 darunter).
+LZG_KNOTEN_MATCH_SCHWELLE: float = float(os.getenv("LZG_KNOTEN_MATCH_SCHWELLE", "0.82"))
 
 # Feature-Flag Synapsen P4. Jetzt aktiv (Chat 98): Live-Promotion laeuft
 # ueber den SynapsenPromotionAgent (lzg_knoten/lzg_kanten); der alte
@@ -1201,9 +1232,12 @@ LZG_SCHICHT_FAKTOR_ENTITAET: float = float(os.getenv("LZG_SCHICHT_FAKTOR_ENTITAE
 
 # Cosine-Similarity, ab der die Embedding-Schicht greift. Unter diesem
 # Wert: keine Embedding-Schicht. Darueber: Tiefe-Faktor waechst linear bis
-# 1.0 bei Cosine 1.0. Stellschraube — kann auf 0.80 oder 0.75 abgesenkt
-# werden, wenn die Schicht zu selten greift.
-LZG_EMBEDDING_SCHWELLWERT: float = float(os.getenv("LZG_EMBEDDING_SCHWELLWERT", "0.85"))
+# 1.0 bei Cosine 1.0.
+# Kalibriert auf nomic-embed-text-v2-moe (Chat 107): 0.55 = p99 der
+# Knoten↔Knoten-Verteilung (Grundrauschen 0.16, Median 0.26, p99 0.57) —
+# nur das oberste Perzentil bildet eine Embedding-Kante.
+# Vorher 0.85 im casing-blinden Raum (Grundrauschen 0.74) — funktionslos.
+LZG_EMBEDDING_SCHWELLWERT: float = float(os.getenv("LZG_EMBEDDING_SCHWELLWERT", "0.55"))
 
 # Timeline-Schicht — Toleranzen pro Praezisions-Stufe, jeweils ± in
 # eigener Einheit. Distanz innerhalb der Toleranz erzeugt einen Tiefe-

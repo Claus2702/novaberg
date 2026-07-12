@@ -224,7 +224,18 @@ def anker_retrieval(
     embedding_str: str,
     *,
     top_k: int = 3,
-    min_similarity: float = 0.5,
+    # Kalibriert auf nomic-embed-text-v2-moe (Chat 107). An diesem Wert haengt
+    # Schale 0 der gesamten Spreading Activation. Abdeckungsmessung an 100
+    # echten User-Prompts gegen 302 Knoten:
+    #   0.50 -> 53 % Turns mit Anker (verliert echte Treffer)
+    #   0.40 -> 82 %, im Schnitt 4.1 Anker (gewaehlt)
+    #   0.35 -> 89 %, 10.2 Anker (Rauschen beginnt)
+    # 100 % Abdeckung ist NICHT das Ziel — Cold Start ist bei ankerlosen
+    # Prompts die richtige Antwort, kein Ausfall. Vorher 0.50 im casing-
+    # blinden Raum: 100 % Abdeckung mit ~299,6 von 302 Knoten pro Turn.
+    # ⚠ Wachposten: Prompt↔Knoten-Wert — begruendeter Startwert aus der
+    # Abdeckungsmessung, kein Verteilungs-Messergebnis. Nach Live-Betrieb pruefen.
+    min_similarity: float = 0.40,
 ) -> list[dict]:
     """
     Initial-Retrieval des Synapsen-Lesepfads (Konzept §8.1): liefert die
@@ -232,7 +243,7 @@ def anker_retrieval(
 
     Geladen werden nur aktive Knoten mit Embedding; nach dem Fetch werden
     Treffer unter min_similarity verworfen (ein schwacher Cosine ist kein
-    sinnvoller Anker, analog zur 0.5-Schwelle des alten B2-Reads).
+    sinnvoller Anker).
 
     Bewusster Unterschied zu kandidaten_mit_cosine_laden (die der Kanten-
     bildung §7.2 dient): hier zaehlt die aktuelle Praesenz, daher

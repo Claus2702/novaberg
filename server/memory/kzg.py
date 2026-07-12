@@ -45,7 +45,12 @@ logger = logging.getLogger("ki_server.memory.kzg")
 # Konstanten
 # ─────────────────────────────────────────────
 EMBEDDING_DIM:        int   = 768
-SIMILARITY_THRESHOLD: float = 0.85
+# Kalibriert auf nomic-embed-text-v2-moe (Chat 107).
+# Grundrauschen 0.16, Median 0.26, p99 0.57 — gemessen an 302 lzg_knoten.
+# Vorher 0.85 im casing-blinden Raum (Grundrauschen 0.74) — funktionslos.
+# Einziger Nutzer kzg_similar_find hat derzeit keinen Live-Aufrufer; bei
+# Reaktivierung soll er nicht mit einem toten Wert starten.
+SIMILARITY_THRESHOLD: float = 0.75
 # DEAD CODE (Chat 91, Pre-P4-Fix): Ersetzt durch KZG_SALIENZ_HIGH (= 0.7)
 # in config.py. Wird mit dem Rest der alten Promotion in P9 entfernt.
 # Nicht löschen vor P9 — könnte noch in nicht-aktivem Legacy-Code
@@ -528,7 +533,13 @@ def kzg_entries_retrieve(
 
         for doc in results.docs:
             similarity: float = 1.0 - (float(doc.score) / 2.0)
-            if similarity < 0.5:
+            # Kalibriert auf nomic-embed-text-v2-moe (Chat 107). Vorher 0.5
+            # im casing-blinden Raum (Grundrauschen 0.74) — passierte fast
+            # alles; im neuen Raum (Grundrauschen 0.16) haette 0.5 fast
+            # nichts mehr passieren lassen.
+            # ⚠ Wachposten: Prompt↔Eintrag-Wert, nicht gemessen —
+            # begruendeter Startwert, kein Messergebnis.
+            if similarity < 0.40:
                 continue
 
             subtyp:  str   = getattr(doc, "dimension", "") or ""

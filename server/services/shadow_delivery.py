@@ -35,6 +35,9 @@ logger = logging.getLogger("ki_server.shadow_delivery")
 PRÜF_INTERVALL:       float = 5.0     # Sekunden zwischen Prüfungen
 MOMENTUM_PAUSE:       float = 3.0     # Pause nach Momentum-Low bevor Delivery
 INAKTIVITAET_GRENZE:  float = 30.0    # Sekunden ohne User-Aktion → Timeout-Trigger
+# Minimum für thematischen Match. Chat 107 geprüft und BEWUSST nicht
+# geändert (Kalibrierung nomic-embed-text-v2-moe) — nicht vergessen.
+# ⚠ Wachposten: Gesprächsvektor↔Stack-Wert, nicht gemessen — Startwert.
 SIMILARITY_THRESHOLD: float = 0.40    # Minimum für thematischen Match
 MAX_BURST:            int   = 2       # Max aufeinanderfolgende Impulse
 COOLDOWN_TTL:         int   = 3600    # Cooldown-Key TTL in Sekunden
@@ -271,7 +274,10 @@ def _stack_aehnliche_entfernen(
     redis_client:    redis.Redis,
     user_id:         str,
     referenz_vector: list[float],
-    threshold:       float = 0.65,
+    # Kalibriert auf nomic-embed-text-v2-moe (Chat 107), vorher 0.65 im
+    # casing-blinden Raum (Grundrauschen 0.74 — räumte fast alles ab; im
+    # neuen Raum hätte 0.65 nie gegriffen).
+    threshold:       float = 0.60,
 ) -> None:
     """Entfernt Stack-Einträge die dem gerade gesendeten zu ähnlich sind."""
 

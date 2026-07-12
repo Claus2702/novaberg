@@ -92,7 +92,10 @@ def lzg_kandidaten_suchen(
 
         for row in cursor.fetchall():
             inhalt, similarity, gewicht, gap_arousal = row
-            if similarity and similarity > 0.1:
+            # Kalibriert auf nomic-embed-text-v2-moe (Chat 107), vorher 0.1 —
+            # liess im alten Raum 93 % durch, filterte nichts. 0.20 liegt
+            # knapp ueber dem neuen Grundrauschen (0.16).
+            if similarity and similarity > 0.20:
                 kandidaten.append({
                     "konzept":    inhalt,
                     "similarity": float(similarity),
@@ -159,7 +162,9 @@ def kzg_kandidaten_suchen(
                 score:   float = float(feld_dict.get("score", "1.0"))
                 similarity: float = 1.0 - score
 
-                if inhalt and similarity > 0.1:
+                # Kalibriert auf nomic-embed-text-v2-moe (Chat 107), vorher
+                # 0.1 — filterte nichts. 0.20 knapp ueber Grundrauschen 0.16.
+                if inhalt and similarity > 0.20:
                     kandidaten.append({
                         "konzept":     inhalt,
                         "similarity":  similarity,

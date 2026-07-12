@@ -156,7 +156,11 @@ class FaktenRepository:
         postgres_url: str,
         user_id:      str,
         embedding:    list[float],
-        threshold:    float = 0.80,
+        # Kalibriert auf nomic-embed-text-v2-moe (Chat 107), vorher 0.80 im
+        # casing-blinden Raum. Kein Live-Aufrufer — mitgezogen, damit der
+        # Pfad bei Reaktivierung nicht mit einem toten Wert startet.
+        # ⚠ Wachposten: nicht gemessen — begruendeter Startwert.
+        threshold:    float = 0.70,
         limit:        int = 5,
     ) -> list[dict]:
         """

@@ -129,7 +129,10 @@ def lzg_entries_retrieve(
 
         for (inhalt, dimension, gewicht_basis, arousal,
              verstaerkt_am, beobachter, erstellt_am, haeufigkeit, similarity) in rows:
-            if similarity < 0.5:
+            # Kalibriert auf nomic-embed-text-v2-moe (Chat 107), vorher 0.5.
+            # Legacy-Pfad ohne Live-Aufrufer — mitgezogen, damit er bei
+            # Reaktivierung nicht mit einem toten Wert startet.
+            if similarity < 0.40:
                 continue
 
             eff_gewicht: float = effektives_gewicht_berechnen(gewicht_basis, verstaerkt_am)

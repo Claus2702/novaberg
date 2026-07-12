@@ -174,7 +174,10 @@ _FORCE_C_ATTRACT:  float = 0.05    # Federkraft (proportional zu similarity)
 _FORCE_ITERATIONS: int   = 150
 _FORCE_EPSILON:    float = 0.001
 _FORCE_INITIAL_TEMP: float = 0.1
-_FORCE_ATTRACT_THRESHOLD: float = 0.1
+# Kalibriert auf nomic-embed-text-v2-moe (Chat 107), vorher 0.1 — im neuen
+# Raum (Grundrauschen 0.16) laege 0.1 unter dem Rauschen, alles zoege sich an.
+# Nur Visualisierung (GravityMap-Layout), keine Gedaechtnis-Entscheidung.
+_FORCE_ATTRACT_THRESHOLD: float = 0.25
 
 
 def _force_directed_layout(
