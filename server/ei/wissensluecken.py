@@ -297,7 +297,19 @@ def wissensluecken_finden(
         k["register"]      = register
 
     # ── 5. Charakter-Filter ──
+    # resonanz_pruefbar statt Zahlen-Fallback (Chat 107,
+    # GV-RESONANZ-FALLBACK-LUEGT): Der fruehere Fallback 0.5 hat nie etwas
+    # entschieden — er lag ueber der Schwelle (0.40), also passierte ohnehin
+    # jeder Kandidat. Er hat ein "nicht anwendbar" als "passt hervorragend"
+    # verkleidet; im v2-moe-Raum (p99 = 0.57) waere 0.5 ein Spitzenwert.
+    # Das Flag trifft dieselbe Entscheidung und sagt die Wahrheit darueber —
+    # kein Verhaltenswechsel, ehrliche Verbuchung.
+    # Fallback 0.0 wurde bewusst VERWORFEN: Er haette die Neugier beim
+    # frischen Paar bis zur ersten Charakter-Destillation abgewuergt —
+    # ausgerechnet dort, wo ungefilterte Neugier plausibel ist. Ein Feature
+    # abwuergen, um eine Buchfuehrung zu reparieren, waere der falsche Tausch.
     nova_kern: str = internal.character.core if internal else ""
+    resonanz_pruefbar: bool = False
     if nova_kern:
         try:
             request = EmbedRequest(text=nova_kern)
@@ -313,18 +325,27 @@ def wissensluecken_finden(
                 k["charakter_resonanz"] = cosine_similarity(
                     turn_embedding, kern_embedding
                 )
+            resonanz_pruefbar = True
         except Exception as fehler:
-            logger.warning(f"GV4: Kern-Embedding fehlgeschlagen: {fehler}")
-            for k in gefiltert:
-                k["charakter_resonanz"] = 0.5
+            # Zweig 2 — Infrastrukturdefekt (Kern vorhanden, Embedding
+            # scheitert): laut krachen statt still einen Wert erfinden.
+            # Der Turn laeuft ohne Resonanz-Pruefung weiter.
+            logger.error(
+                "GV4: Kern-Embedding fehlgeschlagen (user=%s) — Resonanz-Pruefung entfaellt: %s",
+                user_id, fehler, exc_info=True,
+            )
     else:
-        for k in gefiltert:
-            k["charakter_resonanz"] = 0.5
+        # Zweig 1 — legitimer Cold-Start: frisches Paar, noch keine
+        # Charakter-Destillation. Einmal pro Aufruf, nicht pro Kandidat.
+        logger.warning(
+            "GV4: kein Charakter-Kern (Cold-Start) fuer user=%s — Resonanz-Pruefung entfaellt",
+            user_id,
+        )
 
     qualifiziert: list[dict] = [
         k for k in gefiltert
         if k["relevanz"] >= GV_LUECKEN_MIN_RELEVANZ
-        and k["charakter_resonanz"] >= GV_CHARAKTER_RESONANZ_SCHWELLE
+        and (not resonanz_pruefbar or k["charakter_resonanz"] >= GV_CHARAKTER_RESONANZ_SCHWELLE)
     ]
 
     qualifiziert.sort(key=lambda k: k["relevanz"], reverse=True)
