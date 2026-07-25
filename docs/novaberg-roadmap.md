@@ -1409,4 +1409,15 @@ Offen → Backlog: `CHARHASH-GEWICHT-ABSOLUT-LIVE` (volle Live-Abnahme im Dauerb
 
 ---
 
-*Aktualisiert in Chat 107 (Docs-Commit 12.07.2026). Offene Punkte → novaberg-backlog.md. Bugs → novaberg-bugs.md.*
+### CHARAKTER-RESONANZ Teil 2: Konzept gehärtet, kein Code (Chat 108, 12. und 25. Juli 2026)
+
+- ✅ **Konzept `charakter-resonanz_k.md` von §1–§7 auf §1–§16 gewachsen** — Glossar, Lebenszyklus, DDL, sieben Entscheidungen, fünf Audits, fünf Bauteile. Zweimal an der Wurzel korrigiert, beide Male durch Live-Messung
+- ✅ **Audit A5 widerlegte die Partitionsannahme** (`51987ed`) — die gedrehte Partition `(nova, meister)` existiert nicht: 0 LZG-Zeilen, 0 von 926 KZG-Keys. Novas Perspektive lebt als `beobachter='assistant'` im kanonischen Paar `(meister, nova)` — mit 231 Knoten der größere Topf. Schema auf Variante A umgebaut (`verhaltensweisen` partitioniert nach `(user_id, character_id, beobachter)`), Beleg-Achse in die eigene Tabelle `verhaltens_beleg` ausgelagert
+- ✅ **Das Vorher-Bild gemessen** (`90235ce`) — ein manuell ausgelöster Destillationslauf lieferte erstmals beide Charakter-Profile auf ehrlichen Gewichten. Beide beschreiben den Meister; Novas Profil ist durchgehend maskulin. DESTILLAT-PERSPEKTIVE-VS-SUBJEKT ist damit Messung statt Hypothese — und seine Ursachenzuschreibung („Fehler im Prompt") widerlegt: Der Prompt ist korrekt, die Quelle trägt keine Stimme Novas
+- ✅ **Kraft-1-Stichtag gemessen** (`1e4507c`, `7096258`) — `2026-07-11 12:45:21 UTC`, verankert an der Signatur des Defekts (`emotions_vector` davor konstant `plateau`, danach fünf Werte). 150 Rohturns, 39 entwertet, 111 verwertbar; der Stichtag ist Voraussetzung von Bauteil 3 mit eigener Abnahme, der Wert steht im Dokument genau einmal
+- ✅ **ZIELE-AUS-ZERRBILD erfasst** (`90235ce`, Bauteil-4-Anforderung `5d17aa0`) — der Ziel-Destillator hat aus dem Zerrbild embedded Langfristziele in Ich-Form erzeugt („Enklave" wörtlich aus dem Kern-Hash über die Besitzergreifung des Nutzers); eine eigenständige Persistenzstufe hinter dem Hash, die ein reparierter Lesepfad nicht mitzieht. Bauteil 4 trägt jetzt die Ziel-Invalidierung als Abnahmebedingung
+- Sechs Doku-Commits (`51987ed` … `08febe2`), zwei Lessons (konzept-spricht-code, ableitung-als-messung), vier neue Backlog-Einträge plus einen Bug-Eintrag, einen umgehängten und einen von `Frage:` auf `Befund:` umgewidmeten. **Kein Code.** Bauteil 1 bleibt durch A1, A2 und den A5-Rest blockiert — alle drei sind Audits am KZG-Schreibpfad
+
+---
+
+*Aktualisiert in Chat 108 (Docs-Commit 25.07.2026). Offene Punkte → novaberg-backlog.md. Bugs → novaberg-bugs.md.*
