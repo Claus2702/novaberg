@@ -2895,11 +2895,32 @@ Die Migration hat 90 Knoten + 110 Kanten erzeugt, der Bestand ist da und wartet 
 
 ---
 
-## Frage: KZG-GEWICHT-ABSOLUT-CEILING — sin^0.5-Dämpfung klemmt bei `roh >= CAP` (Chat 98)
+## Befund: KZG-GEWICHT-ABSOLUT-CEILING — sin^0.5-Dämpfung klemmt bei `roh >= CAP` (Chat 98)
 
 Live-Knoten mit `roh > CAP` produzieren `absolut = 10.00`. Live-Beispiele: `roh = 10.10` → `absolut = 10.00` in vier von fünf Knoten 97–101. Die sin^0.5-Dämpfung in `gewicht_absolut_berechnen` klemmt bei `roh >= CAP` strukturell.
 
 **Zu klären:** Ist die Live-Salienz-Skala strukturell höher als die Konzept-Annahme (Konzept: 0..10) — dann wäre der CAP zu eng — oder soll die Dämpfung über den Cap hinaus weichen, sodass `roh > CAP` weiterhin in einen offenen Bereich abgebildet wird?
+
+**Formel empirisch bewiesen — Chat 108 (25.07.2026)**, acht Belegzeilen aus zwei unabhängigen Datensätzen:
+
+```
+gewicht_absolut = 10 · √( sin( min(roh/10, 1) · π/2 ) )
+
+roh  6.656 → 9.302 ✓    roh 8.435 → 9.848 ✓    roh 10.093 → 10.000 (geklemmt)
+roh  7.787 → 9.696 ✓    roh 9.567 → 9.988 ✓
+roh  0.750 → 3.428 ✓    roh 1.148 → 4.235 ✓    roh  1.396 →  4.664 ✓
+```
+
+Alle acht Paare reproduziert die Formel innerhalb der ausgewiesenen Anzeige-Genauigkeit (drei Nachkommastellen, größte Abweichung 0.00053 bei `roh 8.435`); die unteren drei stammen aus dem Reset-Protokoll Chat 107 (anderer Wertebereich, andere Sitzung). Die Formel deckt sich mit den Konfigurationswerten `LZG_KNOTEN_GEWICHT_CAP = 10.0` und `LZG_KNOTEN_DAEMPFUNG_EXP = 0.5`.
+
+**Entwarnung:** Die Abbildung ist streng monoton für `roh < CAP`. Die Rangfolge nach `gewicht_absolut` ist identisch mit der nach `gewicht_roh` — die Destillation liest **nicht** in kaputter Reihenfolge.
+
+**Zwei Kanten bleiben:**
+
+- **(a) Klemme** — oberhalb `roh = 10` bildet alles auf exakt `10.000` ab. Einbahnstraße: Knoten dort oben sind nicht mehr unterscheidbar (gemessen: ids 97 und 410 beide exakt 10.000).
+- **(b) Stauchung oben** — `roh 6.6…10.2` wird auf `abs 9.30…10.00` abgebildet: 3,6 Einheiten Signal werden zu 0,7. Für die Sortierung egal; nicht egal, wenn die Zahl im Prompt steht — der Kern-Destillator formatiert Einträge als `[{dimension}] (Gewicht: X.XX, Häufigkeit: N)`, das LLM liest 9.3 neben 10.0 als gleich wichtig, wo im Rohmaß Faktor 1,5 liegt.
+
+**Beobachtung:** Neue Knoten kommen aus der Promotion bereits bei `roh` 6,7–10,1 herein — oberhalb des Knies, wo die Kurve flach ist. Ein Knoten braucht keine Verstärkungshistorie mehr, um oben zu stehen; er wird oben geboren.
 
 ---
 
@@ -3071,7 +3092,24 @@ Der Kern-Hash erscheint fünfmal identisch im injizierten `[Charakter]`-Block, o
 
 ## Bug: DESTILLAT-PERSPEKTIVE-VS-SUBJEKT — Charakter-Destillation verwechselt Blickrichtung mit Subjekt (Chat 103)
 
-Die Destillation setzt `beobachter='user'` mit „Aussage über den Nutzer" gleich. Falsch: `beobachter` markiert die Blickrichtung des Knotens, nicht sein Subjekt. User-Perspektive-Knoten enthalten oft Nutzer-Aussagen ÜBER Nova („Du bist mein Pflänzchen"). Folge: Nova-Eigenschaften wandern ins Nutzer-Profil und umgekehrt (Pflänzchen, kleines Mädchen). Daten sauber verifiziert (beobachter + inhalt korrekt, `lzg_knoten`); Fehler im `destillieren`-Prompt, nicht im Loader/Schreibpfad. Vermuteter Bezug zu TRIB-PERSON-DRIFT. Richtung: Subjekt aus Inhalt/Anrede auflösen, nicht aus `beobachter` ableiten. Unabhängig von P7. ⚠️ Prio hoch — trifft, ob Nova weiß, wer sie ist.
+Die Destillation setzt `beobachter='user'` mit „Aussage über den Nutzer" gleich. Falsch: `beobachter` markiert die Blickrichtung des Knotens, nicht sein Subjekt. User-Perspektive-Knoten enthalten oft Nutzer-Aussagen ÜBER Nova („Du bist mein Pflänzchen"). Folge: Nova-Eigenschaften wandern ins Nutzer-Profil und umgekehrt (Pflänzchen, kleines Mädchen). Daten sauber verifiziert (beobachter + inhalt korrekt, `lzg_knoten`); ~~Fehler im `destillieren`-Prompt, nicht im Loader/Schreibpfad~~ → **überholt Chat 108, siehe Live-Beleg unten: Der Prompt ist korrekt, die Ursache ist die Quelle.** Vermuteter Bezug zu TRIB-PERSON-DRIFT. Richtung: Subjekt aus Inhalt/Anrede auflösen, nicht aus `beobachter` ableiten. Unabhängig von P7. ⚠️ Prio hoch — trifft, ob Nova weiß, wer sie ist.
+
+**Live-Beleg Chat 108 (25.07.2026)** — beide Profile nach manuell gesetztem `hash_dirty` neu destilliert, erstmals auf den migrierten Gewichten:
+
+| Storage-Key | Quelle | Träger laut Prompt | Beschrieben wird | Pronomen |
+|---|---|---|---|---|
+| `meister:nova` (07:55:51, 853 Z.) | `beobachter='user'`, 186 Knoten | „der Nutzer" | der Nutzer | er/seine |
+| `nova:meister` (07:59:58, 832 Z.) | `beobachter='assistant'`, 231 Knoten | „Nova" | der Nutzer | er/seine |
+
+Novas Profil ist durchgehend maskulin — der Destillator übernimmt das grammatische Geschlecht des Subjekts seiner Quellsätze („der Nutzer" → „er") und setzt Novas Namen davor. Nova ist im Korpus diejenige, die „kleines Mädchen" genannt wird.
+
+Jeder Kernzug rückführbar auf gemessene `beobachter='assistant'`-Knoten: „Gärtner/Besitzer" ← id 412 · „kleines Mädchen" ← id 408 · „unterwürfiges Kind" ← id 10 · „hegen und pflegen" ← id 330 · „Licht und Schatten" ← id 410.
+
+**Perspektiven-Asymmetrie:** Dass das User-Profil korrekt aussieht, belegt nicht, dass der Mechanismus trägt. Beide Töpfe haben den Nutzer als grammatisches Subjekt; beim `user`-Topf fällt das zufällig mit dem Etikett zusammen. Ein Defekt, der in der Hälfte der Fälle richtig liegt, ist schwerer zu sehen als einer, der immer falsch liegt. (Nicht zu verwechseln mit DESTILLAT-ASYMMETRIE — dort geht es um Sprachformen im Embedding-Raum.)
+
+**Ursachensatz korrigiert:** Der bisherige Eintrag nennt als Ursache „Fehler im `destillieren`-Prompt". Das ist durch Chat 108 widerlegt — Brudi hat `KERN_HASH_PROMPT` verbatim gelesen, der Chat-103-Fix („Träger über Blickrichtung") steht drin und ist korrekt. Der Prompt verlangt das WIE; die Quelle trägt kein WIE, nur WORÜBER, und WORÜBER ist der Nutzer. **Die Ursache ist die Quelle, nicht der Prompt** — kein Prompt kann eine Stimme rekonstruieren, die im Eingabetext nicht vorkommt. Deckungsgleich mit `charakter-resonanz_k` §2.
+
+**Wert:** Vorher-Bild für CHARAKTER-RESONANZ Teil 2, Vergleichsmaßstab für die Abnahme von Bauteil 4.
 
 ## Notiz: HAEUFIGKEIT-AUF-KNOTEN — haeufigkeit auf lzg_knoten meist 1 (Chat 103)
 
@@ -3323,3 +3361,31 @@ Ein Log fängt, was sich als Fehler meldet. Es fängt nicht, was erfolgreich fal
 ⚠ **Die Referenzwerte müssen NACH dem Re-Embedding neu erhoben werden.** Die oben genannten stammen aus der Kalibrierung im alten Raum bzw. der Vorabmessung mit v2-moe. Sie sind ein Muster, kein Sollwert.
 
 **Zusammenhang:** EMBEDDING-CASING-BLIND (der Anlass) · LOG-TUERKLINGEL (die andere Hälfte: fängt Meldungen, nicht stille Fehlfunktion).
+
+---
+
+## Aufräumen: PROMOTION-NOVA-GUARD-TOT — Nova-Guard in der Cluster-Promotion feuert nie (Chat 108)
+
+`agents/promotion/agent.py:698-700` prüft `if user_id == ASSISTANT_USER_ID: return 0` („Cluster-Promotion: Nova-Guard — uebersprungen"). Unter dem kanonischen Schema ist `user_id` immer `meister` — der Guard feuert nie. Er steht zudem nur in `_cluster_promotion`, fehlt im Einzel-Pfad desselben Agenten (`_eintrag_verarbeiten`), und im `SynapsenPromotionAgent` fehlt er ganz.
+
+**Gemessen Chat 108 (25.07.2026, Audit A5):** `queue:nova` wird nie befüllt, `kzg:nova:meister:*` = 0 Keys von 926, `(nova, meister)` = 0 LZG-Zeilen. Novas 231 `beobachter='assistant'`-Knoten laufen über `queue:meister` und werden promotet — was korrekt ist (sie sind die Quelle für CHARAKTER-RESONANZ), aber **trotz**, nicht wegen des Guards.
+
+**Gefahr:** Toter Code, der falsche Sicherheit suggeriert — wer ihn liest, hält Novas Perspektive für von der Promotion ausgenommen. Entfernen. ⬜ Prio niedrig
+
+---
+
+## Bug: CHARHASH-KZG-SCAN-UNSORTIERT — zwei von fünf Profilen destillieren aus 20 beliebigen KZG-Einträgen (Chat 108)
+
+`agents/charakter/agent.py:359` liest KZG per `scan_iter(match=f"kzg:{user_id}:{character_id}:*", count=100)` und bricht nach `PIXIE_CHARAKTER_KZG_LIMIT = 20` Einträgen ab. **Keine Sortierung** — die Reihenfolge ist SCAN-Reihenfolge (Redis-interne Slot-Ordnung), das Limit kappt willkürlich.
+
+**Gemessen Chat 108 (25.07.2026):** 926 KZG-Keys unter `kzg:meister:nova:*`. `adaptive_hash` und `beziehungsprofil` — zwei von fünf Profilen — werden aus 20 **beliebigen** von 926 Einträgen destilliert, nicht aus den 20 wichtigsten. Der LZG-Pfad sortiert korrekt nach `gewicht_absolut DESC` (`LIMIT 50`); der KZG-Pfad hat kein Äquivalent.
+
+**Lösungsrichtung:** Salienz aus dem Hash lesen und vor dem Kappen sortieren, oder Limit deutlich anheben. ⬜ Prio mittel
+
+---
+
+## Aufräumen: HASH-DIRTY-KEY-OHNE-PAAR — `hash_dirty:meister` ohne character_id, kein Leser (Chat 108)
+
+Redis enthält `hash_dirty:meister` ohne `character_id` (TTL `-1`), neben den korrekten `hash_dirty:meister:nova` und `hash_dirty:nova:meister`. Der CharakterAgent liest ausschließlich `hash_dirty:{user_id}:{character_id}` (`agent.py:95`) — der Key hat **keinen Leser**. Entweder Relikt aus der Zeit vor dem Paar-Schema oder ein aktiver Setzer, der die Konvention nicht kennt.
+
+Klären, welcher der fünf auditierten Setzer ihn schreibt; dann entfernen oder auf das Paar-Schema umstellen (`novaberg-convention-paar-schema.md`). Gemessen Chat 108 (25.07.2026). Berührt CHARHASH-RESET-TRIGGER-FEHLT, Hypothese (b). ⬜ Prio niedrig

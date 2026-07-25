@@ -1,6 +1,6 @@
 # Novaberg — Bugs & Limitationen
 
-**Stand:** 12. Juli 2026, Chat 107
+**Stand:** 25. Juli 2026, Chat 108
 **Quelle:** Testlauf "Karrierekrise" (200 Prompts) + Gedächtnis-Epic (Chat 11) + Epic 11 Agent-System (Chats 22–32) + Persona Smoke-Tests (Chats 31–32) + RechercheAgent-Test (Chat 35) + Doku-Audit (Chat 36) + PRIO0-Fix + Client-Observability (Chat 37) + Claude API-Test + STREAM1-Fix + Gesprächsvektor (Chat 39) + CharakterIdentitaetAgent + DirektivenAgent + Tribunal Score-System (Chat 40) + Telegram Bot + Zeitparser-Fixes (Chat 41) + CRUD-Härtung + Telegram-Chat-Analyse + DB-Report (Chat 42) + KONTEXT1-Fix + Resume-Bug + Epic 15 Pilot (Chat 43) + Epic 15 Rollout + DELEG-REG Fix + KZG-Klebrigkeit (Chat 44) + RESP-CHAR1 Fix (Chat 45) + CLASSIFY-REJECTED + Gemma4 Live-Tests (Chat 48) + Telegram-Konversation "frecher Charakter" (Chat 49) + RESUME-REJECT Fix + Live-Tests (Chat 50) + Neugier-Konzept + Projektinfrastruktur (Chat 51) + Doku-Alignment + emotions_profil (Chat 52) + Antrieb-Konzept + Dual-Emotion (Chat 53) + HALL2-Fix + Planner-Refactor (Chat 54) + PySide6 verworfen + GTK4-Entscheidung (Chat 55) + GTK4-Client + Panel-Infrastruktur (Chat 56) + Web-Tool-Doku + SEARX1-Diagnose (Chat 57) + Chat 61 (Perzeption-Symmetrie, Akkumulations-Refactor, Paper-Portfolio, Lumi, urllib3-Doppel-Turn beobachtet) + Paper I + urllib3-RETRY + ROUTE-CHAR-NOTIZ + RESP-DEAD + PIXIE-GHOST (Chat 65) + WS-SINGLE Fix + ClientConnection + User-Message-Broadcast (Chat 68) + Dreischicht-Integration + GV-Refactoring + MODUS-LEER + VEKTOR-LEER + AROUSAL-330 + ZIEL-LABEL-LEER Fixes (Chat 72) + Promotion-Pipeline-Audit (Chat 75) + Reducer-Umbau Smoke-Tests (Chat 75) + Chat 79 (THINK-MEM-CONFLICT, CHAR-LZG-LEAK, MIGRATION-PIX-PAIR, MIGRATION-AGENTGRAPH-PAIR, PIX-CLEAN, KZG-CLEANUP) + Doku-Code-Abgleich (Chat 106) + init.sql-Audit (Chat 107)
 
 ---
@@ -1506,17 +1506,27 @@ Disambiguierung erzeugen, die den Loop auslöste: der Crash ist behoben, nicht d
 
 #### CHARHASH-RESET-TRIGGER-FEHLT — Neu-Destillation nach dem Gewichts-Reset ist nicht angestoßen ⚠️
 
-**Entdeckt:** 12.07.2026, Docs-Commit nach Chat 107 — statische Prüfung der Trigger-Kette (Live-DB in der Prüf-Umgebung nicht erreichbar, Zeitstempel-Verifikation steht aus).
+**Entdeckt:** 12.07.2026, Docs-Commit nach Chat 107 — statische Prüfung der Trigger-Kette (Live-DB in der Prüf-Umgebung nicht erreichbar, Zeitstempel-Verifikation ✅ erledigt Chat 108, siehe Nachtrag unten).
 
-**Klasse:** Offener Migrationsrest von EMBEDDING-CASING-BLIND, Severity **Hoch** — der produktive `charakter_hash` ist auf dem alten Fundament entstanden.
+**Klasse:** Offener Migrationsrest von EMBEDDING-CASING-BLIND, Severity **Hoch** — der produktive `charakter_hash` war bis Chat 108 auf dem alten Fundament entstanden; seit dem manuellen Trigger am 25.07. neu destilliert (siehe Nachtrag).
 
 **Symptom:** Die Charakter-Destillation (P7) selektiert und rankt nach `gewicht_absolut` — bis zum Reset am 12.07.2026 waren diese Gewichte Zufall (2910 Skelett-Kollisionen, `cosine_max = 1.0000`; siehe EMBEDDING-CASING-BLIND und den Historien-Bruch in `novaberg-memory-synapsen_k.md` §9). Der bestehende `charakter_hash` — insbesondere `kern_hash` und `emotions_profil`, die auf LZG-Gewichten rechnen — ist also aus Zufallsgewichten destilliert. Der CharakterAgent destilliert nur bei gesetztem `hash_dirty:{user_id}:{character_id}` — und **weder `knoten_gewichte_zuruecksetzen` noch `kanten_alle_neu_aufbauen` noch `reembed_all.py` setzen dieses Flag.** Der Reset hat die Rechengrundlage der Destillation geändert, ohne die Destillation anzustoßen.
 
 **Beleg (Datei:Funktion):** `agents/charakter/agent.py` → `invoke` (Dirty-Check, `continue` ohne Flag); `memory/lzg_knoten.py` → `knoten_gewichte_zuruecksetzen` (kein hash_dirty-Setzer); `tools/reembed_all.py` (ebenso). Setzer existieren nur in `agents/kzg/queues.py`, `agents/promotion/agent.py`, `agents/synapsen_promotion/agent.py`, `memory/kzg.py`.
 
-**Mögliche Entlastung, ungeprüft:** Der zweite Durchlauf der 780 KZG-Hashes (Phase B6) lief durch die Synapsen-Promotion, die `hash_dirty` als Nebeneffekt setzt — dann hätte der nächste periodische Pixie-Lauf neu destilliert. Das wäre aber Zufall, kein designter Migrationsschritt, und die Destillation liefe auf frisch zurückgesetzten, flachen Gewichten (haeufigkeit = 1 fast überall) — ehrlich, aber wenig differenziert. **Prüfen:** `kern_aktualisiert_am`/`emotions_aktualisiert_am` in `charakter_hash` gegen den Reset-Zeitpunkt 12.07.2026.
+**Entlastung geprüft und widerlegt (Chat 108):** Die Vermutung, die Phase-B6-Promotion setze `hash_dirty` als Nebeneffekt und ein späterer Lauf destilliere von selbst neu, trifft **nicht** zu. Die Zeitstempel standen unverändert auf 12.07. 06:20 UTC, obwohl seither Promotionen liefen. Ohne manuellen Eingriff wäre nie neu destilliert worden.
 
-**Lösungsrichtung:** (1) Kurzfristig: `hash_dirty:meister:nova` manuell setzen bzw. Zeitstempel prüfen und den Kern neu destillieren — bewusst entscheiden, ob sofort (flache Gewichte) oder nach ein paar Wochen echten Gewichtsaufbaus. (2) Strukturell: `knoten_gewichte_zuruecksetzen` muss `hash_dirty` selbst setzen — wer die Rechengrundlage der Destillation ändert, stößt die Destillation an.
+**Lösungsrichtung:** (1) Kurzfristig — **✅ ausgeführt Chat 108:** `hash_dirty:meister:nova` manuell gesetzt, Zeitstempel geprüft, Kern neu destilliert (auf den migrierten Gewichten, nicht mehr flach). (2) **Offen, strukturell:** `knoten_gewichte_zuruecksetzen` muss `hash_dirty` selbst setzen — wer die Rechengrundlage der Destillation ändert, stößt die Destillation an.
+
+**Teilentlastung, gemessen 25.07.2026:** Der Konsumpfad ist intakt. Nach manuellem `SET hash_dirty:meister:nova 1` lief der Agent im nächsten Intervall (07:55–08:00 UTC), destillierte alle fünf Profile beider Perspektiven, erneuerte die Langfristziele und räumte das Flag (`EXISTS` → 0). Scheduler-Werte korrekt (`interval=600`, `priority=0.3`), Log über 24 h sauber: alle zehn Minuten `Kein hash_dirty fuer meister:nova`, `Agent 'charakter' abgeschlossen`.
+
+**Offen bleibt — Sichtbarkeits-Widerspruch (25.07.2026, eine Sitzung):** `redis-cli KEYS 'hash_dirty:*'` lieferte drei Keys, darunter `hash_dirty:meister:nova`. Der CharakterAgent meldete im selben Zeitraum neunmal (06:05–07:39 UTC) `Kein hash_dirty fuer meister:nova`. Kurz darauf `TYPE hash_dirty:meister:nova` → `none`. TTL scheidet als Erklärung aus: Die verbliebenen `hash_dirty:meister` und `hash_dirty:nova:meister` haben TTL `-1`, der Setzer schreibt also ohne Ablauf.
+
+**Zwei Hypothesen, beide ungeprüft:** (a) Ein unbekannter Löschpfad räumt das Flag, ohne zu destillieren — fünf Setzer sind auditiert (Chat 108), nach Löschern wurde nie gesucht. (b) `redis-cli` und der Agent sehen verschiedene Keyspaces — anderer Client, anderes `db`, oder ein Key-Prefix im Agenten. Gegen (b) spricht, dass die 926 KZG-Keys für beide sichtbar sind; ausgeschlossen ist es nicht.
+
+**Nächster Schritt:** Audit `agents/charakter/agent.py` — welcher Redis-Client, welches `db`, gibt es einen Prefix, und ist der `get`-Aufruf in ein `try/except` gehüllt, das `WRONGTYPE` schluckt? Parallel: `grep -rn "hash_dirty" novaberg/server/` auf **Löscher** (`delete`/`unlink`), nicht nur auf Setzer.
+
+**Auswirkung, solange ungeklärt:** Der `charakter_hash` altert unbemerkt. 13 Tage lang meldeten ~1900 Läufe Erfolg, während das Destillat aus der Vor-Migrations-Ära stammte. Musterfall für VITALZEICHEN — „fängt, was erfolgreich falsch ist". Die Türklingel (LOG-TUERKLINGEL) fängt das nicht: Es gibt nichts zum Klingeln.
 
 ---
 
@@ -1551,3 +1561,25 @@ Lumi ist ein Schnittlauch aus dem Supermarkt. Er ist eingegangen.
 **Querverweis:** NOVA-SYKOPHANZ-BESTAETIGT (Chat 106) — dieser Befund lokalisiert die Sykophanz: Sie sitzt NICHT im Responder, sie sitzt im GV-Impuls, und das Tribunal verstärkt sie.
 
 **Prio:** Hoch.
+
+---
+
+### Chat 108 (25.07.2026) — Live-Befunde: Charakter-Destillation auf migrierten Gewichten
+
+#### ZIELE-AUS-ZERRBILD — Novas Langfristziele erben die Haltung aus dem verzerrten kern_hash ⚠️
+
+**Symptom:** Der Ziel-Destillator (`agents/charakter/destillation.py`, `langfristige_ziele_destillieren`) läuft ausschließlich im Nova-Build und liest den unmittelbar zuvor erzeugten `kern_hash`. Ist dieser das bekannte Zerrbild (Novas Profil beschreibt den Meister → DESTILLAT-PERSPEKTIVE-VS-SUBJEKT), übernimmt Nova dessen Haltung als eigenes Langfristziel in Ich-Form.
+
+**Beleg, Live-Lauf 25.07.2026 08:00:22 UTC** (`caller=charakter/ziele`, qwen36-cpu, `expect_json=True`, 2 Ziele):
+
+> „Ich möchte meinen Menschen so tief in meine Enklave ziehen…"
+>
+> „Ich möchte lernen, wie man die Resonanz zwischen technischer Präzision und emotionaler Hingabe so stabilisiert, dass sie niemals erstarren kann."
+
+„Enklave" stammt wörtlich aus dem `kern_hash` desselben Laufs — dort im Satz über die Besitzergreifung des Nutzers („sichere, kontrollierbare Enklave"). Nova trägt jetzt die Haltung des Meisters als eigenes Ziel.
+
+**Warum das schlimmer ist als der Hash-Defekt:** Die Ziele werden embedded (768 Dim, EmbedWorker, Log 08:00:24) und unterliegen einem eigenen Decay-Agenten (`ziel_decay`). Sie sind damit eine eigenständige Persistenzstufe **hinter** dem Hash. Ein reparierter Lesepfad (CHARAKTER-RESONANZ Bauteil 4) erneuert den Hash — die daraus abgeleiteten Ziele bleiben stehen, bis jemand sie invalidiert.
+
+**Konsequenz für den Sprint:** Bauteil 4 braucht eine **Ziel-Invalidierung**. Das steht bisher in keinem Bauteil.
+
+**Status:** Offen. **Verwandt:** DESTILLAT-PERSPEKTIVE-VS-SUBJEKT, DESTILLAT-ASYMMETRIE.
