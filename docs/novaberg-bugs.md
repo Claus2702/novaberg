@@ -1,6 +1,7 @@
 # Novaberg — Bugs & Limitationen
 
 **Stand:** 25. Juli 2026, Chat 108
+**Gliederung:** Einträge stehen in der Sektion ihres Entdeckungs-Chats und wandern nicht. Nachträge aus späteren Chats tragen ihre Chat-Nummer im Text. Sonst verliert die Sektionsfolge ihre Bedeutung als Zeitachse.
 **Quelle:** Testlauf "Karrierekrise" (200 Prompts) + Gedächtnis-Epic (Chat 11) + Epic 11 Agent-System (Chats 22–32) + Persona Smoke-Tests (Chats 31–32) + RechercheAgent-Test (Chat 35) + Doku-Audit (Chat 36) + PRIO0-Fix + Client-Observability (Chat 37) + Claude API-Test + STREAM1-Fix + Gesprächsvektor (Chat 39) + CharakterIdentitaetAgent + DirektivenAgent + Tribunal Score-System (Chat 40) + Telegram Bot + Zeitparser-Fixes (Chat 41) + CRUD-Härtung + Telegram-Chat-Analyse + DB-Report (Chat 42) + KONTEXT1-Fix + Resume-Bug + Epic 15 Pilot (Chat 43) + Epic 15 Rollout + DELEG-REG Fix + KZG-Klebrigkeit (Chat 44) + RESP-CHAR1 Fix (Chat 45) + CLASSIFY-REJECTED + Gemma4 Live-Tests (Chat 48) + Telegram-Konversation "frecher Charakter" (Chat 49) + RESUME-REJECT Fix + Live-Tests (Chat 50) + Neugier-Konzept + Projektinfrastruktur (Chat 51) + Doku-Alignment + emotions_profil (Chat 52) + Antrieb-Konzept + Dual-Emotion (Chat 53) + HALL2-Fix + Planner-Refactor (Chat 54) + PySide6 verworfen + GTK4-Entscheidung (Chat 55) + GTK4-Client + Panel-Infrastruktur (Chat 56) + Web-Tool-Doku + SEARX1-Diagnose (Chat 57) + Chat 61 (Perzeption-Symmetrie, Akkumulations-Refactor, Paper-Portfolio, Lumi, urllib3-Doppel-Turn beobachtet) + Paper I + urllib3-RETRY + ROUTE-CHAR-NOTIZ + RESP-DEAD + PIXIE-GHOST (Chat 65) + WS-SINGLE Fix + ClientConnection + User-Message-Broadcast (Chat 68) + Dreischicht-Integration + GV-Refactoring + MODUS-LEER + VEKTOR-LEER + AROUSAL-330 + ZIEL-LABEL-LEER Fixes (Chat 72) + Promotion-Pipeline-Audit (Chat 75) + Reducer-Umbau Smoke-Tests (Chat 75) + Chat 79 (THINK-MEM-CONFLICT, CHAR-LZG-LEAK, MIGRATION-PIX-PAIR, MIGRATION-AGENTGRAPH-PAIR, PIX-CLEAN, KZG-CLEANUP) + Doku-Code-Abgleich (Chat 106) + init.sql-Audit (Chat 107)
 
 ---
@@ -1520,11 +1521,21 @@ Disambiguierung erzeugen, die den Loop auslöste: der Crash ist behoben, nicht d
 
 **Teilentlastung, gemessen 25.07.2026:** Der Konsumpfad ist intakt. Nach manuellem `SET hash_dirty:meister:nova 1` lief der Agent im nächsten Intervall (07:55–08:00 UTC), destillierte alle fünf Profile beider Perspektiven, erneuerte die Langfristziele und räumte das Flag (`EXISTS` → 0). Scheduler-Werte korrekt (`interval=600`, `priority=0.3`), Log über 24 h sauber: alle zehn Minuten `Kein hash_dirty fuer meister:nova`, `Agent 'charakter' abgeschlossen`.
 
-**Offen bleibt — Sichtbarkeits-Widerspruch (25.07.2026, eine Sitzung):** `redis-cli KEYS 'hash_dirty:*'` lieferte drei Keys, darunter `hash_dirty:meister:nova`. Der CharakterAgent meldete im selben Zeitraum neunmal (06:05–07:39 UTC) `Kein hash_dirty fuer meister:nova`. Kurz darauf `TYPE hash_dirty:meister:nova` → `none`. TTL scheidet als Erklärung aus: Die verbliebenen `hash_dirty:meister` und `hash_dirty:nova:meister` haben TTL `-1`, der Setzer schreibt also ohne Ablauf.
+**Offen bleibt — das Flag wird nicht eingelöst** (gemessen 12.07. und 25.07.2026, Chat 108):
 
-**Zwei Hypothesen, beide ungeprüft:** (a) Ein unbekannter Löschpfad räumt das Flag, ohne zu destillieren — fünf Setzer sind auditiert (Chat 108), nach Löschern wurde nie gesucht. (b) `redis-cli` und der Agent sehen verschiedene Keyspaces — anderer Client, anderes `db`, oder ein Key-Prefix im Agenten. Gegen (b) spricht, dass die 926 KZG-Keys für beide sichtbar sind; ausgeschlossen ist es nicht.
+| Zeitpunkt | Befund |
+|---|---|
+| 12.07., 06:20 UTC | Letzter erfolgreicher Lauf — `charakter_hash` geschrieben |
+| 12.07., abends | `KEYS hash_dirty:*` zeigt drei Flags, darunter `meister:nova` |
+| 13./16./17.07. | Gespräche: 13 Rohturns, also KZG-Schreibvorgänge (`memory/kzg.py:448` ist Setzer) |
+| 25.07., 06:05–07:39 | Agent meldet neunmal `Kein hash_dirty fuer meister:nova` |
+| 25.07., 07:41 | `TYPE` → `none`; `charakter_hash` unverändert auf 12.07. 06:20 |
 
-**Nächster Schritt:** Audit `agents/charakter/agent.py` — welcher Redis-Client, welches `db`, gibt es einen Prefix, und ist der `get`-Aufruf in ein `try/except` gehüllt, das `WRONGTYPE` schluckt? Parallel: `grep -rn "hash_dirty" novaberg/server/` auf **Löscher** (`delete`/`unlink`), nicht nur auf Setzer.
+Der neue Befund ist nicht „ein Flag verschwand", sondern: An drei Tagen liefen Gespräche, jeder KZG-Schreibvorgang hätte das Flag setzen müssen — dreizehn Tage später ist weder ein Flag da noch wurde destilliert. Entweder feuert der Setzer nicht, oder das Flag verschwindet wiederholt.
+
+TTL scheidet aus: `hash_dirty:meister` und `hash_dirty:nova:meister` haben TTL `-1`.
+
+**Nächster Schritt:** → AUDIT-HASH-DIRTY-SICHTBARKEIT (`backlog.md`).
 
 **Auswirkung, solange ungeklärt:** Der `charakter_hash` altert unbemerkt. 13 Tage lang meldeten ~1900 Läufe Erfolg, während das Destillat aus der Vor-Migrations-Ära stammte. Musterfall für VITALZEICHEN — „fängt, was erfolgreich falsch ist". Die Türklingel (LOG-TUERKLINGEL) fängt das nicht: Es gibt nichts zum Klingeln.
 

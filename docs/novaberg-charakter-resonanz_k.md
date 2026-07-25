@@ -4,6 +4,7 @@
 **Dokument:** Charakter-Resonanz — woraus Novas Charakter entsteht
 **Stand:** 25. Juli 2026, Chat 108 (Schreibpfad live; §2 in Daten belegt; Schreibort der `verbindung`-Zeile neu entworfen; Verbindungstabelle/Verdichten/Lesen offen)
 **Herkunftsvermerk:** Jede Aussage mit Funktionsname, State-Key, Spalte oder Aufrufreihenfolge trägt *auditiert (Chat N)*, *Annahme* oder *überholt (Chat N)*. Ohne Vermerk = Annahme.
+**Zahlen:** Zeitstempel und Stichtage stehen ohne Vorbehalt im Dokument — sie bleiben wahr. Zählungen tragen ihr Messdatum („150 Rohturns, Stand 25.07.2026"), denn sie sind am Tag danach falsch.
 **Pfad:** novaberg/docs/novaberg-charakter-resonanz_k.md
 **Abgrenzung:**
 - Saatgut / explizite Anweisungen → `novaberg-agent-character.md`
@@ -56,7 +57,7 @@ Manche Sätze *handeln* von Nova („das Gegenüber", „die angesprochene Perso
 
 **Damit ist §2 belegt, nicht mehr nur plausibel.** Und die Ursachenzuschreibung in `DESTILLAT-PERSPEKTIVE-VS-SUBJEKT` (bugs.md, „Fehler im destillieren-Prompt") ist zu eng: **Der Prompt ist korrekt, die Eingabe ist es nicht.**
 
-**Quelle vorhanden, Lesepfad bei null (auditiert, Chat 108):** 137 `turn_roh`-Zeilen seit 10.07., keine ohne Paar; JSONB trägt exakt a–d (`user_prompt`, `user_emotion`, `response`, `nova_emotion`). Davon 104 nach dem Kraft-1-Stichtag (→ `TURN-ROH-VOR-KRAFT1-ENTWERTET`). Es existiert **kein Leser**: das einzige `FROM pipeline_log` im gesamten Server ist das `DELETE` der Retention. Bauteil „Lesen" fängt bei null an.
+**Quelle vorhanden, Lesepfad bei null (auditiert, Chat 108):** 150 `turn_roh`-Zeilen seit 10.07. (Stand 25.07.2026), keine ohne Paar; JSONB trägt exakt a–d (`user_prompt`, `user_emotion`, `response`, `nova_emotion`). Davon 111 ab dem Kraft-1-Stichtag 2026-07-11 12:45:21 UTC verwertbar, 39 davor entwertet (→ `TURN-ROH-VOR-KRAFT1-ENTWERTET`). Es existiert **kein Leser**: das einzige `FROM pipeline_log` im gesamten Server ist das `DELETE` der Retention. Bauteil „Lesen" fängt bei null an.
 
 ---
 
@@ -251,7 +252,7 @@ Ein neuer Chat muss diese Zahlen kennen, sonst baut er gegen ein Phantom.
 
 | Speicher | Bestand | Bedeutung |
 |---|---|---|
-| `pipeline_log`, `art='turn_roh'` | **137 Zeilen** (seit 10.07.), keine ohne Paar | **Novas Stimme ist vorhanden.** JSONB trägt a–d vollständig. |
+| `pipeline_log`, `art='turn_roh'` | **150 Zeilen** (seit 10.07., Stand 25.07.2026), keine ohne Paar — davon **111 verwertbar**, 39 vor dem Kraft-1-Stichtag entwertet | **Novas Stimme ist vorhanden.** JSONB trägt a–d vollständig. |
 | Leser auf `pipeline_log` | **null** | Das einzige `FROM pipeline_log` im ganzen Server ist das `DELETE` der Retention. Der Charakter-Pfad schaut nie hinein. |
 | `lzg_knoten` aktiv | `(meister, nova, assistant)` = **231**<br>`(meister, nova, user)` = **186**<br>`(nova, meister, *)` = **0** | Alle Knoten haben **Meister als Subjekt**. Die 231 „assistant"-Knoten sind *Novas Notizen über Meister*, nicht Aussagen über Nova. |
 | KZG (Redis) | `kzg:meister:nova:*` = **926**<br>`kzg:nova:meister:*` = **0** | Dasselbe Bild. |
@@ -375,7 +376,7 @@ Das synaptische Assoziativgedächtnis (Spreading Activation) antwortet auf einen
 
 Der Verdichtungs-Agent (periodisch, analog `synapsen_decay` / `charakter_hash`) läuft deshalb **erschöpfend** über alle erinnerungswürdigen Turns, nicht assoziativ:
 
-1. **Material holen:** ~1000 LZG-Knoten (nach `gewicht_absolut`), über `verbindung.lzg_id → turn_id` die Rohturns.
+1. **Material holen:** ~1000 LZG-Knoten (nach `gewicht_absolut`), über `verbindung.lzg_id → turn_id` die Rohturns. **Nach unten begrenzt durch den Stichtag** `2026-07-11 12:45:21 UTC` (TURN-ROH-VOR-KRAFT1-ENTWERTET): Der Lauf ist erschöpfend *innerhalb* dieses Fensters — oben filtert `gewicht_absolut`, unten der Stichtag. Frühere Rohturns bleiben liegen, sie werden nicht gelesen.
 2. **Bündeln:** Der Prompt frisst nicht 1000 Turns am Stück. Häppchen von ~20 Turns pro LLM-Aufruf.
 3. **Destillieren, pro Bündel und pro Subjekt:**
    > „Das hat der User gesagt: {user_prompt} (Emotion: {user_emotion}).
@@ -435,6 +436,7 @@ Tabelle (§12) + Schreibpfad im Dispatcher (§11.1) + `lzg_id`-Nachtrag in der P
 
 **Bauteil 3 — `verhaltensweisen` + Verdichtungs-Agent.**
 Voraussetzung: **E7** (Gate), E4, E5.
+**Voraussetzung TURN-ROH-VOR-KRAFT1-ENTWERTET:** Der Verdichter liest nur Turns ab `2026-07-11 12:45:21 UTC`. Frühere Rohturns tragen eine Nova-Hälfte ohne Kraft 1 (`emotions_vector` konstant `plateau`, Emotion nur empathie-getrieben). Ohne Untergrenze destilliert Bauteil 3 den Defekt als Charakterzug. *Abnahme:* Der Verdichtungslauf verarbeitet keinen Turn vor dem Stichtag.
 Tabelle (§12) + periodischer Agent nach §13 (erschöpfend, gebündelt, zwei Subjekte, Dedup auf die Partition (`user_id`, `character_id`, `beobachter`) eingegrenzt).
 *Abnahme:* Es existieren Zeilen in `verhaltensweisen` mit `beobachter='assistant'` im Paar `(meister, nova)` — **die ersten Datensätze im System, deren Inhalt Novas Verhalten ist** (nicht: Novas Blick auf Meister). Belegzahl > 1 bei wiederkehrenden Mustern, gegen `COUNT(verhaltens_beleg)` prüfbar.
 
