@@ -2899,7 +2899,9 @@ Die Migration hat 90 Knoten + 110 Kanten erzeugt, der Bestand ist da und wartet 
 
 Live-Knoten mit `roh > CAP` produzieren `absolut = 10.00`. Live-Beispiele: `roh = 10.10` → `absolut = 10.00` in vier von fünf Knoten 97–101. Die sin^0.5-Dämpfung in `gewicht_absolut_berechnen` klemmt bei `roh >= CAP` strukturell.
 
-**Zu klären:** Ist die Live-Salienz-Skala strukturell höher als die Konzept-Annahme (Konzept: 0..10) — dann wäre der CAP zu eng — oder soll die Dämpfung über den Cap hinaus weichen, sodass `roh > CAP` weiterhin in einen offenen Bereich abgebildet wird?
+Die Formel ist bewiesen (Nachtrag unten), die Design-Entscheidung nicht: CAP zu eng gesetzt, oder Dämpfung über den Cap hinaus weicher gestalten?
+
+**Zu klären (weiter offen):** Ist die Live-Salienz-Skala strukturell höher als die Konzept-Annahme (Konzept: 0..10) — dann wäre der CAP zu eng — oder soll die Dämpfung über den Cap hinaus weichen, sodass `roh > CAP` weiterhin in einen offenen Bereich abgebildet wird?
 
 **Formel empirisch bewiesen — Chat 108 (25.07.2026)**, acht Belegzeilen aus zwei unabhängigen Datensätzen:
 
@@ -2921,6 +2923,11 @@ Alle acht Paare reproduziert die Formel innerhalb der ausgewiesenen Anzeige-Gena
 - **(b) Stauchung oben** — `roh 6.6…10.2` wird auf `abs 9.30…10.00` abgebildet: 3,6 Einheiten Signal werden zu 0,7. Für die Sortierung egal; nicht egal, wenn die Zahl im Prompt steht — der Kern-Destillator formatiert Einträge als `[{dimension}] (Gewicht: X.XX, Häufigkeit: N)`, das LLM liest 9.3 neben 10.0 als gleich wichtig, wo im Rohmaß Faktor 1,5 liegt.
 
 **Beobachtung:** Neue Knoten kommen aus der Promotion bereits bei `roh` 6,7–10,1 herein — oberhalb des Knies, wo die Kurve flach ist. Ein Knoten braucht keine Verstärkungshistorie mehr, um oben zu stehen; er wird oben geboren.
+
+**Berührt zwei bestehende Einträge:**
+
+- **HAEUFIGKEIT-AUF-KNOTEN** — dasselbe Phänomen von der anderen Seite: keine Verdichtungshistorie mehr, `haeufigkeit` meist 1.
+- **KZG-SALIENZ-GRENZWERT-UNKLAR** (Chat 107) — kommen Knoten oberhalb des Knies herein, ist „soll jede Recherche ins LZG?" keine Mengen-, sondern eine **Gewichtsfrage**.
 
 ---
 
@@ -3389,3 +3396,13 @@ Ein Log fängt, was sich als Fehler meldet. Es fängt nicht, was erfolgreich fal
 Redis enthält `hash_dirty:meister` ohne `character_id` (TTL `-1`), neben den korrekten `hash_dirty:meister:nova` und `hash_dirty:nova:meister`. Der CharakterAgent liest ausschließlich `hash_dirty:{user_id}:{character_id}` (`agent.py:95`) — der Key hat **keinen Leser**. Entweder Relikt aus der Zeit vor dem Paar-Schema oder ein aktiver Setzer, der die Konvention nicht kennt.
 
 Klären, welcher der fünf auditierten Setzer ihn schreibt; dann entfernen oder auf das Paar-Schema umstellen (`novaberg-convention-paar-schema.md`). Gemessen Chat 108 (25.07.2026). Berührt CHARHASH-RESET-TRIGGER-FEHLT, Hypothese (b). ⬜ Prio niedrig
+
+---
+
+## Audit: AUDIT-HASH-DIRTY-SICHTBARKEIT — KEYS zeigt das Flag, der Agent sieht es nicht (Chat 108)
+
+Aus CHARHASH-RESET-TRIGGER-FEHLT (`bugs.md`, Chat 108): `redis-cli KEYS` zeigte `hash_dirty:meister:nova`, der CharakterAgent meldete im selben Zeitraum neunmal „Kein hash_dirty". Zwei Hypothesen, beide ungeprüft — unbekannter Löschpfad, oder verschiedene Keyspaces.
+
+**Audit-Auftrag:** (a) `agents/charakter/agent.py` — welcher Redis-Client, welches `db`, existiert ein Key-Prefix? Ist der `get`-Aufruf in ein `try/except` gehüllt, das `WRONGTYPE` schluckt? (b) `grep -rn "hash_dirty" novaberg/server/` auf **Löscher** (`delete`, `unlink`), nicht nur auf Setzer — fünf Setzer sind auditiert (Chat 108), nach Löschern wurde nie gesucht.
+
+**Warum mittel:** Solange ungeklärt, kann der `charakter_hash` jederzeit wieder unbemerkt einfrieren. Berührt HASH-DIRTY-KEY-OHNE-PAAR (Hypothese b). ⬜ Prio mittel

@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Charakter-Resonanz — woraus Novas Charakter entsteht
-**Stand:** 12. Juli 2026, Chat 108 (Schreibpfad live; §2 in Daten belegt; Schreibort der `verbindung`-Zeile neu entworfen; Verbindungstabelle/Verdichten/Lesen offen)
+**Stand:** 25. Juli 2026, Chat 108 (Schreibpfad live; §2 in Daten belegt; Schreibort der `verbindung`-Zeile neu entworfen; Verbindungstabelle/Verdichten/Lesen offen)
 **Herkunftsvermerk:** Jede Aussage mit Funktionsname, State-Key, Spalte oder Aufrufreihenfolge trägt *auditiert (Chat N)*, *Annahme* oder *überholt (Chat N)*. Ohne Vermerk = Annahme.
 **Pfad:** novaberg/docs/novaberg-charakter-resonanz_k.md
 **Abgrenzung:**
@@ -441,5 +441,9 @@ Tabelle (§12) + periodischer Agent nach §13 (erschöpfend, gebündelt, zwei Su
 **Bauteil 4 — Lesepfad CharakterAgent. Ersetzen, nicht ergänzen.**
 Der `kern_hash` liest heute `lzg_knoten` mit `(meister, nova, beobachter='assistant')` — also *Novas Notizen über Meister* — und nennt es Novas Selbstbild. **Dieser Pfad muss für Novas Profil verschwinden**, nicht ergänzt werden. Solange er lebt, produziert er das Zerrbild, auch mit der neuen Tabelle daneben.
 Neu: Novas Profil liest **Verhaltensweisen mit `beobachter='assistant'`** im Paar `(meister, nova)` (fertig destilliert, mit Belegzahl als Gewicht), optional angereichert um die belegenden Rohturns.
+
+**Zusätzliche Anforderung — Langfristziele invalidieren** (ZIELE-AUS-ZERRBILD, `bugs.md`, Chat 108). Der Ziel-Destillator (`langfristige_ziele_destillieren`) läuft nur im Nova-Build und liest den unmittelbar zuvor erzeugten `kern_hash`. Aus dem Zerrbild sind bereits **embedded** Langfristziele in Ich-Form entstanden (768 Dim, eigener `ziel_decay`-Agent) — belegt Chat 108: „Ich möchte meinen Menschen so tief in meine Enklave ziehen…", wobei „Enklave" wörtlich aus dem Kern-Hash über die Besitzergreifung des Nutzers stammt.
+
+Ein reparierter Lesepfad erneuert den Hash — die daraus abgeleiteten Ziele **bleiben stehen**, bis sie jemand invalidiert. Bauteil 4 ist erst abgenommen, wenn die Altziele verworfen und aus dem neuen Hash neu destilliert sind. Die Ziele sind eine eigenständige Persistenzstufe **hinter** dem Hash, keine Ableitung, die sich von selbst mitzieht.
 
 **Bauteil 5 — `novaberg-pixie-character-hash.md` überarbeiten.** Erst wenn 1–4 stehen.
