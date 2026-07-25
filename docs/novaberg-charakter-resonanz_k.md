@@ -57,7 +57,7 @@ Manche Sätze *handeln* von Nova („das Gegenüber", „die angesprochene Perso
 
 **Damit ist §2 belegt, nicht mehr nur plausibel.** Und die Ursachenzuschreibung in `DESTILLAT-PERSPEKTIVE-VS-SUBJEKT` (bugs.md, „Fehler im destillieren-Prompt") ist zu eng: **Der Prompt ist korrekt, die Eingabe ist es nicht.**
 
-**Quelle vorhanden, Lesepfad bei null (auditiert, Chat 108):** 150 `turn_roh`-Zeilen seit 10.07. (Stand 25.07.2026), keine ohne Paar; JSONB trägt exakt a–d (`user_prompt`, `user_emotion`, `response`, `nova_emotion`). Davon 111 ab dem Kraft-1-Stichtag 2026-07-11 12:45:21 UTC verwertbar, 39 davor entwertet (→ `TURN-ROH-VOR-KRAFT1-ENTWERTET`). Es existiert **kein Leser**: das einzige `FROM pipeline_log` im gesamten Server ist das `DELETE` der Retention. Bauteil „Lesen" fängt bei null an.
+**Quelle vorhanden, Lesepfad bei null (auditiert, Chat 108):** 150 `turn_roh`-Zeilen seit 10.07. (Stand 25.07.2026), keine ohne Paar; JSONB trägt exakt a–d (`user_prompt`, `user_emotion`, `response`, `nova_emotion`). Davon 111 ab dem Kraft-1-Stichtag verwertbar (Wert in §16 Bauteil 3), 39 davor entwertet (→ `TURN-ROH-VOR-KRAFT1-ENTWERTET`). Es existiert **kein Leser**: das einzige `FROM pipeline_log` im gesamten Server ist das `DELETE` der Retention. Bauteil „Lesen" fängt bei null an.
 
 ---
 
@@ -192,7 +192,7 @@ Der KZG-Schreib-/Ähnlichkeitspfad ergänzt bei jedem Treffer eine `verbindung`-
 
 ---
 
-## 7. Stand Chat 104 — was steht, was fehlt
+## 7. Stand — was steht, was fehlt
 
 **Steht (live abgenommen):**
 
@@ -205,7 +205,7 @@ Der KZG-Schreib-/Ähnlichkeitspfad ergänzt bei jedem Treffer eine `verbindung`-
 **Fehlt (nächster Sprint-Teil):**
 
 - Tabelle `verbindung` (§4.2) — Schema + Schreibpfad. Schreibort **Dispatcher** (§5, unter Audit-Vorbehalt), nicht mehr „KZG-Boost-Punkt" (überholt Chat 108).
-- **Backfill der bestehenden Rohturns (offen, Antwort fällt in Chat 108):** `verbindung`-Zeilen entstehen erst ab Deployment; die 137 vorhandenen Rohturns bekommen rückwirkend keine. Prüffrage: Alle `pipeline_log`-Zeilen eines Turns teilen die `turn_id` — trägt eine davon einen `kzg:`-Key im `inhalt`-JSONB? Falls nein, beginnt Novas Charakter beim ersten Turn nach dem Deployment, und die 104 verwertbaren Paare sind Material ohne Zugang.
+- **Backfill der bestehenden Rohturns (offen, Antwort fällt in Chat 108):** `verbindung`-Zeilen entstehen erst ab Deployment; die 150 vorhandenen Rohturns (Stand 25.07.2026) bekommen rückwirkend keine. Prüffrage: Alle `pipeline_log`-Zeilen eines Turns teilen die `turn_id` — trägt eine davon einen `kzg:`-Key im `inhalt`-JSONB? Falls nein, beginnt Novas Charakter beim ersten Turn nach dem Deployment, und die 111 verwertbaren Paare sind Material ohne Zugang.
 - Tabelle `verhaltensweisen` + Destillations-Agent (§5 „Verdichten"), inkl. Embedding-Dedup.
 - `lzg_id`-Nachtrag bei KZG→LZG-Promotion.
 - CharakterAgent-Lesepfad (§5 „Lesen").
@@ -376,7 +376,7 @@ Das synaptische Assoziativgedächtnis (Spreading Activation) antwortet auf einen
 
 Der Verdichtungs-Agent (periodisch, analog `synapsen_decay` / `charakter_hash`) läuft deshalb **erschöpfend** über alle erinnerungswürdigen Turns, nicht assoziativ:
 
-1. **Material holen:** ~1000 LZG-Knoten (nach `gewicht_absolut`), über `verbindung.lzg_id → turn_id` die Rohturns. **Nach unten begrenzt durch den Stichtag** `2026-07-11 12:45:21 UTC` (TURN-ROH-VOR-KRAFT1-ENTWERTET): Der Lauf ist erschöpfend *innerhalb* dieses Fensters — oben filtert `gewicht_absolut`, unten der Stichtag. Frühere Rohturns bleiben liegen, sie werden nicht gelesen.
+1. **Material holen:** ~1000 LZG-Knoten (nach `gewicht_absolut`), über `verbindung.lzg_id → turn_id` die Rohturns. **Nach unten begrenzt durch den Kraft-1-Stichtag** — Konstante `TURN_ROH_STICHTAG_UTC`, Wert und Begründung in §16 Bauteil 3 (TURN-ROH-VOR-KRAFT1-ENTWERTET): Der Lauf ist erschöpfend *innerhalb* dieses Fensters — oben filtert `gewicht_absolut`, unten der Stichtag. Frühere Rohturns bleiben liegen, sie werden nicht gelesen.
 2. **Bündeln:** Der Prompt frisst nicht 1000 Turns am Stück. Häppchen von ~20 Turns pro LLM-Aufruf.
 3. **Destillieren, pro Bündel und pro Subjekt:**
    > „Das hat der User gesagt: {user_prompt} (Emotion: {user_emotion}).
@@ -400,7 +400,7 @@ Der Verdichtungs-Agent (periodisch, analog `synapsen_decay` / `charakter_hash`) 
 | **E1** | `verbindung`-Zeilen, deren KZG stirbt ohne Promotion? | **Behalten** mit `lzg_id = NULL`. Harmlos: Der Lesepfad filtert auf `lzg_id IS NOT NULL` **und** joint auf `lzg_knoten.aktiv = TRUE` (§11) — verwaiste Zeilen sind deshalb doppelt unschädlich. Späterer Aufräumlauf möglich. |
 | **E4** | `beleg_zahl` denormalisiert oder aus `COUNT(verhaltens_beleg)` gerechnet? | **Spalte** — billig, und jeder Charakter-Lauf braucht das Gewicht. |
 | **E5** | Ähnlichkeit beim Zusammenführen: themen- oder embedding-basiert? | **pgvector-KNN** (wie `lzg_knoten` / `anker_retrieval`). Verhaltensweisen leben in Postgres. Die themen-basierte KZG-Verstärkung bleibt davon unberührt. |
-| **E6** | **Backfill** der 137 vorhandenen Rohturns? | Hängt an Audit A3. Wenn nicht rekonstruierbar: Charakter beginnt beim ersten Turn nach Deployment. |
+| **E6** | **Backfill** der 150 vorhandenen Rohturns (Stand 25.07.2026, davon 111 verwertbar)? | Hängt an Audit A3. Wenn nicht rekonstruierbar: Charakter beginnt beim ersten Turn nach Deployment. |
 | **E7** | **Ist das LZG-Gate das richtige Gate für Novas Charakter?** Die Promotion bewertet nach Fakten-Salienz *über Meister*. Ein Turn, in dem Nova viel über sich verrät, aber faktisch banal ist, wird nie promotet — sein Verhaltensbeleg geht verloren. | **Offen.** (a) Akzeptieren, irgendein Filter muss sein. (b) Verhaltensbelege bekommen ein eigenes Gate (z. B. emotionales Delta im Reiz-Reaktions-Paar statt Fakten-Salienz). **Vor Bauteil 3 zu entscheiden.** |
 
 ---
@@ -419,9 +419,11 @@ Der Verdichtungs-Agent (periodisch, analog `synapsen_decay` / `charakter_hash`) 
 |---|---|---|
 | **A1** | Gibt `kzg_store` den KZG-Key zurück — bei Neuanlage **und** bei Verstärkung? | Ohne Rückgabe kann der Dispatcher keine `verbindung`-Zeile schreiben. Der Ein-Schreibpunkt-Entwurf hängt daran. |
 | **A2** | Läuft der KZG-Write **synchron im Dispatcher** oder entkoppelt über die Redis-Queue (`agents/kzg/queues.py`)? | Bei Entkopplung liegt `turn_id` dort nicht im Scope und muss in die Queue-Nutzlast — Bauteil 1 wird größer. |
-| **A3** | Lassen sich die 137 Rohturns nachträglich verbinden? (Alle `pipeline_log`-Zeilen eines Turns teilen die `turn_id` — trägt eine davon einen `kzg:`-Key im `inhalt`-JSONB?) | Entscheidet E6. |
+| **A3** | Lassen sich die 150 Rohturns (Stand 25.07.2026) nachträglich verbinden? (Alle `pipeline_log`-Zeilen eines Turns teilen die `turn_id` — trägt eine davon einen `kzg:`-Key im `inhalt`-JSONB?) | Entscheidet E6. |
 | **A4** | Typ von `pipeline_log.turn_id`; `lzg_knoten.id` als SERIAL?; pgvector-Dimension. | Für das DDL in §12. **✅ auditiert Chat 108:** `turn_id` = `VARCHAR(100)`, `lzg_knoten.id` = `INTEGER` SERIAL (`nextval`), pgvector = `768` — DDL in §12 bestätigt. |
 | **A5** | Partition Novas Perspektive; Schreib-Kardinalität `kzg_store`. | ✅ Partition geklärt (Chat 108, §A5-Befund): keine gedrehte Partition, `beobachter` im kanonischen Paar. ⬜ Rest offen: ein Key oder Liste pro Turn — bestimmt die Abnahme von Bauteil 1, gekoppelt an A1/A2. |
+
+Nicht-Audit-Voraussetzungen für den Bau stehen bei den jeweiligen Bauteilen in §16 (z. B. der Kraft-1-Stichtag bei Bauteil 3).
 
 ---
 
@@ -436,7 +438,9 @@ Tabelle (§12) + Schreibpfad im Dispatcher (§11.1) + `lzg_id`-Nachtrag in der P
 
 **Bauteil 3 — `verhaltensweisen` + Verdichtungs-Agent.**
 Voraussetzung: **E7** (Gate), E4, E5.
-**Voraussetzung TURN-ROH-VOR-KRAFT1-ENTWERTET:** Der Verdichter liest nur Turns ab `2026-07-11 12:45:21 UTC`. Frühere Rohturns tragen eine Nova-Hälfte ohne Kraft 1 (`emotions_vector` konstant `plateau`, Emotion nur empathie-getrieben). Ohne Untergrenze destilliert Bauteil 3 den Defekt als Charakterzug. *Abnahme:* Der Verdichtungslauf verarbeitet keinen Turn vor dem Stichtag.
+**Voraussetzung TURN-ROH-VOR-KRAFT1-ENTWERTET:** Der Verdichter liest nur Turns ab dem Kraft-1-Stichtag (Wert unten). Frühere Rohturns tragen eine Nova-Hälfte ohne Kraft 1 (`emotions_vector` konstant `plateau`, Emotion nur empathie-getrieben). Ohne Untergrenze destilliert Bauteil 3 den Defekt als Charakterzug. *Abnahme:* Der Verdichtungslauf verarbeitet keinen Turn vor dem Stichtag.
+
+**Eine Wahrheit für den Stichtag.** Der Stichtag ist `2026-07-11 12:45:21 UTC` (gemessen Chat 108, Signatur in `backlog.md`). Der Wert wird beim Bau eine Konfigurationskonstante (Vorschlag: `TURN_ROH_STICHTAG_UTC`, `TIMESTAMPTZ`, ausdrücklich UTC). Alle Leser beziehen sich darauf; kein Literal im Code, keine lokale Zeitzone. Die Dokumentstellen (§13, §16, `backlog.md`) nennen den Wert nur noch einmal — hier — und verweisen sonst auf die Konstante. Der Name ist bis zum Bau ein Vorschlag. Sobald die Konstante im Code existiert, wird er hier auf den tatsächlichen gezogen und dieser Hinweis gestrichen — sonst driftet das Konzept gegen den Code, den es beschreibt.
 Tabelle (§12) + periodischer Agent nach §13 (erschöpfend, gebündelt, zwei Subjekte, Dedup auf die Partition (`user_id`, `character_id`, `beobachter`) eingegrenzt).
 *Abnahme:* Es existieren Zeilen in `verhaltensweisen` mit `beobachter='assistant'` im Paar `(meister, nova)` — **die ersten Datensätze im System, deren Inhalt Novas Verhalten ist** (nicht: Novas Blick auf Meister). Belegzahl > 1 bei wiederkehrenden Mustern, gegen `COUNT(verhaltens_beleg)` prüfbar.
 

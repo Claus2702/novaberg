@@ -1594,3 +1594,5 @@ Lumi ist ein Schnittlauch aus dem Supermarkt. Er ist eingegangen.
 **Konsequenz für den Sprint:** Bauteil 4 braucht eine **Ziel-Invalidierung**. Das steht bisher in keinem Bauteil.
 
 **Status:** Offen. **Verwandt:** DESTILLAT-PERSPEKTIVE-VS-SUBJEKT, DESTILLAT-ASYMMETRIE.
+
+**Verwandt: TURN-ROH-VOR-KRAFT1-ENTWERTET** (`backlog.md`). Dieselbe Klasse: eine Persistenzstufe, die einen Defekt über seine Reparatur hinaus konserviert. Dort die Rohturns, hier die embedded Langfristziele.

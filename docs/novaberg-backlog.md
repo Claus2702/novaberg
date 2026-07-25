@@ -434,7 +434,7 @@ Sammelposten aus zwei Audits in Chat 88 — dem allgemeinen Code-Audit zum Synap
 | INTENT-TOTE-ZWEIGE | `gespraechsvektor.py:54` prüft `intent in ("begruessung","meta","system")` — nur `meta` ist live erreichbar; kein Producer liefert je `begruessung` oder `system`. Auch `_farbe_intent` kennt `begruessung`. Offene Frage vor dem Aufräumen: SOLL ein Begrüßungs-Turn vom GV ausgenommen werden? Heute kommt er als `intent=smalltalk` durch und wird voll gerechnet. | ⬜ Prio niedrig |
 | SILENT-SKIP-EI-DEFAULTS | 39 von 41 `state.get("external"/"internal")`-Stellen fallen bei None still auf Neutral-Defaults (Audit Chat 105); nur `ei_calc_persist` (error) und der `turn_roh`-Guard (warning) sind laut. Steht gegen `lesson_l_silent-skip`. `personality.md` §5 empfiehlt das Muster noch. | ⬜ Prio mittel |
 | DIRECTIVE-DATACLASS | `InternalPersonality.directives` ist `list[dict]` mit implizitem Schema `{anweisung, kontext}`. Drei Fremd-Leser lesen die Keys von Hand (`corrector.py:49`, `tribunal.py:127`, `responder.py:465`). Kandidat für eine `Directive`-dataclass — Gegenargument: nur zwei Felder, ein Loader (§11-Faustregel). | ⬜ Prio niedrig |
-| TURN-ROH-VOR-KRAFT1-ENTWERTET | **Stichtag gemessen (Chat 108, 25.07.2026): 2026-07-11 12:45:21 UTC.** Der Anker ist nicht die Uhr, sondern die Signatur des Defekts: Vor diesem Zeitpunkt ist `nova_emotion.emotions_vector` in allen Rohturns konstant `plateau`; ab 12:45:21 variiert er über fünf Werte. Passt zum Fix-Commit `e54092d` (11.07., 12:29:05 UTC) plus Gesprächspause für Rebuild und Neustart.<br><br>**Konservativ gewählt:** Die drei Turns 12:39–12:43 liegen nach dem Deployment, sind aber `plateau` — ohne Beweis, dass Kraft 1 rechnete. Sie fallen mit heraus.<br><br>**Bestand (Stand 25.07.2026):** 150 Rohturns gesamt, 39 vor dem Stichtag (entwertet, nicht löschen — die Rohworte bleiben wertvoll), 111 danach verwertbar. Die frühere Angabe „40 vor ~12:38" war eine Schätzung und lag um eine Zeile daneben; die Menge vor dem Stichtag ist eingefroren und ändert sich nicht mehr.<br><br>**Anforderung:** Die Verhaltensweisen-Destillation (CHARAKTER-RESONANZ Bauteil 3, nicht „Teil 3") liest ausschließlich Turns ab dem Stichtag. Sonst destilliert sie den Defekt und schreibt ihn als Charakterzug fest. | ⬜ Prio hoch |
+| TURN-ROH-VOR-KRAFT1-ENTWERTET | Stichtag für die Verhaltensweisen-Destillation, gemessen Chat 108 — Volltext im Abschnitt „Landmine: TURN-ROH-VOR-KRAFT1-ENTWERTET — Sperrvermerk für die Verhaltensweisen-Destillation (Chat 105, Stichtag gemessen Chat 108)". | ⬜ Prio hoch |
 | ZIEL-DECAY-FORMEL-KUMULATIV | Zeitbasis `erstellt_am`, Multiplikand der bereits decayte `motivation`-Wert, Ergebnis zurückgeschrieben → kumuliert zu `exp(-r·Σn)`, quadratischer Exponent. Router-Eintrag BEWUSST nicht gesetzt (5 von 5 Zielen wären gefallen, Dry-Run) — der Router-Miss ist die Sicherung. Fix braucht Anker-Feld (`motivation_absolut` analog `gewicht_absolut`) → zeitabsolut + idempotent wie `synapsen_decay`. | ⬜ Prio hoch |
 | ZIEL-DECAY-TYP-FILTER | `ziel_decay` überspringt nur `langfristig`; auch `kurzfristig` wird mit der mittelfristigen HWZ (14 d) decayt. | ⬜ Prio mittel |
 | ZIEL-DECAY-DOKU-LUEGT | Docstring sagt zweimal `aktualisiert_am`, Code nutzt `erstellt_am`; `ziele_aktive_laden` selektiert `aktualisiert_am` nicht einmal. | ⬜ Prio niedrig |
@@ -3406,3 +3406,21 @@ Aus CHARHASH-RESET-TRIGGER-FEHLT (`bugs.md`, Chat 108): `redis-cli KEYS` zeigte 
 **Audit-Auftrag:** (a) `agents/charakter/agent.py` — welcher Redis-Client, welches `db`, existiert ein Key-Prefix? Ist der `get`-Aufruf in ein `try/except` gehüllt, das `WRONGTYPE` schluckt? (b) `grep -rn "hash_dirty" novaberg/server/` auf **Löscher** (`delete`, `unlink`), nicht nur auf Setzer — fünf Setzer sind auditiert (Chat 108), nach Löschern wurde nie gesucht.
 
 **Warum mittel:** Solange ungeklärt, kann der `charakter_hash` jederzeit wieder unbemerkt einfrieren. Berührt HASH-DIRTY-KEY-OHNE-PAAR (Hypothese b). ⬜ Prio mittel
+
+---
+
+## Landmine: TURN-ROH-VOR-KRAFT1-ENTWERTET — Sperrvermerk für die Verhaltensweisen-Destillation (Chat 105, Stichtag gemessen Chat 108)
+
+Kein Defekt — heute liest niemand `turn_roh`. Gehört zu den Bau-Vorbedingungen von CHARAKTER-RESONANZ Bauteil 3. Aus der Übersichtstabelle in §7 hierher gehoben (Chat 108), dort bleibt eine Verweiszeile.
+
+**Landmine — SPERRVERMERK für den Verdichtungs-Agenten.** Ohne Untergrenze läuft die Destillation *erfolgreich* und schreibt den Defekt als Charakterzug fest. Nichts meldet einen Fehler — Musterfall für VITALZEICHEN.
+
+**Stichtag gemessen (Chat 108, 25.07.2026):** Wert und Konstanten-Vorschlag stehen in `novaberg-charakter-resonanz_k.md` §16 Bauteil 3 („Eine Wahrheit für den Stichtag", `TURN_ROH_STICHTAG_UTC`) — hier absichtlich nicht wiederholt, damit die Angabe nicht an zwei Stellen driftet.
+
+**Der Anker ist nicht die Uhr, sondern die Signatur des Defekts:** Vor dem Stichtag ist `nova_emotion.emotions_vector` in allen Rohturns konstant `plateau`; ab dem Stichtag variiert er über fünf Werte (`plateau`, `eskalation`, `abkuehlung`, `aufbluehen`, `absturz`). Passt zum Fix-Commit `e54092d` (11.07., 12:29:05 UTC) plus Gesprächspause für Rebuild und Neustart.
+
+**Konservativ gewählt:** Die drei Turns 12:39–12:43 liegen nach dem Deployment, sind aber `plateau` — ohne Beweis, dass Kraft 1 rechnete. Sie fallen mit heraus.
+
+**Bestand (Stand 25.07.2026):** 150 Rohturns gesamt, 39 vor dem Stichtag (entwertet, **nicht löschen** — die Rohworte bleiben wertvoll), 111 danach verwertbar. Die frühere Angabe „40 vor ~12:38" war eine Schätzung und lag um eine Zeile daneben; die Menge vor dem Stichtag ist eingefroren und ändert sich nicht mehr.
+
+**Anforderung:** Die Verhaltensweisen-Destillation (CHARAKTER-RESONANZ Bauteil 3, nicht „Teil 3") liest ausschließlich Turns ab dem Stichtag. Sonst destilliert sie den Defekt und schreibt ihn als Charakterzug fest. ⬜ Prio hoch
