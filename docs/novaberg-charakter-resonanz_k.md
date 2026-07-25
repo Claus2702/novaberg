@@ -2,7 +2,8 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Charakter-Resonanz — woraus Novas Charakter entsteht
-**Stand:** 11. Juli 2026, Chat 104 (Schreibpfad implementiert + live abgenommen; Verbindungstabelle/Verdichten/Lesen offen)
+**Stand:** 12. Juli 2026, Chat 108 (Schreibpfad live; §2 in Daten belegt; Schreibort der `verbindung`-Zeile neu entworfen; Verbindungstabelle/Verdichten/Lesen offen)
+**Herkunftsvermerk:** Jede Aussage mit Funktionsname, State-Key, Spalte oder Aufrufreihenfolge trägt *auditiert (Chat N)*, *Annahme* oder *überholt (Chat N)*. Ohne Vermerk = Annahme.
 **Pfad:** novaberg/docs/novaberg-charakter-resonanz_k.md
 **Abgrenzung:**
 - Saatgut / explizite Anweisungen → `novaberg-agent-character.md`
@@ -40,6 +41,23 @@ Dauerhaft überlebt nur die **destillierte Ableitung** (LZG-Fakten, Hashes, Ziel
 
 **Der Chat-103-Destillations-Fix** (Perspektive/Deutung/Name, siehe `pixie-character-hash.md`) verbessert den *Leser*, ist aber auf dieser Datenlage nicht hinreichend — er kann kein Selbstbild erzeugen, weil die Quelle fehlt. Verwandte Backlog-/Bug-Punkte: `NOVA-STIMME-NICHT-PERSISTENT`, `DESTILLAT-PERSPEKTIVE-VS-SUBJEKT`, `kern_hash beschreibt User statt Nova`.
 
+### 2.1 Beleg (gemessen, Chat 108)
+
+`lzg_knoten`, `aktiv`, `beobachter='assistant'`, `ORDER BY gewicht_absolut DESC` — exakt das Feld, nach dem die Destillation rankt. **Fünfzehn von fünfzehn Top-Knoten haben den Nutzer als grammatisches Subjekt.** Keine Zeile mit Nova als Handelnder, kein Wort von Nova:
+10.000  Der Nutzer beobachtet dich.
+9.988  Der Nutzer fragt, ob ihm verziehen wird.
+9.552  Der Nutzer möchte den Agenten besonders gut hegen und pflegen.
+9.309  Der Nutzer bezeichnet die angesprochene Person als sein kleines Mädchen.
+8.262  Die Temperaturen liegen morgen voraussichtlich zwischen 0 und 18 Grad.
+
+Manche Sätze *handeln* von Nova („das Gegenüber", „die angesprochene Person") — aber der Nutzer ist der Täter, Nova das Objekt.
+
+**Der Prompt ist repariert und scheitert trotzdem.** `KERN_HASH_PROMPT` (verbatim gelesen, Chat 108) trägt den Chat-103-Fix: „Nicht WORÜBER {traeger} spricht charakterisiert {traeger}, sondern WIE." Der Prompt verlangt das WIE — die Quelle trägt kein WIE: kein Satzbau, kein Wort, keine Emotion von Nova. Sie trägt nur WORÜBER, und WORÜBER ist der Nutzer. Das LLM nimmt das Einzige, was da ist, und klebt Novas Namen darauf.
+
+**Damit ist §2 belegt, nicht mehr nur plausibel.** Und die Ursachenzuschreibung in `DESTILLAT-PERSPEKTIVE-VS-SUBJEKT` (bugs.md, „Fehler im destillieren-Prompt") ist zu eng: **Der Prompt ist korrekt, die Eingabe ist es nicht.**
+
+**Quelle vorhanden, Lesepfad bei null (auditiert, Chat 108):** 137 `turn_roh`-Zeilen seit 10.07., keine ohne Paar; JSONB trägt exakt a–d (`user_prompt`, `user_emotion`, `response`, `nova_emotion`). Davon 104 nach dem Kraft-1-Stichtag (→ `TURN-ROH-VOR-KRAFT1-ENTWERTET`). Es existiert **kein Leser**: das einzige `FROM pipeline_log` im gesamten Server ist das `DELETE` der Retention. Bauteil „Lesen" fängt bei null an.
+
 ---
 
 ## 3. Das Reiz-Reaktions-Paar
@@ -50,10 +68,12 @@ Die kleinste Charakter-Einheit ist **ein Turn als Paar** aus vier Größen:
 |-------|--------|------------------------|
 | a) User-Input (Wortlaut) | Eingang | verfügbar |
 | b) User-Emotion (Sektor/arousal/vector) | EI-Schicht, `external.emotion` | verfügbar |
-| c) Nova-Antwort (Wortlaut) | Responder, `final_response` | verfügbar |
+| c) Nova-Antwort (Wortlaut) | Responder, `state["response"]` | verfügbar |
 | d) Nova-Emotion (Sektor/arousal/vector) | EI-Schicht, `internal.emotion` | verfügbar |
 
-Alle vier liegen zum Schreibzeitpunkt vor: Graph-Reihenfolge `ei_calc → thinker → responder → reducer`; der Reducer schreibt nach dem Responder, `internal.emotion` und `final_response` sind dann gesetzt. Dual-Emotion ist getrennt (external = Nutzer, internal = Nova), beide werden pro Turn berechnet.
+**Überholt (Chat 104, auditiert).** Die ursprüngliche Annahme lautete: „Graph-Reihenfolge `ei_calc → thinker → responder → reducer`; der Reducer schreibt nach dem Responder." Das ist **falsch**. Der Live-CharacterGraph läuft `… → enricher → reducer → router → … → responder → …`: Der Reducer steht an Position 4, **vor** dem Responder, und sieht `state["response"]` nie. Einen Key `final_response` gibt es nicht.
+
+**Korrekt (auditiert, Chat 104):** Letzter Node mit allen vier Größen gleichzeitig ist der **Dispatcher** — dort ist `internal.emotion` nach `ei_calc_persist` final konsolidiert, und er ist ohnehin der Persistenz-Node. Dort schreibt seit Chat 104 der `turn_roh`-Eintrag. Dual-Emotion ist getrennt (external = Nutzer, internal = Nova), beide werden pro Turn berechnet; die maßgebliche Nova-Emotion entsteht in `perzeption_assistant` **nach** der Antwort.
 
 **Warum die Emotion zwingend dazugehört:** Der Wortlaut allein ist mehrdeutig. „Na super." ist Freude oder Sarkasmus — derselbe Text, entgegengesetzter Charakter. Erst Novas Emotionszustand *neben* der Äußerung gibt den Worten eine Stimme. Und erst *beide* Emotionen (Reiz und Reaktion) zeigen das Delta, aus dem sich der Charakterzug liest.
 
@@ -95,15 +115,21 @@ verbindung
   turn_id            → roher Turn im pipeline_log
   kzg_id             → verdichteter KZG-Eintrag (nullable)
   lzg_id             → LZG-Knoten (nullable, bis promoviert)
-  verhaltens_id      → Verhaltensweise (nullable, bis destilliert)
   erstellt_am
 ```
+
+**Nur die Gedächtnis-Achse** *(korrigiert Chat 108)*. Die Zeile hält Turn → KZG → LZG, nichts weiter. Die **Beleg-Achse** (welcher Turn bezeugt welches Verhaltensmuster) ist aus `verbindung` herausgelöst und liegt in der eigenen Tabelle `verhaltens_beleg` (§12) — Begründung dort.
 
 **Kern-Einsicht:** Die Turn-Referenz gehört *nur* hierher, nie in den verdichteten Eintrag. Ein KZG-Eintrag verdichtet n Turns — also zeigen n `verbindung`-Zeilen (je eine turn_id) auf dieselbe `kzg_id`. Beim Zusammenführen eines neuen ähnlichen Turns wird das KZG-Gewicht erhöht **und** eine neue `verbindung`-Zeile (turn_id + kzg_id) ergänzt.
 
 **Umzug ohne Kopie:** Solange der Eintrag nur im KZG lebt, ist `lzg_id` leer. Bei Promotion wird `lzg_id` nachgetragen — dieselben Zeilen, dieselben Turns, jetzt auch am LZG-Knoten. Nichts bricht beim Umzug. Der **Adaptiv-Hash** (lebt aus dem KZG) erreicht über `kzg_id` dieselben Turns wie der **Kern-Hash** später über `lzg_id`. Eine Tabelle bedient beide Hashes und beide Lebensphasen.
 
-**Kardinalität:** Normalfall 1 LZG-Knoten ↔ 1 Turn ↔ 1 Verhaltensweise (der Knoten ist der Hash eines Turns). n:m wird aber *erlaubt*, nicht erzwungen — ein Rückfragen-Turn kann mehrere Austausche bündeln, und viele Turns teilen sich eine Verhaltensweise. Kein UNIQUE-Zwang, damit der Sonderfall Platz hat.
+**Kardinalität** *(korrigiert Chat 108)* — zwei Achsen in zwei Tabellen, mit zwei verschiedenen Kardinalitäten:
+
+- **Gedächtnis-Achse** (`verbindung`): 1 Turn ↔ *n* KZG ↔ *n* LZG. Wie viele Zeilen ein Turn erzeugt, ist Rest-A5 (§A5-Befund) und noch offen. Kein UNIQUE-Zwang — ein Rückfragen-Turn kann mehrere Austausche bündeln.
+- **Beleg-Achse** (`verhaltens_beleg`): 1 Turn ↔ 2 Verhaltensweisen (je `beobachter`). Viele Turns teilen sich eine Verhaltensweise; `UNIQUE (verhaltens_id, turn_id)` verhindert allein den Doppelbeleg desselben Turns.
+
+Getrennte Tabellen, getrennte Kardinalität — Begründung in §12.
 
 ---
 
@@ -119,14 +145,27 @@ Der KZG-Schreib-/Ähnlichkeitspfad ergänzt bei jedem Treffer eine `verbindung`-
 - Turn laden (über `verbindung.turn_id` aus `pipeline_log`).
 - Passende Verhaltensweise über **Embedding-Ähnlichkeit** suchen (pgvector-KNN, wie `lzg_knoten` / `anker_retrieval`).
 - Treffer → vorhandene `verhaltens_id` nehmen (Beleg hinzufügen, Belegzahl/Gewicht steigt). Kein Treffer → einmal destillieren, neu ablegen.
-- `verbindung`-Zeile vervollständigen (`verhaltens_id` setzen).
+- Zeile in `verhaltens_beleg` einfügen (`verhaltens_id`, `turn_id`).
 
-Die `verbindung`-Zeile (turn_id + kzg_id) selbst entsteht früher — am KZG-Boost-Punkt (`_thematisch_verstaerken` / `kzg_store`-inline), wo Ziel-Key und `turn_id` im Scope liegen. Sie ist unabhängig davon, *wie* der Boost ausgelöst wurde.
+**Überholt (Chat 108) — Schreibort der `verbindung`-Zeile.**
+
+*Bisherige Formulierung:* „Die `verbindung`-Zeile entsteht am KZG-Boost-Punkt (`_thematisch_verstaerken` / `kzg_store`-inline), wo Ziel-Key und `turn_id` im Scope liegen."
+
+*Herkunft, präzise:* Der Chat-103-Audit hat die **Orte** belegt (`kzg.py` `kzg_store`-inline; `speicher.py` `_thematisch_verstaerken`, Aufrufer hält `turn_id` + geboostete Keys) — **auditiert**. Der Satz „hier entsteht die `verbindung`-Zeile" war jedoch Brudis **Empfehlung** im selben Bericht und wurde als Befund übernommen. Ungeprüft blieb, ob das der *richtige* Ort ist.
+
+**Vorgesehener Schreibort (Entwurf Meister, Chat 108 — unter Audit-Vorbehalt):** Die `verbindung`-Zeile entsteht im **Dispatcher**, dort wo bereits der `turn_roh` geschrieben wird.
+- Der Dispatcher ist *verifiziert* der Ort, an dem `turn_id` sicher im Scope liegt (auditiert Chat 104, live abgenommen).
+- Die Fallunterscheidung Neuanlage/Verstärkung entfällt: Gebraucht wird nur der KZG-Key, den der Schreibpfad zurückgibt — gleich, ob er ihn angelegt oder getroffen hat. **Ein Schreibpunkt statt zwei.**
+- Die n:1-Semantik bleibt unberührt: Bei Verstärkung entsteht eine neue `verbindung`-Zeile auf dieselbe `kzg_id` — das *ist* die Belegzählung.
+
+**Offen (Audit-Vorbehalt, Brudi):**
+1. Läuft der KZG-Schreibvorgang synchron im Dispatcher oder entkoppelt über die Redis-Queue (`agents/kzg/queues.py`)? Ist er entkoppelt, liegt `turn_id` dort nicht mehr im Scope und muss in die Queue-Nutzlast.
+2. Gibt `kzg_store` den Key überhaupt zurück — bei Neuanlage *und* bei Treffer?
 
 **Lesen (CharakterAgent).** Statt aus entfärbten `lzg_knoten`-Fakten:
 - Erinnerungswürdigen LZG-Eintrag finden (Gewicht/Decay wie bisher).
 - Über `verbindung.lzg_id` → `turn_id` den rohen Turn aus `pipeline_log` laden (Novas Worte + Emotion-Paar).
-- Über `verbindung.verhaltens_id` die Verhaltensweise laden (schon gerechnet, nur nachschlagen).
+- Über `verhaltens_beleg.turn_id` die Verhaltensweise laden (schon gerechnet, nur nachschlagen).
 - Aus **LZG-Eintrag + rohem Turn + Verhaltensweise** den Charakter zusammenfassen — mit den Deutungs-Prompts (Träger über Blickrichtung), jetzt auf dem richtigen Material.
 
 ---
@@ -134,7 +173,7 @@ Die `verbindung`-Zeile (turn_id + kzg_id) selbst entsteht früher — am KZG-Boo
 ## 6. Offene Fragen & Abhängigkeiten (zu verifizieren, nicht beschlossen)
 
 **turn_id-Kupplungen — ✅ Chat-103-Audit bestätigt (nicht mehr offen):**
-- `turn_id` am KZG-Schreib- und Boost-Punkt verfügbar (`dispatch → speicher → kzg_store`).
+- `turn_id` am KZG-Schreib- und Boost-Punkt verfügbar (`dispatch → speicher → kzg_store`) — **auditiert Chat 103**. Achtung: Das belegt die *Verfügbarkeit*, nicht dass dort geschrieben werden *soll* (→ §5, Schreibort neu entworfen).
 - KZG-ID (Redis-Key) stabil bei Verstärkung.
 - Promotion kennt Herkunft (`kzg_quell_key` UNIQUE) → `lzg_id` nachtragbar, 1:1.
 
@@ -164,8 +203,243 @@ Die `verbindung`-Zeile (turn_id + kzg_id) selbst entsteht früher — am KZG-Boo
 
 **Fehlt (nächster Sprint-Teil):**
 
-- Tabelle `verbindung` (§4.2) — Schema + Schreibpfad am KZG-Boost-Punkt.
+- Tabelle `verbindung` (§4.2) — Schema + Schreibpfad. Schreibort **Dispatcher** (§5, unter Audit-Vorbehalt), nicht mehr „KZG-Boost-Punkt" (überholt Chat 108).
+- **Backfill der bestehenden Rohturns (offen, Antwort fällt in Chat 108):** `verbindung`-Zeilen entstehen erst ab Deployment; die 137 vorhandenen Rohturns bekommen rückwirkend keine. Prüffrage: Alle `pipeline_log`-Zeilen eines Turns teilen die `turn_id` — trägt eine davon einen `kzg:`-Key im `inhalt`-JSONB? Falls nein, beginnt Novas Charakter beim ersten Turn nach dem Deployment, und die 104 verwertbaren Paare sind Material ohne Zugang.
 - Tabelle `verhaltensweisen` + Destillations-Agent (§5 „Verdichten"), inkl. Embedding-Dedup.
 - `lzg_id`-Nachtrag bei KZG→LZG-Promotion.
 - CharakterAgent-Lesepfad (§5 „Lesen").
 - Offener Designpunkt unverändert: KZG-Verstärkung themen- statt embedding-basiert (`kzg_similar_find` ohne Aufrufer).
+
+## 8. Glossar — Begriffe, die dieses Konzept trägt
+
+Ein Leser ohne Vorwissen braucht diese acht Begriffe. Sie werden hier einmal definiert.
+
+**Paar-Konvention** *(verbindlich seit Chat 71, `novaberg-convention-paar-schema.md` §2)*
+Drei orthogonale Achsen, überall im System:
+```
+user_id      = SUBJEKT    — über wen geht der Eintrag?
+character_id = GEGENÜBER  — im Kontext welcher anderen Entität?
+beobachter   = SCHREIBER  — wer hat den Eintrag erzeugt? (user | assistant)
+```
+Das Paar ist **geordnet**. `(meister, nova)` und `(nova, meister)` sind zwei verschiedene Dinge: einmal ist Meister das Subjekt, einmal Nova. Wer die Reihenfolge dreht, dreht die Bedeutung. **Subjekt ist nicht Beobachter.** Ein Eintrag `(meister, nova, assistant)` heißt: *Nova hat etwas über Meister notiert.* Er sagt nichts über Nova.
+
+> **Warum `beobachter` bei `verhaltensweisen` doch das Subjekt trägt.** In den Gedächtnis-Tabellen (`lzg_knoten`, KZG) ist `beobachter` die Blickrichtung: Der Eintrag ist aus dieser Sicht geschrieben, das grammatische Subjekt des Satzes kann ein anderes sein. „Der Nutzer beobachtet dich" trägt `beobachter='assistant'` — Subjekt ist der Nutzer. Genau diese Verwechslung ist der Defekt, den dieser Sprint repariert.
+>
+> Bei `verhaltensweisen` fallen die beiden Achsen zusammen — nicht zufällig, sondern weil der Verdichter sie zusammenzwingt: Der Prompt (§13) fragt gezielt „wie hat Nova reagiert" und erzeugt daraus die `assistant`-Zeile. Das Subjekt ist durch die **Prompt-Richtung** fixiert, nicht durch die Grammatik der Quelle. Ein `assistant`-Eintrag in `verhaltensweisen` beschreibt deshalb immer Novas Verhalten, nie ihren Blick auf Meister.
+>
+> Die Konvention „Subjekt ≠ Beobachter" gilt also weiter für alle Gedächtnis-Tabellen. `verhaltensweisen` ist die bewusste **Ausnahme**, und sie ist es nur, weil ihr Inhalt vom Destillator **erzeugt** und nicht von einem Klassifikator **vorgefunden** wird.
+
+**Turn** — Eine Nutzer-Eingabe und Novas Antwort darauf, plus beide Emotionszustände. Ein CharacterGraph-Durchlauf. Identifiziert durch `turn_id`.
+
+**Rohturn** (`pipeline_log`, `art='turn_roh'`) — Die Zeile, die das vollständige Paar wortgetreu hält: `user_prompt`, `user_emotion`, `response`, `nova_emotion` (beide Emotionen mit neun EI-Dimensionen). **Novas Stimme.** Wird nie gelöscht. *(implementiert Chat 104, live abgenommen)*
+
+**KZG-Eintrag** — Verdichteter Gedächtnisinhalt in Redis, Key `kzg:{user}:{char}:{ms}`. Flüchtig (TTL). *(auditiert Chat 103; Key-Format korrigiert Chat 108 — gemessen A5: alle 926 Keys `kzg:meister:nova:*`)*
+
+**Verstärkung** — Ist ein neuer Turn inhaltlich ähnlich zu einem bestehenden KZG-Eintrag, wird **kein neuer angelegt**, sondern der bestehende **in place** erhöht (salienz/haeufigkeit/TTL). Der Key bleibt. **Folge: Ein KZG-Eintrag steht für *n* Turns.** *(auditiert Chat 103)* — Die alte Bezeichnung „Boost-Punkt" ist überholt.
+
+**Promotion** — Übergang KZG → LZG (`lzg_knoten`) bei hinreichender Salienz. Der LZG-Knoten trägt den Herkunfts-Key in `kzg_quell_key` (UNIQUE, 1:1). *(auditiert Chat 103)*
+
+**Verhaltensweise** — Ein destillierter Satz über *ein* Subjekt („Nova bleibt ruhig, wenn das Gegenüber gereizt wird"). Belegt durch *n* Turns. Die Belegzahl ist ihr Gewicht.
+
+**Beleg** — Eine `verhaltens_beleg`-Zeile: *dieser Turn bezeugt dieses Verhaltensmuster.*
+
+---
+
+## 9. Datenlage — was heute wirklich existiert (gemessen Chat 108)
+
+Ein neuer Chat muss diese Zahlen kennen, sonst baut er gegen ein Phantom.
+
+| Speicher | Bestand | Bedeutung |
+|---|---|---|
+| `pipeline_log`, `art='turn_roh'` | **137 Zeilen** (seit 10.07.), keine ohne Paar | **Novas Stimme ist vorhanden.** JSONB trägt a–d vollständig. |
+| Leser auf `pipeline_log` | **null** | Das einzige `FROM pipeline_log` im ganzen Server ist das `DELETE` der Retention. Der Charakter-Pfad schaut nie hinein. |
+| `lzg_knoten` aktiv | `(meister, nova, assistant)` = **231**<br>`(meister, nova, user)` = **186**<br>`(nova, meister, *)` = **0** | Alle Knoten haben **Meister als Subjekt**. Die 231 „assistant"-Knoten sind *Novas Notizen über Meister*, nicht Aussagen über Nova. |
+| KZG (Redis) | `kzg:meister:nova:*` = **926**<br>`kzg:nova:meister:*` = **0** | Dasselbe Bild. |
+
+**Der Defekt, präzise:** Es existiert **kein Schreiber im System, der einen Eintrag mit Subjekt = Nova erzeugt.** Der Klassifikator extrahiert aus jedem Turn Fakten — und die handeln immer vom Nutzer („Der Nutzer fragt nach dem OXTR-Gen"). Novas Antwort geht durch ihn hindurch, ohne dass je ein Eintrag entsteht, der sagt: *Nova ist so und so.*
+
+Die Partition `(nova, meister)` ist deshalb leer. **Nicht blockiert, nicht übersprungen — nie befüllt.** *(Ausdrücklich widerlegt Chat 108: Es gibt keinen aktiven Promotion-Guard gegen Nova. Der Legacy-Guard `if user_id == ASSISTANT_USER_ID: return 0` ist toter Code, weil `user_id` unter der Konvention immer `meister` ist. Der Synapsen-Pfad hat gar keinen Guard und trägt `beobachter` korrekt durch — die 231 Knoten sind der Beweis.)*
+
+Der CharakterAgent liest folglich das Einzige, was da ist — „was Nova über Meister schrieb" — und nennt es Novas Selbstbild. Das ist der ganze Mechanismus hinter „Nova hält den Meister für sich selbst".
+
+**Konsequenz für den Sprint:** Die `verhaltensweisen`-Tabelle erzeugt die **ersten Datensätze im gesamten System, deren Inhalt Novas Verhalten ist.** Das ist kein Nebeneffekt, das ist der Kern.
+
+**Nebenbefund → Backlog:** `convention-paar-schema` §2.1 beschreibt `kzg:nova:meister:*` als Soll-Zustand. Gemessen: 0 Keys. Der dort dokumentierte Chat-71-Fix produziert nichts (mehr). Ein Konventionsdokument, das eine nie befüllte Partition als existent beschreibt, ist selbst eine Falle.
+
+---
+
+## 10. Die zwei Subjekte pro Turn — entschieden
+
+Ein Rohturn trägt **beide Seiten**. Daraus lassen sich **zwei** Verhaltensweisen destillieren:
+
+| Satz | user_id | character_id | beobachter (Subjekt-Achse) |
+|---|---|---|---|
+| „Nova bleibt ruhig, wenn das Gegenüber gereizt wird." | `meister` | `nova` | `assistant` |
+| „Der Nutzer wird schärfer, wenn Nova ausweicht." | `meister` | `nova` | `user` |
+
+Beide werden gebraucht: `charakter_hash` hält zwei Profile. Sein gedrehter Storage-Key `nova:meister` ist dabei ein **Alias, keine Partition** — gelesen wird unter `(meister, nova)` + `beobachter` (→ §A5-Befund).
+
+**Das Subjekt sitzt in `beobachter`, nicht im gedrehten Paar** *(entschieden Chat 108, Variante A)*. Die Partition `(nova, meister)` existiert nirgends im System (A5, gemessen); sie zu erfinden hieße, die erste Tabelle, deren Inhalt Novas Verhalten ist, gegen eine leere Konvention zu bauen. Das Paar bleibt kanonisch `(meister, nova)`, die Blickrichtung trägt `beobachter`: `assistant` = Novas Verhalten, `user` = Meisters.
+
+**Der Rohturn selbst hat keine Perspektive** — er enthält beide Seiten wortgetreu. Das Subjekt wird **beim Destillieren explizit gewählt** und dann in `beobachter` festgehalten, nicht aus einer vorgefundenen Blickrichtung abgeleitet. Genau deshalb heilt der Rohturn den alten Defekt: Bei den `lzg_knoten` war die Perspektive in die Daten eingebrannt und wurde mit dem Subjekt verwechselt.
+
+**⚠ HARTE ANFORDERUNG — Embedding-Dedup muss auf die Partition eingegrenzt sein.**
+„Nova bleibt ruhig, wenn er gereizt wird" und „Der Nutzer wird schärfer, wenn Nova ausweicht" beschreiben **dieselbe Interaktion**, teilen Vokabular und liegen im Embedding-Raum nah beieinander. Die Ähnlichkeitssuche **muss** `WHERE user_id = %s AND character_id = %s AND beobachter = %s` tragen — **drei** Spalten, nicht zwei. Getrennt werden die beiden Sätze jetzt durch den `beobachter` (`assistant` vs. `user`), nicht mehr durch das gedrehte Paar: Ihr `(user_id, character_id)` ist **identisch**. Fehlt die dritte Spalte, führt der Dedup die beiden Subjekte zusammen — und baut den alten Bug in eine neue Tabelle. Ein `WHERE`, mehr nicht. Aber ohne das kippt alles.
+
+**Korrektur zu §4.2:** Der Normalfall ist **nicht** 1:1:1. Ein Turn erzeugt **zwei** Verhaltensweisen und damit **zwei** `verhaltens_beleg`-Zeilen (je `beobachter`). Wie viele `verbindung`-Zeilen ein Turn erzeugt, hängt an der KZG-Schreib-Kardinalität (→ §A5-Befund, Rest von A5).
+
+---
+
+## 11. Lebenszyklus einer `verbindung`-Zeile
+
+**(1) Geburt — im Dispatcher, beim Schreiben des Turns.**
+Der Dispatcher schreibt bereits den Rohturn *(implementiert Chat 104)*. Im selben Schritt entsteht die Zeile:
+```
+turn_id     ← der gerade geschriebene Rohturn
+kzg_id      ← der KZG-Key, den der Schreibpfad zurückgibt
+lzg_id      ← NULL
+```
+Der Key kommt vom Schreibpfad — **gleich ob neu angelegt oder verstärkt**. Genau das macht den Dispatcher zum richtigen Ort: **ein** Schreibpunkt statt zwei, keine Fallunterscheidung.
+
+Bei Verstärkung entsteht eine **neue Zeile auf dieselbe `kzg_id`**, kein Update. Das *ist* die Belegzählung.
+
+**(2) Promotion — `lzg_id` nachtragen.**
+Zieht der KZG-Eintrag ins LZG um, finden wir **alle** Zeilen mit `kzg_id = kzg_quell_key` und tragen die neue `lzg_id` nach. **Nicht optional:** KZG-Keys sind TTL-flüchtig und werden bei der Promotion konsumiert. Ohne Nachtrag zeigt die Zeile bald ins Leere.
+
+**(3) Verdichtung — Beleg eintragen.** Nicht mehr an der `verbindung`-Zeile *(korrigiert Chat 108)*: Der Verdichter fügt **eine Zeile in `verhaltens_beleg` ein** (`verhaltens_id`, `turn_id`); das `UNIQUE (verhaltens_id, turn_id)` macht den Schritt idempotent. Siehe §13.
+
+**(4) Tod ohne Promotion.** Ein KZG-Eintrag kann verfallen, ohne promotet zu werden — der Turn war nicht erinnerungswürdig. Die Zeile bleibt mit `lzg_id = NULL` zurück. → **E1**, §14.
+
+**Lesepfad:** Der CharakterAgent liest **nur** Zeilen mit `lzg_id IS NOT NULL` **und joint auf `lzg_knoten.aktiv = TRUE`** — sonst destilliert er aus weggedecayten Knoten. Genau das ist die Konsistenz-Begründung für **E1** (§14): Verwaiste Zeilen dürfen liegen bleiben, weil der Lesepfad sie ohnehin nicht sieht — beim Löschen des Knotens fällt `lzg_id` per `ON DELETE SET NULL` (§12) auf `NULL` zurück, und ein bloß inaktiver Knoten fällt durch den `aktiv`-Join. Gewicht/Decay am LZG-Knoten ist damit der Filter, der bestimmt, welche Turns Charakter formen. *Alles aufheben, nur das Gewichtete lesen.*
+
+---
+
+## 12. Schema-Entwurf (Typen zu verifizieren → Audit A4)
+
+```sql
+CREATE TABLE verbindung (
+    id          SERIAL PRIMARY KEY,
+    turn_id     VARCHAR(100) NOT NULL,      -- Typ = pipeline_log.turn_id (A4)
+    kzg_id      TEXT,                       -- Redis-Key kzg:{user}:{char}:{ms}
+    lzg_id      INTEGER REFERENCES lzg_knoten(id) ON DELETE SET NULL,
+    erstellt_am TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+CREATE INDEX idx_verbindung_turn ON verbindung (turn_id);
+CREATE INDEX idx_verbindung_kzg  ON verbindung (kzg_id);   -- für den lzg_id-Nachtrag
+CREATE INDEX idx_verbindung_lzg  ON verbindung (lzg_id);   -- für den Lesepfad
+```
+**Kein UNIQUE** auf `turn_id` oder `lzg_id` — n:m ist erlaubt, jetzt aus der **KZG-Kardinalität** begründet *(korrigiert Chat 108)*: Ein Turn kann *n* KZG-Einträge nähren, ein KZG-Eintrag steht für *n* Turns. Wie viele Zeilen pro Turn tatsächlich entstehen, ist Rest-A5 (§A5-Befund) und noch offen.
+Die Partitions-Spalten (`user_id`, `character_id`, `beobachter`) stehen an der `verhaltensweise`, nicht an der Brücke.
+
+```sql
+-- Beleg-Achse: welcher Turn bezeugt welches Verhaltensmuster
+CREATE TABLE verhaltens_beleg (
+    id            SERIAL PRIMARY KEY,
+    verhaltens_id INTEGER NOT NULL REFERENCES verhaltensweisen(id) ON DELETE CASCADE,
+    turn_id       VARCHAR(100) NOT NULL,
+    erstellt_am   TIMESTAMPTZ NOT NULL DEFAULT now(),
+    UNIQUE (verhaltens_id, turn_id)
+);
+CREATE INDEX idx_verhaltens_beleg_verh ON verhaltens_beleg (verhaltens_id);
+CREATE INDEX idx_verhaltens_beleg_turn ON verhaltens_beleg (turn_id);
+```
+
+**Warum zwei Tabellen** *(entschieden Chat 108)*: `verbindung` und `verhaltens_beleg` tragen zwei Relationen verschiedener Kardinalität — Gedächtnis (n pro Turn) und Beleg (2 pro Turn, je `beobachter`). In einer Tabelle würde der Verdichter `turn_id`/`kzg_id`/`lzg_id` duplizieren, jede Auswertung über `lzg_id` zählte doppelt. Getrennt bleibt `beleg_zahl` (E4) gegen `COUNT(verhaltens_beleg)` prüfbar, und ein Wiederholungslauf des erschöpfenden Verdichters kann die Belegzahl nicht aufblähen.
+
+```sql
+CREATE TABLE verhaltensweisen (
+    id              SERIAL PRIMARY KEY,
+    user_id         TEXT NOT NULL,          -- kanonisch: 'meister'
+    character_id    TEXT NOT NULL,          -- kanonisch: 'nova'
+    beobachter      VARCHAR(20) NOT NULL,   -- 'assistant' = Novas Verhalten, 'user' = Meisters
+    muster          TEXT NOT NULL,
+    embedding       VECTOR(768),
+    beleg_zahl      INTEGER NOT NULL DEFAULT 1,
+    erstellt_am     TIMESTAMPTZ NOT NULL DEFAULT now(),
+    aktualisiert_am TIMESTAMPTZ
+);
+CREATE INDEX idx_verhalten_partition ON verhaltensweisen (user_id, character_id, beobachter);
+```
+
+`beobachter` trägt die Subjekt-Achse (entschieden Chat 108, Variante A). Grund: A5 hat gemessen, dass die gedrehte Partition `(nova, meister)` nirgends existiert — Novas Perspektive lebt als `beobachter='assistant'` im kanonischen Paar `(meister, nova)`. Details §A5-Befund unten.
+
+---
+
+## 13. Verdichten — erschöpfend, nicht assoziativ
+
+**Der wichtigste Unterschied im ganzen Konzept:**
+
+Das synaptische Assoziativgedächtnis (Spreading Activation) antwortet auf einen **Reiz**. Es liefert, was zum aktuellen Prompt resoniert — heute drei Knoten, morgen drei andere. Für **Erinnerung** ist das genau richtig. Für **Charakter** ist es zufällig: Ein Hash aus drei assoziativ gefischten Turns ist ein Schnappschuss der Tagesstimmung, kein Wesen.
+
+**Charakter ist das Wiederkehrende.** „23-fach belegt" ist ein Charakterzug, „einmal beobachtet" ist eine Anekdote. Dieser Unterschied entsteht **nur durch Zählen**.
+
+Der Verdichtungs-Agent (periodisch, analog `synapsen_decay` / `charakter_hash`) läuft deshalb **erschöpfend** über alle erinnerungswürdigen Turns, nicht assoziativ:
+
+1. **Material holen:** ~1000 LZG-Knoten (nach `gewicht_absolut`), über `verbindung.lzg_id → turn_id` die Rohturns.
+2. **Bündeln:** Der Prompt frisst nicht 1000 Turns am Stück. Häppchen von ~20 Turns pro LLM-Aufruf.
+3. **Destillieren, pro Bündel und pro Subjekt:**
+   > „Das hat der User gesagt: {user_prompt} (Emotion: {user_emotion}).
+   > Das hat Nova geantwortet: {response} (Emotion: {nova_emotion}).
+   > Bewerte, **wie Nova reagiert hat**." → Subjekt = Nova
+   >
+   > Zweiter Lauf mit umgekehrtem Ziel → Subjekt = Meister.
+
+   **Wichtig:** Die Reaktion muss dem Reiz *gegenübergestellt* werden. „Nova bleibt ruhig" ist erst dann ein Charakterzug, wenn danebensteht, dass der Reiz gereizt war. Beide Emotionen stehen im Rohturn — der Prompt muss sie explizit kontrastieren, sonst liest das LLM zwei Zustände statt einer **Relation**.
+4. **Zusammenführen:** Neue Verhaltensweise per Embedding-KNN gegen bestehende suchen — **eingegrenzt auf `(user_id, character_id, beobachter)`** (§10, harte Anforderung: drei Spalten). Treffer → `beleg_zahl + 1`. Kein Treffer → neu anlegen.
+5. **Beleg eintragen:** eine Zeile in `verhaltens_beleg` (`verhaltens_id`, `turn_id`) — das `UNIQUE (verhaltens_id, turn_id)` macht den Schritt idempotent.
+
+**Der Assoziativpfad bleibt — für etwas anderes.** Für Novas **Selbstreflexion** („wie habe ich damals reagiert?") ist Spreading Activation exakt das Richtige. Nur für die Charakter-Destillation taugt er nicht.
+
+---
+
+## 14. Offene Entscheidungen
+
+| ID | Frage | Empfehlung |
+|---|---|---|
+| **E1** | `verbindung`-Zeilen, deren KZG stirbt ohne Promotion? | **Behalten** mit `lzg_id = NULL`. Harmlos: Der Lesepfad filtert auf `lzg_id IS NOT NULL` **und** joint auf `lzg_knoten.aktiv = TRUE` (§11) — verwaiste Zeilen sind deshalb doppelt unschädlich. Späterer Aufräumlauf möglich. |
+| **E4** | `beleg_zahl` denormalisiert oder aus `COUNT(verhaltens_beleg)` gerechnet? | **Spalte** — billig, und jeder Charakter-Lauf braucht das Gewicht. |
+| **E5** | Ähnlichkeit beim Zusammenführen: themen- oder embedding-basiert? | **pgvector-KNN** (wie `lzg_knoten` / `anker_retrieval`). Verhaltensweisen leben in Postgres. Die themen-basierte KZG-Verstärkung bleibt davon unberührt. |
+| **E6** | **Backfill** der 137 vorhandenen Rohturns? | Hängt an Audit A3. Wenn nicht rekonstruierbar: Charakter beginnt beim ersten Turn nach Deployment. |
+| **E7** | **Ist das LZG-Gate das richtige Gate für Novas Charakter?** Die Promotion bewertet nach Fakten-Salienz *über Meister*. Ein Turn, in dem Nova viel über sich verrät, aber faktisch banal ist, wird nie promotet — sein Verhaltensbeleg geht verloren. | **Offen.** (a) Akzeptieren, irgendein Filter muss sein. (b) Verhaltensbelege bekommen ein eigenes Gate (z. B. emotionales Delta im Reiz-Reaktions-Paar statt Fakten-Salienz). **Vor Bauteil 3 zu entscheiden.** |
+
+---
+
+## §A5-Befund — es gibt keine gedrehte Partition
+
+**A5 (Chat 108) — es gibt keine gedrehte Partition.** Live gemessen: `lzg_knoten` aktiv = `(meister, nova, 'assistant')` 231 Knoten, `(meister, nova, 'user')` 186, `(nova, meister, *)` 0. KZG: `kzg:meister:nova:*` 926 Keys, `kzg:nova:meister:*` 0. Novas Perspektive lebt als `beobachter='assistant'` im kanonischen Paar — der größere Topf. Der `charakter_hash` speichert unter `nova:meister`, liest aber unter `(meister, nova)` + `beobachter` (Brudi-Audit): gedrehtes Paar = **Storage-Alias, keine Partition**. Folge: `verhaltensweisen` partitioniert nach `(user_id, character_id, beobachter)`, nicht nach Subjekt-Paar (Variante A).
+
+**Offen (Rest von A5, an A1/A2 gekoppelt):** Ruft der KZG-Schreibpfad `kzg_store` pro Turn einmal oder mehrfach (je `beobachter`)? Ein Key oder eine Liste zurück? Das bestimmt, wie viele `verbindung`-Zeilen der Dispatcher pro Turn schreibt — und damit die Abnahme von Bauteil 1.
+
+---
+
+## 15. Offene Audits (vor Bauteil 1)
+
+| ID | Frage | Status / warum sie blockiert |
+|---|---|---|
+| **A1** | Gibt `kzg_store` den KZG-Key zurück — bei Neuanlage **und** bei Verstärkung? | Ohne Rückgabe kann der Dispatcher keine `verbindung`-Zeile schreiben. Der Ein-Schreibpunkt-Entwurf hängt daran. |
+| **A2** | Läuft der KZG-Write **synchron im Dispatcher** oder entkoppelt über die Redis-Queue (`agents/kzg/queues.py`)? | Bei Entkopplung liegt `turn_id` dort nicht im Scope und muss in die Queue-Nutzlast — Bauteil 1 wird größer. |
+| **A3** | Lassen sich die 137 Rohturns nachträglich verbinden? (Alle `pipeline_log`-Zeilen eines Turns teilen die `turn_id` — trägt eine davon einen `kzg:`-Key im `inhalt`-JSONB?) | Entscheidet E6. |
+| **A4** | Typ von `pipeline_log.turn_id`; `lzg_knoten.id` als SERIAL?; pgvector-Dimension. | Für das DDL in §12. **✅ auditiert Chat 108:** `turn_id` = `VARCHAR(100)`, `lzg_knoten.id` = `INTEGER` SERIAL (`nextval`), pgvector = `768` — DDL in §12 bestätigt. |
+| **A5** | Partition Novas Perspektive; Schreib-Kardinalität `kzg_store`. | ✅ Partition geklärt (Chat 108, §A5-Befund): keine gedrehte Partition, `beobachter` im kanonischen Paar. ⬜ Rest offen: ein Key oder Liste pro Turn — bestimmt die Abnahme von Bauteil 1, gekoppelt an A1/A2. |
+
+---
+
+## 16. Bauteile (Reihenfolge)
+
+**Bauteil 1 — `verbindung` schreiben.**
+Voraussetzung: A1, A2, A4. Entscheidung: E1.
+Tabelle (§12) + Schreibpfad im Dispatcher (§11.1) + `lzg_id`-Nachtrag in der Promotion (§11.2). **Beides gehört in einen Sprint** — eine Zeile ohne Nachtrag verwaist beim ersten KZG-Verfall.
+*Abnahme:* Nach einem Turn existiert eine `verbindung`-Zeile mit gültiger `turn_id` + `kzg_id`; nach einer Promotion trägt sie die `lzg_id`. **Vorbehalt:** eine oder n `verbindung`-Zeilen pro Turn, je nach Rest-A5 — die Abnahme zählt Zeilen erst, wenn die Schreib-Kardinalität feststeht.
+
+**Bauteil 2 — Backfill (optional).** Voraussetzung: A3, E6.
+
+**Bauteil 3 — `verhaltensweisen` + Verdichtungs-Agent.**
+Voraussetzung: **E7** (Gate), E4, E5.
+Tabelle (§12) + periodischer Agent nach §13 (erschöpfend, gebündelt, zwei Subjekte, Dedup auf die Partition (`user_id`, `character_id`, `beobachter`) eingegrenzt).
+*Abnahme:* Es existieren Zeilen in `verhaltensweisen` mit `beobachter='assistant'` im Paar `(meister, nova)` — **die ersten Datensätze im System, deren Inhalt Novas Verhalten ist** (nicht: Novas Blick auf Meister). Belegzahl > 1 bei wiederkehrenden Mustern, gegen `COUNT(verhaltens_beleg)` prüfbar.
+
+**Bauteil 4 — Lesepfad CharakterAgent. Ersetzen, nicht ergänzen.**
+Der `kern_hash` liest heute `lzg_knoten` mit `(meister, nova, beobachter='assistant')` — also *Novas Notizen über Meister* — und nennt es Novas Selbstbild. **Dieser Pfad muss für Novas Profil verschwinden**, nicht ergänzt werden. Solange er lebt, produziert er das Zerrbild, auch mit der neuen Tabelle daneben.
+Neu: Novas Profil liest **Verhaltensweisen mit `beobachter='assistant'`** im Paar `(meister, nova)` (fertig destilliert, mit Belegzahl als Gewicht), optional angereichert um die belegenden Rohturns.
+
+**Bauteil 5 — `novaberg-pixie-character-hash.md` überarbeiten.** Erst wenn 1–4 stehen.
