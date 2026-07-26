@@ -3429,3 +3429,73 @@ Kein Defekt — heute liest niemand `turn_roh`. Gehört zu den Bau-Vorbedingunge
 **Bestand (Stand 25.07.2026):** 150 Rohturns gesamt, 39 vor dem Stichtag (entwertet, **nicht löschen** — die Rohworte bleiben wertvoll), 111 danach verwertbar. Die frühere Angabe „40 vor ~12:38" war eine Schätzung und lag um eine Zeile daneben; die Menge vor dem Stichtag ist eingefroren und ändert sich nicht mehr.
 
 **Anforderung:** Die Verhaltensweisen-Destillation (CHARAKTER-RESONANZ Bauteil 3, nicht „Teil 3") liest ausschließlich Turns ab dem Stichtag. Sonst destilliert sie den Defekt und schreibt ihn als Charakterzug fest. ⬜ Prio hoch
+
+---
+
+## Befund: PERMISSION-OHNE-BODEN — „Brudi ist read-only" ist Konvention, nicht erzwungen (Chat 109)
+
+**Gemessen Chat 109 (Umgebungs-Audit, 25.07.2026, 11:47 UTC):** 203 `allow`-Einträge über drei Settings-Dateien (`~/.claude/settings.json`, `.claude/settings.json`, `.claude/settings.local.json`), **null `deny`, null `ask`, kein `defaultMode`**, und an keinem der drei üblichen Orte eine `managed-settings.json`. Die Permission-Konfiguration ist reines Allowlisting ohne Gegengewicht.
+
+Claude Codes eigene Bash-Sandbox ist **nicht aktiv**: Der Bash-Prozess sitzt in exakt denselben Namespaces wie der `claude`-Prozess und wie der Flatpak-Init (identische `user`/`mnt`/`net`/`pid`/`ipc`-Inodes, `Seccomp_filters: 1`), und `bwrap` fehlt im Flatpak-Runtime — das Werkzeug, mit dem diese Sandbox auf Linux gebaut würde, ist nicht vorhanden. Die einzige messbare Isolation kommt vom VS-Code-Flatpak (`com.visualstudio.code`), und der läuft mit `filesystems=host` plus `org.freedesktop.Flatpak=talk` — also mit Host-Dateisystem und der Berechtigung für `flatpak-spawn --host`.
+
+**Auswirkung:** Dass ein Audit-Auftrag „READ-ONLY" nur liest, ist eine Zusage im Prompt, keine erzwungene Eigenschaft der Umgebung. Es gibt keine technische Schranke, die einen Schreibzugriff oder einen Host-Ausbruch verhindert; es gibt nur die Absprache. Wer das für eine Sandbox hält, verlässt sich auf etwas, das nicht existiert. ⬜ Prio mittel
+
+**Zusammenhang:** ALLOWLIST-DRIFT (die Liste wächst nur, niemand räumt sie).
+
+---
+
+## Bug: PROMO-KZG-KEY-ALS-TURN-ID — `pipeline_log.turn_id` trägt bei Promotion-Zeilen KZG-Keys (Chat 109)
+
+`agents/synapsen_promotion/agent.py:178-179` ruft `pipeline_log.span_start(turn_id=kzg_key, …)` — der KZG-Redis-Key wird als `turn_id` eingesetzt, weil die Queue-Nutzlast keine echte `turn_id` mitführt (`agents/kzg/queues.py:73-80`: `aufgabe`, `user_id`, `key`, `salienz`, `themen`, `dimension` — kein `turn_id`).
+
+**Folge:** In der Spalte `pipeline_log.turn_id` stehen bei Promotion-Einträgen Werte der Form `kzg:{user_id}:{character_id}:{ms-timestamp}` neben echten UUID4-Hex-Turn-IDs. Jede Auswertung über `turn_id` — Korrelation eines Turns über alle Nodes, Join, `GROUP BY` — mischt zwei Wertebereiche in einer Spalte. Ein Promotion-Span ist damit keinem Turn zuzuordnen, und ein `WHERE turn_id = …` über echte Turn-IDs übersieht ihn stillschweigend.
+
+**Trifft CHARAKTER-RESONANZ Bauteil 2 (Backfill) unmittelbar:** Wer die `verbindung`-Zeilen über `turn_id` an die Rohturns knüpft, muss diese Fremdwerte vorher erkennen; sie sehen nicht nach Fehler aus, sondern nach einem Turn, den es nie gab. Audit Chat 109 (25.07.2026). ⬜ Prio mittel
+
+**Zusammenhang:** KZG-TURN-ID-UNBEKANNT (dieselbe Lücke von der anderen Seite) · PIPELINE-LOG-BACKFILL-PAAR (Alt-Forensik ohne Paar-Schlüssel).
+
+---
+
+## Aufräumen: ALLOWLIST-DRIFT — die Claude-Code-Allowlist wächst nur (Chat 109)
+
+Die Permission-Allowlist kennt nur Zuwachs: Einzelfall-Einträge aus längst abgeschlossenen Sprints stehen weiter drin, darunter ein `docker cp` mit dem konkreten Pfad einer Magneten-Migration (`/tmp/m2_magneten_migration.sql`) und mehrere `python -c "import ast; ast.parse(open('…'))"`-Zeilen auf Dateien, die seit dem jeweiligen Sprint nicht mehr angefasst wurden.
+
+Ein Einzelfall-Eintrag, der seinen Anlass überlebt, ist eine dauerhaft offene Tür ohne Grund. Braucht einen Aufräum-Durchgang **mit Messdatum** — also: Bestand zählen, Einträge einer laufenden Aufgabe zuordnen, Rest streichen, Zahl vor/nach protokollieren. Beobachtet Chat 109 (25.07.2026). ⬜ Prio niedrig
+
+**Zusammenhang:** PERMISSION-OHNE-BODEN (kein `deny`, kein `defaultMode` — die Liste ist die einzige Kontrollfläche).
+
+---
+
+## Performance: KZG-VERSTAERKUNG-KEYS-SCAN — Vollscan der Paar-Partition bei jedem KZG-Write (Chat 109)
+
+`agents/kzg/speicher.py:180` ruft `redis_client.keys(f"{prefix}*")` in `_thematisch_verstaerken` — ein **blockierender** Vollscan über alle KZG-Keys des Paares, bei **jedem** KZG-Write. Da der Dispatcher pro Konversations-Turn zweimal läuft (HumanGraph und CharacterGraph, je ein `dispatch_kzg`) und je Lauf ein Write pro Salienz-Segment entsteht, sind das **2 × n Vollscans pro Turn**. Anschließend folgt pro gefundenem Key ein `hget` auf `themen` (`speicher.py:191`) und bei Overlap drei weitere Feld-Zugriffe.
+
+Gemessener Bezugswert aus dem Nachbar-Befund: 926 Keys unter `kzg:meister:nova:*` (Chat 108). Bei einem Segment pro Lauf sind das zwei Vollscans über 926 Keys je Turn, plus je ein `hget` pro Key.
+
+**Gleicher Mechanismus wie CHARHASH-KZG-SCAN-UNSORTIERT** — dort `scan_iter` mit willkürlichem Limit, hier `keys()` ohne Limit. Beide behandeln die Paar-Partition als kleine Menge. Der Legacy-Zwilling `memory/kzg.py:402` hat denselben Aufruf. Audit Chat 109 (25.07.2026, Quelltext-Audit — Laufzeit nicht gemessen). ⬜ Prio niedrig
+
+---
+
+## Nacharbeit: KZG-TURN-ID-UNBEKANNT — Platzhalter statt Turn-Bezug im KZG-Schreib-Log (Chat 109)
+
+`agents/kzg/speicher.py:331-347` schreibt `log_db_write(turn_id = turn_id or "kzg-unbekannt", …)`; der Legacy-Zwilling `memory/kzg.py:346` verwendet analog `turn_id or "kzg-store-unbekannt"`. Fällt die `turn_id` leer herein — bei Legacy-Aufrufern ohne Turn-Kontext (Recherche-Agent, Shadow) der Normalfall —, landet der Platzhalter in der Spalte.
+
+**Folge:** Diese `db_write`-Zeilen tragen den KZG-Key im JSONB (`inhalt->>'kzg_key'`), aber keinen Turn-Bezug. Sie sind beim Backfill nicht zuordenbar — genau die Zeilen, über die man einen KZG-Eintrag sonst an seinen Turn knüpfen könnte, fallen aus.
+
+**Anzahl ungemessen.** Eine Zählung (`WHERE turn_id LIKE '%-unbekannt'` gruppiert nach `node`) steht aus und gehört vor den Backfill. Audit Chat 109 (25.07.2026). ⬜ Prio niedrig
+
+**Zusammenhang:** PROMO-KZG-KEY-ALS-TURN-ID (dieselbe Spalte, umgekehrter Fehler: dort ein fremder Wert, hier ein Platzhalter).
+
+---
+
+## Befund: TURN-ROH-HG-SKIP — der übersprungene Rohturn pro Turn ist planmäßig; die Zahl ist offen (Chat 109)
+
+**Widerlegt (Quelltext-Audit Chat 109, 25.07.2026):** Die übersprungenen `turn_roh` sind **kein Defektsignal.** Bedingung 4 des Guards (`graph/nodes/dispatcher.py:297-300`, `if not response:` → „turn_roh uebersprungen — keine Nova-Antwort (response leer)") trifft im HumanGraph-Lauf **strukturell immer** zu: `create_state` initialisiert `response = ""` (`graph/base.py:144`), und der HumanGraph hat überhaupt keinen Responder — seine fünf Nodes sind `perzeption`, `enricher`, `ei_calc`, `salience`, `dispatcher` (`graph/human_graph.py:39-43`, Docstring :5-6: „Kein Responder — der Charakter antwortet separat über den CharacterGraph"). Alle Zuweisungen an `state["response"]` liegen im CharacterGraph (`responder.py:617`, `corrector.py:80`, `thinker.py:597/599/636`, `character_graph.py:165`).
+
+Da der Dispatcher pro Konversations-Turn **zweimal** läuft — beide Graphen enden auf ihm (`human_graph.py:50-51`, `character_graph.py:122-123`) —, wird **pro Turn planmäßig genau ein `turn_roh` übersprungen** (der Pfad-1-Lauf) und genau einer geschrieben (der Pfad-2-Lauf). Das deckt sich mit „genau eine `turn_roh`-Zeile je Turn" in `novaberg-charakter-resonanz_k.md` §5 (Die drei Pfade).
+
+**Offene Frage — die Zahl, nicht der Mechanismus:** Strukturell wäre je Rohturn ein Skip zu erwarten, bei 150 Rohturns (Bestand 25.07.2026, siehe TURN-ROH-VOR-KRAFT1-ENTWERTET) also ~150 Warnungen. Beobachtet wurden **2**. Die Differenz ist unerklärt. Denkbare Richtungen, keine geprüft: Log-Vorhaltung/Rotation kürzer als der Beobachtungszeitraum; die Warnung erscheint nur unter bestimmten Log-Levels; oder der Pfad-1-Dispatcher endet häufig vorher im äußeren Guard `if not writes: … return state` (`dispatcher.py:350-356`) — dort wird `_turn_roh_schreiben` gar nicht erst aufgerufen und **keine** turn_roh-spezifische Zeile geschrieben. Letzteres würde die Zahl senken, ohne dass ein Rohturn fehlt.
+
+**Kein Bug — offene Zählfrage.** Zu klären, bevor jemand die Warnung als Fehlersignal liest oder aus ihrer Seltenheit auf einen intakten Pfad schließt. ⬜ Prio niedrig — offene Frage (Zählung), kein Defekt
+
+**Zusammenhang:** PIXIE-SELBSTTRIGGER-KEIN-TURN-ROH (der andere Fall ohne Paar) · TURN-ROH-VOR-KRAFT1-ENTWERTET (Bestandszahl 150) · SILENT-SKIP-EI-DEFAULTS (nennt den `turn_roh`-Guard als eine der zwei lauten Lesestellen).
