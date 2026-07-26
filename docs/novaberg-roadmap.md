@@ -1,6 +1,7 @@
 # Novaberg — Roadmap (Projektchronik)
 
-**Stand:** Chat 93, 21. Mai 2026
+**Stand:** Chat 109, 26. Juli 2026
+*(Die Kopfzeile stand bis Chat 109 auf „Chat 93, 21. Mai 2026" — 15 Chats hinter dem Inhalt. Achtung beim Nachschlagen: Nur bis Chat 97 trägt jeder Chat eine eigene `## Chat NNN`-Überschrift; die Chats 98–108 stehen als `###`-Abschnitte unter dem Chat-97-Block, benannt nach Sprint statt nach Chat.)*
 **Pfad:** novaberg/docs/novaberg-roadmap.md
 **Single Source of Truth für abgeschlossene Arbeit.**
 **Offene Punkte → novaberg-backlog.md**
@@ -1421,3 +1422,53 @@ Offen → Backlog: `CHARHASH-GEWICHT-ABSOLUT-LIVE` (volle Live-Abnahme im Dauerb
 ---
 
 *Aktualisiert in Chat 108 (Docs-Commit 25.07.2026). Offene Punkte → novaberg-backlog.md. Bugs → novaberg-bugs.md.*
+
+---
+
+## Lückenmarkierung — was in dieser Chronik fehlt (gesetzt Chat 109)
+
+**Vier Chats sind hier nicht nachgetragen: 94, 95, 96 und 101.** Quelle für den Nachtrag sind die Protokolle `Chat_094` bis `Chat_096` und `Chat_101`. Eigene Sitzung — in Chat 109 wurde bewusst nichts rekonstruiert.
+
+**Nicht fehlend, nur anders abgelegt:** Die Chats **98–108** sind vollständig dokumentiert, aber **nicht** als eigene `## Chat NNN`-Abschnitte, sondern als `###`-Abschnitte unterhalb des Chat-97-Blocks, benannt nach Sprint statt nach Chat — Synapsen P4 (Chat 92 + 98), P5 (99), P5-Abnahme (100), P6 (102), P7 (103), `pipeline_log`-Paar-Verkabelung (104), Audit-Kaskade (105), drei Bugs (106), Embedding-Migration (107), CHARAKTER-RESONANZ Teil 2 (108). Wer nach `## Chat 104` sucht, findet nichts und hält den Eintrag für fehlend. Die Vereinheitlichung der Gliederung ist eine eigene Aufgabe.
+
+**Herkunft dieser Markierung:** Die Lückenliste ist gegen das Dokument geprüft (Abschnittstitel und Chat-Nennungen, Chat 109). Der ursprüngliche Auftrag ging von einer Lücke 98–108 aus; das war ein Trugschluss aus der uneinheitlichen Gliederung und ist hiermit widerlegt.
+
+---
+
+## Chat 109 (26.07.2026) — CHARAKTER-RESONANZ Bauteil 1a + Audits A1/A2/A5 ✅
+
+**Schwerpunkt:** Die drei Audits am KZG-Schreibpfad, die Bauteil 1 seit Chat 108 blockierten, sind geschlossen — und der eine Befund, der dabei einen Bau nötig machte, ist gebaut und live abgenommen. Erstmals seit Chat 108 wieder Code.
+
+### Audits A1, A2, A5 geschlossen (read-only, Brudi)
+
+- ✅ **A1 nannte die falsche Funktion.** `kzg_store` (`memory/kzg.py`) ist Legacy und vom Dispatcher **unerreichbar** — der Dispatcher zweigt bei `ziel == "kzg"` ab und beendet die Iteration vor dem Registry-Zugriff. Produktiv ist `speichern()` (`agents/kzg/speicher.py`) über `dispatch_kzg`. Sie trennt sauber: Neuanlage liefert ein Dict mit `key`, die thematische Verstärkung eine Liste von Dicts mit je `key`, `salienz`, `themen` — beide Mengen erreichen den Aufrufer
+- ✅ **A2: synchron** — `dispatch_kzg` ist ein synchroner Funktionsaufruf im Dispatcher, der Subgraph läuft über `agent.invoke()`. Kein `await`, kein Task, kein Queue-Push; die Redis-Queue trägt nicht den KZG-Write, sondern den Promotions-Auftrag danach. `turn_id` lag durchgehend im Scope — **der KZG-Key aber nie.** Das ist der Grund für Bauteil 1a
+- ✅ **A5-Rest: Kardinalität gemessen** — pro Konversations-Turn laufen **zwei** `dispatch_kzg`-Läufe (HumanGraph und CharacterGraph, unterschieden über `beobachter`), je Lauf ein Subgraph-Durchlauf **pro Salienz-Segment**. Die Segmentzahl ist je Lauf **unabhängig**: Pfad 1 bewertet den Nutzer-Prompt, Pfad 2 Novas Antwort. Die Abnahmeformel ist damit nicht „2 × n", sondern die Summe über beide Läufe mit unabhängigen Segmentzahlen
+
+### Bauteil 1a — Transport der geschriebenen Keys (Commit `ce8233c`)
+
+- ✅ `dispatch_kzg` sammelt die geschriebenen Redis-Keys je Segment ein und gibt sie **zusätzlich zum Zähler** zurück: `kzg_verarbeitet`, `kzg_neue_keys`, `kzg_verstaerkte_keys`. **Beide Rückgabepfade tragen dieselben drei Schlüssel** — auch der Registry-Miss-Pfad, der `0` plus zwei leere Listen liefert statt eines verkürzten Dicts. Kein Aufrufer kann in einen `KeyError` laufen
+- ✅ Neuanlage und Verstärkung kommen als **zwei getrennte Listen** an; der Dispatcher nimmt beide entgegen und protokolliert sie
+- ✅ Fehlender Key wird unterschieden: `info` bei **regulärer Ablehnung** unter der Salienz-Schwelle (Normalfall, kein Defektsignal), `warning` sonst — mit `status` und `speicher_status` in der Zeile
+- ✅ **Live abgenommen:** 7 von 7 Läufen lieferten Keys — **10 neue, 24 verstärkte**, alle **22** geloggten Keys in Redis vorhanden (`exists=1`), **null Warnungen, null Ablehnungen**
+
+### Entscheidung E8 — verstärkte Nachbarn bekommen keine `verbindung`-Zeile
+
+- ✅ Nur **erzeugte** Einträge bekommen eine Zeile. Keine `art`-Spalte, keine zweite Tabelle für Verstärkungen. Tagebuch-Prinzip: Der Text eines verstärkten Nachbarn stammt aus einem **anderen** Turn, nur sein Gewicht kommt aus diesem — ihn hier zu verdrahten hieße, einen Eintrag unter ein falsches Datum zu schreiben
+- ✅ Das `§12`-DDL des Konzepts passt **ohne Änderung**: keine `art`-Spalte, kein Gewicht, kein Fremdschlüssel auf den Rohturn, `turn_id NOT NULL`, `lzg_id` mit `ON DELETE SET NULL`
+
+### Umgebungs-Audit Brudi — Flatpak ohne Zaun
+
+- ✅ **203 `allow`-Einträge über drei Settings-Dateien, null `deny`, null `ask`, kein `defaultMode`**, keine `managed-settings.json`. Claude Codes Bash-Sandbox ist nicht aktiv (identische Namespaces wie der Elternprozess, `bwrap` fehlt im Runtime). „Read-only" ist eine Zusage im Prompt, keine erzwungene Eigenschaft der Umgebung → Backlog `PERMISSION-OHNE-BODEN`, `ALLOWLIST-DRIFT`
+
+### Dokumentation
+
+- ✅ `novaberg-backlog.md` — Chat-109-Befunde erfasst und zwei Bestandseinträge auf die Messungen gezogen
+- ✅ `novaberg-charakter-resonanz_k.md` — A1/A2/A5-Befunde, E8, Bauteil-1-Split, Ursachenkorrektur in §2/§2.1, Kopfzeile nachgezogen
+- ✅ `novaberg-node-dispatcher.md` + `novaberg-pixie-kzg.md` — Rückgabekontrakt und Log-Verhalten dokumentiert, Signatur-Drift bereinigt
+
+**Stand am Ende:** Bauteil 1a steht und ist live abgenommen. Bauteil 1b (Tabelle + Schreibpfad + `lzg_id`-Nachtrag) bleibt offen und ist durch `PIXIE-TURN-ID-LEER` blockiert — ein Pixie-initiierter Lauf schreibt ohne `turn_id` und würde an `turn_id NOT NULL` scheitern.
+
+---
+
+*Aktualisiert in Chat 109 (26.07.2026). Offene Punkte → novaberg-backlog.md. Bugs → novaberg-bugs.md.*
