@@ -334,8 +334,16 @@ Der Key kommt vom Schreibpfad — **gleich ob neu angelegt oder verstärkt**. Ge
 
 Bei Verstärkung entsteht eine **neue Zeile auf dieselbe `kzg_id`**, kein Update. Das *ist* die Belegzählung.
 
-**(2) Promotion — `lzg_id` nachtragen.**
-Zieht der KZG-Eintrag ins LZG um, finden wir **alle** Zeilen mit `kzg_id = kzg_quell_key` und tragen die neue `lzg_id` nach. **Nicht optional:** KZG-Keys sind TTL-flüchtig und werden bei der Promotion konsumiert. Ohne Nachtrag zeigt die Zeile bald ins Leere.
+**(2) Promotion — `lzg_id` nachtragen. ✅ Gebaut und live gemessen.**
+Zieht der KZG-Eintrag ins LZG um, finden wir **alle** Zeilen mit `kzg_id = kzg_quell_key` und tragen die neue `lzg_id` nach. **Nicht optional:** KZG-Keys sind TTL-flüchtig ~~und werden bei der Promotion konsumiert~~. Ohne Nachtrag zeigt die Zeile bald ins Leere.
+
+**Korrektur der Begründung:** Der Halbsatz „und werden bei der Promotion konsumiert" ist **widerlegt** — `PROMOTION-ENTFERNT-KZG-NICHT` (backlog.md): Ein promoteter Eintrag verlässt das KZG nicht, er bleibt liegen und wächst weiter. Die **Notwendigkeit** des Nachtrags bleibt davon unberührt, sie trägt allein die TTL: Der Key verfällt, nur eben später und nicht durch die Promotion. Widerlegt ist die Dringlichkeitsbegründung, nicht die Regel.
+
+**Umsetzung.** Der Nachtrag sitzt in `agents/synapsen_promotion/agent.py` **hinter** der Dreier-Verzweigung, nicht in ihr. Halbreaktivierung, Reinforcement und Neuanlage unterscheiden sich nur darin, wie sie zu `knoten_id` kommen — der Umzug selbst ist in allen dreien derselbe, also ein Schreibpunkt statt drei. Der Reinforcement-Zweig ist dabei der wichtigste: Dort wandert ein Eintrag in einen **bestehenden** Knoten, und genau diese Zeile bliebe sonst blind, während ihr Knoten schwerer wird.
+
+`VerbindungRepository.lzg_id_nachtragen` gibt **zwei** Zahlen zurück (`gefunden`, `geaendert`). „Null geschrieben" heißt entweder *keine Brücken-Zeile vorhanden* oder *stand schon richtig*; eine einzelne Zahl könnte beides nicht unterscheiden und machte die Frage unbeobachtbar. Das `UPDATE` greift über `IS DISTINCT FROM` statt `IS NULL` — ein zweiter Lauf schreibt nichts, ein tatsächlich umgezogener Knoten wird trotzdem korrigiert.
+
+*Live-Beleg (26.07.2026):* Ein echter Turn, Knoten **513** neu angelegt, Log `verbindung nachgetragen — knoten_id=513, 1 von 1 Zeilen geschrieben`. Der Weg Knoten → `verbindung.lzg_id` → `turn_id` → `turn_roh` läuft seitdem durch und liefert Reiz, Reaktion und **beide** Emotionen nebeneinander. Im selben Lauf traf der Nachtrag einen älteren Key ohne Brücken-Zeile und meldete das als `info`, nicht als Defekt — der reguläre Fall für Einträge aus Pixie-Turns ohne `turn_id` und für alles vor dem Bau der Tabelle.
 
 **(3) Verdichtung — Beleg eintragen.** Nicht mehr an der `verbindung`-Zeile *(korrigiert Chat 108)*: Der Verdichter fügt **eine Zeile in `verhaltens_beleg` ein** (`verhaltens_id`, `turn_id`); das `UNIQUE (verhaltens_id, turn_id)` macht den Schritt idempotent. Siehe §13.
 
@@ -521,11 +529,11 @@ Voraussetzung: A1 ✅, A2 ✅, A4 ✅. Entscheidungen: E1, **E8**.
 `dispatch_kzg` sammelt die geschriebenen Keys je Segment ein und gibt sie **zusätzlich zum Zähler** zurück (`kzg_neue_keys`, `kzg_verstaerkte_keys`, `agents/kzg/dispatch.py:189`); der Dispatcher nimmt sie entgegen und protokolliert sie (`graph/nodes/dispatcher.py:377-390`). Beide Rückgabepfade tragen dieselbe Form. Fehlender Key: `info` bei regulärer Ablehnung (`status == "abgelehnt"`), `warning` sonst — kein silent skip.
 *Abnahme-Beleg:* **7 von 7 Läufen lieferten Keys, null Warnungen, null Ablehnungen, alle 22 geloggten Keys in Redis vorhanden.**
 
-**Bauteil 1b — Tabelle + Schreibpfad + `lzg_id`-Nachtrag. ⬜ Offen.**
+**Bauteil 1b — Tabelle + Schreibpfad + `lzg_id`-Nachtrag. ✅ GEBAUT UND LIVE GEMESSEN.**
 Tabelle (§12) + Schreibpfad im Dispatcher (§11.1) + `lzg_id`-Nachtrag in der Promotion (§11.2). **Beides gehört in einen Sprint** — eine Zeile ohne Nachtrag verwaist beim ersten KZG-Verfall.
 *Abnahme 1b* — **ersetzt den bisherigen Vorbehalt** ~~„eine oder n `verbindung`-Zeilen pro Turn, je nach Rest-A5 — die Abnahme zählt Zeilen erst, wenn die Schreib-Kardinalität feststeht"~~ (Kardinalität seit Chat 109 gemessen, §A5-Befund): Nach einem Turn existieren **mindestens zwei** `verbindung`-Zeilen mit **derselben `turn_id`** — eine je Graph-Lauf, mehr bei mehreren Segmenten. Alle tragen dieselbe `turn_id` (`graph/state.py:38` nennt das ausdrücklich als Zweck des Feldes). Nach einer Promotion trägt die Zeile die `lzg_id`.
 
-**⛔ BLOCKER für 1b — `PIXIE-TURN-ID-LEER`** (backlog.md, Chat 109). Gemessen 26.07.2026, 08:38:29: Ein Pixie-initiierter CharacterGraph-Lauf (`rolle=character`) legte einen KZG-Eintrag an und verstärkte vier weitere — mit **leerem `turn_id`**. Bei `turn_id NOT NULL` (E8-Folgeeigenschaft, §14) **scheitert dieser Lauf beim Schreiben**. Der Fix gehört **vor** 1b.
+**~~⛔ BLOCKER für 1b~~ — war keiner. `PIXIE-TURN-ID-LEER`** (backlog.md, Chat 109). Gemessen 26.07.2026, 08:38:29: Ein Pixie-initiierter CharacterGraph-Lauf (`rolle=character`) legte einen KZG-Eintrag an und verstärkte vier weitere — mit **leerem `turn_id`**. Bei `turn_id NOT NULL` (E8-Folgeeigenschaft, §14) ~~**scheitert dieser Lauf beim Schreiben**~~ — **gebaut anders gelöst (Chat 110):** Der Schreibpfad prüft `turn_id` vor dem Insert und überspringt den Lauf mit einer Warnung, die die Zahl der übersprungenen Keys nennt. Kein Abbruch, kein stiller Verlust. **Der Defekt besteht weiter** — Pixie-Turns erzeugen keine Brücken-Zeile und sind vom Charakter-Lesepfad damit ausgeschlossen —, aber er sperrt 1b nicht. Der Fix gehört ~~vor 1b~~ vor Bauteil 3, sonst fehlen dem Verdichter genau die selbstinitiierten Turns, in denen Nova ohne Reiz handelt.
 
 **Bauteil 2 — Backfill (optional).** Voraussetzung: A3, E6.
 
