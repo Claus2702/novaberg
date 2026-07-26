@@ -9,8 +9,8 @@ Regeln:
 - Veraendere den Wortlaut NICHT — gib die Originalteile zurueck
 
 Beispiele:
-"Meine Schwester Anna hat einen Birnenbaum. Weisst Du, was Birnen kosten?"
--> 2 Einheiten: Fakt ueber Anna | Preisfrage
+"Meine Schwester Ilva hat eine Toepferei. Weisst Du, was Brennoefen kosten?"
+-> 2 Einheiten: Fakt ueber Ilva | Preisfrage
 
 "Das Universum ist faszinierend und ich liebe schwarze Loecher"
 -> 1 Einheit: Gleicher Kontext, gleiche Intention

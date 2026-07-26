@@ -119,7 +119,10 @@ class VerdichtungPromptTest(unittest.TestCase):
 
     def test_nutzer_prompt_nennt_nova_nicht_als_subjekt(self):
         prompt: str = _build_verdichtung_prompt("user")
-        self.assertIn('GUT: "Der Nutzer heisst Claus"', prompt)
+        # Auf die Struktur pruefen, nicht auf den Beispieltext: welcher Name im
+        # Beispiel steht, gehoert nicht hierher, sondern in
+        # test_prompt_beispielnamen.py.
+        self.assertIn('GUT: "Der Nutzer heisst ', prompt)
         self.assertNotIn(f"GUT: \"{ASSISTANT_NAME} hat", prompt)
 
     def test_unbekannter_beobachter_bekommt_den_nutzer_block(self):

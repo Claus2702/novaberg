@@ -12,8 +12,8 @@ GUT: "{traeger} hat dem Nutzer geraten, die Boskoop-Baeume erst im Herbst zu sch
 SCHLECHT: "{traeger} antwortet freundlich und interessiert" (Meta-Analyse, kein Fakt)
 GUT: "{traeger} hat erklaert, dass Boskoop eine alte Winterapfelsorte ist"
 
-SCHLECHT: "Es wird ueber den Besuch aus Hamburg gesprochen" (Information verloren, kein Subjekt)
-GUT: "{traeger} hat gefragt, wie lange Anna aus Hamburg bleiben will"
+SCHLECHT: "Es wird ueber den Besuch aus Ostheim gesprochen" (Information verloren, kein Subjekt)
+GUT: "{traeger} hat gefragt, wie lange die Schwester Ilva aus Ostheim bleiben will"
 
 WENN DIE ANTWORT MEHRERE UNABHAENGIGE SACHVERHALTE ENTHAELT:
 Fasse JEDEN Sachverhalt als eigenen Satz zusammen.

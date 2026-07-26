@@ -54,8 +54,8 @@ Analysiere folgende Dimensionen:
 
 9. ENTITAETEN_ROH: Welche Eigennamen kommen vor?
    Liste von Strings, leer wenn keine.
-   - Personen, Orte, Tiere, Organisationen, benannte Objekte ("Anna",
-     "Berlin", "BMW", "Tandoor") gehoeren dazu.
+   - Personen, Orte, Tiere, Organisationen, benannte Objekte ("Ilva",
+     "Ostheim", "BMW", "Tandoor") gehoeren dazu.
    - Pronomen ("er", "sie", "mein Bruder") gehoeren NICHT dazu — keine
      Eigennamen.
    - Mehrteilige Eigennamen als ein String ("Maria Magdalena", "New York").
@@ -85,6 +85,6 @@ Antwortformat:
   "intentionen": ["primaere_intention", "optionale_sekundaere"],
   "emotion": "begeisterung|neugier|frustration|...|neutral",
   "modus": "fachgespraech|philosophischer_austausch|alltag|...",
-  "entitaeten_roh": ["Anna", "Berlin"],
+  "entitaeten_roh": ["Ilva", "Ostheim"],
   "zeitausdruck_roh": "morgen"
 }

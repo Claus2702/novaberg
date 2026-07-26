@@ -5,15 +5,15 @@ KRITISCH WICHTIG: Behalte dabei ALLE konkreten Namen, Orte, Zahlen und Fakten be
 Die Zusammenfassung muss den INHALT festhalten, nicht die Emotion oder Bewertung.
 
 SCHLECHT: "Der Nutzer betont seinen Namen" (Meta-Analyse, kein Fakt)
-GUT: "Der Nutzer heisst Claus"
+GUT: "Der Nutzer heisst Merten"
 
 SCHLECHT: "Der Nutzer zeigt Interesse an seinem Haustier" (zu abstrakt)
-GUT: "Der Nutzer hat einen Hund namens Balu, ein Golden Retriever"
+GUT: "Der Nutzer hat einen Hund namens Rufus, ein Golden Retriever"
 
 SCHLECHT: "Die Schwester wird erwaehnt" (Information verloren)
-GUT: "Die Schwester des Nutzers heisst Anna und hat einen Birnbaum"
+GUT: "Die Schwester des Nutzers heisst Ilva und betreibt eine Toepferei"
 
 WENN DER SATZ MEHRERE UNABHAENGIGE SACHVERHALTE ENTHAELT:
 Fasse JEDEN Sachverhalt als eigenen Satz zusammen.
-Beispiel: "Meine Schwester, deren Dach undicht war, hat Birnen mitgebracht"
--> "Das Hausdach der Schwester ist undicht. Die Schwester hat Birnen mitgebracht."
+Beispiel: "Meine Schwester, deren Dach undicht war, hat Aepfel mitgebracht"
+-> "Das Hausdach der Schwester ist undicht. Die Schwester hat Aepfel mitgebracht."
