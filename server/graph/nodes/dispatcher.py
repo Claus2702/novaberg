@@ -375,8 +375,19 @@ def dispatch(
             try:
                 result: dict = dispatch_kzg(state, ziel_writes)
                 count: int = result.get("kzg_verarbeitet", 0)
+                kzg_new_keys:        list[str] = result.get("kzg_neue_keys", []) or []
+                kzg_reinforced_keys: list[str] = result.get("kzg_verstaerkte_keys", []) or []
                 gesamt += count
                 logger.info(f"Dispatcher: 'kzg' -> KZG-Agent, {count} Segmente verarbeitet")
+                logger.info(
+                    "Dispatcher: KZG-Keys empfangen — turn_id=%s, rolle=%s, "
+                    "%d neu, %d verstaerkt, neue Keys=%s",
+                    state.get("turn_id", ""),
+                    state.get("ei_calc_rolle", ""),
+                    len(kzg_new_keys),
+                    len(kzg_reinforced_keys),
+                    kzg_new_keys,
+                )
             except Exception as fehler:
                 logger.error(f"Dispatcher: Fehler bei KZG-Agent — {fehler}")
             continue

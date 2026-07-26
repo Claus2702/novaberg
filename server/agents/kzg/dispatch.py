@@ -28,7 +28,12 @@ def dispatch_kzg(
         writes: Liste von pending_writes mit ziel="kzg"
 
     Returns:
-        Dict mit kzg_verarbeitet (Anzahl verarbeiteter Segmente)
+        Dict mit:
+          kzg_verarbeitet:      Anzahl verarbeiteter Segmente
+          kzg_neue_keys:        Redis-Keys der in diesem Lauf neu angelegten
+                                KZG-Eintraege, in Segment-Reihenfolge
+          kzg_verstaerkte_keys: Redis-Keys der thematisch verstaerkten
+                                Nachbar-Eintraege, ueber alle Segmente
     """
 
     user_id:      str = state.get("user_id", "")
@@ -44,14 +49,23 @@ def dispatch_kzg(
 
     if not agent:
         logger.error("KzgAgent nicht in Registry gefunden")
-        return {"kzg_verarbeitet": 0}
+        return {
+            "kzg_verarbeitet":      0,
+            "kzg_neue_keys":        [],
+            "kzg_verstaerkte_keys": [],
+        }
 
     hoechste_salienz: float = 0.0
     bestes_ergebnis:  dict  = {}
     bester_kern:      str   = ""
     verarbeitet:      int   = 0
 
-    for write in writes:
+    # Transport der geschriebenen Redis-Keys an den aufrufenden Dispatcher.
+    # Der Subgraph kennt sie (speicher.py), der Dispatcher bisher nicht.
+    new_keys:         list[str] = []
+    reinforced_keys:  list[str] = []
+
+    for write_idx, write in enumerate(writes):
         daten:       dict = write.get("daten", {})
         salienz_obj: dict = daten.get("salienz_obj", {})
 
@@ -104,6 +118,51 @@ def dispatch_kzg(
         result_state = agent.invoke(agent_state)
         verarbeitet += 1
 
+        # ── Geschriebene Keys einsammeln ──
+        # speichern() legt kzg_key und verstaerkte_eintraege im parameter-Kanal
+        # ab; queues_befuellen fasst den Kanal nicht an, der Wert steht also
+        # noch. Fehlt der Key, gibt es zwei Ursachen: regulaere Ablehnung
+        # unter der Salienz-Schwelle (status="abgelehnt", speichern() lief
+        # nie) oder ein Defekt im Schreibpfad. Nur Letzteres ist laut.
+        result_parameter: dict = result_state.get("parameter", {}) or {}
+        result_status:    str  = result_state.get("status", "")
+        new_key:          str  = result_parameter.get("kzg_key", "")
+        reinforced:       list = result_parameter.get("verstaerkte_eintraege", []) or []
+
+        if new_key:
+            new_keys.append(new_key)
+        elif result_status == "abgelehnt":
+            logger.info(
+                "KZG-Dispatch: Segment %d/%d unter Salienz-Schwelle abgelehnt, "
+                "kein KZG-Eintrag — turn_id=%s",
+                write_idx + 1,
+                len(writes),
+                state.get("turn_id", ""),
+            )
+        else:
+            logger.warning(
+                "KZG-Dispatch: kein kzg_key aus Segment %d/%d — turn_id=%s, "
+                "status=%s, speicher_status='%s'",
+                write_idx + 1,
+                len(writes),
+                state.get("turn_id", ""),
+                result_status,
+                result_parameter.get("speicher_status", ""),
+            )
+
+        for verstaerkt_eintrag in reinforced:
+            verstaerkt_key: str = verstaerkt_eintrag.get("key", "")
+            if verstaerkt_key:
+                reinforced_keys.append(verstaerkt_key)
+            else:
+                logger.warning(
+                    "KZG-Dispatch: verstaerkter Eintrag ohne key aus Segment %d/%d — "
+                    "turn_id=%s",
+                    write_idx + 1,
+                    len(writes),
+                    state.get("turn_id", ""),
+                )
+
         # Hoechste Salienz tracken fuer Session-Annotation
         score: float = salienz_obj.get("salienz", 0.0)
         if score > hoechste_salienz and result_state.get("status") != "abgelehnt":
@@ -118,4 +177,17 @@ def dispatch_kzg(
 
     logger.info(f"KZG-Dispatch: {verarbeitet} Segmente verarbeitet")
 
-    return {"kzg_verarbeitet": verarbeitet}
+    logger.info(
+        "KZG-Dispatch: Keys eingesammelt — turn_id=%s, beobachter=%s, "
+        "%d neue Keys, %d verstaerkte Keys",
+        state.get("turn_id", ""),
+        beobachter,
+        len(new_keys),
+        len(reinforced_keys),
+    )
+
+    return {
+        "kzg_verarbeitet":      verarbeitet,
+        "kzg_neue_keys":        new_keys,
+        "kzg_verstaerkte_keys": reinforced_keys,
+    }
