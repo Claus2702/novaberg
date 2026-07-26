@@ -712,6 +712,8 @@ Lessons leben als `{modul}_l.md` oder `{modul}_l_{thema}.md` neben ihrem Modul-D
 | novaberg-roadmap.md | Projektchronik (nur abgeschlossene Arbeit) |
 | novaberg-backlog.md | Offene Features, Konzepte, Bugs |
 | novaberg-bugs.md | Bekannte Probleme & Limitationen |
+| DEVELOPER_HANDBOOK.md | Verbindliche Entwicklungsstandards fuer Python-Code (EVA, Logging, DB, Tests) |
+| novaberg-fundliste.md | Rohe, noch unklassifizierte Funde aus laufender Arbeit |
 
 ---
 
