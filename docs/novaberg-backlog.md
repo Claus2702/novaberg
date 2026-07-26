@@ -2901,7 +2901,7 @@ Live-Knoten mit `roh > CAP` produzieren `absolut = 10.00`. Live-Beispiele: `roh 
 
 Die Formel ist bewiesen (Nachtrag unten), die Design-Entscheidung nicht: CAP zu eng gesetzt, oder Dämpfung über den Cap hinaus weicher gestalten?
 
-**Zu klären (weiter offen):** Ist die Live-Salienz-Skala strukturell höher als die Konzept-Annahme (Konzept: 0..10) — dann wäre der CAP zu eng — oder soll die Dämpfung über den Cap hinaus weichen, sodass `roh > CAP` weiterhin in einen offenen Bereich abgebildet wird?
+**Zu klären (erste Hälfte beantwortet):** ~~Ist die Live-Salienz-Skala strukturell höher als die Konzept-Annahme (Konzept: 0..10) — dann wäre der CAP zu eng~~ → **beantwortet Chat 109 (26.07.2026): ja, sie ist höher — aber das ist keine Skalenfrage, sondern ein Defekt.** Die KZG-Salienz läuft ungedeckelt bis 10 hoch (KZG-SALIENZ-BOOST-OHNE-DECKEL, 68 % der Partition über 1.0). Der CAP ist nicht zu eng; die Eingangsgröße ist zu groß. **Ursache benannt und nachgerechnet: KZG-SALIENZ-SKALENBRUCH** (Dämpfung gegen CAP 10.0 bei einer Skala 0.0–1.0 — im Entscheidungsbereich unter 1 % Wirkung). Offen bleibt die zweite Hälfte: soll die Dämpfung über den Cap hinaus weichen, sodass `roh > CAP` weiterhin in einen offenen Bereich abgebildet wird?
 
 **Formel empirisch bewiesen — Chat 108 (25.07.2026)**, acht Belegzeilen aus zwei unabhängigen Datensätzen:
 
@@ -2922,7 +2922,22 @@ Alle acht Paare reproduziert die Formel innerhalb der ausgewiesenen Anzeige-Gena
 - **(a) Klemme** — oberhalb `roh = 10` bildet alles auf exakt `10.000` ab. Einbahnstraße: Knoten dort oben sind nicht mehr unterscheidbar (gemessen: ids 97 und 410 beide exakt 10.000).
 - **(b) Stauchung oben** — `roh 6.6…10.2` wird auf `abs 9.30…10.00` abgebildet: 3,6 Einheiten Signal werden zu 0,7. Für die Sortierung egal; nicht egal, wenn die Zahl im Prompt steht — der Kern-Destillator formatiert Einträge als `[{dimension}] (Gewicht: X.XX, Häufigkeit: N)`, das LLM liest 9.3 neben 10.0 als gleich wichtig, wo im Rohmaß Faktor 1,5 liegt.
 
-**Beobachtung:** Neue Knoten kommen aus der Promotion bereits bei `roh` 6,7–10,1 herein — oberhalb des Knies, wo die Kurve flach ist. Ein Knoten braucht keine Verstärkungshistorie mehr, um oben zu stehen; er wird oben geboren.
+**Beobachtung:** Neue Knoten kommen aus der Promotion bereits bei `roh` 6,7–10,1 herein — oberhalb des Knies, wo die Kurve flach ist. Ein Knoten braucht keine Verstärkungshistorie mehr, um oben zu stehen; er wird oben geboren. → **Mechanismus benannt Chat 109, siehe Ursachenkette unten.**
+
+**Ursachenkette — der Zulieferer hat einen Namen (Chat 109, Live-Redis 26.07.2026):**
+
+```
+Boost ohne Deckel  →  KZG-Salienz bis 10, Stau bei 10
+                   →  Promotions-Schwelle 0.8 wirkungslos
+                   →  Knoten kommen oben herein (Beobachtung oben)
+                   →  gewicht_absolut klemmt bei 10.000 (Kante a)
+```
+
+Zulieferer ist KZG-SALIENZ-BOOST-OHNE-DECKEL, sein Mechanismus ist KZG-SALIENZ-SKALENBRUCH: 527 von 775 KZG-Einträgen (68 %) liegen über dem dokumentierten Salienz-Maximum 1.0, der oberste Eimer staut sich bei 10. „Er wird oben geboren" ist damit kein Rätsel mehr — der Knoten erbt seine Höhe aus einer KZG-Salienz, die ihre eigene Skala verlassen hat, und die Promotions-Schwelle 0.8 filtert dabei nichts mehr.
+
+**~~Offene Gegenbeobachtung — nicht aufgelöst:~~ ✅ Aufgelöst Chat 109:** Der am 26.07. entstandene Knoten id=496 kam mit `roh = 0.700` / `absolut = 3.313` herein, also **nicht** oben, während derselbe KZG-Eintrag beim späteren Auslesen auf 1.3958 stand. **Beides ist gleichzeitig wahr, und es ist kein Widerspruch:** Die Queue-Nutzlast friert die Salienz beim Einreihen ein (`queues_befuellen` in `agents/kzg/queues.py` schreibt `salienz` als festen Wert in die `lzg_promotion`-Nutzlast, zum Push-Zeitpunkt) — der Knoten erbt also den Wert **von der Anlage**. Der KZG-Eintrag wächst danach weiter, **weil er nicht entfernt wird** (PROMOTION-ENTFERNT-KZG-NICHT). Zwei Zahlen zu zwei Zeitpunkten, nicht zwei Messungen derselben Größe.
+
+**Davon unberührt weiterhin offen:** *wann* die Verstärkungen des KZG-Zwillings lagen — vor oder nach der Promotion. Der eingefrorene Queue-Wert kann sie nicht datieren (Details in PROMOTION-ENTFERNT-KZG-NICHT). Das ist eine **andere** Frage als die Divergenz der beiden Zahlen und berührt die Auflösung oben nicht. Ebenfalls unberührt offen: ob die Divergenz zu „Knoten kommen bei 6,7–10,1 herein" (Chat 98) dieselbe Ursache hat.
 
 **Berührt zwei bestehende Einträge:**
 
@@ -3349,6 +3364,8 @@ Kein einziger harter Check im Repo (Audit Chat 107): kein `== 768`, kein `assert
 
 Recherche schreibt mit `salienz = 0.7`. `KZG_SALIENZ_HIGH = 0.7`. Der `>=`-Vergleich in `kzg_store` schiebt damit **jeden** Recherche-Eintrag in die `lzg_promotion`-Queue. Ist das gewollt? Soll wirklich jede Recherche ins Langzeitgedächtnis? Kein Bug — eine ungeklärte Entscheidung, die bisher niemand getroffen hat (sie war unsichtbar, solange die Promotion alle Einträge wegen leerem `inhalt` verwarf — siehe RECHERCHE-WISSEN-ERREICHT-LZG-NIE). **Nach dem Re-Embedding neu bewerten:** Dann promoten die Einträge tatsächlich, und wir sehen, was das bedeutet. ⬜ Prio mittel
 
+**Reihenfolge geklärt — Chat 109 (Live-Redis, 26.07.2026):** Die Grenzwertfrage ist **keine Mengenfrage.** 527 von 775 Einträgen der Partition `kzg:meister:nova:*` (68 %) liegen über dem dokumentierten Salienz-Maximum 1.0, nur 7 unter 0.5. Solange der Verstärkungs-Boost keinen **wirksamen** Deckel hat (KZG-SALIENZ-BOOST-OHNE-DECKEL; Mechanismus KZG-SALIENZ-SKALENBRUCH — der Deckel existiert, steht aber bei CAP 10.0 auf einer Skala bis 1.0 und dämpft im Entscheidungsbereich um unter 1 %), ist jede Schwellwert-Diskussion gegenstandslos: `salienz >= 0.7` entscheidet nichts, wenn zwei Drittel des Korpus ohnehin darüber stehen. **Erst der Deckel, dann die Grenzwerte.**
+
 ## Feature: VITALZEICHEN — täglicher Pixie-Agent prüft Output-Qualität statt Fehlerfreiheit (Chat 107)
 
 **Priorität hoch.**
@@ -3446,7 +3463,7 @@ Claude Codes eigene Bash-Sandbox ist **nicht aktiv**: Der Bash-Prozess sitzt in 
 
 ## Bug: PROMO-KZG-KEY-ALS-TURN-ID — `pipeline_log.turn_id` trägt bei Promotion-Zeilen KZG-Keys (Chat 109)
 
-`agents/synapsen_promotion/agent.py:178-179` ruft `pipeline_log.span_start(turn_id=kzg_key, …)` — der KZG-Redis-Key wird als `turn_id` eingesetzt, weil die Queue-Nutzlast keine echte `turn_id` mitführt (`agents/kzg/queues.py:73-80`: `aufgabe`, `user_id`, `key`, `salienz`, `themen`, `dimension` — kein `turn_id`).
+`agents/synapsen_promotion/agent.py:178-179` ruft `pipeline_log.span_start(turn_id=kzg_key, …)` — der KZG-Redis-Key wird als `turn_id` eingesetzt, weil die Queue-Nutzlast keine echte `turn_id` mitführt (`queues_befuellen` in `agents/kzg/queues.py` pusht `aufgabe`, `user_id`, `key`, `salienz`, `themen`, `dimension` — **kein `turn_id`**).
 
 **Folge:** In der Spalte `pipeline_log.turn_id` stehen bei Promotion-Einträgen Werte der Form `kzg:{user_id}:{character_id}:{ms-timestamp}` neben echten UUID4-Hex-Turn-IDs. Jede Auswertung über `turn_id` — Korrelation eines Turns über alle Nodes, Join, `GROUP BY` — mischt zwei Wertebereiche in einer Spalte. Ein Promotion-Span ist damit keinem Turn zuzuordnen, und ein `WHERE turn_id = …` über echte Turn-IDs übersieht ihn stillschweigend.
 
@@ -3488,14 +3505,260 @@ Gemessener Bezugswert aus dem Nachbar-Befund: 926 Keys unter `kzg:meister:nova:*
 
 ---
 
-## Befund: TURN-ROH-HG-SKIP — der übersprungene Rohturn pro Turn ist planmäßig; die Zahl ist offen (Chat 109)
+## Befund: TURN-ROH-HG-SKIP — der übersprungene Rohturn pro Turn ist planmäßig; Zahl gemessen (Chat 109)
 
 **Widerlegt (Quelltext-Audit Chat 109, 25.07.2026):** Die übersprungenen `turn_roh` sind **kein Defektsignal.** Bedingung 4 des Guards (`graph/nodes/dispatcher.py:297-300`, `if not response:` → „turn_roh uebersprungen — keine Nova-Antwort (response leer)") trifft im HumanGraph-Lauf **strukturell immer** zu: `create_state` initialisiert `response = ""` (`graph/base.py:144`), und der HumanGraph hat überhaupt keinen Responder — seine fünf Nodes sind `perzeption`, `enricher`, `ei_calc`, `salience`, `dispatcher` (`graph/human_graph.py:39-43`, Docstring :5-6: „Kein Responder — der Charakter antwortet separat über den CharacterGraph"). Alle Zuweisungen an `state["response"]` liegen im CharacterGraph (`responder.py:617`, `corrector.py:80`, `thinker.py:597/599/636`, `character_graph.py:165`).
 
 Da der Dispatcher pro Konversations-Turn **zweimal** läuft — beide Graphen enden auf ihm (`human_graph.py:50-51`, `character_graph.py:122-123`) —, wird **pro Turn planmäßig genau ein `turn_roh` übersprungen** (der Pfad-1-Lauf) und genau einer geschrieben (der Pfad-2-Lauf). Das deckt sich mit „genau eine `turn_roh`-Zeile je Turn" in `novaberg-charakter-resonanz_k.md` §5 (Die drei Pfade).
 
-**Offene Frage — die Zahl, nicht der Mechanismus:** Strukturell wäre je Rohturn ein Skip zu erwarten, bei 150 Rohturns (Bestand 25.07.2026, siehe TURN-ROH-VOR-KRAFT1-ENTWERTET) also ~150 Warnungen. Beobachtet wurden **2**. Die Differenz ist unerklärt. Denkbare Richtungen, keine geprüft: Log-Vorhaltung/Rotation kürzer als der Beobachtungszeitraum; die Warnung erscheint nur unter bestimmten Log-Levels; oder der Pfad-1-Dispatcher endet häufig vorher im äußeren Guard `if not writes: … return state` (`dispatcher.py:350-356`) — dort wird `_turn_roh_schreiben` gar nicht erst aufgerufen und **keine** turn_roh-spezifische Zeile geschrieben. Letzteres würde die Zahl senken, ohne dass ein Rohturn fehlt.
+**Zahl beantwortet — Chat 109 (26.07.2026, Container-Lauf ab 08:31, ein Gespräch):** ~~Strukturell wäre je Rohturn ein Skip zu erwarten, bei 150 Rohturns also ~150 Warnungen. Beobachtet wurden 2. Die Differenz ist unerklärt.~~ → Die Differenz war ein **Fenster-Artefakt**, keine Lücke: Im gemessenen Lauf stehen **4 Skips**, jeder ~100 ms nach seinem `dispatch_kzg`-Lauf. Drei gehören zu `rolle=user` (HumanGraph, planmäßig), einer zum Pixie-Lauf (siehe PIXIE-TURN-ID-LEER). Der Mechanismus ist damit live bestätigt; die frühere „2" stammte aus einem kleineren Beobachtungsfenster. Die drei vermuteten Richtungen (Log-Rotation, Log-Level, äußerer `writes`-Guard `dispatcher.py:350-356`) brauchen keine Prüfung mehr.
 
-**Kein Bug — offene Zählfrage.** Zu klären, bevor jemand die Warnung als Fehlersignal liest oder aus ihrer Seltenheit auf einen intakten Pfad schließt. ⬜ Prio niedrig — offene Frage (Zählung), kein Defekt
+**Kein Bug.** Die Warnung ist der planmäßige Begleiter jedes Turns — zu wissen, bevor jemand sie als Fehlersignal liest oder aus ihrer Seltenheit auf einen intakten Pfad schließt. ⬜ Prio niedrig — kein Defekt, Mechanismus und Zahl belegt
 
 **Zusammenhang:** PIXIE-SELBSTTRIGGER-KEIN-TURN-ROH (der andere Fall ohne Paar) · TURN-ROH-VOR-KRAFT1-ENTWERTET (Bestandszahl 150) · SILENT-SKIP-EI-DEFAULTS (nennt den `turn_roh`-Guard als eine der zwei lauten Lesestellen).
+
+---
+
+## Bug: KZG-SALIENZ-BOOST-OHNE-DECKEL — die thematische Verstärkung hebt die Salienz über ihren Wertebereich (Chat 109)
+
+Die Bewertung selbst ist gesund: Der Salienz-Node liefert Werte in **0.0–1.0**, wie `novaberg-node-salience.md` sie an zwei Stellen dokumentiert (:15 als kognitionswissenschaftliche Analogie, :80 als Dimension 3 „Float 0.0–1.0"). Die **thematische Verstärkung** hält diesen Bereich nicht ein — sie addiert den gedämpften Boost auf den Bestandswert, und gedämpft wird gegen `KZG_SALIENZ_CAP = 10.0` (`config.py:207`), nicht gegen 1.0. Die Wand steht also eine Größenordnung über der Skala, auf der bewertet wird.
+
+**Gemessen Chat 109 (Live-Redis, 26.07.2026, Partition `kzg:meister:nova:*`, 775 Keys):** **527 von 775 Einträgen (68 %) liegen über 1.0.**
+
+```
+Eimer (gerundet):    0:7 · 1:406 · 2:164 · 3:74 · 4:37 · 5:24
+                     6:13 · 7:10 · 8:10 · 9:9 · 10:21
+MAX 10.002
+```
+
+Der oberste Eimer ist mit 21 Einträgen **dicker** als die drei darunter (9, 10, 10). Das ist ein Stau an einer Wand, kein auslaufender Verteilungsschwanz.
+
+**Korrelation mit `haeufigkeit` eindeutig:** Unter 1.0 liegen überwiegend Einträge mit `haeufigkeit = 1` (167); in den Top 20 findet sich kein einziger Eintrag über 1.0 mit `haeufigkeit = 1`. Über 1.0 beginnt bei `haeufigkeit = 2` (76) und reicht bis `haeufigkeit = 43`. Die Höhe kommt aus der Verstärkung, nicht aus der Bewertung.
+
+**Live-Beleg am einzelnen Eintrag:** `kzg:meister:nova:1785055109755`, angelegt 08:38:29 mit Salienz **0.700** — belegt über `trigger_salienz = 0.700` der Promotion 19 s später und `roh = 0.700` des daraus entstandenen `lzg_knoten` id=496. Beim Auslesen wenige Minuten später: **1.3958**. Selbstverstärkung ist ausgeschlossen — der Key erscheint im Log in keiner Verstärkungszeile.
+
+**Folge — sämtliche KZG-Tore sind für zwei Drittel des Korpus wirkungslos.** `KZG_SALIENZ_MINIMUM` 0.3, `MID` 0.5, `HIGH` 0.7 und die Promotions-Schwelle 0.8 liegen alle unterhalb des Bereichs, in dem 68 % der Einträge stehen; nur **7 von 775** liegen unter 0.5. Ein einziger Boost genügt, damit ein Eintrag alle Gates dauerhaft passiert. Live bestätigt: In sieben `dispatch_kzg`-Läufen eines echten Gesprächs am 26.07. gab es **null** Ablehnungen.
+
+**Ort:** `_gedaempfter_boost`, wortgleich doppelt in `memory/kzg.py:229` und `agents/kzg/speicher.py:134` — ein Fix muss beide treffen, siehe REFAC-KZG-CODE-DUPLIKAT. Die Formel selbst ist nicht nachgerechnet; die **Reparaturrichtung ist offen** (Deckel auf die Summe, Dämpfung gegen 1.0 statt gegen den CAP, oder die Skala bewusst auf 0..10 umdefinieren und die Doku nachziehen). ⬜ Prio hoch
+
+**Zusammenhang:** KZG-GEWICHT-ABSOLUT-CEILING (Abnehmer der Kette — „Knoten werden oben geboren") · KZG-SALIENZ-GRENZWERT-UNKLAR (ohne Deckel gegenstandslos) · KZG-VERSTAERKUNG-KEYS-SCAN (dieselbe Verstärkungsschleife) · REFAC-KZG-CODE-DUPLIKAT.
+
+---
+
+## Bug: DESTILLAT-SUBJEKT-SCHABLONE — der Verdichter erfindet „Der Nutzer" bei null Nutzer-Input (Chat 109)
+
+Ergänzt DESTILLAT-PERSPEKTIVE-VS-SUBJEKT (Chat 103/108) und **korrigiert dessen Ursachensatz.**
+
+**Live-Beleg Chat 109 (26.07.2026),** `kzg:meister:nova:1785055109755`, `beobachter=assistant`:
+
+```
+inhalt: "Der Nutzer erinnert an den vor zehn Tagen besprochenen
+         Synapsen-Migrationsplan P1-P10. …"
+```
+
+Der Turn war **Pixie-initiiert.** Es gab in diesem Turn **keinen Nutzer-Input** — Nova hat unaufgefordert erinnert („ich wollte dich nur kurz an … erinnern"). Der Verdichter hat einen Nutzer als Subjekt **erfunden** und Novas eigene Handlung ihm zugeschrieben.
+
+**Ursache korrigiert:** DESTILLAT-PERSPEKTIVE-VS-SUBJEKT nennt seit Chat 108 als Ursache „die Quelle, nicht der Prompt" — kein Prompt könne eine Stimme rekonstruieren, die im Eingabetext nicht vorkommt. Für den Verdichter ist das hiermit widerlegt: Bei null Nutzer-Input steht „Der Nutzer" trotzdem da. Die Perspektivverdrehung ist an dieser Stelle **kein Materialproblem, sondern eine Schablone** — der Verdichter (`agents/kzg/verdichtung.py`; Prompt-Text nicht gelesen) setzt den Nutzer als Subjekt, unabhängig davon, wer gesprochen hat.
+
+**Folge für CHARAKTER-RESONANZ Bauteil 2:** Ein Backfill über die 111 verwertbaren Rohturns **reproduziert die Verdrehung**, solange der Verdichter das Subjekt nicht aus `beobachter` ableitet. Die Schablone würde in die neue Quelle geschrieben, aus der Novas Charakter entsteht. ⬜ Prio hoch
+
+**Zusammenhang:** DESTILLAT-PERSPEKTIVE-VS-SUBJEKT (dort steht der widerlegte Ursachensatz Chat 108 noch unmarkiert) · PIXIE-SELBSTTRIGGER-KEIN-TURN-ROH und PIXIE-TURN-ID-LEER (derselbe Pixie-Lauf) · TRIB-PERSON-DRIFT.
+
+---
+
+## Bug: PIXIE-TURN-ID-LEER — Pixie-initiierter CharacterGraph-Lauf schreibt KZG ohne `turn_id` (Chat 109)
+
+**Gemessen Chat 109 (26.07.2026, 08:38:29):** Ein Pixie-initiierter CharacterGraph-Lauf (`rolle=character`) legte einen KZG-Eintrag an und verstärkte vier weitere — mit **leerem `turn_id`**. Log-Zeile wörtlich:
+
+```
+KZG-Dispatch: Keys eingesammelt — turn_id=, beobachter=assistant,
+1 neue Keys, 4 verstaerkte Keys
+```
+
+**Verstoß gegen den beschlossenen Entwurf:** `novaberg-thinking-task-orchestration_k.md:323` führt `pixie_delivery` als gleichberechtigten Trigger-Typ neben `user_prompt`, `nova_self` und `nova_rueckfrage`; :95 verlangt für **jeden** Graph-Auftrag den vollständigen CharacterGraph bis Salienz und Dispatcher. Ein Pixie-initiierter Lauf **ist** ein Turn und muss eine `turn_id` tragen. Der `/chat`-Pfad erzeugt sie (`api/chat.py:134`) und reicht sie über das Event-Payload weiter (`services/event_consumer.py:408`) — der Pixie-Pfad hat kein Äquivalent.
+
+**Blocker für CHARAKTER-RESONANZ Bauteil 1b:** `verbindung.turn_id` soll NOT NULL sein. Ohne Fix scheitert **jeder** Pixie-Lauf beim Schreiben der Verbindungs-Zeile. ⬜ Prio hoch
+
+**Berührt PIXIE-SELBSTTRIGGER-KEIN-TURN-ROH:** Derselbe Lauf übersprang `turn_roh`, weil `response` beim Dispatcher leer war — der vierte von vier Skips im gemessenen Gespräch (siehe TURN-ROH-HG-SKIP). Der KZG-Eintragsinhalt war jedoch **gefüllt** und gibt Novas Nachricht korrekt wieder: Der Text lag also vor, nur nicht in `state["response"]`.
+
+**Offene Frage, ausdrücklich keine Antwort:** Woher der Bewertungstext auf diesem Pfad stammt, wenn `graph/nodes/salience.py:120-121` bei `rolle=character` genau `state["response"]` als Bewertungsobjekt liest. Ungeprüft.
+
+---
+
+## Bug: KZG-SALIENZ-SKALENBRUCH — die Dämpfung ist auf CAP 10.0 kalibriert, die Skala geht bis 1.0 (Chat 109)
+
+Nennt den Mechanismus hinter KZG-SALIENZ-BOOST-OHNE-DECKEL und rechnet die Formel nach, die dort ausdrücklich offen blieb.
+
+**Formel wörtlich** (`memory/kzg.py:229-249` und `agents/kzg/speicher.py:134-154` — Funktionskörper per `diff` als byte-identisch verifiziert, nur die Kommentarbanner drumherum unterscheiden sich):
+
+```
+remaining = max(0.0, CAP - alte_salienz)
+ratio     = remaining / CAP
+daempfung = sin(ratio * pi/2) ** EXP
+effektiv  = raw_boost * daempfung
+```
+
+`CAP = 10.0`, `EXP = 0.6` (`config.py:207-208`), `raw_boost = salienz / 2.0` (`KZG_VERSTAERKUNG_DIVISOR`, `config.py:864`).
+
+**Der Bruch:** `salienz` lebt auf 0.0–1.0, die Dämpfungskurve ist über 0–10 gespannt. Im gesamten Entscheidungsbereich ist die Funktion praktisch die Identität:
+
+```
+alte_salienz 0.30  →  Dämpfung 0.99933
+alte_salienz 0.70  →  Dämpfung 0.99637
+alte_salienz 1.00  →  Dämpfung 0.99259
+```
+
+Der Docstring sagt „verhindert Salienz-Explosion". Sie dämpft dort, wo TTL- und Promotions-Entscheidungen fallen, um **unter 1 %**.
+
+**Gemessen Chat 109 (Live-Redis, 26.07.2026, Partition `kzg:meister:nova:*`)** — 10 am 26.07. neu angelegte Einträge, Zeitstempel im Schlüsselnamen, alle deckungsgleich mit `erstellt_am`:
+
+```
+haeufigkeit=1:  0.7 · 0.7 · 0.7 · 0.7 · 0.4 · 0.4        (runde Werte)
+haeufigkeit=2:  0.949067183610147 · 0.849352240389
+haeufigkeit=3:  1.098081464380 · 1.395879534625921
+```
+
+Runde Werte bei `haeufigkeit = 1`, lange Nachkommastellen ab 2: **Die Bewertung ist gesund, der Boost verlässt die Skala.** Zwei Verstärkungen genügen.
+
+**Korpusweit (dieselbe Messreihe wie KZG-SALIENZ-BOOST-OHNE-DECKEL, nicht eine zweite Messung):** 527 von 775 Einträgen über 1.0 (68 %), Verteilung gerundet `0:7 · 1:406 · 2:164 · 3:74 · 4:37 · 5:24 · 6:13 · 7:10 · 8:10 · 9:9 · 10:21`, MAX 10.002. Der oberste Eimer ist **dicker** als die drei darunter — Stau an einer Wand, kein Verteilungsschwanz. Die Korrelation mit `haeufigkeit` ist eindeutig: kein Eintrag über 1.0 bei `haeufigkeit = 1` in den Top 20; über 1.0 beginnt bei `haeufigkeit = 2` und reicht bis `haeufigkeit = 43`.
+
+**Folge:** Alle KZG-Tore sind für zwei Drittel des Korpus wirkungslos — `MINIMUM` 0.3, `MID` 0.5, `HIGH` 0.7, Promotion 0.8. Nur **7 von 775** liegen unter 0.5. Live bestätigt: sieben `dispatch_kzg`-Läufe eines echten Gesprächs am 26.07., **null** Ablehnungen.
+
+**Bauart-Fehler (Brudi-Audit Chat 109):** Die Formel dämpft ein **Inkrement** und schreibt das Ergebnis in dasselbe Feld zurück, aus dem `alte_salienz` gelesen wurde. Kein Ankerfeld → nicht idempotent, pfadabhängig. **Dieselbe Klasse wie ZIEL-DECAY-FORMEL-KUMULATIV.** Ein Deckel allein repariert das nicht; die Bauart muss sich ändern (→ Sprint KZG-SALIENZ-NEUBAU). ⬜ Prio hoch
+
+**Zusammenhang:** KZG-SALIENZ-BOOST-OHNE-DECKEL (dort das Symptom und die Korpusverteilung; dort steht noch „Die Formel selbst ist nicht nachgerechnet" — mit diesem Eintrag überholt) · ZIEL-DECAY-FORMEL-KUMULATIV (gleiche Fehlerklasse) · KZG-KEIN-DECAY · KZG-SALIENZ-KONSUMENTEN-DISSENS · KZG-GEWICHT-ABSOLUT-CEILING (Abnehmer) · REFAC-KZG-CODE-DUPLIKAT (ein Fix muss beide Kopien treffen) · Sprint KZG-SALIENZ-NEUBAU.
+
+---
+
+## Limitation: KZG-TTL-UNSTERBLICH — die Auffrischung kann nur verlängern, nie herabsetzen (Chat 109)
+
+**Einordnung korrigiert (Chat 109):** ~~Bug~~ → **kein eigenständiger Defekt, sondern eine Limitation** — und die **Folge von PROMOTION-ENTFERNT-KZG-NICHT.** Das `max()` in der Auffrischung ist für sich genommen richtig: Eine schwache Wiederholung soll einen hoch eingestuften Eintrag nicht herabstufen. Schädlich wird es erst, weil die Einträge das KZG überhaupt nie verlassen.
+
+`novaberg-mem-kzg.md:169` setzt bei thematischer Verstärkung `TTL = max(verbleibend, neuer_TTL)`. **Jede Berührung verlängert.** Damit verfallen ausgerechnet die Einträge nicht, die über die Skala laufen — wer oft verstärkt wird, wird oft aufgefrischt.
+
+**Gemessen Chat 109 (Live-Redis, 26.07.2026, Partition `kzg:meister:nova:*`, 777 Keys):** **137 von 777 sind älter als 30 Tage (17,6 %)**, der älteste **104,5 Tage** — das **3,5-fache der maximalen TTL** (`KZG_TTL_HIGH_SEKUNDEN` = 30 Tage). Berechnet aus dem Millisekunden-Zeitstempel im Schlüsselnamen; dessen Übereinstimmung mit `erstellt_am` ist an 10 Einträgen geprüft.
+
+Das KZG ist damit für ein Sechstel seines Inhalts kein Kurzzeitgedächtnis mehr — `novaberg-mem-kzg.md:13` beschreibt es als „schneller, flüchtiger Speicher … über Tage und Wochen". ~~⬜ Prio hoch~~ → **⬜ Prio mittel** (herabgestuft Chat 109): Die Limitation hat keinen eigenen Fix, sondern erledigt sich voraussichtlich mit PROMOTION-ENTFERNT-KZG-NICHT — eigene hohe Prio wäre doppelte Arbeit an derselben Ursache. **Der Vorbehalt bleibt:** „voraussichtlich" ist kein Messergebnis; bestätigt sich das beim Nachmessen nicht, gehört der Punkt zurück auf hoch.
+
+**~~Offen, ausdrücklich NICHT beantwortet:~~ ✅ Beantwortet Chat 109 — nein, sie entfernt ihn nicht.** ~~Entfernt die Promotion den Eintrag aus dem KZG?~~ 527 Einträge liegen über der Promotionsschwelle 0.8 und sind **alle noch vorhanden** — ~~das spricht dagegen, ist aber nicht gemessen~~ → **am Einzelfall belegt: PROMOTION-ENTFERNT-KZG-NICHT** (Knoten id=496, Quell-Key 51 Minuten nach der Promotion unverändert in Redis). Der Vollabgleich aller KZG-Keys gegen `lzg_knoten` steht weiterhin aus; die Spalte dafür zuerst im `\d` verifizieren, nicht aus Log-Zeilen übernehmen.
+
+**Warum das die Zahlen erklärt.** Würde ein Eintrag das KZG bei der Promotion verlassen, **könnte keiner auf Salienz 10 und `haeufigkeit` 43 klettern — er wäre vorher weg.** Die 137 Einträge über 30 Tage und die 21 im Stau bei Salienz 10 (Verteilung in KZG-SALIENZ-BOOST-OHNE-DECKEL) sind **genau die, die nie gegangen sind**. Der TTL ist nicht der Mechanismus, der versagt; er wird nur nie zuständig.
+
+**Erwartung — nachmessen, nicht annehmen.** ~~**Wird von KZG-SALIENZ-NEUBAU NICHT repariert.** … vierter, eigener Hebel.~~ Der Neubau repariert den Punkt weiterhin nicht; der Hebel ist aber **nicht** der TTL, sondern **PROMOTION-ENTFERNT-KZG-NICHT**. Nach dessen Fix erledigt sich diese Limitation **vermutlich von selbst**. **Vor dem Schließen nachmessen** — Altersverteilung und Salienz-Verteilung erneut erheben und gegen die Werte oben stellen. Ein „erledigt sich vermutlich" ist kein Messergebnis.
+
+**Zusammenhang:** PROMOTION-ENTFERNT-KZG-NICHT (**Ursache** — diese Limitation ist deren Folge) · KZG-SALIENZ-SKALENBRUCH (liefert die Einträge, die nie mehr verfallen) · KZG-KEIN-DECAY (die andere fehlende Abwärtsbewegung) · Sprint KZG-SALIENZ-NEUBAU (repariert diesen Punkt bewusst nicht).
+
+---
+
+## Bug: KZG-KEIN-DECAY — die Salienz kennt keine Abwärtsbewegung (Chat 109)
+
+**Kein Schreiber senkt `salienz` jemals** (Brudi-Audit Chat 109, musterbasierte Suche über den ganzen Baum: Zuweisungen, `hset`-Mappings, SQL-`UPDATE`). Die einzige Abwärtsbewegung ist Key-Expiry — und die ist durch KZG-TTL-UNSTERBLICH für die stark verstärkten Einträge faktisch abgeschaltet.
+
+**Doku widerlegt:** `novaberg-kzg-liberalisierung_k.md` §3.6 („KZG-Salienz als Analogon zum LZG-Gewicht", :76-77) behauptet: „Beide steigen bei Wiederholung, **beide fallen bei Stillstand**." Die zweite Hälfte hat keine Entsprechung im Code. Der Satz gehört an seiner Stelle als widerlegt markiert — **steht noch unmarkiert**, weil der Auftrag Chat 109 auf diese Datei beschränkt war.
+
+**Das LZG hat, was dem KZG fehlt:** `LZG_KNOTEN_DECAY_RATE = 0.0015` (`config.py:1127`), `LZG_KNOTEN_MIN_GEWICHT = 0.1` (`config.py:1131`), täglicher `synapsen_decay`-Agent. Das KZG hat kein Äquivalent. ⬜ Prio mittel
+
+**Warum ohne Decay eine Ratsche entsteht statt eines Gleichgewichts (Rechnung Chat 109, Näherung).** Der Boost ist `salienz / 2` mit einer Dämpfung, die im Betriebsbereich praktisch 1 ist (KZG-SALIENZ-SKALENBRUCH). Damit gilt näherungsweise **neu = alt × 1.5 je Verstärkung**:
+
+```
+Start 0.4  →  0.60  →  0.90     zwei Verstärkungen bis über 0.8
+Start 0.5  →  0.75  →  1.13     zwei
+Start 0.7  →  1.05              eine
+```
+
+**Als Näherung gekennzeichnet:** Der eingehende Boost ist die Salienz des **neuen** Turns, nicht die des bestehenden Eintrags — die Rechnung nimmt vereinfachend beide gleich an. Der Trend stimmt, die Einzelwerte sind keine Vorhersage.
+
+Belegt in der Zehner-Stichprobe (KZG-SALIENZ-SKALENBRUCH): `haeufigkeit = 2` → 0.849 / 0.949, `haeufigkeit = 3` → 1.098 / 1.396.
+
+**Das Zeitfenster wächst mit.** Ein Eintrag bei 0.4 hat 7 Tage TTL; eine Verstärkung hebt ihn auf 0.6 und damit auf 14 Tage. Die Frist verlängert sich mit jeder Berührung. Ohne Decay läuft das Rennen zwischen **Berührungsrate** und **Verfallsrate** nur in eine Richtung. Mit Decay rutscht ein ruhender Eintrag in eine kürzere Stufe zurück und muss die Verstärkungen erneut sammeln — erst dann ist es ein Gleichgewicht statt einer Ratsche.
+
+**Entscheidung Meister (Chat 109): Decay kommt.** Der Aufwand ist unter der Anker-Bauart nahe null — Decay ist ein **weiteres Argument derselben reinen Funktion**, kein eigener Job:
+
+```
+salienz = daempfung(salienz_roh) · exp(-RATE · tage_seit(verstaerkt_am))
+```
+
+Dieser Eintrag geht **nicht** im Sprint auf: Er hält fest, **warum**. Der Sprint (KZG-SALIENZ-NEUBAU Teil c) setzt um.
+
+**Klarstellung — das KZG kennt kein `aktiv`-Flag und keine Reaktivierung.** Der Hash trägt 21 Felder, **keines davon `aktiv` oder `geloescht`** (`hkeys`, Chat 109). Beim TTL-Ablauf entfernt Redis den Key **vollständig**; es gibt keinen inaktiven Zwischenzustand, aus dem etwas zurückgeholt werden könnte. Das `aktiv = FALSE`-Verhalten mit Halb-Reaktivierung gehört zu `lzg_knoten`, **nicht** zum KZG. Wer die LZG-Mechanik hierher überträgt, sucht einen Schalter, den es nicht gibt.
+
+**Zusammenhang:** KZG-SALIENZ-SKALENBRUCH (nur aufwärts, und aufwärts ungebremst) · KZG-TTL-UNSTERBLICH (auch der Ersatz-Mechanismus greift nicht) · PROMOTION-ENTFERNT-KZG-NICHT (dritte fehlende Abwärtsbewegung — der Eintrag geht nicht einmal beim Umzug) · Sprint KZG-SALIENZ-NEUBAU Teil (c).
+
+---
+
+## Bug: KZG-SALIENZ-KONSUMENTEN-DISSENS — drei Leser, drei Annahmen über dieselbe Zahl (Chat 109)
+
+| Ort | Annahme |
+|---|---|
+| `agents/synapsen_promotion/agent.py:17`, `:253` | dokumentiert Skala **0..10** |
+| `agents/promotion/agent.py:322` | `min(salienz, 1.0)` — klemmt **still** |
+| `ei/gravitation.py:333` | **ungeklemmt**, multiplikativ als `gewicht` |
+
+**Der dritte ist der Schaden:** Ein Eintrag mit Salienz 3 zieht dreifach im **Lesepfad** — also in dem, was Nova im Prompt sieht. Die Klemme in `promotion` verbirgt das Problem an einer Stelle und lässt es an der anderen voll durch. Zwei Konsumenten schweigen über ihre Annahme, einer dokumentiert die falsche.
+
+Solange KZG-SALIENZ-SKALENBRUCH offen ist, ist keine der drei Annahmen richtig — es gibt keine verbindliche Skala, auf die man sich einigen könnte. Der Dissens ist deshalb kein eigenständiger Fix, sondern eine **Abnahmebedingung** des Neubaus: nach (b) muss jeder der drei Leser auf dieselbe, dann tatsächlich eingehaltene Skala zeigen. ⬜ Prio hoch
+
+**Entscheidung Meister (Chat 109) — Sofortfix für `gravitation`.** `ei/gravitation.py` darf die Salienz **nicht ungeklemmt** als multiplikatives Gewicht nehmen. Das ist ein klarer Fehler und wartet nicht auf den Neubau: Die Zahl geht dort ungefiltert in den Lesepfad, also in das, was Nova im Prompt sieht.
+
+**Vermerk zum Neubau — den Cap nicht wieder entfernen.** Sobald KZG-SALIENZ-NEUBAU die Salienz zu einer **hart gekappten reinen Funktion** macht, werden alle drei Konsumenten von selbst einig; die Klemme in `gravitation` wird dann rechnerisch wirkungslos. **Richtig bleibt sie trotzdem** — sie ist die Zusicherung des Lesers an sich selbst, nicht ein Pflaster über den Schreiber. Beim Neubau nicht vergessen und **nicht als überflüssig zurückbauen**.
+
+**Zusammenhang:** KZG-SALIENZ-SKALENBRUCH (Ursache) · KZG-GEWICHT-ABSOLUT-CEILING (vierter Abnehmer, über die Promotion) · Sprint KZG-SALIENZ-NEUBAU.
+
+---
+
+## Sprint: KZG-SALIENZ-NEUBAU — die KZG-Salienz bekommt die Bauart des LZG-Gewichts (Chat 109)
+
+**Beschlossen Chat 109 (Meister).** Drei Teile:
+
+- **(a)** Ankerfeld `salienz_roh`, frei wachsend, linear
+- **(b)** `salienz` als **reine Funktion** davon, hart gekappt, CAP passend zur Skala [0,1] statt 10.0
+- **(c)** Decay analog `LZG_KNOTEN_DECAY_RATE`
+
+**Vorbild im selben Repo:** `memory/lzg_knoten.py:59-67` und `:537-548` — `gewicht_roh` als Anker (`+= BOOST`, linear), `gewicht_absolut = cap · sin(min(roh/cap, 1) · pi/2)^exp` als reine Funktion des Ankers. Idempotent, hart gekappt. Genau das, was der KZG-Variante fehlt.
+
+**Nicht enthalten:** Die TTL-Unsterblichkeit (KZG-TTL-UNSTERBLICH) wird von (a)–(c) **nicht** repariert. ~~Sie hängt am `max()` in der Auffrischung. Vierter, eigener Hebel.~~ **Korrigiert Chat 109:** Der Hebel ist **PROMOTION-ENTFERNT-KZG-NICHT**, nicht das `max()`. Das `max()` ist für sich genommen richtig — schädlich wird es erst, weil die Einträge das KZG nie verlassen. Der vierte Hebel ist also die Entfernung bei der Promotion, und der liegt außerhalb dieses Sprints.
+
+**Migration — 775+ Einträge.** Weil die Dämpfung im Betriebsbereich praktisch 1 ist, ist das heutige `salienz`-Feld faktisch bereits der Rohakkumulator; die Migration wäre damit ein **Rename plus einmaliges Neuberechnen**, kein Rekonstruieren verlorener Historie. **Ungeprüfte Ableitung — vor der Migration verifizieren.**
+
+Braucht ein eigenes Konzeptdokument. ⬜ Prio hoch — eigener Sprint, **nicht** Teil von CHARAKTER-RESONANZ
+
+**Zusammenhang:** KZG-SALIENZ-SKALENBRUCH (Ursache, Teil a+b) · KZG-KEIN-DECAY (Teil c) · KZG-TTL-UNSTERBLICH (ausdrücklich nicht enthalten) · KZG-SALIENZ-KONSUMENTEN-DISSENS (Abnahmebedingung) · REFAC-KZG-CODE-DUPLIKAT (`_gedaempfter_boost` liegt byte-identisch doppelt vor — der Neubau muss beide Kopien auflösen oder zusammenführen) · KZG-GEWICHT-ABSOLUT-CEILING (Abnehmer der Kette).
+
+---
+
+## Bug: PROMOTION-ENTFERNT-KZG-NICHT — der promotete Eintrag bleibt im KZG stehen (Chat 109)
+
+Ein KZG-Eintrag, der ins LZG promotet wurde, **bleibt danach im KZG liegen**. Der Wert existiert von da an **doppelt** — einmal als `lzg_knoten`, einmal als KZG-Hash unter demselben Schlüssel, den `lzg_knoten.kzg_quell_key` als Herkunft führt.
+
+**Belegt an einem Einzelfall (Log und Redis, 26.07.2026):**
+
+```
+08:38:29  KZG-Eintrag angelegt      kzg:meister:nova:1785055109755
+08:38:48  Synapsen-Promotion gestartet, trigger_salienz=0.700
+08:38:49  lzg_knoten angelegt: id=496, quell=kzg:meister:nova:1785055109755
+09:29:35  hmget …1785055109755 → salienz 1.3958, haeufigkeit 3
+```
+
+**Belegt:** 51 Minuten nach der Promotion liegt der Eintrag in Redis — und er ist gewachsen (`haeufigkeit` 3, Salienz 1.3958 gegenüber 0.700 bei der Anlage).
+
+**OFFEN — ob die Verstärkungen vor oder nach der Promotion lagen.** `trigger_salienz = 0.700` taugt nicht als Zeitmarke: Die Queue-Nutzlast **friert die Salienz beim Push ein** (`queues_befuellen` in `agents/kzg/queues.py` schreibt `salienz` als festen Wert in die `lzg_promotion`-Nutzlast, neben `aufgabe`, `user_id`, `key`, `themen`, `dimension` — kein `turn_id`, kein Zeitstempel), also bei der Neuanlage um 08:38:29, nicht bei der Promotion um 08:38:48. Die Zahl datiert die **Geburt**, nicht die Promotion. Das Log-Fenster endete 08:45:15, gemessen wurde 09:29:35 — für die 44 Minuten dazwischen gibt es keine Aufzeichnung. **Dass der KZG-Zwilling nach der Promotion weiter verstärkt wird, ist damit plausibel, aber unbewiesen.**
+
+**Entscheidung Meister (Chat 109):** Promotete Einträge **sollen aus dem KZG entfernt werden**. Doppelte Werte werden nicht gebraucht. ⬜ Prio hoch
+
+**UNGEPRÜFT:** Ob der Code einen Entfernungsschritt hat, der scheitert, oder gar keinen. Das ist eine Grep-Frage und ausdrücklich **nicht Teil dieses Eintrags** — er hält den gemessenen Zustand fest, nicht die Ursache.
+
+**Zusammenhang:** KZG-TTL-UNSTERBLICH (Folge davon — was nie geht, kann ewig aufgefrischt werden) · KZG-KEIN-DECAY (die dritte fehlende Abwärtsbewegung) · KZG-SALIENZ-SKALENBRUCH (der Zwilling ist gewachsen; dass der Boost keinen wirksamen Deckel hat, erklärt die Höhe — nicht den Zeitpunkt) · KZG-GEWICHT-ABSOLUT-CEILING (dort die Gegenbeobachtung zu genau diesem Knoten id=496, mit Chat 109 aufgelöst).
+
+---
+
+## Doku: ROADMAP-GLIEDERUNGSBRUCH — ab Chat 98 wechselt die Chronik die Überschriftsebene (Chat 109)
+
+`novaberg-roadmap.md` gliedert bis **Chat 97** nach Chat: jeder Chat ein eigener `## Chat NNN`-Abschnitt. **Ab Chat 98** wechselt sie ohne Hinweis auf `###`-Abschnitte, die nach **Sprint** benannt sind — „Synapsen P6 — Decay-Agent + Halbreaktivierung (Chat 102, …)", „Audit-Kaskade … (Chat 105, …)". Die Chat-Nummer steht nur noch in Klammern im Titel.
+
+**Folge:** Wer nach `## Chat 104` sucht, findet nichts und hält den Eintrag für fehlend. Die Chronik ist vollständig, ihre Oberfläche sagt etwas anderes.
+
+**Der Beleg für die Kosten — es ist bereits passiert.** In Chat 109 hat genau dieser Bruch einen Fehlschluss ausgelöst: Ein `grep` auf `^## ` fand als letzten Chat-Abschnitt die 97 und ließ auf eine **Lücke von elf Chats (98–108)** schließen. Tatsächlich fehlen **vier: 94, 95, 96 und 101** — die elf vermeintlich fehlenden waren alle da, nur eine Ebene tiefer. Der Fehlschluss wäre beinahe als Lückenmarkierung ins Dokument gewandert und hätte eine spätere Sitzung dazu gebracht, bereits Dokumentiertes nachzutragen. Der korrigierte Stand steht jetzt als Lückenmarkierung in der Roadmap selbst; die Kopfzeile trägt seit Chat 109 einen Warnhinweis auf die uneinheitliche Gliederung.
+
+**Vereinheitlichung ist ein eigener Durchgang** — elf Abschnitte umhängen, Sprint-Titel als Untertitel erhalten, Querverweise prüfen. Nicht nebenbei. ⬜ Prio niedrig
+
+**Zusammenhang:** DOKU-DUPLIKATE-CHAT80 · LESSON-INDEX-LUECKE (beides Gliederungs-/Auffindbarkeitsprobleme in der Doku, nicht im Code).
