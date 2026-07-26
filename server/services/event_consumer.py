@@ -463,6 +463,12 @@ async def _event_verarbeiten(
         response_payload: str = json.dumps({
             "typ":                "character_response",
             "nachricht":          response,
+            # Herkunft des Reizes: "eigener_impuls" bei einem Pixie-Gedanken,
+            # sonst leer. Der Client faerbt danach ein — vor dem Umbau erkannte
+            # er einen Impuls daran, dass der Nachrichtentyp ihm unbekannt war
+            # (shadow_impuls). Jetzt traegt jede Antwort denselben Typ, also
+            # muss das Merkmal ausdruecklich mitreisen.
+            "reiz_herkunft":      (event.get("payload") or {}).get("reiz_herkunft", ""),
             "modell":             result.get("model", ""),
             "token_total":        result.get("token_total", 0),
             "emotion":            result_internal.emotion.emotion              if result_internal else "",

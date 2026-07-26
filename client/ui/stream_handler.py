@@ -324,6 +324,17 @@ class StreamHandler:
         if typ == "character_response":
             # Charakter-Antwort aus dem Event-Consumer (Pfad 2 abgeschlossen).
             # Feld heißt "nachricht" (nicht "antwort" wie im alten SSE-answer-Event).
+            #
+            # Ein Pixie-Impuls trägt denselben Typ, seit er durch den vollen
+            # CharacterGraph läuft — er ist eine echte Nova-Antwort, nur auf
+            # einen selbst erarbeiteten Reiz. Unterschieden wird am
+            # ausdrücklichen Herkunfts-Feld, nicht mehr daran, dass der Typ
+            # unbekannt ist.
+            if data.get("reiz_herkunft") == "eigener_impuls":
+                logger.info(f"WebSocket: Eigener Impuls empfangen ({len(nachricht)} Zeichen)")
+                GLib.idle_add(self._invoke_impulse, nachricht, data)
+                return
+
             logger.info(f"WebSocket: Charakter-Antwort empfangen ({len(nachricht)} Zeichen)")
             GLib.idle_add(self._invoke_answer, nachricht, data)
             return

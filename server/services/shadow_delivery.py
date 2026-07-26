@@ -1,12 +1,19 @@
 """
-Shadow Delivery Service — Novas eigenständige Stimme.
+Shadow Delivery Service — der Übergang von Pixies Fund zu Novas Gedanken.
 
 Prüft periodisch ob Nova etwas einbringen kann:
   1. Momentum "low" nach einem Request → kurze Pause → Delivery
   2. Timeout (30s+ Inaktivität) → proaktive Nachricht
 
-Wählt den thematisch passendsten Stack-Eintrag per Cosine Similarity.
-Pusht über WebSocket als eigene Chat-Nachricht.
+Wählt den thematisch passendsten Stack-Eintrag per Cosine Similarity und gibt
+das Wissensstück in die beiden Graphen: Der AgentGraph lässt den Gedanken
+entstehen, der CharacterGraph denkt ihn. Der Dienst formuliert selbst nichts
+mehr — die Stimme kommt aus dem Responder, die Zustellung aus dem
+Event-Consumer (`character_response`).
+
+Keine Rückfallebene: Erreicht der Impuls den CharacterGraph nicht, bleibt der
+Stack-Eintrag liegen und der nächste Zyklus versucht es erneut. Ein Gedanke,
+der nicht gedacht wurde, wird nicht ausgesprochen.
 
 Flood-Schutz:
   - Thematischer Cooldown: Anderes Thema → wartet auf User-Aktion
@@ -17,15 +24,16 @@ import asyncio
 import json
 import logging
 import time
+import uuid
 from datetime import datetime
 
 import numpy as np
 import redis
 
-from api.websocket import broadcast
-from config         import ASSISTANT_NAME, ASSISTANT_USER_ID, shutdown_event
-from memory.session import session_turns_retrieve, session_turn_store
-from services.model_services import model_service, EmbedRequest, ChatRequest
+from config         import ASSISTANT_USER_ID, shutdown_event
+from memory.session import session_turns_retrieve
+from services.events import event_erzeugen
+from services.model_services import model_service, EmbedRequest
 
 logger = logging.getLogger("ki_server.shadow_delivery")
 
@@ -41,17 +49,6 @@ INAKTIVITAET_GRENZE:  float = 30.0    # Sekunden ohne User-Aktion → Timeout-Tr
 SIMILARITY_THRESHOLD: float = 0.40    # Minimum für thematischen Match
 MAX_BURST:            int   = 2       # Max aufeinanderfolgende Impulse
 COOLDOWN_TTL:         int   = 3600    # Cooldown-Key TTL in Sekunden
-
-# ─────────────────────────────────────────────
-# Delivery-Prompt: Wie Nova formuliert
-# ─────────────────────────────────────────────
-DELIVERY_SYSTEM_PROMPT: str = f"""Du bist {ASSISTANT_NAME}. Antworte auf Deutsch.
-Du teilst dem Nutzer einen eigenen Gedanken mit — eine eigenständige Nachricht,
-nicht als Antwort auf eine Frage.
-- Schreibe direkt an den Nutzer, nicht über ihn
-- 2-4 Sätze, wie eine Chat-Nachricht
-- Variiere deine Einstiege — beginne NIEMALS zwei Nachrichten gleich"""
-
 
 # ─────────────────────────────────────────────
 # Cosine Similarity
@@ -382,73 +379,6 @@ def _burst_erhoehen(redis_client: redis.Redis, user_id: str) -> None:
 
 
 # ─────────────────────────────────────────────
-# Delivery formulieren (GPU-Modell)
-# ─────────────────────────────────────────────
-async def _delivery_formulieren(eintrag: dict) -> str:
-    """Lässt Nova den Impuls als natürliche Chat-Nachricht formulieren."""
-
-    thema:    str = eintrag.get("thema", "")
-    inhalt:   str = eintrag.get("inhalt", "")[:500]
-    erstellt: str = eintrag.get("erstellt", "")
-    aufgabe:  str = eintrag.get("aufgabe", "")
-
-    zeit_kontext: str = _zeitlicher_kontext(erstellt)
-
-    # Einleitungshilfe je nach Situation
-    einleitung_hinweis: str = ""
-    if aufgabe == "nachfragen":
-        einleitung_hinweis = (
-            "Du möchtest eine einfühlsame Nachfrage stellen. "
-            "Zeige echtes Interesse, sei nicht aufdringlich."
-        )
-    elif aufgabe == "recherche":
-        einleitung_hinweis = (
-            "Du hast im Hintergrund über ein Thema nachgedacht "
-            "und möchtest deine Erkenntnis teilen."
-        )
-    elif aufgabe == "vertiefen":
-        einleitung_hinweis = (
-            "Du hast ein bekanntes Thema vertieft "
-            "und möchtest neue Einsichten teilen."
-        )
-    elif aufgabe == "wiedervorlage":
-        einleitung_hinweis = (
-            "Du erinnerst den Nutzer an etwas, das zur Wiedervorlage "
-            "markiert wurde. Sei freundlich und hilfreich."
-        )
-
-    prompt: str = (
-        f"{zeit_kontext}\n"
-        f"{einleitung_hinweis}\n\n"
-        f"Thema: {thema}\n"
-        f"Deine Erkenntnis: {inhalt}\n\n"
-        f"Formuliere daraus eine kurze, natürliche Chat-Nachricht an den Nutzer."
-    )
-
-    # ── LLM-Call via ChatWorker (Microservice-Welle Block 2 Phase 4, G6) ──
-    # _delivery_formulieren laeuft in shadow_delivery_loop, das als
-    # asyncio.create_task() im Haupt-Event-Loop liegt (main.py:247). KEIN
-    # submit_sync hier: der Haupt-Loop wuerde blockierend auf sich selbst
-    # warten (Deadlock). Stattdessen native async-API
-    # `await model_service.chat.submit(...)` — der Worker laeuft in seinem
-    # eigenen Task im selben Loop und gibt sauber zurueck.
-    # Lesson: novaberg-lesson_l_async-bruecken.md.
-    try:
-        response = await model_service.chat.submit(ChatRequest(
-            messages    = [{"role": "user", "content": prompt}],
-            system      = DELIVERY_SYSTEM_PROMPT,
-            temperature = 0.6,
-            caller      = "shadow/delivery",
-        ))
-
-        return response.text.strip()
-
-    except Exception as fehler:
-        logger.error(f"Delivery: Formulierung fehlgeschlagen — {fehler}")
-        return ""
-
-
-# ─────────────────────────────────────────────
 # Delivery ausführen (eine einzelne Nachricht)
 # ─────────────────────────────────────────────
 async def _delivery_ausfuehren(
@@ -458,15 +388,26 @@ async def _delivery_ausfuehren(
     compiled_agent_graph = None,
     agent_graph          = None,
 ) -> bool:
-    """
-    Führt eine einzelne Delivery aus:
-    1. Gesprächs-Embedding berechnen
-    2. Besten Stack-Eintrag finden
-    3. Formulieren lassen
-    4. Über WebSocket senden
-    5. Als Session-Turn speichern
+    """Gibt einen Pixie-Impuls den Weg durch beide Graphen.
 
-    Gibt True zurück wenn eine Nachricht gesendet wurde.
+    1. Gespraechs-Embedding berechnen
+    2. Besten Stack-Eintrag finden
+    3. turn_id erzeugen — eine je CharacterGraph-Durchlauf
+    4. AgentGraph: der Gedanke entsteht (Kontext, Bewertung, Ablage)
+    5. Event feuern: der CharacterGraph denkt ihn — Emotion, Assoziation,
+       Stimme. Der Responder spricht, der Dispatcher schreibt den Rohturn.
+    6. Stack-Eintrag und Aehnliche entfernen
+
+    Das Wissensstueck ist der Reiz, nicht ein daraus vorformulierter Satz.
+
+    Keine Rueckfallebene: Erreicht der Impuls den CharacterGraph nicht, wird
+    nichts gesendet und der Stack-Eintrag bleibt liegen. Eine zweite, seelenlose
+    Zustellung waere kein Ersatz, sondern genau das, was dieser Umbau abgeschafft
+    hat — ein Gedanke, der ausgesprochen wird, bevor er gedacht wurde.
+
+    Vorbedingung: ein WebSocket fuer den User ist verbunden — sonst entstuende
+    eine Antwort, die niemand empfaengt.
+    Gibt True zurueck, wenn ein Impuls seinen Weg genommen hat.
     """
 
     # Gesprächskontext als Embedding
@@ -498,64 +439,45 @@ async def _delivery_ausfuehren(
     if eintrag is None:
         return False
 
-    # Formulieren — async-Aufruf, weil _delivery_formulieren jetzt async
-    # ist (G6, ehemals sync → blockierte den Haupt-Loop).
-    nachricht: str = await _delivery_formulieren(eintrag)
-
-    if not nachricht:
+    # Das Wissensstueck selbst ist der Reiz — nicht ein daraus formulierter
+    # Satz. Der AgentGraph laesst den Gedanken entstehen (Kontext, Bewertung,
+    # Ablage), der CharacterGraph denkt ihn dann: Emotion, Assoziation, Stimme.
+    # Vorher sprach die Delivery den Gedanken aus, bevor er gedacht war.
+    wissensstueck: str = (eintrag.get("inhalt", "") or "").strip()
+    if not wissensstueck:
+        logger.error(
+            f"Delivery: Stack-Eintrag ohne Inhalt — Impuls verworfen "
+            f"(thema='{eintrag.get('thema', '')[:40]}', index={index})"
+        )
         return False
 
-    # Über WebSocket an alle Clients senden
+    # Ohne Zuhoerer kein Impuls: der CharacterGraph wuerde eine Antwort
+    # erzeugen, die niemand empfaengt. Bewusst wie bisher gehalten.
     if not websocket_map.get(user_id):
-        logger.warning(f"Delivery: Kein WebSocket für '{user_id}' — Nachricht verworfen")
+        logger.warning(f"Delivery: Kein WebSocket für '{user_id}' — Impuls verworfen")
         return False
 
-    impuls_payload: str = json.dumps({
-        "typ":       "shadow_impuls",
-        "nachricht": nachricht,
-        "thema":     eintrag.get("thema", ""),
-        "aufgabe":   eintrag.get("aufgabe", ""),
-    }, ensure_ascii=False)
+    # Eine turn_id pro CharacterGraph-Durchlauf (Glossar §8). Sie entsteht
+    # HIER, beim Ausloeser, und wird an beide Graphen gereicht — genau wie
+    # api/chat.py sie fuer einen Nutzer-Turn erzeugt. Wer spaeter eine
+    # Gedankenkette feuert, erzeugt eine eigene; nur der Thinker-Retry erbt.
+    turn_id: str = uuid.uuid4().hex
 
-    await broadcast(user_id, impuls_payload, character_id=ASSISTANT_USER_ID)
-
-    logger.info(
-        f"Delivery: Nachricht gesendet — '{eintrag.get('thema', '')[:40]}' "
-        f"({len(websocket_map.get(user_id, []))} Clients)"
-    )
-
-    # Vom Stack entfernen (erst NACH erfolgreichem Senden)
-    _stack_eintrag_entfernen(redis_client, user_id, index)
-
-     # Deduplizierung: Ähnliche Einträge gleich mit entfernen
-    _stack_aehnliche_entfernen(
-        redis_client, user_id,
-        eintrag.get("embedding", []),
-    )
-
-    # Als Session-Turn speichern (markiert als Shadow-Impuls)
-    session_turn_store(
-        redis_client, user_id, ASSISTANT_USER_ID, "assistant", nachricht,
-        intentionen = ["eigener_impuls"],
-        emotion     = eintrag.get("emotion", ""),
-        modus       = eintrag.get("modus", ""),
-        kern        = f"[Nova-Impuls] Thema: {eintrag.get('thema', '')}",
-    )
-
-   # AgentGraph: Salienz-Analyse + Dispatcher für Novas eigene Impulse
+    # AgentGraph: das Entstehen des Gedankens — Spiegel zum HumanGraph.
     logger.info(f"Delivery: AgentGraph-Check — compiled={compiled_agent_graph is not None}, instance={agent_graph is not None}")
 
     if compiled_agent_graph and agent_graph:
         try:
             logger.info(
                 f"Delivery: AgentGraph — erzeuge State fuer user='{user_id}', "
-                f"character='{ASSISTANT_USER_ID}', rolle='character'"
+                f"character='{ASSISTANT_USER_ID}', rolle='character', turn_id={turn_id}"
             )
             agent_state = agent_graph.create_state(
-                user_prompt    = nachricht,
+                user_prompt    = wissensstueck,
                 user_id        = user_id,
                 character_id   = ASSISTANT_USER_ID,
                 ei_calc_rolle  = "character",
+                turn_id        = turn_id,
             )
             logger.info(f"Delivery: AgentGraph — State erzeugt, starte invoke...")
             # ── Graph-Invoke async-isiert (Microservice-Welle Block 2 Phase 4, G6) ──
@@ -574,9 +496,109 @@ async def _delivery_ausfuehren(
     else:
         logger.warning("Delivery: AgentGraph NICHT verfügbar — übersprungen")
 
+    # ── Der Gedanke geht in den CharacterGraph ──────
+    # Dieselbe Form wie api/chat.py fuer einen Nutzer-Turn: source unterscheidet
+    # sich, der Weg nicht. Der Consumer laesst source="character" ohne Debounce
+    # durch, faehrt den vollen Graphen und sendet die Antwort des Responders als
+    # character_response an die Clients. Der Dispatcher schreibt dabei den
+    # turn_roh — der erste vollstaendige Rohturn ohne Nutzer-Reiz.
+    #
+    # Das Payload traegt nur, was der Stack-Eintrag wirklich hat. Die uebrigen
+    # EI-Dimensionen bleiben leer statt plausibel gefuellt: ein erfundener
+    # Reiz-Zustand waere von einem gemessenen nicht mehr unterscheidbar.
+    if not _impuls_in_den_charaktergraph(
+        redis_client, user_id, turn_id, wissensstueck, eintrag,
+    ):
+        # Keine Rueckfallebene. Der Fehler ist bereits laut protokolliert; der
+        # Stack-Eintrag bleibt liegen und wird beim naechsten Zyklus erneut
+        # versucht. Nichts halb Gedachtes verlaesst das System.
+        return False
+
+    # Vom Stack entfernen (erst NACHDEM der Impuls seinen Weg genommen hat)
+    _stack_eintrag_entfernen(redis_client, user_id, index)
+
+    # Deduplizierung: Ähnliche Einträge gleich mit entfernen
+    _stack_aehnliche_entfernen(
+        redis_client, user_id,
+        eintrag.get("embedding", []),
+    )
+
     # Burst-Counter erhöhen
     _burst_erhoehen(redis_client, user_id)
 
+    return True
+
+
+def _impuls_in_den_charaktergraph(
+    redis_client:  redis.Redis,
+    user_id:       str,
+    turn_id:       str,
+    wissensstueck: str,
+    eintrag:       dict,
+) -> bool:
+    """Feuert das Event, mit dem der CharacterGraph den Gedanken denkt.
+
+    Der Pixie-Impuls ist ein Reiz wie ein Nutzer-Prompt: Er geht als
+    `user_prompt` ins Payload, der Consumer faehrt den vollen Graphen, der
+    Responder gibt ihm eine Stimme, der Dispatcher schreibt den Rohturn.
+
+    Vorbedingung: turn_id und wissensstueck sind gesetzt.
+    Nachbedingung: genau ein Event mit source="character" liegt in der Queue.
+    Fehlerfaelle: leere Eingabe oder Redis-Fehler (error, False) — der
+    Aufrufer faellt dann auf die nuechterne Zustellung zurueck. Die Funktion
+    wirft nicht.
+    """
+
+    # ── Eingabe-Validierung ─────────────────────
+    if not turn_id or not wissensstueck:
+        logger.error(
+            f"Delivery: Impuls ohne turn_id oder Inhalt — nicht in den "
+            f"CharacterGraph gegeben (turn_id='{turn_id}', laenge={len(wissensstueck)})"
+        )
+        return False
+
+    # ── Verarbeitung ────────────────────────────
+    try:
+        event_id: str = event_erzeugen(
+            redis_client = redis_client,
+            user_id      = user_id,
+            character_id = ASSISTANT_USER_ID,
+            source       = "character",
+            typ          = "message",
+            payload      = {
+                "turn_id":          turn_id,
+                "user_prompt":      wissensstueck,
+                # Ausdruecklicher Herkunfts-Marker statt Ableitung aus
+                # source="character": Der Thinker-Retry traegt dieselbe source,
+                # ist aber ein Wiederholungsversuch auf eine NUTZER-Aeusserung.
+                # Wer beides ueber source unterscheiden wollte, raete.
+                "reiz_herkunft":    "eigener_impuls",
+                "current_emotion":  eintrag.get("emotion", ""),
+                "gespraechs_modus": eintrag.get("modus", ""),
+                "prompt_thema":     eintrag.get("thema", ""),
+                "impuls_aufgabe":   eintrag.get("aufgabe", ""),
+            },
+        )
+    except Exception as ex:
+        logger.error(
+            f"Delivery: Event fuer den CharacterGraph fehlgeschlagen — "
+            f"turn_id={turn_id}, thema='{eintrag.get('thema', '')[:40]}', fehler={ex}",
+            exc_info=True,
+        )
+        return False
+
+    # ── Ausgabe-Verifikation ────────────────────
+    if not event_id:
+        logger.error(
+            f"Delivery: event_erzeugen lieferte keine event_id — turn_id={turn_id}"
+        )
+        return False
+
+    logger.info(
+        f"Delivery: Impuls in den CharacterGraph gegeben — turn_id={turn_id}, "
+        f"event_id={event_id}, thema='{eintrag.get('thema', '')[:40]}', "
+        f"{len(wissensstueck)} Zeichen"
+    )
     return True
 
 
