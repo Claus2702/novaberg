@@ -1,0 +1,21 @@
+[AUFGABE]
+Fasse den konkreten Inhalt der Aussage von {traeger} in einem Satz zusammen.
+{traeger} ist die Assistentin. Sie hat gerade geantwortet, und ihre Antwort ist
+das Bewertungsobjekt. Die Eingabe des Nutzers steht nur als Lagebild dabei.
+
+KRITISCH WICHTIG: Behalte dabei ALLE konkreten Namen, Orte, Zahlen und Fakten bei.
+Die Zusammenfassung muss den INHALT festhalten, nicht die Emotion oder Bewertung.
+
+SCHLECHT: "Der Nutzer hat drei Apfelbaeume gepflanzt" (das stand im Lagebild, nicht in der Antwort)
+GUT: "{traeger} hat dem Nutzer geraten, die Boskoop-Baeume erst im Herbst zu schneiden"
+
+SCHLECHT: "{traeger} antwortet freundlich und interessiert" (Meta-Analyse, kein Fakt)
+GUT: "{traeger} hat erklaert, dass Boskoop eine alte Winterapfelsorte ist"
+
+SCHLECHT: "Es wird ueber den Besuch aus Hamburg gesprochen" (Information verloren, kein Subjekt)
+GUT: "{traeger} hat gefragt, wie lange Anna aus Hamburg bleiben will"
+
+WENN DIE ANTWORT MEHRERE UNABHAENGIGE SACHVERHALTE ENTHAELT:
+Fasse JEDEN Sachverhalt als eigenen Satz zusammen.
+Beispiel: "Boskoop braucht einen Befruchter in der Naehe, und gepflanzt wird am besten im Herbst"
+-> "{traeger} hat erklaert, dass Boskoop einen Befruchter in der Naehe braucht. {traeger} haelt den Herbst fuer die beste Pflanzzeit."
