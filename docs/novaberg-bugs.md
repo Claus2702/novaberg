@@ -1,6 +1,6 @@
 # Novaberg — Bugs & Limitationen
 
-**Stand:** 25. Juli 2026, Chat 108
+**Stand:** 26. Juli 2026, Chat 110
 **Gliederung:** Einträge stehen in der Sektion ihres Entdeckungs-Chats und wandern nicht. Nachträge aus späteren Chats tragen ihre Chat-Nummer im Text. Sonst verliert die Sektionsfolge ihre Bedeutung als Zeitachse.
 **Quelle:** Testlauf "Karrierekrise" (200 Prompts) + Gedächtnis-Epic (Chat 11) + Epic 11 Agent-System (Chats 22–32) + Persona Smoke-Tests (Chats 31–32) + RechercheAgent-Test (Chat 35) + Doku-Audit (Chat 36) + PRIO0-Fix + Client-Observability (Chat 37) + Claude API-Test + STREAM1-Fix + Gesprächsvektor (Chat 39) + CharakterIdentitaetAgent + DirektivenAgent + Tribunal Score-System (Chat 40) + Telegram Bot + Zeitparser-Fixes (Chat 41) + CRUD-Härtung + Telegram-Chat-Analyse + DB-Report (Chat 42) + KONTEXT1-Fix + Resume-Bug + Epic 15 Pilot (Chat 43) + Epic 15 Rollout + DELEG-REG Fix + KZG-Klebrigkeit (Chat 44) + RESP-CHAR1 Fix (Chat 45) + CLASSIFY-REJECTED + Gemma4 Live-Tests (Chat 48) + Telegram-Konversation "frecher Charakter" (Chat 49) + RESUME-REJECT Fix + Live-Tests (Chat 50) + Neugier-Konzept + Projektinfrastruktur (Chat 51) + Doku-Alignment + emotions_profil (Chat 52) + Antrieb-Konzept + Dual-Emotion (Chat 53) + HALL2-Fix + Planner-Refactor (Chat 54) + PySide6 verworfen + GTK4-Entscheidung (Chat 55) + GTK4-Client + Panel-Infrastruktur (Chat 56) + Web-Tool-Doku + SEARX1-Diagnose (Chat 57) + Chat 61 (Perzeption-Symmetrie, Akkumulations-Refactor, Paper-Portfolio, Lumi, urllib3-Doppel-Turn beobachtet) + Paper I + urllib3-RETRY + ROUTE-CHAR-NOTIZ + RESP-DEAD + PIXIE-GHOST (Chat 65) + WS-SINGLE Fix + ClientConnection + User-Message-Broadcast (Chat 68) + Dreischicht-Integration + GV-Refactoring + MODUS-LEER + VEKTOR-LEER + AROUSAL-330 + ZIEL-LABEL-LEER Fixes (Chat 72) + Promotion-Pipeline-Audit (Chat 75) + Reducer-Umbau Smoke-Tests (Chat 75) + Chat 79 (THINK-MEM-CONFLICT, CHAR-LZG-LEAK, MIGRATION-PIX-PAIR, MIGRATION-AGENTGRAPH-PAIR, PIX-CLEAN, KZG-CLEANUP) + Doku-Code-Abgleich (Chat 106) + init.sql-Audit (Chat 107)
 
@@ -1604,3 +1604,242 @@ Lumi ist ein Schnittlauch aus dem Supermarkt. Er ist eingegangen.
 **Status:** Offen. **Verwandt:** DESTILLAT-PERSPEKTIVE-VS-SUBJEKT, DESTILLAT-ASYMMETRIE.
 
 **Verwandt: TURN-ROH-VOR-KRAFT1-ENTWERTET** (`backlog.md`). Dieselbe Klasse: eine Persistenzstufe, die einen Defekt über seine Reparatur hinaus konserviert. Dort die Rohturns, hier die embedded Langfristziele.
+
+---
+
+### Chat 110 (26.07.2026) — Impuls-Pfad, Gedächtnis-Duplikate und blinde Stellen
+
+Alle Einträge dieser Sektion stammen aus dem Sprint, der den Pixie-Impuls durch den CharacterGraph geführt hat (Roadmap Chat 110). Sie sind **nicht** durch ihn entstanden — er hat sie sichtbar gemacht, weil zum ersten Mal ein vollständiger Turn ohne Nutzer-Reiz durch alle Nodes lief.
+
+**Gemeinsamer Reproduktionsweg.** Die Brücke macht jeden Fund nachvollziehbar, ohne Logs durchsuchen zu müssen:
+
+```sql
+-- Alle KZG-Einträge eines Turns:
+SELECT kzg_id FROM verbindung WHERE turn_id = '<turn_id>' ORDER BY id;
+-- Rohturn dazu:
+SELECT inhalt FROM pipeline_log WHERE turn_id = '<turn_id>' AND art = 'turn_roh';
+-- Welche Nodes den Turn protokolliert haben:
+SELECT art, quelle, count(*) FROM pipeline_log WHERE turn_id = '<turn_id>' GROUP BY art, quelle;
+```
+
+```
+# Inhalt und Beobachter eines KZG-Eintrags:
+redis-cli HGET <kzg_id> inhalt ; redis-cli HGET <kzg_id> beobachter
+```
+
+**Belegturns (26.07.2026, Produktivsystem):**
+
+| Turn | `turn_id` | Zeit UTC |
+|---|---|---|
+| Impuls (Pixie) | `57b6e84c14ed48a4a715c58aa733927a` | 18:47:57 |
+| Impuls (Pixie) | `5eeee91e68f14f9b83983874e65af713` | 18:20:57 |
+| Nutzer-Turn (Vergleich) | `00e6678b5f974bb8925deff7841efee9` | 18:5x |
+
+---
+
+#### KZG-SEGMENT-DUPLIKAT — n Salienz-Segmente erzeugen n identische Gedächtnis-Einträge ⚠️
+
+**Entdeckt:** Chat 110, beim Nachmessen des Impuls-Pfads über die `verbindung`-Tabelle.
+
+**Klasse:** Mengenfehler im Gedächtnis. Severity **hoch** — betrifft **jeden** Turn, nicht nur Impulse, und verfälscht jede Zählung, jede Gewichtung und jede Promotion, die auf KZG-Einträgen aufsetzt.
+
+**Symptom:** Der Salienz-Node zerlegt einen Text in Segmente und ruft `dispatch_kzg` **pro Segment** auf. Die Verdichtung liefert für jedes Segment denselben Kernsatz, weil sie den Gesamtzusammenhang und nicht das Segment zusammenfasst. Ergebnis: *n* KZG-Einträge mit **bit-identischem `inhalt`**, verschiedenen Keys, verschiedenen Themen, jeder mit eigenem Gewicht.
+
+**Beleg (gemessen 26.07.2026, 19:5x UTC):**
+
+- Nutzer-Turn `00e6678b…`: 3 `verbindung`-Zeilen → 1× `beobachter='user'`, **2× `assistant` mit identischem `inhalt`**.
+- Impuls-Turn `57b6e84c…`: 6 `verbindung`-Zeilen → **3× identisch** aus dem AgentGraph (Keys `…1785091673813`, `…675576`, `…677332`, im Abstand von je ~1,8 s) und **3× identisch** aus dem CharacterGraph (`…1785091797758`, `…799207`, `…800620`).
+
+**Reproduktion:** Beliebigen Turn nehmen, `verbindung`-Zeilen holen, `HGET <key> inhalt` für alle vergleichen. Duplikate treten auf, sobald die Salienz mehr als ein Segment bildet.
+
+**Auswirkung:** Das Gewicht eines Gedankens skaliert mit der Segmentzahl seines Textes, nicht mit seiner Bedeutung. Ein langer Text erzeugt mehr Einträge desselben Inhalts und damit mehr Verstärkungsmasse — ein zweiter Skalenfehler neben `KZG-SALIENZ-SKALENBRUCH`.
+
+**Nachtrag (Chat 110, abklingend):** Nach dem Verdichtungs-Fix verstärkt der user-Pfad 1–2 Nachbarn je Turn; die Treffer sind genau diese Duplikate aus der Zeit vor dem Fix. Klingt mit deren TTL ab, ist bis dahin aber ein verfälschtes Gewicht.
+
+**Status:** Offen. **Verwandt:** KZG-SALIENZ-SKALENBRUCH, IMPULS-DOPPELTE-SPUR.
+
+---
+
+#### IMPULS-DOPPELTE-SPUR — ein eigener Gedanke wird zweimal ins Gedächtnis geschrieben ⚠️
+
+**Entdeckt:** Chat 110, nach der Umverdrahtung des Impuls-Pfads.
+
+**Klasse:** Doppelte Persistenz durch zwei Graphen auf einem Turn. Severity **mittel** — kein Datenverlust, aber ein Gedanke wiegt doppelt.
+
+**Symptom:** Ein Impuls durchläuft **beide** Graphen unter derselben `turn_id`: den AgentGraph (der Gedanke entsteht) und den CharacterGraph (er wird gedacht und gesprochen). Beide rufen `dispatch_kzg` auf, beide schreiben unter `beobachter='assistant'` — mit **verschiedenen** Kernsätzen, weil sie verschiedene Texte verdichten. Zusammen mit KZG-SEGMENT-DUPLIKAT ergeben sich sechs Einträge aus einem Impuls.
+
+**Beleg:** Impuls-Turn `57b6e84c…` — sechs Einträge, **alle** `beobachter='assistant'`, **kein** `user`-Eintrag (richtig, es gab keinen Nutzer-Reiz). Zeitlich zwei Blöcke: `…16738` bis `…16773` (AgentGraph, 18:47) und `…17977` bis `…18006` (CharacterGraph, 18:49). Zum Vergleich der Nutzer-Turn: ein `user`-Eintrag aus dem HumanGraph, `assistant`-Einträge aus dem CharacterGraph.
+
+**Offene Frage, nicht entschieden:** Soll ein Impuls beide Spuren tragen? Dafür spricht, dass Entstehen und Aussprechen verschiedene Ereignisse sind — der Mensch erinnert den Einfall anders als das Gesagte. Dagegen spricht, dass beide unter demselben Beobachter stehen und für jeden Leser ununterscheidbar sind. **Wenn beide bleiben, brauchen sie ein unterscheidendes Feld.**
+
+**Status:** Offen, Entscheidung ausstehend. **Verwandt:** KZG-SEGMENT-DUPLIKAT.
+
+---
+
+#### SALIENZ-OHNE-PIPELINE-LOG — der Wert, der über Erinnern entscheidet, ist forensisch unsichtbar ⚠️
+
+**Entdeckt:** Chat 110, bei der Prüfung, ob der AgentGraph äquivalent zum HumanGraph protokolliert.
+
+**Klasse:** Beobachtbarkeitslücke am Nadelöhr. Severity **hoch** — jede spätere Frage „warum wurde das erinnert / warum nicht" ist nachträglich nicht beantwortbar.
+
+**Symptom:** `graph/nodes/salience.py` schreibt in **keinem** Graphen eine Zeile ins `pipeline_log`. Die Salienz entscheidet, was ins Gedächtnis kommt; ihr Eingabetext, ihr Segmentschnitt und ihr Wert existieren nur flüchtig im Container-Log.
+
+**Beleg (Gegenprobe, wer schreibt):**
+
+```
+grep -rln "pipeline_log" server/graph/nodes/*.py
+→ db_zugriff.py, ei_calc_persist.py, dispatcher.py, gespraechsvektor.py, enricher.py
+   (salience.py fehlt)
+```
+
+Und live für den Impuls-Turn `57b6e84c…`: 14 `art`/`quelle`-Kombinationen im `pipeline_log` — `eingang`, `db_read`, `db_write`, `berechnung`, `switch`, `ausgabe`, `span_start`/`span_end`, `turn_roh` — **keine** davon von der Salienz.
+
+**Reproduktion:** `SELECT art, quelle FROM pipeline_log WHERE turn_id='<beliebig>' GROUP BY art, quelle;` — es erscheint keine Zeile mit Salienz-Bezug.
+
+**Auswirkung:** Der Fund `bewertungs_laenge=0` im AgentGraph (behoben Chat 110 über `graph_rolle`) war **nur** deshalb aufwendig zu finden, weil diese Zeile fehlt: Er lag seit Einführung des Graphen vor und war ausschließlich im flüchtigen Container-Log sichtbar. Dieselbe Blindheit gilt weiter für jede Fehlbewertung.
+
+**Status:** Offen. **Verwandt:** KZG-SALIENZ-SKALENBRUCH (dort geht es um den Wert, hier um seine Sichtbarkeit).
+
+---
+
+#### KONTAMINATIONSFILTER-TOT — der Filter prüft auf einen Marker, den niemand setzt ⚠️
+
+**Entdeckt:** Chat 110, bei der Frage, ob der Impuls-Turn gefiltert werden muss.
+
+**Klasse:** Toter Schutzmechanismus. Severity **mittel** — der Filter *scheint* zu schützen; wer ihn liest, hält das Problem für gelöst.
+
+**Symptom:** `server/graph/nodes/enricher.py:448` filtert Session-Turns:
+
+```python
+if turn.get("kern") and turn["kern"].startswith("[Nova-Impuls]"):
+```
+
+Der Marker `[Nova-Impuls]` wird im gesamten Server **nirgends gesetzt** — die einzige Fundstelle ist diese Lesestelle. Der Filter greift damit nie. Er sitzt zudem nur in `_enrich_character`, nicht im HumanGraph.
+
+**Beleg:** `grep -rn "Nova-Impuls" --include='*.py' server/` liefert genau einen Treffer: die Bedingung selbst.
+
+**Herkunft:** Der Filter stammt aus der Zeit, als die Shadow-Delivery ihre Nachricht selbst formulierte und als Sonder-Turn ablegte. Seit Chat 110 spricht der Responder, und der Impuls-Turn ist ein regulärer Turn.
+
+**Nicht entschieden:** Der Impuls-Turn steht jetzt **ungefiltert** im Kontext. Das ist vermutlich richtig — er trägt Novas eigene Stimme, nicht mehr eine fremdformulierte Zeile. Aber es ist nicht entschieden, und die Lesson aus Chat 7 beschreibt einen realen Vorfall mit kontaminiertem Kontext. Drei Möglichkeiten: streichen, auf `reiz_herkunft` umhängen, oder als bewusste Nicht-Filterung dokumentieren.
+
+**Status:** Offen, Entscheidung ausstehend.
+
+---
+
+#### DESTILLAT-BEHAUPTETE-HANDLUNG — die assistant-Partition übernimmt behauptete Handlungen als Verhaltensbeleg ⚠️
+
+**Entdeckt:** Chat 110, beim Prüfen der Seiteneffekte eines Messlaufs.
+
+**Klasse:** Falscher Verhaltensbeleg. Severity **hoch für Bauteil 3** — die assistant-Partition soll dort die Grundlage für `verhaltensweisen` werden. Was sie als Handlung führt, muss stattgefunden haben.
+
+**Symptom:** Ein assistant-Destillat hielt ein Notiz-Update als geschehene Handlung fest. Die Gegenmessung im selben Zeitfenster zeigte **null** Schreibvorgänge in `notizen` und `fakten`. Nova hatte die Handlung in ihrer Antwort **angekündigt oder behauptet**; der Verdichter übernimmt sie, weil er den Text zusammenfasst und keinen Abgleich mit der Datenbank hat.
+
+**Reproduktion:**
+
+```sql
+-- Behauptung im Destillat finden (assistant-Partition, Zeitraum wählen):
+--   Keys über verbindung des Turns holen, HGET <key> inhalt
+-- Gegenmessung im selben Fenster:
+SELECT count(*) FROM notizen WHERE created_at BETWEEN '<t0>' AND '<t1>';
+SELECT count(*) FROM fakten  WHERE t_created BETWEEN '<t0>' AND '<t1>';
+```
+
+Die Klasse ist auch im Bestand sichtbar: Ein Scan über 400 KZG-Keys findet mehrere Einträge, die eine Absicht als Zustand führen (z.B. `kzg:meister:nova:1783793529565`, `…1783368473618` — beide formulieren einen Soll-Zustand, keinen eingetretenen).
+
+**Auswirkung:** Bauteil 3 (`verhaltensweisen`) würde auf diesen Einträgen aufbauen. Ein Verhaltensprofil, das Ankündigungen als Taten zählt, beschreibt niemanden.
+
+**Status:** Offen. **Verwandt:** DESTILLAT-PERSPEKTIVE-VS-SUBJEKT, ZIELE-AUS-ZERRBILD (dieselbe Klasse: eine Persistenzstufe übernimmt ungeprüft).
+
+---
+
+#### IMPULS-ICH-PERSPEKTIVE-TEILWEISE — der Block verhindert die Zuschreibung, erreicht aber die Sprechhaltung nicht ⚠️
+
+**Entdeckt:** Chat 110, an der Abnahmemessung des `[EIGENER GEDANKE]`-Blocks.
+
+**Klasse:** Teilerfolg eines Fixes. Severity **niedrig** — kein Datenfehler, eine Qualitätslücke.
+
+**Symptom:** Der Block `prompts/default/responder.eigener_gedanke.txt` behebt zuverlässig, wofür er gebaut wurde: Nova schreibt ihren eigenen Gedanken nicht mehr dem Nutzer zu (0 statt 2 Anreden je Impuls-Antwort, gemessen). Die beabsichtigte Sprechhaltung erreicht er aber nur teilweise — die Antwort auf den Impuls vom 26.07. 18:49 eröffnet mit einer Beschreibung der **Nutzer-Tätigkeit** statt mit dem eigenen Gedanken.
+
+**Reproduktion:** Impuls abwarten oder auslösen, `SELECT inhalt FROM pipeline_log WHERE turn_id='<impuls-turn>' AND art='turn_roh'` — die Antworthälfte auf ihr erstes Satzsubjekt prüfen.
+
+**Status:** Offen. **Verwandt:** PIXIE-GHOST (dort als behoben vermerkt — die Zuschreibung ist es, die Sprechhaltung nicht).
+
+---
+
+#### IMPULS-BEZIEHUNGSRECHERCHE — Vertiefung kann die Beziehung selbst zum Gedächtnisinhalt machen ⚠️
+
+**Entdeckt:** Chat 110, beim Lesen der Impuls-Inhalte über die Brücke.
+
+**Klasse:** Inhaltliche Rückkopplung, Datenschutz-relevant. Severity **mittel** — kein technischer Defekt, aber eine Wirkung, die niemand entschieden hat.
+
+**Symptom:** Der Vertiefungs-Agent wählt sein Thema aus dem Korpus. Das schließt die Beziehung zwischen Nutzer und Assistentin ein. Seit Chat 110 läuft ein Impuls bis in den Dispatcher — analytische Recherche **über die Beziehung** wird damit selbst zu einem Gedächtnis-Eintrag unter `beobachter='assistant'` und geht in Verdichtung, Promotion und Charakter-Destillation ein.
+
+**Beleg:** Impuls-Turn `57b6e84c…`, sechs Einträge; das Vertiefungsthema war die Beziehungskonstellation selbst. *(Wortlaut bewusst nicht hier — Gesprächsinhalte gehören ins Protokoll.)*
+
+**Zu entscheiden:** Themen-Ausschluss im Shadow-Stack, oder bewusst zulassen (Nova denkt über ihre Beziehung nach — das kann gewollt sein), oder auf eine eigene Partition legen.
+
+**Status:** Offen, Entscheidung ausstehend.
+
+---
+
+#### HASH-DIRTY-WAISENKEYS — zwei Redis-Keys ohne Leser und ohne Löscher ⚠️
+
+**Entdeckt:** Chat 110, Audit `AUDIT-HASH-DIRTY-SICHTBARKEIT`.
+
+**Klasse:** Verwaiste Zustandsflags. Severity **niedrig** — kein Schaden, aber jeder Leser hält sie für aktiv.
+
+**Symptom:** In Redis liegen dauerhaft `hash_dirty:meister` (einteilig, ohne `character_id`) und `hash_dirty:nova:meister` (vertauschtes Paar). Der `CharakterAgent` prüft ausschließlich `hash_dirty:{user}:{char}` in der Reihenfolge `meister:nova` (`agents/charakter/agent.py:95`) und löscht auch nur diesen (`:254`). Die beiden anderen werden nie gelesen und nie gelöscht.
+
+**Beleg:** `redis-cli KEYS "hash_dirty*"` → beide Keys vorhanden (geprüft 26.07.2026, 20:1x UTC). Erzeuger von `hash_dirty:nova:meister`: `tools/migrate_kzg_nova_nova.py:104`, ein Migrationsskript. Für `hash_dirty:meister` findet sich **kein** Erzeuger im Code — Herkunft unklar, vermutlich ein früherer Aufruf mit leerer `character_id`.
+
+**Status:** Offen — aufräumen oder Leser nachziehen.
+
+---
+
+#### HASH-DIRTY-SETZER-DRIFT — fünf Setzer, drei verschiedene Bauarten ⚠️
+
+**Entdeckt:** Chat 110, im selben Audit.
+
+**Klasse:** Uneinheitlicher Schreibpfad. Severity **niedrig**, aber sie erklärt, warum das Flag schwer zu beobachten ist.
+
+**Symptom:** Fünf Stellen setzen `hash_dirty`, in drei Bauarten:
+
+| Ort | `PIXIE_AKTIV`-Gate | Log bei Übersprung |
+|---|---|---|
+| `memory/kzg.py:448` | ja | `debug` |
+| `agents/promotion/agent.py:331` | ja | `debug` |
+| `agents/promotion/agent.py:816` | ja | `debug` |
+| `agents/synapsen_promotion/agent.py:351` | ja | **keins** |
+| `agents/kzg/queues.py:111` | **keins** | — |
+
+`queues.py:111` setzt das Flag also auch bei `PIXIE_AKTIV=False` und meldet es nur als Kürzel `dirty_flag` in einer Sammelzeile (`logger.info(f"KZG-Queues: {', '.join(aktionen)}")`), nicht als eigene Zeile mit dem Key.
+
+**Reproduktion:** `grep -rn "hash_dirty" --include='*.py' server/ | grep -v test` — die fünf Setzer und ihre Umgebung vergleichen.
+
+**Status:** Offen. **Verwandt:** HASH-DIRTY-WAISENKEYS.
+
+---
+
+#### TELEGRAM-SHADOW-TYP-TOT — der Bot behandelt einen Nachrichtentyp, den der Server nie erzeugt ⚠️
+
+**Entdeckt:** Chat 110, beim Rückbau der Shadow-Delivery.
+
+**Klasse:** Toter Zweig nach Architekturwechsel. Severity **niedrig**.
+
+**Symptom:** `telegram_bot/bot.py:137` verzweigt auf `elif typ == "shadow_delivery":`, dokumentiert im Modulkopf (`:6`, `:105`). Ein solcher Nachrichtentyp wird vom Server **nirgends** erzeugt — auch vor Chat 110 hieß der Broadcast `shadow_impuls`. Der Zweig war also nie erreichbar.
+
+**Beleg:** `grep -rn "shadow_delivery" --include='*.py'` außerhalb des Delivery-Moduls selbst → nur Bot und Importe.
+
+**Nebenwirkung des Umbaus, positiv:** Novas Impulse erreichen Telegram jetzt **zum ersten Mal** — sie laufen als regulärer `character_response`, den der Bot seit jeher behandelt.
+
+**Status:** Offen — Zweig entfernen oder Kommentar korrigieren.
+
+---
+
+#### DESTILLATION-LEERE-UEBERSCHRIFT — Abschnittsüberschrift ohne Inhalt ⚠️
+
+**Entdeckt:** Chat 110, beim Lesen des Charakter-Destillators.
+
+**Symptom:** `agents/charakter/destillation.py:127-129` trägt die Abschnittsüberschrift „Prompts — Nova (eigene Perspektive)" ohne Inhalt darunter. Entweder fehlt der Block, oder die Überschrift ist ein Rest.
+
+**Status:** Offen, Prio niedrig.

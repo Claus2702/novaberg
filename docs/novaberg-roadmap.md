@@ -1519,7 +1519,7 @@ Offen → Backlog: `CHARHASH-GEWICHT-ABSOLUT-LIVE` (volle Live-Abnahme im Dauerb
 | Kernsatz des AgentGraph | „Es liegt kein Bewertungsobjekt vor…" | „Nova ist aufgegangen, dass…" |
 | Zuschreibung an den Nutzer | 2 Anreden je Impuls-Antwort | 0 |
 | `pipeline_log` | AgentGraph ununterscheidbar vom CharacterGraph | eigene `quelle=agent` |
-| `verbindung`-Zeilen je Impuls-Turn | 0 | 10 und 12 |
+| `verbindung`-Zeilen je Impuls-Turn | 0 | 5 und 6 |
 | Seiteneffekte aus 20 Messturns | — | 0 `timeline`, 0 `notizen`, 0 `fakten` |
 
 **Stand am Ende:** Bauteil 1 ist vollständig. Bauteil 3 (`verhaltensweisen` + Verdichtungs-Agent) hängt an E7, und E7 ist nicht beantwortbar, solange die Salienz-Skala gebrochen ist — davor liegt der Sprint `KZG-SALIENZ-NEUBAU`. Offen und unentschieden: der Kontaminationsfilter im Enricher, der auf einen Marker prüft, den seit dem Umbau niemand mehr setzt.

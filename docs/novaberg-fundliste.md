@@ -21,15 +21,26 @@ Analog zum Kraft-1-Stichtag: ab wann eine Partition brauchbar ist. Kein Backfill
 
 ## Offen
 
-- 2026-07-26 — Zwei Redis-Keys `hash_dirty:meister` und `hash_dirty:nova:meister` liegen ohne Leser und ohne Löscher; der `CharakterAgent` prüft ausschließlich `hash_dirty:meister:nova`.
-- 2026-07-26 — `agents/kzg/queues.py:111` setzt `hash_dirty` ohne `PIXIE_AKTIV`-Gate und ohne Log-Zeile, anders als die vier übrigen Setzer.
-- 2026-07-26 — `agents/charakter/destillation.py:127-129` trägt die Abschnittsüberschrift „Prompts — Nova (eigene Perspektive)" ohne Inhalt darunter.
-- 2026-07-26 — Nach dem Verdichtungs-Fix verstärkt der user-Pfad neuerdings 1–2 Nachbarn je Turn; die Treffer sind die vor dem Fix erzeugten Duplikate. Klingt mit deren TTL ab, ist aber bis dahin ein verfälschtes Gewicht.
-- 2026-07-26 — Zwei Salienz-Segmente derselben Nova-Antwort können denselben Kernsatz erzeugen; es entstehen dann zwei KZG-Einträge mit identischem `inhalt` und verschiedenen Themen.
-- 2026-07-26 — Ein assistant-Destillat hält eine Handlung fest, die nicht stattgefunden hat (behauptetes Notiz-Update); `notizen` und `fakten` zeigen im selben Zeitraum null Schreibvorgänge. Die assistant-Partition übernimmt damit behauptete Handlungen als Verhaltensbeleg.
-- 2026-07-26 — Ein Pixie-Impuls erzeugt zwei bis drei identische Kernsätze: Der Segmentierer zerlegt den Fachtext, aber jedes Segment liefert dasselbe Destillat und damit einen eigenen KZG-Eintrag.
-- 2026-07-26 — Der Impuls-Turn erzeugt zwei KZG-Einträge mit `beobachter='assistant'` (AgentGraph: entstehender Gedanke, CharacterGraph: gesprochener). Ein Nutzer-Turn erzeugt dagegen je einen mit `user` und `assistant`. Ob der Impuls beide tragen soll, ist nicht entschieden.
-- 2026-07-26 — Der Salienz-Node schreibt in keinem Graphen ins `pipeline_log`. Die Bewertung, das Nadelöhr für alles, was ins Gedächtnis kommt, ist forensisch unsichtbar.
-- 2026-07-26 — Ein Pixie-Impuls kann Recherche über die Beziehung zwischen Nutzer und Assistentin selbst in den Gedächtnispfad tragen. Ob solche Themen in den Shadow-Stack gehören, ist nicht entschieden.
-- 2026-07-26 — Der Client wurde nur gelesen und kompiliert, nicht ausgeführt: Im `server`-Image gibt es kein GTK, der Impuls-Zweig in `stream_handler.py` hat keinen Testlauf.
-- 2026-07-26 — Der Telegram-Bot behandelt einen Nachrichtentyp `shadow_delivery`, den der Server nirgends erzeugt; der Zweig ist tot. Ebenso nennt `client/ui/stream_handler.py` ihn im Auffangzweig-Kommentar.
+*(leer — alle Einträge vom 26.07.2026 sind nach `novaberg-bugs.md`, Sektion Chat 110, umgezogen und tragen dort stabile IDs)*
+
+---
+
+## Umgezogen — Chat 110 (26.07.2026)
+
+Elf Zeilen sind in `novaberg-bugs.md` zu Einträgen mit Reproduktionsweg geworden. Beim Umzug haben zwei von ihnen sich als ungenauer erwiesen als gedacht — die Messung gehört zum Umzug, nicht zur Notiz:
+
+| Fundlisten-Zeile | Wurde zu | Korrektur beim Umzug |
+|---|---|---|
+| Zwei bis drei identische Kernsätze je Impuls | `KZG-SEGMENT-DUPLIKAT` | Betrifft **jeden** Turn, nicht nur Impulse: Nutzer-Turn 2 identische, Impuls 3 je Graph |
+| Impuls erzeugt zwei assistant-Einträge | `IMPULS-DOPPELTE-SPUR` | Es sind **sechs** (2 Graphen × 3 Segmente); ein Nutzer-Turn hat 1 `user` + 2 `assistant`, nicht je einen |
+| Salienz-Node ohne `pipeline_log` | `SALIENZ-OHNE-PIPELINE-LOG` | — |
+| Kontaminationsfilter ohne Setzer | `KONTAMINATIONSFILTER-TOT` | Zeile 424 → **448** (nach den Chat-110-Änderungen) |
+| Destillat behauptet Handlung | `DESTILLAT-BEHAUPTETE-HANDLUNG` | — |
+| `[EIGENER GEDANKE]` nur teilweise | `IMPULS-ICH-PERSPEKTIVE-TEILWEISE` | — |
+| Beziehungsrecherche im Gedächtnispfad | `IMPULS-BEZIEHUNGSRECHERCHE` | — |
+| Zwei herrenlose `hash_dirty`-Keys | `HASH-DIRTY-WAISENKEYS` | — |
+| `queues.py:111` ohne Gate | `HASH-DIRTY-SETZER-DRIFT` | Nicht „ohne Log": das Kürzel `dirty_flag` steht in einer Sammelzeile. Fünf Setzer, **drei** Bauarten |
+| Telegram `shadow_delivery` | `TELEGRAM-SHADOW-TYP-TOT` | Zweig war **nie** erreichbar — der Broadcast hieß immer `shadow_impuls` |
+| Leere Abschnittsüberschrift | `DESTILLATION-LEERE-UEBERSCHRIFT` | — |
+| Duplikat-Verstärkung auf dem user-Pfad | Nachtrag in `KZG-SEGMENT-DUPLIKAT` | Zeitlich begrenzt, klingt mit der TTL ab |
+| Client-Impuls-Zweig ohne Testlauf | — | **Erledigt am selben Tag**, am laufenden Client sichtbar geprüft |
