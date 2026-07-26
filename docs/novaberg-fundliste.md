@@ -26,3 +26,4 @@ Analog zum Kraft-1-Stichtag: ab wann eine Partition brauchbar ist. Kein Backfill
 - 2026-07-26 — `agents/charakter/destillation.py:127-129` trägt die Abschnittsüberschrift „Prompts — Nova (eigene Perspektive)" ohne Inhalt darunter.
 - 2026-07-26 — Nach dem Verdichtungs-Fix verstärkt der user-Pfad neuerdings 1–2 Nachbarn je Turn; die Treffer sind die vor dem Fix erzeugten Duplikate. Klingt mit deren TTL ab, ist aber bis dahin ein verfälschtes Gewicht.
 - 2026-07-26 — Zwei Salienz-Segmente derselben Nova-Antwort können denselben Kernsatz erzeugen; es entstehen dann zwei KZG-Einträge mit identischem `inhalt` und verschiedenen Themen.
+- 2026-07-26 — Ein assistant-Destillat hält eine Handlung fest, die nicht stattgefunden hat (behauptetes Notiz-Update); `notizen` und `fakten` zeigen im selben Zeitraum null Schreibvorgänge. Die assistant-Partition übernimmt damit behauptete Handlungen als Verhaltensbeleg.
