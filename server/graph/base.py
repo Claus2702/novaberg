@@ -102,6 +102,10 @@ class GraphBase(ABC):
             # Rollen-Marker fuer Graph-Switches
             perzeption_rolle = kwargs.get("perzeption_rolle", "user"),
             ei_calc_rolle    = kwargs.get("ei_calc_rolle", "user"),
+            # Default "human": entspricht dem bisherigen Verhalten fuer jeden
+            # Aufrufer, der die Rolle nicht setzt. CharacterGraph und
+            # AgentGraph setzen sie ausdruecklich.
+            graph_rolle      = kwargs.get("graph_rolle", "human"),
 
             # Router
             needs_memory   = False,

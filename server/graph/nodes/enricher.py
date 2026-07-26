@@ -69,6 +69,26 @@ SPREADING_DEFAULT_CLUSTER: str = "paradox"
 # Dispatcher
 # ═══════════════════════════════════════════════════════════════════
 
+def _pipeline_quelle(state: ConversationState) -> str:
+    """Uebersetzt die Graph-Rolle in den quelle-Wert des pipeline_log.
+
+    Die Werte "user" und "character" sind Bestand — sie stehen so in allen
+    bisherigen Eintraegen und bleiben deshalb unveraendert. Neu ist allein
+    "agent" fuer den AgentGraph, der bis Chat 110 als "character" mitlief und
+    damit im Log nicht vom CharacterGraph zu trennen war.
+
+    Vorbedingung: keine — eine fehlende Rolle gilt als HumanGraph.
+    Nachbedingung: einer der drei Bestandswerte.
+    """
+
+    # ── Verarbeitung / Ausgabe ──────────────────
+    return {
+        "human":     "user",
+        "character": "character",
+        "agent":     "agent",
+    }.get(state.get("graph_rolle", "human"), "user")
+
+
 def enrich(
     state:        ConversationState,
     redis_client: redis.Redis,
@@ -218,7 +238,11 @@ def _enrich_human(
 
     # ── Pipeline-Log: Span-Start ────────────────
     turn_id_log:  str = state.get("turn_id", "unbekannt")
-    quelle_log:   str = state.get("ei_calc_rolle", "user")
+    # Quelle aus graph_rolle statt ei_calc_rolle: der AgentGraph setzt
+    # ei_calc_rolle="character" und war im pipeline_log dadurch nicht vom
+    # CharacterGraph zu unterscheiden. Die bestehenden Werte "user" und
+    # "character" bleiben, damit alte Eintraege vergleichbar bleiben.
+    quelle_log:   str = _pipeline_quelle(state)
     character_id: str = state.get("character_id", "")
     span_id           = span_start(
         turn_id = turn_id_log,
@@ -381,7 +405,7 @@ def _enrich_character(
     # ei_calc_rolle ist projektweit etablierter Marker (siehe
     # graph/character_graph.py:43, kzg/dispatch.py:42).
     turn_id_log: str = state.get("turn_id", "unbekannt")
-    quelle_log:  str = state.get("ei_calc_rolle", "user")
+    quelle_log:  str = _pipeline_quelle(state)
     character_id: str = state.get("character_id", "")
     span_id          = span_start(
         turn_id = turn_id_log,

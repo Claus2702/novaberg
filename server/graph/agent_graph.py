@@ -57,6 +57,7 @@ class AgentGraph(GraphBase):
         Setzt nur die analyse-spezifischen Defaults: leerer System-Prompt,
         Temperature 0.0.
         """
+        kwargs.setdefault("graph_rolle",   "agent")
         kwargs.setdefault("system_prompt", "")
         kwargs.setdefault("temperature",   0.0)
         return super().create_state(user_prompt=user_prompt, user_id=user_id, **kwargs)

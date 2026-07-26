@@ -111,17 +111,31 @@ def analyze(
     Schreibt NICHT in die DB — das macht der KZG-Agent via Dispatcher.
     """
 
-    # PFAD2-PERZEPTION-FIX Phase 2: Input-Switch nach ei_calc_rolle.
-    # CharacterGraph (rolle="character") bewertet Novas Antwort, der
-    # User-Prompt wird nur als [LAGEBILD]-Hintergrund mitgegeben.
-    # HumanGraph (rolle="user") bewertet weiterhin den User-Prompt; die
-    # Assistant-Antwort fehlt im Pfad 1 ohnehin.
-    rolle: str = state.get("ei_calc_rolle", "user")
+    # Input-Switch nach graph_rolle (PFAD2-PERZEPTION-FIX Phase 2, korrigiert
+    # Chat 110). Nur der CharacterGraph bewertet eine REAKTION — er ist der
+    # einzige Graph mit Responder. HumanGraph und AgentGraph bewerten beide
+    # einen REIZ; sie unterscheiden sich darin, von wem er stammt.
+    #
+    # Vorher hing der Switch an ei_calc_rolle. Der AgentGraph setzt die auf
+    # "character" (damit beobachter="assistant" wird) und landete dadurch im
+    # Reaktions-Zweig — mit einer response, die er nie erzeugt. Gemessen
+    # 26.07.2026: bewertungs_laenge=0 in jedem AgentGraph-Lauf, das
+    # Wissensstueck lag ungelesen im [LAGEBILD].
+    rolle: str = state.get("graph_rolle", "human")
+
     if rolle == "character":
         bewertungs_text: str = state.get("response", "")
         lagebild_text:   str = state.get("user_prompt", "")
         lagebild_label:  str = "Dies ist die Eingabe des Nutzers."
         eingabe_label:   str = "Antwort der Assistentin"
+    elif rolle == "agent":
+        # Novas eigener Gedanke. Kein Lagebild — es gibt kein Gegenueber, auf
+        # das er antwortet, und eine leere response als Hintergrund waere eine
+        # Behauptung ueber etwas, das nicht stattgefunden hat.
+        bewertungs_text = state.get("user_prompt", "")
+        lagebild_text   = ""
+        lagebild_label  = ""
+        eingabe_label   = "Eigener Gedanke der Assistentin"
     else:
         bewertungs_text = state.get("user_prompt", "")
         lagebild_text   = state.get("response", "")
@@ -129,9 +143,21 @@ def analyze(
         eingabe_label   = "Eingabe des Nutzers"
 
     logger.info(
-        f"Salienz: rolle={rolle}, bewertungs_laenge={len(bewertungs_text)}, "
+        f"Salienz: graph_rolle={rolle}, bewertungs_laenge={len(bewertungs_text)}, "
         f"lagebild_laenge={len(lagebild_text)}"
     )
+
+    # Fail loud statt still bewerten: Ein leeres Bewertungsobjekt liefert
+    # zwangslaeufig Unsinn — das LLM klassifiziert dann das Lagebild oder
+    # halluziniert Themen. Genau so entstand "Soziale Interaktion, Begruessung"
+    # fuer einen Fachtext ueber Quark-Gluon-Plasma (gemessen 26.07.2026).
+    if not bewertungs_text.strip():
+        logger.error(
+            f"Salienz: Bewertungsobjekt leer — kein pending_write erzeugt "
+            f"(graph_rolle={rolle}, lagebild_laenge={len(lagebild_text)})"
+        )
+        state["pending_writes"] = state.get("pending_writes", []) or []
+        return state
 
     # ── Prompt segmentieren ──────────────────
     segmente: list[str] = _prompt_segmentieren(bewertungs_text)

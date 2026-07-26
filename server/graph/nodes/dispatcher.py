@@ -198,6 +198,18 @@ def _session_turn_schreiben(state: ConversationState) -> None:
         logger.warning("Dispatcher: Session-Turn nicht geschrieben — user_id oder character_id fehlt")
         return
 
+    # Der AgentGraph schreibt keinen Session-Turn. Er hat keinen Responder,
+    # also waere seine Rolle nach der Regel unten "user" — und der Inhalt das
+    # Wissensstueck. In der Session staende dann eine Nutzer-Aeusserung, die
+    # der Nutzer nie gemacht hat. Den Turn dieses Impulses schreibt der
+    # CharacterGraph-Durchlauf, der auf dasselbe Event folgt.
+    if state.get("graph_rolle") == "agent":
+        logger.info(
+            "Dispatcher: Session-Turn uebersprungen — AgentGraph, der Impuls "
+            "wird vom CharacterGraph-Lauf geschrieben"
+        )
+        return
+
     response: str = state.get("response", "")
 
     if response:

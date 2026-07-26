@@ -78,6 +78,29 @@ def speichern(state: AgentState) -> dict:
 
     salienz: float = salienz_obj.get("salienz", 0.0)
 
+    # Ohne Kern gibt es nichts abzulegen. Der Verdichter bricht bei leerem
+    # Bewertungsobjekt ab und liefert einen leeren Kern; ohne diesen Riegel
+    # wuerde `embed_text_bauen` eine ValueError werfen, die den gesamten
+    # KZG-Dispatch fuer alle uebrigen Segmente mitreisst.
+    if not kern.strip():
+        logger.error(
+            f"KZG-Speicher: Kern leer — kein Eintrag angelegt "
+            f"(paar={user_id}:{character_id}, beobachter={beobachter}, "
+            f"turn_id={turn_id}, themen={salienz_obj.get('themen', [])})"
+        )
+        return {
+            "parameter": {
+                **state["parameter"],
+                "speicher_status":       "leer",
+                "kzg_key":               "",
+                "verstaerkt_verwandt":   0,
+                "verstaerkte_eintraege": [],
+            },
+            "schritte": state["schritte"] + [
+                {"node": "speichern", "ergebnis": "leer"}
+            ],
+        }
+
     # Kommagetrennt wie im Hash persistiert (_neu_anlegen) — der Embed-Text
     # muss aus den gespeicherten Feldern rekonstruierbar sein (Chat 107).
     themen:     str = ", ".join(salienz_obj.get("themen", []))

@@ -53,6 +53,19 @@ class ConversationState(TypedDict):
     perzeption_rolle:     str     # "user" (Default) oder "assistant"
     # Welcher Graph ruft den EI-Calc auf: "user" (HumanGraph) oder "character" (CharacterGraph)
     ei_calc_rolle: str
+    # Welcher Graph laeuft gerade: "human" | "character" | "agent".
+    #
+    # Warum eigenstaendig und nicht aus ei_calc_rolle abgeleitet: Der AgentGraph
+    # ist Novas Perspektive (ei_calc_rolle="character", damit beobachter
+    # "assistant" wird), bewertet aber einen REIZ wie der HumanGraph — er hat
+    # keinen Responder und damit nie eine Reaktion. Wer beides aus einem Marker
+    # liest, bekommt fuer den AgentGraph zwangslaeufig einen der beiden Faelle
+    # falsch. Gemessen 26.07.2026: Der Salienz-Node bewertete im AgentGraph
+    # durchgaengig eine leere Zeichenkette (bewertungs_laenge=0).
+    #
+    # Gelesen von: salience (was wird bewertet), enricher (quelle im
+    # pipeline_log), dispatcher (schreibt der Lauf den Session-Turn).
+    graph_rolle: str
 
     # ── Router ───────────────────────────────
     needs_memory:   bool

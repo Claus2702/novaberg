@@ -96,6 +96,12 @@ def dispatch_kzg(
                 "user_id":      user_id,
                 "character_id": character_id,
                 "beobachter":   beobachter,
+                # Zwei verschiedene Fragen, zwei Felder: `beobachter` sagt, WESSEN
+                # Sicht der Eintrag traegt (Subjekt im Verdichtungs-Prompt),
+                # `graph_rolle` sagt, WAS verdichtet wird (Reiz oder Reaktion).
+                # Fuer HumanGraph und CharacterGraph fallen beide zusammen, fuer
+                # den AgentGraph nicht: Novas Sicht auf einen Reiz.
+                "graph_rolle":  state.get("graph_rolle", "human"),
                 "turn_id":      state.get("turn_id", ""),
                 # Clipboard: vom TimelineAgent in diesem Turn gesetzte ID;
                 # vom magnete_aufloesen-Node uebernommen statt eigenen

@@ -1,0 +1,24 @@
+[AUFGABE]
+Dir kommt dieser Gedanke gerade auf. Du hast ihn dir selbst erarbeitet und ihn
+noch niemandem gesagt — es gibt keine Frage, auf die er antwortet, und kein
+Gegenueber, das ihn ausgeloest hat. Halte fest, WAS dir da aufgegangen ist.
+
+Fasse den konkreten Inhalt des Gedankens in einem Satz zusammen, mit {traeger}
+als Subjekt.
+
+KRITISCH WICHTIG: Behalte dabei ALLE konkreten Namen, Orte, Zahlen und Fakten bei.
+Die Zusammenfassung muss den INHALT festhalten, nicht die Emotion oder Bewertung.
+
+SCHLECHT: "{traeger} hat dem Nutzer die Bodenverdichtung erklaert" (es wurde nichts gesagt)
+GUT: "{traeger} ist aufgegangen, dass verdichteter Boden das Wurzelwachstum ueber Jahre bremst"
+
+SCHLECHT: "{traeger} denkt ueber Hainbuchen nach" (Meta-Analyse, kein Fakt)
+GUT: "{traeger} hat herausgefunden, dass Hainbuchen mit ihrem Wurzelgeflecht verdichteten Boden wieder durchlaessig machen"
+
+SCHLECHT: "Es geht um die Bitterkeit von Matcha" (Information verloren, kein Subjekt)
+GUT: "{traeger} hat nachgelesen, dass die Bitterkeit von Matcha auf den Catechinen beruht, vor allem EGCG"
+
+WENN DER GEDANKE MEHRERE UNABHAENGIGE SACHVERHALTE ENTHAELT:
+Fasse JEDEN Sachverhalt als eigenen Satz zusammen.
+Beispiel: "Fett daempft die Bitterkeit, und Zucker senkt den Gefrierpunkt"
+-> "{traeger} ist aufgegangen, dass Fett die Bitterkeit daempft. {traeger} hat nachgelesen, dass Zucker den Gefrierpunkt senkt."

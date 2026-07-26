@@ -13,32 +13,45 @@ from services.model_services import model_service, ChatRequest
 logger = logging.getLogger("ki_server.agents.kzg.verdichtung")
 
 
-def _build_verdichtung_prompt(beobachter: str) -> str:
-    """Baut den System-Prompt fuer die Verdichtung, besetzt nach Beobachter.
+def _build_verdichtung_prompt(beobachter: str, graph_rolle: str = "human") -> str:
+    """Baut den System-Prompt fuer die Verdichtung, besetzt nach Lage.
 
-    Zwei getrennte Aufgaben-Bloecke statt eines mit Ausnahmeregel: Jeder traegt
-    Few-Shot-Beispiele in der Person, die er meint. Ein Beispiel schlaegt eine
-    Anweisung — die sechs Beispiele des Nutzer-Blocks legen das Subjekt auf den
-    Nutzer fest, und keine Regel im selben Prompt haette dagegen bestanden.
-    Vorbild fuer die Auswahl nach Rolle: graph/nodes/perzeption.py:42.
+    Drei getrennte Aufgaben-Bloecke statt eines mit Ausnahmeregeln: Jeder traegt
+    Few-Shot-Beispiele in der Person UND der Situation, die er meint. Ein
+    Beispiel schlaegt eine Anweisung — die sechs Beispiele des Nutzer-Blocks
+    legen das Subjekt auf den Nutzer fest, und keine Regel im selben Prompt
+    haette dagegen bestanden. Vorbild fuer die Auswahl nach Rolle:
+    graph/nodes/perzeption.py:42.
 
-    Vorbedingung: beobachter ist "user" oder "assistant"; andere Werte werden
-    wie "user" behandelt (der Nutzer-Block ist der haeufigere Fall).
-    Nachbedingung: Identitaet, rollenrichtiger Aufgaben-Block und Regeln, in
+    Die drei Lagen:
+      * Nutzer-Aeusserung        -> kzg_verdichtung.task
+      * Novas Antwort            -> kzg_verdichtung.assistant_task
+      * Novas entstehender Gedanke -> kzg_verdichtung.impuls_task
+
+    Warum der dritte Block: Der Assistenten-Block rahmt den Text als „sie hat
+    gerade geantwortet". Fuer einen Pixie-Impuls stimmt das nicht — der Gedanke
+    ist ihr eben erst aufgegangen und wurde niemandem gesagt. Das Subjekt ist in
+    beiden Faellen Nova, die Situation nicht.
+
+    Vorbedingung: beobachter ist "user" oder "assistant", graph_rolle ist
+    "human", "character" oder "agent". Unbekannte Werte fallen auf den
+    Nutzer-Block zurueck (der haeufigere Fall).
+    Nachbedingung: Identitaet, lagerichtiger Aufgaben-Block und Regeln, in
     dieser Reihenfolge.
     """
 
-    # ── Eingabe-Validierung ─────────────────────
-    ist_assistent: bool = beobachter == "assistant"
-
     # ── Verarbeitung ────────────────────────────
-    # Nur der Assistenten-Block traegt {traeger} als Platzhalter, damit der
-    # Name aus der Konfiguration kommt und nicht im Prompt-Text festklebt
-    # (Vorbild: agents/charakter/destillation.py:198-225). Der Nutzer-Block
-    # wird nicht formatiert — er braucht keinen Platzhalter, und ein spaeter
-    # eingefuegtes Zeichen darf dort keinen KeyError ausloesen.
-    if ist_assistent:
-        aufgabe: str = PROMPTS["kzg_verdichtung.assistant_task"].format(
+    # Nur die Nova-Bloecke tragen {traeger} als Platzhalter, damit der Name aus
+    # der Konfiguration kommt und nicht im Prompt-Text festklebt (Vorbild:
+    # agents/charakter/destillation.py:198-225). Der Nutzer-Block wird nicht
+    # formatiert — er braucht keinen Platzhalter, und ein spaeter eingefuegtes
+    # Zeichen darf dort keinen KeyError ausloesen.
+    if graph_rolle == "agent":
+        aufgabe: str = PROMPTS["kzg_verdichtung.impuls_task"].format(
+            traeger=ASSISTANT_NAME,
+        )
+    elif beobachter == "assistant":
+        aufgabe = PROMPTS["kzg_verdichtung.assistant_task"].format(
             traeger=ASSISTANT_NAME,
         )
     else:
@@ -55,23 +68,33 @@ def _build_verdichtung_prompt(beobachter: str) -> str:
 def verdichten(state: AgentState) -> dict:
     """LLM-Call: Erzeugt den kern aus der Aeusserung, die dieser Lauf bewertet.
 
-    Welche der beiden Aeusserungen eines Turns bewertet wird, haengt am
-    Beobachter: Pfad 1 (beobachter="user") verdichtet den User-Prompt und
-    legt Novas Antwort ins Lagebild, Pfad 2 (beobachter="assistant") genau
-    andersherum. Spiegelt den Input-Switch aus graph/nodes/salience.py:114-129;
-    ohne ihn verdichtete Pfad 2 denselben User-Prompt wie Pfad 1 und legte
-    zweimal denselben Satz ab (gemessen Chat 110).
+    Zwei Fragen, zwei Felder — sie fallen nur in zwei von drei Graphen zusammen:
 
-    Vorbedingung: state["kontext"]["beobachter"] ist gesetzt — dispatch_kzg
-    legt ihn dort ab. Fehlt er, wird laut gewarnt und wie Pfad 1 verfahren.
+    * `graph_rolle` entscheidet, WAS verdichtet wird. Nur der CharacterGraph
+      verdichtet eine Reaktion; HumanGraph und AgentGraph verdichten einen Reiz.
+    * `beobachter` entscheidet, WESSEN Subjekt der Kernsatz traegt — der
+      Prompt-Baustein wird danach gewaehlt.
+
+    Der AgentGraph ist der Fall, an dem sich das trennt: Novas Sicht
+    (beobachter="assistant") auf einen Reiz (graph_rolle="agent"). Haengt die
+    erste Frage am `beobachter`, verdichtet er die `response`, die er nie
+    erzeugt. Gemessen 26.07.2026: Der Kernsatz lautete dann woertlich „Es liegt
+    kein Bewertungsobjekt vor, da die Antwort der Assistentin leer ist" — und
+    wurde als Gedaechtnisinhalt abgelegt.
+
+    Vorbedingung: state["kontext"] traegt `beobachter` und `graph_rolle`;
+    dispatch_kzg legt beide dort ab. Fehlt der Beobachter, wird laut gewarnt.
     Nachbedingung: state["parameter"]["kern"] traegt den verdichteten Satz.
+    Fehlerfaelle: leeres Bewertungsobjekt — dann wird nicht verdichtet, sondern
+    laut abgebrochen und ein leerer Kern zurueckgegeben.
     """
 
     # ── Eingabe-Validierung ─────────────────────
     user_prompt: str = state["parameter"].get("user_prompt", "")
     response:    str = state["parameter"].get("response", "")
+    kontext:     dict = state.get("kontext") or {}
 
-    beobachter: str = (state.get("kontext") or {}).get("beobachter", "")
+    beobachter: str = kontext.get("beobachter", "")
     if not beobachter:
         logger.warning(
             "KZG-Verdichtung: beobachter fehlt im kontext-Kanal — verdichte als "
@@ -79,17 +102,47 @@ def verdichten(state: AgentState) -> dict:
         )
         beobachter = "user"
 
+    graph_rolle: str = kontext.get("graph_rolle", "human")
+
     # ── Verarbeitung ────────────────────────────
-    if beobachter == "assistant":
+    if graph_rolle == "character":
         bewertungs_text: str = response
         lagebild_text:   str = user_prompt
         lagebild_label:  str = "Dies ist die Eingabe des Nutzers."
         eingabe_label:   str = "Antwort der Assistentin"
+    elif graph_rolle == "agent":
+        # Der entstehende Gedanke. Kein Lagebild: Es gibt keine Antwort, auf die
+        # er sich bezieht, und die leere `response` als Hintergrund auszugeben
+        # waere eine Behauptung ueber etwas, das nicht stattgefunden hat.
+        bewertungs_text = user_prompt
+        lagebild_text   = ""
+        lagebild_label  = ""
+        eingabe_label   = "Eigener Gedanke der Assistentin"
     else:
         bewertungs_text = user_prompt
         lagebild_text   = response
         lagebild_label  = "Dies ist die Antwort des Assistenten."
         eingabe_label   = "Eingabe des Nutzers"
+
+    logger.info(
+        f"KZG-Verdichtung: graph_rolle={graph_rolle}, beobachter={beobachter}, "
+        f"bewertungs_laenge={len(bewertungs_text)}, "
+        f"lagebild_laenge={len(lagebild_text)}"
+    )
+
+    # Fail loud statt einen Satz ueber das Fehlen des Satzes ablegen.
+    if not bewertungs_text.strip():
+        logger.error(
+            f"KZG-Verdichtung: Bewertungsobjekt leer — kein Kern erzeugt "
+            f"(graph_rolle={graph_rolle}, beobachter={beobachter}, "
+            f"lagebild_laenge={len(lagebild_text)})"
+        )
+        return {
+            "parameter": {**state["parameter"], "kern": ""},
+            "schritte": state["schritte"] + [
+                {"node": "verdichten", "ergebnis": "leer", "kern": ""}
+            ],
+        }
 
     lagebild: str = ""
     if lagebild_text:
@@ -106,12 +159,6 @@ def verdichten(state: AgentState) -> dict:
         f"{eingabe_label}:\n{bewertungs_text}"
     )
 
-    logger.info(
-        f"KZG-Verdichtung: beobachter={beobachter}, "
-        f"bewertungs_laenge={len(bewertungs_text)}, "
-        f"lagebild_laenge={len(lagebild_text)}"
-    )
-
     node_cfg = get_node_config("kzg_verdichtung")
 
     # ── LLM-Call via ChatWorker (Microservice-Welle Block 2 Phase 4, G2) ──
@@ -123,7 +170,7 @@ def verdichten(state: AgentState) -> dict:
     # False — die Verdichtung erwartet Fliesstext, kein JSON.
     chat_request = ChatRequest(
         messages          = [{"role": "user", "content": user_message}],
-        system            = _build_verdichtung_prompt(beobachter),
+        system            = _build_verdichtung_prompt(beobachter, graph_rolle),
         temperature       = node_cfg.get("temperature", 0.1),
         max_output_tokens = node_cfg.get("max_output_tokens", 256),
         caller            = "kzg/verdichtung",

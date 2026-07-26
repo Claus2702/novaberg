@@ -42,6 +42,7 @@ class CharacterGraph(GraphBase):
         """
         kwargs.setdefault("ei_calc_rolle", "character")
         kwargs.setdefault("perzeption_rolle", "assistant")
+        kwargs.setdefault("graph_rolle",      "character")
         return super().create_state(user_prompt=user_prompt, user_id=user_id, **kwargs)
 
     def build(self) -> CompiledStateGraph:
