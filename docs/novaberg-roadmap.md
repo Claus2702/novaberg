@@ -1467,8 +1467,63 @@ Offen → Backlog: `CHARHASH-GEWICHT-ABSOLUT-LIVE` (volle Live-Abnahme im Dauerb
 - ✅ `novaberg-charakter-resonanz_k.md` — A1/A2/A5-Befunde, E8, Bauteil-1-Split, Ursachenkorrektur in §2/§2.1, Kopfzeile nachgezogen
 - ✅ `novaberg-node-dispatcher.md` + `novaberg-pixie-kzg.md` — Rückgabekontrakt und Log-Verhalten dokumentiert, Signatur-Drift bereinigt
 
-**Stand am Ende:** Bauteil 1a steht und ist live abgenommen. Bauteil 1b (Tabelle + Schreibpfad + `lzg_id`-Nachtrag) bleibt offen und ist durch `PIXIE-TURN-ID-LEER` blockiert — ein Pixie-initiierter Lauf schreibt ohne `turn_id` und würde an `turn_id NOT NULL` scheitern.
+**Stand am Ende:** Bauteil 1a steht und ist live abgenommen. Bauteil 1b (Tabelle + Schreibpfad + `lzg_id`-Nachtrag) bleibt offen ~~und ist durch `PIXIE-TURN-ID-LEER` blockiert — ein Pixie-initiierter Lauf schreibt ohne `turn_id` und würde an `turn_id NOT NULL` scheitern~~ → **war kein Blocker (Chat 110).** Der Schreibpfad prüft `turn_id` vor dem Insert und überspringt den Lauf mit einer Warnung, die die Zahl der übersprungenen Keys nennt.
 
 ---
 
-*Aktualisiert in Chat 109 (26.07.2026). Offene Punkte → novaberg-backlog.md. Bugs → novaberg-bugs.md.*
+## Chat 110 (26.07.2026) — CHARAKTER-RESONANZ Bauteil 1b ✅ + Impuls im CharacterGraph ✅
+
+**Schwerpunkt:** Bauteil 1 ist fertig — der Weg vom erinnerungswürdigen Knoten zurück zum Rohturn läuft durch. Und der Impuls-Pfad, der seit Chat 65 als Sackgasse bekannt war, führt jetzt durch den vollen CharacterGraph. Dabei ist eine Fehlerklasse aufgebrochen, die drei Defekte trug.
+
+### Bauteil 1b — die Brücke (Commits `49fbf17`, `ce939d8`)
+
+- ✅ **`verbindung`** in `db/init.sql`, dazu `db/create_verbindung.sql` als eigenständiges Skript. Abweichung von §12 des Konzepts: **`kzg_id` ist `NOT NULL`** — eine Zeile ohne Gedächtnis-Key belegt nichts. `lzg_id INTEGER REFERENCES lzg_knoten(id) ON DELETE SET NULL`, drei Indizes, kein UNIQUE.
+- ✅ **Schreibpunkt im Dispatcher** hinter der KZG-Log-Zeile, mit eigener Fehlerbehandlung um die gesamte Schleife — ein DB-Ausfall erzeugt eine `ERROR`-Zeile, nicht *n*. Nur **neue** Keys bekommen eine Zeile (E8); verstärkte Nachbarn nicht.
+- ✅ **`lzg_id`-Nachtrag in der Promotion** — platziert **hinter** der Dreifach-Verzweigung (Halbreaktivierung, Reinforcement, Neuanlage), damit es einen einzigen Schreibpunkt gibt statt dreier. Rückgabe `{gefunden, geaendert}` statt einer Zahl: So unterscheidet „0 geschrieben" zwischen „keine Zeile gefunden" und „stand schon richtig". `IS DISTINCT FROM` macht den Lauf idempotent.
+- ✅ **Messung:** 95 Zeilen, 29 bis zum LZG-Knoten aufgelöst. Der Weg zurück — Knoten → `verbindung.lzg_id` → `turn_id` → `turn_roh` — liefert Reiz, Reaktion und beide Emotionen nebeneinander.
+
+### Der Impuls durchläuft den CharacterGraph (Commits `6570076`, `7bdfd26`, `179eab4`)
+
+- ✅ **Die Shadow-Delivery formuliert nichts mehr.** Vorher: eigener LLM-Aufruf, Ergebnis direkt an den WebSocket, danach Einspeisung in den AgentGraph — kein Identitätsblock, kein Konversationsvektor, keine Emotion, kein Responder. Jetzt: `turn_id` erzeugen, das **Wissensstück selbst** in beide Graphen geben (AgentGraph = der Gedanke entsteht, CharacterGraph = er wird gedacht), Event mit `source="character"`. **Keine Rückfallebene** — schlägt die Einspeisung fehl, bleibt der Stack-Eintrag liegen und der nächste Zyklus versucht es erneut. 79 Zeilen entfernt.
+- ✅ **Herkunft reist explizit.** `reiz_herkunft` im Payload, vom Consumer nach `character_response` durchgereicht. Der Client erkannte einen Impuls vorher daran, dass ihm der Nachrichtentyp **unbekannt** war — ein Signal aus einer Lücke. Jetzt liest er ein Feld, das sagt, was es meint.
+- ✅ **Der Responder weiß, wessen Gedanke es ist.** Ein Impuls reist auf dem `user_prompt`-Slot — absichtlich, weil er derselbe Reiz ist. Nichts im Prompt sagte, dass der Autor ein anderer ist. Zwei Nodes wussten es längst besser (`ei_calc` überspringt die Empathie, `db_zugriff` füllt `external` mit einer Kopie von `internal`); der Responder war der einzige, der es nicht wusste — und der, der spricht. Neuer Block `[EIGENER GEDANKE]`, und der `[KOMMUNIKATION]`-Kopf behauptet nicht mehr, einen fremden Zustand zu beschreiben.
+- ✅ **`PIXIE-GHOST` geschlossen** (offen seit Chat 65) — und durch **keine** der beiden dort skizzierten Varianten: nichts wird unter einer Sonderrolle persistiert, nichts nachträglich eingespeist. Der Impuls läuft von Anfang an den regulären Graphen.
+
+### `graph_rolle` — ein Marker mit vier Bedeutungen (Commit `179eab4`)
+
+- ✅ `ei_calc_rolle` beantwortete an sechs Lesestellen vier Fragen: **wessen** Emotion berechnet wird, **was** bewertet wird, welche **Quelle** im `pipeline_log` erscheint, welchen **Beobachter** der Gedächtnis-Eintrag bekommt. Für HumanGraph und CharacterGraph fallen die Antworten zusammen. Für den AgentGraph nicht: Er trägt Novas Perspektive **und** bewertet einen Reiz.
+- ✅ **Gemessen:** `bewertungs_laenge=0` in **jedem** AgentGraph-Lauf, seit es den Graphen gibt — die Salienz nahm die leere `response` als Bewertungsobjekt, während das Wissensstück ungelesen im Hintergrundblock stand. Ein Fachtext über Quark-Gluon-Plasma wurde als „Soziale Interaktion, Begrüßung" abgelegt.
+- ✅ **Neues Feld `graph_rolle`** (`human` | `character` | `agent`). Drei Leser sind umgezogen: Salienz, die `pipeline_log`-Quelle im Enricher, der Session-Turn im Dispatcher. `ei_calc`, `db_zugriff` und der Beobachter behalten den alten Marker. `EI-CALC-ROLLE-RENAME` (Chat 89) hatte denselben Namen vorgeschlagen — als **Umbenennung**; das hätte den Defekt unter neuem Namen mitgetragen.
+- ✅ **Derselbe Riss eine Schicht tiefer:** Der Verdichter schaltete auf `beobachter` und verdichtete im AgentGraph die Antwort, die dort nie entsteht. Sein Kernsatz lautete wörtlich *„Es liegt kein Bewertungsobjekt vor, da die Antwort der Assistentin leer ist"* — und wurde als Gedächtnisinhalt gespeichert. Jetzt entscheidet `beobachter`, **wessen Subjekt** der Satz trägt, und `graph_rolle`, **was** verdichtet wird.
+- ✅ **Drei Wächter schließen die Klasse statt des Einzelfalls:** Salienz und Verdichter verweigern ein leeres Bewertungsobjekt (kein LLM-Aufruf, eine `ERROR`-Zeile), der Speicher verweigert einen leeren Kern — der riss vorher in `embed_text_bauen` den gesamten KZG-Dispatch für alle Folgesegmente ab.
+- ✅ **Der Dispatcher schreibt für den AgentGraph keinen Session-Turn mehr.** Ohne Responder wäre seine Rolle `user` und sein Inhalt das Wissensstück — eine Nutzer-Äußerung, die der Nutzer nie gemacht hat.
+
+### Sprint NOVA-SAGT-ICH — die assistant-Partition trägt jetzt Novas Stimme (Commit `283ec17`)
+
+- ✅ **Gemessen an drei echten Turns:** Beide Graph-Läufe speicherten für denselben Turn **wörtlich denselben Satz**, einer davon dreifach. Novas eigene Äußerung wurde nie gespeichert.
+- ✅ **Zwei Ursachen.** Der Datenpfad: `verdichtung.py` fehlte der Rollen-Switch, den `salience.py` seit `PFAD2-PERZEPTION-FIX` trägt. Der Prompt: **ein** Aufgabenblock für beide Läufe, mit sechs Few-Shot-Beispielen, die alle den Nutzer als Subjekt führen. Eine Regel im selben Prompt hätte dagegen nicht bestanden — ein Beispiel schlägt eine Anweisung.
+- ✅ **Nach dem Fix:** Verstärkungen auf dem character-Pfad **15 → 10** bei einem um sieben Einträge **gewachsenen** Korpus. Die Selbstverstärkung ist weg: Pfad 2 verstärkte vorher den Pfad-1-Key **desselben Turns**. `DESTILLAT-SUBJEKT-SCHABLONE` geschlossen.
+
+### Weitere Bauten
+
+- ✅ **Beispielnamen aus vier Prompt-Bausteinen entfernt** (`5a9cdbb`) — die Few-Shot-Beispiele trugen echte Gesprächsdaten. Ersetzt durch einen erfundenen Cast. Der Wächter-Test kennt **nur die erlaubten** Namen: Eine Liste der zu schützenden im Repo wäre genau die Preisgabe, die sie verhindern soll.
+- ✅ **Suite entrotet** (`cff5971`) — ein Test hielt `0.85` hartcodiert, während `config` seit der Embedding-Migration auf `0.55` steht. Die Konzept-Beispiele tragen ihre Zahlen jetzt als benannte Fixtures, getrennt von den Tests, die aus `config` lesen.
+- ✅ **`novaberg-fundliste.md` angelegt** (`2024d6a`) — Funde neben dem Auftrag bekommen eine Zeile mit Datum statt eines vorschnellen Backlog-Eintrags.
+- ✅ **`AUDIT-HASH-DIRTY-SICHTBARKEIT` geschlossen** — ein Redis-Key, keine Spalte. Der Job räumt planmäßig. Zwei herrenlose Key-Varianten ohne Leser und ohne Löscher bleiben als Fund.
+
+### Messung am Ende
+
+| | vorher | nachher |
+|---|---|---|
+| Salienz im AgentGraph | `bewertungs_laenge=0` | 1825 / 2080 |
+| Kernsatz des AgentGraph | „Es liegt kein Bewertungsobjekt vor…" | „Nova ist aufgegangen, dass…" |
+| Zuschreibung an den Nutzer | 2 Anreden je Impuls-Antwort | 0 |
+| `pipeline_log` | AgentGraph ununterscheidbar vom CharacterGraph | eigene `quelle=agent` |
+| `verbindung`-Zeilen je Impuls-Turn | 0 | 10 und 12 |
+| Seiteneffekte aus 20 Messturns | — | 0 `timeline`, 0 `notizen`, 0 `fakten` |
+
+**Stand am Ende:** Bauteil 1 ist vollständig. Bauteil 3 (`verhaltensweisen` + Verdichtungs-Agent) hängt an E7, und E7 ist nicht beantwortbar, solange die Salienz-Skala gebrochen ist — davor liegt der Sprint `KZG-SALIENZ-NEUBAU`. Offen und unentschieden: der Kontaminationsfilter im Enricher, der auf einen Marker prüft, den seit dem Umbau niemand mehr setzt.
+
+---
+
+*Aktualisiert in Chat 110 (26.07.2026). Offene Punkte → novaberg-backlog.md. Bugs → novaberg-bugs.md.*
