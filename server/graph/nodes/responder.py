@@ -160,6 +160,26 @@ def _strip_salienz_tags(text: str) -> str:
     return _SALIENZ_TAG_RE.sub("", text).strip()
 
 
+def _reiz_ist_eigener_gedanke(state: ConversationState) -> bool:
+    """Prueft, ob der Reiz dieses Durchlaufs von Nova selbst stammt.
+
+    Ein Pixie-Impuls reist als `user_prompt` durch den Graphen — derselbe
+    Reiz-Platz wie eine Nutzer-Eingabe, aber anderer Urheber. Der Marker steht
+    ausdruecklich im Event-Payload; `event_source == "character"` allein
+    genuegt nicht, weil der Thinker-Retry dieselbe Quelle traegt und dabei eine
+    echte Nutzer-Aeusserung wiederholt.
+
+    Vorbedingung: keine — ein fehlender Payload heisst „nicht von Nova".
+    Nachbedingung: True nur bei ausdruecklich markierter eigener Herkunft.
+    """
+
+    # ── Eingabe-Validierung ─────────────────────
+    payload: dict = state.get("event_payload") or {}
+
+    # ── Verarbeitung / Ausgabe ──────────────────
+    return payload.get("reiz_herkunft") == "eigener_impuls"
+
+
 def _build_system_prompt(state: ConversationState) -> str:
     """Baut den System-Prompt nach einheitlichem [BLOCKNAME]-Schema."""
 
@@ -291,6 +311,17 @@ def _build_system_prompt(state: ConversationState) -> str:
             f"{f', Vektor={nova_emotions_vektor}' if nova_emotions_vektor else ''}"
         )
 
+    # ── [EIGENER GEDANKE] ── Reiz stammt von Nova selbst ──
+    # Ein Pixie-Impuls geht als user_prompt in den Graphen, weil er derselbe
+    # Reiz ist wie eine Nutzer-Eingabe. Ohne diesen Block liest der Responder
+    # ihn als fremde Aeusserung und dankt dem Nutzer fuer Novas eigenen
+    # Gedanken (gemessen 26.07.2026). Der Marker kommt ausdruecklich aus dem
+    # Event-Payload — event_source allein wuerde den Thinker-Retry mitfangen,
+    # der eine echte Nutzer-Aeusserung wiederholt.
+    if _reiz_ist_eigener_gedanke(state):
+        parts.append(PROMPTS["responder.eigener_gedanke"])
+        logger.info("Responder: [EIGENER GEDANKE] gesetzt — Reiz stammt von Nova selbst")
+
     # ── [AUFGABE] ── Fertiger Block aus dem Planner ──
     task_block: str = state.get("task_block", "")
     has_agent_action: bool = state.get("task_context_cut", False)
@@ -310,7 +341,16 @@ def _build_system_prompt(state: ConversationState) -> str:
     current_arousal:    float= external.emotion.arousal              if external else 0.5
     beziehungs_dynamik: str  = external.emotion.relationship_dynamic if external else "neutral"
 
-    komm_parts: list[str] = ["[KOMMUNIKATION]\nSo nimmt der Nutzer gerade am Gespraech teil:"]
+    # Beim eigenen Impuls traegt `external` laut db_zugriff eine Kopie von
+    # `internal` — die Werte unten sind dann Novas Zustand, nicht der des
+    # Nutzers. Die Ueberschrift muss das sagen, sonst behauptet der Block eine
+    # fremde Verfassung, die niemand gemessen hat.
+    if _reiz_ist_eigener_gedanke(state):
+        komm_kopf: str = "[KOMMUNIKATION]\nSo ist deine eigene Verfassung gerade:"
+    else:
+        komm_kopf = "[KOMMUNIKATION]\nSo nimmt der Nutzer gerade am Gespraech teil:"
+
+    komm_parts: list[str] = [komm_kopf]
 
     # Emotionale Daten
     if emotions_verlauf:
