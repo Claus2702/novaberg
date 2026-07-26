@@ -71,7 +71,7 @@ Session-Key seit Chat 60: `session:{user_id}:{character_id}:turns`. Der Enricher
 
 | Turn-Typ | Behandlung |
 |----------|-----------|
-| Shadow-Impuls (`[Nova-Impuls]` in kern) | **Komplett ausgeblendet** |
+| Shadow-Impuls (`[Nova-Impuls]` in kern) | **Komplett ausgeblendet** — nur in `_enrich_character`; `_enrich_human` hat den Filter nicht. **Seit Chat 110 wirkungslos:** Den Marker setzte allein die alte Delivery, auf dem neuen Pfad schreibt der CG-Dispatcher den Session-Turn ohne ihn. Ob der Filter noch gebraucht wird, ist offen — siehe `novaberg-pixie_l_kontamination.md` |
 | Alle anderen Turns | **Vollständig durchgereicht** — alle Felder |
 
 Jeder konsumierende Node formatiert die Turn-Dicts selbst:
@@ -147,6 +147,7 @@ Die eigentliche Berechnung (Verlauf, Vektor, EI-Arousal, Modus-/Stil-Plausibilit
 | `character_id` | str | Paar-Partition (seit Chat 60) |
 | `user_prompt` | str | Für Embedding-Erzeugung |
 | `ei_calc_rolle` | str | Dispatcher-Switch (`"user"` → HG, `"character"` → CG; Default: `"character"`) |
+| `graph_rolle` | str | Quelle im `pipeline_log` *(seit Chat 110)*: `"human"`→`user`, `"character"`→`character`, `"agent"`→`agent`. Vorher aus `ei_calc_rolle` abgeleitet — der AgentGraph war dadurch vom CharacterGraph nicht zu trennen |
 | `turn_id` | str | Pipeline-Log-Korrelation (Chat 88 P1.1) |
 | `state["external"].character` | Character | Charakter-Hash-Formatierung für `memory_entries` (nur CG, im HG leer) |
 

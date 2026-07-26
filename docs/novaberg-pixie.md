@@ -89,7 +89,16 @@ Shadow-Stack Eintragsformat:
 }
 ```
 
-**Delivery Service:** Eigenstaendiger Dienst, prueft zyklisch ob eine proaktive Nachricht gesendet werden soll. Entscheidungskette: Momentum low? Session-Turns vorhanden? Cosine Similarity >= 0.65? Emotionale Kompatibilitaet? Modus-Kompatibilitaet? Bei Bestehen: GPU-Modell formuliert Nachricht, WebSocket liefert aus. MAX_BURST = 2 Impulse pro Zyklus.
+**Delivery Service:** Eigenstaendiger Dienst, prueft zyklisch ob eine proaktive Nachricht gesendet werden soll. Entscheidungskette: Momentum low? Session-Turns vorhanden? Cosine Similarity >= 0.65? Emotionale Kompatibilitaet? Modus-Kompatibilitaet? MAX_BURST = 2 Impulse pro Zyklus.
+
+**Bei Bestehen — geaendert Chat 110.** ~~GPU-Modell formuliert Nachricht, WebSocket liefert aus.~~ Die Delivery formuliert nichts mehr. Sie erzeugt eine `turn_id` und gibt das **Wissensstueck selbst** — nicht einen daraus vorformulierten Satz — in beide Graphen:
+
+1. **AgentGraph**: der Gedanke entsteht (Kontext, Bewertung, Ablage). Spiegel zum HumanGraph.
+2. **Event** mit `source="character"` und `reiz_herkunft="eigener_impuls"`: der **CharacterGraph** denkt ihn — Emotion, Assoziation, Gespraechsvektor, Stimme. Der Responder spricht, der Event-Consumer liefert als `character_response` aus, der Dispatcher schreibt den `turn_roh`.
+
+Der Impuls ist damit ein vollstaendiger Turn: ein Reiz-Reaktions-Paar ohne Nutzer-Reiz, ueber `verbindung` bis zum Rohturn aufloesbar.
+
+**Keine Rueckfallebene.** Erreicht der Impuls den CharacterGraph nicht, bleibt der Stack-Eintrag liegen und der naechste Zyklus versucht es erneut. Ein Gedanke, der nicht gedacht wurde, wird nicht ausgesprochen.
 
 ---
 
@@ -142,13 +151,19 @@ Kein Kollisionsrisiko: Pixie und Chat nutzen bei Idle dasselbe GPU-Modell (gemma
 
 ## 6. AgentGraph
 
-Der AgentGraph ist eine leichtgewichtige 3-Node-Kette fuer Novas eigene Gedaechtnis-Verarbeitung nach Shadow-Delivery:
+Der AgentGraph ist eine leichtgewichtige 3-Node-Kette, in der Novas eigener Gedanke **entsteht** — der Spiegel zum HumanGraph:
 
 ```
 Enricher → Salienz → Dispatcher → END
 ```
 
-Kein Perzeption, kein Router, kein Responder, kein Tribunal. Pixie weiss bereits, was zu tun ist. Typischer LLM-Verbrauch: 1 Call (Salienz) pro Durchlauf.
+Kein Perzeption, kein Router, kein Responder, kein Tribunal. Typischer LLM-Verbrauch: 1 Call (Salienz) pro Durchlauf.
+
+**Stellung im Ablauf, korrigiert Chat 110.** ~~fuer Novas eigene Gedaechtnis-Verarbeitung **nach** Shadow-Delivery~~ — der AgentGraph laeuft **vor** dem CharacterGraph, nicht danach. Er ist nicht der Gedaechtnis-Nachtrag zu einer bereits gesendeten Nachricht, sondern die erste Haelfte des Impuls-Turns. Die Begruendung ~~„Pixie weiss bereits, was zu tun ist"~~ ist damit hinfaellig: Was Pixie weiss, ist der Inhalt; wie Nova dazu steht, entscheidet der CharacterGraph.
+
+**`graph_rolle="agent"` (Chat 110).** Der AgentGraph traegt `ei_calc_rolle="character"`, damit seine KZG-Eintraege `beobachter="assistant"` bekommen — der Gedanke ist Novas. Er bewertet aber einen **Reiz** wie der HumanGraph, denn ohne Responder gibt es nie eine Reaktion. Beide Aussagen aus einem Marker zu lesen ging schief: Salienz und Verdichter nahmen bis Chat 110 die leere `response` als Bewertungsobjekt (gemessen: `bewertungs_laenge=0` in jedem Lauf). Seither trennt `graph_rolle` die Frage „was wird bewertet" von `ei_calc_rolle` (wessen Sicht) und `beobachter` (wessen Subjekt im Kernsatz).
+
+Der AgentGraph schreibt **keinen Session-Turn** — ohne Responder waere seine Rolle „user" und der Inhalt das Wissensstueck; in der Session staende dann eine Nutzer-Aeusserung, die der Nutzer nie gemacht hat. Den Turn schreibt der CharacterGraph-Lauf. Im `pipeline_log` erscheint er seit Chat 110 als eigene `quelle="agent"` und ist damit vom CharacterGraph trennbar.
 
 Fuenf Pixie-Agenten laufen eigenstaendig ueber den Pixie-Heartbeat und die AgentRegistry: CharakterAgent, PromotionAgent, DecayAgent, RechercheAgent, WiedervorlageAgent. Der alte Plugin-basierte Runner (services/shadow_agent/runner.py) und sieben OLD-Task-Dateien wurden in Chat 79 (PIX-CLEAN) entfernt. Ein verbleibender Task (nova_gedaechtnis.py) ist als Post-Hook konserviert, aber nicht ueber den Pixie-Router verdrahtet — Migration zu einem echten Agent steht aus (PIX-MIG-NOVA).
 

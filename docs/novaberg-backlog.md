@@ -2424,7 +2424,11 @@ char_hash_dict = {
 
 ## Refactor: EI-CALC-ROLLE-RENAME — `ei_calc_rolle` semantisch zu eng (Chat 89)
 
-**Status:** ⬜ Geplant, nach Phase 4
+**Status:** 🟡 Teilweise erledigt (Chat 110)
+
+**Nachtrag Chat 110.** Der vorgeschlagene Name `graph_rolle` existiert jetzt — aber **nicht als Umbenennung, sondern als zweites Feld**. Grund: Der AgentGraph hat gezeigt, dass die beiden Bedeutungen nicht dasselbe sind. Er traegt `ei_calc_rolle="character"` (Novas Sicht, fuer `beobachter`) und bewertet trotzdem einen Reiz wie der HumanGraph — ein Suchen-Ersetzen haette den Fehler nur umbenannt, nicht behoben. `graph_rolle` sagt jetzt, **welcher Graph laeuft** (`human` | `character` | `agent`), `ei_calc_rolle` weiterhin, **wessen Sicht** gerechnet wird.
+
+Umgezogen sind die drei Leser, bei denen die Frage lautete, welcher Graph laeuft: Salienz (was wird bewertet), Enricher (`quelle` im `pipeline_log`), Dispatcher (schreibt der Lauf einen Session-Turn). Nicht umgezogen: EI-Calc, `db_zugriff` und die `beobachter`-Ableitung im KZG-Dispatch — dort ist `ei_calc_rolle` semantisch richtig. Offen bleibt die Default-Asymmetrie aus AUDIT-EI-CALC-ROLLE-DEFAULTS.
 **Prio:** Niedrig
 **Auslöser:** Sprint PFAD2-PERZEPTION-FIX (Chat 89)
 

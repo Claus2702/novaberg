@@ -771,7 +771,7 @@ Dann Requests über diese Session abwickeln statt direkt `requests.post()`.
 
 ---
 
-#### PIXIE-GHOST — Pixie-Delivery fließt nicht durch Novas Verarbeitung ⬜
+#### PIXIE-GHOST — Pixie-Delivery fließt nicht durch Novas Verarbeitung ✅ (behoben Chat 110)
 
 **Entdeckt:** Chat 65, 26. April 2026
 
@@ -779,7 +779,15 @@ Dann Requests über diese Session abwickeln statt direkt `requests.post()`.
 
 **Ursache:** Pixie-Delivery wird direkt über WebSocket an den Client gesendet (Shadow Delivery Service), ohne einen Turn in die Session zu schreiben und ohne den CharacterGraph zu durchlaufen. Die Nachricht existiert nur im Client, nicht im System-Gedächtnis.
 
-**Lösungsansatz:** Offen, wird Teil der Pixie-Überarbeitung. Denkbar: (a) Pixie-Delivery als Session-Turn mit Rolle "assistant_pixie" persistieren, sodass Router und Enricher den Kontext sehen, (b) Pixie-Nachrichten über den Nova-Pfad (CharacterGraph unter ASSISTANT_USER_ID) schicken statt direkt, (c) Mindestens den Bezugs-Kontext der Pixie-Nachricht in Redis halten (TTL), damit der Router bei der nächsten User-Antwort den Rückbezug auflösen kann.
+~~**Lösungsansatz:** Offen, wird Teil der Pixie-Überarbeitung.~~
+
+**Behoben Chat 110 — keine der beiden gedachten Varianten.** Weder als Sonderrolle `assistant_pixie` persistiert noch nachträglich eingespeist: Der Impuls durchläuft den CharacterGraph **regulär**, von Anfang an.
+
+Die Shadow-Delivery formuliert nichts mehr selbst. Sie erzeugt eine `turn_id`, gibt das Wissensstück in den AgentGraph (dort entsteht der Gedanke) und feuert ein Event mit `source="character"`. Der Event-Consumer fährt den vollen CharacterGraph — EI-Calc, Enricher, Gesprächsvektor, Responder, Dispatcher. Damit ist jeder der im Symptom genannten Punkte erledigt: Der Impuls fließt durch Novas EI-System, landet als Session-Turn, geht in den Gesprächsvektor ein, und der Dispatcher schreibt einen vollständigen `turn_roh`.
+
+*Live-Beleg 26.07.2026:* Impuls 18:47:57, `turn_roh`-Zeile vorhanden, 6 `verbindung`-Zeilen, `pipeline_log` mit eigener `quelle="agent"` für die Entstehungs-Hälfte. Der Responder spricht statt eines separaten Delivery-Prompts; die Antwort geht als `character_response` an die Clients und erreicht damit erstmals auch Telegram.
+
+*Zwei Folgedefekte, im selben Sprint gefunden und behoben:* Salienz und Verdichter hingen am falschen Marker und bewerteten im AgentGraph eine leere `response` (`bewertungs_laenge=0`) — behoben über `graph_rolle`. Und der Responder schrieb Novas eigenen Gedanken dem Nutzer zu („Deine Synthese ist brillant") — behoben über den Block `[EIGENER GEDANKE]`.
 
 **Prio:** Mittel — strukturelles Problem, das bei jeder Pixie-Interaktion auftritt. Wird dringender, je mehr Pixie-Tasks aktiv kommunizieren.
 

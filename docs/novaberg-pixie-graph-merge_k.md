@@ -10,17 +10,25 @@
 
 Pixie-Agenten (Recherche, Vertiefung, Traeumen) laufen heute durch einen eigenen AgentGraph mit eigenem Provider und eigener Delivery (`shadow_delivery.py`). Dieser Pfad ist **charakter-blind**:
 
-- Kein `[IDENTITAET]`-Block, keine Destillationsschichten
-- Kein Responder — Delivery formuliert den Text ohne Novas Stimme
-- Kein Thinker — keine Qualitaetspruefung, kein Konflikt-Check
-- Kein Tribunal — keine Ablehnungskontrolle
-- Kein GV-Node — kein Gespraechsvektor-Einfluss
-- Kein Dispatcher — keine Session-Turn-Schreibung, keine Salienz-Bewertung
-- Keine EI-Calc — keine Emotions-Verarbeitung
+- ~~Kein `[IDENTITAET]`-Block, keine Destillationsschichten~~
+- ~~Kein Responder — Delivery formuliert den Text ohne Novas Stimme~~
+- ~~Kein Thinker — keine Qualitaetspruefung, kein Konflikt-Check~~
+- ~~Kein Tribunal — keine Ablehnungskontrolle~~
+- ~~Kein GV-Node — kein Gespraechsvektor-Einfluss~~
+- ~~Kein Dispatcher — keine Session-Turn-Schreibung, keine Salienz-Bewertung~~
+- ~~Keine EI-Calc — keine Emotions-Verarbeitung~~
+
+**Sieben von sieben erledigt — Chat 110.** Der Impuls durchlaeuft seit dem Umbau den vollen CharacterGraph; alle oben genannten Nodes laufen mit. Was bleibt, ist der erste Punkt in anderer Form: Der **AgentGraph** hat weiterhin keinen Responder — aber er soll auch keinen haben. Er ist die Entstehungs-Haelfte, nicht die Antwort-Haelfte.
 
 Ergebnis (beobachtet Chat 79): Recherche-Destillation klingt wie ein Wikipedia-Referat ("Es ist faszinierend..."), produziert Halluzinationen ("Spalte" statt "Spuele"), erzeugt Themen-Spiralen (RECH-SPIRAL), und hat keinen Bezug zum User oder zur Beziehung.
 
 ## 2. Loesung: PixieGraph als zweite CharacterGraph-Instanz
+
+> **Abweichung, gebaut Chat 110.** Umgesetzt ist **nicht** die zweite Instanz auf CPU, sondern der Weg ueber die vorhandene Event-Infrastruktur in **dieselbe** Instanz: Die Shadow-Delivery feuert ein Event mit `source="character"`, der Event-Consumer faehrt den regulaeren CharacterGraph.
+>
+> Warum so: Der Weg brauchte keinen neuen Graphen, keinen zweiten Provider und keine zweite Registrierung — nur eine `turn_id` und ein Event. Was der Entwurf mit einer eigenen Instanz erreichen wollte (Chat-Pfad nicht blockieren), leistet hier der Event-Consumer, der ohnehin ausserhalb des Request-Threads laeuft.
+>
+> **Was der Entwurf damit offen laesst:** Die Trennung GPU/CPU nach Pfad ist nicht gebaut. Ein Impuls belegt dasselbe Chat-Modell wie eine Nutzer-Antwort. Ob das reicht, ist nicht gemessen — der Abschnitt unten beschreibt insofern weiterhin einen moeglichen Ausbau, keinen erledigten Stand.
 
 Pixie-Themen durchlaufen **denselben Graphen** wie Chat-Antworten — aber als eigene Instanz auf CPU, damit der Chat-Pfad (GPU) nie blockiert wird.
 

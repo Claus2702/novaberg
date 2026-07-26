@@ -75,6 +75,18 @@ Jedes Event ist ein JSON-Dict:
 }
 ```
 
+### 3.1.1 Wer erzeugt Events (Stand Chat 110)
+
+| Erzeuger | `source` | `typ` | Anlass |
+|---|---|---|---|
+| `api/chat.py` (sync + stream) | `user` | `message` | Der Nutzer hat geschrieben. Payload traegt `turn_id` und die neun EI-Dimensionen aus `external.emotion`. |
+| `services/shadow_delivery.py` | `character` | `message` | **Neu Chat 110.** Ein Pixie-Impuls: das Wissensstueck als `user_prompt`, dazu `turn_id` und `reiz_herkunft="eigener_impuls"`. Das Payload traegt nur, was der Stack-Eintrag wirklich hat — die uebrigen EI-Dimensionen bleiben leer statt plausibel gefuellt. |
+| `services/event_consumer.py` | `character` | `continue` | Thinker-Selbsttrigger bei Doppel-Fehlschlag. **Erbt** die `turn_id` — es ist derselbe Gedanke, nochmal versucht. |
+
+**`turn_id`: erzeugen oder erben.** Wer einen neuen Turn ausloest, erzeugt eine neue `turn_id` (Chat-API, Delivery). Nur der Retry erbt sie. Die Unterscheidung ist nicht aus `source` ableitbar — Delivery und Retry tragen beide `character` —, deshalb steht die Herkunft ausdruecklich im Payload.
+
+**`reiz_herkunft`.** Markiert einen Reiz, den Nova sich selbst erarbeitet hat. Gelesen vom Responder (Block `[EIGENER GEDANKE]`) und vom Event-Consumer, der das Feld ins `character_response`-Payload weiterreicht, damit der Client den Impuls einfaerben kann. Fehlt das Feld, gilt der Reiz als fremd.
+
 ### 3.2 Event-Typen
 
 | Typ | Quelle | Bedeutung |

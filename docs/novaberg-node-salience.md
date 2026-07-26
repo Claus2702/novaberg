@@ -136,7 +136,15 @@ Die Salienz extrahiert nicht nur den Score, sondern auch Intentionen. Die primä
 
 ### 4.1 Lagebild / Bewertungsobjekt ([BLOCKNAME]-Schema)
 
-Der Prompt-Aufbau folgt der Kontaminations-Trennung ([BLOCKNAME]-Schema seit Chat 27) und ist gespiegelt je nach `ei_calc_rolle`:
+Der Prompt-Aufbau folgt der Kontaminations-Trennung ([BLOCKNAME]-Schema seit Chat 27) und ist gespiegelt je nach ~~`ei_calc_rolle`~~ **`graph_rolle`** *(korrigiert Chat 110)*:
+
+**Drei Lagen, nicht zwei.** Nur der CharacterGraph bewertet eine **Reaktion** — er ist der einzige Graph mit Responder. HumanGraph und AgentGraph bewerten beide einen **Reiz**; sie unterscheiden sich darin, von wem er stammt. Hing der Switch an `ei_calc_rolle`, landete der AgentGraph im Reaktions-Zweig, weil er `"character"` traegt (fuer `beobachter="assistant"`) — und bewertete eine `response`, die er nie erzeugt. Gemessen 26.07.2026: `bewertungs_laenge=0` in jedem AgentGraph-Lauf, das Wissensstueck lag ungelesen im Lagebild; ein Fachtext ueber Quark-Gluon-Plasma wurde als „Soziale Interaktion, Begruessung" abgelegt.
+
+**Leeres Bewertungsobjekt bricht laut ab** *(Chat 110)*. Kein LLM-Call, kein `pending_write`, ein `logger.error`. Vorher klassifizierte das Modell in diesem Fall das Lagebild oder erfand Themen.
+
+#### AgentGraph (`graph_rolle="agent"`, seit Chat 110)
+
+Novas entstehender Gedanke wird bewertet, **kein Lagebild** — es gibt kein Gegenueber, auf das er antwortet, und die leere `response` als Hintergrund waere eine Behauptung ueber etwas, das nicht stattgefunden hat. Label: „Eigener Gedanke der Assistentin".
 
 #### HumanGraph (`rolle="user"`)
 
@@ -212,9 +220,10 @@ Die Salienz entscheidet *was* gespeichert wird. Sie führt *nichts* aus. Alle Er
 
 | State-Quelle | Typ | Beschreibung |
 |---|---|---|
-| `ei_calc_rolle` | str | Input-Switch (`"user"` → User-Prompt bewerten, `"character"` → Nova-Antwort bewerten; impliziter Default `"user"`) |
+| `graph_rolle` | str | Input-Switch *(seit Chat 110)*: `"character"` → Nova-Antwort bewerten, `"human"` und `"agent"` → Reiz bewerten. Default `"human"` |
+| ~~`ei_calc_rolle`~~ | str | ~~Input-Switch~~ — steuert die Salienz **nicht** mehr; bleibt fuer EI-Calc, `beobachter` und den Pixie-Sonderfall in `db_zugriff` |
 | `user_prompt` | str | Bewertungsobjekt (HG) bzw. Lagebild (CG) |
-| `response` | str | Bewertungsobjekt (CG) bzw. (leeres) Lagebild (HG) |
+| `response` | str | Bewertungsobjekt (CG) bzw. (leeres) Lagebild (HG). Im AgentGraph nie gesetzt — er hat keinen Responder |
 | `gravitationsterm` | float | Salienz-Boost-Modulation |
 | `pending_writes` | list[PendingWrite] | Akkumulator (read-modify-write) |
 | `token_total` | int | Token-Counter (read-modify-write) |

@@ -153,7 +153,7 @@ db_zugriff → EI-Calc(character) → Enricher → Reducer → Router ───�
 | 13 | Corrector | GPU | Korrektur bei Ablehnung, zurueck zum Tribunal (max 2 Runden). |
 | 14 | perzeption_assistant | GPU | Analysiert Novas finale Antwort (`perzeption_rolle="assistant"`, liest `state["response"]`). Schreibt nach `state["internal"].emotion`. (Bugfix Chat 89: liest jetzt `response`, vorher faelschlich `user_prompt`.) |
 | 15 | ei_calc_persist | Nein | Konsolidiert Plausibilitaeten auf `state["internal"].emotion` (Modus, Sprach-Stil, EI-Arousal) und persistiert Novas neun EI-Dimensionen in Redis als `nova_state:{user_id}:{character_id}` (Default Mode Network). (Chat 89, Phase 2.) |
-| 16 | Salienz | GPU | Bewertung der Charakter-Antwort — Bewertungsobjekt ist `state["response"]` (Switch nach `ei_calc_rolle="character"`). Erzeugt `pending_writes` mit `ziel="kzg"`. |
+| 16 | Salienz | GPU | Bewertung der Charakter-Antwort — Bewertungsobjekt ist `state["response"]` (Switch nach ~~`ei_calc_rolle="character"`~~ **`graph_rolle="character"`**, korrigiert Chat 110). Erzeugt `pending_writes` mit `ziel="kzg"`. |
 | 17 | Dispatcher | Nein | Schreibt Session-Turn (komplett, aus `state["internal"].emotion`) + KZG. |
 
 Salienz und Dispatcher sind seit Chat 60 wieder synchron im Graphen. Der Charakter-Turn wird vollstaendig aus `state["internal"]` geschrieben — Text, Emotion, Arousal, Modus, alles. Die Nova-Perzeption (Schritt 14, seit Chat 61) sorgt fuer Symmetrie zu Pfad 1; `ei_calc_persist` (Schritt 15, seit Chat 89) konsolidiert und persistiert Novas Zustand zwischen User-Turns.
@@ -263,7 +263,8 @@ Felder, die den Graph-Zweig und die Akteurs-Perspektive steuern.
 | `event_source` | `str` | Event-Consumer | `"user"` oder `"character"` — steuert EI-Calc-Empathie-Switch |
 | `event_payload` | `dict` | Event-Consumer | Freies Dict aus dem Event (Metadaten, Trigger-Info) |
 | `perzeption_rolle` | `str` | `create_state` | `"user"` (HumanGraph) oder `"assistant"` (CharacterGraph, `perzeption_assistant`) — steuert, welchen Text die Perzeption liest |
-| `ei_calc_rolle` | `str` | `create_state` | `"user"` (Pfad 1) oder `"character"` (Pfad 2, Nova-Empathie) — auch Quelle fuer `beobachter` im KZG-Dispatch (Chat 62) |
+| `ei_calc_rolle` | `str` | `create_state` | `"user"` (Pfad 1) oder `"character"` (Pfad 2, Nova-Empathie) — auch Quelle fuer `beobachter` im KZG-Dispatch (Chat 62). **Steuert seit Chat 110 nicht mehr die Salienz** |
+| `graph_rolle` | `str` | `create_state` | Welcher Graph laeuft: `"human"` \| `"character"` \| `"agent"` (Chat 110). Gelesen von Salienz (was wird bewertet), Enricher (`quelle` im pipeline_log), Dispatcher (schreibt der Lauf den Session-Turn) und ueber `dispatch_kzg` vom Verdichter |
 
 ### 4.2 Perzeption → Personality-Klasse (seit Chat 89, Phase 3)
 
@@ -450,11 +451,17 @@ Wer schreibt PendingWrites: Planner (bei Management-Aktionen) und Salienz (bei s
 Enricher -> Salienz -> Dispatcher -> END
 ```
 
-**Entry-Point:** Enricher (keine Perzeption, kein Router — Pixie weiss bereits, was zu tun ist).
+**Entry-Point:** Enricher (keine Perzeption, kein Router).
 
 ### 5.2 Verwendung
 
-Wird nach Shadow Delivery aufgerufen, damit Novas eigene Erkenntnisse (unter `user_id: "nova"`) den normalen Gedaechtnis-Pfad durchlaufen: Enricher laedt Novas Kontext, Salienz bewertet, Dispatcher schreibt.
+**Korrigiert Chat 110.** ~~Wird nach Shadow Delivery aufgerufen~~ — der AgentGraph laeuft **innerhalb** der Shadow-Delivery und **vor** dem CharacterGraph. Er ist die erste Haelfte eines Impuls-Turns: Hier **entsteht** der Gedanke (Kontext, Bewertung, Ablage), gedacht wird er danach im CharacterGraph, der auf dasselbe Event folgt. Beide Laeufe teilen sich die `turn_id`, die die Delivery erzeugt.
+
+Damit ist der AgentGraph der **Spiegel zum HumanGraph**: Dort bewertet ein Graph den Reiz des Nutzers, hier den Reiz, den Nova sich selbst erarbeitet hat. Der CharacterGraph reagiert in beiden Faellen.
+
+**`graph_rolle="agent"`.** Der AgentGraph traegt `ei_calc_rolle="character"` (damit KZG-Eintraege `beobachter="assistant"` bekommen) und bewertet trotzdem einen Reiz — er hat keinen Responder. Bis Chat 110 hing der Salienz-Switch an `ei_calc_rolle`; der AgentGraph landete dadurch im Reaktions-Zweig und bewertete eine leere `response`. Gemessen: `bewertungs_laenge=0` in jedem Lauf, seit dem Fix 1825–2080.
+
+Zwei Folgen im selben Sprint: Der AgentGraph schreibt **keinen Session-Turn** (ohne Responder waere seine Rolle „user" und der Inhalt das Wissensstueck — eine Nutzer-Aeusserung, die nie stattfand), und er erscheint im `pipeline_log` als eigene `quelle="agent"` statt als zweiter „character"-Lauf.
 
 ### 5.3 State
 

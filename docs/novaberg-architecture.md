@@ -604,7 +604,7 @@ Das Handbuch ist nach Betrachtungstiefen organisiert. Tiefe 0 ist der Einstiegsp
 | novaberg-node-thinker.md | Thinker (Faktenpruefung, Web-Suche) |
 | novaberg-node-tribunal.md | Tribunal (Drei-Perspektiven-Bewertung, Score-System) |
 | novaberg-node-corrector.md | Corrector (Korrekturschleife) |
-| novaberg-node-salience.md | Salienz (Bewertung, pending_writes, Input-Switch nach ei_calc_rolle) |
+| novaberg-node-salience.md | Salienz (Bewertung, pending_writes, Input-Switch nach graph_rolle) |
 | novaberg-node-dispatcher.md | Dispatcher (Session-Turn-Schreiben, KZG-Dispatch, Schreiboperationen verteilen) |
 
 ### Tiefe 2 — User-Agenten (4)
