@@ -37,6 +37,7 @@ from config import (
 )
 from memory.session import session_turn_store, session_summarize_if_needed
 from memory.pipeline_log import log_turn_roh, log_fehler
+from memory.repositories.verbindung_repository import VerbindungRepository
 
 logger = logging.getLogger("ki_server.dispatcher")
 
@@ -335,6 +336,83 @@ def _turn_roh_schreiben(state: ConversationState) -> None:
             pass  # Wenn selbst das Fehler-Logging bricht: nicht den Turn mitreissen.
 
 
+def _verbindung_schreiben(
+    turn_id:      str,
+    rolle:        str,
+    neue_keys:    list[str],
+    postgres_url: str,
+) -> int:
+    """Schreibt je NEU angelegtem KZG-Key eine Zeile in die verbindung-Tabelle.
+
+    Die Geburt der Brueckenzeile (§11 Schritt 1): turn_id und kzg_id werden
+    verdrahtet, lzg_id bleibt NULL und wird erst bei der Promotion nachgetragen.
+
+    Nur die neu angelegten Keys bekommen eine Zeile — thematisch verstaerkte
+    Nachbarn nicht (E8, §14). Ihr Text stammt aus einem anderen Turn; sie hier
+    zu verdrahten hiesse, einen Tagebucheintrag unter ein falsches Datum zu
+    schreiben.
+
+    Vorbedingung: turn_id ist nicht leer. Ohne sie zeigt die Zeile ins Leere,
+    und die Spalte ist NOT NULL — dann wird nichts geschrieben und laut gewarnt.
+    Nachbedingung: fuer jeden uebergebenen Key existiert genau eine Zeile; die
+    Anzahl tatsaechlich geschriebener Zeilen wird zurueckgegeben.
+    Fehlerfaelle: leere Key-Liste (debug, 0 Zeilen), leere turn_id (warning,
+    0 Zeilen), Datenbankfehler (error mit Forensik, teilweise geschriebene
+    Anzahl). Die Funktion wirft nicht — ein defektes Nachschlagewerk darf den
+    Turn-Abschluss nicht reissen.
+    """
+
+    # ── Eingabe-Validierung ─────────────────────
+    if not neue_keys:
+        logger.debug(
+            f"Dispatcher: verbindung — keine neuen KZG-Keys (turn_id={turn_id}, "
+            f"rolle={rolle})"
+        )
+        return 0
+
+    if not turn_id:
+        logger.warning(
+            f"Dispatcher: verbindung uebersprungen — turn_id leer, "
+            f"{len(neue_keys)} neue Keys ohne Zeile (rolle={rolle})"
+        )
+        return 0
+
+    # ── Verarbeitung ────────────────────────────
+    # Eigenes try/except: die Fehlerbehandlung der umgebenden KZG-Bloecke fasst
+    # diesen Insert nicht an. Fail loud, aber ohne den Turn mitzureissen.
+    geschrieben: int = 0
+    try:
+        for kzg_id in neue_keys:
+            VerbindungRepository.insert(
+                postgres_url = postgres_url,
+                turn_id      = turn_id,
+                kzg_id       = kzg_id,
+            )
+            geschrieben += 1
+    except Exception as ex:
+        logger.error(
+            f"Dispatcher: verbindung-Insert fehlgeschlagen nach {geschrieben} von "
+            f"{len(neue_keys)} Zeilen — turn_id={turn_id}, rolle={rolle}, "
+            f"fehler={ex}",
+            exc_info=True,
+        )
+        return geschrieben
+
+    # ── Ausgabe-Verifikation ────────────────────
+    if geschrieben != len(neue_keys):
+        logger.error(
+            f"Dispatcher: verbindung unvollstaendig — turn_id={turn_id}, "
+            f"rolle={rolle}, {geschrieben} von {len(neue_keys)} Zeilen"
+        )
+        return geschrieben
+
+    logger.info(
+        f"Dispatcher: verbindung geschrieben — turn_id={turn_id}, rolle={rolle}, "
+        f"{geschrieben} Zeilen"
+    )
+    return geschrieben
+
+
 def dispatch(
     state:         ConversationState,
     redis_client:  redis.Redis,
@@ -381,12 +459,22 @@ def dispatch(
                 logger.info(f"Dispatcher: 'kzg' -> KZG-Agent, {count} Segmente verarbeitet")
                 logger.info(
                     "Dispatcher: KZG-Keys empfangen — turn_id=%s, rolle=%s, "
-                    "%d neu, %d verstaerkt, neue Keys=%s",
+                    "%d neu, %d verstaerkt, neue Keys=%s, verstaerkte Keys=%s",
                     state.get("turn_id", ""),
                     state.get("ei_calc_rolle", ""),
                     len(kzg_new_keys),
                     len(kzg_reinforced_keys),
                     kzg_new_keys,
+                    kzg_reinforced_keys,
+                )
+                # verbindung-Zeilen: nur fuer NEU angelegte Keys (E8, §14).
+                # _verbindung_schreiben bringt seine eigene Fehlerbehandlung mit
+                # und wirft nicht — das except dieses Blocks fasst sie nicht an.
+                _verbindung_schreiben(
+                    turn_id      = state.get("turn_id", ""),
+                    rolle        = state.get("ei_calc_rolle", ""),
+                    neue_keys    = kzg_new_keys,
+                    postgres_url = postgres_url,
                 )
             except Exception as fehler:
                 logger.error(f"Dispatcher: Fehler bei KZG-Agent — {fehler}")

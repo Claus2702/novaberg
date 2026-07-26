@@ -398,6 +398,41 @@ CREATE INDEX IF NOT EXISTS idx_pipeline_log_erstellt ON pipeline_log (erstellt_a
 CREATE INDEX IF NOT EXISTS idx_pipeline_log_paar     ON pipeline_log (user_id, character_id);
 
 
+-- ───────────────────────────────────────────────
+-- verbindung — Brücke Turn ↔ Gedächtnis-Eintrag
+-- ───────────────────────────────────────────────
+-- Nachschlagewerk außerhalb des kognitiven Gedächtnisses: welcher Rohturn hat
+-- welchen KZG-Eintrag erzeugt, und in welchen LZG-Knoten ist dieser Eintrag
+-- später umgezogen. Kein Gewicht, kein Decay, keine Salienz — ein Tagebuch-
+-- eintrag verblasst nicht (§14, Folgeeigenschaften aus E8).
+--
+-- Spezifikation: docs/novaberg-charakter-resonanz_k.md §12, Bauteil 1b.
+--
+-- Abweichung gegenüber dem Schema-Entwurf in §12:
+--   kzg_id ist NOT NULL — eine Zeile ohne Gedächtnis-Key belegt nichts.
+-- lzg_id trägt ON DELETE SET NULL wie im Entwurf: eine verwaiste Zeile darf
+-- liegen bleiben, der Lesepfad filtert ohnehin auf lzg_id IS NOT NULL (§11, E1).
+--
+-- Kein UNIQUE auf turn_id oder lzg_id: n:m ist zwingend. Ein Turn nährt
+-- mehrere KZG-Einträge, und beide Graph-Läufe eines Turns schreiben unter
+-- derselben turn_id (§12, §A5-Befund).
+--
+-- Kein Fremdschlüssel von turn_id auf die turn_roh-Zeile: Pfad 1 schreibt
+-- seine KZG-Einträge, BEVOR Pfad 2 den Rohturn anlegt (entschieden Chat 109).
+-- turn_id bleibt eine nackte Spalte.
+CREATE TABLE IF NOT EXISTS verbindung (
+    id          SERIAL       PRIMARY KEY,
+    turn_id     VARCHAR(100) NOT NULL,
+    kzg_id      TEXT         NOT NULL,
+    lzg_id      INTEGER      REFERENCES lzg_knoten(id) ON DELETE SET NULL,
+    erstellt_am TIMESTAMPTZ  NOT NULL DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_verbindung_turn ON verbindung (turn_id);
+CREATE INDEX IF NOT EXISTS idx_verbindung_kzg  ON verbindung (kzg_id);
+CREATE INDEX IF NOT EXISTS idx_verbindung_lzg  ON verbindung (lzg_id);
+
+
 -- ═══════════════════════════════════════════════
 -- Indizes
 -- ═══════════════════════════════════════════════
