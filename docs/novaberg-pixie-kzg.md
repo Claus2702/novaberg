@@ -96,9 +96,27 @@ neue_haeufigkeit = alte_haeufigkeit + 1
 neuer_TTL    = max(verbleibend, TTL der neuen Salienz-Stufe)
 ```
 
-`KZG_VERSTAERKUNG_DIVISOR = 2.0`, `KZG_SALIENZ_CAP = 10.0`, `KZG_SALIENZ_DAEMPFUNG_EXP = 0.6`. Die sin^0.6-Kurve verhindert Salienz-Explosion bei häufig wiederkehrenden Themen (selbe Kurvenfamilie wie Arousal-Glättung, Chat 61).
+`KZG_VERSTAERKUNG_DIVISOR = 2.0`, `KZG_SALIENZ_CAP = 10.0`, `KZG_SALIENZ_DAEMPFUNG_EXP = 0.6`. ~~Die sin^0.6-Kurve verhindert Salienz-Explosion bei häufig wiederkehrenden Themen~~ (selbe Kurvenfamilie wie Arousal-Glättung, Chat 61).
+
+> **⚠ Widerlegt — die Kurve dämpft im Betriebsbereich nicht.** Sie rechnet gegen `KZG_SALIENZ_CAP = 10.0`, während `salienz` auf **0.0–1.0** lebt. Gemessene Dämpfung dort, wo die TTL- und Promotions-Entscheidungen fallen: 0.99933 bei Salienz 0.30, 0.99637 bei 0.70, 0.99259 bei 1.00 — **unter 1 %**. Faktisch die Identität; die Salienz wächst näherungsweise um Faktor 1.5 je Verstärkung und verlässt nach zwei Verstärkungen ihren Wertebereich. → Backlog **`KZG-SALIENZ-SKALENBRUCH`** (Ursache und Formel), **`KZG-SALIENZ-BOOST-OHNE-DECKEL`** (Korpusverteilung). Der Satz bleibt hier als das stehen, was er war: die Absicht des Entwurfs, nicht sein Verhalten.
 
 Seit Chat 60: `dispatch_kzg()` ruft nicht mehr `session_turn_annotate()` direkt auf. Stattdessen schreibt er den `kern` in `state["session_turn_kern"]`. Der Dispatcher sammelt den Kern ein und schreibt den Session-Turn vollständig.
+
+### Rückgabe an den Dispatcher
+
+`dispatch_kzg(state, writes)` gibt ein Dict mit **drei Schlüsseln** zurück:
+
+- **`kzg_verarbeitet`** — Anzahl der in diesem Lauf verarbeiteten Salienz-Segmente.
+- **`kzg_neue_keys`** — Redis-Keys der neu angelegten Einträge, in Segment-Reihenfolge.
+- **`kzg_verstaerkte_keys`** — Redis-Keys der thematisch verstärkten Nachbar-Einträge (§5), über alle Segmente des Laufs.
+
+**Beide Rückgabepfade tragen dieselben drei Schlüssel.** Auch der Registry-Miss-Pfad — wenn der KzgAgent nicht in der Registry steht — liefert `kzg_verarbeitet: 0` plus zwei leere Listen statt eines verkürzten Dicts. Ein Aufrufer mit direktem Index-Zugriff läuft auf keinem Pfad in einen `KeyError`.
+
+**Neuanlage und Verstärkung sind zwei getrennte Listen** und werden nicht zusammengeführt: Der neue Eintrag entsteht aus diesem Turn, der verstärkte Nachbar stammt aus einem früheren und bekommt hier nur Gewicht. Der Dispatcher nimmt beide entgegen und protokolliert sie, verwendet sie aber noch nicht.
+
+**Kardinalität:** Die Listen enthalten die Keys **eines** Graph-Laufs — je Salienz-Segment ein Subgraph-Durchlauf. Pro Konversations-Turn läuft `dispatch_kzg()` zweimal (HumanGraph und CharacterGraph, unterschieden über `beobachter`), mit unabhängiger Segmentzahl je Lauf: Pfad 1 bewertet den Nutzer-Prompt, Pfad 2 Novas Antwort.
+
+**Fehlender Key — `info` oder `warning`, und der Unterschied ist die Aussage:** Bleibt ein Segment ohne Key, weil es **regulär unter der Salienz-Schwelle abgelehnt** wurde (`status == "abgelehnt"`), steht eine `info`-Zeile im Log — Normalfall, **kein Defektsignal**. Fehlt der Key **ohne** diesen Status, steht eine `warning` mit `status` und `speicher_status` — **das** ist das Defektsignal. Ein verstärkter Eintrag ohne `key`-Feld ist ebenfalls `warning`. Wer die `info`-Zeilen für Fehler hält, sucht einen Defekt, der keiner ist.
 
 ---
 

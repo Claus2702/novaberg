@@ -41,9 +41,9 @@ CharacterGraph (Pfad 2): ... → Tribunal → Evaluate → ok → Salienz → �
 1. `pending_writes` aus State lesen — wenn leer, Durchlauf ohne Aktion
 2. Nach `ziel` gruppieren (z.B. alle `"kzg"`-Writes zusammen)
 3. Pro Ziel: Zuständigen Handler bestimmen
-   - `"kzg"` → `dispatch_kzg(state, writes, embed_client, embed_model)` (KZG-Agent-Subgraph)
+   - `"kzg"` → `dispatch_kzg(state, writes)` (KZG-Agent-Subgraph) — ~~`dispatch_kzg(state, writes, embed_client, embed_model)`~~ **überholt:** die beiden Embedding-Parameter waren tote Defaults (`embed_client=None`, `embed_model: str = ""`) und sind mit der Umstellung auf den EmbedWorker entfallen
    - Alle anderen → Manager aus der Plugin-Registry, `manager.execute(...)` aufrufen
-4. Handler aufrufen, Rückgabe: Anzahl ausgeführter Operationen pro Handler
+4. Handler aufrufen, Rückgabe: Anzahl ausgeführter Operationen pro Handler — **Ausnahme KZG:** `dispatch_kzg()` gibt ein Dict zurück, nicht nur eine Zahl (§3.2)
 5. **DelegationsAgent prüfen** (unabhängig von pending_writes, siehe §3.4)
 6. `pending_writes` im State leeren
 
@@ -57,7 +57,36 @@ def execute(self, writes, user_id, redis_client, postgres_url, embed_client, emb
 
 Jeder Manager bekommt alle Parameter, nimmt sich was er braucht. FaktenManager braucht PostgreSQL, TimelineManager braucht den Zeitparser, etc.
 
-**Ausnahme KZG:** Das Ziel `"kzg"` wird nicht über die Manager-Signatur geroutet. `dispatch_kzg()` hat eine eigene Signatur und führt den KZG-Agent-Subgraph aus (Schwelle → Verdichtung → Ähnlichkeit → Store → Queues).
+**Ausnahme KZG:** Das Ziel `"kzg"` wird nicht über die Manager-Signatur geroutet. `dispatch_kzg()` hat eine eigene Signatur und führt den KZG-Agent-Subgraph aus — **fünf Nodes**: `schwelle_pruefen` → `magnete_aufloesen` → `verdichten` → `speichern` → `queues` (`agents/kzg/agent.py`, `build_graph`). ~~(Schwelle → Verdichtung → **Ähnlichkeit** → Store → Queues)~~ **überholt:** Einen Node `aehnlichkeit_pruefen` gibt es nicht mehr — das Modul ist gelöscht, im Paket `agents/kzg/` liegt keine `aehnlichkeit.py`. An seine Stelle ist `magnete_aufloesen` getreten (Entitäts-/Timeline-Auflösung), das **vor** der Verdichtung läuft. Signatur:
+
+```python
+def dispatch_kzg(
+    state: dict,
+    writes: list[dict],
+) -> dict:
+```
+
+**Rückgabekontrakt — drei Schlüssel:**
+
+| Schlüssel | Inhalt |
+|---|---|
+| `kzg_verarbeitet` | `int` — Anzahl der in diesem Lauf verarbeiteten Salienz-Segmente. |
+| `kzg_neue_keys` | `list[str]` — Redis-Keys der in diesem Lauf **neu angelegten** KZG-Einträge, in Segment-Reihenfolge. |
+| `kzg_verstaerkte_keys` | `list[str]` — Redis-Keys der **thematisch verstärkten** Nachbar-Einträge, über alle Segmente des Laufs gesammelt. |
+
+**Beide Rückgabepfade tragen dieselben drei Schlüssel** — auch der Registry-Miss-Pfad (`AgentRegistry.finden("kzg")` liefert nichts): Er gibt `kzg_verarbeitet: 0` mit zwei leeren Listen zurück, nicht ein leeres oder verkürztes Dict. Ein Aufrufer mit direktem Index-Zugriff läuft damit **auf keinem Pfad in einen `KeyError`**.
+
+**Neuanlage und Verstärkung kommen als zwei getrennte Listen an.** Sie werden nicht zusammengeführt. Der Dispatcher nimmt beide entgegen und protokolliert sie (Anzahlen für beide, die neuen Keys zusätzlich im Klartext); **verwendet werden sie bisher nicht** — der Transport steht, der Konsument fehlt noch.
+
+**Kardinalität:** Die Listen enthalten die Keys **eines** Graph-Laufs — je Salienz-Segment ein Subgraph-Durchlauf (`agents/kzg/dispatch.py:68`, Schleife über die `writes`). Pro Konversations-Turn wird `dispatch_kzg()` **zweimal** aufgerufen, einmal aus dem HumanGraph und einmal aus dem CharacterGraph, mit **unabhängiger Segmentzahl je Lauf**: Pfad 1 bewertet den Nutzer-Prompt, Pfad 2 Novas Antwort (`graph/nodes/salience.py:120-121` — zwei verschiedene Texte).
+
+**Log-Verhalten bei fehlendem Key — die Unterscheidung ist die Aussage:**
+
+- Fehlt der Key nach **regulärer Ablehnung** (`status == "abgelehnt"`, Segment unter der Salienz-Schwelle, der Speicher-Node lief nie): `logger.info`. Das ist der **Normalfall und kein Defektsignal.**
+- Fehlt der Key **ohne** diesen Status: `logger.warning` mit `status` und `speicher_status`. **Das ist das Defektsignal** — hier hätte ein Key entstehen müssen.
+- Ein verstärkter Eintrag ohne `key`-Feld erzeugt ebenfalls `logger.warning`.
+
+Wer die `info`-Zeilen für Fehler hält, sucht einen Defekt, der keiner ist. Die Schwelle abzulehnen ist die Aufgabe des Filters, nicht sein Versagen.
 
 ### 3.3 Fehlerbehandlung
 
@@ -108,10 +137,12 @@ Wenn ein Trigger greift, wird `_delegation_trigger` und `salienz_obj_aktuell` in
 
 | Ziel | Handler | Typische Aktionen |
 |------|---------|-------------------|
-| `"kzg"` | KZG-Agent (`dispatch_kzg()`) | Schwellwert prüfen, kern verdichten, Ähnlichkeit prüfen, Redis-Store neu/verstärken, Session-Turn annotieren, Queues befüllen |
+| `"kzg"` | KZG-Agent (`dispatch_kzg()`) | Schwellwert prüfen, Magnete auflösen, kern verdichten, Redis-Store neu/verstärken, Queues befüllen — ~~Ähnlichkeit prüfen~~ (Node gelöscht), ~~Session-Turn annotieren~~ (macht der Dispatcher, siehe unten) |
 | `"fakten"` | FaktenManager | Entitäten + Fakten-Tripel speichern, Entity Resolution |
 | `"timeline"` | TimelineManager | Termin anlegen, verschieben, löschen |
 | `"notizen"` | NotizenManager | Notiz anlegen, löschen |
+
+**Wer den Session-Turn schreibt.** Nicht der KZG-Agent — **der Dispatcher.** Der Agent verdichtet nur und legt den Kern des Segments mit der höchsten Salienz in `state["session_turn_kern"]` ab (`agents/kzg/dispatch.py`); der Dispatcher liest ihn dort ab und schreibt den Session-Turn vollständig (`graph/nodes/dispatcher.py`, `kern = state.get("session_turn_kern", "")`). Eine Funktion `session_turn_annotate()` existiert im ganzen Server nicht mehr. Die frühere Angabe „Session-Turn annotieren" in der Tabelle oben war die Aufgabenteilung **vor** dieser Umstellung.
 
 Der DelegationsAgent ist **kein** PendingWrite-Ziel — er wird separat über die Trigger-Prüfung (§3.4) ausgelöst und bekommt den gesamten State, nicht einzelne Writes.
 

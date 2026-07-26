@@ -223,11 +223,13 @@ Die Salienz entscheidet *was* gespeichert wird. Sie führt *nichts* aus. Alle Er
 
 ### 6.4 Session-Turn-Annotation
 
-Die Salienz löst keine Session-Turn-Annotation mehr aus. Diese Aufgabe übernimmt der KZG-Agent (`agents/kzg/dispatch.py`).
+Die Salienz löst keine Session-Turn-Annotation mehr aus. ~~Diese Aufgabe übernimmt der KZG-Agent (`agents/kzg/dispatch.py`).~~ **Überholt:** Sie ist vom KZG-Agent **weiter zum Dispatcher** gewandert — der Agent liefert nur noch den Kern, geschrieben wird der Session-Turn im Dispatcher.
 
-**Ablauf:** Die Salienz schreibt `pending_writes` mit `ziel: "kzg"`. Der Dispatcher ruft `dispatch_kzg()` auf. Der KZG-Agent annotiert den Session-Turn mit dem verdichteten kern und den EI-Feldern des Segments mit der höchsten Salienz.
+**Ablauf:** Die Salienz schreibt `pending_writes` mit `ziel: "kzg"`. Der Dispatcher ruft `dispatch_kzg()` auf. ~~Der KZG-Agent annotiert den Session-Turn mit dem verdichteten kern und den EI-Feldern des Segments mit der höchsten Salienz.~~ **Überholt — der KZG-Agent annotiert nichts.** Er legt den Kern des Segments mit der höchsten Salienz in `state["session_turn_kern"]` ab (`agents/kzg/dispatch.py:175`); der **Dispatcher** liest ihn dort ab und schreibt den Session-Turn vollständig, mitsamt der EI-Felder (`graph/nodes/dispatcher.py:244-261`, `session_turn_store(… kern = state.get("session_turn_kern", "") …)`). Eine Funktion `session_turn_annotate()` existiert im gesamten Server **nicht** — der State-Kanal `session_turn_kern` ist an vier Stellen belegt (Deklaration `graph/state.py:78`, Initialisierung `graph/base.py:123`, Schreiber `agents/kzg/dispatch.py:175`, Leser `graph/nodes/dispatcher.py:254`), eine Annotations-Funktion an keiner.
 
-**Grund der Verschiebung (Chat 29):** Die Annotation gehört zum KZG-Agent, weil erst nach der Verdichtung (kern-Erzeugung) klar ist, was annotiert werden soll. Salienz bewertet OB — KZG-Agent entscheidet WAS.
+**Grund der ersten Verschiebung (Chat 29):** ~~Die Annotation gehört zum KZG-Agent, weil~~ Die Zuständigkeit wanderte von der Salienz weg, weil erst nach der Verdichtung (kern-Erzeugung) klar ist, was annotiert werden soll. Salienz bewertet OB — KZG-Agent entscheidet WAS. **Dieser Teil gilt weiter.**
+
+**Grund der zweiten Verschiebung:** Das Schreiben selbst liegt seither beim Dispatcher — er ist der Persistenz-Node und hält alle Turn-Größen gleichzeitig, während der KZG-Agent pro Salienz-Segment einmal läuft und den Turn deshalb mehrfach schreiben würde. Die Arbeitsteilung ist damit: **Salienz bewertet OB, KZG-Agent entscheidet WAS, Dispatcher schreibt.**
 
 ---
 
