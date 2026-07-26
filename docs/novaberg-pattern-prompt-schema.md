@@ -97,7 +97,44 @@ Nicht jeder Node hat alle Blöcke. Die Tabelle zeigt, welcher Node welche Blöck
 
 ---
 
-## 5. Node-spezifische AUFGABE-Blöcke
+## 5. Beispiele in Prompt-Blöcken
+
+Ein Beispiel schlägt eine Anweisung. Wo ein Block durch Beispiele lehrt, bestimmen die Beispiele das Ergebnis stärker als jede Regel daneben — deshalb gelten für sie eigene Vorgaben.
+
+### Keine echten Daten
+
+**Beispiele tragen niemals Inhalte aus echten Gesprächen.** Kein Name einer Person, keines Haustiers, keines Wohnorts, keine daran hängenden Fakten. Ein Prompt-Baustein liegt im Repository, und das Repository ist öffentlich.
+
+Für Beispiele existiert stattdessen ein erfundener Cast:
+
+| Rolle im Beispiel | Name |
+|---|---|
+| Der Nutzer | Merten |
+| Geschwister | Ilva |
+| Haustier | Rufus |
+| Wohnort | Ostheim |
+
+Der Cast ist bewusst klein und über alle Bausteine hinweg derselbe. Wer eine weitere Rolle braucht, erfindet einen Namen und trägt ihn hier und im Wächter-Test nach.
+
+### Namen nur über bekannte Konstruktionen einführen
+
+Damit ein Beispiel maschinell prüfbar bleibt, wird ein Name nur über eine dieser Wendungen eingeführt:
+
+`heisst X` · `namens X` · `Schwester X` · `Bruder X` · `aus X` · `Fakt ueber X` · als Eintrag in einem `entitaeten_roh`-Listenliteral
+
+Ein Name, der frei im Satz steht, wird nicht erkannt. Braucht ein Beispiel eine neue Wendung, kommt sie in `NAMENS_SLOTS` — sonst prüft der Wächter an dieser Stelle nicht mit.
+
+### Wächter
+
+`server/tests/test_prompt_beispielnamen.py` liest alle Bausteine unter `server/prompts/` und alle Dateien unter `server/tests/`, sammelt jeden Namen aus den obigen Konstruktionen und schlägt an, sobald einer nicht zum Cast gehört.
+
+Der Test führt **keine Liste zu schützender Namen** — die stünde damit im Repository und wäre selbst die Preisgabe. Er kennt nur die erlaubten. Ein zweiter Fall prüft, dass der Cast in den Beispielen tatsächlich vorkommt; ohne ihn wäre das Löschen aller Beispiele grün.
+
+Generische Wörter, die `aus X` mitnimmt (`aus Worker-Thread`, `aus Konzept §7.5`), stehen in `KEINE_NAMEN`. Wächst diese Liste, ist das ein Anlass hinzusehen.
+
+---
+
+## 6. Node-spezifische AUFGABE-Blöcke
 
 ### Responder
 
@@ -218,7 +255,7 @@ Analysiere den folgenden Prompt und bestimme die Aktion.
 
 ---
 
-## 6. Implementierungsstand
+## 7. Implementierungsstand
 
 | Node | Status | Chat |
 |------|--------|------|
@@ -234,7 +271,7 @@ Alle Nodes implementiert. Das Schema ist durchgängig.
 
 ---
 
-## 7. Evolution des Prompt-Designs
+## 8. Evolution des Prompt-Designs
 
 ```
 Chat 1–22:   Flacher Prompt, alles in einem Block
