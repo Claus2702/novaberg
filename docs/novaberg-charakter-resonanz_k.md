@@ -60,7 +60,13 @@ Was heute **wirklich** fehlt, ist kein Speicher, sondern ein **Leser**: Das einz
 
 Manche Sätze *handeln* von Nova („das Gegenüber", „die angesprochene Person") — aber der Nutzer ist der Täter, Nova das Objekt.
 
-**Der Prompt ist repariert und scheitert trotzdem.** `KERN_HASH_PROMPT` (verbatim gelesen, Chat 108) trägt den Chat-103-Fix: „Nicht WORÜBER {traeger} spricht charakterisiert {traeger}, sondern WIE." Der Prompt verlangt das WIE — ~~die Quelle trägt kein WIE: kein Satzbau, kein Wort, keine Emotion von Nova. Sie trägt nur WORÜBER, und WORÜBER ist der Nutzer.~~ **Widerlegt Chat 109 — siehe Ursachenkorrektur unten.** Das LLM nimmt das, was der Verdichter ihm hinlegt, und klebt Novas Namen darauf.
+**Der Prompt ist repariert und scheitert trotzdem.** `KERN_HASH_PROMPT` (verbatim gelesen, Chat 108) trägt den Chat-103-Fix: „Nicht WORÜBER {traeger} spricht charakterisiert {traeger}, sondern WIE."
+
+Der Prompt verlangt das WIE. Die Quelle trägt es nicht: Das KZG-Destillat hält per Anweisung nur den Inhalt fest — kein Satzbau, kein Wort, keine Emotion von Nova (`kzg_verdichtung.rules.txt`: „Nur Inhalt, keine Meta-Analyse, keine Emotionsbewertung"). Bestätigt Chat 110 am reparierten Pfad: „Nova hat erklärt, dass ein Abriss Platz für Neues schafft" — Subjekt korrekt, WIE entsorgt.
+
+Widerlegt (Chat 109/110) ist allein der zweite Halbsatz „und WORÜBER ist der Nutzer" als Ursachenzuschreibung. Die Streichung in Chat 109 umfasste beide Behauptungen und hat die zutreffende mitgetilgt.
+
+Das LLM nimmt das, was der Verdichter ihm hinlegt, und klebt Novas Namen darauf.
 
 **Damit ist §2 belegt, nicht mehr nur plausibel.** ~~Und die Ursachenzuschreibung in `DESTILLAT-PERSPEKTIVE-VS-SUBJEKT` (bugs.md, „Fehler im destillieren-Prompt") ist zu eng: **Der Prompt ist korrekt, die Eingabe ist es nicht.**~~ **Dieser Satz ist widerlegt (Chat 109).** Er stand hier seit Chat 108 und hat die Reparatur in die falsche Richtung gelenkt.
 
@@ -125,6 +131,8 @@ Das KZG verstärkt bei einem Treffer den bestehenden Eintrag **in place** (nur s
 Der Verhaltensweisen-Satz („Nova bleibt ruhig bei Gereiztheit"), einmal gerechnet und abgelegt, nicht bei jeder Destillation neu. Zusammenführung ähnlicher Muster über Embedding (nomic-embed / pgvector, wie bei den Synapsen-Kanten). Belegzahl = Gewicht: oft belegt = fester Charakterzug, einmalig belegt = Ausreißer.
 
 ### 4.2 Verbindungstabelle
+
+**Warum `verbindung` existiert.** Das Destillat ist für den Charakter wertlos, weil es entfärbt ist. Novas Wesen liegt in ihrer Sprache und im Emotionspaar des Rohturns, nicht im Kernsatz, der daraus wurde. `verbindung` ist der einzige Weg von einem erinnerungswürdigen Gedächtniseintrag zurück zu dem Turn, der ihn erzeugt hat. Ohne sie ist bekannt, WAS erinnerungswürdig war, und unerreichbar, WIE Nova dabei war.
 
 Die Brücke, die alles verknüpft und den KZG→LZG-Umzug übersteht:
 
