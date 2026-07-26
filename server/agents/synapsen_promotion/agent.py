@@ -42,6 +42,7 @@ from config import (
     PIXIE_AKTIV, SYNAPSEN_PROMOTION_AKTIV,
 )
 from memory import lzg_knoten, lzg_kanten, pipeline_log
+from memory.repositories.verbindung_repository import VerbindungRepository
 from services.model_services import model_service, EmbedRequest
 from tools.db_manager import db_manager
 
@@ -339,6 +340,13 @@ class SynapsenPromotionAgent(BaseAgent):
             aktion = "neuanlage"
             info = f"knoten={knoten_id} kanten_paare={paare}"
 
+        # ── verbindung: lzg_id nachtragen (§11.2) ──────
+        # Hinter allen drei Pfaden, weil in allen dreien derselbe Umzug
+        # stattfindet: Halbreaktivierung, Reinforcement und Neuanlage geben den
+        # Knoten an, in den dieser KZG-Eintrag gewandert ist. Ein Schreibpunkt
+        # statt drei.
+        self._verbindung_lzg_id_nachtragen(kzg_key, knoten_id, user_id, character_id)
+
         # ── hash_dirty (Charakter-Hash neu berechnen lassen) ──────
         if PIXIE_AKTIV:
             redis_client.set(f"hash_dirty:{user_id}:{character_id}", "1")
@@ -360,6 +368,72 @@ class SynapsenPromotionAgent(BaseAgent):
             inhalt={"aktion": aktion, "knoten_id": knoten_id},
             user_id=user_id, character_id=character_id,
         )
+
+    def _verbindung_lzg_id_nachtragen(
+        self,
+        kzg_key:      str,
+        knoten_id:    int,
+        user_id:      str,
+        character_id: str,
+    ) -> int:
+        """Verdrahtet die Bruecken-Zeilen dieses KZG-Keys auf den LZG-Knoten.
+
+        §11.2: Der KZG-Key ist TTL-fluechtig. Ohne diesen Nachtrag zeigt die
+        `verbindung`-Zeile ins Leere, sobald er verfaellt — und der Weg vom
+        erinnerungswuerdigen Knoten zurueck zum Rohturn ist zu.
+
+        Vorbedingung: kzg_key und knoten_id liegen vor; beim Aufruf hinter den
+        drei Promotions-Pfaden ist das immer der Fall.
+        Nachbedingung: alle Zeilen mit dieser kzg_id tragen die knoten_id.
+        Fehlerfaelle: fehlende Eingabe (error, 0), Datenbankfehler (error mit
+        Forensik, 0). Die Methode wirft nicht — ein fehlgeschlagener Nachtrag
+        darf den Promotions-Lauf nicht reissen, muss aber laut sein.
+        """
+
+        # ── Eingabe-Validierung ─────────────────────
+        if not kzg_key or not knoten_id:
+            logger.error(
+                f"Synapsen-Promotion: verbindung-Nachtrag uebersprungen — "
+                f"kzg_key='{kzg_key}', knoten_id={knoten_id}"
+            )
+            return 0
+
+        # ── Verarbeitung ────────────────────────────
+        # Eigenes try/except: die Fehlerbehandlung des Promotions-Laufs fasst
+        # den Nachtrag nicht an.
+        try:
+            ergebnis: dict[str, int] = VerbindungRepository.lzg_id_nachtragen(
+                postgres_url = POSTGRES_URL,
+                kzg_id       = kzg_key,
+                lzg_id       = knoten_id,
+            )
+        except Exception as ex:
+            logger.error(
+                f"Synapsen-Promotion: verbindung-Nachtrag fehlgeschlagen — "
+                f"kzg_key={kzg_key}, knoten_id={knoten_id}, paar={user_id}:{character_id}, "
+                f"fehler={ex}",
+                exc_info=True,
+            )
+            return 0
+
+        # ── Ausgabe-Verifikation ────────────────────
+        gefunden:  int = ergebnis["gefunden"]
+        geaendert: int = ergebnis["geaendert"]
+
+        if gefunden == 0:
+            # Kein Defekt: KZG-Eintraege ohne turn_id (Pixie-Laeufe) und alle
+            # vor dem Bau der Tabelle erzeugten haben keine Bruecken-Zeile.
+            logger.info(
+                f"Synapsen-Promotion: verbindung-Nachtrag ohne Treffer — "
+                f"kzg_key={kzg_key}, knoten_id={knoten_id}, keine Bruecken-Zeile vorhanden"
+            )
+        else:
+            logger.info(
+                f"Synapsen-Promotion: verbindung nachgetragen — knoten_id={knoten_id}, "
+                f"kzg_key={kzg_key}, {geaendert} von {gefunden} Zeilen geschrieben"
+            )
+
+        return geaendert
 
     def _fehler(self, user_id: str, aufgabe: str, kzg_key: str, span_id, grund: str) -> None:
         """Einheitlicher Fehler-Abschluss: Log, hintergrund_log, pipeline_log, Span-Ende."""
