@@ -8,6 +8,26 @@
 
 ---
 
+> ## ⚠ Namens- und Zustandsvermerk (Chat 111, 27.07.2026)
+>
+> **Was dieses Dokument `effektive_neugier` nennt, ist nicht der Wert, der heute im Code so hieß.** Es gibt drei Größen, die bis Chat 111 alle „Neugier" hießen:
+>
+> | Größe | Was sie ist | Stand |
+> |---|---|---|
+> | **`aufnahmebereitschaft`** | Maß ihrer Fähigkeit, *jetzt* neugierig zu sein — sechs Säulen aus Zustand und Situation, `sin^0.5`-normiert. Skaliert jede gefundene Lücke und kann sie bei Krise auf 0 löschen. | gebaut (`ei/neugier.py`, Chat 71/72), hieß bis Chat 111 `effektive_neugier` |
+> | **`wissensluecken`** | Die akute Lücke aus dem laufenden Turn — *„Kuchen? Was für ein Kuchen?"*. Passiv, extern ausgelöst, einen Turn lang. | gebaut (`ei/wissensluecken.py`, GV4) |
+> | **`neugier_vektor`** | Der Zug zu einem Thema über den Turn hinaus — *„Wie entstehen Wurmlöcher?"*. Aktiv, treibt Pixie und Agenten. **Das ist, was dieses Dokument beschreibt.** | **nicht gebaut** |
+>
+> Der Satz, der sie trennt: **Der Vektor sagt, wohin sie will. Die Bereitschaft sagt, ob jetzt der Moment dafür ist.**
+>
+> **Die Formel dieses Dokuments — `NOVA_NEUGIER × Resonanz × Neuheit` (§3.3) — wurde nie gebaut.** Der Code rechnet seit Chat 71 sechs Zustands- und Situationsfaktoren. Die Kopfzeile „Code-Alignment — Konzept unverändert" bezieht sich auf einen Abgleich, bei dem die Abweichung gesehen und bewusst stehengelassen wurde; sie ist **kein** Beleg, dass das Konzept dem Code entspricht.
+>
+> Insbesondere fehlt der **Neuheits-Faktor** vollständig. Er ist es, der die tiefe von der flachen Neugier unterscheidet — ein halb bekanntes Thema ist der Sweet Spot; für die heutige Lückensuche ist es entweder zu ähnlich oder unauffällig.
+>
+> **Wer hier `effektive_neugier` liest, meint `neugier_vektor` und findet ihn im Code nicht.** Beim Bau wird dieses Dokument durchgängig umbenannt; bis dahin bleibt es unverändert, damit die zwanzig Formelstellen nicht stillschweigend auf den falschen Begriff gedreht werden.
+
+---
+
 ## 1. Vision
 
 Der Traum-Modus gibt Nova intrinsische Motivation. Statt nur Wissen zu sammeln oder Aufträge abzuarbeiten, entwickelt Nova eigene Interessen, die aus ihrem Charakter wachsen. Das Ergebnis: ein Assistent, der nicht nur hilft, sondern der von manchen Themen **mehr wissen will** — und von anderen nicht.
