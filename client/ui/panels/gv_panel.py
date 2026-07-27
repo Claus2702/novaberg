@@ -88,8 +88,22 @@ class GvPanel(PanelBase):
             self._outer_box.append(placeholder)
             return
 
-        laenge:            int   = int(data.get("laenge", 0) or 0)
-        effektive_neugier: float = float(data.get("effektive_neugier", 0.0) or 0.0)
+        laenge: int = int(data.get("laenge", 0) or 0)
+
+        # Der Serverschluessel heisst seit Chat 111 'aufnahmebereitschaft'.
+        # Kein stiller Default: Fehlen BEIDE Schluessel, ist das ein Bruch
+        # zwischen Server und Client — nicht ein Wert von null. Der alte Name
+        # wird uebergangsweise mitgelesen, damit Blobs von vor der Umbenennung
+        # nicht als 0.00 erscheinen.
+        roh_bereitschaft = data.get("aufnahmebereitschaft",
+                                    data.get("effektive_neugier"))
+        if roh_bereitschaft is None:
+            logger.error(
+                "GvPanel: weder 'aufnahmebereitschaft' noch 'effektive_neugier' "
+                "im gv_detail — Server und Client passen nicht zusammen"
+            )
+        aufnahmebereitschaft: float = float(roh_bereitschaft or 0.0)
+
         strategie_aktiv:   bool  = bool(data.get("strategie_aktiv", False))
         wissensluecken:    list  = data.get("wissensluecken") or []
         farbton:           str   = str(data.get("farbton") or "")
@@ -108,7 +122,7 @@ class GvPanel(PanelBase):
         impuls:         str  = str(data.get("impuls") or "")
 
         logger.info(
-            f"GvPanel: laenge={laenge}, neugier={effektive_neugier:.3f}, "
+            f"GvPanel: laenge={laenge}, bereitschaft={aufnahmebereitschaft:.3f}, "
             f"strategie={strategie_aktiv}, luecken={len(wissensluecken)}, "
             f"sektor=#{sektor_index} {sektor_name}, cluster={cluster}, "
             f"absicht={absicht}, strat={strategie_name}, vehikel={vehikel}"
@@ -117,7 +131,7 @@ class GvPanel(PanelBase):
         # 1. Bestehend: Kennzahlen (Sprünge-Bar, Neugier-Bar, Strategie aktiv/—)
         self._outer_box.append(_build_kennzahlen(
             laenge=laenge,
-            neugier=effektive_neugier,
+            neugier=aufnahmebereitschaft,
             strategie_aktiv=strategie_aktiv,
         ))
 
