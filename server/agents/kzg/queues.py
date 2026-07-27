@@ -7,7 +7,7 @@ import json
 import logging
 
 from agents.base import AgentState
-from services.shadow_agent.utils import shadow_queue_push
+from services.shadow_agent.utils import shadow_queue_push, promotion_queue_push
 from config import ASSISTANT_USER_ID, redis_client, KZG_SALIENZ_HIGH, PIXIE_AKTIV
 
 logger = logging.getLogger("ki_server.agents.kzg.queues")
@@ -70,15 +70,14 @@ def queues_befuellen(state: AgentState) -> dict:
         kern: str = state["parameter"].get("kern", "")
 
         if neue_salienz >= KZG_SALIENZ_HIGH:
-            redis_client.rpush(f"queue:{user_id}", json.dumps({
-                "aufgabe":   "lzg_promotion",
-                "user_id":   user_id,
-                "key":       kzg_key,
-                "salienz":   neue_salienz,
-                "themen":    kzg_themen_str,
-                "dimension": kzg_dimension,
-            }))
-            aktionen.append("promotion")
+            # Der Helfer prueft auf einen bestehenden Auftrag fuer denselben
+            # Key. `aktionen` meldet nur, was wirklich eingereiht wurde —
+            # sonst behauptete die Sammelzeile eine Wirkung, die ausblieb.
+            if promotion_queue_push(
+                redis_client, user_id, kzg_key, neue_salienz,
+                kzg_themen_str, kzg_dimension,
+            ):
+                aktionen.append("promotion")
 
             aufgabe: str = _aufgabe_aus_intention(intentionen)
             if aufgabe and user_id != ASSISTANT_USER_ID:
@@ -97,15 +96,12 @@ def queues_befuellen(state: AgentState) -> dict:
     # Eintrag an UND hebt ggf. mehrere Nachbarn ueber die Schwelle.
     for verstaerkt_eintrag in state["parameter"].get("verstaerkte_eintraege", []):
         if verstaerkt_eintrag["salienz"] >= KZG_SALIENZ_HIGH:
-            redis_client.rpush(f"queue:{user_id}", json.dumps({
-                "aufgabe":   "lzg_promotion",
-                "user_id":   user_id,
-                "key":       verstaerkt_eintrag["key"],
-                "salienz":   verstaerkt_eintrag["salienz"],
-                "themen":    verstaerkt_eintrag.get("themen", ""),
-                "dimension": "",
-            }))
-            aktionen.append("promotion_verstaerkt")
+            if promotion_queue_push(
+                redis_client, user_id, verstaerkt_eintrag["key"],
+                verstaerkt_eintrag["salienz"],
+                verstaerkt_eintrag.get("themen", ""), "",
+            ):
+                aktionen.append("promotion_verstaerkt")
 
     # Dirty-Flag fuer Hash-Destillation
     redis_client.set(f"hash_dirty:{user_id}:{character_id}", "1")

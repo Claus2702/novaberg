@@ -34,6 +34,7 @@ from config                                import (
 from graph.context_entry                   import ContextEntry
 from memory.pipeline_log                   import log_db_write
 from services.shadow_agent                 import shadow_queue_push
+from services.shadow_agent.utils           import promotion_queue_push
 
 from redis.commands.search.field           import TextField, NumericField, VectorField, TagField
 from redis.commands.search.indexDefinition import IndexDefinition, IndexType
@@ -364,15 +365,10 @@ def kzg_store(
 
     if salienz >= KZG_SALIENZ_HIGH:
         if PIXIE_AKTIV:
-            redis_client.rpush(
-                f"queue:{user_id}",
-                json.dumps({
-                    "aufgabe":   "lzg_promotion",
-                    "key":       key,
-                    "salienz":   salienz,
-                    "themen":    themen_str,
-                    "dimension": dimension,
-                }),
+            # Dublettenpruefung im Helfer; das PIXIE_AKTIV-Gate steht hier
+            # weiterhin, weil der folgende Block daran haengt.
+            promotion_queue_push(
+                redis_client, user_id, key, salienz, themen_str, dimension,
             )
 
             aufgabe: str = _aufgabe_aus_intention(intentionen)
