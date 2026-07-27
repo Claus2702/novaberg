@@ -207,6 +207,32 @@ KZG_VERTIEFUNG_HAEUFIGKEIT:   int   = int(os.getenv("KZG_VERTIEFUNG_HAEUFIGKEIT"
 KZG_SALIENZ_CAP:              float = float(os.getenv("KZG_SALIENZ_CAP", "10.0"))
 KZG_SALIENZ_DAEMPFUNG_EXP:    float = float(os.getenv("KZG_SALIENZ_DAEMPFUNG_EXP", "0.6"))
 
+# ─── Charakter-Rad (Gewichtung der Nutzer-Salienz) ──
+# Zwoelf Speichen um eine Nabe. Jede Speiche zieht den Faktor in ihre Richtung,
+# mehrere auf derselben Seite ziehen zusammen staerker. Volle Auslenkung trifft
+# die Grenzen exakt: 0.9 + 0.60 = 1.5, 0.9 - 0.40 = 0.5. Die Kappung ist damit
+# Sicherung, kein Formteil. Herleitung: novaberg-salienz-berechnung_k.md §5.
+#
+# Die Zuege sind eine SETZUNG, keine Messung — ausdruecklich nachkalibrierbar.
+# Sie stehen bei der Destillation, die sie anwendet (agents/charakter/).
+#
+# Nabe und Grenzen stehen hier und nicht dort, weil sie seit Chat 112 zwei
+# Verbraucher haben: die Destillation, die den Faktor schreibt, und die
+# Salienz-Formel, die ihn liest und auf Plausibilitaet prueft. Zwei Kopien
+# derselben Grenze laufen zwangslaeufig auseinander, und die Fehlerbedingung
+# waere Schweigen (novaberg-lesson_l_gelesen-ist-nicht-wirksam.md).
+RAD_NABE:                     float = float(os.getenv("RAD_NABE", "0.9"))
+RAD_MIN:                      float = float(os.getenv("RAD_MIN",  "0.5"))
+RAD_MAX:                      float = float(os.getenv("RAD_MAX",  "1.5"))
+
+# ─── Erregungs-Zuschlag auf den Eigen-Pfad ──
+# Starke Freude, Aufgebrachtheit, Ausrufezeichen — Signale, dass eine Aussage
+# im Moment viel bedeutet. Kein eigener Antrieb, sondern ein Verstaerker auf
+# dem, was ohnehin durchkommt: multiplikativ als (1 + zuschlag), damit er
+# hebt, aber nie ausloescht. Erregung macht aus einer belanglosen Aussage
+# keine bedeutsame (novaberg-salienz-berechnung_k.md §4).
+SALIENZ_EREGUNG_MAX_ZUSCHLAG: float = float(os.getenv("SALIENZ_EREGUNG_MAX_ZUSCHLAG", "0.3"))
+
 # ─── Cluster-Promotion ─────────────────────
 CLUSTER_MIN_EINTRAEGE:              int   = int(os.getenv("CLUSTER_MIN_EINTRAEGE", "3"))
 # Kalibriert auf nomic-embed-text-v2-moe (Chat 107).

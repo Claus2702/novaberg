@@ -164,6 +164,13 @@ class GraphBase(ABC):
             # Pending Writes (Salienz + Planner → Dispatcher)
             pending_writes = [],
 
+            # Salienz der Nutzeraeusserung (Chat 112).
+            # Kein Default-Wert, sondern None: Der HumanGraph rechnet sie im
+            # Salienz-Node aus, der CharacterGraph bekommt sie ueber das
+            # Event-Payload gereicht, und der AgentGraph hat keine — dort
+            # bleibt sie None, weil es keine Nutzeraeusserung gibt.
+            salienz_human = kwargs.get("salienz_human"),
+
             # Agent-System (Epic 11)
             agent_name    = "",
             agent_results = [],

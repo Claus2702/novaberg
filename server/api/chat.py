@@ -164,6 +164,12 @@ def ChatSenden(anfrage: GespraechAnfrage, request: Request):
             payload      = {
                 "turn_id":            turn_id,
                 "user_prompt":        anfrage.prompt,
+                # Die Salienz dieses Reizes reist mit in den CharacterGraph.
+                # Dort multipliziert die Formel sie mit nutzer_gewichtung und
+                # erhaelt daraus den Boden fuer Novas Segmente
+                # (novaberg-salienz-berechnung_k.md §3). None heisst "nicht
+                # ermittelt" und ist von einer echten 0.0 zu unterscheiden.
+                "salienz_human":      result.get("salienz_human"),
                 "current_emotion":    result_external.emotion.emotion              if result_external else "",
                 "current_arousal":    result_external.emotion.arousal              if result_external else 0.0,
                 "gespraechs_modus":   result_external.emotion.mode                 if result_external else "",
@@ -360,6 +366,11 @@ def ChatStreamSenden(anfrage: GespraechAnfrage, request: Request):
                 payload      = {
                     "turn_id":            turn_id,
                     "user_prompt":        anfrage.prompt,
+                    # Wie im nicht-streamenden Pfad: der Boden fuer Novas
+                    # Segmente. letzter_state traegt ihn, weil der Dispatcher
+                    # als letzter Node nur pending_writes leert und den State
+                    # sonst unveraendert zurueckgibt.
+                    "salienz_human":      letzter_state.get("salienz_human"),
                     "current_emotion":    letzter_external.emotion.emotion              if letzter_external else "",
                     "current_arousal":    letzter_external.emotion.arousal              if letzter_external else 0.0,
                     "gespraechs_modus":   letzter_external.emotion.mode                 if letzter_external else "",

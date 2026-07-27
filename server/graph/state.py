@@ -128,6 +128,23 @@ class ConversationState(TypedDict):
     # ── Pending Writes (Salienz + Planner → Dispatcher) ──
     pending_writes: list[PendingWrite]
 
+    # ── Salienz der Nutzeraeusserung (Chat 112) ──
+    salienz_human: float | None
+    # Die Salienz dessen, was der Nutzer in DIESEM Turn gesagt hat, 0.0-1.0 —
+    # die rohe LLM-Bewertung, ohne Gravitationsboost. Der HumanGraph setzt sie
+    # im Salienz-Node als Maximum ueber seine Segmente; sie reist ueber das
+    # Event-Payload in den CharacterGraph, wo die Formel sie mit
+    # nutzer_gewichtung multipliziert (novaberg-salienz-berechnung_k.md §3).
+    #
+    # None heisst "es gab keine Nutzeraeusserung" — AgentGraph und eigener
+    # Impuls. Das ist NICHT dasselbe wie 0.0 ("gesagt, aber belanglos"): Wer
+    # beides zusammenwirft, kann einen fehlenden Wert nicht mehr von einem
+    # gemessenen unterscheiden (novaberg-convention-abgeleitete-werte.md,
+    # Regel 1).
+    #
+    # Ohne Boost, weil die Ziel-Gravitation mit der Formel zu einem Antrieb
+    # des Eigen-Pfads wird. Stuende sie hier mit drin, zaehlte sie zweimal.
+
     # ── Agent-System (Epic 11) ───────────────────
     agent_name:    str    # Vom Planner gesetzt — welcher Agent soll arbeiten
     agent_results: list   # Liste von AgentResult-Objekten — Ergebnisse aller Agenten dieses Turns

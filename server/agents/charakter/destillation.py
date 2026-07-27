@@ -11,7 +11,15 @@ import logging
 import math
 import time
 
-from config import ASSISTANT_NAME, ASSISTANT_USER_ID, DEFAULT_USER_ID, get_node_config
+from config import (
+    ASSISTANT_NAME,
+    ASSISTANT_USER_ID,
+    DEFAULT_USER_ID,
+    get_node_config,
+    RAD_NABE,
+    RAD_MIN,
+    RAD_MAX,
+)
 from services.model_services import model_service, BackgroundRequest
 
 logger = logging.getLogger("ki_server.agents.charakter.destillation")
@@ -26,10 +34,11 @@ logger = logging.getLogger("ki_server.agents.charakter.destillation")
 # Herleitung und Bedeutung: novaberg-salienz-berechnung_k.md §5.
 #
 # Die Zuege sind eine SETZUNG, keine Messung — ausdruecklich nachkalibrierbar.
-
-RAD_NABE:   float = 0.9
-RAD_MIN:    float = 0.5
-RAD_MAX:    float = 1.5
+#
+# Nabe und Grenzen liegen seit Chat 112 in config.py: Die Salienz-Formel
+# (ei/salienz.py) liest den Faktor und prueft ihn gegen dieselben Grenzen.
+# Eine zweite Kopie hier wuerde beim naechsten Nachkalibrieren auseinander-
+# laufen, ohne dass irgendwo ein Widerspruch auffiele.
 
 RAD_ZUG_HOCH: dict[str, float] = {
     "treue":          0.16,   # stellt seine Belange ueber die eigenen

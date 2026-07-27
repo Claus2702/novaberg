@@ -24,6 +24,8 @@ import redis
 
 from graph.state import ConversationState, pipeline_quelle
 from config import get_node_config, PROMPTS
+from ei.salienz import salienz_effektiv_berechnen
+from memory.charakter import nutzer_gewichtung_laden
 from memory.pipeline_log import (
     span_start,
     span_end,
@@ -104,6 +106,89 @@ def _build_salienz_prompt() -> str:
         PROMPTS["salienz.task"],
         PROMPTS["salienz.rules"],
     ])
+
+
+def _salienz_wert_lesen(salienz_obj: dict) -> float | None:
+    """Liest den Salienzwert eines bewerteten Segments als Zahl.
+
+    Vorbedingung: salienz_obj ist die geparste LLM-Antwort eines Segments.
+    Nachbedingung: ein float, wenn das Feld 'salienz' numerisch ist.
+    Fehlerfaelle: Feld fehlt oder ist nicht in eine Zahl wandelbar — dann None
+        und eine Fehlerzeile. Ein unlesbarer Wert darf ausdruecklich NICHT als
+        0.0 durchgehen: Er wanderte sonst ins Maximum und senkte es still ab,
+        ohne dass irgendwo steht, dass ueberhaupt etwas fehlte.
+    """
+
+    # ── Eingabe-Validierung ─────────────────────
+    roh = salienz_obj.get("salienz")
+
+    if roh is None:
+        logger.error(
+            "Salienz: Segment ohne Feld 'salienz' — fuer salienz_human uebergangen"
+        )
+        return None
+
+    # ── Verarbeitung ────────────────────────────
+    try:
+        wert: float = float(roh)
+    except (TypeError, ValueError):
+        logger.error(
+            f"Salienz: Feld 'salienz' nicht numerisch ({roh!r}) — "
+            f"fuer salienz_human uebergangen"
+        )
+        return None
+
+    # ── Ausgabe ─────────────────────────────────
+    return wert
+
+
+def _salienz_anzeige(wert: float | None) -> str:
+    """Formatiert einen Salienzwert fuer Log-Zeilen und Beschreibungen.
+
+    Vorbedingung: wert ist ein geprueft numerischer Salienzwert oder None.
+    Nachbedingung: zwei Nachkommastellen, oder 'unlesbar'.
+    Fehlerfaelle: keine — genau dafuer gibt es die Funktion. Ein ungepruefter
+        `:.2f` direkt auf der Modellantwort wirft ValueError, und der faellt an
+        keinem der except-Zweige dieses Nodes ab: Ein einziges "hoch" statt 0.8
+        riss bis Chat 112 den ganzen Turn ab.
+    """
+    return f"{wert:.2f}" if wert is not None else "unlesbar"
+
+
+def _salienz_human_ermitteln(roh_salienzen: list[float]) -> float | None:
+    """Bestimmt die Salienz der Nutzeraeusserung aus ihren Segmentwerten.
+
+    Das Maximum, nicht der Mittelwert: Ein Turn ist so gewichtig wie sein
+    staerkster Teil. Ein beilaeufiger Nebensatz neben einer wichtigen Aussage
+    darf den Wert nicht verduennen — dieselbe Begruendung, aus der die Formel
+    max() statt einer Summe nimmt (novaberg-salienz-berechnung_k.md §3).
+
+    Vorbedingung: roh_salienzen traegt die rohen LLM-Bewertungen der
+        erfolgreich geparsten Segmente, ohne Gravitationsboost.
+    Nachbedingung: Rueckgabe in [0.0, 1.0].
+    Fehlerfaelle: leere Liste — None, damit der Aufrufer "nicht ermittelt" von
+        "ermittelt und niedrig" unterscheiden kann.
+    """
+
+    # ── Eingabe-Validierung ─────────────────────
+    if not roh_salienzen:
+        return None
+
+    # ── Verarbeitung ────────────────────────────
+    hoechste: float = max(roh_salienzen)
+
+    # ── Ausgabe-Verifikation ────────────────────
+    if not 0.0 <= hoechste <= 1.0:
+        # Verarbeitbar, aber ausserhalb des vereinbarten Bereichs — Warnung,
+        # nicht Fehler (DEVELOPER_HANDBOOK §4). Der Wert wird benannt, damit
+        # die Kappung nicht als Messung durchgeht.
+        logger.warning(
+            f"Salienz: salienz_human ausserhalb [0,1] — Modell lieferte "
+            f"{hoechste:.2f}, auf den Rand gekappt"
+        )
+        hoechste = max(0.0, min(1.0, hoechste))
+
+    return hoechste
 
 
 def analyze(
@@ -266,6 +351,49 @@ def analyze(
     pending:       list[dict] = state.get("pending_writes", []) or []
     gesamt_tokens: int        = 0
 
+    # Die rohen LLM-Bewertungen je Segment, vor dem Gravitationsboost. Nur der
+    # HumanGraph wertet sie unten zu salienz_human aus; gesammelt wird in jedem
+    # Lauf, damit die Sammelstelle nicht an einer Rollen-Bedingung haengt und
+    # bei der naechsten Rollen-Aenderung still leer bleibt.
+    roh_salienzen: list[float] = []
+
+    # ── Zwei Groessen fuer die Salienz-Formel, einmal je Turn ──
+    # Beide sind Eigenschaften des Paares bzw. des Turns, keine Merkmale eines
+    # Segments — sie gehoeren deshalb vor die Schleife und nicht hinein.
+    #
+    # Genau darin liegt die heute noch offene Schwaeche: Ausser der Lesung des
+    # Segmenttexts ist jede Eingabe der Formel turnweit. Solange das so ist,
+    # unterscheidet allein `sprachlich` ein Segment von seinem Nachbarn.
+    nutzer_gewichtung: float | None = None
+    gewichtung_quelle: str          = "nicht_gebraucht"
+
+    if rolle in ("character", "agent"):
+        if postgres_url:
+            nutzer_gewichtung, gewichtung_quelle = nutzer_gewichtung_laden(
+                postgres_url, user_id,
+            )
+        else:
+            # Kein stiller Ruecktritt auf 0.9: Ohne Datenbank ist der Faktor
+            # nicht bekannt, und ein angenommener saehe aus wie ein gelesener.
+            gewichtung_quelle = "fehlt"
+            logger.error(
+                f"Salienz: kein postgres_url — nutzer_gewichtung nicht ladbar, "
+                f"der Pflicht-Pfad entfaellt fuer turn_id={state.get('turn_id', 'unbekannt')}"
+            )
+
+    # Novas eigene Erregung speist den Verstaerker (1 + zuschlag).
+    internal = state.get("internal")
+    if internal is not None:
+        nova_arousal: float = internal.emotion.arousal
+    else:
+        # 0.0 statt eines mittleren 0.5: Ein erfundener Mittelwert truege 15 %
+        # Zuschlag auf jedes Segment, ohne dass irgendetwas gemessen waere.
+        # Kein Verstaerker ist die ehrliche Antwort auf "nicht bekannt".
+        nova_arousal = 0.0
+        logger.warning(
+            "Salienz: kein internal im State — Erregungs-Zuschlag entfaellt (0.0)"
+        )
+
     salienz_prompt: str = _build_salienz_prompt()
 
     logger.info(f"Salienz: System-Prompt:\n{salienz_prompt}")
@@ -337,8 +465,23 @@ def analyze(
             roh_zeit = salienz_obj.get("zeitausdruck_roh", "") or ""
             salienz_obj["zeitausdruck_roh"] = str(roh_zeit).strip()
 
+            # Den rohen Wert lesen, BEVOR der Gravitationsboost ihn veraendert.
+            # salienz_human ist laut Konzept die LLM-Bewertung der
+            # Nutzeraeusserung — die Gravitation wird mit der neuen Formel zu
+            # einem Antrieb des Eigen-Pfads und zaehlte hier ein zweites Mal.
+            #
+            # Der Aufruf steht vor der Log-Zeile, nicht dahinter: Die Zeile
+            # formatierte den Wert bis Chat 112 ungeprueft mit `:.2f`. Liefert
+            # das Modell dort eine Zeichenkette, wirft das einen ValueError —
+            # und der faellt nicht in das except unten, das nur
+            # JSONDecodeError und KeyError kennt. Ein einziges "hoch" statt 0.8
+            # riss damit den ganzen Turn ab.
+            roh_wert: float | None = _salienz_wert_lesen(salienz_obj)
+            if roh_wert is not None:
+                roh_salienzen.append(roh_wert)
+
             logger.info(
-                f"Salienz: score={salienz_obj.get('salienz', 0):.2f}, "
+                f"Salienz: score={_salienz_anzeige(roh_wert)}, "
                 f"themen={salienz_obj.get('themen', [])}, "
                 f"dimension={salienz_obj.get('dimension', '-')}, "
                 f"typ={salienz_obj.get('gedaechtnistyp', '-')}, "
@@ -361,7 +504,10 @@ def analyze(
                     "segment_gesamt": len(segmente),
                     "segment_laenge": len(segment),
                     "segment_kurz":   segment[:60],
-                    "salienz":        salienz_obj.get("salienz", 0.0),
+                    # Der geprueft numerische Wert, nicht die rohe Modellantwort:
+                    # Sonst stuende im forensischen Log eine Zeichenkette, wo
+                    # jede spaetere Auswertung eine Zahl erwartet.
+                    "salienz":        roh_wert,
                     "themen":         salienz_obj.get("themen", []),
                     "dimension":      salienz_obj.get("dimension", ""),
                     "gedaechtnistyp": salienz_obj.get("gedaechtnistyp", ""),
@@ -402,10 +548,76 @@ def analyze(
         # ── Gravitationsterm auf Salienz addieren (Drive) ──
         gravitationsterm: float = state.get("gravitationsterm", 0.0)
 
-        if gravitationsterm > 0.0:
-            salienz_basis: float = salienz_obj.get("salienz", 0.0)
+        # Der Wert, der am Ende dieses Segments gilt. None heisst, das Modell
+        # lieferte nichts Lesbares.
+        salienz_segment: float | None = roh_wert
+
+        if rolle in ("character", "agent") and roh_wert is not None:
+            # ── Die Salienz-Formel (Chat 112, Bauteil 1b) ──
+            # Fuer Novas eigene Aeusserung wird die Salienz gerechnet, nicht
+            # allein gefragt: max(sein Interesse × ihr Charakter, ihr Antrieb).
+            # Der Gravitationsboost entfaellt hier — die Gravitation ist jetzt
+            # einer der Antriebe des Eigen-Pfads und zaehlte sonst zweimal.
+            ergebnis = salienz_effektiv_berechnen(
+                sprachlich        = roh_wert,
+                ziel_gravitation  = gravitationsterm,
+                arousal           = nova_arousal,
+                salienz_human     = state.get("salienz_human"),
+                nutzer_gewichtung = nutzer_gewichtung,
+            )
+
+            salienz_obj["salienz"] = ergebnis.effektiv
+            salienz_segment        = ergebnis.effektiv
+
+            logger.info(
+                f"Salienz-Formel: effektiv={ergebnis.effektiv:.4f} "
+                f"(Gewinner '{ergebnis.gewinner}') — "
+                f"pflicht={ergebnis.pflicht_pfad} "
+                f"(human={state.get('salienz_human')} × gew={nutzer_gewichtung}, "
+                f"Herkunft '{gewichtung_quelle}'), "
+                f"eigen={ergebnis.eigen_pfad:.4f} "
+                f"(Antriebe {ergebnis.antriebe}, Zuschlag {ergebnis.erregungs_zuschlag:.3f}), "
+                f"nicht angeschlossen: {list(ergebnis.nicht_angeschlossen)}"
+                + (" — GEKAPPT auf 1.0" if ergebnis.gekappt else "")
+            )
+
+            # Beide Operanden ins Log, nicht nur das Ergebnis: Sonst ist im
+            # Nachhinein nicht feststellbar, ob ein Segment erinnert wurde,
+            # weil es Nova etwas bedeutete oder weil es dem Nutzer etwas
+            # bedeutete — und genau das ist der Zweck der Formel.
+            log_berechnung(
+                turn_id = turn_id_log,
+                node    = "salienz",
+                quelle  = quelle_log,
+                inhalt  = {
+                    "schritt":             "salienz_formel",
+                    "segment_index":       seg_idx,
+                    "salienz_effektiv":    ergebnis.effektiv,
+                    "gewinner":            ergebnis.gewinner,
+                    "pflicht_pfad":        ergebnis.pflicht_pfad,
+                    "salienz_human":       state.get("salienz_human"),
+                    "nutzer_gewichtung":   nutzer_gewichtung,
+                    "gewichtung_quelle":   gewichtung_quelle,
+                    "eigen_pfad":          ergebnis.eigen_pfad,
+                    "antriebe":            ergebnis.antriebe,
+                    "nicht_angeschlossen": list(ergebnis.nicht_angeschlossen),
+                    "erregungs_zuschlag":  ergebnis.erregungs_zuschlag,
+                    "gekappt":             ergebnis.gekappt,
+                },
+                span_id = span_id,
+                user_id      = user_id,
+                character_id = character_id,
+            )
+
+        # `roh_wert is not None` statt eines ungeprueften .get(): Die Addition
+        # unten bricht mit TypeError ab, wenn dort eine Zeichenkette steht.
+        # Dieselbe Klasse wie die Log-Zeile darueber — an einer Stelle
+        # diagnostiziert, sass sie schon an der zweiten.
+        elif gravitationsterm > 0.0 and roh_wert is not None:
+            salienz_basis: float = roh_wert
             salienz_neu:   float = min(1.0, salienz_basis + gravitationsterm)
             salienz_obj["salienz"] = round(salienz_neu, 2)
+            salienz_segment        = salienz_obj["salienz"]
 
             logger.info(
                 f"Salienz: Gravitationsboost — "
@@ -451,13 +663,74 @@ def analyze(
                 "segment_gesamt": len(segmente),
             },
             "beschreibung": f"KZG: {', '.join(salienz_obj.get('themen', []))} "
-                            f"(salienz={salienz_obj.get('salienz', 0):.2f}, "
+                            f"(salienz={_salienz_anzeige(salienz_segment)}, "
                             f"Segment {seg_idx + 1}/{len(segmente)})",
         })
 
     state["pending_writes"] = pending
 
     logger.info(f"Salienz: {len(pending)} pending_writes angelegt ({len(segmente)} Segment(e))")
+
+    # ── Salienz der Nutzeraeusserung festhalten (Chat 112) ──
+    # Nur der HumanGraph bewertet eine Nutzeraeusserung. Der CharacterGraph
+    # bewertet gerade Novas Antwort und bekommt salienz_human ueber das
+    # Event-Payload gereicht — schriebe er hier, ueberschriebe er den Reiz mit
+    # der Reaktion. Der AgentGraph hat keine Nutzeraeusserung; dort bleibt das
+    # Feld None, und die Formel faellt dort bestimmungsgemaess auf den
+    # Eigen-Pfad zusammen (novaberg-salienz-berechnung_k.md §9).
+    #
+    # Der Wert wird hier gesetzt und nicht vom Aufrufer aus den pending_writes
+    # gelesen: Der Dispatcher laeuft als letzter Node und leert sie
+    # (dispatcher.py, _dispatch_writes). Wer danach liest, bekommt eine leere
+    # Liste und daraus still None.
+    if rolle == "human":
+        state["salienz_human"] = _salienz_human_ermitteln(roh_salienzen)
+
+        if state["salienz_human"] is None:
+            # Ohne den Wert hat der CharacterGraph keinen Boden fuer seine
+            # Segmente. Das ist ein Verlust, keine Randnotiz — und er faellt
+            # sonst nirgends auf, weil der Turn ansonsten sauber durchlaeuft.
+            logger.error(
+                f"Salienz: salienz_human nicht ermittelbar — {len(segmente)} "
+                f"Segment(e) bewertet, keines lieferte einen lesbaren Wert. "
+                f"Der CharacterGraph bekommt fuer turn_id={turn_id_log} keinen Boden."
+            )
+            log_fehler(
+                turn_id = turn_id_log,
+                node    = "salienz",
+                quelle  = quelle_log,
+                inhalt  = {
+                    "grund":         "salienz_human_unermittelbar",
+                    "segmente":      len(segmente),
+                    "lesbare_werte": len(roh_salienzen),
+                },
+                span_id = span_id,
+                user_id      = user_id,
+                character_id = character_id,
+            )
+        else:
+            # Den Wert nennen, nicht die Anzahl: Ein Setzer ohne Log-Zeile ist
+            # nicht messbar, und eine Zeile, die nur zaehlt, macht ihre Frage
+            # unbeobachtbar.
+            logger.info(
+                f"Salienz: salienz_human={state['salienz_human']:.2f} "
+                f"(Maximum aus {len(roh_salienzen)} Segment(en): "
+                f"{[round(w, 2) for w in roh_salienzen]})"
+            )
+            log_berechnung(
+                turn_id = turn_id_log,
+                node    = "salienz",
+                quelle  = quelle_log,
+                inhalt  = {
+                    "schritt":       "salienz_human",
+                    "salienz_human": state["salienz_human"],
+                    "segmentwerte":  [round(w, 4) for w in roh_salienzen],
+                    "segmente":      len(segmente),
+                },
+                span_id = span_id,
+                user_id      = user_id,
+                character_id = character_id,
+            )
 
     # ── Token-Zaehler aktualisieren ───────────
     state["token_total"] += gesamt_tokens

@@ -265,9 +265,19 @@ class SalienzFehlerpfadTest(unittest.TestCase):
         eintraege: list = [ruf.args[0] for ruf in puffer.put_threadsafe.call_args_list]
         fehler = [e for e in eintraege if e.art == "fehler"]
 
-        self.assertEqual(len(fehler), 2)
-        self.assertEqual({e.inhalt["grund"] for e in fehler}, {"json_parsing"})
+        verworfen = [e for e in fehler if e.inhalt["grund"] == "json_parsing"]
+        self.assertEqual(len(verworfen), 2)
         self.assertEqual(ergebnis["pending_writes"], [])
+
+        # Seit Chat 112 steht daneben ein zweiter, anders begruendeter Fehler:
+        # Lieferte kein Segment einen lesbaren Wert, bekommt der CharacterGraph
+        # keinen Boden fuer seine eigene Salienz. Das ist ein eigener Verlust
+        # und deshalb eine eigene Zeile — nicht dieselbe zweimal.
+        self.assertEqual(
+            {e.inhalt["grund"] for e in fehler},
+            {"json_parsing", "salienz_human_unermittelbar"},
+        )
+        self.assertIsNone(ergebnis["salienz_human"])
 
         # Der Span schliesst trotzdem — sonst bliebe der Lauf offen.
         ende = [e for e in eintraege if e.art == "span_end"][0]

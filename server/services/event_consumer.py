@@ -398,6 +398,13 @@ async def _event_verarbeiten(
     payload:     dict = event.get("payload", {})
     user_prompt: str  = payload.get("user_prompt", "")
 
+    # Die Salienz des Reizes, den Nova gerade beantwortet. Bewusst ohne
+    # Default: payload.get() liefert None, wenn der Schluessel fehlt — und
+    # genau das ist der richtige Wert fuer einen eigenen Impuls, der gar keine
+    # Nutzeraeusserung hat. Ein Default 0.0 wuerde daraus die Aussage machen,
+    # der Nutzer habe etwas Belangloses gesagt.
+    salienz_human = payload.get("salienz_human")
+
     # ── State erzeugen ──
     state: dict = character_graph.create_state(
         user_prompt   = user_prompt,
@@ -406,6 +413,13 @@ async def _event_verarbeiten(
         event_source  = event.get("source", "user"),
         event_payload = payload,
         turn_id       = payload.get("turn_id", ""),
+        salienz_human = salienz_human,
+    )
+
+    logger.info(
+        f"Event-Consumer: salienz_human={salienz_human} in den CharacterGraph "
+        f"gereicht (turn_id={payload.get('turn_id', '')}, "
+        f"herkunft={payload.get('reiz_herkunft', 'nutzer_turn')})"
     )
 
     # Hinweis: Die Perzeption-Daten aus dem Pfad-1-Payload werden vom
