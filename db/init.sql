@@ -600,7 +600,14 @@ ALTER TABLE charakter_hash ADD COLUMN IF NOT EXISTS character_id               T
 -- charakter_hash durchgaengig TEXT fuer seine Profile nutzt.
 ALTER TABLE charakter_hash ADD COLUMN IF NOT EXISTS nutzer_gewichtung          DOUBLE PRECISION NOT NULL DEFAULT 0.9;
 ALTER TABLE charakter_hash ADD COLUMN IF NOT EXISTS nutzer_gewichtung_quelle   TEXT        NOT NULL DEFAULT 'default';
-ALTER TABLE charakter_hash ADD COLUMN IF NOT EXISTS nutzer_gewichtung_rad      TEXT        NOT NULL DEFAULT '';
+ALTER TABLE charakter_hash ADD COLUMN IF NOT EXISTS nutzer_gewichtung_rad      TEXT        NOT NULL DEFAULT '{"hoch": {"treue": 0.0, "dienst": 0.0, "pflicht": 0.0, "aufmerksamkeit": 0.0, "wissbegier": 0.0, "wohlwollen": 0.0}, "runter": {"widerspenstig": 0.0, "gleichgueltig": 0.0, "selbstbezogen": 0.0, "langeweile": 0.0, "distanz": 0.0, "misstrauen": 0.0}}';
+-- Der Default ist das leere Rad, nicht der Leerstring: Eine frisch angelegte
+-- Zeile traegt damit denselben Beleg wie eine destillierte — die 0.9 ist
+-- nachrechenbar statt behauptet. Bestandszeilen mit Leerstring bekommen ihn
+-- einmalig nachgetragen; destillierte Raeder bleiben unangetastet.
+UPDATE charakter_hash
+   SET nutzer_gewichtung_rad = '{"hoch": {"treue": 0.0, "dienst": 0.0, "pflicht": 0.0, "aufmerksamkeit": 0.0, "wissbegier": 0.0, "wohlwollen": 0.0}, "runter": {"widerspenstig": 0.0, "gleichgueltig": 0.0, "selbstbezogen": 0.0, "langeweile": 0.0, "distanz": 0.0, "misstrauen": 0.0}}'
+ WHERE nutzer_gewichtung_rad = '' AND nutzer_gewichtung_quelle = 'default';
 ALTER TABLE charakter_hash ADD COLUMN IF NOT EXISTS nutzer_gewichtung_am       TIMESTAMPTZ;
 -- Typkorrektur (Chat 111, am selben Tag): zuerst als REAL angelegt. REAL ist
 -- einfach genau, 0.9 wird darin zu 0.89999997615814209 — jeder Vergleich

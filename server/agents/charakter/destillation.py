@@ -6,6 +6,7 @@ macht einen LLM-Call und gibt den bereinigten Profil-Text zurueck.
 Prompts uebernommen aus: services/shadow_agent/tasks/charakter_hash.py
 """
 
+import json
 import logging
 import math
 import time
@@ -14,6 +15,47 @@ from config import ASSISTANT_NAME, ASSISTANT_USER_ID, DEFAULT_USER_ID, get_node_
 from services.model_services import model_service, BackgroundRequest
 
 logger = logging.getLogger("ki_server.agents.charakter.destillation")
+
+
+# ─────────────────────────────────────────────
+# Charakter-Rad — Gewichtung der Nutzer-Salienz
+# ─────────────────────────────────────────────
+# Zwoelf Speichen um eine Nabe. Jede Speiche zieht den Faktor in ihre
+# Richtung, mehrere auf derselben Seite ziehen zusammen staerker. Volle
+# Auslenkung trifft die Grenzen exakt: 0.9 + 0.60 = 1.5, 0.9 - 0.40 = 0.5.
+# Herleitung und Bedeutung: novaberg-salienz-berechnung_k.md §5.
+#
+# Die Zuege sind eine SETZUNG, keine Messung — ausdruecklich nachkalibrierbar.
+
+RAD_NABE:   float = 0.9
+RAD_MIN:    float = 0.5
+RAD_MAX:    float = 1.5
+
+RAD_ZUG_HOCH: dict[str, float] = {
+    "treue":          0.16,   # stellt seine Belange ueber die eigenen
+    "dienst":         0.11,   # sucht von sich aus Gelegenheiten zu helfen
+    "pflicht":        0.11,   # nimmt Auftraege ernst, auch ungeliebte
+    "aufmerksamkeit": 0.08,   # registriert Nebensaetze, behaelt Details
+    "wissbegier":     0.08,   # fremde Themen wecken echtes Interesse
+    "wohlwollen":     0.06,   # legt Gesagtes im besten Sinne aus
+}
+
+RAD_ZUG_RUNTER: dict[str, float] = {
+    "widerspenstig":  0.12,   # widerspricht, lenkt ab, folgt ungern
+    "gleichgueltig":  0.10,   # seine Belange beruehren sie nicht
+    "selbstbezogen":  0.08,   # kehrt zu ihren eigenen Themen zurueck
+    "langeweile":     0.05,   # fremde Themen ermueden sie
+    "distanz":        0.03,   # haelt ihn auf Abstand
+    "misstrauen":     0.02,   # legt Gesagtes skeptisch aus
+}
+
+# Rad ohne jede Auspraegung — ergibt rechnerisch exakt die Nabe. Dient als
+# Spalten-Default, damit eine frisch angelegte Zeile denselben Beleg traegt
+# wie eine destillierte: die 0.9 ist dann nachrechenbar statt behauptet.
+RAD_LEER: dict[str, dict[str, float]] = {
+    "hoch":   {name: 0.0 for name in RAD_ZUG_HOCH},
+    "runter": {name: 0.0 for name in RAD_ZUG_RUNTER},
+}
 
 # ─────────────────────────────────────────────
 # Prompts — User (meister)
@@ -365,6 +407,167 @@ def beziehungsprofil_destillieren(kzg_eintraege: list[dict], user_id: str = DEFA
         BEZIEHUNGS_PROFIL_PROMPT.format(eintraege="\n".join(beziehungs_eintraege), **perspektive),
         f"Beziehungsprofil ({user_id})",
     )
+
+
+CHARAKTER_RAD_PROMPT: str = """Du bist ein psychologischer Profiler. Vor dir liegt
+ein Persoenlichkeitsprofil und ein Beziehungsprofil.
+
+[PROFIL]
+{profil}
+
+[AUFGABE]
+Bewerte zwoelf Eigenschaften danach, wie stark sie in diesem Profil erkennbar
+sind. Es geht ausschliesslich um die Haltung GEGENUEBER DEM ANDEREN — nicht um
+allgemeine Charakterstaerke.
+
+Gib je Eigenschaft genau einen von drei Werten:
+  0.0  = nicht erkennbar
+  0.5  = angedeutet
+  1.0  = ausgepraegt
+
+Zuwendung zum Anderen:
+- treue            — stellt die Belange des Anderen ueber die eigenen
+- dienst           — sucht von sich aus Gelegenheiten zu helfen
+- pflicht          — nimmt Auftraege ernst, auch ungeliebte
+- aufmerksamkeit   — registriert Nebensaetze, behaelt Details
+- wissbegier       — fremde Themen wecken echtes Interesse
+- wohlwollen       — legt Gesagtes im besten Sinne aus
+
+Abwendung vom Anderen:
+- widerspenstig    — widerspricht, lenkt ab, folgt ungern
+- gleichgueltig    — die Belange des Anderen beruehren nicht
+- selbstbezogen    — kehrt zu den eigenen Themen zurueck
+- langeweile       — fremde Themen ermueden
+- distanz          — haelt den Anderen auf Abstand
+- misstrauen       — legt Gesagtes skeptisch aus
+
+Eine Eigenschaft kann auch dann ausgepraegt sein, wenn ihr Gegenstueck es
+ebenfalls ist — jemand kann widerspenstig UND wissbegierig sein.
+
+Antworte AUSSCHLIESSLICH mit diesem JSON, ohne erklaerenden Text:
+{{"hoch": {{"treue": 0.0, "dienst": 0.0, "pflicht": 0.0, "aufmerksamkeit": 0.0, "wissbegier": 0.0, "wohlwollen": 0.0}}, "runter": {{"widerspenstig": 0.0, "gleichgueltig": 0.0, "selbstbezogen": 0.0, "langeweile": 0.0, "distanz": 0.0, "misstrauen": 0.0}}}}
+"""
+
+
+def nutzer_gewichtung_berechnen(rad: dict) -> float:
+    """Rechnet aus den zwoelf Speichen den Gewichtungsfaktor.
+
+    Reine Funktion: Dieselben Eingaben liefern immer denselben Wert, und der
+    Wert haengt an keiner Stelle von einem frueheren Ergebnis ab
+    (novaberg-convention-abgeleitete-werte.md, Regel 2 und 3).
+
+    Vorbedingung: `rad` traegt die Schluessel 'hoch' und 'runter' mit je genau
+        den Speichen aus RAD_ZUG_HOCH bzw. RAD_ZUG_RUNTER. Jede Auspraegung
+        liegt zwischen 0.0 und 1.0.
+    Nachbedingung: Rueckgabe liegt in [RAD_MIN, RAD_MAX].
+    Fehlerfaelle: fehlende oder unbekannte Speiche, nicht-numerische oder
+        ausserhalb liegende Auspraegung — ValueError. Ein unvollstaendiges Rad
+        ist nicht rechenbar, und ein halb gerechneter Faktor waere schlimmer
+        als keiner.
+    """
+
+    # ── Eingabe-Validierung ─────────────────────
+    if not isinstance(rad, dict):
+        raise ValueError(f"Charakter-Rad: erwartet dict, bekam {type(rad).__name__}")
+
+    for seite, zuege in (("hoch", RAD_ZUG_HOCH), ("runter", RAD_ZUG_RUNTER)):
+        werte = rad.get(seite)
+        if not isinstance(werte, dict):
+            raise ValueError(f"Charakter-Rad: Seite '{seite}' fehlt oder ist kein dict")
+
+        fehlend: set[str] = set(zuege) - set(werte)
+        fremd:   set[str] = set(werte) - set(zuege)
+        if fehlend or fremd:
+            raise ValueError(
+                f"Charakter-Rad: Seite '{seite}' unvollstaendig — "
+                f"fehlend={sorted(fehlend)}, unbekannt={sorted(fremd)}"
+            )
+
+        for name, auspraegung in werte.items():
+            if not isinstance(auspraegung, (int, float)) or isinstance(auspraegung, bool):
+                raise ValueError(
+                    f"Charakter-Rad: '{seite}.{name}' ist nicht numerisch "
+                    f"({type(auspraegung).__name__})"
+                )
+            if not 0.0 <= float(auspraegung) <= 1.0:
+                raise ValueError(
+                    f"Charakter-Rad: '{seite}.{name}' = {auspraegung} liegt "
+                    f"ausserhalb von 0.0–1.0"
+                )
+
+    # ── Verarbeitung ────────────────────────────
+    zug_hoch:   float = sum(float(rad["hoch"][n])   * z for n, z in RAD_ZUG_HOCH.items())
+    zug_runter: float = sum(float(rad["runter"][n]) * z for n, z in RAD_ZUG_RUNTER.items())
+    roh:        float = RAD_NABE + zug_hoch - zug_runter
+
+    # ── Ausgabe-Verifikation ────────────────────
+    # Volle Auslenkung trifft die Grenzen exakt; die Kappung ist Sicherung,
+    # kein Formteil. Greift sie doch, ist eine Auspraegung ausser Rand geraten
+    # — das gehoert benannt, nicht stillschweigend weggeschnitten.
+    gekappt: float = max(RAD_MIN, min(RAD_MAX, roh))
+    if abs(gekappt - roh) > 1e-9:
+        logger.warning(
+            f"Charakter-Rad: Faktor {roh:.4f} ausserhalb [{RAD_MIN}, {RAD_MAX}] "
+            f"— gekappt auf {gekappt:.4f}. Zuege pruefen."
+        )
+
+    logger.debug(
+        f"Charakter-Rad: Nabe {RAD_NABE} + {zug_hoch:.4f} - {zug_runter:.4f} "
+        f"= {gekappt:.4f}"
+    )
+    return gekappt
+
+
+def charakter_rad_destillieren(
+    profil_text: str,
+    user_id:     str = DEFAULT_USER_ID,
+) -> tuple[dict, float] | None:
+    """Erhebt die zwoelf Speichen aus dem Profiltext und rechnet den Faktor.
+
+    Laeuft NACH den fuenf Profilen und liest deren Ergebnis, nicht erneut das
+    KZG — das Rad ist eine Eigenschaft des destillierten Charakters, keine
+    zweite Beobachtung der Rohdaten.
+
+    Vorbedingung: `profil_text` ist nicht leer.
+    Nachbedingung: (rad, faktor) mit vollstaendigem Rad und faktor in
+        [RAD_MIN, RAD_MAX] — oder None.
+    Fehlerfaelle: leerer Profiltext, unlesbares JSON, unvollstaendiges Rad.
+        In allen Faellen None und eine error-Zeile; der Aufrufer behaelt dann
+        den bestehenden Wert, statt einen erfundenen zu schreiben.
+    """
+
+    # ── Eingabe-Validierung ─────────────────────
+    if not profil_text or not profil_text.strip():
+        logger.error(
+            f"Charakter-Rad ({user_id}): Profiltext leer — nicht erhoben, "
+            f"bestehender Faktor bleibt"
+        )
+        return None
+
+    # ── Verarbeitung ────────────────────────────
+    roh: str = _llm_call(
+        CHARAKTER_RAD_PROMPT.format(profil=profil_text),
+        f"Charakter-Rad ({user_id})",
+    )
+
+    try:
+        rad: dict = json.loads(roh)
+    except (json.JSONDecodeError, TypeError) as fehler:
+        logger.error(
+            f"Charakter-Rad ({user_id}): Antwort ist kein JSON "
+            f"({type(fehler).__name__}) — nicht erhoben. Roh: '{roh[:120]}'"
+        )
+        return None
+
+    try:
+        faktor: float = nutzer_gewichtung_berechnen(rad)
+    except ValueError as fehler:
+        logger.error(f"Charakter-Rad ({user_id}): {fehler} — nicht erhoben")
+        return None
+
+    # ── Ausgabe ─────────────────────────────────
+    logger.info(f"Charakter-Rad ({user_id}) erhoben: nutzer_gewichtung={faktor:.4f}")
+    return rad, faktor
 
 
 def langfristige_ziele_destillieren(kern_hash: str, user_id: str = "nova") -> list[dict]:

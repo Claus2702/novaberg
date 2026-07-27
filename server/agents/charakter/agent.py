@@ -4,6 +4,7 @@ Ein LLM-Call pro Profil pro User. Nur aktiv wenn hash_dirty gesetzt.
 Migriert aus: services/shadow_agent/tasks/charakter_hash.py
 """
 
+import json
 import logging
 
 from agents.base import BaseAgent, AgentState, PeriodicTask
@@ -28,6 +29,9 @@ from agents.charakter.destillation import (
     emotions_profil_destillieren,
     beziehungsprofil_destillieren,
     langfristige_ziele_destillieren,
+    charakter_rad_destillieren,
+    RAD_NABE,
+    RAD_LEER,
 )
 from memory.ziele import ziel_speichern, ziele_aktive_laden, ziel_deaktivieren
 from memory.ziele import embed_text_bauen as ziel_embed_text_bauen
@@ -148,6 +152,11 @@ class CharakterAgent(BaseAgent):
                     "kern": "", "adaptiv": "",
                     "intentions_profil": "", "emotions_profil": "",
                     "beziehungsprofil": "",
+                    # Leer bzw. None heisst "nicht erhoben" — der Schreibpfad
+                    # laesst den bestehenden Wert dann stehen, statt ihn durch
+                    # einen erfundenen zu ersetzen.
+                    "nutzer_gewichtung_rad": "",
+                    "nutzer_gewichtung":     None,
                 }
 
                 try:
@@ -174,6 +183,31 @@ class CharakterAgent(BaseAgent):
                     ergebnis["beziehungsprofil"] = beziehungsprofil_destillieren(kzg_eintraege, user_id=subjekt_user_id)
                 except Exception as ex:
                     logger.error(f"CharakterAgent: Beziehungsprofil fehlgeschlagen fuer {subjekt_user_id}: {ex}")
+
+                # ── Charakter-Rad aus den frischen Profilen ──
+                # Laeuft NACH den fuenf Profilen und liest deren Ergebnis, nicht
+                # erneut das KZG: Das Rad ist eine Eigenschaft des destillierten
+                # Charakters, keine zweite Beobachtung der Rohdaten.
+                #
+                # Das Rad misst die Haltung des Subjekts GEGENUEBER seinem
+                # Gegenueber. Auf der Zeile (nova, meister) ist das Novas
+                # Zuwendung zum Nutzer — der Wert, den die Salienz-Formel
+                # liest. Auf (meister, nova) entsteht spiegelbildlich seine
+                # Zuwendung zu ihr; die hat bewusst keinen Verbraucher
+                # (novaberg-salienz-berechnung_k.md §8).
+                rad_quelle: str = "\n\n".join(
+                    t for t in (ergebnis["kern"], ergebnis["beziehungsprofil"]) if t
+                )
+                if rad_quelle:
+                    erhoben = charakter_rad_destillieren(rad_quelle, user_id=subjekt_user_id)
+                    if erhoben is not None:
+                        ergebnis["nutzer_gewichtung_rad"], ergebnis["nutzer_gewichtung"] = erhoben
+                else:
+                    logger.warning(
+                        f"CharakterAgent: kein Kern- und kein Beziehungsprofil fuer "
+                        f"{subjekt_user_id} — Charakter-Rad nicht erhoben, "
+                        f"bestehender Faktor bleibt"
+                    )
 
                 # ── In PostgreSQL speichern ──────────
                 hat_aenderungen: bool = any(v for v in ergebnis.values())
@@ -402,6 +436,18 @@ class CharakterAgent(BaseAgent):
         Jedes Profil wird nur ueberschrieben wenn der neue Wert nicht-leer ist.
         Der zugehoerige Zeitstempel wird nur dann auf NOW() gesetzt.
         """
+        # Rad-Werte vorbereiten. `_erhoben` ist die einzige Bedingung: Ist es
+        # None, blieb die Erhebung aus, und alle vier Spalten bleiben, wie sie
+        # sind. Ein erfundener Faktor waere schlimmer als ein alter.
+        _erhoben:    float | None = ergebnis.get("nutzer_gewichtung")
+        _rad_faktor: float = _erhoben if _erhoben is not None else RAD_NABE
+        _rad_quelle: str   = "destilliert" if _erhoben is not None else "default"
+        _rad_json:   str   = (
+            ergebnis.get("nutzer_gewichtung_rad") or json.dumps(RAD_LEER)
+        )
+        if isinstance(_rad_json, dict):
+            _rad_json = json.dumps(_rad_json)
+
         db_manager.execute(
             """
             INSERT INTO charakter_hash
@@ -410,8 +456,12 @@ class CharakterAgent(BaseAgent):
                  intentions_profil, emotions_profil, beziehungsprofil,
                  kern_aktualisiert_am, adaptive_aktualisiert_am,
                  intentions_aktualisiert_am, emotions_aktualisiert_am,
-                 beziehung_aktualisiert_am)
-            VALUES (%s, %s, %s, %s, %s, %s, %s, NOW(), NOW(), NOW(), NOW(), NOW())
+                 beziehung_aktualisiert_am,
+                 nutzer_gewichtung, nutzer_gewichtung_quelle,
+                 nutzer_gewichtung_rad, nutzer_gewichtung_am)
+            VALUES (%s, %s, %s, %s, %s, %s, %s, NOW(), NOW(), NOW(), NOW(), NOW(),
+                    %s, %s, %s,
+                    CASE WHEN %s IS NOT NULL THEN NOW() ELSE NULL END)
             ON CONFLICT (user_id, character_id) DO UPDATE SET
                 kern_hash = CASE WHEN %s != '' THEN %s
                     ELSE charakter_hash.kern_hash END,
@@ -432,13 +482,28 @@ class CharakterAgent(BaseAgent):
                 emotions_aktualisiert_am = CASE WHEN %s != '' THEN NOW()
                     ELSE charakter_hash.emotions_aktualisiert_am END,
                 beziehung_aktualisiert_am = CASE WHEN %s != '' THEN NOW()
-                    ELSE charakter_hash.beziehung_aktualisiert_am END
+                    ELSE charakter_hash.beziehung_aktualisiert_am END,
+                -- Charakter-Rad: NULL heisst "nicht erhoben". Dann bleibt der
+                -- bestehende Faktor stehen — ein misslungener Lauf darf einen
+                -- destillierten Wert nicht durch den Default ersetzen.
+                nutzer_gewichtung = CASE WHEN %s IS NOT NULL THEN %s
+                    ELSE charakter_hash.nutzer_gewichtung END,
+                nutzer_gewichtung_quelle = CASE WHEN %s IS NOT NULL THEN 'destilliert'
+                    ELSE charakter_hash.nutzer_gewichtung_quelle END,
+                nutzer_gewichtung_rad = CASE WHEN %s IS NOT NULL THEN %s
+                    ELSE charakter_hash.nutzer_gewichtung_rad END,
+                nutzer_gewichtung_am = CASE WHEN %s IS NOT NULL THEN NOW()
+                    ELSE charakter_hash.nutzer_gewichtung_am END
             """,
             (
                 user_id, character_id,
                 ergebnis["kern"], ergebnis["adaptiv"],
                 ergebnis["intentions_profil"], ergebnis["emotions_profil"],
                 ergebnis["beziehungsprofil"],
+                # INSERT — Charakter-Rad. Ohne Erhebung die Spalten-Defaults,
+                # damit eine neue Zeile denselben Beleg traegt wie eine
+                # destillierte: die 0.9 ist dann nachrechenbar statt behauptet.
+                _rad_faktor, _rad_quelle, _rad_json, _rad_faktor,
                 # ON CONFLICT — Profil-Werte (je 2×: Bedingung + Wert)
                 ergebnis["kern"], ergebnis["kern"],
                 ergebnis["adaptiv"], ergebnis["adaptiv"],
@@ -451,5 +516,10 @@ class CharakterAgent(BaseAgent):
                 ergebnis["intentions_profil"],
                 ergebnis["emotions_profil"],
                 ergebnis["beziehungsprofil"],
+                # ON CONFLICT — Charakter-Rad (Bedingung je 1×, Werte 2×)
+                _erhoben, _rad_faktor,
+                _erhoben,
+                _erhoben, _rad_json,
+                _erhoben,
             ),
         )
