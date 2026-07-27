@@ -976,7 +976,12 @@ NOVA_NEUGIER:                    float = 0.5    # Novas Grund-Neugier (Persoenli
 # achtminuetige Recherche blockierte den Pixie-Takt vollstaendig. 0.35 stellt
 # den Agenten knapp ueber den Charakter, aber weit unter Queue-Arbeit (0.97).
 LUECKEN_PRIORITAET:          float = float(os.getenv("LUECKEN_PRIORITAET", "0.35"))
-LUECKEN_INTERVALL_SEKUNDEN:  int   = int(os.getenv("LUECKEN_INTERVALL_SEKUNDEN", "3600"))
+# Acht Stunden. Der Lueckenagent (0.35) und der CharakterAgent (0.3) sind nur
+# dann Konkurrenten, wenn BEIDE faellig sind. Bei stuendlichem Takt gegen die
+# zehn Minuten des Charakters kollidieren sie jede Stunde und der Charakter
+# verliert; bei acht Stunden praktisch nie. Zwanzig Luecken tragen ohnehin
+# mehrere Stunden.
+LUECKEN_INTERVALL_SEKUNDEN:  int   = int(os.getenv("LUECKEN_INTERVALL_SEKUNDEN", "28800"))
 
 # Startwert, nach der ersten Messung nachzujustieren. Jeder Kandidat kostet
 # ein Embedding.

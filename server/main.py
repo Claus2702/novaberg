@@ -163,7 +163,14 @@ async def Lifespan(app: FastAPI):
             _task = _agent.periodic_task()
             if _task:
                 _key = f"pixie:schedule:{_task.name}"
-                if not redis_client.exists(_key):
+                _neu: bool = not redis_client.exists(_key)
+
+                # Takt und Prioritaet folgen der Konfiguration, next_run nicht.
+                # Bis Chat 111 wurde der Eintrag nur beim ersten Mal geschrieben
+                # — eine Aenderung an config.py erreichte das laufende System
+                # dann nie, und niemand sah warum. next_run bleibt stehen, sonst
+                # rutschte jeder Neustart den Takt nach vorn.
+                if _neu:
                     redis_client.hset(_key, mapping={
                         "priority":    str(_task.priority),
                         "interval":    str(_task.interval),
@@ -174,6 +181,21 @@ async def Lifespan(app: FastAPI):
                         f"Pixie: Periodische Aufgabe registriert — {_task.name} "
                         f"(Prio {_task.priority}, alle {_task.interval}s)"
                     )
+                else:
+                    _alt_intervall = redis_client.hget(_key, "interval")
+                    _alt_prio      = redis_client.hget(_key, "priority")
+                    redis_client.hset(_key, mapping={
+                        "priority":    str(_task.priority),
+                        "interval":    str(_task.interval),
+                        "description": _task.description,
+                    })
+                    if (_alt_intervall and str(_alt_intervall) != str(_task.interval)) or \
+                       (_alt_prio and str(_alt_prio) != str(_task.priority)):
+                        logger.info(
+                            f"Pixie: Zeitplan angeglichen — {_task.name}: "
+                            f"Takt {_alt_intervall}s -> {_task.interval}s, "
+                            f"Prio {_alt_prio} -> {_task.priority}"
+                        )
     else:
         logger.debug("main: Periodic-Task-Discovery uebersprungen (PIXIE_AKTIV=False)")
 
