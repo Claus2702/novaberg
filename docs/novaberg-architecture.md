@@ -670,7 +670,7 @@ Das Handbuch ist nach Betrachtungstiefen organisiert. Tiefe 0 ist der Einstiegsp
 | novaberg-pattern-prompt-schema.md | Prompt-Schema [BLOCKNAME] (Konvention) |
 | novaberg-pattern-entity-resolution.md | Entity Resolution (Name-Match, Embedding) |
 
-### Lessons (22)
+### Lessons
 
 Lessons leben als `{modul}_l.md` oder `{modul}_l_{thema}.md` neben ihrem Modul-Dokument:
 
@@ -704,6 +704,7 @@ Lessons leben als `{modul}_l.md` oder `{modul}_l_{thema}.md` neben ihrem Modul-D
 | novaberg-lesson_l_analyse-ersetzt-keine-messung.md | Ein Analyse-Upgrade ersetzt keine Messung |
 | novaberg-lesson_l_konzept-spricht-code.md | Ein Konzept, das in Code-Sprache spricht, wird für einen Befund gehalten |
 | novaberg-lesson_l_ableitung-als-messung.md | Eine Ableitung ist keine Messung — auch wenn sie stimmt |
+| novaberg-lesson_l_gelesen-ist-nicht-wirksam.md | Die gelesene Quelle ist nicht die wirksame (zwei Speicher, einer gilt) |
 
 ### Uebergreifend
 

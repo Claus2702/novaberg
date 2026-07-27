@@ -3260,7 +3260,7 @@ Der Lesson-Index in `novaberg-architecture.md` listet die Legacy-`{modul}_l.md`-
 
 **Nachtrag Chat 108:** Zwei neue Lessons sind eingetragen (`konzept-spricht-code`, `ableitung-als-messung`); der Altbestand bleibt bewusst offen. Zwei Beobachtungen für den geplanten Doku-Commit:
 
-- Die Überschrift `### Lessons (NN)` in `novaberg-architecture.md` trägt einen handgepflegten Zähler, der schon vor Chat 108 falsch war. Beim Aufräumen **entfernen, nicht aktualisieren** — eine Zahl neben einer wachsenden Tabelle driftet dauerhaft, und die Tabelle steht direkt darunter.
+- ~~Die Überschrift `### Lessons (NN)` in `novaberg-architecture.md` trägt einen handgepflegten Zähler, der schon vor Chat 108 falsch war. Beim Aufräumen **entfernen, nicht aktualisieren** — eine Zahl neben einer wachsenden Tabelle driftet dauerhaft, und die Tabelle steht direkt darunter.~~ → **Erledigt Chat 111.** Der Zähler stand bei 22, die Tabelle hatte 28 Zeilen, auf der Platte lagen 44 `_l`-Dateien — dreimal auseinander. Ersatzlos entfernt. Der Altbestand bleibt offen.
 - Die Angabe „zwölf ältere Dateien fehlen" stammt aus Chat 106 und trägt kein Messdatum. Beim Aufräumen **neu zählen statt übernehmen**.
 
 ## Doku: DOKU-DUPLIKATE-CHAT80 — 8 Bezeichner stehen in bugs.md UND backlog.md (Chat 106)
@@ -3778,3 +3778,43 @@ Ein KZG-Eintrag, der ins LZG promotet wurde, **bleibt danach im KZG liegen**. De
 **Vereinheitlichung ist ein eigener Durchgang** — elf Abschnitte umhängen, Sprint-Titel als Untertitel erhalten, Querverweise prüfen. Nicht nebenbei. ⬜ Prio niedrig
 
 **Zusammenhang:** DOKU-DUPLIKATE-CHAT80 · LESSON-INDEX-LUECKE (beides Gliederungs-/Auffindbarkeitsprobleme in der Doku, nicht im Code).
+
+---
+
+## Landmine: DB-SELECT-SCHREIBT-OHNE-COMMIT — `select()` führt ein Schreib-Statement aus und verwirft es (Chat 111)
+
+Kein Defekt — `db_manager.select()` tut, was ihr Docstring sagt („SELECT-Abfrage", `tools/db_manager.py:26-34`). Die Falle liegt darin, was sie **nicht** tut: Sie lehnt ein übergebenes `INSERT`/`UPDATE`/`DELETE` nicht ab, sondern **führt es aus**, liest die `RETURNING`-Zeilen aus der offenen Transaktion und legt die Verbindung ohne `commit` in den Pool zurück. Dort wird alles verworfen.
+
+Der Aufrufer sieht echte Zeilen und meldet Erfolg. Genau das ist einmal geschehen: zwanzig gemeldete Neuanlagen, null in der Tabelle. Behoben durch `execute_returning`, das committet und die Zeile zurückgibt — es existierte längst; gegriffen wurde zur falschen Funktion, weil sie zufällig auch etwas zurückgibt.
+
+**Gemessen am Bestand:** **22 von 22** Aufrufstellen übergeben ein `SELECT`. Kein zweiter Fall, ein Durchgang lohnt nicht — die Falle ist latent, nicht verbreitet.
+
+**Härtung:** `select()` soll ein Nicht-`SELECT` **ablehnen** statt es auszuführen — fail loud, statt lautlos zu verwerfen. Solange das nicht gebaut ist, gilt der Sperrvermerk: Wer schreibend `RETURNING` braucht, nimmt `execute_returning`. ⬜ Prio niedrig
+
+**Zusammenhang:** `novaberg-lesson_l_gelesen-ist-nicht-wirksam.md` (Fall 1 der Klasse).
+
+---
+
+## Audit: REGISTER-SPIEGEL-DURCHGANG — wo spiegelt sonst eine Aufzählung ein Register? (Chat 111)
+
+In `services/pixie/router.py` entschied eine **Tabelle neben dem Register** darüber, welcher periodische Agent läuft — dieselbe Zuordnung ein zweites Mal geführt, ohne dass ein Auseinanderlaufen bemerkt worden wäre. Ein neu registrierter Agent gewann den Heartbeat, fand keine Route und starb mit einer Warnung; weil der Takt einen Gewinner je Runde kennt, lief in dieser Runde auch sonst nichts. Behoben durch Rückfall auf Namensgleichheit — die Tabelle bleibt nur noch für die Fälle, in denen Zeitplan- und Agentenname wirklich abweichen (`charakter_hash` → `charakter`).
+
+**Die Instanz ist zu, die Form nicht.** Offen und **nicht gemessen:** Wo sonst im Bestand führt eine Aufzählung dieselbe Zuordnung wie ein Register, ohne dass ein fehlender Eintrag lauter ist als eine Warnung? Zu prüfen sind Zuordnungs-Literale, die neben einer Registry, einer Enum oder einer Tabelle stehen und von Hand nachgepflegt werden müssen.
+
+**Der Durchgang braucht ein Messdatum:** Kandidaten zählen, je Fall entscheiden — ableitbar (dann ableiten) oder echt abweichend (dann bleibt die Tabelle, aber der Fehlschlag wird laut). ⬜ Prio mittel
+
+**Zusammenhang:** ALLOWLIST-DRIFT (andere Form von Drift) · `novaberg-lesson_l_gelesen-ist-nicht-wirksam.md` (Fall 3 der Klasse).
+
+---
+
+## Landmine: GV-RELEVANZ-UNNORMIERT — die Relevanz kann über 1.0 liegen, ihr Name sagt das nicht (Chat 111)
+
+Kein Defekt — heute stolpert niemand darüber. `relevanz` entsteht als `basis × (1.0 + neugier_boost) × aufnahmebereitschaft × register` (`ei/wissensluecken.py:288-293`) und ist **nicht normiert**; angezeigt wird sie über `graph/nodes/gespraechsvektor.py:554`. Der Faktor `1.0 + neugier_boost` hebt sie über 1.0, sobald eine Gravitation anliegt — sieben Lücken über 1.0 sind im Client bereits beobachtet worden.
+
+**Der einzige heutige Leser ist geprüft und unbetroffen:** `ei/wissensluecken.py:347` vergleicht gegen `GV_LUECKEN_MIN_RELEVANZ = 0.15` (`config.py:997`), also eine **Untergrenze** — die wirkt unabhängig davon, wie weit der Wert nach oben reicht.
+
+**Die Falle liegt beim nächsten Leser.** Wer den Namen für einen Anteil hält und eine **Obergrenze** oder einen Prozentwert daraus baut — `if relevanz > 0.8`, eine Anzeige in Prozent, ein Faktor in ein Produkt hinein —, bekommt bei anliegender Gravitation lautlos ein immer wahres Kriterium oder ein Gewicht über 100 %. Ein Vergleich gegen eine plausible Zahl sieht nach einer Prüfung aus.
+
+**Entscheidung, keine Reparatur:** entweder den Wertebereich am Erzeuger dokumentieren und die Konsumenten darauf verpflichten, oder normieren und alle Leser mitziehen. ⬜ Prio niedrig
+
+**Zusammenhang:** KZG-SALIENZ-KONSUMENTEN-DISSENS (drei Leser, drei Annahmen über dieselbe Zahl — dieselbe Familie).
