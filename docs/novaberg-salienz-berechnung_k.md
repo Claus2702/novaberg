@@ -152,7 +152,51 @@ Die Salienz wird gerechnet. Die übrigen Felder nicht: `themen`, `dimension`, `g
 
 Deren Kontamination aus dem `[LAGEBILD]` ist gemessen: Segmente ohne Themenbezug trugen die Wendung des Nutzerprompts wörtlich. **Der Rollen-Switch am Salienz-Prompt wird also gebraucht** — nach dem Vorbild von `_build_verdichtung_prompt` —, nur nicht mehr für die Salienz-Skala.
 
-## 8. Offen
+## 8. Das gespeicherte Rad — Vertrag zwischen Destillation und Anzeige
+
+`nutzer_gewichtung_rad` hält die zwölf Ausprägungen als JSON. Das Format ist der Vertrag: Die Destillation schreibt es, der Client liest es, und `nutzer_gewichtung` muss daraus **nachrechenbar** sein — sonst wäre der Faktor eine Zahl ohne Herkunft (Konvention, Regel 3).
+
+```json
+{
+  "hoch": {"treue": 1.0, "dienst": 0.5, "pflicht": 1.0,
+           "aufmerksamkeit": 0.5, "wissbegier": 1.0, "wohlwollen": 0.5},
+  "runter": {"widerspenstig": 0.0, "gleichgueltig": 0.0, "selbstbezogen": 0.5,
+             "langeweile": 0.0, "distanz": 0.5, "misstrauen": 0.0}
+}
+```
+
+Jede Ausprägung ist **0.0**, **0.5** oder **1.0** — drei Stufen, keine Zwischenwerte. Die Schlüssel sind fest; fehlt einer, ist das Rad unvollständig und der Faktor nicht rechenbar.
+
+### Welche Zeile die Formel liest — Vorbedingung
+
+`charakter_hash` ist nach `(user_id, character_id)` geschlüsselt und trägt **beide Richtungen**:
+
+| Zeile | Inhalt | Rad bedeutet dort |
+|---|---|---|
+| `(nova, meister)` | Novas Selbstbild | **ihre** Zuwendung zum Meister |
+| `(meister, nova)` | Novas Bild vom Meister | **seine** Zuwendung zu Nova |
+
+**Die Salienz-Formel liest das Rad des Sprechers über sein Gegenüber — also `(nova, meister)`.** Läse sie die andere Zeile, bekäme sie seine Zuwendung zu ihr, und die Gewichtung stünde auf dem Kopf: Ein aufmerksamer Nutzer machte dann *ihr* Gedächtnis empfänglicher, obwohl über ihre Bereitschaft nichts gesagt wäre.
+
+Beide Zeilen sind gleich gebaut und tragen dieselben Spaltennamen; der einzige Unterschied ist die Schlüsselreihenfolge. Das ist dieselbe Klasse wie `ei_calc_rolle`, die vier Bedeutungen an sechs Lesestellen trug — deshalb steht es hier als Vorbedingung und nicht als Kommentar im Code.
+
+**Der Faktor auf `(meister, nova)` hat keinen Verbraucher** und soll keinen bekommen. Er entsteht als Beiprodukt der Spiegelung und ist als Beobachtung interessant; niemand darf annehmen, er wirke irgendwo.
+
+### Anzeige im Client
+
+**Entschieden Chat 111:** ein Radar-Diagramm mit **zwölf Achsen**, ein Punkt je Achse auf dem errechneten Wert. Darunter der Faktor als Zahl, mit dem Herkunftsvermerk `default` oder `destilliert` daneben — ohne ihn sähe eine nie destillierte 0.9 aus wie ein Messergebnis.
+
+**Ein Rad je Ansicht, nicht zwei nebeneinander.** Der Charakter-Tab trägt bereits einen Perspektiven-Umschalter; er zeigt das Rad der jeweils eingestellten Seite. Umschalten zeigt das andere — Novas Zuwendung zum Meister oder seine zu ihr. Das unterscheidet den Tab vom Emotionen-Tab, der zwei Radare (Session / KZG) gleichzeitig zeigt.
+
+Eine Variante mit Zuwendungs-Speichen in der oberen und Abwendungs-Speichen in der unteren Hälfte wurde erwogen und **verworfen**: Sie hätte die Richtung sichtbar gemacht, aber die schlichte Rundum-Darstellung genügt.
+
+`client/ui/widgets/radar_chart.py` ist heute auf `_NUM_AXES = 8` und die Plutchik-Kurznamen verdrahtet. Es wird auf N Achsen verallgemeinert, rückwärtskompatibel — Labels als Parameter, Achsenzahl daraus abgeleitet, Default bleibt der Plutchik-Satz. Zwei bestehende Aufrufer bleiben unverändert.
+
+Der Endpunkt in `server/api/gedaechtnis.py` liefert heute fünf Profilfelder; die vier neuen Spalten kommen dazu.
+
+**Reihenfolge:** Die Anzeige wird erst gebaut, wenn die Destillation das Rad wirklich schreibt. Gegen ein ausgedachtes Format zu bauen hieße, zweimal zu bauen.
+
+## 9. Offen
 
 **Der AgentGraph.** Ein eigener Gedanke hat keine Nutzeräußerung; `salienz_human` existiert nicht, der Ausdruck fällt auf den Eigen-Pfad zusammen. Folge: Ein Impuls ohne Ziel-, Emotions- oder Neugierbezug bekäme Salienz 0 und würde nie gespeichert. Nachvollziehbare Konsequenz, **nicht entschieden**.
 
