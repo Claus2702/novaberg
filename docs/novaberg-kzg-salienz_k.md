@@ -177,6 +177,35 @@ Ohne diesen Schritt nähme der Neubau seine eigene Abnahme ohne Messgerät ab. G
 
 **Abgrenzung:** Bauteil 0 ändert **keinen** Wert und **keine** Formel. Es macht nur sichtbar, was ohnehin geschieht. Damit ist es vor dem Umbau messbar und liefert die Vergleichsbasis für danach.
 
+### Bauteil 1a — das Segment erreicht den Verdichter
+
+**Vor dem Formel-Umbau.** Gemessen am Turn `975ec093…` (27.07.2026, mit dem Messgerät aus Bauteil 0):
+
+Der Segmentierer schneidet richtig — 137 / 487 / 222 Zeichen, genau die drei Absätze einer Antwort: Novas Reaktion auf den Themenwechsel, der Sachkern, Novas Selbstbezug. Gespeichert wurden aber **drei Paraphrasen desselben Sachkerns**. Die anderen beiden Segmente sind verloren.
+
+**Ursache, im Code belegt.** Der `pending_write` trägt in `daten` nur `salienz_obj` — das Segment selbst wird verworfen. `agents/kzg/dispatch.py:111-115` füllt `parameter` aus dem State mit `user_prompt` und `response`, also dem ganzen Turn. `verdichtung.py:93-94` liest genau die. Drei Segmente ergeben damit drei LLM-Aufrufe mit **bitgleicher Eingabe**; bei `temperature: 0.1` entstehen drei Paraphrasen.
+
+Das ist ein **Datenpfad**-Defekt, kein Prompt-Defekt. Der Verdichter zieht nicht den Gesamtzusammenhang dem Segment vor — er hat kein Segment, aus dem er wählen könnte. Am Prompt zu drehen hätte beliebig lange nichts geändert.
+
+**Warum vor Bauteil 1.** Der Neubau kalibriert die Skala. Solange ein Turn dreifaches Gewicht für einen Gedanken erzeugt, kalibriert er auf einer verfälschten Mengenbasis. Und für Bauteil 3 wiegt es schwerer: Verloren gehen ausgerechnet die Segmente mit Selbstbezug und Regung — die assistant-Partition behält das Lexikon und wirft weg, was über Nova etwas sagt.
+
+| | |
+|---|---|
+| **ZIEL** | Ein Turn mit drei Segmenten erzeugt drei Gedächtnis-Einträge mit drei **verschiedenen** Inhalten, jeder erkennbar zu seinem Segment gehörend. Fehlt ein Segment, wird der Volltext verdichtet und das ausdrücklich protokolliert. |
+| **TEST** | `pending_write["daten"]` trägt `segment`, `segment_index`, `segment_gesamt`; `dispatch_kzg` reicht sie in `parameter`. Verdichtung mit Segment nimmt das Segment ins `[BEWERTUNGSOBJEKT]`, nicht den Volltext. Ohne Segment fällt sie auf den Volltext zurück **und** schreibt eine Zeile, die das benennt — ein Rückfall darf nicht aussehen wie ein Normalfall. |
+| **Gegenprobe** | Die Segment-Bevorzugung in `verdichtung.py` entfernen — der Test, der drei verschiedene `[BEWERTUNGSOBJEKT]`-Inhalte erwartet, muss rot werden. |
+| **MESSUNG** | Live-Turn mit drei Absätzen zu einem Wissenschaftsthema. Über `verbindung` die drei Keys holen, `HGET <key> inhalt` für alle drei: **drei verschiedene MD5**, und jeder Inhalt gehört erkennbar zu seinem Absatz. Vollständig ausgeben, nicht abschneiden — ein `cut` hat bei genau dieser Frage schon einmal Gleichheit vorgetäuscht. |
+
+**Offenes Risiko, bewusst nicht vorweggenommen.** Ein Segment kann ohne seine Nachbarn unauflösbar sein — Segment 2 begann mit *„In gewisser Weise ist es genau das…"*, und worauf „das" zeigt, steht in Segment 1. Das `[LAGEBILD]` bleibt deshalb unverändert die andere Turn-Hälfte; es wird **nicht** um den Volltext erweitert. Sonst stünde der ganze Text wieder im Prompt und wir hätten die Ursache reproduziert, die wir gerade beseitigen. Zeigt die Messung unauflösbare Kerne, wird das Lagebild danach **gezielt** erweitert — als eigene Änderung mit eigener Messung, nicht auf Verdacht zusammen mit dieser.
+
+**Abnahme — Turn `cb8f02e5…`, 27.07.2026 11:14 UTC.** Drei Segmente von 118 / 375 / 699 Zeichen, drei Einträge mit **drei verschiedenen MD5**, jeder Kern erkennbar zu seinem Absatz: die Rahmung („eine funktionale Hierarchie der Kohärenz"), der lokale Teil („spezialisierte neuronale Ensembles… lokale Oszillationen"), der globale Teil („Communication Through Coherence… Phasenlagen"). Die Kernlängen skalieren mit den Segmentlängen: 101 / 210 / 353 Zeichen.
+
+Gegenprüfung am Log: viermal `quelle=segment`, **null** Rückfall-Warnungen, `bewertungs_laenge` je 118 / 375 / 699 statt der 1192 des Volltexts — der Verdichter hat das Segment gelesen, nicht den Turn. `lagebild_laenge=165` ist der Nutzerprompt; das Lagebild ist die andere Turn-Hälfte geblieben.
+
+**Zum offenen Risiko, erster Datenpunkt:** Segment 0 begann mit *„Das ist genau das Paradoxon…"* — ein Rückverweis ohne eigenen Bezug. Der Kern wurde trotzdem sinnvoll; das Lagebild hat gereicht. Das belegt **einen Fall, nicht die Klasse.** Der Vorbehalt bleibt bestehen, bis mehrere Turns mit rückverweisenden Segmenten gemessen sind.
+
+**Nicht behoben:** Alle drei Segmente erhielten erneut Salienz **0.3**, bei drei inhaltlich völlig verschiedenen Absätzen. Der Durchstich hat den Verdichter repariert, die Bewertung nicht. Der Verdacht, dass auch sie den Gesamtzusammenhang statt des Segments liest, steht weiter in der Fundliste und ist vor Bauteil 1 zu klären — eine Skala neu zu kalibrieren, deren Eingangswert womöglich das Falsche misst, wäre verfrüht.
+
 ### Bauteil 1 — Salienz als abgeleiteter Wert
 
 | | |

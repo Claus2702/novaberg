@@ -1659,7 +1659,15 @@ redis-cli HGET <kzg_id> inhalt ; redis-cli HGET <kzg_id> beobachter
 
 **Klasse:** Mengenfehler im Gedächtnis. Severity **hoch** — betrifft **jeden** Turn, nicht nur Impulse, und verfälscht jede Zählung, jede Gewichtung und jede Promotion, die auf KZG-Einträgen aufsetzt.
 
-**Symptom:** Der Salienz-Node zerlegt einen Text in Segmente und ruft `dispatch_kzg` **pro Segment** auf. Die Verdichtung liefert für jedes Segment denselben Kernsatz, weil sie den Gesamtzusammenhang und nicht das Segment zusammenfasst. Ergebnis: *n* KZG-Einträge mit **bit-identischem `inhalt`**, verschiedenen Keys, verschiedenen Themen, jeder mit eigenem Gewicht.
+**Symptom:** Der Salienz-Node zerlegt einen Text in Segmente und ruft `dispatch_kzg` **pro Segment** auf. Die Verdichtung fasst jedes Mal denselben Text zusammen. Ergebnis: *n* KZG-Einträge mit demselben Inhalt, verschiedenen Keys, verschiedenen Themen, jeder mit eigenem Gewicht.
+
+**Mechanismus — korrigiert Chat 111 (27.07.2026), im Code belegt.** ~~weil sie den Gesamtzusammenhang und nicht das Segment zusammenfasst~~ → Die Verdichtung **bekommt das Segment gar nicht.** Der `pending_write` trug in `daten` nur `salienz_obj`; das Segment starb mit der Schleife im Salienz-Node. `agents/kzg/dispatch.py` füllte `parameter` aus dem State mit `user_prompt`/`response`, `agents/kzg/verdichtung.py` las genau die. *n* Segmente ergaben *n* LLM-Aufrufe mit **bitgleicher Eingabe**.
+
+Das ist ein **Datenpfad**-Defekt, kein Prompt-Defekt. Der Verdichter zog nicht den Gesamtzusammenhang vor — er hatte kein Segment, aus dem er wählen konnte. Die Unterscheidung entscheidet über den Fix: durchstechen, nicht den Prompt schärfen.
+
+**Korrektur zu „bit-identisch":** Bei `temperature: 0.1` sind die Ausgaben nicht deterministisch. Gemessen an Turn `975ec093…` (27.07.2026): derselbe erste Satz wörtlich, danach drei Umformulierungen desselben Gedankens — Längen 315 / 307 / 315, drei verschiedene MD5. Das ist **schlimmer als identisch**, nicht harmloser: Drei verschiedene Zeichenketten fallen keiner Dublettenprüfung auf.
+
+**Der eigentliche Schaden ist Verlust, nicht Redundanz.** Derselbe Turn: Der Segmentierer schnitt korrekt in 137 / 487 / 222 Zeichen — Novas Reaktion auf den Themenwechsel, der Sachkern, Novas Selbstbezug. Gespeichert wurden dreimal Paraphrasen **nur des Sachkerns**. Verloren gingen die beiden Segmente, die etwas über Nova aussagen. Für Bauteil 3 (`verhaltensweisen` aus der assistant-Partition) wiegt das schwerer als das verfälschte Gewicht: Die Partition behält das Lexikon und wirft den Selbstbezug weg.
 
 **Beleg (gemessen 26.07.2026, 19:5x UTC):**
 
@@ -1672,7 +1680,13 @@ redis-cli HGET <kzg_id> inhalt ; redis-cli HGET <kzg_id> beobachter
 
 **Nachtrag (Chat 110, abklingend):** Nach dem Verdichtungs-Fix verstärkt der user-Pfad 1–2 Nachbarn je Turn; die Treffer sind genau diese Duplikate aus der Zeit vor dem Fix. Klingt mit deren TTL ab, ist bis dahin aber ein verfälschtes Gewicht.
 
-**Status:** Offen. **Verwandt:** KZG-SALIENZ-SKALENBRUCH, IMPULS-DOPPELTE-SPUR.
+**Status: Behoben Chat 111 (27.07.2026)** — Bauteil 1a, `novaberg-kzg-salienz_k.md` §11. Der `pending_write` trägt `segment`, `segment_index` und `segment_gesamt`; `dispatch_kzg` reicht sie in den `parameter`-Kanal; `verdichtung.py` zieht das Segment dem Volltext vor und meldet einen Rückfall ausdrücklich. Das `[LAGEBILD]` bleibt die andere Turn-Hälfte und wurde **nicht** um den Volltext erweitert — sonst stünde der ganze Text wieder im Prompt.
+
+**Abnahme:** Turn `cb8f02e5…`, 11:14 UTC. Drei Segmente (118 / 375 / 699 Zeichen) → drei Einträge mit drei verschiedenen MD5, jeder Kern erkennbar zu seinem Absatz. Im Log viermal `quelle=segment`, null Rückfall-Warnungen, `bewertungs_laenge` je gleich der Segmentlänge statt der 1192 des Volltexts.
+
+**Was der Fix NICHT behebt:** Die Salienz-Bewertung selbst. Im Abnahme-Turn erhielten alle drei inhaltlich verschiedenen Segmente erneut **0.3**. Der Verdacht, dass auch die Bewertung den Gesamtzusammenhang statt des Segments liest, steht in `novaberg-fundliste.md` und ist ein eigener Befund.
+
+**Verwandt:** KZG-SALIENZ-SKALENBRUCH, IMPULS-DOPPELTE-SPUR.
 
 ---
 
