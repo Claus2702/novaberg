@@ -119,13 +119,9 @@ class WissensluecketAgent(BaseAgent):
         character_id: str = state["kontext"].get("character_id", "") or ASSISTANT_USER_ID
 
         # ── Eingabe-Validierung: das Charakterfeld ──
-        feld_embedding: list[float] | None = self._charakterfeld(user_id, character_id)
+        feld_embedding, feld_grund = self._charakterfeld(user_id, character_id)
         if feld_embedding is None:
-            return self._abbruch(
-                state,
-                f"Kein Charakterkern fuer {user_id}:{character_id} — ohne Feld "
-                f"keine Resonanz. Erst destillieren lassen.",
-            )
+            return self._abbruch(state, feld_grund)
 
         # ── Saat ziehen ─────────────────────────────
         saat: list[str] = self._saat_ziehen(user_id, character_id)
@@ -178,7 +174,15 @@ class WissensluecketAgent(BaseAgent):
                 aufgefrischt += 1
                 continue
 
-            db_manager.execute(
+            # xmax = 0 heisst: eingefuegt. Sonst hat der ON-CONFLICT-Zweig
+            # gefeuert. Ohne diese Unterscheidung zaehlte der Zaehler Aufrufe
+            # statt Wirkungen — dieselbe Klasse wie
+            # BATCH-ZAEHLER-ZAEHLEN-AUFRUFE, wo eine Summenzeile Verworfene
+            # als Erfolge meldete.
+            # execute_returning statt select: select committet NICHT, und die
+            # Einfuegung wuerde beim Verbindungsschluss verworfen — lautlos,
+            # mit einem Zaehler, der trotzdem Erfolg meldet.
+            zeile = db_manager.execute_returning(
                 """
                 INSERT INTO wissensluecken
                     (user_id, character_id, thema, embedding,
@@ -189,11 +193,22 @@ class WissensluecketAgent(BaseAgent):
                     neuheit         = EXCLUDED.neuheit,
                     neugier_vektor  = EXCLUDED.neugier_vektor,
                     aktualisiert_am = NOW()
+                RETURNING (xmax = 0) AS eingefuegt
                 """,
                 (user_id, character_id, thema, vektor_str,
                  resonanz, neuheit, zug, STATUS_OFFEN),
             )
-            angelegt += 1
+            if zeile is None:
+                # Weder eingefuegt noch aktualisiert — das darf nicht sein.
+                logger.error(
+                    f"Wissensluecken: Upsert fuer '{thema}' lieferte keine "
+                    f"Zeile — weder angelegt noch aufgefrischt"
+                )
+                verworfen += 1
+            elif zeile["eingefuegt"]:
+                angelegt += 1
+            else:
+                aufgefrischt += 1
 
         # ── Ausgabe-Verifikation ────────────────────
         logger.info(
@@ -225,7 +240,9 @@ class WissensluecketAgent(BaseAgent):
         state["fehler"] = grund
         return state
 
-    def _charakterfeld(self, user_id: str, character_id: str) -> list[float] | None:
+    def _charakterfeld(
+        self, user_id: str, character_id: str,
+    ) -> tuple[list[float] | None, str]:
         """Embeddet kern_hash plus aktive Charakter-Anweisung.
 
         Wird NICHT persistiert — der Wert entsteht je Lauf neu und wird
@@ -234,6 +251,12 @@ class WissensluecketAgent(BaseAgent):
         ACHTUNG: Kern und Anweisung liegen unter VERSCHIEDENEN Schluesseln.
         Der Kern steht am Paar, die Anweisung nur an user_id — der Tabelle
         charakter_anweisungen fehlt bis heute jedes character_id.
+
+        Nachbedingung: (embedding, "") bei Erfolg, sonst (None, grund). Der
+        Grund wird MITGELIEFERT statt vom Aufrufer geraten: Ein fehlender
+        Kern und ein gescheitertes Embedding sind verschiedene Lagen, und
+        eine Fehlermeldung, die die falsche nennt, schickt den Leser in die
+        Irre.
         """
 
         # ── Eingabe-Validierung ─────────────────────
@@ -244,7 +267,10 @@ class WissensluecketAgent(BaseAgent):
         )
         kern: str = (zeilen[0]["kern_hash"] or "").strip() if zeilen else ""
         if not kern:
-            return None
+            return None, (
+                f"Kein Charakterkern fuer {user_id}:{character_id} — ohne Feld "
+                f"keine Resonanz. Erst destillieren lassen."
+            )
 
         anweisungen = db_manager.select(
             "SELECT anweisung FROM charakter_anweisungen "
@@ -254,7 +280,14 @@ class WissensluecketAgent(BaseAgent):
         teile: list[str] = [kern] + [z["anweisung"] for z in (anweisungen or [])]
 
         # ── Verarbeitung / Ausgabe ──────────────────
-        return self._embedden("\n\n".join(teile)) or None
+        embedding: list[float] = self._embedden("\n\n".join(teile))
+        if not embedding:
+            return None, (
+                f"Charakterkern vorhanden ({len(kern)} Zeichen), aber sein "
+                f"Embedding ist gescheitert — Ursache steht in der Zeile davor. "
+                f"Kein Feld, keine Resonanz."
+            )
+        return embedding, ""
 
     @staticmethod
     def _embedden(text: str) -> list[float]:
