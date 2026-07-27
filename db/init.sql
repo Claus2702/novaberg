@@ -585,6 +585,45 @@ ALTER TABLE charakter_hash ADD COLUMN IF NOT EXISTS intentions_aktualisiert_am T
 ALTER TABLE charakter_hash ADD COLUMN IF NOT EXISTS emotions_aktualisiert_am   TIMESTAMPTZ NOT NULL DEFAULT NOW();
 ALTER TABLE charakter_hash ADD COLUMN IF NOT EXISTS beziehung_aktualisiert_am  TIMESTAMPTZ NOT NULL DEFAULT NOW();
 ALTER TABLE charakter_hash ADD COLUMN IF NOT EXISTS character_id               TEXT        NOT NULL DEFAULT '';
+-- ── Charakter-Rad (Chat 111) ───────────────────
+-- Gewichtung der Nutzer-Salienz aus dem Charakter-Rad
+-- (novaberg-salienz-berechnung_k.md §5). Zwoelf Speichen um die Nabe 0.9,
+-- sechs nach oben (Summe 0.60), sechs nach unten (Summe 0.40) — daher der
+-- Wertebereich 0.5 bis 1.5.
+--
+-- _quelle trennt 'default' von 'destilliert'. Ohne diese Spalte sieht 0.9 aus
+-- wie ein destillierter Wert, und niemand kann unterscheiden, ob der Charakter
+-- das ergeben hat oder ob nie destilliert wurde
+-- (novaberg-lesson_l_default-wie-fehlschlag.md).
+--
+-- _rad haelt die zwoelf Auspraegungen als JSON. TEXT statt JSONB, weil
+-- charakter_hash durchgaengig TEXT fuer seine Profile nutzt.
+ALTER TABLE charakter_hash ADD COLUMN IF NOT EXISTS nutzer_gewichtung          DOUBLE PRECISION NOT NULL DEFAULT 0.9;
+ALTER TABLE charakter_hash ADD COLUMN IF NOT EXISTS nutzer_gewichtung_quelle   TEXT        NOT NULL DEFAULT 'default';
+ALTER TABLE charakter_hash ADD COLUMN IF NOT EXISTS nutzer_gewichtung_rad      TEXT        NOT NULL DEFAULT '';
+ALTER TABLE charakter_hash ADD COLUMN IF NOT EXISTS nutzer_gewichtung_am       TIMESTAMPTZ;
+-- Typkorrektur (Chat 111, am selben Tag): zuerst als REAL angelegt. REAL ist
+-- einfach genau, 0.9 wird darin zu 0.89999997615814209 — jeder Vergleich
+-- `= 0.9` schlaegt fehl, und ein Default, den man nicht wiedererkennt, ist
+-- kein brauchbarer Default. Der Rest des Schemas nutzt DOUBLE PRECISION.
+DO $$
+BEGIN
+    IF EXISTS (
+        SELECT 1 FROM information_schema.columns
+        WHERE table_name = 'charakter_hash'
+          AND column_name = 'nutzer_gewichtung'
+          AND data_type  = 'real'
+    ) THEN
+        ALTER TABLE charakter_hash
+            ALTER COLUMN nutzer_gewichtung TYPE DOUBLE PRECISION;
+        -- Die Umwandlung rettet die verlorene Genauigkeit nicht. Zeilen, die
+        -- noch den Default tragen, bekommen ihn exakt zurueck; destillierte
+        -- Werte bleiben unangetastet.
+        UPDATE charakter_hash
+           SET nutzer_gewichtung = 0.9
+         WHERE nutzer_gewichtung_quelle = 'default';
+    END IF;
+END $$;
 
 -- PK auf charakter_hash zum Paar (user_id, character_id) erweitern, falls
 -- noch alte Single-Column-Form. Idempotent durch pg_constraint-Check.
