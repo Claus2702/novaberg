@@ -206,6 +206,83 @@ Gegenprüfung am Log: viermal `quelle=segment`, **null** Rückfall-Warnungen, `b
 
 **Nicht behoben:** Alle drei Segmente erhielten erneut Salienz **0.3**, bei drei inhaltlich völlig verschiedenen Absätzen. Der Durchstich hat den Verdichter repariert, die Bewertung nicht. Der Verdacht, dass auch sie den Gesamtzusammenhang statt des Segments liest, steht weiter in der Fundliste und ist vor Bauteil 1 zu klären — eine Skala neu zu kalibrieren, deren Eingangswert womöglich das Falsche misst, wäre verfrüht.
 
+### Bauteil 1b — die Salienz von Novas Äußerung wird gerechnet, nicht gefragt
+
+**Befund (`SALIENZ-PROMPT-NUTZER-SCHABLONE`, Chat 111).** `_build_salienz_prompt()` kennt keinen Rollen-Parameter — derselbe Prompt geht an alle drei Graphen. Und er ist durchgehend aus der Nutzerperspektive geschrieben. `salienz.rules.txt` weist an:
+
+> Bewerte die Salienz AUSSCHLIESSLICH anhand der EINGABE DES NUTZERS. Die Antwort des Assistenten ist Hintergrund-Kontext und darf die Bewertung NICHT beeinflussen.
+
+Im CharacterGraph steht die Nutzereingabe im `[LAGEBILD]` und Novas Äußerung im `[BEWERTUNGSOBJEKT]`. **Die Anweisung ist exakt invertiert.** Im AgentGraph ist das Lagebild leer — dort wird angewiesen, etwas zu bewerten, das nicht existiert.
+
+Dieselbe Fehlerklasse hat Chat 110 beim Verdichter behoben (drei Aufgaben-Blöcke nach Rolle, `DESTILLAT-SUBJEKT-SCHABLONE`). Der Salienz-Node eine Ebene höher wurde nicht mitgeprüft. Auf der Platte steht es nebeneinander: `kzg_verdichtung.{task,assistant_task,impuls_task}.txt` gegen ein einzelnes `salienz.task.txt`.
+
+**Belegt an zwei Turns:** Alle Segmente erhielten 0.3 — auch eines mit dem Wort „liebe", für das die Regeln 0.7–0.8 vorsehen. Themen wurden wörtlich aus dem Lagebild übernommen.
+
+#### Was Salienz für Novas Äußerung bedeutet
+
+**Entschieden Chat 111.** Formel, Herleitung und das vollständige Charakter-Rad stehen in **`novaberg-salienz-berechnung_k.md`**. Hier nur der Umriss:
+
+```
+salienz_effektiv  = max( salienz_human × nutzer_gewichtung , salienz_charakter )
+salienz_charakter = max( ziel_gravitation , emotionale_gravitation , neugier_bezug )
+                    × (1 + erregungs_zuschlag)
+```
+
+| Größe | Herkunft | Bereich |
+|---|---|---|
+| `salienz_human` | LLM-Bewertung der Nutzeräußerung — im HumanGraph korrekt | 0.0–1.0 |
+| `nutzer_gewichtung` | neues Feld auf `charakter_hash`, aus dem Zwölf-Speichen-Rad | **0.5–1.5**, Default 0.9 |
+| `salienz_charakter` | Novas eigener Antrieb, je Segment | 0.0–1.0 |
+
+**Je Segment, nicht je Turn.** Jedes Segment bekommt sein eigenes `salienz_effektiv`; der `user`-Eintrag behält `salienz_human` unverändert. Kognitive Begründung: Über `verbindung` sind alle Segmente ohnehin mit dem ganzen Turn verbunden — ein gering gewichteter Teil ist nicht gelöscht, sondern **nur nicht auffindbar**, weil er unbedeutend war.
+
+**Drei Antriebe sind gebaut und nicht angeschlossen.** Ziel-Gravitation kommt heute nur als Zuschlag an; emotionale Gravitation wird ausschließlich für den Emotionsverlauf gelesen; Neugier landet im `gv_detail` und löst Impulse aus. Keiner beeinflusst die Salienz.
+
+#### Das neue Feld
+
+| Spalte | Typ | Zweck |
+|---|---|---|
+| `nutzer_gewichtung` | `REAL NOT NULL DEFAULT 0.9` | der Faktor |
+| `nutzer_gewichtung_quelle` | `TEXT NOT NULL DEFAULT 'default'` | `'default'` oder `'destilliert'` |
+| `nutzer_gewichtung_am` | `TIMESTAMPTZ` | wann destilliert |
+
+**Das Quelle-Feld ist Pflicht, keine Zierde.** `0.9` sieht aus wie ein echter Wert. Ohne die Trennung kann niemand unterscheiden, ob der Charakter das ergeben hat oder ob nie destilliert wurde — die Regel „ein Default darf nie aussehen wie ein echter Wert" (Konvention Regel 1, `novaberg-lesson_l_default-wie-fehlschlag.md`).
+
+#### Das Charakter-Rad
+
+Zwölf Speichen um die Nabe 0.9 — sechs nach oben (Summe 0.60), sechs nach unten (Summe 0.40). Ein LLM-Call in der Charakter-Destillation bewertet jede mit 0.0 / 0.5 / 1.0; der Faktor wird daraus gerechnet, nicht geschätzt. Volle Auslenkung trifft die Grenzen exakt.
+
+**Die zwölf Speichen mit ihren Zügen stehen in `novaberg-salienz-berechnung_k.md` §5.** Sie sind eine Setzung, keine Messung, und ausdrücklich nachkalibrierbar.
+
+Gespeichert wird **das ganze Rad**, nicht nur das Ergebnis: zwölf Ausprägungen plus der errechnete Faktor. Sonst wäre die Zahl ein Wert ohne Herkunft.
+
+#### Zusammenspiel mit der Kurve
+
+Das Produkt kann 1.5 erreichen, die Skala endet bei 1.0. Das wäre `KZG-SALIENZ-SKALENBRUCH` in neuer Gestalt — **es löst sich nur, wenn der Faktor am Anker angreift, vor der Kurve:**
+
+```
+salienz_roh = salienz_effektiv + haeufigkeit × KZG_SALIENZ_BOOST
+anteil      = min(salienz_roh / KZG_SALIENZ_CAP, 1.0)
+salienz     = KZG_SALIENZ_CAP · sin(anteil · π/2) ^ 0.5
+```
+
+Das `min()` kappt hart: Ein Produkt von 1.4 wird zu `salienz = 1.0` — maximal erinnerungswürdig, nicht jenseits der Skala. Stünde die Multiplikation **nach** der Kurve, wäre der Bruch wieder da.
+
+#### Der Prompt bleibt trotzdem zu reparieren
+
+Die Salienz wird gerechnet, die übrigen Felder nicht: `themen`, `dimension`, `gedaechtnistyp`, `intentionen`, `emotion`, `modus`, `entitaeten_roh`, `zeitausdruck_roh` kommen weiter aus dem LLM-Call — und deren Kontamination aus dem Lagebild ist gemessen. Der Rollen-Switch nach dem Vorbild von `_build_verdichtung_prompt` wird also gebraucht, nur nicht mehr für die Salienz-Skala.
+
+| | |
+|---|---|
+| **ZIEL** | Zwei Segmente derselben Antwort mit verschiedener Nähe zu Novas Zielen erhalten **verschiedene** Salienzwerte. Ein Segment ohne Zielbezug erhält die gewichtete Nutzer-Salienz als Boden. Kein Wert überschreitet 1.0. |
+| **TEST** | Reine Funktion, ohne LLM prüfbar: `max(0.5 × 0.9, 0.0) = 0.45`; `max(0.5 × 1.5, 0.0) = 0.75`; `max(0.2 × 0.9, 0.8) = 0.8` — der Eigen-Pfad gewinnt. Idempotenz: zweimal rechnen liefert bitgleich. Feld-Test: frisch angelegter `charakter_hash` trägt `quelle='default'`, nach Destillation `'destilliert'` mit Zeitstempel. |
+| **Gegenprobe** | `nutzer_gewichtung` testweise fest auf 1.0 — der Test, der 0.45 erwartet, muss rot werden. |
+| **MESSUNG** | Live-Turn, dessen Antwort ein Segment mit Zielbezug und eines ohne enthält. Über `pipeline_log` beide Salienzwerte lesen: sie müssen sich unterscheiden. Zusätzlich `SELECT nutzer_gewichtung, nutzer_gewichtung_quelle FROM charakter_hash` — nach der ersten Destillation muss die Quelle `'destilliert'` lauten. |
+
+#### Offen
+
+**Der AgentGraph.** Ein eigener Gedanke hat keine Nutzeräußerung, `salienz_human` existiert nicht. Der Ausdruck fällt auf `salienz_charakter` zusammen — reiner Zielbezug. Folge: Ein Impuls ohne Zielbezug bekäme Salienz 0 und würde nie gespeichert. Das ist eine nachvollziehbare Konsequenz, aber **nicht entschieden**.
+
 ### Bauteil 1 — Salienz als abgeleiteter Wert
 
 | | |

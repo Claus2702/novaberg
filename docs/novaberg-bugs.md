@@ -1873,3 +1873,41 @@ Die Klasse ist auch im Bestand sichtbar: Ein Scan über 400 KZG-Keys findet mehr
 **Symptom:** `agents/charakter/destillation.py:127-129` trägt die Abschnittsüberschrift „Prompts — Nova (eigene Perspektive)" ohne Inhalt darunter. Entweder fehlt der Block, oder die Überschrift ist ein Rest.
 
 **Status:** Offen, Prio niedrig.
+
+---
+
+### Chat 111 (27.07.2026) — Salienz-Sprint
+
+#### SALIENZ-PROMPT-NUTZER-SCHABLONE — der Prompt weist an, den Hintergrund zu bewerten ⚠️
+
+**Entdeckt:** Chat 111, beim Nachgehen dreier identischer Salienzwerte für drei verschiedene Absätze.
+
+**Klasse:** Rollenblinder Prompt. Severity **hoch** — die gesamte assistant-Partition trägt Gewichte, die nie etwas über Novas Äußerung ausgesagt haben. Geschwister von `DESTILLAT-SUBJEKT-SCHABLONE`.
+
+**Symptom:** `_build_salienz_prompt()` in `graph/nodes/salience.py` nimmt **keinen Rollen-Parameter** — derselbe Prompt geht an HumanGraph, CharacterGraph und AgentGraph. Er ist durchgehend aus der Nutzerperspektive geschrieben. `prompts/default/salienz.rules.txt` weist wörtlich an:
+
+> Bewerte die Salienz AUSSCHLIESSLICH anhand der EINGABE DES NUTZERS. Die Antwort des Assistenten ist Hintergrund-Kontext und darf die Bewertung NICHT beeinflussen.
+
+Im CharacterGraph steht die Nutzereingabe im `[LAGEBILD]`, Novas Äußerung im `[BEWERTUNGSOBJEKT]`. **Die Anweisung ist invertiert.** Auch die Aufgabe fragt durchgehend nach dem Nutzer („Welche emotionalen Signale gibt der User?", „Was will der User erreichen?"), und die Skala ist an Nutzeraussagen kalibriert. Im AgentGraph ist das Lagebild leer — dort wird angewiesen, etwas zu bewerten, das nicht existiert.
+
+**Beleg (zwei Turns, 27.07.2026, über die Bauteil-0-Forensik):**
+
+```sql
+SELECT inhalt->>'segment_index', inhalt->>'salienz', inhalt->>'themen'
+FROM pipeline_log WHERE turn_id = '<turn>' AND node = 'salienz'
+  AND quelle = 'character' AND inhalt->>'schritt' = 'bewertung';
+```
+
+- Turn `975ec093…`: drei Segmente (137/487/222 Zeichen) — Reaktion auf Themenwechsel, Sachkern, Selbstbezug. Alle drei **0.3**. Segment 0 enthält „liebe", wofür die Regeln 0.7–0.8 vorsehen.
+- Turn `cb8f02e5…`: drei Segmente (118/375/699 Zeichen), inhaltlich völlig verschieden. Alle drei **0.3**.
+- Themen-Kontamination: Segmente ohne Themenbezug tragen die Wendung des Nutzerprompts wörtlich; nur das Segment, das das Thema enthält, trägt eigene Themen.
+
+**Reproduktion:** `grep -c "" prompts/default/salienz.task.txt` gegen `ls prompts/default/kzg_verdichtung.*task*` — ein Aufgaben-Block gegen drei. Dazu `sed -n '/def _build_salienz_prompt/,/^def /p' graph/nodes/salience.py`: kein Parameter.
+
+**Auswirkung:** Jede Zahl, auf der `KZG-SALIENZ-NEUBAU` kalibrieren würde, ist an der falschen Größe gemessen. Bauteil 3 (`verhaltensweisen`) baute auf Gewichten auf, die die Salienz der Nutzerfrage tragen.
+
+**Herkunft:** Chat 110 hat diese Fehlerklasse beim Verdichter diagnostiziert und dort mit drei rollenabhängigen Aufgaben-Blöcken behoben. Der Salienz-Node eine Ebene höher wurde nicht mitgeprüft — die Lesson „denselben Fehler zweimal bauen" beschreibt genau diesen Vorgang.
+
+**Status:** Offen. Lösung entschieden Chat 111 — `novaberg-kzg-salienz_k.md`, Bauteil 1b: Die Salienz von Novas Äußerung wird gerechnet statt gefragt (`max(salienz_human × nutzer_gewichtung, salienz_charakter)`); der Rollen-Switch am Prompt bleibt trotzdem nötig, weil Themen, Intentionen und Emotion weiter aus dem LLM-Call kommen.
+
+**Verwandt:** DESTILLAT-SUBJEKT-SCHABLONE (gleiche Klasse, eine Ebene tiefer) · KZG-SALIENZ-SKALENBRUCH (kalibriert auf diesen Werten) · KZG-SEGMENT-DUPLIKAT.
