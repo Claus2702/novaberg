@@ -11,13 +11,13 @@ import logging
 from config import (
     EMOTION_SEKTOR_MAP,
     NOVA_NEUGIER,
-    GV_NEUGIER_CAP,
+    GV_AUFNAHMEBEREITSCHAFT_CAP,
     GV_SESSION_AKT_CAP,
-    GV_NEUGIER_EMOTION,
-    GV_NEUGIER_VEKTOR,
-    GV_NEUGIER_MODUS,
-    GV_NEUGIER_DYNAMIK,
-    GV_NEUGIER_STIL,
+    GV_AUFNAHMEBEREITSCHAFT_EMOTION,
+    GV_AUFNAHMEBEREITSCHAFT_STIMMUNG,
+    GV_AUFNAHMEBEREITSCHAFT_MODUS,
+    GV_AUFNAHMEBEREITSCHAFT_DYNAMIK,
+    GV_AUFNAHMEBEREITSCHAFT_STIL,
     GV_REGISTER_SACHLICH_EMOTIONAL,
     GV_REGISTER_SACHLICH_MILD,
     GV_REGISTER_SACHLICH_NEUTRAL,
@@ -35,7 +35,7 @@ def sektor_distanz(sektor_a: int, sektor_b: int) -> int:
     return min(d, 8 - d)
 
 
-def effektive_neugier_berechnen(state: ConversationState) -> float:
+def aufnahmebereitschaft_berechnen(state: ConversationState) -> float:
     """Berechnet Novas aktuelle Neugier aus 6 EI-Dimensionen.
 
     Basis: NOVA_NEUGIER (0.5, Persoenlichkeitsparameter)
@@ -82,7 +82,7 @@ def effektive_neugier_berechnen(state: ConversationState) -> float:
             f"GV4-Neugier Detail: emotion='{nova_emotion}' → sektor={sektor}, "
             f"distanz_zu_8={distanz if sektor is not None else 'n/a'}"
         )
-        faktor_e: float = GV_NEUGIER_EMOTION.get(distanz, 1.0)
+        faktor_e: float = GV_AUFNAHMEBEREITSCHAFT_EMOTION.get(distanz, 1.0)
     else:
         faktor_e = 1.0  # neutral — keine Modulation
 
@@ -97,15 +97,15 @@ def effektive_neugier_berechnen(state: ConversationState) -> float:
         faktor_a = 0.85
 
     # ── V, M, D, S: Lookup ──
-    faktor_v: float = GV_NEUGIER_VEKTOR.get(vektor, 1.0)
-    faktor_m: float = GV_NEUGIER_MODUS.get(modus, 1.0)
-    faktor_d: float = GV_NEUGIER_DYNAMIK.get(dynamik, 1.0)
-    faktor_s: float = GV_NEUGIER_STIL.get(stil, 1.0)
+    faktor_v: float = GV_AUFNAHMEBEREITSCHAFT_STIMMUNG.get(vektor, 1.0)
+    faktor_m: float = GV_AUFNAHMEBEREITSCHAFT_MODUS.get(modus, 1.0)
+    faktor_d: float = GV_AUFNAHMEBEREITSCHAFT_DYNAMIK.get(dynamik, 1.0)
+    faktor_s: float = GV_AUFNAHMEBEREITSCHAFT_STIL.get(stil, 1.0)
 
     # ── Rohwert → sin^0.5 → [0, 1] ──
     produkt: float = faktor_e * faktor_a * faktor_v * faktor_m * faktor_d * faktor_s
     rohwert: float = NOVA_NEUGIER * produkt
-    effektiv: float = sin_sqrt_norm(rohwert, GV_NEUGIER_CAP)
+    effektiv: float = sin_sqrt_norm(rohwert, GV_AUFNAHMEBEREITSCHAFT_CAP)
 
     logger.info(
         f"GV4-Neugier: {effektiv:.3f} "

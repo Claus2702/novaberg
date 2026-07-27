@@ -25,7 +25,7 @@ from services.model_services import model_service, ChatRequest
 
 from ei.utils import POSITIVE_EMOTIONEN, NEGATIVE_EMOTIONEN
 from ei.farbton import farbton_berechnen
-from ei.neugier import effektive_neugier_berechnen
+from ei.neugier import aufnahmebereitschaft_berechnen
 from ei.wissensluecken import wissensluecken_finden
 from ei.dreischicht import (
     achsen_berechnen,
@@ -492,15 +492,15 @@ def gespraechsvektor(state: ConversationState) -> ConversationState:
 
     # 3c. GV4: Effektive Neugier
     strategie_aktiv:    bool       = max_laenge >= GV_STRATEGIE_MIN_LAENGE
-    effektive_neugier:  float      = 0.0
+    aufnahmebereitschaft:  float      = 0.0
     wissensluecken:     list[dict] = []
 
     if strategie_aktiv:
-        effektive_neugier = effektive_neugier_berechnen(state)
+        aufnahmebereitschaft = aufnahmebereitschaft_berechnen(state)
 
         # 3d. GV4: Wissensluecken finden (nur wenn Neugier > 0)
-        if effektive_neugier > 0:
-            wissensluecken = wissensluecken_finden(state, effektive_neugier)
+        if aufnahmebereitschaft > 0:
+            wissensluecken = wissensluecken_finden(state, aufnahmebereitschaft)
 
     # 3e. Dreischicht: Achsen → Sektor → Cluster → Repertoire
     achsen: dict = achsen_berechnen(state)
@@ -546,7 +546,7 @@ def gespraechsvektor(state: ConversationState) -> ConversationState:
         "laenge":                max_laenge,
         "farbton":               farbton,
         "entity_hops":           entity_kontext[:500] if entity_kontext else "",
-        "effektive_neugier":     effektive_neugier,
+        "aufnahmebereitschaft":     aufnahmebereitschaft,
         "wissensluecken": [
             {
                 "konzept":       l["konzept"][:120],

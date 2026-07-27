@@ -183,7 +183,7 @@ def kzg_kandidaten_suchen(
 
 def wissensluecken_finden(
     state:             ConversationState,
-    effektive_neugier: float,
+    aufnahmebereitschaft: float,
 ) -> list[dict]:
     """Findet semantisch nahe, aber unbesprochene Konzepte.
 
@@ -195,7 +195,7 @@ def wissensluecken_finden(
       1. Gedaechtnis     — similarity × gewicht (aus DB)
       2. Aktualitaet     — nur Session-Turns (hier: alle DB = 1.0)
       3. Drive           — Ziel-Gravitation (neugier_boost)
-      4. Neugier         — effektive_neugier (6 Saeulen, sin^0.5)
+      4. Neugier         — aufnahmebereitschaft (6 Saeulen, sin^0.5)
       5. Register        — register_kompatibilitaet (sachlich/offen)
       6. Charakter       — kern_hash Cosine >= Schwelle
 
@@ -288,7 +288,7 @@ def wissensluecken_finden(
         relevanz: float = (
             basis
             * (1.0 + neugier_boost)
-            * effektive_neugier
+            * aufnahmebereitschaft
             * register
         )
 

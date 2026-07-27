@@ -612,12 +612,12 @@ Arbeitstitel: "The Conversational Landscape: A Six-Axis Model for Dialogue State
 
 ```
 relevanz = similarity × gewicht × session_akt × QF
-         × (1 + neugier_boost) × effektive_neugier × register_kompatibilitaet
+         × (1 + neugier_boost) × aufnahmebereitschaft × register_kompatibilitaet
 
 session_akt:        1 − sin^0.5(turn/25 × π/2)     nur Session, sonst 1.0
 QF:                 0.6 einheitlich
 neugier_boost:      max(ziel_sim × motivation)       Schwelle 0.30
-effektive_neugier:  sin^0.5(rohwert/2.5 × π/2)      6 Säulen, [0,1]
+aufnahmebereitschaft:  sin^0.5(rohwert/2.5 × π/2)      6 Säulen, [0,1]
 register:           sachlich↑neutral↓emotional / offen↑emotional
 charakter_filter:   kern_hash-Resonanz ≥ 0.40   (GV_CHARAKTER_RESONANZ_SCHWELLE)
 ```

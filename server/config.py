@@ -974,12 +974,12 @@ GV_NEUGIER_BOOST_SCHWELLE:       float = 0.30
 GV_CHARAKTER_RESONANZ_SCHWELLE:  float = 0.40
 GV_QUELLEN_FAKTOR:               float = 0.6    # Einheitlich fuer alle Quellen
 GV_SESSION_AKT_CAP:              int   = 25     # Session-Decay: nach 25 Turns = 0
-GV_NEUGIER_CAP:                  float = 2.5    # sin^0.5 Normalisierung: Rohwert-Obergrenze
+GV_AUFNAHMEBEREITSCHAFT_CAP:                  float = 2.5    # sin^0.5 Normalisierung: Rohwert-Obergrenze
 GV_STRATEGIE_MIN_LAENGE:         int   = 2      # GV3-Strategie nur ab Vektorlaenge >= 2
 GV_LUECKEN_SIM_OBERGRENZE:       float = 0.92   # Zu aehnlich = bereits besprochen
 
 # Neugier-Saeulen: Faktor-Tabellen fuer effektive Neugier
-GV_NEUGIER_EMOTION: dict[int, float] = {
+GV_AUFNAHMEBEREITSCHAFT_EMOTION: dict[int, float] = {
     0: 1.50,   # Neugier selbst (Sektor 8)
     1: 1.25,   # Adjacent (Freude, Aerger)
     2: 1.00,   # Nah-diagonal (Zuversicht, Enttaeuschung)
@@ -987,7 +987,7 @@ GV_NEUGIER_EMOTION: dict[int, float] = {
     4: 0.50,   # Gegenpol (Ueberraschung)
 }
 
-GV_NEUGIER_VEKTOR: dict[str, float] = {
+GV_AUFNAHMEBEREITSCHAFT_STIMMUNG: dict[str, float] = {
     "aufbluehen":     1.30,
     "eskalation":     1.25,
     "erholung":       1.15,
@@ -999,7 +999,7 @@ GV_NEUGIER_VEKTOR: dict[str, float] = {
     "absturz":        0.40,
 }
 
-GV_NEUGIER_MODUS: dict[str, float] = {
+GV_AUFNAHMEBEREITSCHAFT_MODUS: dict[str, float] = {
     "spielerisch":    1.40,
     "fachgespraech":  1.30,
     "arbeitsmodus":   1.00,
@@ -1007,7 +1007,7 @@ GV_NEUGIER_MODUS: dict[str, float] = {
     "emotional":      0.70,
 }
 
-GV_NEUGIER_DYNAMIK: dict[str, float] = {
+GV_AUFNAHMEBEREITSCHAFT_DYNAMIK: dict[str, float] = {
     "vertrauen":      1.30,
     "dankbar":        1.15,
     "neutral":        1.00,
@@ -1016,7 +1016,7 @@ GV_NEUGIER_DYNAMIK: dict[str, float] = {
     "angriff":        0.60,
 }
 
-GV_NEUGIER_STIL: dict[str, float] = {
+GV_AUFNAHMEBEREITSCHAFT_STIL: dict[str, float] = {
     "locker":         1.20,
     "jugendlich":     1.15,
     "neutral":        1.00,

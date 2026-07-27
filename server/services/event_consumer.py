@@ -181,7 +181,7 @@ def _stage_detail_bauen(node_name: str, node_state: dict) -> str:
         gv_detail: dict = node_state.get("gv_detail") or {}
         if gv_detail:
             laenge:    int   = int(gv_detail.get("laenge", 0) or 0)
-            neugier:   float = float(gv_detail.get("effektive_neugier", 0.0) or 0.0)
+            neugier:   float = float(gv_detail.get("aufnahmebereitschaft", 0.0) or 0.0)
             strategie: str   = "aktiv" if gv_detail.get("strategie_aktiv") else "—"
             luecken:   int   = len(gv_detail.get("wissensluecken") or [])
             return (
