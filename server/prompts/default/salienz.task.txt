@@ -1,90 +1,24 @@
 [AUFGABE]
-Analysiere den folgenden Gespraechs-Turn und bestimme emotionale Salienz,
-Themen, Gedaechtnistyp und Dimension.
+Im Bewertungsobjekt steht, was der Nutzer gerade gesagt hat. Bewerte, wie
+erinnerungswuerdig diese Aeusserung ist. Steht ein Lagebild dabei, ist es die
+Antwort der Assistentin und dient nur dem Verstaendnis.
 
-Analysiere folgende Dimensionen:
+Salienz-Skala — emotionale Signale des Nutzers wiegen SCHWER:
+- Expliziter Stress, Angst, Ueberforderung, Notfall -> 0.8-1.0
+- Begeisterung, Leidenschaft, starkes Interesse ("liebe", "fasziniert",
+  "begeistert") -> 0.7-0.8
+- Explizite Bitte sich etwas zu merken ("merk dir", "vergiss nicht") -> 0.7
+- Neue Informationen ueber konkrete Personen (Namen!), Orte, Beziehungen,
+  Wohnorte, Arbeitsplaetze oder Familienmitglieder -> mindestens 0.70, auch
+  wenn sachlich und ohne Emotion formuliert
+- Relevantes Interesse mit Kontext, laufende Projekte, persoenliche Meinung
+  -> 0.5-0.6
+- Informativ, alltaegliche Vorlieben oder Erlebnisse -> 0.3-0.4
+- Sachliche Frage ohne emotionale Signale -> 0.2-0.4
+- Smalltalk, Gruss, Hoeflichkeiten -> 0.1-0.2
 
-1. THEMEN: Welche sachlichen Themen kommen vor?
-
-2. EMOTIONEN: Welche emotionalen Signale gibt der User?
-   - Explizit (Worte wie "wichtig", "unbedingt", "leider")
-   - Implizit (Satzstruktur, Wiederholungen, Ausrufezeichen)
-
-3. SALIENZ: Wie dringend/wichtig ist dieser Inhalt fuer das Gedaechtnis? (0.0 - 1.0)
-   - 0.0-0.2: Beilaeufig, Smalltalk, Hoeflichkeiten ("Hallo", "Okay", "Danke")
-   - 0.3-0.4: Informativ, alltaegliche Vorlieben oder Erlebnisse ("Ich mag Schnittlauch", "War heute im Park", "Finde den Film gut")
-   - 0.5-0.6: Relevantes Interesse mit Kontext, laufende Projekte, persoenliche Meinung ("Ich arbeite an einem Buchprojekt", "Mein Bruder hat geheiratet")
-   - 0.7-0.8: Starke Emotion, Begeisterung, Sorge, Beziehungen, Werte, Lebensereignisse
-   - 0.9-1.0: Maximale Dringlichkeit, Krise, Wendepunkt, akute emotionale Belastung
-
-4. GEDAECHTNISTYP: "kurz" oder "lang"
-   - "kurz": Einmalig, situativ, verfaellt wahrscheinlich
-   - "lang": Wiederkehrendes Interesse, Persoenlichkeitsmerkmal
-
-5. DIMENSION: Genau eine aus: kognition | emotion | werte | interessen | kommunikation | kontext
-
-6. INTENTIONEN: Was will der User mit dieser Aussage erreichen?
-   Waehle 1-3 aus dieser Liste, ERSTE = primaere Intention:
-   - "emotionaler_ausdruck" — Gefuehle teilen, Begeisterung, Frustration
-   - "information_teilen" — Fakten mitteilen, Erlebtes berichten
-   - "information_erfragen" — Wissen abfragen, Verstaendnisfrage
-   - "recherche_vertiefen" — Tiefes Eintauchen, Fachthema erforschen
-   - "gemeinsam_eruieren" — Brainstorming, gemeinsam Ideen entwickeln
-   - "reflexion" — Nachdenken, Philosophieren, Sinnfragen
-   - "smalltalk" — Plauderei, Alltaegliches, Verbindung halten
-   - "feedback_geben" — Lob, Kritik, Bewertung
-   - "feedback_erfragen" — Meinung, Einschaetzung einholen
-   - "planung" — Termine, Aufgaben, Organisation
-   - "anweisung" — Direkte Aufgabe, Aufforderung
-   - "bestaetigung" — Zustimmung, Gespraech fortsetzen
-   - "widerspruch" — Ablehnung, Korrektur, andere Sicht
-   - "abschluss" — Verabschiedung, Themenwechsel
-   - "hilferuf" — Ueberforderung, Frustration, Unterstuetzung noetig
-   - "humor" — Witz, Ironie, spielerischer Austausch
-
-7. EMOTION: Die emotionale Faerbung DIESER Nachricht. Genau eine aus:
-   begeisterung | freude | dankbarkeit | zufriedenheit |
-   stress | unsicherheit | ueberrascht | verwundert |
-   verzweiflung | traurigkeit | frustration | enttaeuschung |
-   wut | aerger | hoffnung | neugierig | neutral
-
-8. MODUS: Der aktuelle Gespraechsrahmen. Genau einer aus:
-   fachgespraech | philosophischer_austausch | alltag | arbeitsmodus |
-   emotional | spielerisch | lernmodus | kreativ | beratend | berichtend
-
-9. ENTITAETEN_ROH: Welche Eigennamen kommen vor?
-   Liste von Strings, leer wenn keine.
-   - Personen, Orte, Tiere, Organisationen, benannte Objekte ("Ilva",
-     "Ostheim", "BMW", "Tandoor") gehoeren dazu.
-   - Pronomen ("er", "sie", "mein Bruder") gehoeren NICHT dazu — keine
-     Eigennamen.
-   - Mehrteilige Eigennamen als ein String ("Maria Magdalena", "New York").
-
-10. ZEITAUSDRUCK_ROH: Welcher Zeitbezug ist im Turn?
-    Ein einzelner String, leer wenn kein Zeitbezug erkennbar.
-    - Genau EIN Zeitausdruck pro Segment — der dominante, falls mehrere.
-    - Explizite Datums-/Wochentags-Bezuege ("17.10.", "morgen", "letzten
-      Freitag", "naechste Woche") gehoeren dazu.
-    - Sub-Tages-Zeitangaben ("14:00", "heute Abend") gehoeren dazu.
-    - "heute" zaehlt als Zeitbezug.
-    - Allgemeine zeitliche Bemerkungen ohne konkreten Anker ("frueher",
-      "vor langer Zeit", "irgendwann") gehoeren NICHT dazu.
-
-Antwortformat:
-{
-  "themen": ["thema1", "thema2"],
-  "emotionen": {
-    "explizit": ["signal1", "signal2"],
-    "implizit": ["signal1"],
-    "valenz": "positiv|negativ|neutral"
-  },
-  "salienz": 0.0,
-  "gedaechtnistyp": "kurz|lang",
-  "dimension": "kognition|emotion|werte|interessen|kommunikation|kontext",
-  "begruendung": "Warum diese Salienz-Bewertung?",
-  "intentionen": ["primaere_intention", "optionale_sekundaere"],
-  "emotion": "begeisterung|neugier|frustration|...|neutral",
-  "modus": "fachgespraech|philosophischer_austausch|alltag|...",
-  "entitaeten_roh": ["Ilva", "Ostheim"],
-  "zeitausdruck_roh": "morgen"
-}
+Emotionale Verstaerker:
+- Ausrufezeichen (!) erhoehen um +0.1
+- Grossbuchstaben (WIRKLICH, TOTAL) erhoehen um +0.1
+- Wiederholung oder Intensivierer ("total", "absolut", "unbedingt", "sehr")
+  erhoehen um +0.1

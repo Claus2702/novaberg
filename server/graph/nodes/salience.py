@@ -23,7 +23,7 @@ import logging
 import redis
 
 from graph.state import ConversationState, pipeline_quelle
-from config import get_node_config, PROMPTS
+from config import get_node_config, PROMPTS, ASSISTANT_NAME
 from ei.salienz import salienz_effektiv_berechnen
 from memory.charakter import nutzer_gewichtung_laden
 from memory.pipeline_log import (
@@ -99,13 +99,97 @@ def _prompt_segmentieren(prompt: str) -> list[str]:
         return [prompt]
 
 
-def _build_salienz_prompt() -> str:
-    """Baut den Salienz-System-Prompt aus [BLOCKNAME]-Bloecken zusammen."""
-    return "\n\n".join([
+def _aufgaben_block_name(graph_rolle: str) -> str:
+    """Nennt den Aufgaben-Block, den diese Rolle zieht.
+
+    Eine Funktion und nicht zwei Verzweigungen: Die Abbildung wird an zwei
+    Stellen gebraucht — beim Bauen des Prompts und beim Protokollieren —, und
+    zwei Kopien liefen beim naechsten Rollenwechsel auseinander. Dann stuende
+    im Log eine Schablone, die gar nicht gezogen wurde.
+
+    Vorbedingung: keine — unbekannte Rollen gelten als Nutzerlage.
+    Nachbedingung: einer der drei PROMPTS-Schluessel.
+    """
+    if graph_rolle == "agent":
+        return "salienz.impuls_task"
+    if graph_rolle == "character":
+        return "salienz.assistant_task"
+    return "salienz.task"
+
+
+def _build_salienz_prompt(graph_rolle: str = "human") -> tuple[str, str]:
+    """Baut den Salienz-System-Prompt, besetzt nach Lage.
+
+    Drei getrennte Aufgaben-Bloecke statt eines mit Ausnahmeregeln — Vorbild:
+    `_build_verdichtung_prompt` in agents/kzg/verdichtung.py, wo Chat 110
+    dieselbe Fehlerklasse eine Ebene tiefer behoben hat.
+
+    Die drei Lagen:
+      * Nutzer-Aeusserung          -> salienz.task
+      * Novas Antwort              -> salienz.assistant_task
+      * Novas entstehender Gedanke -> salienz.impuls_task
+
+    Warum drei und nicht zwei: Der Assistenten-Block rahmt den Text als „sie
+    hat gerade geantwortet" und verweist auf ein Lagebild. Fuer einen Impuls
+    stimmt beides nicht — der Gedanke ist ihr eben erst aufgegangen, und das
+    Lagebild ist leer. Das Subjekt ist in beiden Faellen Nova, die Lage nicht.
+
+    Der Befund dahinter (SALIENZ-PROMPT-NUTZER-SCHABLONE): Bis Chat 112 ging
+    derselbe, durchgehend aus der Nutzerperspektive geschriebene Prompt an alle
+    drei Graphen. Im CharacterGraph wies er an, das Lagebild zu bewerten statt
+    das Bewertungsobjekt — die Anweisung war exakt invertiert.
+
+    Der geteilte Dimensionen-Block traegt die zehn Felder und das
+    Antwortformat; nur Lage und Skala haengen an der Rolle. Die Skala lag bis
+    Chat 112 zusaetzlich in den Regeln, dort in zwei Kopien (default und
+    gemma4) — beide auf die Nutzerlage geschrieben.
+
+    Rueckgabe ist ein Paar aus Prompt und **tatsaechlich verwendetem**
+    Blocknamen. Der Name wird hier zurueckgegeben und nicht beim Aufrufer neu
+    aus der Rolle abgeleitet: Sonst haengen Protokoll und Prompt an zwei
+    getrennten Ableitungen, und das Log kann eine Schablone melden, die nie
+    gezogen wurde. Eine erste Fassung dieser Funktion hatte genau das — die
+    Gegenprobe (Node zieht fuer jede Rolle den Nutzer-Block) blieb gruen, weil
+    die Log-Zeile weiterhin das Richtige behauptete
+    (novaberg-lesson_l_log-behauptet-was-es-weiss.md).
+
+    Vorbedingung: graph_rolle ist "human", "character" oder "agent".
+    Nachbedingung: (Prompt, Blockname). Der Prompt traegt Identitaet,
+        lagerichtigen Aufgaben-Block, Dimensionen und Regeln in dieser
+        Reihenfolge; der Blockname benennt den zweiten davon.
+    Fehlerfaelle: unbekannte Rollen fallen auf den Nutzer-Block zurueck — den
+        haeufigeren Fall — und werden benannt, damit ein Tippfehler in einer
+        Rolle nicht still die falsche Schablone zieht.
+    """
+
+    # ── Eingabe-Validierung ─────────────────────
+    if graph_rolle not in ("human", "character", "agent"):
+        logger.warning(
+            f"Salienz: unbekannte graph_rolle '{graph_rolle}' — "
+            f"Nutzer-Block verwendet"
+        )
+        graph_rolle = "human"
+
+    # ── Verarbeitung ────────────────────────────
+    # Nur die Nova-Bloecke tragen {traeger}, damit der Name aus der
+    # Konfiguration kommt und nicht im Prompt-Text festklebt. Der Nutzer-Block
+    # wird nicht formatiert — er braucht keinen Platzhalter, und eine spaeter
+    # eingefuegte geschweifte Klammer duerfte dort keinen KeyError ausloesen.
+    block: str = _aufgaben_block_name(graph_rolle)
+
+    if graph_rolle == "human":
+        aufgabe: str = PROMPTS[block]
+    else:
+        aufgabe = PROMPTS[block].format(traeger=ASSISTANT_NAME)
+
+    # ── Ausgabe ─────────────────────────────────
+    prompt: str = "\n\n".join([
         PROMPTS["salienz.identity"],
-        PROMPTS["salienz.task"],
+        aufgabe,
+        PROMPTS["salienz.dimensionen"],
         PROMPTS["salienz.rules"],
     ])
+    return prompt, block
 
 
 def _salienz_wert_lesen(salienz_obj: dict) -> float | None:
@@ -274,6 +358,15 @@ def analyze(
         character_id = character_id,
     )
 
+    # Der Prompt wird HIER gebaut, vor der switch-Zeile, damit diese den
+    # tatsaechlich verwendeten Aufgaben-Block nennen kann statt einen zweiten
+    # Mal aus der Rolle abgeleiteten. Beides getrennt abzuleiten war der erste
+    # Entwurf, und die Gegenprobe blieb dabei gruen: Der Node zog fuer jede
+    # Rolle die Nutzer-Schablone, und das Log meldete trotzdem die richtige.
+    salienz_prompt: str
+    aufgaben_block: str
+    salienz_prompt, aufgaben_block = _build_salienz_prompt(rolle)
+
     # Welcher Text bewertet wird und welcher nur Hintergrund ist, war bis
     # jetzt nur im fluechtigen Container-Log sichtbar. Genau diese Zeile haette
     # bewertungs_laenge=0 im AgentGraph sofort gezeigt (SALIENZ-OHNE-PIPELINE-LOG).
@@ -286,6 +379,10 @@ def analyze(
             "eingabe_label":     eingabe_label,
             "bewertungs_laenge": len(bewertungs_text),
             "lagebild_laenge":   len(lagebild_text),
+            # Welche Schablone gezogen wurde. Bis Chat 112 gab es nur eine, und
+            # dass sie im CharacterGraph die falsche war, stand nirgends —
+            # weder im Log noch in der Datenbank (SALIENZ-PROMPT-NUTZER-SCHABLONE).
+            "aufgaben_block":    aufgaben_block,
         },
         span_id = span_id,
         user_id      = user_id,
@@ -394,9 +491,7 @@ def analyze(
             "Salienz: kein internal im State — Erregungs-Zuschlag entfaellt (0.0)"
         )
 
-    salienz_prompt: str = _build_salienz_prompt()
-
-    logger.info(f"Salienz: System-Prompt:\n{salienz_prompt}")
+    logger.info(f"Salienz: System-Prompt ({aufgaben_block}):\n{salienz_prompt}")
 
     for seg_idx, segment in enumerate(segmente):
 

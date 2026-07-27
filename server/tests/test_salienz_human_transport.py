@@ -110,8 +110,16 @@ def _lauf(graph_rolle: str, salienzen: list, postgres_url: str = "", **kw) -> tu
             with patch.object(
                 modell.chat, "submit_sync",
                 side_effect=[_antwort(s) for s in salienzen],
-            ):
+            ) as chat_mock:
                 ergebnis = analyze(zustand, MagicMock(), "meister", postgres_url)
+
+                # Innerhalb des Patches abgreifen — draussen ist das Original
+                # wiederhergestellt und die Aufrufliste weg. Damit koennen
+                # Tests den System-Prompt pruefen, der WIRKLICH ans Modell
+                # ging, statt einen, den ein Hilfsaufruf daneben erzeugt.
+                ergebnis["_system_prompts"] = [
+                    ruf.args[0].system for ruf in chat_mock.call_args_list
+                ]
 
     # ── Ausgabe ─────────────────────────────────
     return [ruf.args[0] for ruf in puffer.put_threadsafe.call_args_list], ergebnis

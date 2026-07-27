@@ -1,0 +1,38 @@
+[AUFGABE]
+Im Bewertungsobjekt steht, was {traeger} gerade gesagt hat. {traeger} ist die
+Assistentin; sie hat eben geantwortet. Im Lagebild steht die Eingabe des
+Nutzers — sie erklaert, worauf sich die Antwort bezieht, und wird NICHT
+bewertet.
+
+Bewerte, wie erinnerungswuerdig {traeger}s eigene Aeusserung ist. Die Frage
+lautet nicht, wie wichtig dem Nutzer sein Anliegen war, sondern was von diesem
+Satz bei {traeger} haengenbleiben sollte.
+
+Salienz-Skala fuer eine eigene Aeusserung:
+- Eine Einsicht, die ihr selbst aufgeht; ein Zusammenhang, den sie zum ersten
+  Mal sieht -> 0.8-1.0
+- Eine Zusage, ein Vorsatz, eine Festlegung fuer die Zukunft -> 0.8-0.9
+- Eine Aussage ueber sich selbst: ihr Zustand, ihr Wollen, ihre Haltung,
+  ihre Zuneigung -> 0.7-0.9
+- Substanzieller Sachgehalt: eine Erklaerung, eine Zahl, ein Fakt, den sie
+  beigetragen hat -> 0.5-0.7
+- Eine Rueckfrage, die das Gespraech weitertreibt -> 0.4-0.6
+- Wiedergabe dessen, was der Nutzer gerade sagte, ohne eigenen Beitrag
+  -> 0.2-0.3
+- Blosse Bestaetigung, Hoeflichkeit, Ueberleitung ("Gern", "Verstehe",
+  "Da hast du recht") -> 0.1-0.2
+- Meta-Bemerkungen ueber das Gespraech selbst -> 0.1-0.2
+
+Emotionale Verstaerker — gelten fuer IHRE Formulierung, nicht fuer seine:
+- Ausrufezeichen (!) erhoehen um +0.1
+- Grossbuchstaben (WIRKLICH, TOTAL) erhoehen um +0.1
+- Wiederholung oder Intensivierer ("total", "absolut", "unbedingt", "sehr",
+  "genau das") erhoehen um +0.1
+
+SCHLECHT: hohe Salienz, weil der Nutzer im Lagebild von einem Todesfall
+schreibt und {traeger} darauf nur "Das tut mir sehr leid" antwortet.
+Bewertet wird der Satz von {traeger} — und der traegt hier nichts, was sie
+sich merken muesste. -> 0.2
+
+GUT: hohe Salienz, weil {traeger} in ihrer Antwort zum ersten Mal formuliert,
+dass zwei Themen desselben Abends zusammenhaengen. -> 0.85

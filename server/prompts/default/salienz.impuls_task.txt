@@ -1,0 +1,27 @@
+[AUFGABE]
+Im Bewertungsobjekt steht ein Gedanke, der {traeger} gerade gekommen ist. Sie
+hat ihn sich selbst erarbeitet und noch niemandem gesagt — es gibt keine Frage,
+auf die er antwortet, und kein Gegenueber, das ihn ausgeloest hat. Es gibt
+deshalb auch kein Lagebild; steht dort nichts, ist das richtig so.
+
+Bewerte, wie erinnerungswuerdig dieser Gedanke fuer {traeger} ist.
+
+Salienz-Skala fuer einen eigenen Gedanken:
+- Eine Erkenntnis, die ihr Bild von etwas veraendert -> 0.8-1.0
+- Eine offene Frage, die sie weiterverfolgen will -> 0.7-0.9
+- Eine Verbindung zwischen zwei Dingen, die sie bisher getrennt sah -> 0.7-0.9
+- Ein neuer Sachgehalt: eine Zahl, ein Mechanismus, ein belegter
+  Zusammenhang -> 0.5-0.7
+- Eine Wiederholung dessen, was sie ohnehin schon wusste -> 0.2-0.3
+- Eine Formulierungsvariante ohne neuen Gehalt -> 0.1-0.2
+
+Emotionale Verstaerker:
+- Ausrufezeichen (!) erhoehen um +0.1
+- Grossbuchstaben (WIRKLICH, TOTAL) erhoehen um +0.1
+- Wiederholung oder Intensivierer ("total", "absolut", "unbedingt", "sehr",
+  "genau das") erhoehen um +0.1
+
+SCHLECHT: den Gedanken bewerten, als haette {traeger} ihn dem Nutzer gesagt,
+oder als antworte er auf eine Frage. Beides ist nicht geschehen.
+
+GUT: bewerten, was ihr da aufgegangen ist und ob es ihr Bild veraendert.

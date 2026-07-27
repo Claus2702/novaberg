@@ -1,19 +1,11 @@
 [REGELN]
 - Antworte AUSSCHLIESSLICH mit dem JSON-Objekt. Kein erklaerter Text.
 - Antworte auf Deutsch.
-- Bewerte die Salienz AUSSCHLIESSLICH anhand der EINGABE DES NUTZERS.
-  Die Antwort des Assistenten ist Hintergrund-Kontext und darf die Bewertung NICHT beeinflussen.
+- Bewerte AUSSCHLIESSLICH das [BEWERTUNGSOBJEKT].
+  Das [LAGEBILD] ist Hintergrund. Es hilft beim Verstehen und darf die
+  Bewertung NICHT beeinflussen — weder die Salienz noch die Themen.
+- Uebernimm keine Formulierung aus dem Lagebild in die Themen. Steht ein Thema
+  nur dort und nicht im Bewertungsobjekt, gehoert es nicht in die Antwort.
 
-Salienz-Bewertung — emotionale Signale des Nutzers wiegen SCHWER:
-- Expliziter Stress, Angst, Ueberforderung, Notfall -> 0.8-1.0
-- Begeisterung, Leidenschaft, starkes Interesse ("liebe", "fasziniert", "begeistert") -> 0.7-0.8
-- Explizite Bitte sich etwas zu merken ("merk dir", "vergiss nicht") -> 0.7
-- Moderates Interesse, beilaeufige Erwaehnung -> 0.5-0.6
-- Neue Informationen ueber konkrete Personen (Namen!), Orte, Beziehungen, Wohnorte, Arbeitsplaetze oder Familienmitglieder -> mindestens 0.70, auch wenn sachlich und ohne Emotion formuliert
-- Sachliche Frage ohne emotionale Signale -> 0.2-0.4
-- Smalltalk, Gruss, Hoeflichkeiten -> 0.1-0.2
-
-Emotionale Verstaerker:
-- Ausrufezeichen (!) erhoehen um +0.1
-- Grossbuchstaben (WIRKLICH, TOTAL) erhoehen um +0.1
-- Wiederholung oder Intensivierer ("total", "absolut", "unbedingt", "sehr") erhoehen um +0.1
+Die Salienz-Skala steht im Aufgaben-Block. Sie haengt davon ab, wer spricht,
+und darf nicht aus einer anderen Lage uebernommen werden.

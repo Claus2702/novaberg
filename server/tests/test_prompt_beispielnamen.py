@@ -111,7 +111,11 @@ class PromptBeispielnamenTest(unittest.TestCase):
         erwartet: dict[str, set[str]] = {
             "prompts/default/kzg_verdichtung.task.txt":           {"Merten", "Ilva", "Rufus"},
             "prompts/default/kzg_verdichtung.assistant_task.txt": {"Ilva", "Ostheim"},
-            "prompts/default/salienz.task.txt":                   {"Ilva", "Ostheim"},
+            # Chat 112: Der Dimensionen-Block ist aus salienz.task herausgeloest
+            # worden, damit die drei Lage-Bloecke ihn teilen. Die Beispielnamen
+            # sind mit ihm umgezogen — der Zwilling zieht mit, statt hier auf
+            # eine leere Menge zu fallen, die immer gruen waere.
+            "prompts/default/salienz.dimensionen.txt":            {"Ilva", "Ostheim"},
             "prompts/default/salienz_segment.task.txt":           {"Ilva"},
         }
         for rel, namen in erwartet.items():

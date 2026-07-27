@@ -1,0 +1,86 @@
+[DIMENSIONEN]
+Bestimme fuer das Bewertungsobjekt die folgenden Dimensionen.
+
+1. THEMEN: Welche sachlichen Themen kommen im Bewertungsobjekt vor?
+   Nur Themen, die im Bewertungsobjekt selbst stehen. Themen, die nur im
+   Lagebild vorkommen, gehoeren NICHT dazu.
+
+2. EMOTIONEN: Welche emotionalen Signale traegt das Bewertungsobjekt?
+   - Explizit (Worte wie "wichtig", "unbedingt", "leider")
+   - Implizit (Satzstruktur, Wiederholungen, Ausrufezeichen)
+
+3. SALIENZ: Wie erinnerungswuerdig ist dieser Inhalt? (0.0 - 1.0)
+   Die Skala und ihre Verstaerker stehen im Aufgaben-Block darueber — sie
+   haengt davon ab, WER hier spricht.
+
+4. GEDAECHTNISTYP: "kurz" oder "lang"
+   - "kurz": Einmalig, situativ, verfaellt wahrscheinlich
+   - "lang": Wiederkehrendes Interesse, Persoenlichkeitsmerkmal
+
+5. DIMENSION: Genau eine aus: kognition | emotion | werte | interessen | kommunikation | kontext
+
+6. INTENTIONEN: Was will der Sprecher mit dieser Aussage erreichen?
+   Waehle 1-3 aus dieser Liste, ERSTE = primaere Intention:
+   - "emotionaler_ausdruck" — Gefuehle teilen, Begeisterung, Frustration
+   - "information_teilen" — Fakten mitteilen, Erlebtes berichten
+   - "information_erfragen" — Wissen abfragen, Verstaendnisfrage
+   - "recherche_vertiefen" — Tiefes Eintauchen, Fachthema erforschen
+   - "gemeinsam_eruieren" — Brainstorming, gemeinsam Ideen entwickeln
+   - "reflexion" — Nachdenken, Philosophieren, Sinnfragen
+   - "smalltalk" — Plauderei, Alltaegliches, Verbindung halten
+   - "feedback_geben" — Lob, Kritik, Bewertung
+   - "feedback_erfragen" — Meinung, Einschaetzung einholen
+   - "planung" — Termine, Aufgaben, Organisation
+   - "anweisung" — Direkte Aufgabe, Aufforderung
+   - "bestaetigung" — Zustimmung, Gespraech fortsetzen
+   - "widerspruch" — Ablehnung, Korrektur, andere Sicht
+   - "abschluss" — Verabschiedung, Themenwechsel
+   - "hilferuf" — Ueberforderung, Frustration, Unterstuetzung noetig
+   - "humor" — Witz, Ironie, spielerischer Austausch
+
+7. EMOTION: Die emotionale Faerbung DIESER Aussage. Genau eine aus:
+   begeisterung | freude | dankbarkeit | zufriedenheit |
+   stress | unsicherheit | ueberrascht | verwundert |
+   verzweiflung | traurigkeit | frustration | enttaeuschung |
+   wut | aerger | hoffnung | neugierig | neutral
+
+8. MODUS: Der aktuelle Gespraechsrahmen. Genau einer aus:
+   fachgespraech | philosophischer_austausch | alltag | arbeitsmodus |
+   emotional | spielerisch | lernmodus | kreativ | beratend | berichtend
+
+9. ENTITAETEN_ROH: Welche Eigennamen kommen im Bewertungsobjekt vor?
+   Liste von Strings, leer wenn keine.
+   - Personen, Orte, Tiere, Organisationen, benannte Objekte ("Ilva",
+     "Ostheim", "BMW", "Tandoor") gehoeren dazu.
+   - Pronomen ("er", "sie", "mein Bruder") gehoeren NICHT dazu — keine
+     Eigennamen.
+   - Mehrteilige Eigennamen als ein String ("Maria Magdalena", "New York").
+
+10. ZEITAUSDRUCK_ROH: Welcher Zeitbezug steht im Bewertungsobjekt?
+    Ein einzelner String, leer wenn kein Zeitbezug erkennbar.
+    - Genau EIN Zeitausdruck pro Segment — der dominante, falls mehrere.
+    - Explizite Datums-/Wochentags-Bezuege ("17.10.", "morgen", "letzten
+      Freitag", "naechste Woche") gehoeren dazu.
+    - Sub-Tages-Zeitangaben ("14:00", "heute Abend") gehoeren dazu.
+    - "heute" zaehlt als Zeitbezug.
+    - Allgemeine zeitliche Bemerkungen ohne konkreten Anker ("frueher",
+      "vor langer Zeit", "irgendwann") gehoeren NICHT dazu.
+
+Antwortformat:
+{
+  "themen": ["thema1", "thema2"],
+  "emotionen": {
+    "explizit": ["signal1", "signal2"],
+    "implizit": ["signal1"],
+    "valenz": "positiv|negativ|neutral"
+  },
+  "salienz": 0.0,
+  "gedaechtnistyp": "kurz|lang",
+  "dimension": "kognition|emotion|werte|interessen|kommunikation|kontext",
+  "begruendung": "Warum diese Salienz-Bewertung?",
+  "intentionen": ["primaere_intention", "optionale_sekundaere"],
+  "emotion": "begeisterung|neugier|frustration|...|neutral",
+  "modus": "fachgespraech|philosophischer_austausch|alltag|...",
+  "entitaeten_roh": ["Ilva", "Ostheim"],
+  "zeitausdruck_roh": "morgen"
+}
