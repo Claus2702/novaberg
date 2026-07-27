@@ -3580,6 +3580,10 @@ Der Turn war **Pixie-initiiert.** Es gab in diesem Turn **keinen Nutzer-Input** 
 
 **Zusammenhang:** DESTILLAT-PERSPEKTIVE-VS-SUBJEKT (dort steht der widerlegte Ursachensatz Chat 108 noch unmarkiert) · PIXIE-SELBSTTRIGGER-KEIN-TURN-ROH und PIXIE-TURN-ID-LEER (derselbe Pixie-Lauf) · TRIB-PERSON-DRIFT.
 
+**Status: Behoben Chat 110 — nachgetragen Chat 112.** Der Eintrag trug bis dahin **gar keine Statuszeile**, obwohl die Reparatur zwei Chats zurücklag: `_build_verdichtung_prompt(beobachter, graph_rolle)` wählt einen von drei Aufgaben-Blöcken (`kzg_verdichtung.task` / `.assistant_task` / `.impuls_task`), jeder mit Few-Shot-Beispielen in seiner Person und Lage. Ein Eintrag ohne Status liest sich wie ein offener — und dieser wurde in `novaberg-charakter-resonanz_k.md` §16 zweimal als Voraussetzung geführt.
+
+**Die Klasse hat sich anschließend wiederholt.** Chat 112 fand denselben Defekt eine Ebene höher im Salienz-Node (`SALIENZ-PROMPT-NUTZER-SCHABLONE`): dort war es nicht der Verdichter, sondern die Bewertung, und die Anweisung war nicht nur unpassend, sondern invertiert. Beide Male half dasselbe Mittel — drei Aufgaben-Blöcke statt eines mit Ausnahmeregeln.
+
 ---
 
 ## Bug: PIXIE-TURN-ID-LEER — Pixie-initiierter CharacterGraph-Lauf schreibt KZG ohne `turn_id` (Chat 109)
@@ -3597,7 +3601,14 @@ KZG-Dispatch: Keys eingesammelt — turn_id=, beobachter=assistant,
 
 **Berührt PIXIE-SELBSTTRIGGER-KEIN-TURN-ROH:** Derselbe Lauf übersprang `turn_roh`, weil `response` beim Dispatcher leer war — der vierte von vier Skips im gemessenen Gespräch (siehe TURN-ROH-HG-SKIP). Der KZG-Eintragsinhalt war jedoch **gefüllt** und gibt Novas Nachricht korrekt wieder: Der Text lag also vor, nur nicht in `state["response"]`.
 
-**Offene Frage, ausdrücklich keine Antwort:** Woher der Bewertungstext auf diesem Pfad stammt, wenn `graph/nodes/salience.py:120-121` bei `rolle=character` genau `state["response"]` als Bewertungsobjekt liest. Ungeprüft.
+**Offene Frage, ausdrücklich keine Antwort:** Woher der Bewertungstext auf diesem Pfad stammt, wenn `graph/nodes/salience.py` (Input-Switch in `analyze`) bei `rolle=character` genau `state["response"]` als Bewertungsobjekt liest. Ungeprüft.
+
+**Nachtrag Chat 112 — die Frage steht weiter offen, ist aber jetzt in einer Messung zu beantworten.** Zwei Dinge haben sich seit ihrer Formulierung geändert, beide in ihre Richtung:
+
+- **Der Switch hängt seit Chat 110 an `graph_rolle` statt an `ei_calc_rolle`.** Zum Messzeitpunkt lief der AgentGraph als `"character"` mit und landete dadurch im Reaktions-Zweig — er las `state["response"]`, die er nie erzeugt. Ob der gemessene Lauf der AgentGraph oder der CharacterGraph war, entscheidet die Antwort und ist aus dem damaligen Log nicht mehr herauszulesen: Beide trugen dieselbe `quelle`.
+- **Ein leeres Bewertungsobjekt bricht seit Chat 110 laut ab** und schreibt seit Chat 111 eine `fehler`-Zeile ins `pipeline_log`. Der stille Fall, in dem die Frage entstand, kann sich nicht wiederholen, ohne sich zu melden.
+
+**Wie sie zu beantworten ist:** Eine Zustellung auslösen und im `pipeline_log` die `switch`-Zeilen des Turns lesen. Sie tragen `graph_rolle`, `bewertungs_laenge` und `lagebild_laenge` je Lauf — damit ist ohne Rekonstruktion sichtbar, welcher Graph welchen Text bewertet hat. Zwei `switch`-Zeilen mit derselben `turn_id` heißen: beide Graphen liefen, und die Zuordnung ist eindeutig.
 
 ---
 

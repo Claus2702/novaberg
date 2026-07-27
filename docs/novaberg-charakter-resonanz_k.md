@@ -2,7 +2,9 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Charakter-Resonanz — woraus Novas Charakter entsteht
-**Stand:** 26. Juli 2026, Chat 109 (Audits A1/A2/A5 geschlossen; Schreib-Kardinalität gemessen; E8 entschieden; Bauteil 1a gebaut und live abgenommen — Bauteil 1b blockiert durch `PIXIE-TURN-ID-LEER`; Verbindungstabelle/Verdichten/Lesen weiterhin offen; Ursache aus §2/§2.1 korrigiert: die Quelle trägt Novas Stimme, der Verdichter überschreibt sie)
+**Stand:** 26. Juli 2026, Chat 109 (Audits A1/A2/A5 geschlossen; Schreib-Kardinalität gemessen; E8 entschieden; Bauteil 1a gebaut und live abgenommen — ~~Bauteil 1b blockiert durch `PIXIE-TURN-ID-LEER`~~; Verbindungstabelle/Verdichten/Lesen weiterhin offen; Ursache aus §2/§2.1 korrigiert: die Quelle trägt Novas Stimme, der Verdichter überschreibt sie)
+
+> **Korrektur Chat 112 zur Kopfzeile:** `PIXIE-TURN-ID-LEER` **sperrt 1b nicht** — das steht seit Chat 110 im Dokument selbst (§16, „war keiner"), nur nicht hier oben. Der Schreibpfad prüft die `turn_id` vor dem Insert und überspringt den Lauf mit einer Warnung, die die Zahl der übersprungenen Keys nennt. Der Defekt besteht weiter und gehört vor **Bauteil 3**, nicht vor 1b. Ein Widerspruch zwischen Kopfzeile und Abschnitt trifft immer den, der nur oben liest.
 **Herkunftsvermerk:** Jede Aussage mit Funktionsname, State-Key, Spalte oder Aufrufreihenfolge trägt *auditiert (Chat N)*, *Annahme* oder *überholt (Chat N)*. Ohne Vermerk = Annahme.
 **Zahlen:** Zeitstempel und Stichtage stehen ohne Vorbehalt im Dokument — sie bleiben wahr. Zählungen tragen ihr Messdatum („150 Rohturns, Stand 25.07.2026"), denn sie sind am Tag danach falsch.
 **Pfad:** novaberg/docs/novaberg-charakter-resonanz_k.md
