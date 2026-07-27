@@ -2,9 +2,21 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Backlog — Konzipierte, noch nicht implementierte Features
-**Stand:** 12. Juli 2026, Chat 107
+**Stand:** 27. Juli 2026, Chat 111
 **Pfad:** novaberg/docs/novaberg-backlog.md
 **Quellen:** nova-08-k.md (Kognitive Anreicherung), nova-10-k-backlog.md (Skill-System), nova-01-t-c-backlog.md (Node-Konfiguration)
+
+---
+
+## Stichtag Bestandsdaten — 27.07.2026, 09:13 UTC
+
+Das System wurde zu diesem Zeitpunkt auf einen leeren Datenbestand zurückgesetzt. Geleert wurden `pipeline_log`, `hintergrund_log`, `lzg_knoten`, `lzg_kanten`, `verbindung`, `langzeitgedaechtnis`, `timeline`, `ziele`, `notizen`, `fakten`, `entitaeten`, `delegations_akten`, `delegations_seiten` sowie die vollständige KZG-Partition in Redis (864 Schlüssel). Erhalten blieben `charakter_hash`, `charakter_anweisungen` und `direktiven`.
+
+**Jede Korpuszahl in diesem Dokument, die vor diesem Zeitpunkt gemessen wurde, ist historisch und nicht mehr reproduzierbar.** Betroffen sind insbesondere die Messreihen aus Chat 109, auf denen die gesamte Salienz-Analyse ruht: die 775 Einträge der Partition, die 527 über 1.0 (68 %), die Verteilung über die Salienz-Eimer, die 137 Einträge älter als 30 Tage, der Knoten `id=496` mit seinem Quell-Schlüssel.
+
+**Die Befunde bleiben gültig.** Sie ruhen auf Formeln, Konstanten und Codestellen, nicht auf den Zahlen — die Zahlen waren ihr Beleg, nicht ihre Ursache. `KZG-SALIENZ-SKALENBRUCH` ist eine Aussage über eine Dämpfungskurve und einen Deckel; die hält, solange der Code sie trägt.
+
+**Was neu gemessen werden muss, bevor es geschlossen wird:** `KZG-TTL-UNSTERBLICH` (die Altersverteilung ist weg), `PROMOTION-ENTFERNT-KZG-NICHT` (der Vollabgleich hat keinen Bestand mehr), `KZG-GEWICHT-ABSOLUT-CEILING` (die Knoten über dem Cap existieren nicht mehr). Ein leerer Bestand ist kein Nachweis, dass ein Defekt behoben ist.
 
 ---
 

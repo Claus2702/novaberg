@@ -1,8 +1,24 @@
 # Novaberg — Bugs & Limitationen
 
-**Stand:** 26. Juli 2026, Chat 110
+**Stand:** 27. Juli 2026, Chat 111
 **Gliederung:** Einträge stehen in der Sektion ihres Entdeckungs-Chats und wandern nicht. Nachträge aus späteren Chats tragen ihre Chat-Nummer im Text. Sonst verliert die Sektionsfolge ihre Bedeutung als Zeitachse.
 **Quelle:** Testlauf "Karrierekrise" (200 Prompts) + Gedächtnis-Epic (Chat 11) + Epic 11 Agent-System (Chats 22–32) + Persona Smoke-Tests (Chats 31–32) + RechercheAgent-Test (Chat 35) + Doku-Audit (Chat 36) + PRIO0-Fix + Client-Observability (Chat 37) + Claude API-Test + STREAM1-Fix + Gesprächsvektor (Chat 39) + CharakterIdentitaetAgent + DirektivenAgent + Tribunal Score-System (Chat 40) + Telegram Bot + Zeitparser-Fixes (Chat 41) + CRUD-Härtung + Telegram-Chat-Analyse + DB-Report (Chat 42) + KONTEXT1-Fix + Resume-Bug + Epic 15 Pilot (Chat 43) + Epic 15 Rollout + DELEG-REG Fix + KZG-Klebrigkeit (Chat 44) + RESP-CHAR1 Fix (Chat 45) + CLASSIFY-REJECTED + Gemma4 Live-Tests (Chat 48) + Telegram-Konversation "frecher Charakter" (Chat 49) + RESUME-REJECT Fix + Live-Tests (Chat 50) + Neugier-Konzept + Projektinfrastruktur (Chat 51) + Doku-Alignment + emotions_profil (Chat 52) + Antrieb-Konzept + Dual-Emotion (Chat 53) + HALL2-Fix + Planner-Refactor (Chat 54) + PySide6 verworfen + GTK4-Entscheidung (Chat 55) + GTK4-Client + Panel-Infrastruktur (Chat 56) + Web-Tool-Doku + SEARX1-Diagnose (Chat 57) + Chat 61 (Perzeption-Symmetrie, Akkumulations-Refactor, Paper-Portfolio, Lumi, urllib3-Doppel-Turn beobachtet) + Paper I + urllib3-RETRY + ROUTE-CHAR-NOTIZ + RESP-DEAD + PIXIE-GHOST (Chat 65) + WS-SINGLE Fix + ClientConnection + User-Message-Broadcast (Chat 68) + Dreischicht-Integration + GV-Refactoring + MODUS-LEER + VEKTOR-LEER + AROUSAL-330 + ZIEL-LABEL-LEER Fixes (Chat 72) + Promotion-Pipeline-Audit (Chat 75) + Reducer-Umbau Smoke-Tests (Chat 75) + Chat 79 (THINK-MEM-CONFLICT, CHAR-LZG-LEAK, MIGRATION-PIX-PAIR, MIGRATION-AGENTGRAPH-PAIR, PIX-CLEAN, KZG-CLEANUP) + Doku-Code-Abgleich (Chat 106) + init.sql-Audit (Chat 107)
+
+---
+
+## Stichtag Bestandsdaten — 27.07.2026, 09:13 UTC
+
+Das System wurde zu diesem Zeitpunkt auf einen leeren Datenbestand zurückgesetzt. Geleert wurden `pipeline_log`, `hintergrund_log`, `lzg_knoten`, `lzg_kanten`, `verbindung`, `langzeitgedaechtnis`, `timeline`, `ziele`, `notizen`, `fakten`, `entitaeten`, `delegations_akten`, `delegations_seiten` sowie die vollständige KZG-Partition in Redis (864 Schlüssel). Erhalten blieben `charakter_hash`, `charakter_anweisungen` und `direktiven` — der Charakter ist kein Messobjekt.
+
+**Jede Korpuszahl in diesem Dokument, die vor diesem Zeitpunkt gemessen wurde, ist historisch.** Sie belegt weiterhin, was sie zum Zeitpunkt ihrer Messung belegt hat — alle Zahlen tragen ihr Messdatum —, aber sie ist **nicht mehr reproduzierbar**. Das gilt ebenso für jeden Belegturn, jede `turn_id` und jeden Redis-Schlüssel, der in einem Reproduktionsweg genannt wird.
+
+Daraus folgt für die Arbeit an den Einträgen:
+
+- Ein Befund, der **im Code** sitzt, überlebt den Reset unverändert. Datei, Zeile und Mechanismus gelten weiter.
+- Ein Befund, der nur **in Daten** sichtbar war, muss vor dem Schließen **neu gemessen** werden. Ein leerer Bestand ist kein Beleg dafür, dass der Defekt weg ist.
+- Wer einen Eintrag bearbeitet, ersetzt die alte Zahl nicht, sondern stellt die neue daneben. Zwei Messungen zu zwei Zeitpunkten sind wertvoller als eine.
+
+Gegenstandslos geworden: der Stichtag der assistant-Partition vom 26.07.2026, die Duplikate aus dem Nachtrag zu `KZG-SEGMENT-DUPLIKAT` und die beiden Schlüssel aus `HASH-DIRTY-WAISENKEYS` — letzterer ist damit erledigt.
 
 ---
 
