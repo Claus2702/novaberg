@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Pipeline-Node Salienz (Bewertung & Gedächtnisbildung)
-**Stand:** 17. Mai 2026, Chat 90 (PFAD2-PERZEPTION-FIX abgeschlossen, HumanGraph-Slimming Phase 4)
+**Stand:** 27. Juli 2026, Chat 112 (Salienz-Formel, Rollen-Switch am System-Prompt)
 **Pfad:** novaberg/docs/novaberg-node-salience.md
 **Quellen:** nova-01-m-g.md (Node-Beschreibung), nova-02-t-b.md (Salienz-Technik)
 
@@ -94,6 +94,10 @@ Pro Segment extrahiert die Salienz 10 Dimensionen — nicht nur den Score (verif
 
 ### 3.2 Bewertungsskala
 
+**Seit Chat 112 gibt es drei Skalen, eine je Lage** — sie stehen in den drei Aufgaben-Blöcken (§4.0). Die Skala einer Nutzeräußerung passt nicht auf Novas eigene: Ganz oben steht dort die Krise, hier die Einsicht, die ihr selbst aufgeht.
+
+**Nutzeräußerung** (`salienz.task`) — die Bestandsskala:
+
 | Bereich | Bedeutung | Beispiele | Aktion |
 |---------|-----------|-----------|--------|
 | 0.0–0.2 | Beiläufig | „Hallo", „Okay", „Danke" | Nichts (unter Schwellwert) |
@@ -101,6 +105,29 @@ Pro Segment extrahiert die Salienz 10 Dimensionen — nicht nur den Score (verif
 | 0.5–0.6 | Moderates Interesse | „Ich war gestern wandern", „Gutes Buch gelesen" | KZG (14 Tage) |
 | 0.7–0.8 | Starke Relevanz | „Ich liebe Astronomie!", „Anna wohnt in München" | KZG (30 Tage) + Promotion + Shadow |
 | 0.9–1.0 | Maximale Dringlichkeit | „Ich kann nicht mehr!", Notfall, akute Krise | KZG (30 Tage) + Promotion + Shadow |
+
+**Novas Antwort** (`salienz.assistant_task`) — bewertet wird, was von *ihrem* Satz bei ihr hängenbleiben soll, nicht wie wichtig dem Nutzer sein Anliegen war:
+
+| Bereich | Bedeutung |
+|---|---|
+| 0.8–1.0 | Eine Einsicht, die ihr selbst aufgeht; ein Zusammenhang, den sie zum ersten Mal sieht |
+| 0.8–0.9 | Eine Zusage, ein Vorsatz, eine Festlegung |
+| 0.7–0.9 | Eine Aussage über sich selbst: Zustand, Wollen, Haltung, Zuwendung |
+| 0.5–0.7 | Substanzieller Sachgehalt, den sie beigetragen hat |
+| 0.4–0.6 | Eine Rückfrage, die das Gespräch weitertreibt |
+| 0.2–0.3 | Wiedergabe dessen, was der Nutzer sagte, ohne eigenen Beitrag |
+| 0.1–0.2 | Bloße Bestätigung, Höflichkeit, Meta-Bemerkung über das Gespräch |
+
+**Novas eigener Gedanke** (`salienz.impuls_task`) — ein Impuls, den sie niemandem gesagt hat:
+
+| Bereich | Bedeutung |
+|---|---|
+| 0.8–1.0 | Eine Erkenntnis, die ihr Bild von etwas verändert |
+| 0.7–0.9 | Eine offene Frage, die sie weiterverfolgen will; eine neue Verbindung zwischen zwei Dingen |
+| 0.5–0.7 | Ein neuer Sachgehalt: Zahl, Mechanismus, belegter Zusammenhang |
+| 0.1–0.3 | Wiederholung von Bekanntem; Formulierungsvariante ohne neuen Gehalt |
+
+**Diese Skala ist nur noch der eine von vier Antrieben des Eigen-Pfads.** Was am Ende im KZG steht, entscheidet die Formel `max(salienz_human × nutzer_gewichtung, salienz_charakter)` — siehe `novaberg-salienz-berechnung_k.md`.
 
 ### 3.3 Emotionale Verstärker
 
@@ -116,7 +143,9 @@ Das LLM wird angewiesen, auf explizite emotionale Signale zu achten:
 
 Neue Informationen über konkrete Personen (Namen!), Orte, Beziehungen, Wohnorte, Arbeitsplätze oder Familienmitglieder → **mindestens 0.70**, auch wenn sachlich und ohne Emotion formuliert. „Anna wohnt in Nürnberg" = 0.70, nicht 0.30.
 
-> **Verankert im Prompt, nicht als Python-Fallback:** Die Regel steht explizit als Bewertungsanweisung in [`prompts/default/salienz.rules.txt`](novaberg/server/prompts/default/salienz.rules.txt) („… -> mindestens 0.70, auch wenn sachlich und ohne Emotion formuliert"). Es gibt keine nachgelagerte Python-Korrektur — wenn das LLM trotz Prompt-Regel unter 0.70 bewertet, bleibt dieser Score bestehen. → `novaberg-node-salience_l.md`
+> **Verankert im Prompt, nicht als Python-Fallback:** Die Regel steht explizit als Bewertungsanweisung — seit Chat 112 in ~~`salienz.rules.txt`~~ **[`prompts/default/salienz.task.txt`](novaberg/server/prompts/default/salienz.task.txt)**, weil die Skala mit dem Rollen-Switch aus den Regeln in den Lage-Block gewandert ist („… -> mindestens 0.70, auch wenn sachlich und ohne Emotion formuliert"). Es gibt keine nachgelagerte Python-Korrektur — wenn das LLM trotz Prompt-Regel unter 0.70 bewertet, bleibt dieser Score bestehen. → `novaberg-node-salience_l.md`
+>
+> **Gilt nur für die Nutzerlage.** Die beiden Nova-Blöcke tragen diese Regel nicht: Ein Name in *ihrer* Antwort ist meist einer, den er gerade genannt hat, und der steht dann schon auf seiner Seite im Gedächtnis.
 
 ### 3.5 Intention → Shadow-Aufgabe
 
@@ -133,6 +162,42 @@ Die Salienz extrahiert nicht nur den Score, sondern auch Intentionen. Die primä
 ---
 
 ## 4. Prompt-Aufbau
+
+**Zwei Switches, nicht einer.** Das wird leicht verwechselt:
+
+| Switch | Betrifft | Seit |
+|---|---|---|
+| **System-Prompt** (§4.0) | Welche *Aufgabe und Skala* das Modell bekommt | Chat 112 |
+| **Nutzer-Nachricht** (§4.1) | Welcher *Text* Bewertungsobjekt und welcher Lagebild ist | Chat 110 |
+
+Bis Chat 112 gab es nur den zweiten. Der Text wurde korrekt getauscht, die Anweisung darüber nicht — der System-Prompt war durchgehend aus der Nutzerperspektive geschrieben und wies an, „ausschließlich anhand der EINGABE DES NUTZERS" zu bewerten. Im CharacterGraph steht die Nutzereingabe im Lagebild: **Die Anweisung war exakt invertiert** (`SALIENZ-PROMPT-NUTZER-SCHABLONE`).
+
+### 4.0 Rollen-Switch am System-Prompt (Chat 112)
+
+`_build_salienz_prompt(graph_rolle)` setzt vier Blöcke zusammen und gibt **Prompt und Blocknamen als Paar** zurück:
+
+```
+[IDENTITAET]  — rollenneutral
+<Aufgaben-Block>  — einer von drei, siehe Tabelle
+[DIMENSIONEN] — rollenneutral: die zehn Felder und das Antwortformat
+[REGELN]      — rollenneutral: Ausgabeformat + „bewerte ausschließlich das [BEWERTUNGSOBJEKT]"
+```
+
+| `graph_rolle` | Aufgaben-Block | Lage |
+|---|---|---|
+| `human` | `salienz.task` | Der Nutzer hat gerade etwas gesagt |
+| `character` | `salienz.assistant_task` | Nova hat eben geantwortet |
+| `agent` | `salienz.impuls_task` | Ein Gedanke ist ihr gekommen, gesagt hat sie ihn niemandem |
+
+Vorbild ist `_build_verdichtung_prompt`, wo Chat 110 dieselbe Klasse eine Ebene tiefer behoben hat: **Ein Beispiel schlägt eine Anweisung**, also müssen die Beispiele in der Person und der Situation stehen, die sie meinen.
+
+**Warum drei Blöcke und nicht zwei.** Der Assistenten-Block rahmt den Text als „sie hat gerade geantwortet" und verweist auf ein Lagebild. Für einen Impuls stimmt beides nicht. Das Subjekt ist in beiden Fällen Nova, die Lage nicht.
+
+**Warum die Dimensionen geteilt bleiben.** Sie sind eine Checkliste, keine Beispiele. Drei Kopien von hundert Zeilen liefen beim nächsten Feld auseinander; nur Lage und Skala hängen an der Rolle.
+
+**Die Regeln nennen den Block, nicht die Person.** *„Bewerte ausschließlich das [BEWERTUNGSOBJEKT]"* ist rollenneutral formulierbar — damit ist die Inversion strukturell nicht mehr aussprechbar. Der alte Satz lag zweimal auf der Platte, auch im `gemma4`-Override, der wegen des Ausgabeformats existiert und die ganze Nutzer-Skala mitgeschleppt hatte.
+
+**Das Paar aus Rückgabewert ist kein Zierat.** Der Blockname wird in die `switch`-Zeile des `pipeline_log` geschrieben. Würde der Aufrufer ihn erneut aus der Rolle ableiten, hingen Protokoll und Prompt an zwei getrennten Ableitungen — und das Log könnte eine Schablone melden, die nie gezogen wurde. Genau das ist in der ersten Fassung passiert und hat eine Gegenprobe grün bleiben lassen (`novaberg-lesson_l_log-behauptet-was-es-weiss.md`).
 
 ### 4.1 Lagebild / Bewertungsobjekt ([BLOCKNAME]-Schema)
 
@@ -178,7 +243,11 @@ Antwort der Assistentin: {segment}
 
 **Bewertungsobjekt zuletzt:** Das zu bewertende Segment steht am Ende des Prompts — nutzt den Recency Bias des LLM. Der gegenüberliegende Akteur steht im Lagebild oben: kontextgebend, aber nicht dominant.
 
-> **Lesson gelernt (Chat 3):** Ohne Trennung mittelte die Salienz über den gesamten Turn. „Ich bin total überfordert!" (kurz, emotional) + Novas Antwort (200 Wörter, sachlich) = Salienz 0.40 statt 0.70. Die Trennung + die explizite Anweisung „bewerte nur die Eingabe des Nutzers" löste das Problem. → `novaberg-node-salience_l.md`
+> **Lesson gelernt (Chat 3):** Ohne Trennung mittelte die Salienz über den gesamten Turn. „Ich bin total überfordert!" (kurz, emotional) + Novas Antwort (200 Wörter, sachlich) = Salienz 0.40 statt 0.70. Die Trennung + ~~die explizite Anweisung „bewerte nur die Eingabe des Nutzers"~~ löste das Problem. → `novaberg-node-salience_l.md`
+>
+> **Nachtrag Chat 112 — die zweite Hälfte hat sich gegen sich selbst gewendet.** Die Trennung gilt weiter und war nie das Problem. Die Anweisung dagegen wurde **nie an die Rolle angepasst**: Sie stand auch dann noch im Prompt, als der CharacterGraph längst Novas Antwort bewertete — und wies dort auf das Lagebild. Was in Chat 3 eine Lösung war, ist zwei Graphen später der Defekt geworden. Sie heißt jetzt rollenneutral „bewerte ausschließlich das [BEWERTUNGSOBJEKT]" und kann damit nicht mehr auf den falschen Text zeigen.
+>
+> Die Klasse dahinter ist eigenständig: **Eine Anweisung, die eine Rolle voraussetzt, ohne sie zu nennen, überlebt die Einführung der zweiten Rolle unbemerkt.** Sie war weiterhin wahr für den Graphen, für den sie geschrieben wurde.
 
 ### 4.2 Plugin-Erweiterungen via salienz_prompt
 
@@ -215,6 +284,7 @@ Die Salienz entscheidet *was* gespeichert wird. Sie führt *nichts* aus. Alle Er
 |---|---|---|---|
 | `pending_writes` | list[PendingWrite] | n.a. (Brücken-Datenstruktur) | Ergänzt um KZG-Writes (`ziel: "kzg"`). Keine Fakten- oder Timeline-Writes mehr. |
 | `token_total` | int | n.a. (Counter, kein Personality-Wert) | Aufaddiert |
+| `salienz_human` | float \| None | ja (Einzelwert ohne Verbund) | **Nur im HumanGraph** *(Chat 112)*. Maximum über die Segmentwerte der Nutzeräußerung, **vor** dem Gravitationsboost. Reist über das Event-Payload in den CharacterGraph. `None` heißt „keine Nutzeräußerung" (AgentGraph, eigener Impuls) und ist von einer echten `0.0` zu unterscheiden. Gesetzt wird es hier und nicht vom Aufrufer aus den `pending_writes` — der Dispatcher läuft als letzter Node und leert sie |
 
 ### 6.3 Gelesene State-Felder
 
@@ -224,11 +294,19 @@ Die Salienz entscheidet *was* gespeichert wird. Sie führt *nichts* aus. Alle Er
 | ~~`ei_calc_rolle`~~ | str | ~~Input-Switch~~ — steuert die Salienz **nicht** mehr; bleibt fuer EI-Calc, `beobachter` und den Pixie-Sonderfall in `db_zugriff` |
 | `user_prompt` | str | Bewertungsobjekt (HG) bzw. Lagebild (CG) |
 | `response` | str | Bewertungsobjekt (CG) bzw. (leeres) Lagebild (HG). Im AgentGraph nie gesetzt — er hat keinen Responder |
-| `gravitationsterm` | float | Salienz-Boost-Modulation |
+| `gravitationsterm` | float | Im HumanGraph weiterhin Salienz-Boost. Für `character`/`agent` seit Chat 112 **einer der Antriebe des Eigen-Pfads**, kein Zuschlag mehr — sonst zählte er zweimal |
+| `salienz_human` | float \| None | *(Chat 112)* Im CharacterGraph aus dem Event-Payload; Operand des Pflicht-Pfads. Im HumanGraph selbst geschrieben, nicht gelesen |
+| `internal` | InternalPersonality | *(Chat 112)* `internal.emotion.arousal` speist den Erregungs-Zuschlag `(1 + z)`. Fehlt die Klasse, ist der Zuschlag **0.0** und nicht etwa 0.5 — ein erfundener Mittelwert trüge 15 % auf jedes Segment |
 | `pending_writes` | list[PendingWrite] | Akkumulator (read-modify-write) |
 | `token_total` | int | Token-Counter (read-modify-write) |
 
-**Was Salience bewusst NICHT liest:** Memory-Daten, Charakter-Daten, Personality-Klassen-Felder. Salience bewertet ausschließlich den Text plus den Drive-Term. Das ist Designprinzip — Bewertung soll text-immanent erfolgen, nicht durch Charakter-Kontext gefärbt werden.
+~~**Was Salience bewusst NICHT liest:** Memory-Daten, Charakter-Daten, Personality-Klassen-Felder. Salience bewertet ausschließlich den Text plus den Drive-Term. Das ist Designprinzip — Bewertung soll text-immanent erfolgen, nicht durch Charakter-Kontext gefärbt werden.~~
+
+**Überholt seit Chat 112 — und zwar als Entscheidung, nicht als Drift.** Der Node liest jetzt beides: `internal.emotion.arousal` aus der Personality-Klasse und `nutzer_gewichtung` aus `charakter_hash` (über `memory/charakter.py`, einmal je Turn vor der Segmentschleife). Das Prinzip „text-immanent, nicht durch Charakter-Kontext gefärbt" ist genau das, was die Salienz-Formel aufhebt: Wie stark Nova aufnimmt, was der Nutzer sagt, **soll** aus ihrem Charakter folgen und nicht aus einer Einstellung.
+
+Der zutreffende Kern des alten Satzes bleibt: **Memory-Daten liest die Salienz weiterhin nicht.** Kein KZG-, kein LZG-Zugriff, keine Erinnerungen. Gelesen wird der Charakter des Paares — eine Eigenschaft, kein Inhalt.
+
+Gelesen wird die Zeile `(ASSISTANT_USER_ID, user_id)`: **Novas** Zuwendung zum Nutzer. Die Gegenzeile trägt dieselben Spaltennamen und ist seine Zuwendung zu ihr; wer sie läse, bekäme die Gewichtung auf dem Kopf.
 
 ### 6.4 Session-Turn-Annotation
 
@@ -270,7 +348,19 @@ Der ursprüngliche P5/P6-Guard unterdrückte bei aktivem Planner die Fakten- und
 | Großbuchstaben | +0.1 |
 | Intensivierer | +0.1 |
 
-Alle Schwellwerte und Gewichte sind in `config.py` konfiguriert.
+Diese drei sind **Prompt-Anweisungen**, keine Konstanten — sie stehen in den drei Aufgaben-Blöcken, seit Chat 112 je einmal pro Lage. Additiv und nicht multiplikativ: Ein Verstärker darf heben, aber nie auslöschen.
+
+### Konstanten der Salienz-Formel *(Chat 112)*
+
+| Konstante | Wert | Wirkung |
+|---|---|---|
+| `RAD_NABE` | 0.9 | Nullpunkt des Charakter-Rads |
+| `RAD_MIN` / `RAD_MAX` | 0.5 / 1.5 | Grenzen von `nutzer_gewichtung`. **Enthalten die Null nicht** — der Faktor kann dämpfen, aber den Pflicht-Pfad nie umlegen |
+| `SALIENZ_EREGUNG_MAX_ZUSCHLAG` | 0.3 | Obergrenze des Erregungs-Zuschlags; wirkt als `(1 + z)` |
+
+Nabe und Grenzen liegen in `config.py` und nicht bei der Destillation, weil sie seit Chat 112 zwei Verbraucher haben: die Destillation, die den Faktor schreibt, und die Formel, die ihn liest und prüft. Zwei Kopien liefen beim nächsten Nachkalibrieren auseinander, und die Fehlerbedingung wäre Schweigen.
+
+Alle übrigen Schwellwerte und Gewichte sind ebenfalls in `config.py` konfiguriert.
 
 ### Geplante Erweiterungen
 
