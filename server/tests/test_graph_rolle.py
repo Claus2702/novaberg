@@ -17,7 +17,7 @@ Kein skipUnless, kein skipIf, kein try/except um Importe.
 import unittest
 from unittest.mock import MagicMock, patch
 
-from graph.nodes.enricher import _pipeline_quelle
+from graph.state import pipeline_quelle
 from graph.nodes.salience import analyze
 
 SALIENZ_LOGGER: str = "ki_server.salience"
@@ -43,14 +43,14 @@ class PipelineQuelleTest(unittest.TestCase):
     """Bestandswerte bleiben, der AgentGraph wird unterscheidbar."""
 
     def test_bestandswerte_unveraendert(self):
-        self.assertEqual(_pipeline_quelle(_state("human")),     "user")
-        self.assertEqual(_pipeline_quelle(_state("character")), "character")
+        self.assertEqual(pipeline_quelle(_state("human")),     "user")
+        self.assertEqual(pipeline_quelle(_state("character")), "character")
 
     def test_agentgraph_ist_eigene_quelle(self):
-        self.assertEqual(_pipeline_quelle(_state("agent")), "agent")
+        self.assertEqual(pipeline_quelle(_state("agent")), "agent")
 
     def test_fehlende_rolle_gilt_als_humangraph(self):
-        self.assertEqual(_pipeline_quelle({}), "user")
+        self.assertEqual(pipeline_quelle({}), "user")
 
 
 class SalienzBewertungsobjektTest(unittest.TestCase):

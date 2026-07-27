@@ -22,8 +22,15 @@ import logging
 
 import redis
 
-from graph.state import ConversationState
+from graph.state import ConversationState, pipeline_quelle
 from config import get_node_config, PROMPTS
+from memory.pipeline_log import (
+    span_start,
+    span_end,
+    log_switch,
+    log_berechnung,
+    log_fehler,
+)
 from services.model_services import model_service, ChatRequest
 
 logger = logging.getLogger("ki_server.salience")
@@ -109,6 +116,24 @@ def analyze(
     Analysiert den Turn. Segmentiert bei Bedarf in Teilaussagen.
     Legt pending_writes fuer KZG an (ohne Embedding, ohne kern).
     Schreibt NICHT in die DB — das macht der KZG-Agent via Dispatcher.
+
+    Forensik (Chat 111, SALIENZ-OHNE-PIPELINE-LOG): Der Lauf haengt in einem
+    Span und schreibt fuenf Arten von Eintraegen ins pipeline_log —
+    switch (welcher Text bewertet wird), berechnung/segmentierung (der
+    Schnitt), berechnung/bewertung (der Salienzwert je Segment),
+    berechnung/gravitationsboost (die nachtraegliche Anhebung) und fehler
+    (leeres Bewertungsobjekt, verworfenes Segment). Damit ist im Nachhinein
+    ohne Container-Log beantwortbar, warum etwas erinnert wurde oder nicht.
+
+    Vorbedingung: state traegt graph_rolle, turn_id und character_id;
+        fehlen sie, greifen die dokumentierten Defaults ("human",
+        "unbekannt", "").
+    Nachbedingung: state["pending_writes"] ist gesetzt — eine Liste mit
+        einem Eintrag je erfolgreich bewertetem Segment. Der Span ist in
+        jedem Rueckgabepfad geschlossen.
+    Fehlerfaelle: leeres Bewertungsobjekt (kein pending_write, fehler-
+        Eintrag, frueher return); JSON-Parsing je Segment (Segment
+        verworfen, fehler-Eintrag, Lauf geht weiter).
     """
 
     # Input-Switch nach graph_rolle (PFAD2-PERZEPTION-FIX Phase 2, korrigiert
@@ -147,6 +172,41 @@ def analyze(
         f"lagebild_laenge={len(lagebild_text)}"
     )
 
+    # ── Pipeline-Log: Span-Start ────────────────
+    # quelle traegt durchgaengig die Graph-Rolle, nicht eine semantische
+    # Unterquelle wie beim Enricher. Der Salienz-Node hat nur eine Datenquelle
+    # — den Turn selbst —, ein Unterlabel truege also keine Information. Die
+    # Rolle dagegen ist genau der Unterscheider, der bis Chat 110 fehlte: Der
+    # AgentGraph lief als "character" mit und war im Log nicht zu trennen.
+    turn_id_log:  str = state.get("turn_id", "unbekannt")
+    quelle_log:   str = pipeline_quelle(state)
+    character_id: str = state.get("character_id", "")
+    span_id           = span_start(
+        turn_id = turn_id_log,
+        node    = "salienz",
+        quelle  = quelle_log,
+        user_id      = user_id,
+        character_id = character_id,
+    )
+
+    # Welcher Text bewertet wird und welcher nur Hintergrund ist, war bis
+    # jetzt nur im fluechtigen Container-Log sichtbar. Genau diese Zeile haette
+    # bewertungs_laenge=0 im AgentGraph sofort gezeigt (SALIENZ-OHNE-PIPELINE-LOG).
+    log_switch(
+        turn_id = turn_id_log,
+        node    = "salienz",
+        quelle  = quelle_log,
+        inhalt  = {
+            "graph_rolle":       rolle,
+            "eingabe_label":     eingabe_label,
+            "bewertungs_laenge": len(bewertungs_text),
+            "lagebild_laenge":   len(lagebild_text),
+        },
+        span_id = span_id,
+        user_id      = user_id,
+        character_id = character_id,
+    )
+
     # Fail loud statt still bewerten: Ein leeres Bewertungsobjekt liefert
     # zwangslaeufig Unsinn — das LLM klassifiziert dann das Lagebild oder
     # halluziniert Themen. Genau so entstand "Soziale Interaktion, Begruessung"
@@ -156,11 +216,52 @@ def analyze(
             f"Salienz: Bewertungsobjekt leer — kein pending_write erzeugt "
             f"(graph_rolle={rolle}, lagebild_laenge={len(lagebild_text)})"
         )
+        log_fehler(
+            turn_id = turn_id_log,
+            node    = "salienz",
+            quelle  = quelle_log,
+            inhalt  = {
+                "grund":           "bewertungsobjekt_leer",
+                "graph_rolle":     rolle,
+                "lagebild_laenge": len(lagebild_text),
+                "pending_writes":  0,
+            },
+            span_id = span_id,
+            user_id      = user_id,
+            character_id = character_id,
+        )
+        span_end(
+            turn_id = turn_id_log,
+            node    = "salienz",
+            quelle  = quelle_log,
+            span_id = span_id,
+            inhalt  = {"segmente": 0, "pending_writes": 0, "abbruch": True},
+            user_id      = user_id,
+            character_id = character_id,
+        )
         state["pending_writes"] = state.get("pending_writes", []) or []
         return state
 
     # ── Prompt segmentieren ──────────────────
     segmente: list[str] = _prompt_segmentieren(bewertungs_text)
+
+    # Der Segmentschnitt entscheidet, wie viele KZG-Eintraege ein Turn
+    # erzeugt — jedes Segment einen. Ohne diese Zeile ist im Nachhinein nicht
+    # feststellbar, ob mehrere Eintraege auf einen langen Text zurueckgehen
+    # oder auf mehrere Reize (KZG-SEGMENT-DUPLIKAT).
+    log_berechnung(
+        turn_id = turn_id_log,
+        node    = "salienz",
+        quelle  = quelle_log,
+        inhalt  = {
+            "schritt":         "segmentierung",
+            "segmente":        len(segmente),
+            "segment_laengen": [len(s) for s in segmente],
+        },
+        span_id = span_id,
+        user_id      = user_id,
+        character_id = character_id,
+    )
 
     pending:       list[dict] = state.get("pending_writes", []) or []
     gesamt_tokens: int        = 0
@@ -248,8 +349,54 @@ def analyze(
                 f"zeitausdruck_roh='{salienz_obj.get('zeitausdruck_roh', '')}'"
             )
 
+            # Der Wert, der ueber Erinnern entscheidet — ab hier dauerhaft
+            # und ohne Container-Log beantwortbar.
+            log_berechnung(
+                turn_id = turn_id_log,
+                node    = "salienz",
+                quelle  = quelle_log,
+                inhalt  = {
+                    "schritt":        "bewertung",
+                    "segment_index":  seg_idx,
+                    "segment_gesamt": len(segmente),
+                    "segment_laenge": len(segment),
+                    "segment_kurz":   segment[:60],
+                    "salienz":        salienz_obj.get("salienz", 0.0),
+                    "themen":         salienz_obj.get("themen", []),
+                    "dimension":      salienz_obj.get("dimension", ""),
+                    "gedaechtnistyp": salienz_obj.get("gedaechtnistyp", ""),
+                    "emotion":        salienz_obj.get("emotion", ""),
+                    "arousal":        salienz_obj.get("arousal", None),
+                    "modus":          salienz_obj.get("modus", ""),
+                },
+                span_id = span_id,
+                user_id      = user_id,
+                character_id = character_id,
+            )
+
         except (json.JSONDecodeError, KeyError) as fehler:
-            logger.warning(f"Salienz: JSON-Parsing fehlgeschlagen ({fehler}) — Segment uebersprungen")
+            # Ein uebersprungenes Segment ist ein Fehler, keine Warnung
+            # (DEVELOPER_HANDBOOK §3: silent skip mit warning ist verboten).
+            # Der Turn verliert hier still einen Gedaechtnis-Eintrag.
+            logger.error(
+                f"Salienz: JSON-Parsing fehlgeschlagen ({type(fehler).__name__}: {fehler}) — "
+                f"Segment {seg_idx + 1}/{len(segmente)} verworfen, kein pending_write"
+            )
+            log_fehler(
+                turn_id = turn_id_log,
+                node    = "salienz",
+                quelle  = quelle_log,
+                inhalt  = {
+                    "grund":          "json_parsing",
+                    "fehler_typ":     type(fehler).__name__,
+                    "segment_index":  seg_idx,
+                    "segment_gesamt": len(segmente),
+                    "segment_laenge": len(segment),
+                },
+                span_id = span_id,
+                user_id      = user_id,
+                character_id = character_id,
+            )
             continue
 
         # ── Gravitationsterm auf Salienz addieren (Drive) ──
@@ -264,6 +411,25 @@ def analyze(
                 f"Salienz: Gravitationsboost — "
                 f"basis={salienz_basis:.2f} + grav={gravitationsterm:.3f} "
                 f"= {salienz_neu:.2f}"
+            )
+
+            # Der Boost veraendert den Wert nach der Bewertung. Ohne eigene
+            # Zeile waere im Nachhinein nicht trennbar, ob eine hohe Salienz
+            # vom Modell kam oder von der Ziel-Gravitation.
+            log_berechnung(
+                turn_id = turn_id_log,
+                node    = "salienz",
+                quelle  = quelle_log,
+                inhalt  = {
+                    "schritt":          "gravitationsboost",
+                    "segment_index":    seg_idx,
+                    "salienz_basis":    salienz_basis,
+                    "gravitationsterm": gravitationsterm,
+                    "salienz_neu":      salienz_obj["salienz"],
+                },
+                span_id = span_id,
+                user_id      = user_id,
+                character_id = character_id,
             )
 
         # ── pending_write fuer KZG-Agent (ohne Embedding, ohne kern) ─
@@ -283,5 +449,24 @@ def analyze(
 
     # ── Token-Zaehler aktualisieren ───────────
     state["token_total"] += gesamt_tokens
+
+    # ── Pipeline-Log: Span-Ende ─────────────────
+    # Die Klammer zu span_start. Weniger pending_writes als Segmente heisst,
+    # dass unterwegs mindestens eines verworfen wurde — die Differenz ist ohne
+    # Container-Log sichtbar, die Begruendung steht in den fehler-Eintraegen.
+    span_end(
+        turn_id = turn_id_log,
+        node    = "salienz",
+        quelle  = quelle_log,
+        span_id = span_id,
+        inhalt  = {
+            "segmente":       len(segmente),
+            "pending_writes": len(pending),
+            "token_total":    gesamt_tokens,
+            "abbruch":        False,
+        },
+        user_id      = user_id,
+        character_id = character_id,
+    )
 
     return state

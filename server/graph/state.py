@@ -144,4 +144,33 @@ class ConversationState(TypedDict):
 
     # ── Interne Anmerkungen (Node-übergreifend) ──
     node_annotations: list[str]
+
+
+# ═══════════════════════════════════════════════════════════════════
+# Projektionen des State
+# ═══════════════════════════════════════════════════════════════════
+
+def pipeline_quelle(state: ConversationState) -> str:
+    """Uebersetzt die Graph-Rolle in den quelle-Wert des pipeline_log.
+
+    Die Werte "user" und "character" sind Bestand — sie stehen so in allen
+    bisherigen Eintraegen und bleiben deshalb unveraendert. Neu seit Chat 110
+    ist "agent" fuer den AgentGraph, der davor als "character" mitlief und
+    damit im Log nicht vom CharacterGraph zu trennen war.
+
+    Liegt hier statt in einem Node, weil mehrere Nodes dieselbe Abbildung
+    brauchen (Enricher, Salienz) und eine zweite Kopie zwangslaeufig
+    auseinanderlaeuft.
+
+    Vorbedingung: keine — eine fehlende Rolle gilt als HumanGraph.
+    Nachbedingung: einer der drei Bestandswerte.
+    Fehlerfaelle: keine; unbekannte Rollen fallen auf "user" zurueck.
+    """
+
+    # ── Verarbeitung / Ausgabe ──────────────────
+    return {
+        "human":     "user",
+        "character": "character",
+        "agent":     "agent",
+    }.get(state.get("graph_rolle", "human"), "user")
     

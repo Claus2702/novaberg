@@ -4,9 +4,18 @@ Ziel: Nach einer Promotion fuehrt jede verbindung-Zeile des promoteten
 KZG-Keys auf ihren LZG-Knoten.
 
 Die Faelle schreiben echte Zeilen in `verbindung`. Jede traegt eine testeigene
-turn_id und testeigene kzg_ids (uuid4); tearDown raeumt genau diese ab. Als
-Fremdschluessel-Ziel dient ein bestehender lzg_knoten — fehlt die Tabelle oder
-ist sie leer, wird der Test rot statt uebersprungen.
+turn_id und testeigene kzg_ids (uuid4); tearDown raeumt genau diese ab.
+
+Als Fremdschluessel-Ziel legt setUp sich **zwei eigene lzg_knoten an** und
+raeumt sie wieder ab. Bis Chat 111 nahm der Test sich stattdessen zwei
+beliebige bestehende Knoten — das lief nur, solange zufaellig welche da waren.
+Der Reset vom 27.07.2026 hat die Tabelle geleert und alle neun Faelle rot
+gemacht, ohne dass am Code etwas falsch war. Ein Test, der einen Bestand
+voraussetzt, den er nicht selbst herstellt, prueft die Datenlage mit.
+
+Der Knoten dient ausschliesslich als Fremdschluessel-Ziel — sein Inhalt geht
+in keine Zusicherung ein. Deshalb genuegen die acht Pflichtspalten ohne
+Default; Embedding, Themen und EI-Felder bleiben leer.
 
 ABGRENZUNG: Geprueft wird der Nachtrag selbst. Dass er hinter allen drei
 Promotions-Pfaden sitzt (Halbreaktivierung, Reinforcement, Neuanlage), ergibt
@@ -36,8 +45,8 @@ class VerbindungNachtragTest(unittest.TestCase):
         self.kzg_id:  str = f"kzg:test:nachtrag:{marke}"
         self.fremd_kzg_id: str = f"kzg:test:nachtrag:{marke}:fremd"
 
-        self.knoten_id:  int = self._irgendein_knoten()
-        self.knoten_id2: int = self._irgendein_knoten(ausser=self.knoten_id)
+        self.knoten_id:  int = self._knoten_anlegen(f"{self.kzg_id}:fk1")
+        self.knoten_id2: int = self._knoten_anlegen(f"{self.kzg_id}:fk2")
 
         # Zwei Zeilen — ein Turn kann denselben Eintrag mehrfach naehren.
         VerbindungRepository.insert(POSTGRES_URL, self.turn_id, self.kzg_id)
@@ -46,34 +55,66 @@ class VerbindungNachtragTest(unittest.TestCase):
         VerbindungRepository.insert(POSTGRES_URL, self.turn_id, self.fremd_kzg_id)
 
     def tearDown(self) -> None:
+        """Raeumt Bruecken-Zeilen und die beiden Fixture-Knoten ab.
+
+        Reihenfolge: erst verbindung, dann lzg_knoten. Der Fremdschluessel
+        traegt ON DELETE SET NULL, die Reihenfolge waere also unkritisch —
+        sie steht trotzdem so da, damit sie es auch bleibt, wenn jemand die
+        Regel spaeter auf CASCADE zieht.
+        """
         conn = psycopg2.connect(POSTGRES_URL)
         try:
             with conn.cursor() as cur:
                 cur.execute("DELETE FROM verbindung WHERE turn_id = %s", (self.turn_id,))
+                cur.execute(
+                    "DELETE FROM lzg_knoten WHERE id = ANY(%s)",
+                    ([self.knoten_id, self.knoten_id2],),
+                )
             conn.commit()
         finally:
             conn.close()
 
     @staticmethod
-    def _irgendein_knoten(ausser: int | None = None) -> int:
-        """Liefert eine bestehende lzg_knoten-ID als Fremdschluessel-Ziel."""
+    def _knoten_anlegen(quell_key: str) -> int:
+        """Legt einen Wegwerf-lzg_knoten an und liefert seine ID.
+
+        Der Knoten ist reines Fremdschluessel-Ziel fuer verbindung.lzg_id;
+        sein Inhalt geht in keine Zusicherung ein. Gesetzt werden nur die
+        Pflichtspalten ohne Default.
+
+        Vorbedingung: Postgres erreichbar, Tabelle lzg_knoten existiert.
+        Nachbedingung: genau eine neue Zeile, deren ID zurueckgegeben wird.
+        Fehlerfaelle: liefert das INSERT keine ID, ist die Tabelle nicht
+            bespielbar — das ist ein echter Fehler und wird laut, nicht
+            uebersprungen.
+        """
+
+        # ── Verarbeitung ────────────────────────────
         conn = psycopg2.connect(POSTGRES_URL)
         try:
             with conn.cursor() as cur:
-                if ausser is None:
-                    cur.execute("SELECT id FROM lzg_knoten ORDER BY id LIMIT 1")
-                else:
-                    cur.execute(
-                        "SELECT id FROM lzg_knoten WHERE id <> %s ORDER BY id LIMIT 1",
-                        (ausser,),
-                    )
+                cur.execute(
+                    """
+                    INSERT INTO lzg_knoten
+                        (kzg_quell_key, user_id, inhalt, dimension,
+                         gewicht_roh, gewicht_absolut, gewicht_decay,
+                         kzg_erstellt_am)
+                    VALUES (%s, 'test', 'Fixture fuer den lzg_id-Nachtrag.',
+                            'test', 0.0, 0.0, 0.0, NOW())
+                    RETURNING id
+                    """,
+                    (quell_key,),
+                )
                 zeile = cur.fetchone()
+            conn.commit()
         finally:
             conn.close()
+
+        # ── Ausgabe-Verifikation ────────────────────
         if not zeile:
             raise AssertionError(
-                "Kein lzg_knoten vorhanden — ohne Fremdschluessel-Ziel ist der "
-                "Nachtrag nicht pruefbar."
+                f"lzg_knoten-Fixture '{quell_key}' konnte nicht angelegt werden — "
+                f"INSERT lieferte keine ID."
             )
         return int(zeile[0])
 
