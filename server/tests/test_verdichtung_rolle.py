@@ -139,9 +139,16 @@ class VerdichtungDatenpfadTest(unittest.TestCase):
             with self.assertLogs(VERDICHTUNG_LOGGER, level="WARNING") as log:
                 verdichten(_state(None))
 
-        warnungen = [r for r in log.records if r.levelname == "WARNING"]
-        self.assertEqual(len(warnungen), 1)
-        self.assertIn("beobachter fehlt", warnungen[0].getMessage())
+        # Auf den Wortlaut gefiltert statt alle WARNINGs gezaehlt: Dieser
+        # Zustand traegt kein Segment, seit Chat 111 warnt die Verdichtung
+        # deshalb zusaetzlich vor dem Volltext-Rueckfall. Die Zusicherung hier
+        # ist "genau eine beobachter-Warnung, kein Doppel-Log" — nicht "im
+        # ganzen Lauf passiert nur eine einzige Sache".
+        beobachter_warnungen = [
+            r for r in log.records
+            if r.levelname == "WARNING" and "beobachter fehlt" in r.getMessage()
+        ]
+        self.assertEqual(len(beobachter_warnungen), 1)
 
         nachricht: str = ruf.call_args.args[0].messages[0]["content"]
         self.assertIn(USER_TEXT, nachricht.split("[BEWERTUNGSOBJEKT]", 1)[1])

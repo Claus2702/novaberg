@@ -124,8 +124,36 @@ def verdichten(state: AgentState) -> dict:
         lagebild_label  = "Dies ist die Antwort des Assistenten."
         eingabe_label   = "Eingabe des Nutzers"
 
+    # ── Segment vor Volltext ────────────────────
+    # Die Salienz hat ein Segment bewertet, nicht den ganzen Turn. Wer den
+    # Volltext verdichtet, waehrend die Bewertung ein Segment betraf, legt fuer
+    # jedes Segment denselben Satz ab — gemessen 27.07.2026: drei Segmente
+    # (137/487/222 Zeichen), drei Paraphrasen desselben Absatzes, die anderen
+    # beiden Segmente nie gespeichert.
+    #
+    # Das Lagebild bleibt absichtlich die andere Turn-Haelfte und wird NICHT um
+    # den Volltext erweitert. Sonst stuende der ganze Text wieder im Prompt und
+    # die Ursache waere reproduziert.
+    segment:        str = state["parameter"].get("segment", "")
+    segment_index:  int = state["parameter"].get("segment_index", 0)
+    segment_gesamt: int = state["parameter"].get("segment_gesamt", 0)
+
+    if segment.strip():
+        bewertungs_text = segment
+    else:
+        # Kein stiller Rueckfall: Ein Volltext-Lauf muss sich vom Segment-Lauf
+        # im Log unterscheiden, sonst sieht die Ausnahme aus wie der Normalfall
+        # (DEVELOPER_HANDBOOK §4, Default-wie-Fehlschlag-Lesson).
+        logger.warning(
+            f"KZG-Verdichtung: kein Segment im parameter-Kanal — verdichte den "
+            f"Volltext ({len(bewertungs_text)} Zeichen, graph_rolle={graph_rolle}). "
+            f"Erwartet bei pending_writes ausserhalb des Salienz-Nodes."
+        )
+
     logger.info(
         f"KZG-Verdichtung: graph_rolle={graph_rolle}, beobachter={beobachter}, "
+        f"quelle={'segment' if segment.strip() else 'volltext'}, "
+        f"segment={segment_index + 1}/{segment_gesamt if segment_gesamt else 1}, "
         f"bewertungs_laenge={len(bewertungs_text)}, "
         f"lagebild_laenge={len(lagebild_text)}"
     )

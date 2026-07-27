@@ -433,14 +433,26 @@ def analyze(
             )
 
         # ── pending_write fuer KZG-Agent (ohne Embedding, ohne kern) ─
+        # Das Segment reist mit. Bis Chat 111 trug `daten` nur das
+        # salienz_obj; der Verdichter bekam den Turn-Volltext aus dem State und
+        # fasste ihn je Segment erneut zusammen — drei Segmente ergaben drei
+        # Paraphrasen desselben Absatzes, die uebrigen Segmente landeten nie im
+        # Gedaechtnis (gemessen 27.07.2026 an Turn 975ec093...).
+        #
+        # salienz_obj bleibt, was das Modell gesagt hat; das Segment ist, was
+        # es gelesen hat. Zwei verschiedene Dinge, zwei Felder.
         pending.append({
             "ziel":         "kzg",
             "aktion":       "create",
             "daten": {
-                "salienz_obj": salienz_obj,
+                "salienz_obj":    salienz_obj,
+                "segment":        segment,
+                "segment_index":  seg_idx,
+                "segment_gesamt": len(segmente),
             },
             "beschreibung": f"KZG: {', '.join(salienz_obj.get('themen', []))} "
-                            f"(salienz={salienz_obj.get('salienz', 0):.2f})",
+                            f"(salienz={salienz_obj.get('salienz', 0):.2f}, "
+                            f"Segment {seg_idx + 1}/{len(segmente)})",
         })
 
     state["pending_writes"] = pending

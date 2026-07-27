@@ -112,6 +112,14 @@ def dispatch_kzg(
                 "salienz_obj":  salienz_obj,
                 "user_prompt":  state.get("user_prompt", ""),
                 "response":     state.get("response", ""),
+                # Das Segment, das die Salienz bewertet hat. Der Verdichter
+                # zieht es dem Turn-Volltext vor; fehlt es — etwa bei einem
+                # pending_write aus dem RechercheAgenten —, faellt er sichtbar
+                # auf den Volltext zurueck. Leerstring statt None, damit die
+                # Rueckfall-Bedingung eine einzige Form hat.
+                "segment":        daten.get("segment", ""),
+                "segment_index":  daten.get("segment_index", 0),
+                "segment_gesamt": daten.get("segment_gesamt", 0),
             },
             "schritte": [],
             "ergebnis": None,
