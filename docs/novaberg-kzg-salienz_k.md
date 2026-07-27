@@ -236,7 +236,7 @@ salienz_charakter = max( ziel_gravitation , emotionale_gravitation , neugier_bez
 
 **Je Segment, nicht je Turn.** Jedes Segment bekommt sein eigenes `salienz_effektiv`; der `user`-Eintrag behält `salienz_human` unverändert. Kognitive Begründung: Über `verbindung` sind alle Segmente ohnehin mit dem ganzen Turn verbunden — ein gering gewichteter Teil ist nicht gelöscht, sondern **nur nicht auffindbar**, weil er unbedeutend war.
 
-**Drei Antriebe sind gebaut und nicht angeschlossen.** Ziel-Gravitation kommt heute nur als Zuschlag an; emotionale Gravitation wird ausschließlich für den Emotionsverlauf gelesen; Neugier landet im `gv_detail` und löst Impulse aus. Keiner beeinflusst die Salienz.
+~~**Drei Antriebe sind gebaut und nicht angeschlossen.**~~ — **teilweise überholt, Chat 112.** Die Ziel-Gravitation ist im Eigen-Pfad angeschlossen (und liefert dort gemessen 0.0, siehe `novaberg-salienz-berechnung_k.md` §9). Emotionale Gravitation und Neugier sind es weiterhin nicht. Dazugekommen ist ein vierter Antrieb, den diese Fassung nicht kannte: die **sprachliche Lesung des Segmenttexts** — die einzige segmentweite Größe im System und damit die einzige, die „je Segment" überhaupt einlösen kann.
 
 #### Das neue Feld
 
@@ -278,6 +278,31 @@ Die Salienz wird gerechnet, die übrigen Felder nicht: `themen`, `dimension`, `g
 | **TEST** | Reine Funktion, ohne LLM prüfbar: `max(0.5 × 0.9, 0.0) = 0.45`; `max(0.5 × 1.5, 0.0) = 0.75`; `max(0.2 × 0.9, 0.8) = 0.8` — der Eigen-Pfad gewinnt. Idempotenz: zweimal rechnen liefert bitgleich. Feld-Test: frisch angelegter `charakter_hash` trägt `quelle='default'`, nach Destillation `'destilliert'` mit Zeitstempel. |
 | **Gegenprobe** | `nutzer_gewichtung` testweise fest auf 1.0 — der Test, der 0.45 erwartet, muss rot werden. |
 | **MESSUNG** | Live-Turn, dessen Antwort ein Segment mit Zielbezug und eines ohne enthält. Über `pipeline_log` beide Salienzwerte lesen: sie müssen sich unterscheiden. Zusätzlich `SELECT nutzer_gewichtung, nutzer_gewichtung_quelle FROM charakter_hash` — nach der ersten Destillation muss die Quelle `'destilliert'` lauten. |
+
+#### Abnahme (Chat 112, 27.07.2026)
+
+**Gebaut in zwei Teilen.** Erst der Transport: `salienz_human` erreicht den CharacterGraph desselben Turns. Dann die Formel.
+
+Der Transport war die unbemerkte Vorbedingung. Der Wert wurde im HumanGraph gemessen und danach fallengelassen — er stand vierzig Sekunden vor dem CharacterGraph-Lauf unter derselben `turn_id` im `pipeline_log`, und der CharacterGraph fragte das Modell erneut. Ohne ihn gibt es keinen Pflicht-Pfad und die Formel fällt auf den Eigen-Pfad zusammen.
+
+**Messturn 21:11 UTC**, zwei Nutzer-Segmente (0.7 / 0.3) → `salienz_human = 0.7`, `nutzer_gewichtung = 1.04` (`destilliert`):
+
+| Segment | sprachlich | Eigen-Pfad | Pflicht-Pfad | effektiv | Gewinner |
+|---|---|---|---|---|---|
+| 1 | 0.75 | 0.885 | 0.728 | **0.885** | eigen |
+| 2 | 0.40 | 0.472 | 0.728 | **0.728** | pflicht |
+
+Drei Zusicherungen des ZIELs sind damit belegt: Die beiden Segmente erhalten **verschiedene** Werte. Das Segment ohne eigenen Zug bekommt die gewichtete Nutzer-Salienz als **Boden** — ohne ihn stünde es bei 0.472. Und kein Wert überschreitet 1.0.
+
+**Beide Pfade gewinnen je einmal in einem einzigen Turn.** Das `max()` ist damit als echte Wahl belegt und nicht als Formalität.
+
+`ziel_gravitation` stand auch hier bei 0.0. Seiteneffekte des Messturns: `timeline` 0 · `notizen` 0 · `fakten` 0.
+
+**Gegenprobe, zweifach.** `(1 + z)` durch einen nackten Multiplikator `z` ersetzt → 10 Tests rot, darunter alle vier Auslöschungs-Tests. Leserichtung auf `charakter_hash` vertauscht → 1 Test rot; er legt beide Richtungen mit verschiedenen Faktoren an, damit die Verwechslung überhaupt bemerkbar ist. Beides zurückgenommen.
+
+**Suite:** 173 → 222 Tests, grün, 0 übersprungen.
+
+**Offen aus diesem Bauteil:** Der Rollen-Switch am Prompt (Bauteil unten) wird jetzt dringender, nicht weniger dringend — die sprachliche Lesung ist der einzige tragende Antrieb des Eigen-Pfads, und sie läuft weiterhin gegen die Nutzer-Schablone.
 
 #### Offen
 

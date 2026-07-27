@@ -1,6 +1,6 @@
 # Novaberg — Bugs & Limitationen
 
-**Stand:** 27. Juli 2026, Chat 111
+**Stand:** 27. Juli 2026, Chat 112
 **Gliederung:** Einträge stehen in der Sektion ihres Entdeckungs-Chats und wandern nicht. Nachträge aus späteren Chats tragen ihre Chat-Nummer im Text. Sonst verliert die Sektionsfolge ihre Bedeutung als Zeitachse.
 **Quelle:** Testlauf "Karrierekrise" (200 Prompts) + Gedächtnis-Epic (Chat 11) + Epic 11 Agent-System (Chats 22–32) + Persona Smoke-Tests (Chats 31–32) + RechercheAgent-Test (Chat 35) + Doku-Audit (Chat 36) + PRIO0-Fix + Client-Observability (Chat 37) + Claude API-Test + STREAM1-Fix + Gesprächsvektor (Chat 39) + CharakterIdentitaetAgent + DirektivenAgent + Tribunal Score-System (Chat 40) + Telegram Bot + Zeitparser-Fixes (Chat 41) + CRUD-Härtung + Telegram-Chat-Analyse + DB-Report (Chat 42) + KONTEXT1-Fix + Resume-Bug + Epic 15 Pilot (Chat 43) + Epic 15 Rollout + DELEG-REG Fix + KZG-Klebrigkeit (Chat 44) + RESP-CHAR1 Fix (Chat 45) + CLASSIFY-REJECTED + Gemma4 Live-Tests (Chat 48) + Telegram-Konversation "frecher Charakter" (Chat 49) + RESUME-REJECT Fix + Live-Tests (Chat 50) + Neugier-Konzept + Projektinfrastruktur (Chat 51) + Doku-Alignment + emotions_profil (Chat 52) + Antrieb-Konzept + Dual-Emotion (Chat 53) + HALL2-Fix + Planner-Refactor (Chat 54) + PySide6 verworfen + GTK4-Entscheidung (Chat 55) + GTK4-Client + Panel-Infrastruktur (Chat 56) + Web-Tool-Doku + SEARX1-Diagnose (Chat 57) + Chat 61 (Perzeption-Symmetrie, Akkumulations-Refactor, Paper-Portfolio, Lumi, urllib3-Doppel-Turn beobachtet) + Paper I + urllib3-RETRY + ROUTE-CHAR-NOTIZ + RESP-DEAD + PIXIE-GHOST (Chat 65) + WS-SINGLE Fix + ClientConnection + User-Message-Broadcast (Chat 68) + Dreischicht-Integration + GV-Refactoring + MODUS-LEER + VEKTOR-LEER + AROUSAL-330 + ZIEL-LABEL-LEER Fixes (Chat 72) + Promotion-Pipeline-Audit (Chat 75) + Reducer-Umbau Smoke-Tests (Chat 75) + Chat 79 (THINK-MEM-CONFLICT, CHAR-LZG-LEAK, MIGRATION-PIX-PAIR, MIGRATION-AGENTGRAPH-PAIR, PIX-CLEAN, KZG-CLEANUP) + Doku-Code-Abgleich (Chat 106) + init.sql-Audit (Chat 107)
 
@@ -1910,6 +1910,8 @@ FROM pipeline_log WHERE turn_id = '<turn>' AND node = 'salienz'
 
 **Status:** Offen. Lösung entschieden Chat 111 — `novaberg-kzg-salienz_k.md`, Bauteil 1b: Die Salienz von Novas Äußerung wird gerechnet statt gefragt (`max(salienz_human × nutzer_gewichtung, salienz_charakter)`); der Rollen-Switch am Prompt bleibt trotzdem nötig, weil Themen, Intentionen und Emotion weiter aus dem LLM-Call kommen.
 
+**Nachtrag Chat 112 — die Formel steht, und der Prompt ist dadurch *dringender* geworden, nicht weniger dringend.** Der Halbsatz „wird gerechnet statt gefragt" trifft die gebaute Lösung nur zur Hälfte: Sie wird gerechnet **und** gelesen. Der Grund kam beim Bauen heraus — `salienz_human`, `gravitationsterm`, die emotionale Gravitation und die `aufnahmebereitschaft` sind sämtlich **turnweite** Größen, einmal je Turn vor dem Segmentschnitt berechnet. Eine Formel nur aus ihnen gäbe allen *n* Segmenten einer Antwort denselben Wert — also genau das Symptom, das diesen Eintrag ausgelöst hat, auf anderem Weg. Die LLM-Lesung des Segmenttexts ist derzeit die **einzige segmentweite Größe im System** und bleibt deshalb als vierter Antrieb im Eigen-Pfad. Sie läuft weiter gegen die Nutzer-Schablone. Damit trägt der einzige Antrieb, der heute etwas beiträgt, den Defekt dieses Eintrags in sich.
+
 **Verwandt:** DESTILLAT-SUBJEKT-SCHABLONE (gleiche Klasse, eine Ebene tiefer) · KZG-SALIENZ-SKALENBRUCH (kalibriert auf diesen Werten) · KZG-SEGMENT-DUPLIKAT.
 
 ---
@@ -1959,3 +1961,37 @@ FROM pipeline_log WHERE turn_id = '<turn>' AND node = 'salienz'
 **Status: Behoben Chat 111** — `promotion_queue_push()` in `services/shadow_agent/utils.py` prüft vor dem Einreihen auf einen bestehenden Auftrag mit demselben `key` und schreibt nur, wenn keiner da ist. Alle drei Schreiber gehen über den Helfer.
 
 **Verwandt:** PIXIE-QUEUE-LAUF-DISSENS.
+
+---
+
+### Chat 112 (27.07.2026) — Salienz-Formel
+
+#### SALIENZ-WERT-UNGEPRUEFT-FORMATIERT — eine Zeichenkette im Salienzfeld reißt den Turn ab ✅
+
+**Entdeckt:** Chat 112, beim Schreiben eines Tests für den Fall „das Modell liefert etwas Unlesbares". Der Test ist nicht rot geworden — der ganze Turn ist abgestürzt.
+
+**Klasse:** Ungeprüfte Modellantwort in einem Format-Ausdruck. Severity **hoch** — vollständiger Turn-Abbruch, kein Gedächtnis-Eintrag, und kein Fehlerpfad, der ihn auffängt.
+
+**Symptom:** `graph/nodes/salience.py` las das Feld `salienz` der LLM-Antwort an drei Stellen ungeprüft:
+
+1. die Log-Zeile nach der Bewertung — `f"score={salienz_obj.get('salienz', 0):.2f}"`
+2. der Gravitationsboost — `salienz_basis + gravitationsterm`
+3. die `beschreibung` des `pending_write` — wieder `:.2f`
+
+Liefert das Modell dort eine Zeichenkette statt einer Zahl — „hoch" statt 0.8 —, wirft (1) `ValueError: Unknown format code 'f' for object of type 'str'` und (2) `TypeError`. **Beide fallen an keinem `except`-Zweig des Nodes ab:** Dort stehen nur `json.JSONDecodeError` und `KeyError`.
+
+**Beleg:**
+
+```
+File "/app/graph/nodes/salience.py", line 417, in analyze
+    f"Salienz: score={salienz_obj.get('salienz', 0):.2f}, "
+ValueError: Unknown format code 'f' for object of type 'str'
+```
+
+**Auswirkung:** Ein einziges Wort statt einer Zahl beendet den Turn. Kein `pending_write`, kein KZG-Eintrag, keine Antwort — und im `pipeline_log` bleibt der Span offen, weil der Abbruch vor `span_end` liegt. Der Fehler ist nie aufgetreten, solange das Modell brav Zahlen lieferte; er ist eine Landmine mit Auslöser beim ersten Ausreißer.
+
+**Herkunft:** Die Fehlerklasse steht in `Arbeitsweise` §12 als *„denselben Fehler zweimal bauen"*. Genau das ist passiert: Nach dem Fix an Stelle (1) lief derselbe Test zwei Aufrufe später in Stelle (3). Die dritte fand erst ein Grep über alle `salienz_obj.get('salienz'`-Vorkommen derselben Funktion — die Aufzählung war wieder kürzer als die Wirklichkeit.
+
+**Status: Behoben Chat 112.** Alle drei Stellen gehen über `_salienz_wert_lesen()`, das den Wert prüft und bei Unlesbarkeit `None` mit `logger.error` liefert. Die Formatierung läuft über `_salienz_anzeige()`, das `None` als `unlesbar` ausgibt. **Ein unlesbarer Wert wird ausdrücklich nicht als 0.0 gezählt** — als 0.0 wanderte er ins Maximum von `salienz_human` und senkte es still ab, ohne dass irgendwo stünde, dass etwas fehlte. Zwei Tests decken den Fall ab, einer davon auf Node-Ebene mit einem lesbaren und einem unlesbaren Segment im selben Lauf.
+
+**Verwandt:** SALIENZ-OHNE-PIPELINE-LOG (dieselbe Funktion, ohne die der Absturz unauffindbar gewesen wäre) · `novaberg-lesson_l_default-wie-fehlschlag.md` (warum die 0.0 nicht in Frage kam).

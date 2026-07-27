@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Konzept — Formel und Herleitung der Salienz für beide Beobachter
-**Stand:** 27. Juli 2026, Chat 111
+**Stand:** 27. Juli 2026, Chat 112 — Formel gebaut und live abgenommen
 **Pfad:** novaberg/docs/novaberg-salienz-berechnung_k.md
 **Typ:** Konzept
 **Voraussetzung:** `novaberg-convention-abgeleitete-werte.md`
@@ -41,24 +41,58 @@ salienz_effektiv = max( salienz_human × nutzer_gewichtung , salienz_charakter )
 
 **Je Segment, nicht je Turn.** Ein Turn erzeugt einen `user`-Eintrag und *n* `assistant`-Segmente. Jedes Segment bekommt sein eigenes `salienz_effektiv`; der `user`-Eintrag behält `salienz_human` unverändert.
 
+### Woher `salienz_human` kommt (Chat 112)
+
+Es ist die LLM-Bewertung der Nutzeräußerung **desselben Turns**, gemessen im HumanGraph, als **Maximum über dessen Segmente** — ein Turn ist so gewichtig wie sein stärkster Teil, dieselbe Begründung wie beim `max()` der Formel.
+
+Der Wert wird im Salienz-Node in den State gesetzt, **nicht** vom Aufrufer aus den `pending_writes` gelesen: Der Dispatcher läuft als letzter Node und leert sie. Wer danach liest, bekommt eine leere Liste und daraus still `None`. Von dort reist er im Event-Payload in den CharacterGraph.
+
+Er wird **vor** dem Gravitationsboost genommen. Die Gravitation ist im Eigen-Pfad ein Antrieb; stünde sie auch hier drin, zählte sie zweimal.
+
+**`None` und `0.0` sind verschiedene Dinge und werden durchgängig getrennt.** `None` heißt: Es gab keine Nutzeräußerung — AgentGraph und eigener Impuls. `0.0` heißt: Es wurde etwas gesagt, und es war belanglos. Wer beides zusammenwirft, kann einen fehlenden Wert nicht mehr von einem gemessenen unterscheiden.
+
 Die Begründung ist kognitiv: Was hängen bleibt, sind die aussagekräftigen Teile. Ein beiläufiger Satz bleibt nicht. Über `verbindung` sind alle Segmente ohnehin mit dem ganzen Turn verbunden — ein gering gewichteter Teil ist damit **nicht gelöscht, sondern nur nicht auffindbar**, weil er unbedeutend war. Genau so verhält sich Erinnerung.
 
 ## 4. Der Eigen-Pfad
 
 ```
-salienz_charakter = max( ziel_gravitation , emotionale_gravitation , neugier_bezug )
+salienz_charakter = max( sprachlich , ziel_gravitation ,
+                         emotionale_gravitation , neugier_bezug )
                     × (1 + erregungs_zuschlag)
 ```
 
-Wieder `max()`, aus demselben Grund: drei Gründe, einer genügt.
+Wieder `max()`, aus demselben Grund: mehrere Gründe, einer genügt.
 
-| Antrieb | Formel | Stand |
+| Antrieb | Formel | Stand (27.07.2026) |
 |---|---|---|
-| **Ziel-Gravitation** | `cosine(segment, ziel) × motivation` | gebaut, `ei/gravitation.py` |
-| **Emotionale Gravitation** | `similarity × gewicht × zeit_decay × quellen_faktor` | gebaut, heute nur für den Emotionsverlauf gelesen |
-| **Neugier-Bezug** | Wissenslücken-Detektor (GV4) | teilweise — die Rückkopplung Lücken → Neugier ist dokumentiert, nicht integriert |
+| **Sprachlich** | LLM-Lesung des Segmenttexts | **angeschlossen** |
+| **Ziel-Gravitation** | `cosine(segment, ziel) × motivation` | **angeschlossen**, `ei/gravitation.py` |
+| **Emotionale Gravitation** | `similarity × gewicht × zeit_decay × quellen_faktor` | gebaut, **nicht angeschlossen** — unnormiert |
+| **Neugier-Bezug** | Wissenslücken-Detektor (GV4) | **nicht angeschlossen** — Rückkopplung Lücken → Neugier fehlt |
 
-**Alle drei sind bereits gerechnet und stehen im State. Keiner beeinflusst heute die Salienz.** Nur die Ziel-Gravitation kommt an, und die als bloßer Zuschlag auf die LLM-Bewertung.
+~~**Alle drei sind bereits gerechnet und stehen im State. Keiner beeinflusst heute die Salienz.**~~ — **überholt seit Chat 112:** Ziel-Gravitation und die sprachliche Lesung sind angeschlossen. Der Nachsatz *„Nur die Ziel-Gravitation kommt an, und die als bloßer Zuschlag auf die LLM-Bewertung"* gilt weiterhin für den **HumanGraph**; für Novas eigene Äußerung ist der Zuschlag durch die Formel ersetzt.
+
+### Der vierte Antrieb — warum die sprachliche Lesung dazukam
+
+Die ursprüngliche Fassung nannte drei Antriebe und wollte die LLM-Bewertung ganz ersetzen. **Das hätte den Befund neu erzeugt, aus dem dieses Konzept entstanden ist.**
+
+Denn: `salienz_human`, `gravitationsterm`, die emotionale Gravitation und die `aufnahmebereitschaft` sind **sämtlich turnweite Größen**. Sie werden einmal je Turn aus dem Turn-Embedding bzw. dem Gesprächszustand gerechnet, vor dem Segmentschnitt. Der Salienz-Node liest den Gravitationsterm innerhalb der Segmentschleife und bekommt bei jedem Durchlauf dieselbe Zahl.
+
+§3 verlangt aber „je Segment, nicht je Turn". **Mit turnweiten Eingaben allein ist das nicht erfüllbar** — alle *n* Segmente einer Antwort bekämen denselben Wert. Genau das ist das Symptom von `SALIENZ-PROMPT-NUTZER-SCHABLONE`: sechs Segmente, sechsmal 0.3.
+
+Die Lesung des Segmenttexts ist derzeit die **einzige** Größe im System, die ein Segment von seinem Nachbarn unterscheiden kann. Sie bleibt deshalb im `max()`, bis die Antriebe gegen das Segment-Embedding statt gegen das Turn-Embedding rechnen.
+
+**Belegt am Messturn vom 27.07.2026, 21:11 UTC:** zwei Segmente derselben Antwort, `sprachlich` 0.75 und 0.40, alle übrigen Eingaben identisch. Die Differenz von 0.35 stammt vollständig aus der Lesung.
+
+### Zur Bauart: kein nackter Multiplikator
+
+Ein Faktor darf nur so viel Einfluss auf das Ergebnis haben, wie seine Skala ihm zugesteht. Ein Verstärker, der modulieren soll, aber als bloßer Multiplikator vor dem Ergebnis steht, kann es allein auf null ziehen; ein unnormierter Antrieb kann es allein sättigen. **Beides ist derselbe Fehler.** Daraus folgen drei Bauregeln, die im Code stehen und getestet sind:
+
+- Die Antriebe stehen in einem `max()`, nicht in einem Produkt.
+- Der Erregungs-Zuschlag wirkt als `(1 + z)` mit `z ≥ 0`.
+- Die Gewichtung liegt in `[RAD_MIN, RAD_MAX]` und enthält die Null nicht.
+
+Wird die Salienz null, dann weil alle Gründe null waren — nicht, weil ein einzelner Faktor sie umgelegt hat.
 
 ### Der Erregungs-Zuschlag
 
@@ -144,7 +178,9 @@ salienz     = KZG_SALIENZ_CAP · sin(anteil · π/2) ^ 0.5
 
 Das `min()` kappt hart. Stünde die Multiplikation **nach** der Kurve, wäre der Bruch wieder da.
 
-**Die Gravitation hört auf, ein Zuschlag zu sein.** Heute addiert `salience.py` den `gravitationsterm` auf die LLM-Bewertung (gecappt bei 1.0). Künftig ist sie einer der drei Antriebe des Eigen-Pfads. Die Addition entfällt — und mit ihr die Frage nach ihrem Deckel.
+**Die Gravitation hört auf, ein Zuschlag zu sein.** ~~Heute addiert `salience.py` den `gravitationsterm` auf die LLM-Bewertung (gecappt bei 1.0).~~ — **seit Chat 112 nur noch im HumanGraph.** Für die Rollen `character` und `agent` ist die Addition durch die Formel ersetzt; die Gravitation ist dort ein Antrieb des Eigen-Pfads. Im HumanGraph steht der alte Zuschlag unverändert — sein Ausbau gehört zu Bauteil 1, nicht hierher, und ein Test bewacht die Trennung.
+
+**Die Kappung sitzt vorläufig in der Formel.** Bis Bauteil 1 die Kurve umbaut, kappt `ei/salienz.py` das Ergebnis bei 1.0 und vermerkt das im Ergebnis (`gekappt`), damit die Kappung nicht als Messwert durchgeht. Danach übernimmt das `min()` der Kurve.
 
 ## 7. Was das LLM noch entscheidet
 
@@ -198,9 +234,19 @@ Der Endpunkt in `server/api/gedaechtnis.py` liefert heute fünf Profilfelder; di
 
 ## 9. Offen
 
-**Der AgentGraph.** Ein eigener Gedanke hat keine Nutzeräußerung; `salienz_human` existiert nicht, der Ausdruck fällt auf den Eigen-Pfad zusammen. Folge: Ein Impuls ohne Ziel-, Emotions- oder Neugierbezug bekäme Salienz 0 und würde nie gespeichert. Nachvollziehbare Konsequenz, **nicht entschieden**.
+**Der AgentGraph.** ~~Ein Impuls ohne Ziel-, Emotions- oder Neugierbezug bekäme Salienz 0 und würde nie gespeichert. Nachvollziehbare Konsequenz, **nicht entschieden**.~~ — **entschieden Chat 112.** Der erste Halbsatz gilt weiter: Ein eigener Gedanke hat keine Nutzeräußerung, `salienz_human` bleibt `None`, der Ausdruck fällt auf den Eigen-Pfad zusammen. Die befürchtete Null tritt aber nicht ein, weil der Eigen-Pfad seit dem vierten Antrieb die sprachliche Lesung enthält — ein Impuls trägt immer einen Text, und ein Text hat immer eine Lesung.
 
-**Die Neugier-Rückkopplung.** Der Wissenslücken-Detektor steht, die Rückkopplung Lücken → Neugier ist dokumentiert und nicht integriert. Bis dahin trägt der Eigen-Pfad zwei statt drei Antriebe.
+Die Entscheidung dazu, in ihrer allgemeinen Form: **Eine Salienz von 0 ist zulässig, wenn sie aus lauter Nullen entsteht.** Unzulässig ist, dass eine Multiplikation den Wert auf 0 setzt, weil ein einzelner Faktor 0 ist, der eigentlich nur geringen Einfluss nehmen dürfte. Daraus wurden die drei Bauregeln in §4.
+
+**Ausdrücklich verworfen** wurde der Gegenentwurf, die Salienz des auslösenden Themas durch Queue, Agent, Stack und Zustellung bis in den Impuls durchzureichen. Ein Wert aus einem Turn von vor Stunden ist keine Aussage über den Gedanken, der jetzt entsteht. Novas Salienz kommt aus ihrer eigenen Äußerung.
+
+**Die Neugier-Rückkopplung.** Der Wissenslücken-Detektor steht, die Rückkopplung Lücken → Neugier ist dokumentiert und nicht integriert.
+
+**Die Normierung der emotionalen Gravitation.** `similarity × gewicht × zeit_decay × quellen_faktor` liefert Werte **weit über 1.0**: `gewicht` ist das LZG-Gewicht und lag am 27.07.2026 über 47 Knoten zwischen **3.31 und 4.98**. In ein `max()` mit Werten aus [0,1] gegeben, gewänne dieser Antrieb praktisch immer — nicht weil er der stärkste Grund wäre, sondern weil seine Skala eine andere ist. Er bleibt deshalb abgeklemmt, bis er normiert ist. Berührt `GV-RELEVANZ-UNNORMIERT`.
+
+**Das Tor der Ziel-Gravitation.** Die Schwelle 0.40 liegt auf `similarity × motivation`. Bei den 15 aktiven Zielen (Motivation 0.6–0.9, Mittel 0.759) hebt die Multiplikation die tatsächlich nötige Ähnlichkeit auf **0.44 bis 0.67**. Gemessen: `gravitationsterm = 0.0` in allen bisher betrachteten Läufen. Der Antrieb ist angeschlossen und schweigt. Dieselbe Klasse wie oben — ein Faktor, der gewichten soll, verschiebt in Wahrheit ein Tor.
+
+**Damit trägt der Eigen-Pfad heute genau einen von vier Antrieben.** Die Namen der schweigenden reisen in jeder `pipeline_log`-Zeile mit; ohne sie sähe ein `max()` über zwei Antriebe genauso aus wie eines über vier.
 
 **Die Züge des Rades.** Zwölf Zahlen, gesetzt nach Augenmaß. Sie sind nachzukalibrieren, sobald genug Charaktere durchgerechnet sind — und sie sind der erste Kandidat, wenn die Gewichtung sich in der Praxis falsch anfühlt.
 
