@@ -186,7 +186,13 @@ Das `min()` kappt hart. Stünde die Multiplikation **nach** der Kurve, wäre der
 
 Die Salienz wird gerechnet. Die übrigen Felder nicht: `themen`, `dimension`, `gedaechtnistyp`, `intentionen`, `emotion`, `modus`, `entitaeten_roh`, `zeitausdruck_roh` kommen weiter aus dem LLM-Call.
 
-Deren Kontamination aus dem `[LAGEBILD]` ist gemessen: Segmente ohne Themenbezug trugen die Wendung des Nutzerprompts wörtlich. **Der Rollen-Switch am Salienz-Prompt wird also gebraucht** — nach dem Vorbild von `_build_verdichtung_prompt` —, nur nicht mehr für die Salienz-Skala.
+Deren Kontamination aus dem `[LAGEBILD]` war gemessen: Segmente ohne Themenbezug trugen die Wendung des Nutzerprompts wörtlich. ~~**Der Rollen-Switch am Salienz-Prompt wird also gebraucht**~~ — **gebaut in Chat 112.**
+
+`_build_salienz_prompt()` nimmt die Graph-Rolle und zieht einen von drei Aufgaben-Blöcken: `salienz.task` für die Nutzeräußerung, `salienz.assistant_task` für Novas Antwort, `salienz.impuls_task` für ihren eigenen Gedanken. Die zehn Dimensionen und das Antwortformat bleiben geteilt — sie sind eine Checkliste, keine Beispiele; nur Lage und Skala hängen an der Rolle.
+
+**Der Nachsatz „nur nicht mehr für die Salienz-Skala" ist überholt.** Er ging davon aus, dass die Skala ganz entfällt. Sie bleibt — als vierter Antrieb des Eigen-Pfads (§4) —, und deshalb trägt jeder der drei Blöcke seine **eigene** Skala. Die Skala einer Nutzeräußerung („Smalltalk 0.1–0.2, Krise 0.8–1.0") passt auf eine Assistenten-Antwort nicht: Dort steht am oberen Ende die Einsicht, die ihr selbst aufgeht, am unteren die bloße Bestätigung.
+
+**Abnahme (27.07.2026, 21:41 UTC):** Beide Graphen ziehen den richtigen Block, nachweisbar in der `switch`-Zeile des `pipeline_log`. Novas Segmente kamen bei 0.6 heraus statt der flachen 0.3 der invertierten Schablone, ihre Themen stammen aus ihrem eigenen Text.
 
 ## 8. Das gespeicherte Rad — Vertrag zwischen Destillation und Anzeige
 

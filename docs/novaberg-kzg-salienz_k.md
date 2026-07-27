@@ -268,9 +268,11 @@ salienz     = KZG_SALIENZ_CAP · sin(anteil · π/2) ^ 0.5
 
 Das `min()` kappt hart: Ein Produkt von 1.4 wird zu `salienz = 1.0` — maximal erinnerungswürdig, nicht jenseits der Skala. Stünde die Multiplikation **nach** der Kurve, wäre der Bruch wieder da.
 
-#### Der Prompt bleibt trotzdem zu reparieren
+#### Der Prompt bleibt trotzdem zu reparieren — erledigt Chat 112
 
-Die Salienz wird gerechnet, die übrigen Felder nicht: `themen`, `dimension`, `gedaechtnistyp`, `intentionen`, `emotion`, `modus`, `entitaeten_roh`, `zeitausdruck_roh` kommen weiter aus dem LLM-Call — und deren Kontamination aus dem Lagebild ist gemessen. Der Rollen-Switch nach dem Vorbild von `_build_verdichtung_prompt` wird also gebraucht, nur nicht mehr für die Salienz-Skala.
+Die Salienz wird gerechnet, die übrigen Felder nicht: `themen`, `dimension`, `gedaechtnistyp`, `intentionen`, `emotion`, `modus`, `entitaeten_roh`, `zeitausdruck_roh` kommen weiter aus dem LLM-Call — und deren Kontamination aus dem Lagebild ist gemessen. Der Rollen-Switch nach dem Vorbild von `_build_verdichtung_prompt` wird also gebraucht, ~~nur nicht mehr für die Salienz-Skala~~ — **und zwar samt Skala**: Sie bleibt als vierter Antrieb des Eigen-Pfads, und jede Lage braucht ihre eigene.
+
+**Gebaut und abgenommen.** Drei Aufgaben-Blöcke, geteilter Dimensionen-Block, beide `rules`-Dateien auf rollenneutrale Ausgaberegeln reduziert. Der invertierte Satz lag zweimal auf der Platte — auch im gemma4-Override, der die ganze Nutzer-Skala mitgeschleppt hatte. Details und Messung: `SALIENZ-PROMPT-NUTZER-SCHABLONE` in `novaberg-bugs.md`.
 
 | | |
 |---|---|

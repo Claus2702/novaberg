@@ -1878,7 +1878,7 @@ Die Klasse ist auch im Bestand sichtbar: Ein Scan über 400 KZG-Keys findet mehr
 
 ### Chat 111 (27.07.2026) — Salienz-Sprint
 
-#### SALIENZ-PROMPT-NUTZER-SCHABLONE — der Prompt weist an, den Hintergrund zu bewerten ⚠️
+#### SALIENZ-PROMPT-NUTZER-SCHABLONE — der Prompt weist an, den Hintergrund zu bewerten ✅
 
 **Entdeckt:** Chat 111, beim Nachgehen dreier identischer Salienzwerte für drei verschiedene Absätze.
 
@@ -1908,9 +1908,19 @@ FROM pipeline_log WHERE turn_id = '<turn>' AND node = 'salienz'
 
 **Herkunft:** Chat 110 hat diese Fehlerklasse beim Verdichter diagnostiziert und dort mit drei rollenabhängigen Aufgaben-Blöcken behoben. Der Salienz-Node eine Ebene höher wurde nicht mitgeprüft — die Lesson „denselben Fehler zweimal bauen" beschreibt genau diesen Vorgang.
 
-**Status:** Offen. Lösung entschieden Chat 111 — `novaberg-kzg-salienz_k.md`, Bauteil 1b: Die Salienz von Novas Äußerung wird gerechnet statt gefragt (`max(salienz_human × nutzer_gewichtung, salienz_charakter)`); der Rollen-Switch am Prompt bleibt trotzdem nötig, weil Themen, Intentionen und Emotion weiter aus dem LLM-Call kommen.
+~~**Status:** Offen.~~ Lösung entschieden Chat 111 — `novaberg-kzg-salienz_k.md`, Bauteil 1b: Die Salienz von Novas Äußerung wird gerechnet statt gefragt (`max(salienz_human × nutzer_gewichtung, salienz_charakter)`); der Rollen-Switch am Prompt bleibt trotzdem nötig, weil Themen, Intentionen und Emotion weiter aus dem LLM-Call kommen.
 
-**Nachtrag Chat 112 — die Formel steht, und der Prompt ist dadurch *dringender* geworden, nicht weniger dringend.** Der Halbsatz „wird gerechnet statt gefragt" trifft die gebaute Lösung nur zur Hälfte: Sie wird gerechnet **und** gelesen. Der Grund kam beim Bauen heraus — `salienz_human`, `gravitationsterm`, die emotionale Gravitation und die `aufnahmebereitschaft` sind sämtlich **turnweite** Größen, einmal je Turn vor dem Segmentschnitt berechnet. Eine Formel nur aus ihnen gäbe allen *n* Segmenten einer Antwort denselben Wert — also genau das Symptom, das diesen Eintrag ausgelöst hat, auf anderem Weg. Die LLM-Lesung des Segmenttexts ist derzeit die **einzige segmentweite Größe im System** und bleibt deshalb als vierter Antrieb im Eigen-Pfad. Sie läuft weiter gegen die Nutzer-Schablone. Damit trägt der einzige Antrieb, der heute etwas beiträgt, den Defekt dieses Eintrags in sich.
+**Status: Behoben Chat 112.** `_build_salienz_prompt()` nimmt die Graph-Rolle und zieht einen von drei Aufgaben-Blöcken — `salienz.task` (Nutzeräußerung), `salienz.assistant_task` (Novas Antwort), `salienz.impuls_task` (Novas eigener Gedanke). Vorbild ist `_build_verdichtung_prompt`, wo Chat 110 dieselbe Klasse eine Ebene tiefer behoben hat. Die zehn Dimensionen und das Antwortformat bleiben geteilt — sie sind eine Checkliste, keine Beispiele, und drei Kopien liefen auseinander. Nur Lage und Skala hängen an der Rolle.
+
+**Der invertierte Satz lag zweimal auf der Platte:** in `prompts/default/salienz.rules.txt` und vollständig noch einmal in `prompts/gemma4/salienz.rules.txt`. Der Override existiert wegen des Ausgabeformats und hatte die ganze nutzerkalibrierte Skala mitgeschleppt. Eine Reparatur nur am Default hätte den Defekt beim nächsten Connector-Wechsel lautlos zurückgebracht. Beide Regel-Dateien tragen jetzt nur noch Ausgaberegeln plus einen rollenneutralen Satz, der den **Block** benennt statt die Person (*„Bewerte ausschließlich das [BEWERTUNGSOBJEKT]"*) — damit ist die Inversion strukturell nicht mehr formulierbar.
+
+**Abnahme (Turn 27.07.2026, 21:41 UTC):** HumanGraph zieht `salienz.task`, CharacterGraph zieht `salienz.assistant_task` — beides steht in der `switch`-Zeile des `pipeline_log`. Novas Segmente kamen bei **0.6** heraus statt der flachen 0.3, die die invertierte Schablone erzeugte, und ihre Themen stammen erkennbar aus ihrem eigenen Text (*„Fluktuation der metrischen Feldstärke"* kommt nur in ihrer Antwort vor). Die gemessene Themen-Kontamination ist damit ebenfalls weg.
+
+**Einschränkung:** Beide Segmente dieses Turns erhielten denselben Wert. Das widerspricht der Messung von 21:11 (0.75 gegen 0.40) nicht, zeigt aber, dass die Differenzierung am Modellurteil hängt und nicht zugesichert ist.
+
+**Was die Gegenprobe zutage förderte — der lehrreichere Teil.** Die erste Fassung bestand die Gegenprobe **nicht**, ohne rot zu werden: Der Node wurde testweise so verbogen, dass er für jede Rolle die Nutzer-Schablone zieht, und die Suite blieb grün. Grund war die Forensik selbst — die `switch`-Zeile leitete den Blocknamen **unabhängig vom Prompt** aus der Rolle ab und meldete weiter das Richtige, während die falsche Schablone ans Modell ging. Eine Log-Zeile, die etwas behauptet, das sie nicht beobachtet (`novaberg-lesson_l_log-behauptet-was-es-weiss.md`) — gebaut am selben Abend, an dem diese Lesson zitiert wurde. Behoben: `_build_salienz_prompt()` gibt Prompt **und** Blocknamen zurück, eine Ableitung statt zweier; fünf Tests prüfen den `system`-Prompt, der tatsächlich an den Worker ging. Dieselbe Sabotage macht jetzt sechs Tests rot.
+
+**Nachtrag Chat 112 — die Formel steht, und der Prompt war dadurch *dringender* geworden, nicht weniger dringend.** Der Halbsatz „wird gerechnet statt gefragt" trifft die gebaute Lösung nur zur Hälfte: Sie wird gerechnet **und** gelesen. Der Grund kam beim Bauen heraus — `salienz_human`, `gravitationsterm`, die emotionale Gravitation und die `aufnahmebereitschaft` sind sämtlich **turnweite** Größen, einmal je Turn vor dem Segmentschnitt berechnet. Eine Formel nur aus ihnen gäbe allen *n* Segmenten einer Antwort denselben Wert — also genau das Symptom, das diesen Eintrag ausgelöst hat, auf anderem Weg. Die LLM-Lesung des Segmenttexts ist derzeit die **einzige segmentweite Größe im System** und bleibt deshalb als vierter Antrieb im Eigen-Pfad. Sie läuft weiter gegen die Nutzer-Schablone. Damit trägt der einzige Antrieb, der heute etwas beiträgt, den Defekt dieses Eintrags in sich.
 
 **Verwandt:** DESTILLAT-SUBJEKT-SCHABLONE (gleiche Klasse, eine Ebene tiefer) · KZG-SALIENZ-SKALENBRUCH (kalibriert auf diesen Werten) · KZG-SEGMENT-DUPLIKAT.
 
