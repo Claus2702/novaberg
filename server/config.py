@@ -927,6 +927,10 @@ NODE_LLM_CONFIG: dict = {
         "temperature": 0.5,
         "max_output_tokens": 2048,
     },
+    "wissensluecken": {
+        "temperature": 0.7,
+        "max_output_tokens": 1024,
+    },
     "nachfragen": {
         "temperature": 0.6,
         "max_output_tokens": 1024,
@@ -961,6 +965,29 @@ NODE_LLM_CONFIG: dict = {
 # ── GV4 — Wissenslücken-Erkennung ────────────────────────────
 # Formel: relevanz = sim × gewicht × session_akt × QF × (1 + boost) × eff_neugier × register
 NOVA_NEUGIER:                    float = 0.5    # Novas Grund-Neugier (Persoenlichkeitsparameter)
+
+# ─────────────────────────────────────────────
+# Wissensluecken — Themen am Rand des Feldes
+# ─────────────────────────────────────────────
+# Konzept: docs/novaberg-wissensluecken_k.md
+#
+# Prioritaet bewusst gesetzt, nicht per Default. Gemessen 27.07.2026:
+# CharakterAgent mit 0.3 kam erst dran, als das Gespraech verstummte, und eine
+# achtminuetige Recherche blockierte den Pixie-Takt vollstaendig. 0.35 stellt
+# den Agenten knapp ueber den Charakter, aber weit unter Queue-Arbeit (0.97).
+LUECKEN_PRIORITAET:          float = float(os.getenv("LUECKEN_PRIORITAET", "0.35"))
+LUECKEN_INTERVALL_SEKUNDEN:  int   = int(os.getenv("LUECKEN_INTERVALL_SEKUNDEN", "3600"))
+
+# Startwert, nach der ersten Messung nachzujustieren. Jeder Kandidat kostet
+# ein Embedding.
+LUECKEN_KANDIDATEN_JE_LAUF:  int   = int(os.getenv("LUECKEN_KANDIDATEN_JE_LAUF", "20"))
+
+# Wechselnde Saat: Ohne Stichprobe liefe jeder Lauf ueber dieselben Themen.
+LUECKEN_SAAT_THEMEN:         int   = int(os.getenv("LUECKEN_SAAT_THEMEN", "8"))
+
+# Nur ein Wink an das LLM, keine Garantie — die liegt in der
+# Embedding-Dublettenpruefung. Die Liste darf unvollstaendig sein.
+LUECKEN_HINWEIS_THEMEN:      int   = int(os.getenv("LUECKEN_HINWEIS_THEMEN", "30"))
 GV_LUECKEN_MAX:                  int   = 8      # Erweitert Chat 71 (vorher 3)
 GV_LUECKEN_MIN_RELEVANZ:         float = 0.15   # Mindest-Gesamtrelevanz
 # Mindest-Gravitation fuer Ziel-Boost. Chat 107 geprueft und BEWUSST nicht
