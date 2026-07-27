@@ -7,7 +7,7 @@
 **Typ:** Konzept
 **Voraussetzung:** `novaberg-convention-abgeleitete-werte.md`
 **Ersetzt:** die Bauart in `memory/kzg.py` und `agents/kzg/speicher.py` (`_gedaempfter_boost`)
-**Schließt:** `KZG-SALIENZ-SKALENBRUCH` · `KZG-SALIENZ-BOOST-OHNE-DECKEL` · `KZG-SALIENZ-KONSUMENTEN-DISSENS` · `KZG-GEWICHT-ABSOLUT-CEILING` · `PROMOTION-ENTFERNT-KZG-NICHT` · `REFAC-KZG-CODE-DUPLIKAT`
+**Schließt:** `SALIENZ-OHNE-PIPELINE-LOG` · `KZG-SALIENZ-SKALENBRUCH` · `KZG-SALIENZ-BOOST-OHNE-DECKEL` · `KZG-SALIENZ-KONSUMENTEN-DISSENS` · `KZG-GEWICHT-ABSOLUT-CEILING` · `PROMOTION-ENTFERNT-KZG-NICHT` · `REFAC-KZG-CODE-DUPLIKAT`
 
 ---
 
@@ -160,6 +160,22 @@ Damit entfällt auch die Frage nach einem Herkunftsfeld, das *gesetzt* von *geme
 Der Umbau ist damit ein reiner Neubau ohne Bestandsberührung. Das ist der günstigste Zeitpunkt, den er haben konnte.
 
 ## 11. ZIEL / TEST / MESSUNG
+
+### Bauteil 0 — die Salienz wird beobachtbar
+
+**Zuerst, vor jeder Formeländerung.** `graph/nodes/salience.py` schreibt in keinem Graphen eine Zeile ins `pipeline_log` (`SALIENZ-OHNE-PIPELINE-LOG`). Der Wert, der über Erinnern entscheidet, existiert damit nur flüchtig im Container-Log.
+
+Ohne diesen Schritt nähme der Neubau seine eigene Abnahme ohne Messgerät ab. Genau daran lag es, dass `bewertungs_laenge=0` im AgentGraph seit Einführung des Graphen unbemerkt blieb: Der Fehler war da, aber nichts hielt ihn fest.
+
+| | |
+|---|---|
+| **ZIEL** | Für jeden Turn ist im Nachhinein aus der Datenbank beantwortbar: Welcher Text wurde bewertet, welcher lag nur als Hintergrund an, in wie viele Segmente wurde geschnitten, und welchen Salienzwert bekam jedes Segment. Ohne Container-Log. |
+| **TEST** | Ein Testlauf über `analyze()` mit einem Fake-Buffer sammelt die Einträge: erwartet werden `span_start`, ein `switch` mit `graph_rolle` und beiden Textlängen, je Segment eine `berechnung` mit dem Salienzwert, und `span_end` mit Segment- und `pending_writes`-Zahl. Zweiter Test für den Fehlerpfad: leeres Bewertungsobjekt erzeugt einen `fehler`-Eintrag und **kein** `pending_write`. |
+| **Positiver Zwilling** | Die Zusicherung „kein `pending_write` bei leerem Bewertungsobjekt" kann die Gegenprobe allein nicht bestehen. Derselbe Test prüft deshalb zusätzlich, dass ein gefüllter Text **genau ein** `pending_write` und **eine** `berechnung` erzeugt. |
+| **Gegenprobe** | Die `log_berechnung`-Zeile testweise entfernen — der Segment-Test muss rot werden. Danach zurücknehmen. |
+| **MESSUNG** | Ein Live-Turn zu einem Wissenschaftsthema, danach `SELECT art, quelle, inhalt FROM pipeline_log WHERE turn_id = '<turn>' AND node = 'salienz' ORDER BY id;`. Der Salienzwert muss dort stehen, ohne dass ein Container-Log gelesen wird. Gegenprobe zum Chat-110-Befund: Ein Impuls-Turn muss `quelle='agent'` tragen und ein Bewertungsobjekt mit Länge > 0. |
+
+**Abgrenzung:** Bauteil 0 ändert **keinen** Wert und **keine** Formel. Es macht nur sichtbar, was ohnehin geschieht. Damit ist es vor dem Umbau messbar und liefert die Vergleichsbasis für danach.
 
 ### Bauteil 1 — Salienz als abgeleiteter Wert
 
