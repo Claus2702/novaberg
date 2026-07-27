@@ -1911,3 +1911,51 @@ FROM pipeline_log WHERE turn_id = '<turn>' AND node = 'salienz'
 **Status:** Offen. Lösung entschieden Chat 111 — `novaberg-kzg-salienz_k.md`, Bauteil 1b: Die Salienz von Novas Äußerung wird gerechnet statt gefragt (`max(salienz_human × nutzer_gewichtung, salienz_charakter)`); der Rollen-Switch am Prompt bleibt trotzdem nötig, weil Themen, Intentionen und Emotion weiter aus dem LLM-Call kommen.
 
 **Verwandt:** DESTILLAT-SUBJEKT-SCHABLONE (gleiche Klasse, eine Ebene tiefer) · KZG-SALIENZ-SKALENBRUCH (kalibriert auf diesen Werten) · KZG-SEGMENT-DUPLIKAT.
+
+---
+
+#### PIXIE-QUEUE-LAUF-DISSENS — Dispatcher und Agent meinen Verschiedenes mit „ein Queue-Lauf" ⚠️
+
+**Entdeckt:** Chat 111, Audit der Promotion-Queue.
+
+**Klasse:** Zwei Schichten, zwei Annahmen über dieselbe Queue. Severity **mittel** — kein gemessener Datenverlust, aber ein Fehlerpfad, der Einträge verlieren kann, ohne dass es jemand sieht.
+
+**Symptom:** Der Pixie-Dispatcher arbeitet nach dem Modell *„ein Eintrag, ein Lauf"*. Der `SynapsenPromotionAgent` arbeitet nach *„ein Anstoß, alles"* — sein Docstring sagt es ausdrücklich, und die Schleife zieht per `lpop`, bis die Queue leer ist (`agents/synapsen_promotion/agent.py:119-150`). Daraus folgen drei Befunde:
+
+**(1) Ein `lrem`, das ins Leere greift.** `services/pixie/dispatch.py:110` entfernt nach Erfolg genau den Eintrag, mit dem angestoßen wurde — den der Agent längst selbst gezogen hat. Wirkungslos, aber es zeigt die Annahme.
+
+**(2) Der Retry schreibt in eine geleerte Queue zurück.** `dispatch.py:124-127` legt den Eintrag mit `_retries` erneut ab. Der Agent hat zu diesem Zeitpunkt die ganze Queue geleert und möglicherweise einen Teil erfolgreich verarbeitet. Zurück kommt **genau einer** — die übrigen sind weg, und der Dispatcher kann es nicht wissen: Der Agent meldet `promotet` und `fehler` intern, nach außen gibt es nur Erfolg/Misserfolg.
+
+**(3) `except Exception: pass` im Retry-Pfad.** `dispatch.py:131-132`, mit dem Kommentar „Im Fehlerfall einfach stehen lassen". Verbotenes Muster nach `DEVELOPER_HANDBOOK` §3.
+
+**Reproduktion:** `agents/synapsen_promotion/agent.py:119` (Docstring „Arbeitet die Promotion-Queue vollstaendig ab") gegen `services/pixie/dispatch.py:102-132` (Abschluss-Routine je Einzeleintrag) lesen.
+
+**Auswirkung:** Solange die Läufe gelingen, fällt nichts auf. Scheitert einer nach teilweiser Verarbeitung, gehen die bereits gezogenen, noch nicht promoteten Einträge verloren — still, weil der Zähler nicht nach außen dringt.
+
+**Status:** Offen.
+
+**Verwandt:** PROMO-QUEUE-DUBLETTEN (dieselbe Queue) · BATCH-ZAEHLER-ZAEHLEN-AUFRUFE (auch dort meldet ein Zähler nach außen weniger, als er innen weiß).
+
+---
+
+#### PROMO-QUEUE-DUBLETTEN — derselbe KZG-Key wird mehrfach eingereiht ⚠️
+
+**Entdeckt:** Chat 111, im selben Audit.
+
+**Klasse:** Fehlende Idempotenz beim Einreihen. Severity **niedrig** — kein Datenfehler, aber unnötige Queue-Last und ein verzerrtes Bild beim Debuggen.
+
+**Symptom:** Drei Stellen schreiben `lzg_promotion`-Aufträge, **keine** prüft, ob für denselben `key` bereits einer liegt:
+
+| Ort | Anlass |
+|---|---|
+| `agents/kzg/queues.py:74` | neu angelegter KZG-Eintrag über `KZG_SALIENZ_HIGH` |
+| `agents/kzg/queues.py:101` | verstärkter Nachbar, der die Schwelle überschreitet |
+| `memory/kzg.py:370` | Bestandspfad |
+
+**Warum die Dublette nachweislich nichts beiträgt:** Der Agent liest die Salienz **frisch aus dem Hash**, nicht aus dem Auftrag (`agents/synapsen_promotion/agent.py:236-240`, ausdrücklich kommentiert). Ein zweiter Auftrag für denselben Key kann also keine neuere Information transportieren — der erste holt den gestiegenen Wert ohnehin ab.
+
+**Auswirkung:** Die Queue füllt sich mit Einträgen, die beim Lauf zu No-Ops werden. Kein Mengenproblem für den Agenten (er leert vollständig), aber jeder Dublette kostet einen Peek, und beim Debuggen sieht eine Queue voller gleicher Keys nach einem Stau aus, der keiner ist.
+
+**Status: Behoben Chat 111** — `promotion_queue_push()` in `services/shadow_agent/utils.py` prüft vor dem Einreihen auf einen bestehenden Auftrag mit demselben `key` und schreibt nur, wenn keiner da ist. Alle drei Schreiber gehen über den Helfer.
+
+**Verwandt:** PIXIE-QUEUE-LAUF-DISSENS.
