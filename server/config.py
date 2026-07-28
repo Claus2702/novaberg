@@ -210,21 +210,21 @@ PIXIE_DECAY_PRIORITAET:              float = float(os.getenv("PIXIE_DECAY_PRIORI
 PIXIE_DECAY_INTERVALL_SEKUNDEN:      int   = int(os.getenv("PIXIE_DECAY_INTERVALL_SEKUNDEN", "86400"))     # 24 Stunden
 
 # --- Pixie Agent: Ziel-Decay ---
-# Default FALSE — stillgelegt bis zur Reparatur der Formel (ZIEL-DECAY-FORMEL-KUMULATIV).
-# Der Agent multipliziert die bereits verfallene Motivation erneut mit einem Faktor
-# aus dem GESAMTALTER des Ziels und schreibt das Ergebnis zurueck. Der Verfall
-# waechst dadurch quadratisch mit der Zahl der Laeufe statt linear mit der Zeit.
-# Belegt am Lauf vom 27.07.2026, 18:39:58 UTC: Ziel 3 von 0.65 auf 0.640,
-# Ziel 4 von 0.70 auf 0.690 — exakt motivation x exp(-ln2/14 x alter_tage).
-# Hochgerechnet auf taegliche Laeufe faellt das erste Ziel nach sieben Laeufen
-# unter die Deaktivierungsschwelle 0.15; vorgesehen ist eine Halbwertszeit von
-# 14 Tagen, nach der es bei 0.44 stuende.
+# Wieder aktiv seit Chat 113, nachdem die Formel eine reine Funktion aus Anker
+# und Zeit geworden ist (ziele.motivation_berechnen / ziel_decay_lauf).
 #
-# Bis Chat 112 war der fehlende Router-Eintrag die faktische Sicherung. Sie ist
-# entfallen, seit der Router unbekannte Namen ueber Namensgleichheit gegen die
-# Registry aufloest — der Agent lief seither. Eine Sicherung, die aus einem
-# fehlenden Eintrag besteht, ist keine; deshalb steht hier jetzt ein Schalter.
-ZIEL_DECAY_AKTIV: bool = os.getenv("ZIEL_DECAY_AKTIV", "false").lower() == "true"
+# Stillgelegt war er, weil er die bereits verfallene Motivation erneut mit einem
+# Faktor aus dem GESAMTALTER des Ziels multiplizierte und zurueckschrieb — der
+# Verfall wuchs quadratisch mit der Zahl der Laeufe statt linear mit der Zeit.
+# Belegt am Lauf vom 27.07.2026, 18:39:58 UTC: Ziel 3 von 0.65 auf 0.640,
+# Ziel 4 von 0.70 auf 0.690. Gemessen an der Gegenprobe zur neuen Fassung: zehn
+# Laeufe hintereinander ergaben 0.0999 statt 0.4.
+#
+# Der Schalter bleibt stehen. Bis Chat 112 war der fehlende Router-Eintrag die
+# faktische Sicherung; sie entfiel, seit der Router unbekannte Namen ueber
+# Namensgleichheit aufloest. Eine Sicherung, die aus einem fehlenden Eintrag
+# besteht, ist keine — wer diesen Agenten anhalten muss, braucht ein Gate.
+ZIEL_DECAY_AKTIV: bool = os.getenv("ZIEL_DECAY_AKTIV", "true").lower() == "true"
 
 # --- Pixie Agent: Charakter ---
 PIXIE_CHARAKTER_PRIORITAET:          float = float(os.getenv("PIXIE_CHARAKTER_PRIORITAET", "0.3"))

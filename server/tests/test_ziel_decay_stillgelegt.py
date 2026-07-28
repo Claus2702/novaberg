@@ -33,25 +33,37 @@ class TestZielDecayStillgelegt(unittest.TestCase):
                 self.assertIsNone(ZielDecayAgent().periodic_task())
 
     def test_invoke_schreibt_nichts(self) -> None:
-        """Der direkte Aufruf laedt keine Ziele und ruft keinen Schreiber.
+        """Der direkte Aufruf loest keinen Verfallslauf aus.
 
-        Geprueft wird die Wirkung, nicht die Absicht: Waeren die drei
-        memory.ziele-Funktionen erreichbar, wuerde der Lauf Motivation
-        anpassen. Die Zusicherung ist, dass keine davon gerufen wird.
+        Geprueft wird die Wirkung, nicht die Absicht: Waere ziel_decay_lauf
+        erreichbar, schriebe er Motivation und deaktivierte Ziele. Die
+        Zusicherung ist, dass er nicht gerufen wird.
         """
         with patch("agents.ziel_decay.agent.ZIEL_DECAY_AKTIV", False), \
-             patch("agents.ziel_decay.agent.ziele_aktive_laden") as laden, \
-             patch("agents.ziel_decay.agent.ziel_motivation_anpassen") as anpassen, \
-             patch("agents.ziel_decay.agent.ziel_deaktivieren") as deaktivieren:
+             patch("agents.ziel_decay.agent.ziel_decay_lauf") as lauf:
 
             with self.assertLogs(ZIEL_DECAY_LOGGER, level="INFO"):
                 ergebnis = ZielDecayAgent().invoke({})
 
-        laden.assert_not_called()
-        anpassen.assert_not_called()
-        deaktivieren.assert_not_called()
+        lauf.assert_not_called()
         self.assertEqual(ergebnis["status"], "abgeschlossen")
         self.assertFalse(ergebnis["ergebnis"]["aktiv"])
+
+    def test_eingeschaltet_loest_den_lauf_aus(self) -> None:
+        """Positiver Zwilling: Das Gate ist ein Schalter, keine Entfernung.
+
+        Ohne diesen Fall bestuende der Test oben auch dann, wenn der Aufruf
+        ersatzlos aus invoke() verschwunden waere.
+        """
+        with patch("agents.ziel_decay.agent.ZIEL_DECAY_AKTIV", True), \
+             patch("agents.ziel_decay.agent.ziel_decay_lauf") as lauf, \
+             patch.object(ZielDecayAgent, "_audit_log"), \
+             patch.object(ZielDecayAgent, "_log_forensik"):
+            lauf.return_value = {"verarbeitet": 0, "deaktiviert": 0,
+                                 "ohne_anker": 0, "error": None}
+            ZielDecayAgent().invoke({})
+
+        lauf.assert_called_once()
 
     def test_eingeschaltet_meldet_wieder_eine_aufgabe(self) -> None:
         """Positiver Zwilling: Das Gate ist ein Schalter, keine Entfernung.

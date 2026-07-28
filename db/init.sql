@@ -669,6 +669,22 @@ ALTER TABLE notizen ADD COLUMN IF NOT EXISTS timeline_id      INTEGER;
 -- ── ziele ──────────────────────────────────────
 ALTER TABLE ziele ADD COLUMN IF NOT EXISTS thema VARCHAR(100) NOT NULL DEFAULT '';
 
+-- Anker des Motivations-Verfalls (Chat 113). Bis dahin war `motivation` ein
+-- Akkumulator: Der Lauf multiplizierte den bereits verfallenen Wert erneut mit
+-- einem Faktor aus dem GESAMTALTER des Ziels und schrieb ihn zurueck, wodurch
+-- der Verfall quadratisch mit der Zahl der Laeufe wuchs statt linear mit der
+-- Zeit. `motivation` bleibt das materialisierte Feld, das jede Abfrage liest;
+-- berechnet wird es aus diesen beiden.
+--
+-- Bewusst NULLABLE und ohne Default: NULL heisst "nie gesetzt" und wird laut
+-- gemeldet. Ein Default saehe aus wie ein echter Anker.
+--
+-- `aktualisiert_am` taugt als Zeitbasis nicht — sie wird von jedem Schreiber
+-- gesetzt, auch vom Decay-Lauf selbst, der damit seine eigene Referenz
+-- zuruecksetzte. Anker und Ankerzeitpunkt werden nur gemeinsam geschrieben.
+ALTER TABLE ziele ADD COLUMN IF NOT EXISTS motivation_basis    DOUBLE PRECISION;
+ALTER TABLE ziele ADD COLUMN IF NOT EXISTS motivation_basis_am TIMESTAMPTZ;
+
 
 -- ═══════════════════════════════════════════════
 -- Daten-Migrationen
@@ -690,6 +706,16 @@ SET    user_id      = 'meister',
        character_id = 'nova',
        beobachter   = 'assistant'
 WHERE  user_id = 'nova';
+
+-- ziele: Bestand mit dem Motivations-Anker versorgen (Chat 113). Der heutige
+-- Wert wird zum Anker, die Uhr beginnt jetzt. Der Verfall, den der kumulative
+-- Lauf vom 27.07.2026 bereits abgezogen hat, bleibt darin stehen — er liesse
+-- sich nur aus gerundeten Werten zurueckrechnen, und eine Rueckrechnung waere
+-- eine Erfindung. Greift genau einmal je Zeile: Wer einen Anker hat, behaelt ihn.
+UPDATE ziele
+SET    motivation_basis    = motivation,
+       motivation_basis_am = NOW()
+WHERE  motivation_basis IS NULL;
 
 
 -- ═══════════════════════════════════════════════

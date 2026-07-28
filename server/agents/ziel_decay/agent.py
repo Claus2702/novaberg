@@ -1,14 +1,17 @@
-"""ZielDecayAgent — Motivations-Decay fuer mittelfristige Ziele.
+"""ZielDecayAgent — Motivations-Verfall fuer mittelfristige Ziele.
 
-Exponentieller Verfall basierend auf aktualisiert_am.
-Langfristige Ziele sind ausgenommen. Deaktivierung unter Schwelle.
+Exponentieller Verfall aus dem Anker `motivation_basis` und dem Zeitpunkt
+`motivation_basis_am`. `motivation` ist das materialisierte Feld, das jede
+Abfrage liest — einmal rechnen, hundertmal lesen, wie `gewicht_decay` im LZG.
 
-Kein LLM-Call. Reine Mathematik. Analog zum DecayAgent (LZG).
+Der Agent traegt keine Formel und keine Schleife: Die Fachlogik liegt in
+memory/ziele.py, hier steht nur der Ausloeser plus Audit und Forensik.
+
+Kein LLM-Call. Reine Mathematik. Analog zum SynapsenDecayAgent.
 """
 
 import logging
-import math
-from datetime import datetime, timezone
+import uuid
 
 from agents.base import BaseAgent, AgentState, PeriodicTask
 from config import (
@@ -17,8 +20,11 @@ from config import (
     PIXIE_DECAY_PRIORITAET,
     PIXIE_DECAY_INTERVALL_SEKUNDEN,
     POSTGRES_URL,
+    DEFAULT_USER_ID,
 )
-from memory.ziele import ziele_aktive_laden, ziel_motivation_anpassen, ziel_deaktivieren
+from memory import pipeline_log
+from memory.ziele import ziel_decay_lauf
+from tools.db_manager import db_manager
 
 logger = logging.getLogger("ki_server.agents.ziel_decay")
 
@@ -64,78 +70,113 @@ class ZielDecayAgent(BaseAgent):
     def build_graph(self):
         return None
 
+
+    @staticmethod
+    def _audit_log(user_id: str, status: str, ergebnis: str) -> None:
+        """Schreibt einen hintergrund_log-Eintrag (Audit-Pflicht).
+
+        Failsafe: Bei DB-Fehler nur logger.critical, kein Retry — sonst droht
+        Endlos-Rekursion bei kaputter Audit-Senke. Muster wie synapsen_decay.
+        """
+        try:
+            db_manager.execute(
+                """
+                INSERT INTO hintergrund_log
+                    (user_id, aufgabe, status, ergebnis, verarbeitet_am)
+                VALUES (%s, %s, %s, %s, NOW())
+                """,
+                (user_id, "ziel_decay", status, ergebnis),
+            )
+        except Exception as ex:
+            logger.critical(
+                f"hintergrund_log-INSERT fehlgeschlagen: {ex} "
+                f"(verlorener Audit-Eintrag: ziel_decay/{status}/{ergebnis[:100]})"
+            )
+
+    @staticmethod
+    def _log_forensik(run_id: str, inhalt: dict) -> None:
+        """Schreibt eine pipeline_log-Zeile (best-effort).
+
+        Paar-los wie beim synapsen_decay: Ein Wartungslauf gehoert zu keinem
+        Turn und zu keinem Paar. Ein Forensik-Schreibfehler darf den Lauf nicht
+        killen — deshalb gekapselt mit logger.warning.
+        """
+        try:
+            pipeline_log.log_berechnung(
+                turn_id=run_id, node="ziel_decay", quelle="pixie", inhalt=inhalt
+            )
+        except Exception as ex:
+            logger.warning(
+                f"pipeline_log-Forensik nicht geschrieben ({inhalt.get('phase', '?')}): {ex}"
+            )
+
     def invoke(self, state: AgentState) -> AgentState:
-        """Berechnet Motivations-Decay und deaktiviert verblasste Ziele.
+        """Loest den Verfallslauf ueber die mittelfristigen Ziele aus.
+
+        Ablauf (EVA):
+          Eingabe      — Feature-Gate pruefen.
+          Verarbeitung — ziel_decay_lauf() materialisiert `motivation` aus Anker
+                         und Zeit und deaktiviert, was unter die Schwelle faellt.
+          Ausgabe      — Ergebnis in state["ergebnis"], Status und Audit setzen.
 
         Zweites Gate: Auch ein direkt aufgerufener Lauf schreibt nichts, solange
         ZIEL_DECAY_AKTIV false ist. Ein Gate allein im Scheduling reichte nicht —
         der Router loest Agenten inzwischen auch ueber Namensgleichheit auf.
+
+        Der Lauf ist idempotent. Wird er zweimal hintereinander ausgefuehrt,
+        steht danach derselbe Wert wie nach dem ersten Mal.
         """
 
-        # ── Eingabe-Validierung ─────────────────────
+        # --- Eingabe (EVA): Feature-Gate ---
         if not ZIEL_DECAY_AKTIV:
             logger.info(
-                "ziel_decay invoke uebersprungen (ZIEL_DECAY_AKTIV=false) — "
-                "die Formel schreibt sonst kumulativ verfallene Motivation zurueck"
+                "ziel_decay invoke uebersprungen (ZIEL_DECAY_AKTIV=false)"
             )
-            state["ergebnis"] = {"aktiv": False, "deaktiviert": 0, "geprueft": 0}
+            state["ergebnis"] = {"aktiv": False, "verarbeitet": 0, "deaktiviert": 0}
             state["status"] = "abgeschlossen"
             return state
 
-        ziele: list[dict] = ziele_aktive_laden(POSTGRES_URL, user_id="nova")
+        run_id: str = f"ziel_decay:{uuid.uuid4()}"
+        logger.info(f"Ziel-Decay-Lauf startet (run_id={run_id})")
+        self._audit_log(DEFAULT_USER_ID, "gestartet", f"run_id={run_id}")
+        self._log_forensik(run_id, {"phase": "start"})
 
-        if not ziele:
-            logger.debug("ZielDecay: Keine aktiven Ziele")
-            state["ergebnis"] = {"deaktiviert": 0, "geprueft": 0}
-            state["status"] = "abgeschlossen"
+        # --- Verarbeitung ---
+        ergebnis: dict = ziel_decay_lauf(
+            POSTGRES_URL,
+            ziel_typ                = "mittelfristig",
+            deaktivierungs_schwelle = ZIEL_DEAKTIVIERUNGS_SCHWELLE,
+            halbwertszeit_tage      = ZIEL_MITTELFRISTIG_DECAY_TAGE,
+        )
+
+        # --- Ausgabe (EVA) ---
+        state["ergebnis"] = ergebnis
+        ende: dict = {
+            "phase":       "ende",
+            "verarbeitet": ergebnis["verarbeitet"],
+            "deaktiviert": ergebnis["deaktiviert"],
+            "ohne_anker":  ergebnis["ohne_anker"],
+        }
+
+        if ergebnis["error"]:
+            state["status"] = "fehler"
+            state["fehler"] = ergebnis["error"]
+            ende["status"]  = "fehler"
+            ende["fehler"]  = ergebnis["error"]
+            self._log_forensik(run_id, ende)
+            self._audit_log(DEFAULT_USER_ID, "fehler", ergebnis["error"])
+            logger.error(f"Ziel-Decay-Lauf mit Fehler beendet (run_id={run_id})")
             return state
 
-        jetzt: datetime = datetime.now(timezone.utc)
-        decay_rate: float = math.log(2) / ZIEL_MITTELFRISTIG_DECAY_TAGE
-
-        deaktiviert: int = 0
-        geprueft:    int = 0
-
-        for ziel in ziele:
-            # Langfristige Ziele sind vom Decay ausgenommen.
-            if ziel["ziel_typ"] == "langfristig":
-                continue
-
-            geprueft += 1
-
-            # Tage seit letzter Aktualisierung.
-            aktualisiert: datetime = ziel.get("erstellt_am", jetzt)
-            if aktualisiert.tzinfo is None:
-                aktualisiert = aktualisiert.replace(tzinfo=timezone.utc)
-
-            tage: float = max(0.0, (jetzt - aktualisiert).total_seconds() / 86400.0)
-
-            # Exponentieller Verfall: motivation_neu = motivation × e^(-rate × tage)
-            decay_faktor:   float = math.exp(-decay_rate * tage)
-            motivation_alt: float = ziel["motivation"]
-            motivation_neu: float = round(motivation_alt * decay_faktor, 3)
-
-            if motivation_neu < ZIEL_DEAKTIVIERUNGS_SCHWELLE:
-                ziel_deaktivieren(POSTGRES_URL, ziel["id"])
-                deaktiviert += 1
-                logger.info(
-                    f"ZielDecay: id={ziel['id']} deaktiviert — "
-                    f"motivation={motivation_alt:.2f} → {motivation_neu:.3f} "
-                    f"(nach {tage:.0f} Tagen)"
-                )
-            elif abs(motivation_neu - motivation_alt) > 0.01:
-                ziel_motivation_anpassen(POSTGRES_URL, ziel["id"], motivation_neu)
-                logger.debug(
-                    f"ZielDecay: id={ziel['id']} — "
-                    f"motivation={motivation_alt:.2f} → {motivation_neu:.3f} "
-                    f"({tage:.0f} Tage, Halbwert={ZIEL_MITTELFRISTIG_DECAY_TAGE}d)"
-                )
-
-        if deaktiviert:
-            logger.info(f"ZielDecay: {deaktiviert} von {geprueft} mittelfristigen Zielen deaktiviert")
-        else:
-            logger.info(f"ZielDecay: Alle {geprueft} mittelfristigen Ziele noch aktiv")
-
-        state["ergebnis"] = {"deaktiviert": deaktiviert, "geprueft": geprueft}
         state["status"] = "abgeschlossen"
+        ende["status"]  = "abgeschlossen"
+        self._log_forensik(run_id, ende)
+        self._audit_log(
+            DEFAULT_USER_ID,
+            "erledigt",
+            f"{ergebnis['verarbeitet']} verarbeitet, "
+            f"{ergebnis['deaktiviert']} deaktiviert, "
+            f"{ergebnis['ohne_anker']} ohne Anker",
+        )
+        logger.info(f"Ziel-Decay-Lauf abgeschlossen (run_id={run_id})")
         return state
