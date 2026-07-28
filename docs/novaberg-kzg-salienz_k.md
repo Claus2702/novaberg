@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Konzept — Bauart, Skala und Tore der KZG-Salienz
-**Stand:** 27. Juli 2026, Chat 111
+**Stand:** 28. Juli 2026, Chat 113 (Bauteil 1 gebaut, migriert und live gemessen)
 **Pfad:** novaberg/docs/novaberg-kzg-salienz_k.md
 **Typ:** Konzept
 **Voraussetzung:** `novaberg-convention-abgeleitete-werte.md`
@@ -76,9 +76,11 @@ Die zweite Hälfte ist formgleich mit `gewicht_absolut_berechnen` in `memory/lzg
 | `KZG_SALIENZ_CAP` | **1.0** | — | 10.0 |
 | `KZG_SALIENZ_DAEMPFUNG_EXP` | **0.5** | — | 0.6 |
 | `KZG_SALIENZ_BOOST` | **0.03** | — | *neu* |
-| `KZG_SALIENZ_MINIMUM` | **0.6738** | 0.3 | 0.3 |
-| `KZG_SALIENZ_MID` | **0.8409** | 0.5 | 0.5 |
-| `KZG_SALIENZ_HIGH` | **0.9439** | 0.7 | 0.7 |
+| `KZG_SALIENZ_MINIMUM` | **0.67378** | 0.3 | 0.3 |
+| `KZG_SALIENZ_MID` | **0.84089** | 0.5 | 0.5 |
+| `KZG_SALIENZ_HIGH` | **0.94393** | 0.7 | 0.7 |
+
+**Fünf Nachkommastellen, abgerundet — und das ist kein Schönheitsfehler.** Ein Tor wird mit `>=` geprüft. Der exakte Kurvenwert von 0.3 ist 0.6737882; auf 0.6738 *aufgerundet* liegt die Konstante über ihrem eigenen Rohwert, und wer genau die Bewertung trifft, die das Tor meint, fällt durch. Gemessen am Live-Turn vom 28.07.2026, 09:27 UTC: `Salienz 0.6738 (Eingang 0.30) < 0.6738 — abgelehnt`. Dasselbe galt für MID (0.8408964). Nur HIGH war schon abgerundet.
 
 Der Exponent wird von 0.6 auf 0.5 gezogen, damit KZG und LZG dieselbe Kurve tragen.
 
@@ -153,11 +155,26 @@ Zwei Konsequenzen:
 
 `salienz_eingang` fehlte dem Bestand, und der alte `salienz`-Wert taugte nicht zur Rückrechnung: Der Akkumulator ist pfadabhängig, die Eingangsbewertung war überschrieben. Genau der Verlust, den die Konvention beschreibt — die alte Bauart konnte ihre eigene Migration nicht tragen.
 
-**Aufgelöst durch den Reset am 27.07.2026, 09:13 UTC.** Die KZG-Partition wurde vollständig geleert (864 Schlüssel). Es gibt keinen Altbestand mehr, der zu migrieren wäre. Der erste Eintrag nach dem Umbau trägt `salienz_eingang` von Anfang an.
+~~**Aufgelöst durch den Reset am 27.07.2026, 09:13 UTC.** Die KZG-Partition wurde vollständig geleert (864 Schlüssel). Es gibt keinen Altbestand mehr, der zu migrieren wäre.~~ — **überholt am 28.07.2026.** Der Reset lag einen Tag zurück, als Bauteil 1 gebaut wurde; in dieser Zeit sind **192 neue Einträge** entstanden, 71 davon bereits über 1.0. Der Satz war zum Zeitpunkt seiner Niederschrift richtig und hatte ein Verfallsdatum, das er nicht nannte: **Ein leerer Bestand bleibt nur so lange leer, wie das System steht.**
+
+Der im nächsten Absatz formulierte Vorbehalt griff damit wörtlich — nur nicht aus einem Backup, sondern aus dem laufenden Betrieb.
 
 Damit entfällt auch die Frage nach einem Herkunftsfeld, das *gesetzt* von *gemessen* trennt. Sie wäre nötig gewesen, wenn Alteinträge eine erfundene Eingangsbewertung bekommen hätten — nach der Regel, dass ein Default nie aussehen darf wie ein echter Wert. **Kommt jemals ein Bestand ohne `salienz_eingang` hinzu — etwa aus einem Backup —, gilt die Regel wieder.**
 
-Der Umbau ist damit ein reiner Neubau ohne Bestandsberührung. Das ist der günstigste Zeitpunkt, den er haben konnte.
+### Die Migration, wie sie stattgefunden hat (28.07.2026)
+
+`scripts/migration_kzg_salienz_eingang.py`, idempotent, zweimal gelaufen. Zwei Fälle, getrennt nach Rekonstruierbarkeit:
+
+| Fall | Einträge | `salienz_eingang` | Herkunft |
+|---|---|---|---|
+| `haeufigkeit = 1` | 87 | `= salienz` — nie verstärkt, also unverändert die Modellbewertung | `gemessen` |
+| `haeufigkeit > 1` | 107 | `= 0.6`, gesetzt | `geschaetzt` |
+
+Der Akkumulator war pfadabhängig; für verstärkte Einträge existiert die Eingangsbewertung nirgends mehr. Das Feld `salienz_eingang_herkunft` trennt beide Fälle dauerhaft — es ist die Vorkehrung, die der Absatz oben verlangt, und es steht auch an jedem neu angelegten Eintrag (`gemessen`).
+
+**Wirkung der Setzung 0.6:** Unter der neuen Kurve liegt sie zwischen MID und HIGH. Die Masse der geschätzten Einträge (70 mit zwei oder drei Verstärkungen) bleibt bei 0.9142 bzw. 0.9278 knapp unter dem Promotionstor; 32 mit vier und mehr Verstärkungen gehen durch. Wer oft wiederkam, wird promotet — der Ansammlungspfad wirkt rückwirkend so, wie er soll.
+
+**Der LZG-Altbestand bleibt unberührt.** 126 aktive Knoten tragen weiter `gewicht_roh` bis 2.574 — sie wurden vor dem Umbau aus der gebrochenen Skala promotet. Für neue Knoten kann `roh > 1.0` nicht mehr auftreten (§9); der Altbestand trägt `KZG-GEWICHT-ABSOLUT-CEILING` weiter, bis er verfällt.
 
 ## 11. ZIEL / TEST / MESSUNG
 
@@ -310,7 +327,11 @@ Drei Zusicherungen des ZIELs sind damit belegt: Die beiden Segmente erhalten **v
 
 **Der AgentGraph.** Ein eigener Gedanke hat keine Nutzeräußerung, `salienz_human` existiert nicht. Der Ausdruck fällt auf `salienz_charakter` zusammen — reiner Zielbezug. Folge: Ein Impuls ohne Zielbezug bekäme Salienz 0 und würde nie gespeichert. Das ist eine nachvollziehbare Konsequenz, aber **nicht entschieden**.
 
-### Bauteil 1 — Salienz als abgeleiteter Wert
+### Bauteil 1 — Salienz als abgeleiteter Wert ✅ Chat 113, live gemessen
+
+**Abgenommen 28.07.2026.** Korpusweit: 194 Einträge, **kein einziger über 1.0**, Maximum exakt 1.0000 (vorher 5.636 bei 38 % über der Skala). Live-Turn 09:28 UTC: Anlegen mit `salienz=0.9170 (Eingang 0.64)`, TTL 14 Tage; vier Verstärkungen, jede aus `salienz_eingang` und `haeufigkeit` neu gerechnet, von Hand nachgeprüft (`0.6 + 4×0.03 = 0.72 → sin(0.72·π/2)^0.5 = 0.9512`); zwei Einträge bei `haeufigkeit` 16→17 stehen auf 1.0000 und bewegen sich nicht mehr — der Deckel hält, ohne dass ein Wert ihn überschreitet.
+
+**Zwei Befunde aus der Abnahme**, beide oben eingearbeitet: die Rundungsrichtung der Tore (§5) und die überholte Migrationslage (§10). Der erste kam aus einem echten Turn, nicht aus einem Test — er betraf genau den Grenzwert, den kein Unit-Test traf, weil er die Konstante gegen sich selbst geprüft hätte.
 
 | | |
 |---|---|

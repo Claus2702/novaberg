@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Pixie — Hintergrundverarbeitung (Übersicht)
-**Stand:** 11. Juli 2026, Chat 105 (Routing-Doppelregistry dokumentiert, synapsen_decay verdrahtet)
+**Stand:** 28. Juli 2026, Chat 113 (Aging gegen das Verhungern periodischer Aufgaben)
 **Pfad:** novaberg/docs/novaberg-pixie.md
 **Quellen:** nova-05-k.md (Pixie-Konzept), nova-05-a.md (AgentGraph), nova-05-t-a.md (Queue/Stack/Delivery), nova-05-m-a.md (Agenten-Referenz)
 
@@ -30,6 +30,25 @@ Pro Heartbeat werden Kandidaten aus zwei Quellen gesammelt:
 
 Die hoechste Prioritaet gewinnt — Queue-Kandidat gegen periodischen Kandidaten, keine Normalisierung. Genau ein Agent wird pro Zyklus ausgefuehrt. Bei Fehler: Retry-Counter (max 3), danach verwerfen und loggen.
 
+### Aging: Verhungerungsschutz fuer periodische Aufgaben (Chat 113)
+
+Eine reine `max()`-Wahl ueber die Prioritaet laesst niedrig priorisierte Aufgaben verhungern, sobald hoehere Kandidaten nachlaufen. **Gemessen am 28.07.2026:** `synapsen_decay` (Prioritaet 0.2) war 12,4 Stunden faellig und hatte im gesamten Server-Log **null** Heartbeat-Gewinne, waehrend die Shadow-Queue 41 Eintraege ueber 0.7 trug und dauerhaft nachgefuellt wurde. Die Folge war ein Langzeitgedaechtnis ohne Verfall: 111 aktive Knoten, 111 verschiedene `decay_am` — kein einziger globaler Decay-Lauf seit dem Reset.
+
+Faellige periodische Aufgaben tragen deshalb einen Zuschlag auf ihre Basis-Prioritaet:
+
+```
+zuschlag = min(PIXIE_AGING_MAX_ZUSCHLAG, PIXIE_AGING_PRO_STUNDE x wartezeit_h)
+effektiv = basis + zuschlag
+```
+
+Default: 0.5 je Stunde, Deckel 2.0 (erreicht nach vier Stunden). Nach zwei Stunden Wartezeit ueberholt eine Aufgabe mit Basis 0.2 den hoechstmoeglichen Queue-Wert 1.0. Ab dem Deckel entscheidet wieder die Basis-Prioritaet — zwei gleich lang wartende Aufgaben sollen in ihrer gewollten Rangfolge laufen.
+
+**Der Massstab ist die absolute Wartezeit, nicht die Zahl verpasster Intervalle.** Die erste Fassung mass relativ und wurde live widerlegt: `synapsen_promotion` (Takt 300s) war 4916 s faellig, also 16 Intervalle, sass damit sofort am Deckel und kam auf Prioritaet 2.90 — waehrend `synapsen_decay` (Takt 86400s) bei zwoelf Stunden Wartezeit nur 1.22 erreichte. Ein kurzer Takt alterte 288-mal schneller als ein langer, und genau die Aufgabe, die der Zuschlag retten sollte, verlor weiter. Verhungern ist ein absolutes Zeitphaenomen.
+
+**Queue-Eintraege altern ausdruecklich nicht.** In der Shadow-Queue liegen Auftraege fuer Agenten, die es nicht gibt (`vertiefen`, `nachfragen`), heute allein von ihrer Prioritaet 0.0 ruhig gehalten. Aging auf der Queue holte genau sie nach oben und liesse sie ins Leere laufen.
+
+Jeder Kandidat traegt beide Werte: `prioritaet` (effektiv, danach wird gewaehlt) und `prioritaet_basis` (ungealtert). Die Gewinner-Zeile im Log nennt beide, sobald der Zuschlag gegriffen hat — sonst waere aus dem Log nicht mehr erkennbar, ob eine Wahl auf der Rangfolge oder auf dem Verhungerungsschutz beruhte.
+
 ### Routing: Kandidat → Agent (Chat 105)
 
 Der gewinnende Kandidat wird in `services/pixie/router.py` auf einen Agent-Namen gemappt — fuer periodische Aufgaben ueber das handgepflegte Dict `_PERIODISCH_ROUTING`. **Achtung, Doppelregistry:** Der Router fuehrt damit eine zweite, manuelle Registry neben der automatischen Agent-Discovery. Genau das ist die Fehlerquelle: Ein Agent kann vollstaendig implementiert, per Discovery registriert und korrekt geschedult sein (`pixie:schedule:{name}` entsteht, der Kandidat gewinnt den Heartbeat) — und trotzdem **nie laufen**, weil der Router-Lookup `None` liefert. Sichtbar nur als `warning` „Kein Agent fuer periodische Aufgabe". → Backlog PIXIE-ROUTING-DOPPELREGISTRY.
@@ -37,7 +56,9 @@ Der gewinnende Kandidat wird in `services/pixie/router.py` auf einen Agent-Namen
 Stand der Tabelle:
 
 - **`synapsen_decay` ist seit 1e438e0 (Chat 105) verdrahtet** — davor lief P6 (Knoten-Decay + `delete_expired_entries`, einziger Aufrufer der pipeline_log-Retention) seit seiner Implementierung in Chat 102 **nie**.
-- **`ziel_decay` fehlt weiterhin BEWUSST:** Die Decay-Formel des Agenten ist kumulativ defekt (multipliziert den gespeicherten Wert mit einem Faktor aus dem Gesamtalter; erster Lauf wuerde praktisch alle nicht-langfristigen Ziele deaktivieren). Der Router-Miss ist dort die **Sicherung, nicht der Fehler** — erst die Formel reparieren, dann verdrahten. → Backlog ZIEL-DECAY-FORMEL-KUMULATIV.
+- **`ziel_decay` fehlt weiterhin BEWUSST** in der Tabelle: Die Decay-Formel des Agenten ist kumulativ defekt (multipliziert den gespeicherten Wert mit einem Faktor aus dem Gesamtalter). ~~Der Router-Miss ist dort die **Sicherung, nicht der Fehler**.~~ → **widerlegt 28.07.2026:** Der Router loest unbekannte Namen ueber Namensgleichheit gegen die Registry auf (siehe unten), damit greift der Miss als Sicherung nicht mehr — der Agent lief am 27.07.2026 um 18:39:58 UTC und hat Motivationswerte veraendert. **Eine Sicherung, die aus einem fehlenden Eintrag besteht, ist keine.** Der Agent ist seit dem 28.07.2026 ueber `ZIEL_DECAY_AKTIV=false` stillgelegt: `periodic_task()` liefert None, der Zeitplan-Eintrag wird beim Start entfernt, `invoke()` traegt ein zweites Gate. → Backlog ZIEL-DECAY-FORMEL-KUMULATIV.
+
+- **Namensgleichheit als zweiter Aufloesungsweg:** Findet der Router einen Namen nicht in `_PERIODISCH_ROUTING`, versucht er ihn direkt gegen die Agent-Registry. Das nimmt der Doppelregistry ihre Schaerfe — und zugleich jedem „bewusst nicht verdrahtet" seine Wirkung. Wer einen Agenten zurueckhalten will, braucht ein Gate im Agenten, keinen fehlenden Tabelleneintrag.
 - **Tote Keys:** `"promotion"` (Agent seit P4 dormant, `periodic_task()` liefert None) und `"aufraeumen"` (kein Agent meldet diesen Namen) — harmlos, aber Bestandteil der Doppelregistry-Pflegelast.
 
 ---

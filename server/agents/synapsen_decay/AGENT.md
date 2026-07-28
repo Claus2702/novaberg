@@ -2,7 +2,7 @@
 
 **Typ:** Pixie-Hintergrund-Agent (workflow, kein LLM)
 **Konzept:** `novaberg-memory-synapsen_k.md` §9 (Decay-Logik), P6
-**Scheduling:** täglich (`interval = PIXIE_DECAY_INTERVALL_SEKUNDEN = 86400`, `priority = PIXIE_DECAY_PRIORITAET = 0.2`)
+**Scheduling:** täglich (`interval = PIXIE_DECAY_INTERVALL_SEKUNDEN = 86400`, `priority = PIXIE_DECAY_PRIORITAET = 0.2`), Verhungerungsschutz über das Pixie-Aging (`novaberg-pixie.md` §2)
 **Feature-Flag:** `SYNAPSEN_DECAY_AKTIV` (Default true, gated durch `PIXIE_AKTIV`)
 
 ## Aufgabe

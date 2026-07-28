@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Rohe, noch unklassifizierte Funde aus laufender Arbeit
-**Stand:** 27. Juli 2026
+**Stand:** 28. Juli 2026
 **Pfad:** novaberg/docs/novaberg-fundliste.md
 
 Was beim Bauen an anderer Stelle auffällt, landet hier — **eine Zeile mit Datum**. Kein Bug-Name, keine Priorität, keine Klassifizierung, keine Diskussion. Der Zweck ist, einen Fund festzuhalten, ohne die laufende Arbeit dafür zu unterbrechen.
@@ -41,6 +41,10 @@ Analog zum Kraft-1-Stichtag: ab wann eine Partition brauchbar ist. Kein Backfill
     - **`novaberg-memory-synapsen-p4-entscheidungen_k.md` darf nicht mitkorrigiert werden.** Dort steht die 0.8 in einem historisch richtigen Satz: dass `queues.py` *von* `PROMOTION_THRESHOLD` (0.8) *auf* `KZG_SALIENZ_HIGH` (0.7) umgehängt wurde. Wer über alle `0.8`-Vorkommen greppt und ersetzt, tilgt eine zutreffende Aussage.
 
   **Kriterium statt Aufzählung:** zu korrigieren ist jede Stelle, die 0.8 als *geltende* Schwelle beschreibt — nicht jede, die die Zahl nennt.
+
+- **2026-07-28** — Der LZG-Zweig der emotionalen Gravitation rechnet den Verfall **dreifach**. `ei/gravitation.py` liest die Spalte `gewicht_decay` — den vom Decay-Lauf bereits materialisierten Wert —, schickt sie durch `effektives_gewicht_berechnen()` (Ebbinghaus, live) und multipliziert zusätzlich `_zeit_decay_faktor()` (eigener Verfall, Halbwert 180 Tage). Der Docstring der zweiten Funktion sagt wörtlich „Der Decay wird live berechnet, nie gespeichert" — für `lzg_knoten` gilt das seit der Materialisierung nicht mehr. Die Funktion stammt aus dem alten `langzeitgedaechtnis`-Modell (Tabelle steht heute auf 0 Zeilen); die Query mischt zwei Gedächtnismodelle mit gegensätzlicher Decay-Philosophie. Wirkung heute klein, weil kein Knoten älter als einen Tag ist. Berührt `novaberg-convention-abgeleitete-werte.md` §3(5): Die Kurve wird genau einmal angewandt.
+
+- **2026-07-28** — Der Router-Miss-Pfad in `services/pixie/scheduler.py` kehrt zurück, **ohne `abschluss()` zu rufen**. Ein periodischer Kandidat, für den kein Agent gefunden wird, behält damit sein `next_run` und wird beim nächsten Heartbeat erneut Kandidat. Ohne Aging war das harmlos — er verlor gegen die Queue. Mit dem Aging (Chat 113) wächst sein Zuschlag bis zum Deckel, und er gewinnt dann **jeden** Zyklus, ohne je zu laufen. Heute nicht akut: Alle sieben vorhandenen `pixie:schedule:*`-Einträge sind routebar, sechs über die Tabelle, `ziel_decay` über die Namensgleichheit. Der Fund ist die Falle für den nächsten Agenten ohne Routing-Eintrag.
 
 ---
 
