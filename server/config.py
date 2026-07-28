@@ -171,6 +171,36 @@ PIXIE_INTERVALL_MIN: int = int(os.getenv("PIXIE_INTERVALL_MIN", "2"))
 PIXIE_INTERVALL_SEKUNDEN: int = int(os.getenv("PIXIE_INTERVALL_SEKUNDEN", "120"))
 PIXIE_LOCK_TTL_SEKUNDEN:  int = int(os.getenv("PIXIE_LOCK_TTL_SEKUNDEN", "600"))
 
+# --- Pixie Aging (Verhungerungsschutz, Chat 113) ---
+# Eine faellige periodische Aufgabe steigt in der Prioritaet, solange sie nicht
+# laeuft. Ohne das gewinnt eine dauerhaft gefuellte Shadow-Queue (Eintraege bis
+# Prioritaet 1.0) jeden Heartbeat gegen Wartungslaeufe (Prio 0.2) — gemessen am
+# 28.07.2026: synapsen_decay 11,9 Stunden faellig, null Heartbeat-Gewinne.
+#
+# Gilt NUR fuer periodische Aufgaben. Queue-Eintraege werden ausdruecklich NICHT
+# gealtert: Dort liegen Auftraege fuer Agenten, die es nicht gibt (`vertiefen`,
+# `nachfragen`), heute von ihrer Prioritaet 0.0 ruhig gehalten. Aging auf der
+# Queue wuerde genau sie nach oben holen.
+#
+# Der Zuschlag waechst mit der ABSOLUTEN Wartezeit, nicht mit der Zahl
+# verpasster Intervalle. Gemessen am 28.07.2026 an der ersten, relativen
+# Fassung: synapsen_promotion (Takt 300s) war 4916s faellig — 16 Intervalle,
+# damit sofort am Deckel und mit Prioritaet 2.90 unschlagbar; synapsen_decay
+# (Takt 86400s) kam bei derselben Wartezeitklasse auf 1.22. Ein kurzer Takt
+# alterte schneller als ein langer, und die Aufgabe, die der Zuschlag retten
+# sollte, verlor weiter. Verhungern ist ein absolutes Zeitphaenomen: Wer zwoelf
+# Stunden wartet, wartet zu lange — unabhaengig davon, ob sein Takt fuenf
+# Minuten oder ein Tag ist.
+#
+# Rate 0.5/h = nach zwei Stunden Wartezeit ueberholt eine Aufgabe mit
+# Basis-Prioritaet 0.2 den hoechstmoeglichen Queue-Wert 1.0 (0.2 + 0.5 x 2 = 1.2).
+PIXIE_AGING_PRO_STUNDE: float = float(os.getenv("PIXIE_AGING_PRO_STUNDE", "0.5"))
+
+# Deckel des Zuschlags, erreicht nach vier Stunden Wartezeit. Ab dort entscheidet
+# wieder die Basis-Prioritaet: Zwei gleich lang wartende Aufgaben sollen in ihrer
+# gewollten Rangfolge laufen, nicht in der ihrer Wartezeit-Nachkommastellen.
+PIXIE_AGING_MAX_ZUSCHLAG: float = float(os.getenv("PIXIE_AGING_MAX_ZUSCHLAG", "2.0"))
+
 # --- Pixie Agent: Promotion ---
 PIXIE_PROMOTION_PRIORITAET:          float = float(os.getenv("PIXIE_PROMOTION_PRIORITAET", "0.9"))
 PIXIE_PROMOTION_INTERVALL_SEKUNDEN:  int   = int(os.getenv("PIXIE_PROMOTION_INTERVALL_SEKUNDEN", "300"))   # 5 Minuten

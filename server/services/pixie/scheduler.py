@@ -52,9 +52,21 @@ async def pixie_heartbeat(app_state) -> None:
 
         # Hoechste Prioritaet gewinnt
         gewinner: dict = max(kandidaten, key=lambda k: k["prioritaet"])
+
+        # Die Gewinner-Zeile nennt beide Werte: gewaehlt wurde nach der
+        # effektiven Prioritaet, entschieden hat bei einer gealterten Aufgabe
+        # der Zuschlag. Stuende hier nur eine Zahl, waere aus dem Log nicht
+        # mehr erkennbar, ob der Verhungerungsschutz gegriffen hat.
+        _basis:       float        = gewinner.get("prioritaet_basis", gewinner["prioritaet"])
+        _ueberfaellig: float | None = gewinner.get("ueberfaellig_s")
+        _aging_text:  str          = (
+            f", gealtert von {_basis:.2f} nach {_ueberfaellig:.0f}s Ueberfaelligkeit"
+            if _ueberfaellig is not None and gewinner["prioritaet"] > _basis
+            else ""
+        )
         logger.info(
             f"Pixie: Gewinner — {gewinner['name']} "
-            f"(Prio {gewinner['prioritaet']:.2f}, Quelle: {gewinner['quelle']})"
+            f"(Prio {gewinner['prioritaet']:.2f}, Quelle: {gewinner['quelle']}{_aging_text})"
         )
 
         # Status setzen (fuer Health-Endpoint / Client-Statusleiste)
