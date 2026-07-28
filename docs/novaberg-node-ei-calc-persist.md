@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Pipeline-Node `ei_calc_persist` (Konsolidierung und Persistierung der Nova-EI)
-**Stand:** 17. Mai 2026, Chat 89 (PFAD2-PERZEPTION-FIX abgeschlossen)
+**Stand:** 28. Juli 2026, Chat 114 (elf Felder: die neun EI-Dimensionen plus die beiden Raum-Achsen)
 **Pfad:** novaberg/docs/novaberg-node-ei-calc-persist.md
 **Quellen:** novaberg-path2-perzeption_k.md (archiviert)
 **Datei:** `graph/nodes/ei_calc_persist.py`
@@ -84,11 +84,13 @@ Die Plausibilitäts-Funktionen sind beschrieben in `novaberg-ei.md`. Sie sind ni
 
 ### Schritt 2 — Redis-Persistierung
 
-Die neun konsolidierten Felder werden in einen Redis-Hash geschrieben.
+Die elf konsolidierten Felder werden in einen Redis-Hash geschrieben — die neun EI-Dimensionen plus die beiden Achsen von Novas Raum (Chat 114).
 
 ```python
 nova_state_key = f"nova_state:{user_id}:{character_id}"
 nova_state_mapping = {
+    "raum_tiefe":           str(internal.raum.tiefe),
+    "raum_naehe":           str(internal.raum.naehe),
     "emotion":              internal.emotion.emotion,
     "arousal":              str(internal.emotion.arousal),
     "emotions_vector":      internal.emotion.emotions_vector,
@@ -104,7 +106,9 @@ redis_client.hset(nova_state_key, mapping=nova_state_mapping)
 
 **Kein TTL.** Der Hash überlebt zwischen Turns und Server-Restarts. Konsistent zur `gv:detail:`-Konvention: jeder CharacterGraph-Lauf überschreibt den vorigen Stand, kein Verfall.
 
-**Schreib-Modus `hset` mit `mapping`:** Atomischer Update aller neun Felder gleichzeitig, nicht inkrementell — der Hash wird durch jeden Lauf vollständig neu beschrieben.
+**Schreib-Modus `hset` mit `mapping`:** Atomischer Update aller elf Felder gleichzeitig, nicht inkrementell — der Hash wird durch jeden Lauf vollständig neu beschrieben.
+
+**Warum der Raum hier mitfährt (Chat 114):** Die neun EI-Felder beschreiben je eine Äußerung — sie werden pro Turn neu klassifiziert. Die beiden Raum-Achsen beschreiben einen **Zustand**, der zwischen zwei Labels liegen kann und über mehrere Turns wandert. Ohne Persistenz gäbe es keinen Zwischenzustand und damit keinen Zug, nur ein Springen von Label zu Label. Geschrieben werden sie hier, weil der Raum denselben Lebenszyklus hat wie der übrige Nova-Zustand: ein Wert je Paar, kein Verfall, überschrieben am Ausgang jedes CharacterGraph-Laufs.
 
 ### Schritt 3 — Pipeline-Log-Eintrag
 
@@ -170,6 +174,8 @@ Tabellarisch zur Übersicht:
 
 | Feld | Typ in Redis | Beispielwert |
 |---|---|---|
+| `raum_tiefe` | string (numerisch) | `0.51` |
+| `raum_naehe` | string (numerisch) | `0.64` |
 | `emotion` | string | `begeisterung` |
 | `arousal` | string (numerisch) | `0.9` |
 | `emotions_vector` | string | `plateau` |

@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Modul Personality-Klassen (typisierte State-Schicht für Akteurs-Verbunde)
-**Stand:** 11. Juli 2026, Chat 105 (Werte-Listen korrigiert)
+**Stand:** 28. Juli 2026, Chat 114 (Raum-Klasse ergänzt, Lese-Pfade der Achsen korrigiert)
 **Pfad:** novaberg/docs/novaberg-personality.md
 **Quellen:** novaberg-path2-perzeption_k.md (archiviert), novaberg-lesson_l_klassen-statt-flache-keys.md
 **Datei:** `graph/personality.py`
@@ -100,7 +100,7 @@ Felddetails:
 | `emotion` | str | Plutchik-Basisemotion. Gültig: `begeisterung`, `freude`, `dankbarkeit`, `zufriedenheit`, `stress`, `unsicherheit`, `ueberrascht`, `verwundert`, `verzweiflung`, `traurigkeit`, `frustration`, `enttaeuschung`, `wut`, `aerger`, `hoffnung`, `neugierig`, `neutral` |
 | `arousal` | float | 0.0 (vollständig ruhig) bis 1.0 (maximal erregt) |
 | `emotions_vector` | str | Verlaufs-Form. Deterministisch berechnet, NICHT vom LLM geliefert (`ei/berechnung.py::_emotions_vektor_bestimmen`). Gültig: `absturz`, `spirale`, `stabilisierung`, `erholung`, `aufbluehen`, `eskalation`, `abkuehlung`, `einbruch`, `plateau`; Default leer |
-| `mode` | str | Gespräch-Modus. Gültig: `fachgespraech`, `philosophischer_austausch`, `alltag`, `arbeitsmodus`, `emotional`, `spielerisch`, `lernmodus`, `kreativ`, `beratend`, `berichtend` |
+| `mode` | str | Gespräch-Modus. Gültige Werte: `MODUS_KANON` in `config.py` — `fachgespraech`, `philosophischer_austausch`, `alltag`, `arbeitsmodus`, `emotional`, `spielerisch`, `lernmodus`, `kreativ`, `beratend`, `berichtend` |
 | `language_style` | str | Stil-Klassifikation. Gültig: `fachlich`, `formell`, `neutral`, `locker`, `emotional`, `jugendlich` |
 | `relationship_dynamic` | str | Beziehungs-Stimmung. Gültig: `vertrauen`, `distanz`, `angriff`, `hilfesuchend`, `dankbar`, `neutral` |
 | `tone` | str | Gewünschter Antwort-Tone. Gültig: `empathisch`, `sachlich`, `kreativ`, `direkt` |
@@ -143,11 +143,31 @@ class InternalPersonality(Personality):
     """
     identities: list[str]  = field(default_factory=list)
     directives: list[dict] = field(default_factory=list)
+    raum: Raum             = field(default_factory=Raum)
 ```
 
 **Trennung von `identities` und `directives`:** Beide sind Handlungsanweisungen, aber unterschiedlicher Natur. `identities` ankern Novas Selbst-Beschreibung („ich bin neugierig, warmherzig, ein bisschen verspielt"), `directives` sind situativ-anleitende Vorgaben („antworte konzis, wenn der User unter Zeitdruck steht"). Im Responder werden sie zu separaten Prompt-Blöcken kompiliert, mit unterschiedlicher Gewichtung. Eine spätere Vereinigung zu einem einzigen `instructions`-Feld bleibt möglich, ist aber nicht geplant.
 
 `directives` ist `list[dict]` mit dem Schema `{"anweisung": str, "kontext": str}` — der Kontext beschreibt, wann die Direktive zieht.
+
+### 3.5 Raum (Chat 114)
+
+Novas Gesprächsraum — wo sie im Register steht, als Zahl.
+
+```python
+@dataclass
+class Raum:
+    tiefe: float = 0.3   # Gesprächsebene, 0.0 flach bis 1.0 existenziell
+    naehe: float = 0.5   # Beziehungsdichte, 0.0 fern bis 1.0 intim
+```
+
+**Es gibt genau einen Raum, und es ist ihrer.** Der Raum des Nutzers lebt in seinem Kopf; was die Perzeption liefert, ist eine Schätzung davon und ein Ziel, zu dem Novas Raum gezogen wird.
+
+**Warum Zahlen und nicht die Labels aus `Emotion`.** `mode`, `language_style` und `relationship_dynamic` beschreiben je **eine Äußerung** — sie werden pro Turn neu klassifiziert und beziehen sich auf einen Text. Zwischen `fachgespraech` und `alltag` gibt es kein Label, wohl aber einen Zwischenzustand, und genau der ist ein Registerwechsel. Der Raum ist der Zustand, die Labels sind die Messungen an den Äußerungen.
+
+Beide Achsen liegen auf den Skalen aus `novaberg-gv-strategie_k.md` §3.1 und werden mit denselben Schwellen binarisiert, mit denen vorher die Label-Werte verglichen wurden. Die Bewegungsregel — proportionaler Zug, hinauf langsamer als hinab, Ankunftsregel, Charakterfaktor — steht in §3.4 desselben Dokuments; die Implementierung in `ei/raum.py`.
+
+**Warum die Klasse zu `InternalPersonality` gehört und nicht zu `Personality`:** Der Nutzer hat keinen Raum in diesem System — von ihm gibt es nur die Schätzung pro Turn, und die liegt in `external.emotion`. Ein `raum` auf der Basisklasse hätte einen Wert vorgetäuscht, den es für ihn nicht gibt.
 
 ---
 
@@ -163,6 +183,7 @@ Im CharacterGraph werden alle vier Datenquellen vom `db_zugriff`-Node geladen. S
 | `internal.character` | PostgreSQL `charakter_hash` mit `(ASSISTANT_USER_ID, user_id)` | `nova_charakter_hash_retrieve_dict` |
 | `internal.identities` | PostgreSQL `charakter_anweisungen` (aktiv) | `db_zugriff` Schritt 4 |
 | `internal.directives` | PostgreSQL `direktiven` (aktiv) | `db_zugriff` Schritt 4 |
+| `internal.raum` | Redis `nova_state`, Felder `raum_tiefe`/`raum_naehe`; fehlen sie, aus den Register-Labels abgeleitet | `db_zugriff` Schritt 2 |
 
 Im HumanGraph wird nur `external.emotion` befüllt — über das Payload-Seeding, das vom HumanGraph-EI-Calc und der HumanGraph-Perzeption auf der User-Seite produziert wird. `internal` bleibt bei Defaults, weil der HumanGraph Nova-Daten nicht konsumiert.
 
@@ -185,7 +206,9 @@ Konsumenten lesen mit Absicht aus genau einem der beiden Personality-Slots. Welc
 | `dispatcher.py` Session-Persist | `internal.emotion` (Nova-Werte für Assistant-Turn) |
 | `agents/kzg/dispatch.py` | bei `beobachter=assistant` aus `internal`, sonst `external` |
 | `agents/delegation/dispatch.py` | `external.emotion` (Delegation arbeitet auf User-Werten) |
-| `ei/neugier.py`, `ei/dreischicht.py`, `ei/wissensluecken.py`, `ei/farbton.py` | `internal.emotion` und `internal.character` |
+| `ei/neugier.py`, `ei/wissensluecken.py`, `ei/farbton.py` | `internal.emotion` und `internal.character` |
+| `ei/dreischicht.py` Achsen Nähe/Tiefe | `internal.raum` (seit Chat 114, vorher die Labels aus `internal.emotion`) |
+| `ei/raum.py` | `internal.raum` schreibend, Ziel aus `external.emotion` bzw. bei Eigen-Impulsen aus `internal.emotion` |
 | `_ei_calc_character` Empathie-Quelle | `external.emotion` (User-Werte als Modulations-Eingabe) |
 
 Defensiv-Pattern bei optionalen Slots:
@@ -241,7 +264,7 @@ Beim allerersten Turn pro User-Charakter-Paar existiert kein Eintrag in `nova_st
 
 ## 8. Persistierung von `internal.emotion`
 
-Nach jedem CharacterGraph-Lauf werden Novas neun Emotion-Felder vom `ei_calc_persist`-Node nach Redis geschrieben. Beim nächsten Lauf liest `db_zugriff` diesen Hash und befüllt `internal.emotion` damit. Pixie-Pfade schreiben in denselben Hash — Novas „Default Mode Network" akkumuliert Spuren zwischen User-Turns.
+Nach jedem CharacterGraph-Lauf werden Novas neun Emotion-Felder und die beiden Raum-Achsen vom `ei_calc_persist`-Node nach Redis geschrieben. Beim nächsten Lauf liest `db_zugriff` diesen Hash und befüllt `internal.emotion` damit. Pixie-Pfade schreiben in denselben Hash — Novas „Default Mode Network" akkumuliert Spuren zwischen User-Turns.
 
 Siehe `novaberg-node-ei-calc-persist.md` für Details der Persistierung.
 

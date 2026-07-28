@@ -97,7 +97,7 @@ db_zugriff → ei_calc → enricher → reducer → router → planner → agent
 
 | Feld | Werte | Beschreibung |
 |------|-------|-------------|
-| `modus` | `fachgespraech`, `philosophischer_austausch`, `alltag`, `arbeitsmodus`, `emotional`, `spielerisch`, `lernmodus`, `kreativ`, `beratend`, `berichtend` | Kommunikationsregister des Users |
+| `modus` | `MODUS_KANON` (`config.py`): `fachgespraech`, `philosophischer_austausch`, `alltag`, `arbeitsmodus`, `emotional`, `spielerisch`, `lernmodus`, `kreativ`, `beratend`, `berichtend` | Kommunikationsregister des Users |
 | `sprach_stil` | `locker`, `formell`, `fachlich`, `emotional`, `jugendlich`, `neutral` | Wie der User formuliert |
 | `beziehungs_dynamik` | `vertrauen`, `distanz`, `angriff`, `hilfesuchend`, `dankbar`, `neutral` | Positionierung des Users zum Assistenten |
 

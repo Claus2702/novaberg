@@ -278,6 +278,7 @@ project/
 │   │   └── wiedervorlage/               #   WiedervorlageAgent (Pixie)
 │   │
 │   ├── ei/                              # EI-Berechnungsmodul (Chat 58 ausgelagert, Chat 61 Refactor)
+│   │   ├── raum.py                      #     → Novas Gespraechsraum, Zug zum Register des Sprechers (Chat 114)
 │   │   └── berechnung.py                #   Verlauf, Vektor, Nova-Empathie, sin^0.5-Glaettung
 │   │
 │   ├── tools/                           # Tool-Manager (Epic 11)

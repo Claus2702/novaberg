@@ -139,7 +139,7 @@ db_zugriff → EI-Calc(character) → Enricher → EmGrav → Reducer → Router
 | # | Node | LLM? | Aufgabe |
 |---|------|------|---------|
 | 1 | db_zugriff | Nein | Lädt Charakter-Hashes (User + Nova), Identitäten, Direktiven, persistierten Nova-State (`nova_state:{user_id}:{character_id}`) aus PostgreSQL/Redis in `state["external"]` / `state["internal"]`. Pixie-Sonderfall: bei `event_source != "user"` wird `external` als Kopie von `internal` befüllt. (Chat 89, Phase 2.) |
-| 2 | EI-Calc | Nein | `_ei_calc_character`: berechnet `nova_emotions_verlauf` (Decay + asymmetrische Empathie zu `state["external"].emotion`), schreibt `state["internal"].emotion.emotions_vector`, setzt `nova_emotion_konflikt`. Empathie-Switch nach `event_source` (siehe §3.6). |
+| 2 | EI-Calc | Nein | `_ei_calc_character`: berechnet `nova_emotions_verlauf` (Decay + asymmetrische Empathie zu `state["external"].emotion`), schreibt `state["internal"].emotion.emotions_vector`, übertraegt seit Chat 113 auch `emotion`/`arousal` und zieht seit Chat 114 `state["internal"].raum` zum Register des letzten Sprechers nach (`ei/raum.py`), setzt `nova_emotion_konflikt`. Empathie-Switch nach `event_source` (siehe §3.6). |
 | 3 | Enricher | Nein | `_enrich_character`-Voll-Lauf: KZG/LZG-Resonanz, Session-Turns, Plugin-`enrich()`-Hooks, Drive-Ziele, baut `memory_entries`. Liest Novas modifizierten EI-Zustand fuer Sektor-Affinitaet (vorbereitet fuer P5). |
 | 4 | Reducer | Nein | Dedupliziert `memory_entries` (Exakt- + Substring-Dedup) und baut `memory_context` fuer den Responder. CG-only seit Chat 75 (im HG durch Phase 4 entfernt). |
 | 5 | Router | GPU | Routing-Entscheidungen, Pending-Agent-Check, setzt `management_action`. |
@@ -152,7 +152,7 @@ db_zugriff → EI-Calc(character) → Enricher → EmGrav → Reducer → Router
 | 12 | Evaluate | Nein | Vote-Aggregation. Conditional → ok/fallback/correct. |
 | 13 | Corrector | GPU | Korrektur bei Ablehnung, zurueck zum Tribunal (max 2 Runden). |
 | 14 | perzeption_assistant | GPU | Analysiert Novas finale Antwort (`perzeption_rolle="assistant"`, liest `state["response"]`). Schreibt nach `state["internal"].emotion`. (Bugfix Chat 89: liest jetzt `response`, vorher faelschlich `user_prompt`.) |
-| 15 | ei_calc_persist | Nein | Konsolidiert Plausibilitaeten auf `state["internal"].emotion` (Modus, Sprach-Stil, EI-Arousal) und persistiert Novas neun EI-Dimensionen in Redis als `nova_state:{user_id}:{character_id}` (Default Mode Network). (Chat 89, Phase 2.) |
+| 15 | ei_calc_persist | Nein | Konsolidiert Plausibilitaeten auf `state["internal"].emotion` (Modus, Sprach-Stil, EI-Arousal) und persistiert Novas neun EI-Dimensionen und die beiden Raum-Achsen in Redis als `nova_state:{user_id}:{character_id}` (Default Mode Network). (Chat 89, Phase 2.) |
 | 16 | Salienz | GPU | Bewertung der Charakter-Antwort — Bewertungsobjekt ist `state["response"]` (Switch nach ~~`ei_calc_rolle="character"`~~ **`graph_rolle="character"`**, korrigiert Chat 110). Erzeugt `pending_writes` mit `ziel="kzg"`. |
 | 17 | Dispatcher | Nein | Schreibt Session-Turn (komplett, aus `state["internal"].emotion`) + KZG. |
 

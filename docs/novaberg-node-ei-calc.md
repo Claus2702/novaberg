@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Node-Referenz EI-Calc (Emotionale Intelligenz — Berechnungsschicht)
-**Stand:** 11. Juli 2026, Chat 105 (CG lädt Session-Turns selbst — Kraft-1-Historie repariert)
+**Stand:** 28. Juli 2026, Chat 114 (Raumzug als zweite Kraft neben der Empathie)
 **Pfad:** novaberg/docs/novaberg-node-ei-calc.md
 **Quellen:** Chat 58 (Konzept-Split), Chat 59 (Implementierung)
 **Datei:** `graph/nodes/ei_calc.py`
@@ -170,6 +170,25 @@ Bei `event_source == "character"` wird `state["nova_emotions_verlauf"]` auf die 
 | `state["nova_emotion_konflikt"]` | bool | Ja — Berechnungs-Ableitung, kein Persönlichkeits-Zustand (`state.py:88`) | Konflikt-Flag bei gegenüberliegenden Sektoren |
 
 **Was EI-Calc nicht (mehr) schreibt:** `beziehungs_kontext` (wird nur konsumiert, s. §3.1 Punkt 7), `nova_emotions_vektor` (sitzt in `internal.emotion.emotions_vector`), `gespraechs_modus` / `sprach_stil` (sitzen in `external.emotion.mode` / `language_style`).
+
+### Der Raumzug (Chat 114)
+
+Der Character-Zweig zieht am Ende `state["internal"].raum` zum Register desjenigen, der zuletzt gesprochen hat — `raum_nachfuehren()` aus `ei/raum.py`.
+
+Das ist die zweite Kraft desselben Musters, das dieser Node für die Emotion schon trägt. Novas Emotion entsteht aus ihrem eigenen abklingenden Verlauf **plus** dem Zug des Nutzers (asymmetrische Empathie). Ihr Register hatte bis Chat 114 nur die erste Hälfte: `internal.emotion.mode` und `.language_style` wurden über Redis konserviert, und nichts zog daran. Gemessen wurde daraus eine Divergenz statt einer Annäherung — der Nutzer wurde lockerer, Nova förmlicher.
+
+```python
+if event_source == "user":
+    raum_nachfuehren(internal, external, quelle="Nutzer")
+else:
+    raum_nachfuehren(internal, internal, quelle="Eigen-Impuls", charakter_faktor=1.0)
+```
+
+Bei einem Nutzer-Turn ist sein geschätztes Register das Ziel und der Charakterfaktor greift — er beschreibt Novas Bereitschaft, **ihm** zu folgen. Bei einem Eigen-Impuls folgt der Raum Nova selbst, ohne Faktor: Geht sie in der Zwischenzeit eigenen Dingen nach, schiebt sich der Raum dorthin. Dasselbe Ereignis-Kriterium wie beim Empathie-Switch (§3.6), aber eine andere Konsequenz — die Empathie entfällt bei Eigen-Impulsen, der Raumzug wechselt nur seine Quelle.
+
+**Reihenfolge im Node:** erst `internal_emotion_uebertragen()` (Emotion), dann der Raumzug. Die Übertragung nimmt seit Chat 114 einen `quelle`-Parameter, weil ein zweiter Aufrufer dazugekommen ist — der EmGrav-Node zieht sie nach, wenn eine reaktivierte Erinnerung Novas Lage verschoben hat. Ohne den Parameter behauptete die zweite Log-Zeile, sie käme aus diesem Node.
+
+Konzept: `novaberg-gv-strategie_k.md` §3.4. Abgrenzung zur Empathie: `novaberg-ei-dual-emotion_k.md` §4.2.
 
 ---
 

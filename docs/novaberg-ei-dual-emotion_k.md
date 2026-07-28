@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Konzept — Dual-Emotion Phase 2
-**Stand:** 26. April 2026, Chat 66 (AP9 Doku-Abschluss, alle Server-APs fertig)
+**Stand:** 28. Juli 2026, Chat 114 (Abgrenzung zum Raumzug in §4.2)
 **Pfad:** novaberg/docs/novaberg-ei-dual-emotion_k.md
 **Typ:** Konzept (K)
 **Voraussetzung:** Phase 1 (User-ID-Entkopplung, Chat 57) ✅
@@ -126,6 +126,18 @@ Die Emotion des Users wirkt als Kraft auf Novas Position. Der Empathie-Faktor α
 | 3–4 (gegenüber) | 0.7–0.9 | Nova freudig, User traurig → Empathie überschreibt |
 
 Die Sektor-Distanzmatrix existiert bereits (`EMOTION_SEKTOR_DISTANZ` in `config.py`).
+
+> **Abgrenzung zum Raumzug (Chat 114) — das Vorzeichen kehrt sich um.** Novas Register hat seit Chat 114 dieselbe Bauart: ein eigener Zustand, der vom Nutzer angezogen wird (`ei/raum.py`, Konzept in `novaberg-gv-strategie_k.md` §3.4). Die Formel ist dieselbe Gestalt, die Abhängigkeit von der Distanz aber die **entgegengesetzte**.
+>
+> | | Emotion | Register |
+> |---|---|---|
+> | Große Distanz | zieht **stärker** — Empathie überschreibt | zieht **nicht** stärker |
+> | Richtung | symmetrisch | hinauf (System 1 → System 2) langsamer als hinab |
+> | Faktor aus | Sektor-Distanz im Plutchik-Oktagon | fester Zug × Charakterfaktor |
+>
+> Der Grund ist inhaltlich: Ein Gegenüber, das emotional weit weg steht, zieht mich mit — das ist Mitgefühl. Ein Gegenüber, das das Register wechselt, zieht mich nicht schneller, weil das gedankliche Umstellen Zeit kostet, egal wie weit der Sprung ist.
+>
+> **Wer die α-Tabelle oben fürs Register abschreibt, baut das Gegenteil dessen, was entschieden wurde.**
 
 ### 4.3 Ziel-Vektor × Similarity (Phase 3 — noch nicht)
 

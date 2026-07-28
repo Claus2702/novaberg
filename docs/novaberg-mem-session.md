@@ -25,7 +25,7 @@ Das Session-Gedächtnis ist Novas Arbeitsgedächtnis für das laufende Gespräch
 |-----|-----|-----|-------------|
 | `session:{user_id}:{character_id}:turns` | List | 7200s (2h) | Geordnete Liste aller Turns |
 | `session:{user_id}:{character_id}:summary` | String | 7200s (2h) | Zusammenfassung älterer Turns |
-| `nova_state:{user_id}:{character_id}` | Hash | kein TTL | Persistierter Nova-Zustand (Default Mode Network, Chat 89) |
+| `nova_state:{user_id}:{character_id}` | Hash | kein TTL | Persistierter Nova-Zustand: neun EI-Dimensionen (Chat 89) + `raum_tiefe`/`raum_naehe` (Chat 114) |
 
 Seit Chat 60: Session-Key enthält `character_id`. Die Session repräsentiert das Gespräch zwischen einem bestimmten User und einem bestimmten Charakter (z.B. `session:meister:nova:turns`). Helfer: `_session_key(user_id, character_id, suffix)`.
 
@@ -199,7 +199,7 @@ Seit Chat 60: Der Dispatcher (`graph/nodes/dispatcher.py`) schreibt alle Session
 |------|-------------|
 | **Dispatcher** | Schreibt User- und Assistant-Turns vollständig via `session_turn_store` (seit Chat 60) |
 | **Enricher** | Liest Turns via `session_turns_retrieve`, destilliert sie, blendet Shadow-Impulse aus |
-| **db_zugriff** | Liest `nova_state:{user_id}:{character_id}` am CG-Eingang, befüllt `state["internal"].emotion` (Chat 89) |
+| **db_zugriff** | Liest `nova_state:{user_id}:{character_id}` am CG-Eingang, befüllt `state["internal"].emotion` (Chat 89) und `.raum` (Chat 114; fehlen die Achsen, werden sie aus den Register-Labels abgeleitet) |
 | **ei_calc_persist** | Schreibt `nova_state:{user_id}:{character_id}` am CG-Ausgang (Chat 89) |
 | **Salienz** | Legacy-Annotation via `session_turn_annotate` (perspektivisch deprecated, Chat 60) |
 | **API-Layer** (`api/chat.py`) | Markiert User-Turns nach Agent-Dispatch via `session_turn_mark_action` |

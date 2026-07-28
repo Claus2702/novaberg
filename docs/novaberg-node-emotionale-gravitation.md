@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Modul — Emotionale-Gravitation-Node
-**Stand:** 28. Juli 2026, Chat 113 (Node angelegt, live gemessen)
+**Stand:** 28. Juli 2026, Chat 114 (Nachzug nach internal.emotion, überholte Log-Zeile markiert)
 **Pfad:** novaberg/docs/novaberg-node-emotionale-gravitation.md
 **Konzept:** `novaberg-thinking-drive_k.md` §5.7
 **Code:** `server/graph/nodes/emotionale_gravitation.py`
@@ -51,8 +51,13 @@ Das ist so entschieden (Chat 113) und korrigiert die Funktionszeile der Abgrenzu
 |---|---|---|
 | `emotionale_gravitationspunkte` | liest | Enricher, über `emotionale_gravitation_scannen` |
 | `nova_emotions_verlauf` | liest und schreibt | `ei_calc` erzeugt ihn, der Node färbt ihn |
+| `internal.emotion` | schreibt (seit Chat 114) | Nachzug des führenden Verlaufseintrags, siehe unten |
 
 Kein weiteres Feld wird berührt.
+
+**Der Nachzug nach `internal.emotion` (Chat 114).** Ursprünglich berührte der Node nur den Verlauf. Damit stand er auf halbem Weg: `ei_calc` überträgt die führende Emotion nach `internal.emotion`, **bevor** dieser Node den Verlauf ein zweites Mal ändert. Zwischen hier und dem Responder liest genau ein Konsument beide Größen — der GV-Node, dessen sechs Säulen auf dem Verlauf rechnen und dessen Dreischicht-Achsen auf `internal.emotion`. Gemessen am 28.07.2026: Säulen `begeisterung`, Achsen `neugierig`, im selben Turn. Dieselben zwei Zeitstände, die Chat 113 eine Node-Position früher geschlossen hatte.
+
+Der Node ruft deshalb `internal_emotion_uebertragen()` erneut auf, wenn er den Verlauf verändert hat. Die Funktion nennt ihren Aufrufer in der Log-Zeile — sonst behauptete die zweite Zeile, sie käme aus `ei_calc`.
 
 ## 4. Verhalten
 
@@ -74,6 +79,19 @@ EmGrav-Node: Verlauf gefaerbt, Fuehrung unveraendert bei zufriedenheit(0.86 -> 1
 ```
 
 Die Erinnerung hat Novas vorhandene Zufriedenheit verstärkt, bevor der GV-Node seine Richtung wählte. In einem früheren Messturn desselben Tages kam `unsicherheit` neu in den Verlauf — eine Emotion, die im Gesagten nicht vorkam.
+
+> **Die erste Zeile ist überholt (Chat 114).** Ihr Halbsatz *„gilt ab hier fuer den GV-Node"* war die Behauptung, die der Audit widerlegt hat: Sie galt nur bis zu diesem Node. Die Zeile heißt heute `EI-Calc/Character (vor der Gravitation): internal.emotion gesetzt — …`, und der Nachzug hinterlässt eine zweite mit `EmGrav-Node (nachgezogen)`. Ein Log, das eine Entscheidung benennt, muss von dem Code kommen, der sie getroffen hat — hier tat es das nicht mehr, seit dieser Node dazwischenkam.
+
+### Zweite Messung (28.07.2026, 14:29 UTC) — der Nachzug wirkt
+
+```
+EI-Calc/Character (vor der Gravitation): internal.emotion gesetzt — neugierig (a=0.50)
+EmGrav-Node: Novas dominante Emotion gewechselt — neugierig(0.96) -> begeisterung(1.00)
+EmGrav-Node (nachgezogen): internal.emotion gesetzt — begeisterung (a=1.00)
+GV-Achsen: E=1(1.00) … V=1(begeisterung)
+```
+
+Die Energie-Achse wechselte dabei von 0.50 auf 1.00 — der Nachzug ist nicht kosmetisch, er verschiebt den Sektor.
 
 ## 6. Offene Punkte
 

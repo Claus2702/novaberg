@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Node-Referenz Responder
-**Stand:** 26. April 2026, Chat 66 ([EIGENE_EMOTION]-Block dokumentiert)
+**Stand:** 28. Juli 2026, Chat 114 ([DEIN SPRACHSTIL] hinter dem Verlauf, §4.1)
 **Pfad:** novaberg/docs/novaberg-node-responder.md
 **Quellen:** nova-01-m-e.md, nova-12-k.md §7
 **Datei:** `graph/nodes/responder.py`
@@ -262,8 +262,44 @@ Der Responder sendet eine einzige User-Message an das LLM, die den Gesprächsver
 
 ```
 [system] → Dynamischer System-Prompt (s.o.)
-[user]   → [GESPRAECHSVERLAUF] + [AKTUELLER PROMPT]
+[user]   → [GESPRAECHSVERLAUF] + [AKTUELLER PROMPT] + [DEIN SPRACHSTIL]
 ```
+
+### 4.1 [DEIN SPRACHSTIL] — der eine Block außerhalb des System-Prompts (Chat 114)
+
+Alles über das *Wie* der Antwort steht im System-Prompt und damit vor dem Verlauf. Gemessen an einem Turn hieß das:
+
+| Bestandteil | Größe |
+|---|---|
+| Gesprächsverlauf | 21 Turns, ungekürzt — rund drei Viertel des Prompts |
+| Gedächtnis-Kontext | 4.154 Zeichen |
+| Identität | 1.268 Zeichen |
+| `[GESPRAECHSVEKTOR]` | 1.376 Zeichen |
+| Eingang gesamt | 11.254 Tokens |
+
+Der Registeranteil ist rund drei Prozent, und er stand vor der Wand statt dahinter. Die Folge war im Log zu sehen: ein Turn mit Cluster `kissenschlacht` — *spielerisch, nah, lebendig* —, Strategie Impuls, Vehikel Frage, Stil locker, und eine Antwort über thermische Entropie. Das Wort „spielerisch" kam darin vor, als Objekt eines abstrakten Satzes. Die Metadaten stimmten alle; die Sprache kam aus rund 8.400 Tokens eigener Prosa im Verlauf.
+
+Der Block wiederholt deshalb die kurze Fassung des *Wie* am **Ende der User-Message**, hinter dem Verlauf und hinter dem aktuellen Prompt — dort, wo eine Anweisung noch etwas ausrichtet. Er kostet rund 60 Tokens.
+
+```
+[DEIN SPRACHSTIL]
+Der Verlauf oben, wie Du sprichst und klingst, kann in einer ganz anderen
+Situation entstanden sein, loese Dich erstmal von der Art und Weise. Wichtig
+ist jetzt, dass Du so klingst bei Deiner Antwort:
+Landschaft: Kissenschlacht — Spielerisch, nah, lebendig. Leichtigkeit ist der Inhalt.
+Ton: locker · Fragen: Mittel, neckisch · Werkzeug: Impuls, als Frage
+Leitgedanke: Die Leichtigkeit halten, nicht erklaeren.
+```
+
+**Er führt hin, statt zu verbieten.** Der Verlauf ist nicht falsch — er ist in einer anderen Lage entstanden. Ein Verbot war die naheliegende Variante und wurde verworfen.
+
+**Die Quellen sind bewusst gemischt.** Landschaft und Fragefrequenz kommen aus dem Cluster, der über Novas Raum trägheitsbehaftet nachzieht; der **Ton** kommt aus `external.emotion.language_style`, also aus dem Register des aktuellen Nutzer-Turns — nicht aus Novas gespeicherten Labels, sonst zitierte der Block genau die Schleife, gegen die er gebaut ist. Der Ton folgt dem Nutzer sofort, die Landschaft mit ein bis zwei Turns Verzug.
+
+Fehlen alle Angaben — übersprungener GV-Node und neutraler Stil —, entfällt der Block; das steht in einer Log-Zeile, statt still zu geschehen.
+
+**Gemessen (28.07.2026):** Bei Cluster `feuerwerk` und einem Prompt ohne jeden Stilwunsch griff die Antwort das Bild des Nutzers auf, statt es zu übersetzen, und schloss mit einer Frage — was der Cluster vorsieht. Zwei Turns; die Wirkung auf den Ton lässt sich nicht im Unit-Test sichern, nur beobachten. Details: `novaberg-bugs.md`, GV-METADATEN-ERREICHEN-DIE-SPRACHE-NICHT.
+
+**Was der Block nicht tut:** Er kürzt den Verlauf nicht. `SESSION_MAX_TURNS = 20` heißt weiterhin, dass ein langer abstrakter Absatz rund zehn Wortwechsel im Prompt überlebt. Das Verlaufs-Trimming steht seit Chat 72 als Vorschlag (c) zum Echo-Bug im Backlog und ist durch diese Messung als der wirksamste der drei belegt.
 
 **Textblock-Format (Chat 30):** Session-Turns werden als zusammenhängender Textblock in einer einzigen User-Message gesendet. Jeder Turn hat einen Header mit Nummer und emotionalem Kontext:
 

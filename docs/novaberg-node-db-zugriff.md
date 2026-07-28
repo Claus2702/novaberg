@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Pipeline-Node `db_zugriff` (Eingangsnode des CharacterGraphs)
-**Stand:** 17. Mai 2026, Chat 89 (PFAD2-PERZEPTION-FIX abgeschlossen)
+**Stand:** 28. Juli 2026, Chat 114 (Raum aus nova_state, eigener Cold-Start aus den Labels)
 **Pfad:** novaberg/docs/novaberg-node-db-zugriff.md
 **Quellen:** novaberg-path2-perzeption_k.md (archiviert)
 **Datei:** `graph/nodes/db_zugriff.py`
@@ -57,9 +57,9 @@ external_emotion = Emotion(
 
 Die Default-Werte greifen, wenn der Payload unvollständig ist (z.B. bei Pixie-Events, die keinen User-Pfad-Vorgang hatten). Sie sind identisch zu den dataclass-Defaults.
 
-### Schritt 2 — `internal.emotion` aus Redis `nova_state`
+### Schritt 2 — `internal.emotion` und `internal.raum` aus Redis `nova_state`
 
-Nova trägt ihren letzten bekannten Zustand im Redis-Hash `nova_state:{user_id}:{character_id}`. Der `db_zugriff`-Node liest ihn und packt die neun Felder in eine `Emotion`-Instanz.
+Nova trägt ihren letzten bekannten Zustand im Redis-Hash `nova_state:{user_id}:{character_id}`. Der `db_zugriff`-Node liest ihn und packt die neun EI-Felder in eine `Emotion`-Instanz und die beiden Raum-Achsen in eine `Raum`-Instanz (Chat 114).
 
 ```python
 nova_state_key = f"nova_state:{user_id}:{character_id}"
@@ -79,6 +79,27 @@ internal_emotion = Emotion(
 ```
 
 **Cold-Start:** Wenn der Hash leer ist (erster Turn pro User-Charakter-Paar), greifen die Defaults der Klasse. Pipeline-Log-Eintrag enthält `exists: false` als Signal.
+
+#### Der Raum hat einen eigenen Cold-Start (Chat 114)
+
+```python
+raum_geladen = "raum_tiefe" in nova_state_raw and "raum_naehe" in nova_state_raw
+if raum_geladen:
+    internal_raum = Raum(tiefe=float(...), naehe=float(...))
+else:
+    internal_raum = _raum_aus_labels(internal_emotion)
+```
+
+Fehlen die beiden Achsen — frisches Paar oder erster Turn nach ihrer Einführung —, wird der Raum **nicht auf einen Default gesetzt, sondern aus Novas Register-Labels abgeleitet**: `mode` über `GV_TIEFE_MODUS`, `relationship_dynamic` und `language_style` über die beiden Nähe-Tabellen. Der Raum, in dem sie zuletzt gesprochen hat, ist die ehrlichere Auskunft als ein erfundener Startwert.
+
+Dass abgeleitet und nicht geladen wurde, steht in der Log-Zeile:
+
+```
+db_zugriff Schritt 2 — internal.emotion aus Redis: cold_start=False,
+emotion=neugierig, arousal=0.5, raum=(0.90, 0.45) [aus Labels abgeleitet]
+```
+
+Unlesbare Werte im Hash (kein `float`) sind kein Leerfall, sondern ein Defekt: `logger.error`, danach dieselbe Ableitung. Ein stiller Default wäre hier besonders teuer, weil zwei der sechs Gesprächsachsen darauf stehen.
 
 **Persistiert wird durch:** den `ei_calc_persist`-Node am Ende desselben Graphen-Laufs. Siehe `novaberg-node-ei-calc-persist.md`.
 

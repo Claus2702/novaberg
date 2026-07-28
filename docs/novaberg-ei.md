@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Emotionale Intelligenz (Übersicht)
-**Stand:** 21. April 2026, Chat 60 (Event-Modell, Graph-Split — EI-Calc in beiden Graphen)
+**Stand:** 28. Juli 2026, Chat 114 (Wahrnehmung und Zustand: die Säule Modus bekommt, was die Säule Emotion hat)
 **Pfad:** novaberg/docs/novaberg-ei.md
 **Quellen:** nova-04-k.md (EI-Konzept)
 
@@ -19,7 +19,7 @@ Jede Interaktion wird auf sechs Saeulen analysiert, inspiriert von Schulz von Th
 | **Inhalt** | Schulz von Thun (Sachebene) | Themen, Fakten, Zusammenfassung | Session, KZG |
 | **Intention** | Schulz von Thun (Appell) | Warum sagt der Nutzer das? | KZG, Charakter-Hash |
 | **Emotion** | Watzlawick (Beziehungsebene) | Emotionale Faerbung pro Turn | Session, KZG |
-| **Modus** | Schulz von Thun (Selbstoffenbarung) | Gespraechsregister (alltag, fachlich, emotional) | Session, Charakter-Hash |
+| **Modus** | Schulz von Thun (Selbstoffenbarung) | Gespraechsregister, zehn kanonische Werte (`MODUS_KANON`) | Session, Charakter-Hash, Novas Raum |
 | **Beziehung** | Watzlawick + Berne | Dynamik zwischen Nutzer und Nova | Charakter-Hash (langfristig) |
 | **Salienz** | Eigene Entwicklung | Wichtigkeit, steuert Gedaechtnisbildung | KZG → LZG |
 
@@ -36,6 +36,21 @@ Jede Saeule hat Daten auf drei Ebenen:
 | **Langfristig** (Monate) | Charakter-Hash | "Grundsaetzlich neugierig und analytisch" |
 
 > **Bordcomputer-Analogie (Chat 8):** "Wenn ich generell ein ruhiger Fahrer bin, errechnet er einen Durchschnittsverbrauch der letzten Stunden und sagt: Jo, Brudi, kannst noch 550 km fahren. Aber gerade jetzt habe ich es eilig. Der Verbrauch steigt." — Langzeitwerte fuer Vorhersage, Session-Turn bestimmt die Gegenwart.
+
+### Wahrnehmung und Zustand — zwei Saeulen tragen beides
+
+Die drei Zeitskalen oben beschreiben, wie weit zurueck eine Saeule blickt. Zwei Saeulen tragen daneben eine zweite Unterscheidung: **Wahrnehmung** ist, was an einer Aeusserung gemessen wird; **Zustand** ist, was Nova daraus mit sich traegt.
+
+| Saeule | Wahrnehmung (pro Aeusserung) | Novas Zustand (traegheitsbehaftet) |
+|--------|------------------------------|------------------------------------|
+| **Emotion** | `emotion` + `arousal` aus der Perzeption jedes Turns | `nova_emotions_verlauf` mit Decay, gezogen vom Nutzer ueber die asymmetrische Empathie |
+| **Modus** | `mode`, `sprach_stil`, `beziehungs_dynamik` aus der Perzeption jedes Turns | **Novas Raum** — Tiefe und Naehe als Zahlen, gezogen vom Nutzer ueber den Raumzug |
+
+Die Emotion hatte diesen Doppelcharakter von Anfang an: Der Nutzer wird pro Turn vermessen, und daneben laeuft Novas eigener Strang, der abklingt und vom Nutzer angezogen wird. Der Modus hatte bis Chat 114 nur die linke Spalte. Seine Labels wurden zwar in `redis:nova_state` konserviert und in den naechsten Turn getragen — aber nichts zog daran. Ein Label ist auch kein Zustand: Es beschreibt eine Aeusserung, und zwischen zwei Labels gibt es keinen Zwischenwert, waehrend ein Registerwechsel genau dort stattfindet.
+
+Novas Raum schliesst diese Luecke nach demselben Schema. Ein Unterschied bleibt und ist Absicht: Bei der Emotion zieht ein **weit entfernter** Nutzer staerker — das ist Empathie. Beim Register zieht er langsamer, weil die gedankliche Umstellung kostet, und hinauf (System 1 → System 2) mehr als hinab.
+
+> Detail: `novaberg-gv-strategie_k.md` §3.4 (Raum, Zugfaktoren, Ankunftsregel), `novaberg-ei-dual-emotion_k.md` §4.2 (Empathie-α als das Gegenstueck).
 
 ---
 
