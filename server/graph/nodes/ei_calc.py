@@ -29,12 +29,53 @@ from ei.berechnung import (
     _stil_plausibilitaet,
     _nova_empathie_berechnen,
 )
-from ei.gravitation import emotionale_gravitation_auf_verlauf_anwenden
 from graph.personality import InternalPersonality, Personality
 from graph.state import ConversationState
 from memory.session import session_turns_retrieve
 
 logger = logging.getLogger("ki_server.ei_calc")
+
+
+def internal_emotion_uebertragen(
+    internal, nova_emotions_verlauf: list[dict],
+) -> bool:
+    """Uebertraegt Novas dominante Emotion dieses Turns nach internal.emotion.
+
+    Vorbedingung: `internal` traegt eine Emotion (aus db_zugriff, Stand
+    Vorturn); `nova_emotions_verlauf` ist absteigend nach Gewicht sortiert.
+    Nachbedingung: Bei nicht-leerem Verlauf tragen `emotion` und `arousal` den
+    fuehrenden Eintrag. Bei leerem Verlauf bleibt der Vorturn-Stand stehen.
+    Fehlerfaelle: Leerer Verlauf — laut protokolliert, weil der GV-Node dann
+    seinen Cluster auf einer veralteten Lage waehlt.
+
+    Returns:
+        True, wenn uebertragen wurde; False, wenn der Vorturn-Wert stehenblieb.
+    """
+
+    # ── Eingabe-Validierung ─────────────────────
+    if not nova_emotions_verlauf:
+        logger.error(
+            "EI-Calc/Character: nova_emotions_verlauf ist leer — internal.emotion "
+            "behaelt den Stand des Vorturns (%s). Der GV-Node waehlt seinen "
+            "Cluster damit auf einer veralteten Lage",
+            internal.emotion.emotion,
+        )
+        return False
+
+    # ── Verarbeitung ────────────────────────────
+    fuehrend: dict = nova_emotions_verlauf[0]
+    internal.emotion.emotion = fuehrend["emotion"]
+    # Ein Eintrag ohne arousal darf keine 0.0 erfinden — der bisherige Wert
+    # ist die ehrlichere Auskunft als eine Null, die wie eine Messung aussieht.
+    internal.emotion.arousal = fuehrend.get("arousal", internal.emotion.arousal)
+
+    # ── Ausgabe-Verifikation ────────────────────
+    logger.info(
+        "EI-Calc/Character: internal.emotion aktualisiert — %s (a=%.2f), "
+        "gilt ab hier fuer den GV-Node",
+        internal.emotion.emotion, internal.emotion.arousal,
+    )
+    return True
 
 
 def ei_calc(state: ConversationState) -> ConversationState:
@@ -215,26 +256,12 @@ def _ei_calc_character(state: ConversationState) -> None:
             nova_verlauf_basis, current_emotion, current_arousal,
         )
 
-        # ── Emotionale Gravitation anwenden (EI Phase 3) ──
-        emotionale_punkte: list[dict] = state.get("emotionale_gravitationspunkte", [])
-
-        if emotionale_punkte and empathie_ergebnis.get("nova_verlauf_modifiziert"):
-            empathie_ergebnis["nova_verlauf_modifiziert"] = emotionale_gravitation_auf_verlauf_anwenden(
-                empathie_ergebnis["nova_verlauf_modifiziert"],
-                emotionale_punkte,
-            )
-
-            # Nova-Emotion nach Gravitation neu bestimmen (für Logging)
-            if empathie_ergebnis["nova_verlauf_modifiziert"]:
-                top: dict = empathie_ergebnis["nova_verlauf_modifiziert"][0]
-                empathie_ergebnis["nova_emotion"] = top["emotion"]
-                empathie_ergebnis["nova_arousal"] = top.get("arousal", 0.3)
-
-            logger.info(
-                f"EI-Calc: Emotionale Gravitation angewendet — "
-                f"{len(emotionale_punkte)} Punkte, "
-                f"Nova-Emotion jetzt: {empathie_ergebnis.get('nova_emotion', '?')}"
-            )
+        # Die emotionale Gravitation wird NICHT hier angewendet. Sie stand bis
+        # Chat 113 an dieser Stelle und konnte nie greifen: Der Enricher setzt
+        # die Gravitationspunkte, laeuft im CharacterGraph aber NACH ei_calc
+        # (siehe Modul-Docstring). Die Liste war hier immer leer — 851
+        # Berechnungen, null Anwendungen. Der Verbraucher ist jetzt ein eigener
+        # Node zwischen Enricher und Reducer.
 
         state["nova_emotions_verlauf"] = empathie_ergebnis["nova_verlauf_modifiziert"]
         state["nova_emotion_konflikt"] = empathie_ergebnis["nova_konflikt"]
@@ -257,6 +284,24 @@ def _ei_calc_character(state: ConversationState) -> None:
         "EI-Calc/Character: Emotions-Vektor — %s (nova_turns=%d)",
         nova_emotions_vektor, len(nova_turns),
     )
+
+    # Novas dominante Emotion dieses Turns in internal.emotion uebertragen.
+    #
+    # Bis Chat 113 stand hier nur der Emotions-Vektor, und `emotion`/`arousal`
+    # trugen weiter den Wert, den db_zugriff aus redis:nova_state geladen hatte —
+    # den Stand vom ENDE des letzten Turns (einziger Setzer sonst:
+    # perzeption/assistant, der erst nach dem Responder laeuft). Zwischen hier
+    # und dort liest genau ein Konsument diese Felder: der GV-Node. Seine
+    # Dreischicht-Achsen waehlten Sektor, Cluster und Strategie-Repertoire damit
+    # auf Novas Lage von gestern, waehrend die sechs Saeulen der
+    # Aufnahmebereitschaft im selben Node bereits auf nova_emotions_verlauf
+    # standen — zwei Zeitstaende fuer dieselbe Groesse in einem Node.
+    #
+    # Nova hoert den Input mit der Stimmung, die sie JETZT hat; darauf antwortet
+    # ihr Gedaechtnis, und daraus entsteht die Verschiebung, die der GV-Node
+    # ausarbeitet. Der Vorturn-Wert bleibt nur stehen, wenn es keinen Verlauf
+    # gibt — und das wird gemeldet, statt still zu geschehen.
+    internal_emotion_uebertragen(internal, state.get("nova_emotions_verlauf") or [])
 
     if state["nova_emotions_verlauf"]:
         nova_top: str = ", ".join(

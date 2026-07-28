@@ -22,6 +22,7 @@ from graph.nodes.perzeption import perceive
 from graph.nodes.router     import route
 from graph.nodes.enricher  import enrich
 from graph.nodes.ei_calc   import ei_calc
+from graph.nodes.emotionale_gravitation import emotionale_gravitation_anwenden
 from graph.nodes.planner   import plan
 from graph.nodes.reducer   import reduce_memory
 from graph.nodes.responder import respond
@@ -195,6 +196,9 @@ class GraphBase(ABC):
 
     def _node_ei_calc(self, state: ConversationState) -> ConversationState:
         return ei_calc(state)
+
+    def _node_emotionale_gravitation(self, state: ConversationState) -> ConversationState:
+        return emotionale_gravitation_anwenden(state)
 
     def _node_plan(self, state: ConversationState) -> ConversationState:
         return plan(state, self.postgres_url)

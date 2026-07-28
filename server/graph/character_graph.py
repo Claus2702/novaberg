@@ -54,6 +54,7 @@ class CharacterGraph(GraphBase):
         graph.add_node("db_zugriff",      self._node_db_zugriff)
         graph.add_node("ei_calc",         self._node_ei_calc)
         graph.add_node("enricher",        self._node_enrich)
+        graph.add_node("emotionale_gravitation", self._node_emotionale_gravitation)
         graph.add_node("reducer",         self._node_reduce)
         graph.add_node("router",          self._node_route)
         graph.add_node("planner",         self._node_plan)
@@ -75,7 +76,13 @@ class CharacterGraph(GraphBase):
         graph.set_entry_point("db_zugriff")
         graph.add_edge("db_zugriff", "ei_calc")
         graph.add_edge("ei_calc",    "enricher")
-        graph.add_edge("enricher",   "reducer")
+        # Die Gravitation sitzt zwischen Enricher und Reducer: Der Enricher
+        # findet die Punkte, und alles Nachfolgende — GV-Node wie Responder —
+        # soll Novas gefaerbte Lage sehen. Vor dem Enricher ginge es nicht, denn
+        # dort entstehen die Punkte erst; nach dem GV-Node bliebe nur noch der
+        # Ton der Antwort, nicht ihre Denkrichtung (Chat 113).
+        graph.add_edge("enricher",   "emotionale_gravitation")
+        graph.add_edge("emotionale_gravitation", "reducer")
         graph.add_edge("reducer",    "router")
 
         # Router → Planner oder GV-Node
