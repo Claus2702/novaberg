@@ -1526,4 +1526,59 @@ Offen → Backlog: `CHARHASH-GEWICHT-ABSOLUT-LIVE` (volle Live-Abnahme im Dauerb
 
 ---
 
-*Aktualisiert in Chat 110 (26.07.2026). Offene Punkte → novaberg-backlog.md. Bugs → novaberg-bugs.md.*
+## Chats 111–112 (27.–28.07.2026) — Sprint KZG-SALIENZ-NEUBAU, Teil 1 ✅
+
+**Schwerpunkt:** Die Salienz-Skala, die seit Chat 110 Bauteil 3 blockierte, wurde erst sichtbar und dann neu definiert.
+
+- ✅ **Reset des Bestands** (27.07., 09:13 UTC) — neuer Nullpunkt für alle Partitionen, festgehalten in `novaberg-fundliste.md`
+- ✅ **Salienz beobachtbar gemacht** — vorher entschied eine Zahl über Gedächtnisbildung, ohne dass irgendwo stand, wie sie zustande kam
+- ✅ **Das Segment erreicht den Verdichter**; die Salienz von Novas Äußerung neu definiert
+- ✅ **Charakter-Rad**; drei Neugier-Größen getrennt, die vorher unter einem Namen liefen
+- ✅ **Wissenslücken-Agent** gebaut, dreimal live gelaufen
+- ✅ **Salienz-Formel** und `salienz_human` erreicht den CharacterGraph; **Rollen-Switch** am Salienz-Prompt
+- ✅ **Gedankenkette konzipiert** (`novaberg-gedankenkette_k.md`) — Konzept, kein Code
+
+**Umfang:** Chat 111: 19 Commits, 43 Dateien, +3798/−126, Suite 103 → 173. Chat 112: 8 Commits, 27 Dateien, +2076/−173, Suite 173 → 241.
+
+**Methodischer Ertrag:** Eine Gegenprobe blieb grün und war damit ein Befund über das Messgerät, nicht über den Code — daraus die Regel, beide Seiten eines Vergleichs zurückzuverfolgen (`Arbeitsweise` §6, Lesson `ableitung-als-messung`).
+
+---
+
+## Chat 113 (28.07.2026) — Drei Akkumulatoren und ein Pfad, der nie ankam ✅
+
+**Schwerpunkt:** Der Sprint erreichte Bauteil 1, und jede Reparatur legte die nächste frei. Die Fehlerklasse des Tages: *ein Wert, dessen Uhr in einem Feld liegt, das jemand anders aus einem anderen Grund berührt* — dreimal in drei Verkleidungen.
+
+- ✅ **Pixie-Scheduler: Aging gegen Verhungern.** Zuschlag 0.5/h auf **absolute** Wartezeit, Deckel 2.0. Die erste Fassung maß verpasste Intervalle und bevorzugte damit kurze Takte — also genau die Aufgaben, die nicht verhungern. Queue-Einträge altern ausdrücklich nicht
+- ✅ **LZG-Decay lief seit dem Reset nie** — 111 aktive Knoten mit 111 verschiedenen `decay_am`, alle aus dem Spalten-Default. Ursache war der Scheduler ohne Aging. Danach 123 Knoten mit einem `decay_am`
+- ✅ **KZG-Salienz als abgeleiteter Wert** (Bauteil 1 des Sprints) — Akkumulator ersetzt durch eine reine Funktion aus `salienz_eingang` und `haeufigkeit`, samt Migration von 194 Einträgen. Vorher 38 % über 1.0 bei einem Maximum von 5.636, danach keiner über 1.0
+- ✅ **Ziel-Decay idempotent** — Anker und Ankerzeitpunkt als eigenes Feldpaar. `aktualisiert_am` war als Zeitbasis nie tauglich, weil der Decay-Lauf sie selbst zurücksetzte. Zwei aufeinanderfolgende Läufe unterscheiden sich um 6e-09
+- ✅ **Die emotionale Gravitation erreicht erstmals Novas Emotion** — eigener Node zwischen Enricher und Reducer (`novaberg-node-emotionale-gravitation.md`). Vorher: 851 Berechnungen, null Anwendungen, weil der Verbraucher vor seinem Produzenten lief
+- ✅ **`internal.emotion` trägt Novas Lage dieses Turns** statt der des vorigen — der GV-Node wählte seinen Cluster vorher mit den Ohren von gestern
+
+**Umfang:** 9 Commits, 40 Dateien, +2258/−213, Suite 241 → 296.
+
+**Geschlossen:** `KZG-SALIENZ-SKALENBRUCH` · `KZG-SALIENZ-KONSUMENTEN-DISSENS` · `REFAC-KZG-CODE-DUPLIKAT` · `ZIEL-DECAY-FORMEL-KUMULATIV` · `ZIEL-DECAY-TYP-FILTER` · `ZIEL-DECAY-DOKU-LUEGT` · `KZG-GEWICHT-ABSOLUT-CEILING` (für neue Knoten)
+
+**Stand am Ende:** Bauteil 1 des Salienz-Sprints steht und ist live gemessen. Bauteil 2 (Promotion entfernt den KZG-Eintrag) und das Charakter-Rad im Client bleiben offen → Backlog.
+
+---
+
+## Chat 114 (28.07.2026) — GV-Vollaudit, Novas Raum, die Sprache ✅
+
+**Schwerpunkt:** Vollaudit des Gesprächsvektor-Nodes gegen seine beiden Konzeptdokumente. Methode: erst der Sollzustand aus den Dokumenten, dann der Code, dann die Abweichung — in dieser Reihenfolge, weil sie zweimal den naheliegenden und falschen Eingriff verhindert hat.
+
+- ✅ **Der Dreischicht-Korridor ist bindend.** Der Parser las die Marker-Glyphe aus dem Prompt als Strategie-Kürzel; 17 von 44 Turns erreichten den Responder ohne Strategie. Dazu `korridor_pruefen` gegen das Cluster-Repertoire, Verstöße benannt im Log statt still verworfen
+- ✅ **Das Modus-Vokabular ist geschlossen.** Die Perzeption darf zehn Modi liefern, fünf Verzweigungsstellen kannten fünf. `MODUS_KANON` als einzige Quelle; 33 von 45 Läufen hatten vorher die Tiefe-Achse auf ihrem eigenen Default
+- ✅ **Ein Zeitstand.** Der EmGrav-Node zieht `internal.emotion` nach — die Chat-113-Reparatur war unvollständig, seit er selbst dazwischenkam
+- ✅ **Novas Raum** (`ei/raum.py`, Konzept §3.4) — das Register hatte nur Trägheit und keinen Zug. Gemessen: Der Nutzer wurde lockerer, Nova förmlicher. Zwei persistierte Achsen, proportionaler Zug, hinauf langsamer als hinab; Faktoren aus einer Simulation aller Modus-Übergänge gewählt
+- ✅ **`[DEIN SPRACHSTIL]`** hinter dem Verlauf. Gemessen: Der Gesprächsverlauf ist rund drei Viertel des Responder-Prompts, der Registeranteil drei Prozent — und stand vor der Wand statt dahinter
+
+**Umfang:** 4 Commits, Suite 296 → 356. Seiteneffekte über alle Messreihen: 0 `timeline`, 0 `notizen`, 0 `fakten`.
+
+**Geschlossen:** `GV-STRATEGIE-VEHIKEL-LEER` (aus Chat 106, Ursache erst jetzt gemessen) · `GV-TIEFE-DEFAULT-BLIND` · `GV-ACHSEN-ZWEI-ZEITSTAENDE` · `GV-REGISTER-OHNE-ZUG` · `GV-METADATEN-ERREICHEN-DIE-SPRACHE-NICHT`
+
+**Stand am Ende:** Sieben Befunde des Audits sind offen und mit stabiler ID in `novaberg-bugs.md` erfasst; `GV-ENTITY-HOP-FINDET-NICHTS` ist der teuerste — 45 von 45 Läufen ohne einen einzigen Fakt. Das Verlaufs-Trimming (Echo-Bug Chat 72, Vorschlag c) ist durch die Prompt-Messung als der wirksamste der drei Vorschläge belegt und weiterhin nicht gebaut.
+
+---
+
+*Aktualisiert in Chat 114 (28.07.2026). Offene Punkte → novaberg-backlog.md. Bugs → novaberg-bugs.md.*

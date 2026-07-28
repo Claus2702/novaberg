@@ -3831,3 +3831,43 @@ Kein Defekt — heute stolpert niemand darüber. `relevanz` entsteht als `basis 
 **Entscheidung, keine Reparatur:** entweder den Wertebereich am Erzeuger dokumentieren und die Konsumenten darauf verpflichten, oder normieren und alle Leser mitziehen. ⬜ Prio niedrig
 
 **Zusammenhang:** KZG-SALIENZ-KONSUMENTEN-DISSENS (drei Leser, drei Annahmen über dieselbe Zahl — dieselbe Familie).
+
+---
+
+## Sprint KZG-SALIENZ-NEUBAU — was nach Bauteil 1 offen bleibt (Chat 114)
+
+Bauteil 1 — die Salienz als abgeleiteter Wert statt als Akkumulator — steht seit Chat 113, migriert und live gemessen. Die restlichen Schritte standen bis Chat 114 nur in der Sitzungsübergabe außerhalb des Repos und damit nirgends, wo sie eine Sitzung überleben.
+
+### Bauteil 2 — die Promotion entfernt den KZG-Eintrag ⬜ Prio hoch
+
+Vorbild ist der bestehende Löschpfad im Promotions-Agenten. Betrifft **nur** den Neuanlage-Pfad, nicht die Halbreaktivierung und nicht das Reinforcement. Hängt an `PROMOTION-ENTFERNT-KZG-NICHT` (Chat 109) — dort steht der Befund, hier der Bauschritt.
+
+**Vor der Umsetzung neu messen.** Der Befund stammt aus Chat 109 und liegt vor dem Reset des Bestands und vor dem Salienz-Umbau.
+
+### Bauteil 3 — Charakter-Rad im Client ⬜ Prio mittel
+
+Sieben Teilschritte, unverändert seit Chat 111. Die Visualisierung im Charakter-Tab; die Datenseite steht.
+
+### Der Eigen-Pfad trägt einen von vier Antrieben
+
+Vor dem Anschluss der emotionalen Gravitation an die Salienz sind zwei Punkte zu klären:
+
+- Der **dreifache Verfall** im LZG-Zweig (`novaberg-fundliste.md`, 28.07.2026) — die Kurve wird dreimal angewandt, entgegen `novaberg-convention-abgeleitete-werte.md` §3(5)
+- Der **Quellenfaktor**: LZG 0.5 gegen KZG 0.8. Die Schatzkiste wird stärker gedämpft als der Zwischenspeicher — das steht gegen das Leitmotiv *„viel speichern, intelligent vergessen"*. Entscheidung offen
+
+Die Rückkopplung Wissenslücken → Neugier existiert weiterhin nicht (`novaberg-thinking-curiosity_k.md`).
+
+---
+
+## Konzipiert, nicht gebaut — der Bestand (Chat 114)
+
+Vier Konzepte ohne Code. Sie standen bis Chat 114 nur in der Sitzungsübergabe; die Konzeptdokumente selbst existieren, aber nichts im Repo verzeichnete sie als offene Arbeit.
+
+| Konzept | Dokument | Stand |
+|---|---|---|
+| **Gedankenkette** — ein Gedanke über mehrere Turns | `novaberg-gedankenkette_k.md` | konzipiert Chat 111, kein Code ⬜ |
+| **Wissensspeicher (Strang B)** | außerhalb des Git-Roots | konzipiert, kein Code ⬜ |
+| **NachfragenAgent** | `novaberg-pixie-nachfragen_k.md` | Konzept steht, vier Fragen in §4 offen; Bau als `PIX-MIG-7` geführt ⬜ |
+| **Selbstreflexion** | `novaberg-thinking-curiosity_k.md` §4.7 | konzipiert, kein Code ⬜ |
+
+Der NachfragenAgent hat eine Kopplung: `services/pixie/router.py` bildet `nachfragen` auf einen Agenten ab, den es nicht gibt — siehe die Fundliste vom 27.07.2026. Der Bau schließt diesen Befund mit; die Reihenfolge ist dort beschrieben.
