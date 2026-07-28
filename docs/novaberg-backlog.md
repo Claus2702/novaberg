@@ -686,7 +686,9 @@ Erweiterung (siehe oben) kommt, müssen die Altdaten ohnehin migriert werden.
 
 **Wissenschaftliche Basis:** Bower (1981) Mood-Congruent Memory, Collins & Loftus (1975) Spreading Activation, Tulving (1983) Episodic Memory.
 
-**Status:** Konzeptionell vollständig. Code-Implementation offen.
+**Status:** ~~Konzeptionell vollständig. Code-Implementation offen.~~ → **überholt.** Die Berechnung steht seit Chat 109 (`ei/gravitation.py`, LZG-Umstellung Commit `36c311e`), die Anwendung seit Chat 113 als eigener Node zwischen Enricher und Reducer. **Dass hier und in `novaberg-roadmap.md` „Implementation steht aus" stand, ist der Grund, warum vier Chats lang niemand hingesehen hat** — der Code lief, und zwei Dokumente sagten, es gäbe ihn nicht.
+
+**Offen bleiben zwei der fünf Festlegungen aus §5.7:** die Session-Quelle (`EMOTIONALE_GRAVITATION_FAKTOR_SESSION` steht seit Chat 61 unbenutzt in der Config, gescannt werden nur KZG und LZG) und der Arousal-Filter bei der Kandidatenwahl (`arousal` wird gelesen, mitgeführt und geloggt, aber nie verglichen). Beides ist unfertiges Bauteil, kein Defekt.
 
 **Priorität:** Mittel — schön zu haben, erhöht emotionale Tiefe deutlich, aber nicht blockierend.
 

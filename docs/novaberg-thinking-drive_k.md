@@ -320,7 +320,7 @@ Summiert über alle aktivierten Einträge aller drei Quellen.
 
 Über `EMOTIONALE_GRAVITATIONS_SCHWELLE` wird der Eintrag aktiviert. Die zugeordnete Emotion mit ihrem Arousal wird als dritte Kraft (nach Decay und Empathie) in die Nova-Emotions-Berechnung injiziert.
 
-**Wirkort:** EI-Calc im CharacterGraph (Pfad 2), Nova-Block. Ergänzt die bestehende Formel:
+**Wirkort (präzisiert Chat 113):** ~~EI-Calc im CharacterGraph (Pfad 2), Nova-Block.~~ Ein **eigener Node zwischen Enricher und Reducer**. In EI-Calc stand der Aufruf bis dahin und konnte dort nie greifen: Der Enricher setzt die Gravitationspunkte und läuft im CharacterGraph nach EI-Calc — die Reihenfolge ist Absicht, weil der Enricher seine Erinnerungen über Novas empathie-modifizierte Lage wählt. Der Produzent kam damit nach seinem Verbraucher; gemessen am 28.07.2026: 851 Berechnungen, null Anwendungen. Ergänzt die bestehende Formel:
 
 ```
 Nova-Emotion (Pfad 2) = Decay(letzte Nova-Emotion)
@@ -342,7 +342,9 @@ Die Gewichtung dieser Kräfte wird empirisch kalibriert. Startwerte: Decay 0.4, 
 | Motivationstyp | Wollen (Zukunft) | Erinnern (Vergangenheit) |
 | Wirkort | Salienz, GV-Node | Nova-Emotion direkt |
 | Beispiel | "Ich möchte Botanik verstehen" | "Schnittlauch ist vertrocknet" |
-| Funktion | Lenkt Aufmerksamkeit | Färbt emotionale Haltung |
+| Funktion | Lenkt Aufmerksamkeit | Färbt emotionale Haltung **und lenkt mit** (Chat 113) |
+
+**Zur Funktionszeile, entschieden Chat 113:** Die ursprüngliche Trennung — Ziele lenken, Erinnerungen färben — hält der Umsetzung nicht stand, und das ist gewollt. Der Node sitzt vor dem GV-Node, dessen sechs Säulen der Aufnahmebereitschaft und dessen Dreischicht-Achsen auf Novas Emotion stehen. Eine reaktivierte Erinnerung verschiebt damit auch Sektor, Cluster und Strategie-Repertoire. Das Bild dahinter: Wer „Freitag" hört und dabei an Grillen denkt, bei dem hat die Assoziation die Denkrichtung verschoben und die Stimmung zugleich. Beides gehört zusammen — die Gravitation ist Novas *Art des Hörens*, nicht nur der Ton ihrer Antwort.
 
 Beide Gravitationsarten können gleichzeitig wirken. Beim Schnittlauch-Beispiel wirkt die emotionale Gravitation (Trauer aus der Erinnerung), während gleichzeitig eine Ziel-Gravitation aktiv sein kann ("Ich möchte lernen, Pflanzen besser zu pflegen") — beide verstärken sich: Die Trauer wird zum Antrieb für das Ziel.
 
