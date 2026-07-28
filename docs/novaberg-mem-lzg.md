@@ -149,7 +149,7 @@ Die Trennung ist architektonisch erzwungen: Der Chat-Graph (HumanGraph) schreibt
 
 ```
 KZG (Redis)
-    │ Salienz ≥ 0.8 → Promotion-Queue
+    │ Salienz ≥ KZG_SALIENZ_HIGH → Promotion-Queue
     ▼
 Pixie: lzg_promotion
     │ Zwei-Call-Promotion (Klassifikation + Extraktion)

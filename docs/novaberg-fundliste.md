@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Rohe, noch unklassifizierte Funde aus laufender Arbeit
-**Stand:** 28. Juli 2026
+**Stand:** 28. Juli 2026, Chat 114 (drei Funde erledigt, vier ohne Gegenstand getrennt)
 **Pfad:** novaberg/docs/novaberg-fundliste.md
 
 Was beim Bauen an anderer Stelle auffällt, landet hier — **eine Zeile mit Datum**. Kein Bug-Name, keine Priorität, keine Klassifizierung, keine Diskussion. Der Zweck ist, einen Fund festzuhalten, ohne die laufende Arbeit dafür zu unterbrechen.
@@ -27,27 +27,47 @@ Analog zum Kraft-1-Stichtag: ab wann eine Partition brauchbar ist. Kein Backfill
 - **2026-07-27** — `services/pixie/dispatch.py` liest beim Bau des `AgentState` `eintrag.get("salienz", 0.0)`. Die Shadow-Queue schreibt das Feld aber als `prioritaet`; `salienz` schreibt nur die Promotion-Queue. `kontext["salienz"]` ist damit für **jeden** Shadow-Auftrag 0.0, auch bei echten 0.7. Eine Datei weiter macht `services/pixie/kandidaten.py` es richtig und liest beide Namen. Zusatzbefund: `kontext["salienz"]` wird nirgends gelesen (Grep leer, Positivkontrolle auf dasselbe Muster mit `user_id` = 34 Treffer).
 - **2026-07-27** — Ein Queue-Auftrag für einen **nicht registrierten** Agenten gewinnt den Heartbeat und verdrängt laufende Arbeit. `services/pixie/router.py` bildet `vertiefen` → `vertiefung` und `nachfragen` → `nachfragen` ab; **beide Agenten existieren nicht**. Gemessen an der über `discover_agents()` befüllten Registry: 15 Agenten, `recherche` und `wiedervorlage` darunter, die zwei nicht. Beobachtet am selben Tag: `nachfragen` (Prio 0.97) gewann dreimal gegen `charakter_hash` (Prio 0.3) und scheiterte jedes Mal an `Agent 'nachfragen' nicht in Registry` — nach drei Fehlversuchen verworfen, sechs Minuten ohne anderen Job (Server-Log 13:19–13:23 UTC). Die fehlenden Agenten sind **kein Bug, sondern Roadmap** (`PIX-MIG-7`, dort aber nur einer von zweien); der Befund ist die Verdrängung: Ein Auftrag für einen unbekannten Agenten sollte gar nicht erst gewinnen. **Kopplung beachten:** Wird nur die `prioritaet` oben repariert, gewinnen acht liegengebliebene `vertiefen`-Aufträge sofort den Heartbeat und laufen ins Leere — der Nullwert hält sie heute ruhig.
 - **2026-07-27** — `CharakterAgent` (Prio 0.3) wird ausgehungert, solange die Queue läuft: `lzg_promotion` steht bei 0.97, jeder Turn erzeugt welche. Vier Heartbeats in Folge ging der Charakter leer aus, obwohl `hash_dirty` gesetzt war. Vermutlich gewollt (Profil-Destillation ist nicht dringend) — als Verhalten aber nirgends festgehalten.
-- **2026-07-27, nachgemessen 27.07. abends** — `novaberg-architecture.md` §7 nennt „**72 Dateien**" in `docs/`; tatsächlich sind es **130** (`ls docs/*.md`). Die Zahl im ursprünglichen Fund lautete 123 und war beim Nachmessen desselben Tages schon überholt — eine Zählung ohne Messdatum ist hier wertlos. **Teilkorrektur:** Die Behauptung „kein einziges `novaberg-convention-*.md` steht im Index" trifft nicht zu. Von sechs Konventionsdateien wird **eine** genannt (`novaberg-convention-event-model.md`, als Querverweis im Fließtext, nicht als Index-Eintrag). Die anderen fünf fehlen.
 - **2026-07-28** — Doku-Hygiene, **gemessen**: Drei Dokumente vergeben Überschriften mehrfach und erzeugen damit mehrdeutige Anker — `novaberg-backlog.md` (3× „Phasen-Übersicht", 3× „Hintergrund", 2× „Auswirkung auf Akten-Vision"), `novaberg-roadmap.md` (je 2× „Dokumentation", „Backlog", „Bugfixes") und `novaberg-thinking-skills_k.md` (2× „Wetter-Anfragen"). Ein Zähler über alle `#`-Zeilen meldet zusätzlich `novaberg-memory-synapsen_k.md` mit 12 Treffern — das sind **Python-Kommentare in einem Code-Block**, kein Befund. Wer das nachmisst, muss Code-Fences überspringen.
 - **2026-07-28** — `server/agents/kzg/AGENT.md` ist nie gegen den Code geprüft worden. Der KZG-Agent hat seit der Erstfassung Nodes gewonnen und verloren (`magnete_aufloesen` kam, `aehnlichkeit_pruefen` ist gelöscht) — ob die AGENT.md das trägt, ist offen. Gilt sinngemäß für die übrigen AGENT.md-Dateien, die ebenfalls nie systematisch abgeglichen wurden.
-- **2026-07-28** — `novaberg-kzg-liberalisierung_k.md` §3.6 und §5 sind als überholungsbedürftig notiert. **Der Grund ist nirgends festgehalten** — das Dokument trägt an beiden Stellen keine Markierung, und was genau dort nicht mehr stimmt, steht in keinem Repo-Dokument. Vor der Bearbeitung neu ermitteln.
-- **2026-07-28** — Eine Manager-Signatur-Drift „über 19 Dateien" wird geführt, **ohne dass das Kriterium irgendwo steht**. Ein Nachmessen am 28.07. fand mit selbst gewählten Mustern 4 Dokumente. Ob 19 überholt ist oder das Muster zu eng, ist **nicht entscheidbar** — die Zahl steht ohne die Abfrage, die sie erzeugt hat. Vor der Bearbeitung ist der Fund neu zu erheben; die alte Zahl ist kein Ausgangspunkt, sondern nur ein Hinweis, dass hier etwas war.
-- **2026-07-28** — Vier in Chat 107 identifizierte Lessons sind nie als Datei angelegt worden. **Welche vier, steht in keinem Repo-Dokument** — der Inhalt liegt nur im Protokoll außerhalb. Auf der Platte liegen 44 `_l`-Dateien. Diese Zeile hält den Verlust fest, nicht die Aufgabe: Ohne Rückgriff aufs Protokoll ist sie nicht bearbeitbar.
-- **2026-07-28** — `broadcast()` steht seit Chat 107 als ungeprüfter Punkt, **ohne dass die Frage dazu festgehalten wäre**. Wie bei der Signatur-Drift: Der Hinweis überlebte, die Fragestellung nicht.
-- **2026-07-27** — `novaberg-bugs.md` führt `SHADOW-DELIVERY-DATENVERLUST` mit einem Beleg auf `services/shadow_delivery.py:514-522`, der dort nicht mehr steht; der Chat-110-Umbau hat den Pfad ersetzt. Restrisiko besteht weiter, aber an anderer Stelle und an `BROADCAST-VERSCHLUCKT-FEHLER` hängend.
-- **2026-07-27, nachgemessen 27.07. abends** — Mehrere Dokumente nennen eine „Promotions-Schwelle 0.8". Im Code gibt es keine 0.8; das Tor ist `KZG_SALIENZ_HIGH = 0.7` in `agents/kzg/queues.py`, `_aufgabe_aus_intention`-Nachbarschaft. **Die ursprüngliche Aufzählung war unvollständig und in einem Punkt irreführend:**
-    - Nicht genannt war `novaberg-mem-lzg.md` („Salienz ≥ 0.8 → Promotion-Queue" im ASCII-Diagramm).
-    - Die Zeilennummern für `novaberg-backlog.md` (2940, 3544) stimmen nicht mehr; die Stellen liegen heute bei 2947 und 3556. Das Kriterium trägt weiter, die Nummern nicht.
-    - **`novaberg-memory-synapsen-p4-entscheidungen_k.md` darf nicht mitkorrigiert werden.** Dort steht die 0.8 in einem historisch richtigen Satz: dass `queues.py` *von* `PROMOTION_THRESHOLD` (0.8) *auf* `KZG_SALIENZ_HIGH` (0.7) umgehängt wurde. Wer über alle `0.8`-Vorkommen greppt und ersetzt, tilgt eine zutreffende Aussage.
-
-  **Kriterium statt Aufzählung:** zu korrigieren ist jede Stelle, die 0.8 als *geltende* Schwelle beschreibt — nicht jede, die die Zahl nennt.
-
 - **2026-07-28** — Der LZG-Zweig der emotionalen Gravitation rechnet den Verfall **dreifach**. `ei/gravitation.py` liest die Spalte `gewicht_decay` — den vom Decay-Lauf bereits materialisierten Wert —, schickt sie durch `effektives_gewicht_berechnen()` (Ebbinghaus, live) und multipliziert zusätzlich `_zeit_decay_faktor()` (eigener Verfall, Halbwert 180 Tage). Der Docstring der zweiten Funktion sagt wörtlich „Der Decay wird live berechnet, nie gespeichert" — für `lzg_knoten` gilt das seit der Materialisierung nicht mehr. Die Funktion stammt aus dem alten `langzeitgedaechtnis`-Modell (Tabelle steht heute auf 0 Zeilen); die Query mischt zwei Gedächtnismodelle mit gegensätzlicher Decay-Philosophie. Wirkung heute klein, weil kein Knoten älter als einen Tag ist. Berührt `novaberg-convention-abgeleitete-werte.md` §3(5): Die Kurve wird genau einmal angewandt.
 
 - **2026-07-28** — Der Router-Miss-Pfad in `services/pixie/scheduler.py` kehrt zurück, **ohne `abschluss()` zu rufen**. Ein periodischer Kandidat, für den kein Agent gefunden wird, behält damit sein `next_run` und wird beim nächsten Heartbeat erneut Kandidat. Ohne Aging war das harmlos — er verlor gegen die Queue. Mit dem Aging (Chat 113) wächst sein Zuschlag bis zum Deckel, und er gewinnt dann **jeden** Zyklus, ohne je zu laufen. Heute nicht akut: Alle sieben vorhandenen `pixie:schedule:*`-Einträge sind routebar, sechs über die Tabelle, `ziel_decay` über die Namensgleichheit. Der Fund ist die Falle für den nächsten Agenten ohne Routing-Eintrag.
 
 ---
 
+## Ohne Gegenstand — der Hinweis überlebte, die Frage nicht
+
+Diese Einträge halten **einen Verlust** fest, keine Aufgabe. Ihr Gegenstand steht in keinem Repo-Dokument mehr; sie sind ohne Rückgriff auf Quellen außerhalb des Repos nicht bearbeitbar. Sie stehen hier getrennt, damit „Offen" bedeutet, was es sagt — vier von fünfzehn Zeilen sahen sonst nach Arbeit aus, die niemand aufnehmen kann.
+
+**Wer eine davon anfasst, erhebt sie neu.** Die alte Zeile ist kein Ausgangspunkt, sondern nur der Hinweis, dass hier einmal etwas war.
+
+- **2026-07-28** — `novaberg-kzg-liberalisierung_k.md` §3.6 und §5 sind als überholungsbedürftig notiert. **Der Grund ist nirgends festgehalten** — das Dokument trägt an beiden Stellen keine Markierung, und was genau dort nicht mehr stimmt, steht in keinem Repo-Dokument. Vor der Bearbeitung neu ermitteln.
+
+- **2026-07-28** — Eine Manager-Signatur-Drift „über 19 Dateien" wird geführt, **ohne dass das Kriterium irgendwo steht**. Ein Nachmessen am 28.07. fand mit selbst gewählten Mustern 4 Dokumente. Ob 19 überholt ist oder das Muster zu eng, ist **nicht entscheidbar** — die Zahl steht ohne die Abfrage, die sie erzeugt hat. Vor der Bearbeitung ist der Fund neu zu erheben; die alte Zahl ist kein Ausgangspunkt, sondern nur ein Hinweis, dass hier etwas war.
+
+- **2026-07-28** — Vier in Chat 107 identifizierte Lessons sind nie als Datei angelegt worden. **Welche vier, steht in keinem Repo-Dokument** — der Inhalt liegt nur im Protokoll außerhalb. Auf der Platte liegen 44 `_l`-Dateien. Diese Zeile hält den Verlust fest, nicht die Aufgabe: Ohne Rückgriff aufs Protokoll ist sie nicht bearbeitbar.
+
+- **2026-07-28** — `broadcast()` steht seit Chat 107 als ungeprüfter Punkt, **ohne dass die Frage dazu festgehalten wäre**. Wie bei der Signatur-Drift: Der Hinweis überlebte, die Fragestellung nicht.
+
+---
+
+## Umgezogen — Chat 114 (28.07.2026)
+
+- **2026-07-27, nachgemessen 27.07. abends** — `novaberg-architecture.md` §7 nennt „**72 Dateien**" in `docs/`; tatsächlich sind es **130** (`ls docs/*.md`). Die Zahl im ursprünglichen Fund lautete 123 und war beim Nachmessen desselben Tages schon überholt — eine Zählung ohne Messdatum ist hier wertlos. **Teilkorrektur:** Die Behauptung „kein einziges `novaberg-convention-*.md` steht im Index" trifft nicht zu. Von sechs Konventionsdateien wird **eine** genannt (`novaberg-convention-event-model.md`, als Querverweis im Fließtext, nicht als Index-Eintrag). Die anderen fünf fehlen.
+  → **Erledigt Chat 114.**
+
+- **2026-07-27** — `novaberg-bugs.md` führt `SHADOW-DELIVERY-DATENVERLUST` mit einem Beleg auf `services/shadow_delivery.py:514-522`, der dort nicht mehr steht; der Chat-110-Umbau hat den Pfad ersetzt. Restrisiko besteht weiter, aber an anderer Stelle und an `BROADCAST-VERSCHLUCKT-FEHLER` hängend.
+  → **Erledigt Chat 114.**
+
+- **2026-07-27, nachgemessen 27.07. abends** — Mehrere Dokumente nennen eine „Promotions-Schwelle 0.8". Im Code gibt es keine 0.8; das Tor ist `KZG_SALIENZ_HIGH = 0.7` in `agents/kzg/queues.py`, `_aufgabe_aus_intention`-Nachbarschaft. **Die ursprüngliche Aufzählung war unvollständig und in einem Punkt irreführend:**
+    - Nicht genannt war `novaberg-mem-lzg.md` („Salienz ≥ 0.8 → Promotion-Queue" im ASCII-Diagramm).
+    - Die Zeilennummern für `novaberg-backlog.md` (2940, 3544) stimmen nicht mehr; die Stellen liegen heute bei 2947 und 3556. Das Kriterium trägt weiter, die Nummern nicht.
+    - **`novaberg-memory-synapsen-p4-entscheidungen_k.md` darf nicht mitkorrigiert werden.** Dort steht die 0.8 in einem historisch richtigen Satz: dass `queues.py` *von* `PROMOTION_THRESHOLD` (0.8) *auf* `KZG_SALIENZ_HIGH` (0.7) umgehängt wurde. Wer über alle `0.8`-Vorkommen greppt und ersetzt, tilgt eine zutreffende Aussage.
+
+  **Kriterium statt Aufzählung:** zu korrigieren ist jede Stelle, die 0.8 als *geltende* Schwelle beschreibt — nicht jede, die die Zahl nennt.
+  → **Erledigt Chat 114.**
+
+---
 ## Umgezogen — Chat 112 (27.07.2026)
 
 Die Messung gehörte auch hier zum Umzug — bei jeder der vier Zeilen hat sie etwas an der Notiz korrigiert.

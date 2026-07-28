@@ -1273,8 +1273,15 @@ er beschreibt eine Prüfung, die es nicht gibt. Pointe: Bei Totalausfall steht d
 *„gesendet … 0 Clients"*, weil der Client-Zähler NACH dem Aufräumen der kaputten
 Verbindungen gelesen wird — das Log widerlegt sich selbst in derselben Zeile.
 
-**Beleg:** `services/shadow_delivery.py:514-522` (Log + Löschung), Zähler-Lesung nach
+**Beleg:** ~~`services/shadow_delivery.py:514-522` (Log + Löschung)~~, Zähler-Lesung nach
 `broadcast()`-Aufräumen; zusätzlich `_stack_aehnliche_entfernen` direkt danach.
+
+> **Beleg überholt (Chat 110, festgestellt Chat 114).** An den genannten Zeilen steht der
+> beschriebene Pfad nicht mehr — der Chat-110-Umbau hat die Shadow-Delivery neu gebaut:
+> Sie formuliert nichts mehr selbst, sondern speist das Wissensstück in beide Graphen ein.
+> **Das Restrisiko besteht weiter**, aber an anderer Stelle und an
+> `BROADCAST-VERSCHLUCKT-FEHLER` hängend. Vor der Bearbeitung neu erheben; die alten
+> Zeilennummern sind kein Ausgangspunkt.
 
 **Auswirkung:** Stiller Verlust von Shadow-Impulsen bei WebSocket-Störung.
 

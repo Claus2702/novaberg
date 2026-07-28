@@ -571,7 +571,7 @@ Perzeption und Router bekommen die letzten 5 Session-Turns als Hintergrund-Konte
 
 ## 7. Dokumentenverzeichnis
 
-Das Handbuch ist nach Betrachtungstiefen organisiert. Tiefe 0 ist der Einstiegspunkt, jede weitere Tiefe geht ins Detail. **72 Dateien** im Verzeichnis `novaberg/docs/`.
+Das Handbuch ist nach Betrachtungstiefen organisiert. Tiefe 0 ist der Einstiegspunkt, jede weitere Tiefe geht ins Detail. **131 Dateien** im Verzeichnis `novaberg/docs/` (gezaehlt 28.07.2026 — eine Zaehlung ohne Messdatum veraltet zwischen zwei Sitzungen).
 
 ### Tiefe 0 — Projekt
 

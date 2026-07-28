@@ -15,7 +15,7 @@
 
 Der PromotionAgent ist der einzige Weg vom Kurzzeitgedächtnis (KZG, Redis) ins Langzeitgedächtnis (LZG, PostgreSQL) und in den Knowledge Graph. Seit Chat 64 arbeitet er in zwei Modi:
 
-**Modus 1 — Einzelpromotion (Queue-basiert):** Für KZG-Einträge mit Salienz ≥ 0.85, die über die Promotion-Queue kommen. Zwei LLM-Calls: Klassifikation + Fakten-Extraktion. Wie bisher.
+**Modus 1 — Einzelpromotion (Queue-basiert):** Für KZG-Einträge über dem Tor `KZG_SALIENZ_HIGH`, die über die Promotion-Queue kommen. Der Wert der Konstanten hat sich zweimal geändert (0.8 → 0.7 in Chat 91, seit dem Salienz-Umbau in Chat 113 auf der neuen Skala) — deshalb steht hier der Name und keine Zahl. Zwei LLM-Calls: Klassifikation + Fakten-Extraktion. Wie bisher.
 
 **Modus 2 — Cluster-Promotion (Scan-basiert):** 4-Phasen-Algorithmus, der die gesamte KZG-Partition scannt, thematisch verwandte Einträge zu Clustern zusammenfasst und per LLM-Destillation mit Kohärenzprüfung ins LZG schreibt. Läuft nach der Queue-Verarbeitung.
 
