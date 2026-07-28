@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Gesprächslandschaft — 64 Zustände, 6 Achsen, 13 Cluster, 7 Strategien, 4 Absichten, 3 Vehikel (Konzept)
-**Stand:** 12. Juli 2026, Chat 107 (Anhang A: Charakter-Filter nur bei prüfbarer Resonanz — resonanz_pruefbar. Kern: Chat 71)
+**Stand:** 28. Juli 2026, Chat 114 (Vollaudit: TIEFE_MODUS auf alle zehn Modi ergänzt, Paradox-Umfang §5.14 gegen §6 korrigiert, Caching-Aussage §9.2/§10.4 als überholt markiert. Kern: Chat 71)
 **Pfad:** novaberg/docs/novaberg-gv-strategie_k.md
 **Quellen:** Chat 71 (GV3+4, Strategie-Analyse, 64-Sektoren-Validierung, Dreischicht-Architektur), Chat 39 (GV-Grundkonzept), Chat 53 (Drive/Neugier), Chat 7 (6-Säulen-Wahrnehmung)
 
@@ -76,9 +76,9 @@ Neugier entsteht in der Lücke zwischen Wissen und Nicht-Wissen.
 |---|-------|-------------|------|-----------------|
 | 1 | **Energie** (E) | Kraft im Raum | niedrig (L) ◄──► hoch (H) | `arousal` |
 | 2 | **Richtung** (R) | Wohin bewegt sich die Stimmung? | abwärts ↓ ◄──► aufwärts ↑ | `emotions_vektor` |
-| 3 | **Nähe** (N) | Beziehungsdichte | fern ◄──► nah/intim | `beziehungs_dynamik` + `sprach_stil` |
+| 3 | **Nähe** (N) | Beziehungsdichte | fern ◄──► nah/intim | Novas Raum (§3.4) |
 | 4 | **Valenz** (V) | Emotionale Färbung | negativ (−) ◄──► positiv (+) | `current_emotion` (Plutchik-Sektor) |
-| 5 | **Tiefe** (T) | Gesprächsebene | flach (f) ◄──► tief (t) | `gespraechs_modus` |
+| 5 | **Tiefe** (T) | Gesprächsebene | flach (f) ◄──► tief (t) | Novas Raum (§3.4) |
 | 6 | **Initiative** (I) | Wer treibt? | User führt (U) ◄──► gleich/Nova (=) | `intentionen` + Turn-Muster |
 
 ### 3.2 Kodierung
@@ -92,7 +92,39 @@ Richtung und Valenz korrelieren stark. 8 Sektoren mit R=↑ und V=− bilden die
 
 > **Yin-Yang-Prinzip (Chat 71):** "Wir nehmen Schwächen des Systems an und arrangieren uns damit. Wir leiten die Energie um, statt dagegen zu kämpfen."
 
-### 3.4 Reduktion auf 4 Berechnungs-Achsen
+### 3.4 Novas Raum — woher Nähe und Tiefe kommen (Chat 114)
+
+Es gibt genau **einen** Raum, und es ist Novas. Der Raum des Nutzers lebt in seinem Kopf; was die Perzeption liefert, ist eine Schätzung davon. Sie darf springen, weil sie eine Messung ist und kein Zustand.
+
+Novas Raum springt nicht. Er wird gezogen:
+
+```
+raum(neu) = raum(alt) + α · (geschätzter Nutzer-Raum − raum(alt))
+α = richtungszug × charakterfaktor
+```
+
+**Warum überhaupt ein eigener Wert?** Nähe und Tiefe lasen bis Chat 114 direkt Novas Register-Labels (`gespraechs_modus`, `sprach_stil`, `beziehungs_dynamik`). Diese Labels beschreiben aber **eine Äußerung**, nicht einen Zustand — und zwar Novas letzte, gemessen von der Assistant-Perzeption und über Redis in den nächsten Turn getragen. Zwischen `fachgespraech` und `alltag` gibt es kein Label, wohl aber einen Zwischenzustand, und genau der ist ein Registerwechsel.
+
+**Warum ein Zug?** Die Emotion hat zwei Kräfte: Novas eigenen Verlauf und die Empathie zum Nutzer. Das Register hatte nur die erste — es wurde perfekt konserviert, und nichts zog daran. Gemessen über eine Sequenz, in der der Nutzer vom Fachgespräch auf ein Alltagsthema wechselte: Er wurde lockerer, Nova förmlicher, und die Achsen folgten ihr. Eine Kurskorrektur des Nutzers hatte keinen Eingang ins System.
+
+**Die Richtung ist asymmetrisch.** Hinauf (System 1 → System 2, Kahneman) kostet mehr als hinab: Das gedankliche Umstellen in konzentriertes Denken braucht Zeit. Für die Nähe gilt dasselbe in anderer Sprache — Aufbau ist teuer, Rückzug billig.
+
+| Richtung | Zug | Wirkung |
+|---|---|---|
+| tiefer / näher | 0.35 | Median 2 Turns bis zum Kippen der Achse |
+| seichter / ferner | 0.65 | Median 1 Turn |
+
+Die beiden Werte sind nicht gesetzt, sondern aus einer Simulation aller Modus-Übergänge gewählt: 0.35 ist der einzige Wert mit Median 2 hinauf bei wenigen Schwellenkanten, 0.65 der einzige mit Median 1 hinab bei null Kanten.
+
+**Ankunftsregel.** Ein proportionaler Zug erreicht sein Ziel nie, er nähert sich an. Ein Modus, der exakt auf der Achsen-Schwelle liegt — `kreativ` = 0.5, Nähe neutral/neutral = 0.5 —, wäre von einer Seite **nie** erreichbar. Wer näher als 0.02 dran ist, ist da.
+
+**Der Charakterfaktor** multipliziert den Zug: anpassungsbereit ↔ widerspenstig, Bereich 0.5 bis 1.25 (darüber ist er gesättigt, schneller als ein Turn geht nicht). Er steht vorerst auf 1.0 und ist **nicht abgeleitet**. Der Versuch, ihn wie die Strategie-Gewichtung aus einer Cosine-Distanz zu gewinnen, ist gemessen gescheitert: Zwei Kunstfiguren trennen sich sauber bei +0.24 und −0.22, der echte Charakter liegt bei +0.036 — und wechselt das Vorzeichen, je nachdem ob man den Kern allein oder alle fünf Schichten einbettet. Ein Faktor darauf wäre Rauschen im Gewand einer Charaktereigenschaft.
+
+**Wer den Raum bewegt.** Bei einem Nutzer-Turn sein geschätztes Register, mit Charakterfaktor. Bei einem Eigen-Impuls Nova selbst, ohne Faktor — folgt sie in der Zwischenzeit eigenen Dingen, schiebt sich der Raum dorthin. Kein Verfall, kein Reset: Wo das letzte Gespräch endete, fängt das nächste an.
+
+Der Raum liegt in `redis:nova_state` (`raum_tiefe`, `raum_naehe`) und überlebt den Turn. Fehlt er, wird er aus den Register-Labels abgeleitet, und die Log-Zeile sagt, dass er abgeleitet und nicht geladen wurde.
+
+### 3.5 Reduktion auf 4 Berechnungs-Achsen
 
 | Berechnungs-Achse | Zusammengesetzt aus | Wertebereich |
 |-------------------|--------------------|----|
@@ -332,6 +364,8 @@ Das ist genug Vielfalt um **niemals** zehnmal dasselbe Muster zu wiederholen. De
 ### 5.14 Paradox-Zone
 
 **Koordinaten:** R=↑ bei V=negativ (8 Sektoren).
+
+> **Korrektur Chat 114:** Diese Definition und die Tabelle in §6 widersprechen sich. §6 markiert **14** Sektoren als 🚫 — zu den acht hier genannten kommen #37/#38 („Nervöse Freude", „Fiebrige Heiterkeit": E=hoch, R=↓, V=positiv, dort als *Paradox\** geführt), #49/#50 und #57/#58. Der Code folgt §6 und führt vierzehn Einträge im Cluster `paradox`. Maßgeblich ist §6; der Satz oben nennt nur die Kern-Definition der Zone, nicht ihren Umfang. Praktische Bedeutung: #37 war in einer Messung über 45 Läufe der **häufigste Sektor überhaupt** — der Zustand, den das Konzept als unwahrscheinlich führt, ist der häufigste des Systems.
 **Bild:** Widersprüchliche Signale.
 **Strategien:** Be ✅, Sp ✅ (behutsam)
 **Absichten:** Halten (umlenken)
@@ -462,7 +496,9 @@ Die Situation bestimmt das Repertoire. Der Charakter bestimmt die Präferenz. Di
 
 ### 9.2 Berechnung
 
-Cosine-Similarity zwischen zusammengesetztem Charakter-Embedding und Strategie-Beschreibungstexten. Gecacht bis `kern_aktualisiert_am` sich ändert.
+Cosine-Similarity zwischen zusammengesetztem Charakter-Embedding und Strategie-Beschreibungstexten. ~~Gecacht bis `kern_aktualisiert_am` sich ändert.~~
+
+> **Überholt (Chat 114, gemessen):** Gecacht sind nur die sieben Strategie-Embeddings (statische Texte). Das Charakter-Embedding wird in **jedem** Turn neu berechnet; der Docstring von `charakter_gewichtung_berechnen` sagt es ausdrücklich („jedes Mal frisch, ~50ms"). Ob das Caching nachgezogen oder die Absicht aufgegeben wird, ist offen — siehe `GV-CHARAKTER-DEFAULT-UEBER-MESSBEREICH` in bugs.md.
 
 ```python
 def strategie_gewichtung_ableiten(state: dict) -> dict[str, float]:
@@ -540,9 +576,13 @@ naehe = (NAEHE_DYNAMIK[dynamik] + NAEHE_STIL[stil]) / 2.0
 # Valenz (Plutchik-Sektor)
 VALENZ_SEKTOR = {1:1, 2:1, 3:0, 4:0, 5:0, 6:0, 7:0, 8:1}
 
-# Tiefe
-TIEFE_MODUS = {"fachgespraech":0.8, "emotional":0.7,
-               "spielerisch":0.4, "arbeitsmodus":0.6, "alltag":0.3}
+# Tiefe — alle zehn Modi, die die Perzeption liefern darf (ergänzt Chat 114).
+# Die ursprüngliche Fassung kannte nur die ersten fünf; die anderen fielen auf
+# den Default 0.3 und waren von einem echten "alltag" nicht zu unterscheiden.
+TIEFE_MODUS = {"philosophischer_austausch":0.9, "fachgespraech":0.8,
+               "emotional":0.7, "lernmodus":0.7, "arbeitsmodus":0.6,
+               "beratend":0.6, "kreativ":0.5, "spielerisch":0.4,
+               "berichtend":0.4, "alltag":0.3}
 
 # Initiative (Heuristik v1)
 # User-Turns deutlich länger als Nova-Turns → User führt
@@ -575,7 +615,7 @@ In jeder Schicht: 4 Quadranten (Nähe × Tiefe) × 4 Einträge (Valenz × Initia
 ### 10.4 Performance
 
 - Achsen + Sektor-Lookup: < 2ms
-- Charakter-Gewichtung: gecacht (nur bei Hash-Änderung neu)
+- ~~Charakter-Gewichtung: gecacht (nur bei Hash-Änderung neu)~~ — überholt, siehe §9.2
 - Gesamt pro Turn: < 5ms nach Cache
 
 ---

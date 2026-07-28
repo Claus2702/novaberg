@@ -1357,17 +1357,43 @@ klingt ab"* bei noch 89 %) — der Mechanismus stimmt, die Textbausteine sind zu
 
 **Auswirkung:** Selbstwidersprüchliche Selbstbeschreibung im Prompt bei Führungswechsel.
 
-#### GV-STRATEGIE-VEHIKEL-LEER — leere Strategie/Vehikel ohne Log ⚠️
+#### GV-STRATEGIE-VEHIKEL-LEER — leere Strategie/Vehikel ohne Log ✅ Behoben Chat 114
 
 **Entdeckt:** Chat 106, Tagesgeschäft. **Prio mittel.**
 
-**Symptom:** Bei `Cluster=paradox`/`kissenschlacht` liefert der GV-Node leere Strategie
-und leeres Vehikel. Kein Log — stiller Miss.
+**Symptom:** ~~Bei `Cluster=paradox`/`kissenschlacht`~~ liefert der GV-Node leere Strategie
+und leeres Vehikel. ~~Kein Log — stiller Miss.~~
 
-**Beleg:** GV-Node (`graph/nodes/gespraechsvektor.py`, Strategie-/Repertoire-Pfad;
-Repertoire-Quelle `CLUSTER_REPERTOIRE` in `ei/dreischicht.py`).
+**Beide Einschränkungen widerlegt (Chat 114, GV-Vollaudit):** Der Verlust hängt **nicht am
+Cluster** — er trat in jedem Cluster auf, in dem das LLM überhaupt eine Strategie nannte.
+Und es gab sehr wohl eine Log-Zeile (`GV-Parse: Unbekannte Strategie '●'`); sie benannte
+nur das Symptom, nicht die Ursache, und niemand las sie.
 
-**Auswirkung:** GV-Impuls ohne Strategie-Anteil, von außen unsichtbar.
+**Gemessene Ursache:** Der `[WERKZEUGE]`-Block stellte jeder Zeile eine Marker-Glyphe
+voran (`● Sp (Spiegelung) — Affinitaet: 25%`). Das LLM antwortete formattreu
+`STRATEGIE: ● Sp (Spiegelung) …`, und `gv_output_parsen` las mit `raw.split()[0]` die
+**Glyphe** als Kürzel. Zweite Variante: Das LLM verwechselte die Stockwerke und
+beantwortete die Absicht-Zeile mit einem Strategie-Kürzel (`ABSICHT: Sa`).
+
+**Beleg:** 44 Injektionen über 18 h Container-Laufzeit — **17 mit leerer Strategie (39 %),
+14 mit leerem Vehikel (32 %)**, 16 Parse-Warnungen. Zwei Live-Turns am 28.07.2026
+(12:31:56 und 12:34:48) zeigen beide Varianten wörtlich.
+
+**Auswirkung:** GV-Impuls ohne Strategie-Anteil, von außen unsichtbar. Der Responder
+erhielt `Strategie=` und ließ die Zeile *„Deine Strategie: …"* im Prompt weg — das WAS
+der Dreischicht fehlte in zwei von fünf Turns.
+
+**Behebung (Chat 114):** Drei Teile in `ei/dreischicht.py`. (1) `_strategie_extrahieren`
+und `_begriff_extrahieren` ziehen den Kanon-Begriff aus der Zeile statt des ersten Tokens
+— Marker, Klammern, Umlaute und angehängte Begründungen sind toleriert. (2) `korridor_pruefen`
+prüft die gewählte Strategie gegen das Repertoire des Clusters; was dort `unpassend` ist,
+wird verworfen. (3) Der Marker steht jetzt **hinter** dem Kürzel, und der Block nennt das
+erwartete Antwortformat. Verworfene Rohwerte tragen Feld, Wert und Grund und werden im
+Node mit `logger.error` benannt sowie in `gv_detail["korridor_verstoesse"]` geführt — ein
+Verlust ist damit nicht mehr von außen unsichtbar. Das Vehikel wird erstmals überhaupt
+gegen seinen Kanon geprüft. Tests: `tests/test_gv_korridor.py` (16), Eingaben wörtlich aus
+dem Messprotokoll. Live belegt 28.07.2026 13:03:50 — `Strategie=Sa` im Cluster
+`schlachtfeld`, wo `Sa` Kernstrategie ist.
 
 #### NOTIZ-RESUME-TARGET-VERLUST — Rückfrage verarmt bei jedem Resume ⚠️
 
@@ -2005,3 +2031,344 @@ ValueError: Unknown format code 'f' for object of type 'str'
 **Status: Behoben Chat 112.** Alle drei Stellen gehen über `_salienz_wert_lesen()`, das den Wert prüft und bei Unlesbarkeit `None` mit `logger.error` liefert. Die Formatierung läuft über `_salienz_anzeige()`, das `None` als `unlesbar` ausgibt. **Ein unlesbarer Wert wird ausdrücklich nicht als 0.0 gezählt** — als 0.0 wanderte er ins Maximum von `salienz_human` und senkte es still ab, ohne dass irgendwo stünde, dass etwas fehlte. Zwei Tests decken den Fall ab, einer davon auf Node-Ebene mit einem lesbaren und einem unlesbaren Segment im selben Lauf.
 
 **Verwandt:** SALIENZ-OHNE-PIPELINE-LOG (dieselbe Funktion, ohne die der Absturz unauffindbar gewesen wäre) · `novaberg-lesson_l_default-wie-fehlschlag.md` (warum die 0.0 nicht in Frage kam).
+
+---
+
+### Chat 114 (28.07.2026) — GV-Vollaudit
+
+Vollaudit des Gesprächsvektor-Nodes gegen `novaberg-gv-strategie_k.md` und
+`novaberg-node-gv_k.md`. Methode: erst der Sollzustand aus den Dokumenten, dann der Code,
+dann die Abweichung. Belege aus 45 GV-Läufen (18 h Container-Laufzeit) plus drei
+Messturns mit Wissenschaftsthemen; Seiteneffekte der Messreihe: `timeline` 0, `notizen` 0,
+`fakten` 0.
+
+**Was zusammenpasst:** Die 64-Sektoren-Tabelle deckt sich Zeile für Zeile mit §6, die
+Repertoire-Matrix Feld für Feld mit §7, die sieben Strategie-Beschreibungstexte wörtlich
+mit §9.3. Die Konstanten entsprechen §10.2 und Anhang A.3/A.4.
+
+#### GV-TIEFE-DEFAULT-BLIND — die Tiefe-Achse maß überwiegend ihren eigenen Default ✅ Behoben Chat 114
+
+**Klasse:** Default, der wie ein echter Wert aussieht. Severity **Hoch** — die Achse
+entscheidet über Sektor und Cluster und damit über das gesamte Strategie-Repertoire.
+
+**Symptom:** Die Perzeption darf zehn Gesprächsmodi liefern (`perzeption.task.txt`),
+die vier Modus-Tabellen des GV-Pfads kannten fünf. Die fehlenden fünf —
+`philosophischer_austausch`, `lernmodus`, `kreativ`, `beratend`, `berichtend` — fielen
+auf den Default 0.3. Das ist derselbe Wert, den `alltag` legitim trägt: Aus dem Log war
+ein echter Alltag von einer Vokabular-Lücke nicht zu unterscheiden.
+
+**Beleg:** 33 von 45 Läufen mit `T=0(0.30)`, während Novas Live-Modus in Redis
+`philosophischer_austausch` war. Betroffen waren fünf Stellen, nicht vier: `GV_TIEFE_MODUS`,
+`GV_AUFNAHMEBEREITSCHAFT_MODUS`, `register_kompatibilitaet`, `_farbe_modus` und die
+if/elif-Kette der Längenberechnung im Node.
+
+**Auswirkung:** Ein philosophischer Austausch wurde als flaches Alltagsgespräch verrechnet.
+Die tiefen Cluster waren praktisch unerreichbar — sieben der vierzehn kamen in 45 Läufen
+kein einziges Mal vor.
+
+**Behebung:** `MODUS_KANON` in `config.py` als Single Source of Truth (Handbuch §6). Alle
+zehn Modi tragen in allen fünf Stellen einen eigenen Wert; die if/elif-Kette wurde zur
+Tabelle `GV_LAENGE_MODUS_DELTA`, damit Vollständigkeit prüfbar ist. `modus_pruefen()` in
+`ei/utils.py` meldet einen Modus außerhalb des Kanons mit seinem Namen. Die Achsen-Logzeile
+nennt jetzt den Modus hinter dem Rohwert. Tests: `tests/test_modus_kanon.py` (14) — der
+Zeuge ist die Prompt-Datei, nicht der Code, der sie erfüllen soll. Live belegt
+28.07.2026 13:03:47: `T=1(0.90 philosophischer_austausch)`, erstmals aus einer Messung
+statt aus dem Default.
+
+#### GV-ACHSEN-ZWEI-ZEITSTAENDE — die beiden Beine des Nodes standen wieder auf verschiedenen Ständen ✅ Behoben Chat 114
+
+**Klasse:** Ein Wert, dessen Uhr in einem Feld liegt, das jemand anders berührt — dieselbe
+Fehlerklasse, die Chat 113 eine Node-Position früher geschlossen hat. Severity **Hoch**.
+
+**Symptom:** `ei_calc` überträgt Novas dominante Emotion nach `internal.emotion`. Seit
+Chat 113 läuft der EmGrav-Node **danach** und ändert `nova_emotions_verlauf` erneut. Die
+sechs Säulen der Aufnahmebereitschaft lesen den Verlauf, die Dreischicht-Achsen lesen
+`internal.emotion` — im selben Node, im selben Turn, auf zwei Ständen.
+
+**Beleg (28.07.2026):**
+
+```
+12:31:49,832  internal.emotion aktualisiert — neugierig (a=0.50), gilt ab hier fuer den GV-Node
+12:31:50,054  EmGrav-Node: neugierig(0.96) -> begeisterung(1.00)
+12:31:52,354  GV4-Neugier: emotion='begeisterung' … A=1.25      ← sechs Saeulen
+12:31:52,508  GV-Achsen: E=1(0.50) …                            ← internal.emotion
+```
+
+**Auswirkung:** Sektor, Cluster und Repertoire standen auf der Lage **vor** der
+reaktivierten Erinnerung, während die Neugier die danach kannte. Die Log-Zeile
+*„gilt ab hier für den GV-Node"* behauptete zusätzlich eine Geltung, die sie seit Chat 113
+nicht mehr besaß — ein Log, das eine Entscheidung benennt, die es nicht getroffen hat.
+
+**Behebung:** Der EmGrav-Node zieht `internal_emotion_uebertragen()` nach, wenn er den
+Verlauf verändert hat; die Funktion nennt ihren Aufrufer in der Log-Zeile. Die
+Achsen-Logzeile trägt die Emotion hinter dem Valenz-Bit, damit die Frage überhaupt
+beobachtbar ist. Tests: `tests/test_gv_zeitstand.py` (6). Live belegt 28.07.2026 13:03:45 —
+`EmGrav-Node (nachgezogen): internal.emotion gesetzt — begeisterung (a=1.00)`, gefolgt von
+`GV-Achsen: E=1(1.00) … V=1(begeisterung)`.
+
+#### GV-ENTITY-HOP-FINDET-NICHTS — 45 von 45 Läufen ohne einen einzigen Fakt ⚠️
+
+**Entdeckt:** Chat 114, GV-Vollaudit. **Prio hoch.**
+
+**Klasse:** Messgerät, das die Sache nicht sehen kann. Der Leerfall sieht legitim aus.
+
+**Symptom:** Jeder Lauf endet mit `GV-Entity-Hop: keine Entitaeten zum Schluessel '…'`.
+Über die gesamte Container-Laufzeit lieferte **kein einziger** Hop Fakten.
+
+**Beleg:** 45 Läufe, 45× „keine Entitaeten", 0× Fakten geladen. Der Schlüssel ist ein
+2–5-Wort-`prompt_topic` („Hawking-Strahlung und Verdampfung"), die Suche ein
+`name ILIKE %phrase%` bzw. `zusammenfassung ILIKE %phrase%` in `_entity_kontext_laden`.
+Eine mehrwortige Phrase trifft als Teilstring praktisch nie.
+
+**Auswirkung:** Der GV-Node hat weiterhin keine Entity-Hops, obwohl GV-ENTITY-HOP-TOT
+(Chat 107) den Absturz beseitigt hat. Damals war die Query gegen eine Spalte gerichtet,
+die es nie gab; heute ist sie syntaktisch korrekt und trifft trotzdem nichts. GV-WERT-FAKTEN-BLIND
+kommt obendrauf, ist aber nicht die Ursache — hier scheitert schon Hop 1.
+
+**Lösungsrichtung:** Der Schlüssel muss in Token zerlegt werden, oder die Suche geht über
+das Embedding statt über `ILIKE`. Vor dem Schließen neu messen.
+
+#### GV-FARBTON-SUBJEKTWECHSEL — der Farbton behauptet etwas über den Nutzer und misst Nova ⚠️
+
+**Entdeckt:** Chat 114, GV-Vollaudit. **Prio mittel-hoch.**
+
+**Symptom:** `farbton_berechnen` liest durchgehend `internal` (Nova), formuliert aber
+Sätze über den Nutzer: *„Der Nutzer haelt Abstand."*, *„Der Nutzer ist offen und vertraut."*
+Vier der acht Farben sind betroffen (`_farbe_intent`, `_farbe_dynamik`, `_farbe_stil`/`_farbe_tone`
+und mittelbar `_farbe_modus`).
+
+**Beleg (28.07.2026, 12:34:46):** Der `[SITUATION]`-Block trug *„Der Nutzer haelt Abstand."*,
+während die Perzeption des Nutzers im selben Turn `dynamik=neutral` sagte. Die `distanz`
+stammte aus `perzeption_assistant` auf **Novas eigene** Antwort des Vorturns — die Felder
+`mode`, `language_style`, `relationship_dynamic`, `tone` und `intent` in `internal.emotion`
+kommen aus `redis:nova_state` und beschreiben Novas letzte Äußerung, nicht den Nutzer.
+
+**Auswirkung:** Das LLM bekommt eine Tatsachenbehauptung über den Nutzer, die auf einer
+Messung an Nova beruht. Eine dichte Fachantwort Novas lässt den nächsten Turn glauben, der
+Nutzer gehe auf Abstand. Konzept §10.1 nennt für `_farbe_dynamik` ausdrücklich das Beispiel
+„Der Nutzer öffnet sich" — gemeint ist die Perzeption des Nutzers.
+
+**Entscheidung nötig:** Welche der acht Farben Nova beschreiben sollen und welche den
+Nutzer. Der Node liest beides und hat beide Quellen zur Hand.
+
+#### GV4-QUELLEN-SILENT-SKIP — die zwei Wissenslücken-Suchen tragen das Muster, das den Entity-Hop vier Monate versteckt hat ⚠️
+
+**Entdeckt:** Chat 114, GV-Vollaudit. **Prio mittel.**
+
+**Symptom:** `lzg_kandidaten_suchen` und `kzg_kandidaten_suchen` fangen `Exception`, loggen
+`logger.warning` und geben eine leere Liste zurück. Der Aufrufer meldet daraufhin
+`GV4: Keine Kandidaten gefunden` auf `info` — nicht unterscheidbar von einem echten Leerfall.
+
+**Auswirkung:** Ein Defekt in einer der beiden Quellen sieht aus wie ein Gespräch ohne
+Wissenslücken. Der Entity-Hop im selben Node ist seit Chat 107 gehärtet (`logger.error`
+plus `log_fehler`); diese beiden sind es nicht.
+
+**Lösungsrichtung:** Dasselbe Muster wie `_entity_kontext_laden` — spezifische Exception,
+`logger.error`, Forensik-Eintrag.
+
+#### GV-ABSICHT-OHNE-KORRIDOR — alle vier Absichten werden in jedem Cluster angeboten ⚠️
+
+**Entdeckt:** Chat 114, GV-Vollaudit. **Prio mittel.**
+
+**Symptom:** `dreischicht_prompt_bauen` listet die vier Absichten unverändert in jedem
+Cluster. Das Konzept gibt sie pro Cluster vor (§5): Nebel *„nur Halten"*, Paradox
+*„Halten (umlenken)"*, Schlachtfeld *„Teilen (Lösungen)"*. Auch §4.5 (*„Präsenz × Lenken
+ergibt keinen Sinn"*, *„Schweigen nur bei Präsenz"*) ist nirgends verdrahtet.
+
+**Beleg (28.07.2026, 12:31:56):** Cluster `paradox` → `Absicht=lenken`. Das Konzept erlaubt
+dort nur Halten.
+
+**Auswirkung:** Von den drei Stockwerken der Dreischicht ist seit Chat 114 eines
+korridorgeprüft (Strategie). Absicht und Vehikel werden nur gegen ihren globalen Kanon
+geprüft, nicht gegen die Landschaft.
+
+#### GV-DREISCHICHT-BLOCK-OHNE-AUFTRAG — Werkzeuge im Prompt, aber kein Auftrag, sie zu benutzen ⚠️
+
+**Entdeckt:** Chat 114, GV-Vollaudit. **Prio mittel.**
+
+**Symptom:** Der Dreischicht-Block wird unbedingt gebaut und angehängt, auch wenn
+`strategie_aktiv=False` (Vektorlänge < `GV_STRATEGIE_MIN_LAENGE`). Dann sieht das LLM
+`[WERKZEUGE]` und `[ABSICHTEN]`, bekommt aber die Anweisung *„Beschreibe die LANDSCHAFT —
+nicht die Route"* und kein Ausgabeformat, weil `gv.strategie` fehlt.
+
+**Beleg:** Zwei Turns mit Länge 1 (28.07.2026, 12:34 und 13:03). Beide Male antwortete das
+LLM trotzdem mit Absicht- und Strategie-Zeilen, aber ohne Vehikel — der Prompt fragt es
+in diesem Zweig nicht.
+
+**Auswirkung:** Widersprüchlicher Prompt. Entweder der Block gehört hinter dieselbe
+Bedingung wie der Strategie-Auftrag, oder der Auftrag gehört zum Block.
+
+#### GV-CHARAKTER-DEFAULT-UEBER-MESSBEREICH — der Ausfallwert schlägt jede echte Messung ⚠️
+
+**Entdeckt:** Chat 114, GV-Vollaudit. **Prio mittel.**
+
+**Symptom:** `dreischicht_prompt_bauen` nimmt bei fehlender Gewichtung
+`gewichtung.get(strat_id, 0.5)`. Gemessene Charakter-Similarities liegen bei **0.195 bis
+0.334** — der Ausfall-Default liegt über jedem echten Wert und erscheint im Prompt als
+*„Affinitaet: 50%"*, also als beste verfügbare Passung.
+
+**Beleg (28.07.2026):** `GV-Charakter-Gewichtung: Im=0.334, Pw=0.304, Sa=0.293, Pr=0.276,
+So=0.274, Sp=0.253, Be=0.195`. Dazu: `charakter_gewichtung_berechnen` fängt `Exception`
+und loggt `warning` (Handbuch §3: Verwerfung gehört auf `error`).
+
+**Nebenbefund zur Doku:** Konzept §9.2 und §10.4 verlangen ein Caching der
+Charakter-Gewichtung bis `kern_aktualisiert_am`. Der Code embeddet den Charakter in jedem
+Turn neu; der Docstring sagt es ausdrücklich. Konzept oder Code ist zu korrigieren.
+
+#### GV4-SYSTEM-2-TOT — von sechs Systemen der Relevanzformel differenzieren drei ⚠️
+
+**Entdeckt:** Chat 114, GV-Vollaudit. **Prio mittel.**
+
+**Symptom:** Anhang A.2 nennt sechs Systeme. Gemessen am Code:
+
+- **System 2 (Aktualität):** `session_aktualitaet()` in `ei/neugier.py` hat keinen
+  Aufrufer. Alle Kandidaten stammen aus LZG und KZG, für die der Faktor 1.0 ist.
+- **System 3 (Drive):** Der Neugier-Boost nutzt das **Turn**-Embedding als Proxy für die
+  Lücke — der Wert ist für alle Kandidaten identisch und skaliert die Liste nur global.
+- **System 6 (Charakter):** Dieselbe Konstruktion. `charakter_resonanz` hängt nicht vom
+  Kandidaten ab; der Filter lässt alle durch oder keinen.
+
+**Auswirkung:** Zwischen zwei Wissenslücken unterscheiden real nur Gedächtnis (System 1),
+Neugier (4) und Register (5). Der Code benennt den Proxy in einem Kommentar; das Konzept
+tut es nicht.
+
+#### GV-SKIP-BEGRUESSUNG-TOT — zwei von drei Skip-Gründen können nicht eintreten ⚠️
+
+**Entdeckt:** Chat 114, GV-Vollaudit. **Prio niedrig.**
+
+**Symptom:** `_ist_skip` prüft `intent in ("begruessung", "meta", "system")`. Die Perzeption
+darf laut Prompt nur `smalltalk|knowledge|personal|task|creative|meta` liefern. Für
+`begruessung` und `system` existiert im gesamten Repository kein Schreiber — nur zwei Leser
+(`_ist_skip` und `_farbe_intent`).
+
+**Auswirkung:** Konzept §10.1 Schritt 1 lautet *„Skip-Check: Begrüßung/Meta"*. Der
+Begrüßungs-Zweig greift nie; Begrüßungen laufen durch den vollen Node samt LLM-Call.
+Ob das ein Verlust ist, ist eine Entscheidung — der Node kann auch bei einer Begrüßung
+sinnvoll vorausdenken.
+
+#### GV-REGISTER-OHNE-ZUG — Novas Register wurde konserviert, aber nie zum Nutzer gezogen ✅ Behoben Chat 114
+
+**Klasse:** Halb gebauter Mechanismus. Die konservierende Hälfte stand seit jeher, die
+zweite Kraft fehlte. Severity **Hoch** — betrifft zwei der sechs Achsen und damit Cluster
+und Repertoire jedes Turns.
+
+**Symptom:** Die Nähe- und Tiefe-Achse lasen `internal.emotion.mode`, `.language_style`
+und `.relationship_dynamic`. Diese Felder beschreiben **Novas letzte Äußerung**, gemessen
+von der Assistant-Perzeption, über `redis:nova_state` in den nächsten Turn getragen — und
+nichts zog daran. Die gemessenen Werte des Nutzers lagen im selben State und wurden nie
+gelesen.
+
+**Beleg (28.07.2026, Sequenz mit Themenwechsel vom Physikgespräch auf ein Alltagsthema):**
+
+| Turn | Register des Nutzers | Register Novas | Cluster |
+|---|---|---|---|
+| 13:16 | `alltag` / `locker` | `philosophischer_austausch` / `fachlich` | Schlachtfeld |
+| 13:27 | `alltag` / `locker` | `philosophischer_austausch` / `formell` | Foyer |
+
+Der Nutzer wurde lockerer, Nova förmlicher — keine Verzögerung um einen Turn, sondern eine
+**Divergenz**, die sich mit jedem Eigen-Impuls verstärkte. In beiden Clustern führt die
+Matrix `So` (Selbstoffenbarung) als unpassend; die naheliegende menschliche Antwort war
+strukturell ausgeschlossen. Eine ausdrückliche Kurskorrektur des Nutzers hatte keinen
+Eingang ins System.
+
+**Auswirkung:** Der Node bezog seine Landschaft aus einem Text, der nicht der letzte war.
+Verstärkt durch die Rückkopplung über Eigen-Impulse: Novas eigener abstrakter Beitrag
+wurde als `philosophischer_austausch` klassifiziert, und genau dieses Feld las der nächste
+Turn.
+
+**Behebung:** Novas Raum als eigener, persistierter Zustand (`graph/personality.py:Raum`,
+`ei/raum.py`, Konzept §3.4). Zwei Zahlen statt Labels — Labels beschreiben je eine
+Äußerung, der Raum ist der Zustand dazwischen. Der Zug ist proportional zum Abstand,
+derselben Bauart wie die Empathie-Injektion der Emotion, aber mit umgekehrtem Vorzeichen
+in der Distanz: Bei der Emotion zieht ein weit entfernter Nutzer stärker, beim Register
+kostet die Umstellung. Hinauf 0.35, hinab 0.65 — beide aus einer Simulation aller
+Modus-Übergänge gewählt, nicht gesetzt.
+
+**Zwei Befunde aus dieser Simulation, die den Bau verändert haben:** Ein Ziel exakt auf der
+Achsen-Schwelle (`kreativ` = 0.5, Nähe neutral/neutral = 0.5) ist bei proportionalem Zug
+**nie** erreichbar — daher die Ankunftsregel. Und der Charakterfaktor, der den Zug
+skalieren soll, ließ sich nicht aus der Cosine-Distanz zweier Pol-Texte gewinnen: Zwei
+Kunstfiguren trennen sich sauber bei +0.24 und −0.22, der echte Charakter liegt bei +0.036
+und wechselt das Vorzeichen je nach eingebettetem Textumfang. Er steht deshalb auf 1.0 und
+ist als offener Punkt dokumentiert.
+
+**Messung (28.07.2026, 14:28–14:30, drei Turns mit Wissenschaftsthemen):**
+
+```
+Raumzug: Tiefe 0.90 → 0.90 (Ziel 0.90) · Naehe 0.45 → 0.62
+Raumzug: Tiefe 0.90 → 0.51 (Ziel 0.30) · Naehe 0.62 → 0.65
+Raumzug: Tiefe 0.51 → 0.37 (Ziel 0.30) · Naehe 0.65 → 0.76
+GV-Sektor: #13 'Bier' → Cluster 'bier'   ·   Repertoire: Im=passt, Be=kern
+```
+
+Dieselbe Ausgangslage hatte vorher Schlachtfeld und Foyer ergeben. Tests:
+`tests/test_gv_raumzug.py` (16), darunter eine Wirksamkeitsprüfung, die Raum und Labels in
+Widerspruch setzt — die erste Fassung der Datei belegte nur, dass der Zug rechnet, nicht
+dass die Achsen ihn benutzen.
+
+**Bleibt offen:** `GV-FARBTON-SUBJEKTWECHSEL`. Der Farbton liest weiterhin die Labels und
+formuliert daraus Sätze über den Nutzer.
+
+*Aufgenommen Chat 114 (GV-Vollaudit). Drei Befunde derselben Sitzung behoben
+(GV-TIEFE-DEFAULT-BLIND, GV-ACHSEN-ZWEI-ZEITSTAENDE, GV-REGISTER-OHNE-ZUG), einer aus
+Chat 106 geschlossen und in seiner Ursache korrigiert (GV-STRATEGIE-VEHIKEL-LEER).
+Suite 296 → 349 Tests, grün, 0 übersprungen.*
+
+#### GV-METADATEN-ERREICHEN-DIE-SPRACHE-NICHT — der Korridor stand richtig und wurde überschrieben ✅ Behoben Chat 114
+
+**Klasse:** Prompt-Architektur. Eine korrekte Anweisung an der falschen Stelle. Severity
+**Hoch** — sie entwertete die gesamte Registermechanik des Nodes.
+
+**Symptom:** Alles über das WIE der Antwort stand im System-Prompt. Unmittelbar vor der
+Generierung lag stattdessen der Gesprächsverlauf.
+
+**Beleg (28.07.2026, 16:59:55):** Ein Turn mit `Cluster=kissenschlacht` („Spielerisch, nah,
+lebendig. Leichtigkeit ist der Inhalt"), `Strategie=Im`, `Vehikel=frage`, EI-Profil
+`Stil: locker | Modus: spielerisch` — also jedes Registersignal auf leicht. Die Antwort
+begann mit *„Diese mathematische Eleganz, mit der du unsere Dynamik als Resonanzphänomen
+beschreibst …"* und endete bei der thermischen Entropie. Das Wort „spielerisch" kam darin
+vor — als Objekt eines abstrakten Satzes.
+
+**Die Größenverhältnisse, gemessen im selben Turn:**
+
+| Bestandteil | Größe |
+|---|---|
+| Session-Verlauf im Prompt | 21 Turns, 98.074 Bytes in Redis, ungekürzt |
+| Gedächtnis-Kontext | 4.154 Zeichen |
+| Identität | 1.268 Zeichen |
+| Gesprächsvektor-Block | **1.376 Zeichen** |
+| Responder-Eingang gesamt | **11.254 Tokens** |
+
+Rund drei Viertel des Prompts sind Gesprächsverlauf, und dort stehen die eigenen Absätze
+der Assistentin wörtlich. Der Registeranteil ist etwa drei Prozent — und stand vor der
+Wand statt dahinter.
+
+**Auswirkung:** Die Dreischicht konnte den Ton nicht setzen, egal wie richtig Cluster,
+Strategie und Raum waren. Das erklärt, warum eine ausdrückliche Bitte des Nutzers um einen
+leichteren Ton mehrere Turns lang folgenlos blieb: Der Verlauf trug seine eigene Sprache
+weiter, und `SESSION_MAX_TURNS = 20` heißt, dass ein abstrakter Absatz erst nach rund zehn
+Wortwechseln aus dem Prompt fällt.
+
+**Behebung:** Neuer Block `[DEIN SPRACHSTIL]` (`prompts/default/responder.sprachstil.txt`),
+angehängt ans **Ende** der Nutzer-Nachricht — hinter dem Verlauf und hinter dem aktuellen
+Prompt. Er führt hin, statt zu verbieten: Der Verlauf sei in einer anderen Lage entstanden,
+wichtig sei jetzt dieser Klang. Inhalt: Landschaft und Fragefrequenz aus dem Cluster (der
+über Novas Raum trägheitsbehaftet nachzieht), der Ton aus `external` — dem Register des
+aktuellen Nutzer-Turns, nicht aus alten Labels — sowie Werkzeug und Leitgedanke.
+Rund 60 Tokens.
+
+**Messung (28.07.2026, 17:57–17:58, zwei Turns):** Bei `Cluster=feuerwerk` und einem Prompt
+**ohne** jeden Stilwunsch begann die Antwort mit *„… das ist ein wahnsinnig starkes Bild!
+Es ist, als würde die Realität selbst kurz die Maske fallen lassen …"* — sie greift das
+Bild des Nutzers auf, statt es zu übersetzen. Tests:
+`tests/test_responder_sprachstil.py` (7), darunter eine Positionsprüfung: Verlauf →
+aktueller Prompt → Sprachstil. Ein Inhaltstest allein bestünde auch, wenn der Block wieder
+nach vorn wanderte.
+
+**Einschränkung:** Zwei Turns. Die Wirkung auf den Ton lässt sich nicht im Unit-Test
+sichern, nur live beobachten. Ob der Block auch über längere Strecken trägt, ist offen.
+
+**Zusammenhang:** `GV-REGISTER-OHNE-ZUG` (die Metadaten stimmen seit derselben Sitzung —
+Voraussetzung, nicht Wirkung) · `GV-IMPULS-ALS-FAKTENSPERRE` · Echo-Bug Chat 72,
+Lösungsvorschlag (c) Verlaufs-Trimming — durch diesen Befund als der wirksamste der drei
+belegt, weiterhin nicht gebaut.

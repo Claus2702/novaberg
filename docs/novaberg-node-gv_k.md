@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Konzept — Gesprächsvektor
-**Stand:** 12. Juli 2026, Chat 107 (Entity-Hop-Historie: GV-ENTITY-HOP-TOT behoben, Design-Grenze Wert-Fakten dokumentiert)
+**Stand:** 28. Juli 2026, Chat 114 (Vollaudit des Nodes: Ergebnis in §8.1, Befunde in novaberg-bugs.md)
 **Pfad:** novaberg/docs/novaberg-node-gv_k.md
 **Quellen:** nova-09-k.md
 
@@ -469,7 +469,15 @@ Bis Chat 113 standen diese beiden Beine auf **verschiedenen Zeitständen**. `int
 
 Seit derselben Änderung sieht der Node auch die **emotionale Gravitation**: Der Node `emotionale_gravitation` färbt `nova_emotions_verlauf`, bevor der GV-Node läuft. Eine reaktivierte Erinnerung verschiebt damit Sektor, Cluster und Strategie — das ist so entschieden und in `novaberg-thinking-drive_k.md` §5.7 begründet.
 
-**Damit ist eine Frage offen:** Die Wahl von Cluster und Repertoire steht ab jetzt auf einer anderen Lage als zuvor. Ob das gewählte Repertoire dazu passt, ist ungeprüft — der Vollaudit des Nodes gegen `novaberg-gv-strategie_k.md` §4/§5 steht aus.
+**Nachtrag Chat 114 — die Reparatur war unvollständig.** Der EmGrav-Node läuft *nach* `ei_calc` und ändert `nova_emotions_verlauf` ein zweites Mal. Die Übertragung nach `internal.emotion` fand aber nur in `ei_calc` statt: Die sechs Säulen lasen daraufhin die gravitationsgefärbte Lage, die Achsen die davor — dieselben zwei Zeitstände, eine Node-Position früher. Gemessen am 28.07.2026: Säulen `begeisterung`, Achsen `neugierig`, im selben Turn. Seit Chat 114 zieht der EmGrav-Node die Übertragung nach; beide Beine stehen wieder auf einem Stand (`GV-ACHSEN-ZWEI-ZEITSTAENDE` in bugs.md).
+
+#### Ergebnis des Vollaudits (Chat 114)
+
+Die offene Frage — passt das gewählte Repertoire zu der veränderten Eingabe? — ist beantwortet, und die Ursache lag nicht bei der Gravitation.
+
+Über 45 gemessene Läufe verteilten sich die Sektoren so, dass der häufigste (#37 „Fiebrige Heiterkeit", 10 Treffer) im Konzept als 🚫 paradox geführt wird; `kissenschlacht` und `paradox` trugen zusammen 53 %, und **sieben der vierzehn Cluster kamen kein einziges Mal vor**. Verantwortlich waren zwei Achsen, die praktisch feststanden: die Tiefe fiel in 33 von 45 Läufen auf ihren Default (behoben, `GV-TIEFE-DEFAULT-BLIND`), und die Richtung steht bei `plateau` — dem häufigsten Emotions-Vektor — auf „abwärts". Der zweite Punkt folgt dem Konzept (§10.2 `RICHTUNG_MAP`) und ist deshalb kein Codefehler, sondern eine offene Konzeptfrage; `novaberg-node-gv_l.md` §5 hat sie bereits benannt: *„Die Vektor-Berechnung unterscheidet nicht zwischen ‚stabil warm' und ‚eskalierend ekstatisch'."*
+
+Der übrige Befund steht in `novaberg-bugs.md`, Abschnitt Chat 114. Was mit dem Konzept übereinstimmt: die 64-Sektoren-Tabelle (§6), die Repertoire-Matrix (§7) und die Strategie-Beschreibungstexte (§9.3), jeweils vollständig.
 
 ### 8.2 Vektor-Destillation (LLM-Call)
 
