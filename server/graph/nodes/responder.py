@@ -534,6 +534,85 @@ def _build_system_prompt(state: ConversationState) -> str:
     return "\n\n".join(parts)
 
 
+def _sprachstil_block(state: ConversationState) -> str:
+    """Baut den Sprachstil-Block, der hinter den Verlauf gehaengt wird.
+
+    Alles, was Nova sagt WIE sie antworten soll, stand bis Chat 114 im
+    System-Prompt — am weitesten weg vom Generierungspunkt. Unmittelbar vor
+    der Generierung lag stattdessen der Gespraechsverlauf: gemessen rund drei
+    Viertel der 11.254 Eingabe-Tokens eines Turns, gegenueber 1.376 Zeichen
+    Gespraechsvektor. Das Ergebnis war im Log zu sehen — Cluster
+    `kissenschlacht`, Strategie Impuls, Stil locker, und eine Antwort ueber
+    thermische Entropie. Die Metadaten stimmten, die Sprache kam aus dem
+    Verlauf.
+
+    Der Block wiederholt deshalb die kurze Fassung des WIE dort, wo
+    Anweisungen wirken. Er beschreibt und fuehrt hin, statt zu verbieten:
+    Der Verlauf ist nicht falsch, er ist nur in einer anderen Lage entstanden.
+
+    Quellen der Zeilen: Landschaft und Fragefrequenz aus dem Cluster (der
+    ueber Novas Raum traegheitsbehaftet nachzieht), der Ton aus `external` —
+    also aus dem Register DIESES Nutzer-Turns, nicht aus Novas alten Labels.
+
+    Vorbedingung: Keine — fehlende Teile werden weggelassen.
+    Nachbedingung: Rueckgabe ist der fertige Block oder "", wenn keine
+    einzige Angabe vorliegt.
+    Fehlerfaelle: Keine; ein unbekannter Cluster liefert nur keine Landschaft.
+    """
+
+    # ── Eingabe ─────────────────────────────────
+    gv_detail: dict = state.get("gv_detail", {}) or {}
+    cluster:   str  = gv_detail.get("cluster", "")
+    strategie: str  = gv_detail.get("strategie", "")
+    vehikel:   str  = gv_detail.get("vehikel", "")
+    impuls:    str  = gv_detail.get("impuls", "")
+
+    external = state.get("external")
+    stil: str = external.emotion.language_style if external else ""
+
+    # ── Verarbeitung ────────────────────────────
+    zeilen: list[str] = []
+
+    if cluster:
+        from ei.dreischicht import CLUSTER_BESCHREIBUNGEN
+        beschreibung: str = CLUSTER_BESCHREIBUNGEN.get(cluster, "")
+        zeilen.append(f"Landschaft: {cluster.capitalize()} — {beschreibung}")
+
+    ton_teile: list[str] = []
+    if stil and stil != "neutral":
+        ton_teile.append(f"Ton: {stil}")
+    if cluster:
+        from ei.dreischicht import CLUSTER_FRAGEN
+        fragen: str = CLUSTER_FRAGEN.get(cluster, "")
+        if fragen:
+            ton_teile.append(f"Fragen: {fragen}")
+    if strategie:
+        from ei.dreischicht import STRATEGIE_NAMEN
+        werkzeug: str = STRATEGIE_NAMEN.get(strategie, strategie)
+        if vehikel:
+            werkzeug += f", als {vehikel.capitalize()}"
+        ton_teile.append(f"Werkzeug: {werkzeug}")
+    if ton_teile:
+        zeilen.append(" · ".join(ton_teile))
+
+    if impuls:
+        zeilen.append(f"Leitgedanke: {impuls}")
+
+    # ── Ausgabe-Verifikation ────────────────────
+    if not zeilen:
+        logger.info("Responder: Sprachstil-Block leer — weder Cluster noch Stil")
+        return ""
+
+    block: str = PROMPTS["responder.sprachstil"].format(
+        stil_zeilen="\n".join(zeilen),
+    )
+    logger.info(
+        "Responder: Sprachstil-Block hinter dem Verlauf (%d Zeichen, "
+        "Cluster=%s, Stil=%s)", len(block), cluster or "—", stil or "—",
+    )
+    return block
+
+
 def respond(
     state: ConversationState,
 ) -> ConversationState:
@@ -548,6 +627,13 @@ def respond(
 
     # Messages aus Session-History aufbauen
     messages: list[dict] = []
+
+    # Der Sprachstil steht am ENDE der Nutzer-Nachricht, hinter dem Verlauf und
+    # hinter dem aktuellen Prompt — dort, wo eine Anweisung gegen 8.400 Tokens
+    # fremder Prosa noch etwas ausrichtet. Fuehrende Leerzeile, damit er sich
+    # vom Prompt absetzt.
+    sprachstil_block: str = _sprachstil_block(state)
+    sprachstil: str = f"\n\n{sprachstil_block}" if sprachstil_block else ""
 
     # Session-Turns immer aufnehmen — auch bei Agent-Erfolg (Chat 27).
     # Die AGT3-Ursache war memory_context (Notizen-Uebersicht), nicht Session-Turns.
@@ -615,9 +701,10 @@ def respond(
             "[AKTUELLER PROMPT]\n"
             "Dies ist die aktuelle Nachricht. Alles davor war Hintergrund.\n"
             f"{user_prompt}"
+            f"{sprachstil}"
         )})
     else:
-        messages.append({"role": "user", "content": user_prompt})
+        messages.append({"role": "user", "content": user_prompt + sprachstil})
 
     # Log: Inhalt direkt ausgeben, ohne JSON-Wrapping
     messages_text: str = "\n\n".join(
