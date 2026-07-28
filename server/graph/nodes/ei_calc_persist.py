@@ -164,6 +164,11 @@ def ei_calc_persist(state: ConversationState) -> ConversationState:
     # gv:detail:-Konvention, jeder CharacterGraph-Lauf ueberschreibt.
     nova_state_key: str  = f"nova_state:{user_id}:{character_id}"
     nova_state_mapping: dict = {
+        # Novas Raum (Chat 114) — er ueberlebt den Turn, weil ein
+        # Registerwechsel ueber mehrere Turns laeuft. Ohne Persistenz gaebe es
+        # keinen Zwischenzustand und damit keinen Zug, nur ein Springen.
+        "raum_tiefe":           str(internal.raum.tiefe),
+        "raum_naehe":           str(internal.raum.naehe),
         "emotion":              internal.emotion.emotion,
         "arousal":              str(internal.emotion.arousal),
         "emotions_vector":      internal.emotion.emotions_vector,

@@ -2,11 +2,14 @@
 EI-Hilfsfunktionen — gemeinsam genutzt von Neugier, Wissensluecken, Dreischicht.
 """
 
+import logging
 import math
 
 import numpy as np
 
-from config import EMOTION_SEKTOR_MAP, SEKTOR_GRUPPE
+from config import EMOTION_SEKTOR_MAP, MODUS_KANON, SEKTOR_GRUPPE
+
+logger = logging.getLogger("ki_server.ei.utils")
 
 
 # ─────────────────────────────────────────────
@@ -22,6 +25,43 @@ NEGATIVE_EMOTIONEN: set[str] = {
     emotion for emotion, sektor in EMOTION_SEKTOR_MAP.items()
     if SEKTOR_GRUPPE.get(sektor) == "negativ"
 }
+
+
+def modus_pruefen(modus: str, quelle: str) -> bool:
+    """Meldet einen Gespraechsmodus ausserhalb von MODUS_KANON.
+
+    Die Modus-Tabellen des GV-Pfads sind Lookups mit Default. Ein Modus, den
+    die Perzeption liefern darf, der aber in keiner Tabelle steht, faellt
+    lautlos auf den Wert von "alltag" — und ist von einem echten "alltag"
+    hinterher nicht zu unterscheiden. Diese Pruefung macht die Luecke sichtbar,
+    bevor der Default sie verdeckt.
+
+    Vorbedingung: `modus` ist der Wert, mit dem gleich gerechnet wird;
+    `quelle` benennt den Konsumenten (fuer die Log-Zeile).
+    Nachbedingung: Rueckgabe True, wenn der Modus im Kanon liegt.
+    Fehlerfaelle: Leerer oder unbekannter Modus — beides wird mit dem Wert
+    benannt protokolliert, die Berechnung laeuft mit ihrem Default weiter.
+    """
+
+    # ── Eingabe-Validierung ─────────────────────
+    if not modus:
+        logger.error(
+            "Modus-Kanon: leerer Modus in '%s' — die Rechnung nimmt ihren Default",
+            quelle,
+        )
+        return False
+
+    # ── Verarbeitung ────────────────────────────
+    bekannt: bool = modus in MODUS_KANON
+
+    # ── Ausgabe-Verifikation ────────────────────
+    if not bekannt:
+        logger.error(
+            "Modus-Kanon: '%s' steht nicht in MODUS_KANON (Konsument '%s') — "
+            "die Rechnung nimmt ihren Default, das Ergebnis sieht aus wie 'alltag'",
+            modus, quelle,
+        )
+    return bekannt
 
 
 def cosine_similarity(vec_a: list[float], vec_b: list[float]) -> float:

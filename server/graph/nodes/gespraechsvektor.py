@@ -16,6 +16,7 @@ from config import (
     POSTGRES_URL,
     PROMPTS,
     get_node_config,
+    GV_LAENGE_MODUS_DELTA,
     GV_STRATEGIE_MIN_LAENGE,
 )
 from graph.state import ConversationState
@@ -23,7 +24,7 @@ from memory.pipeline_log import log_fehler
 from memory.session import format_session_turns_numbered
 from services.model_services import model_service, ChatRequest
 
-from ei.utils import POSITIVE_EMOTIONEN, NEGATIVE_EMOTIONEN
+from ei.utils import POSITIVE_EMOTIONEN, NEGATIVE_EMOTIONEN, modus_pruefen
 from ei.farbton import farbton_berechnen
 from ei.neugier import aufnahmebereitschaft_berechnen
 from ei.wissensluecken import wissensluecken_finden
@@ -34,6 +35,7 @@ from ei.dreischicht import (
     charakter_gewichtung_berechnen,
     dreischicht_prompt_bauen,
     gv_output_parsen,
+    korridor_pruefen,
 )
 
 logger = logging.getLogger("ki_server.gespraechsvektor")
@@ -70,7 +72,7 @@ def _vektor_laenge_berechnen(state: ConversationState) -> int:
     Faktoren:
       - Emotion (positiv/negativ) + Arousal → Grundlaenge
       - Beziehungsdynamik (Vertrautheit) → Erhoehung
-      - Modus (fachlich/emotional) → Reduktion
+      - Modus → Zu-/Abschlag aus GV_LAENGE_MODUS_DELTA (alle Modi des Kanons)
       - Sprachstil (locker/formell) → Feintuning
       - Emotions-Vektor (Krise) → Notbremse auf 0
     """
@@ -101,11 +103,11 @@ def _vektor_laenge_berechnen(state: ConversationState) -> int:
     elif dynamik == "distanz":
         laenge -= 0.5
 
-    # Fachliche Komplexitaet bremst
-    if modus == "fachgespraech":
-        laenge -= 0.3
-    elif modus == "emotional":
-        laenge -= 0.2
+    # Fachliche Komplexitaet bremst, assoziative Register erlauben mehr.
+    # Tabelle statt if/elif: Sie deckt alle zehn Modi aus MODUS_KANON ab, und
+    # ein fehlender Eintrag faellt im Test auf statt still auf 0.0.
+    modus_pruefen(modus, "GV-Laenge")
+    laenge += GV_LAENGE_MODUS_DELTA.get(modus, 0.0)
 
     # Lockerer Stil erlaubt groessere Spruenge
     if stil == "locker":
@@ -520,6 +522,22 @@ def gespraechsvektor(state: ConversationState) -> ConversationState:
         dreischicht_block=dreischicht_block,
     )
 
+    # 4b. Korridor pruefen
+    # Python setzt die Leitplanken, das LLM waehlt darin (Konzept §10.1). Ob es
+    # das getan hat, hat bis Chat 114 niemand nachgesehen: Eine Strategie, die
+    # der Parser nicht lesen konnte oder die im Cluster als unpassend gilt,
+    # verschwand als leeres Feld — der Responder bekam eine Landschaft ohne
+    # Werkzeug und nichts wies darauf hin.
+    korridor_verstoesse: list[dict] = list(gv_parsed.get("verworfen", []))
+    korridor_verstoesse.extend(
+        korridor_pruefen(gv_parsed, repertoire, cluster)
+    )
+    for verstoss in korridor_verstoesse:
+        logger.error(
+            "GV-Korridor: %s '%s' verworfen — %s (Cluster '%s')",
+            verstoss["feld"], verstoss["wert"], verstoss["grund"], cluster,
+        )
+
     # 5. State schreiben
     state["gespraechsvektor"] = hypothese
 
@@ -558,6 +576,7 @@ def gespraechsvektor(state: ConversationState) -> ConversationState:
             for l in wissensluecken
         ],
         "strategie_aktiv":       strategie_aktiv,
+        "korridor_verstoesse":   korridor_verstoesse,
     }
 
     return state

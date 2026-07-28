@@ -16,15 +16,13 @@ from config import (
     GV_ACHSE_NAEHE_SCHWELLE,
     GV_ACHSE_TIEFE_SCHWELLE,
     GV_ACHSE_INITIATIVE_VERH,
-    GV_NAEHE_DYNAMIK,
-    GV_NAEHE_STIL,
     GV_RICHTUNG_MAP,
     GV_VALENZ_SEKTOR,
     GV_TIEFE_MODUS,
 )
 from graph.state import ConversationState
 from services.model_services import model_service, EmbedRequest
-from ei.utils import cosine_similarity
+from ei.utils import cosine_similarity, modus_pruefen
 
 logger = logging.getLogger("ki_server.ei.dreischicht")
 
@@ -224,6 +222,15 @@ STRATEGIE_NAMEN: dict[str, str] = {
     "Pr": "Praesenz",
 }
 
+# Die beiden anderen Stockwerke der Dreischicht (Konzept §4.3 und §4.4).
+# Hier stehen sie einmal — Parser und Validierung lesen dieselbe Menge.
+ABSICHT_KANON: set[str] = {"teilen", "lenken", "halten", "saeen"}
+VEHIKEL_KANON: set[str] = {"aussage", "frage", "schweigen"}
+
+# Zeichen, mit denen das LLM seine Antwort schmueckt: die Marker aus dem
+# [WERKZEUGE]-Block, Aufzaehlungsstriche, Satzzeichen, Anfuehrungen.
+_RANDZEICHEN: str = "★●○•*-–—:.,;!?\"'`()[] "
+
 # Cache fuer Strategie-Embeddings (einmal berechnet, nie geaendert)
 _strategie_embeddings_cache: dict[str, list[float]] = {}
 
@@ -247,8 +254,6 @@ def achsen_berechnen(state: ConversationState) -> dict:
     arousal:  float = internal.emotion.arousal              if internal else 0.5
     vektor:   str   = (internal.emotion.emotions_vector or "plateau") if internal else "plateau"
     emotion:  str   = internal.emotion.emotion              if internal else "neutral"
-    dynamik:  str   = internal.emotion.relationship_dynamic if internal else "neutral"
-    stil:     str   = internal.emotion.language_style       if internal else "neutral"
     modus:    str   = internal.emotion.mode                 if internal else "alltag"
 
     # ── E: Energie ──
@@ -259,9 +264,10 @@ def achsen_berechnen(state: ConversationState) -> dict:
     richtung_bin: int = GV_RICHTUNG_MAP.get(vektor, 0)
 
     # ── N: Naehe ──
-    naehe_roh: float = (
-        GV_NAEHE_DYNAMIK.get(dynamik, 0.5) + GV_NAEHE_STIL.get(stil, 0.5)
-    ) / 2.0
+    # Aus Novas Raum, nicht mehr direkt aus ihren Register-Labels: Die Labels
+    # beschreiben ihre letzte Aeusserung, der Raum ist der Zustand, der dem
+    # Nutzer nachgezogen wird (ei/raum.py, Chat 114).
+    naehe_roh: float = internal.raum.naehe if internal else 0.5
     naehe_bin: int = 1 if naehe_roh >= GV_ACHSE_NAEHE_SCHWELLE else 0
 
     # ── V: Valenz ──
@@ -272,7 +278,11 @@ def achsen_berechnen(state: ConversationState) -> dict:
         valenz_bin = 1  # neutral → positiv (Default)
 
     # ── T: Tiefe ──
-    tiefe_roh: float = GV_TIEFE_MODUS.get(modus, 0.3)
+    # Ebenfalls aus dem Raum. Der Modus wird trotzdem geprueft: Er ist die
+    # Quelle, aus der der Raum sein Ziel zieht, und eine Luecke im Kanon
+    # bliebe sonst unbemerkt.
+    modus_pruefen(modus, "GV-Achse Tiefe")
+    tiefe_roh: float = internal.raum.tiefe if internal else 0.3
     tiefe_bin: int   = 1 if tiefe_roh >= GV_ACHSE_TIEFE_SCHWELLE else 0
 
     # ── I: Initiative ──
@@ -302,11 +312,16 @@ def achsen_berechnen(state: ConversationState) -> dict:
         "drive":           round(drive, 2),
     }
 
+    # Die Werte benennen, nicht nur die Bits: V trug bisher nur die 0/1 und
+    # verschwieg damit, auf welcher Emotion Novas Lage steht — genau die Frage,
+    # an der sich die Achsen und die sechs Saeulen unterscheiden koennen.
+    # N und T tragen seit Chat 114 den Raumwert; woher er kommt und wohin er
+    # gezogen wird, steht in der Raumzug-Zeile desselben Turns.
     logger.info(
         f"GV-Achsen: E={energie_bin}({arousal:.2f}) R={richtung_bin}({vektor}) "
-        f"N={naehe_bin}({naehe_roh:.2f}) V={valenz_bin} "
-        f"T={tiefe_bin}({tiefe_roh:.2f}) I={initiative_bin}({initiative_roh:.2f}) "
-        f"Drive={drive:.2f}"
+        f"N={naehe_bin}({naehe_roh:.2f} Raum) V={valenz_bin}({emotion}) "
+        f"T={tiefe_bin}({tiefe_roh:.2f} Raum, Label {modus}) "
+        f"I={initiative_bin}({initiative_roh:.2f}) Drive={drive:.2f}"
     )
 
     return achsen
@@ -488,11 +503,15 @@ def dreischicht_prompt_bauen(
     _EIGNUNG_RANG: dict[str, int] = {"kern": 0, "passt": 1, "selten": 2}
     verfuegbar.sort(key=lambda x: (_EIGNUNG_RANG.get(x[1], 9), -x[2]))
 
+    # Der Marker steht HINTER dem Kuerzel. Stand er davor, begann die Zeile mit
+    # einer Glyphe, das LLM antwortete formattreu "STRATEGIE: ● Sp" — und der
+    # Parser las die Glyphe als Kuerzel (gemessen Chat 114). Der Parser ist
+    # inzwischen robust dagegen; die Zeile gibt ihm trotzdem keinen Anlass mehr.
     strat_zeilen: list[str] = []
     for strat_id, eignung, char_sim in verfuegbar:
         name: str = STRATEGIE_NAMEN.get(strat_id, strat_id)
         marker: str = "★" if eignung == "kern" else ("●" if eignung == "passt" else "○")
-        strat_zeilen.append(f"  {marker} {strat_id} ({name}) — Affinitaet: {char_sim:.0%}")
+        strat_zeilen.append(f"  {strat_id} ({name}) {marker} — Affinitaet: {char_sim:.0%}")
 
     block: str = (
         f"[GESPRAECHSLANDSCHAFT]\n"
@@ -501,9 +520,11 @@ def dreischicht_prompt_bauen(
         f"[WERKZEUGE]\n"
         f"Verfuegbare Strategien (★ Kern, ● passt, ○ selten):\n"
         + "\n".join(strat_zeilen)
-        + "\n\n"
+        + "\n"
+        f"Nenne bei STRATEGIE nur das Kuerzel — z.B. 'STRATEGIE: Sp'.\n"
+        f"Andere Strategien stehen in dieser Landschaft nicht zur Wahl.\n\n"
         f"[ABSICHTEN]\n"
-        f"Waehle eine Absicht:\n"
+        f"Waehle eine Absicht und nenne nur ihren Namen:\n"
         f"  Teilen — etwas von dir geben, Verbindung\n"
         f"  Lenken — den Nutzer zu einer Erkenntnis fuehren\n"
         f"  Halten — Raum bewahren, Sicherheit geben\n"
@@ -513,6 +534,176 @@ def dreischicht_prompt_bauen(
     return block
 
 
+def _normalisieren(wort: str) -> str:
+    """Vereinheitlicht ein LLM-Wort fuer den Vergleich mit einem Kanon.
+
+    Kleinschreibung, Umlaute aufgeloest, Schmuck- und Satzzeichen von den
+    Raendern entfernt. "Saeen." und "Säen" und "SÄEN" ergeben denselben Wert.
+
+    Vorbedingung: keine — ein leerer String ist zulaessig.
+    Nachbedingung: Rueckgabe enthaelt nur den Wortkern.
+    Fehlerfaelle: keine; ein reines Schmuckzeichen ergibt den leeren String.
+    """
+
+    # ── Verarbeitung ────────────────────────────
+    ersetzt: str = wort.lower()
+    for von, nach in (("ä", "ae"), ("ö", "oe"), ("ü", "ue"), ("ß", "ss")):
+        ersetzt = ersetzt.replace(von, nach)
+
+    # ── Ausgabe ─────────────────────────────────
+    return ersetzt.strip(_RANDZEICHEN)
+
+
+def _strategie_extrahieren(rohwert: str) -> str:
+    """Zieht das Strategie-Kuerzel aus einer LLM-Antwortzeile.
+
+    Das LLM antwortet formattreu zu dem, was der Prompt ihm zeigt. Der
+    [WERKZEUGE]-Block listet "Sp (Spiegelung) ★ Kern — Affinitaet: 25%";
+    Antworten wie "STRATEGIE: ● Sp (Spiegelung)" sind die Regel, nicht die
+    Ausnahme. Ein split()[0] liefert dort die Marker-Glyphe und verwirft
+    danach eine Strategie, die das LLM korrekt gewaehlt hatte (gemessen
+    Chat 114: 17 von 44 Turns ohne Strategie).
+
+    Vorbedingung: `rohwert` ist alles, was hinter "STRATEGIE:" stand.
+    Nachbedingung: Rueckgabe ist ein Kuerzel aus STRATEGIE_NAMEN oder "".
+    Fehlerfaelle: Kein erkennbares Kuerzel — Rueckgabe "", der Aufrufer
+    entscheidet ueber die Meldung.
+    """
+
+    # ── Eingabe-Validierung ─────────────────────
+    if not rohwert or not rohwert.strip():
+        return ""
+
+    # ── Verarbeitung ────────────────────────────
+    kuerzel_index: dict[str, str] = {
+        _normalisieren(k): k for k in STRATEGIE_NAMEN
+    }
+    namen_index: dict[str, str] = {
+        _normalisieren(name): k for k, name in STRATEGIE_NAMEN.items()
+    }
+
+    for token in rohwert.replace("(", " ").replace(")", " ").split():
+        kern: str = _normalisieren(token)
+        if not kern:
+            continue
+        if kern in kuerzel_index:
+            return kuerzel_index[kern]
+        if kern in namen_index:
+            return namen_index[kern]
+
+    # ── Ausgabe ─────────────────────────────────
+    return ""
+
+
+def _doppelbuchstaben_kollabieren(wort: str) -> str:
+    """Zieht Laeufe gleicher Buchstaben auf einen zusammen.
+
+    Faengt die Schreibvarianten der Umlaut-Aufloesung ab: Der Prompt schreibt
+    "Saeen", das Modell antwortet "Saen" — beide meinen Saeen und ergeben hier
+    "saen". Gemessen am 28.07.2026, 13:05:30, als eine korrekt gewaehlte Absicht
+    an dieser Schreibung scheiterte.
+
+    Ueber den vier Absichten und den sieben Strategien ist die Abbildung
+    eindeutig; zwei verschiedene Begriffe fallen nicht zusammen.
+
+    Vorbedingung: keine.
+    Nachbedingung: Rueckgabe enthaelt keinen Buchstaben zweimal hintereinander.
+    Fehlerfaelle: keine.
+    """
+
+    # ── Verarbeitung ────────────────────────────
+    gebaut: list[str] = []
+    for zeichen in wort:
+        if not gebaut or gebaut[-1] != zeichen:
+            gebaut.append(zeichen)
+
+    # ── Ausgabe ─────────────────────────────────
+    return "".join(gebaut)
+
+
+def _begriff_extrahieren(rohwert: str, kanon: set[str]) -> str:
+    """Zieht den ersten Begriff aus `kanon` aus einer LLM-Antwortzeile.
+
+    Gleiches Problem wie bei der Strategie: Das LLM haengt Begruendungen,
+    Gedankenstriche und Klammern an ("ABSICHT: Saeen — den Boden bereiten") und
+    schreibt aufgeloeste Umlaute mal mit, mal ohne das doppelte e.
+
+    Vorbedingung: `kanon` enthaelt normalisierte Begriffe (klein, ohne Umlaute).
+    Nachbedingung: Rueckgabe ist ein Element aus `kanon` oder "".
+    Fehlerfaelle: Kein Treffer — Rueckgabe "".
+    """
+
+    # ── Eingabe-Validierung ─────────────────────
+    if not rohwert or not rohwert.strip():
+        return ""
+
+    # ── Verarbeitung ────────────────────────────
+    kollabiert_index: dict[str, str] = {
+        _doppelbuchstaben_kollabieren(begriff): begriff for begriff in kanon
+    }
+
+    for token in rohwert.replace("(", " ").replace(")", " ").split():
+        kern: str = _normalisieren(token)
+        if kern in kanon:
+            return kern
+        variante: str = _doppelbuchstaben_kollabieren(kern)
+        if variante in kollabiert_index:
+            return kollabiert_index[variante]
+
+    # ── Ausgabe ─────────────────────────────────
+    return ""
+
+
+def korridor_pruefen(
+    gv_parsed:  dict,
+    repertoire: dict[str, str],
+    cluster:    str,
+) -> list[dict]:
+    """Prueft die gewaehlte Strategie gegen das Repertoire des Clusters.
+
+    Der Cluster bestimmt das Repertoire, der Charakter gewichtet die Praeferenz
+    (Konzept §10.1). Eine Strategie, die das Repertoire als "unpassend" fuehrt,
+    ist keine kreative Variante, sondern ein Griff daneben — bisher fiel er
+    niemandem auf, weil niemand nachsah.
+
+    Vorbedingung: `gv_parsed` stammt aus gv_output_parsen(), `repertoire` aus
+    repertoire_laden() desselben Turns.
+    Nachbedingung: Liegt die Strategie ausserhalb des Korridors, ist das Feld
+    geleert und der Verstoss in der Rueckgabe benannt. `gv_parsed` wird dabei
+    veraendert.
+    Fehlerfaelle: Leeres Repertoire — dann kann nichts geprueft werden, und das
+    ist selbst ein Verstoss-Eintrag.
+    """
+
+    # ── Eingabe-Validierung ─────────────────────
+    verstoesse: list[dict] = []
+    strategie: str = gv_parsed.get("strategie", "")
+    if not strategie:
+        return verstoesse
+
+    if not repertoire:
+        verstoesse.append({
+            "feld":  "strategie",
+            "wert":  strategie,
+            "grund": f"kein Repertoire fuer Cluster '{cluster}' — nicht pruefbar",
+        })
+        return verstoesse
+
+    # ── Verarbeitung ────────────────────────────
+    eignung: str = repertoire.get(strategie, "unbekannt")
+
+    # ── Ausgabe-Verifikation ────────────────────
+    if eignung in ("unpassend", "unbekannt"):
+        verstoesse.append({
+            "feld":  "strategie",
+            "wert":  strategie,
+            "grund": f"im Cluster '{cluster}' als '{eignung}' gefuehrt",
+        })
+        gv_parsed["strategie"] = ""
+
+    return verstoesse
+
+
 def gv_output_parsen(hypothese: str) -> dict:
     """Parst die strukturierten Zeilen aus dem LLM-Output.
 
@@ -520,16 +711,29 @@ def gv_output_parsen(hypothese: str) -> dict:
         SPRUNG 1/2/3, ABSICHT, STRATEGIE, VEHIKEL, IMPULS
     Bei fehlenden Labels → voller Text als Impuls (graceful degradation).
 
+    Vorbedingung: `hypothese` ist die rohe LLM-Antwort.
+    Nachbedingung: Die drei Dreischicht-Felder tragen entweder einen Wert aus
+    ihrem Kanon oder "". Jedes verworfene Rohwort steht mit Feld, Wert und
+    Grund unter "verworfen" — der Aufrufer protokolliert es.
+    Fehlerfaelle: Rohwert vorhanden, aber kein Kanon-Treffer → Verwerfung.
+    Kein Label vorhanden → keine Verwerfung, das Feld bleibt schlicht leer.
+
     Returns:
-        Dict mit sprung_1..3, absicht, strategie, vehikel, impuls.
+        Dict mit sprung_1..3, absicht, strategie, vehikel, impuls, verworfen.
     """
     ergebnis: dict = {
         "sprung_1": "", "sprung_2": "", "sprung_3": "",
         "absicht": "", "strategie": "", "vehikel": "", "impuls": "",
+        "verworfen": [],
     }
 
     impuls_zeilen: list[str] = []
     im_impuls: bool = False
+
+    # Rohwerte merken: Nur wer weiss, was dastand, kann sagen, was verworfen wurde.
+    roh_absicht:   str = ""
+    roh_strategie: str = ""
+    roh_vehikel:   str = ""
 
     for zeile in hypothese.splitlines():
         stripped: str = zeile.strip()
@@ -550,16 +754,16 @@ def gv_output_parsen(hypothese: str) -> dict:
             ergebnis["sprung_3"] = stripped[9:].strip()
             im_impuls = False
         elif obere.startswith("ABSICHT:"):
-            raw: str = stripped[8:].strip().lower()
-            ergebnis["absicht"] = raw.split()[0] if raw else ""
+            roh_absicht = stripped[8:].strip()
+            ergebnis["absicht"] = _begriff_extrahieren(roh_absicht, ABSICHT_KANON)
             im_impuls = False
         elif obere.startswith("STRATEGIE:"):
-            raw: str = stripped[10:].strip()
-            ergebnis["strategie"] = raw.split()[0] if raw else ""
+            roh_strategie = stripped[10:].strip()
+            ergebnis["strategie"] = _strategie_extrahieren(roh_strategie)
             im_impuls = False
         elif obere.startswith("VEHIKEL:"):
-            raw: str = stripped[8:].strip().lower()
-            ergebnis["vehikel"] = raw.split()[0] if raw else ""
+            roh_vehikel = stripped[8:].strip()
+            ergebnis["vehikel"] = _begriff_extrahieren(roh_vehikel, VEHIKEL_KANON)
             im_impuls = False
         elif obere.startswith("IMPULS:"):
             impuls_zeilen.append(stripped[7:].strip())
@@ -571,15 +775,20 @@ def gv_output_parsen(hypothese: str) -> dict:
 
     ergebnis["impuls"] = "\n".join(impuls_zeilen).strip()
 
-    # Validierung
-    if ergebnis["strategie"] and ergebnis["strategie"] not in STRATEGIE_NAMEN:
-        logger.warning(f"GV-Parse: Unbekannte Strategie '{ergebnis['strategie']}'")
-        ergebnis["strategie"] = ""
-
-    gueltige_absichten: set[str] = {"teilen", "lenken", "halten", "saeen"}
-    if ergebnis["absicht"] and ergebnis["absicht"] not in gueltige_absichten:
-        logger.warning(f"GV-Parse: Unbekannte Absicht '{ergebnis['absicht']}'")
-        ergebnis["absicht"] = ""
+    # ── Ausgabe-Verifikation ────────────────────
+    # Ein Rohwert, aus dem sich kein Kanon-Begriff ziehen liess, ist ein
+    # Verlust und wird als solcher benannt — mit dem Wort, das dastand.
+    for feld, rohwert in (
+        ("absicht",   roh_absicht),
+        ("strategie", roh_strategie),
+        ("vehikel",   roh_vehikel),
+    ):
+        if rohwert and not ergebnis[feld]:
+            ergebnis["verworfen"].append({
+                "feld":  feld,
+                "wert":  rohwert[:80],
+                "grund": "kein Begriff aus dem Kanon erkennbar",
+            })
 
     logger.info(
         f"GV-Parse: Spruenge=[{ergebnis['sprung_1'][:30]}.. | "

@@ -611,6 +611,18 @@ EI_PASSIV_NEGATIVE: set[str] = {"verzweiflung", "traurigkeit"}
 # Plutchik-Emotionsmodell: 8 Sektoren, 16+1 Emotionen
 # ─────────────────────────────────────────────
 
+# Gültige kanonische Gesprächsmodi (Perzeption soll NUR diese liefern).
+# Single Source of Truth für alle Modus-Verzweigungen im Code (Handbuch §6).
+# Wortgleich mit dem "modus"-Enum in prompts/default/perzeption.task.txt und
+# perzeption.assistant_task.txt — tests/test_modus_kanon.py hält beide Seiten
+# zusammen. Wer hier einen Modus ergänzt, ergänzt ihn auch in GV_TIEFE_MODUS,
+# GV_AUFNAHMEBEREITSCHAFT_MODUS, ei/farbton.py und der Längenberechnung des
+# GV-Nodes; der Test nennt die Lücke.
+MODUS_KANON: set[str] = {
+    "fachgespraech", "philosophischer_austausch", "alltag", "arbeitsmodus",
+    "emotional", "spielerisch", "lernmodus", "kreativ", "beratend", "berichtend",
+}
+
 # Gültige kanonische Emotionen (Perzeption soll NUR diese liefern)
 EMOTION_KANON: set[str] = {
     "begeisterung", "freude",           # Sektor 1 — Freude
@@ -1135,11 +1147,16 @@ GV_AUFNAHMEBEREITSCHAFT_STIMMUNG: dict[str, float] = {
 }
 
 GV_AUFNAHMEBEREITSCHAFT_MODUS: dict[str, float] = {
-    "spielerisch":    1.40,
-    "fachgespraech":  1.30,
-    "arbeitsmodus":   1.00,
-    "alltag":         1.00,
-    "emotional":      0.70,
+    "spielerisch":              1.40,
+    "kreativ":                  1.40,   # wie spielerisch: assoziatives Terrain
+    "philosophischer_austausch": 1.35,  # offene Fragen sind sein Betriebsstoff
+    "fachgespraech":            1.30,
+    "lernmodus":                1.30,   # Wissensaufbau, empfangend statt streitend
+    "arbeitsmodus":             1.00,
+    "alltag":                   1.00,
+    "beratend":                 1.00,
+    "berichtend":               0.95,   # Wiedergabe, nicht Erkundung
+    "emotional":                0.70,
 }
 
 GV_AUFNAHMEBEREITSCHAFT_DYNAMIK: dict[str, float] = {
@@ -1182,6 +1199,55 @@ GV_NAEHE_STIL: dict[str, float] = {
     "emotional": 0.7, "fachlich": 0.4, "formell": 0.2,
 }
 
+# ── Raumzug: Novas Register folgt dem des Nutzers (Chat 114) ──
+# Es gibt einen Raum, und es ist Novas. Der Nutzer-Raum ist eine Schaetzung
+# aus der Perzeption und dient als Ziel. Der Zug ist proportional zum Abstand,
+# derselben Bauart wie die Empathie-Injektion der Emotion — aber mit
+# umgekehrtem Vorzeichen in der Distanz: Bei der Emotion zieht ein weit
+# entfernter Nutzer STAERKER (Empathie), beim Register kostet die Umstellung.
+#
+# Die Werte sind aus einer Simulation aller Modus-Uebergaenge gewaehlt
+# (Chat 114): 0.35 ist der einzige Wert mit Median 2 Turns hinauf bei wenigen
+# Schwellenkanten, 0.65 der einzige mit Median 1 Turn hinab bei null Kanten.
+# Hinauf ist langsamer, weil der Wechsel von System 1 zu System 2 Zeit kostet;
+# fuer die Naehe gilt dasselbe in anderer Sprache: Aufbau ist teuer, Rueckzug
+# billig.
+GV_RAUM_ZUG_HINAUF:  float = 0.35   # tiefer / naeher
+GV_RAUM_ZUG_HINAB:   float = 0.65   # seichter / ferner
+
+# Ankunfts-Regel: Ein proportionaler Zug erreicht sein Ziel nie, er naehert
+# sich an. Liegt ein Modus exakt auf der Achsen-Schwelle (kreativ = 0.5,
+# Naehe neutral/neutral = 0.5), waere er von unten NIE erreichbar — gemessen
+# in der Simulation. Wer naeher als dieser Wert dran ist, ist da.
+GV_RAUM_ANKUNFT:     float = 0.02
+
+# Charakterfaktor: multipliziert den Zug — anpassungsbereit ↔ widerspenstig.
+# Vorerst 1.0 und NICHT abgeleitet. Der Versuch, ihn aus der Cosine-Distanz
+# zweier Pol-Texte zu gewinnen, ist gemessen gescheitert (Chat 114): Zwei
+# Kunstfiguren trennen sich sauber bei +0.24 und -0.22, der echte Charakter
+# liegt bei +0.036 — und wechselt das Vorzeichen, je nachdem ob man den Kern
+# allein oder alle fuenf Schichten einbettet. Ein Faktor darauf waere Rauschen
+# im Gewand einer Charaktereigenschaft. Der Weg dorthin fuehrt eher ueber die
+# Charakter-Destillation als ueber den Einbettungsraum.
+GV_RAUM_CHARAKTER_FAKTOR: float = 1.0
+
+# Laengenberechnung: Zuschlag/Abzug je Gespraechsmodus (Konzept §2.7 —
+# "Komplexitaet senkt die Laenge", assoziative Register erlauben groessere
+# Spruenge). Vorher eine if/elif-Kette ueber zwei Modi; als Tabelle ist
+# pruefbar, dass jeder Modus aus MODUS_KANON einen eigenen Wert hat.
+GV_LAENGE_MODUS_DELTA: dict[str, float] = {
+    "kreativ":                   0.3,   # assoziative Spruenge sind hier der Zweck
+    "spielerisch":               0.0,
+    "alltag":                    0.0,
+    "berichtend":                0.0,
+    "arbeitsmodus":              0.0,
+    "emotional":                -0.2,
+    "beratend":                 -0.2,   # Entscheidungsdruck verengt den Blick
+    "fachgespraech":            -0.3,
+    "lernmodus":                -0.3,   # ein Schritt nach dem anderen
+    "philosophischer_austausch": -0.3,  # abstrakte Ketten sind teuer
+}
+
 # Richtung: Binaer aus emotions_vektor
 GV_RICHTUNG_MAP: dict[str, int] = {
     "aufbluehen": 1, "eskalation": 1, "erholung": 1,
@@ -1194,10 +1260,23 @@ GV_VALENZ_SEKTOR: dict[int, int] = {
     1: 1, 2: 1, 3: 0, 4: 0, 5: 0, 6: 0, 7: 0, 8: 1,
 }
 
-# Tiefe: Aus Gespraechsmodus
+# Tiefe: Aus Gespraechsmodus. Achse 5 des Konzepts (§3.1): flach ◄──► existenziell.
+# Alle zehn Modi aus MODUS_KANON tragen einen eigenen Wert — ein fehlender Eintrag
+# fiele auf 0.3 und waere von einem echten "alltag" nicht zu unterscheiden.
+# Die fuenf ab Chat 114 ergaenzten Werte liegen auf der bestehenden Skala:
+# philosophischer_austausch ueber fachgespraech, weil das Konzept den Sektor
+# "Philosophie-Cafe" (§6.2 #24) als T=tief fuehrt.
 GV_TIEFE_MODUS: dict[str, float] = {
-    "fachgespraech": 0.8, "emotional": 0.7,
-    "spielerisch": 0.4, "arbeitsmodus": 0.6, "alltag": 0.3,
+    "philosophischer_austausch": 0.9,
+    "fachgespraech":             0.8,
+    "emotional":                 0.7,
+    "lernmodus":                 0.7,
+    "arbeitsmodus":              0.6,
+    "beratend":                  0.6,
+    "kreativ":                   0.5,
+    "spielerisch":               0.4,
+    "berichtend":                0.4,
+    "alltag":                    0.3,
 }
 
 # ─────────────────────────────────────────────

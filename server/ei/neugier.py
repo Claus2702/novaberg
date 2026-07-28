@@ -24,7 +24,7 @@ from config import (
     GV_REGISTER_OFFEN_EMOTIONAL,
 )
 from graph.state import ConversationState
-from ei.utils import sin_sqrt_norm
+from ei.utils import modus_pruefen, sin_sqrt_norm
 
 logger = logging.getLogger("ki_server.ei.neugier")
 
@@ -68,6 +68,8 @@ def aufnahmebereitschaft_berechnen(state: ConversationState) -> float:
     modus:   str = internal.emotion.mode                 if internal else "alltag"
     dynamik: str = internal.emotion.relationship_dynamic if internal else "neutral"
     stil:    str = internal.emotion.language_style       if internal else "neutral"
+
+    modus_pruefen(modus, "GV4-Neugier")
 
     # ── Krise: sofortiger Kill ──
     if vektor in ("spirale", "absturz") and nova_arousal >= 0.7:
@@ -125,18 +127,22 @@ def register_kompatibilitaet(
 ) -> float:
     """Passt die emotionale Ladung der Luecke zum Gespraechsregister?
 
-    Sachlich (Fachgespraech/Arbeit/Distanz):
+    Sachlich (Fachgespraech/Arbeit/Lernen/Beratung/Bericht oder Distanz):
       → Emotionale Luecken gedaempft, sachliche bevorzugt.
-    Offen (Spielerisch/Vertrauen):
+    Offen (Spielerisch/Kreativ/Philosophisch oder Vertrauen):
       → Emotionale Luecken willkommen.
-    Neutral: Keine Modulation.
+    Neutral (Alltag, emotional): Keine Modulation.
+
+    Die Modus-Listen decken zusammen alle zehn Werte aus MODUS_KANON ab —
+    ein nicht zugeordneter Modus liefe als "neutral" durch, ohne dass es
+    jemandem auffiele.
     """
     ist_sachlich: bool = (
-        modus in ("fachgespraech", "arbeitsmodus")
+        modus in ("fachgespraech", "arbeitsmodus", "lernmodus", "beratend", "berichtend")
         or dynamik == "distanz"
     )
     ist_offen: bool = (
-        modus == "spielerisch"
+        modus in ("spielerisch", "kreativ", "philosophischer_austausch")
         or dynamik == "vertrauen"
     )
 

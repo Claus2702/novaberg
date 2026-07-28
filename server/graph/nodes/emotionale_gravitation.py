@@ -38,6 +38,7 @@ Kein LLM-Call, kein I/O. Reine State-Transformation.
 import logging
 
 from ei.gravitation import emotionale_gravitation_auf_verlauf_anwenden
+from graph.nodes.ei_calc import internal_emotion_uebertragen
 from graph.state import ConversationState
 
 logger = logging.getLogger("ki_server.emotionale_gravitation")
@@ -50,12 +51,15 @@ def emotionale_gravitation_anwenden(state: ConversationState) -> ConversationSta
       Eingabe      — Punkte und Verlauf pruefen; ohne eines von beidem gibt es
                      nichts zu tun, und das ist der Normalfall.
       Verarbeitung — emotionale_gravitation_auf_verlauf_anwenden().
-      Ausgabe      — Verlauf zurueckschreiben, Wirkung protokollieren.
+      Ausgabe      — Verlauf zurueckschreiben, internal.emotion nachziehen,
+                     Wirkung protokollieren.
 
     Vorbedingung: `emotionale_gravitationspunkte` und `nova_emotions_verlauf`
     liegen im State (Enricher bzw. ei_calc haben sie gesetzt).
     Nachbedingung: `nova_emotions_verlauf` traegt die Emotionen der aktivierten
-    Erinnerungen, absteigend nach Gewicht sortiert.
+    Erinnerungen, absteigend nach Gewicht sortiert, und `internal.emotion`
+    traegt denselben fuehrenden Eintrag — beide Beine des GV-Nodes stehen
+    danach auf derselben Lage.
     Fehlerfaelle: Fehlt einer der beiden Werte, bleibt der State unveraendert.
     Ein leerer Punkte-Satz ist kein Fehler — er ist die Regel, weil nur wenige
     Turns eine Erinnerung ueber der Schwelle treffen. Ein leerer Verlauf bei
@@ -99,6 +103,26 @@ def emotionale_gravitation_anwenden(state: ConversationState) -> ConversationSta
         return state
 
     state["nova_emotions_verlauf"] = modifiziert
+
+    # Novas Lage hat sich soeben geaendert — und internal.emotion traegt noch
+    # den Stand, den ei_calc vor dieser Injektion uebertragen hat. Zwischen hier
+    # und dem Responder liest genau ein Node beide Groessen: der GV-Node. Seine
+    # sechs Saeulen rechnen auf nova_emotions_verlauf, seine Dreischicht-Achsen
+    # auf internal.emotion. Ohne diesen Nachzug waehlen sie Sektor und Cluster
+    # auf der Lage VOR der Erinnerung, waehrend die Neugier die danach kennt —
+    # dieselben zwei Zeitstaende, die Chat 113 eine Node-Position frueher
+    # geschlossen hat (gemessen Chat 114: Saeulen 'begeisterung', Achsen
+    # 'neugierig', im selben Turn).
+    internal = state.get("internal")
+    if internal is None:
+        logger.error(
+            "EmGrav-Node: kein internal im State — internal.emotion behaelt den "
+            "Stand vor der Injektion, der GV-Node waehlt seinen Cluster darauf"
+        )
+    else:
+        internal_emotion_uebertragen(
+            internal, modifiziert, quelle="EmGrav-Node (nachgezogen)",
+        )
 
     # Die Wirkung benennen, nicht zaehlen: Welche Emotion oben stand und welche
     # jetzt oben steht, ist die Frage, die dieser Node beantwortet.

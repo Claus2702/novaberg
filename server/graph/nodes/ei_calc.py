@@ -29,6 +29,7 @@ from ei.berechnung import (
     _stil_plausibilitaet,
     _nova_empathie_berechnen,
 )
+from ei.raum import raum_nachfuehren
 from graph.personality import InternalPersonality, Personality
 from graph.state import ConversationState
 from memory.session import session_turns_retrieve
@@ -38,8 +39,14 @@ logger = logging.getLogger("ki_server.ei_calc")
 
 def internal_emotion_uebertragen(
     internal, nova_emotions_verlauf: list[dict],
+    quelle: str = "EI-Calc/Character",
 ) -> bool:
     """Uebertraegt Novas dominante Emotion dieses Turns nach internal.emotion.
+
+    Zwei Nodes rufen die Funktion nacheinander: `ei_calc` setzt den Stand aus
+    Decay und Empathie, der EmGrav-Node zieht ihn nach, wenn eine reaktivierte
+    Erinnerung Novas Lage verschoben hat. `quelle` benennt den Aufrufer in der
+    Log-Zeile — sonst behauptet die zweite Zeile, sie komme aus ei_calc.
 
     Vorbedingung: `internal` traegt eine Emotion (aus db_zugriff, Stand
     Vorturn); `nova_emotions_verlauf` ist absteigend nach Gewicht sortiert.
@@ -55,10 +62,10 @@ def internal_emotion_uebertragen(
     # ── Eingabe-Validierung ─────────────────────
     if not nova_emotions_verlauf:
         logger.error(
-            "EI-Calc/Character: nova_emotions_verlauf ist leer — internal.emotion "
+            "%s: nova_emotions_verlauf ist leer — internal.emotion "
             "behaelt den Stand des Vorturns (%s). Der GV-Node waehlt seinen "
             "Cluster damit auf einer veralteten Lage",
-            internal.emotion.emotion,
+            quelle, internal.emotion.emotion,
         )
         return False
 
@@ -70,10 +77,13 @@ def internal_emotion_uebertragen(
     internal.emotion.arousal = fuehrend.get("arousal", internal.emotion.arousal)
 
     # ── Ausgabe-Verifikation ────────────────────
+    # Bis Chat 114 endete diese Zeile mit "gilt ab hier fuer den GV-Node". Das
+    # stimmte nicht mehr, seit der EmGrav-Node zwischen hier und dem GV-Node
+    # Novas Lage erneut aendert: Die Zeile behauptete eine Geltung, die sie
+    # nicht mehr besass. Jetzt sagt sie, wer geschrieben hat.
     logger.info(
-        "EI-Calc/Character: internal.emotion aktualisiert — %s (a=%.2f), "
-        "gilt ab hier fuer den GV-Node",
-        internal.emotion.emotion, internal.emotion.arousal,
+        "%s: internal.emotion gesetzt — %s (a=%.2f)",
+        quelle, internal.emotion.emotion, internal.emotion.arousal,
     )
     return True
 
@@ -301,7 +311,34 @@ def _ei_calc_character(state: ConversationState) -> None:
     # ihr Gedaechtnis, und daraus entsteht die Verschiebung, die der GV-Node
     # ausarbeitet. Der Vorturn-Wert bleibt nur stehen, wenn es keinen Verlauf
     # gibt — und das wird gemeldet, statt still zu geschehen.
-    internal_emotion_uebertragen(internal, state.get("nova_emotions_verlauf") or [])
+    #
+    # Das ist der Stand VOR der emotionalen Gravitation. Der EmGrav-Node laeuft
+    # spaeter im CharacterGraph (enricher → emotionale_gravitation → reducer)
+    # und zieht die Uebertragung nach, wenn eine Erinnerung Novas Lage
+    # verschoben hat. Erst danach steht fest, worauf der GV-Node rechnet.
+    internal_emotion_uebertragen(
+        internal, state.get("nova_emotions_verlauf") or [],
+        quelle="EI-Calc/Character (vor der Gravitation)",
+    )
+
+    # ── Raumzug: das Register folgt dem, der zuletzt gesprochen hat ──
+    # Die Emotion hat zwei Kraefte — Novas eigenen Verlauf und den Zug des
+    # Nutzers (Empathie, oben). Das Register hatte bis Chat 114 nur die erste:
+    # `internal.emotion.mode` und `.language_style` beschreiben Novas letzte
+    # Aeusserung, ueberleben in Redis, und nichts zog daran. Gemessen wurde
+    # daraus eine Divergenz statt einer Annaeherung — der Nutzer wurde lockerer,
+    # Nova foermlicher, und die Dreischicht-Achsen folgten ihr.
+    #
+    # Bei einem Nutzer-Turn ist sein geschaetztes Register das Ziel und der
+    # Charakterfaktor greift. Bei einem Eigen-Impuls folgt der Raum Nova selbst:
+    # Wenn sie in der Zwischenzeit eigenen Dingen nachgeht, schiebt sich der
+    # Raum dorthin — ohne Faktor, gegen sich selbst straeubt sie sich nicht.
+    if event_source == "user":
+        raum_nachfuehren(internal, external, quelle="Nutzer")
+    else:
+        raum_nachfuehren(
+            internal, internal, quelle="Eigen-Impuls", charakter_faktor=1.0,
+        )
 
     if state["nova_emotions_verlauf"]:
         nova_top: str = ", ".join(

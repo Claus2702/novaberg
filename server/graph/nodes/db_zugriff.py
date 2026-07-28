@@ -24,7 +24,9 @@ from graph.personality import (
     Emotion,
     Personality,
     InternalPersonality,
+    Raum,
 )
+from ei.raum import raum_ziel_bestimmen
 from graph.state import ConversationState
 from memory.charakter import (
     charakter_hash_retrieve_dict,
@@ -39,6 +41,30 @@ from memory.pipeline_log import (
 from tools.db_manager import db_manager
 
 logger = logging.getLogger("ki_server.db_zugriff")
+
+
+def _raum_aus_labels(emotion: Emotion) -> Raum:
+    """Leitet Novas Raum aus ihren Register-Labels ab.
+
+    Nur fuer den Fall, dass in ``redis:nova_state`` noch keine Raumwerte
+    stehen — Cold-Start oder der erste Turn nach Einfuehrung des Raums
+    (Chat 114). Der Raum, in dem sie zuletzt gesprochen hat, ist der
+    ehrlichere Startwert als ein erfundener Default.
+
+    Vorbedingung: `emotion` traegt die Registerfelder aus der Perzeption.
+    Nachbedingung: Beide Achsen liegen auf denselben Skalen wie im laufenden
+    Betrieb, gerundet auf zwei Stellen.
+    Fehlerfaelle: Keine — unbekannte Labels nehmen den Tabellen-Default,
+    und `raum_ziel_bestimmen` benennt einen Modus ausserhalb des Kanons.
+    """
+
+    # ── Verarbeitung ────────────────────────────
+    tiefe, naehe = raum_ziel_bestimmen(
+        Personality(emotion=emotion), quelle="Cold-Start aus Labels",
+    )
+
+    # ── Ausgabe ─────────────────────────────────
+    return Raum(tiefe=tiefe, naehe=naehe)
 
 
 def db_zugriff(state: ConversationState) -> ConversationState:
@@ -142,10 +168,34 @@ def db_zugriff(state: ConversationState) -> ConversationState:
     else:
         internal_emotion = Emotion()
 
+    # Novas Raum (Chat 114). Fehlt er im Hash — Cold-Start oder erster Turn
+    # nach der Einfuehrung —, wird er aus ihren Register-Labels abgeleitet
+    # statt auf einen Default gesetzt: Der Raum, in dem sie zuletzt gesprochen
+    # hat, ist die ehrlichere Auskunft als ein erfundener Startwert. Dass er
+    # abgeleitet und nicht geladen wurde, steht in der Log-Zeile.
+    raum_geladen: bool = "raum_tiefe" in nova_state_raw and "raum_naehe" in nova_state_raw
+    if raum_geladen:
+        try:
+            internal_raum = Raum(
+                tiefe = float(nova_state_raw["raum_tiefe"]),
+                naehe = float(nova_state_raw["raum_naehe"]),
+            )
+        except (ValueError, TypeError) as fehler:
+            logger.error(
+                "db_zugriff: Raumwerte in redis:nova_state unlesbar (%s) — "
+                "aus den Register-Labels abgeleitet", fehler,
+            )
+            raum_geladen  = False
+            internal_raum = _raum_aus_labels(internal_emotion)
+    else:
+        internal_raum = _raum_aus_labels(internal_emotion)
+
     logger.info(
         f"db_zugriff Schritt 2 — internal.emotion aus Redis: "
         f"cold_start={not bool(nova_state_raw)}, "
-        f"emotion={internal_emotion.emotion}, arousal={internal_emotion.arousal}"
+        f"emotion={internal_emotion.emotion}, arousal={internal_emotion.arousal}, "
+        f"raum=({internal_raum.tiefe:.2f}, {internal_raum.naehe:.2f})"
+        f"{'' if raum_geladen else ' [aus Labels abgeleitet]'}"
     )
 
     # Schritt 3a: external.character aus PostgreSQL (User-Hash).
@@ -276,6 +326,7 @@ def db_zugriff(state: ConversationState) -> ConversationState:
         emotion    = internal_emotion,
         identities = identities,
         directives = directives,
+        raum       = internal_raum,
     )
 
     # Pixie-Sonderfall: bei event_source != "user" trgt external eine

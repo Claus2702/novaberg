@@ -79,13 +79,22 @@ def _farbe_dynamik(dynamik: str) -> str:
 
 
 def _farbe_modus(modus: str) -> str:
-    """Wie tief gehen wir?"""
+    """Wie tief gehen wir?
+
+    Deckt alle zehn Modi aus MODUS_KANON ab. Die Saetze beschreiben den Raum,
+    nicht den Nutzer — der Farbton sagt, was IST, nicht wer es tut.
+    """
     farben: dict[str, str] = {
-        "fachgespraech":  "Das Gespraech ist fachlich und konzentriert.",
-        "emotional":      "Gefuehle stehen im Vordergrund.",
-        "spielerisch":    "Die Stimmung ist verspielt und leicht.",
-        "arbeitsmodus":   "Der Fokus liegt auf der Aufgabe.",
-        "alltag":         "",  # schweigt — Normalzustand
+        "fachgespraech":             "Das Gespraech ist fachlich und konzentriert.",
+        "philosophischer_austausch": "Das Gespraech sucht die Tiefe hinter der Sache.",
+        "lernmodus":                 "Hier wird Wissen aufgebaut, Schritt fuer Schritt.",
+        "emotional":                 "Gefuehle stehen im Vordergrund.",
+        "spielerisch":               "Die Stimmung ist verspielt und leicht.",
+        "kreativ":                   "Hier wird gerade etwas erfunden.",
+        "arbeitsmodus":              "Der Fokus liegt auf der Aufgabe.",
+        "beratend":                  "Eine Entscheidung will abgewogen werden.",
+        "berichtend":                "Es wird berichtet, nicht diskutiert.",
+        "alltag":                    "",  # schweigt — Normalzustand
     }
     return farben.get(modus, "")
 
