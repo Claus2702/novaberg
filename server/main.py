@@ -161,6 +161,22 @@ async def Lifespan(app: FastAPI):
         import time as _time
         for _agent in AgentRegistry.alle().values():
             _task = _agent.periodic_task()
+
+            # Ein Agent, der keine periodische Aufgabe (mehr) meldet, darf keinen
+            # Zeitplan-Eintrag zuruecklassen. Ein solcher Zombie bleibt faellig,
+            # wird bei jedem Heartbeat als Kandidat gesammelt und waechst seit dem
+            # Aging (Chat 113) bis zum Deckel — er gewaenne dann jeden Zyklus,
+            # ohne je zu laufen. Abschalten muss den Kandidaten entfernen, nicht
+            # nur seine Wirkung.
+            if not _task:
+                _zombie = f"pixie:schedule:{_agent.name}"
+                if redis_client.delete(_zombie):
+                    logger.info(
+                        f"Pixie: Zeitplan entfernt — {_agent.name} meldet keine "
+                        f"periodische Aufgabe mehr (Kandidat abgemeldet)"
+                    )
+                continue
+
             if _task:
                 _key = f"pixie:schedule:{_task.name}"
                 _neu: bool = not redis_client.exists(_key)

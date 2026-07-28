@@ -12,6 +12,7 @@ from datetime import datetime, timezone
 
 from agents.base import BaseAgent, AgentState, PeriodicTask
 from config import (
+    ZIEL_DECAY_AKTIV,
     ZIEL_MITTELFRISTIG_DECAY_TAGE,
     PIXIE_DECAY_PRIORITAET,
     PIXIE_DECAY_INTERVALL_SEKUNDEN,
@@ -40,6 +41,19 @@ class ZielDecayAgent(BaseAgent):
         return ["pixie"]
 
     def periodic_task(self) -> PeriodicTask | None:
+        """Registriert den taeglichen Lauf — oder gar nicht, wenn stillgelegt.
+
+        Rueckgabe None => kein Zeitplan-Eintrag, der Agent taucht nicht als
+        Heartbeat-Kandidat auf. Das ist das erste von zwei Gates (zweites in
+        invoke). Muster wie synapsen_decay.
+        """
+        if not ZIEL_DECAY_AKTIV:
+            logger.info(
+                "ziel_decay stillgelegt (ZIEL_DECAY_AKTIV=false) — kein periodisches "
+                "Scheduling, bis ZIEL-DECAY-FORMEL-KUMULATIV repariert ist"
+            )
+            return None
+
         return PeriodicTask(
             name="ziel_decay",
             priority=PIXIE_DECAY_PRIORITAET,
@@ -51,7 +65,22 @@ class ZielDecayAgent(BaseAgent):
         return None
 
     def invoke(self, state: AgentState) -> AgentState:
-        """Berechnet Motivations-Decay und deaktiviert verblasste Ziele."""
+        """Berechnet Motivations-Decay und deaktiviert verblasste Ziele.
+
+        Zweites Gate: Auch ein direkt aufgerufener Lauf schreibt nichts, solange
+        ZIEL_DECAY_AKTIV false ist. Ein Gate allein im Scheduling reichte nicht —
+        der Router loest Agenten inzwischen auch ueber Namensgleichheit auf.
+        """
+
+        # ── Eingabe-Validierung ─────────────────────
+        if not ZIEL_DECAY_AKTIV:
+            logger.info(
+                "ziel_decay invoke uebersprungen (ZIEL_DECAY_AKTIV=false) — "
+                "die Formel schreibt sonst kumulativ verfallene Motivation zurueck"
+            )
+            state["ergebnis"] = {"aktiv": False, "deaktiviert": 0, "geprueft": 0}
+            state["status"] = "abgeschlossen"
+            return state
 
         ziele: list[dict] = ziele_aktive_laden(POSTGRES_URL, user_id="nova")
 
