@@ -82,10 +82,14 @@ Diese Konvention beschreibt einen Zielzustand, den heute kein Modul vollständig
 | `memory/lzg_knoten.py` — `gewicht_absolut` | reine Funktion von `gewicht_roh` | Regel (3) erfüllt |
 | `memory/lzg_knoten.py` — `gewicht_roh` | Akkumulator (`+= BOOST`) | Regel (2) verletzt |
 | `memory/lzg_knoten.py` — `gewicht_decay` | reine Funktion aus `gewicht_absolut` und `verstaerkt_am` | erfüllt |
-| `memory/kzg.py`, `agents/kzg/speicher.py` — `salienz` | Akkumulator mit Skalenfehler | `KZG-SALIENZ-SKALENBRUCH` |
-| Ziel-Decay | Akkumulator | `ZIEL-DECAY-FORMEL-KUMULATIV` |
+| ~~`memory/kzg.py`, `agents/kzg/speicher.py` — `salienz`~~ | ~~Akkumulator mit Skalenfehler~~ → **reine Funktion aus `salienz_eingang` und `haeufigkeit`** (Chat 113) | erfüllt |
+| ~~Ziel-Decay~~ | ~~Akkumulator~~ → **reine Funktion aus `motivation_basis` und `motivation_basis_am`** (Chat 113) | erfüllt |
 
 Das LZG-Gewicht ist damit **halb** konform: Die Kurve ist sauber, der Anker darunter nicht. Es taugt als Vorbild für die Formkurve und ausdrücklich **nicht** als Vorbild für den Anker.
+
+**Stand 28.07.2026:** Von den fünf Zeilen erfüllen vier die Regeln. Offen bleibt allein `gewicht_roh` — ein Akkumulator, der sich nur deshalb nicht rächt, weil sein Zuwachs konstant ist und `haeufigkeit` danebensteht: `initial_roh = gewicht_roh − (haeufigkeit − 1) × BOOST` rechnet ihn zurück, und `knoten_gewichte_zuruecksetzen()` tut genau das. Ein Akkumulator mit Umkehrfunktion ist die mildeste Form des Problems, aber er bleibt einer: Die Umkehrung setzt voraus, dass der Zuwachs nie geändert wurde.
+
+**Was die beiden Reparaturen gemeinsam hatten:** In beiden Fällen war die *Zeitbasis* oder der *Multiplikand* aus dem Ergebnis abgeleitet, und in beiden Fällen fiel es erst auf, als jemand die Zahlen gegen ihre eigene Skala hielt. Der Ziel-Decay las sein Alter aus `erstellt_am` statt aus einem eigenen Ankerzeitpunkt — `aktualisiert_am` wäre als Referenz ebenso untauglich gewesen, weil jeder Schreiber sie setzt, auch der Decay-Lauf selbst. **Ein Anker braucht seinen eigenen Zeitstempel, der nur mit ihm zusammen geschrieben wird.** Sonst hängt die Rechnung an einem Feld, das jemand anders aus einem anderen Grund berührt.
 
 Der KZG-Salienz-Neubau ist der erste vollständig konforme Fall: `salienz` wird aus einem unveränderlichen Eingangswert und einem Zähler berechnet, von denen keiner je aus `salienz` entstanden ist.
 

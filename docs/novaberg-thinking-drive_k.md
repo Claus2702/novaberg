@@ -498,13 +498,25 @@ Eine Tabelle für beide Zeithorizonte. Der `ziel_typ` bestimmt das Decay-Verhalt
 | `emotion` | TEXT | Spezifische Emotion (neugierig, besorgt, begeistert, ...) |
 | `embedding` | VECTOR | Embedding des Zielsatzes (nomic-embed-text, vorberechnet) |
 | `erstellt_am` | TIMESTAMP | Zeitpunkt der Erstellung |
-| `aktualisiert_am` | TIMESTAMP | Letzte Aktualisierung (Decay-Referenz für mittelfristig) |
+| `aktualisiert_am` | TIMESTAMP | Letzte Aktualisierung ~~(Decay-Referenz für mittelfristig)~~ — **kein Decay-Bezug mehr, siehe unten** |
+| `motivation_basis` | FLOAT | Anker des Verfalls: der zuletzt *gesetzte* Motivationswert (Chat 113) |
+| `motivation_basis_am` | TIMESTAMP | Zeitpunkt dieser Setzung. Wird nur gemeinsam mit dem Anker geschrieben |
 | `quelle` | TEXT | Herkunft (charakter_destillation / recherche / vertiefen / traeumen) |
 | `herkunftsthema` | TEXT | Ursprüngliches Queue-Thema (nur mittelfristig) |
 | `datei_pfad` | TEXT | Pfad zur Wissens-Datei (nur mittelfristig) |
 | `aktiv` | BOOLEAN | Für Decay-Management |
 
-**Decay-Berechnung:** Mittelfristige Ziele verwenden `aktualisiert_am` als Referenz. Die Decay-Formel nutzt den bestehenden Ebbinghaus-Mechanismus — der `ZIEL_MITTELFRISTIG_DECAY_TAGE`-Parameter bestimmt die Halbwertszeit. Langfristige Ziele (`ziel_typ = 'langfristig'`) werden vom Decay-Prozess ignoriert.
+**Decay-Berechnung (korrigiert Chat 113):** ~~Mittelfristige Ziele verwenden `aktualisiert_am` als Referenz.~~ Das war zum Zeitpunkt der Niederschrift gedacht, aber untauglich: `aktualisiert_am` wird von **jedem** Schreiber gesetzt, auch vom Decay-Lauf selbst, der damit seine eigene Zeitbasis zurücksetzte. Ein Anker braucht seinen eigenen Zeitstempel, der nur mit ihm zusammen geschrieben wird.
+
+```
+motivation = motivation_basis × exp(−ln2 / ZIEL_MITTELFRISTIG_DECAY_TAGE × tage_seit_motivation_basis_am)
+```
+
+`motivation` bleibt das **materialisierte** Feld, das jede Abfrage liest — einmal rechnen, hundertmal lesen, dieselbe Rollenteilung wie `gewicht_decay` im LZG. Der Lauf schreibt es neu und ist trotzdem kein Akkumulator, weil er aus Anker und Zeit rechnet und nie aus dem vorherigen Wert. Zehn Läufe hintereinander liefern denselben Stand wie einer; gar nicht zu laufen macht den Wert veraltet, nicht falsch.
+
+**Wer die Motivation setzt, setzt den Anker** — nicht den Momentwert. Damit beginnt die Vergessenskurve von vorn, genau wie `knoten_verstaerken` im LZG `verstaerkt_am` zurücksetzt: Ein Ziel wieder aufzugreifen *ist* seine Verstärkung.
+
+**Nur `mittelfristig` verfällt**, als Allowlist geprüft. Die frühere Fassung übersprang lediglich `langfristig` und hätte damit jeden anderen Typ mit der mittelfristigen Halbwertszeit behandelt — auch `kurzfristig`, das es heute nicht gibt und morgen geben kann.
 
 **Abfrage-Pattern:** `SELECT * FROM ziele WHERE aktiv = TRUE AND user_id = 'nova'` lädt alle aktiven Ziele beider Typen in einem Query. Der Enricher filtert dann in Python nach Similarity.
 
