@@ -57,8 +57,25 @@ def queues_befuellen(state: AgentState) -> dict:
     emotion:     str   = salienz_obj.get("emotion", "neutral")
     modus:       str   = salienz_obj.get("modus", "")
 
-    # Exakte Werte aus speicher.py
-    neue_salienz:     float = state["parameter"].get("neue_salienz", salienz)
+    # Exakte Werte aus speicher.py. `neue_salienz` steht auf der gekruemmten
+    # Skala, gegen die auch KZG_SALIENZ_HIGH prueft; `salienz` aus dem
+    # salienz_obj ist die rohe Modellbewertung. Ein Fallback auf den rohen Wert
+    # waere ein Default, der wie ein echter Wert aussieht — er pruefte gegen ein
+    # Tor auf der anderen Skala und traefe es nie. Fehlt der Wert, ist der
+    # Speicher-Node nicht gelaufen; das ist ein Fehler, kein Ersatzfall.
+    if speicher_status == "neu" and "neue_salienz" not in state["parameter"]:
+        logger.error(
+            f"KZG-Queues: speicher_status='neu', aber keine neue_salienz im State "
+            f"(paar={user_id}:{character_id}) — Promotion und Shadow uebersprungen"
+        )
+        return {
+            "parameter": state["parameter"],
+            "schritte": state["schritte"] + [
+                {"node": "queues", "ergebnis": "fehler", "grund": "neue_salienz fehlt"}
+            ],
+        }
+
+    neue_salienz:     float = state["parameter"].get("neue_salienz", 0.0)
     kzg_key:          str   = state["parameter"].get("kzg_key", "")
     kzg_themen_str:   str   = state["parameter"].get("kzg_themen_str", "")
     kzg_dimension:    str   = state["parameter"].get("kzg_dimension", "")

@@ -15,6 +15,7 @@ from agents.kzg.verdichtung import verdichten
 from agents.kzg.speicher import speichern
 from agents.kzg.queues import queues_befuellen
 from config import KZG_SALIENZ_MINIMUM
+from memory.kzg import salienz_berechnen
 
 logger = logging.getLogger("ki_server.agents.kzg")
 
@@ -64,21 +65,38 @@ class KzgAgent(BaseAgent):
     # --- Nodes ---
 
     def _schwelle_pruefen(self, state: AgentState) -> dict:
-        """Prueft Salienz-Score gegen Konfigurationsschwelle."""
+        """Prueft Salienz-Score gegen Konfigurationsschwelle.
+
+        Verglichen wird die abgeleitete Salienz, nicht die rohe Modell-
+        bewertung: Die Tore stehen seit dem Skalenumbau auf der gekruemmten
+        Skala. Ein roher Wert gegen ein gekruemmtes Tor waeren zwei Skalen
+        nebeneinander — genau der Zustand, den der Umbau beendet
+        (novaberg-kzg-salienz_k.md §5).
+
+        Der Eintrag existiert hier noch nicht, hat also null Verstaerkungen;
+        haeufigkeit 1 ist der Zustand beim Anlegen.
+        """
         salienz_obj: dict = state["parameter"].get("salienz_obj", {})
-        score: float = salienz_obj.get("salienz", 0.0)
+        eingang: float = salienz_obj.get("salienz", 0.0)
+        score:   float = salienz_berechnen(eingang, 1)
 
         if score < KZG_SALIENZ_MINIMUM:
-            logger.info(f"KZG-Agent: Salienz {score:.2f} < {KZG_SALIENZ_MINIMUM} — abgelehnt")
+            logger.info(
+                f"KZG-Agent: Salienz {score:.4f} (Eingang {eingang:.2f}) "
+                f"< {KZG_SALIENZ_MINIMUM} — abgelehnt"
+            )
             return {
                 "status": "abgelehnt",
-                "ergebnis": f"Salienz {score:.2f} unter Schwelle",
+                "ergebnis": f"Salienz {score:.4f} unter Schwelle",
                 "schritte": state["schritte"] + [
                     {"node": "schwelle_pruefen", "ergebnis": "abgelehnt", "score": score}
                 ],
             }
 
-        logger.info(f"KZG-Agent: Salienz {score:.2f} >= {KZG_SALIENZ_MINIMUM} — angenommen")
+        logger.info(
+            f"KZG-Agent: Salienz {score:.4f} (Eingang {eingang:.2f}) "
+            f">= {KZG_SALIENZ_MINIMUM} — angenommen"
+        )
         return {
             "status": "laufend",
             "schritte": state["schritte"] + [

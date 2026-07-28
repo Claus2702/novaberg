@@ -14,7 +14,7 @@ novaberg-memory-synapsen-p4-entscheidungen_k.md):
   - Embedding aus dem inhalt ALLEIN, ohne Themen-Anreicherung (K9). Der alte
     Pfad embeddet "themen inhalt" — hier bewusst nicht.
   - gewicht_roh = KZG-Salienz aus dem Hash-Feld 'salienz' (K8, direkte
-    Uebernahme; Skala 0..10, KZG_SALIENZ_CAP). Bewusst frisch aus dem Hash
+    Uebernahme; Skala 0..1, KZG_SALIENZ_CAP seit Chat 113). Bewusst frisch aus dem Hash
     gelesen, NICHT aus dem Queue-Auftrag: die Salienz kann zwischen Einreihen
     und Promotion durch thematische Verstaerkung gestiegen sein. Der Auftrag
     traegt nur die Trigger-Salienz beim Einreihen.
@@ -232,11 +232,13 @@ class SynapsenPromotionAgent(BaseAgent):
 
         themen_list: list[str] = sorted({t.strip() for t in themen_str.split(",") if t.strip()})
 
-        # gewicht_roh = KZG-Salienz aus dem Hash (K8). Skala 0..10
-        # (KZG_SALIENZ_CAP). Frisch aus dem Hash, nicht aus dem Auftrag — die
-        # Salienz kann zwischen Einreihen und Promotion durch thematische
-        # Verstaerkung gestiegen sein. knoten_anlegen daempft sie per Sinus auf
-        # gewicht_absolut (Cap 10) und setzt gewicht_decay = gewicht_absolut.
+        # gewicht_roh = KZG-Salienz aus dem Hash (K8). Skala 0..1
+        # (KZG_SALIENZ_CAP seit Chat 113). Frisch aus dem Hash, nicht aus dem
+        # Auftrag — die Salienz kann zwischen Einreihen und Promotion durch
+        # thematische Verstaerkung gestiegen sein. knoten_anlegen daempft sie
+        # per Sinus auf gewicht_absolut (Cap 10) und setzt
+        # gewicht_decay = gewicht_absolut. Dass roh > CAP auftreten kann, ist
+        # damit ausgeschlossen (KZG-GEWICHT-ABSOLUT-CEILING).
         salienz: float = float(_hget("salienz", "0"))
 
         # kzg_erstellt_am ist ein Unix-Timestamp (Float). knoten_anlegen wandelt

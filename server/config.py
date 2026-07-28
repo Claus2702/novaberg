@@ -244,15 +244,45 @@ PIXIE_RECHERCHE_MAX_QUERIES:             int   = int(os.getenv("PIXIE_RECHERCHE_
 PIXIE_RECHERCHE_MAX_SEITEN_PRO_RUNDE:    int   = int(os.getenv("PIXIE_RECHERCHE_MAX_SEITEN_PRO_RUNDE", "3"))
 
 # ─── KZG (Kurzzeitgedaechtnis) ─────────────────
-KZG_SALIENZ_MINIMUM:          float = float(os.getenv("KZG_SALIENZ_MINIMUM", "0.3"))
-KZG_SALIENZ_MID:              float = float(os.getenv("KZG_SALIENZ_MID", "0.5"))
-KZG_SALIENZ_HIGH:             float = float(os.getenv("KZG_SALIENZ_HIGH", "0.7"))
+# Die drei Tore stehen seit Chat 113 auf der GEKRUEMMTEN Skala — sie sind die
+# Bilder der alten Rohwerte unter der Salienzkurve. Fachlich hat sich nichts
+# geaendert: Wer frueher 0.3 sagte, sagt weiterhin 0.3; nur die Zahl in der
+# Konfiguration heisst anders. Ohne das Roh-Aequivalent im Kommentar ist jede
+# dieser Konstanten beim naechsten Lesen eine offene Frage
+# (novaberg-convention-abgeleitete-werte.md, Regel 7).
+#
+# Fuenf Nachkommastellen, ABGERUNDET. Das ist kein Schoenheitsfehler: Ein Tor
+# wird mit `>=` geprueft, und der exakte Kurvenwert von 0.3 ist 0.6737882. Auf
+# 0.6738 aufgerundet liegt die Konstante ueber ihrem eigenen Rohwert — gemessen
+# am Live-Turn vom 28.07.2026, 09:27 UTC: „Salienz 0.6738 (Eingang 0.30)
+# < 0.6738 — abgelehnt". Wer genau die Bewertung trifft, die das Tor meint,
+# muss hindurchgehen.
+KZG_SALIENZ_MINIMUM:          float = float(os.getenv("KZG_SALIENZ_MINIMUM", "0.67378"))  # roh 0.3
+KZG_SALIENZ_MID:              float = float(os.getenv("KZG_SALIENZ_MID", "0.84089"))      # roh 0.5
+KZG_SALIENZ_HIGH:             float = float(os.getenv("KZG_SALIENZ_HIGH", "0.94393"))     # roh 0.7
 KZG_TTL_LOW_SEKUNDEN:         int   = int(os.getenv("KZG_TTL_LOW_SEKUNDEN", "604800"))       # 7 Tage  — Salienz 0.3–0.5
 KZG_TTL_MID_SEKUNDEN:         int   = int(os.getenv("KZG_TTL_MID_SEKUNDEN", "1209600"))      # 14 Tage — Salienz 0.5–0.7
 KZG_TTL_HIGH_SEKUNDEN:        int   = int(os.getenv("KZG_TTL_HIGH_SEKUNDEN", "2592000"))     # 30 Tage — Salienz >= 0.7
 KZG_VERTIEFUNG_HAEUFIGKEIT:   int   = int(os.getenv("KZG_VERTIEFUNG_HAEUFIGKEIT", "3"))
-KZG_SALIENZ_CAP:              float = float(os.getenv("KZG_SALIENZ_CAP", "10.0"))
-KZG_SALIENZ_DAEMPFUNG_EXP:    float = float(os.getenv("KZG_SALIENZ_DAEMPFUNG_EXP", "0.6"))
+# Deckel der Salienzskala. War bis Chat 113 auf 10.0 — ein Wertebereich, den die
+# Eingangsgroesse nie hatte: Die Modellbewertung liegt in [0,1]. Gemessen am
+# 28.07.2026 standen dadurch 71 von 188 Eintraegen (38 %) ueber 1.0, der hoechste
+# bei 5.64, und keines der Tore griff noch.
+KZG_SALIENZ_CAP:              float = float(os.getenv("KZG_SALIENZ_CAP", "1.0"))
+
+# Exponent der Salienzkurve. Von 0.6 auf 0.5 gezogen, damit KZG und LZG dieselbe
+# Kurve tragen (gewicht_absolut_berechnen in memory/lzg_knoten.py).
+KZG_SALIENZ_DAEMPFUNG_EXP:    float = float(os.getenv("KZG_SALIENZ_DAEMPFUNG_EXP", "0.5"))
+
+# Zuwachs je thematischer Verstaerkung, am Anker vor der Kurve. Nicht frei
+# gewaehlt, sondern durch die TTL-Stufen bestimmt: Ein Eintrag muss nicht nur
+# n-mal wiederkommen, sondern jedes Mal innerhalb seines Fensters (7/14/30 Tage).
+# Mit 0.03 erreicht eine Bewertung von 0.5 das Tor nach sieben Verstaerkungen,
+# eine von 0.3 nach vierzehn. Bei 0.015 waeren es siebenundzwanzig, vierzehn
+# davon in Sieben-Tage-Fenstern — der Ansammlungspfad waere fuer die untere
+# Haelfte der Skala unerreichbar. Wer diesen Wert oder eine TTL-Stufe aendert,
+# prueft die jeweils andere Groesse mit (novaberg-kzg-salienz_k.md §6).
+KZG_SALIENZ_BOOST:            float = float(os.getenv("KZG_SALIENZ_BOOST", "0.03"))
 
 # ─── Charakter-Rad (Gewichtung der Nutzer-Salienz) ──
 # Zwoelf Speichen um eine Nabe. Jede Speiche zieht den Faktor in ihre Richtung,

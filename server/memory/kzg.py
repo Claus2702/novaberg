@@ -20,12 +20,12 @@ import redis
 
 from config                                import (
     ASSISTANT_USER_ID,
-    KZG_VERSTAERKUNG_DIVISOR,
     KZG_SALIENZ_MINIMUM,
     KZG_SALIENZ_MID,
     KZG_SALIENZ_HIGH,
     KZG_SALIENZ_CAP,
     KZG_SALIENZ_DAEMPFUNG_EXP,
+    KZG_SALIENZ_BOOST,
     KZG_TTL_LOW_SEKUNDEN,
     KZG_TTL_MID_SEKUNDEN,
     KZG_TTL_HIGH_SEKUNDEN,
@@ -225,29 +225,69 @@ def kzg_similar_find(
 
 
 # ─────────────────────────────────────────────
-# Salienz-Boost-Dämpfung
+# Salienz als abgeleiteter Wert
 # ─────────────────────────────────────────────
-def _gedaempfter_boost(alte_salienz: float, raw_boost: float) -> float:
-    """Berechnet den gedämpften Salienz-Boost mit sin^0.6-Kurve.
+def salienz_berechnen(salienz_eingang: float, haeufigkeit: int) -> float:
+    """Berechnet die Salienz eines KZG-Eintrags aus seinen zwei Eingaben.
 
-    Unten fast voller Boost, oben immer weniger, asymptotisch gegen den Cap.
-    Dieselbe Kurvenfamilie wie bei der Emotions-Glättung (sin^0.5, Cap 2.5).
+    Die Salienz ist das Tor zwischen Kurz- und Langzeitgedaechtnis und bildet
+    zwei Wege ab: den Einpraegsamen (das Modell bewertet beim Anlegen hoch) und
+    den Angesammelten (mittelmaessig Wichtiges kommt wieder). Beide enden am
+    selben Tor.
 
-    Formel:
-        remaining = max(0, CAP - alte_salienz)
-        ratio = remaining / CAP                    (1.0 am Anfang, 0.0 am Cap)
-        dämpfung = sin(ratio × π/2) ^ EXPONENT     (sin^0.6)
-        effektiver_boost = raw_boost × dämpfung
+        salienz_roh = salienz_eingang + verstaerkungen x KZG_SALIENZ_BOOST
+        anteil      = min(salienz_roh / CAP, 1.0)
+        salienz     = CAP x sin(anteil x pi/2) ** EXP
+
+    `verstaerkungen` ist `haeufigkeit - 1`: Ein frisch angelegter Eintrag traegt
+    haeufigkeit 1 und null Verstaerkungen. Der Boost greift am Anker VOR der
+    Kurve — ein Zuwachs auf den gekruemmten Wert bedeutete am unteren Ende der
+    Skala etwas anderes als am oberen (novaberg-kzg-salienz_k.md §3).
+
+    Reine Funktion: Keine Eingabe wurde je aus dem Ergebnis berechnet, nichts
+    wird zurueckgeschrieben, zweimaliges Rechnen liefert bitgleiche Werte
+    (novaberg-convention-abgeleitete-werte.md, Regeln 2 bis 4).
+
+    Vorbedingung: salienz_eingang in [0.0, 1.0], haeufigkeit >= 1.
+    Nachbedingung: Rueckgabe in [0.0, KZG_SALIENZ_CAP].
+    Fehlerfaelle: Werte ausserhalb ihres Bereichs werden laut protokolliert und
+    geklemmt — ein stiller Abbruch mitten in der Verdichtung waere der
+    schlimmere Fehler, ein stilles Weiterrechnen der schlimmste.
     """
-    remaining: float = max(0.0, KZG_SALIENZ_CAP - alte_salienz)
-    if remaining <= 0:
-        return 0.0
 
-    ratio:     float = remaining / KZG_SALIENZ_CAP
-    daempfung: float = math.sin(ratio * math.pi / 2) ** KZG_SALIENZ_DAEMPFUNG_EXP
-    effektiv:  float = raw_boost * daempfung
+    # ── Eingabe-Validierung ─────────────────────
+    if not 0.0 <= salienz_eingang <= 1.0:
+        logger.error(
+            f"salienz_berechnen: salienz_eingang={salienz_eingang} liegt ausserhalb "
+            f"[0.0, 1.0] — geklemmt. Das Feld traegt die Modellbewertung und kann "
+            f"diesen Bereich nicht verlassen; der Schreiber ist defekt"
+        )
+        salienz_eingang = max(0.0, min(1.0, salienz_eingang))
 
-    return effektiv
+    if haeufigkeit < 1:
+        logger.error(
+            f"salienz_berechnen: haeufigkeit={haeufigkeit} — ein bestehender Eintrag "
+            f"wurde mindestens einmal angelegt; auf 1 gesetzt"
+        )
+        haeufigkeit = 1
+
+    # ── Verarbeitung ────────────────────────────
+    verstaerkungen: int   = haeufigkeit - 1
+    salienz_roh:    float = salienz_eingang + verstaerkungen * KZG_SALIENZ_BOOST
+    anteil:         float = min(salienz_roh / KZG_SALIENZ_CAP, 1.0)
+    salienz:        float = KZG_SALIENZ_CAP * (
+        math.sin(anteil * math.pi / 2) ** KZG_SALIENZ_DAEMPFUNG_EXP
+    )
+
+    # ── Ausgabe-Verifikation ────────────────────
+    if not 0.0 <= salienz <= KZG_SALIENZ_CAP:
+        logger.error(
+            f"salienz_berechnen: Ergebnis {salienz} ausserhalb [0.0, {KZG_SALIENZ_CAP}] "
+            f"(eingang={salienz_eingang}, haeufigkeit={haeufigkeit}) — geklemmt"
+        )
+        salienz = max(0.0, min(KZG_SALIENZ_CAP, salienz))
+
+    return salienz
 
 
 # ─────────────────────────────────────────────
@@ -279,10 +319,17 @@ def kzg_store(
       turn_id:      Pipeline-Log-Korrelation; bei Legacy-Aufrufern leer.
     """
 
-    salienz: float = salienz_obj.get("salienz", 0.0)
+    # Der Wert aus dem Salienz-Node ist die Bewertung des Modells — der
+    # unveraenderliche Eingang. Die Salienz, gegen die alle Tore pruefen, ist
+    # daraus abgeleitet und wird ab hier durchgaengig verwendet.
+    salienz_eingang: float = salienz_obj.get("salienz", 0.0)
+    salienz:         float = salienz_berechnen(salienz_eingang, 1)
 
     if salienz < KZG_SALIENZ_MINIMUM:
-        logger.info(f"KZG: Salienz {salienz:.2f} unter Schwellwert — ignoriert")
+        logger.info(
+            f"KZG: Salienz {salienz:.4f} (Eingang {salienz_eingang:.2f}) unter "
+            f"Schwellwert {KZG_SALIENZ_MINIMUM} — ignoriert"
+        )
         return "ignoriert"
 
     # Meta-Daten aus Salienz-Analyse (Intentions-Schicht)
@@ -314,6 +361,13 @@ def kzg_store(
         "themen":           themen_str,
         "inhalt":           salienz_obj.get("zusammenfassung", salienz_obj.get("begruendung", "")),
         "salienz":          str(salienz),
+        "salienz_eingang":  str(salienz_eingang),
+        # Herkunft des Eingangswerts. Ein neu angelegter Eintrag traegt die
+        # echte Modellbewertung — "gemessen". Der Bestand aus der Zeit vor dem
+        # Skalenumbau traegt teils "geschaetzt" (Migration Chat 113): Ein
+        # Default darf nie aussehen wie ein echter Wert
+        # (novaberg-kzg-salienz_k.md §10).
+        "salienz_eingang_herkunft": "gemessen",
         "haeufigkeit":      str(1),
         "gedaechtnistyp":   salienz_obj.get("gedaechtnistyp", "kurz"),
         "dimension":        dimension,
@@ -410,12 +464,23 @@ def kzg_store(
                 if not neue_themen & other_themen:
                     continue
 
+                # Der Eingangswert ist unveraenderlich; verstaerkt wird der
+                # Zaehler. Die Salienz entsteht daraus neu — sie wird nicht
+                # fortgeschrieben (novaberg-convention-abgeleitete-werte.md).
+                eingang_roh: str | None = redis_client.hget(other_key, "salienz_eingang")
+                if eingang_roh is None:
+                    logger.error(
+                        f"KZG-Verstaerkung: {other_key} traegt kein salienz_eingang — "
+                        f"Eintrag stammt aus der Zeit vor dem Skalenumbau und ist nicht "
+                        f"nachrechenbar; uebersprungen"
+                    )
+                    continue
+
                 alte_sal: float = float(redis_client.hget(other_key, "salienz") or "0.0")
                 alte_hfk: int   = int(float(redis_client.hget(other_key, "haeufigkeit") or "1"))
-                raw_boost: float = salienz / KZG_VERSTAERKUNG_DIVISOR
-                boost:     float = _gedaempfter_boost(alte_sal, raw_boost)
-                neue_sal:  float = alte_sal + boost
+                eingang:  float = float(eingang_roh)
                 neue_hfk: int   = alte_hfk + 1
+                neue_sal: float = salienz_berechnen(eingang, neue_hfk)
 
                 redis_client.hset(other_key, mapping={
                     "salienz":     str(neue_sal),

@@ -12,17 +12,14 @@ import numpy as np
 
 from agents.base import AgentState
 from config import (
-    KZG_VERSTAERKUNG_DIVISOR,
     KZG_SALIENZ_HIGH,
     KZG_SALIENZ_MID,
-    KZG_SALIENZ_CAP,
-    KZG_SALIENZ_DAEMPFUNG_EXP,
     KZG_TTL_LOW_SEKUNDEN,
     KZG_TTL_MID_SEKUNDEN,
     KZG_TTL_HIGH_SEKUNDEN,
     redis_client,
 )
-from memory.kzg import _kzg_key
+from memory.kzg import _kzg_key, salienz_berechnen
 from memory.pipeline_log import log_db_write
 from services.model_services import model_service, EmbedRequest
 
@@ -130,8 +127,7 @@ def speichern(state: AgentState) -> dict:
 
     if neue_themen:
         verstaerkte_eintraege = _thematisch_verstaerken(
-            user_id, character_id, ergebnis.get("key", ""),
-            neue_themen, salienz,
+            user_id, character_id, ergebnis.get("key", ""), neue_themen,
         )
 
     return {
@@ -142,7 +138,7 @@ def speichern(state: AgentState) -> dict:
             "kzg_key":             ergebnis.get("key", ""),
             "kzg_themen_str":      ergebnis.get("themen_str", ""),
             "kzg_dimension":       ergebnis.get("dimension", ""),
-            "neue_salienz":        salienz,
+            "neue_salienz":        ergebnis.get("salienz", 0.0),
             "neue_haeufigkeit":    1,
             "verstaerkt_verwandt": len(verstaerkte_eintraege),
             "verstaerkte_eintraege": verstaerkte_eintraege,
@@ -154,49 +150,30 @@ def speichern(state: AgentState) -> dict:
     }
 
 
-def _gedaempfter_boost(alte_salienz: float, raw_boost: float) -> float:
-    """Berechnet den gedämpften Salienz-Boost mit sin^0.6-Kurve.
-
-    Unten fast voller Boost, oben immer weniger, asymptotisch gegen den Cap.
-    Dieselbe Kurvenfamilie wie bei der Emotions-Glättung (sin^0.5, Cap 2.5).
-
-    Formel:
-        remaining = max(0, CAP - alte_salienz)
-        ratio = remaining / CAP                    (1.0 am Anfang, 0.0 am Cap)
-        dämpfung = sin(ratio × π/2) ^ EXPONENT     (sin^0.6)
-        effektiver_boost = raw_boost × dämpfung
-    """
-    remaining: float = max(0.0, KZG_SALIENZ_CAP - alte_salienz)
-    if remaining <= 0:
-        return 0.0
-
-    ratio:     float = remaining / KZG_SALIENZ_CAP
-    daempfung: float = math.sin(ratio * math.pi / 2) ** KZG_SALIENZ_DAEMPFUNG_EXP
-    effektiv:  float = raw_boost * daempfung
-
-    return effektiv
-
-
 def _thematisch_verstaerken(
     user_id:       str,
     character_id:  str,
     eigener_key:   str,
     neue_themen:   set[str],
-    salienz:       float,
 ) -> list[dict]:
     """Verstärkt thematisch verwandte KZG-Einträge in der Paar-Partition.
 
     Verstärkungsschema (KZG):
-    - salienz += eingehende_salienz / KZG_VERSTAERKUNG_DIVISOR
     - haeufigkeit += 1
+    - salienz = salienz_berechnen(salienz_eingang, neue_haeufigkeit) — neu
+      gerechnet aus den beiden gespeicherten Eingaben, nicht fortgeschrieben
     - TTL auf den höheren Wert aus (verbleibend, neu berechnet aus neuer Salienz)
+
+    Die eingehende Salienz des auslösenden Eintrags geht NICHT mehr in den
+    Zuwachs ein: Was einen Eintrag stärker macht, ist die Tatsache der
+    Wiederholung, nicht die Bewertung dessen, was sie ausgelöst hat.
 
     Nicht angerührt: inhalt, embedding, emotion, modus, arousal.
     Der scharfe Kern jedes Eintrags bleibt exakt erhalten.
 
     Returns:
         Liste der verstärkten Einträge als Dicts mit key, salienz, themen.
-        Jeder Eintrag, dessen geboostete Salienz KZG_SALIENZ_HIGH erreicht,
+        Jeder Eintrag, dessen neu gerechnete Salienz KZG_SALIENZ_HIGH erreicht,
         wird in queues_befuellen zur Promotion eingereiht.
     """
     prefix: str = f"kzg:{user_id}:{character_id}:"
@@ -223,13 +200,25 @@ def _thematisch_verstaerken(
             if not overlap:
                 continue
 
+            # Der Eingangswert ist unveraenderlich; verstaerkt wird der Zaehler.
+            # Die Salienz entsteht daraus neu — sie wird nicht fortgeschrieben
+            # (novaberg-convention-abgeleitete-werte.md).
+            eingang_roh: str | None = redis_client.hget(key, "salienz_eingang")
+            if eingang_roh is None:
+                logger.error(
+                    f"KZG-Verstaerkung: {key} traegt kein salienz_eingang — Eintrag "
+                    f"stammt aus der Zeit vor dem Skalenumbau und ist nicht "
+                    f"nachrechenbar; uebersprungen"
+                )
+                continue
+
             alte_salienz:     float = float(redis_client.hget(key, "salienz") or "0.0")
             alte_haeufigkeit: int   = int(float(redis_client.hget(key, "haeufigkeit") or "1"))
 
-            raw_boost:        float = salienz / KZG_VERSTAERKUNG_DIVISOR
-            boost:            float = _gedaempfter_boost(alte_salienz, raw_boost)
-            neue_salienz:     float = alte_salienz + boost
             neue_haeufigkeit: int   = alte_haeufigkeit + 1
+            neue_salienz:     float = salienz_berechnen(
+                float(eingang_roh), neue_haeufigkeit,
+            )
 
             redis_client.hset(key, mapping={
                 "salienz":     str(neue_salienz),
@@ -257,7 +246,8 @@ def _thematisch_verstaerken(
 
             logger.info(
                 f"KZG Verstärkung: {key} — "
-                f"salienz {alte_salienz:.2f} → {neue_salienz:.2f} (+{boost:.2f}), "
+                f"salienz {alte_salienz:.4f} → {neue_salienz:.4f} "
+                f"(Eingang {float(eingang_roh):.2f}), "
                 f"häufigkeit {alte_haeufigkeit} → {neue_haeufigkeit}, "
                 f"TTL {effektiver_ttl}s, "
                 f"overlap={overlap}"
@@ -299,7 +289,15 @@ def _neu_anlegen(
 
     Pipeline-Log: nach erfolgreichem hset wird ein log_db_write-Eintrag
     erzeugt (EVA-konform: Forensik nach Verarbeitung).
+
+    Der Parameter `salienz` ist die BEWERTUNG des Modells — der unveraenderliche
+    Eingang. Die Salienz, gegen die alle Tore pruefen, wird daraus abgeleitet
+    (novaberg-kzg-salienz_k.md §3). Beide werden gespeichert: der Eingang, weil
+    ohne ihn nichts nachrechenbar ist, das Ergebnis fuer die Leser.
     """
+
+    salienz_eingang: float = salienz
+    salienz_wert:    float = salienz_berechnen(salienz_eingang, 1)
 
     embedding_bytes: bytes = np.array(embedding, dtype=np.float32).tobytes()
     timestamp:       float = time.time()
@@ -316,7 +314,13 @@ def _neu_anlegen(
         "beobachter":         beobachter,
         "themen":             themen_str,
         "inhalt":             kern,
-        "salienz":            str(salienz),
+        "salienz":            str(salienz_wert),
+        "salienz_eingang":    str(salienz_eingang),
+        # Herkunft des Eingangswerts: Ein neu angelegter Eintrag traegt die
+        # echte Modellbewertung. Der migrierte Bestand traegt teils
+        # "geschaetzt" — ein Default darf nie aussehen wie ein echter Wert
+        # (novaberg-kzg-salienz_k.md §10).
+        "salienz_eingang_herkunft": "gemessen",
         "haeufigkeit":        str(1),
         "gedaechtnistyp":     salienz_obj.get("gedaechtnistyp", "kurz"),
         "dimension":          dimension,
@@ -337,16 +341,19 @@ def _neu_anlegen(
 
     rc.hset(key, mapping=mapping)
 
-    if salienz >= KZG_SALIENZ_HIGH:
+    # Die TTL-Stufen stehen auf derselben gekruemmten Skala wie die Tore. Ein
+    # roher Wert gegen ein gekruemmtes Tor waeren zwei Skalen nebeneinander.
+    if salienz_wert >= KZG_SALIENZ_HIGH:
         ttl: int = KZG_TTL_HIGH_SEKUNDEN
-    elif salienz >= KZG_SALIENZ_MID:
+    elif salienz_wert >= KZG_SALIENZ_MID:
         ttl: int = KZG_TTL_MID_SEKUNDEN
     else:
         ttl: int = KZG_TTL_LOW_SEKUNDEN
     rc.expire(key, ttl)
 
     logger.info(
-        f"KZG: Neuer Eintrag — salienz={salienz:.2f}, themen={themen_str}, "
+        f"KZG: Neuer Eintrag — salienz={salienz_wert:.4f} "
+        f"(Eingang {salienz_eingang:.2f}), themen={themen_str}, "
         f"entitaet_ids={entitaet_ids or []}, timeline_id={timeline_id}, TTL={ttl}s"
     )
 
@@ -362,9 +369,10 @@ def _neu_anlegen(
             "entitaet_ids": entitaet_ids or [],
             "timeline_id":  timeline_id,
             "themen":       themen_str,
-            "dimension":    dimension,
-            "salienz":      salienz,
-            "ttl":          ttl,
+            "dimension":       dimension,
+            "salienz":         salienz_wert,
+            "salienz_eingang": salienz_eingang,
+            "ttl":             ttl,
         },
         user_id      = user_id,
         character_id = character_id,
@@ -375,4 +383,9 @@ def _neu_anlegen(
         "key": key,
         "themen_str": themen_str,
         "dimension": dimension,
+        # Die abgeleitete Salienz wandert mit: Der Aufrufer legt sie als
+        # `neue_salienz` in den State, und agents/kzg/queues.py entscheidet
+        # damit ueber die Promotion. Stuende dort der rohe Modellwert, pruefte
+        # er gegen ein Tor auf der gekruemmten Skala und traefe es nie.
+        "salienz": salienz_wert,
     }

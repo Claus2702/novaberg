@@ -199,8 +199,15 @@ def salienz_effektiv_berechnen(
     # ── Ausgabe-Verifikation ────────────────────
     # Die Skala endet bei 1.0. Der Faktor kann bis RAD_MAX gehen und der
     # Zuschlag bis 1.3 multiplizieren — das Produkt kann darueber liegen.
-    # Die Kappung steht hier, bis Bauteil 1 sie in die Kurve verlegt; sie wird
-    # vermerkt, damit sie nicht als Messergebnis durchgeht.
+    #
+    # Die Kappung bleibt hier (geprueft Chat 113). Der urspruengliche Plan war,
+    # sie mit Bauteil 1 in die Salienzkurve zu verlegen. Die Kurve kappt aber
+    # nur ihr ERGEBNIS: Sie rechnet anteil = min(roh/CAP, 1.0) und liefert
+    # zuverlaessig einen Wert in [0,1] — der Eingangswert selbst wuerde
+    # ungeklemmt gespeichert. `salienz_eingang` ist als Feld in [0,1]
+    # spezifiziert (novaberg-kzg-salienz_k.md §4); ein Erzeuger, der darueber
+    # liefert, verschoebe den Skalenbruch nur eine Ebene tiefer.
+    # Der Vermerk bleibt, damit die Kappung nicht als Messergebnis durchgeht.
     gekappt: bool = effektiv > 1.0
     if gekappt:
         effektiv = 1.0
