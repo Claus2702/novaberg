@@ -235,7 +235,7 @@ Alle Nodes, die nach `db_zugriff` laufen, können auf `state["external"]` und `s
 
 | Node | Liest |
 |---|---|
-| `ei_calc` (`_ei_calc_character`) | `external.emotion` für Empathie-Modulation, schreibt in `internal.emotion.emotions_vector` |
+| `ei_calc` (`_ei_calc_character`) | `external.emotion` für Empathie-Modulation, schreibt in `internal.emotion.emotions_vector` — **und seit Chat 113 auch `emotion` und `arousal`** aus dem fuehrenden Eintrag von `nova_emotions_verlauf` (`internal_emotion_uebertragen`). Bis dahin trugen beide Felder bis zum `perzeption_assistant` den hier geladenen Vorturn-Stand, und der GV-Node waehlte seinen Cluster darauf |
 | `enricher` | `external.character` für Charakter-Hash-String im Memory-Kontext; `internal.character` falls Memory-Filter Nova-Profile braucht |
 | `router` | `external.emotion` |
 | `responder` | `external.emotion`, `internal.character`, `internal.identities`, `internal.directives` |

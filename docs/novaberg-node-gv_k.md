@@ -461,6 +461,16 @@ Novas Gesprächsvektor arbeitet auf System-1-Ebene: schnelle Antizipation des n�
 
 Eigener Node "Gesprächsvektor" zwischen Enricher und Responder. Der Enricher lädt Wissen (Gedächtnis, Web-Kontext, Session-Turns). Der Gesprächsvektor-Node analysiert Intention und Richtung. Strikte Trennung: Wissen laden ≠ Intention erkennen.
 
+#### Auf welchem Zeitstand der Node arbeitet (erhoben Chat 113)
+
+Der Node steht mit beiden Beinen auf Novas Emotion: Die sechs Säulen der Aufnahmebereitschaft lesen `nova_emotions_verlauf` (`ei/neugier.py`), die Achsen der Dreischicht lesen `internal.emotion` (`ei/dreischicht.py`). Daran hängt die Gewichtung jeder Wissenslücke sowie Sektor, Cluster und das Repertoire, aus dem das LLM seine Strategie wählen darf. **Der Node ist damit der größte Konsument von Novas Emotion im System.**
+
+Bis Chat 113 standen diese beiden Beine auf **verschiedenen Zeitständen**. `internal.emotion.emotion` und `.arousal` trugen den Wert, den `db_zugriff` aus `redis:nova_state` geladen hatte — den Stand vom *Ende des letzten Turns*; einziger anderer Setzer im Code ist `graph/nodes/perzeption.py`, und der läuft im CharacterGraph erst nach dem Responder. Die Achsen wählten ihren Cluster also auf der Lage von gestern, während die Säulen im selben Node bereits die aktuelle lasen. `ei_calc` überträgt den führenden Verlaufseintrag seither nach `internal.emotion` (`internal_emotion_uebertragen`).
+
+Seit derselben Änderung sieht der Node auch die **emotionale Gravitation**: Der Node `emotionale_gravitation` färbt `nova_emotions_verlauf`, bevor der GV-Node läuft. Eine reaktivierte Erinnerung verschiebt damit Sektor, Cluster und Strategie — das ist so entschieden und in `novaberg-thinking-drive_k.md` §5.7 begründet.
+
+**Damit ist eine Frage offen:** Die Wahl von Cluster und Repertoire steht ab jetzt auf einer anderen Lage als zuvor. Ob das gewählte Repertoire dazu passt, ist ungeprüft — der Vollaudit des Nodes gegen `novaberg-gv-strategie_k.md` §4/§5 steht aus.
+
 ### 8.2 Vektor-Destillation (LLM-Call)
 
 Input: Letzte 3-5 Session-Turns + aktuelle Perzeption (Emotion, Arousal, Modus) + KZG-Themen

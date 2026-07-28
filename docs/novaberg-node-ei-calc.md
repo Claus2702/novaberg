@@ -49,7 +49,7 @@ HumanGraph (Pfad 1, 5 Nodes):
 perzeption → enricher → ▶ ei_calc ◀ → salience → dispatcher
 
 CharacterGraph (Pfad 2, 17 Nodes):
-db_zugriff → ▶ ei_calc ◀ → enricher → reducer → router → planner → agent_dispatch
+db_zugriff → ▶ ei_calc ◀ → enricher → emotionale_gravitation → reducer → router → planner → agent_dispatch
           → gv_node → responder → thinker → tribunal → evaluate → corrector
           → perzeption_assistant → ei_calc_persist → salience → dispatcher
 ```
@@ -155,7 +155,7 @@ Bei `event_source == "character"` wird `state["nova_emotions_verlauf"]` auf die 
 | `state["external"].emotion.language_style` | str | Sprachstil aus Perzeption |
 | `state["external"].character.*` | Character (5 Felder) | Char-Hash-Tiebreaker (inline-konstruiertes Dict) |
 | `state["event_source"]` | str | Empathie-Switch (`"user"` / `"character"`) |
-| `state["emotionale_gravitationspunkte"]` | list[dict] | Gravitations-Modulation des Verlaufs |
+| ~~`state["emotionale_gravitationspunkte"]`~~ | ~~list[dict]~~ | ~~Gravitations-Modulation des Verlaufs~~ — **ausgezogen Chat 113.** Der Aufruf stand hier und konnte nie greifen: Der Enricher setzt das Feld und laeuft im CharacterGraph NACH ei_calc, die Liste war an dieser Lesestelle immer leer (851 Berechnungen, null Anwendungen). Verbraucher ist jetzt der Node `emotionale_gravitation` zwischen Enricher und Reducer |
 
 ### Geschrieben
 

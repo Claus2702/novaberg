@@ -106,7 +106,7 @@ Nach dem HumanGraph erzeugt `chat.py` ein Event in der Event-Queue (`event_queue
 ### 3.2 CharacterGraph — Pfad 2: Charakter reagiert (17 Nodes)
 
 ```
-db_zugriff → EI-Calc(character) → Enricher → Reducer → Router ────────────+
+db_zugriff → EI-Calc(character) → Enricher → EmGrav → Reducer → Router ───+
                                                             |              |
                                                             +── management_action?
                                                             |   +── ja → Planner ──+
@@ -300,7 +300,7 @@ Felder der `Emotion`-Klasse (`graph/personality.py`):
 | `management_action` | `str` | "agent" (Plugin-gesteuert) / "resume" / "" |
 | `management_target` | `str` | Agent-Name (seit Chat 40, von Plugin-Prompt gesetzt) |
 
-### 4.4 db_zugriff + Enricher + Reducer (CharacterGraph-Pre-Router-Block)
+### 4.4 db_zugriff + Enricher + EmGrav + Reducer (CharacterGraph-Pre-Router-Block)
 
 Im CharacterGraph laden seit Chat 89 drei aufeinanderfolgende Nodes den vollstaendigen Kontext, getrennt nach Verantwortungen.
 
@@ -343,7 +343,7 @@ Kein KZG/LZG-Read, kein Charakter-Hash, kein Reducer, kein `memory_context` (Pha
 | `session_turns` | `list[dict]` | Vollstaendige Turn-Dicts (Shadow-gefiltert, seit Chat 30). |
 | `memory_entries_raw` | `list[ContextEntry]` | Akkumulator: KZG-Resonanz + LZG-Resonanz + Plugin-`enrich()`-Hooks. |
 | `web_context` | `str` | Web-Kontext (optional). |
-| `emotionale_gravitationspunkte` | `list[dict]` | Emotional aufgeladene Erinnerungen (Sektor-Affinitaet von `state["internal"].emotion`). |
+| `emotionale_gravitationspunkte` | `list[dict]` | Emotional aufgeladene Erinnerungen, vom Enricher ueber Embedding-Aehnlichkeit zum Turn gefunden (KZG + LZG, `ei/gravitation.py`). Verbraucher ist der Node `emotionale_gravitation` zwischen Enricher und Reducer — bis Chat 113 stand der Verbraucher in `ei_calc` und lief damit VOR dem Produzenten: 851 Berechnungen, null Anwendungen. Siehe `novaberg-node-emotionale-gravitation.md`. |
 
 #### Reducer (nur CharacterGraph)
 

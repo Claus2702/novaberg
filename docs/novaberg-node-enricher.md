@@ -28,7 +28,7 @@ HumanGraph (Pfad 1, 5 Nodes):
 perzeption → ▶ enricher ◀ → ei_calc → salience → dispatcher
 
 CharacterGraph (Pfad 2, 17 Nodes):
-db_zugriff → ei_calc → ▶ enricher ◀ → reducer → router → planner → agent_dispatch
+db_zugriff → ei_calc → ▶ enricher ◀ → emotionale_gravitation → reducer → router → planner → agent_dispatch
           → gv_node → responder → thinker → tribunal → evaluate → corrector
           → perzeption_assistant → ei_calc_persist → salience → dispatcher
 ```
@@ -173,7 +173,7 @@ Die eigentliche Berechnung (Verlauf, Vektor, EI-Arousal, Modus-/Stil-Plausibilit
 | `state["prompt_embedding"]` | list[float] | n.a. | 768-dim Vektor |
 | `state["aktivierte_ziele"]` | list[dict] | n.a. | Ziele über Schwelle |
 | `state["gravitationsterm"]` | float | n.a. | Aggregierter Drive-Term |
-| `state["emotionale_gravitationspunkte"]` | list[dict] | n.a. | KZG-Scan auf hoch-arousal Treffer |
+| `state["emotionale_gravitationspunkte"]` | list[dict] | n.a. | Scan ueber **KZG und LZG** auf Eintraege mit Emotion (`ei/gravitation.py`). ~~hoch-arousal~~ — **einen Arousal-Filter gibt es nicht:** §5.7 des Konzepts verlangt „Emotion ≠ neutral und Arousal ueber Schwelle", der Code liest `arousal`, fuehrt es mit und loggt es, vergleicht es aber nie. Offener Punkt, kein Defekt (Backlog-Epic). Verbraucher: Node `emotionale_gravitation` |
 | `state["memory_entries"]` | list[ContextEntry] | n.a. | Akkumulierte Memory-Quellen für den Reducer |
 | `state["lzg_resonanz"]` | dict | n.a. | Spreading-Lesepfad (§3.3): Kontext-Rahmen (Anker-Anzahl, Sprung-Tiefe, Cluster, Nova-Sektor) + Erinnerungen mit Pfad; Transport zum Formatter via Reducer-Durchreiche |
 

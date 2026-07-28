@@ -246,6 +246,7 @@ project/
 │   │       ├── perzeption.py            #     → novaberg-node-perception.md (rolle user/assistant)
 │   │       ├── db_zugriff.py            #     → novaberg-node-db-zugriff.md (CG-Entry, lädt Personality)
 │   │       ├── enricher.py              #     → novaberg-node-enricher.md (Methodensplit nach Phase 4)
+│   │       ├── emotionale_gravitation.py #     → novaberg-node-emotionale-gravitation.md (CG, zwischen Enricher und Reducer)
 │   │       ├── reducer.py               #     Dedupliziert memory_entries → memory_context (nur CG, seit Chat 75)
 │   │       ├── ei_calc.py               #     → novaberg-node-ei-calc.md (rolle user/character)
 │   │       ├── ei_calc_persist.py       #     → novaberg-node-ei-calc-persist.md (CG-Ausgang, nova_state-Persistierung)
@@ -595,6 +596,7 @@ Das Handbuch ist nach Betrachtungstiefen organisiert. Tiefe 0 ist der Einstiegsp
 | novaberg-node-db-zugriff.md | db_zugriff (CG-Entry, lädt Personality-Klassen aus PostgreSQL/Redis) |
 | novaberg-node-enricher.md | Enricher (Methodensplit nach Phase 4: _enrich_human schlank, _enrich_character voll, Plugin-Hooks im CG) |
 | novaberg-node-ei-calc.md | EI-Calc (Python-Berechnung: Verlauf, Vektor, Nova-Empathie, kein LLM) |
+| novaberg-node-emotionale-gravitation.md | Emotionale Gravitation (CG, injiziert reaktivierte Erinnerungen in Novas Emotions-Verlauf) |
 | novaberg-node-ei-calc-persist.md | ei_calc_persist (CG-Ausgang, konsolidiert internal.emotion, persistiert nova_state) |
 | novaberg-node-router.md | Router (Routing, Agenten-Delegation) |
 | novaberg-node-planner.md | Planner (Agent-Loop, Resume-Flow) |

@@ -25,12 +25,12 @@ Output ist der `memory_context`-String, den Responder, Thinker, Tribunal und Cor
 
 ```
 CharacterGraph (17 Nodes):
-db_zugriff → ei_calc → enricher → ▶ reducer ◀ → router → planner → agent_dispatch
+db_zugriff → ei_calc → enricher → emotionale_gravitation → ▶ reducer ◀ → router → planner → agent_dispatch
           → gv_node → responder → thinker → tribunal → evaluate → corrector
           → perzeption_assistant → ei_calc_persist → salience → dispatcher
 ```
 
-Der Reducer läuft als Node im CharacterGraph zwischen Enricher und Router. Registrierung in `graph/character_graph.py:56`, Kanten in `graph/character_graph.py:77-78` (`enricher → reducer → router`).
+Der Reducer läuft als Node im CharacterGraph zwischen dem Emotionale-Gravitation-Node und dem Router. Registrierung und Kanten in `graph/character_graph.py`; sein direkter Vorgänger ist seit Chat 113 nicht mehr der Enricher, sondern `emotionale_gravitation` (`novaberg-node-emotionale-gravitation.md`).
 
 ---
 
@@ -149,7 +149,7 @@ Korrigiert (Chat 107, Reducer-Audit): Die frühere Notiz **SESSION-SUMMARY-PFAD-
 Ein früher Entwurf von `novaberg-charakter-resonanz_k.md` sah den Reducer als
 Schreibpunkt für die Turn-Rohdaten (Reiz-Reaktions-Paar) vor. **Das ist falsch und
 wurde in Chat 104 korrigiert:** Der Reducer läuft an Position 4 des CharacterGraph
-(`enricher → reducer → router`), also **vor** dem Responder — `state["response"]`
+(`emotionale_gravitation → reducer → router`), also **vor** dem Responder — `state["response"]`
 existiert zu diesem Zeitpunkt noch nicht. Der Schreibpunkt ist der **Dispatcher**
 (letzter Node); siehe `novaberg-node-dispatcher.md` §8.
 
