@@ -37,6 +37,8 @@ KEINE_NAMEN: frozenset[str] = frozenset({
     "Kontext", "Session", "Notiz", "Prompt", "Vor", "Sicht", "Redis",
     "Worker",   # "aus Worker-Thread" in den Model-Service-Tests
     "Konzept",  # "aus Konzept §7.5" in test_synapsen_kanten
+    "Cohen",    # "aus Cohen (1960)" — die Quelle der Kappa-Formel, kein Gespraechsname
+    "Chat",     # "aus Chat 116" — Sitzungsverweis, wie ihn jedes Dokument traegt
 })
 
 # Einfuehrungs-Konstruktionen. Erweitern, wenn ein Beispiel eine neue braucht.

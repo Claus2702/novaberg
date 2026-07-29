@@ -1263,6 +1263,78 @@ GV_INITIATIVE_SCHWELLE:       float = float(os.getenv("GV_INITIATIVE_SCHWELLE", 
 GV_INITIATIVE_VERSATZ_MAX:  float = 0.25
 GV_INITIATIVE_VERSATZ:      float = 0.0
 
+# ── Kalibrier-Agent: die Schwelle je Paar erheben (Konzept §7) ──
+#
+# Der Agent legt die Schwelle fest, er regelt sie NICHT zur Laufzeit nach. Es
+# gibt einen Pfad von der Achse zurueck auf die Eingabe — Sektor -> Cluster ->
+# Repertoire -> Novas Antwort -> naechster Rohwert. Er ist lang und schwach,
+# aber er ist da; ein mitlaufendes Zentrum haette keinen Anker und driftete,
+# bis alles Mittelwert ist.
+
+# Untergrenze der Fallzahl. Darunter wird nicht geschrieben, und die
+# bestehende Schwelle bleibt stehen. 60 liegt unter den 83 Turns, auf denen
+# GV_INITIATIVE_SCHWELLE heute steht, und weit genug ueber der Groesse, bei
+# der einzelne Turns das kappa tragen. Die Zahl ist gesetzt, nicht gemessen.
+KALIBRIERUNG_MIN_TURNS:       int   = int(os.getenv("KALIBRIERUNG_MIN_TURNS", "60"))
+
+# Nebenbedingung der Schwellensuche: Anteil, den die schwaechere Seite
+# mindestens tragen muss. Ohne sie gewinnt bei schiefen Korpora eine
+# Randschwelle, die fast alles auf ein Bit legt — und schliesst damit die
+# Haelfte der 64 Sektoren wieder, also genau den Defekt, den die neue Achse
+# abgeloest hat. Erreichbarkeit ist Vorgabe, nicht Nebenprodukt (Konzept §8).
+KALIBRIERUNG_MIN_MINDERHEIT:  float = float(os.getenv("KALIBRIERUNG_MIN_MINDERHEIT", "0.15"))
+
+# Das Raster, ueber das gesucht wird. Die Achse liefert Werte in [-1, +1];
+# 0.05 ist fein genug fuer ein Plateau von 0.2 Breite (gemessen zwischen
+# -0.55 und -0.35) und grob genug, dass 41 Kandidaten reichen.
+KALIBRIERUNG_RASTER_MIN:      float = -1.0
+KALIBRIERUNG_RASTER_MAX:      float =  1.0
+KALIBRIERUNG_RASTER_SCHRITT:  float =  0.05
+
+# Positions-Kontrolle: Mindest-Differenz zwischen "B ist der Nutzer" und
+# "B ist Nova". Ein Zeuge, der nur die Reihenfolge liest — wer zuletzt
+# spricht, fuehrt —, laege in beiden Richtungen gleich. Gemessen (Chat 116):
+# 79,5 % gegen 36,1 %, also 43,4 Punkte. 20 Punkte sind die Haelfte davon und
+# trennen einen unterscheidenden Zeugen sicher von einem positionsblinden.
+KALIBRIERUNG_MIN_POSITIONSDIFFERENZ: float = float(
+    os.getenv("KALIBRIERUNG_MIN_POSITIONSDIFFERENZ", "0.20")
+)
+
+# Laenge, auf die ein Beitrag fuer den Zeugen gekuerzt wird. Nova antwortet in
+# Absaetzen (gemessen 433 Zeichen je Turn), der Nutzer tippt eine Zeile (51) —
+# ohne Deckel verschwindet der kurze Beitrag im langen. Gekuerzt wird vom
+# Anfang her: Wer die Richtung setzt, tut es zu Beginn seines Beitrags.
+KALIBRIERUNG_ZEUGE_MAX_ZEICHEN: int = int(
+    os.getenv("KALIBRIERUNG_ZEUGE_MAX_ZEICHEN", "1200")
+)
+
+# Groesse der Stichprobe fuer die Positions-Kontrolle. Sie laeuft mit
+# vertauschten Rollen und kostet je Turn ein zweites Urteil — ueber den vollen
+# Korpus waere sie doppelt so teuer wie die Erhebung selbst, und fuer die
+# Frage "unterscheidet der Zeuge die Sprecher?" reicht eine Teilmenge.
+KALIBRIERUNG_POSITIONSPROBE:  int = int(os.getenv("KALIBRIERUNG_POSITIONSPROBE", "30"))
+
+# Zwischenstand der Urteilsreihe. Eine Reihe, die abbricht, ist ohne
+# Zwischenstand vollstaendig verloren — gemessen am 29.07.2026: rund 200 Urteile
+# durch eine einzelne Zeitueberschreitung. Bei Aufrufen an ein Sprachmodell ist
+# der Zwischenstand Pflicht, sobald die Reihe drei Minuten ueberschreitet; hier
+# ist das nach wenigen Faellen erreicht.
+#
+# Der Pfad liegt AUSSERHALB des Repositoriums: `/app` ist das gemountete
+# Server-Verzeichnis und damit Teil des Repos. `/tmp` im Behaelter uebersteht
+# den Neustart des Dienstes durch einen Datei-Edit und stirbt mit dem Behaelter
+# — genau die Lebensdauer, die Arbeitsmaterial haben soll.
+KALIBRIERUNG_ZWISCHENSTAND: str = os.getenv(
+    "KALIBRIERUNG_ZWISCHENSTAND", "/tmp/kalibrierung"
+)
+
+# Trennt Erheben von Anwenden. Auf false rechnet der Agent die Schwelle,
+# protokolliert sie vollstaendig und schreibt NICHTS. Das ist der Zustand, in
+# dem eine neue Kalibriergrundlage geprueft wird, bevor sie die Achse
+# verschiebt — eine Schwelle aus einem ungeprueften Zeugen dreht das Bit fuer
+# einen grossen Teil der Turns um.
+KALIBRIERUNG_ANWENDEN: bool = os.getenv("KALIBRIERUNG_ANWENDEN", "false").lower() == "true"
+
 # Naeheberechnung: (Dynamik + Stil) / 2
 GV_NAEHE_DYNAMIK: dict[str, float] = {
     "vertrauen": 1.0, "dankbar": 0.8, "neutral": 0.5,
