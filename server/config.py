@@ -302,6 +302,21 @@ RAD_NABE:                     float = float(os.getenv("RAD_NABE", "0.9"))
 RAD_MIN:                      float = float(os.getenv("RAD_MIN",  "0.5"))
 RAD_MAX:                      float = float(os.getenv("RAD_MAX",  "1.5"))
 
+# ─── Initiative-Rad (Chat 116) ──
+# Zweites Charakter-Rad, andere Frage: ueberlaesst Nova im Gespraech die
+# Fuehrung oder behaelt sie sie. Nabe bei 0.0 — keine Tendenz. Volle
+# Auslenkung trifft +/-SPANNE exakt, die Summen der zehn Zuege sind deshalb
+# symmetrisch je 0.25 (novaberg-gv-initiative_k.md §6.3).
+INITIATIVE_RAD_NABE:          float = float(os.getenv("INITIATIVE_RAD_NABE",   "0.0"))
+INITIATIVE_RAD_SPANNE:        float = float(os.getenv("INITIATIVE_RAD_SPANNE", "0.25"))
+
+# Mehrfach erheben und den Median nehmen. Gemessen 29.07.2026: Zwei Laeufe
+# gegen denselben Charaktertext bei Temperatur 0.2 ergaben -0.18 und -0.13 —
+# ein Fuenftel der halben Spanne aus derselben Eingabe. Der Wert wird bei der
+# Destillation EINMAL geschrieben und bleibt bis zur naechsten stehen; ein
+# ungluecklicher Lauf legte ihn sonst fuer Tage fest.
+INITIATIVE_RAD_LAEUFE:        int   = int(os.getenv("INITIATIVE_RAD_LAEUFE", "3"))
+
 # ─── Erregungs-Zuschlag auf den Eigen-Pfad ──
 # Starke Freude, Aufgebrachtheit, Ausrufezeichen — Signale, dass eine Aussage
 # im Moment viel bedeutet. Kein eigener Antrieb, sondern ein Verstaerker auf
@@ -1216,6 +1231,30 @@ GV_INITIATIVE_FUEHREND: set[str] = {
     "information_erfragen", "feedback_erfragen", "anweisung",
     "widerspruch", "abschluss",
 }
+
+# Die Schwelle, an der das Achsen-Bit kippt. NICHT der Median des Korpus.
+#
+# Erste Fassung war 0.0 — das Zentrum lag per Konstruktion auf dem Median und
+# erzwang damit einen 50/50-Schnitt. Gemessen gegen 83 unabhaengige Lesarten
+# des Modells ("wer hat hier die Richtung gesetzt?", ohne Kenntnis der Achse):
+#
+#   Schwelle 0.00 : Uebereinstimmung 65.1 %, kappa 0.286, Bit0-Anteil 51.8 %
+#   Schwelle -0.45: Uebereinstimmung 83.1 %, kappa 0.482, Bit0-Anteil 79.5 %
+#
+# Der Median ist ein Verteilungspunkt, die Achse braucht einen Bedeutungspunkt
+# — die Stelle, an der das Folgen endet und das Fuehren beginnt. Dort fuehrt der
+# Nutzer in vier von fuenf Wortwechseln, nicht in der Haelfte.
+#
+# Die Kurve ist zwischen -0.55 und -0.35 flach (kappa 0.40-0.48): -0.45 ist
+# das Maximum eines Plateaus, keine Spitze. Wer die Stelle nachmisst, erwartet
+# ein Plateau und keinen scharfen Punkt.
+#
+# Erreichbarkeit bleibt gewahrt: Bei -0.45 traegt die Minderheit 20.5 %, und
+# ueber die volle Charakter-Spanne (+/-0.25) faellt sie nicht unter 8.4 %.
+#
+# Herkunft: novaberg-gv-initiative_k.md §12. Ein Wert aus EINEM Paar und 83
+# Turns — der Kalibrier-Agent (§7) soll ihn spaeter je Charakter erheben.
+GV_INITIATIVE_SCHWELLE:       float = float(os.getenv("GV_INITIATIVE_SCHWELLE", "-0.45"))
 
 # Der Charakter-Versatz verschiebt den Rohwert, nicht die Schwelle. Volle
 # Auslenkung des Rads trifft die Grenze exakt (Konzept §6.3). Bis das Rad

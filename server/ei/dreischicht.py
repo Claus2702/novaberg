@@ -16,6 +16,7 @@ from config import (
     GV_ACHSE_NAEHE_SCHWELLE,
     GV_ACHSE_TIEFE_SCHWELLE,
     GV_ACHSE_INITIATIVE_VERH,
+    GV_INITIATIVE_SCHWELLE,
     GV_RICHTUNG_MAP,
     GV_VALENZ_SEKTOR,
     GV_TIEFE_MODUS,
@@ -322,7 +323,10 @@ def achsen_berechnen(
         )
         initiative_bin: int = 1
     else:
-        initiative_bin = 0 if initiative_roh > 0.0 else 1
+        # Die Schwelle ist NICHT 0: Der Median erzwaenge einen 50/50-Schnitt,
+        # den die Wirklichkeit nicht hergibt. Gegen 83 unabhaengige Lesarten
+        # kalibriert (config.GV_INITIATIVE_SCHWELLE, Herleitung im Konzept §12).
+        initiative_bin = 0 if initiative_roh > GV_INITIATIVE_SCHWELLE else 1
 
     # ── Drive (4-Achsen-Reduktion): E × R-Vorzeichen ──
     _VORZEICHEN: dict[str, float] = {

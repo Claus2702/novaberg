@@ -609,6 +609,28 @@ UPDATE charakter_hash
    SET nutzer_gewichtung_rad = '{"hoch": {"treue": 0.0, "dienst": 0.0, "pflicht": 0.0, "aufmerksamkeit": 0.0, "wissbegier": 0.0, "wohlwollen": 0.0}, "runter": {"widerspenstig": 0.0, "gleichgueltig": 0.0, "selbstbezogen": 0.0, "langeweile": 0.0, "distanz": 0.0, "misstrauen": 0.0}}'
  WHERE nutzer_gewichtung_rad = '' AND nutzer_gewichtung_quelle = 'default';
 ALTER TABLE charakter_hash ADD COLUMN IF NOT EXISTS nutzer_gewichtung_am       TIMESTAMPTZ;
+
+-- ── Initiative-Versatz: das zweite Charakter-Rad (Chat 116) ──
+--
+-- Dieselbe Bauart wie nutzer_gewichtung, andere Frage. Das erste Rad misst,
+-- wie sehr Nova das Gegenueber ueberhaupt gilt; dieses misst, ob sie im
+-- Gespraech die Fuehrung ueberlaesst oder behaelt. Zehn Speichen um eine
+-- Nabe bei 0.0, volle Auslenkung trifft +/-0.25 exakt.
+--
+-- Warum ein eigenes Rad und nicht der bestehende Wert: Vier seiner zwoelf
+-- Speichen treffen zwar Fuehren und Folgen, aber sein Ergebnis buendelt sie
+-- mit Wissbegier, Pflichtbewusstsein und Aufmerksamkeit, die mit der Frage
+-- nichts zu tun haben (novaberg-gv-initiative_k.md §6).
+--
+-- _quelle trennt 'default' von 'destilliert'. Der Unterschied traegt hier
+-- mehr als anderswo: Ein Versatz von 0.0, weil sich zehn Speichen aufheben,
+-- ist etwas anderes als 0.0, weil das LLM in keiner etwas erkannt hat. Ohne
+-- das Feld waere dies die vierte Stelle im System, an der ein Ausfallwert
+-- wie ein Messergebnis aussieht (novaberg-lesson_l_default-wie-fehlschlag.md).
+ALTER TABLE charakter_hash ADD COLUMN IF NOT EXISTS initiative_versatz         DOUBLE PRECISION NOT NULL DEFAULT 0.0;
+ALTER TABLE charakter_hash ADD COLUMN IF NOT EXISTS initiative_versatz_quelle  TEXT        NOT NULL DEFAULT 'default';
+ALTER TABLE charakter_hash ADD COLUMN IF NOT EXISTS initiative_versatz_rad     TEXT        NOT NULL DEFAULT '{"hoch": {"folgsamkeit": 0.0, "anschlussfreude": 0.0, "zurueckhaltung": 0.0, "antwortende_rolle": 0.0, "behutsamkeit": 0.0}, "runter": {"lenkungsdrang": 0.0, "eigensinn": 0.0, "assoziationsdrang": 0.0, "widerspruchsfreude": 0.0, "gespraechsdistanz": 0.0}}';
+ALTER TABLE charakter_hash ADD COLUMN IF NOT EXISTS initiative_versatz_am      TIMESTAMPTZ;
 -- Typkorrektur (Chat 111, am selben Tag): zuerst als REAL angelegt. REAL ist
 -- einfach genau, 0.9 wird darin zu 0.89999997615814209 — jeder Vergleich
 -- `= 0.9` schlaegt fehl, und ein Default, den man nicht wiedererkennt, ist

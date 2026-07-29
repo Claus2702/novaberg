@@ -6,7 +6,7 @@ import logging
 
 import psycopg2
 
-from config import ASSISTANT_USER_ID, RAD_MIN, RAD_MAX
+from config import ASSISTANT_USER_ID, RAD_MIN, RAD_MAX, INITIATIVE_RAD_SPANNE
 
 logger = logging.getLogger("ki_server.memory.charakter")
 
@@ -167,3 +167,75 @@ def nutzer_gewichtung_laden(postgres_url: str, user_id: str) -> tuple[float | No
         f"fuer Paar '{ASSISTANT_USER_ID}/{user_id}'"
     )
     return faktor, quelle
+
+
+def initiative_versatz_laden(postgres_url: str, user_id: str) -> tuple[float | None, str]:
+    """Laedt Novas Initiative-Versatz — den Wert des zweiten Charakter-Rads.
+
+    Gelesen wird dieselbe Zeile wie beim ersten Rad: (ASSISTANT_USER_ID,
+    user_id), also **Novas** Neigung, dem Nutzer die Fuehrung zu ueberlassen.
+    Die Gegenzeile traegt seine Neigung und hat keinen Verbraucher; wer sie
+    laese, verschoebe die Achse nach dem falschen Charakter.
+
+    Vorbedingung: user_id ist nicht leer.
+    Nachbedingung: (versatz, quelle) mit versatz in
+        [-INITIATIVE_RAD_SPANNE, +INITIATIVE_RAD_SPANNE] und quelle aus
+        {'default', 'destilliert'}.
+    Fehlerfaelle: leere user_id, fehlender Datensatz oder DB-Fehler — dann
+        (None, 'fehlt'). Ausdruecklich NICHT (0.0, 'default'): Ein Versatz von
+        0.0 ist ein gueltiges Messergebnis (die Speichen heben sich auf), und
+        ein Lesefehler darf nicht so aussehen.
+
+    Returns:
+        (Versatz oder None, Herkunft).
+    """
+
+    # ── Eingabe-Validierung ─────────────────────
+    if not user_id:
+        logger.error("initiative_versatz_laden: user_id leer — verworfen")
+        return None, "fehlt"
+
+    # ── Verarbeitung ────────────────────────────
+    try:
+        conn   = psycopg2.connect(postgres_url)
+        cursor = conn.cursor()
+        cursor.execute(
+            "SELECT initiative_versatz, initiative_versatz_quelle FROM charakter_hash "
+            "WHERE user_id = %s AND character_id = %s",
+            (ASSISTANT_USER_ID, user_id),
+        )
+        row = cursor.fetchone()
+        conn.close()
+    except Exception as fehler:
+        logger.error(
+            f"initiative_versatz_laden: Abruf fuer Paar "
+            f"'{ASSISTANT_USER_ID}/{user_id}' fehlgeschlagen — {fehler}"
+        )
+        return None, "fehlt"
+
+    if not row:
+        logger.error(
+            f"initiative_versatz_laden: keine charakter_hash-Zeile fuer Paar "
+            f"'{ASSISTANT_USER_ID}/{user_id}' — Versatz nicht ermittelbar"
+        )
+        return None, "fehlt"
+
+    versatz: float = float(row[0])
+    quelle:  str   = row[1] or "default"
+
+    # ── Ausgabe-Verifikation ────────────────────
+    # Die Destillation kappt beim Schreiben. Greift die Pruefung hier trotzdem,
+    # steht ein Wert in der Tabelle, den kein Rad erzeugt haben kann.
+    if not -INITIATIVE_RAD_SPANNE <= versatz <= INITIATIVE_RAD_SPANNE:
+        logger.warning(
+            f"initiative_versatz_laden: Versatz {versatz:+.4f} ausserhalb "
+            f"+/-{INITIATIVE_RAD_SPANNE} fuer Paar "
+            f"'{ASSISTANT_USER_ID}/{user_id}' — gekappt, Herkunft '{quelle}'"
+        )
+        versatz = max(-INITIATIVE_RAD_SPANNE, min(INITIATIVE_RAD_SPANNE, versatz))
+
+    logger.debug(
+        f"initiative_versatz_laden: {versatz:+.4f} (Herkunft '{quelle}') "
+        f"fuer Paar '{ASSISTANT_USER_ID}/{user_id}'"
+    )
+    return versatz, quelle

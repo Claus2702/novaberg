@@ -28,6 +28,7 @@ from config import (
     GV_STRATEGIE_MIN_LAENGE,
 )
 from graph.state import ConversationState
+from memory.charakter import initiative_versatz_laden
 from memory.pipeline_log import log_fehler
 from memory.session import format_session_turns_numbered
 from services.model_services import model_service, ChatRequest, EmbedRequest
@@ -740,7 +741,29 @@ def gespraechsvektor(state: ConversationState) -> ConversationState:
 
     # 3e. Dreischicht: Achsen → Sektor → Cluster → Repertoire
     vorher_embedding, vorher_modus = _vorturn_laden(state)
-    fuehrung: Fuehrung = fuehrung_messen(state, vorher_embedding, vorher_modus)
+
+    # Der Charakter-Versatz kommt aus dem zweiten Rad (Chat 116). Faellt das
+    # Laden aus, wird OHNE Versatz gerechnet statt mit einem erfundenen — der
+    # Rohwert bleibt dann die reine Messung, und die Logzeile sagt es.
+    versatz, versatz_quelle = initiative_versatz_laden(
+        POSTGRES_URL, state.get("user_id", ""),
+    )
+    if versatz is None:
+        logger.error(
+            "GV-Initiative: Charakter-Versatz nicht ladbar (Herkunft '%s') — "
+            "die Achse rechnet ohne ihn", versatz_quelle,
+        )
+        versatz = 0.0
+    elif versatz_quelle != "destilliert":
+        logger.info(
+            "GV-Initiative: Versatz %+.4f stammt aus dem Default, nicht aus "
+            "einer Destillation — der Charakter verschiebt die Achse noch nicht",
+            versatz,
+        )
+
+    fuehrung: Fuehrung = fuehrung_messen(
+        state, vorher_embedding, vorher_modus, versatz,
+    )
     achsen: dict = achsen_berechnen(state, fuehrung)
     sektor_index, sektor_name, cluster = sektor_bestimmen(achsen)
     repertoire: dict[str, str] = repertoire_laden(cluster)
@@ -839,6 +862,7 @@ def gespraechsvektor(state: ConversationState) -> ConversationState:
             "m2_roh":   fuehrung.m2_roh,
             "m3_roh":   fuehrung.m3_roh,
             "fehlend":  fuehrung.fehlend,
+            "versatz_quelle": versatz_quelle,
         },
     }
 

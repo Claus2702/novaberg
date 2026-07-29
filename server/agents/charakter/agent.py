@@ -30,8 +30,11 @@ from agents.charakter.destillation import (
     beziehungsprofil_destillieren,
     langfristige_ziele_destillieren,
     charakter_rad_destillieren,
+    initiative_rad_destillieren,
     RAD_NABE,
+    INITIATIVE_RAD_NABE,
     RAD_LEER,
+    INITIATIVE_RAD_LEER,
 )
 from memory.ziele import ziel_speichern, ziele_aktive_laden, ziel_deaktivieren
 from memory.ziele import embed_text_bauen as ziel_embed_text_bauen
@@ -157,6 +160,8 @@ class CharakterAgent(BaseAgent):
                     # einen erfundenen zu ersetzen.
                     "nutzer_gewichtung_rad": "",
                     "nutzer_gewichtung":     None,
+                    "initiative_versatz_rad": "",
+                    "initiative_versatz":     None,
                 }
 
                 try:
@@ -202,6 +207,18 @@ class CharakterAgent(BaseAgent):
                     erhoben = charakter_rad_destillieren(rad_quelle, user_id=subjekt_user_id)
                     if erhoben is not None:
                         ergebnis["nutzer_gewichtung_rad"], ergebnis["nutzer_gewichtung"] = erhoben
+
+                    # Zweites Rad, dieselbe Quelle, andere Frage: ueberlaesst
+                    # sie im Gespraech die Fuehrung oder behaelt sie sie.
+                    # Ein eigener Call, weil das erste Rad seine Speichen mit
+                    # Wissbegier und Pflicht buendelt, die hier nichts zu
+                    # suchen haben (novaberg-gv-initiative_k.md §6).
+                    erhoben_init = initiative_rad_destillieren(
+                        rad_quelle, user_id=subjekt_user_id,
+                    )
+                    if erhoben_init is not None:
+                        (ergebnis["initiative_versatz_rad"],
+                         ergebnis["initiative_versatz"]) = erhoben_init
                 else:
                     logger.warning(
                         f"CharakterAgent: kein Kern- und kein Beziehungsprofil fuer "
@@ -448,6 +465,17 @@ class CharakterAgent(BaseAgent):
         if isinstance(_rad_json, dict):
             _rad_json = json.dumps(_rad_json)
 
+        # Initiative-Rad, dieselbe Logik: None heisst "nicht erhoben", dann
+        # bleiben alle vier Spalten stehen.
+        _init_erhoben: float | None = ergebnis.get("initiative_versatz")
+        _init_wert:    float = _init_erhoben if _init_erhoben is not None else INITIATIVE_RAD_NABE
+        _init_quelle:  str   = "destilliert" if _init_erhoben is not None else "default"
+        _init_json:    str   = (
+            ergebnis.get("initiative_versatz_rad") or json.dumps(INITIATIVE_RAD_LEER)
+        )
+        if isinstance(_init_json, dict):
+            _init_json = json.dumps(_init_json)
+
         db_manager.execute(
             """
             INSERT INTO charakter_hash
@@ -458,8 +486,12 @@ class CharakterAgent(BaseAgent):
                  intentions_aktualisiert_am, emotions_aktualisiert_am,
                  beziehung_aktualisiert_am,
                  nutzer_gewichtung, nutzer_gewichtung_quelle,
-                 nutzer_gewichtung_rad, nutzer_gewichtung_am)
+                 nutzer_gewichtung_rad, nutzer_gewichtung_am,
+                 initiative_versatz, initiative_versatz_quelle,
+                 initiative_versatz_rad, initiative_versatz_am)
             VALUES (%s, %s, %s, %s, %s, %s, %s, NOW(), NOW(), NOW(), NOW(), NOW(),
+                    %s, %s, %s,
+                    CASE WHEN %s IS NOT NULL THEN NOW() ELSE NULL END,
                     %s, %s, %s,
                     CASE WHEN %s IS NOT NULL THEN NOW() ELSE NULL END)
             ON CONFLICT (user_id, character_id) DO UPDATE SET
@@ -493,7 +525,17 @@ class CharakterAgent(BaseAgent):
                 nutzer_gewichtung_rad = CASE WHEN %s IS NOT NULL THEN %s
                     ELSE charakter_hash.nutzer_gewichtung_rad END,
                 nutzer_gewichtung_am = CASE WHEN %s IS NOT NULL THEN NOW()
-                    ELSE charakter_hash.nutzer_gewichtung_am END
+                    ELSE charakter_hash.nutzer_gewichtung_am END,
+                -- Initiative-Rad: dieselbe Regel. Ein misslungener Lauf darf
+                -- einen destillierten Versatz nicht durch die Nabe ersetzen.
+                initiative_versatz = CASE WHEN %s IS NOT NULL THEN %s
+                    ELSE charakter_hash.initiative_versatz END,
+                initiative_versatz_quelle = CASE WHEN %s IS NOT NULL THEN 'destilliert'
+                    ELSE charakter_hash.initiative_versatz_quelle END,
+                initiative_versatz_rad = CASE WHEN %s IS NOT NULL THEN %s
+                    ELSE charakter_hash.initiative_versatz_rad END,
+                initiative_versatz_am = CASE WHEN %s IS NOT NULL THEN NOW()
+                    ELSE charakter_hash.initiative_versatz_am END
             """,
             (
                 user_id, character_id,
@@ -504,6 +546,7 @@ class CharakterAgent(BaseAgent):
                 # damit eine neue Zeile denselben Beleg traegt wie eine
                 # destillierte: die 0.9 ist dann nachrechenbar statt behauptet.
                 _rad_faktor, _rad_quelle, _rad_json, _rad_faktor,
+                _init_wert, _init_quelle, _init_json, _init_wert,
                 # ON CONFLICT — Profil-Werte (je 2×: Bedingung + Wert)
                 ergebnis["kern"], ergebnis["kern"],
                 ergebnis["adaptiv"], ergebnis["adaptiv"],
@@ -521,5 +564,10 @@ class CharakterAgent(BaseAgent):
                 _erhoben,
                 _erhoben, _rad_json,
                 _erhoben,
+                # ON CONFLICT — Initiative-Rad (Bedingung je 1×, Werte 2×)
+                _init_erhoben, _init_wert,
+                _init_erhoben,
+                _init_erhoben, _init_json,
+                _init_erhoben,
             ),
         )

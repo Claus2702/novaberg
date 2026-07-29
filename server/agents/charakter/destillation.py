@@ -19,6 +19,9 @@ from config import (
     RAD_NABE,
     RAD_MIN,
     RAD_MAX,
+    INITIATIVE_RAD_NABE,
+    INITIATIVE_RAD_SPANNE,
+    INITIATIVE_RAD_LAEUFE,
 )
 from services.model_services import model_service, BackgroundRequest
 
@@ -64,6 +67,44 @@ RAD_ZUG_RUNTER: dict[str, float] = {
 RAD_LEER: dict[str, dict[str, float]] = {
     "hoch":   {name: 0.0 for name in RAD_ZUG_HOCH},
     "runter": {name: 0.0 for name in RAD_ZUG_RUNTER},
+}
+
+
+# ─────────────────────────────────────────────
+# Initiative-Rad — Versatz der Fuehrungsachse
+# ─────────────────────────────────────────────
+# Zehn Speichen um eine Nabe bei 0.0. Dieselbe Bauart wie oben, andere Frage:
+# nicht "wie sehr gilt ihr das Gegenueber", sondern "ueberlaesst sie ihm die
+# Fuehrung oder behaelt sie sie".
+#
+# **Entwurfsregel (Konzept §6.1): Handlung statt Haltung.** Das Rad darueber
+# beschreibt Treue als "stellt seine Belange ueber die eigenen" — eine
+# Haltung, aus der ein LLM leicht allgemeine Freundlichkeit liest. Jede
+# Speiche hier nennt stattdessen eine beobachtbare Gespraechshandlung. Davon
+# haengt ab, ob zehn Fragen zehn verschiedene Dinge messen oder zehnmal
+# denselben Gesamteindruck.
+#
+# Volle Auslenkung trifft +/-INITIATIVE_RAD_SPANNE exakt; die Summen sind
+# deshalb symmetrisch und je 0.25.
+INITIATIVE_ZUG_HOCH: dict[str, float] = {
+    "folgsamkeit":       0.08,   # uebernimmt das gesetzte Thema, ohne es zu drehen
+    "anschlussfreude":   0.06,   # greift den letzten Punkt auf statt einen neuen zu setzen
+    "zurueckhaltung":    0.05,   # bringt Eigenes erst, wenn danach gefragt wird
+    "antwortende_rolle": 0.04,   # versteht ihren Beitrag als Antwort, nicht als eigenen daneben
+    "behutsamkeit":      0.02,   # vermeidet Brueche, wechselt nicht abrupt weg
+}
+
+INITIATIVE_ZUG_RUNTER: dict[str, float] = {
+    "lenkungsdrang":      0.08,  # fuehrt auf eine Erkenntnis hin, setzt die Route
+    "eigensinn":          0.06,  # hat eigene Themen und bringt sie ungefragt ein
+    "assoziationsdrang":  0.05,  # springt quer, oeffnet Nebenwege
+    "widerspruchsfreude": 0.04,  # haelt dagegen, korrigiert, stellt in Frage
+    "gespraechsdistanz":  0.02,  # geht nicht mit, haelt den Faden auf Abstand
+}
+
+INITIATIVE_RAD_LEER: dict[str, dict[str, float]] = {
+    "hoch":   {name: 0.0 for name in INITIATIVE_ZUG_HOCH},
+    "runter": {name: 0.0 for name in INITIATIVE_ZUG_RUNTER},
 }
 
 # ─────────────────────────────────────────────
@@ -418,6 +459,50 @@ def beziehungsprofil_destillieren(kzg_eintraege: list[dict], user_id: str = DEFA
     )
 
 
+INITIATIVE_RAD_PROMPT: str = """Du bist ein Gespraechsanalytiker. Vor dir liegt
+ein Persoenlichkeitsprofil und ein Beziehungsprofil.
+
+[PROFIL]
+{profil}
+
+[AUFGABE]
+Bewerte zehn Gespraechs-Verhaltensweisen danach, wie stark sie in diesem
+Profil erkennbar sind. Es geht ausschliesslich darum, WER IM GESPRAECH DIE
+RICHTUNG SETZT — nicht um Freundlichkeit, Kompetenz oder Zuwendung.
+
+Bewerte, was die Person TUT, nicht wie sie IST. Eine warmherzige Person kann
+das Gespraech fest fuehren; eine distanzierte kann jedem Thema folgen.
+
+Gib je Verhalten genau einen von drei Werten:
+  0.0  = nicht erkennbar
+  0.5  = angedeutet
+  1.0  = ausgepraegt
+
+Ueberlaesst die Fuehrung:
+- folgsamkeit       — uebernimmt das gesetzte Thema, ohne es zu drehen
+- anschlussfreude   — greift den letzten Punkt auf und spinnt ihn weiter, statt einen neuen zu setzen
+- zurueckhaltung    — bringt Eigenes erst, wenn danach gefragt wird
+- antwortende_rolle — versteht den eigenen Beitrag als Antwort, nicht als Beitrag daneben
+- behutsamkeit      — vermeidet Brueche, wechselt nicht abrupt weg
+
+Behaelt die Initiative:
+- lenkungsdrang      — fuehrt auf eine Erkenntnis hin, setzt die Route
+- eigensinn          — hat eigene Themen und bringt sie ungefragt ein
+- assoziationsdrang  — springt quer, verknuepft Entferntes, oeffnet Nebenwege
+- widerspruchsfreude — haelt dagegen, korrigiert, stellt in Frage
+- gespraechsdistanz  — geht nicht mit, haelt den Faden auf Abstand
+
+Ein Verhalten kann auch dann ausgepraegt sein, wenn sein Gegenstueck es
+ebenfalls ist — jemand kann anschlussfreudig UND widerspruchsfreudig sein.
+
+Steht im Profil nichts ueber das Gespraechsverhalten, bewerte alle zehn mit
+0.0. Rate nicht aus dem allgemeinen Eindruck.
+
+Antworte AUSSCHLIESSLICH mit diesem JSON, ohne erklaerenden Text:
+{{"hoch": {{"folgsamkeit": 0.0, "anschlussfreude": 0.0, "zurueckhaltung": 0.0, "antwortende_rolle": 0.0, "behutsamkeit": 0.0}}, "runter": {{"lenkungsdrang": 0.0, "eigensinn": 0.0, "assoziationsdrang": 0.0, "widerspruchsfreude": 0.0, "gespraechsdistanz": 0.0}}}}
+"""
+
+
 CHARAKTER_RAD_PROMPT: str = """Du bist ein psychologischer Profiler. Vor dir liegt
 ein Persoenlichkeitsprofil und ein Beziehungsprofil.
 
@@ -577,6 +662,220 @@ def charakter_rad_destillieren(
     # ── Ausgabe ─────────────────────────────────
     logger.info(f"Charakter-Rad ({user_id}) erhoben: nutzer_gewichtung={faktor:.4f}")
     return rad, faktor
+
+
+def initiative_versatz_berechnen(rad: dict) -> float:
+    """Rechnet aus den zehn Speichen den Initiative-Versatz.
+
+    Reine Funktion nach demselben Muster wie `nutzer_gewichtung_berechnen`:
+    Dieselben Eingaben liefern immer denselben Wert, und der Wert haengt an
+    keiner Stelle von einem frueheren Ergebnis ab
+    (novaberg-convention-abgeleitete-werte.md, Regel 2 und 3).
+
+    Vorbedingung: `rad` traegt 'hoch' und 'runter' mit je genau den Speichen
+        aus INITIATIVE_ZUG_HOCH bzw. INITIATIVE_ZUG_RUNTER; jede Auspraegung
+        liegt in [0.0, 1.0].
+    Nachbedingung: Rueckgabe in [-INITIATIVE_RAD_SPANNE, +INITIATIVE_RAD_SPANNE].
+        Volle Auslenkung trifft die Grenze exakt.
+    Fehlerfaelle: fehlende oder unbekannte Speiche, nicht-numerische oder
+        ausserhalb liegende Auspraegung — ValueError. Ein unvollstaendiges Rad
+        wird abgelehnt, nicht ergaenzt: Eine fehlende Speiche als 0.0 zu
+        ergaenzen hiesse, eine nicht gestellte Frage als beantwortet zu buchen.
+
+    Returns:
+        Der Versatz, der den Initiative-Rohwert verschiebt.
+    """
+
+    # ── Eingabe-Validierung ─────────────────────
+    if not isinstance(rad, dict):
+        raise ValueError(f"Initiative-Rad: kein Dict ({type(rad).__name__})")
+
+    for seite, erwartet in (("hoch", INITIATIVE_ZUG_HOCH),
+                            ("runter", INITIATIVE_ZUG_RUNTER)):
+        werte = rad.get(seite)
+        if not isinstance(werte, dict):
+            raise ValueError(f"Initiative-Rad: Seite '{seite}' fehlt oder ist kein Dict")
+
+        fehlend: set = set(erwartet) - set(werte)
+        fremd:   set = set(werte) - set(erwartet)
+        if fehlend or fremd:
+            raise ValueError(
+                f"Initiative-Rad: Seite '{seite}' unvollstaendig — "
+                f"fehlend={sorted(fehlend)}, unbekannt={sorted(fremd)}"
+            )
+
+        for name, auspraegung in werte.items():
+            if not isinstance(auspraegung, (int, float)) or isinstance(auspraegung, bool):
+                raise ValueError(
+                    f"Initiative-Rad: '{seite}.{name}' ist nicht numerisch "
+                    f"({type(auspraegung).__name__})"
+                )
+            if not 0.0 <= float(auspraegung) <= 1.0:
+                raise ValueError(
+                    f"Initiative-Rad: '{seite}.{name}' = {auspraegung} liegt "
+                    f"ausserhalb von 0.0-1.0"
+                )
+
+    # ── Verarbeitung ────────────────────────────
+    zug_hoch:   float = sum(float(rad["hoch"][n])   * z for n, z in INITIATIVE_ZUG_HOCH.items())
+    zug_runter: float = sum(float(rad["runter"][n]) * z for n, z in INITIATIVE_ZUG_RUNTER.items())
+    roh:        float = INITIATIVE_RAD_NABE + zug_hoch - zug_runter
+
+    # ── Ausgabe-Verifikation ────────────────────
+    gekappt: float = max(-INITIATIVE_RAD_SPANNE, min(INITIATIVE_RAD_SPANNE, roh))
+    if abs(gekappt - roh) > 1e-9:
+        logger.warning(
+            f"Initiative-Rad: Versatz {roh:.4f} ausserhalb "
+            f"+/-{INITIATIVE_RAD_SPANNE} — gekappt auf {gekappt:.4f}. Zuege pruefen."
+        )
+
+    logger.info(
+        f"Initiative-Rad: Nabe {INITIATIVE_RAD_NABE} + {zug_hoch:.4f} "
+        f"- {zug_runter:.4f} = {gekappt:+.4f}"
+    )
+    return gekappt
+
+
+def _initiative_rad_einmal(profil_text: str, user_id: str) -> tuple[dict, float] | None:
+    """Eine einzelne Erhebung des Initiative-Rads.
+
+    Vorbedingung: `profil_text` ist nicht leer (vom Aufrufer geprueft).
+    Nachbedingung: (rad, versatz) oder None.
+    Fehlerfaelle: unlesbares JSON, unvollstaendiges Rad — beide laut, beide
+        None. Der Aufrufer zaehlt die Ausfaelle und entscheidet.
+
+    Returns:
+        (Rad, Versatz) oder None.
+    """
+
+    # ── Verarbeitung ────────────────────────────
+    roh: str = _llm_call(
+        INITIATIVE_RAD_PROMPT.format(profil=profil_text),
+        f"Initiative-Rad ({user_id})",
+    )
+
+    try:
+        rad: dict = json.loads(roh)
+    except (json.JSONDecodeError, TypeError) as fehler:
+        logger.error(
+            f"Initiative-Rad ({user_id}): Antwort ist kein JSON "
+            f"({type(fehler).__name__}). Roh: '{roh[:120]}'"
+        )
+        return None
+
+    # ── Ausgabe-Verifikation ────────────────────
+    try:
+        versatz: float = initiative_versatz_berechnen(rad)
+    except ValueError as fehler:
+        logger.error(f"Initiative-Rad ({user_id}): {fehler}")
+        return None
+
+    return rad, versatz
+
+
+def initiative_rad_destillieren(
+    profil_text: str,
+    user_id:     str = DEFAULT_USER_ID,
+    laeufe:      int = INITIATIVE_RAD_LAEUFE,
+) -> tuple[dict, float] | None:
+    """Erhebt das Initiative-Rad mehrfach und nimmt den Median.
+
+    Laeuft wie das erste Rad NACH den fuenf Profilen und liest deren Ergebnis,
+    nicht erneut das KZG — der Versatz ist eine Eigenschaft des destillierten
+    Charakters, keine zweite Beobachtung der Rohdaten.
+
+    **Warum mehrfach.** Gemessen am 29.07.2026: Zwei Laeufe gegen denselben
+    Charaktertext bei Temperatur 0.2 ergaben -0.18 und -0.13. Die Richtung war
+    beide Male eindeutig, der Betrag nicht — und genau der geht in die Achse
+    ein. Anders als ein Turn-Wert wird der Versatz nicht ueber viele Turns
+    gemittelt: Er wird bei der Destillation einmal geschrieben und bleibt bis
+    zur naechsten stehen.
+
+    **Gespeichert wird das Rad des Median-Laufs**, nicht ein gemitteltes Rad.
+    Ein Durchschnitt aus drei Raedern ergaebe Auspraegungen wie 0.67, die kein
+    Lauf je vergeben hat — und der Zusammenhang `Rad x Zuege = Versatz` waere
+    nicht mehr von Hand nachrechenbar. Die Streuung reist als Metadatum mit.
+
+    Vorbedingung: `profil_text` ist nicht leer, `laeufe` >= 1.
+    Nachbedingung: (rad, versatz) — das Rad traegt zusaetzlich 'laeufe' und
+        'streuung'; versatz ist der Median der gelungenen Erhebungen und liegt
+        in [-INITIATIVE_RAD_SPANNE, +INITIATIVE_RAD_SPANNE].
+    Fehlerfaelle: leerer Profiltext oder **keine** gelungene Erhebung — dann
+        None und eine error-Zeile; der Aufrufer behaelt den bestehenden Wert,
+        statt einen erfundenen zu schreiben. Teilausfaelle sind kein Fehler,
+        werden aber benannt und stehen in 'laeufe'.
+
+    Returns:
+        (Rad mit Metadaten, Median-Versatz) oder None.
+    """
+
+    # ── Eingabe-Validierung ─────────────────────
+    if not profil_text or not profil_text.strip():
+        logger.error(
+            f"Initiative-Rad ({user_id}): Profiltext leer — nicht erhoben, "
+            f"bestehender Versatz bleibt"
+        )
+        return None
+
+    if laeufe < 1:
+        logger.error(
+            f"Initiative-Rad ({user_id}): laeufe={laeufe} ist kleiner als 1 — "
+            f"nicht erhoben"
+        )
+        return None
+
+    # ── Verarbeitung ────────────────────────────
+    erhebungen: list[tuple[dict, float]] = []
+    for nummer in range(1, laeufe + 1):
+        ergebnis = _initiative_rad_einmal(profil_text, user_id)
+        if ergebnis is None:
+            logger.error(
+                f"Initiative-Rad ({user_id}): Lauf {nummer}/{laeufe} "
+                f"gescheitert — zaehlt nicht mit"
+            )
+            continue
+        erhebungen.append(ergebnis)
+
+    if not erhebungen:
+        logger.error(
+            f"Initiative-Rad ({user_id}): alle {laeufe} Laeufe gescheitert — "
+            f"nicht erhoben, bestehender Versatz bleibt"
+        )
+        return None
+
+    # Median ueber die Versaetze; bei gerader Anzahl der untere der beiden
+    # mittleren, damit ein ECHTES Rad gespeichert werden kann und nicht ein
+    # gemitteltes, das kein Lauf vergeben hat.
+    erhebungen.sort(key=lambda paar: paar[1])
+    rad, versatz = erhebungen[(len(erhebungen) - 1) // 2]
+
+    werte:    list[float] = [v for _, v in erhebungen]
+    streuung: float       = max(werte) - min(werte)
+
+    # ── Ausgabe-Verifikation ────────────────────
+    rad = dict(rad)
+    rad["laeufe"]   = [round(v, 4) for v in werte]
+    rad["streuung"] = round(streuung, 4)
+
+    if len(erhebungen) < laeufe:
+        logger.error(
+            f"Initiative-Rad ({user_id}): nur {len(erhebungen)} von {laeufe} "
+            f"Laeufen gelungen — der Median steht auf duennerer Grundlage"
+        )
+
+    if versatz == 0.0:
+        logger.info(
+            f"Initiative-Rad ({user_id}): Versatz 0.0000 — die Speichen heben "
+            f"sich auf oder das Profil sagt ueber Gespraechsfuehrung nichts. "
+            f"Das gespeicherte Rad sagt, welcher der beiden Faelle vorliegt."
+        )
+
+    logger.info(
+        f"Initiative-Rad ({user_id}) erhoben: versatz={versatz:+.4f} "
+        f"(Median aus {len(erhebungen)} Laeufen: "
+        f"{[f'{v:+.4f}' for v in werte]}, Streuung {streuung:.4f})"
+    )
+    return rad, versatz
 
 
 def langfristige_ziele_destillieren(kern_hash: str, user_id: str = "nova") -> list[dict]:

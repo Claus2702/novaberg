@@ -22,7 +22,11 @@ Kein skipUnless, kein skipIf, kein try/except um Importe.
 
 import unittest
 
-from config import GV_INITIATIVE_M2_THEMA, GV_INITIATIVE_M3_REGISTER
+from config import (
+    GV_INITIATIVE_M2_THEMA,
+    GV_INITIATIVE_M3_REGISTER,
+    GV_INITIATIVE_SCHWELLE,
+)
 from ei.dreischicht import achsen_berechnen
 from ei.initiative import Fuehrung, _normieren, fuehrung_messen
 
@@ -147,6 +151,61 @@ class TestAchseKippt(unittest.TestCase):
     def _bit_ohne_messung() -> int:
         achsen: dict = achsen_berechnen({"session_turns": []}, Fuehrung())
         return achsen["initiative"]
+
+
+class TestSchwelleIstDerBedeutungspunkt(unittest.TestCase):
+    """Die Schwelle liegt nicht auf dem Median, sondern dort, wo das Folgen
+    endet und das Fuehren beginnt.
+
+    Anlass (Chat 116, gemessen an 83 unabhaengigen Lesarten des Modells): Bei
+    einer Schwelle von 0.0 stimmte die Achse in 65.1 % der Turns mit dem
+    Zeugen ueberein, kappa 0.286. Bei -0.45 in 83.1 %, kappa 0.482. Der Median
+    erzwingt einen 50/50-Schnitt; in der Wirklichkeit fuehrt der Nutzer in vier
+    von fuenf Wortwechseln.
+
+    Zeuge: Die Erwartung stammt aus dieser Messung und aus der Bauabsicht
+    (Erreichbarkeit beider Bits), nicht aus dem Code.
+    """
+
+    @staticmethod
+    def _bit(wert: float) -> int:
+        achsen: dict = achsen_berechnen(
+            {"session_turns": []}, Fuehrung(rohwert=wert, wert=wert),
+        )
+        return achsen["initiative"]
+
+    def test_die_schwelle_liegt_nicht_auf_null(self) -> None:
+        """Sonst waere der Median zurueck und mit ihm der 50/50-Schnitt."""
+        self.assertNotEqual(0.0, GV_INITIATIVE_SCHWELLE)
+        self.assertLess(GV_INITIATIVE_SCHWELLE, 0.0)
+
+    def test_ein_wert_zwischen_schwelle_und_null_heisst_nutzer_fuehrt(self) -> None:
+        """Das ist die Verhaltensaenderung: Frueher Bit 1, jetzt Bit 0.
+
+        Ein Rohwert von -0.20 liegt unter dem Median und ueber dem
+        Bedeutungspunkt — genau die Turns, die der Zeuge als 'Nutzer fuehrt'
+        liest und die alte Schwelle als 'Nova' verbuchte.
+        """
+        self.assertEqual(0, self._bit(-0.20))
+
+    def test_deutlich_unter_der_schwelle_heisst_nova(self) -> None:
+        self.assertEqual(1, self._bit(-0.80))
+
+    def test_beide_bits_bleiben_ueber_die_charakter_spanne_erreichbar(self) -> None:
+        """Die Nebenbedingung: Der Charakter darf verschieben, nicht schliessen.
+
+        Volle Auslenkung des Rads sind +/-0.25. Auch am Rand muss ein Rohwert
+        existieren, der jedes der beiden Bits erzeugt — sonst waere ein
+        Charakter denkbar, fuer den die Haelfte der Sektoren zufaellt.
+        """
+        for versatz in (-0.25, 0.0, +0.25):
+            with self.subTest(versatz=versatz):
+                # Ein Rohwert am oberen und einer am unteren Rand der
+                # beobachteten Spanne (-0.90 bis +0.95).
+                oben:  int = self._bit(+0.95 + versatz)
+                unten: int = self._bit(-0.90 + versatz)
+                self.assertEqual(0, oben, "oberes Ende erzeugt kein Bit 0")
+                self.assertEqual(1, unten, "unteres Ende erzeugt kein Bit 1")
 
 
 class TestLaengenachseIstRaus(unittest.TestCase):
