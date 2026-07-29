@@ -1653,6 +1653,47 @@ Am laufenden Client aufgefallen: Der Neugier-Balken des GV-Panels stand über vi
 
 **Live belegt 29.07.2026, 06:21:49 UTC:** `GV-Laenge: 1` · `GV4-Neugier: 0.551` · im Panel-Pfad `aufnahmebereitschaft=0.551`, `strategie_aktiv=False`, `wissensluecken=0`. Vorher hätte dort `0.0` gestanden. Zwei Messturns (Astronomie), Seiteneffekte: 0 `timeline`, 0 `notizen`, 0 `fakten`.
 
+### Das GV-Panel zeigt den Korridor ✅ — Backlog-Punkt aus Chat 72 geschlossen
+
+- ✅ **Neue Sektion „Repertoire"** hinter der Dreischicht: alle sieben Strategien mit Eignung und Charakter-Affinität, sortiert wie der `[WERKZEUGE]`-Block des Prompts, die gewählte hervorgehoben. Darunter die Verstoß-Zeile — `korridor_verstoesse` war seit Chat 114 ohne Leser.
+- ✅ **Kürzel werden aufgelöst.** Das Panel zeigte `Strategie: Sa`, und eine Legende gab es im Client nicht. Jetzt `Sachbeitrag (Sa)`. Der Client führt eine eigene Kopie von `STRATEGIE_NAMEN`; ein unbekanntes Kürzel wird laut gemeldet statt roh angezeigt.
+- ✅ **Zwei bewusste Abweichungen vom Prompt.** `unpassend` wird gezeigt (`✗`), obwohl der Prompt es weglässt — die Frage „war der Korridor richtig gesetzt?" ist nur mit dem Ausgeschlossenen zu beantworten. Und **kein `0.5`-Default** bei fehlender Gewichtung, sondern `—`: Der Prompt setzt ihn, das Panel würde damit `GV-CHARAKTER-DEFAULT-UEBER-MESSBEREICH` an einer zweiten Stelle wiederholen.
+- ✅ **Nicht baubar und als solches vermerkt:** die „Sprünge zwischen Sektoren über die letzten Turns" aus der ursprünglichen Backlog-Liste. `gv_detail` trägt immer nur den aktuellen Turn. Das ist ein eigener Bau, kein Rest dieses Punktes.
+
+**Umfang:** Suite 370 → **373 Tests**, grün, 0 übersprungen. Drei Verträge: die drei Schlüssel erreichen das Panel, `korridor_verstoesse` ist auch im Normalfall eine leere Liste statt zu fehlen, und jedes Kürzel aus `CLUSTER_REPERTOIRE` hat einen Klartextnamen. Gegenprobe zweifach, jeweils gezielt: einen Namen aus `STRATEGIE_NAMEN` entfernt → nur der Namens-Test rot (mit `subTest` auf `Pw`); `korridor_verstoesse` aus `gv_detail` entfernt → nur die beiden Feld-Tests rot.
+
+**Live belegt 29.07.2026, 07:31 UTC**, headless gegen den echten Blob gebaut und die Labels zurückgelesen — Cluster `Schlachtfeld`, gewählt `Pw`:
+
+```
+★ Sachbeitrag (Sa)        kern       28%
+● Perspektivwechsel (Pw)  passt      31%
+○ Spiegelung (Sp)         selten     26%
+○ Bestätigung (Be)        selten     17%
+✗ Impuls (Im)             unpassend  35%
+✗ Selbstoffenbarung (So)  unpassend  31%
+✗ Präsenz (Pr)            unpassend  30%
+Korridor: eingehalten
+```
+
+Zusätzlich die zwei Randfälle geprüft: leere Gewichtung → sieben Striche plus Hinweis statt sieben Mal 50 %; konstruierter Verstoß → benannte Zeile mit Feld, Wert und Grund.
+
+**Was die erste Anzeige sofort zeigte:** Novas stärkste Affinität (`Impuls`, 35 %) ist in diesem Cluster ausgeschlossen, die Kernstrategie liegt bei 28 %. Kein Defekt — Konzept §10.1 will es so —, aber eine Spreizung, die vorher niemand sehen konnte. In der Fundliste.
+
+### Die Initiative-Achse — gemessen, verworfen, neu konzipiert
+
+Aus der Frage, ob die Repertoire-Verteilung etwas ausschließt, wurde ein Befund über die Achsen.
+
+- ✅ **Die Achse I kippt nicht.** Über 15 GV-Läufe stand sie 15 Mal auf demselben Wert. Rohwerte 0.10–1.00 gegen eine Schwelle von 1.5; der Nutzer müsste **649 Zeichen** je Turn schreiben statt gemessener 51, das 12,6-fache. **32 der 64 Sektoren sind damit nicht selten, sondern unerreichbar.**
+- ✅ **Drei Konzept-Widersprüche dazu**, alle am Code belegt: Das Konzept nennt `intentionen` als Quelle, gebaut ist nur die Turn-Länge. Es nennt einen Wertebereich 0.0–1.0, die Schwelle liegt bei 1.5 — außerhalb. Und `if avg_nova == 0: return 2.0` macht eine **leere Nova-Antwort** zum zuverlässigsten Weg nach „Nutzer führt".
+- ✅ **Drei neue Maße gemessen, aus drei verschiedenen Quellen** — über 493 KZG-Einträge, 164 Übergaben, 133 Rohturn-Paare: Intentionen (LLM-Label) **6:1**, Themensprung im Embedding (deterministisch) **8:1**, Registerweg auf der Tiefe-Skala **2:1**. Gleiche Richtung, unabhängige Quellen.
+- ✅ **Ein Maß gemessen und verworfen:** das Fragezeichen im Rohtext. Es kehrt die Richtung um (Nova 41,4 %, Nutzer 32,3 %), weil Novas Fragen Gesprächsgesten sind, deren Frequenz der Cluster vorgibt — und es liegt hinter der Achse, misst also die eigene Ausgabe mit.
+- ✅ **Eine Selbstkorrektur:** Aus neun Läufen hatte ich geschlossen, `paradox` sei unerreichbar. Der vierte flache Turn der Messreihe zog Novas Raum-Tiefe auf 0.45 und kippte T. Erreichbar sind **16 von 64** Sektoren und **10 von 14** Clustern, nicht 8 und 6. Nicht erreichbar sind die vier Negativ-Valenz-Cluster.
+- ✅ **Konzeptpapier `novaberg-gv-initiative_k.md`** — Definition, drei Maße, Skala, Charakter-Versatz über ein Rad statt über eine Cosine-Distanz (der in Chat 114 gemessen gescheiterte Weg), Kalibrier-Agent nach der Charakter-Destillation. Herkunftsvermerk je Abschnitt: was gebaut ist, was gemessen, was Setzung, was Entwurf.
+
+**Seiteneffekte über die gesamte Messreihe:** 0 `timeline`, 0 `notizen`, 0 `fakten`.
+
+**Nebenbefund, der die Messung erst blockierte:** Zwei von fünf Turns der ersten Charge liefen in `concurrent.futures.TimeoutError` (60 s in `submit_sync`). Dessen `str()` ist leer — die Zeile lautete `Graph-Fehler: ` und benannte nichts, der Client bekam `Verarbeitungsfehler: ` ohne Grund. Behoben: Typ und `exc_info` in `api/chat.py`.
+
 ### Was dabei abfiel
 
 - **`korridor_verstoesse` ist ebenfalls ohne Leser** — die Leitplanke aus Chat 114 meldet einen Verstoß nur ins Server-Log. Zusammen mit `repertoire` und `charakter_gewichtung` (beide seit Chat 72 im Backlog) am Backlog-Punkt „GV-Panel: Dreischicht-Felder visualisieren" vermerkt, der damit als teilerledigt geführt wird.

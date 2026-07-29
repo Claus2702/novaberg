@@ -2322,6 +2322,16 @@ und loggt `warning` (Handbuch §3: Verwerfung gehört auf `error`).
 Charakter-Gewichtung bis `kern_aktualisiert_am`. Der Code embeddet den Charakter in jedem
 Turn neu; der Docstring sagt es ausdrücklich. Konzept oder Code ist zu korrigieren.
 
+**Nachtrag Chat 116 — der zweite Leser übernimmt den Default nicht.** Das GV-Panel zeigt
+seit dieser Sitzung dieselbe Gewichtung an. Es setzt bei fehlendem Wert **keinen** Default,
+sondern `—`, und meldet ein leeres Gewichtungs-Dict als eigenen Hinweis unter der Liste.
+Der Bug bleibt offen: **Er sitzt weiterhin im Prompt**, also an der Stelle, wo er wirkt.
+Das Panel ist jetzt nur nicht mehr die zweite Stelle, an der ein Ausfallwert wie eine
+Messung aussieht — und es macht den Bug zum ersten Mal sichtbar: Ein Turn mit leerer
+Gewichtung zeigt sieben Striche, während der Prompt desselben Turns sieben Mal
+*„Affinitaet: 50%"* behauptet. Der Leerfall ist real und erreichbar, live gemessen am
+29.07.2026: `GV-Charakter-Gewichtung: Kein Charakter-Text` → `charakter_gewichtung = {}`.
+
 #### GV4-SYSTEM-2-TOT — von sechs Systemen der Relevanzformel differenzieren drei ⚠️
 
 **Entdeckt:** Chat 114, GV-Vollaudit. **Prio mittel.**

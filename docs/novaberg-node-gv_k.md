@@ -832,9 +832,31 @@ verschwinden. Ein Test auf der Serverseite hält die Gegenrichtung fest
 (`tests/test_gv_resonanz_kontext.py`): Der Node muss den Schlüssel schreiben, den
 das Panel liest, und bei Leerfällen einen leeren String statt gar keinen Wert.
 
-**Nicht angezeigt** sind `repertoire`, `charakter_gewichtung` und
-`korridor_verstoesse` — Stand und Begründung im Backlog unter „GV-Panel:
-Dreischicht-Felder visualisieren".
+**Der Korridor ist seit Chat 116 sichtbar** — `repertoire`, `charakter_gewichtung` und
+`korridor_verstoesse` als eigene Sektion hinter der Dreischicht. Sie zeigt alle sieben
+Strategien mit Eignung und Charakter-Affinität, sortiert wie im `[WERKZEUGE]`-Block, die
+gewählte hervorgehoben. Erst damit ist eine Strategiewahl beurteilbar: Vorher sah man das
+Ergebnis, nicht den Korridor, in dem es zustande kam.
+
+Zwei Stellen weichen bewusst vom Prompt-Block ab:
+
+- **`unpassend` wird gezeigt, im Prompt nicht.** Der Prompt lässt diese Strategien weg, um
+  das LLM nicht danach greifen zu lassen; das Panel führt sie mit `✗`, weil die Frage „war
+  der Korridor richtig gesetzt?" nur mit dem Ausgeschlossenen zu beantworten ist.
+- **Kein `0.5`-Default bei fehlender Gewichtung.** `dreischicht_prompt_bauen` setzt ihn
+  ein, das Panel zeigt `—`. Der Grund steht als `GV-CHARAKTER-DEFAULT-UEBER-MESSBEREICH` in
+  `novaberg-bugs.md`: Gemessene Affinitäten liegen bei 0.195 bis 0.334, ein Default von 0.5
+  läge über jedem echten Wert und erschiene als beste Passung.
+
+**Die Strategie-Kürzel werden im Client aufgelöst.** `Sa` allein sagt niemandem etwas, und
+eine Legende gibt es dort nicht. Der Client führt eine eigene Kopie von `STRATEGIE_NAMEN`
+— er importiert nichts aus dem Server —; ein unbekanntes Kürzel wird als `logger.error`
+gemeldet statt roh angezeigt. Ein serverseitiger Test hält fest, dass jedes Kürzel aus
+`CLUSTER_REPERTOIRE` einen Klartextnamen hat: Wer eine achte Strategie aufnimmt, ohne sie
+zu benennen, wird rot — und weiß dann, dass auch das Panel sie nicht lesen kann.
+
+**Was `gv_detail` nicht hergibt:** eine Sektor-Bahn über mehrere Turns. Der Blob trägt
+immer nur den aktuellen Turn und wird bei jedem überschrieben.
 
 ## Dreischicht-Architektur (Chat 71)
 

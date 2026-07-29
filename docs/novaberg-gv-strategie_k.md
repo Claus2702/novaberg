@@ -79,7 +79,7 @@ Neugier entsteht in der Lücke zwischen Wissen und Nicht-Wissen.
 | 3 | **Nähe** (N) | Beziehungsdichte | fern ◄──► nah/intim | Novas Raum (§3.4) |
 | 4 | **Valenz** (V) | Emotionale Färbung | negativ (−) ◄──► positiv (+) | `current_emotion` (Plutchik-Sektor) |
 | 5 | **Tiefe** (T) | Gesprächsebene | flach (f) ◄──► tief (t) | Novas Raum (§3.4) |
-| 6 | **Initiative** (I) | Wer treibt? | User führt (U) ◄──► gleich/Nova (=) | `intentionen` + Turn-Muster |
+| 6 | **Initiative** (I) | Wer treibt? | User führt (U) ◄──► gleich/Nova (=) | ~~`intentionen` + Turn-Muster~~ — gebaut ist nur die Turn-Länge, siehe unten |
 
 ### 3.2 Kodierung
 
@@ -131,7 +131,7 @@ Der Raum liegt in `redis:nova_state` (`raum_tiefe`, `raum_naehe`) und überlebt 
 | **Drive** | Energie × Richtung × Valenz | −1.0 bis +1.0 |
 | **Nähe** | Dynamik + Stil | 0.0 bis 1.0 |
 | **Tiefe** | Modus + Verlauf | 0.0 bis 1.0 |
-| **Initiative** | Intention + Turn-Muster | 0.0 bis 1.0 |
+| **Initiative** | Intention + Turn-Muster | ~~0.0 bis 1.0~~ — der gebaute Code liefert ein unbegrenztes Verhältnis und kippt bei 1.5, also **außerhalb** dieses Bereichs (Chat 116) |
 
 Die 6→4 Reduktion erhält alle 13 Cluster vollständig (§8).
 
@@ -586,6 +586,11 @@ TIEFE_MODUS = {"philosophischer_austausch":0.9, "fachgespraech":0.8,
 
 # Initiative (Heuristik v1)
 # User-Turns deutlich länger als Nova-Turns → User führt
+#
+# ⚠ Chat 116, gemessen: Diese Heuristik kippt nie. Ueber 15 GV-Laeufe stand
+# die Achse in 15 Faellen auf demselben Wert; die Rohwerte liegen bei
+# 0.10-1.00 gegen eine Schwelle von 1.5. Damit sind 32 der 64 Sektoren
+# unerreichbar. Neudefinition: novaberg-gv-initiative_k.md
 
 # Drive (4-Achsen-Variante)
 def drive_berechnen(arousal, vektor):

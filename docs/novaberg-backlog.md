@@ -1359,9 +1359,16 @@ Der Reducer fasst ältere Session-Turns zusammen, statt alle 11+ Turns wörtlich
 
 **Priorität:** Hoch — ohne Sichtbarkeit ist die neue Architektur nicht debugbar oder kalibrierbar.
 
-**Stand Chat 116 (29.07.2026), am Live-Blob gemessen — teilerledigt.** `GET /drive/gv_detail` trägt 21 Schlüssel, das Panel liest 16. Gebaut sind Achsen, Sektor, Cluster, Absicht/Strategie/Vehikel, Sprünge und Impuls (Chat 73) sowie die verwandten Erinnerungen (Chat 116). **Offen von dieser Liste: `repertoire` und `charakter_gewichtung`** — die beiden Felder, die zeigen, *worin* das LLM gewählt hat, nicht nur *was* es gewählt hat. Ohne sie ist eine Strategiewahl nicht beurteilbar: Man sieht das Ergebnis, aber nicht den Korridor, in dem es zustande kam.
+**✅ Erledigt Chat 116 (29.07.2026)** — bis auf einen Punkt, der so nicht baubar ist.
 
-Dazu gehört `korridor_verstoesse` (Chat 114, in dieser Liste noch nicht enthalten): die Gegenprobe zum Repertoire — was das LLM daneben gewählt hat und verworfen wurde. Ein Verstoß ist heute nur im Server-Log sichtbar.
+Gebaut wurden Achsen, Sektor, Cluster, Absicht/Strategie/Vehikel, Sprünge und Impuls (Chat 73), die verwandten Erinnerungen und zuletzt der Korridor: **`repertoire` mit `charakter_gewichtung`**, dazu **`korridor_verstoesse`** (Chat 114, in der ursprünglichen Liste nicht enthalten — die Gegenprobe zum Repertoire). Das Panel zeigt alle sieben Strategien mit Eignung und Affinität, die gewählte hervorgehoben, darunter die Verstoß-Zeile.
+
+**Zwei bewusste Abweichungen vom Prompt-Block**, beide im Panel-Docstring begründet:
+
+- Der Prompt lässt `unpassend` ganz weg, damit das LLM nicht danach greift. Das Panel zeigt diese Strategien mit `✗` — wer beurteilen will, ob der Korridor richtig saß, muss sehen, was ausgeschlossen wurde.
+- `dreischicht_prompt_bauen` setzt bei fehlender Gewichtung `0.5` ein. **Das Panel tut das nicht** und zeigt `—`. Siehe `GV-CHARAKTER-DEFAULT-UEBER-MESSBEREICH` in `novaberg-bugs.md`: Der Default liegt über jedem gemessenen Wert und erschiene als beste Passung.
+
+**Nicht baubar aus `gv_detail`:** „Sprünge zwischen Sektoren über die letzten Turns". Der Blob trägt immer nur den aktuellen Turn, der Redis-Key wird bei jedem Turn überschrieben. Eine Sektor-Bahn über mehrere Turns braucht eine eigene Historie — das ist ein anderer Bau und nicht Teil dieses Punktes. Wer sie will, legt sie als eigenen Backlog-Eintrag an.
 
 ---
 

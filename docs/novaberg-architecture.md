@@ -603,6 +603,7 @@ Das Handbuch ist nach Betrachtungstiefen organisiert. Tiefe 0 ist der Einstiegsp
 | novaberg-node-planner.md | Planner (Agent-Loop, Resume-Flow) |
 | novaberg-node-agent-dispatch.md | Agent-Dispatch (Zentraler Entry-Point) |
 | novaberg-node-gv_k.md | Gespraechsvektor (Farbmisch-System, zweite Wissensquelle: ~~Entity-Hop~~ Resonanz-Kontext seit Chat 115) |
+| novaberg-gv-initiative_k.md | Initiative-Achse — Neudefinition und Kalibrierung (Entwurf, Chat 116) |
 | novaberg-node-responder.md | Responder (Antwortgenerierung, EI-MIKRO) |
 | novaberg-node-thinker.md | Thinker (Faktenpruefung, Web-Suche) |
 | novaberg-node-tribunal.md | Tribunal (Drei-Perspektiven-Bewertung, Score-System) |
