@@ -8,6 +8,7 @@
 **Herkunft:** `novaberg-gv-strategie_k.md` §3.1 (Achse 6) — dieses Dokument ersetzt die dortige Heuristik v1
 **Voraussetzung:** `novaberg-convention-abgeleitete-werte.md`, `novaberg-salienz-berechnung_k.md` §5 (Charakter-Rad)
 **Abnehmer:** `novaberg-node-gv_k.md` §10.1 (Achsen → Sektor)
+**Modul-Referenz:** `novaberg-gv-initiative.md` — was heute läuft, die Konstanten mit ihrem Kalibrierungsstand und die Messungen, die die Funktion belegen
 
 > **Herkunftsvermerk, Stand 29.07.2026 nach dem Bau.**
 >
