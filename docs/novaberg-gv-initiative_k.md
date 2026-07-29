@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Konzept — Neudefinition und Kalibrierung der Achse I
-**Stand:** 29. Juli 2026, Chat 117 (§7 Baustand der Kalibrierrechnung, §7.2 der Zeuge urteilt umgekehrt. Kern: Chat 116)
+**Stand:** 29. Juli 2026, Chat 117 (§7 Baustand der Kalibrierrechnung, §7.2 der Zeuge urteilt umgekehrt, §7.4 er ist nicht längenneutral. Kern: Chat 116)
 **Pfad:** novaberg/docs/novaberg-gv-initiative_k.md
 **Typ:** Konzept
 **Herkunft:** `novaberg-gv-strategie_k.md` §3.1 (Achse 6) — dieses Dokument ersetzt die dortige Heuristik v1
@@ -415,6 +415,32 @@ Daraus folgte eine Korrektur an der Kontrolle selbst: **Sie wertet den Betrag, n
 Damit ist belegt, was §12.5 als Vermutung formulierte: **Die Schwelle aus einem Paar und 83 Turns beschreibt das Verhalten dieses Systems nicht dauerhaft** — sie beschreibt es nicht einmal auf demselben Paar, sobald der Bestand wächst. Das ist ein Argument für den Agenten und gegen die Konstante, und es hängt nicht an der Frage, welcher Zeuge recht hat.
 
 **Offen bleibt die Ursache der Verschiebung.** Die Auswahl der 83 Turns von Chat 116 ist nicht rekonstruierbar; jene Erhebung lief ad hoc und hinterließ keinen Code. Ob der Unterschied am Umfang, am Anteil der Alltagsturns oder an der Auswahl liegt, ist **Annahme, nicht Befund**.
+
+### 7.4 Der Zeuge ist nicht längenneutral — gemessen
+
+**Auditiert am 29.07.2026** über alle 144 Urteile der Reihe, punkt-biseriale Korrelation zwischen Urteil und Textlänge:
+
+| Größe | r |
+|---|---|
+| Länge des **Nutzer**-Turns | **−0,295** |
+| Länge der Nova-Vorantwort | +0,143 |
+| Rohwert der Achse | +0,265 |
+
+| Urteil | Nutzer-Turn | Nova-Vorantwort |
+|---|---|---|
+| „Nutzer führt" (n=83) | **477** Zeichen | 652 |
+| „Nova führt" (n=61) | **1047** Zeichen | 545 |
+
+**Das Urteil korreliert stärker mit der Länge des beurteilten Beitrags als mit dem Wert, den es beurteilen soll.** Ein Nutzer-Turn doppelter Länge wird als folgend gelesen. Die Positions-Kontrolle bestand dieser Zeuge sauber — sie prüft die Reihenfolge der Sprecher, nicht die Störgröße.
+
+**Ob das ein Defekt ist, ist offen.** Nach der Setzung in §3 ist ein langer, inhaltlich reicher Beitrag im gesetzten Thema definitionsgemäß **folgend** (§3.1). Der Zeuge könnte also zutreffend urteilen, und die Achse ebenfalls — sie leitet dasselbe aus Embedding-Abstand und Registerweg her. Die Frage ist nicht, wer recht hat, sondern über welche Turns sie sich uneinig sind.
+
+**Die Uneinigkeit hat zwei Muster, keine Streuung.** Von den 55 strittigen Turns bei Schwelle −0.45:
+
+- **Langer Nutzer-Turn, Achse extrem:** Rohwert −0,82 bis −1,00 („Nova führt"), Zeuge sagt „Nutzer führt", Nutzer-Turn 1600–2650 Zeichen. Hier ist die Achse maximal sicher und liegt nach dem Zeugen falsch. Das ist die Menge, an der sich die Frage entscheidet.
+- **Sehr kurzer Nutzer-Turn, Achse positiv:** 32 bzw. 45 Zeichen, Rohwert +0,86 und −0,05 („Nutzer führt"), Zeuge sagt „Nova führt". Ein Zweizeiler erzeugt einen großen Embedding-Abstand, den M2 als Themenwechsel liest.
+
+**Folge für das Verfahren:** Ein weiterer Modell-Zeuge klärt nichts, solange seine eigene Störgröße unbekannt ist — dieselbe Prüfung wäre für ihn und für jeden weiteren zu wiederholen. Die Entscheidung braucht ein Urteil von außerhalb des Systems, und zwar nur über das erste Muster.
 
 **Was er ausdrücklich nicht tut: zur Laufzeit nachregeln.** Das Zentrum darf der gemessenen Verteilung nicht laufend folgen. Es gibt einen Pfad von der Achse zurück auf die Eingabe — Sektor → Cluster → Repertoire → Novas Antwort → nächster Rohwert. Er ist lang und schwach, aber er ist da; ein mitlaufendes Zentrum hätte keinen Anker und driftete, bis alles Mittelwert ist.
 
