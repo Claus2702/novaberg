@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Konzept — Gesprächsvektor
-**Stand:** 28. Juli 2026, Chat 114 (Vollaudit des Nodes: Ergebnis in §8.1, Befunde in novaberg-bugs.md)
+**Stand:** 29. Juli 2026, Chat 115 (zweite Wissensquelle vom Faktenpfad auf den Erinnerungsgraphen umgehängt, §10.1. Vollaudit des Nodes: Ergebnis in §8.1, Befunde in novaberg-bugs.md)
 **Pfad:** novaberg/docs/novaberg-node-gv_k.md
 **Quellen:** nova-09-k.md
 
@@ -652,7 +652,7 @@ Der existierende Task `vertiefen` ist konzeptionell der richtige Ort für den Ge
 
 | # | Schritt | Beschreibung | Status |
 |---|---------|-------------|--------|
-| GV1 | Vektor-Destillation | Eigener `gv_node` zwischen Enricher/Planner und Responder. Deterministischer Längenalgorithmus (0–3) aus 8 EI-Dimensionen. Entity-Hop über Fakten-Tabelle. Farbmisch-System (8 unabhängige `_farbe_*`-Funktionen). 1 LLM-Call für natürlichsprachliche Hypothese. | ✅ Chat 39 |
+| GV1 | Vektor-Destillation | Eigener `gv_node` zwischen Enricher/Planner und Responder. Deterministischer Längenalgorithmus (0–3) aus 8 EI-Dimensionen. ~~Entity-Hop über Fakten-Tabelle~~ (in Chat 115 durch den Resonanz-Kontext ersetzt, §10.1). Farbmisch-System (8 unabhängige `_farbe_*`-Funktionen). 1 LLM-Call für natürlichsprachliche Hypothese. | ✅ Chat 39 |
 | GV2 | Responder-Integration | `[GESPRAECHSVEKTOR]`-Block im Responder-Prompt. Framing: "So bewegt sich das Gespräch gerade. Du bist mittendrin." Landschaft beschreiben, nicht imperative Route vorgeben. | ✅ Chat 39 |
 | GV3 | Invertierte Perzeption | Strategie-Planung: Ziel → benötigter Modus/Emotion/Weg | ⬜ |
 | GV4 | Wissens-Lücken-Erkennung | Embedding-Nachbarschaft via pgvector | ⬜ |
@@ -787,11 +787,54 @@ Formel und Kalibrierung: siehe `novaberg-gv-strategie_k.md` Anhang A.
 Erweiterung auf Agent-Quellen (Timeline, Notizen, Fakten, Dateien):
 siehe Backlog GV4b.
 
-## GV-Panel (Chat 71)
+**Was hinter dem Längen-Tor steht und was davor (präzisiert Chat 116).** Die
+**Lückensuche** läuft erst ab `GV_STRATEGIE_MIN_LAENGE` (2) — sie stellt DB-Queries und
+lohnt bei einem Ein-Schritt-Vektor nicht. Die **Aufnahmebereitschaft** steht davor und
+wird in jedem Turn gerechnet: Sie ist ein Zustand Novas, keine Funktion der Vektorlänge,
+und sie ist rein (State-Lesen, Lookups, Arithmetik).
 
-GTK4-Panel zeigt nach jedem Turn: Sprünge (LevelBar 0-3), Neugier (LevelBar 0-1
-mit Schwelle), Strategie-Status, Wissenslücken-Liste (Konzept, Quelle, Relevanz),
-Farbton. Transport: WebSocket (aktuell), geplant Redis/REST.
+Diese Trennung ist nicht kosmetisch. **Der Wert `0.00` ist für die Krise reserviert** —
+`aufnahmebereitschaft_berechnen` liefert ihn genau bei Stimmungsvektor `spirale`/`absturz`
+mit Arousal ≥ 0.7; ein neutraler Zustand liegt bei ~0.56. Stand die Rechnung hinter dem
+Tor, war „nicht gerechnet" von „im Absturz" nicht zu unterscheiden — für den Leser des
+Panels und für jeden späteren Abnehmer der Zahl. Wer die Größe an weiterer Stelle liest
+(die Gedankenkette sieht sie als Pausenkriterium vor), erbt diese Unterscheidung.
+Belegt und behoben als `GV4-BEREITSCHAFT-DEFAULT-WIE-KRISE` in `novaberg-bugs.md`.
+
+## GV-Panel (Chat 71, erweitert Chat 73 und 116)
+
+GTK4-Panel, `turn_reactive`. Zeigt nach jedem Turn: Sprünge (LevelBar 0-3),
+Neugier (LevelBar 0-1 mit Schwelle), Strategie-Status, Dreischicht (Sektor,
+Cluster, Achsen, Absicht/Strategie/Vehikel), die drei Gedankensprünge, den
+Impuls, die Wissenslücken-Liste (Konzept, Quelle, Relevanz), die verwandten
+Erinnerungen und den Farbton.
+
+~~Transport: WebSocket (aktuell), geplant Redis/REST.~~ → **Beides ist gebaut,
+und die Rollen sind vertauscht gegenüber der Planung:** Der Dispatcher schreibt
+`gv_detail` nach jedem Turn nach Redis (`gv:detail:{user_id}:{character_id}`,
+kein TTL), das Panel holt es über `GET /drive/gv_detail`. Der WebSocket löst nur
+noch den Refresh aus, er trägt die Daten nicht.
+
+**Die beiden Wissens-Sektionen gehören zusammen.** Wissenslücken sagen, was Nova
+zum Thema *nicht* weiß, verwandte Erinnerungen, was sie dazu schon erlebt hat —
+die zweite Wissensquelle des Nodes (§10.1). Sie war von ihrer Einführung bis
+Chat 116 schreib-only: geschrieben, nach Redis persistiert, über REST
+ausgeliefert und von keinem Leser abgeholt. Ob der Node in einem Turn überhaupt
+Wissen bekommen hat, stand nur im Server-Log — und genau diese Frage blieb bei
+`GV-ENTITY-HOP-FINDET-NICHTS` 45 Läufe lang unbeobachtet.
+
+**Der Client folgt bei Umbenennungen einem festen Muster** (eingeführt mit
+`aufnahmebereitschaft` in Chat 111): den alten Schlüsselnamen übergangsweise
+mitlesen, weil der Redis-Blob kein TTL hat, und das Fehlen **beider** Namen als
+`logger.error` melden. Ein fehlender Schlüssel ist ein Bruch zwischen Server und
+Client, kein leerer Turn — die Unterscheidung darf nicht in einem Default
+verschwinden. Ein Test auf der Serverseite hält die Gegenrichtung fest
+(`tests/test_gv_resonanz_kontext.py`): Der Node muss den Schlüssel schreiben, den
+das Panel liest, und bei Leerfällen einen leeren String statt gar keinen Wert.
+
+**Nicht angezeigt** sind `repertoire`, `charakter_gewichtung` und
+`korridor_verstoesse` — Stand und Begründung im Backlog unter „GV-Panel:
+Dreischicht-Felder visualisieren".
 
 ## Dreischicht-Architektur (Chat 71)
 

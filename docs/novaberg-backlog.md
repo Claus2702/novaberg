@@ -1156,8 +1156,17 @@ CREATE INDEX IF NOT EXISTS idx_notizen_embedding
 
 **3. Fakten:** Hat bereits `embedding VECTOR(768)` — kein ALTER TABLE nötig.
   FaktenAgent kann `neugier_suchen()` sofort implementieren.
-  Die Entity-Hop-ILIKE-Suche im GV-Node bleibt parallel bestehen —
-  sie findet Named Entities, die pgvector-Suche findet semantische Nachbarschaft.
+  ~~Die Entity-Hop-ILIKE-Suche im GV-Node bleibt parallel bestehen —
+  sie findet Named Entities, die pgvector-Suche findet semantische Nachbarschaft.~~
+
+  **Zwei Behauptungen, beide widerlegt (Chat 115, 29.07.2026).** *Parallel bestehen:* Der
+  GV-Node ruft `_entity_kontext_laden` nicht mehr auf; die Funktion schläft mit
+  Weckbedingung im Modul, ein Test wird rot, wenn sie zurückverdrahtet wird.
+  *Findet Named Entities:* Sie hat nie welche gefunden — der Suchschlüssel ist eine
+  Themenphrase, die Entitätsnamen sind Eigennamen (65 von 89 einwortig), beide
+  `ILIKE`-Richtungen 0 Treffer über 45 Läufe (GV-ENTITY-HOP-FINDET-NICHTS, Tür 1).
+  Wer den FaktenAgent baut (M2.5b), erbt diesen Mismatch — er hängt an der Suche,
+  nicht am GV-Node.
 
 **4. Dateien:** `autonomous_wissen`-Tabelle hat bereits `themen_embedding VECTOR(768)`
   im Konzept (`novaberg-autonomous-wissen_k.md`). Wird mit Phase 3 (Pixie-Infrastruktur)
@@ -1349,6 +1358,10 @@ Der Reducer fasst ältere Session-Turns zusammen, statt alle 11+ Turns wörtlich
 - Sprünge zwischen Sektoren über die letzten Turns
 
 **Priorität:** Hoch — ohne Sichtbarkeit ist die neue Architektur nicht debugbar oder kalibrierbar.
+
+**Stand Chat 116 (29.07.2026), am Live-Blob gemessen — teilerledigt.** `GET /drive/gv_detail` trägt 21 Schlüssel, das Panel liest 16. Gebaut sind Achsen, Sektor, Cluster, Absicht/Strategie/Vehikel, Sprünge und Impuls (Chat 73) sowie die verwandten Erinnerungen (Chat 116). **Offen von dieser Liste: `repertoire` und `charakter_gewichtung`** — die beiden Felder, die zeigen, *worin* das LLM gewählt hat, nicht nur *was* es gewählt hat. Ohne sie ist eine Strategiewahl nicht beurteilbar: Man sieht das Ergebnis, aber nicht den Korridor, in dem es zustande kam.
+
+Dazu gehört `korridor_verstoesse` (Chat 114, in dieser Liste noch nicht enthalten): die Gegenprobe zum Repertoire — was das LLM daneben gewählt hat und verworfen wurde. Ein Verstoß ist heute nur im Server-Log sichtbar.
 
 ---
 

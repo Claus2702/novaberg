@@ -96,7 +96,7 @@ Neun Vektoren beschreiben die emotionale Dynamik eines Gespraechs. Jeder Vektor 
 
 **Spirale vs. Plateau:** Beide haben die gleiche Emotions-Gruppe (negativ → negativ). Der Unterschied: Spirale zeigt *neue* negative Emotionen (Intensitaetsanstieg), Plateau zeigt dieselben (keine Veraenderung). Gleiches gilt fuer Eskalation vs. Plateau bei positiv → positiv.
 
-Der GV-Node berechnet den Vektor als eigener Node im CharacterGraph (Pfad 2, seit Chat 60). Farbmisch-System, Entity-Hop und Charakter-Linse steuern die Nuancen.
+Der GV-Node berechnet den Vektor als eigener Node im CharacterGraph (Pfad 2, seit Chat 60). Farbmisch-System, zweite Wissensquelle und Charakter-Linse steuern die Nuancen. *(~~Entity-Hop~~ → Resonanz-Kontext aus `state["lzg_resonanz"]`, seit Chat 115.)*
 
 > Detail: novaberg-node-gv_k.md
 

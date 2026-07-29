@@ -1,6 +1,6 @@
 # Novaberg — Roadmap (Projektchronik)
 
-**Stand:** Chat 115, 29. Juli 2026
+**Stand:** Chat 116, 29. Juli 2026
 *(Die Kopfzeile stand bis Chat 109 auf „Chat 93, 21. Mai 2026" — 15 Chats hinter dem Inhalt. **Sie ist danach erneut zurückgefallen:** von Chat 110 bis 114 blieb sie auf „Chat 109" stehen, während der Inhalt weiterwuchs, und wurde in Chat 115 nachgezogen. Wer hier etwas ergänzt, zieht die Kopfzeile mit — sie driftet zuverlässig. Achtung beim Nachschlagen: Nur bis Chat 97 trägt jeder Chat eine eigene `## Chat NNN`-Überschrift; die Chats 98–108 stehen als `###`-Abschnitte unter dem Chat-97-Block, benannt nach Sprint statt nach Chat.)*
 **Pfad:** novaberg/docs/novaberg-roadmap.md
 **Single Source of Truth für abgeschlossene Arbeit.**
@@ -621,7 +621,7 @@
 | Was | Wo | Warum deaktiviert | Wann reaktivieren |
 |-----|-----|-------------------|-------------------|
 | **Fakten-Enrichment** | `enricher.py` | 130+ Rausch-Einträge (`VERWENDET_BELEIDIGUNG`, `BEHERRSCHT = Markdown`, etc.) — Fakten-Qualität muss erst bereinigt werden | Nach Fakten-Bereinigung (CRUD gerade ziehen, Phase 4) |
-| **memory_context im GV-Node** | `gespraechsvektor.py`, `_hypothese_destillieren()` | Der GV-Node bekommt den kompletten Enricher-Dump (Fakten + KZG + LZG + Notizen + Timeline + Charakter) als [GEDAECHTNIS]-Block — alles redundant, weil der GV eigene Quellen hat (Entity-Hops, Wissenslücken). Charakter steht bereits im System-Prompt. ~3500 Tokens Rauschen, Strategie-Prompt geht unter | **Permanent für den GV** — der GV braucht memory_context nicht. Der Responder braucht ihn weiterhin (dort bleibt er aktiv). Wenn der Reducer kommt, baut er das Responder-Konzentrat aus dem State, nicht aus memory_context. |
+| **memory_context im GV-Node** | `gespraechsvektor.py`, `_hypothese_destillieren()` | Der GV-Node bekommt den kompletten Enricher-Dump (Fakten + KZG + LZG + Notizen + Timeline + Charakter) als [GEDAECHTNIS]-Block — alles redundant, weil der GV eigene Quellen hat (~~Entity-Hops~~ Resonanz-Kontext seit Chat 115, Wissenslücken — siehe Korrektur unter „Konsequenzen"). Charakter steht bereits im System-Prompt. ~3500 Tokens Rauschen, Strategie-Prompt geht unter | **Permanent für den GV** — der GV braucht memory_context nicht. Der Responder braucht ihn weiterhin (dort bleibt er aktiv). Wenn der Reducer kommt, baut er das Responder-Konzentrat aus dem State, nicht aus memory_context. |
 
 ### Konsequenzen und Abhängigkeiten
 
@@ -629,13 +629,13 @@
 
 - Der Responder bekommt aktuell keine Fakten mehr im Kontext
 - Semantische Fragen zu Personen/Orten ("Wo wohnt Anna?") funktionieren weiterhin über KZG und LZG, aber nicht über strukturierte Fakten
-- Entity-Hops im GV-Node funktionieren weiterhin (eigene DB-Query, unabhängig vom Enricher)
+- ~~Entity-Hops im GV-Node funktionieren weiterhin (eigene DB-Query, unabhängig vom Enricher)~~ — **zwei Behauptungen, beide überholt (Chat 115, 29.07.2026).** Die *Unabhängigkeit vom Enricher* stimmte, als der Satz geschrieben wurde: Die eigene DB-Query existierte. Dass sie *funktionierte*, stimmte nie — bis 12.07.2026 warf sie `UndefinedColumn` (GV-ENTITY-HOP-TOT), danach traf sie über 45 gemessene Läufe keinen einzigen Fakt (GV-ENTITY-HOP-FINDET-NICHTS). Seit Chat 115 liest der Node keine Fakten mehr, sondern `state["lzg_resonanz"]` — und hängt damit am Enricher, der diesen Key legt.
 - Reaktivierung erfordert: Fakten-Tabelle bereinigen (Rausch-Einträge löschen, Attribut-Normalisierung), dann Enricher wieder einschalten
 
 **memory_context im GV:**
 
 - Designentscheidung, keine temporäre Deaktivierung: Der GV braucht keinen Enricher-Dump. Er hat eigene, fokussierte Datenquellen:
-  - [VERWANDTE FAKTEN] aus Entity-Hops (eigene pgvector/ILIKE-Query)
+  - ~~[VERWANDTE FAKTEN] aus Entity-Hops (eigene pgvector/ILIKE-Query)~~ → seit Chat 115 `[VERWANDTE ERINNERUNGEN]` aus `state["lzg_resonanz"]`. **Keine eigene Abfrage mehr** — die Quelle ist weiterhin fokussiert, aber nicht mehr selbst erhoben
   - [WISSENSLUECKEN] aus GV4 (eigene LZG + KZG Embedding-Suche)
   - [CHARAKTER] bereits im System-Prompt
   - [GEDANKEN] aus Drive-System (aktivierte Ziele)
@@ -1604,6 +1604,17 @@ Offen → Backlog: `CHARHASH-GEWICHT-ABSOLUT-LIVE` (volle Live-Abnahme im Dauerb
 
 Die Wiederbelebung ist **M2.5b** und war nie abgeschafft. Sie ist heute nicht fällig, und der Grund ist messbar: Die Vorbedingung aus Synapsen-§3.2 („sobald der LZG-Kern steht") ist nicht erfüllt. Die beiden Felder, über die §3.2 die zwei Gedächtnis-Modalitäten verschränkt, sind zu 22 % (`entitaet_ids`, 65/296) und 0,3 % (`timeline_id`, 1/296) gefüllt — das Faktengedächtnis müsste genau dort andocken. Bestandsaufnahme im Backlog.
 
+### Der Nachzug in den Übersichtsdokumenten
+
+Der Entity-Hop stand in fünf weiteren Dokumenten als **gegenwärtige** zweite Wissensquelle. Alle fünf Stellen sind an Ort und Stelle markiert, keine gelöscht: `architecture.md` (Statustabelle und Doku-Index), `graph.md` (Node-Tabelle), `ei.md`, `roadmap.md` (Deaktivierungstabelle samt Konsequenzen), `backlog.md` (Neugier-Suche §3).
+
+Zwei davon trugen **zwei** Behauptungen in einem Satz und brauchten zwei Entscheidungen:
+
+- *„Entity-Hops im GV-Node funktionieren weiterhin (eigene DB-Query, unabhängig vom Enricher)"* — die Unabhängigkeit stimmte damals, das Funktionieren nie.
+- *„Die Entity-Hop-ILIKE-Suche bleibt parallel bestehen — sie findet Named Entities"* — sie besteht nicht mehr, und Named Entities hat sie nie gefunden. Der Mismatch wandert mit zu M2.5b: Er hängt an der Suche, nicht am GV-Node.
+
+Historische Aussagen bleiben unangetastet — die Chronik von Chat 39, die Entity-Hop-Historie in §10.1 des GV-Konzepts und der Anlass-Absatz im Backlog beschreiben die Vergangenheit richtig.
+
 **Umfang:** Suite 356 → **365 Tests**, grün, 0 übersprungen. Gegenprobe zweifach rot.
 
 **Live belegt 29.07.2026, 05:35 UTC:** `GV-Resonanz: 3 Erinnerung(en) in den Prompt (Cluster 'feuerwerk', Schalen: [0, 1, 1])`. Seiteneffekte: 0 `timeline`, 0 `notizen`, 0 `fakten`.
@@ -1612,4 +1623,42 @@ Die Wiederbelebung ist **M2.5b** und war nie abgeschafft. Sie ist heute nicht f�
 
 ---
 
-*Aktualisiert in Chat 115 (29.07.2026). Offene Punkte → novaberg-backlog.md. Bugs → novaberg-bugs.md.*
+## Chat 116 (29.07.2026) — Das Panel bekommt den Wert, den der Node seit jeher schreibt ✅
+
+### Doku-Nachzug zu Chat 115
+
+Der Entity-Hop stand in fünf weiteren Dokumenten als gegenwärtige zweite Wissensquelle. Alle Stellen sind markiert; die Einzelheiten stehen im Chat-115-Block unter „Der Nachzug in den Übersichtsdokumenten", weil sie zu dessen Umbau gehören.
+
+### `gv_detail.resonanz_kontext` wird angezeigt
+
+- ✅ **Der Fund war richtig und die Messung hat ihn zugleich verkleinert.** Das Feld war schreib-only — geschrieben, nach Redis persistiert, über `GET /drive/gv_detail` ausgeliefert, von keinem Leser abgeholt. Der Fund behauptete zusätzlich, das Panel zeige *sonst alle* Eingänge des Nodes. Am Live-Blob nachgezählt: **21 Schlüssel, 16 gelesen.** Die Behauptung war zu großzügig, der Kern des Fundes hielt.
+- ✅ **Neue Sektion „Verwandte Erinnerungen (N)"** im GV-Panel, direkt neben den Wissenslücken: was Nova nicht weiß, was sie schon erlebt hat. Die Schalen-Beschriftung des Servers bleibt sichtbar — *direkt zum Thema* gegen *assoziiert über N Sprung(e)* —, sonst liest man einen Nachbarn zweiter Ordnung als Kernbezug.
+- ✅ **Kürzungshinweis.** Der Server schneidet den Block bei 500 Zeichen. Ohne Hinweis sieht ein mitten im Wort endender Eintrag aus wie ein Defekt der Schreibseite.
+- ✅ **Umbenennungs-Muster übernommen** (von `aufnahmebereitschaft`, Chat 111): `entity_hops` wird übergangsweise mitgelesen, weil der Redis-Key kein TTL hat; fehlen **beide** Namen, ist das ein `logger.error` — ein Bruch zwischen Server und Client, kein leerer Turn.
+- ✅ **Zwei Tests auf der Serverseite** halten die Gegenrichtung fest: Der Node muss den Schlüssel schreiben, den das Panel liest, und bei Leerfällen einen leeren String statt gar keinen Wert. Der zweite Test ist der positive Zwilling zum ersten — fiele der Schlüssel bei Leerfällen weg, meldete das Panel bei jedem stillen Turn einen Bruch.
+
+**Umfang:** Suite 365 → **367 Tests**, grün, 0 übersprungen. Gegenprobe zweimal rot, jeweils gezielt: Schlüssel im Node umbenannt → beide neuen Tests rot; Leerfall auf einen Nicht-Leer-Default gesetzt → nur der Zwilling rot.
+
+**Live belegt 29.07.2026, 06:06 UTC.** Die Sektion wurde ohne Bildschirm gegen den echten `/drive/gv_detail`-Blob gebaut und ihre Labels zurückgelesen: `Verwandte Erinnerungen (2)`, eine Erinnerung *direkt zum Thema*, eine *assoziiert über 1 Sprung(e)*, dazu der Kürzungshinweis bei genau 500 Zeichen. Keine Messturns, keine Seiteneffekte.
+
+### `GV4-BEREITSCHAFT-DEFAULT-WIE-KRISE` — der Neugier-Balken meldete eine Krise
+
+Am laufenden Client aufgefallen: Der Neugier-Balken des GV-Panels stand über viele Turns hinweg auf 0.
+
+- ✅ **Der Rechner war in Ordnung, er wurde nur nicht gefragt.** `aufnahmebereitschaft` stand auf `0.0` und wurde nur innerhalb von `if strategie_aktiv:` überschrieben — also erst ab Vektorlänge 2. Gemessen über acht GV-Läufe (28.07. 19:57 bis 29.07. 05:37 UTC): vier mit Länge 2 lieferten 0.626 / 0.626 / 0.937 / 0.824, drei mit Länge 1 lieferten die uneingelöste `0.0`, einer mit Länge 0 kam gar nicht bis zum `gv_detail`.
+- ✅ **Der Ausfallwert war nicht irgendeine Null.** `0.00` ist im Konzept für die Krise reserviert (`spirale`/`absturz` bei Arousal ≥ 0.7); ein neutraler Zustand liegt bei ~0.56. Das Panel meldete in der Hälfte der Läufe nicht „nicht gemessen", sondern „Nova ist im Absturz".
+- ✅ **Die Rechnung steht jetzt vor dem Tor, das Tor blieb, wo es war.** Die Aufnahmebereitschaft ist ein Zustand Novas und rein berechenbar; die Längen-Schwelle gehört vor die teure Lückensuche, die weiterhin `strategie_aktiv and aufnahmebereitschaft > 0` verlangt.
+
+**Umfang:** Suite 367 → **370 Tests**, grün, 0 übersprungen. Gegenprobe zweifach, jeweils gezielt: alte Torstellung → die zwei Messungs-Tests rot, der Tor-Zwilling grün; Tor aus der Suchbedingung entfernt → nur der Tor-Test rot.
+
+**Live belegt 29.07.2026, 06:21:49 UTC:** `GV-Laenge: 1` · `GV4-Neugier: 0.551` · im Panel-Pfad `aufnahmebereitschaft=0.551`, `strategie_aktiv=False`, `wissensluecken=0`. Vorher hätte dort `0.0` gestanden. Zwei Messturns (Astronomie), Seiteneffekte: 0 `timeline`, 0 `notizen`, 0 `fakten`.
+
+### Was dabei abfiel
+
+- **`korridor_verstoesse` ist ebenfalls ohne Leser** — die Leitplanke aus Chat 114 meldet einen Verstoß nur ins Server-Log. Zusammen mit `repertoire` und `charakter_gewichtung` (beide seit Chat 72 im Backlog) am Backlog-Punkt „GV-Panel: Dreischicht-Felder visualisieren" vermerkt, der damit als teilerledigt geführt wird.
+- **Ein übersprungener Turn hinterlässt den vorigen Stand.** `gespraechsvektor()` kehrt bei Skip und bei Länge 0 zurück, bevor `gv_detail` gesetzt wird; der Dispatcher persistiert dann nichts, der Redis-Key hat kein TTL. Das Panel zeigt danach die Werte des letzten *nicht* übersprungenen Turns, ohne Kennzeichnung. Beim Messen live vorgeführt (06:20:41, Länge 0 → 45 Minuten alter Blob blieb stehen). In der Fundliste.
+- **Geprüft und nicht gefunden:** die naheliegende Wettlaufsituation. Wenn das Panel refreshte, bevor der Dispatcher schreibt, wäre es systematisch einen Turn im Rückstand. Am Log gemessen: `_persist_gv_detail` läuft **2 ms vor** `Antwort gesendet per WebSocket`. Der Verdacht war falsch, und das gehört genauso in die Chronik wie ein Treffer — sonst prüft ihn der nächste noch einmal.
+
+---
+
+*Aktualisiert in Chat 116 (29.07.2026). Offene Punkte → novaberg-backlog.md. Bugs → novaberg-bugs.md.*

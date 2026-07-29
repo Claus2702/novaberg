@@ -556,7 +556,7 @@ Perzeption und Router bekommen die letzten 5 Session-Turns als Hintergrund-Konte
 | KZG-Agent (LangGraph-Subgraph, 5 Nodes) | Implementiert & validiert | novaberg-mem-kzg.md |
 | DelegationsAgent (Halluzinations-Ventil) | Implementiert & validiert | novaberg-pixie-delegation.md |
 | RechercheAgent (Pixie Web-Recherche) | Implementiert | novaberg-pixie-research.md |
-| Gespraechsvektor (GV1+GV2: Node, Farbmisch, Entity-Hop) | Implementiert & validiert | novaberg-node-gv_k.md |
+| Gespraechsvektor (GV1+GV2: Node, Farbmisch, ~~Entity-Hop~~ Resonanz-Kontext) | Implementiert & validiert | novaberg-node-gv_k.md |
 | Session-Kontext-Extraktion (memory/kontext.py) | Implementiert | Chat 35 |
 | Auto-Fetch (web_search -> page_fetch automatisch) | Implementiert | Chat 35 |
 | Prompt-Schema [BLOCKNAME] auf allen Nodes | Implementiert | novaberg-pattern-prompt-schema.md |
@@ -602,7 +602,7 @@ Das Handbuch ist nach Betrachtungstiefen organisiert. Tiefe 0 ist der Einstiegsp
 | novaberg-node-router.md | Router (Routing, Agenten-Delegation) |
 | novaberg-node-planner.md | Planner (Agent-Loop, Resume-Flow) |
 | novaberg-node-agent-dispatch.md | Agent-Dispatch (Zentraler Entry-Point) |
-| novaberg-node-gv_k.md | Gespraechsvektor (Farbmisch-System, Entity-Hop) |
+| novaberg-node-gv_k.md | Gespraechsvektor (Farbmisch-System, zweite Wissensquelle: ~~Entity-Hop~~ Resonanz-Kontext seit Chat 115) |
 | novaberg-node-responder.md | Responder (Antwortgenerierung, EI-MIKRO) |
 | novaberg-node-thinker.md | Thinker (Faktenpruefung, Web-Suche) |
 | novaberg-node-tribunal.md | Tribunal (Drei-Perspektiven-Bewertung, Score-System) |

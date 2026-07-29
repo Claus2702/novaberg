@@ -1,6 +1,6 @@
 # Novaberg — Bugs & Limitationen
 
-**Stand:** 27. Juli 2026, Chat 112
+**Stand:** 29. Juli 2026, Chat 116
 **Gliederung:** Einträge stehen in der Sektion ihres Entdeckungs-Chats und wandern nicht. Nachträge aus späteren Chats tragen ihre Chat-Nummer im Text. Sonst verliert die Sektionsfolge ihre Bedeutung als Zeitachse.
 **Quelle:** Testlauf "Karrierekrise" (200 Prompts) + Gedächtnis-Epic (Chat 11) + Epic 11 Agent-System (Chats 22–32) + Persona Smoke-Tests (Chats 31–32) + RechercheAgent-Test (Chat 35) + Doku-Audit (Chat 36) + PRIO0-Fix + Client-Observability (Chat 37) + Claude API-Test + STREAM1-Fix + Gesprächsvektor (Chat 39) + CharakterIdentitaetAgent + DirektivenAgent + Tribunal Score-System (Chat 40) + Telegram Bot + Zeitparser-Fixes (Chat 41) + CRUD-Härtung + Telegram-Chat-Analyse + DB-Report (Chat 42) + KONTEXT1-Fix + Resume-Bug + Epic 15 Pilot (Chat 43) + Epic 15 Rollout + DELEG-REG Fix + KZG-Klebrigkeit (Chat 44) + RESP-CHAR1 Fix (Chat 45) + CLASSIFY-REJECTED + Gemma4 Live-Tests (Chat 48) + Telegram-Konversation "frecher Charakter" (Chat 49) + RESUME-REJECT Fix + Live-Tests (Chat 50) + Neugier-Konzept + Projektinfrastruktur (Chat 51) + Doku-Alignment + emotions_profil (Chat 52) + Antrieb-Konzept + Dual-Emotion (Chat 53) + HALL2-Fix + Planner-Refactor (Chat 54) + PySide6 verworfen + GTK4-Entscheidung (Chat 55) + GTK4-Client + Panel-Infrastruktur (Chat 56) + Web-Tool-Doku + SEARX1-Diagnose (Chat 57) + Chat 61 (Perzeption-Symmetrie, Akkumulations-Refactor, Paper-Portfolio, Lumi, urllib3-Doppel-Turn beobachtet) + Paper I + urllib3-RETRY + ROUTE-CHAR-NOTIZ + RESP-DEAD + PIXIE-GHOST (Chat 65) + WS-SINGLE Fix + ClientConnection + User-Message-Broadcast (Chat 68) + Dreischicht-Integration + GV-Refactoring + MODUS-LEER + VEKTOR-LEER + AROUSAL-330 + ZIEL-LABEL-LEER Fixes (Chat 72) + Promotion-Pipeline-Audit (Chat 75) + Reducer-Umbau Smoke-Tests (Chat 75) + Chat 79 (THINK-MEM-CONFLICT, CHAR-LZG-LEAK, MIGRATION-PIX-PAIR, MIGRATION-AGENTGRAPH-PAIR, PIX-CLEAN, KZG-CLEANUP) + Doku-Code-Abgleich (Chat 106) + init.sql-Audit (Chat 107)
 
@@ -2479,3 +2479,62 @@ sichern, nur live beobachten. Ob der Block auch über längere Strecken trägt, 
 Voraussetzung, nicht Wirkung) · `GV-IMPULS-ALS-FAKTENSPERRE` · Echo-Bug Chat 72,
 Lösungsvorschlag (c) Verlaufs-Trimming — durch diesen Befund als der wirksamste der drei
 belegt, weiterhin nicht gebaut.
+
+---
+
+### Chat 116 (29.07.2026) — GV-Panel
+
+#### GV4-BEREITSCHAFT-DEFAULT-WIE-KRISE — der Neugier-Balken meldete eine Krise, wenn nur der Vektor kurz war ✅ Behoben Chat 116
+
+**Entdeckt:** Chat 116, am laufenden Client beobachtet: Der Neugier-Balken des GV-Panels
+stand über viele Turns hinweg auf 0. **Prio mittel.**
+
+**Klasse:** Ausfallwert, der wie eine Messung aussieht — und zwar wie die eine Messung, die
+etwas Bestimmtes bedeutet. Dieselbe Klasse wie `GV-CHARAKTER-DEFAULT-UEBER-MESSBEREICH` und
+`lesson_l_default-wie-fehlschlag`.
+
+**Symptom:** `aufnahmebereitschaft` wurde mit `0.0` initialisiert und nur innerhalb von
+`if strategie_aktiv:` überschrieben, also erst ab Vektorlänge ≥ `GV_STRATEGIE_MIN_LAENGE`
+(2). Jeder kürzere Turn schrieb die `0.0` unverändert nach `gv_detail`, von dort nach Redis
+und ins GV-Panel.
+
+**Warum das nicht nur unschön ist:** `0.00` ist im Konzept **für die Krise reserviert** —
+`aufnahmebereitschaft_berechnen` gibt genau dann 0 zurück, wenn Stimmungsvektor `spirale`
+oder `absturz` bei Arousal ≥ 0.7 vorliegt. Ein neutraler Zustand liegt bei ~0.56. Der
+Balken meldete also nicht „nicht gemessen", sondern „Nova ist im Absturz".
+
+**Beleg (Server-Log, 28.07. 19:57 bis 29.07. 05:37 UTC, acht GV-Läufe):** vier mit Länge 2
+→ gerechnete Werte 0.626, 0.626, 0.937, 0.824. Drei mit Länge 1 → nie gerechnet, `0.0`
+ausgeliefert. Einer mit Länge 0 → der Node kehrt zurück, bevor `gv_detail` existiert. In
+**der Hälfte der Läufe** trug das Panel den Krisenwert.
+
+**Mitbetroffen:** `services/event_consumer.py` loggt dieselbe Zahl aus `gv_detail` in die
+Turn-Zeile.
+
+**Behoben:** Die Rechnung steht jetzt vor dem Tor, nicht dahinter. Begründung im Code: Die
+Aufnahmebereitschaft ist ein **Zustand Novas** — sechs Säulen aus Emotion, Arousal,
+Stimmungsrichtung, Modus, Dynamik und Stil — und keine Funktion der Vektorlänge. Sie ist
+rein (State-Lesen, Tabellen-Lookups, Arithmetik; keine DB, kein LLM). Das Längen-Tor bleibt
+unverändert dort, wo es hingehört: vor der teuren Wissenslücken-Suche, die weiterhin
+`strategie_aktiv and aufnahmebereitschaft > 0` verlangt.
+
+**Tests:** `tests/test_gv_aufnahmebereitschaft.py` (3). Der Erwartungswert stammt aus der
+dokumentierten Semantik der Größe, nicht aus dem Rechenweg. Zwei davon prüfen beide
+Richtungen des Tors — geschlossen bei Länge 1, offen bei gesenkter Schwelle —, weil eine
+vorgezogene Messung das Tor mit hochziehen könnte und die Suche dann in jedem Turn liefe.
+
+**Gegenprobe zweifach, jeweils gezielt:** alte Torstellung wiederhergestellt → die zwei
+Messungs-Tests rot, der Tor-Zwilling grün. Tor aus der Suchbedingung entfernt → nur der
+Tor-Test rot.
+
+**Live belegt 29.07.2026, 06:21:49 UTC:** Turn mit `GV-Laenge: 1`,
+`GV4-Neugier: 0.551 (roh=0.49, produkt=0.98, emotion='neugierig' sektor=8 dist=0)`, und im
+Panel-Pfad `GET /drive/gv_detail` → `aufnahmebereitschaft=0.551`, `strategie_aktiv=False`,
+`wissensluecken=0`. Vorher wäre an derselben Stelle `0.0` gestanden. Seiteneffekte über
+beide Messturns: 0 `timeline`, 0 `notizen`, 0 `fakten`.
+
+**Nicht mitbehoben, in der Fundliste:** Bei Länge 0 und beim Skip kehrt der Node zurück,
+**bevor** `gv_detail` gesetzt wird. Der Dispatcher persistiert dann nichts, der Redis-Key
+hat kein TTL — das Panel zeigt danach den Stand des letzten *nicht* übersprungenen Turns,
+ohne Kennzeichnung. Am 29.07.2026 um 06:20:41 live vorgeführt: Ein Turn mit `GV-Laenge: 0`
+ließ den 45 Minuten alten Blob stehen.

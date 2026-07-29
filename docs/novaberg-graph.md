@@ -145,7 +145,7 @@ db_zugriff → EI-Calc(character) → Enricher → EmGrav → Reducer → Router
 | 5 | Router | GPU | Routing-Entscheidungen, Pending-Agent-Check, setzt `management_action`. |
 | 6 | Planner | GPU | Bei Management: Agent finden, Aktion planen. Conditional ⇄ Agent-Dispatch. |
 | 7 | Agent-Dispatch | Nein | Delegiert an agenten-spezifischen Dispatch, kehrt zum Planner zurueck (Schleife). |
-| 8 | GV-Node | GPU | Gespraechsvektor-Hypothese (Farbmisch + Entity-Hop). |
+| 8 | GV-Node | GPU | Gespraechsvektor-Hypothese (Farbmisch + zweite Wissensquelle). ~~Entity-Hop über die `fakten`-Tabelle~~ → seit Chat 115 Resonanz-Kontext aus `state["lzg_resonanz"]`, gelegt vom Enricher. |
 | 9 | Responder | GPU | Antwort generieren — liest `internal.character`, `internal.identities`, `internal.directives` aus `state["internal"]`. |
 | 10 | Thinker | GPU (opt.) | Faktencheck, Web-Suche. Bei Doppel-Fehlschlag: setzt `self_trigger`/`self_trigger_payload` (deklarierte Channels seit Chat 106, `44e050a` — vorher undeklariert und an der Node-Grenze still verworfen, THINKER-SELFTRIGGER-KANALLOS). |
 | 11 | Tribunal | GPU | Drei-Perspektiven-Bewertung (Jurist/Psychologe/Ethiker). |
