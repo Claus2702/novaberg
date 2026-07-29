@@ -219,10 +219,19 @@ def ChatSenden(anfrage: GespraechAnfrage, request: Request):
         }
 
     except Exception as fehler:
-        logger.error(f"Graph-Fehler: {fehler}")
+        # Den Typ nennen, nicht nur str(fehler): Die haeufigste Exception auf
+        # diesem Pfad ist concurrent.futures.TimeoutError aus submit_sync
+        # (60 s Default, greift wenn der Modell-Worker noch am vorigen Turn
+        # haengt) — und deren str() ist LEER. Die Zeile lautete dann
+        # "Graph-Fehler: " und benannte nichts; der Client bekam ein
+        # "Verarbeitungsfehler: " ohne Grund. Gemessen 29.07.2026 bei zwei
+        # von fuenf Turns einer Messreihe ohne Pause.
+        typ: str = type(fehler).__name__
+        text: str = str(fehler) or "(Exception ohne Meldung)"
+        logger.error(f"Graph-Fehler [{typ}]: {text}", exc_info=True)
         return JSONResponse(
             status_code = 503,
-            content     = {"fehler": f"Verarbeitungsfehler: {fehler}"},
+            content     = {"fehler": f"Verarbeitungsfehler [{typ}]: {text}"},
         )
 
 
