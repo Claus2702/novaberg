@@ -79,7 +79,7 @@ Neugier entsteht in der Lücke zwischen Wissen und Nicht-Wissen.
 | 3 | **Nähe** (N) | Beziehungsdichte | fern ◄──► nah/intim | Novas Raum (§3.4) |
 | 4 | **Valenz** (V) | Emotionale Färbung | negativ (−) ◄──► positiv (+) | `current_emotion` (Plutchik-Sektor) |
 | 5 | **Tiefe** (T) | Gesprächsebene | flach (f) ◄──► tief (t) | Novas Raum (§3.4) |
-| 6 | **Initiative** (I) | Wer treibt? | User führt (U) ◄──► gleich/Nova (=) | ~~`intentionen` + Turn-Muster~~ — gebaut ist nur die Turn-Länge, siehe unten |
+| 6 | **Initiative** (I) | Wer treibt? | User führt (U) ◄──► gleich/Nova (=) | ~~Turn-Länge~~ → seit Chat 116 Wollen + Themensprung + Registerweg (`novaberg-gv-initiative_k.md`) |
 
 ### 3.2 Kodierung
 

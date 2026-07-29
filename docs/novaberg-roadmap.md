@@ -1694,6 +1694,31 @@ Aus der Frage, ob die Repertoire-Verteilung etwas ausschließt, wurde ein Befund
 
 **Nebenbefund, der die Messung erst blockierte:** Zwei von fünf Turns der ersten Charge liefen in `concurrent.futures.TimeoutError` (60 s in `submit_sync`). Dessen `str()` ist leer — die Zeile lautete `Graph-Fehler: ` und benannte nichts, der Client bekam `Verarbeitungsfehler: ` ohne Grund. Behoben: Typ und `exc_info` in `api/chat.py`.
 
+### Die Initiative-Achse gebaut ✅ — 32 Sektoren waren zu, jetzt sind sie offen
+
+Kein Schattenbetrieb: Nova ist ein Prototyp, also direkt gebaut und gemessen.
+
+- ✅ **`ei/initiative.py`** — drei Maße (Wollen, Themensprung, Registerweg), jedes auf sein eigenes erhobenes Zentrum normiert, je Dimension gewichtet. Ergebnis ist eine `Fuehrung`-Klasse statt flacher Felder (Handbuch §6), mit `fehlend` als benannter Liste: Was nicht gemessen werden konnte, wird genannt statt als Null verrechnet.
+- ✅ **Die Normierung ist bewusst asymmetrisch.** Bei M3 liegt das Zentrum (0.100) dicht am Minimum (0.000) und weit vom Maximum (0.600); eine symmetrische Abbildung staucht die untere Hälfte und erfindet eine Auflösung, die die Daten nicht hergeben.
+- ✅ **Rechnen und Laden getrennt** (Handbuch §1): Der GV-Node lädt die Bezugsgrößen und embeddet Novas Vorantwort, das Rechenmodul macht keine Datenbankzugriffe. Der Dispatcher legt den **Antworttext** ab, nicht sein Embedding — ein Embed-Call dort läge vor dem WebSocket-Broadcast.
+- ✅ **`initiative_berechnen` bleibt stehen** und dokumentiert den widerlegten Zustand, mit einem Test, der rot wird, wenn jemand sie zurückverdrahtet.
+
+**Umfang:** Suite 373 → **385 Tests**, grün, 0 übersprungen. **Gegenprobe:** alte Längen-Achse zurückverdrahtet → vier rot, darunter `test_beide_bits_sind_erreichbar` mit `AssertionError: 1 == 1` — der Defekt reproduziert sich im Test. Die Normierungs-Tests blieben grün, weil sie nicht an der Verdrahtung hängen.
+
+**Live belegt 29.07.2026, 13:56 UTC**, zwei Turns mit Themenwechsel:
+
+```
+Initiative: wert=0.104 (roh=0.104, versatz=+0.00)
+            wollen=— bewegung=+0.104 [M1=— M2=0.729 M3=0.100] fehlend=['wollen']
+GV-Achsen:  … I=0(+0.104)   →   GV-Sektor: #14 'Stilles Vertrauen' → Cluster 'glut'
+```
+
+**Sektor #14 gehört zu den 32, die vorher unerreichbar waren.** Seiteneffekte: 0 `timeline`, 0 `notizen`, 0 `fakten`.
+
+**Nicht gebaut:** Der Charakter-Versatz steht auf 0.0 und ist nicht abgeleitet — das Rad ist entworfen (§6 des Konzepts), nicht gebaut. Ebenso fehlt das tote Band; das Zentrum ist per Konstruktion der Median und damit die dichteste Stelle der Verteilung, wo das Bit am stärksten zittert.
+
+**Erfasst als:** `GV-INITIATIVE-KIPPT-NIE` in `novaberg-bugs.md`.
+
 ### Was dabei abfiel
 
 - **`korridor_verstoesse` ist ebenfalls ohne Leser** — die Leitplanke aus Chat 114 meldet einen Verstoß nur ins Server-Log. Zusammen mit `repertoire` und `charakter_gewichtung` (beide seit Chat 72 im Backlog) am Backlog-Punkt „GV-Panel: Dreischicht-Felder visualisieren" vermerkt, der damit als teilerledigt geführt wird.

@@ -2548,3 +2548,29 @@ beide Messturns: 0 `timeline`, 0 `notizen`, 0 `fakten`.
 hat kein TTL — das Panel zeigt danach den Stand des letzten *nicht* übersprungenen Turns,
 ohne Kennzeichnung. Am 29.07.2026 um 06:20:41 live vorgeführt: Ein Turn mit `GV-Laenge: 0`
 ließ den 45 Minuten alten Blob stehen.
+
+#### GV-INITIATIVE-KIPPT-NIE — eine Achse, die über 15 Läufe denselben Wert trug ✅ Behoben Chat 116
+
+**Entdeckt:** Chat 116, bei der Frage, ob die Repertoire-Verteilung etwas ausschließt. **Prio hoch** — die Achse ist ein Drittel des Sektor-Index.
+
+**Klasse:** Ein Maß, dessen Schwelle außerhalb seines erreichbaren Wertebereichs liegt. Verwandt mit `GV4-BEREITSCHAFT-DEFAULT-WIE-KRISE` aus derselben Sitzung, aber eine Stufe tiefer: Dort wurde ein Wert nicht gerechnet, hier wurde er gerechnet und konnte nie etwas bedeuten.
+
+**Symptom:** `initiative_berechnen` bildete das Verhältnis der durchschnittlichen Zeichenzahl von Nutzer- zu Nova-Turns über die letzten sechs Session-Turns; `achsen_berechnen` kippte bei `>= 1.5`.
+
+**Beleg (Server-Log, 28.07. 19:57 bis 29.07. 07:52 UTC, 15 GV-Läufe):** I = 1 in **15 von 15**, Rohwerte 0.10 bis 1.00. Aus den Session-Turns desselben Paars: Nutzer **51 Zeichen** je Turn, Nova **433** — Verhältnis 0.12. Für die Schwelle müsste der Nutzer **649 Zeichen** je Turn schreiben, das **12,6-fache**, und das im Schnitt über sechs Turns. Der Quotient ist durch die Bauart beider Seiten nach oben gedeckelt: Eine Assistentin antwortet in Absätzen, ein Mensch tippt eine Zeile.
+
+**Auswirkung:** Sektor-Index = `E*32 + R*16 + N*8 + V*4 + T*2 + I*1`. Ein festes Bit halbiert den Zustandsraum — **32 der 64 Sektoren waren nicht selten, sondern unerreichbar.**
+
+**Drei Konzept-Widersprüche, alle am Code belegt:**
+
+- `novaberg-gv-strategie_k.md` §3.1 nennt als Quelle `intentionen` + Turn-Muster. Gebaut war nur die Textlänge; dasselbe Dokument nennt seine Fassung an anderer Stelle „Heuristik v1".
+- Die Wertebereichs-Tabelle desselben Dokuments führt die Größe mit **0.0 bis 1.0**. Die Schwelle lag bei **1.5**, also außerhalb. Wäre der Code auf den konzipierten Bereich normiert gewesen, hätte die Achse **konstruktionsbedingt** nie kippen können.
+- `if avg_nova == 0: return 2.0` — 2.0 ≥ 1.5. **Eine leere Nova-Antwort war der zuverlässigste Weg zu „Nutzer führt".** Ein Ausfallwert auf einer regulären Achsenposition.
+
+**Behoben Chat 116 — ersetzt, nicht kalibriert.** Eine Nachkalibrierung der Schwelle hätte die Achse nur launischer gemacht: Sie misst die falsche Größe. Wer ein Gespräch treibt, hängt nicht an der Zeichenzahl — eine kurze Frage kann stärker lenken als drei Absätze Antwort. Neu misst `ei/initiative.py` drei Formen von Führung (Wollen, Themensprung, Registerweg), jede auf ihr eigenes erhobenes Zentrum bezogen und je Dimension gewichtet. Herleitung, Messgrundlage und die verworfenen Alternativen: `novaberg-gv-initiative_k.md`.
+
+**Tests:** `tests/test_gv_initiative.py` (12). **Gegenprobe:** die alte Achse zurückverdrahtet → vier rot, darunter `test_beide_bits_sind_erreichbar` mit `AssertionError: 1 == 1` — der Defekt reproduziert sich im Test.
+
+**Live belegt 29.07.2026, 13:56 UTC:** Zwei Turns, der zweite mit Themenwechsel. `Initiative: wert=0.104 … [M1=— M2=0.729 M3=0.100] fehlend=['wollen']` → `I=0` → Sektor **#14 'Stilles Vertrauen'**, Cluster `glut`. **#14 gehört zu den 32 vorher unerreichbaren.** Seiteneffekte: 0 `timeline`, 0 `notizen`, 0 `fakten`.
+
+**Nicht mitbehoben:** Der Charakter-Versatz steht auf 0.0 und ist nicht abgeleitet — dieselbe Lage wie `GV_RAUM_CHARAKTER_FAKTOR` nach Chat 114. Das Rad dafür ist entworfen (`novaberg-gv-initiative_k.md` §6), nicht gebaut. Ebenso fehlt das tote Band: Das Zentrum ist per Konstruktion der Median, also die dichteste Stelle der Verteilung — dort zittert das Bit am stärksten. Die Breite braucht eine eigene Messung.

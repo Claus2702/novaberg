@@ -9,23 +9,52 @@
 **Voraussetzung:** `novaberg-convention-abgeleitete-werte.md`, `novaberg-salienz-berechnung_k.md` §5 (Charakter-Rad)
 **Abnehmer:** `novaberg-node-gv_k.md` §10.1 (Achsen → Sektor)
 
-> **Herkunftsvermerk.** Abschnitt 2 ist **auditiert** — jede Zahl ist am 29.07.2026 gemessen, die Quelle steht dabei. Abschnitt 3 ist eine **Setzung** — gesetzt, nicht gemessen. Abschnitte 4 bis 7 sind **Entwurf**: nichts davon ist gebaut. Was gebaut ist, steht ausschließlich in Abschnitt 1.
+> **Herkunftsvermerk, Stand 29.07.2026 nach dem Bau.**
+>
+> | Abschnitt | Status |
+> |---|---|
+> | 1 | **gebaut** — der neue Rohwert läuft im Achsen-Pfad |
+> | 2 | **auditiert** — was ersetzt wurde und warum, jede Zahl gemessen |
+> | 3 | **Setzung** — gesetzt, nicht gemessen |
+> | 4 | **auditiert** — die drei Maße mit ihren Zahlen |
+> | 5 | **teils gebaut** — Skala und Kombination stehen, das tote Band nicht |
+> | 6, 7 | **Entwurf** — Rad und Kalibrier-Agent sind nicht gebaut |
 
 ---
 
-## 1. Was heute gebaut ist
+## 1. Was gebaut ist
 
-`initiative_berechnen` (`ei/dreischicht.py`) bildet das Verhältnis der durchschnittlichen Zeichenzahl von Nutzer- zu Nova-Turns über die letzten sechs Session-Turns. `achsen_berechnen` binarisiert:
+`fuehrung_messen` (`ei/initiative.py`) rechnet die drei Maße aus §4, normiert jedes auf sein eigenes Zentrum und fasst sie je Dimension zusammen. Das Ergebnis ist eine `Fuehrung` — eine Klasse, keine flachen Felder, weil alle Werte aus derselben Rechnung stammen und zusammen weitergereicht werden (Handbuch §6).
 
-```python
-initiative_bin = 0 if initiative_roh >= GV_ACHSE_INITIATIVE_VERH else 1   # Schwelle 1.5
+```
+wollen   = M1 normiert                     [-1, +1]
+bewegung = Mittel(M2', M3')                [-1, +1]
+rohwert  = Mittel(bewegung, wollen)
+wert     = rohwert + versatz               gekappt auf [-1, +1]
 ```
 
-Bit 0 heißt „Nutzer führt", Bit 1 „gleich oder Nova". Der Wert geht als niedrigstes Bit in den Sektor-Index.
+`achsen_berechnen` binarisiert bei **0**: Bit 0 heißt „Nutzer führt", Bit 1 „gleich oder Nova".
+
+**Wer was tut:** Der GV-Node lädt die Bezugsgrößen (`_vorturn_laden`) und embeddet Novas letzte Antwort; `ei/initiative.py` rechnet nur. Datenbankzugriffe gehören nicht in ein Rechenmodul (Handbuch §1). Der Dispatcher legt nach jedem Turn Antworttext und Modus unter `gv:vorturn:{user_id}:{character_id}` ab — **den Text, nicht sein Embedding**: Ein Embed-Call dort läge vor dem WebSocket-Broadcast und verlängerte die wahrgenommene Antwortzeit. Im GV-Node des Folgeturns fällt die Wartezeit ohnehin an.
+
+**Fehlende Maße werden benannt.** `Fuehrung.fehlend` trägt die Namen der Maße, deren Quelle im Turn nicht vorlag; die Rechnung läuft mit den übrigen. Fehlen alle drei, ist `wert` None, das Bit steht auf 1 und eine `error`-Zeile sagt, dass es ein Ausfall ist und keine Messung. Ohne diese Unterscheidung läse ein späteres Sektor-Histogramm Ausfälle als „Nova führt".
+
+**Der Charakter-Versatz steht auf 0.0 und ist nicht abgeleitet** — dieselbe Lage wie `GV_RAUM_CHARAKTER_FAKTOR` nach Chat 114. Das Rad (§6) ist der nächste Schritt.
+
+**Live belegt 29.07.2026, 13:56 UTC.** Zwei Turns; der zweite (Themenwechsel Mond → Saturnringe):
+
+```
+Initiative: wert=0.104 (roh=0.104, versatz=+0.00)
+            wollen=— bewegung=+0.104 [M1=— M2=0.729 M3=0.100] fehlend=['wollen']
+GV-Achsen:  … I=0(+0.104)
+GV-Sektor:  #14 'Stilles Vertrauen' → Cluster 'glut'
+```
+
+Der Themensprung liegt mit 0.729 über dem Korpus-Zentrum von 0.662, der Registerweg mit 0.100 genau darauf. **Sektor #14 gehört zu den 32, die vorher unerreichbar waren.** Tests: `tests/test_gv_initiative.py` (12); Gegenprobe mit der alten Achse macht vier davon rot, darunter `test_beide_bits_sind_erreichbar` mit `AssertionError: 1 == 1` — der ursprüngliche Defekt reproduziert sich.
 
 ---
 
-## 2. Warum die Achse ersetzt wird — gemessen
+## 2. Was ersetzt wurde und warum — gemessen
 
 ### 2.1 Sie kippt nicht
 
