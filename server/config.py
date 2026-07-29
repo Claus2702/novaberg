@@ -1187,7 +1187,42 @@ GV_REGISTER_OFFEN_EMOTIONAL:     float = 1.20   # Emotionale Luecke in offenem R
 GV_ACHSE_ENERGIE_SCHWELLE:    float = 0.5   # arousal >= → hoch (1)
 GV_ACHSE_NAEHE_SCHWELLE:      float = 0.5   # naehe >= → nah (1)
 GV_ACHSE_TIEFE_SCHWELLE:      float = 0.5   # tiefe >= → tief (1)
-GV_ACHSE_INITIATIVE_VERH:     float = 1.5   # user_len/nova_len >= → user fuehrt (0)
+GV_ACHSE_INITIATIVE_VERH:     float = 1.5   # ⚠ ABGELOEST, siehe unten — nur noch fuer den Altpfad
+
+# ── Initiative-Achse: wer setzt die Richtung ──
+#
+# Die alte Achse verglich Turn-Laengen gegen GV_ACHSE_INITIATIVE_VERH (1.5).
+# Gemessen ueber 15 Laeufe stand sie 15 Mal auf demselben Wert: Rohwerte
+# 0.10-1.00 gegen eine Schwelle von 1.5, damit waren 32 der 64 Sektoren
+# unerreichbar. Neudefinition und Herleitung: novaberg-gv-initiative_k.md.
+#
+# Drei Masse, je auf ihr eigenes Zentrum bezogen. Die Zentren sind Mediane
+# ueber 133 Rohturn-Paare (gemessen 29.07.2026), die Grenzen die dort
+# beobachteten Extreme. Sie sind KEINE gesetzten Schwellen, sondern erhobene
+# Werte — der Kalibrier-Agent schreibt sie bei jeder Charakter-Destillation
+# neu. Wer sie von Hand aendert, notiert Datum und Korpusgroesse.
+GV_INITIATIVE_M2_THEMA: dict[str, float] = {
+    "zentrum": 0.662, "min": 0.290, "max": 0.983,
+}
+GV_INITIATIVE_M3_REGISTER: dict[str, float] = {
+    "zentrum": 0.100, "min": 0.000, "max": 0.600,
+}
+
+# Intentionen, die eine Richtung SETZEN. Tiefer in ein gesetztes Thema
+# eintauchen ist Folgen, kein Fuehren — 'recherche_vertiefen' steht deshalb
+# bewusst NICHT hier. Die Aufnahme dieses einen Werts wuerde das Signal von
+# +0.38 auf +0.04 druecken (gemessen, Konzept §4.1).
+GV_INITIATIVE_FUEHREND: set[str] = {
+    "information_erfragen", "feedback_erfragen", "anweisung",
+    "widerspruch", "abschluss",
+}
+
+# Der Charakter-Versatz verschiebt den Rohwert, nicht die Schwelle. Volle
+# Auslenkung des Rads trifft die Grenze exakt (Konzept §6.3). Bis das Rad
+# gebaut ist, steht der Versatz auf 0.0 und ist NICHT abgeleitet — dieselbe
+# Lage wie GV_RAUM_CHARAKTER_FAKTOR nach Chat 114.
+GV_INITIATIVE_VERSATZ_MAX:  float = 0.25
+GV_INITIATIVE_VERSATZ:      float = 0.0
 
 # Naeheberechnung: (Dynamik + Stil) / 2
 GV_NAEHE_DYNAMIK: dict[str, float] = {

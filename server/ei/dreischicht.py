@@ -22,6 +22,7 @@ from config import (
 )
 from graph.state import ConversationState
 from services.model_services import model_service, EmbedRequest
+from ei.initiative import Fuehrung, fuehrung_messen
 from ei.utils import cosine_similarity, modus_pruefen
 
 logger = logging.getLogger("ki_server.ei.dreischicht")
@@ -240,12 +241,25 @@ _strategie_embeddings_cache: dict[str, list[float]] = {}
 # ─────────────────────────────────────────────
 
 
-def achsen_berechnen(state: ConversationState) -> dict:
+def achsen_berechnen(
+    state:    ConversationState,
+    fuehrung: Fuehrung | None = None,
+) -> dict:
     """Berechnet die 6 Gespraechsachsen aus dem EI-State.
 
     Jede Achse wird als Rohwert und als binaerer Wert berechnet.
     Die Rohwerte gehen ins gv_detail (Panel), die binaeren Werte
     bestimmen den Sektor-Index.
+
+    Vorbedingung: `state` traegt `internal`. `fuehrung` ist die bereits
+    gemessene Initiative des Turns; sie wird von aussen gereicht, weil ihre
+    Quellen (Embedding und Modus der Vorantwort) aus Redis kommen und ein
+    Rechenmodul keine Datenbankzugriffe macht (Handbuch §1). Fehlt sie, wird
+    sie ohne diese Quellen gemessen — dann traegt sie nur das Wollen.
+    Nachbedingung: Das Dict traegt fuer jede der sechs Achsen einen binaeren
+    Wert; `initiative_roh` ist None, wenn kein Mass verfuegbar war.
+    Fehlerfaelle: Ein Modus ausserhalb des Kanons wird ueber `modus_pruefen`
+    gemeldet, die Rechnung laeuft mit dem Tabellen-Default weiter.
 
     Returns:
         Dict mit Rohwerten und binaeren Werten fuer alle 6 Achsen.
@@ -286,8 +300,29 @@ def achsen_berechnen(state: ConversationState) -> dict:
     tiefe_bin: int   = 1 if tiefe_roh >= GV_ACHSE_TIEFE_SCHWELLE else 0
 
     # ── I: Initiative ──
-    initiative_roh: float = initiative_berechnen(state)
-    initiative_bin: int   = 0 if initiative_roh >= GV_ACHSE_INITIATIVE_VERH else 1
+    # Wer setzt die Richtung? Drei Masse aus ei/initiative.py, je auf ihr
+    # eigenes Zentrum bezogen. Bit 0 heisst "Nutzer fuehrt" — der Wert liegt
+    # in [-1, +1] und ist ueber 0 genau dann, wenn der Nutzer ueber dem
+    # Korpus-Mittel fuehrt.
+    #
+    # Die abgeloeste Fassung verglich Turn-Laengen und stand ueber 15
+    # gemessene Laeufe 15 Mal auf demselben Wert; 32 der 64 Sektoren waren
+    # dadurch unerreichbar (novaberg-gv-initiative_k.md §2).
+    if fuehrung is None:
+        fuehrung = fuehrung_messen(state)
+    initiative_roh: float | None = fuehrung.wert
+
+    if initiative_roh is None:
+        # Kein Mass verfuegbar. Die Achse braucht trotzdem ein Bit, aber es
+        # ist keine Messung — deshalb laut, damit ein Sektor-Histogramm
+        # spaeter nicht Ausfaelle als "Nova fuehrt" liest.
+        logger.error(
+            "GV-Achsen: Initiative nicht messbar (fehlend: %s) — Bit 1 gesetzt, "
+            "das ist ein Ausfall und keine Messung", fuehrung.fehlend,
+        )
+        initiative_bin: int = 1
+    else:
+        initiative_bin = 0 if initiative_roh > 0.0 else 1
 
     # ── Drive (4-Achsen-Reduktion): E × R-Vorzeichen ──
     _VORZEICHEN: dict[str, float] = {
@@ -307,7 +342,8 @@ def achsen_berechnen(state: ConversationState) -> dict:
         "valenz_bin":      valenz_bin,
         "tiefe_roh":       round(tiefe_roh, 2),
         "tiefe":           tiefe_bin,
-        "initiative_roh":  round(initiative_roh, 2),
+        "initiative_roh":  round(initiative_roh, 3) if initiative_roh is not None else None,
+        "initiative_fehlend": fuehrung.fehlend,
         "initiative":      initiative_bin,
         "drive":           round(drive, 2),
     }
@@ -321,14 +357,27 @@ def achsen_berechnen(state: ConversationState) -> dict:
         f"GV-Achsen: E={energie_bin}({arousal:.2f}) R={richtung_bin}({vektor}) "
         f"N={naehe_bin}({naehe_roh:.2f} Raum) V={valenz_bin}({emotion}) "
         f"T={tiefe_bin}({tiefe_roh:.2f} Raum, Label {modus}) "
-        f"I={initiative_bin}({initiative_roh:.2f}) Drive={drive:.2f}"
+        f"I={initiative_bin}("
+        f"{f'{initiative_roh:+.3f}' if initiative_roh is not None else 'nicht messbar'}"
+        f") Drive={drive:.2f}"
     )
 
     return achsen
 
 
 def initiative_berechnen(state: ConversationState) -> float:
-    """Berechnet das Initiative-Verhaeltnis aus den Session-Turns.
+    """⚠ ABGELOEST seit Chat 116 — nicht mehr im Achsen-Pfad.
+
+    Ersetzt durch `ei/initiative.py`, `fuehrung_messen`. Die Funktion bleibt
+    stehen, weil sie den Zustand dokumentiert, den die Messung widerlegt hat:
+    Ueber 15 Laeufe stand die Achse 15 Mal auf demselben Wert. Der Nutzer
+    schreibt 51 Zeichen je Turn, Nova 433; fuer die Schwelle von 1.5 muesste
+    er das 12,6-fache schreiben. 32 der 64 Sektoren waren unerreichbar.
+    Herleitung und Ersatz: novaberg-gv-initiative_k.md.
+
+    Wer sie zurueckverdrahtet, holt den Befund zurueck — ein Test wird rot.
+
+    Berechnet das Initiative-Verhaeltnis aus den Session-Turns.
 
     Vergleicht die durchschnittliche Laenge der User-Turns mit den
     Nova-Turns der letzten 6 Turns. Hoher Wert = User fuehrt.

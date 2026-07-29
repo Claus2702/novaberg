@@ -14,12 +14,14 @@ Begruendung steht am Block ueber `_entity_kontext_laden`.
 Konzept: novaberg-gv-strategie_k.md
 """
 
+import json
 import logging
 
 import psycopg2
 
 from config import (
     POSTGRES_URL,
+    redis_client as cfg_redis_client,
     PROMPTS,
     get_node_config,
     GV_LAENGE_MODUS_DELTA,
@@ -28,12 +30,13 @@ from config import (
 from graph.state import ConversationState
 from memory.pipeline_log import log_fehler
 from memory.session import format_session_turns_numbered
-from services.model_services import model_service, ChatRequest
+from services.model_services import model_service, ChatRequest, EmbedRequest
 
 from ei.utils import POSITIVE_EMOTIONEN, NEGATIVE_EMOTIONEN, modus_pruefen
 from ei.farbton import farbton_berechnen
 from ei.neugier import aufnahmebereitschaft_berechnen
 from ei.wissensluecken import wissensluecken_finden
+from ei.initiative import Fuehrung, fuehrung_messen
 from ei.dreischicht import (
     achsen_berechnen,
     sektor_bestimmen,
@@ -599,6 +602,78 @@ def _hypothese_destillieren(
 # Node-Funktion (Einsprungpunkt fuer den Graph)
 # ─────────────────────────────────────────────
 
+
+def _vorturn_laden(state: ConversationState) -> tuple[list[float] | None, str]:
+    """Holt Embedding und Modus von Novas letzter Antwort fuer die Achse I.
+
+    Der Dispatcher legt den Antworttext ab (`_persist_vorturn`), embeddet ihn
+    aber nicht — das laege dort vor dem Broadcast. Hier faellt die Wartezeit
+    ohnehin an, also wird hier embeddet.
+
+    Vorbedingung: keine. Fehlt der Key, ist es der erste Turn des Paars.
+    Nachbedingung: Entweder ein 768-Vektor und ein Modus, oder (None, "") —
+    dann meldet `fuehrung_messen` die betroffenen Masse als fehlend statt sie
+    als null zu rechnen.
+    Fehlerfaelle: Unlesbarer Key, kaputtes JSON oder ein gescheiterter
+    Embed-Call. Alle drei sind laut, keiner reisst den Turn.
+
+    Returns:
+        (Embedding der Vorantwort oder None, Modus der Vorantwort oder "").
+    """
+
+    # ── Eingabe-Validierung ─────────────────────
+    user_id:      str = state.get("user_id", "")
+    character_id: str = state.get("character_id", "")
+    if not user_id or not character_id:
+        return None, ""
+
+    key: str = f"gv:vorturn:{user_id}:{character_id}"
+
+    try:
+        roh = cfg_redis_client.get(key)
+    except Exception as fehler:
+        logger.error("GV-Initiative: Vorturn nicht lesbar (%s) — %s",
+                     key, fehler, exc_info=True)
+        return None, ""
+
+    if not roh:
+        logger.info("GV-Initiative: kein Vorturn unter %s — erster Turn "
+                    "dieses Paars oder Bestand geleert", key)
+        return None, ""
+
+    # ── Verarbeitung ────────────────────────────
+    try:
+        daten: dict = json.loads(roh)
+    except json.JSONDecodeError as fehler:
+        logger.error("GV-Initiative: Vorturn unter %s nicht parsebar — %s",
+                     key, fehler)
+        return None, ""
+
+    antwort: str = (daten.get("antwort") or "").strip()
+    modus:   str = daten.get("modus") or ""
+
+    if not antwort:
+        logger.error("GV-Initiative: Vorturn unter %s ohne Antworttext — "
+                     "der Themensprung ist fuer diesen Turn nicht messbar", key)
+        return None, modus
+
+    try:
+        antwort_response = model_service.embed.submit_sync(EmbedRequest(text=antwort))
+        embedding: list[float] = antwort_response.embedding
+    except Exception as fehler:
+        logger.error("GV-Initiative: Embedding der Vorantwort gescheitert — %s",
+                     fehler, exc_info=True)
+        return None, modus
+
+    # ── Ausgabe-Verifikation ────────────────────
+    if not embedding:
+        logger.error("GV-Initiative: EmbedWorker lieferte einen leeren Vektor "
+                     "fuer die Vorantwort")
+        return None, modus
+
+    return embedding, modus
+
+
 def gespraechsvektor(state: ConversationState) -> ConversationState:
     """Gespraechsvektor-Node: Antizipiert die Richtung des Gespraechs.
 
@@ -664,7 +739,9 @@ def gespraechsvektor(state: ConversationState) -> ConversationState:
         wissensluecken = wissensluecken_finden(state, aufnahmebereitschaft)
 
     # 3e. Dreischicht: Achsen → Sektor → Cluster → Repertoire
-    achsen: dict = achsen_berechnen(state)
+    vorher_embedding, vorher_modus = _vorturn_laden(state)
+    fuehrung: Fuehrung = fuehrung_messen(state, vorher_embedding, vorher_modus)
+    achsen: dict = achsen_berechnen(state, fuehrung)
     sektor_index, sektor_name, cluster = sektor_bestimmen(achsen)
     repertoire: dict[str, str] = repertoire_laden(cluster)
     charakter_gewichtung: dict[str, float] = charakter_gewichtung_berechnen(state)
@@ -750,6 +827,19 @@ def gespraechsvektor(state: ConversationState) -> ConversationState:
         ],
         "strategie_aktiv":       strategie_aktiv,
         "korridor_verstoesse":   korridor_verstoesse,
+        # Initiative: die drei Masse einzeln, damit am Panel ablesbar bleibt,
+        # woraus das Achsen-Bit entstanden ist und was gefehlt hat.
+        "initiative": {
+            "wert":     fuehrung.wert,
+            "rohwert":  fuehrung.rohwert,
+            "versatz":  fuehrung.versatz,
+            "wollen":   fuehrung.wollen,
+            "bewegung": fuehrung.bewegung,
+            "m1_roh":   fuehrung.m1_roh,
+            "m2_roh":   fuehrung.m2_roh,
+            "m3_roh":   fuehrung.m3_roh,
+            "fehlend":  fuehrung.fehlend,
+        },
     }
 
     return state

@@ -184,6 +184,73 @@ def _persist_gv_detail(state: ConversationState) -> None:
         logger.warning(f"Dispatcher: gv_detail-Persist fehlgeschlagen — {fehler}")
 
 
+
+def _persist_vorturn(state: ConversationState) -> None:
+    """Legt Novas letzte Antwort und ihren Modus fuer den naechsten Turn ab.
+
+    Die Initiative-Achse misst, wie weit der Nutzer Thema und Register
+    gegenueber Novas letzter Aeusserung bewegt (`ei/initiative.py`). Beide
+    Bezugsgroessen leben nur im Turn, in dem die Antwort entsteht — ohne
+    diese Spur haette der naechste Turn nichts zu vergleichen.
+
+    Der Text wird abgelegt, nicht sein Embedding: Ein Embedding hier zu
+    rechnen laege vor dem WebSocket-Broadcast und verlaengerte die
+    wahrgenommene Antwortzeit. Der GV-Node des Folgeturns embeddet ihn, wo
+    die Wartezeit ohnehin anfaellt.
+
+    Key: gv:vorturn:{user_id}:{character_id}. Kein TTL — wird beim naechsten
+    Turn ueberschrieben, wie gv:detail (Handbuch §10: die Lebensdauer ist
+    'bis zum naechsten Turn desselben Paars', nicht unbegrenzt gueltig).
+
+    Vorbedingung: `state` traegt user_id, character_id, response und internal.
+    Nachbedingung: Bei Erfolg steht der Key mit 'antwort' und 'modus'.
+    Fehlerfaelle: Fehlende Antwort oder fehlendes internal — dann gibt es
+    nichts abzulegen, und der Folgeturn meldet das Mass als fehlend statt es
+    als null zu rechnen. Redis-Fehler krachen sichtbar ins Log.
+    """
+
+    # ── Eingabe-Validierung ─────────────────────
+    user_id:      str = state.get("user_id", "")
+    character_id: str = state.get("character_id", "")
+    response:     str = state.get("response", "")
+    internal          = state.get("internal")
+
+    if not user_id or not character_id:
+        return
+    if not response or internal is None:
+        logger.info(
+            "Dispatcher: kein Vorturn abgelegt — response=%d Zeichen, "
+            "internal=%s (der naechste Turn misst die Initiative ohne "
+            "Thema und Register)",
+            len(response), internal is not None,
+        )
+        return
+
+    # ── Verarbeitung ────────────────────────────
+    key: str = f"gv:vorturn:{user_id}:{character_id}"
+    nutzlast: dict = {
+        # Gekappt: Der Themensprung braucht den Inhalt, nicht die Laenge.
+        # 2000 Zeichen decken jede gemessene Antwort ab (max 1056).
+        "antwort": response[:2000],
+        "modus":   internal.emotion.mode,
+    }
+
+    try:
+        cfg_redis_client.set(key, json.dumps(nutzlast, ensure_ascii=False))
+    except Exception as fehler:
+        logger.error(
+            "Dispatcher: Vorturn-Persist fehlgeschlagen (%s) — %s",
+            key, fehler, exc_info=True,
+        )
+        return
+
+    # ── Ausgabe-Verifikation ────────────────────
+    logger.debug(
+        "Dispatcher: Vorturn abgelegt (%s, %d Zeichen, Modus '%s')",
+        key, len(nutzlast["antwort"]), nutzlast["modus"],
+    )
+
+
 def _session_turn_schreiben(state: ConversationState) -> None:
     """Schreibt den aktuellen Turn vollständig in die Session.
 
@@ -542,6 +609,9 @@ def dispatch(
 
     # ── GV-Detail nach Redis (fuers GV-Panel Initial-Load) ──
     _persist_gv_detail(state)
+
+    # ── Vorturn-Spur fuer die Initiative-Achse ──
+    _persist_vorturn(state)
 
     # pending_writes leeren
     state["pending_writes"] = []
