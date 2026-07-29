@@ -1,9 +1,15 @@
 """
 Gespraechsvektor Node — Antizipiert die Richtung des Gespraechs.
 
-Schlanker Orchestrator: Berechnet die Vektorlaenge, laedt Entity-Kontext
-und assembliert den LLM-Prompt. Alle EI-Berechnungen (Farbton, Neugier,
-Wissensluecken, Dreischicht) sind in server/ei/ ausgelagert.
+Schlanker Orchestrator: Berechnet die Vektorlaenge, holt die zweite
+Wissensquelle und assembliert den LLM-Prompt. Alle EI-Berechnungen
+(Farbton, Neugier, Wissensluecken, Dreischicht) sind in server/ei/
+ausgelagert.
+
+Zweite Wissensquelle seit Chat 115: die Spreading-Erinnerungen des
+Enrichers (`_resonanz_kontext_laden`). Davor der Entity-Hop ueber die
+`fakten`-Tabelle — der schlaeft, bis M2.5b sie wieder befuellt; die
+Begruendung steht am Block ueber `_entity_kontext_laden`.
 
 Konzept: novaberg-gv-strategie_k.md
 """
@@ -128,8 +134,140 @@ def _vektor_laenge_berechnen(state: ConversationState) -> int:
 # Entity-Hop ueber Fakten-Tabelle
 # ─────────────────────────────────────────────
 
+def _resonanz_kontext_laden(state: ConversationState) -> str:
+    """Formatiert die Spreading-Erinnerungen des Enrichers fuer den GV-Prompt.
+
+    Dies ist die zweite Wissensquelle des GV-Nodes — die Stelle, an der er
+    erfaehrt, was zum aktuellen Thema schon erlebt wurde. Bis Chat 115 kam
+    sie aus der `fakten`-Tabelle (`_entity_kontext_laden`, direkt darunter,
+    seither schlafend); warum sie umgehaengt wurde, steht dort.
+
+    Die Quelle ist `state["lzg_resonanz"]`, das der Enricher legt. Sie ist
+    bereits eine Zwei-Stufen-Traversierung im Sinn des Konzepts, nur ueber
+    den Erinnerungs- statt den Faktengraphen:
+
+      Schale 0 — Anker aus der Cosine-Suche ueber `lzg_knoten`
+      Schale 1+ — Nachbarn entlang `lzg_kanten` (Spreading-Activation)
+
+    Der GV-Node fragt hier bewusst **nicht** selbst die Datenbank. Zwei
+    Abfragen mit zwei verschiedenen Ankern in einem Turn waeren zwei
+    Wahrheiten ueber dasselbe Gespraech — die Fehlerklasse, die dieses
+    Projekt mehrfach Arbeit gekostet hat. Der Enricher laeuft ohnehin vor
+    dem GV-Node (character_graph.py: enricher → … → gv_node).
+
+    Vorbedingung: keine. Fehlt `lzg_resonanz` oder ist es leer, ist das ein
+    legitimer Leerfall (Cold-Start, Enricher ohne Gedaechtnis-Zweig).
+    Nachbedingung: nicht-leerer Rueckgabewert genau dann, wenn mindestens
+    eine Erinnerung einen nicht-leeren `inhalt` hatte.
+    Fehlerfaelle: Erinnerungen ohne `inhalt` werden benannt uebersprungen —
+    ein Knoten ohne Text ist ein Defekt der Schreibseite, kein Leerfall.
+    """
+
+    # ── Eingabe-Validierung ─────────────────────
+    resonanz: dict = state.get("lzg_resonanz") or {}
+    erinnerungen: list[dict] = resonanz.get("erinnerungen") or []
+
+    if not erinnerungen:
+        logger.info(
+            "GV-Resonanz: keine Erinnerungen im lzg_resonanz (Cluster '%s') "
+            "— leerer Kontext",
+            resonanz.get("cluster", ""),
+        )
+        return ""
+
+    # ── Verarbeitung ────────────────────────────
+    zeilen:      list[str] = []
+    ohne_inhalt: list[int] = []
+
+    for erinnerung in erinnerungen:
+        inhalt: str = (erinnerung.get("inhalt") or "").strip()
+        if not inhalt:
+            ohne_inhalt.append(erinnerung.get("knoten_id", -1))
+            continue
+
+        # Die Schale sagt, wie die Erinnerung erreicht wurde: 0 ist der
+        # direkte Treffer auf das aktuelle Thema, alles darueber wurde ueber
+        # eine Assoziation gefunden. Der Unterschied gehoert in den Prompt —
+        # sonst liest das LLM einen Nachbarn zweiter Ordnung als Kernbezug.
+        schale: int = erinnerung.get("schale", 0)
+        herkunft: str = "direkt zum Thema" if schale == 0 else f"assoziiert ueber {schale} Sprung(e)"
+
+        themen_roh = erinnerung.get("themen") or []
+        themen: str = ", ".join(str(t) for t in themen_roh if t)
+
+        zeile: str = f"  {inhalt} ({herkunft}"
+        if themen:
+            zeile += f"; Themen: {themen}"
+        emotion: str = (erinnerung.get("emotion") or "").strip()
+        if emotion:
+            zeile += f"; Faerbung: {emotion}"
+        zeile += ")"
+        zeilen.append(zeile)
+
+    if ohne_inhalt:
+        # Kein Leerfall: lzg_knoten ohne Text ist ein Schreibseiten-Defekt.
+        # Den Wert nennen, nicht die Anzahl (Arbeitsweise §7).
+        logger.error(
+            "GV-Resonanz: %d Erinnerung(en) ohne Inhalt uebersprungen "
+            "(knoten_ids: %s)",
+            len(ohne_inhalt), ohne_inhalt,
+        )
+
+    # ── Ausgabe-Verifikation ────────────────────
+    if not zeilen:
+        logger.error(
+            "GV-Resonanz: %d Erinnerung(en) geliefert, aber keine mit Inhalt "
+            "— leerer Kontext trotz gefuellter Resonanz",
+            len(erinnerungen),
+        )
+        return ""
+
+    resonanz_text: str = "\n".join(zeilen)
+    logger.info(
+        "GV-Resonanz: %d Erinnerung(en) in den Prompt (Cluster '%s', "
+        "Schalen: %s)",
+        len(zeilen), resonanz.get("cluster", ""),
+        [e.get("schale") for e in erinnerungen],
+    )
+    return resonanz_text
+
+
+# ─────────────────────────────────────────────
+# Entity-Hop ueber die Fakten-Tabelle — SCHLAFEND seit Chat 115
+# ─────────────────────────────────────────────
+#
+# Diese Funktion hat KEINEN AUFRUFER und ist kein toter Code, den jemand
+# vergessen hat. Sie wartet auf eine Datenquelle, die es derzeit nicht gibt.
+#
+# WARUM SIE SCHLAEFT (gemessen 28.07.2026):
+#   Die `fakten`-Tabelle hat 0 Zeilen und keinen Produzenten. Die Tripel-
+#   Extraktion wurde mit Synapsen P4 aus der Promotion herausgenommen —
+#   Festlegung K2 in novaberg-memory-synapsen-p4-entscheidungen_k.md:
+#   "Tripel-Extraktion entfaellt komplett in P4 ... Funktionalitaets-Bruch
+#   zwischen P4 und M2.5b wird akzeptiert (keine neuen Tripel, ...,
+#   eingefrorener Fakten-Bestand)."
+#   Der eingefrorene Bestand (411 Fakten) ist beim Reset am 27.07.2026
+#   weggefallen. Aus "eingefroren" wurde "leer" — eine Folge, die in der
+#   Festlegung nicht vorgesehen war.
+#
+#   Unabhaengig davon trifft Hop 1 auch dann nicht: Der Schluessel ist eine
+#   Themenphrase (`prompt_topic`, 2-5 Woerter), die Entitaetsnamen sind
+#   Eigennamen (65 von 89 einwortig). Gemessen sind beide ILIKE-Richtungen
+#   0 Treffer. Der zweite Zweig (`zusammenfassung ILIKE`) ist zusaetzlich
+#   ohne Substrat: 88 von 89 Entitaeten haben keine Zusammenfassung, weil
+#   der Magnet-Pfad nur Name und Typ setzt.
+#
+# WANN SIE AUFWACHT:
+#   Mit M2.5b (FaktenAgent als eigenstaendige Fachabteilung, analog
+#   TimelineAgent) — im Backlog gefuehrt. Vorbedingung laut Synapsen-Konzept
+#   §3.2: der LZG-Kern steht. Wer sie reaktiviert, repariert vorher Hop 1;
+#   der Schluessel-Mismatch bleibt sonst bestehen, auch mit vollen Tabellen.
+#
+# Details und Messungen: GV-ENTITY-HOP-FINDET-NICHTS in novaberg-bugs.md.
+# ─────────────────────────────────────────────
+
 def _entity_kontext_laden(state: ConversationState) -> str:
-    """Laedt verwandte Entitaeten ueber die Fakten-Kanten.
+    """Laedt verwandte Entitaeten ueber die Fakten-Kanten. SCHLAEFT — siehe Block darueber.
 
     Hop 1: Schluesselentitaet → deren Fakten
     Hop 2: Verknuepfte Entitaeten → deren Fakten (Orts-/Themen-Verknuepfung)
@@ -268,7 +406,7 @@ def _entity_kontext_laden(state: ConversationState) -> str:
 def _hypothese_destillieren(
     state:             ConversationState,
     max_laenge:        int,
-    entity_kontext:    str,
+    resonanz_kontext:  str,
     farbton:           str = "",
     wissensluecken:    list[dict] | None = None,
     strategie_aktiv:   bool = False,
@@ -276,7 +414,7 @@ def _hypothese_destillieren(
 ) -> tuple[str, dict]:
     """Destilliert die Gespraechsvektor-Hypothese via LLM.
 
-    Input: Session-Turns, Emotion, Charakter, Entity-Kontext
+    Input: Session-Turns, Emotion, Charakter, Resonanz-Kontext
     Output: Natuerlichsprachliche Hypothese (2-4 Saetze) + geparste Felder.
     """
     # Session-Turns aufbereiten (letzte 8)
@@ -375,11 +513,17 @@ def _hypothese_destillieren(
         f"Intentionen: {', '.join(intentionen) if intentionen else 'keine'}"
     )
 
-    if entity_kontext:
+    if resonanz_kontext:
+        # Der Blockname sagt, was die Quelle ist. Er hiess bis Chat 115
+        # [VERWANDTE FAKTEN] und versprach "bekanntes Wissen ueber Personen,
+        # Orte und Vorlieben" — das war der Faktengraph. Diese Erinnerungen
+        # sind episodisch: was erlebt wurde, nicht was der Fall ist. Ein
+        # Block, der das Falsche behauptet, laesst das LLM sie als gesicherte
+        # Auskunft lesen.
         user_parts.append(
-            f"[VERWANDTE FAKTEN]\n"
-            f"Bekanntes Wissen ueber Personen, Orte und Vorlieben des Nutzers:\n"
-            f"{entity_kontext}"
+            f"[VERWANDTE ERINNERUNGEN]\n"
+            f"Woran dieses Thema anknuepft — Erlebtes, keine gesicherten Fakten:\n"
+            f"{resonanz_kontext}"
         )
 
     # Gedaechtnis-Kontext (KZG + LZG + Notizen, vom Enricher geladen)
@@ -460,7 +604,7 @@ def gespraechsvektor(state: ConversationState) -> ConversationState:
     Sequentieller Ablauf:
       1. Skip-Check (Begruessung/Meta → durchreichen)
       2. Laenge aus EI-Dimensionen berechnen (Python, deterministisch)
-      3. Entity-Hop ueber Fakten-Tabelle (Python, DB-Queries)
+      3. Resonanz-Kontext aus den Spreading-Erinnerungen des Enrichers
       3b. Farbmisch-System (8 Dimensionen → Landschaftsbeschreibung)
       3c. Effektive Neugier berechnen (6 Saeulen)
       3d. Wissensluecken finden (DB-Queries, Relevanz-Berechnung)
@@ -484,8 +628,10 @@ def gespraechsvektor(state: ConversationState) -> ConversationState:
         state["gespraechsvektor"] = ""
         return state
 
-    # 3. Entity-Hop
-    entity_kontext: str = _entity_kontext_laden(state)
+    # 3. Zweite Wissensquelle: die Spreading-Erinnerungen des Enrichers.
+    #    Bis Chat 115 der Entity-Hop ueber `fakten` — umgehaengt, weil die
+    #    Tabelle seit Synapsen P4 keinen Produzenten mehr hat (K2).
+    resonanz_kontext: str = _resonanz_kontext_laden(state)
 
     # 3b. Farbton (einmal berechnen, durchreichen)
     farbton: str = farbton_berechnen(state)
@@ -515,7 +661,7 @@ def gespraechsvektor(state: ConversationState) -> ConversationState:
 
     # 4. Hypothese destillieren
     hypothese, gv_parsed = _hypothese_destillieren(
-        state, max_laenge, entity_kontext,
+        state, max_laenge, resonanz_kontext,
         farbton=farbton,
         wissensluecken=wissensluecken,
         strategie_aktiv=strategie_aktiv,
@@ -563,7 +709,11 @@ def gespraechsvektor(state: ConversationState) -> ConversationState:
         # Bestehende Felder
         "laenge":                max_laenge,
         "farbton":               farbton,
-        "entity_hops":           entity_kontext[:500] if entity_kontext else "",
+        # Hiess bis Chat 115 "entity_hops" und trug den Faktengraph-Auszug.
+        # Umbenannt mit der Quelle: ein Feldname, der eine Herkunft nennt,
+        # die er nicht mehr hat, ist die teuerste Sorte Doku. Kein Leser im
+        # Repo (der /gv_detail-Client liegt ausserhalb) — dort ggf. nachziehen.
+        "resonanz_kontext":      resonanz_kontext[:500] if resonanz_kontext else "",
         "aufnahmebereitschaft":     aufnahmebereitschaft,
         "wissensluecken": [
             {
