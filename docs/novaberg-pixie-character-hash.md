@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** CharakterAgent — Charakter-Hash aus KZG/LZG destillieren
-**Stand:** 12. Juli 2026, Chat 107 (⚠ Fundament-Warnung nach Gewichts-Reset, siehe Kasten in §3. Kern: Chat 79, P7-Update Chat 103)
+**Stand:** 29. Juli 2026, Chat 117 (die zwei Charakter-Räder und die vollständige Spaltenliste nachgetragen — §2, §4a, §7. ⚠ Fundament-Warnung nach Gewichts-Reset, siehe Kasten in §3. Kern: Chat 79, P7-Update Chat 103)
 **Pfad:** novaberg/docs/novaberg-pixie-character-hash.md
 **Quellen:** nova-05-m-a.md, nova-04-m-b.md, nova-04-t-b.md
 
@@ -25,7 +25,7 @@ Der CharakterAgent destilliert Novas verdichtetes Bild ihres Gegenübers — und
 | **Priorität** | `PIXIE_CHARAKTER_PRIORITAET = 0.3` (`config.py`) |
 | **Intervall** | `PIXIE_CHARAKTER_INTERVALL_SEKUNDEN = 600` = 10 Minuten (`config.py`) |
 | **Bedingung** | NUR bei `hash_dirty:{user_id}` = "1" |
-| **LLM-Call** | 5 CPU-Calls pro User (einer pro Profil) |
+| **LLM-Call** | ~~5 CPU-Calls pro User (einer pro Profil)~~ → **9 pro Subjekt** (5 Profile + 1 Charakter-Rad + 3 Läufe des Initiative-Rads, §4a); für `nova` kommt die Ziel-Destillation dazu. Bei zwei Subjekten je Lauf sind das 19 |
 | **LZG-Limit** | `PIXIE_CHARAKTER_LZG_LIMIT = 50` (max. LZG-Einträge pro Destillation, `config.py`) |
 | **KZG-Limit** | `PIXIE_CHARAKTER_KZG_LIMIT = 20` (max. KZG-Einträge für Adaptiv, `config.py`) |
 | **context_user** | Iteriert intern über `meister` + `nova` |
@@ -89,7 +89,7 @@ Kein dirty Flag → sofort return. Fehlerbehandlung pro Profil (try/except).
 
 ## 4. Destillation
 
-5 LLM-Calls auf dem CPU-Modell, einer pro Profil. `hash_dirty:{user_id}` wird für beide User geprüft.
+Fünf LLM-Calls auf dem CPU-Modell für die Profile, danach die beiden Räder (§4a). `hash_dirty:{user_id}` wird für beide User geprüft.
 
 ```
 hash_dirty = TRUE in Redis?
@@ -99,6 +99,9 @@ hash_dirty = TRUE in Redis?
     │
     ▼
     5 LLM-Calls (CPU-Modell) → 5 Profile generieren
+    │
+    ▼
+    Charakter-Rad (1 Call) und Initiative-Rad (3 Calls) auf dem Profiltext
     │
     ▼
     charakter_hash-Tabelle aktualisieren (INSERT oder UPDATE)
@@ -117,6 +120,32 @@ Jedes Profil ist komprimierter Fließtext (2–5 Sätze). Keine Listen, keine St
 - `BEZIEHUNGS_PROFIL_PROMPT_NOVA`: Vier Dimensionen (Naehe/Hierarchie/Vertrauen/Ton)
 
 Die User-Destillation (meister) bleibt unveraendert.
+
+---
+
+## 4a. Die zwei Charakter-Räder
+
+Beide laufen **nach** den fünf Profilen und lesen deren Ergebnis, nicht erneut das Gedächtnis: Ein Rad ist eine Eigenschaft des destillierten Charakters, keine zweite Beobachtung der Rohdaten. Beide speichern neben dem Zahlenwert das Rad selbst, seine Herkunft und den Zeitpunkt — vier Spalten je Rad (§7).
+
+| | **Charakter-Rad** (Chat 111) | **Initiative-Rad** (Chat 116) |
+|---|---|---|
+| Frage | Wie sehr gilt Nova das Gegenüber überhaupt? | Überlässt sie im Gespräch die Führung oder behält sie sie? |
+| Speichen | 12 (6 hoch, 6 runter) | 10 (5 hoch, 5 runter) |
+| Nabe | 0.9, Grenzen 0.5–1.5 | 0.0, Spanne ±0.25 |
+| Erhebungen | 1 | **3, Median** |
+| Feld | `nutzer_gewichtung` | `initiative_versatz` |
+| Verbraucher | Salienz: `max(salienz_human × nutzer_gewichtung, salienz_charakter)` | GV-Achse I: verschiebt den Rohwert vor der Schwelle |
+| Beschreibung | `novaberg-salienz-berechnung_k.md` | `novaberg-gv-initiative_k.md` §6, `novaberg-gv-initiative.md` |
+
+**Warum zwei Räder und nicht eines.** Vier der zwölf Speichen des älteren Rads berühren Führen und Folgen — sein Ergebnis bündelt sie aber mit Wissbegier, Pflichtbewusstsein und Aufmerksamkeit, die mit der Frage nichts zu tun haben. Ein abgeleiteter Wert wäre die Summe zweier Fragen gewesen.
+
+**Die Entwurfsregel des zweiten Rads: Handlung statt Haltung.** Jede Speiche wird über eine *beobachtbare Gesprächshandlung* beschrieben, nicht über eine Disposition. Das ältere Rad beschreibt Treue als „die Anliegen des anderen voranstellen" — eine Haltung, die ein Modell als allgemeine Wärme liest. Am selben Profiltext gemessen: Das ältere Rad füllte 3 von 12 Speichen und auf der Abwendungsseite keine einzige, das neue 6 von 10 und auf beiden Seiten etwas.
+
+**Warum das Initiative-Rad dreimal erhoben wird.** Zwei Läufe gegen denselben Text bei Temperatur 0.2 unterschieden sich um ein Fünftel der halben Spanne. Anders als ein Wert pro Turn wird dieser einmal geschrieben und steht bis zur nächsten Destillation — ein einzelner Ausreißer hätte ihn für Tage festgesetzt. **Gespeichert wird das Rad des Median-Laufs**, kein gemitteltes: Ein Mittel über drei Räder ergäbe Bewertungen, die kein Lauf je vergeben hat, und der Wert wäre von Hand nicht mehr nachrechenbar. Die Streuung reist als Metadatum mit.
+
+**`_quelle` trennt `default` von `destilliert`.** Ein Versatz von 0.0, weil sich zehn Speichen aufheben, ist etwas anderes als 0.0, weil das Modell in keiner etwas erkannt hat. Ohne das Feld wäre dies die vierte Stelle im System, an der ein Ausfallwert wie ein Messergebnis aussieht (`novaberg-lesson_l_default-wie-fehlschlag.md`). Scheitert eine Erhebung — leerer Profiltext, unlesbares JSON, unvollständiges Rad —, bleibt der bestehende Wert stehen und eine `error`-Zeile sagt es; geschrieben wird nie ein erfundener.
+
+---
 
 **Gewichtung:** Hohe Anker-Stärken (`gewicht_absolut`) dominieren das Profil — was sich als dauerhaft prägend verankert hat, nicht was gerade präsent ist. `aktiv = TRUE` bleibt als Gate: inaktive (decay-deaktivierte) Knoten werden nicht geladen. Präsenz gated, Anker-Stärke ranked. Angezeigtes Gewicht im Kern-/Emotions-Prompt ist `gewicht_absolut` direkt (kein Read-Time-Decay mehr; `effektives_gewicht_berechnen` an diesen Stellen entfernt).
 
@@ -178,18 +207,34 @@ _lzg_emotionen_laden) filtern seit Chat 79 ebenfalls auf
 
 Tabelle: `charakter_hash`
 
+Zwanzig Spalten, PRIMARY KEY `(user_id, character_id)`. ~~PRIMARY KEY `user_id`~~ — überholt seit dem Paar-Schema (Chat 79): Eine Zeile gilt für ein *Paar*, nicht für einen User.
+
 | Spalte | Typ | Beschreibung |
 |--------|-----|-------------|
-| `user_id` | TEXT | PRIMARY KEY — `meister` oder `nova` |
+| `user_id` | TEXT | Teil des PK — Subjekt der Zeile (`meister` oder `nova`) |
+| `character_id` | TEXT | Teil des PK — das Gegenüber (`novaberg-convention-paar-schema.md`) |
 | `kern_hash` | TEXT | Grundpersönlichkeit (aus LZG) |
 | `adaptive_hash` | TEXT | Aktuelle Phase (aus KZG) |
 | `kern_aktualisiert_am` | TIMESTAMPTZ | Letzte Kern-Destillation |
 | `adaptive_aktualisiert_am` | TIMESTAMPTZ | Letzte Adaptiv-Destillation |
 | `intentions_profil` | TEXT | Kommunikationsmuster (aggregiert) |
+| `intentions_aktualisiert_am` | TIMESTAMPTZ | Letzte Intentions-Destillation |
 | `emotions_profil` | TEXT | Emotionale Grundtendenz (aggregiert) |
+| `emotions_aktualisiert_am` | TIMESTAMPTZ | Letzte Emotions-Destillation |
 | `beziehungsprofil` | TEXT | Beziehungsdynamik (aggregiert) |
+| `beziehung_aktualisiert_am` | TIMESTAMPTZ | Letzte Beziehungs-Destillation |
+| `nutzer_gewichtung` | DOUBLE PRECISION | Charakter-Rad, Default 0.9 (§4a) |
+| `nutzer_gewichtung_quelle` | TEXT | `default` oder `destilliert` |
+| `nutzer_gewichtung_rad` | TEXT | Die zwölf Speichen als JSON — der Wert ist daraus nachrechenbar |
+| `nutzer_gewichtung_am` | TIMESTAMPTZ | Zeitpunkt der Erhebung (nullable: nie erhoben) |
+| `initiative_versatz` | DOUBLE PRECISION | Initiative-Rad, Default 0.0 (§4a) |
+| `initiative_versatz_quelle` | TEXT | `default` oder `destilliert` |
+| `initiative_versatz_rad` | TEXT | Die zehn Speichen des **Median-Laufs** als JSON, mit der Streuung als Metadatum |
+| `initiative_versatz_am` | TIMESTAMPTZ | Zeitpunkt der Erhebung (nullable: nie erhoben) |
 
-Kein Auto-Increment — eine Zeile pro User. Der Hash wird nicht versioniert, sondern überschrieben. Die Historie lebt im LZG, nicht im Hash.
+Kein Auto-Increment — eine Zeile pro Paar. Der Hash wird nicht versioniert, sondern überschrieben. Die Historie lebt im LZG, nicht im Hash.
+
+**Die beiden `_rad`-Spalten sind der Grund, warum ein Wert prüfbar bleibt.** Ohne sie stünde eine Zahl da, die niemand mehr aufschlüsseln kann; mit ihnen lässt sich jede Erhebung von Hand nachrechnen und im Client als Radar zeigen (Backlog, „Charakter-Räder im Client").
 
 ---
 
@@ -226,6 +271,7 @@ Alles Nova-bezogene in einem Block. Der separate `[CHARAKTER]`-Block wurde entfe
 ---
 
 Verwandte Dokumente:
+- Die zwei Räder: `novaberg-salienz-berechnung_k.md` (Charakter-Rad), `novaberg-gv-initiative.md` und `novaberg-gv-initiative_k.md` §6 (Initiative-Rad)
 - DecayAgent (Ebbinghaus-Gewichtung): `novaberg-pixie-decay.md`
 - PromotionAgent (hash_dirty-Setter): `novaberg-pixie-promotion.md`
 - KZG-Agent (Datenquelle Adaptiv): `novaberg-pixie-kzg.md`

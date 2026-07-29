@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Systemarchitektur, Tech-Stack, Plugin-System
-**Stand:** 12. Juli 2026, Chat 107 (Embedding-Modellwechsel auf nomic-embed-text-v2-moe, §2.4. Kern: Chat 94, Microservice-Welle Block 2+3)
+**Stand:** 29. Juli 2026, Chat 117 (Verzeichnisbaum nachgezogen: `ei/` vollständig, vier fehlende Agenten ergänzt. Kern: Chat 94, Microservice-Welle Block 2+3; Embedding-Modellwechsel Chat 107, §2.4)
 **Pfad:** novaberg/docs/novaberg-architecture.md
 **Quellen:** nova-00-a.md (Architektur-Übersicht), nova-07-a.md (Tech-Stack), nova-07-m-a.md (Plugin-System)
 
@@ -261,7 +261,7 @@ project/
 │   │       ├── agent_dispatch.py        #     Agent-Dispatch (Epic 11)
 │   │       └── gespraechsvektor.py      #     → novaberg-node-gv_k.md
 │   │
-│   ├── agents/                          # Agent-System (Epic 11 + Epic 5) — 11 Agenten
+│   ├── agents/                          # Agent-System (Epic 11 + Epic 5) — 15 Agenten
 │   │   ├── __init__.py                  #   AgentRegistry, Auto-Discovery
 │   │   ├── base.py                      #   BaseAgent, AgentState, AgentResult, PeriodicTask
 │   │   ├── crud_validation.py           #   Gemeinsame CRUD-Haertung (Chat 42)
@@ -274,12 +274,24 @@ project/
 │   │   ├── recherche/                   #   RechercheAgent (Pixie, Web-Recherche)
 │   │   ├── promotion/                   #   PromotionAgent (Pixie, KZG -> LZG)
 │   │   ├── decay/                       #   DecayAgent (Pixie, Ebbinghaus)
-│   │   ├── charakter/                   #   CharakterAgent (Pixie, Hash-Destillation)
-│   │   └── wiedervorlage/               #   WiedervorlageAgent (Pixie)
+│   │   ├── charakter/                   #   CharakterAgent (Pixie, Hash-Destillation + zwei Charakter-Raeder)
+│   │   ├── wiedervorlage/               #   WiedervorlageAgent (Pixie)
+│   │   ├── synapsen_promotion/          #   Synapsen P4 (Pixie, KZG -> lzg_knoten)
+│   │   ├── synapsen_decay/              #   Synapsen P6 (Pixie, Knoten-Decay + pipeline_log-Retention)
+│   │   ├── wissensluecken/              #   WissensluckenAgent (Pixie, Chat 112)
+│   │   └── ziel_decay/                  #   Motivations-Verfall der Ziele (Pixie, Anker + Uhr seit Chat 113)
 │   │
 │   ├── ei/                              # EI-Berechnungsmodul (Chat 58 ausgelagert, Chat 61 Refactor)
-│   │   ├── raum.py                      #     → Novas Gespraechsraum, Zug zum Register des Sprechers (Chat 114)
-│   │   └── berechnung.py                #   Verlauf, Vektor, Nova-Empathie, sin^0.5-Glaettung
+│   │   ├── berechnung.py                #   Verlauf, Vektor, Nova-Empathie, sin^0.5-Glaettung
+│   │   ├── dreischicht.py               #   6 Achsen → 64 Sektoren → 13 Cluster → Strategie (→ novaberg-gv-strategie_k.md)
+│   │   ├── raum.py                      #   Novas Gespraechsraum, Zug zum Register des Sprechers (Chat 114)
+│   │   ├── initiative.py                #   Achse I: wer im Turn die Richtung setzt (Chat 116, → novaberg-gv-initiative.md)
+│   │   ├── neugier.py                   #   GV4: sechs Saeulen × Persoenlichkeit → Aufnahmebereitschaft
+│   │   ├── wissensluecken.py            #   GV4: semantisch nahe, aber unbesprochene Konzepte
+│   │   ├── gravitation.py               #   Emotionale Gravitation: Erinnerungen als Attraktoren (→ novaberg-node-emotionale-gravitation.md)
+│   │   ├── salienz.py                   #   Salienz-Formel (→ novaberg-salienz-berechnung_k.md)
+│   │   ├── farbton.py                   #   Farbmisch-System: 8 Dimensionen → Landschaftsbeschreibung
+│   │   └── utils.py                     #   Gemeinsam genutzt von Neugier, Wissensluecken, Dreischicht (u.a. modus_pruefen)
 │   │
 │   ├── tools/                           # Tool-Manager (Epic 11)
 │   │   ├── db_manager.py                #   PostgreSQL + Connection Pool

@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** KZG-Speicher (Redis, Vektorsuche, TTL, Verstärkung)
-**Stand:** 12. Juli 2026, Chat 107 (Embedding-Migration: Modellwechsel auf nomic-embed-text-v2-moe, eine Embed-Formel via `embed_text_bauen()`, Retrieval-Schwelle 0.40)
+**Stand:** 29. Juli 2026, Chat 117 (Salienz-Neubau nachgezogen: abgeleiteter Wert statt Akkumulator, Cap 1.0, zwei neue Hash-Felder, Tore auf der Kurve. Kern: Chat 107, Embedding-Migration)
 **Pfad:** novaberg/docs/novaberg-mem-kzg.md
 **Quellen:** nova-02-m-b.md (Speicher-Abschnitte)
 
@@ -35,8 +35,10 @@ _kzg_prefix(user_id, character_id)            # Scan-/Match-Prefix
 |------|--------|-------------|
 | `inhalt` | KZG-Agent (Verdichtung) | Destillierter Kern des Turns |
 | `themen` | Salienz Dim 1 | Erkannte Themen |
-| `salienz` | Salienz Dim 3 | Bewertung 0.0–10.0 (Cap mit sin^0.6-Dämpfung) |
-| `haeufigkeit` | KZG-Agent | Thematische Verstärkungszähler (initial 1, steigt bei Themen-Overlap) |
+| `salienz` | ~~Salienz Dim 3~~ **abgeleitet** | ~~Bewertung 0.0–10.0 (Cap mit sin^0.6-Dämpfung)~~ → **seit Chat 113: 0.0–1.0, gerechnet aus `salienz_eingang` und `haeufigkeit`** (§4). Materialisiert, aber kein Eingabefeld mehr — wer hierher schreibt, überschreibt ein Ergebnis |
+| `salienz_eingang` | Salienz Dim 3 | **Die Bewertung des Modells beim Anlegen, 0.0–1.0.** Ändert sich nie. Seit Chat 113 die eigentliche Eingangsgröße |
+| `salienz_eingang_herkunft` | Schreibpfad | `gemessen` an jedem neu angelegten Eintrag; `rekonstruiert` bzw. `unbekannt` am migrierten Bestand. Trennt dauerhaft, was gemessen wurde, von dem, was die Migration setzen musste |
+| `haeufigkeit` | KZG-Agent | Thematische Verstärkungszähler (initial 1, steigt bei Themen-Overlap). Zweiter Eingang der Salienz-Formel: `verstaerkungen = haeufigkeit − 1` |
 | `gedaechtnistyp` | Salienz Dim 4 | episodisch / semantisch / prozedural |
 | `dimension` | Salienz Dim 5 | Zuordnung (interessen, beziehungen, ...) |
 | `intentionen` | Salienz Dim 6 | Erkannte User-Intentionen |
@@ -55,14 +57,18 @@ _kzg_prefix(user_id, character_id)            # Scan-/Match-Prefix
 
 ---
 
-## 2a. Salienz-Schwellen und TTL (seit Chat 64)
+## 2a. Salienz-Schwellen und TTL (seit Chat 64, Skala korrigiert Chat 113)
 
-| Bereich | TTL | Aktion |
-|---------|-----|--------|
-| < 0.3 | — | Ignoriert (`schwelle_pruefen` lehnt ab) |
-| 0.3–0.5 | 7 Tage | KZG kurz |
-| 0.5–0.7 | 14 Tage | KZG mittel |
-| ≥ 0.7 | 30 Tage | KZG lang + Promotion-Queue + Shadow-Queue + `hash_dirty` |
+Die Tore vergleichen gegen `salienz` — den **gekrümmten** Wert. Die Rohbewertung, die sie meinen, steht daneben:
+
+| Rohbewertung | Untergrenze als Konstante (Kurvenwert) | TTL | Aktion |
+|---|---|-----|--------|
+| < 0.3 | — | — | Ignoriert (`schwelle_pruefen` lehnt ab) |
+| 0.3–0.5 | `KZG_SALIENZ_MINIMUM` = 0.67378 | 7 Tage | KZG kurz |
+| 0.5–0.7 | `KZG_SALIENZ_MID` = 0.84089 | 14 Tage | KZG mittel |
+| ≥ 0.7 | `KZG_SALIENZ_HIGH` = 0.94393 | 30 Tage | KZG lang + Promotion-Queue + Shadow-Queue + `hash_dirty` |
+
+**Die fünf Nachkommastellen sind abgerundet, und das ist keine Kosmetik.** Ein Tor wird mit `>=` geprüft; der exakte Kurvenwert von 0.3 ist 0.6737882. Auf 0.6738 aufgerundet läge die Konstante über ihrem eigenen Rohwert — gemessen am Live-Turn vom 28.07.2026, 09:27 UTC: *„Salienz 0.6738 (Eingang 0.30) < 0.6738 — abgelehnt"*. Wer genau die Bewertung trifft, die das Tor benennt, muss hindurchgehen.
 
 Die Untergrenze 0.3 (vorher 0.5) lässt informative Alltagsaussagen ("Ich mag Schnittlauch") ins KZG. Wenn sie nie wiederkehren, sterben sie durch TTL. Wenn doch, steigen sie durch thematische Verstärkung in höhere Stufen auf.
 
@@ -112,9 +118,12 @@ Wenn ein neuer Eintrag gespeichert wird, durchsucht `_thematisch_verstaerken()` 
 
 ### Was wird verstärkt (nur Metadaten)
 
-- `salienz += eingehende_salienz / KZG_VERSTAERKUNG_DIVISOR` (gedämpft durch sin^0.6)
+- ~~`salienz += eingehende_salienz / KZG_VERSTAERKUNG_DIVISOR` (gedämpft durch sin^0.6)~~ → **überholt seit Chat 113.** Das war ein Akkumulator: Der neue Wert entstand aus dem alten, und die eingehende Salienz eines *fremden* Turns ging in den Eintrag ein. Heute steigt nur `haeufigkeit`, und `salienz` wird daraus neu gerechnet — siehe unten.
 - `haeufigkeit += 1`
+- `salienz = salienz_berechnen(salienz_eingang, neue_haeufigkeit)` — aus den beiden gespeicherten Eingaben, nicht aus dem Vorwert
 - TTL = max(verbleibend, neu berechnet aus neuer Salienz-Stufe)
+
+**Ein Eintrag ohne `salienz_eingang` wird nicht verstärkt**, sondern mit `logger.error` benannt und übersprungen (`speicher.py`). Ein Rückfall auf den Rohwert hätte still eine zweite Skala eingeführt.
 
 ### Was wird NIE angerührt
 
@@ -122,16 +131,22 @@ Wenn ein neuer Eintrag gespeichert wird, durchsucht `_thematisch_verstaerken()` 
 - `embedding` — kein Neuberechnen
 - `emotion`, `modus`, `arousal` — gehören zum originalen Turn
 
-### sin^0.6-Dämpfung
+### Die Salienz-Formel (seit Chat 113)
 
-Verhindert Salienz-Explosion bei häufig wiederkehrenden Themen:
+`salienz_berechnen()` in `memory/kzg.py` ist die **einzige** Formel; beide Schreibpfade rufen sie:
 
-- `remaining = max(0, KZG_SALIENZ_CAP - alte_salienz)`
-- `ratio = remaining / KZG_SALIENZ_CAP`
-- `dämpfung = sin(ratio × π/2) ^ 0.6`
-- `effektiver_boost = raw_boost × dämpfung`
+```
+verstaerkungen = haeufigkeit − 1
+salienz_roh    = salienz_eingang + verstaerkungen × KZG_SALIENZ_BOOST
+anteil         = min(salienz_roh / KZG_SALIENZ_CAP, 1.0)
+salienz        = KZG_SALIENZ_CAP × sin(anteil × π/2) ^ KZG_SALIENZ_DAEMPFUNG_EXP
+```
 
-Unten fast voller Boost, oben asymptotisch gegen Cap (10.0). Selbe Kurvenfamilie wie Arousal-Glättung (Chat 61, sin^0.5, Cap 2.5).
+**Der Boost greift am Anker, vor der Kurve.** Auf den gekrümmten Wert addiert bedeutete derselbe Zuwachs an jeder Stelle der Skala etwas anderes — ein mit 0.5 bewerteter Eintrag erreichte das Tor nach vier statt nach sieben Verstärkungen.
+
+**Reine Funktion:** Keine der beiden Eingaben wurde je aus dem Ergebnis berechnet, nichts wird zurückgeschrieben, zweimaliges Rechnen liefert bitgleiche Werte. Dieselbe Kurvenfamilie wie `gewicht_absolut_berechnen` im LZG — beide Gedächtnisse tragen eine Form mit verschiedenen Deckeln.
+
+> ~~**sin^0.6-Dämpfung.** `remaining = max(0, KZG_SALIENZ_CAP - alte_salienz)` · `ratio = remaining / KZG_SALIENZ_CAP` · `dämpfung = sin(ratio × π/2) ^ 0.6` · `effektiver_boost = raw_boost × dämpfung`. Unten fast voller Boost, oben asymptotisch gegen Cap (10.0).~~ → **Überholt seit Chat 113, und die Kurve hat nie gebremst.** Sie war auf einen Deckel von 10.0 gebaut, den die Eingangsgröße nie erreichen konnte: Bei einem Altwert von 1.0 ließ sie noch 99,3 % des Zuwachses durch, ihr Bremsweg begann bei 5 — einem Bereich, der nur erreichbar war, weil sie vorher nicht gebremst hatte. Gemessen am 28.07.2026: 71 von 188 Einträgen über 1.0, der höchste bei 5.636.
 
 ### Unterschied zum alten System (vor Chat 64)
 
@@ -199,15 +214,16 @@ Der RedisManager mit `decode_responses=True` bricht binäre Vektorsuche und Embe
 
 | Konstante | Wert | Pfad | Beschreibung |
 |-----------|------|------|-------------|
-| `KZG_SALIENZ_MINIMUM` | 0.3 | `config.py` | Eingangsfilter (darunter kein KZG-Eintrag) — Chat 64: von 0.5 gesenkt |
-| `KZG_SALIENZ_MID` | 0.5 | `config.py` | Schwelle für mittlere TTL (14 Tage) — Chat 64 neu |
-| `KZG_SALIENZ_HIGH` | 0.7 | `config.py` | Schwelle für hohe TTL + Promotion-/Shadow-Queue |
-| `KZG_SALIENZ_CAP` | 10.0 | `config.py` | Asymptotischer Cap der thematischen Verstärkung — Chat 64 neu |
-| `KZG_SALIENZ_DAEMPFUNG_EXP` | 0.6 | `config.py` | Exponent der sin-Dämpfungskurve — Chat 64 neu |
+| `KZG_SALIENZ_MINIMUM` | 0.67378 (roh 0.3) | `config.py` | Eingangsfilter (darunter kein KZG-Eintrag) — Chat 64: von 0.5 gesenkt; Chat 113: auf den Kurvenwert umgestellt |
+| `KZG_SALIENZ_MID` | 0.84089 (roh 0.5) | `config.py` | Schwelle für mittlere TTL (14 Tage) — Chat 64 neu |
+| `KZG_SALIENZ_HIGH` | 0.94393 (roh 0.7) | `config.py` | Schwelle für hohe TTL + Promotion-/Shadow-Queue |
+| `KZG_SALIENZ_CAP` | **1.0** ~~(10.0)~~ | `config.py` | Deckel der Salienzskala — Chat 113 von 10.0 gezogen, einem Bereich, den die Modellbewertung [0,1] nie hatte |
+| `KZG_SALIENZ_DAEMPFUNG_EXP` | **0.5** ~~(0.6)~~ | `config.py` | Exponent der Salienzkurve — Chat 113 auf 0.5, damit KZG und LZG dieselbe Kurve tragen |
+| `KZG_SALIENZ_BOOST` | 0.03 | `config.py` | Zuwachs je Verstärkung, am Anker vor der Kurve — Chat 113 neu. **Nicht frei gewählt:** Mit 0.03 erreicht eine Bewertung von 0.5 das obere Tor nach sieben, eine von 0.3 nach vierzehn Verstärkungen — jede innerhalb ihres TTL-Fensters. Wer ihn oder eine TTL-Stufe ändert, prüft die jeweils andere Größe mit |
 | `KZG_TTL_LOW_SEKUNDEN` | 604800 (7 Tage) | `config.py` | Salienz 0.3–0.5 |
 | `KZG_TTL_MID_SEKUNDEN` | 1209600 (14 Tage) | `config.py` | Salienz 0.5–0.7 — Chat 64 neu |
 | `KZG_TTL_HIGH_SEKUNDEN` | 2592000 (30 Tage) | `config.py` | Salienz ≥ 0.7 |
-| `KZG_VERSTAERKUNG_DIVISOR` | 2.0 | `config.py` | Verstärkungs-Stärke (Roh-Boost vor sin^0.6-Dämpfung) |
+| ~~`KZG_VERSTAERKUNG_DIVISOR`~~ | ~~2.0~~ | `config.py` | ~~Verstärkungs-Stärke (Roh-Boost vor sin^0.6-Dämpfung)~~ → **ohne Leser seit Chat 113.** Die Konstante steht noch in `config.py`, keine Codezeile liest sie mehr; `KZG_SALIENZ_BOOST` hat ihre Rolle übernommen |
 | `KZG_VERTIEFUNG_HAEUFIGKEIT` | 3 | `config.py` | Ab dieser Wiederholungszahl Vertiefungs-Trigger |
 | `PIXIE_PROMOTION_PRIORITAET` | 0.9 | `config.py` | Scheduler-Priorität für periodischen Promotion-Task |
 | `EMBEDDING_DIM` | 768 | — | Embedding-Dimensionen (`nomic-embed-text-v2-moe`) |
@@ -222,6 +238,8 @@ Der RedisManager mit `decode_responses=True` bricht binäre Vektorsuche und Embe
 - Der **KZG-Speicher** (Schema, TTL, Vektorsuche, thematische Verstärkung) → dieses Dokument
 
 → KZG-Agent: novaberg-pixie-kzg.md
+→ Salienz-Formel, Herleitung und Migration: novaberg-kzg-salienz_k.md
+→ Wie die Salienz eines Turns überhaupt entsteht: novaberg-salienz-berechnung_k.md, novaberg-node-salience.md
 → Promotion (KZG → LZG): novaberg-pixie-promotion.md
 → Decay (LZG): novaberg-pixie-decay.md
 → Gedächtnis-Überblick: novaberg-memory.md

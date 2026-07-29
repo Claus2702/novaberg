@@ -2,12 +2,16 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Konzept — Bauart, Skala und Tore der KZG-Salienz
-**Stand:** 28. Juli 2026, Chat 113 (Bauteil 1 gebaut, migriert und live gemessen)
+**Stand:** 29. Juli 2026, Chat 117 (Abgleich der „Schließt"-Zeile gegen den Code — drei der sieben IDs sind offen. Bauteil 1: gebaut, migriert und live gemessen, Chat 113)
 **Pfad:** novaberg/docs/novaberg-kzg-salienz_k.md
 **Typ:** Konzept
 **Voraussetzung:** `novaberg-convention-abgeleitete-werte.md`
 **Ersetzt:** die Bauart in `memory/kzg.py` und `agents/kzg/speicher.py` (`_gedaempfter_boost`)
-**Schließt:** `SALIENZ-OHNE-PIPELINE-LOG` · `KZG-SALIENZ-SKALENBRUCH` · `KZG-SALIENZ-BOOST-OHNE-DECKEL` · `KZG-SALIENZ-KONSUMENTEN-DISSENS` · `KZG-GEWICHT-ABSOLUT-CEILING` · `PROMOTION-ENTFERNT-KZG-NICHT` · `REFAC-KZG-CODE-DUPLIKAT`
+**Schließt:** `SALIENZ-OHNE-PIPELINE-LOG` · `KZG-SALIENZ-SKALENBRUCH` · `KZG-SALIENZ-BOOST-OHNE-DECKEL` · `KZG-GEWICHT-ABSOLUT-CEILING`
+
+**Sollte schließen, tut es nach Bauteil 1 aber nicht** (geprüft am Code, 29.07.2026): `KZG-SALIENZ-KONSUMENTEN-DISSENS` — die Klemme in `ei/gravitation.py` fehlt weiterhin · `PROMOTION-ENTFERNT-KZG-NICHT` — die Synapsen-Promotion löscht den KZG-Eintrag nach wie vor nicht · `REFAC-KZG-CODE-DUPLIKAT` — `_gedaempfter_boost` ist aufgelöst, das doppelte Hash-Mapping in `kzg_store` und `_neu_anlegen` besteht fort.
+
+> **Diese Zeile war eine Absicht, kein Zustand.** Sie stand von Anfang an im Kopf des Konzepts und liest sich wie eine Erledigt-Liste. Wer nach einer der drei IDs sucht und hier landet, hält sie für geschlossen. Der Stand jeder einzelnen steht in `novaberg-backlog.md`.
 
 ---
 

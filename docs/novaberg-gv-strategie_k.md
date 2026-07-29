@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Gesprächslandschaft — 64 Zustände, 6 Achsen, 13 Cluster, 7 Strategien, 4 Absichten, 3 Vehikel (Konzept)
-**Stand:** 28. Juli 2026, Chat 114 (Vollaudit: TIEFE_MODUS auf alle zehn Modi ergänzt, Paradox-Umfang §5.14 gegen §6 korrigiert, Caching-Aussage §9.2/§10.4 als überholt markiert. Kern: Chat 71)
+**Stand:** 29. Juli 2026, Chat 117 (§10.2 nachgezogen: Nähe und Tiefe sind dort das Ziel des Raumzugs, nicht die Achse. Chat 114 — Vollaudit: TIEFE_MODUS auf alle zehn Modi ergänzt, Paradox-Umfang §5.14 gegen §6 korrigiert, Caching-Aussage §9.2/§10.4 als überholt markiert. Kern: Chat 71)
 **Pfad:** novaberg/docs/novaberg-gv-strategie_k.md
 **Quellen:** Chat 71 (GV3+4, Strategie-Analyse, 64-Sektoren-Validierung, Dreischicht-Architektur), Chat 39 (GV-Grundkonzept), Chat 53 (Drive/Neugier), Chat 7 (6-Säulen-Wahrnehmung)
 
@@ -555,6 +555,8 @@ Vehikel bestimmt das WIE             → Aussage (Bier: beiläufig)
 
 ### 10.2 Achsen-Berechnung
 
+> **Zwei der sechs Blöcke stehen hier nicht mehr für die Achse, die sie benennen.** Nähe und Tiefe wurden in Chat 114 auf Novas Raum umgestellt (§3.1, §3.4): Was hier gerechnet wird, ist seither das *Ziel*, zu dem der Raum gezogen wird — die Achse selbst liest den gezogenen Wert. Die Initiative-Heuristik ist in Chat 116 ganz ersetzt worden. Beides steht an Ort und Stelle vermerkt.
+
 ```python
 # Energie
 energie: float = state.get("current_arousal", 0.5)
@@ -567,11 +569,15 @@ RICHTUNG_MAP = {
 }
 
 # Nähe
+# ⚠ Chat 114: Diese Rechnung ist nicht mehr die Achse, sondern ihr ZIEL.
+# Die Achse liest seither Novas Raum (§3.4); was hier steht, bestimmt nur
+# noch, wohin er gezogen wird — `raum_ziel_bestimmen` in ei/raum.py.
 NAEHE_DYNAMIK = {"vertrauen":1.0, "dankbar":0.8, "neutral":0.5,
                  "hilfesuchend":0.6, "distanz":0.2, "angriff":0.3}
 NAEHE_STIL = {"locker":0.9, "jugendlich":0.85, "neutral":0.5,
               "emotional":0.7, "fachlich":0.4, "formell":0.2}
-naehe = (NAEHE_DYNAMIK[dynamik] + NAEHE_STIL[stil]) / 2.0
+naehe_ziel = (NAEHE_DYNAMIK[dynamik] + NAEHE_STIL[stil]) / 2.0
+naehe      = internal.raum.naehe        # das ist die Achse
 
 # Valenz (Plutchik-Sektor)
 VALENZ_SEKTOR = {1:1, 2:1, 3:0, 4:0, 5:0, 6:0, 7:0, 8:1}
@@ -579,10 +585,15 @@ VALENZ_SEKTOR = {1:1, 2:1, 3:0, 4:0, 5:0, 6:0, 7:0, 8:1}
 # Tiefe — alle zehn Modi, die die Perzeption liefern darf (ergänzt Chat 114).
 # Die ursprüngliche Fassung kannte nur die ersten fünf; die anderen fielen auf
 # den Default 0.3 und waren von einem echten "alltag" nicht zu unterscheiden.
+#
+# ⚠ Chat 114: Wie bei der Nähe ist auch das nur noch das ZIEL des Raumzugs,
+# nicht die Achse. Die Achse liest internal.raum.tiefe (§3.4).
 TIEFE_MODUS = {"philosophischer_austausch":0.9, "fachgespraech":0.8,
                "emotional":0.7, "lernmodus":0.7, "arbeitsmodus":0.6,
                "beratend":0.6, "kreativ":0.5, "spielerisch":0.4,
                "berichtend":0.4, "alltag":0.3}
+tiefe_ziel = TIEFE_MODUS.get(modus, 0.3)
+tiefe      = internal.raum.tiefe        # das ist die Achse
 
 # Initiative (Heuristik v1)
 # User-Turns deutlich länger als Nova-Turns → User führt

@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Pixie — Hintergrundverarbeitung (Übersicht)
-**Stand:** 28. Juli 2026, Chat 113 (Aging gegen das Verhungern periodischer Aufgaben)
+**Stand:** 29. Juli 2026, Chat 117 (`ziel_decay` läuft wieder — die Stilllegung galt einen halben Tag. Kern: Chat 113, Aging gegen das Verhungern periodischer Aufgaben)
 **Pfad:** novaberg/docs/novaberg-pixie.md
 **Quellen:** nova-05-k.md (Pixie-Konzept), nova-05-a.md (AgentGraph), nova-05-t-a.md (Queue/Stack/Delivery), nova-05-m-a.md (Agenten-Referenz)
 
@@ -56,7 +56,9 @@ Der gewinnende Kandidat wird in `services/pixie/router.py` auf einen Agent-Namen
 Stand der Tabelle:
 
 - **`synapsen_decay` ist seit 1e438e0 (Chat 105) verdrahtet** — davor lief P6 (Knoten-Decay + `delete_expired_entries`, einziger Aufrufer der pipeline_log-Retention) seit seiner Implementierung in Chat 102 **nie**.
-- **`ziel_decay` fehlt weiterhin BEWUSST** in der Tabelle: Die Decay-Formel des Agenten ist kumulativ defekt (multipliziert den gespeicherten Wert mit einem Faktor aus dem Gesamtalter). ~~Der Router-Miss ist dort die **Sicherung, nicht der Fehler**.~~ → **widerlegt 28.07.2026:** Der Router loest unbekannte Namen ueber Namensgleichheit gegen die Registry auf (siehe unten), damit greift der Miss als Sicherung nicht mehr — der Agent lief am 27.07.2026 um 18:39:58 UTC und hat Motivationswerte veraendert. **Eine Sicherung, die aus einem fehlenden Eintrag besteht, ist keine.** Der Agent ist seit dem 28.07.2026 ueber `ZIEL_DECAY_AKTIV=false` stillgelegt: `periodic_task()` liefert None, der Zeitplan-Eintrag wird beim Start entfernt, `invoke()` traegt ein zweites Gate. → Backlog ZIEL-DECAY-FORMEL-KUMULATIV.
+- **`ziel_decay` fehlt weiterhin in der Tabelle** und laeuft trotzdem — ueber die Namensgleichheit (siehe unten). ~~Der Router-Miss ist dort die **Sicherung, nicht der Fehler**.~~ → **widerlegt 28.07.2026:** Der Router loest unbekannte Namen ueber Namensgleichheit gegen die Registry auf, damit greift der Miss als Sicherung nicht mehr — der Agent lief am 27.07.2026 um 18:39:58 UTC und hat Motivationswerte veraendert. **Eine Sicherung, die aus einem fehlenden Eintrag besteht, ist keine.**
+
+  ~~Die Decay-Formel des Agenten ist kumulativ defekt (multipliziert den gespeicherten Wert mit einem Faktor aus dem Gesamtalter). Der Agent ist seit dem 28.07.2026 ueber `ZIEL_DECAY_AKTIV=false` stillgelegt.~~ → **Beides ueberholt seit dem 28.07.2026, 12:23 Uhr.** Die Stilllegung hielt einen halben Tag: Am selben Tag wurde die Formel zu einer reinen Funktion aus `motivation_basis` und `motivation_basis_am` umgebaut, und `ZIEL_DECAY_AKTIV` steht seither wieder auf `true`. Die zwei Gates (`periodic_task()`, `invoke()`) bleiben stehen — wer diesen Agenten anhalten muss, braucht ein Gate, keinen fehlenden Tabelleneintrag. Live gemessen an fuenf Zielen: zwei aufeinanderfolgende Laeufe unterscheiden sich um 5–6 × 10⁻⁹, dem Verfall der Sekundenbruchteile dazwischen. → `novaberg-thinking-drive_k.md` §Ziel-Schema, Backlog ZIEL-DECAY-FORMEL-KUMULATIV (✅).
 
 - **Namensgleichheit als zweiter Aufloesungsweg:** Findet der Router einen Namen nicht in `_PERIODISCH_ROUTING`, versucht er ihn direkt gegen die Agent-Registry. Das nimmt der Doppelregistry ihre Schaerfe — und zugleich jedem „bewusst nicht verdrahtet" seine Wirkung. Wer einen Agenten zurueckhalten will, braucht ein Gate im Agenten, keinen fehlenden Tabelleneintrag.
 - **Tote Keys:** `"promotion"` (Agent seit P4 dormant, `periodic_task()` liefert None) und `"aufraeumen"` (kein Agent meldet diesen Namen) — harmlos, aber Bestandteil der Doppelregistry-Pflegelast.
