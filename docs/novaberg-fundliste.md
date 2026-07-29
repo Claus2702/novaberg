@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Rohe, noch unklassifizierte Funde aus laufender Arbeit
-**Stand:** 28. Juli 2026, Chat 115 (drei Funde aus der Session-Verlaufs-Prüfung ergänzt)
+**Stand:** 29. Juli 2026, Chat 115 (drei Funde aus der Session-Verlaufs-Prüfung, einer aus dem GV-Entity-Hop; ein Fund erledigt)
 **Pfad:** novaberg/docs/novaberg-fundliste.md
 
 Was beim Bauen an anderer Stelle auffällt, landet hier — **eine Zeile mit Datum**. Kein Bug-Name, keine Priorität, keine Klassifizierung, keine Diskussion. Der Zweck ist, einen Fund festzuhalten, ohne die laufende Arbeit dafür zu unterbrechen.
@@ -35,7 +35,7 @@ Analog zum Kraft-1-Stichtag: ab wann eine Partition brauchbar ist. Kein Backfill
 
 - **2026-07-28** — Novas Eigen-Impulse zählen in die Zusammenfassungs-Schwelle, **erscheinen aber nie im Gesprächsverlauf**. Ein Impuls läuft durch den CharacterGraph; der Dispatcher schreibt dafür einen `assistant`-Session-Turn ohne `user`-Gegenstück. Beide Verlaufs-Bildner überspringen alleinstehende `assistant`-Turns: der Paar-Bildner im Responder (`graph/nodes/responder.py:672-674`) und `format_session_turns_numbered` (`memory/session.py:283-286`), das GV-Node, Router, Perzeption und vier Agenten-Klassifikationen lesen. *(Zeilennummern gemessen 28.07.2026.)* Gemessen am 28.07.2026, 20:15 UTC: `session:<user>:<character>:turns` = 20 Einträge, davon **12 `assistant` gegen 8 `user`**; der Responder-Prompt desselben Fensters trug 7 Turn-Paare. Vier Einträge zählen damit gegen `SESSION_SUMMARIZE_AT`, ohne je im Prompt gestanden zu haben — bei Erreichen der Schwelle schneiden sie echte Wortwechsel weg. Ob ein Impuls in den Verlauf gehört, ist eine offene Frage; dass er ihn verkürzt, ohne darin vorzukommen, ist keine.
 
-- **2026-07-28** — `novaberg-roadmap.md` trägt in der Kopfzeile „**Stand:** Chat 109, 26. Juli 2026", während der Inhalt bis Chat 114 reicht und die Fußzeile „Aktualisiert in Chat 114 (28.07.2026)" nennt. Es ist dieselbe Drift, die der Klammerkommentar zwei Zeilen darunter für die Zeit davor festhält (der Kopf stand bis Chat 109 auf „Chat 93") — beim Schließen der Vier-Chat-Lücke ist sie nicht mitgezogen worden. Wer nur den Kopf liest, hält fünf Sitzungen für undokumentiert und sucht die Arbeit woanders.
+- **2026-07-29** — Entitäten entstehen ohne Zusammenfassung und ohne Embedding. Einziger aktiver Erzeuger ist `agents/kzg/magnete.py`, `_entitaeten_aufloesen` → `EntityResolutionService.create_new_entity(postgres_url, user_id, name, typ)` — vier Argumente, `zusammenfassung` und `embedding` sind nicht darunter. Gemessen 28.07.2026: **88 von 89** aktiven Entitäten haben ein leeres `zusammenfassung`-Feld; nur die eine `user`-Entität trägt eines (die aus `api/chat.py` stammt, wo beide Felder gesetzt werden). Die Spalten existieren beide in `entitaeten`. Wirkung heute: Jede Suche über die Zusammenfassung ist ohne Substrat — das war Tür 2 des GV-Entity-Hop-Befunds — und eine Embedding-Suche über Entitäten ist gar nicht möglich. Wirkung morgen: M2.5b und die Entity-Resolution selbst hängen an denselben zwei Feldern. Offen ist nicht der Fix, sondern die Frage, **woher** die Zusammenfassung einer im KZG-Pfad nebenbei aufgelösten Entität kommen soll — der Magnet-Pfad ist nicht-interaktiv und hat nur den Namen.
 
 - **2026-07-28** — Der Router-Miss-Pfad in `services/pixie/scheduler.py` kehrt zurück, **ohne `abschluss()` zu rufen**. Ein periodischer Kandidat, für den kein Agent gefunden wird, behält damit sein `next_run` und wird beim nächsten Heartbeat erneut Kandidat. Ohne Aging war das harmlos — er verlor gegen die Queue. Mit dem Aging (Chat 113) wächst sein Zuschlag bis zum Deckel, und er gewinnt dann **jeden** Zyklus, ohne je zu laufen. Heute nicht akut: Alle sieben vorhandenen `pixie:schedule:*`-Einträge sind routebar, sechs über die Tabelle, `ziel_decay` über die Namensgleichheit. Der Fund ist die Falle für den nächsten Agenten ohne Routing-Eintrag.
 
@@ -54,6 +54,13 @@ Diese Einträge halten **einen Verlust** fest, keine Aufgabe. Ihr Gegenstand ste
 - **2026-07-28** — Vier in Chat 107 identifizierte Lessons sind nie als Datei angelegt worden. **Welche vier, steht in keinem Repo-Dokument** — der Inhalt liegt nur im Protokoll außerhalb. Auf der Platte liegen 44 `_l`-Dateien. Diese Zeile hält den Verlust fest, nicht die Aufgabe: Ohne Rückgriff aufs Protokoll ist sie nicht bearbeitbar.
 
 - **2026-07-28** — `broadcast()` steht seit Chat 107 als ungeprüfter Punkt, **ohne dass die Frage dazu festgehalten wäre**. Wie bei der Signatur-Drift: Der Hinweis überlebte, die Fragestellung nicht.
+
+---
+
+## Umgezogen — Chat 115 (29.07.2026)
+
+- **2026-07-28** — `novaberg-roadmap.md` trug in der Kopfzeile „Stand: Chat 109, 26. Juli 2026", während der Inhalt bis Chat 114 reichte.
+  → **Erledigt Chat 115.** Kopfzeile nachgezogen. Der Klammerkommentar darunter hält jetzt fest, dass die Drift zum zweiten Mal auftrat — sie ist kein Einzelfall, sondern das Verhalten dieser Datei.
 
 ---
 

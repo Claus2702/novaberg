@@ -1,7 +1,7 @@
 # Novaberg — Roadmap (Projektchronik)
 
-**Stand:** Chat 109, 26. Juli 2026
-*(Die Kopfzeile stand bis Chat 109 auf „Chat 93, 21. Mai 2026" — 15 Chats hinter dem Inhalt. Achtung beim Nachschlagen: Nur bis Chat 97 trägt jeder Chat eine eigene `## Chat NNN`-Überschrift; die Chats 98–108 stehen als `###`-Abschnitte unter dem Chat-97-Block, benannt nach Sprint statt nach Chat.)*
+**Stand:** Chat 115, 29. Juli 2026
+*(Die Kopfzeile stand bis Chat 109 auf „Chat 93, 21. Mai 2026" — 15 Chats hinter dem Inhalt. **Sie ist danach erneut zurückgefallen:** von Chat 110 bis 114 blieb sie auf „Chat 109" stehen, während der Inhalt weiterwuchs, und wurde in Chat 115 nachgezogen. Wer hier etwas ergänzt, zieht die Kopfzeile mit — sie driftet zuverlässig. Achtung beim Nachschlagen: Nur bis Chat 97 trägt jeder Chat eine eigene `## Chat NNN`-Überschrift; die Chats 98–108 stehen als `###`-Abschnitte unter dem Chat-97-Block, benannt nach Sprint statt nach Chat.)*
 **Pfad:** novaberg/docs/novaberg-roadmap.md
 **Single Source of Truth für abgeschlossene Arbeit.**
 **Offene Punkte → novaberg-backlog.md**
@@ -1581,4 +1581,35 @@ Offen → Backlog: `CHARHASH-GEWICHT-ABSOLUT-LIVE` (volle Live-Abnahme im Dauerb
 
 ---
 
-*Aktualisiert in Chat 114 (28.07.2026). Offene Punkte → novaberg-backlog.md. Bugs → novaberg-bugs.md.*
+## Chat 115 (29.07.2026) — Der GV-Node bekommt seine zweite Wissensquelle zurück ✅
+
+**Schwerpunkt:** Zwei Befunde untersucht statt gebaut — und beide erwiesen sich als anders, als ihr Eintrag sagte. Die Lehre des Tages: **Ein Befund nennt die Ursache, die sein Messgerät sehen konnte.**
+
+### Das Verlaufs-Trimming — geprüft, nichts gebaut
+
+- ✅ **Der Deckel existiert und wurde falsch erinnert.** Zusammengefasst wird bei `SESSION_SUMMARIZE_AT` = **25 Einträgen**, nicht bei 20 Wortwechseln; `SESSION_MAX_TURNS` (20) steht an genau einer Stelle — dem `except`-Zweig, also im Notpfad bei gescheitertem LLM-Call. „Turn" zählt Einzeleinträge, `user` und `assistant` getrennt: 25 Einträge sind rund 12 Wortwechsel.
+- ✅ **Entscheidung: nichts bauen.** Der Deckel begrenzt die Anzahl, nicht die Größe — bei den Turn-Größen aus der Chat-114-Messung liegt die Obergrenze weiter bei rund 55 KB. Ein Zeichenbudget zu bauen, bevor gemessen ist, ob der Sprachstil-Block bei vollem Stack noch trägt, wäre eine Reparatur ohne Befund.
+
+### `GV-ENTITY-HOP-FINDET-NICHTS` — drei Türen statt einer
+
+- ✅ **Der Chat-114-Befund war richtig und beschrieb die oberste von drei unabhängigen Ursachen.** Die dort vorgeschlagene Lösung (Schlüssel tokenisieren) hätte keinen der 45 Läufe verändert.
+- ✅ **Tür 1:** Der Schlüssel ist eine Themenphrase, die Entitätsnamen sind Eigennamen (65 von 89 einwortig). **Beide** `ILIKE`-Richtungen gegen echte Schlüssel gemessen: je 0 Treffer. Der Mismatch ist kategorial, nicht syntaktisch.
+- ✅ **Tür 2:** Der zweite Zweig (`zusammenfassung ILIKE`) ist ohne Substrat — 88 von 89 Entitäten haben keine Zusammenfassung, weil der Magnet-Pfad nur Name und Typ setzt.
+- ✅ **Tür 3:** `fakten` hat 0 Zeilen und keinen erreichbaren Produzenten. Ursache ist keine Regression, sondern Festlegung K2 aus Synapsen P4 (Chat 91) — ein terminierter Verzicht mit benanntem Nachfolger. **Was die Festlegung nicht vorsah:** Ihr akzeptierter Preis war ein *eingefrorener* Bestand; der Reset am 27.07. machte daraus einen leeren.
+- ✅ **Umgehängt statt repariert** (`_resonanz_kontext_laden`) — die zweite Wissensquelle kommt jetzt aus `state["lzg_resonanz"]`. Dieselbe Zwei-Stufen-Traversierung, die das Konzept beschreibt, nur über den Graphen, der tatsächlich wächst: Schale 0 = Cosine-Anker über `lzg_knoten`, Schale 1+ = Nachbarn entlang `lzg_kanten` (296 Knoten, 13.538 Kanten). **Keine eigene Abfrage** — zwei Retrieval-Pfade mit zwei Ankern wären zwei Wahrheiten über denselben Turn.
+- ✅ **`[VERWANDTE FAKTEN]` → `[VERWANDTE ERINNERUNGEN]`.** Der alte Block versprach „bekanntes Wissen über Personen, Orte und Vorlieben"; die neue Quelle ist episodisch. Ebenso `gv_detail.entity_hops` → `resonanz_kontext`.
+- ✅ **Der Faktenpfad schläft, statt zu verschwinden** — mit Begründung und Weckbedingung als Kommentarblock über der Funktion, damit er in Monaten nicht wie vergessener toter Code aussieht.
+
+### Das Faktengedächtnis — eingeordnet, nicht aufgegeben
+
+Die Wiederbelebung ist **M2.5b** und war nie abgeschafft. Sie ist heute nicht fällig, und der Grund ist messbar: Die Vorbedingung aus Synapsen-§3.2 („sobald der LZG-Kern steht") ist nicht erfüllt. Die beiden Felder, über die §3.2 die zwei Gedächtnis-Modalitäten verschränkt, sind zu 22 % (`entitaet_ids`, 65/296) und 0,3 % (`timeline_id`, 1/296) gefüllt — das Faktengedächtnis müsste genau dort andocken. Bestandsaufnahme im Backlog.
+
+**Umfang:** Suite 356 → **365 Tests**, grün, 0 übersprungen. Gegenprobe zweifach rot.
+
+**Live belegt 29.07.2026, 05:35 UTC:** `GV-Resonanz: 3 Erinnerung(en) in den Prompt (Cluster 'feuerwerk', Schalen: [0, 1, 1])`. Seiteneffekte: 0 `timeline`, 0 `notizen`, 0 `fakten`.
+
+**Geschlossen:** `GV-ENTITY-HOP-FINDET-NICHTS` (umgehängt, nicht repariert) · `GV-WERT-FAKTEN-BLIND` auf seinen weiter gültigen Kern zurückgeschnitten
+
+---
+
+*Aktualisiert in Chat 115 (29.07.2026). Offene Punkte → novaberg-backlog.md. Bugs → novaberg-bugs.md.*

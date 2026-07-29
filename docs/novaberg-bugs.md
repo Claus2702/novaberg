@@ -1496,7 +1496,26 @@ Disambiguierung erzeugen, die den Loop auslöste: der Crash ist behoben, nicht d
 
 **Zuordnung:** Gehört in den Reducer-Ausbau der Synapsen-Reihe (P8/P9), kein eigener Sprint. Nach dem Re-Embedding messen, wie viele Dubletten tatsächlich gemeinsam im Kontext landen.
 
-#### GV-WERT-FAKTEN-BLIND — 364 von 411 Fakten erreichen den Gesprächsvektor nie ⚠️
+#### GV-WERT-FAKTEN-BLIND — 364 von 411 Fakten erreichen den Gesprächsvektor nie ⚠️ **Gegenstand verschoben (Chat 115)**
+
+> **Nachtrag Chat 115 — zwei Aussagen dieses Eintrags gelten nicht mehr, eine schon.**
+>
+> **Überholt:** *„erreichen den Gesprächsvektor nie"*. Der Gesprächsvektor liest seit Chat 115
+> überhaupt keine Fakten mehr — seine zweite Wissensquelle ist `lzg_resonanz`
+> (GV-ENTITY-HOP-FINDET-NICHTS). Der Eintrag ist damit kein GV-Bug mehr.
+>
+> **Überholt:** die Zahlen 411 / 47 / 364. Sie stammen vom 12.07.2026; der Reset am
+> 27.07.2026 hat den Bestand entfernt. Gemessen 28.07.2026: `fakten` = 0 Zeilen.
+>
+> **Gilt weiter:** Die Aussage über die Bauart. `_entity_kontext_laden` nutzt
+> `INNER JOIN entitaeten e2 ON f.objekt_id = e2.id` und erfasst damit nur
+> Entität→Entität-Kanten; Wert-Fakten bleiben konstruktionsbedingt außen vor. Die Funktion
+> schläft, aber sie steht unverändert im Modul. **Wer sie mit M2.5b weckt, trifft diesen
+> Befund unverändert an** — zusammen mit dem Schlüssel-Mismatch aus Tür 1 des
+> GV-ENTITY-HOP-FINDET-NICHTS-Eintrags. Die Lösungsrichtung unten (`LEFT JOIN` +
+> `COALESCE`) ist davon unberührt gültig.
+>
+> Neu zu messen ist beides erst, wenn die Tabelle wieder einen Produzenten hat.
 
 **Entdeckt:** Chat 107, beim GV-Entity-Hop-Fix (GV-ENTITY-HOP-TOT) als Design-Grenze dokumentiert; hier als eigener Bug erfasst.
 
@@ -2113,27 +2132,108 @@ beobachtbar ist. Tests: `tests/test_gv_zeitstand.py` (6). Live belegt 28.07.2026
 `EmGrav-Node (nachgezogen): internal.emotion gesetzt — begeisterung (a=1.00)`, gefolgt von
 `GV-Achsen: E=1(1.00) … V=1(begeisterung)`.
 
-#### GV-ENTITY-HOP-FINDET-NICHTS — 45 von 45 Läufen ohne einen einzigen Fakt ⚠️
+#### GV-ENTITY-HOP-FINDET-NICHTS — 45 von 45 Läufen ohne einen einzigen Fakt ✅ Behoben Chat 115 (umgehängt, nicht repariert)
 
-**Entdeckt:** Chat 114, GV-Vollaudit. **Prio hoch.**
+**Entdeckt:** Chat 114, GV-Vollaudit. **Prio hoch.** **Untersucht und geschlossen Chat 115.**
 
-**Klasse:** Messgerät, das die Sache nicht sehen kann. Der Leerfall sieht legitim aus.
+**Klasse:** Drei unabhängige Ursachen hintereinander, von denen die erste die beiden
+anderen verdeckt. Der Leerfall sieht an jeder der drei Stellen legitim aus.
 
 **Symptom:** Jeder Lauf endet mit `GV-Entity-Hop: keine Entitaeten zum Schluessel '…'`.
 Über die gesamte Container-Laufzeit lieferte **kein einziger** Hop Fakten.
 
-**Beleg:** 45 Läufe, 45× „keine Entitaeten", 0× Fakten geladen. Der Schlüssel ist ein
-2–5-Wort-`prompt_topic` („Hawking-Strahlung und Verdampfung"), die Suche ein
-`name ILIKE %phrase%` bzw. `zusammenfassung ILIKE %phrase%` in `_entity_kontext_laden`.
-Eine mehrwortige Phrase trifft als Teilstring praktisch nie.
+##### Warum der ursprüngliche Befund richtig und trotzdem zu kurz war
 
-**Auswirkung:** Der GV-Node hat weiterhin keine Entity-Hops, obwohl GV-ENTITY-HOP-TOT
-(Chat 107) den Absturz beseitigt hat. Damals war die Query gegen eine Spalte gerichtet,
-die es nie gab; heute ist sie syntaktisch korrekt und trifft trotzdem nichts. GV-WERT-FAKTEN-BLIND
-kommt obendrauf, ist aber nicht die Ursache — hier scheitert schon Hop 1.
+Der Chat-114-Eintrag nannte die `ILIKE`-Suche als Ursache und schlug vor, den Schlüssel zu
+tokenisieren oder über das Embedding zu suchen. **Beides hätte keinen einzigen der 45 Läufe
+verändert.** Die Untersuchung in Chat 115 fand drei Türen, die unabhängig voneinander
+geschlossen sind; der Befund von Chat 114 beschreibt die oberste.
 
-**Lösungsrichtung:** Der Schlüssel muss in Token zerlegt werden, oder die Suche geht über
-das Embedding statt über `ILIKE`. Vor dem Schließen neu messen.
+**Tür 1 — Hop 1 kann konstruktiv nicht treffen.** Der Schlüssel ist eine Themenphrase aus
+`prompt_topic`, der Entitätsbestand besteht aus Eigennamen. Gemessen 28.07.2026 an 89 aktiven
+Entitäten: 65 einwortig, Namenslänge im Schnitt 11 Zeichen, 83 von 89 kürzer als ein typischer
+Schlüssel. Gegen zwei echte Schlüssel aus dem Log wurden **beide** Richtungen getestet —
+`name ILIKE %schluessel%` (der heutige Code) und die Umkehrung `schluessel ILIKE %name%`:
+je **0 Treffer**. Der Mismatch ist kategorial, nicht syntaktisch; kein Teilstring-Verfahren
+verbindet eine Themenbeschreibung mit einem Eigennamen. Eine Tokenisierung hätte daran
+nichts geändert.
+
+**Tür 2 — der zweite `ILIKE`-Zweig ist durch die Daten tot.** Die Query prüft zusätzlich
+`zusammenfassung ILIKE %schluessel%`. Gemessen: **88 von 89** Entitäten haben keine
+Zusammenfassung, weil der einzige aktive Erzeuger (`agents/kzg/magnete.py`,
+`_entitaeten_aufloesen` → `create_new_entity`) nur Name und Typ setzt. Nur die eine
+`user`-Entität trägt eine. Auch eine Embedding-Suche über dieses Feld hätte kein Substrat.
+
+**Tür 3 — auch ein perfekter Hop 1 liefert nichts.** Die `fakten`-Tabelle hat **0 Zeilen**
+(gemessen 28.07.2026; nicht 0 aktive, 0 insgesamt) und keinen erreichbaren Produzenten.
+Details unter *Warum die Tabelle leer ist*.
+
+##### Warum die Tabelle leer ist — und warum das keine Panne war
+
+Der einzige Extraktionspfad ist `FaktenManager.fakten_verarbeiten`, direkt aufgerufen nur von
+`agents/promotion/agent.py`. Alle Auslöser dieses Agenten sind zu:
+
+- Die Queue-Route `lzg_promotion` zeigt seit Commit `4f7b0c4` (24.05.2026) auf
+  `synapsen_promotion` statt auf `promotion`.
+- Die Aufgabe `fakten_extraktion` kommt repoweit **einmal** vor — in der Deklaration, die
+  sie anmeldet. Niemand stellt je einen solchen Auftrag ein.
+- Ein Schedule-Eintrag `pixie:schedule:promotion` existiert nicht (7 Einträge, keiner davon).
+- Der zweite Eingang `FaktenManager.execute()` über `pending_writes` ist erreichbar, aber
+  unbefüllt: Die Salienz legt ausschließlich `ziel="kzg"` an, der Notizen-Manager
+  `ziel="notizen"`. `ziel="fakten"` erzeugt niemand.
+
+**Das war eine bewusste Festlegung, keine Regression.** K2 in
+`novaberg-memory-synapsen-p4-entscheidungen_k.md` (Chat 91):
+
+> Pfad D.2 — Tripel-Extraktion entfällt komplett in P4. Kein Call 1, kein Call 2, kein
+> FaktenManager-Aufruf im neuen Pixie-Agent. Funktionalitäts-Bruch zwischen P4 und M2.5b
+> wird akzeptiert (keine neuen Tripel, keine Edge Invalidation, **eingefrorener
+> Fakten-Bestand**). Spätere Architektur: FaktenAgent als eigenständige Fachabteilung
+> (M2.5b), analog zu TimelineAgent.
+
+**Was die Festlegung nicht vorsah:** Der akzeptierte Preis war ein *eingefrorener* Bestand —
+keine neuen Fakten, aber die vorhandenen weiter lesbar. Das galt 64 Tage lang; Chat 107 zählte
+am 12.07.2026 noch 411 aktive Fakten. Der Reset am 27.07.2026 hat diesen Bestand entfernt.
+Aus *eingefroren* wurde *leer*, und das ist ein anderer Preis als der, der damals abgewogen
+wurde. Kein Dokument hielt das fest, weil es niemand beschlossen hat.
+
+##### Behoben Chat 115 — umgehängt statt repariert
+
+Der GV-Node zieht seine zweite Wissensquelle jetzt aus `state["lzg_resonanz"]`, das der
+Enricher legt (`_resonanz_kontext_laden` in `graph/nodes/gespraechsvektor.py`). Das ist
+dieselbe Zwei-Stufen-Traversierung, die das Konzept für den Entity-Hop beschreibt, nur über
+den Erinnerungs- statt den Faktengraphen: Schale 0 sind die Anker der Cosine-Suche über
+`lzg_knoten`, Schale 1+ die Nachbarn entlang `lzg_kanten`. Dieser Graph wird laufend
+befüllt — 296 Knoten, 13.538 Kanten (gemessen 28.07.2026).
+
+**Warum keine eigene Abfrage:** Der GV-Node fragt bewusst nicht selbst die Datenbank. Zwei
+Retrieval-Pfade mit zwei verschiedenen Ankern in einem Turn wären zwei Wahrheiten über
+dasselbe Gespräch. Der Enricher läuft ohnehin vorher (`character_graph.py`:
+enricher → … → gv_node).
+
+**Der Prompt-Block heißt jetzt anders.** `[VERWANDTE FAKTEN]` versprach „bekanntes Wissen
+über Personen, Orte und Vorlieben" — das war der Faktengraph. Die neue Quelle ist episodisch:
+was erlebt wurde, nicht was der Fall ist. Der Block heißt `[VERWANDTE ERINNERUNGEN]` und sagt
+das im Kopf. Ebenso umbenannt: das `gv_detail`-Feld `entity_hops` → `resonanz_kontext`.
+
+**Was nicht behoben ist:** Der Faktenpfad selbst. `_entity_kontext_laden` liegt schlafend im
+Modul, mit der Begründung und der Weckbedingung als Kommentarblock darüber. **Wer ihn
+reaktiviert, repariert vorher Tür 1** — der Schlüssel-Mismatch bleibt auch mit vollen
+Tabellen bestehen. Die Wiederbelebung des Faktengedächtnisses ist M2.5b (Backlog); ihre
+Vorbedingung nach Synapsen-Konzept §3.2 ist ein stehender LZG-Kern. Stand 29.07.2026 ist
+er das nicht: Die beiden Felder, über die §3.2 die zwei Gedächtnis-Modalitäten verschränkt,
+sind zu 22 % (`entitaet_ids`, 65 von 296 Knoten) und zu 0,3 % (`timeline_id`, 1 von 296)
+gefüllt. Das Faktengedächtnis müsste genau dort andocken.
+
+**Tests:** `tests/test_gv_resonanz_kontext.py` (9). Darunter einer, der rot wird, wenn der
+Faktenpfad wieder in den Node verdrahtet wird — sonst käme der Befund zurück, ohne dass
+etwas rot wird. Gegenprobe zweifach: Schalen-Unterscheidung entfernt → rot; Aufruf auf
+`_entity_kontext_laden` zurückgedreht → rot.
+
+**Live belegt 29.07.2026, 05:35 UTC:** `GV-Resonanz: 3 Erinnerung(en) in den Prompt
+(Cluster 'feuerwerk', Schalen: [0, 1, 1])` — ein Anker, zwei Nachbarn. `[VERWANDTE
+ERINNERUNGEN]` im GV-Prompt vorhanden, `[VERWANDTE FAKTEN]` nicht mehr. Seiteneffekte im
+Messfenster: 0 `timeline`, 0 `notizen`, 0 `fakten`.
 
 #### GV-FARBTON-SUBJEKTWECHSEL — der Farbton behauptet etwas über den Nutzer und misst Nova ⚠️
 

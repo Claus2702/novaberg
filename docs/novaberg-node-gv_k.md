@@ -666,13 +666,31 @@ Der existierende Task `vertiefen` ist konzeptionell der richtige Ort für den Ge
 **Sequentieller Ablauf:**
 1. [Python] Skip-Check: Begrüßung/Meta → Durchreichen (Länge 0)
 2. [Python] Max-Länge aus 8 EI-Dimensionen berechnen (0–3 Schritte)
-3. [Python] Entity-Hop: 2-Stufen-Traversierung über `fakten`-Tabelle
+3. [Python] Zweite Wissensquelle: 2-Stufen-Traversierung. ~~über `fakten`-Tabelle~~ → **seit Chat 115 über den Erinnerungsgraphen** (`lzg_knoten` + `lzg_kanten`, gelesen aus `state["lzg_resonanz"]`). Die zwei Stufen bleiben, der Graph wechselt — siehe unten.
 4. [LLM] Hypothese destillieren (Session + Emotion + Charakter + Fakten + KZG)
 5. [State] `gespraechsvektor_block` → Responder liest als `[GESPRAECHSVEKTOR]`-Block
 
 **⚠ Entity-Hop-Historie (Chat 107):** Der Entity-Hop war von seiner Einführung bis zum 12.07.2026 **tot**. Beide Fakten-Queries in `_entity_kontext_laden` selektierten `f.beziehung` — eine Spalte, die nie existierte (sie heißt seit Bestehen der `fakten`-Tabelle `attribut`). Jede Ausführung warf `UndefinedColumn`; das pauschale `except Exception` degradierte den Crash zu `logger.warning` und gab `""` zurück — der Entity-Kontext hat den GV-Prompt **nie** erreicht (411 aktive Fakten, keiner je geliefert). Behoben in Commit `1c6332b` (GV-ENTITY-HOP-TOT, bugs.md), live belegt am 12.07.2026.
 
 **Design-Grenze (bleibt, als GV-WERT-FAKTEN-BLIND in bugs.md erfasst):** Der Hop nutzt `INNER JOIN entitaeten e2 ON f.objekt_id = e2.id` und erfasst damit nur Entität→Entität-Fakten — live 47 von 411. Die 364 Wert-Fakten (`objekt_wert`, per Check-Constraint XOR zu `objekt_id`) erreichen den Gesprächsvektor nicht; genau dort liegen Fakten wie „Der Nutzer heißt Claus". Lösungsrichtung: `LEFT JOIN` + `COALESCE(e2.name, f.objekt_wert)` als mitgelesener Kontext, ohne die Hop-Logik zu ändern.
+
+**⚠ Der Faktenpfad schläft seit Chat 115 (29.07.2026).** Der Absatz darüber beschreibt weiterhin richtig, wie `_entity_kontext_laden` gebaut ist — die Funktion steht unverändert im Modul. Was nicht mehr gilt: dass sie aufgerufen wird, und die Zahlen 47/411/364.
+
+Gemessen am 28.07.2026 hatte `fakten` **0 Zeilen** und keinen erreichbaren Produzenten. Die Tripel-Extraktion wurde mit Synapsen P4 aus der Promotion herausgenommen (Festlegung K2 in `novaberg-memory-synapsen-p4-entscheidungen_k.md`, Chat 91) — ausdrücklich als terminierter Verzicht mit benanntem Nachfolger, dem FaktenAgent als eigenständiger Fachabteilung (M2.5b). Der dort akzeptierte Preis war ein *eingefrorener* Bestand; der Reset am 27.07.2026 machte daraus einen leeren.
+
+Unabhängig davon traf Hop 1 auch vorher nicht: Der Schlüssel ist eine Themenphrase, die Entitätsnamen sind Eigennamen, beide `ILIKE`-Richtungen 0 Treffer über 45 Läufe.
+
+**Was an die Stelle getreten ist:** Die zweite Wissensquelle kommt jetzt aus `state["lzg_resonanz"]`, das der Enricher legt. Die Zwei-Stufen-Idee dieses Konzepts bleibt damit erhalten und wechselt nur den Graphen:
+
+| | Faktenpfad (schläft) | Erinnerungspfad (aktiv) |
+|---|---|---|
+| Hop 1 / Schale 0 | Schlüsselentität → deren Fakten | Cosine-Anker über `lzg_knoten` |
+| Hop 2 / Schale 1+ | verknüpfte Entitäten → deren Fakten | Nachbarn entlang `lzg_kanten` (Spreading) |
+| Was es liefert | *was der Fall ist* — semantisch | *was erlebt wurde* — episodisch |
+
+Der Unterschied in der letzten Zeile ist kein Detail: Der Prompt-Block heißt deshalb `[VERWANDTE ERINNERUNGEN]` und nicht mehr `[VERWANDTE FAKTEN]`. Ein Block, der Erlebtes als gesichertes Wissen ankündigt, lässt das LLM es als Auskunft lesen.
+
+**Beide Modalitäten sind vorgesehen, nicht alternativ** — Synapsen-Konzept §3.2 beschreibt sie als komplementär („Reine Fakten wären ein Polizeibericht. Reine Resonanz wäre ein Gefühl ohne Anker."). Mit M2.5b tritt der Faktenpfad wieder daneben, nicht an die Stelle. Wer ihn weckt, repariert vorher den Schlüssel-Mismatch; Details in `novaberg-bugs.md`, GV-ENTITY-HOP-FINDET-NICHTS.
 
 **Farbmisch-System:** Statt eines if/elif-Decision-Trees: 8 unabhängige Funktionen, jede gibt einen Satz oder Stille zurück. Neutral = leerer String — nur salient Dimensionen tragen bei.
 

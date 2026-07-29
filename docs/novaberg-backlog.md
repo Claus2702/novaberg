@@ -1519,6 +1519,14 @@ Mehrere Phasen des Memory-Promotion-Epics werden durch den Synapsen-Umbau anders
 - **M3b** (entitaet_ids + timeline_id im Promotion-Code) — wird Teil von Punkt 3 (Schreibpfad-Sicht des Synapsen-Modells)
 - **M5a** (Charakter-Hash profitiert von echten EI-Profilen) — bereits erledigt durch Backfill und Code-Fix in Chat 82/83/84
 - **M5b** (FaktenManager-Reaktivierung) — bleibt separat, hängt nicht direkt am Synapsen-Umbau. **Chat 91:** wird als M2.5b geführt (FaktenAgent als eigenständige Fachabteilung analog TimelineAgent, kein Plugin mehr). Schreibpfad in `fakten`-Tabelle bleibt orthogonal zum Synapsen-Modell. Verschoben auf nach Synapsen-Umbau, eigenes Faktengedächtnis-Konzeptpapier siehe Synapsen-§3.2.
+
+  **Chat 115 — Bestandsaufnahme vor der Umsetzung.** Das Faktengedächtnis ist gewollt und eingeplant; die Frage ist allein der Zeitpunkt. Gemessen 28./29.07.2026:
+
+  - `fakten` hat **0 Zeilen**. Der in K2 akzeptierte Preis war ein *eingefrorener* Bestand (411 Fakten am 12.07.2026); der Reset am 27.07.2026 hat ihn entfernt. Aus „keine neuen Fakten" wurde „keine Fakten" — eine Folge, die die Festlegung nicht vorsah und die niemand beschlossen hat.
+  - Die Vorbedingung aus Synapsen-§3.2 („sobald der LZG-Kern steht") ist **nicht erfüllt**. Die beiden Felder, über die §3.2 die zwei Gedächtnis-Modalitäten verschränkt, sind dünn: `entitaet_ids` in 65 von 296 Knoten (22 %), `timeline_id` in **1** von 296 (0,3 %). Ein FaktenAgent auf diesem Untergrund produzierte Fakten, deren Verschränkung mit den Erinnerungen — der eigentliche Gewinn nach §3.2 — nicht stattfände.
+  - Der alte `PromotionAgent` liegt vollständig im Repo und trägt die Extraktionslogik als Vorlage (Call 1, Call 2, Entity-Resolution, Edge-Invalidation). Laut Commit `4f7b0c4` bleibt er „dormant through P9". **P9 hat nicht stattgefunden** — es ist im Konzept das Codeschloss und setzt P5–P8 plus eine Woche Beobachtung voraus. Läuft P9 vor M2.5b, ist die Vorlage weg.
+  - **Mitzunehmen bei der Umsetzung:** Der Schlüssel-Mismatch aus GV-ENTITY-HOP-FINDET-NICHTS (Themenphrase gegen Eigenname) und die Wert-Fakten-Grenze aus GV-WERT-FAKTEN-BLIND bestehen unabhängig vom leeren Bestand fort. Beide treffen jeden, der die Tabelle wieder liest — nicht nur den GV-Node.
+  - **Wer heute davon abhängt:** niemand mehr im Lesepfad des GV-Nodes; der wurde in Chat 115 auf `lzg_resonanz` umgehängt. `_entity_kontext_laden` schläft dort mit Weckbedingung im Code. Die übrigen vier Leser (Enricher-Hook, `fakten_abfragen`, `fakten_historie`, Router-Intent `fakten_management`) sind funktionsfähig und lesen eine leere Tabelle.
 - **M5c** (Themen-Cluster-Promotion smarter) — wird strukturell obsolet, weil keine Themen-Cluster mehr aggregiert werden
 
 ### Scope-Definition
