@@ -104,7 +104,28 @@ Cosinus-Abstand zwischen den KZG-Embeddings aufeinanderfolgender Einträge, geme
 
 **Die Rauschgrenze ist der entscheidende Wert.** Zwei Verdichtungen **derselben Äußerung** liegen bereits 0,383 auseinander — darunter ist „gleiches Thema" nicht von Messrauschen zu trennen. Über dem Rauschen bleibt: Nutzer **+0,23**, Nova **+0,03**.
 
-**Zentrum-Kandidat:** Median aller 164 Übergaben = **0,543**; q10 0,297, q25 0,411, q75 0,627, q90 0,704.
+**Zentrum-Kandidat:** Median aller 164 Übergaben = **0,543**; q10 0,297, q25 0,411, q75 0,627, q90 0,704. **Dieser Wert gilt für Verdichtungen** — siehe die Gegenprobe unten.
+
+#### Gegenprobe auf Rohtexten
+
+Dieselbe Rechnung auf den ungekürzten Turn-Texten aus dem `pipeline_log`, 36 Paare, Embeddings frisch erzeugt (144 Stück, Modell wie im Betrieb). Als Rauschgrenze diente hier der Abstand zwischen den **beiden Hälften derselben Nova-Antwort** — das Gegenstück zu „zwei Verdichtungen derselben Äußerung".
+
+| | Rohtexte | Verdichtungen |
+|---|---|---|
+| Nutzer übernimmt | **0,658** | 0,608 |
+| Nova übernimmt | **0,445** | 0,412 |
+| Rauschgrenze | **0,488** | 0,383 |
+
+**Die Richtung hält, die Absolutwerte nicht.** Auf Rohtexten liegt Novas Sprung sogar **unter** der Rauschgrenze: Sie bewegt das Thema bei der Übernahme weniger, als ihre eigene Antwort sich in sich selbst bewegt.
+
+Das Ergebnis ist damit **robuster als das Verhältnis 8:1**, weil es nicht an der Wahl der Grenze hängt. Beide Kandidaten überschätzen das reine Messrauschen — die Verdichtungs-Segmente sind bereits nach Themen geschnitten, die Antwort-Hälften decken verschiedene Teilaspekte ab. Das wahre Rauschen liegt unter beiden. In beiden Fällen gilt derselbe Satz:
+
+> **Der Nutzer liegt über jeder Kandidaten-Rauschgrenze, Nova an oder unter jeder.**
+
+**Zwei Folgerungen für den Bau:**
+
+1. **Das Zentrum ist repräsentationsgebunden.** 0,543 stammt aus Verdichtungen und ist nicht auf Rohtexte übertragbar. Das Konzept legt die Repräsentation fest, und die Kalibrierung läuft auf derselben.
+2. **Der Rohtext-Pfad ist zur Laufzeit der billigere.** Das Embedding des Nutzer-Prompts liegt bereits im State (`prompt_embedding`, vom Enricher gesetzt); es müsste nur das der vorigen Nova-Antwort aufbewahrt werden. Der Verdichtungs-Pfad müsste dagegen auf den KZG-Agenten warten.
 
 ### 4.3 M3 — Registerweg (F3)
 
@@ -131,10 +152,12 @@ Zweiter, unabhängiger Grund gegen dieses Maß: Novas Fragefrequenz ist ein **Pr
 | Maß | Quelle | Nutzer : Nova |
 |---|---|---|
 | M1 Intentionen (eng) | LLM-Label | **6 : 1** |
-| M2 Themensprung | Vektorrechnung, deterministisch | **8 : 1** |
+| M2 Themensprung | Vektorrechnung, deterministisch | **8 : 1** (Verdichtungen) |
 | M3 Registerweg | Tabellen-Distanz | **2 : 1** |
 
-Drei Maße aus drei verschiedenen Quellen, gleiche Richtung. M2 ist der belastbarste: Er kommt ohne LLM-Urteil aus und stützt damit M1, das sonst gegen sich selbst geprüft würde.
+Drei Maße aus drei verschiedenen Quellen, gleiche Richtung. M2 ist der belastbarste: Er kommt ohne LLM-Urteil aus und stützt damit M1, das sonst gegen sich selbst geprüft würde — und er hat als einziger eine Gegenprobe auf einer zweiten Repräsentation bestanden (§4.2).
+
+**Die Verhältniszahlen sind die schwächere Aussage.** Sie hängen an der gewählten Rauschgrenze. Der robuste Kern, der über beide Repräsentationen und beide Grenzen-Kandidaten hält, lautet: **Der Nutzer bewegt das Thema messbar, Nova nicht.**
 
 ---
 
@@ -212,7 +235,7 @@ Wer später die Schieflage der Verteilung misst, findet einen erwarteten Befund 
 - **Gewichtung der drei Maße zueinander.** M1, M2 und M3 messen verschiedene Formen von Führung und konvergieren nur in der Richtung, nicht im Betrag (6:1, 8:1, 2:1). Wie sie zu einem Rohwert zusammengehen, ist nicht entschieden.
 - **Rad neu oder bestehend** (§6).
 - **Breite des toten Bands** (§5).
-- **Gegenprobe zu M2 auf Rohtexten.** Gemessen wurde der Abstand zwischen KZG-*Verdichtungen*, nicht zwischen Rohtexten. Die 133 Rohturn-Paare im `pipeline_log` erlauben die Gegenprobe. Es ist die letzte Stelle, an der M2 noch kippen könnte.
+- ~~**Gegenprobe zu M2 auf Rohtexten.**~~ **Erledigt** (§4.2): Richtung bestätigt, Absolutwerte verschoben, Novas Sprung liegt dort sogar unter der Rauschgrenze. Neu offen dafür: **auf welcher Repräsentation die Achse läuft** — Rohtext oder Verdichtung. Davon hängt das Zentrum ab, und der Rohtext-Pfad ist zur Laufzeit billiger.
 - **Kanon-Löcher schließen.** M1 steht auf `intentionen`, M3 auf `modus`; beide Felder nehmen heute Werte außerhalb ihres Kanons stillschweigend an. `modus_pruefen` existiert seit Chat 114, wird aber nur im GV-Pfad gerufen, nicht im Verdichtungs-Pfad.
 
 ---
