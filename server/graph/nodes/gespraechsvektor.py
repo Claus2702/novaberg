@@ -206,7 +206,8 @@ def _resonanz_kontext_laden(state: ConversationState) -> str:
 
     if ohne_inhalt:
         # Kein Leerfall: lzg_knoten ohne Text ist ein Schreibseiten-Defekt.
-        # Den Wert nennen, nicht die Anzahl (Arbeitsweise §7).
+        # Die Zeile nennt die knoten_ids und nicht nur ihre Anzahl — eine
+        # Zaehlung macht die Frage "welcher Knoten ist kaputt?" unbeobachtbar.
         logger.error(
             "GV-Resonanz: %d Erinnerung(en) ohne Inhalt uebersprungen "
             "(knoten_ids: %s)",
