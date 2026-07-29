@@ -122,10 +122,39 @@ Das Ergebnis ist damit **robuster als das Verhältnis 8:1**, weil es nicht an de
 
 > **Der Nutzer liegt über jeder Kandidaten-Rauschgrenze, Nova an oder unter jeder.**
 
-**Zwei Folgerungen für den Bau:**
+#### Festlegung: die Achse läuft auf Rohtext
 
-1. **Das Zentrum ist repräsentationsgebunden.** 0,543 stammt aus Verdichtungen und ist nicht auf Rohtexte übertragbar. Das Konzept legt die Repräsentation fest, und die Kalibrierung läuft auf derselben.
-2. **Der Rohtext-Pfad ist zur Laufzeit der billigere.** Das Embedding des Nutzer-Prompts liegt bereits im State (`prompt_embedding`, vom Enricher gesetzt); es müsste nur das der vorigen Nova-Antwort aufbewahrt werden. Der Verdichtungs-Pfad müsste dagegen auf den KZG-Agenten warten.
+**Begründung — die Verdichtung ist bereits eine Deutung.** Sie ist die Zusammenfassung einer Äußerung durch ein LLM. Wer den Themensprung darauf misst, misst die Bewegung *der Zusammenfassung*, nicht die Bewegung des Gesprächs. Der Rohtext ist das Material, das tatsächlich gewechselt hat.
+
+Die Messung stützt die Festlegung zusätzlich: Auf Rohtexten fällt Novas Sprung **unter** die Rauschgrenze, auf Verdichtungen lag er knapp darüber. Das Maß ist auf dem Rohmaterial schärfer, nicht nur ehrlicher.
+
+**Vier Folgerungen:**
+
+1. **Das Zentrum 0,543 ist gegenstandslos.** Es stammt aus Verdichtungen. Die Kalibrierung wird auf Rohturns neu erhoben; der Wert aus §5 ist bis dahin ein Platzhalter mit falscher Herkunft.
+2. **Der Kalibrier-Korpus sind die Rohturn-Paare** im `pipeline_log` (`node='dispatcher'`, `quelle='character'`, Feld `user_prompt`), nicht die KZG-Einträge.
+
+   **Über alle 133 Paare gerechnet (29.07.2026):**
+
+   | | Zentrum (Median) | n | Spanne |
+   |---|---|---|---|
+   | M2 Themensprung | **0,662** | 132 | 0,290 – 0,983 |
+   | M3 Registerweg | **0,100** | 132 | 0,000 – 0,600 |
+   | M1 Intentionen | binär | 81 | 50,6 % führend |
+
+   Die 36er-Vorstichprobe hatte 0,658 geliefert — sie war repräsentativ.
+3. **Zur Laufzeit liest die Achse den State, nicht das Gedächtnis.** Alle drei Maße liegen dort bereits je Turn vor:
+
+   | Maß | Quelle im State |
+   |---|---|
+   | M1 Intentionen | `user_intentionen` |
+   | M2 Themensprung | `prompt_embedding` (Enricher) gegen das aufbewahrte Embedding der vorigen Antwort |
+   | M3 Registerweg | `external.emotion.mode` |
+
+   Der KZG-Bestand war ausschließlich das **Mess**-Substrat, weil er die persistierte Historie ist. Er ist nicht der Laufzeitpfad.
+
+4. **Nur das Embedding der vorigen Nova-Antwort fehlt.** Es wird heute nirgends aufbewahrt. Das ist der einzige neue Speicherbedarf der Achse — ein Vektor je Paar, wie `gv:detail:{user}:{character}`.
+
+**Zu beachten bei der Kalibrierung:** Korpus und Laufzeit müssen dieselbe Größe rechnen. Die Messwerte aus §4.2 stammen aus einem Skript, das die Rohtexte frisch embeddet hat; der Laufzeitpfad nimmt `prompt_embedding` aus dem State. Beides ist derselbe Text durch dasselbe Modell — die Gleichheit ist zu prüfen, nicht anzunehmen.
 
 ### 4.3 M3 — Registerweg (F3)
 
@@ -159,6 +188,22 @@ Drei Maße aus drei verschiedenen Quellen, gleiche Richtung. M2 ist der belastba
 
 **Die Verhältniszahlen sind die schwächere Aussage.** Sie hängen an der gewählten Rauschgrenze. Der robuste Kern, der über beide Repräsentationen und beide Grenzen-Kandidaten hält, lautet: **Der Nutzer bewegt das Thema messbar, Nova nicht.**
 
+### 4.6 Die drei Maße sind zwei Dimensionen
+
+Konvergenz im Aggregat ist nicht Übereinstimmung je Turn. Über die Tabelle `verbindung` (`turn_id` → `kzg_id`) lässt sich jeder Rohturn mit seinen Verdichtungen verbinden; damit ist die paarweise Übereinstimmung **je Turn** rechenbar. Gemessen 29.07.2026:
+
+| Paar | Übereinstimmung | n |
+|---|---|---|
+| **M2 ↔ M3** | **72,7 %** | 132 |
+| M1 ↔ M2 | 55,6 % | 81 |
+| M1 ↔ M3 | 48,1 % | 81 |
+
+Der Zufall liegt bei 50 %. **M2 und M3 sind weitgehend redundant** — wer das Thema wechselt, wechselt meist auch das Register. **M1 ist von beiden praktisch unabhängig.**
+
+Das bestätigt die Struktur aus §3 an den Daten: F2 und F3 sind zwei Spielarten von *wechseln*, F1 ist ein anderer Akt — *etwas wollen*. Eine Frage kann kommen, ohne dass sich Thema oder Register bewegen, und umgekehrt.
+
+**Methodischer Hinweis für spätere Auswertungen:** Ein erster Anlauf hatte über die Zeitnähe gejoint statt über `verbindung` und kam auf 45,8 % und 43,0 % — *unter* Zufall. Die Ursache war der Join: 108 Zuordnungen aus nur 74 verschiedenen Einträgen, einer bis zu viermal vergeben. **Ein Zeit-Join zwischen Turn und Gedächtnis ist in diesem System kein gültiger Ersatz für `verbindung`** — er erzeugt Rauschen, das wie ein Befund aussieht.
+
 ---
 
 ## 5. Skala, Zentrum und Versatz — Entwurf
@@ -171,9 +216,29 @@ Rauschgrenze          Median aller           beobachtetes
           Nova 0,412            Nutzer 0,608
 ```
 
+> **⚠ Die Zahlen dieser Skizze stammen aus Verdichtungen und sind mit der Festlegung „Rohtext" (§4.2) gegenstandslos geworden.** Die Form gilt weiter, die Werte nicht. Auf Rohtexten liegen die gemessenen Eckpunkte bei Rauschgrenze 0,488, Nova 0,445, Nutzer 0,658 — das Zentrum ist dort noch nicht erhoben.
+
 **Das neutrale Zentrum kommt aus dem Bestand,** nicht aus einer Konstante. Es ist der Punkt, an dem beide Seiten der Achse im Datenbereich liegen. Genau das fehlt der heutigen Achse: Schwelle 1,5 bei einem Wertebereich von 0,10 bis 0,24.
 
 **Der Charakter verschiebt das Zentrum um ein kleines Stück.** Eine Nova, die sich führen lässt, gilt schon bei einem kleineren Sprung als führend; eine distanzierte erst bei einem größeren. Die Verschiebung ist eine Tendenz, kein Anschlag — das bestehende Charakter-Rad liefert für einen echten Charakter eine Auslenkung von rund einem Drittel des verfügbaren Wegs (Nabe 0.9, gemessen 1.115).
+
+### 5.1 Wie die drei Maße zusammengehen — je Dimension, nicht je Maß
+
+Aus §4.6 folgt die Gewichtung. Gleichgewichtung **je Maß** gäbe der redundanten Paarung stillschweigend zwei Drittel: M2 und M3 sagen zu drei Vierteln dasselbe und zählten doppelt, die unabhängige Messung wäre dauerhaft überstimmt.
+
+```
+Bewegung = Mittel(M2', M3')      ← die redundante Paarung, gemeinsam eine Stimme
+Wollen   = M1'                   ← die unabhängige, eigene Stimme
+Rohwert  = Mittel(Bewegung, Wollen)
+```
+
+Jedes Maß wird vorher auf sein **eigenes** Zentrum bezogen und auf eine gemeinsame Spanne gebracht (`'`). Eine reine Verschiebung genügt nicht: Die Spannweiten sind zu verschieden (M2 rund 0,7 breit, M3 rund 0,6, M1 binär), und M2 würde den Mittelwert allein tragen.
+
+**Warum das statistisch richtig ist:** Zwei zu 73 % redundante Maße tragen zusammen etwa **1,3** Messungen an Information, M1 trägt eine volle unabhängige. Eine unabhängige Messung verdient in einer Kombination mehr Gewicht, nicht weniger — redundante wiederholen sich nur.
+
+**Und die Verengung durch Mitteln ist damit unkritisch.** Bei zwei Komponenten liegt sie bei σ/√2 statt σ/√3, und weil jede Komponente auf ihrem eigenen Median zentriert wird, bleiben beide Seiten der Achse ohnehin erreichbar. Das Risiko war nie der mediale Wert, sondern die verdeckte Doppelgewichtung.
+
+**Eine Abstimmung statt eines Mittelwerts wurde erwogen und verworfen.** Bei 72,7 % Einigkeit entschieden M2 und M3 die Mehrheit unter sich; M1 wäre nur in den 27 % Uneinigkeit ausschlaggebend — dieselbe Überstimmung, nur anders verpackt.
 
 **Zwei Konstruktionsregeln:**
 
@@ -189,9 +254,69 @@ Rauschgrenze          Median aller           beobachtetes
 
 **Über ein Rad,** nach dem Muster von `nutzer_gewichtung` (`novaberg-salienz-berechnung_k.md` §5): eine Nabe als Nullpunkt, Speichen mit festem Zug, ein LLM-Call bewertet jede Speiche mit 0.0 / 0.5 / 1.0 gegen den Charaktertext, das Ergebnis wird **gerechnet**. Die Einzelausprägungen werden mitgespeichert, sonst wäre die Zahl ein Wert ohne Herkunft.
 
-Der Unterschied zum gescheiterten Weg ist die Form der Frage: **zwölf konkrete Einzelfragen statt einer Einordnung im Embedding-Raum.**
+Der Unterschied zum gescheiterten Weg ist die Form der Frage: **konkrete Einzelfragen statt einer Einordnung im Embedding-Raum.**
 
-**Offen:** Vier Speichen des **bestehenden** Rads treffen bereits Führen und Folgen — Treue/Ergebenheit (+0.16), Widerspenstigkeit (−0.12), Selbstbezogenheit (−0.08), Distanz (−0.03). Ob ein eigenes Rad nötig ist oder eine zweite Auswertung desselben genügt, ist nicht entschieden. Die kleinere Variante ist zuerst zu prüfen.
+**Entschieden: ein eigenes Rad mit eigenem LLM-Call.** Das bestehende Rad wird nicht mitbenutzt. Vier seiner zwölf Speichen treffen zwar Führen und Folgen — Treue (+0.16), Widerspenstigkeit (−0.12), Selbstbezogenheit (−0.08), Distanz (−0.03) —, aber sein Wert bündelt sie mit Wissbegier, Pflichtbewusstsein und Aufmerksamkeit, die mit der Frage nichts zu tun haben. Ein Call je Charakter-Destillation ist der Preis, und er ist gering; die Genauigkeit ist es nicht.
+
+### 6.1 Die Entwurfsregel: Handlung statt Haltung
+
+**Jede Speiche wird über eine beobachtbare Gesprächshandlung beschrieben, nicht über eine Disposition.**
+
+Das bestehende Rad beschreibt Treue als *„stellt seine Belange über die eigenen"*. Das ist eine Haltung; ein LLM liest daraus leicht allgemeine Freundlichkeit und bewertet einen warmherzigen Charakter hoch, obwohl über sein Gesprächsverhalten nichts gesagt ist. Ein Rad für Initiative muss fragen: **was tut sie im Gespräch?**
+
+Der Unterschied ist nicht kosmetisch. Er entscheidet, ob die zehn Fragen zehn verschiedene Dinge messen oder zehnmal denselben Gesamteindruck.
+
+### 6.2 Die zehn Speichen
+
+**Nabe: 0.00** — keine Tendenz. Eine Nova, die weder besonders leicht folgt noch besonders auf ihrer Richtung besteht.
+
+**Nach oben — sie überlässt die Führung** (Summe **+0.25**)
+
+| Speiche | Woran man sie im Gespräch erkennt | Zug |
+|---|---|---|
+| **Folgsamkeit** | übernimmt das gesetzte Thema, ohne es zu drehen | +0.08 |
+| **Anschlussfreude** | greift den letzten Punkt auf und spinnt ihn weiter, statt einen neuen zu setzen | +0.06 |
+| **Zurückhaltung** | bringt Eigenes erst, wenn danach gefragt wird | +0.05 |
+| **Antwortende Rolle** | versteht ihren Beitrag als Antwort, nicht als Beitrag neben seinem | +0.04 |
+| **Behutsamkeit** | vermeidet Brüche, wechselt nicht abrupt weg | +0.02 |
+
+**Nach unten — sie behält die Initiative** (Summe **−0.25**)
+
+| Speiche | Woran man sie im Gespräch erkennt | Zug |
+|---|---|---|
+| **Lenkungsdrang** | führt auf eine Erkenntnis hin, setzt die Route | −0.08 |
+| **Eigensinn** | hat eigene Themen und bringt sie ungefragt ein | −0.06 |
+| **Assoziationsdrang** | springt quer, verknüpft Entferntes, öffnet Nebenwege | −0.05 |
+| **Widerspruchsfreude** | hält dagegen, korrigiert, stellt in Frage | −0.04 |
+| **Gesprächsdistanz** | geht nicht mit, hält den Faden auf Abstand | −0.02 |
+
+### 6.3 Die Rechnung
+
+```
+versatz = 0.00 + Σ(auspraegung_i × zug_hoch_i) − Σ(auspraegung_j × zug_runter_j)
+```
+
+**Volle Auslenkung trifft die Grenzen exakt:** alle fünf oben ausgeprägt → **+0.25**, alle fünf unten → **−0.25**. Die Kappung auf [−0.25, +0.25] ist damit Sicherung, nicht Formteil — dieselbe Eigenschaft, die das bestehende Rad hat.
+
+Der Versatz wirkt **auf den Rohwert**, nicht auf die Schwelle (§5). Ein positiver Versatz hebt den gemessenen Führungswert des Nutzers an: Dieselbe Gesprächsbewegung wird bei einer folgsamen Nova eher als „der Nutzer führt" gelesen. Ein negativer senkt ihn — eine Nova mit Lenkungsdrang muss stärker geführt werden, bevor die Achse kippt.
+
+**Zur Größenordnung:** Der Rohwert liegt nach der Zentrierung in [−1, +1]. Ein Versatz von ±0.25 verschiebt die Schwelle um ein Viertel der halben Spanne — eine Tendenz, kein Anschlag. **Der Wert ist zu prüfen, sobald die Achse läuft:** Wie viele Turns die volle Auslenkung tatsächlich umklappt, ist messbar und heute nicht bekannt.
+
+### 6.4 Was gespeichert wird, und warum
+
+Wie beim bestehenden Rad werden **die zehn Einzelausprägungen mitgeschrieben**, nicht nur das Ergebnis — sonst wäre die Zahl ein Wert ohne Herkunft, und niemand könnte sie nachrechnen. Vorbild ist `nutzer_gewichtung_rad`, das die zwölf Bewertungen als JSON hält; die Rechnung darauf ist von Hand nachprüfbar (am 29.07.2026 für beide Paare exakt bestätigt).
+
+Dazu ein **Herkunftsfeld** wie `nutzer_gewichtung_quelle`. Es trägt den Unterschied, den ein Zahlenwert allein nicht tragen kann:
+
+> **Ein Versatz von 0.00, weil alle zehn Speichen sich aufheben, ist etwas anderes als ein Versatz von 0.00, weil das LLM in keiner Speiche etwas erkannt hat.**
+
+Der erste ist eine Messung, der zweite ein Ausfall. Ohne die Unterscheidung wäre dies die vierte Stelle im System, an der ein Ausfallwert wie ein Messergebnis aussieht — nach `aufnahmebereitschaft`, dem Charakter-Default 0.5 und der Initiative-Achse selbst.
+
+### 6.5 Bekannte Fehlerquellen
+
+- **Merkmals-Blutung.** Ein LLM liest allgemeine Verträglichkeit als Folgsamkeit. Dagegen steht §6.1 — jede Speiche nennt eine Handlung. Ob es reicht, zeigt erst die Auswertung an mehreren Charakteren.
+- **Ein Charaktertext, der über Gesprächsführung nichts sagt.** Dann sind alle zehn Bewertungen 0.0, und das Herkunftsfeld muss es sagen (§6.4).
+- **Überschneidung mit dem bestehenden Rad.** Gesprächsdistanz und Eigensinn liegen nahe an Distanz und Selbstbezogenheit. Das ist zulässig — die beiden Räder beantworten verschiedene Fragen —, aber wenn beide Werte einmal gegeneinanderlaufen, ist das ein Befund über die Charakter-Destillation und nicht über die Räder.
 
 ---
 
@@ -232,15 +357,19 @@ Wer später die Schieflage der Verteilung misst, findet einen erwarteten Befund 
 
 ## 9. Offene Punkte
 
-- **Gewichtung der drei Maße zueinander.** M1, M2 und M3 messen verschiedene Formen von Führung und konvergieren nur in der Richtung, nicht im Betrag (6:1, 8:1, 2:1). Wie sie zu einem Rohwert zusammengehen, ist nicht entschieden.
-- **Rad neu oder bestehend** (§6).
+- ~~**Gewichtung der drei Maße zueinander.**~~ **Entschieden: je Dimension, nicht je Maß** (§5.1), gestützt auf die gemessene Redundanzstruktur (§4.6).
+- ~~**Rad neu oder bestehend.**~~ **Entschieden: eigenes Rad, eigener LLM-Call je Destillation** (§6). Offen bleibt daran nur die **Spannweite des Versatzes** — ±0.25 ist gesetzt, aber nicht gemessen. Sobald die Achse läuft, ist prüfbar, wie viele Turns die volle Auslenkung umklappt.
 - **Breite des toten Bands** (§5).
-- ~~**Gegenprobe zu M2 auf Rohtexten.**~~ **Erledigt** (§4.2): Richtung bestätigt, Absolutwerte verschoben, Novas Sprung liegt dort sogar unter der Rauschgrenze. Neu offen dafür: **auf welcher Repräsentation die Achse läuft** — Rohtext oder Verdichtung. Davon hängt das Zentrum ab, und der Rohtext-Pfad ist zur Laufzeit billiger.
+- ~~**Gegenprobe zu M2 auf Rohtexten.**~~ **Erledigt** (§4.2): Richtung bestätigt, Absolutwerte verschoben, Novas Sprung liegt dort unter der Rauschgrenze.
+- ~~**Auf welcher Repräsentation die Achse läuft.**~~ **Entschieden: Rohtext** (§4.2). Daraus folgt: Zentrum neu erheben, Korpus sind die Rohturn-Paare, Laufzeitquelle ist der State.
+- **Das Zentrum auf Rohtext erheben.** 36 der 133 verfügbaren Paare sind gemessen. Der Kalibrier-Agent rechnet es später ohnehin — ein einmal von Hand erhobener Wert wäre der Zeuge, an dem sich sein erstes Ergebnis prüfen lässt.
 - **Kanon-Löcher schließen.** M1 steht auf `intentionen`, M3 auf `modus`; beide Felder nehmen heute Werte außerhalb ihres Kanons stillschweigend an. `modus_pruefen` existiert seit Chat 114, wird aber nur im GV-Pfad gerufen, nicht im Verdichtungs-Pfad.
 
 ---
 
 ## 10. Grenzen der Messgrundlage
+
+Der Korpus umfasst **133 Rohturn-Paare** und **493 KZG-Einträge**, davon 81 Turns mit beidseitig verfügbaren Maßen. Für die Übereinstimmungs-Zahlen aus §4.6 ist **n = 81** die tragende Größe, nicht 133 — die Aussage über M1 steht auf der kleineren Hälfte.
 
 Alle Zahlen aus §4 stammen aus **einem Paar** und einem Bestand, der stark von einer Messreihe am Tag der Erhebung geprägt ist — überwiegend Wissenschaftsthemen mit einem fragenden Nutzer und einer erklärenden Assistentin. Genau das ist der Gesprächstyp, der die gemessene Richtung erzeugt.
 
