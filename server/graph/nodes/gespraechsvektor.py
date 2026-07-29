@@ -29,7 +29,7 @@ from config import (
 )
 from graph.state import ConversationState
 from memory.charakter import initiative_versatz_laden
-from memory.pipeline_log import log_fehler
+from memory.pipeline_log import log_berechnung, log_fehler
 from memory.session import format_session_turns_numbered
 from services.model_services import model_service, ChatRequest, EmbedRequest
 
@@ -37,7 +37,7 @@ from ei.utils import POSITIVE_EMOTIONEN, NEGATIVE_EMOTIONEN, modus_pruefen
 from ei.farbton import farbton_berechnen
 from ei.neugier import aufnahmebereitschaft_berechnen
 from ei.wissensluecken import wissensluecken_finden
-from ei.initiative import Fuehrung, fuehrung_messen
+from ei.initiative import Fuehrung, fuehrung_messen, skalenfassung
 from ei.dreischicht import (
     achsen_berechnen,
     sektor_bestimmen,
@@ -675,6 +675,73 @@ def _vorturn_laden(state: ConversationState) -> tuple[list[float] | None, str]:
     return embedding, modus
 
 
+def _initiative_protokollieren(
+    state:    ConversationState,
+    fuehrung: Fuehrung,
+    achsen:   dict,
+) -> None:
+    """Schreibt Rohwert, Bit und geltende Skalenfassung in einer Zeile.
+
+    **Beides zusammen oder keins von beidem.** Der Rohwert sagt allein nichts
+    darueber, was er bedeutet hat: Sobald die Schwelle je Paar erhoben wird,
+    verschiebt sich mit jeder Kalibrierung der Punkt, an dem dasselbe Bit
+    kippt. Eine Reihe aus Rohwerten ohne ihre Fassung laesst spaeter nicht
+    mehr trennen, ob sich Nova bewegt hat oder der Massstab.
+
+    Geschrieben wird `art='berechnung'` mit `node='gespraechsvektor'` — die
+    Forensik-Art verfaellt nach der Vorhaltefrist, was hier richtig ist: Die
+    Reihe soll die letzten Wochen tragen, nicht die Projektgeschichte.
+
+    Vorbedingung: `fuehrung` und `achsen` stammen aus demselben Turn.
+    Nachbedingung: Eine `pipeline_log`-Zeile, oder eine `warning`, wenn das
+    Schreiben scheiterte.
+    Fehlerfaelle: Forensik-Schreibfehler duerfen den Turn nicht killen —
+    gekapselt und als `warning` gemeldet, wie in den uebrigen Nodes. Ein
+    fehlender Turn-Bezug ist dagegen ein `error`: Eine Zeile ohne `turn_id`
+    laesst sich keiner Messung zuordnen und ist damit wertlos.
+    """
+
+    # ── Eingabe-Validierung ─────────────────────
+    turn_id: str = state.get("turn_id", "")
+    if not turn_id:
+        logger.error(
+            "Initiative-Protokoll: kein turn_id im State — die Zeile waere "
+            "keiner Messung zuzuordnen und wird nicht geschrieben"
+        )
+        return
+
+    # ── Verarbeitung ────────────────────────────
+    inhalt: dict = {
+        "rohwert":      fuehrung.rohwert,
+        "wert":         fuehrung.wert,
+        "versatz":      fuehrung.versatz,
+        "bit":          achsen.get("initiative"),
+        "m1_roh":       fuehrung.m1_roh,
+        "m2_roh":       fuehrung.m2_roh,
+        "m3_roh":       fuehrung.m3_roh,
+        "wollen":       fuehrung.wollen,
+        "bewegung":     fuehrung.bewegung,
+        "fehlend":      fuehrung.fehlend,
+        "skalenfassung": skalenfassung(),
+    }
+
+    # ── Ausgabe-Verifikation ────────────────────
+    try:
+        log_berechnung(
+            turn_id      = turn_id,
+            node         = "gespraechsvektor",
+            quelle       = "character_graph",
+            inhalt       = inhalt,
+            user_id      = state.get("user_id", ""),
+            character_id = state.get("character_id", ""),
+        )
+    except Exception as fehler:
+        logger.warning(
+            f"Initiative-Protokoll nicht geschrieben ({type(fehler).__name__}: "
+            f"{fehler}) — der Turn laeuft weiter, die Reihe hat eine Luecke"
+        )
+
+
 def gespraechsvektor(state: ConversationState) -> ConversationState:
     """Gespraechsvektor-Node: Antizipiert die Richtung des Gespraechs.
 
@@ -765,6 +832,18 @@ def gespraechsvektor(state: ConversationState) -> ConversationState:
         state, vorher_embedding, vorher_modus, versatz,
     )
     achsen: dict = achsen_berechnen(state, fuehrung)
+
+    # Der Rohwert allein ist spaeter nicht auswertbar. Sobald der
+    # Kalibrier-Agent die Schwelle je Paar erhebt, wandert der Massstab mit
+    # dem Gemessenen: Ein Rohwert von -0.30 heisst bei Schwelle -0.45 "der
+    # Nutzer fuehrt" und bei -0.20 das Gegenteil. Ohne die zum Zeitpunkt
+    # geltende Fassung ist nach einigen Kalibrierungen nicht mehr trennbar, ob
+    # sich Nova bewegt hat oder die Skala — dieselbe Fehlerklasse wie ein
+    # Ausfallwert, der aussieht wie eine Messung, nur ueber die Zeit
+    # (novaberg-lesson_l_default-wie-fehlschlag.md). Deshalb reisen Rohwert,
+    # Bit und Skalenfassung in EINER Zeile.
+    _initiative_protokollieren(state, fuehrung, achsen)
+
     sektor_index, sektor_name, cluster = sektor_bestimmen(achsen)
     repertoire: dict[str, str] = repertoire_laden(cluster)
     charakter_gewichtung: dict[str, float] = charakter_gewichtung_berechnen(state)

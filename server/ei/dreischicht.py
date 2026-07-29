@@ -23,7 +23,7 @@ from config import (
 )
 from graph.state import ConversationState
 from services.model_services import model_service, EmbedRequest
-from ei.initiative import Fuehrung, fuehrung_messen
+from ei.initiative import Fuehrung, fuehrung_messen, initiative_bit
 from ei.utils import cosine_similarity, modus_pruefen
 
 logger = logging.getLogger("ki_server.ei.dreischicht")
@@ -326,7 +326,9 @@ def achsen_berechnen(
         # Die Schwelle ist NICHT 0: Der Median erzwaenge einen 50/50-Schnitt,
         # den die Wirklichkeit nicht hergibt. Gegen 83 unabhaengige Lesarten
         # kalibriert (config.GV_INITIATIVE_SCHWELLE, Herleitung im Konzept §12).
-        initiative_bin = 0 if initiative_roh > GV_INITIATIVE_SCHWELLE else 1
+        # Die Binarisierung steht in ei/initiative.py, damit der Kalibrier-Lauf
+        # dieselbe Regel benutzt wie die Laufzeit.
+        initiative_bin = initiative_bit(initiative_roh, GV_INITIATIVE_SCHWELLE)
 
     # ── Drive (4-Achsen-Reduktion): E × R-Vorzeichen ──
     _VORZEICHEN: dict[str, float] = {

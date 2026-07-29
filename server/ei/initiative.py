@@ -36,6 +36,7 @@ from config import (
     GV_INITIATIVE_FUEHREND,
     GV_INITIATIVE_M2_THEMA,
     GV_INITIATIVE_M3_REGISTER,
+    GV_INITIATIVE_SCHWELLE,
     GV_INITIATIVE_VERSATZ,
     GV_INITIATIVE_VERSATZ_MAX,
     GV_TIEFE_MODUS,
@@ -76,6 +77,95 @@ class Fuehrung:
     wert:     float | None = None   # rohwert + versatz, gekappt
 
     fehlend:  list[str]    = field(default_factory=list)
+
+
+def skalenfassung(
+    schwelle:      float = GV_INITIATIVE_SCHWELLE,
+    quelle:        str   = "default",
+    kalibriert_am: str   = "",
+) -> dict:
+    """Liefert die Skala, die einen Achsenwert gerade lesbar macht.
+
+    **Warum das mitgeschrieben werden muss.** Sobald der Kalibrier-Agent die
+    Schwelle je Paar erhebt, wandert der Massstab mit dem Gemessenen. Ein
+    Rohwert von -0.30 heisst bei Schwelle -0.45 „der Nutzer fuehrt" und bei
+    Schwelle -0.20 das Gegenteil. Steht im Protokoll nur der Rohwert, ist nach
+    einigen Kalibrierungen nicht mehr trennbar, ob sich Nova bewegt hat oder
+    die Skala — die Reihe ist dann nicht auswertbar. Dieselbe Fehlerklasse wie
+    ein Ausfallwert, der aussieht wie eine Messung, nur ueber die Zeit statt
+    ueber einen einzelnen Wert.
+
+    Die Fassung steht deshalb an **einer** Stelle: Wer den Achsenwert
+    protokolliert, holt sie hier und kann sie nicht anders zusammensetzen als
+    die Rechnung selbst.
+
+    Vorbedingung: `schwelle` liegt in [-1, +1].
+    Nachbedingung: Ein flaches Dict, JSON-serialisierbar, mit Schwelle, den
+    Spannen beider Bewegungsmasse, der Versatz-Grenze, der Herkunft und dem
+    Zeitpunkt der Erhebung.
+    Fehlerfaelle: Schwelle ausserhalb des Wertebereichs — laut gemeldet, die
+    Fassung wird trotzdem gebaut: Ein Protokolleintrag mit einer auffaelligen
+    Schwelle ist mehr wert als keiner.
+
+    Returns:
+        Die Skalenfassung.
+    """
+
+    # ── Eingabe-Validierung ─────────────────────
+    if not -1.0 <= schwelle <= 1.0:
+        logger.error(
+            "Initiative: Skalenfassung mit Schwelle %.3f ausserhalb [-1, +1] — "
+            "protokolliert, aber der Wert ist nicht plausibel", schwelle,
+        )
+
+    # ── Verarbeitung ────────────────────────────
+    fassung: dict = {
+        "schwelle":      round(schwelle, 3),
+        "quelle":        quelle,
+        "kalibriert_am": kalibriert_am,
+        "m2_zentrum":    GV_INITIATIVE_M2_THEMA["zentrum"],
+        "m2_min":        GV_INITIATIVE_M2_THEMA["min"],
+        "m2_max":        GV_INITIATIVE_M2_THEMA["max"],
+        "m3_zentrum":    GV_INITIATIVE_M3_REGISTER["zentrum"],
+        "m3_min":        GV_INITIATIVE_M3_REGISTER["min"],
+        "m3_max":        GV_INITIATIVE_M3_REGISTER["max"],
+        "versatz_max":   GV_INITIATIVE_VERSATZ_MAX,
+    }
+
+    # ── Ausgabe ─────────────────────────────────
+    return fassung
+
+
+def initiative_bit(wert: float, schwelle: float) -> int:
+    """Binarisiert den Initiative-Wert an einer Schwelle.
+
+    Bit **0** heisst „Nutzer fuehrt", Bit **1** „gleich oder Nova". Verglichen
+    wird strikt groesser: Wer genau auf der Schwelle liegt, fuehrt nicht.
+
+    Die Regel steht hier und nur hier. Die Achse (`achsen_berechnen`) und die
+    Kalibrierung (`ei/kalibrierung.py`) rufen dieselbe Funktion — eine zweite
+    Kopie waere die Stelle, an der beide spaeter auseinanderlaufen, ohne dass
+    es auffiele: Die Kalibrierung suchte dann eine Schwelle fuer eine
+    Binarisierung, die es zur Laufzeit nicht gibt.
+
+    Vorbedingung: `wert` in [-1, +1], `schwelle` im selben Bereich.
+    Nachbedingung: 0 oder 1.
+    Fehlerfaelle: Keine — ein Wert ausserhalb des Bereichs ist ein Turn
+    jenseits des Korpus und wird trotzdem binarisiert; die Kappung sitzt in
+    `fuehrung_messen`.
+
+    Returns:
+        0 (Nutzer fuehrt) oder 1 (gleich oder Nova).
+    """
+
+    # ── Eingabe-Validierung ─────────────────────
+    # Keine: Beide Argumente sind Zahlen, jede Kombination ist entscheidbar.
+
+    # ── Verarbeitung ────────────────────────────
+    bit: int = 0 if wert > schwelle else 1
+
+    # ── Ausgabe ─────────────────────────────────
+    return bit
 
 
 def _normieren(wert: float, skala: dict[str, float]) -> float:
