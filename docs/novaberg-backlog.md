@@ -3919,6 +3919,12 @@ Dasselbe ist bei der Auswertung dieser Sitzung aufgefallen: Die Messgrundlage f�
 
 **Kopplung:** Der Kalibrier-Agent (`novaberg-gv-initiative_k.md` §7) rechnet Zentren aus dem Bestand. Ohne persistierte Rohwerte kann er nur aus abgeleiteten Quellen rechnen — genau der Umweg, den diese Sitzung gehen musste.
 
+**✅ Für die Initiative-Achse erledigt am 29.07.2026 (Chat 117).** Der GV-Node schreibt je Turn eine `berechnung`-Zeile mit den drei Maßen, den zwei Dimensionen, Rohwert, Versatz, Bit und `fehlend` — **dazu die geltende Skalenfassung**: Schwelle, Herkunft, Kalibrierzeitpunkt, die Zentren und Spannen von M2 und M3, die Versatzgrenze. Auditiert am Turn von 20:52 UTC. Das Bit ist aus der Zeile allein nachrechenbar, auch nachdem die Schwelle neu erhoben wurde; ein Test hält das fest.
+
+**Die Fassung war der eigentliche Punkt und stand nicht in diesem Eintrag.** Ein Rohwert allein genügt nicht: Sobald die Schwelle je Paar erhoben wird, wandert der Maßstab mit dem Gemessenen, und die Reihe lässt später nicht mehr trennen, ob sich Nova bewegt hat oder die Skala.
+
+**Offen bleibt der Rest der Frage:** Welche anderen Rechnungen tragen eine Entscheidung und schreiben nichts? Die drei Prüffragen oben gelten unverändert; die Initiative-Achse ist ein Fall, nicht die Menge. ⬜ Prio hoch
+
 ---
 
 ### Konzept: ein Node für Novas Sprache ⬜ Prio offen (Chat 116)

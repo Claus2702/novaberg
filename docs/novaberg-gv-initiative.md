@@ -2,10 +2,10 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Modul-Referenz — Achse I des Gesprächsvektors
-**Stand:** 29. Juli 2026, Chat 116 (Erstfassung, mit dem Bau)
+**Stand:** 29. Juli 2026, Chat 117 (Protokollpflicht der Skalenfassung, Kalibrierrechnung — §7, §8. Kern: Chat 116)
 **Pfad:** novaberg/docs/novaberg-gv-initiative.md
 **Konzept:** `novaberg-gv-initiative_k.md` — Herleitung, verworfene Wege, Grenzen
-**Dateien:** `ei/initiative.py` · `agents/charakter/destillation.py` (Rad) · `ei/dreischicht.py` (Binarisierung) · `graph/nodes/gespraechsvektor.py` (Quellen) · `graph/nodes/dispatcher.py` (Vorturn-Spur)
+**Dateien:** `ei/initiative.py` · `agents/charakter/destillation.py` (Rad) · `ei/dreischicht.py` (Binarisierung) · `graph/nodes/gespraechsvektor.py` (Quellen, Protokoll) · `graph/nodes/dispatcher.py` (Vorturn-Spur) · `ei/kalibrierung.py` · `agents/kalibrierung/` (Erhebung)
 
 ---
 
@@ -32,7 +32,9 @@ GV-Node (Turn n+1)            →  _vorturn_laden()  embeddet die Antwort
 
 **Gespeichert wird der Antworttext, nicht sein Embedding.** Ein Embed-Call im Dispatcher läge vor dem WebSocket-Broadcast und wäre als Antwortzeit spürbar; im GV-Node des Folgeturns fällt die Wartezeit ohnehin an.
 
-**Der Redis-Zugriff bleibt aus dem Rechenmodul.** `ei/initiative.py` rechnet nur; der Node lädt (Handbuch §1).
+**Der Redis-Zugriff bleibt aus dem Rechenmodul.** `ei/initiative.py` rechnet nur; der Node lädt.
+
+**Die Binarisierung hat eine Quelle.** `initiative_bit(wert, schwelle)` in `ei/initiative.py` — Bit 0 bei **strikt** größer. Die Achse und die Kalibrierrechnung rufen dieselbe Funktion; eine zweite Kopie der Regel wäre die Stelle, an der beide auseinanderlaufen, ohne dass es auffällt. Dann suchte die Kalibrierung eine Schwelle für eine Binarisierung, die es zur Laufzeit nicht gibt.
 
 ---
 
@@ -69,7 +71,9 @@ bit      = 0 wenn wert > GV_INITIATIVE_SCHWELLE
 | `GV_INITIATIVE_M2_THEMA` | 0.662 / 0.290 / 0.983 | 133 Rohturn-Paare, dasselbe Paar | **nein** |
 | `GV_INITIATIVE_M3_REGISTER` | 0.100 / 0.000 / 0.600 | dieselbe Grundlage | **nein** |
 
-> **Nur der Versatz kalibriert sich heute selbst.** Schwelle und Zentren stammen aus einem Gesprächsstil; für ein anderes Paar gelten sie vermutlich nicht. Der Kalibrier-Agent, der sie erheben soll, ist Entwurf (`novaberg-gv-initiative_k.md` §7) und **nicht gebaut**. Wer das überliest, hält das System für selbstkalibrierender, als es ist.
+> **Nur der Versatz kalibriert sich heute selbst.** Schwelle und Zentren stammen aus einem Gesprächsstil; für ein anderes Paar gelten sie vermutlich nicht. Wer das überliest, hält das System für selbstkalibrierender, als es ist.
+>
+> **Teilweise überholt seit Chat 117:** ~~Der Kalibrier-Agent, der sie erheben soll, ist Entwurf und **nicht gebaut**.~~ Die **Rechnung** ist gebaut und geprüft (§8) — Zeuge, Schwellensuche, Positions-Kontrolle, Zwischenstand. **Nicht gebaut** sind der Agent mit Takt und Gate und die Ablage der erhobenen Schwelle; die Konstante gilt unverändert, und `KALIBRIERUNG_ANWENDEN` steht auf `false`.
 
 ---
 
@@ -129,7 +133,66 @@ Bei `nova` gewinnt der Median gegen einen Ausreißer — der Fall, für den die 
 
 ---
 
-## 7. Was wo steht
+## 7. Jeder Turn protokolliert seine Skalenfassung (Chat 117)
+
+Der GV-Node schreibt je Turn eine `pipeline_log`-Zeile — `art='berechnung'`, `node='gespraechsvektor'` — mit dem Rohwert **und** der Fassung, gegen die er verglichen wurde: Schwelle, Herkunft, Kalibrierzeitpunkt, die Zentren und Spannen von M2 und M3, die Versatzgrenze.
+
+**Warum beides zusammen.** Sobald die Schwelle je Paar erhoben wird, wandert der Maßstab mit dem Gemessenen. Ein Rohwert von −0.30 heißt bei Schwelle −0.45 „der Nutzer führt" und bei −0.20 das Gegenteil. Steht nur der Rohwert im Protokoll, ist nach einigen Kalibrierungen **nicht mehr trennbar, ob sich Nova bewegt hat oder die Skala** — die Reihe ist dann nicht auswertbar. Dieselbe Fehlerklasse wie ein Ausfallwert, der aussieht wie eine Messung, nur über die Zeit statt über einen einzelnen Wert.
+
+Die Fassung wird von `skalenfassung()` in `ei/initiative.py` gebaut, also an einer Stelle. Ein Test hält fest, dass sich das Bit aus protokolliertem Rohwert plus Fassung reproduzieren lässt: derselbe Wert −0.30 ergibt unter `−0.45` das Bit 0 und unter `−0.20` das Bit 1.
+
+**Auditiert am 29.07.2026, 20:52 UTC** — Rohwert 0.209, Versatz −0.23, Wert −0.021, Bit 0, Fassung mit Schwelle −0.45 und `quelle='default'`. Der Versatz war zu diesem Zeitpunkt destilliert, nicht mehr 0.0; er zog den Wert unter null, ohne das Bit zu kippen.
+
+---
+
+## 8. Die Kalibrierrechnung (Chat 117)
+
+Gebaut ist die **Rechnung**, nicht der Agent. Was läuft:
+
+| Teil | Ort |
+|---|---|
+| Cohens κ über die 2×2-Tafel | `ei/kalibrierung.py`, `cohens_kappa` |
+| Schwellensuche über ein Raster von −1.0 bis +1.0 in Schritten von 0.05 | `schwelle_suchen` |
+| Auswertung der Positions-Kontrolle | `positions_kontrolle` |
+| Der Zeuge: zwei Texte, Sprecher A und B | `agents/kalibrierung/zeuge.py` |
+| Korpus aus Rohturns, `verbindung` und KZG | `agents/kalibrierung/korpus.py` |
+| Ablauf, Zwischenstand, Wiederanlauf | `agents/kalibrierung/lauf.py`, `zwischenstand.py` |
+
+**Erreichbarkeit ist Nebenbedingung, nicht Nebenprodukt.** Gewählt wird das höchste κ **unter** den Schwellen, deren schwächere Seite mindestens `KALIBRIERUNG_MIN_MINDERHEIT` (0.15) der Turns trägt. Ohne diese Bedingung gewinnt bei schiefen Korpora eine Randschwelle, die fast alles auf ein Bit legt — und schließt damit die halbe Sektorentafel wieder, also genau den Defekt, den diese Achse abgelöst hat.
+
+**Die Positions-Kontrolle wertet den Betrag, nicht das Vorzeichen.** Sie zeigt, ob der Zeuge die Sprecher unterscheidet, nicht ob er richtig liegt. Ob im Korpus Nova oder der Nutzer häufiger führt, ist ein Befund über das Paar; positionsblind heißt Differenz nahe null, in beide Richtungen.
+
+**Erheben und Anwenden sind getrennt** (`KALIBRIERUNG_ANWENDEN`, Default `false`). Der Lauf rechnet die Schwelle und protokolliert sie vollständig, ohne zu schreiben. Eine Schwelle aus einem ungeprüften Zeugen dreht das Bit für einen großen Teil der Turns um, und die Wirkung zeigt sich erst im Sektor-Histogramm der Folgetage.
+
+**Der Zwischenstand macht den Lauf unterbrechbar.** Jedes Urteil wird sofort in eine Datei außerhalb des Repositoriums geschrieben, Fehlschläge markiert und beim Wiederanlauf wiederholt. Eine Prompt-Kennung verwirft den Stand, wenn der Zeuge geändert wurde — zwei Fassungen dürfen nicht zu einer Zahl verrechnet werden. Belegt: Ein Lauf ohne Zwischenstand verlor am 29.07.2026 rund 200 Urteile an eine einzelne Zeitüberschreitung.
+
+**Offen:** der Pixie-Agent mit Takt und Gate, die Ablage der erhobenen Schwelle je Paar, und die Entscheidung, ob die gemessene Schwelle die Konstante ersetzt. Der Zeuge dieses Baus urteilt umgekehrt zu dem aus Chat 116 — Herleitung und Grenzen in `_k.md` §7.
+
+### 8.1 Erster vollständiger Lauf (29.07.2026, 21:41–22:35 UTC)
+
+**Quelle:** `kalibrierung_durchfuehren("meister", "nova")` über `pipeline_log`-Rohturns, `verbindung` und KZG. **Umfang:** 144 Turnpaare, 144 verwertet, **null Ausfälle**; rund 204 Urteile in 54 Minuten, also etwa 16 Sekunden je Urteil auf dem CPU-Backend. Nichts in die Datenbank geschrieben.
+
+| | Chat 116 (von Hand, 83 Turns) | Chat 117 (Lauf, 144 Turns) |
+|---|---|---|
+| Positions-Kontrolle, Betrag | 43,4 Punkte | **43,3 Punkte** |
+| Richtung | B = Nutzer führt häufiger | **B = Nova führt häufiger** (43,3 % gegen 86,7 %) |
+| Gefundene Schwelle | −0.45 | **−0.55** |
+| κ dort | 0,482 | **0,375** |
+| Übereinstimmung | 83,1 % | 68,8 % |
+| Bit-0-Anteil bei −0.45 | 79,5 % | **38,9 %** |
+| κ bei −0.45 | 0,482 | **0,261** |
+
+**Der Befund ist nicht die neue Schwelle, sondern die Verteilung.** 142 der 144 Rohwerte sind **negativ**; bei Schwelle 0.00 tragen nur 1,4 % das Bit 0. Chat 116 fand den Median bei 0.00 und ein Loch zwischen −0.15 und +0.20. Auf dem heutigen, vollständigen Bestand liegt die Achse fast durchgehend im negativen Bereich, und die kalibrierte Konstante trifft dort 38,9 % statt der gemessenen 79,5 %.
+
+**Die Datenlage ist dabei besser als damals:** 142 der 144 Turns trugen **alle drei Maße** (in Chat 116 stand die Übereinstimmungsrechnung auf 81 von 133). Der Unterschied kommt nicht aus fehlenden Maßen.
+
+**Was nicht gemessen wurde:** warum die Verteilung so verschoben ist. Die Auswahl der 83 Turns von Chat 116 ist nicht rekonstruierbar — jene Erhebung lief ad hoc und hinterließ keinen Code. Ob der Unterschied am größeren Korpus, am Anteil Alltagsturns oder an der Auswahl liegt, ist offen und **Annahme, nicht Befund**.
+
+**Das Plateau ist wieder da:** κ bleibt zwischen −0.80 und −0.50 im Band 0,29 bis 0,375. Wer nachmisst, erwartet ein Plateau und keine Spitze — dieselbe Eigenschaft, die Chat 116 zwischen −0.55 und −0.35 fand.
+
+---
+
+## 9. Was wo steht
 
 | Frage | Ort |
 |---|---|
@@ -137,6 +200,7 @@ Bei `nova` gewinnt der Median gegen einen Ausreißer — der Fall, für den die 
 | Was „führen" heißt | `_k.md` §3 |
 | Herleitung der drei Maße | `_k.md` §4 |
 | Die zehn Speichen des Rads | `_k.md` §6 |
-| Der Kalibrier-Agent (Entwurf) | `_k.md` §7 |
+| Der Kalibrier-Agent: Entwurf, Baustand, Grenzen des Zeugen | `_k.md` §7 |
+| Warum die Schwelle nicht der Median ist | `_k.md` §12 |
 | Verworfene Wege | `_k.md` §4.4, §6, §12 |
 | Der Defekt der Vorgängerin | `novaberg-bugs.md`, `GV-INITIATIVE-KIPPT-NIE` |

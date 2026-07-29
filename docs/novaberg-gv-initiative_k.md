@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Konzept — Neudefinition und Kalibrierung der Achse I
-**Stand:** 29. Juli 2026, Chat 116
+**Stand:** 29. Juli 2026, Chat 117 (§7 Baustand der Kalibrierrechnung, §7.2 der Zeuge urteilt umgekehrt. Kern: Chat 116)
 **Pfad:** novaberg/docs/novaberg-gv-initiative_k.md
 **Typ:** Konzept
 **Herkunft:** `novaberg-gv-strategie_k.md` §3.1 (Achse 6) — dieses Dokument ersetzt die dortige Heuristik v1
@@ -20,7 +20,7 @@
 > | 4 | **auditiert** — die drei Maße mit ihren Zahlen |
 > | 5 | **teils gebaut** — Skala und Kombination stehen, das tote Band nicht |
 > | 6 | **gebaut** — das Rad läuft in der Charakter-Destillation |
-> | 7 | **Entwurf** — der Kalibrier-Agent ist nicht gebaut |
+> | 7 | **teils gebaut (Chat 117)** — die Rechnung läuft und ist geprüft; Agent, Takt und Ablage fehlen |
 
 ---
 
@@ -365,16 +365,56 @@ Der erste ist eine Messung, der zweite ein Ausfall. Ohne die Unterscheidung wär
 
 ---
 
-## 7. Der Kalibrier-Agent — Entwurf
+## 7. Der Kalibrier-Agent — Entwurf, Rechnung gebaut (Chat 117)
 
 Ein eigener Vorgang, der **nach der Charakter-Destillation** läuft, analog zu den übrigen Fachabteilungen.
 
 **Er rechnet zwei Größen neu:**
 
 1. die Schwelle — **nicht** als Median des Bestands, sondern als Bedeutungspunkt gegen einen Zeugen (§12)
-2. den Charakter-Versatz aus dem dann geltenden Charakter (§6, gebaut)
+2. ~~den Charakter-Versatz aus dem dann geltenden Charakter~~ → **entfallen:** Der Versatz wird seit Chat 116 vom Charakter-Rad in der Destillation selbst erhoben (§6). Der Agent rechnet nur noch die Schwelle.
 
-> **⚠ Der Aufwand ist mit Chat 116 gestiegen.** Ursprünglich sollte der Agent einen Median rechnen — eine Zeile. Seit die Schwelle gegen einen Zeugen kalibriert wird, braucht er rund **achtzig LLM-Urteile je Kalibrierung** plus die Schwellensuche darüber. Machbar (83 Urteile liefen in 90 Sekunden auf der GPU), aber ein anderer Bau als der hier ursprünglich beschriebene.
+> **⚠ Der Aufwand ist mit Chat 116 gestiegen.** Ursprünglich sollte der Agent einen Median rechnen — eine Zeile. Seit die Schwelle gegen einen Zeugen kalibriert wird, braucht er rund **achtzig LLM-Urteile je Kalibrierung** plus die Schwellensuche darüber. ~~Machbar (83 Urteile liefen in 90 Sekunden auf der GPU)~~ → **auf dem heutigen Pfad nicht:** Die Hintergrund-Sprachaufgaben laufen auf dem CPU-Backend, und dort kostet ein einzelnes Urteil bis zu **342 Sekunden** — gemessen am 29.07.2026, als genau dieser Wert den Timeout von 300 s riss. Ein voller Lauf über den Bestand dauert damit Stunden, nicht Minuten.
+
+### 7.1 Was gebaut ist, was nicht (Chat 117)
+
+| Teil | Stand |
+|---|---|
+| Cohens κ, Schwellensuche mit Erreichbarkeits-Nebenbedingung | **gebaut**, `ei/kalibrierung.py` |
+| Der Zeuge: zwei Texte, Sprecher A und B | **gebaut**, `agents/kalibrierung/zeuge.py` |
+| Korpus aus Rohturns, `verbindung`, KZG; Rohwerte über `fuehrung_messen` | **gebaut**, `korpus.py` |
+| Zwischenstand und Wiederanlauf | **gebaut**, `zwischenstand.py` |
+| Trennung von Erheben und Anwenden (`KALIBRIERUNG_ANWENDEN`) | **gebaut**, Default `false` |
+| Pixie-Agent mit Takt und Gate | **nicht gebaut** |
+| Ablage der erhobenen Schwelle je Paar | **nicht gebaut** — die Konstante gilt |
+| Entscheidung, ob die gemessene Schwelle die Konstante ersetzt | **offen** |
+
+**Der Takt ist entschieden, nicht gebaut:** eigener periodischer Vorgang, täglich, mit einem Gate auf die Zahl neuer Turns seit der letzten Erhebung. Nicht an die Charakter-Destillation gehängt — die läuft alle zehn Minuten bei `hash_dirty`, und achtzig Urteile darin hielten den Hintergrundtakt jedes Mal für Minuten auf. Untergrenze der Fallzahl: **60** (`KALIBRIERUNG_MIN_TURNS`), gesetzt und nicht gemessen.
+
+### 7.2 Der Zeuge dieses Baus urteilt umgekehrt
+
+**Der Prompt aus Chat 116 existiert nicht im Repositorium** — nur sein Ergebnis, als Kommentar über `GV_INITIATIVE_SCHWELLE`. Der für Chat 117 neu gebaute Zeuge trennt die Sprecher deutlich, aber mit umgekehrtem Vorzeichen:
+
+| Erhebung | B = Nutzer führt | B = Nova führt | Differenz |
+|---|---|---|---|
+| Chat 116, von Hand | 79,5 % | 36,1 % | **+43,4** |
+| Chat 117, nachgebaut (6 Paare) | 20,0 % | 90,0 % | **−70,0** |
+
+Seine Einzelurteile über den Nutzer folgen der Setzung aus §3: eine Frage nach einer Information gilt als führend, eine inhaltliche Vertiefung im gesetzten Thema nicht. Der Unterschied sitzt auf Novas Seite — sie erklärt in Absätzen und bringt neue Aspekte, und das liest der Zeuge als Richtungssetzen. **Das ist nicht offensichtlich falsch.**
+
+Daraus folgte eine Korrektur an der Kontrolle selbst: **Sie wertet den Betrag, nicht das Vorzeichen.** Ob im Korpus Nova oder der Nutzer häufiger führt, ist ein Befund über das Paar und keine Eigenschaft eines guten Zeugen; positionsblind heißt Differenz nahe null, in beide Richtungen. Der nachgebaute Zeuge trennt **schärfer** als der aus Chat 116 und wäre an der Vorzeichen-Prüfung dennoch gescheitert.
+
+**Welche der beiden Lesarten die Achse kalibrieren soll, ist eine Setzung und keine Implementierungsfrage.** Beide sind in sich schlüssig und führen zu entgegengesetzten Schwellen. Deshalb ist Erheben von Anwenden getrennt: Der erste Lauf legt die Zahl vor, ohne sie anzuwenden.
+
+**Der erste vollständige Lauf bestätigt die Richtung an 30 statt 6 Paaren:** B = Nutzer 43,3 %, B = Nova 86,7 %. Der **Betrag** der Differenz ist mit 43,3 Punkten praktisch identisch mit den 43,4 aus Chat 116 — nur das Vorzeichen ist gedreht. Zwei Zeugen, gleiche Trennschärfe, entgegengesetztes Urteil darüber, wer in diesem Paar führt. Die vollständigen Zahlen stehen in `novaberg-gv-initiative.md` §8.1.
+
+### 7.3 Was der Lauf über die Konstante sagt
+
+**Die Kalibrierung ist nötiger, als der Zeugenstreit vermuten lässt.** Unabhängig davon, welchem Zeugen man folgt: Auf dem heutigen Bestand liegen **142 von 144 Rohwerten im negativen Bereich**, und die Konstante −0.45 trifft dort einen Bit-0-Anteil von 38,9 % statt der 79,5 %, mit denen sie kalibriert wurde. Ihr κ fällt von 0,482 auf 0,261.
+
+Damit ist belegt, was §12.5 als Vermutung formulierte: **Die Schwelle aus einem Paar und 83 Turns beschreibt das Verhalten dieses Systems nicht dauerhaft** — sie beschreibt es nicht einmal auf demselben Paar, sobald der Bestand wächst. Das ist ein Argument für den Agenten und gegen die Konstante, und es hängt nicht an der Frage, welcher Zeuge recht hat.
+
+**Offen bleibt die Ursache der Verschiebung.** Die Auswahl der 83 Turns von Chat 116 ist nicht rekonstruierbar; jene Erhebung lief ad hoc und hinterließ keinen Code. Ob der Unterschied am Umfang, am Anteil der Alltagsturns oder an der Auswahl liegt, ist **Annahme, nicht Befund**.
 
 **Was er ausdrücklich nicht tut: zur Laufzeit nachregeln.** Das Zentrum darf der gemessenen Verteilung nicht laufend folgen. Es gibt einen Pfad von der Achse zurück auf die Eingabe — Sektor → Cluster → Repertoire → Novas Antwort → nächster Rohwert. Er ist lang und schwach, aber er ist da; ein mitlaufendes Zentrum hätte keinen Anker und driftete, bis alles Mittelwert ist.
 

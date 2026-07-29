@@ -1,6 +1,6 @@
 # Novaberg — Roadmap (Projektchronik)
 
-**Stand:** Chat 116, 29. Juli 2026
+**Stand:** Chat 117, 29. Juli 2026
 *(Die Kopfzeile stand bis Chat 109 auf „Chat 93, 21. Mai 2026" — 15 Chats hinter dem Inhalt. **Sie ist danach erneut zurückgefallen:** von Chat 110 bis 114 blieb sie auf „Chat 109" stehen, während der Inhalt weiterwuchs, und wurde in Chat 115 nachgezogen. Wer hier etwas ergänzt, zieht die Kopfzeile mit — sie driftet zuverlässig. Achtung beim Nachschlagen: Nur bis Chat 97 trägt jeder Chat eine eigene `## Chat NNN`-Überschrift; die Chats 98–108 stehen als `###`-Abschnitte unter dem Chat-97-Block, benannt nach Sprint statt nach Chat.)*
 **Pfad:** novaberg/docs/novaberg-roadmap.md
 **Single Source of Truth für abgeschlossene Arbeit.**
@@ -1620,6 +1620,41 @@ Historische Aussagen bleiben unangetastet — die Chronik von Chat 39, die Entit
 **Live belegt 29.07.2026, 05:35 UTC:** `GV-Resonanz: 3 Erinnerung(en) in den Prompt (Cluster 'feuerwerk', Schalen: [0, 1, 1])`. Seiteneffekte: 0 `timeline`, 0 `notizen`, 0 `fakten`.
 
 **Geschlossen:** `GV-ENTITY-HOP-FINDET-NICHTS` (umgehängt, nicht repariert) · `GV-WERT-FAKTEN-BLIND` auf seinen weiter gültigen Kern zurückgeschnitten
+
+---
+
+## Chat 117 (29.07.2026) — Der Doku-Abgleich, und eine Skala, die ihren Maßstab mitschreibt 🔶
+
+### Doku-Abgleich der Chats 112–116
+
+Die Konzepte waren sauber nachgezogen, die **Moduldokumente** nicht — und zwei sagten das Gegenteil des Zustands.
+
+- ✅ **`novaberg-mem-kzg.md` beschrieb die abgeschaffte Salienz.** Seit dem 12.07. nicht angefasst, während `memory/kzg.py` am 28.07. umgebaut wurde: Feldtabelle mit Bereich 0–10, der Akkumulator `salienz += eingehende_salienz / DIVISOR` als aktive Rechnung, Cap 10.0 gegen die gebauten 1.0, Dämpfungsexponent 0.6 gegen 0.5, eine Konstante ohne Leser als aktiv geführt, die beiden neuen Eingabefelder gar nicht genannt. Korrigiert samt Tor-Tabelle mit Kurvenwerten und Rohäquivalenten.
+- ✅ **`novaberg-pixie.md` führte `ziel_decay` als defekt und stillgelegt.** Der Text entstand 11:48, die Reparatur 12:23 desselben Tages; der Schalter steht seither auf `true`. Wer die Übersicht las, glaubte, Motivation verfalle nicht.
+- ✅ **`novaberg-pixie-character-hash.md` versprach fünf LLM-Calls je User.** Es sind neun — fünf Profile, ein Charakter-Rad, drei Läufe des Initiative-Rads. Das Schema führte acht Spalten von zwanzig und `user_id` als Primärschlüssel statt des Paars. Neues §4a für beide Räder mit der Entwurfsregel *Handlung statt Haltung*.
+- ✅ **`novaberg-gv-strategie_k.md` §10.2** zeigte Nähe und Tiefe weiter als Achsenrechnung; seit dem Raumzug sind sie dessen **Ziel**. Markiert, nicht ersetzt.
+- ✅ **`novaberg-architecture.md`**: `ei/` listete 2 von 11 Modulen, vier Agenten fehlten, die Zahl stand auf 11 statt 15.
+- ✅ **Zwei Backlog-Einträge gegen den Code nachgezogen.** Die Abnahmebedingung des Salienz-Neubaus ist zu zwei Dritteln erfüllt: Die drei Leser teilen die Skala, aber die Klemme in `ei/gravitation.py` wurde nie gebaut — sie ist jetzt rechnerisch wirkungslos und genau darum billig. Das Code-Duplikat ist zur Hälfte geschlossen, und seine Vorhersage ist eingetreten: Die zwei neuen Felder mussten in beide Hash-Mappings, im ersten Anlauf war nur eines umgebaut.
+- ✅ **Die „Schließt"-Zeile von `novaberg-kzg-salienz_k.md` war eine Absicht, kein Zustand.** Drei der sieben genannten IDs sind offen; die Zeile ist aufgeteilt.
+
+**Gepusht als `bd562cc`,** 8 Dateien, +154/−45.
+
+### Die Initiative-Achse schreibt ihren Maßstab mit
+
+- ✅ **Jeder Turn protokolliert Rohwert und Skalenfassung in einer Zeile** (`pipeline_log`, `art='berechnung'`). Sobald die Schwelle je Paar erhoben wird, wandert der Maßstab mit dem Gemessenen: Ein Rohwert von −0.30 heißt bei Schwelle −0.45 „der Nutzer führt" und bei −0.20 das Gegenteil. Ohne die Fassung ist später nicht trennbar, ob sich Nova bewegt hat oder die Skala. **Auditiert 20:52 UTC:** roh 0.209, Versatz −0.23, Wert −0.021, Bit 0, Fassung mit `quelle='default'`.
+- ✅ **Die Binarisierung hat eine Quelle.** `initiative_bit` in `ei/initiative.py`; Achse und Kalibrierrechnung rufen dieselbe Funktion. Eine Kopie wäre die Stelle, an der beide auseinanderlaufen, ohne dass es auffällt.
+- ✅ **Die Kalibrierrechnung steht** — Cohens κ, Schwellensuche über ein Raster, Erreichbarkeit als Nebenbedingung statt als Nebenprodukt: gewählt wird das höchste κ **unter** den Schwellen, deren schwächere Seite mindestens 15 % trägt. Ohne diese Bedingung gewinnt bei schiefen Korpora eine Randschwelle und schließt die halbe Sektorentafel wieder.
+- ✅ **Erheben und Anwenden getrennt** (`KALIBRIERUNG_ANWENDEN`, Default `false`).
+- ✅ **Der Lauf ist unterbrechbar.** Jedes Urteil wird sofort außerhalb des Repositoriums gesichert, Fehlschläge markiert und wiederholt; eine Prompt-Kennung verwirft den Stand bei geändertem Zeugen. Anlass: Ein Lauf ohne Zwischenstand verlor rund **200 Urteile** an eine einzelne Zeitüberschreitung von 342 s auf dem CPU-Backend.
+- 🔶 **Der Zeuge dieses Baus urteilt umgekehrt zu dem aus Chat 116** — B=Nutzer 20,0 % gegen B=Nova 90,0 %, also −70 Punkte statt +43,4. Beide Lesarten sind in sich schlüssig; der Prompt aus Chat 116 existiert nicht im Repositorium. Welche die Achse kalibriert, ist eine Setzung und offen (`novaberg-gv-initiative_k.md` §7.2).
+- 🔶 **Die Positions-Kontrolle wertet jetzt den Betrag, nicht das Vorzeichen.** Ob Nova oder der Nutzer häufiger führt, ist ein Befund über das Paar und keine Eigenschaft eines guten Zeugen. Der nachgebaute Zeuge trennt schärfer als der aus Chat 116 und wäre an der Vorzeichen-Prüfung dennoch gescheitert.
+
+- ✅ **Erster vollständiger Lauf, 21:41–22:35 UTC:** 144 Turnpaare, 144 verwertet, null Ausfälle, ~204 Urteile in 54 Minuten. Gefundene Schwelle **−0.55** bei κ 0,375; die heutige Konstante −0.45 erreicht auf diesem Korpus κ 0,261 und einen Bit-0-Anteil von **38,9 %** statt der 79,5 %, mit denen sie kalibriert wurde.
+- 🔶 **Der eigentliche Befund ist die Verteilung.** 142 der 144 Rohwerte sind negativ; bei Schwelle 0.00 tragen 1,4 % das Bit 0. Chat 116 fand dort den Median. **Die Konstante beschreibt das Verhalten nicht mehr, auch nicht auf demselben Paar** — das ist ein Argument für den Agenten, unabhängig von der Zeugenfrage. Die Datenlage war dabei besser als damals: 142 von 144 Turns trugen alle drei Maße.
+
+**Nicht gebaut:** der Pixie-Agent mit Takt und Gate, die Ablage der erhobenen Schwelle je Paar. Die Konstante gilt unverändert; `KALIBRIERUNG_ANWENDEN` steht auf `false`.
+
+**Umfang:** Suite 410 → **458 Tests**, grün, 0 übersprungen. Gegenproben dreimal gezielt rot: Erreichbarkeits-Nebenbedingung entfernt → 5 rot; Binarisierung von `>` auf `>=` → 1 rot; Schwelle aus der Skalenfassung entfernt → 1 Fehlschlag und 3 Fehler; Fehlschlag im Zwischenstand als Urteil `False` geführt → 3 rot. Jede zurückgenommen.
 
 ---
 
