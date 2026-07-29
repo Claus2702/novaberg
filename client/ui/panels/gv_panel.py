@@ -16,6 +16,11 @@ Anzeige (kompakt):
       ● Person zum Lachen bringen  KZG  rel=0.714
       ● Respektvolles Siezen       KZG  rel=0.545
 
+    Initiative:
+      Nutzer führt  +0.104  (Schwelle −0.45)
+      gemessen +0.104 · Charakter +0.00 · Wollen +1.0 · Bewegung +0.10
+      M1 führend  M2 Thema 0.729  M3 Register 0.100
+
     Repertoire — Cluster Kissenschlacht:
       ★ Impuls (Im)             kern         35%
       ● Bestätigung (Be)        passt        31%
@@ -58,6 +63,11 @@ _GV_LUECKEN_RELEVANZ:  float = 0.15  # GV_LUECKEN_MIN_RELEVANZ aus dem Server
 # (gespraechsvektor.py, Schritt 5). Wer die Zahl hier aendert, aendert nur
 # den Hinweis — nicht die Kuerzung.
 _GV_RESONANZ_MAX_ZEICHEN: int = 500
+
+# GV_INITIATIVE_SCHWELLE aus dem Server. Ueber diesem Wert heisst das
+# Achsen-Bit "Nutzer fuehrt". Sie liegt bewusst NICHT auf null — der Median
+# erzwaenge einen 50/50-Schnitt, den die Wirklichkeit nicht hergibt.
+_GV_INITIATIVE_SCHWELLE: float = -0.45
 
 # STRATEGIE_NAMEN aus ei/dreischicht.py, von Hand uebertragen. Der Client
 # importiert nichts aus dem Server, deshalb steht die Tabelle zweimal — wie
@@ -194,6 +204,16 @@ class GvPanel(PanelBase):
         charakter_gewichtung: dict = data.get("charakter_gewichtung") or {}
         korridor_verstoesse: list = data.get("korridor_verstoesse") or []
 
+        # Die Initiative-Messung. Der Node schreibt sie als eigenes Objekt;
+        # fehlt es, ist der Server aelter als Chat 116 — das wird laut, nicht
+        # als leere Anzeige verschluckt.
+        initiative: dict | None = data.get("initiative")
+        if initiative is None:
+            logger.error(
+                "GvPanel: 'initiative' fehlt im gv_detail — Server und Client "
+                "passen nicht zusammen (Achse seit Chat 116)"
+            )
+
         if "korridor_verstoesse" not in data:
             logger.error(
                 "GvPanel: 'korridor_verstoesse' fehlt im gv_detail — "
@@ -258,6 +278,9 @@ class GvPanel(PanelBase):
             gewaehlt=strategie_name,
             verstoesse=korridor_verstoesse,
         ))
+
+        # 2c. NEU (Chat 116): Initiative — woraus das Achsen-Bit entstand.
+        self._outer_box.append(_build_initiative_section(initiative))
 
         # 3. NEU: Sprünge (3 Gedankenschritte)
         self._outer_box.append(_build_spruenge_section(sprung_1, sprung_2, sprung_3))
@@ -444,6 +467,125 @@ def _build_luecken_row(luecke: dict) -> Gtk.Box:
     row.append(rel_label)
 
     return row
+
+
+
+def _build_initiative_section(initiative: dict | None) -> Gtk.Box:
+    """Sektion 'Initiative' — wer im Turn die Richtung gesetzt hat.
+
+    Zeigt nicht nur das Ergebnis, sondern woraus es entstand: die drei Masse
+    einzeln, die zwei Dimensionen, den Charakter-Versatz und den Rohwert
+    daneben. Ein Bit allein waere nicht beurteilbar — dieselbe Lehre wie beim
+    Repertoire, wo das Ergebnis ohne den Korridor nichts sagt.
+
+    Der Charakter-Versatz steht getrennt vom Rohwert, damit ablesbar bleibt,
+    was gemessen wurde und was der Charakter daraus gemacht hat.
+
+    Eingabe: das `initiative`-Objekt aus dem gv_detail oder None (Server
+    aelter als die Achse).
+    """
+    section = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=4)
+
+    header = Gtk.Label(label="Initiative")
+    header.set_xalign(0.0)
+    header.add_css_class("heading")
+    section.append(header)
+
+    if not initiative:
+        leer = Gtk.Label(label="(keine Initiative-Messung in diesem Turn)")
+        leer.set_xalign(0.0)
+        leer.add_css_class("dim-label")
+        section.append(leer)
+        return section
+
+    wert    = initiative.get("wert")
+    rohwert = initiative.get("rohwert")
+    versatz = float(initiative.get("versatz") or 0.0)
+    fehlend = initiative.get("fehlend") or []
+
+    # ── Ergebniszeile ───────────────────────────
+    if wert is None:
+        kopf = Gtk.Label(label="nicht messbar — das Achsen-Bit ist ein Ausfall")
+        kopf.set_xalign(0.0)
+        kopf.set_wrap(True)
+        kopf.add_css_class("error")
+        section.append(kopf)
+    else:
+        fuehrt: bool = float(wert) > _GV_INITIATIVE_SCHWELLE
+        zeile = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=8)
+
+        wer = Gtk.Label(label="Nutzer führt" if fuehrt else "Nova hält die Initiative")
+        wer.set_xalign(0.0)
+        wer.add_css_class("success" if fuehrt else "accent")
+        zeile.append(wer)
+
+        zahl = Gtk.Label(label=f"{float(wert):+.3f}")
+        zahl.set_xalign(0.0)
+        zahl.add_css_class("caption")
+        zeile.append(zahl)
+
+        schwelle = Gtk.Label(label=f"(Schwelle {_GV_INITIATIVE_SCHWELLE:+.2f})")
+        schwelle.set_xalign(0.0)
+        schwelle.set_hexpand(True)
+        schwelle.add_css_class("dim-label")
+        schwelle.add_css_class("caption")
+        zeile.append(schwelle)
+
+        section.append(zeile)
+
+    # ── Herkunft: Rohwert und Charakter getrennt ──
+    teile: list[str] = []
+    if rohwert is not None:
+        teile.append(f"gemessen {float(rohwert):+.3f}")
+    teile.append(f"Charakter {versatz:+.2f}"
+                 + ("" if versatz else " (nicht abgeleitet)"))
+    for name, schluessel in (("Wollen", "wollen"), ("Bewegung", "bewegung")):
+        w = initiative.get(schluessel)
+        if w is not None:
+            teile.append(f"{name} {float(w):+.3f}")
+
+    herkunft = Gtk.Label(label="  ·  ".join(teile))
+    herkunft.set_xalign(0.0)
+    herkunft.set_wrap(True)
+    herkunft.add_css_class("caption")
+    section.append(herkunft)
+
+    # ── Die drei Masse einzeln ──────────────────
+    masse: list[str] = []
+    m1 = initiative.get("m1_roh")
+    if m1 is not None:
+        masse.append(f"M1 {'führend' if m1 else 'folgend'}")
+    m2 = initiative.get("m2_roh")
+    if m2 is not None:
+        masse.append(f"M2 Thema {float(m2):.3f}")
+    m3 = initiative.get("m3_roh")
+    if m3 is not None:
+        masse.append(f"M3 Register {float(m3):.3f}")
+
+    if masse:
+        zeile2 = Gtk.Label(label="  ".join(masse))
+        zeile2.set_xalign(0.0)
+        zeile2.add_css_class("caption")
+        zeile2.add_css_class("dim-label")
+        zeile2.set_selectable(True)
+        section.append(zeile2)
+
+    # ── Fehlendes benennen, nicht verschweigen ──
+    if fehlend:
+        # "steht auf den übrigen" ist falsch, wenn es keine übrigen gibt —
+        # dann ist der Wert gar nicht entstanden.
+        rest: str = ("— es blieb keines übrig" if wert is None
+                     else "— der Wert steht auf den übrigen")
+        hinweis = Gtk.Label(
+            label=f"nicht messbar in diesem Turn: {', '.join(fehlend)} {rest}"
+        )
+        hinweis.set_xalign(0.0)
+        hinweis.set_wrap(True)
+        hinweis.add_css_class("dim-label")
+        hinweis.add_css_class("caption")
+        section.append(hinweis)
+
+    return section
 
 
 def _build_repertoire_section(
