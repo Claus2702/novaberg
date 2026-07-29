@@ -1719,6 +1719,54 @@ GV-Achsen:  … I=0(+0.104)   →   GV-Sektor: #14 'Stilles Vertrauen' → Clust
 
 **Erfasst als:** `GV-INITIATIVE-KIPPT-NIE` in `novaberg-bugs.md`.
 
+### Das zweite Charakter-Rad ✅ — der Versatz kommt jetzt aus dem Charakter
+
+Bis hierher stand der Charakter-Versatz der Initiative-Achse auf 0.0 und war nicht abgeleitet — dieselbe Lage wie `GV_RAUM_CHARAKTER_FAKTOR` seit Chat 114, wo der Versuch über eine Cosine-Distanz gemessen gescheitert war.
+
+- ✅ **Zehn Speichen um eine Nabe bei 0.0**, fünf „überlässt die Führung", fünf „behält die Initiative". Volle Auslenkung trifft **±0.25 exakt** — nachgerechnet: alle fünf oben +0.2500, alle fünf unten −0.2500, leeres Rad 0.0000.
+- ✅ **Die Entwurfsregel ist der eigentliche Bau: Handlung statt Haltung.** Das bestehende Rad beschreibt Treue als *„stellt seine Belange über die eigenen"* — eine Haltung, aus der ein LLM allgemeine Freundlichkeit liest. Jede neue Speiche nennt eine Gesprächshandlung: *„übernimmt das gesetzte Thema, ohne es zu drehen"*. Beide Prompts liegen in derselben Datei; der Unterschied ist ablesbar.
+- ✅ **Ein eigenes Rad, kein Mitbenutzen.** Vier der zwölf bestehenden Speichen treffen Führen und Folgen, aber ihr Ergebnis bündelt sie mit Wissbegier, Pflichtbewusstsein und Aufmerksamkeit. Ein LLM-Call je Destillation ist der Preis.
+- ✅ **DDL angekündigt und freigegeben**, vier Spalten auf `charakter_hash` nach dem Muster von `nutzer_gewichtung`. Die Migration lief mit dem ersten Python-Edit des Sprints — wie die Reload-Falle es beschreibt, nicht als Überraschung.
+- ✅ **Drei Fälle, die derselbe Zahlenwert sind und nicht dasselbe bedeuten**, unterscheidbar am Herkunftsfeld und am gespeicherten Rad: Speichen heben sich auf · Profil sagt über Gesprächsführung nichts · nie erhoben. Ohne diese Trennung wäre es die vierte Stelle im System, an der ein Ausfallwert wie ein Messergebnis aussieht.
+- ✅ **Fällt das Laden aus, rechnet die Achse ohne Versatz** statt mit einem erfundenen, und die Logzeile sagt es. Ein Versatz aus dem Default wird ebenfalls gemeldet.
+
+**Umfang:** Suite 385 → **398 Tests**, grün, 0 übersprungen. Darunter drei, die die Zug-Summen selbst prüfen: Weicht eine von 0.25 ab, trifft die volle Auslenkung die Grenze nicht mehr, und die Kappung würde vom Sicherungsnetz zum Formteil — das fällt sonst niemandem auf, weil beide Fälle denselben Wert liefern.
+
+**Offen:** Die Spannweite ±0.25 ist gesetzt, nicht gemessen. Ebenso fehlt weiterhin das tote Band.
+
+### Der Zeuge — und die Schwelle, die am falschen Ort lag ✅
+
+Aus einem Screenshot des GV-Panels entstand die Frage, ob die situative Lesart des Modells für die Achse taugt. Als **Eingang** nicht: Der Impuls entsteht in Zeile 776, die Achse in Zeile 767 — er wüsste den Sektor bereits. Als **Prüfstein** dagegen schließt er genau die Lücke, die seit der Konzeption offen war.
+
+- ✅ **Der Zeuge sieht nur zwei Texte** — Vorantwort und Nutzer-Turn, keine Achse, kein Sektor, kein Maß. Die Sprecher heißen A und B, damit keine Vorannahme über „Assistentin" mitreist.
+- ✅ **Positions-Kontrolle bestanden:** B = Nutzer → 79,5 % „führt", B = Nova → 36,1 %. Läse das Modell nur die Reihenfolge, stünden beide bei 80 %.
+- ✅ **Die Achse bestand die Prüfung nur zur Hälfte:** 65,1 % Übereinstimmung, **κ = 0,286** — bei einer Zufallsübereinstimmung von 51,1 % kaum mehr als Rauschen.
+- ✅ **Die Ursache war eine eigene Entscheidung vom selben Tag.** Das Zentrum lag auf dem Median und erzwang damit 50/50; der Zeuge sagt, der Nutzer führt in **vier von fünf** Wortwechseln. Das deckt sich mit allem übrigen Gemessenen — Themensprung 8:1, Fragen 6:1.
+- ✅ **Schwelle auf −0.45 kalibriert:** 83,1 % Übereinstimmung, **κ = 0,482**, Minderheit 20,5 %. Gesucht wurde das beste κ **unter der Nebenbedingung**, dass beide Bits erreichbar bleiben — Erreichbarkeit ist Vorgabe, nicht Nebenprodukt.
+- ✅ **Zwei Eigenschaften der Kurve mitgeschrieben:** Zwischen −0.15 und +0.20 ändert sich nichts, weil dort kein einziger Rohwert liegt — **der Median lag in einem Loch**. Und zwischen −0.55 und −0.35 ist die Kurve flach: −0.45 ist ein Plateau-Maximum, keine Spitze.
+
+### Das Rad läuft im Produktivsystem
+
+Nach der ersten Destillation mit dem neuen Rad:
+
+```
+meister: laeufe [-0.10, -0.10, -0.10]   streuung 0.00
+nova:    laeufe [-0.13, -0.13, -0.09]   streuung 0.04
+```
+
+**Der Median-Bau greift wie vorgesehen** — bei `nova` gewinnt −0.13 gegen den Ausreißer −0.09, und die Streuung steht daneben. Anlass war eine Messung: Zwei Läufe gegen denselben Charaktertext ergaben −0.18 und −0.13, und der Versatz wird bei der Destillation einmal geschrieben und bleibt bis zur nächsten stehen.
+
+**Und die Entwurfsregel hat gehalten.** Dasselbe Profil, beide Räder:
+
+| | belegte Speichen | Ergebnis |
+|---|---|---|
+| **NEU** — Handlung | **6 von 10** | −0.13 |
+| **ALT** — Haltung | **3 von 12** | 1.09 |
+
+Das Haltungs-Rad belegt ausschließlich Speichen der Zuwendungsseite — `aufmerksamkeit`, `wissbegier`, `wohlwollen` — und **keine einzige** der Abwendungsseite. Das ist kein Profil, sondern ein wohlwollender Gesamteindruck. Das Handlungs-Rad zeichnet ein Bild mit Kanten: *sie setzt die Route und springt quer, hält aber keinen Abstand.*
+
+**Umfang:** Suite 398 → **410 Tests**, grün. Gegenprobe zum Median zweifach: ersten statt Median-Lauf → zwei rot; Streuung verschwiegen → eine rot.
+
 ### Was dabei abfiel
 
 - **`korridor_verstoesse` ist ebenfalls ohne Leser** — die Leitplanke aus Chat 114 meldet einen Verstoß nur ins Server-Log. Zusammen mit `repertoire` und `charakter_gewichtung` (beide seit Chat 72 im Backlog) am Backlog-Punkt „GV-Panel: Dreischicht-Felder visualisieren" vermerkt, der damit als teilerledigt geführt wird.

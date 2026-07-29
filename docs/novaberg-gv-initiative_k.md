@@ -18,7 +18,8 @@
 > | 3 | **Setzung** — gesetzt, nicht gemessen |
 > | 4 | **auditiert** — die drei Maße mit ihren Zahlen |
 > | 5 | **teils gebaut** — Skala und Kombination stehen, das tote Band nicht |
-> | 6, 7 | **Entwurf** — Rad und Kalibrier-Agent sind nicht gebaut |
+> | 6 | **gebaut** — das Rad läuft in der Charakter-Destillation |
+> | 7 | **Entwurf** — der Kalibrier-Agent ist nicht gebaut |
 
 ---
 
@@ -100,6 +101,14 @@ Drei Formen setzen eine Richtung:
 **Ausdrücklich kein Führen:** tiefer in das Thema des Gegenübers eintauchen. Das ist aktives Mitgehen. Die Intention `recherche_vertiefen` zählt daher als **folgend**.
 
 Diese Abgrenzung ist keine Nebensache — §4.1 zeigt, dass sie das Vorzeichen des gesamten Maßes entscheidet.
+
+### 3.1 Die Kante dieser Setzung
+
+**Ein Nutzer, der ein Gespräch inhaltlich stark vorantreibt, ohne Thema oder Register zu wechseln, wird als folgend gelesen.**
+
+Live beobachtet am 29.07.2026: ein Turn, in dem der Nutzer eine hochkomplexe Synthese aus Physik und Neurobiologie vorantrieb — die Achse las „Nova hält die Initiative" (Wert −0.851). Das ist **keine Fehlfunktion**, sondern die Setzung aus §3 in Reinform: Er blieb im gesetzten Thema (M2 unter dem Zentrum) und im Register (M3 = 0).
+
+Das steht hier, damit es später nicht als Bug gemeldet wird. Wer die Kante verschieben will, verschiebt die Definition — nicht die Rechnung.
 
 ---
 
@@ -195,6 +204,10 @@ Distanz auf der `TIEFE_MODUS`-Skala (`alltag` 0.3 … `philosophischer_austausch
 | Weg, Median | **0,200** | 0,100 |
 | Weg, Mittel | 0,263 | 0,163 |
 
+**Die Skala ist stark asymmetrisch, und das ist ein kräftiger Hebel.** Zentrum 0.100, Minimum 0.000, Maximum 0.600 — die untere Hälfte ist nur 0.1 breit, die obere 0.5. Ein Turn **ohne** Registerwechsel (M3 = 0.000) normiert damit auf **−1.000**, den Anschlag; ein deutlicher Wechsel von 0.2 erreicht nur +0.2.
+
+Das ist so konstruiert und vertretbar — kein Wechsel *ist* das stärkste Argument gegen Führung in dieser Dimension. Aber „kein Wechsel" dürfte der häufigste Fall sein, und dann zieht M3 in jedem solchen Turn mit voller Kraft. Live beobachtet am 29.07.2026: `M2 0.475` (normiert −0.503) und `M3 0.000` (normiert −1.000) ergaben zusammen eine Bewegung von −0.751 — der Registerteil trug doppelt so stark wie der Thementeil.
+
 **Einschränkung, die das Ergebnis verschiebt:** 34 von 399 Nova-Einträgen (**9 %**) tragen einen Modus außerhalb des Kanons — LLM-Freitext statt Label. Sie fielen aus der Rechnung. Ihre Texte beschreiben überwiegend genau das Gemessene (*„Wechsel zwischen intensivem Lernmodus und …"*), also die Fälle mit dem größten Weg. **Novas 0,100 ist eher zu niedrig, der Faktor eher zu groß.** Der Nutzer-Pfad liefert 94 von 94 Kanon-Werten; die Asymmetrie sitzt zwischen den beiden Perzeptions-Prompts.
 
 ### 4.4 Verworfen: das Fragezeichen
@@ -247,6 +260,8 @@ Rauschgrenze          Median aller           beobachtetes
 
 > **⚠ Die Zahlen dieser Skizze stammen aus Verdichtungen und sind mit der Festlegung „Rohtext" (§4.2) gegenstandslos geworden.** Die Form gilt weiter, die Werte nicht. Auf Rohtexten liegen die gemessenen Eckpunkte bei Rauschgrenze 0,488, Nova 0,445, Nutzer 0,658 — das Zentrum ist dort noch nicht erhoben.
 
+> **⚠ Überholt seit §12 (Chat 116).** Das Zentrum ist **nicht** der Median. Gegen einen unabhängigen Zeugen gemessen liegt der Bedeutungspunkt bei **−0.45**, nicht bei 0. Der Median ist ein Verteilungspunkt und erzwingt einen 50/50-Schnitt; die Achse braucht die Stelle, an der das Folgen endet. Die Herleitung steht in §12, die Konstante heißt `GV_INITIATIVE_SCHWELLE`.
+
 **Das neutrale Zentrum kommt aus dem Bestand,** nicht aus einer Konstante. Es ist der Punkt, an dem beide Seiten der Achse im Datenbereich liegen. Genau das fehlt der heutigen Achse: Schwelle 1,5 bei einem Wertebereich von 0,10 bis 0,24.
 
 **Der Charakter verschiebt das Zentrum um ein kleines Stück.** Eine Nova, die sich führen lässt, gilt schon bei einem kleineren Sprung als führend; eine distanzierte erst bei einem größeren. Die Verschiebung ist eine Tendenz, kein Anschlag — das bestehende Charakter-Rad liefert für einen echten Charakter eine Auslenkung von rund einem Drittel des verfügbaren Wegs (Nabe 0.9, gemessen 1.115).
@@ -277,7 +292,7 @@ Jedes Maß wird vorher auf sein **eigenes** Zentrum bezogen und auf eine gemeins
 
 ---
 
-## 6. Woher der Charakter-Wert kommt — Entwurf
+## 6. Woher der Charakter-Wert kommt — gebaut Chat 116
 
 **Nicht über eine Cosine-Distanz.** Der Versuch, einen Charakterfaktor so zu gewinnen, ist in Chat 114 **gemessen gescheitert**: Zwei Kunstfiguren trennen sich sauber bei +0.24 und −0.22, der echte Charakter liegt bei **+0.036** und wechselt das Vorzeichen, je nachdem ob man den Kern allein oder alle fünf Schichten einbettet. Ein Faktor darauf wäre Rauschen im Gewand einer Charaktereigenschaft.
 
@@ -285,7 +300,7 @@ Jedes Maß wird vorher auf sein **eigenes** Zentrum bezogen und auf eine gemeins
 
 Der Unterschied zum gescheiterten Weg ist die Form der Frage: **konkrete Einzelfragen statt einer Einordnung im Embedding-Raum.**
 
-**Entschieden: ein eigenes Rad mit eigenem LLM-Call.** Das bestehende Rad wird nicht mitbenutzt. Vier seiner zwölf Speichen treffen zwar Führen und Folgen — Treue (+0.16), Widerspenstigkeit (−0.12), Selbstbezogenheit (−0.08), Distanz (−0.03) —, aber sein Wert bündelt sie mit Wissbegier, Pflichtbewusstsein und Aufmerksamkeit, die mit der Frage nichts zu tun haben. Ein Call je Charakter-Destillation ist der Preis, und er ist gering; die Genauigkeit ist es nicht.
+**Gebaut: ein eigenes Rad mit eigenem LLM-Call.** Das bestehende Rad wird nicht mitbenutzt. Vier seiner zwölf Speichen treffen zwar Führen und Folgen — Treue (+0.16), Widerspenstigkeit (−0.12), Selbstbezogenheit (−0.08), Distanz (−0.03) —, aber sein Wert bündelt sie mit Wissbegier, Pflichtbewusstsein und Aufmerksamkeit, die mit der Frage nichts zu tun haben. Ein Call je Charakter-Destillation ist der Preis, und er ist gering; die Genauigkeit ist es nicht.
 
 ### 6.1 Die Entwurfsregel: Handlung statt Haltung
 
@@ -355,8 +370,10 @@ Ein eigener Vorgang, der **nach der Charakter-Destillation** läuft, analog zu d
 
 **Er rechnet zwei Größen neu:**
 
-1. das neutrale Zentrum aus dem dann vorliegenden Bestand
-2. den Charakter-Versatz aus dem dann geltenden Charakter
+1. die Schwelle — **nicht** als Median des Bestands, sondern als Bedeutungspunkt gegen einen Zeugen (§12)
+2. den Charakter-Versatz aus dem dann geltenden Charakter (§6, gebaut)
+
+> **⚠ Der Aufwand ist mit Chat 116 gestiegen.** Ursprünglich sollte der Agent einen Median rechnen — eine Zeile. Seit die Schwelle gegen einen Zeugen kalibriert wird, braucht er rund **achtzig LLM-Urteile je Kalibrierung** plus die Schwellensuche darüber. Machbar (83 Urteile liefen in 90 Sekunden auf der GPU), aber ein anderer Bau als der hier ursprünglich beschriebene.
 
 **Was er ausdrücklich nicht tut: zur Laufzeit nachregeln.** Das Zentrum darf der gemessenen Verteilung nicht laufend folgen. Es gibt einen Pfad von der Achse zurück auf die Eingabe — Sektor → Cluster → Repertoire → Novas Antwort → nächster Rohwert. Er ist lang und schwach, aber er ist da; ein mitlaufendes Zentrum hätte keinen Anker und driftete, bis alles Mittelwert ist.
 
@@ -405,3 +422,93 @@ Alle Zahlen aus §4 stammen aus **einem Paar** und einem Bestand, der stark von 
 Die Richtung ist deshalb belastbar, der **Betrag nicht**. Ein Zentrum aus diesem Bestand trüge dessen Schlagseite.
 
 Das spricht nicht gegen den Entwurf, sondern für den Agenten aus §7: Er rechnet das Zentrum bei jeder Charakter-Destillation neu, und bis dahin ist der Bestand breiter.
+
+---
+
+## 11. Baustand des Rads (Chat 116)
+
+| | |
+|---|---|
+| Speichen und Züge | `INITIATIVE_ZUG_HOCH` / `_RUNTER` in `agents/charakter/destillation.py` |
+| Prompt | `INITIATIVE_RAD_PROMPT`, direkt neben dem bestehenden `CHARAKTER_RAD_PROMPT` |
+| Rechnung | `initiative_versatz_berechnen` — reine Funktion, lehnt unvollständige Räder ab |
+| Erhebung | `initiative_rad_destillieren`, gerufen vom `CharakterAgent` nach den fünf Profilen |
+| Speicher | `charakter_hash.initiative_versatz{,_quelle,_rad,_am}` — vier Spalten nach dem Muster von `nutzer_gewichtung` |
+| Verbraucher | `memory/charakter.py`, `initiative_versatz_laden`; der GV-Node reicht den Wert an `fuehrung_messen` |
+| Tests | `tests/test_initiative_rad.py` (13) |
+
+**Volle Auslenkung trifft ±0.25 exakt** — live nachgerechnet: alle fünf oben ausgeprägt ergeben +0.2500, alle fünf unten −0.2500, das leere Rad 0.0000. Die Kappung ist damit Sicherung, kein Formteil.
+
+**Die Zug-Summen sind getestet, nicht nur gesetzt.** Weicht eine Summe von 0.25 ab, trifft die volle Auslenkung die Grenze nicht mehr, und die Kappung würde vom Sicherungsnetz zum Formteil — das fällt sonst niemandem auf, weil beide Fälle denselben Wert liefern.
+
+**Zwei Fälle, die derselbe Zahlenwert sind und nicht dasselbe bedeuten**, unterscheidbar allein am Herkunftsfeld und am gespeicherten Rad:
+
+- Versatz 0.0000, `quelle='destilliert'`, Rad mit belegten Speichen → die Speichen heben sich auf. Eine Messung.
+- Versatz 0.0000, `quelle='destilliert'`, Rad überall 0.0 → das Profil sagt über Gesprächsführung nichts. Auch eine Messung, aber eine andere.
+- Versatz 0.0000, `quelle='default'` → nie erhoben. Kein Messergebnis.
+
+**Wenn das Laden ausfällt, rechnet die Achse ohne Versatz** statt mit einem erfundenen — der Rohwert bleibt dann die reine Messung, und die Logzeile sagt es. Dasselbe gilt für einen Versatz aus dem Default: Der GV-Node meldet, dass der Charakter die Achse noch nicht verschiebt.
+
+**Offen bleibt die Spannweite.** ±0.25 ist gesetzt, nicht gemessen. Prüfbar, sobald genug Turns vorliegen: wie viele Turns die volle Auslenkung tatsächlich umklappt.
+
+---
+
+## 12. Die Schwelle: gegen einen Zeugen kalibriert (Chat 116)
+
+### 12.1 Warum der Median nicht taugt
+
+Die erste Fassung binarisierte bei **0** — dem Median des Korpus. Das stellt sicher, dass beide Bits erreichbar sind, und erzwingt zugleich einen **50/50-Schnitt**, den die Wirklichkeit nicht hergibt.
+
+### 12.2 Der Zeuge
+
+Eine unabhängige Lesart je Turn: Dem Modell werden **ausschließlich zwei Texte** vorgelegt — Novas Vorantwort und der Nutzer-Turn. Keine Achse, kein Sektor, kein Cluster, kein Maß. Die Sprecher heißen **A und B**, damit keine Vorannahme über „Assistentin" oder „Nutzer" mitreist. Gefragt wird: *Hat B die Richtung gesetzt?*
+
+**Der Zeuge liegt vor der Achse, nicht dahinter.** Das unterscheidet ihn vom Impuls und vom Fragezeichen (§4.4), die beide die eigene Ausgabe mitmessen.
+
+**Positions-Kontrolle, ohne die der Zeuge wertlos wäre:**
+
+| Frage | „B führt" |
+|---|---|
+| B = Nutzer (nach Novas Antwort) | **79,5 %** |
+| B = Nova (nach dem Nutzer-Turn) | **36,1 %** |
+| Differenz | **+43,4 Prozentpunkte** |
+
+Läse das Modell nur die Position — *wer zuletzt spricht, führt* —, stünden beide bei ~80 %. Es unterscheidet die Sprecher, nicht ihre Reihenfolge.
+
+### 12.3 Die Schwellensuche
+
+83 Turns mit Rohwert und Urteil, Rohwert-Spanne −0,901 bis +0,950.
+
+| Schwelle | Übereinstimmung | κ | Bit-0-Anteil | Minderheit |
+|---|---|---|---|---|
+| −0.65 | 85,5 % | +0,432 | 91,6 % | 8,4 % |
+| **−0.45** | **83,1 %** | **+0,482** | **79,5 %** | **20,5 %** |
+| −0.35 | 80,7 % | +0,456 | 74,7 % | 25,3 % |
+| **0.00** (Median) | **65,1 %** | **+0,286** | 51,8 % | 48,2 % |
+| +0.50 | 49,4 % | +0,171 | 31,3 % | 31,3 % |
+
+**Gewählt: −0.45.** Bestes κ unter der Nebenbedingung, dass die Minderheit mindestens 15 % trägt — Erreichbarkeit bleibt Vorgabe, nicht Nebenprodukt.
+
+**Zwei Eigenschaften der Kurve, die mitgeschrieben gehören:**
+
+- **Zwischen −0.15 und +0.20 ändert sich nichts** (65,1 %, κ 0,286 durchgehend). Dort liegt kein einziger Rohwert — die Verteilung ist an der Mitte ausgedünnt. **Der Median lag in einem Loch**, und das erklärt, warum ausgerechnet er so schlecht trennte.
+- **Zwischen −0.55 und −0.35 ist die Kurve flach** (κ 0,40–0,48). −0.45 ist das Maximum eines Plateaus, keine Spitze. Wer nachmisst, erwartet ein Plateau.
+
+### 12.4 Die Nebenbedingung, durchgerechnet
+
+Über die volle Charakter-Spanne bleibt jede Seite erreichbar:
+
+| Versatz | Bit-0-Anteil | Minderheit |
+|---|---|---|
+| −0.25 | 61,4 % | 38,6 % |
+| **−0.13** (Novas gemessener Wert) | 73,5 % | 26,5 % |
+| 0.00 | 79,5 % | 20,5 % |
+| +0.25 | 91,6 % | **8,4 %** |
+
+Im ungünstigsten Fall selten, nie zu. Der Charakter verschiebt, er schließt nicht.
+
+### 12.5 Grenzen
+
+**83 Turns, ein Paar, ein Zeuge mit einem Prompt.** κ = 0,48 ist „mäßig bis gut" und ein deutlicher Fortschritt gegenüber 0,29 — kein Beweis. Die Positions-Kontrolle zeigt, dass der Zeuge nicht die Reihenfolge liest; dass er inhaltlich richtig liegt, ist damit **nicht** gezeigt.
+
+**Und die Schwelle ist heute eine Konstante, kein selbstkalibrierender Wert.** Sie stammt aus diesem einen Paar. Für einen anderen Charakter gilt sie vermutlich nicht — die Verteilung der Rohwerte hängt am Gesprächsstil beider Seiten. Der Kalibrier-Agent (§7) soll sie je Paar erheben; bis dahin ist `GV_INITIATIVE_SCHWELLE` sein Platzhalter und als solcher im Code benannt.

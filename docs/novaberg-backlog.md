@@ -3872,9 +3872,50 @@ Vorbild ist der bestehende Löschpfad im Promotions-Agenten. Betrifft **nur** de
 
 **Vor der Umsetzung neu messen.** Der Befund stammt aus Chat 109 und liegt vor dem Reset des Bestands und vor dem Salienz-Umbau.
 
-### Bauteil 3 — Charakter-Rad im Client ⬜ Prio mittel
+### Bauteil 3 — Charakter-Räder im Client ⬜ Prio hoch (hochgestuft Chat 116)
 
 Sieben Teilschritte, unverändert seit Chat 111. Die Visualisierung im Charakter-Tab; die Datenseite steht.
+
+**Chat 116 — es sind jetzt zwei Räder, und der Punkt wird dringender.**
+
+| Rad | Speichen | Datenlage |
+|---|---|---|
+| `nutzer_gewichtung` | **12** — sechs Zuwendung, sechs Abwendung | gebaut, Werte in `charakter_hash.nutzer_gewichtung_rad` als JSON |
+| Initiative-Versatz | **10** — fünf überlässt, fünf behält | entworfen (`novaberg-gv-initiative_k.md` §6), noch nicht gebaut |
+
+Beide gehören als **Radar-Diagramme untereinander in den Charakter-Tab**. Die Bauart ist dieselbe: Nabe, Speichen mit festem Zug, LLM-Bewertung 0.0 / 0.5 / 1.0 je Speiche, das Ergebnis gerechnet. Ein Radar ist die Darstellungsform, die zu dieser Bauart gehört — sie zeigt, welche Speichen tragen und welche nicht, statt nur das Ergebnis.
+
+**Warum früh:** Beide Räder erzeugen einen einzelnen Zahlenwert aus zehn bis zwölf Einzelbewertungen. Ohne Visualisierung ist die Zahl nicht beurteilbar — man sieht 1.35, aber nicht, dass sie aus fünf ausgeprägten und einer angedeuteten Speiche entsteht. Das ist dieselbe Frage, die das GV-Panel in Chat 116 für den Strategie-Korridor beantwortet hat: das Ergebnis zeigen reicht nicht, der Korridor muss mit.
+
+**Vorhandene Datenlage prüfen:** `nutzer_gewichtung_rad` liegt vor und ist von Hand nachrechenbar (am 29.07.2026 für beide Paare exakt bestätigt). Für das Initiative-Rad muss das Speicherformat mitgebaut werden — dasselbe Muster, eigenes Feld.
+
+---
+
+### Nachvollziehbarkeit im `pipeline_log` prüfen ⬜ Prio hoch (Chat 116)
+
+**Die Frage:** Sind die Rechenergebnisse im Nachhinein nachvollziehbar, oder sind sie Black Boxes? Eine Berechnung, deren Zwischenwerte nirgends dauerhaft stehen, ist nach einem Tag nicht mehr prüfbar — man sieht das Ergebnis und kann nicht sagen, wie es zustande kam.
+
+**Der konkrete Anlass:** Die Initiative-Achse (Chat 116) schreibt ihre drei Maße, die zwei Dimensionen und den Versatz nach `gv_detail` — also nach **Redis, ohne TTL, bei jedem Turn überschrieben** — und in die Logzeile, die mit dem Container rotiert. **Im `pipeline_log` steht nichts davon.** Nach einem Neustart ist von jedem Turn außer dem letzten nur noch das Achsen-Bit übrig, nicht die drei Zahlen, aus denen es entstand.
+
+Dasselbe ist bei der Auswertung dieser Sitzung aufgefallen: Die Messgrundlage für die neue Achse musste aus KZG-Einträgen und Rohturns rekonstruiert werden, weil die gerechneten Werte nirgends persistiert waren.
+
+**Zu prüfen, nicht zu bauen — der Umfang ist offen:**
+
+- Welche Rechnungen schreiben heute Zwischenwerte ins `pipeline_log`, welche nicht? (Kriterium statt Aufzählung: **jede**, deren Ergebnis eine spätere Entscheidung trägt.)
+- Was davon wäre für eine Kalibrierung oder eine Fehlersuche nötig?
+- Was kostet die Persistierung — `pipeline_log` trägt bereits über 12.000 Zeilen für wenige Tage.
+
+**Kopplung:** Der Kalibrier-Agent (`novaberg-gv-initiative_k.md` §7) rechnet Zentren aus dem Bestand. Ohne persistierte Rohwerte kann er nur aus abgeleiteten Quellen rechnen — genau der Umweg, den diese Sitzung gehen musste.
+
+---
+
+### Konzept: ein Node für Novas Sprache ⬜ Prio offen (Chat 116)
+
+**Auftrag:** Ein Konzept für einen neuen Node, der Novas Sprache stärker zur Geltung bringt. Die Ausarbeitung folgt nach dem Konzept.
+
+**Was an Vorarbeit vorliegt:** Chat 114 hat gemessen, dass der Gesprächsverlauf rund drei Viertel des Responder-Prompts ausmacht und der Gesprächsvektor-Block rund drei Prozent — *„Rund drei Viertel Verlauf, rund drei Prozent Register."* Der Sprachstil-Block wurde daraufhin hinter den Verlauf gesetzt, damit er überhaupt eine Chance gegen die Prosa davor hat. Ob das über längere Strecken trägt, ist ausdrücklich offen geblieben (`novaberg-bugs.md`, Sprachstil-Eintrag: *„Zwei Turns. Die Wirkung auf den Ton lässt sich nicht im Unit-Test sichern"*).
+
+Das ist der Befund, an dem ein solcher Node ansetzt — die Frage ist nicht, ob Nova eine Sprache hat, sondern warum die Prosa im Kontext sie überschreibt.
 
 ### Der Eigen-Pfad trägt einen von vier Antrieben
 
