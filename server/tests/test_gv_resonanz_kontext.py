@@ -180,5 +180,69 @@ class TestFaktenHopSchlaeft(unittest.TestCase):
         self.assertIn("_resonanz_kontext_laden", quelle)
 
 
+class TestGvDetailVertragMitDemPanel(unittest.TestCase):
+    """Das GV-Panel liest die zweite Wissensquelle unter einem festen Namen.
+
+    Zeuge: `PANEL_SCHLUESSEL` ist von Hand aus `client/ui/panels/gv_panel.py`
+    uebertragen. Der Container sieht `client/` nicht — docker-compose baut den
+    Server aus `novaberg/server`. Der erwartete Name stammt damit aus einer
+    anderen Quelle als das Prueobjekt; der erwartete Inhalt ist ein Literal
+    dieser Datei.
+
+    Warum das ein Test ist und keine Formalie: Das Feld war von seiner
+    Einfuehrung bis Chat 116 schreib-only — kein Leser im Repo. Wird es hier
+    umbenannt oder faellt es aus dem Dict, zeigt das Panel wieder nichts, und
+    nichts weist darauf hin. Genau so ist der Zustand vier Monate lang
+    unbemerkt geblieben (GV-ENTITY-HOP-TOT, GV-ENTITY-HOP-FINDET-NICHTS).
+
+    `_hypothese_destillieren` ist der einzige gepatchte Teil — er ruft das
+    LLM. Alles andere laeuft echt; DB-Zugriffe finden nicht statt, weil die
+    Wissensluecken-Suche erst ab der Strategie-Mindestlaenge greift.
+    """
+
+    # Von Hand uebertragen aus client/ui/panels/gv_panel.py, _update_ui.
+    PANEL_SCHLUESSEL: str = "resonanz_kontext"
+
+    @staticmethod
+    def _gv_detail(erinnerungen: list[dict]) -> dict:
+        """Laesst den Node echt laufen und gibt sein gv_detail zurueck."""
+        from unittest.mock import patch
+
+        from graph.nodes import gespraechsvektor as gv_modul
+
+        zustand: dict = {
+            "user_id":      "test_gv_vertrag",
+            "character_id": "test_gv_vertrag",
+            **_state(erinnerungen),
+        }
+
+        with patch.object(gv_modul, "_hypothese_destillieren",
+                          return_value=("Hypothese", {})):
+            ergebnis = gv_modul.gespraechsvektor(zustand)
+
+        return ergebnis.get("gv_detail") or {}
+
+    def test_der_schluessel_traegt_die_erinnerung(self) -> None:
+        """Der positive Zwilling: Inhalt drin, unter dem Namen des Panels."""
+        detail: dict = self._gv_detail([ANKER_ERINNERUNG])
+
+        self.assertIn(self.PANEL_SCHLUESSEL, detail)
+        self.assertIn("Ereignishorizont wurde als Grenze",
+                      detail[self.PANEL_SCHLUESSEL])
+
+    def test_ohne_erinnerungen_bleibt_der_schluessel_stehen(self) -> None:
+        """Leer heisst leerer String, nicht fehlender Schluessel.
+
+        Das Panel unterscheidet beides: Ein leerer String ist ein Turn ohne
+        Erinnerungen, ein fehlender Schluessel ein Bruch zwischen Server und
+        Client — und wird dort laut gemeldet. Faellt der Schluessel bei
+        Leerfaellen weg, meldet das Panel bei jedem stillen Turn einen Bruch.
+        """
+        detail: dict = self._gv_detail([])
+
+        self.assertIn(self.PANEL_SCHLUESSEL, detail)
+        self.assertEqual("", detail[self.PANEL_SCHLUESSEL])
+
+
 if __name__ == "__main__":
     unittest.main()

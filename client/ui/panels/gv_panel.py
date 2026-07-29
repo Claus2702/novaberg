@@ -16,8 +16,15 @@ Anzeige (kompakt):
       ● Person zum Lachen bringen  KZG  rel=0.714
       ● Respektvolles Siezen       KZG  rel=0.545
 
+    Verwandte Erinnerungen (2):
+      ● Der Ereignishorizont wurde besprochen (direkt zum Thema; ...)
+      ● Die Hawking-Strahlung kam zur Sprache (assoziiert ueber 2 ...)
+
     Farbton:
       Der Nutzer verfolgt einen Wissenspfad ...
+
+Die beiden Wissens-Sektionen stehen bewusst nebeneinander: Wissensluecken
+sagen, was Nova nicht weiss, verwandte Erinnerungen, was sie schon erlebt hat.
 
 Sprach-Regeln: Code/Bezeichner englisch, UI-Texte und Logs deutsch.
 """
@@ -40,6 +47,11 @@ logger = logging.getLogger(__name__)
 
 _GV_LAENGE_MAX:        int   = 3
 _GV_LUECKEN_RELEVANZ:  float = 0.15  # GV_LUECKEN_MIN_RELEVANZ aus dem Server
+
+# Der Server kuerzt den Resonanz-Kontext beim Schreiben ins gv_detail
+# (gespraechsvektor.py, Schritt 5). Wer die Zahl hier aendert, aendert nur
+# den Hinweis — nicht die Kuerzung.
+_GV_RESONANZ_MAX_ZEICHEN: int = 500
 
 
 class GvPanel(PanelBase):
@@ -108,6 +120,23 @@ class GvPanel(PanelBase):
         wissensluecken:    list  = data.get("wissensluecken") or []
         farbton:           str   = str(data.get("farbton") or "")
 
+        # Die zweite Wissensquelle des Nodes. Der Serverschluessel heisst seit
+        # Chat 115 'resonanz_kontext'; davor 'entity_hops', als die Quelle noch
+        # die fakten-Tabelle war. Beide Namen werden gelesen — der Redis-Key
+        # hat kein TTL, ein Blob von vor der Umbenennung bleibt bis zum
+        # naechsten Turn stehen.
+        #
+        # Kein stiller Default: Der Server schreibt das Feld immer, notfalls
+        # als leeren String. Fehlen BEIDE Schluessel, ist das ein Bruch
+        # zwischen Server und Client — nicht ein Turn ohne Erinnerungen.
+        roh_resonanz = data.get("resonanz_kontext", data.get("entity_hops"))
+        if roh_resonanz is None:
+            logger.error(
+                "GvPanel: weder 'resonanz_kontext' noch 'entity_hops' im "
+                "gv_detail — Server und Client passen nicht zusammen"
+            )
+        resonanz_kontext: str = str(roh_resonanz or "")
+
         # Dreischicht-Felder (Chat 72/73)
         sektor_index:   int  = int(data.get("sektor_index", 0) or 0)
         sektor_name:    str  = str(data.get("sektor_name") or "")
@@ -121,9 +150,15 @@ class GvPanel(PanelBase):
         sprung_3:       str  = str(data.get("sprung_3") or "")
         impuls:         str  = str(data.get("impuls") or "")
 
+        resonanz_zeilen: list[str] = [
+            z.strip() for z in resonanz_kontext.splitlines() if z.strip()
+        ]
+
         logger.info(
             f"GvPanel: laenge={laenge}, bereitschaft={aufnahmebereitschaft:.3f}, "
             f"strategie={strategie_aktiv}, luecken={len(wissensluecken)}, "
+            f"resonanz={len(resonanz_zeilen)} Erinnerung(en)/"
+            f"{len(resonanz_kontext)} Zeichen, "
             f"sektor=#{sektor_index} {sektor_name}, cluster={cluster}, "
             f"absicht={absicht}, strat={strategie_name}, vehikel={vehikel}"
         )
@@ -152,10 +187,14 @@ class GvPanel(PanelBase):
         # 4. NEU: Impuls (Richtungsangabe für den Responder)
         self._outer_box.append(_build_impuls_section(impuls))
 
-        # 5. Bestehend: Wissenslücken
+        # 5. Bestehend: Wissenslücken — was Nova nicht weiss
         self._outer_box.append(_build_luecken_section(wissensluecken))
 
-        # 6. Bestehend: Farbton
+        # 6. NEU (Chat 116): Verwandte Erinnerungen — was sie schon erlebt hat
+        self._outer_box.append(_build_resonanz_section(resonanz_zeilen,
+                                                       len(resonanz_kontext)))
+
+        # 7. Bestehend: Farbton
         self._outer_box.append(_build_farbton_section(farbton))
 
     # ═══════════════════════════════════════════════════════════════
@@ -327,6 +366,71 @@ def _build_luecken_row(luecke: dict) -> Gtk.Box:
     row.append(rel_label)
 
     return row
+
+
+def _build_resonanz_section(zeilen: list[str], roh_laenge: int) -> Gtk.Box:
+    """Sektion 'Verwandte Erinnerungen' — die zweite Wissensquelle des Nodes.
+
+    Der Server liefert einen fertig formatierten Block, eine Erinnerung je
+    Zeile, aufgebaut in `_resonanz_kontext_laden`:
+
+        <Inhalt> (direkt zum Thema; Themen: …; Faerbung: …)
+        <Inhalt> (assoziiert ueber 2 Sprung(e); Themen: …)
+
+    Das Panel formatiert nicht nach, es zeigt die Zeilen und ihre Anzahl.
+    Bis Chat 116 war das Feld schreib-only: Ob der Node in einem Turn
+    ueberhaupt Wissen bekommen hat, stand nur im Server-Log — und genau
+    diese Frage blieb bei GV-ENTITY-HOP-FINDET-NICHTS 45 Laeufe unbeobachtet.
+
+    Eingabe: `zeilen` bereits entleert und getrimmt, `roh_laenge` die
+    Zeichenzahl des ungeteilten Blocks (fuer den Kuerzungshinweis).
+    """
+    section = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=4)
+
+    header = Gtk.Label(label=f"Verwandte Erinnerungen ({len(zeilen)})")
+    header.set_xalign(0.0)
+    header.add_css_class("heading")
+    section.append(header)
+
+    if not zeilen:
+        leer = Gtk.Label(label="(keine verwandten Erinnerungen in diesem Turn)")
+        leer.set_xalign(0.0)
+        leer.add_css_class("dim-label")
+        section.append(leer)
+        return section
+
+    for zeile in zeilen:
+        row = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=8)
+
+        bullet = Gtk.Label(label="●")
+        bullet.set_valign(Gtk.Align.START)
+        bullet.add_css_class("accent")
+        row.append(bullet)
+
+        text_label = Gtk.Label(label=zeile)
+        text_label.set_xalign(0.0)
+        text_label.set_hexpand(True)
+        text_label.set_wrap(True)
+        text_label.set_wrap_mode(Pango.WrapMode.WORD_CHAR)
+        text_label.set_selectable(True)
+        row.append(text_label)
+
+        section.append(row)
+
+    # Ein am Limit abgeschnittener Block sieht sonst aus wie ein Defekt der
+    # Schreibseite. Der Hinweis sagt, dass die Kuerzung Absicht ist.
+    if roh_laenge >= _GV_RESONANZ_MAX_ZEICHEN:
+        hinweis = Gtk.Label(
+            label=f"(vom Server auf {_GV_RESONANZ_MAX_ZEICHEN} Zeichen gekürzt — "
+                  f"der GV-Prompt hat den vollen Text bekommen)"
+        )
+        hinweis.set_xalign(0.0)
+        hinweis.set_wrap(True)
+        hinweis.add_css_class("dim-label")
+        hinweis.add_css_class("caption")
+        section.append(hinweis)
+
+    return section
 
 
 def _build_farbton_section(farbton: str) -> Gtk.Box:

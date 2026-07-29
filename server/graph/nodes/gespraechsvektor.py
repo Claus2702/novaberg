@@ -638,17 +638,29 @@ def gespraechsvektor(state: ConversationState) -> ConversationState:
     if farbton:
         logger.info(f"GV-Farbton: {farbton}")
 
-    # 3c. GV4: Effektive Neugier
+    # 3c. GV4: Aufnahmebereitschaft — Novas Faehigkeit, jetzt neugierig zu sein.
+    #
+    # Sie wird in JEDEM Turn gerechnet, nicht erst ab der Strategie-Laenge.
+    # Grund: Sie ist ein Zustand Novas (sechs Saeulen aus Emotion, Arousal,
+    # Stimmungsrichtung, Modus, Dynamik, Stil) und keine Funktion der
+    # Vektorlaenge. Der Wert 0.00 ist im Konzept fuer die Krise reserviert —
+    # ein neutraler Zustand liegt bei ~0.56. Stand die Rechnung hinter der
+    # Laengen-Schwelle, trug gv_detail bei jedem kurzen Vektor eine 0.0, die
+    # von einer gemessenen Krise nicht zu unterscheiden war (Chat 116,
+    # gemessen: 4 von 8 Laeufen; lesson_l_default-wie-fehlschlag).
+    #
+    # Die Rechnung ist rein: State-Lesen, Tabellen-Lookups, Arithmetik —
+    # keine DB, kein LLM. Die Laengen-Schwelle bleibt dort, wo sie hingehoert,
+    # naemlich an der teuren Luechensuche eine Zeile weiter unten.
     strategie_aktiv:    bool       = max_laenge >= GV_STRATEGIE_MIN_LAENGE
-    aufnahmebereitschaft:  float      = 0.0
     wissensluecken:     list[dict] = []
 
-    if strategie_aktiv:
-        aufnahmebereitschaft = aufnahmebereitschaft_berechnen(state)
+    aufnahmebereitschaft: float = aufnahmebereitschaft_berechnen(state)
 
-        # 3d. GV4: Wissensluecken finden (nur wenn Neugier > 0)
-        if aufnahmebereitschaft > 0:
-            wissensluecken = wissensluecken_finden(state, aufnahmebereitschaft)
+    # 3d. GV4: Wissensluecken finden (DB-Queries — nur ab Strategie-Laenge,
+    #     und nur wenn ueberhaupt Bereitschaft da ist)
+    if strategie_aktiv and aufnahmebereitschaft > 0:
+        wissensluecken = wissensluecken_finden(state, aufnahmebereitschaft)
 
     # 3e. Dreischicht: Achsen → Sektor → Cluster → Repertoire
     achsen: dict = achsen_berechnen(state)
@@ -711,8 +723,18 @@ def gespraechsvektor(state: ConversationState) -> ConversationState:
         "farbton":               farbton,
         # Hiess bis Chat 115 "entity_hops" und trug den Faktengraph-Auszug.
         # Umbenannt mit der Quelle: ein Feldname, der eine Herkunft nennt,
-        # die er nicht mehr hat, ist die teuerste Sorte Doku. Kein Leser im
-        # Repo (der /gv_detail-Client liegt ausserhalb) — dort ggf. nachziehen.
+        # die er nicht mehr hat, ist die teuerste Sorte Doku.
+        #
+        # Das Feld war von seiner Einfuehrung bis Chat 116 schreib-only — es
+        # ging nach Redis und ueber GET /drive/gv_detail an den Client, ohne
+        # dass es dort jemand las. Deshalb brach die Umbenennung nichts.
+        #
+        # Seit Chat 116 zeigt client/ui/panels/gv_panel.py es als Sektion
+        # "Verwandte Erinnerungen" und liest 'entity_hops' uebergangsweise
+        # mit (Redis-Key ohne TTL). Der Schluesselname ist damit ein Vertrag:
+        # tests/test_gv_resonanz_kontext.py wird rot, wenn er hier
+        # verschwindet — auch im Leerfall, wo er einen leeren String tragen
+        # muss und nicht fehlen darf.
         "resonanz_kontext":      resonanz_kontext[:500] if resonanz_kontext else "",
         "aufnahmebereitschaft":     aufnahmebereitschaft,
         "wissensluecken": [
