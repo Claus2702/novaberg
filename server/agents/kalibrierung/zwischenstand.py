@@ -82,42 +82,25 @@ def _pfad(name: str) -> str:
     return os.path.join(KALIBRIERUNG_ZWISCHENSTAND, f"{name}.jsonl")
 
 
-def zeile_schreiben(
-    name:    str,
-    kennung: str,
-    urteil:  bool | None,
-    fehler:  str = "",
-) -> None:
-    """Haengt ein Einzelergebnis an — sofort, nicht gepuffert.
+def _anhaengen(name: str, satz: dict, was: str) -> None:
+    """Haengt einen Satz an die Datei der Reihe — sofort, nicht gepuffert.
 
-    Vorbedingung: `name` und `kennung` sind gesetzt. `urteil` ist None genau
-    dann, wenn der Fall fehlschlug; dann traegt `fehler` den Grund.
-    Nachbedingung: Eine Zeile im Zwischenstand, mit Zeitpunkt in UTC.
-    Fehlerfaelle: Schreibfehler werden als `error` gemeldet und verschluckt —
+    Der gemeinsame Kern der drei Schreibwege. `fsync` gehoert dazu: Ein Puffer,
+    der beim Abbruch verloren geht, ist dasselbe wie keine Datei.
+
+    Vorbedingung: `satz` ist JSON-serialisierbar, `name` ohne Pfadtrenner.
+    Nachbedingung: Eine Zeile in der Datei, auf den Traeger geschrieben.
+    Fehlerfaelle: Schreibfehler werden als `error` gemeldet und nicht geworfen —
     ein defekter Zwischenstand darf die Reihe nicht beenden, sonst ersetzt die
-    Sicherung den Verlust, den sie verhindern soll. Die Reihe verliert dann
-    ihre Wiederaufnahmefaehigkeit, und das steht im Log.
+    Sicherung den Verlust, den sie verhindern soll. Die Reihe verliert dann ihre
+    Wiederaufnahmefaehigkeit, und genau das steht im Log.
     """
 
     # ── Eingabe-Validierung ─────────────────────
-    if not kennung:
-        logger.error("Zwischenstand: leere Kennung — Zeile nicht geschrieben")
-        return
-
-    if urteil is None and not fehler:
-        logger.error(
-            f"Zwischenstand: Fall '{kennung}' ohne Urteil und ohne Grund — "
-            f"ein unbenannter Fehlschlag ist beim Wiederanlauf nicht deutbar"
-        )
-        fehler = "unbenannt"
+    # Der Aufrufer hat geprueft; `_pfad` weist einen unzulaessigen Namen ab.
 
     # ── Verarbeitung ────────────────────────────
-    satz: dict = {
-        "kennung": kennung,
-        "urteil":  urteil,
-        "fehler":  fehler,
-        "zeit":    datetime.now(timezone.utc).isoformat(timespec="seconds"),
-    }
+    satz["zeit"] = datetime.now(timezone.utc).isoformat(timespec="seconds")
 
     # ── Ausgabe-Verifikation ────────────────────
     try:
@@ -127,10 +110,64 @@ def zeile_schreiben(
             os.fsync(datei.fileno())
     except (OSError, ValueError) as ex:
         logger.error(
-            f"Zwischenstand '{name}': Zeile fuer '{kennung}' nicht geschrieben "
+            f"Zwischenstand '{name}': {was} nicht geschrieben "
             f"({type(ex).__name__}: {ex}) — die Reihe laeuft weiter, ist aber "
             f"ab hier nicht mehr wiederaufnehmbar"
         )
+
+
+def urteil_schreiben(name: str, kennung: str, urteil: bool) -> None:
+    """Haengt ein gelungenes Urteil an.
+
+    Getrennt von `fehlschlag_schreiben`, weil beide verschiedene Dinge
+    bedeuten: Ein Urteil ist ein Ergebnis, ein Fehlschlag ist eine Aufgabe fuer
+    den naechsten Lauf. In **einer** Funktion mit `urteil: bool | None` waere
+    „None ohne Grund" ein moeglicher Aufruf gewesen — ein unbenannter
+    Fehlschlag, der beim Wiederanlauf nicht deutbar ist. Zwei Funktionen machen
+    diesen Fall unaussprechbar.
+
+    Vorbedingung: `kennung` ist gesetzt, `urteil` ist ein echtes Boolean.
+    Nachbedingung: Eine Zeile mit Urteil und Zeitpunkt in UTC.
+    Fehlerfaelle: leere Kennung — gemeldet, nichts geschrieben.
+    """
+
+    # ── Eingabe-Validierung ─────────────────────
+    if not kennung:
+        logger.error("Zwischenstand: leere Kennung — Urteil nicht geschrieben")
+        return
+
+    # ── Verarbeitung / Ausgabe ──────────────────
+    _anhaengen(name, {"kennung": kennung, "urteil": urteil, "fehler": ""},
+               f"Urteil fuer '{kennung}'")
+
+
+def fehlschlag_schreiben(name: str, kennung: str, grund: str) -> None:
+    """Haengt einen Fehlschlag an, damit der naechste Lauf ihn wiederholt.
+
+    Vorbedingung: `kennung` und `grund` sind gesetzt. **Ein Fehlschlag ohne
+    Grund wird abgewiesen** — beim Wiederanlauf waere nicht entscheidbar, ob er
+    wiederholbar ist oder dauerhaft scheitert.
+    Nachbedingung: Eine Zeile ohne Urteil, mit Grund und Zeitpunkt in UTC. Der
+    Fall gilt danach als offen, nicht als beantwortet.
+    Fehlerfaelle: leere Kennung oder leerer Grund — gemeldet, nichts geschrieben.
+    """
+
+    # ── Eingabe-Validierung ─────────────────────
+    if not kennung:
+        logger.error("Zwischenstand: leere Kennung — Fehlschlag nicht geschrieben")
+        return
+
+    if not grund:
+        logger.error(
+            f"Zwischenstand: Fehlschlag fuer '{kennung}' ohne Grund — "
+            f"ein unbenannter Fehlschlag ist beim Wiederanlauf nicht deutbar; "
+            f"nicht geschrieben"
+        )
+        return
+
+    # ── Verarbeitung / Ausgabe ──────────────────
+    _anhaengen(name, {"kennung": kennung, "urteil": None, "fehler": grund},
+               f"Fehlschlag fuer '{kennung}'")
 
 
 def aggregat_schreiben(name: str, schluessel: str, wert: dict) -> None:
@@ -143,7 +180,7 @@ def aggregat_schreiben(name: str, schluessel: str, wert: dict) -> None:
 
     Vorbedingung: `schluessel` ist gesetzt, `wert` ist JSON-serialisierbar.
     Nachbedingung: Eine Zeile mit `aggregat`-Marke im Zwischenstand.
-    Fehlerfaelle: wie bei `zeile_schreiben` — gemeldet, nicht geworfen.
+    Fehlerfaelle: wie bei `_anhaengen` — gemeldet, nicht geworfen.
     """
 
     # ── Eingabe-Validierung ─────────────────────
@@ -151,24 +188,9 @@ def aggregat_schreiben(name: str, schluessel: str, wert: dict) -> None:
         logger.error("Zwischenstand: Aggregat ohne Schluessel — nicht geschrieben")
         return
 
-    # ── Verarbeitung ────────────────────────────
-    satz: dict = {
-        "aggregat":  schluessel,
-        "wert":      wert,
-        "zeit":      datetime.now(timezone.utc).isoformat(timespec="seconds"),
-    }
-
-    # ── Ausgabe-Verifikation ────────────────────
-    try:
-        with open(_pfad(name), "a", encoding="utf-8") as datei:
-            datei.write(json.dumps(satz, ensure_ascii=False) + "\n")
-            datei.flush()
-            os.fsync(datei.fileno())
-    except (OSError, ValueError) as ex:
-        logger.error(
-            f"Zwischenstand '{name}': Aggregat '{schluessel}' nicht geschrieben "
-            f"({type(ex).__name__}: {ex})"
-        )
+    # ── Verarbeitung / Ausgabe ──────────────────
+    _anhaengen(name, {"aggregat": schluessel, "wert": wert},
+               f"Aggregat '{schluessel}'")
 
 
 def stand_lesen(name: str) -> Reihenstand:

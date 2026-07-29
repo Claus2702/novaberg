@@ -94,11 +94,32 @@ class Kalibrierung:
     kandidaten: list[Schwellenkandidat] = field(default_factory=list)
 
 
-def cohens_kappa(a: int, b: int, c: int, d: int) -> float:
-    """Rechnet Cohens kappa aus den vier Feldern einer 2x2-Tafel.
+@dataclass
+class Vierfeldertafel:
+    """Die vier Felder eines Vergleichs zweier zweiwertiger Lesarten.
 
-        a = beide sagen "fuehrt"        b = Achse fuehrt, Zeuge nicht
-        c = Zeuge fuehrt, Achse nicht   d = beide sagen "fuehrt nicht"
+    Vier Werte aus einer Zaehlung, zusammen erzeugt und nur zusammen deutbar —
+    deshalb eine Klasse und keine vier Argumente. Die Buchstaben a bis d der
+    Fachliteratur sagen an der Aufrufstelle nichts; `Vierfeldertafel(beide_ja=20,
+    …)` sagt es.
+
+    Belegt mit den Namen dieses Vergleichs: „Achse" ist der gerechnete Wert,
+    „Zeuge" das unabhaengige Urteil.
+    """
+
+    beide_ja:   int = 0   # a — Achse und Zeuge sagen "der Nutzer fuehrt"
+    nur_achse:  int = 0   # b — nur die Achse sagt es
+    nur_zeuge:  int = 0   # c — nur der Zeuge sagt es
+    beide_nein: int = 0   # d — keiner von beiden sagt es
+
+    @property
+    def summe(self) -> int:
+        """Zahl der verglichenen Faelle."""
+        return self.beide_ja + self.nur_achse + self.nur_zeuge + self.beide_nein
+
+
+def cohens_kappa(tafel: Vierfeldertafel) -> float:
+    """Rechnet Cohens kappa aus einer Vierfeldertafel.
 
         po = (a + d) / n
         pe = ((a+b)(a+c) + (c+d)(b+d)) / n^2
@@ -117,6 +138,9 @@ def cohens_kappa(a: int, b: int, c: int, d: int) -> float:
     """
 
     # ── Eingabe-Validierung ─────────────────────
+    a, b = tafel.beide_ja,  tafel.nur_achse
+    c, d = tafel.nur_zeuge, tafel.beide_nein
+
     if min(a, b, c, d) < 0:
         logger.error(
             f"Kappa: negatives Tafelfeld (a={a}, b={b}, c={c}, d={d}) — "
@@ -124,7 +148,7 @@ def cohens_kappa(a: int, b: int, c: int, d: int) -> float:
         )
         return 0.0
 
-    n: int = a + b + c + d
+    n: int = tafel.summe
     if n == 0:
         logger.error("Kappa: leere Tafel — nicht rechenbar")
         return 0.0
@@ -178,28 +202,28 @@ def schwelle_pruefen(paare: list[Urteilspaar], schwelle: float) -> Schwellenkand
         return Schwellenkandidat(schwelle, 0.0, 0.0, 0.0, 0.0, False)
 
     # ── Verarbeitung ────────────────────────────
-    a = b = c = d = 0
+    tafel = Vierfeldertafel()
 
     for p in paare:
         achse_fuehrt: bool = initiative_bit(p.rohwert, schwelle) == 0
         if achse_fuehrt and p.zeuge_fuehrt:
-            a += 1
+            tafel.beide_ja += 1
         elif achse_fuehrt and not p.zeuge_fuehrt:
-            b += 1
+            tafel.nur_achse += 1
         elif not achse_fuehrt and p.zeuge_fuehrt:
-            c += 1
+            tafel.nur_zeuge += 1
         else:
-            d += 1
+            tafel.beide_nein += 1
 
     n: int = len(paare)
-    bit0_anteil: float = (a + b) / n
+    bit0_anteil: float = (tafel.beide_ja + tafel.nur_achse) / n
     minderheit:  float = min(bit0_anteil, 1.0 - bit0_anteil)
 
     # ── Ausgabe-Verifikation ────────────────────
     return Schwellenkandidat(
         schwelle         = round(schwelle, 3),
-        uebereinstimmung = round((a + d) / n, 4),
-        kappa            = cohens_kappa(a, b, c, d),
+        uebereinstimmung = round((tafel.beide_ja + tafel.beide_nein) / n, 4),
+        kappa            = cohens_kappa(tafel),
         bit0_anteil      = round(bit0_anteil, 4),
         minderheit       = round(minderheit, 4),
         zulaessig        = minderheit >= KALIBRIERUNG_MIN_MINDERHEIT,

@@ -33,6 +33,7 @@ from config import KALIBRIERUNG_MIN_MINDERHEIT, KALIBRIERUNG_MIN_TURNS
 from ei.initiative import initiative_bit
 from ei.kalibrierung import (
     Urteilspaar,
+    Vierfeldertafel,
     cohens_kappa,
     positions_kontrolle,
     schwelle_pruefen,
@@ -113,36 +114,36 @@ class TestCohensKappa(unittest.TestCase):
         # po = 35/50 = 0.7
         # pe = (25*30 + 25*20) / 2500 = 1250/2500 = 0.5
         # kappa = (0.7 - 0.5) / 0.5 = 0.4
-        self.assertEqual(0.4, cohens_kappa(20, 5, 10, 15))
+        self.assertEqual(0.4, cohens_kappa(Vierfeldertafel(20, 5, 10, 15)))
 
     def test_vollstaendige_uebereinstimmung_ergibt_eins(self) -> None:
         # a=30 b=0 c=0 d=20, n=50
         # po = 1.0 ; pe = (30*30 + 20*20)/2500 = 0.52
         # kappa = 0.48/0.48 = 1.0
-        self.assertEqual(1.0, cohens_kappa(30, 0, 0, 20))
+        self.assertEqual(1.0, cohens_kappa(Vierfeldertafel(30, 0, 0, 20)))
 
     def test_reiner_zufall_ergibt_null(self) -> None:
         # a=25 b=25 c=25 d=25, n=100
         # po = 0.5 ; pe = (50*50 + 50*50)/10000 = 0.5
         # kappa = 0.0
-        self.assertEqual(0.0, cohens_kappa(25, 25, 25, 25))
+        self.assertEqual(0.0, cohens_kappa(Vierfeldertafel(25, 25, 25, 25)))
 
     def test_schlechter_als_zufall_wird_negativ(self) -> None:
         # a=5 b=20 c=20 d=5, n=50
         # po = 10/50 = 0.2 ; pe = (25*25 + 25*25)/2500 = 0.5
         # kappa = (0.2 - 0.5)/0.5 = -0.6
-        self.assertEqual(-0.6, cohens_kappa(5, 20, 20, 5))
+        self.assertEqual(-0.6, cohens_kappa(Vierfeldertafel(5, 20, 20, 5)))
 
     def test_leere_tafel_wird_laut_gemeldet(self) -> None:
         with self.assertLogs("ki_server.ei.kalibrierung", level="ERROR") as log:
-            self.assertEqual(0.0, cohens_kappa(0, 0, 0, 0))
+            self.assertEqual(0.0, cohens_kappa(Vierfeldertafel()))
         self.assertIn("leere Tafel", "".join(log.output))
 
     def test_entartete_verteilung_meldet_undefiniertes_kappa(self) -> None:
         # Beide Lesarten legen alles auf dasselbe Bit: pe = 1.0.
         # Das ist keine perfekte Trennung, sondern eine Tafel ohne Varianz.
         with self.assertLogs("ki_server.ei.kalibrierung", level="WARNING") as log:
-            self.assertEqual(0.0, cohens_kappa(50, 0, 0, 0))
+            self.assertEqual(0.0, cohens_kappa(Vierfeldertafel(50, 0, 0, 0)))
         self.assertIn("nicht definiert", "".join(log.output))
 
 

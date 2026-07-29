@@ -34,9 +34,10 @@ from agents.kalibrierung.lauf import _reihenname, _zeugenkennung
 from agents.kalibrierung.zwischenstand import (
     _pfad,
     aggregat_schreiben,
+    fehlschlag_schreiben,
     stand_lesen,
+    urteil_schreiben,
     verwerfen,
-    zeile_schreiben,
 )
 
 
@@ -55,8 +56,8 @@ class TestSchreibenUndLesen(ZwischenstandBasis):
     """Was hineingeschrieben wurde, kommt unveraendert zurueck."""
 
     def test_urteil_wird_gelesen_wie_geschrieben(self) -> None:
-        zeile_schreiben(self.reihe, "turn-1", True)
-        zeile_schreiben(self.reihe, "turn-2", False)
+        urteil_schreiben(self.reihe, "turn-1", True)
+        urteil_schreiben(self.reihe, "turn-2", False)
 
         stand = stand_lesen(self.reihe)
 
@@ -65,7 +66,7 @@ class TestSchreibenUndLesen(ZwischenstandBasis):
 
     def test_fehlschlag_landet_nicht_bei_den_urteilen(self) -> None:
         # Der Kern der Regel: Ein Fehlschlag ist kein Urteil "False".
-        zeile_schreiben(self.reihe, "turn-1", None, fehler="Zeitueberschreitung")
+        fehlschlag_schreiben(self.reihe, "turn-1", "Zeitueberschreitung")
 
         stand = stand_lesen(self.reihe)
 
@@ -73,8 +74,8 @@ class TestSchreibenUndLesen(ZwischenstandBasis):
         self.assertEqual({"turn-1"}, stand.gescheitert)
 
     def test_wiederholung_ueberschreibt_den_fehlschlag(self) -> None:
-        zeile_schreiben(self.reihe, "turn-1", None, fehler="Zeitueberschreitung")
-        zeile_schreiben(self.reihe, "turn-1", True)
+        fehlschlag_schreiben(self.reihe, "turn-1", "Zeitueberschreitung")
+        urteil_schreiben(self.reihe, "turn-1", True)
 
         stand = stand_lesen(self.reihe)
 
@@ -83,8 +84,8 @@ class TestSchreibenUndLesen(ZwischenstandBasis):
 
     def test_spaeteres_urteil_gewinnt_gegen_frueheres(self) -> None:
         # Doppelung derselben Kennung: die spaetere Zeile gilt.
-        zeile_schreiben(self.reihe, "turn-1", True)
-        zeile_schreiben(self.reihe, "turn-1", False)
+        urteil_schreiben(self.reihe, "turn-1", True)
+        urteil_schreiben(self.reihe, "turn-1", False)
 
         self.assertEqual({"turn-1": False}, stand_lesen(self.reihe).urteile)
 
@@ -99,7 +100,7 @@ class TestSchreibenUndLesen(ZwischenstandBasis):
         self.assertEqual(0.795, stand.aggregate["positions_kontrolle"]["anteil_nutzer"])
 
     def test_jede_zeile_traegt_einen_zeitpunkt_in_utc(self) -> None:
-        zeile_schreiben(self.reihe, "turn-1", True)
+        urteil_schreiben(self.reihe, "turn-1", True)
 
         with open(_pfad(self.reihe), "r", encoding="utf-8") as datei:
             satz = json.loads(datei.readline())
@@ -129,19 +130,29 @@ class TestRandfaelle(ZwischenstandBasis):
         with self.assertLogs(
             "ki_server.agents.kalibrierung.zwischenstand", level="ERROR"
         ) as log:
-            zeile_schreiben(self.reihe, "", True)
+            urteil_schreiben(self.reihe, "", True)
 
         self.assertIn("leere Kennung", "".join(log.output))
         self.assertFalse(os.path.exists(_pfad(self.reihe)))
 
-    def test_fehlschlag_ohne_grund_wird_benannt(self) -> None:
-        # Ein unbenannter Fehlschlag ist beim Wiederanlauf nicht deutbar.
+    def test_fehlschlag_ohne_grund_wird_abgewiesen(self) -> None:
+        # Ein unbenannter Fehlschlag ist beim Wiederanlauf nicht deutbar: Man
+        # kann nicht entscheiden, ob er wiederholbar ist. Er wird deshalb nicht
+        # geschrieben — der Fall gilt dann als nie versucht und wird ohnehin
+        # wiederholt.
         with self.assertLogs(
             "ki_server.agents.kalibrierung.zwischenstand", level="ERROR"
         ) as log:
-            zeile_schreiben(self.reihe, "turn-1", None)
+            fehlschlag_schreiben(self.reihe, "turn-1", "")
 
-        self.assertIn("ohne Urteil und ohne Grund", "".join(log.output))
+        self.assertIn("ohne Grund", "".join(log.output))
+        self.assertFalse(os.path.exists(_pfad(self.reihe)))
+
+    def test_fehlschlag_mit_grund_wird_geschrieben(self) -> None:
+        # Der positive Zwilling zur Abweisung darueber: Ohne ihn bestuende der
+        # Test auch dann, wenn nie ein Fehlschlag geschrieben wuerde.
+        fehlschlag_schreiben(self.reihe, "turn-1", "Zeitueberschreitung")
+
         self.assertEqual({"turn-1"}, stand_lesen(self.reihe).gescheitert)
 
     def test_aggregat_ohne_schluessel_wird_abgewiesen(self) -> None:
@@ -166,7 +177,7 @@ class TestRandfaelle(ZwischenstandBasis):
     def test_unlesbare_zeile_wird_gezaehlt_nicht_verschwiegen(self) -> None:
         # Freitext, wo JSON erwartet wird. Eine stillschweigend uebergangene
         # Zeile waere eine Luecke, die aussieht wie ein nie versuchter Fall.
-        zeile_schreiben(self.reihe, "turn-1", True)
+        urteil_schreiben(self.reihe, "turn-1", True)
         with open(_pfad(self.reihe), "a", encoding="utf-8") as datei:
             datei.write("das ist kein JSON\n")
 
@@ -201,7 +212,7 @@ class TestRandfaelle(ZwischenstandBasis):
     def test_grosse_reihe_bleibt_vollstaendig(self) -> None:
         # Unerwartet gross: Der Zwischenstand ist fuer Hunderte Faelle gebaut.
         for i in range(500):
-            zeile_schreiben(self.reihe, f"turn-{i}", i % 2 == 0)
+            urteil_schreiben(self.reihe, f"turn-{i}", i % 2 == 0)
 
         stand = stand_lesen(self.reihe)
 
@@ -214,7 +225,7 @@ class TestVerwerfen(ZwischenstandBasis):
     """Arbeitsmaterial bleibt nicht liegen."""
 
     def test_verwerfen_entfernt_die_datei(self) -> None:
-        zeile_schreiben(self.reihe, "turn-1", True)
+        urteil_schreiben(self.reihe, "turn-1", True)
         self.assertTrue(os.path.exists(_pfad(self.reihe)))
 
         verwerfen(self.reihe)

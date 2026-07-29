@@ -27,9 +27,10 @@ from agents.kalibrierung.zeuge import ZEUGE_PROMPT, zeuge_befragen
 from agents.kalibrierung.zwischenstand import (
     Reihenstand,
     aggregat_schreiben,
+    fehlschlag_schreiben,
     stand_lesen,
+    urteil_schreiben,
     verwerfen,
-    zeile_schreiben,
 )
 from config import KALIBRIERUNG_POSITIONSPROBE
 from ei.kalibrierung import (
@@ -158,10 +159,10 @@ def _urteilspaare_sammeln(
             aus_stand += 1
         else:
             urteil = zeuge_befragen(paar.vor_antwort, paar.user_prompt)
-            zeile_schreiben(
-                reihe, paar.turn_id, urteil,
-                fehler="" if urteil is not None else "kein Urteil",
-            )
+            if urteil is None:
+                fehlschlag_schreiben(reihe, paar.turn_id, "kein Urteil erhalten")
+            else:
+                urteil_schreiben(reihe, paar.turn_id, urteil)
 
         if urteil is None:
             ausfaelle["ohne_urteil"] += 1
