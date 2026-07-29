@@ -28,6 +28,7 @@ import unittest
 
 from ei.dreischicht import (
     CLUSTER_REPERTOIRE,
+    STRATEGIE_NAMEN,
     gv_output_parsen,
     korridor_pruefen,
 )
@@ -227,3 +228,78 @@ class TestAufrufImNode(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class TestKorridorVertragMitDemPanel(unittest.TestCase):
+    """Was das GV-Panel braucht, um den Korridor zeigen zu koennen.
+
+    Seit Chat 116 zeigt `client/ui/panels/gv_panel.py` das Repertoire, die
+    Charakter-Gewichtung und die Verstoesse. Der Client liegt ausserhalb des
+    Containers (docker-compose baut den Server aus `novaberg/server`), kann
+    hier also nicht importiert werden — die erwarteten Namen sind von Hand aus
+    dem Panel uebertragen und stammen damit aus einer anderen Quelle als das
+    Prueobjekt.
+
+    Warum das Tests sind und keine Formalien: Die drei Felder waren bis Chat
+    116 ohne Leser. Faellt eines davon aus dem Dict oder wird es umbenannt,
+    zeigt das Panel wieder nichts — und niemand merkt es, weil ein leerer
+    Korridor genauso aussieht wie ein eingehaltener.
+    """
+
+    # Von Hand uebertragen aus client/ui/panels/gv_panel.py, _update_ui.
+    PANEL_SCHLUESSEL: tuple = ("repertoire", "charakter_gewichtung",
+                               "korridor_verstoesse")
+
+    @staticmethod
+    def _gv_detail() -> dict:
+        """Laesst den Node echt laufen und gibt sein gv_detail zurueck."""
+        from unittest.mock import patch
+
+        from graph.nodes import gespraechsvektor as gv_modul
+
+        with patch.object(gv_modul, "_hypothese_destillieren",
+                          return_value=("Hypothese", {})):
+            ergebnis = gv_modul.gespraechsvektor({
+                "user_id":      "test_gv_korridor",
+                "character_id": "test_gv_korridor",
+            })
+        return ergebnis.get("gv_detail") or {}
+
+    def test_alle_drei_felder_erreichen_das_panel(self) -> None:
+        detail: dict = self._gv_detail()
+        for schluessel in self.PANEL_SCHLUESSEL:
+            with self.subTest(schluessel=schluessel):
+                self.assertIn(schluessel, detail)
+
+    def test_ohne_verstoss_bleibt_eine_leere_liste_stehen(self) -> None:
+        """Der Normalfall darf keinen fehlenden Schluessel erzeugen.
+
+        Das Panel unterscheidet beides: eine leere Liste heisst „Korridor
+        eingehalten", ein fehlender Schluessel ist ein Bruch und wird laut
+        gemeldet. Faellt der Schluessel im Normalfall weg, meldet das Panel
+        bei jedem sauberen Turn einen Bruch — und die Meldung verliert ihren
+        Wert, noch bevor der erste echte Verstoss auftritt.
+        """
+        detail: dict = self._gv_detail()
+
+        self.assertIsInstance(detail["korridor_verstoesse"], list)
+        self.assertEqual([], detail["korridor_verstoesse"])
+
+    def test_jedes_kuerzel_der_matrix_hat_einen_klartextnamen(self) -> None:
+        """Sonst zeigt das Panel dauerhaft ein unaufloesbares Kuerzel.
+
+        Der Client fuehrt eine eigene Kopie von STRATEGIE_NAMEN — er kann
+        nichts aus dem Server importieren. Diese Zusicherung schuetzt nicht
+        die Kopie, sondern ihre Vollstaendigkeit an der Quelle: Wer eine
+        achte Strategie in CLUSTER_REPERTOIRE aufnimmt, ohne sie zu benennen,
+        wird hier rot — und weiss dann, dass auch das Panel sie nicht lesen
+        kann.
+        """
+        kuerzel_der_matrix: set = set()
+        for repertoire in CLUSTER_REPERTOIRE.values():
+            kuerzel_der_matrix.update(repertoire.keys())
+
+        self.assertTrue(kuerzel_der_matrix, "Matrix ist leer — nichts geprueft")
+        for kuerzel in sorted(kuerzel_der_matrix):
+            with self.subTest(kuerzel=kuerzel):
+                self.assertIn(kuerzel, STRATEGIE_NAMEN)

@@ -16,6 +16,12 @@ Anzeige (kompakt):
       ● Person zum Lachen bringen  KZG  rel=0.714
       ● Respektvolles Siezen       KZG  rel=0.545
 
+    Repertoire — Cluster Kissenschlacht:
+      ★ Impuls (Im)             kern         35%
+      ● Bestätigung (Be)        passt        31%
+      ✗ Sachbeitrag (Sa)        unpassend    28%
+      Korridor: eingehalten
+
     Verwandte Erinnerungen (2):
       ● Der Ereignishorizont wurde besprochen (direkt zum Thema; ...)
       ● Die Hawking-Strahlung kam zur Sprache (assoziiert ueber 2 ...)
@@ -52,6 +58,50 @@ _GV_LUECKEN_RELEVANZ:  float = 0.15  # GV_LUECKEN_MIN_RELEVANZ aus dem Server
 # (gespraechsvektor.py, Schritt 5). Wer die Zahl hier aendert, aendert nur
 # den Hinweis — nicht die Kuerzung.
 _GV_RESONANZ_MAX_ZEICHEN: int = 500
+
+# STRATEGIE_NAMEN aus ei/dreischicht.py, von Hand uebertragen. Der Client
+# importiert nichts aus dem Server, deshalb steht die Tabelle zweimal — wie
+# _GV_LUECKEN_RELEVANZ oben. Ein serverseitiger Test haelt fest, dass jedes
+# Kuerzel aus CLUSTER_REPERTOIRE hier eine Entsprechung hat.
+_STRATEGIE_NAMEN: dict[str, str] = {
+    "Sa": "Sachbeitrag",
+    "So": "Selbstoffenbarung",
+    "Sp": "Spiegelung",
+    "Im": "Impuls",
+    "Pw": "Perspektivwechsel",
+    "Be": "Bestätigung",
+    "Pr": "Präsenz",
+}
+
+# Marker wie im [WERKZEUGE]-Block des GV-Prompts (dreischicht_prompt_bauen).
+# Der Prompt zeigt 'unpassend' gar nicht — das Panel schon: Wer beurteilen
+# will, ob der Korridor stimmt, muss sehen, was ausgeschlossen wurde.
+_EIGNUNG_MARKER: dict[str, str] = {
+    "kern":      "★",
+    "passt":     "●",
+    "selten":    "○",
+    "unpassend": "✗",
+}
+_EIGNUNG_RANG: dict[str, int] = {"kern": 0, "passt": 1, "selten": 2, "unpassend": 3}
+
+
+def _strategie_klartext(kuerzel: str) -> str:
+    """Loest ein Strategie-Kuerzel auf. Unbekanntes wird laut, nicht still.
+
+    Ein Kuerzel ohne Entsprechung heisst, dass der Server eine Strategie
+    kennt, die diese Tabelle nicht hat — das Panel zeigt dann dauerhaft ein
+    unlesbares Kuerzel, ohne dass jemand den Grund sieht.
+    """
+    if not kuerzel:
+        return ""
+    name: str | None = _STRATEGIE_NAMEN.get(kuerzel)
+    if name is None:
+        logger.error(
+            f"GvPanel: Strategie-Kuerzel '{kuerzel}' ist in _STRATEGIE_NAMEN "
+            f"nicht bekannt — Server und Client passen nicht zusammen"
+        )
+        return kuerzel
+    return name
 
 
 class GvPanel(PanelBase):
@@ -137,6 +187,19 @@ class GvPanel(PanelBase):
             )
         resonanz_kontext: str = str(roh_resonanz or "")
 
+        # Der Korridor: worin gewählt wurde, nicht nur was gewählt wurde.
+        # Alle drei Felder schreibt der Node unbedingt; ein fehlender
+        # Schlüssel ist deshalb ein Bruch und kein leerer Turn.
+        repertoire:          dict = data.get("repertoire") or {}
+        charakter_gewichtung: dict = data.get("charakter_gewichtung") or {}
+        korridor_verstoesse: list = data.get("korridor_verstoesse") or []
+
+        if "korridor_verstoesse" not in data:
+            logger.error(
+                "GvPanel: 'korridor_verstoesse' fehlt im gv_detail — "
+                "Server und Client passen nicht zusammen"
+            )
+
         # Dreischicht-Felder (Chat 72/73)
         sektor_index:   int  = int(data.get("sektor_index", 0) or 0)
         sektor_name:    str  = str(data.get("sektor_name") or "")
@@ -160,7 +223,10 @@ class GvPanel(PanelBase):
             f"resonanz={len(resonanz_zeilen)} Erinnerung(en)/"
             f"{len(resonanz_kontext)} Zeichen, "
             f"sektor=#{sektor_index} {sektor_name}, cluster={cluster}, "
-            f"absicht={absicht}, strat={strategie_name}, vehikel={vehikel}"
+            f"absicht={absicht}, strat={strategie_name}, vehikel={vehikel}, "
+            f"repertoire={len(repertoire)} Strategien, "
+            f"gewichtung={'leer' if not charakter_gewichtung else len(charakter_gewichtung)}, "
+            f"verstoesse={[v.get('wert') for v in korridor_verstoesse] or 'keine'}"
         )
 
         # 1. Bestehend: Kennzahlen (Sprünge-Bar, Neugier-Bar, Strategie aktiv/—)
@@ -179,6 +245,18 @@ class GvPanel(PanelBase):
             absicht=absicht,
             strategie=strategie_name,
             vehikel=vehikel,
+        ))
+
+        # 2b. NEU (Chat 116): Der Korridor — worin gewählt wurde.
+        #     Steht direkt hinter der Dreischicht, weil es deren Strategie-Zeile
+        #     erklärt: Ohne das Repertoire ist eine Strategiewahl nicht zu
+        #     beurteilen, man sieht nur das Ergebnis.
+        self._outer_box.append(_build_repertoire_section(
+            repertoire=repertoire,
+            gewichtung=charakter_gewichtung,
+            cluster=cluster,
+            gewaehlt=strategie_name,
+            verstoesse=korridor_verstoesse,
         ))
 
         # 3. NEU: Sprünge (3 Gedankenschritte)
@@ -368,6 +446,165 @@ def _build_luecken_row(luecke: dict) -> Gtk.Box:
     return row
 
 
+def _build_repertoire_section(
+    repertoire: dict,
+    gewichtung: dict,
+    cluster:    str,
+    gewaehlt:   str,
+    verstoesse: list,
+) -> Gtk.Box:
+    """Sektion 'Repertoire' — der Korridor, in dem die Strategie gewaehlt wurde.
+
+    Zeigt alle sieben Strategien mit ihrer Eignung im aktuellen Cluster und
+    der Charakter-Affinitaet, sortiert wie im GV-Prompt (Eignung, dann
+    Affinitaet absteigend). Die gewaehlte Strategie ist hervorgehoben.
+
+    **Zwei bewusste Abweichungen vom Prompt-Block:**
+
+    1. Der Prompt laesst 'unpassend' ganz weg — er soll das LLM nicht in
+       Versuchung fuehren. Das Panel zeigt sie mit ✗: Wer beurteilen will, ob
+       der Korridor richtig gesetzt war, muss sehen, was ausgeschlossen wurde.
+    2. `dreischicht_prompt_bauen` setzt bei fehlender Gewichtung 0.5 ein. Das
+       Panel tut das **nicht**. Gemessene Affinitaeten liegen bei 0.195 bis
+       0.334 — ein Default von 0.5 laege ueber jedem echten Wert und erschiene
+       als beste Passung (GV-CHARAKTER-DEFAULT-UEBER-MESSBEREICH in bugs.md,
+       offen). Fehlt der Wert, steht hier '—' und sonst nichts.
+
+    Eingabe: `repertoire` Kuerzel → Eignung, `gewichtung` Kuerzel → float,
+    `gewaehlt` das Kuerzel der gewaehlten Strategie (darf leer sein — bei
+    kurzem Vektor waehlt das LLM keine), `verstoesse` die Liste aus dem Node.
+    """
+    section = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=4)
+
+    kopf: str = "Repertoire"
+    if cluster:
+        kopf += f" — Cluster {cluster.capitalize()}"
+    header = Gtk.Label(label=kopf)
+    header.set_xalign(0.0)
+    header.add_css_class("heading")
+    section.append(header)
+
+    if not repertoire:
+        leer = Gtk.Label(label="(kein Repertoire in diesem Turn)")
+        leer.set_xalign(0.0)
+        leer.add_css_class("dim-label")
+        section.append(leer)
+    else:
+        geordnet = sorted(
+            repertoire.items(),
+            key=lambda paar: (
+                _EIGNUNG_RANG.get(paar[1], 9),
+                -float(gewichtung.get(paar[0], 0.0) or 0.0),
+            ),
+        )
+        for kuerzel, eignung in geordnet:
+            section.append(_build_repertoire_row(
+                kuerzel=kuerzel,
+                eignung=str(eignung),
+                affinitaet=gewichtung.get(kuerzel),
+                ist_gewaehlt=(kuerzel == gewaehlt),
+            ))
+
+        if not gewichtung:
+            hinweis = Gtk.Label(
+                label="(keine Charakter-Gewichtung in diesem Turn — "
+                      "die Reihenfolge steht dann allein auf der Eignung)"
+            )
+            hinweis.set_xalign(0.0)
+            hinweis.set_wrap(True)
+            hinweis.add_css_class("dim-label")
+            hinweis.add_css_class("caption")
+            section.append(hinweis)
+
+    section.append(_build_verstoesse_zeile(verstoesse))
+
+    return section
+
+
+def _build_repertoire_row(
+    kuerzel:      str,
+    eignung:      str,
+    affinitaet:   float | None,
+    ist_gewaehlt: bool,
+) -> Gtk.Box:
+    """★ Im  Impuls              kern        Charakter 35%"""
+    row = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=8)
+
+    marker = Gtk.Label(label=_EIGNUNG_MARKER.get(eignung, "?"))
+    marker.set_width_chars(2)
+    row.append(marker)
+
+    name: str = f"{_strategie_klartext(kuerzel)} ({kuerzel})"
+    name_label = Gtk.Label(label=name)
+    name_label.set_xalign(0.0)
+    name_label.set_hexpand(True)
+    if ist_gewaehlt:
+        name_label.add_css_class("success")
+    elif eignung == "unpassend":
+        name_label.add_css_class("dim-label")
+    row.append(name_label)
+
+    eignung_label = Gtk.Label(label=eignung)
+    eignung_label.set_xalign(0.0)
+    eignung_label.set_width_chars(10)
+    eignung_label.add_css_class("caption")
+    eignung_label.add_css_class("dim-label")
+    row.append(eignung_label)
+
+    # Kein 0.5-Default: fehlt der Wert, steht ein Strich da. Ein Ausfallwert
+    # ueber dem gemessenen Bereich saehe wie die beste Passung aus.
+    if affinitaet is None:
+        aff_text: str = "—"
+    else:
+        aff_text = f"{float(affinitaet):.0%}"
+    aff_label = Gtk.Label(label=aff_text)
+    aff_label.set_xalign(1.0)
+    aff_label.set_width_chars(5)
+    aff_label.add_css_class("caption")
+    row.append(aff_label)
+
+    return row
+
+
+def _build_verstoesse_zeile(verstoesse: list) -> Gtk.Box:
+    """Was das LLM ausserhalb des Korridors gewaehlt hat — und verworfen wurde.
+
+    Der Korridor wurde in Chat 114 gebaut, damit eine Strategie ausserhalb des
+    Repertoires nicht mehr als leeres Feld verschwindet. Bis Chat 116 war ein
+    Verstoss nur im Server-Log sichtbar.
+    """
+    box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=2)
+    box.set_margin_top(4)
+
+    if not verstoesse:
+        ok = Gtk.Label(label="Korridor: eingehalten")
+        ok.set_xalign(0.0)
+        ok.add_css_class("caption")
+        ok.add_css_class("dim-label")
+        box.append(ok)
+        return box
+
+    kopf = Gtk.Label(label=f"Korridor verletzt ({len(verstoesse)}):")
+    kopf.set_xalign(0.0)
+    kopf.add_css_class("caption")
+    kopf.add_css_class("error")
+    box.append(kopf)
+
+    for verstoss in verstoesse:
+        feld:  str = str(verstoss.get("feld") or "?")
+        wert:  str = str(verstoss.get("wert") or "?")
+        grund: str = str(verstoss.get("grund") or "ohne Grund")
+        zeile = Gtk.Label(label=f"  {feld} '{wert}' verworfen — {grund}")
+        zeile.set_xalign(0.0)
+        zeile.set_wrap(True)
+        zeile.set_wrap_mode(Pango.WrapMode.WORD_CHAR)
+        zeile.set_selectable(True)
+        zeile.add_css_class("caption")
+        box.append(zeile)
+
+    return box
+
+
 def _build_resonanz_section(zeilen: list[str], roh_laenge: int) -> Gtk.Box:
     """Sektion 'Verwandte Erinnerungen' — die zweite Wissensquelle des Nodes.
 
@@ -502,7 +739,10 @@ def _build_dreischicht_section(
         if absicht:
             teile.append(f"Absicht: {absicht.capitalize()}")
         if strategie:
-            teile.append(f"Strategie: {strategie}")
+            # Kuerzel aufloesen: 'Sa' allein sagt niemandem etwas, und eine
+            # Legende gibt es im Client nicht. Das Kuerzel bleibt in Klammern
+            # stehen, weil der Server es in Logs und Prompt so nennt.
+            teile.append(f"Strategie: {_strategie_klartext(strategie)} ({strategie})")
         if vehikel:
             teile.append(f"als {vehikel.capitalize()}")
         strat_label = Gtk.Label(label="  ·  ".join(teile))
