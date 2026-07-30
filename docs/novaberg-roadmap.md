@@ -1768,6 +1768,22 @@ Zweiwertig **wog** M1 nicht mit, es **bestimmte** das Vorzeichen. `rohwert = Mit
 
 **Umfang:** Suite 575 → **590 Tests**, grün, 0 übersprungen. Nulllinie unverändert 2263. Drei Gegenproben, jede an ihrer Wirkung: Aufrufer zurück auf zweiwertig → 4 rot; Kanon-Prüfung entfernt → 2 rot; `emotionaler_ausdruck` in die mittlere Klasse → 1 rot. Kein `db/init.sql` angefasst, keine DDL.
 
+### Drei Reparaturen aus dem Live-Betrieb ✅ (30.07.2026)
+
+Alle drei stammen aus einem Abend am laufenden System, nicht aus einem Audit.
+
+- ✅ **Ein Abbruch in Pfad 1 löscht die Nutzeräußerung nicht mehr.** Die Ereignis-Erzeugung stand hinter der Schleife über den HumanGraph; eine Ausnahme darin übersprang sie, und ohne Ereignis gab es keinen zweiten Pfad, keine Antwort und keinen Weg zur Wiederholung. Das Ereignis entsteht jetzt in beiden Fällen und trägt `pfad1_ausfall` mit Ausnahmetyp — **ohne den Vermerk käme ein Zusammenbruch stromabwärts als ruhige Nutzeräußerung an**, weil fehlende Perzeptionsfelder die Defaults der Datenklasse nehmen. Beide Endpunkte bauen die Nutzlast seitdem an einer Stelle.
+- ✅ **Der Session-Turn trägt eine Herkunft.** Antwort und Eigen-Impuls schrieben beide als `rolle=assistant` ohne Unterscheidung; die stand allein im Log des Event-Consumers. Leer heißt **unbekannt**, nicht „vom Nutzer" — ein Default hätte Alt-Turns rückwirkend eine Herkunft angedichtet.
+- ✅ **Die erkannte Zeitrichtung steuert jetzt die Auflösung.** `referenz_modus` wurde berechnet, zurückgegeben und nicht übergeben; `letzte fünf Wochen` ergab deshalb ein Datum fünf Wochen in der Zukunft. Ein berechneter Wert ohne Wirkung ist schlimmer als keiner — im Rückgabewert sieht er nach einer getroffenen Entscheidung aus.
+
+**Zweimal war die Gegenprobe grün, und das war der wertvollste Teil des Abends.** Bei den ersten beiden Reparaturen wurde der ursprüngliche Defekt testweise vollständig wiederhergestellt — `except`-Zweig durch `raise`, dann das durchgereichte Argument entfernt — und **kein einziger Test wurde rot.** Das Netz prüfte jeweils den neuen Baustein und nicht die Zeile, die ihn ruft. Genau die Lücke, durch die beide Defekte ursprünglich gekommen waren. Zwei Tests am Kontrollfluss schließen sie; wiederholt färben dieselben Eingriffe 2 und 4 Tests rot.
+
+**Und einmal war ein Wächter zu schwach.** Der Test für „zehn vor acht" sicherte `>= 0 Tage` zu — was der falsche Fall („heute, aber vorbei") mit exakt 0 erfüllt. Die Behauptung im Kommentar, `vor` in der Richtungsliste breche Uhrzeiten, war ungemessen. Nachgemessen: 30.07. 07:50 statt 31.07. 07:50. Der Test steht jetzt auf dem genauen Tag.
+
+**Die harte LOG-Familie hat sich am Tag ihrer Einführung bezahlt gemacht.** Die erste Fassung der Stream-Hülle schrieb den Traceback beim Aufrufer, wo die Ausnahme nur noch ein Wert ist und kein Kontext existiert. `LOG004` meldete es, der Log wanderte in den `except`-Block.
+
+**Umfang:** Suite 603 → **637 Tests**, grün, 0 übersprungen. Nulllinie 2263 → **2253** — die zusammengeführte Nutzlast nahm zehn Treffer der Doppelung mit. Kein `db/init.sql` angefasst, keine DDL.
+
 ### Die Schwelle wird neu erhoben — und überträgt diesmal ✅ (30.07.2026)
 
 Die Achse stand nach der Verkabelung auf einem konstanten Bit. Der Kalibrierlauf war damit zum ersten Mal sinnvoll — vorher hätte er eine Schwelle für eine Größe gesucht, die live nicht entsteht.
