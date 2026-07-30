@@ -31,7 +31,12 @@ import re
 import unittest
 from pathlib import Path
 
-from config import GV_INITIATIVE_FUEHREND, INTENT_KANON
+from config import (
+    GV_INITIATIVE_FOLGEND,
+    GV_INITIATIVE_FUEHREND,
+    GV_INITIATIVE_NEUTRAL,
+    INTENT_KANON,
+)
 
 SERVER_WURZEL = Path(__file__).resolve().parent.parent
 PROMPT = SERVER_WURZEL / "prompts" / "default" / "salienz.dimensionen.txt"
@@ -120,6 +125,71 @@ class FuehrendeIntentionen(unittest.TestCase):
             "GV_INITIATIVE_FUEHREND ist keine echte Teilmenge des Kanons — "
             "M1 waere konstant",
         )
+
+
+class DreiKlassenZerlegenDenKanon(unittest.TestCase):
+    """M1 ist dreiwertig — die drei Mengen muessen den Kanon zerlegen.
+
+    Der Zeuge ist `INTENT_KANON`, also die Obermenge, die aus der Prompt-Datei
+    belegt ist. Geprueft wird gegen sie, nicht gegen die Summe der drei Mengen
+    — sonst pruefte die Zerlegung sich selbst.
+    """
+
+    def test_die_drei_mengen_ueberschneiden_sich_nicht(self) -> None:
+        """Eine Intention in zwei Klassen macht M1 von der Reihenfolge abhaengig.
+
+        `_wollen_messen` nimmt die groesste vorkommende Klasse. Stuende ein
+        Wert in zwei Mengen, gewaenne stillschweigend die hoehere, und welche
+        das ist, waere nur aus dem Code der Schleife ablesbar.
+        """
+        for a, b, name_a, name_b in (
+            (GV_INITIATIVE_FUEHREND, GV_INITIATIVE_NEUTRAL, "FUEHREND", "NEUTRAL"),
+            (GV_INITIATIVE_FUEHREND, GV_INITIATIVE_FOLGEND, "FUEHREND", "FOLGEND"),
+            (GV_INITIATIVE_NEUTRAL,  GV_INITIATIVE_FOLGEND, "NEUTRAL",  "FOLGEND"),
+        ):
+            with self.subTest(paar=f"{name_a}/{name_b}"):
+                self.assertEqual(
+                    a & b, set(),
+                    f"{sorted(a & b)} steht in {name_a} UND {name_b}",
+                )
+
+    def test_jede_kanonische_intention_hat_genau_eine_klasse(self) -> None:
+        """Der Waechter gegen die still hinzukommende Intention.
+
+        Wird der Kanon erweitert, ohne die neue Intention einzuordnen, faellt
+        sie in `_wollen_messen` durch alle drei Zweige und traegt gar nichts
+        bei — der Turn verliert einen Teil seines Signals, ohne dass etwas
+        anschlaegt. Genau diese Klasse von Fehlern hat M1 zwei Monate als
+        Konstante laufen lassen.
+        """
+        zugeordnet = (GV_INITIATIVE_FUEHREND | GV_INITIATIVE_NEUTRAL
+                      | GV_INITIATIVE_FOLGEND)
+        self.assertEqual(
+            INTENT_KANON - zugeordnet, set(),
+            f"{sorted(INTENT_KANON - zugeordnet)} steht im Kanon, aber in "
+            f"keiner der drei Klassen — M1 wuerde diese Intention ignorieren",
+        )
+        self.assertEqual(
+            zugeordnet - INTENT_KANON, set(),
+            f"{sorted(zugeordnet - INTENT_KANON)} ist einer Klasse zugeordnet, "
+            f"steht aber nicht im Kanon — dieser Wert kann nie eintreffen",
+        )
+
+    def test_jede_der_drei_klassen_ist_belegt(self) -> None:
+        """Eine leere Klasse macht M1 wieder zweiwertig, ohne dass es auffaellt.
+
+        Der positive Zwilling zu den beiden Zusicherungen oben: Die zaehlen
+        Ueberschneidungen und Luecken und waeren auch dann gruen, wenn eine
+        der drei Mengen leer stuende.
+        """
+        for menge, name in ((GV_INITIATIVE_FUEHREND, "FUEHREND"),
+                            (GV_INITIATIVE_NEUTRAL,  "NEUTRAL"),
+                            (GV_INITIATIVE_FOLGEND,  "FOLGEND")):
+            with self.subTest(klasse=name):
+                self.assertTrue(
+                    menge, f"GV_INITIATIVE_{name} ist leer — M1 hat diese "
+                           f"Klasse faktisch nicht",
+                )
 
 
 if __name__ == "__main__":

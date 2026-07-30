@@ -1246,13 +1246,58 @@ GV_INITIATIVE_M3_REGISTER: dict[str, float] = {
     "zentrum": 0.100, "min": 0.000, "max": 0.600,
 }
 
-# Intentionen, die eine Richtung SETZEN. Tiefer in ein gesetztes Thema
-# eintauchen ist Folgen, kein Fuehren — 'recherche_vertiefen' steht deshalb
-# bewusst NICHT hier. Die Aufnahme dieses einen Werts wuerde das Signal von
-# +0.38 auf +0.04 druecken (gemessen, Konzept §4.1).
+# M1 ist DREIWERTIG. Die drei Mengen zerlegen INTENT_KANON vollstaendig und
+# ueberschneidungsfrei; tests/test_intent_kanon.py haelt das fest. Eine neue
+# Intention im Kanon ohne Zuordnung macht diesen Test rot — sie faellt nicht
+# still in eine Klasse.
+#
+# WARUM DREI UND NICHT ZWEI (Setzung vom 30.07.2026).
+# Zweiwertig bestimmte M1 das Vorzeichen des Rohwerts allein. Das ist
+# Arithmetik: rohwert = Mittel(bewegung, wollen) mit wollen in {-1, +1}, also
+# liegt der Rohwert bei wollen=+1 zwingend in [0, +1] und bei wollen=-1
+# zwingend in [-1, 0]. Bei einer Schwelle von -0.45 und einem Versatz von
+# hoechstens +/-0.25 heisst das: **eine fuehrende Intention setzte das Bit im
+# Alleingang**, und weder Themensprung noch Registerweg noch Charakter konnten
+# es kippen. Gemessen am 30.07.2026 traf das auf 47,4 % der Nutzer-Turns zu
+# (46 von 97) — in fast der Haelfte aller Turns war der Bewegungsteil der
+# Rechnung ohne Wirkung auf das Ergebnis.
+#
+# Die zweite Haelfte war ebenso hart: Jeder Turn ohne eine der fuenf
+# Intentionen trug -1.0, auch wenn er inhaltlich mitging. Genau das
+# widersprach dem Konzept, das 'recherche_vertiefen' ausdruecklich als
+# "aktives Mitgehen" fuehrt — weder Setzen noch Zurueckgeben.
+#
+# Wirkung der Umstellung, gemessen ueber 97 Nutzer-Turns:
+#   zweiwertig    46 x +1.0                        51 x -1.0
+#   dreiwertig    47 x +1.0      42 x 0.0           8 x -1.0
+# 42 Turns (43 %) hoeren damit auf, einen harten Gegenpol zu tragen.
+
+# +1 — der Turn SETZT eine Richtung. Er verlangt etwas oder legt etwas fest.
 GV_INITIATIVE_FUEHREND: set[str] = {
     "information_erfragen", "feedback_erfragen", "anweisung",
-    "widerspruch", "abschluss",
+    "widerspruch", "abschluss", "hilferuf", "planung",
+}
+
+#  0 — der Turn GEHT MIT, mit eigenem Beitrag. Er setzt keine neue Richtung
+# und gibt die bestehende auch nicht zurueck. Tiefer in ein gesetztes Thema
+# eintauchen steht hier und nicht oben: Die Aufnahme von
+# 'recherche_vertiefen' in die fuehrende Menge wuerde das Signal von +0.38 auf
+# +0.04 druecken (gemessen, Konzept §4.1).
+GV_INITIATIVE_NEUTRAL: set[str] = {
+    "information_teilen", "reflexion", "recherche_vertiefen",
+    "gemeinsam_eruieren", "feedback_geben", "humor",
+}
+
+# -1 — der Turn GIBT die Richtung zurueck. Er reagiert, ohne etwas
+# beizutragen, das weitertraegt.
+#
+# 'emotionaler_ausdruck' steht hier und nicht in NEUTRAL, und der Grund ist
+# messbar: Er kommt in 7 von 97 Nutzer-Turns ohne jede andere tragende
+# Intention vor, meist zusammen mit 'bestaetigung'. Stuende er auf 0, ergaebe
+# ['bestaetigung'] den Wert -1 und ['emotionaler_ausdruck', 'bestaetigung']
+# den Wert 0 — eine reaktive Gefuehlsaeusserung machte den Turn fuehrender.
+GV_INITIATIVE_FOLGEND: set[str] = {
+    "bestaetigung", "smalltalk", "emotionaler_ausdruck",
 }
 
 # Die Schwelle, an der das Achsen-Bit kippt. NICHT der Median des Korpus.

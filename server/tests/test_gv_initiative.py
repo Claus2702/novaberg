@@ -21,6 +21,7 @@ Kein skipUnless, kein skipIf, kein try/except um Importe.
 """
 
 import unittest
+from types import SimpleNamespace
 
 from config import (
     GV_INITIATIVE_M2_THEMA,
@@ -229,3 +230,162 @@ class TestLaengenachseIstRaus(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class TestM1IstDreiwertig(unittest.TestCase):
+    """M1 traegt drei Zustaende, und der mittlere ist der eigentliche Gewinn.
+
+    Zweiwertig gab jeder Turn ohne fuehrende Intention den vollen Gegenpol.
+    Das war nicht nur ungenau, sondern strukturell bestimmend: Bei
+    `wollen = -1` kann `Mittel(bewegung, wollen)` nicht positiv werden, egal
+    was Thema und Register sagen.
+    """
+
+    @staticmethod
+    def _wollen(*intentionen: str) -> float | None:
+        """Misst nur M1 — Thema und Register fehlen absichtlich."""
+        return fuehrung_messen({"user_intentionen": list(intentionen)}).wollen
+
+    def test_eine_richtungssetzende_intention_ergibt_plus_eins(self) -> None:
+        """Eine Intention aus der setzenden Klasse ergibt den oberen Anschlag."""
+        self.assertEqual(+1.0, self._wollen("information_erfragen"))
+
+    def test_ein_mitgehender_turn_ergibt_null(self) -> None:
+        """Der neue mittlere Zustand.
+
+        `recherche_vertiefen` ist im Konzept ausdruecklich aktives Mitgehen —
+        weder Setzen noch Zurueckgeben. Vorher trug genau dieser Turn -1.0.
+        """
+        self.assertEqual(0.0, self._wollen("recherche_vertiefen"))
+
+    def test_ein_zurueckgebender_turn_ergibt_minus_eins(self) -> None:
+        """Eine Intention aus der zurueckgebenden Klasse ergibt den unteren.
+
+        Wie bisher jeder Turn ohne fuehrende Intention — nur ist das jetzt
+        eine eigene Klasse und nicht mehr der Auffangbecken-Fall.
+        """
+        self.assertEqual(-1.0, self._wollen("bestaetigung"))
+
+    def test_alle_drei_zustaende_sind_verschieden(self) -> None:
+        """Der positive Zwilling zu den dreien oben.
+
+        Ohne ihn bestuenden sie auch dann, wenn zwei Klassen denselben Wert
+        lieferten — und M1 waere wieder zweiwertig, ohne dass es auffiele.
+        """
+        werte = {self._wollen("information_erfragen"),
+                 self._wollen("recherche_vertiefen"),
+                 self._wollen("bestaetigung")}
+        self.assertEqual(3, len(werte), f"M1 liefert nur {sorted(werte)}")
+
+    def test_die_staerkste_klasse_eines_turns_gewinnt(self) -> None:
+        """Die bisherige Semantik bleibt: eine fuehrende Intention genuegt.
+
+        Ein Turn traegt mehrere Intentionen. Wuerde gemittelt statt maximiert,
+        verduennte jede beilaeufige Bestaetigung eine echte Frage.
+        """
+        self.assertEqual(
+            +1.0, self._wollen("bestaetigung", "information_erfragen"),
+        )
+        self.assertEqual(
+            0.0, self._wollen("bestaetigung", "recherche_vertiefen"),
+        )
+
+    def test_eine_reaktive_gefuehlsaeusserung_hebt_den_turn_nicht(self) -> None:
+        """`emotionaler_ausdruck` gehoert zur zurueckgebenden Klasse.
+
+        Der Grund ist diese Invariante und nicht die Zuordnung selbst: Stuende
+        der Wert auf 0, ergaebe ['bestaetigung'] den Wert -1 und
+        ['bestaetigung', 'emotionaler_ausdruck'] den Wert 0. Eine Reaktion auf
+        einen fremden Turn machte den Turn damit fuehrender, als er ohne sie
+        waere. Gemessen am 30.07.2026 betrifft die Zuordnung 7 von 97
+        Nutzer-Turns — die, in denen sonst nichts Tragendes steht.
+        """
+        self.assertEqual(
+            self._wollen("bestaetigung"),
+            self._wollen("bestaetigung", "emotionaler_ausdruck"),
+        )
+        self.assertEqual(-1.0, self._wollen("emotionaler_ausdruck"))
+
+
+class TestM1BestimmtDasVorzeichenNichtMehrAllein(unittest.TestCase):
+    """Das ZIEL der Umstellung, in Systemverhalten formuliert.
+
+    Ein Turn, der mitgeht und dabei das Register weit bewegt, muss einen
+    positiven Rohwert erreichen koennen. Zweiwertig war das unmoeglich: Die
+    Rechnung `Mittel(bewegung, wollen)` mit `wollen = -1` deckelt den Rohwert
+    bei 0, auch bei maximaler Bewegung.
+    """
+
+    @staticmethod
+    def _mit_weitem_registerweg(*intentionen: str) -> Fuehrung:
+        """Baut einen Turn mit dem groesstmoeglichen Registerweg (0.6).
+
+        Von `alltag` (0.3) nach `philosophischer_austausch` (0.9) ist der
+        weiteste Weg der Skala und normiert damit auf +1.0.
+        """
+        state: dict = {
+            "user_intentionen": list(intentionen),
+            "external": SimpleNamespace(
+                emotion=SimpleNamespace(mode="philosophischer_austausch"),
+            ),
+        }
+        return fuehrung_messen(state, vorher_embedding=None, vorher_modus="alltag")
+
+    def test_ein_mitgehender_turn_mit_weiter_bewegung_wird_positiv(self) -> None:
+        """Der Kern des ZIELs: Die Bewegung darf das Vorzeichen bestimmen."""
+        f: Fuehrung = self._mit_weitem_registerweg("recherche_vertiefen")
+
+        self.assertEqual(0.0, f.wollen)
+        self.assertEqual(+1.0, f.bewegung)
+        self.assertGreater(
+            f.rohwert, 0.0,
+            "Ein mitgehender Turn mit maximaler Bewegung bleibt im negativen "
+            "Bereich — M1 bestimmt das Vorzeichen weiterhin allein",
+        )
+
+    def test_ein_zurueckgebender_turn_bleibt_bei_gleicher_bewegung_bei_null(self) -> None:
+        """Die Gegenrichtung, damit der Test oben nicht nur die Bewegung misst.
+
+        Derselbe maximale Registerweg, nur eine andere Intentionsklasse: Hier
+        deckelt M1 den Rohwert weiterhin — und das ist richtig so.
+        """
+        f: Fuehrung = self._mit_weitem_registerweg("bestaetigung")
+
+        self.assertEqual(-1.0, f.wollen)
+        self.assertEqual(+1.0, f.bewegung)
+        self.assertEqual(0.0, f.rohwert)
+
+
+class TestUnbekannteIntentionWirdBenannt(unittest.TestCase):
+    """Ein Wert ausserhalb des Kanons ist ein Defekt, kein 'gibt zurueck'.
+
+    Das ist die Lehre aus dem Defekt, der M1 zwei Monate als Konstante laufen
+    liess: Ohne Pruefung gegen die Obermenge ist ein Bruchstueck eines
+    Transportformats von einer gueltigen Intention nicht zu unterscheiden.
+    """
+
+    def test_nur_unbekannte_werte_ergeben_eine_benannte_luecke(self) -> None:
+        """Eine Liste ohne einen einzigen kanonischen Wert ist kein Messwert.
+
+        Sie ist ein Defekt, und M1 gilt als fehlend — nicht als "gibt zurueck".
+        """
+        with self.assertLogs("ki_server.ei.initiative", level="ERROR") as protokoll:
+            f: Fuehrung = fuehrung_messen(
+                {"user_intentionen": ['["reflexion"', '"information_teilen"]']},
+            )
+
+        self.assertIsNone(f.wollen)
+        self.assertIn("wollen", f.fehlend)
+        gemeinsam: str = "\n".join(protokoll.output)
+        self.assertIn("ausserhalb des Kanons", gemeinsam)
+
+    def test_ein_unbekannter_wert_neben_bekannten_wird_gemeldet_und_uebergangen(self) -> None:
+        """Die Rechnung laeuft mit den uebrigen — aber nicht stillschweigend."""
+        with self.assertLogs("ki_server.ei.initiative", level="ERROR") as protokoll:
+            f: Fuehrung = fuehrung_messen(
+                {"user_intentionen": ["information_erfragen", "erfundener_wert"]},
+            )
+
+        self.assertEqual(+1.0, f.wollen)
+        self.assertNotIn("wollen", f.fehlend)
+        self.assertIn("erfundener_wert", "\n".join(protokoll.output))

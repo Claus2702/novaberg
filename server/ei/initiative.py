@@ -7,6 +7,15 @@ nicht mit Tiefe. Drei Formen setzen eine Richtung, und jede hat ihr Mass:
   M2 Thema      — der Themenwechsel (Embedding-Abstand zur Vorantwort)
   M3 Register   — tiefer eintauchen oder zurueckgehen (Weg auf der Tiefe-Skala)
 
+**M1 ist dreiwertig, und das ist keine Feinheit.** Zweiwertig bestimmte es das
+Vorzeichen des Rohwerts allein: Bei wollen=+1 liegt Mittel(bewegung, wollen)
+zwingend in [0, +1], bei wollen=-1 zwingend in [-1, 0]. Gegen eine Schwelle
+von -0.45 und einen Versatz von hoechstens +/-0.25 hiess das, dass eine
+einzige fuehrende Intention das Bit im Alleingang setzte — M2, M3 und der
+Charakter konnten es nicht mehr kippen. Gemessen betraf das 47,4 % der Turns.
+Seit dem 30.07.2026 traegt ein Turn, der mitgeht, ohne eine Richtung zu setzen
+oder zurueckzugeben, den Wert 0.0 statt -1.0.
+
 **Warum nicht die Turn-Laenge.** Die abgeloeste Achse verglich die
 durchschnittliche Zeichenzahl beider Seiten gegen eine Schwelle von 1.5.
 Gemessen ueber 15 Laeufe stand sie 15 Mal auf demselben Wert: Der Nutzer
@@ -33,13 +42,16 @@ import logging
 from dataclasses import dataclass, field
 
 from config import (
+    GV_INITIATIVE_FOLGEND,
     GV_INITIATIVE_FUEHREND,
     GV_INITIATIVE_M2_THEMA,
     GV_INITIATIVE_M3_REGISTER,
+    GV_INITIATIVE_NEUTRAL,
     GV_INITIATIVE_SCHWELLE,
     GV_INITIATIVE_VERSATZ,
     GV_INITIATIVE_VERSATZ_MAX,
     GV_TIEFE_MODUS,
+    INTENT_KANON,
 )
 from ei.utils import modus_pruefen
 
@@ -65,7 +77,7 @@ class Fuehrung:
     hat nichts zu sagen.
     """
 
-    m1_roh:   int | None   = None   # 1 = fuehrende Intention vorhanden
+    m1_roh:   int | None   = None   # +1 setzt / 0 geht mit / -1 gibt zurueck
     m2_roh:   float | None = None   # Cosinus-Abstand zur Vorantwort
     m3_roh:   float | None = None   # Weg auf der Tiefe-Skala
 
@@ -211,40 +223,74 @@ def _normieren(wert: float, skala: dict[str, float]) -> float:
 
 
 def _wollen_messen(state: dict) -> int | None:
-    """M1 — traegt der Turn eine Intention, die eine Richtung setzt?
+    """M1 — setzt der Turn eine Richtung, geht er mit, oder gibt er sie zurueck?
 
     Quelle ist `user_intentionen` aus dem State, also die Perzeption des
-    aktuellen Nutzer-Turns. Fuehrend sind Frage, Rueckfrage, Anweisung,
-    Widerspruch und Themenwechsel (GV_INITIATIVE_FUEHREND).
+    aktuellen Nutzer-Turns. Das Mass ist **dreiwertig**: Jede Intention traegt
+    ihre Klasse (GV_INITIATIVE_FUEHREND +1, _NEUTRAL 0, _FOLGEND -1), und der
+    Turn nimmt die groesste vorkommende. Damit bleibt die bisherige Semantik
+    erhalten — eine einzige fuehrende Intention genuegt —, waehrend ein Turn
+    ohne sie nicht mehr zwingend den Gegenpol traegt.
+
+    Ein Wert ausserhalb von INTENT_KANON wird **benannt und verworfen**, nicht
+    als "nicht fuehrend" verrechnet. Ohne diese Pruefung waere ein unbekannter
+    Wert von einer gueltigen Intention der Klasse -1 nicht zu unterscheiden;
+    genau daran lief M1 im Kalibrier-Korpus zwei Monate als Konstante
+    (novaberg-lesson_l_teilmenge-verdeckt-muell.md).
 
     Vorbedingung: keine.
-    Nachbedingung: 1 oder 0, wenn Intentionen vorlagen; sonst None.
-    Fehlerfaelle: Keine Intentionen im State — das ist ein legitimer Leerfall
-    (Perzeption ohne Intentionsschicht) und wird als None gemeldet, nicht als
-    0 verrechnet.
+    Nachbedingung: -1, 0 oder +1, wenn mindestens eine kanonische Intention
+    vorlag; sonst None.
+    Fehlerfaelle: Keine Intentionen im State — legitimer Leerfall (Perzeption
+    ohne Intentionsschicht), None. Ausschliesslich unbekannte oder falsch
+    typisierte Werte — Defekt, laut gemeldet, ebenfalls None. Beide Male gilt
+    M1 als `fehlend`; das ist der einzige ehrliche Zustand.
 
     Returns:
-        1 (fuehrend), 0 (folgend) oder None (nicht messbar).
+        +1 (setzt eine Richtung), 0 (geht mit), -1 (gibt sie zurueck)
+        oder None (nicht messbar).
     """
     # ── Eingabe-Validierung ─────────────────────
     intentionen: list = state.get("user_intentionen") or []
     if not intentionen:
         return None
 
-    # ── Verarbeitung ────────────────────────────
-    ausserhalb: list[str] = [
-        i for i in intentionen if not isinstance(i, str)
-    ]
-    if ausserhalb:
+    falscher_typ: list = [i for i in intentionen if not isinstance(i, str)]
+    if falscher_typ:
         logger.error(
             "Initiative: Intentionen mit unerwartetem Typ verworfen: %s",
-            ausserhalb,
+            falscher_typ,
         )
 
-    treffer: set = GV_INITIATIVE_FUEHREND & {i for i in intentionen if isinstance(i, str)}
+    benannt: set[str] = {i for i in intentionen if isinstance(i, str)}
+    fremd:   set[str] = benannt - INTENT_KANON
+    if fremd:
+        logger.error(
+            "Initiative: Intentionen ausserhalb des Kanons verworfen: %s — "
+            "M1 rechnet nur mit den uebrigen %d von %d Werten",
+            sorted(fremd), len(benannt) - len(fremd), len(benannt),
+        )
+
+    # ── Verarbeitung ────────────────────────────
+    klassen: list[int] = []
+    for wert in benannt & INTENT_KANON:
+        if wert in GV_INITIATIVE_FUEHREND:
+            klassen.append(1)
+        elif wert in GV_INITIATIVE_NEUTRAL:
+            klassen.append(0)
+        elif wert in GV_INITIATIVE_FOLGEND:
+            klassen.append(-1)
 
     # ── Ausgabe-Verifikation ────────────────────
-    return 1 if treffer else 0
+    if not klassen:
+        logger.error(
+            "Initiative: keine einzige kanonische Intention in %s — M1 fehlt "
+            "fuer diesen Turn, statt als 'gibt zurueck' zu zaehlen",
+            sorted(benannt) or intentionen,
+        )
+        return None
+
+    return max(klassen)
 
 
 def _register_messen(state: dict, vorher_modus: str) -> float | None:
@@ -378,7 +424,11 @@ def fuehrung_messen(
     if f.m1_roh is None:
         f.fehlend.append("wollen")
     else:
-        f.wollen = 1.0 if f.m1_roh else -1.0
+        # Dreiwertig: -1, 0 oder +1 wandern unveraendert auf die Skala. Die
+        # frueher hier stehende Zweiwertigkeit ("1 wenn Treffer, sonst -1")
+        # gab jedem Turn ohne fuehrende Intention den vollen Gegenpol und
+        # bestimmte damit das Vorzeichen des Rohwerts allein.
+        f.wollen = float(f.m1_roh)
 
     bewegungs_teile: list[float] = []
     if f.m2_roh is None:
