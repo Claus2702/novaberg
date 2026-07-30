@@ -184,11 +184,20 @@ class OllamaProvider(LLMProvider):
         logger.debug(f"OLLAMA RAW [{caller}]: '{raw_content[:500]}'")
 
         # thinking-Feld additiv auslesen — Ollama trennt Reasoning vom content
-        # bei think=True (Ollama #10976). Fehlt das Feld, ist es leer; **traegt
-        # es einen anderen Typ, ist das ein Vertragsbruch des Clients** und
-        # nicht ein leeres Reasoning. Ein stiller Rueckfall auf "" machte aus
-        # einem Defekt eine plausible Ausgabe.
-        raw_thinking = nachricht.get("thinking", "")
+        # bei think=True (Ollama #10976). **Traegt das Feld einen anderen Typ,
+        # ist das ein Vertragsbruch des Clients** und nicht ein leeres
+        # Reasoning. Ein stiller Rueckfall auf "" machte aus einem Defekt eine
+        # plausible Ausgabe.
+        #
+        # ABER: `None` ist kein Vertragsbruch, sondern die zweite Schreibweise
+        # von "kein Reasoning". Ollama laesst den Schluessel nicht weg, es
+        # sendet `"thinking": null` — und ein Default in `.get` greift nur bei
+        # FEHLENDEM Schluessel, nicht bei einem gesetzten Null-Wert. Beides
+        # muss deshalb ausdruecklich auf denselben Leerfall abgebildet werden.
+        # Gemessen am 30.07.2026: Die scharfe Fassung liess jeden Turn mit
+        # einem TypeError enden, und der Client zeigte nur noch "Fehler:".
+        roh = nachricht.get("thinking", "")
+        raw_thinking = "" if roh is None else roh
         if not isinstance(raw_thinking, str):
             logger.error(
                 f"OllamaProvider: thinking-Feld ist "

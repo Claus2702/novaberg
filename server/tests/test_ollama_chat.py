@@ -40,6 +40,13 @@ MODELL: str = "qwen36-cpu"
 CTX:    int = 32768
 
 
+# "Schluessel gesetzt, Wert null" — das ist ein anderer Fall als ein fehlender
+# Schluessel, und die Attrappe braucht dafuer einen eigenen Ausdruck. `None`
+# heisst hier weiterhin "Feld weglassen"; genau diese Gleichsetzung hat den
+# Null-Fall lange unbaubar gemacht.
+THINKING_NULL: object = object()
+
+
 def _antwort(
     content:  str = "Antwort",
     thinking: object = None,
@@ -47,9 +54,17 @@ def _antwort(
     eval_count:        object = 7,
     message_extra:     dict | None = None,
 ) -> dict:
-    """Baut eine Ollama-Antwort in der Form, die der Client liefert."""
+    """Baut eine Ollama-Antwort in der Form, die der Client liefert.
+
+    `thinking=None` laesst den Schluessel **weg**, `thinking=THINKING_NULL`
+    setzt ihn auf null. Die Attrappe konnte den zweiten Fall lange gar nicht
+    erzeugen — und eine Attrappe, die eine Form der Wirklichkeit nicht bilden
+    kann, liefert Falsch-Negative, die wie bestandene Tests aussehen.
+    """
     message: dict = {"content": content}
-    if thinking is not None:
+    if thinking is THINKING_NULL:
+        message["thinking"] = None
+    elif thinking is not None:
         message["thinking"] = thinking
     if message_extra:
         message.update(message_extra)
@@ -166,6 +181,37 @@ class AntwortAuslesen(ChatBasis):
     def test_fehlendes_thinking_wird_leer(self) -> None:
         """Ohne das Feld steht eine leere Zeichenkette, nicht None."""
         self.assertEqual(self._fahren(_antwort()).thinking, "")
+
+    def test_thinking_als_null_wird_leer_und_kracht_nicht(self) -> None:
+        """`"thinking": null` ist kein Vertragsbruch, sondern kein Reasoning.
+
+        Ollama laesst den Schluessel nicht weg, es setzt ihn auf null. Ein
+        Default in `.get` greift aber nur bei fehlendem Schluessel — der
+        gesetzte Null-Wert kam durch und lief in die Typpruefung.
+
+        Gemessen am 30.07.2026 am laufenden System: Jeder Turn endete mit
+        einem TypeError, der Client zeigte nur noch "Fehler:". Die 16 Tests
+        der Methode waren dabei gruen, weil die Attrappe diesen Fall nicht
+        bilden konnte — sie bildete `None` auf einen fehlenden Schluessel ab
+        und damit genau die Unterscheidung weg, an der der Code scheiterte.
+        """
+        with self.assertNoLogs("ki_server.llm_provider", "ERROR"):
+            antwort = self._fahren(_antwort(thinking=THINKING_NULL))
+
+        self.assertEqual(antwort.thinking, "")
+        self.assertEqual(antwort.content, "Antwort")
+
+    def test_null_und_fehlend_sind_derselbe_leerfall(self) -> None:
+        """Der positive Zwilling: beide Schreibweisen ergeben dasselbe.
+
+        Ohne diese Zusicherung bestuende der Test oben auch dann, wenn null
+        auf irgendetwas anderes Leeres abgebildet wuerde als der fehlende
+        Schluessel.
+        """
+        self.assertEqual(
+            self._fahren(_antwort()).thinking,
+            self._fahren(_antwort(thinking=THINKING_NULL)).thinking,
+        )
 
     def test_thinking_falschen_typs_kracht_laut(self) -> None:
         """Ein `thinking`, das keine Zeichenkette ist, ist ein Vertragsbruch.
