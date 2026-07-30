@@ -322,6 +322,12 @@ def ChatSenden(anfrage: GespraechAnfrage, request: Request):
         # Momentum für Shadow Delivery Service
         redis_client.set(f"momentum:{anfrage.user_id}", result.get("momentum", "mid"), ex=300)
 
+        # Die Personality-Klasse aus dem Ergebnis-State. Sie wird hier neu
+        # gelesen, weil der Nutzlast-Aufbau in `_ereignis_nutzlast` gewandert
+        # ist und seine lokale Ableitung mitgenommen hat — diese beiden Leser
+        # sind dabei stehengeblieben.
+        result_external = result.get("external")
+
         return {
             "status":    "processing",
             "nachricht": "Nachricht empfangen, Charakter-Antwort folgt per WebSocket.",
@@ -535,6 +541,10 @@ def ChatStreamSenden(anfrage: GespraechAnfrage, request: Request):
                 letzter_state.get("momentum", "mid"),
                 ex=300,
             )
+
+            # Wie im synchronen Pfad: eigene Ableitung, weil der gemeinsame
+            # Nutzlast-Aufbau seine mitgenommen hat.
+            letzter_external = letzter_state.get("external")
 
             yield _sse_event("processing", {
                 "status":    "event_created",
