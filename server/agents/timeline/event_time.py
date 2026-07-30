@@ -14,7 +14,7 @@ from dataclasses import dataclass
 from datetime import datetime, timedelta
 from logging import getLogger
 
-_log = getLogger(__name__)
+logger = getLogger(__name__)
 
 _TIME_PRECISION = {"minute", "hour"}
 _VALID_PRECISIONS = {"minute", "hour", "day", "month", "quarter", "year"}
@@ -41,7 +41,7 @@ class EventTime:
 
     def __post_init__(self) -> None:
         if self.precision not in _VALID_PRECISIONS:
-            _log.warning(
+            logger.warning(
                 "EventTime mit unbekannter precision %r — fallback auf 'day'",
                 self.precision,
             )
