@@ -1,6 +1,6 @@
 # Novaberg — Bugs & Limitationen
 
-**Stand:** 30. Juli 2026 (`OLLAMA-THINKING-NULL` behoben — ein Default in `.get` deckt den fehlenden Schlüssel ab, nicht den gesetzten Null-Wert; jeder Turn endete in einem TypeError, und die 16 Tests der Methode blieben grün, weil ihre Attrappe den Fall nicht bilden konnte. Neu offen: `INITIATIVE-M1-OHNE-QUELLE` — der State-Key, aus dem M1 liest, wird nur von seinem eigenen Abnehmerkreis beschrieben und ist deshalb dauerhaft leer. Zuvor: `KALIBRIER-INTENTIONEN-UNGEPARST` behoben — ein ungeparstes JSON-Feld ließ M1 der Initiative-Achse zwei Monate als Konstante laufen und erzeugte zwei Befunde, die keine waren)
+**Stand:** 30. Juli 2026 (neu offen: `PFAD1-TIMEOUT-TURNVERLUST` — ein 60-Sekunden-Aussetzer bei einem Aufruf mit Median 2,3 s führte zu einem Timeout, die Ausnahme verhinderte die Ereignis-Erzeugung, und die Nutzeräußerung ist damit endgültig verloren; ein zeitgleich laufender Impuls folgte dem Gesprächskontext statt seinem Thema und war von einer Antwort nicht zu unterscheiden. Dazu `ZEIT-RUECKWAERTS-WIRD-ZUKUNFT` — „seit fünf Wochen" wurde zu einem Anker fünf Wochen in der Zukunft; die Extraktion verwirft das Richtungswort, und der Parser erkennt die Richtung, ohne sie zu verwenden. Zuvor: `OLLAMA-THINKING-NULL` behoben — ein Default in `.get` deckt den fehlenden Schlüssel ab, nicht den gesetzten Null-Wert; jeder Turn endete in einem TypeError, und die 16 Tests der Methode blieben grün, weil ihre Attrappe den Fall nicht bilden konnte. Neu offen: `INITIATIVE-M1-OHNE-QUELLE` — der State-Key, aus dem M1 liest, wird nur von seinem eigenen Abnehmerkreis beschrieben und ist deshalb dauerhaft leer. Zuvor: `KALIBRIER-INTENTIONEN-UNGEPARST` behoben — ein ungeparstes JSON-Feld ließ M1 der Initiative-Achse zwei Monate als Konstante laufen und erzeugte zwei Befunde, die keine waren)
 **Gliederung:** Einträge stehen in der Sektion ihres Entdeckungs-Chats und wandern nicht. Nachträge aus späteren Chats tragen ihre Chat-Nummer im Text. Sonst verliert die Sektionsfolge ihre Bedeutung als Zeitachse.
 **Quelle:** Testlauf "Karrierekrise" (200 Prompts) + Gedächtnis-Epic (Chat 11) + Epic 11 Agent-System (Chats 22–32) + Persona Smoke-Tests (Chats 31–32) + RechercheAgent-Test (Chat 35) + Doku-Audit (Chat 36) + PRIO0-Fix + Client-Observability (Chat 37) + Claude API-Test + STREAM1-Fix + Gesprächsvektor (Chat 39) + CharakterIdentitaetAgent + DirektivenAgent + Tribunal Score-System (Chat 40) + Telegram Bot + Zeitparser-Fixes (Chat 41) + CRUD-Härtung + Telegram-Chat-Analyse + DB-Report (Chat 42) + KONTEXT1-Fix + Resume-Bug + Epic 15 Pilot (Chat 43) + Epic 15 Rollout + DELEG-REG Fix + KZG-Klebrigkeit (Chat 44) + RESP-CHAR1 Fix (Chat 45) + CLASSIFY-REJECTED + Gemma4 Live-Tests (Chat 48) + Telegram-Konversation "frecher Charakter" (Chat 49) + RESUME-REJECT Fix + Live-Tests (Chat 50) + Neugier-Konzept + Projektinfrastruktur (Chat 51) + Doku-Alignment + emotions_profil (Chat 52) + Antrieb-Konzept + Dual-Emotion (Chat 53) + HALL2-Fix + Planner-Refactor (Chat 54) + PySide6 verworfen + GTK4-Entscheidung (Chat 55) + GTK4-Client + Panel-Infrastruktur (Chat 56) + Web-Tool-Doku + SEARX1-Diagnose (Chat 57) + Chat 61 (Perzeption-Symmetrie, Akkumulations-Refactor, Paper-Portfolio, Lumi, urllib3-Doppel-Turn beobachtet) + Paper I + urllib3-RETRY + ROUTE-CHAR-NOTIZ + RESP-DEAD + PIXIE-GHOST (Chat 65) + WS-SINGLE Fix + ClientConnection + User-Message-Broadcast (Chat 68) + Dreischicht-Integration + GV-Refactoring + MODUS-LEER + VEKTOR-LEER + AROUSAL-330 + ZIEL-LABEL-LEER Fixes (Chat 72) + Promotion-Pipeline-Audit (Chat 75) + Reducer-Umbau Smoke-Tests (Chat 75) + Chat 79 (THINK-MEM-CONFLICT, CHAR-LZG-LEAK, MIGRATION-PIX-PAIR, MIGRATION-AGENTGRAPH-PAIR, PIX-CLEAN, KZG-CLEANUP) + Doku-Code-Abgleich (Chat 106) + init.sql-Audit (Chat 107)
 
@@ -106,6 +106,81 @@ Gegenstandslos geworden: der Stichtag der assistant-Partition vom 26.07.2026, di
 ---
 
 ## Offene Bugs
+
+### Turn-Verlust auf dem Hauptpfad (Chat 119)
+
+#### PFAD1-TIMEOUT-TURNVERLUST — ein Aussetzer im Modell löscht die Nutzeräußerung, und ein Impuls füllt die Lücke
+
+**Entdeckt:** Chat 119, live am Client. **Drei Defekte in einer Kette** — sie stehen zusammen, weil keiner von ihnen allein den beobachteten Schaden erklärt und weil die Reihenfolge der Behebung von der Kette abhängt.
+
+**Der Ablauf, gemessen am 30.07.2026:**
+
+```
+18:09:05  Delivery: Bester Match '<Thema aus einem frueheren Abschnitt>' (score=0.51)
+18:09:24  Delivery: Impuls in den CharacterGraph gegeben (turn_id=2de1b008…)
+18:09:24  Perzeption des Nutzer-Turns startet
+18:10:24  TimeoutError in perzeption.py:198                    ← nach 60,000 s
+18:10:24  Perzeptions-Antwort erhalten, parsed=True, 365 Zeichen  ← 6 ms danach
+18:11:25  Antwort auf den IMPULS gesendet, 500 Zeichen
+```
+
+*(Themenbezeichnungen im Auszug ersetzt — sie tragen Gesprächsinhalt und nichts zum Befund bei.)*
+
+Der Nutzer sah: seine Nachricht, dann „Fehler:", dann eine inhaltlich passende Antwort. Tatsächlich war seine Nachricht zu diesem Zeitpunkt bereits endgültig verloren, und die Antwort gehörte einem anderen Vorgang.
+
+---
+
+**(A) Ein Aufruf mit Faktor 26 über dem Median.** Die Perzeption braucht im Normalfall **2,3 Sekunden** — Median über 20 Aufrufe desselben Tages, Spanne 2,2 bis 7,4 s. Dieser eine brauchte **60,0 s**, der nächste wieder 2,3 s. Der Worker war frei, es lag keine Warteschlange davor (der vorige Aufruf endete 300 ms zuvor). Die Ursache liegt im Modell-Backend und ist **nicht ermittelt**; das Server-Log endet an der HTTP-Grenze.
+
+**(B) Der Timeout verwirft ein vorliegendes Ergebnis.** `submit_sync` gibt bei 60,000 s auf (`worker_base.py:182`, `concurrent_future.result(timeout=…)`). Die Antwort traf 6 ms später ein, vollständig und geparst. Rechenzeit verbraucht, Ergebnis weggeworfen.
+
+**(C) Eine Ausnahme vor `event_erzeugen` löscht den Turn endgültig.** Das ist der schwerste Teil. In `api/chat.py` steht die Ereignis-Erzeugung **hinter** der Stream-Schleife über den HumanGraph. Fliegt in der Schleife eine Ausnahme, wird kein Ereignis erzeugt — und ohne Ereignis startet der CharacterGraph nie. Es gibt keinen Zweig, der das Ereignis trotzdem anlegt, und keinen Wiederholungsweg. **Belegt:** Für diesen Turn existiert keine einzige `Event-Consumer: … herkunft=nutzer_turn`-Zeile.
+
+**Reproduktionsweg:** Im Perzeptions-Pfad eine Verzögerung über `submit_timeout` erzwingen (Standard 60,0 s) und den Chat-Endpunkt aufrufen. Erwartet: `TimeoutError: Stream-Fehler` im Log, „Fehler:" am Client, **kein** `herkunft=nutzer_turn`-Eintrag, keine Antwort — auch nicht verzögert.
+
+---
+
+**Warum es wie ein Anzeigefehler aussah, und was daran ein eigener Befund ist:**
+
+Der Impuls war zum Zeitpunkt des Fehlers bereits eine Minute unterwegs. Sein Thema stammte aus einem **früheren** Abschnitt des Gesprächs — seine Antwort handelte vom Gegenstand des **laufenden** Wortwechsels. **Ein Impuls lädt im CharacterGraph den Gesprächskontext und folgt ihm statt seinem eigenen Thema.** Deshalb traf er genau die Lücke, die der verlorene Turn hinterlassen hatte, und war von einer Antwort inhaltlich nicht zu unterscheiden. Der Delivery-Log nennt beide Themen nebeneinander und macht die Abweichung nachprüfbar.
+
+Unterscheidbar war er nur an **einer** Stelle: der Bubble-Farbe des Clients. **In den Session-Turns ist er es nicht** — Impuls und Antwort stehen beide als `rolle: assistant` ohne Herkunftsfeld. Die Herkunft existiert nur als Logzeile des Event-Consumers (`herkunft=nutzer_turn` gegen `herkunft=eigener_impuls`) und wird nicht mitgeschrieben. Wer den Verlauf aus den Daten rekonstruiert, hält den Impuls für eine Antwort. *(Beim Erstellen dieses Eintrags zweimal selbst passiert.)*
+
+**Reihenfolge der Behebung, aus der Kette:** (C) zuerst — er ist der einzige mit Datenverlust und unabhängig von (A) reparierbar. Dann das Herkunftsfeld, weil ohne es jede weitere Messung an dieser Stelle blind bleibt. (B) danach. (A) braucht eine Messung außerhalb dieses Systems.
+
+### Zeitauflösung (Chat 119)
+
+#### ZEIT-RUECKWAERTS-WIRD-ZUKUNFT — ein rückwärts gerichteter Zeitausdruck erzeugt einen Anker in der Zukunft
+
+**Entdeckt:** Chat 119, im Gedächtnis-Nachlauf eines Gesprächs.
+
+**Symptom:** Der Satz „seit fünf Wochen sind keine zehn Millimeter Regen gefallen" (30.07.2026) erzeugte einen Timeline-Eintrag `erinnerungs_anker` auf den **03.09.2026** — fünf Wochen in die **Zukunft** statt in die Vergangenheit. Richtig wäre der 25.06.2026 gewesen.
+
+**Zwei unabhängige Ursachen, die sich zusammensetzen:**
+
+**(a) Die Extraktion verwirft das Richtungswort.** Der Salienz-Schritt legt den Rohausdruck in `zeitausdruck_roh` ab; gemessen am Log stand dort `'fünf Wochen'` — die Präposition `seit`, die allein die Richtung trägt, war schon weg. Was danach kommt, kann die Richtung nicht mehr kennen.
+
+**(b) Der Parser wertet die Richtung nicht aus, auch wenn er sie erkennt.** `zeit_parsen_vektor` (`utils/zeitparser.py`) bestimmt `referenz_modus` über eine Präfix-Prüfung und ruft anschließend `zeit_parsen(text, referenz, zukunft_bevorzugt)` — **ohne den Modus zu übergeben**. Der Wert wird berechnet, im `ZeitVektor` zurückgegeben und steuert die Auflösung nicht.
+
+**Reproduktionsweg**, gemessen am 30.07.2026 gegen Referenz 30.07.2026:
+
+| Ausdruck | erkannter `referenz_modus` | aufgelöst |
+|---|---|---|
+| `fünf Wochen` | `relativ` | **03.09.2026 (+35 Tage)** |
+| `seit fünf Wochen` | `relativ` | nicht geparst |
+| `vor fünf Wochen` | `relativ` | 25.06.2026 (−35 Tage) ✓ |
+| **`letzte fünf Wochen`** | **`relativ_rueckwaerts`** | **03.09.2026 (+35 Tage)** |
+| `vergangene fünf Wochen` | `relativ_rueckwaerts` | nicht geparst |
+| `seit drei Tagen` | `relativ` | nicht geparst |
+| `vor drei Tagen` | `relativ` | 27.07.2026 (−3 Tage) ✓ |
+
+Die vierte Zeile trägt den Kern: Die Richtung ist erkannt und wirkt nicht. Nur `vor` funktioniert, und zwar weil `dateparser` es selbst versteht — nicht durch das Zutun dieser Funktion.
+
+**`seit` fehlt zusätzlich in beiden Listen:** weder in der Präfix-Prüfung des `referenz_modus` (`letzten?|vorigen?|vergangenen?`) noch im Wortschatz des Parsers. Ein nicht geparster Ausdruck ist dabei der harmlosere Fall — er trägt eine Warnung und legt keinen Anker an.
+
+**Nicht die Ursache, aber im selben Feld gemessen:** `zeitausdruck_roh` trug im selben Gespräch auch `'trockenen Sommer'` und `'Tageslicht'` — Zeichenketten, die keine Zeitangaben sind. Die Extraktion ist über den Richtungsverlust hinaus unscharf.
+
+**Wirkung:** Ein Anker in der Zukunft ist kein toter Eintrag. `erinnerungs_anker` trägt die Flags (False, False, False), ist also nicht bindend — aber er sitzt als Magnet im Gedächtnis und zieht Bezüge auf ein Datum, an dem nichts war. Zwei solche Einträge stehen seit dem 30.07.2026 live in der Timeline.
 
 ### Initiative-Achse (Chat 119)
 
