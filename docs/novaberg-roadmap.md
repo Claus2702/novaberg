@@ -1654,7 +1654,12 @@ Die Konzepte waren sauber nachgezogen, die **Moduldokumente** nicht — und zwei
 
 **Nicht gebaut:** der Pixie-Agent mit Takt und Gate, die Ablage der erhobenen Schwelle je Paar. Die Konstante gilt unverändert; `KALIBRIERUNG_ANWENDEN` steht auf `false`.
 
-**Umfang:** Suite 410 → **458 Tests**, grün, 0 übersprungen. Gegenproben dreimal gezielt rot: Erreichbarkeits-Nebenbedingung entfernt → 5 rot; Binarisierung von `>` auf `>=` → 1 rot; Schwelle aus der Skalenfassung entfernt → 1 Fehlschlag und 3 Fehler; Fehlschlag im Zwischenstand als Urteil `False` geführt → 3 rot. Jede zurückgenommen.
+### Zwei Befunde am Ende, die die Zahlen des Laufs einschränken
+
+- 🔶 **Ein Drittel des Kalibrier-Korpus stammt aus eigenen Messturns.** Die Längenverteilung der 147 Turnpaare ist zweigipflig: 99 unter 500 Zeichen, **null zwischen 500 und 1500**, 48 darüber. Der Median des Gesprächs liegt bei 92 Zeichen, die Messturns bei rund 2000 — thematisch zulässig, in ihrer Bauart kein Gesprächsverhalten. Alle zwölf strittigen Fälle des Musters „langer Turn" stammen daraus, und der Befund über die negative Verteilung ist zu einem erheblichen Teil einer über die eigenen Turns. **Reparierbar ohne neue Erhebung:** Bei Grenze 500 bleiben 99 Paare, über der Mindestzahl von 60.
+- 🔶 **M2 liest lange Texte als themengleich.** Gemessen an zehn Turnpaaren mit 1611–2654 Zeichen gegen zehn mit 13–165: **M2 im Mittel 0,467 gegen 0,613** bei einem Zentrum von 0,662. Alle zehn langen liegen unter dem Zentrum, obwohl jeder das Thema wechselt; einer trifft exakt das Skalenminimum. Die Achse trägt damit eine eigene Längenabhängigkeit, die in dieselbe Richtung zeigt wie die des Zeugen. Ursache vermutlich die Mittelung über viele Token — **Annahme, nicht gemessen**.
+
+**Umfang:** Suite 410 → **463 Tests**, grün, 0 übersprungen. Gegenproben sechsmal gezielt rot: Erreichbarkeits-Nebenbedingung entfernt → 5 rot; Binarisierung von `>` auf `>=` → 1 rot; Schwelle aus der Skalenfassung entfernt → 1 Fehlschlag und 3 Fehler; Fehlschlag im Zwischenstand als Urteil `False` geführt → 3 rot; Fehlschlag ohne Grund schreiben lassen → 1 rot; ein Feld aus der Tafelsumme entfernt → 3 rot. Jede zurückgenommen.
 
 ---
 

@@ -433,6 +433,10 @@ Damit ist belegt, was §12.5 als Vermutung formulierte: **Die Schwelle aus einem
 
 **Das Urteil korreliert stärker mit der Länge des beurteilten Beitrags als mit dem Wert, den es beurteilen soll.** Ein Nutzer-Turn doppelter Länge wird als folgend gelesen. Die Positions-Kontrolle bestand dieser Zeuge sauber — sie prüft die Reihenfolge der Sprecher, nicht die Störgröße.
 
+> **Diese Zuschreibung ist zu eng, ergänzt am 30.07.2026.** Nicht nur der Zeuge trägt eine Längenabhängigkeit — **M2 trägt sie ebenfalls und stärker** (`novaberg-gv-initiative.md` §8.3): Bei zehn langen Turns liegt der Themensprung im Mittel bei 0,467 gegen 0,613 bei kurzen, obwohl jeder der langen das Thema wechselt. Wo der Zeuge den Wechsel liest, sieht die Achse ihn nicht. Wer §7.4 allein liest, hält den Zeugen für die fehlerhafte Seite; gemessen ist er die weniger fehlerhafte.
+>
+> **Und der Korpus dieser Messung ist zu einem Drittel synthetisch** (§8.2). Die Korrelation von −0,295 steht auf denselben 144 Turnpaaren, von denen 48 eigene Messturns sind.
+
 **Ob das ein Defekt ist, ist offen.** Nach der Setzung in §3 ist ein langer, inhaltlich reicher Beitrag im gesetzten Thema definitionsgemäß **folgend** (§3.1). Der Zeuge könnte also zutreffend urteilen, und die Achse ebenfalls — sie leitet dasselbe aus Embedding-Abstand und Registerweg her. Die Frage ist nicht, wer recht hat, sondern über welche Turns sie sich uneinig sind.
 
 **Die Uneinigkeit hat zwei Muster, keine Streuung.** Von den 55 strittigen Turns bei Schwelle −0.45:
