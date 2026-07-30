@@ -29,7 +29,7 @@ Nur im CharacterGraph. Registrierung in `graph/base.py` (`_node_emotionale_gravi
 
 ### Warum genau hier
 
-Bis Chat 113 stand der Aufruf in `ei_calc` und **konnte dort nie greifen**. Der Enricher setzt `emotionale_gravitationspunkte`, läuft im CharacterGraph aber *nach* `ei_calc` — die Reihenfolge ist Absicht (Commit `630d357`, Chat 89), weil der Enricher seine Erinnerungen über Novas empathie-modifizierte Lage wählt. Der Produzent kam damit nach seinem Verbraucher, und `state.get("emotionale_gravitationspunkte", [])` war an der Lesestelle immer leer.
+Bis Chat 113 stand der Aufruf in `ei_calc` und **konnte dort nie greifen**. Der Enricher setzt `emotionale_gravitationspunkte`, läuft im CharacterGraph aber *nach* `ei_calc` — die Reihenfolge ist Absicht (Commit `fe1bb5f`, Chat 89), weil der Enricher seine Erinnerungen über Novas empathie-modifizierte Lage wählt. Der Produzent kam damit nach seinem Verbraucher, und `state.get("emotionale_gravitationspunkte", [])` war an der Lesestelle immer leer.
 
 **Gemessen am 28.07.2026:** 851 Log-Zeilen `Emotionale Gravitation: N von M Kandidaten aktiviert`, **null** Anwendungen. Jeder Turn bezahlte einen vollen Embedding-Scan über KZG und LZG und warf das Ergebnis weg.
 

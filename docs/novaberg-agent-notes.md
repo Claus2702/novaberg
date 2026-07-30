@@ -315,7 +315,7 @@ NotizenAgent erfordert Rueckfrage nur bei niedriger Konfidenz oder Konflikt (and
 sofort wieder nach Redis — die Terminierung besorgt dann der Planner-Guard: Der Agent
 lief in diesem Turn bereits, der Turn endet, der Responder stellt die neue Rueckfrage,
 der Pending-Key wartet auf den naechsten echten User-Turn. Ohne den Guard rekursierte
-genau dieser Fall bis Recursion-Limit 25 (AGENT-RUECKFRAGE-LOOP, gefixt `1a44fbf`).
+genau dieser Fall bis Recursion-Limit 25 (AGENT-RUECKFRAGE-LOOP, gefixt `f1b3a27`).
 Details: `novaberg-node-planner.md` §3.1.
 
 ### Rueckfrage-Szenarien

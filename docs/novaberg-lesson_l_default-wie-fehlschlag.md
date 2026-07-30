@@ -11,7 +11,7 @@
 
 ## 1. Der Fall
 
-`create_state` belegt `raw_turns` mit `[]` vor (`base.py:122`). Im CharacterGraph läuft `ei_calc` **vor** dem Enricher (`character_graph.py:75-76`, bewusst so seit 630d357/Chat 89) — und der Enricher ist der **einzige** Schreiber von `state["raw_turns"]`. `_ei_calc_character` las damit seit Chat 89 in jedem Lauf eine leere Liste: nicht, weil die Session leer war, sondern weil noch niemand geladen hatte.
+`create_state` belegt `raw_turns` mit `[]` vor (`base.py:122`). Im CharacterGraph läuft `ei_calc` **vor** dem Enricher (`character_graph.py:75-76`, bewusst so seit fe1bb5f/Chat 89) — und der Enricher ist der **einzige** Schreiber von `state["raw_turns"]`. `_ei_calc_character` las damit seit Chat 89 in jedem Lauf eine leere Liste: nicht, weil die Session leer war, sondern weil noch niemand geladen hatte.
 
 Die Folgen, live belegt:
 
@@ -34,9 +34,9 @@ Das ist die Verschärfung gegenüber `lesson_l_silent-skip`: Dort maskierte ein 
 
 ## 3. Warum der Docstring es verschlimmerte
 
-`ei_calc.py` sagte im Modulkopf: *„Liest aus dem State, was der Enricher geladen hat. Position im Graph: Nach Enricher, vor Router."* — für den CharacterGraph seit Chat 89 falsch (630d357 drehte die Reihenfolge, der Docstring blieb stehen).
+`ei_calc.py` sagte im Modulkopf: *„Liest aus dem State, was der Enricher geladen hat. Position im Graph: Nach Enricher, vor Router."* — für den CharacterGraph seit Chat 89 falsch (fe1bb5f drehte die Reihenfolge, der Docstring blieb stehen).
 
-Wer die Doku las, glaubte, `raw_turns` liege im State. Der Docstring war die Erklärung dafür, warum sechzehn Chats lang niemand nachschaute: Er beantwortete die Frage, die man hätte stellen müssen, mit einer plausiblen Unwahrheit. Ein fehlender Docstring hätte zur Prüfung gezwungen; ein falscher verhinderte sie. (Korrigiert in `546e472`; siehe auch `lesson_l_code-vor-doku`.)
+Wer die Doku las, glaubte, `raw_turns` liege im State. Der Docstring war die Erklärung dafür, warum sechzehn Chats lang niemand nachschaute: Er beantwortete die Frage, die man hätte stellen müssen, mit einer plausiblen Unwahrheit. Ein fehlender Docstring hätte zur Prüfung gezwungen; ein falscher verhinderte sie. (Korrigiert in `4c409b3`; siehe auch `lesson_l_code-vor-doku`.)
 
 ---
 
@@ -46,7 +46,7 @@ Wer die Doku las, glaubte, `raw_turns` liege im State. Der Docstring war die Erk
 
 Zwei strukturelle Wege, beide gültig:
 
-**(a) Der Node, der rechnet, lädt selbst — dann ist „leer" eindeutig.** Gewählt in `e54092d`: `_ei_calc_character` beschafft die Session-Turns selbst via `session_turns_retrieve` (EVA-gerahmt, Redis-Fehler laut, Liste bleibt lokal — `state["raw_turns"]` gehört weiter dem Enricher, kein zweiter Schreiber). Wer selbst lädt, weiß, dass geladen wurde; eine leere Liste bedeutet dann wirklich „Session leer". Preis: ein doppelter LRANGE pro CG-Turn (<1 ms).
+**(a) Der Node, der rechnet, lädt selbst — dann ist „leer" eindeutig.** Gewählt in `a5acc7d`: `_ei_calc_character` beschafft die Session-Turns selbst via `session_turns_retrieve` (EVA-gerahmt, Redis-Fehler laut, Liste bleibt lokal — `state["raw_turns"]` gehört weiter dem Enricher, kein zweiter Schreiber). Wer selbst lädt, weiß, dass geladen wurde; eine leere Liste bedeutet dann wirklich „Session leer". Preis: ein doppelter LRANGE pro CG-Turn (<1 ms).
 
 **(b) Der Wert trägt seinen Ladezustand mit sich.** Value Type mit drei Zuständen: `IsSet` (initialisiert, nie geladen) / `HasSucceeded` (geladen, Wert gültig — auch leer) / `HasFailed` (Laden versucht, gescheitert, Fehlermeldung dabei). Drei Zustände statt zwei — **der dritte ist der Gewinn**: `session_turns_retrieve` fängt `JSONDecodeError` je Element und macht `continue` (`session.py:219-223`); ein korrupter Turn verschwindet lautlos, und `[]` sieht aus wie „Session leer". Nur ein expliziter Fehlschlag-Zustand macht diesen Fall überhaupt darstellbar. (Konzept, Backlog STATE-LADEZUSTAND; Kandidaten: `memory_entries`, `session_turns`, `lzg_resonanz`, `aktivierte_ziele`, `prompt_embedding`, `memory_context`.)
 
@@ -60,7 +60,7 @@ Gehört hierher, weil es dieselbe Blindheit ist — nur auf der Diagnose-Seite.
 
 Gefunden wurde der Defekt **nicht** durch die drei plausiblen Hypothesen des ersten Audits (Kaltstart / Session-TTL / Stabilitäts-Lock der gleichbleibenden Emotion). Alle drei waren korrekt auditiert, mit Zeilennummern belegt — und alle drei **irrelevant**: Sie beschrieben, was passieren würde, *wenn* `nova_turns` befüllt wäre. Die Vorfrage — *ist* es überhaupt befüllt? — stellte keine von ihnen.
 
-Gefunden wurde er durch eine Diagnose-Log-Zeile (`db02526`, fünf Minuten Aufwand, kein Verhaltenswechsel), die die Verlaufslänge mit ausgab:
+Gefunden wurde er durch eine Diagnose-Log-Zeile (`2462d16`, fünf Minuten Aufwand, kein Verhaltenswechsel), die die Verlaufslänge mit ausgab:
 
 ```
 EI-Calc/Character: Emotions-Vektor — plateau (nova_turns=0)

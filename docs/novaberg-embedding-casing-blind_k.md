@@ -169,7 +169,7 @@ echte Baseline war 0.74. Auch das war schon falsch.
 aber **unter** der Verwechslung (Matcha/Kakao bei 0.98).
 → **Der Match hat systematisch die *falschen* Knoten verstärkt.**
 
-### 4.1 Abgeleitete Werte (Knoten ↔ Knoten — gemessen) ✅ Gesetzt Chat 107 (Commit `f07e760`)
+### 4.1 Abgeleitete Werte (Knoten ↔ Knoten — gemessen) ✅ Gesetzt Chat 107 (Commit `3adc682`)
 
 | Schwellwert | Ort | alt | **neu** | Begründung |
 |---|---|---|---|---|
@@ -186,7 +186,7 @@ aber **unter** der Verwechslung (Matcha/Kakao bei 0.98).
 | `_FORCE_ATTRACT_THRESHOLD` | `api/drive.py` | 0.10 | **0.25** | nur Visualisierung |
 | `migrate_lzg_synapsen.py --schwelle` | Tool | 0.90 | **0.85** | |
 
-### 4.2 Prompt ↔ Knoten — Startwerte gesetzt, Wachposten aktiv ✅ Chat 107 (Commit `f07e760`)
+### 4.2 Prompt ↔ Knoten — Startwerte gesetzt, Wachposten aktiv ✅ Chat 107 (Commit `3adc682`)
 
 Diese Werte vergleichen **Prompt ↔ Knoten**, nicht Knoten ↔ Knoten. Die
 Abdeckungsmessung (100 echte User-Prompts gegen 302 Knoten) hat den Blocker
@@ -250,10 +250,10 @@ liegen in verschiedenen Räumen, der Kosinus zwischen ihnen ist bedeutungslos, u
 pgvector merkt nichts.
 
 1. **Server stoppen** (kein Turn darf in den Mischzustand fallen)
-2. Schwellwerte setzen (Phase 0 + §4.1) — ✅ Code-Commit `f07e760` (Chat 107).
+2. Schwellwerte setzen (Phase 0 + §4.1) — ✅ Code-Commit `3adc682` (Chat 107).
    ⚠ Ab hier gilt: KEIN Server-Neustart vor Schritt 3 (Modellwechsel) — die
    neuen Schwellen gegen den alten Raum ließen das Retrieval komplett tot laufen.
-3. `EMBED_MODEL` umschalten an **drei** Orten — ✅ Chat 107 (Commit `889b411`):
+3. `EMBED_MODEL` umschalten an **drei** Orten — ✅ Chat 107 (Commit `0eb1584`):
    - `~/ki-assistent/docker-compose.yml` (**wirksam** — Env schlägt Config-Default!)
      ⚠ Liegt AUSSERHALB des Repos und wurde **von Hand geändert** — im Repo
      nicht zu finden, nicht danach suchen.
@@ -267,7 +267,7 @@ pgvector merkt nichts.
    ein bloßer Restart liest die Compose-Env nicht neu.
 4. Re-Embedding laufen lassen (Dry-Run → Diff prüfen → `--commit`) —
    `python -m tools.reembed_all --commit` (deckt inkl. Shadow-Leerung alles ab;
-   Werkzeug ✅ Chat 107, Commit `e6671d4`)
+   Werkzeug ✅ Chat 107, Commit `f866e1b`)
 5. **Gewichts-Reset** — `--target reset` (✅ gebaut Chat 107, NICHT in "all"):
    2910 Reinforcements (93 %) entstanden durch Skelett-Kollisionen
    (cosine_max = 1.0000 im pipeline_log); `haeufigkeit` speist

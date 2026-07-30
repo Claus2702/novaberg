@@ -110,7 +110,7 @@ Die Bindung wurde nach oben gezogen, neben `turn_id_log`/`quelle_log`, vor den
 ersten `span_start`. Sie hing an nichts außer `state`. Alle Call-Sites tragen jetzt
 die echte lokale ID, konsistent — kein Konstanten-Workaround, kein Sonderfall.
 
-Commit: `6e1b950` — *fix(enricher): character_id binding before span_start*.
+Commit: `744ec38` — *fix(enricher): character_id binding before span_start*.
 
 ---
 

@@ -57,7 +57,7 @@ class ConversationState(TypedDict):
     lzg_resonanz: dict | None
 ```
 
-Damit wurde aus dem nicht existierenden Channel ein echter. LangGraph trägt den Wert seither über den Node-Übergang, genau wie das benachbarte `memory_entries`. Live verifiziert: `erinnerungen=3` am Reducer, Resonanz-Block mit Spreading-Pfaden im Responder-Prompt (Commit `dd0811b`, Bug `LZG-RESONANZ-STATE-DEKL`).
+Damit wurde aus dem nicht existierenden Channel ein echter. LangGraph trägt den Wert seither über den Node-Übergang, genau wie das benachbarte `memory_entries`. Live verifiziert: `erinnerungen=3` am Reducer, Resonanz-Block mit Spreading-Pfaden im Responder-Prompt (Commit `f14c8b4`, Bug `LZG-RESONANZ-STATE-DEKL`).
 
 Kein Producer- und kein Consumer-Code wurde angefasst — sie waren immer korrekt. Der Fehler war nie in den Enden; er war im fehlenden Kanal.
 

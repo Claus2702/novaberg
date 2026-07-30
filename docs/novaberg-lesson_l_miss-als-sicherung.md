@@ -18,7 +18,7 @@ Das Chat-105-Audit fand **zwei** Agenten in genau dieser Lage:
 - `synapsen_decay` (P6, Chat 102) — täglicher Knoten-Decay + `pipeline_log`-TTL-Cleanup.
 - `ziel_decay` — Motivations-Decay für mittelfristige Ziele.
 
-Gleiche Ursache (fehlender Registry-Eintrag), gleicher denkbarer Fix (eine Dict-Zeile). Der erste wurde gefixt (`1e438e0`). Der zweite wurde **bewusst nicht** gefixt.
+Gleiche Ursache (fehlender Registry-Eintrag), gleicher denkbarer Fix (eine Dict-Zeile). Der erste wurde gefixt (`fb33028`). Der zweite wurde **bewusst nicht** gefixt.
 
 ---
 

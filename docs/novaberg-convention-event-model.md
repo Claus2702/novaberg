@@ -271,7 +271,7 @@ def event_consumer_loop(redis_client, human_graph, ...):
             )
 ```
 
-**Drei Beobachtbarkeits-Regeln (Chat 106, `44e050a`):** (1) `self_trigger` und
+**Drei Beobachtbarkeits-Regeln (Chat 106, `090ac07`):** (1) `self_trigger` und
 `self_trigger_payload` sind deklarierte `ConversationState`-Channels — ohne Deklaration
 wird der Wert an der ersten Node-Grenze still verworfen (THINKER-SELFTRIGGER-KANALLOS,
 live bewiesen). (2) Der Consumer loggt JEDE Ankunft, nicht nur den Erfolgsfall — sonst

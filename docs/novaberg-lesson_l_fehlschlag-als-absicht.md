@@ -30,7 +30,7 @@ Das Gewicht: Chat 105 hatte Kraft 1 repariert, Novas Vektor trug erstmals seit C
 
 Die Basis-Lesson (`default-wie-fehlschlag`) behandelt die erste Hälfte: Zwei Zustände („nie geladen" vs. „leer geladen") dürfen nicht denselben Wert tragen. Diese Erweiterung behandelt die zweite: **Ein optionales Ausgabe-Element, das bei Miss kommentarlos entfällt, ist von einer bewussten Design-Entscheidung nicht unterscheidbar.** Wer das Log liest, fragt nicht „warum fehlt die Zeile?", sondern nimmt an, sie sei nie vorgesehen gewesen.
 
-Konsequenz (umgesetzt in `4416a23`): Jeder Ausfallweg wird einzeln laut —
+Konsequenz (umgesetzt in `f1b7f8e`): Jeder Ausfallweg wird einzeln laut —
 
 | Fall | Log |
 |---|---|

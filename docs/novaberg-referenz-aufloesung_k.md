@@ -380,7 +380,7 @@ Wer vor dem Enricher läuft, hat keine Session-Turns. Wer nach ihm läuft, kommt
 > **Der Node, der rechnet, lädt seine Daten selbst.**
 
 Der Referenz-Node holt die Session-Turns über `session_turns_retrieve` — wie
-`_ei_calc_character` seit `e54092d`. Keine Fernkopplung, kein Sonderweg, keine Kante zu drehen.
+`_ei_calc_character` seit `a5acc7d`. Keine Fernkopplung, kein Sonderweg, keine Kante zu drehen.
 Und „leer" heißt dann eindeutig *leer* und nicht *nie geladen*.
 
 ⚠ **Der Enricher hat kein `try/except` um Redis** (`ENRICHER-REDIS-UNGESCHUETZT`). Der neue

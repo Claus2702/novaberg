@@ -100,8 +100,8 @@ Gegenstandslos geworden: der Stichtag der assistant-Partition vom 26.07.2026, di
 | ECHO-BUG | Reducer-Umbau (STRUCT-1 bis STRUCT-6, Chat 75) hat Memory-Context strukturiert dedupliziert und Kontext-Volumen reduziert. Live-Verifikation im 38-Turn-Chat in Chat 81: kein Echo-Verhalten mehr. | Chat 81 |
 | THINK-MEM-LOOP | Per-Turn-Tool-Cache `ThinkerToolCache` (graph/nodes/thinker_cache.py), strikt lokal in `think()` instanziiert. Stufe 1 (generisch fuer alle 5 Tools): Argument-Cache in `_execute_tool_call`. Stufe 2 (nur `memory_search`): Result-Hash ueber stabile Felder (inhalt, subtyp, dimension, beobachter, vektor) — effektives Gewicht und Arousal wegen Decay-Volatilitaet ausgeschlossen. FIFO-Verdraengung bei MAX_GROESSE=20. | Chat 82 |
 | NORMALIZER-CONNECTOR-NOOP | `get_thinking_normalizer()` matchte gegen den Connector-Namen (`frozenset({"gemma4"})`). Der live aktive Connector `qwen36` fährt im CharacterGraph `gemma4-gpu` auf der GPU und zeigt den Ollama content/thinking-Split (#10976), wurde aber als No-Op behandelt, weil `"qwen36" != "gemma4"`. | Match per Substring gegen das aufgelöste `OLLAMA_MODEL` (`gemma4-gpu`/`gemma4-cpu`). Live verifiziert (Modell=`gemma4-gpu`, aktiv). | Chat 100 |
-| LZG-RESONANZ-STATE-DEKL | `lzg_resonanz` war nicht als Channel im `ConversationState`-TypedDict deklariert. Da der Haupt-Graph `StateGraph(ConversationState)` nutzt und den State pro Node aus den Channels rekonstruiert, wurde der vom Enricher per Mutation gesetzte Key am Node-Übergang Enricher→Reducer still verworfen → Reducer sah `None` → kein Resonanz-Block im Prompt, trotz `lzg_resonanz_count: 3`. Wurzel von P5-REDUCER-RESONANZ-BLIND. | `lzg_resonanz: dict \| None` als Channel deklariert (`dd0811b`). Live verifiziert (erinnerungen=3 am Reducer, Resonanz-Block mit Spreading-Pfaden im Responder-Prompt). Hinweis: Chat-99-Einschätzung „Prio niedrig, läuft trotzdem" war falsch — bei `StateGraph(TypedDict)` ist das TypedDict die Channel-Definition, kein bloßer Typhinweis. | Chat 100 |
-| DOPPEL-GEDAECHTNIS-HEADER | Bei aktiver Resonanz erschien `[GEDAECHTNIS]` zweimal im Responder-Prompt (Wrapper-Template `responder.gedaechtnis.txt` + innerer Header in `_format_lzg_resonanz`). | Innerer Header entfernt, Einleitungszeile bleibt (`2f8c441`). Verifiziert (Header-Zahl = Turn-Zahl). | Chat 100 |
+| LZG-RESONANZ-STATE-DEKL | `lzg_resonanz` war nicht als Channel im `ConversationState`-TypedDict deklariert. Da der Haupt-Graph `StateGraph(ConversationState)` nutzt und den State pro Node aus den Channels rekonstruiert, wurde der vom Enricher per Mutation gesetzte Key am Node-Übergang Enricher→Reducer still verworfen → Reducer sah `None` → kein Resonanz-Block im Prompt, trotz `lzg_resonanz_count: 3`. Wurzel von P5-REDUCER-RESONANZ-BLIND. | `lzg_resonanz: dict \| None` als Channel deklariert (`f14c8b4`). Live verifiziert (erinnerungen=3 am Reducer, Resonanz-Block mit Spreading-Pfaden im Responder-Prompt). Hinweis: Chat-99-Einschätzung „Prio niedrig, läuft trotzdem" war falsch — bei `StateGraph(TypedDict)` ist das TypedDict die Channel-Definition, kein bloßer Typhinweis. | Chat 100 |
+| DOPPEL-GEDAECHTNIS-HEADER | Bei aktiver Resonanz erschien `[GEDAECHTNIS]` zweimal im Responder-Prompt (Wrapper-Template `responder.gedaechtnis.txt` + innerer Header in `_format_lzg_resonanz`). | Innerer Header entfernt, Einleitungszeile bleibt (`5087de9`). Verifiziert (Header-Zahl = Turn-Zahl). | Chat 100 |
 
 ---
 
@@ -449,7 +449,7 @@ NICHT im selben Turn re-dispatchen; und/oder (2) `bereits_gelaufen`-Guard auf
 den Resume-Pfad ausdehnen / Iterations-Budget im Resume. Ausgelöst durch
 NOTIZ-BEFEHL-ALS-TITEL (Duplikate erzeugen die Disambiguierung überhaupt erst).
 
-**Behoben Chat 106 (Commit `1a44fbf`):** Der Guard war nie kaputt — er wurde nur nie
+**Behoben Chat 106 (Commit `f1b3a27`):** Der Guard war nie kaputt — er wurde nur nie
 gefragt. Der Resume-Pfad ist Priorität 0 im Planner und kehrte zurück, BEVOR der
 `bereits_gelaufen`-Guard erreicht wurde; Chat 101 fuhr fünf Turns über den Agent-Pfad,
 wo der Guard greift — die Stichprobe traf den Pfad daneben. Fix: Helfer
@@ -1267,9 +1267,9 @@ Die Shadow-Delivery formuliert nichts mehr selbst. Sie erzeugt eine `turn_id`, g
 - Bestätigung der Wanderung: `graph/state.py:85` („nova_emotions_vektor wandert in internal.emotion.emotions_vector")
 - Korrekt migrierter Vergleichspfad: `services/event_consumer.py:476` liest für die API-Response richtig aus `result_internal.emotion.emotions_vector`
 
-**Auswirkung:** Nova bekommt die Richtung ihres eigenen emotionalen Bogens (plateau, eskalation, absturz, …) in keiner Antwortgenerierung zu sehen — betrifft jeden CharacterGraph-Turn. Der NOVA-VERLAUF-LEER-Fix (`db02526`/`e54092d`/`546e472`, Roadmap) hat den Vektor erstmals beweglich gemacht; durch diesen Lesepfad-Bruch bleibt die Bewegung für die Antwortqualität unsichtbar. Fix bewusst offen — kommt nach eigenem Audit, nicht aus dem Doku-Abgleich.
+**Auswirkung:** Nova bekommt die Richtung ihres eigenen emotionalen Bogens (plateau, eskalation, absturz, …) in keiner Antwortgenerierung zu sehen — betrifft jeden CharacterGraph-Turn. Der NOVA-VERLAUF-LEER-Fix (`2462d16`/`a5acc7d`/`4c409b3`, Roadmap) hat den Vektor erstmals beweglich gemacht; durch diesen Lesepfad-Bruch bleibt die Bewegung für die Antwortqualität unsichtbar. Fix bewusst offen — kommt nach eigenem Audit, nicht aus dem Doku-Abgleich.
 
-**Behoben Chat 106 (Commit `4416a23`):** Reiner Lesepfad-Fehler, Regression aus dem
+**Behoben Chat 106 (Commit `f1b7f8e`):** Reiner Lesepfad-Fehler, Regression aus dem
 Personality-Umbau — die Reihenfolge stimmte (`ei_calc` ist der zweite Node im
 CharacterGraph, lange vor dem Responder; kein Chat-89-Muster). **Live bewiesen
 11.7. 19:11:43:** `VEKTOR-TEST: flach=None | internal vorhanden=True |
@@ -1326,7 +1326,7 @@ KANAL-TEST (Tribunal):                              vorhanden=False, wert=None
 
 Eine Millisekunde. Eine Node-Grenze. Wert weg. Nicht `False` — **nicht vorhanden**.
 
-**Behoben Chat 106 (Commit `44e050a`):** Zwei Kanäle in `state.py` deklariert, zwei
+**Behoben Chat 106 (Commit `090ac07`):** Zwei Kanäle in `state.py` deklariert, zwei
 Init-Punkte (`base.py`, `builder.py` — mehr gibt es nicht; `character_graph`/`agent_graph`
 delegieren an `super()`, `human_graph` hat keinen Override). Dazu: Das Log sagt jetzt,
 was es weiß („Self-Trigger im State gesetzt (self_trigger=True) — Auslieferung haengt am
@@ -1542,8 +1542,8 @@ ohne Auswirkung, weil `resume.py` sich `create` aus den Parametern holt — Fehl
 **Auswirkung:** Rückfragen werden mit jedem Resume-Zyklus unverständlicher.
 
 *Aktualisiert Chat 106 (Abschluss, Quelle: Chat-106-Protokoll): Drei Bugs live bewiesen
-und geschlossen — AGENT-RUECKFRAGE-LOOP (`1a44fbf`, 18:14:01), THINKER-SELFTRIGGER-KANALLOS
-(`44e050a`, 18:35:22), RESPONDER-VEKTOR-TOT (`4416a23`, 19:11:43/Abnahme 19:19:51). Keiner
+und geschlossen — AGENT-RUECKFRAGE-LOOP (`f1b3a27`, 18:14:01), THINKER-SELFTRIGGER-KANALLOS
+(`090ac07`, 18:35:22), RESPONDER-VEKTOR-TOT (`f1b7f8e`, 19:11:43/Abnahme 19:19:51). Keiner
 wurde durch Code-Lesung gefunden — alle drei durch eine Log-Zeile, die vorher nicht da war.
 NOVA-SYKOPHANZ-BESTAETIGT auf Protokoll-§7-Wortlaut gezogen. Neu aufgenommen: 6 Einträge
 aus dem Lügende-Logs-Audit (BROADCAST-VERSCHLUCKT-FEHLER als Wurzel,
@@ -1577,7 +1577,7 @@ Disambiguierung erzeugen, die den Loop auslöste: der Crash ist behoben, nicht d
 
 **Auswirkung:** Der GV-Node bekam nie Entity-Kontext (Hop-1-/Hop-2-Faktenkanten) für die Hypothesen-Destillation — betrifft jeden Turn mit `management_target` oder `prompt_topic`.
 
-**Behoben Chat 107 (Commit `1c6332b`):** `f.beziehung` → `f.attribut` in beiden Queries. Fehlerbehandlung nach dem Fail-loud-Muster des Dispatchers getrennt: `psycopg2.Error` → `logger.error` mit `exc_info` + `log_fehler`-Forensik (`grund=entity_hop_db_fehler`), Turn läuft ohne Entity-Kontext weiter; das pauschale `except Exception` ist weg — echte Python-Fehler krachen jetzt. Legitime Leerfälle (kein Schlüssel, keine Entitäten, 0 Fakten) loggen `info`/`debug` und liefern weiterhin `""`. Verbindung schließt im `finally` (leckte vorher im Fehlerfall). **Live bewiesen 12.7.** (echte Funktion, read-only gegen Live-DB): Schlüssel `Nova` (user `meister`) → 23 deduplizierte Faktenkanten statt `""`; Gegenprobe mit Fantasie-Schlüssel → `info`-Log + `""`. Design-Grenze dokumentiert, kein Bug: Der Hop erfasst nur Entität→Entität-Fakten (`objekt_id` gesetzt, live 47 von 411); Wert-Fakten (`objekt_wert`, 364) sind konstruktionsbedingt nicht hüpfbar.
+**Behoben Chat 107 (Commit `7df65f1`):** `f.beziehung` → `f.attribut` in beiden Queries. Fehlerbehandlung nach dem Fail-loud-Muster des Dispatchers getrennt: `psycopg2.Error` → `logger.error` mit `exc_info` + `log_fehler`-Forensik (`grund=entity_hop_db_fehler`), Turn läuft ohne Entity-Kontext weiter; das pauschale `except Exception` ist weg — echte Python-Fehler krachen jetzt. Legitime Leerfälle (kein Schlüssel, keine Entitäten, 0 Fakten) loggen `info`/`debug` und liefern weiterhin `""`. Verbindung schließt im `finally` (leckte vorher im Fehlerfall). **Live bewiesen 12.7.** (echte Funktion, read-only gegen Live-DB): Schlüssel `Nova` (user `meister`) → 23 deduplizierte Faktenkanten statt `""`; Gegenprobe mit Fantasie-Schlüssel → `info`-Log + `""`. Design-Grenze dokumentiert, kein Bug: Der Hop erfasst nur Entität→Entität-Fakten (`objekt_id` gesetzt, live 47 von 411); Wert-Fakten (`objekt_wert`, 364) sind konstruktionsbedingt nicht hüpfbar.
 
 ---
 
@@ -1585,7 +1585,7 @@ Disambiguierung erzeugen, die den Loop auslöste: der Crash ist behoben, nicht d
 
 #### RECHERCHE-KZG-INHALT-LEER — Recherche-KZG-Einträge tragen Vektor ohne Text ✅ Behoben Chat 107
 
-**Entdeckt:** Chat 107, Sichtung aller Embed-Text-Kompositionsstellen für die `embed_text_bauen`-Vereinheitlichung (Commit `5d58b66`).
+**Entdeckt:** Chat 107, Sichtung aller Embed-Text-Kompositionsstellen für die `embed_text_bauen`-Vereinheitlichung (Commit `eb53103`).
 
 **Klasse:** Datenverlust durch Schnittstellen-Mismatch zweier Legacy-Bausteine, Severity **Mittel** — die Einträge existieren, sind aber inhaltsleer und ihre Vektoren für immer unrekonstruierbar.
 
@@ -1598,7 +1598,7 @@ Disambiguierung erzeugen, die den Loop auslöste: der Crash ist behoben, nicht d
 
 **Auswirkung:** Die 94 Einträge sind im Retrieval als Kontext wertlos (leerer Inhalt) und beim Re-Embedding (EMBEDDING-CASING-BLIND Phase 2/3) nicht neu erzeugbar — es gibt keinen Text, aus dem der Vektor wieder entstehen könnte. Verwandt mit der Formel-Frage: Der Pfad nutzt weder die KZG-Formel (`Thema: … Aussage: …`) noch persistiert er seinen eigenen Embed-Text.
 
-**Behoben Chat 107 (Commit `36c4f0b`), nach eigenem Audit statt nebenbei:** Das Folge-Audit ergab Fall A — der Text (`destillat`) existierte zur Schreibzeit, wurde nur nicht ins Feld gelegt. Fix: `salienz_obj["zusammenfassung"] = destillat` (→ `inhalt` befüllt) + Embedding über die eine KZG-Formel `embed_text_bauen(themen, kern)`. Dazu Leer-Filter im Lesepfad (siehe RECHERCHE-WISSEN-ERREICHT-LZG-NIE für die volle Tragweite und den Nachweis). Die 94 Alt-Einträge bleiben unangetastet und verfallen per TTL.
+**Behoben Chat 107 (Commit `6ecea1b`), nach eigenem Audit statt nebenbei:** Das Folge-Audit ergab Fall A — der Text (`destillat`) existierte zur Schreibzeit, wurde nur nicht ins Feld gelegt. Fix: `salienz_obj["zusammenfassung"] = destillat` (→ `inhalt` befüllt) + Embedding über die eine KZG-Formel `embed_text_bauen(themen, kern)`. Dazu Leer-Filter im Lesepfad (siehe RECHERCHE-WISSEN-ERREICHT-LZG-NIE für die volle Tragweite und den Nachweis). Die 94 Alt-Einträge bleiben unangetastet und verfallen per TTL.
 
 ---
 
@@ -1667,7 +1667,7 @@ Disambiguierung erzeugen, die den Loop auslöste: der Crash ist behoben, nicht d
 
 **Der Code hat alles richtig gemacht:** fail loud, forensisch protokolliert, in zwei Speicher geschrieben. Er hat wochenlang geschrien — und niemand war da, um es zu hören. Dieser Eintrag dient als Beleg und als Argument für LOG-TUERKLINGEL.
 
-**Behoben Chat 107 (Commit `36c4f0b`):** Schreibpfad: `zusammenfassung = destillat` → `inhalt` befüllt, Embedding über `embed_text_bauen(themen, kern)` — Vektor aus Hash-Feldern rekonstruierbar. Lesepfad: `kzg_entries_retrieve` verwirft Einträge ohne `inhalt` **laut** (`logger.warning` mit Key, Themen, Beobachter, Similarity) — fängt auch künftige textlose Quellen, nicht nur diese. **Nachweis:** Lesepfad live read-only (10/10 leere Treffer verworfen, 0 im Ergebnis); Schreibpfad gegen Redis-Stub (`inhalt == destillat`, Embed-Text aus Hash exakt reproduzierbar). Live-Bestätigung eines frischen Recherche-Eintrags folgt nach dem Phase-B-Neustart — der laufende Server trägt noch den alten Code.
+**Behoben Chat 107 (Commit `6ecea1b`):** Schreibpfad: `zusammenfassung = destillat` → `inhalt` befüllt, Embedding über `embed_text_bauen(themen, kern)` — Vektor aus Hash-Feldern rekonstruierbar. Lesepfad: `kzg_entries_retrieve` verwirft Einträge ohne `inhalt` **laut** (`logger.warning` mit Key, Themen, Beobachter, Similarity) — fängt auch künftige textlose Quellen, nicht nur diese. **Nachweis:** Lesepfad live read-only (10/10 leere Treffer verworfen, 0 im Ergebnis); Schreibpfad gegen Redis-Stub (`inhalt == destillat`, Embed-Text aus Hash exakt reproduzierbar). Live-Bestätigung eines frischen Recherche-Eintrags folgt nach dem Phase-B-Neustart — der laufende Server trägt noch den alten Code.
 
 ---
 
@@ -1681,7 +1681,7 @@ Disambiguierung erzeugen, die den Loop auslöste: der Crash ist behoben, nicht d
 
 **Symptom:** `ei/wissensluecken.py::wissensluecken_finden` setzte bei fehlendem Charakter-Kern (legitimer Cold-Start) UND bei fehlgeschlagenem Kern-Embedding (Infrastrukturdefekt) für jeden Kandidaten `charakter_resonanz = 0.5` — lautlos, über der 0.40-Schwelle, jeder Kandidat passierte. Der erfundene Wert hat nie etwas entschieden; er hat nur die Buchführung belogen und den Fehlerfall zum Erfolg umlackiert.
 
-**Behoben Chat 107 (Commit `deb6199`):** `resonanz_pruefbar`-Flag statt Zahlen-Fallback — der Filter prüft die Resonanz-Bedingung nur, wenn das Flag steht. Zweig 1 (kein Kern, Cold-Start): `logger.warning` einmal pro Aufruf mit `user_id`, Kandidaten qualifizieren sich allein über die Relevanz. Zweig 2 (Kern da, Embedding scheitert): `logger.error` mit `exc_info`, Turn läuft weiter — der Defekt schreit, die LOG-TUERKLINGEL wird ihn fangen. Kein Verhaltenswechsel, ehrliche Verbuchung. Fallback 0.0 bewusst verworfen: hätte die Neugier beim frischen Paar bis zur ersten Destillation abgewürgt — ein Feature abwürgen, um eine Buchführung zu reparieren, wäre der falsche Tausch.
+**Behoben Chat 107 (Commit `1e5ae70`):** `resonanz_pruefbar`-Flag statt Zahlen-Fallback — der Filter prüft die Resonanz-Bedingung nur, wenn das Flag steht. Zweig 1 (kein Kern, Cold-Start): `logger.warning` einmal pro Aufruf mit `user_id`, Kandidaten qualifizieren sich allein über die Relevanz. Zweig 2 (Kern da, Embedding scheitert): `logger.error` mit `exc_info`, Turn läuft weiter — der Defekt schreit, die LOG-TUERKLINGEL wird ihn fangen. Kein Verhaltenswechsel, ehrliche Verbuchung. Fallback 0.0 bewusst verworfen: hätte die Neugier beim frischen Paar bis zur ersten Destillation abgewürgt — ein Feature abwürgen, um eine Buchführung zu reparieren, wäre der falsche Tausch.
 
 ---
 
@@ -1699,7 +1699,7 @@ Disambiguierung erzeugen, die den Loop auslöste: der Crash ist behoben, nicht d
 
 **Mitschuldiger — das eigene Log:** `anker_retrieval` loggte `anker[0]["cosine"] if anker else float("nan")` — ein Platzhalter, der als Messwert auftrat. Er behauptete NaN, wo er „0 über Schwelle, Roh-Werte unbekannt" meinte, und schickte den Audit auf die Nullvektor-Fährte. Verstoß gegen `lesson_l_log-behauptet-was-es-weiss` — die Lesson war einen Tag alt.
 
-**Behoben Chat 107 (Commit `95ef8eb`):** Index **entfernt**, nicht getunt — bei ~300 Zeilen ist der Seq-Scan exakt und < 1 ms; ein approximativer Index bringt keinen Zeitgewinn, nur Recall-Verlust. Ebenso `idx_lzg_embedding` (Legacy) gedroppt. `db/init.sql` kommentiert beide aus, mit Vorfall, Beleg und Wiederanlage-Schwelle (~10k Zeilen, `lists ≈ rows/1000`, `probes` mitkalibrieren) — dieselbe Konsistenz, die bei entitaeten/fakten immer galt. Log ehrlich gemacht: zeigt jetzt die **rohen** Cosines vor dem Schwellenfilter. **Nachweis live:** `anker_retrieval("Was weißt du über Lumi?")` → 118 (0.7377), 308 (0.6820), 102 (0.6742) — „3 Kandidaten geladen (beste Roh-Cosine 0.7377, schwaechste 0.6742), 3 ueber Schwelle 0.40". Das Retrieval lebt. VITALZEICHEN-Bezug: Das Retrieval-Vitalzeichen hätte den Kollaps gefangen — der Backlog-Eintrag entstand drei Stunden vor dem Vorfall.
+**Behoben Chat 107 (Commit `0fd54a1`):** Index **entfernt**, nicht getunt — bei ~300 Zeilen ist der Seq-Scan exakt und < 1 ms; ein approximativer Index bringt keinen Zeitgewinn, nur Recall-Verlust. Ebenso `idx_lzg_embedding` (Legacy) gedroppt. `db/init.sql` kommentiert beide aus, mit Vorfall, Beleg und Wiederanlage-Schwelle (~10k Zeilen, `lists ≈ rows/1000`, `probes` mitkalibrieren) — dieselbe Konsistenz, die bei entitaeten/fakten immer galt. Log ehrlich gemacht: zeigt jetzt die **rohen** Cosines vor dem Schwellenfilter. **Nachweis live:** `anker_retrieval("Was weißt du über Lumi?")` → 118 (0.7377), 308 (0.6820), 102 (0.6742) — „3 Kandidaten geladen (beste Roh-Cosine 0.7377, schwaechste 0.6742), 3 ueber Schwelle 0.40". Das Retrieval lebt. VITALZEICHEN-Bezug: Das Retrieval-Vitalzeichen hätte den Kollaps gefangen — der Backlog-Eintrag entstand drei Stunden vor dem Vorfall.
 
 ---
 
@@ -2297,7 +2297,7 @@ Details unter *Warum die Tabelle leer ist*.
 Der einzige Extraktionspfad ist `FaktenManager.fakten_verarbeiten`, direkt aufgerufen nur von
 `agents/promotion/agent.py`. Alle Auslöser dieses Agenten sind zu:
 
-- Die Queue-Route `lzg_promotion` zeigt seit Commit `4f7b0c4` (24.05.2026) auf
+- Die Queue-Route `lzg_promotion` zeigt seit Commit `4dd6ac6` (24.05.2026) auf
   `synapsen_promotion` statt auf `promotion`.
 - Die Aufgabe `fakten_extraktion` kommt repoweit **einmal** vor — in der Deklaration, die
   sie anmeldet. Niemand stellt je einen solchen Auftrag ein.

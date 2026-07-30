@@ -19,7 +19,7 @@ Vier Fehler in einer Sitzung, alle vom selben Typ: Ein erschlossener Wert wurde 
 |---|---|---|
 | 1 | „Jetzt" aus `max(erstellt_am)` erschlossen statt gelesen. Daraus erst „14 Stunden", dann „13 Tage" — und eine Falschaussage in `bugs.md`, die später korrigiert werden musste. | `date -u` (Meister) |
 | 2 | TTL von `hash_dirty:meister` abgefragt, das Ergebnis auf `hash_dirty:meister:nova` übertragen. Anderer Key. | eigene Nachprüfung, zu spät |
-| 3 | Stichtag-Zeitzone angenommen (`+02` statt UTC). Daraus 33 statt 39 — und der Verdacht, im Backlog stehe eine falsche Zahl. Die dortige 40 war fast richtig. | Messung gegen `e54092d` |
+| 3 | Stichtag-Zeitzone angenommen (`+02` statt UTC). Daraus 33 statt 39 — und der Verdacht, im Backlog stehe eine falsche Zahl. Die dortige 40 war fast richtig. | Messung gegen `a5acc7d` |
 | 4 | Drei Fundstellen für eine veraltete Zahl aufgezählt statt gegrept. | Brudis Grep: zwölf Treffer, neun davon Chat-Nummern |
 
 Keinen davon hat Claude selbst gefunden — zwei Brudi, zwei der Meister.

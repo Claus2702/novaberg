@@ -21,7 +21,7 @@ Der Lauf meldete zwanzig Neuanlagen. Die Tabelle hatte keine. Die zwanzig Zeilen
 
 Der Pixie-Zeitplan schrieb seinen Redis-Eintrag unter `if not redis_client.exists(key)`. Beim ersten Start entstand er aus `config.py`; ab dem zweiten war der **gespeicherte** Wert maßgeblich. Jede spätere Änderung an Intervall oder Priorität stand im Code, wirkte aber nie — ohne Fehler, ohne Warnung, ohne etwas, das widersprochen hätte.
 
-Betroffen waren alle sieben periodischen Aufgaben. **Folge für alles Frühere:** Beobachtungen zum Takt- oder Prioritätsverhalten vor Commit `3dc151e` können gegen einen veralteten Redis-Stand gemessen worden sein statt gegen den Code. Ein Backfill ist nicht möglich; die damaligen Werte sind fort.
+Betroffen waren alle sieben periodischen Aufgaben. **Folge für alles Frühere:** Beobachtungen zum Takt- oder Prioritätsverhalten vor Commit `d5b07f7` können gegen einen veralteten Redis-Stand gemessen worden sein statt gegen den Code. Ein Backfill ist nicht möglich; die damaligen Werte sind fort.
 
 ### Fall 3 — Das Register und seine Abschrift
 

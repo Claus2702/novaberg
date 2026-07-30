@@ -34,7 +34,7 @@ Der Bug war der schlimmste der drei Chat-106-Bugs, gerade WEIL er der leiseste w
 
 > **Ein Log darf nur behaupten, was es weiß. Wer eine Wirkung loggt, die er nicht beobachten kann, baut einen Zeugen, der gegen ihn aussagt.**
 
-Der Thinker weiß: „ich habe in den State geschrieben". Er weiß NICHT: „der Folge-Durchlauf wird laufen". Das ehrliche Log lautet deshalb seit `44e050a`:
+Der Thinker weiß: „ich habe in den State geschrieben". Er weiß NICHT: „der Folge-Durchlauf wird laufen". Das ehrliche Log lautet deshalb seit `090ac07`:
 
 ```
 Thinker: Doppel-Fehlschlag — Self-Trigger im State gesetzt (self_trigger=True)
@@ -60,7 +60,7 @@ Zwei wiederkehrende Klassen aus dem Audit, beide mit derselben Form („der Aufr
 
 ---
 
-## 4. Die Anwendung (drei Regeln, umgesetzt in `44e050a`)
+## 4. Die Anwendung (drei Regeln, umgesetzt in `090ac07`)
 
 1. **Der Sender loggt seinen Write, nicht die Wirkung** — „im State gesetzt, Auslieferung hängt am Empfänger".
 2. **Der Empfänger loggt jede Ankunft, nicht nur den Erfolgsfall** — sonst ist ein toter Kanal von „kein Trigger nötig" nicht unterscheidbar (`Event-Consumer: Self-Trigger im Result — vorhanden=…, wert=…`).

@@ -89,7 +89,7 @@ Der oben beschriebene Self-Trigger-Notnagel („läuft ein zweiter, vollständig
 Durchlauf") hat zum Zeitpunkt dieser Lesson **nie funktioniert**. `self_trigger` und
 `self_trigger_payload` waren nicht als Channel deklariert und wurden an der ersten
 Node-Grenze (Thinker → Tribunal) still verworfen. Live belegt Chat 106, 18:35:22.
-Fix: `44e050a`.
+Fix: `090ac07`.
 
 Diese Lesson wurde in gutem Glauben geschrieben — der Thinker loggte
 `"Self-Trigger fuer Klaerung gesetzt"`. Das Log log.

@@ -147,7 +147,7 @@ db_zugriff → EI-Calc(character) → Enricher → EmGrav → Reducer → Router
 | 7 | Agent-Dispatch | Nein | Delegiert an agenten-spezifischen Dispatch, kehrt zum Planner zurueck (Schleife). |
 | 8 | GV-Node | GPU | Gespraechsvektor-Hypothese (Farbmisch + zweite Wissensquelle). ~~Entity-Hop über die `fakten`-Tabelle~~ → seit Chat 115 Resonanz-Kontext aus `state["lzg_resonanz"]`, gelegt vom Enricher. |
 | 9 | Responder | GPU | Antwort generieren — liest `internal.character`, `internal.identities`, `internal.directives` aus `state["internal"]`. |
-| 10 | Thinker | GPU (opt.) | Faktencheck, Web-Suche. Bei Doppel-Fehlschlag: setzt `self_trigger`/`self_trigger_payload` (deklarierte Channels seit Chat 106, `44e050a` — vorher undeklariert und an der Node-Grenze still verworfen, THINKER-SELFTRIGGER-KANALLOS). |
+| 10 | Thinker | GPU (opt.) | Faktencheck, Web-Suche. Bei Doppel-Fehlschlag: setzt `self_trigger`/`self_trigger_payload` (deklarierte Channels seit Chat 106, `090ac07` — vorher undeklariert und an der Node-Grenze still verworfen, THINKER-SELFTRIGGER-KANALLOS). |
 | 11 | Tribunal | GPU | Drei-Perspektiven-Bewertung (Jurist/Psychologe/Ethiker). |
 | 12 | Evaluate | Nein | Vote-Aggregation. Conditional → ok/fallback/correct. |
 | 13 | Corrector | GPU | Korrektur bei Ablehnung, zurueck zum Tribunal (max 2 Runden). |
@@ -602,7 +602,7 @@ agents/timeline/
 
 ### 7.3 Resume-Flow (Redis Pending State, TTL 300s)
 
-Agent setzt `status=rueckfrage` -> Dispatch speichert `pending_agent:{user_id}` in Redis (TTL 300s) -> Router erkennt Pending -> `management_action=resume` -> Planner (**Schleifen-Schutz seit Chat 106:** `_agent_bereits_gelaufen()` prueft VOR dem Setzen von `agent_name`, ob der Agent in diesem Turn schon lief — wenn ja, endet der Turn, der Responder stellt die Rueckfrage, der Pending-Key bleibt fuer den naechsten echten User-Turn) -> Agent-Dispatch -> Agent._resume-Node (Disambiguierung-Matching oder Duplikat-Aufloesung). Ohne den Guard rekursierte eine Rueckfrage-auf-Rueckfrage im selben Turn bis Recursion-Limit 25 (AGENT-RUECKFRAGE-LOOP, gefixt `1a44fbf`, live bewiesen 11.7.2026) — der alte AGT-FIX3-Guard sass nur im Agent-Pfad, der Resume-Zweig kehrte vor ihm zurueck. Funktioniert seit dem Fix end-to-end inkl. Rueckfrage-auf-Rueckfrage. LangGraph `interrupt()` bleibt langfristiges Ziel fuer sauberes State-Handling.
+Agent setzt `status=rueckfrage` -> Dispatch speichert `pending_agent:{user_id}` in Redis (TTL 300s) -> Router erkennt Pending -> `management_action=resume` -> Planner (**Schleifen-Schutz seit Chat 106:** `_agent_bereits_gelaufen()` prueft VOR dem Setzen von `agent_name`, ob der Agent in diesem Turn schon lief — wenn ja, endet der Turn, der Responder stellt die Rueckfrage, der Pending-Key bleibt fuer den naechsten echten User-Turn) -> Agent-Dispatch -> Agent._resume-Node (Disambiguierung-Matching oder Duplikat-Aufloesung). Ohne den Guard rekursierte eine Rueckfrage-auf-Rueckfrage im selben Turn bis Recursion-Limit 25 (AGENT-RUECKFRAGE-LOOP, gefixt `f1b3a27`, live bewiesen 11.7.2026) — der alte AGT-FIX3-Guard sass nur im Agent-Pfad, der Resume-Zweig kehrte vor ihm zurueck. Funktioniert seit dem Fix end-to-end inkl. Rueckfrage-auf-Rueckfrage. LangGraph `interrupt()` bleibt langfristiges Ziel fuer sauberes State-Handling.
 
 ### 7.4 CRUD-Haertung (Chat 42)
 

@@ -13,7 +13,7 @@
 
 Der EI-Calc-Node ist die Berechnungsschicht der emotionalen Intelligenz. Er berechnet pro Aufruf **entweder** die User-EI (Pfad 1, HumanGraph) **oder** Novas Empathie-modulierten Emotionsstrang (Pfad 2, CharacterGraph). Welcher Block läuft, entscheidet `state["ei_calc_rolle"]`.
 
-Eingangsdaten: die Session-Turns (`raw_turns`) und die Perzeptionsergebnisse aus der `Emotion`-Klasse (`state["external"].emotion` für den User-Pfad, `state["internal"].emotion` als Vorzustand für den Character-Pfad). Die Turn-Beschaffung unterscheidet sich je Graph: Im HumanGraph liefert sie der Enricher über `state["raw_turns"]` (er läuft davor); im CharacterGraph lädt `_ei_calc_character` sie **selbst** aus Redis (`session_turns_retrieve`, seit e54092d/Chat 105) — der Enricher läuft dort erst danach.
+Eingangsdaten: die Session-Turns (`raw_turns`) und die Perzeptionsergebnisse aus der `Emotion`-Klasse (`state["external"].emotion` für den User-Pfad, `state["internal"].emotion` als Vorzustand für den Character-Pfad). Die Turn-Beschaffung unterscheidet sich je Graph: Im HumanGraph liefert sie der Enricher über `state["raw_turns"]` (er läuft davor); im CharacterGraph lädt `_ei_calc_character` sie **selbst** aus Redis (`session_turns_retrieve`, seit a5acc7d/Chat 105) — der Enricher läuft dort erst danach.
 
 **Kein LLM-Call.** Ein Redis-Read (Session-Turns) auf der Character-Seite; sonst reine Python-Vektorarithmetik. Sub-100ms, deterministisch, reproduzierbar.
 
@@ -58,9 +58,9 @@ db_zugriff → ▶ ei_calc ◀ → enricher → emotionale_gravitation → reduc
 
 **CharacterGraph:** Zweiter Node, nach `db_zugriff`. Berechnet den Character-Pfad.
 
-**Reihenfolge-Logik (Phase 2, präzisiert Chat 105):** Im CharacterGraph läuft EI-Calc **vor** dem Enricher — bewusst (630d357): Der Enricher liest `nova_emotions_verlauf`, das EI-Calc erzeugt; die Erinnerungs-Auswahl (Spreading-Sektor-Faktor, `enricher.py` §8.4-Pfad) soll auf Novas empathie-modifizierter Lage stehen, nicht auf der des Vorturns. Die Abhängigkeit besteht damit in **beide** Richtungen: EI-Calc braucht Session-Turns, der Enricher braucht EI-Calc-Output. Aufgelöst wird sie, indem der Konsument selbst lädt — nicht durch Kantentausch.
+**Reihenfolge-Logik (Phase 2, präzisiert Chat 105):** Im CharacterGraph läuft EI-Calc **vor** dem Enricher — bewusst (fe1bb5f): Der Enricher liest `nova_emotions_verlauf`, das EI-Calc erzeugt; die Erinnerungs-Auswahl (Spreading-Sektor-Faktor, `enricher.py` §8.4-Pfad) soll auf Novas empathie-modifizierter Lage stehen, nicht auf der des Vorturns. Die Abhängigkeit besteht damit in **beide** Richtungen: EI-Calc braucht Session-Turns, der Enricher braucht EI-Calc-Output. Aufgelöst wird sie, indem der Konsument selbst lädt — nicht durch Kantentausch.
 
-**Konsequenz für raw_turns (seit e54092d):** Im CG liegt `state["raw_turns"]` zum EI-Calc-Zeitpunkt noch leer (create_state-Default). `_ei_calc_character` lädt die Session-Turns deshalb selbst aus Redis (`session_turns_retrieve`), mit EVA-Disziplin: Paar-Check (user_id/character_id vorhanden?), Redis-Read im try/except, bei Fehler `logger.error` mit Kontext und Weiterrechnen mit leerer Liste — der Turn stirbt nicht am fehlenden Emotionsverlauf, aber der Ausfall ist laut. Die geladene Liste bleibt **lokal**: `state["raw_turns"]` gehört weiterhin dem Enricher, kein zweiter Schreiber. `_ei_calc_user` (HG) liest unverändert aus `state["raw_turns"]`.
+**Konsequenz für raw_turns (seit a5acc7d):** Im CG liegt `state["raw_turns"]` zum EI-Calc-Zeitpunkt noch leer (create_state-Default). `_ei_calc_character` lädt die Session-Turns deshalb selbst aus Redis (`session_turns_retrieve`), mit EVA-Disziplin: Paar-Check (user_id/character_id vorhanden?), Redis-Read im try/except, bei Fehler `logger.error` mit Kontext und Weiterrechnen mit leerer Liste — der Turn stirbt nicht am fehlenden Emotionsverlauf, aber der Ausfall ist laut. Die geladene Liste bleibt **lokal**: `state["raw_turns"]` gehört weiterhin dem Enricher, kein zweiter Schreiber. `_ei_calc_user` (HG) liest unverändert aus `state["raw_turns"]`.
 
 **Input:** State mit Perzeptionsergebnissen (Emotion, Arousal, Modus, Stil, Intent, Tone, Beziehungsdynamik) in den Personality-Klassen; Session-Turns je Graph wie oben (HG: `state["raw_turns"]` vom Enricher, CG: eigener Redis-Read).
 
@@ -207,7 +207,7 @@ Sieben Funktionen aus `ei/berechnung.py` plus eine aus `ei/gravitation.py`:
 | `_nova_empathie_berechnen` | `ei/berechnung.py` | Asymmetrische Empathie, α-Koeffizienten, Konflikt-Erkennung |
 | `emotionale_gravitation_auf_verlauf_anwenden(verlauf, punkte)` | `ei/gravitation.py` | Moduliert Verlauf an hoch-arousal KZG-Treffern (`ei_calc.py:22` importiert) |
 
-Dazu seit e54092d: `session_turns_retrieve` (`memory/session.py`) und `redis_client` aus `config` — der eine Redis-Read der Character-Seite (s. §2). **Keine** PostgreSQL- oder Ollama-Zugriffe, kein LLM-Call.
+Dazu seit a5acc7d: `session_turns_retrieve` (`memory/session.py`) und `redis_client` aus `config` — der eine Redis-Read der Character-Seite (s. §2). **Keine** PostgreSQL- oder Ollama-Zugriffe, kein LLM-Call.
 
 ---
 
@@ -226,7 +226,7 @@ Bis Chat 58 lief beides im Enricher: Datenzugriffe + EI-Berechnungen in einem No
 - **Enricher:** Lädt alles aus Redis/PostgreSQL. Schreibt `raw_turns`, Plugin-Kontext, Session-Turns, `memory_entries`.
 - **EI-Calc:** Liest nur aus dem State (`raw_turns`, Personality-Klassen). Rechnet. Schreibt EI-Ergebnisse zurück (Klassen-Felder plus die drei zulässigen Verlaufs-Brücken).
 
-Für die User-Seite gilt weiterhin: Unit-Tests mit reinem State-Dict, keine Mocks. Die Character-Seite trägt seit e54092d die eine, bewusste Ausnahme — den eigenen Session-Turns-Read (s. §2), erzwungen durch die CG-Reihenfolge aus 630d357. Tests dieses Pfads mocken `session_turns_retrieve` oder akzeptieren die laut geloggte Leer-Liste.
+Für die User-Seite gilt weiterhin: Unit-Tests mit reinem State-Dict, keine Mocks. Die Character-Seite trägt seit a5acc7d die eine, bewusste Ausnahme — den eigenen Session-Turns-Read (s. §2), erzwungen durch die CG-Reihenfolge aus fe1bb5f. Tests dieses Pfads mocken `session_turns_retrieve` oder akzeptieren die laut geloggte Leer-Liste.
 
 ### 6.3 Position vor dem Router (Chat 59, aktualisiert Phase 2)
 
@@ -255,7 +255,7 @@ EI-Calc führt pro Aufruf genau einen der zwei Blöcke aus — User-Pfad oder Ch
 
 ## 7a. Historie — was seit Chat 89 nicht lief
 
-Von 630d357 (Chat 89, Topologie-Drehung) bis e54092d (Chat 105) las `_ei_calc_character` **immer** ein leeres `raw_turns`: Die Drehung stellte den Enricher hinter EI-Calc, übersah aber, dass EI-Calc dessen `raw_turns` brauchte — im CG-State lag ab da nur noch der create_state-Default `[]`.
+Von fe1bb5f (Chat 89, Topologie-Drehung) bis a5acc7d (Chat 105) las `_ei_calc_character` **immer** ein leeres `raw_turns`: Die Drehung stellte den Enricher hinter EI-Calc, übersah aber, dass EI-Calc dessen `raw_turns` brauchte — im CG-State lag ab da nur noch der create_state-Default `[]`.
 
 Zwei Folgen, die zweite schwerer als die erste:
 
