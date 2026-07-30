@@ -1746,6 +1746,36 @@ Die Nulllinie duldet den Bestand: 2263 Treffer, die gezählt und nicht behoben w
 
 **Was die Umbenennung nicht ist:** eine Lösung für `REFAC-LOGGER-HIERARCHIE`. Der Backlog-Punkt betrifft das **Argument** von `getLogger` — den Mix aus flachen, verschachtelten und `__name__`-basierten Logger-Namen. Hier ging es um den **Variablennamen**, unter dem der Logger im Modul steht. Zwei verschiedene Dinge am selben Aufruf; `event_time.py` erfüllt weiterhin nur das eine.
 
+### M1 wird dreiwertig — und der Live-Pfad hat es nie bekommen ✅🔶 (30.07.2026)
+
+Zweiwertig **wog** M1 nicht mit, es **bestimmte** das Vorzeichen. `rohwert = Mittel(bewegung, wollen)` mit `wollen ∈ {−1, +1}` legt den Rohwert bei `+1` zwingend in [0, +1] und bei `−1` zwingend in [−1, 0]; gegen die Schwelle −0.45 und einen Versatz von höchstens ±0.25 setzte damit **eine einzige führende Intention das Bit im Alleingang**. Gemessen über 97 Nutzer-Turns: 47,4 %. In fast der Hälfte aller Turns war der ganze Bewegungsapparat ohne Wirkung.
+
+- ✅ **Drei Klassen statt zwei.** `hilferuf` und `planung` kommen zur setzenden Menge — beides verlangt oder legt fest. Sechs Intentionen gehen mit (0), drei geben zurück (−1). Die drei Mengen zerlegen `INTENT_KANON` vollständig, und ein Test prüft das **gegen den Kanon**, nicht gegen ihre eigene Vereinigung: Eine neue Intention ohne Klasse wird rot, statt still durch alle drei Zweige zu fallen.
+- ✅ **`emotionaler_ausdruck` gibt zurück, und der Grund ist eine Invariante.** Auf 0 ergäbe `['bestaetigung']` den Wert −1 und `['bestaetigung', 'emotionaler_ausdruck']` den Wert 0 — eine Reaktion machte den Turn führender. Betrifft 7 von 97 Turns, die, in denen sonst nichts Tragendes steht.
+- ✅ **Ein unbekannter Wert wird benannt statt verrechnet.** Zweiwertig war ein Bruchstück eines Transportformats von einer gültigen Intention der unteren Klasse nicht zu unterscheiden. Dieselbe Fehlerklasse wie `KALIBRIER-INTENTIONEN-UNGEPARST`, eine Ebene höher.
+- ✅ **Gemessen über beide Durchgänge desselben Codepfads** — der alte Zustand ist der Sonderfall mit leerer mittlerer Klasse, kein nachgebauter Vergleichswert. Kontrolle: Der alte Durchgang liefert 57 von 99 negativen Rohwerten, exakt die aktenkundigen 57,6 %.
+
+| | Rohwert < 0 | > 0 |
+|---|---:|---:|
+| zweiwertig | 57 | 42 |
+| **dreiwertig** | **24** | **75** |
+
+- 🔶 **Die Schwelle passt nicht mehr.** Bei −0.45 liegt die Minderheit jetzt bei **3,0 %** statt der geforderten 15 %. Von Hand gesetzt wird sie nicht; sie kommt aus dem Kalibrierlauf.
+- 🔶 **Und der wartet auf einen Defekt, der beim Prüfen der Live-Wirkung herausfiel:** `user_intentionen` — der State-Key, aus dem M1 liest — **hat keinen Erzeuger**. Der Enricher füllt ihn aus den Session-Turns, der Dispatcher schreibt die Session-Turns aus ihm; ein geschlossener Kreis. Die Perzeption erzeugt ein einzelnes `external.emotion.intent`, die Liste im KZG kommt aus dem Salienz-Objekt. Zwei Erzeuger, keiner bedient diesen Schlüssel. Live gemessen: 3 von 3 Turns `fehlend=['wollen']`, keine Kanon-Verwerfung — die Liste ist leer, nicht ungültig. Als `INITIATIVE-M1-OHNE-QUELLE` aufgenommen.
+- 🔶 **Der Beleg lag seit dem Bautag im Konzept.** Das als „live belegt" geführte Beispiel vom 29.07. trägt `fehlend=['wollen']` im abgedruckten Log. Der Nachweis für das Funktionieren der Achse enthielt den Befund.
+
+**Folge für die Kalibrierung:** Der Korpus holt die Intentionen aus dem KZG und hat M1 in 47,4 % der Turns, die Laufzeit nie. **Korpus und Laufzeit rechnen verschiedene Größen**, und die Schwelle wurde auf der einen erhoben und wird auf der anderen angewandt. Der Kalibrierlauf ist deshalb ausdrücklich **nicht** gefahren worden — er suchte eine Schwelle für etwas, das live nicht entsteht.
+
+**Umfang:** Suite 575 → **590 Tests**, grün, 0 übersprungen. Nulllinie unverändert 2263. Drei Gegenproben, jede an ihrer Wirkung: Aufrufer zurück auf zweiwertig → 4 rot; Kanon-Prüfung entfernt → 2 rot; `emotionaler_ausdruck` in die mittlere Klasse → 1 rot. Kein `db/init.sql` angefasst, keine DDL.
+
+### Ein Default in `.get` deckt den fehlenden Schlüssel, nicht den gesetzten ✅ (30.07.2026)
+
+**Der Client zeigte nur noch „Fehler:".** `nachricht.get("thinking", "")` sah aus wie eine Absicherung und war keine: Ollama lässt das Feld nicht weg, es sendet `"thinking": null`. Ein Default greift bei **abwesendem** Schlüssel, nie bei einem mit Wert `None` — also kam `None` durch und löste die am selben Tag ergänzte Typprüfung aus. Jeder Turn starb.
+
+Die Härtung bleibt: Ein `dict`, eine Zahl oder eine Liste in dem Feld kracht weiterhin laut mit genanntem Typ. Nur die Grenze war eine Stufe zu scharf — **`null` ist die zweite Schreibweise von „kein Reasoning"**, und beide Schreibweisen werden jetzt ausdrücklich auf denselben Leerfall abgebildet, statt dass eine davon über einen Default hereinfällt.
+
+**Warum 16 Tests grün blieben: die Attrappe konnte den Fall nicht bilden.** Sie bildete `thinking=None` auf einen **weggelassenen** Schlüssel ab — genau die Unterscheidung, an der der Code scheiterte, war in ihr schon eingeebnet. Sie hat jetzt mit `THINKING_NULL` einen eigenen Ausdruck dafür, und zwei Tests stehen darauf: der Leerfall und der positive Zwilling, der beide Schreibweisen gegeneinander hält. Gegenprobe: Fix heraus → beide rot. Als `OLLAMA-THINKING-NULL` aufgenommen.
+
 ---
 
 ## Chat 116 (29.07.2026) — Das Panel bekommt den Wert, den der Node seit jeher schreibt ✅

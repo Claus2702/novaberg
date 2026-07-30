@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Konzept — Neudefinition und Kalibrierung der Achse I
-**Stand:** 29. Juli 2026, Chat 117 (§7 Baustand der Kalibrierrechnung, §7.2 der Zeuge urteilt umgekehrt, §7.4 er ist nicht längenneutral. Kern: Chat 116)
+**Stand:** 30. Juli 2026 (§4.1a **M1 ist dreiwertig** — zweiwertig bestimmte es das Vorzeichen des Rohwerts allein, gemessen in 47,4 % der Turns; §4.2 Punkt 3 für M1 **widerlegt**: `user_intentionen` hat keinen Erzeuger, die Achse läuft live auf zwei von drei Maßen; §1 der abgedruckte Live-Beleg enthält den Befund. Zuvor: §7 Baustand der Kalibrierrechnung, §7.2 der Zeuge urteilt umgekehrt, §7.4 er ist nicht längenneutral. Kern: Chat 116)
 **Pfad:** novaberg/docs/novaberg-gv-initiative_k.md
 **Typ:** Konzept
 **Herkunft:** `novaberg-gv-strategie_k.md` §3.1 (Achse 6) — dieses Dokument ersetzt die dortige Heuristik v1
@@ -44,6 +44,8 @@ wert     = rohwert + versatz               gekappt auf [-1, +1]
 **Der Charakter-Versatz steht auf 0.0 und ist nicht abgeleitet** — dieselbe Lage wie `GV_RAUM_CHARAKTER_FAKTOR` nach Chat 114. Das Rad (§6) ist der nächste Schritt.
 
 **Live belegt 29.07.2026, 13:56 UTC.** Zwei Turns; der zweite (Themenwechsel Mond → Saturnringe):
+
+> **⚠ Der abgedruckte Beleg enthält den Befund, gelesen am 30.07.2026.** Er trägt `fehlend=['wollen']` — M1 war schon in diesem Beispiel nicht messbar, und das ist kein Zustand jener zwei Turns, sondern der Regelfall (`novaberg-bugs.md` → `INITIATIVE-M1-OHNE-QUELLE`). Der Beleg zeigt also eine Achse, die auf zwei von drei Maßen läuft. **Was er belegt, bleibt richtig:** Die Achse kippt, und Sektor #14 ist erreichbar. Was er nicht belegt, ist die Vollständigkeit der Rechnung.
 
 ```
 Initiative: wert=0.104 (roh=0.104, versatz=+0.00)
@@ -119,6 +121,8 @@ Grundlage: **493 KZG-Einträge** des Paars (94 Nutzer, 399 Nova), davon **164 Ü
 
 ### 4.1 M1 — Intentionen (F1)
 
+> **Seit 30.07.2026 ist M1 dreiwertig.** Die Messungen dieses Abschnitts stammen aus der zweiwertigen Fassung und behalten ihre Gültigkeit als Herleitung der *führenden* Menge; die Zuordnung der übrigen elf Intentionen ist mit §4.1a neu. Der Grund für die Umstellung steht dort und ist arithmetisch, nicht qualitativ.
+
 Führend: `information_erfragen`, `feedback_erfragen`, `anweisung`, `widerspruch`, `abschluss`.
 
 | | Nutzer | Nova | Spreizung |
@@ -130,6 +134,45 @@ Führend: `information_erfragen`, `feedback_erfragen`, `anweisung`, `widerspruch
 **Ein einziger Wert entscheidet: `recherche_vertiefen`.** Nova trägt ihn in 38,8 % ihrer Einträge, der Nutzer in 6,4 %. Nimmt man ihn zur führenden Menge, kollabiert das Signal auf +0,04 — dieselbe Nutzlosigkeit wie die Textlängen-Achse. Nimmt man `reflexion` dazu, **führt Nova**. Die Setzung aus §3 ist damit nicht kosmetisch, sondern trägt das Maß.
 
 **Bekannte Lücke:** Zwei von 874 Nennungen liegen außerhalb des 16er-Kanons (`philosophischer_austausch`, `spielerisch_interagieren` — beides Modus-Werte im Intentionsfeld, beide auf Novas Seite). Das Feld nimmt sie stillschweigend an. Für ein Maß, das darauf steht, muss die Annahme laut werden.
+
+### 4.1a M1 ist dreiwertig — Setzung vom 30.07.2026
+
+**Zweiwertig wog M1 nicht mit, es bestimmte das Vorzeichen.** Das ist Arithmetik:
+
+```
+rohwert = Mittel(bewegung, wollen)      wollen ∈ {−1, +1}
+```
+
+Bei `wollen = +1` liegt der Rohwert zwingend in **[0, +1]**, bei `wollen = −1` zwingend in **[−1, 0]**. Gegen eine Schwelle von −0.45 und einen Versatz von höchstens ±0.25 heißt das: **Eine einzige führende Intention setzte das Bit im Alleingang**, und weder Themensprung noch Registerweg noch Charakter konnten es zurückholen. Gemessen über 97 Nutzer-Turns des Paars traf das **47,4 %** von ihnen — in fast der Hälfte aller Turns war die Bewegungshälfte der Rechnung ohne Wirkung auf das Ergebnis.
+
+Die andere Hälfte war ebenso hart: Jeder Turn ohne eine der fünf Intentionen trug −1.0, auch wenn er inhaltlich mitging. Das widersprach §3, das `recherche_vertiefen` ausdrücklich als *aktives Mitgehen* führt — weder Setzen noch Zurückgeben. **Die Klasse fehlte, nicht die Einordnung.**
+
+Die sechzehn kanonischen Intentionen zerfallen jetzt in drei Klassen:
+
+| Klasse | Wert | Intentionen |
+|---|---:|---|
+| **setzt eine Richtung** | **+1** | `information_erfragen`, `feedback_erfragen`, `anweisung`, `widerspruch`, `abschluss`, `hilferuf`, `planung` |
+| **geht mit** | **0** | `information_teilen`, `reflexion`, `recherche_vertiefen`, `gemeinsam_eruieren`, `feedback_geben`, `humor` |
+| **gibt zurück** | **−1** | `bestaetigung`, `smalltalk`, `emotionaler_ausdruck` |
+
+`hilferuf` und `planung` sind neu in der oberen Klasse: beides verlangt oder legt fest.
+
+**`emotionaler_ausdruck` war der strittige Fall, und die Begründung ist eine Invariante, kein Geschmack.** Stünde er auf 0, ergäbe `['bestaetigung']` den Wert −1 und `['bestaetigung', 'emotionaler_ausdruck']` den Wert 0 — eine Reaktion auf einen fremden Turn machte den Turn **führender**, als er ohne sie wäre. Betroffen sind 7 von 97 Turns: die, in denen sonst nichts Tragendes steht.
+
+**Ein Turn nimmt die größte vorkommende Klasse.** Damit bleibt die bisherige Semantik erhalten — eine führende Intention genügt. Gemittelt statt maximiert verdünnte jede beiläufige Bestätigung eine echte Frage.
+
+**Ein Wert außerhalb des Kanons wird benannt und verworfen**, nicht als „nicht führend" verrechnet. Zweiwertig war ein Bruchstück eines Transportformats von einer gültigen Intention der unteren Klasse nicht zu unterscheiden — beides ergab „kein Treffer". Das ist der Defekt aus `novaberg-lesson_l_teilmenge-verdeckt-muell.md`, eine Ebene höher.
+
+**Wirkung, gemessen über die 99 Korpuspaare.** Beide Durchgänge durch denselben Codepfad; der alte Zustand ist der Sonderfall mit leerer mittlerer Klasse, also kein nachgebauter Vergleichswert. Kontrolle: Der alte Durchgang liefert 57 von 99 negativen Rohwerten — exakt die aktenkundigen 57,6 %.
+
+| | Rohwert < 0 | > 0 |
+|---|---:|---:|
+| zweiwertig | 57 | 42 |
+| **dreiwertig** | **24** | **75** |
+
+23 von 99 Turns kippen ihr Bit an der geltenden Schwelle, **alle in dieselbe Richtung** — bauartbedingt, `wollen` kann sich nur nach oben bewegen.
+
+**Was daraus folgt und noch offen ist:** Die Schwelle −0.45 wurde für das zweiwertige M1 erhoben. Auf den neuen Rohwerten liegt die Minderheit dort bei **3,0 %** statt der von §12 geforderten 15 % — die Achse wäre am Korpus fast festgenagelt, nur in der anderen Richtung. **Eine neue Schwelle wird nicht von Hand gesetzt** (§12.1); sie kommt aus dem Kalibrierlauf. Der wartet allerdings auf `INITIATIVE-M1-OHNE-QUELLE`: Solange die Laufzeit M1 nicht bekommt, suchte er eine Schwelle für eine Größe, die live nicht entsteht.
 
 ### 4.2 M2 — Themensprung (F2)
 
@@ -181,7 +224,11 @@ Die Messung stützt die Festlegung zusätzlich: Auf Rohtexten fällt Novas Sprun
    | M1 Intentionen | binär | 81 | 50,6 % führend |
 
    Die 36er-Vorstichprobe hatte 0,658 geliefert — sie war repräsentativ.
-3. **Zur Laufzeit liest die Achse den State, nicht das Gedächtnis.** Alle drei Maße liegen dort bereits je Turn vor:
+3. ~~**Zur Laufzeit liest die Achse den State, nicht das Gedächtnis.** Alle drei Maße liegen dort bereits je Turn vor:~~
+
+   > **⚠ Für M1 widerlegt am 30.07.2026** (`novaberg-bugs.md` → `INITIATIVE-M1-OHNE-QUELLE`). Der Satz gilt für M2 und M3. **`user_intentionen` liegt nicht vor — der Schlüssel hat keinen Erzeuger.** Der Enricher füllt ihn aus den bisherigen Session-Turns, der Dispatcher schreibt die Session-Turns aus ihm: ein geschlossener Kreis. Die Perzeption erzeugt ein einzelnes `external.emotion.intent`, die Liste im KZG kommt aus `salienz_obj["intentionen"]`; keiner der beiden bedient diesen Schlüssel. Gemessen an drei Live-Turns: 3 von 3 mit `fehlend=['wollen']`, keine Kanon-Verwerfung.
+   >
+   > **Die Tabelle unten benennt damit eine Absicht, keinen Zustand.** Sie bleibt stehen, weil sie beschreibt, was gelten soll.
 
    | Maß | Quelle im State |
    |---|---|

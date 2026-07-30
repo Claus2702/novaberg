@@ -42,7 +42,7 @@ GV-Node (Turn n+1)            →  _vorturn_laden()  embeddet die Antwort
 
 | Maß | Quelle im State | Einheit |
 |---|---|---|
-| **M1 Wollen** | `user_intentionen` | binär |
+| **M1 Wollen** | `user_intentionen` | **dreiwertig** −1 / 0 / +1 |
 | **M2 Thema** | `prompt_embedding` gegen das Embedding der Vorantwort | Cosinus-Abstand |
 | **M3 Register** | `external.emotion.mode` gegen den Modus der Vorantwort | Weg auf `GV_TIEFE_MODUS` |
 
@@ -56,6 +56,12 @@ bit      = 0 wenn wert > GV_INITIATIVE_SCHWELLE
 
 **Je Dimension gewichtet, nicht je Maß.** M2 und M3 stimmen je Turn zu 72,7 % überein, M1 ist von beiden unabhängig. Gleichgewichtung je Maß gäbe der redundanten Paarung zwei Drittel.
 
+**M1 ist seit dem 30.07.2026 dreiwertig** — `+1` setzt eine Richtung, `0` geht mit, `−1` gibt sie zurück. Die drei Mengen (`GV_INITIATIVE_FUEHREND`, `_NEUTRAL`, `_FOLGEND`) zerlegen `INTENT_KANON` vollständig; ein Turn nimmt die größte vorkommende Klasse, ein Wert außerhalb des Kanons wird benannt und verworfen. Herleitung und Klassenzuordnung: `novaberg-gv-initiative_k.md` §4.1a.
+
+**Warum das die Rechnung ändert und nicht nur verfeinert.** Zweiwertig legte `wollen` das Vorzeichen des Rohwerts fest: `Mittel(bewegung, wollen)` liegt bei `wollen = +1` zwingend in [0, +1] und bei `−1` zwingend in [−1, 0]. Gegen die Schwelle −0.45 entschied eine führende Intention das Bit damit allein — gemessen in 47,4 % der Turns.
+
+> **⚠ Live trägt M1 heute nichts bei.** `user_intentionen` hat keinen Erzeuger; die Achse rechnet in jedem Turn `rohwert = bewegung` und meldet `fehlend=['wollen']`. Der Defekt steht als `INITIATIVE-M1-OHNE-QUELLE` in `novaberg-bugs.md`. **Solange er offen ist, wirkt die Dreiwertigkeit nur im Kalibrier-Korpus**, der die Intentionen über `verbindung` aus dem KZG holt — und damit rechnen Korpus und Laufzeit verschiedene Größen.
+
 **Fehlende Maße werden benannt.** `Fuehrung.fehlend` trägt die Namen; die Rechnung läuft mit den übrigen. Fehlen alle drei, ist `wert` None, das Bit steht auf 1 und eine `error`-Zeile sagt, dass es ein Ausfall ist.
 
 ---
@@ -67,7 +73,7 @@ bit      = 0 wenn wert > GV_INITIATIVE_SCHWELLE
 | Größe | Wert | Herkunft | Kalibriert sich selbst? |
 |---|---|---|---|
 | `initiative_versatz` | je Paar | Charakter-Rad, Median aus 3 Erhebungen | **ja** — bei jeder Destillation neu |
-| `GV_INITIATIVE_SCHWELLE` | −0.45 | 83 Turns, ein Paar, gegen einen Zeugen | **nein** — Konstante |
+| `GV_INITIATIVE_SCHWELLE` | −0.45 | 83 Turns, ein Paar, gegen einen Zeugen — **auf zweiwertigem M1** | **nein** — Konstante, und seit dem 30.07.2026 für eine andere Größe erhoben als die, auf die sie angewandt wird |
 | `GV_INITIATIVE_M2_THEMA` | 0.662 / 0.290 / 0.983 | 133 Rohturn-Paare, dasselbe Paar | **nein** |
 | `GV_INITIATIVE_M3_REGISTER` | 0.100 / 0.000 / 0.600 | dieselbe Grundlage | **nein** |
 

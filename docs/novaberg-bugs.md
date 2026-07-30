@@ -1,6 +1,6 @@
 # Novaberg — Bugs & Limitationen
 
-**Stand:** 30. Juli 2026, Chat 117 (`KALIBRIER-INTENTIONEN-UNGEPARST` behoben — ein ungeparstes JSON-Feld ließ M1 der Initiative-Achse zwei Monate als Konstante laufen und erzeugte zwei Befunde, die keine waren)
+**Stand:** 30. Juli 2026 (`OLLAMA-THINKING-NULL` behoben — ein Default in `.get` deckt den fehlenden Schlüssel ab, nicht den gesetzten Null-Wert; jeder Turn endete in einem TypeError, und die 16 Tests der Methode blieben grün, weil ihre Attrappe den Fall nicht bilden konnte. Neu offen: `INITIATIVE-M1-OHNE-QUELLE` — der State-Key, aus dem M1 liest, wird nur von seinem eigenen Abnehmerkreis beschrieben und ist deshalb dauerhaft leer. Zuvor: `KALIBRIER-INTENTIONEN-UNGEPARST` behoben — ein ungeparstes JSON-Feld ließ M1 der Initiative-Achse zwei Monate als Konstante laufen und erzeugte zwei Befunde, die keine waren)
 **Gliederung:** Einträge stehen in der Sektion ihres Entdeckungs-Chats und wandern nicht. Nachträge aus späteren Chats tragen ihre Chat-Nummer im Text. Sonst verliert die Sektionsfolge ihre Bedeutung als Zeitachse.
 **Quelle:** Testlauf "Karrierekrise" (200 Prompts) + Gedächtnis-Epic (Chat 11) + Epic 11 Agent-System (Chats 22–32) + Persona Smoke-Tests (Chats 31–32) + RechercheAgent-Test (Chat 35) + Doku-Audit (Chat 36) + PRIO0-Fix + Client-Observability (Chat 37) + Claude API-Test + STREAM1-Fix + Gesprächsvektor (Chat 39) + CharakterIdentitaetAgent + DirektivenAgent + Tribunal Score-System (Chat 40) + Telegram Bot + Zeitparser-Fixes (Chat 41) + CRUD-Härtung + Telegram-Chat-Analyse + DB-Report (Chat 42) + KONTEXT1-Fix + Resume-Bug + Epic 15 Pilot (Chat 43) + Epic 15 Rollout + DELEG-REG Fix + KZG-Klebrigkeit (Chat 44) + RESP-CHAR1 Fix (Chat 45) + CLASSIFY-REJECTED + Gemma4 Live-Tests (Chat 48) + Telegram-Konversation "frecher Charakter" (Chat 49) + RESUME-REJECT Fix + Live-Tests (Chat 50) + Neugier-Konzept + Projektinfrastruktur (Chat 51) + Doku-Alignment + emotions_profil (Chat 52) + Antrieb-Konzept + Dual-Emotion (Chat 53) + HALL2-Fix + Planner-Refactor (Chat 54) + PySide6 verworfen + GTK4-Entscheidung (Chat 55) + GTK4-Client + Panel-Infrastruktur (Chat 56) + Web-Tool-Doku + SEARX1-Diagnose (Chat 57) + Chat 61 (Perzeption-Symmetrie, Akkumulations-Refactor, Paper-Portfolio, Lumi, urllib3-Doppel-Turn beobachtet) + Paper I + urllib3-RETRY + ROUTE-CHAR-NOTIZ + RESP-DEAD + PIXIE-GHOST (Chat 65) + WS-SINGLE Fix + ClientConnection + User-Message-Broadcast (Chat 68) + Dreischicht-Integration + GV-Refactoring + MODUS-LEER + VEKTOR-LEER + AROUSAL-330 + ZIEL-LABEL-LEER Fixes (Chat 72) + Promotion-Pipeline-Audit (Chat 75) + Reducer-Umbau Smoke-Tests (Chat 75) + Chat 79 (THINK-MEM-CONFLICT, CHAR-LZG-LEAK, MIGRATION-PIX-PAIR, MIGRATION-AGENTGRAPH-PAIR, PIX-CLEAN, KZG-CLEANUP) + Doku-Code-Abgleich (Chat 106) + init.sql-Audit (Chat 107)
 
@@ -26,6 +26,7 @@ Gegenstandslos geworden: der Stichtag der assistant-Partition vom 26.07.2026, di
 
 | # | Problem | Lösung | Behoben in |
 |---|---------|--------|-----------|
+| OLLAMA-THINKING-NULL | **Jeder Turn endete in einem `TypeError`, der Client zeigte nur noch „Fehler:".** `nachricht.get("thinking", "")` in `services/llm_provider.py` sieht aus wie eine Absicherung gegen ein fehlendes Feld, ist aber keine gegen ein gesetztes: Ein Default in `.get` greift bei **abwesendem** Schlüssel, nie bei einem Schlüssel mit Wert `None`. Ollama lässt das Feld nicht weg, es sendet `"thinking": null`. Also kam `None` durch, traf die am selben Tag ergänzte Typprüfung und löste sie aus. **Reproduktionsweg:** Eine Ollama-Antwort mit `{"message": {"content": "…", "thinking": None}}` durch `OllamaProvider.chat` schicken. **Warum 16 Tests grün blieben:** Die Attrappe konnte den Fall nicht bilden — sie bildete `thinking=None` auf einen **weggelassenen** Schlüssel ab und damit genau die Unterscheidung weg, an der der Code scheiterte. | `None` und fehlender Schlüssel werden ausdrücklich auf denselben Leerfall abgebildet; jeder andere falsche Typ kracht weiterhin laut mit genanntem Typ. Die Attrappe bekommt mit `THINKING_NULL` einen eigenen Ausdruck für „Schlüssel gesetzt, Wert null", dazu zwei Tests: der Leerfall und der positive Zwilling, der beide Schreibweisen gegeneinander hält. Gegenprobe: Fix heraus → beide neu rot | Chat 119 |
 | KALIBRIER-INTENTIONEN-UNGEPARST | Der Kalibrier-Korpus splittete das Feld `intentionen` des KZG-Hash an Kommas, obwohl es mit `json.dumps` geschrieben wird. Aus `["reflexion", "information_teilen"]` wurden Bruchstücke mit Klammer und Anführungszeichen, die `GV_INITIATIVE_FUEHREND` nie treffen — und weil die Liste dabei **nicht leer** war, galt M1 als „nicht führend" statt als „fehlend": ein harter Beitrag von −1.0 in jedem Turn. **0 von 144 Turns** trugen eine führende Intention, geparst **40 von 99**. Der Korpus reproduzierte damit nie die Achse, die sein Docstring zusagt. **Reproduktionsweg:** `HGET kzg:<user>:<char>:<ts> intentionen` liefert eine JSON-Liste; `_intentionen_laden` gab daraus `['["reflexion"', '"information_teilen"]']` zurück. Der Live-Pfad war nie betroffen — er liest die Intentionen aus den Session-Turns, wo sie als echte Liste liegen. **Folge:** zwei widerlegte Befunde, siehe `novaberg-lesson_l_teilmenge-verdeckt-muell.md` §6. | `json.loads` statt `split(",")`; ein vorhandenes, aber unlesbares Feld gilt laut gemeldet als *fehlend* statt als *nicht führend*; sechs Tests, darunter die Zusicherung, dass eine führende Intention nach dem Lesen `GV_INITIATIVE_FUEHREND` trifft. Gegenprobe mit dem alten Split: 3 rot | Chat 117 |
 | P5 | Doppelspeicherung Notiz + Fakt | Guard: `if facts and not planner_aktiv` | Chat 11 |
 | P6 | Doppelspeicherung Timeline | Guard: `if temporal_fact and not planner_aktiv` | Chat 11 |
@@ -105,6 +106,31 @@ Gegenstandslos geworden: der Stichtag der assistant-Partition vom 26.07.2026, di
 ---
 
 ## Offene Bugs
+
+### Initiative-Achse (Chat 119)
+
+#### INITIATIVE-M1-OHNE-QUELLE — der State-Key, den M1 liest, hat keinen Erzeuger
+
+**Entdeckt:** Chat 119, beim Prüfen der Live-Wirkung der Dreiwertigkeit.
+
+**Symptom:** `fuehrung_messen` meldet in jedem Turn `fehlend=['wollen']`. Die Achse rechnet damit `rohwert = bewegung` — M1 trägt live nichts bei, obwohl es die Hälfte der Rechnung sein soll.
+
+**Mechanismus:** M1 liest `state["user_intentionen"]`. Die einzigen Schreiber dieses Schlüssels sind:
+
+- `graph/base.py:125` und `graph/builder.py:94` — initialisieren auf `[]`
+- `graph/nodes/enricher.py:239, 434` — setzen ihn aus `raw_turns`, also aus den **bisherigen Session-Turns**
+- `graph/nodes/dispatcher.py:329` — schreibt den Session-Turn mit `state.get("user_intentionen", [])`
+- `services/event_consumer.py:502` — reicht durch
+
+Der Enricher liest aus den Session-Turns, der Dispatcher schreibt in die Session-Turns. **Ein geschlossener Kreis ohne Quelle:** Was nie hineinkommt, kann nie herauskommen. Die Perzeption erzeugt kein `user_intentionen`, sondern ein einzelnes `external.emotion.intent`; die Intentionsliste im KZG stammt aus `salienz_obj["intentionen"]` (`agents/kzg/speicher.py:326`, `memory/kzg.py:369`). **Zwei Erzeuger von Intentionen, und keiner bedient den Schlüssel, den die Achse liest.**
+
+**Reproduktionsweg:** Einen Turn fahren und die Zeile `ki_server.ei.initiative: Initiative: …` lesen — sie trägt `fehlend=['wollen']` und **keine** Kanon-Verwerfung, die Liste ist also leer und nicht ungültig. Gegenprobe in Redis: `LRANGE session:<user>:<char>:turns 0 -1` zeigt auf `rolle='user'` das Feld `intentionen: []`, während `modus`, `emotion`, `arousal`, `tone` und `sprach_stil` gefüllt sind. Gemessen 30.07.2026 an drei Turns, 3 von 3.
+
+**Alter:** mindestens seit dem Bautag der Achse. Das als „live belegt" geführte Beispiel in `novaberg-gv-initiative_k.md` §1 vom 29.07.2026 trägt `fehlend=['wollen']` bereits im abgedruckten Log — der Beleg für das Funktionieren der Achse enthält den Befund.
+
+**Wirkung, die über die Achse hinausgeht:** Der Kalibrier-Korpus holt die Intentionen über `verbindung` aus dem KZG und hat M1 in 47,4 % der Turns. Sein Modul-Docstring sagt zu, der Rohwert entstehe „wie zur Laufzeit". **Korpus und Laufzeit rechnen verschiedene Größen**, und die Schwelle `GV_INITIATIVE_SCHWELLE` wurde auf Rohwerten *mit* M1 kalibriert und wird auf Rohwerte *ohne* M1 angewandt.
+
+**Nicht entschieden:** ob `user_intentionen` aus dem Salienz-Objekt gespeist werden soll — derselben Quelle wie das KZG — oder ob die Achse direkt dorthin greift. Das ist eine Frage der Absicht und gehört in die Konzeption.
 
 ### RechercheAgent (Chat 35)
 
