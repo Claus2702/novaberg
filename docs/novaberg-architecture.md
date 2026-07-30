@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Systemarchitektur, Tech-Stack, Plugin-System
-**Stand:** 29. Juli 2026, Chat 117 (Verzeichnisbaum nachgezogen: `ei/` vollständig, vier fehlende Agenten ergänzt. Kern: Chat 94, Microservice-Welle Block 2+3; Embedding-Modellwechsel Chat 107, §2.4)
+**Stand:** 30. Juli 2026, Chat 117 (`ruff.toml` im Verzeichnisbaum ergänzt, §3. Zuvor: Verzeichnisbaum nachgezogen — `ei/` vollständig, vier fehlende Agenten ergänzt. Kern: Chat 94, Microservice-Welle Block 2+3; Embedding-Modellwechsel Chat 107, §2.4)
 **Pfad:** novaberg/docs/novaberg-architecture.md
 **Quellen:** nova-00-a.md (Architektur-Übersicht), nova-07-a.md (Tech-Stack), nova-07-m-a.md (Plugin-System)
 
@@ -355,8 +355,11 @@ project/
 ├── ollama/
 │   └── modelfiles/                      # GPU + CPU Modelfiles
 │
+├── ruff.toml                            # Linter-Konfiguration, gilt fuer allen Python-Code
 └── docker-compose.yml
 ```
+
+**Zur `ruff.toml`:** Sie steht in der Wurzel, weil es keine `pyproject.toml` gibt — der Server wird nicht als Paket installiert, sondern als Quellbaum in den Behaelter gemountet. Zielversion ist `py312` aus der Bildbasis des Servers, nicht die Python-Version des Hosts. Jeder gesetzte Grenzwert traegt in der Datei seine Herleitung und seine Messzahlen; jede abgeschaltete Regel ihre Begruendung. Vier Regeln sind abgeschaltet, weil sie einer im Projekt vorgeschriebenen Bauart widersprechen — darunter das f-String-Verbot im Logging und die Zaehlung der Rueckkehrpunkte, die mit der EVA-Disziplin unvereinbar ist.
 
 ### Event-Modell (Chat 60)
 

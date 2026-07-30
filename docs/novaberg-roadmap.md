@@ -1,6 +1,6 @@
 # Novaberg — Roadmap (Projektchronik)
 
-**Stand:** Chat 117, 29. Juli 2026
+**Stand:** Chat 117, 30. Juli 2026
 *(Die Kopfzeile stand bis Chat 109 auf „Chat 93, 21. Mai 2026" — 15 Chats hinter dem Inhalt. **Sie ist danach erneut zurückgefallen:** von Chat 110 bis 114 blieb sie auf „Chat 109" stehen, während der Inhalt weiterwuchs, und wurde in Chat 115 nachgezogen. Wer hier etwas ergänzt, zieht die Kopfzeile mit — sie driftet zuverlässig. Achtung beim Nachschlagen: Nur bis Chat 97 trägt jeder Chat eine eigene `## Chat NNN`-Überschrift; die Chats 98–108 stehen als `###`-Abschnitte unter dem Chat-97-Block, benannt nach Sprint statt nach Chat.)*
 **Pfad:** novaberg/docs/novaberg-roadmap.md
 **Single Source of Truth für abgeschlossene Arbeit.**
@@ -1623,7 +1623,7 @@ Historische Aussagen bleiben unangetastet — die Chronik von Chat 39, die Entit
 
 ---
 
-## Chat 117 (29.07.2026) — Der Doku-Abgleich, und eine Skala, die ihren Maßstab mitschreibt 🔶
+## Chat 117 (29.–30.07.2026) — Der Doku-Abgleich, eine Skala mit Maßstab, und der Linter bekommt eine Konfiguration 🔶
 
 ### Doku-Abgleich der Chats 112–116
 
@@ -1660,6 +1660,27 @@ Die Konzepte waren sauber nachgezogen, die **Moduldokumente** nicht — und zwei
 - 🔶 **M2 liest lange Texte als themengleich.** Gemessen an zehn Turnpaaren mit 1611–2654 Zeichen gegen zehn mit 13–165: **M2 im Mittel 0,467 gegen 0,613** bei einem Zentrum von 0,662. Alle zehn langen liegen unter dem Zentrum, obwohl jeder das Thema wechselt; einer trifft exakt das Skalenminimum. Die Achse trägt damit eine eigene Längenabhängigkeit, die in dieselbe Richtung zeigt wie die des Zeugen. Ursache vermutlich die Mittelung über viele Token — **Annahme, nicht gemessen**.
 
 **Umfang:** Suite 410 → **463 Tests**, grün, 0 übersprungen. Gegenproben sechsmal gezielt rot: Erreichbarkeits-Nebenbedingung entfernt → 5 rot; Binarisierung von `>` auf `>=` → 1 rot; Schwelle aus der Skalenfassung entfernt → 1 Fehlschlag und 3 Fehler; Fehlschlag im Zwischenstand als Urteil `False` geführt → 3 rot; Fehlschlag ohne Grund schreiben lassen → 1 rot; ein Feld aus der Tafelsumme entfernt → 3 rot. Jede zurückgenommen.
+
+### Der Linter bekommt eine Konfiguration ✅ (30.07.2026)
+
+Das Repositorium hatte an keiner Stelle eine Linter-Konfiguration — keine `pyproject.toml`, keine `setup.cfg`, keine `ruff.toml`, auch nicht in Unterverzeichnissen. „Docstring ohne Ausnahme" und „Type Hints ohne Ausnahme" waren damit Absichtserklärungen. Jetzt sind sie prüfbar.
+
+- ✅ **`ruff.toml` liegt versioniert im Repositorium.** Kein Editor-Ordner, kein Skript, keine Erinnerung dessen, der es aufruft. Sechzehn Regelfamilien aktiv, vier Regeln begründet abgeschaltet, vier Grenzwerte gesetzt. Jede Entscheidung trägt ihre Begründung und ihre Messzahlen in der Datei — eine Konfiguration ohne Begründungen ist nach dem nächsten Werkzeugwechsel wertlos, weil niemand weiß, welche Zeile eine Entscheidung war und welche eine Voreinstellung.
+- ✅ **Zielversion `py312`, aus der Bildbasis des Servers gelesen.** Nicht die des Hosts, der eine andere Python-Version trägt: ein Werkzeug in der Voreinstellung des Hosts prüft gegen eine Sprache, die im Betrieb nicht läuft.
+- ✅ **`line-length = 100`, aus der Verteilung hergeleitet.** Über `server/` liegen 1235 Zeilen über 88 Zeichen, 378 über 100, 79 über 120. Der Schritt von 88 auf 100 räumt 857 ab, der von 100 auf 120 nur 299 weitere — die Kurve knickt bei 100. Bei 120 wäre die Trefferzahl am kleinsten, aber dort bleibt Fließtext unbeanstandet; die längste Zeile im Baum hat 414 Zeichen.
+- ✅ **Nulllinie: 2659 Treffer**, gemessen am 30.07.2026 mit ruff 0.16.0. Der Bestand wird nicht aufgeräumt — er ist der Ausgangswert. Größte Einzelmengen: `D` 959, `E` 385, `ANN` 326, `TRY` 209.
+- ✅ **`LOG` ist die eine Familie bei null Treffern**, alle sieben Regeln stable. Die Null ist ein Befund und kein Artefakt abgeschalteter Regeln — die Familie ist damit hart schaltbar. Dicht dahinter: `W` 6, `B` 10, `S` 14, `T20` 14, `N` 29.
+- ✅ **Vier Regeln stehen gegen den Projektstandard und sind ausdrücklich abgeschaltet, nicht stillschweigend weggelassen.** Ein nicht selektierter Präfix sieht aus wie eine Auslassung; ein begründeter Eintrag ist eine Entscheidung. Das f-String-Verbot im Logging (hier vorgeschrieben) wäre allein **931 Treffer** — mehr als das Doppelte der größten aktiven Einzelregel und ein Drittel der Nulllinie. Dazu der Vergleich gegen Zahlenliterale (die Schwellen dieses Systems sind kalibrierte Parameter, 104 Treffer) und eine der beiden gegenläufigen Docstring-Formvarianten.
+- ✅ **Die Zählregel für Rückkehrpunkte ist ausgeschlossen, weil sie die EVA-Disziplin bestraft.** 14 Treffer bei der Standardgrenze, und die Zusammensetzung entscheidet: **fünf sind reine Wächterketten** — eine Funktion gibt sechs von acht Rückgaben als leeres Ergebnis hinter je einer verletzten Vorbedingung zurück, zwei Validierer je ein Ergebnis mit Grund. Die Rückgabezahl eines Validierers ist die Zahl seiner Vorbedingungen und folgt dem Datenmodell; kommt ein Pflichtfeld hinzu, wandert die Funktion auf jede Grenze zu, die man setzt. **Offen benannt, was der Ausschluss aufgibt:** eine Funktion mit 18 Rückgaben, die keine Wächterkette ist, sondern eine als `if`-Kette geschriebene Dispatch-Tabelle.
+- ✅ **Die Verzweigungsgrenze ist die eine *gewählte*, bei 10 statt der Voreinstellung 12.** Bei 12 war die Regel messbar wirkungslos: alle 35 Treffer wurden auch von der Komplexitätsregel gemeldet. Ursache ist Arithmetik, an isolierten Testfällen nachgemessen — die Komplexität entspricht den Verzweigungen plus eins minus der Zahl der `else`-Arme, weil McCabe `else` nicht als eigenen Pfad zählt. Bei 10 liefert dieselbe Regel 7 eigenständige Treffer, und das sind per Konstruktion die `else`-reichen Funktionen: genau die Dispatch-Tabelle als `if`-Kette, die die Komplexitätsregel systematisch unterschätzt.
+- ✅ **Drei Grenzwerte sind Voreinstellungen, und die Datei sagt das** — Komplexität 10, Argumente 5, Anweisungen 50, jeweils als „Standardwert, sichtbar gemacht" und nicht als gewählte Grenze. In keiner der drei Verteilungen gibt es eine Klippe, aus der ein eigener Wert folgte; bei der Komplexität verschiebt der Schritt von 15 auf 16 einen einzigen Treffer. Dass keine Klippe existiert, ist selbst das Herleitungsergebnis.
+- ✅ **Die Anweisungsgrenze trägt eine Warnung.** Sie zählt Anweisungen, die Funktionslängen-Regel des Projekts zählt Zeilen, und beides fällt auseinander — Leerzeilen, Kommentare und Docstrings zählt die Regel gar nicht mit. Der Wert ist eine Näherung an die Längenregel und darf nicht als deren Durchsetzung gelesen werden.
+- 🔶 **Messvorschrift, die man leicht falsch stellt:** Die Trefferzahl wird **ohne** Regelauswahl auf der Kommandozeile erhoben. `--select` setzt den Ausnahmeblock außer Kraft und meldete die ausgeschlossene Rückkehrpunkt-Regel mit 14 Treffern, obwohl sie abgeschaltet ist. Wer so misst, misst die Regelfamilie und nicht die eigene Konfiguration.
+- 🔶 **Was der Prüfstrecke fehlt, ist die Wand.** Der Linter läuft und hat einen Ausgangswert, aber kein Mechanismus schlägt an, wenn die Trefferzahl steigt. Solange der Vergleich Handarbeit ist, ist die Nulllinie eine Notiz. Das ist der Schritt, der die Einführung wirksam macht, und er steht aus.
+
+**Fünf Codestellen abgefallen** — Stellen, die eine Form mehrfach hinschreiben statt sie einmal zu benennen, alle einzeln gelesen und in `novaberg-fundliste.md` festgehalten. Kein Defekt darunter, alles Struktur. Zwei weitere Treffer wurden geprüft und sind **so richtig** und bleiben.
+
+**Kein `.py` angefasst, kein `--fix`, kein Formatter.** Commit `4cd0e79`, eine Datei, 242 Zeilen.
 
 ---
 

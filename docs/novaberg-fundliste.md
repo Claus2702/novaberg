@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Rohe, noch unklassifizierte Funde aus laufender Arbeit
-**Stand:** 30. Juli 2026, Chat 117 (fünf Funde — zwei davon wiegen schwer: der Kalibrier-Korpus besteht zu einem Drittel aus Messturns, und M2 sieht bei langen Texten keinen Themenwechsel. Dazu drei: eine ungesicherte Urteilsreihe in der Positions-Kontrolle, dazu zwei aus dem Doku-Abgleich der Chats 112–116 — eine Log-Zeile auf der alten Salienz-Skala, eine im Backlog verlangte Klemme, die es nie gab. Chat 116: drei Funde aus der Session-Verlaufs-Prüfung, einer aus dem GV-Entity-Hop, sieben aus dem GV-Panel, der Repertoire-Matrix, der Achsen-Messung und dem Charakter-Rad; drei Funde erledigt)
+**Stand:** 30. Juli 2026, Chat 117 (sechs Funde — dazu am 30.07. einer aus der Linter-Einführung: fünf Codestellen, die eine Form mehrfach hinschreiben statt sie einmal zu benennen. Zwei davon wiegen schwer: der Kalibrier-Korpus besteht zu einem Drittel aus Messturns, und M2 sieht bei langen Texten keinen Themenwechsel. Dazu drei: eine ungesicherte Urteilsreihe in der Positions-Kontrolle, dazu zwei aus dem Doku-Abgleich der Chats 112–116 — eine Log-Zeile auf der alten Salienz-Skala, eine im Backlog verlangte Klemme, die es nie gab. Chat 116: drei Funde aus der Session-Verlaufs-Prüfung, einer aus dem GV-Entity-Hop, sieben aus dem GV-Panel, der Repertoire-Matrix, der Achsen-Messung und dem Charakter-Rad; drei Funde erledigt)
 **Pfad:** novaberg/docs/novaberg-fundliste.md
 
 Was beim Bauen an anderer Stelle auffällt, landet hier — **eine Zeile mit Datum**. Kein Bug-Name, keine Priorität, keine Klassifizierung, keine Diskussion. Der Zweck ist, einen Fund festzuhalten, ohne die laufende Arbeit dafür zu unterbrechen.
@@ -64,6 +64,20 @@ Analog zum Kraft-1-Stichtag: ab wann eine Partition brauchbar ist. Kein Backfill
 - **2026-07-29** — Die Klemme in `ei/gravitation.py` fehlt weiterhin: Zeile 336 übernimmt `salienz` ungeklemmt als `gewicht` in den Lesepfad. Der Backlog führt sie als Sofortfix (`KZG-SALIENZ-KONSUMENTEN-DISSENS`, Entscheidung aus Chat 109) und hält im selben Eintrag fest, dass sie nach dem Neubau zwar rechnerisch wirkungslos, aber **als Zusicherung des Lesers an sich selbst** richtig bleibt. Seit dem Salienz-Neubau vom 28.07. kann kein Wert über 1.0 mehr entstehen; die Zusicherung ist damit nicht erfüllt, sondern nur unbeobachtbar geworden.
 
 - **2026-07-28** — Der Router-Miss-Pfad in `services/pixie/scheduler.py` kehrt zurück, **ohne `abschluss()` zu rufen**. Ein periodischer Kandidat, für den kein Agent gefunden wird, behält damit sein `next_run` und wird beim nächsten Heartbeat erneut Kandidat. Ohne Aging war das harmlos — er verlor gegen die Queue. Mit dem Aging (Chat 113) wächst sein Zuschlag bis zum Deckel, und er gewinnt dann **jeden** Zyklus, ohne je zu laufen. Heute nicht akut: Alle sieben vorhandenen `pixie:schedule:*`-Einträge sind routebar, sechs über die Tabelle, `ziel_decay` über die Namensgleichheit. Der Fund ist die Falle für den nächsten Agenten ohne Routing-Eintrag.
+
+- **2026-07-30** — Fünf Stellen schreiben eine Form mehrfach hin, statt sie einmal zu benennen. Alle fünf sind über die Verzweigungsregel des Linters aufgefallen und einzeln gelesen; keine ist ein Defekt, alle fünf sind Struktur. **Der gemeinsame Nenner ist die Wiederholung, nicht die Kompliziertheit** — die Verzweigungszahl ist bei diesen fünf kein Ausdruck von Sachkomplexität, sondern von einem zweimal hingeschriebenen Muster.
+
+  | Stelle | Befund | Form, die es besser trägt |
+  |---|---|---|
+  | `graph/nodes/db_zugriff.py:70` `db_zugriff()` | schreibt zweimal „roh vorhanden → parsen → Parse-Fehler loggen → sonst Fehlen loggen" | ein Helfer, zweimal gerufen — dann steht die Fehlerbehandlung an **einer** Stelle richtig statt an zwei Stellen zweimal |
+  | `services/llm_provider.py:139` `chat()` | zwei fast identische Diagnoseblöcke (`_diag_*`, `_voll_*`), jeder mit eigenem `isinstance`-Paar und eigenem `except` | gemeinsame Form extrahieren; halbiert zugleich die beiden `noqa: BLE001` |
+  | `plugins/notizen_manager/manager.py:406` `execute()` | Aktions-Dispatch als `if/elif`-Kette, in einer Schleife, in einem `try` | Abbildung Aktion → Funktion, oder je Aktion eine Funktion |
+  | `services/pixie/dispatch.py:102` `abschluss()` | Quellen-Dispatch (`queue`/`periodisch`) mit vier Ebenen Retry-Logik darin | Aufspaltung je Quelle, dann je etwa fünf Zweige |
+  | `graph/nodes/perzeption.py:63` `perceive()` | `if rolle == "assistant"` verzweigt an zwei getrennten Stellen, in beiden Armen noch ein `if ziel_personality is None` | die Rollenunterscheidung einmal in ein Wertobjekt auflösen |
+
+  Nicht in der Liste, weil geprüft und **so richtig**: `graph/nodes/ei_calc.py:198` (die `else`-Arme sind die vorgeschriebenen Fehler- und Sichtbarkeitszweige) und `ei/berechnung.py:814` (Fallunterscheidung auf dem 8-Sektor-Oktagon samt dokumentiertem Rückfall). Beide bleiben, wie sie sind.
+
+  Der Bestand wird nicht eigens aufgeräumt: Wer eine dieser Dateien aus anderem Grund anfasst, bringt sie mit.
 
 ---
 
