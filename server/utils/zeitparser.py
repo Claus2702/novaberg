@@ -373,6 +373,12 @@ def _text_normalisieren(text: str) -> tuple[str, bool]:
     ergebnis = re.sub(r"\b[Kk]ommende[nrs]?\s+", "", ergebnis)
     ergebnis = re.sub(r"\b[Ll]etzte[nrs]?\s+", "", ergebnis)
     ergebnis = re.sub(r"\b[Vv]orige[nrs]?\s+", "", ergebnis)
+    ergebnis = re.sub(r"\b[Vv]ergangene[nrs]?\s+", "", ergebnis)
+    # "seit" traegt die Richtung und nicht die Dauer. Bleibt es stehen, kennt
+    # dateparser den Ausdruck nicht und liefert gar nichts; entfernt bleibt
+    # eine Dauer uebrig, die ueber `referenz_modus` rueckwaerts aufgeloest
+    # wird (siehe zeit_parsen_vektor).
+    ergebnis = re.sub(r"\b[Ss]eit\s+", "", ergebnis)
 
     ergebnis = re.sub(r"\b[Ww]oche\s+", "", ergebnis)
 
@@ -573,13 +579,30 @@ def zeit_parsen_vektor(
     # Erkennung auf korrigiertem Text VOR Normalisierung (Block 8 entfernt Praefixe)
     if re.search(r'\b(diesen|diese[mrs]?)\b', korrigiert_lower):
         referenz_modus: str = "absolut"
-    elif re.search(r'\b(letzten?|vorigen?|vergangenen?)\b', korrigiert_lower):
+    elif re.search(r'\b(letzten?|vorigen?|vergangenen?|seit)\b', korrigiert_lower):
+        # `seit` gehoert hierher und nicht zu `vor`: Beide zeigen rueckwaerts,
+        # aber `vor` versteht dateparser selbst, waehrend `seit` ohne diese
+        # Zeile eine Dauer in die ZUKUNFT aufloest. `vor` steht bewusst NICHT
+        # in dieser Liste — es kommt auch in Uhrzeiten vor ("zehn vor acht"),
+        # und dort waere eine Rueckwaerts-Aufloesung falsch.
         referenz_modus: str = "relativ_rueckwaerts"
     else:
         referenz_modus: str = "relativ"
 
-    # ── Datum parsen (bestehende Funktion) ──
-    datum: Optional[datetime] = zeit_parsen(text, referenz, zukunft_bevorzugt)
+    # ── Datum parsen ──
+    # **Der Modus steuert die Richtung.** Bis zum 30.07.2026 wurde er hier
+    # berechnet, zurueckgegeben — und nicht uebergeben: `zeit_parsen` bekam
+    # nur `zukunft_bevorzugt`, und ein rueckwaerts gerichteter Ausdruck loeste
+    # trotzdem nach vorn auf. "letzte fuenf Wochen" ergab ein Datum fuenf
+    # Wochen in der Zukunft, obwohl der Modus `relativ_rueckwaerts` daneben
+    # stand (novaberg-bugs.md -> ZEIT-RUECKWAERTS-WIRD-ZUKUNFT).
+    #
+    # Ein berechneter Wert ohne Wirkung ist schlimmer als keiner: Er sieht im
+    # Rueckgabewert nach einer getroffenen Entscheidung aus.
+    rueckwaerts: bool = referenz_modus == "relativ_rueckwaerts"
+    datum: Optional[datetime] = zeit_parsen(
+        text, referenz, zukunft_bevorzugt and not rueckwaerts,
+    )
 
     return ZeitVektor(
         datum=datum,
