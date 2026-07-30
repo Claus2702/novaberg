@@ -45,6 +45,7 @@ gi.require_version("Gtk", "4.0")
 from gi.repository import Gtk, Pango  # noqa: E402
 
 from config import PANEL_REQUEST_TIMEOUT, SERVER_URL  # noqa: E402
+from ui.formatierung import zeit_kurz  # noqa: E402
 from ui.panel_base import PanelBase  # noqa: E402
 
 
@@ -230,7 +231,7 @@ def _build_goal_card(ziel: dict, zeige_aktualisiert: bool) -> Gtk.Box:
     spacer.set_hexpand(True)
     head.append(spacer)
 
-    created: str = _format_timestamp(str(ziel.get("created_at") or ""))
+    created: str = zeit_kurz(str(ziel.get("created_at") or ""))
     if created:
         ts_label = Gtk.Label(label=f"erstellt: {created}")
         ts_label.add_css_class("dim-label")
@@ -285,7 +286,7 @@ def _build_goal_card(ziel: dict, zeige_aktualisiert: bool) -> Gtk.Box:
 
     # Aktualisiert-am (nur fuer mittelfristige Ziele relevant).
     if zeige_aktualisiert:
-        updated: str = _format_timestamp(str(ziel.get("updated_at") or ""))
+        updated: str = zeit_kurz(str(ziel.get("updated_at") or ""))
         if updated:
             akt_label = Gtk.Label(label=f"aktualisiert: {updated}")
             akt_label.set_xalign(0.0)
@@ -356,12 +357,3 @@ def _build_activated_goal_row(entry: dict) -> Gtk.Label:
     label.set_wrap_mode(Pango.WrapMode.WORD_CHAR)
     return label
 
-
-def _format_timestamp(iso: str) -> str:
-    """Kuerzt einen ISO-Zeitstempel auf 'YYYY-MM-DD HH:MM'."""
-    if not iso:
-        return ""
-    s: str = iso.replace("T", " ")
-    if len(s) >= 16:
-        return s[:16]
-    return s

@@ -32,6 +32,7 @@ gi.require_version("Gtk", "4.0")
 from gi.repository import Gtk  # noqa: E402
 
 from config import PANEL_REQUEST_TIMEOUT, SERVER_URL  # noqa: E402
+from ui.formatierung import zeit_kurz  # noqa: E402
 from ui.panel_base import PanelBase  # noqa: E402
 
 
@@ -160,7 +161,7 @@ def _build_entry_card(eintrag: dict) -> Gtk.Box:
     dim_label.add_css_class("heading")
     head.append(dim_label)
 
-    verstaerkt: str = _format_timestamp(str(eintrag.get("verstaerkt_am", "") or ""))
+    verstaerkt: str = zeit_kurz(str(eintrag.get("verstaerkt_am", "") or ""))
     if verstaerkt:
         vs_label = Gtk.Label(label=f"verstärkt: {verstaerkt}")
         vs_label.add_css_class("dim-label")
@@ -180,7 +181,7 @@ def _build_entry_card(eintrag: dict) -> Gtk.Box:
 
     # Tag-Zeile: erstellt · häufigkeit.
     tags: list[str] = []
-    erstellt: str = _format_timestamp(str(eintrag.get("erstellt_am", "") or ""))
+    erstellt: str = zeit_kurz(str(eintrag.get("erstellt_am", "") or ""))
     haeufigkeit: int = int(eintrag.get("haeufigkeit", 0))
 
     if erstellt:
@@ -196,13 +197,3 @@ def _build_entry_card(eintrag: dict) -> Gtk.Box:
 
     return card
 
-
-def _format_timestamp(iso: str) -> str:
-    """Kürzt einen ISO-Zeitstempel auf 'YYYY-MM-DD HH:MM'."""
-    if not iso:
-        return ""
-    s: str = iso.replace("T", " ")
-    # Sekunden/Millisekunden/Zeitzone abschneiden, falls vorhanden.
-    if len(s) >= 16:
-        return s[:16]
-    return s
