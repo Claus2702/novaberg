@@ -188,7 +188,7 @@ Die vierte Zeile trägt den Kern: Die Richtung ist erkannt und wirkt nicht. Nur 
 
 **Gelöst am 30.07.2026.** Der erste Pfad erhebt die Intentionen im Salienz-Node und legt ihre Vereinigung über die Segmente in den State; sie reisen mit demselben Ereignis in den zweiten Pfad wie `salienz_human`. Der Enricher des CharacterGraph gibt dem Wert aus dem Ereignis Vorrang vor seiner Ableitung aus der Historie — ohne diesen Vorrang überschriebe er die Quelle sechs Nodes vor der Achse. **Live gemessen an zehn Turns: M1 kam in allen acht Achsenläufen an, kein `fehlend=['wollen']`.**
 
-**Was der Fix nicht löst:** Die Schwelle `GV_INITIATIVE_SCHWELLE` stammt aus einer Erhebung ohne M1. Über dieselben zehn Turns sagte die Achse **8 von 8 mal „Nutzer führt“** — Minderheit 0 % gegen die von §12 geforderten 15 %. Die Kalibrierung steht damit aus und ist keine Kür mehr.
+~~**Was der Fix nicht löst:**~~ **Am selben Tag nachgezogen.** Die Schwelle stammte aus einer Erhebung ohne M1 und trug über zehn Turns **8 von 8 mal Bit 0**, Minderheit 0 %. Neu erhoben über 127 Turnpaare: **−0.05**, κ 0,406, κ außerhalb der Stichprobe 0,358. Dieselben zehn Turns ergeben jetzt 6 zu 2, Minderheit 25,0 %.
 
 *Der Befund unten bleibt vollständig stehen — er beschreibt, wie der Kanal aussah, und die Fehlerklasse gilt weiter.*
 

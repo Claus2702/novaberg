@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Konzept — Neudefinition und Kalibrierung der Achse I
-**Stand:** 30. Juli 2026 (§4.1a **M1 ist dreiwertig** — zweiwertig bestimmte es das Vorzeichen des Rohwerts allein, gemessen in 47,4 % der Turns; §4.2 Punkt 3 für M1 **widerlegt**: `user_intentionen` hat keinen Erzeuger, die Achse läuft live auf zwei von drei Maßen; §1 der abgedruckte Live-Beleg enthält den Befund. Zuvor: §7 Baustand der Kalibrierrechnung, §7.2 der Zeuge urteilt umgekehrt, §7.4 er ist nicht längenneutral. Kern: Chat 116)
+**Stand:** 30. Juli 2026 (§12.6 **Schwelle neu erhoben: −0.05** statt −0.45, 127 Turns, κ 0,406, κ außen 0,358; §4.1a **M1 ist dreiwertig** — zweiwertig bestimmte es das Vorzeichen des Rohwerts allein, gemessen in 47,4 % der Turns; §4.2 Punkt 3 für M1 **widerlegt**: `user_intentionen` hat keinen Erzeuger, die Achse läuft live auf zwei von drei Maßen; §1 der abgedruckte Live-Beleg enthält den Befund. Zuvor: §7 Baustand der Kalibrierrechnung, §7.2 der Zeuge urteilt umgekehrt, §7.4 er ist nicht längenneutral. Kern: Chat 116)
 **Pfad:** novaberg/docs/novaberg-gv-initiative_k.md
 **Typ:** Konzept
 **Herkunft:** `novaberg-gv-strategie_k.md` §3.1 (Achse 6) — dieses Dokument ersetzt die dortige Heuristik v1
@@ -575,7 +575,11 @@ Das spricht nicht gegen den Entwurf, sondern für den Agenten aus §7: Er rechne
 
 ---
 
-## 12. Die Schwelle: gegen einen Zeugen kalibriert (Chat 116)
+## 12. Die Schwelle: gegen einen Zeugen kalibriert (Chat 116, neu erhoben 30.07.2026)
+
+> **⚠ Die Zahlen der Abschnitte 12.1 bis 12.4 stammen aus der Erstfassung und sind überholt.** Sie bleiben stehen, weil sie die Begründung gegen den Median tragen, und die gilt weiter. Der **Wert** gilt nicht mehr: Die Schwelle steht seit dem 30.07.2026 auf **−0.05**, nicht auf −0.45. Die neue Erhebung steht in §12.6.
+
+
 
 ### 12.1 Warum der Median nicht taugt
 
@@ -628,6 +632,41 @@ Läse das Modell nur die Position — *wer zuletzt spricht, führt* —, stünde
 | +0.25 | 91,6 % | **8,4 %** |
 
 Im ungünstigsten Fall selten, nie zu. Der Charakter verschiebt, er schließt nicht.
+
+### 12.6 Neuerhebung vom 30.07.2026 — die Größe hat sich geändert, nicht nur der Bestand
+
+**Warum überhaupt neu erhoben wurde.** −0.45 stammt aus einer Zeit, in der M1 die Laufzeit nie erreicht hat (`novaberg-bugs.md` → `INITIATIVE-M1-OHNE-QUELLE`): `user_intentionen` hatte keinen Erzeuger, die Achse rechnete `rohwert = bewegung`. Seit der Verkabelung trägt M1 bei. **Damit ist die Schwelle nicht nur veraltet, sondern für eine andere Größe erhoben** als die, auf die sie angewandt wurde.
+
+Auf dem heutigen Korpus trug −0.45 eine Minderheit von **4,7 %** gegen die in §12.3 geforderten 15 %. Live an zehn Turns nachgemessen: **8 von 8 mal Bit 0** — die Achse stand faktisch auf einem konstanten Bit, dem Zustand, den sie ablösen sollte.
+
+**Der Lauf.** 127 Turnpaare, **127 verwertet, null Ausfälle**, Positions-Kontrolle bestanden (Betrag 26,7 Punkte gegen geforderte 20). Der Korpus trägt diesmal eine echte Spreizung — 30 Turns unter 50 Zeichen, 75 zwischen 50 und 149, 21 darüber — statt zu einem Drittel aus synthetischen Messturns zu bestehen (§8.2 des Moduldokuments).
+
+| Schwelle | Übereinstimmung | κ | Minderheit | |
+|---|---|---|---|---|
+| **−0.05** | **74,8 %** | **0,406** | **25,2 %** | **gesetzt** |
+| −0.20 | 76,4 % | 0,402 | 15,8 % | Rand des Plateaus |
+| −0.45 | 68,5 % | 0,127 | 4,7 % | Vorgänger |
+
+**Zwischen −0.20 und −0.05 ist die Kurve flach** — wieder ein Plateau, keine Spitze, genau wie §12.3 es für die Erstfassung festhält.
+
+**Warum −0.05 und nicht −0.20.** κ ist praktisch gleich. Über 200 Zufallshalbierungen wurde −0.05 in **105** Fällen wiedergefunden, −0.20 in **49**; **174 von 200** landeten im Plateau. −0.05 liegt in dessen Mitte, −0.20 an seinem Rand. Der stabilere Wert gewinnt.
+
+**Sie überträgt auf ungesehene Daten** — die einzige Zahl, die etwas über neue Daten sagt:
+
+| | κ innen | κ **außen** | Schwund |
+|---|---|---|---|
+| Erhebung 30.07. vormittags | 0,403 | **0,260** | 0,143 |
+| **Erhebung 30.07. abends** | 0,423 | **0,358** | **0,065** |
+
+Der Schwund ist halbiert, κ außerhalb der Stichprobe um ein Drittel gestiegen.
+
+**Gegenprobe an den zehn Live-Turns**, unabhängig vom Korpus: Bit-Verteilung 6 zu 2, Minderheit **25,0 %** gegen die 25,2 % der Erhebung. Zwei Wege, dieselbe Zahl.
+
+**Drei Vorbehalte, die keine weitere Rechnung auf diesen Daten ausräumt:**
+
+1. **Der Zeuge trennt nur auf einer Seite.** Gefragt, ob *Nova* die Richtung gesetzt hat: 76,7 % ja. Gefragt, ob der *Nutzer* es tat: **exakt 50,0 %** — ein Münzwurf. Zum zweiten Mal unabhängig gemessen, mit anderem Korpus. Das ist das stärkste Argument für einen dreiwertigen Zeugen (§7.2).
+2. **Ein Paar, ein Zeuge, ein Prompt.** κ 0,406 ist „mäßig bis gut", kein Beweis.
+3. **Die chronologische Halbierung überträgt schlechter** als die alternierende (κ außen 0,259 gegen 0,451). Hinweis auf Drift, zum zweiten Mal beobachtet, n=63 je Hälfte. Schwächer als beim letzten Mal (dort −0,058), aber noch da.
 
 ### 12.5 Grenzen
 

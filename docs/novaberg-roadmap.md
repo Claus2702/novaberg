@@ -1768,6 +1768,24 @@ Zweiwertig **wog** M1 nicht mit, es **bestimmte** das Vorzeichen. `rohwert = Mit
 
 **Umfang:** Suite 575 → **590 Tests**, grün, 0 übersprungen. Nulllinie unverändert 2263. Drei Gegenproben, jede an ihrer Wirkung: Aufrufer zurück auf zweiwertig → 4 rot; Kanon-Prüfung entfernt → 2 rot; `emotionaler_ausdruck` in die mittlere Klasse → 1 rot. Kein `db/init.sql` angefasst, keine DDL.
 
+### Die Schwelle wird neu erhoben — und überträgt diesmal ✅ (30.07.2026)
+
+Die Achse stand nach der Verkabelung auf einem konstanten Bit. Der Kalibrierlauf war damit zum ersten Mal sinnvoll — vorher hätte er eine Schwelle für eine Größe gesucht, die live nicht entsteht.
+
+- ✅ **127 Turnpaare, 127 verwertet, null Ausfälle.** Positions-Kontrolle bestanden, Betrag 26,7 gegen geforderte 20. Der Korpus trägt diesmal eine echte Spreizung: 30 Turns unter 50 Zeichen gegen 21 über 150 — statt zu einem Drittel aus synthetischen Messturns zu bestehen.
+- ✅ **Schwelle −0.05**, κ 0,406, Übereinstimmung 74,8 %, Minderheit 25,2 %. Der Vorgänger −0.45 trug auf demselben Korpus κ 0,127 bei einer Minderheit von **4,7 %**.
+- ✅ **Sie überträgt.** Über 200 Zufallshalbierungen: κ innen 0,423, κ **außen 0,358**, Schwund **0,065**. Am Vormittag desselben Tages stand κ außen bei 0,260 und der Schwund bei 0,143 — **halbiert**.
+- ✅ **Und sie ist stabil.** −0.05 wurde in 105 von 200 Halbierungen wiedergefunden, 174 von 200 landeten im Plateau [−0.20, −0.05]. Nach dem Parsing-Fix am Vormittag war die Stabilität auf 35 % gefallen; jetzt sind es 87 %.
+- ✅ **Gegenprobe aus einer zweiten Quelle:** Die zehn Live-Turns der Vortagsreihe ergeben unter der neuen Schwelle 6 zu 2 — Minderheit **25,0 %** gegen die 25,2 % der Erhebung. Zwei Wege, dieselbe Zahl.
+- 🔶 **Der Zeuge trennt weiter nur auf einer Seite.** B = Nova 76,7 %, B = Nutzer **exakt 50,0 %**. Zum zweiten Mal unabhängig gemessen, mit anderem Korpus. Ein Münzwurf in einer der beiden Richtungen — das stärkste Argument für einen dreiwertigen Zeugen.
+- 🔶 **Die chronologische Halbierung überträgt schlechter** als die alternierende (κ außen 0,259 gegen 0,451). Hinweis auf Drift, zum zweiten Mal beobachtet, n=63 je Hälfte. Schwächer als beim letzten Mal, aber nicht weg.
+
+**Zwei Fehlversuche vorweg, weil sie eine Falle zeigen.** Der erste Lauf lief in einem eigenen Prozess ohne gestartete Model-Worker und scheiterte an der Positions-Kontrolle. Er hat dieses Scheitern **als Ergebnis in den Zwischenstand geschrieben**; der zweite Lauf hat es von dort übernommen und die Erhebung gar nicht erst versucht. Ein Ausfall mit Umgebungsursache lag als Messergebnis im Speicher und machte jeden Folgelauf unbrauchbar, bis der Stand verworfen wurde.
+
+**Ein Test rechnet seinen Fall jetzt aus der Konstante.** `test_ein_wert_zwischen_schwelle_und_null_heisst_nutzer_fuehrt` pinnte den Rohwert −0.20 als Literal — richtig bei −0.45, falsch bei −0.05. Ein festes Beispiel prüft nach der nächsten Kalibrierung stillschweigend etwas anderes, als es behauptet.
+
+**Umfang:** Suite **603 Tests**, grün, 0 übersprungen. Nulllinie unverändert 2263. Kein `db/init.sql` angefasst, keine DDL. `KALIBRIERUNG_ANWENDEN` bleibt `false` — die Konstante ist von Hand gesetzt, mit Erhebungsdatum und Fallzahl im Kommentar.
+
 ### M1 erreicht die Laufzeit — und legt die Achse dabei fest ✅🔶 (30.07.2026)
 
 `user_intentionen` hatte keinen Erzeuger, also rechnete die Achse seit ihrem Bautag `rohwert = bewegung`. Der Fix ist klein, der Weg dorthin war die eigentliche Arbeit: **Es gab keine Quelle, die vor dem GV-Node liegt** — der Salienz-Node des CharacterGraph steht an Position 69, der GV-Node an 61; die Perzeption liefert ein einzelnes `intent` aus einem Sechs-Werte-Vokabular, das mit dem 16er-Kanon nichts gemeinsam hat außer dem zufälligen `smalltalk`; und der KZG-Eintrag entsteht nach der Salienz.

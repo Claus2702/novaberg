@@ -64,7 +64,11 @@ bit      = 0 wenn wert > GV_INITIATIVE_SCHWELLE
 
 **Seit dem 30.07.2026 rechnen Korpus und Laufzeit dieselbe Größe.** Der Salienz-Node des ersten Pfads legt die Vereinigung der Segment-Intentionen in den State, sie reisen mit dem Ereignis in den zweiten Pfad, und der Enricher gibt ihnen Vorrang vor seiner Ableitung aus der Historie. Live über zehn Turns: M1 in **allen acht** Achsenläufen vorhanden.
 
-> **⚠ Die Schwelle passt seitdem nicht mehr.** Dieselben zehn Turns ergaben **8 von 8 mal Bit 0** („Nutzer führt“), Minderheit **0 %** gegen die von `_k.md` §12 geforderten 15 %. Zweiwertig wären es 6 von 8 gewesen. `GV_INITIATIVE_SCHWELLE` = −0.45 wurde ohne M1 erhoben und gilt für eine andere Größe als die, die jetzt gerechnet wird. Die Kalibrierung steht aus.
+~~**⚠ Die Schwelle passt seitdem nicht mehr.**~~ → **Neu erhoben am 30.07.2026.**
+
+Der Befund galt und ist behoben: Dieselben zehn Turns ergaben unter −0.45 **8 von 8 mal Bit 0**, Minderheit **0 %**. Die Schwelle war ohne M1 erhoben und galt für eine andere Größe als die, die seit der Verkabelung gerechnet wird.
+
+**Seit dem 30.07.2026 steht sie auf −0.05**, erhoben über 127 Turnpaare mit 127 verwerteten Urteilen und null Ausfällen. Dieselben zehn Live-Turns ergeben damit **6 zu 2**, Minderheit **25,0 %** — gegen die 25,2 % der Erhebung. Herleitung, Kandidatenkurve und die drei Vorbehalte: `novaberg-gv-initiative_k.md` §12.6.
 
 **Fehlende Maße werden benannt.** `Fuehrung.fehlend` trägt die Namen; die Rechnung läuft mit den übrigen. Fehlen alle drei, ist `wert` None, das Bit steht auf 1 und eine `error`-Zeile sagt, dass es ein Ausfall ist.
 
@@ -77,7 +81,7 @@ bit      = 0 wenn wert > GV_INITIATIVE_SCHWELLE
 | Größe | Wert | Herkunft | Kalibriert sich selbst? |
 |---|---|---|---|
 | `initiative_versatz` | je Paar | Charakter-Rad, Median aus 3 Erhebungen | **ja** — bei jeder Destillation neu |
-| `GV_INITIATIVE_SCHWELLE` | −0.45 | 83 Turns, ein Paar, gegen einen Zeugen — **auf zweiwertigem M1** | **nein** — Konstante, und seit dem 30.07.2026 für eine andere Größe erhoben als die, auf die sie angewandt wird |
+| `GV_INITIATIVE_SCHWELLE` | **−0.05** | **127 Turns**, ein Paar, gegen einen Zeugen, 30.07.2026 — auf dreiwertigem M1 mit Live-Quelle. κ 0,406, κ **außen** 0,358 | **nein** — Konstante; der Kalibrier-Agent soll sie je Paar erheben |
 | `GV_INITIATIVE_M2_THEMA` | 0.662 / 0.290 / 0.983 | 133 Rohturn-Paare, dasselbe Paar | **nein** |
 | `GV_INITIATIVE_M3_REGISTER` | 0.100 / 0.000 / 0.600 | dieselbe Grundlage | **nein** |
 
