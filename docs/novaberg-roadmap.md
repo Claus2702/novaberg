@@ -1695,6 +1695,33 @@ Das Repositorium hatte an keiner Stelle eine Linter-Konfiguration — keine `pyp
 
 **Stand der Sache:** Die ehrliche Zahl ist κ ≈ 0,26 außerhalb der Stichprobe, auf beiden Varianten. Das ist „fair" und dünn für ein Bit, auf dem die Salienz-Gewichtung steht. **Nicht getan und mit Absicht:** keine DDL, kein Pixie-Agent, `KALIBRIERUNG_ANWENDEN` bleibt `false`.
 
+
+### Der Linter räumt auf — vier Regel-Durchgänge und fünf Zerlegungen ✅ (30.07.2026)
+
+Aus der Konfiguration wurde Arbeit. **Nulllinie 2659 → 2263**, Suite 463 → **575 Tests**, alles grün.
+
+- ✅ **`TRY400` abgeräumt, 103 Stellen.** `logger.error` → `logger.exception` im `except`-Block, auf demselben Logger. Der eigentliche Gewinn stand daneben: **`BLE001` fiel um 60**, weil ein breiter `except Exception` nicht mehr beanstandet wird, sobald der Block einen Traceback loggt. Sechzig Handler wurden von „zu breit" zu „begründet breit", ohne dass eine Zeile Fangverhalten geändert wurde. **Ein globales `sed` wäre zerstörerisch gewesen:** Von 293 `logger.error`-Aufrufen liegen nur 103 in einem `except`; die anderen 190 hätten `NoneType: None` als Traceback geschrieben.
+- ✅ **`TRY401` abgeräumt, 95 Stellen.** Der Ausnahmetyp steht jetzt **vorn** in der Meldung, das Objekt geht in den Traceback. Die Regel ist nicht „ein Typ in der Klausel", sondern **Blatt oder Basisklasse**: Bei `psycopg2.Error` trägt die Unterklasse die Bedeutung, bei `ValueError` nicht. Sieben Blatt-Stellen behalten das Objekt mit begründetem `noqa` — dort ist die Ausnahmemeldung die einzige Information.
+- 🔶 **Ein Test hat dabei eine Regel korrigiert.** Der erste Anlauf entfernte an den Blatt-Stellen Typ *und* Objekt. `test_charakter_rad` wurde rot: Die `ValueError`-Meldung nennt die fehlende Speiche. Den redundanten **Typ** wegzulassen ist bei einem Blatt richtig — die **Meldung** wegzulassen nie.
+- ✅ **`D202` abgeräumt, 224 Stellen.** Die Leerzeile zwischen Docstring und Rumpf. Die Begründung „das ist Hausstil" hielt der Messung nicht: von 1027 Funktionen mit Docstring trugen **228** die Leerzeile und **799 nicht**. Die Regel widersprach keiner Bauart, sondern einer Uneinheitlichkeit.
+- ✅ **Fünf Funktionen zerlegt, jede mit Tests zuerst.** Alle fünf hatten **null Abdeckung** — und dreimal war die gemeldete Abdeckung ein Grep-Artefakt: Testdateien nannten die Funktion im Docstring oder riefen eine gleichnamige Methode (`cur.execute`).
+
+| Funktion | Zeilen | Anweisungen | neue Tests |
+|---|---|---|---:|
+| `db_zugriff()` | 333 → **65** | — → 21 | 26 |
+| `perceive()` | 128 → **42** | 67 → **10** | 21 |
+| `OllamaProvider.chat()` | 127 → **66** | 45 → 22 | 16 |
+| `NotizenManager.execute()` | 67 → **43** | 26 → **7** | 16 |
+| `abschluss()` | 43 → **21** | 26 → **7** | 15 |
+
+- ✅ **Dreimal war die Wiederholung die Länge.** `log_db_read` stand fünfmal mit denselben fünf Argumenten — jetzt ein `Protokollkopf` und ein Helfer. Die acht Wahrnehmungs-Felder standen als acht Variablen mit ihren Standardwerten **zweimal** im Rumpf — jetzt eine `Wahrnehmung`-Datenklasse, deren Defaults *der* Fallback sind. Der Pixie-Zweig kopierte 5 + 9 Felder von Hand — jetzt `dataclasses.replace`.
+- ✅ **Bei `chat()` war die Zerlegung eine Löschung.** 52 % der Funktion waren zwei Diagnoseblöcke mit dem Vermerk „temporaer, wird nach Auswertung entfernt". Die Auswertung liegt vor (`novaberg-lesson_l_ollama-think-content-split.md`), die architektonische Antwort ist gebaut (`tools/thinking_normalizer.py`). 70 Zeilen weg, 564 INFO-Zeilen je 48 Stunden weniger.
+- ✅ **Und der defensive Zweig darin war nie erreichbar.** Er behandelte `message` als Dict *oder* Objekt — drei Zeilen darüber ruft die Token-Verbuchung `response.get(...)`, ein Objekt scheitert dort zuerst. Beim Schreiben des Tests aufgefallen, nicht beim Lesen. Der Typ ist jetzt festgelegt, ein Vertragsbruch kracht laut statt still auf `""` zu fallen.
+- 🔶 **Was von den sieben eigenständigen Zählregel-Funden bleibt, sind die zwei, die bleiben sollten:** `_nova_empathie_berechnen()` (Fallunterscheidung auf dem Oktagon) und `_ei_calc_character()` (EVA-Wächter und Sichtbarkeits-`else`). Die Klassifikation vom Morgen hat gehalten — fünf verbesserbar, zwei Bauart.
+
+**Zwei Zahlen, die zusammen gelesen werden müssen.** Die Nulllinie steht auf 2263, der `noqa`-Bestand auf **9**. Bei einer Löschung von 127 Zeilen fiel die Nulllinie um **eins**, weil die zwei `BLE001` darin ein `noqa` trugen und deshalb nie in der Zahl standen. Eine unterdrückte Meldung ist für die Trefferzahl unsichtbar; steigende Unterdrückungen bei fallenden Treffern sind kein Fortschritt.
+
+**Kein `db/init.sql` angefasst, keine DDL, `KALIBRIERUNG_ANWENDEN` unverändert `false`.**
 ---
 
 ## Chat 116 (29.07.2026) — Das Panel bekommt den Wert, den der Node seit jeher schreibt ✅
