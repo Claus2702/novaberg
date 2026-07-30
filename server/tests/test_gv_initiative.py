@@ -161,8 +161,16 @@ class TestSchwelleIstDerBedeutungspunkt(unittest.TestCase):
     Anlass (Chat 116, gemessen an 83 unabhaengigen Lesarten des Modells): Bei
     einer Schwelle von 0.0 stimmte die Achse in 65.1 % der Turns mit dem
     Zeugen ueberein, kappa 0.286. Bei -0.45 in 83.1 %, kappa 0.482. Der Median
-    erzwingt einen 50/50-Schnitt; in der Wirklichkeit fuehrt der Nutzer in vier
-    von fuenf Wortwechseln.
+    erzwingt einen 50/50-Schnitt.
+
+    Die Zahlen dieses Absatzes sind historisch. Sie stammen aus einer Erhebung,
+    in der M1 die Laufzeit nie erreicht hat, und die daraus gefolgerte Lesart
+    "der Nutzer fuehrt in vier von fuenf Wortwechseln" ist mit der Erhebung vom
+    30.07.2026 ueberholt: 127 Turns, Schwelle -0.05, kappa 0.406, Minderheit
+    25.2 %. Was NICHT ueberholt ist, ist die Aussage dieser Klasse — der Median
+    taugt nicht, weil er ein Verteilungspunkt ist und kein Bedeutungspunkt.
+    Genau deshalb rechnen die Tests unten gegen die geltende Konstante und
+    nicht gegen eine Zahl aus einem dieser beiden Absaetze.
 
     Zeuge: Die Erwartung stammt aus dieser Messung und aus der Bauabsicht
     (Erreichbarkeit beider Bits), nicht aus dem Code.
@@ -181,13 +189,22 @@ class TestSchwelleIstDerBedeutungspunkt(unittest.TestCase):
         self.assertLess(GV_INITIATIVE_SCHWELLE, 0.0)
 
     def test_ein_wert_zwischen_schwelle_und_null_heisst_nutzer_fuehrt(self) -> None:
-        """Das ist die Verhaltensaenderung: Frueher Bit 1, jetzt Bit 0.
+        """Ein Rohwert unter dem Median, aber ueber dem Bedeutungspunkt.
 
-        Ein Rohwert von -0.20 liegt unter dem Median und ueber dem
-        Bedeutungspunkt — genau die Turns, die der Zeuge als 'Nutzer fuehrt'
-        liest und die alte Schwelle als 'Nova' verbuchte.
+        Genau die Turns, die der Zeuge als 'Nutzer fuehrt' liest und die eine
+        Schwelle auf dem Median als 'Nova' verbuchen wuerde. Der Abstand ist
+        seit der Erhebung vom 30.07.2026 klein — der Bedeutungspunkt liegt bei
+        -0.05 und nicht mehr bei -0.45 —, aber es gibt ihn, und er traegt die
+        ganze Begruendung gegen den Median.
+
+        Das Beispiel wird aus der geltenden Schwelle gerechnet und nicht als
+        Literal gesetzt: Ein fester Wert wuerde bei der naechsten Kalibrierung
+        stillschweigend etwas anderes pruefen, als er behauptet.
         """
-        self.assertEqual(0, self._bit(-0.20))
+        zwischen: float = GV_INITIATIVE_SCHWELLE / 2.0
+        self.assertLess(zwischen, 0.0, "Testfall liegt nicht mehr unter null")
+        self.assertGreater(zwischen, GV_INITIATIVE_SCHWELLE)
+        self.assertEqual(0, self._bit(zwischen))
 
     def test_deutlich_unter_der_schwelle_heisst_nova(self) -> None:
         self.assertEqual(1, self._bit(-0.80))

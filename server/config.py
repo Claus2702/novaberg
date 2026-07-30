@@ -1302,27 +1302,48 @@ GV_INITIATIVE_FOLGEND: set[str] = {
 
 # Die Schwelle, an der das Achsen-Bit kippt. NICHT der Median des Korpus.
 #
-# Erste Fassung war 0.0 — das Zentrum lag per Konstruktion auf dem Median und
-# erzwang damit einen 50/50-Schnitt. Gemessen gegen 83 unabhaengige Lesarten
-# des Modells ("wer hat hier die Richtung gesetzt?", ohne Kenntnis der Achse):
+# ERHOBEN AM 30.07.2026 gegen 127 unabhaengige Lesarten des Modells ("wer hat
+# hier die Richtung gesetzt?", ohne Kenntnis der Achse). Fallzahl 127, null
+# Ausfaelle, Positions-Kontrolle bestanden (Betrag 26.7 Punkte, verlangt 20).
 #
-#   Schwelle 0.00 : Uebereinstimmung 65.1 %, kappa 0.286, Bit0-Anteil 51.8 %
-#   Schwelle -0.45: Uebereinstimmung 83.1 %, kappa 0.482, Bit0-Anteil 79.5 %
+#   Schwelle -0.05: Uebereinstimmung 74.8 %, kappa 0.406, Minderheit 25.2 %  (gesetzt)
+#   Schwelle -0.20: Uebereinstimmung 76.4 %, kappa 0.402, Minderheit 15.8 %
+#   Schwelle -0.45: Uebereinstimmung 68.5 %, kappa 0.127, Minderheit  4.7 %  (Vorgaenger)
 #
-# Der Median ist ein Verteilungspunkt, die Achse braucht einen Bedeutungspunkt
-# — die Stelle, an der das Folgen endet und das Fuehren beginnt. Dort fuehrt der
-# Nutzer in vier von fuenf Wortwechseln, nicht in der Haelfte.
+# WARUM DER VORGAENGER ERSETZT WURDE. -0.45 stammt aus einer Erhebung ueber 83
+# Turns, in der M1 die Laufzeit nie erreicht hat: `user_intentionen` hatte
+# keinen Erzeuger, die Achse rechnete `rohwert = bewegung`. Seit dem 30.07.2026
+# traegt M1 bei, und damit hat sich die Groesse geaendert, auf die die Schwelle
+# angewandt wird — nicht nur der Bestand. Auf dem heutigen Korpus traegt -0.45
+# eine Minderheit von 4.7 % gegen die von §12 geforderten 15 %: Die Achse stand
+# faktisch auf einem konstanten Bit. Live an zehn Turns nachgemessen: 8 von 8
+# mal Bit 0.
 #
-# Die Kurve ist zwischen -0.55 und -0.35 flach (kappa 0.40-0.48): -0.45 ist
-# das Maximum eines Plateaus, keine Spitze. Wer die Stelle nachmisst, erwartet
-# ein Plateau und keinen scharfen Punkt.
+# WARUM -0.05 UND NICHT -0.20. kappa ist praktisch gleich (0.406 gegen 0.402),
+# aber -0.05 liegt in der MITTE des Plateaus und -0.20 an seinem Rand. Ueber
+# 200 Zufallshalbierungen wurde -0.05 in 105 Faellen wiedergefunden und -0.20
+# in 49; 174 von 200 landeten im Plateau [-0.20, -0.05]. Der Wert in der Mitte
+# ist der stabilere.
 #
-# Erreichbarkeit bleibt gewahrt: Bei -0.45 traegt die Minderheit 20.5 %, und
-# ueber die volle Charakter-Spanne (+/-0.25) faellt sie nicht unter 8.4 %.
+# UEBERTRAEGT AUF UNGESEHENE DATEN, gemessen ueber dieselben 200 Halbierungen:
+#   kappa innen 0.423, kappa AUSSEN 0.358, Schwund 0.065.
+# Zum Vergleich die Erhebung vom Vormittag desselben Tages: kappa aussen 0.260
+# bei Schwund 0.143. Der Schwund ist halbiert. Das ist die einzige Zahl, die
+# etwas ueber neue Daten sagt, und sie steht hier deshalb an erster Stelle.
 #
-# Herkunft: novaberg-gv-initiative_k.md §12. Ein Wert aus EINEM Paar und 83
-# Turns — der Kalibrier-Agent (§7) soll ihn spaeter je Charakter erheben.
-GV_INITIATIVE_SCHWELLE:       float = float(os.getenv("GV_INITIATIVE_SCHWELLE", "-0.45"))
+# DREI VORBEHALTE, die keine Rechnung auf diesen Daten ausraeumen kann:
+#   1. Der Zeuge trennt nur auf EINER Seite. Gefragt, ob NOVA die Richtung
+#      gesetzt hat, urteilt er zu 76.7 % ja; gefragt, ob der NUTZER es tat, zu
+#      exakt 50.0 % — ein Muenzwurf. Zum zweiten Mal unabhaengig gemessen.
+#   2. Ein Paar, ein Zeuge, ein Prompt.
+#   3. Die chronologische Halbierung uebertraegt schlechter als die
+#      alternierende (kappa aussen 0.259 gegen 0.451). Hinweis auf Drift,
+#      zum zweiten Mal beobachtet, n=63 je Haelfte.
+#
+# Herkunft: novaberg-gv-initiative_k.md §12. Ein Wert aus EINEM Paar — der
+# Kalibrier-Agent (§7) soll ihn spaeter je Paar erheben und ablegen; bis dahin
+# ist diese Konstante sein Platzhalter.
+GV_INITIATIVE_SCHWELLE:       float = float(os.getenv("GV_INITIATIVE_SCHWELLE", "-0.05"))
 
 # Der Charakter-Versatz verschiebt den Rohwert, nicht die Schwelle. Volle
 # Auslenkung des Rads trifft die Grenze exakt (Konzept §6.3). Bis das Rad
