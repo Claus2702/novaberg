@@ -13,10 +13,17 @@ Pixie-Sonderfall: bei ``event_source != "user"`` wird ``external`` mit
 einer Kopie von ``internal`` initialisiert — Nova spricht mit sich
 selbst, Empathie-Differenz ist null.
 
+**Aufbau:** ``db_zugriff`` ist der Orchestrator und ruft je Quelle einen
+Lader. Die **Reihenfolge der Lesevorgaenge ist Verhalten** — in dieser
+Reihenfolge stehen sie im ``pipeline_log``, und dort werden sie ausgewertet.
+Die Lader werden deshalb in der Schrittfolge gerufen und nicht nach Kanal
+gruppiert, auch wenn Letzteres kuerzer aussaehe.
+
 Konzept: docs/novaberg-path2-perzeption_k.md §4.2.
 """
 
 import logging
+from dataclasses import dataclass, replace
 
 from config import POSTGRES_URL, ASSISTANT_USER_ID, redis_client
 from graph.personality import (
@@ -42,6 +49,73 @@ from tools.db_manager import db_manager
 
 logger = logging.getLogger("ki_server.db_zugriff")
 
+_NODE: str = "db_zugriff"
+
+# Zuordnung Character-Feld → Hash-Spalte. Als Tabelle, weil sie zweimal
+# gebraucht wird: fuer den Hash des Nutzers und fuer Novas eigenen. Zweimal
+# hingeschrieben waere sie die Stelle, an der beide auseinanderlaufen.
+_HASH_FELDER: dict[str, str] = {
+    "core":         "kern",
+    "adaptive":     "adaptiv",
+    "relationship": "beziehungsprofil",
+    "intentions":   "intentions_profil",
+    "emotions":     "emotions_profil",
+}
+
+
+@dataclass(frozen=True)
+class Protokollkopf:
+    """Die fuenf Werte, die jeder Protokolleintrag dieses Knotens mitfuehrt.
+
+    Zusammen gesetzt, zusammen weitergegeben — deshalb eine Klasse und nicht
+    fuenf Parameter an jedem Lader
+    (`novaberg-lesson_l_klassen-statt-flache-keys.md`). Ohne sie stand der
+    Rumpf von ``log_db_read`` fuenfmal wortgleich im Node.
+    """
+
+    turn_id:      str
+    quelle:       str
+    span_id:      str
+    user_id:      str
+    character_id: str
+
+
+def _lesevorgang(kopf: Protokollkopf, tabelle: str, **felder: object) -> None:
+    """Protokolliert einen Lesevorgang im ``pipeline_log``.
+
+    Vorbedingung: `kopf` stammt aus `db_zugriff`, `tabelle` benennt die Quelle.
+    Nachbedingung: Ein Eintrag, dessen `inhalt` die Tabelle und die
+    uebergebenen Felder traegt.
+    Fehlerfaelle: Keine — `log_db_read` behandelt seine eigenen.
+    """
+    log_db_read(
+        turn_id = kopf.turn_id,
+        node    = _NODE,
+        quelle  = kopf.quelle,
+        inhalt  = {"tabelle": tabelle, **felder},
+        span_id = kopf.span_id,
+        user_id      = kopf.user_id,
+        character_id = kopf.character_id,
+    )
+
+
+def _zweig_protokollieren(kopf: Protokollkopf, wert: str, zweig: str) -> None:
+    """Protokolliert, welchen Zweig der Pixie-Weiche der Lauf genommen hat.
+
+    Vorbedingung: `zweig` ist der Name des genommenen Zweigs.
+    Nachbedingung: Ein `log_switch`-Eintrag mit Bedingung, Wert und Zweig.
+    Fehlerfaelle: Keine.
+    """
+    log_switch(
+        turn_id = kopf.turn_id,
+        node    = _NODE,
+        quelle  = kopf.quelle,
+        inhalt  = {"bedingung": "event_source", "wert": wert, "zweig": zweig},
+        span_id = kopf.span_id,
+        user_id      = kopf.user_id,
+        character_id = kopf.character_id,
+    )
+
 
 def _raum_aus_labels(emotion: Emotion) -> Raum:
     """Leitet Novas Raum aus ihren Register-Labels ab.
@@ -66,6 +140,306 @@ def _raum_aus_labels(emotion: Emotion) -> Raum:
     return Raum(tiefe=tiefe, naehe=naehe)
 
 
+def _kopf_eroeffnen(
+    turn_id: str, quelle: str, user_id: str, character_id: str,
+) -> Protokollkopf:
+    """Oeffnet die Protokoll-Spanne und bindet ihre Kennung an den Kopf.
+
+    Vorbedingung: Die vier Werte stammen aus dem State.
+    Nachbedingung: Ein Kopf mit der `span_id` der geoeffneten Spanne. Zu jeder
+    geoeffneten Spanne gehoert ein `span_end` beim Aufrufer.
+    Fehlerfaelle: Keine — `span_start` behandelt seine eigenen.
+    """
+    # ── Ausgabe ─────────────────────────────────
+    return Protokollkopf(
+        turn_id = turn_id,
+        quelle  = quelle,
+        span_id = span_start(
+            turn_id = turn_id,
+            node    = _NODE,
+            quelle  = quelle,
+            user_id      = user_id,
+            character_id = character_id,
+        ),
+        user_id      = user_id,
+        character_id = character_id,
+    )
+
+
+def _emotion_aus_payload(payload: dict) -> Emotion:
+    """Baut die Emotion des Nutzers aus dem Event-Payload des HumanGraphs.
+
+    Vorbedingung: `payload` ist ein Dict, auch ein leeres.
+    Nachbedingung: Emotion mit den Werten des Payloads; fehlende Schluessel
+    nehmen die dokumentierten Defaults der Datenklasse.
+    Fehlerfaelle: Keine — bei Pixie-Events ist der Payload typischerweise leer,
+    und `external` wird dann ohnehin durch die Kopie von `internal` ersetzt.
+    """
+    # ── Verarbeitung ────────────────────────────
+    emotion: Emotion = Emotion(
+        emotion              = payload.get("current_emotion",    "neutral"),
+        arousal              = float(payload.get("current_arousal", 0.5)),
+        emotions_vector      = payload.get("emotions_vektor",    ""),
+        mode                 = payload.get("gespraechs_modus",   "alltag"),
+        language_style       = payload.get("sprach_stil",        "neutral"),
+        relationship_dynamic = payload.get("beziehungs_dynamik", "neutral"),
+        tone                 = payload.get("tone",               "sachlich"),
+        intent               = payload.get("intent",             "smalltalk"),
+        prompt_topic         = payload.get("prompt_thema",       ""),
+    )
+
+    # ── Ausgabe-Verifikation ────────────────────
+    logger.info(
+        f"db_zugriff Schritt 1 — external.emotion aus Payload: "
+        f"emotion={emotion.emotion}, arousal={emotion.arousal}, "
+        f"mode={emotion.mode}"
+    )
+    return emotion
+
+
+def _emotion_aus_nova_state(roh: dict) -> Emotion:
+    """Baut Novas Emotion aus dem persistierten Redis-Hash.
+
+    Vorbedingung: `roh` ist der Hash aus ``redis:nova_state``, auch ein leerer.
+    Nachbedingung: Bei leerem Hash die Standard-Emotion (Cold-Start), sonst die
+    persistierten Werte; `arousal` ist eine Zahl.
+    Fehlerfaelle: Ein nicht zahlbares `arousal` nimmt 0.5. Der Rueckfall gilt
+    genau diesem Feld — der uebrige Stand bleibt erhalten.
+    """
+    # ── Eingabe-Validierung ─────────────────────
+    if not roh:
+        return Emotion()
+
+    try:
+        arousal: float = float(roh.get("arousal", 0.5))
+    except (ValueError, TypeError):
+        arousal = 0.5
+
+    # ── Ausgabe ─────────────────────────────────
+    return Emotion(
+        emotion              = roh.get("emotion",              "neutral"),
+        arousal              = arousal,
+        emotions_vector      = roh.get("emotions_vector",      ""),
+        mode                 = roh.get("mode",                 "alltag"),
+        language_style       = roh.get("language_style",       "neutral"),
+        relationship_dynamic = roh.get("relationship_dynamic", "neutral"),
+        tone                 = roh.get("tone",                 "sachlich"),
+        intent               = roh.get("intent",               "smalltalk"),
+        prompt_topic         = roh.get("prompt_topic",         ""),
+    )
+
+
+def _raum_aus_nova_state(roh: dict, emotion: Emotion) -> tuple[Raum, bool]:
+    """Holt Novas Raum aus dem Hash oder leitet ihn aus den Labels ab.
+
+    Vorbedingung: `roh` ist der Hash, `emotion` die daraus gebaute Emotion.
+    Nachbedingung: (Raum, geladen). Das zweite Feld sagt, ob der Raum aus dem
+    Hash stammt oder abgeleitet wurde, und wandert in die Log-Zeile.
+    Fehlerfaelle: Unlesbare Raumwerte sind ein **Defekt** und werden laut
+    gemeldet; danach gilt derselbe Rueckfall wie bei fehlenden Werten.
+    """
+    # ── Eingabe-Validierung ─────────────────────
+    if "raum_tiefe" not in roh or "raum_naehe" not in roh:
+        return _raum_aus_labels(emotion), False
+
+    # ── Verarbeitung ────────────────────────────
+    try:
+        geladen = Raum(
+            tiefe = float(roh["raum_tiefe"]),
+            naehe = float(roh["raum_naehe"]),
+        )
+    except (ValueError, TypeError) as fehler:
+        logger.exception(
+            "%s: db_zugriff: Raumwerte in redis:nova_state unlesbar — "
+            "aus den Register-Labels abgeleitet",
+            type(fehler).__name__,
+        )
+        return _raum_aus_labels(emotion), False
+
+    # ── Ausgabe ─────────────────────────────────
+    return geladen, True
+
+
+def _nova_zustand_laden(kopf: Protokollkopf) -> tuple[Emotion, Raum]:
+    """Laedt Novas persistierten Zustand aus Redis und protokolliert das Lesen.
+
+    Vorbedingung: `kopf` traegt das Paar.
+    Nachbedingung: (Emotion, Raum). Der Lesevorgang steht im ``pipeline_log``,
+    auch wenn der Hash leer war — ein Cold-Start ist eine Auskunft.
+    Fehlerfaelle: Siehe `_emotion_aus_nova_state` und `_raum_aus_nova_state`;
+    beide fallen feldweise zurueck und melden es.
+    """
+    # ── Verarbeitung ────────────────────────────
+    key: str = f"nova_state:{kopf.user_id}:{kopf.character_id}"
+    roh: dict = redis_client.hgetall(key) or {}
+    _lesevorgang(kopf, "redis:nova_state", key=key, exists=bool(roh))
+
+    emotion: Emotion = _emotion_aus_nova_state(roh)
+    raum, geladen = _raum_aus_nova_state(roh, emotion)
+
+    # ── Ausgabe-Verifikation ────────────────────
+    logger.info(
+        f"db_zugriff Schritt 2 — internal.emotion aus Redis: "
+        f"cold_start={not bool(roh)}, "
+        f"emotion={emotion.emotion}, arousal={emotion.arousal}, "
+        f"raum=({raum.tiefe:.2f}, {raum.naehe:.2f})"
+        f"{'' if geladen else ' [aus Labels abgeleitet]'}"
+    )
+    return emotion, raum
+
+
+def _character_aus_hash(hash_dict: dict) -> Character:
+    """Bildet einen Charakter-Hash auf die fuenf Character-Felder ab.
+
+    Vorbedingung: `hash_dict` ist das Ergebnis einer Hash-Abfrage, auch leer.
+    Nachbedingung: Character; fehlende Spalten ergeben leere Zeichenketten,
+    nie None.
+    Fehlerfaelle: Keine.
+    """
+    # ── Ausgabe ─────────────────────────────────
+    return Character(**{
+        feld: hash_dict.get(spalte, "") for feld, spalte in _HASH_FELDER.items()
+    })
+
+
+def _charaktere_laden(kopf: Protokollkopf) -> tuple[Character, Character]:
+    """Laedt beide Charakter-Hashes aus PostgreSQL.
+
+    Die Reihenfolge ist Verhalten: erst der Hash des Nutzers, dann Novas
+    eigener. So stehen die beiden Lesevorgaenge im ``pipeline_log``.
+
+    Vorbedingung: `kopf` traegt das Paar.
+    Nachbedingung: (external, internal), beide Lesevorgaenge protokolliert.
+    Fehlerfaelle: Keine — ein fehlender Treffer ergibt leere Felder, und dass
+    er fehlte, steht in der Log-Zeile.
+    """
+    # ── Verarbeitung ────────────────────────────
+    extern: dict = charakter_hash_retrieve_dict(
+        POSTGRES_URL, kopf.user_id, kopf.character_id,
+    )
+    _lesevorgang(
+        kopf, "charakter_hash",
+        user_id      = kopf.user_id,
+        character_id = kopf.character_id,
+        rolle        = "external",
+        hat_treffer  = bool(extern),
+    )
+
+    intern: dict = nova_charakter_hash_retrieve_dict(POSTGRES_URL, kopf.user_id)
+    _lesevorgang(
+        kopf, "charakter_hash",
+        user_id      = ASSISTANT_USER_ID,
+        character_id = kopf.user_id,
+        rolle        = "internal",
+        hat_treffer  = bool(intern),
+    )
+
+    # ── Ausgabe-Verifikation ────────────────────
+    logger.info(
+        f"db_zugriff Schritt 3 — Hashes geladen: "
+        f"external_treffer={bool(extern)}, internal_treffer={bool(intern)}"
+    )
+    return _character_aus_hash(extern), _character_aus_hash(intern)
+
+
+def _identities_laden(kopf: Protokollkopf) -> list[str]:
+    """Laedt Novas Charakter-Anweisungen aus PostgreSQL.
+
+    Vorbedingung: `kopf` traegt die `user_id`.
+    Nachbedingung: Liste der aktiven Anweisungen in Anlagereihenfolge; der
+    Lesevorgang steht mit seiner Zahl im ``pipeline_log``.
+    Fehlerfaelle: Scheitert die Abfrage, bleibt die Liste leer und der Node
+    laeuft weiter — der Graph soll nicht im Eingangsknoten sterben.
+    """
+    # ── Verarbeitung ────────────────────────────
+    anweisungen: list[str] = []
+    try:
+        zeilen = db_manager.select(
+            "SELECT anweisung FROM charakter_anweisungen "
+            "WHERE user_id = %s AND aktiv = TRUE ORDER BY erstellt_am",
+            (kopf.user_id,),
+        )
+        anweisungen = [z["anweisung"] for z in zeilen] if zeilen else []
+    except Exception as fehler:
+        logger.warning(
+            f"db_zugriff — Charakter-Anweisungen Laden fehlgeschlagen: {fehler}"
+        )
+
+    # ── Ausgabe-Verifikation ────────────────────
+    _lesevorgang(
+        kopf, "charakter_anweisungen",
+        user_id = kopf.user_id, count = len(anweisungen),
+    )
+    return anweisungen
+
+
+def _directives_laden(kopf: Protokollkopf) -> list[dict]:
+    """Laedt die Direktiven aus PostgreSQL.
+
+    Vorbedingung: `kopf` traegt die `user_id`.
+    Nachbedingung: Liste von Dicts mit `anweisung` und `kontext`; ein fehlender
+    Kontext ergibt eine leere Zeichenkette, nie None.
+    Fehlerfaelle: Wie bei den Anweisungen — leere Liste, Warnung, weiter.
+    """
+    # ── Verarbeitung ────────────────────────────
+    direktiven: list[dict] = []
+    try:
+        zeilen = db_manager.select(
+            "SELECT anweisung, kontext FROM direktiven "
+            "WHERE user_id = %s AND aktiv = TRUE ORDER BY erstellt_am",
+            (kopf.user_id,),
+        )
+        direktiven = [
+            {"anweisung": z["anweisung"], "kontext": z.get("kontext", "")}
+            for z in zeilen
+        ] if zeilen else []
+    except Exception as fehler:
+        logger.warning(f"db_zugriff — Direktiven Laden fehlgeschlagen: {fehler}")
+
+    # ── Ausgabe-Verifikation ────────────────────
+    _lesevorgang(
+        kopf, "direktiven", user_id = kopf.user_id, count = len(direktiven),
+    )
+    return direktiven
+
+
+def _external_bestimmen(
+    kopf:         Protokollkopf,
+    event_source: str,
+    internal:     InternalPersonality,
+    charakter:    Character,
+    emotion:      Emotion,
+) -> Personality:
+    """Waehlt, wer ``external`` ist: der Nutzer oder Nova selbst.
+
+    Pixie-Sonderfall: bei ``event_source != "user"`` spricht Nova mit sich
+    selbst, die Empathie-Differenz ist null.
+
+    **Die Kopie ist eine Kopie.** `replace` ohne Aenderung liefert ein neues
+    Objekt mit denselben Werten. Eine Zuweisung ergaebe einen Alias, und eine
+    spaetere Aenderung an `internal` schlueg dann auf `external` durch, ohne
+    dass ein Gleichheitstest es saehe.
+
+    Vorbedingung: `internal` ist fertig gebaut.
+    Nachbedingung: Personality; der genommene Zweig steht im ``pipeline_log``.
+    Fehlerfaelle: Keine.
+    """
+    # ── Verarbeitung ────────────────────────────
+    if event_source != "user":
+        _zweig_protokollieren(
+            kopf, event_source, "pixie_pfad_external_aus_internal",
+        )
+        logger.info("db_zugriff — Pixie-Pfad: external = Kopie von internal")
+        return Personality(
+            character = replace(internal.character),
+            emotion   = replace(internal.emotion),
+        )
+
+    # ── Ausgabe ─────────────────────────────────
+    _zweig_protokollieren(kopf, event_source, "user_pfad")
+    return Personality(character=charakter, emotion=emotion)
+
+
 def db_zugriff(state: ConversationState) -> ConversationState:
     """Eingangsnode des CharacterGraphs.
 
@@ -74,19 +448,19 @@ def db_zugriff(state: ConversationState) -> ConversationState:
 
     Vorbedingung: ``user_id`` und ``character_id`` sind im State gesetzt.
     Nachbedingung: ``state["external"]`` und ``state["internal"]`` sind
-    befuellt; bei ``event_source != "user"`` trgt ``external`` eine Kopie
+    befuellt; bei ``event_source != "user"`` traegt ``external`` eine Kopie
     von ``internal``.
     Fehlerfaelle: leere ``user_id``/``character_id`` werden geloggt; der
     Node bricht nicht ab, sondern faehrt mit Defaults fort, damit der
     Graph nicht im Eingangsknoten stirbt.
     """
     # ── Eingabe-Validierung ─────────────────────
-    user_id:       str  = state.get("user_id", "")
-    character_id:  str  = state.get("character_id", "")
-    turn_id:       str  = state.get("turn_id", "unbekannt")
-    event_source:  str  = state.get("event_source", "user")
-    event_payload: dict = state.get("event_payload", {}) or {}
-    quelle_log:    str  = state.get("ei_calc_rolle", "character")
+    user_id:      str  = state.get("user_id", "")
+    character_id: str  = state.get("character_id", "")
+    event_source: str  = state.get("event_source", "user")
+    payload:      dict = state.get("event_payload", {}) or {}
+    turn_id:      str  = state.get("turn_id", "unbekannt")
+    quelle_log:   str  = state.get("ei_calc_rolle", "character")
 
     if not user_id or not character_id:
         logger.error(
@@ -94,233 +468,20 @@ def db_zugriff(state: ConversationState) -> ConversationState:
             f"user_id='{user_id}', character_id='{character_id}'"
         )
 
-    span_id = span_start(
-        turn_id = turn_id,
-        node    = "db_zugriff",
-        quelle  = quelle_log,
-        user_id      = user_id,
-        character_id = character_id,
-    )
+    kopf = _kopf_eroeffnen(turn_id, quelle_log, user_id, character_id)
     logger.info(
         f"db_zugriff start — paar={user_id}:{character_id}, "
         f"event_source={event_source}"
     )
 
     # ── Verarbeitung ────────────────────────────
+    external_emotion: Emotion = _emotion_aus_payload(payload)
+    internal_emotion, internal_raum = _nova_zustand_laden(kopf)
+    external_character, internal_character = _charaktere_laden(kopf)
+    identities: list[str]  = _identities_laden(kopf)
+    directives: list[dict] = _directives_laden(kopf)
 
-    # Schritt 1: external.emotion aus dem Event-Payload (User-Werte vom
-    # HumanGraph). Bei Pixie-Events sind die Felder typischerweise leer
-    # und werden im Pixie-Sonderfall am Ende ueberschrieben.
-    external_emotion: Emotion = Emotion(
-        emotion              = event_payload.get("current_emotion",    "neutral"),
-        arousal              = float(event_payload.get("current_arousal", 0.5)),
-        emotions_vector      = event_payload.get("emotions_vektor",    ""),
-        mode                 = event_payload.get("gespraechs_modus",   "alltag"),
-        language_style       = event_payload.get("sprach_stil",        "neutral"),
-        relationship_dynamic = event_payload.get("beziehungs_dynamik", "neutral"),
-        tone                 = event_payload.get("tone",               "sachlich"),
-        intent               = event_payload.get("intent",             "smalltalk"),
-        prompt_topic         = event_payload.get("prompt_thema",       ""),
-    )
-    logger.info(
-        f"db_zugriff Schritt 1 — external.emotion aus Payload: "
-        f"emotion={external_emotion.emotion}, arousal={external_emotion.arousal}, "
-        f"mode={external_emotion.mode}"
-    )
-
-    # Schritt 2: internal.emotion aus Redis nova_state. Cold-Start liefert
-    # ein leeres Dict, die Emotion-dataclass-Defaults werden dann unten
-    # genutzt (Standard-Konstruktor).
-    nova_state_key: str  = f"nova_state:{user_id}:{character_id}"
-    nova_state_raw: dict = redis_client.hgetall(nova_state_key) or {}
-    log_db_read(
-        turn_id = turn_id,
-        node    = "db_zugriff",
-        quelle  = quelle_log,
-        inhalt  = {
-            "tabelle": "redis:nova_state",
-            "key":     nova_state_key,
-            "exists":  bool(nova_state_raw),
-        },
-        span_id = span_id,
-        user_id      = user_id,
-        character_id = character_id,
-    )
-
-    if nova_state_raw:
-        try:
-            arousal_persist: float = float(nova_state_raw.get("arousal", 0.5))
-        except (ValueError, TypeError):
-            arousal_persist = 0.5
-        internal_emotion: Emotion = Emotion(
-            emotion              = nova_state_raw.get("emotion",              "neutral"),
-            arousal              = arousal_persist,
-            emotions_vector      = nova_state_raw.get("emotions_vector",      ""),
-            mode                 = nova_state_raw.get("mode",                 "alltag"),
-            language_style       = nova_state_raw.get("language_style",       "neutral"),
-            relationship_dynamic = nova_state_raw.get("relationship_dynamic", "neutral"),
-            tone                 = nova_state_raw.get("tone",                 "sachlich"),
-            intent               = nova_state_raw.get("intent",               "smalltalk"),
-            prompt_topic         = nova_state_raw.get("prompt_topic",         ""),
-        )
-    else:
-        internal_emotion = Emotion()
-
-    # Novas Raum (Chat 114). Fehlt er im Hash — Cold-Start oder erster Turn
-    # nach der Einfuehrung —, wird er aus ihren Register-Labels abgeleitet
-    # statt auf einen Default gesetzt: Der Raum, in dem sie zuletzt gesprochen
-    # hat, ist die ehrlichere Auskunft als ein erfundener Startwert. Dass er
-    # abgeleitet und nicht geladen wurde, steht in der Log-Zeile.
-    raum_geladen: bool = "raum_tiefe" in nova_state_raw and "raum_naehe" in nova_state_raw
-    if raum_geladen:
-        try:
-            internal_raum = Raum(
-                tiefe = float(nova_state_raw["raum_tiefe"]),
-                naehe = float(nova_state_raw["raum_naehe"]),
-            )
-        except (ValueError, TypeError) as fehler:
-            logger.exception(
-                "%s: db_zugriff: Raumwerte in redis:nova_state unlesbar — "
-                "aus den Register-Labels abgeleitet",
-                type(fehler).__name__,
-            )
-            raum_geladen  = False
-            internal_raum = _raum_aus_labels(internal_emotion)
-    else:
-        internal_raum = _raum_aus_labels(internal_emotion)
-
-    logger.info(
-        f"db_zugriff Schritt 2 — internal.emotion aus Redis: "
-        f"cold_start={not bool(nova_state_raw)}, "
-        f"emotion={internal_emotion.emotion}, arousal={internal_emotion.arousal}, "
-        f"raum=({internal_raum.tiefe:.2f}, {internal_raum.naehe:.2f})"
-        f"{'' if raum_geladen else ' [aus Labels abgeleitet]'}"
-    )
-
-    # Schritt 3a: external.character aus PostgreSQL (User-Hash).
-    external_hash_dict: dict = charakter_hash_retrieve_dict(
-        POSTGRES_URL, user_id, character_id,
-    )
-    log_db_read(
-        turn_id = turn_id,
-        node    = "db_zugriff",
-        quelle  = quelle_log,
-        inhalt  = {
-            "tabelle":      "charakter_hash",
-            "user_id":      user_id,
-            "character_id": character_id,
-            "rolle":        "external",
-            "hat_treffer":  bool(external_hash_dict),
-        },
-        span_id = span_id,
-        user_id      = user_id,
-        character_id = character_id,
-    )
-    external_character: Character = Character(
-        core         = external_hash_dict.get("kern",              ""),
-        adaptive     = external_hash_dict.get("adaptiv",           ""),
-        relationship = external_hash_dict.get("beziehungsprofil",  ""),
-        intentions   = external_hash_dict.get("intentions_profil", ""),
-        emotions     = external_hash_dict.get("emotions_profil",   ""),
-    )
-
-    # Schritt 3b: internal.character (Novas Hash) aus PostgreSQL.
-    internal_hash_dict: dict = nova_charakter_hash_retrieve_dict(
-        POSTGRES_URL, user_id,
-    )
-    log_db_read(
-        turn_id = turn_id,
-        node    = "db_zugriff",
-        quelle  = quelle_log,
-        inhalt  = {
-            "tabelle":      "charakter_hash",
-            "user_id":      ASSISTANT_USER_ID,
-            "character_id": user_id,
-            "rolle":        "internal",
-            "hat_treffer":  bool(internal_hash_dict),
-        },
-        span_id = span_id,
-        user_id      = user_id,
-        character_id = character_id,
-    )
-    internal_character: Character = Character(
-        core         = internal_hash_dict.get("kern",              ""),
-        adaptive     = internal_hash_dict.get("adaptiv",           ""),
-        relationship = internal_hash_dict.get("beziehungsprofil",  ""),
-        intentions   = internal_hash_dict.get("intentions_profil", ""),
-        emotions     = internal_hash_dict.get("emotions_profil",   ""),
-    )
-    logger.info(
-        f"db_zugriff Schritt 3 — Hashes geladen: "
-        f"external_treffer={bool(external_hash_dict)}, "
-        f"internal_treffer={bool(internal_hash_dict)}"
-    )
-
-    # Schritt 4a: identities aus PostgreSQL (charakter_anweisungen).
-    identities: list[str] = []
-    try:
-        identities_rows = db_manager.select(
-            "SELECT anweisung FROM charakter_anweisungen "
-            "WHERE user_id = %s AND aktiv = TRUE ORDER BY erstellt_am",
-            (user_id,),
-        )
-        identities = (
-            [r["anweisung"] for r in identities_rows] if identities_rows else []
-        )
-    except Exception as fehler:
-        logger.warning(
-            f"db_zugriff — Charakter-Anweisungen Laden fehlgeschlagen: {fehler}"
-        )
-    log_db_read(
-        turn_id = turn_id,
-        node    = "db_zugriff",
-        quelle  = quelle_log,
-        inhalt  = {
-            "tabelle": "charakter_anweisungen",
-            "user_id": user_id,
-            "count":   len(identities),
-        },
-        span_id = span_id,
-        user_id      = user_id,
-        character_id = character_id,
-    )
-
-    # Schritt 4b: directives aus PostgreSQL (direktiven).
-    directives: list[dict] = []
-    try:
-        direktiven_rows = db_manager.select(
-            "SELECT anweisung, kontext FROM direktiven "
-            "WHERE user_id = %s AND aktiv = TRUE ORDER BY erstellt_am",
-            (user_id,),
-        )
-        directives = [
-            {"anweisung": r["anweisung"], "kontext": r.get("kontext", "")}
-            for r in direktiven_rows
-        ] if direktiven_rows else []
-    except Exception as fehler:
-        logger.warning(
-            f"db_zugriff — Direktiven Laden fehlgeschlagen: {fehler}"
-        )
-    log_db_read(
-        turn_id = turn_id,
-        node    = "db_zugriff",
-        quelle  = quelle_log,
-        inhalt  = {
-            "tabelle": "direktiven",
-            "user_id": user_id,
-            "count":   len(directives),
-        },
-        span_id = span_id,
-        user_id      = user_id,
-        character_id = character_id,
-    )
-    logger.info(
-        f"db_zugriff Schritt 4 — Anweisungen geladen: "
-        f"identities={len(identities)}, directives={len(directives)}"
-    )
-
-    # Schritt 5: Personalities zusammenbauen.
-    internal: InternalPersonality = InternalPersonality(
+    internal = InternalPersonality(
         character  = internal_character,
         emotion    = internal_emotion,
         identities = identities,
@@ -328,74 +489,19 @@ def db_zugriff(state: ConversationState) -> ConversationState:
         raum       = internal_raum,
     )
 
-    # Pixie-Sonderfall: bei event_source != "user" trgt external eine
-    # Kopie von internal — Nova spricht mit sich selbst.
-    if event_source != "user":
-        external: Personality = Personality(
-            character = Character(
-                core         = internal_character.core,
-                adaptive     = internal_character.adaptive,
-                relationship = internal_character.relationship,
-                intentions   = internal_character.intentions,
-                emotions     = internal_character.emotions,
-            ),
-            emotion = Emotion(
-                emotion              = internal_emotion.emotion,
-                arousal              = internal_emotion.arousal,
-                emotions_vector      = internal_emotion.emotions_vector,
-                mode                 = internal_emotion.mode,
-                language_style       = internal_emotion.language_style,
-                relationship_dynamic = internal_emotion.relationship_dynamic,
-                tone                 = internal_emotion.tone,
-                intent               = internal_emotion.intent,
-                prompt_topic         = internal_emotion.prompt_topic,
-            ),
-        )
-        log_switch(
-            turn_id = turn_id,
-            node    = "db_zugriff",
-            quelle  = quelle_log,
-            inhalt  = {
-                "bedingung": "event_source",
-                "wert":      event_source,
-                "zweig":     "pixie_pfad_external_aus_internal",
-            },
-            span_id = span_id,
-            user_id      = user_id,
-            character_id = character_id,
-        )
-        logger.info("db_zugriff — Pixie-Pfad: external = Kopie von internal")
-    else:
-        external = Personality(
-            character = external_character,
-            emotion   = external_emotion,
-        )
-        log_switch(
-            turn_id = turn_id,
-            node    = "db_zugriff",
-            quelle  = quelle_log,
-            inhalt  = {
-                "bedingung": "event_source",
-                "wert":      event_source,
-                "zweig":     "user_pfad",
-            },
-            span_id = span_id,
-            user_id      = user_id,
-            character_id = character_id,
-        )
-
     # ── Ausgabe-Verifikation ────────────────────
-    state["external"] = external
     state["internal"] = internal
+    state["external"] = _external_bestimmen(
+        kopf, event_source, internal, external_character, external_emotion,
+    )
 
     span_end(
-        turn_id = turn_id,
-        node    = "db_zugriff",
-        quelle  = quelle_log,
-        span_id = span_id,
-        user_id      = user_id,
-        character_id = character_id,
+        turn_id = kopf.turn_id,
+        node    = _NODE,
+        quelle  = kopf.quelle,
+        span_id = kopf.span_id,
+        user_id      = kopf.user_id,
+        character_id = kopf.character_id,
     )
     logger.info("db_zugriff fertig — external und internal befuellt")
-
     return state
