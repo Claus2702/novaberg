@@ -13,6 +13,8 @@ ein Write hier landen, schlaegt execute() lauf fehl — Absicht.
 """
 
 import logging
+
+import redis
 from datetime import datetime, timedelta
 from zoneinfo import ZoneInfo
 
@@ -235,7 +237,7 @@ und der aktuelle Prompt sich darauf bezieht.
         self,
         writes:       list[dict],
         user_id:      str,
-        redis_client: "redis.Redis",
+        redis_client: redis.Redis,
         postgres_url: str,
     ) -> int:
         """Loud-Failure-Stub.
