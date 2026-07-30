@@ -14,10 +14,14 @@
 
 ## Überblick
 
-Nova besteht aus zwei parallelen Graphen:
+Ein einzelner Gesprächszug läuft durch **zwei** Graphen, nicht durch einen:
 
-- **Human Graph** (Vordergrund) — Perzeption → Router → Enricher → Planner → Agent-Dispatch → Gesprächsvektor → Responder → Tribunal. Reagiert auf User-Eingaben in Echtzeit.
-- **Pixie Graph** (Hintergrund) — der autonome Hintergrundagent. Führt Promotion, Decay, Charakter-Destillation, Wiedervorlage, Recherche und Vertiefung aus. Läuft kompetitiv nach Priorität.
+- **Human Graph** (5 Knoten) — Perzeption → Enricher → EI-Calc → Salienz → Dispatcher. Klassifiziert, was der Nutzer gesagt hat, lädt Kontext, berechnet Emotion und Salienz und speichert, was es wert ist. Er erzeugt bewusst keine Antwort.
+- **Character Graph** (18 Knoten) — DB-Zugriff → EI-Calc → Enricher → Emotionale Gravitation → Reducer → Router → Planner → Agent-Dispatch → Gesprächsvektor → Responder → Thinker → Tribunal → Evaluate, danach Novas eigene Perzeption, Salienz und Speicherung. Hier entsteht die Antwort — und hier nimmt Nova ihren eigenen Zug genauso wahr und merkt ihn sich genauso, wie sie es mit dem des Nutzers tut.
+
+Verbunden sind beide über eine Redis-Ereigniswarteschlange: Der Human Graph hinterlässt ein Ereignis, ein Konsument startet einen Character-Graph-Lauf, und die Antwort erreicht den Client über einen WebSocket. Ein dritter Graph, der **Agent Graph** (3 Knoten), bedient Züge, die von Agenten stammen statt von Menschen.
+
+- **Pixie** (Hintergrund) — der autonome Hintergrundagent. Sechzehn Agenten konkurrieren nach Priorität: Promotion und Decay über beide Gedächtnisschichten, Charakter-Destillation, Wiedervorlage, Recherche, Kalibrierung, Wissenslücken, Timeline und Notizen.
 
 Geschichtetes Gedächtnis:
 
@@ -26,7 +30,7 @@ Geschichtetes Gedächtnis:
 | Kurzzeit (KZG) | Redis + Vektorsuche | Aktive Gedanken, TTL-basiert |
 | Langzeit (LZG) | PostgreSQL | Verfestigte Erinnerungen mit Ebbinghaus-Decay |
 | Knowledge Graph | PostgreSQL | Entitäten, Fakten, bi-temporales Modell |
-| Charakter-Hash | PostgreSQL | Destillierte Persönlichkeitsprofile |
+| Charakter-Hash | PostgreSQL | Destillierte Persönlichkeitsprofile und die daraus abgeleiteten Charakter-Räder |
 
 Multi-Channel: Desktop-Client (GTK4) und Telegram-Bot nutzen dieselbe FastAPI-Server-Instanz.
 
@@ -38,7 +42,7 @@ Multi-Channel: Desktop-Client (GTK4) und Telegram-Bot nutzen dieselbe FastAPI-Se
 
 ![Chat mit Pipeline-Stages](images/nova-ui-chat-1.png)
 
-Jede Nachricht durchläuft die vollständige kognitive Pipeline. Die Stage-Indikatoren unter der Konversation zeigen jeden Verarbeitungsschritt in Echtzeit: Die Perzeption klassifiziert Intent und Emotion, der Router bestimmt den Verarbeitungspfad, der Enricher lädt relevanten Kontext aus dem Gedächtnis, der Gesprächsvektor formt Novas eigene Gesprächsintention, und der Responder generiert die Antwort. Das ist keine Dekoration — es ist die Live-Spur eines 10-Knoten-Graphen, der natürliche Sprache verarbeitet.
+Jede Nachricht durchläuft die vollständige kognitive Pipeline. Die Stage-Indikatoren unter der Konversation zeigen jeden Verarbeitungsschritt in Echtzeit: Die Perzeption klassifiziert Intent und Emotion, der Router bestimmt den Verarbeitungspfad, der Enricher lädt relevanten Kontext aus dem Gedächtnis, der Gesprächsvektor formt Novas eigene Gesprächsintention, und der Responder generiert die Antwort. Das ist keine Dekoration — es ist die Live-Spur der kognitiven Pipeline: fünf Knoten auf dem Wahrnehmungspfad, achtzehn weitere auf dem Pfad, der die Antwort formt.
 
 ![Chat — Gespräch ohne Stages](images/nova-ui-chat-2.png)
 
@@ -60,7 +64,7 @@ Jeder Gesprächs-Turn wird mit seinen analytischen Metadaten gespeichert: klassi
 
 ![KZG-Panel](images/nova-ui-shorttermmemory-1.png)
 
-Novas Kurzzeitgedächtnis-Einträge, hier für User „nova" — Novas eigene Gedanken. Jeder Eintrag trägt einen Salienz-Score, thematische Tags, eine Dimensions-Klassifikation und einen TTL-Countdown. Einträge über dem Promotions-Schwellwert (0.8) sind Kandidaten für die Konsolidierung ins Langzeitgedächtnis durch den Pixie-Hintergrundagenten. Der Inhalt ist Novas eigene Perspektive: „Für Nova gibt es kaum etwas Besseres als eine reife Tomate frisch vom Strauch."
+Novas Kurzzeitgedächtnis-Einträge, hier für User „nova" — Novas eigene Gedanken. Jeder Eintrag trägt einen Salienz-Score, thematische Tags, eine Dimensions-Klassifikation und einen TTL-Countdown. Einträge über dem Promotions-Tor — 0.94 auf der hier gezeigten Skala, das sind 0.7 vor der Salienz-Kurve — sind Kandidaten für die Konsolidierung ins Langzeitgedächtnis durch den Pixie-Hintergrundagenten. Der Inhalt ist Novas eigene Perspektive: „Für Nova gibt es kaum etwas Besseres als eine reife Tomate frisch vom Strauch."
 
 ### Langzeitgedächtnis (LZG)
 
@@ -73,6 +77,8 @@ Konsolidierte Erinnerungen, die den Promotions-Prozess überlebt haben. Jeder Ei
 ![Charakter-Panel — Novas Selbstmodell](images/nova-ui-character-1.png)
 
 Fünf destillierte Persönlichkeitsprofile, hier für Nova selbst. Das sind keine handgeschriebenen Beschreibungen, sondern das Ergebnis von Pixies Charakter-Destillationsagent, der periodisch Kurzzeit- und Langzeitgedächtnis zu strukturierten Profilen verdichtet. Das Kern-Profil erfasst, wer Nova geworden ist; das Adaptiv-Profil spiegelt ihre aktuellen Beschäftigungen; Intentionen und Emotionen beschreiben ihre Kommunikationsmuster und emotionale Grundlinie; das Beziehungs-Profil modelliert ihre Wahrnehmung des Nutzers. Alle fünf Schichten fließen in den Identitäts-Block des Responders ein.
+
+Aus diesen Profilen werden zwei **Charakter-Räder** abgeleitet, und die sind der Teil, der handelt statt beschreibt. Jedes stellt Einzelfragen an den destillierten Charakter — zwölf für die Zuwendung, zehn für die Initiative —, die ein LLM mit *nicht erkennbar*, *angedeutet* oder *ausgeprägt* beantwortet; der Faktor daraus wird **gerechnet**, nie geschätzt. Die Zuwendung gewichtet, wie stark die Belange des Gegenübers zählen, wenn Nova entscheidet, was sie sich merkt; die Initiative verschiebt die Achse, die bestimmt, wer das Gespräch führt. Beide legen ihre Einzelbewertungen neben der Zahl ab, sodass jeder Faktor von Hand nachrechenbar ist, und beide tragen ein Herkunftsfeld — denn ein Wert, der genau auf seinem Nullpunkt landet, ist eine Messung und darf nicht aussehen wie einer, der nie erhoben wurde. *(Der Screenshot oben ist älter als die Räder.)*
 
 ---
 
@@ -211,7 +217,7 @@ Die zentrale Konfiguration liegt in `server/config.py`. Alle Parameter sind übe
 | Variable | Werte | Effekt |
 |----------|-------|--------|
 | `LLM_PROFILE` | `lokal`, `claude` | Umschaltung zwischen Ollama und Anthropic API |
-| `OLLAMA_CONNECTOR` | `mistral`, `gemma4` | Modell-Stack innerhalb von `lokal` |
+| `OLLAMA_CONNECTOR` | `mistral`, `gemma4`, `qwen36` | Modell-Stack innerhalb von `lokal` |
 
 Feingranulare Parameter (Pixie-Intervalle, KZG-Thresholds, Such-Limits etc.) sind ebenfalls in `config.py` dokumentiert und über `PIXIE_*`-, `KZG_*`-, `NOTIZEN_*`-Variablen steuerbar.
 
@@ -225,11 +231,11 @@ Feingranulare Parameter (Pixie-Intervalle, KZG-Thresholds, Such-Limits etc.) sin
 Die Architektur ist ausführlich dokumentiert in `docs/`:
 
 - `novaberg-architecture.md` — Gesamtübersicht
-- `novaberg-graph.md` — Human Graph Pipeline
+- `novaberg-graph.md` — Graph-Architektur und Pipeline
 - `novaberg-pixie.md` — Hintergrundagent
 - `novaberg-memory.md` — Gedächtnis-Schichten
 - `novaberg-ei.md` — Emotionale Intelligenz
-- `nova-node-*.md` — Einzelne Pipeline-Knoten
+- `novaberg-node-*.md` — Einzelne Pipeline-Knoten (23 Dokumente)
 - `novaberg-thinking-curiosity_k.md` — Neugier und intrinsische Motivation
 - `novaberg-thinking-drive_k.md` — Antrieb, Ziele und Dual-Emotion
 - `novaberg-roadmap.md` — Projektchronik

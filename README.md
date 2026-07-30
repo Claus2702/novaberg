@@ -14,10 +14,14 @@
 
 ## Overview
 
-Nova runs on two parallel graphs:
+A single conversational turn runs through **two** graphs, not one:
 
-- **Human Graph** (foreground) — Perception → Router → Enricher → Planner → Agent-Dispatch → Conversational Vector → Responder → Tribunal. Responds to user input in real time.
-- **Pixie Graph** (background) — the autonomous background agent. Handles promotion, decay, character distillation, reminders, research, and deepening. Runs competitively by priority.
+- **Human Graph** (5 nodes) — Perception → Enricher → EI-Calc → Salience → Dispatcher. Classifies what the user said, loads context, computes emotion and salience, and stores what is worth keeping. It deliberately produces no answer.
+- **Character Graph** (18 nodes) — DB-Access → EI-Calc → Enricher → Emotional Gravitation → Reducer → Router → Planner → Agent-Dispatch → Conversational Vector → Responder → Thinker → Tribunal → Evaluate, then Nova's own perception, salience and storage. This is where the answer forms — and where Nova perceives and remembers her own turn the same way she does the user's.
+
+The two are joined by a Redis event queue: the Human Graph leaves an event, a consumer starts a Character Graph run, and the answer reaches the client over a WebSocket. A third graph, the **Agent Graph** (3 nodes), handles turns that agents produce rather than people.
+
+- **Pixie** (background) — the autonomous background agent. Sixteen agents compete by priority: promotion and decay across both memory layers, character distillation, reminders, research, calibration, knowledge gaps, timeline and notes.
 
 Layered memory:
 
@@ -26,7 +30,7 @@ Layered memory:
 | Short-term (STM) | Redis + vector search | Active thoughts, TTL-based |
 | Long-term (LTM) | PostgreSQL | Consolidated memories with Ebbinghaus decay |
 | Knowledge Graph | PostgreSQL | Entities, facts, bi-temporal model |
-| Character Hash | PostgreSQL | Distilled personality profiles |
+| Character Hash | PostgreSQL | Distilled personality profiles and the character wheels derived from them |
 
 Multi-channel: Desktop client (GTK4) and Telegram bot share the same FastAPI server instance.
 
@@ -38,7 +42,7 @@ Multi-channel: Desktop client (GTK4) and Telegram bot share the same FastAPI ser
 
 ![Chat with pipeline stages](images/nova-ui-chat-1.png)
 
-Every message passes through the full cognitive pipeline. The stage indicators below the conversation show each processing step as it happens: Perception classifies intent and emotion, the Router determines the processing path, the Enricher loads relevant context from memory, the Conversational Vector shapes Nova's own conversational intention, and the Responder generates the final answer. This is not decoration — it is the live trace of a 10-node cognitive graph processing natural language.
+Every message passes through the full cognitive pipeline. The stage indicators below the conversation show each processing step as it happens: Perception classifies intent and emotion, the Router determines the processing path, the Enricher loads relevant context from memory, the Conversational Vector shapes Nova's own conversational intention, and the Responder generates the final answer. This is not decoration — it is the live trace of the cognitive pipeline: five nodes on the perception path, eighteen more on the path that forms the answer.
 
 ![Chat — clean conversation](images/nova-ui-chat-2.png)
 
@@ -60,7 +64,7 @@ Each conversation turn is stored with its analytical metadata: classified intent
 
 ![STM panel](images/nova-ui-shorttermmemory-1.png)
 
-Nova's short-term memory entries, shown here for user "nova" — Nova's own thoughts. Each entry carries a salience score, thematic tags, a dimension classification, and a TTL countdown. Entries above the promotion threshold (0.8) are candidates for consolidation into long-term memory via the Pixie background agent. The content is Nova's own perspective: "For Nova, there is hardly anything better than a ripe tomato fresh from the bush."
+Nova's short-term memory entries, shown here for user "nova" — Nova's own thoughts. Each entry carries a salience score, thematic tags, a dimension classification, and a TTL countdown. Entries above the promotion gate — 0.94 on the scale shown here, which is 0.7 before the salience curve is applied — are candidates for consolidation into long-term memory via the Pixie background agent. The content is Nova's own perspective: "For Nova, there is hardly anything better than a ripe tomato fresh from the bush."
 
 ### Long-Term Memory (LTM)
 
@@ -73,6 +77,8 @@ Consolidated memories that survived the promotion process. Each entry has a weig
 ![Character panel — Nova's self-model](images/nova-ui-character-1.png)
 
 Five distilled personality profiles, shown here for Nova herself. These are not hand-written descriptions but the output of Pixie's character distillation agent, which periodically compresses short-term and long-term memory into structured profiles. The Core profile captures who Nova has become; the Adaptive profile reflects her current preoccupations; Intentions and Emotions describe her communication patterns and emotional baseline; the Relationship profile models her perception of the user. All five layers feed into the Responder's identity block.
+
+Two **character wheels** are derived from those profiles, and they are the part that acts rather than describes. Each asks a set of single questions against the distilled character — twelve for attachment, ten for initiative — which an LLM rates as absent, hinted or pronounced; the resulting factor is then *computed*, never estimated. Attachment weighs how much the other person's concerns count when Nova decides what to remember; initiative shifts the axis that decides who is leading the conversation. Both store their individual ratings alongside the number, so every factor can be recalculated by hand, and both carry a provenance field — because a value that happens to land on its neutral point is a measurement, and must not look like a value that was never taken. *(The screenshot above predates the wheels.)*
 
 ---
 
@@ -211,7 +217,7 @@ Central configuration lives in `server/config.py`. All parameters can be overrid
 | Variable | Values | Effect |
 |----------|--------|--------|
 | `LLM_PROFILE` | `lokal`, `claude` | Switch between Ollama and Anthropic API |
-| `OLLAMA_CONNECTOR` | `mistral`, `gemma4` | Model stack within `lokal` |
+| `OLLAMA_CONNECTOR` | `mistral`, `gemma4`, `qwen36` | Model stack within `lokal` |
 
 Fine-grained parameters (Pixie intervals, STM thresholds, search limits, etc.) are also documented in `config.py` and controllable via `PIXIE_*`, `KZG_*`, `NOTIZEN_*` variables.
 
@@ -225,11 +231,11 @@ Fine-grained parameters (Pixie intervals, STM thresholds, search limits, etc.) a
 The architecture is extensively documented in `docs/`:
 
 - `novaberg-architecture.md` — System overview
-- `novaberg-graph.md` — Human Graph pipeline
+- `novaberg-graph.md` — Graph architecture and pipeline
 - `novaberg-pixie.md` — Background agent
 - `novaberg-memory.md` — Memory layers
 - `novaberg-ei.md` — Emotional intelligence
-- `nova-node-*.md` — Individual pipeline nodes
+- `novaberg-node-*.md` — Individual pipeline nodes (23 documents)
 - `novaberg-thinking-curiosity_k.md` — Curiosity and intrinsic motivation
 - `novaberg-thinking-drive_k.md` — Drive, goals, and dual-emotion architecture
 - `novaberg-roadmap.md` — Project chronicle
