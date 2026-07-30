@@ -1872,6 +1872,20 @@ Der Charakter-Tab zeigt jetzt oben zwei Radar-Diagramme nebeneinander, darunter 
 
 **Ein Rad ohne Daten wird nicht als Polygon aus Nullen gezeichnet.** `RadarChart.set_unbekannt()` zeichnet Gitter und Achsen, schreibt den Grund ins Zentrum und lässt die Fläche weg. Zwölf Nullen sähen aus wie ein Charakter ohne jede Zuwendung — dieselbe Verwechslung, gegen die die Herkunftsfelder gebaut wurden (`novaberg-lesson_l_default-wie-fehlschlag.md`). Aus demselben Grund steht die Herkunft neben jeder Kennzahl und wird hervorgehoben, sobald sie nicht `destilliert` lautet.
 
+### Der Abstand von der Nabe wird gezeichnet ✅ (30.07.2026)
+
+Beide Räder haben eine Nabe — den Wert ohne jede Ausprägung — und das Ergebnis liegt mehr oder weniger weit davon entfernt. Diese Entfernung war bisher nur als Zahl da. Jetzt steht sie im Diagramm: ein Ring im Zentrum als Nullpunkt, ein Punkt daneben für das Ergebnis, eine Strecke dazwischen.
+
+**Die Richtung ist waagerecht, und das folgt aus der Anordnung.** Die Speichen der ersten Hälfte liegen auf der rechten Seite des Sterns, die der zweiten auf der linken; bei geradzahliger Achsenzahl trennt sie eine senkrechte Linie. Ein Ergebnis, das nach oben zieht, wandert deshalb nach rechts.
+
+**Es ist ausdrücklich kein Flächenschwerpunkt.** Der Wert eines Rades ist eine gewichtete Summe, in der jede Speiche mit ihrem eigenen Betrag zieht; ein geometrischer Schwerpunkt wäre eine andere Zahl, die nur so aussähe wie diese. Gezeichnet wird der abgelegte Wert.
+
+**Je Seite gegen die eigene Spanne normiert.** Das Zuwendungs-Rad reicht 0.60 nach oben und 0.40 nach unten. Eine gemeinsame Spanne für beide Seiten zeigte volle Abwendung bei zwei Dritteln des Weges, obwohl sie ihre Grenze exakt trifft — eine Untertreibung, die nur eine der beiden Hälften beträfe. Gemessen: mit getrennter Normierung erreichen 0.5 und 1.5 beide den Rand, mit gemeinsamer erreicht 0.5 nur −0.667.
+
+**Nabe und Grenzen kommen vom Server**, weil sie dort über die Umgebung einstellbar sind. Eine Kopie im Anzeiger wäre eine zweite Quelle derselben Größe und liefe beim nächsten Verstellen still auseinander — dieselbe Form wie die Toolbar-Zuordnung weiter unten.
+
+**Was dabei sichtbar wurde:** Ein Wert kann exakt auf der Nabe liegen und trotzdem eine Messung sein. Steht der Punkt im Ring, während die Fläche erkennbar zu einer Seite hängt, heben sich zwei Gruppen von Speichen gegenseitig auf. Ohne das Bild ist dieser Fall von „nie erhoben" nur über das Herkunftsfeld zu unterscheiden; mit ihm sieht man es.
+
 **Die Speichen werden nach Namen gelesen, nicht nach Position.** Die Reihenfolge im JSON gehört seinem Erzeuger, die Reihenfolge der Achsen der Anzeige. Eine fehlende Speiche wird gemeldet und nicht mit 0.0 überdeckt — im Log als `error`, im Panel als Warnzeile mit den Namen.
 
 **Umfang:** Suite 637 → **654 Tests**, grün, 0 übersprungen. Nulllinie unverändert **2253**, `noqa` 9, Wand `LOG` sauber. Kein `db/init.sql` angefasst, keine DDL.
