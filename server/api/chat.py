@@ -6,6 +6,8 @@ import json
 import logging
 import time
 import uuid
+from collections.abc import Iterator
+from dataclasses import dataclass
 
 from fastapi                    import APIRouter, Request
 from fastapi.responses          import JSONResponse, StreamingResponse
@@ -124,6 +126,113 @@ def _sse_event(event_type: str, data: dict) -> str:
 # ─────────────────────────────────────────────
 # Synchroner Chat
 # ─────────────────────────────────────────────
+@dataclass
+class _Pfad1Abbruch:
+    """Meldet der Stream-Schleife, dass Pfad 1 abgebrochen ist.
+
+    Kein Weiterwerfen der Ausnahme: Die Schleife muss den Abbruch **sehen**,
+    weil das Ereignis danach trotzdem erzeugt wird. Eine durchgereichte
+    Ausnahme haette den Generator verlassen und genau das verhindert.
+    """
+
+    fehler: BaseException
+    text:   str
+
+
+def _stream_oder_abbruch(graph: object, zustand: dict) -> Iterator[object]:
+    """Reicht die Stream-Chunks durch und macht aus einem Abbruch ein Element.
+
+    Vorbedingung: `graph` hat eine `.stream()`-Methode.
+    Nachbedingung: Dieselben Chunks wie `graph.stream()`, gefolgt von genau
+        einem `_Pfad1Abbruch`, falls die Iteration mit einer Ausnahme endete.
+    Fehlerfaelle: Keine — jede Ausnahme wird zum Element und nicht zum Abbruch
+        des Aufrufers. Das ist der ganze Zweck.
+
+    Returns:
+        Ein Iterator ueber Chunks und hoechstens einen Abbruch-Marker.
+    """
+    # ── Eingabe-Validierung ─────────────────────
+    # Keine: Ein Graph ohne stream() scheitert laut beim ersten Aufruf.
+
+    # ── Verarbeitung ────────────────────────────
+    try:
+        yield from graph.stream(zustand)
+    except Exception as fehler:
+        # Der Traceback wird HIER geschrieben, im aktiven Ausnahmekontext. Beim
+        # Aufrufer ist die Ausnahme nur noch ein Wert; ein `logger.exception`
+        # oder ein `exc_info=` dort haette keinen Kontext mehr, auf den es sich
+        # beziehen koennte.
+        logger.exception(
+            f"{type(fehler).__name__}: Pfad 1 abgebrochen — die Schleife "
+            f"bekommt einen Abbruch-Marker, damit das Ereignis trotzdem "
+            f"erzeugt wird"
+        )
+        yield _Pfad1Abbruch(fehler, f"{type(fehler).__name__}: {fehler}")
+
+
+def _ereignis_nutzlast(
+    turn_id:     str,
+    user_prompt: str,
+    zustand:     dict,
+    ausfall:     str = "",
+) -> dict:
+    """Baut die Nutzlast des Ereignisses, das den CharacterGraph ausloest.
+
+    **Eine Stelle fuer beide Endpunkte und fuer beide Ausgaenge.** Der
+    synchrone und der streamende Pfad bauten dieselbe Nutzlast zweimal; eine
+    dritte Kopie fuer den Ausfallweg waere die Stelle gewesen, an der die drei
+    auseinanderlaufen.
+
+    `ausfall` traegt die Ausnahme, an der Pfad 1 abgebrochen ist — leer, wenn
+    er durchgelaufen ist. **Das Feld ist der Unterschied zwischen einem
+    gemessenen Neutralzustand und einem Ausfall:** `db_zugriff` fuellt fehlende
+    Perzeptionsfelder mit den Defaults der Datenklasse (`neutral`, 0.5,
+    `alltag`), und ohne diesen Vermerk waere ein Zusammenbruch von einer
+    ruhigen Nutzeraeusserung nicht zu unterscheiden.
+
+    Vorbedingung: `zustand` ist der State nach Pfad 1 — bei einem Abbruch der
+        zuletzt erreichte, notfalls der Eingangs-State.
+    Nachbedingung: Ein flaches, JSON-serialisierbares Dict.
+    Fehlerfaelle: Keine. Fehlt `external`, stehen leere Werte statt erfundener;
+        das Feld `pfad1_ausfall` sagt dann, warum.
+
+    Returns:
+        Die Nutzlast.
+    """
+    # ── Eingabe-Validierung ─────────────────────
+    aussen = zustand.get("external")
+
+    # ── Verarbeitung ────────────────────────────
+    nutzlast: dict = {
+        "turn_id":     turn_id,
+        "user_prompt": user_prompt,
+        # Die Salienz dieses Reizes reist mit in den CharacterGraph. Dort
+        # multipliziert die Formel sie mit nutzer_gewichtung und erhaelt daraus
+        # den Boden fuer Novas Segmente (novaberg-salienz-berechnung_k.md §3).
+        # None heisst "nicht ermittelt" und ist von einer echten 0.0 zu
+        # unterscheiden.
+        "salienz_human":      zustand.get("salienz_human"),
+        # Die Intentionen desselben Reizes, Quelle von M1 der Initiative-Achse.
+        # Sie muessen mitreisen: Der Salienz-Node des CharacterGraph laeuft NACH
+        # dem GV-Node und kaeme zu spaet.
+        "user_intentionen":   zustand.get("user_intentionen", []),
+        "current_emotion":    aussen.emotion.emotion              if aussen else "",
+        "current_arousal":    aussen.emotion.arousal              if aussen else 0.0,
+        "gespraechs_modus":   aussen.emotion.mode                 if aussen else "",
+        "intent":             aussen.emotion.intent               if aussen else "",
+        "tone":               aussen.emotion.tone                 if aussen else "",
+        "sprach_stil":        aussen.emotion.language_style       if aussen else "",
+        "beziehungs_dynamik": aussen.emotion.relationship_dynamic if aussen else "",
+        "emotions_vektor":    aussen.emotion.emotions_vector      if aussen else "",
+        "prompt_thema":       aussen.emotion.prompt_topic         if aussen else "",
+    }
+    if ausfall:
+        nutzlast["pfad1_ausfall"] = ausfall
+
+    # ── Ausgabe-Verifikation ────────────────────
+    return nutzlast
+
+
 @router.post("/chat")
 def ChatSenden(anfrage: GespraechAnfrage, request: Request):
     """Prompt durch den Gesprächsgraphen verarbeiten."""
@@ -141,49 +250,47 @@ def ChatSenden(anfrage: GespraechAnfrage, request: Request):
         shadow_cooldown_reset(redis_client, anfrage.user_id)
 
         # ── Pfad 1: HumanGraph (Perzeption → Enricher → EI-Calc → Salienz → Dispatcher) ──
-        with llm_lock:
-            initial_state: dict = request.app.state.human_graph.create_state(
-                user_prompt   = anfrage.prompt,
-                user_id       = anfrage.user_id,
-                character_id  = character_id,
-                system_prompt = anfrage.system,
-                temperature   = anfrage.temperatur,
-                turn_id       = turn_id,
+        initial_state: dict = request.app.state.human_graph.create_state(
+            user_prompt   = anfrage.prompt,
+            user_id       = anfrage.user_id,
+            character_id  = character_id,
+            system_prompt = anfrage.system,
+            temperature   = anfrage.temperatur,
+            turn_id       = turn_id,
+        )
+
+        # **Ein Abbruch in Pfad 1 darf die Nutzeraeusserung nicht loeschen.**
+        # Das Ereignis unten ist der einzige Ausloeser des CharacterGraph; wird
+        # es nicht erzeugt, gibt es keine Antwort — nicht spaeter, sondern nie,
+        # und ohne Weg zur Wiederholung. Genau so ging am 30.07.2026 ein Turn
+        # verloren, weil ein Modellaufruf sechs Millisekunden nach dem Timeout
+        # zurueckkam (novaberg-bugs.md → PFAD1-TIMEOUT-TURNVERLUST).
+        #
+        # Was hier NICHT passiert: den Ausfall verschweigen. Der Vermerk reist
+        # mit, und `db_zugriff` meldet ihn laut.
+        pfad1_ausfall: str = ""
+        result: dict = initial_state
+        try:
+            with llm_lock:
+                result = request.app.state.conversation_graph.invoke(initial_state)
+        except Exception as fehler:
+            pfad1_ausfall = f"{type(fehler).__name__}: {fehler}"
+            logger.exception(
+                f"{type(fehler).__name__}: Pfad 1 abgebrochen — das Ereignis "
+                f"wird trotzdem erzeugt, damit der Turn nicht verlorengeht "
+                f"(turn_id={turn_id})"
             )
 
-            result: dict = request.app.state.conversation_graph.invoke(initial_state)
-
         # ── Event erzeugen — löst CharacterGraph (Pfad 2) im Consumer aus ──
-        result_external = result.get("external")
         event_erzeugen(
             redis_client = redis_client,
             user_id      = anfrage.user_id,
             character_id = character_id,
             source       = "user",
             typ          = "message",
-            payload      = {
-                "turn_id":            turn_id,
-                "user_prompt":        anfrage.prompt,
-                # Die Salienz dieses Reizes reist mit in den CharacterGraph.
-                # Dort multipliziert die Formel sie mit nutzer_gewichtung und
-                # erhaelt daraus den Boden fuer Novas Segmente
-                # (novaberg-salienz-berechnung_k.md §3). None heisst "nicht
-                # ermittelt" und ist von einer echten 0.0 zu unterscheiden.
-                "salienz_human":      result.get("salienz_human"),
-                # Die Intentionen desselben Reizes, Quelle von M1 der
-                # Initiative-Achse. Sie muessen mitreisen: Der Salienz-Node des
-                # CharacterGraph laeuft NACH dem GV-Node und kaeme zu spaet.
-                "user_intentionen":   result.get("user_intentionen", []),
-                "current_emotion":    result_external.emotion.emotion              if result_external else "",
-                "current_arousal":    result_external.emotion.arousal              if result_external else 0.0,
-                "gespraechs_modus":   result_external.emotion.mode                 if result_external else "",
-                "intent":             result_external.emotion.intent               if result_external else "",
-                "tone":               result_external.emotion.tone                 if result_external else "",
-                "sprach_stil":        result_external.emotion.language_style       if result_external else "",
-                "beziehungs_dynamik": result_external.emotion.relationship_dynamic if result_external else "",
-                "emotions_vektor":    result_external.emotion.emotions_vector      if result_external else "",
-                "prompt_thema":       result_external.emotion.prompt_topic         if result_external else "",
-            },
+            payload      = _ereignis_nutzlast(
+                turn_id, anfrage.prompt, result, pfad1_ausfall,
+            ),
         )
 
         # ── User-Nachricht an andere Clients broadcasten ──
@@ -272,8 +379,23 @@ def ChatStreamSenden(anfrage: GespraechAnfrage, request: Request):
                 )
 
                 letzter_state: dict = initial_state
+                pfad1_ausfall: str = ""
 
-                for chunk in request.app.state.conversation_graph.stream(initial_state):
+                for chunk in _stream_oder_abbruch(
+                    request.app.state.conversation_graph, initial_state,
+                ):
+                    if isinstance(chunk, _Pfad1Abbruch):
+                        pfad1_ausfall = chunk.text
+                        logger.error(
+                            f"Pfad 1 abgebrochen ({chunk.text}) — das Ereignis "
+                            f"wird trotzdem erzeugt, damit der Turn nicht "
+                            f"verlorengeht (turn_id={turn_id})"
+                        )
+                        yield _sse_event("stage", {
+                            "label":  "Wahrnehmung unvollständig",
+                            "detail": "Die Antwort folgt über den anderen Kanal.",
+                        })
+                        break
                     # LangGraph liefert nach Subgraph-Return manchmal Listen statt Dicts
                     if not isinstance(chunk, dict):
                         logger.debug(f"Stream: Überspringe Nicht-Dict-Chunk (Typ: {type(chunk).__name__})")
@@ -367,37 +489,18 @@ def ChatStreamSenden(anfrage: GespraechAnfrage, request: Request):
                         letzter_state = node_state
 
             # ── Event erzeugen — löst CharacterGraph (Pfad 2) im Consumer aus ──
-            # User-Werte aus state["external"].emotion ins Payload — db_zugriff
-            # liest sie dort wieder und befuellt damit external.emotion im CG.
-            letzter_external = letzter_state.get("external")
+            # Dieselbe Nutzlast wie im synchronen Pfad, aus derselben Funktion:
+            # db_zugriff liest die Perzeptionswerte dort wieder und befuellt
+            # damit external.emotion im CharacterGraph.
             event_erzeugen(
                 redis_client = redis_client,
                 user_id      = anfrage.user_id,
                 character_id = character_id,
                 source       = "user",
                 typ          = "message",
-                payload      = {
-                    "turn_id":            turn_id,
-                    "user_prompt":        anfrage.prompt,
-                    # Wie im nicht-streamenden Pfad: der Boden fuer Novas
-                    # Segmente. letzter_state traegt ihn, weil der Dispatcher
-                    # als letzter Node nur pending_writes leert und den State
-                    # sonst unveraendert zurueckgibt.
-                    "salienz_human":      letzter_state.get("salienz_human"),
-                    # Die Intentionen desselben Reizes, Quelle von M1 der
-                    # Initiative-Achse. Sie muessen mitreisen: Der Salienz-Node des
-                    # CharacterGraph laeuft NACH dem GV-Node und kaeme zu spaet.
-                    "user_intentionen":   letzter_state.get("user_intentionen", []),
-                    "current_emotion":    letzter_external.emotion.emotion              if letzter_external else "",
-                    "current_arousal":    letzter_external.emotion.arousal              if letzter_external else 0.0,
-                    "gespraechs_modus":   letzter_external.emotion.mode                 if letzter_external else "",
-                    "intent":             letzter_external.emotion.intent               if letzter_external else "",
-                    "tone":               letzter_external.emotion.tone                 if letzter_external else "",
-                    "sprach_stil":        letzter_external.emotion.language_style       if letzter_external else "",
-                    "beziehungs_dynamik": letzter_external.emotion.relationship_dynamic if letzter_external else "",
-                    "emotions_vektor":    letzter_external.emotion.emotions_vector      if letzter_external else "",
-                    "prompt_thema":       letzter_external.emotion.prompt_topic         if letzter_external else "",
-                },
+                payload      = _ereignis_nutzlast(
+                    turn_id, anfrage.prompt, letzter_state, pfad1_ausfall,
+                ),
             )
 
             # ── User-Nachricht an andere Clients broadcasten ──

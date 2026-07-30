@@ -475,6 +475,22 @@ def db_zugriff(state: ConversationState) -> ConversationState:
     )
 
     # ── Verarbeitung ────────────────────────────
+    # Ein abgebrochener Pfad 1 liefert keine Perzeptionswerte, und
+    # `_emotion_aus_payload` fuellt fehlende Schluessel mit den Defaults der
+    # Datenklasse — `neutral`, 0.5, `alltag`. **Ohne diese Zeile waere ein
+    # Zusammenbruch von einer ruhigen Nutzeraeusserung nicht zu
+    # unterscheiden**, und der Turn liefe unauffaellig auf erfundenen Werten
+    # weiter. Das Ereignis wird trotzdem verarbeitet: Eine Antwort auf
+    # Defaults ist besser als keine (novaberg-bugs.md →
+    # PFAD1-TIMEOUT-TURNVERLUST), aber sie ist als solche kenntlich.
+    pfad1_ausfall: str = str(payload.get("pfad1_ausfall", ""))
+    if pfad1_ausfall:
+        logger.error(
+            f"db_zugriff: Pfad 1 ist abgebrochen ({pfad1_ausfall}) — "
+            f"external.emotion traegt die Defaults der Datenklasse und ist "
+            f"KEINE Messung (turn_id={turn_id})"
+        )
+
     external_emotion: Emotion = _emotion_aus_payload(payload)
     internal_emotion, internal_raum = _nova_zustand_laden(kopf)
     external_character, internal_character = _charaktere_laden(kopf)
