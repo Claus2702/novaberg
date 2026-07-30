@@ -32,7 +32,6 @@ class HumanGraph(GraphBase):
 
     def build(self) -> CompiledStateGraph:
         """Baut den User-Pfad und gibt ihn kompiliert zurück."""
-
         graph = StateGraph(ConversationState)
 
         # ── Nodes registrieren ─────────────────

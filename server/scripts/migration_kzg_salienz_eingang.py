@@ -64,7 +64,6 @@ def migrieren(trocken: bool = False) -> dict:
     Returns:
         Zaehlwerk als Dict.
     """
-
     # ── Eingabe-Validierung ─────────────────────
     keys: list[str] = [
         k.decode("utf-8") if isinstance(k, bytes) else k

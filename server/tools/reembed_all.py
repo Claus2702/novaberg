@@ -129,7 +129,6 @@ def embedding_berechnen(text: str) -> list[float]:
     (Abbruch des Laufs — Sicherheitsnetz 2, im Repo existiert sonst kein
     einziger Dimensions-Check).
     """
-
     # ── Verarbeitung ────────────────────────────
     antwort = ollama_gpu_client.embed(model=EMBED_MODEL, input=text)
     embeddings = antwort.get("embeddings")
@@ -155,7 +154,6 @@ def casing_pruefung() -> None:
     (der EMBEDDING-CASING-BLIND-Defekt) und der Lauf bricht sofort ab.
     Laeuft vor jedem Lauf, auch im Dry-Run.
     """
-
     # ── Verarbeitung ────────────────────────────
     hund: list[float] = embedding_berechnen("Hund")
     katze: list[float] = embedding_berechnen("Katze")
@@ -200,7 +198,6 @@ def _pg_ziel_verarbeiten(
     schreiben(row_id, embedding)   -> bool (nur bei --commit aufgerufen)
     Liefert die Statistik {gelesen, embedded, geschrieben, uebersprungen}.
     """
-
     # ── Eingabe-Validierung ─────────────────────
     stats: dict = {"gelesen": len(rows), "embedded": 0, "geschrieben": 0, "uebersprungen": 0}
     logger.info("[%s] %d Zeilen gelesen", ziel, len(rows))
@@ -531,7 +528,6 @@ def selbstkontrolle() -> bool:
     oder inaktive Referenzknoten -> Warnung, kein Abbruch.
     Liefert True, wenn alle prueffbaren Paare im Toleranzband liegen.
     """
-
     # ── Verarbeitung ────────────────────────────
     alles_ok: bool = True
     conn = psycopg2.connect(POSTGRES_URL)
@@ -583,7 +579,6 @@ def selbstkontrolle() -> bool:
 
 def main() -> int:
     """Kommandozeilen-Einstieg: Ziele aufloesen, Sicherheitsnetze, Lauf, Bilanz."""
-
     # ── Eingabe-Validierung ─────────────────────
     parser = argparse.ArgumentParser(description="Re-Embedding aller Vektor-Speicher (A5, Chat 107)")
     parser.add_argument("--target", action="append", choices=ZIEL_REIHENFOLGE + ["all"],

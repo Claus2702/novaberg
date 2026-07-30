@@ -36,7 +36,6 @@ _INTENTION_AUFGABE_MAP: dict[str, str] = {
 
 def queues_befuellen(state: AgentState) -> dict:
     """Befuellt Promotion-Queue, Shadow-Queue und setzt Dirty-Flag."""
-
     if not PIXIE_AKTIV:
         logger.debug("kzg.queues: queues_befuellen uebersprungen (PIXIE_AKTIV=False)")
         return {

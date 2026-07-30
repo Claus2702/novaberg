@@ -599,7 +599,6 @@ def _normalisieren(wort: str) -> str:
     Nachbedingung: Rueckgabe enthaelt nur den Wortkern.
     Fehlerfaelle: keine; ein reines Schmuckzeichen ergibt den leeren String.
     """
-
     # ── Verarbeitung ────────────────────────────
     ersetzt: str = wort.lower()
     for von, nach in (("ä", "ae"), ("ö", "oe"), ("ü", "ue"), ("ß", "ss")):
@@ -624,7 +623,6 @@ def _strategie_extrahieren(rohwert: str) -> str:
     Fehlerfaelle: Kein erkennbares Kuerzel — Rueckgabe "", der Aufrufer
     entscheidet ueber die Meldung.
     """
-
     # ── Eingabe-Validierung ─────────────────────
     if not rohwert or not rohwert.strip():
         return ""
@@ -665,7 +663,6 @@ def _doppelbuchstaben_kollabieren(wort: str) -> str:
     Nachbedingung: Rueckgabe enthaelt keinen Buchstaben zweimal hintereinander.
     Fehlerfaelle: keine.
     """
-
     # ── Verarbeitung ────────────────────────────
     gebaut: list[str] = []
     for zeichen in wort:
@@ -687,7 +684,6 @@ def _begriff_extrahieren(rohwert: str, kanon: set[str]) -> str:
     Nachbedingung: Rueckgabe ist ein Element aus `kanon` oder "".
     Fehlerfaelle: Kein Treffer — Rueckgabe "".
     """
-
     # ── Eingabe-Validierung ─────────────────────
     if not rohwert or not rohwert.strip():
         return ""
@@ -729,7 +725,6 @@ def korridor_pruefen(
     Fehlerfaelle: Leeres Repertoire — dann kann nichts geprueft werden, und das
     ist selbst ein Verstoss-Eintrag.
     """
-
     # ── Eingabe-Validierung ─────────────────────
     verstoesse: list[dict] = []
     strategie: str = gv_parsed.get("strategie", "")

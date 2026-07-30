@@ -434,7 +434,6 @@ def embedding_cosine_alle_aktualisieren(postgres_url: str) -> int:
 
     Liefert die Anzahl aufgefrischter Kanten.
     """
-
     # ── Eingabe-Validierung / Verarbeitung Teil 1: Cosine-Refresh ──────
     conn = psycopg2.connect(postgres_url)
     try:
@@ -501,7 +500,6 @@ def kanten_alle_loeschen(postgres_url: str) -> int:
 
     Liefert die Anzahl geloeschter Kanten; -1 bei DB-Fehler.
     """
-
     # ── Verarbeitung ────────────────────────────
     conn = psycopg2.connect(postgres_url)
     try:
@@ -539,7 +537,6 @@ def kanten_alle_neu_aufbauen(postgres_url: str) -> dict:
     Nur aktive Knoten — deckungsgleich mit dem Live-Anlegen (Kandidaten
     sind dort ebenfalls nur aktive). Liefert {knoten, paare, error}.
     """
-
     # ── Eingabe-Validierung: Bestand chronologisch laden ───────────────
     ergebnis: dict = {"knoten": 0, "paare": 0, "error": None}
     conn = psycopg2.connect(postgres_url)

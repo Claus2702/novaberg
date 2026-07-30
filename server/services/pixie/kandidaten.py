@@ -133,7 +133,6 @@ def _aging_zuschlag(ueberfaellig_s: float, name: str) -> float:
     Aufgabe bleibt Kandidat, sie altert nur nicht — ein stiller Ausschluss
     waere hier der schlimmere Fehler.
     """
-
     # ── Eingabe-Validierung ─────────────────────
     if ueberfaellig_s < 0:
         logger.error(

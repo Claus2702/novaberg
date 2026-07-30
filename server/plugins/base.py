@@ -139,7 +139,6 @@ class BaseManager(ABC):
         Wird beim Server-Start aufgerufen.
         Liest init.sql aus dem eigenen Ordner und führt es aus.
         """
-
         sql_path: Path = Path(inspect.getfile(self.__class__)).parent / "init.sql"
 
         if sql_path.exists():

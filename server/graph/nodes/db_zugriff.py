@@ -57,7 +57,6 @@ def _raum_aus_labels(emotion: Emotion) -> Raum:
     Fehlerfaelle: Keine — unbekannte Labels nehmen den Tabellen-Default,
     und `raum_ziel_bestimmen` benennt einen Modus ausserhalb des Kanons.
     """
-
     # ── Verarbeitung ────────────────────────────
     tiefe, naehe = raum_ziel_bestimmen(
         Personality(emotion=emotion), quelle="Cold-Start aus Labels",
@@ -81,7 +80,6 @@ def db_zugriff(state: ConversationState) -> ConversationState:
     Node bricht nicht ab, sondern faehrt mit Defaults fort, damit der
     Graph nicht im Eingangsknoten stirbt.
     """
-
     # ── Eingabe-Validierung ─────────────────────
     user_id:       str  = state.get("user_id", "")
     character_id:  str  = state.get("character_id", "")

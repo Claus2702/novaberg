@@ -26,7 +26,6 @@ def shadow_queue_push(
     modus:        str  = "",
 ) -> None:
     """Legt einen Auftrag in die Shadow-Queue."""
-
     if not PIXIE_AKTIV:
         logger.debug("shadow_agent.utils: shadow_queue_push uebersprungen (PIXIE_AKTIV=False)")
         return
@@ -77,7 +76,6 @@ def promotion_queue_push(
         unlesbarer Fremdeintrag in der Queue blockiert die Pruefung nicht,
         wird aber benannt.
     """
-
     # ── Eingabe-Validierung ─────────────────────
     if not user_id or not key:
         logger.error(

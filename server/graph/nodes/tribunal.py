@@ -88,7 +88,6 @@ def _agent_vote(
     state:         ConversationState,
 ) -> TribunalVote:
     """Fuehrt einen einzelnen Tribunal-Agenten aus und gibt sein Votum zurueck."""
-
     external = state.get("external")
     intent: str = external.emotion.intent if external else "smalltalk"
     tone:   str = external.emotion.tone   if external else "sachlich"
@@ -222,7 +221,6 @@ def _agent_vote(
 # ─────────────────────────────────────────────
 def judge(state: ConversationState) -> ConversationState:
     """Fuehrt alle Tribunal-Agenten sequenziell aus und sammelt Voten."""
-
     logger.info(f"Tribunal: Starte Bewertung (Runde {state['correction_round']}, "
                 f"{len(AGENTS)} Agenten)")
 
@@ -246,7 +244,6 @@ def judge(state: ConversationState) -> ConversationState:
 # ─────────────────────────────────────────────
 def evaluate(state: ConversationState) -> ConversationState:
     """Wertet die Voten aus und bildet das Gesamturteil."""
-
     votes: list[TribunalVote] = state["tribunal_votes"]
 
     rejections: list[TribunalVote] = [v for v in votes if v["vote"] == "ablehnen"]

@@ -19,7 +19,6 @@ PENDING_TTL_SECONDS = 300  # 5 Minuten
 
 def dispatch_notizen(state: dict) -> dict:
     """ConversationState -> NotizenAgent -> ConversationState."""
-
     user_id = state.get("user_id", "")
     pending_key = f"pending_agent:{user_id}"
 
@@ -128,7 +127,6 @@ def _handle_resume(state: dict, pending: dict, pending_key: str) -> dict:
     Baut einen AgentState mit der User-Antwort + dem originalen Kontext
     aus Redis und startet den Agent erneut.
     """
-
     user_answer = state.get("user_prompt", "")
     original_action = pending.get("action", "")
     original_parameter = pending.get("parameter", {})

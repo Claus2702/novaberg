@@ -208,7 +208,6 @@ def _persist_vorturn(state: ConversationState) -> None:
     nichts abzulegen, und der Folgeturn meldet das Mass als fehlend statt es
     als null zu rechnen. Redis-Fehler krachen sichtbar ins Log.
     """
-
     # ── Eingabe-Validierung ─────────────────────
     user_id:      str = state.get("user_id", "")
     character_id: str = state.get("character_id", "")
@@ -440,7 +439,6 @@ def _verbindung_schreiben(
     Anzahl). Die Funktion wirft nicht — ein defektes Nachschlagewerk darf den
     Turn-Abschluss nicht reissen.
     """
-
     # ── Eingabe-Validierung ─────────────────────
     if not neue_keys:
         logger.debug(
@@ -501,7 +499,6 @@ def dispatch(
     Verteilt alle pending_writes an die zustaendigen Manager/Agenten.
     Jeder Manager/Agent bekommt nur seine eigenen Writes.
     """
-
     writes: list = state.get("pending_writes", []) or []
 
     if not writes:

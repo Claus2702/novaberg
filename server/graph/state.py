@@ -183,7 +183,6 @@ def pipeline_quelle(state: ConversationState) -> str:
     Nachbedingung: einer der drei Bestandswerte.
     Fehlerfaelle: keine; unbekannte Rollen fallen auf "user" zurueck.
     """
-
     # ── Verarbeitung / Ausgabe ──────────────────
     return {
         "human":     "user",

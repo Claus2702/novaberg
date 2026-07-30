@@ -26,7 +26,6 @@ def stack_push(
     modus:         str  = "",
 ) -> None:
     """Legt ein Ergebnis mit Embedding und Meta-Daten auf den Shadow-Stack."""
-
     if not PIXIE_AKTIV:
         logger.debug("pixie.stack: stack_push uebersprungen (PIXIE_AKTIV=False)")
         return

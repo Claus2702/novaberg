@@ -61,7 +61,6 @@ def motivation_berechnen(
     geklemmt; ein Ankerzeitpunkt in der Zukunft ergibt den vollen Anker, damit
     eine schiefe Uhr keine Motivation erfindet.
     """
-
     # ── Eingabe-Validierung ─────────────────────
     if not 0.0 <= motivation_basis <= 1.0:
         logger.error(
@@ -322,7 +321,6 @@ def ziel_decay_lauf(
         {"verarbeitet": int, "deaktiviert": int, "ohne_anker": int,
          "error": str | None}
     """
-
     # ── Eingabe-Validierung ─────────────────────
     if halbwertszeit_tage <= 0:
         fehlertext: str = (

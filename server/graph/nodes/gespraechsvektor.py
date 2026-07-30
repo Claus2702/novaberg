@@ -166,7 +166,6 @@ def _resonanz_kontext_laden(state: ConversationState) -> str:
     Fehlerfaelle: Erinnerungen ohne `inhalt` werden benannt uebersprungen —
     ein Knoten ohne Text ist ein Defekt der Schreibseite, kein Leerfall.
     """
-
     # ── Eingabe-Validierung ─────────────────────
     resonanz: dict = state.get("lzg_resonanz") or {}
     erinnerungen: list[dict] = resonanz.get("erinnerungen") or []
@@ -621,7 +620,6 @@ def _vorturn_laden(state: ConversationState) -> tuple[list[float] | None, str]:
     Returns:
         (Embedding der Vorantwort oder None, Modus der Vorantwort oder "").
     """
-
     # ── Eingabe-Validierung ─────────────────────
     user_id:      str = state.get("user_id", "")
     character_id: str = state.get("character_id", "")
@@ -702,7 +700,6 @@ def _initiative_protokollieren(
     fehlender Turn-Bezug ist dagegen ein `error`: Eine Zeile ohne `turn_id`
     laesst sich keiner Messung zuordnen und ist damit wertlos.
     """
-
     # ── Eingabe-Validierung ─────────────────────
     turn_id: str = state.get("turn_id", "")
     if not turn_id:

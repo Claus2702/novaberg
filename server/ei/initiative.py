@@ -110,7 +110,6 @@ def skalenfassung(
     Returns:
         Die Skalenfassung.
     """
-
     # ── Eingabe-Validierung ─────────────────────
     if not -1.0 <= schwelle <= 1.0:
         logger.error(
@@ -157,7 +156,6 @@ def initiative_bit(wert: float, schwelle: float) -> int:
     Returns:
         0 (Nutzer fuehrt) oder 1 (gleich oder Nova).
     """
-
     # ── Eingabe-Validierung ─────────────────────
     # Keine: Beide Argumente sind Zahlen, jede Kombination ist entscheidbar.
 
@@ -187,7 +185,6 @@ def _normieren(wert: float, skala: dict[str, float]) -> float:
     Returns:
         Der normierte Wert.
     """
-
     # ── Eingabe-Validierung ─────────────────────
     zentrum: float = skala["zentrum"]
     unten:   float = zentrum - skala["min"]
@@ -229,7 +226,6 @@ def _wollen_messen(state: dict) -> int | None:
     Returns:
         1 (fuehrend), 0 (folgend) oder None (nicht messbar).
     """
-
     # ── Eingabe-Validierung ─────────────────────
     intentionen: list = state.get("user_intentionen") or []
     if not intentionen:
@@ -267,7 +263,6 @@ def _register_messen(state: dict, vorher_modus: str) -> float | None:
     Returns:
         Der Betrag des Registerwegs oder None.
     """
-
     # ── Eingabe-Validierung ─────────────────────
     external = state.get("external")
     jetzt_modus: str = external.emotion.mode if external else ""
@@ -310,7 +305,6 @@ def _thema_messen(state: dict, vorher_embedding: list[float] | None) -> float | 
     Returns:
         Der Cosinus-Abstand oder None.
     """
-
     # ── Eingabe-Validierung ─────────────────────
     jetzt = state.get("prompt_embedding")
     if not jetzt or not vorher_embedding:
@@ -364,7 +358,6 @@ def fuehrung_messen(
     Returns:
         Die gemessene Fuehrung.
     """
-
     # ── Eingabe-Validierung ─────────────────────
     f = Fuehrung()
 

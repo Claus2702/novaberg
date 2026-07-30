@@ -52,7 +52,6 @@ def embedding_berechnen(text: str) -> list[float]:
 
 def main() -> None:
     """Embedet die Test-Query, ruft anker_retrieval auf und verifiziert das Ergebnis."""
-
     # ── Eingabe: Embedding erzeugen (Thinker-Weg) ───────────────
     logger.info("Test-Query: %r", TEST_QUERY)
     embedding: list[float] = embedding_berechnen(TEST_QUERY)

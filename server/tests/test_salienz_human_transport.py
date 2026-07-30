@@ -92,7 +92,6 @@ def _lauf(graph_rolle: str, salienzen: list, postgres_url: str = "", **kw) -> tu
     test_salienz_formel.py nutzen denselben Helfer — eine zweite Kopie liefe
     beim naechsten Umbau des Nodes auseinander.
     """
-
     # ── Eingabe-Validierung ─────────────────────
     if not salienzen:
         raise ValueError("_lauf: mindestens ein Salienzwert noetig")

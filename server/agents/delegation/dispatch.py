@@ -34,7 +34,6 @@ def dispatch_delegation(state: dict) -> None:
     Args:
         state: ConversationState
     """
-
     user_id: str = state.get("user_id", "")
     trigger: str = state.get("_delegation_trigger", "")
     salienz_obj: dict = state.get("salienz_obj_aktuell", {})

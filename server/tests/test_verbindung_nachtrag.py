@@ -88,7 +88,6 @@ class VerbindungNachtragTest(unittest.TestCase):
             bespielbar — das ist ein echter Fehler und wird laut, nicht
             uebersprungen.
         """
-
         # ── Verarbeitung ────────────────────────────
         conn = psycopg2.connect(POSTGRES_URL)
         try:

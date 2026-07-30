@@ -66,7 +66,6 @@ def emotionale_gravitation_anwenden(state: ConversationState) -> ConversationSta
     vorhandenen Punkten dagegen ist einer: Dann hat ei_calc nichts geliefert,
     und die Injektion haette nichts, worauf sie wirken koennte.
     """
-
     # ── Eingabe-Validierung ─────────────────────
     punkte:  list[dict] = state.get("emotionale_gravitationspunkte") or []
     verlauf: list[dict] = state.get("nova_emotions_verlauf") or []

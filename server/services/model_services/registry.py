@@ -52,7 +52,6 @@ def _build_backend(kind: str) -> LLMProvider:
     Fehlerfaelle: ValueError bei unbekanntem Schluessel (fail-loud, kein
     silent default — Developer-Handbook §3).
     """
-
     # ── Eingabe-Validierung & Verarbeitung ──────
     if kind == "ollama_gpu":
         return OllamaProvider(ollama_gpu_client, OLLAMA_MODEL, OLLAMA_GPU_NUM_CTX)
@@ -90,7 +89,6 @@ class ModelServiceRegistry:
         Backend-Schluessel.
         Nachbedingung: Alle Worker sind instanziiert (aber nicht gestartet).
         """
-
         # ── Embed-Worker (unveraendert aus Block 1) ──
         self.embed: EmbedWorker = EmbedWorker()
 

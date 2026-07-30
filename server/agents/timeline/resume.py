@@ -40,7 +40,6 @@ def resume(state: AgentState) -> dict:
 
 def _resume_disambiguierung(state: AgentState, disamb: dict, user_answer: str) -> dict:
     """User hat einen Kandidaten aus der Disambiguierung gewaehlt."""
-
     kandidaten = disamb.get("kandidaten", [])
     action = disamb.get("aktion", state["parameter"].get("action", ""))
 

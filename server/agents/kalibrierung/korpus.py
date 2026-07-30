@@ -106,7 +106,6 @@ def rohturns_laden(user_id: str, character_id: str) -> list[Turnpaar]:
     Returns:
         Die Turnpaare.
     """
-
     # ── Eingabe-Validierung ─────────────────────
     if not user_id or not character_id:
         logger.error(
@@ -215,7 +214,6 @@ def _intentionen_laden(turn_id: str) -> list:
     Returns:
         Die Intentionen.
     """
-
     # ── Eingabe-Validierung ─────────────────────
     if not turn_id:
         logger.error("Korpus: leere turn_id — Intentionen nicht ladbar")
@@ -293,7 +291,6 @@ def rohwert_rechnen(
     Returns:
         Der Rohwert oder None.
     """
-
     # ── Eingabe-Validierung ─────────────────────
     external = Personality(emotion=Emotion(mode=paar.user_modus))
 
@@ -328,7 +325,6 @@ def embedding_holen(text: str) -> list[float] | None:
     Returns:
         Der Vektor oder None.
     """
-
     # ── Eingabe-Validierung ─────────────────────
     sauber: str = (text or "").strip()
     if not sauber:

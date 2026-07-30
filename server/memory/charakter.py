@@ -13,7 +13,6 @@ logger = logging.getLogger("ki_server.memory.charakter")
 
 def charakter_hash_retrieve(postgres_url: str, user_id: str, character_id: str = "") -> str:
     """Holt den aktuellen Charakter-Hash fuer ein Gespraechspaar."""
-
     try:
         conn   = psycopg2.connect(postgres_url)
         cursor = conn.cursor()
@@ -45,7 +44,6 @@ def charakter_hash_retrieve(postgres_url: str, user_id: str, character_id: str =
 
 def charakter_hash_retrieve_dict(postgres_url: str, user_id: str, character_id: str = "") -> dict:
     """Holt den Charakter-Hash als Dict fuer ein Gespraechspaar."""
-
     try:
         conn   = psycopg2.connect(postgres_url)
         cursor = conn.cursor()
@@ -87,7 +85,6 @@ def nova_charakter_hash_retrieve_dict(postgres_url: str, user_id: str) -> dict:
     Nachbedingung: Liefert dict mit den fuenf Hash-Schichten oder {} bei
     fehlendem Datensatz.
     """
-
     # ── Eingabe-Validierung ─────────────────────
     if not user_id:
         logger.error("nova_charakter_hash_retrieve_dict: user_id leer — verworfen")
@@ -116,7 +113,6 @@ def nutzer_gewichtung_laden(postgres_url: str, user_id: str) -> tuple[float | No
         muss "nie destilliert" von "nicht gelesen" unterscheiden koennen, sonst
         sieht ein Lesefehler aus wie ein Charakter ohne Auspraegung.
     """
-
     # ── Eingabe-Validierung ─────────────────────
     if not user_id:
         logger.error("nutzer_gewichtung_laden: user_id leer — verworfen")
@@ -189,7 +185,6 @@ def initiative_versatz_laden(postgres_url: str, user_id: str) -> tuple[float | N
     Returns:
         (Versatz oder None, Herkunft).
     """
-
     # ── Eingabe-Validierung ─────────────────────
     if not user_id:
         logger.error("initiative_versatz_laden: user_id leer — verworfen")

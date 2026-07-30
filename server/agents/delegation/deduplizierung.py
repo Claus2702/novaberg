@@ -19,7 +19,6 @@ logger = logging.getLogger("ki_server.agents.delegation.deduplizierung")
 
 def duplikat_pruefen(state: AgentState) -> dict:
     """Erzeugt Embedding und sucht aehnliche offene Akte."""
-
     salienz_obj: dict = state["parameter"].get("salienz_obj", {})
     user_id:     str  = state["kontext"].get("user_id", "")
 

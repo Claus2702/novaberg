@@ -84,7 +84,6 @@ class WiedervorlageAgent(BaseAgent):
 
     def invoke(self, state: AgentState) -> AgentState:
         """Prueft faellige Wiedervorlagen und erstellt Erinnerungen."""
-
         # Periodischer Pfad: dispatch.py setzt kontext={}, daher greift hier
         # strukturell der DEFAULT_USER_ID-Fallback. Multi-User-Wiedervorlage
         # braucht Scheduler-Umbau (Aufgaben pro User) — Backlog
@@ -140,7 +139,6 @@ class WiedervorlageAgent(BaseAgent):
     @staticmethod
     def _faellige_sammeln(user_id: str) -> list[dict]:
         """Sammelt faellige Wiedervorlagen aus Entitaeten, Fakten, Timeline, Notizen."""
-
         faellige: list[dict] = []
 
         # Entitaeten
@@ -200,7 +198,6 @@ class WiedervorlageAgent(BaseAgent):
     @staticmethod
     def _nachfrage_formulieren(eintrag: dict) -> str:
         """Laesst das CPU-Modell eine kurze Erinnerung formulieren."""
-
         tabelle: str = eintrag["tabelle"]
         titel:   str = eintrag["titel"]
         details: str = eintrag["details"][:300]
@@ -244,7 +241,6 @@ Nenne den konkreten Inhalt. Formuliere NUR die Erinnerung, kein weiterer Text.""
     @staticmethod
     def _wiedervorlage_verschieben(eintrag: dict) -> None:
         """Verschiebt die Wiedervorlage um SNOOZE_TAGE Tage in die Zukunft."""
-
         tabelle:  str = eintrag["tabelle"]
         entry_id: int = eintrag["id"]
         neues_datum: datetime = datetime.now() + timedelta(days=PIXIE_WIEDERVORLAGE_SNOOZE_TAGE)

@@ -42,7 +42,6 @@ def modus_pruefen(modus: str, quelle: str) -> bool:
     Fehlerfaelle: Leerer oder unbekannter Modus — beides wird mit dem Wert
     benannt protokolliert, die Berechnung laeuft mit ihrem Default weiter.
     """
-
     # ── Eingabe-Validierung ─────────────────────
     if not modus:
         logger.error(

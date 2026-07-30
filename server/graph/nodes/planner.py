@@ -206,7 +206,6 @@ def plan(
     Delegiert die Plan-Phase an den zuständigen Manager.
     Der Manager erzeugt pending_writes + management_result/detail.
     """
-
     action: str = state.get("management_action", "")
 
     if not action:

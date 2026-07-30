@@ -39,7 +39,6 @@ def _build_verdichtung_prompt(beobachter: str, graph_rolle: str = "human") -> st
     Nachbedingung: Identitaet, lagerichtiger Aufgaben-Block und Regeln, in
     dieser Reihenfolge.
     """
-
     # ── Verarbeitung ────────────────────────────
     # Nur die Nova-Bloecke tragen {traeger} als Platzhalter, damit der Name aus
     # der Konfiguration kommt und nicht im Prompt-Text festklebt (Vorbild:
@@ -88,7 +87,6 @@ def verdichten(state: AgentState) -> dict:
     Fehlerfaelle: leeres Bewertungsobjekt — dann wird nicht verdichtet, sondern
     laut abgebrochen und ein leerer Kern zurueckgegeben.
     """
-
     # ── Eingabe-Validierung ─────────────────────
     user_prompt: str = state["parameter"].get("user_prompt", "")
     response:    str = state["parameter"].get("response", "")

@@ -62,7 +62,6 @@ def _zeugenkennung() -> str:
     Returns:
         Die Kennung.
     """
-
     # ── Verarbeitung ────────────────────────────
     import hashlib
     roh: str = hashlib.sha256(ZEUGE_PROMPT.encode("utf-8")).hexdigest()
@@ -116,7 +115,6 @@ def _urteilspaare_sammeln(
     Returns:
         (Urteilspaare, Ausfallzaehler)
     """
-
     # ── Eingabe-Validierung ─────────────────────
     if not paare:
         logger.error("Kalibrierlauf: keine Turnpaare — nichts zu sammeln")
@@ -202,7 +200,6 @@ def _positions_kontrolle_fahren(
     Returns:
         (bestanden, Klartext)
     """
-
     # ── Eingabe-Validierung ─────────────────────
     vorher: dict = stand.aggregate.get("positions_kontrolle", {})
     if vorher:
@@ -284,7 +281,6 @@ def kalibrierung_durchfuehren(
     Returns:
         Das Laufergebnis.
     """
-
     # ── Eingabe-Validierung ─────────────────────
     paare: list[Turnpaar] = rohturns_laden(user_id, character_id)
     if not paare:

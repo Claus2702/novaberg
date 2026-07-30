@@ -28,7 +28,6 @@ class AgentGraph(GraphBase):
 
     def build(self) -> CompiledStateGraph:
         """Baut den Analyse-Graphen mit Enricher → Salience → Dispatcher."""
-
         graph = StateGraph(ConversationState)
 
         # ── Nodes registrieren ─────────────────

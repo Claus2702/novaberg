@@ -295,7 +295,6 @@ def _neu_anlegen(
     (novaberg-kzg-salienz_k.md §3). Beide werden gespeichert: der Eingang, weil
     ohne ihn nichts nachrechenbar ist, das Ergebnis fuer die Leser.
     """
-
     salienz_eingang: float = salienz
     salienz_wert:    float = salienz_berechnen(salienz_eingang, 1)
 

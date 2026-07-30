@@ -91,7 +91,6 @@ class CharakterAgent(BaseAgent):
         Perspektiv-Unterscheidung User-Profil vs. Nova-Profil ueber das
         beobachter-Feld im KZG, nicht ueber Paar-Richtung.
         """
-
         paare: list[tuple[str, str]] = [
             (DEFAULT_USER_ID, ASSISTANT_USER_ID),
         ]

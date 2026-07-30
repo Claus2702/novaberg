@@ -76,7 +76,6 @@ def route(
     state: ConversationState,
 ) -> ConversationState:
     """Entscheidet ueber Ressourcen-Routing basierend auf Perzeption-Ergebnissen."""
-
     logger.info(f"Router: Route Prompt ({len(state['user_prompt'])} Zeichen)")
 
     # ── Pending Agent Check (Resume-Flow) ──────────

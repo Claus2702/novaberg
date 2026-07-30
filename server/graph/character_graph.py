@@ -47,7 +47,6 @@ class CharacterGraph(GraphBase):
 
     def build(self) -> CompiledStateGraph:
         """Baut den Charakter-Pfad und gibt ihn kompiliert zurück."""
-
         graph = StateGraph(ConversationState)
 
         # ── Nodes registrieren ─────────────────
@@ -154,7 +153,6 @@ class CharacterGraph(GraphBase):
 
     def _after_evaluate(self, state: ConversationState) -> str:
         """Entscheidet ob Korrektur nötig oder weiter zur Salienz."""
-
         verdict: str = state["tribunal_verdict"]
 
         # ok → Salienz + Dispatcher

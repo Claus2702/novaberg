@@ -70,7 +70,6 @@ def _text_kuerzen(text: str) -> str:
     Returns:
         Der gekuerzte Text.
     """
-
     # ── Eingabe-Validierung ─────────────────────
     sauber: str = (text or "").strip()
 
@@ -101,7 +100,6 @@ def zeuge_befragen(text_a: str, text_b: str) -> bool | None:
     Returns:
         Das Urteil oder None.
     """
-
     # ── Eingabe-Validierung ─────────────────────
     a: str = _text_kuerzen(text_a)
     b: str = _text_kuerzen(text_b)

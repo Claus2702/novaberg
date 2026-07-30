@@ -175,7 +175,6 @@ def knoten_embedding_aktualisieren(
     Fehlerfaelle: unplausible Eingabe, unbekannte knoten_id (rowcount 0),
     DB-Fehler — jeweils logger.error und False.
     """
-
     # ── Eingabe-Validierung ─────────────────────
     if not isinstance(knoten_id, int) or knoten_id <= 0:
         logger.error("knoten_embedding_aktualisieren: unplausible knoten_id=%r — verworfen", knoten_id)
@@ -257,7 +256,6 @@ def knoten_gewichte_zuruecksetzen(
     vorher/nachher-Werte zurueckgegeben werden. Rueckgabe:
     {knoten, verletzungen, beispiele, geschrieben, error}.
     """
-
     # ── Eingabe-Validierung: Bestand laden, Reset-Plan pruefen ─────────
     ergebnis: dict = {"knoten": 0, "verletzungen": [], "beispiele": [], "geschrieben": 0, "error": None}
     beispiel_menge: set[int] = set(beispiel_ids or [])

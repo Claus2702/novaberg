@@ -35,7 +35,6 @@ class VerbindungRepository:
         RETURNING-Zeile (RuntimeError), Datenbankfehler (psycopg2.Error) —
         alle drei werden an den Aufrufer durchgereicht, nicht geschluckt.
         """
-
         # ── Eingabe-Validierung ─────────────────────
         if not turn_id:
             raise ValueError("VerbindungRepository.insert: turn_id ist leer")
@@ -92,7 +91,6 @@ class VerbindungRepository:
         Fehlerfaelle: leere kzg_id oder unplausible lzg_id (ValueError),
         Datenbankfehler (psycopg2.Error) — beide werden durchgereicht.
         """
-
         # ── Eingabe-Validierung ─────────────────────
         if not kzg_id:
             raise ValueError("VerbindungRepository.lzg_id_nachtragen: kzg_id ist leer")

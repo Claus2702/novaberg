@@ -50,7 +50,6 @@ def magnete_aufloesen(state: AgentState) -> dict:
     Ergebnis, kein Abbruch (Magnete sind optional gemaess
     convention-magneten.md §3).
     """
-
     # ── Eingabe-Validierung ─────────────────────
     salienz_obj: dict = state["parameter"].get("salienz_obj", {})
     user_id:     str  = state["kontext"].get("user_id", "")

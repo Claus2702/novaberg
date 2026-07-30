@@ -559,7 +559,6 @@ def nutzer_gewichtung_berechnen(rad: dict) -> float:
         ist nicht rechenbar, und ein halb gerechneter Faktor waere schlimmer
         als keiner.
     """
-
     # ── Eingabe-Validierung ─────────────────────
     if not isinstance(rad, dict):
         raise ValueError(f"Charakter-Rad: erwartet dict, bekam {type(rad).__name__}")
@@ -629,7 +628,6 @@ def charakter_rad_destillieren(
         In allen Faellen None und eine error-Zeile; der Aufrufer behaelt dann
         den bestehenden Wert, statt einen erfundenen zu schreiben.
     """
-
     # ── Eingabe-Validierung ─────────────────────
     if not profil_text or not profil_text.strip():
         logger.error(
@@ -689,7 +687,6 @@ def initiative_versatz_berechnen(rad: dict) -> float:
     Returns:
         Der Versatz, der den Initiative-Rohwert verschiebt.
     """
-
     # ── Eingabe-Validierung ─────────────────────
     if not isinstance(rad, dict):
         raise ValueError(f"Initiative-Rad: kein Dict ({type(rad).__name__})")
@@ -751,7 +748,6 @@ def _initiative_rad_einmal(profil_text: str, user_id: str) -> tuple[dict, float]
     Returns:
         (Rad, Versatz) oder None.
     """
-
     # ── Verarbeitung ────────────────────────────
     roh: str = _llm_call(
         INITIATIVE_RAD_PROMPT.format(profil=profil_text),
@@ -814,7 +810,6 @@ def initiative_rad_destillieren(
     Returns:
         (Rad mit Metadaten, Median-Versatz) oder None.
     """
-
     # ── Eingabe-Validierung ─────────────────────
     if not profil_text or not profil_text.strip():
         logger.error(

@@ -66,7 +66,6 @@ def _pfad(name: str) -> str:
     Returns:
         Der vollstaendige Pfad.
     """
-
     # ── Eingabe-Validierung ─────────────────────
     if "/" in name or "\\" in name or not name:
         logger.error(
@@ -95,7 +94,6 @@ def _anhaengen(name: str, satz: dict, was: str) -> None:
     Sicherung den Verlust, den sie verhindern soll. Die Reihe verliert dann ihre
     Wiederaufnahmefaehigkeit, und genau das steht im Log.
     """
-
     # ── Eingabe-Validierung ─────────────────────
     # Der Aufrufer hat geprueft; `_pfad` weist einen unzulaessigen Namen ab.
 
@@ -130,7 +128,6 @@ def urteil_schreiben(name: str, kennung: str, urteil: bool) -> None:
     Nachbedingung: Eine Zeile mit Urteil und Zeitpunkt in UTC.
     Fehlerfaelle: leere Kennung — gemeldet, nichts geschrieben.
     """
-
     # ── Eingabe-Validierung ─────────────────────
     if not kennung:
         logger.error("Zwischenstand: leere Kennung — Urteil nicht geschrieben")
@@ -151,7 +148,6 @@ def fehlschlag_schreiben(name: str, kennung: str, grund: str) -> None:
     Fall gilt danach als offen, nicht als beantwortet.
     Fehlerfaelle: leere Kennung oder leerer Grund — gemeldet, nichts geschrieben.
     """
-
     # ── Eingabe-Validierung ─────────────────────
     if not kennung:
         logger.error("Zwischenstand: leere Kennung — Fehlschlag nicht geschrieben")
@@ -182,7 +178,6 @@ def aggregat_schreiben(name: str, schluessel: str, wert: dict) -> None:
     Nachbedingung: Eine Zeile mit `aggregat`-Marke im Zwischenstand.
     Fehlerfaelle: wie bei `_anhaengen` — gemeldet, nicht geworfen.
     """
-
     # ── Eingabe-Validierung ─────────────────────
     if not schluessel:
         logger.error("Zwischenstand: Aggregat ohne Schluessel — nicht geschrieben")
@@ -208,7 +203,6 @@ def stand_lesen(name: str) -> Reihenstand:
     Returns:
         Der Reihenstand.
     """
-
     # ── Eingabe-Validierung ─────────────────────
     try:
         pfad: str = _pfad(name)
@@ -279,7 +273,6 @@ def verwerfen(name: str) -> None:
     Fehlerfaelle: Eine fehlende Datei ist kein Fehler. Ein Loeschfehler wird
     gemeldet, weil ein liegengebliebener Stand den naechsten Lauf verfaelscht.
     """
-
     # ── Eingabe-Validierung / Verarbeitung ──────
     try:
         pfad: str = _pfad(name)

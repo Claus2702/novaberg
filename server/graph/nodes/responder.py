@@ -52,7 +52,6 @@ def _ei_mikro_anweisung(
     Basiert auf berechneten Daten aus Perzeption und Enricher.
     Nur die fuer diese Situation relevanten Prinzipien werden injiziert.
     """
-
     teile: list[str] = []
 
     # ── 1. Laenge (immer, aus Arousal) ─────────
@@ -172,7 +171,6 @@ def _reiz_ist_eigener_gedanke(state: ConversationState) -> bool:
     Vorbedingung: keine — ein fehlender Payload heisst „nicht von Nova".
     Nachbedingung: True nur bei ausdruecklich markierter eigener Herkunft.
     """
-
     # ── Eingabe-Validierung ─────────────────────
     payload: dict = state.get("event_payload") or {}
 
@@ -182,7 +180,6 @@ def _reiz_ist_eigener_gedanke(state: ConversationState) -> bool:
 
 def _build_system_prompt(state: ConversationState) -> str:
     """Baut den System-Prompt nach einheitlichem [BLOCKNAME]-Schema."""
-
     parts: list[str] = []
 
     external = state.get("external")
@@ -559,7 +556,6 @@ def _sprachstil_block(state: ConversationState) -> str:
     einzige Angabe vorliegt.
     Fehlerfaelle: Keine; ein unbekannter Cluster liefert nur keine Landschaft.
     """
-
     # ── Eingabe ─────────────────────────────────
     gv_detail: dict = state.get("gv_detail", {}) or {}
     cluster:   str  = gv_detail.get("cluster", "")
@@ -617,7 +613,6 @@ def respond(
     state: ConversationState,
 ) -> ConversationState:
     """Generiert die LLM-Antwort basierend auf angereichertem State."""
-
     system_prompt: str = _build_system_prompt(state)
 
     external = state.get("external")

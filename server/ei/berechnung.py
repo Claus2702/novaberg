@@ -158,7 +158,6 @@ def _emotions_verlauf_berechnen(
         Liste von {emotion: str, gewicht: float, arousal: float},
         absteigend nach Gewicht.
     """
-
     # 1. Nur User-Turns mit nicht-neutraler Emotion (kanonisiert)
     emotion_turns: list[dict] = []
     for t in turns:
@@ -347,7 +346,6 @@ def _emotions_vektor_bestimmen(
         Einer der 9 Vektor-Namen: "absturz", "spirale", "stabilisierung",
         "erholung", "aufbluehen", "eskalation", "abkuehlung", "einbruch", "plateau"
     """
-
     # 1. Nur User-Turns mit Emotion, kanonisiert, eigenes kurzes Fenster
     emotion_turns: list[dict] = []
     for t in turns:
@@ -417,7 +415,6 @@ def _turn_features_bewerten(turn_text: str) -> dict[str, float]:
     Eingabe: Originaltext (nicht lowercased).
     Rückgabe: Scores pro Stil (positiv und negativ möglich).
     """
-
     text_lower: str = turn_text.lower()
     woerter: list[str] = text_lower.split()
     anzahl_woerter: int = len(woerter) if woerter else 1
@@ -564,7 +561,6 @@ def _hash_stil_extrahieren(charakter_hash: dict) -> str:
     Sucht zuerst im kommunikations_profil (intentions_profil-Spalte),
     dann im kern_hash als Fallback.
     """
-
     profil: str = (
         charakter_hash.get("intentions_profil", "")
         or charakter_hash.get("kommunikations_profil", "")
@@ -613,7 +609,6 @@ def _sprach_stil_erkennen(
         Stilbegriff: ``"locker"``, ``"formell"``, ``"fachlich"``,
         ``"emotional"``, ``"jugendlich"``, ``"neutral"``.
     """
-
     # 1. Letzte N Turns der angefragten Rolle (Originaltext, nicht lowercased)
     rolle_turns: list[str] = [
         t.get("inhalt", "")
@@ -840,7 +835,6 @@ def _nova_empathie_berechnen(
           nova_verlauf_modifiziert: list[dict] — Novas Verlauf mit
                                                  Empathie-Einfluss
     """
-
     user_emotion_kanon: str = _emotion_kanonisieren(user_emotion)
 
     # ── 1. Novas Baseline bestimmen ──

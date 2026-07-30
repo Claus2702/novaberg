@@ -32,7 +32,6 @@ def clean_json_response(text: str) -> str:
     Code-Fence.
     Fehlerfaelle: keine — gibt im Worst Case den getrimmten Originaltext zurueck.
     """
-
     # ── Verarbeitung ────────────────────────────
     cleaned: str = text.strip()
     if cleaned.startswith("```json"):
@@ -56,7 +55,6 @@ def deduplicate_repetition(text: str) -> str:
     Nachbedingung: Bei erkanntem Repetitions-Muster ist der Text bis zur Stelle
     nach dem ersten Vorkommen gekuerzt; sonst unveraendert.
     """
-
     # ── Eingabe-Validierung ─────────────────────
     if not text:
         return text
@@ -80,7 +78,6 @@ def repair_truncated_json(text: str) -> str:
     Nachbedingung: Rueckgabe enthaelt eine ausgeglichene Anzahl von `{}`/`[]`
     und eine gerade Anzahl von `"`.
     """
-
     # ── Eingabe-Validierung ─────────────────────
     text = text.strip()
     if not text:
@@ -148,7 +145,6 @@ def parse_json_strict(text: str) -> dict:
     Fehlerfaelle: JSONDecodeError propagiert an den Aufrufer (Silent-Skip-
     Lesson, Developer-Handbook §3).
     """
-
     # ── Verarbeitung ────────────────────────────
     cleaned: str = clean_json_response(text)
     cleaned = deduplicate_repetition(cleaned)

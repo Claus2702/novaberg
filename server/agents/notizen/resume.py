@@ -51,7 +51,6 @@ def resume(state: AgentState) -> dict:
 
 def _resume_disambiguierung(state: AgentState, disamb: dict, user_answer: str) -> dict:
     """User hat einen Kandidaten aus der Disambiguierung gewaehlt."""
-
     kandidaten = disamb.get("kandidaten", [])
     action = disamb.get("aktion", state["parameter"].get("action", ""))
 
@@ -121,7 +120,6 @@ def _resume_disambiguierung(state: AgentState, disamb: dict, user_answer: str) -
 
 def _resume_nicht_gefunden(state: AgentState, info: dict, user_answer: str) -> dict:
     """User hat auf 'Notiz existiert nicht, soll ich anlegen?' geantwortet."""
-
     user_lower = user_answer.lower()
     target = info.get("target", "")
     original_aufgabe = info.get("original_aufgabe", "")
@@ -174,7 +172,6 @@ def _resume_nicht_gefunden(state: AgentState, info: dict, user_answer: str) -> d
 
 def _resume_duplikat(state: AgentState, user_answer: str) -> dict:
     """User hat auf Duplikat-Rueckfrage geantwortet ('aktualisieren' oder 'neu')."""
-
     user_lower = user_answer.lower()
 
     logger.debug(f"_resume_duplikat: user_answer='{user_answer}'")

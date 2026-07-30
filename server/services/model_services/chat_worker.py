@@ -53,7 +53,6 @@ class ChatWorker(ModelWorker[ChatRequest, ChatResponse]):
         Fehlerfaelle: keine — Validierung des Backends erfolgt im
         Konfigurations-Pfad (Registry-Factory).
         """
-
         # ── Eingabe-Validierung ─────────────────────
         if not name:
             raise ValueError("ChatWorker: 'name' darf nicht leer sein")
@@ -84,7 +83,6 @@ class ChatWorker(ModelWorker[ChatRequest, ChatResponse]):
               silent skip).
             - expect_json + invalid JSON → JSONDecodeError propagiert.
         """
-
         # ── Eingabe-Validierung ─────────────────────
         if not request.messages:
             raise ValueError(

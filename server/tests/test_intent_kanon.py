@@ -49,7 +49,6 @@ def _intentionen_aus_prompt(pfad: Path) -> set[str]:
     Returns:
         Die Intentionen aus dem Prompt.
     """
-
     # ── Eingabe-Validierung ─────────────────────
     if not pfad.is_file():
         return set()

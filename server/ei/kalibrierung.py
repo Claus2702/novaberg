@@ -136,7 +136,6 @@ def cohens_kappa(tafel: Vierfeldertafel) -> float:
     Returns:
         Cohens kappa.
     """
-
     # ── Eingabe-Validierung ─────────────────────
     a, b = tafel.beide_ja,  tafel.nur_achse
     c, d = tafel.nur_zeuge, tafel.beide_nein
@@ -195,7 +194,6 @@ def schwelle_pruefen(paare: list[Urteilspaar], schwelle: float) -> Schwellenkand
     Returns:
         Der ausgewertete Kandidat.
     """
-
     # ── Eingabe-Validierung ─────────────────────
     if not paare:
         logger.error("Schwellenpruefung: leerer Korpus — nichts auszuwerten")
@@ -254,7 +252,6 @@ def schwelle_suchen(paare: list[Urteilspaar]) -> Kalibrierung:
     Returns:
         Die Kalibrierung.
     """
-
     # ── Eingabe-Validierung ─────────────────────
     n: int = len(paare)
 
@@ -364,7 +361,6 @@ def positions_kontrolle(
     Returns:
         (bestanden, Klartext-Begruendung)
     """
-
     # ── Eingabe-Validierung ─────────────────────
     for name, wert in (("B=Nutzer", anteil_b_nutzer), ("B=Nova", anteil_b_nova)):
         if not (0.0 <= wert <= 1.0):

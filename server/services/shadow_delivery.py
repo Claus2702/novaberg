@@ -55,7 +55,6 @@ COOLDOWN_TTL:         int   = 3600    # Cooldown-Key TTL in Sekunden
 # ─────────────────────────────────────────────
 def _cosine_similarity(vec_a: list[float], vec_b: list[float]) -> float:
     """Berechnet die Cosine Similarity zwischen zwei Vektoren."""
-
     if not vec_a or not vec_b:
         return 0.0
 
@@ -82,7 +81,6 @@ def _emotional_kompatibel(
     user_emotion:  str,
 ) -> bool:
     """Prüft ob ein Impuls zur aktuellen User-Emotion passt."""
-
     # Bei Stress: Grundsätzlich nichts einbringen
     if user_emotion == "stress":
         return False
@@ -107,7 +105,6 @@ def _modus_kompatibel(
     Berechnet einen Kompatibilitäts-Score (0.0-1.0) zwischen
     Stack-Modus und aktuellem Gesprächsmodus.
     """
-
     if not stack_modus or not gespraechs_modus:
         return 0.5  # Unbekannt → neutral
 
@@ -146,7 +143,6 @@ async def _gespraechs_embedding(
     character_id:  str = "",
 ) -> list[float]:
     """Berechnet ein Embedding aus den letzten Session-Turns."""
-
     turns: list[dict] = session_turns_retrieve(redis_client, user_id, character_id or ASSISTANT_USER_ID)
 
     if not turns:
@@ -183,7 +179,6 @@ def _besten_eintrag_finden(
     Durchsucht den Stack nach dem thematisch und emotional passendsten Eintrag.
     Gibt (eintrag, index) zurück oder (None, -1) wenn nichts passt.
     """
-
     raw_list: list = redis_client.lrange(f"shadow_stack:{user_id}", 0, -1)
 
     if not raw_list:
@@ -253,7 +248,6 @@ def _stack_eintrag_entfernen(
     index:        int,
 ) -> None:
     """Entfernt einen spezifischen Eintrag per Index vom Stack."""
-
     stack_key: str = f"shadow_stack:{user_id}"
     tombstone: str = "__REMOVED__"
 
@@ -277,7 +271,6 @@ def _stack_aehnliche_entfernen(
     threshold:       float = 0.60,
 ) -> None:
     """Entfernt Stack-Einträge die dem gerade gesendeten zu ähnlich sind."""
-
     if not referenz_vector:
         return
 
@@ -309,7 +302,6 @@ def _stack_aehnliche_entfernen(
 # ─────────────────────────────────────────────
 def _zeitlicher_kontext(erstellt: str) -> str:
     """Berechnet eine natürliche Zeitangabe aus dem Erstelldatum."""
-
     try:
         erstelldatum: datetime = datetime.fromisoformat(erstellt)
         differenz = datetime.now() - erstelldatum
@@ -334,13 +326,11 @@ def _zeitlicher_kontext(erstellt: str) -> str:
 # ─────────────────────────────────────────────
 def _cooldown_aktiv(redis_client: redis.Redis, user_id: str) -> bool:
     """Prüft ob der thematische Cooldown aktiv ist."""
-
     return redis_client.exists(f"shadow_cooldown:{user_id}") == 1
 
 
 def _cooldown_setzen(redis_client: redis.Redis, user_id: str) -> None:
     """Setzt den Cooldown — wird durch nächste User-Aktion gelöscht."""
-
     redis_client.set(f"shadow_cooldown:{user_id}", "1", ex=COOLDOWN_TTL)
 
 
@@ -349,7 +339,6 @@ def shadow_cooldown_reset(redis_client: redis.Redis, user_id: str) -> None:
     Löscht Cooldown und Burst-Counter.
     Wird bei jeder User-Nachricht aufgerufen (aus dem Chat-Endpoint).
     """
-
     redis_client.delete(f"shadow_cooldown:{user_id}")
     redis_client.delete(f"shadow_burst_count:{user_id}")
     logger.debug(f"Delivery: Cooldown + Burst reset für '{user_id}'")
@@ -360,7 +349,6 @@ def shadow_cooldown_reset(redis_client: redis.Redis, user_id: str) -> None:
 # ─────────────────────────────────────────────
 def _burst_erlaubt(redis_client: redis.Redis, user_id: str) -> bool:
     """Prüft ob der Burst-Limit noch nicht erreicht ist."""
-
     count: str | None = redis_client.get(f"shadow_burst_count:{user_id}")
 
     if not count:
@@ -371,7 +359,6 @@ def _burst_erlaubt(redis_client: redis.Redis, user_id: str) -> bool:
 
 def _burst_erhoehen(redis_client: redis.Redis, user_id: str) -> None:
     """Erhöht den Burst-Counter."""
-
     key: str = f"shadow_burst_count:{user_id}"
 
     redis_client.incr(key)
@@ -409,7 +396,6 @@ async def _delivery_ausfuehren(
     eine Antwort, die niemand empfaengt.
     Gibt True zurueck, wenn ein Impuls seinen Weg genommen hat.
     """
-
     # Gesprächskontext als Embedding
     gespraechs_vector: list[float] = await _gespraechs_embedding(
         redis_client, user_id, ASSISTANT_USER_ID,
@@ -548,7 +534,6 @@ def _impuls_in_den_charaktergraph(
     Aufrufer faellt dann auf die nuechterne Zustellung zurueck. Die Funktion
     wirft nicht.
     """
-
     # ── Eingabe-Validierung ─────────────────────
     if not turn_id or not wissensstueck:
         logger.error(
@@ -616,7 +601,6 @@ async def shadow_delivery_loop(
     Endlos-Loop, läuft als asyncio-Task.
     Prüft alle 5 Sekunden ob Delivery-Bedingungen erfüllt sind.
     """
-
     logger.info("Shadow Delivery Service gestartet.")
 
     while True:

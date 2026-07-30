@@ -391,7 +391,6 @@ class SynapsenPromotionAgent(BaseAgent):
         Forensik, 0). Die Methode wirft nicht — ein fehlgeschlagener Nachtrag
         darf den Promotions-Lauf nicht reissen, muss aber laut sein.
         """
-
         # ── Eingabe-Validierung ─────────────────────
         if not kzg_key or not knoten_id:
             logger.error(

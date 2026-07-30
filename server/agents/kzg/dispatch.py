@@ -35,7 +35,6 @@ def dispatch_kzg(
           kzg_verstaerkte_keys: Redis-Keys der thematisch verstaerkten
                                 Nachbar-Eintraege, ueber alle Segmente
     """
-
     user_id:      str = state.get("user_id", "")
     character_id: str = state.get("character_id", ASSISTANT_USER_ID)
 

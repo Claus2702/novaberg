@@ -96,7 +96,6 @@ def lzg_entries_retrieve(
     Returns:
         Liste von ContextEntry-Dicts. Leer bei keinen Treffern oder Fehler.
     """
-
     logger.info(f"LZG-Entries-Retrieve: Paar={user_id}:{character_id}, Limit={top_k}")
 
     embedding_str: str = embedding_zu_pgvector_str(embedding)

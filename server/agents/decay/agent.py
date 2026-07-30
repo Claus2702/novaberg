@@ -48,7 +48,6 @@ class DecayAgent(BaseAgent):
 
     def invoke(self, state: AgentState) -> AgentState:
         """Berechnet effektives Gewicht und deaktiviert verblasste Eintraege."""
-
         rows: list[dict] = db_manager.select(
             "SELECT id, gewicht, verstaerkt_am FROM langzeitgedaechtnis WHERE aktiv = TRUE"
         )

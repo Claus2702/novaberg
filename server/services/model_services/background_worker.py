@@ -64,7 +64,6 @@ class BackgroundWorker(ModelWorker[BackgroundRequest, BackgroundResponse]):
         den 60s-Basis-Default in `ModelWorker.submit_sync`.
         Nachbedingung: Worker bereit fuer `start()`.
         """
-
         # ── Eingabe-Validierung ─────────────────────
         if not name:
             raise ValueError("BackgroundWorker: 'name' darf nicht leer sein")
@@ -149,7 +148,6 @@ class BackgroundWorker(ModelWorker[BackgroundRequest, BackgroundResponse]):
             - Unbekannter modus → ValueError.
             - expect_json + invalid JSON → JSONDecodeError propagiert.
         """
-
         # ── Eingabe-Validierung ─────────────────────
         if not request.messages:
             raise ValueError(

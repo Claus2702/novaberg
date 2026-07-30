@@ -91,7 +91,6 @@ def searxng_testen() -> bool:
 @router.get("/health")
 def Health():
     """Systemstatus aller Komponenten + Shadow Agent."""
-
     # Shadow-Status aus Redis lesen
     shadow: dict = {"zustand": "idle", "thema": ""}
 

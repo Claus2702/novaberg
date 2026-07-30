@@ -289,7 +289,6 @@ Falls keine Notiz erkennbar: "snippet": null
         Bei update: LLM erzeugt die neue Version, pending_write wird angelegt.
         Bei create: Daten aus dem State extrahieren.
         """
-
         action:  str = state.get("management_action", "")
         target:  str = state.get("management_target", "")
         user_id: str = state.get("user_id", "")
@@ -778,7 +777,6 @@ Falls keine Notiz erkennbar: "snippet": null
     # ─────────────────────────────────────────
     def _aktualisieren(self, postgres_url: str, user_id: str, daten: dict) -> None:
         """Bestehende Notiz aktualisieren (alter Pfad, target-basiert)."""
-
         target: str = daten.get("target", "")
         text:   str = daten.get("text", "")
 
@@ -800,7 +798,6 @@ Falls keine Notiz erkennbar: "snippet": null
 
     def _loeschen(self, postgres_url: str, user_id: str, daten: dict) -> None:
         """Notiz als archiviert markieren (alter Pfad, target-basiert)."""
-
         target: str = daten.get("target", "")
         if not target:
             return

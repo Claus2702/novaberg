@@ -58,7 +58,6 @@ def internal_emotion_uebertragen(
     Returns:
         True, wenn uebertragen wurde; False, wenn der Vorturn-Wert stehenblieb.
     """
-
     # ── Eingabe-Validierung ─────────────────────
     if not nova_emotions_verlauf:
         logger.error(
@@ -96,7 +95,6 @@ def ei_calc(state: ConversationState) -> ConversationState:
 
     Die saubere Trennung vermeidet Doppelarbeit und semantische Vermischung.
     """
-
     rolle: str = state.get("ei_calc_rolle", "user")
     logger.info(f"EI-Calc: Starte Berechnung (rolle={rolle})")
 

@@ -46,7 +46,6 @@ def _migriere_key(
     beobachter:   str,
 ) -> bool:
     """Migriert einen einzelnen Key. Gibt True zurueck wenn migriert."""
-
     if raw_redis.exists(neuer_key):
         logger.warning(f"Kollision: Zielkey '{neuer_key}' existiert bereits — uebersprungen")
         return False
@@ -83,7 +82,6 @@ def migrate(
     character_id: str = ASSISTANT_USER_ID,
 ) -> dict:
     """Migriert alle alten zweiteiligen KZG-Keys in das neue Paar-Schema."""
-
     logger.info(
         f"KZG-Migration startet — Zielpaar {user_id}:{character_id}"
     )

@@ -39,7 +39,6 @@ class KzgManager(BaseManager):
         nicht verfuegbar; als Fallback wird das User-Paar mit Beobachter "user"
         angenommen.
         """
-
         verarbeitet: int = 0
 
         for write in writes:

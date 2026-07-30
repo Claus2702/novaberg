@@ -28,7 +28,6 @@ async def pixie_heartbeat(app_state) -> None:
     6. Agent ausfuehren
     7. Abschluss: Queue-Pop oder next_run aktualisieren, Lock freigeben
     """
-
     # Guard: Lauf-Schutz
     if redis_client.exists("pixie:running"):
         logger.debug("Pixie: Letzter Zyklus laeuft noch — Heartbeat verworfen")

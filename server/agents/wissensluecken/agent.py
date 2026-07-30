@@ -114,7 +114,6 @@ class WissensluecketAgent(BaseAgent):
         Fehlerfaelle: kein Charakterkern, leere Saat, unlesbare LLM-Antwort —
             jeweils Abbruch mit error-Zeile und status="fehler".
         """
-
         user_id:      str = state["kontext"].get("user_id", "")      or DEFAULT_USER_ID
         character_id: str = state["kontext"].get("character_id", "") or ASSISTANT_USER_ID
 
@@ -258,7 +257,6 @@ class WissensluecketAgent(BaseAgent):
         eine Fehlermeldung, die die falsche nennt, schickt den Leser in die
         Irre.
         """
-
         # ── Eingabe-Validierung ─────────────────────
         zeilen = db_manager.select(
             "SELECT kern_hash FROM charakter_hash "

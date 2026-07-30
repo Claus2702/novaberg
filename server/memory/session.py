@@ -52,7 +52,6 @@ def session_turn_store(
     embedding:          list[float] | None = None,
 ) -> None:
     """Speichert einen Turn in der Session, vollständig mit allen Meta-Daten."""
-
     key: str = _session_key(user_id, character_id, "turns")
 
     turn_data: dict = {
@@ -134,7 +133,6 @@ def session_summarize_if_needed(
     character_id:  str,
 ) -> None:
     """Fasst älteste Turns zusammen wenn der Stack zu groß wird."""
-
     key:         str = _session_key(user_id, character_id, "turns")
     summary_key: str = _session_key(user_id, character_id, "summary")
     laenge:      int = redis_client.llen(key)
@@ -211,7 +209,6 @@ def session_turns_retrieve(
     character_id: str,
 ) -> list[dict]:
     """Holt alle Turns der aktuellen Session."""
-
     key:        str       = _session_key(user_id, character_id, "turns")
     raw_turns:  list      = redis_client.lrange(key, 0, -1)
     turns:      list[dict] = []
@@ -316,7 +313,6 @@ def session_context_build(
     character_id: str,
 ) -> str:
     """Baut den vollständigen Session-Kontext: Zusammenfassung + aktuelle Turns."""
-
     parts: list[str] = []
 
     summary_key: str = _session_key(user_id, character_id, "summary")
@@ -347,7 +343,6 @@ def session_reset(
     character_id: str,
 ) -> None:
     """Löscht die aktuelle Session komplett."""
-
     redis_client.delete(_session_key(user_id, character_id, "turns"))
     redis_client.delete(_session_key(user_id, character_id, "summary"))
     redis_client.delete(_session_key(user_id, character_id, "stack"))

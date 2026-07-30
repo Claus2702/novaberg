@@ -147,7 +147,6 @@ class PromotionAgent(BaseAgent):
         gegen das tatsaechliche Schreibergebnis verifiziert. Jeder Schritt
         wird ins hintergrund_log auditet (gestartet / erledigt / fehler).
         """
-
         kzg_key:   str   = auftrag.get("key", "")
         themen:    str   = auftrag.get("themen", "")
         salienz:   float = auftrag.get("salienz", 0.0)
@@ -369,7 +368,6 @@ class PromotionAgent(BaseAgent):
         bekannte_entitaeten: list[dict],
     ) -> dict:
         """Call 1: Klassifikation + Entitaeten-Erkennung."""
-
         if bekannte_entitaeten:
             lines: list[str] = []
             for e in bekannte_entitaeten:
@@ -465,7 +463,6 @@ class PromotionAgent(BaseAgent):
         user_id_db: int | None = None,
     ) -> dict:
         """Call 2: Fakten-Extraktion als Tripel."""
-
         ent_str: str = "\n".join(
             f"- {e['name']} (ID:{e.get('bekannte_id', 'neu')}, "
             f"{'Referenz' if e.get('ist_referenz') else 'Interface'}, {e.get('typ', '')})"
@@ -546,7 +543,6 @@ class PromotionAgent(BaseAgent):
         bekannte:   list[dict],
     ) -> dict:
         """Nachbearbeitung Call 1: User-Entitaet, bekannte_id Lookup."""
-
         entitaeten: list[dict] = ergebnis.get("entitaeten", [])
 
         # User als erste Entitaet sicherstellen
@@ -591,7 +587,6 @@ class PromotionAgent(BaseAgent):
         bekannte_entitaeten:   list[dict] | None = None,
     ) -> dict:
         """Nachbearbeitung Call 2: Ich-Ersetzung, objekt_wert/id, Tautologie-Filter."""
-
         fakten: list[dict] = ergebnis.get("fakten", [])
 
         # User-Entitaet aus Entitaeten-Liste finden
@@ -836,7 +831,6 @@ class PromotionAgent(BaseAgent):
         in `_lzg_eintrag_schreiben`. emotions_vektor wird bewusst nicht
         geladen — das Feld existiert im LZG-Schema nicht mehr.
         """
-
         keys: list = redis_client.keys(_kzg_prefix(user_id, character_id))
         eintraege: list[dict] = []
 
@@ -1428,7 +1422,6 @@ class PromotionAgent(BaseAgent):
           - arousal: Mittelwert aller nicht-None-Werte, Fallback 0.5.
           - intentionen: Mengen-Vereinigung aller Listen, leere Listen ignoriert.
         """
-
         beobachter_counts = Counter(e["beobachter"] for e in cluster_eintraege)
         beobachter: str = beobachter_counts.most_common(1)[0][0]
 
@@ -1522,7 +1515,6 @@ class PromotionAgent(BaseAgent):
     @staticmethod
     def _destillation_insert(kerne: list[str], thema: str, user_id: str) -> str:
         """LLM-Call: Destilliert mehrere KZG-Kerne zu einer LZG-Zusammenfassung."""
-
         kerne_formatiert: str = "\n".join(f"- {k}" for k in kerne)
 
         system_prompt: str = (

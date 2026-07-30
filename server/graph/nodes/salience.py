@@ -44,7 +44,6 @@ def _prompt_segmentieren(prompt: str) -> list[str]:
     Gibt eine Liste von Segment-Texten zurueck.
     Bei einfachen Prompts (1 Segment) wird der Original-Prompt zurueckgegeben.
     """
-
     # Kurze Prompts brauchen keine Segmentierung
     if len(prompt) < 60 or "." not in prompt:
         return [prompt]
@@ -161,7 +160,6 @@ def _build_salienz_prompt(graph_rolle: str = "human") -> tuple[str, str]:
         haeufigeren Fall — und werden benannt, damit ein Tippfehler in einer
         Rolle nicht still die falsche Schablone zieht.
     """
-
     # ── Eingabe-Validierung ─────────────────────
     if graph_rolle not in ("human", "character", "agent"):
         logger.warning(
@@ -202,7 +200,6 @@ def _salienz_wert_lesen(salienz_obj: dict) -> float | None:
         0.0 durchgehen: Er wanderte sonst ins Maximum und senkte es still ab,
         ohne dass irgendwo steht, dass ueberhaupt etwas fehlte.
     """
-
     # ── Eingabe-Validierung ─────────────────────
     roh = salienz_obj.get("salienz")
 
@@ -253,7 +250,6 @@ def _salienz_human_ermitteln(roh_salienzen: list[float]) -> float | None:
     Fehlerfaelle: leere Liste — None, damit der Aufrufer "nicht ermittelt" von
         "ermittelt und niedrig" unterscheiden kann.
     """
-
     # ── Eingabe-Validierung ─────────────────────
     if not roh_salienzen:
         return None
@@ -304,7 +300,6 @@ def analyze(
         Eintrag, frueher return); JSON-Parsing je Segment (Segment
         verworfen, fehler-Eintrag, Lauf geht weiter).
     """
-
     # Input-Switch nach graph_rolle (PFAD2-PERZEPTION-FIX Phase 2, korrigiert
     # Chat 110). Nur der CharacterGraph bewertet eine REAKTION — er ist der
     # einzige Graph mit Responder. HumanGraph und AgentGraph bewerten beide

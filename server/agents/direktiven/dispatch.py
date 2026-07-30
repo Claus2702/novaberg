@@ -18,7 +18,6 @@ PENDING_TTL_SECONDS = 300  # 5 Minuten
 
 def dispatch_direktiven(state: dict) -> dict:
     """ConversationState -> DirektivenAgent -> ConversationState."""
-
     user_id = state.get("user_id", "")
     pending_key = f"pending_agent:{user_id}"
 
@@ -116,7 +115,6 @@ def dispatch_direktiven(state: dict) -> dict:
 
 def _handle_resume(state: dict, pending: dict, pending_key: str) -> dict:
     """Resume-Flow: User hat auf eine Rueckfrage geantwortet."""
-
     user_answer = state.get("user_prompt", "")
     original_action = pending.get("action", "")
     original_parameter = pending.get("parameter", {})

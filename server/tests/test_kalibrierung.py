@@ -59,7 +59,6 @@ def _korpus_schief() -> list[Urteilspaar]:
     Returns:
         Der Korpus.
     """
-
     # ── Verarbeitung ────────────────────────────
     paare: list[Urteilspaar] = []
 
@@ -91,7 +90,6 @@ def _korpus_trennbar(n: int = 80) -> list[Urteilspaar]:
     Returns:
         Der Korpus.
     """
-
     # ── Verarbeitung ────────────────────────────
     fuehrend: int = int(n * 0.7)
     paare: list[Urteilspaar] = []

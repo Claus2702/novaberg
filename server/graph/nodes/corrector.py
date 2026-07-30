@@ -14,7 +14,6 @@ logger = logging.getLogger("ki_server.corrector")
 
 def correct(state: ConversationState) -> ConversationState:
     """Überarbeitet die Antwort basierend auf Tribunal-Feedback."""
-
     state["correction_round"] += 1
 
     logger.info(f"Corrector: Korrektur-Runde {state['correction_round']} "

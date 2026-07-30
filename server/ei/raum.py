@@ -52,7 +52,6 @@ def raum_ziehen(
     Returns:
         Der neue Achsenwert.
     """
-
     # ── Eingabe-Validierung ─────────────────────
     if aktuell == ziel:
         return aktuell
@@ -96,7 +95,6 @@ def raum_ziel_bestimmen(personality, quelle: str = "Nutzer") -> tuple[float, flo
     Returns:
         (tiefe_ziel, naehe_ziel)
     """
-
     # ── Eingabe-Validierung ─────────────────────
     if personality is None:
         logger.error(
@@ -145,7 +143,6 @@ def raum_nachfuehren(
     Returns:
         True, wenn sich mindestens eine Achse bewegt hat.
     """
-
     # ── Eingabe-Validierung ─────────────────────
     if internal is None:
         logger.error("Raumzug: kein internal im State — Novas Raum bleibt stehen")

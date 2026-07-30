@@ -77,7 +77,6 @@ def create_tools(
         Damit kannst du prüfen ob es zeitliche Konflikte mit bestehenden Terminen gibt.
         Bedenke: Termine haben eine Dauer und erfordern physische Anwesenheit —
         zwei Termine zur gleichen Zeit am gleichen Tag sind ein Konflikt."""
-
         logger.info(f"Thinker-Tool: timeline_check({datum})")
 
         from datetime import datetime as dt
@@ -113,7 +112,6 @@ def create_tools(
         """Suche nach Terminen anhand eines Begriffs (z.B. 'Friseur', 'Zahnarzt', 'Geburtstag').
         Nutze dieses Tool wenn du prüfen willst, ob es bereits ähnliche Termine gibt
         oder wann der nächste/letzte Termin einer bestimmten Art war."""
-
         logger.info(f"Thinker-Tool: timeline_search({keyword})")
 
         rows: list[dict] = TimelineRepository.find_by_keyword(
@@ -210,7 +208,6 @@ def create_tools(
 
         Liefert eine Trefferliste plus den vollstaendigen Artikeltext
         des relevantesten Ergebnisses. Fuer weitere URLs nutze web_fetch(url)."""
-
         logger.info(f"Thinker-Tool: web_search({suchbegriff})")
 
         try:
@@ -251,7 +248,6 @@ def create_tools(
         Nutze dieses Tool nur wenn du eine ANDERE URL aus der
         Trefferliste laden willst.
         Gibt den extrahierten Artikeltext zurueck (ohne Navigation, Werbung, Footer)."""
-
         logger.info(f"Thinker-Tool: web_fetch({url})")
 
         text: str = page_fetch(url)
@@ -336,7 +332,6 @@ def _format_faktencheck_treffer(treffer: list[dict]) -> str:
     Returns:
         Formatierter Prompt-Block. Leere Liste -> "".
     """
-
     # ── Eingabe-Validierung ─────────────────────
     if not treffer:
         return ""
@@ -368,7 +363,6 @@ def think(
     Denkt über die Antwort nach.
     Nutzt ReAct-Pattern: Denken → Tool aufrufen → Beobachten → Weiterdenken.
     """
-
     jetzt = datetime.now()
     today: str = jetzt.strftime("%d.%m.%Y, %H:%M Uhr")
 
@@ -657,7 +651,6 @@ def _execute_tool_call(content: str, tool_map: dict, cache: ThinkerToolCache) ->
     das Tool nicht erneut ausgefuehrt, sondern ein Hinweis-String
     zurueckgegeben. Greift generisch fuer alle 5 Thinker-Tools.
     """
-
     try:
         tool_line: str = ""
         for line in content.split("\n"):
@@ -706,7 +699,6 @@ def _execute_tool_call(content: str, tool_map: dict, cache: ThinkerToolCache) ->
 
 def _extract_corrected_response(content: str) -> str:
     """Extrahiert die korrigierte Antwort aus dem Thinker-Output."""
-
     marker: str = "KORRIGIERTE ANTWORT:"
     if marker not in content:
         return ""
@@ -719,7 +711,6 @@ def _extract_corrected_response(content: str) -> str:
 
 def _extract_issues(content: str) -> list[str]:
     """Extrahiert die Problem-Liste aus dem Thinker-Output."""
-
     marker: str = "PROBLEME:"
     if marker not in content:
         return []

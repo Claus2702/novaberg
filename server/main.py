@@ -79,7 +79,6 @@ def schema_migrieren(postgres_url: str) -> None:
        Bei Fehler warning-Log und Rückkehr ohne Re-Raise — Fail-Mode wie
        bisher in P0.
     """
-
     if not SQL_INIT_PFAD.exists():
         logger.warning(f"Migration: db/init.sql nicht gefunden unter {SQL_INIT_PFAD}")
         return

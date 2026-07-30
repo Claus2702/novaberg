@@ -89,7 +89,6 @@ def _seiten_dict(state: AgentState) -> dict:
 
 def akte_erstellen(state: AgentState) -> dict:
     """Erstellt eine neue Akte mit Header + erster Seite."""
-
     param:       dict        = state["parameter"]
     salienz_obj: dict        = param.get("salienz_obj", {})
     user_id:     str         = state["kontext"].get("user_id", "")
@@ -198,7 +197,6 @@ def akte_erstellen(state: AgentState) -> dict:
 
 def akte_anreichern(state: AgentState) -> dict:
     """Reichert eine bestehende Akte um eine neue Seite an."""
-
     param:    dict = state["parameter"]
     akte_id:  int  = param["bestehende_akte_id"]
     trigger:  str  = param.get("trigger", "")

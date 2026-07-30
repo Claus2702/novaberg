@@ -66,7 +66,6 @@ def perceive(
     """Analysiert den User-Prompt oder die Nova-Antwort und schreibt die
     klassifizierten EI-Dimensionen in die rollen-spezifische Personality.
     """
-
     rolle: str = state.get("perzeption_rolle", "user")
 
     # PFAD2-PERZEPTION-FIX Phase 2: Input-Switch nach Rolle. Bei

@@ -99,7 +99,6 @@ _INTENTION_AUFGABE_MAP: dict[str, str] = {
 
 def _aufgabe_aus_intention(intentionen: list) -> str:
     """Leitet die Shadow-Aufgabe aus der primären Intention ab."""
-
     if not intentionen:
         return "recherche"
 
@@ -113,7 +112,6 @@ def _aufgabe_aus_intention(intentionen: list) -> str:
 # ─────────────────────────────────────────────
 def kzg_index_create(redis_client: redis.Redis) -> None:
     """Erstellt den RediSearch-Index für KZG-Einträge falls nicht vorhanden."""
-
     try:
         redis_client.ft(KZG_INDEX_NAME).info()
         logger.info("KZG-Index existiert bereits.")
@@ -175,7 +173,6 @@ def kzg_similar_find(
     top_k:        int = 1
 ) -> Optional[dict]:
     """Sucht den ähnlichsten KZG-Eintrag per Vektorsuche (paar-skopiert)."""
-
     embedding_bytes: bytes = np.array(embedding, dtype=np.float32).tobytes()
 
     query = (
@@ -254,7 +251,6 @@ def salienz_berechnen(salienz_eingang: float, haeufigkeit: int) -> float:
     geklemmt — ein stiller Abbruch mitten in der Verdichtung waere der
     schlimmere Fehler, ein stilles Weiterrechnen der schlimmste.
     """
-
     # ── Eingabe-Validierung ─────────────────────
     if not 0.0 <= salienz_eingang <= 1.0:
         logger.error(
@@ -318,7 +314,6 @@ def kzg_store(
                     aus dem mapping= ausgelassen.
       turn_id:      Pipeline-Log-Korrelation; bei Legacy-Aufrufern leer.
     """
-
     # Der Wert aus dem Salienz-Node ist die Bewertung des Modells — der
     # unveraenderliche Eingang. Die Salienz, gegen die alle Tore pruefen, ist
     # daraus abgeleitet und wird ab hier durchgaengig verwendet.
@@ -560,7 +555,6 @@ def kzg_entries_retrieve(
     Returns:
         Liste von ContextEntry-Dicts. Leer bei keinen Treffern oder Fehler.
     """
-
     logger.info(f"KZG-Entries-Retrieve: Paar={user_id}:{character_id}, Limit={top_k}")
 
     embedding_bytes: bytes = np.array(embedding, dtype=np.float32).tobytes()

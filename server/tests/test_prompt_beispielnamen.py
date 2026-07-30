@@ -64,7 +64,6 @@ def _namen_aus(text: str) -> set[str]:
     Nachbedingung: Menge der Kandidaten, generische Slot-Treffer bereits entfernt.
     Fehlerfaelle: keine — ein Text ohne Namen liefert die leere Menge.
     """
-
     # ── Verarbeitung ────────────────────────────
     gefunden: set[str] = set()
     for muster in NAMENS_SLOTS:

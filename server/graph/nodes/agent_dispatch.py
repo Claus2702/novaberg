@@ -16,7 +16,6 @@ logger = logging.getLogger("ki_server.agent_dispatch")
 
 def agent_dispatch_node(state: dict) -> dict:
     """Zentraler Dispatch-Node im Graph. Delegiert an den agenten-spezifischen Dispatch."""
-
     agent_name = state.get("agent_name", "")
     if not agent_name:
         # Kein Agent angefordert — nichts zu tun

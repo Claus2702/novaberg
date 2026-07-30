@@ -101,7 +101,6 @@ def _erregungs_zuschlag_berechnen(arousal: float) -> float:
     Nachbedingung: Rueckgabe in [0.0, SALIENZ_EREGUNG_MAX_ZUSCHLAG].
     Fehlerfaelle: Werte ausserhalb [0,1] werden gekappt und benannt.
     """
-
     # ── Eingabe-Validierung ─────────────────────
     if not 0.0 <= arousal <= 1.0:
         logger.warning(
@@ -143,7 +142,6 @@ def salienz_effektiv_berechnen(
         None. Das ist kein Fehler, sondern der dokumentierte Fall des
         AgentGraphen; der Aufrufer entscheidet, ob er ihn erwartet hat.
     """
-
     # ── Eingabe-Validierung ─────────────────────
     if sprachlich < 0.0:
         logger.warning(f"Salienz-Formel: sprachlich {sprachlich:.3f} negativ — auf 0.0 gesetzt")

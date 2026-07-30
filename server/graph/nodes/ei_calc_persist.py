@@ -42,7 +42,6 @@ def ei_calc_persist(state: ConversationState) -> ConversationState:
     Nachbedingung: Plausibilitaets-korrigierte Werte sind in
     ``internal.emotion`` und ``redis:nova_state:{user_id}:{character_id}``.
     """
-
     # ── Eingabe-Validierung ─────────────────────
     user_id:      str  = state.get("user_id", "")
     character_id: str  = state.get("character_id", "")

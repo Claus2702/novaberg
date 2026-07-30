@@ -126,7 +126,6 @@ class ZielDecayAgent(BaseAgent):
         Der Lauf ist idempotent. Wird er zweimal hintereinander ausgefuehrt,
         steht danach derselbe Wert wie nach dem ersten Mal.
         """
-
         # --- Eingabe (EVA): Feature-Gate ---
         if not ZIEL_DECAY_AKTIV:
             logger.info(

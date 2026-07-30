@@ -82,7 +82,6 @@ class GraphBase(ABC):
         **kwargs,
     ) -> ConversationState:
         """Erzeugt einen frischen State für einen neuen Gesprächs-Turn."""
-
         return ConversationState(
             # Eingang
             user_prompt   = user_prompt,

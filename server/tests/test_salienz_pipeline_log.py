@@ -48,7 +48,6 @@ def _lauf(graph_rolle: str, segmente: int = 1, **kw) -> tuple[list, dict]:
     Fehlerfaelle: keine — ein Lauf ohne Eintraege liefert eine leere Liste,
         was die Tests als Fehlschlag werten.
     """
-
     # ── Eingabe-Validierung ─────────────────────
     if segmente < 1:
         raise ValueError("_lauf: segmente muss mindestens 1 sein")

@@ -22,7 +22,6 @@ def discover_managers() -> dict[str, BaseManager]:
     Scannt plugins/ nach Unterordnern mit BaseManager-Subklassen.
     Instanziiert und registriert sie nach 'ziel'.
     """
-
     _registry.clear()
 
     package_path: Path = Path(__file__).parent

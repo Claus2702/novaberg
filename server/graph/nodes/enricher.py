@@ -84,7 +84,6 @@ def enrich(
     Fallback: fehlt oder ist der Marker unbekannt, laeuft der CG-
               Vollpfad — sicherer Default, kein Funktionsverlust.
     """
-
     # ── Eingabe-Validierung ─────────────────────
     rolle: str = state.get("ei_calc_rolle", "character")
 
@@ -123,7 +122,6 @@ def _extract_user_intentionen(raw_turns: list[dict]) -> list:
     Nachbedingung: Liste der Intentionen aus dem juengsten User-Turn
                    mit gesetztem modus; leere Liste falls keiner.
     """
-
     # ── Verarbeitung ────────────────────────────
     for turn in reversed(raw_turns):
         if turn.get("rolle") == "user" and turn.get("modus"):
@@ -162,7 +160,6 @@ def _compute_ziele_und_gravitation(
     Nachbedingung: Tupel (aktivierte_ziele_dicts, gravitationsterm).
                    Beide leer / 0.0, wenn keine Ziele vorhanden sind.
     """
-
     # ── Eingabe-Validierung ─────────────────────
     ziele: list[dict] = ziele_aktive_laden(postgres_url, user_id=ASSISTANT_USER_ID)
 
@@ -215,7 +212,6 @@ def _enrich_human(
     Nachbedingung: die fuenf produktiven Felder oben sind im state
                    gesetzt.
     """
-
     # ── Pipeline-Log: Span-Start ────────────────
     turn_id_log:  str = state.get("turn_id", "unbekannt")
     # Quelle aus graph_rolle statt ei_calc_rolle: der AgentGraph setzt
@@ -380,7 +376,6 @@ def _enrich_character(
                    prompt_embedding, memory_entries, aktivierte_ziele,
                    gravitationsterm, emotionale_gravitationspunkte).
     """
-
     # ── Pipeline-Log: Span-Start (Anker 1) ──────
     # ei_calc_rolle ist projektweit etablierter Marker (siehe
     # graph/character_graph.py:43, kzg/dispatch.py:42).

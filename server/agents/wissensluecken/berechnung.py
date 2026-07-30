@@ -43,7 +43,6 @@ def neuheit_berechnen(hoechste_aehnlichkeit: float) -> float:
     Fehlerfaelle: keine. Negative Cosine-Werte (Gegensatz statt Naehe) gelten
         als maximal neu und werden auf 1.0 geklemmt, nicht auf > 1.0.
     """
-
     # ── Eingabe-Validierung ─────────────────────
     if not isinstance(hoechste_aehnlichkeit, (int, float)) or isinstance(
         hoechste_aehnlichkeit, bool
@@ -72,7 +71,6 @@ def neugier_vektor_berechnen(resonanz: float, neuheit: float) -> float:
         seinen Bereich verlaesst, ist ein Defekt beim Aufrufer; ihn hier
         stillschweigend zu klemmen wuerde ihn verbergen.
     """
-
     # ── Eingabe-Validierung ─────────────────────
     for name, wert in (("resonanz", resonanz), ("neuheit", neuheit)):
         if not isinstance(wert, (int, float)) or isinstance(wert, bool):
@@ -101,6 +99,5 @@ def ist_dublette(hoechste_aehnlichkeit_zu_luecken: float) -> bool:
     Nachbedingung: True, wenn der Kandidat aufgefrischt statt neu angelegt
         werden soll.
     """
-
     # ── Verarbeitung / Ausgabe ──────────────────
     return float(hoechste_aehnlichkeit_zu_luecken) >= LUECKE_DUBLETTE_SCHWELLE
