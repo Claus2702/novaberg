@@ -224,7 +224,7 @@
 ### Marktanalyse + Projektinfrastruktur (Chat 51)
 - ✅ 7 Open-Source-Projekte analysiert — Nova architektonisch einzigartig
 - ✅ Projektname: **Novaberg — The Nova Anima Resonance System**
-- ✅ Codeberg-Repo: `ClausVomBerg/novaberg`, Apache 2.0
+- ✅ ~~Codeberg-Repo: `ClausVomBerg/novaberg`, Apache 2.0~~ → **Umgezogen am 30.07.2026** nach `github.com/Claus2702/novaberg`. Die Lizenz bleibt Apache 2.0. Der Anlass war eine Änderung der Nutzungsbedingungen von Codeberg, die Repositorien mit generativ erzeugtem Inhalt untersagt.
 - ✅ `nova-pitch-anthropic.docx` erstellt
 
 ---
@@ -292,7 +292,7 @@
 - ✅ Akademisches Whitepaper, 13 Kapitel, kausale Erzählstruktur
 - ✅ NB-Monogramm Logo in Oxblood
 - ✅ 3 inhaltliche Review-Durchgänge (Claude Opus), null inhaltliche Fehler
-- ✅ Live: https://ClausVomBerg.codeberg.page/Novaberg/
+- ✅ ~~Live: https://ClausVomBerg.codeberg.page/Novaberg/~~ → **Erloschen mit dem Umzug am 30.07.2026.** Der Zweig `pages` ist **nicht** mitgezogen; die Projektseite bleibt beim Umzug zurück. Ihr Inhalt liegt weiterhin im Zweig `pages` des lokalen Arbeitsbaums, ist also nicht verloren — sie ist nur nirgends mehr veröffentlicht.
 
 ### Dual-Emotion Phase 2 — Konzept + AP1 (Chat 58)
 - ✅ Konzeptdokument `novaberg-ei-dual-emotion_k.md` (9 Arbeitspakete)

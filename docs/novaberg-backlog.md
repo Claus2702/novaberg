@@ -3879,6 +3879,40 @@ Der Aufrufer sieht echte Zeilen und meldet Erfolg. Genau das ist einmal geschehe
 
 ---
 
+## Audit: PUB-ROLLENNAMEN-IM-BESTAND — die Doku nennt die internen Rollen (Chat 120)
+
+Rollennamen der Zusammenarbeit gehören nicht ins öffentliche Repositorium. Sie stehen trotzdem darin, und zwar nicht vereinzelt.
+
+**Gemessen am 30.07.2026.** Die Abfrage gehört zur Zahl, sonst ist sie beim nächsten Nachzählen nicht reproduzierbar: alle `*.md` im Wurzelverzeichnis und unter `docs/`, **ohne** `docs/archive/` (siehe unten) und **ohne** `novaberg-backlog.md`, weil dieser Eintrag die Begriffe selbst nennt und sich sonst mitzählt.
+
+| Begriff | Dateien | Fundstellen |
+|---|---|---|
+| „Brudi" | 19 | 70 |
+| „Meister" | 35 | 107 |
+| Commit-Meldungen mit einem der beiden | — | 9 |
+
+`docs/archive/` trägt zusätzlich „Brudi" in 2 Dateien (4 Fundstellen) und „Meister" in 1 Datei (2 Fundstellen).
+
+**Die bisherige Notiz führte drei Stellen.** Sie war keine Zählung, sondern eine Aufzählung dessen, was zufällig aufgefallen war — die tatsächliche Menge liegt zwei Größenordnungen darüber. Dieselbe Klasse wie die „Manager-Signatur-Drift über 19 Dateien" in der Fundliste: eine Zahl ohne die Abfrage, die sie erzeugt hat.
+
+**Die Falle bei der Umsetzung — sie ist der Grund, warum hier ein Kriterium steht und keine Ersetzung:**
+
+> **Kleingeschriebenes `meister` ist die `user_id` des Systems und muss bleiben.** Es steht in 33 Dateien, im Schema, in Redis-Schlüsseln, in jedem Paar-Beispiel und in gemessenen Ausgaben. Wer über `[Mm]eister` ersetzt, zerstört die Doku des Paar-Schemas.
+
+Zu ändern ist, was die **Rolle** benennt, nicht was die **Kennung** nennt. Ein großer Teil der Fundstellen steht dabei im Fließtext (*„Brudi commitet erst, wenn alle Konsumenten umgestellt sind"*, *„Diff-Review durch Meister"*) — das ist Umformulieren, nicht Ersetzen, und deshalb ein eigener Durchgang und keine Nebenarbeit. ⬜ Prio mittel
+
+**Entschieden am 30.07.2026:** Der Umzug auf die neue Plattform nimmt die Historie **unverändert** mit. Der Inhalt stand bereits öffentlich; der Umzug legt nichts neu offen. Die Säuberung ist davon getrennt.
+
+**Die Reihenfolge ist nicht beliebig:** erst der heutige Baum, dann — falls überhaupt gewollt — die Historie. Eine gesäuberte Historie unter einem Baum, der die Namen weiter trägt, wäre Aufwand ohne Wirkung. Ein Rewrite bleibt danach möglich und kostet dann einen Force-Push auf veröffentlichte Historie, also eine eigene Freigabe.
+
+**Nicht in diesem Auftrag:** `archive/` — dort steht Aufgegebenes, das ausdrücklich als historisch geführt wird. Ob es mitgezogen wird, ist beim Durchgang zu entscheiden, nicht vorher.
+
+**Dieser Eintrag ist der letzte Schritt seiner selbst.** Er nennt die beiden Begriffe wörtlich, weil ein Auftrag, der sein Ziel nicht benennt, nicht ausführbar ist — und solange sie in hundert Dateien stehen, fügt das nichts hinzu. Ist der Bestand geräumt, sind die Nennungen hier die letzten im Repositorium. Dann wird der Eintrag umformuliert und auf sein Ergebnis reduziert; er darf nicht als sein eigener Rest stehen bleiben.
+
+**Zusammenhang:** `F-PUB-1` (Protokolle gehören nicht ins Repositorium — dieselbe Grenze, andere Seite).
+
+---
+
 ## Audit: REGISTER-SPIEGEL-DURCHGANG — wo spiegelt sonst eine Aufzählung ein Register? (Chat 111)
 
 In `services/pixie/router.py` entschied eine **Tabelle neben dem Register** darüber, welcher periodische Agent läuft — dieselbe Zuordnung ein zweites Mal geführt, ohne dass ein Auseinanderlaufen bemerkt worden wäre. Ein neu registrierter Agent gewann den Heartbeat, fand keine Route und starb mit einer Warnung; weil der Takt einen Gewinner je Runde kennt, lief in dieser Runde auch sonst nichts. Behoben durch Rückfall auf Namensgleichheit — die Tabelle bleibt nur noch für die Fälle, in denen Zeitplan- und Agentenname wirklich abweichen (`charakter_hash` → `charakter`).

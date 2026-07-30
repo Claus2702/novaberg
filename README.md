@@ -122,7 +122,7 @@ Ollama runs host-native by design so the GPU is directly accessible. Containeriz
 ### 1. Clone the repository
 
 ```bash
-git clone https://codeberg.org/ClausVomBerg/novaberg.git
+git clone https://github.com/Claus2702/novaberg.git
 cd novaberg
 ```
 

@@ -122,7 +122,7 @@ Ollama läuft bewusst host-native, damit die GPU direkt ansprechbar ist. Die Die
 ### 1. Repo klonen
 
 ```bash
-git clone https://codeberg.org/ClausVomBerg/novaberg.git
+git clone https://github.com/Claus2702/novaberg.git
 cd novaberg
 ```
 
