@@ -28,6 +28,7 @@ from config import (  # noqa: E402
     RADAR_DATA_STROKE_COLOR,
     RADAR_GRID_COLOR,
     RADAR_LABEL_COLOR,
+    RADAR_NABE_COLOR,
     RADAR_TITLE_COLOR,
 )
 
@@ -72,6 +73,10 @@ class RadarChart(Gtk.DrawingArea):
         # ueberall nichts gefunden hat. Nur ``set_data`` fuellt dieses Feld.
         self._values: list[float] | None = None
         self._leer_grund: str = "noch nicht geladen"
+        # Anteil, um den das gerechnete Ergebnis von der Nabe abliegt:
+        # -1.0 volle Auslenkung zur zweiten Haelfte, +1.0 zur ersten,
+        # 0.0 genau auf der Nabe. ``None`` heisst "gilt hier nicht".
+        self._nabe_versatz: float | None = None
 
         self.set_content_width(size)
         self.set_content_height(size)
@@ -106,6 +111,35 @@ class RadarChart(Gtk.DrawingArea):
         )
         self.queue_draw()
 
+    def set_nabe_versatz(self, anteil: float | None) -> None:
+        """Zeigt, wie weit das gerechnete Ergebnis von der Nabe abliegt.
+
+        Die erste Hälfte der Achsen zieht nach oben, die zweite nach unten;
+        bei geradzahliger Achsenzahl trennt sie eine senkrechte Linie. Der
+        Versatz wird deshalb **waagerecht** aufgetragen: nach rechts zur
+        ersten Hälfte, nach links zur zweiten.
+
+        Er ist bewusst kein Schwerpunkt der Fläche. Der Wert des Rades ist
+        eine gewichtete Summe — jede Speiche zieht mit ihrem eigenen Betrag —,
+        und ein geometrischer Schwerpunkt wäre eine andere Zahl, die nur so
+        aussähe wie diese. Gezeichnet wird der abgelegte Wert selbst.
+
+        Args:
+            anteil: Abstand von der Nabe als Anteil der Spanne auf der
+                jeweiligen Seite, im Bereich −1.0 bis +1.0. ``None``
+                blendet die Anzeige aus.
+        """
+        if anteil is None:
+            self._nabe_versatz = None
+            self.queue_draw()
+            return
+
+        self._nabe_versatz = max(-1.0, min(1.0, float(anteil)))
+        logger.info(
+            f"RadarChart '{self._title}' Nabenversatz: {self._nabe_versatz:+.3f}"
+        )
+        self.queue_draw()
+
     def set_unbekannt(self, grund: str) -> None:
         """Verwirft die Daten und zeichnet nur Gitter, Achsen und den Grund.
 
@@ -118,6 +152,8 @@ class RadarChart(Gtk.DrawingArea):
         """
         self._values = None
         self._leer_grund = grund
+        # Ohne Speichen gibt es auch keine Bilanz aus ihnen.
+        self._nabe_versatz = None
         logger.warning(f"RadarChart '{self._title}': ohne Daten — {grund}")
         self.queue_draw()
 
@@ -149,6 +185,8 @@ class RadarChart(Gtk.DrawingArea):
             self._draw_leer(cr, cx, cy)
         else:
             self._draw_data(cr, cx, cy, radius)
+        # Nach der Flaeche, damit die Bilanz nicht darunter verschwindet.
+        self._draw_nabe(cr, cx, cy, radius)
         self._draw_labels(cr, cx, cy, radius)
 
     def _axis_angle(self, i: int) -> float:
@@ -223,6 +261,36 @@ class RadarChart(Gtk.DrawingArea):
         for x, y in points:
             cr.arc(x, y, 3.0, 0.0, 2.0 * math.pi)
             cr.fill()
+
+    def _draw_nabe(self, cr, cx: float, cy: float, radius: float) -> None:
+        """Zeichnet die Nabe als Ring und das Ergebnis als versetzten Punkt.
+
+        Der Ring sitzt immer im Zentrum und ist der Nullpunkt; der Punkt
+        liegt waagerecht daneben. Beide werden auch bei Versatz 0.0
+        gezeichnet — dass ein Ergebnis **genau** auf der Nabe liegt, ist
+        eine Aussage und kein Grund, nichts zu zeigen.
+        """
+        if self._nabe_versatz is None:
+            return
+
+        cr.set_source_rgba(*RADAR_NABE_COLOR)
+        cr.set_line_width(1.2)
+
+        # Die Nabe: ein hohler Ring im Zentrum als Bezugspunkt.
+        cr.arc(cx, cy, 3.0, 0.0, 2.0 * math.pi)
+        cr.stroke()
+
+        px: float = cx + radius * self._nabe_versatz
+
+        # Die Strecke macht den Versatz als Versatz sichtbar; ohne sie waere
+        # der Punkt nur ein Punkt an einer Stelle.
+        if abs(self._nabe_versatz) > 0.01:
+            cr.move_to(cx, cy)
+            cr.line_to(px, cy)
+            cr.stroke()
+
+        cr.arc(px, cy, 4.0, 0.0, 2.0 * math.pi)
+        cr.fill()
 
     def _draw_labels(self, cr, cx: float, cy: float, radius: float) -> None:
         """Schreibt die Kurznamen am Ende jeder Achse."""

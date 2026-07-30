@@ -288,9 +288,14 @@ class CharacterPanel(PanelBase):
 
             werte, fehlend = _speichen_lesen(block, definition, self.user_id)
             if werte is None:
+                # set_unbekannt raeumt den Nabenversatz mit ab — ohne
+                # Speichen gibt es keine Bilanz aus ihnen.
                 chart.set_unbekannt(_leer_grund(block))
             else:
                 chart.set_data(werte)
+                chart.set_nabe_versatz(
+                    _nabe_versatz(block, self.user_id, definition.schluessel)
+                )
 
             self._rad_box.append(_build_rad_section(definition, block, fehlend))
 
@@ -305,6 +310,56 @@ def _leer_grund(block: dict) -> str:
     if not block.get("rad"):
         return "nicht erhoben"
     return "nicht lesbar"
+
+
+def _nabe_versatz(block: dict, subjekt: str, rad: str) -> float | None:
+    """Rechnet den Abstand des Ergebnisses von der Nabe in einen Anteil um.
+
+    Beide Räder haben eine Nabe und zwei Grenzen, und **beide Seiten sind
+    verschieden weit**: Das Zuwendungs-Rad reicht 0.60 nach oben und 0.40
+    nach unten. Ein Anteil, der beide Seiten durch dieselbe Spanne teilte,
+    zeigte volle Auslenkung nach unten kürzer als nach oben, obwohl beide
+    ihre Grenze exakt treffen. Deshalb wird je Seite gegen ihre eigene
+    Spanne normiert.
+
+    Nabe und Grenzen kommen vom Server. Sie sind dort über die Umgebung
+    einstellbar; eine Kopie hier wäre eine zweite Quelle derselben Größe.
+
+    Args:
+        block:   Der Rad-Block der Server-Antwort.
+        subjekt: ``user_id`` der Perspektive, nur für die Logausgabe.
+        rad:     Name des Rades, nur für die Logausgabe.
+
+    Returns:
+        Anteil in [−1.0, +1.0], oder ``None``, wenn kein Wert vorliegt oder
+        die Grenzen fehlen — dann wird nichts gezeichnet statt geraten.
+    """
+    # ── Eingabe ──────────────────────────────────────────────────────
+    wert = block.get("wert")
+    nabe = block.get("nabe")
+    unten = block.get("minimum")
+    oben = block.get("maximum")
+
+    if wert is None or nabe is None or unten is None or oben is None:
+        logger.warning(
+            f"CharacterPanel '{subjekt}': Rad '{rad}' ohne Wert oder Grenzen "
+            f"(wert={wert}, nabe={nabe}, min={unten}, max={oben}) — "
+            f"Nabenversatz wird nicht gezeichnet"
+        )
+        return None
+
+    # ── Verarbeitung ─────────────────────────────────────────────────
+    spanne: float = (float(oben) - float(nabe)) if wert >= nabe else (float(nabe) - float(unten))
+
+    if spanne <= 0.0:
+        logger.error(
+            f"CharacterPanel '{subjekt}': Rad '{rad}' hat auf der belegten "
+            f"Seite keine Spanne (nabe={nabe}, min={unten}, max={oben})"
+        )
+        return None
+
+    # ── Ausgabe ──────────────────────────────────────────────────────
+    return max(-1.0, min(1.0, (float(wert) - float(nabe)) / spanne))
 
 
 def _speichen_lesen(

@@ -109,6 +109,10 @@ RADAR_DATA_FILL_COLOR:   tuple[float, float, float, float] = (0.3, 0.8, 0.3, 0.2
 RADAR_DATA_STROKE_COLOR: tuple[float, float, float, float] = (0.3, 0.8, 0.3, 0.8)
 RADAR_DATA_DOT_COLOR:    tuple[float, float, float, float] = (0.3, 0.8, 0.3, 1.0)
 RADAR_LABEL_COLOR:       tuple[float, float, float, float] = (0.7, 0.7, 0.7, 1.0)
+# Der Punkt, der zeigt, wie weit das Ergebnis von der Nabe abliegt. Bewusst
+# nicht das Grün der Speichenfläche: Er ist keine elfte Achse, sondern die
+# aus allen Achsen gerechnete Bilanz.
+RADAR_NABE_COLOR:        tuple[float, float, float, float] = (0.95, 0.65, 0.2, 1.0)
 
 # ─────────────────────────────────────────────
 # Logging
