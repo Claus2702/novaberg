@@ -3,6 +3,7 @@ Gedächtnis-Introspection — KZG, LZG, Hash, Fakten.
 Debug- und Monitoring-Endpunkte.
 """
 
+import datetime
 import json
 import logging
 
@@ -130,11 +131,121 @@ def LzgAbrufen(
 # ─────────────────────────────────────────────
 # Charakter-Hash
 # ─────────────────────────────────────────────
+def _rad_aufbereiten(
+    bezeichnung: str,
+    rad_roh: str | None,
+    wert: float | None,
+    quelle: str | None,
+    erhoben_am: datetime.datetime | None,
+) -> dict:
+    """Baut den Anzeige-Block eines Charakter-Rades aus seinen vier Spalten.
+
+    Das Rad liegt in der Datenbank als TEXT. Es wird **hier** geparst, nicht
+    beim Leser: Ein JSON-Feld, das ungeparst weitergereicht wird, sieht am
+    Ziel wie ein Wert aus und rechnet still falsch — genau so lief M1 zwei
+    Monate als Konstante (``KALIBRIER-INTENTIONEN-UNGEPARST``).
+
+    ``lesbar`` trennt drei Faelle, die ein leeres Rad sonst zusammenwerfen:
+    die Zeile fehlt, das JSON ist kaputt, oder alle Speichen stehen echt auf
+    0.0. Nur der dritte ist ein Messergebnis.
+
+    Args:
+        bezeichnung: Name des Rades fuer die Logausgabe.
+        rad_roh:     JSON-Text der Speichen, wie er in der Spalte steht.
+        wert:        Der daraus gerechnete Faktor bzw. Versatz.
+        quelle:      ``'destilliert'`` oder ``'default'``.
+        erhoben_am:  Zeitstempel der Erhebung, ``None`` wenn nie erhoben.
+
+    Returns:
+        Dict mit ``wert``, ``quelle``, ``erhoben_am``, ``rad`` und ``lesbar``.
+    """
+    # ── Eingabe ──────────────────────────────────────────────────────
+    if not rad_roh:
+        logger.warning(f"Charakter-Rad '{bezeichnung}': Spalte leer")
+        return {
+            "wert":       float(wert) if wert is not None else None,
+            "quelle":     quelle or "",
+            "erhoben_am": erhoben_am.isoformat() if erhoben_am else "",
+            "rad":        {},
+            "lesbar":     False,
+        }
+
+    # ── Verarbeitung ─────────────────────────────────────────────────
+    try:
+        rad: dict = json.loads(rad_roh)
+    except (ValueError, TypeError) as fehler:
+        logger.exception(
+            f"{type(fehler).__name__}: Charakter-Rad '{bezeichnung}': "
+            f"JSON nicht lesbar — Rohwert: {rad_roh[:120]!r}"
+        )
+        return {
+            "wert":       float(wert) if wert is not None else None,
+            "quelle":     quelle or "",
+            "erhoben_am": erhoben_am.isoformat() if erhoben_am else "",
+            "rad":        {},
+            "lesbar":     False,
+        }
+
+    # ── Ausgabe ──────────────────────────────────────────────────────
+    if not isinstance(rad, dict) or "hoch" not in rad or "runter" not in rad:
+        logger.error(
+            f"Charakter-Rad '{bezeichnung}': geparst, aber ohne die Seiten "
+            f"'hoch'/'runter' — Typ {type(rad).__name__}, "
+            f"Schluessel {list(rad)[:8] if isinstance(rad, dict) else '—'}"
+        )
+        return {
+            "wert":       float(wert) if wert is not None else None,
+            "quelle":     quelle or "",
+            "erhoben_am": erhoben_am.isoformat() if erhoben_am else "",
+            "rad":        {},
+            "lesbar":     False,
+        }
+
+    logger.debug(
+        f"Charakter-Rad '{bezeichnung}': {len(rad['hoch'])} hoch, "
+        f"{len(rad['runter'])} runter, quelle={quelle}, wert={wert}"
+    )
+    return {
+        "wert":       float(wert) if wert is not None else None,
+        "quelle":     quelle or "",
+        "erhoben_am": erhoben_am.isoformat() if erhoben_am else "",
+        "rad":        rad,
+        "lesbar":     True,
+    }
+
+
+def _hash_leer() -> dict:
+    """Antwort fuer ein Gespraechspaar ohne Zeile in ``charakter_hash``.
+
+    ``lesbar: False`` bei beiden Raedern ist hier die Aussage: Es gibt keine
+    Erhebung. Ein Rad voller Nullen waere an dieser Stelle eine Behauptung.
+    """
+    leeres_rad: dict = {
+        "wert": None, "quelle": "", "erhoben_am": "", "rad": {}, "lesbar": False,
+    }
+    return {
+        "kern_hash": "", "adaptive_hash": "",
+        "intentions_profil": "", "emotions_profil": "",
+        "beziehungsprofil": "",
+        "kern_aktualisiert": "", "adaptive_aktualisiert": "",
+        "intentions_aktualisiert": "", "emotions_aktualisiert": "",
+        "beziehung_aktualisiert": "",
+        "zuwendung":  dict(leeres_rad),
+        "initiative": dict(leeres_rad),
+    }
+
+
 @router.get("/gedaechtnis/hash/{user_id}")
 def HashAbrufen(user_id: str, character_id: str = ASSISTANT_USER_ID):
     """Charakter-Hash eines Users fuer ein bestimmtes Gespraechspaar.
 
-    Seit dem Paar-Schema (Chat 62) wird nach ``user_id`` + ``character_id`` gefiltert.
+    Seit dem Paar-Schema (Chat 62) wird nach ``user_id`` + ``character_id``
+    gefiltert. Die Zeile traegt neben den fuenf Profilen die **zwei
+    Charakter-Raeder** des Subjekts gegenueber seinem Gegenueber: die
+    Zuwendung (zwoelf Speichen, ``novaberg-salienz-berechnung_k.md`` §5) und
+    den Initiative-Versatz (zehn Speichen, ``novaberg-gv-initiative_k.md``
+    §6). Beide werden hier mitgeliefert, samt Herkunft — ohne die ist ein
+    Wert von 0.9 bzw. 0.00 nicht von einem Ausfall zu unterscheiden.
     """
     try:
         conn   = postgres_verbinden()
@@ -145,7 +256,11 @@ def HashAbrufen(user_id: str, character_id: str = ASSISTANT_USER_ID):
                    intentions_profil, emotions_profil, beziehungsprofil,
                    kern_aktualisiert_am, adaptive_aktualisiert_am,
                    intentions_aktualisiert_am, emotions_aktualisiert_am,
-                   beziehung_aktualisiert_am
+                   beziehung_aktualisiert_am,
+                   nutzer_gewichtung, nutzer_gewichtung_quelle,
+                   nutzer_gewichtung_rad, nutzer_gewichtung_am,
+                   initiative_versatz, initiative_versatz_quelle,
+                   initiative_versatz_rad, initiative_versatz_am
             FROM charakter_hash
             WHERE user_id = %s AND character_id = %s
         """, (user_id, character_id))
@@ -154,14 +269,10 @@ def HashAbrufen(user_id: str, character_id: str = ASSISTANT_USER_ID):
         conn.close()
 
         if not row:
-            return {
-                "kern_hash": "", "adaptive_hash": "",
-                "intentions_profil": "", "emotions_profil": "",
-                "beziehungsprofil": "",
-                "kern_aktualisiert": "", "adaptive_aktualisiert": "",
-                "intentions_aktualisiert": "", "emotions_aktualisiert": "",
-                "beziehung_aktualisiert": "",
-            }
+            logger.info(
+                f"HashAbrufen: keine Zeile fuer {user_id}/{character_id}"
+            )
+            return _hash_leer()
 
         return {
             "kern_hash":                row[0] or "",
@@ -174,6 +285,14 @@ def HashAbrufen(user_id: str, character_id: str = ASSISTANT_USER_ID):
             "intentions_aktualisiert":  row[7].isoformat() if row[7] else "",
             "emotions_aktualisiert":    row[8].isoformat() if row[8] else "",
             "beziehung_aktualisiert":   row[9].isoformat() if row[9] else "",
+            "zuwendung": _rad_aufbereiten(
+                f"zuwendung {user_id}->{character_id}",
+                row[12], row[10], row[11], row[13],
+            ),
+            "initiative": _rad_aufbereiten(
+                f"initiative {user_id}->{character_id}",
+                row[16], row[14], row[15], row[17],
+            ),
         }
 
     except Exception as fehler:
