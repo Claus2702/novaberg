@@ -37,6 +37,12 @@ from ui.widgets.radar_chart import RadarChart  # noqa: E402
 logger = logging.getLogger(__name__)
 
 
+# Kurzformen der 8 Plutchik-Sektoren für die Radar-Achsen, in derselben
+# Reihenfolge wie ``EMOTION_SEKTOREN``. Sie stehen hier und nicht im Widget:
+# Das Radar-Diagramm zeichnet Achsen, es kennt keine Emotionen.
+_RADAR_ACHSEN: list[str] = ["Fr", "Zv", "An", "Üb", "Tr", "En", "Är", "Ne"]
+
+
 # Deutsche Anzeigenamen für die Gruppen-Farbklassen im CSS.
 _GROUP_CSS_CLASS: dict[str, str] = {
     "positiv": "emotion-positiv",
@@ -83,8 +89,8 @@ class EmotionsPanel(PanelBase):
         radar_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=8)
         radar_box.set_halign(Gtk.Align.CENTER)
 
-        self._session_radar = RadarChart(title="Session", size=160)
-        self._kzg_radar = RadarChart(title="KZG", size=160)
+        self._session_radar = RadarChart(_RADAR_ACHSEN, title="Session", size=160)
+        self._kzg_radar = RadarChart(_RADAR_ACHSEN, title="KZG", size=160)
 
         radar_box.append(self._session_radar)
         radar_box.append(self._kzg_radar)

@@ -1,9 +1,15 @@
 """
 Radar-Diagramm-Widget auf Basis von ``Gtk.DrawingArea`` und Cairo.
 
-Zeichnet 8 Plutchik-Sektoren auf einem Achsen-Stern. Jede Achse zeigt
-einen Sektor-Wert (0.0–1.0); die 8 Datenpunkte werden als geschlossenes,
+Zeichnet eine beliebige Zahl von Achsen auf einem Stern. Jede Achse zeigt
+einen Wert (0.0–1.0); die Datenpunkte werden als geschlossenes,
 halbtransparent gefülltes Polygon verbunden.
+
+**Das Widget kennt seinen Gegenstand nicht.** Die Achsen-Beschriftungen
+kommen vom Aufrufer und bestimmen zugleich, wie viele Achsen gezeichnet
+werden — acht Plutchik-Sektoren im Emotionen-Panel, zwölf bzw. zehn
+Charakter-Speichen im Charakter-Panel. Eine feste Achsenzahl im Widget
+hiesse, es fuer jeden weiteren Gegenstand zu kopieren.
 
 Sprach-Regeln: Code/Bezeichner englisch, UI-Texte deutsch.
 """
@@ -29,51 +35,90 @@ from config import (  # noqa: E402
 logger = logging.getLogger(__name__)
 
 
-# Kurzformen für die 8 Plutchik-Sektoren (Reihenfolge 1–8).
-_SEKTOR_KURZ: list[str] = ["Fr", "Zv", "An", "Üb", "Tr", "En", "Är", "Ne"]
-
-_NUM_AXES: int = 8
+# Weniger als drei Achsen ergeben kein Polygon, sondern eine Strecke.
+_MIN_AXES: int = 3
 
 
 class RadarChart(Gtk.DrawingArea):
-    """Radar-Diagramm mit 8 Achsen für Plutchik-Sektoren."""
+    """Radar-Diagramm mit so vielen Achsen, wie Beschriftungen übergeben wurden."""
 
-    def __init__(self, title: str = "", size: int = 160):
-        """Erstellt ein Radar-Diagramm mit 8 Achsen (Plutchik-Sektoren).
+    def __init__(self, labels: list[str], title: str = "", size: int = 160):
+        """Erstellt ein Radar-Diagramm über den übergebenen Achsen.
 
         Args:
+            labels: Kurzformen der Achsen, in Zeichenreihenfolge (oben
+                beginnend, im Uhrzeigersinn). Ihre Anzahl ist die Achsenzahl.
             title: Überschrift über dem Diagramm (z.B. "Session", "KZG").
             size: Breite und Höhe in Pixel.
+
+        Raises:
+            ValueError: Bei weniger als drei Beschriftungen.
         """
+        # ── Eingabe ──────────────────────────────────────────────────
+        if len(labels) < _MIN_AXES:
+            raise ValueError(
+                f"RadarChart braucht mindestens {_MIN_AXES} Achsen, "
+                f"bekam {len(labels)}"
+            )
+
+        # ── Verarbeitung ─────────────────────────────────────────────
         super().__init__()
+        self._labels: list[str] = list(labels)
+        self._num_axes: int = len(self._labels)
         self._title: str = title
         self._size: int = size
-        self._values: list[float] = [0.0] * _NUM_AXES
+        # ``None`` heisst "keine Daten" und ist von einem Vektor aus Nullen
+        # verschieden: Ein Nullpolygon sieht aus wie eine Messung, die
+        # ueberall nichts gefunden hat. Nur ``set_data`` fuellt dieses Feld.
+        self._values: list[float] | None = None
+        self._leer_grund: str = "noch nicht geladen"
 
         self.set_content_width(size)
         self.set_content_height(size)
         self.set_draw_func(self._on_draw)
 
-    def set_data(self, sector_values: list[float]) -> None:
-        """Setzt die 8 Sektorwerte (0.0–1.0) und löst Neuzeichnung aus.
+    def set_data(self, axis_values: list[float]) -> None:
+        """Setzt die Achsenwerte (0.0–1.0) und löst Neuzeichnung aus.
 
         Args:
-            sector_values: Liste mit genau 8 Floats, Reihenfolge Sektor 1–8:
-                [Freude, Zuversicht, Angst, Überraschung, Trauer,
-                 Enttäuschung, Ärger, Neugier]
+            axis_values: Liste mit genau so vielen Floats, wie das Diagramm
+                Achsen hat, in derselben Reihenfolge wie die Beschriftungen.
+
+        Raises:
+            ValueError: Wenn die Anzahl nicht zur Achsenzahl passt. Ein zu
+                kurzer Vektor wird **nicht** mit Nullen aufgefüllt — eine
+                aufgefüllte Achse sähe aus wie eine gemessene Null.
         """
-        if len(sector_values) != _NUM_AXES:
+        # ── Eingabe ──────────────────────────────────────────────────
+        if len(axis_values) != self._num_axes:
             raise ValueError(
-                f"RadarChart.set_data erwartet {_NUM_AXES} Werte, "
-                f"bekam {len(sector_values)}"
+                f"RadarChart '{self._title}'.set_data erwartet "
+                f"{self._num_axes} Werte, bekam {len(axis_values)}"
             )
-        self._values = [max(0.0, min(1.0, float(v))) for v in sector_values]
+
+        # ── Verarbeitung ─────────────────────────────────────────────
+        self._values = [max(0.0, min(1.0, float(v))) for v in axis_values]
         logger.info(
-            f"RadarChart '{self._title}' Sektorwerte: "
+            f"RadarChart '{self._title}' Achsenwerte: "
             + ", ".join(
-                f"{k}={v:.2f}" for k, v in zip(_SEKTOR_KURZ, self._values)
+                f"{k}={v:.2f}" for k, v in zip(self._labels, self._values)
             )
         )
+        self.queue_draw()
+
+    def set_unbekannt(self, grund: str) -> None:
+        """Verwirft die Daten und zeichnet nur Gitter, Achsen und den Grund.
+
+        Für den Fall, dass keine Messung vorliegt — Zeile fehlt, JSON nicht
+        lesbar, nie erhoben. Ein Diagramm mit lauter Nullen wäre an dieser
+        Stelle keine Darstellung des Nichtwissens, sondern eine Behauptung.
+
+        Args:
+            grund: Kurzer Text, der im Zentrum steht (z.B. "nicht erhoben").
+        """
+        self._values = None
+        self._leer_grund = grund
+        logger.warning(f"RadarChart '{self._title}': ohne Daten — {grund}")
         self.queue_draw()
 
     def _on_draw(
@@ -100,22 +145,25 @@ class RadarChart(Gtk.DrawingArea):
         radius: float = max(10.0, (min(width, radar_area_height) - 40.0) / 2.0)
 
         self._draw_grid(cr, cx, cy, radius)
-        self._draw_data(cr, cx, cy, radius)
+        if self._values is None:
+            self._draw_leer(cr, cx, cy)
+        else:
+            self._draw_data(cr, cx, cy, radius)
         self._draw_labels(cr, cx, cy, radius)
 
     def _axis_angle(self, i: int) -> float:
         """Winkel der Achse ``i`` (0-basiert), Start oben, im Uhrzeigersinn."""
-        return i * (2.0 * math.pi / _NUM_AXES) - math.pi / 2.0
+        return i * (2.0 * math.pi / self._num_axes) - math.pi / 2.0
 
     def _draw_grid(self, cr, cx: float, cy: float, radius: float) -> None:
-        """Zeichnet konzentrische Ringe und 8 Achsen."""
+        """Zeichnet konzentrische Ringe und die Achsen vom Zentrum nach außen."""
         cr.set_source_rgba(*RADAR_GRID_COLOR)
         cr.set_line_width(1.0)
 
         # Drei konzentrische Ringe bei 33 %, 66 %, 100 %.
         for frac in (0.33, 0.66, 1.0):
             r: float = radius * frac
-            for i in range(_NUM_AXES):
+            for i in range(self._num_axes):
                 angle: float = self._axis_angle(i)
                 x: float = cx + r * math.cos(angle)
                 y: float = cy + r * math.sin(angle)
@@ -126,14 +174,26 @@ class RadarChart(Gtk.DrawingArea):
             cr.close_path()
             cr.stroke()
 
-        # 8 Achsen vom Zentrum nach außen.
-        for i in range(_NUM_AXES):
+        # Achsen vom Zentrum nach außen.
+        for i in range(self._num_axes):
             angle = self._axis_angle(i)
             x = cx + radius * math.cos(angle)
             y = cy + radius * math.sin(angle)
             cr.move_to(cx, cy)
             cr.line_to(x, y)
             cr.stroke()
+
+    def _draw_leer(self, cr, cx: float, cy: float) -> None:
+        """Schreibt statt eines Polygons den Grund ins Zentrum."""
+        cr.select_font_face("Sans")
+        cr.set_font_size(9)
+        cr.set_source_rgba(*RADAR_LABEL_COLOR)
+        extents = cr.text_extents(self._leer_grund)
+        cr.move_to(
+            cx - extents.width / 2.0 - extents.x_bearing,
+            cy + extents.height / 2.0,
+        )
+        cr.show_text(self._leer_grund)
 
     def _draw_data(self, cr, cx: float, cy: float, radius: float) -> None:
         """Zeichnet Datenpolygon (Füllung + Rand) und Datenpunkte."""
@@ -171,7 +231,7 @@ class RadarChart(Gtk.DrawingArea):
         cr.set_source_rgba(*RADAR_LABEL_COLOR)
 
         label_radius: float = radius + 12.0
-        for i, label in enumerate(_SEKTOR_KURZ):
+        for i, label in enumerate(self._labels):
             angle: float = self._axis_angle(i)
             lx: float = cx + label_radius * math.cos(angle)
             ly: float = cy + label_radius * math.sin(angle)
