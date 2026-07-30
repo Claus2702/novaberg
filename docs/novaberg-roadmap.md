@@ -1768,6 +1768,22 @@ Zweiwertig **wog** M1 nicht mit, es **bestimmte** das Vorzeichen. `rohwert = Mit
 
 **Umfang:** Suite 575 → **590 Tests**, grün, 0 übersprungen. Nulllinie unverändert 2263. Drei Gegenproben, jede an ihrer Wirkung: Aufrufer zurück auf zweiwertig → 4 rot; Kanon-Prüfung entfernt → 2 rot; `emotionaler_ausdruck` in die mittlere Klasse → 1 rot. Kein `db/init.sql` angefasst, keine DDL.
 
+### M1 erreicht die Laufzeit — und legt die Achse dabei fest ✅🔶 (30.07.2026)
+
+`user_intentionen` hatte keinen Erzeuger, also rechnete die Achse seit ihrem Bautag `rohwert = bewegung`. Der Fix ist klein, der Weg dorthin war die eigentliche Arbeit: **Es gab keine Quelle, die vor dem GV-Node liegt** — der Salienz-Node des CharacterGraph steht an Position 69, der GV-Node an 61; die Perzeption liefert ein einzelnes `intent` aus einem Sechs-Werte-Vokabular, das mit dem 16er-Kanon nichts gemeinsam hat außer dem zufälligen `smalltalk`; und der KZG-Eintrag entsteht nach der Salienz.
+
+**Die Antwort war der erste Pfad.** Er fährt `perzeption → enricher → ei_calc → salience → dispatcher` und ist fertig, bevor der zweite startet. Die Intentionen im richtigen Kanon lagen die ganze Zeit vor — sie wurden nur nicht hinübergereicht. Ein Vorbild dafür gab es seit Chat 112: `salienz_human` reist genau diesen Weg.
+
+- ✅ **Vereinigung über die Segmente**, nicht das erste. Ein Turn setzt eine Richtung, wenn irgendein Teil von ihm sie setzt — dieselbe Begründung, aus der `_salienz_human_ermitteln` das Maximum nimmt.
+- ✅ **Der Wert aus dem Ereignis gewinnt.** Der Enricher des CharacterGraph hätte die Quelle sechs Nodes vor der Achse überschrieben. Die Entscheidung steht als benannte Funktion `_intentionen_bestimmen` und gibt die Herkunft zurück, damit im Log steht, *welche* Quelle gegriffen hat — zwei Quellen können denselben Wert tragen.
+- ✅ **Live gemessen an zehn Turns eines echten Gesprächs:** M1 in **allen acht** Achsenläufen vorhanden, kein `fehlend=['wollen']`. Herkunft zwölfmal Ereignis, zweimal Rückfall.
+- ✅ **Die Dreiwertigkeit wirkte sichtbar.** Zwei Turns nahmen die mittlere Klasse und hätten vorher −1.0 getragen; ihr Bit kippt von „Nova führt“ auf „Nutzer führt“. Beides Turns, die mitgehen, ohne zu fragen.
+- 🔶 **Und die Schwelle passt jetzt nicht mehr.** Über dieselben zehn Turns sagte die Achse **8 von 8 mal Bit 0**, Minderheit **0 %** gegen die geforderten 15 %. Zweiwertig wären es 6 von 8 gewesen. Die Dreiwertigkeit hat die Achse auf dieser Reihe nicht geschärft, sondern **festgenagelt** — weil −0.45 aus einer Erhebung ohne M1 stammt. Das ist die am Korpus vorhergesagte Zahl (3,0 %), die live ankommt.
+
+**Damit ist die Kalibrierung keine Kür mehr.** Sie war vorher nicht sinnvoll — der Korpus rechnete mit M1, die Laufzeit ohne, also hätte sie eine Schwelle für eine Größe gesucht, die live nicht entsteht. Jetzt rechnen beide dasselbe, und die Achse steht solange auf einem konstanten Bit.
+
+**Umfang:** Suite 590 → **603 Tests**, grün, 0 übersprungen. Nulllinie unverändert 2263. Drei Gegenproben, jede zurückgenommen: Vorrang entfernt → 2 rot; Salienz schreibt eine leere Liste → 1 rot; `create_state` ignoriert den gereichten Wert → 1 rot. Kein `db/init.sql` angefasst, keine DDL.
+
 ### Ein Default in `.get` deckt den fehlenden Schlüssel, nicht den gesetzten ✅ (30.07.2026)
 
 **Der Client zeigte nur noch „Fehler:".** `nachricht.get("thinking", "")` sah aus wie eine Absicherung und war keine: Ollama lässt das Feld nicht weg, es sendet `"thinking": null`. Ein Default greift bei **abwesendem** Schlüssel, nie bei einem mit Wert `None` — also kam `None` durch und löste die am selben Tag ergänzte Typprüfung aus. Jeder Turn starb.

@@ -226,7 +226,11 @@ Die Messung stützt die Festlegung zusätzlich: Auf Rohtexten fällt Novas Sprun
    Die 36er-Vorstichprobe hatte 0,658 geliefert — sie war repräsentativ.
 3. ~~**Zur Laufzeit liest die Achse den State, nicht das Gedächtnis.** Alle drei Maße liegen dort bereits je Turn vor:~~
 
-   > **⚠ Für M1 widerlegt am 30.07.2026** (`novaberg-bugs.md` → `INITIATIVE-M1-OHNE-QUELLE`). Der Satz gilt für M2 und M3. **`user_intentionen` liegt nicht vor — der Schlüssel hat keinen Erzeuger.** Der Enricher füllt ihn aus den bisherigen Session-Turns, der Dispatcher schreibt die Session-Turns aus ihm: ein geschlossener Kreis. Die Perzeption erzeugt ein einzelnes `external.emotion.intent`, die Liste im KZG kommt aus `salienz_obj["intentionen"]`; keiner der beiden bedient diesen Schlüssel. Gemessen an drei Live-Turns: 3 von 3 mit `fehlend=['wollen']`, keine Kanon-Verwerfung.
+   > **⚠ Für M1 war dieser Satz falsch — von der Erstfassung bis zum 30.07.2026, seitdem trifft er zu.**
+   >
+   > ~~Widerlegt am 30.07.2026~~ (`novaberg-bugs.md` → `INITIATIVE-M1-OHNE-QUELLE`). Der Satz gilt für M2 und M3. **`user_intentionen` liegt nicht vor — der Schlüssel hat keinen Erzeuger.** Der Enricher füllt ihn aus den bisherigen Session-Turns, der Dispatcher schreibt die Session-Turns aus ihm: ein geschlossener Kreis. Die Perzeption erzeugt ein einzelnes `external.emotion.intent`, die Liste im KZG kommt aus `salienz_obj["intentionen"]`; keiner der beiden bedient diesen Schlüssel. Gemessen an drei Live-Turns: 3 von 3 mit `fehlend=['wollen']`, keine Kanon-Verwerfung.
+   >
+   > **Behoben am selben Tag.** Der erste Pfad reicht die Intentionen mit dem Ereignis herüber, der Enricher gibt ihnen Vorrang vor der Ableitung aus der Historie. Über zehn Live-Turns kam M1 in allen acht Achsenläufen an. Die Tabelle unten beschreibt seither den Zustand und nicht mehr nur die Absicht.
    >
    > **Die Tabelle unten benennt damit eine Absicht, keinen Zustand.** Sie bleibt stehen, weil sie beschreibt, was gelten soll.
 

@@ -60,7 +60,11 @@ bit      = 0 wenn wert > GV_INITIATIVE_SCHWELLE
 
 **Warum das die Rechnung ändert und nicht nur verfeinert.** Zweiwertig legte `wollen` das Vorzeichen des Rohwerts fest: `Mittel(bewegung, wollen)` liegt bei `wollen = +1` zwingend in [0, +1] und bei `−1` zwingend in [−1, 0]. Gegen die Schwelle −0.45 entschied eine führende Intention das Bit damit allein — gemessen in 47,4 % der Turns.
 
-> **⚠ Live trägt M1 heute nichts bei.** `user_intentionen` hat keinen Erzeuger; die Achse rechnet in jedem Turn `rohwert = bewegung` und meldet `fehlend=['wollen']`. Der Defekt steht als `INITIATIVE-M1-OHNE-QUELLE` in `novaberg-bugs.md`. **Solange er offen ist, wirkt die Dreiwertigkeit nur im Kalibrier-Korpus**, der die Intentionen über `verbindung` aus dem KZG holt — und damit rechnen Korpus und Laufzeit verschiedene Größen.
+> ~~**⚠ Live trägt M1 heute nichts bei.**~~ → **Behoben am 30.07.2026, siehe unten.** `user_intentionen` hat keinen Erzeuger; die Achse rechnet in jedem Turn `rohwert = bewegung` und meldet `fehlend=['wollen']`. Der Defekt steht als `INITIATIVE-M1-OHNE-QUELLE` in `novaberg-bugs.md`. ~~**Solange er offen ist, wirkt die Dreiwertigkeit nur im Kalibrier-Korpus**~~ — das galt bis zum 30.07.2026.
+
+**Seit dem 30.07.2026 rechnen Korpus und Laufzeit dieselbe Größe.** Der Salienz-Node des ersten Pfads legt die Vereinigung der Segment-Intentionen in den State, sie reisen mit dem Ereignis in den zweiten Pfad, und der Enricher gibt ihnen Vorrang vor seiner Ableitung aus der Historie. Live über zehn Turns: M1 in **allen acht** Achsenläufen vorhanden.
+
+> **⚠ Die Schwelle passt seitdem nicht mehr.** Dieselben zehn Turns ergaben **8 von 8 mal Bit 0** („Nutzer führt“), Minderheit **0 %** gegen die von `_k.md` §12 geforderten 15 %. Zweiwertig wären es 6 von 8 gewesen. `GV_INITIATIVE_SCHWELLE` = −0.45 wurde ohne M1 erhoben und gilt für eine andere Größe als die, die jetzt gerechnet wird. Die Kalibrierung steht aus.
 
 **Fehlende Maße werden benannt.** `Fuehrung.fehlend` trägt die Namen; die Rechnung läuft mit den übrigen. Fehlen alle drei, ist `wert` None, das Bit steht auf 1 und eine `error`-Zeile sagt, dass es ein Ausfall ist.
 
