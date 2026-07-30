@@ -729,5 +729,5 @@ async def shadow_delivery_loop(
             break
 
         except Exception as fehler:
-            logger.error(f"Delivery-Loop: Unerwarteter Fehler — {fehler}")
+            logger.exception(f"Delivery-Loop: Unerwarteter Fehler — {fehler}")
             await asyncio.sleep(PRÜF_INTERVALL)

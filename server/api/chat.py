@@ -433,7 +433,7 @@ def ChatStreamSenden(anfrage: GespraechAnfrage, request: Request):
             })
 
         except Exception as fehler:
-            logger.error(f"Stream-Fehler: {fehler}")
+            logger.exception(f"Stream-Fehler: {fehler}")
             yield _sse_event("error", {"fehler": str(fehler)})
 
     return StreamingResponse(

@@ -162,7 +162,7 @@ def _entitaeten_aufloesen(
                     f"angelegt (id={ent.bekannte_id})"
                 )
             except Exception as fehler:
-                logger.error(
+                logger.exception(
                     f"magnete_aufloesen: create_new_entity('{ent.name}') "
                     f"fehlgeschlagen: {fehler}"
                 )
@@ -218,7 +218,7 @@ def _timeline_aufloesen(
             POSTGRES_URL, user_id, vektor.datum, precision="day"
         )
     except Exception as fehler:
-        logger.error(
+        logger.exception(
             f"magnete_aufloesen: find_by_date fehlgeschlagen: {fehler}"
         )
         return None
@@ -254,7 +254,7 @@ def _timeline_aufloesen(
         )
         return neue_id
     except Exception as fehler:
-        logger.error(
+        logger.exception(
             f"magnete_aufloesen: TimelineRepository.insert fehlgeschlagen: {fehler}"
         )
         return None

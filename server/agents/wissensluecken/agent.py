@@ -418,7 +418,7 @@ class WissensluecketAgent(BaseAgent):
         try:
             geparst = json.loads(roh.strip())
         except (json.JSONDecodeError, TypeError) as fehler:
-            logger.error(
+            logger.exception(
                 f"Wissensluecken: Antwort ist kein JSON "
                 f"({type(fehler).__name__}) — Roh: '{roh[:120]}'"
             )

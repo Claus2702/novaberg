@@ -109,7 +109,7 @@ def _anhaengen(name: str, satz: dict, was: str) -> None:
             datei.flush()
             os.fsync(datei.fileno())
     except (OSError, ValueError) as ex:
-        logger.error(
+        logger.exception(
             f"Zwischenstand '{name}': {was} nicht geschrieben "
             f"({type(ex).__name__}: {ex}) — die Reihe laeuft weiter, ist aber "
             f"ab hier nicht mehr wiederaufnehmbar"
@@ -287,7 +287,7 @@ def verwerfen(name: str) -> None:
             os.remove(pfad)
             logger.info(f"Zwischenstand '{name}': verworfen")
     except (OSError, ValueError) as ex:
-        logger.error(
+        logger.exception(
             f"Zwischenstand '{name}': nicht geloescht ({type(ex).__name__}: "
             f"{ex}) — ein naechster Lauf wuerde darauf aufbauen"
         )

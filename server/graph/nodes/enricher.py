@@ -484,7 +484,7 @@ def _enrich_character(
                 )
 
         except Exception as fehler:
-            logger.error(f"Enricher: Plugin '{name}' Fehler — {fehler}")
+            logger.exception(f"Enricher: Plugin '{name}' Fehler — {fehler}")
 
     # ─────────────────────────────────────────
     # 3. KZG/LZG semantische Suche

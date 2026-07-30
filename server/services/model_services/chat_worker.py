@@ -143,7 +143,7 @@ class ChatWorker(ModelWorker[ChatRequest, ChatResponse]):
                 parsed = postprocess.parse_json_strict(text)
             except JSONDecodeError as exc:
                 preview: str = text[:200].replace("\n", " ")
-                logger.error(
+                logger.exception(
                     "ChatWorker '%s': JSON-Parsing fehlgeschlagen (caller=%s, "
                     "fehler=%s, preview='%s...')",
                     self._name,

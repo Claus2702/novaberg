@@ -31,7 +31,7 @@ def ollama_testen() -> bool:
         return True
 
     except Exception as fehler:
-        logger.error(f"Ollama nicht erreichbar: {fehler}")
+        logger.exception(f"Ollama nicht erreichbar: {fehler}")
         return False
 
 
@@ -42,7 +42,7 @@ def redis_testen() -> bool:
         logger.debug("Redis erreichbar.")
         return True
     except Exception as fehler:
-        logger.error(f"Redis nicht erreichbar: {fehler}")
+        logger.exception(f"Redis nicht erreichbar: {fehler}")
         return False
 
 
@@ -66,7 +66,7 @@ def postgres_testen() -> bool:
         return True
 
     except Exception as fehler:
-        logger.error(f"PostgreSQL nicht erreichbar: {fehler}")
+        logger.exception(f"PostgreSQL nicht erreichbar: {fehler}")
         return False
 
 
@@ -81,7 +81,7 @@ def searxng_testen() -> bool:
                 return True
         return False
     except Exception as fehler:
-        logger.error(f"SearXNG nicht erreichbar: {fehler}")
+        logger.exception(f"SearXNG nicht erreichbar: {fehler}")
         return False
 
 

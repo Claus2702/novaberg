@@ -338,7 +338,7 @@ def lagebeurteilung_erstellen(
         ))
         lage = response.parsed
     except json.JSONDecodeError:
-        logger.error("Lagebeurteilung: JSON-Parse fehlgeschlagen, Fallback")
+        logger.exception("Lagebeurteilung: JSON-Parse fehlgeschlagen, Fallback")
         lage = {
             "vorwissen_zusammenfassung": "Kein Vorwissen zu diesem Thema.",
             "wissensluecken": [kontext_paket["thema"]],

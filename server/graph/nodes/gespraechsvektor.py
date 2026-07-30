@@ -646,7 +646,7 @@ def _vorturn_laden(state: ConversationState) -> tuple[list[float] | None, str]:
     try:
         daten: dict = json.loads(roh)
     except json.JSONDecodeError as fehler:
-        logger.error("GV-Initiative: Vorturn unter %s nicht parsebar — %s",
+        logger.exception("GV-Initiative: Vorturn unter %s nicht parsebar — %s",
                      key, fehler)
         return None, ""
 

@@ -100,7 +100,7 @@ def migrieren(trocken: bool = False) -> dict:
             alte_salienz: float = float(salienz_roh)
             haeufigkeit:  int   = int(float(haeufigkeit_roh))
         except (TypeError, ValueError) as fehler:
-            logger.error(f"Migration: {key} unlesbare Werte ({fehler}) — uebersprungen")
+            logger.exception(f"Migration: {key} unlesbare Werte ({fehler}) — uebersprungen")
             zaehler["defekt"] += 1
             continue
 

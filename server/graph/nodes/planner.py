@@ -364,7 +364,7 @@ def plan(
         )
 
     except Exception as fehler:
-        logger.error(f"Planner: Fehler bei '{zustaendiger.ziel}' — {fehler}")
+        logger.exception(f"Planner: Fehler bei '{zustaendiger.ziel}' — {fehler}")
         state["node_annotations"].append(f"Planner-Fehler: {fehler}")
 
     _write_task_block(state)

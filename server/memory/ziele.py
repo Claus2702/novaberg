@@ -157,7 +157,7 @@ def ziele_aktive_laden(postgres_url: str, user_id: str = "nova") -> list[dict]:
         return ziele
 
     except Exception as fehler:
-        logger.error(f"Ziele laden fehlgeschlagen: {fehler}")
+        logger.exception(f"Ziele laden fehlgeschlagen: {fehler}")
         return []
 
 
@@ -222,7 +222,7 @@ def ziel_speichern(
         return ziel_id
 
     except Exception as fehler:
-        logger.error(f"Ziel speichern fehlgeschlagen: {fehler}")
+        logger.exception(f"Ziel speichern fehlgeschlagen: {fehler}")
         return None
 
 
@@ -276,7 +276,7 @@ def ziel_motivation_anpassen(
         return True
 
     except Exception as fehler:
-        logger.error(f"Ziel-Motivation anpassen fehlgeschlagen: {fehler}")
+        logger.exception(f"Ziel-Motivation anpassen fehlgeschlagen: {fehler}")
         return False
 
 
@@ -418,7 +418,7 @@ def ziel_decay_lauf(
         if conn:
             conn.rollback()
         fehlertext = f"ziel_decay_lauf fehlgeschlagen: {fehler}"
-        logger.error(fehlertext)
+        logger.exception(fehlertext)
         return {"verarbeitet": 0, "deaktiviert": 0, "ohne_anker": 0, "error": fehlertext}
 
     finally:
@@ -452,7 +452,7 @@ def ziel_deaktivieren(postgres_url: str, ziel_id: int) -> bool:
         return True
 
     except Exception as fehler:
-        logger.error(f"Ziel deaktivieren fehlgeschlagen: {fehler}")
+        logger.exception(f"Ziel deaktivieren fehlgeschlagen: {fehler}")
         return False
 
 

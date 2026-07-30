@@ -46,7 +46,7 @@ def discover_managers() -> dict[str, BaseManager]:
                     logger.info(f"Plugin registriert: '{instance.ziel}' ({item.name})")
 
         except Exception as fehler:
-            logger.error(f"Plugin '{item.name}' konnte nicht geladen werden: {fehler}")
+            logger.exception(f"Plugin '{item.name}' konnte nicht geladen werden: {fehler}")
 
     logger.info(f"Plugin-Discovery abgeschlossen: {len(_registry)} Manager registriert")
     return _registry

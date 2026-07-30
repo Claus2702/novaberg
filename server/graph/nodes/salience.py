@@ -216,7 +216,7 @@ def _salienz_wert_lesen(salienz_obj: dict) -> float | None:
     try:
         wert: float = float(roh)
     except (TypeError, ValueError):
-        logger.error(
+        logger.exception(
             f"Salienz: Feld 'salienz' nicht numerisch ({roh!r}) — "
             f"fuer salienz_human uebergangen"
         )
@@ -619,7 +619,7 @@ def analyze(
             # Ein uebersprungenes Segment ist ein Fehler, keine Warnung
             # (DEVELOPER_HANDBOOK §3: silent skip mit warning ist verboten).
             # Der Turn verliert hier still einen Gedaechtnis-Eintrag.
-            logger.error(
+            logger.exception(
                 f"Salienz: JSON-Parsing fehlgeschlagen ({type(fehler).__name__}: {fehler}) — "
                 f"Segment {seg_idx + 1}/{len(segmente)} verworfen, kein pending_write"
             )

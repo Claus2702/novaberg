@@ -111,5 +111,5 @@ def recherche_planen(thema: str, session_kontext: dict, lage: dict = None) -> di
         return plan
 
     except (json.JSONDecodeError, Exception) as e:
-        logger.error(f"Recherche-Planung fehlgeschlagen: {e}")
+        logger.exception(f"Recherche-Planung fehlgeschlagen: {e}")
         return {}

@@ -449,7 +449,7 @@ class PromotionAgent(BaseAgent):
             ))
             return response.parsed
         except json.JSONDecodeError as fehler:
-            logger.error(f"Promotion Call 1: Ungueltiges JSON: {fehler}")
+            logger.exception(f"Promotion Call 1: Ungueltiges JSON: {fehler}")
             return {"klassifikation": "erinnerung", "entitaeten": []}
 
     # ─────────────────────────────────────────
@@ -528,7 +528,7 @@ class PromotionAgent(BaseAgent):
             ))
             return response.parsed
         except json.JSONDecodeError as fehler:
-            logger.error(f"Promotion Call 2: Ungueltiges JSON: {fehler}")
+            logger.exception(f"Promotion Call 2: Ungueltiges JSON: {fehler}")
             return {"fakten": []}
 
     # ─────────────────────────────────────────
@@ -1069,7 +1069,7 @@ class PromotionAgent(BaseAgent):
             return None
 
         except Exception as ex:
-            logger.error(f"Cluster-Promotion: LZG-Suche fehlgeschlagen: {ex}")
+            logger.exception(f"Cluster-Promotion: LZG-Suche fehlgeschlagen: {ex}")
             return None
 
     def _cluster_update(
@@ -1620,5 +1620,5 @@ class PromotionAgent(BaseAgent):
         try:
             return json.loads(raw)
         except json.JSONDecodeError:
-            logger.error(f"Cluster-Promotion: Ungueltiges JSON: {raw[:200]}")
+            logger.exception(f"Cluster-Promotion: Ungueltiges JSON: {raw[:200]}")
             return {"zusammenfassung": raw, "widerspruch": False}

@@ -221,7 +221,7 @@ async def writer_loop(
             await _flush_batch(buffer, postgres_url)
             logger.info("PipelineLog: Final-Flush nach Cancel erfolgreich.")
         except Exception as flush_fehler:
-            logger.error(
+            logger.exception(
                 "PipelineLog: Final-Flush nach Cancel fehlgeschlagen — %s",
                 flush_fehler,
             )
@@ -378,7 +378,7 @@ def delete_expired_entries(
     except psycopg2.Error as ex:
         if conn is not None:
             conn.rollback()
-        logger.error(f"TTL-Cleanup DB-Fehler, Rollback: {ex}")
+        logger.exception(f"TTL-Cleanup DB-Fehler, Rollback: {ex}")
         result["error"] = str(ex)
         return result
     finally:

@@ -181,7 +181,7 @@ def db_zugriff(state: ConversationState) -> ConversationState:
                 naehe = float(nova_state_raw["raum_naehe"]),
             )
         except (ValueError, TypeError) as fehler:
-            logger.error(
+            logger.exception(
                 "db_zugriff: Raumwerte in redis:nova_state unlesbar (%s) — "
                 "aus den Register-Labels abgeleitet", fehler,
             )

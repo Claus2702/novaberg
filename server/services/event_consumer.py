@@ -365,7 +365,7 @@ async def event_consumer_loop(
             break
 
         except Exception as fehler:
-            logger.error(f"Event-Consumer: Unerwarteter Fehler — {fehler}")
+            logger.exception(f"Event-Consumer: Unerwarteter Fehler — {fehler}")
             await asyncio.sleep(POLL_INTERVAL)
 
 
@@ -461,7 +461,7 @@ async def _event_verarbeiten(
             compiled_character, state, loop, user_id, character_id,
         )
     except Exception as fehler:
-        logger.error(f"Event-Consumer: Graph-Fehler — {fehler}")
+        logger.exception(f"Event-Consumer: Graph-Fehler — {fehler}")
         return
     finally:
         llm_lock.release()

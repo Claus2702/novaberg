@@ -198,7 +198,7 @@ def session_summarize_if_needed(
         logger.info(f"Session: 10 Turns zusammengefasst, {redis_client.llen(key)} verbleiben")
 
     except Exception as fehler:
-        logger.error(f"Session-Zusammenfassung fehlgeschlagen: {fehler}")
+        logger.exception(f"Session-Zusammenfassung fehlgeschlagen: {fehler}")
         redis_client.ltrim(key, laenge - SESSION_MAX_TURNS, -1)
 
 

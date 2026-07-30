@@ -131,7 +131,7 @@ def zeuge_befragen(text_a: str, text_b: str) -> bool | None:
             caller            = "pixie/kalibrierung",
         ))
     except Exception as fehler:
-        logger.error(
+        logger.exception(
             f"Zeuge: Urteil nicht erhalten ({type(fehler).__name__}: {fehler}) "
             f"— Turn faellt aus dem Korpus, die Erhebung laeuft weiter"
         )
@@ -146,7 +146,7 @@ def zeuge_befragen(text_a: str, text_b: str) -> bool | None:
     try:
         geparst: dict = json.loads(roh)
     except (json.JSONDecodeError, TypeError) as fehler:
-        logger.error(
+        logger.exception(
             f"Zeuge: Antwort ist kein JSON ({type(fehler).__name__}). "
             f"Roh: '{roh[:120]}'"
         )

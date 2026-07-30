@@ -80,7 +80,7 @@ def zwischen_destillieren(
         return zusammenfassung
 
     except Exception as e:
-        logger.error(f"Zwischen-Destillation fehlgeschlagen: {e}")
+        logger.exception(f"Zwischen-Destillation fehlgeschlagen: {e}")
         return ""
 
 
@@ -199,5 +199,5 @@ def ergebnisse_destillieren(
         return destillat
 
     except Exception as e:
-        logger.error(f"Recherche-Destillation fehlgeschlagen: {e}")
+        logger.exception(f"Recherche-Destillation fehlgeschlagen: {e}")
         return ""

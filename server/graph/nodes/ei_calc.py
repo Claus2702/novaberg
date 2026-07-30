@@ -223,7 +223,7 @@ def _ei_calc_character(state: ConversationState) -> None:
         try:
             raw_turns = session_turns_retrieve(redis_client, user_id, character_id)
         except Exception as fehler:
-            logger.error(
+            logger.exception(
                 "EI-Calc/Character: Session-Turns-Read fehlgeschlagen (%s:%s) — %s; "
                 "rechne mit leerem Verlauf",
                 user_id, character_id, fehler,

@@ -119,7 +119,7 @@ class WiedervorlageAgent(BaseAgent):
                         inhalt=nachfrage,
                     )
                 except Exception as ex:
-                    logger.error(f"WiedervorlageAgent: Stack-Push fehlgeschlagen — {ex}")
+                    logger.exception(f"WiedervorlageAgent: Stack-Push fehlgeschlagen — {ex}")
 
             # ── Wiedervorlage verschieben ────
             self._wiedervorlage_verschieben(eintrag)
@@ -230,7 +230,7 @@ Nenne den konkreten Inhalt. Formuliere NUR die Erinnerung, kein weiterer Text.""
             return response.text.strip()
 
         except Exception as fehler:
-            logger.error(f"WiedervorlageAgent: LLM-Formulierung fehlgeschlagen — {fehler}")
+            logger.exception(f"WiedervorlageAgent: LLM-Formulierung fehlgeschlagen — {fehler}")
             return ""
 
     # ─────────────────────────────────────────
