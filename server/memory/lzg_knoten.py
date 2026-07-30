@@ -150,7 +150,10 @@ def knoten_anlegen(
         return neue_id
     except psycopg2.Error as exc:
         conn.rollback()
-        logger.exception("knoten_anlegen fehlgeschlagen quell=%s: %s", kzg_quell_key, exc)
+        logger.exception(
+            "%s: knoten_anlegen fehlgeschlagen quell=%s",
+            type(exc).__name__, kzg_quell_key,
+        )
         return None
     finally:
         conn.close()
@@ -197,8 +200,8 @@ def knoten_embedding_aktualisieren(
     except psycopg2.Error as exc:
         conn.rollback()
         logger.exception(
-            "knoten_embedding_aktualisieren fehlgeschlagen knoten=%s: %s",
-            knoten_id, exc,
+            "%s: knoten_embedding_aktualisieren fehlgeschlagen knoten=%s",
+            type(exc).__name__, knoten_id,
         )
         return False
     finally:
@@ -330,7 +333,8 @@ def knoten_gewichte_zuruecksetzen(
         except psycopg2.Error as exc:
             conn.rollback()
             logger.exception(
-                "Gewichts-Reset fehlgeschlagen: %s — Rollback, nichts geschrieben", exc
+                "%s: Gewichts-Reset fehlgeschlagen — Rollback, nichts geschrieben",
+                type(exc).__name__,
             )
             ergebnis["error"] = str(exc)
             return ergebnis
@@ -400,7 +404,10 @@ def kandidaten_mit_cosine_laden(
         )
         return kandidaten
     except psycopg2.Error as exc:
-        logger.exception("kandidaten_mit_cosine_laden fehlgeschlagen paar=%s/%s: %s", user_id, character_id, exc)
+        logger.exception(
+            "%s: kandidaten_mit_cosine_laden fehlgeschlagen paar=%s/%s",
+            type(exc).__name__, user_id, character_id,
+        )
         return []
     finally:
         conn.close()
@@ -497,8 +504,8 @@ def anker_retrieval(
         return anker
     except psycopg2.Error as exc:
         logger.exception(
-            "anker_retrieval fehlgeschlagen paar=%s/%s: %s",
-            user_id, character_id, exc,
+            "%s: anker_retrieval fehlgeschlagen paar=%s/%s",
+            type(exc).__name__, user_id, character_id,
         )
         return []
     finally:
@@ -562,7 +569,10 @@ def knoten_verstaerken(postgres_url: str, knoten_id: int) -> Optional[float]:
         return neuer_absolut
     except psycopg2.Error as exc:
         conn.rollback()
-        logger.exception("knoten_verstaerken fehlgeschlagen id=%s: %s", knoten_id, exc)
+        logger.exception(
+            "%s: knoten_verstaerken fehlgeschlagen id=%s",
+            type(exc).__name__, knoten_id,
+        )
         return None
     finally:
         conn.close()
@@ -640,7 +650,7 @@ def reactivate_node(postgres_url: str, knoten_id: int) -> Optional[dict]:
         }
     except psycopg2.Error as exc:
         conn.rollback()
-        logger.exception("reactivate_node fehlgeschlagen id=%s: %s", knoten_id, exc)
+        logger.exception("%s: reactivate_node fehlgeschlagen id=%s", type(exc).__name__, knoten_id)
         return None
     finally:
         conn.close()
@@ -754,7 +764,7 @@ def run_node_decay(
     except psycopg2.Error as ex:
         if conn is not None:
             conn.rollback()
-        logger.exception(f"Decay-Lauf DB-Fehler, Rollback: {ex}")
+        logger.exception(f"{type(ex).__name__}: Decay-Lauf DB-Fehler, Rollback")
         result["error"] = str(ex)
         return result
     finally:
@@ -794,7 +804,7 @@ def knoten_laden(postgres_url: str, knoten_id: int) -> Optional[dict]:
             return None
         return dict(zeile)
     except psycopg2.Error as exc:
-        logger.exception("knoten_laden fehlgeschlagen id=%s: %s", knoten_id, exc)
+        logger.exception("%s: knoten_laden fehlgeschlagen id=%s", type(exc).__name__, knoten_id)
         return None
     finally:
         conn.close()
@@ -904,7 +914,10 @@ def _kanten_nachbarn(
                      knoten_id, vorgaenger_knoten_id, len(nachbarn))
         return nachbarn
     except psycopg2.Error as exc:
-        logger.exception("_kanten_nachbarn fehlgeschlagen knoten=%s: %s", knoten_id, exc)
+        logger.exception(
+            "%s: _kanten_nachbarn fehlgeschlagen knoten=%s",
+            type(exc).__name__, knoten_id,
+        )
         return []
     finally:
         conn.close()
@@ -940,7 +953,10 @@ def _knoten_details_laden(postgres_url: str, knoten_id: int) -> Optional[dict]:
             return None
         return dict(zeile)
     except psycopg2.Error as exc:
-        logger.exception("_knoten_details_laden fehlgeschlagen id=%s: %s", knoten_id, exc)
+        logger.exception(
+            "%s: _knoten_details_laden fehlgeschlagen id=%s",
+            type(exc).__name__, knoten_id,
+        )
         return None
     finally:
         conn.close()

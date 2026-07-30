@@ -169,5 +169,5 @@ def lzg_entries_retrieve(
         return entries
 
     except Exception as fehler:
-        logger.exception(f"LZG-Entries-Retrieve fehlgeschlagen: {fehler}")
+        logger.exception(f"{type(fehler).__name__}: LZG-Entries-Retrieve fehlgeschlagen")
         return []

@@ -230,8 +230,8 @@ def _intentionen_laden(turn_id: str) -> list:
         gelesen = json.loads(roh)
     except (TypeError, ValueError) as fehler:
         logger.exception(
-            f"Korpus: Intentionen von {zeile['kzg_id']} nicht lesbar "
-            f"({type(fehler).__name__}: {fehler}) — M1 fehlt fuer diesen Turn"
+            f"{type(fehler).__name__}: Korpus: Intentionen von {zeile['kzg_id']} nicht lesbar "
+            f" — M1 fehlt fuer diesen Turn"
         )
         return []
 
@@ -317,8 +317,8 @@ def embedding_holen(text: str) -> list[float] | None:
         antwort = model_service.embed.submit_sync(EmbedRequest(text=sauber))
     except Exception as fehler:
         logger.exception(
-            f"Korpus: Embedding fehlgeschlagen ({type(fehler).__name__}: "
-            f"{fehler}) — Turn verliert M2"
+            f"{type(fehler).__name__}: Korpus: Embedding fehlgeschlagen "
+            f"— Turn verliert M2"
         )
         return None
 

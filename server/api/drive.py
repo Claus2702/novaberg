@@ -137,7 +137,7 @@ def GoalsLesen():
         )
 
     except Exception as fehler:
-        logger.exception(f"Drive/Goals: Datenbank-Fehler — {fehler}")
+        logger.exception(f"{type(fehler).__name__}: Drive/Goals: Datenbank-Fehler")
         return JSONResponse(
             status_code=503,
             content={"error": f"Ziele konnten nicht geladen werden: {fehler}"},

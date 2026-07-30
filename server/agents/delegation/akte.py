@@ -174,7 +174,7 @@ def akte_erstellen(state: AgentState) -> dict:
         )
 
     except Exception as fehler:
-        logger.exception(f"Akte erstellen fehlgeschlagen: {fehler}")
+        logger.exception(f"{type(fehler).__name__}: Akte erstellen fehlgeschlagen")
         if conn:
             conn.rollback()
         return {
@@ -320,7 +320,7 @@ def akte_anreichern(state: AgentState) -> dict:
         )
 
     except Exception as fehler:
-        logger.exception(f"Akte anreichern fehlgeschlagen: {fehler}")
+        logger.exception(f"{type(fehler).__name__}: Akte anreichern fehlgeschlagen")
         if conn:
             conn.rollback()
         return {

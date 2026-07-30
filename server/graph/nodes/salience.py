@@ -620,7 +620,7 @@ def analyze(
             # (DEVELOPER_HANDBOOK §3: silent skip mit warning ist verboten).
             # Der Turn verliert hier still einen Gedaechtnis-Eintrag.
             logger.exception(
-                f"Salienz: JSON-Parsing fehlgeschlagen ({type(fehler).__name__}: {fehler}) — "
+                f"{type(fehler).__name__}: Salienz: JSON-Parsing fehlgeschlagen — "
                 f"Segment {seg_idx + 1}/{len(segmente)} verworfen, kein pending_write"
             )
             log_fehler(

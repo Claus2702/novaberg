@@ -272,7 +272,7 @@ class EntityResolutionService:
         try:
             return EntitaetenRepository.find_by_name(postgres_url, user_id, name)
         except Exception as fehler:
-            logger.exception(f"DB-Namenssuche fehlgeschlagen: {fehler}")
+            logger.exception(f"{type(fehler).__name__}: DB-Namenssuche fehlgeschlagen")
             return []
 
     @staticmethod

@@ -220,7 +220,7 @@ def kzg_similar_find(
         }
 
     except Exception as fehler:
-        logger.exception(f"KZG-Suche fehlgeschlagen: {fehler}")
+        logger.exception(f"{type(fehler).__name__}: KZG-Suche fehlgeschlagen")
         return None
 
 
@@ -662,5 +662,5 @@ def kzg_entries_retrieve(
         return entries
 
     except Exception as fehler:
-        logger.exception(f"KZG-Entries-Retrieve fehlgeschlagen: {fehler}")
+        logger.exception(f"{type(fehler).__name__}: KZG-Entries-Retrieve fehlgeschlagen")
         return []

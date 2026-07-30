@@ -42,7 +42,7 @@ def agent_dispatch_node(state: dict) -> dict:
     try:
         return dispatch_fn(state)
     except Exception as e:
-        logger.exception(f"Agent-Dispatch Fehler für '{agent_name}': {e}")
+        logger.exception(f"{type(e).__name__}: Agent-Dispatch Fehler für '{agent_name}'")
         result = AgentResult(
             agent_name=agent_name,
             ergebnis=None,

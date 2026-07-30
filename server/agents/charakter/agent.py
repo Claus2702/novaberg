@@ -167,27 +167,27 @@ class CharakterAgent(BaseAgent):
                 try:
                     ergebnis["kern"] = kern_hash_destillieren(lzg_kern, user_id=subjekt_user_id)
                 except Exception as ex:
-                    logger.exception(f"CharakterAgent: Kern-Hash fehlgeschlagen fuer {subjekt_user_id}: {ex}")
+                    logger.exception(f"{type(ex).__name__}: CharakterAgent: Kern-Hash fehlgeschlagen fuer {subjekt_user_id}")
 
                 try:
                     ergebnis["adaptiv"] = adaptive_hash_destillieren(kzg_eintraege, user_id=subjekt_user_id)
                 except Exception as ex:
-                    logger.exception(f"CharakterAgent: Adaptive-Hash fehlgeschlagen fuer {subjekt_user_id}: {ex}")
+                    logger.exception(f"{type(ex).__name__}: CharakterAgent: Adaptive-Hash fehlgeschlagen fuer {subjekt_user_id}")
 
                 try:
                     ergebnis["intentions_profil"] = intentions_profil_destillieren(lzg_intentionen, user_id=subjekt_user_id)
                 except Exception as ex:
-                    logger.exception(f"CharakterAgent: Intentions-Profil fehlgeschlagen fuer {subjekt_user_id}: {ex}")
+                    logger.exception(f"{type(ex).__name__}: CharakterAgent: Intentions-Profil fehlgeschlagen fuer {subjekt_user_id}")
 
                 try:
                     ergebnis["emotions_profil"] = emotions_profil_destillieren(lzg_emotionen, user_id=subjekt_user_id)
                 except Exception as ex:
-                    logger.exception(f"CharakterAgent: Emotions-Profil fehlgeschlagen fuer {subjekt_user_id}: {ex}")
+                    logger.exception(f"{type(ex).__name__}: CharakterAgent: Emotions-Profil fehlgeschlagen fuer {subjekt_user_id}")
 
                 try:
                     ergebnis["beziehungsprofil"] = beziehungsprofil_destillieren(kzg_eintraege, user_id=subjekt_user_id)
                 except Exception as ex:
-                    logger.exception(f"CharakterAgent: Beziehungsprofil fehlgeschlagen fuer {subjekt_user_id}: {ex}")
+                    logger.exception(f"{type(ex).__name__}: CharakterAgent: Beziehungsprofil fehlgeschlagen fuer {subjekt_user_id}")
 
                 # ── Charakter-Rad aus den frischen Profilen ──
                 # Laeuft NACH den fuenf Profilen und liest deren Ergebnis, nicht
@@ -239,7 +239,7 @@ class CharakterAgent(BaseAgent):
                             f"(5 Profile, beobachter={beobachter})"
                         )
                     except Exception as ex:
-                        logger.exception(f"CharakterAgent: Speicherung fehlgeschlagen fuer {subjekt_user_id}: {ex}")
+                        logger.exception(f"{type(ex).__name__}: CharakterAgent: Speicherung fehlgeschlagen fuer {subjekt_user_id}")
 
                     # ── Langfristige Ziele aus Kern-Hash destillieren ──
                     # Nur fuer Novas eigenen Hash (ASSISTANT_USER_ID als subjekt_user_id),

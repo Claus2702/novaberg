@@ -184,7 +184,7 @@ def klassifizieren(state: AgentState) -> dict:
         }
 
     except (json.JSONDecodeError, KeyError) as fehler:
-        logger.exception(f"klassifizieren: JSON-Fehler — {fehler}")
+        logger.exception(f"{type(fehler).__name__}: klassifizieren: JSON-Fehler")
         return {
             "status": "fehler",
             "fehler": f"Klassifikation fehlgeschlagen: {fehler}",

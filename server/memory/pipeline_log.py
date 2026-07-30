@@ -222,8 +222,8 @@ async def writer_loop(
             logger.info("PipelineLog: Final-Flush nach Cancel erfolgreich.")
         except Exception as flush_fehler:
             logger.exception(
-                "PipelineLog: Final-Flush nach Cancel fehlgeschlagen — %s",
-                flush_fehler,
+                "%s: PipelineLog: Final-Flush nach Cancel fehlgeschlagen",
+                type(flush_fehler).__name__,
             )
         raise
 
@@ -378,7 +378,7 @@ def delete_expired_entries(
     except psycopg2.Error as ex:
         if conn is not None:
             conn.rollback()
-        logger.exception(f"TTL-Cleanup DB-Fehler, Rollback: {ex}")
+        logger.exception(f"{type(ex).__name__}: TTL-Cleanup DB-Fehler, Rollback")
         result["error"] = str(ex)
         return result
     finally:

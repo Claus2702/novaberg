@@ -241,7 +241,7 @@ def create_tools(
             return uebersicht
 
         except Exception as fehler:
-            logger.exception(f"Thinker: Web-Suche fehlgeschlagen — {fehler}")
+            logger.exception(f"{type(fehler).__name__}: Thinker: Web-Suche fehlgeschlagen")
             return f"Web-Suche fehlgeschlagen: {fehler}"
 
     @tool
@@ -700,7 +700,7 @@ def _execute_tool_call(content: str, tool_map: dict, cache: ThinkerToolCache) ->
         return ergebnis
 
     except Exception as fehler:
-        logger.exception(f"Thinker: Tool-Ausführung fehlgeschlagen — {fehler}")
+        logger.exception(f"{type(fehler).__name__}: Thinker: Tool-Ausführung fehlgeschlagen")
         return f"Tool-Fehler: {fehler}"
 
 

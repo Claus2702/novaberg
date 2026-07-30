@@ -656,7 +656,11 @@ def charakter_rad_destillieren(
     try:
         faktor: float = nutzer_gewichtung_berechnen(rad)
     except ValueError as fehler:
-        logger.exception(f"Charakter-Rad ({user_id}): {fehler} — nicht erhoben")
+        # Die ValueError-Meldung nennt die fehlende Speiche; sie gehoert auf die
+        # Zeile, nicht nur in den Traceback. Ein Test prueft darauf.
+        logger.exception(
+            f"Charakter-Rad ({user_id}): {fehler} — nicht erhoben"  # noqa: TRY401  — Blatt-Typ
+        )
         return None
 
     # ── Ausgabe ─────────────────────────────────
@@ -767,7 +771,9 @@ def _initiative_rad_einmal(profil_text: str, user_id: str) -> tuple[dict, float]
     try:
         versatz: float = initiative_versatz_berechnen(rad)
     except ValueError as fehler:
-        logger.exception(f"Initiative-Rad ({user_id}): {fehler}")
+        logger.exception(
+            f"Initiative-Rad ({user_id}): {fehler}"  # noqa: TRY401  — Blatt-Typ
+        )
         return None
 
     return rad, versatz
@@ -961,5 +967,5 @@ def langfristige_ziele_destillieren(kern_hash: str, user_id: str = "nova") -> li
         return valide
 
     except Exception as fehler:
-        logger.exception(f"Ziel-Destillation fehlgeschlagen für {user_id}: {fehler}")
+        logger.exception(f"{type(fehler).__name__}: Ziel-Destillation fehlgeschlagen für {user_id}")
         return []

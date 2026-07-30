@@ -105,7 +105,7 @@ def event_naechstes(
     try:
         event: dict = json.loads(raw)
     except (json.JSONDecodeError, TypeError) as fehler:
-        logger.exception(f"Event: JSON-Parsing fehlgeschlagen — {fehler}")
+        logger.exception(f"{type(fehler).__name__}: Event: JSON-Parsing fehlgeschlagen")
         return None
 
     logger.info(

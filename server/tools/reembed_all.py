@@ -247,7 +247,7 @@ def _pg_update(sql: str, embedding: list[float], row_id: int) -> bool:
         return rowcount == 1
     except psycopg2.Error as exc:
         conn.rollback()
-        logger.exception("UPDATE fehlgeschlagen id=%s: %s", row_id, exc)
+        logger.exception("%s: UPDATE fehlgeschlagen id=%s", type(exc).__name__, row_id)
         return False
     finally:
         conn.close()

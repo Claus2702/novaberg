@@ -112,5 +112,5 @@ def ergebnisse_bewerten(
         return bewertung
 
     except (json.JSONDecodeError, Exception) as e:
-        logger.exception(f"Recherche-Bewertung fehlgeschlagen: {e}")
+        logger.exception(f"{type(e).__name__}: Recherche-Bewertung fehlgeschlagen")
         return {"status": "fertig"}  # Im Zweifel: fertig, nicht endlos

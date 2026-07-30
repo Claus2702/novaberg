@@ -556,7 +556,7 @@ def dispatch(
                     postgres_url = postgres_url,
                 )
             except Exception as fehler:
-                logger.exception(f"Dispatcher: Fehler bei KZG-Agent — {fehler}")
+                logger.exception(f"{type(fehler).__name__}: Dispatcher: Fehler bei KZG-Agent")
             continue
 
         # ── Legacy: Manager-Pfad ──
@@ -578,7 +578,7 @@ def dispatch(
             logger.info(f"Dispatcher: '{ziel}' -> {count} Operationen ausgefuehrt")
 
         except Exception as fehler:
-            logger.exception(f"Dispatcher: Fehler bei '{ziel}' — {fehler}")
+            logger.exception(f"{type(fehler).__name__}: Dispatcher: Fehler bei '{ziel}'")
 
     # ── DelegationsAgent (VENT1, Chat 32) ──
     trigger: str = _delegation_trigger_pruefen(state)
@@ -593,7 +593,7 @@ def dispatch(
             dispatch_delegation(state)
             logger.info(f"Dispatcher: DelegationsAgent gefeuert (trigger={trigger})")
         except Exception as fehler:
-            logger.exception(f"Dispatcher: Fehler bei DelegationsAgent — {fehler}")
+            logger.exception(f"{type(fehler).__name__}: Dispatcher: Fehler bei DelegationsAgent")
 
     # ── Session-Turn schreiben (nach allen Writes, damit kern verfügbar ist) ──
     _session_turn_schreiben(state)

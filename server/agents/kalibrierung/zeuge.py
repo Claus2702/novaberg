@@ -132,7 +132,7 @@ def zeuge_befragen(text_a: str, text_b: str) -> bool | None:
         ))
     except Exception as fehler:
         logger.exception(
-            f"Zeuge: Urteil nicht erhalten ({type(fehler).__name__}: {fehler}) "
+            f"{type(fehler).__name__}: Zeuge: Urteil nicht erhalten "
             f"— Turn faellt aus dem Korpus, die Erhebung laeuft weiter"
         )
         return None

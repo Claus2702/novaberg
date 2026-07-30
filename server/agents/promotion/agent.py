@@ -449,7 +449,9 @@ class PromotionAgent(BaseAgent):
             ))
             return response.parsed
         except json.JSONDecodeError as fehler:
-            logger.exception(f"Promotion Call 1: Ungueltiges JSON: {fehler}")
+            logger.exception(
+                f"Promotion Call 1: Ungueltiges JSON: {fehler}"  # noqa: TRY401  — Blatt-Typ
+            )
             return {"klassifikation": "erinnerung", "entitaeten": []}
 
     # ─────────────────────────────────────────
@@ -528,7 +530,9 @@ class PromotionAgent(BaseAgent):
             ))
             return response.parsed
         except json.JSONDecodeError as fehler:
-            logger.exception(f"Promotion Call 2: Ungueltiges JSON: {fehler}")
+            logger.exception(
+                f"Promotion Call 2: Ungueltiges JSON: {fehler}"  # noqa: TRY401  — Blatt-Typ
+            )
             return {"fakten": []}
 
     # ─────────────────────────────────────────
@@ -1069,7 +1073,7 @@ class PromotionAgent(BaseAgent):
             return None
 
         except Exception as ex:
-            logger.exception(f"Cluster-Promotion: LZG-Suche fehlgeschlagen: {ex}")
+            logger.exception(f"{type(ex).__name__}: Cluster-Promotion: LZG-Suche fehlgeschlagen")
             return None
 
     def _cluster_update(

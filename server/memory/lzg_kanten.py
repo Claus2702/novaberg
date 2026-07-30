@@ -339,8 +339,8 @@ def kanten_fuer_neuen_knoten_bilden(
     except psycopg2.Error as exc:
         conn.rollback()
         logger.exception(
-            "kanten_fuer_neuen_knoten_bilden fehlgeschlagen knoten=%s: %s",
-            neuer_id, exc,
+            "%s: kanten_fuer_neuen_knoten_bilden fehlgeschlagen knoten=%s",
+            type(exc).__name__, neuer_id,
         )
         return 0
     finally:
@@ -403,8 +403,8 @@ def kanten_neuberechnen_fuer_knoten(postgres_url: str, knoten_id: int) -> int:
     except psycopg2.Error as exc:
         conn.rollback()
         logger.exception(
-            "kanten_neuberechnen_fuer_knoten fehlgeschlagen knoten=%s: %s",
-            knoten_id, exc,
+            "%s: kanten_neuberechnen_fuer_knoten fehlgeschlagen knoten=%s",
+            type(exc).__name__, knoten_id,
         )
         return 0
     finally:
@@ -462,7 +462,10 @@ def embedding_cosine_alle_aktualisieren(postgres_url: str) -> int:
         conn.commit()
     except psycopg2.Error as exc:
         conn.rollback()
-        logger.exception("embedding_cosine_alle_aktualisieren fehlgeschlagen: %s", exc)
+        logger.exception(
+            "%s: embedding_cosine_alle_aktualisieren fehlgeschlagen",
+            type(exc).__name__,
+        )
         return 0
     finally:
         conn.close()
@@ -508,7 +511,7 @@ def kanten_alle_loeschen(postgres_url: str) -> int:
         conn.commit()
     except psycopg2.Error as exc:
         conn.rollback()
-        logger.exception("kanten_alle_loeschen fehlgeschlagen: %s", exc)
+        logger.exception("%s: kanten_alle_loeschen fehlgeschlagen", type(exc).__name__)
         return -1
     finally:
         conn.close()

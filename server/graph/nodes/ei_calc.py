@@ -224,9 +224,9 @@ def _ei_calc_character(state: ConversationState) -> None:
             raw_turns = session_turns_retrieve(redis_client, user_id, character_id)
         except Exception as fehler:
             logger.exception(
-                "EI-Calc/Character: Session-Turns-Read fehlgeschlagen (%s:%s) — %s; "
-                "rechne mit leerem Verlauf",
-                user_id, character_id, fehler,
+                "%s: EI-Calc/Character: Session-Turns-Read fehlgeschlagen "
+                "(%s:%s); rechne mit leerem Verlauf",
+                type(fehler).__name__, user_id, character_id,
             )
 
     # User-Werte werden gelesen, aber NICHT als Turn 0 in Novas Verlauf injiziert.

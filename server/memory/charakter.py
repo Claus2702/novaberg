@@ -39,7 +39,7 @@ def charakter_hash_retrieve(postgres_url: str, user_id: str, character_id: str =
         return ""
 
     except Exception as fehler:
-        logger.exception(f"Charakter-Hash Abruf fehlgeschlagen: {fehler}")
+        logger.exception(f"{type(fehler).__name__}: Charakter-Hash Abruf fehlgeschlagen")
         return ""
 
 
@@ -71,7 +71,7 @@ def charakter_hash_retrieve_dict(postgres_url: str, user_id: str, character_id: 
         return {}
 
     except Exception as fehler:
-        logger.exception(f"Charakter-Hash-Dict Abruf fehlgeschlagen: {fehler}")
+        logger.exception(f"{type(fehler).__name__}: Charakter-Hash-Dict Abruf fehlgeschlagen")
         return {}
 
 
@@ -135,8 +135,8 @@ def nutzer_gewichtung_laden(postgres_url: str, user_id: str) -> tuple[float | No
         conn.close()
     except Exception as fehler:
         logger.exception(
-            f"nutzer_gewichtung_laden: Abruf fuer Paar "
-            f"'{ASSISTANT_USER_ID}/{user_id}' fehlgeschlagen — {fehler}"
+            f"{type(fehler).__name__}: nutzer_gewichtung_laden: Abruf fuer Paar "
+            f"'{ASSISTANT_USER_ID}/{user_id}' fehlgeschlagen"
         )
         return None, "fehlt"
 
@@ -208,8 +208,8 @@ def initiative_versatz_laden(postgres_url: str, user_id: str) -> tuple[float | N
         conn.close()
     except Exception as fehler:
         logger.exception(
-            f"initiative_versatz_laden: Abruf fuer Paar "
-            f"'{ASSISTANT_USER_ID}/{user_id}' fehlgeschlagen — {fehler}"
+            f"{type(fehler).__name__}: initiative_versatz_laden: Abruf fuer Paar "
+            f"'{ASSISTANT_USER_ID}/{user_id}' fehlgeschlagen"
         )
         return None, "fehlt"
 

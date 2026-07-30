@@ -58,7 +58,7 @@ def session_kontext_extrahieren(
     try:
         raw_turns: list[bytes] = redis_client.lrange(session_key, 0, -1)
     except Exception as e:
-        logger.exception(f"Kontext: Redis-Fehler — {e}")
+        logger.exception(f"{type(e).__name__}: Kontext: Redis-Fehler")
         return {}
 
     if not raw_turns:
@@ -117,7 +117,7 @@ def session_kontext_extrahieren(
         return ergebnis
 
     except (json.JSONDecodeError, Exception) as e:
-        logger.exception(f"Kontext: LLM-Analyse fehlgeschlagen — {e}")
+        logger.exception(f"{type(e).__name__}: Kontext: LLM-Analyse fehlgeschlagen")
         return {}
 
 

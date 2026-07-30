@@ -151,7 +151,7 @@ class BaseManager(ABC):
                 conn.close()
                 logger.info(f"Plugin '{self.ziel}': Schema geladen ({sql_path.name})")
             except Exception as fehler:
-                logger.exception(f"Plugin '{self.ziel}': Schema-Fehler — {fehler}")
+                logger.exception(f"{type(fehler).__name__}: Plugin '{self.ziel}': Schema-Fehler")
 
     # ─────────────────────────────────────────
     # Ausführung (Arbeiter)

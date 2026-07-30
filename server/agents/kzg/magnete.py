@@ -163,8 +163,8 @@ def _entitaeten_aufloesen(
                 )
             except Exception as fehler:
                 logger.exception(
-                    f"magnete_aufloesen: create_new_entity('{ent.name}') "
-                    f"fehlgeschlagen: {fehler}"
+                    f"{type(fehler).__name__}: magnete_aufloesen: create_new_entity('{ent.name}') "
+                    f"fehlgeschlagen"
                 )
                 continue
 
@@ -219,7 +219,7 @@ def _timeline_aufloesen(
         )
     except Exception as fehler:
         logger.exception(
-            f"magnete_aufloesen: find_by_date fehlgeschlagen: {fehler}"
+            f"{type(fehler).__name__}: magnete_aufloesen: find_by_date fehlgeschlagen"
         )
         return None
 
@@ -255,6 +255,6 @@ def _timeline_aufloesen(
         return neue_id
     except Exception as fehler:
         logger.exception(
-            f"magnete_aufloesen: TimelineRepository.insert fehlgeschlagen: {fehler}"
+            f"{type(fehler).__name__}: magnete_aufloesen: TimelineRepository.insert fehlgeschlagen"
         )
         return None

@@ -47,7 +47,7 @@ class WebSearchManager:
                 for r in results
             ]
         except Exception as e:
-            logger.exception(f"Web-Suche fehlgeschlagen: {e}")
+            logger.exception(f"{type(e).__name__}: Web-Suche fehlgeschlagen")
             return []
 
 

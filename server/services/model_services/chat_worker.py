@@ -148,7 +148,7 @@ class ChatWorker(ModelWorker[ChatRequest, ChatResponse]):
                     "fehler=%s, preview='%s...')",
                     self._name,
                     caller_label,
-                    exc,
+                    exc,  # noqa: TRY401  — Blatt-Typ
                     preview,
                 )
                 raise

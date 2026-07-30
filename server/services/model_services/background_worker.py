@@ -237,7 +237,7 @@ class BackgroundWorker(ModelWorker[BackgroundRequest, BackgroundResponse]):
                     "(caller=%s, fehler=%s, preview='%s...')",
                     self._name,
                     caller_label,
-                    exc,
+                    exc,  # noqa: TRY401  — Blatt-Typ
                     preview,
                 )
                 raise

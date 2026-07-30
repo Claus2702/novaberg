@@ -182,8 +182,9 @@ def db_zugriff(state: ConversationState) -> ConversationState:
             )
         except (ValueError, TypeError) as fehler:
             logger.exception(
-                "db_zugriff: Raumwerte in redis:nova_state unlesbar (%s) — "
-                "aus den Register-Labels abgeleitet", fehler,
+                "%s: db_zugriff: Raumwerte in redis:nova_state unlesbar — "
+                "aus den Register-Labels abgeleitet",
+                type(fehler).__name__,
             )
             raum_geladen  = False
             internal_raum = _raum_aus_labels(internal_emotion)

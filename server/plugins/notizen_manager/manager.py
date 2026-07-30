@@ -190,7 +190,9 @@ Falls keine Notiz erkennbar: "snippet": null
                         row = {"name": raw[0], "typ": raw[1], "text": raw[2]}
                         quelle_branch = "sql_fallback"
                 except Exception as fehler:
-                    logger.exception(f"Notizen-Enricher Fallback fehlgeschlagen: {fehler}")
+                    logger.exception(
+                        f"{type(fehler).__name__}: Notizen-Enricher Fallback fehlgeschlagen"
+                    )
 
             if row:
                 name:   str = row["name"]
@@ -465,7 +467,9 @@ Falls keine Notiz erkennbar: "snippet": null
                     verarbeitet += 1
 
             except Exception as fehler:
-                logger.exception(f"Notizen-Manager: {aktion} fehlgeschlagen — {fehler}")
+                logger.exception(
+                    f"{type(fehler).__name__}: Notizen-Manager: {aktion} fehlgeschlagen"
+                )
 
         return verarbeitet
 
