@@ -1,0 +1,242 @@
+# Ruff-Konfiguration für das Novaberg-Projekt
+#
+# Ablageort: Repo-Wurzel novaberg/. Es gibt keine pyproject.toml — der Server
+# wird nicht als Paket installiert, sondern als Quellbaum in den Container
+# gemountet. Eine pyproject.toml ohne [project]-Abschnitt nur als Träger für
+# den Linter wäre irreführend, deshalb die eigenständige ruff.toml.
+
+# Basis des Server-Images: novaberg/server/Dockerfile Zeile 1 — FROM python:3.12-slim.
+# Bewusst NICHT die Python-Version des Hosts: der Code läuft im Container.
+target-version = "py312"
+
+# Messung über novaberg/server/**/*.py (54.074 Zeilen in 244 Dateien):
+#   > 88 Zeichen: 1235 Zeilen   (2,28 %)
+#   > 100 Zeichen: 378 Zeilen   (0,70 %)
+#   > 120 Zeichen:  79 Zeilen   (0,15 %)
+# Gewählt: 100. Der Schritt 88 -> 100 räumt 857 Treffer ab (69 % des Rauschens),
+# der Schritt 100 -> 120 nur weitere 299. Die Kurve knickt bei 100 ab. 120 hätte
+# die absolut geringste Trefferzahl, ist aber keine vertretbare Grenze mehr:
+# dort bleibt Fließtext-Code unbeanstandet, den im Review niemand überblickt.
+line-length = 100
+
+[lint]
+select = [
+    "D",    # pydocstyle          — Docstrings
+    "ANN",  # flake8-annotations  — Typannotationen
+    "F",    # Pyflakes            — echte Fehler
+    "E",    # pycodestyle Error   — Stil
+    "W",    # pycodestyle Warning — Stil
+    "N",    # pep8-naming         — Namensformen
+    "I",    # isort               — Importsortierung
+    "S",    # flake8-bandit       — Sicherheit
+    "B",    # flake8-bugbear      — häufige Fallen
+    "ERA",  # eradicate           — auskommentierter Code
+    "T20",  # flake8-print        — print statt Logger
+    "BLE",  # flake8-blind-except — blankes except
+    "TRY",  # tryceratops         — Ausnahmebehandlung
+    "LOG",  # flake8-logging      — Logger-Fehlgebrauch
+    "C90",  # mccabe              — zyklomatische Komplexität
+
+    # "PLR09" — die Pylint-Zählregeln, und zwar NUR der 09xx-Block, nicht "PLR".
+    # Gemessen am 30.07.2026 mit den Grenzen dieser Datei: "PLR" liefert 299
+    # Treffer, der 09xx-Block davon 193. Die Differenz von 106 ist zu 104 Teilen
+    # PLR2004 (magic-value-comparison) — also eine Meldung pro
+    # Schwellenvergleich. Die Differenz ist von den Grenzen unabhängig, die
+    # beiden Summen sind es nicht: sie verschieben sich mit max-branches. Bei
+    # einem System, dessen Kern aus kalibrierten Schwellen besteht, meldete die
+    # Regel die Arbeitsweise des Systems als Fehler. Der engere Präfix hält sie
+    # draußen; zusätzlich steht PLR2004 unten im ignore-Block, damit die
+    # Entscheidung als Entscheidung lesbar ist und nicht wie eine Auslassung.
+    #
+    # Der 09xx-Block umfasst acht Regeln; fünf davon greifen: PLR0911, PLR0912,
+    # PLR0913, PLR0915, PLR0917. Drei greifen ohne "preview = true" nicht —
+    # PLR0904 (too-many-public-methods), PLR0914 (too-many-locals),
+    # PLR0916 (too-many-boolean-expressions). PLR0911 ist zusätzlich unten
+    # ausgeschlossen, greift also faktisch nicht; wirksam sind vier.
+    # C901 kommt nicht von hier, sondern aus der Familie "C90" eine Zeile höher.
+    "PLR09",
+]
+
+ignore = [
+    # G004 "Logging statement uses f-string"
+    # Abgeschaltet, weil f-Strings im Logging in diesem Projekt VORGESCHRIEBEN
+    # sind. Die Regel widerspricht dem Standard des Projekts, nicht umgekehrt.
+    # Der Eintrag steht hier defensiv: die Familie "G" ist oben nicht selektiert,
+    # aber falls sie später hinzukommt, bleibt G004 stumm.
+    "G004",
+
+    # D203 "1 blank line required before class docstring"
+    # Von den beiden gegenläufigen Formvarianten weicht D203. Sein Gegenstück
+    # D211 ("No blank lines allowed before class docstring") fordert das genaue
+    # Gegenteil; wären beide aktiv, wäre jede Klassen-Docstring unreparierbar,
+    # weil jede Behebung die andere Regel auslöst. Gewählt wurde D211, weil der
+    # Bestand und jeder moderne Formatter die Docstring direkt unter "class X:"
+    # setzen — D203 zu behalten hieße, den gesamten Bestand umzuformatieren, um
+    # eine Leerzeile einzufügen, die niemand haben will.
+    # Nachgemessen mit --show-settings: D203 ist inaktiv, D211 ist aktiv.
+    # Hinweis: die Konvention pep257 schaltet D203 ohnehin ab. Der Eintrag bleibt
+    # trotzdem stehen — er dokumentiert die Entscheidung an der Stelle, an der
+    # man sie sucht, und hält sie fest, falls die Konvention je wechselt.
+    "D203",
+
+    # PLR0911 "Too many return statements"
+    # Abgeschaltet, weil die Regel die im Projekt vorgeschriebene Bauart
+    # bestraft. Jede geprüfte Vorbedingung erzeugt einen eigenen Rückkehrpunkt —
+    # eine Funktion mit fünf Vorbedingungen hat sechs. Das ist die Folge der
+    # EVA-Disziplin und kein Verstoß gegen die Funktionsanatomie.
+    # Widerspricht eine Werkzeugregel dem Standard des Projekts, gewinnt der
+    # Standard des Projekts.
+    #
+    # Gemessen am 30.07.2026 mit der Standardgrenze 6: 14 Treffer. Entscheidend
+    # ist nicht die Zahl, sondern ihre Zusammensetzung — 5 der 14 sind reine
+    # Wächterketten:
+    #   validieren_gegen_db()    agents/direktiven/crud.py            9 Rückgaben
+    #   validieren_gegen_db()    agents/charakter_identitaet/crud.py   8
+    #   _vorturn_laden()         graph/nodes/gespraechsvektor.py       8
+    #   _timeline_aufloesen()    agents/kzg/magnete.py                 7
+    #   _modus_plausibilitaet()  ei/berechnung.py                      8
+    # _vorturn_laden() ist der reine Fall: sechs von acht Rückgaben sind
+    # "return None, ''" hinter je einer verletzten Vorbedingung. Beide
+    # validieren_gegen_db() geben pro verletzter Vorbedingung ein
+    # ValidationResult(ok=False, grund=...) zurück — genau die Form, die
+    # "fail loud, fail logged" verlangt.
+    #
+    # Eine andere Grenze würde das nicht reparieren: Die Rückgabezahl eines
+    # Validierers ist die Zahl seiner Vorbedingungen. Die folgt aus dem
+    # Datenmodell, nicht aus der Codequalität — kommt ein Pflichtfeld hinzu,
+    # wandert die Funktion auf jede Grenze zu, die man setzt. Die Regel erzieht
+    # zu verschachtelten Bedingungsketten, in denen die verletzte Vorbedingung
+    # nicht mehr an der Stelle steht, an der sie geprüft wird.
+    #
+    # Was damit ungeprüft bleibt, offen benannt: _stage_detail_bauen() in
+    # services/event_consumer.py hat 18 Rückgaben und ist keine Wächterkette,
+    # sondern eine als if-Kette geschriebene Dispatch-Tabelle. Der eine Fall,
+    # den die Regel zu Recht melden würde. Dafür ist der Review zuständig.
+    "PLR0911",
+
+    # PLR2004 "Magic value used in comparison"
+    # Abgeschaltet, weil die Schwellenvergleiche dieses Systems kalibrierte,
+    # dokumentierte Parameter sind und keine Magic Values. "arousal >= 0.7" ist
+    # ein hergeleiteter Messwert mit Herkunft, kein vergessenes Literal.
+    #
+    # Gemessen am 30.07.2026: 104 Treffer — mehr, als jede einzelne aktivierte
+    # Zählregel liefert (die größte ist C901 mit 52).
+    #
+    # Der Eintrag steht defensiv: PLR2004 liegt außerhalb des oben selektierten
+    # 09xx-Blocks und greift derzeit gar nicht. Er steht trotzdem hier, weil ein
+    # nicht selektierter Präfix wie eine Auslassung aussieht und ein begründeter
+    # Eintrag eine Entscheidung ist. Wird "PLR" je breiter selektiert, bleibt die
+    # Entscheidung wirksam.
+    "PLR2004",
+]
+
+[lint.pydocstyle]
+# Konvention pep257. Wirkt sich aus: die Konvention schaltet von der oben mit
+# "D" selektierten Familie eine Reihe von Regeln wieder ab, nachgemessen mit
+# --show-settings — darunter D203 sowie BEIDE Varianten des zweiten Paarkonflikts,
+# D212 (Zusammenfassung in Zeile 1) und D213 (Zusammenfassung in Zeile 2).
+# Zur Position der Zusammenfassung in mehrzeiligen Docstrings erzwingt pep257
+# also gar nichts; wer eine der beiden Formen verbindlich will, muss sie hier
+# per extend-select nachziehen. Ebenfalls abgeschaltet sind die Abschnitts-
+# Regeln D405–D417 (numpy-/google-Stil), die pep257 nicht kennt.
+# Aktiv bleiben unter anderem: D1xx (fehlende Docstrings), D200, D205, D206–D208,
+# D211, D301, D402, D414, D418, D419.
+convention = "pep257"
+
+[lint.mccabe]
+# Standardwert, sichtbar gemacht — keine gewählte Grenze.
+#
+# Gemessen am 30.07.2026 über 664 Funktionen mit Komplexität >= 2:
+#   max-complexity = 10  ->  52 Treffer   (gesetzt)
+#   max-complexity = 12  ->  39
+#   max-complexity = 14  ->  29
+#   max-complexity = 15  ->  24
+#   max-complexity = 16  ->  23
+#   max-complexity = 18  ->  19
+#   max-complexity = 20  ->  11
+#   max-complexity = 25  ->   4
+#
+# Hergeleitet wurde, dass hier nichts herzuleiten ist: Die Verteilung hat keine
+# Klippe. Der Schritt von 15 auf 16 verschiebt einen einzigen Treffer. Ohne
+# natürlichen Bruch im Bestand ist kein abgeleiteter Wert besser begründet als
+# der Literaturwert, und ein höherer Wert senkte nur die Trefferzahl, ohne sie
+# zu begründen. Deshalb bleibt die 10 stehen — ausdrücklich als Standardwert
+# und nicht als Fund.
+#
+# 52 Treffer sind 7,8 % der gemessenen Funktionen; 92 % erfüllen die Grenze
+# bereits, die Regel ist für neuen Code also durchsetzbar. Die Spitze:
+#   _build_system_prompt()    graph/nodes/responder.py      47
+#   _stage_detail_bauen()     services/event_consumer.py    35
+#   _text_normalisieren()     utils/zeitparser.py           31
+#   plan()                    graph/nodes/planner.py        28
+#   _call2_nachbearbeiten()   agents/promotion/agent.py     25
+max-complexity = 10
+
+[lint.pylint]
+# Drei Werte gesetzt, einer bewusst nicht. Gemessen am 30.07.2026.
+#
+# max-args und max-statements sind Standardwerte, sichtbar gemacht — in ihren
+# Verteilungen gibt es keine Klippe, die einen abgeleiteten Wert tragen würde.
+# max-branches ist eine GEWÄHLTE Grenze: der Standardwert wäre dort neben C901
+# wirkungslos gewesen, die Begründung steht bei dem Wert.
+# max-returns ist nicht gesetzt; die Begründung steht am Ende des Abschnitts.
+
+# 47 Treffer beim Standardwert 5. Verteilung: 4->83, 5->47, 6->33, 7->17,
+# 8->13, 10->4.
+#
+# max-positional-args ist bewusst nicht gesetzt: ohne eigene Angabe folgt es
+# automatisch max-args. Die zugehörige Regel PLR0917
+# (too-many-positional-arguments) liefert 44 Treffer und ist erst in Ruff 0.16.0
+# stabil geworden — gegen eine ältere Ruff-Version wäre dieselbe Konfiguration
+# hier still, ohne anders auszusehen. Deshalb gehört die Werkzeugversion in den
+# Messbericht, nicht nur in die Erinnerung.
+max-args = 5
+
+# 37 Treffer beim Standardwert 50. Verteilung: 50->37, 60->27, 70->19, 80->13,
+# 100->2.
+#
+# KEINE ABBILDUNG DER LÄNGENREGEL: Die Regel zählt ANWEISUNGEN, nicht Zeilen.
+# Die Funktionslängen-Regel des Projektstandards spricht von Zeilen. Beides fällt
+# auseinander — eine Anweisung kann sich über mehrere Zeilen ziehen, und
+# Leerzeilen, Kommentare und Docstrings zählt die Regel gar nicht mit. Der Wert
+# ist eine Näherung an die Längenregel und keine Umsetzung davon. Wer die
+# Längenregel maschinell prüfen will, braucht eine eigene Prüfung; dieser Wert
+# ersetzt sie nicht und darf nicht als ihre Durchsetzung gelesen werden.
+max-statements = 50
+
+# GEWÄHLTE GRENZE, kein Standardwert. Der Standardwert 12 wäre hier wirkungslos:
+# gemessen am 30.07.2026 sind alle 35 Treffer bei 12 auch von C901 gemeldet, die
+# Regel sagt bei diesem Wert nichts Eigenes.
+#
+# Ursache ist die Arithmetik der beiden Zählungen. Nachgemessen an isolierten
+# Testfällen gilt: C901 = Verzweigungen + 1 - Anzahl der else-Arme. McCabe zählt
+# ab 1 und ignoriert else, weil ein else keinen neuen unabhängigen Pfad erzeugt;
+# PLR0912 zählt es mit. Verzweigungen > 12 bedeutet damit Komplexität >= 13
+# minus else-Zahl — und solange die unter 3 liegt, hat C901 mit Grenze 10 längst
+# angeschlagen.
+#
+# Eigenständigkeit gegen C901 bei Grenze 10, gemessen:
+#   max-branches = 12  ->  35 Treffer, davon  0 nur von PLR0912
+#   max-branches = 11  ->  44 Treffer, davon  2 nur von PLR0912
+#   max-branches = 10  ->  51 Treffer, davon  7 nur von PLR0912   (gesetzt)
+#   max-branches =  9  ->  61 Treffer, davon 14 nur von PLR0912
+#   max-branches =  8  ->  79 Treffer, davon 30 nur von PLR0912
+#
+# Gewählt ist 10, weil die Regel dort eigenständig wird und dabei genau die
+# Blindstelle von C901 abdeckt: Weil C901 jedes else abzieht, unterschätzt es
+# systematisch die als if/elif/else-Kette geschriebene Dispatch-Tabelle. Die
+# sieben eigenständigen Treffer sind per Konstruktion die else-reichen
+# Funktionen. Das ist zugleich das Muster, das der Ausschluss von PLR0911
+# unbeaufsichtigt gelassen hätte — _stage_detail_bauen() hat 36 Verzweigungen
+# bei Komplexität 35, die Verzweigungszahl ist dort die höhere.
+#
+# Blindstelle, die beide Regeln teilen und die dieser Wert nicht behebt:
+# Boolesche Operatoren zählen als ein Verzweigungspunkt, nicht als mehrere, und
+# Bedingungen in Comprehensions zählen bei keiner der beiden Regeln mit.
+max-branches = 10
+
+# max-returns ist ABSICHTLICH NICHT GESETZT — die Abwesenheit ist die
+# Entscheidung. Die zugehörige Regel PLR0911 steht oben im ignore-Block, dort
+# steht auch die Begründung. Ein Wert an dieser Stelle wäre
+# wirkungslos und würde vortäuschen, die Grenze sei verhandelt worden. Sie ist
+# nicht verhandelt, sie ist abgelehnt.
