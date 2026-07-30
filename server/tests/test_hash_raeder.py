@@ -41,7 +41,20 @@ from agents.charakter.destillation import (
     RAD_ZUG_HOCH,
     RAD_ZUG_RUNTER,
 )
-from api.gedaechtnis import _hash_leer, _rad_aufbereiten
+from api.gedaechtnis import (
+    _GRENZEN_INITIATIVE,
+    _GRENZEN_ZUWENDUNG,
+    RadSpalten,
+    _hash_leer,
+    _rad_aufbereiten,
+)
+from config import (
+    INITIATIVE_RAD_NABE,
+    INITIATIVE_RAD_SPANNE,
+    RAD_MAX,
+    RAD_MIN,
+    RAD_NABE,
+)
 
 GEDAECHTNIS_LOGGER: str = "ki_server.gedaechtnis"
 
@@ -57,7 +70,9 @@ class LesbarkeitTest(unittest.TestCase):
     def test_vollstaendiges_rad_ist_lesbar(self) -> None:
         """Ein gelieferter Rad-Block traegt Wert, Herkunft und beide Seiten."""
         block: dict = _rad_aufbereiten(
-            "zuwendung", json.dumps(RAD_LEER), 0.9, "destilliert", ERHOBEN,
+            "zuwendung",
+            RadSpalten(json.dumps(RAD_LEER), 0.9, "destilliert", ERHOBEN),
+            _GRENZEN_ZUWENDUNG,
         )
         self.assertTrue(block["lesbar"])
         self.assertEqual(block["quelle"], "destilliert")
@@ -70,7 +85,9 @@ class LesbarkeitTest(unittest.TestCase):
         Der Unterschied zum Ausfall steht in `quelle`, nicht in `lesbar`.
         """
         block: dict = _rad_aufbereiten(
-            "zuwendung", json.dumps(RAD_LEER), 0.9, "destilliert", ERHOBEN,
+            "zuwendung",
+            RadSpalten(json.dumps(RAD_LEER), 0.9, "destilliert", ERHOBEN),
+            _GRENZEN_ZUWENDUNG,
         )
         self.assertTrue(block["lesbar"])
         self.assertTrue(all(v == 0.0 for v in block["rad"]["hoch"].values()))
@@ -79,7 +96,9 @@ class LesbarkeitTest(unittest.TestCase):
         """Unlesbares JSON meldet sich als Ausfall, nicht als Rad ohne Auspraegung."""
         with self.assertLogs(GEDAECHTNIS_LOGGER, level="ERROR"):
             block: dict = _rad_aufbereiten(
-                "zuwendung", "{kein json", 0.9, "destilliert", ERHOBEN,
+                "zuwendung",
+                RadSpalten("{kein json", 0.9, "destilliert", ERHOBEN),
+                _GRENZEN_ZUWENDUNG,
             )
         self.assertFalse(block["lesbar"])
         self.assertEqual(block["rad"], {})
@@ -91,7 +110,9 @@ class LesbarkeitTest(unittest.TestCase):
         """Eine leere Spalte ist keine Erhebung und sagt das auch."""
         with self.assertLogs(GEDAECHTNIS_LOGGER, level="WARNING"):
             block: dict = _rad_aufbereiten(
-                "initiative", "", 0.0, "default", None,
+                "initiative",
+                RadSpalten("", 0.0, "default", None),
+                _GRENZEN_INITIATIVE,
             )
         self.assertFalse(block["lesbar"])
         self.assertEqual(block["erhoben_am"], "")
@@ -100,7 +121,9 @@ class LesbarkeitTest(unittest.TestCase):
         """Geparst heisst nicht brauchbar — 'hoch' und 'runter' muessen da sein."""
         with self.assertLogs(GEDAECHTNIS_LOGGER, level="ERROR"):
             block: dict = _rad_aufbereiten(
-                "zuwendung", json.dumps({"speichen": []}), 1.2, "destilliert", ERHOBEN,
+                "zuwendung",
+                RadSpalten(json.dumps({"speichen": []}), 1.2, "destilliert", ERHOBEN),
+                _GRENZEN_ZUWENDUNG,
             )
         self.assertFalse(block["lesbar"])
 
@@ -108,14 +131,18 @@ class LesbarkeitTest(unittest.TestCase):
         """Eine Liste ist gueltiges JSON und trotzdem kein Rad."""
         with self.assertLogs(GEDAECHTNIS_LOGGER, level="ERROR"):
             block: dict = _rad_aufbereiten(
-                "zuwendung", json.dumps([1, 2, 3]), 1.2, "destilliert", ERHOBEN,
+                "zuwendung",
+                RadSpalten(json.dumps([1, 2, 3]), 1.2, "destilliert", ERHOBEN),
+                _GRENZEN_ZUWENDUNG,
             )
         self.assertFalse(block["lesbar"])
 
     def test_zeitstempel_wird_als_iso_gereicht(self) -> None:
         """Der Erhebungszeitpunkt reist als ISO-Zeichenkette, nicht als Objekt."""
         block: dict = _rad_aufbereiten(
-            "zuwendung", json.dumps(RAD_LEER), 0.9, "destilliert", ERHOBEN,
+            "zuwendung",
+            RadSpalten(json.dumps(RAD_LEER), 0.9, "destilliert", ERHOBEN),
+            _GRENZEN_ZUWENDUNG,
         )
         self.assertEqual(block["erhoben_am"], "2026-07-30T19:59:09+00:00")
 
@@ -132,11 +159,72 @@ class LesbarkeitTest(unittest.TestCase):
         rad["streuung"] = 0.02
 
         block: dict = _rad_aufbereiten(
-            "initiative", json.dumps(rad), -0.09, "destilliert", ERHOBEN,
+            "initiative",
+            RadSpalten(json.dumps(rad), -0.09, "destilliert", ERHOBEN),
+            _GRENZEN_INITIATIVE,
         )
         self.assertTrue(block["lesbar"])
         self.assertEqual(block["rad"]["laeufe"], [-0.11, -0.09, -0.07])
         self.assertEqual(block["rad"]["streuung"], 0.02)
+
+
+class GrenzenTest(unittest.TestCase):
+    """Nabe und Grenzen reisen mit, damit der Anzeiger sie nicht nachbaut.
+
+    Der Client zeichnet den Abstand des Werts von der Nabe als Anteil der
+    Spanne. Die drei Zahlen sind serverseitig ueber die Umgebung
+    einstellbar — haette der Client eigene Kopien, zeigte er nach einem
+    Verstellen weiter die alte Geometrie, ohne dass etwas auffiele.
+    """
+
+    def _block(self, rad_roh: str | None = None) -> dict:
+        """Ruft die Aufbereitung mit den Grenzen des Zuwendungs-Rades."""
+        return _rad_aufbereiten(
+            "zuwendung",
+            RadSpalten(
+                json.dumps(RAD_LEER) if rad_roh is None else rad_roh,
+                RAD_NABE, "destilliert", ERHOBEN,
+            ),
+            _GRENZEN_ZUWENDUNG,
+        )
+
+    def test_die_drei_grenzen_stehen_im_block(self) -> None:
+        """Ohne sie kann der Anzeiger den Versatz nicht auf die Spanne beziehen."""
+        block: dict = self._block()
+        self.assertEqual(block["nabe"], RAD_NABE)
+        self.assertEqual(block["minimum"], RAD_MIN)
+        self.assertEqual(block["maximum"], RAD_MAX)
+
+    def test_grenzen_stehen_auch_im_unlesbaren_block(self) -> None:
+        """Sie haengen nicht am Rad, sondern an seiner Bauart."""
+        with self.assertLogs(GEDAECHTNIS_LOGGER, level="ERROR"):
+            block: dict = self._block(rad_roh="{kaputt")
+        self.assertFalse(block["lesbar"])
+        self.assertEqual(block["nabe"], RAD_NABE)
+        self.assertEqual(block["maximum"], RAD_MAX)
+
+    def test_die_zuwendungs_spannen_sind_unsymmetrisch(self) -> None:
+        """0.60 nach oben, 0.40 nach unten — der Anzeiger muss je Seite normieren.
+
+        Steht diese Ungleichheit nicht mehr, ist die getrennte Normierung im
+        Client ueberfluessig geworden und gehoert nachgezogen.
+        """
+        self.assertNotAlmostEqual(RAD_MAX - RAD_NABE, RAD_NABE - RAD_MIN, places=9)
+
+    def test_die_initiative_spanne_ist_symmetrisch(self) -> None:
+        """Hier sind beide Seiten gleich weit — die Grenzen tragen das Vorzeichen."""
+        block: dict = _rad_aufbereiten(
+            "initiative",
+            RadSpalten(
+                json.dumps(INITIATIVE_RAD_LEER), INITIATIVE_RAD_NABE,
+                "destilliert", ERHOBEN,
+            ),
+            _GRENZEN_INITIATIVE,
+        )
+        self.assertAlmostEqual(
+            block["maximum"] - block["nabe"], block["nabe"] - block["minimum"],
+            places=9,
+        )
 
 
 class LeereAntwortTest(unittest.TestCase):
@@ -150,6 +238,18 @@ class LeereAntwortTest(unittest.TestCase):
             self.assertFalse(antwort[schluessel]["lesbar"])
             self.assertIsNone(antwort[schluessel]["wert"])
             self.assertEqual(antwort[schluessel]["rad"], {})
+            # Die Bauart des Rades steht fest, auch wenn die Zeile fehlt.
+            for feld in ("nabe", "minimum", "maximum"):
+                self.assertIn(feld, antwort[schluessel])
+
+    def test_die_beiden_raeder_tragen_verschiedene_naben(self) -> None:
+        """Sonst haetten beide dieselbe Bauart bekommen — ein Kopierfehler."""
+        antwort: dict = _hash_leer()
+        self.assertEqual(antwort["zuwendung"]["nabe"], RAD_NABE)
+        self.assertEqual(antwort["initiative"]["nabe"], INITIATIVE_RAD_NABE)
+        self.assertNotEqual(
+            antwort["zuwendung"]["maximum"], antwort["initiative"]["maximum"],
+        )
 
     def test_die_fuenf_profile_bleiben_im_leeren_fall_erhalten(self) -> None:
         """Der Client liest sie unbedingt — ein fehlender Schluessel waere ein KeyError."""
@@ -225,7 +325,9 @@ class VertragMitDemClientTest(unittest.TestCase):
     def test_ein_ausgeliefertes_rad_traegt_jede_erwartete_speiche(self) -> None:
         """Die Verdrahtung: Was der Endpunkt liefert, muss der Client finden."""
         block: dict = _rad_aufbereiten(
-            "zuwendung", json.dumps(RAD_LEER), 0.9, "destilliert", ERHOBEN,
+            "zuwendung",
+            RadSpalten(json.dumps(RAD_LEER), 0.9, "destilliert", ERHOBEN),
+            _GRENZEN_ZUWENDUNG,
         )
         for name in self.ZUWENDUNG_HOCH:
             self.assertIn(name, block["rad"]["hoch"])

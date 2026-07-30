@@ -3,6 +3,7 @@ Gedächtnis-Introspection — KZG, LZG, Hash, Fakten.
 Debug- und Monitoring-Endpunkte.
 """
 
+import dataclasses
 import datetime
 import json
 import logging
@@ -11,7 +12,10 @@ import redis as redis_lib
 from fastapi           import APIRouter
 from fastapi.responses import JSONResponse
 
-from config import redis_client, REDIS_URL, postgres_verbinden, EMOTION_SEKTOR_MAP, ASSISTANT_USER_ID
+from config import (
+    redis_client, REDIS_URL, postgres_verbinden, EMOTION_SEKTOR_MAP, ASSISTANT_USER_ID,
+    RAD_NABE, RAD_MIN, RAD_MAX, INITIATIVE_RAD_NABE, INITIATIVE_RAD_SPANNE,
+)
 from memory.kzg     import _kzg_prefix
 from memory.session import _session_key, session_turns_retrieve
 
@@ -131,12 +135,50 @@ def LzgAbrufen(
 # ─────────────────────────────────────────────
 # Charakter-Hash
 # ─────────────────────────────────────────────
+@dataclasses.dataclass(frozen=True)
+class RadSpalten:
+    """Die vier Spalten, in denen ein Charakter-Rad in der Datenbank liegt.
+
+    Sie gehoeren zusammen und werden nie einzeln gebraucht: Der Wert ohne
+    seine Herkunft ist nicht einzuordnen, das Speichen-JSON ohne den Wert
+    nicht nachrechenbar. Als vier lose Parameter waeren sie zudem
+    vertauschbar — ``quelle`` und ``rad_roh`` sind beide Text.
+    """
+
+    rad_roh: str | None
+    wert: float | None
+    quelle: str | None
+    erhoben_am: datetime.datetime | None
+
+
+@dataclasses.dataclass(frozen=True)
+class RadGrenzen:
+    """Nabe und Grenzen eines Rades — seine Bauart, nicht sein Inhalt.
+
+    Sie haengen am Rad-Typ, nicht an der Zeile: Jede Zeile des
+    Zuwendungs-Rades hat dieselbe Nabe. Deshalb stehen sie getrennt von
+    ``RadSpalten``.
+    """
+
+    nabe: float
+    minimum: float
+    maximum: float
+
+
+# Die Bauart je Rad, einmal aus der Konfiguration gelesen. Das
+# Initiative-Rad traegt eine symmetrische Spanne um seine Nabe, das
+# Zuwendungs-Rad zwei verschiedene — deshalb beide Grenzen einzeln und
+# nicht eine Spanne.
+_GRENZEN_ZUWENDUNG = RadGrenzen(nabe=RAD_NABE, minimum=RAD_MIN, maximum=RAD_MAX)
+_GRENZEN_INITIATIVE = RadGrenzen(
+    nabe=INITIATIVE_RAD_NABE,
+    minimum=-INITIATIVE_RAD_SPANNE,
+    maximum=INITIATIVE_RAD_SPANNE,
+)
+
+
 def _rad_aufbereiten(
-    bezeichnung: str,
-    rad_roh: str | None,
-    wert: float | None,
-    quelle: str | None,
-    erhoben_am: datetime.datetime | None,
+    bezeichnung: str, spalten: RadSpalten, grenzen: RadGrenzen,
 ) -> dict:
     """Baut den Anzeige-Block eines Charakter-Rades aus seinen vier Spalten.
 
@@ -149,42 +191,50 @@ def _rad_aufbereiten(
     die Zeile fehlt, das JSON ist kaputt, oder alle Speichen stehen echt auf
     0.0. Nur der dritte ist ein Messergebnis.
 
+    **Nabe, Minimum und Maximum reisen mit.** Sie sind serverseitige
+    Konstanten und ueber die Umgebung einstellbar; eine Kopie im Anzeiger
+    waere eine zweite Quelle derselben Groesse und liefe beim naechsten
+    Verstellen still auseinander. Der Anzeiger braucht sie, um den Abstand
+    des Werts von der Nabe als Anteil der jeweiligen Spanne zu zeichnen —
+    die beiden Spannen sind nicht symmetrisch.
+
     Args:
         bezeichnung: Name des Rades fuer die Logausgabe.
-        rad_roh:     JSON-Text der Speichen, wie er in der Spalte steht.
-        wert:        Der daraus gerechnete Faktor bzw. Versatz.
-        quelle:      ``'destilliert'`` oder ``'default'``.
-        erhoben_am:  Zeitstempel der Erhebung, ``None`` wenn nie erhoben.
+        spalten:     Die vier Datenbankspalten des Rades.
+        grenzen:     Nabe und Grenzen seiner Bauart.
 
     Returns:
-        Dict mit ``wert``, ``quelle``, ``erhoben_am``, ``rad`` und ``lesbar``.
+        Dict mit ``wert``, ``quelle``, ``erhoben_am``, ``rad``, ``lesbar``
+        sowie ``nabe``, ``minimum`` und ``maximum``.
     """
-    # ── Eingabe ──────────────────────────────────────────────────────
-    if not rad_roh:
-        logger.warning(f"Charakter-Rad '{bezeichnung}': Spalte leer")
+
+    def block(rad_inhalt: dict, lesbar: bool) -> dict:
+        """Setzt die Antwort zusammen — eine Form, vier Ausgaenge."""
         return {
-            "wert":       float(wert) if wert is not None else None,
-            "quelle":     quelle or "",
-            "erhoben_am": erhoben_am.isoformat() if erhoben_am else "",
-            "rad":        {},
-            "lesbar":     False,
+            "wert":       float(spalten.wert) if spalten.wert is not None else None,
+            "quelle":     spalten.quelle or "",
+            "erhoben_am": spalten.erhoben_am.isoformat() if spalten.erhoben_am else "",
+            "rad":        rad_inhalt,
+            "lesbar":     lesbar,
+            "nabe":       float(grenzen.nabe),
+            "minimum":    float(grenzen.minimum),
+            "maximum":    float(grenzen.maximum),
         }
+
+    # ── Eingabe ──────────────────────────────────────────────────────
+    if not spalten.rad_roh:
+        logger.warning(f"Charakter-Rad '{bezeichnung}': Spalte leer")
+        return block({}, lesbar=False)
 
     # ── Verarbeitung ─────────────────────────────────────────────────
     try:
-        rad: dict = json.loads(rad_roh)
+        rad: dict = json.loads(spalten.rad_roh)
     except (ValueError, TypeError) as fehler:
         logger.exception(
             f"{type(fehler).__name__}: Charakter-Rad '{bezeichnung}': "
-            f"JSON nicht lesbar — Rohwert: {rad_roh[:120]!r}"
+            f"JSON nicht lesbar — Rohwert: {spalten.rad_roh[:120]!r}"
         )
-        return {
-            "wert":       float(wert) if wert is not None else None,
-            "quelle":     quelle or "",
-            "erhoben_am": erhoben_am.isoformat() if erhoben_am else "",
-            "rad":        {},
-            "lesbar":     False,
-        }
+        return block({}, lesbar=False)
 
     # ── Ausgabe ──────────────────────────────────────────────────────
     if not isinstance(rad, dict) or "hoch" not in rad or "runter" not in rad:
@@ -193,25 +243,15 @@ def _rad_aufbereiten(
             f"'hoch'/'runter' — Typ {type(rad).__name__}, "
             f"Schluessel {list(rad)[:8] if isinstance(rad, dict) else '—'}"
         )
-        return {
-            "wert":       float(wert) if wert is not None else None,
-            "quelle":     quelle or "",
-            "erhoben_am": erhoben_am.isoformat() if erhoben_am else "",
-            "rad":        {},
-            "lesbar":     False,
-        }
+        return block({}, lesbar=False)
 
     logger.debug(
         f"Charakter-Rad '{bezeichnung}': {len(rad['hoch'])} hoch, "
-        f"{len(rad['runter'])} runter, quelle={quelle}, wert={wert}"
+        f"{len(rad['runter'])} runter, quelle={spalten.quelle}, "
+        f"wert={spalten.wert}, Nabe {grenzen.nabe} "
+        f"in [{grenzen.minimum}, {grenzen.maximum}]"
     )
-    return {
-        "wert":       float(wert) if wert is not None else None,
-        "quelle":     quelle or "",
-        "erhoben_am": erhoben_am.isoformat() if erhoben_am else "",
-        "rad":        rad,
-        "lesbar":     True,
-    }
+    return block(rad, lesbar=True)
 
 
 def _hash_leer() -> dict:
@@ -223,6 +263,8 @@ def _hash_leer() -> dict:
     leeres_rad: dict = {
         "wert": None, "quelle": "", "erhoben_am": "", "rad": {}, "lesbar": False,
     }
+    zuwendung: dict = dict(leeres_rad, **dataclasses.asdict(_GRENZEN_ZUWENDUNG))
+    initiative: dict = dict(leeres_rad, **dataclasses.asdict(_GRENZEN_INITIATIVE))
     return {
         "kern_hash": "", "adaptive_hash": "",
         "intentions_profil": "", "emotions_profil": "",
@@ -230,8 +272,8 @@ def _hash_leer() -> dict:
         "kern_aktualisiert": "", "adaptive_aktualisiert": "",
         "intentions_aktualisiert": "", "emotions_aktualisiert": "",
         "beziehung_aktualisiert": "",
-        "zuwendung":  dict(leeres_rad),
-        "initiative": dict(leeres_rad),
+        "zuwendung":  zuwendung,
+        "initiative": initiative,
     }
 
 
@@ -287,11 +329,13 @@ def HashAbrufen(user_id: str, character_id: str = ASSISTANT_USER_ID):
             "beziehung_aktualisiert":   row[9].isoformat() if row[9] else "",
             "zuwendung": _rad_aufbereiten(
                 f"zuwendung {user_id}->{character_id}",
-                row[12], row[10], row[11], row[13],
+                RadSpalten(row[12], row[10], row[11], row[13]),
+                _GRENZEN_ZUWENDUNG,
             ),
             "initiative": _rad_aufbereiten(
                 f"initiative {user_id}->{character_id}",
-                row[16], row[14], row[15], row[17],
+                RadSpalten(row[16], row[14], row[15], row[17]),
+                _GRENZEN_INITIATIVE,
             ),
         }
 
