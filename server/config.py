@@ -638,6 +638,29 @@ MODUS_KANON: set[str] = {
     "emotional", "spielerisch", "lernmodus", "kreativ", "beratend", "berichtend",
 }
 
+# Single Source of Truth für die Intentionen, die die Salienz liefern darf.
+# Wortgleich mit der Aufzählung unter "6. INTENTIONEN" in
+# prompts/default/salienz.dimensionen.txt — tests/test_intent_kanon.py hält
+# beide Seiten zusammen, mit der Prompt-Datei als Zeugen.
+#
+# Warum diese Konstante existiert: GV_INITIATIVE_FUEHREND ist eine **Teilmenge**
+# von fünf dieser sechzehn. Wer nur gegen die Teilmenge prüft, kann einen
+# unbekannten Wert nicht von einer gültigen Nicht-Zugehörigkeit unterscheiden —
+# beides ergibt "kein Treffer". Genau daran lief M1 der Initiative-Achse zwei
+# Monate als Konstante: Der Kalibrier-Korpus las Bruchstücke eines
+# Transportformats, die trafen die fünf nie, und weil die Liste nicht leer war,
+# galt M1 als "nicht führend" statt als "fehlend"
+# (novaberg-lesson_l_teilmenge-verdeckt-muell.md).
+#
+# Eine geschlossene Wertemenge ohne deklarierte Obermenge ist benutzbar, aber
+# nicht prüfbar. Deshalb steht sie hier.
+INTENT_KANON: set[str] = {
+    "emotionaler_ausdruck", "information_teilen", "information_erfragen",
+    "recherche_vertiefen", "gemeinsam_eruieren", "reflexion", "smalltalk",
+    "feedback_geben", "feedback_erfragen", "planung", "anweisung",
+    "bestaetigung", "widerspruch", "abschluss", "hilferuf", "humor",
+}
+
 # Gültige kanonische Emotionen (Perzeption soll NUR diese liefern)
 EMOTION_KANON: set[str] = {
     "begeisterung", "freude",           # Sektor 1 — Freude

@@ -34,7 +34,11 @@ import unittest
 from unittest.mock import patch
 
 from agents.kalibrierung.korpus import _intentionen_laden, rohturns_laden
-from config import GV_INITIATIVE_FUEHREND, KALIBRIERUNG_MAX_TURN_ZEICHEN
+from config import (
+    GV_INITIATIVE_FUEHREND,
+    INTENT_KANON,
+    KALIBRIERUNG_MAX_TURN_ZEICHEN,
+)
 
 # Eine Laenge klar unter und eine klar ueber der Grenze, plus der Randwert.
 KURZ:  str = "k" * 40
@@ -199,6 +203,68 @@ class IntentionenLesen(unittest.TestCase):
     def test_leeres_feld_gilt_als_fehlend(self) -> None:
         """Fehlendes Feld ist der legitime Leerfall."""
         self.assertEqual(self._laden(None), [])
+
+
+class KanonPruefung(unittest.TestCase):
+    """Werte ausserhalb des Kanons sind ein Defekt, keine Negativinformation.
+
+    Die Pruefung, die zwei Monate gefehlt hat. Ohne sie ist ein Bruchstueck
+    eines Transportformats von einer gueltigen Intention, die nur nicht in
+    `GV_INITIATIVE_FUEHREND` steht, nicht zu unterscheiden.
+    """
+
+    def _laden(self, roh: object) -> list:
+        """Ruft `_intentionen_laden` gegen einen vorgegebenen Redis-Wert."""
+        with patch(
+            "agents.kalibrierung.korpus.db_manager.select_one",
+            return_value={"kzg_id": "kzg:test:test:1"},
+        ), patch(
+            "agents.kalibrierung.korpus.redis_manager"
+        ) as rm:
+            rm.client.hget.return_value = roh
+            return _intentionen_laden("turn-1")
+
+    def test_kanonische_werte_kommen_durch(self) -> None:
+        """Was im Kanon steht, bleibt unangetastet."""
+        gelesen = self._laden('["reflexion", "information_teilen"]')
+        self.assertEqual(gelesen, ["reflexion", "information_teilen"])
+        for wert in gelesen:
+            self.assertIn(wert, INTENT_KANON)
+
+    def test_fremder_wert_wird_verworfen_und_gemeldet(self) -> None:
+        """Ein unbekannter Wert faellt heraus und erzeugt eine error-Zeile."""
+        with self.assertLogs("ki_server.agents.kalibrierung.korpus", "ERROR") as log:
+            gelesen = self._laden('["reflexion", "quatschintention"]')
+        self.assertEqual(gelesen, ["reflexion"])
+        self.assertIn("quatschintention", log.output[-1])
+        self.assertIn("Kanons", log.output[-1])
+
+    def test_nur_fremde_werte_ergeben_fehlend(self) -> None:
+        """Sind alle Werte fremd, ist M1 `fehlend` — nicht `nicht fuehrend`.
+
+        Das ist der Kern. Eine leere Liste benennt die Luecke; eine gefuellte
+        Liste mit unpassenden Werten trug ein hartes -1.0 in jeden Turn.
+        """
+        with self.assertLogs("ki_server.agents.kalibrierung.korpus", "ERROR"):
+            self.assertEqual(self._laden('["quatsch", "unsinn"]'), [])
+
+    def test_der_alte_defekt_ergibt_jetzt_fehlend(self) -> None:
+        """Die Bruchstuecke des alten Split-Fehlers kommen nicht mehr durch.
+
+        Nachstellung des Defekts: So sahen die Werte aus, als der Korpus die
+        JSON-Liste an Kommas zerlegte. Sie trafen `GV_INITIATIVE_FUEHREND` nie
+        und galten deshalb als gueltiges "nicht fuehrend". Der Kanon kennt sie
+        nicht — jetzt sind sie ein Defekt.
+        """
+        for bruchstueck in ('["reflexion"', '"information_teilen"]'):
+            self.assertNotIn(
+                bruchstueck, INTENT_KANON,
+                f"{bruchstueck!r} steht im Kanon — dann prueft dieser Test nichts",
+            )
+        with self.assertLogs("ki_server.agents.kalibrierung.korpus", "ERROR"):
+            # Kein gueltiges JSON: der Parser lehnt schon vorher ab. Deshalb
+            # wird hier die Menge geprueft, die der alte Split erzeugt haette.
+            self.assertEqual(self._laden('["reflexion", '), [])
 
 
 if __name__ == "__main__":

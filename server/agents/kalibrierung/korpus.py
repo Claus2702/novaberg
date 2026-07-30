@@ -33,7 +33,11 @@ import json
 import logging
 from dataclasses import dataclass
 
-from config import KALIBRIERUNG_MAX_TURN_ZEICHEN, KALIBRIERUNG_MIN_TURNS
+from config import (
+    INTENT_KANON,
+    KALIBRIERUNG_MAX_TURN_ZEICHEN,
+    KALIBRIERUNG_MIN_TURNS,
+)
 from ei.initiative import fuehrung_messen
 from graph.personality import Emotion, Personality
 from memory.kzg import _kzg_key  # noqa: F401  — Key-Form dokumentiert hier
@@ -230,8 +234,8 @@ def _intentionen_laden(turn_id: str) -> list:
         gelesen = json.loads(roh)
     except (TypeError, ValueError) as fehler:
         logger.exception(
-            f"{type(fehler).__name__}: Korpus: Intentionen von {zeile['kzg_id']} nicht lesbar "
-            f" — M1 fehlt fuer diesen Turn"
+            f"{type(fehler).__name__}: Korpus: Intentionen von "
+            f"{zeile['kzg_id']} nicht lesbar — M1 fehlt fuer diesen Turn"
         )
         return []
 
@@ -244,7 +248,27 @@ def _intentionen_laden(turn_id: str) -> list:
         return []
 
     # ── Ausgabe-Verifikation ────────────────────
-    return [str(teil).strip() for teil in gelesen if str(teil).strip()]
+    # Zugehoerigkeit zum Kanon pruefen, nicht nur Nichtleere. Ein Wert ausserhalb
+    # von INTENT_KANON ist ein **Defekt**, kein "nicht fuehrend": Ohne diese
+    # Pruefung ist ein Bruchstueck eines Transportformats von einer gueltigen
+    # Intention, die nur nicht in GV_INITIATIVE_FUEHREND steht, nicht zu
+    # unterscheiden — beides ergibt "kein Treffer".
+    #
+    # Sind alle Werte fremd, ist die Rueckgabe leer und M1 gilt als `fehlend`.
+    # Das ist der Zustand, den der Defekt zwei Monate verdeckt hat: eine
+    # benannte Luecke statt eines stillen Beitrags von -1.0.
+    werte:   list[str] = [str(teil).strip() for teil in gelesen if str(teil).strip()]
+    bekannt: list[str] = [wert for wert in werte if wert in INTENT_KANON]
+    fremd:   list[str] = [wert for wert in werte if wert not in INTENT_KANON]
+
+    if fremd:
+        logger.error(
+            f"Korpus: Intentionen von {zeile['kzg_id']} tragen "
+            f"{len(fremd)} Wert(e) ausserhalb des Kanons: {fremd} — verworfen, "
+            f"{len(bekannt)} von {len(werte)} bleiben"
+        )
+
+    return bekannt
 
 
 def rohwert_rechnen(
