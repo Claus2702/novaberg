@@ -619,6 +619,20 @@ Erweiterung (siehe oben) kommt, müssen die Altdaten ohnehin migriert werden.
 
 ---
 
+## PROJEKTSEITE-NACHZIEHEN — die Seite kommt modernisiert wieder (Chat 120)
+
+Die Projektseite ist beim Umzug **nicht** mitgezogen. Sie soll nachkommen, und zwar überarbeitet statt eins zu eins übertragen. ⬜ Prio niedrig
+
+**Vorlage und Bestand:** Zweig `pages`, fünf Commits, Spitze `06017c5` — ein eigenständiger Wurzelzweig ohne gemeinsame Basis mit `master`. Inhalt: `index.html`, `index.de.html` und `assets/logo.png`, ein akademisches Whitepaper in zwei Sprachfassungen mit Sprachumschaltung.
+
+> **Wachposten:** Der Zweig liegt **nur lokal**, sobald das alte Repositorium gelöscht ist. Er ist nie auf die neue Plattform gepusht worden, und `master` kennt ihn nicht — die beiden teilen keinen Vorfahren. Wer die Arbeitskopie verliert, verliert die Seite. Vor dem Löschen des alten Repositoriums entweder den Zweig mitpushen oder ihn außerhalb sichern.
+
+**Zu entscheiden, wenn es soweit ist:** ob die Seite wieder ein eigener Wurzelzweig wird oder als Verzeichnis in `master` wandert. Das erste hält Seite und Code getrennt, wie bisher; das zweite macht sie mitversionierbar und Änderungen an ihr im normalen Ablauf sichtbar. Die neue Plattform kann beides bedienen.
+
+**Der inhaltliche Abgleich ist der eigentliche Aufwand, nicht die Technik.** Der Text beschreibt einen Stand von Chat 57. Seitdem sind die Initiative-Achse, die zwei Charakter-Räder, der Gesprächsvektor mit Sektoren und Clustern und der Salienz-Neubau dazugekommen; die kognitive Pipeline ist von 10 auf 13 Knoten gewachsen. Was die Seite über das System sagt, ist an mehreren Stellen überholt und gehört gegen die heutigen Konzeptdokumente geprüft — nicht gegen die Erinnerung.
+
+---
+
 ## Epic: Client-Dashboard (GTK4 / PyGObject)
 
 **Motivation:** Debugging, Kalibrierung und Einregelung des Dual-Emotion-Systems (Chat 53) erfordern visuelles Echtzeit-Feedback. Log-Grep ist kein Werkzeug für die Feinabstimmung von 8-dimensionalen Emotionsvektoren. Ohne Dashboard ist die Dual-Emotion-Architektur Blindflug.
