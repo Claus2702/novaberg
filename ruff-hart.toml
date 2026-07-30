@@ -1,0 +1,73 @@
+# Ruff — die harte Teilmenge
+#
+# Diese Datei nennt die Regelfamilien, für die der Bestand NICHT geduldet wird.
+# Für sie gilt: jeder Treffer ist ein Fehler, sofort. Aufgenommen wird eine
+# Familie erst, wenn sie über server/ null Treffer hat.
+#
+# Aufruf, gehört vor jeden Commit, der Python-Code berührt:
+#
+#     ruff check --config ruff-hart.toml server/
+#
+# Rückgabewert 0 ist die Bedingung. Alles andere blockiert den Commit.
+#
+# WARUM EINE ZWEITE DATEI UND NICHT EIN EINTRAG IN ruff.toml:
+# Ruff kennt keine Schweregrade. Jede in ruff.toml selektierte Regel meldet
+# gleich laut, und der Gesamtlauf über server/ endet ohnehin mit einem
+# Rückgabewert ungleich null — am 30.07.2026 mit 2263 Treffern, die als
+# Bestand geduldet sind. Ein neu hinzukommender LOG-Treffer hübe diese Zahl
+# von 2263 auf 2264 und wäre damit von keinem Menschen und keinem
+# Rückgabewert zu unterscheiden. Ein zweiter Lauf, der sauber sein MUSS, ist
+# der einzige Weg, aus einer Regel eine Wand zu machen, ohne eine Datei mit
+# Vergleichszahlen zu pflegen, die selbst wieder gepflegt werden müsste.
+#
+# Diese Datei wird von Ruff NICHT automatisch gefunden — gesucht werden nur
+# ruff.toml, .ruff.toml und pyproject.toml. Sie wirkt ausschließlich über
+# --config und stört den normalen Lauf deshalb nicht.
+#
+# AUFNAHMEKRITERIUM, beide Teile sind Pflicht:
+#   1. Die Familie hat über server/ null Treffer.
+#   2. Keine ihrer Regeln steht im Preview-Status. Preview-Regeln können mit
+#      der nächsten Werkzeugversion erscheinen oder verschwinden; eine Wand,
+#      die sich mit dem Werkzeug bewegt, ist keine.
+# Dazu die Frage, die eine Null erst zu einem Befund macht: Kann das Werkzeug
+# einen Verstoß in diesem Bestand überhaupt sehen? Siehe die Reichweiten-
+# Prüfung bei LOG.
+
+# Erbt ruff.toml vollständig: Zielversion, Zeilenlänge, Ausnahmeblock und alle
+# Grenzwerte. Ersetzt davon nur die Regelauswahl.
+extend = "ruff.toml"
+
+[lint]
+select = [
+    # LOG (flake8-logging) — Fehlgebrauch der Logging-Bibliothek.
+    #
+    # Bestand am 30.07.2026, ruff 0.16.0, über server/: 0 Treffer.
+    # Alle sieben Regeln der Familie sind stable, keine im Preview:
+    # LOG001, LOG002, LOG004, LOG007, LOG009, LOG014, LOG015.
+    #
+    # Gegenprobe am 30.07.2026: Für jede der sieben Regeln wurde ein Verstoß
+    # konstruiert und unter dieser Konfiguration gemeldet. Die Null sagt damit
+    # "kein Verstoß vorhanden" und nicht "das Werkzeug sieht nicht hin".
+    #
+    # REICHWEITE, gemessen am 30.07.2026 — der Teil, der beinahe gefehlt hätte:
+    # Die Regeln der Familie erkennen einen Logger an seinem NAMEN, nicht an
+    # seiner Herkunft. Ein Name wird erkannt, wenn er "logger" enthält oder
+    # genau "log" lautet, Groß- und Kleinschreibung egal. Isoliert nachgemessen:
+    #   logger, log, LOGGER, _logger, _llm_logger, logger_tokens  -> erkannt
+    #   _log                                                      -> STUMM
+    # Der Importstil ist dabei gleichgültig: "import logging" und
+    # "from logging import getLogger" verhalten sich identisch.
+    #
+    # Im Bestand entstehen 156 Logger modulweit, keiner innerhalb einer
+    # Funktion, keiner als Attribut, keiner als Parameter. 155 davon tragen
+    # einen erkannten Namen. Der 156. hieß _log und war damit für die gesamte
+    # Familie unsichtbar; er ist am 30.07.2026 umbenannt worden, weil eine Wand
+    # vor einem Modul, in das das Werkzeug nicht hineinsieht, eine Zusicherung
+    # ohne Deckung ist.
+    #
+    # Die Einstellung logger-objects hilft hier NICHT und ist deshalb nicht
+    # gesetzt. Gemessen: Sie wirkt nur, wenn ein Logger aus einem anderen Modul
+    # importiert wird; für den Gebrauch innerhalb des Moduls, das ihn anlegt,
+    # bleibt sie wirkungslos. Der einzige Hebel dort ist der Name.
+    "LOG",
+]
