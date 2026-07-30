@@ -4,10 +4,14 @@ Ziel: Das heutige Verhalten von `OllamaProvider.chat` ist festgeschrieben, bevor
 die Methode zerlegt wird. Ein **Charakterisierungs-Netz**.
 
 Hintergrund: 127 Zeilen, elf Verzweigungen — und **kein Test**. Neun Dateien
-nannten `chat` in `tests/`, keine rief diese Methode. Zwei der drei Bloecke der
-Funktion sind im Quelltext als *temporaer* gekennzeichnet
-("wird nach Auswertung entfernt"); sie lesen dasselbe Feld auf dieselbe Weise wie
-der dritte, der bleibt.
+nannten `chat` in `tests/`, keine rief diese Methode.
+
+Zwei der drei Bloecke waren im Quelltext als *temporaer* gekennzeichnet
+("wird nach Auswertung entfernt") und sind entfernt, nachdem die Auswertung
+vorlag: Das Phaenomen ist in `novaberg-lesson_l_ollama-think-content-split.md`
+beschrieben und wird von `tools/thinking_normalizer.py` behandelt. Die vier
+Tests, die ihr Feuern gepinnt hatten, sind mit ihnen gegangen — sichtbar im
+Diff, wie es sich fuer eine Loeschung gehoert.
 
 Zeugen dieser Datei:
   * **Der Zeuge fuer die Antwort ist die Datenklasse `LLMAntwort`** — content,
@@ -19,9 +23,9 @@ Zeugen dieser Datei:
   * **Die Token-Ruecklage wird eigens geprueft.** Fehlt `prompt_eval_count` auf
     der oberen Ebene, wird es aus `message` gelesen. Ohne diesen Test saehe man
     einen Ausfall der Zaehlung nicht von einem Call ohne Verbrauch.
-  * **Die Diagnose darf nie den Call brechen.** Ein Test schickt eine Antwort,
-    deren `message` kein Dict ist, und verlangt, dass trotzdem eine Antwort
-    herauskommt statt einer Ausnahme.
+  * **Die Objekt-Form von `message` wird gefahren.** Das thinking-Auslesen
+    behandelt sie defensiv; die Zeile, die den content liest, tut es nicht. Der
+    Test haelt diese offene Frage fest.
 
 Kein skipUnless, kein skipIf, kein try/except um Importe.
 """
@@ -171,57 +175,19 @@ class AntwortAuslesen(ChatBasis):
         self.assertEqual(self._fahren(_antwort(thinking={"a": 1})).thinking, "")
 
 
-class DiagnoseBloecke(ChatBasis):
-    """Die beiden als temporaer gekennzeichneten Diagnose-Bloecke.
+class NachrichtAlsObjekt(ChatBasis):
+    """Das thinking-Auslesen behandelt `message` als Dict oder als Objekt."""
 
-    Sie stehen im Quelltext mit dem Vermerk "wird nach Auswertung entfernt".
-    Das Netz haelt fest, dass sie heute feuern — damit ihre Entfernung eine
-    Entscheidung ist und nicht ein Nebeneffekt der Zerlegung.
-    """
+    def test_objekt_form_bricht_das_auslesen_nicht(self) -> None:
+        """Ein `message` mit Attributen statt Schluesseln fuehrt nicht zur Ausnahme.
 
-    def test_die_diagnose_feuert_mit_aufrufer_und_think(self) -> None:
-        """Eine INFO-Zeile je Call, mit caller und think."""
-        with self.assertLogs("ki_server.llm_provider", "INFO") as log:
-            self._fahren(caller="thinker", think=True)
-        zeilen = [z for z in log.output if "chat DIAGNOSE [" in z]
-        self.assertEqual(len(zeilen), 1)
-        self.assertIn("thinker", zeilen[0])
-
-    def test_voll_feuert_nur_bei_leerem_content_und_think(self) -> None:
-        """Der Vollausdruck des thinking-Felds ist an drei Bedingungen gebunden."""
-        with self.assertLogs("ki_server.llm_provider", "INFO") as log:
-            self._fahren(
-                _antwort(content="", thinking="langer Gedanke"),
-                think=True, caller="thinker",
-            )
-        self.assertTrue(any("DIAGNOSE-VOLL" in z for z in log.output))
-
-    def test_voll_schweigt_wenn_content_da_ist(self) -> None:
-        """Mit Inhalt im content bleibt der Vollausdruck aus."""
-        with self.assertLogs("ki_server.llm_provider", "INFO") as log:
-            self._fahren(_antwort(content="da", thinking="auch da"), think=True)
-        self.assertFalse(any("DIAGNOSE-VOLL" in z for z in log.output))
-
-    def test_voll_schweigt_ohne_think(self) -> None:
-        """Ohne `think` feuert der Vollausdruck auch bei leerem content nicht."""
-        with self.assertLogs("ki_server.llm_provider", "INFO") as log:
-            self._fahren(_antwort(content="", thinking="etwas"), think=False)
-        self.assertFalse(any("DIAGNOSE-VOLL" in z for z in log.output))
-
-
-class DiagnoseBrichtNichts(ChatBasis):
-    """Die Diagnose darf den Call unter keinen Umstaenden brechen."""
-
-    def test_nachricht_als_objekt_bricht_die_diagnose_nicht(self) -> None:
-        """Ist `message` kein Dict, faengt die Diagnose das ab.
-
-        **Und hier zeigt sich eine Unstimmigkeit im Bestand:** Die
-        Diagnose-Bloecke behandeln `message` defensiv als Dict *oder* Objekt,
-        die Zeile, die den content tatsaechlich ausliest, greift dagegen direkt
-        mit `response["message"]["content"]` zu. Waere `message` je ein Objekt,
-        stuerzte die Methode dort — nach der Diagnose. Der Test faehrt deshalb
-        eine Antwort, deren `message` ein Objekt mit den erwarteten Attributen
-        ist, und verlangt nur, dass die Diagnose selbst nicht wirft.
+        **Die Unstimmigkeit im Bestand steht weiter offen:** Das
+        thinking-Auslesen behandelt `message` defensiv als Dict *oder* Objekt,
+        die Zeile darueber greift den content mit
+        `response["message"]["content"]` direkt zu. Waere `message` je nur ein
+        Objekt, stuerzte die Methode dort. Entweder ist die Defensive unnoetig
+        oder jene Zeile ist ein latenter Defekt — der Test haelt die Frage
+        offen, ohne sie zu beantworten.
         """
         class Nachricht:
             content = "aus dem Objekt"
