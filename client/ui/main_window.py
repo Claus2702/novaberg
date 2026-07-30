@@ -52,7 +52,7 @@ _TOOLBAR_PANELS: list[str] = [
     "Session",
     "KZG",
     "LZG",
-    "Charakter",
+    "🧬 Charakter",
     "🎯 Ziele & Antrieb",
     "🌌 Gravitationsgraph",
     "🧭 Gesprächsvektor",
@@ -147,15 +147,41 @@ class MainWindow(Gtk.ApplicationWindow):
         Buttons, deren Label zu einem registrierten Panel passt, werden mit
         der Registry verdrahtet. Alle anderen Buttons bleiben Platzhalter
         und loggen beim Klick nur einen Hinweis.
+
+        **Der Anzeigetext ist zugleich der Verbindungsschlüssel.** Ein
+        Button findet sein Panel nur bei exakter Übereinstimmung mit
+        ``PANEL_LABEL``. Wer eine Beschriftung an einer der beiden Stellen
+        ändert, trennt die Verbindung — der Reiter öffnet dann nichts mehr,
+        ohne dass ein Fehler entsteht. Dagegen steht die Prüfung unten.
         """
         # Label → PANEL_ID für alle registrierten Panels.
         label_to_panel_id: dict[str, str] = {
             panel_class.PANEL_LABEL: panel_class.PANEL_ID
             for panel_class in self._registry.get_panel_types()
         }
+
+        # Ein registriertes Panel ohne Button ist unerreichbar. Das ist der
+        # Ausgang jeder Beschriftungs-Drift und heute nur daran zu merken,
+        # dass ein Klick nichts tut — deshalb hier laut, nicht erst dort.
+        ohne_button: list[str] = [
+            label for label in label_to_panel_id if label not in _TOOLBAR_PANELS
+        ]
+        if ohne_button:
+            logger.error(
+                f"Toolbar: {len(ohne_button)} registrierte Panels haben keinen "
+                f"Button — Beschriftung und PANEL_LABEL laufen auseinander: "
+                f"{', '.join(ohne_button)}"
+            )
+
+        # Gezählt wird, was verdrahtet wurde. Die frühere Fassung meldete
+        # stattdessen die Zahl der registrierten Panels und wäre bei genau
+        # dieser Drift unverändert geblieben
+        # (novaberg-lesson_l_log-behauptet-was-es-weiss.md).
+        verdrahtet: int = sum(1 for lbl in _TOOLBAR_PANELS if lbl in label_to_panel_id)
         logger.debug(
             f"Toolbar wird aufgebaut ({len(_TOOLBAR_PANELS)} Buttons, "
-            f"davon {len(label_to_panel_id)} via Registry)"
+            f"davon {verdrahtet} verdrahtet, "
+            f"{len(_TOOLBAR_PANELS) - verdrahtet} Platzhalter)"
         )
 
         flow = Gtk.FlowBox()
