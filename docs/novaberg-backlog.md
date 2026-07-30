@@ -355,6 +355,37 @@ Emotions-Baseline.
 | Phase 5 | Aktionen aus Selbstreflexion (Queue, jeder Agent) | ⬜ |
 | Phase 6 | Vorsatz-Evaluation + Charakter-Verschiebung (experimentell) | ⬜ |
 
+### Epic: HERMES-SUBSTRAT — Hermes Agent als Ausführungs-Schicht
+
+**Status:** Konzept steht, kein Code (`novaberg-hermes-substrat_k.md`)
+**Berührt:** Skill-System (Epic 10, Abschnitt 2) — siehe Abgrenzung unten
+
+Nova bleibt Kopf (Persönlichkeit, Emotion, Gedächtnis, Entscheidung), Hermes
+wird Hände (Werkzeuge, Skills, Workflows, Ausführung). Zwei getrennte
+Prozesse, Kommandorichtung einseitig: Nova ruft, Hermes antwortet. Kein Fork —
+Anbindung entsteht vollständig auf Novaberg-Seite.
+
+Alle sechs Gedächtnisse bleiben oben: Notizen, Timeline, Fakten, Entitäten,
+Knowledge Graph, Datei-Gedächtnis.
+
+**Vor dem Anbindungs-Konzept sind sieben Messungen am Testcontainer zu
+erledigen:**
+
+| # | Frage | Status |
+|---|-------|--------|
+| M0 | Startet der Gateway ohne konfigurierte Messaging-Plattform, und tickt der Kanban-Dispatcher? (Dispatcher lebt im Gateway-Prozess — Gateway darf nicht abgeschaltet werden.) | ⬜ |
+| M5 | Läuft lokale Ollama über den Custom-Endpoint-Pfad? Welches Tool-Calling-Verhalten zeigt qwen36-cpu? | ⬜ |
+| M1 | Wieviel Struktur nimmt ein Kanban-Worker aus den Feldern auf, wieviel muss Prosa im `--body` sein? | ⬜ |
+| M2 | Ist `complete --result` strukturierbar? Kann ein Ausgabeschema vorgegeben werden? | ⬜ |
+| M3 | Welche Felder liefert `hermes skills list` maschinenlesbar? Reicht das für einen Körperschema-Knoten? | ⬜ |
+| M4 | Wie erfährt ein Aufrufer von `block`? Polling oder Rückkanal? | ⬜ |
+| M6 | Queue-Tiefe und Wartezeiten an Port 11435 vor und nach Anschluss des dritten Verbrauchers | ⬜ |
+
+**Reihenfolge zwingend M0 → M5 → M1–M4.** Wird M5 nicht zuerst beantwortet,
+misst man das Modell statt Hermes und kann beides hinterher nicht trennen.
+
+Offene Entscheidungen H1–H8 siehe Konzeptdokument, Abschnitt 12.
+
 ### Client & Visualisierung
 | # | Thema | Status |
 |---|-------|--------|
