@@ -122,7 +122,10 @@ class GraphBase(ABC):
             memory_context     = "",
             web_context        = "",
             session_turns      = [],
-            user_intentionen   = [],
+            # Aus Pfad 1 uebernommen, wenn das Ereignis sie traegt. Sonst leer
+            # — und leer heisst fuer M1 der Initiative-Achse **fehlend**,
+            # nicht "keine Richtung" (`ei/initiative.py`).
+            user_intentionen   = kwargs.get("user_intentionen", []) or [],
             raw_turns          = [],
             session_turn_kern  = "",
             timeline_id        = None,

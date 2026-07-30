@@ -170,6 +170,10 @@ def ChatSenden(anfrage: GespraechAnfrage, request: Request):
                 # (novaberg-salienz-berechnung_k.md §3). None heisst "nicht
                 # ermittelt" und ist von einer echten 0.0 zu unterscheiden.
                 "salienz_human":      result.get("salienz_human"),
+                # Die Intentionen desselben Reizes, Quelle von M1 der
+                # Initiative-Achse. Sie muessen mitreisen: Der Salienz-Node des
+                # CharacterGraph laeuft NACH dem GV-Node und kaeme zu spaet.
+                "user_intentionen":   result.get("user_intentionen", []),
                 "current_emotion":    result_external.emotion.emotion              if result_external else "",
                 "current_arousal":    result_external.emotion.arousal              if result_external else 0.0,
                 "gespraechs_modus":   result_external.emotion.mode                 if result_external else "",
@@ -380,6 +384,10 @@ def ChatStreamSenden(anfrage: GespraechAnfrage, request: Request):
                     # als letzter Node nur pending_writes leert und den State
                     # sonst unveraendert zurueckgibt.
                     "salienz_human":      letzter_state.get("salienz_human"),
+                    # Die Intentionen desselben Reizes, Quelle von M1 der
+                    # Initiative-Achse. Sie muessen mitreisen: Der Salienz-Node des
+                    # CharacterGraph laeuft NACH dem GV-Node und kaeme zu spaet.
+                    "user_intentionen":   letzter_state.get("user_intentionen", []),
                     "current_emotion":    letzter_external.emotion.emotion              if letzter_external else "",
                     "current_arousal":    letzter_external.emotion.arousal              if letzter_external else 0.0,
                     "gespraechs_modus":   letzter_external.emotion.mode                 if letzter_external else "",

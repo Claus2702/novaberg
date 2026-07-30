@@ -24,8 +24,10 @@ import unittest
 from unittest.mock import MagicMock, patch
 
 from graph.base import GraphBase
+from graph.nodes.enricher import _intentionen_bestimmen
 from graph.nodes.salience import (
     analyze,
+    _intentionen_human_ermitteln,
     _salienz_human_ermitteln,
     _salienz_wert_lesen,
 )
@@ -36,7 +38,7 @@ REAKTION: str = "Und diese Ausdehnung beschleunigt sich, was niemand erwartet ha
 LOGGER: str = "ki_server.salience"
 
 
-def _antwort(salienz) -> MagicMock:
+def _antwort(salienz, intentionen: list | None = None) -> MagicMock:
     """Baut eine LLM-Antwort-Attrappe mit einem bestimmten Salienzwert.
 
     Vorbedingung: salienz ist der Wert, den das Modell im Feld 'salienz'
@@ -54,6 +56,7 @@ def _antwort(salienz) -> MagicMock:
         "emotion":        "neugier",
         "arousal":        0.4,
         "modus":          "sachlich",
+        "intentionen":    intentionen if intentionen is not None else [],
     }
     antwort.token_total = 11
     antwort.text        = "{}"
@@ -78,7 +81,13 @@ def _state(graph_rolle: str, **kw) -> dict:
     return zustand
 
 
-def _lauf(graph_rolle: str, salienzen: list, postgres_url: str = "", **kw) -> tuple[list, dict]:
+def _lauf(
+    graph_rolle: str,
+    salienzen: list,
+    postgres_url: str = "",
+    intentionen_je_segment: list | None = None,
+    **kw,
+) -> tuple[list, dict]:
     """Fuehrt analyze() mit je einem Segment pro Salienzwert aus.
 
     Vorbedingung: salienzen ist nicht leer; jeder Eintrag ist der Wert, den das
@@ -108,7 +117,10 @@ def _lauf(graph_rolle: str, salienzen: list, postgres_url: str = "", **kw) -> tu
         ):
             with patch.object(
                 modell.chat, "submit_sync",
-                side_effect=[_antwort(s) for s in salienzen],
+                side_effect=[
+                    _antwort(wert, (intentionen_je_segment or [None] * len(salienzen))[i])
+                    for i, wert in enumerate(salienzen)
+                ],
             ) as chat_mock:
                 ergebnis = analyze(zustand, MagicMock(), "meister", postgres_url)
 
@@ -271,3 +283,142 @@ class CreateStateTest(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class IntentionenHumanErmittelnTest(unittest.TestCase):
+    """Die Vereinigung ueber die Segmente, ohne Doppelungen."""
+
+    def test_vereinigung_ueber_segmente(self) -> None:
+        """Ein Turn setzt eine Richtung, wenn irgendein Teil von ihm sie setzt.
+
+        Dieselbe Begruendung, aus der `_salienz_human_ermitteln` das Maximum
+        nimmt: Ein beilaeufiger Nebensatz darf eine Frage nicht verduennen.
+        """
+        self.assertEqual(
+            _intentionen_human_ermitteln(
+                ["reflexion", "information_erfragen", "bestaetigung"],
+            ),
+            ["reflexion", "information_erfragen", "bestaetigung"],
+        )
+
+    def test_doppelungen_fallen_weg_die_erste_stellung_bleibt(self) -> None:
+        """Ein Wert, der in zwei Segmenten steht, zaehlt einmal."""
+        self.assertEqual(
+            _intentionen_human_ermitteln(
+                ["reflexion", "information_erfragen", "reflexion"],
+            ),
+            ["reflexion", "information_erfragen"],
+        )
+
+    def test_leerwerte_fallen_weg(self) -> None:
+        """Leere und reine Leerzeichen-Eintraege sind keine Intentionen."""
+        self.assertEqual(
+            _intentionen_human_ermitteln(["", "  ", "reflexion"]), ["reflexion"],
+        )
+
+    def test_ohne_segmente_leere_liste(self) -> None:
+        """Leer heisst fuer M1 **fehlend**, und zwar dort, nicht hier.
+
+        Diese Funktion erfindet keinen Ersatzwert.
+        """
+        self.assertEqual(_intentionen_human_ermitteln([]), [])
+
+
+class IntentionenImNodeTest(unittest.TestCase):
+    """Wer die Intentionen des Reizes in den State schreibt."""
+
+    def test_humangraph_sammelt_ueber_alle_segmente(self) -> None:
+        """Pfad 1 legt die Vereinigung in den State — die Quelle von M1."""
+        _, ergebnis = _lauf(
+            "human", [0.4, 0.7],
+            intentionen_je_segment=[["reflexion"], ["information_erfragen"]],
+        )
+        self.assertEqual(
+            ergebnis["user_intentionen"], ["reflexion", "information_erfragen"],
+        )
+
+    def test_charactergraph_ueberschreibt_den_gereichten_wert_nicht(self) -> None:
+        """Der CharacterGraph bewertet Novas Antwort und schreibt hier nicht.
+
+        Taete er es, ersetzte Novas Intention die des Nutzers — und M1 maesse
+        die falsche Seite des Gespraechs.
+        """
+        _, ergebnis = _lauf(
+            "character", [0.9],
+            intentionen_je_segment=[["recherche_vertiefen"]],
+            user_intentionen=["information_erfragen"],
+        )
+        self.assertEqual(ergebnis["user_intentionen"], ["information_erfragen"])
+
+    def test_ein_segment_ohne_intentionen_liefert_die_leere_liste(self) -> None:
+        """Der positive Zwilling zum Sammel-Test.
+
+        Wenn nichts kommt, steht nichts da — kein Rueckfall auf einen
+        erfundenen Wert.
+        """
+        _, ergebnis = _lauf("human", [0.5], intentionen_je_segment=[[]])
+        self.assertEqual(ergebnis["user_intentionen"], [])
+
+
+class IntentionenVorrangTest(unittest.TestCase):
+    """Der Wert aus dem Ereignis schlaegt die Ableitung aus der Historie.
+
+    Ohne diesen Vorrang ueberschriebe der Enricher die Quelle von M1, sechs
+    Nodes bevor die Achse sie liest — und zwar mit einem Wert, der nur dann
+    zufaellig stimmt, wenn Pfad 1 seinen Session-Turn schon geschrieben hat.
+    """
+
+    HISTORIE: list = [
+        {"rolle": "user", "modus": "alltag", "intentionen": ["smalltalk"]},
+    ]
+
+    def test_ereignis_gewinnt(self) -> None:
+        """Der Wert aus Pfad 1 schlaegt die Ableitung aus der Historie."""
+        werte, herkunft = _intentionen_bestimmen(
+            ["information_erfragen"], self.HISTORIE,
+        )
+        self.assertEqual(werte, ["information_erfragen"])
+        self.assertEqual(herkunft, "Ereignis")
+
+    def test_ohne_ereignis_traegt_die_historie(self) -> None:
+        """Der Rueckfall bleibt — ein eigener Impuls hat keine Nutzeraeusserung."""
+        werte, herkunft = _intentionen_bestimmen([], self.HISTORIE)
+        self.assertEqual(werte, ["smalltalk"])
+        self.assertEqual(herkunft, "letzter Session-Turn")
+
+    def test_ohne_beides_leer(self) -> None:
+        """Keine Quelle heisst leere Liste, nicht ein erfundener Wert."""
+        werte, herkunft = _intentionen_bestimmen([], [])
+        self.assertEqual(werte, [])
+        self.assertEqual(herkunft, "letzter Session-Turn")
+
+    def test_die_herkunft_unterscheidet_gleiche_werte(self) -> None:
+        """Beide Quellen koennen denselben Wert tragen.
+
+        Welche von beiden gegriffen hat, steht sonst nirgends — und genau das
+        war zwei Monate unbeobachtbar.
+        """
+        _, aus_ereignis = _intentionen_bestimmen(["smalltalk"], self.HISTORIE)
+        _, aus_historie = _intentionen_bestimmen([], self.HISTORIE)
+        self.assertNotEqual(aus_ereignis, aus_historie)
+
+
+class CreateStateIntentionenTest(unittest.TestCase):
+    """Die Graphgrenze — der Wert muss sie ueberleben."""
+
+    def test_ohne_angabe_leere_liste(self) -> None:
+        """Ohne gereichten Wert steht die leere Liste, nicht None."""
+        zustand = GraphBase.create_state(
+            _StubGraph(), user_prompt=REAKTION, user_id="meister",
+        )
+        self.assertEqual(zustand["user_intentionen"], [])
+
+    def test_gereichte_werte_kommen_an(self) -> None:
+        """Der Wert ueberlebt die Grenze zwischen den beiden Graphen."""
+        zustand = GraphBase.create_state(
+            _StubGraph(), user_prompt=REAKTION, user_id="meister",
+            user_intentionen=["information_erfragen", "reflexion"],
+        )
+        self.assertEqual(
+            zustand["user_intentionen"], ["information_erfragen", "reflexion"],
+        )

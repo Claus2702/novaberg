@@ -236,6 +236,49 @@ def _salienz_anzeige(wert: float | None) -> str:
     return f"{wert:.2f}" if wert is not None else "unlesbar"
 
 
+def _intentionen_human_ermitteln(roh_intentionen: list[str]) -> list[str]:
+    """Fasst die Intentionen aller Segmente einer Nutzeraeusserung zusammen.
+
+    Die **Vereinigung**, nicht das erste Segment: Ein Turn setzt eine Richtung,
+    wenn irgendein Teil von ihm sie setzt. Dieselbe Begruendung wie bei
+    `_salienz_human_ermitteln`, das aus demselben Grund `max()` nimmt — und
+    dieselbe wie in `_wollen_messen`, das aus der Menge die staerkste Klasse
+    zieht. Ein beilaeufiger Nebensatz darf eine Frage nicht verduennen.
+
+    Die Reihenfolge des ersten Auftretens bleibt erhalten. Sie traegt keine
+    Bedeutung fuer M1 (das maximiert), macht aber die Logzeile lesbar und den
+    Vergleich mit dem KZG-Eintrag desselben Turns moeglich.
+
+    Vorbedingung: `roh_intentionen` traegt die Werte der erfolgreich
+        geparsten Segmente, in Segmentreihenfolge, ungeprueft.
+    Nachbedingung: Liste ohne Doppelungen und ohne Leerwerte.
+    Fehlerfaelle: Keine. Eine leere Liste heisst "keine Intention erhoben" und
+        wird vom Empfaenger als **fehlend** gewertet, nicht als "keine
+        Richtung" — die Unterscheidung sitzt in `ei/initiative.py`.
+
+    Returns:
+        Die Intentionen des Turns.
+    """
+    # ── Eingabe-Validierung ─────────────────────
+    # Keine: Jede Liste ist verarbeitbar, auch die leere.
+
+    # ── Verarbeitung ────────────────────────────
+    gesehen: list[str] = []
+    for wert in roh_intentionen:
+        sauber: str = wert.strip()
+        if sauber and sauber not in gesehen:
+            gesehen.append(sauber)
+
+    # ── Ausgabe-Verifikation ────────────────────
+    if len(gesehen) != len(set(gesehen)):
+        logger.error(
+            "Salienz: Intentionen nach der Zusammenfassung nicht eindeutig: %s",
+            gesehen,
+        )
+
+    return gesehen
+
+
 def _salienz_human_ermitteln(roh_salienzen: list[float]) -> float | None:
     """Bestimmt die Salienz der Nutzeraeusserung aus ihren Segmentwerten.
 
@@ -448,6 +491,7 @@ def analyze(
     # Lauf, damit die Sammelstelle nicht an einer Rollen-Bedingung haengt und
     # bei der naechsten Rollen-Aenderung still leer bleibt.
     roh_salienzen: list[float] = []
+    roh_intentionen: list[str] = []
 
     # ── Zwei Groessen fuer die Salienz-Formel, einmal je Turn ──
     # Beide sind Eigenschaften des Paares bzw. des Turns, keine Merkmale eines
@@ -569,6 +613,9 @@ def analyze(
             roh_wert: float | None = _salienz_wert_lesen(salienz_obj)
             if roh_wert is not None:
                 roh_salienzen.append(roh_wert)
+                roh_intentionen.extend(
+                    str(i) for i in salienz_obj.get("intentionen", []) or []
+                )
 
             logger.info(
                 f"Salienz: score={_salienz_anzeige(roh_wert)}, "
@@ -775,6 +822,22 @@ def analyze(
     # Liste und daraus still None.
     if rolle == "human":
         state["salienz_human"] = _salienz_human_ermitteln(roh_salienzen)
+
+        # Die Intentionen desselben Reizes. Sie reisen mit demselben Ereignis
+        # in den CharacterGraph wie `salienz_human` und sind dort die Quelle
+        # von M1 der Initiative-Achse (`ei/initiative.py`).
+        #
+        # Warum sie hier entstehen und nicht im CharacterGraph: Der
+        # Salienz-Node von Pfad 2 laeuft NACH dem GV-Node. Wer die Intentionen
+        # erst dort holt, holt sie eine Node-Laenge zu spaet — die Achse hat
+        # dann nichts. Pfad 1 hat sie bereits erhoben, bevor Pfad 2 startet.
+        state["user_intentionen"] = _intentionen_human_ermitteln(roh_intentionen)
+
+        logger.info(
+            "Salienz: Intentionen des Reizes: %s (aus %d Segment(en))",
+            state["user_intentionen"] or "keine",
+            len(roh_salienzen),
+        )
 
         if state["salienz_human"] is None:
             # Ohne den Wert hat der CharacterGraph keinen Boden fuer seine

@@ -405,6 +405,14 @@ async def _event_verarbeiten(
     # der Nutzer habe etwas Belangloses gesagt.
     salienz_human = payload.get("salienz_human")
 
+    # Die Intentionen desselben Reizes. Anders als bei `salienz_human` ist der
+    # Default hier die leere Liste und nicht None: `user_intentionen` ist im
+    # Zustandstyp als Liste deklariert, und ein eigener Impuls ohne
+    # Nutzeraeusserung hat schlicht keine. Die Unterscheidung "nicht erhoben"
+    # gegen "keine Richtung" trifft nicht dieser Default, sondern
+    # `_wollen_messen` — eine leere Liste gilt dort als **fehlend**.
+    user_intentionen: list = payload.get("user_intentionen", []) or []
+
     # ── State erzeugen ──
     state: dict = character_graph.create_state(
         user_prompt   = user_prompt,
@@ -414,10 +422,12 @@ async def _event_verarbeiten(
         event_payload = payload,
         turn_id       = payload.get("turn_id", ""),
         salienz_human = salienz_human,
+        user_intentionen = user_intentionen,
     )
 
     logger.info(
-        f"Event-Consumer: salienz_human={salienz_human} in den CharacterGraph "
+        f"Event-Consumer: salienz_human={salienz_human}, "
+        f"user_intentionen={user_intentionen or 'keine'} in den CharacterGraph "
         f"gereicht (turn_id={payload.get('turn_id', '')}, "
         f"herkunft={payload.get('reiz_herkunft', 'nutzer_turn')})"
     )

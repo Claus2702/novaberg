@@ -41,6 +41,9 @@ KEINE_NAMEN: frozenset[str] = frozenset({
     "Chat",     # "aus Chat 116" — Sitzungsverweis, wie ihn jedes Dokument traegt
     "Postgre",  # "aus PostgreSQL" — der Slot bricht nach dem ersten
                 # Kleinbuchstaben-Block ab. Zwilling zu "Redis" darueber.
+    "Pfad",     # "aus Pfad 1" — die beiden Graph-Pfade heissen so. Der
+                # Ausdruck steht in Doku, Kommentaren und Tests und waechst
+                # mit jeder Stelle, die ueber die Graphgrenze schreibt.
 })
 
 # Einfuehrungs-Konstruktionen. Erweitern, wenn ein Beispiel eine neue braucht.

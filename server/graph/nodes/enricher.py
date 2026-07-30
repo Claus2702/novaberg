@@ -131,6 +131,42 @@ def _extract_user_intentionen(raw_turns: list[dict]) -> list:
     return []
 
 
+def _intentionen_bestimmen(aus_ereignis: list, raw_turns: list[dict]) -> list:
+    """Entscheidet, woher die Intentionen des aktuellen Turns stammen.
+
+    **Der Wert aus dem Ereignis gewinnt.** Pfad 1 erhebt die Intentionen im
+    Salienz-Node fuer genau diesen Turn und reicht sie mit dem Ereignis
+    herueber. Die Ableitung aus `raw_turns` sieht denselben Wert nur, wenn der
+    Dispatcher von Pfad 1 den Session-Turn schon geschrieben hat — eine
+    Reihenfolge zwischen zwei Graphen, auf die sich nichts verlassen sollte.
+
+    Der Rueckfall bleibt fuer Laeufe **ohne** Nutzeraeusserung: Ein eigener
+    Impuls traegt keine Intentionen im Ereignis, hat aber eine Vorgeschichte.
+
+    Ohne diesen Vorrang ueberschriebe der Enricher die Quelle von M1 der
+    Initiative-Achse, und zwar sechs Nodes bevor die Achse sie liest.
+
+    Vorbedingung: keine. Beide Argumente duerfen leer sein.
+    Nachbedingung: (Liste der Intentionen, Herkunftsname). Die Liste ist
+        leer, wenn keine der beiden Quellen etwas hat.
+    Fehlerfaelle: keine — ein leeres Ergebnis ist ein legitimer Zustand und
+        wird vom Empfaenger als **fehlend** gewertet, nicht als "keine
+        Richtung" (`ei/initiative.py`).
+
+    Returns:
+        (Intentionen, Herkunftsname fuer die Logzeile)
+    """
+    # ── Eingabe-Validierung ─────────────────────
+    # Keine: Jede Kombination aus leer und gefuellt ist entscheidbar.
+
+    # ── Verarbeitung ────────────────────────────
+    if aus_ereignis:
+        return list(aus_ereignis), "Ereignis"
+
+    # ── Ausgabe-Verifikation ────────────────────
+    return _extract_user_intentionen(raw_turns), "letzter Session-Turn"
+
+
 def _create_prompt_embedding(
     state: ConversationState,
 ) -> list[float]:
@@ -427,16 +463,26 @@ def _enrich_character(
 
     state["session_turns"] = gefilterte_turns
 
-    # Intentionen aus dem letzten User-Turn ableiten (vom Dispatcher
-    # gelesen). Modus und Emotion liegen seit Phase 3 in den Personality-
-    # Klassen — keine Spiegelung mehr.
-    letzte_intentionen: list = _extract_user_intentionen(raw_turns)
+    # Intentionen des Reizes. **Der Wert aus dem Ereignis gewinnt.**
+    #
+    # Pfad 1 erhebt sie im Salienz-Node fuer genau diesen Turn und reicht sie
+    # mit dem Ereignis herueber. Die Ableitung aus `raw_turns` unten sieht
+    # denselben Wert nur, wenn der Dispatcht von Pfad 1 den Session-Turn
+    # bereits geschrieben hat — eine Reihenfolge zwischen zwei Graphen, auf
+    # die sich nichts verlassen sollte. Sie bleibt als Rueckfall fuer Laeufe
+    # ohne Nutzeraeusserung: Ein Eigen-Impuls traegt keine im Ereignis.
+    #
+    # Ohne diesen Vorrang ueberschriebe der Enricher die Quelle von M1 der
+    # Initiative-Achse, und zwar sechs Nodes bevor die Achse sie liest.
+    letzte_intentionen, herkunft = _intentionen_bestimmen(
+        state.get("user_intentionen") or [], raw_turns,
+    )
     state["user_intentionen"] = letzte_intentionen
 
-    if letzte_intentionen:
-        logger.info(
-            f"Enricher: User-Intentionen aus letztem Turn: {letzte_intentionen}"
-        )
+    logger.info(
+        "Enricher: User-Intentionen: %s (Quelle: %s)",
+        letzte_intentionen or "keine", herkunft,
+    )
 
     # ── Pipeline-Log: Eingang (Anker 2) ─────────
     # Session-Kontext geladen, vor Plugin-Loop und Memory-Suche.
