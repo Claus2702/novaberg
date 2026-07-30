@@ -172,22 +172,30 @@ class OllamaProvider(LLMProvider):
         caller_label  = f" [{caller}]" if caller else ""
         self._log_token_usage(caller_label, input_tokens, output_tokens, total_tokens, ctx_limit)
 
-        raw_content: str = response["message"]["content"]
+        # ── Ausgabe-Verifikation ────────────────────
+        # `message` ist ein Dict. Kein Objekt-Zweig: Die Antwort des Clients ist
+        # ein festgelegter Typ, und wenn sie es nicht ist, soll es hier laut
+        # krachen statt spaeter still falsch zu rechnen. Ein `getattr`-Zweig
+        # daneben waere ohnehin Theater gewesen — der Zugriff auf `content`
+        # unten greift direkt zu und stuerzte als Erster.
+        nachricht: dict = response["message"]
+
+        raw_content: str = nachricht["content"]
         logger.debug(f"OLLAMA RAW [{caller}]: '{raw_content[:500]}'")
 
         # thinking-Feld additiv auslesen — Ollama trennt Reasoning vom content
-        # bei think=True (Ollama #10976). Defensiv: message kann dict oder
-        # Objekt sein; fehlt das Feld → "". Kein Crash bei unerwartetem Typ.
-        _thinking_msg = (
-            response.get("message")
-            if isinstance(response, dict)
-            else getattr(response, "message", None)
-        )
-        if isinstance(_thinking_msg, dict):
-            _thinking_raw = _thinking_msg.get("thinking", "")
-        else:
-            _thinking_raw = getattr(_thinking_msg, "thinking", "")
-        raw_thinking: str = _thinking_raw if isinstance(_thinking_raw, str) else ""
+        # bei think=True (Ollama #10976). Fehlt das Feld, ist es leer; **traegt
+        # es einen anderen Typ, ist das ein Vertragsbruch des Clients** und
+        # nicht ein leeres Reasoning. Ein stiller Rueckfall auf "" machte aus
+        # einem Defekt eine plausible Ausgabe.
+        raw_thinking = nachricht.get("thinking", "")
+        if not isinstance(raw_thinking, str):
+            logger.error(
+                f"OllamaProvider: thinking-Feld ist "
+                f"{type(raw_thinking).__name__}, erwartet str — "
+                f"Vertragsbruch des Clients, caller={caller}"
+            )
+            raise TypeError
 
         return LLMAntwort(
             content=raw_content,

@@ -23,9 +23,10 @@ Zeugen dieser Datei:
   * **Die Token-Ruecklage wird eigens geprueft.** Fehlt `prompt_eval_count` auf
     der oberen Ebene, wird es aus `message` gelesen. Ohne diesen Test saehe man
     einen Ausfall der Zaehlung nicht von einem Call ohne Verbrauch.
-  * **Die Objekt-Form von `message` wird gefahren.** Das thinking-Auslesen
-    behandelt sie defensiv; die Zeile, die den content liest, tut es nicht. Der
-    Test haelt diese offene Frage fest.
+  * **Der Typ ist festgelegt, und das Netz pinnt den Krach.** `message` ist ein
+    Dict; jede andere Form und jeder falsche Typ im `thinking`-Feld enden in
+    einer Ausnahme mit error-Zeile. Frueher wurde daraus stillschweigend ein
+    leerer Wert — aus einem Defekt eine plausible Ausgabe.
 
 Kein skipUnless, kein skipIf, kein try/except um Importe.
 """
@@ -166,41 +167,47 @@ class AntwortAuslesen(ChatBasis):
         """Ohne das Feld steht eine leere Zeichenkette, nicht None."""
         self.assertEqual(self._fahren(_antwort()).thinking, "")
 
-    def test_thinking_falschen_typs_wird_leer(self) -> None:
-        """Ein `thinking`, das keine Zeichenkette ist, gilt als leer.
+    def test_thinking_falschen_typs_kracht_laut(self) -> None:
+        """Ein `thinking`, das keine Zeichenkette ist, ist ein Vertragsbruch.
 
-        Defensiv gegen Client-Versionen, die dort etwas anderes ablegen — ein
-        Objekt statt eines Textes wuerde sonst als Reasoning durchgehen.
+        Vorher wurde daraus stillschweigend "" — aus einem Defekt eine
+        plausible Ausgabe. Jetzt nennt eine error-Zeile den gefundenen Typ und
+        die Methode wirft. Ein leeres Reasoning und ein kaputtes Feld sind zwei
+        Dinge, und sie sollen unterscheidbar bleiben.
         """
-        self.assertEqual(self._fahren(_antwort(thinking={"a": 1})).thinking, "")
+        with self.assertLogs("ki_server.llm_provider", "ERROR") as log:
+            with self.assertRaises(TypeError):
+                self._fahren(_antwort(thinking={"a": 1}))
+        self.assertIn("dict", log.output[-1])
+        self.assertIn("erwartet str", log.output[-1])
 
 
-class NachrichtAlsObjekt(ChatBasis):
-    """Das thinking-Auslesen behandelt `message` als Dict oder als Objekt."""
+class NachrichtNurAlsDictionary(ChatBasis):
+    """`message` ist ein Dict — jede andere Form kracht, und zwar sofort."""
 
-    def test_objekt_form_bricht_das_auslesen_nicht(self) -> None:
-        """Ein `message` mit Attributen statt Schluesseln fuehrt nicht zur Ausnahme.
+    def test_objekt_statt_dict_kracht(self) -> None:
+        """Eine Antwort, die kein Dict ist, wirft — nachgemessen `AttributeError`.
 
-        **Die Unstimmigkeit im Bestand steht weiter offen:** Das
-        thinking-Auslesen behandelt `message` defensiv als Dict *oder* Objekt,
-        die Zeile darueber greift den content mit
-        `response["message"]["content"]` direkt zu. Waere `message` je nur ein
-        Objekt, stuerzte die Methode dort. Entweder ist die Defensive unnoetig
-        oder jene Zeile ist ein latenter Defekt — der Test haelt die Frage
-        offen, ohne sie zu beantworten.
+        Der frueher defensive Zweig behandelte `message` als Dict *oder*
+        Objekt. Das war Theater, und der Test zeigt, warum: Die Antwort wird
+        schon **vor** dem `message`-Zugriff als Dict benutzt — die
+        Token-Verbuchung ruft `response.get(...)`. Ein Objekt scheitert dort,
+        drei Zeilen vor dem sorgfaeltig abgesicherten Zweig. Der abgesicherte
+        Zweig konnte nie erreicht werden.
+
+        Gepinnt wird deshalb der Ausnahmetyp, den die Messung ergibt, nicht der,
+        den man erwarten wuerde.
         """
-        class Nachricht:
-            content = "aus dem Objekt"
-            thinking = "gedacht"
+        class NurObjekt:
+            message = type("M", (), {"content": "x", "thinking": "y"})()
 
-        class Antwort(dict):
-            """Dict fuer den content-Zugriff, Attribut fuer die Diagnose."""
+        with self.assertRaises(AttributeError):
+            self._fahren(NurObjekt())
 
-            message = Nachricht()
-
-        roh = Antwort({"message": {"content": "aus dem Dict"}, "eval_count": 1})
-        antwort = self._fahren(roh)
-        self.assertEqual(antwort.content, "aus dem Dict")
+    def test_fehlendes_content_feld_kracht(self) -> None:
+        """Ohne `content` im Dict gibt es nichts zurueckzugeben."""
+        with self.assertRaises(KeyError):
+            self._fahren({"message": {}, "eval_count": 1})
 
 
 if __name__ == "__main__":
