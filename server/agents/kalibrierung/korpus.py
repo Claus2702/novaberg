@@ -29,6 +29,7 @@ doppelt (novaberg-gv-initiative_k.md §5).
 Konzept: novaberg-gv-initiative_k.md §7, §12.
 """
 
+import json
 import logging
 from dataclasses import dataclass
 
@@ -186,6 +187,11 @@ def rohturns_laden(user_id: str, character_id: str) -> list[Turnpaar]:
 def _intentionen_laden(turn_id: str) -> list:
     """Holt die Intentionen eines Turns ueber `verbindung` aus dem KZG.
 
+    Das Feld ist eine **JSON-Liste**, geschrieben mit `json.dumps`
+    (`memory/kzg.py`, `agents/kzg/speicher.py`), und wird entsprechend geparst.
+    Ein Split an Kommas liefert Bruchstuecke mit Klammer und
+    Anfuehrungszeichen — `["reflexion"` statt `reflexion`.
+
     Vorbedingung: `turn_id` ist gesetzt.
     Nachbedingung: Liste der Intentionen; leer, wenn der Turn keinen
     KZG-Eintrag hat oder dieser abgelaufen ist.
@@ -194,6 +200,13 @@ def _intentionen_laden(turn_id: str) -> list:
     Salienz-Schwelle kommt nie ins KZG, und ein alter faellt per TTL heraus.
     Die Folge ist, dass M1 fuer diesen Turn fehlt — `fuehrung_messen` benennt
     das dann in `fehlend`, statt es als 0 zu verrechnen.
+    Ein **vorhandenes, aber unlesbares** Feld ist etwas anderes und wird laut
+    gemeldet: Es ist ein Defekt und kein Leerfall. Zurueckgegeben wird dann
+    ebenfalls die leere Liste, damit M1 als `fehlend` gilt — der einzige
+    ehrliche Zustand. Der Unterschied ist nicht kosmetisch: Eine gefuellte
+    Liste mit unpassenden Werten laesst M1 als **"nicht fuehrend"** durchgehen
+    und traegt damit ein hartes -1.0 in jeden Turn, wo eine benannte Luecke
+    stehen muesste.
 
     Returns:
         Die Intentionen.
@@ -213,8 +226,25 @@ def _intentionen_laden(turn_id: str) -> list:
     if not roh:
         return []
 
+    try:
+        gelesen = json.loads(roh)
+    except (TypeError, ValueError) as fehler:
+        logger.error(
+            f"Korpus: Intentionen von {zeile['kzg_id']} nicht lesbar "
+            f"({type(fehler).__name__}: {fehler}) — M1 fehlt fuer diesen Turn"
+        )
+        return []
+
+    if not isinstance(gelesen, list):
+        logger.error(
+            f"Korpus: Intentionen von {zeile['kzg_id']} sind "
+            f"{type(gelesen).__name__}, erwartet ist eine Liste — "
+            f"M1 fehlt fuer diesen Turn"
+        )
+        return []
+
     # ── Ausgabe-Verifikation ────────────────────
-    return [teil.strip() for teil in roh.split(",") if teil.strip()]
+    return [str(teil).strip() for teil in gelesen if str(teil).strip()]
 
 
 def rohwert_rechnen(

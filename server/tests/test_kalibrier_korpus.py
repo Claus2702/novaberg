@@ -33,8 +33,8 @@ Kein skipUnless, kein skipIf, kein try/except um Importe.
 import unittest
 from unittest.mock import patch
 
-from agents.kalibrierung.korpus import rohturns_laden
-from config import KALIBRIERUNG_MAX_TURN_ZEICHEN
+from agents.kalibrierung.korpus import _intentionen_laden, rohturns_laden
+from config import GV_INITIATIVE_FUEHREND, KALIBRIERUNG_MAX_TURN_ZEICHEN
 
 # Eine Laenge klar unter und eine klar ueber der Grenze, plus der Randwert.
 KURZ:  str = "k" * 40
@@ -126,6 +126,79 @@ class KorpusLaengenfilter(unittest.TestCase):
             ["turn-1", "turn-2", "turn-3", "turn-4"],
             "ohne Filter fehlen Paare — dann prueft der Filtertest nichts",
         )
+
+
+class IntentionenLesen(unittest.TestCase):
+    """Das Intentionen-Feld ist eine JSON-Liste und wird geparst.
+
+    Der Defekt, gegen den diese Klasse steht: Ein Split an Kommas liefert
+    `["reflexion"` statt `reflexion`. Solche Bruchstuecke treffen
+    `GV_INITIATIVE_FUEHREND` nie — und weil die Liste dabei **nicht leer** ist,
+    gilt M1 als „nicht fuehrend" statt als „fehlend" und traegt ein hartes
+    -1.0 in jeden Turn. Gemessen am 30.07.2026 hatte damit **keiner** von 144
+    Turns eine fuehrende Intention; geparst sind es 40 von 99.
+    """
+
+    def _laden(self, roh: object) -> list:
+        """Ruft `_intentionen_laden` gegen einen vorgegebenen Redis-Wert."""
+        with patch(
+            "agents.kalibrierung.korpus.db_manager.select_one",
+            return_value={"kzg_id": "kzg:test:test:1"},
+        ), patch(
+            "agents.kalibrierung.korpus.redis_manager"
+        ) as rm:
+            rm.client.hget.return_value = roh
+            return _intentionen_laden("turn-1")
+
+    def test_json_liste_wird_geparst(self) -> None:
+        """Aus der JSON-Liste kommen die nackten Werte."""
+        self.assertEqual(
+            self._laden('["reflexion", "information_teilen"]'),
+            ["reflexion", "information_teilen"],
+        )
+
+    def test_keine_klammern_und_anfuehrungszeichen_im_wert(self) -> None:
+        """Kein Wert traegt Syntax des Transportformats.
+
+        Der direkte Anschlag gegen den alten Split: Er lieferte genau diese
+        Zeichen im Wert.
+        """
+        for wert in self._laden('["reflexion", "information_teilen"]'):
+            self.assertNotIn("[", wert, f"Klammer im Wert: {wert!r}")
+            self.assertNotIn("]", wert, f"Klammer im Wert: {wert!r}")
+            self.assertNotIn('"', wert, f"Anfuehrungszeichen im Wert: {wert!r}")
+
+    def test_fuehrende_intention_trifft_die_menge(self) -> None:
+        """Der Test, der den Defekt gefangen haette.
+
+        Eine fuehrende Intention muss nach dem Lesen in
+        `GV_INITIATIVE_FUEHREND` gefunden werden. Genau das war zwei Monate
+        lang nicht der Fall, und keine Zahl im Kalibrierbericht hat es gezeigt:
+        Der Defekt sah aus wie ein Paar, das nie die Initiative nimmt.
+        """
+        fuehrend: str = sorted(GV_INITIATIVE_FUEHREND)[0]
+        gelesen = self._laden(f'["{fuehrend}", "reflexion"]')
+        self.assertTrue(
+            any(i in GV_INITIATIVE_FUEHREND for i in gelesen),
+            f"{gelesen} trifft GV_INITIATIVE_FUEHREND nicht — M1 ist blind",
+        )
+
+    def test_unlesbares_feld_gilt_als_fehlend(self) -> None:
+        """Kaputtes JSON ergibt die leere Liste, nicht Bruchstuecke.
+
+        Leer heisst fuer `fuehrung_messen` „fehlend" und wird benannt. Eine
+        gefuellte Liste mit unpassenden Werten hiesse „nicht fuehrend" und
+        waere ein stiller Beitrag von -1.0.
+        """
+        self.assertEqual(self._laden('["reflexion", '), [])
+
+    def test_nichtliste_gilt_als_fehlend(self) -> None:
+        """Gueltiges JSON, das keine Liste ist, ergibt ebenfalls leer."""
+        self.assertEqual(self._laden('{"reflexion": true}'), [])
+
+    def test_leeres_feld_gilt_als_fehlend(self) -> None:
+        """Fehlendes Feld ist der legitime Leerfall."""
+        self.assertEqual(self._laden(None), [])
 
 
 if __name__ == "__main__":
