@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Pipeline-Node Perzeption (Emotionale + rationale Analyse)
-**Stand:** 17. Mai 2026, Chat 90 (PFAD2-PERZEPTION-FIX abgeschlossen, HumanGraph-Slimming Phase 4)
+**Stand:** 30. Juli 2026, Chat 118 (Zerlegung: `Wahrnehmung`-Dataclass + acht Helfer; Verhalten unverändert)
 **Pfad:** novaberg/docs/novaberg-node-perception.md
 **Quellen:** nova-01-m-a.md (Node-Beschreibung), nova-04-m-a.md (Emotions-Vektoren, Plutchik-Details)
 
@@ -44,6 +44,43 @@ db_zugriff → ei_calc → enricher → reducer → router → planner → agent
 **HumanGraph:** Entry-Point. Sieht den rohen User-Prompt und den Session-Kontext (letzte 5 Turns aus Redis). Kein KZG, kein LZG, kein Charakter-Hash.
 
 **CharacterGraph:** Vorletzter Berechnungs-Node vor `ei_calc_persist` / `salience` / `dispatcher`. Analysiert Novas finale, vom Tribunal freigegebene Antwort. Der CG selbst beginnt nicht hier — Entry-Point ist `db_zugriff`. Session-Turns werden mit `character_id` aus dem State geladen (seit Chat 60).
+
+---
+
+## Bauform: `Wahrnehmung` und acht Helfer (Chat 118)
+
+`perceive()` war 128 Zeilen mit 67 Anweisungen und drei über den Rumpf verteilten Rollen-Abfragen. Sie ist jetzt 42 Zeilen mit zehn Anweisungen und **keiner** Verzweigung; die Rollen-Abfrage steht einmal, in `_eingabe_waehlen` und `_ziel_personality`. Das Verhalten ist unverändert — die Zerlegung lief gegen ein vorher geschriebenes Netz aus 21 Tests.
+
+| Helfer | Aufgabe |
+|---|---|
+| `_eingabe_waehlen` | User-Prompt oder Nova-Antwort, nach `perzeption_rolle` |
+| `_ziel_personality` | Wohin geschrieben wird — `external` oder `internal` |
+| `_session_kontext_laden` | Die letzten Turns aus Redis (§4.2) |
+| `_build_system_prompt` | Prompt-Zusammenbau (§4.1) |
+| `_wahrnehmung_erheben` | Der LLM-Aufruf |
+| `_wahrnehmung_lesen`, `_arousal_lesen` | JSON → `Wahrnehmung` |
+| `_wahrnehmung_schreiben` | `Wahrnehmung` → Personality-Slots |
+
+Die acht Ausgabefelder liegen in einer Dataclass:
+
+```python
+@dataclass
+class Wahrnehmung:
+    intent:             str   = "smalltalk"
+    tone:               str   = "sachlich"
+    thema:              str   = ""
+    emotion:            str   = "neutral"
+    arousal:            float = 0.5
+    modus:              str   = "alltag"
+    sprach_stil:        str   = "neutral"
+    beziehungs_dynamik: str   = "neutral"
+```
+
+**Die Defaults sind der Fallback.** Vorher standen dieselben acht Standardwerte zweimal im Rumpf: einmal als `.get()`-Default beim Lesen, einmal im `except`-Zweig bei einem Parse-Fehler. Zwei Listen, die dasselbe bedeuten sollen, sind die Stelle, an der sie auseinanderlaufen. Jetzt ist `Wahrnehmung()` der Fallback, und es gibt nur eine Liste.
+
+`emotions_vector` steht bewusst **nicht** in der Klasse — den setzt der EI-Calc aus dem Emotionsverlauf, nicht dieser Knoten (§8).
+
+Die Rolle „Nova" steht als Konstante `_ROLLE_NOVA = "assistant"` — der Wert kommt aus LangGraph-Message-Rollen und heißt deshalb nicht `nova`.
 
 ---
 

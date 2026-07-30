@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Pipeline-Node `db_zugriff` (Eingangsnode des CharacterGraphs)
-**Stand:** 28. Juli 2026, Chat 114 (Raum aus nova_state, eigener Cold-Start aus den Labels)
+**Stand:** 30. Juli 2026, Chat 118 (Zerlegung in Orchestrator + zwölf Helfer; Verhalten unverändert)
 **Pfad:** novaberg/docs/novaberg-node-db-zugriff.md
 **Quellen:** novaberg-path2-perzeption_k.md (archiviert)
 **Datei:** `graph/nodes/db_zugriff.py`
@@ -36,6 +36,26 @@ Im HumanGraph läuft `db_zugriff` **nicht**. Der HumanGraph braucht Nova-Identit
 ---
 
 ## 3. Vier Lade-Schritte
+
+### Bauform: Orchestrator und Helfer (Chat 118)
+
+Bis Chat 118 stand alles Folgende im Rumpf von `db_zugriff()` — 333 Zeilen, elf Verzweigungen. Die Funktion ist jetzt ein Orchestrator von 65 Zeilen mit einer Verzweigung; die Arbeit liegt in zwölf Helfern. **Das Verhalten ist unverändert** — die Zerlegung lief gegen ein vorher geschriebenes Netz aus 26 Tests.
+
+| Helfer | Gehört zu |
+|---|---|
+| `_kopf_eroeffnen`, `_lesevorgang`, `_zweig_protokollieren` | Pipeline-Log (§5) |
+| `_emotion_aus_payload` | Schritt 1 |
+| `_emotion_aus_nova_state`, `_raum_aus_nova_state`, `_raum_aus_labels`, `_nova_zustand_laden` | Schritt 2 |
+| `_character_aus_hash`, `_charaktere_laden` | Schritt 3 |
+| `_identities_laden`, `_directives_laden` | Schritt 4 |
+| `_external_bestimmen` | Personality-Zusammenbau (§4) |
+
+Zwei Strukturen tragen die Wiederholung:
+
+- **`Protokollkopf`** (frozen dataclass) — `turn_id`, `quelle`, `span_id`, `user_id`, `character_id`. Jeder Helfer, der protokolliert, bekommt diesen einen Parameter statt fünf.
+- **`_HASH_FELDER`** — die Abbildung Character-Feld → Hash-Spalte an genau einer Stelle (§3, Schritt 3).
+
+**Die Reihenfolge der Aufrufe ist Verhalten, nicht Geschmack.** Sie ist die Reihenfolge der Einträge im `pipeline_log`. Die Helfer werden deshalb in Schritt-Reihenfolge aufgerufen und *nicht* nach Kanal gruppiert (erst alles Redis, dann alles PostgreSQL) — das wäre die naheliegendere Gliederung und würde die Forensik-Abfrage in §5 stillschweigend umsortieren.
 
 ### Schritt 1 — `external.emotion` aus dem Event-Payload
 
@@ -107,24 +127,34 @@ Unlesbare Werte im Hash (kein `float`) sind kein Leerfall, sondern ein Defekt: `
 
 Beide Akteure haben einen Charakter-Hash in der Tabelle `charakter_hash`. Im Paar-Schema lebt jeder Hash unter `(user_id, character_id)`.
 
+Die Abbildung Feld → Spalte steht an einer Stelle, weil sie zweimal gebraucht wird — für den Hash des Nutzers und für Novas eigenen. Zweimal hingeschrieben wäre sie die Stelle, an der beide auseinanderlaufen:
+
+```python
+_HASH_FELDER: dict[str, str] = {
+    "core":         "kern",
+    "adaptive":     "adaptiv",
+    "relationship": "beziehungsprofil",
+    "intentions":   "intentions_profil",
+    "emotions":     "emotions_profil",
+}
+
+def _character_aus_hash(hash_dict: dict) -> Character:
+    return Character(**{
+        feld: hash_dict.get(spalte, "") for feld, spalte in _HASH_FELDER.items()
+    })
+```
+
+`_charaktere_laden` holt beide Hashes und schickt jeden durch diese Abbildung:
+
 ```python
 # User-Hash: external.character
-external_hash_dict = charakter_hash_retrieve_dict(
-    postgres_url, user_id, character_id,
+external_character = _character_aus_hash(
+    charakter_hash_retrieve_dict(postgres_url, user_id, character_id)
 )
-external_character = Character(
-    core         = external_hash_dict.get("kern",              ""),
-    adaptive     = external_hash_dict.get("adaptiv",           ""),
-    relationship = external_hash_dict.get("beziehungsprofil",  ""),
-    intentions   = external_hash_dict.get("intentions_profil", ""),
-    emotions     = external_hash_dict.get("emotions_profil",   ""),
-)
-
 # Nova-Hash: internal.character
-internal_hash_dict = nova_charakter_hash_retrieve_dict(
-    postgres_url, user_id,
+internal_character = _character_aus_hash(
+    nova_charakter_hash_retrieve_dict(postgres_url, user_id)
 )
-internal_character = Character(... analog ...)
 ```
 
 `nova_charakter_hash_retrieve_dict` ist ein Helper in `memory/charakter.py`, der intern den korrekten Argument-Vertausch durchführt (Nova lebt unter `(ASSISTANT_USER_ID, user_id)` im Paar-Schema). Die Funktion existiert, damit der Aufrufer nicht selbst den Vertausch durchführen muss — das war eine subtile Fehlerquelle in der Vorgängerversion.
@@ -180,13 +210,15 @@ if event_source == "user":
 else:
     # Pixie-Pfad: external = Kopie von internal
     external = Personality(
-        character = Character(... aus internal_character ...),
-        emotion   = Emotion(... aus internal_emotion ...),
+        character = replace(internal.character),
+        emotion   = replace(internal.emotion),
     )
 
 state["external"] = external
 state["internal"] = internal
 ```
+
+**Die Kopie muss eine Kopie bleiben.** `dataclasses.replace()` ohne Änderung liefert ein neues Objekt mit denselben Werten. Eine Zuweisung ohne `replace` (`character = internal.character`) sähe identisch aus und würde funktionieren, bis ein späterer Node in `external` schreibt — dann schriebe er zugleich in `internal`. Der Pixie-Pfad ist genau der, auf dem das passieren kann, weil dort beide Seiten dieselbe Person sind.
 
 Die Pixie-Sonderbehandlung am Ende ist wichtig: bei Pixie-getriggerten Läufen (Träumen, Recherche) ist Nova beide Seiten zugleich. `external` wird mit einer Kopie von `internal` initialisiert, damit der EI-Calc keine Empathie-Differenz berechnet und die Konsumenten von `external.character` Novas eigenen Charakter sehen, nicht den User-Charakter aus dem letzten User-Turn.
 
