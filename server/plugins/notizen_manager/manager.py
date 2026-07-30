@@ -15,6 +15,7 @@ Erweitert um:
 
 import json
 import logging
+from dataclasses import dataclass
 
 import psycopg2
 import redis
@@ -32,6 +33,24 @@ from config import get_node_config
 from services.model_services import model_service, ChatRequest
 
 logger = logging.getLogger("ki_server.plugins.notizen")
+
+# Aktionen, die unveraendert an den M6-Pfad gehen. Als Menge, weil die
+# Zugehoerigkeit gefragt wird und nicht die Reihenfolge.
+_M6_AKTIONEN: frozenset[str] = frozenset({"create", "append", "query"})
+
+
+@dataclass(frozen=True)
+class Zugang:
+    """Die drei Verbindungswerte, die jeder Schreibpfad braucht.
+
+    Zusammen uebergeben, weil sie zusammen gehoeren — ohne sie trugen die
+    Unterfunktionen sechs Parameter und rissen die Argumentgrenze
+    (`novaberg-lesson_l_klassen-statt-flache-keys.md`).
+    """
+
+    user_id:      str
+    postgres_url: str
+    redis_client: redis.Redis
 
 
 # ─────────────────────────────────────────
@@ -404,6 +423,111 @@ Falls keine Notiz erkennbar: "snippet": null
     # ─────────────────────────────────────────
     # Ausführung
     # ─────────────────────────────────────────
+    def _m6_ausfuehren(self, aktion: str, daten: dict, zugang: Zugang) -> int:
+        """Fuehrt einen Auftrag ueber den M6-Pfad aus (Repository).
+
+        Vorbedingung: `aktion` ist eine der M6-Aktionen oder "update".
+        Nachbedingung: 1, wenn der Pfad Erfolg meldet, sonst 0. Das Ergebnis
+        steht in jedem Fall im Log — auch ein Fehlschlag ist eine Auskunft.
+        Fehlerfaelle: Keine eigenen; `notiz_verarbeiten` meldet seine selbst,
+        und eine Ausnahme faengt der Aufrufer je Auftrag.
+
+        Returns:
+            1 bei Erfolg, sonst 0.
+        """
+        # ── Verarbeitung ────────────────────────────
+        ergebnis: dict = self.notiz_verarbeiten(
+            aktion       = aktion,
+            daten        = daten,
+            user_id      = zugang.user_id,
+            postgres_url = zugang.postgres_url,
+            redis_client = zugang.redis_client,
+            turn_id      = daten.get("turn_id"),
+        )
+
+        # ── Ausgabe-Verifikation ────────────────────
+        logger.info(
+            f"NotizenManager M6: {ergebnis.get('aktion', '')} "
+            f"— {ergebnis.get('details', '')}"
+        )
+        return 1 if ergebnis.get("erfolg") else 0
+
+    def _update_ausfuehren(self, daten: dict, zugang: Zugang) -> int:
+        """Aktualisiert eine Notiz — ueber M6 mit `notiz_id`, sonst per target.
+
+        **Gepinnte Asymmetrie:** Der M6-Zweig zaehlt nur bei gemeldetem Erfolg,
+        der alte Zweig unbedingt — `_aktualisieren` gibt nichts zurueck, es gibt
+        dort nichts zu pruefen. `verarbeitet` bedeutet damit je Pfad etwas
+        anderes. `tests/test_notizen_execute.py` haelt das fest; es
+        gleichzuziehen ist eine Entscheidung und kein Nebeneffekt.
+
+        Vorbedingung: `daten` traegt `notiz_id` oder `target` und `text`.
+        Nachbedingung: 1 oder 0 nach der obigen Regel.
+        Fehlerfaelle: Faengt der Aufrufer je Auftrag.
+
+        Returns:
+            1 oder 0.
+        """
+        # ── Verarbeitung ────────────────────────────
+        if "notiz_id" in daten:
+            return self._m6_ausfuehren("update", daten, zugang)
+
+        # ── Ausgabe ─────────────────────────────────
+        self._aktualisieren(zugang.postgres_url, zugang.user_id, daten)
+        return 1
+
+    def _delete_ausfuehren(self, daten: dict, zugang: Zugang) -> int:
+        """Loescht eine Notiz — per Repository mit `notiz_id`, sonst per target.
+
+        Vorbedingung: `daten` traegt `notiz_id` oder `target`.
+        Nachbedingung: 1 — beide Zweige zaehlen, die Zaehlung stand schon
+        vorher hinter der Weiche.
+        Fehlerfaelle: Faengt der Aufrufer je Auftrag.
+
+        Returns:
+            1.
+        """
+        # ── Verarbeitung ────────────────────────────
+        if "notiz_id" in daten:
+            NotizenRepository.invalidate(zugang.postgres_url, daten["notiz_id"])
+            logger.info(f"NotizenManager: Notiz {daten['notiz_id']} invalidiert")
+        else:
+            self._loeschen(zugang.postgres_url, zugang.user_id, daten)
+
+        # ── Ausgabe ─────────────────────────────────
+        return 1
+
+    def _auftrag_ausfuehren(self, write: dict, zugang: Zugang) -> int:
+        """Waehlt den Pfad fuer einen einzelnen Schreibauftrag.
+
+        **Gepinntes Verhalten:** Eine unbekannte Aktion faellt stillschweigend
+        durch — keine Zaehlung, keine Log-Zeile. Das ist der stille Uebersprung,
+        den der Standard verbietet, und er wird hier nicht beiläufig behoben:
+        Ein Test sichert die Stille, damit ihre Beseitigung eine Entscheidung
+        ist. Der Fund gehoert in die Fundliste.
+
+        Vorbedingung: `write` traegt `aktion` und `daten`.
+        Nachbedingung: Die Zahl der verarbeiteten Auftraege dieses Satzes.
+        Fehlerfaelle: Keine eigenen — der Aufrufer faengt je Auftrag.
+
+        Returns:
+            1 oder 0.
+        """
+        # ── Eingabe-Validierung ─────────────────────
+        aktion: str  = write.get("aktion", "")
+        daten:  dict = write.get("daten", {})
+
+        # ── Verarbeitung ────────────────────────────
+        if aktion in _M6_AKTIONEN:
+            return self._m6_ausfuehren(aktion, daten, zugang)
+        if aktion == "update":
+            return self._update_ausfuehren(daten, zugang)
+        if aktion == "delete":
+            return self._delete_ausfuehren(daten, zugang)
+
+        # ── Ausgabe ─────────────────────────────────
+        return 0
+
     def execute(
         self,
         writes:        list[dict],
@@ -411,65 +535,41 @@ Falls keine Notiz erkennbar: "snippet": null
         redis_client:  redis.Redis,
         postgres_url:  str,
     ) -> int:
+        """Fuehrt Notiz-CRUD aus.
+
+        Unterstuetzt den alten Pfad (direkte SQL) und den neuen M6-Pfad
+        (Repository). Die Signatur ist durch `BaseManager` festgelegt.
+
+        **Der `try` steht in der Schleife, nicht darum.** Ein gescheiterter
+        Auftrag darf die folgenden nicht mitnehmen.
+
+        Vorbedingung: `writes` ist eine Liste von Auftraegen, auch eine leere.
+        Nachbedingung: Zahl der verarbeiteten Auftraege.
+        Fehlerfaelle: Ein Auftrag, der wirft, wird mit Ausnahmetyp und Aktion
+        gemeldet und zaehlt nicht; die uebrigen laufen weiter.
+
+        Returns:
+            Anzahl verarbeiteter Writes.
         """
-        Führt Notiz-CRUD aus.
-        Unterstützt alten Pfad (direkte SQL) und neuen M6-Pfad (Repository).
-        """
+        # ── Eingabe-Validierung ─────────────────────
+        zugang = Zugang(
+            user_id      = user_id,
+            postgres_url = postgres_url,
+            redis_client = redis_client,
+        )
+
+        # ── Verarbeitung ────────────────────────────
         verarbeitet: int = 0
-
         for write in writes:
-            aktion: str  = write.get("aktion", "")
-            daten:  dict = write.get("daten", {})
-
             try:
-                if aktion in ("create", "append", "query"):
-                    ergebnis: dict = self.notiz_verarbeiten(
-                        aktion=aktion,
-                        daten=daten,
-                        user_id=user_id,
-                        postgres_url=postgres_url,
-                        redis_client=redis_client,
-                        turn_id=daten.get("turn_id"),
-                    )
-                    if ergebnis.get("erfolg"):
-                        verarbeitet += 1
-                    logger.info(
-                        f"NotizenManager M6: {ergebnis.get('aktion', '')} "
-                        f"— {ergebnis.get('details', '')}"
-                    )
-
-                elif aktion == "update":
-                    # Update: prüfen ob notiz_id vorhanden (M6) oder target (alter Pfad)
-                    if "notiz_id" in daten:
-                        ergebnis = self.notiz_verarbeiten(
-                            aktion="update",
-                            daten=daten,
-                            user_id=user_id,
-                            postgres_url=postgres_url,
-                            redis_client=redis_client,
-                            turn_id=daten.get("turn_id"),
-                        )
-                        if ergebnis.get("erfolg"):
-                            verarbeitet += 1
-                    else:
-                        # Alter Pfad: target + text
-                        self._aktualisieren(postgres_url, user_id, daten)
-                        verarbeitet += 1
-
-                elif aktion == "delete":
-                    if "notiz_id" in daten:
-                        NotizenRepository.invalidate(postgres_url, daten["notiz_id"])
-                        logger.info(f"NotizenManager: Notiz {daten['notiz_id']} invalidiert")
-                    else:
-                        # Alter Pfad: target-basiert
-                        self._loeschen(postgres_url, user_id, daten)
-                    verarbeitet += 1
-
+                verarbeitet += self._auftrag_ausfuehren(write, zugang)
             except Exception as fehler:
                 logger.exception(
-                    f"{type(fehler).__name__}: Notizen-Manager: {aktion} fehlgeschlagen"
+                    f"{type(fehler).__name__}: Notizen-Manager: "
+                    f"{write.get('aktion', '')} fehlgeschlagen"
                 )
 
+        # ── Ausgabe ─────────────────────────────────
         return verarbeitet
 
     # ─────────────────────────────────────────
