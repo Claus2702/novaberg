@@ -70,4 +70,40 @@ select = [
     # importiert wird; für den Gebrauch innerhalb des Moduls, das ihn anlegt,
     # bleibt sie wirkungslos. Der einzige Hebel dort ist der Name.
     "LOG",
+
+    # F821 (Pyflakes) — Verwendung eines Namens, den es nicht gibt.
+    #
+    # Bestand am 31.07.2026, ruff 0.16.0, über server/: 0 Treffer.
+    # F821 ist stable, nicht im Preview.
+    #
+    # ANLASS, und er ist der schärfste, den eine Wand haben kann: Die Regel
+    # hatte am 30.07.2026 neun Treffer, und acht davon waren zwei echte
+    # Laufzeitfehler in api/chat.py — je zwei Leser einer lokalen Variablen,
+    # die bei einer Umstrukturierung mit ihrem Erzeuger verschwunden war.
+    # Beide Pfade des Chat-Endpunkts starben daran, der synchrone wie der
+    # streamende. Das Werkzeug hat das gemeldet, bevor es das erste Mal
+    # zuschlug — die Meldung ging in der geduldeten Trefferzahl unter.
+    #
+    # Das ist der Fall, gegen den diese Datei gebaut ist: nicht eine Regel,
+    # die Geschmack durchsetzt, sondern eine, die einen NameError vor der
+    # Auslieferung findet. Sie duldet keinen Bestand, weil ein Bestand hier
+    # bedeutet, dass Code ausgeliefert wird, der beim Betreten abstürzt.
+    #
+    # REICHWEITE, gemessen am 31.07.2026:
+    # F821 ist blind gegenüber Namen, die zur Laufzeit entstehen — Stern-
+    # Importe, exec(), Zuweisungen in globals(). Über server/ gezählt:
+    #   "from x import *"   -> 0 Vorkommen
+    #   exec( / globals()[  -> 0 Vorkommen
+    # Es gibt im Bestand also keine Stelle, an der ein Name auf einem Weg
+    # entsteht, den die Regel nicht verfolgen kann. Die Null sagt damit
+    # "kein undefinierter Name vorhanden".
+    #
+    # Positivkontrolle am 31.07.2026: Eine Funktion mit einem frei erfundenen
+    # Namen wurde unter dieser Konfiguration gemeldet.
+    #
+    # ACHTUNG bei String-Annotationen: `redis_client: "redis.Redis"` ohne
+    # Import ist zur Laufzeit harmlos, für F821 aber ein Treffer — zu Recht,
+    # denn sobald jemand die Annotationen auflöst, kracht es. Der Bestand
+    # annotiert deshalb direkt und importiert das Modul.
+    "F821",
 ]
