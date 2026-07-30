@@ -3887,6 +3887,12 @@ In `services/pixie/router.py` entschied eine **Tabelle neben dem Register** dar�
 
 **Der Durchgang braucht ein Messdatum:** Kandidaten zählen, je Fall entscheiden — ableitbar (dann ableiten) oder echt abweichend (dann bleibt die Tabelle, aber der Fehlschlag wird laut). ⬜ Prio mittel
 
+**Zweite Instanz gefunden, 30.07.2026 — die Toolbar des Clients.** `client/ui/main_window.py` führt in `_TOOLBAR_PANELS` eine Liste von Button-Beschriftungen; verdrahtet wird ein Button nur, wenn seine Beschriftung **exakt** auf das `PANEL_LABEL` eines registrierten Panels trifft. Der Anzeigetext ist damit zugleich der Verbindungsschlüssel. Trifft er nicht, fällt der Button auf einen Platzhalter-Zweig, der beim Klick nur eine Zeile loggt — kein Fehler, keine Warnung, der Reiter öffnet nichts.
+
+Aufgefallen beim Ergänzen eines Symbols im Reiter „Charakter": Die Änderung an einer der beiden Stellen allein macht das Panel unerreichbar. Gemessen mit beiden Stellen geändert: 9 von 9 registrierten Panels verdrahtet, kein verwaistes. Gegenprobe mit nur einer geänderten Stelle: `Charakter` als Platzhalter, `🧬 Charakter` als registriertes Panel ohne Button.
+
+**Zwei Auswege, beide klein:** Die Liste über `PANEL_LABEL` ableiten statt sie zu führen — dann ist die Doppelung weg; oder `_build_toolbar` beim Aufbau melden lassen, welche registrierten Panels keinen Button haben. Der zweite ist drei Zeilen und macht den Fehlschlag laut, ohne das Verhalten zu ändern.
+
 **Zusammenhang:** ALLOWLIST-DRIFT (andere Form von Drift) · `novaberg-lesson_l_gelesen-ist-nicht-wirksam.md` (Fall 3 der Klasse).
 
 ---
@@ -3915,22 +3921,26 @@ Vorbild ist der bestehende Löschpfad im Promotions-Agenten. Betrifft **nur** de
 
 **Vor der Umsetzung neu messen.** Der Befund stammt aus Chat 109 und liegt vor dem Reset des Bestands und vor dem Salienz-Umbau.
 
-### Bauteil 3 — Charakter-Räder im Client ⬜ Prio hoch (hochgestuft Chat 116)
+### Bauteil 3 — Charakter-Räder im Client ✅ Chat 120 (30.07.2026)
 
-Sieben Teilschritte, unverändert seit Chat 111. Die Visualisierung im Charakter-Tab; die Datenseite steht.
-
-**Chat 116 — es sind jetzt zwei Räder, und der Punkt wird dringender.**
+Die Visualisierung im Charakter-Tab; die Datenseite stand seit Chat 116.
 
 | Rad | Speichen | Datenlage |
 |---|---|---|
 | `nutzer_gewichtung` | **12** — sechs Zuwendung, sechs Abwendung | gebaut, Werte in `charakter_hash.nutzer_gewichtung_rad` als JSON |
-| Initiative-Versatz | **10** — fünf überlässt, fünf behält | entworfen (`novaberg-gv-initiative_k.md` §6), noch nicht gebaut |
+| Initiative-Versatz | **10** — fünf überlässt, fünf behält | gebaut Chat 116, Werte in `charakter_hash.initiative_versatz_rad` |
 
-Beide gehören als **Radar-Diagramme untereinander in den Charakter-Tab**. Die Bauart ist dieselbe: Nabe, Speichen mit festem Zug, LLM-Bewertung 0.0 / 0.5 / 1.0 je Speiche, das Ergebnis gerechnet. Ein Radar ist die Darstellungsform, die zu dieser Bauart gehört — sie zeigt, welche Speichen tragen und welche nicht, statt nur das Ergebnis.
+Beide stehen jetzt als **Radar-Diagramme nebeneinander im Charakter-Tab**, darunter je Kennzahl, Herkunft und die Speichen einzeln. Die Bauart ist dieselbe: Nabe, Speichen mit festem Zug, LLM-Bewertung 0.0 / 0.5 / 1.0 je Speiche, das Ergebnis gerechnet. Ein Radar ist die Darstellungsform, die zu dieser Bauart gehört — sie zeigt, welche Speichen tragen und welche nicht, statt nur das Ergebnis.
 
-**Warum früh:** Beide Räder erzeugen einen einzelnen Zahlenwert aus zehn bis zwölf Einzelbewertungen. Ohne Visualisierung ist die Zahl nicht beurteilbar — man sieht 1.35, aber nicht, dass sie aus fünf ausgeprägten und einer angedeuteten Speiche entsteht. Das ist dieselbe Frage, die das GV-Panel in Chat 116 für den Strategie-Korridor beantwortet hat: das Ergebnis zeigen reicht nicht, der Korridor muss mit.
+**Nebeneinander statt untereinander,** abweichend von der ursprünglichen Fassung dieses Eintrags — die Anordnung folgt dem Emotionen-Panel, das zwei Radare derselben Größe nebeneinander stellt.
 
-**Vorhandene Datenlage prüfen:** `nutzer_gewichtung_rad` liegt vor und ist von Hand nachrechenbar (am 29.07.2026 für beide Paare exakt bestätigt). Für das Initiative-Rad muss das Speicherformat mitgebaut werden — dasselbe Muster, eigenes Feld.
+**Umgesetzt:** `RadarChart` auf beliebige Achsenzahl verallgemeinert · `GET /gedaechtnis/hash/{user_id}` liefert beide Räder samt Herkunft · das Speichen-JSON wird serverseitig geparst · ein Rad ohne Daten wird als solches gezeichnet, nicht als Polygon aus Nullen · fehlende Speichen werden gemeldet statt mit 0.0 überdeckt.
+
+**Was offen bleibt:**
+
+- **`laeufe` und `streuung` haben weiterhin keinen Leser.** Das Initiative-Rad legt neben den zehn Speichen die Einzelergebnisse seiner drei Läufe und deren Streuung ab (gemessen 30.07.2026: 0.07 und 0.08). Sie reisen jetzt bis in den Client, werden dort aber nicht angezeigt. Die Streuung ist die einzige Aussage darüber, wie stabil der Versatz über mehrere Erhebungen ist — ohne sie ist ein Median aus drei Läufen von einem Einzelwert nicht zu unterscheiden. ⬜ Prio niedrig
+- **Der Verweis auf „sieben Teilschritte, unverändert seit Chat 111" zeigte ins Leere.** Die Aufzählung steht in keinem Repo-Dokument; ein Grep über `docs/` findet nur den Verweis auf sie. Sie ist beim Schließen nicht rekonstruiert worden — was tatsächlich gebaut wurde, steht oben. Dieselbe Klasse wie die Einträge unter „Ohne Gegenstand" in der Fundliste.
+- **Es gibt keinen automatischen Test der Client-Seite.** Der Client liegt außerhalb des Server-Abbilds und kann in der Suite nicht importiert werden. Die Verdrahtung ist stattdessen über die Speichennamen gesichert (`server/tests/test_hash_raeder.py`, `VertragMitDemClientTest`): Wird eine Speiche serverseitig umbenannt, wird der Test rot und nennt den Client als nachzuziehende Stelle. Die Anzeige selbst ist von Hand gemessen. ⬜ Prio niedrig
 
 ---
 

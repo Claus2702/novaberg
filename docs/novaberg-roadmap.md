@@ -1,6 +1,6 @@
 # Novaberg — Roadmap (Projektchronik)
 
-**Stand:** Chat 117, 30. Juli 2026
+**Stand:** Chat 120, 30. Juli 2026
 *(Die Kopfzeile stand bis Chat 109 auf „Chat 93, 21. Mai 2026" — 15 Chats hinter dem Inhalt. **Sie ist danach erneut zurückgefallen:** von Chat 110 bis 114 blieb sie auf „Chat 109" stehen, während der Inhalt weiterwuchs, und wurde in Chat 115 nachgezogen. Wer hier etwas ergänzt, zieht die Kopfzeile mit — sie driftet zuverlässig. Achtung beim Nachschlagen: Nur bis Chat 97 trägt jeder Chat eine eigene `## Chat NNN`-Überschrift; die Chats 98–108 stehen als `###`-Abschnitte unter dem Chat-97-Block, benannt nach Sprint statt nach Chat.)*
 **Pfad:** novaberg/docs/novaberg-roadmap.md
 **Single Source of Truth für abgeschlossene Arbeit.**
@@ -1853,6 +1853,36 @@ Die Achse stand nach der Verkabelung auf einem konstanten Bit. Der Kalibrierlauf
 Die Härtung bleibt: Ein `dict`, eine Zahl oder eine Liste in dem Feld kracht weiterhin laut mit genanntem Typ. Nur die Grenze war eine Stufe zu scharf — **`null` ist die zweite Schreibweise von „kein Reasoning"**, und beide Schreibweisen werden jetzt ausdrücklich auf denselben Leerfall abgebildet, statt dass eine davon über einen Default hereinfällt.
 
 **Warum 16 Tests grün blieben: die Attrappe konnte den Fall nicht bilden.** Sie bildete `thinking=None` auf einen **weggelassenen** Schlüssel ab — genau die Unterscheidung, an der der Code scheiterte, war in ihr schon eingeebnet. Sie hat jetzt mit `THINKING_NULL` einen eigenen Ausdruck dafür, und zwei Tests stehen darauf: der Leerfall und der positive Zwilling, der beide Schreibweisen gegeneinander hält. Gegenprobe: Fix heraus → beide rot. Als `OLLAMA-THINKING-NULL` aufgenommen.
+
+---
+
+## Chat 120 (30.07.2026) — Die beiden Charakter-Räder werden sichtbar ✅
+
+### Bauteil 3 des Salienz-Sprints: die Räder im Charakter-Tab ✅ (30.07.2026)
+
+**Die Datenseite stand seit Chat 116, die Anzeige nicht.** Beide Räder erzeugen einen einzelnen Zahlenwert aus zehn bis zwölf Einzelbewertungen; ohne Bild ist die Zahl nicht beurteilbar — man sieht einen Faktor, aber nicht, ob er aus wenigen ausgeprägten Speichen entsteht oder aus vielen angedeuteten, und nicht, ob eine Gegenspeiche ihn nach unten zieht.
+
+Der Charakter-Tab zeigt jetzt oben zwei Radar-Diagramme nebeneinander, darunter je Kennzahl, Herkunft und die Speichen einzeln. Das Perspektive-Dropdown war bereits bidirektional und schaltet beide Räder mit den fünf Textprofilen zusammen um — auf `(nova, meister)` steht Novas Rad, der Wert, den die Salienz-Formel liest; auf `(meister, nova)` spiegelbildlich das des Nutzers.
+
+**Drei Bauteile:**
+
+- **`RadarChart` kennt seinen Gegenstand nicht mehr.** Das Widget hatte acht Achsen und die Plutchik-Kurzformen fest eingebaut. Achsenzahl und Beschriftung kommen jetzt vom Aufrufer; die Emotions-Kurzformen stehen im Emotionen-Panel, wo ihr Gegenstand liegt. Ohne das hätte jedes weitere Rad eine Kopie des Widgets gebraucht.
+- **`GET /gedaechtnis/hash/{user_id}` liefert beide Räder mit.** Vier Spalten je Rad — Wert, Herkunft, Speichen-JSON, Erhebungszeitpunkt — als zwei Blöcke `zuwendung` und `initiative`.
+- **Das JSON wird serverseitig geparst.** Ein ungeparst weitergereichtes JSON-Feld sieht am Ziel wie ein Wert aus; genau so lief M1 zwei Monate als Konstante (`KALIBRIER-INTENTIONEN-UNGEPARST`). Ein Parse-Fehler ist deshalb laut und erreicht die Anzeige als `lesbar: false`.
+
+**Ein Rad ohne Daten wird nicht als Polygon aus Nullen gezeichnet.** `RadarChart.set_unbekannt()` zeichnet Gitter und Achsen, schreibt den Grund ins Zentrum und lässt die Fläche weg. Zwölf Nullen sähen aus wie ein Charakter ohne jede Zuwendung — dieselbe Verwechslung, gegen die die Herkunftsfelder gebaut wurden (`novaberg-lesson_l_default-wie-fehlschlag.md`). Aus demselben Grund steht die Herkunft neben jeder Kennzahl und wird hervorgehoben, sobald sie nicht `destilliert` lautet.
+
+**Die Speichen werden nach Namen gelesen, nicht nach Position.** Die Reihenfolge im JSON gehört seinem Erzeuger, die Reihenfolge der Achsen der Anzeige. Eine fehlende Speiche wird gemeldet und nicht mit 0.0 überdeckt — im Log als `error`, im Panel als Warnzeile mit den Namen.
+
+**Umfang:** Suite 637 → **654 Tests**, grün, 0 übersprungen. Nulllinie unverändert **2253**, `noqa` 9, Wand `LOG` sauber. Kein `db/init.sql` angefasst, keine DDL.
+
+**Gegenprobe zweifach, beide zurückgenommen:** Parse-Fehler meldet sich als `lesbar` → 1 rot. Speiche `wohlwollen` serverseitig umbenannt → 2 rot, darunter der Verdrahtungstest, der genau diesen stillen Ausfall abfängt.
+
+**Live gemessen 30.07.2026, 20:52 UTC:** beide Richtungen des Paares, beide Räder, **vier von vier Werten von Hand aus den Speichen nachgerechnet und exakt getroffen** — der Endpunkt liefert genau das, was in der Tabelle steht, und die Speichen ergeben genau den abgelegten Wert. Der Client nimmt beide Richtungen mit 12 bzw. 10 Achsen auf, ohne fehlende Speiche.
+
+> **Die Zahlen selbst stehen nicht hier.** Ein Charakter-Rad ist ein Charakterprofil; aus den Summanden sind mit der Züge-Tabelle die Einzelspeichen rückrechenbar. Wer die Messung nachvollziehen will, fährt sie gegen den eigenen Bestand — sie ist in zwei Aufrufen wiederholbar.
+
+**Geschlossen:** `Bauteil 3 — Charakter-Räder im Client` (Rest benannt, siehe Backlog)
 
 ---
 
