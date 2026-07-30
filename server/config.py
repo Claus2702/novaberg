@@ -1314,6 +1314,31 @@ KALIBRIERUNG_ZEUGE_MAX_ZEICHEN: int = int(
 # Frage "unterscheidet der Zeuge die Sprecher?" reicht eine Teilmenge.
 KALIBRIERUNG_POSITIONSPROBE:  int = int(os.getenv("KALIBRIERUNG_POSITIONSPROBE", "30"))
 
+# Obergrenze der Nutzer-Turn-Laenge fuer den Kalibrier-Korpus. Turns darueber
+# sind keine Gespraechsbeitraege, sondern eigene Messturns aus fruehereren
+# Sitzungen — thematisch zulaessig, in ihrer Bauart aber kein Verhalten, das
+# kalibriert werden soll.
+#
+# Der Wert ist nicht gesetzt, sondern gefunden: Die Laengenverteilung der 147
+# Turnpaare ist zweigipflig, und zwischen den Gipfeln liegt nichts.
+# Gemessen 30.07.2026 ueber meister:nova:
+#     <  100 Zeichen:  77 Turns
+#   100– 499 Zeichen:  22
+#   500–1499 Zeichen:   0   ← die Luecke
+#   >= 1500 Zeichen:   48
+#   Median 92, Maximum 2812
+#
+# Jede Grenze zwischen 500 und 1499 ergibt dieselben 99 Paare. Der Wert ist
+# damit unempfindlich gegen seine eigene Wahl — die Trennung steht in den
+# Daten, nicht in dieser Zeile. 99 liegt ueber KALIBRIERUNG_MIN_TURNS (60).
+#
+# Wird die Zahl je knapp, ist das ein Befund und keine Gelegenheit, die Grenze
+# zu heben: Eine Luecke, die sich schliesst, heisst, dass Messturns und
+# Gespraech ihre Bauart nicht mehr unterscheiden.
+KALIBRIERUNG_MAX_TURN_ZEICHEN: int = int(
+    os.getenv("KALIBRIERUNG_MAX_TURN_ZEICHEN", "500")
+)
+
 # Zwischenstand der Urteilsreihe. Eine Reihe, die abbricht, ist ohne
 # Zwischenstand vollstaendig verloren — gemessen am 29.07.2026: rund 200 Urteile
 # durch eine einzelne Zeitueberschreitung. Bei Aufrufen an ein Sprachmodell ist

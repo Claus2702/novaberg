@@ -32,6 +32,7 @@ Konzept: novaberg-gv-initiative_k.md §7, §12.
 import logging
 from dataclasses import dataclass
 
+from config import KALIBRIERUNG_MAX_TURN_ZEICHEN, KALIBRIERUNG_MIN_TURNS
 from ei.initiative import fuehrung_messen
 from graph.personality import Emotion, Personality
 from memory.kzg import _kzg_key  # noqa: F401  — Key-Form dokumentiert hier
@@ -124,6 +125,7 @@ def rohturns_laden(user_id: str, character_id: str) -> list[Turnpaar]:
     paare:        list[Turnpaar] = []
     ohne_text:    int = 0
     ohne_modus:   int = 0
+    zu_lang:      int = 0
 
     for i in range(1, len(rohturns)):
         vorher = rohturns[i - 1]
@@ -134,6 +136,15 @@ def rohturns_laden(user_id: str, character_id: str) -> list[Turnpaar]:
 
         if not prompt or not antwort:
             ohne_text += 1
+            continue
+
+        # Eigene Messturns aussortieren. Sie sind thematisch zulaessig, aber in
+        # ihrer Bauart kein Gespraechsverhalten — dichte Fachprosa mit Formeln
+        # und Literaturstellen, wo das Gespraech im Median 92 Zeichen hat. Der
+        # Schnitt liegt in einer Luecke der Laengenverteilung und nicht an einem
+        # gesetzten Wert; die Herleitung steht bei der Konstante.
+        if len(prompt) >= KALIBRIERUNG_MAX_TURN_ZEICHEN:
+            zu_lang += 1
             continue
 
         user_modus: str = jetzt.get("user_modus") or ""
@@ -155,9 +166,20 @@ def rohturns_laden(user_id: str, character_id: str) -> list[Turnpaar]:
     logger.info(
         f"Korpus {user_id}:{character_id}: {len(rohturns)} Rohturns → "
         f"{len(paare)} Turnpaare "
-        f"(uebersprungen: {ohne_text} ohne Text; {ohne_modus} ohne Modus, "
-        f"diese bleiben drin und verlieren nur M3)"
+        f"(uebersprungen: {ohne_text} ohne Text; "
+        f"{zu_lang} ueber {KALIBRIERUNG_MAX_TURN_ZEICHEN} Zeichen; "
+        f"{ohne_modus} ohne Modus, diese bleiben drin und verlieren nur M3)"
     )
+
+    if len(paare) < KALIBRIERUNG_MIN_TURNS:
+        logger.error(
+            f"Korpus {user_id}:{character_id}: nur {len(paare)} Turnpaare nach "
+            f"dem Laengenfilter, verlangt sind {KALIBRIERUNG_MIN_TURNS} — die "
+            f"Grundlage ist zu schmal. NICHT die Grenze heben: Sie liegt in "
+            f"einer Luecke der Verteilung, und eine geschlossene Luecke ist ein "
+            f"Befund ueber den Bestand"
+        )
+
     return paare
 
 
