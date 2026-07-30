@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Rohe, noch unklassifizierte Funde aus laufender Arbeit
-**Stand:** 30. Juli 2026, Chat 117 (elf offene Funde. **Sechs vom 30.07.**, aus der Linter-Einfuehrung und fuenf Zerlegungen: fuenf Codestellen, die eine Form mehrfach hinschreiben statt sie einmal zu benennen; zwei **widerlegte** Befunde der Initiative-Kalibrierung, deren Ursache ein Defekt an der Eingabegrenze war; eine Funktion mit 16 Zweigen, die die Auswahlmethode uebersah; ein Verlustpfad bei abgeschaltetem Pixie; ein stiller Uebersprung samt asymmetrischer Zaehlung; ein defensiver Zweig, der nie erreichbar war. **Aelter und schwer:** der Kalibrier-Korpus besteht zu einem Drittel aus Messturns, und M2 sieht bei langen Texten keinen Themenwechsel)
+**Stand:** 30. Juli 2026 (**31 offene Funde**, gezählt am 30.07.2026 über die Einträge des Abschnitts „Offen". Die vorige Angabe „elf" war nicht nachgezählt. Jüngster Eintrag: 65 Logging-Aufrufe mit `%`-Platzhaltern statt f-Strings. Davor **sechs vom 30.07.**, aus der Linter-Einfuehrung und fuenf Zerlegungen: fuenf Codestellen, die eine Form mehrfach hinschreiben statt sie einmal zu benennen; zwei **widerlegte** Befunde der Initiative-Kalibrierung, deren Ursache ein Defekt an der Eingabegrenze war; eine Funktion mit 16 Zweigen, die die Auswahlmethode uebersah; ein Verlustpfad bei abgeschaltetem Pixie; ein stiller Uebersprung samt asymmetrischer Zaehlung; ein defensiver Zweig, der nie erreichbar war. **Aelter und schwer:** der Kalibrier-Korpus besteht zu einem Drittel aus Messturns, und M2 sieht bei langen Texten keinen Themenwechsel)
 **Pfad:** novaberg/docs/novaberg-fundliste.md
 
 Was beim Bauen an anderer Stelle auffällt, landet hier — **eine Zeile mit Datum**. Kein Bug-Name, keine Priorität, keine Klassifizierung, keine Diskussion. Der Zweck ist, einen Fund festzuhalten, ohne die laufende Arbeit dafür zu unterbrechen.
@@ -88,6 +88,8 @@ Analog zum Kraft-1-Stichtag: ab wann eine Partition brauchbar ist. Kein Backfill
   Nicht in der Liste, weil geprüft und **so richtig**: `graph/nodes/ei_calc.py:198` (die `else`-Arme sind die vorgeschriebenen Fehler- und Sichtbarkeitszweige) und `ei/berechnung.py:814` (Fallunterscheidung auf dem 8-Sektor-Oktagon samt dokumentiertem Rückfall). Beide bleiben, wie sie sind.
 
   Der Bestand wird nicht eigens aufgeräumt: Wer eine dieser Dateien aus anderem Grund anfasst, bringt sie mit.
+
+- **2026-07-30** — **65 Logging-Aufrufe formatieren über `%`-Platzhalter mit Argumenten** statt über den vorgeschriebenen f-String, zum Beispiel `logger.info("… %s", basis_top)` in `graph/nodes/ei_calc.py:252` und `logger.exception("%s: kanten_alle_loeschen fehlgeschlagen", type(exc).__name__)` in `memory/lzg_kanten.py:512`. Zum Vergleich am selben Bestand gezählt: **538** Aufrufe mit f-String. Die Stellen verteilen sich über den Baum, sie sind kein Nest in einer Datei. Berührt die Begründung, mit der `G004` in der Linter-Konfiguration abgeschaltet ist — dort steht, f-Strings seien im Logging *vorgeschrieben*, was für 65 Stellen so nicht zutrifft. *(Zeilennummern gemessen 30.07.2026.)*
 
 ---
 

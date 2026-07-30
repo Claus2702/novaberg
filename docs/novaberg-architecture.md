@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Systemarchitektur, Tech-Stack, Plugin-System
-**Stand:** 30. Juli 2026, Chat 117 (`ruff.toml` im Verzeichnisbaum ergänzt, §3. Zuvor: Verzeichnisbaum nachgezogen — `ei/` vollständig, vier fehlende Agenten ergänzt. Kern: Chat 94, Microservice-Welle Block 2+3; Embedding-Modellwechsel Chat 107, §2.4)
+**Stand:** 30. Juli 2026 (`ruff-hart.toml` im Verzeichnisbaum ergänzt, §3 — die harte Teilmenge ohne geduldeten Bestand. Zuvor: `ruff.toml` im Verzeichnisbaum ergänzt, §3. Zuvor: Verzeichnisbaum nachgezogen — `ei/` vollständig, vier fehlende Agenten ergänzt. Kern: Chat 94, Microservice-Welle Block 2+3; Embedding-Modellwechsel Chat 107, §2.4)
 **Pfad:** novaberg/docs/novaberg-architecture.md
 **Quellen:** nova-00-a.md (Architektur-Übersicht), nova-07-a.md (Tech-Stack), nova-07-m-a.md (Plugin-System)
 
@@ -356,10 +356,13 @@ project/
 │   └── modelfiles/                      # GPU + CPU Modelfiles
 │
 ├── ruff.toml                            # Linter-Konfiguration, gilt fuer allen Python-Code
+├── ruff-hart.toml                       # engere Auswahl: Familien ohne geduldeten Bestand
 └── docker-compose.yml
 ```
 
 **Zur `ruff.toml`:** Sie steht in der Wurzel, weil es keine `pyproject.toml` gibt — der Server wird nicht als Paket installiert, sondern als Quellbaum in den Behaelter gemountet. Zielversion ist `py312` aus der Bildbasis des Servers, nicht die Python-Version des Hosts. Jeder gesetzte Grenzwert traegt in der Datei seine Herleitung und seine Messzahlen; jede abgeschaltete Regel ihre Begruendung. Vier Regeln sind abgeschaltet, weil sie einer im Projekt vorgeschriebenen Bauart widersprechen — darunter das f-String-Verbot im Logging und die Zaehlung der Rueckkehrpunkte, die mit der EVA-Disziplin unvereinbar ist.
+
+**Zur `ruff-hart.toml`:** Die `ruff.toml` duldet den Bestand — ihr Lauf endet mit Treffern, die gezaehlt und nicht behoben werden. Die `ruff-hart.toml` fuehrt die Familien, fuer die das nicht mehr gilt: Sie erbt die erste ueber `extend` vollstaendig und ersetzt davon nur die Regelauswahl, und **ihr Lauf muss sauber sein**. Aufruf aus der Repo-Wurzel: `ruff check --config ruff-hart.toml server/`, Rueckgabewert 0 ist die Bedingung. Die Trennung ist noetig, weil Ruff keine Schweregrade kennt — in einer gemeinsamen Datei waere ein neuer Treffer der harten Familie von den geduldeten nicht zu unterscheiden. Aufgenommen wird eine Familie, wenn sie ueber `server/` null Treffer hat, keine ihrer Regeln im Preview-Status steht und geprueft ist, dass das Werkzeug jedes Exemplar im Bestand sehen kann. Stand 30.07.2026: `LOG`.
 
 ### Event-Modell (Chat 60)
 

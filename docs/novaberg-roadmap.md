@@ -1722,6 +1722,30 @@ Aus der Konfiguration wurde Arbeit. **Nulllinie 2659 → 2263**, Suite 463 → *
 **Zwei Zahlen, die zusammen gelesen werden müssen.** Die Nulllinie steht auf 2263, der `noqa`-Bestand auf **9**. Bei einer Löschung von 127 Zeilen fiel die Nulllinie um **eins**, weil die zwei `BLE001` darin ein `noqa` trugen und deshalb nie in der Zahl standen. Eine unterdrückte Meldung ist für die Trefferzahl unsichtbar; steigende Unterdrückungen bei fallenden Treffern sind kein Fortschritt.
 
 **Kein `db/init.sql` angefasst, keine DDL, `KALIBRIERUNG_ANWENDEN` unverändert `false`.**
+
+### Die erste Regelfamilie wird hart geschaltet — und die Null hatte ein Loch ✅ (30.07.2026)
+
+Die Nulllinie duldet den Bestand: 2263 Treffer, die gezählt und nicht behoben werden. Für eine Familie, die bei **null** steht, gilt das nicht mehr — dort ist jeder Treffer ab sofort ein Fehler. `LOG` (flake8-logging) war die erste, die dafür in Frage kam.
+
+- ✅ **Die Wand ist eine zweite Konfigurationsdatei, `ruff-hart.toml`.** Ruff kennt keine Schweregrade: Jede selektierte Regel meldet gleich laut, und der Gesamtlauf endet ohnehin mit einem Rückgabewert ungleich null. Ein neu hinzukommender `LOG`-Treffer hübe die Zahl von 2263 auf 2264 und wäre damit unsichtbar. Ein zweiter Lauf, der **sauber sein muss**, ist der einzige Weg, aus einer Regel eine Wand zu machen, ohne eine Datei mit Vergleichszahlen zu pflegen. Aufruf aus der Repo-Wurzel: `ruff check --config ruff-hart.toml server/`, Rückgabewert 0 ist die Bedingung. Die Datei erbt `ruff.toml` über `extend` und ersetzt davon nur die Regelauswahl; Ruff findet sie nicht von selbst, sie wirkt ausschließlich über `--config`.
+- ✅ **Alle sieben Regeln der Familie sind stable** — LOG001, LOG002, LOG004, LOG007, LOG009, LOG014, LOG015. Das ist die zweite Aufnahmebedingung neben der Null: Eine Preview-Regel kann mit der nächsten Werkzeugversion erscheinen oder verschwinden, und eine Wand, die sich mit dem Werkzeug bewegt, ist keine.
+- ✅ **Gegenprobe für jede der sieben Regeln.** Zu jeder wurde ein Verstoß konstruiert und unter dieser Konfiguration gemeldet. Die Null sagt damit *kein Verstoß vorhanden* und nicht *das Werkzeug sieht nicht hin*.
+- 🔶 **Und genau dort hatte sie ein Loch.** Die Regeln der Familie erkennen einen Logger an seinem **Namen**, nicht an seiner Herkunft: Ein Name wird erkannt, wenn er `logger` enthält oder genau `log` lautet. Isoliert nachgemessen, ein Bezeichner je Lauf, sonst identischer Code:
+
+| Name | erkannt |
+|---|---|
+| `logger`, `log`, `LOGGER`, `_logger`, `_llm_logger`, `logger_tokens` | ja |
+| `_log` | **nein** |
+
+- 🔶 **Der Importstil ist dabei gleichgültig.** `import logging` und `from logging import getLogger` verhalten sich identisch — der zunächst naheliegende Verdacht war falsch, gemessen wurde er trotzdem.
+- ✅ **`agents/timeline/event_time.py` war der eine Fall.** Von 156 modulweit angelegten Loggern trugen 155 einen erkannten Namen; der 156. hieß `_log` und war damit für die gesamte Familie unsichtbar. Umbenannt auf `logger`, zwei Zeilen. Ohne diesen Schritt wäre die Wand eine Zusicherung über ein Modul gewesen, in das das Werkzeug nicht hineinsieht.
+- ✅ **`logger-objects` hilft hier nicht** und ist deshalb nicht gesetzt. Gemessen an beiden Fällen: Die Einstellung wirkt, wenn ein Logger aus einem **anderen** Modul importiert wird — für den Gebrauch innerhalb des Moduls, das ihn anlegt, bleibt sie wirkungslos. Der einzige Hebel dort ist der Name.
+- ✅ **Gegenprobe an der Wirkung**, nicht an der Absicht: ein `LOG004`-Verstoß in genau dem umbenannten Modul → Wand rot, Rückgabewert 1; nach Rücknahme wieder sauber, Rückgabewert 0.
+
+**Umfang:** Suite **575 Tests**, grün, 0 übersprungen. Nulllinie unverändert **2263** — die Umbenennung eines Bezeichners bewegt keine Regel. Kein `db/init.sql` angefasst, keine DDL.
+
+**Was die Umbenennung nicht ist:** eine Lösung für `REFAC-LOGGER-HIERARCHIE`. Der Backlog-Punkt betrifft das **Argument** von `getLogger` — den Mix aus flachen, verschachtelten und `__name__`-basierten Logger-Namen. Hier ging es um den **Variablennamen**, unter dem der Logger im Modul steht. Zwei verschiedene Dinge am selben Aufruf; `event_time.py` erfüllt weiterhin nur das eine.
+
 ---
 
 ## Chat 116 (29.07.2026) — Das Panel bekommt den Wert, den der Node seit jeher schreibt ✅
