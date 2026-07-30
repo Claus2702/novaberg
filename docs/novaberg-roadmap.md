@@ -1768,6 +1768,34 @@ Zweiwertig **wog** M1 nicht mit, es **bestimmte** das Vorzeichen. `rohwert = Mit
 
 **Umfang:** Suite 575 → **590 Tests**, grün, 0 übersprungen. Nulllinie unverändert 2263. Drei Gegenproben, jede an ihrer Wirkung: Aufrufer zurück auf zweiwertig → 4 rot; Kanon-Prüfung entfernt → 2 rot; `emotionaler_ausdruck` in die mittlere Klasse → 1 rot. Kein `db/init.sql` angefasst, keine DDL.
 
+### Die Recherche lief eine Stunde ins Leere, und niemand merkte es 🔶 (30.07.2026)
+
+Anlass war eine Frage, keine Prüfung: *Was macht Pixie eigentlich, es gibt ja keinen Output?*
+
+Die Kette, von hinten aufgerollt:
+
+| Ebene | Zustand |
+|---|---|
+| Netz | DuckDuckGo per TCP nicht erreichbar — DNS löst auf, die Verbindung läuft in die Zeitüberschreitung. Wikipedia, Google und Startpage antworten aus demselben Container in 20–50 ms |
+| Suchdienst | `running (healthy)`, HTTP **200**, **0 Treffer**. Die aktiven Engines waren stumm oder mit Rate-Limit gesperrt |
+| `RechercheAgent` | 4 Queries geplant → `Keine Ergebnisse gefunden — Abbruch` in Iteration 1 von 3, **achtmal in einer Stunde** |
+| `hintergrund_log` | **null Einträge** |
+| Oberfläche | keine Meldung |
+
+**Von 14 geprüften Engines lieferten zwei.** `startpage` → `Suspended: CAPTCHA`, `brave` → `Suspended: too many requests`, `qwant` → `access denied`, `marginalia`/`stract`/`right dao` → HTTP-Fehler. Treffer gab es nur bei `bing` und `google scholar`.
+
+**Für die Auswahl relevant und nicht offensichtlich:** Startpage liefert Google-Ergebnisse, DuckDuckGo überwiegend Bing-Ergebnisse. Beides sind Datenschutz-Vorschaltungen und keine eigenen Indizes — ein Wechsel dorthin ist ein Gewinn für die Privatsphäre, aber kein Ausweichen auf einen anderen Index. Eigene Indizes haben Brave, Mojeek, Marginalia und Stract, und genau diese vier waren stumm.
+
+**Behoben durch eine Zeile Konfiguration**, außerhalb des Repositoriums: `bing` von `disabled: true` auf `false`. Danach liefert die Standardsuche 10–30 Treffer, und der nächste Recherche-Auftrag lief bis `3 Texte gesammelt` durch statt abzubrechen.
+
+**Drei Befunde bleiben, alle im Code und alle in der Fundliste:**
+
+- Der `RechercheAgent` schreibt **keinen Audit-Eintrag**. Acht Fehlläufe, jeder mit LLM-Kontextanalyse und Lagebeurteilung, blieben deshalb eine Stunde unsichtbar. Ein `fehler`-Eintrag hätte eine Lampe erzeugt.
+- **„Keine Treffer" und „Suchdienst ausgefallen" nehmen denselben Weg.** Der Suchdienst liefert den Grund in jeder Antwort mit — ein Feld `unresponsive_engines` mit Engine-Namen und Ursache —, es wird nicht gelesen. Fünf bis sechs Engines sind auch nach der Reparatur stumm.
+- **Die Trefferrelevanz wird nicht geprüft.** Für die Anfragen *information self-gravitation*, *neurobiological coherence resonance* und *topological phase transition* holte der Agent `photos.google.com`, `support.microsoft.com` und einen Wikipedia-Artikel — zwei von drei ohne jeden Bezug, unbewertet in die Weiterverarbeitung.
+
+**Der eigentliche Schaden war nicht die Sperre, sondern die Stille.** Jeder der acht Läufe kostete mehrere Minuten Rechenzeit für ein garantiertes Nichts, und diese Last hat an diesem Abend zweimal ein laufendes Gespräch zum Timeout gebracht.
+
 ### Drei Reparaturen aus dem Live-Betrieb ✅ (30.07.2026)
 
 Alle drei stammen aus einem Abend am laufenden System, nicht aus einem Audit.
