@@ -50,8 +50,14 @@ def session_turn_store(
     tone:               str = "",
     themen:             list[str] | None = None,
     embedding:          list[float] | None = None,
+    herkunft:           str = "",
 ) -> None:
-    """Speichert einen Turn in der Session, vollständig mit allen Meta-Daten."""
+    """Speichert einen Turn in der Session, vollständig mit allen Meta-Daten.
+
+    `herkunft` benennt den Vorgang, der den Turn erzeugt hat — `nutzer_turn`
+    oder `eigener_impuls`. Leer bleibt sie nur dort, wo der Aufrufer sie nicht
+    bestimmen kann; **leer heisst unbekannt und nicht "vom Nutzer"**.
+    """
     key: str = _session_key(user_id, character_id, "turns")
 
     turn_data: dict = {
@@ -67,6 +73,18 @@ def session_turn_store(
         "sprach_stil":        sprach_stil,
         "beziehungs_dynamik": beziehungs_dynamik,
         "tone":               tone,
+        # Wer diesen Turn erzeugt hat. Zwei Vorgaenge schreiben Eintraege
+        # derselben Form in diesen Verlauf — die Antwort auf eine
+        # Nutzeraeusserung und Novas eigener Impuls —, und ohne dieses Feld
+        # sind sie in den Daten nicht zu unterscheiden. Sie waren es bis zum
+        # 30.07.2026 nicht: Die Herkunft stand allein im Laufzeit-Protokoll,
+        # und wer den Verlauf aus dem Speicher las, hielt einen Impuls fuer
+        # eine Antwort (novaberg-bugs.md -> PFAD1-TIMEOUT-TURNVERLUST).
+        #
+        # Leer heisst **unbekannt**, nicht "nutzer_turn". Turns von vor dieser
+        # Aenderung tragen das Feld nicht, und ein Default haette aus ihnen
+        # rueckwirkend eine Aussage gemacht, die niemand erhoben hat.
+        "herkunft":           herkunft,
     }
 
     if themen is not None:

@@ -320,6 +320,14 @@ def _session_turn_schreiben(state: ConversationState) -> None:
         if turn_topic:
             themen = [turn_topic]
 
+    # Die Herkunft steht im Ereignis, das den Lauf ausgeloest hat: Der
+    # Delivery-Pfad setzt `reiz_herkunft='eigener_impuls'`, ein Nutzer-Turn
+    # traegt den Schluessel nicht. Bisher endete diese Unterscheidung an der
+    # Logzeile des Event-Consumers; ab hier steht sie im Verlauf selbst.
+    herkunft: str = str(
+        (state.get("event_payload") or {}).get("reiz_herkunft") or "nutzer_turn"
+    )
+
     session_turn_store(
         redis_client       = cfg_redis_client,
         user_id            = user_id,
@@ -337,6 +345,7 @@ def _session_turn_schreiben(state: ConversationState) -> None:
         tone               = turn_tone,
         themen             = themen,
         embedding          = embedding,
+        herkunft           = herkunft,
     )
 
     logger.info(f"Dispatcher: Session-Turn geschrieben — rolle={rolle}, {len(inhalt)} Zeichen")
