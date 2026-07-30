@@ -190,6 +190,40 @@ Gebaut ist die **Rechnung**, nicht der Agent. Was läuft:
 
 **Das Plateau ist wieder da:** κ bleibt zwischen −0.80 und −0.50 im Band 0,29 bis 0,375. Wer nachmisst, erwartet ein Plateau und keine Spitze — dieselbe Eigenschaft, die Chat 116 zwischen −0.55 und −0.35 fand.
 
+### 8.2 ⚠ Der Korpus dieses Laufs ist zu einem Drittel synthetisch
+
+**Alle Zahlen in §8.1 stehen unter diesem Vorbehalt.** Gemessen am 30.07.2026 über die Längenverteilung der 147 Turnpaare:
+
+| Länge des Nutzer-Turns | Turnpaare |
+|---|---|
+| unter 500 Zeichen | **99** |
+| zwischen 500 und 1500 | **0** |
+| über 1500 Zeichen | **48** (32,7 %) |
+
+**Die Verteilung ist zweigipflig, und das ist keine Streuung.** Der Median des Gesprächs liegt bei **92 Zeichen**; die 48 langen Turns sind Messturns früherer Sitzungen — dicht formulierte Fachtexte um 2000 Zeichen, thematisch zulässig, in ihrer Bauart aber kein Gesprächsverhalten.
+
+**Wirkung auf die Messung.** Die zwölf strittigen Fälle des Musters „langer Turn, Achse extrem" stammen sämtlich aus dieser Population. Und der Befund über die negative Verteilung — 142 von 144 Rohwerten unter null — ist damit zu einem erheblichen Teil ein Befund über Messturns, nicht über das Gespräch.
+
+**Wirkung auf die Schwelle.** `−0.55` bei κ 0,375 ist auf diesem gemischten Korpus erhoben. Sie gilt als Zahl, nicht als Aussage über dieses Paar.
+
+**Was daraus folgt, nicht was daraus folgen könnte:** Die Kalibrierung wird auf dem gefilterten Korpus wiederholt. Bei einer Grenze von 500 Zeichen bleiben **99 Turnpaare** — mehr als die Mindestzahl von 60, also ohne neue Erhebungswelle machbar. Was dabei nicht wiederholt werden muss, sind die Rohwerte; die sind deterministisch.
+
+### 8.3 M2 sieht bei langen Texten keinen Themenwechsel — gemessen
+
+Unabhängig vom Korpusproblem, und deshalb hier eigens: **Der Themensprung M2 fällt bei langen Texten systematisch niedriger aus.** Gemessen am 30.07.2026 an den zehn strittigen Turns gegen zehn kurze aus demselben Bestand:
+
+| Gruppe | Länge Nutzer-Turn | M2 im Mittel |
+|---|---|---|
+| die zehn strittigen | 1611–2654 Zeichen | **0,467** |
+| zehn kurze | 13–165 Zeichen | **0,613** |
+| Korpus-Zentrum | | 0,662 |
+
+**Alle zehn langen liegen unter dem Zentrum**, obwohl jeder inhaltlich das Thema wechselt — einer erreicht mit 0,290 exakt das Skalenminimum. Die kurzen, überwiegend im laufenden Thema, liegen höher.
+
+Ein langer Fachtext liegt im Embedding-Raum näher an einer langen Fachantwort als ein kurzer Alltagssatz an derselben Antwort, unabhängig vom Inhalt. **Als Ursache liegt die Mittelung über viele Token nahe — das ist Annahme, nicht gemessen.**
+
+**Folge:** M2 trägt eine Längenabhängigkeit, und sie zeigt in dieselbe Richtung wie die des Zeugen (`_k.md` §7.4). Solange sie besteht, misst die Achse bei langen Turns nicht das, was ihre Definition verlangt. Das ist ein Befund über M2 und **kein** Argument in der Zeugenfrage.
+
 ---
 
 ## 9. Was wo steht
