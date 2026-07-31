@@ -1,0 +1,604 @@
+# Haertefallkorpus Zeitparser
+#
+# Dies ist die SPEZIFIKATION der Phasen 2-5, nicht nur eine Testsammlung.
+# Faelle, die heute scheitern, sind kein Fehler — sie sind der Auftrag.
+#
+# Deshalb traegt jeder Fall `ab_phase`: die Umbauphase, ab der er gruen sein
+# muss. Der Laeufer unterscheidet damit vier Zustaende:
+#
+#   erfuellt      besteht, und soll es in dieser Phase        -> gut
+#   offen         scheitert, soll es aber noch                -> erwartet
+#   REGRESSION    scheitert, sollte laengst bestehen          -> Abbruch
+#   vorauseilend  besteht schon vor seiner Phase              -> ab_phase senken
+#
+# `ab_phase: null` heisst: dokumentierte Luecke, nicht geplant. Diese Faelle
+# gehoeren trotzdem hierher — eine bekannte Luecke, die niemand aufschreibt,
+# wird irgendwann als neuer Bug wiederentdeckt.
+#
+# HERKUNFT: Die REG-Faelle sind aus novaberg-tool-timeparser.md REKONSTRUIERT,
+# nicht aus der alten 47er-Suite geborgen. Die echten 47 stehen in der
+# Git-Historie und sollten von dort geholt und hier eingehaengt werden; jeder
+# von ihnen war ein bezahlter Bug. Diese 25 decken die dokumentierten Bloecke
+# ab, aber sie kennen die Faelle nicht, die damals wehgetan haben.
+
+meta:
+  zone: "Europe/Berlin"
+  jetzt: "2026-07-31T14:00:00+02:00"   # Freitag, KW 31
+  aktuelle_phase: 2
+
+# Referenzen fuer Update-Faelle (bestehende Termine)
+anker:
+  termin_do: "2026-08-06T14:00:00+02:00"   # Donnerstag
+  termin_mo: "2026-08-10T09:00:00+02:00"   # Montag
+
+faelle:
+
+# ═══════════════════════════════════════════════════════════════════════════
+# H1 — Partikeln: die Richtung liegt nicht im Partikel
+# ═══════════════════════════════════════════════════════════════════════════
+
+- id: H1-001
+  text: "schon zwei Wochen"
+  ab_phase: 3
+  erwartet: { art: intervall, beginn: "2026-07-17T14:00:00+02:00", ende: "2026-07-31T14:00:00+02:00" }
+  notiz: "Der Leitfall. Partikel traegt keine Richtung — Praesens+durativ tut es."
+
+- id: H1-002
+  text: "schon in zwei Wochen"
+  ab_phase: 2
+  erwartet: { art: punkt, beginn: "2026-08-14T14:00:00+02:00" }
+  genauigkeit: tag
+  notiz: "Gegenprobe zu H1-001. Dasselbe Partikel, umgekehrte Richtung."
+
+- id: H1-003
+  text: "bereits drei Tage"
+  ab_phase: 3
+  erwartet: { art: intervall, beginn: "2026-07-28T14:00:00+02:00", ende: "2026-07-31T14:00:00+02:00" }
+
+- id: H1-004
+  text: "bereits nächsten Montag"
+  ab_phase: 2
+  erwartet: { art: punkt, beginn: "2026-08-03T00:00:00+02:00" }
+  genauigkeit: tag
+  notiz: "Verstaerkungspartikel vor Vorwaertsangabe. Darf NICHT rueckwaerts."
+
+- id: H1-005
+  text: "erst in zwei Wochen"
+  ab_phase: 2
+  erwartet: { art: punkt, beginn: "2026-08-14T14:00:00+02:00" }
+  genauigkeit: tag
+
+- id: H1-006
+  text: "erst zwei Wochen"
+  ab_phase: 3
+  erwartet: { art: intervall, beginn: "2026-07-17T14:00:00+02:00", ende: "2026-07-31T14:00:00+02:00" }
+
+- id: H1-007
+  text: "noch zwei Wochen"
+  ab_phase: 3
+  erwartet: { art: intervall, beginn: "2026-07-31T14:00:00+02:00", ende: "2026-08-14T14:00:00+02:00" }
+  notiz: "Die Ausnahme: 'noch' TRAEGT Richtung, wenn kein staerkerer Marker da ist."
+
+- id: H1-008
+  text: "noch vor zwei Wochen"
+  ab_phase: 3
+  erwartet: { art: punkt, beginn: "2026-07-17T14:00:00+02:00" }
+  genauigkeit: tag
+  notiz: "Gegenprobe zu H1-007: 'vor' schlaegt 'noch'."
+
+- id: H1-009
+  text: "seit zwei Wochen"
+  ab_phase: 3
+  erwartet: { art: intervall, beginn: "2026-07-17T14:00:00+02:00", ende: "2026-07-31T14:00:00+02:00" }
+
+- id: H1-010
+  text: "seit Montag"
+  ab_phase: 3
+  erwartet: { art: intervall, beginn: "2026-07-27T00:00:00+02:00", ende: "2026-07-31T14:00:00+02:00" }
+  genauigkeit: tag
+
+- id: H1-011
+  text: "vor zwei Wochen"
+  ab_phase: 1
+  erwartet: { art: punkt, beginn: "2026-07-17T14:00:00+02:00" }
+  genauigkeit: tag
+  notiz: "dateparser versteht das selbst — Bestandsschutz."
+
+- id: H1-012
+  text: "in zwei Wochen"
+  ab_phase: 1
+  erwartet: { art: punkt, beginn: "2026-08-14T14:00:00+02:00" }
+  genauigkeit: tag
+
+- id: H1-013
+  text: "in den letzten zwei Wochen"
+  ab_phase: 3
+  erwartet: { art: intervall, beginn: "2026-07-17T14:00:00+02:00", ende: "2026-07-31T14:00:00+02:00" }
+  notiz: "Determinierer kehrt die Praeposition um."
+
+- id: H1-014
+  text: "innerhalb von zwei Wochen"
+  ab_phase: 3
+  erwartet: { art: intervall, beginn: "2026-07-31T14:00:00+02:00", ende: "2026-08-14T14:00:00+02:00" }
+
+- id: H1-015
+  text: "binnen zwei Wochen"
+  ab_phase: 3
+  erwartet: { art: intervall, beginn: "2026-07-31T14:00:00+02:00", ende: "2026-08-14T14:00:00+02:00" }
+
+- id: H1-016
+  text: "schon seit zwei Wochen"
+  ab_phase: 3
+  erwartet: { art: intervall, beginn: "2026-07-17T14:00:00+02:00", ende: "2026-07-31T14:00:00+02:00" }
+  notiz: "Zwei Marker, ein Ergebnis. 'seit' entscheidet, 'schon' verstaerkt."
+
+- id: H1-017
+  text: "gut zwei Wochen"
+  ab_phase: 3
+  erwartet: { art: dauer, dauer_tage: 14 }
+  notiz: "Unverankert. Ein Modifikator waere 'mehr als' — Novaberg fuehrt keinen."
+
+- id: H1-018
+  text: "knapp zwei Wochen"
+  ab_phase: 3
+  erwartet: { art: dauer, dauer_tage: 14 }
+
+- id: H1-019
+  text: "schon am Freitag"
+  ab_phase: 1
+  erwartet: { art: punkt, beginn: "2026-08-07T00:00:00+02:00" }
+  genauigkeit: tag
+  notiz: "Gemessener Regressionsfall vom 31.07.2026: darf nicht rueckwaerts."
+
+- id: H1-020
+  text: "schon nächsten Montag"
+  ab_phase: 2
+  erwartet: { art: punkt, beginn: "2026-08-03T00:00:00+02:00" }
+  genauigkeit: tag
+
+# ═══════════════════════════════════════════════════════════════════════════
+# H4 — Postponierte Marker: Deutsch stellt nach
+# ═══════════════════════════════════════════════════════════════════════════
+
+- id: H4-001
+  text: "zwei Wochen später"
+  ab_phase: 3
+  referenz: termin_do
+  erwartet: { art: punkt, beginn: "2026-08-20T14:00:00+02:00" }
+  genauigkeit: tag
+  notiz: "Anker ist der bestehende Termin, nicht jetzt."
+
+- id: H4-002
+  text: "zwei Wochen zuvor"
+  ab_phase: 3
+  referenz: termin_do
+  erwartet: { art: punkt, beginn: "2026-07-23T14:00:00+02:00" }
+  genauigkeit: tag
+
+- id: H4-003
+  text: "das ist zwei Wochen her"
+  ab_phase: 3
+  erwartet: { art: punkt, beginn: "2026-07-17T14:00:00+02:00" }
+  genauigkeit: tag
+
+- id: H4-004
+  text: "zwei Wochen zurück"
+  ab_phase: 3
+  erwartet: { art: punkt, beginn: "2026-07-17T14:00:00+02:00" }
+  genauigkeit: tag
+
+- id: H4-005
+  text: "zwei Wochen lang"
+  ab_phase: 3
+  erwartet: { art: dauer, dauer_tage: 14 }
+  notiz: "Unverankert — kein Anker im Text, also auch keiner im Ergebnis."
+
+- id: H4-006
+  text: "drei Tage danach"
+  ab_phase: 3
+  referenz: termin_do
+  erwartet: { art: punkt, beginn: "2026-08-09T14:00:00+02:00" }
+  genauigkeit: tag
+
+- id: H4-007
+  text: "drei Tage vorher"
+  ab_phase: 3
+  referenz: termin_do
+  erwartet: { art: punkt, beginn: "2026-08-03T14:00:00+02:00" }
+  genauigkeit: tag
+
+- id: H4-008
+  text: "eine Woche im Voraus"
+  ab_phase: 3
+  referenz: termin_do
+  erwartet: { art: punkt, beginn: "2026-07-30T14:00:00+02:00" }
+  genauigkeit: tag
+
+- id: H4-009
+  text: "zwei Tage später"
+  ab_phase: 3
+  referenz: termin_mo
+  erwartet: { art: punkt, beginn: "2026-08-12T09:00:00+02:00" }
+  genauigkeit: tag
+
+- id: H4-010
+  text: "eine Woche danach"
+  ab_phase: 3
+  referenz: termin_mo
+  erwartet: { art: punkt, beginn: "2026-08-17T09:00:00+02:00" }
+  genauigkeit: tag
+
+# ═══════════════════════════════════════════════════════════════════════════
+# ZON — Zonengrenzen: beide Uhren muessen dieselbe sein
+# ═══════════════════════════════════════════════════════════════════════════
+
+- id: ZON-001
+  text: "morgen"
+  ab_phase: 0
+  jetzt: "2026-07-31T00:30:00+02:00"
+  erwartet: { art: punkt, beginn: "2026-08-01T00:00:00+02:00" }
+  genauigkeit: tag
+  notiz: "00:30 Berlin = 22:30 UTC des Vortags. B3."
+
+- id: ZON-002
+  text: "in einem Tag"
+  ab_phase: 0
+  jetzt: "2026-07-31T00:30:00+02:00"
+  erwartet: { art: punkt, beginn: "2026-08-01T00:30:00+02:00" }
+  genauigkeit: tag
+  notiz: "Muss denselben Tag treffen wie ZON-001 — das ist die Invariante."
+
+- id: ZON-003
+  text: "übermorgen"
+  ab_phase: 0
+  jetzt: "2026-07-31T00:30:00+02:00"
+  erwartet: { art: punkt, beginn: "2026-08-02T00:00:00+02:00" }
+  genauigkeit: tag
+
+- id: ZON-004
+  text: "in zwei Tagen"
+  ab_phase: 0
+  jetzt: "2026-07-31T00:30:00+02:00"
+  erwartet: { art: punkt, beginn: "2026-08-02T00:30:00+02:00" }
+  genauigkeit: tag
+
+- id: ZON-005
+  text: "gestern"
+  ab_phase: 0
+  jetzt: "2026-07-31T00:30:00+02:00"
+  erwartet: { art: punkt, beginn: "2026-07-30T00:00:00+02:00" }
+  genauigkeit: tag
+
+- id: ZON-006
+  text: "heute"
+  ab_phase: 0
+  jetzt: "2027-01-01T00:30:00+01:00"
+  erwartet: { art: punkt, beginn: "2027-01-01T00:00:00+01:00" }
+  genauigkeit: tag
+  notiz: "Jahresgrenze: 00:30 Berlin = 23:30 UTC des Vorjahres."
+
+- id: ZON-007
+  text: "15.04."
+  ab_phase: 0
+  jetzt: "2027-01-01T00:30:00+01:00"
+  erwartet: { art: punkt, beginn: "2027-04-15T00:00:00+02:00" }
+  genauigkeit: tag
+  notiz: "Block 0c ergaenzt das LOKALE Jahr — 2027, nicht 2026."
+
+- id: ZON-008
+  text: "morgen"
+  ab_phase: 0
+  jetzt: "2026-10-25T02:30:00+02:00"
+  erwartet: { art: punkt, beginn: "2026-10-26T00:00:00+01:00" }
+  genauigkeit: tag
+  notiz: "Zeitumstellungstag. 02:30 gibt es an diesem Tag zweimal."
+
+- id: ZON-009
+  text: "in 24 Stunden"
+  ab_phase: null
+  jetzt: "2026-10-24T14:00:00+02:00"
+  erwartet: { art: punkt, beginn: "2026-10-25T13:00:00+01:00" }
+  notiz: >
+    DOKUMENTIERTE LUECKE. Zeiteinheiten muessten auf dem Instant rechnen,
+    Kalendereinheiten auf der Wanduhr. Novaberg unterscheidet das nicht;
+    'in 24 Stunden' und 'in einem Tag' fallen ueber die Umstellung
+    auseinander. Ohne typisierte Einheiten nicht loesbar.
+
+- id: ZON-010
+  text: "31.03."
+  ab_phase: 0
+  jetzt: "2026-01-15T09:00:00+01:00"
+  erwartet: { art: punkt, beginn: "2026-03-31T00:00:00+02:00" }
+  genauigkeit: tag
+
+# ═══════════════════════════════════════════════════════════════════════════
+# VEK — Vektor-Modus: was wurde gesagt, gegen welchen Anker
+# ═══════════════════════════════════════════════════════════════════════════
+
+- id: VEK-001
+  text: "Freitag"
+  ab_phase: 1
+  referenz: termin_do
+  vektor: { tag_erkannt: true, uhrzeit_erkannt: false, referenz_modus: relativ }
+  erwartet: { art: punkt, beginn: "2026-08-07T00:00:00+02:00" }
+  genauigkeit: tag
+  notiz: "Freitag NACH dem bestehenden Termin, nicht nach heute."
+
+- id: VEK-002
+  text: "15 Uhr"
+  ab_phase: 0
+  referenz: termin_do
+  vektor: { tag_erkannt: false, uhrzeit_erkannt: true, referenz_modus: relativ }
+
+- id: VEK-003
+  text: "Freitag um 10 Uhr"
+  ab_phase: 0
+  referenz: termin_do
+  vektor: { tag_erkannt: true, uhrzeit_erkannt: true, referenz_modus: relativ }
+
+- id: VEK-004
+  text: "morgen früh"
+  ab_phase: 0
+  referenz: termin_do
+  vektor: { tag_erkannt: true, uhrzeit_erkannt: true, referenz_modus: relativ }
+  erwartet: { art: punkt, beginn: "2026-08-01T06:00:00+02:00" }
+  notiz: >
+    Deiktisch: haengt am HEUTIGEN Tag, nicht am bestehenden Termin. Der
+    Grund, aus dem Block 0b bewusst nicht gegen `referenz` rechnet.
+
+- id: VEK-005
+  text: "diesen Montag"
+  ab_phase: 0
+  referenz: termin_do
+  vektor: { referenz_modus: absolut }
+
+- id: VEK-006
+  text: "nächsten Freitag"
+  ab_phase: 0
+  referenz: termin_do
+  vektor: { tag_erkannt: true, referenz_modus: relativ }
+
+- id: VEK-007
+  text: "letzten Montag"
+  ab_phase: 0
+  referenz: termin_do
+  vektor: { tag_erkannt: true, referenz_modus: relativ_rueckwaerts }
+
+- id: VEK-008
+  text: "seit zwei Wochen"
+  ab_phase: 0
+  vektor: { tag_erkannt: false, uhrzeit_erkannt: false, referenz_modus: relativ_rueckwaerts }
+  notiz: "Nur der Modus ab Phase 1. Das Intervall kommt mit Phase 3 (H1-009)."
+
+- id: VEK-009
+  text: "schon zwei Wochen"
+  ab_phase: 0
+  vektor: { referenz_modus: relativ_rueckwaerts }
+
+- id: VEK-010
+  text: "schon am Freitag"
+  ab_phase: 0
+  vektor: { referenz_modus: relativ }
+  notiz: "Verstaerkungspartikel — Modus darf NICHT rueckwaerts sein."
+
+- id: VEK-011
+  text: "bereits nächsten Montag"
+  ab_phase: 0
+  vektor: { referenz_modus: relativ }
+
+- id: VEK-012
+  text: "vorigen Mittwoch"
+  ab_phase: 0
+  vektor: { tag_erkannt: true, referenz_modus: relativ_rueckwaerts }
+  erwartet: { art: punkt, beginn: "2026-07-29T00:00:00+02:00" }
+  genauigkeit: tag
+  notiz: "B4 — 'vorigen' wurde von der Fuzzy-Korrektur zu 'morgen' gezogen."
+
+- id: VEK-013
+  text: "übernächste Woche"
+  ab_phase: 0
+  vektor: { referenz_modus: relativ }
+  notiz: "+7-Offset muss greifen."
+
+- id: VEK-014
+  text: "uebernaechste Woche"
+  ab_phase: 0
+  vektor: { referenz_modus: relativ }
+  notiz: "B2 — ASCII-Schreibweise, gleiches Ergebnis wie VEK-013."
+
+- id: VEK-015
+  text: "naechsten Montag"
+  ab_phase: 0
+  vektor: { tag_erkannt: true, referenz_modus: relativ }
+  erwartet: { art: punkt, beginn: "2026-08-03T00:00:00+02:00" }
+  genauigkeit: tag
+
+# ═══════════════════════════════════════════════════════════════════════════
+# REG — Bestandsschutz, rekonstruiert aus novaberg-tool-timeparser.md
+# ═══════════════════════════════════════════════════════════════════════════
+
+- id: REG-001
+  text: "am Donnerstag um 14 Uhr"
+  ab_phase: 1
+  erwartet: { art: punkt, beginn: "2026-08-06T14:00:00+02:00" }
+
+- id: REG-002
+  text: "übermorgen früh"
+  ab_phase: 0
+  erwartet: { art: punkt, beginn: "2026-08-02T06:00:00+02:00" }
+
+- id: REG-003
+  text: "dreiviertel acht"
+  ab_phase: 1
+  erwartet: { art: punkt, beginn: "2026-08-01T07:45:00+02:00" }
+  notiz: "Fraenkisch. 07:45 ist heute vorbei -> morgen."
+
+- id: REG-004
+  text: "viertel vor acht"
+  ab_phase: 1
+  erwartet: { art: punkt, beginn: "2026-08-01T07:45:00+02:00" }
+  notiz: "Norddeutsch, gleiches Ergebnis wie REG-003. Kein Dialekt bevorzugt."
+
+- id: REG-005
+  text: "viertel acht"
+  ab_phase: 1
+  erwartet: { art: punkt, beginn: "2026-08-01T07:15:00+02:00" }
+
+- id: REG-006
+  text: "halb drei"
+  ab_phase: 1
+  erwartet: { art: punkt, beginn: "2026-07-31T14:30:00+02:00" }
+  notiz: "14:30 ist um 14:00 noch nicht vorbei -> heute."
+
+- id: REG-007
+  text: "zehn vor acht"
+  ab_phase: 1
+  erwartet: { art: punkt, beginn: "2026-08-01T07:50:00+02:00" }
+
+- id: REG-008
+  text: "fünf nach drei"
+  ab_phase: 1
+  erwartet: { art: punkt, beginn: "2026-07-31T15:05:00+02:00" }
+
+- id: REG-009
+  text: "drei Uhr nachmittags"
+  ab_phase: 1
+  erwartet: { art: punkt, beginn: "2026-07-31T15:00:00+02:00" }
+
+- id: REG-010
+  text: "14 Uhr 30"
+  ab_phase: 1
+  erwartet: { art: punkt, beginn: "2026-07-31T14:30:00+02:00" }
+
+- id: REG-011
+  text: "3 nachmittags"
+  ab_phase: 1
+  erwartet: { art: punkt, beginn: "2026-07-31T15:00:00+02:00" }
+
+- id: REG-012
+  text: "morgens"
+  ab_phase: 1
+  erwartet: { art: punkt, beginn: "2026-08-01T08:00:00+02:00" }
+
+- id: REG-013
+  text: "abends"
+  ab_phase: 1
+  erwartet: { art: punkt, beginn: "2026-07-31T18:00:00+02:00" }
+
+- id: REG-014
+  text: "nachts"
+  ab_phase: 1
+  erwartet: { art: punkt, beginn: "2026-07-31T22:00:00+02:00" }
+
+- id: REG-015
+  text: "15.09."
+  ab_phase: 0
+  erwartet: { art: punkt, beginn: "2026-09-15T00:00:00+02:00" }
+  genauigkeit: tag
+
+- id: REG-016
+  text: "01.09. um 9 Uhr"
+  ab_phase: 0
+  erwartet: { art: punkt, beginn: "2026-09-01T09:00:00+02:00" }
+
+- id: REG-017
+  text: "2026-05-15 10:00"
+  ab_phase: 0
+  erwartet: { art: punkt, beginn: "2026-05-15T10:00:00+02:00" }
+  notiz: "Pfad 1, ohne dateparser."
+
+- id: REG-018
+  text: "Frietag"
+  ab_phase: 1
+  erwartet: { art: punkt, beginn: "2026-08-07T00:00:00+02:00" }
+  genauigkeit: tag
+  notiz: "Fuzzy, Distanz 1."
+
+- id: REG-019
+  text: "Donerstag"
+  ab_phase: 1
+  erwartet: { art: punkt, beginn: "2026-08-06T00:00:00+02:00" }
+  genauigkeit: tag
+
+- id: REG-020
+  text: "15. Maerz"
+  ab_phase: 1
+  erwartet: { art: punkt, beginn: "2027-03-15T00:00:00+01:00" }
+  genauigkeit: tag
+  notiz: "Umschrift. Der Maerz-Bug vom 31.07.2026."
+
+- id: REG-021
+  text: "15. März"
+  ab_phase: 1
+  erwartet: { art: punkt, beginn: "2027-03-15T00:00:00+01:00" }
+  genauigkeit: tag
+
+- id: REG-022
+  text: "in einer Woche um 14 Uhr"
+  ab_phase: 0
+  erwartet: { art: punkt, beginn: "2026-08-07T14:00:00+02:00" }
+  notiz: "B1 — die Wochenangabe darf die Uhrzeit nicht mitreissen."
+
+- id: REG-023
+  text: "nachmittags um 3 Uhr"
+  ab_phase: null
+  erwartet: { art: punkt, beginn: "2026-07-31T15:00:00+02:00" }
+  notiz: "DOKUMENTIERTE LUECKE: Tageszeit VOR Uhrzeit, Offset geht verloren."
+
+- id: REG-024
+  text: "nachmittags um 3"
+  ab_phase: null
+  erwartet: { art: punkt, beginn: "2026-07-31T15:00:00+02:00" }
+  notiz: "DOKUMENTIERTE LUECKE: einzelne Ziffer ohne 'Uhr' wird Tag."
+
+- id: REG-025
+  text: "zwanzig vor vier"
+  ab_phase: null
+  erwartet: { art: punkt, beginn: "2026-08-01T03:40:00+02:00" }
+  notiz: "DOKUMENTIERTE LUECKE: _ZAHLWOERTER kennt nur 1-12."
+
+# ═══════════════════════════════════════════════════════════════════════════
+# VAG — Vage Ausdruecke: duerfen NICHT zu einem Datum werden
+# ═══════════════════════════════════════════════════════════════════════════
+
+- id: VAG-001
+  text: "neulich"
+  ab_phase: 4
+  erwartet: { art: vage, vage: vergangenheit }
+
+- id: VAG-002
+  text: "kürzlich"
+  ab_phase: 4
+  erwartet: { art: vage, vage: vergangenheit }
+
+- id: VAG-003
+  text: "letztens"
+  ab_phase: 4
+  erwartet: { art: vage, vage: vergangenheit }
+
+- id: VAG-004
+  text: "vor Kurzem"
+  ab_phase: 4
+  erwartet: { art: vage, vage: vergangenheit }
+  notiz: "Abgrenzung zu 'vor allem' — 'vor Kurzem' IST temporal."
+
+- id: VAG-005
+  text: "demnächst"
+  ab_phase: 4
+  erwartet: { art: vage, vage: zukunft }
+
+- id: VAG-006
+  text: "bald"
+  ab_phase: 4
+  erwartet: { art: vage, vage: zukunft }
+  notiz: "Ein Parser, der 'bald' zu t0+7d macht, erfindet Information."
+
+- id: VAG-007
+  text: "irgendwann"
+  ab_phase: 4
+  erwartet: { art: vage, vage: zukunft }
+
+- id: VAG-008
+  text: "momentan"
+  ab_phase: 4
+  erwartet: { art: vage, vage: gegenwart }
