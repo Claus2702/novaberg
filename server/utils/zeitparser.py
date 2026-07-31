@@ -38,14 +38,39 @@ _WOCHENTAGE: list[str] = [
     "freitag", "samstag", "sonntag",
 ]
 
+# Die Umlautform ist die massgebliche: dateparser versteht "15. März" und
+# liefert bei "15. Maerz" None. Die Liste trug bis zum 31.07.2026 nur die
+# ASCII-Form — die Fuzzy-Korrektur fand "März" deshalb nicht als bekanntes
+# Wort, ersetzte es auf Distanz 2 durch "Maerz", und dateparser scheiterte
+# daran. Jedes Datum im Maerz fiel durch.
 _MONATE: list[str] = [
-    "januar", "februar", "maerz", "april", "mai", "juni",
+    "januar", "februar", "märz", "april", "mai", "juni",
     "juli", "august", "september", "oktober", "november", "dezember",
 ]
 
 _RELATIVE: list[str] = [
     "morgen", "uebermorgen", "übermorgen", "heute", "gestern", "vorgestern",
 ]
+
+
+def _ascii_umschrift(wort: str) -> str:
+    """Bildet die Umlaut-Umschreibung eines Wortes ("märz" -> "maerz")."""
+    for umlaut, ersatz in (("ä", "ae"), ("ö", "oe"), ("ü", "ue"), ("ß", "ss")):
+        wort = wort.replace(umlaut, ersatz)
+    return wort
+
+
+# ASCII-Umschreibung -> Umlautform, ABGELEITET aus den Listen selbst.
+#
+# Wer ohne Umlaute tippt, schreibt "maerz", "fuenf", "zwoelf". dateparser
+# kennt nur die Umlautform, also wird zurueckuebersetzt, bevor er sie sieht.
+#
+# Abgeleitet und nicht von Hand gefuehrt: Eine zweite Liste liefe beim
+# naechsten neuen Wort auseinander, und genau diese Drift ist der Grund, aus
+# dem "märz" ueberhaupt fehlte. Wortweise ersetzt und nur bei vollstaendiger
+# Uebereinstimmung — eine blinde Ersetzung von "ue" nach "ü" machte aus
+# "heute" ein "heüte".
+_ASCII_ZU_UMLAUT: dict[str, str] = {}
 
 _ALLE_WOERTER: list[str] = _WOCHENTAGE + _MONATE + _RELATIVE
 
@@ -79,6 +104,38 @@ def _levenshtein(a: str, b: str) -> int:
     return vorherige[-1]
 
 
+def _umlaute_herstellen(text: str) -> str:
+    """Uebersetzt ASCII-Umschreibungen bekannter Woerter zurueck.
+
+    "15. maerz" -> "15. märz", "fuenf Wochen" -> "fünf Wochen".
+
+    Laeuft VOR der Fuzzy-Korrektur, damit die ein bekanntes Wort sieht statt
+    eines unbekannten, das sie auf Distanz 2 irgendwohin zieht.
+
+    Ersetzt wird nur bei vollstaendiger Wortuebereinstimmung. Eine blinde
+    Ersetzung der Buchstabenfolge machte aus "heute" ein "heüte" und aus
+    "neue" ein "neü".
+
+    Vorbedingung: keine.
+    Nachbedingung: Gleiche Wortzahl, gleiche Gross-/Kleinschreibung am
+        Wortanfang.
+    """
+    # ── Eingabe ─────────────────────────────────
+    if not text or not _ASCII_PATTERN:
+        return text
+
+    # ── Verarbeitung ────────────────────────────
+    def ersetzen(treffer: re.Match) -> str:
+        wort: str = treffer.group(0)
+        ziel: str = _ASCII_ZU_UMLAUT[wort.lower()]
+        return ziel.capitalize() if wort[0].isupper() else ziel
+
+    # ── Ausgabe ─────────────────────────────────
+    return re.sub(
+        r'\b(' + _ASCII_PATTERN + r')\b', ersetzen, text, flags=re.IGNORECASE,
+    )
+
+
 def _fuzzy_korrektur(text: str, max_distanz: int = 2) -> str:
     """
     Korrigiert Tippfehler in Wochentagen und Monaten.
@@ -87,6 +144,7 @@ def _fuzzy_korrektur(text: str, max_distanz: int = 2) -> str:
     'Donerstag' -> 'Donnerstag' (Distanz 1)
     'Septmeber' -> 'September' (Distanz 2)
     """
+    text = _umlaute_herstellen(text)
     woerter: list[str] = text.split()
     korrigiert: list[str] = []
 
@@ -132,6 +190,18 @@ _ZAHLWOERTER: dict[str, int] = {
 }
 
 _ZAHLWOERTER_PATTERN: str = "|".join(_ZAHLWOERTER.keys())
+
+# Zuordnung befuellen, sobald alle Quelllisten stehen. Jedes Wort mit Umlaut
+# bekommt seine ASCII-Umschreibung als Schluessel; Woerter, deren Umschreibung
+# gleich dem Wort ist, fallen heraus.
+for _quelle in (_WOCHENTAGE, _MONATE, _RELATIVE, list(_ZAHLWOERTER.keys()),
+                list(_GESCHUETZTE_WOERTER)):
+    for _wort in _quelle:
+        _ascii = _ascii_umschrift(_wort)
+        if _ascii != _wort:
+            _ASCII_ZU_UMLAUT.setdefault(_ascii, _wort)
+
+_ASCII_PATTERN: str = "|".join(sorted(_ASCII_ZU_UMLAUT, key=len, reverse=True))
 
 # "bereits"/"schon" + nackte Dauer — eine andauernde Sache, die rueckwaerts
 # zeigt: "das dauert bereits zwei Wochen" meint den Beginn vor zwei Wochen.
