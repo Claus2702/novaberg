@@ -728,6 +728,10 @@ Lessons leben als `{modul}_l.md` oder `{modul}_l_{thema}.md` neben ihrem Modul-D
 | novaberg-lesson_l_konzept-spricht-code.md | Ein Konzept, das in Code-Sprache spricht, wird für einen Befund gehalten |
 | novaberg-lesson_l_ableitung-als-messung.md | Eine Ableitung ist keine Messung — auch wenn sie stimmt |
 | novaberg-lesson_l_gelesen-ist-nicht-wirksam.md | Die gelesene Quelle ist nicht die wirksame (zwei Speicher, einer gilt) |
+| novaberg-lesson_l_gegenprobe-misst-den-cache.md | Eine Gegenprobe, die den Bytecode-Cache erwischt, misst gar nichts |
+| novaberg-lesson_l_weg-vor-wortschatz.md | Erst messen, ob der Weg befahren wird — sonst erweitert man einen toten Pfad |
+| novaberg-lesson_l_parst-nicht-schlaegt-parst-falsch.md | Eine zu breite Regel macht aus dem harmlosen Ausfall den schädlichen |
+| novaberg-lesson_l_meldung-im-bestand-ertrinkt.md | Eine Regel, deren Verletzung ein Absturz ist, gehört nicht in eine geduldete Trefferzahl |
 
 ### Uebergreifend
 
