@@ -138,16 +138,17 @@ This is the clearest picture of why Nova remembers unevenly. A turn that lands i
 
 ### Model Footprint
 
-Nova runs three language models plus one embedding model in parallel:
+Nova runs three models in parallel — two language models and one for embeddings:
 
 | Model | Execution | Purpose | Size |
 |-------|----------|---------|------|
 | `gemma4-gpu` | GPU (VRAM) | Chat, agents, responder | ~17 GB |
 | `nomic-embed-text-v2-moe` | GPU (VRAM) | Embeddings for STM/LTM/entity resolution | ~1.0 GB |
-| `gemma4-cpu` | CPU (RAM) | Pixie — language tasks in the background | ~17 GB |
-| `qwen3-32b-cpu` | CPU (RAM) | Pixie — analysis tasks (promotion, research evaluation) | ~20 GB |
+| `qwen36-cpu` | CPU (RAM) | Pixie — everything in the background, language and analysis alike | ~24 GB |
 
-Both CPU models reside in RAM simultaneously, alongside PostgreSQL, Redis, and the server process. This is why 64 GB RAM is a requirement, not a recommendation. With less, the system will start swapping, which destroys Pixie throughput.
+Gemma runs on the GPU only. The background agent used to split its work across two CPU models, one for language and one for analysis; it now uses a single one for both, which is why the count went from four models to three.
+
+The CPU model sits in RAM alongside PostgreSQL, Redis and the server process, and it is the large one. This is why 64 GB is a requirement rather than a recommendation — with less, the system starts swapping, and swapping destroys Pixie throughput.
 
 Ollama runs host-native by design so the GPU is directly accessible. Containerized services connect via `host.docker.internal`.
 
@@ -198,7 +199,7 @@ OLLAMA_HOST=0.0.0.0:11434 ollama serve &    # GPU
 OLLAMA_HOST=0.0.0.0:11435 ollama serve &    # CPU
 ```
 
-Pull all four models:
+Pull all three models:
 
 ```bash
 # GPU — chat and embedding
@@ -206,8 +207,7 @@ ollama pull gemma4-gpu
 ollama pull nomic-embed-text-v2-moe
 
 # CPU — Pixie background work
-ollama pull gemma4-cpu
-ollama pull qwen3-32b-cpu
+ollama pull qwen36-cpu
 ```
 
 Modelfiles (quantization, context size, system prompts) are in `ollama/modelfiles/` for reference.
@@ -247,7 +247,7 @@ Central configuration lives in `server/config.py`. All parameters can be overrid
 | Variable | Values | Effect |
 |----------|--------|--------|
 | `LLM_PROFILE` | `lokal`, `claude` | Switch between Ollama and Anthropic API |
-| `OLLAMA_CONNECTOR` | `mistral`, `gemma4`, `qwen36` | Model stack within `lokal` |
+| `OLLAMA_CONNECTOR` | `mistral`, `gemma4`, `qwen36` | Model stack within `lokal`. The three models above are the `qwen36` stack — set it explicitly, since the built-in default is still `gemma4`, which expects a separate CPU language model. |
 
 Fine-grained parameters (Pixie intervals, STM thresholds, search limits, etc.) are also documented in `config.py` and controllable via `PIXIE_*`, `KZG_*`, `NOTIZEN_*` variables.
 

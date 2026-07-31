@@ -138,16 +138,17 @@ Das ist das deutlichste Bild dafür, warum Nova ungleichmäßig behält. Ein Tur
 
 ### Modell-Footprint
 
-Nova betreibt parallel drei Sprachmodelle plus ein Embedding-Modell:
+Nova betreibt parallel drei Modelle — zwei Sprachmodelle und eines für Embeddings:
 
 | Modell | Ausführung | Zweck | Größe |
 |--------|-----------|-------|-------|
 | `gemma4-gpu` | GPU (VRAM) | Chat, Agenten, Responder | ~17 GB |
 | `nomic-embed-text-v2-moe` | GPU (VRAM) | Embeddings für KZG/LZG/Entity Resolution | ~1,0 GB |
-| `gemma4-cpu` | CPU (RAM) | Pixie — Sprachaufgaben im Hintergrund | ~17 GB |
-| `qwen3-32b-cpu` | CPU (RAM) | Pixie — Analyseaufgaben (Promotion, Recherche-Bewertung) | ~20 GB |
+| `qwen36-cpu` | CPU (RAM) | Pixie — alles im Hintergrund, Sprache wie Analyse | ~24 GB |
 
-Beide CPU-Modelle liegen gleichzeitig im RAM, zusätzlich zu PostgreSQL, Redis und dem Server-Prozess. Deshalb sind 64 GB RAM keine Empfehlung, sondern Voraussetzung. Mit weniger wird das System anfangen zu swappen, was den Pixie-Durchsatz zerstört.
+Gemma läuft ausschließlich auf der GPU. Der Hintergrundagent hat seine Arbeit früher auf zwei CPU-Modelle verteilt, eines für Sprache und eines für Analyse; er benutzt jetzt ein einziges für beides — daher drei Modelle statt vier.
+
+Das CPU-Modell liegt im RAM, dazu PostgreSQL, Redis und der Server-Prozess, und es ist das große. Deshalb sind 64 GB keine Empfehlung, sondern Voraussetzung — mit weniger fängt das System an zu swappen, und Swapping zerstört den Pixie-Durchsatz.
 
 Ollama läuft bewusst host-native, damit die GPU direkt ansprechbar ist. Die Dienste im Container verbinden sich über `host.docker.internal`.
 
@@ -206,8 +207,7 @@ ollama pull gemma4-gpu
 ollama pull nomic-embed-text-v2-moe
 
 # CPU — Pixie-Hintergrundarbeit
-ollama pull gemma4-cpu
-ollama pull qwen3-32b-cpu
+ollama pull qwen36-cpu
 ```
 
 Die Modelfiles (Quantisierung, Kontextgröße, System-Prompts) liegen in `ollama/modelfiles/` als Referenz.
@@ -247,7 +247,7 @@ Die zentrale Konfiguration liegt in `server/config.py`. Alle Parameter sind übe
 | Variable | Werte | Effekt |
 |----------|-------|--------|
 | `LLM_PROFILE` | `lokal`, `claude` | Umschaltung zwischen Ollama und Anthropic API |
-| `OLLAMA_CONNECTOR` | `mistral`, `gemma4`, `qwen36` | Modell-Stack innerhalb von `lokal` |
+| `OLLAMA_CONNECTOR` | `mistral`, `gemma4`, `qwen36` | Modell-Stack innerhalb von `lokal`. Die drei Modelle oben sind der `qwen36`-Stack — ausdrücklich setzen, denn der eingebaute Vorgabewert ist weiterhin `gemma4` und erwartet ein eigenes CPU-Sprachmodell. |
 
 Feingranulare Parameter (Pixie-Intervalle, KZG-Thresholds, Such-Limits etc.) sind ebenfalls in `config.py` dokumentiert und über `PIXIE_*`-, `KZG_*`-, `NOTIZEN_*`-Variablen steuerbar.
 
