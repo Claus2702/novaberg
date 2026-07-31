@@ -1,6 +1,6 @@
 # Novaberg — Roadmap (Projektchronik)
 
-**Stand:** Chat 121, 31. Juli 2026
+**Stand:** Chat 122, 31. Juli 2026
 *(Die Kopfzeile stand bis Chat 109 auf „Chat 93, 21. Mai 2026" — 15 Chats hinter dem Inhalt. **Sie ist danach erneut zurückgefallen:** von Chat 110 bis 114 blieb sie auf „Chat 109" stehen, während der Inhalt weiterwuchs, und wurde in Chat 115 nachgezogen. Wer hier etwas ergänzt, zieht die Kopfzeile mit — sie driftet zuverlässig. Achtung beim Nachschlagen: Nur bis Chat 97 trägt jeder Chat eine eigene `## Chat NNN`-Überschrift; die Chats 98–108 stehen als `###`-Abschnitte unter dem Chat-97-Block, benannt nach Sprint statt nach Chat.)*
 **Pfad:** novaberg/docs/novaberg-roadmap.md
 **Single Source of Truth für abgeschlossene Arbeit.**
@@ -1980,6 +1980,41 @@ Beide Räder haben eine Nabe — den Wert ohne jede Ausprägung — und das Erge
 > **Die Zahlen selbst stehen nicht hier.** Ein Charakter-Rad ist ein Charakterprofil; aus den Summanden sind mit der Züge-Tabelle die Einzelspeichen rückrechenbar. Wer die Messung nachvollziehen will, fährt sie gegen den eigenen Bestand — sie ist in zwei Aufrufen wiederholbar.
 
 **Geschlossen:** `Bauteil 3 — Charakter-Räder im Client` (Rest benannt, siehe Backlog)
+
+---
+
+## Chat 122 (31.07.2026) — Das Rad bekommt Gegenpole ✅
+
+### Die Speichen-Reihenfolge war eine Aufzählung und ist jetzt eine Anordnung
+
+Vorarbeit zum Haltungsraum. Der Raum kreuzt die Gesprächslandschaft mit der Zuwendung — und dafür muss die Zuwendung adressierbar sein.
+
+**Die Messung hat die Annahme des Konzepts widerlegt.** Es ging von zwölf Speichen als zwölf Positionen aus. Beide vorhandenen Räder belegen jedoch **mehrere Speichen gleichzeitig, auf beiden Seiten**: `nova → meister` trägt `wissbegier` und `distanz` beide auf 1.0. Eine Position auf zwölf diskreten Werten gibt es damit nicht, und „die stärkste Speiche" ist nicht eindeutig.
+
+**Die Zuwendung ist deshalb ein Punkt**, gebildet als Vektorsumme der belegten Speichen, mit Sektor und Ausschlag. Dieselbe Bauart wie die 64 Sektoren des Gesprächsvektors. Damit kann Distanz das Wohlwollen herunterziehen, ohne es auszulöschen — eine Summe kann das nicht.
+
+**Das setzt voraus, dass die Speichen einander sinnvoll gegenüberstehen, und das taten sie nicht.** Die Reihenfolge war die Aufzählung beider Konstanten hintereinander, gewählt für die Lesbarkeit des Diagramms. Von sechs Gegenüberstellungen trugen zwei:
+
+| war gegenüber | trägt | steht jetzt gegenüber |
+|---|---|---|
+| treue ↔ widerspenstig | nein | treue ↔ selbstbezogen |
+| dienst ↔ gleichgueltig | **ja** | unverändert |
+| pflicht ↔ selbstbezogen | nein | pflicht ↔ widerspenstig |
+| aufmerksamkeit ↔ langeweile | teilweise | aufmerksamkeit ↔ distanz |
+| **wissbegier ↔ distanz** | **nein** | wissbegier ↔ langeweile |
+| wohlwollen ↔ misstrauen | **ja** | unverändert |
+
+Der teure Fall ist der fünfte. Neugier auf die Sache schließt Abstand zur Person nicht aus — das dritte Beispiel in `novaberg-salienz-berechnung_k.md` §5 sagt es seit jeher, und der Bestand belegt es. Gegenübergestellt hätten sie sich verrechnet.
+
+> **Für den Skalar ist die Reihenfolge gleichgültig — er ist eine Summe.** Genau deshalb konnte sie jahrelang falsch stehen, ohne dass etwas auffiel. Sie wird erst tragend, wo aus den Speichen ein Punkt wird.
+
+**Der zweite Befund war größer als der erste.** Nimmt man den Zug einer Speiche als ihre Länge auf dem Rad, ist der erreichbare Ausschlag richtungsabhängig: Richtung `treue` bis 0.16, Richtung `misstrauen` bis 0.02 — **Faktor acht.** Jede Zelle „starker Ausschlag × misstrauen" wäre unerreichbar gewesen. Und die Richtung folgt dann der Zugstärke statt der Messung: Am realen Rad zeigte der Punkt auf `aufmerksamkeit` (Ausprägung 0.5), während `wissbegier` und `wohlwollen` auf 1.0 standen — `treue` mit 0.5 × 0.16 wiegt genau so viel wie `wissbegier` mit 1.0 × 0.08.
+
+Deshalb sind **Zug und Geometriefaktor jetzt zwei Größen**: Der Zug bleibt der Beitrag zum Skalar, der Geometriefaktor ist die Länge auf dem Rad, je Speiche einzeln setzbar und anfangs für alle gleich. Konzipiert, nicht gebaut — die Vektorrechnung existiert noch nicht.
+
+**Umfang:** Suite 740 → **743 Tests**, grün, 0 übersprungen. Linter-Nulllinie unverändert 2265, harte Wand sauber. Gegenprobe, ein Eingriff: die alte Reihenfolge wiederhergestellt → 5 Fehlschläge aus zwei Testmethoden, vier davon `subTest`-Stellen der Paarung plus der Client-Vertrag. Die beiden sortierenden Zusicherungen bleiben grün, weil sie reihenfolgeblind sind.
+
+**Was nicht angefasst wurde:** das Initiative-Rad. Seine zehn Speichen stehen vor derselben Frage, und sie ist dort nicht geprüft.
 
 ---
 

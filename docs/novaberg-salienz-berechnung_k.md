@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Konzept — Formel und Herleitung der Salienz für beide Beobachter
-**Stand:** 27. Juli 2026, Chat 112 — Formel gebaut und live abgenommen
+**Stand:** 31. Juli 2026 (§5 **die Speichen-Reihenfolge ist eine Gegenpol-Anordnung** — Paartabelle ergänzt, die frühere Ordnung war die Aufzählung beider Listen und stellte `Wissbegier` gegen `Distanz`. Für den Faktor gleichgültig, für die Fläche des Haltungsraums tragend. Zuvor: 27. Juli 2026, Chat 112 — Formel gebaut und live abgenommen)
 **Pfad:** novaberg/docs/novaberg-salienz-berechnung_k.md
 **Typ:** Konzept
 **Voraussetzung:** `novaberg-convention-abgeleitete-werte.md`
@@ -155,6 +155,25 @@ Volle Auslenkung trifft die Grenzen **exakt**: alle sechs oben ausgeprägt → 1
 Eine frühere Fassung sah 2.0 als Obergrenze vor. Verworfen: Bei 2.0 hätte eine ergebene Nova jede Nutzeräußerung fast garantiert über jedes Tor gehoben, und die Gewichtung wäre vom Regler zum Passierschein geworden. Bei 1.5 verschiebt sie spürbar, ohne zu entscheiden.
 
 Die zwölf Sektoren und ihre Züge sind **nachkalibrierbar**. Sie sind eine Setzung, keine Messung.
+
+### Die Reihenfolge ist eine Gegenpol-Anordnung (31.07.2026)
+
+**auditiert, 31.07.2026.** Speiche *i* der Zuwendungsseite und Speiche *i* der Abwendungsseite sind inhaltliche Gegensätze und liegen auf dem Rad einander gegenüber:
+
+| Zuwendung | | Abwendung | woran man das Paar erkennt |
+|---|---|---|---|
+| Treue | ↔ | Selbstbezogenheit | fremde Belange vor eigenen / eigene zuerst |
+| Dienstbeflissenheit | ↔ | Gleichgültigkeit | sucht Gelegenheiten / berührt sie nicht |
+| Pflichtbewusstsein | ↔ | Widerspenstigkeit | nimmt Aufträge ernst / folgt ungern |
+| Aufmerksamkeit | ↔ | Distanz | hält Nähe / hält Abstand |
+| Wissbegier | ↔ | Langeweile | Themen wecken Interesse / ermüden sie |
+| Wohlgesonnenheit | ↔ | Misstrauen | im besten Sinne / skeptisch ausgelegt |
+
+**Für den Faktor ist die Reihenfolge gleichgültig** — er ist eine Summe und kennt keine Winkel. Sie wird erst dort tragend, wo aus den Speichen ein **Punkt** gebildet wird (`novaberg-haltungsraum_k.md` §2): Dann entscheidet sie, welche zwei Eigenschaften einander auslöschen können.
+
+**Die frühere Ordnung war keine Setzung, sondern die Aufzählung beider Listen hintereinander.** Sie stellte `Wissbegier` gegen `Distanz` — und genau diese beiden stehen im Bestand gleichzeitig auf 1.0. Neugier auf die Sache schließt Abstand zur Person nicht aus; das dritte Beispiel unten sagt es ausdrücklich. Vier der sechs damaligen Gegenüberstellungen trugen nicht.
+
+**Wer diese Listen nach Zugstärke sortiert, zerstört die Anordnung**, ohne dass am Faktor etwas auffiele. Deshalb hält `GegenpolAnordnungTest` die Paare als Literal fest, und der Client führt dieselbe Ordnung.
 
 ### Drei Beispiele
 
