@@ -602,3 +602,23 @@ faelle:
   text: "momentan"
   ab_phase: 4
   erwartet: { art: vage, vage: gegenwart }
+
+# ───────────────────────────────────────────────────────────────────────────
+# LIB — Riegel gegen einen Fremddefekt: kein Phasenziel, sondern ein Ablaufdatum
+# ───────────────────────────────────────────────────────────────────────────
+
+- id: LIB-001
+  text: "um 2 Uhr 30"
+  ab_phase: null
+  jetzt: "2026-07-31T14:27:00+02:00"
+  erwartet: { art: punkt, beginn: "2026-08-01T02:30:00+02:00" }
+  notiz: >
+    RIEGEL, keine Phasenaufgabe — deshalb ab_phase: null. dateparser 1.4.1
+    addiert fuer eine bereits vergangene nackte Uhrzeit korrekt Tag+1 und
+    ueberschreibt den Monat danach mit dem des Bezugsmoments; am
+    Monatsletzten landet das Ergebnis dadurch im Vormonat (31.07. -> 01.07.
+    statt 01.08.). Pfad 1c des Parsers umgeht das und macht diesen Fall
+    gruen. Der Sollwert steht hier, damit die Absicht im Korpus sichtbar ist.
+    Ob der Riegel noch gebraucht wird, prueft NICHT dieser Fall, sondern
+    tests/test_zeit_dateparser_riegel.py direkt gegen die Bibliothek: Der
+    schlaegt an, sobald sie richtig rechnet.
