@@ -15,6 +15,8 @@ Zeugen dieser Datei:
     Charakter nichts und die Rechnung ist eine Cluster-Tabelle.
   * Die Zusicherung zum Kanal stammt aus
     `novaberg-lesson_l_stategraph-channel-zwang.md`.
+  * Die Pflichtteile der Protokollzeile stammen aus Konzept §2.0a: drei Zahlen
+    je Groesse, Rechenart, Uebersteuerungsmarke — und **kein** Redis-Blob.
 
 Kein skipUnless, kein skipIf, kein try/except um Importe.
 """
@@ -26,6 +28,7 @@ from unittest.mock import MagicMock, patch
 from graph.nodes.haltung import haltung_bestimmen
 from graph.state import ConversationState
 from langgraph.graph import END, StateGraph
+from services.event_consumer import CHARACTER_NODE_LABELS, _stage_detail_bauen
 
 HALTUNG_LOGGER: str = "ki_server.graph.haltung"
 
@@ -285,6 +288,140 @@ class DerAusfallBleibtLeerTest(unittest.TestCase):
                 )
 
         self.assertNotIn("haltung", ergebnis)
+
+
+class DasProtokollTraegtDieHerkunftTest(unittest.TestCase):
+    """Drei Zahlen je Groesse, sonst ist das Ergebnis nicht zurechenbar.
+
+    Steht nur der verrechnete Wert im Protokoll, ist nie erkennbar, ob die
+    Landschaft ihn gesetzt oder der Charakter ihn verschoben hat — und die
+    Beitragszahlen sind Setzungen, die genau daran nachkalibriert werden.
+    """
+
+    def _zeile(self, **felder: object) -> dict:
+        """Faehrt den Knoten und gibt den Inhalt der Berechnungszeile zurueck."""
+        with _mit_rad(RAD_GEMESSEN):
+            with patch("graph.nodes.haltung.log_berechnung") as schreiber:
+                haltung_bestimmen(_state(**felder), "postgresql://attrappe")
+        self.assertTrue(schreiber.called, "keine Berechnungszeile geschrieben")
+        return schreiber.call_args.kwargs["inhalt"]
+
+    def test_jede_groesse_traegt_grundwert_modifikation_und_ergebnis(self) -> None:
+        """Eine Zahl je Groesse waere ein Ergebnis ohne Herkunft."""
+        groessen: dict = self._zeile()["groessen"]
+
+        self.assertEqual(FUENF_GROESSEN, set(groessen))
+        for name, satz in groessen.items():
+            with self.subTest(groesse=name):
+                self.assertEqual(
+                    {"grundwert", "modifikation", "ergebnis", "art", "ausloeser"},
+                    set(satz),
+                )
+
+    def test_die_zeile_nennt_den_turn_und_das_paar(self) -> None:
+        """Ohne Turnbezug ist die Zeile keiner Messung zuzuordnen."""
+        with _mit_rad(RAD_GEMESSEN):
+            with patch("graph.nodes.haltung.log_berechnung") as schreiber:
+                haltung_bestimmen(_state(), "postgresql://attrappe")
+
+        aufruf = schreiber.call_args.kwargs
+        self.assertEqual("t",            aufruf["turn_id"])
+        self.assertEqual("meister",      aufruf["user_id"])
+        self.assertEqual("nova",         aufruf["character_id"])
+        self.assertEqual("haltungsraum", aufruf["node"])
+
+    def test_die_ueberlaeufe_stehen_zaehlbar_obenauf(self) -> None:
+        """Die Haeufigkeit ist die Messgroesse — sie darf keine Tiefensuche sein.
+
+        `glut` mit dem gemessenen Rad ergibt `waerme` 1.15; der Name gehoert
+        deshalb in die obere Liste, nicht nur in den Satz der Groesse.
+        """
+        self.assertEqual(["waerme"], self._zeile()["ausserhalb"])
+
+    def test_die_herkunft_des_rades_steht_in_der_zeile(self) -> None:
+        """Ein Default-Rad ist kein gemessener Charakter."""
+        with _mit_rad(RAD_GEMESSEN, quelle="default"):
+            with patch("graph.nodes.haltung.log_berechnung") as schreiber:
+                haltung_bestimmen(_state(), "postgresql://attrappe")
+
+        self.assertEqual("default", schreiber.call_args.kwargs["inhalt"]["rad_quelle"])
+
+    def test_ohne_turn_id_wird_nichts_geschrieben(self) -> None:
+        """Eine Zeile ohne Turnbezug ist wertlos — und sie fehlt laut."""
+        with _mit_rad(RAD_GEMESSEN):
+            with patch("graph.nodes.haltung.log_berechnung") as schreiber:
+                with self.assertLogs(HALTUNG_LOGGER, level="ERROR"):
+                    haltung_bestimmen(_state(turn_id=""), "postgresql://attrappe")
+
+        self.assertFalse(schreiber.called)
+
+    def test_ein_schreibfehler_toetet_den_turn_nicht(self) -> None:
+        """Forensik ist Beifang. Faellt sie aus, antwortet Nova trotzdem."""
+        with _mit_rad(RAD_GEMESSEN):
+            with patch(
+                "graph.nodes.haltung.log_berechnung", side_effect=RuntimeError("DB weg"),
+            ):
+                with self.assertLogs(HALTUNG_LOGGER, level="WARNING"):
+                    ergebnis = haltung_bestimmen(_state(), "postgresql://attrappe")
+
+        self.assertIsNotNone(ergebnis["haltung"])
+
+
+class DerAusfallIstZaehlbarUndKeinMesswertTest(unittest.TestCase):
+    """Ein Turn ohne Rechnung darf nicht wie eine Haltung ohne Ausschlag aussehen."""
+
+    def test_ein_ausfall_wird_als_fehler_und_nicht_als_berechnung_gefuehrt(self) -> None:
+        """Eine Berechnungszeile mit Nullen waere in jeder Auswertung ein Messwert."""
+        with patch(
+            "graph.nodes.haltung.nutzer_gewichtung_rad_laden",
+            return_value=(None, "fehlt"),
+        ):
+            with patch("graph.nodes.haltung.log_berechnung") as berechnung:
+                with patch("graph.nodes.haltung.log_fehler") as fehler:
+                    with self.assertLogs(HALTUNG_LOGGER, level="ERROR"):
+                        haltung_bestimmen(_state(), "postgresql://attrappe")
+
+        self.assertFalse(berechnung.called, "ein Ausfall steht als Berechnung im Log")
+        self.assertTrue(fehler.called, "der Ausfall ist nirgends gezaehlt")
+        self.assertIn("Rad nicht ladbar", fehler.call_args.kwargs["inhalt"]["grund"])
+
+    def test_auch_die_fehlende_landschaft_hinterlaesst_eine_zeile(self) -> None:
+        """Sonst fehlt in der Reihe genau der Turn, der erklaeren wuerde, warum."""
+        with _mit_rad(RAD_GEMESSEN):
+            with patch("graph.nodes.haltung.log_fehler") as fehler:
+                with self.assertLogs(HALTUNG_LOGGER, level="ERROR"):
+                    haltung_bestimmen(_state(gv_detail={}), "postgresql://attrappe")
+
+        self.assertTrue(fehler.called)
+
+
+class DieSpurZeigtDieHaltungTest(unittest.TestCase):
+    """Das Ergebnis ist bei jeder Antwort ohne Umweg lesbar."""
+
+    def test_der_knoten_hat_ein_eigenes_etikett(self) -> None:
+        """Ohne Etikett steht der rohe Knotenname in der Spur."""
+        self.assertIn("haltungsraum", CHARACTER_NODE_LABELS)
+
+    def test_die_zeile_traegt_die_fuenf_werte(self) -> None:
+        """Sie kommt aus `kurzfassung()` und wird nicht zweitgebaut."""
+        with _mit_rad(RAD_GEMESSEN):
+            zustand = haltung_bestimmen(_state(), "postgresql://attrappe")
+
+        zeile: str = _stage_detail_bauen("haltungsraum", zustand)
+        for name in FUENF_GROESSEN:
+            with self.subTest(groesse=name):
+                self.assertIn(name, zeile)
+
+    def test_ohne_rechnung_steht_dort_nicht_der_vorgabewert(self) -> None:
+        """„—" ist der Strich jedes Knotens ohne Details und sagt nichts.
+
+        Ein Turn ohne Rechnung muss von einem mit lauter Nullen
+        unterscheidbar bleiben.
+        """
+        zeile: str = _stage_detail_bauen("haltungsraum", _state())
+
+        self.assertNotEqual("—", zeile)
+        self.assertIn("nicht gerechnet", zeile)
 
 
 if __name__ == "__main__":

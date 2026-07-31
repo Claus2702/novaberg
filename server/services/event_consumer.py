@@ -42,6 +42,7 @@ CHARACTER_NODE_LABELS: dict[str, str] = {
     "planner":              "Planner — Aufgabenplanung",
     "agent_dispatch":       "Agent — Ausführung",
     "gv_node":              "Gesprächsvektor — Tonalität",
+    "haltungsraum":         "Haltungsraum — fünf Verhaltensgrößen",
     "verfasser":            "Verfasser — Inhalt",
     "responder":            "Responder — Antwort",
     "thinker":              "Thinker — Reflexion",
@@ -266,6 +267,19 @@ def _stage_detail_bauen(node_name: str, node_state: dict) -> str:
         if len(hypothese) > 100:
             return hypothese[:100] + " …"
         return hypothese
+
+    if node_name == "haltungsraum":
+        # `kurzfassung()` liefert die Zeile fertig — Umfang, Fragen, Nähe,
+        # Wärme, Drängen, dazu Grenze, Übersteuerung und die Marke für ein
+        # Ergebnis außerhalb der Spanne.
+        haltung = node_state.get("haltung")
+        if haltung is None:
+            # **Nicht "—".** Ein Turn ohne Rechnung muss von einem mit lauter
+            # Nullen unterscheidbar bleiben (novaberg-haltungsraum_k.md §2.0a);
+            # der Strich ist der Vorgabewert jedes Knotens ohne Details und
+            # sagt deshalb nichts.
+            return "nicht gerechnet"
+        return haltung.kurzfassung()
 
     if node_name == "perzeption_assistant":
         # Nova-Wahrnehmung der eigenen Antwort aus internal.emotion
