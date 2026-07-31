@@ -1858,6 +1858,67 @@ Die Härtung bleibt: Ein `dict`, eine Zahl oder eine Liste in dem Feld kracht we
 
 ## Chat 120 (30.–31.07.2026) — Die Charakter-Räder werden sichtbar, und der Zeitparser bekommt drei Reparaturen ✅
 
+### Der Plattformwechsel ✅ (30.–31.07.2026)
+
+Die bisherige Plattform hat ihre Nutzungsbedingungen geändert und untersagt Repositorien mit generativ erzeugtem Inhalt. Das Projekt zieht um, statt zu diskutieren.
+
+**Der Umzug selbst war klein** — 400 Commits, 5 MB, ein Zweig. **Die Prüfung davor war die Arbeit.** Über alle Revisionen und 4.149 Objekte: keine Schlüsseldatei, kein Token, keine Zuweisung mit echtem Wert. Positivkontrolle 45.480 Treffer, die Suche griff also wirklich über alles.
+
+**Zwei Dateien mussten aus der Historie**, und beide waren im heutigen Baum längst gelöscht: ein Chat-Protokoll, am selben Tag als „misplaced" wieder entfernt, und das Entwicklerhandbuch. Ein gelöschter Pfad verschwindet nur aus dem aktuellen Baum — der Inhalt hängt am Commit, reist in jedem Klon mit und ist auf einer Weboberfläche zwei Klicks entfernt. 82 und 343 Zeilen, vollständig lesbar.
+
+**Der Umbau traf nur diese zwei Pfade.** Belegt: Der Baum von `HEAD` war danach bitgleich, und die drei entfallenen Commits enthielten je ausschließlich eine der beiden Dateien. Das kostete alle Hashes ab dem frühesten der beiden — 140 Verweise in 25 Dokumenten wurden über die Zuordnungstabelle nachgezogen, danach lösen 74 von 74 wieder auf.
+
+**Die Projektseite zieht nicht mit.** Ihr Zweig bleibt zurück; er teilt keinen Vorfahren mit der Hauptlinie und hängt danach an einer einzigen Arbeitskopie (Backlog `PROJEKTSEITE-NACHZIEHEN`).
+
+**Dabei aufgefallen:** Die Rollennamen der Zusammenarbeit stehen nicht an drei Stellen im Repositorium, wie eine Notiz behauptete, sondern in rund vierzig Dateien. Die Notiz war eine Aufzählung dessen, was zufällig aufgefallen war, keine Zählung (Backlog `PUB-ROLLENNAMEN-IM-BESTAND`).
+
+---
+
+### Die README sagt wieder, was der Code tut ✅ (31.07.2026)
+
+Sechs Behauptungen hielten der Prüfung nicht stand, jede gegen Code gemessen statt gegen Erinnerung:
+
+- **Die Pipeline war strukturell falsch beschrieben** — ein Graph mit acht Stufen, wo es zwei sind: fünf Knoten Wahrnehmung, achtzehn Knoten Antwort. Die genannten Stufen gehörten zum zweiten.
+- **Die Promotions-Schwelle** stand auf 0.8. Eine 0.8 gibt es im Code nicht; das Tor liegt bei 0.94 auf der Kurve, 0.7 davor.
+- **Dem Hintergrundagenten war „Vertiefung" zugeschrieben.** Der Router bildet die Aufgabe auf einen Agenten ab, den es nicht gibt — geplant, nicht gebaut. Eine README, die eine Fähigkeit verspricht, ist etwas anderes als eine veraltete Zahl.
+- **Das Muster der Knoten-Dokumente** stammte aus einer Umbenennung, die längst gelaufen war.
+- **Der Modell-Stack** nannte vier Modelle; es sind drei, und zwei der genannten existieren nicht mehr.
+- **Die Schnellstart-Anleitung ließ zwei Dateien kopieren, die es nicht gab.** Die Umgebungsvorlage war nie im Repositorium, weil das Ignoriermuster für Geheimnisse sie mitverschluckte; die Compose-Vorlage hieß anders als angegeben und wählte einen Connector, dessen CPU-Modell fehlt. Wer der Anleitung folgte, bekam ein System, dessen Hintergrundagent nicht starten kann.
+
+**Ein Verdacht überlebte die Prüfung nicht** und ist festgehalten, damit ihn niemand erneut aufwirft: Die englischen Sektornamen sehen nach einer Fehlübersetzung aus, folgen aber der Zuordnung, die der Code selbst deklariert.
+
+**Dazu vier neue Bilder**, aufgenommen während einer Messreihe zu Wissenschaftsthemen. Der erste Satz trug, worüber tatsächlich geredet worden war — bis zu einem Namen und einer Wohnsituation. Das ist der Unterschied zwischen dem Bild eines Systems und dem Bild eines Gesprächs.
+
+---
+
+### Zwei tote Variablen in beiden Pfaden des Chat-Endpunkts ✅ (31.07.2026)
+
+Ein `NameError` tötete das abschließende Statusereignis jedes streamenden Turns, und derselbe Defekt saß im synchronen Pfad. Sichtbar als roter Fehlerkasten, während die Antwort trotzdem ankam — das Ereignis für den zweiten Graphen war zu dem Zeitpunkt schon geschrieben. Deshalb wirkte es sporadisch statt strukturell.
+
+**Ursache war die Reparatur des Vortags.** Der Nutzlast-Aufbau wanderte in eine gemeinsame Funktion, die ihre Ableitung selbst macht — die lokale Zeile ging mit, zwei Leser blieben stehen. Je Pfad.
+
+**Das Werkzeug hatte es gemeldet, bevor es zuschlug.** Die Regelfamilie für undefinierte Namen trug neun Treffer, acht davon diese beiden Abstürze. Die Meldung ging in 2253 geduldeten Treffern unter, wo ein Treffer mehr von keinem zu unterscheiden ist.
+
+---
+
+### F821 wird die zweite Wand ✅ (31.07.2026)
+
+Genau der Fall, für den die zweite Konfiguration gebaut wurde: keine Regel, die Geschmack durchsetzt, sondern eine, die einen Absturz vor der Auslieferung findet. Sie duldet keinen Bestand, weil ein Bestand hier heißt, dass Code ausgeliefert wird, der beim Betreten abstürzt.
+
+Aufnahmebedingungen geprüft und in der Konfiguration festgehalten — einschließlich der Reichweitenfrage, die bei der ersten Familie beinahe gefehlt hätte: Die Regel ist blind für Namen, die zur Laufzeit entstehen, also wurden beide Wege gezählt. Null Stern-Importe, null `exec`/`globals()`. Die Null heißt damit „kein undefinierter Name vorhanden", nicht „das Werkzeug sieht nicht hin".
+
+**Nulllinie 2253 → 2244.**
+
+---
+
+### Kleineres, an einem Tag ✅ (31.07.2026)
+
+- **Die Zielbeschriftungen im Gravitationsgraph** wurden bei 50 Zeichen abgeschnitten — bei der Fensterbreite, mit der das Panel öffnet, ein Fünftel der Zeile. Eine Zeichenzahl kann das nicht leisten: Ein „i" ist schmaler als ein „M", und die Konstante kennt die Fensterbreite nicht. Jetzt in Pixeln gemessen, mit der tatsächlich gesetzten Schrift.
+- **Ein Datumsformat für alle Panels.** Zwei Panels trugen denselben Formatierer wortgleich doppelt, ein drittes zeigte den rohen ISO-Wert. Vier Darstellungen desselben Zeitpunkts in einem Fenster.
+- **Das Kontextfenster des Hintergrundmodells** von 32.768 auf 262.144 Token, die Grenze des Modells. Die Kosten sind gemessen statt gerechnet — eine Lehrbuchformel greift bei dieser Architektur nicht: 24,5 KB je Token, über zwei unabhängige Schritte bestätigt, zusammen 5,62 GB.
+
+---
+
 ### Der Zeitparser: drei Defekte aus einer Frage ✅ (31.07.2026)
 
 Anlass war eine Frage, kein Audit: Normalisiert der Parser Zahlwörter? Er tut es nicht — die Wort-zu-Zahl-Tabelle dient nur Uhrzeit-Konstruktionen. Die Suche nach der Antwort förderte drei Defekte zutage, jeder mit eigener Ursache.
