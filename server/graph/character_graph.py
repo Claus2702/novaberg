@@ -59,6 +59,7 @@ class CharacterGraph(GraphBase):
         graph.add_node("planner",         self._node_plan)
         graph.add_node("agent_dispatch",  self._node_agent_dispatch)
         graph.add_node("gv_node",         self._node_gespraechsvektor)
+        graph.add_node("verfasser",       self._node_verfassen)
         graph.add_node("responder",       self._node_respond)
         graph.add_node("thinker",         self._node_think)
         graph.add_node("tribunal",        self._node_judge)
@@ -105,7 +106,24 @@ class CharacterGraph(GraphBase):
         )
         graph.add_edge("agent_dispatch", "planner")  # Schleife zurück zum Planner
 
-        graph.add_edge("gv_node",    "responder")
+        # GV-Node → Verfasser oder direkt Responder.
+        #
+        # Bei `task_context_cut` sieht der Responder absichtlich fast nichts —
+        # kein Gedaechtnis, kein Web, nur Identitaet, Stil und das Ergebnis der
+        # Aufgabe. Diese Beschraenkung war die Loesung nach vier
+        # Fix-Iterationen. Ein Verfasser, der in dieser Lage Gedaechtnis und
+        # Web zusammenfasst, holt genau den Input zurueck, der entfernt wurde —
+        # nur einen Node frueher und verdichtet. Deshalb laeuft er dort nicht
+        # (novaberg-node-verfasser_k.md §5.1).
+        graph.add_conditional_edges(
+            "gv_node",
+            self._after_gv,
+            {
+                "verfasser": "verfasser",
+                "responder": "responder",
+            },
+        )
+        graph.add_edge("verfasser",  "responder")
         graph.add_edge("responder",  "thinker")
         graph.add_edge("thinker",    "tribunal")
         graph.add_edge("tribunal",   "evaluate")
@@ -150,6 +168,22 @@ class CharacterGraph(GraphBase):
             logger.info("Graph: Management-Intent erkannt — Planner aktiviert")
             return "planner"
         return "gv_node"
+
+    def _after_gv(self, state: ConversationState) -> str:
+        """Verfasser überspringen, wenn der Kontext-Schnitt gilt.
+
+        Bei `task_context_cut` ist der schmale Kontext des Responders Absicht,
+        nicht Mangel. Ein Verfasser würde dort Gedächtnis und Web wieder
+        einsammeln und verdichtet weiterreichen — genau den Input, dessen
+        Entfernung die Halluzination bei Agent-Erfolg beendet hat.
+        """
+        if state.get("task_context_cut"):
+            logger.info(
+                "Graph: Kontext-Schnitt aktiv — Verfasser übersprungen, "
+                "der Responder verarbeitet den Aufgaben-Block direkt"
+            )
+            return "responder"
+        return "verfasser"
 
     def _after_evaluate(self, state: ConversationState) -> str:
         """Entscheidet ob Korrektur nötig oder weiter zur Salienz."""

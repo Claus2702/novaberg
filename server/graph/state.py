@@ -107,6 +107,17 @@ class ConversationState(TypedDict):
     task_block:         str    # Fertiger [AUFGABE]-Block fuer den Responder (leer = kein Block)
     task_context_cut:   bool   # True = Responder soll Gedaechtnis/Web weglassen
 
+    # ── Verfasser ────────────────────────────
+    # Der fachliche Inhalt der Antwort, bevor Nova ihm ihre Form gibt. Der
+    # Responder erhaelt ihn fertig und fuegt keine Behauptung hinzu, die hier
+    # nicht steht (novaberg-node-verfasser_k.md §2).
+    #
+    # Ein Kanal, der hier fehlt, macht den Schreibvorgang des Nodes
+    # stillschweigend wirkungslos — der Node laeuft, das Feld bleibt leer, und
+    # niemandem faellt etwas auf
+    # (novaberg-lesson_l_stategraph-channel-zwang.md).
+    antwort_inhalt: str
+
     # ── Responder ────────────────────────────
     response:    str
     model:       str

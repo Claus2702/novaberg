@@ -55,13 +55,26 @@ class TestBlockInhalt(unittest.TestCase):
         self.assertIn("Kissenschlacht", block)
         self.assertIn(CLUSTER_BESCHREIBUNGEN["kissenschlacht"], block)
 
-    def test_ton_werkzeug_und_leitgedanke(self) -> None:
+    def test_ton_und_werkzeug(self) -> None:
+        """Was den Klang beschreibt, bleibt hier."""
         block: str = _sprachstil_block(_state())
 
         self.assertIn("Ton: locker", block)
         self.assertIn("Impuls", block)          # Strategie-Langname
         self.assertIn("als Frage", block)       # Vehikel
-        self.assertIn("Leitgedanke: Die Leichtigkeit halten", block)
+
+    def test_kein_leitgedanke_mehr(self) -> None:
+        """Der Leitgedanke ist Inhalt und steht seit dem 31.07.2026 beim Verfasser.
+
+        Dieser Block war die **zweite** Tuer: Der GV-Block war schon aus dem
+        System-Prompt entfernt, und derselbe Text kam ueber den Sprachstil am
+        Ende der Nutzer-Nachricht zurueck. Live beobachtet — der Responder gab
+        den Leitgedanken daraufhin woertlich weiter.
+        """
+        block: str = _sprachstil_block(_state())
+
+        self.assertNotIn("Leitgedanke", block)
+        self.assertNotIn("Die Leichtigkeit halten", block)
 
     def test_fuehrt_hin_statt_zu_verbieten(self) -> None:
         """Die Formulierung ist Vorgabe: beschreiben, nicht untersagen."""
