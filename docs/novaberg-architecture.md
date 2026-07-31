@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Systemarchitektur, Tech-Stack, Plugin-System
-**Stand:** 31. Juli 2026 (`novaberg-node-verfasser_k.md` im Dokumenten-Index ergänzt — Konzept, nicht gebaut. Zuvor: `ruff-hart.toml` im Verzeichnisbaum ergänzt, §3 — die harte Teilmenge ohne geduldeten Bestand. Zuvor: `ruff.toml` im Verzeichnisbaum ergänzt, §3. Zuvor: Verzeichnisbaum nachgezogen — `ei/` vollständig, vier fehlende Agenten ergänzt. Kern: Chat 94, Microservice-Welle Block 2+3; Embedding-Modellwechsel Chat 107, §2.4)
+**Stand:** 31. Juli 2026 (`ei/haltung.py` im Verzeichnisbaum ergänzt und der Eintrag zum Haltungsraum im Dokumenten-Index auf das Beitragsmodell umgestellt — die Rechnung ist gebaut, der Knoten fehlt. Zuvor: `novaberg-node-verfasser_k.md` im Dokumenten-Index ergänzt — Konzept, nicht gebaut. Zuvor: `ruff-hart.toml` im Verzeichnisbaum ergänzt, §3 — die harte Teilmenge ohne geduldeten Bestand. Zuvor: `ruff.toml` im Verzeichnisbaum ergänzt, §3. Zuvor: Verzeichnisbaum nachgezogen — `ei/` vollständig, vier fehlende Agenten ergänzt. Kern: Chat 94, Microservice-Welle Block 2+3; Embedding-Modellwechsel Chat 107, §2.4)
 **Pfad:** novaberg/docs/novaberg-architecture.md
 **Quellen:** nova-00-a.md (Architektur-Übersicht), nova-07-a.md (Tech-Stack), nova-07-m-a.md (Plugin-System)
 
@@ -290,6 +290,7 @@ project/
 │   │   ├── wissensluecken.py            #   GV4: semantisch nahe, aber unbesprochene Konzepte
 │   │   ├── gravitation.py               #   Emotionale Gravitation: Erinnerungen als Attraktoren (→ novaberg-node-emotionale-gravitation.md)
 │   │   ├── salienz.py                   #   Salienz-Formel (→ novaberg-salienz-berechnung_k.md)
+│   │   ├── haltung.py                   #   Landschaft + Zuwendungsrad → fuenf Verhaltensgroessen (→ novaberg-haltungsraum_k.md)
 │   │   ├── farbton.py                   #   Farbmisch-System: 8 Dimensionen → Landschaftsbeschreibung
 │   │   └── utils.py                     #   Gemeinsam genutzt von Neugier, Wissensluecken, Dreischicht (u.a. modus_pruefen)
 │   │
@@ -623,7 +624,7 @@ Das Handbuch ist nach Betrachtungstiefen organisiert. Tiefe 0 ist der Einstiegsp
 | novaberg-node-gv_k.md | Gespraechsvektor (Farbmisch-System, zweite Wissensquelle: ~~Entity-Hop~~ Resonanz-Kontext seit Chat 115) |
 | novaberg-gv-initiative_k.md | Initiative-Achse — Konzept: Herleitung, verworfene Wege, Kalibrier-Agent (Entwurf) |
 | novaberg-gv-initiative.md | Initiative-Achse — Modul: Datenfluss, Konstanten mit Kalibrierungsstand, Messungen |
-| novaberg-haltungsraum_k.md | Haltungsraum — Konzept: Fläche aus 14 Landschaften × 12 Zuwendungs-Speichen, aus der Grenzen für Umfang und Art folgen (⬜ nicht gebaut) |
+| novaberg-haltungsraum_k.md | Haltungsraum — Konzept: Landschaft setzt Grundwerte für fünf Verhaltensgrößen, das Zuwendungsrad modifiziert sie; Grenzen multiplizieren, Neigungen addieren, Übersteuerungen ersetzen (🔶 Rechnung gebaut, Knoten offen) |
 | novaberg-node-verfasser_k.md | Verfasser — Konzept: ein Node vor dem Responder, der den fachlichen Inhalt bestimmt; Inhalt und Wesen werden getrennt (⬜ nicht gebaut) |
 | novaberg-node-responder.md | Responder (Antwortgenerierung, EI-MIKRO) |
 | novaberg-node-thinker.md | Thinker (Faktenpruefung, Web-Suche) |

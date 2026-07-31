@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Backlog — Konzipierte, noch nicht implementierte Features
-**Stand:** 31. Juli 2026 (Abschnitt „Zeitparser und Kalibrierung" ergänzt — vier Einträge aus dem Korpus-Erstlauf und der Neuerhebung der Positions-Kontrolle. Zuvor: Chat 117, zwei KZG-Einträge gegen den Code nachgezogen. Kern: Chat 111)
+**Stand:** 31. Juli 2026 (Abschnitt „Haltungsraum — der unterbrochene Sprint" ergänzt — vier Einträge: der fehlende Knoten, das fehlende Protokoll, die offenen Spannenenden und die abzulösende Längenregel. Zuvor: Abschnitt „Zeitparser und Kalibrierung" ergänzt — vier Einträge aus dem Korpus-Erstlauf und der Neuerhebung der Positions-Kontrolle. Zuvor: Chat 117, zwei KZG-Einträge gegen den Code nachgezogen. Kern: Chat 111)
 **Pfad:** novaberg/docs/novaberg-backlog.md
 **Quellen:** nova-08-k.md (Kognitive Anreicherung), nova-10-k-backlog.md (Skill-System), nova-01-t-c-backlog.md (Node-Konfiguration)
 
@@ -17,6 +17,52 @@ Das System wurde zu diesem Zeitpunkt auf einen leeren Datenbestand zurückgesetz
 **Die Befunde bleiben gültig.** Sie ruhen auf Formeln, Konstanten und Codestellen, nicht auf den Zahlen — die Zahlen waren ihr Beleg, nicht ihre Ursache. `KZG-SALIENZ-SKALENBRUCH` ist eine Aussage über eine Dämpfungskurve und einen Deckel; die hält, solange der Code sie trägt.
 
 **Was neu gemessen werden muss, bevor es geschlossen wird:** `KZG-TTL-UNSTERBLICH` (die Altersverteilung ist weg), `PROMOTION-ENTFERNT-KZG-NICHT` (der Vollabgleich hat keinen Bestand mehr), `KZG-GEWICHT-ABSOLUT-CEILING` (die Knoten über dem Cap existieren nicht mehr). Ein leerer Bestand ist kein Nachweis, dass ein Defekt behoben ist.
+
+---
+
+## 0a. Haltungsraum — der unterbrochene Sprint (31.07.2026)
+
+Die Rechnung steht und ist geprüft, sie wirkt aber nirgends: Kein Knoten ruft sie, kein Protokoll trägt sie, kein Prompt liest sie. **Der Sprint ist bewusst hier unterbrochen**, weil der Rest in den Graphen eingreift.
+
+#### HALTUNG-KNOTEN-FEHLT — die Rechnung hat keinen Aufrufer
+
+`ei/haltung.py` und `memory/charakter.py → nutzer_gewichtung_rad_laden()` sind gebaut und getestet. Es fehlt der Knoten, der beides verbindet.
+
+**Er gehört vor die Verzweigung zum Verfasser** (`character_graph.py`, `_after_gv`), aus zwei Gründen: Der Verfasser muss den Umfang kennen, bevor er den Inhalt zusammenstellt, und er wird bei `task_context_cut` übersprungen — eine Rechnung in ihm fiele in genau der Lage aus, in der der Responder allein steht.
+
+**Zu beachten:** Der Zustandsschlüssel muss in `graph/state.py` deklariert sein. Ein Schlüssel, den ein Knoten schreibt, ohne dass er im Zustandstyp steht, wird an der Knotengrenze stillschweigend verworfen — der Wert ist innerhalb des Knotens lesbar und danach weg.
+
+**Aufwand:** ein Knoten, eine Kanaldeklaration, eine Verdrahtung. **Priorität:** hoch — ohne ihn ist alles Gebaute wirkungslos.
+
+#### HALTUNG-PROTOKOLL-FEHLT — das Ergebnis ist nicht sichtbar
+
+Drei Zahlen je Größe (Grundwert, Modifikation, Ergebnis) plus Rechenart und Übersteuerungsmarke gehören über `log_berechnung` ins `pipeline_log`, geschrieben vom rechnenden Knoten. Der Eintrag trägt eine `turn_id` und steht damit neben `log_turn_roh` desselben Turns.
+
+**Ausdrücklich kein Redis-Blob** nach dem Muster von `gv_detail`: Der trägt den Zustand, nicht den Verlauf, und ein übersprungener Turn hinterlässt dort den Vorstand ohne Kennzeichnung. Die Beitragszahlen sind Setzungen und werden nachkalibriert — dafür braucht es die Historie.
+
+Dazu eine Zeile in der Spur (`services/event_consumer.py`), damit das Ergebnis bei jeder Antwort ohne Umweg lesbar ist. `Haltung.kurzfassung()` liefert sie fertig. **Ein Turn ohne Rechnung trägt keine Zeile statt einer leeren.**
+
+**Priorität:** hoch — die Sichtbarkeit ist Voraussetzung für die Messreihe.
+
+#### HALTUNG-SPANNENENDEN-OFFEN — die Zahlen verlassen den Korridor
+
+Gemessen am Entwurf: `glut/waerme` ergibt 1.15, `feuerwerk/fragen` 1.40, und nach unten reicht **eine** voll ausgeprägte Speiche — `glut/draengen` fällt mit `treue` auf −0.10.
+
+Nicht gekappt, sondern gemeldet und markiert; die Häufigkeit ist die Messgröße, die zwischen zwei Auswegen entscheidet. **Kleinere Beiträge** oder **Sättigung auf die Summe** — beide stehen mit ihren Preisen in `novaberg-haltungsraum_k.md` §6.
+
+**Der Eintrag verlangt keine der beiden Lösungen**, sondern die Messung davor. Eine Entscheidung am Schreibtisch wäre eine Setzung auf eine Setzung.
+
+**Priorität:** mittel — erst nach der ersten Messreihe entscheidbar.
+
+#### HALTUNG-LAENGE-ZWEI-ERZEUGER — die alte Längenregel muss abgelöst werden
+
+`_ei_mikro_anweisung()` in `graph/nodes/responder.py` setzt die Antwortlänge heute in **jedem** Turn allein aus dem Arousal, mit nicht-monotoner Kurve: hoch und niedrig ergeben „MAXIMAL 1-2 Sätze", die Mitte „2-3 Sätze".
+
+Wer den Haltungsraum in den Prompt einhängt, ohne diese Regel abzulösen, hat zwei Erzeuger für dieselbe Größe — dieselbe Fehlerklasse wie die zwei Pipelines im Zeitparser, die auseinanderliefen, weil niemand sie synchron halten konnte.
+
+**Nicht im selben Zug wie der Knoten**, sondern danach: Solange der Block nicht im Prompt steht, ändert sich Novas Verhalten nicht, und die Zahlen lassen sich gegen echte Turns prüfen, ohne diese Turns bereits beeinflusst zu haben.
+
+**Priorität:** hoch, aber nach der Messreihe.
 
 ---
 
