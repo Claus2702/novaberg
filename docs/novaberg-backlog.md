@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Backlog — Konzipierte, noch nicht implementierte Features
-**Stand:** 29. Juli 2026, Chat 117 (zwei KZG-Einträge gegen den Code nachgezogen: Abnahmebedingung des Salienz-Neubaus, Teil-Erledigung des Code-Duplikats. Kern: Chat 111)
+**Stand:** 31. Juli 2026 (Abschnitt „Zeitparser und Kalibrierung" ergänzt — vier Einträge aus dem Korpus-Erstlauf und der Neuerhebung der Positions-Kontrolle. Zuvor: Chat 117, zwei KZG-Einträge gegen den Code nachgezogen. Kern: Chat 111)
 **Pfad:** novaberg/docs/novaberg-backlog.md
 **Quellen:** nova-08-k.md (Kognitive Anreicherung), nova-10-k-backlog.md (Skill-System), nova-01-t-c-backlog.md (Node-Konfiguration)
 
@@ -17,6 +17,50 @@ Das System wurde zu diesem Zeitpunkt auf einen leeren Datenbestand zurückgesetz
 **Die Befunde bleiben gültig.** Sie ruhen auf Formeln, Konstanten und Codestellen, nicht auf den Zahlen — die Zahlen waren ihr Beleg, nicht ihre Ursache. `KZG-SALIENZ-SKALENBRUCH` ist eine Aussage über eine Dämpfungskurve und einen Deckel; die hält, solange der Code sie trägt.
 
 **Was neu gemessen werden muss, bevor es geschlossen wird:** `KZG-TTL-UNSTERBLICH` (die Altersverteilung ist weg), `PROMOTION-ENTFERNT-KZG-NICHT` (der Vollabgleich hat keinen Bestand mehr), `KZG-GEWICHT-ABSOLUT-CEILING` (die Knoten über dem Cap existieren nicht mehr). Ein leerer Bestand ist kein Nachweis, dass ein Defekt behoben ist.
+
+---
+
+## 0. Zeitparser und Kalibrierung (31.07.2026)
+
+Vier Einträge aus einem Tag. Die ersten drei kommen aus dem ersten Lauf des Härtefallkorpus gegen den Parser, der vierte aus der Neuerhebung der Positions-Kontrolle.
+
+#### ZEIT-KORPUS-TESTS-AUF-UNITTEST — drei Testdateien der Korpus-Lieferung laufen nicht
+
+`tests/test_zeit_korpus.py`, `tests/test_zeit_normalisierung.py` und `tests/test_zeit_zonen.py` sind gegen `pytest` geschrieben — `@pytest.mark.parametrize`, `pytest.skip`, `pytest.fail`. Der Testrahmen dieses Projekts ist reines `unittest`; `pytest` ist im Server-Abbild nicht installiert. Unter dem kanonischen Lauf tragen die drei Dateien **null Abdeckung** bei und scheitern beim Import.
+
+Deshalb sind sie **nicht eingecheckt**. Der Korpus selbst braucht kein `pytest`: `tests/korpus_laeufer.py` läuft als Skript, und alle Zahlen des Erstlaufs sind so gemessen.
+
+**Zwei Dinge sind beim Umschreiben zu beachten.** `test_zeit_korpus.py` überspringt sich an drei Stellen selbst — bei fehlender Umgebung, bei vorauseilenden Fällen und im gemeinsamen Zugriffspfad. Ein Test, der sich selbst überspringt, ist keiner; die Fälle brauchen eine andere Form. Und die Zahl übersprungener Tests ist im Bericht ein Befund, kein Transportmittel für eine Meldung.
+
+**Aufwand:** drei Dateien, rund 40 Fälle. **Priorität:** mittel — der Korpus ist über den Läufer bereits fahrbar, es fehlt die Einbindung in die Suite.
+
+#### ZEIT-ZWOELF-STUNDEN-DEUTUNG — „halb drei" trifft die falsche Tageshälfte
+
+Die Normalisierung bildet „halb drei" auf `2:30` ab, ohne zu entscheiden, welche Tageshälfte gemeint ist. Um 14 Uhr gesagt, ergibt der Ausdruck damit 2:30 des **nächsten** Tages statt 14:30 desselben. Betrifft ebenso „fünf nach drei".
+
+**Der Befund wurde erst sichtbar, nachdem ein anderer Defekt weg war.** Bis zum 31.07.2026 ergab „halb drei" den 1. des Monats (`PARSER-NACKTE-UHRZEIT-FALSCHER-TAG`); dass zusätzlich die Stunde falsch ist, verdeckte der falsche Tag.
+
+**Das ist eine Bedeutungsfrage, keine Reparatur:** Welche Tageshälfte ein Sprecher meint, folgt aus der Uhrzeit des Sprechens und aus dem Kontext, nicht aus einer Regel über Zahlwörter. Vor der Umsetzung gehört die Absicht ins Konzept.
+
+**Belegt:** Korpus `REG-006`, `REG-008`. **Priorität:** mittel.
+
+#### ZEIT-TAGESZEIT-VOR-ZIFFER — „3 nachmittags" wird zum 3. des Monats
+
+Die Tageszeit-Extraktion (Block 0) nimmt „nachmittags" aus dem Text und merkt sich 15:00 als Fallback. Die „3" bleibt stehen, der Fallback wird angehängt, und `dateparser` liest das Ergebnis `3 15:00` als **Tag 3 um 15:00**.
+
+Der Block für alleinstehende Tageszeiten (Block 3) käme mit dem Ausdruck zurecht — er sieht ihn nur nie, weil Block 0 das Wort vorher entfernt hat. **Eine Reihenfolgefrage, kein fehlender Wortschatz.**
+
+**Belegt:** Korpus `REG-011`. **Priorität:** niedrig — der Ausdruck ist selten, der Fehlbetrag klein.
+
+#### KALIBRIERUNG-ZEUGE-TRENNT-SCHWACH — der Zeuge unterscheidet die Sprecher zu wenig
+
+Auf ordentlicher Grundlage trennt der Zeuge die Sprecher um **13,6 Punkte** gegen die geforderten 20 (`novaberg-gv-initiative_k.md` §12.7). Damit steht der Kalibrier-Agent still: Er würde eine Schwelle gegen ein Urteil suchen, das seine eigene Eingangsprüfung nicht besteht.
+
+**Was NICHT gezeigt ist:** dass ein dreiwertiger Zeuge das repariert. Das war das Argument, solange die Zahlen aus dem Präfix stammten; nach der Korrektur ist der Anlass ein anderer. Die schwache Trennung kann ebenso am Prompt liegen, an der Kürzung auf `KALIBRIERUNG_ZEUGE_MAX_ZEICHEN` oder an der Fragestellung, die für eine erklärende Assistentin schlecht passt.
+
+**Was der Eintrag verlangt, ist deshalb eine Messung, die diese Möglichkeiten trennt** — nicht eine weitere Rechnung auf denselben Urteilen. Erst danach ist der Zuschnitt eines Umbaus entscheidbar.
+
+**Priorität:** hoch — die Achse läuft heute auf einer Schwelle ohne gültigen Beleg.
 
 ---
 

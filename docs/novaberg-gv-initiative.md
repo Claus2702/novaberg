@@ -238,6 +238,21 @@ Ein langer Fachtext liegt im Embedding-Raum näher an einer langen Fachantwort a
 
 **Folge:** M2 trägt eine Längenabhängigkeit, und sie zeigt in dieselbe Richtung wie die des Zeugen (`_k.md` §7.4). Solange sie besteht, misst die Achse bei langen Turns nicht das, was ihre Definition verlangt. Das ist ein Befund über M2 und **kein** Argument in der Zeugenfrage.
 
+### 8.4 Die Positions-Kontrolle zog ein Präfix — behoben und neu erhoben (31.07.2026)
+
+**Was gebaut wurde.** `ei/kalibrierung.stichprobe_indizes()` zieht eine **systematische** Stichprobe: Der Korpus wird in so viele Blöcke geteilt, wie die Probe groß ist, aus jedem die Mitte genommen. `agents/kalibrierung/lauf._positions_kontrolle_fahren()` benutzt sie, statt `paare[:KALIBRIERUNG_POSITIONSPROBE]` zu schneiden.
+
+Zwei Eigenschaften sind Absicht, nicht Geschmack:
+
+- **Deterministisch.** Ein Wiederanlauf muss dieselbe Menge treffen, sonst beschreibt ein abgelegtes Ergebnis eine andere Stichprobe als die, die der nächste Lauf zieht.
+- **Die Mitte jedes Blocks, nicht sein Anfang.** Bei einem Anfang fiele der erste Index immer auf 0, und die älteste Zeile stünde in jeder Probe.
+
+**Was der alte Zuschnitt anrichtete.** Der Korpus kommt mit `ORDER BY erstellt_am`; ein Präfix ist damit seine älteste Ecke. Die Zahlen stehen im Konzept (`_k.md` §12.7): Betrag 26,7 Punkte auf den dreißig ältesten Paaren, **13,6 auf 125 Paaren des Vollkorpus**. Das Tor verlangt 20.
+
+**Damit ist jede bis dahin gefahrene Positions-Kontrolle entwertet** — auch die aus §8.1, deren 43,3 Punkte auf demselben Präfix stehen. Der Defekt trägt die Kennung `KALIBRIERUNG-STICHPROBE-IST-PRAEFIX` in `novaberg-bugs.md`.
+
+**Was der Lauf heute tut, wenn das Tor fällt:** Er bricht ab und lässt die bestehende Schwelle stehen. Das ist unverändert und richtig; neu ist, dass er es jetzt auch tatsächlich tut, statt an einer geschönten Grundlage vorbeizukommen.
+
 ---
 
 ## 9. Was wo steht

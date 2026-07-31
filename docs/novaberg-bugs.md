@@ -215,6 +215,85 @@ Die vierte Zeile trägt den Kern: Die Richtung ist erkannt und wirkt nicht. Nur 
 
 **Wirkung:** Ein Anker in der Zukunft ist kein toter Eintrag. `erinnerungs_anker` trägt die Flags (False, False, False), ist also nicht bindend — aber er sitzt als Magnet im Gedächtnis und zieht Bezüge auf ein Datum, an dem nichts war. Zwei solche Einträge stehen seit dem 30.07.2026 live in der Timeline.
 
+### Zeitparser und Fremdbibliothek (31.07.2026)
+
+#### PARSER-NACKTE-UHRZEIT-FALSCHER-TAG — eine Uhrzeit ohne Tagesangabe landet im Vormonat 🔧 Umgangen, Ursache extern
+
+**Umgangen am 31.07.2026** durch Pfad 1c: Ein Ausdruck, der nach der Normalisierung nur noch aus `HH:MM` besteht, bekommt seinen Tag selbst gerechnet, statt ihn bei `dateparser` zu erfragen. **Die Ursache liegt in der Bibliothek und ist nicht behoben.**
+
+**Entdeckt:** beim ersten Lauf des Haertefallkorpus gegen den Parser — zehn Faelle des Bestandsschutz-Blocks fielen durch, in **beiden** Parserfassungen. Nicht gesucht.
+
+**Symptom**, gemessen am 31.07.2026 am Bestandsparser im Produktionsmodus, heute war der 31.:
+
+```
+halb drei          ->  2026-07-01 02:30
+dreiviertel acht   ->  2026-07-01 07:45
+14 Uhr 30          ->  2026-07-01 14:30
+morgens            ->  2026-07-01 08:00
+```
+
+**Mechanismus, instrumentiert.** Es sind **zwei** Defekte, beide in `_correct_for_time_frame` von `dateparser` 1.4.1:
+
+**A — der Uebertrag wird ueberschrieben.** Die Addition ist korrekt: `dateobj + timedelta(days=1)`, mit Uebertrag in Monat und Jahr. Unmittelbar danach laeuft `_correct_for_month`, und die rechnet nicht, sondern **weist zu** — `date_obj.replace(month=<Monat des Bezugsmoments>)`. Die Korrektur soll ein *nicht genanntes* Monatsfeld fuellen; zu ihrem Zeitpunkt ist das Feld aber das **Ergebnis der Addition**, und ein `datetime` traegt keine Herkunft, an der sie beides unterscheiden koennte.
+
+```
+ZEITRAHMEN  2026-07-31 02:30  ->  2026-08-01 02:30     korrekt
+MONAT       2026-08-01 02:30  ->  2026-07-01 02:30     Zuweisung
+```
+
+**Der Silvester-Fall ist der Fingerabdruck:** 31.12. + 1 Tag ergibt 01.01.2027, dann `replace(month=12)` → **01.12.2027**. Das Jahr ueberlebt, weil nur das Monatsfeld zugewiesen wird — elf Monate daneben, nicht zwoelf. Eine fehlerhafte Addition koennte dieses Muster nicht erzeugen.
+
+**B — die beiden Seiten des Vergleichs sind nicht dieselbe Groesse.**
+
+```python
+tz_offset = tz.utcoffset(dateobj)
+if self.now > dateobj - tz_offset:
+    dateobj = dateobj + timedelta(days=1)
+```
+
+`self.now` ist naive Ortszeit, von `dateobj` wird der UTC-Versatz abgezogen. Jede Uhrzeit innerhalb der naechsten `utcoffset` Stunden gilt als vergangen. Gemessen bei Europe/Berlin, Referenz 15.07. 14:27 — die Kante liegt exakt bei +2h:
+
+| Eingabe | Ergebnis | |
+|---|---|---|
+| `14:28` | 16.07. 14:28 | falsch |
+| `15:00` | 16.07. 15:00 | falsch |
+| `16:26` | 16.07. 16:26 | falsch |
+| `16:27` | 15.07. 16:27 | richtig |
+
+**Bedingungen und Haeufigkeit.** Defekt A verlangt drei Dinge gleichzeitig: eine Uhrzeit ohne jede Tagesangabe, den **letzten Tag des Monats**, und eine Uhrzeit, die heute schon vorbei ist. Das sind zwoelf Tage im Jahr, dafuer mit 28 bis 31 Tagen Betrag. **Defekt B trifft jeden Tag** und beide Richtungen — bei `past` bleibt ein Zeitpunkt in der **Zukunft** stehen.
+
+**Warum es so lange unentdeckt blieb.** Der Plausibilitaets-Check verwirft erst ab zwei Jahren Vergangenheit; dreissig Tage laufen ohne ein Wort durch. Und ein Test, der gegen `date.today()` laeuft, ist bei Defekt A an 29 von 30 Tagen gruen.
+
+**Reichweite, instrumentiert:** Fuer Wochentage, Dauern und deiktische Worte wird die Monatskorrektur gar nicht erst gerufen — `Montag`, `in einem Tag`, `morgen` tragen korrekt ueber die Monatsgrenze. Die nackte Uhrzeit ist der einzige Ausdruck, der dort ankommt.
+
+**Der Riegel traegt ein Ablaufdatum:** `tests/test_zeit_dateparser_riegel.py` prueft die Bibliothek direkt und haelt beide Fehlwerte in getrennten Klassen fest. Er wird rot, sobald einer der Defekte verschwindet. **Erst wenn beide weg sind, kann Pfad 1c entfallen** — wer nach der Behebung nur eines davon aufraeumt, holt den anderen zurueck.
+
+**Offen:** ein Fehlerbericht an die Bibliothek.
+
+---
+
+#### PARSER-EINSTELLIGE-STUNDE-STUERZT-AB — „morgen um 9 Uhr" wirft eine unbehandelte ValueError ✅ Gelöst 31.07.2026
+
+**Gelöst am 31.07.2026.** Pfad 1 setzt das Datum aus seinen Teilen zusammen, so wie Pfad 1b es fuer `DD.MM.YYYY` immer schon tat.
+
+**Entdeckt:** beim Schreiben der Tests fuer Pfad 1c — nicht gesucht, und der gesuchte Defekt war ein anderer.
+
+**Symptom**, gemessen am Bestandsparser:
+
+```
+morgen um 9 Uhr   ->  ABSTURZ ValueError: Invalid isoformat string: '2026-08-01T9:00:00'
+heute um 8 Uhr    ->  ABSTURZ ValueError: Invalid isoformat string: '2026-07-31T8:00:00'
+morgen um 14 Uhr  ->  2026-08-01 14:00:00+02:00
+```
+
+**Mechanismus:** Das Muster von Pfad 1 erlaubt eine **einstellige** Stunde (`\d{1,2}:\d{2}`), `datetime.fromisoformat` verlangt zwei. Block 0b macht aus „morgen" ein ISO-Datum, die Uhrzeit-Bloecke aus „9 Uhr" ein `9:00` — und die Verkettung ergibt einen String, den `fromisoformat` ablehnt.
+
+**Reichweite:** jeder Ausdruck mit deiktischem Tageswort **und** einstelliger Stunde. Das ist eine haeufige Sprechform. Zweistellige Uhrzeiten kamen durch, deshalb sah es nie nach einem Muster aus, sondern nach einem Einzelfall.
+
+**Es war eine unbehandelte Ausnahme, kein falscher Wert** — sie verliess `zeit_parsen` und traf den Aufrufer.
+
+---
+
 ### Zeitparser und Chat-Endpunkt (Chat 120)
 
 #### PARSER-MAERZ-FAELLT-DURCH — die Tippfehler-Korrektur zerstört den korrekt geschriebenen Monat ✅ Gelöst Chat 120
@@ -317,6 +396,38 @@ Der Enricher liest aus den Session-Turns, der Dispatcher schreibt in die Session
 **Wirkung, die über die Achse hinausgeht:** Der Kalibrier-Korpus holt die Intentionen über `verbindung` aus dem KZG und hat M1 in 47,4 % der Turns. Sein Modul-Docstring sagt zu, der Rohwert entstehe „wie zur Laufzeit". **Korpus und Laufzeit rechnen verschiedene Größen**, und die Schwelle `GV_INITIATIVE_SCHWELLE` wurde auf Rohwerten *mit* M1 kalibriert und wird auf Rohwerte *ohne* M1 angewandt.
 
 **Nicht entschieden:** ob `user_intentionen` aus dem Salienz-Objekt gespeist werden soll — derselben Quelle wie das KZG — oder ob die Achse direkt dorthin greift. Das ist eine Frage der Absicht und gehört in die Konzeption.
+
+#### KALIBRIERUNG-STICHPROBE-IST-PRAEFIX — die Positions-Kontrolle maß die älteste Ecke des Korpus ✅ Gelöst 31.07.2026
+
+**Gelöst am 31.07.2026.** `ei/kalibrierung.stichprobe_indizes()` zieht eine systematische Stichprobe: Der Korpus wird in so viele Bloecke geteilt, wie die Probe gross ist, aus jedem die Mitte genommen. Deterministisch, damit ein Wiederanlauf dieselbe Menge trifft; die Mitte statt des Anfangs, damit die aelteste Zeile nicht in jeder Probe steht.
+
+**Entdeckt:** beim Nachpruefen des Arguments, der Zeuge habe auf der Nutzerseite keine Meinung — nicht durch ein Audit.
+
+**Symptom:** Die Positions-Kontrolle bestand, obwohl sie auf ordentlicher Grundlage faellt.
+
+**Mechanismus:** `_positions_kontrolle_fahren` zog `paare[:KALIBRIERUNG_POSITIONSPROBE]`, waehrend `rohturns_laden` mit `ORDER BY erstellt_am` laedt. Die Kontrolle mass damit nie eine Stichprobe des Korpus, sondern seine **dreissig aeltesten Paare**.
+
+**Belege**, alle mit demselben Prompt und derselben Prompt-Kennung:
+
+| Grundlage | n | B = Nutzer | B = Nova | Betrag | Tor |
+|---|---:|---:|---:|---:|---|
+| die 30 aeltesten | 30 | 50,0 % | 76,7 % | 26,7 | bestanden |
+| gestreut | 30 | 66,7 % | 53,3 % | 13,3 | **faellt** |
+| Vollkorpus, Schnittmenge | **125** | 66,4 % | 52,8 % | **13,6** | **faellt** |
+
+Die gestreute Stichprobe sagte den Vollkorpus auf **0,3 Punkte** genau voraus. Gegenprobe aus zweiter Quelle: Dieselbe Frage ueber alle 127 Urteile des Hauptlaufs vom 30.07. ergab 65,4 % — die 50,0 % der Kontrolle waren der Ausschnitt, nicht das Signal.
+
+**Zwei Folgen, die ueber den Defekt hinausgehen:**
+
+**Die geltende Schwelle steht auf diesem Tor.** `GV_INITIATIVE_SCHWELLE` wurde in einem Lauf erhoben, dessen Kontrolle nur bestand, weil sie ueber das Praefix lief. Nach der Regel des Laufs selbst haette die Erhebung nicht stattfinden duerfen. Die Konstante bleibt vorerst stehen — ihr Vorgaenger war gemessen schlechter —, ist aber nicht mehr belegt.
+
+**Ein Vorbehalt im Konzept war falsch, und zwar mit vertauschten Seiten.** `novaberg-gv-initiative_k.md` §12.4 fuehrte „der Nutzer ist ein Muenzwurf" als staerkstes Argument fuer einen dreiwertigen Zeugen. Gemessen ist das Gegenteil: Der Nutzer traegt ein klares Urteil, Novas Seite liegt nahe am Zufall. Markiert in §12.4, hergeleitet in §12.7.
+
+**Damit ist jede zuvor gefahrene Positions-Kontrolle entwertet** — auch die aus `novaberg-gv-initiative.md` §8.1.
+
+**Warum es unentdeckt blieb:** Ein Praefix sieht wie eine Stichprobe aus, solange der Korpus nicht driftet. Dass er driftet, war zweimal beobachtet (chronologische Halbierung, `_k.md` §12.4 Punkt 3) — der Zusammenhang zur Stichprobe wurde nicht gezogen.
+
+---
 
 ### RechercheAgent (Chat 35)
 

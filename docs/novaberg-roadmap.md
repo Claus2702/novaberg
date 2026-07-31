@@ -1,6 +1,6 @@
 # Novaberg — Roadmap (Projektchronik)
 
-**Stand:** Chat 120, 30. Juli 2026
+**Stand:** Chat 121, 31. Juli 2026
 *(Die Kopfzeile stand bis Chat 109 auf „Chat 93, 21. Mai 2026" — 15 Chats hinter dem Inhalt. **Sie ist danach erneut zurückgefallen:** von Chat 110 bis 114 blieb sie auf „Chat 109" stehen, während der Inhalt weiterwuchs, und wurde in Chat 115 nachgezogen. Wer hier etwas ergänzt, zieht die Kopfzeile mit — sie driftet zuverlässig. Achtung beim Nachschlagen: Nur bis Chat 97 trägt jeder Chat eine eigene `## Chat NNN`-Überschrift; die Chats 98–108 stehen als `###`-Abschnitte unter dem Chat-97-Block, benannt nach Sprint statt nach Chat.)*
 **Pfad:** novaberg/docs/novaberg-roadmap.md
 **Single Source of Truth für abgeschlossene Arbeit.**
@@ -1821,7 +1821,7 @@ Die Achse stand nach der Verkabelung auf einem konstanten Bit. Der Kalibrierlauf
 - ✅ **Sie überträgt.** Über 200 Zufallshalbierungen: κ innen 0,423, κ **außen 0,358**, Schwund **0,065**. Am Vormittag desselben Tages stand κ außen bei 0,260 und der Schwund bei 0,143 — **halbiert**.
 - ✅ **Und sie ist stabil.** −0.05 wurde in 105 von 200 Halbierungen wiedergefunden, 174 von 200 landeten im Plateau [−0.20, −0.05]. Nach dem Parsing-Fix am Vormittag war die Stabilität auf 35 % gefallen; jetzt sind es 87 %.
 - ✅ **Gegenprobe aus einer zweiten Quelle:** Die zehn Live-Turns der Vortagsreihe ergeben unter der neuen Schwelle 6 zu 2 — Minderheit **25,0 %** gegen die 25,2 % der Erhebung. Zwei Wege, dieselbe Zahl.
-- 🔶 **Der Zeuge trennt weiter nur auf einer Seite.** B = Nova 76,7 %, B = Nutzer **exakt 50,0 %**. Zum zweiten Mal unabhängig gemessen, mit anderem Korpus. Ein Münzwurf in einer der beiden Richtungen — das stärkste Argument für einen dreiwertigen Zeugen.
+- 🔶 **Der Zeuge trennt weiter nur auf einer Seite.** B = Nova 76,7 %, B = Nutzer **exakt 50,0 %**. Zum zweiten Mal unabhängig gemessen, mit anderem Korpus. Ein Münzwurf in einer der beiden Richtungen — das stärkste Argument für einen dreiwertigen Zeugen. *(→ richtiggestellt im Eintrag vom 31.07.2026: Beide Zahlen stammen aus einer Stichprobe der dreißig ältesten Turnpaare; auf gestreuter Grundlage kehren sich die Seiten um.)*
 - 🔶 **Die chronologische Halbierung überträgt schlechter** als die alternierende (κ außen 0,259 gegen 0,451). Hinweis auf Drift, zum zweiten Mal beobachtet, n=63 je Hälfte. Schwächer als beim letzten Mal, aber nicht weg.
 
 **Zwei Fehlversuche vorweg, weil sie eine Falle zeigen.** Der erste Lauf lief in einem eigenen Prozess ohne gestartete Model-Worker und scheiterte an der Positions-Kontrolle. Er hat dieses Scheitern **als Ergebnis in den Zwischenstand geschrieben**; der zweite Lauf hat es von dort übernommen und die Erhebung gar nicht erst versucht. Ein Ausfall mit Umgebungsursache lag als Messergebnis im Speicher und machte jeden Folgelauf unbrauchbar, bis der Stand verworfen wurde.
@@ -1980,6 +1980,68 @@ Beide Räder haben eine Nabe — den Wert ohne jede Ausprägung — und das Erge
 > **Die Zahlen selbst stehen nicht hier.** Ein Charakter-Rad ist ein Charakterprofil; aus den Summanden sind mit der Züge-Tabelle die Einzelspeichen rückrechenbar. Wer die Messung nachvollziehen will, fährt sie gegen den eigenen Bestand — sie ist in zwei Aufrufen wiederholbar.
 
 **Geschlossen:** `Bauteil 3 — Charakter-Räder im Client` (Rest benannt, siehe Backlog)
+
+---
+
+## Chat 121 (31.07.2026) — Ein Korpus als Spezifikation, zwei Fremddefekte, und eine Stichprobe, die das falsche Viertel maß ✅
+
+### Der Zeitparser bekommt eine Marker-Stufe und einen Korpus
+
+**Zwei Umbaustufen auf einmal eingebaut**, weil das Repositorium keine von beiden hatte. Die Richtung eines Zeitausdrucks wird jetzt in **einem** Durchlauf gelesen statt aus zwei Textzuständen rekonstruiert — bis dahin löschte die Normalisierung die Richtungswörter, und ein zweiter Regex-Pass baute die Richtung aus dem korrigierten, nicht normalisierten Text wieder auf. Zwei Pipelines, die synchron bleiben mussten und es nicht taten.
+
+**Gemessen gegen den Vorzustand, gleicher Läufer, gleicher Korpus:**
+
+| | vorher | nachher |
+|---|---:|---:|
+| erfüllt | 31 | **49** |
+| Regressionen | 22 | **4** |
+
+Kein Fall wurde neu kaputt — die verbliebene Menge ist eine echte Teilmenge der alten. Die 31 Bestandstests blieben unverändert grün.
+
+**Der Korpus ist eine Spezifikation, kein Testordner.** 89 Fälle, jeder mit der Stufe, ab der er grün sein muss. Der Läufer unterscheidet vier Zustände statt zwei: erfüllt, offen, Regression, vorauseilend. Der Unterschied zwischen „noch nicht gebaut" und „kaputtgemacht" ist die ganze Information — ein Läufer, der nur bestanden und durchgefallen kennt, wäre hier unbrauchbar, weil die Hälfte der Fälle heute scheitern **soll**.
+
+Er prüft sich außerdem selbst, ohne Parser: Zonenversätze, Intervallrichtung, doppelte Kennungen. Ein Golden-File mit falschen Sollwerten zementiert Fehler, statt sie zu finden.
+
+### Zwei Defekte in einer Fremdbibliothek, gefunden am ersten Tag
+
+Zehn Fälle des Bestandsschutz-Blocks fielen durch — **in beiden Parserfassungen**. Die Ursache liegt in `dateparser` 1.4.1, und es sind zwei getrennte Defekte in derselben Funktion. Beide in `novaberg-bugs.md` → `PARSER-NACKTE-UHRZEIT-FALSCHER-TAG`.
+
+**Der eine ist kein Rechenfehler, und das war die Pointe.** Die Addition `dateobj + timedelta(days=1)` trägt korrekt über die Monatsgrenze. Die unmittelbar danach laufende Monatskorrektur rechnet nicht, sondern **weist zu**: `replace(month=<Monat des Bezugsmoments>)`. Sie soll ein nicht genanntes Feld füllen — zu ihrem Zeitpunkt ist es aber ein Rechenergebnis, und ein `datetime` trägt keine Herkunft, an der sie beides unterscheiden könnte.
+
+Der Silvester-Fall ist der Fingerabdruck: 31.12. + 1 Tag ergibt 01.01.2027, dann wird der Monat zugewiesen → **01.12.2027**. Das Jahr überlebt, der Monat nicht. Elf Monate daneben, nicht zwölf — eine fehlerhafte Addition könnte dieses Muster nicht erzeugen.
+
+**Der andere trifft jeden Tag.** `self.now` ist naive Ortszeit, vom Vergleichswert wird der UTC-Versatz abgezogen; jede Uhrzeit innerhalb der nächsten zwei Stunden gilt damit als vergangen. „15:00", um 14:27 gesagt, ergibt morgen.
+
+**Umgangen, nicht behoben** — die Ursache liegt außerhalb. Ein Ausdruck, der nur noch aus `HH:MM` besteht, bekommt seinen Tag jetzt selbst gerechnet.
+
+> **Der Riegel hat ein Ablaufdatum bekommen.** Ein Test prüft die Bibliothek direkt und hält beide Fehlwerte in getrennten Klassen fest; er wird rot, sobald einer verschwindet. Die Trennung ist nötig, weil die Defekte einzeln behoben werden können — wer nach der Behebung nur eines davon aufräumt, holt den anderen zurück. Der Ausstieg wurde durchgespielt: Mit beiden Defekten simuliert behoben und dem Riegel abgeschaltet bleibt **genau eine** Zusicherung rot, und die ist kein Defekt, sondern ein Unterschied in der Festlegung um eine Minute. Auch das steht jetzt dort, damit es nicht für einen Ausstiegsfehler gehalten wird.
+
+**Und ein dritter Defekt, gefunden vom eigenen Test:** „morgen um 9 Uhr" warf eine unbehandelte `ValueError`. Das Muster erlaubte eine einstellige Stunde, `fromisoformat` verlangt zwei. Zweistellige Uhrzeiten kamen durch — deshalb sah es nie nach einem Muster aus. `PARSER-EINSTELLIGE-STUNDE-STUERZT-AB`.
+
+### Die Positions-Kontrolle maß die älteste Ecke des Korpus
+
+Die Kontrolle entscheidet, ob das Urteil des Zeugen überhaupt als Kalibriergrundlage taugt. Sie zog `paare[:30]`, während der Korpus nach `erstellt_am` sortiert geladen wird — also nie eine Stichprobe, sondern die **dreißig ältesten** Paare.
+
+| Grundlage | n | B = Nutzer | B = Nova | Betrag | Tor |
+|---|---:|---:|---:|---:|---|
+| die 30 ältesten | 30 | 50,0 % | 76,7 % | 26,7 | bestanden |
+| gestreut | 30 | 66,7 % | 53,3 % | 13,3 | **fällt** |
+| Vollkorpus | **125** | 66,4 % | 52,8 % | **13,6** | **fällt** |
+
+Die gestreute Stichprobe sagte den Vollkorpus auf **0,3 Punkte** genau voraus.
+
+**Damit ist der Vorbehalt vom 30.07. richtiggestellt, und zwar mit vertauschten Seiten.** Nicht der Nutzer ist der Münzwurf, sondern Nova. Das Argument, das die Dreiwertigkeit des Zeugen tragen sollte, ist widerlegt; was bleibt, ist ein schwächerer, aber gemessener Befund: Der Zeuge trennt **beide** Seiten schlecht. `KALIBRIERUNG-ZEUGE-TRENNT-SCHWACH` im Backlog.
+
+**Die geltende Schwelle steht auf diesem Tor.** Sie wurde in einem Lauf erhoben, dessen Kontrolle nur bestand, weil sie über das Präfix lief. Sie bleibt vorerst stehen — ihr Vorgänger war gemessen schlechter —, ist aber nicht mehr belegt. `KALIBRIERUNG-STICHPROBE-IST-PRAEFIX`.
+
+**Die Reparatur hat eine Verzerrung entfernt und dabei ein Varianzproblem freigelegt:** Eine Probe von 30 misst mit einem Rauschen, das breiter ist als der Abstand, den ihr Grenzwert prüfen soll. Deshalb die Erhebung über 125 Paare statt über eine zweite Probe derselben Größe.
+
+### Bilanz
+
+- Suite **677 → 715**, 0 übersprungen. Linter-Nulllinie **2268**, beide Wände sauber.
+- Korpus: 49 erfüllt, 4 Regressionen, 31 offen, 5 dokumentierte Lücken.
+- Drei Defekte mit Kennung, vier Backlog-Einträge.
+- **Was nicht eingecheckt wurde:** drei Testdateien der Lieferung, die gegen `pytest` geschrieben sind. Der Testrahmen dieses Projekts ist reines `unittest`; sie hätten die Suite aus einem Grund rot gemacht, der nichts mit dem Parser zu tun hat. `ZEIT-KORPUS-TESTS-AUF-UNITTEST`.
 
 ---
 
