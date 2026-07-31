@@ -32,12 +32,17 @@ DEBOUNCE_DELAY: float = 2.0     # Sekunden warten nach User-Event (Tippen abwart
 
 # Node-Labels für CharacterGraph (Pfad 2) — angezeigt als Stage im Client.
 CHARACTER_NODE_LABELS: dict[str, str] = {
+    "db_zugriff":           "DB-Zugriff — Identitäten laden",
+    "emotionale_gravitation": "Gravitation — Erinnerungen färben",
+    "reducer":              "Reducer — Kontext kürzen",
+    "ei_calc_persist":      "EI-Persist — Nova-Zustand sichern",
     "enricher":             "Enricher — Kontext laden",
     "ei_calc":              "EI-Calc — Emotionale Intelligenz",
     "router":               "Router — Entscheidung",
     "planner":              "Planner — Aufgabenplanung",
     "agent_dispatch":       "Agent — Ausführung",
     "gv_node":              "Gesprächsvektor — Tonalität",
+    "verfasser":            "Verfasser — Inhalt",
     "responder":            "Responder — Antwort",
     "thinker":              "Thinker — Reflexion",
     "tribunal":             "Tribunal — Bewertung",
@@ -139,6 +144,70 @@ def _stage_detail_bauen(node_name: str, node_state: dict) -> str:
                 agent_teile.append(f"{a_name}: {a_status}")
             return " | ".join(agent_teile)
         return "Ausführung läuft"
+
+    if node_name == "reducer":
+        # Die beiden Zahlen, die den Kuerzungsschritt beurteilbar machen: Was
+        # blieb uebrig, und wie lang ist das Ergebnis. Eine der beiden allein
+        # sagt nichts — zehn Eintraege koennen kuerzer sein als drei.
+        kontext: str = node_state.get("memory_context", "")
+        if not kontext:
+            return "kein Kontext"
+        return f"{len(kontext)} Zeichen Kontext"
+
+    if node_name == "emotionale_gravitation":
+        # Novas dominante Emotion nach der Faerbung. Ob sie gewechselt hat,
+        # steht im Log; hier zaehlt der Zustand, mit dem alles Folgende rechnet.
+        innen = node_state.get("internal")
+        emotion: str = getattr(getattr(innen, "emotion", None), "emotion", "")
+        verlauf: list = node_state.get("nova_emotions_verlauf") or []
+        if not emotion and not verlauf:
+            return "nicht gefärbt"
+        return f"{emotion or '?'} · {len(verlauf)} im Verlauf"
+
+    if node_name == "ei_calc_persist":
+        innen = node_state.get("internal")
+        emo = getattr(innen, "emotion", None)
+        if emo is None:
+            return "kein Zustand"
+        return f"{getattr(emo, 'emotion', '?')} · {getattr(emo, 'mode', '?')}"
+
+    if node_name == "db_zugriff":
+        innen  = node_state.get("internal")
+        aussen = node_state.get("external")
+        geladen: list[str] = []
+        if innen is not None:
+            geladen.append("Nova")
+        if aussen is not None:
+            geladen.append("Nutzer")
+        return " + ".join(geladen) + " geladen" if geladen else "nichts geladen"
+
+    if node_name == "verfasser":
+        # Zeichen UND Tokens: Die Zeichenzahl sagt, wie viel der Responder zu
+        # formen bekommt, die Tokenzahl was es gekostet hat. Dazu, ob das
+        # Wissen ueberhaupt da war — ein kurzer Inhalt aus leerem Gedaechtnis
+        # ist etwas anderes als ein kurzer Inhalt trotz vollem.
+        inhalt: str = node_state.get("antwort_inhalt", "")
+        if not inhalt:
+            return "kein Inhalt"
+
+        quellen: list[str] = []
+        if node_state.get("memory_context"):
+            quellen.append("Gedächtnis")
+        if node_state.get("web_context"):
+            quellen.append("Web")
+
+        teile: list[str] = [f"{len(inhalt)} Zeichen"]
+
+        for anmerkung in node_state.get("node_annotations") or []:
+            if anmerkung.startswith("[Verfasser]"):
+                teile.append(anmerkung.removeprefix("[Verfasser] "))
+                break
+
+        if quellen:
+            teile.append(" + ".join(quellen))
+        else:
+            teile.append("ohne Wissen")
+        return " · ".join(teile)
 
     if node_name == "responder":
         return f"{node_state.get('token_total', 0)} Tokens"
