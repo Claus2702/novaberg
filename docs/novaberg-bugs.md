@@ -215,6 +215,78 @@ Die vierte Zeile trägt den Kern: Die Richtung ist erkannt und wirkt nicht. Nur 
 
 **Wirkung:** Ein Anker in der Zukunft ist kein toter Eintrag. `erinnerungs_anker` trägt die Flags (False, False, False), ist also nicht bindend — aber er sitzt als Magnet im Gedächtnis und zieht Bezüge auf ein Datum, an dem nichts war. Zwei solche Einträge stehen seit dem 30.07.2026 live in der Timeline.
 
+### Zeitparser und Chat-Endpunkt (Chat 120)
+
+#### PARSER-MAERZ-FAELLT-DURCH — die Tippfehler-Korrektur zerstört den korrekt geschriebenen Monat ✅ Gelöst Chat 120
+
+**Gelöst am 31.07.2026.** Die Monatsliste führt jetzt die Umlautform, und die ASCII-Umschreibungen werden vor der Fuzzy-Korrektur zurückübersetzt. Die Zuordnung wird aus den Wortlisten abgeleitet, nicht daneben geführt.
+
+**Entdeckt:** Chat 120, beim Nachgehen einer Frage nach der Zahlwort-Normalisierung — nicht durch ein Audit.
+
+**Symptom:** `zeit_parsen_vektor("15. März")` lieferte `None`. Jedes Datum im März fiel durch, also ein Zwölftel aller Datumsangaben.
+
+**Mechanismus, und er ist die Pointe:** `_MONATE` trug nur `"maerz"`. Die Fuzzy-Korrektur fand ein korrekt geschriebenes „März" damit **nicht** als bekanntes Wort, suchte den nächsten Nachbarn und landete auf Distanz 2 bei der ASCII-Form — die `dateparser` nicht versteht. **Der Schritt, der Tippfehler reparieren soll, hat die richtige Schreibweise zerstört.**
+
+**Reproduktionsweg**, gemessen am 31.07.2026:
+
+| Aufruf | Ergebnis |
+|---|---|
+| `dateparser.parse("15. März", languages=["de"])` | 2026-03-15 |
+| `dateparser.parse("15. Maerz", languages=["de"])` | **None** |
+| `zeit_parsen_vektor("15. März")` — vor dem Fix | **None** |
+| `_fuzzy_korrektur("15. März")` | `'15. Maerz'` |
+
+Die dritte Zeile folgt aus der vierten: Was die Bibliothek versteht, machte unsere Vorstufe unverständlich.
+
+**Ursache dahinter war Drift zwischen drei Listen:** Monate nur ASCII, Zahlwörter und Schutzwörter nur Umlaut, relative Tageswörter beides. Jede wird an anderer Stelle gelesen — deshalb fiel es nie auf.
+
+**Wirkung:** Kein falscher Anker, sondern gar keiner. Der harmlose Ausfall, aber ein vollständiger für einen ganzen Monat.
+
+---
+
+#### PARSER-ZWEI-UHREN — deiktische Tagesworte und relative Dauern rechnen in verschiedenen Zonen ✅ Gelöst Chat 120
+
+**Gelöst am 31.07.2026.** Die Referenz wird in die Ortszone gedreht, statt ihres Zonenvermerks beraubt zu werden.
+
+**Entdeckt:** Chat 120, ausgelöst durch einen roten Test, der über Nacht rot geworden war.
+
+**Symptom:** „übermorgen" und „in zwei Tagen" lieferten verschiedene Tage.
+
+**Mechanismus:** `RELATIVE_BASE` muss naiv sein, und `settings["TIMEZONE"]` sagt der Bibliothek, dass sie naive Zeiten als **Ortszeit** liest. Übergeben wurde `referenz.replace(tzinfo=None)` — die UTC-Wanduhr, die damit als Ortszeit **umgedeutet** statt umgerechnet wurde. Block 0b rechnet dagegen mit `date.today()`, also lokal. Zwei Uhren in einem Aufruf.
+
+**Reproduktionsweg**, Referenz 30.07.2026 22:30 UTC (= 31.07. 00:30 Ortszeit):
+
+| Ausdruck | vor dem Fix | nach dem Fix |
+|---|---|---|
+| `übermorgen` | 2026-08-02 | 2026-08-02 |
+| `in zwei Tagen` | **2026-08-01** | 2026-08-02 |
+
+**Welche Seite recht hatte, folgt aus der Festlegung, nicht aus Geschmack:** Das Repository ist die einzige Stelle, die UTC kennt (`novaberg-tool-timeparser_l_timezone.md` §3). Vor dieser Grenze wird lokal gerechnet — die Tagesworte waren richtig, der Dauer-Pfad nicht.
+
+**Alter:** Das Fenster ist die Zeitspanne zwischen lokaler und UTC-Mitternacht, im Sommer zwei Stunden täglich. Der Defekt bestand, seit die Referenz durchgereicht wird.
+
+**Der Zeitparser ist die vierte Stelle**, die die Zonen-Umrechnung braucht, neben Schreiben, Lesen und Query-Range. Die Zentralisierung von damals hat ihn nicht erfasst, weil er kein Datenpfad ist, sondern ein Interpret — das Partial-Fix-Problem aus derselben Lesson.
+
+---
+
+#### CHAT-NAME-OHNE-ERZEUGER — beide Pfade des Chat-Endpunkts lesen eine Variable, die es nicht mehr gibt ✅ Gelöst Chat 120
+
+**Gelöst am 31.07.2026.** Beide Pfade leiten den Wert wieder lokal aus dem State ab, den sie ohnehin halten.
+
+**Entdeckt:** Chat 120, aus einem Bildschirmfoto des laufenden Betriebs — nicht aus einem Test.
+
+**Symptom:** `Fehler: name 'letzter_external' is not defined` im Client, während Novas Antwort trotzdem ankam.
+
+**Mechanismus:** Der Nutzlast-Aufbau wanderte am Vortag in eine gemeinsame Funktion, die ihre Ableitung selbst vornimmt. Die lokale Zuweisung ging mit — **zwei Leser blieben stehen, in jedem der beiden Pfade.** Vier Ausdrücke, zwei tote Namen.
+
+Dass die Antwort trotzdem ankam, liegt an der Reihenfolge: Das Ereignis für den zweiten Graphen ist zu diesem Zeitpunkt schon geschrieben. Der `NameError` tötet nur das abschließende Statusereignis, und die Ausnahmebehandlung macht daraus einen roten Kasten. Deshalb wirkte es sporadisch.
+
+**Reproduktionsweg:** Einen Turn über `/chat/stream` fahren und das Serverprotokoll lesen — `NameError: Stream-Fehler` mit Zeilenverweis. Gemessen am 30.07.2026, 22:30 UTC.
+
+**Der eigentliche Befund ist nicht der Defekt, sondern dass er gemeldet war.** Die Linter-Regel für undefinierte Namen trug ihn seit dem Vortag. Acht ihrer neun Treffer waren diese beiden Abstürze, und sie gingen in 2253 geduldeten Treffern unter. **Daraus die zweite harte Regelfamilie** (`ruff-hart.toml`, F821): Eine Regel, die einen Absturz vor der Auslieferung findet, duldet keinen Bestand.
+
+---
+
 ### Initiative-Achse (Chat 119)
 
 #### INITIATIVE-M1-OHNE-QUELLE — der State-Key, den M1 liest, hat keinen Erzeuger ✅ Gelöst Chat 119
