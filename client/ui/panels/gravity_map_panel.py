@@ -671,14 +671,12 @@ class GravityMapPanel(PanelBase):
             num_ext = cr.text_extents(num)
             x_cursor: float = bar_left + 10.0 + num_ext.width + 10.0
 
-            # Goal-Text (~50 Zeichen).
-            text: str = self._truncate(str(goal.get("goal_text") or ""), 50)
-            cr.set_source_rgba(0.95, 0.95, 0.98, 0.95)
-            cr.set_font_size(11)
-            cr.move_to(x_cursor, baseline)
-            cr.show_text(text)
-
             # Rechts: Linien-Stil-Vorschau + Typ-Glyph + Motivation.
+            # Dieser Block wird VOR dem Zieltext vermessen, weil er dessen
+            # Platz begrenzt. Andersherum muesste die Textbreite geraten
+            # werden — genau das tat die feste Grenze von 50 Zeichen, die
+            # hier stand: Sie kannte die Fensterbreite nicht und schnitt auch
+            # dann ab, wenn zwei Drittel der Zeile leer blieben.
             try:
                 motivation: float = float(goal.get("motivation", 0.0) or 0.0)
             except (TypeError, ValueError):
@@ -697,6 +695,18 @@ class GravityMapPanel(PanelBase):
             glyph_x: float = mot_x - glyph_ext.width - 8.0
             preview_x_end: float = glyph_x - 8.0
             preview_x_start: float = preview_x_end - 28.0
+
+            # Zieltext — bekommt alles, was zwischen Nummer und rechtem
+            # Block frei ist, abzueglich eines Abstands.
+            cr.set_font_size(11)
+            text: str = self._auf_breite_kuerzen(
+                cr,
+                str(goal.get("goal_text") or ""),
+                preview_x_start - x_cursor - 12.0,
+            )
+            cr.set_source_rgba(0.95, 0.95, 0.98, 0.95)
+            cr.move_to(x_cursor, baseline)
+            cr.show_text(text)
 
             # Linien-Stil-Preview als kurze Linie.
             cr.set_source_rgba(*color)
@@ -905,9 +915,47 @@ class GravityMapPanel(PanelBase):
 
     # ─── Hilfen ──────────────────────────────────────────────────────
     @staticmethod
-    def _truncate(text: str, limit: int) -> str:
-        """Kuerzt einen String auf maximal ``limit`` Zeichen."""
+    def _auf_breite_kuerzen(cr, text: str, max_breite: float) -> str:
+        """Kuerzt einen String so, dass er in ``max_breite`` Pixel passt.
+
+        Gemessen wird mit der Schrift, die gerade auf ``cr`` gesetzt ist —
+        eine Zeichenzahl kann das nicht leisten, weil ein „i" schmaler ist
+        als ein „M" und dieselbe Zahl je nach Text und Fensterbreite mal zu
+        frueh und mal gar nicht schneidet.
+
+        Args:
+            cr:         Cairo-Kontext mit bereits gesetzter Schriftgroesse.
+            text:       Der volle Text.
+            max_breite: Verfuegbare Breite in Pixel.
+
+        Returns:
+            Den Text unveraendert, wenn er passt; sonst gekuerzt mit
+            Auslassungszeichen. Bei nicht positiver Breite den Leerstring —
+            dann ist kein Platz, und ein Auslassungszeichen allein waere
+            eine Behauptung ueber einen Text, von dem nichts zu sehen ist.
+        """
+        # ── Eingabe ──────────────────────────────────────────────────
         text = (text or "").strip()
-        if len(text) <= limit:
+        if not text or max_breite <= 0.0:
+            return ""
+
+        if cr.text_extents(text).x_advance <= max_breite:
             return text
-        return text[: max(0, limit - 1)].rstrip() + "…"
+
+        # ── Verarbeitung ─────────────────────────────────────────────
+        # Binaere Suche nach der laengsten passenden Laenge. Zeichenweise
+        # zu messen waere bei sieben Zeilen je Neuzeichnung spuerbar.
+        auslassung: str = "…"
+        if cr.text_extents(auslassung).x_advance > max_breite:
+            return ""
+
+        unten, oben = 0, len(text)
+        while unten < oben:
+            mitte = (unten + oben + 1) // 2
+            if cr.text_extents(text[:mitte].rstrip() + auslassung).x_advance <= max_breite:
+                unten = mitte
+            else:
+                oben = mitte - 1
+
+        # ── Ausgabe ──────────────────────────────────────────────────
+        return text[:unten].rstrip() + auslassung
