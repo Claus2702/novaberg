@@ -50,9 +50,9 @@ Dieselbe Konversation nach dem Verblassen der Pipeline-Stages. Markdown-Renderin
 
 ### Emotionale Intelligenz — Plutchik-Oktagon
 
-![Emotions-Panel mit Radar-Diagrammen](images/nova-ui-emotion-1.png)
+![Emotions-Panel mit Radar-Diagrammen](images/nova-ui-emotion-2.png)
 
-Novas emotionaler Zustand, visualisiert über die 8 Plutchik-Sektoren (Freude, Zuversicht, Angst, Überraschung, Trauer, Enttäuschung, Ärger, Neugier). Zwei Radar-Diagramme vergleichen das aktuelle Session-Profil mit der emotionalen Langzeit-Landschaft aus dem Kurzzeitgedächtnis. Darunter alle 16 kanonischen Emotionen mit ihren aktuellen Werten. Das Session-Radar zeigt, was jetzt passiert; das KZG-Radar zeigt den emotionalen Fingerabdruck über Wochen der Konversation.
+Novas **eigener** emotionaler Zustand über die 8 Plutchik-Sektoren (Freude, Zuversicht, Angst, Überraschung, Trauer, Enttäuschung, Ärger, Neugier) — der Perspektive-Selector schaltet zwischen ihrem und dem des Nutzers um, beide werden durchgehend getrennt geführt. Zwei Radar-Diagramme vergleichen das aktuelle Session-Profil mit der länger laufenden emotionalen Landschaft im Kurzzeitgedächtnis. Darunter alle 16 kanonischen Emotionen mit ihren aktuellen Werten. Das Session-Radar zeigt, was jetzt passiert; das KZG-Radar zeigt den emotionalen Fingerabdruck über Wochen der Konversation.
 
 ### Session — Analyse auf Turn-Ebene
 
@@ -78,7 +78,37 @@ Konsolidierte Erinnerungen, die den Promotions-Prozess überlebt haben. Jeder Ei
 
 Fünf destillierte Persönlichkeitsprofile, hier für Nova selbst. Das sind keine handgeschriebenen Beschreibungen, sondern das Ergebnis von Pixies Charakter-Destillationsagent, der periodisch Kurzzeit- und Langzeitgedächtnis zu strukturierten Profilen verdichtet. Das Kern-Profil erfasst, wer Nova geworden ist; das Adaptiv-Profil spiegelt ihre aktuellen Beschäftigungen; Intentionen und Emotionen beschreiben ihre Kommunikationsmuster und emotionale Grundlinie; das Beziehungs-Profil modelliert ihre Wahrnehmung des Nutzers. Alle fünf Schichten fließen in den Identitäts-Block des Responders ein.
 
-Aus diesen Profilen werden zwei **Charakter-Räder** abgeleitet, und die sind der Teil, der handelt statt beschreibt. Jedes stellt Einzelfragen an den destillierten Charakter — zwölf für die Zuwendung, zehn für die Initiative —, die ein LLM mit *nicht erkennbar*, *angedeutet* oder *ausgeprägt* beantwortet; der Faktor daraus wird **gerechnet**, nie geschätzt. Die Zuwendung gewichtet, wie stark die Belange des Gegenübers zählen, wenn Nova entscheidet, was sie sich merkt; die Initiative verschiebt die Achse, die bestimmt, wer das Gespräch führt. Beide legen ihre Einzelbewertungen neben der Zahl ab, sodass jeder Faktor von Hand nachrechenbar ist, und beide tragen ein Herkunftsfeld — denn ein Wert, der genau auf seinem Nullpunkt landet, ist eine Messung und darf nicht aussehen wie einer, der nie erhoben wurde. *(Der Screenshot oben ist älter als die Räder.)*
+### Charakter-Räder — der Teil, der handelt
+
+![Charakter-Panel — die zwei Charakter-Räder](images/nova-ui-character-2.png)
+
+Aus diesen Profilen werden zwei **Charakter-Räder** abgeleitet, und die sind der Teil, der handelt statt beschreibt. Jedes stellt Einzelfragen an den destillierten Charakter — zwölf für die Zuwendung, zehn für die Initiative —, die ein LLM mit *nicht erkennbar*, *angedeutet* oder *ausgeprägt* beantwortet; der Faktor daraus wird **gerechnet**, nie geschätzt. Die Zuwendung gewichtet, wie stark die Belange des Gegenübers zählen, wenn Nova entscheidet, was sie sich merkt; die Initiative verschiebt die Achse, die bestimmt, wer das Gespräch führt.
+
+Jede Einzelbewertung wird neben der Zahl abgelegt, sodass sich jeder Faktor von Hand nachrechnen lässt — die Speichenliste unter jedem Diagramm **ist** diese Herleitung, keine Verzierung. Der orangene Punkt zeigt, wie weit das Ergebnis von der Nabe abliegt, normiert gegen die Spanne auf seiner eigenen Seite. Das ist wesentlich: Ein Rad kann **genau** auf seinem Nullpunkt landen, während die Fläche deutlich zu einer Seite hängt — dann heben sich zwei Gruppen von Speichen gegenseitig auf. Deshalb tragen beide Räder ein Herkunftsfeld: Ein gemessener Nullwert darf nicht aussehen wie einer, der nie erhoben wurde.
+
+### Gesprächsvektor — wie Nova entscheidet, was für ein Zug das wird
+
+![Gesprächsvektor-Panel](images/nova-ui-vector-1.png)
+
+Bevor der Responder ein Wort schreibt, wird das Gespräch in einem Raum aus 64 Sektoren verortet, die zu 14 Clustern gehören — und der Cluster entscheidet, welche rhetorischen Strategien überhaupt zur Verfügung stehen. Hier ist der Sektor *Werkstatt*, ein arbeitendes, konstruktives Register, und die sieben Strategien sind dagegen eingestuft: zwei passen, zwei sind selten, zwei sind ausgeschlossen, eine ist die Kernstrategie des Clusters. Die Prozentwerte sind Novas eigene Affinität aus ihrem Charakter; die Etiketten sind das, was die Landschaft zulässt. Wo beide sich widersprechen, gewinnt die Landschaft — und das Panel sagt, ob der Korridor eingehalten wurde.
+
+Darunter ist die Initiative-Achse in die drei Maße zerlegt, aus denen sie entsteht, plus den Charakterversatz aus dem Rad weiter oben. Das ist die Zahl, die entscheidet, ob Nova den Zug als „der Nutzer führt" oder „ich führe" behandelt — und die Schwelle daneben ist die weiterhin geltende Konstante, nicht die, die der Kalibrier-Agent inzwischen gemessen hat.
+
+Die übrigen Blöcke sind das Arbeitsmaterial: Wissenslücken, die sich für diesen Turn qualifiziert haben, Erinnerungen, die die Gravitation hereingezogen hat, und der Farbton, den der Responder mitbekommt. Nichts davon steht in einem Prompt. Alles ist gerechnet, und alles ist sichtbar, während es geschieht.
+
+### Antrieb — Ziele, die verfallen
+
+![Ziele-Panel](images/nova-ui-goals-1.png)
+
+Novas eigene Langzeitziele, jedes mit der Emotion, die es trägt, und einem Motivationswert, der über die Zeit fällt. Verblasste Einträge sind unter die Schwelle verfallen und ziehen nicht mehr. Das ist keine Konfiguration — die Ziele entstehen aus dem, worüber sie nachgedacht hat, und wirken zurück darauf, was sie für merkenswert hält.
+
+### Gravitationsgraph — was woran zieht
+
+![Gravitationsgraph-Panel](images/nova-ui-gravitation-1.png)
+
+Dieselben Ziele als kräftebasierte Karte, dazu die Turns des laufenden Gesprächs. Eine Linie heißt, dass das Embedding des Turns einem Ziel nahe genug kam, um Zug auszuüben; durchgezogen sind langfristige Ziele, gestrichelt mittelfristige. Die eingefärbten Flächen sind thematische Cluster, in die die Ziele fallen.
+
+Das ist das deutlichste Bild dafür, warum Nova ungleichmäßig behält. Ein Turn, der in einer Region landet, zu der es sie ohnehin zieht, wird anders gewichtet als einer, der das nicht tut — nicht weil eine Regel es sagt, sondern weil der Abstand im Embedding-Raum kleiner ist.
 
 ---
 

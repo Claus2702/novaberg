@@ -50,9 +50,9 @@ The same conversation after the pipeline stages fade. Markdown rendering, native
 
 ### Emotional Intelligence — Plutchik Octagon
 
-![Emotions panel with radar diagrams](images/nova-ui-emotion-1.png)
+![Emotions panel with radar diagrams](images/nova-ui-emotion-2.png)
 
-Nova's emotional state visualized across the 8 Plutchik sectors (Joy, Trust, Fear, Surprise, Sadness, Disgust, Anger, Anticipation). Two radar diagrams compare the current session profile against the long-term emotional landscape from short-term memory. Below, all 16 canonical emotions are listed with their current values. The session radar shows what is happening now; the STM radar shows the emotional fingerprint across weeks of conversation.
+Nova's own emotional state across the 8 Plutchik sectors (Joy, Trust, Fear, Surprise, Sadness, Disgust, Anger, Anticipation) — the perspective selector switches between hers and the user's, and both are tracked separately throughout. Two radar diagrams compare the current session profile against the longer-run emotional landscape held in short-term memory. Below, all 16 canonical emotions are listed with their current values. The session radar shows what is happening now; the STM radar shows the emotional fingerprint across weeks of conversation.
 
 ### Session — Turn-Level Analysis
 
@@ -78,7 +78,37 @@ Consolidated memories that survived the promotion process. Each entry has a weig
 
 Five distilled personality profiles, shown here for Nova herself. These are not hand-written descriptions but the output of Pixie's character distillation agent, which periodically compresses short-term and long-term memory into structured profiles. The Core profile captures who Nova has become; the Adaptive profile reflects her current preoccupations; Intentions and Emotions describe her communication patterns and emotional baseline; the Relationship profile models her perception of the user. All five layers feed into the Responder's identity block.
 
-Two **character wheels** are derived from those profiles, and they are the part that acts rather than describes. Each asks a set of single questions against the distilled character — twelve for attachment, ten for initiative — which an LLM rates as absent, hinted or pronounced; the resulting factor is then *computed*, never estimated. Attachment weighs how much the other person's concerns count when Nova decides what to remember; initiative shifts the axis that decides who is leading the conversation. Both store their individual ratings alongside the number, so every factor can be recalculated by hand, and both carry a provenance field — because a value that happens to land on its neutral point is a measurement, and must not look like a value that was never taken. *(The screenshot above predates the wheels.)*
+### Character Wheels — the part that acts
+
+![Character panel — the two character wheels](images/nova-ui-character-2.png)
+
+Two **character wheels** are derived from those profiles, and they are the part that acts rather than describes. Each asks a set of single questions against the distilled character — twelve for attachment, ten for initiative — which an LLM rates as absent, hinted or pronounced; the resulting factor is then *computed*, never estimated. Attachment weighs how much the other person's concerns count when Nova decides what to remember; initiative shifts the axis that decides who is leading the conversation.
+
+Every rating is stored alongside the number, so each factor can be recalculated by hand — the spoke list under each chart is that derivation, not a decoration. The orange marker shows how far the result sits from the hub, scaled against the span on its own side. That matters: a wheel can land *exactly* on its neutral point while the shape leans clearly to one side, which means two groups of spokes are cancelling each other out. Both wheels therefore carry a provenance field, because a measured neutral value must not look like a value that was never taken at all.
+
+### Conversational Vector — how Nova decides what kind of turn to make
+
+![Conversational vector panel](images/nova-ui-vector-1.png)
+
+Before the Responder writes anything, the conversation is placed in a space of 64 sectors grouped into 14 clusters, and the cluster decides which rhetorical strategies are even available. Here the sector is *Werkstatt* — a working, constructive register — and the seven strategies are ranked against it: two fit, two are rare, two are ruled out, and one is the cluster's core. The percentages are Nova's own affinity from her character; the labels are what the landscape permits. Where the two disagree, the landscape wins, and the panel says whether the corridor was kept.
+
+Below it, the initiative axis is broken into the three measures it is computed from, plus the character offset from the wheel above. This is the number that decides whether Nova treats the turn as the user leading or herself leading — and the threshold beside it is the constant still in force, not the one the calibration agent has measured since.
+
+The remaining blocks are the working material: knowledge gaps that qualified this turn, memories the gravitational pull brought in, and the tone the Responder is handed. Nothing here is written by a prompt. All of it is computed, and all of it is visible while it happens.
+
+### Drive — goals that decay
+
+![Goals panel](images/nova-ui-goals-1.png)
+
+Nova's own long-term goals, each with the emotion that carries it and a motivation value that falls over time. Faded entries have decayed past the threshold and no longer pull. These are not configuration — they emerge from what she has been thinking about, and they feed back into what she finds worth remembering.
+
+### Gravity Map — what pulls on what
+
+![Gravity map panel](images/nova-ui-gravitation-1.png)
+
+The same goals as a force-directed map, with the turns of the current conversation drawn against them. A line means the turn's embedding came close enough to a goal to exert pull; solid lines are long-term goals, dashed ones mid-term. The shaded regions are thematic clusters the goals fall into.
+
+This is the clearest picture of why Nova remembers unevenly. A turn that lands inside a region she is already pulled toward is weighted differently from one that does not — not because a rule says so, but because the distance in the embedding space is smaller.
 
 ---
 
