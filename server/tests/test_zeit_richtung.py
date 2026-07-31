@@ -20,7 +20,9 @@ Kein skipUnless, kein skipIf, kein try/except um Importe.
 
 import unittest
 from datetime import date, datetime, timedelta, timezone
+from zoneinfo import ZoneInfo
 
+from config import TIMEZONE
 from utils.zeitparser import zeit_parsen_vektor
 
 REF: datetime = datetime(2026, 7, 30, 17, 10, 0, tzinfo=timezone.utc)
@@ -99,9 +101,49 @@ class VorwaertsBleibtVorwaerts(unittest.TestCase):
         """Ein Vorwaerts-Praefix, das neben den Rueckwaerts-Praefixen steht."""
         self.assertEqual(_tage("nächste Woche"), +7)
 
-    def test_morgen(self) -> None:
-        """Der haeufigste Fall ueberhaupt."""
-        self.assertEqual(_tage("morgen"), +1)
+    def test_morgen_folgt_dem_sprechzeitpunkt_nicht_der_referenz(self) -> None:
+        """Deiktische Tagesworte haengen am heutigen Kalendertag, nicht an `referenz`.
+
+        Die fruehere Fassung dieses Tests mass `morgen` gegen `REF` und
+        erwartete +1. Das war nur solange gruen, wie `REF` zufaellig auf dem
+        echten Datum lag — mit dem naechsten Tageswechsel wurde es +2, ohne
+        dass sich am Code etwas geaendert haette.
+
+        Die Erwartung war auch inhaltlich falsch. `referenz` ist der
+        Bezugspunkt fuer relative DAUERN ("in drei Tagen"); ein deiktisches
+        Wort zeigt dagegen immer auf den Tag nach heute. Der Update-Pfad der
+        Timeline reicht als Referenz die Zeit des BESTEHENDEN Termins durch
+        (`agents/timeline/crud.py`) — wuerde `morgen` ihr folgen, schoebe
+        "verschieb ihn auf morgen" einen Termin im August auf den Tag nach
+        jenem Termin statt auf den Tag nach heute.
+        """
+        heute: date = datetime.now(ZoneInfo(TIMEZONE)).date()
+        gemessen = zeit_parsen_vektor("morgen", REF).datum
+
+        self.assertIsNotNone(gemessen)
+        self.assertEqual(gemessen.date(), heute + timedelta(days=1))
+
+    def test_dauer_und_tageswort_benutzen_dieselbe_uhr(self) -> None:
+        """`uebermorgen` und `in zwei Tagen` duerfen nicht auseinanderliegen.
+
+        Sie nehmen verschiedene Wege — das Tageswort ueber den lokalen
+        Kalendertag, die Dauer ueber `RELATIVE_BASE` — und lagen deshalb in
+        den Stunden zwischen lokaler und UTC-Mitternacht einen Tag
+        auseinander: Die Referenz wurde ihres Zonenvermerks beraubt statt in
+        die Ortszone gedreht, und dateparser las die UTC-Wanduhr als
+        Ortszeit.
+
+        Die Referenz hier liegt bewusst in genau diesem Fenster: 22:30 UTC
+        ist 00:30 Ortszeit des Folgetags.
+        """
+        im_fenster: datetime = datetime(2026, 7, 30, 22, 30, tzinfo=timezone.utc)
+
+        tageswort = zeit_parsen_vektor("übermorgen", im_fenster).datum
+        dauer     = zeit_parsen_vektor("in zwei Tagen", im_fenster).datum
+
+        self.assertIsNotNone(tageswort)
+        self.assertIsNotNone(dauer)
+        self.assertEqual(tageswort.date(), dauer.date())
 
     def test_vor_in_einer_uhrzeit_meint_den_naechsten_termin(self) -> None:
         """`vor` steht bewusst NICHT in der Richtungsliste.

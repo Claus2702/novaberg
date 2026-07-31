@@ -429,8 +429,25 @@ def zeit_parsen(
 
     # Schritt 3: Drei Parse-Pfade
     tz = ZoneInfo(TIMEZONE)
+
+    # Die Referenz wird in die Ortszone GEDREHT, nicht ihres Zonenvermerks
+    # beraubt. `RELATIVE_BASE` muss naiv sein, und `settings["TIMEZONE"]`
+    # unten sagt dateparser, dass es naive Zeiten als Ortszeit liest — ein
+    # blosses `.replace(tzinfo=None)` haette die UTC-Wanduhr also als
+    # Ortszeit ausgegeben und damit um den Zonenversatz verschoben.
+    #
+    # Das ist der Bezugspunkt fuer relative Dauern ("in drei Tagen"). Block
+    # 0b rechnet die deiktischen Tagesworte ("morgen") mit dem lokalen
+    # Kalendertag. Beide muessen dieselbe Zone benutzen, sonst liegen
+    # "uebermorgen" und "in zwei Tagen" in den Stunden zwischen lokaler und
+    # UTC-Mitternacht einen Tag auseinander — gemessen am 31.07.2026.
+    #
+    # Die Zone gilt vor der Persistenz-Grenze; nach UTC dreht erst das
+    # Repository (novaberg-tool-timeparser_l_timezone.md §3).
+    referenz_lokal: datetime = referenz.astimezone(tz)
+
     settings: dict = {
-        "RELATIVE_BASE": referenz.replace(tzinfo=None),
+        "RELATIVE_BASE": referenz_lokal.replace(tzinfo=None),
         "PREFER_DATES_FROM": "future" if zukunft_bevorzugt else "past",
         "TIMEZONE": TIMEZONE,
         "RETURN_AS_TIMEZONE_AWARE": True,
