@@ -2,11 +2,11 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Technik Zeitparser (Natürlichsprachliche Zeitauflösung)
-**Stand:** 17. April 2026, Chat 52 (Code-Alignment)
+**Stand:** 31. Juli 2026, Chat 120 (Zonen-Grenze, andauernde Dauern, Umlaut-Umschrift)
 **Pfad:** novaberg/docs/novaberg-tool-timeparser.md
 **Quellen:** nova-02-t-c.md
 **Datei:** `utils/zeitparser.py`
-**Tests:** 47/47 bestanden
+**Tests:** 31 in `tests/test_zeit_richtung.py` (20) und `tests/test_zeit_umlaute.py` (11)
 
 ---
 
@@ -50,7 +50,19 @@ zeit_parsen("am Donnerstag um 14 Uhr")
 
 ---
 
-## 3. Stufe 1: Fuzzy-Korrektur
+## 3. Stufe 1: Umlaut-Umschrift und Fuzzy-Korrektur
+
+### 3.0 Umlaut-Umschrift — vor allem anderen
+
+Wer ohne Umlaute tippt, schreibt „maerz", „fuenf", „zwoelf". `dateparser` kennt nur die Umlautform und liefert für „15. Maerz" nichts, während es „15. März" versteht. Die Umschreibungen werden deshalb zurückübersetzt, **bevor** die Fuzzy-Korrektur läuft — sie soll ein bekanntes Wort sehen und kein unbekanntes, das sie auf Distanz 2 irgendwohin zieht.
+
+**Die Zuordnung wird aus den Wortlisten abgeleitet, nicht daneben geführt.** Jedes Wort mit Umlaut in `_WOCHENTAGE`, `_MONATE`, `_RELATIVE`, `_ZAHLWOERTER` und `_GESCHUETZTE_WOERTER` bekommt automatisch seine Umschreibung als Schlüssel. Der Grund steht in §9: Eine zweite, von Hand gepflegte Liste war genau die Ursache des Fehlers, den diese Stufe behebt.
+
+Heute ergibt das fünf Einträge: `maerz`, `uebermorgen`, `fuenf`, `zwoelf`, `frueh`.
+
+> **Nur ganze Wörter, nur bei vollständiger Übereinstimmung.** Eine Ersetzung der bloßen Buchstabenfolge machte aus „heute" ein „heüte" und aus „neue" ein „neü". Die Tests dafür stehen gleichberechtigt neben denen für die Ersetzung.
+
+### 3.1 Fuzzy-Korrektur
 
 Levenshtein-Distanz gegen Wochentage, Monate und relative Zeitbegriffe. Maximale Distanz: 2.
 
@@ -103,6 +115,12 @@ Tageszeit-Wörter werden extrahiert und als Fallback-Uhrzeit gemerkt — nur ein
 | „vorgestern" | 2026-03-23 |
 
 Python berechnet das Datum — nicht das LLM. Deterministisch.
+
+**Diese Wörter sind deiktisch: Sie hängen am heutigen Kalendertag, nicht an `referenz`.** Das ist der Unterschied zu relativen Dauern („in drei Tagen"), die gegen die übergebene Referenz rechnen. Der Unterschied ist beabsichtigt und hat einen konkreten Grund: Der Update-Pfad des TimelineManagers reicht als Referenz die Zeit des **bestehenden** Termins durch (§10.4). Würde „morgen" ihr folgen, verschöbe „verschieb ihn auf morgen" einen Termin im August auf den Tag nach jenem Termin statt auf den Tag nach heute.
+
+**Gerechnet wird in der Ortszone**, mit `date.today()`. Das folgt der Grenzregel aus `novaberg-tool-timeparser_l_timezone.md` §3: Das Repository ist die einzige Stelle, die UTC kennt; alles davor arbeitet lokal.
+
+> **Beide Wege müssen dieselbe Uhr benutzen.** Die Referenz für Dauern wird deshalb in die Ortszone **gedreht**, nicht ihres Zonenvermerks beraubt (§5). Bis zum 31.07.2026 geschah das Zweite — damit lagen „übermorgen" und „in zwei Tagen" in den Stunden zwischen lokaler und UTC-Mitternacht **einen Tag auseinander**.
 
 ### Block 0c: Deutsches Datum ohne Jahr
 
@@ -159,6 +177,10 @@ Wenn nach allen Transformationen keine Uhrzeit (`\d{1,2}:\d{2}`) im String steht
 ---
 
 ## 5. Stufe 3: 3-Pfade-Parsing
+
+Vor den Pfaden wird die Referenz gesetzt. `dateparser` bekommt sie als `RELATIVE_BASE`, und dieses Feld muss naiv sein — ohne Zonenvermerk. Die Einstellung `TIMEZONE` sagt der Bibliothek zugleich, dass sie naive Zeiten als **Ortszeit** liest.
+
+> **Die Referenz wird deshalb in die Ortszone gedreht, nicht ihres Vermerks beraubt.** Ein bloßes `.replace(tzinfo=None)` gäbe die UTC-Wanduhr als Ortszeit aus und verschöbe sie um den Zonenversatz — zwischen lokaler und UTC-Mitternacht über die Datumsgrenze hinweg. Genau so war es bis zum 31.07.2026, und „übermorgen" (Block 0b, Ortszeit) lag dann einen Tag neben „in zwei Tagen" (`RELATIVE_BASE`, UTC-Wanduhr).
 
 Nach der Normalisierung versucht der Parser drei Pfade:
 
@@ -246,6 +268,20 @@ Verhindert, dass halluzinierte oder falsch berechnete Daten in die Timeline gela
 | v4 | 47/47 | Tageszeit-Extraktion + Fallback statt Inline-Ersetzung |
 | v5 | 47/47 | Schutzliste gegen falsche Fuzzy-Korrekturen |
 | v6 | 47/47 | Vektor-Modus: `ZeitVektor` Dataclass, Referenz-Modus, Zwei-Phasen-Parsing (Chat 14) |
+| v7 | — | Der erkannte Referenz-Modus steuert die Auflösung. Er wurde bis dahin berechnet, zurückgegeben und **nicht übergeben**; „letzte fünf Wochen" war als rückwärts erkannt und löste vorwärts auf. `seit` in die Richtungsliste (Chat 119) |
+| v8 | 31 | Drei Befunde an einem Tag (Chat 120, siehe unten) |
+
+**Die Tests sind mit v8 neu gezählt.** Die 47 der frühen Versionen stammen aus einer Suite, die es in dieser Form nicht mehr gibt; heute sind es 31 in zwei Dateien, die je einen Gegenstand haben — Richtung und Umlaute.
+
+### Was v8 gefunden hat
+
+Alle drei kamen aus einer einzigen Frage: ob der Parser Zahlwörter normalisiert. Er tut es nicht — die Wort-zu-Zahl-Tabelle dient nur Uhrzeit-Konstruktionen, Dauern versteht `dateparser` selbst.
+
+1. **Zwei Uhren im selben Aufruf.** Die deiktischen Tageswörter rechneten lokal, die Referenz für Dauern kam als UTC-Wanduhr an. Zwischen den Mitternachten lagen „übermorgen" und „in zwei Tagen" einen Tag auseinander (§5).
+2. **Jedes Datum im März fiel durch — verursacht von der Tippfehler-Korrektur.** `_MONATE` führte nur „maerz"; „März" galt damit als unbekannt, wurde auf Distanz 2 zur ASCII-Form gezogen, und `dateparser` liefert dafür nichts (§3.0).
+3. **„bereits" und „schon" erreichten den Parser nie.** Die Salienz-Extraktion verwarf sie, weil ihre Beispiele keine Richtungspräposition trugen (§10.4).
+
+**Die Reihenfolge war entscheidend.** Der Wortschatz des Parsers wurde erst erweitert, **nachdem** gemessen war, dass die Extraktion die Wörter überhaupt durchlässt — vorher wäre es Arbeit an einem Weg gewesen, den nichts befährt.
 
 → Vollständige Geschichte: novaberg-tool-timeparser_l_evolution.md
 
@@ -293,7 +329,14 @@ Bei Timeline-Updates bestimmt der Referenz-Modus, von welchem Datum aus „Freit
 |--------|---------------|-----------------------------------|
 | „diesen" | `absolut` | `datetime.now()` (heute) |
 | „nächsten", „kommenden", kein Präfix | `relativ` | `alter_termin["event_time"]` |
-| „letzten", „vorigen" | `relativ_rueckwaerts` | `alter_termin["event_time"]` + `zukunft_bevorzugt=False` |
+| „letzten", „vorigen", „vergangenen", „seit" | `relativ_rueckwaerts` | `alter_termin["event_time"]` + `zukunft_bevorzugt=False` |
+| „bereits"/„schon" **+ nackte Dauer** | `relativ_rueckwaerts` | dito |
+
+**`vor` steht bewusst nicht in der Liste.** Es kommt auch in Uhrzeiten vor („zehn vor acht"), und dort wäre eine Rückwärts-Auflösung falsch — gemessen: mit `vor` in der Liste löst „zehn vor acht" auf einen Zeitpunkt am selben Tag auf, der längst vorbei ist, statt auf den nächsten Termin. Rückwärts funktioniert es trotzdem, weil `dateparser` das Wort selbst versteht.
+
+**„bereits" und „schon" nur vor einer nackten Dauer.** „Das dauert bereits zwei Wochen" meint den Beginn vor zwei Wochen. Aber beide Wörter sind häufiger Verstärkungspartikel als Richtungswort, und dann zeigen sie nach vorn. Eine Regel auf das bloße Wort löste „schon am Freitag" auf den vergangenen Freitag auf und „bereits nächsten Montag" auf den vergangenen Montag — aus Ausdrücken, die vorher gar nicht parsten, wurden damit welche, die falsch parsen. Deshalb muss unmittelbar eine Zahl und eine Zeiteinheit folgen.
+
+> **Die Richtung muss ankommen, um wirken zu können.** Sie steht im Rohausdruck, den die Salienz-Extraktion bildet (`prompts/default/salienz.dimensionen.txt`). Bis zum 31.07.2026 verwarf diese Anweisung „bereits" und „schon" — ihre sechs Beispiele trugen keine Richtungspräposition, und das Modell normalisierte entsprechend. Der beste Wortschatz im Parser nützt nichts, wenn das Wort ihn nie erreicht.
 
 ### 10.5 Zwei-Phasen-Parsing im TimelineManager
 
@@ -304,10 +347,23 @@ Bei Timeline-Updates bestimmt der Referenz-Modus, von welchem Datum aus „Freit
 
 ### 10.6 Dateien
 
-| Datei | Änderung |
-|-------|---------|
-| `utils/zeitparser.py` | `ZeitVektor` Dataclass, `zeit_parsen_vektor()` |
-| `plugins/timeline_manager/manager.py` | UPDATE-Block: Zwei-Phasen-Parsing, Vektor-Kombination |
+Wer den Parser benutzt, gemessen am 31.07.2026:
+
+| Datei | Rolle |
+|-------|-------|
+| `utils/zeitparser.py` | Das Modul selbst — Umschrift, Fuzzy, zwölf Normalisierungsblöcke, drei Pfade, Richtung, Plausibilität |
+| `agents/timeline/crud.py` | Anlegen und Verschieben. **Der einzige Aufrufer, der eine eigene Referenz übergibt** — die Zeit des bestehenden Termins |
+| `agents/timeline/suche.py` | Terminsuche, über `zeit_parsen` |
+| `agents/kzg/magnete.py` | Legt aus `zeitausdruck_roh` die Gedächtnis-Anker an. Hier entstand der Anker fünf Wochen in der Zukunft |
+
+Davor liegt, was den Rohausdruck bildet — und was er weglässt, kann der Parser nicht wiederherstellen:
+
+| Datei | Rolle |
+|-------|-------|
+| `prompts/default/salienz.dimensionen.txt` | Die Anweisung, die `zeitausdruck_roh` erzeugt |
+| `graph/nodes/salience.py` | Setzt den Prompt zusammen, legt das Ergebnis in den State |
+
+*(Der frühere Eintrag `plugins/timeline_manager/manager.py` ist überholt — die Datei importiert den Parser nicht mehr; der Update-Pfad liegt seit dem Agenten-Umbau in `agents/timeline/crud.py`.)*
 
 → Lesson: novaberg-tool-timeparser_l_vektor.md
 

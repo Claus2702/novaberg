@@ -1856,7 +1856,29 @@ Die Härtung bleibt: Ein `dict`, eine Zahl oder eine Liste in dem Feld kracht we
 
 ---
 
-## Chat 120 (30.07.2026) — Die beiden Charakter-Räder werden sichtbar ✅
+## Chat 120 (30.–31.07.2026) — Die Charakter-Räder werden sichtbar, und der Zeitparser bekommt drei Reparaturen ✅
+
+### Der Zeitparser: drei Defekte aus einer Frage ✅ (31.07.2026)
+
+Anlass war eine Frage, kein Audit: Normalisiert der Parser Zahlwörter? Er tut es nicht — die Wort-zu-Zahl-Tabelle dient nur Uhrzeit-Konstruktionen. Die Suche nach der Antwort förderte drei Defekte zutage, jeder mit eigener Ursache.
+
+**Zwei Uhren im selben Aufruf.** Die deiktischen Tageswörter („morgen") rechnen über den lokalen Kalendertag, die relativen Dauern („in zwei Tagen") über eine Referenz — und die kam als UTC-Wanduhr an, weil sie ihres Zonenvermerks beraubt statt in die Ortszone gedreht wurde. In den Stunden zwischen lokaler und UTC-Mitternacht lagen beide **einen Tag auseinander**. Welche Seite recht hatte, folgt aus der Grenzregel: Das Repository ist die einzige Stelle, die UTC kennt; davor wird lokal gerechnet.
+
+**Jedes Datum im März fiel durch — verursacht von der Tippfehler-Korrektur.** Die Monatsliste führte nur die ASCII-Form. „März" galt damit als unbekanntes Wort, wurde auf Distanz 2 zur Umschrift gezogen, und die Datumsbibliothek liefert dafür nichts, während sie „15. März" direkt versteht. Der Schritt, der Tippfehler reparieren soll, zerstörte die korrekte Schreibweise. Drei Wortlisten führten drei verschiedene Konventionen; die Umschrift-Zuordnung wird jetzt **aus ihnen abgeleitet**, weil eine zweite Liste die Ursache war.
+
+**„bereits" und „schon" erreichten den Parser nie.** Die Salienz-Anweisung trug sechs Beispiele, von denen keines eine Richtungspräposition enthielt — das Modell normalisierte entsprechend und verwarf beide Wörter. Damit korrigiert sich auch der ältere Befund: `seit` wird sehr wohl durchgereicht, gemessen mit und ohne Lagebild.
+
+**Die Reihenfolge war das Entscheidende.** Der Wortschatz des Parsers wurde erst erweitert, nachdem gemessen war, dass die Extraktion die Wörter überhaupt durchlässt. Vorher wäre es Arbeit an einem Weg gewesen, den nichts befährt.
+
+**Und die Gegenprobe hat eine Regel gerettet.** Die erste Fassung deutete `bereits`/`schon` als bloßes Wort — damit löste „schon am Freitag" auf den vergangenen Freitag auf. Aus Ausdrücken, die vorher gar nicht parsten, wären welche geworden, die falsch parsen. Die Regel verlangt jetzt unmittelbar eine Zahl und eine Zeiteinheit.
+
+**Umfang:** Suite 659 mit einem Fehlschlag → **677 grün**. Nulllinie unverändert 2244, beide Wände sauber. Vier Gegenproben, jede zurückgenommen.
+
+**Ein Wachposten daraus:** Nach dem Zurücksetzen einer Datei per `cp` kann Python einen **veralteten Bytecode-Cache** behalten — er vergleicht den Quell-Zeitstempel sekundengenau, und eine Rücknahme innerhalb derselben Sekunde fällt durch das Raster. Eine Gegenprobe misst dann den vorherigen Stand. `__pycache__` gehört vor jedem solchen Lauf geleert.
+
+**Geschlossen:** `ZEIT-RUECKWAERTS-WIRD-ZUKUNFT` vollständig
+
+---
 
 ### Bauteil 3 des Salienz-Sprints: die Räder im Charakter-Tab ✅ (30.07.2026)
 
