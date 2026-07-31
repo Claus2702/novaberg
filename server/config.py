@@ -101,9 +101,9 @@ OLLAMA_CONNECTORS: dict = {
         "gpu_model":       "gemma4-gpu",
         "gpu_num_ctx":     32768,
         "cpu_model":       "qwen36-cpu",
-        "cpu_num_ctx":     32768,
+        "cpu_num_ctx":     262144,
         "analyse_model":   "qwen36-cpu",
-        "analyse_num_ctx": 32768,
+        "analyse_num_ctx": 262144,
     },
 }
 
