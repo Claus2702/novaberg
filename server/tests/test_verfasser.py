@@ -296,7 +296,7 @@ class TestDerKontextSchnittUmgehtDenVerfasser(unittest.TestCase):
     def _zweig(self, schnitt: bool) -> str:
         from graph.character_graph import CharacterGraph
 
-        return CharacterGraph._after_gv(None, _state(task_context_cut=schnitt))
+        return CharacterGraph._after_haltung(None, _state(task_context_cut=schnitt))
 
     def test_bei_schnitt_geht_es_direkt_zum_responder(self) -> None:
         """Mit Kontext-Schnitt bleibt der Verfasser aussen vor."""
