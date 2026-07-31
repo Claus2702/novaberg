@@ -32,6 +32,75 @@ class ZeitVektor:
     uhrzeit_erkannt: bool
     referenz_modus: str  # "absolut" | "relativ" | "relativ_rueckwaerts"
 
+
+@dataclass(frozen=True)
+class MarkerBefund:
+    """Was die Richtungsmarker im Text aussagen.
+
+    Bis Phase 2 gab es diese Struktur nicht. Die Richtung wurde von Block 8
+    aus dem Text GELOESCHT und danach von einem zweiten Regex-Durchlauf in
+    `zeit_parsen_vektor` aus dem *korrigierten, nicht normalisierten* Text
+    rekonstruiert. Zwei Pipelines ueber demselben Text, die synchron bleiben
+    mussten — und die es nicht taten: Weil die Praefixe nur in Block 8
+    standen, bekamen sie keine ASCII-Umschreibung, und "naechsten Montag"
+    behielt sein Praefix (B2, 31.07.2026).
+
+    Jetzt liest ein Durchlauf die Marker und gibt zurueck, was er gefunden
+    hat. Der Rumpf wird nur von dem befreit, was `dateparser` verwirren
+    wuerde — was er selbst versteht, bleibt stehen.
+    """
+    richtung: str = "unbestimmt"       # "vorwaerts"|"rueckwaerts"|"unbestimmt"
+    ankerart: str = "referenz"         # "jetzt"|"referenz"
+    versatz_tage: int = 0              # "uebernaechste" -> 7
+    marker: tuple[str, ...] = ()       # gefundene Marker im Wortlaut
+    regel_ids: tuple[str, ...] = ()    # welche Regeln gegriffen haben
+
+    @property
+    def rueckwaerts(self) -> bool:
+        return self.richtung == "rueckwaerts"
+
+    def als_referenz_modus(self) -> str:
+        """Uebersetzt den Befund in das bestehende ZeitVektor-Feld.
+
+        Reihenfolge wie bisher: "diesen" schlaegt die Richtung.
+        """
+        if self.ankerart == "jetzt":
+            return "absolut"
+        if self.rueckwaerts:
+            return "relativ_rueckwaerts"
+        return "relativ"
+
+
+@dataclass(frozen=True)
+class MarkerRegel:
+    """Eine Richtungsregel.
+
+    `richtung` und `entfernen` sind BEWUSST unabhaengig. Ein Marker kann
+    Richtung tragen und trotzdem im Rumpf bleiben muessen: `vor` versteht
+    `dateparser` selbst, `seit` nicht. Wer beides in einem Flag fuehrt, muss
+    fuer jeden neuen Marker den falschen Kompromiss waehlen.
+    """
+    kennung: str
+    muster: str
+    richtung: str = "unbestimmt"
+    ankerart: str = "referenz"
+    entfernen: bool = True
+    versatz_tage: int = 0
+    notiz: str = ""
+
+
+def _wortgruppe(*woerter: str) -> str:
+    """Alternation aus Woertern, laengste zuerst."""
+    return "|".join(sorted(woerter, key=len, reverse=True))
+
+
+# Zeiteinheiten fuer die "nackte Dauer"-Bedingung.
+_DAUER_EINHEITEN: str = _wortgruppe(
+    "tag", "tage", "tagen", "woche", "wochen", "monat", "monate", "monaten",
+    "jahr", "jahre", "jahren", "stunde", "stunden", "minute", "minuten",
+)
+
+
 # Deutsche Wochentage und Monate fuer Fuzzy-Matching
 _WOCHENTAGE: list[str] = [
     "montag", "dienstag", "mittwoch", "donnerstag",
@@ -51,6 +120,33 @@ _MONATE: list[str] = [
 _RELATIVE: list[str] = [
     "morgen", "uebermorgen", "übermorgen", "heute", "gestern", "vorgestern",
 ]
+
+# Relative Praefixe — Staemme, nicht fertige Formen.
+#
+# Sie standen bis zum 31.07.2026 als sechs Literale in den Regexen von Block 8
+# und damit in einer DRITTEN, von Hand gefuehrten Liste. Sie war bereits
+# gedriftet: Weil kein Praefix in _WOCHENTAGE, _MONATE, _RELATIVE oder
+# _ZAHLWOERTER stand, bekam keines seine ASCII-Umschreibung abgeleitet.
+# "naechsten Montag" behielt sein Praefix, "uebernaechste Woche" bekam keinen
+# +7-Offset. Das ist derselbe Fehler wie beim Maerz-Bug, nur eine Ebene
+# hoeher: eine Liste, die neben den anderen laeuft, laeuft irgendwann
+# auseinander.
+#
+# Deshalb stehen hier die Staemme; Endungen, Suchmuster und Umschreibung
+# werden daraus erzeugt.
+_RELATIVE_PRAEFIX_STAEMME: tuple[str, ...] = (
+    "übernächste", "nächste", "kommende", "letzte", "vorige", "vergangene",
+)
+
+# "-m" gehoert dazu: "seit letztem Jahr", "von naechstem Monat" sind Dativ und
+# im Deutschen gaengig. Die alten Regexe kannten nur [nrs].
+_PRAEFIX_ENDUNGEN: tuple[str, ...] = ("", "n", "r", "s", "m")
+
+_RELATIVE_PRAEFIXE: tuple[str, ...] = tuple(
+    stamm + endung
+    for stamm in _RELATIVE_PRAEFIX_STAEMME
+    for endung in _PRAEFIX_ENDUNGEN
+)
 
 
 def _ascii_umschrift(wort: str) -> str:
@@ -81,7 +177,8 @@ _GESCHUETZTE_WOERTER: set[str] = {
     "sechs", "sieben", "acht", "neun", "zehn",
     "elf", "zwölf", "halb", "viertel", "dreiviertel",
     "vor", "nach", "um", "am", "in", "an",
-}
+} | set(_RELATIVE_PRAEFIXE)
+
 
 
 def _levenshtein(a: str, b: str) -> int:
@@ -195,7 +292,7 @@ _ZAHLWOERTER_PATTERN: str = "|".join(_ZAHLWOERTER.keys())
 # bekommt seine ASCII-Umschreibung als Schluessel; Woerter, deren Umschreibung
 # gleich dem Wort ist, fallen heraus.
 for _quelle in (_WOCHENTAGE, _MONATE, _RELATIVE, list(_ZAHLWOERTER.keys()),
-                list(_GESCHUETZTE_WOERTER)):
+                list(_GESCHUETZTE_WOERTER), list(_RELATIVE_PRAEFIXE)):
     for _wort in _quelle:
         _ascii = _ascii_umschrift(_wort)
         if _ascii != _wort:
@@ -203,22 +300,156 @@ for _quelle in (_WOCHENTAGE, _MONATE, _RELATIVE, list(_ZAHLWOERTER.keys()),
 
 _ASCII_PATTERN: str = "|".join(sorted(_ASCII_ZU_UMLAUT, key=len, reverse=True))
 
-# "bereits"/"schon" + nackte Dauer — eine andauernde Sache, die rueckwaerts
-# zeigt: "das dauert bereits zwei Wochen" meint den Beginn vor zwei Wochen.
+# ── Richtungsregeln ─────────────────────────────────────────────────────────
 #
-# Die Enge ist der Punkt. Beide Woerter sind haeufiger Verstaerkungspartikel
-# als Richtungswort, und dort zeigen sie NACH VORN: "schon am Freitag",
-# "bereits naechsten Montag", "schon naechste Woche". Eine Regel auf das
-# blosse Wort loeste diese drei rueckwaerts auf — gemessen am 31.07.2026
-# ergab "schon am Freitag" den vergangenen statt den kommenden Freitag.
+# Reihenfolge ist Prioritaet: Die erste Regel, die eine Richtung setzt,
+# gewinnt. Alle passenden Regeln werden trotzdem angewandt, damit ihre
+# `entfernen`-Wirkung und der Versatz greifen.
 #
-# Deshalb muss unmittelbar eine ZAHL und eine Zeiteinheit folgen. Damit
-# faellt jeder Fall heraus, in dem ein Wochentag, ein Datum oder ein
-# Vorwaertswort dazwischensteht.
-_DAUER_ANDAUERND: str = (
-    r'\b(bereits|schon)\s+(\d+|' + _ZAHLWOERTER_PATTERN + r')\s+'
-    r'(tag|tage|tagen|woche|wochen|monat|monate|monaten|jahr|jahre|jahren)\b'
+# Zur Enge von M-01: "bereits"/"schon"/"erst" sind haeufiger
+# Verstaerkungspartikel als Richtungswort, und dort zeigen sie NACH VORN
+# ("schon am Freitag", "bereits naechsten Montag"). Eine Regel auf das blosse
+# Wort loeste diese rueckwaerts auf — gemessen am 31.07.2026 ergab "schon am
+# Freitag" den vergangenen statt den kommenden Freitag. Deshalb verlangt
+# M-01 unmittelbar eine Zahl und eine Zeiteinheit; alles andere faellt an
+# M-08, das den Partikel entfernt OHNE eine Richtung zu behaupten.
+
+_DAUER_VORAUS: str = (
+    r"(?=(?:\d+|" + _ZAHLWOERTER_PATTERN + r")\s+(?:" + _DAUER_EINHEITEN + r")\b)"
 )
+
+_MARKER_REGELN: tuple[MarkerRegel, ...] = (
+    MarkerRegel(
+        kennung="M-01",
+        muster=r"\b(bereits|schon|erst)\s+" + _DAUER_VORAUS,
+        richtung="rueckwaerts",
+        notiz="andauernde Sache: 'das dauert bereits zwei Wochen'",
+    ),
+    MarkerRegel(
+        kennung="M-02",
+        muster=r"\b(noch)\s+" + _DAUER_VORAUS,
+        richtung="vorwaerts",
+        notiz="Restdauer: 'noch zwei Wochen'. Die Ausnahme unter den Partikeln.",
+    ),
+    MarkerRegel(
+        kennung="M-03",
+        muster=r"\b(seit)\s+",
+        richtung="rueckwaerts",
+        notiz="dateparser versteht 'seit' nicht und loest es VORWAERTS auf.",
+    ),
+    MarkerRegel(
+        kennung="M-04",
+        muster=r"\b(vor)\s+" + _DAUER_VORAUS,
+        richtung="rueckwaerts",
+        entfernen=False,
+        notiz=(
+            "Bleibt stehen: dateparser versteht es selbst. Die Vorausschau "
+            "haelt Uhrzeiten heraus — 'zehn vor acht' ist keine Richtung."
+        ),
+    ),
+    MarkerRegel(
+        kennung="M-05",
+        muster=r"\b(" + _wortgruppe(*(s + e for s in ("übernächste",)
+                                      for e in _PRAEFIX_ENDUNGEN)) + r")\s+",
+        richtung="vorwaerts",
+        versatz_tage=7,
+    ),
+    MarkerRegel(
+        kennung="M-06",
+        muster=r"\b(" + _wortgruppe(*(s + e for s in ("nächste", "kommende")
+                                      for e in _PRAEFIX_ENDUNGEN)) + r")\s+",
+        richtung="vorwaerts",
+    ),
+    MarkerRegel(
+        kennung="M-07",
+        muster=r"\b(" + _wortgruppe(*(s + e for s in ("letzte", "vorige",
+                                                      "vergangene")
+                                      for e in _PRAEFIX_ENDUNGEN)) + r")\s+",
+        richtung="rueckwaerts",
+    ),
+    MarkerRegel(
+        kennung="M-08",
+        muster=r"\b(bereits|schon|erst|nur|bloß)\s+",
+        richtung="unbestimmt",
+        notiz=(
+            "Verstaerkungspartikel. Traegt KEINE Richtung — entfernt wird er "
+            "nur, damit dateparser den Rest versteht. Das ist der Fall "
+            "'schon in zwei Wochen'."
+        ),
+    ),
+    MarkerRegel(
+        kennung="M-09",
+        muster=r"\b(diese[nmrs]?)\b",
+        richtung="unbestimmt",
+        ankerart="jetzt",
+        entfernen=False,
+        notiz="'diesen Freitag' rechnet ab heute, nicht ab dem alten Termin.",
+    ),
+)
+
+_MARKER_UEBERSETZT: tuple[tuple[MarkerRegel, "re.Pattern[str]"], ...] = tuple(
+    (regel, re.compile(regel.muster, re.IGNORECASE))
+    for regel in _MARKER_REGELN
+)
+
+
+def _marker_extrahieren(text: str) -> tuple[str, MarkerBefund]:
+    """Liest die Richtungsmarker und befreit den Rumpf von den stoerenden.
+
+    Ein Durchlauf, ein Ergebnis. Vorher lief die Erkennung zweimal ueber
+    zwei verschiedene Textzustaende, und die beiden liefen auseinander.
+
+    Args:
+        text: Der fuzzy-korrigierte Ausdruck.
+
+    Returns:
+        (rumpf, befund) — der Rumpf geht an die Normalisierung, der Befund
+        an die Aufloesung. Der Rumpf enthaelt keine Richtungsinformation
+        mehr; sie steckt vollstaendig im Befund.
+
+    Vorbedingung: `text` ist bereits durch `_fuzzy_korrektur` gelaufen,
+        ASCII-Umschreibungen sind zurueckuebersetzt.
+    Nachbedingung: Jeder gefundene Marker steht im Befund — auch die, die
+        im Rumpf stehen bleiben.
+    """
+    # ── Eingabe ─────────────────────────────────
+    if not text:
+        return text, MarkerBefund()
+
+    # ── Verarbeitung ────────────────────────────
+    rumpf: str = text
+    richtung: str = "unbestimmt"
+    ankerart: str = "referenz"
+    versatz: int = 0
+    gefunden: list[str] = []
+    kennungen: list[str] = []
+
+    for regel, muster in _MARKER_UEBERSETZT:
+        treffer = muster.search(rumpf)
+        if treffer is None:
+            continue
+
+        gefunden.append(treffer.group(1))
+        kennungen.append(regel.kennung)
+
+        # Erste Regel mit einer Richtung gewinnt.
+        if richtung == "unbestimmt" and regel.richtung != "unbestimmt":
+            richtung = regel.richtung
+        if regel.ankerart == "jetzt":
+            ankerart = "jetzt"
+        versatz += regel.versatz_tage
+
+        if regel.entfernen:
+            rumpf = muster.sub("", rumpf, count=1)
+
+    # ── Ausgabe ─────────────────────────────────
+    return re.sub(r"\s+", " ", rumpf).strip(), MarkerBefund(
+        richtung=richtung,
+        ankerart=ankerart,
+        versatz_tage=versatz,
+        marker=tuple(gefunden),
+        regel_ids=tuple(kennungen),
+    )
 
 _TAGESZEITEN: dict[str, int] = {
     "morgens": 0,
@@ -242,13 +473,62 @@ _TAGESZEIT_UHRZEITEN: dict[str, str] = {
 }
 
 
-def _text_normalisieren(text: str) -> tuple[str, bool]:
+def _heute_lokal(jetzt: Optional[datetime] = None) -> date:
+    """Der heutige Kalendertag in der KONFIGURIERTEN Ortszone.
+
+    `date.today()` liest die Systemzone. Auf einem Entwicklerrechner in
+    Deutschland ist das dasselbe wie `TIMEZONE`, in einem UTC-Container nicht.
+    Genau dort lag der halbe Zwei-Uhren-Bug: Der Fix vom 31.07.2026 drehte die
+    Referenz fuer Dauern in die Ortszone (`referenz.astimezone(tz)`), Block 0b
+    rechnete aber weiter mit `date.today()`.
+
+    Nachgemessen fuer 2026-07-30 22:30 UTC (= 2026-07-31 00:30 Berlin) bei
+    TZ=UTC:
+
+        "morgen"    ueber date.today()+1  ->  2026-07-31
+        "in 1 Tag"  ueber RELATIVE_BASE   ->  2026-08-01
+
+    Einen Tag auseinander — dieselbe Signatur, die der Fix beseitigen sollte.
+    Das ist die dritte Welle des Partial-Fix-Problems aus
+    novaberg-tool-timeparser_l_timezone.md: Zwei Uhren, gefixt wurde eine.
+
+    Args:
+        jetzt: Bezugsmoment. Default: jetzt in UTC. Nur fuer Tests gesetzt —
+            damit die Zonengrenze pruefbar ist, ohne auf sie zu warten.
+
+    Vorbedingung: keine.
+    Nachbedingung: Der zurueckgegebene Tag ist derselbe, den auch
+        `referenz.astimezone(ZoneInfo(TIMEZONE))` sieht.
+    """
+    # ── Eingabe ─────────────────────────────────
+    if jetzt is None:
+        jetzt = datetime.now(timezone.utc)
+
+    # ── Ausgabe ─────────────────────────────────
+    return jetzt.astimezone(ZoneInfo(TIMEZONE)).date()
+
+
+def _text_normalisieren(
+    text: str,
+    heute: Optional[date] = None,
+) -> str:
     """
     Normalisiert deutsche Zeitausdruecke fuer dateparser-Kompatibilitaet.
 
+    Args:
+        text: Der bereits fuzzy-korrigierte Zeitausdruck.
+        heute: Kalendertag fuer die deiktischen Tagesworte. Default:
+            `_heute_lokal()`. Der Parameter ist additiv — alle bestehenden
+            Aufrufer bleiben unveraendert gueltig.
+
     Returns:
-        (normalisierter_text, hat_uebernachst)
+        Der normalisierte Text. Der frueher mitgelieferte
+        `hat_uebernachst` steckt jetzt in `MarkerBefund.versatz_tage` —
+        er wird dort erzeugt, wo er entsteht.
     """
+    if heute is None:
+        heute = _heute_lokal()
+
     ergebnis: str = text
     tageszeit_woerter: str = "|".join(_TAGESZEITEN.keys())
 
@@ -283,7 +563,7 @@ def _text_normalisieren(text: str) -> tuple[str, bool]:
 
     for wort, offset in _RELATIVE_TAGE.items():
         if re.search(r'\b' + wort + r'\b', ergebnis, flags=re.IGNORECASE):
-            konkretes_datum: str = (date.today() + timedelta(days=offset)).isoformat()
+            konkretes_datum: str = (heute + timedelta(days=offset)).isoformat()
             ergebnis = re.sub(
                 r'\b' + wort + r'\b',
                 konkretes_datum,
@@ -292,7 +572,7 @@ def _text_normalisieren(text: str) -> tuple[str, bool]:
             )
 
     # ── 0c. Deutsches Datum ohne Jahr: "01.07." oder "15.04." -> "01.07.2026" ──
-    aktuelles_jahr: str = str(date.today().year)
+    aktuelles_jahr: str = str(heute.year)
 
     ergebnis = re.sub(
         r'\b(\d{1,2}\.\d{1,2})\.\s',
@@ -451,31 +731,29 @@ def _text_normalisieren(text: str) -> tuple[str, bool]:
     )
 
     # ── 8. Relative Praefixe ──
-    hat_uebernachst: bool = bool(
-        re.search(r"\b[Üü]bern[äa]chste[nrs]?\b", ergebnis)
-    )
-
-    ergebnis = re.sub(r"\b[Üü]bern[äa]chste[nrs]?\s+", "", ergebnis)
-    ergebnis = re.sub(r"\b[Nn]ächste[nrs]?\s+", "", ergebnis)
-    ergebnis = re.sub(r"\b[Kk]ommende[nrs]?\s+", "", ergebnis)
-    ergebnis = re.sub(r"\b[Ll]etzte[nrs]?\s+", "", ergebnis)
-    ergebnis = re.sub(r"\b[Vv]orige[nrs]?\s+", "", ergebnis)
-    ergebnis = re.sub(r"\b[Vv]ergangene[nrs]?\s+", "", ergebnis)
-    # "seit", "bereits" und "schon" tragen die Richtung und nicht die Dauer.
-    # Bleiben sie stehen, kennt dateparser den Ausdruck nicht und liefert gar
-    # nichts; entfernt bleibt eine Dauer uebrig, die ueber `referenz_modus`
-    # rueckwaerts aufgeloest wird (siehe zeit_parsen_vektor).
-    ergebnis = re.sub(r"\b[Ss]eit\s+", "", ergebnis)
-    # Nur vor einer nackten Dauer entfernen — sonst sind es
-    # Verstaerkungspartikeln, die eine Vorwaerts-Angabe begleiten
-    # ("schon am Freitag"), und dann muss der Rest unangetastet bleiben.
+    # ── 8. Reste fuer dateparser-Kompatibilitaet ──
+    #
+    # Die Richtungswoerter stehen hier nicht mehr. Sie hat
+    # `_marker_extrahieren` gelesen und — soweit noetig — entfernt, BEVOR
+    # dieser Text entstand. Block 8 kannte sie frueher nur, um sie
+    # wegzuwerfen; die Richtung musste danach aus dem Originaltext
+    # rekonstruiert werden. Genau diese zweite Pipeline ist der Punkt, an
+    # dem B2 entstand.
+    #
+    # "Woche" faellt nur, wenn ein Wochentag folgt: In "nächste Woche
+    # Dienstag" ist es nach der Markerentfernung redundant, sonst nicht.
+    #
+    # Die Regel loeschte bis zum 31.07.2026 jedes "Woche " mit Folgetext. Sie
+    # war fuer einen Kontext gebaut und wirkte kontextfrei — gemessen:
+    #
+    #     "in einer Woche um 14 Uhr"  ->  "in einer 14:00"
+    #     "Woche 32"                  ->  "32"
+    #
+    # Beides Ausdruecke, die vorher nicht falsch parsten, sondern gar nicht.
     ergebnis = re.sub(
-        r"\b([Bb]ereits|[Ss]chon)\s+(?=(\d+|" + _ZAHLWOERTER_PATTERN + r")\s+"
-        r"(tag|tage|tagen|woche|wochen|monat|monate|monaten|jahr|jahre|jahren)\b)",
+        r"\b[Ww]oche\s+(?=(" + "|".join(_WOCHENTAGE) + r")\b)",
         "", ergebnis, flags=re.IGNORECASE,
     )
-
-    ergebnis = re.sub(r"\b[Ww]oche\s+", "", ergebnis)
 
     # ── 9. Orphaned "um" vor Uhrzeiten entfernen ──
     ergebnis = re.sub(r'\bum\s+(\d{1,2}:\d{2})', r'\1', ergebnis)
@@ -491,7 +769,7 @@ def _text_normalisieren(text: str) -> tuple[str, bool]:
     if ergebnis != text:
         logger.info(f"Zeitparser: Normalisiert '{text}' -> '{ergebnis}'")
 
-    return ergebnis, hat_uebernachst
+    return ergebnis
 
 
 def zeit_parsen(
@@ -510,8 +788,30 @@ def zeit_parsen(
     Returns:
         datetime (timezone-aware UTC) oder None wenn nicht aufloesbar
     """
+    ergebnis, _befund, _korrigiert, _normalisiert = _aufloesen(
+        text, referenz, zukunft_bevorzugt,
+    )
+    return ergebnis
+
+
+def _aufloesen(
+    text: str,
+    referenz: Optional[datetime],
+    zukunft_bevorzugt: bool,
+) -> tuple[Optional[datetime], MarkerBefund, str, str]:
+    """Der gemeinsame Weg von `zeit_parsen` und `zeit_parsen_vektor`.
+
+    Einmal Fuzzy, einmal Marker, einmal Normalisierung. Bis Phase 2 lief
+    `zeit_parsen_vektor` die ersten beiden Schritte fuer die
+    Komponentenerkennung und rief dann `zeit_parsen` mit dem ORIGINALTEXT,
+    das beides erneut tat — doppelte Arbeit und zwei Durchlaeufe, die
+    auseinanderlaufen konnten, sobald einer von ihnen Zustand bekam.
+
+    Returns:
+        (datum, befund, korrigiert, normalisiert)
+    """
     if not text or not text.strip():
-        return None
+        return None, MarkerBefund(), "", ""
 
     if referenz is None:
         referenz = datetime.now(timezone.utc)
@@ -519,10 +819,27 @@ def zeit_parsen(
     # Schritt 1: Fuzzy-Korrektur
     korrigiert: str = _fuzzy_korrektur(text)
 
-    # Schritt 2: Normalisierung fuer dateparser
-    normalisiert, hat_uebernachst = _text_normalisieren(korrigiert)
+    # Schritt 2: Marker lesen — der Rumpf geht weiter, die Richtung in den Befund
+    rumpf, befund = _marker_extrahieren(korrigiert)
 
-    # Schritt 3: Drei Parse-Pfade
+    # Schritt 3: Normalisierung fuer dateparser (kennt keine Richtung mehr)
+    normalisiert: str = _text_normalisieren(rumpf)
+
+    # DIE RICHTUNG WIRD UEBERGEBEN, nicht nur berechnet.
+    #
+    # Bis zum 30.07.2026 wurde sie in `zeit_parsen_vektor` ermittelt,
+    # zurueckgegeben — und nicht weitergereicht: `zeit_parsen` bekam nur
+    # `zukunft_bevorzugt`, und ein rueckwaerts gerichteter Ausdruck loeste
+    # trotzdem nach vorn auf ("letzte fuenf Wochen" ergab ein Datum fuenf
+    # Wochen in der ZUKUNFT). Seit Phase 2 steht die Auswertung hier, im
+    # gemeinsamen Weg — jeder Aufrufer bekommt sie, auch die, die nur
+    # `zeit_parsen` benutzen (`agents/timeline/suche.py`, `agents/kzg/magnete.py`).
+    #
+    # Ein berechneter Wert ohne Wirkung ist schlimmer als keiner: Er sieht
+    # im Rueckgabewert nach einer getroffenen Entscheidung aus.
+    zukunft: bool = zukunft_bevorzugt and not befund.rueckwaerts
+
+    # Schritt 4: Drei Parse-Pfade
     tz = ZoneInfo(TIMEZONE)
 
     # Die Referenz wird in die Ortszone GEDREHT, nicht ihres Zonenvermerks
@@ -543,7 +860,7 @@ def zeit_parsen(
 
     settings: dict = {
         "RELATIVE_BASE": referenz_lokal.replace(tzinfo=None),
-        "PREFER_DATES_FROM": "future" if zukunft_bevorzugt else "past",
+        "PREFER_DATES_FROM": "future" if zukunft else "past",
         "TIMEZONE": TIMEZONE,
         "RETURN_AS_TIMEZONE_AWARE": True,
         "DATE_ORDER": "DMY",
@@ -618,14 +935,17 @@ def zeit_parsen(
 
     if ergebnis is None:
         logger.warning(f"Zeitparser: '{text}' konnte nicht aufgeloest werden")
-        return None
+        return None, befund, korrigiert, normalisiert
 
-    logger.info(f"Zeitparser: '{text}' -> {ergebnis.isoformat()} (Pfad {pfad})")
+    logger.info(
+        f"Zeitparser: '{text}' -> {ergebnis.isoformat()} (Pfad {pfad}, "
+        f"Richtung {befund.richtung}, Regeln {befund.regel_ids or '-'})"
+    )
 
-    # Schritt 3b: "uebernachste Woche" -> +7 Tage Offset
-    if hat_uebernachst:
-        ergebnis = ergebnis + timedelta(days=7)
-        logger.info(f"Zeitparser: 'uebernachst' erkannt -> +7 Tage Offset")
+    # Schritt 4b: "uebernaechste Woche" -> +7 Tage
+    if befund.versatz_tage:
+        ergebnis = ergebnis + timedelta(days=befund.versatz_tage)
+        logger.info(f"Zeitparser: Versatz {befund.versatz_tage} Tage")
 
     # Schritt 4: Plausibilitaets-Check
     diff: timedelta = ergebnis - referenz
@@ -636,7 +956,7 @@ def zeit_parsen(
             f"Zeitparser: '{text}' -> {ergebnis.isoformat()} "
             f"liegt > 2 Jahre in der Vergangenheit, verwerfe"
         )
-        return None
+        return None, befund, korrigiert, normalisiert
 
     # Mehr als 5 Jahre in der Zukunft?
     if diff.days > 1825:
@@ -644,9 +964,9 @@ def zeit_parsen(
             f"Zeitparser: '{text}' -> {ergebnis.isoformat()} "
             f"liegt > 5 Jahre in der Zukunft, verwerfe"
         )
-        return None
+        return None, befund, korrigiert, normalisiert
 
-    return ergebnis
+    return ergebnis, befund, korrigiert, normalisiert
 
 
 def zeit_parsen_vektor(
@@ -661,22 +981,30 @@ def zeit_parsen_vektor(
     'Freitag' -> tag_erkannt=True, uhrzeit_erkannt=False
     '15 Uhr' -> tag_erkannt=False, uhrzeit_erkannt=True
     'Freitag um 10 Uhr' -> tag_erkannt=True, uhrzeit_erkannt=True
+
+    Seit Phase 2 laeuft der Text EINMAL durch: `_aufloesen` liefert Datum,
+    Markerbefund und beide Textzustaende zurueck. Der frueher noetige zweite
+    Regex-Durchlauf auf dem korrigierten Text entfaellt — mit ihm die
+    Moeglichkeit, dass beide Durchlaeufe auseinanderlaufen.
     """
+    # ── Eingabe ─────────────────────────────────
     if not text or not text.strip():
-        return ZeitVektor(datum=None, tag_erkannt=False, uhrzeit_erkannt=False, referenz_modus="relativ")
+        return ZeitVektor(
+            datum=None, tag_erkannt=False, uhrzeit_erkannt=False,
+            referenz_modus="relativ",
+        )
 
-    # Schritt 1: Fuzzy-Korrektur (bestehend)
-    korrigiert: str = _fuzzy_korrektur(text)
+    # ── Verarbeitung ────────────────────────────
+    datum, befund, korrigiert, normalisiert = _aufloesen(
+        text, referenz, zukunft_bevorzugt,
+    )
 
-    # Schritt 2: Normalisierung (bestehend)
-    normalisiert, hat_uebernachst = _text_normalisieren(korrigiert)
-
-    # ── Uhrzeit-Erkennung ──
-    # Nach Normalisierung sind alle Uhrzeitformen (15 Uhr, halb drei, dreiviertel acht)
-    # in HH:MM umgewandelt. Wenn HH:MM vorhanden ist, hat der User eine Uhrzeit angegeben.
+    # Uhrzeit-Erkennung: Nach der Normalisierung sind alle Uhrzeitformen
+    # ("15 Uhr", "halb drei", "dreiviertel acht") in HH:MM umgewandelt.
     uhrzeit_erkannt: bool = bool(re.search(r'\d{1,2}:\d{2}', normalisiert))
 
-    # ── Tag-Erkennung ──
+    # Tag-Erkennung auf dem korrigierten Text — der Rumpf hat die Praefixe
+    # nicht mehr, der korrigierte Text schon.
     korrigiert_lower: str = korrigiert.lower()
     tag_erkannt: bool = (
         any(tag in korrigiert_lower for tag in _WOCHENTAGE)
@@ -687,46 +1015,10 @@ def zeit_parsen_vektor(
         or bool(re.search(r'\d{4}-\d{2}-\d{2}', korrigiert))
     )
 
-    # ── Referenz-Modus aus Praefixen bestimmen ──
-    # Erkennung auf korrigiertem Text VOR Normalisierung (Block 8 entfernt Praefixe)
-    if re.search(r'\b(diesen|diese[mrs]?)\b', korrigiert_lower):
-        referenz_modus: str = "absolut"
-    elif (re.search(r'\b(letzten?|vorigen?|vergangenen?|seit)\b', korrigiert_lower)
-          or re.search(_DAUER_ANDAUERND, korrigiert_lower)):
-        # `seit` gehoert hierher und nicht zu `vor`: Beide zeigen rueckwaerts,
-        # aber `vor` versteht dateparser selbst, waehrend `seit` ohne diese
-        # Zeile eine Dauer in die ZUKUNFT aufloest. `vor` steht bewusst NICHT
-        # in dieser Liste — es kommt auch in Uhrzeiten vor ("zehn vor acht"),
-        # und dort waere eine Rueckwaerts-Aufloesung falsch.
-        #
-        # `bereits` und `schon` markieren eine andauernde Sache und zeigen
-        # damit ebenfalls rueckwaerts: "das dauert bereits zwei Wochen" meint
-        # den Beginn vor zwei Wochen. Sie standen bis zum 31.07.2026 nicht
-        # hier — was folgenlos war, weil die Salienz-Extraktion sie ohnehin
-        # verwarf. Seit sie im Prompt ausdruecklich erhalten bleiben, kommen
-        # sie hier an und muessen gedeutet werden.
-        referenz_modus: str = "relativ_rueckwaerts"
-    else:
-        referenz_modus: str = "relativ"
-
-    # ── Datum parsen ──
-    # **Der Modus steuert die Richtung.** Bis zum 30.07.2026 wurde er hier
-    # berechnet, zurueckgegeben — und nicht uebergeben: `zeit_parsen` bekam
-    # nur `zukunft_bevorzugt`, und ein rueckwaerts gerichteter Ausdruck loeste
-    # trotzdem nach vorn auf. "letzte fuenf Wochen" ergab ein Datum fuenf
-    # Wochen in der Zukunft, obwohl der Modus `relativ_rueckwaerts` daneben
-    # stand (novaberg-bugs.md -> ZEIT-RUECKWAERTS-WIRD-ZUKUNFT).
-    #
-    # Ein berechneter Wert ohne Wirkung ist schlimmer als keiner: Er sieht im
-    # Rueckgabewert nach einer getroffenen Entscheidung aus.
-    rueckwaerts: bool = referenz_modus == "relativ_rueckwaerts"
-    datum: Optional[datetime] = zeit_parsen(
-        text, referenz, zukunft_bevorzugt and not rueckwaerts,
-    )
-
+    # ── Ausgabe ─────────────────────────────────
     return ZeitVektor(
         datum=datum,
         tag_erkannt=tag_erkannt,
         uhrzeit_erkannt=uhrzeit_erkannt,
-        referenz_modus=referenz_modus,
+        referenz_modus=befund.als_referenz_modus(),
     )
