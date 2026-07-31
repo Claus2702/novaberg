@@ -82,6 +82,8 @@ Der Gesprächsvektor hat seine Wahl damit bereits getroffen, bevor der Verfasser
 
 Das schärft den Satz aus §2. „Der Responder entscheidet keinen Inhalt mehr" heißt: **Er entscheidet keine Fakten.** Er fügt keine Behauptung hinzu, die im Verfasser-Ergebnis nicht stand. Bedeutung fügt er sehr wohl hinzu — das ist seine Aufgabe.
 
+> **Weglassen ist erlaubt, ergänzt am 31.07.2026.** Ursprünglich stand hier „und lässt keine weg". Das machte die Kürze-Regel unbefolgbar: Länge ist formal Stil, folgt aber aus dem Inhalt — solange der Responder nichts weglassen durfte, war für den Umfang **niemand** zuständig. Hinzufügen bleibt die harte Grenze; wie viel gesagt wird, entscheidet sie. Woraus sich das ergibt, steht in `novaberg-haltungsraum_k.md`.
+
 Daraus folgt unmittelbar, was der Thinker bewertet (§5.2).
 
 ### 2.4 Der Leitgedanke
@@ -90,7 +92,11 @@ Der Gesprächsvektor liefert heute einen `impuls` — im Prompt als *„Dein Lei
 
 **Der Leitgedanke geht an den Verfasser.** Er verändert, was gesagt wird: Eine Querverbindung oder eine Überraschung ist Inhalt, nicht Tonfall.
 
-**Der Zusatz entfällt.** „Finde deine eigenen Worte" ist ab dann keine Bitte mehr, sondern die Aufgabe der zweiten Stufe. Eine Anweisung, die beschreibt, was die Architektur ohnehin erzwingt, ist Prompt-Gewicht ohne Wirkung.
+~~**Der Zusatz entfällt.** „Finde deine eigenen Worte" ist ab dann keine Bitte mehr, sondern die Aufgabe der zweiten Stufe. Eine Anweisung, die beschreibt, was die Architektur ohnehin erzwingt, ist Prompt-Gewicht ohne Wirkung.~~ → **Widerlegt am 31.07.2026, live gemessen.**
+
+Der Schutz war tragend. Die Begründung enthielt ihr eigenes Gegenteil: §2.3 verbietet dem Responder, den Inhalt zu ändern — damit formuliert **niemand** um. Beim ersten Lauf reichte die Kette den Hypothesentext des Hintergrundagenten unverändert bis zum Nutzer durch.
+
+Der Schutz steht jetzt beim Verfasser, verschärft: *„Schreibe ihn niemals ab und übernimm keine seiner Formulierungen — er beschreibt, was der Nutzer tut, nicht was du sagst."* Der Zusatz ist wichtig — die Hypothese ist eine Beobachtung **über** den Nutzer; wörtlich weitergereicht wird sie zur Konfrontation.
 
 ---
 
@@ -175,7 +181,22 @@ Das neue State-Feld muss in `graph/state.py` deklariert **und** in `graph/base.p
 
 ---
 
+## 7. Die Regeln sind zur Probe ausgesetzt (31.07.2026)
+
+`[REGELN]` läuft nicht mehr — Antwortkürze, verbotene Floskeln, Butler-Prinzip, Tag-Unterdrückung, das Verbot falscher Erfolgsmeldungen.
+
+**Der Grund ist nicht Aufräumen.** Jede dieser Regeln ist gegen ein Verhalten gewachsen, das der überladene Prompt hervorbrachte: Ein Modell, das gleichzeitig Wissen sichten, Inhalt bestimmen und Form finden soll, greift zu Floskeln. Seit der Trennung ist diese Ursache weg — ob die Narben noch gebraucht werden, ist damit eine offene Frage, und sie ist nur zu beantworten, indem man sie einmal weglässt.
+
+**Belegt ist bereits, dass mindestens eine widersprach:** Die Regeln untersagten Rückfragen (*„Soll ich…?", „Möchtest du…?"*), während der Gesprächsvektor im selben Turn `Vehikel: Frage` und eine Landschaft mit *„Fragen: Mittel, neckisch, oft rhetorisch"* gewählt hatte. Ein pauschales Verbot schlug eine gemessene Vorgabe.
+
+**Der Prompt-Baustein bleibt bestehen; nur der Aufruf entfällt.** Zurückgeholt wird die einzelne Zeile, die sich als nötig zeigt — nicht der Block.
+
+**Erster Befund aus dem Betrieb:** Die Kürze fehlt. Sie kommt aber nicht als Regel zurück, sondern als Grenze aus dem Haltungsraum.
+
+---
+
 ## Versionshistorie
 
+- **v0.3 — 31.07.2026:** Zwei Aussagen live widerlegt und an ihrer Stelle markiert. §2.4 — der Schutz „der Leitgedanke ist die Richtung, nicht der Text" war **tragend**; ohne ihn formuliert niemand um, und die Kette reichte den Hypothesentext des Hintergrundagenten unverändert bis zum Nutzer durch. §2.3 — „lässt keine weg" machte die Kürze unbefolgbar und ist aufgehoben; hinzufügen bleibt verboten. Neu §7: Die Regeln sind zur Probe ausgesetzt, samt Beleg, dass mindestens eine der gemessenen Vorgabe des Gesprächsvektors widersprach. Woher die Länge stattdessen kommt, steht in `novaberg-haltungsraum_k.md`.
 - **v0.2 — 31.07.2026:** Zwei offene Punkte entschieden. Der Thinker bewertet weiterhin die **Endantwort**, weil erst Novas Art die vollständige Mitteilung ergibt — daraus §2.3, das den Satz „der Responder entscheidet keinen Inhalt" auf **Fakten** einschränkt: Bedeutung fügt er sehr wohl hinzu. Und es wird **kein Rückfallpfad** gebaut; der erwartete Fehlerfall ist nicht der Ausfall, sondern der inhaltliche Irrtum, und dagegen hilft nur die Messung. Ein technischer Ausfall bleibt laut.
 - **v0.1 — 31.07.2026:** Erstfassung. Die Trennlinie folgt dem Dreischicht-Modell des Gesprächsvektors: Strategie, Absicht und Vehikel gehören zum Inhalt, nicht zum Wesen. Der Responder verliert Gedächtnis und Web-Recherche vollständig; damit wird die Lehre aus den vier Fix-Iterationen von einer Fallunterscheidung zu einer Eigenschaft der Bauart. Zwei Alternativen mit Begründung verworfen (reine Verdichtung, strukturierter Antwortauftrag). Vier Punkte ausdrücklich offen.

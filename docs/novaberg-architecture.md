@@ -623,6 +623,7 @@ Das Handbuch ist nach Betrachtungstiefen organisiert. Tiefe 0 ist der Einstiegsp
 | novaberg-node-gv_k.md | Gespraechsvektor (Farbmisch-System, zweite Wissensquelle: ~~Entity-Hop~~ Resonanz-Kontext seit Chat 115) |
 | novaberg-gv-initiative_k.md | Initiative-Achse — Konzept: Herleitung, verworfene Wege, Kalibrier-Agent (Entwurf) |
 | novaberg-gv-initiative.md | Initiative-Achse — Modul: Datenfluss, Konstanten mit Kalibrierungsstand, Messungen |
+| novaberg-haltungsraum_k.md | Haltungsraum — Konzept: Fläche aus 14 Landschaften × 12 Zuwendungs-Speichen, aus der Grenzen für Umfang und Art folgen (⬜ nicht gebaut) |
 | novaberg-node-verfasser_k.md | Verfasser — Konzept: ein Node vor dem Responder, der den fachlichen Inhalt bestimmt; Inhalt und Wesen werden getrennt (⬜ nicht gebaut) |
 | novaberg-node-responder.md | Responder (Antwortgenerierung, EI-MIKRO) |
 | novaberg-node-thinker.md | Thinker (Faktenpruefung, Web-Suche) |
