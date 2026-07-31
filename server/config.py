@@ -80,6 +80,12 @@ ollama_gpu_client:  ollama.Client = ollama.Client(host=OLLAMA_GPU_URL)
 ollama_cpu_client:  ollama.Client = ollama.Client(host=OLLAMA_CPU_URL)
 
 # Connector-Definitionen (Modelle + Context)
+#
+# ACHTUNG, die Namen folgen keiner einheitlichen Regel: "mistral" und
+# "gemma4" sind nach ihrem GPU-Modell benannt, "qwen36" nach seinem
+# CPU-Modell. "gemma4" und "qwen36" fahren BEIDE gemma4-gpu im Gespraech und
+# unterscheiden sich ausschliesslich im Hintergrund. Wer qwen36 setzt und
+# erwartet, dass Qwen antwortet, irrt sich.
 OLLAMA_CONNECTORS: dict = {
     "mistral": {
         "gpu_model":       "mistral-small3.2-gpu",

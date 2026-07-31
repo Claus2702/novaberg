@@ -247,7 +247,7 @@ Die zentrale Konfiguration liegt in `server/config.py`. Alle Parameter sind übe
 | Variable | Werte | Effekt |
 |----------|-------|--------|
 | `LLM_PROFILE` | `lokal`, `claude` | Umschaltung zwischen Ollama und Anthropic API |
-| `OLLAMA_CONNECTOR` | `mistral`, `gemma4`, `qwen36` | Modell-Stack innerhalb von `lokal`. Die drei Modelle oben sind der `qwen36`-Stack und zugleich der Vorgabewert; die beiden anderen erwarten ein eigenes CPU-Sprachmodell, das erst gebaut werden muss. |
+| `OLLAMA_CONNECTOR` | `mistral`, `gemma4`, `qwen36` | Modell-Stack innerhalb von `lokal`. Vorgabewert ist `qwen36` — genau der Satz oben. **Der Name bezeichnet das Hintergrundmodell, nicht das antwortende** — `gemma4` und `qwen36` fahren beide Gemma auf der GPU und unterscheiden sich nur auf der CPU-Seite. Die beiden anderen Connectors erwarten CPU-Modelle, die erst gebaut werden müssen. |
 
 Feingranulare Parameter (Pixie-Intervalle, KZG-Thresholds, Such-Limits etc.) sind ebenfalls in `config.py` dokumentiert und über `PIXIE_*`-, `KZG_*`-, `NOTIZEN_*`-Variablen steuerbar.
 
