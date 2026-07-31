@@ -5,7 +5,7 @@
 **Stand:** 31. Juli 2026
 **Pfad:** novaberg/docs/novaberg-haltungsraum_k.md
 **Typ:** Konzept (`_k`)
-**Status:** ⬜ Konzept, nicht gebaut — Bauart entschieden (v0.3), Zahlen offen
+**Status:** ⬜ Konzept, nicht gebaut — Bauart und Ausgangswerte stehen (v0.4), Justierung folgt der Messung
 **Voraussetzung:** `novaberg-gv-strategie_k.md` (14 Cluster) · `novaberg-charakter-resonanz_k.md` (Räder)
 **Betrifft:** `novaberg-node-verfasser_k.md` · `novaberg-node-responder.md`
 
@@ -98,6 +98,52 @@ Drei Gründe sprechen für einen eigenen Knoten statt eines Anbaus an den Gespr�
 **Was in einer Zelle steht, sind Grenzen — kein Wert.** „Zwischen einem Satz und einem Absatz", nicht „37 Wörter". Der Unterschied ist der Zweck: Ein Korridor lässt ihr Spielraum, eine Zahl nimmt ihn.
 
 **Und die Länge ist nur die erste Größe, die man daran abliest.** Dieselbe Lage trägt auch, wie sie spricht — ob sie fragt oder feststellt, ob sie ausholt oder abbricht. Die Länge steht am Anfang, weil sie die messbarste ist, nicht weil sie die wichtigste wäre.
+
+### 2.0 Die Ausgangswerte
+
+**Gesetzt, um gemessen zu werden.** Diese Zahlen sind ein Entwurf und ausdrücklich kein Ergebnis — sie stehen hier, damit die erste Messreihe etwas hat, gegen das sie laufen kann. Ihre Justierung folgt aus den Messungen, nicht aus weiterem Nachdenken.
+
+**Eine Spalte ist nicht gesetzt, sondern übersetzt:** `Fragen` folgt `CLUSTER_FRAGEN`, das für alle vierzehn Landschaften bereits im Bestand steht. Die Grenzen sind ebenfalls abgelesen — sie stehen wörtlich in `CLUSTER_BESCHREIBUNGEN`.
+
+Skala 0.0 bis 1.0 je Größe: 0 = ein Satz · keine Fragen · distanziert · sachlich · zurückhaltend. `G` markiert eine **Grenze** (multipliziert), alles übrige ist **Neigung** (addiert).
+
+| Landschaft | Umfang | Fragen | Nähe | Wärme | Drängen | Grenze abgelesen aus |
+|---|---:|---:|---:|---:|---:|---|
+| feuerwerk | 0.8 | 0.9 | 0.9 | 0.9 | 0.7 | |
+| kissenschlacht | 0.3 | 0.6 | 0.8 | 0.9 | 0.5 | |
+| werkstatt | 0.9 | 0.9 | 0.5 | 0.5 | 0.7 | |
+| glut | 0.7 | 0.3 | 0.9 | 0.8 | 0.2 | |
+| bier | 0.5 | 0.5 | 0.8 | 0.8 | 0.3 | |
+| foyer | 0.7 | 0.5 | 0.3 | 0.5 | 0.3 | |
+| regen | 0.2 | 0.15 | 0.8 | 0.9 | **0.0 G** | „Halten, da sein" |
+| schmollen | 0.2 | 0.15 | 0.6 | 0.6 | **0.0 G** | „Nicht drängen" |
+| nebel | 0.15 | **0.0 G** | 0.5 | 0.6 | **0.0 G** | „Keine" · „Leise da sein" |
+| gewitter | 0.3 | **0.0 G** | 0.2 | 0.2 | 0.2 | „Keine — Spiegelung" |
+| schlachtfeld | 0.15 | 0.3 | 0.2 | 0.2 | 0.8 | |
+| beichte | 0.2 | 0.3 | 0.95 | 0.9 | **0.0 G** | „Erleichterung oder Katharsis" |
+| wartezimmer | 0.3 | 0.5 | 0.2 | 0.5 | 0.2 | |
+| paradox | 0.2 | **0.0 G** | 0.3 | 0.5 | **0.0 G** | „Vorsicht, beobachten" |
+
+Modifikation je Speiche bei voller Ausprägung; halbe Ausprägung wirkt halb. `Ü` markiert eine **Übersteuerung**:
+
+| Speiche | Umfang | Fragen | Nähe | Wärme | Drängen |
+|---|---:|---:|---:|---:|---:|
+| treue | | | +0.2 | +0.1 | −0.3 |
+| dienst | +0.2 | | | | +0.3 |
+| pflicht | +0.2 | −0.2 | | | +0.1 |
+| aufmerksamkeit | | +0.2 | +0.2 | | |
+| wissbegier | +0.3 | **+0.4 Ü** | | | +0.2 |
+| wohlwollen | | | +0.1 | +0.4 | |
+| selbstbezogen | +0.1 | −0.2 | −0.3 | | +0.3 |
+| gleichgueltig | −0.3 | −0.2 | −0.2 | −0.4 | |
+| widerspenstig | | | | −0.3 | +0.3 |
+| distanz | −0.3 | | **−0.5 Ü** | −0.2 | |
+| langeweile | −0.4 | −0.3 | | −0.2 | −0.2 |
+| misstrauen | | +0.1 | −0.2 | −0.4 | |
+
+**Zwei Übersteuerungen, bewusst wenige.** `wissbegier` bei voller Ausprägung durchbricht das Fragenverbot — eine brennend neugierige Nova fragt auch im Gewitter. `distanz` bei 1.0 übersteuert die Nähe, gleich wie warm die Landschaft ist. Die übrigen Grenzen halten unter jedem Charakter.
+
+**Was am Entwurf unsicher ist**, damit die Messung weiß, wo sie hinsehen soll: `misstrauen` mit `+0.1` auf Fragen ist der einzige Beitrag, der einer Abwendungs-Speiche eine Zuwendungs-Wirkung gibt — wer skeptisch liest, hakt nach; er kann ebenso gut null sein. Und `Umfang` bekommt seine Bewegung fast nur von der Abwendungsseite.
 
 ### 2.0a Das Ergebnis ist sichtbar, bei jeder Antwort
 
@@ -229,7 +275,8 @@ Eine Übersteuerung ist keine Ausnahme von der Fläche, sondern eine Eigenschaft
 - ~~**Die zwölf Speichen des Zuwendungs-Rades sind hier nicht benannt.** Sie liegen als JSON in der Destillation (`rad_roh`), nicht als Konstante.~~ → **Erledigt am 31.07.2026, und die Begründung war falsch.** Die Speichen **sind** Konstanten: `RAD_ZUG_HOCH` und `RAD_ZUG_RUNTER` in `agents/charakter/destillation.py`, dokumentiert in `novaberg-salienz-berechnung_k.md` §5. `rad_roh` trägt nur die Ausprägung je Paar. Die zwölf Namen stehen dort samt Gegenpol-Anordnung.
 - **Die Zellen selbst.** Das ist die eigentliche Arbeit und eine Setzung. Belegt sind bisher nur die zwei Pole: `Glut × Wohlwollen` weit, `Schlachtfeld × Abwendung` eng. **Beide sind noch auf die neue Adressierung zu übersetzen** (§2): Der eine nennt eine Speiche, der andere eine ganze Seite — als Sektor-und-Ausschlag ist keiner von beiden bereits ausgedrückt.
 - ~~**Wie viele Sektoren die Fläche bekommt.**~~ → **Gegenstandslos seit dem Beitragsmodell** (§2). Es gibt keine Sektoren mehr; die frühere Angabe „168" setzte zwölf diskrete Speichenpositionen voraus und gilt nicht.
-- **Die Zahlen selbst.** 14 Cluster-Sets und 12 Speichen-Sets zu je fünf Größen sind zu setzen, dazu je Zelle die Rechenart. Belegt sind bisher nur zwei Pole: `Glut × Wohlwollen` weit, `Schlachtfeld × Abwendung` eng — und `CLUSTER_FRAGEN` als bereits gesetzte Spalte für alle 14 Landschaften.
+- ~~**Die Zahlen selbst.**~~ → **Entwurf steht** (§2.0), gesetzt zum Messen. Was daraus wird, entscheidet die erste Messreihe.
+- **Die obere Grenze, und sie ist am Entwurf schon aufgetreten.** Bei reiner Addition läuft `Wärme` über: Grundwert `glut` 0.8 plus 0.35 aus dem Rad ergibt 1.15, bei `feuerwerk` sogar 1.25 und `Fragen` 1.40. Gekappt wird nicht (§3.1) — es bleiben zwei Wege. **Kleinere Beiträge**, sodass die Summe passt; das ist die Bauart des Charakter-Rades, wo die Züge die Grenzen exakt treffen, funktioniert dort aber nur, weil die Nabe fest ist. Oder **Sättigung auf die Summe**: `neu = grund + summe × (1 − grund)` nach oben, `grund + summe × grund` nach unten — erst summieren, dann einmal sättigen, damit die Reihenfolge nichts entscheidet. Die zweite Bauart kann die Grenze nicht überschreiten, statt an ihr abgeschnitten zu werden, und sagt inhaltlich etwas: Wo die Lage schon warm ist, fügt der Charakter wenig hinzu; wo sie kalt ist, macht er den Unterschied. Ihr Preis ist, dass die Beiträge gestaucht werden und die Skala nicht mehr linear zu lesen ist. **Entschieden wird nach der ersten Messreihe, nicht davor** — eine Übersteuerung bleibt in jedem Fall ausgenommen, sonst wäre ihre Markierung sinnlos.
 - **Ob es fünf gleichrangige Größen sind.** Im abgeleiteten Entwurf hängt `Drängen` an vier Speichen, `Wärme` fast nur an der Deutungsachse. Möglicherweise sind es drei starke und zwei schwache. Das zeigt sich erst an den gesetzten Zahlen und gehört gemessen, bevor alle fünf gleich ernst genommen werden.
 - **Ob eine Speiche je Ausprägungsstufe ein eigenes Set braucht.** Multiplikativ mit 0.5 und 1.0 sind es 26 Sets, je Stufe eigene wären es 38. Die zweite Bauart erlaubt Nichtlinearität — „halb distanziert ist kaum etwas, ganz distanziert ändert alles". Anfangen mit der ersten, nachschärfen, wenn die Messung es verlangt.
 - **Die Ablösung der bestehenden Längenregel.** `_ei_mikro_anweisung` setzt die Länge heute in jedem Turn allein aus dem Arousal, mit nicht-monotoner Kurve (hoch und niedrig kurz, die Mitte länger). Sie muss abgelöst und nicht ergänzt werden, sonst hat der Umfang zwei Erzeuger.
@@ -241,6 +288,7 @@ Eine Übersteuerung ist keine Ausnahme von der Fläche, sondern eine Eigenschaft
 
 ## Versionshistorie
 
+- **v0.4 — 31.07.2026:** §2.0 trägt die **Ausgangswerte** — 14 Cluster-Sets und 12 Speichen-Sets, gesetzt zum Messen und nicht als Ergebnis. Die Spalte `Fragen` ist aus `CLUSTER_FRAGEN` übersetzt statt gesetzt, die Grenzen sind wörtlich aus `CLUSTER_BESCHREIBUNGEN` abgelesen. Zwei Übersteuerungen sind vorgesehen, beide an den Grenzen, die am ehesten überschreitbar sein sollten. Am Entwurf trat sofort die **obere Grenze** auf: `Wärme` läuft bei reiner Addition über 1.0 hinaus. Beide Auswege stehen in §6 mit ihren Preisen; entschieden wird nach der ersten Messreihe, weil eine Setzung an der Messung justiert wird und nicht am Schreibtisch.
 - **v0.3 — 31.07.2026:** **Die Fläche wird ein Beitragsmodell.** Statt Zellen einer Matrix trägt jeder Cluster und jede Speiche ein Set von Beiträgen auf **fünf Verhaltensgrößen** — Umfang, Fragefreudigkeit, Nähe, Wärme, Drängen —, abgeleitet aus den Dimensionen, die die vorhandenen Prompt-Anweisungen ansprechen. Der Cluster setzt den Grundwert, der Charakter modifiziert ihn: **Grenzen multiplizieren, Neigungen addieren, Übersteuerungen ersetzen.** Übersteuern ist ausdrücklich erlaubt — ein System, das nur vernünftige Zustände kennt, bildet kein Wesen ab —, wird aber **markiert**, weil sonst Absicht und Rechenfehler ununterscheidbar werden. Damit entfällt die Vektorgeometrie: kein Sektor, kein Ausschlag, kein Geometriefaktor (§2.2a bleibt mit Begründung stehen). Die Gegenpol-Anordnung behält Geltung, aber nur für die Anzeige. Neu §2.0a: Das Ergebnis geht über `log_berechnung` ins `pipeline_log` — drei Zahlen je Größe, verknüpft über die `turn_id`, **kein Redis-Blob** —, dazu eine Zeile in der Spur. Die Rechnung sitzt in einem **eigenen Knoten vor der Verzweigung zum Verfasser**: Der Verfasser muss den Umfang kennen, bevor er den Inhalt zusammenstellt, und er wird beim Kontext-Schnitt übersprungen. §2.1 trägt den Nachtrag, warum der einst verworfene additive Weg nun doch gegangen wird und welcher Teil des Einwands bleibt.
 - **v0.2 — 31.07.2026:** Die zweite Achse ist entschieden: **Die Zuwendung ist ein Punkt, kein Speichenwert.** Die belegten Speichen addieren sich vektoriell zu Sektor und Ausschlag; damit kann Distanz Wohlwollen herunterziehen, ohne es auszulöschen. Anlass war eine Messung an beiden vorhandenen Rädern — `wissbegier` und `distanz` stehen gleichzeitig auf 1.0, eine Position auf zwölf diskreten Werten gibt es nicht. Neu §2.2a: **Zug und Geometriefaktor sind zwei Größen.** Nimmt man den Zug als Speichenlänge, reicht der Ausschlag Richtung `treue` achtmal so weit wie Richtung `misstrauen` — die halbe Fläche wird unerreichbar —, und die Richtung folgt der Zugstärke statt der Messung. Die Angabe „168 Zellen" ist damit überholt und an allen vier Stellen aufgelöst; die Zahl folgt erst aus der gewählten Sektor- und Ausschlagsteilung. Der offene Punkt zu den zwölf Speichen ist erledigt und trug eine falsche Begründung: Sie sind Konstanten, kein JSON.
 - **v0.1 — 31.07.2026:** Erstfassung, ausgelöst von einer gemessenen Fehlantwort: zwei Absätze Seminarsprache auf einen lockeren Einzeiler. Die ausgesetzte Kürze-Regel erwies sich beim Zurückholen als doppelt falsch — falscher Node und falsches Kriterium. Der additive Entwurf ist mit Begründung verworfen: Er unterstellt eine Gerade zwischen den Polen, während einzelne Kombinationen eigene Zustände sind. Vorbild ist die Verteilung der 64 Sektoren, die auch gesetzt und nicht gerechnet wurde.
