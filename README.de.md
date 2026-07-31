@@ -179,7 +179,7 @@ Das Repository liegt in einem Projektverzeichnis neben den Runtime-Dateien:
 cd ..
 mkdir searxng
 cp novaberg/.env.template .env
-cp novaberg/docker-compose.example.yml docker-compose.yml
+cp novaberg/docker-compose.template.yml docker-compose.yml
 ```
 
 ### 3. `.env` ausfüllen
@@ -247,12 +247,12 @@ Die zentrale Konfiguration liegt in `server/config.py`. Alle Parameter sind übe
 | Variable | Werte | Effekt |
 |----------|-------|--------|
 | `LLM_PROFILE` | `lokal`, `claude` | Umschaltung zwischen Ollama und Anthropic API |
-| `OLLAMA_CONNECTOR` | `mistral`, `gemma4`, `qwen36` | Modell-Stack innerhalb von `lokal`. Die drei Modelle oben sind der `qwen36`-Stack — ausdrücklich setzen, denn der eingebaute Vorgabewert ist weiterhin `gemma4` und erwartet ein eigenes CPU-Sprachmodell. |
+| `OLLAMA_CONNECTOR` | `mistral`, `gemma4`, `qwen36` | Modell-Stack innerhalb von `lokal`. Die drei Modelle oben sind der `qwen36`-Stack und zugleich der Vorgabewert; die beiden anderen erwarten ein eigenes CPU-Sprachmodell, das erst gebaut werden muss. |
 
 Feingranulare Parameter (Pixie-Intervalle, KZG-Thresholds, Such-Limits etc.) sind ebenfalls in `config.py` dokumentiert und über `PIXIE_*`-, `KZG_*`-, `NOTIZEN_*`-Variablen steuerbar.
 
 > **Sicherheitshinweis (Dev-Only-Defaults):**
-> Die Default-Werte in `config.py` und `docker-compose.example.yml` enthalten PostgreSQL-Credentials `ki:ki`. Diese sind ausschließlich für die lokale Entwicklungsumgebung gedacht. Für einen Produktionsbetrieb müssen `POSTGRES_URL` bzw. `POSTGRES_PASSWORD` zwingend in der `.env` auf eigene, sichere Werte gesetzt werden. Die `.env` darf nicht ins Repository eingecheckt werden.
+> Die Default-Werte in `config.py` und `docker-compose.template.yml` enthalten PostgreSQL-Credentials `ki:ki`. Diese sind ausschließlich für die lokale Entwicklungsumgebung gedacht. Für einen Produktionsbetrieb müssen `POSTGRES_URL` bzw. `POSTGRES_PASSWORD` zwingend in der `.env` auf eigene, sichere Werte gesetzt werden. Die `.env` darf nicht ins Repository eingecheckt werden.
 
 ---
 

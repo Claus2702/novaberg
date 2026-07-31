@@ -179,7 +179,7 @@ The repository goes inside a project directory alongside runtime files:
 cd ..
 mkdir searxng
 cp novaberg/.env.template .env
-cp novaberg/docker-compose.example.yml docker-compose.yml
+cp novaberg/docker-compose.template.yml docker-compose.yml
 ```
 
 ### 3. Configure `.env`
@@ -247,12 +247,12 @@ Central configuration lives in `server/config.py`. All parameters can be overrid
 | Variable | Values | Effect |
 |----------|--------|--------|
 | `LLM_PROFILE` | `lokal`, `claude` | Switch between Ollama and Anthropic API |
-| `OLLAMA_CONNECTOR` | `mistral`, `gemma4`, `qwen36` | Model stack within `lokal`. The three models above are the `qwen36` stack — set it explicitly, since the built-in default is still `gemma4`, which expects a separate CPU language model. |
+| `OLLAMA_CONNECTOR` | `mistral`, `gemma4`, `qwen36` | Model stack within `lokal`. The three models above are the `qwen36` stack, which is the default; the other two expect a separate CPU language model that has to be built first. |
 
 Fine-grained parameters (Pixie intervals, STM thresholds, search limits, etc.) are also documented in `config.py` and controllable via `PIXIE_*`, `KZG_*`, `NOTIZEN_*` variables.
 
 > **Security note (dev-only defaults):**
-> Default values in `config.py` and `docker-compose.example.yml` contain PostgreSQL credentials `ki:ki`. These are intended for local development only. For any other deployment, set `POSTGRES_URL` / `POSTGRES_PASSWORD` to secure values in your `.env`. The `.env` file must never be committed to the repository.
+> Default values in `config.py` and `docker-compose.template.yml` contain PostgreSQL credentials `ki:ki`. These are intended for local development only. For any other deployment, set `POSTGRES_URL` / `POSTGRES_PASSWORD` to secure values in your `.env`. The `.env` file must never be committed to the repository.
 
 ---
 

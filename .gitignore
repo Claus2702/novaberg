@@ -17,6 +17,10 @@ env/
 # Environment & Secrets
 .env
 .env.*
+# Ausnahme: Die Vorlage traegt nur Schluesselnamen und Platzhalter, keine
+# Werte. Ohne diese Zeile schluckt `.env.*` sie mit — und die Anleitung
+# laesst eine Datei kopieren, die im Repositorium nie ankommt.
+!.env.template
 *.key
 *.pem
 

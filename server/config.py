@@ -68,7 +68,7 @@ LLM_PROFILE: str = os.getenv("LLM_PROFILE", "lokal")
 # "mistral" = Mistral Small 3.2 (bisheriger Standard)
 # "gemma4"  = Google Gemma 4 26B-A4B (MoE, 3.8B aktiv)
 # "qwen36"  = Qwen 3.6 35B-A3B (MoE, 3B aktiv)
-OLLAMA_CONNECTOR: str = os.getenv("OLLAMA_CONNECTOR", "gemma4")
+OLLAMA_CONNECTOR: str = os.getenv("OLLAMA_CONNECTOR", "qwen36")
 
 # ─────────────────────────────────────────────
 # Ollama — Verbindungen + Connector-Modelle (immer aktiv)

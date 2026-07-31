@@ -79,7 +79,7 @@ services:
       OLLAMA_CPU_URL:    http://host.docker.internal:11435
       REDIS_URL:         redis://redis:6379
       POSTGRES_URL:      postgresql://ki:ki@postgres:5432/gedaechtnis
-      OLLAMA_CONNECTOR:  gemma4
+      OLLAMA_CONNECTOR:  qwen36
       # v2-moe seit A4 (Chat 107, EMBEDDING-CASING-BLIND). Vor dem ersten Start:
       # ollama pull nomic-embed-text-v2-moe  (955 MB VRAM, passt neben gemma4-gpu)
       EMBED_MODEL:       nomic-embed-text-v2-moe
