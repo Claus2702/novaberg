@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Backlog — Konzipierte, noch nicht implementierte Features
-**Stand:** 31. Juli 2026 (Abschnitt „Haltungsraum — der unterbrochene Sprint" ergänzt — vier Einträge: der fehlende Knoten, das fehlende Protokoll, die offenen Spannenenden und die abzulösende Längenregel. Zuvor: Abschnitt „Zeitparser und Kalibrierung" ergänzt — vier Einträge aus dem Korpus-Erstlauf und der Neuerhebung der Positions-Kontrolle. Zuvor: Chat 117, zwei KZG-Einträge gegen den Code nachgezogen. Kern: Chat 111)
+**Stand:** 31. Juli 2026, abends (`HALTUNG-KNOTEN-FEHLT` geschlossen, `HALTUNG-SPANNENENDEN-OFFEN` um die erste Messung am echten Turn ergänzt. Zuvor: Abschnitt „Haltungsraum — der unterbrochene Sprint" ergänzt — vier Einträge: der fehlende Knoten, das fehlende Protokoll, die offenen Spannenenden und die abzulösende Längenregel. Zuvor: Abschnitt „Zeitparser und Kalibrierung" ergänzt — vier Einträge aus dem Korpus-Erstlauf und der Neuerhebung der Positions-Kontrolle. Zuvor: Chat 117, zwei KZG-Einträge gegen den Code nachgezogen. Kern: Chat 111)
 **Pfad:** novaberg/docs/novaberg-backlog.md
 **Quellen:** nova-08-k.md (Kognitive Anreicherung), nova-10-k-backlog.md (Skill-System), nova-01-t-c-backlog.md (Node-Konfiguration)
 
@@ -24,7 +24,17 @@ Das System wurde zu diesem Zeitpunkt auf einen leeren Datenbestand zurückgesetz
 
 Die Rechnung steht und ist geprüft, sie wirkt aber nirgends: Kein Knoten ruft sie, kein Protokoll trägt sie, kein Prompt liest sie. **Der Sprint ist bewusst hier unterbrochen**, weil der Rest in den Graphen eingreift.
 
-#### HALTUNG-KNOTEN-FEHLT — die Rechnung hat keinen Aufrufer
+> **Stand 31.07.2026, abends:** Knoten **und** Protokoll sind gebaut, der erste Satz gilt also nicht mehr — die Rechnung läuft in jedem Turn, steht im `pipeline_log` und in der Spur. Es bleibt: **kein Prompt.** Damit ist Novas Verhalten weiterhin unverändert, und die Zahlen lassen sich gegen echte Turns prüfen, ohne diese Turns beeinflusst zu haben. **Die Messreihe kann beginnen.**
+
+#### HALTUNG-KNOTEN-FEHLT — die Rechnung hat keinen Aufrufer ✅ **erledigt am 31.07.2026**
+
+Gebaut als `graph/nodes/haltung.py`, im Graphen als Knoten `haltungsraum` zwischen `gv_node` und der Verzweigung. Kanal `haltung` in `graph/state.py` deklariert und **nicht** vorbelegt. Belegt an einem echten Turn: `beichte · umfang 0.60 · fragen 0.80 · naehe 1.25 ! · waerme 1.35 ! · draengen 0.00 [Grenze]`, Rad destilliert, zwölf Speichen.
+
+**Was der Eintrag verlangte und was daraus wurde:** Die Kanalfalle war real — die Gegenprobe ohne Deklaration ergab im Folgeknoten `FEHLT` statt des Werts. Neu dazugekommen ist eine Randbedingung, die niemand genannt hatte: Ein Knoten darf nicht heißen wie ein Zustandsschlüssel; das Framework lehnt ihn ab.
+
+**Der Rest bleibt offen:** Kein Prompt liest die Werte, kein Protokoll trägt sie. Novas Verhalten ist unverändert — das ist die Reihenfolge des Sprints, kein Versehen.
+
+Die ursprüngliche Fassung des Eintrags:
 
 `ei/haltung.py` und `memory/charakter.py → nutzer_gewichtung_rad_laden()` sind gebaut und getestet. Es fehlt der Knoten, der beides verbindet.
 
@@ -34,7 +44,23 @@ Die Rechnung steht und ist geprüft, sie wirkt aber nirgends: Kein Knoten ruft s
 
 **Aufwand:** ein Knoten, eine Kanaldeklaration, eine Verdrahtung. **Priorität:** hoch — ohne ihn ist alles Gebaute wirkungslos.
 
-#### HALTUNG-PROTOKOLL-FEHLT — das Ergebnis ist nicht sichtbar
+#### GRAPH-SACKGASSE-UNGEPRUEFT — ein Knoten ohne Ausgang fällt nicht auf
+
+Beim Bau des Haltungs-Knotens vorgeführt: Wird die abgehende Kante eines Knotens umgehängt, bleibt er als **Sackgasse** im Graphen stehen, und `compile()` nimmt das widerspruchslos an. Der Knoten läuft dann noch, sein Ergebnis erreicht aber niemanden — sichtbar erst an der ausbleibenden Wirkung.
+
+**Prüfbar und ungeprüft:** Ein Test über die kompilierten Graphen, der für jeden registrierten Knoten mindestens eine eingehende und eine ausgehende Kante verlangt (Ausnahmen: Eintritts- und Endknoten). Die Kantenliste ist ohne Redis und Postgres abfragbar — `CharacterGraph.build(object.__new__(CharacterGraph))` genügt.
+
+**Priorität:** mittel. Der Fall ist heute nicht im Bestand, aber lautlos, wenn er eintritt.
+
+#### HALTUNG-PROTOKOLL-FEHLT — das Ergebnis ist nicht sichtbar ✅ **erledigt am 31.07.2026**
+
+Gebaut im rechnenden Knoten: `log_berechnung` mit drei Zahlen je Größe, Rechenart und Auslöser, dazu `ausserhalb` und `uebersteuert` als zählbare Listen obenauf. Die Spur zeigt `Haltung.kurzfassung()`, ein Turn ohne Rechnung zeigt dort **„nicht gerechnet"** statt des Vorgabestrichs.
+
+**Zwei Entscheidungen, die der Eintrag offengelassen hatte.** Ein **Ausfall** wird als `fehler`-Zeile geführt: keine Berechnungszeile mit Nullen, die wie eine gemessene Haltung ohne Ausschlag aussähe — aber auch kein Schweigen, denn die Häufigkeit der Ausfälle gehört zur Messreihe. Und `quelle` kommt aus `pipeline_quelle(state)` wie bei Enricher und Salienz, nicht als Literal wie im GV-Node.
+
+**Belegt am echten Turn:** Die Zeile steht mit `quelle='character'` im `pipeline_log`, und der Join gegen den Rohturn liefert Haltung und Antwortlänge nebeneinander — `beichte`, Umfang 0.60, 1623 Zeichen Antwort, 2725 Zeichen Verfasser-Inhalt.
+
+Die ursprüngliche Fassung des Eintrags:
 
 Drei Zahlen je Größe (Grundwert, Modifikation, Ergebnis) plus Rechenart und Übersteuerungsmarke gehören über `log_berechnung` ins `pipeline_log`, geschrieben vom rechnenden Knoten. Der Eintrag trägt eine `turn_id` und steht damit neben `log_turn_roh` desselben Turns.
 
@@ -47,6 +73,8 @@ Dazu eine Zeile in der Spur (`services/event_consumer.py`), damit das Ergebnis b
 #### HALTUNG-SPANNENENDEN-OFFEN — die Zahlen verlassen den Korridor
 
 Gemessen am Entwurf: `glut/waerme` ergibt 1.15, `feuerwerk/fragen` 1.40, und nach unten reicht **eine** voll ausgeprägte Speiche — `glut/draengen` fällt mit `treue` auf −0.10.
+
+**Erster echter Turn, 31.07.2026, 20:35 UTC:** Landschaft `beichte`, **zwei von fünf** Größen außerhalb — `naehe` 1.25, `waerme` 1.35. Ein Datenpunkt ist keine Häufigkeit, aber er verschiebt die Erwartung: Der Überlauf tritt nicht selten auf, sondern im ersten Lauf.
 
 Nicht gekappt, sondern gemeldet und markiert; die Häufigkeit ist die Messgröße, die zwischen zwei Auswegen entscheidet. **Kleinere Beiträge** oder **Sättigung auf die Summe** — beide stehen mit ihren Preisen in `novaberg-haltungsraum_k.md` §6.
 

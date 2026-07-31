@@ -5,7 +5,7 @@
 **Stand:** 31. Juli 2026
 **Pfad:** novaberg/docs/novaberg-haltungsraum_k.md
 **Typ:** Konzept (`_k`)
-**Status:** ⬜ Konzept, nicht gebaut — Bauart und Ausgangswerte stehen (v0.4), Justierung folgt der Messung
+**Status:** 🔶 teilweise gebaut — Rechnung, Lader, **Knoten** und **Protokoll** stehen und laufen im Produktivsystem (31.07.2026); es fehlen der Prompt-Block (§3) und die Ablösung der alten Längenregel (§6). **Nova verhält sich noch unverändert:** Die Haltung wird gerechnet, protokolliert und angezeigt, aber kein Prompt liest sie.
 **Voraussetzung:** `novaberg-gv-strategie_k.md` (14 Cluster) · `novaberg-charakter-resonanz_k.md` (Räder)
 **Betrifft:** `novaberg-node-verfasser_k.md` · `novaberg-node-responder.md`
 
@@ -89,6 +89,10 @@ außerhalb + unmarkiert           Rechenfehler, laut
 
 **Der Responder kommt dafür zu spät, und der Verfasser ist der falsche Ort.** Bei `task_context_cut` wird der Verfasser übersprungen (`character_graph.py`, `_after_gv`) — eine Rechnung in ihm fiele in genau der Lage aus, in der der Responder allein steht. Der Knoten gehört deshalb **vor** die Verzweigung, wo er in jedem Turn läuft.
 
+> **Gebaut am 31.07.2026.** Der Knoten heißt `haltungsraum` und sitzt zwischen `gv_node` und der Verzweigung; die bedingte Kante hängt seither an ihm statt am GV-Node, das Kriterium (`task_context_cut`) ist unverändert. Sein Ergebnis steht als `state["haltung"]`, deklariert in `graph/state.py`. **Der Node heißt nach dem Raum, der Kanal nach seinem Ergebnis** — nicht nur der Lesbarkeit wegen: Das Graphframework lehnt einen Knoten ab, der wie ein Zustandsschlüssel heißt.
+>
+> **Der Schlüssel wird nicht vorbelegt**, und das gehört zur Bauart: Fehlt er, ist die Rechnung nicht gelaufen. Ein leerer Startwert machte das von „alles auf null" ununterscheidbar, bevor irgendeine Prüfung stattfinden kann.
+
 Drei Gründe sprechen für einen eigenen Knoten statt eines Anbaus an den Gesprächsvektor:
 
 - Er trifft eine eigene Entscheidung und schreibt sie selbst ins Protokoll (`novaberg-node-verfasser_k.md` folgt demselben Muster).
@@ -161,6 +165,19 @@ Haltung · Umfang 0.5 (glut 0.8 − distanz) · Fragen 0.6 ÜBERSTEUERT (wissbeg
 ```
 
 Ein Turn ohne Rechnung trägt **keine** Zeile statt einer leeren — „nicht gelaufen" muss von „alles auf null" unterscheidbar bleiben.
+
+> **Gebaut am 31.07.2026, mit einer Präzisierung.** Der Satz „keine Zeile" gilt für die **Berechnungszeile**: Ein Ausfall erzeugt keine `berechnung` mit Nullen, die in jeder Auswertung wie eine gemessene Haltung ohne Ausschlag aussähe. Er erzeugt stattdessen eine **`fehler`-Zeile mit dem Grund** — denn ganz zu schweigen ginge ebenso wenig: Die Häufigkeit der Ausfälle gehört zur Messreihe. Eine Fehlerzeile ist beides, nicht als Messwert lesbar und trotzdem zählbar.
+>
+> **Zwei Listen stehen zusätzlich obenauf**, obwohl sie aus den Größen ableitbar sind: `ausserhalb` und `uebersteuert`. Beide sind **die** Messgrößen dieses Sprints (§6), und eine Reihe soll sie zählen können, ohne je Zeile in die Tiefe zu steigen.
+>
+> **Der Join ist vorgeführt, nicht behauptet.** Eine Abfrage stellt Haltung und Rohturn desselben Turns nebeneinander:
+>
+> ```
+> landschaft | umfang_soll | antwort_zeichen | inhalt_zeichen
+> beichte    | 0.60        | 1623            | 2725
+> ```
+>
+> Damit steht die Grundlage der Kalibrierung: vorhergesagter Umfang gegen tatsächliche Länge, in einer Zeile.
 
 ### 2.1 Warum eine Fläche und keine Summe
 
@@ -276,6 +293,14 @@ Eine Übersteuerung ist keine Ausnahme von der Fläche, sondern eine Eigenschaft
 - **Die Zellen selbst.** Das ist die eigentliche Arbeit und eine Setzung. Belegt sind bisher nur die zwei Pole: `Glut × Wohlwollen` weit, `Schlachtfeld × Abwendung` eng. **Beide sind noch auf die neue Adressierung zu übersetzen** (§2): Der eine nennt eine Speiche, der andere eine ganze Seite — als Sektor-und-Ausschlag ist keiner von beiden bereits ausgedrückt.
 - ~~**Wie viele Sektoren die Fläche bekommt.**~~ → **Gegenstandslos seit dem Beitragsmodell** (§2). Es gibt keine Sektoren mehr; die frühere Angabe „168" setzte zwölf diskrete Speichenpositionen voraus und gilt nicht.
 - ~~**Die Zahlen selbst.**~~ → **Entwurf steht** (§2.0), gesetzt zum Messen. Was daraus wird, entscheidet die erste Messreihe.
+- **Erste Messung am echten Turn, 31.07.2026, 20:35 UTC.** Landschaft `beichte`, Rad destilliert mit zwölf Speichen:
+
+  ```
+  beichte · umfang 0.60 · fragen 0.80 · naehe 1.25 ! · waerme 1.35 ! · draengen 0.00 [Grenze]
+  ```
+
+  **Zwei von fünf Größen verlassen die Spanne im allerersten Turn**, beide nach oben, beide durch reine Addition auf ohnehin hohe Grundwerte (0.95 und 0.90). Die Grenze auf `draengen` hielt. Das ist ein Datenpunkt, keine Häufigkeit — aber er verschiebt die Erwartung: Der Überlauf ist nicht der Randfall, für den ihn §6 gehalten hat. Die Entscheidung zwischen kleineren Beiträgen und Sättigung bleibt bei der Messreihe.
+
 - **Die Spannenenden — beide, und häufiger als gedacht.** Bei reiner Addition läuft `Wärme` über: Grundwert `glut` 0.8 plus 0.35 aus dem Rad ergibt 1.15, bei `feuerwerk` sogar 1.25 und `Fragen` 1.40. **Die untere Grenze bricht ebenso**, und das kam erst beim Bauen zum Vorschein: `glut/draengen` steht auf 0.20, eine einzige voll ausgeprägte `treue` trägt −0.30, das Ergebnis ist −0.10. Es braucht also nicht einmal ein volles Rad — eine Speiche genügt. Gekappt wird nicht (§3.1) — es bleiben zwei Wege. **Kleinere Beiträge**, sodass die Summe passt; das ist die Bauart des Charakter-Rades, wo die Züge die Grenzen exakt treffen, funktioniert dort aber nur, weil die Nabe fest ist. Oder **Sättigung auf die Summe**: `neu = grund + summe × (1 − grund)` nach oben, `grund + summe × grund` nach unten — erst summieren, dann einmal sättigen, damit die Reihenfolge nichts entscheidet. Die zweite Bauart kann die Grenze nicht überschreiten, statt an ihr abgeschnitten zu werden, und sagt inhaltlich etwas: Wo die Lage schon warm ist, fügt der Charakter wenig hinzu; wo sie kalt ist, macht er den Unterschied. Ihr Preis ist, dass die Beiträge gestaucht werden und die Skala nicht mehr linear zu lesen ist. **Entschieden wird nach der ersten Messreihe, nicht davor** — eine Übersteuerung bleibt in jedem Fall ausgenommen, sonst wäre ihre Markierung sinnlos.
 - **Ob es fünf gleichrangige Größen sind.** Im abgeleiteten Entwurf hängt `Drängen` an vier Speichen, `Wärme` fast nur an der Deutungsachse. Möglicherweise sind es drei starke und zwei schwache. Das zeigt sich erst an den gesetzten Zahlen und gehört gemessen, bevor alle fünf gleich ernst genommen werden.
 - **Ob eine Speiche je Ausprägungsstufe ein eigenes Set braucht.** Multiplikativ mit 0.5 und 1.0 sind es 26 Sets, je Stufe eigene wären es 38. Die zweite Bauart erlaubt Nichtlinearität — „halb distanziert ist kaum etwas, ganz distanziert ändert alles". Anfangen mit der ersten, nachschärfen, wenn die Messung es verlangt.
@@ -288,6 +313,8 @@ Eine Übersteuerung ist keine Ausnahme von der Fläche, sondern eine Eigenschaft
 
 ## Versionshistorie
 
+- **v0.6 — 31.07.2026:** **Das Protokoll steht.** Drei Zahlen je Größe, Rechenart und Auslöser gehen über `log_berechnung` ins `pipeline_log`, die Spur zeigt `kurzfassung()` bei jeder Antwort. Zwei Präzisierungen gegenüber §2.0a: Ein **Ausfall** wird als `fehler`-Zeile geführt statt gar nicht — nicht als Messwert lesbar, aber zählbar; und die beiden Messgrößen `ausserhalb` und `uebersteuert` stehen zusätzlich obenauf, damit eine Reihe sie zählen kann. Der Join zwischen Haltung und Rohturn ist an einem echten Turn vorgeführt.
+- **v0.5 — 31.07.2026:** **Der Knoten steht.** Die Rechnung hatte bis dahin keinen Aufrufer; sie läuft jetzt in jedem Turn des CharacterGraph, zwischen GV-Node und der Verzweigung zum Verfasser. Der Status wechselt von „nicht gebaut" auf „teilweise gebaut" — mit der Einschränkung, die die Reihenfolge des Sprints trägt: **Nova verhält sich unverändert**, weil kein Prompt die Werte liest. Neu in §6 die erste Messung am echten Turn: Zwei von fünf Größen verlassen die Spanne bereits im ersten Lauf, beide nach oben. Der Überlauf ist damit kein Randfall.
 - **v0.4 — 31.07.2026:** §2.0 trägt die **Ausgangswerte** — 14 Cluster-Sets und 12 Speichen-Sets, gesetzt zum Messen und nicht als Ergebnis. Die Spalte `Fragen` ist aus `CLUSTER_FRAGEN` übersetzt statt gesetzt, die Grenzen sind wörtlich aus `CLUSTER_BESCHREIBUNGEN` abgelesen. Zwei Übersteuerungen sind vorgesehen, beide an den Grenzen, die am ehesten überschreitbar sein sollten. Am Entwurf trat sofort die **obere Grenze** auf: `Wärme` läuft bei reiner Addition über 1.0 hinaus. Beide Auswege stehen in §6 mit ihren Preisen; entschieden wird nach der ersten Messreihe, weil eine Setzung an der Messung justiert wird und nicht am Schreibtisch.
 - **v0.3 — 31.07.2026:** **Die Fläche wird ein Beitragsmodell.** Statt Zellen einer Matrix trägt jeder Cluster und jede Speiche ein Set von Beiträgen auf **fünf Verhaltensgrößen** — Umfang, Fragefreudigkeit, Nähe, Wärme, Drängen —, abgeleitet aus den Dimensionen, die die vorhandenen Prompt-Anweisungen ansprechen. Der Cluster setzt den Grundwert, der Charakter modifiziert ihn: **Grenzen multiplizieren, Neigungen addieren, Übersteuerungen ersetzen.** Übersteuern ist ausdrücklich erlaubt — ein System, das nur vernünftige Zustände kennt, bildet kein Wesen ab —, wird aber **markiert**, weil sonst Absicht und Rechenfehler ununterscheidbar werden. Damit entfällt die Vektorgeometrie: kein Sektor, kein Ausschlag, kein Geometriefaktor (§2.2a bleibt mit Begründung stehen). Die Gegenpol-Anordnung behält Geltung, aber nur für die Anzeige. Neu §2.0a: Das Ergebnis geht über `log_berechnung` ins `pipeline_log` — drei Zahlen je Größe, verknüpft über die `turn_id`, **kein Redis-Blob** —, dazu eine Zeile in der Spur. Die Rechnung sitzt in einem **eigenen Knoten vor der Verzweigung zum Verfasser**: Der Verfasser muss den Umfang kennen, bevor er den Inhalt zusammenstellt, und er wird beim Kontext-Schnitt übersprungen. §2.1 trägt den Nachtrag, warum der einst verworfene additive Weg nun doch gegangen wird und welcher Teil des Einwands bleibt.
 - **v0.2 — 31.07.2026:** Die zweite Achse ist entschieden: **Die Zuwendung ist ein Punkt, kein Speichenwert.** Die belegten Speichen addieren sich vektoriell zu Sektor und Ausschlag; damit kann Distanz Wohlwollen herunterziehen, ohne es auszulöschen. Anlass war eine Messung an beiden vorhandenen Rädern — `wissbegier` und `distanz` stehen gleichzeitig auf 1.0, eine Position auf zwölf diskreten Werten gibt es nicht. Neu §2.2a: **Zug und Geometriefaktor sind zwei Größen.** Nimmt man den Zug als Speichenlänge, reicht der Ausschlag Richtung `treue` achtmal so weit wie Richtung `misstrauen` — die halbe Fläche wird unerreichbar —, und die Richtung folgt der Zugstärke statt der Messung. Die Angabe „168 Zellen" ist damit überholt und an allen vier Stellen aufgelöst; die Zahl folgt erst aus der gewählten Sektor- und Ausschlagsteilung. Der offene Punkt zu den zwölf Speichen ist erledigt und trug eine falsche Begründung: Sie sind Konstanten, kein JSON.

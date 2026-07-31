@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Graph-Architektur, HumanGraph, AgentGraph, Agent-System
-**Stand:** 17. Mai 2026, Chat 90 (HumanGraph-Slimming Phase 4, TURN-ID-FIX)
+**Stand:** 31. Juli 2026, Chat 123 (Haltungsraum-Node im CharacterGraph). Zuvor: 17. Mai 2026, Chat 90 (HumanGraph-Slimming Phase 4, TURN-ID-FIX)
 **Pfad:** novaberg/docs/novaberg-graph.md
 **Quellen:** nova-01-k.md (Graph-Konzept), nova-01-a.md (Graph-Architektur), nova-11-k.md (Agent-Workflow-Konzept), nova-11-a.md (Agent-Architektur), novaberg-path2-perzeption_k.md (PFAD2-PERZEPTION-FIX, Personality-Klassen-Schicht)
 
@@ -122,6 +122,13 @@ db_zugriff → EI-Calc(character) → Enricher → EmGrav → Reducer → Router
                                               GV-Node <────────────────────────────────+
                                                   |
                                                   v
+                                              Haltungsraum
+                                                  |
+                                                  +── task_context_cut? ── ja ──────+
+                                                  |                                 |
+                                                  +── nein → Verfasser ─────────────+
+                                                                                    |
+                                                                                    v
                                               Responder → Thinker → Tribunal → Evaluate
                                                                                     |
             +───────────────────────────────────────────────────────────────────────+
@@ -146,6 +153,7 @@ db_zugriff → EI-Calc(character) → Enricher → EmGrav → Reducer → Router
 | 6 | Planner | GPU | Bei Management: Agent finden, Aktion planen. Conditional ⇄ Agent-Dispatch. |
 | 7 | Agent-Dispatch | Nein | Delegiert an agenten-spezifischen Dispatch, kehrt zum Planner zurueck (Schleife). |
 | 8 | GV-Node | GPU | Gespraechsvektor-Hypothese (Farbmisch + zweite Wissensquelle). ~~Entity-Hop über die `fakten`-Tabelle~~ → seit Chat 115 Resonanz-Kontext aus `state["lzg_resonanz"]`, gelegt vom Enricher. |
+| 8a | Haltungsraum | Nein | Rechnet die fünf Verhaltensgrößen dieses Turns aus der Landschaft des GV-Nodes (`gv_detail["cluster"]`) und Novas Zuwendungsrad, schreibt sie als `state["haltung"]` (`novaberg-haltungsraum_k.md` §2). Steht **vor** der Verzweigung zum Verfasser, damit die Rechnung auch bei `task_context_cut` läuft. Ein Lesezugriff auf `charakter_hash`, kein LLM. Der Node heißt nach dem Raum, sein Kanal nach dem Ergebnis — LangGraph lehnt einen Node ab, der wie ein State-Key heißt. (Chat 123, 31.07.2026.) |
 | 9 | Responder | GPU | Antwort generieren — liest `internal.character`, `internal.identities`, `internal.directives` aus `state["internal"]`. |
 | 10 | Thinker | GPU (opt.) | Faktencheck, Web-Suche. Bei Doppel-Fehlschlag: setzt `self_trigger`/`self_trigger_payload` (deklarierte Channels seit Chat 106, `090ac07` — vorher undeklariert und an der Node-Grenze still verworfen, THINKER-SELFTRIGGER-KANALLOS). |
 | 11 | Tribunal | GPU | Drei-Perspektiven-Bewertung (Jurist/Psychologe/Ethiker). |
@@ -155,6 +163,8 @@ db_zugriff → EI-Calc(character) → Enricher → EmGrav → Reducer → Router
 | 15 | ei_calc_persist | Nein | Konsolidiert Plausibilitaeten auf `state["internal"].emotion` (Modus, Sprach-Stil, EI-Arousal) und persistiert Novas neun EI-Dimensionen und die beiden Raum-Achsen in Redis als `nova_state:{user_id}:{character_id}` (Default Mode Network). (Chat 89, Phase 2.) |
 | 16 | Salienz | GPU | Bewertung der Charakter-Antwort — Bewertungsobjekt ist `state["response"]` (Switch nach ~~`ei_calc_rolle="character"`~~ **`graph_rolle="character"`**, korrigiert Chat 110). Erzeugt `pending_writes` mit `ziel="kzg"`. |
 | 17 | Dispatcher | Nein | Schreibt Session-Turn (komplett, aus `state["internal"].emotion`) + KZG. |
+
+**Der Verfasser fehlt in dieser Tabelle** (Stand 31.07.2026). Er steht im Ablaufbild darüber, weil die Position des Haltungsraums ohne ihn nicht zu beschreiben ist, hat aber noch keine eigene Zeile; die Nummerierung 9–17 wird von den Absätzen darunter zitiert und deshalb hier nicht verschoben. Vermerkt in `novaberg-fundliste.md`.
 
 Salienz und Dispatcher sind seit Chat 60 wieder synchron im Graphen. Der Charakter-Turn wird vollstaendig aus `state["internal"]` geschrieben — Text, Emotion, Arousal, Modus, alles. Die Nova-Perzeption (Schritt 14, seit Chat 61) sorgt fuer Symmetrie zu Pfad 1; `ei_calc_persist` (Schritt 15, seit Chat 89) konsolidiert und persistiert Novas Zustand zwischen User-Turns.
 
