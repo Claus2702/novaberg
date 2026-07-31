@@ -52,12 +52,32 @@ RAD_ZUG_HOCH: dict[str, float] = {
     "wohlwollen":     0.06,   # legt Gesagtes im besten Sinne aus
 }
 
+# Die Reihenfolge dieser Seite ist eine **Gegenpol-Anordnung**, keine
+# Aufzaehlung: Speiche i von RAD_ZUG_HOCH und Speiche i dieser Liste sind
+# inhaltliche Gegensaetze und liegen auf dem Rad einander gegenueber.
+#
+#   treue          <-> selbstbezogen   fremde Belange vor eigenen / eigene zuerst
+#   dienst         <-> gleichgueltig   sucht Gelegenheiten / beruehrt sie nicht
+#   pflicht        <-> widerspenstig   nimmt Auftraege ernst / folgt ungern
+#   aufmerksamkeit <-> distanz         haelt Naehe / haelt Abstand
+#   wissbegier     <-> langeweile      Themen wecken Interesse / ermueden sie
+#   wohlwollen     <-> misstrauen      im besten Sinne / skeptisch ausgelegt
+#
+# **Nicht nach Zugstaerke sortieren.** Fuer den Skalar ist die Reihenfolge
+# gleichgueltig — er ist eine Summe. Fuer die Flaeche des Haltungsraums ist
+# sie tragend: Sie entscheidet, welche zwei Eigenschaften einander auf dem
+# Rad ausloeschen koennen. Die fruehere Ordnung stellte `wissbegier` gegen
+# `distanz`; beide stehen im Bestand gleichzeitig auf 1.0, und Neugier auf
+# die Sache schliesst Abstand zur Person nicht aus (siehe das dritte
+# Beispiel in novaberg-salienz-berechnung_k.md §5).
+#
+# `GegenpolAnordnungTest` in tests/test_hash_raeder.py haelt die Paare fest.
 RAD_ZUG_RUNTER: dict[str, float] = {
-    "widerspenstig":  0.12,   # widerspricht, lenkt ab, folgt ungern
-    "gleichgueltig":  0.10,   # seine Belange beruehren sie nicht
     "selbstbezogen":  0.08,   # kehrt zu ihren eigenen Themen zurueck
-    "langeweile":     0.05,   # fremde Themen ermueden sie
+    "gleichgueltig":  0.10,   # seine Belange beruehren sie nicht
+    "widerspenstig":  0.12,   # widerspricht, lenkt ab, folgt ungern
     "distanz":        0.03,   # haelt ihn auf Abstand
+    "langeweile":     0.05,   # fremde Themen ermueden sie
     "misstrauen":     0.02,   # legt Gesagtes skeptisch aus
 }
 
