@@ -133,6 +133,23 @@ _ZAHLWOERTER: dict[str, int] = {
 
 _ZAHLWOERTER_PATTERN: str = "|".join(_ZAHLWOERTER.keys())
 
+# "bereits"/"schon" + nackte Dauer — eine andauernde Sache, die rueckwaerts
+# zeigt: "das dauert bereits zwei Wochen" meint den Beginn vor zwei Wochen.
+#
+# Die Enge ist der Punkt. Beide Woerter sind haeufiger Verstaerkungspartikel
+# als Richtungswort, und dort zeigen sie NACH VORN: "schon am Freitag",
+# "bereits naechsten Montag", "schon naechste Woche". Eine Regel auf das
+# blosse Wort loeste diese drei rueckwaerts auf — gemessen am 31.07.2026
+# ergab "schon am Freitag" den vergangenen statt den kommenden Freitag.
+#
+# Deshalb muss unmittelbar eine ZAHL und eine Zeiteinheit folgen. Damit
+# faellt jeder Fall heraus, in dem ein Wochentag, ein Datum oder ein
+# Vorwaertswort dazwischensteht.
+_DAUER_ANDAUERND: str = (
+    r'\b(bereits|schon)\s+(\d+|' + _ZAHLWOERTER_PATTERN + r')\s+'
+    r'(tag|tage|tagen|woche|wochen|monat|monate|monaten|jahr|jahre|jahren)\b'
+)
+
 _TAGESZEITEN: dict[str, int] = {
     "morgens": 0,
     "früh": 0,
@@ -374,11 +391,19 @@ def _text_normalisieren(text: str) -> tuple[str, bool]:
     ergebnis = re.sub(r"\b[Ll]etzte[nrs]?\s+", "", ergebnis)
     ergebnis = re.sub(r"\b[Vv]orige[nrs]?\s+", "", ergebnis)
     ergebnis = re.sub(r"\b[Vv]ergangene[nrs]?\s+", "", ergebnis)
-    # "seit" traegt die Richtung und nicht die Dauer. Bleibt es stehen, kennt
-    # dateparser den Ausdruck nicht und liefert gar nichts; entfernt bleibt
-    # eine Dauer uebrig, die ueber `referenz_modus` rueckwaerts aufgeloest
-    # wird (siehe zeit_parsen_vektor).
+    # "seit", "bereits" und "schon" tragen die Richtung und nicht die Dauer.
+    # Bleiben sie stehen, kennt dateparser den Ausdruck nicht und liefert gar
+    # nichts; entfernt bleibt eine Dauer uebrig, die ueber `referenz_modus`
+    # rueckwaerts aufgeloest wird (siehe zeit_parsen_vektor).
     ergebnis = re.sub(r"\b[Ss]eit\s+", "", ergebnis)
+    # Nur vor einer nackten Dauer entfernen — sonst sind es
+    # Verstaerkungspartikeln, die eine Vorwaerts-Angabe begleiten
+    # ("schon am Freitag"), und dann muss der Rest unangetastet bleiben.
+    ergebnis = re.sub(
+        r"\b([Bb]ereits|[Ss]chon)\s+(?=(\d+|" + _ZAHLWOERTER_PATTERN + r")\s+"
+        r"(tag|tage|tagen|woche|wochen|monat|monate|monaten|jahr|jahre|jahren)\b)",
+        "", ergebnis, flags=re.IGNORECASE,
+    )
 
     ergebnis = re.sub(r"\b[Ww]oche\s+", "", ergebnis)
 
@@ -596,12 +621,20 @@ def zeit_parsen_vektor(
     # Erkennung auf korrigiertem Text VOR Normalisierung (Block 8 entfernt Praefixe)
     if re.search(r'\b(diesen|diese[mrs]?)\b', korrigiert_lower):
         referenz_modus: str = "absolut"
-    elif re.search(r'\b(letzten?|vorigen?|vergangenen?|seit)\b', korrigiert_lower):
+    elif (re.search(r'\b(letzten?|vorigen?|vergangenen?|seit)\b', korrigiert_lower)
+          or re.search(_DAUER_ANDAUERND, korrigiert_lower)):
         # `seit` gehoert hierher und nicht zu `vor`: Beide zeigen rueckwaerts,
         # aber `vor` versteht dateparser selbst, waehrend `seit` ohne diese
         # Zeile eine Dauer in die ZUKUNFT aufloest. `vor` steht bewusst NICHT
         # in dieser Liste — es kommt auch in Uhrzeiten vor ("zehn vor acht"),
         # und dort waere eine Rueckwaerts-Aufloesung falsch.
+        #
+        # `bereits` und `schon` markieren eine andauernde Sache und zeigen
+        # damit ebenfalls rueckwaerts: "das dauert bereits zwei Wochen" meint
+        # den Beginn vor zwei Wochen. Sie standen bis zum 31.07.2026 nicht
+        # hier — was folgenlos war, weil die Salienz-Extraktion sie ohnehin
+        # verwarf. Seit sie im Prompt ausdruecklich erhalten bleiben, kommen
+        # sie hier an und muessen gedeutet werden.
         referenz_modus: str = "relativ_rueckwaerts"
     else:
         referenz_modus: str = "relativ"

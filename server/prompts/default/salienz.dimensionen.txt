@@ -63,6 +63,18 @@ Bestimme fuer das Bewertungsobjekt die folgenden Dimensionen.
       Freitag", "naechste Woche") gehoeren dazu.
     - Sub-Tages-Zeitangaben ("14:00", "heute Abend") gehoeren dazu.
     - "heute" zaehlt als Zeitbezug.
+    - DAS RICHTUNGSWORT GEHOERT ZUM AUSDRUCK. Woerter wie "seit", "vor",
+      "bereits", "schon", "letzte", "vergangene", "in", "naechste" sagen,
+      ob der Bezug in die Vergangenheit oder in die Zukunft zeigt. Ohne sie
+      ist eine Dauer richtungslos und wird nach vorn aufgeloest — aus "seit
+      zwei Wochen" wuerde ein Datum zwei Wochen in der ZUKUNFT.
+      Uebernimm sie mit, auch wenn sie nicht direkt vor der Zeitangabe
+      stehen:
+        "Das dauert bereits zwei Wochen."      -> "bereits zwei Wochen"
+        "Wir haben schon drei Tage nichts."    -> "schon drei Tage"
+        "Seit fuenf Wochen kein Regen."        -> "seit fuenf Wochen"
+        "Vor zwei Wochen war das anders."      -> "vor zwei Wochen"
+      Nur das Richtungswort und die Zeitangabe, nichts weiter aus dem Satz.
     - Allgemeine zeitliche Bemerkungen ohne konkreten Anker ("frueher",
       "vor langer Zeit", "irgendwann") gehoeren NICHT dazu.
 

@@ -86,6 +86,62 @@ class DerModusWirdErkanntUndVerwendet(unittest.TestCase):
         self.assertNotEqual(_tage("fünf Wochen"), _tage("seit fünf Wochen"))
 
 
+class AndauerndZeigtRueckwaerts(unittest.TestCase):
+    """"bereits"/"schon" vor einer nackten Dauer meinen den Beginn."""
+
+    def test_bereits_zwei_wochen(self) -> None:
+        """30.07.2026 minus 14 Tage ist der 16.07.2026."""
+        self.assertEqual(_tage("bereits zwei Wochen"), -14)
+
+    def test_schon_drei_tage(self) -> None:
+        """30.07.2026 minus 3 Tage ist der 27.07.2026."""
+        self.assertEqual(_tage("schon drei Tage"), -3)
+
+    def test_der_satz_aus_der_frage(self) -> None:
+        """"Das dauert bereits zwei Wochen" — der Anlass dieser Regel."""
+        self.assertEqual(
+            zeit_parsen_vektor("bereits zwei Wochen", REF).referenz_modus,
+            "relativ_rueckwaerts",
+        )
+
+
+class VerstaerkungsPartikelBleibtVorwaerts(unittest.TestCase):
+    """Die Gegenprobe zur Regel darueber — sie ist der Grund fuer ihre Enge.
+
+    "bereits" und "schon" sind haeufiger Verstaerkungspartikel als
+    Richtungswort, und dann zeigen sie NACH VORN. Eine Regel auf das blosse
+    Wort loeste diese Faelle rueckwaerts auf: Gemessen am 31.07.2026 ergab
+    "schon am Freitag" den vergangenen statt den kommenden Freitag und
+    "bereits naechsten Montag" den vergangenen Montag — aus einem Ausdruck,
+    der vorher gar nicht geparst wurde, wurde damit einer, der falsch parst.
+    Das ist die schlechtere Sorte Ausfall.
+
+    Deshalb greift die Regel nur, wenn unmittelbar eine Zahl und eine
+    Zeiteinheit folgen. Diese Tests halten die Enge fest.
+    """
+
+    def test_wochentag_wird_nicht_rueckwaerts(self) -> None:
+        """Ein Wochentag ist keine Dauer."""
+        self.assertNotEqual(
+            zeit_parsen_vektor("schon am Freitag", REF).referenz_modus,
+            "relativ_rueckwaerts",
+        )
+
+    def test_vorwaertswort_wird_nicht_rueckwaerts(self) -> None:
+        """"naechsten" zeigt nach vorn, egal was davor steht."""
+        self.assertNotEqual(
+            zeit_parsen_vektor("bereits nächsten Montag", REF).referenz_modus,
+            "relativ_rueckwaerts",
+        )
+
+    def test_in_zwei_wochen_bleibt_zukunft(self) -> None:
+        """Mit "in" ist es eine Vorwaerts-Dauer und keine andauernde Sache."""
+        self.assertNotEqual(
+            zeit_parsen_vektor("schon in zwei Wochen", REF).referenz_modus,
+            "relativ_rueckwaerts",
+        )
+
+
 class VorwaertsBleibtVorwaerts(unittest.TestCase):
     """Der positive Zwilling: Die Reparatur dreht nicht alles um."""
 
