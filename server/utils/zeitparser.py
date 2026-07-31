@@ -873,9 +873,18 @@ def _aufloesen(
 
     # Pfad 1 — Direkt-Parse (ISO-Datum + Uhrzeit)
     logger.debug(f"Zeitparser Pfad-Check: normalisiert='{norm_stripped}'")
-    m = re.match(r'^(\d{4}-\d{2}-\d{2})\s+(\d{1,2}:\d{2})$', norm_stripped)
+    m = re.match(r'^(\d{4}-\d{2}-\d{2})\s+(\d{1,2}):(\d{2})$', norm_stripped)
     if m:
-        ergebnis = datetime.fromisoformat(f"{m.group(1)}T{m.group(2)}:00").replace(tzinfo=tz)
+        # Zusammengesetzt statt ueber `fromisoformat`: Das Muster erlaubt eine
+        # EINSTELLIGE Stunde, `fromisoformat` verlangt zwei. "morgen um 9 Uhr"
+        # normalisiert zu "2026-08-01 9:00" und riss damit eine unbehandelte
+        # ValueError bis zum Aufrufer hoch — gemessen am 31.07.2026. Zweistellige
+        # Uhrzeiten kamen durch, einstellige stuerzten ab; deshalb fiel es nie
+        # jemandem als Muster auf. Pfad 1b baut sein Datum laengst so.
+        jahr, monat, tag = (int(teil) for teil in m.group(1).split("-"))
+        ergebnis = datetime(
+            jahr, monat, tag, int(m.group(2)), int(m.group(3)), tzinfo=tz,
+        )
         pfad = 1
 
     if ergebnis is None:
@@ -899,6 +908,61 @@ def _aufloesen(
             tag, monat, jahr = int(m.group(1)), int(m.group(2)), int(m.group(3))
             ergebnis = datetime(jahr, monat, tag, tzinfo=tz)
             pfad = 1
+
+    # Pfad 1c — Nackte Uhrzeit ohne jede Tagesangabe.
+    #
+    # Der Tag wird hier selbst gerechnet und NICHT von dateparser erfragt.
+    # Grund, instrumentiert gemessen am 31.07.2026 an dateparser 1.4.1:
+    #
+    # Dessen Addition ist korrekt — `_correct_for_time_frame` rechnet fuer eine
+    # bereits vergangene Uhrzeit `dateobj + timedelta(days=1)` und traegt sauber
+    # ueber die Monatsgrenze. UNMITTELBAR DANACH laeuft `_correct_for_month`,
+    # und die rechnet nicht, sondern weist zu:
+    #
+    #     date_obj.replace(month=<Monat des Bezugsmoments>)
+    #
+    # Diese Korrektur soll ein NICHT GENANNTES Monatsfeld befuellen. Zu ihrem
+    # Zeitpunkt ist das Feld aber kein Default mehr, sondern das Ergebnis der
+    # Addition — und ein `datetime` traegt keine Herkunft, an der sie das
+    # unterscheiden koennte. Der Uebertrag wird damit ueberschrieben, der Tag 1
+    # bleibt stehen:
+    #
+    #     31.07. 14:27 + "02:30"  ->  01.08. (Addition)  ->  01.07. (Zuweisung)
+    #     31.12. 14:27 + "02:30"  ->  01.01.2027         ->  01.12.2027
+    #
+    # Der Silvester-Fall zeigt die Bauart: Das JAHR ueberlebt, weil nur das
+    # Monatsfeld zugewiesen wird — elf Monate daneben, nicht zwoelf. Eine
+    # fehlerhafte Addition koennte dieses Muster nicht erzeugen.
+    #
+    # Reichweite, instrumentiert: Fuer Wochentage, Dauern und deiktische Worte
+    # wird die Monatskorrektur gar nicht erst gerufen; sie tragen korrekt ueber
+    # die Grenze. Die nackte Uhrzeit ist der einzige Ausdruck, der dort ankommt.
+    # Der Plausibilitaets-Check unten greift erst ab zwei Jahren, und an den
+    # uebrigen 29 Tagen des Monats rechnet dateparser richtig — deshalb ist der
+    # Defekt einem Test gegen `date.today()` nie begegnet.
+    #
+    # Die Regel hier ist die, die dateparser meint: heute, wenn die Uhrzeit
+    # noch kommt, sonst der Nachbartag in der gefragten Richtung.
+    if ergebnis is None:
+        m = re.match(r'^(\d{1,2}):(\d{2})$', norm_stripped)
+        if m:
+            stunde, minute = int(m.group(1)), int(m.group(2))
+            if stunde < 24 and minute < 60:
+                kandidat: datetime = referenz_lokal.replace(
+                    hour=stunde, minute=minute, second=0, microsecond=0,
+                )
+                if zukunft and kandidat <= referenz_lokal:
+                    kandidat += timedelta(days=1)
+                elif not zukunft and kandidat > referenz_lokal:
+                    kandidat -= timedelta(days=1)
+                ergebnis = kandidat
+                pfad = 1
+            else:
+                logger.error(
+                    f"Zeitparser: '{norm_stripped}' sieht aus wie eine Uhrzeit, "
+                    f"ist aber keine ({stunde}:{minute:02d}) — an dateparser "
+                    f"weitergereicht"
+                )
 
     # Pfad 2 — Split-Parse (Uhrzeit raus, dateparser nur Datum)
     if ergebnis is None:
