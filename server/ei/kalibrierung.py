@@ -325,6 +325,90 @@ def schwelle_suchen(paare: list[Urteilspaar]) -> Kalibrierung:
     )
 
 
+def stichprobe_indizes(anzahl: int, groesse: int) -> list[int]:
+    """Waehlt gestreute Indizes aus einem geordneten Korpus.
+
+    **Warum nicht die ersten n.** Der Korpus kommt chronologisch sortiert
+    (`korpus.rohturns_laden`, ORDER BY erstellt_am). Ein Praefix ist damit
+    keine Stichprobe des Korpus, sondern seine aelteste Ecke — und auf diesem
+    Bestand ist die Ecke nachweislich nicht typisch: Ueber die 30 aeltesten
+    Turnpaare urteilte der Zeuge in 50,0 % der Faelle "der Nutzer fuehrt",
+    ueber alle 127 desselben Laufs in 65,4 %. Dieselbe Frage, derselbe Prompt,
+    15 Prozentpunkte Unterschied, allein aus der Auswahl.
+
+    Gewaehlt wird deshalb **systematisch**: Der Korpus wird in `groesse`
+    gleich grosse Bloecke geteilt, aus jedem die Mitte genommen. Das streut
+    ueber die volle Laenge, gewichtet keine Kante ueber, und ist
+    deterministisch — ein Wiederanlauf muss dieselbe Stichprobe treffen, sonst
+    beschreibt ein abgelegtes Ergebnis eine andere Menge als die, die der
+    naechste Lauf zieht.
+
+    Vorbedingung: `anzahl` und `groesse` sind mindestens 1. Beide sind
+    Zaehlungen, kein Aufrufer kann sie sinnvoll auf null setzen.
+    Nachbedingung: `min(anzahl, groesse)` Indizes, streng aufsteigend, jeder
+    in [0, anzahl-1]. Bei `groesse >= anzahl` ist das der ganze Korpus.
+    Fehlerfaelle: `anzahl` oder `groesse` unter 1 — laut gemeldet, leere
+    Liste. Eine Nachbedingung, die nicht haelt, wird gemeldet und die Auswahl
+    verworfen: Eine stillschweigend reparierte Stichprobe waere von einer
+    gezogenen nicht zu unterscheiden.
+
+    Returns:
+        Die gewaehlten Indizes, aufsteigend.
+    """
+    # ── Eingabe-Validierung ─────────────────────
+    if anzahl < 1:
+        logger.error(
+            f"Stichprobe: Korpusgroesse {anzahl} — aus einem leeren Korpus "
+            f"laesst sich nicht ziehen, keine Auswahl"
+        )
+        return []
+
+    if groesse < 1:
+        logger.error(
+            f"Stichprobe: Probengroesse {groesse} bei {anzahl} verfuegbaren "
+            f"Paaren — eine Probe von null ist keine Probe, keine Auswahl"
+        )
+        return []
+
+    # ── Verarbeitung ────────────────────────────
+    k:       int   = min(groesse, anzahl)
+    schritt: float = anzahl / k
+
+    # Die Mitte jedes Blocks, nicht sein Anfang: Bei einem Anfang faellt der
+    # erste Index immer auf 0, und die aelteste Zeile waere in jeder Probe.
+    indizes: list[int] = [int((i + 0.5) * schritt) for i in range(k)]
+
+    # ── Ausgabe-Verifikation ────────────────────
+    # Spanne laut Nachbedingung: k Indizes, streng aufsteigend, in [0, n-1].
+    if len(indizes) != k:
+        logger.error(
+            f"Stichprobe: {len(indizes)} Indizes gezogen, {k} erwartet "
+            f"(Korpus {anzahl}, Probe {groesse}) — Auswahl verworfen"
+        )
+        return []
+
+    if indizes[0] < 0 or indizes[-1] >= anzahl:
+        logger.error(
+            f"Stichprobe: Index ausserhalb [0, {anzahl - 1}] "
+            f"(erster {indizes[0]}, letzter {indizes[-1]}) — Auswahl verworfen"
+        )
+        return []
+
+    if len(set(indizes)) != k or indizes != sorted(indizes):
+        logger.error(
+            f"Stichprobe: Indizes nicht streng aufsteigend bei Korpus "
+            f"{anzahl} und Probe {groesse} — ein doppelt gezogenes Paar "
+            f"zaehlt zweimal, Auswahl verworfen"
+        )
+        return []
+
+    logger.info(
+        f"Stichprobe: {k} von {anzahl} Turnpaaren, gestreut "
+        f"(Index {indizes[0]} bis {indizes[-1]}, Schritt {schritt:.2f})"
+    )
+    return indizes
+
+
 def positions_kontrolle(
     anteil_b_nutzer: float,
     anteil_b_nova:   float,

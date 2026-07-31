@@ -29,6 +29,9 @@ Kein skipUnless, kein skipIf, kein try/except um Importe.
 import unittest
 from unittest.mock import patch
 
+from agents.kalibrierung.korpus import Turnpaar
+from agents.kalibrierung.lauf import _positions_kontrolle_fahren
+from agents.kalibrierung.zwischenstand import Reihenstand
 from config import KALIBRIERUNG_MIN_MINDERHEIT, KALIBRIERUNG_MIN_TURNS
 from ei.initiative import initiative_bit
 from ei.kalibrierung import (
@@ -38,6 +41,7 @@ from ei.kalibrierung import (
     positions_kontrolle,
     schwelle_pruefen,
     schwelle_suchen,
+    stichprobe_indizes,
 )
 
 
@@ -305,6 +309,148 @@ class TestPositionsKontrolle(unittest.TestCase):
 
         self.assertFalse(bestanden)
         self.assertIn("ausserhalb", text)
+
+
+class TestStichprobeStreut(unittest.TestCase):
+    """Die Probe kommt aus dem ganzen Korpus, nicht aus seiner aeltesten Ecke.
+
+    Zeuge dieser Klasse: Die Viertel-Erwartung stammt aus der Messung vom
+    31.07.2026, nicht aus dem Pruefobjekt — ueber die 30 aeltesten von 127
+    Turnpaaren urteilte der Zeuge zu 50,0 % "Nutzer fuehrt", ueber alle 127
+    zu 65,4 %. Eine Auswahl, die nur den Anfang sieht, misst diese Ecke.
+    """
+
+    def test_jedes_viertel_des_korpus_ist_vertreten(self) -> None:
+        """Die Probe erreicht jedes Viertel des Korpus."""
+        # Die eigentliche Zusicherung. 127 und 30 sind die gemessenen Groessen
+        # des Laufs vom 30.07.2026.
+        indizes = stichprobe_indizes(127, 30)
+
+        self.assertEqual(30, len(indizes))
+        for viertel in range(4):
+            unten, oben = viertel * 127 / 4, (viertel + 1) * 127 / 4
+            treffer = [i for i in indizes if unten <= i < oben]
+            self.assertTrue(
+                treffer,
+                f"Viertel {viertel + 1} ({unten:.0f}-{oben:.0f}) nicht vertreten",
+            )
+
+    def test_indizes_sind_aufsteigend_und_im_korpus(self) -> None:
+        """Die Indizes sind aufsteigend, doppelungsfrei und im Korpus."""
+        indizes = stichprobe_indizes(127, 30)
+
+        self.assertEqual(sorted(set(indizes)), indizes)
+        self.assertGreaterEqual(indizes[0], 0)
+        self.assertLess(indizes[-1], 127)
+
+    def test_gleiche_eingabe_gleiche_probe(self) -> None:
+        """Zweimal gezogen ergibt dieselbe Probe."""
+        # Deterministisch: Ein Wiederanlauf muss dieselbe Menge treffen, sonst
+        # beschreibt das abgelegte Ergebnis eine andere Stichprobe.
+        self.assertEqual(stichprobe_indizes(127, 30), stichprobe_indizes(127, 30))
+
+    def test_probe_groesser_als_korpus_nimmt_alles(self) -> None:
+        """Ist die Probe groesser als der Korpus, kommt alles hinein."""
+        self.assertEqual(list(range(12)), stichprobe_indizes(12, 30))
+
+    def test_probe_genau_so_gross_wie_korpus_nimmt_alles(self) -> None:
+        """Probe genau so gross wie der Korpus: alles, ohne Luecke."""
+        self.assertEqual(list(range(30)), stichprobe_indizes(30, 30))
+
+    def test_knappe_probe_zieht_kein_paar_doppelt(self) -> None:
+        """Bei Schritt knapp ueber 1 wird kein Paar zweimal gezogen."""
+        # Schritt knapp ueber 1 — der Fall, in dem eine Rundung zwei Bloecke
+        # auf dasselbe Paar legen wuerde.
+        indizes = stichprobe_indizes(31, 30)
+
+        self.assertEqual(30, len(indizes))
+        self.assertEqual(30, len(set(indizes)))
+
+    def test_einzelne_probe_nimmt_nicht_die_aelteste_zeile(self) -> None:
+        """Eine Einzelprobe trifft die Mitte, nicht den Anfang."""
+        # Randfall groesse = 1. Bei einem driftenden Korpus waere Index 0 die
+        # schlechteste aller Einzelproben.
+        self.assertEqual([63], stichprobe_indizes(127, 1))
+
+    def test_leerer_korpus_wird_laut_gemeldet(self) -> None:
+        """Ein leerer Korpus liefert nichts und wird laut gemeldet."""
+        with self.assertLogs("ki_server.ei.kalibrierung", level="ERROR") as log:
+            indizes = stichprobe_indizes(0, 30)
+
+        self.assertEqual([], indizes)
+        self.assertIn("leeren Korpus", "".join(log.output))
+
+    def test_probengroesse_null_wird_laut_gemeldet(self) -> None:
+        """Eine Probengroesse von null wird laut gemeldet."""
+        with self.assertLogs("ki_server.ei.kalibrierung", level="ERROR") as log:
+            indizes = stichprobe_indizes(127, 0)
+
+        self.assertEqual([], indizes)
+        self.assertIn("keine Probe", "".join(log.output))
+
+
+class TestPositionsKontrolleZiehtGestreut(unittest.TestCase):
+    """Der Aufrufer legt dem Zeugen die gestreute Probe vor, nicht das Praefix.
+
+    **Diese Klasse prueft die Verdrahtung, nicht den Baustein.** Der Defekt
+    sass nie in einer Rechenfunktion, sondern in `paare[:30]` — eine Auswahl
+    mit sauberen Tests haette ihn nicht gefunden.
+
+    Zeuge: die Turn-Kennungen, die der Zeuge tatsaechlich zu sehen bekam. Sie
+    stammen aus der Attrappe, nicht aus dem Pruefobjekt.
+    """
+
+    def _paare(self, anzahl: int) -> list:
+        """Baut einen Korpus, dessen Kennung die Position im Korpus traegt."""
+        return [
+            Turnpaar(
+                turn_id     = f"turn-{i:03d}",
+                user_prompt = f"Nutzer {i}",
+                user_modus  = "sachlich",
+                vor_antwort = f"Nova {i}",
+                vor_modus   = "sachlich",
+                intentionen = [],
+            )
+            for i in range(anzahl)
+        ]
+
+    def _gesehene_indizes(self) -> list[int]:
+        """Faehrt die Kontrolle und gibt zurueck, welche Paare befragt wurden."""
+        gesehen: list[int] = []
+
+        def _zeuge(text_a: str, text_b: str) -> bool:
+            # B = Nutzer traegt "Nutzer <i>", B = Nova traegt "Nova <i>".
+            gesehen.append(int(text_b.split()[-1]))
+            return True
+
+        stand = Reihenstand(urteile={}, gescheitert=set(), aggregate={})
+
+        with patch("agents.kalibrierung.lauf.zeuge_befragen", side_effect=_zeuge), \
+             patch("agents.kalibrierung.lauf.aggregat_schreiben"):
+            _positions_kontrolle_fahren(self._paare(127), "test-reihe", stand)
+
+        return sorted(set(gesehen))
+
+    def test_der_zeuge_sieht_paare_aus_jedem_viertel(self) -> None:
+        """Der Zeuge bekommt Paare aus jedem Viertel vorgelegt."""
+        gesehen = self._gesehene_indizes()
+
+        self.assertEqual(30, len(gesehen))
+        for viertel in range(4):
+            unten, oben = viertel * 127 / 4, (viertel + 1) * 127 / 4
+            self.assertTrue(
+                [i for i in gesehen if unten <= i < oben],
+                f"Viertel {viertel + 1} wurde dem Zeugen nie vorgelegt",
+            )
+
+    def test_der_zeuge_sieht_auch_das_juengste_drittel(self) -> None:
+        """Der Zeuge sieht auch das juengste Drittel des Korpus."""
+        # Die Zusicherung, die gegen `paare[:30]` rot wird: Bei 127 Paaren
+        # endet ein Praefix von 30 bei Index 29 und erreicht das juengste
+        # Drittel (ab 85) nie.
+        gesehen = self._gesehene_indizes()
+
+        self.assertTrue([i for i in gesehen if i >= 85])
 
 
 if __name__ == "__main__":

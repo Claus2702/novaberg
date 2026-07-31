@@ -38,6 +38,7 @@ from ei.kalibrierung import (
     Urteilspaar,
     positions_kontrolle,
     schwelle_suchen,
+    stichprobe_indizes,
 )
 
 logger = logging.getLogger("ki_server.agents.kalibrierung.lauf")
@@ -209,7 +210,12 @@ def _positions_kontrolle_fahren(
         )
         return bool(vorher.get("bestanden")), str(vorher.get("text", ""))
 
-    stichprobe: list[Turnpaar] = paare[:KALIBRIERUNG_POSITIONSPROBE]
+    # Gestreut, nicht die ersten n: Der Korpus ist chronologisch sortiert, ein
+    # Praefix ist seine aelteste Ecke. Herleitung in `stichprobe_indizes`.
+    stichprobe: list[Turnpaar] = [
+        paare[i]
+        for i in stichprobe_indizes(len(paare), KALIBRIERUNG_POSITIONSPROBE)
+    ]
     if not stichprobe:
         logger.error("Positions-Kontrolle: leere Stichprobe")
         return False, "keine Stichprobe"
