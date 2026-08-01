@@ -481,6 +481,29 @@ async def _event_verarbeiten(
     payload:     dict = event.get("payload", {})
     user_prompt: str  = payload.get("user_prompt", "")
 
+    # Die Kennung des Reizes, den dieser Durchlauf beantwortet. Sie reist bis
+    # in die Antwort-Nutzlast durch: Ohne sie ordnet der Client der letzten
+    # Nachricht zu, was ankommt — und nach einem Ausfall verschiebt sich alles
+    # um eins (novaberg-bugs.md -> ANTWORT-OHNE-ZUORDNUNG).
+    #
+    # Sie wird ausdruecklich **hier** gelesen und nicht spaeter aus dem
+    # Ergebnis-Zustand: Der Zustand traegt dieselbe Kennung nur, solange
+    # niemand sie unterwegs ueberschreibt, und was der Client braucht, ist die
+    # Kennung seiner Frage — nicht die des Laufs, der geantwortet hat.
+    turn_id: str = payload.get("turn_id", "")
+
+    if not turn_id:
+        # Jeder Erzeuger eines Turns setzt sie (novaberg-convention-event-model.md
+        # 3.1.1). Fehlt sie, ist die Antwort nicht zuordenbar — der Durchlauf
+        # laeuft trotzdem weiter, weil ein verworfener Turn teurer ist als eine
+        # Antwort ohne Zuordnung.
+        logger.error(
+            f"Event-Consumer: Event ohne turn_id — die Antwort ist beim Client "
+            f"nicht zuordenbar ({user_id}:{character_id}, source="
+            f"{event.get('source', '?')}, typ={event.get('typ', '?')}, "
+            f"Payload-Felder: {sorted(payload)})"
+        )
+
     # Die Salienz des Reizes, den Nova gerade beantwortet. Bewusst ohne
     # Default: payload.get() liefert None, wenn der Schluessel fehlt — und
     # genau das ist der richtige Wert fuer einen eigenen Impuls, der gar keine
@@ -503,7 +526,7 @@ async def _event_verarbeiten(
         character_id  = character_id,
         event_source  = event.get("source", "user"),
         event_payload = payload,
-        turn_id       = payload.get("turn_id", ""),
+        turn_id       = turn_id,
         salienz_human = salienz_human,
         user_intentionen = user_intentionen,
     )
@@ -511,7 +534,7 @@ async def _event_verarbeiten(
     logger.info(
         f"Event-Consumer: salienz_human={salienz_human}, "
         f"user_intentionen={user_intentionen or 'keine'} in den CharacterGraph "
-        f"gereicht (turn_id={payload.get('turn_id', '')}, "
+        f"gereicht (turn_id={turn_id}, "
         f"herkunft={payload.get('reiz_herkunft', 'nutzer_turn')})"
     )
 
@@ -570,6 +593,11 @@ async def _event_verarbeiten(
         response_payload: str = json.dumps({
             "typ":                "character_response",
             "nachricht":          response,
+            # Der Reiz, auf den diese Antwort antwortet. Leer heisst
+            # "nicht zuordenbar" und ist oben als Fehler gemeldet — der Client
+            # darf daraus nicht schliessen, die Antwort gehoere zur letzten
+            # Nachricht.
+            "turn_id":            turn_id,
             # Herkunft des Reizes: "eigener_impuls" bei einem Pixie-Gedanken,
             # sonst leer. Der Client faerbt danach ein — vor dem Umbau erkannte
             # er einen Impuls daran, dass der Nachrichtentyp ihm unbekannt war

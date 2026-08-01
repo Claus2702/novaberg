@@ -233,6 +233,51 @@ def _ereignis_nutzlast(
     return nutzlast
 
 
+def _bestaetigungs_nutzlast(turn_id: str, zustand: dict) -> dict:
+    """Baut die Bestaetigung, die Pfad 1 dem Client zurueckgibt.
+
+    **Eine Stelle fuer beide Endpunkte**, aus demselben Grund wie bei
+    `_ereignis_nutzlast`: Der synchrone und der streamende Pfad bauten dieselbe
+    Bestaetigung zweimal.
+
+    Sie traegt die `turn_id`. Ohne sie hat der Client nichts, wogegen er eine
+    ankommende Antwort halten koennte — er ordnet sie dann der letzten
+    Nachricht zu, und nach einem ausgefallenen Turn verschiebt sich alles um
+    eins (novaberg-bugs.md -> ANTWORT-OHNE-ZUORDNUNG). Die Zuordnung in der
+    Antwort allein reicht nicht: Sie braucht eine Gegenprobe auf der Seite, die
+    die Frage gestellt hat.
+
+    Vorbedingung: `turn_id` ist die Kennung, die derselbe Aufruf ins Ereignis
+        geschrieben hat. Eine zweite Kennung waere keine Zuordnung, sondern
+        eine zweite Auskunft.
+    Nachbedingung: Ein flaches, JSON-serialisierbares Dict.
+    Fehlerfaelle: Keine. Fehlt `external`, stehen leere Werte statt erfundener.
+
+    Returns:
+        Die Bestaetigung.
+    """
+    # ── Eingabe-Validierung ─────────────────────
+    aussen = zustand.get("external")
+
+    # ── Verarbeitung ────────────────────────────
+    nutzlast: dict = {
+        "status":    "processing",
+        "nachricht": "Nachricht empfangen, Charakter-Antwort folgt per WebSocket.",
+        "turn_id":   turn_id,
+        "emotion":   aussen.emotion.emotion if aussen else "",
+        "arousal":   aussen.emotion.arousal if aussen else 0.0,
+    }
+
+    # ── Ausgabe-Verifikation ────────────────────
+    if not nutzlast["turn_id"]:
+        logger.error(
+            f"Bestaetigung ohne turn_id — der Client kann die Antwort auf "
+            f"diese Nachricht nicht zuordnen (Felder: {sorted(nutzlast)})"
+        )
+
+    return nutzlast
+
+
 @router.post("/chat")
 def ChatSenden(anfrage: GespraechAnfrage, request: Request):
     """Prompt durch den Gesprächsgraphen verarbeiten."""
@@ -322,18 +367,7 @@ def ChatSenden(anfrage: GespraechAnfrage, request: Request):
         # Momentum für Shadow Delivery Service
         redis_client.set(f"momentum:{anfrage.user_id}", result.get("momentum", "mid"), ex=300)
 
-        # Die Personality-Klasse aus dem Ergebnis-State. Sie wird hier neu
-        # gelesen, weil der Nutzlast-Aufbau in `_ereignis_nutzlast` gewandert
-        # ist und seine lokale Ableitung mitgenommen hat — diese beiden Leser
-        # sind dabei stehengeblieben.
-        result_external = result.get("external")
-
-        return {
-            "status":    "processing",
-            "nachricht": "Nachricht empfangen, Charakter-Antwort folgt per WebSocket.",
-            "emotion":   result_external.emotion.emotion if result_external else "",
-            "arousal":   result_external.emotion.arousal if result_external else 0.0,
-        }
+        return _bestaetigungs_nutzlast(turn_id, result)
 
     except Exception as fehler:
         # Den Typ nennen, nicht nur str(fehler): Die haeufigste Exception auf
@@ -542,16 +576,9 @@ def ChatStreamSenden(anfrage: GespraechAnfrage, request: Request):
                 ex=300,
             )
 
-            # Wie im synchronen Pfad: eigene Ableitung, weil der gemeinsame
-            # Nutzlast-Aufbau seine mitgenommen hat.
-            letzter_external = letzter_state.get("external")
-
-            yield _sse_event("processing", {
-                "status":    "event_created",
-                "nachricht": "Charakter-Antwort folgt per WebSocket.",
-                "emotion":   letzter_external.emotion.emotion if letzter_external else "",
-                "arousal":   letzter_external.emotion.arousal if letzter_external else 0.0,
-            })
+            yield _sse_event(
+                "processing", _bestaetigungs_nutzlast(turn_id, letzter_state),
+            )
 
         except Exception as fehler:
             logger.exception(f"{type(fehler).__name__}: Stream-Fehler")
