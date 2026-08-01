@@ -5,7 +5,7 @@
 **Stand:** 1. August 2026
 **Pfad:** novaberg/docs/novaberg-charakter-rad-messreihe_k.md
 **Typ:** Konzept (`_k`)
-**Status:** 🔶 gebaut für das **Zuwendungs-Rad**, im Betrieb seit 01.08.2026. Das Initiative-Rad schreibt noch keine Messungen — die Tabelle trägt `rad_art`, damit es ohne Schemaänderung folgen kann.
+**Status:** ✅ gebaut für **beide Räder**, im Betrieb seit 01.08.2026.
 **Voraussetzung:** `novaberg-convention-abgeleitete-werte.md` · `novaberg-salienz-berechnung_k.md` §5 (die zwölf Speichen)
 **Betrifft:** `novaberg-charakter-resonanz_k.md` · `novaberg-haltungsraum_k.md` · `novaberg-kzg-salienz_k.md` (Verbraucher des Faktors)
 
@@ -117,7 +117,26 @@ Zum Vergleich: Zehn Reihen mit demselben Historiengewicht ergäben 26 % für die
 
 ## 5. Das Datenmodell
 
-**Eine Tabelle für beide Räder.** Das Initiative-Rad hat dieselbe Frage und bisher dieselbe Lücke: Es rechnet zwar den Median über drei Läufe, wirft die Einzelwerte aber weg.
+**Eine Tabelle für beide Räder.** Das Initiative-Rad hatte dieselbe Frage und dieselbe Lücke: Es rechnete den Median über drei Läufe und warf die Einzelwerte weg.
+
+### Zwei Stufen, zwei Streuungen
+
+Das Initiative-Rad macht sichtbar, warum das Fenster **Erhebungen** zählt und nicht Zeilen:
+
+| Stufe | nimmt heraus | Rechnung |
+|---|---|---|
+| **innerhalb einer Erhebung** | die Streuung des Verfahrens | Mittel über die Läufe, **gleichgewichtet** |
+| **über die Erhebungen** | die Bewegung zwischen den Tagen | Mittel mit Verfall über den Rang |
+
+Innerhalb einer Erhebung bedeutet die Reihenfolge nichts — die Läufe liegen Sekunden auseinander und lesen denselben Text. Ein Verfall über ihren Rang wäre eine Aussage über nichts.
+
+**Und ohne diese Unterscheidung wäre das Fenster stillschweigend ein anderes:** Drei Zeilen je Erhebung füllten fünf Plätze mit weniger als zwei Erhebungen, und die Reihe reichte Stunden statt Tage zurück — unauffällig, weil die Zahl der Messungen unverändert aussieht.
+
+### Warum der Median-Lauf des Initiative-Rades weichen konnte
+
+Seine Destillation begründete ausdrücklich, warum sie **ein echtes Rad** speichert und kein gemitteltes: Ein Durchschnitt ergäbe Ausprägungen, die kein Lauf je vergeben hat, und `Rad × Züge = Versatz` wäre nicht mehr von Hand nachrechenbar.
+
+**Das erste Argument galt, solange es keinen anderen Ort für die Läufe gab.** Mit der Messreihe bleiben sie einzeln erhalten — nur eben in der Tabelle statt im Rückgabewert. Das zweite Argument bleibt gültig und unberührt: Die Rechnung `Rad × Züge` ist mit jedem Wert von Hand nachvollziehbar, auch mit 0.67.
 
 | Feld | Zweck |
 |---|---|
@@ -148,7 +167,7 @@ Zum Vergleich: Zehn Reihen mit demselben Historiengewicht ergäben 26 % für die
 - **Keine Glättung des Profiltexts.** Geglättet wird das Rad, nicht seine Eingabe. Wer beides glättet, dämpft zweimal und weiß hinterher nicht, welche Dämpfung gewirkt hat.
 - **Kein Rückschreiben des Mittels in die Messreihe** (§2).
 - **Keine Änderung an der Rechnung des Faktors.** `nutzer_gewichtung_berechnen()` bleibt, was es ist; es bekommt nur ein anderes Rad übergeben.
-- **Keine Änderung am Initiative-Rad.** Es behält seine drei Läufe und seinen Median und schreibt vorerst **keine** Messreihe. Die Tabelle trägt `rad_art` und ist dafür vorbereitet; es anzuschließen hieße, seine Destillation um die Einzelwerte zu erweitern, und das ist ein eigener Auftrag.
+- **Keine Änderung an der Rechnung des Initiative-Rades.** Es behält seine drei Läufe; neu ist, dass jeder davon als eigene Zeile in der Reihe liegt und der gespeicherte Wert aus den letzten Erhebungen folgt statt aus dem Median-Lauf allein.
 - **Keine Entscheidung über die Zusammensetzung der Quelle.** Dass das Rad zur einen Hälfte aus dem zeitlosen Kern-Hash liest, bleibt offen (§8).
 
 ---

@@ -1998,6 +1998,15 @@ Novas Zuwendungsrad wechselte am 31.07. binnen zwei Stunden von leerer Abwendung
 
 **Am realen Fall nachgerechnet:** Der Sprung 1.215 → 0.980 kommt als **1.047** an, `distanz` als 0.71 statt 1.0. Sichtbar, aber nicht bestimmend.
 
+### Das Initiative-Rad bekommt dasselbe — und deckt einen Fehler auf
+
+- ✅ **Beide Räder laufen im selben Takt und über dieselbe Reihe.** Das Initiative-Rad behält seine drei Läufe; neu ist, dass jeder als eigene Zeile liegt und der gespeicherte Versatz aus den letzten Erhebungen folgt statt aus dem Median-Lauf allein.
+- ✅ **`reihe_laden` zählte die letzten N *Zeilen*, nicht die letzten N *Erhebungen*.** Beim Zuwendungs-Rad fällt beides zusammen — eine Zeile je Erhebung. Beim Initiative-Rad sind es drei, und dann füllten fünf Zeilen weniger als zwei Erhebungen: Die Reihe reichte Stunden statt Tage zurück, **lautlos**, weil die Zahl der Messungen unverändert aussieht.
+- ✅ **Zwei Stufen, zwei Streuungen.** Innerhalb einer Erhebung wird gleichgewichtet gemittelt — die Läufe liegen Sekunden auseinander, ein Verfall über ihren Rang wäre eine Aussage über nichts. Über die Erhebungen greift der Verfall.
+- ✅ **Die Destillation meldet ihre Läufe, statt sie zu speichern.** Ein Rückruf statt eines Datenbankzugriffs: Die Destillation bleibt ohne Persistenz, der Aufrufer entscheidet, was mit den Läufen geschieht.
+
+**Ein begründetes Argument des Bestands ist dabei weggefallen, und der Grund gehört dazu:** Die Destillation speicherte bewusst *ein echtes Rad* statt eines gemittelten, weil ein Durchschnitt Ausprägungen ergäbe, die kein Lauf je vergeben hat. Das galt, **solange es keinen anderen Ort für die Läufe gab**. Jetzt bleiben sie einzeln erhalten — in der Tabelle statt im Rückgabewert. Der zweite Teil des Arguments bleibt unberührt: `Rad × Züge = Versatz` ist auch mit 0.67 von Hand nachrechenbar.
+
 ### Beim Bauen gegen den Entwurf entschieden
 
 Der Entwurf verlangte den **Median** je Speiche. Ein gewichteter Median auf einer Dreierskala ist aber eine Sprungfunktion: Unter vier Messungen überschreitet die jüngste allein die halbe Gewichtssumme und entscheidet weiterhin allein — gerade die ersten Tage wären ungeschützt geblieben. Gebaut ist deshalb das gewichtete **Mittel**, auf dem die Einschwingzeiten ohnehin gerechnet waren.
