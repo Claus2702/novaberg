@@ -303,14 +303,17 @@ class QueueWaechterTest(unittest.IsolatedAsyncioTestCase):
     """
 
     def _umgebung(self) -> tuple:
-        """Redis mit einer wartenden Queue und ein Loop, der eine Runde dreht."""
+        """Redis mit wartender Queue, freier Riegel, ein Loop mit einer Runde."""
         redis = MagicMock()
         redis.keys.return_value = ["prompt_queue:meister:nova"]
+
+        riegel = MagicMock()
+        riegel.acquire.return_value = True
 
         halt = MagicMock()
         halt.is_set.side_effect = [False, True]
 
-        return redis, halt
+        return redis, riegel, halt
 
     async def _eine_runde(self, turn_frei: bool) -> tuple:
         """Laesst den Loop eine Runde drehen; gibt Nehmer und Beender zurueck."""
@@ -318,9 +321,10 @@ class QueueWaechterTest(unittest.IsolatedAsyncioTestCase):
 
         import services.prompt_consumer as modul
 
-        redis, halt = self._umgebung()
+        redis, riegel, halt = self._umgebung()
 
         with patch.object(modul, "redis_client", redis), \
+             patch.object(modul, "llm_lock", riegel), \
              patch.object(modul, "shutdown_event", halt), \
              patch.object(modul, "POLL_INTERVAL", 0.0), \
              patch.object(modul, "turn_beginnen", return_value=turn_frei) as beginn, \
@@ -329,29 +333,29 @@ class QueueWaechterTest(unittest.IsolatedAsyncioTestCase):
              patch.object(modul, "naechster_block", return_value=[]) as nehmer:
             await modul.prompt_consumer_loop(MagicMock(), MagicMock())
 
-        return nehmer, ende, beginn
+        return nehmer, ende, beginn, riegel
 
     async def test_laufender_turn_nimmt_nichts(self) -> None:
         """Die Aeusserungen bleiben liegen, bis der CharacterGraph durch ist."""
-        nehmer, _, _ = await self._eine_runde(turn_frei=False)
+        nehmer, _, _, _ = await self._eine_runde(turn_frei=False)
 
         nehmer.assert_not_called()
 
     async def test_freier_turn_nimmt(self) -> None:
         """Der positive Zwilling — sonst bestuende der Test auch bei totem Loop."""
-        nehmer, _, _ = await self._eine_runde(turn_frei=True)
+        nehmer, _, _, _ = await self._eine_runde(turn_frei=True)
 
         nehmer.assert_called_once()
 
     async def test_leerer_takt_gibt_den_marker_zurueck(self) -> None:
         """Ein Takt ohne Block darf die naechste Aeusserung nicht sperren."""
-        _, ende, _ = await self._eine_runde(turn_frei=True)
+        _, ende, _, _ = await self._eine_runde(turn_frei=True)
 
         ende.assert_called_once()
 
     async def test_der_marker_traegt_die_turn_kennung(self) -> None:
         """Ohne sie ist im Log nicht zuzuordnen, welcher Turn gerade laeuft."""
-        _, _, beginn = await self._eine_runde(turn_frei=True)
+        _, _, beginn, _ = await self._eine_runde(turn_frei=True)
 
         self.assertTrue(beginn.call_args.args[3], "keine turn_id im Marker")
 
@@ -414,13 +418,18 @@ class PixieUndWaechterTest(unittest.IsolatedAsyncioTestCase):
 
         modul = self._consumer()
 
-        with patch.object(modul, "turn_beginnen", return_value=True), \
+        riegel = MagicMock()
+        riegel.acquire.return_value = True
+
+        with patch.object(modul, "llm_lock", riegel), \
+             patch.object(modul, "turn_beginnen", return_value=True), \
              patch.object(modul, "event_wartet", return_value=True), \
              patch.object(modul, "turn_beenden") as ende:
             erlaubt: bool = modul._darf_nehmen("meister", "nova", "t-1")
 
         self.assertFalse(erlaubt)
         ende.assert_called_once()
+        riegel.release.assert_called_once()
 
     async def test_freie_bahn_erlaubt_das_nehmen(self) -> None:
         """Der positive Zwilling — beide Bedingungen frei."""
@@ -428,13 +437,18 @@ class PixieUndWaechterTest(unittest.IsolatedAsyncioTestCase):
 
         modul = self._consumer()
 
-        with patch.object(modul, "turn_beginnen", return_value=True), \
+        riegel = MagicMock()
+        riegel.acquire.return_value = True
+
+        with patch.object(modul, "llm_lock", riegel), \
+             patch.object(modul, "turn_beginnen", return_value=True), \
              patch.object(modul, "event_wartet", return_value=False), \
              patch.object(modul, "turn_beenden") as ende:
             erlaubt: bool = modul._darf_nehmen("meister", "nova", "t-1")
 
         self.assertTrue(erlaubt)
         ende.assert_not_called()
+        riegel.release.assert_not_called()
 
     async def test_der_marker_wird_bei_abbruch_zurueckgegeben(self) -> None:
         """Ein gesetzter und nicht genutzter Marker sperrte bis zum Verfall."""
@@ -442,7 +456,11 @@ class PixieUndWaechterTest(unittest.IsolatedAsyncioTestCase):
 
         modul = self._consumer()
 
-        with patch.object(modul, "turn_beginnen", return_value=True), \
+        riegel = MagicMock()
+        riegel.acquire.return_value = True
+
+        with patch.object(modul, "llm_lock", riegel), \
+             patch.object(modul, "turn_beginnen", return_value=True), \
              patch.object(modul, "event_wartet", return_value=True), \
              patch.object(modul, "turn_beenden") as ende:
             modul._darf_nehmen("meister", "nova", "t-1")
@@ -467,3 +485,94 @@ class PixieUndWaechterTest(unittest.IsolatedAsyncioTestCase):
 
         self.assertIn("turn_beginnen", rufe, "der Consumer setzt keinen Marker")
         self.assertIn("turn_beenden", rufe, "der Consumer loescht keinen Marker")
+
+
+class KeinBlockierenImEventLoopTest(unittest.IsolatedAsyncioTestCase):
+    """Der Riegel wird nie blockierend genommen — das legte den Dienst still.
+
+    Am 01.08.2026 stand der Server sieben Minuten ohne eine einzige Logzeile:
+    `_block_verarbeiten` nahm den Riegel mit `with llm_lock` **synchron im
+    Event-Loop**. Damit blockierte es nicht nur sich selbst, sondern den ganzen
+    Loop — auch den Event-Consumer, dessen `await` den Riegel freigegeben
+    haette. Ein Deadlock, aus dem nur ein Neustart herausfuehrte.
+
+    Geprueft wird am Syntaxbaum: Ein blockierender Erwerb sieht zur Laufzeit
+    genauso aus wie ein gelingender, solange der Riegel zufaellig frei ist.
+    """
+
+    def _modul_quelle(self) -> str:
+        """Der Quelltext des Prompt-Consumers."""
+        import inspect
+
+        import services.prompt_consumer as modul
+        return inspect.getsource(modul)
+
+    async def test_kein_with_auf_dem_riegel(self) -> None:
+        """Ein `with` auf dem Riegel im Event-Loop hielt den Dienst an.
+
+        Geprueft am Syntaxbaum, nicht am Text: Der Quelltext **nennt** die
+        verbotene Bauart im Kommentar, der sie begruendet. Ein Textvergleich
+        faende den Kommentar und meldete den Defekt, den er beschreibt.
+        """
+        import ast
+
+        baum: ast.Module = ast.parse(self._modul_quelle())
+
+        riegel_blöcke: list = [
+            k for k in ast.walk(baum)
+            if isinstance(k, ast.With)
+            for eintrag in k.items
+            if isinstance(eintrag.context_expr, ast.Name)
+            and eintrag.context_expr.id == "llm_lock"
+        ]
+
+        self.assertEqual(riegel_blöcke, [], "`with llm_lock` im Event-Loop")
+
+    async def test_der_erwerb_ist_nicht_blockierend(self) -> None:
+        """Jeder `acquire` traegt `blocking=False` — ein Warten liefe im Loop."""
+        import ast
+
+        baum: ast.Module = ast.parse(self._modul_quelle())
+
+        erwerbe: list[ast.Call] = [
+            k for k in ast.walk(baum)
+            if isinstance(k, ast.Call)
+            and isinstance(k.func, ast.Attribute)
+            and k.func.attr == "acquire"
+        ]
+
+        self.assertTrue(erwerbe, "kein acquire gefunden — Test blind")
+
+        for erwerb in erwerbe:
+            kwargs: dict = {k.arg: k.value for k in erwerb.keywords}
+            self.assertIn("blocking", kwargs, "acquire ohne blocking-Angabe")
+            self.assertFalse(
+                kwargs["blocking"].value,
+                "acquire blockiert — im Event-Loop legt das den Dienst still",
+            )
+
+    async def test_die_freigabe_steht_in_einem_finally(self) -> None:
+        """Ein gehaltener Riegel sperrt jeden weiteren Modellaufruf.
+
+        Die Zahl der Freigaben ist groesser als die der Erwerbe — jeder
+        Ausgang gibt zurueck. Was zaehlt, ist deshalb nicht die Paarigkeit,
+        sondern dass der Weg durch den Verarbeitungsblock in einem `finally`
+        endet: Eine Ausnahme darf den Riegel nicht behalten.
+        """
+        import ast
+
+        baum: ast.Module = ast.parse(self._modul_quelle())
+
+        in_finally: bool = any(
+            isinstance(knoten, ast.Try)
+            and any(
+                isinstance(ruf, ast.Call)
+                and isinstance(ruf.func, ast.Attribute)
+                and ruf.func.attr == "release"
+                for anweisung in knoten.finalbody
+                for ruf in ast.walk(anweisung)
+            )
+            for knoten in ast.walk(baum)
+        )
+
+        self.assertTrue(in_finally, "keine Freigabe in einem finally")

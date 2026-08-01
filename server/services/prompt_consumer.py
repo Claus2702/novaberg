@@ -220,10 +220,15 @@ async def _block_verarbeiten(
             turn_id      = turn_id,
         )
 
-        with llm_lock:
-            letzter, ausfall = await asyncio.to_thread(
-                _pfad1_fahren, conversation_graph, zustand, kopf, loop,
-            )
+        # **Kein `with llm_lock` hier.** Ein `threading.Lock` blockierend im
+        # Event-Loop zu nehmen legt den gesamten Loop still — auch den
+        # Event-Consumer, dessen `await` den Riegel freigeben wuerde. Genau so
+        # entstand am 01.08.2026 ein Deadlock: Der Loop stand, und mit ihm
+        # jede Logzeile. Der Riegel wird vom Waechter erworben, bevor er die
+        # Queue anfasst, und im `finally` des Loops freigegeben.
+        letzter, ausfall = await asyncio.to_thread(
+            _pfad1_fahren, conversation_graph, zustand, kopf, loop,
+        )
 
         nutzlast: dict = _ereignis_nutzlast(
             turn_id, empfangen_am, prompt, letzter, ausfall,
@@ -329,8 +334,8 @@ def _darf_nehmen(user_id: str, character_id: str, turn_id: str) -> bool:
     Bedingung, wird der Marker sofort zurueckgegeben.
 
     Vorbedingung: `turn_id` ist nicht leer.
-    Nachbedingung: Bei `True` ist der Marker gesetzt und gehoert dem Aufrufer;
-        bei `False` ist nichts veraendert.
+    Nachbedingung: Bei `True` sind **Riegel und Marker** erworben und gehoeren
+        dem Aufrufer — er gibt beide zurueck. Bei `False` ist nichts veraendert.
     Fehlerfaelle: Keine — beide Ausgaenge sind Aussagen.
 
     Returns:
@@ -340,7 +345,19 @@ def _darf_nehmen(user_id: str, character_id: str, turn_id: str) -> bool:
     # Keine: `turn_beginnen` lehnt eine leere Kennung selbst ab und meldet.
 
     # ── Verarbeitung ────────────────────────────
+    # Der Riegel zuerst, **nicht blockierend**. Er deckt ab, was der Marker
+    # nicht kennt: den Pixie- und den Recherche-Pfad, die dasselbe Modell
+    # benutzen. Ein blockierendes Warten waere hier toedlich — es liefe im
+    # Event-Loop und legte den ganzen Dienst still.
+    if not llm_lock.acquire(blocking=False):
+        logger.debug(
+            f"Prompt-Consumer: Riegel belegt ({user_id}:{character_id}) — "
+            f"es wird nichts genommen"
+        )
+        return False
+
     if not turn_beginnen(redis_client, user_id, character_id, turn_id):
+        llm_lock.release()
         return False
 
     if event_wartet(redis_client, user_id, character_id):
@@ -349,6 +366,7 @@ def _darf_nehmen(user_id: str, character_id: str, turn_id: str) -> bool:
             f"({user_id}:{character_id}) — es wird nichts genommen"
         )
         turn_beenden(redis_client, user_id, character_id)
+        llm_lock.release()
         return False
 
     # ── Ausgabe-Verifikation ────────────────────
@@ -404,20 +422,27 @@ async def prompt_consumer_loop(
                 if not _darf_nehmen(user_id, character_id, turn_id):
                     continue
 
-                block: list[dict] = naechster_block(
-                    redis_client, user_id, character_id,
-                )
+                # Ab hier gehoert der Riegel diesem Durchlauf. Er wird in
+                # **jedem** Ausgang zurueckgegeben — ein gehaltener Riegel
+                # legte jeden weiteren Modellaufruf still.
+                try:
+                    block: list[dict] = naechster_block(
+                        redis_client, user_id, character_id,
+                    )
 
-                if not block:
-                    # Nichts zu tun — der Marker darf nicht stehenbleiben,
-                    # sonst blockiert ein leerer Takt die naechste Aeusserung.
-                    turn_beenden(redis_client, user_id, character_id)
-                    continue
+                    if not block:
+                        # Nichts zu tun — der Marker darf nicht stehenbleiben,
+                        # sonst blockiert ein leerer Takt die naechste
+                        # Aeusserung.
+                        turn_beenden(redis_client, user_id, character_id)
+                        continue
 
-                await _block_verarbeiten(
-                    block, (user_id, character_id), turn_id,
-                    human_graph, conversation_graph,
-                )
+                    await _block_verarbeiten(
+                        block, (user_id, character_id), turn_id,
+                        human_graph, conversation_graph,
+                    )
+                finally:
+                    llm_lock.release()
 
         except asyncio.CancelledError:
             logger.info("Prompt-Consumer beendet.")
