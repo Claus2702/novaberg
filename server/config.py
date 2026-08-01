@@ -323,6 +323,37 @@ INITIATIVE_RAD_SPANNE:        float = float(os.getenv("INITIATIVE_RAD_SPANNE", "
 # ungluecklicher Lauf legte ihn sonst fuer Tage fest.
 INITIATIVE_RAD_LAEUFE:        int   = int(os.getenv("INITIATIVE_RAD_LAEUFE", "3"))
 
+# ─── Messreihe der Charakter-Raeder (Chat 123) ──
+# Das Rad misst einen akuten Zustand und wird durch die Messungen der letzten
+# Tage stabilisiert (novaberg-charakter-rad-messreihe_k.md). Anlass ist ein
+# gemessener Sprung des Zuwendungsfaktors von 1.215 auf 0.980 innerhalb von
+# zwei Stunden — bei einer Verfahrensstreuung von nur 0.08, also echte
+# Bewegung, ausgeloest von zwanzig gleichfoermigen Turns.
+#
+# **Beide Zahlen sind gesetzt zum Messen.** Sie folgen aus der geforderten
+# Einschwingzeit, nicht aus einer Messung; sobald zehn Reihen liegen, ist die
+# Streuung zwischen Erhebungen bekannt und beide sind abzuleiten.
+RAD_MESSREIHE_FENSTER:        int   = int(os.getenv("RAD_MESSREIHE_FENSTER", "5"))
+
+# Fester Takt, damit Rang und Zeit dasselbe bedeuten: Die Gewichtskurve
+# verfaellt ueber den Rang. Bei ereignisgetriebener Messung wuerden fuenf
+# Erhebungen an einem Tag alles Fruehere verdraengen.
+RAD_MESSUNG_ABSTAND_STUNDEN:  int   = int(os.getenv("RAD_MESSUNG_ABSTAND_STUNDEN", "12"))
+
+# Gewicht der aelteren Messungen gegen die juengste. Der Emotions-Verlauf
+# benutzt an derselben Stelle 0.15, weil dort der aktuelle Turn dominieren
+# SOLL; hier ist das Ziel das Gegenteil. Bei 0.5 und fuenf Reihen traegt die
+# juengste Messung 41 % des Ergebnisses, und ein echter Umschwung ist nach
+# zwei Tagen zu 87 % angekommen.
+RAD_HISTORIEN_GEWICHT:        float = float(os.getenv("RAD_HISTORIEN_GEWICHT", "0.5"))
+
+# Dieselbe Kurve wie der Emotions-Verlauf (EMOTION_DECAY_FACTOR/-_BASE), aber
+# eigene Konstanten: Zwei Groessen, die zufaellig denselben Wert haben, duerfen
+# nicht an einem Regler haengen — wer die Emotionskurve justiert, wuerde sonst
+# stillschweigend die Charakter-Raeder mitverschieben.
+RAD_DECAY_FACTOR:             float = float(os.getenv("RAD_DECAY_FACTOR", "0.8"))
+RAD_DECAY_BASE:               float = float(os.getenv("RAD_DECAY_BASE",  "10"))
+
 # ─── Erregungs-Zuschlag auf den Eigen-Pfad ──
 # Starke Freude, Aufgebrachtheit, Ausrufezeichen — Signale, dass eine Aussage
 # im Moment viel bedeutet. Kein eigener Antrieb, sondern ein Verstaerker auf
