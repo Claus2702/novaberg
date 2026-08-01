@@ -392,16 +392,17 @@ def _fall_pruefen(
     jetzt: datetime = fall["jetzt_dt"]
     referenz: datetime = fall["referenz_dt"]
 
-    original = zeitparser._heute_lokal
-    zeitparser._heute_lokal = lambda bezug=None: jetzt.astimezone(zone).date()
-    try:
-        return _vergleichen(fall, zeitparser, zone, referenz)
-    finally:
-        zeitparser._heute_lokal = original
+    # Bis zum 01.08.2026 stand hier ein Monkey-Patch auf `_heute_lokal`: Der
+    # Parser hatte keinen Weg, den Sprechzeitpunkt entgegenzunehmen, also
+    # wurde eine private Funktion fuer die Dauer des Falls ersetzt. Seit es
+    # `sprechzeitpunkt` gibt, laeuft der Korpus ueber die oeffentliche
+    # Schnittstelle — und misst damit dasselbe, was auch der Betrieb benutzt.
+    return _vergleichen(fall, zeitparser, zone, referenz, jetzt)
 
 
 def _vergleichen(
     fall: dict, zeitparser: Any, zone: ZoneInfo, referenz: datetime,
+    jetzt: datetime,
 ) -> tuple[bool, str, str, str]:
     """Der eigentliche Vergleich, ohne Zeitmanipulation."""
     text: str = fall["text"]
@@ -410,7 +411,7 @@ def _vergleichen(
 
     # Vektorfelder pruefen, wenn gefordert
     if vektor_erwartung:
-        vektor = zeitparser.zeit_parsen_vektor(text, referenz)
+        vektor = zeitparser.zeit_parsen_vektor(text, referenz, sprechzeitpunkt=jetzt)
         for feld, soll in vektor_erwartung.items():
             ist = getattr(vektor, feld, "<fehlt>")
             if ist != soll:
@@ -435,7 +436,9 @@ def _vergleichen(
         return _spanne_vergleichen(spanne, erwartung, zone)
 
     # Punkt: der heutige Rueckgabetyp
-    ergebnis: Optional[datetime] = zeitparser.zeit_parsen(text, referenz)
+    ergebnis: Optional[datetime] = zeitparser.zeit_parsen(
+        text, referenz, sprechzeitpunkt=jetzt,
+    )
     soll_s: Optional[str] = erwartung.get("beginn")
     if soll_s is None:
         return True, "kein Sollwert", "-", ""
