@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Backlog — Konzipierte, noch nicht implementierte Features
-**Stand:** 31. Juli 2026, abends (`HALTUNG-KNOTEN-FEHLT` geschlossen, `HALTUNG-SPANNENENDEN-OFFEN` um die erste Messung am echten Turn ergänzt. Zuvor: Abschnitt „Haltungsraum — der unterbrochene Sprint" ergänzt — vier Einträge: der fehlende Knoten, das fehlende Protokoll, die offenen Spannenenden und die abzulösende Längenregel. Zuvor: Abschnitt „Zeitparser und Kalibrierung" ergänzt — vier Einträge aus dem Korpus-Erstlauf und der Neuerhebung der Positions-Kontrolle. Zuvor: Chat 117, zwei KZG-Einträge gegen den Code nachgezogen. Kern: Chat 111)
+**Stand:** 1. August 2026 (Abschnitt „Charakterbildung messen" ergänzt — der nächste Sprint, mit `PROFIL-HISTORIE-FEHLT` und `PAARLISTE-FEST` als Voraussetzungen. Zuvor: 31. Juli 2026, abends — `HALTUNG-KNOTEN-FEHLT` geschlossen, `HALTUNG-SPANNENENDEN-OFFEN` um die erste Messung am echten Turn ergänzt. Zuvor: Abschnitt „Haltungsraum — der unterbrochene Sprint" ergänzt — vier Einträge: der fehlende Knoten, das fehlende Protokoll, die offenen Spannenenden und die abzulösende Längenregel. Zuvor: Abschnitt „Zeitparser und Kalibrierung" ergänzt — vier Einträge aus dem Korpus-Erstlauf und der Neuerhebung der Positions-Kontrolle. Zuvor: Chat 117, zwei KZG-Einträge gegen den Code nachgezogen. Kern: Chat 111)
 **Pfad:** novaberg/docs/novaberg-backlog.md
 **Quellen:** nova-08-k.md (Kognitive Anreicherung), nova-10-k-backlog.md (Skill-System), nova-01-t-c-backlog.md (Node-Konfiguration)
 
@@ -30,6 +30,69 @@ Erste Erhebung der KZG-Salienz **nach** dem Reset, 400 Schlüssel des Paares `me
 **Die rohe Bewertung ist dabei gesund:** 132 Segmentbewertungen einer Messreihe lagen zwischen 0.2 und 0.9, Mittel **0.61**, keine einzige bei 1.0. Zwischen Bewertung und Ablage hebt die Formel also fast alles ans Dach — dieselbe Aussage wie vor dem Reset (damals 68 % über 1.0), auf frischem Bestand bestätigt. **Der Befund ist damit nicht historisch, sondern aktuell.**
 
 **Was neu gemessen werden muss, bevor es geschlossen wird:** `KZG-TTL-UNSTERBLICH` (die Altersverteilung ist weg), `PROMOTION-ENTFERNT-KZG-NICHT` (der Vollabgleich hat keinen Bestand mehr), `KZG-GEWICHT-ABSOLUT-CEILING` (die Knoten über dem Cap existieren nicht mehr). Ein leerer Bestand ist kein Nachweis, dass ein Defekt behoben ist.
+
+---
+
+## 0b. Charakterbildung messen — der nächste Sprint (01.08.2026)
+
+Das System misst sich inzwischen selbst sehr genau und seine **Wirkung auf das Gespräch gar nicht**. Es gibt keine Zahl, die sagt, ob der Apparat aus Perzeption, EI-Profil, Gesprächsvektor und Charakter-Rädern eine Antwort erzeugt, die ein nacktes Sprachmodell nicht erzeugt hätte.
+
+Solange diese Zahl fehlt, wird jede Justierung an Zwischengrößen gegen Zwischengrößen kalibriert.
+
+### Die Frage, in drei zerlegt
+
+**Ist es unterscheidbar?** Erzeugt der Apparat eine sichtbare Wirkung, oder wäre das nackte Modell nicht zu trennen?
+
+**Ist es ein Charakter?** Nicht dasselbe. Ein Charakter ist nicht „anders als das Basismodell", sondern über die Zeit derselbe und unter Störung stabil.
+
+**Ist es kausal?** Ändert sich das Verhalten, wenn sich der Charakter ändert — in die vorhergesagte Richtung?
+
+### Der Aufbau
+
+**Mehrere Test-Nutzer gegen dieselbe Nova**, jeder mit einer eigenen Gesprächsart. Das Paar-Schema trägt das bereits: `charakter_hash`, KZG und LZG liegen je Paar. Damit wird die Frage schärfer und besser messbar:
+
+> **Entwickelt Nova je Beziehung einen anderen Charakter?**
+
+Konvergieren alle Räder auf dasselbe Profil, liest der Apparat das **Modell** und nicht die Beziehung. Divergieren sie in die Richtung, die die Gesprächsart vorgibt, ist Charakterbildung belegt.
+
+**Der nackte Vergleich ist dabei geschenkt:** Ein frisches Paar ist in seinen ersten Turns das nackte Modell — leere Profile, Rad auf der Nabe. Turn 1 gegen Turn 100 desselben Paares ist die Ablation, ohne Gabelung und ohne das Risiko, dass ein Ablationspfad dem Produktivpfad nicht entspricht.
+
+**Der Kontrollarm gehört dazu:** Zwei Nutzer mit **identischem** Gesprächsskript. Divergieren die, misst die Reihe Rauschen.
+
+### Die Maße stehen vor dem ersten Turn fest
+
+Sonst sucht man hinterher die Zahl, die passt.
+
+| Maß | Quelle |
+|---|---|
+| Antwortlänge, Fragenanteil | `pipeline_log`, `art='turn_roh'` |
+| Radabstand zwischen den Paaren | euklidisch über die zwölf Speichen |
+| Profilähnlichkeit | Embedding-Distanz der Profiltexte |
+| Trennschärfe | blinder Urteiler: Profil plus zwei Antworten — welche passt? |
+
+**Jede nicht-blinde Ablesung ist für diese Frage wertlos.** Wer weiß, welche Antwort von Nova stammt, findet Charakter darin.
+
+**Die Vorhersagen gehören ebenfalls vorher festgeschrieben** — je Person eine Erwartung an ihr Rad. Trifft sie nicht ein, ist das ein Ergebnis und kein Anlass zum Nachjustieren.
+
+**Priorität:** hoch. Sie steht vor der Justierung der Beitragszahlen und vor dem Prompt-Block: Landet der Blindtest beim Zufall, wird gerade sehr sorgfältig etwas kalibriert, das niemand sieht.
+
+#### PROFIL-HISTORIE-FEHLT — der Profilstand ist nicht rekonstruierbar
+
+`kern_hash`, `adaptive_hash`, `intentions_profil`, `emotions_profil` und `beziehungsprofil` werden bei jeder Destillation **überschrieben**. Nach hundert Turns lässt sich nicht mehr sagen, welcher Profilstand welches Verhalten erzeugt hat.
+
+Für eine Messreihe ist das der Unterschied zwischen einer Messung und einer Erzählung. Es ist derselbe Defekt, den das Zuwendungs-Rad bis zum 01.08.2026 hatte — eine Ebene höher, und derselbe Verstoß gegen Regel (1) der Konvention über abgeleitete Werte.
+
+**Bauart steht bereits:** dieselbe wie `charakter_rad_messung` — rohe Stände mit eigenem Zeitstempel, Modell, Temperatur und Quellen-Prüfsumme, der gelesene Wert bleibt in `charakter_hash`.
+
+**Priorität:** hoch, **vor** der Reihe. Ohne sie ist die Reihe nicht auswertbar.
+
+#### PAARLISTE-FEST — der CharakterAgent destilliert genau ein Paar
+
+`agents/charakter/agent.py` trägt die Paarliste als Literal: `[(DEFAULT_USER_ID, ASSISTANT_USER_ID)]`. Für weitere Nutzer entstünden weder Profile noch Räder — still, weil der Agent für sie schlicht nie läuft.
+
+Das Datenmodell trägt das Paar überall; es fehlt die **Iteration**, nicht das Schema. Die Liste muss aus dem Bestand kommen, mit einer benannten Grenze, damit ein versehentlich angelegter Nutzer nicht zehn Destillationen je Lauf auslöst.
+
+**Priorität:** hoch, vor der Reihe.
 
 ---
 
