@@ -76,6 +76,7 @@ USER_BUBBLE_COLOR         = "#2B5278"   # Blau, rechts (User)
 ASSISTANT_BUBBLE_COLOR    = "#1A3A2A"   # Grün-dunkel, links (Nova)
 IMPULSE_BUBBLE_COLOR      = "#2A3A1A"   # Grün-leicht, links (Pixie-Impulse)
 IMPULSE_BORDER_COLOR      = "#4A7A3A"   # Akzent-Rand links an Impuls-Bubbles
+UNZUGEORDNET_BORDER_COLOR = "#C46A2A"   # Rand an Antworten, die nicht zur letzten Frage gehören
 BACKGROUND_COLOR          = "#1E1E1E"   # Dunkler Hintergrund
 TEXT_COLOR                = "#E0E0E0"   # Heller Text
 STAGE_TEXT_COLOR          = "#888"      # Pipeline-Stage (kursiv, zentriert)

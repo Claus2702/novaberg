@@ -40,7 +40,11 @@ from config import (  # noqa: E402
 from ui.chat_view      import ChatView                    # noqa: E402
 from ui.panel_registry import PanelRegistry, create_default_registry  # noqa: E402
 from ui.status_bar     import StatusBar                   # noqa: E402
-from ui.stream_handler import StreamHandler               # noqa: E402
+from ui.stream_handler import (                           # noqa: E402
+    StreamHandler,
+    ZUORDNUNG_FREMD,
+    ZUORDNUNG_UNBEOBACHTET,
+)
 
 
 logger = logging.getLogger(__name__)
@@ -362,13 +366,28 @@ class MainWindow(Gtk.ApplicationWindow):
         self._chat_view.show_stage(label, detail)
 
     def _handle_answer(self, antwort: str, meta: dict) -> None:
+        zuordnung: str = meta.get("zuordnung", ZUORDNUNG_UNBEOBACHTET)
+
         logger.info(
             f"Antwort empfangen ({len(antwort)} Zeichen, "
             f"Modell={meta.get('modell', '?')}, "
-            f"Tokens={meta.get('token_total', '?')})"
+            f"Tokens={meta.get('token_total', '?')}, "
+            f"Zuordnung={zuordnung})"
         )
         self._chat_view.clear_stages()
-        self._chat_view.add_assistant_message(antwort)
+
+        if zuordnung == ZUORDNUNG_FREMD:
+            # Die letzte Nachricht ist unbeantwortet geblieben, und was hier
+            # ankommt, gehoert zu einem anderen Reiz. Ohne den Vermerk waere
+            # das nicht erkennbar: Die Antwort liest sich fluessig und
+            # geschlossen, sie passt nur nicht zur Frage.
+            self._chat_view.add_unzugeordnete_antwort(
+                antwort,
+                "⚠ **Diese Antwort gehört nicht zu deiner letzten Nachricht.** "
+                "Sie blieb unbeantwortet.",
+            )
+        else:
+            self._chat_view.add_assistant_message(antwort)
 
         # Antwort da — Eingabe wieder freigeben.
         self._awaiting_response = False

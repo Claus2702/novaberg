@@ -36,6 +36,7 @@ from config import (  # noqa: E402
     STAGE_TEXT_COLOR,
     TABLE_BORDER_COLOR,
     TEXT_COLOR,
+    UNZUGEORDNET_BORDER_COLOR,
     USER_BUBBLE_COLOR,
 )
 
@@ -103,6 +104,16 @@ body {{
     align-self: flex-start;
     border-bottom-left-radius: 4px;
     border-left: 3px solid {IMPULSE_BORDER_COLOR};
+}}
+
+/* Eine Antwort, die nicht zur letzten Frage gehoert. Sie traegt die Farbe
+   der Assistenten-Bubble, damit erkennbar bleibt, wer spricht — und einen
+   auffaelligen Rand, weil ihre Stelle im Gespraech nicht stimmt. */
+.message-unzugeordnet {{
+    background-color: {ASSISTANT_BUBBLE_COLOR};
+    align-self: flex-start;
+    border-bottom-left-radius: 4px;
+    border-left: 3px solid {UNZUGEORDNET_BORDER_COLOR};
 }}
 
 .stage {{
@@ -253,6 +264,7 @@ class ChatView:
             LINK_COLOR                = LINK_COLOR,
             BLOCKQUOTE_BORDER_COLOR   = BLOCKQUOTE_BORDER_COLOR,
             BLOCKQUOTE_TEXT_COLOR     = BLOCKQUOTE_TEXT_COLOR,
+            UNZUGEORDNET_BORDER_COLOR = UNZUGEORDNET_BORDER_COLOR,
         )
         self.webview.load_html(html_content, None)
         logger.info("ChatView: HTML-Template geladen")
@@ -271,6 +283,17 @@ class ChatView:
         logger.debug(f"ChatView.add_assistant_message: {len(text)} Zeichen")
         rendered: str = self._markdown_to_html(text)
         self._render_message(rendered, "message-assistant")
+
+    def add_unzugeordnete_antwort(self, text: str, vermerk: str) -> None:
+        """Nova-Antwort, die nicht zur letzten Frage gehoert — mit Vermerk.
+
+        Sie wird angezeigt und nicht unterdrueckt: Der Inhalt ist echt, nur
+        seine Stelle im Gespraech ist es nicht. Verschwiegen waere er ein
+        zweiter Verlust, still einsortiert eine Falschaussage.
+        """
+        logger.warning(f"ChatView.add_unzugeordnete_antwort: {len(text)} Zeichen — {vermerk}")
+        rendered: str = self._markdown_to_html(f"{vermerk}\n\n{text}")
+        self._render_message(rendered, "message-unzugeordnet")
 
     def add_impulse_message(self, text: str) -> None:
         """Pixie-Impuls als hervorgehobene Bubble links."""
