@@ -16,6 +16,19 @@ Das System wurde zu diesem Zeitpunkt auf einen leeren Datenbestand zurückgesetz
 
 **Die Befunde bleiben gültig.** Sie ruhen auf Formeln, Konstanten und Codestellen, nicht auf den Zahlen — die Zahlen waren ihr Beleg, nicht ihre Ursache. `KZG-SALIENZ-SKALENBRUCH` ist eine Aussage über eine Dämpfungskurve und einen Deckel; die hält, solange der Code sie trägt.
 
+### Nachgemessen am 01.08.2026 — die Salienz steht wieder oben
+
+Erste Erhebung der KZG-Salienz **nach** dem Reset, 400 Schlüssel des Paares `meister/nova` aus 1045:
+
+| | |
+|---|---|
+| Minimum | 0.67 |
+| **Median** | **0.98** |
+| ≥ 0.9 | 345 = **86 %** |
+| = 1.0 (Deckel) | 119 = **30 %** |
+
+**Die rohe Bewertung ist dabei gesund:** 132 Segmentbewertungen einer Messreihe lagen zwischen 0.2 und 0.9, Mittel **0.61**, keine einzige bei 1.0. Zwischen Bewertung und Ablage hebt die Formel also fast alles ans Dach — dieselbe Aussage wie vor dem Reset (damals 68 % über 1.0), auf frischem Bestand bestätigt. **Der Befund ist damit nicht historisch, sondern aktuell.**
+
 **Was neu gemessen werden muss, bevor es geschlossen wird:** `KZG-TTL-UNSTERBLICH` (die Altersverteilung ist weg), `PROMOTION-ENTFERNT-KZG-NICHT` (der Vollabgleich hat keinen Bestand mehr), `KZG-GEWICHT-ABSOLUT-CEILING` (die Knoten über dem Cap existieren nicht mehr). Ein leerer Bestand ist kein Nachweis, dass ein Defekt behoben ist.
 
 ---
@@ -74,13 +87,31 @@ Dazu eine Zeile in der Spur (`services/event_consumer.py`), damit das Ergebnis b
 
 Gemessen am Entwurf: `glut/waerme` ergibt 1.15, `feuerwerk/fragen` 1.40, und nach unten reicht **eine** voll ausgeprägte Speiche — `glut/draengen` fällt mit `treue` auf −0.10.
 
-**Erster echter Turn, 31.07.2026, 20:35 UTC:** Landschaft `beichte`, **zwei von fünf** Größen außerhalb — `naehe` 1.25, `waerme` 1.35. Ein Datenpunkt ist keine Häufigkeit, aber er verschiebt die Erwartung: Der Überlauf tritt nicht selten auf, sondern im ersten Lauf.
+**Gemessen am 31.07.2026 — die Frage ist entscheidbar geworden.** Reihe über 20 Turns: 9 von 19 Turns außerhalb, 20 von 95 Einzelwerten, ausschließlich nach oben, null Übersteuerungen. Anschließend alle 14 Landschaften gegen das reale Rad gerechnet — die Haltung ist bei festem Rad eine reine Funktion, das Ergebnis ist damit vollständig und keine Schätzung:
+
+**10 von 14 Landschaften laufen über.** `waerme` 8×, `naehe` 6×, `umfang` 4×, `fragen` 3×. Sauber bleiben nur die vier kühlen: `gewitter`, `schlachtfeld`, `wartezimmer`, `paradox`.
+
+**Damit ist eine der beiden Lösungen unplausibel geworden.** *Kleinere Beiträge* müssten das Rad so weit stauchen, dass der Charakter in warmen Landschaften praktisch nichts mehr bewirkt — `waerme` steht dort bei Grundwert 0.90 und bekommt +0.45. *Sättigung* trifft genau diesen Fall: Wo die Lage schon warm ist, fügt der Charakter wenig hinzu; wo sie kalt ist, macht er den Unterschied. **Die Entscheidung liegt weiterhin nicht hier** — sie gehört in `novaberg-haltungsraum_k.md` §6 und ist zu treffen, nicht abzuleiten.
+
+**Was die Messung nicht zeigt:** den Unterlauf. Das vermessene Rad ist ein warmes; die untere Grenze braucht eine ausgeprägte `treue` und ist ungeprüft geblieben.
 
 Nicht gekappt, sondern gemeldet und markiert; die Häufigkeit ist die Messgröße, die zwischen zwei Auswegen entscheidet. **Kleinere Beiträge** oder **Sättigung auf die Summe** — beide stehen mit ihren Preisen in `novaberg-haltungsraum_k.md` §6.
 
 **Der Eintrag verlangt keine der beiden Lösungen**, sondern die Messung davor. Eine Entscheidung am Schreibtisch wäre eine Setzung auf eine Setzung.
 
 **Priorität:** mittel — erst nach der ersten Messreihe entscheidbar.
+
+#### HALTUNG-OHNE-LANDSCHAFT — der Prompt-Block muss den leeren Fall beantworten
+
+Kehrt der GV-Node früh zurück — bei Vektorlänge 0 („kein Vorausdenken") oder beim Skip —, setzt er `gv_detail` **nicht**. Ohne Landschaft gibt es keine Grundwerte und damit keine Haltung. Der Haltungs-Knoten erbt diese Lücke; das ist kein Defekt in ihm, sondern eine Weitergabe.
+
+**Gemessen am 31.07.2026:** in einer Reihe von 20 Turns **einmal**, dazu **einmal** auf Novas Eigenimpuls unmittelbar danach — also rund jeder zehnte Haltungs-Vorgang. Kein Randfall.
+
+**Solange kein Prompt die Werte liest, ist das folgenlos.** Mit dem Prompt-Block wird es eine Fallunterscheidung: Nova bekäme in diesen Turns keine Verhaltensvorgaben, während die alte Längenregel abgelöst ist. Zwei Wege stehen offen — die letzte Haltung weiterverwenden (dann muss sie als übernommen markiert sein, sonst sieht ein alter Wert wie ein frischer aus) oder den Block weglassen und auf die Vorgabewerte des Prompts zurückfallen.
+
+**Der Eintrag verlangt keinen der beiden Wege**, sondern die Entscheidung vor dem Einhängen des Blocks.
+
+**Priorität:** hoch, gleichzeitig mit dem Prompt-Block.
 
 #### HALTUNG-LAENGE-ZWEI-ERZEUGER — die alte Längenregel muss abgelöst werden
 

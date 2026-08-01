@@ -293,6 +293,45 @@ Eine Übersteuerung ist keine Ausnahme von der Fläche, sondern eine Eigenschaft
 - **Die Zellen selbst.** Das ist die eigentliche Arbeit und eine Setzung. Belegt sind bisher nur die zwei Pole: `Glut × Wohlwollen` weit, `Schlachtfeld × Abwendung` eng. **Beide sind noch auf die neue Adressierung zu übersetzen** (§2): Der eine nennt eine Speiche, der andere eine ganze Seite — als Sektor-und-Ausschlag ist keiner von beiden bereits ausgedrückt.
 - ~~**Wie viele Sektoren die Fläche bekommt.**~~ → **Gegenstandslos seit dem Beitragsmodell** (§2). Es gibt keine Sektoren mehr; die frühere Angabe „168" setzte zwölf diskrete Speichenpositionen voraus und gilt nicht.
 - ~~**Die Zahlen selbst.**~~ → **Entwurf steht** (§2.0), gesetzt zum Messen. Was daraus wird, entscheidet die erste Messreihe.
+- **Der Bezugswert wandert, und zwar um 100 % in zwei Stunden.** Dasselbe `kissenschlacht`, zweimal gerechnet:
+
+  | Rad | Umfang | Fragen | Nähe | Wärme | Drängen | Landschaften mit Überlauf |
+  |---|---:|---:|---:|---:|---:|---|
+  | 20:18 UTC | **0.70** | 1.10 | 1.10 | 1.35 | 0.70 | 10 von 14, keine mit Unterlauf |
+  | 22:20 UTC | **0.35** | 1.00 | 0.30 | 0.90 | 0.85 | 7 von 14, davon 5 mit Unterlauf |
+
+  Zwischen beiden lief eine Neudestillation: `treue` 0.5→0.0, `dienst` 0.5→0.0, `wohlwollen` 1.0→0.5, `selbstbezogen` 0.0→0.5, **`distanz` 0.0→1.0**, Faktor 1.215→0.98.
+
+  **Damit ist die Reihenfolge der Arbeit falsch herum.** Die Beitragszahlen an einer Größe zu kalibrieren, die sich binnen zwei Stunden verdoppelt, kalibriert gegen Rauschen. Vor jeder weiteren Justierung steht die Frage, **wie stabil das Zuwendungs-Rad überhaupt ist** — es wird bis heute einmal erhoben, ohne Median und ohne Streuungsmaß, anders als das Initiative-Rad, das dreimal läuft.
+
+  **Und die Zahlen selbst sind damit nicht widerlegt, sondern entlastet:** Mit dem Rad von 22:20 trifft das Modell den Anlassfall gut — der scherzhafte Einzeiler bekommt Umfang 0.35 statt 0.70.
+
+- **Der Anlassfall, an echten Turns gemessen (31.07.2026, 28 Turns eines Tages).** Kurze Reize bis 200 Zeichen: Median **45 Zeichen hinein, 546 hinaus**. Lange Reize über 200 Zeichen: Median **1789 hinein, 1172 hinaus**. Im Modus `spielerisch` zweimal **23 → 887** und **30 → 1224 Zeichen**, also Faktor 39 und 41.
+
+  **Das ist §1 in Zahlen:** Je kürzer der Reiz, desto unverhältnismäßiger die Antwort. Die Regel „Spiegle die Länge des Nutzers" hätte hier nicht nur nicht gegriffen — sie hätte in die falsche Richtung gezeigt.
+
+  > **Und die Ausgangswerte lösen genau diesen Fall nicht.** `kissenschlacht` trägt Umfang 0.30; das reale Rad addiert **+0.40** auf den Umfang (`wissbegier` +0.3, `dienst` +0.2 bei halber Ausprägung). Ergebnis **0.70** — der scherzhafte Einzeiler bekäme weiterhin einen ausführlichen Umfang zugestanden. Auch mit Sättigung stünde er bei 0.58. **Der Hebel ist damit nicht allein die Behandlung der Spannenenden**, sondern die Frage, warum eine wissbegierige Nova den Umfang unabhängig von der Lage anhebt.
+
+- **Messreihe über 20 Turns, 31.07.2026, 21:18–22:02 UTC.** 19 Turns mit Haltung, einer ohne. Vier Landschaften: `werkstatt` 8×, `schlachtfeld` 9×, `feuerwerk` und `wartezimmer` je 1×.
+
+  **Die Spanne wird in 9 von 19 Turns verlassen, in 20 von 95 Einzelwerten — ausschließlich nach oben, keine einzige Übersteuerung.** Nach unten brach nichts: Dieses Rad ist ein warmes, die Unterlauf-Gefahr aus dem Entwurf braucht eine ausgeprägte `treue`.
+
+  > **Die Reihe hat dabei ihre eigene Grenze gezeigt.** Bei festem Rad ist die Haltung eine **reine Funktion der Landschaft** — alle acht `werkstatt`-Turns lieferten dieselben fünf Zahlen, alle neun `schlachtfeld` ebenso. Zwanzig Turns messen damit die **Häufigkeit der Landschaften**, nicht die Streuung der Haltung; die wirksame Stichprobe war **vier**. Wer die Charakter-Achse bewegen will, braucht ein anderes Rad, nicht mehr Turns.
+
+- **Deshalb gerechnet statt gestichprobt: alle 14 Landschaften gegen das reale Rad** (destilliert, 12 Speichen, Stand 31.07.2026). Die Rechnung ist die geprüfte Funktion selbst, das Ergebnis vollständig und keine Schätzung:
+
+  | | Landschaften mit Überlauf |
+  |---|---|
+  | **Gesamt** | **10 von 14** |
+  | `waerme` | 8 |
+  | `naehe` | 6 |
+  | `umfang` | 4 |
+  | `fragen` | 3 |
+
+  **Die Stichprobe hat die falsche Größe gezeigt.** In den vier gemessenen Landschaften liefen `umfang` und `fragen` über; über alle vierzehn ist `waerme` der Hauptfall und `naehe` der zweite — beide traten in der Reihe nur je einmal auf. Eine Reihe, die vier von vierzehn Landschaften trifft, kann die Rangfolge der Überläufe nicht sehen.
+
+  **Vier Landschaften bleiben sauber:** `gewitter`, `schlachtfeld`, `wartezimmer`, `paradox` — durchweg kühle mit niedrigen Grundwerten. Der Überlauf ist damit kein Randfall, sondern die Regel für alles Warme.
+
 - **Erste Messung am echten Turn, 31.07.2026, 20:35 UTC.** Landschaft `beichte`, Rad destilliert mit zwölf Speichen:
 
   ```

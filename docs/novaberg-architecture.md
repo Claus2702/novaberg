@@ -276,6 +276,8 @@ project/
 │   │   ├── promotion/                   #   PromotionAgent (Pixie, KZG -> LZG)
 │   │   ├── decay/                       #   DecayAgent (Pixie, Ebbinghaus)
 │   │   ├── charakter/                   #   CharakterAgent (Pixie, Hash-Destillation + zwei Charakter-Raeder)
+│   │   │   ├── rad_messreihe.py         #     Messreihe der Raeder: rohe Messungen + gewichtetes Mittel (→ novaberg-charakter-rad-messreihe_k.md)
+│   │   │   └── init.sql                 #     Tabelle charakter_rad_messung (seit 01.08.2026)
 │   │   ├── wiedervorlage/               #   WiedervorlageAgent (Pixie)
 │   │   ├── synapsen_promotion/          #   Synapsen P4 (Pixie, KZG -> lzg_knoten)
 │   │   ├── synapsen_decay/              #   Synapsen P6 (Pixie, Knoten-Decay + pipeline_log-Retention)
@@ -625,6 +627,7 @@ Das Handbuch ist nach Betrachtungstiefen organisiert. Tiefe 0 ist der Einstiegsp
 | novaberg-node-gv_k.md | Gespraechsvektor (Farbmisch-System, zweite Wissensquelle: ~~Entity-Hop~~ Resonanz-Kontext seit Chat 115) |
 | novaberg-gv-initiative_k.md | Initiative-Achse — Konzept: Herleitung, verworfene Wege, Kalibrier-Agent (Entwurf) |
 | novaberg-gv-initiative.md | Initiative-Achse — Modul: Datenfluss, Konstanten mit Kalibrierungsstand, Messungen |
+| novaberg-charakter-rad-messreihe_k.md | Die Charakter-Räder als Messreihe — Konzept: Das Rad misst einen akuten Zustand und wird durch die Messungen der letzten Tage stabilisiert; rohe Messungen in `charakter_rad_messung`, gelesener Wert als gewichtetes Mittel (🔶 gebaut für das Zuwendungs-Rad) |
 | novaberg-haltungsraum_k.md | Haltungsraum — Konzept: Landschaft setzt Grundwerte für fünf Verhaltensgrößen, das Zuwendungsrad modifiziert sie; Grenzen multiplizieren, Neigungen addieren, Übersteuerungen ersetzen (🔶 Rechnung und Knoten gebaut und im Betrieb, Protokoll und Prompt offen) |
 | novaberg-node-verfasser_k.md | Verfasser — Konzept: ein Node vor dem Responder, der den fachlichen Inhalt bestimmt; Inhalt und Wesen werden getrennt (⬜ nicht gebaut) |
 | novaberg-node-responder.md | Responder (Antwortgenerierung, EI-MIKRO) |
