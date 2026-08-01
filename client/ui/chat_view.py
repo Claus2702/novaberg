@@ -191,12 +191,17 @@ body {{
 <body>
 <div id="chat-container"></div>
 <script>
-// Fügt eine Nachrichten-Bubble in den Container ein. Vorher werden
-// sämtliche Pipeline-Stage-Einträge entfernt, damit der Verlauf
-// übersichtlich bleibt.
+// Fügt eine Nachrichten-Bubble in den Container ein.
+//
+// Eine **Antwort** räumt die Stage-Einträge des Turns ab, den sie beendet.
+// Eine **eigene Nachricht** tut das nicht: Seit die Eingabe nicht mehr
+// gesperrt ist, kann sie mitten in einen laufenden Turn fallen, und sie
+// löschte dann die Anzeige einer Verarbeitung, die noch läuft.
 function addMessage(html, cssClass) {{
     const container = document.getElementById('chat-container');
-    removeStages();
+    if (cssClass !== 'message-user') {{
+        removeStages();
+    }}
     const div = document.createElement('div');
     div.className = 'message ' + cssClass;
     div.innerHTML = html;
