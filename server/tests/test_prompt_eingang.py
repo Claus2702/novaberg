@@ -324,6 +324,7 @@ class QueueWaechterTest(unittest.IsolatedAsyncioTestCase):
              patch.object(modul, "shutdown_event", halt), \
              patch.object(modul, "POLL_INTERVAL", 0.0), \
              patch.object(modul, "turn_beginnen", return_value=turn_frei) as beginn, \
+             patch.object(modul, "event_wartet", return_value=False), \
              patch.object(modul, "turn_beenden") as ende, \
              patch.object(modul, "naechster_block", return_value=[]) as nehmer:
             await modul.prompt_consumer_loop(MagicMock(), MagicMock())
@@ -391,3 +392,78 @@ class TurnMarkerTest(unittest.TestCase):
         turn_beenden(redis, "meister", "nova")
 
         redis.delete.assert_called_once()
+
+
+class PixieUndWaechterTest(unittest.IsolatedAsyncioTestCase):
+    """Ein eigener Impuls ist auch ein Turn — und er wartet auf seinen Durchlauf.
+
+    Der Marker allein reicht nicht: Ein Impuls loescht ihn am Ende seines
+    eigenen Durchlaufs, auch wenn das Nutzer-Ereignis dahinter noch in der
+    Ereignis-Queue liegt. Dann steht der Marker frei und ein unfertiger Turn
+    trotzdem aus.
+    """
+
+    def _consumer(self) -> object:
+        """Das Consumer-Modul, dessen Waechter geprueft wird."""
+        import services.prompt_consumer as modul
+        return modul
+
+    async def test_wartendes_ereignis_verhindert_das_nehmen(self) -> None:
+        """Der zweite Riegel: nicht 'laeuft gerade', sondern 'kommt noch'."""
+        from unittest.mock import patch
+
+        modul = self._consumer()
+
+        with patch.object(modul, "turn_beginnen", return_value=True), \
+             patch.object(modul, "event_wartet", return_value=True), \
+             patch.object(modul, "turn_beenden") as ende:
+            erlaubt: bool = modul._darf_nehmen("meister", "nova", "t-1")
+
+        self.assertFalse(erlaubt)
+        ende.assert_called_once()
+
+    async def test_freie_bahn_erlaubt_das_nehmen(self) -> None:
+        """Der positive Zwilling — beide Bedingungen frei."""
+        from unittest.mock import patch
+
+        modul = self._consumer()
+
+        with patch.object(modul, "turn_beginnen", return_value=True), \
+             patch.object(modul, "event_wartet", return_value=False), \
+             patch.object(modul, "turn_beenden") as ende:
+            erlaubt: bool = modul._darf_nehmen("meister", "nova", "t-1")
+
+        self.assertTrue(erlaubt)
+        ende.assert_not_called()
+
+    async def test_der_marker_wird_bei_abbruch_zurueckgegeben(self) -> None:
+        """Ein gesetzter und nicht genutzter Marker sperrte bis zum Verfall."""
+        from unittest.mock import patch
+
+        modul = self._consumer()
+
+        with patch.object(modul, "turn_beginnen", return_value=True), \
+             patch.object(modul, "event_wartet", return_value=True), \
+             patch.object(modul, "turn_beenden") as ende:
+            modul._darf_nehmen("meister", "nova", "t-1")
+
+        ende.assert_called_once_with(modul.redis_client, "meister", "nova")
+
+    async def test_ein_impuls_setzt_den_marker_ebenfalls(self) -> None:
+        """Sonst bliebe die Eingabe waehrend seines Durchlaufs offen."""
+        import ast
+        import inspect
+
+        import services.event_consumer as ec
+
+        quelle: str = inspect.getsource(ec)
+        baum: ast.Module = ast.parse(quelle)
+
+        rufe: set[str] = {
+            k.func.id
+            for k in ast.walk(baum)
+            if isinstance(k, ast.Call) and isinstance(k.func, ast.Name)
+        }
+
+        self.assertIn("turn_beginnen", rufe, "der Consumer setzt keinen Marker")
+        self.assertIn("turn_beenden", rufe, "der Consumer loescht keinen Marker")

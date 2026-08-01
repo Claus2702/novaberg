@@ -22,7 +22,7 @@ from services.events import (
     event_naechstes,
     event_self_trigger_erlaubt,
 )
-from services.prompt_eingang import turn_beenden
+from services.prompt_eingang import turn_beenden, turn_beginnen
 
 logger = logging.getLogger("ki_server.event_consumer")
 
@@ -436,6 +436,20 @@ async def event_consumer_loop(
                 logger.info(
                     f"Event-Consumer: Verarbeite {event['typ']} "
                     f"(source={event['source']}, {user_id}:{character_id})"
+                )
+
+                # Auch ein eigener Impuls ist ein Turn. Er kommt nicht aus
+                # der Eingangs-Queue und hat deshalb keinen Marker — ohne
+                # diesen hier bliebe die Eingabe waehrend seines Durchlaufs
+                # offen, und eine gleichzeitig eingespeiste Aeusserung liefe in
+                # dieselbe Zeitueberschreitung, gegen die der Marker gebaut ist.
+                #
+                # Das Ergebnis wird nicht geprueft: Bei einem Nutzer-Turn steht
+                # der Marker bereits, und dass er steht, ist genau das
+                # Gewuenschte.
+                turn_beginnen(
+                    redis_client, user_id, character_id,
+                    event.get("event_id", "ereignis"),
                 )
 
                 # ── CharacterGraph ausführen ──

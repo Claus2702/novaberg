@@ -83,6 +83,38 @@ def event_erzeugen(
 # ─────────────────────────────────────────────
 # Nächstes Event holen
 # ─────────────────────────────────────────────
+def event_wartet(
+    redis_client: redis.Redis,
+    user_id:      str,
+    character_id: str,
+) -> bool:
+    """Sagt, ob fuer dieses Paar noch ein Ereignis auf seinen Durchlauf wartet.
+
+    Gebraucht vom Prompt-Consumer: Ein wartendes Ereignis heisst, dass der
+    CharacterGraph noch kommt. Wer in diesem Zustand eine neue Aeusserung
+    einspeist, erzeugt einen zweiten Turn neben einem unfertigen.
+
+    Der Turn-Marker allein reicht dafuer nicht — ein Pixie-Impuls loescht ihn
+    am Ende seines eigenen Durchlaufs, auch wenn das Nutzer-Ereignis dahinter
+    noch in der Queue liegt.
+
+    Vorbedingung: Keine.
+    Nachbedingung: True, wenn mindestens ein Ereignis wartet.
+    Fehlerfaelle: Keine.
+
+    Returns:
+        Ob etwas wartet.
+    """
+    # ── Eingabe-Validierung ─────────────────────
+    key: str = _queue_key(user_id, character_id)
+
+    # ── Verarbeitung ────────────────────────────
+    laenge: int = redis_client.llen(key)
+
+    # ── Ausgabe-Verifikation ────────────────────
+    return laenge > 0
+
+
 def event_naechstes(
     redis_client: redis.Redis,
     user_id:      str,

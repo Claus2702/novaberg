@@ -2001,6 +2001,8 @@ Der Chat-Endpunkt **nimmt nur noch an**. Er stempelt den Empfang, reiht ein und 
 
 > **Der `llm_lock` reicht als Wächter nicht.** Er wird zwischen Pfad 1 und dem CharacterGraph kurz frei, und in diesen Spalt geriet ein zweiter Durchlauf; sein Modellaufruf lief danach in einen Timeout, der Turn blieb ohne Perzeption. Erst ein Marker, der **beide** Hälften umspannt, hält die Eingabe zurück. Der Riegel schützt die GPU, nicht den Turn.
 
+**Der Pixie-Pfad war das Loch im ersten Wächter.** Ein eigener Impuls kommt nicht aus der Eingangs-Queue und brachte deshalb keinen Marker mit — während er lief, stand die Eingabe offen. Und schlimmer: Sein Durchlauf **löschte** den Marker am Ende, auch wenn das Nutzer-Ereignis dahinter noch wartete. Der Event-Consumer setzt den Marker jetzt selbst, und der Prompt-Consumer prüft zwei Dinge statt einem: *läuft gerade etwas* und *kommt noch etwas*.
+
 **Live gemessen am 01.08.2026:**
 
 - Eine Äußerung während eines laufenden Turns wartete **1:57 min** in der Queue, wurde **558 ms** nach dem Turn-Ende genommen und lief ohne Timeout durch.
@@ -2009,7 +2011,7 @@ Der Chat-Endpunkt **nimmt nur noch an**. Er stempelt den Empfang, reiht ein und 
 
 **Und die Eingabesperre im Client ist gefallen** — beide: die sichtbare und der stille Riegel, der eine zweite Äußerung mit einer Logzeile verwarf. Sie hatte einen Preis, der erst mit dem Leer-Defekt sichtbar wurde: Blieb eine Antwort aus, blieb die Oberfläche unbenutzbar. Jetzt gibt es nichts mehr zu sperren.
 
-**Umfang:** Suite 869 → **912 Tests**, grün, 0 übersprungen. Nulllinie **2264 → 2247**. Gegenprobe je Bauteil, alle Mengen vorhergesagt und getroffen.
+**Umfang:** Suite 869 → **916 Tests**, grün, 0 übersprungen. Nulllinie **2264 → 2247**. Gegenprobe je Bauteil, alle Mengen vorhergesagt und getroffen.
 
 ---
 

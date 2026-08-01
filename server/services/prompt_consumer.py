@@ -26,7 +26,7 @@ from api.websocket import broadcast_threadsafe
 from config import ASSISTANT_USER_ID, llm_lock, redis_client, shutdown_event
 from tools.db_manager import db_manager
 
-from services.events import event_erzeugen
+from services.events import event_erzeugen, event_wartet
 from services.prompt_eingang import (
     block_zu_prompt,
     naechster_block,
@@ -309,6 +309,52 @@ def _nutzer_nachricht_verteilen(
         )
 
 
+def _darf_nehmen(user_id: str, character_id: str, turn_id: str) -> bool:
+    """Der Waechter — entscheidet, ob jetzt eingespeist werden darf.
+
+    Zwei Bedingungen, und sie sagen **nicht** dasselbe:
+
+    * **Der Turn-Marker** sagt, dass gerade nichts laeuft. Er umspannt den
+      ganzen Turn — Pfad 1 und CharacterGraph. Der Riegel um das Sprachmodell
+      reicht dafuer nicht: Er wird zwischen beiden Haelften kurz frei, und in
+      diesen Spalt geriet am 01.08.2026 ein zweiter Durchlauf, dessen
+      Modellaufruf danach in eine Zeitueberschreitung lief.
+    * **Die Ereignis-Queue** sagt, ob noch etwas *kommt*. Ein eigener Impuls
+      loescht den Marker am Ende seines Durchlaufs — auch dann, wenn das
+      Nutzer-Ereignis dahinter noch wartet. Dann steht der Marker frei und ein
+      unfertiger Turn trotzdem aus.
+
+    Gesetzt wird zuerst, geprueft danach: Ein Blick vor dem Setzen waere eine
+    Momentaufnahme, die bis zum Setzen veraltet sein kann. Faellt die zweite
+    Bedingung, wird der Marker sofort zurueckgegeben.
+
+    Vorbedingung: `turn_id` ist nicht leer.
+    Nachbedingung: Bei `True` ist der Marker gesetzt und gehoert dem Aufrufer;
+        bei `False` ist nichts veraendert.
+    Fehlerfaelle: Keine — beide Ausgaenge sind Aussagen.
+
+    Returns:
+        Ob eingespeist werden darf.
+    """
+    # ── Eingabe-Validierung ─────────────────────
+    # Keine: `turn_beginnen` lehnt eine leere Kennung selbst ab und meldet.
+
+    # ── Verarbeitung ────────────────────────────
+    if not turn_beginnen(redis_client, user_id, character_id, turn_id):
+        return False
+
+    if event_wartet(redis_client, user_id, character_id):
+        logger.debug(
+            f"Prompt-Consumer: ein Ereignis wartet noch auf seinen Durchlauf "
+            f"({user_id}:{character_id}) — es wird nichts genommen"
+        )
+        turn_beenden(redis_client, user_id, character_id)
+        return False
+
+    # ── Ausgabe-Verifikation ────────────────────
+    return True
+
+
 async def prompt_consumer_loop(
     human_graph:        object,
     conversation_graph: object,
@@ -353,20 +399,9 @@ async def prompt_consumer_loop(
                 _, user_id, character_id = teile
                 character_id = character_id or ASSISTANT_USER_ID
 
-                # ── Der Waechter ──
-                # Eingespeist wird erst, wenn der **ganze** Turn durch ist —
-                # Pfad 1 und CharacterGraph. Der `llm_lock` reicht dafuer nicht:
-                # Er wird zwischen beiden kurz frei, und in diesen Spalt geriet
-                # am 01.08.2026 ein zweiter Durchlauf, dessen Modellaufruf
-                # danach in einen Timeout lief.
-                #
-                # Der Marker wird **hier** gesetzt und vom Event-Consumer nach
-                # dem CharacterGraph geloescht. Solange er steht, bleiben die
-                # Aeusserungen in der Queue — und werden beim naechsten freien
-                # Takt gemeinsam genommen. Dort greift dann das Eingangsfenster.
                 turn_id: str = uuid.uuid4().hex
 
-                if not turn_beginnen(redis_client, user_id, character_id, turn_id):
+                if not _darf_nehmen(user_id, character_id, turn_id):
                     continue
 
                 block: list[dict] = naechster_block(

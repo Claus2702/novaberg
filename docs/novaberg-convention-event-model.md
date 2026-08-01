@@ -64,6 +64,10 @@ Vor der Ereignis-Queue liegt seit dem 01.08.2026 eine zweite: `prompt_queue:{use
 
 **Der Turn-Marker.** `turn_laeuft:{user_id}:{character_id}`, gesetzt mit `SET NX` vom Prompt-Consumer, gelöscht vom Event-Consumer **nach** dem CharacterGraph. Solange er steht, bleiben neue Äußerungen liegen.
 
+**Ein eigener Impuls ist auch ein Turn.** Er kommt nicht aus der Eingangs-Queue und bringt deshalb keinen Marker mit — der Event-Consumer setzt ihn beim Aufgreifen selbst. Ohne das bliebe die Eingabe während seines Durchlaufs offen.
+
+**Und der Marker allein genügt nicht.** Ein Impuls löscht ihn am Ende seines eigenen Durchlaufs, auch wenn das Nutzer-Ereignis dahinter noch in der Ereignis-Queue liegt. Der Prompt-Consumer prüft deshalb beides: *läuft gerade etwas* (Marker) und *kommt noch etwas* (`event_wartet`). Die zweite Frage ist nicht die erste.
+
 > Der `llm_lock` kann das nicht leisten: Er wird zwischen Pfad 1 und dem CharacterGraph kurz frei, und in diesen Spalt geriet am 01.08.2026 ein zweiter Durchlauf — sein Modellaufruf lief danach in einen Timeout, der Turn blieb ohne Perzeption. Der Marker umspannt beide Hälften; sein TTL ist die Notbremse gegen einen Turn, den niemand beendet.
 
 Belegt am 01.08.2026: Eine Äußerung während eines laufenden Turns wartete 1:57 min in der Queue, wurde 558 ms nach dem Turn-Ende genommen und lief ohne Timeout durch. Drei Äußerungen mit 12 und 4 Sekunden Abstand wurden zu **einem** Prompt und in **einer** Antwort beantwortet, die alle drei Kennungen nennt.
