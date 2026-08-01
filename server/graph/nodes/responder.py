@@ -192,14 +192,11 @@ def _build_system_prompt(state: ConversationState) -> str:
         f"Du bist {ASSISTANT_NAME}, ein persoenlicher KI-Assistent. Du antwortest auf deutsch."
     ]
 
-    # Charakter-Anweisungen (vom User definierte Grundidentitaet)
-    charakter_anweisungen: list[str] = list(internal.identities) if internal else []
-    if charakter_anweisungen:
-        zeilen: list[str] = ["Dein Wesen, wie es dir mitgegeben wurde:"]
-        for anweisung in charakter_anweisungen:
-            zeilen.append(f"- {anweisung}")
-        identitaet_parts.append("\n".join(zeilen))
-        logger.info(f"Responder: {len(charakter_anweisungen)} Charakter-Anweisungen in [IDENTITAET]")
+    # Die Charakter-Anweisungen stehen NICHT mehr hier, sondern als letzter
+    # Block des Prompts ([DEIN WESEN]). Oben bilden alle Bloecke zusammen eine
+    # breite Grundlage — Persoenlichkeit, Stimmung, Beziehung, Regeln. Das
+    # vom Nutzer gesetzte Wesen soll sich dagegen nicht einreihen, sondern
+    # zuletzt stehen und damit staerker wirken (Recency).
 
     # Gewachsene Persoenlichkeit (kern aus LZG-Destillation, internal.character.core)
     nova_kern: str = internal.character.core if internal else ""
@@ -228,13 +225,19 @@ def _build_system_prompt(state: ConversationState) -> str:
 
     # Datum + Rollenklarheit + Regeln (Recency — am Ende des Blocks)
     identitaet_parts.append(
+        # Drei Saetze sind seit der Trennung in den Verfasser gewandert: der
+        # Hinweis auf den Charakter-Kontext im Gedaechtnis, "erwaehne nur
+        # Informationen die im Kontext stehen" und der Internetzugang. Alle
+        # drei sprechen ueber Wissen, das der Responder nicht mehr sieht — eine
+        # Anweisung zu Quellen, die nicht im Prompt stehen, ist entweder
+        # wirkungslos oder eine Aufforderung zum Erfinden
+        # (novaberg-node-verfasser_k.md §2.2).
+        #
+        # Datum und Uhrzeit bleiben hier UND stehen beim Verfasser: Sie sind
+        # kein Wissen aus einer Quelle, sondern die Lage, in der beide Stufen
+        # stehen. Novas Art um 03:00 ist eine andere als um 14:00.
         f"Heute ist {jetzt.strftime('%A, %d.%m.%Y')}, es ist {jetzt.strftime('%H:%M')} Uhr.\n"
-        "Sprich als du selbst, niemals als der Nutzer.\n"
-        "Der Charakter-Kontext im Gedaechtnis beschreibt den NUTZER — verwechsle\n"
-        "seine Eigenschaften nicht mit deinen.\n"
-        "Erwaehne nur Informationen die im Kontext stehen. Erfinde keine Details.\n"
-        "Du hast Zugriff auf aktuelle Informationen aus dem Internet ueber eine lokale\n"
-        "Suchmaschine. Sage niemals du haettest keinen Internetzugang."
+        "Sprich als du selbst, niemals als der Nutzer."
     )
 
     if nova_kern or nova_beziehung:
@@ -321,7 +324,6 @@ def _build_system_prompt(state: ConversationState) -> str:
 
     # ── [AUFGABE] ── Fertiger Block aus dem Planner ──
     task_block: str = state.get("task_block", "")
-    has_agent_action: bool = state.get("task_context_cut", False)
 
     if task_block:
         parts.append(task_block)
@@ -428,94 +430,46 @@ def _build_system_prompt(state: ConversationState) -> str:
 
     parts.append("\n".join(komm_parts))
 
-    # ── [GESPRAECHSVEKTOR] ── Antizipation: Wohin fuehrt das Gespraech? ──
-    gv_hypothese: str = state.get("gespraechsvektor", "")
-    if gv_hypothese:
-        gv_detail: dict = state.get("gv_detail", {})
-        cluster:   str  = gv_detail.get("cluster", "")
-        strategie: str  = gv_detail.get("strategie", "")
-        vehikel:   str  = gv_detail.get("vehikel", "")
-        impuls:    str  = gv_detail.get("impuls", "")
+    # ── [GESPRAECHSVEKTOR] ── entfaellt hier ──
+    #
+    # Landschaft, Strategie, Vehikel und Leitgedanke gehoeren zum Inhalt und
+    # stehen beim Verfasser (novaberg-node-verfasser_k.md §2.1). Standen sie
+    # zusaetzlich hier, sah der Responder denselben Leitgedanken ein zweites
+    # Mal — und gab ihn woertlich weiter, statt ihm eine Form zu geben.
 
-        rahmen: str = ""
-        if cluster:
-            from ei.dreischicht import (
-                CLUSTER_BESCHREIBUNGEN, CLUSTER_FRAGEN, STRATEGIE_NAMEN,
-            )
-            cluster_beschr: str = CLUSTER_BESCHREIBUNGEN.get(cluster, "")
-            fragen_freq:    str = CLUSTER_FRAGEN.get(cluster, "")
-            strat_name:     str = STRATEGIE_NAMEN.get(strategie, strategie)
-
-            rahmen = (
-                f"Gespraechslandschaft: {cluster.capitalize()} — {cluster_beschr}\n"
-                f"Fragen: {fragen_freq}\n"
-            )
-            if strategie:
-                rahmen += f"Deine Strategie: {strat_name}"
-                if vehikel:
-                    rahmen += f" als {vehikel.capitalize()}"
-                rahmen += ".\n"
-
-        inhalt: str = gv_hypothese
-
-        impuls_block: str = ""
-        if impuls:
-            impuls_block = (
-                f"\nDein Leitgedanke fuer diese Antwort: {impuls}\n"
-                f"Finde deine eigenen Worte — der Leitgedanke ist die Richtung, "
-                f"nicht der Text."
-            )
-
+    # ── [INHALT] ── Was gesagt wird, kommt fertig vom Verfasser ──
+    #
+    # Gedaechtnis und Web-Recherche stehen hier NICHT mehr. Der Responder sieht
+    # das Wissen nicht und kann daraus folglich nichts erfinden — die Lehre aus
+    # den vier Fix-Iterationen ist damit eine Eigenschaft der Bauart statt
+    # einer Fallunterscheidung (novaberg-node-verfasser_k.md §2.2).
+    #
+    # Bei aktivem Kontext-Schnitt laeuft der Verfasser nicht; dann ist das Feld
+    # leer und der [AUFGABE]-Block traegt allein, genau wie bisher (§5.1).
+    antwort_inhalt: str = state.get("antwort_inhalt", "")
+    if antwort_inhalt:
         parts.append(
-            f"[GESPRAECHSVEKTOR]\n"
-            f"{rahmen}"
-            f"So bewegt sich das Gespraech gerade. Du bist mittendrin.\n\n"
-            f"{inhalt}"
-            f"{impuls_block}"
-        )
-        logger.info(
-            f"Responder: Gespraechsvektor injiziert "
-            f"(Cluster={cluster}, Strategie={strategie}, "
-            f"Vehikel={vehikel}, {len(inhalt)} Zeichen)"
+            f"[INHALT]\n"
+            f"Das ist der fachliche Inhalt deiner Antwort. Sag ihn auf deine "
+            f"Art.\n\n"
+            f"{antwort_inhalt}"
         )
 
-    # Logging
-    aktive_dimensionen: list[str] = []
-    if emotions_verlauf:
-        top_emo: str = ", ".join(
-            f"{e['emotion']}={e['gewicht']:.0%}(a={e.get('arousal', 0.5):.0%})"
-            for e in emotions_verlauf[:4]
-        )
-        aktive_dimensionen.append(f"Emotion: [{top_emo}]")
-    if emotions_vektor and emotions_vektor != "plateau":
-        aktive_dimensionen.append(f"Vektor: {emotions_vektor}")
-    if sprach_stil and sprach_stil != "neutral":
-        aktive_dimensionen.append(f"Stil: {sprach_stil}")
-    if beziehungs_kontext:
-        aktive_dimensionen.append(f"Beziehung: aktiv ({len(beziehungs_kontext)} Zeichen)")
-    if gespraechs_modus:
-        aktive_dimensionen.append(f"Modus: {gespraechs_modus}")
-    if aktive_dimensionen:
-        logger.info(f"Responder: EI-Profil — {' | '.join(aktive_dimensionen)}")
-
-    # ── [GEDAECHTNIS] ── Bei Agent-Erfolg weglassen (AGT3) ──
-    if state["memory_context"] and not has_agent_action:
-        parts.append(
-            PROMPTS["responder.gedaechtnis"].format(
-                memory_context=state["memory_context"]
-            )
-        )
-
-    # Web-Kontext — bei Agent-Erfolg weglassen
-    if state["web_context"] and not has_agent_action:
-        parts.append(
-            PROMPTS["responder.web"].format(
-                web_context=state["web_context"]
-            )
-        )
-
-    # ── [REGELN] ── Alles an einer Stelle, direkt vor Datenformat ──
-    parts.append(PROMPTS["responder.rules"])
+    # ── [REGELN] ── zur Probe ausgesetzt (31.07.2026) ──
+    #
+    # Die Regeln sind Narben: verbotene Floskeln, Antwortkuerze, Butler-Prinzip,
+    # Tag-Unterdrueckung, das Verbot falscher Erfolgsmeldungen. Jede ist gegen
+    # ein Verhalten gewachsen, das der ueberladene Prompt hervorgebracht hat —
+    # ein Modell, das gleichzeitig Wissen sichten, Inhalt bestimmen und Form
+    # finden sollte, greift zu Floskeln und Fuellseln.
+    #
+    # Seit der Trennung ist diese Ursache weg. Ob die Narben noch gebraucht
+    # werden, ist damit eine offene Frage — und sie ist nur zu beantworten,
+    # indem man sie einmal weglaesst. Nachjustiert wird, was sich als noetig
+    # zeigt, statt alles vorsorglich stehen zu lassen.
+    #
+    # Der Prompt-Baustein `responder.rules` bleibt bestehen; nur der Aufruf
+    # entfaellt. Zurueckholen ist damit eine Zeile.
 
     # ── [DIREKTIVEN] ── Absolute Verhaltensanweisungen vom Nutzer ──
     direktiven: list[dict] = list(internal.directives) if internal else []
@@ -527,6 +481,29 @@ def _build_system_prompt(state: ConversationState) -> str:
                 dir_zeilen.append(f"  (Kontext: {d['kontext']})")
         parts.append("\n".join(dir_zeilen))
         logger.info(f"Responder: {len(direktiven)} Direktiven in [DIREKTIVEN]")
+
+    # ── [DEIN WESEN] ── zuletzt, damit es am staerksten wirkt ──
+    #
+    # Alles darueber ist Grundlage: gewachsene Persoenlichkeit, Stimmung,
+    # Beziehung, Lage, Regeln. Das vom Nutzer gesetzte Wesen soll sich dort
+    # nicht einreihen — es steht am Ende und damit an der Stelle, an der eine
+    # Vorgabe am meisten ausrichtet.
+    #
+    # Nur wenn es eine gibt. Ein leerer Block waere eine Ueberschrift ohne
+    # Aussage und naehme der Stelle genau die Wirkung, fuer die sie gewaehlt ist.
+    charakter_anweisungen: list[str] = list(internal.identities) if internal else []
+    if charakter_anweisungen:
+        wesen_zeilen: list[str] = [
+            "[DEIN WESEN]",
+            "So bist du gemeint. Das hier ist keine Beschreibung neben anderen,",
+            "sondern der Kern, aus dem heraus du sprichst:",
+        ]
+        wesen_zeilen.extend(f"- {anweisung}" for anweisung in charakter_anweisungen)
+        parts.append("\n".join(wesen_zeilen))
+        logger.info(
+            f"Responder: {len(charakter_anweisungen)} Charakter-Anweisungen "
+            f"als [DEIN WESEN] am Prompt-Ende"
+        )
 
     return "\n\n".join(parts)
 
@@ -561,7 +538,6 @@ def _sprachstil_block(state: ConversationState) -> str:
     cluster:   str  = gv_detail.get("cluster", "")
     strategie: str  = gv_detail.get("strategie", "")
     vehikel:   str  = gv_detail.get("vehikel", "")
-    impuls:    str  = gv_detail.get("impuls", "")
 
     external = state.get("external")
     stil: str = external.emotion.language_style if external else ""
@@ -591,8 +567,13 @@ def _sprachstil_block(state: ConversationState) -> str:
     if ton_teile:
         zeilen.append(" · ".join(ton_teile))
 
-    if impuls:
-        zeilen.append(f"Leitgedanke: {impuls}")
+    # Der Leitgedanke steht hier NICHT mehr. Er ist Inhalt und gehoert zum
+    # Verfasser — hier war er die zweite Tuer: Der GV-Block war schon aus dem
+    # System-Prompt entfernt, und derselbe Text kam ueber den Sprachstil am
+    # Ende der Nutzer-Nachricht zurueck. Live beobachtet am 31.07.2026
+    # (novaberg-node-verfasser_k.md §2.1).
+    #
+    # Was bleibt, ist Stil: Landschaft, Ton, Fragenfrequenz, Werkzeug.
 
     # ── Ausgabe-Verifikation ────────────────────
     if not zeilen:
@@ -740,6 +721,28 @@ def respond(
     state["model"]       = "chat_worker"
     state["token_total"] = response.token_total
 
-    logger.info(f"Responder: Antwort generiert ({state['token_total']} Tokens)")
+    # ── Ausgabe-Verifikation ────────────────────
+    # **Gezaehlt werden Zeichen, nicht Token.** Die fruehere Erfolgsmeldung
+    # nannte die Tokenzahl — und die war bei beiden verlorenen Turns vierstellig,
+    # waehrend der Text null Zeichen hatte. Eine Meldung, die Erfolg behauptet,
+    # wo nichts steht, macht den Ausfall an genau der Stelle unsichtbar, an der
+    # er entsteht (novaberg-bugs.md -> RESPONDER-LEERE-ANTWORT-STILL).
+    #
+    # Der Turn laeuft weiter: Abzubrechen hiesse, die Nutzeraeusserung zu
+    # verlieren, und die ist der teurere Verlust (PFAD1-TIMEOUT-TURNVERLUST).
+    # Die Stufen dahinter sehen die leere Antwort und koennen sie behandeln.
+    if not state["response"].strip():
+        logger.error(
+            f"Responder: LEERE Antwort trotz {state['token_total']} Token — "
+            f"der Verfasser hatte {len(state.get('antwort_inhalt', ''))} Zeichen "
+            "Inhalt bereitgestellt. Der Turn erreicht den Nutzer nicht; die "
+            "Ursache steht in der Zeile des ChatWorkers darueber."
+        )
+        return state
+
+    logger.info(
+        f"Responder: Antwort generiert ({len(state['response'])} Zeichen, "
+        f"{state['token_total']} Tokens)"
+    )
 
     return state

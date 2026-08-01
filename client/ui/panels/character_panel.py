@@ -120,12 +120,17 @@ _ZUWENDUNG = RadDefinition(
         ("wissbegier",     "Wi", "Wissbegier"),
         ("wohlwollen",     "Wo", "Wohlwollen"),
     ),
+    # Gegenpol-Anordnung: Speiche i oben und Speiche i hier liegen einander
+    # auf dem Rad gegenüber. Die Ordnung ist tragend, nicht kosmetisch —
+    # Begründung und Paartabelle stehen bei RAD_ZUG_RUNTER
+    # (server/agents/charakter/destillation.py), festgehalten von
+    # `GegenpolAnordnungTest`.
     runter=(
-        ("widerspenstig",  "Wd", "Widerspenstigkeit"),
-        ("gleichgueltig",  "Gl", "Gleichgültigkeit"),
         ("selbstbezogen",  "Sb", "Selbstbezogenheit"),
-        ("langeweile",     "La", "Langeweile"),
+        ("gleichgueltig",  "Gl", "Gleichgültigkeit"),
+        ("widerspenstig",  "Wd", "Widerspenstigkeit"),
         ("distanz",        "Dz", "Distanz"),
+        ("langeweile",     "La", "Langeweile"),
         ("misstrauen",     "Ms", "Misstrauen"),
     ),
     format="{:.2f}",

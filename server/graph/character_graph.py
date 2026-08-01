@@ -6,8 +6,14 @@ Liest den Chat, entscheidet, handelt optional, antwortet, speichert.
 
 Flow (PFAD2-PERZEPTION-FIX Phase 2):
   db_zugriff → EI-Calc → Enricher → Reducer → Router → [Planner ⇄ Agent]* →
-  GV-Node → Responder → Thinker → Tribunal → Evaluate →
-  [Corrector]* → perzeption_assistant → ei_calc_persist → Salienz → Dispatcher → END
+  GV-Node → Haltungsraum → [Verfasser]* → Responder → Thinker → Tribunal →
+  Evaluate → [Corrector]* → perzeption_assistant → ei_calc_persist → Salienz →
+  Dispatcher → END
+
+  Haltungsraum rechnet die fuenf Verhaltensgroessen aus der Landschaft des
+  GV-Nodes und Novas Zuwendungsrad. Sie steht vor der Verzweigung, weil der
+  Verfasser bei `task_context_cut` uebersprungen wird
+  (novaberg-haltungsraum_k.md §2).
 
   db_zugriff laedt Identitaeten und Nova-State, befuellt external/internal.
   EI-Calc steht vor dem Enricher, damit Enricher Novas modifizierten
@@ -59,6 +65,11 @@ class CharacterGraph(GraphBase):
         graph.add_node("planner",         self._node_plan)
         graph.add_node("agent_dispatch",  self._node_agent_dispatch)
         graph.add_node("gv_node",         self._node_gespraechsvektor)
+        # Der Node heisst nach dem Raum, der Kanal nach seinem Ergebnis. Nicht
+        # nur der Lesbarkeit wegen: LangGraph lehnt einen Node ab, der wie ein
+        # State-Key heisst ("'haltung' is already being used as a state key").
+        graph.add_node("haltungsraum",    self._node_haltung)
+        graph.add_node("verfasser",       self._node_verfassen)
         graph.add_node("responder",       self._node_respond)
         graph.add_node("thinker",         self._node_think)
         graph.add_node("tribunal",        self._node_judge)
@@ -105,7 +116,34 @@ class CharacterGraph(GraphBase):
         )
         graph.add_edge("agent_dispatch", "planner")  # Schleife zurück zum Planner
 
-        graph.add_edge("gv_node",    "responder")
+        # GV-Node → Haltung: Der Haltungsraum braucht die Landschaft, und die
+        # setzt erst der GV-Node (`gv_detail["cluster"]`).
+        graph.add_edge("gv_node", "haltungsraum")
+
+        # Haltungsraum → Verfasser oder direkt Responder.
+        #
+        # Die Verzweigung haengt an der Haltung und nicht mehr am GV-Node,
+        # damit die Rechnung in JEDEM Turn laeuft. Im Verfasser stuende sie
+        # falsch: Er wird beim Kontext-Schnitt uebersprungen, und der Responder
+        # braucht den Umfang gerade dort, wo er allein steht
+        # (novaberg-haltungsraum_k.md §2 "Wer rechnet").
+        #
+        # Bei `task_context_cut` sieht der Responder absichtlich fast nichts —
+        # kein Gedaechtnis, kein Web, nur Identitaet, Stil und das Ergebnis der
+        # Aufgabe. Diese Beschraenkung war die Loesung nach vier
+        # Fix-Iterationen. Ein Verfasser, der in dieser Lage Gedaechtnis und
+        # Web zusammenfasst, holt genau den Input zurueck, der entfernt wurde —
+        # nur einen Node frueher und verdichtet. Deshalb laeuft er dort nicht
+        # (novaberg-node-verfasser_k.md §5.1).
+        graph.add_conditional_edges(
+            "haltungsraum",
+            self._after_haltung,
+            {
+                "verfasser": "verfasser",
+                "responder": "responder",
+            },
+        )
+        graph.add_edge("verfasser",  "responder")
         graph.add_edge("responder",  "thinker")
         graph.add_edge("thinker",    "tribunal")
         graph.add_edge("tribunal",   "evaluate")
@@ -150,6 +188,26 @@ class CharacterGraph(GraphBase):
             logger.info("Graph: Management-Intent erkannt — Planner aktiviert")
             return "planner"
         return "gv_node"
+
+    def _after_haltung(self, state: ConversationState) -> str:
+        """Verfasser überspringen, wenn der Kontext-Schnitt gilt.
+
+        Hieß bis zum 31.07.2026 `_after_gv` und hing am GV-Node. Die
+        Verzweigung sitzt jetzt einen Node später, weil die Haltungsrechnung
+        dazwischen steht; das Kriterium ist unverändert.
+
+        Bei `task_context_cut` ist der schmale Kontext des Responders Absicht,
+        nicht Mangel. Ein Verfasser würde dort Gedächtnis und Web wieder
+        einsammeln und verdichtet weiterreichen — genau den Input, dessen
+        Entfernung die Halluzination bei Agent-Erfolg beendet hat.
+        """
+        if state.get("task_context_cut"):
+            logger.info(
+                "Graph: Kontext-Schnitt aktiv — Verfasser übersprungen, "
+                "der Responder verarbeitet den Aufgaben-Block direkt"
+            )
+            return "responder"
+        return "verfasser"
 
     def _after_evaluate(self, state: ConversationState) -> str:
         """Entscheidet ob Korrektur nötig oder weiter zur Salienz."""

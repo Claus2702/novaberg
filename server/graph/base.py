@@ -23,9 +23,11 @@ from graph.nodes.router     import route
 from graph.nodes.enricher  import enrich
 from graph.nodes.ei_calc   import ei_calc
 from graph.nodes.emotionale_gravitation import emotionale_gravitation_anwenden
+from graph.nodes.haltung   import haltung_bestimmen
 from graph.nodes.planner   import plan
 from graph.nodes.reducer   import reduce_memory
 from graph.nodes.responder import respond
+from graph.nodes.verfasser import verfassen
 from graph.nodes.thinker   import think
 from graph.nodes.tribunal  import judge, evaluate
 from graph.nodes.corrector import correct
@@ -146,6 +148,9 @@ class GraphBase(ABC):
             # Momentum (für Shadow Delivery Service via Redis)
             momentum = "mid",
 
+            # Verfasser — der fachliche Inhalt vor Novas Form
+            antwort_inhalt = "",
+
             # Responder
             response    = "",
             model       = "",
@@ -204,6 +209,12 @@ class GraphBase(ABC):
 
     def _node_plan(self, state: ConversationState) -> ConversationState:
         return plan(state, self.postgres_url)
+
+    def _node_haltung(self, state: ConversationState) -> ConversationState:
+        return haltung_bestimmen(state, self.postgres_url)
+
+    def _node_verfassen(self, state: ConversationState) -> ConversationState:
+        return verfassen(state)
 
     def _node_respond(self, state: ConversationState) -> ConversationState:
         return respond(state)

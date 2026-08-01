@@ -175,19 +175,30 @@ class TestMitTagesangabeUnveraendert(unittest.TestCase):
     def test_mit_deiktischem_tageswort_unveraendert(self) -> None:
         """Traegt zugleich den EINSTELLIGEN Stundenfall.
 
+        Der Sprechzeitpunkt steht seit dem 01.08.2026 ausdruecklich dabei: Das
+        Tageswort haengt an ihm, nicht an `referenz`, und ohne die Angabe
+        rechnete der Fall gegen die echte Uhr — gruen nur am Tag seiner
+        Entstehung.
+
         "morgen um 2 Uhr 30" normalisiert zu "2026-08-01 2:30". Pfad 1 gab das
         an `datetime.fromisoformat`, und die verlangt zwei Stellen — bis zum
         31.07.2026 riss dieser Ausdruck eine unbehandelte ValueError bis zum
         Aufrufer hoch. Zweistellige Uhrzeiten kamen durch; deshalb sah es nach
         einem Einzelfall aus statt nach einem Muster.
         """
-        ergebnis = zeit_parsen("morgen um 2 Uhr 30", _referenz(2026, 7, 31, 14, 27))
+        ergebnis = zeit_parsen(
+            "morgen um 2 Uhr 30", _referenz(2026, 7, 31, 14, 27),
+            sprechzeitpunkt=_referenz(2026, 7, 31, 14, 27),
+        )
 
         self.assertEqual("2026-08-01 02:30", _lokal(ergebnis))
 
     def test_einstellige_stunde_mit_tageswort_stuerzt_nicht_ab(self) -> None:
         """Derselbe Defekt in der gaengigsten Form, die er im Betrieb hat."""
-        ergebnis = zeit_parsen("morgen um 9 Uhr", _referenz(2026, 7, 31, 14, 27))
+        ergebnis = zeit_parsen(
+            "morgen um 9 Uhr", _referenz(2026, 7, 31, 14, 27),
+            sprechzeitpunkt=_referenz(2026, 7, 31, 14, 27),
+        )
 
         self.assertEqual("2026-08-01 09:00", _lokal(ergebnis))
 

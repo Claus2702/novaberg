@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** CharakterAgent — Charakter-Hash aus KZG/LZG destillieren
-**Stand:** 29. Juli 2026, Chat 117 (die zwei Charakter-Räder und die vollständige Spaltenliste nachgetragen — §2, §4a, §7. ⚠ Fundament-Warnung nach Gewichts-Reset, siehe Kasten in §3. Kern: Chat 79, P7-Update Chat 103)
+**Stand:** 1. August 2026 (**beide Räder sind eine Messreihe** — rohe Läufe in `charakter_rad_messung`, gespeichert wird das gewichtete Mittel der letzten fünf Erhebungen, Takt zweimal täglich; §4a. Zuvor: 29. Juli 2026, Chat 117 — die zwei Charakter-Räder und die vollständige Spaltenliste nachgetragen, §2, §4a, §7. ⚠ Fundament-Warnung nach Gewichts-Reset, siehe Kasten in §3. Kern: Chat 79, P7-Update Chat 103)
 **Pfad:** novaberg/docs/novaberg-pixie-character-hash.md
 **Quellen:** nova-05-m-a.md, nova-04-m-b.md, nova-04-t-b.md
 
@@ -25,7 +25,7 @@ Der CharakterAgent destilliert Novas verdichtetes Bild ihres Gegenübers — und
 | **Priorität** | `PIXIE_CHARAKTER_PRIORITAET = 0.3` (`config.py`) |
 | **Intervall** | `PIXIE_CHARAKTER_INTERVALL_SEKUNDEN = 600` = 10 Minuten (`config.py`) |
 | **Bedingung** | NUR bei `hash_dirty:{user_id}` = "1" |
-| **LLM-Call** | ~~5 CPU-Calls pro User (einer pro Profil)~~ → **9 pro Subjekt** (5 Profile + 1 Charakter-Rad + 3 Läufe des Initiative-Rads, §4a); für `nova` kommt die Ziel-Destillation dazu. Bei zwei Subjekten je Lauf sind das 19 |
+| **LLM-Call** | ~~5 CPU-Calls pro User (einer pro Profil)~~ → **9 pro Subjekt** (5 Profile + 1 Charakter-Rad + 3 Läufe des Initiative-Rads, §4a); für `nova` kommt die Ziel-Destillation dazu. Bei zwei Subjekten je Lauf sind das 19. **Seit 01.08.2026 fallen die vier Rad-Calls nur zweimal täglich an** — außerhalb des Takts sind es 5 je Subjekt |
 | **LZG-Limit** | `PIXIE_CHARAKTER_LZG_LIMIT = 50` (max. LZG-Einträge pro Destillation, `config.py`) |
 | **KZG-Limit** | `PIXIE_CHARAKTER_KZG_LIMIT = 20` (max. KZG-Einträge für Adaptiv, `config.py`) |
 | **context_user** | Iteriert intern über `meister` + `nova` |
@@ -132,7 +132,9 @@ Beide laufen **nach** den fünf Profilen und lesen deren Ergebnis, nicht erneut 
 | Frage | Wie sehr gilt Nova das Gegenüber überhaupt? | Überlässt sie im Gespräch die Führung oder behält sie sie? |
 | Speichen | 12 (6 hoch, 6 runter) | 10 (5 hoch, 5 runter) |
 | Nabe | 0.9, Grenzen 0.5–1.5 | 0.0, Spanne ±0.25 |
-| Erhebungen | 1 | **3, Median** |
+| Erhebungen je Messung | 1 | **3, Median** |
+| Takt | **zweimal täglich** (seit 01.08.2026) | **zweimal täglich** |
+| Gespeicherter Wert | **gewichtetes Mittel der letzten 5 Erhebungen** | ebenso |
 | Feld | `nutzer_gewichtung` | `initiative_versatz` |
 | Verbraucher | Salienz: `max(salienz_human × nutzer_gewichtung, salienz_charakter)` | GV-Achse I: verschiebt den Rohwert vor der Schwelle |
 | Beschreibung | `novaberg-salienz-berechnung_k.md` | `novaberg-gv-initiative_k.md` §6, `novaberg-gv-initiative.md` |
@@ -140,6 +142,19 @@ Beide laufen **nach** den fünf Profilen und lesen deren Ergebnis, nicht erneut 
 **Warum zwei Räder und nicht eines.** Vier der zwölf Speichen des älteren Rads berühren Führen und Folgen — sein Ergebnis bündelt sie aber mit Wissbegier, Pflichtbewusstsein und Aufmerksamkeit, die mit der Frage nichts zu tun haben. Ein abgeleiteter Wert wäre die Summe zweier Fragen gewesen.
 
 **Die Entwurfsregel des zweiten Rads: Handlung statt Haltung.** Jede Speiche wird über eine *beobachtbare Gesprächshandlung* beschrieben, nicht über eine Disposition. Das ältere Rad beschreibt Treue als „die Anliegen des anderen voranstellen" — eine Haltung, die ein Modell als allgemeine Wärme liest. Am selben Profiltext gemessen: Das ältere Rad füllte 3 von 12 Speichen und auf der Abwendungsseite keine einzige, das neue 6 von 10 und auf beiden Seiten etwas.
+
+### Seit 01.08.2026: beide Räder sind eine Messreihe
+
+Bis dahin war der gespeicherte Wert **eine einzelne Erhebung**, beim nächsten Lauf überschrieben. Am 31.07. wechselte Novas Zuwendungsfaktor binnen zwei Stunden von 1.215 auf 0.980 — und ob das Bewegung oder Rauschen war, ließ sich aus den Daten nicht beantworten, weil die vorige Erhebung nicht mehr existierte. Das ist Regel (1) der Konvention über abgeleitete Werte: **Speichere die Eingaben, nicht nur das Ergebnis.**
+
+- **Die rohen Läufe liegen in `charakter_rad_messung`** — eine Zeile je Lauf, mit eigenem Zeitstempel, Modell, Temperatur und der Prüfsumme des gelesenen Profiltexts. Gleiche Prüfsumme mit anderem Ergebnis ist Verfahrensstreuung, andere Prüfsumme kann Bewegung sein.
+- **Der gelesene Wert in `charakter_hash` ist ihr gewichtetes Mittel** über die letzten fünf Erhebungen und wird daraus jederzeit neu berechnet. Ein Mittel wird **nie** als Messung zurückgeschrieben — das wäre der Akkumulator, an dem der Ziel-Decay scheiterte.
+- **Der Takt ist fest**, zweimal täglich, geprüft vom Agenten selbst. Fest, damit Rang und Zeit dasselbe bedeuten: Die Gewichtskurve verfällt über den Rang.
+- **Zwei Stufen, zwei Streuungen.** Die Läufe einer Erhebung werden gleichgewichtet gemittelt — sie liegen Sekunden auseinander und lesen denselben Text. Über die Erhebungen greift der Verfall.
+
+**Die jüngste Messung trägt 41 %** statt 100 %; ein echter Umschwung ist nach zwei Tagen zu 87 % angekommen. Vollständig in `novaberg-charakter-rad-messreihe_k.md`.
+
+> **Das Argument „gespeichert wird ein echtes Rad" ist damit hinfällig** — aber nur seine erste Hälfte. Es galt, solange die Einzelläufe nirgends erhalten blieben; sie liegen jetzt in der Messreihe. Die zweite Hälfte gilt weiter: `Rad × Züge = Faktor` bleibt von Hand nachrechenbar, auch mit 0.67.
 
 **Warum das Initiative-Rad dreimal erhoben wird.** Zwei Läufe gegen denselben Text bei Temperatur 0.2 unterschieden sich um ein Fünftel der halben Spanne. Anders als ein Wert pro Turn wird dieser einmal geschrieben und steht bis zur nächsten Destillation — ein einzelner Ausreißer hätte ihn für Tage festgesetzt. **Gespeichert wird das Rad des Median-Laufs**, kein gemitteltes: Ein Mittel über drei Räder ergäbe Bewertungen, die kein Lauf je vergeben hat, und der Wert wäre von Hand nicht mehr nachrechenbar. Die Streuung reist als Metadatum mit.
 
@@ -205,7 +220,27 @@ _lzg_emotionen_laden) filtern seit Chat 79 ebenfalls auf
 
 ## 7. DB-Schema
 
-Tabelle: `charakter_hash`
+**Zwei Tabellen seit dem 01.08.2026.** `charakter_hash` hält den gelesenen Zustand, `charakter_rad_messung` die rohen Erhebungen, aus denen er entsteht.
+
+### `charakter_rad_messung` (seit 01.08.2026)
+
+Eine Zeile je **Lauf**, nicht je Erhebung. `erhebung_id` klammert die Läufe einer Messung, `lauf` nummeriert sie.
+
+| Spalte | Typ | Beschreibung |
+|--------|-----|-------------|
+| `user_id`, `character_id` | TEXT | das kanonische Paar, wie in `charakter_hash` |
+| `rad_art` | TEXT | `zuwendung` oder `initiative` |
+| `erhebung_id` | UUID | klammert die Läufe einer Messung |
+| `lauf` | SMALLINT | Nummer innerhalb der Erhebung |
+| `gemessen_am` | TIMESTAMPTZ | **eigener Zeitstempel**, nur mit dieser Zeile geschrieben |
+| `speichen` | JSONB | die rohen Werte dieses Laufs |
+| `faktor` | DOUBLE PRECISION | der Skalar dieses Laufs — zusätzlich, nicht stattdessen |
+| `modell`, `temperatur` | TEXT / DOUBLE | der Maßstab, mit dem gemessen wurde |
+| `quelle_pruefsumme`, `quelle_zeichen` | TEXT / INTEGER | welcher Profiltext gelesen wurde |
+
+Ablage: `server/agents/charakter/init.sql`. Zwei Indizes: die Reihe je Rad (`user_id, character_id, rad_art, gemessen_am DESC`) und die Läufe je Erhebung.
+
+### `charakter_hash`
 
 Zwanzig Spalten, PRIMARY KEY `(user_id, character_id)`. ~~PRIMARY KEY `user_id`~~ — überholt seit dem Paar-Schema (Chat 79): Eine Zeile gilt für ein *Paar*, nicht für einen User.
 

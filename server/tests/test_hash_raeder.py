@@ -285,8 +285,8 @@ class VertragMitDemClientTest(unittest.TestCase):
         "treue", "dienst", "pflicht", "aufmerksamkeit", "wissbegier", "wohlwollen",
     )
     ZUWENDUNG_RUNTER: tuple[str, ...] = (
-        "widerspenstig", "gleichgueltig", "selbstbezogen",
-        "langeweile", "distanz", "misstrauen",
+        "selbstbezogen", "gleichgueltig", "widerspenstig",
+        "distanz", "langeweile", "misstrauen",
     )
     INITIATIVE_HOCH: tuple[str, ...] = (
         "folgsamkeit", "anschlussfreude", "zurueckhaltung",
@@ -333,6 +333,63 @@ class VertragMitDemClientTest(unittest.TestCase):
             self.assertIn(name, block["rad"]["hoch"])
         for name in self.ZUWENDUNG_RUNTER:
             self.assertIn(name, block["rad"]["runter"])
+
+
+class GegenpolAnordnungTest(unittest.TestCase):
+    """Die Reihenfolge der Zuwendungs-Speichen ist eine Gegenpol-Anordnung.
+
+    Speiche *i* der Zuwendungsseite und Speiche *i* der Abwendungsseite
+    liegen auf dem Rad einander gegenueber. **Fuer den gerechneten Faktor ist
+    das gleichgueltig** — er ist eine Summe und kennt keine Winkel. Tragend
+    wird die Ordnung erst dort, wo aus den Speichen ein Punkt gebildet wird:
+    Sie entscheidet, welche zwei Eigenschaften einander ausloeschen koennen.
+
+    Der Zeuge ist die Paartabelle unten. Sie ist von Hand aus den
+    Beschreibungen der Speichen abgeleitet und steht als Literal hier — sie
+    darf nicht aus den Konstanten gewonnen werden, sonst prueft der Test die
+    Reihenfolge gegen sich selbst.
+
+    Wird eine dieser Zusicherungen rot, ist das kein Testproblem: Dann hat
+    jemand eine Liste sortiert, die keine Aufzaehlung ist. Der Client
+    (`client/ui/panels/character_panel.py`) traegt dieselbe Ordnung und muss
+    mitwandern.
+    """
+
+    PAARE: tuple[tuple[str, str], ...] = (
+        ("treue",          "selbstbezogen"),
+        ("dienst",         "gleichgueltig"),
+        ("pflicht",        "widerspenstig"),
+        ("aufmerksamkeit", "distanz"),
+        ("wissbegier",     "langeweile"),
+        ("wohlwollen",     "misstrauen"),
+    )
+
+    def test_jede_speiche_liegt_ihrem_gegenpol_gegenueber(self) -> None:
+        """Position i beider Seiten bildet das dokumentierte Paar."""
+        hoch: tuple[str, ...] = tuple(RAD_ZUG_HOCH)
+        runter: tuple[str, ...] = tuple(RAD_ZUG_RUNTER)
+        for stelle, (erwartet_hoch, erwartet_runter) in enumerate(self.PAARE):
+            with self.subTest(stelle=stelle, paar=(erwartet_hoch, erwartet_runter)):
+                self.assertEqual(hoch[stelle], erwartet_hoch)
+                self.assertEqual(runter[stelle], erwartet_runter)
+
+    def test_beide_seiten_sind_gleich_lang(self) -> None:
+        """Ohne gleiche Laenge gibt es zu einer Speiche keinen Gegenpol.
+
+        Der Zwilling zur Zusicherung darueber: Die pruefte nur die Stellen,
+        die die Paartabelle nennt. Waere eine Seite laenger, blieben die
+        ueberzaehligen Speichen ohne Gegenueber und ungeprueft.
+        """
+        self.assertEqual(len(RAD_ZUG_HOCH), len(RAD_ZUG_RUNTER))
+        self.assertEqual(len(self.PAARE), len(RAD_ZUG_HOCH))
+
+    def test_die_paartabelle_nennt_jede_speiche_genau_einmal(self) -> None:
+        """Kein Gegenpol doppelt vergeben, keine Speiche vergessen."""
+        genannt_hoch: list[str] = [h for h, _r in self.PAARE]
+        genannt_runter: list[str] = [r for _h, r in self.PAARE]
+        self.assertEqual(sorted(genannt_hoch), sorted(RAD_ZUG_HOCH))
+        self.assertEqual(sorted(genannt_runter), sorted(RAD_ZUG_RUNTER))
+        self.assertEqual(len(set(genannt_runter)), len(genannt_runter))
 
 
 if __name__ == "__main__":

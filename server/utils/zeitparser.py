@@ -776,20 +776,29 @@ def zeit_parsen(
     text: str,
     referenz: Optional[datetime] = None,
     zukunft_bevorzugt: bool = True,
+    sprechzeitpunkt: Optional[datetime] = None,
 ) -> Optional[datetime]:
     """
     Loest einen natuerlichsprachlichen Zeitausdruck in ein datetime auf.
 
     Args:
         text: Der Zeitausdruck (z.B. "am Donnerstag um 14 Uhr", "morgen")
-        referenz: Referenzzeitpunkt (default: jetzt UTC)
+        referenz: Anker fuer relative **Dauern** — "in drei Tagen" zaehlt von
+            ihr aus. Default: jetzt UTC. Der Timeline-Update-Pfad reicht hier
+            die Zeit des bestehenden Termins durch.
         zukunft_bevorzugt: Bei Mehrdeutigkeit den naechsten zukuenftigen Termin waehlen
+        sprechzeitpunkt: Der Moment, in dem gesprochen wird — Anker fuer
+            deiktische **Tagesworte** ("morgen", "uebermorgen"). Default: die
+            echte Uhr, **nicht** `referenz`: "verschieb ihn auf morgen" meint
+            morgen ab heute, auch wenn der Termin im August liegt. Zu setzen
+            ist er, wo ein Ausdruck gegen einen anderen Moment aufzuloesen ist
+            — bei der Wiederverarbeitung alter Turns und in Testkorpora.
 
     Returns:
         datetime (timezone-aware UTC) oder None wenn nicht aufloesbar
     """
     ergebnis, _befund, _korrigiert, _normalisiert = _aufloesen(
-        text, referenz, zukunft_bevorzugt,
+        text, referenz, zukunft_bevorzugt, sprechzeitpunkt,
     )
     return ergebnis
 
@@ -798,6 +807,7 @@ def _aufloesen(
     text: str,
     referenz: Optional[datetime],
     zukunft_bevorzugt: bool,
+    sprechzeitpunkt: Optional[datetime] = None,
 ) -> tuple[Optional[datetime], MarkerBefund, str, str]:
     """Der gemeinsame Weg von `zeit_parsen` und `zeit_parsen_vektor`.
 
@@ -816,6 +826,46 @@ def _aufloesen(
     if referenz is None:
         referenz = datetime.now(timezone.utc)
 
+    # ZWEI BEZUGSPUNKTE, WEIL ES ZWEI FRAGEN SIND.
+    #
+    # `referenz` ist der Anker fuer relative DAUERN: "in drei Tagen" zaehlt von
+    # ihr aus. Der Timeline-Update-Pfad reicht dort die Zeit des BESTEHENDEN
+    # Termins durch (`agents/timeline/crud.py`) — "verschieb ihn um zwei Tage"
+    # meint zwei Tage nach dem Termin, nicht nach heute.
+    #
+    # `sprechzeitpunkt` ist der Moment, in dem gesprochen wird: Ein deiktisches
+    # Tageswort zeigt immer auf den Tag nach DIESEM Tag. "Verschieb ihn auf
+    # morgen" heisst morgen ab heute, auch wenn der Termin im August liegt.
+    #
+    # **Beides in einen Parameter zu legen, geht nicht** — die beiden Faelle
+    # oben verlangen gegensaetzliches Verhalten. Bis zum 01.08.2026 gab es nur
+    # `referenz`, und die Tagesworte nahmen ersatzweise die echte Uhr. Das war
+    # fuer den Live-Pfad richtig und fuer jede spaetere Verarbeitung falsch:
+    # Ein Ausdruck, der gegen einen historischen Moment aufgeloest werden soll,
+    # bekam den heutigen Kalendertag.
+    #
+    # Gemessen am 01.08.2026 — dreimal derselbe Ausdruck, drei Bezugsmomente:
+    #
+    #     Bezug 10.07. 22:30Z -> "uebermorgen" 2026-08-03, "in zwei Tagen" 13.07.
+    #     Bezug 20.07. 22:30Z -> "uebermorgen" 2026-08-03, "in zwei Tagen" 23.07.
+    #     Bezug 30.07. 22:30Z -> "uebermorgen" 2026-08-03, "in zwei Tagen" 02.08.
+    #
+    # Der Vorgabewert bleibt die echte Uhr, damit jeder Aufrufer, der nur einen
+    # Termin verschiebt, unveraendert weiterlaeuft.
+    #
+    # Die Zone gilt vor der Persistenz-Grenze; nach UTC dreht erst das
+    # Repository (novaberg-tool-timeparser_l_timezone.md §3). Gedreht wird,
+    # nicht des Zonenvermerks beraubt: `RELATIVE_BASE` muss naiv sein, und
+    # `settings["TIMEZONE"]` unten sagt dateparser, dass es naive Zeiten als
+    # Ortszeit liest — ein blosses `.replace(tzinfo=None)` haette die
+    # UTC-Wanduhr als Ortszeit ausgegeben.
+    tz = ZoneInfo(TIMEZONE)
+    referenz_lokal: datetime = referenz.astimezone(tz)
+    heute_lokal: date = (
+        _heute_lokal() if sprechzeitpunkt is None
+        else sprechzeitpunkt.astimezone(tz).date()
+    )
+
     # Schritt 1: Fuzzy-Korrektur
     korrigiert: str = _fuzzy_korrektur(text)
 
@@ -823,7 +873,7 @@ def _aufloesen(
     rumpf, befund = _marker_extrahieren(korrigiert)
 
     # Schritt 3: Normalisierung fuer dateparser (kennt keine Richtung mehr)
-    normalisiert: str = _text_normalisieren(rumpf)
+    normalisiert: str = _text_normalisieren(rumpf, heute=heute_lokal)
 
     # DIE RICHTUNG WIRD UEBERGEBEN, nicht nur berechnet.
     #
@@ -839,25 +889,7 @@ def _aufloesen(
     # im Rueckgabewert nach einer getroffenen Entscheidung aus.
     zukunft: bool = zukunft_bevorzugt and not befund.rueckwaerts
 
-    # Schritt 4: Drei Parse-Pfade
-    tz = ZoneInfo(TIMEZONE)
-
-    # Die Referenz wird in die Ortszone GEDREHT, nicht ihres Zonenvermerks
-    # beraubt. `RELATIVE_BASE` muss naiv sein, und `settings["TIMEZONE"]`
-    # unten sagt dateparser, dass es naive Zeiten als Ortszeit liest — ein
-    # blosses `.replace(tzinfo=None)` haette die UTC-Wanduhr also als
-    # Ortszeit ausgegeben und damit um den Zonenversatz verschoben.
-    #
-    # Das ist der Bezugspunkt fuer relative Dauern ("in drei Tagen"). Block
-    # 0b rechnet die deiktischen Tagesworte ("morgen") mit dem lokalen
-    # Kalendertag. Beide muessen dieselbe Zone benutzen, sonst liegen
-    # "uebermorgen" und "in zwei Tagen" in den Stunden zwischen lokaler und
-    # UTC-Mitternacht einen Tag auseinander — gemessen am 31.07.2026.
-    #
-    # Die Zone gilt vor der Persistenz-Grenze; nach UTC dreht erst das
-    # Repository (novaberg-tool-timeparser_l_timezone.md §3).
-    referenz_lokal: datetime = referenz.astimezone(tz)
-
+    # Schritt 4: Drei Parse-Pfade — `tz` und `referenz_lokal` stehen oben.
     settings: dict = {
         "RELATIVE_BASE": referenz_lokal.replace(tzinfo=None),
         "PREFER_DATES_FROM": "future" if zukunft else "past",
@@ -1037,6 +1069,7 @@ def zeit_parsen_vektor(
     text: str,
     referenz: Optional[datetime] = None,
     zukunft_bevorzugt: bool = True,
+    sprechzeitpunkt: Optional[datetime] = None,
 ) -> ZeitVektor:
     """
     Parst einen Zeitausdruck und meldet zurueck, welche Komponenten erkannt wurden.
@@ -1050,6 +1083,14 @@ def zeit_parsen_vektor(
     Markerbefund und beide Textzustaende zurueck. Der frueher noetige zweite
     Regex-Durchlauf auf dem korrigierten Text entfaellt — mit ihm die
     Moeglichkeit, dass beide Durchlaeufe auseinanderlaufen.
+
+    Args:
+        referenz: Anker fuer relative **Dauern**. Der Update-Pfad reicht hier
+            die Zeit des bestehenden Termins durch.
+        sprechzeitpunkt: Anker fuer deiktische **Tagesworte**. Default: die
+            echte Uhr, nicht `referenz` — sonst schoebe "verschieb ihn auf
+            morgen" einen Termin im August auf den Tag nach jenem Termin.
+            Ausfuehrlich an der Referenz-Drehung in `_aufloesen`.
     """
     # ── Eingabe ─────────────────────────────────
     if not text or not text.strip():
@@ -1060,7 +1101,7 @@ def zeit_parsen_vektor(
 
     # ── Verarbeitung ────────────────────────────
     datum, befund, korrigiert, normalisiert = _aufloesen(
-        text, referenz, zukunft_bevorzugt,
+        text, referenz, zukunft_bevorzugt, sprechzeitpunkt,
     )
 
     # Uhrzeit-Erkennung: Nach der Normalisierung sind alle Uhrzeitformen

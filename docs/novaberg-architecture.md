@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Systemarchitektur, Tech-Stack, Plugin-System
-**Stand:** 30. Juli 2026 (`ruff-hart.toml` im Verzeichnisbaum ergänzt, §3 — die harte Teilmenge ohne geduldeten Bestand. Zuvor: `ruff.toml` im Verzeichnisbaum ergänzt, §3. Zuvor: Verzeichnisbaum nachgezogen — `ei/` vollständig, vier fehlende Agenten ergänzt. Kern: Chat 94, Microservice-Welle Block 2+3; Embedding-Modellwechsel Chat 107, §2.4)
+**Stand:** 31. Juli 2026, abends (`graph/nodes/haltung.py` im Verzeichnisbaum ergänzt, Knotenzahlen des CharacterGraph und des Node-Verzeichnisses neu gezählt — beide standen älter als der Verfasser da. Zuvor: `ei/haltung.py` im Verzeichnisbaum ergänzt und der Eintrag zum Haltungsraum im Dokumenten-Index auf das Beitragsmodell umgestellt — die Rechnung ist gebaut, der Knoten fehlt. Zuvor: `novaberg-node-verfasser_k.md` im Dokumenten-Index ergänzt — Konzept, nicht gebaut. Zuvor: `ruff-hart.toml` im Verzeichnisbaum ergänzt, §3 — die harte Teilmenge ohne geduldeten Bestand. Zuvor: `ruff.toml` im Verzeichnisbaum ergänzt, §3. Zuvor: Verzeichnisbaum nachgezogen — `ei/` vollständig, vier fehlende Agenten ergänzt. Kern: Chat 94, Microservice-Welle Block 2+3; Embedding-Modellwechsel Chat 107, §2.4)
 **Pfad:** novaberg/docs/novaberg-architecture.md
 **Quellen:** nova-00-a.md (Architektur-Übersicht), nova-07-a.md (Tech-Stack), nova-07-m-a.md (Plugin-System)
 
@@ -237,12 +237,13 @@ project/
 │   ├── graph/                           # LangGraph Graphen + State (Chat 60: Graph-Split)
 │   │   ├── base.py                      #   GraphBase (abstrakt, create_state)
 │   │   ├── human_graph.py               #   HumanGraph (Pfad 1, 5 Nodes)
-│   │   ├── character_graph.py           #   CharacterGraph (Pfad 2, 17 Nodes, Chat 60/61/89)
+│   │   ├── character_graph.py           #   CharacterGraph (Pfad 2, 20 Nodes — gezählt 31.07.2026; die frühere Angabe 17 ist älter als Verfasser und Haltungsraum)
 │   │   ├── agent_graph.py               #   AgentGraph (Pixie-Pipeline, 3 Nodes)
 │   │   ├── builder.py                   #   Fassade, Plugin-Init
 │   │   ├── personality.py               #   Personality-Klassen (Character, Emotion, Personality, InternalPersonality)
 │   │   ├── state.py                     #   State-Definition, PendingWrite
-│   │   └── nodes/                       #   16 Node-Dateien, von den drei Graphen geteilt
+│   │   └── nodes/                       #   20 Node-Dateien, von den drei Graphen geteilt (gezählt 31.07.2026)
+│   │       ├── haltung.py               #     Knoten `haltungsraum`: lädt Landschaft + Rad, rechnet, schreibt state["haltung"] (→ novaberg-haltungsraum_k.md §2)
 │   │       ├── perzeption.py            #     → novaberg-node-perception.md (rolle user/assistant)
 │   │       ├── db_zugriff.py            #     → novaberg-node-db-zugriff.md (CG-Entry, lädt Personality)
 │   │       ├── enricher.py              #     → novaberg-node-enricher.md (Methodensplit nach Phase 4)
@@ -275,6 +276,8 @@ project/
 │   │   ├── promotion/                   #   PromotionAgent (Pixie, KZG -> LZG)
 │   │   ├── decay/                       #   DecayAgent (Pixie, Ebbinghaus)
 │   │   ├── charakter/                   #   CharakterAgent (Pixie, Hash-Destillation + zwei Charakter-Raeder)
+│   │   │   ├── rad_messreihe.py         #     Messreihe der Raeder: rohe Messungen + gewichtetes Mittel (→ novaberg-charakter-rad-messreihe_k.md)
+│   │   │   └── init.sql                 #     Tabelle charakter_rad_messung (seit 01.08.2026)
 │   │   ├── wiedervorlage/               #   WiedervorlageAgent (Pixie)
 │   │   ├── synapsen_promotion/          #   Synapsen P4 (Pixie, KZG -> lzg_knoten)
 │   │   ├── synapsen_decay/              #   Synapsen P6 (Pixie, Knoten-Decay + pipeline_log-Retention)
@@ -290,6 +293,7 @@ project/
 │   │   ├── wissensluecken.py            #   GV4: semantisch nahe, aber unbesprochene Konzepte
 │   │   ├── gravitation.py               #   Emotionale Gravitation: Erinnerungen als Attraktoren (→ novaberg-node-emotionale-gravitation.md)
 │   │   ├── salienz.py                   #   Salienz-Formel (→ novaberg-salienz-berechnung_k.md)
+│   │   ├── haltung.py                   #   Landschaft + Zuwendungsrad → fuenf Verhaltensgroessen (→ novaberg-haltungsraum_k.md)
 │   │   ├── farbton.py                   #   Farbmisch-System: 8 Dimensionen → Landschaftsbeschreibung
 │   │   └── utils.py                     #   Gemeinsam genutzt von Neugier, Wissensluecken, Dreischicht (u.a. modus_pruefen)
 │   │
@@ -623,6 +627,9 @@ Das Handbuch ist nach Betrachtungstiefen organisiert. Tiefe 0 ist der Einstiegsp
 | novaberg-node-gv_k.md | Gespraechsvektor (Farbmisch-System, zweite Wissensquelle: ~~Entity-Hop~~ Resonanz-Kontext seit Chat 115) |
 | novaberg-gv-initiative_k.md | Initiative-Achse — Konzept: Herleitung, verworfene Wege, Kalibrier-Agent (Entwurf) |
 | novaberg-gv-initiative.md | Initiative-Achse — Modul: Datenfluss, Konstanten mit Kalibrierungsstand, Messungen |
+| novaberg-charakter-rad-messreihe_k.md | Die Charakter-Räder als Messreihe — Konzept: Das Rad misst einen akuten Zustand und wird durch die Messungen der letzten Tage stabilisiert; rohe Messungen in `charakter_rad_messung`, gelesener Wert als gewichtetes Mittel (🔶 gebaut für das Zuwendungs-Rad) |
+| novaberg-haltungsraum_k.md | Haltungsraum — Konzept: Landschaft setzt Grundwerte für fünf Verhaltensgrößen, das Zuwendungsrad modifiziert sie; Grenzen multiplizieren, Neigungen addieren, Übersteuerungen ersetzen (🔶 Rechnung und Knoten gebaut und im Betrieb, Protokoll und Prompt offen) |
+| novaberg-node-verfasser_k.md | Verfasser — Konzept: ein Node vor dem Responder, der den fachlichen Inhalt bestimmt; Inhalt und Wesen werden getrennt (⬜ nicht gebaut) |
 | novaberg-node-responder.md | Responder (Antwortgenerierung, EI-MIKRO) |
 | novaberg-node-thinker.md | Thinker (Faktenpruefung, Web-Suche) |
 | novaberg-node-tribunal.md | Tribunal (Drei-Perspektiven-Bewertung, Score-System) |

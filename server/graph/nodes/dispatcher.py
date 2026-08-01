@@ -394,6 +394,21 @@ def _turn_roh_schreiben(state: ConversationState) -> None:
             "user_emotion": external.emotion.to_dict(),
             "nova_emotion": internal.emotion.to_dict(),
         }
+
+        # Der fachliche Inhalt vor Novas Form — nur wenn der Verfasser lief.
+        #
+        # Ohne ihn ist die Frage nicht beantwortbar, ob die Endantwort
+        # Behauptungen traegt, die im Inhalt nicht standen: Beide Texte muessen
+        # in derselben Zeile stehen, sonst ist der Vergleich eine Rekonstruktion
+        # aus zwei Quellen (novaberg-node-verfasser_k.md §5).
+        #
+        # Das Feld erscheint NUR, wenn es etwas zu sagen hat. Ein dauerhaftes
+        # `antwort_inhalt: ""` waere von "der Verfasser lief nicht" nicht zu
+        # unterscheiden — dieselbe Verwechslung, gegen die die Herkunftsfelder
+        # gebaut wurden.
+        antwort_inhalt: str = state.get("antwort_inhalt", "")
+        if antwort_inhalt:
+            inhalt["antwort_inhalt"] = antwort_inhalt
         log_turn_roh(
             turn_id      = state.get("turn_id", ""),
             node         = "dispatcher",

@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Backlog — Konzipierte, noch nicht implementierte Features
-**Stand:** 31. Juli 2026 (Abschnitt „Zeitparser und Kalibrierung" ergänzt — vier Einträge aus dem Korpus-Erstlauf und der Neuerhebung der Positions-Kontrolle. Zuvor: Chat 117, zwei KZG-Einträge gegen den Code nachgezogen. Kern: Chat 111)
+**Stand:** 1. August 2026 (Abschnitt „Charakterbildung messen" ergänzt — der nächste Sprint, mit `PROFIL-HISTORIE-FEHLT` und `PAARLISTE-FEST` als Voraussetzungen. Zuvor: 31. Juli 2026, abends — `HALTUNG-KNOTEN-FEHLT` geschlossen, `HALTUNG-SPANNENENDEN-OFFEN` um die erste Messung am echten Turn ergänzt. Zuvor: Abschnitt „Haltungsraum — der unterbrochene Sprint" ergänzt — vier Einträge: der fehlende Knoten, das fehlende Protokoll, die offenen Spannenenden und die abzulösende Längenregel. Zuvor: Abschnitt „Zeitparser und Kalibrierung" ergänzt — vier Einträge aus dem Korpus-Erstlauf und der Neuerhebung der Positions-Kontrolle. Zuvor: Chat 117, zwei KZG-Einträge gegen den Code nachgezogen. Kern: Chat 111)
 **Pfad:** novaberg/docs/novaberg-backlog.md
 **Quellen:** nova-08-k.md (Kognitive Anreicherung), nova-10-k-backlog.md (Skill-System), nova-01-t-c-backlog.md (Node-Konfiguration)
 
@@ -16,7 +16,175 @@ Das System wurde zu diesem Zeitpunkt auf einen leeren Datenbestand zurückgesetz
 
 **Die Befunde bleiben gültig.** Sie ruhen auf Formeln, Konstanten und Codestellen, nicht auf den Zahlen — die Zahlen waren ihr Beleg, nicht ihre Ursache. `KZG-SALIENZ-SKALENBRUCH` ist eine Aussage über eine Dämpfungskurve und einen Deckel; die hält, solange der Code sie trägt.
 
+### Nachgemessen am 01.08.2026 — die Salienz steht wieder oben
+
+Erste Erhebung der KZG-Salienz **nach** dem Reset, 400 Schlüssel des Paares `meister/nova` aus 1045:
+
+| | |
+|---|---|
+| Minimum | 0.67 |
+| **Median** | **0.98** |
+| ≥ 0.9 | 345 = **86 %** |
+| = 1.0 (Deckel) | 119 = **30 %** |
+
+**Die rohe Bewertung ist dabei gesund:** 132 Segmentbewertungen einer Messreihe lagen zwischen 0.2 und 0.9, Mittel **0.61**, keine einzige bei 1.0. Zwischen Bewertung und Ablage hebt die Formel also fast alles ans Dach — dieselbe Aussage wie vor dem Reset (damals 68 % über 1.0), auf frischem Bestand bestätigt. **Der Befund ist damit nicht historisch, sondern aktuell.**
+
 **Was neu gemessen werden muss, bevor es geschlossen wird:** `KZG-TTL-UNSTERBLICH` (die Altersverteilung ist weg), `PROMOTION-ENTFERNT-KZG-NICHT` (der Vollabgleich hat keinen Bestand mehr), `KZG-GEWICHT-ABSOLUT-CEILING` (die Knoten über dem Cap existieren nicht mehr). Ein leerer Bestand ist kein Nachweis, dass ein Defekt behoben ist.
+
+---
+
+## 0b. Charakterbildung messen — der nächste Sprint (01.08.2026)
+
+Das System misst sich inzwischen selbst sehr genau und seine **Wirkung auf das Gespräch gar nicht**. Es gibt keine Zahl, die sagt, ob der Apparat aus Perzeption, EI-Profil, Gesprächsvektor und Charakter-Rädern eine Antwort erzeugt, die ein nacktes Sprachmodell nicht erzeugt hätte.
+
+Solange diese Zahl fehlt, wird jede Justierung an Zwischengrößen gegen Zwischengrößen kalibriert.
+
+### Die Frage, in drei zerlegt
+
+**Ist es unterscheidbar?** Erzeugt der Apparat eine sichtbare Wirkung, oder wäre das nackte Modell nicht zu trennen?
+
+**Ist es ein Charakter?** Nicht dasselbe. Ein Charakter ist nicht „anders als das Basismodell", sondern über die Zeit derselbe und unter Störung stabil.
+
+**Ist es kausal?** Ändert sich das Verhalten, wenn sich der Charakter ändert — in die vorhergesagte Richtung?
+
+### Der Aufbau
+
+**Mehrere Test-Nutzer gegen dieselbe Nova**, jeder mit einer eigenen Gesprächsart. Das Paar-Schema trägt das bereits: `charakter_hash`, KZG und LZG liegen je Paar. Damit wird die Frage schärfer und besser messbar:
+
+> **Entwickelt Nova je Beziehung einen anderen Charakter?**
+
+Konvergieren alle Räder auf dasselbe Profil, liest der Apparat das **Modell** und nicht die Beziehung. Divergieren sie in die Richtung, die die Gesprächsart vorgibt, ist Charakterbildung belegt.
+
+**Der nackte Vergleich ist dabei geschenkt:** Ein frisches Paar ist in seinen ersten Turns das nackte Modell — leere Profile, Rad auf der Nabe. Turn 1 gegen Turn 100 desselben Paares ist die Ablation, ohne Gabelung und ohne das Risiko, dass ein Ablationspfad dem Produktivpfad nicht entspricht.
+
+**Der Kontrollarm gehört dazu:** Zwei Nutzer mit **identischem** Gesprächsskript. Divergieren die, misst die Reihe Rauschen.
+
+### Die Maße stehen vor dem ersten Turn fest
+
+Sonst sucht man hinterher die Zahl, die passt.
+
+| Maß | Quelle |
+|---|---|
+| Antwortlänge, Fragenanteil | `pipeline_log`, `art='turn_roh'` |
+| Radabstand zwischen den Paaren | euklidisch über die zwölf Speichen |
+| Profilähnlichkeit | Embedding-Distanz der Profiltexte |
+| Trennschärfe | blinder Urteiler: Profil plus zwei Antworten — welche passt? |
+
+**Jede nicht-blinde Ablesung ist für diese Frage wertlos.** Wer weiß, welche Antwort von Nova stammt, findet Charakter darin.
+
+**Die Vorhersagen gehören ebenfalls vorher festgeschrieben** — je Person eine Erwartung an ihr Rad. Trifft sie nicht ein, ist das ein Ergebnis und kein Anlass zum Nachjustieren.
+
+**Priorität:** hoch. Sie steht vor der Justierung der Beitragszahlen und vor dem Prompt-Block: Landet der Blindtest beim Zufall, wird gerade sehr sorgfältig etwas kalibriert, das niemand sieht.
+
+#### PROFIL-HISTORIE-FEHLT — der Profilstand ist nicht rekonstruierbar
+
+`kern_hash`, `adaptive_hash`, `intentions_profil`, `emotions_profil` und `beziehungsprofil` werden bei jeder Destillation **überschrieben**. Nach hundert Turns lässt sich nicht mehr sagen, welcher Profilstand welches Verhalten erzeugt hat.
+
+Für eine Messreihe ist das der Unterschied zwischen einer Messung und einer Erzählung. Es ist derselbe Defekt, den das Zuwendungs-Rad bis zum 01.08.2026 hatte — eine Ebene höher, und derselbe Verstoß gegen Regel (1) der Konvention über abgeleitete Werte.
+
+**Bauart steht bereits:** dieselbe wie `charakter_rad_messung` — rohe Stände mit eigenem Zeitstempel, Modell, Temperatur und Quellen-Prüfsumme, der gelesene Wert bleibt in `charakter_hash`.
+
+**Priorität:** hoch, **vor** der Reihe. Ohne sie ist die Reihe nicht auswertbar.
+
+#### PAARLISTE-FEST — der CharakterAgent destilliert genau ein Paar
+
+`agents/charakter/agent.py` trägt die Paarliste als Literal: `[(DEFAULT_USER_ID, ASSISTANT_USER_ID)]`. Für weitere Nutzer entstünden weder Profile noch Räder — still, weil der Agent für sie schlicht nie läuft.
+
+Das Datenmodell trägt das Paar überall; es fehlt die **Iteration**, nicht das Schema. Die Liste muss aus dem Bestand kommen, mit einer benannten Grenze, damit ein versehentlich angelegter Nutzer nicht zehn Destillationen je Lauf auslöst.
+
+**Priorität:** hoch, vor der Reihe.
+
+---
+
+## 0a. Haltungsraum — der unterbrochene Sprint (31.07.2026)
+
+Die Rechnung steht und ist geprüft, sie wirkt aber nirgends: Kein Knoten ruft sie, kein Protokoll trägt sie, kein Prompt liest sie. **Der Sprint ist bewusst hier unterbrochen**, weil der Rest in den Graphen eingreift.
+
+> **Stand 31.07.2026, abends:** Knoten **und** Protokoll sind gebaut, der erste Satz gilt also nicht mehr — die Rechnung läuft in jedem Turn, steht im `pipeline_log` und in der Spur. Es bleibt: **kein Prompt.** Damit ist Novas Verhalten weiterhin unverändert, und die Zahlen lassen sich gegen echte Turns prüfen, ohne diese Turns beeinflusst zu haben. **Die Messreihe kann beginnen.**
+
+#### HALTUNG-KNOTEN-FEHLT — die Rechnung hat keinen Aufrufer ✅ **erledigt am 31.07.2026**
+
+Gebaut als `graph/nodes/haltung.py`, im Graphen als Knoten `haltungsraum` zwischen `gv_node` und der Verzweigung. Kanal `haltung` in `graph/state.py` deklariert und **nicht** vorbelegt. Belegt an einem echten Turn: `beichte · umfang 0.60 · fragen 0.80 · naehe 1.25 ! · waerme 1.35 ! · draengen 0.00 [Grenze]`, Rad destilliert, zwölf Speichen.
+
+**Was der Eintrag verlangte und was daraus wurde:** Die Kanalfalle war real — die Gegenprobe ohne Deklaration ergab im Folgeknoten `FEHLT` statt des Werts. Neu dazugekommen ist eine Randbedingung, die niemand genannt hatte: Ein Knoten darf nicht heißen wie ein Zustandsschlüssel; das Framework lehnt ihn ab.
+
+**Der Rest bleibt offen:** Kein Prompt liest die Werte, kein Protokoll trägt sie. Novas Verhalten ist unverändert — das ist die Reihenfolge des Sprints, kein Versehen.
+
+Die ursprüngliche Fassung des Eintrags:
+
+`ei/haltung.py` und `memory/charakter.py → nutzer_gewichtung_rad_laden()` sind gebaut und getestet. Es fehlt der Knoten, der beides verbindet.
+
+**Er gehört vor die Verzweigung zum Verfasser** (`character_graph.py`, `_after_gv`), aus zwei Gründen: Der Verfasser muss den Umfang kennen, bevor er den Inhalt zusammenstellt, und er wird bei `task_context_cut` übersprungen — eine Rechnung in ihm fiele in genau der Lage aus, in der der Responder allein steht.
+
+**Zu beachten:** Der Zustandsschlüssel muss in `graph/state.py` deklariert sein. Ein Schlüssel, den ein Knoten schreibt, ohne dass er im Zustandstyp steht, wird an der Knotengrenze stillschweigend verworfen — der Wert ist innerhalb des Knotens lesbar und danach weg.
+
+**Aufwand:** ein Knoten, eine Kanaldeklaration, eine Verdrahtung. **Priorität:** hoch — ohne ihn ist alles Gebaute wirkungslos.
+
+#### GRAPH-SACKGASSE-UNGEPRUEFT — ein Knoten ohne Ausgang fällt nicht auf
+
+Beim Bau des Haltungs-Knotens vorgeführt: Wird die abgehende Kante eines Knotens umgehängt, bleibt er als **Sackgasse** im Graphen stehen, und `compile()` nimmt das widerspruchslos an. Der Knoten läuft dann noch, sein Ergebnis erreicht aber niemanden — sichtbar erst an der ausbleibenden Wirkung.
+
+**Prüfbar und ungeprüft:** Ein Test über die kompilierten Graphen, der für jeden registrierten Knoten mindestens eine eingehende und eine ausgehende Kante verlangt (Ausnahmen: Eintritts- und Endknoten). Die Kantenliste ist ohne Redis und Postgres abfragbar — `CharacterGraph.build(object.__new__(CharacterGraph))` genügt.
+
+**Priorität:** mittel. Der Fall ist heute nicht im Bestand, aber lautlos, wenn er eintritt.
+
+#### HALTUNG-PROTOKOLL-FEHLT — das Ergebnis ist nicht sichtbar ✅ **erledigt am 31.07.2026**
+
+Gebaut im rechnenden Knoten: `log_berechnung` mit drei Zahlen je Größe, Rechenart und Auslöser, dazu `ausserhalb` und `uebersteuert` als zählbare Listen obenauf. Die Spur zeigt `Haltung.kurzfassung()`, ein Turn ohne Rechnung zeigt dort **„nicht gerechnet"** statt des Vorgabestrichs.
+
+**Zwei Entscheidungen, die der Eintrag offengelassen hatte.** Ein **Ausfall** wird als `fehler`-Zeile geführt: keine Berechnungszeile mit Nullen, die wie eine gemessene Haltung ohne Ausschlag aussähe — aber auch kein Schweigen, denn die Häufigkeit der Ausfälle gehört zur Messreihe. Und `quelle` kommt aus `pipeline_quelle(state)` wie bei Enricher und Salienz, nicht als Literal wie im GV-Node.
+
+**Belegt am echten Turn:** Die Zeile steht mit `quelle='character'` im `pipeline_log`, und der Join gegen den Rohturn liefert Haltung und Antwortlänge nebeneinander — `beichte`, Umfang 0.60, 1623 Zeichen Antwort, 2725 Zeichen Verfasser-Inhalt.
+
+Die ursprüngliche Fassung des Eintrags:
+
+Drei Zahlen je Größe (Grundwert, Modifikation, Ergebnis) plus Rechenart und Übersteuerungsmarke gehören über `log_berechnung` ins `pipeline_log`, geschrieben vom rechnenden Knoten. Der Eintrag trägt eine `turn_id` und steht damit neben `log_turn_roh` desselben Turns.
+
+**Ausdrücklich kein Redis-Blob** nach dem Muster von `gv_detail`: Der trägt den Zustand, nicht den Verlauf, und ein übersprungener Turn hinterlässt dort den Vorstand ohne Kennzeichnung. Die Beitragszahlen sind Setzungen und werden nachkalibriert — dafür braucht es die Historie.
+
+Dazu eine Zeile in der Spur (`services/event_consumer.py`), damit das Ergebnis bei jeder Antwort ohne Umweg lesbar ist. `Haltung.kurzfassung()` liefert sie fertig. **Ein Turn ohne Rechnung trägt keine Zeile statt einer leeren.**
+
+**Priorität:** hoch — die Sichtbarkeit ist Voraussetzung für die Messreihe.
+
+#### HALTUNG-SPANNENENDEN-OFFEN — die Zahlen verlassen den Korridor
+
+Gemessen am Entwurf: `glut/waerme` ergibt 1.15, `feuerwerk/fragen` 1.40, und nach unten reicht **eine** voll ausgeprägte Speiche — `glut/draengen` fällt mit `treue` auf −0.10.
+
+**Gemessen am 31.07.2026 — die Frage ist entscheidbar geworden.** Reihe über 20 Turns: 9 von 19 Turns außerhalb, 20 von 95 Einzelwerten, ausschließlich nach oben, null Übersteuerungen. Anschließend alle 14 Landschaften gegen das reale Rad gerechnet — die Haltung ist bei festem Rad eine reine Funktion, das Ergebnis ist damit vollständig und keine Schätzung:
+
+**10 von 14 Landschaften laufen über.** `waerme` 8×, `naehe` 6×, `umfang` 4×, `fragen` 3×. Sauber bleiben nur die vier kühlen: `gewitter`, `schlachtfeld`, `wartezimmer`, `paradox`.
+
+**Damit ist eine der beiden Lösungen unplausibel geworden.** *Kleinere Beiträge* müssten das Rad so weit stauchen, dass der Charakter in warmen Landschaften praktisch nichts mehr bewirkt — `waerme` steht dort bei Grundwert 0.90 und bekommt +0.45. *Sättigung* trifft genau diesen Fall: Wo die Lage schon warm ist, fügt der Charakter wenig hinzu; wo sie kalt ist, macht er den Unterschied. **Die Entscheidung liegt weiterhin nicht hier** — sie gehört in `novaberg-haltungsraum_k.md` §6 und ist zu treffen, nicht abzuleiten.
+
+**Was die Messung nicht zeigt:** den Unterlauf. Das vermessene Rad ist ein warmes; die untere Grenze braucht eine ausgeprägte `treue` und ist ungeprüft geblieben.
+
+Nicht gekappt, sondern gemeldet und markiert; die Häufigkeit ist die Messgröße, die zwischen zwei Auswegen entscheidet. **Kleinere Beiträge** oder **Sättigung auf die Summe** — beide stehen mit ihren Preisen in `novaberg-haltungsraum_k.md` §6.
+
+**Der Eintrag verlangt keine der beiden Lösungen**, sondern die Messung davor. Eine Entscheidung am Schreibtisch wäre eine Setzung auf eine Setzung.
+
+**Priorität:** mittel — erst nach der ersten Messreihe entscheidbar.
+
+#### HALTUNG-OHNE-LANDSCHAFT — der Prompt-Block muss den leeren Fall beantworten
+
+Kehrt der GV-Node früh zurück — bei Vektorlänge 0 („kein Vorausdenken") oder beim Skip —, setzt er `gv_detail` **nicht**. Ohne Landschaft gibt es keine Grundwerte und damit keine Haltung. Der Haltungs-Knoten erbt diese Lücke; das ist kein Defekt in ihm, sondern eine Weitergabe.
+
+**Gemessen am 31.07.2026:** in einer Reihe von 20 Turns **einmal**, dazu **einmal** auf Novas Eigenimpuls unmittelbar danach — also rund jeder zehnte Haltungs-Vorgang. Kein Randfall.
+
+**Solange kein Prompt die Werte liest, ist das folgenlos.** Mit dem Prompt-Block wird es eine Fallunterscheidung: Nova bekäme in diesen Turns keine Verhaltensvorgaben, während die alte Längenregel abgelöst ist. Zwei Wege stehen offen — die letzte Haltung weiterverwenden (dann muss sie als übernommen markiert sein, sonst sieht ein alter Wert wie ein frischer aus) oder den Block weglassen und auf die Vorgabewerte des Prompts zurückfallen.
+
+**Der Eintrag verlangt keinen der beiden Wege**, sondern die Entscheidung vor dem Einhängen des Blocks.
+
+**Priorität:** hoch, gleichzeitig mit dem Prompt-Block.
+
+#### HALTUNG-LAENGE-ZWEI-ERZEUGER — die alte Längenregel muss abgelöst werden
+
+`_ei_mikro_anweisung()` in `graph/nodes/responder.py` setzt die Antwortlänge heute in **jedem** Turn allein aus dem Arousal, mit nicht-monotoner Kurve: hoch und niedrig ergeben „MAXIMAL 1-2 Sätze", die Mitte „2-3 Sätze".
+
+Wer den Haltungsraum in den Prompt einhängt, ohne diese Regel abzulösen, hat zwei Erzeuger für dieselbe Größe — dieselbe Fehlerklasse wie die zwei Pipelines im Zeitparser, die auseinanderliefen, weil niemand sie synchron halten konnte.
+
+**Nicht im selben Zug wie der Knoten**, sondern danach: Solange der Block nicht im Prompt steht, ändert sich Novas Verhalten nicht, und die Zahlen lassen sich gegen echte Turns prüfen, ohne diese Turns bereits beeinflusst zu haben.
+
+**Priorität:** hoch, aber nach der Messreihe.
 
 ---
 

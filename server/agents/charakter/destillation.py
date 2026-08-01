@@ -10,6 +10,7 @@ import json
 import logging
 import math
 import time
+from collections.abc import Callable
 
 from config import (
     ASSISTANT_NAME,
@@ -52,12 +53,32 @@ RAD_ZUG_HOCH: dict[str, float] = {
     "wohlwollen":     0.06,   # legt Gesagtes im besten Sinne aus
 }
 
+# Die Reihenfolge dieser Seite ist eine **Gegenpol-Anordnung**, keine
+# Aufzaehlung: Speiche i von RAD_ZUG_HOCH und Speiche i dieser Liste sind
+# inhaltliche Gegensaetze und liegen auf dem Rad einander gegenueber.
+#
+#   treue          <-> selbstbezogen   fremde Belange vor eigenen / eigene zuerst
+#   dienst         <-> gleichgueltig   sucht Gelegenheiten / beruehrt sie nicht
+#   pflicht        <-> widerspenstig   nimmt Auftraege ernst / folgt ungern
+#   aufmerksamkeit <-> distanz         haelt Naehe / haelt Abstand
+#   wissbegier     <-> langeweile      Themen wecken Interesse / ermueden sie
+#   wohlwollen     <-> misstrauen      im besten Sinne / skeptisch ausgelegt
+#
+# **Nicht nach Zugstaerke sortieren.** Fuer den Skalar ist die Reihenfolge
+# gleichgueltig — er ist eine Summe. Fuer die Flaeche des Haltungsraums ist
+# sie tragend: Sie entscheidet, welche zwei Eigenschaften einander auf dem
+# Rad ausloeschen koennen. Die fruehere Ordnung stellte `wissbegier` gegen
+# `distanz`; beide stehen im Bestand gleichzeitig auf 1.0, und Neugier auf
+# die Sache schliesst Abstand zur Person nicht aus (siehe das dritte
+# Beispiel in novaberg-salienz-berechnung_k.md §5).
+#
+# `GegenpolAnordnungTest` in tests/test_hash_raeder.py haelt die Paare fest.
 RAD_ZUG_RUNTER: dict[str, float] = {
-    "widerspenstig":  0.12,   # widerspricht, lenkt ab, folgt ungern
-    "gleichgueltig":  0.10,   # seine Belange beruehren sie nicht
     "selbstbezogen":  0.08,   # kehrt zu ihren eigenen Themen zurueck
-    "langeweile":     0.05,   # fremde Themen ermueden sie
+    "gleichgueltig":  0.10,   # seine Belange beruehren sie nicht
+    "widerspenstig":  0.12,   # widerspricht, lenkt ab, folgt ungern
     "distanz":        0.03,   # haelt ihn auf Abstand
+    "langeweile":     0.05,   # fremde Themen ermueden sie
     "misstrauen":     0.02,   # legt Gesagtes skeptisch aus
 }
 
@@ -779,6 +800,7 @@ def initiative_rad_destillieren(
     profil_text: str,
     user_id:     str = DEFAULT_USER_ID,
     laeufe:      int = INITIATIVE_RAD_LAEUFE,
+    lauf_melden: Callable[[int, dict, float], None] | None = None,
 ) -> tuple[dict, float] | None:
     """Erhebt das Initiative-Rad mehrfach und nimmt den Median.
 
@@ -793,10 +815,24 @@ def initiative_rad_destillieren(
     gemittelt: Er wird bei der Destillation einmal geschrieben und bleibt bis
     zur naechsten stehen.
 
-    **Gespeichert wird das Rad des Median-Laufs**, nicht ein gemitteltes Rad.
+    **Zurueckgegeben wird das Rad des Median-Laufs**, nicht ein gemitteltes Rad.
     Ein Durchschnitt aus drei Raedern ergaebe Auspraegungen wie 0.67, die kein
     Lauf je vergeben hat — und der Zusammenhang `Rad x Zuege = Versatz` waere
     nicht mehr von Hand nachrechenbar. Die Streuung reist als Metadatum mit.
+
+    **Was der Aufrufer daraus macht, ist seine Sache.** Seit dem 01.08.2026
+    legt er die Einzellaeufe in die Messreihe und speichert ein ueber Tage
+    stabilisiertes Rad (novaberg-charakter-rad-messreihe_k.md). Der Grund fuer
+    "ein echtes Rad" faellt damit an dieser Stelle weg: Die Laeufe, aus denen
+    es entsteht, bleiben einzeln erhalten — nur eben in der Messreihe statt im
+    Rueckgabewert.
+
+    Args:
+        lauf_melden: wird nach jedem **gelungenen** Lauf mit (Nummer, Rad,
+            Versatz) gerufen. Der Rueckgabewert wird nicht gelesen.
+            **Vertrag: Die Senke wirft nicht** — eine Ausnahme aus ihr wuerde
+            die Destillation abbrechen, und ein Forensik-Ziel darf einen
+            Charakterlauf nicht toeten.
 
     Vorbedingung: `profil_text` ist nicht leer, `laeufe` >= 1.
     Nachbedingung: (rad, versatz) — das Rad traegt zusaetzlich 'laeufe' und
@@ -836,6 +872,8 @@ def initiative_rad_destillieren(
             )
             continue
         erhebungen.append(ergebnis)
+        if lauf_melden is not None:
+            lauf_melden(nummer, ergebnis[0], ergebnis[1])
 
     if not erhebungen:
         logger.error(

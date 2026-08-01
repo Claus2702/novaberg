@@ -1,6 +1,6 @@
 # Novaberg — Roadmap (Projektchronik)
 
-**Stand:** Chat 121, 31. Juli 2026
+**Stand:** Chat 123, 1. August 2026
 *(Die Kopfzeile stand bis Chat 109 auf „Chat 93, 21. Mai 2026" — 15 Chats hinter dem Inhalt. **Sie ist danach erneut zurückgefallen:** von Chat 110 bis 114 blieb sie auf „Chat 109" stehen, während der Inhalt weiterwuchs, und wurde in Chat 115 nachgezogen. Wer hier etwas ergänzt, zieht die Kopfzeile mit — sie driftet zuverlässig. Achtung beim Nachschlagen: Nur bis Chat 97 trägt jeder Chat eine eigene `## Chat NNN`-Überschrift; die Chats 98–108 stehen als `###`-Abschnitte unter dem Chat-97-Block, benannt nach Sprint statt nach Chat.)*
 **Pfad:** novaberg/docs/novaberg-roadmap.md
 **Single Source of Truth für abgeschlossene Arbeit.**
@@ -1980,6 +1980,228 @@ Beide Räder haben eine Nabe — den Wert ohne jede Ausprägung — und das Erge
 > **Die Zahlen selbst stehen nicht hier.** Ein Charakter-Rad ist ein Charakterprofil; aus den Summanden sind mit der Züge-Tabelle die Einzelspeichen rückrechenbar. Wer die Messung nachvollziehen will, fährt sie gegen den eigenen Bestand — sie ist in zwei Aufrufen wiederholbar.
 
 **Geschlossen:** `Bauteil 3 — Charakter-Räder im Client` (Rest benannt, siehe Backlog)
+
+---
+
+## Chat 123 (01.08.2026) — Zwei verlorene Turns, und der Riegel dagegen ✅
+
+Ein Turn erreichte den Nutzer nicht. Keine Fehlermeldung, keine Antwort — die Oberfläche zeigte die Stufen bis zum Dispatcher und dann nichts. Vierzehn Minuten später derselbe Fall.
+
+**Belegt:** `tokens=4936, text_len=0` und `tokens=3753, text_len=0`. Der Verfasser hatte 1149 Zeichen Inhalt übergeben; Thinker und ein Tribunal aus drei Bewertern liefen anschließend über eine leere Antwort. Erst die **Salienz** brach ab — zwei Knoten später, und dort ist nur noch Abbrechen möglich.
+
+**Die Ursache ist ein Regelbruch, kein Versehen.** Unter der Sektionsmarke `── Ausgabe-Verifikation ──` im ChatWorker stand ausschließlich eine Logzeile: Sie meldete `text_len`, sie prüfte es nicht. Der Responder zog den zweiten Vorhang — seine Erfolgsmeldung zählte **Token statt Zeichen**, damit war die Leere genau dort unsichtbar, wo sie entstand.
+
+- ✅ **Der Worker prüft jetzt seine Ausgabe** und meldet bei leerem Text **Länge und Anfang von `thinking`** mit. Die Prüfung steht als eigene Funktion, weil eine Wächterkette die Zweigzahl ihres Aufrufers bestimmt und dort nichts erklärt.
+- ✅ **Der Responder zählt Zeichen** und meldet keinen Erfolg mehr über eine leere Antwort. Der Turn läuft weiter — abzubrechen hieße, die Nutzeräußerung zu verlieren, und die ist der teurere Verlust.
+- ✅ **Fünf Tests**, darunter der positive Zwilling zur Negativ-Zusicherung.
+
+**Was der Riegel nicht tut: reparieren.** Er macht den nächsten Fall **diagnostizierbar**. Bis dahin war aus keinem Log entscheidbar, ob das Modell nichts gesagt oder die Aufbereitung den Text entfernt hat — der Beleg lag im Antwortobjekt und wurde weggeworfen.
+
+**Umfang:** Suite 850 → **855 Tests, grün**. Nulllinie **2265** unverändert; ein Zweig zu viel im Worker wurde durch Herausziehen der Prüfung aufgelöst, nicht durch Dulden.
+
+---
+
+## Chat 123 (01.08.2026) — Ein Parameter mit zwei Bedeutungen ✅
+
+### Die Suite ist wieder grün
+
+Seit dem Kalenderwechsel standen drei Zeitparser-Tests rot: `morgen` und `übermorgen` rechneten gegen die **echte Uhr**, auch wenn ein Bezugsmoment übergeben war. Dreimal derselbe Ausdruck gegen drei Bezugsmomente lieferte dreimal denselben Tag.
+
+**Die naheliegende Reparatur war eine Zeile — und sie war falsch.** Die Weitergabe des Bezugsmoments an die Tagesworte machte einen bestehenden Test rot, der genau das verbietet, mit einer Begründung aus dem Betrieb: Der Timeline-Update-Pfad reicht als Referenz die Zeit des **bestehenden Termins** durch. Würde `morgen` ihr folgen, schöbe „verschieb ihn auf morgen" einen Termin im August auf den Tag nach jenem Termin.
+
+- ✅ **`referenz` trug zwei Bedeutungen.** Für relative Dauern ist er der Anker, für deiktische Tagesworte müsste es der Sprechzeitpunkt sein. Sie fallen nur im Live-Pfad zusammen.
+- ✅ **Zweiter Parameter `sprechzeitpunkt`**, Vorgabewert weiterhin die echte Uhr — jeder Aufrufer, der nur einen Termin verschiebt, läuft unverändert.
+- ✅ **Der Korpus ersetzte bisher eine private Funktion.** `_heute_lokal` wurde je Fall durch ein Lambda ersetzt, weil der Parser keinen Weg hatte, den Sprechzeitpunkt entgegenzunehmen. Der Monkey-Patch ist raus; der Korpus läuft über die öffentliche Schnittstelle.
+- ✅ **Drei bestehende Tests sagen jetzt, welchen Anker sie meinen.** Ihre Zusicherungen sind unverändert — nur ihr Aufbau war auf den Tag ihrer Entstehung angewiesen.
+
+**Messung:** Der Härtefallkorpus vor und nach dem Umbau — **49 erfüllt, 31 offen, 5 dokumentierte Lücken, 4 Regressionen, 89 gesamt**, identisch. Der Parameter leistet, was der Monkey-Patch leistete.
+
+**Gegenprobe:** Den Sprechzeitpunkt wieder ausgehängt — **10 rot**: die sieben neuen Zusicherungen und exakt die drei, die vorher rot waren.
+
+**Umfang:** Suite 845 → **850 Tests, grün, 0 übersprungen** — zum ersten Mal seit dem Kalenderwechsel. Nulllinie **2265** unverändert, beide Wände sauber.
+
+> **Die Regel, die daraus folgt** (`novaberg-tool-timeparser_l_timezone.md` §5): Ein Parameter, der in zwei Aufrufkontexten Verschiedenes bedeutet, ist zwei Parameter. Solange sie im Normalfall zusammenfallen, sieht die Verwechslung wie ein funktionierender Vorgabewert aus — und wird erst dort sichtbar, wo sie auseinanderlaufen. Ein Monkey-Patch auf ein Privatsymbol ist die Form, die eine fehlende Schnittstelle annimmt.
+
+---
+
+## Chat 123 (01.08.2026) — Die Charakter-Räder werden eine Messreihe ✅
+
+### Ein Einzelwert war die Ursache, nicht das Symptom
+
+Novas Zuwendungsrad wechselte am 31.07. binnen zwei Stunden von leerer Abwendungsseite auf `distanz 1.0`, der Faktor von 1.215 auf 0.980. Die naheliegende Erklärung — das Modell würfelt — ist **geprüft und widerlegt**: Drei Erhebungen gegen dieselbe Eingabe bei Produktions-Temperatur ergaben elf von zwölf Speichen identisch, die Verfahrensstreuung des Faktors liegt bei **0.08** gegen einen Sprung von 0.235.
+
+**Der Sprung war echt — und das Rad speicherte bis dahin ausschließlich sein Ergebnis.** Damit verletzte es Regel (1) der Konvention über abgeleitete Werte, und die Frage „Bewegung oder Rauschen?" war aus den Daten nicht zu beantworten: Die vorige Erhebung existierte nicht mehr.
+
+- ✅ **Tabelle `charakter_rad_messung`** (`agents/charakter/init.sql`, neu). Eine Zeile je Lauf, mit eigenem Zeitstempel, Modell, Temperatur und der **Prüfsumme des gelesenen Profiltexts**. Gleiche Prüfsumme mit anderem Ergebnis ist Verfahrensstreuung, andere Prüfsumme kann Bewegung sein — die Unterscheidung, die zuvor eine Stunde Nachstellen kostete, ist jetzt eine Gruppierung.
+- ✅ **Fester Takt, zweimal täglich.** Der Agent prüft beim Lauf, ob zwölf Stunden vergangen sind. Kein zweiter Zeitplan-Eintrag: Der wäre ein zweiter Ort, an dem der Takt steht. Fest, damit Rang und Zeit dasselbe bedeuten — die Gewichtskurve verfällt über den Rang.
+- ✅ **Gewichtetes Mittel über fünf Reihen**, Kurve aus dem Emotions-Verlauf übernommen, Historiengewicht als eigene Konstante bei 0.5. Die jüngste Messung trägt **41 %** statt 100 %; ein echter Umschwung ist nach zwei Tagen zu 87 % angekommen.
+- ✅ **Die Messreihe nimmt nur rohe Läufe auf.** Ein zurückgeschriebenes Mittel wäre der Akkumulator aus Regel (2) — derselbe Fehler wie beim Ziel-Decay.
+
+**Am realen Fall nachgerechnet:** Der Sprung 1.215 → 0.980 kommt als **1.047** an, `distanz` als 0.71 statt 1.0. Sichtbar, aber nicht bestimmend.
+
+### Das Initiative-Rad bekommt dasselbe — und deckt einen Fehler auf
+
+- ✅ **Beide Räder laufen im selben Takt und über dieselbe Reihe.** Das Initiative-Rad behält seine drei Läufe; neu ist, dass jeder als eigene Zeile liegt und der gespeicherte Versatz aus den letzten Erhebungen folgt statt aus dem Median-Lauf allein.
+- ✅ **`reihe_laden` zählte die letzten N *Zeilen*, nicht die letzten N *Erhebungen*.** Beim Zuwendungs-Rad fällt beides zusammen — eine Zeile je Erhebung. Beim Initiative-Rad sind es drei, und dann füllten fünf Zeilen weniger als zwei Erhebungen: Die Reihe reichte Stunden statt Tage zurück, **lautlos**, weil die Zahl der Messungen unverändert aussieht.
+- ✅ **Zwei Stufen, zwei Streuungen.** Innerhalb einer Erhebung wird gleichgewichtet gemittelt — die Läufe liegen Sekunden auseinander, ein Verfall über ihren Rang wäre eine Aussage über nichts. Über die Erhebungen greift der Verfall.
+- ✅ **Die Destillation meldet ihre Läufe, statt sie zu speichern.** Ein Rückruf statt eines Datenbankzugriffs: Die Destillation bleibt ohne Persistenz, der Aufrufer entscheidet, was mit den Läufen geschieht.
+
+**Ein begründetes Argument des Bestands ist dabei weggefallen, und der Grund gehört dazu:** Die Destillation speicherte bewusst *ein echtes Rad* statt eines gemittelten, weil ein Durchschnitt Ausprägungen ergäbe, die kein Lauf je vergeben hat. Das galt, **solange es keinen anderen Ort für die Läufe gab**. Jetzt bleiben sie einzeln erhalten — in der Tabelle statt im Rückgabewert. Der zweite Teil des Arguments bleibt unberührt: `Rad × Züge = Versatz` ist auch mit 0.67 von Hand nachrechenbar.
+
+### Beim Bauen gegen den Entwurf entschieden
+
+Der Entwurf verlangte den **Median** je Speiche. Ein gewichteter Median auf einer Dreierskala ist aber eine Sprungfunktion: Unter vier Messungen überschreitet die jüngste allein die halbe Gewichtssumme und entscheidet weiterhin allein — gerade die ersten Tage wären ungeschützt geblieben. Gebaut ist deshalb das gewichtete **Mittel**, auf dem die Einschwingzeiten ohnehin gerechnet waren.
+
+**Die Folge steht dabei:** Eine Ausprägung von 1.0 bedeutet jetzt „seit Tagen durchgehend voll" — die Übersteuerung im Haltungsraum greift entsprechend seltener.
+
+### Gemessen am laufenden System
+
+```
+13:20:28  meister/nova  Faktor 1.240  Quelle 1050 Zeichen (c528e55d)
+13:28:08  nova/meister  Faktor 1.060  Quelle 1302 Zeichen (8c2a66fc)
+13:43:59  letzte Messung liegt 0.4 h zurueck, Takt 12 h — uebersprungen
+```
+
+Beide Perspektiven erhoben, der Takt greift beim nächsten Lauf. Nebenbei bestätigt: Das Initiative-Rad meldete im selben Lauf `Median aus 3 Laeufen: [-0.1650, -0.0750, -0.0450], Streuung 0.1200` — dieselbe Größenordnung Verfahrensstreuung wie beim Zuwendungs-Rad.
+
+**Umfang:** Suite 820 → **839 Tests**, 19 neue grün. Nulllinie unverändert **2265**, beide Wände sauber. **Die Suite ist rot** — drei Zeitparser-Tests, fremde Ursache, siehe unten.
+
+**Gegenprobe:** Historiengewicht auf 0 gesetzt — das Ergebnis ist exakt die jüngste Messung, also das Verhalten vor dem Umbau, und vier Tests werden rot.
+
+---
+
+## Chat 123 (31.07.2026) — Die Haltungsrechnung bekommt ihren Aufrufer ✅
+
+### Ein Knoten, ein Kanal, eine Verdrahtung
+
+Die Rechnung des Haltungsraums stand seit Chat 122 gebaut und geprüft da und **wirkte nirgends** — kein Aufrufer außerhalb der Tests. Sie läuft jetzt in jedem Turn des CharacterGraph.
+
+- ✅ **Knoten `haltungsraum`** (`graph/nodes/haltung.py`) zwischen `gv_node` und der Verzweigung. Er lädt Landschaft und Zuwendungsrad, ruft `haltung_berechnen()` und legt das Ergebnis in den Zustand. Kein LLM-Aufruf, ein Lesezugriff.
+- ✅ **Die bedingte Kante hängt jetzt an ihm** statt am GV-Node; `_after_gv` heißt entsprechend `_after_haltung`. Das Kriterium (`task_context_cut`) ist unverändert — die Rechnung läuft in **beiden** Zweigen, auch dort, wo der Verfasser übersprungen wird.
+- ✅ **Kanal `haltung`** in `graph/state.py` deklariert und **nicht** vorbelegt: Ein fehlender Schlüssel heißt „nicht gerechnet", ein leerer hieße „alles auf null".
+- ✅ **Der Node heißt nach dem Raum, der Kanal nach dem Ergebnis.** Nicht Geschmack: LangGraph lehnt einen Knoten ab, der wie ein Zustandsschlüssel heißt (`'haltung' is already being used as a state key`). Beim ersten Bauversuch aufgelaufen.
+
+### Gemessen am echten Turn
+
+Eine Sachfrage über Gammablitze, 20:35 UTC:
+
+```
+Haltungs-Node: beichte · umfang 0.60 · fragen 0.80 · naehe 1.25 ! · waerme 1.35 !
+               · draengen 0.00 [Grenze] (Rad 'destilliert', 12 Speichen)
+```
+
+**Zwei von fünf Größen verlassen die Spanne im allerersten Turn**, beide nach oben. Die Grenze auf `draengen` hielt. Der Überlauf aus `HALTUNG-SPANNENENDEN-OFFEN` ist damit kein Randfall — die Entscheidung zwischen kleineren Beiträgen und Sättigung bleibt trotzdem bei der Messreihe, ein Datenpunkt ist keine Häufigkeit.
+
+### Zwei Gegenproben
+
+- **Kanal-Deklaration entfernt** → zwei rot. Der Folgeknoten sah `FEHLT` statt `glut`: Der Wert war im schreibenden Knoten lesbar und nach der Grenze weg. Die teuerste Falle des Graphframeworks, hier einmal vorgeführt.
+- **Verzweigung zurück an den GV-Node gehängt** → zwei rot, nicht die vorhergesagten drei. Der Eingriff nahm nur den Ausgang, nicht die Eingangskante; die Vorhersage war in der falschen Menge gedacht.
+
+**Umfang:** Suite 794 → **809 Tests**, grün, 0 übersprungen. Linter-Nulllinie unverändert **2264**, beide Wände sauber.
+
+### Und das Ergebnis wird sichtbar
+
+Der Knoten schreibt seine Rechnung selbst ins Protokoll — drei Zahlen je Größe, nicht eine.
+
+- ✅ **`log_berechnung` ins `pipeline_log`:** Grundwert, Modifikation, Ergebnis, Rechenart und Auslöser je Größe. Dazu `ausserhalb` und `uebersteuert` als Listen **obenauf**, weil ihre Häufigkeit die Messgröße dieses Sprints ist und eine Reihe sie zählen können muss, ohne je Zeile in die Tiefe zu steigen.
+- ✅ **Kein Redis-Blob.** Die Beitragszahlen sind Setzungen und werden nachkalibriert; das braucht Historie, keinen Zustand, der beim nächsten Turn überschrieben wird.
+- ✅ **Ein Ausfall wird als `fehler`-Zeile geführt.** Eine Berechnungszeile mit Nullen sähe in jeder Auswertung aus wie eine gemessene Haltung ohne Ausschlag; Schweigen wäre ebenso falsch, weil die Häufigkeit der Ausfälle zur Reihe gehört.
+- ✅ **Die Spur zeigt `kurzfassung()`** bei jeder Antwort — und **„nicht gerechnet"** statt des Vorgabestrichs, wenn keine Rechnung lief.
+
+**Der Join ist vorgeführt, nicht behauptet:**
+
+```
+landschaft | umfang_soll | antwort_zeichen | inhalt_zeichen
+beichte    | 0.60        | 1623            | 2725
+```
+
+Vorhergesagter Umfang, tatsächliche Antwortlänge und die Menge, die der Verfasser bereitgestellt hat — in einer Abfrage. Damit steht die Grundlage der Kalibrierung.
+
+**Gegenproben, je 6 rot wie vorhergesagt:** Protokollzeile ausgehängt, und der Spur-Zweig entfernt.
+
+**Umfang:** Suite 809 → **820 Tests**, grün, 0 übersprungen. Nulllinie **2264 → 2265**: ein `BLE001` für die Kapselung des Protokollschreibens. Die Meldung ist keine neue Klasse — dieselbe Absicherung steht 87× im Bestand, unter anderem im GV-Node, und sie ist hier Absicht: Ein Forensik-Schreibfehler darf den Turn nicht töten.
+
+**Was ausdrücklich nicht dazugehört:** Kein Prompt liest die Werte. **Novas Verhalten ist unverändert** — das ist die Reihenfolge des Sprints, damit die Zahlen gegen echte Turns prüfbar bleiben, ohne sie beeinflusst zu haben.
+
+### Die erste Messreihe — und was sie über sich selbst sagt
+
+20 Turns gegen das Produktivsystem, 21:18–22:02 UTC, ausschließlich wissenschaftliche Themen. 19 mit Haltung, einer ohne.
+
+- ✅ **Die Spanne wird in 9 von 19 Turns verlassen**, in 20 von 95 Einzelwerten — ausschließlich nach oben, null Übersteuerungen. Nach unten brach nichts; das vermessene Rad ist ein warmes.
+- 🔶 **Die Reihe hat ihre eigene Grenze gezeigt.** Bei festem Rad ist die Haltung eine **reine Funktion der Landschaft**: Alle acht `werkstatt`-Turns lieferten dieselben fünf Zahlen, alle neun `schlachtfeld` ebenso. Zwanzig Turns messen die Häufigkeit der Landschaften, nicht die Streuung der Haltung — die wirksame Stichprobe war **vier**.
+- ✅ **Deshalb gerechnet statt gestichprobt:** alle 14 Landschaften gegen das reale Rad. **10 von 14 laufen über** — `waerme` 8×, `naehe` 6×, `umfang` 4×, `fragen` 3×. Sauber bleiben nur die vier kühlen.
+- ✅ **Die Stichprobe hatte die falsche Größe gezeigt.** In den vier getroffenen Landschaften liefen `umfang` und `fragen` über; über alle vierzehn ist `waerme` der Hauptfall. Vier von vierzehn Landschaften können die Rangfolge nicht sehen.
+- ✅ **Ein Ausfall im Betrieb, und er ist keiner der Rechnung.** Der GV-Node kehrt bei Vektorlänge 0 zurück, **bevor** er `gv_detail` setzt; ohne Landschaft keine Haltung. Einmal in der Reihe, einmal auf Novas Eigenimpuls — rund jeder zehnte Vorgang. Daraus `HALTUNG-OHNE-LANDSCHAFT`.
+
+**Umfang gegen tatsächliche Antwortlänge: r = 0.61 über 19 Turns.** Das ist **kein** Beleg, dass der Haltungsraum wirkt — nichts liest ihn. Beide Größen hängen an derselben Ursache, der Landschaft, die den Responder längst über andere Blöcke erreicht. Der Wert ist die **Nulllinie**: Was der Prompt-Block später bewirkt, misst sich gegen 0.61, nicht gegen null.
+
+**Seiteneffekte:** 20 Rohturns, Redis 942 → 1066 Schlüssel. Termine 8 → 8, Notizen 1 → 1, Fakten 0 → 0 — die Themenregel hat gehalten.
+
+**Geschlossen:** `HALTUNG-KNOTEN-FEHLT`, `HALTUNG-PROTOKOLL-FEHLT`
+
+---
+
+## Chat 122 (31.07.2026) — Das Rad bekommt Gegenpole ✅
+
+### Die Speichen-Reihenfolge war eine Aufzählung und ist jetzt eine Anordnung
+
+Vorarbeit zum Haltungsraum. Der Raum kreuzt die Gesprächslandschaft mit der Zuwendung — und dafür muss die Zuwendung adressierbar sein.
+
+**Die Messung hat die Annahme des Konzepts widerlegt.** Es ging von zwölf Speichen als zwölf Positionen aus. Beide vorhandenen Räder belegen jedoch **mehrere Speichen gleichzeitig, auf beiden Seiten**: `nova → meister` trägt `wissbegier` und `distanz` beide auf 1.0. Eine Position auf zwölf diskreten Werten gibt es damit nicht, und „die stärkste Speiche" ist nicht eindeutig.
+
+**Die Zuwendung ist deshalb ein Punkt**, gebildet als Vektorsumme der belegten Speichen, mit Sektor und Ausschlag. Dieselbe Bauart wie die 64 Sektoren des Gesprächsvektors. Damit kann Distanz das Wohlwollen herunterziehen, ohne es auszulöschen — eine Summe kann das nicht.
+
+**Das setzt voraus, dass die Speichen einander sinnvoll gegenüberstehen, und das taten sie nicht.** Die Reihenfolge war die Aufzählung beider Konstanten hintereinander, gewählt für die Lesbarkeit des Diagramms. Von sechs Gegenüberstellungen trugen zwei:
+
+| war gegenüber | trägt | steht jetzt gegenüber |
+|---|---|---|
+| treue ↔ widerspenstig | nein | treue ↔ selbstbezogen |
+| dienst ↔ gleichgueltig | **ja** | unverändert |
+| pflicht ↔ selbstbezogen | nein | pflicht ↔ widerspenstig |
+| aufmerksamkeit ↔ langeweile | teilweise | aufmerksamkeit ↔ distanz |
+| **wissbegier ↔ distanz** | **nein** | wissbegier ↔ langeweile |
+| wohlwollen ↔ misstrauen | **ja** | unverändert |
+
+Der teure Fall ist der fünfte. Neugier auf die Sache schließt Abstand zur Person nicht aus — das dritte Beispiel in `novaberg-salienz-berechnung_k.md` §5 sagt es seit jeher, und der Bestand belegt es. Gegenübergestellt hätten sie sich verrechnet.
+
+> **Für den Skalar ist die Reihenfolge gleichgültig — er ist eine Summe.** Genau deshalb konnte sie jahrelang falsch stehen, ohne dass etwas auffiel. Sie wird erst tragend, wo aus den Speichen ein Punkt wird.
+
+**Der zweite Befund war größer als der erste.** Nimmt man den Zug einer Speiche als ihre Länge auf dem Rad, ist der erreichbare Ausschlag richtungsabhängig: Richtung `treue` bis 0.16, Richtung `misstrauen` bis 0.02 — **Faktor acht.** Jede Zelle „starker Ausschlag × misstrauen" wäre unerreichbar gewesen. Und die Richtung folgt dann der Zugstärke statt der Messung: Am realen Rad zeigte der Punkt auf `aufmerksamkeit` (Ausprägung 0.5), während `wissbegier` und `wohlwollen` auf 1.0 standen — `treue` mit 0.5 × 0.16 wiegt genau so viel wie `wissbegier` mit 1.0 × 0.08.
+
+Deshalb sind **Zug und Geometriefaktor jetzt zwei Größen**: Der Zug bleibt der Beitrag zum Skalar, der Geometriefaktor ist die Länge auf dem Rad, je Speiche einzeln setzbar und anfangs für alle gleich. Konzipiert, nicht gebaut — die Vektorrechnung existiert noch nicht.
+
+**Umfang:** Suite 740 → **743 Tests**, grün, 0 übersprungen. Linter-Nulllinie unverändert 2265, harte Wand sauber. Gegenprobe, ein Eingriff: die alte Reihenfolge wiederhergestellt → 5 Fehlschläge aus zwei Testmethoden, vier davon `subTest`-Stellen der Paarung plus der Client-Vertrag. Die beiden sortierenden Zusicherungen bleiben grün, weil sie reihenfolgeblind sind.
+
+**Was nicht angefasst wurde:** das Initiative-Rad. Seine zehn Speichen stehen vor derselben Frage, und sie ist dort nicht geprüft.
+
+### Der Haltungsraum wird ein Beitragsmodell — und die Rechnung steht 🔶
+
+Das Konzept ging von einer Fläche aus: 14 Landschaften × 12 Speichen, 168 gesetzte Zellen. Zwei Messungen haben daraus etwas anderes gemacht.
+
+**Erst fiel die Adressierung.** Ein Rad belegt mehrere Speichen gleichzeitig, auf beiden Seiten — eine Position auf zwölf diskreten Werten gibt es nicht. Der Ausweg war eine Vektorsumme mit Sektor und Ausschlag, und die brauchte einen Geometriefaktor, weil sonst der erreichbare Ausschlag richtungsabhängig gewesen wäre: Richtung `treue` bis 0.16, Richtung `misstrauen` bis 0.02.
+
+**Dann fiel die Geometrie selbst.** Wenn jede Speiche direkt auf Verhaltensgrößen wirkt, gibt es keinen Punkt zu platzieren und keine Länge zu normieren. Was man nicht braucht, baut man nicht — Sektor, Ausschlag und Geometriefaktor stehen mit ihrer Messung als verworfen im Konzept, weil sie erklärt, warum.
+
+**Das Modell jetzt:** Die Landschaft setzt Grundwerte für fünf Größen, der Charakter modifiziert sie.
+
+| | |
+|---|---|
+| **Umfang · Fragefreudigkeit · Nähe · Wärme · Drängen** | abgeleitet aus den Dimensionen, die die vorhandenen Prompt-Anweisungen ansprechen — gezählt über sieben Stellen, die heute Verhalten als Text schreiben |
+| **Grenze multipliziert** | im Gewitter fragt man nicht, gleich welchen Charakters |
+| **Neigung addiert** | der Regelfall |
+| **Übersteuerung ersetzt** | der Charakter darf die Lage überschreiben — markiert |
+
+`CLUSTER_FRAGEN` ist der Beleg, dass die Bauart trägt: dieselbe Tabelle, für alle 14 Landschaften bereits gesetzt, für eine Größe.
+
+> **Die Übersteuerung wird markiert, und das ist keine Formalie.** Sobald Überschreiben erlaubt ist, ist ein Wert außerhalb des Korridors nicht mehr automatisch ein Defekt. Ohne Marke wären drei Fälle ununterscheidbar: im Korridor, absichtlich draußen, kaputt.
+
+**Gebaut sind die Rechnung und der Lader**, nicht der Knoten. Die Rechenfunktion ist rein und ohne Datenzugriff; die Ladefunktion holt die zwölf Speichen aus derselben Zeile, aus der die Salienz ihren Faktor zieht — `(ASSISTANT_USER_ID, user_id)`, denn die Gegenzeile trägt seine Zuwendung zu ihr.
+
+**Zwei Befunde kamen erst beim Bauen.** Die untere Spanne bricht genauso wie die obere, und dafür genügt **eine** Speiche: `glut/draengen` steht auf 0.20, ein volles `treue` trägt −0.30. Und beim Flachlegen der beiden Radseiten würde ein Name, der auf beiden vorkäme, lautlos einen Wert verschlucken — heute unmöglich, nach einer einseitigen Umbenennung nicht mehr.
+
+**Umfang:** Suite 743 → **794 Tests**, grün, 0 übersprungen. Linter-Nulllinie 2265 → **2264**, harte Wand sauber. Gegenproben, je ein Eingriff: Multiplikation → Addition macht 4 rot; stille Kappung macht 4 rot, darunter die Log-Zusicherung, weil ein gekappter Wert nichts mehr zu melden hat; die Paar-Richtung vertauscht macht genau 1 rot — den Test, der die abgefragte Zeile prüft statt ihr Ergebnis.
+
+**Bewusst nicht gebaut:** der Knoten, das Protokoll, die Prompt-Seite. Solange der Block nicht im Prompt steht, ändert sich Novas Verhalten nicht, und die Zahlen lassen sich gegen echte Turns prüfen, ohne sie beeinflusst zu haben. Vier Backlog-Einträge unter `HALTUNG-*`.
 
 ---
 

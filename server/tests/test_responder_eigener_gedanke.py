@@ -112,7 +112,12 @@ class ResponderPromptTest(unittest.TestCase):
                 prompt: str = _build_system_prompt(_state(payload, "character"))
                 self.assertIn("[IDENTITAET]", prompt)
                 self.assertIn("[KOMMUNIKATION]", prompt)
-                self.assertIn("[REGELN]", prompt)
+                # [REGELN] steht seit dem 31.07.2026 zur Probe nicht mehr
+                # im Prompt — die Regeln waren Narben des ueberladenen
+                # Prompts, und die Ursache ist seit der Trennung von Inhalt
+                # und Form weg. Wird der Block zurueckgeholt, gehoert diese
+                # Zeile mit ihm zurueck.
+                self.assertNotIn("[REGELN]", prompt)
 
 
 if __name__ == "__main__":

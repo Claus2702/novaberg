@@ -2,11 +2,11 @@
 Charakter-Hash — Kern + Adaptiv aus PostgreSQL.
 """
 
+import json
 import logging
 
 import psycopg2
-
-from config import ASSISTANT_USER_ID, RAD_MIN, RAD_MAX, INITIATIVE_RAD_SPANNE
+from config import ASSISTANT_USER_ID, INITIATIVE_RAD_SPANNE, RAD_MAX, RAD_MIN
 
 logger = logging.getLogger("ki_server.memory.charakter")
 
@@ -163,6 +163,151 @@ def nutzer_gewichtung_laden(postgres_url: str, user_id: str) -> tuple[float | No
         f"fuer Paar '{ASSISTANT_USER_ID}/{user_id}'"
     )
     return faktor, quelle
+
+
+def _rad_flach_machen(roh: str, paar: str) -> tuple[dict[str, float] | None, str]:
+    """Liest das Rad-JSON und legt beide Seiten zu einem flachen Rad zusammen.
+
+    Steht als eigene Funktion, weil eine Waechterkette sonst die Zweigzahl
+    ihres Aufrufers bestimmt: Der Lader soll laden, nicht auswerten. Die Zahl
+    der Rueckgaben ist die Zahl der Vorbedingungen und folgt dem Datenmodell.
+
+    Args:
+        roh:  der Spalteninhalt, nicht leer. Pruefung erfolgt beim Aufrufer.
+        paar: nur fuer die Meldungen, damit sie den Fall benennen.
+
+    Returns:
+        (rad, "") im Gutfall, sonst (None, grund) — der Grund im Klartext, mit
+        dem Wert und nicht nur dem Feldnamen.
+    """
+    try:
+        verschachtelt: dict = json.loads(roh)
+    except (ValueError, TypeError) as fehler:
+        return None, (
+            f"JSON nicht lesbar fuer Paar '{paar}' ({type(fehler).__name__}) "
+            f"— Rohwert: {roh[:120]!r}"
+        )
+
+    if not isinstance(verschachtelt, dict):
+        return None, (
+            f"Rad fuer Paar '{paar}' ist {type(verschachtelt).__name__}, "
+            "erwartet wird ein Objekt mit den Seiten 'hoch' und 'runter'"
+        )
+
+    rad: dict[str, float] = {}
+    for seite in ("hoch", "runter"):
+        speichen = verschachtelt.get(seite)
+        if not isinstance(speichen, dict):
+            return None, (
+                f"Seite {seite!r} fehlt oder ist {type(speichen).__name__} "
+                f"im Rad zu Paar '{paar}' — verworfen"
+            )
+        for name, wert in speichen.items():
+            # Ein Wahrheitswert ist in Python eine Zahl und rechnete stumm mit.
+            if isinstance(wert, bool) or not isinstance(wert, (int, float)):
+                return None, (
+                    f"Speiche {name!r} traegt {wert!r} "
+                    f"({type(wert).__name__}) im Paar '{paar}', erwartet wird "
+                    "eine Zahl — verworfen"
+                )
+            rad[name] = float(wert)
+
+    # Ein Name auf beiden Seiten haette beim Zusammenlegen einen Wert
+    # verschluckt — lautlos, und das Rad saehe vollstaendig aus.
+    erwartet: int = len(verschachtelt["hoch"]) + len(verschachtelt["runter"])
+    if len(rad) != erwartet:
+        return None, (
+            f"{len(rad)} Speichen nach dem Zusammenlegen, erwartet waren "
+            f"{erwartet} fuer Paar '{paar}' — ein Name kommt auf beiden Seiten "
+            "vor, verworfen"
+        )
+
+    return rad, ""
+
+
+def nutzer_gewichtung_rad_laden(
+    postgres_url: str, user_id: str,
+) -> tuple[dict[str, float] | None, str]:
+    """Laedt die zwoelf Speichen von Novas Zuwendung zum Nutzer.
+
+    Die Schwester von `nutzer_gewichtung_laden`, die denselben Datensatz auf
+    seinen Faktor reduziert. Der Haltungsraum braucht die Speichen selbst: Ein
+    Faktor von 0.95 kann aus Wissbegier oder aus Pflicht entstanden sein, und
+    die beiden wirken auf Umfang und Fragen verschieden
+    (novaberg-haltungsraum_k.md §2).
+
+    Gelesen wird dieselbe Zeile (ASSISTANT_USER_ID, user_id) und aus demselben
+    Grund: Die Gegenzeile traegt SEINE Zuwendung zu ihr, und die sagt ueber
+    ihre Haltung nichts.
+
+    Args:
+        postgres_url: Verbindungszeichenkette.
+        user_id:      der Nutzer, dem ihre Zuwendung gilt.
+
+    Returns:
+        (rad, quelle) — `rad` flach als Speichenname -> Auspraegung ueber beide
+        Seiten, `quelle` aus {'destilliert', 'default'}. Bei jedem Fehlerfall
+        (None, 'fehlt') und **nicht** ein leeres Rad: Ein Rad ohne Auspraegung
+        ist eine Messung, ein nicht gelesenes ist keine. Wer beides gleich
+        behandelt, laesst einen Lesefehler wie einen Charakter ohne Zuwendung
+        aussehen.
+
+    Fehlerfaelle: leere user_id, fehlende Zeile, leere Spalte, unlesbares JSON,
+        fehlende Seite, nicht-numerische Auspraegung — je eine Meldung mit dem
+        Wert und (None, 'fehlt').
+    """
+    # ── Eingabe-Validierung ─────────────────────
+    if not user_id:
+        logger.error("nutzer_gewichtung_rad_laden: user_id leer — verworfen")
+        return None, "fehlt"
+
+    # ── Verarbeitung ────────────────────────────
+    paar: str = f"{ASSISTANT_USER_ID}/{user_id}"
+    try:
+        conn   = psycopg2.connect(postgres_url)
+        cursor = conn.cursor()
+        cursor.execute(
+            "SELECT nutzer_gewichtung_rad, nutzer_gewichtung_quelle "
+            "FROM charakter_hash WHERE user_id = %s AND character_id = %s",
+            (ASSISTANT_USER_ID, user_id),
+        )
+        row = cursor.fetchone()
+        conn.close()
+    except Exception as fehler:
+        logger.exception(
+            f"{type(fehler).__name__}: nutzer_gewichtung_rad_laden: Abruf fuer "
+            f"Paar '{paar}' fehlgeschlagen"
+        )
+        return None, "fehlt"
+
+    if not row:
+        logger.error(
+            f"nutzer_gewichtung_rad_laden: keine charakter_hash-Zeile fuer Paar "
+            f"'{paar}' — Rad nicht ermittelbar"
+        )
+        return None, "fehlt"
+
+    # `.get`-artige Defaults greifen hier nicht: Die Spalte kann NULL tragen,
+    # und ein NULL ist etwas anderes als eine fehlende Zeile.
+    roh: str | None = row[0]
+    quelle: str     = row[1] or "default"
+    if not roh:
+        logger.error(
+            f"nutzer_gewichtung_rad_laden: Spalte nutzer_gewichtung_rad ist leer "
+            f"fuer Paar '{paar}', Herkunft '{quelle}' — Rad nicht ermittelbar"
+        )
+        return None, "fehlt"
+
+    rad, grund = _rad_flach_machen(roh, paar)
+    if rad is None:
+        logger.error(f"nutzer_gewichtung_rad_laden: {grund}")
+        return None, "fehlt"
+
+    logger.debug(
+        f"nutzer_gewichtung_rad_laden: {len(rad)} Speichen "
+        f"(Herkunft '{quelle}') fuer Paar '{paar}'"
+    )
+    return rad, quelle
 
 
 def initiative_versatz_laden(postgres_url: str, user_id: str) -> tuple[float | None, str]:

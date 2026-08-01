@@ -194,8 +194,12 @@ class VorwaertsBleibtVorwaerts(unittest.TestCase):
         """
         im_fenster: datetime = datetime(2026, 7, 30, 22, 30, tzinfo=timezone.utc)
 
-        tageswort = zeit_parsen_vektor("übermorgen", im_fenster).datum
-        dauer     = zeit_parsen_vektor("in zwei Tagen", im_fenster).datum
+        tageswort = zeit_parsen_vektor(
+            "übermorgen", im_fenster, sprechzeitpunkt=im_fenster,
+        ).datum
+        dauer     = zeit_parsen_vektor(
+            "in zwei Tagen", im_fenster, sprechzeitpunkt=im_fenster,
+        ).datum
 
         self.assertIsNotNone(tageswort)
         self.assertIsNotNone(dauer)

@@ -9,6 +9,7 @@ Erweiterungen A1:
 
 from typing import TypedDict
 
+from ei.haltung import Haltung
 from graph.context_entry import ContextEntry
 from graph.personality import Personality, InternalPersonality
 
@@ -106,6 +107,33 @@ class ConversationState(TypedDict):
     management_detail:  str
     task_block:         str    # Fertiger [AUFGABE]-Block fuer den Responder (leer = kein Block)
     task_context_cut:   bool   # True = Responder soll Gedaechtnis/Web weglassen
+
+    # ── Verfasser ────────────────────────────
+    # Der fachliche Inhalt der Antwort, bevor Nova ihm ihre Form gibt. Der
+    # Responder erhaelt ihn fertig und fuegt keine Behauptung hinzu, die hier
+    # nicht steht (novaberg-node-verfasser_k.md §2).
+    #
+    # Ein Kanal, der hier fehlt, macht den Schreibvorgang des Nodes
+    # stillschweigend wirkungslos — der Node laeuft, das Feld bleibt leer, und
+    # niemandem faellt etwas auf
+    # (novaberg-lesson_l_stategraph-channel-zwang.md).
+    antwort_inhalt: str
+
+    # ── Haltungsraum ─────────────────────────
+    # Die fuenf Verhaltensgroessen dieses Turns — Umfang, Fragen, Naehe,
+    # Waerme, Draengen —, gerechnet aus der Landschaft des GV-Nodes und Novas
+    # Zuwendungsrad (novaberg-haltungsraum_k.md §2). Verfasser und Responder
+    # lesen sie, keiner von beiden rechnet sie.
+    #
+    # **Nicht vorbelegt, und das ist Absicht.** Fehlt der Schluessel, ist die
+    # Rechnung nicht gelaufen; eine leere Haltung waere davon nicht zu
+    # unterscheiden (Konzept §2.0a). Leser greifen deshalb ueber `.get` zu.
+    #
+    # Ein Kanal, der hier fehlt, macht den Schreibvorgang des Nodes
+    # stillschweigend wirkungslos — innerhalb des Nodes ist der Wert lesbar,
+    # nach der Knotengrenze weg
+    # (novaberg-lesson_l_stategraph-channel-zwang.md).
+    haltung: Haltung | None
 
     # ── Responder ────────────────────────────
     response:    str
