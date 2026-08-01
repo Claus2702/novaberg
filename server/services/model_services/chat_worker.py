@@ -31,6 +31,37 @@ from services.model_services.worker_base import ModelWorker
 logger = logging.getLogger(__name__)
 
 
+def _leere_antwort_melden(
+    worker: str, caller: str, text: str, antwort: object,
+) -> None:
+    """Meldet eine Antwort ohne Zeichen — und was die Ursache entscheidet.
+
+    Steht als eigene Funktion, weil eine Waechterkette die Zweigzahl ihres
+    Aufrufers bestimmt und dort nichts erklaert.
+
+    **`thinking` gehoert in die Meldung.** Ist es gefuellt, hat das Modell
+    gedacht und nichts gesagt; ist es ebenfalls leer, liegt es an der
+    Aufbereitung. Bis zum 01.08.2026 lag dieser Beleg im Antwortobjekt und
+    wurde verworfen — zwei verlorene Turns lang war die Ursache deshalb nicht
+    entscheidbar (novaberg-bugs.md -> RESPONDER-LEERE-ANTWORT-STILL).
+
+    Vorbedingung: keine.
+    Nachbedingung: Bei nicht-leerem Text geschieht nichts.
+    """
+    if text.strip():
+        return
+
+    denkspur: str = (getattr(antwort, "thinking", "") or "").strip()
+    logger.error(
+        "ChatWorker '%s': LEERE Antwort (caller=%s, tokens=%d, "
+        "thinking_len=%d, thinking_anfang='%s') — kein Text trotz verbrauchter "
+        "Token. Der Aufrufer bekommt eine leere Zeichenkette und muss sie als "
+        "Fehlschlag behandeln.",
+        worker, caller, getattr(antwort, "token_total", -1),
+        len(denkspur), denkspur[:160].replace("\n", " "),
+    )
+
+
 class ChatWorker(ModelWorker[ChatRequest, ChatResponse]):
     """FIFO-Worker fuer Chat-Anfragen.
 
@@ -152,6 +183,20 @@ class ChatWorker(ModelWorker[ChatRequest, ChatResponse]):
                 raise
 
         # ── Ausgabe-Verifikation ────────────────────
+        # **Eine leere Antwort ist kein Ergebnis.** Bis zum 01.08.2026 stand
+        # unter dieser Marke ausschliesslich die Logzeile unten: Sie MELDETE
+        # die Laenge, ohne sie zu pruefen, und `text_len=0` lief als INFO durch
+        # wie jeder Erfolg. Zwei Turns gingen so verloren — der Responder gab
+        # den leeren Text weiter, Thinker und Tribunal bewerteten ihn, und erst
+        # die Salienz zwei Knoten spaeter brach ab
+        # (novaberg-bugs.md -> RESPONDER-LEERE-ANTWORT-STILL).
+        #
+        # `thinking` wird dabei mitgemeldet, weil es die Ursache entscheidet:
+        # Ist es gefuellt, hat das Modell gedacht und nichts gesagt; ist es
+        # ebenfalls leer, liegt es an der Aufbereitung. Der Beleg lag bisher im
+        # Antwortobjekt und wurde verworfen.
+        _leere_antwort_melden(self._name, caller_label, text, antwort)
+
         logger.info(
             "ChatWorker '%s': Antwort erhalten (caller=%s, tokens=%d, "
             "text_len=%d, parsed=%s)",

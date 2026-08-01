@@ -721,6 +721,28 @@ def respond(
     state["model"]       = "chat_worker"
     state["token_total"] = response.token_total
 
-    logger.info(f"Responder: Antwort generiert ({state['token_total']} Tokens)")
+    # ── Ausgabe-Verifikation ────────────────────
+    # **Gezaehlt werden Zeichen, nicht Token.** Die fruehere Erfolgsmeldung
+    # nannte die Tokenzahl — und die war bei beiden verlorenen Turns vierstellig,
+    # waehrend der Text null Zeichen hatte. Eine Meldung, die Erfolg behauptet,
+    # wo nichts steht, macht den Ausfall an genau der Stelle unsichtbar, an der
+    # er entsteht (novaberg-bugs.md -> RESPONDER-LEERE-ANTWORT-STILL).
+    #
+    # Der Turn laeuft weiter: Abzubrechen hiesse, die Nutzeraeusserung zu
+    # verlieren, und die ist der teurere Verlust (PFAD1-TIMEOUT-TURNVERLUST).
+    # Die Stufen dahinter sehen die leere Antwort und koennen sie behandeln.
+    if not state["response"].strip():
+        logger.error(
+            f"Responder: LEERE Antwort trotz {state['token_total']} Token — "
+            f"der Verfasser hatte {len(state.get('antwort_inhalt', ''))} Zeichen "
+            "Inhalt bereitgestellt. Der Turn erreicht den Nutzer nicht; die "
+            "Ursache steht in der Zeile des ChatWorkers darueber."
+        )
+        return state
+
+    logger.info(
+        f"Responder: Antwort generiert ({len(state['response'])} Zeichen, "
+        f"{state['token_total']} Tokens)"
+    )
 
     return state
