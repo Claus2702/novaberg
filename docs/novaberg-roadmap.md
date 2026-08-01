@@ -1,6 +1,6 @@
 # Novaberg — Roadmap (Projektchronik)
 
-**Stand:** Chat 123, 1. August 2026
+**Stand:** Chat 124, 1. August 2026
 *(Die Kopfzeile stand bis Chat 109 auf „Chat 93, 21. Mai 2026" — 15 Chats hinter dem Inhalt. **Sie ist danach erneut zurückgefallen:** von Chat 110 bis 114 blieb sie auf „Chat 109" stehen, während der Inhalt weiterwuchs, und wurde in Chat 115 nachgezogen. Wer hier etwas ergänzt, zieht die Kopfzeile mit — sie driftet zuverlässig. Achtung beim Nachschlagen: Nur bis Chat 97 trägt jeder Chat eine eigene `## Chat NNN`-Überschrift; die Chats 98–108 stehen als `###`-Abschnitte unter dem Chat-97-Block, benannt nach Sprint statt nach Chat.)*
 **Pfad:** novaberg/docs/novaberg-roadmap.md
 **Single Source of Truth für abgeschlossene Arbeit.**
@@ -1983,6 +1983,36 @@ Beide Räder haben eine Nabe — den Wert ohne jede Ausprägung — und das Erge
 
 ---
 
+## Chat 124 (01.08.2026) — Jede Antwort nennt den Reiz, den sie beantwortet ✅
+
+`ANTWORT-OHNE-ZUORDNUNG` ist geschlossen. Die Zustellung trug keine Turn-Zuordnung; der Client ordnete der letzten Nachricht zu, was ankam. **Solange jeder Turn antwortet, stimmt das** — und genau deshalb fiel es nie auf. Fällt einer aus, verschiebt sich alles um eins, und eine flüssige, inhaltlich geschlossene Antwort zum falschen Thema ist als Fehler nicht erkennbar.
+
+**Drei Stellen, eine Kette:**
+
+| Stelle | Was sie jetzt trägt |
+|---|---|
+| `api/chat.py` → `_bestaetigungs_nutzlast` | die `turn_id` in der Bestätigung von Pfad 1 — der Client erfährt, welche Kennung **seine** Nachricht bekommen hat |
+| `services/event_consumer.py` | die `turn_id` des Reizes im `character_response`-Payload |
+| `client/ui/stream_handler.py` → `_zuordnung_pruefen` | den Vergleich beider, mit drei benannten Ausgängen |
+
+**Die Kennung kommt aus dem Reiz, nicht aus dem Ergebnis-Zustand.** Beide liegen im selben Griffbereich; der Test hält sie deshalb auf verschiedenen Werten, damit die naheliegende falsche Quelle rot wird.
+
+**Der Client unterdrückt nichts.** Eine Antwort, die nicht zur offenen Frage gehört, wird angezeigt — mit Vermerk und eigenem Rand. Der Inhalt ist echt, nur seine Stelle im Gespräch ist es nicht; verschwiegen wäre er ein zweiter Verlust, still einsortiert eine Falschaussage. Die Frage bleibt dabei **offen**, also wird auch die nächste Antwort geprüft.
+
+**Drei Ausgänge, als Kanon deklariert:** `passt` (Frage beantwortet), `fremd` (gehört zu einem anderen Reiz, Vermerk), `unbeobachtet` (keine offene Frage — Antwort auf einen anderen Client oder ein Nachzügler). **Eine Antwort ohne Kennung fällt bei offener Frage auf `fremd`**, nicht auf `passt`: „nicht nachweisbar" darf nicht aussehen wie „stimmt".
+
+**Ein eigener Impuls lässt die offene Frage stehen.** Er beantwortet sie nicht — sonst gälte eine unbeantwortete Nachricht als erledigt, weil Nova zwischendurch von sich aus sprach.
+
+**Umfang:** Suite 855 → **869 Tests**, grün, 0 übersprungen. Gegenprobe zweifach, beide Mengen vorher benannt und getroffen: Zuordnung aus dem `character_response` entfernt → **5 rot**; aus der Bestätigung entfernt → **3 rot**.
+
+**Live gemessen 01.08.2026, 19:35 UTC** an einem echten Turn: Bestätigung und Antwort trugen dieselbe `turn_id`, 2604 Zeichen Antwort nach 114,5 s.
+
+**Nebenbei zusammengeführt:** Beide Chat-Endpunkte bauten die Bestätigung getrennt und mit **verschiedenen** `status`-Werten (`processing` gegen `event_created`) — gelesen hat den Wert niemand, der Client reagiert auf den SSE-Ereignistyp. Jetzt eine Stelle, ein Wert (`processing`).
+
+**Offen bleibt `RESPONDER-OHNE-INHALT-ANTWORTET-TROTZDEM`** — die Lage, die den Fall erzeugt. Sie ist jetzt sichtbar, nicht behoben.
+
+---
+
 ## Chat 123 (01.08.2026) — Der Riegel zahlt sich noch am selben Tag aus 🔶
 
 Eine Messreihe über 20 Turns zu mediterranen Kräutern, botanisch gefasst — zwei Zwecke: den Leer-Fall wieder auslösen, und eine zweite Reihe mit **anderer Tonlage** als die vom 31.07.
@@ -2008,7 +2038,7 @@ Eine Messreihe über 20 Turns zu mediterranen Kräutern, botanisch gefasst — z
 
 Ein Trace aus dem laufenden Gespräch machte sichtbar, dass der verlorene Turn nicht das Schlimmste ist:
 
-- 🔶 **`ANTWORT-OHNE-ZUORDNUNG`** — Bleibt eine Antwort aus, wird die des **nächsten** Turns beim Nutzer als Antwort auf seine Frage angezeigt. Die Zustellung trägt keine Turn-Zuordnung. Belegt: Der Nutzer las eine flüssige Antwort zu einem Eigenimpuls über ein anderes Thema. **Ein Hänger ist erkennbar, eine falsch zugeordnete Antwort nicht.**
+- ✅ **`ANTWORT-OHNE-ZUORDNUNG`** — Bleibt eine Antwort aus, wird die des **nächsten** Turns beim Nutzer als Antwort auf seine Frage angezeigt. Die Zustellung trägt keine Turn-Zuordnung. Belegt: Der Nutzer las eine flüssige Antwort zu einem Eigenimpuls über ein anderes Thema. **Ein Hänger ist erkennbar, eine falsch zugeordnete Antwort nicht.** *(Geschlossen in Chat 124 — die Zustellung trägt die `turn_id` des Reizes, der Client vergleicht sie gegen die eigene offene Frage.)*
 - 🔶 **`RESPONDER-OHNE-INHALT-ANTWORTET-TROTZDEM`** — Liefert der Verfasser nichts, baut der Responder die Antwort aus 23.824 Zeichen Gedächtniskontext und beantwortet damit die falsche Frage. Genau die Lage, vor der das Verfasser-Konzept warnt.
 
 **Die beiden hängen zusammen:** Der Leer-Defekt erzeugt die Lage, die fehlende Zuordnung macht sie unsichtbar.

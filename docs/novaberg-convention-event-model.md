@@ -85,6 +85,12 @@ Jedes Event ist ein JSON-Dict:
 
 **`turn_id`: erzeugen oder erben.** Wer einen neuen Turn ausloest, erzeugt eine neue `turn_id` (Chat-API, Delivery). Nur der Retry erbt sie. Die Unterscheidung ist nicht aus `source` ableitbar — Delivery und Retry tragen beide `character` —, deshalb steht die Herkunft ausdruecklich im Payload.
 
+**Die `turn_id` reist bis in die Antwort.** Der Event-Consumer legt sie in das `character_response`-Payload, und die Bestaetigung von Pfad 1 (`_bestaetigungs_nutzlast`) gibt dem Client dieselbe Kennung fuer seine eigene Nachricht. Der Client vergleicht beide und erkennt daran, ob eine ankommende Antwort zu seiner offenen Frage gehoert.
+
+**Gelesen wird die Kennung aus dem Payload, nicht aus dem Ergebnis-Zustand.** Beide tragen sie, und beide liegen im selben Griffbereich — aber was der Client braucht, ist die Kennung **seiner Frage**, nicht die des Laufs, der geantwortet hat. Ein leeres Feld heisst „nicht zuordenbar" und wird als Fehler gemeldet; ein Platzhalter waere schlimmer als die Luecke, weil er gueltig aussaehe.
+
+Der Anlass steht in `novaberg-bugs.md` → `ANTWORT-OHNE-ZUORDNUNG`: Ohne die Zuordnung ordnet der Client der letzten Nachricht zu, was ankommt. Solange jeder Turn antwortet, stimmt das; faellt einer aus, verschiebt sich alles um eins.
+
 **`reiz_herkunft`.** Markiert einen Reiz, den Nova sich selbst erarbeitet hat. Gelesen vom Responder (Block `[EIGENER GEDANKE]`) und vom Event-Consumer, der das Feld ins `character_response`-Payload weiterreicht, damit der Client den Impuls einfaerben kann. Fehlt das Feld, gilt der Reiz als fremd.
 
 ### 3.2 Event-Typen
