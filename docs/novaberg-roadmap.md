@@ -1983,6 +1983,38 @@ Beide Räder haben eine Nabe — den Wert ohne jede Ausprägung — und das Erge
 
 ---
 
+## Chat 123 (01.08.2026) — Der Riegel zahlt sich noch am selben Tag aus 🔶
+
+Eine Messreihe über 20 Turns zu mediterranen Kräutern, botanisch gefasst — zwei Zwecke: den Leer-Fall wieder auslösen, und eine zweite Reihe mit **anderer Tonlage** als die vom 31.07.
+
+**Sechs leere Antworten, und sie widerlegen drei Annahmen desselben Tages:**
+
+| Rolle | leer / gesamt | `thinking_len` |
+|---|---|---|
+| Verfasser | **2 von 7** | 0 |
+| Thinker | 2 von 18 | **8.204 / 8.399** |
+| Responder | 1 von 8 | 0 |
+| Gesprächsvektor | 0 von 7 | — |
+| Salienz | **0 von 57** | — |
+
+- ❌ **Kein Responder-Problem.** Der Verfasser ist am stärksten betroffen, der Thinker gab es schon vor dem Umbau.
+- ❌ **Kein reiner Denk-Split.** Beim Thinker ist `thinking` mit über 8.000 Zeichen gefüllt, bei Verfasser und Responder leer. Zwei verschiedene Fälle unter einem Symptom.
+- ❌ **Nicht die Ausgabegrenze und nicht die Prompt-Länge.** Der Ausfall hatte `output=1.177` gegen eine Leine von 2048; ein Lauf mit `input=12.835` lief glatt durch.
+- ✅ **Es trifft ausschließlich die textproduzierenden Rollen.** Die JSON-erwartenden blieben in 64 Aufrufen kein einziges Mal leer.
+
+**Und der Sprung ist datiert:** Das `pipeline_log` reicht fünf Tage und 30.144 Einträge zurück — **kein einziger Fall** vor dem 01.08., **fünf** an einem Nachmittag.
+
+### Zwei weitere Stufen desselben Vorfalls
+
+Ein Trace aus dem laufenden Gespräch machte sichtbar, dass der verlorene Turn nicht das Schlimmste ist:
+
+- 🔶 **`ANTWORT-OHNE-ZUORDNUNG`** — Bleibt eine Antwort aus, wird die des **nächsten** Turns beim Nutzer als Antwort auf seine Frage angezeigt. Die Zustellung trägt keine Turn-Zuordnung. Belegt: Der Nutzer las eine flüssige Antwort zu einem Eigenimpuls über ein anderes Thema. **Ein Hänger ist erkennbar, eine falsch zugeordnete Antwort nicht.**
+- 🔶 **`RESPONDER-OHNE-INHALT-ANTWORTET-TROTZDEM`** — Liefert der Verfasser nichts, baut der Responder die Antwort aus 23.824 Zeichen Gedächtniskontext und beantwortet damit die falsche Frage. Genau die Lage, vor der das Verfasser-Konzept warnt.
+
+**Die beiden hängen zusammen:** Der Leer-Defekt erzeugt die Lage, die fehlende Zuordnung macht sie unsichtbar.
+
+---
+
 ## Chat 123 (01.08.2026) — Zwei verlorene Turns, und der Riegel dagegen ✅
 
 Ein Turn erreichte den Nutzer nicht. Keine Fehlermeldung, keine Antwort — die Oberfläche zeigte die Stufen bis zum Dispatcher und dann nichts. Vierzehn Minuten später derselbe Fall.

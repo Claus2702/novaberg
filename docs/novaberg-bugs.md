@@ -1,6 +1,6 @@
 # Novaberg — Bugs & Limitationen
 
-**Stand:** 1. August 2026 (`RESPONDER-LEERE-ANTWORT-STILL` neu aufgenommen und **mit einem Riegel versehen** — zwei Modellantworten mit 4936 bzw. 3753 Token und null Zeichen passierten Worker, Responder, Thinker und Tribunal als Erfolg; die Sektionsmarke „Ausgabe-Verifikation“ im ChatWorker trägt ausschließlich eine Logzeile, und die Erfolgsmeldung des Responders zählt Token statt Zeichen. Zwei Turns gingen in vierzehn Minuten verloren, für den Nutzer nicht von einem Hänger zu unterscheiden. Der Ausfall ist seit dem 01.08.2026 laut und trägt `thinking_len` mit — damit ist beim nächsten Fall entscheidbar, ob das Modell nichts sagte oder die Aufbereitung es entfernte. Die Ursache selbst ist offen. Zuvor: 31. Juli 2026 (`ZEIT-RUECKWAERTS-WIRD-ZUKUNFT` **vollständig gelöst** — Teil (a) neu gemessen: Die Extraktion verwirft `seit` nicht mehr, wohl aber `bereits` und `schon`; die Anweisung verlangt das Richtungswort jetzt ausdrücklich, und der Parser deutet beide vor einer nackten Dauer als rückwärts. Dabei zwei weitere Defekte im selben Modul gefunden und behoben: Der Parser benutzte zwei Uhren — deiktische Tagesworte lokal, die Referenz für Dauern als UTC-Wanduhr —, und die eigene Tippfehler-Korrektur ließ **jedes Datum im März** durchfallen, weil die Monatsliste nur die ASCII-Form trug. Zuvor: `PFAD1-TIMEOUT-TURNVERLUST` Teil (C) **gelöst** — das Ereignis entsteht auch bei einer Ausnahme in Pfad 1 und trägt den Vermerk; der Session-Turn trägt seitdem eine Herkunft. `ZEIT-RUECKWAERTS-WIRD-ZUKUNFT` Teil (b) **gelöst** — die erkannte Richtung steuert jetzt die Auflösung. Zuvor neu aufgenommen: `PFAD1-TIMEOUT-TURNVERLUST` — ein 60-Sekunden-Aussetzer bei einem Aufruf mit Median 2,3 s führte zu einem Timeout, die Ausnahme verhinderte die Ereignis-Erzeugung, und die Nutzeräußerung ist damit endgültig verloren; ein zeitgleich laufender Impuls folgte dem Gesprächskontext statt seinem Thema und war von einer Antwort nicht zu unterscheiden. Dazu `ZEIT-RUECKWAERTS-WIRD-ZUKUNFT` — „seit fünf Wochen" wurde zu einem Anker fünf Wochen in der Zukunft; die Extraktion verwirft das Richtungswort, und der Parser erkennt die Richtung, ohne sie zu verwenden. Zuvor: `OLLAMA-THINKING-NULL` behoben — ein Default in `.get` deckt den fehlenden Schlüssel ab, nicht den gesetzten Null-Wert; jeder Turn endete in einem TypeError, und die 16 Tests der Methode blieben grün, weil ihre Attrappe den Fall nicht bilden konnte. `INITIATIVE-M1-OHNE-QUELLE` **behoben** — der erste Pfad reicht die Intentionen des Reizes an den zweiten; M1 kam in allen acht Achsenläufen einer Zehn-Turn-Reihe an. Die Schwelle passt seitdem nicht mehr: 8 von 8 Turns Bit 0, Minderheit 0 %. Zuvor: `KALIBRIER-INTENTIONEN-UNGEPARST` behoben — ein ungeparstes JSON-Feld ließ M1 der Initiative-Achse zwei Monate als Konstante laufen und erzeugte zwei Befunde, die keine waren)
+**Stand:** 1. August 2026, abends (**drei Eintraege zum selben Vorfall.** `RESPONDER-LEERE-ANTWORT-STILL` — eine Modellantwort ohne Zeichen passierte vier Stufen als Erfolg; Riegel gebaut, Ursache offen. Gemessen: **null Faelle in fuenf Tagen, fuenf an einem Nachmittag**, und es trifft ausschliesslich die textproduzierenden Rollen — der Verfasser mit 2 von 7 am staerksten. `ANTWORT-OHNE-ZUORDNUNG` — bleibt eine Antwort aus, wird die des naechsten Turns beim Nutzer als Antwort auf seine Frage angezeigt; die Zustellung traegt keine Turn-Zuordnung. `RESPONDER-OHNE-INHALT-ANTWORTET-TROTZDEM` — ohne Material aus dem Verfasser baut der Responder die Antwort aus dem Gedaechtniskontext und beantwortet damit fluessig die falsche Frage. Zuvor: 1. August 2026 (`RESPONDER-LEERE-ANTWORT-STILL` neu aufgenommen und **mit einem Riegel versehen** — zwei Modellantworten mit 4936 bzw. 3753 Token und null Zeichen passierten Worker, Responder, Thinker und Tribunal als Erfolg; die Sektionsmarke „Ausgabe-Verifikation“ im ChatWorker trägt ausschließlich eine Logzeile, und die Erfolgsmeldung des Responders zählt Token statt Zeichen. Zwei Turns gingen in vierzehn Minuten verloren, für den Nutzer nicht von einem Hänger zu unterscheiden. Der Ausfall ist seit dem 01.08.2026 laut und trägt `thinking_len` mit — damit ist beim nächsten Fall entscheidbar, ob das Modell nichts sagte oder die Aufbereitung es entfernte. Die Ursache selbst ist offen. Zuvor: 31. Juli 2026 (`ZEIT-RUECKWAERTS-WIRD-ZUKUNFT` **vollständig gelöst** — Teil (a) neu gemessen: Die Extraktion verwirft `seit` nicht mehr, wohl aber `bereits` und `schon`; die Anweisung verlangt das Richtungswort jetzt ausdrücklich, und der Parser deutet beide vor einer nackten Dauer als rückwärts. Dabei zwei weitere Defekte im selben Modul gefunden und behoben: Der Parser benutzte zwei Uhren — deiktische Tagesworte lokal, die Referenz für Dauern als UTC-Wanduhr —, und die eigene Tippfehler-Korrektur ließ **jedes Datum im März** durchfallen, weil die Monatsliste nur die ASCII-Form trug. Zuvor: `PFAD1-TIMEOUT-TURNVERLUST` Teil (C) **gelöst** — das Ereignis entsteht auch bei einer Ausnahme in Pfad 1 und trägt den Vermerk; der Session-Turn trägt seitdem eine Herkunft. `ZEIT-RUECKWAERTS-WIRD-ZUKUNFT` Teil (b) **gelöst** — die erkannte Richtung steuert jetzt die Auflösung. Zuvor neu aufgenommen: `PFAD1-TIMEOUT-TURNVERLUST` — ein 60-Sekunden-Aussetzer bei einem Aufruf mit Median 2,3 s führte zu einem Timeout, die Ausnahme verhinderte die Ereignis-Erzeugung, und die Nutzeräußerung ist damit endgültig verloren; ein zeitgleich laufender Impuls folgte dem Gesprächskontext statt seinem Thema und war von einer Antwort nicht zu unterscheiden. Dazu `ZEIT-RUECKWAERTS-WIRD-ZUKUNFT` — „seit fünf Wochen" wurde zu einem Anker fünf Wochen in der Zukunft; die Extraktion verwirft das Richtungswort, und der Parser erkennt die Richtung, ohne sie zu verwenden. Zuvor: `OLLAMA-THINKING-NULL` behoben — ein Default in `.get` deckt den fehlenden Schlüssel ab, nicht den gesetzten Null-Wert; jeder Turn endete in einem TypeError, und die 16 Tests der Methode blieben grün, weil ihre Attrappe den Fall nicht bilden konnte. `INITIATIVE-M1-OHNE-QUELLE` **behoben** — der erste Pfad reicht die Intentionen des Reizes an den zweiten; M1 kam in allen acht Achsenläufen einer Zehn-Turn-Reihe an. Die Schwelle passt seitdem nicht mehr: 8 von 8 Turns Bit 0, Minderheit 0 %. Zuvor: `KALIBRIER-INTENTIONEN-UNGEPARST` behoben — ein ungeparstes JSON-Feld ließ M1 der Initiative-Achse zwei Monate als Konstante laufen und erzeugte zwei Befunde, die keine waren)
 **Gliederung:** Einträge stehen in der Sektion ihres Entdeckungs-Chats und wandern nicht. Nachträge aus späteren Chats tragen ihre Chat-Nummer im Text. Sonst verliert die Sektionsfolge ihre Bedeutung als Zeitachse.
 **Quelle:** Testlauf "Karrierekrise" (200 Prompts) + Gedächtnis-Epic (Chat 11) + Epic 11 Agent-System (Chats 22–32) + Persona Smoke-Tests (Chats 31–32) + RechercheAgent-Test (Chat 35) + Doku-Audit (Chat 36) + PRIO0-Fix + Client-Observability (Chat 37) + Claude API-Test + STREAM1-Fix + Gesprächsvektor (Chat 39) + CharakterIdentitaetAgent + DirektivenAgent + Tribunal Score-System (Chat 40) + Telegram Bot + Zeitparser-Fixes (Chat 41) + CRUD-Härtung + Telegram-Chat-Analyse + DB-Report (Chat 42) + KONTEXT1-Fix + Resume-Bug + Epic 15 Pilot (Chat 43) + Epic 15 Rollout + DELEG-REG Fix + KZG-Klebrigkeit (Chat 44) + RESP-CHAR1 Fix (Chat 45) + CLASSIFY-REJECTED + Gemma4 Live-Tests (Chat 48) + Telegram-Konversation "frecher Charakter" (Chat 49) + RESUME-REJECT Fix + Live-Tests (Chat 50) + Neugier-Konzept + Projektinfrastruktur (Chat 51) + Doku-Alignment + emotions_profil (Chat 52) + Antrieb-Konzept + Dual-Emotion (Chat 53) + HALL2-Fix + Planner-Refactor (Chat 54) + PySide6 verworfen + GTK4-Entscheidung (Chat 55) + GTK4-Client + Panel-Infrastruktur (Chat 56) + Web-Tool-Doku + SEARX1-Diagnose (Chat 57) + Chat 61 (Perzeption-Symmetrie, Akkumulations-Refactor, Paper-Portfolio, Lumi, urllib3-Doppel-Turn beobachtet) + Paper I + urllib3-RETRY + ROUTE-CHAR-NOTIZ + RESP-DEAD + PIXIE-GHOST (Chat 65) + WS-SINGLE Fix + ClientConnection + User-Message-Broadcast (Chat 68) + Dreischicht-Integration + GV-Refactoring + MODUS-LEER + VEKTOR-LEER + AROUSAL-330 + ZIEL-LABEL-LEER Fixes (Chat 72) + Promotion-Pipeline-Audit (Chat 75) + Reducer-Umbau Smoke-Tests (Chat 75) + Chat 79 (THINK-MEM-CONFLICT, CHAR-LZG-LEAK, MIGRATION-PIX-PAIR, MIGRATION-AGENTGRAPH-PAIR, PIX-CLEAN, KZG-CLEANUP) + Doku-Code-Abgleich (Chat 106) + init.sql-Audit (Chat 107)
 
@@ -135,6 +135,28 @@ Gegenstandslos geworden: der Stichtag der assistant-Partition vom 26.07.2026, di
 
 **Was die Frage entscheiden würde, wird weggeworfen.** `ChatResponse` trägt neben `text` auch `thinking`. Bei leerem `text` und gefülltem `thinking` stünde fest, dass das Modell gedacht und nichts gesagt hat; bei beidem leer läge es an der Aufbereitung. **Niemand sieht hin.** Deshalb ist bis heute nicht entscheidbar, ob das Modell nichts geliefert hat oder unsere Verarbeitung es entfernt hat — der Verdacht fällt auf den `<think>`-Split (`novaberg-lesson_l_ollama-think-content-split.md`), belegt ist er nicht.
 
+**Der Sprung ist datiert, und das ist die härteste Spur.** Das `pipeline_log` reicht bis zum **27.07.** zurück, 30.144 Einträge über fünf Tage. Darin steht **kein einziges** `bewertungsobjekt_leer`. Am 01.08. sind es **fünf zwischen 15:14 und 18:37**. Null in fünf Tagen, fünf in dreieinhalb Stunden — das ist ein Sprung, kein Rauschen.
+
+**Was an diesem Tag im Prompt-Pfad neu war:** Die Charakter-Profile wurden zweimal neu destilliert (13:20 und 14:08–14:19), und `kern_hash` und `beziehungsprofil` gehen als `[IDENTITAET]` in den Responder-Prompt. Der erste Ausfall liegt 55 Minuten nach der zweiten Destillation. **Die am selben Tag gebauten Änderungen — Haltungs-Knoten, Messreihe, Zeitparser — berühren den Prompt nicht**; sie schreiben in den Zustand, in eine eigene Tabelle und in einen anderen Pfad. Der Verfasser lief schon am Vortag.
+
+**Das ist eine Spur, keine Ursache.** Ebenso in Frage kommen der über den Tag stark gewachsene Kontext (im belegten Fall 23.824 Zeichen) und eine Änderung außerhalb unseres Codes.
+
+**Drei Rollen, zwei Signaturen — gemessen an einer Reihe von 20 Turns (01.08., 17:15–18:00):**
+
+| Rolle | leer / gesamt | `thinking_len` |
+|---|---|---|
+| Verfasser | **2 von 7** | 0 |
+| Thinker | 2 von 18 | **8.204 / 8.399** |
+| Responder | 1 von 8 | 0 |
+| Gesprächsvektor | 0 von 7 | — |
+| Salienz | **0 von 57** | — |
+
+**Es trifft ausschließlich die textproduzierenden Rollen.** Die JSON-erwartenden sind in 64 Aufrufen kein einziges Mal leer geblieben.
+
+**Und es sind zwei verschiedene Fälle.** Beim Thinker ist `thinking` mit über 8.000 Zeichen **gefüllt** — der klassische Denk-Split, das Modell reasoniert und schreibt nichts in `content`; die Denkspur beginnt sogar auf Englisch. Bei Verfasser und Responder ist `thinking` **leer**: Token werden erzeugt und tauchen in **keinem** Feld auf.
+
+**Die Ausgabegrenze ist es nicht.** Der Responder-Ausfall der Reihe hatte `input=11.943, output=1.177` — die Leine liegt bei 2048 und wurde nicht erreicht. **Die Prompt-Länge ist es auch nicht:** Ein Aufruf mit `input=12.835` lief glatt durch, mehr als jeder Ausfall bis auf einen.
+
 **Häufigkeit: zweimal in vierzehn Minuten.** Der zweite Fall um **15:28:00** mit 3753 Token, wieder null Zeichen, wieder Salienz-Abbruch acht Sekunden später. Damit ist es keine Beobachtung, sondern eine Klasse — und beide Male traf es denselben Nutzer im laufenden Gespräch. Beim zweiten Anlauf mit **demselben Satz** antwortete das Modell normal.
 
 **Riegel gebaut am 01.08.2026 — der Ausfall ist jetzt laut, die Ursache noch offen.**
@@ -157,6 +179,43 @@ Gegenstandslos geworden: der Stichtag der assistant-Partition vom 26.07.2026, di
 **Verwandt:** `PFAD1-TIMEOUT-TURNVERLUST` (dieselbe Klasse auf dem anderen Pfad: ein Aussetzer des Modells kostet einen Turn) · `novaberg-lesson_l_log-behauptet-was-es-weiss.md` · `novaberg-lesson_l_ollama-think-content-split.md`.
 
 **Priorität:** hoch. Der Datenverlust ist vollständig und für den Nutzer nicht von einem Hänger zu unterscheiden.
+
+#### ANTWORT-OHNE-ZUORDNUNG — die nächste Antwort wird als Antwort auf die letzte Frage angezeigt
+
+**Die teuerste der drei Stufen, weil sie unsichtbar falsch ist.** Bleibt eine Antwort leer, hängt das Gespräch — und die Antwort des **nächsten** Turns wird beim Nutzer als Antwort auf seine unbeantwortete Nachricht angezeigt.
+
+**Belegt am 01.08.2026:**
+
+```
+18:36:41  Haltungsraum — feuerwerk        ← die Nachricht des Nutzers
+18:37:47  salienz: bewertungsobjekt_leer  ← Antwort leer, kein Rohturn
+18:38:52  Haltungsraum — werkstatt        ← der naechste Turn beginnt
+18:40:52  Rohturn, 4312 Zeichen Antwort   ← wird zugestellt
+```
+
+Der Nutzer sah eine flüssige, inhaltlich geschlossene Antwort — zu einem **Eigenimpuls über ein anderes Thema**. Seine eigene Frage war nie beantwortet worden.
+
+**Ursache:** Die WebSocket-Zustellung trägt **keine Turn-Zuordnung**. Der Client kann nicht prüfen, zu welchem Reiz eine ankommende Antwort gehört, und ordnet sie der letzten Nachricht zu. Solange jeder Turn antwortet, stimmt das; sobald einer ausfällt, verschiebt sich alles um eins.
+
+**Ein Hänger ist erkennbar. Eine falsch zugeordnete Antwort ist es nicht** — sie liest sich richtig, sie passt nur nicht zur Frage.
+
+**Was zu tun ist:** Die Zustellung trägt die `turn_id` des Reizes, auf den sie antwortet. Der Client zeigt eine Antwort nur an der Stelle, zu der sie gehört, und macht eine unbeantwortete Nachricht als solche sichtbar. Additiv und ohne Verhaltensänderung — es macht prüfbar, was heute geraten wird.
+
+**Priorität:** hoch. Der Verlust ist nicht der Turn, sondern das Vertrauen in jede Antwort nach einem Ausfall.
+
+#### RESPONDER-OHNE-INHALT-ANTWORTET-TROTZDEM — ohne Material aus dem Verfasser greift der Responder auf den Kontext
+
+Liefert der Verfasser nichts (`antwort_inhalt` fehlt), läuft der Responder unverändert weiter und baut eine Antwort aus dem **Gedächtniskontext** — im belegten Fall 23.824 Zeichen.
+
+**Belegt am 01.08.2026, 18:40:52:** `antwort_inhalt` FEHLT, Antwort **4312 Zeichen**. Der Trace meldete `Verfasser — Inhalt · kein Inhalt`, und die Antwort handelte von Themen früherer Turns.
+
+**Das ist genau die Lage, vor der das Verfasser-Konzept warnt:** *„Sonst liefert er einen Satz Information, und eine redefreudige Nova soll daraus drei machen — ohne Material."* Ohne Material greift sie auf den Kontext zurück, und der ist alt. Die Antwort ist flüssig, geschlossen und beantwortet die falsche Frage.
+
+**Der Verfasser fiel dabei selbst dem Leer-Defekt zum Opfer** — er ist mit 2 von 7 Aufrufen die am stärksten betroffene Rolle (`RESPONDER-LEERE-ANTWORT-STILL`). Die beiden Defekte hängen zusammen: Der eine erzeugt die Lage, der andere macht sie unsichtbar.
+
+**Was zu tun ist:** Der Responder meldet einen fehlenden Verfasser-Inhalt und kennzeichnet, dass er ohne Material antwortet. Ob abgebrochen oder gekennzeichnet wird, ist zu entscheiden — abbrechen kostet den Turn, weitermachen kostet die Zuordenbarkeit.
+
+**Priorität:** hoch, gemeinsam mit dem Eintrag darüber.
 
 ### Turn-Verlust auf dem Hauptpfad (Chat 119)
 
