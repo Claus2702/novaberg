@@ -57,6 +57,22 @@ Kein Aufrufer muss sich um Timezones kümmern — das Repository ist die einzige
 
 > **Die Drei-Pfade-Regel:** Jede Datentransformation betrifft mindestens drei Pfade: Schreiben, Lesen, Abfragen. Wenn einer gefixt wird, müssen alle drei geprüft werden — nicht nur der gerade sichtbare.
 
+## 5. Die vierte Welle — und warum sie keine Welle war (01.08.2026)
+
+Nach Zone und Kalendertag fiel eine dritte Größe auf: `morgen` rechnete gegen die **echte Uhr**, auch wenn ein Bezugsmoment übergeben war. Dreimal derselbe Ausdruck gegen drei Bezugsmomente lieferte dreimal denselben Tag.
+
+**Die naheliegende Diagnose war „schon wieder ein partieller Fix" — und sie war falsch.** Die Weitergabe fehlte nicht aus Nachlässigkeit; sie durfte so nicht stattfinden. Ein bestehender Test hielt fest, warum:
+
+> Der Update-Pfad der Timeline reicht als Referenz die Zeit des **bestehenden Termins** durch. Würde `morgen` ihr folgen, schöbe „verschieb ihn auf morgen" einen Termin im August auf den Tag nach jenem Termin statt auf den Tag nach heute.
+
+**Der Parameter trug zwei Bedeutungen.** Für relative Dauern ist `referenz` der Anker, für deiktische Tagesworte müsste es der Sprechzeitpunkt sein — und die beiden fallen nur im Live-Pfad zusammen. Die Ersatzlösung „Tagesworte nehmen die echte Uhr" war für den Betrieb richtig und für jede nachträgliche Verarbeitung falsch.
+
+**Daraus die Regel, die über diesen Fall hinausreicht:**
+
+> **Ein Parameter, der in zwei Aufrufkontexten Verschiedenes bedeutet, ist zwei Parameter.** Solange sie im Normalfall zusammenfallen, sieht die Verwechslung wie ein funktionierender Vorgabewert aus. Sie wird erst dort sichtbar, wo die beiden auseinanderlaufen — und das ist typischerweise die Wiederverarbeitung, nicht der Live-Pfad.
+
+Der Beleg dafür, dass die Unterscheidung schon vorher gebraucht wurde: Der Härtefallkorpus **ersetzte für jeden Fall eine private Funktion** (`_heute_lokal`), weil der Parser keinen Weg hatte, den Sprechzeitpunkt entgegenzunehmen. Ein Monkey-Patch auf ein Privatsymbol ist die Form, die eine fehlende Schnittstelle annimmt. Seit es `sprechzeitpunkt` gibt, läuft der Korpus über die öffentliche Schnittstelle — bei unveränderten Zahlen: 49 erfüllt, 31 offen, 5 Lücken, 4 Regressionen.
+
 ---
 
 → Timeline-Modul: `02_M_e`
