@@ -47,11 +47,14 @@ logger = logging.getLogger(__name__)
 # ─────────────────────────────────────────────
 # Zuordnung einer Antwort zu ihrem Reiz
 #
-# Der Server nennt in jeder Antwort die ``turn_id`` des Reizes, den sie
-# beantwortet, und in der Bestätigung von Pfad 1 die ``turn_id``, die die
-# gerade gesendete Nachricht bekommen hat. Der Vergleich beider ist die
+# Der Server nennt in jeder Antwort die ``nachrichten_ids`` der Äußerungen,
+# die sie beantwortet, und in der Bestätigung des Endpunkts die
+# ``nachrichten_id`` der gerade gesendeten. Der Vergleich beider ist die
 # einzige Stelle, an der auffällt, dass eine Antwort zu einer **anderen**
 # Frage gehört.
+#
+# Eine Antwort kann mehrere Äußerungen auf einmal schließen: Was innerhalb
+# des Eingangsfensters eintraf, wird zu einem Prompt zusammengefasst.
 #
 # Vor dieser Prüfung ordnete der Client jede ankommende Antwort der letzten
 # Nachricht zu. Solange jeder Turn antwortet, stimmt das. Fällt einer aus,
@@ -125,26 +128,32 @@ class StreamHandler:
         self._ws_thread:    Optional[threading.Thread]        = None
         self._ws_should_run: bool                             = False
 
-        # Die Kennung der Nachricht, auf die dieser Client noch wartet.
-        # Leer heisst "keine offene Frage" — nicht "Zuordnung egal".
+        # Die Kennungen der Nachrichten, auf deren Antwort dieser Client noch
+        # wartet. Leer heisst "keine offene Frage" — nicht "Zuordnung egal".
         #
-        # Sie wird im SSE-Thread gesetzt (Bestaetigung von Pfad 1) und im
-        # WebSocket-Thread gelesen und geloescht (ankommende Antwort). Zwei
-        # Threads, deshalb ein Schloss: Eine Antwort, die genau zwischen
-        # Lesen und Loeschen ankommt, wuerde sonst gegen einen Wert geprueft,
-        # den es nicht mehr gibt.
-        self._offene_turn_id: str             = ""
-        self._turn_schloss:   threading.Lock  = threading.Lock()
+        # Eine **Menge**, nicht ein Wert: Seit Pfad 1 hinter der Eingangs-Queue
+        # laeuft, nimmt der Server mehrere Aeusserungen entgegen, bevor er die
+        # erste beantwortet — und fasst zusammen, was dicht beieinander eintraf.
+        # Eine Antwort kann deshalb mehrere Fragen auf einmal schliessen.
+        #
+        # Gesetzt wird im SSE-Thread (Bestaetigung), gelesen und geleert im
+        # WebSocket-Thread (ankommende Antwort). Zwei Threads, deshalb ein
+        # Schloss.
+        self._offene_nachrichten: set[str]      = set()
+        self._turn_schloss:       threading.Lock = threading.Lock()
 
     # ═════════════════════════════════════════════════════════════
     # SSE — pro Nachricht ein Thread
     # ═════════════════════════════════════════════════════════════
     def send_message(self, prompt: str) -> None:
-        """Startet einen neuen SSE-Request für ``prompt``."""
-        if self._sse_thread and self._sse_thread.is_alive():
-            logger.warning("SSE läuft bereits — neuer Request ignoriert")
-            return
+        """Startet einen neuen Request für ``prompt``.
 
+        **Kein Riegel mehr gegen einen laufenden Vorgang.** Er verwarf eine
+        zweite Äußerung still, nur mit einer Warnung im Log — für den Nutzer
+        war sie einfach weg. Seit der Endpunkt in Millisekunden bestätigt,
+        überlappen sich zwei Sendevorgänge ohnehin kaum noch; und wo sie es
+        tun, gehören beide Äußerungen in die Queue, nicht in den Papierkorb.
+        """
         logger.info(f"SSE: Nachricht wird gesendet ({len(prompt)} Zeichen)")
         self._sse_stop.clear()
         self._sse_thread = threading.Thread(
@@ -256,20 +265,20 @@ class StreamHandler:
             # Hier — und nur hier — erfaehrt der Client, welche Kennung seine
             # gerade gesendete Nachricht bekommen hat. Ohne sie hat er nichts,
             # wogegen er die ankommende Antwort halten koennte.
-            turn_id: str = data.get("turn_id", "")
+            nachrichten_id: str = data.get("nachrichten_id", "")
 
-            if not turn_id:
+            if not nachrichten_id:
                 logger.error(
-                    f"SSE: Bestaetigung ohne turn_id — die Antwort auf diese "
-                    f"Nachricht ist nicht pruefbar (Felder: {sorted(data)})"
+                    f"SSE: Bestaetigung ohne nachrichten_id — die Antwort auf "
+                    f"diese Nachricht ist nicht pruefbar (Felder: {sorted(data)})"
                 )
-
-            with self._turn_schloss:
-                self._offene_turn_id = turn_id
+            else:
+                with self._turn_schloss:
+                    self._offene_nachrichten.add(nachrichten_id)
 
             logger.info(
-                f"SSE: Pfad 1 abgeschlossen — warte auf Antwort zu "
-                f"turn_id={turn_id or '(fehlt)'}"
+                f"SSE: Nachricht angenommen — warte auf Antwort zu "
+                f"nachrichten_id={nachrichten_id or '(fehlt)'}"
             )
             GLib.idle_add(self._invoke_stage, "Nova denkt nach …", "")
 
@@ -393,7 +402,7 @@ class StreamHandler:
                 GLib.idle_add(self._invoke_impulse, nachricht, data)
                 return
 
-            data["zuordnung"] = self._zuordnung_pruefen(data.get("turn_id", ""))
+            data["zuordnung"] = self._zuordnung_pruefen(data.get("nachrichten_ids", []))
 
             logger.info(
                 f"WebSocket: Charakter-Antwort empfangen ({len(nachricht)} Zeichen, "
@@ -420,45 +429,46 @@ class StreamHandler:
         text: str = nachricht or json.dumps(data, ensure_ascii=False)
         GLib.idle_add(self._invoke_impulse, text, data)
 
-    def _zuordnung_pruefen(self, antwort_turn_id: str) -> str:
-        """Entscheidet, ob eine ankommende Antwort zur offenen Frage gehoert.
+    def _zuordnung_pruefen(self, beantwortete: list) -> str:
+        """Entscheidet, ob eine ankommende Antwort zu einer offenen Frage gehoert.
 
         Der Vergleich ist die einzige Stelle, an der auffaellt, dass eine
         Antwort zu einem anderen Reiz gehoert — sie liest sich richtig, sie
         passt nur nicht zur Frage.
 
-        Passt sie, gilt die Frage als beantwortet und die offene Kennung wird
-        geloescht. Passt sie **nicht**, bleibt die Kennung stehen: Die Frage
-        ist weiterhin offen, und auch die naechste Antwort wird geprueft.
+        Nennt sie **mindestens eine** offene Kennung, gelten alle genannten als
+        beantwortet und fallen aus der Menge. Nennt sie keine, bleiben sie
+        stehen: Die Fragen sind weiterhin offen, und auch die naechste Antwort
+        wird geprueft.
 
-        Vorbedingung: Keine. Eine leere Kennung ist ein gueltiger Fall und
-            bedeutet, dass die Gegenseite keine mitgeschickt hat.
+        Vorbedingung: Keine. Eine leere Liste ist ein gueltiger Fall und
+            bedeutet, dass die Gegenseite keine Kennung mitgeschickt hat.
         Nachbedingung: Ein Wert aus `ZUORDNUNG_KANON`.
         Fehlerfaelle: Keine — jeder Ausgang ist eine Aussage, keine Stoerung.
 
         Args:
-            antwort_turn_id: Die Kennung des Reizes, den die Antwort nennt.
+            beantwortete: Die Kennungen der Aeusserungen, die diese Antwort
+                nach Auskunft des Servers beantwortet.
 
         Returns:
             Einer der drei Kanon-Werte.
         """
         # ── Eingabe-Validierung ─────────────────────
-        # Keine: Jede Zeichenkette ist ein zulaessiger Eingang, einschliesslich
-        # der leeren. Was sie bedeutet, entscheidet die Verarbeitung.
+        genannte: set[str] = {k for k in (beantwortete or []) if isinstance(k, str) and k}
 
         # ── Verarbeitung ────────────────────────────
         with self._turn_schloss:
-            offen: str = self._offene_turn_id
+            offen: set[str] = set(self._offene_nachrichten)
 
             if not offen:
-                # Antwort auf eine Nachricht eines anderen Clients, oder ein
+                # Antwort auf eine Aeusserung eines anderen Clients, oder ein
                 # Nachzuegler zu einer bereits beantworteten Frage. Dieser
                 # Client hat nichts, was sie verdraengen koennte.
                 zuordnung: str = ZUORDNUNG_UNBEOBACHTET
 
-            elif antwort_turn_id and antwort_turn_id == offen:
+            elif genannte & offen:
                 zuordnung = ZUORDNUNG_PASST
-                self._offene_turn_id = ""
+                self._offene_nachrichten -= genannte
 
             else:
                 # Auch der leere Fall landet hier, und das ist Absicht: Eine
@@ -467,9 +477,9 @@ class StreamHandler:
                 # aussehen.
                 zuordnung = ZUORDNUNG_FREMD
                 logger.error(
-                    f"WebSocket: Antwort gehoert nicht zur offenen Frage — "
-                    f"erwartet turn_id={offen}, bekommen "
-                    f"{antwort_turn_id or '(keine)'}. Die Frage bleibt offen."
+                    f"WebSocket: Antwort gehoert zu keiner offenen Frage — "
+                    f"offen {sorted(offen)}, genannt "
+                    f"{sorted(genannte) or '(keine)'}. Die Fragen bleiben offen."
                 )
 
         # ── Ausgabe-Verifikation ────────────────────
