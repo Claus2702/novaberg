@@ -35,6 +35,7 @@ from api.drive                  import router as drive_router
 
 from services.shadow_delivery   import shadow_delivery_loop
 from services.event_consumer    import event_consumer_loop
+from services.prompt_consumer   import prompt_consumer_loop
 
 from memory.pipeline_log        import (
     init_buffer as pipeline_log_init,
@@ -291,7 +292,18 @@ async def Lifespan(app: FastAPI):
     )
     logger.info("Event-Consumer gestartet.")
 
-    # Pipeline-Log-Writer als drittes Hintergrund-Task.
+    # ── Prompt-Consumer starten ──
+    # Er faehrt Pfad 1 hinter der Eingangs-Queue: Der Endpunkt nimmt nur an,
+    # und mehrere Aeusserungen innerhalb des Fensters werden zu einem Prompt.
+    prompt_task = asyncio.create_task(
+        prompt_consumer_loop(
+            human_graph        = app.state.human_graph,
+            conversation_graph = app.state.conversation_graph,
+        )
+    )
+    logger.info("Prompt-Consumer gestartet.")
+
+    # Pipeline-Log-Writer als viertes Hintergrund-Task.
     pipeline_log_task: asyncio.Task = asyncio.create_task(
         pipeline_log_writer(POSTGRES_URL, shutdown_event)
     )

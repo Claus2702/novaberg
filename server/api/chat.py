@@ -5,21 +5,21 @@ Chat-Endpunkte — Synchron und SSE-Streaming.
 import json
 import logging
 import time
-import uuid
 from collections.abc import Iterator
 from dataclasses import dataclass
 
-from fastapi                    import APIRouter, Request
-from fastapi.responses          import JSONResponse, StreamingResponse
-
-from config                     import redis_client, ollama_gpu_client, EMBED_MODEL, POSTGRES_URL, llm_lock, ASSISTANT_USER_ID
-from api.models                 import GespraechAnfrage
-from api.websocket              import broadcast_threadsafe
-from services.events            import event_erzeugen
-from services.model_services    import model_service, EmbedRequest
+from config import (
+    ASSISTANT_USER_ID,
+    POSTGRES_URL,
+    redis_client,
+)
+from fastapi import APIRouter, Request
+from fastapi.responses import JSONResponse, StreamingResponse
 from memory.repositories.entitaeten_repository import EntitaetenRepository
+from services.model_services import EmbedRequest, model_service
+from services.prompt_eingang import EingehendeNachricht, nachricht_einreihen
 
-from services.shadow_delivery   import shadow_cooldown_reset
+from api.models import GespraechAnfrage
 
 logger = logging.getLogger("ki_server.chat")
 
@@ -240,46 +240,144 @@ def _ereignis_nutzlast(
     return nutzlast
 
 
-def _bestaetigungs_nutzlast(turn_id: str, zustand: dict) -> dict:
-    """Baut die Bestaetigung, die Pfad 1 dem Client zurueckgibt.
+def _stage_detail(node_name: str, node_state: dict) -> str:
+    """Baut die Detailzeile einer Pfad-1-Stufe fuer die Anzeige.
 
-    **Eine Stelle fuer beide Endpunkte**, aus demselben Grund wie bei
-    `_ereignis_nutzlast`: Der synchrone und der streamende Pfad bauten dieselbe
-    Bestaetigung zweimal.
+    Reine Aufbereitung — sie liest den Zustand und formt Text. Sie stand
+    frueher inline im SSE-Generator; seit Pfad 1 hinter der Eingangs-Queue
+    laeuft, braucht der Prompt-Consumer dieselbe Zeile fuer den WebSocket.
 
-    Sie traegt die `turn_id`. Ohne sie hat der Client nichts, wogegen er eine
-    ankommende Antwort halten koennte — er ordnet sie dann der letzten
-    Nachricht zu, und nach einem ausgefallenen Turn verschiebt sich alles um
-    eins (novaberg-bugs.md -> ANTWORT-OHNE-ZUORDNUNG). Die Zuordnung in der
-    Antwort allein reicht nicht: Sie braucht eine Gegenprobe auf der Seite, die
-    die Frage gestellt hat.
+    Vorbedingung: `node_state` ist der Zustand nach dem Knoten. Fehlende
+        Felder ergeben eine kuerzere Zeile, keinen Fehler.
+    Nachbedingung: Eine Zeichenkette; "—" wenn nichts zu sagen ist.
+    Fehlerfaelle: Keine.
 
-    Vorbedingung: `turn_id` ist die Kennung, die derselbe Aufruf ins Ereignis
-        geschrieben hat. Eine zweite Kennung waere keine Zuordnung, sondern
-        eine zweite Auskunft.
+    Args:
+        node_name: Name des Knotens, der gerade fertig wurde.
+        node_state: Sein Ergebniszustand.
+
+    Returns:
+        Die Detailzeile.
+    """
+    # ── Eingabe-Validierung ─────────────────────
+    node_external = node_state.get("external")
+
+    # ── Verarbeitung ────────────────────────────
+    if node_name == "perzeption":
+        emotion:  str = (node_external.emotion.emotion              if node_external else "").capitalize()
+        arousal: float = node_external.emotion.arousal              if node_external else 0.0
+        modus:    str = (node_external.emotion.mode                 if node_external else "").capitalize()
+        dynamik:  str = (node_external.emotion.relationship_dynamic if node_external else "").capitalize()
+
+        arousal_text: str = (
+            "ruhig" if arousal < 0.3
+            else "moderat" if arousal < 0.6
+            else "intensiv"
+        )
+
+        teile: list[str] = []
+        if emotion and emotion != "Neutral":
+            teile.append(f"{emotion} ({arousal_text})")
+        elif emotion:
+            teile.append(emotion)
+        if modus:
+            teile.append(modus)
+        if dynamik and dynamik != "Neutral":
+            teile.append(dynamik)
+
+        return " · ".join(teile) if teile else "—"
+
+    if node_name == "enricher":
+        hat_kontext: bool = bool(node_state.get("memory_context", ""))
+        modus_e:      str = (node_external.emotion.mode    if node_external else "").capitalize()
+        emotion_e:    str = (node_external.emotion.emotion if node_external else "").capitalize()
+        intentionen: list = node_state.get("user_intentionen", [])
+
+        detail: str = f"Kontext: {'gefunden' if hat_kontext else 'keiner'}"
+        if modus_e or emotion_e:
+            detail += (
+                f" | Modus: {modus_e or '?'}, "
+                f"Emotion: {emotion_e or '?'}, "
+                f"Intention: {', '.join(i.capitalize() for i in intentionen) if intentionen else '?'}"
+            )
+        return detail
+
+    if node_name == "ei_calc":
+        ev:        list = node_state.get("emotions_verlauf", [])
+        vektor:     str = node_external.emotion.emotions_vector if node_external else ""
+        stil:       str = node_external.emotion.language_style  if node_external else ""
+        modus_korr: str = node_external.emotion.mode            if node_external else ""
+        has_bez:   bool = bool(node_external.character.relationship if node_external else "")
+
+        ei_teile: list[str] = []
+        if ev:
+            top3: str = ", ".join(
+                f"{e.get('emotion','?')}({e.get('gewicht',0):.2f})"
+                for e in ev[:3]
+            )
+            ei_teile.append(f"Verlauf: {top3}")
+        if vektor:
+            ei_teile.append(f"Vektor: {vektor}")
+        if modus_korr:
+            ei_teile.append(f"Modus: {modus_korr}")
+        if stil:
+            ei_teile.append(f"Stil: {stil}")
+        if has_bez:
+            ei_teile.append("Beziehung: geladen")
+
+        nova_ev: list = node_state.get("nova_emotions_verlauf", [])
+        if nova_ev:
+            nova_top:   str = nova_ev[0].get("emotion", "?")
+            nova_ar:  float = nova_ev[0].get("arousal", 0.0)
+            nova_konf: bool = node_state.get("nova_emotion_konflikt", False)
+            nova_str:   str = f"Nova: {nova_top}(a={nova_ar:.2f})"
+            if nova_konf:
+                nova_str += " ⚡Konflikt"
+            ei_teile.append(nova_str)
+
+        return " | ".join(ei_teile) if ei_teile else "—"
+
+    # ── Ausgabe-Verifikation ────────────────────
+    return ""
+
+
+def _bestaetigungs_nutzlast(nachrichten_id: str) -> dict:
+    """Baut die Bestaetigung, die der Endpunkt dem Client zurueckgibt.
+
+    **Eine Stelle fuer beide Endpunkte.** Sie traegt die `nachrichten_id` —
+    die Kennung *dieser* Aeusserung, nicht die des Turns: Der Turn entsteht
+    erst im Prompt-Consumer, und er kann mehrere Aeusserungen umfassen.
+
+    Ohne sie hat der Client nichts, wogegen er eine ankommende Antwort halten
+    koennte; er ordnet sie dann der letzten Nachricht zu, und nach einem
+    ausgefallenen Turn verschiebt sich alles um eins
+    (novaberg-bugs.md -> ANTWORT-OHNE-ZUORDNUNG).
+
+    **Perzeptionswerte stehen nicht mehr darin.** Der Endpunkt rechnet nicht
+    mehr; er nimmt an. Emotion und Arousal kommen mit den Stufen ueber den
+    WebSocket.
+
+    Vorbedingung: `nachrichten_id` stammt aus der Einreihung derselben
+        Anfrage.
     Nachbedingung: Ein flaches, JSON-serialisierbares Dict.
-    Fehlerfaelle: Keine. Fehlt `external`, stehen leere Werte statt erfundener.
+    Fehlerfaelle: Leere Kennung — `logger.error`, das Feld bleibt leer statt
+        erfunden.
 
     Returns:
         Die Bestaetigung.
     """
     # ── Eingabe-Validierung ─────────────────────
-    aussen = zustand.get("external")
-
-    # ── Verarbeitung ────────────────────────────
     nutzlast: dict = {
-        "status":    "processing",
-        "nachricht": "Nachricht empfangen, Charakter-Antwort folgt per WebSocket.",
-        "turn_id":   turn_id,
-        "emotion":   aussen.emotion.emotion if aussen else "",
-        "arousal":   aussen.emotion.arousal if aussen else 0.0,
+        "status":         "processing",
+        "nachricht":      "Nachricht empfangen, Charakter-Antwort folgt per WebSocket.",
+        "nachrichten_id": nachrichten_id,
     }
 
     # ── Ausgabe-Verifikation ────────────────────
-    if not nutzlast["turn_id"]:
+    if not nutzlast["nachrichten_id"]:
         logger.error(
-            f"Bestaetigung ohne turn_id — der Client kann die Antwort auf "
-            f"diese Nachricht nicht zuordnen (Felder: {sorted(nutzlast)})"
+            f"Bestaetigung ohne nachrichten_id — der Client kann die Antwort "
+            f"auf diese Nachricht nicht zuordnen (Felder: {sorted(nutzlast)})"
         )
 
     return nutzlast
@@ -287,320 +385,72 @@ def _bestaetigungs_nutzlast(turn_id: str, zustand: dict) -> dict:
 
 @router.post("/chat")
 def ChatSenden(anfrage: GespraechAnfrage, request: Request):
-    """Prompt durch den Gesprächsgraphen verarbeiten."""
+    """Nimmt eine Aeusserung an und reiht sie ein — kein Graph-Lauf im Request.
+
+    Der HumanGraph laeuft im Prompt-Consumer. Vorher blockierte dieser
+    Endpunkt, bis Perzeption und Salienz durch waren: bei belegter GPU bis zu
+    104 Sekunden, gemessen am 01.08.2026.
+    """
+    # Der Empfang, als erste Anweisung. Er ist die einzige Groesse, die den
+    # Abstand zwischen zwei Nutzeraeusserungen misst — jede spaetere Uhr
+    # traegt die Wartezeit am `llm_lock` mit.
+    empfangen_am: float = time.time()
+
     try:
-        # Der Empfang, als erste Anweisung. Er ist die einzige Groesse, die den
-        # Abstand zwischen zwei Nutzeraeusserungen misst — jede spaetere Uhr
-        # traegt die Dauer von Pfad 1 und die Wartezeit am `llm_lock` mit.
-        empfangen_am: float = time.time()
-
-        # turn_id: korreliert HumanGraph- und CharacterGraph-Spans desselben
-        # Konversations-Turns im Pipeline-Log. Vor allen Pfaden erzeugt, damit
-        # beide Graphen denselben Wert in den State bekommen.
-        turn_id: str = uuid.uuid4().hex
-
         _user_entitaet_sicherstellen(anfrage.user_id)
-        character_id: str = ASSISTANT_USER_ID
 
-        # Shadow Delivery: Aktivität melden + Cooldown zurücksetzen
-        redis_client.set(f"last_activity:{anfrage.user_id}", str(time.time()), ex=7200)
-        shadow_cooldown_reset(redis_client, anfrage.user_id)
-
-        # ── Pfad 1: HumanGraph (Perzeption → Enricher → EI-Calc → Salienz → Dispatcher) ──
-        initial_state: dict = request.app.state.human_graph.create_state(
-            user_prompt   = anfrage.prompt,
-            user_id       = anfrage.user_id,
-            character_id  = character_id,
-            system_prompt = anfrage.system,
-            temperature   = anfrage.temperatur,
-            turn_id       = turn_id,
+        kennung: str = nachricht_einreihen(
+            redis_client, anfrage.user_id, ASSISTANT_USER_ID,
+            EingehendeNachricht(anfrage.prompt, empfangen_am, anfrage.client_id or ""),
         )
 
-        # **Ein Abbruch in Pfad 1 darf die Nutzeraeusserung nicht loeschen.**
-        # Das Ereignis unten ist der einzige Ausloeser des CharacterGraph; wird
-        # es nicht erzeugt, gibt es keine Antwort — nicht spaeter, sondern nie,
-        # und ohne Weg zur Wiederholung. Genau so ging am 30.07.2026 ein Turn
-        # verloren, weil ein Modellaufruf sechs Millisekunden nach dem Timeout
-        # zurueckkam (novaberg-bugs.md → PFAD1-TIMEOUT-TURNVERLUST).
-        #
-        # Was hier NICHT passiert: den Ausfall verschweigen. Der Vermerk reist
-        # mit, und `db_zugriff` meldet ihn laut.
-        pfad1_ausfall: str = ""
-        result: dict = initial_state
-        try:
-            with llm_lock:
-                result = request.app.state.conversation_graph.invoke(initial_state)
-        except Exception as fehler:
-            pfad1_ausfall = f"{type(fehler).__name__}: {fehler}"
-            logger.exception(
-                f"{type(fehler).__name__}: Pfad 1 abgebrochen — das Ereignis "
-                f"wird trotzdem erzeugt, damit der Turn nicht verlorengeht "
-                f"(turn_id={turn_id})"
+        if not kennung:
+            return JSONResponse(
+                status_code = 400,
+                content     = {"fehler": "Leere Nachricht — nichts einzureihen."},
             )
 
-        # ── Event erzeugen — löst CharacterGraph (Pfad 2) im Consumer aus ──
-        event_erzeugen(
-            redis_client = redis_client,
-            user_id      = anfrage.user_id,
-            character_id = character_id,
-            source       = "user",
-            typ          = "message",
-            payload      = _ereignis_nutzlast(
-                turn_id, empfangen_am, anfrage.prompt, result, pfad1_ausfall,
-            ),
-        )
-
-        # ── User-Nachricht an andere Clients broadcasten ──
-        if anfrage.client_id:
-            try:
-                user_msg_payload: str = json.dumps({
-                    "typ":          "user_message",
-                    "nachricht":    anfrage.prompt,
-                    "user_id":      anfrage.user_id,
-                    "character_id": character_id,
-                    "client_id":    anfrage.client_id,
-                }, ensure_ascii=False)
-
-                broadcast_threadsafe(
-                    user_id=anfrage.user_id,
-                    nachricht=user_msg_payload,
-                    loop=request.app.state.loop,
-                    character_id=character_id,
-                    exclude_client=anfrage.client_id,
-                )
-
-                logger.debug(
-                    f"User-Message Broadcast: '{anfrage.prompt[:60]}' "
-                    f"(exclude={anfrage.client_id})"
-                )
-            except Exception as broadcast_fehler:
-                logger.warning(f"User-Message Broadcast fehlgeschlagen: {broadcast_fehler}")
-
-        # Momentum für Shadow Delivery Service
-        redis_client.set(f"momentum:{anfrage.user_id}", result.get("momentum", "mid"), ex=300)
-
-        return _bestaetigungs_nutzlast(turn_id, result)
+        return _bestaetigungs_nutzlast(kennung)
 
     except Exception as fehler:
         # Den Typ nennen, nicht nur str(fehler): Die haeufigste Exception auf
-        # diesem Pfad ist concurrent.futures.TimeoutError aus submit_sync
-        # (60 s Default, greift wenn der Modell-Worker noch am vorigen Turn
-        # haengt) — und deren str() ist LEER. Die Zeile lautete dann
-        # "Graph-Fehler: " und benannte nichts; der Client bekam ein
-        # "Verarbeitungsfehler: " ohne Grund. Gemessen 29.07.2026 bei zwei
-        # von fuenf Turns einer Messreihe ohne Pause.
-        typ: str = type(fehler).__name__
+        # diesem Pfad hatte einen leeren str() und die Zeile benannte nichts.
+        typ:  str = type(fehler).__name__
         text: str = str(fehler) or "(Exception ohne Meldung)"
-        logger.error(f"Graph-Fehler [{typ}]: {text}", exc_info=True)
+        logger.error(f"Eingang-Fehler [{typ}]: {text}", exc_info=True)
         return JSONResponse(
             status_code = 503,
             content     = {"fehler": f"Verarbeitungsfehler [{typ}]: {text}"},
         )
 
 
-# ─────────────────────────────────────────────
-# SSE-Streaming Chat
-# ─────────────────────────────────────────────
 @router.post("/chat/stream")
 def ChatStreamSenden(anfrage: GespraechAnfrage, request: Request):
-    """Prompt mit Stage-Updates via SSE."""
-    # Der Empfang, als erste Anweisung — vor der Entitaetspruefung und vor dem
-    # Generator, der erst laeuft, wenn der Client zu lesen beginnt. Er misst
-    # den Abstand zwischen zwei Nutzeraeusserungen; jede spaetere Uhr traegt
-    # die Dauer von Pfad 1 und die Wartezeit am `llm_lock` mit.
-    empfangen_am: float = time.time()
+    """Nimmt eine Aeusserung an und bestaetigt sofort.
 
-    _user_entitaet_sicherstellen(anfrage.user_id)
+    Der Kanal bleibt SSE, traegt aber keine Stufen mehr: Pfad 1 laeuft hinter
+    der Eingangs-Queue, und seine Stufen gehen als `character_stage` ueber den
+    WebSocket. Der Strom endet mit der Bestaetigung.
+    """
+    empfangen_am: float = time.time()
 
     def event_generator():
         try:
-            character_id: str = ASSISTANT_USER_ID
+            _user_entitaet_sicherstellen(anfrage.user_id)
 
-            # turn_id: korreliert HumanGraph- und CharacterGraph-Spans desselben
-            # Konversations-Turns im Pipeline-Log. Analog zu ChatSenden:116 —
-            # vor allen Pfaden erzeugt, damit beide Graphen denselben Wert in
-            # den State und ins Event-Payload bekommen.
-            turn_id: str = uuid.uuid4().hex
-
-            # Shadow Delivery: Aktivität melden + Cooldown zurücksetzen
-            redis_client.set(f"last_activity:{anfrage.user_id}", str(time.time()), ex=7200)
-            shadow_cooldown_reset(redis_client, anfrage.user_id)
-
-            with llm_lock:
-                initial_state: dict = request.app.state.human_graph.create_state(
-                    user_prompt   = anfrage.prompt,
-                    user_id       = anfrage.user_id,
-                    character_id  = character_id,
-                    system_prompt = anfrage.system,
-                    temperature   = anfrage.temperatur,
-                    turn_id       = turn_id,
-                )
-
-                letzter_state: dict = initial_state
-                pfad1_ausfall: str = ""
-
-                for chunk in _stream_oder_abbruch(
-                    request.app.state.conversation_graph, initial_state,
-                ):
-                    if isinstance(chunk, _Pfad1Abbruch):
-                        pfad1_ausfall = chunk.text
-                        logger.error(
-                            f"Pfad 1 abgebrochen ({chunk.text}) — das Ereignis "
-                            f"wird trotzdem erzeugt, damit der Turn nicht "
-                            f"verlorengeht (turn_id={turn_id})"
-                        )
-                        yield _sse_event("stage", {
-                            "label":  "Wahrnehmung unvollständig",
-                            "detail": "Die Antwort folgt über den anderen Kanal.",
-                        })
-                        break
-                    # LangGraph liefert nach Subgraph-Return manchmal Listen statt Dicts
-                    if not isinstance(chunk, dict):
-                        logger.debug(f"Stream: Überspringe Nicht-Dict-Chunk (Typ: {type(chunk).__name__})")
-                        continue
-                    for node_name, node_state in chunk.items():
-                        label:  str = NODE_LABELS.get(node_name, node_name)
-                        detail: str = ""
-
-                        node_external = node_state.get("external")
-                        node_internal = node_state.get("internal")
-
-                        if node_name == "perzeption":
-                            emotion:  str = (node_external.emotion.emotion              if node_external else "").capitalize()
-                            arousal: float = node_external.emotion.arousal              if node_external else 0.0
-                            modus:    str = (node_external.emotion.mode                 if node_external else "").capitalize()
-                            dynamik:  str = (node_external.emotion.relationship_dynamic if node_external else "").capitalize()
-
-                            arousal_text: str = (
-                                "ruhig" if arousal < 0.3
-                                else "moderat" if arousal < 0.6
-                                else "intensiv"
-                            )
-
-                            teile: list[str] = []
-                            if emotion and emotion != "Neutral":
-                                teile.append(f"{emotion} ({arousal_text})")
-                            elif emotion:
-                                teile.append(emotion)
-                            if modus:
-                                teile.append(modus)
-                            if dynamik and dynamik != "Neutral":
-                                teile.append(dynamik)
-
-                            detail = " · ".join(teile) if teile else "—"
-
-                        elif node_name == "enricher":
-                            hat_kontext: bool = bool(node_state.get("memory_context", ""))
-                            modus:       str  = (node_external.emotion.mode    if node_external else "").capitalize()
-                            emotion:     str  = (node_external.emotion.emotion if node_external else "").capitalize()
-                            intentionen: list = node_state.get("user_intentionen", [])
-                            detail = f"Kontext: {'gefunden' if hat_kontext else 'keiner'}"
-                            if modus or emotion:
-                                detail += (
-                                    f" | Modus: {modus or '?'}, "
-                                    f"Emotion: {emotion or '?'}, "
-                                    f"Intention: {', '.join(i.capitalize() for i in intentionen) if intentionen else '?'}"
-                                )
-
-                        elif node_name == "ei_calc":
-                            ev:            list = node_state.get("emotions_verlauf", [])
-                            vektor:         str = node_external.emotion.emotions_vector if node_external else ""
-                            stil:           str = node_external.emotion.language_style  if node_external else ""
-                            modus_korr:     str = node_external.emotion.mode            if node_external else ""
-                            has_bez:       bool = bool(node_external.character.relationship if node_external else "")
-
-                            ei_teile: list[str] = []
-                            if ev:
-                                top3: str = ", ".join(
-                                    f"{e.get('emotion','?')}({e.get('gewicht',0):.2f})"
-                                    for e in ev[:3]
-                                )
-                                ei_teile.append(f"Verlauf: {top3}")
-                            if vektor:
-                                ei_teile.append(f"Vektor: {vektor}")
-                            if modus_korr:
-                                ei_teile.append(f"Modus: {modus_korr}")
-                            if stil:
-                                ei_teile.append(f"Stil: {stil}")
-                            if has_bez:
-                                ei_teile.append("Beziehung: geladen")
-
-                            # Nova-Emotion ergänzen
-                            nova_ev: list = node_state.get("nova_emotions_verlauf", [])
-                            if nova_ev:
-                                nova_top: str = nova_ev[0].get("emotion", "?")
-                                nova_ar: float = nova_ev[0].get("arousal", 0.0)
-                                nova_konf: bool = node_state.get("nova_emotion_konflikt", False)
-                                nova_str: str = f"Nova: {nova_top}(a={nova_ar:.2f})"
-                                if nova_konf:
-                                    nova_str += " ⚡Konflikt"
-                                ei_teile.append(nova_str)
-
-                            detail = " | ".join(ei_teile) if ei_teile else "—"
-
-                        yield _sse_event("stage", {
-                            "node":   node_name,
-                            "label":  label,
-                            "detail": detail,
-                        })
-
-                        letzter_state = node_state
-
-            # ── Event erzeugen — löst CharacterGraph (Pfad 2) im Consumer aus ──
-            # Dieselbe Nutzlast wie im synchronen Pfad, aus derselben Funktion:
-            # db_zugriff liest die Perzeptionswerte dort wieder und befuellt
-            # damit external.emotion im CharacterGraph.
-            event_erzeugen(
-                redis_client = redis_client,
-                user_id      = anfrage.user_id,
-                character_id = character_id,
-                source       = "user",
-                typ          = "message",
-                payload      = _ereignis_nutzlast(
-                    turn_id, empfangen_am, anfrage.prompt, letzter_state,
-                    pfad1_ausfall,
-                ),
+            kennung: str = nachricht_einreihen(
+                redis_client, anfrage.user_id, ASSISTANT_USER_ID,
+                EingehendeNachricht(anfrage.prompt, empfangen_am, anfrage.client_id or ""),
             )
 
-            # ── User-Nachricht an andere Clients broadcasten ──
-            if anfrage.client_id:
-                try:
-                    user_msg_payload: str = json.dumps({
-                        "typ":          "user_message",
-                        "nachricht":    anfrage.prompt,
-                        "user_id":      anfrage.user_id,
-                        "character_id": character_id,
-                        "client_id":    anfrage.client_id,
-                    }, ensure_ascii=False)
+            if not kennung:
+                yield _sse_event("error", {"fehler": "Leere Nachricht — nichts einzureihen."})
+                return
 
-                    broadcast_threadsafe(
-                        user_id=anfrage.user_id,
-                        nachricht=user_msg_payload,
-                        loop=request.app.state.loop,
-                        character_id=character_id,
-                        exclude_client=anfrage.client_id,
-                    )
-
-                    logger.debug(
-                        f"User-Message Broadcast: '{anfrage.prompt[:60]}' "
-                        f"(exclude={anfrage.client_id})"
-                    )
-                except Exception as broadcast_fehler:
-                    logger.warning(f"User-Message Broadcast fehlgeschlagen: {broadcast_fehler}")
-
-            # Momentum für Shadow Delivery Service
-            redis_client.set(
-                f"momentum:{letzter_state['user_id']}",
-                letzter_state.get("momentum", "mid"),
-                ex=300,
-            )
-
-            yield _sse_event(
-                "processing", _bestaetigungs_nutzlast(turn_id, letzter_state),
-            )
+            yield _sse_event("processing", _bestaetigungs_nutzlast(kennung))
 
         except Exception as fehler:
-            logger.exception(f"{type(fehler).__name__}: Stream-Fehler")
+            logger.exception(f"{type(fehler).__name__}: Eingang-Fehler")
             yield _sse_event("error", {"fehler": str(fehler)})
 
     return StreamingResponse(

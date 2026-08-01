@@ -14,13 +14,15 @@ import json
 import logging
 
 from api.websocket import broadcast, broadcast_threadsafe
-from config import shutdown_event, ASSISTANT_USER_ID
+from config import ASSISTANT_USER_ID, shutdown_event
+
 from services.events import (
-    event_naechstes,
-    event_erzeugen,
-    event_self_trigger_erlaubt,
     MAX_SELF_TRIGGERS,
+    event_erzeugen,
+    event_naechstes,
+    event_self_trigger_erlaubt,
 )
+from services.prompt_eingang import turn_beenden
 
 logger = logging.getLogger("ki_server.event_consumer")
 
@@ -437,11 +439,20 @@ async def event_consumer_loop(
                 )
 
                 # ── CharacterGraph ausführen ──
-                await _event_verarbeiten(
-                    event, user_id, character_id,
-                    redis_client, character_graph, compiled_character,
-                    websocket_map, llm_lock,
-                )
+                try:
+                    await _event_verarbeiten(
+                        event, user_id, character_id,
+                        redis_client, character_graph, compiled_character,
+                        websocket_map, llm_lock,
+                    )
+                finally:
+                    # Hier endet der Turn — nicht nach Pfad 1. Solange der
+                    # Marker steht, haelt der Prompt-Consumer neue
+                    # Aeusserungen in der Eingangs-Queue zurueck. Im `finally`,
+                    # weil ein gescheiterter Durchlauf die Eingabe sonst
+                    # dauerhaft sperrte; der Verfall des Markers waere dann die
+                    # einzige Rettung, und der dauert Minuten.
+                    turn_beenden(redis_client, user_id, character_id)
 
         except asyncio.CancelledError:
             logger.info("Event-Consumer beendet.")
@@ -598,6 +609,12 @@ async def _event_verarbeiten(
             # darf daraus nicht schliessen, die Antwort gehoere zur letzten
             # Nachricht.
             "turn_id":            turn_id,
+            # Die Kennungen der einzelnen Aeusserungen, die dieser Turn
+            # beantwortet. Ein Turn kann mehrere umfassen: Was innerhalb des
+            # Eingangsfensters eintraf, wurde zu einem Prompt zusammengefasst.
+            # Der Client hat je Aeusserung eine Bestaetigung bekommen und haelt
+            # sie offen, bis eine Antwort sie nennt.
+            "nachrichten_ids":    payload.get("nachrichten_ids", []),
             # Herkunft des Reizes: "eigener_impuls" bei einem Pixie-Gedanken,
             # sonst leer. Der Client faerbt danach ein — vor dem Umbau erkannte
             # er einen Impuls daran, dass der Nachrichtentyp ihm unbekannt war

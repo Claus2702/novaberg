@@ -157,70 +157,85 @@ class StreamHuelleMachtAusDemAbbruchEinElement(unittest.TestCase):
         self.assertIn("Traceback", gemeinsam)
 
 
-class EndpunktErzeugtDasEreignisTrotzAusnahme(unittest.TestCase):
+class ConsumerErzeugtDasEreignisTrotzAusnahme(unittest.IsolatedAsyncioTestCase):
     """Der eigentliche Regressionsschutz — am Kontrollfluss, nicht am Baustein.
 
     Die Tests oben pruefen `_ereignis_nutzlast` und `_stream_oder_abbruch`
-    einzeln. Beide waren gruen, als der `except`-Zweig des Endpunkts testweise
-    durch ein `raise` ersetzt wurde — also als der urspruengliche Defekt
-    vollstaendig wiederhergestellt war. **Ein Netz, das den Baustein prueft und
-    nicht seine Verdrahtung, haette den Defekt erneut durchgelassen.**
+    einzeln. Beide waren gruen, als der `except`-Zweig testweise durch ein
+    `raise` ersetzt wurde — also als der urspruengliche Defekt vollstaendig
+    wiederhergestellt war. **Ein Netz, das den Baustein prueft und nicht seine
+    Verdrahtung, haette den Defekt erneut durchgelassen.**
+
+    Die Zusicherung ist mit dem Code gewandert: Pfad 1 laeuft seit der
+    Eingangs-Queue im Prompt-Consumer, nicht mehr im Endpunkt. Die Regel
+    dahinter ist unveraendert — ein Abbruch darf die Nutzeraeusserung nicht
+    loeschen.
     """
 
-    def _fahren(self, fehler: Exception | None) -> list:
-        """Ruft den Endpunkt gegen einen Graphen, der optional wirft.
+    async def _fahren(self, fehler: Exception | None) -> list:
+        """Laesst den Consumer einen Block gegen einen Graphen fahren, der optional wirft.
 
         Returns:
             Die Aufrufe von `event_erzeugen` als Liste von kwargs.
         """
         from unittest.mock import MagicMock, patch
 
-        import api.chat as modul
+        import services.prompt_consumer as modul
 
         graph = MagicMock()
         if fehler is None:
-            graph.invoke.return_value = _zustand()
+            graph.stream.return_value = iter([{"perzeption": _zustand()}])
         else:
-            graph.invoke.side_effect = fehler
+            graph.stream.side_effect = fehler
 
-        anfrage = SimpleNamespace(
-            prompt=REIZ, user_id="meister", client_id="", system="", temperatur=0.7,
-        )
-        request = SimpleNamespace(app=SimpleNamespace(state=SimpleNamespace(
-            human_graph=MagicMock(create_state=MagicMock(return_value={})),
-            conversation_graph=graph,
-            loop=MagicMock(),
-        )))
+        block: list[dict] = [{
+            "nachrichten_id": "n-1",
+            "prompt":         REIZ,
+            "empfangen_am":   EMPFANG,
+            "client_id":      "desktop",
+        }]
 
         with patch.object(modul, "event_erzeugen") as ereignis, \
              patch.object(modul, "redis_client", MagicMock()), \
              patch.object(modul, "shadow_cooldown_reset", MagicMock()), \
-             patch.object(modul, "_user_entitaet_sicherstellen", MagicMock()):
-            modul.ChatSenden(anfrage, request)
+             patch.object(modul, "broadcast_threadsafe", MagicMock()), \
+             patch.object(modul, "_audit_log", MagicMock()), \
+             patch.object(modul, "turn_beenden", MagicMock()):
+            await modul._block_verarbeiten(
+                block, ("meister", "nova"), "t-block",
+                MagicMock(create_state=MagicMock(return_value={})),
+                graph,
+            )
 
         return [ruf.kwargs for ruf in ereignis.call_args_list]
 
-    def test_ohne_ausnahme_entsteht_ein_ereignis(self) -> None:
+    async def test_ohne_ausnahme_entsteht_ein_ereignis(self) -> None:
         """Der positive Zwilling zum Test darunter.
 
-        Ohne ihn bestuende der auch bei einem Endpunkt, der ueberhaupt kein
+        Ohne ihn bestuende der auch bei einem Consumer, der ueberhaupt kein
         Ereignis mehr erzeugt.
         """
-        rufe = self._fahren(None)
+        rufe = await self._fahren(None)
         self.assertEqual(1, len(rufe))
         self.assertNotIn("pfad1_ausfall", rufe[0]["payload"])
 
-    def test_mit_ausnahme_entsteht_es_ebenfalls(self) -> None:
+    async def test_mit_ausnahme_entsteht_es_ebenfalls(self) -> None:
         """Das ZIEL: Die Nutzeraeusserung ueberlebt den Abbruch."""
-        with self.assertLogs("ki_server.chat", level="ERROR"):
-            rufe = self._fahren(TimeoutError("zu spaet"))
+        with self.assertLogs("ki_server.prompt_consumer", level="ERROR"):
+            rufe = await self._fahren(TimeoutError("zu spaet"))
 
         self.assertEqual(1, len(rufe), "kein Ereignis — der Turn waere verloren")
         self.assertEqual(rufe[0]["payload"]["user_prompt"], REIZ)
 
-    def test_und_traegt_dann_den_vermerk(self) -> None:
+    async def test_und_traegt_dann_den_vermerk(self) -> None:
         """Ueberleben allein genuegt nicht — der Ausfall muss sichtbar sein."""
-        with self.assertLogs("ki_server.chat", level="ERROR"):
-            rufe = self._fahren(TimeoutError("zu spaet"))
+        with self.assertLogs("ki_server.prompt_consumer", level="ERROR"):
+            rufe = await self._fahren(TimeoutError("zu spaet"))
 
         self.assertIn("TimeoutError", rufe[0]["payload"]["pfad1_ausfall"])
+
+    async def test_die_kennungen_des_blocks_reisen_mit(self) -> None:
+        """Ohne sie kann der Client seine offenen Fragen nicht schliessen."""
+        rufe = await self._fahren(None)
+
+        self.assertEqual(rufe[0]["payload"]["nachrichten_ids"], ["n-1"])

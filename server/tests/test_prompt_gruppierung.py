@@ -36,7 +36,7 @@ import api.chat as chat_mod
 # Zeitnahme dahinter, misst sie nicht mehr den Empfang.
 VERARBEITUNG: frozenset[str] = frozenset({
     "create_state", "invoke", "stream", "_stream_oder_abbruch",
-    "_user_entitaet_sicherstellen",
+    "_user_entitaet_sicherstellen", "nachricht_einreihen",
 })
 
 
@@ -161,7 +161,12 @@ class ZeitnahmeStehtVorDerVerarbeitungTest(unittest.TestCase):
         )
 
     def test_beide_endpunkte_reichen_die_zeit_weiter(self) -> None:
-        """Positiver Zwilling: genommen und auch uebergeben, nicht nur genommen."""
+        """Positiver Zwilling: genommen und auch uebergeben, nicht nur genommen.
+
+        Seit Pfad 1 hinter der Eingangs-Queue laeuft, geht die Zeit nicht mehr
+        direkt in die Ereignis-Nutzlast, sondern ueber die Einreihung: Beide
+        Endpunkte bauen eine `EingehendeNachricht` mit ihr.
+        """
         baum: ast.Module = ast.parse(inspect.getsource(chat_mod))
 
         weitergaben: int = sum(
@@ -169,7 +174,7 @@ class ZeitnahmeStehtVorDerVerarbeitungTest(unittest.TestCase):
             for knoten in ast.walk(baum)
             if isinstance(knoten, ast.Call)
             and isinstance(knoten.func, ast.Name)
-            and knoten.func.id == "_ereignis_nutzlast"
+            and knoten.func.id == "EingehendeNachricht"
             and any(
                 isinstance(arg, ast.Name) and arg.id == "empfangen_am"
                 for arg in knoten.args

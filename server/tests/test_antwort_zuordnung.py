@@ -35,6 +35,8 @@ REIZ_TURN_ID:  str = "reiz-4f1c9a"
 # Die Kennung im Ergebnis-Zustand. Sie ist bewusst eine andere: Wer sie
 # ausliefert, hat die falsche Quelle gelesen.
 STATE_TURN_ID: str = "state-77bb02"
+# Die Kennung einer einzelnen Aeusserung, wie der Endpunkt sie vergibt.
+NACHRICHT_ID:  str = "nachricht-1a2b3c"
 
 
 def _event(turn_id: str = REIZ_TURN_ID, **payload_felder: object) -> dict:
@@ -169,38 +171,41 @@ class FehlendeZuordnungWirdLautTest(_EventVerarbeitenLauf):
         self.assertEqual(nutzlasten, [])
 
 
-class BestaetigungNenntDenTurnTest(unittest.TestCase):
-    """Pfad 1 sagt dem Client, welche Kennung seine Nachricht bekommen hat.
+class BestaetigungNenntDieNachrichtTest(unittest.TestCase):
+    """Der Endpunkt sagt dem Client, welche Kennung seine Aeusserung bekam.
 
     Ohne sie hat der Client nichts, wogegen er die ankommende Antwort halten
-    koennte — die Zuordnung in der Antwort allein reicht nicht.
+    koennte — die Zuordnung in der Antwort allein reicht nicht. Es ist die
+    Kennung der **Nachricht**, nicht die des Turns: Der Turn entsteht erst im
+    Prompt-Consumer und kann mehrere Aeusserungen umfassen.
     """
 
-    def test_bestaetigung_traegt_die_turn_id(self) -> None:
-        """Der Client braucht die Kennung seiner eigenen Frage."""
-        nutzlast: dict = chat_mod._bestaetigungs_nutzlast(REIZ_TURN_ID, {})
+    def test_bestaetigung_traegt_die_nachrichten_id(self) -> None:
+        """Der Client braucht die Kennung seiner eigenen Aeusserung."""
+        nutzlast: dict = chat_mod._bestaetigungs_nutzlast(NACHRICHT_ID)
 
-        self.assertEqual(nutzlast["turn_id"], REIZ_TURN_ID)
+        self.assertEqual(nutzlast["nachrichten_id"], NACHRICHT_ID)
 
-    def test_bestaetigung_traegt_weiterhin_status_und_perzeption(self) -> None:
-        """Charakterisierung: der Vertrag von vor der Zusammenfuehrung."""
-        nutzlast: dict = chat_mod._bestaetigungs_nutzlast(REIZ_TURN_ID, {})
+    def test_bestaetigung_traegt_weiterhin_den_status(self) -> None:
+        """Charakterisierung: der Vertrag, den der Client heute liest."""
+        nutzlast: dict = chat_mod._bestaetigungs_nutzlast(NACHRICHT_ID)
 
         self.assertEqual(nutzlast["status"], "processing")
         self.assertIn("WebSocket", nutzlast["nachricht"])
-        self.assertEqual(nutzlast["emotion"], "")
-        self.assertEqual(nutzlast["arousal"], 0.0)
 
-    def test_perzeptionswerte_stammen_aus_dem_zustand(self) -> None:
-        """Die Perzeption kommt aus dem Zustand, nicht aus einem Vorgabewert."""
-        aussen = MagicMock()
-        aussen.emotion.emotion = "neugier"
-        aussen.emotion.arousal = 0.62
+    def test_keine_perzeptionswerte_mehr(self) -> None:
+        """Der Endpunkt rechnet nicht — er darf nichts behaupten, was er nicht weiss."""
+        nutzlast: dict = chat_mod._bestaetigungs_nutzlast(NACHRICHT_ID)
 
-        nutzlast: dict = chat_mod._bestaetigungs_nutzlast(REIZ_TURN_ID, {"external": aussen})
+        self.assertNotIn("emotion", nutzlast)
+        self.assertNotIn("arousal", nutzlast)
 
-        self.assertEqual(nutzlast["emotion"], "neugier")
-        self.assertEqual(nutzlast["arousal"], 0.62)
+    def test_leere_kennung_wird_gemeldet_und_nicht_erfunden(self) -> None:
+        """Ein Platzhalter saehe gueltig aus."""
+        with self.assertLogs("ki_server.chat", level="ERROR"):
+            nutzlast: dict = chat_mod._bestaetigungs_nutzlast("")
+
+        self.assertEqual(nutzlast["nachrichten_id"], "")
 
 
 class BeideEndpunkteRufenDenBauerTest(unittest.TestCase):
