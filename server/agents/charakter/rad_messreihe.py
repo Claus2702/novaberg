@@ -357,16 +357,28 @@ def reihe_laden(
         return []
 
     # ── Verarbeitung ────────────────────────────
+    # **Das Fenster zaehlt Erhebungen, nicht Zeilen.** Ein Rad mit drei Laeufen
+    # je Erhebung fuellte sonst das Fenster mit weniger als zwei Erhebungen, und
+    # die Reihe reichte nur noch Stunden zurueck statt Tage — lautlos, weil die
+    # Zahl der Messungen unveraendert aussieht.
     try:
         zeilen: list[dict] = db_manager.select(
             """
-            SELECT speichen
+            SELECT erhebung_id, speichen
             FROM charakter_rad_messung
             WHERE user_id = %s AND character_id = %s AND rad_art = %s
+              AND erhebung_id IN (
+                  SELECT erhebung_id
+                  FROM charakter_rad_messung
+                  WHERE user_id = %s AND character_id = %s AND rad_art = %s
+                  GROUP BY erhebung_id
+                  ORDER BY max(gemessen_am) DESC
+                  LIMIT %s
+              )
             ORDER BY gemessen_am DESC, id DESC
-            LIMIT %s
             """,
-            (user_id, character_id, rad_art, fenster),
+            (user_id, character_id, rad_art,
+             user_id, character_id, rad_art, fenster),
         )
     except Exception as fehler:
         logger.exception(
@@ -375,26 +387,85 @@ def reihe_laden(
         )
         return []
 
-    reihe: list[dict[str, float]] = []
+    # Laeufe je Erhebung sammeln, Reihenfolge der Abfrage erhalten.
+    nach_erhebung: dict[str, list[dict[str, float]]] = {}
     for nummer, zeile in enumerate(zeilen, start=1):
-        roh = zeile.get("speichen")
-        # psycopg2 liefert jsonb bereits als dict; eine Zeichenkette waere ein
-        # abweichender Schreibweg und wird trotzdem gelesen.
-        if isinstance(roh, str):
-            try:
-                roh = json.loads(roh)
-            except (json.JSONDecodeError, TypeError):
-                logger.exception(
-                    f"Rad-Messreihe: Zeile {nummer} traegt unlesbares JSON — "
-                    "uebersprungen"
-                )
-                continue
-        if not isinstance(roh, dict) or not roh:
+        rad: dict[str, float] | None = _speichen_lesen(zeile.get("speichen"), nummer)
+        if rad is None:
+            continue
+        nach_erhebung.setdefault(str(zeile["erhebung_id"]), []).append(rad)
+
+    # ── Ausgabe ─────────────────────────────────
+    reihe: list[dict[str, float]] = []
+    for erhebung_id, laeufe in nach_erhebung.items():
+        verdichtet: dict[str, float] | None = (
+            laeufe[0] if len(laeufe) == 1 else rad_zusammenfassen_gleichgewichtig(laeufe)
+        )
+        if verdichtet is None:
             logger.error(
-                f"Rad-Messreihe: Zeile {nummer} traegt kein Rad ({type(roh).__name__}) "
-                "— uebersprungen"
+                f"Rad-Messreihe: Erhebung {erhebung_id[:8]} mit {len(laeufe)} "
+                "Laeufen nicht verdichtbar — uebersprungen"
             )
             continue
-        reihe.append({name: float(wert) for name, wert in roh.items()})
+        reihe.append(verdichtet)
 
     return reihe
+
+
+def _speichen_lesen(roh: object, nummer: int) -> dict[str, float] | None:
+    """Liest das Speichen-Feld einer Zeile.
+
+    psycopg2 liefert `jsonb` bereits als Abbildung; eine Zeichenkette waere ein
+    abweichender Schreibweg und wird trotzdem gelesen.
+
+    Returns:
+        Speichenname -> Wert, oder None bei unlesbarem Inhalt.
+    """
+    if isinstance(roh, str):
+        try:
+            roh = json.loads(roh)
+        except (json.JSONDecodeError, TypeError):
+            logger.exception(
+                f"Rad-Messreihe: Zeile {nummer} traegt unlesbares JSON — uebersprungen"
+            )
+            return None
+
+    if not isinstance(roh, dict) or not roh:
+        logger.error(
+            f"Rad-Messreihe: Zeile {nummer} traegt kein Rad "
+            f"({type(roh).__name__}) — uebersprungen"
+        )
+        return None
+
+    return {name: float(wert) for name, wert in roh.items()}
+
+
+def rad_zusammenfassen_gleichgewichtig(
+    laeufe: list[dict[str, float]],
+) -> dict[str, float] | None:
+    """Verdichtet die Laeufe EINER Erhebung — ohne Verfall, alle gleich alt.
+
+    Innerhalb einer Erhebung gibt es keine Reihenfolge, die etwas bedeutet: Die
+    Laeufe liegen Sekunden auseinander und messen denselben Text. Ein Verfall
+    ueber ihren Rang waere eine Aussage ueber nichts.
+
+    Dieselbe Rechenart wie ueber die Erhebungen — ein arithmetisches Mittel je
+    Speiche —, nur mit gleichen Gewichten.
+    """
+    if not laeufe:
+        logger.error("Rad-Messreihe: Erhebung ohne Lauf — nicht verdichtbar")
+        return None
+
+    namen: set[str] = set(laeufe[0])
+    for lauf in laeufe[1:]:
+        if set(lauf) != namen:
+            logger.error(
+                f"Rad-Messreihe: Laeufe einer Erhebung tragen verschiedene "
+                f"Speichen ({sorted(namen)} gegen {sorted(set(lauf))}) — verworfen"
+            )
+            return None
+
+    return {
+        name: sum(float(lauf[name]) for lauf in laeufe) / len(laeufe)
+        for name in namen
+    }

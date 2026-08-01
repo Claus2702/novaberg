@@ -10,6 +10,7 @@ import json
 import logging
 import math
 import time
+from collections.abc import Callable
 
 from config import (
     ASSISTANT_NAME,
@@ -799,6 +800,7 @@ def initiative_rad_destillieren(
     profil_text: str,
     user_id:     str = DEFAULT_USER_ID,
     laeufe:      int = INITIATIVE_RAD_LAEUFE,
+    lauf_melden: Callable[[int, dict, float], None] | None = None,
 ) -> tuple[dict, float] | None:
     """Erhebt das Initiative-Rad mehrfach und nimmt den Median.
 
@@ -813,10 +815,24 @@ def initiative_rad_destillieren(
     gemittelt: Er wird bei der Destillation einmal geschrieben und bleibt bis
     zur naechsten stehen.
 
-    **Gespeichert wird das Rad des Median-Laufs**, nicht ein gemitteltes Rad.
+    **Zurueckgegeben wird das Rad des Median-Laufs**, nicht ein gemitteltes Rad.
     Ein Durchschnitt aus drei Raedern ergaebe Auspraegungen wie 0.67, die kein
     Lauf je vergeben hat — und der Zusammenhang `Rad x Zuege = Versatz` waere
     nicht mehr von Hand nachrechenbar. Die Streuung reist als Metadatum mit.
+
+    **Was der Aufrufer daraus macht, ist seine Sache.** Seit dem 01.08.2026
+    legt er die Einzellaeufe in die Messreihe und speichert ein ueber Tage
+    stabilisiertes Rad (novaberg-charakter-rad-messreihe_k.md). Der Grund fuer
+    "ein echtes Rad" faellt damit an dieser Stelle weg: Die Laeufe, aus denen
+    es entsteht, bleiben einzeln erhalten — nur eben in der Messreihe statt im
+    Rueckgabewert.
+
+    Args:
+        lauf_melden: wird nach jedem **gelungenen** Lauf mit (Nummer, Rad,
+            Versatz) gerufen. Der Rueckgabewert wird nicht gelesen.
+            **Vertrag: Die Senke wirft nicht** — eine Ausnahme aus ihr wuerde
+            die Destillation abbrechen, und ein Forensik-Ziel darf einen
+            Charakterlauf nicht toeten.
 
     Vorbedingung: `profil_text` ist nicht leer, `laeufe` >= 1.
     Nachbedingung: (rad, versatz) — das Rad traegt zusaetzlich 'laeufe' und
@@ -856,6 +872,8 @@ def initiative_rad_destillieren(
             )
             continue
         erhebungen.append(ergebnis)
+        if lauf_melden is not None:
+            lauf_melden(nummer, ergebnis[0], ergebnis[1])
 
     if not erhebungen:
         logger.error(

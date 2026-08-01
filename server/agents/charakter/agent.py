@@ -6,6 +6,7 @@ Migriert aus: services/shadow_agent/tasks/charakter_hash.py
 
 import json
 import logging
+import uuid
 
 from agents.base import BaseAgent, AgentState, PeriodicTask
 from config import (
@@ -33,6 +34,7 @@ from agents.charakter.destillation import (
     langfristige_ziele_destillieren,
     charakter_rad_destillieren,
     initiative_rad_destillieren,
+    initiative_versatz_berechnen,
     nutzer_gewichtung_berechnen,
     RAD_NABE,
     INITIATIVE_RAD_NABE,
@@ -41,6 +43,7 @@ from agents.charakter.destillation import (
 )
 from agents.charakter.rad_messreihe import (
     Messung,
+    RAD_ART_INITIATIVE,
     RAD_ART_ZUWENDUNG,
     messung_ablegen,
     messung_faellig,
@@ -241,12 +244,24 @@ class CharakterAgent(BaseAgent):
                     # Ein eigener Call, weil das erste Rad seine Speichen mit
                     # Wissbegier und Pflicht buendelt, die hier nichts zu
                     # suchen haben (novaberg-gv-initiative_k.md §6).
-                    erhoben_init = initiative_rad_destillieren(
-                        rad_quelle, user_id=subjekt_user_id,
-                    )
-                    if erhoben_init is not None:
-                        (ergebnis["initiative_versatz_rad"],
-                         ergebnis["initiative_versatz"]) = erhoben_init
+                    #
+                    # Derselbe Takt und dieselbe Reihe wie beim Zuwendungs-Rad.
+                    # Seine drei Laeufe bleiben: Sie nehmen die Streuung INNER-
+                    # HALB einer Erhebung heraus, die Reihe die zwischen ihnen.
+                    if not messung_faellig(
+                        subjekt_user_id, subjekt_character_id, RAD_ART_INITIATIVE,
+                    ):
+                        logger.info(
+                            f"CharakterAgent: Initiative-Rad fuer {subjekt_user_id} "
+                            "nicht faellig — bestehender Wert bleibt"
+                        )
+                    else:
+                        erhoben_init = self._initiative_ueber_reihe_stabilisieren(
+                            subjekt_user_id, subjekt_character_id, rad_quelle,
+                        )
+                        if erhoben_init is not None:
+                            (ergebnis["initiative_versatz_rad"],
+                             ergebnis["initiative_versatz"]) = erhoben_init
                 else:
                     logger.warning(
                         f"CharakterAgent: kein Kern- und kein Beziehungsprofil fuer "
@@ -564,6 +579,95 @@ class CharakterAgent(BaseAgent):
             f"Faktor frisch {faktor_frisch:.3f} -> aus der Reihe {faktor_neu:.3f}"
         )
         return rad_neu, faktor_neu
+
+    @staticmethod
+    def _initiative_ueber_reihe_stabilisieren(
+        user_id:      str,
+        character_id: str,
+        quelle:       str,
+    ) -> tuple[dict, float] | None:
+        """Erhebt das Initiative-Rad, legt jeden Lauf ab und mittelt ueber die Reihe.
+
+        Zwei Stufen, die verschiedene Streuungen wegnehmen: Die drei Laeufe
+        einer Erhebung nehmen die des Verfahrens heraus (gemessen 01.08.2026:
+        Spanne 0.12 ueber drei Laeufe), die Reihe die zwischen den Erhebungen.
+
+        Returns:
+            (Rad, Versatz) aus der Reihe, oder None, wenn keine Erhebung gelang
+            — dann behaelt der Aufrufer den bestehenden Wert.
+
+        Nachbedingung: Jeder gelungene Lauf liegt als eigene Zeile in der
+            Messreihe, mit derselben `erhebung_id`.
+        """
+        # ── Verarbeitung ────────────────────────
+        node_cfg:    dict = get_node_config("charakter_hash")
+        erhebung_id: str  = str(uuid.uuid4())
+
+        def lauf_ablegen(nummer: int, rad: dict, versatz: float) -> None:
+            """Senke fuer `initiative_rad_destillieren` — wirft nicht."""
+            messung_ablegen(Messung(
+                user_id      = user_id,
+                character_id = character_id,
+                rad_art      = RAD_ART_INITIATIVE,
+                speichen     = {**rad.get("hoch", {}), **rad.get("runter", {})},
+                faktor       = versatz,
+                modell       = PIXIE_ANALYSE_MODEL,
+                temperatur   = float(node_cfg.get("temperature", 0.2)),
+                quelle       = quelle,
+                erhebung_id  = erhebung_id,
+                lauf         = nummer,
+            ))
+
+        erhoben = initiative_rad_destillieren(
+            quelle, user_id=user_id, lauf_melden=lauf_ablegen,
+        )
+        if erhoben is None:
+            return None
+
+        rad_frisch, versatz_frisch = erhoben
+        reihe: list[dict] = reihe_laden(user_id, character_id, RAD_ART_INITIATIVE)
+        if len(reihe) < 2:
+            logger.info(
+                f"CharakterAgent: Initiative-Reihe fuer {user_id} traegt "
+                f"{len(reihe)} Erhebung(en) — nichts zu stabilisieren"
+            )
+            return rad_frisch, versatz_frisch
+
+        flach: dict[str, float] | None = rad_zusammenfassen(reihe)
+        if flach is None:
+            logger.error(
+                f"CharakterAgent: Initiative-Reihe fuer {user_id} nicht "
+                "zusammenfassbar — Einzelwert bleibt"
+            )
+            return rad_frisch, versatz_frisch
+
+        # Die Metadaten des frischen Laufs (`laeufe`, `streuung`) reisen mit:
+        # Sie beschreiben die juengste Erhebung, nicht die Reihe, und ohne sie
+        # verloere die Zeile ihre Herkunftsangabe.
+        rad_neu: dict = {
+            "hoch":     {name: flach[name] for name in rad_frisch["hoch"]},
+            "runter":   {name: flach[name] for name in rad_frisch["runter"]},
+            "laeufe":   rad_frisch.get("laeufe", []),
+            "streuung": rad_frisch.get("streuung", 0.0),
+            "erhebungen": len(reihe),
+        }
+
+        try:
+            versatz_neu: float = initiative_versatz_berechnen(rad_neu)
+        except ValueError as fehler:
+            logger.exception(
+                f"CharakterAgent: Versatz aus der Reihe nicht berechenbar "
+                f"({fehler}) — Einzelwert bleibt"  # noqa: TRY401  — Blatt-Typ
+            )
+            return rad_frisch, versatz_frisch
+
+        # ── Ausgabe-Verifikation ────────────────
+        logger.info(
+            f"CharakterAgent: Initiative-Rad ueber {len(reihe)} Erhebungen "
+            f"stabilisiert — Versatz frisch {versatz_frisch:+.4f} -> aus der "
+            f"Reihe {versatz_neu:+.4f}"
+        )
+        return rad_neu, versatz_neu
 
     # ─────────────────────────────────────────
     # Ergebnis speichern

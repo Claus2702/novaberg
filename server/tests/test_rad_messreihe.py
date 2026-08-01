@@ -16,6 +16,7 @@ Kein skipUnless, kein skipIf, kein try/except um Importe.
 """
 
 import unittest
+from collections.abc import Callable
 from unittest.mock import patch
 
 from agents.charakter.rad_messreihe import (
@@ -232,6 +233,110 @@ class NurRoheMessungenGehenInDieReiheTest(unittest.TestCase):
 
         self.assertFalse(erfolg)
         self.assertFalse(schreiber.called)
+
+
+class DasFensterZaehltErhebungenNichtZeilenTest(unittest.TestCase):
+    """Ein Rad mit drei Laeufen je Erhebung fuellte das Fenster sonst zu frueh.
+
+    Beim Zuwendungs-Rad faellt beides zusammen — eine Zeile, eine Erhebung.
+    Beim Initiative-Rad sind es drei Zeilen, und dann reichte eine Reihe von
+    fuenf Zeilen nur noch anderthalb Erhebungen weit. Lautlos, weil die Zahl
+    der Messungen unveraendert aussieht.
+    """
+
+    def _zeilen(self, gruppen: list[list[float]]) -> list[dict]:
+        """Baut Datenbankzeilen: je Gruppe eine Erhebung mit ihren Laeufen."""
+        zeilen: list[dict] = []
+        for nummer, laeufe in enumerate(gruppen):
+            for wert in laeufe:
+                zeilen.append({
+                    "erhebung_id": f"erhebung-{nummer}",
+                    "speichen": {"distanz": wert},
+                })
+        return zeilen
+
+    def _laden(self, gruppen: list[list[float]]) -> list[dict]:
+        from agents.charakter import rad_messreihe
+
+        with patch.object(
+            rad_messreihe.db_manager, "select", return_value=self._zeilen(gruppen),
+        ):
+            return rad_messreihe.reihe_laden("nova", "meister", RAD_ART_ZUWENDUNG)
+
+    def test_drei_laeufe_einer_erhebung_ergeben_einen_punkt(self) -> None:
+        """Sonst zaehlte dieselbe Erhebung dreifach gegen das Fenster."""
+        reihe = self._laden([[1.0, 1.0, 0.0], [0.0, 0.0, 0.0]])
+
+        self.assertEqual(2, len(reihe))
+
+    def test_die_laeufe_einer_erhebung_werden_gleich_gewichtet(self) -> None:
+        """Innerhalb einer Erhebung bedeutet die Reihenfolge nichts.
+
+        Die Laeufe liegen Sekunden auseinander und messen denselben Text; ein
+        Verfall ueber ihren Rang waere eine Aussage ueber nichts. Von Hand:
+        (1.0 + 1.0 + 0.0) / 3.
+        """
+        reihe = self._laden([[1.0, 1.0, 0.0]])
+
+        self.assertAlmostEqual(2 / 3, reihe[0]["distanz"], places=6)
+
+    def test_eine_zeile_je_erhebung_bleibt_unveraendert(self) -> None:
+        """Der Regelfall des Zuwendungs-Rades darf nicht mitwandern."""
+        reihe = self._laden([[1.0], [0.5], [0.0]])
+
+        self.assertEqual([1.0, 0.5, 0.0], [r["distanz"] for r in reihe])
+
+
+class DieSenkeBekommtJedenLaufTest(unittest.TestCase):
+    """Das Initiative-Rad meldet seine Einzellaeufe, statt sie zu verwerfen."""
+
+    def _erheben(self, senke: Callable[[int, dict, float], None]) -> None:
+        """Faehrt drei Laeufe, von denen der dritte scheitert."""
+        from agents.charakter import destillation
+
+        rad = {
+            "hoch":   dict.fromkeys(destillation.INITIATIVE_ZUG_HOCH, 0.0),
+            "runter": {**dict.fromkeys(destillation.INITIATIVE_ZUG_RUNTER, 0.0),
+                       "lenkungsdrang": 1.0},
+        }
+        with patch.object(
+            destillation, "_initiative_rad_einmal",
+            side_effect=[(rad, -0.08), (rad, -0.08), None],
+        ):
+            destillation.initiative_rad_destillieren(
+                "Profiltext", "nova", laeufe=3, lauf_melden=senke,
+            )
+
+    def test_jeder_gelungene_lauf_wird_gemeldet(self) -> None:
+        """Zwei von drei Laeufen gelingen — zwei Meldungen, nicht drei."""
+        gemeldet: list[int] = []
+        self._erheben(lambda nummer, rad, versatz: gemeldet.append(nummer))
+
+        self.assertEqual([1, 2], gemeldet)
+
+    def test_ein_gescheiterter_lauf_wird_nicht_gemeldet(self) -> None:
+        """Sonst stuende eine Zeile ohne Messung in der Reihe."""
+        gemeldet: list[float] = []
+        self._erheben(lambda nummer, rad, versatz: gemeldet.append(versatz))
+
+        self.assertEqual([-0.08, -0.08], gemeldet)
+
+    def test_ohne_senke_laeuft_die_destillation_wie_bisher(self) -> None:
+        """Der Vorgabewert None darf nichts aendern."""
+        from agents.charakter import destillation
+
+        rad = {
+            "hoch":   dict.fromkeys(destillation.INITIATIVE_ZUG_HOCH, 0.0),
+            "runter": dict.fromkeys(destillation.INITIATIVE_ZUG_RUNTER, 0.0),
+        }
+        with patch.object(
+            destillation, "_initiative_rad_einmal", side_effect=[(rad, 0.0)],
+        ):
+            ergebnis = destillation.initiative_rad_destillieren(
+                "Profiltext", "nova", laeufe=1,
+            )
+
+        self.assertIsNotNone(ergebnis)
 
 
 if __name__ == "__main__":
