@@ -199,13 +199,19 @@ def haltung_bestimmen(state: ConversationState, postgres_url: str) -> Conversati
     user_id:   str  = state.get("user_id", "")
 
     if not cluster:
-        # Der GV-Node laeuft unmittelbar davor und setzt den Cluster immer.
-        # Ist er leer, hat der GV-Node nicht geliefert — das ist ein Defekt
-        # dort, nicht ein Turn ohne Landschaft.
+        # **Kein Defekt, sondern eine Weitergabe.** Der GV-Node kehrt bei
+        # Vektorlaenge 0 ("kein Vorausdenken") und beim Skip zurueck, BEVOR er
+        # `gv_detail` setzt. Dieser Knoten erbt die Luecke: keine Landschaft,
+        # keine Grundwerte, keine Haltung.
+        #
+        # Gemessen am 31.07.2026: in einer Reihe von 20 Turns einmal, dazu
+        # einmal auf Novas Eigenimpuls. Wer den Prompt-Block einhaengt, muss
+        # den Fall beantworten — er tritt regelmaessig ein und nicht selten
+        # (novaberg-backlog.md → HALTUNG-OHNE-LANDSCHAFT).
         logger.error(
             "Haltungs-Node: keine Landschaft in gv_detail "
-            f"({len(gv_detail)} Felder) — ohne Cluster gibt es keine "
-            "Grundwerte, keine Haltung fuer diesen Turn"
+            f"({len(gv_detail)} Felder) — der GV-Node ist vor dem Setzen "
+            "zurueckgekehrt, keine Haltung fuer diesen Turn"
         )
         _ausfall_protokollieren(state, "keine Landschaft in gv_detail", "")
         return state
