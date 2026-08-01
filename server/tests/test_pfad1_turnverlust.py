@@ -34,6 +34,9 @@ from api.chat import _ereignis_nutzlast, _Pfad1Abbruch, _stream_oder_abbruch
 
 TURN: str = "t-pfad1"
 REIZ: str = "Wie entstehen die Ringe des Saturn?"
+# Empfangszeitpunkt der Aeusserung — fuer diese Datei ohne Bedeutung,
+# aber Pflichtargument: Die Nutzlast traegt ihn seit der Prompt-Gruppierung.
+EMPFANG: float = 1_754_000_000.0
 
 
 def _zustand(**kw: object) -> dict:
@@ -58,14 +61,14 @@ class NutzlastOhneAusfall(unittest.TestCase):
 
     def test_die_perzeptionswerte_reisen_mit(self) -> None:
         """Was Pfad 1 gemessen hat, steht im Ereignis."""
-        n = _ereignis_nutzlast(TURN, REIZ, _zustand())
+        n = _ereignis_nutzlast(TURN, EMPFANG, REIZ, _zustand())
         self.assertEqual(n["current_emotion"], "neugierig")
         self.assertEqual(n["current_arousal"], 0.6)
         self.assertEqual(n["gespraechs_modus"], "fachgespraech")
 
     def test_salienz_und_intentionen_reisen_mit(self) -> None:
         """Die beiden Werte, die der CharacterGraph nicht selbst erheben kann."""
-        n = _ereignis_nutzlast(TURN, REIZ, _zustand())
+        n = _ereignis_nutzlast(TURN, EMPFANG, REIZ, _zustand())
         self.assertEqual(n["salienz_human"], 0.7)
         self.assertEqual(n["user_intentionen"], ["information_erfragen"])
 
@@ -76,7 +79,7 @@ class NutzlastOhneAusfall(unittest.TestCase):
         jeder Leser muesste den Leerstring als "alles gut" deuten, statt das
         Fehlen des Feldes zu sehen.
         """
-        self.assertNotIn("pfad1_ausfall", _ereignis_nutzlast(TURN, REIZ, _zustand()))
+        self.assertNotIn("pfad1_ausfall", _ereignis_nutzlast(TURN, EMPFANG, REIZ, _zustand()))
 
 
 class NutzlastMitAusfall(unittest.TestCase):
@@ -84,13 +87,13 @@ class NutzlastMitAusfall(unittest.TestCase):
 
     def test_das_ereignis_entsteht_trotzdem(self) -> None:
         """Der Kern: Ohne Ereignis gibt es nie eine Antwort, nicht nur spaeter keine."""
-        n = _ereignis_nutzlast(TURN, REIZ, {}, "TimeoutError: zu spaet")
+        n = _ereignis_nutzlast(TURN, EMPFANG, REIZ, {}, "TimeoutError: zu spaet")
         self.assertEqual(n["turn_id"], TURN)
         self.assertEqual(n["user_prompt"], REIZ)
 
     def test_der_ausfall_wird_benannt(self) -> None:
         """Mit dem Ausnahmetyp, nicht nur mit einem Flag."""
-        n = _ereignis_nutzlast(TURN, REIZ, {}, "TimeoutError: zu spaet")
+        n = _ereignis_nutzlast(TURN, EMPFANG, REIZ, {}, "TimeoutError: zu spaet")
         self.assertIn("TimeoutError", n["pfad1_ausfall"])
 
     def test_ohne_perzeption_stehen_leere_werte_und_kein_erfundener_zustand(self) -> None:
@@ -100,7 +103,7 @@ class NutzlastMitAusfall(unittest.TestCase):
         Datenklasse. Wuerde hier bereits 'neutral' stehen, waere der Ausfall
         eine Ebene frueher zu einem plausiblen Messwert geworden.
         """
-        n = _ereignis_nutzlast(TURN, REIZ, {}, "TimeoutError: zu spaet")
+        n = _ereignis_nutzlast(TURN, EMPFANG, REIZ, {}, "TimeoutError: zu spaet")
         self.assertEqual(n["current_emotion"], "")
         self.assertEqual(n["gespraechs_modus"], "")
         self.assertIsNone(n["salienz_human"])

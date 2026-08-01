@@ -171,10 +171,11 @@ def _stream_oder_abbruch(graph: object, zustand: dict) -> Iterator[object]:
 
 
 def _ereignis_nutzlast(
-    turn_id:     str,
-    user_prompt: str,
-    zustand:     dict,
-    ausfall:     str = "",
+    turn_id:      str,
+    empfangen_am: float,
+    user_prompt:  str,
+    zustand:      dict,
+    ausfall:      str = "",
 ) -> dict:
     """Baut die Nutzlast des Ereignisses, das den CharacterGraph ausloest.
 
@@ -205,6 +206,12 @@ def _ereignis_nutzlast(
     # ── Verarbeitung ────────────────────────────
     nutzlast: dict = {
         "turn_id":     turn_id,
+        # Der Zeitpunkt, zu dem die Aeusserung eintraf — genommen vor jeder
+        # Verarbeitung. **Nicht** `erstellt_am`: Das Ereignis entsteht erst
+        # nach Pfad 1, also 11 bis 13 Sekunden spaeter, und die zweite
+        # Nachricht wartet in dieser Zeit am `llm_lock`. Wer Abstaende auf
+        # `erstellt_am` rechnet, misst die Traegheit des Systems mit.
+        "empfangen_am": empfangen_am,
         "user_prompt": user_prompt,
         # Die Salienz dieses Reizes reist mit in den CharacterGraph. Dort
         # multipliziert die Formel sie mit nutzer_gewichtung und erhaelt daraus
@@ -282,6 +289,11 @@ def _bestaetigungs_nutzlast(turn_id: str, zustand: dict) -> dict:
 def ChatSenden(anfrage: GespraechAnfrage, request: Request):
     """Prompt durch den Gesprächsgraphen verarbeiten."""
     try:
+        # Der Empfang, als erste Anweisung. Er ist die einzige Groesse, die den
+        # Abstand zwischen zwei Nutzeraeusserungen misst — jede spaetere Uhr
+        # traegt die Dauer von Pfad 1 und die Wartezeit am `llm_lock` mit.
+        empfangen_am: float = time.time()
+
         # turn_id: korreliert HumanGraph- und CharacterGraph-Spans desselben
         # Konversations-Turns im Pipeline-Log. Vor allen Pfaden erzeugt, damit
         # beide Graphen denselben Wert in den State bekommen.
@@ -334,7 +346,7 @@ def ChatSenden(anfrage: GespraechAnfrage, request: Request):
             source       = "user",
             typ          = "message",
             payload      = _ereignis_nutzlast(
-                turn_id, anfrage.prompt, result, pfad1_ausfall,
+                turn_id, empfangen_am, anfrage.prompt, result, pfad1_ausfall,
             ),
         )
 
@@ -392,6 +404,12 @@ def ChatSenden(anfrage: GespraechAnfrage, request: Request):
 @router.post("/chat/stream")
 def ChatStreamSenden(anfrage: GespraechAnfrage, request: Request):
     """Prompt mit Stage-Updates via SSE."""
+    # Der Empfang, als erste Anweisung — vor der Entitaetspruefung und vor dem
+    # Generator, der erst laeuft, wenn der Client zu lesen beginnt. Er misst
+    # den Abstand zwischen zwei Nutzeraeusserungen; jede spaetere Uhr traegt
+    # die Dauer von Pfad 1 und die Wartezeit am `llm_lock` mit.
+    empfangen_am: float = time.time()
+
     _user_entitaet_sicherstellen(anfrage.user_id)
 
     def event_generator():
@@ -539,7 +557,8 @@ def ChatStreamSenden(anfrage: GespraechAnfrage, request: Request):
                 source       = "user",
                 typ          = "message",
                 payload      = _ereignis_nutzlast(
-                    turn_id, anfrage.prompt, letzter_state, pfad1_ausfall,
+                    turn_id, empfangen_am, anfrage.prompt, letzter_state,
+                    pfad1_ausfall,
                 ),
             )
 
