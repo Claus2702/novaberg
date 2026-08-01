@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Konzept — Event-Modell (Architektur-Evolution)
-**Stand:** 21. April 2026, Chat 60
+**Stand:** 1. August 2026, Chat 124 (Eingangs-Queue vor Pfad 1, Turn-Marker, fire-and-forget — Migrationsschritte 6 und 7 abgeschlossen). Kern: 21. April 2026, Chat 60
 **Pfad:** novaberg/docs/novaberg-convention-event-model.md
 **Typ:** Convention
 **Voraussetzung:** Session-Trennung (user_id × character_id), Chat 60 ✅
@@ -52,6 +52,22 @@ Die Antwort erreicht den Client per WebSocket.
 
 ## 3. Event-Infrastruktur
 
+### 3.0 Die Eingangs-Queue vor Pfad 1 (Chat 124)
+
+Vor der Ereignis-Queue liegt seit dem 01.08.2026 eine zweite: `prompt_queue:{user_id}:{character_id}`. Der Chat-Endpunkt **nimmt nur an** — er stempelt `empfangen_am`, reiht ein und bestätigt mit einer `nachrichten_id`. Gemessen: **0,01 s** statt 11 bis 104 Sekunden.
+
+**Warum vor und nicht hinter Pfad 1.** Pfad 1 hält den `llm_lock`; eine zweite Äußerung wartet dort, und ihr Ereignis entsteht erst danach — mit rund zehn Sekunden Abstand. In der Ereignis-Queue liegt deshalb **praktisch nie mehr als ein Nutzer-Reiz**, und eine Zusammenfassung dort kann nicht greifen. Vor Pfad 1 greift sie, weil Einreihen eine Redis-Operation ist und kein Modellaufruf.
+
+**Der Block.** Der Prompt-Consumer nimmt beim Poll, was da liegt, und schneidet die vorderste Gruppe ab: Äußerungen, deren Abstand **zum unmittelbaren Vorgänger** höchstens `EINGANG_FENSTER` (30 s) beträgt. Der Rest bleibt für den nächsten Durchlauf. Es wird **nicht gewartet** — ein Ruhefenster wäre eine Wartezeit auf jeder Antwort.
+
+**Der Block wird als Ganzes perzipiert.** Eine Perzeption, eine Salienz, ein Satz Intentionen für das, was der Nutzer gesagt hat. Vorher wurde je Äußerung gemessen und beim Zusammenfassen alles bis auf eine Messung verworfen — der Text überlebte im Session-Verlauf, die Messwerte nicht.
+
+**Der Turn-Marker.** `turn_laeuft:{user_id}:{character_id}`, gesetzt mit `SET NX` vom Prompt-Consumer, gelöscht vom Event-Consumer **nach** dem CharacterGraph. Solange er steht, bleiben neue Äußerungen liegen.
+
+> Der `llm_lock` kann das nicht leisten: Er wird zwischen Pfad 1 und dem CharacterGraph kurz frei, und in diesen Spalt geriet am 01.08.2026 ein zweiter Durchlauf — sein Modellaufruf lief danach in einen Timeout, der Turn blieb ohne Perzeption. Der Marker umspannt beide Hälften; sein TTL ist die Notbremse gegen einen Turn, den niemand beendet.
+
+Belegt am 01.08.2026: Eine Äußerung während eines laufenden Turns wartete 1:57 min in der Queue, wurde 558 ms nach dem Turn-Ende genommen und lief ohne Timeout durch. Drei Äußerungen mit 12 und 4 Sekunden Abstand wurden zu **einem** Prompt und in **einer** Antwort beantwortet, die alle drei Kennungen nennt.
+
 ### 3.1 Event-Queue (Redis)
 
 Pro User-Charakter-Paar eine FIFO-Queue:
@@ -85,7 +101,7 @@ Jedes Event ist ein JSON-Dict:
 
 **`turn_id`: erzeugen oder erben.** Wer einen neuen Turn ausloest, erzeugt eine neue `turn_id` (Chat-API, Delivery). Nur der Retry erbt sie. Die Unterscheidung ist nicht aus `source` ableitbar — Delivery und Retry tragen beide `character` —, deshalb steht die Herkunft ausdruecklich im Payload.
 
-**Die `turn_id` reist bis in die Antwort.** Der Event-Consumer legt sie in das `character_response`-Payload, und die Bestaetigung von Pfad 1 (`_bestaetigungs_nutzlast`) gibt dem Client dieselbe Kennung fuer seine eigene Nachricht. Der Client vergleicht beide und erkennt daran, ob eine ankommende Antwort zu seiner offenen Frage gehoert.
+**Die Kennungen reisen bis in die Antwort.** Der Event-Consumer legt `turn_id` **und** `nachrichten_ids` in das `character_response`-Payload. Die Bestaetigung des Endpunkts gibt dem Client die `nachrichten_id` seiner eigenen Aeusserung — nicht die `turn_id`, denn der Turn entsteht erst im Prompt-Consumer und kann mehrere Aeusserungen umfassen. Der Client haelt eine **Menge** offener Kennungen und schliesst alle, die eine Antwort nennt.
 
 **Gelesen wird die Kennung aus dem Payload, nicht aus dem Ergebnis-Zustand.** Beide tragen sie, und beide liegen im selben Griffbereich — aber was der Client braucht, ist die Kennung **seiner Frage**, nicht die des Laufs, der geantwortet hat. Ein leeres Feld heisst „nicht zuordenbar" und wird als Fehler gemeldet; ein Platzhalter waere schlimmer als die Luecke, weil er gueltig aussaehe.
 
@@ -337,8 +353,8 @@ Der Umbau kann schrittweise erfolgen:
 3. Pfad 1 als eigenen Graph extrahieren
 4. Pfad 2 als eigenen Graph extrahieren
 5. Event-Consumer bauen
-6. chat.py umbauen (fire-and-forget)
-7. Client auf WebSocket-only umstellen
+6. chat.py umbauen (fire-and-forget) ✅ **01.08.2026**
+7. Client auf WebSocket-only umstellen ✅ **01.08.2026** — die Stufen von Pfad 1 gehen als `character_stage` über den WebSocket, der SSE-Kanal trägt nur noch die Bestätigung
 8. Aufräumen (nachbearbeitung.py, SSE, Annotate-Funktionen)
 
 Jeder Schritt ist testbar. Der alte Graph läuft parallel, bis der neue validiert ist.

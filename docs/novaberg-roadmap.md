@@ -1983,6 +1983,36 @@ Beide Räder haben eine Nabe — den Wert ohne jede Ausprägung — und das Erge
 
 ---
 
+## Chat 124 (01.08.2026) — Eine Queue vor dem HumanGraph, und der Turn bekommt einen Marker ✅
+
+Der Chat-Endpunkt **nimmt nur noch an**. Er stempelt den Empfang, reiht ein und bestätigt — **in 0,01 Sekunden** statt in 11 bis 104. Pfad 1 läuft dahinter im Prompt-Consumer. Damit sind die Migrationsschritte 6 und 7 aus `novaberg-convention-event-model.md` §9.1 abgeschlossen, die seit Chat 60 offen standen.
+
+**Der Weg dorthin führte über eine Messung, die einen Entwurf widerlegte.** Die naheliegende Stelle für eine Zusammenfassung wäre die Ereignis-Queue gewesen. Dort kann sie nicht greifen: Pfad 1 hält den `llm_lock`, eine zweite Äußerung wartet dort, und ihr Ereignis entsteht erst danach. **In der Ereignis-Queue liegt praktisch nie mehr als ein Reiz** — gemessen an einem POST, der 103,8 Sekunden blockierte.
+
+| Bauteil | Was es leistet |
+|---|---|
+| `prompt_queue:{user}:{char}` | die Äußerungen, bevor irgendetwas rechnet |
+| `empfangen_am` | der Abstand zwischen zwei Äußerungen, nicht die Trägheit des Systems |
+| `block_schneiden` | die vorderste Gruppe: Abstand **zum Vorgänger** höchstens 30 s |
+| `turn_laeuft:{user}:{char}` | der Marker über den **ganzen** Turn, `SET NX`, TTL als Notbremse |
+| `prompt_consumer_loop` | nimmt, wenn kein Turn läuft — und wartet nie |
+
+**Der Block wird als Ganzes perzipiert.** Das ist der eigentliche Gewinn: eine Perzeption, eine Salienz, ein Satz Intentionen für das, was der Nutzer gesagt hat. Vorher wurde je Äußerung gemessen und beim Zusammenfassen alles bis auf eine Messung verworfen — der Text überlebte im Verlauf, die Messwerte nicht.
+
+> **Der `llm_lock` reicht als Wächter nicht.** Er wird zwischen Pfad 1 und dem CharacterGraph kurz frei, und in diesen Spalt geriet ein zweiter Durchlauf; sein Modellaufruf lief danach in einen Timeout, der Turn blieb ohne Perzeption. Erst ein Marker, der **beide** Hälften umspannt, hält die Eingabe zurück. Der Riegel schützt die GPU, nicht den Turn.
+
+**Live gemessen am 01.08.2026:**
+
+- Eine Äußerung während eines laufenden Turns wartete **1:57 min** in der Queue, wurde **558 ms** nach dem Turn-Ende genommen und lief ohne Timeout durch.
+- Drei Äußerungen mit 12 und 4 Sekunden Abstand wurden zu **einem** Prompt und in **einer** Antwort beantwortet, die alle drei Kennungen nennt.
+- Siebzehn Stufen von Pfad 1 und Pfad 2 liefen über den WebSocket.
+
+**Und die Eingabesperre im Client ist gefallen** — beide: die sichtbare und der stille Riegel, der eine zweite Äußerung mit einer Logzeile verwarf. Sie hatte einen Preis, der erst mit dem Leer-Defekt sichtbar wurde: Blieb eine Antwort aus, blieb die Oberfläche unbenutzbar. Jetzt gibt es nichts mehr zu sperren.
+
+**Umfang:** Suite 869 → **912 Tests**, grün, 0 übersprungen. Nulllinie **2264 → 2247**. Gegenprobe je Bauteil, alle Mengen vorhergesagt und getroffen.
+
+---
+
 ## Chat 124 (01.08.2026) — Jede Antwort nennt den Reiz, den sie beantwortet ✅
 
 `ANTWORT-OHNE-ZUORDNUNG` ist geschlossen. Die Zustellung trug keine Turn-Zuordnung; der Client ordnete der letzten Nachricht zu, was ankam. **Solange jeder Turn antwortet, stimmt das** — und genau deshalb fiel es nie auf. Fällt einer aus, verschiebt sich alles um eins, und eine flüssige, inhaltlich geschlossene Antwort zum falschen Thema ist als Fehler nicht erkennbar.

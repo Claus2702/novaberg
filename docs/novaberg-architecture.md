@@ -344,6 +344,8 @@ project/
 │       │   └── registry.py              #     ModelServiceRegistry, _build_backend, Singleton model_service
 │       ├── events.py                    #   Event-Queue (Redis FIFO, Self-Trigger-Schutz, Chat 60)
 │       ├── event_consumer.py            #   Event-Consumer (async-Loop, WebSocket-Delivery, Chat 60)
+│       ├── prompt_eingang.py           #   Eingangs-Queue vor Pfad 1, Blockbildung, Turn-Marker (Chat 124)
+│       ├── prompt_consumer.py          #   Prompt-Consumer (async-Loop, faehrt Pfad 1 hinter der Queue, Chat 124)
 │       ├── shadow_delivery.py           #   Pixie -> Chat-Einspeisung
 │       ├── shadow_agent/                #   Alter Pixie-Runner (extern aufruflos, PIX-CLEAN)
 │       └── pixie/                       #   Neues Pixie-System (Chat 33+)
@@ -384,7 +386,8 @@ Verbunden durch eine Redis-Event-Queue (`event_queue:{user_id}:{character_id}`).
 | Service | Datei | Aufgabe |
 |---------|-------|---------|
 | Event-Queue | `services/events.py` | Event erzeugen, lesen, Self-Trigger-Schutz |
-| Event-Consumer | `services/event_consumer.py` | Queue-Polling, Debouncing, Graph-Aufruf, WebSocket-Delivery |
+| Event-Consumer | `services/event_consumer.py` | Queue-Polling, Debouncing, Graph-Aufruf, WebSocket-Delivery, Turn-Marker loeschen |
+| Prompt-Consumer | `services/prompt_consumer.py` | Eingangs-Queue-Polling, Blockbildung, Pfad-1-Lauf, Turn-Marker setzen |
 
 **Ersetzte Services:**
 
