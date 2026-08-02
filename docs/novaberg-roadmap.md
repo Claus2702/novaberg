@@ -2001,6 +2001,14 @@ Der Chat-Endpunkt **nimmt nur noch an**. Er stempelt den Empfang, reiht ein und 
 
 > **Der `llm_lock` reicht als Wächter nicht.** Er wird zwischen Pfad 1 und dem CharacterGraph kurz frei, und in diesen Spalt geriet ein zweiter Durchlauf; sein Modellaufruf lief danach in einen Timeout, der Turn blieb ohne Perzeption. Erst ein Marker, der **beide** Hälften umspannt, hält die Eingabe zurück. Der Riegel schützt die GPU, nicht den Turn.
 
+**Und der Wächter selbst hatte einen zweiten Fehler, der teurer war als alles andere an diesem Tag.** `_block_verarbeiten` nahm den Modell-Riegel mit `with llm_lock` — synchron im asyncio-Ereignis-Loop. Ist der Riegel belegt, blockiert das nicht diesen Verbraucher, sondern den **ganzen Loop**, einschließlich des Event-Consumers, dessen `await` den Riegel freigeben würde.
+
+> **Der Dienst stand sieben Minuten ohne eine einzige Logzeile.** Nur ein Neustart beendete den Zustand, und er kostete eine Nutzeräußerung, die bereits aus der Eingangs-Queue entnommen war. Ein Fehler in genau dem Bauteil, das Turnverluste verhindern sollte.
+
+Entstanden beim Herausziehen des Wächters in eine eigene Funktion: Die nicht-blockierende Riegel-Prüfung wanderte mit — und wurde durch den Turn-Marker **ersetzt** statt ihm **hinzugefügt**. Der Marker kennt Nutzer-Turns und den CharacterGraph; der Pixie- und der Recherche-Pfad nehmen denselben Riegel und stehen nicht darin.
+
+Behoben: Der Wächter erwirbt den Riegel nicht-blockierend, **bevor** er die Queue anfasst, und jeder Ausgang gibt ihn zurück. Drei Tests halten die Bauart am Syntaxbaum fest — ein blockierender Erwerb verhält sich zur Laufzeit wie ein gelingender, solange der Riegel gerade frei ist.
+
 **Der Pixie-Pfad war das Loch im ersten Wächter.** Ein eigener Impuls kommt nicht aus der Eingangs-Queue und brachte deshalb keinen Marker mit — während er lief, stand die Eingabe offen. Und schlimmer: Sein Durchlauf **löschte** den Marker am Ende, auch wenn das Nutzer-Ereignis dahinter noch wartete. Der Event-Consumer setzt den Marker jetzt selbst, und der Prompt-Consumer prüft zwei Dinge statt einem: *läuft gerade etwas* und *kommt noch etwas*.
 
 **Live gemessen am 01.08.2026:**
@@ -2011,7 +2019,7 @@ Der Chat-Endpunkt **nimmt nur noch an**. Er stempelt den Empfang, reiht ein und 
 
 **Und die Eingabesperre im Client ist gefallen** — beide: die sichtbare und der stille Riegel, der eine zweite Äußerung mit einer Logzeile verwarf. Sie hatte einen Preis, der erst mit dem Leer-Defekt sichtbar wurde: Blieb eine Antwort aus, blieb die Oberfläche unbenutzbar. Jetzt gibt es nichts mehr zu sperren.
 
-**Umfang:** Suite 869 → **916 Tests**, grün, 0 übersprungen. Nulllinie **2264 → 2247**. Gegenprobe je Bauteil, alle Mengen vorhergesagt und getroffen.
+**Umfang:** Suite 869 → **919 Tests**, grün, 0 übersprungen. Nulllinie **2264 → 2247**. Gegenprobe je Bauteil, alle Mengen vorhergesagt und getroffen.
 
 ---
 
