@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Backlog — Konzipierte, noch nicht implementierte Features
-**Stand:** 1. August 2026 (Abschnitt „Charakterbildung messen" ergänzt — der nächste Sprint, mit `PROFIL-HISTORIE-FEHLT` und `PAARLISTE-FEST` als Voraussetzungen. Zuvor: 31. Juli 2026, abends — `HALTUNG-KNOTEN-FEHLT` geschlossen, `HALTUNG-SPANNENENDEN-OFFEN` um die erste Messung am echten Turn ergänzt. Zuvor: Abschnitt „Haltungsraum — der unterbrochene Sprint" ergänzt — vier Einträge: der fehlende Knoten, das fehlende Protokoll, die offenen Spannenenden und die abzulösende Längenregel. Zuvor: Abschnitt „Zeitparser und Kalibrierung" ergänzt — vier Einträge aus dem Korpus-Erstlauf und der Neuerhebung der Positions-Kontrolle. Zuvor: Chat 117, zwei KZG-Einträge gegen den Code nachgezogen. Kern: Chat 111)
+**Stand:** 1. August 2026, spät (Epic „Client WebSocket-Umbau" aus Chat 60 **abgeschlossen** — der SSE-Kanal trägt nur noch die Bestätigung, alle Stufen gehen über den WebSocket; darüber hinaus liegt jetzt eine Eingangs-Queue vor Pfad 1. Zwei Reste benannt, beide in der Fundliste. Zuvor: Abschnitt „Charakterbildung messen" ergänzt — der nächste Sprint, mit `PROFIL-HISTORIE-FEHLT` und `PAARLISTE-FEST` als Voraussetzungen. Zuvor: 31. Juli 2026, abends — `HALTUNG-KNOTEN-FEHLT` geschlossen, `HALTUNG-SPANNENENDEN-OFFEN` um die erste Messung am echten Turn ergänzt. Zuvor: Abschnitt „Haltungsraum — der unterbrochene Sprint" ergänzt — vier Einträge: der fehlende Knoten, das fehlende Protokoll, die offenen Spannenenden und die abzulösende Längenregel. Zuvor: Abschnitt „Zeitparser und Kalibrierung" ergänzt — vier Einträge aus dem Korpus-Erstlauf und der Neuerhebung der Positions-Kontrolle. Zuvor: Chat 117, zwei KZG-Einträge gegen den Code nachgezogen. Kern: Chat 111)
 **Pfad:** novaberg/docs/novaberg-backlog.md
 **Quellen:** nova-08-k.md (Kognitive Anreicherung), nova-10-k-backlog.md (Skill-System), nova-01-t-c-backlog.md (Node-Konfiguration)
 
@@ -1026,7 +1026,15 @@ GV-Node → Responder → Thinker → Tribunal → [Corrector]
 
 ---
 
-## Epic: Client WebSocket-Umbau (Chat 60)
+## Epic: Client WebSocket-Umbau (Chat 60) ✅ **abgeschlossen 01.08.2026 (Chat 124)**
+
+**Erledigt.** Der SSE-Kanal trägt nur noch die Bestätigung; alle Stufen — Pfad 1 **und** Pfad 2 — gehen als `character_stage` über den WebSocket, die Antwort als `character_response`. Damit sind die Migrationsschritte 6 und 7 aus `novaberg-convention-event-model.md` §9.1 durch.
+
+**Über die ursprüngliche Vision hinaus:** Der Endpunkt führt Pfad 1 nicht mehr selbst aus, sondern reiht die Äußerung in eine Eingangs-Queue (`prompt_queue`) und bestätigt in 0,01 s statt in 11 bis 104 Sekunden. Mehrere Äußerungen innerhalb von 30 Sekunden werden zu **einem** Prompt und als Ganzes perzipiert. Ein Turn-Marker hält die Eingabe zurück, bis der CharacterGraph durch ist.
+
+**Rest, benannt:** Die Stufen tragen keine Turn-Kennung und sammeln sich optisch unter der falschen Nachricht, wenn während eines Laufs weitergeschrieben wird. Und eine nie beantwortete Frage bleibt im Client-Zustand offen, ohne auf dem Bildschirm sichtbar zu sein. Beides in `novaberg-fundliste.md`.
+
+Die ursprüngliche Fassung des Epics:
 
 **Vision:** Der GTK4-Client empfängt Charakter-Antworten per WebSocket (`typ: "character_response"`) statt aus dem SSE-"answer"-Event. Der SSE-Stream zeigt nur noch die Pfad-1-Stages.
 
@@ -1037,7 +1045,7 @@ GV-Node → Responder → Thinker → Tribunal → [Corrector]
 2. SSE-Handler — kein `answer`-Event mehr, nur `processing`
 3. Nachrichten-Rendering — Antworten asynchron anzeigen
 
-**Status:** Offen. Server-Seite fertig (Chat 60).
+**Status:** ~~Offen. Server-Seite fertig (Chat 60).~~ → siehe oben, abgeschlossen in Chat 124.
 
 **Status Chat 68:** WS-SINGLE behoben. `ClientConnection`-Dataclass mit `client_id`/`character_id`-Filterung. User-Message-Broadcast (server-seitige Filterung, kein Client-Filter nötig). Desktop ↔ Telegram bidirektional getestet. 12 Dateien.
 

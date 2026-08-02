@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Graph-Architektur, HumanGraph, AgentGraph, Agent-System
-**Stand:** 31. Juli 2026, Chat 123 (Haltungsraum-Node im CharacterGraph). Zuvor: 17. Mai 2026, Chat 90 (HumanGraph-Slimming Phase 4, TURN-ID-FIX)
+**Stand:** 1. August 2026, Chat 124 (Eingangs-Queue vor Pfad 1, Prompt-Consumer, Turn-Marker — der Endpunkt nimmt nur noch an). Zuvor: 31. Juli 2026, Chat 123 (Haltungsraum-Node im CharacterGraph). Zuvor: 17. Mai 2026, Chat 90 (HumanGraph-Slimming Phase 4, TURN-ID-FIX)
 **Pfad:** novaberg/docs/novaberg-graph.md
 **Quellen:** nova-01-k.md (Graph-Konzept), nova-01-a.md (Graph-Architektur), nova-11-k.md (Agent-Workflow-Konzept), nova-11-a.md (Agent-Architektur), novaberg-path2-perzeption_k.md (PFAD2-PERZEPTION-FIX, Personality-Klassen-Schicht)
 
@@ -183,24 +183,36 @@ Das Flag `perzeption_rolle` im State steuert, welchen Text die Perzeption liest 
 User tippt
     |
     v
-chat.py → HumanGraph (Pfad 1) → Event erzeugen
-                                      |
-                                      v
-                              Event-Queue (Redis)
-                                      |
-                                      v
-                              Event-Consumer
-                                      |
-                                      v
-                              CharacterGraph (Pfad 2)
-                                      |
-                                      v
-                              Antwort per WebSocket
+chat.py → nimmt an, stempelt, reiht ein   (kein Graph-Lauf im Request)
+    |
+    v
+Eingangs-Queue (Redis)
+    |
+    v
+Prompt-Consumer → Block schneiden → HumanGraph (Pfad 1) → Event erzeugen
+                                                              |
+                                                              v
+                                                      Event-Queue (Redis)
+                                                              |
+                                                              v
+                                                      Event-Consumer
+                                                              |
+                                                              v
+                                                      CharacterGraph (Pfad 2)
+                                                              |
+                                                              v
+                                                      Antwort per WebSocket
 ```
+
+**Eingangs-Queue (Chat 124):** Redis List `prompt_queue:{user_id}:{character_id}`. Der Endpunkt fuehrt Pfad 1 nicht mehr selbst aus — er bestaetigt in Millisekunden statt in 11 bis 104 Sekunden.
+
+**Prompt-Consumer:** Async-Loop (`services/prompt_consumer.py`). Nimmt beim Poll die vorderste Gruppe: Aeusserungen, deren Abstand **zum Vorgaenger** hoechstens `EINGANG_FENSTER` (30 s) betraegt. Sie werden zu **einem** Prompt verkettet und als Ganzes perzipiert — eine Perzeption, eine Salienz, ein Satz Intentionen.
+
+**Turn-Marker:** `turn_laeuft:{user_id}:{character_id}`, mit `SET NX` gesetzt, vom Event-Consumer nach dem CharacterGraph geloescht. Solange er steht, bleiben neue Aeusserungen in der Eingangs-Queue. Der Modell-Riegel reicht dafuer nicht — er wird zwischen Pfad 1 und Pfad 2 kurz frei.
 
 **Event-Queue:** Redis List `event_queue:{user_id}:{character_id}` (FIFO).
 **Event-Consumer:** Async-Loop (`services/event_consumer.py`), pollt Queues, startet Graph-Durchlaeufe.
-**Debouncing:** 2s Pause nach User-Events (Tippen abwarten).
+**Debouncing:** 2s Pause nach User-Events. **Wirkungslos seit Chat 124:** Die Zusammenfassung geschieht in der Eingangs-Queue, und dort liegen die Aeusserungen tatsaechlich vor — in der Event-Queue nie mehr als eine, weil Pfad 1 sie serialisiert.
 **Self-Trigger:** Nach dem Dispatcher kann der Charakter ein weiteres Event erzeugen (Multi-Turn).
 **Loop-Schutz:** Max 3 Self-Triggers pro User-Event.
 
