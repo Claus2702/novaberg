@@ -399,6 +399,8 @@ e_nova = e_anfrage × (1 - GRAVITATION_FAKTOR[cluster])
 
 **Implementierungs-Skizze:** Eine sechste Cluster-Tabelle `CLUSTER_GRAVITATION_FAKTOR` in `ei/dreischicht.py`, analog zu den bestehenden `CLUSTER_REPERTOIRE`, `CLUSTER_BESCHREIBUNGEN`, `CLUSTER_FRAGEN`. Damit liegt die Steuerung an einer Stelle, zusammen mit den anderen Cluster-Eigenschaften, ohne Code-Änderungen in anderen Modulen anpassbar.
 
+> **Gebaut am 02.08.2026 (P10, Chat 126) — genau so.** Die Tabelle steht in `ei/dreischicht.py` mit den vierzehn Schlüsseln der Nachbartabellen und den Werten oben. Ein Cluster, der nicht darin steht, ist ein Defekt und wird gemeldet, statt still auf `paradox` zu fallen. Mechanik, Ausgänge und erste Messung: `novaberg-memory-synapsen_k.md` §8.5.
+
 **Reihenfolge im Pipeline-Ablauf:** Der GV-Node bestimmt den Cluster im CharacterGraph. Im CharacterGraph-Enricher kann der Cluster aus dem aktuellen Turn-State gelesen werden. Im HumanGraph-Enricher (User-Turn, GV ist noch nicht gelaufen) wird der Cluster aus dem vorigen Turn als Default verwendet — Konversationen sind träge, der Modus wechselt selten abrupt. Bei abruptem Modus-Wechsel ist die erste Antwort minimal off, beim nächsten Turn passt sich Nova an.
 
 **Phänomenologische Logik der Werte:**
@@ -409,7 +411,7 @@ e_nova = e_anfrage × (1 - GRAVITATION_FAKTOR[cluster])
 
 - **Hohe Faktoren (0.25–0.30)** für entspannte, intime, intensive Cluster (Kissenschlacht, Glut, Feuerwerk). Hier ist Abschweifen Teil der Atmosphäre — *„die Zigarette danach"* (Glut) bedeutet buchstäblich, dass freie Gedanken fließen dürfen. Auf „Zahnarzt" darf hier „Bratwurst" folgen, weil die Stimmung das trägt.
 
-**Imperativ-Override:** Bei klaren Aufträgen (erkennbar aus Salienz-Intentionen wie `auftrag`, `aufgabe`, `imperativ`) wird der Faktor zusätzlich auf 0.0–0.05 gedämpft, unabhängig vom Cluster. Sonst legt Nova einen Bratwurst-Termin an statt eines Zahnarzttermins. Die Salienz-Klassifikation hat bereits Intentions-Erkennung — diese kann den Cluster-Faktor turn-spezifisch überschreiben.
+**Imperativ-Override:** Bei klaren Aufträgen (erkennbar aus der Salienz-Intention ~~`auftrag`, `aufgabe`, `imperativ`~~ **`anweisung`** — korrigiert am 02.08.2026, das ist der einzige Wert dieser Art im Kanon von `salienz.dimensionen.txt`) wird der Faktor zusätzlich auf 0.0–0.05 gedämpft, unabhängig vom Cluster. Sonst legt Nova einen Bratwurst-Termin an statt eines Zahnarzttermins. Die Salienz-Klassifikation hat bereits Intentions-Erkennung — diese kann den Cluster-Faktor turn-spezifisch überschreiben.
 
 **Live-Kalibrierung:** Die Werte sind eine erste Setzung. Im Live-Betrieb wird sich zeigen, welche Cluster zu fokussiert oder zu lose wirken. Anpassung über die `CLUSTER_GRAVITATION_FAKTOR`-Tabelle ohne Code-Änderung möglich.
 

@@ -1780,7 +1780,7 @@ plausibel (frühestes Auftreten der Erinnerung).
 
 ## Epic: Memory-Kern-Umbau (Synapsen-Modell, Chat 86)
 
-**Status:** **P1–P9 abgeschlossen (Chat 125).** Offen ist allein P10 (Wahrnehmungs-Gravitation), das laut Konzept §13.12 ohnehin orthogonal zum Umbau steht.
+**Status:** **Alle zehn Sprints abgeschlossen (P1–P9 in Chat 125, P10 in Chat 126).** Der Umbau ist gebaut. Offen bleiben zwei Reste, die keine Sprints sind: die dünne Zeit- und Entitätsschicht aus P3 (unten) und die ungemessene Wirkung von P10 (`P10-WIRKUNG-UNGEMESSEN`).
 
 *Die vorige Angabe „P0–P3 implementiert, P4 wartet auf MS-Welle" stammte aus Chat 91 und war fünf Phasen im Rückstand — P4 bis P8 sind zwischen Chat 98 und 111 gebaut worden, ohne dass diese Tabelle nachgezogen wurde. Nachgemessen am 02.08.2026 gegen den Bestand, nicht gegen die Doku.*
 **Bezug:** novaberg-memory-synapsen_k.md, novaberg-memory-synapsen-p4-entscheidungen_k.md (Chat 91)
@@ -1798,7 +1798,7 @@ plausibel (frühestes Auftreten der Erinnerung).
 | Punkt 6 | Gesprächs- und Node-Log (Forensik-Schicht) | ✅ Chat 86 |
 | Punkt 7 | Migration und selektive Bestandsdaten-Übernahme | ✅ Chat 86 |
 | Punkt 8 | Bug- und Backlog-Reset | ✅ Chat 86 |
-| Punkt 9 | Implementierungs-Phasen P1–P10 | 🔧 **P1–P9 ✅ (Chat 125), P10 offen** — Stand am 02.08.2026 gegen den Bestand gemessen, siehe Tabelle unten |
+| Punkt 9 | Implementierungs-Phasen P1–P10 | ✅ **P1–P9 (Chat 125), P10 (Chat 126)** — Stand am 02.08.2026 gegen den Bestand gemessen, siehe Tabelle unten |
 | Punkt 10 | P4-Klärungspunkte (K1–K10) | ✅ Chat 91 — `novaberg-memory-synapsen-p4-entscheidungen_k.md` |
 
 ### Stand der Sprints, gemessen am 02.08.2026
@@ -1814,7 +1814,14 @@ plausibel (frühestes Auftreten der Erinnerung).
 | **P7** Charakter-Hash auf neuer Topologie | ✅ liest `lzg_knoten` |
 | **P8** Migration Bestandsdaten | ✅ gegenstandslos: alte Tabelle hatte 0 Zeilen |
 | **P9** Codeschloss | ✅ Tabelle gelöscht, 2172 Zeilen entfernt |
-| **P10** Wahrnehmungs-Gravitation | ⬜ nicht gebaut |
+| **P10** Wahrnehmungs-Gravitation | ✅ `wahrnehmung_verschieben`, live gemessen — Wirkung offen, siehe unten |
+
+**Zu P10 — gebaut und live, die Wirkung aber ungemessen.** Die Verschiebung greift: Ein Turn nahe an einem langfristigen Ziel erreichte Aktivierungs-Stärke 0.631 und drehte den Suchschlüssel um 1,14° (Cluster `schlachtfeld`, Faktor 0.05). Genau diese Kleinheit ist der Befund — **Aktivierungsschwelle und Verschiebungswirkung ziehen gegeneinander:** Ein Ziel überschreitet die Schwelle von 0.4 nur, wenn es der Frage schon ähnlich ist, und in Richtung eines fast parallelen Vektors zu verschieben dreht kaum. Bei sieben aktiven Zielen und einem thematisch entfernten Turn lagen alle Stärken zwischen 0.102 und 0.212, also unter der Schwelle. Entscheidbar ist das erst an einem Korpus, in dem Ziele und Fragen auseinanderliegen — wie bei P3 also an der Charakterbildungs-Messreihe.
+
+**`P10-WIRKUNG-UNGEMESSEN`**
+**Frage:** Ändert die Verschiebung die Trefferliste der LZG-Suche, und ab welcher Drehung?
+**Vorgehen:** Je Turn beide Suchen fahren — roh und verschoben — und die Anker-Mengen vergleichen. Der Pipeline-Log trägt bereits Cluster, Faktor, Anteile und Cosinus je Turn; es fehlt der Vergleich der Ergebnisse.
+**Prio:** Mittel. Ohne diese Zahl ist nicht entscheidbar, ob die Cluster-Faktoren zu klein gesetzt sind oder die Schwelle zu hoch.
 
 **Zu P3 — die dünnen Magnetfelder sind überwiegend kein Defekt.** Gemessen: Von 1076 Knoten ohne `timeline_id` enthalten **5** überhaupt einen Datums- oder Zeitausdruck; von 766 ohne `entitaet_ids` nennen 76 % nichts Bekanntes. Der Korpus besteht aus Weltwissen — Entropie, Hawking-Strahlung, Raumzeit —, und Weltwissen hat weder Referenz noch Datum. Verbleibende 185 Knoten nennen einen bekannten Begriff als ganzes Wort, ohne ihn zu verlinken; das ist ein Fundlisten-Eintrag, kein Sprint.
 

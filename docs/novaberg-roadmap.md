@@ -1,6 +1,6 @@
 # Novaberg — Roadmap (Projektchronik)
 
-**Stand:** Chat 125, 2. August 2026
+**Stand:** Chat 126, 2. August 2026
 *(Die Kopfzeile stand bis Chat 109 auf „Chat 93, 21. Mai 2026" — 15 Chats hinter dem Inhalt. **Sie ist danach erneut zurückgefallen:** von Chat 110 bis 114 blieb sie auf „Chat 109" stehen, während der Inhalt weiterwuchs, und wurde in Chat 115 nachgezogen. Wer hier etwas ergänzt, zieht die Kopfzeile mit — sie driftet zuverlässig. Achtung beim Nachschlagen: Nur bis Chat 97 trägt jeder Chat eine eigene `## Chat NNN`-Überschrift; die Chats 98–108 stehen als `###`-Abschnitte unter dem Chat-97-Block, benannt nach Sprint statt nach Chat.)*
 **Pfad:** novaberg/docs/novaberg-roadmap.md
 **Single Source of Truth für abgeschlossene Arbeit.**
@@ -1980,6 +1980,45 @@ Beide Räder haben eine Nabe — den Wert ohne jede Ausprägung — und das Erge
 > **Die Zahlen selbst stehen nicht hier.** Ein Charakter-Rad ist ein Charakterprofil; aus den Summanden sind mit der Züge-Tabelle die Einzelspeichen rückrechenbar. Wer die Messung nachvollziehen will, fährt sie gegen den eigenen Bestand — sie ist in zwei Aufrufen wiederholbar.
 
 **Geschlossen:** `Bauteil 3 — Charakter-Räder im Client` (Rest benannt, siehe Backlog)
+
+---
+
+## Chat 126 (02.08.2026) — P10: der Suchschlüssel trägt Novas Antrieb ✅
+
+**Der letzte Sprint des Synapsen-Umbaus.** Bis heute suchte der Enricher im Gedächtnis mit dem rohen Anfrage-Embedding. Jetzt wird dieser Schlüssel vor der Suche in Richtung von Novas aktivierten Zielen verschoben — so stark, wie der Gesprächscluster es zulässt, und bei einer direkten Anweisung gar nicht.
+
+```
+e_nova = e_anfrage × (1 − faktor) + Σ(e_ziel × aktivierungs_staerke) × faktor
+```
+
+**Zwei Größen, ein Name — das war der eigentliche Aufräumpunkt.** Der `faktor` gilt pro Turn und kommt aus der neuen Cluster-Tabelle; die `aktivierungs_staerke` gilt pro Ziel. Im Bestand hießen beide „Gravitation". Das Feld ist deshalb überall umbenannt, nicht nur an der einen Konsumenten-Stelle, die der Sprint-Plan nennt — fünf Fundstellen, eine Quelle.
+
+**Nur die LZG-Suche bekommt den verschobenen Schlüssel.** KZG-Suche, Ziel-Aktivierung und emotionale Gravitation rechnen weiter gegen das rohe Embedding; die Aktivierung wäre sonst ihre eigene Eingabe. Aus demselben Grund ist der Ziele-Block im CharacterGraph vor die Memory-Suche gewandert.
+
+**Jeder Ausgang ist benannt.** Acht Herkunftsmarken im Pipeline-Log trennen „verschoben" von Imperativ-Override, fehlenden Zielen, unbekanntem Cluster, ungleicher Dimension, verworfenem Ergebnis und dem Turn ganz ohne LZG-Suche. Auch der Durchlauf, der nichts tut, schreibt — ein fehlender Eintrag wäre vom Stand des Vorturns nicht zu unterscheiden.
+
+**Die Spannenprüfung ist kein Übereifer.** Die Ziel-Summe wird bewusst nicht normiert, damit mehrere Ziele sich verstärken; damit kann der Ziel-Anteil den Anfrage-Anteil überwiegen. Ein Schlüssel, der von der Frage wegzeigt, wird gemeldet und **verworfen, nicht gekappt** — eine Kappung machte einen Rechenfehler von einer Randbedingung ununterscheidbar.
+
+### Was die Messung ergeben hat
+
+**Turn 1** landete auf dem Übersprungspfad, mit dem Grund in Zahlen: sieben aktive Ziele des Paares, **keines aktiviert**, Aktivierungs-Stärken 0.102 bis 0.212 gegen eine Schwelle von 0.4.
+
+**Turn 2**, bewusst nahe an einem langfristigen Ziel, überschritt sie: Stärke 0.631, Cluster `schlachtfeld` (Faktor 0.05), Cosinus zum rohen Embedding **0.9998** — eine Drehung von **1,14°**. Die gespeicherte Zerlegung rechnet sich von Hand auf denselben Wert.
+
+> **Aktivierungsschwelle und Verschiebungswirkung ziehen gegeneinander.** Ein Ziel überschreitet die Schwelle nur, wenn es der Frage schon ähnlich ist — und in Richtung eines fast parallelen Vektors zu verschieben dreht kaum. Selbst im stärksten Cluster wären es bei derselben Lage 7,8°. **Ob die Verschiebung die Trefferliste je ändert, ist nicht gemessen** und bleibt als `P10-WIRKUNG-UNGEMESSEN` offen.
+
+### Was die Umsetzung am Konzept widerlegt hat
+
+Vier Stellen, alle markiert statt gelöscht:
+
+- **§8.5.2 stimmt nicht.** Der `gv_node` läuft in beiden Graphen **nach** dem Enricher. Der Rückfall auf den Cluster des Vorturns ist damit kein Sonderfall, sondern der einzige Pfad — die Färbung hinkt der Konversation regulär einen Turn hinterher.
+- **Abnahme-Test 3 ist nicht erfüllbar.** Der HumanGraph führt gar keine Vektorsuche; es gibt dort keinen Schlüssel zu verschieben. Der Rückfall ist stattdessen im CharacterGraph geprüft.
+- **Der Marker steht in einer anderen Datei** als §8.5.3 behauptet: `salienz.dimensionen.txt` Zeile 34, nicht `salienz.task.txt`.
+- **Zwei Konzeptstellen widersprachen sich beim Ablageort** der neuen Konstante. Entschieden für `ei/dreischicht.py`, wo die vier bestehenden Cluster-Tabellen liegen.
+
+**Gegenprobe vierfach, jede Menge vorher benannt:** Verdrahtung zurückgedreht → 2 rot (2); Imperativ-Override ausgehängt → 3 rot (3); Spannenprüfung ausgehängt → 1 rot (1); Kanon-Prüfung ausgehängt → 1 rot (1).
+
+**Umfang:** Suite 956 → **978**, grün, 0 übersprungen. Nulllinie **2182 unverändert**, beide Wände sauber, die neue Testdatei bei null Treffern. Kein DDL.
 
 ---
 

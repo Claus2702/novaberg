@@ -1002,7 +1002,9 @@ Wenn sich das Format im Live-Betrieb als zu lang oder zu kurz erweist, ist es ei
 
 Das Anfrage-Embedding für die Cosine-Suche in 8.1 soll nicht roh verwendet werden. Novas Drive verschiebt es in Richtung ihrer aktivierten Ziele, bevor pgvector damit sucht. Damit hört Nova in entspannten Räumen anders zu als in der Werkstatt — sie zieht die Erinnerungen heran, die ihrer aktuellen Motivation nahe liegen.
 
-Das Konzept ist eine Erweiterung der bestehenden Drive-Mechanik. Bausteine sind im Live-Code vorhanden (siehe 8.5.5), die Verschiebungs-Mechanik selbst (Cluster-Faktor, Embedding-Mischung, HumanGraph-Fallback, Imperativ-Override) steht aus und wird im LZG-Sprint zusammen mit dem Synapsen-Umbau implementiert. Bis dahin sucht der Enricher mit dem rohen Anfrage-Embedding.
+Das Konzept ist eine Erweiterung der bestehenden Drive-Mechanik. Bausteine sind im Live-Code vorhanden (siehe 8.5.5), die Verschiebungs-Mechanik selbst (Cluster-Faktor, Embedding-Mischung, HumanGraph-Fallback, Imperativ-Override) steht aus und wird im LZG-Sprint zusammen mit dem Synapsen-Umbau implementiert. ~~Bis dahin sucht der Enricher mit dem rohen Anfrage-Embedding.~~
+
+> **Gebaut am 02.08.2026 (P10, Chat 126).** `ei/gravitation.py:wahrnehmung_verschieben()`, Tabelle in `ei/dreischicht.py`, Aufruf im Enricher vor `spreading_lesen`. Was die Umsetzung an diesem Abschnitt widerlegt hat, steht in §8.5.2 und §8.5.3; was gemessen wurde, in §8.5.6.
 
 #### 8.5.1 Berechnung der Verschiebung
 
@@ -1025,7 +1027,13 @@ Cluster-Faktor-Tabelle und phänomenologische Begründung pro Cluster siehe `nov
 
 Im HumanGraph (User-Turn) ist der GV-Node noch nicht gelaufen — ein aktueller Cluster für diesen Turn existiert nicht. Der Lesepfad verwendet den Cluster aus dem vorigen Turn als Default. Konversationen sind träge — der Modus wechselt selten abrupt. Bei abruptem Wechsel ist die erste Antwort minimal off, beim nächsten Turn passt sich Nova an.
 
-Im CharacterGraph ist der Cluster für den aktuellen Turn bereits gesetzt, weil der GV-Node vor dem Enricher läuft.
+~~Im CharacterGraph ist der Cluster für den aktuellen Turn bereits gesetzt, weil der GV-Node vor dem Enricher läuft.~~
+
+> **Widerlegt am 02.08.2026 (Chat 126).** Der `gv_node` läuft in **beiden** Graphen nach dem Enricher. Die Kantenliste in `graph/character_graph.py` führt `db_zugriff → ei_calc → enricher → … → agent_dispatch → gv_node`; beide Messturns lasen den Cluster aus `gv:detail:{user_id}:{character_id}`. **Der Rückfall auf den Vorturn ist damit kein Sonderfall, sondern der einzige Pfad** — und `_vorturn_cluster_lesen()` gab es schon, weil die Sprung-Tiefe des Spreading-Lesepfads (§8.2.1) an derselben Stelle steht.
+>
+> Zwei Folgen, die vorher nicht sichtbar waren: Der Cluster ist im Regelfall der des **vorigen** Turns, also die Färbung eine Konversation im Rückstand; und ein Turn ohne gespeicherten Cluster färbt mit `paradox` (Faktor 0.10).
+
+**Und der HumanGraph verschiebt gar nichts.** `_enrich_human` führt seit dem Umbau der Pfade keine Vektorsuche mehr — es gibt dort keinen Suchschlüssel. Der Abschnitt beschreibt damit einen Fall, den es im Code nicht gibt; die Sache selbst gilt unverändert, nur im CharacterGraph.
 
 **Zugriffsweg auf den vorigen Cluster:** Der GV-Cluster wird heute in Redis unter `gv:detail:{user_id}:{character_id}` als JSON-Payload persistiert (geschrieben in `dispatcher.py:_persist_gv_detail()`). Dieser Key trägt immer den letzten verifizierten Cluster und ist der natürliche Zugriffspunkt für den HumanGraph-Fallback. Im aktuellen Code-Bestand liest der Enricher diesen Key noch nicht — das wird mit der Verschiebungs-Implementierung mitgemacht.
 
@@ -1033,7 +1041,9 @@ Im CharacterGraph ist der Cluster für den aktuellen Turn bereits gesetzt, weil 
 
 Bei klaren Aufträgen wird `faktor` zusätzlich gedämpft auf 0.0 bis 0.05, unabhängig vom Cluster. Sonst legt Nova einen Bratwurst-Termin an, wenn der User „Zahnarzt" sagt.
 
-**Marker im Salienz-Code:** Der canonical Wert in `salienz_obj["intentionen"]`, der einen Auftrags-Charakter anzeigt, ist `"anweisung"` (Definition in `prompts/default/salienz.task.txt`: „Direkte Aufgabe, Aufforderung"). Die Wahrnehmungs-Gravitation wird diesen einen Marker prüfen — wenn `"anweisung"` in den Intentionen des aktuellen Turns vorhanden ist, greift der Override.
+**Marker im Salienz-Code:** Der canonical Wert in `salienz_obj["intentionen"]`, der einen Auftrags-Charakter anzeigt, ist `"anweisung"` (Definition in ~~`prompts/default/salienz.task.txt`~~ **`prompts/default/salienz.dimensionen.txt` Zeile 34**, korrigiert am 02.08.2026: „Direkte Aufgabe, Aufforderung"). Die Wahrnehmungs-Gravitation wird diesen einen Marker prüfen — wenn `"anweisung"` in den Intentionen des aktuellen Turns vorhanden ist, greift der Override.
+
+**Umgesetzt mit Faktor 0.0**, nicht mit einem gedämpften Wert aus der Spanne 0.0 bis 0.05: Nur die untere Grenze trägt die Zusicherung, dass mit dem rohen Embedding gesucht wird, und nur sie ist prüfbar. Konstante: `GRAVITATION_FAKTOR_ANWEISUNG`.
 
 Salienz-Werte mit weicherem Charakter (`feedback_geben`, `widerspruch`, `bestaetigung`, `planung`) bleiben dem Cluster-Faktor unterworfen. Sie sind nicht imperativ genug, um die Wahrnehmungs-Färbung komplett zu unterdrücken.
 
@@ -1069,7 +1079,32 @@ Der Code-Stand zum Zeitpunkt der Konzeption (Chat 87) ist sauber zu benennen, da
 - Imperativ-Marker-Prüfung: Wenn `"anweisung"` in `state["intentionen"]` (oder vergleichbarem Salienz-Feld) vorhanden, Cluster-Faktor auf 0.0 bis 0.05 dämpfen.
 - Empfohlene Umbenennung `aktivierte_ziele[i]["gravitation"]` → `aktivierte_ziele[i]["aktivierungs_staerke"]`. Heute ein einziger Lese-Punkt im Dispatcher betroffen.
 
-Diese Punkte werden in Punkt 9 (Implementierungs-Phasen) als eigene Sprint-Schritte aufgenommen, wenn der Brudi-Plan steht.
+Diese Punkte werden in Punkt 9 (Implementierungs-Phasen) als eigene Sprint-Schritte aufgenommen, wenn der Plan steht.
+
+**Erledigt am 02.08.2026 (P10).** Sechs von sechs, mit zwei Abweichungen:
+
+| Offener Punkt | Umsetzung |
+|---|---|
+| Ziel-Embedding verfügbar machen | in `ActivatedGoal`, **nicht** im State-Dict `aktivierte_ziele` — dort hätte es keinen Leser, und der Dispatcher legt das Dict in Redis ab |
+| Cluster-Faktor-Tabelle | `CLUSTER_GRAVITATION_FAKTOR` in `ei/dreischicht.py`, 14 Schlüssel |
+| `gv:detail`-Lesezugriff | über das vorhandene `_vorturn_cluster_lesen()`, siehe §8.5.2 |
+| Mischfunktion | `ei/gravitation.py:wahrnehmung_verschieben()` |
+| Imperativ-Marker-Prüfung | `INTENTION_ANWEISUNG`, Faktor 0.0, siehe §8.5.3 |
+| Umbenennung `gravitation` | durchgeführt, und zwar auch am Dataclass-Feld — fünf Fundstellen, eine Quelle |
+
+**Zum Ablageort der Tabelle:** Dieser Abschnitt und `novaberg-memory.md` §11.4 nennen `ei/dreischicht.py`, §13.12 nennt `config.py`. Entschieden für `ei/dreischicht.py` — dort liegen die vier bestehenden Cluster-Tabellen, `config.py` führt Skalare.
+
+#### 8.5.6 Was die erste Messung ergeben hat
+
+**Zwei Turns gegen das Produktivsystem, 02.08.2026.**
+
+Der erste landete auf dem Übersprungspfad: sieben aktive Ziele des Paares, **keines aktiviert**. Die Aktivierungs-Stärken lagen zwischen 0.102 und 0.212 gegen `GRAVITATIONS_SCHWELLE` = 0.4 — das stärkste um den Faktor 1,9 darunter.
+
+Der zweite Turn war bewusst nahe an einem langfristigen Ziel gewählt und überschritt die Schwelle: Aktivierungs-Stärke 0.631, Cluster `schlachtfeld` (Faktor 0.05), Cosinus zum rohen Embedding **0.9998** — eine Drehung von **1,14°**. Die gespeicherte Zerlegung lässt sich von Hand nachrechnen und ergibt denselben Wert.
+
+> **Der Befund: Aktivierungsschwelle und Verschiebungswirkung ziehen gegeneinander.** Ein Ziel überschreitet die Schwelle nur, wenn es der Frage schon ähnlich ist — und in Richtung eines fast parallelen Vektors zu verschieben dreht kaum. Selbst im stärksten Cluster (`glut`, 0.30) wären es bei derselben Lage 7,8°.
+
+**Ob die Verschiebung die Trefferliste je ändert, ist nicht gemessen.** Das ist die offene Frage von P10, nicht ein Defekt seiner Umsetzung. Sie ist erst an einem Korpus entscheidbar, in dem Ziele und Fragen auseinanderliegen — also an der Charakterbildungs-Messreihe.
 
 ### 8.6 Charakter-Hash-Destillation (außerhalb des Kerns)
 
@@ -1506,7 +1541,7 @@ Im `novaberg-backlog.md` wird das Epic `Memory-Kern-Umbau (Synapsen-Modell, Chat
 
 ## 13. Implementierungs-Phasen
 
-> **Stand 02.08.2026 (Chat 125): P1 bis P9 sind gebaut. Offen ist allein P10.**
+> **Stand 02.08.2026 (Chat 126): Alle zehn Sprints sind gebaut.**
 >
 > | Sprint | Stand | Belegt durch |
 > |---|---|---|
@@ -1519,9 +1554,9 @@ Im `novaberg-backlog.md` wird das Epic `Memory-Kern-Umbau (Synapsen-Modell, Chat
 > | P7 Charakter-Hash | ✅ | liest `lzg_knoten` |
 > | P8 Migration | ✅ | gegenstandslos, siehe §11 |
 > | P9 Codeschloss | ✅ | Tabelle gelöscht, 2172 Zeilen entfernt |
-> | P10 Wahrnehmungs-Gravitation | ⬜ | nicht gebaut |
+> | P10 Wahrnehmungs-Gravitation | ✅ | `wahrnehmung_verschieben`, live gemessen — **Wirkung offen, siehe §8.5.6** |
 >
-> **Die Sprint-Beschreibungen unten bleiben unverändert.** Sie sind die Absicht von damals und der Maßstab, an dem sich messen lässt, was daraus wurde — nicht der Zustand. Zwei Abweichungen sind beim Bauen von P9 aufgefallen und dort vermerkt: `agents/timeline/init.sql` legte die alte Tabelle bei jedem Serverstart neu an, und das in §13.11 zu entfernende Flag `SYNAPSEN_LESEPFAD_AKTIV` wurde nie gebaut.
+> **Die Sprint-Beschreibungen unten bleiben unverändert.** Sie sind die Absicht von damals und der Maßstab, an dem sich messen lässt, was daraus wurde — nicht der Zustand. Zwei Abweichungen sind beim Bauen von P9 aufgefallen und dort vermerkt: `agents/timeline/init.sql` legte die alte Tabelle bei jedem Serverstart neu an, und das in §13.11 zu entfernende Flag `SYNAPSEN_LESEPFAD_AKTIV` wurde nie gebaut. Drei weitere aus P10 stehen in §8.5.2, §8.5.3 und §13.12.
 
 
 Der Synapsen-Umbau wird in zehn Sprints (P1 bis P10) umgesetzt. Jeder Sprint ist eine in sich abgeschlossene Lieferung, die für sich genommen funktioniert und vorzeigbar ist. Kein Sprint hinterlässt einen nicht-funktionierenden Zwischenzustand über seinen eigenen Lauf hinaus.
@@ -1812,6 +1847,8 @@ Die folgenden Abschnitte (13.3 bis 13.12) sind **Stufe 1** der Sprint-Definition
 
 ### 13.12 P10 — Wahrnehmungs-Gravitation
 
+> **Gebaut am 02.08.2026 (Chat 126).** Vier Abweichungen von dieser Beschreibung sind beim Bauen aufgefallen und stehen an Ort und Stelle: der Ablageort der Konstante (§8.5.5), die Knotenreihenfolge (§8.5.2), der Dateizeiger des Markers (§8.5.3) und Abnahme-Test 3 unten. Was gemessen wurde, steht in §8.5.6.
+
 **Ziel.** Embedding-Verschiebung im Enricher vor der pgvector-Suche, abhängig von aktivierten Drive-Zielen, GV-Cluster-Faktor, HumanGraph-Fallback und Imperativ-Override. Vollständige Implementierung der in Konzept 8.5 spezifizierten Mechanik, basierend auf den bereits live vorhandenen Bausteinen (Drive-Ziele mit `embedding`-Spalte, `state["prompt_embedding"]`, Salienz-Marker `"anweisung"`).
 
 **Abgrenzung.** Vollständig unabhängiger Sprint, mechanisch orthogonal zum Synapsen-Umbau. Berührt nur den Enricher (Embedding-Berechnung vor `lzg_knoten`-Suche) und nicht die LZG-Tabellen oder Promotion. `CLUSTER_GRAVITATION_FAKTOR`-Tabelle wird neu in `config.py` angelegt. Vorgeschlagene Umbenennung des Feldes `gravitation` zu `aktivierungs_staerke` an der einen Konsumenten-Stelle in `dispatcher.py` wird mit erledigt.
@@ -1834,7 +1871,7 @@ Die folgenden Abschnitte (13.3 bis 13.12) sind **Stufe 1** der Sprint-Definition
 
 1. Bei aktiven Drive-Zielen mit hoher Aktivierungs-Stärke wird das Anfrage-Embedding messbar in Richtung der Ziel-Embeddings verschoben. Verschiebung ist im Pipeline-Log dokumentiert.
 2. Bei Salienz-Marker `"anweisung"` im aktuellen Turn greift der Imperativ-Override; das Anfrage-Embedding wird nicht verschoben. Pipeline-Log-Eintrag bestätigt das.
-3. Im HumanGraph (Pfad 1 unter `ASSISTANT_USER_ID`) greift der Fallback auf den zuletzt gespeicherten Cluster aus Redis; Verschiebung erfolgt mit dem Fallback-Cluster-Faktor.
+3. ~~Im HumanGraph (Pfad 1 unter `ASSISTANT_USER_ID`) greift der Fallback auf den zuletzt gespeicherten Cluster aus Redis; Verschiebung erfolgt mit dem Fallback-Cluster-Faktor.~~ **Nicht erfüllbar, festgestellt am 02.08.2026:** `_enrich_human` führt keine Vektorsuche, es gibt dort keinen Suchschlüssel. Der Redis-Rückfall ist stattdessen im **CharacterGraph** geprüft — dort ist er nach §8.5.2 der einzige Pfad.
 4. Cluster-abhängige Stärke der Verschiebung ist gemäß `CLUSTER_GRAVITATION_FAKTOR` aus `config.py` nachvollziehbar — Werkstatt-Cluster verschiebt anders als Glut.
 5. Umbenennung `gravitation` → `aktivierungs_staerke` ist in `dispatcher.py` durchgeführt, keine Konsumenten-Stelle ist gebrochen. `grep "gravitation"` im Code zeigt nur noch Verwendungen, die wirklich den Cluster-Faktor meinen.
 6. Pipeline-Log zeigt für jeden Enricher-Lauf einen Span mit allen Verschiebungs-Parametern.

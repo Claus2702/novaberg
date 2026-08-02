@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Node-Referenz Enricher
-**Stand:** 12. Juli 2026, Chat 107 (Spreading-Lesepfad dokumentiert, anker_retrieval auf 0.40 kalibriert, ivfflat-Korrektur)
+**Stand:** 2. August 2026, Chat 126 (Wahrnehmungs-Gravitation P10: der LZG-Suchschlüssel wird vor der Suche verschoben)
 **Pfad:** novaberg/docs/novaberg-node-enricher.md
 **Quellen:** nova-01-m-c.md
 **Datei:** `graph/nodes/enricher.py`
@@ -111,6 +111,24 @@ Nur wenn Einträge existieren (Vor-Check zur Kostenoptimierung):
 
 **Kalibrierung Chat 107:** `anker_retrieval min_similarity` steht auf **0.40** (vorher 0.50), kalibriert auf `nomic-embed-text-v2-moe` per Abdeckungsmessung an 100 echten Prompts (82 % der Turns mit Anker, Ø 4.1 Anker; 100 % Abdeckung ist nicht das Ziel — Cold Start ist bei ankerlosen Prompts die richtige Antwort). ⚠ Wachposten, kein Endwert.
 
+### 3.3a Wahrnehmungs-Gravitation (Synapsen-Konzept §8.5, live seit P10 / Chat 126)
+
+Der Suchschlüssel der LZG-Suche ist nicht mehr das rohe Anfrage-Embedding, sondern eine Mischung aus Frage und Novas aktivierten Zielen:
+
+```
+e_nova = e_anfrage × (1 − faktor) + Σ(e_ziel × aktivierungs_staerke) × faktor
+```
+
+`faktor` ist ein Wert **pro Turn** aus `CLUSTER_GRAVITATION_FAKTOR` (`ei/dreischicht.py`, 14 Cluster, 0.05 bis 0.30); `aktivierungs_staerke` ist ein Wert **pro Ziel** (`similarity × motivation`). Die Rechnung steht in `ei/gravitation.py:wahrnehmung_verschieben()`, der Enricher ruft sie nur auf.
+
+**Nur die LZG-Suche bekommt den verschobenen Schlüssel.** KZG-Suche, Ziel-Aktivierung und emotionale Gravitation rechnen weiter gegen das rohe Embedding — die Aktivierung wäre sonst ihre eigene Eingabe. Aus demselben Grund steht der Ziele-Block seit P10 **vor** der Memory-Suche statt danach.
+
+**Sieben Ausgänge, jeder benannt.** Das Feld `herkunft` im Pipeline-Log (`quelle="wahrnehmungs_gravitation"`) trennt sie: `verschoben`, `anweisung` (Imperativ-Override), `keine_ziele`, `kein_ziel_embedding`, `cluster_unbekannt`, `dimension_ungleich`, `verworfen_ausser_spanne` — dazu `keine_lzg_suche` für den Durchlauf ohne Suche. Jeder Ausgang außer dem ersten sucht mit dem rohen Embedding weiter; ein Durchlauf ohne Eintrag gibt es nicht.
+
+**Die Summe wird nicht normiert.** Mehrere Ziele verstärken sich, und der Ziel-Anteil kann den Anfrage-Anteil überwiegen. Ein Ergebnis, dessen Cosinus zum rohen Embedding nicht in (0.0, 1.0] liegt, wird deshalb gemeldet und **verworfen, nicht gekappt** — es zeigt von der Frage weg und ist keine Färbung mehr.
+
+**Gemessen am 02.08.2026:** Bei sieben aktiven Zielen des Paares lagen die Aktivierungs-Stärken zwischen 0.102 und 0.212 gegen eine Schwelle von 0.4 — kein Ziel aktivierte. Ein zweiter Turn nahe an einem langfristigen Ziel erreichte 0.631; die Verschiebung im Cluster `schlachtfeld` (Faktor 0.05) drehte den Suchschlüssel um **1,14°** (Cosinus 0.9998). Aktivierungsschwelle und Verschiebungswirkung ziehen gegeneinander: Ein Ziel aktiviert nur, wenn es der Frage schon ähnlich ist, und in Richtung eines fast parallelen Vektors zu verschieben dreht kaum. Ob der Mechanismus die Trefferliste je ändert, ist **nicht gemessen** (`novaberg-fundliste.md`, 02.08.).
+
 **Korrektur zur Historie (Chat 107):** Die frühere Aussage, das Anker-Retrieval „findet Anker", war faktisch falsch. Der ivfflat-Index auf `lzg_knoten` (lists=100 bei ~300 Zeilen, probes=1) durchsuchte eine einzige Liste und lieferte pro Query drei Zufallstreffer (IVFFLAT-RECALL-KOLLAPS, bugs.md); im casing-blinden Embedding-Raum lag bei Grundrauschen 0.74 praktisch jeder Zufallstreffer über der alten 0.50-Schwelle — die Treffer sahen deshalb plausibel aus. Die ivfflat-Indizes sind entfernt (Commit `0fd54a1`); bis ~10k Zeilen läuft das Retrieval exakt per Seq-Scan.
 
 ### 3.4 Charakter-Hash (nicht mehr geladen, seit Phase 2)
@@ -160,7 +178,7 @@ Die eigentliche Berechnung (Verlauf, Vektor, EI-Arousal, Modus-/Stil-Plausibilit
 | `state["raw_turns"]` | list[dict] | n.a. (Brücken-Datenstruktur, kein Personality-Wert) | Ungefilterte Session-Turns |
 | `state["user_intentionen"]` | list[str] | n.a. | Letzte Intentionen aus User-Turn |
 | `state["prompt_embedding"]` | list[float] | n.a. | 768-dim Vektor aus `user_prompt` |
-| `state["aktivierte_ziele"]` | list[dict] | n.a. | Ziele über Gravitations-Schwelle |
+| `state["aktivierte_ziele"]` | list[dict] | n.a. | Ziele über Gravitations-Schwelle. Feld je Ziel seit Chat 126 `aktivierungs_staerke` (vorher `gravitation`); das Ziel-Embedding bleibt **draußen** — es trägt die Verschiebung und hat im State keinen Leser |
 | `state["gravitationsterm"]` | float | n.a. | Aggregierter Drive-Term |
 
 **CharacterGraph (`_enrich_character`):**
@@ -171,7 +189,7 @@ Die eigentliche Berechnung (Verlauf, Vektor, EI-Arousal, Modus-/Stil-Plausibilit
 | `state["session_turns"]` | list[dict] | n.a. | Shadow-Impulse gefiltert |
 | `state["user_intentionen"]` | list[str] | n.a. | Letzte Intentionen aus User-Turn |
 | `state["prompt_embedding"]` | list[float] | n.a. | 768-dim Vektor |
-| `state["aktivierte_ziele"]` | list[dict] | n.a. | Ziele über Schwelle |
+| `state["aktivierte_ziele"]` | list[dict] | n.a. | Ziele über Schwelle, Feld `aktivierungs_staerke` (siehe HG-Tabelle) |
 | `state["gravitationsterm"]` | float | n.a. | Aggregierter Drive-Term |
 | `state["emotionale_gravitationspunkte"]` | list[dict] | n.a. | Scan ueber **KZG und LZG** auf Eintraege mit Emotion (`ei/gravitation.py`). ~~hoch-arousal~~ — **einen Arousal-Filter gibt es nicht:** §5.7 des Konzepts verlangt „Emotion ≠ neutral und Arousal ueber Schwelle", der Code liest `arousal`, fuehrt es mit und loggt es, vergleicht es aber nie. Offener Punkt, kein Defekt (Backlog-Epic). Verbraucher: Node `emotionale_gravitation` |
 | `state["memory_entries"]` | list[ContextEntry] | n.a. | Akkumulierte Memory-Quellen für den Reducer |
@@ -190,6 +208,10 @@ Die eigentliche Berechnung (Verlauf, Vektor, EI-Arousal, Modus-/Stil-Plausibilit
 **Kein LLM-Call:** Der Enricher ist bewusst LLM-frei. Alle Operationen sind deterministisch: Datenbankabfragen, Embedding-Erzeugung (via Ollama, aber das ist kein generativer Call). Das macht ihn schnell, reproduzierbar und testbar.
 
 **Reiner I/O-Node (seit Chat 59):** Keine Python-Berechnungen mehr — alles was rechnet, steht im EI-Calc. Der Enricher lädt Session-Turns aus Redis, erzeugt Embeddings via Ollama-Embed-Modell, liest aktivierte Ziele aus Postgres (`ziele`-Tabelle). Punkt.
+
+**Das gilt auch nach P10.** Die Wahrnehmungs-Gravitation (§3.3a) rechnet in `ei/gravitation.py`; im Node steht der Aufruf und die Entscheidung, welchen Schlüssel die Suche bekommt.
+
+**Der GV-Cluster kommt immer aus dem Vorturn (Chat 126).** Der `gv_node` läuft in **beiden** Graphen nach dem Enricher (§2) — der Cluster des aktuellen Turns existiert zum Zeitpunkt der Suche noch nicht. `_vorturn_cluster_lesen()` holt ihn aus `gv:detail:{user_id}:{character_id}` in Redis, mit `paradox` als Rückfall. Das Synapsen-Konzept §8.5.2 behauptete für den CharacterGraph das Gegenteil; die Kantenliste in `graph/character_graph.py` widerlegt es, und beide Messturns vom 02.08. lasen den Cluster aus Redis.
 
 **Ziele je Beziehung (seit Chat 125):** Der Enricher liest die Ziele des Paares, nicht alle Ziele Novas. Beide Pfade — `_enrich_human` und `_enrich_character` — reichen ihr Turn-Paar an `ziel_paar_bestimmen()` weiter, weil sie es in verschiedener Reihenfolge führen: `(mensch, nova)` gegen `(nova, mensch)`. Wer das Turn-Paar direkt als Ziel-Paar verwendet, liest auf einem der beiden Pfade nichts.
 
