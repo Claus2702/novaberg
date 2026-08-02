@@ -24,7 +24,7 @@ from typing import Any
 
 import redis
 
-from graph.state import ConversationState
+from graph.state import ConversationState, reiz_herkunft
 from plugins     import get_registry
 from agents.kzg.dispatch import dispatch_kzg
 from agents.delegation.dispatch import dispatch_delegation
@@ -320,13 +320,10 @@ def _session_turn_schreiben(state: ConversationState) -> None:
         if turn_topic:
             themen = [turn_topic]
 
-    # Die Herkunft steht im Ereignis, das den Lauf ausgeloest hat: Der
-    # Delivery-Pfad setzt `reiz_herkunft='eigener_impuls'`, ein Nutzer-Turn
-    # traegt den Schluessel nicht. Bisher endete diese Unterscheidung an der
-    # Logzeile des Event-Consumers; ab hier steht sie im Verlauf selbst.
-    herkunft: str = str(
-        (state.get("event_payload") or {}).get("reiz_herkunft") or "nutzer_turn"
-    )
+    # Die Herkunft steht im Ereignis, das den Lauf ausgeloest hat. Die
+    # Ableitung liegt in graph/state.py, weil der Rohturn sie ebenfalls
+    # braucht und zwei Kopien auseinanderlaufen.
+    herkunft: str = reiz_herkunft(state)
 
     session_turn_store(
         redis_client       = cfg_redis_client,
@@ -393,6 +390,12 @@ def _turn_roh_schreiben(state: ConversationState) -> None:
             "response":    response,
             "user_emotion": external.emotion.to_dict(),
             "nova_emotion": internal.emotion.to_dict(),
+            # Ohne dieses Feld ist ein Turn, den Nova von sich aus begonnen
+            # hat, im dauerhaften Protokoll nicht von einem Nutzer-Turn zu
+            # unterscheiden. Der Session-Turn traegt die Herkunft schon, aber
+            # der verfaellt — eine Messreihe wertet Tage spaeter aus, und dann
+            # zaehlt ein Impuls als Turn des Bogens, den niemand geschrieben hat.
+            "herkunft":    reiz_herkunft(state),
         }
 
         # Der fachliche Inhalt vor Novas Form — nur wenn der Verfasser lief.

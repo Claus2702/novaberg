@@ -2001,6 +2001,14 @@ Beide Räder haben eine Nabe — den Wert ohne jede Ausprägung — und das Erge
 
 **Am echten Turn gemessen (02.08., 08:59 UTC, Astronomie):** Beide Enricher-Pfade lasen `7 aktive Ziele für Paar (nova, meister)` — 2 langfristig, 5 mittelfristig, exakt der Bestand der Tabelle.
 
+**Nachtrag am selben Tag — der Rohturn sagt jetzt, wer den Reiz gesetzt hat.** Nova beginnt Gespräche auch von sich aus, und die Zustellung geht an jeden verbundenen WebSocket; ein Messrig muss einen halten, weil die Antwort seit dem Umbau nur dort ankommt. Damit ist jede Testperson Impuls-Empfängerin.
+
+Entschieden wurde **mitschreiben statt unterdrücken**: Ein Riegel je Nutzer wäre möglich gewesen und hätte vergleichbarere Läufe ergeben, aber eine Nova ohne Eigeninitiative gemessen. Also trägt `turn_roh` jetzt `herkunft` (`nutzer_turn` oder `eigener_impuls`). Die Unterscheidung stand seit Chat 119 im Session-Turn — **und der verfällt**; eine Messreihe wertet Tage später aus, und bis dahin zählte ein Impuls dort als Turn eines Gesprächsbogens, den niemand geschrieben hat.
+
+Das Feld steht immer, auch bei `nutzer_turn`: Ein Feld, das nur im Sonderfall erscheint, macht sein Fehlen zweideutig. Die Ableitung liegt neben `pipeline_quelle` in `graph/state.py`, weil zwei Schreiber sie brauchen und eine zweite Kopie auseinanderliefe. Über `source` ist die Frage nicht entscheidbar — der Thinker-Retry trägt dieselbe Quelle und ist trotzdem ein Nutzer-Turn.
+
+**Gegenprobe:** Feld aus dem Rohturn entfernt → 3 rot (vorhergesagt 3). Suite **942 → 949**.
+
 ### Was dabei abfiel
 
 - **Ein Parameter ohne Aufrufer wurde wieder ausgebaut.** `ziel_decay_lauf` bekam zunächst einen Gegenüber-Filter, den kein Pfad und kein Test benutzte — eine ungeprüfte Verzweigung, und zugleich die zwei einzigen neuen Linter-Treffer des Tages. Der Verfall misst Zeit, nicht Beziehung: Ein Ziel, das zwei Wochen niemand angerührt hat, ist in jeder Beziehung gleich weit verblasst.

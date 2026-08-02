@@ -190,6 +190,23 @@ aber **vor** dem Responder und sieht `state["response"]` nie.
 `Emotion.to_dict()`. Der Wortlaut allein ist mehrdeutig („Na super." = Freude oder
 Sarkasmus); erst der Emotionszustand *neben* der Äußerung gibt ihr eine Stimme.
 
+**Dazu `herkunft`** — `nutzer_turn` oder `eigener_impuls`. Der Session-Turn trägt
+das Feld seit Chat 119, aber er verfällt; der Rohturn ist die Zeile, die eine
+Auswertung Tage später liest. Ohne das Feld zählt ein Turn, den Nova von sich aus
+begonnen hat, dort als Turn wie jeder andere — und verschiebt in einer Messreihe
+mit festem Gesprächsbogen jede turn-indizierte Sonde dahinter.
+
+Das Feld steht **immer**, auch bei `nutzer_turn`. Ein Feld, das nur im Sonderfall
+erscheint, macht sein Fehlen zweideutig: nicht geschrieben oder nicht zutreffend.
+Das ist die Gegenrichtung zu `antwort_inhalt`, das genau deshalb weggelassen wird
+— dort ist die Abwesenheit selbst die Aussage.
+
+Die Ableitung liegt in `graph/state.py` (`reiz_herkunft()`), nicht im Dispatcher:
+Session-Turn und Rohturn brauchen dieselbe Abbildung, und eine zweite Kopie
+liefe auseinander. **Über `source` ist die Frage nicht entscheidbar** — der
+Thinker-Retry läuft mit derselben `source="character"` und ist trotzdem die
+Wiederholung einer Nutzeräußerung.
+
 **Drei Guards, alle laut (kein Silent-Skip):**
 
 | Bedingung | Verhalten |

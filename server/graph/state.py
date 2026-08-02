@@ -217,4 +217,27 @@ def pipeline_quelle(state: ConversationState) -> str:
         "character": "character",
         "agent":     "agent",
     }.get(state.get("graph_rolle", "human"), "user")
+
+
+def reiz_herkunft(state: ConversationState) -> str:
+    """Sagt, ob der Reiz dieses Laufs von aussen kam oder von Nova selbst.
+
+    Der Delivery-Pfad setzt `reiz_herkunft='eigener_impuls'` ins Ereignis; ein
+    Nutzer-Turn traegt den Schluessel nicht. **Ueber `source` ist das nicht
+    entscheidbar** — der Thinker-Retry laeuft mit derselben `source="character"`
+    und ist trotzdem die Wiederholung einer Nutzeraeusserung.
+
+    Liegt hier aus demselben Grund wie `pipeline_quelle`: Zwei Schreiber
+    brauchen dieselbe Abbildung — der Session-Turn und der Rohturn —, und eine
+    zweite Kopie laeuft zwangslaeufig auseinander. Genau dann truege derselbe
+    Turn im Verlauf eine andere Herkunft als im dauerhaften Protokoll.
+
+    Vorbedingung: keine — ein fehlendes Payload gilt als Nutzer-Turn.
+    Nachbedingung: `"eigener_impuls"` oder `"nutzer_turn"`, nie leer.
+    Fehlerfaelle: keine; ein unbekannter Wert wird durchgereicht statt
+        stillschweigend auf `"nutzer_turn"` abgebildet — sonst saehe eine neue
+        Herkunftsart aus wie ein Nutzer-Turn.
+    """
+    # ── Verarbeitung / Ausgabe ──────────────────
+    return str((state.get("event_payload") or {}).get("reiz_herkunft") or "nutzer_turn")
     
