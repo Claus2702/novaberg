@@ -10,8 +10,8 @@ import uuid
 
 from agents.base import BaseAgent, AgentState, PeriodicTask
 from config import (
+    AKTIVES_PAAR_USER_ID,
     ASSISTANT_USER_ID,
-    DEFAULT_USER_ID,
     redis_client,
     ollama_gpu_client,
     EMBED_MODEL,
@@ -105,8 +105,18 @@ class CharakterAgent(BaseAgent):
         Perspektiv-Unterscheidung User-Profil vs. Nova-Profil ueber das
         beobachter-Feld im KZG, nicht ueber Paar-Richtung.
         """
+        # Das Paar dieses Laufs kommt aus der Konfiguration, nicht aus dem
+        # Fallback fuer eine fehlende Anfrage (Chat 125). Beide Werte sind im
+        # Regelbetrieb derselbe Mensch; fuer eine Messreihe wird
+        # AKTIVES_PAAR_USER_ID umgestellt, und dann destilliert der Agent
+        # Profile und Raeder genau fuer die Testperson.
+        #
+        # Die Liste bleibt eine Liste: Der Backlog-Eintrag PAARLISTE-FEST
+        # verlangt die Iteration ueber den Bestand, und die kommt hier hinein.
+        # Bis dahin ist die Menge bewusst einelementig — mehrere Paare je Lauf
+        # brauchen erst eine benannte Obergrenze.
         paare: list[tuple[str, str]] = [
-            (DEFAULT_USER_ID, ASSISTANT_USER_ID),
+            (AKTIVES_PAAR_USER_ID, ASSISTANT_USER_ID),
         ]
         gesamt_destilliert: int = 0
 

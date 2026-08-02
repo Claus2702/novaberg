@@ -51,6 +51,23 @@ ASSISTANT_USER_ID: str = os.getenv("ASSISTANT_USER_ID", "nova")
 # Welcher User ist der Standard-Mensch (Fallback wenn kein user_id übergeben wird)
 DEFAULT_USER_ID:   str = os.getenv("DEFAULT_USER_ID",   "meister")
 
+# Welches Paar bedient Pixie? Der Mensch der EINEN Beziehung, in der die
+# Hintergrundarbeit dieses Laufs stattfindet — Promotion, Destillation,
+# Wissensluecken. Gespraeche sind davon unberuehrt: Der Chat-Endpunkt nimmt die
+# `user_id` je Anfrage, mehrere Menschen koennen gleichzeitig schreiben.
+#
+# Der Unterschied zu DEFAULT_USER_ID ist die Richtung: Jener ist ein FALLBACK
+# fuer eine fehlende Angabe, dieser eine ENTSCHEIDUNG darueber, wessen Arbeit
+# laeuft. Beide traegt heute derselbe Mensch, und genau deshalb braucht es zwei
+# Namen — sonst verschiebt eine Aenderung am Fallback still den Arbeitsbereich
+# der Hintergrundagenten.
+#
+# Fuer eine Messreihe wird dieser Wert je Lauf umgestellt und der Server neu
+# gestartet. Was in den Queues der uebrigen Paare liegt, bleibt liegen und
+# laeuft ab, sobald sie wieder an der Reihe sind: Die KZG-TTL reicht von sieben
+# bis dreissig Tagen.
+AKTIVES_PAAR_USER_ID: str = os.getenv("AKTIVES_PAAR_USER_ID", DEFAULT_USER_ID)
+
 redis_client:   redis.Redis     = redis.from_url(REDIS_URL, decode_responses=True)
 llm_lock:       threading.Lock  = threading.Lock()
 shutdown_event: threading.Event = threading.Event()

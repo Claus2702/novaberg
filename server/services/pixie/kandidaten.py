@@ -19,6 +19,8 @@ import logging
 import time
 
 from config import (
+    AKTIVES_PAAR_USER_ID,
+    ASSISTANT_USER_ID,
     PIXIE_AGING_MAX_ZUSCHLAG,
     PIXIE_AGING_PRO_STUNDE,
     redis_client,
@@ -57,21 +59,41 @@ def kandidaten_sammeln() -> list[dict]:
 
 
 def _aktive_user_ids() -> list[str]:
-    """Gibt alle aktiven User-IDs zurueck.
+    """Gibt die beiden Seiten des konfigurierten Paares zurueck.
 
-    Aktuell: Alle User mit last_activity in Redis (TTL 2h).
-    Fallback: leere Liste.
+    Bis Chat 125 war das jeder Nutzer mit `last_activity` in Redis (TTL 2h).
+    Damit bediente Pixie jeden, der zufaellig in den letzten zwei Stunden
+    geschrieben hatte — bei einer Messreihe also die Testperson **und** den
+    produktiven Nutzer, mit einem einzigen Heartbeat fuer beide.
+
+    Jetzt entscheidet die Konfiguration (`AKTIVES_PAAR_USER_ID`), und der Lauf
+    ist damit in sich geschlossen: Was in den Queues anderer Paare liegt,
+    bleibt liegen, bis sie an der Reihe sind. Verloren geht dabei nichts — die
+    Auftraege stehen in Redis, und die KZG-TTL reicht von sieben bis dreissig
+    Tagen.
+
+    **Beide Seiten**, weil das Paar zwei Subjekte hat: Der Mensch traegt seine
+    Auftraege unter `queue:{mensch}`, Novas eigene Erkenntnisse liegen unter
+    `queue:nova`. Wer nur die Menschenseite bedient, laesst Novas Selbstbild
+    stehen.
+
+    Nachbedingung: Ein bis zwei Kennungen, ohne Dubletten, keine leere.
     """
-    user_ids: list[str] = []
+    seiten: list[str] = [AKTIVES_PAAR_USER_ID, ASSISTANT_USER_ID]
 
-    for key in redis_client.scan_iter(match="last_activity:*"):
-        if isinstance(key, bytes):
-            key = key.decode("utf-8")
-        uid = key.split(":", 1)[1] if ":" in key else ""
-        if uid:
-            user_ids.append(uid)
+    # ── Ausgabe-Verifikation ────────────────────
+    aktive: list[str] = []
+    for kennung in seiten:
+        if kennung and kennung not in aktive:
+            aktive.append(kennung)
 
-    return user_ids
+    if not aktive:
+        logger.error(
+            "Pixie: kein aktives Paar konfiguriert — AKTIVES_PAAR_USER_ID und "
+            "ASSISTANT_USER_ID sind beide leer, kein Queue-Kandidat wird gesammelt"
+        )
+
+    return aktive
 
 
 def _queue_peek(user_id: str) -> dict | None:
