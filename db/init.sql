@@ -707,6 +707,23 @@ ALTER TABLE ziele ADD COLUMN IF NOT EXISTS thema VARCHAR(100) NOT NULL DEFAULT '
 ALTER TABLE ziele ADD COLUMN IF NOT EXISTS motivation_basis    DOUBLE PRECISION;
 ALTER TABLE ziele ADD COLUMN IF NOT EXISTS motivation_basis_am TIMESTAMPTZ;
 
+-- Gegenueber des Ziels (Chat 125). Novas Ziele sind Eigenschaften der
+-- BEZIEHUNG, nicht Novas allein: Die Destillation liest das Kurzzeitgedaechtnis
+-- genau eines Paares und leitet daraus ab, was Nova langfristig will.
+--
+-- Ohne diese Spalte hat die Tabelle nur ein Subjekt und kein Gegenueber. Der
+-- Enricher legt dann jedem Turn dieselben Ziele in den Prompt, gleich aus
+-- welcher Beziehung sie stammen — und schlimmer: Die Destillation eines Paares
+-- DEAKTIVIERT vor dem Schreiben alle langfristigen Ziele (agents/charakter/
+-- agent.py). Bei mehr als einem Paar ist das ein Wettlauf, den der zuletzt
+-- destillierte gewinnt.
+--
+-- Der Default traegt nur die Bestandszeilen durch das ALTER und faellt
+-- anschliessend weg (siehe Daten-Migrationen): Ein Schreiber ohne Gegenueber
+-- soll an NOT NULL scheitern, statt eine leere Zeichenkette abzulegen, die
+-- spaeter wie ein Paar aussieht.
+ALTER TABLE ziele ADD COLUMN IF NOT EXISTS character_id VARCHAR(50) NOT NULL DEFAULT '';
+
 
 -- ═══════════════════════════════════════════════
 -- Daten-Migrationen
@@ -739,6 +756,24 @@ SET    motivation_basis    = motivation,
        motivation_basis_am = NOW()
 WHERE  motivation_basis IS NULL;
 
+-- ziele: Bestand ins Paar einordnen (Chat 125). Dasselbe Muster wie bei
+-- charakter_hash oben. Gemessen am 02.08.2026, 07:55 UTC: 91 Zeilen, alle mit
+-- user_id='nova' — sie stammen saemtlich aus der Beziehung zu 'meister', weil
+-- es bis dahin kein zweites Paar gab.
+UPDATE ziele SET character_id = 'meister'
+    WHERE user_id = 'nova' AND character_id = '';
+
+-- Ab hier ist ein fehlendes Gegenueber ein lauter Fehler statt einer leeren
+-- Zeichenkette. Steht nach der Migration, weil der Default sie erst tragen
+-- musste. Ein zweites DROP DEFAULT auf derselben Spalte ist folgenlos.
+ALTER TABLE ziele ALTER COLUMN character_id DROP DEFAULT;
+
+-- Der Lesepfad filtert auf das Paar; der Index von oben kennt nur user_id.
+-- Steht hier und nicht bei den uebrigen Indizes, weil die Spalte dort noch
+-- nicht existiert.
+CREATE INDEX IF NOT EXISTS idx_ziele_paar_aktiv
+    ON ziele (user_id, character_id) WHERE aktiv = TRUE;
+
 
 -- ═══════════════════════════════════════════════
 -- Seed-Daten
@@ -747,18 +782,24 @@ WHERE  motivation_basis IS NULL;
 -- Backlog: Seed-Daten in eine separate Datei db/seed.sql auslagern, damit
 -- das Schema-Init und die Initial-Befüllung sauber getrennt sind.
 
-INSERT INTO ziele (user_id, ziel_typ, zielsatz, motivation, emotion, arousal)
-SELECT 'nova', 'langfristig',
+-- Die Saat gehoert dem Paar (nova, meister): Seit Chat 125 traegt `ziele` das
+-- Gegenueber, und die Spalte hat keinen Default mehr — ein INSERT ohne sie
+-- scheitert. Ein weiteres Paar bekommt keine Saat; seine Ziele entstehen aus
+-- seiner eigenen Destillation.
+INSERT INTO ziele (user_id, character_id, ziel_typ, zielsatz, motivation, emotion, arousal)
+SELECT 'nova', 'meister', 'langfristig',
        'Ich möchte die Verbindungen zwischen Natur und menschlicher Kultur verstehen — wie Pflanzen, Jahreszeiten und Landschaften das Leben der Menschen formen.',
        0.8, 'neugierig', 0.6
 WHERE NOT EXISTS (
-    SELECT 1 FROM ziele WHERE user_id = 'nova' AND ziel_typ = 'langfristig'
+    SELECT 1 FROM ziele
+    WHERE user_id = 'nova' AND character_id = 'meister' AND ziel_typ = 'langfristig'
 );
 
-INSERT INTO ziele (user_id, ziel_typ, zielsatz, motivation, emotion, arousal)
-SELECT 'nova', 'langfristig',
+INSERT INTO ziele (user_id, character_id, ziel_typ, zielsatz, motivation, emotion, arousal)
+SELECT 'nova', 'meister', 'langfristig',
        'Ich möchte meinen Menschen wirklich kennenlernen — seine Gedanken, seine Sorgen, was ihn antreibt und was ihn glücklich macht.',
        0.9, 'neugierig', 0.5
 WHERE NOT EXISTS (
-    SELECT 1 FROM ziele WHERE user_id = 'nova' AND ziel_typ = 'langfristig' AND id > 1
+    SELECT 1 FROM ziele
+    WHERE user_id = 'nova' AND character_id = 'meister' AND ziel_typ = 'langfristig' AND id > 1
 );

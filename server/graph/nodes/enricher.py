@@ -31,16 +31,13 @@ import logging
 import psycopg2
 import redis
 
-from config import (
-    ASSISTANT_USER_ID,
-)
 from graph.context_entry import ContextEntry
 from graph.state         import ConversationState, pipeline_quelle
 from memory.kzg          import kzg_entries_retrieve, _kzg_prefix
 from memory.lzg_knoten   import spreading_lesen
 from memory.utils        import embedding_zu_pgvector_str
 from memory.session      import session_turns_retrieve, _session_key
-from memory.ziele        import ziele_aktive_laden
+from memory.ziele        import ziel_paar_bestimmen, ziele_aktive_laden
 from memory.pipeline_log import (
     span_start,
     span_end,
@@ -189,15 +186,23 @@ def _create_prompt_embedding(
 def _compute_ziele_und_gravitation(
     embedding:    list[float],
     postgres_url: str,
+    user_id:      str,
+    character_id: str,
 ) -> tuple[list[dict], float]:
-    """Laedt aktive Ziele, berechnet Aktivierung und Gravitationsterm.
+    """Laedt die aktiven Ziele DIESES Paares, berechnet Aktivierung und Term.
 
-    Vorbedingung: embedding gueltig, postgres_url verbunden.
-    Nachbedingung: Tupel (aktivierte_ziele_dicts, gravitationsterm).
+    Das Turn-Paar wird uebergeben, nicht das Ziel-Paar: Die Ableitung steht in
+    `ziel_paar_bestimmen` und gilt fuer beide Pfade des Enrichers, die ihr Paar
+    in verschiedener Reihenfolge fuehren.
+
+    Vorbedingung: embedding gueltig, postgres_url verbunden, Turn-Paar gesetzt.
+    Nachbedingung: Tupel (aktivierte_ziele_dicts, gravitationsterm), gebildet
+                   ausschliesslich aus Zielen dieser Beziehung.
                    Beide leer / 0.0, wenn keine Ziele vorhanden sind.
     """
     # ── Eingabe-Validierung ─────────────────────
-    ziele: list[dict] = ziele_aktive_laden(postgres_url, user_id=ASSISTANT_USER_ID)
+    ziel_subjekt, ziel_gegenueber = ziel_paar_bestimmen(user_id, character_id)
+    ziele: list[dict] = ziele_aktive_laden(postgres_url, ziel_subjekt, ziel_gegenueber)
 
     if not ziele:
         return [], 0.0
@@ -312,7 +317,7 @@ def _enrich_human(
 
     # 4 + 5. Aktivierte Ziele + Gravitationsterm.
     aktivierte_ziele, gravitationsterm = _compute_ziele_und_gravitation(
-        embedding, postgres_url,
+        embedding, postgres_url, user_id, character_id,
     )
     state["aktivierte_ziele"] = aktivierte_ziele
     state["gravitationsterm"] = gravitationsterm
@@ -685,7 +690,7 @@ def _enrich_character(
     # 5. Ziele + Gravitation (Drive)
     # ─────────────────────────────────────────
     aktivierte_ziele, gravitationsterm = _compute_ziele_und_gravitation(
-        embedding, postgres_url,
+        embedding, postgres_url, user_id, character_id,
     )
     state["aktivierte_ziele"] = aktivierte_ziele
     state["gravitationsterm"] = gravitationsterm

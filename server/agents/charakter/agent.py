@@ -294,9 +294,12 @@ class CharakterAgent(BaseAgent):
                             )
 
                             if neue_ziele:
-                                # Alte langfristige Ziele deaktivieren
+                                # Alte langfristige Ziele DIESES Paares
+                                # deaktivieren. Das Gegenueber ist Pflicht:
+                                # Ohne es raeumte die Destillation eines Paares
+                                # die Ziele jedes anderen ab (Chat 125).
                                 alte_ziele: list[dict] = ziele_aktive_laden(
-                                    POSTGRES_URL, user_id=ASSISTANT_USER_ID,
+                                    POSTGRES_URL, ASSISTANT_USER_ID, kanon_user_id,
                                 )
                                 for altes in alte_ziele:
                                     if altes["ziel_typ"] == "langfristig":
@@ -319,6 +322,7 @@ class CharakterAgent(BaseAgent):
                                     ziel_speichern(
                                         postgres_url=POSTGRES_URL,
                                         user_id=ASSISTANT_USER_ID,
+                                        character_id=kanon_user_id,
                                         ziel_typ="langfristig",
                                         zielsatz=z["zielsatz"],
                                         motivation=0.8,

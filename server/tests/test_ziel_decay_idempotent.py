@@ -37,8 +37,11 @@ import psycopg2
 from config import POSTGRES_URL
 from memory.ziele import motivation_berechnen, ziel_decay_lauf
 
-ZIELE_LOGGER: str = "ki_server.memory.ziele"
-TEST_USER:    str = "test_ziel_decay"
+ZIELE_LOGGER:   str = "ki_server.memory.ziele"
+TEST_USER:      str = "test_ziel_decay"
+# Eigenes Gegenueber, seit `ziele` das Paar traegt (Chat 125). Die Spalte hat
+# keinen Default mehr — ein INSERT ohne sie scheitert an NOT NULL.
+TEST_CHARACTER: str = "test_ziel_decay_gegenueber"
 
 
 class TestMotivationBerechnen(unittest.TestCase):
@@ -102,16 +105,18 @@ class TestZielDecayLauf(unittest.TestCase):
             # mit demselben Anker als Gegenstueck fuer die Allowlist.
             cur.execute(
                 """
-                INSERT INTO ziele (user_id, ziel_typ, zielsatz, motivation,
-                                   motivation_basis, motivation_basis_am)
-                VALUES (%s, 'mittelfristig', 'Testziel mittelfristig', 0.8, 0.8,
+                INSERT INTO ziele (user_id, character_id, ziel_typ, zielsatz,
+                                   motivation, motivation_basis, motivation_basis_am)
+                VALUES (%s, %s, 'mittelfristig', 'Testziel mittelfristig', 0.8, 0.8,
                         NOW() - INTERVAL '14 days'),
-                       (%s, 'langfristig',   'Testziel langfristig',   0.8, 0.8,
+                       (%s, %s, 'langfristig',   'Testziel langfristig',   0.8, 0.8,
                         NOW() - INTERVAL '14 days'),
-                       (%s, 'kurzfristig',   'Testziel kurzfristig',   0.8, 0.8,
+                       (%s, %s, 'kurzfristig',   'Testziel kurzfristig',   0.8, 0.8,
                         NOW() - INTERVAL '14 days')
                 """,
-                (TEST_USER, TEST_USER, TEST_USER),
+                (TEST_USER, TEST_CHARACTER,
+                 TEST_USER, TEST_CHARACTER,
+                 TEST_USER, TEST_CHARACTER),
             )
         self.conn.commit()
 

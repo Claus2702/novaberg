@@ -319,7 +319,11 @@ class RechercheAgent(BaseAgent):
         # -- 8. Mittelfristiges Ziel extrahieren (Drive) --
         try:
             # Max-Check: nicht über ZIEL_MAX_MITTELFRISTIG
-            aktive_ziele: list[dict] = ziele_aktive_laden(POSTGRES_URL, user_id=ASSISTANT_USER_ID)
+            # Novas Ziele stehen je Beziehung. `user_id` ist hier der Mensch,
+            # in dessen Gespraech die Recherche lief — also das Gegenueber.
+            aktive_ziele: list[dict] = ziele_aktive_laden(
+                POSTGRES_URL, ASSISTANT_USER_ID, user_id,
+            )
             mittelfristige: int = sum(1 for z in aktive_ziele if z["ziel_typ"] == "mittelfristig")
 
             if mittelfristige < ZIEL_MAX_MITTELFRISTIG:
@@ -344,6 +348,7 @@ class RechercheAgent(BaseAgent):
                     ziel_speichern(
                         postgres_url=POSTGRES_URL,
                         user_id=ASSISTANT_USER_ID,
+                        character_id=user_id,
                         ziel_typ="mittelfristig",
                         zielsatz=ziel_extrakt["zielsatz"],
                         motivation=ziel_extrakt.get("motivation", 0.6),

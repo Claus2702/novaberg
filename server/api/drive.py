@@ -95,12 +95,16 @@ def GvDetailLesen(user_id: str = DEFAULT_USER_ID, character_id: str = ASSISTANT_
 
 
 @router.get("/goals")
-def GoalsLesen():
-    """Liefert alle Ziele und den aktuellen kurzfristigen Drive-Zustand.
+def GoalsLesen(user_id: str = DEFAULT_USER_ID):
+    """Liefert alle Ziele einer Beziehung und den kurzfristigen Drive-Zustand.
 
     Lang- und mittelfristige Ziele kommen aus PostgreSQL (aktiv + inaktiv,
     sortiert nach `active DESC, motivation DESC`). Kurzfristige Daten
     kommen aus Redis (zuletzt geschriebener Snapshot vom Dispatcher).
+
+    `user_id` ist der **Mensch** der Beziehung, nicht das Subjekt der Zeile:
+    Novas Ziele stehen als `(nova, mensch)`. Der Vorgabewert haelt das
+    bisherige Verhalten fuer den Standard-Menschen.
     """
     long_term: list[dict] = []
     mid_term:  list[dict] = []
@@ -114,10 +118,10 @@ def GoalsLesen():
             SELECT id, zielsatz, motivation, emotion, arousal, aktiv,
                    erstellt_am, aktualisiert_am, ziel_typ
             FROM ziele
-            WHERE user_id = %s
+            WHERE user_id = %s AND character_id = %s
             ORDER BY ziel_typ, aktiv DESC, motivation DESC
             """,
-            (ASSISTANT_USER_ID,),
+            (ASSISTANT_USER_ID, user_id),
         )
 
         rows = cursor.fetchall()
@@ -133,7 +137,8 @@ def GoalsLesen():
 
         logger.info(
             f"Drive/Goals: {len(long_term)} langfristig, "
-            f"{len(mid_term)} mittelfristig geladen"
+            f"{len(mid_term)} mittelfristig geladen "
+            f"— Paar ({ASSISTANT_USER_ID}, {user_id})"
         )
 
     except Exception as fehler:
@@ -143,7 +148,7 @@ def GoalsLesen():
             content={"error": f"Ziele konnten nicht geladen werden: {fehler}"},
         )
 
-    short_term: dict | None = _short_term_load(DEFAULT_USER_ID, ASSISTANT_USER_ID)
+    short_term: dict | None = _short_term_load(user_id, ASSISTANT_USER_ID)
 
     return {
         "long_term":  long_term,
@@ -325,11 +330,15 @@ def _aggregate_dominant_topics(
 
 
 @router.get("/gravity_map")
-def GravityMapLesen():
+def GravityMapLesen(user_id: str = DEFAULT_USER_ID):
     """Liefert Turns + Ziele auf einer 2D-Ebene plus Gravitations-Connections.
 
+    `user_id` ist der Mensch der Beziehung; Turns und Ziele stammen beide aus
+    ihr. Ohne diesen Parameter zeigte die Karte die Turns des einen Paares mit
+    den Zielen aller.
+
     Datenfluss:
-      1. Session-Turns aus Redis (Default-Perspektive: meister/nova).
+      1. Session-Turns aus Redis (Vorgabe-Perspektive: meister/nova).
       2. User-Turns mit Embedding filtern, Themen sammeln.
       3. Aktive Ziele aus PostgreSQL laden (mit Embedding).
       4. Alle Embeddings gemeinsam per Force-Directed Layout auf 2D legen
@@ -342,7 +351,6 @@ def GravityMapLesen():
     sinnvolle Projektion. Wir geben dann eine leere Turn-Liste zurueck und
     streuen die Ziele entlang der x-Achse mit y=0.5.
     """
-    user_id:      str = DEFAULT_USER_ID
     character_id: str = ASSISTANT_USER_ID
 
     # ── 1+2. Session-Turns: User-Turns mit Embedding rausziehen ──
@@ -377,7 +385,7 @@ def GravityMapLesen():
         })
 
     # ── 3. Aktive Ziele mit Embedding laden ──
-    ziele_raw: list[dict] = ziele_aktive_laden(POSTGRES_URL, user_id=ASSISTANT_USER_ID)
+    ziele_raw: list[dict] = ziele_aktive_laden(POSTGRES_URL, ASSISTANT_USER_ID, user_id)
 
     goals: list[dict] = []
     for ziel in ziele_raw:

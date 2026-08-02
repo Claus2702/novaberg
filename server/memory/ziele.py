@@ -11,11 +11,69 @@ from datetime import datetime, timezone
 
 import psycopg2
 
-from config import ZIEL_MITTELFRISTIG_DECAY_TAGE
+from config import ASSISTANT_USER_ID, DEFAULT_USER_ID, ZIEL_MITTELFRISTIG_DECAY_TAGE
 from services.model_services import model_service, EmbedRequest
 from memory.utils import embedding_zu_pgvector_str
 
 logger = logging.getLogger("ki_server.memory.ziele")
+
+
+def ziel_paar_bestimmen(turn_user_id: str, turn_character_id: str) -> tuple[str, str]:
+    """Leitet das Ziel-Paar aus dem Paar eines Turns ab.
+
+    Novas Ziele stehen nach dem Paar-Schema als `(Subjekt=nova,
+    Gegenueber=Mensch)` — sie sind Aussagen ueber Nova im Kontext genau einer
+    Beziehung (`novaberg-convention-paar-schema.md` §2).
+
+    Ein Turn nennt sein Paar dagegen in der Reihenfolge seines eigenen
+    Subjekts: Der Human-Pfad laeuft als `(meister, nova)`, Novas eigener Pfad
+    als `(nova, meister)`. Wer das Ziel-Paar aus dem Turn-Paar direkt
+    uebernimmt, liest auf dem einen Pfad die Ziele und auf dem anderen nichts.
+    Deshalb steht die Ableitung hier und nicht in vier Aufrufern.
+
+    Vorbedingung: Mindestens eine der beiden Kennungen ist gesetzt.
+    Nachbedingung: Ein Tupel `(nova, gegenueber)`; das Gegenueber ist nie Nova
+        selbst.
+    Fehlerfaelle: Beide Kennungen leer oder beide Nova — `logger.error` und
+        Rueckfall auf `DEFAULT_USER_ID` als Gegenueber. Der Rueckfall ist
+        benannt, nicht still: Eine Ausnahme wuerde hier einen laufenden Turn
+        kappen, und ein leeres Gegenueber laege als Zeile in der Datenbank.
+
+    Args:
+        turn_user_id: Subjekt des Turns.
+        turn_character_id: Gegenueber des Turns.
+
+    Returns:
+        `(subjekt, gegenueber)` fuer den Zugriff auf `ziele`.
+    """
+    # ── Eingabe-Validierung ─────────────────────
+    if not turn_user_id and not turn_character_id:
+        logger.error(
+            "ziel_paar_bestimmen: beide Kennungen leer — Gegenueber faellt auf "
+            f"'{DEFAULT_USER_ID}' zurueck, die gelesenen Ziele koennen fremde sein"
+        )
+        return ASSISTANT_USER_ID, DEFAULT_USER_ID
+
+    # ── Verarbeitung ────────────────────────────
+    # Der Mensch ist die Kennung, die nicht Nova und nicht leer ist — gleich
+    # auf welcher Seite des Turn-Paares er steht. Die Reihenfolge entscheidet
+    # nur, wenn beide Seiten Menschen nennen; dann gilt das Subjekt des Turns.
+    kandidaten: list[str] = [
+        kennung for kennung in (turn_user_id, turn_character_id)
+        if kennung and kennung != ASSISTANT_USER_ID
+    ]
+    gegenueber: str = kandidaten[0] if kandidaten else ""
+
+    # ── Ausgabe-Verifikation ────────────────────
+    if not gegenueber or gegenueber == ASSISTANT_USER_ID:
+        logger.error(
+            f"ziel_paar_bestimmen: kein Gegenueber in ({turn_user_id!r}, "
+            f"{turn_character_id!r}) — Rueckfall auf '{DEFAULT_USER_ID}'. "
+            f"Ein Turn ohne Menschen ist kein Turn"
+        )
+        return ASSISTANT_USER_ID, DEFAULT_USER_ID
+
+    return ASSISTANT_USER_ID, gegenueber
 
 
 def embed_text_bauen(zielsatz: str) -> str:
@@ -97,17 +155,42 @@ def motivation_berechnen(
     return motivation
 
 
-def ziele_aktive_laden(postgres_url: str, user_id: str = "nova") -> list[dict]:
-    """Lädt alle aktiven Ziele eines Users mit Embedding.
+def ziele_aktive_laden(
+    postgres_url: str,
+    user_id:      str,
+    character_id: str,
+) -> list[dict]:
+    """Lädt alle aktiven Ziele eines Paares mit Embedding.
+
+    Beide Kennungen sind Pflicht und haben bewusst keinen Vorgabewert
+    (`novaberg-convention-paar-schema.md` §5: „Defaults sind ein Code-Smell").
+    Ein Vorgabewert fuer das Gegenueber liesse den Aufrufer glauben, er habe
+    das Paar genannt, waehrend er die Ziele einer fremden Beziehung liest.
+
+    Vorbedingung: Beide Kennungen sind gesetzt.
+    Nachbedingung: Ausschliesslich Ziele dieses Paares, aktiv, nach Typ und
+        Motivation sortiert.
+    Fehlerfaelle: Leere Kennung — `logger.error`, leere Liste, kein Zugriff.
+        DB-Fehler — `logger.exception`, leere Liste.
 
     Args:
         postgres_url: PostgreSQL-Verbindungs-URL.
-        user_id: User-ID (default "nova" — Ziele sind Novas eigene).
+        user_id: Subjekt — bei Novas Zielen `ASSISTANT_USER_ID`.
+        character_id: Gegenueber — der Mensch der Beziehung.
 
     Returns:
         Liste von Ziel-Dicts mit id, ziel_typ, zielsatz, motivation,
         emotion, arousal, embedding, erstellt_am.
     """
+    # ── Eingabe-Validierung ─────────────────────
+    if not user_id or not character_id:
+        logger.error(
+            f"ziele_aktive_laden: unvollstaendiges Paar ({user_id!r}, "
+            f"{character_id!r}) — nichts geladen. Ohne Gegenueber waere jede "
+            f"Zeile ein Treffer"
+        )
+        return []
+
     try:
         conn   = psycopg2.connect(postgres_url)
         cursor = conn.cursor()
@@ -117,10 +200,10 @@ def ziele_aktive_laden(postgres_url: str, user_id: str = "nova") -> list[dict]:
             SELECT id, ziel_typ, zielsatz, motivation, emotion, arousal,
                    embedding::text, erstellt_am, COALESCE(thema, '')
             FROM ziele
-            WHERE user_id = %s AND aktiv = TRUE
+            WHERE user_id = %s AND character_id = %s AND aktiv = TRUE
             ORDER BY ziel_typ, motivation DESC
             """,
-            (user_id,),
+            (user_id, character_id),
         )
 
         rows = cursor.fetchall()
@@ -149,7 +232,8 @@ def ziele_aktive_laden(postgres_url: str, user_id: str = "nova") -> list[dict]:
             })
 
         logger.info(
-            f"Ziele geladen: {len(ziele)} aktive Ziele für '{user_id}' "
+            f"Ziele geladen: {len(ziele)} aktive Ziele für Paar "
+            f"({user_id}, {character_id}) "
             f"({sum(1 for z in ziele if z['ziel_typ'] == 'langfristig')} lang, "
             f"{sum(1 for z in ziele if z['ziel_typ'] == 'mittelfristig')} mittel)"
         )
@@ -163,6 +247,7 @@ def ziele_aktive_laden(postgres_url: str, user_id: str = "nova") -> list[dict]:
 def ziel_speichern(
     postgres_url: str,
     user_id:      str,
+    character_id: str,
     ziel_typ:     str,
     zielsatz:     str,
     motivation:   float,
@@ -173,9 +258,20 @@ def ziel_speichern(
 ) -> int | None:
     """Speichert ein neues Ziel in PostgreSQL.
 
+    Das Gegenueber ist Pflicht: Die Spalte `character_id` traegt seit Chat 125
+    keinen Default mehr, ein INSERT ohne sie scheitert an NOT NULL. Das ist
+    Absicht — ein Ziel ohne Beziehung waere in jedem Turn sichtbar.
+
+    Vorbedingung: Beide Kennungen gesetzt, `zielsatz` nicht leer.
+    Nachbedingung: Genau eine neue Zeile, deren Anker und materialisierter Wert
+        identisch sind.
+    Fehlerfaelle: Leere Kennung — `logger.error`, kein Schreibversuch, None.
+        DB-Fehler — `logger.exception`, None.
+
     Args:
         postgres_url: PostgreSQL-Verbindungs-URL.
-        user_id: User-ID (typisch "nova").
+        user_id: Subjekt — bei Novas Zielen `ASSISTANT_USER_ID`.
+        character_id: Gegenueber — der Mensch der Beziehung.
         ziel_typ: "langfristig" oder "mittelfristig".
         zielsatz: Der Ziel-Text (1-2 Sätze).
         motivation: Motivationsstärke (0.0-1.0).
@@ -187,6 +283,14 @@ def ziel_speichern(
     Returns:
         ID des neuen Eintrags, oder None bei Fehler.
     """
+    # ── Eingabe-Validierung ─────────────────────
+    if not user_id or not character_id:
+        logger.error(
+            f"ziel_speichern: unvollstaendiges Paar ({user_id!r}, "
+            f"{character_id!r}) — nichts geschrieben, '{zielsatz[:60]}' verworfen"
+        )
+        return None
+
     try:
         conn   = psycopg2.connect(postgres_url)
         cursor = conn.cursor()
@@ -197,16 +301,16 @@ def ziel_speichern(
 
         cursor.execute(
             """
-            INSERT INTO ziele (user_id, ziel_typ, zielsatz, motivation,
+            INSERT INTO ziele (user_id, character_id, ziel_typ, zielsatz, motivation,
                                motivation_basis, motivation_basis_am,
                                emotion, arousal, thema, embedding)
-            VALUES (%s, %s, %s, %s, %s, NOW(), %s, %s, %s, %s::vector)
+            VALUES (%s, %s, %s, %s, %s, %s, NOW(), %s, %s, %s, %s::vector)
             RETURNING id
             """,
             # Anker und materialisierter Wert sind beim Anlegen identisch: Der
             # Verfall ueber null Tage ist exakt 1.0. Beide werden gesetzt, weil
             # ein NULL-Anker "nie gesetzt" bedeutet und laut gemeldet wird.
-            (user_id, ziel_typ, zielsatz, motivation,
+            (user_id, character_id, ziel_typ, zielsatz, motivation,
              motivation, emotion, arousal, thema, embedding_str),
         )
 
@@ -215,8 +319,8 @@ def ziel_speichern(
         conn.close()
 
         logger.info(
-            f"Ziel gespeichert: id={ziel_id}, typ={ziel_typ}, "
-            f"motivation={motivation:.2f}, '{zielsatz[:60]}'"
+            f"Ziel gespeichert: id={ziel_id}, paar=({user_id}, {character_id}), "
+            f"typ={ziel_typ}, motivation={motivation:.2f}, '{zielsatz[:60]}'"
         )
         return ziel_id
 
@@ -307,10 +411,17 @@ def ziel_decay_lauf(
     Ziele ohne Anker werden NICHT angefasst und laut gezaehlt: Sie stammen aus
     der Zeit vor dem Ankerfeld oder von einem Schreiber, der es nicht setzt.
 
-    `user_id=None` laeuft ueber alle Nutzer — das ist der Produktivfall, denn
-    Ziele gehoeren Nova. Der Parameter existiert, damit ein Test seine Wirkung
-    auf sein eigenes Fixture begrenzen kann: Die Suite laeuft gegen die
-    Produktiv-Datenbank, und ein globaler Lauf fasst deren Ziele mit an.
+    `user_id=None` laeuft ueber alle Zeilen — das ist der Produktivfall. Der
+    Parameter existiert, damit ein Test seine Wirkung auf sein eigenes Fixture
+    begrenzen kann: Die Suite laeuft gegen die Produktiv-Datenbank, und ein
+    globaler Lauf fasst deren Ziele mit an.
+
+    **Kein Filter auf das Gegenueber**, obwohl `ziele` seit Chat 125 das Paar
+    traegt: Der Verfall misst Zeit, nicht Beziehung. Ein Ziel, das seit zwei
+    Wochen niemand angeruehrt hat, ist in jeder Beziehung gleich weit
+    verblasst, und ein Lauf je Paar ergaebe dasselbe Ergebnis in mehr
+    Statements. Ein Parameter dafuer waere heute ohne Aufrufer und damit eine
+    ungepruefte Verzweigung.
 
     Vorbedingung: Postgres erreichbar, Spalten motivation_basis/-_am vorhanden.
     Nachbedingung: Jedes aktive Ziel des Typs mit Anker traegt einen aus Anker
