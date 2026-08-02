@@ -19,7 +19,7 @@ from config import (
     LLM_PROFILE, ANTHROPIC_API_KEY, ANTHROPIC_MODEL,
     PIXIE_ANALYSE_MODEL, PIXIE_ANALYSE_NUM_CTX,
     PIXIE_INTERVALL_MIN, PIXIE_AKTIV, shutdown_event,
-    DEFAULT_USER_ID, ASSISTANT_USER_ID,
+    DEFAULT_USER_ID, ASSISTANT_USER_ID, AKTIVES_PAAR_USER_ID,
 )
 from graph.builder              import build_human_graph, build_agent_graph, build_character_graph
 
@@ -116,6 +116,18 @@ async def Lifespan(app: FastAPI):
     logging.getLogger("uvicorn.access").addFilter(HealthCheckFilter())
 
     logger.info("Server startet...")
+
+    # Das Paar, fuer das die Hintergrundarbeit dieses Laufs stattfindet. Steht
+    # hier, weil es sonst von aussen nicht feststellbar ist: Wird die Umgebung
+    # fuer eine Messreihe umgestellt und greift die Umstellung nicht — etwa
+    # weil `docker compose restart` den Behaelter neu startet, ohne ihn neu zu
+    # erzeugen —, laeuft die Reihe dreissig Turns lang gegen das falsche Paar,
+    # und nichts meldet es. Ein Wert, den niemand ablesen kann, ist keine
+    # Konfiguration, sondern eine Annahme.
+    logger.info(
+        f"Aktives Paar: ({AKTIVES_PAAR_USER_ID}, {ASSISTANT_USER_ID}) — "
+        f"Pixie bedient beide Seiten dieses Paares, sonst niemanden"
+    )
 
     # Event-Loop-Referenz für synchrone Endpoints (broadcast_threadsafe)
     app.state.loop = asyncio.get_running_loop()
