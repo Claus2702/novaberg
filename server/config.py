@@ -1675,16 +1675,15 @@ LZG_KNOTEN_REINFORCEMENT_BOOST: float = float(os.getenv("LZG_KNOTEN_REINFORCEMEN
 # (Matcha/Kakao 0.98 lag ueber der Schwelle, Paraphrasen bei 0.78 darunter).
 LZG_KNOTEN_MATCH_SCHWELLE: float = float(os.getenv("LZG_KNOTEN_MATCH_SCHWELLE", "0.82"))
 
-# Feature-Flag Synapsen P4. Jetzt aktiv (Chat 98): Live-Promotion laeuft
-# ueber den SynapsenPromotionAgent (lzg_knoten/lzg_kanten); der alte
-# Cluster-Pfad (Tabelle langzeitgedaechtnis) ist deaktiviert. Beide
-# Code-Pfade bleiben bis P9 im Repo.
-SYNAPSEN_PROMOTION_AKTIV: bool = os.getenv("SYNAPSEN_PROMOTION_AKTIV", "true").lower() == "true"
+# SYNAPSEN_PROMOTION_AKTIV ist mit P9 entfallen (Chat 125): Der alte
+# Cluster-Pfad ist geloescht, es gibt nur noch einen Promotions-Weg. Ein
+# Schalter zwischen zwei Pfaden, von denen einer nicht mehr existiert, ist
+# kein Schalter, sondern eine Falle.
 
 # Feature-Flag: Synapsen-Decay-Agent (P6). Taeglicher Lauf materialisiert
 # gewicht_decay je aktivem Knoten und deaktiviert Knoten unter
-# LZG_KNOTEN_MIN_GEWICHT; plus pipeline_log-TTL-Cleanup. Default true analog
-# SYNAPSEN_PROMOTION_AKTIV; wirkt nur, wenn PIXIE_AKTIV gesetzt ist.
+# LZG_KNOTEN_MIN_GEWICHT; plus pipeline_log-TTL-Cleanup. Wirkt nur, wenn
+# PIXIE_AKTIV gesetzt ist.
 SYNAPSEN_DECAY_AKTIV: bool = os.getenv("SYNAPSEN_DECAY_AKTIV", "true").lower() == "true"
 
 

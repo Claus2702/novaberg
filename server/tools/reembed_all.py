@@ -24,9 +24,9 @@ Selbstkontrolle nach --commit (Ziel lzg_knoten): drei Referenzpaare aus der
 Chat-107-Kalibrierung werden direkt in der DB nachgerechnet
 (1 - (a.embedding <=> b.embedding)); Abweichung > 0.01 wird laut gemeldet.
 
-Ziele (--target, mehrfach; "all" = alle ausser legacy, reset, kanten_rebuild):
+Ziele (--target, mehrfach; "all" = alle ausser reset, kanten_rebuild):
   lzg_knoten entitaeten fakten ziele delegation kzg shadow kanten
-  reset kanten_rebuild legacy
+  reset kanten_rebuild
   - Reihenfolge in "all": lzg_knoten -> ... -> kzg -> shadow -> kanten.
     kanten IMMER zuletzt (rechnet Cosines aus den frischen Knoten-Vektoren).
   - shadow wird GELOESCHT, nicht re-embedded (kurzlebig, kein Verlust).
@@ -41,9 +41,6 @@ Ziele (--target, mehrfach; "all" = alle ausser legacy, reset, kanten_rebuild):
     Zufallsgewichte in die Kanten einfrieren.
     Phase-B-Kette: lzg_knoten -> reset -> kanten_rebuild
     (kanten/Cosine-Refresh bleibt fuer Refresh-OHNE-Reset erhalten).
-  - legacy (langzeitgedaechtnis) nur explizit — hat keinen Live-Aufrufer
-    und KEINE embed_text_bauen-Formel; der Handler verweigert laut, statt
-    eine Formel im Tool zu improvisieren (Entscheidung noetig).
   - Auch inaktive Zeilen werden re-embedded (reactivate_node kann sie
     wiederbeleben); leere Quelltexte werden uebersprungen UND gezaehlt.
 
@@ -95,14 +92,14 @@ KONTROLL_TOLERANZ: float = 0.01
 
 ZIEL_REIHENFOLGE: list[str] = [
     "lzg_knoten", "entitaeten", "fakten", "ziele",
-    "delegation", "kzg", "legacy", "shadow",
+    "delegation", "kzg", "shadow",
     "reset", "kanten", "kanten_rebuild",
 ]
 # reset und kanten_rebuild laufen NICHT in "all" mit — der Gewichts-Reset ist
 # eine bewusste Entscheidung, kein Automatismus; der Rebuild gehoert zwingend
 # HINTER den Reset (kanten_staerke_berechnen liest gewicht_absolut — ein
 # Rebuild vor dem Reset wuerde die Zufallsgewichte in die Kanten einfrieren).
-ALL_ZIELE: list[str] = [z for z in ZIEL_REIHENFOLGE if z not in ("legacy", "reset", "kanten_rebuild")]
+ALL_ZIELE: list[str] = [z for z in ZIEL_REIHENFOLGE if z not in ("reset", "kanten_rebuild")]
 
 # Beispielknoten fuer die Reset-Vorschau: die drei bekannten Kollisions-Opfer
 # (108: 179x "exquisit und blumig", 121: 121x OXTR-Frage, 167: 61x "Der Nutzer
@@ -500,26 +497,6 @@ def ziel_kanten(commit: bool, lzg_dabei: bool) -> dict:
     return stats
 
 
-def ziel_legacy(commit: bool) -> dict:
-    """langzeitgedaechtnis — VERWEIGERT: keine embed_text_bauen-Formel.
-
-    Der Legacy-Pfad ist bewusst kein Bauer-Ziel (Commit 5d58b66). Eine
-    Formel hier im Tool nachzubauen waere genau der Fehler, den die
-    Vereinheitlichung abschafft — melden, nicht improvisieren.
-    """
-    logger.error(
-        "[legacy] langzeitgedaechtnis hat KEINE embed_text_bauen-Formel (bewusst "
-        "kein Bauer-Ziel, Commit 5d58b66). Das Tool improvisiert keine Formel. "
-        "Entscheidung noetig: Bauer anlegen oder Tabelle stilllegen "
-        "(Backlog: Landmine in EMBEDDING-CASING-BLIND §6)."
-    )
-    raise SystemExit(1)
-
-
-# ─────────────────────────────────────────────
-# Selbstkontrolle (nach --commit mit Ziel lzg_knoten)
-# ─────────────────────────────────────────────
-
 def selbstkontrolle() -> bool:
     """Prueft die Referenzpaare direkt in der DB (nicht aus dem Speicher).
 
@@ -582,7 +559,7 @@ def main() -> int:
     # ── Eingabe-Validierung ─────────────────────
     parser = argparse.ArgumentParser(description="Re-Embedding aller Vektor-Speicher (A5, Chat 107)")
     parser.add_argument("--target", action="append", choices=ZIEL_REIHENFOLGE + ["all"],
-                        help="Ziel, mehrfach angebbar. Default: all (ohne legacy)")
+                        help="Ziel, mehrfach angebbar. Default: all")
     parser.add_argument("--commit", action="store_true", help="Tatsaechlich schreiben (sonst Dry-Run)")
     args = parser.parse_args()
 
@@ -608,7 +585,6 @@ def main() -> int:
         "ziele":      lambda: ziel_ziele(args.commit),
         "delegation": lambda: ziel_delegation(args.commit),
         "kzg":        lambda: ziel_kzg(args.commit),
-        "legacy":     lambda: ziel_legacy(args.commit),
         "shadow":     lambda: ziel_shadow(args.commit),
         "reset":      lambda: ziel_reset(args.commit),
         "kanten":     lambda: ziel_kanten(args.commit, lzg_dabei="lzg_knoten" in ziele),

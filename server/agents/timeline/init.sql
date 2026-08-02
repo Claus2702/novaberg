@@ -65,34 +65,26 @@ UPDATE timeline SET binding = FALSE, remind = TRUE, conflict_check = FALSE
 -- ── M2: timeline_id-Fremdschlüssel auf lzg + notizen ────
 -- Übergangs-Konstrukt: Diese FK-Constraints werden hier nachträglich gesetzt,
 -- weil die timeline-Tabelle aktuell noch im Plugin-Stand lebt, während die
--- timeline_id-Spalten in langzeitgedaechtnis und notizen bereits im Kern
--- (db/init.sql) definiert sind. Die übliche Inline-Form
+-- timeline_id-Spalte in notizen bereits im Kern (db/init.sql) definiert ist. Die übliche Inline-Form
 --   ALTER TABLE ... ADD COLUMN IF NOT EXISTS ... REFERENCES timeline(id)
 -- greift in diesem Fall nicht, weil Postgres das gesamte Statement überspringt,
 -- wenn die Spalte schon existiert (sie kommt aus db/init.sql).
 --
 -- Bei dem geplanten Umzug von Timeline in den Kern werden diese FKs in die
--- CREATE-Definitionen von langzeitgedaechtnis und notizen in db/init.sql
--- konsolidiert; dieser Block entfällt dann.
+-- CREATE-Definition von notizen in db/init.sql konsolidiert; dieser Block
+-- entfällt dann.
+--
+-- Der Zwilling fuer `langzeitgedaechtnis` ist mit der Tabelle entfallen
+-- (Synapsen P9, Chat 125). Er musste im selben Zug weg wie der Drop: Diese
+-- Datei laeuft bei jedem Serverstart, und ein ALTER auf eine geloeschte
+-- Tabelle haette sie entweder neu angelegt oder die Migration abgebrochen.
 
 -- Sicherheitsnetz: Spalten anlegen, falls eine sehr alte Bestandsinstallation
 -- ohne den heutigen db/init.sql-Stand sie noch nicht hat. Bei Frisch- oder
 -- aktueller Bestandsinstallation no-op.
-ALTER TABLE langzeitgedaechtnis ADD COLUMN IF NOT EXISTS timeline_id INTEGER;
-ALTER TABLE notizen             ADD COLUMN IF NOT EXISTS timeline_id INTEGER;
+ALTER TABLE notizen ADD COLUMN IF NOT EXISTS timeline_id INTEGER;
 
 -- FK-Constraints idempotent nachziehen (pg_constraint-Lookup als Guard).
-DO $$ BEGIN
-    IF NOT EXISTS (
-        SELECT 1 FROM pg_constraint
-        WHERE  conname = 'langzeitgedaechtnis_timeline_id_fkey'
-    ) THEN
-        ALTER TABLE langzeitgedaechtnis
-            ADD CONSTRAINT langzeitgedaechtnis_timeline_id_fkey
-            FOREIGN KEY (timeline_id) REFERENCES timeline(id) ON DELETE SET NULL;
-    END IF;
-END $$;
-
 DO $$ BEGIN
     IF NOT EXISTS (
         SELECT 1 FROM pg_constraint
@@ -104,7 +96,6 @@ DO $$ BEGIN
     END IF;
 END $$;
 
-CREATE INDEX IF NOT EXISTS idx_lzg_timeline_id     ON langzeitgedaechtnis (timeline_id);
 CREATE INDEX IF NOT EXISTS idx_notizen_timeline_id ON notizen (timeline_id);
 
 -- ── lzg_knoten ↔ timeline FK (Synapsen-P2) ──────

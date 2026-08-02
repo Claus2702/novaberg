@@ -75,38 +75,6 @@ END $$;
 -- ═══════════════════════════════════════════════
 
 -- ───────────────────────────────────────────────
--- langzeitgedaechtnis
--- ───────────────────────────────────────────────
--- timeline_id: nackte INTEGER-Spalte; FK-Constraint auf timeline(id) wird in
--- server/agents/timeline/init.sql gesetzt.
-CREATE TABLE IF NOT EXISTS langzeitgedaechtnis (
-    id                  SERIAL           PRIMARY KEY,
-    user_id             TEXT             NOT NULL,
-    character_id        VARCHAR(50)      NOT NULL DEFAULT 'nova',
-    beobachter          VARCHAR(20)      NOT NULL DEFAULT 'user',
-    dimension           TEXT             NOT NULL,
-    inhalt              TEXT             NOT NULL,
-    gewicht             DOUBLE PRECISION NOT NULL DEFAULT 0.5,
-    haeufigkeit         INTEGER          NOT NULL DEFAULT 1,
-    embedding           VECTOR(768),
-    erstellt_am         TIMESTAMPTZ      NOT NULL DEFAULT NOW(),
-    verstaerkt_am       TIMESTAMPTZ      NOT NULL DEFAULT NOW(),
-    intentionen         TEXT             NOT NULL DEFAULT '[]',
-    emotion             TEXT             NOT NULL DEFAULT '',
-    modus               TEXT             NOT NULL DEFAULT '',
-    arousal             DOUBLE PRECISION NOT NULL DEFAULT 0.5,
-    sprach_stil         TEXT             NOT NULL DEFAULT '',
-    beziehungs_dynamik  TEXT             NOT NULL DEFAULT '',
-    tone                TEXT             NOT NULL DEFAULT '',
-    aktiv               BOOLEAN          NOT NULL DEFAULT TRUE,
-    themen              TEXT[],
-    gedaechtnistyp      VARCHAR(20),
-    kzg_erstellt_am     TIMESTAMPTZ,
-    entitaet_ids        INTEGER[],
-    timeline_id         INTEGER
-);
-
--- ───────────────────────────────────────────────
 -- lzg_knoten — Synapsen-Knoten (Synapsen-Modell, P2)
 -- ───────────────────────────────────────────────
 -- Parallel zum bestehenden langzeitgedaechtnis. Trägt die Memory-Knoten
@@ -437,30 +405,6 @@ CREATE INDEX IF NOT EXISTS idx_verbindung_lzg  ON verbindung (lzg_id);
 -- Indizes
 -- ═══════════════════════════════════════════════
 
--- langzeitgedaechtnis
-CREATE INDEX IF NOT EXISTS idx_lzg_user_id
-    ON langzeitgedaechtnis (user_id);
--- Vektor-Index (ivfflat) manuell anlegen wenn > ~10k Einträge vorhanden
--- (dann lists ≈ rows/1000 waehlen und ivfflat.probes mitkalibrieren):
--- ivfflat mit lists=100 bei ~300 Zeilen und probes=1 durchsucht eine einzige
--- Zentroid-Liste mit ~3 Mitgliedern — der Recall bricht auf nahezu null ein
--- (IVFFLAT-RECALL-KOLLAPS, Chat 107). Seq-Scan ist bei dieser Groesse exakt
--- und < 1 ms. entitaeten/fakten funktionierten von Anfang an GERADE WEIL sie
--- diesen Index nie hatten.
--- CREATE INDEX idx_lzg_embedding
---     ON langzeitgedaechtnis USING ivfflat (embedding vector_cosine_ops)
---     WITH (lists = 100);
-CREATE INDEX IF NOT EXISTS idx_lzg_aktiv
-    ON langzeitgedaechtnis (user_id, character_id) WHERE aktiv = TRUE;
-CREATE INDEX IF NOT EXISTS idx_lzg_themen
-    ON langzeitgedaechtnis USING GIN (themen);
-CREATE INDEX IF NOT EXISTS idx_lzg_entitaet_ids
-    ON langzeitgedaechtnis USING GIN (entitaet_ids);
-CREATE INDEX IF NOT EXISTS idx_lzg_kzg_erstellt_am
-    ON langzeitgedaechtnis (kzg_erstellt_am);
-CREATE INDEX IF NOT EXISTS idx_lzg_timeline_id
-    ON langzeitgedaechtnis (timeline_id);
-
 -- lzg_knoten (Synapsen P2)
 CREATE INDEX IF NOT EXISTS idx_lzg_knoten_aktiv
     ON lzg_knoten (user_id, character_id) WHERE aktiv = TRUE;
@@ -555,27 +499,19 @@ CREATE INDEX IF NOT EXISTS idx_verb_mappings_user
 -- Bei einem späteren Review wird der Block in die CREATE-Definitionen
 -- zurückgeführt.
 
--- ── langzeitgedaechtnis ────────────────────────
--- emotions_vektor entfernt (PROMO-CLUSTER-EI): Trajektorie passt semantisch
--- nicht zu einer verdichteten LZG-Erinnerung.
-ALTER TABLE langzeitgedaechtnis DROP COLUMN IF EXISTS emotions_vektor;
-
-ALTER TABLE langzeitgedaechtnis ADD COLUMN IF NOT EXISTS arousal            DOUBLE PRECISION NOT NULL DEFAULT 0.5;
-ALTER TABLE langzeitgedaechtnis ADD COLUMN IF NOT EXISTS intentionen        TEXT             NOT NULL DEFAULT '[]';
-ALTER TABLE langzeitgedaechtnis ADD COLUMN IF NOT EXISTS emotion            TEXT             NOT NULL DEFAULT '';
-ALTER TABLE langzeitgedaechtnis ADD COLUMN IF NOT EXISTS modus              TEXT             NOT NULL DEFAULT '';
-ALTER TABLE langzeitgedaechtnis ADD COLUMN IF NOT EXISTS sprach_stil        TEXT             NOT NULL DEFAULT '';
-ALTER TABLE langzeitgedaechtnis ADD COLUMN IF NOT EXISTS beziehungs_dynamik TEXT             NOT NULL DEFAULT '';
-ALTER TABLE langzeitgedaechtnis ADD COLUMN IF NOT EXISTS tone               TEXT             NOT NULL DEFAULT '';
-ALTER TABLE langzeitgedaechtnis ADD COLUMN IF NOT EXISTS aktiv              BOOLEAN          NOT NULL DEFAULT TRUE;
-ALTER TABLE langzeitgedaechtnis ADD COLUMN IF NOT EXISTS character_id       VARCHAR(50)      NOT NULL DEFAULT 'nova';
-ALTER TABLE langzeitgedaechtnis ADD COLUMN IF NOT EXISTS beobachter         VARCHAR(20)      NOT NULL DEFAULT 'user';
-ALTER TABLE langzeitgedaechtnis ADD COLUMN IF NOT EXISTS themen             TEXT[];
-ALTER TABLE langzeitgedaechtnis ADD COLUMN IF NOT EXISTS gedaechtnistyp     VARCHAR(20);
-ALTER TABLE langzeitgedaechtnis ADD COLUMN IF NOT EXISTS kzg_erstellt_am    TIMESTAMPTZ;
-ALTER TABLE langzeitgedaechtnis ADD COLUMN IF NOT EXISTS entitaet_ids       INTEGER[];
--- timeline_id: nackte Spalte; FK setzt server/agents/timeline/init.sql.
-ALTER TABLE langzeitgedaechtnis ADD COLUMN IF NOT EXISTS timeline_id        INTEGER;
+-- ── langzeitgedaechtnis: entfernt (Synapsen P9, Chat 125) ──
+-- Das Codeschloss des Synapsen-Umbaus. Die Tabelle ist durch `lzg_knoten`
+-- und `lzg_kanten` abgeloest; zum Zeitpunkt des Drops trug sie 0 Zeilen.
+--
+-- CASCADE, weil `agents/timeline/init.sql` einen Fremdschluessel auf
+-- `timeline(id)` gesetzt hatte. Der zugehoerige ALTER-Block ist dort im
+-- selben Zug entfernt worden — bliebe er stehen, legte er die Tabelle bei
+-- jedem Serverstart neu an, und der Drop waere eine Endlosschleife aus
+-- Anlegen und Loeschen.
+--
+-- IF EXISTS, weil diese Datei bei jedem Start laeuft: Nach dem ersten Mal
+-- ist nichts mehr zu tun, und eine Frischinstallation kennt die Tabelle nie.
+DROP TABLE IF EXISTS langzeitgedaechtnis CASCADE;
 
 -- ── charakter_hash ─────────────────────────────
 ALTER TABLE charakter_hash ADD COLUMN IF NOT EXISTS intentions_profil          TEXT        NOT NULL DEFAULT '';
@@ -738,13 +674,9 @@ UPDATE charakter_hash SET character_id = 'nova'
 UPDATE charakter_hash SET character_id = 'meister'
     WHERE user_id = 'nova'    AND character_id = '';
 
--- langzeitgedaechtnis: alte Nova-Einträge (user_id='nova') ins Paar
--- meister:nova mit Beobachter-Sicht 'assistant' umschreiben.
-UPDATE langzeitgedaechtnis
-SET    user_id      = 'meister',
-       character_id = 'nova',
-       beobachter   = 'assistant'
-WHERE  user_id = 'nova';
+-- Die Nova-Umschreibung auf `langzeitgedaechtnis` ist mit der Tabelle
+-- entfallen (Synapsen P9). `lzg_knoten` wird vom Schreibpfad von Anfang an
+-- paar-richtig befüllt und braucht keine Nachbesserung.
 
 -- ziele: Bestand mit dem Motivations-Anker versorgen (Chat 113). Der heutige
 -- Wert wird zum Anker, die Uhr beginnt jetzt. Der Verfall, den der kumulative

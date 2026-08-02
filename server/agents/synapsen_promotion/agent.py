@@ -3,8 +3,8 @@
 Promotet jeden reifen KZG-Eintrag als eigenstaendigen lzg_knoten und bildet
 Kanten zu entitaets-, embedding-, themen- oder zeitlich verwandten
 Bestandsknoten (assoziatives Netz, Konzept novaberg-memory-synapsen_k.md §7).
-Ersetzt den Cluster-Aggregat-Pfad des PromotionAgent, sobald
-SYNAPSEN_PROMOTION_AKTIV gesetzt ist.
+Hat den Cluster-Aggregat-Pfad des PromotionAgent abgeloest; jener ist mit
+dem Codeschloss P9 aus dem Repositorium entfernt.
 
 Bewusste Abweichungen vom alten PromotionAgent (Entscheidungs-Doku
 novaberg-memory-synapsen-p4-entscheidungen_k.md):
@@ -39,7 +39,7 @@ from config import (
     ASSISTANT_USER_ID, DEFAULT_USER_ID,
     redis_client, POSTGRES_URL,
     PIXIE_PROMOTION_PRIORITAET, PIXIE_PROMOTION_INTERVALL_SEKUNDEN,
-    PIXIE_AKTIV, SYNAPSEN_PROMOTION_AKTIV,
+    PIXIE_AKTIV,
 )
 from memory import lzg_knoten, lzg_kanten, pipeline_log
 from memory.repositories.verbindung_repository import VerbindungRepository
@@ -72,13 +72,14 @@ class SynapsenPromotionAgent(BaseAgent):
         return "user"
 
     def periodic_task(self) -> PeriodicTask | None:
-        """Feature-Flag-Gate (P4): solange SYNAPSEN_PROMOTION_AKTIV False ist,
-        bleibt dieser Agent dormant (None = kein Scheduling) und der alte
-        Cluster-Pfad (PromotionAgent) bedient die Queue weiter. Erst beim
-        Scharfschalten in Phase D wird der alte Pfad stillgelegt.
+        """Der einzige Promotions-Weg — ohne Schalter.
+
+        Bis P9 stand hier ein Gate auf SYNAPSEN_PROMOTION_AKTIV, das diesen
+        Agenten dormant hielt, solange der alte Cluster-Pfad die Queue
+        bediente. Beides ist mit dem Codeschloss entfallen: Der alte Pfad ist
+        geloescht, und ein Schalter, dessen Aus-Stellung keinen Ersatz mehr
+        hat, schaltet die Promotion nicht um, sondern ab.
         """
-        if not SYNAPSEN_PROMOTION_AKTIV:
-            return None
         return PeriodicTask(
             name="synapsen_promotion",
             priority=PIXIE_PROMOTION_PRIORITAET,
@@ -118,18 +119,6 @@ class SynapsenPromotionAgent(BaseAgent):
 
     def invoke(self, state: AgentState) -> AgentState:
         """Arbeitet die Promotion-Queue vollstaendig ab (KZG hat TTL)."""
-        # Feature-Flag-Gate (P4): Selbst wenn der Queue-Peek diesen Agenten
-        # ueber die umgeleitete lzg_promotion-Route invoked, bleibt er bei
-        # ausgeschaltetem Flag wirkungslos — er leert die Queue nicht. Der
-        # Flag ist damit der einzige Schalter fuer das gesamte Subsystem.
-        if not SYNAPSEN_PROMOTION_AKTIV:
-            logger.debug(
-                "Synapsen-Promotion: inaktiv (SYNAPSEN_PROMOTION_AKTIV=False) — "
-                "Queue nicht geleert"
-            )
-            state["ergebnis"] = {"promotet": 0, "fehler": 0, "inaktiv": True}
-            state["status"] = "abgeschlossen"
-            return state
 
         user_id: str = state["kontext"].get("user_id", "") or DEFAULT_USER_ID
         queue_key: str = f"queue:{user_id}"

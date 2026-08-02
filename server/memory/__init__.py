@@ -24,9 +24,6 @@ from memory.kzg import (
     KZG_PREFIX,
 )
 
-# LZG
-from memory.lzg import lzg_entries_retrieve
-
 # Charakter-Hash
 from memory.charakter import charakter_hash_retrieve
 
