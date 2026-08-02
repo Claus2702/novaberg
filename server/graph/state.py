@@ -182,7 +182,7 @@ class ConversationState(TypedDict):
     gv_detail: dict          # GV4 Debug-Info (Neugier, Luecken, Farbton)
 
     # ── Drive / Gravitation (Chat 68) ────────────
-    aktivierte_ziele:  list[dict]   # Ziele über Gravitationsschwelle [{zielsatz, motivation, gravitation, ...}]
+    aktivierte_ziele:  list[dict]   # Ziele über Gravitationsschwelle [{zielsatz, motivation, aktivierungs_staerke, ...}]
     gravitationsterm:  float        # Salienz-Boost aus Ziel-Gravitation
     emotionale_gravitationspunkte: list[dict]   # Emotional aufgeladene Erinnerungen [{emotion, arousal, gravitation, ...}]
     prompt_embedding:  list[float]  # Embedding des aktuellen User-Prompts (768-dim, vom Enricher gesetzt)

@@ -47,11 +47,13 @@ from memory.pipeline_log import (
     log_ausgabe,
 )
 from ei.gravitation      import (
+    Verschiebung,
     ziel_gravitation_berechnen,
     gravitationsterm_berechnen,
     emotionale_gravitation_scannen,
+    wahrnehmung_verschieben,
 )
-from ei.dreischicht      import CLUSTER_ENRICHER_SPRUENGE
+from ei.dreischicht      import CLUSTER_ENRICHER_SPRUENGE, INTENTION_ANWEISUNG
 from plugins             import get_registry
 from services.model_services import model_service, EmbedRequest
 
@@ -188,15 +190,19 @@ def _compute_ziele_und_gravitation(
     postgres_url: str,
     user_id:      str,
     character_id: str,
-) -> tuple[list[dict], float]:
+) -> tuple[list, float]:
     """Laedt die aktiven Ziele DIESES Paares, berechnet Aktivierung und Term.
 
     Das Turn-Paar wird uebergeben, nicht das Ziel-Paar: Die Ableitung steht in
     `ziel_paar_bestimmen` und gilt fuer beide Pfade des Enrichers, die ihr Paar
     in verschiedener Reihenfolge fuehren.
 
+    Gibt die `ActivatedGoal`-Objekte zurueck, nicht die State-Dicts: Die
+    Wahrnehmungs-Gravitation braucht das Ziel-Embedding, und das gehoert nicht
+    in den State (`_ziele_als_dicts`).
+
     Vorbedingung: embedding gueltig, postgres_url verbunden, Turn-Paar gesetzt.
-    Nachbedingung: Tupel (aktivierte_ziele_dicts, gravitationsterm), gebildet
+    Nachbedingung: Tupel (aktivierte_ziele, gravitationsterm), gebildet
                    ausschliesslich aus Zielen dieser Beziehung.
                    Beide leer / 0.0, wenn keine Ziele vorhanden sind.
     """
@@ -209,24 +215,36 @@ def _compute_ziele_und_gravitation(
 
     # ── Verarbeitung ────────────────────────────
     aktiviert: list = ziel_gravitation_berechnen(embedding, ziele)
-
-    aktivierte_dicts: list[dict] = [
-        {
-            "ziel_id":     g.ziel_id,
-            "ziel_typ":    g.ziel_typ,
-            "zielsatz":    g.zielsatz,
-            "motivation":  g.motivation,
-            "emotion":     g.emotion,
-            "arousal":     g.arousal,
-            "similarity":  g.similarity,
-            "gravitation": g.gravitation,
-        }
-        for g in aktiviert
-    ]
     grav: float = gravitationsterm_berechnen(aktiviert)
 
     # ── Ausgabe ─────────────────────────────────
-    return aktivierte_dicts, grav
+    return aktiviert, grav
+
+
+def _ziele_als_dicts(aktiviert: list) -> list[dict]:
+    """Bildet die aktivierten Ziele auf die State-Darstellung ab.
+
+    **Das Ziel-Embedding bleibt draussen.** Es traegt die Verschiebungs-Rechnung
+    im Enricher und hat im State keinen Leser; der Dispatcher legt
+    `aktivierte_ziele` in Redis ab, und sieben Ziele mal 768 Werte je Turn waeren
+    Ballast, den niemand liest.
+
+    Vorbedingung: `aktiviert` enthaelt `ActivatedGoal`-Objekte (kann leer sein).
+    Nachbedingung: Eine Liste gleicher Laenge mit acht flachen Feldern je Ziel.
+    """
+    return [
+        {
+            "ziel_id":              g.ziel_id,
+            "ziel_typ":             g.ziel_typ,
+            "zielsatz":             g.zielsatz,
+            "motivation":           g.motivation,
+            "emotion":              g.emotion,
+            "arousal":              g.arousal,
+            "similarity":           g.similarity,
+            "aktivierungs_staerke": g.aktivierungs_staerke,
+        }
+        for g in aktiviert
+    ]
 
 
 # ═══════════════════════════════════════════════════════════════════
@@ -316,9 +334,12 @@ def _enrich_human(
     )
 
     # 4 + 5. Aktivierte Ziele + Gravitationsterm.
-    aktivierte_ziele, gravitationsterm = _compute_ziele_und_gravitation(
+    # Keine Wahrnehmungs-Gravitation im HG: Dieser Pfad fuehrt keine
+    # Vektorsuche, es gibt keinen Suchschluessel zu verschieben.
+    aktiviert, gravitationsterm = _compute_ziele_und_gravitation(
         embedding, postgres_url, user_id, character_id,
     )
+    aktivierte_ziele: list[dict] = _ziele_als_dicts(aktiviert)
     state["aktivierte_ziele"] = aktivierte_ziele
     state["gravitationsterm"] = gravitationsterm
 
@@ -396,6 +417,46 @@ def _vorturn_cluster_lesen(
             f"Default '{SPREADING_DEFAULT_CLUSTER}'"
         )
     return SPREADING_DEFAULT_CLUSTER
+
+
+def _verschiebungs_protokoll(
+    verschiebung: Verschiebung | None,
+    anfrage_dim:  int,
+) -> dict:
+    """Baut den Protokoll-Inhalt der Wahrnehmungs-Gravitation.
+
+    Ein zusammengesetzter Wert ist ohne seine Eingangsgroessen nicht
+    beurteilbar, deshalb stehen die Aktivierungs-Staerken **einzeln** im
+    Eintrag und nicht als Summe.
+
+    `verschiebung=None` heisst: In diesem Turn lief keine LZG-Suche. Auch
+    dieser Durchlauf bekommt einen Eintrag — sonst waere er von einem Turn
+    ohne Verschiebung nicht zu unterscheiden.
+
+    Vorbedingung: keine.
+    Nachbedingung: Eine Abbildung mit sieben Feldern; `herkunft` ist immer
+        gesetzt und trennt die sieben Ausgaenge voneinander.
+    """
+    if verschiebung is None:
+        return {
+            "herkunft":       "keine_lzg_suche",
+            "faktor":         0.0,
+            "cluster":        "",
+            "ziel_anteile":   [],
+            "ziele_count":    0,
+            "cosinus_zu_roh": 1.0,
+            "anfrage_dim":    anfrage_dim,
+        }
+
+    return {
+        "herkunft":       verschiebung.herkunft,
+        "faktor":         verschiebung.faktor,
+        "cluster":        verschiebung.cluster,
+        "ziel_anteile":   verschiebung.ziel_anteile,
+        "ziele_count":    len(verschiebung.ziel_anteile),
+        "cosinus_zu_roh": verschiebung.cosinus_zu_roh,
+        "anfrage_dim":    anfrage_dim,
+    }
 
 
 def _enrich_character(
@@ -575,10 +636,36 @@ def _enrich_character(
         character_id = character_id,
     )
 
+    # ─────────────────────────────────────────
+    # 3a. Ziele + Gravitation (Drive)
+    #     Steht VOR der Memory-Suche, weil die Wahrnehmungs-Gravitation
+    #     (§8.5) den Suchschluessel aus den aktivierten Zielen bildet. Die
+    #     Aktivierung selbst rechnet gegen das ROHE Anfrage-Embedding —
+    #     mit dem verschobenen waere sie ihre eigene Eingabe.
+    # ─────────────────────────────────────────
+    aktiviert, gravitationsterm = _compute_ziele_und_gravitation(
+        embedding, postgres_url, user_id, character_id,
+    )
+    aktivierte_ziele: list[dict] = _ziele_als_dicts(aktiviert)
+    state["aktivierte_ziele"] = aktivierte_ziele
+    state["gravitationsterm"] = gravitationsterm
+
+    if aktivierte_ziele:
+        logger.info(
+            f"Enricher: {len(aktivierte_ziele)} Ziele aktiviert, "
+            f"Gravitationsterm={gravitationsterm:.3f}"
+        )
+
     # Lokale Initialisierung, damit der Switch-Inhalt unten den KZG-Count
     # unabhaengig vom Pfad sicher referenzieren kann. Die Spreading-Erinnerungen
     # zaehlt der Switch aus state["lzg_resonanz"] (kein memory_entries-Akkumulator).
     kzg_entries: list[ContextEntry] = []
+
+    # None heisst: In diesem Turn lief keine LZG-Suche, es gab keinen
+    # Suchschluessel zu verschieben. Der Protokoll-Eintrag unten haelt genau
+    # diesen Fall fest — ohne ihn saehe ein Turn ohne LZG aus wie ein Turn
+    # ohne Verschiebung.
+    verschiebung: Verschiebung | None = None
 
     if kzg_keys or has_lzg:
         logger.info(
@@ -604,7 +691,18 @@ def _enrich_character(
             nova_verlauf: list = state.get("nova_emotions_verlauf") or []
             nova_emotion: str = nova_verlauf[0]["emotion"] if nova_verlauf else ""
 
-            embedding_str: str = embedding_zu_pgvector_str(embedding)
+            # §8.5: Wahrnehmungs-Gravitation. Der Suchschluessel ist nicht mehr
+            # allein die Frage, sondern die Frage plus Novas Motivation. Nur die
+            # LZG-Suche bekommt ihn — die KZG-Suche oben und die Ziel-Aktivierung
+            # rechnen weiter gegen das rohe Embedding.
+            verschiebung = wahrnehmung_verschieben(
+                anfrage_embedding = embedding,
+                aktivierte_ziele  = aktiviert,
+                cluster           = cluster,
+                ist_anweisung     = INTENTION_ANWEISUNG in letzte_intentionen,
+            )
+
+            embedding_str: str = embedding_zu_pgvector_str(verschiebung.vektor)
             erinnerungen: list[dict] = spreading_lesen(
                 postgres_url, user_id, character_id, embedding_str,
                 cluster=cluster, nova_emotion=nova_emotion,
@@ -658,6 +756,20 @@ def _enrich_character(
             character_id = character_id,
         )
 
+    # ── Pipeline-Log: Wahrnehmungs-Gravitation (Anker 4c) ──
+    # Genau ein Eintrag je Durchlauf, auch wenn nichts verschoben wurde.
+    log_berechnung(
+        turn_id = turn_id_log,
+        node    = "enricher",
+        quelle  = "wahrnehmungs_gravitation",
+        inhalt  = _verschiebungs_protokoll(
+            verschiebung, len(embedding) if embedding else 0,
+        ),
+        span_id = span_id,
+        user_id      = user_id,
+        character_id = character_id,
+    )
+
     # ─────────────────────────────────────────
     # 4. Charakter-Hash als ContextEntry
     #     Der Hash-String wird inline aus external.character.core/adaptive
@@ -687,22 +799,10 @@ def _enrich_character(
         logger.info("Enricher: Charakter-Hash aus external.character als ContextEntry")
 
     # ─────────────────────────────────────────
-    # 5. Ziele + Gravitation (Drive)
-    # ─────────────────────────────────────────
-    aktivierte_ziele, gravitationsterm = _compute_ziele_und_gravitation(
-        embedding, postgres_url, user_id, character_id,
-    )
-    state["aktivierte_ziele"] = aktivierte_ziele
-    state["gravitationsterm"] = gravitationsterm
-
-    if aktivierte_ziele:
-        logger.info(
-            f"Enricher: {len(aktivierte_ziele)} Ziele aktiviert, "
-            f"Gravitationsterm={gravitationsterm:.3f}"
-        )
-
-    # ─────────────────────────────────────────
-    # 6. Emotionale Gravitation (EI Phase 3)
+    # 5. Emotionale Gravitation (EI Phase 3)
+    #     Rechnet gegen das ROHE Anfrage-Embedding: Sie sucht emotional
+    #     geladene Erinnerungen zum Thema des Turns, nicht zum Thema von
+    #     Novas Zielen.
     # ─────────────────────────────────────────
     emotionale_punkte: list[dict] = emotionale_gravitation_scannen(
         turn_embedding=embedding,

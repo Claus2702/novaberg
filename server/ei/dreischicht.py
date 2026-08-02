@@ -198,6 +198,61 @@ CLUSTER_ENRICHER_SPRUENGE: dict[str, int] = {
 
 
 # ─────────────────────────────────────────────
+# Wahrnehmungs-Gravitation: Mischungs-Anteil pro GV-Cluster
+# ─────────────────────────────────────────────
+# Steuert, wie stark das Anfrage-Embedding vor der Vektorsuche in Richtung
+# der aktivierten Drive-Ziele verschoben wird (Konzept `novaberg-memory.md`
+# §11.4, Formel in `novaberg-memory-synapsen_k.md` §8.5.1):
+#
+#   e_nova = e_anfrage x (1 - faktor) + summe(e_ziel x aktivierungs_staerke) x faktor
+#
+# 0.00 = gar keine Verschiebung (Suche mit dem rohen Anfrage-Embedding);
+# 0.30 = staerkste vorgesehene Faerbung. Die Werte sind eine erste Setzung
+# aus dem Konzept und ausdruecklich zur Live-Kalibrierung bestimmt — sie
+# sind KEINE Festlegung im Sinne des Registers.
+#
+# Phaenomenologisch: niedrig, wo Nova fokussiert sein muss (Fachgespraech,
+# Distanz, Konflikt, tiefes Zuhoeren); hoch, wo Abschweifen zur Atmosphaere
+# gehoert (Glut, Feuerwerk, Kissenschlacht).
+#
+# Die Schluesselmenge ist dieselbe wie in den vier Tabellen oben. Ein
+# unbekannter Cluster ist ein Defekt und wird beim Leser laut gemeldet,
+# nicht still auf einen Vorgabewert abgebildet (`wahrnehmung_verschieben`).
+
+CLUSTER_GRAVITATION_FAKTOR: dict[str, float] = {
+    "feuerwerk":     0.30,
+    "kissenschlacht":0.25,
+    "werkstatt":     0.05,
+    "glut":          0.30,
+    "bier":          0.20,
+    "foyer":         0.05,
+    "regen":         0.10,
+    "schmollen":     0.10,
+    "nebel":         0.10,
+    "gewitter":      0.10,
+    "schlachtfeld":  0.05,
+    "beichte":       0.10,
+    "wartezimmer":   0.10,
+    "paradox":       0.10,
+}
+
+# Imperativ-Override (Konzept §8.5.3): Traegt der Turn die Salienz-Intention
+# "anweisung", wird nicht verschoben — unabhaengig vom Cluster. Sonst legt
+# Nova einen Bratwurst-Termin an, wenn der Nutzer "Zahnarzt" sagt.
+# Das Konzept nennt eine Spanne von 0.0 bis 0.05; gewaehlt ist die untere
+# Grenze, weil nur sie die Zusicherung "das rohe Embedding sucht" traegt.
+
+GRAVITATION_FAKTOR_ANWEISUNG: float = 0.0
+
+# Der Marker, der den Imperativ anzeigt. Kanon der Intentionen:
+# `prompts/default/salienz.dimensionen.txt`. Weichere Werte
+# (feedback_geben, widerspruch, bestaetigung, planung) bleiben dem
+# Cluster-Faktor unterworfen — sie sind nicht imperativ genug.
+
+INTENTION_ANWEISUNG: str = "anweisung"
+
+
+# ─────────────────────────────────────────────
 # Strategie-Beschreibungen (fuer Charakter-Gewichtung)
 # ─────────────────────────────────────────────
 # Diese Texte werden embedded und gegen den Charakter-Hash verglichen.

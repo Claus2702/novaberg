@@ -33,7 +33,7 @@ logger = logging.getLogger("ki_server.ei.gravitation")
 
 @dataclass
 class ActivatedGoal:
-    """Ein Ziel, dessen Gravitation über der Schwelle liegt.
+    """Ein Ziel, dessen Aktivierungs-Stärke über der Schwelle liegt.
 
     Attributes:
         ziel_id: Datenbank-ID des Ziels.
@@ -43,16 +43,59 @@ class ActivatedGoal:
         emotion: Emotionale Valenz des Ziels.
         arousal: Emotionale Intensität.
         similarity: Cosine-Similarity zwischen Turn und Ziel.
-        gravitation: similarity × motivation — der effektive Gravitationswert.
+        aktivierungs_staerke: similarity × motivation — wie stark dieses
+            EINE Ziel den Turn anzieht, 0.0 bis 1.0. Nicht zu verwechseln
+            mit dem Cluster-Faktor der Wahrnehmungs-Gravitation: der ist
+            ein globaler Wert pro Turn (`CLUSTER_GRAVITATION_FAKTOR`).
+        embedding: Das Ziel-Embedding, mit dem `similarity` gerechnet wurde.
+            Trägt die Verschiebungs-Rechnung (`wahrnehmung_verschieben`);
+            None nur, wenn die Quelle keins hatte — dann ist das Ziel gar
+            nicht erst aktiviert worden.
     """
-    ziel_id:     int
-    ziel_typ:    str
-    zielsatz:    str
-    motivation:  float
-    emotion:     str
-    arousal:     float
-    similarity:  float
-    gravitation: float
+    ziel_id:              int
+    ziel_typ:             str
+    zielsatz:             str
+    motivation:           float
+    emotion:              str
+    arousal:              float
+    similarity:           float
+    aktivierungs_staerke: float
+    embedding:            list[float] | None = None
+
+
+@dataclass
+class Verschiebung:
+    """Ergebnis der Wahrnehmungs-Gravitation für genau einen Turn.
+
+    Reiner Datencontainer. Die Rechnung steht in `wahrnehmung_verschieben`,
+    die Zerlegung ist für das Pipeline-Log gedacht: ein zusammengesetzter
+    Wert ist ohne seine Eingangsgrößen nicht beurteilbar.
+
+    Attributes:
+        vektor: Der Suchschlüssel für die Vektorsuche. Bei jeder Herkunft
+            außer "verschoben" ist das unverändert das Anfrage-Embedding —
+            das Feld ist nie leer, solange die Eingabe gültig war.
+        faktor: Der angewandte Mischungs-Anteil, 0.0 bis 0.30.
+        cluster: Der GV-Cluster, aus dem der Faktor stammt.
+        ziel_anteile: Aktivierungs-Stärke je beitragendem Ziel, in der
+            Reihenfolge der Ziele. Einzeln, nicht summiert — sonst ist die
+            Zahl später nicht nachrechenbar.
+        cosinus_zu_roh: Cosine zwischen rohem und verschobenem Vektor.
+            1.0 = nicht verschoben, kleiner = stärker gedreht.
+        herkunft: Warum das Ergebnis so aussieht. Geschlossene Menge:
+            "verschoben"              — gerechnet
+            "anweisung"               — Imperativ-Override, roh gesucht
+            "keine_ziele"             — kein aktives Ziel, roh gesucht
+            "kein_ziel_embedding"     — Ziele aktiv, aber ohne Embedding
+            "verworfen_ausser_spanne" — gerechnet und verworfen, roh gesucht
+    """
+
+    vektor:         list[float]
+    faktor:         float
+    cluster:        str
+    ziel_anteile:   list[float]
+    cosinus_zu_roh: float
+    herkunft:       str
 
 
 def _cosine_similarity(vec_a: list[float], vec_b: list[float]) -> float:
@@ -116,11 +159,11 @@ def ziel_gravitation_berechnen(
             )
             continue
 
-        similarity:  float = _cosine_similarity(turn_embedding, ziel_embedding)
-        motivation:  float = ziel.get("motivation", 0.5)
-        gravitation: float = similarity * motivation
+        similarity: float = _cosine_similarity(turn_embedding, ziel_embedding)
+        motivation: float = ziel.get("motivation", 0.5)
+        staerke:    float = similarity * motivation
 
-        if gravitation >= GRAVITATIONS_SCHWELLE:
+        if staerke >= GRAVITATIONS_SCHWELLE:
             goal = ActivatedGoal(
                 ziel_id=ziel["id"],
                 ziel_typ=ziel.get("ziel_typ", "mittelfristig"),
@@ -129,30 +172,31 @@ def ziel_gravitation_berechnen(
                 emotion=ziel.get("emotion", ""),
                 arousal=ziel.get("arousal", 0.5),
                 similarity=round(similarity, 3),
-                gravitation=round(gravitation, 3),
+                aktivierungs_staerke=round(staerke, 3),
+                embedding=ziel_embedding,
             )
             aktiviert.append(goal)
 
             logger.info(
                 f"Gravitation: Ziel AKTIVIERT — id={ziel['id']}, "
                 f"typ={goal.ziel_typ}, sim={goal.similarity:.3f}, "
-                f"mot={motivation:.2f}, grav={goal.gravitation:.3f}, "
+                f"mot={motivation:.2f}, staerke={goal.aktivierungs_staerke:.3f}, "
                 f"'{goal.zielsatz[:50]}'"
             )
         else:
             logger.debug(
                 f"Gravitation: Ziel id={ziel['id']} unter Schwelle — "
                 f"sim={similarity:.3f}, mot={motivation:.2f}, "
-                f"grav={gravitation:.3f} < {GRAVITATIONS_SCHWELLE}"
+                f"staerke={staerke:.3f} < {GRAVITATIONS_SCHWELLE}"
             )
 
-    # Absteigend nach Gravitationsstärke sortieren.
-    aktiviert.sort(key=lambda g: g.gravitation, reverse=True)
+    # Absteigend nach Aktivierungs-Stärke sortieren.
+    aktiviert.sort(key=lambda g: g.aktivierungs_staerke, reverse=True)
 
     if aktiviert:
         logger.info(
             f"Gravitation: {len(aktiviert)} Ziele aktiviert von {len(ziele)} — "
-            f"stärkstes: grav={aktiviert[0].gravitation:.3f}, "
+            f"stärkstes: staerke={aktiviert[0].aktivierungs_staerke:.3f}, "
             f"'{aktiviert[0].zielsatz[:50]}'"
         )
     else:
@@ -179,9 +223,9 @@ def gravitationsterm_berechnen(aktivierte_ziele: list[ActivatedGoal]) -> float:
     if not aktivierte_ziele:
         return 0.0
 
-    # Summe der Gravitationswerte × Salienz-Faktor.
+    # Summe der Aktivierungs-Stärken × Salienz-Faktor.
     # Bei mehreren aktivierten Zielen verstärken sie sich.
-    gesamt: float = sum(g.gravitation for g in aktivierte_ziele)
+    gesamt: float = sum(g.aktivierungs_staerke for g in aktivierte_ziele)
     term:   float = gesamt * GRAVITATIONS_SALIENZ_FAKTOR
 
     logger.debug(
@@ -191,6 +235,189 @@ def gravitationsterm_berechnen(aktivierte_ziele: list[ActivatedGoal]) -> float:
     )
 
     return round(term, 4)
+
+
+# ─────────────────────────────────────────────
+# Wahrnehmungs-Gravitation (Konzept §8.5)
+# ─────────────────────────────────────────────
+
+def _unverschoben(
+    anfrage_embedding: list[float],
+    cluster:           str,
+    ziel_anteile:      list[float],
+    herkunft:          str,
+) -> Verschiebung:
+    """Baut das Ergebnis für jeden Weg, der ohne Verschiebung endet.
+
+    Es gibt fünf davon (siehe `Verschiebung.herkunft`), und jeder muss
+    dieselben Felder setzen. Ein Rückkehrpfad, der die Zerlegung wegließe,
+    machte "nicht verschoben" von "nicht gerechnet" ununterscheidbar.
+
+    Vorbedingung: keine — die Funktion baut nur den Container.
+    Nachbedingung: `vektor` ist das rohe Anfrage-Embedding, `faktor` 0.0,
+        `cosinus_zu_roh` 1.0 (der Vektor ist mit sich selbst identisch).
+    """
+    return Verschiebung(
+        vektor         = anfrage_embedding,
+        faktor         = 0.0,
+        cluster        = cluster,
+        ziel_anteile   = ziel_anteile,
+        cosinus_zu_roh = 1.0,
+        herkunft       = herkunft,
+    )
+
+
+def wahrnehmung_verschieben(
+    anfrage_embedding: list[float],
+    aktivierte_ziele:  list[ActivatedGoal],
+    cluster:           str,
+    ist_anweisung:     bool,
+) -> Verschiebung:
+    """Verschiebt das Anfrage-Embedding in Richtung der aktivierten Ziele.
+
+    Der Suchschlüssel der Vektorsuche ist dann nicht mehr allein die Frage,
+    sondern die Frage plus Novas Motivation — cluster-abhängig stark:
+
+        e_nova = e_anfrage × (1 − faktor)
+               + summe(e_ziel × aktivierungs_staerke) × faktor
+
+    Der Faktor ist ein globaler Wert pro Turn aus `CLUSTER_GRAVITATION_FAKTOR`;
+    die Aktivierungs-Stärke ist eine Größe pro Ziel. Zwei verschiedene Dinge,
+    die im Bestand einmal denselben Namen trugen.
+
+    **Die Summe wird nicht normiert.** Das ist die Formel des Konzepts: Mehrere
+    gleichzeitig aktivierte Ziele sollen sich verstärken. Die Folge — der
+    Ziel-Anteil kann den Anfrage-Anteil überwiegen — ist der Grund für die
+    Spannenprüfung unten.
+
+    Vorbedingung: `anfrage_embedding` ist nicht leer; `cluster` stammt aus der
+        Schlüsselmenge von `CLUSTER_GRAVITATION_FAKTOR`; die Ziele stammen aus
+        `ziel_gravitation_berechnen` und tragen ihr Embedding.
+    Nachbedingung: Der zurückgegebene `vektor` hat dieselbe Dimension wie die
+        Eingabe und enthält nur endliche Zahlen. `cosinus_zu_roh` liegt in
+        (0.0, 1.0] — ein Suchschlüssel, der von der Frage wegzeigt, ist keine
+        Färbung mehr, sondern ein Austausch der Frage.
+    Fehlerfälle: Jeder endet mit dem **rohen** Embedding als Suchschlüssel und
+        einer Herkunftsmarke; keiner wirft. Leeres Anfrage-Embedding,
+        unbekannter Cluster und ein Ergebnis außerhalb der Spanne sind
+        `logger.error`; Imperativ, fehlende Ziele und Ziele ohne Embedding
+        sind vorgesehene Zustände und werden auf `info` gemeldet.
+
+    Args:
+        anfrage_embedding: Rohes Embedding des Turns (768-dim).
+        aktivierte_ziele: Ziele über der Schwelle, aus `ziel_gravitation_berechnen`.
+        cluster: GV-Cluster des Turns — bestimmt den Mischungs-Anteil.
+        ist_anweisung: Trägt der Turn die Salienz-Intention "anweisung".
+
+    Returns:
+        Die `Verschiebung` samt Zerlegung für das Pipeline-Log.
+    """
+    from ei.dreischicht import (
+        CLUSTER_GRAVITATION_FAKTOR,
+        GRAVITATION_FAKTOR_ANWEISUNG,
+    )
+
+    anteile: list[float] = [z.aktivierungs_staerke for z in aktivierte_ziele]
+
+    # ── Eingabe-Validierung ─────────────────────
+    if not anfrage_embedding:
+        logger.error(
+            f"Wahrnehmungs-Gravitation: leeres Anfrage-Embedding, "
+            f"Cluster '{cluster}', {len(aktivierte_ziele)} Ziele — "
+            f"keine Verschiebung, es gibt nichts zu verschieben"
+        )
+        return _unverschoben(anfrage_embedding, cluster, anteile, "kein_anfrage_embedding")
+
+    # Zugehörigkeit zum Kanon: Ein unbekannter Cluster ist ein Defekt und darf
+    # nicht still auf einen Vorgabewert fallen — sonst faerbt ein neuer
+    # 15. Cluster stillschweigend wie 'paradox'.
+    if cluster not in CLUSTER_GRAVITATION_FAKTOR:
+        logger.error(
+            f"Wahrnehmungs-Gravitation: Cluster '{cluster}' steht nicht in "
+            f"CLUSTER_GRAVITATION_FAKTOR ({len(CLUSTER_GRAVITATION_FAKTOR)} bekannt) "
+            f"— keine Verschiebung, roh gesucht"
+        )
+        return _unverschoben(anfrage_embedding, cluster, anteile, "cluster_unbekannt")
+
+    if ist_anweisung:
+        logger.info(
+            f"Wahrnehmungs-Gravitation: Imperativ-Override (Intention "
+            f"'anweisung'), Faktor {GRAVITATION_FAKTOR_ANWEISUNG} statt "
+            f"{CLUSTER_GRAVITATION_FAKTOR[cluster]} aus '{cluster}' — roh gesucht"
+        )
+        return _unverschoben(anfrage_embedding, cluster, anteile, "anweisung")
+
+    if not aktivierte_ziele:
+        logger.info(
+            f"Wahrnehmungs-Gravitation: kein aktives Ziel im Cluster "
+            f"'{cluster}' — roh gesucht"
+        )
+        return _unverschoben(anfrage_embedding, cluster, anteile, "keine_ziele")
+
+    beitragende: list[ActivatedGoal] = [z for z in aktivierte_ziele if z.embedding]
+
+    if not beitragende:
+        logger.info(
+            f"Wahrnehmungs-Gravitation: {len(aktivierte_ziele)} Ziele aktiv, "
+            f"aber keines mit Embedding — roh gesucht"
+        )
+        return _unverschoben(anfrage_embedding, cluster, anteile, "kein_ziel_embedding")
+
+    # ── Verarbeitung ────────────────────────────
+    faktor: float = CLUSTER_GRAVITATION_FAKTOR[cluster]
+
+    roh: np.ndarray = np.array(anfrage_embedding, dtype=float)
+
+    ziel_summe: np.ndarray = np.zeros_like(roh)
+    for ziel in beitragende:
+        if len(ziel.embedding) != len(anfrage_embedding):
+            logger.error(
+                f"Wahrnehmungs-Gravitation: Ziel id={ziel.ziel_id} hat "
+                f"Dimension {len(ziel.embedding)}, Anfrage {len(anfrage_embedding)} "
+                f"— keine Verschiebung, roh gesucht"
+            )
+            return _unverschoben(anfrage_embedding, cluster, anteile, "dimension_ungleich")
+        ziel_summe += np.array(ziel.embedding, dtype=float) * ziel.aktivierungs_staerke
+
+    verschoben: np.ndarray = roh * (1.0 - faktor) + ziel_summe * faktor
+
+    # ── Ausgabe-Verifikation ────────────────────
+    if not np.all(np.isfinite(verschoben)):
+        logger.error(
+            f"Wahrnehmungs-Gravitation: Ergebnis enthaelt nicht-endliche Werte "
+            f"(Cluster '{cluster}', Faktor {faktor}, {len(beitragende)} Ziele, "
+            f"Anteile {[round(a, 3) for a in anteile]}) — verworfen, roh gesucht"
+        )
+        return _unverschoben(anfrage_embedding, cluster, anteile, "verworfen_ausser_spanne")
+
+    cosinus: float = _cosine_similarity(anfrage_embedding, verschoben.tolist())
+
+    # Spanne laut Nachbedingung: (0.0, 1.0]. Ein Wert ausserhalb wird gemeldet
+    # und verworfen, nicht gekappt — sonst waere eine umgedrehte Frage von
+    # einer starken Faerbung nicht mehr zu unterscheiden.
+    if not (0.0 < cosinus <= 1.0 + 1e-6):
+        logger.error(
+            f"Wahrnehmungs-Gravitation: Cosinus zum rohen Embedding "
+            f"{cosinus:.4f} ausserhalb der Spanne (0.0, 1.0] — Cluster "
+            f"'{cluster}', Faktor {faktor}, {len(beitragende)} Ziele, "
+            f"Anteile {[round(a, 3) for a in anteile]} — verworfen, roh gesucht"
+        )
+        return _unverschoben(anfrage_embedding, cluster, anteile, "verworfen_ausser_spanne")
+
+    logger.info(
+        f"Wahrnehmungs-Gravitation: Cluster '{cluster}', Faktor {faktor}, "
+        f"{len(beitragende)} Ziele (Anteile {[round(a, 3) for a in anteile]}), "
+        f"Cosinus zum rohen Embedding {cosinus:.4f}"
+    )
+
+    return Verschiebung(
+        vektor         = verschoben.tolist(),
+        faktor         = faktor,
+        cluster        = cluster,
+        ziel_anteile   = anteile,
+        cosinus_zu_roh = round(cosinus, 4),
+        herkunft       = "verschoben",
+    )
 
 
 # ─────────────────────────────────────────────

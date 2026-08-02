@@ -110,22 +110,24 @@ def _persist_short_term_drive(state: ConversationState) -> None:
     for ziel in aktivierte:
         # aktivierte_ziele sind plain dicts (siehe enricher); robust gegen
         # versehentliche ActivatedGoal-Objekte mit getattr-Fallback.
+        # `aktivierungs_staerke` ist die Anziehung EINES Ziels — nicht der
+        # Cluster-Faktor der Wahrnehmungs-Gravitation, der pro Turn gilt.
         if isinstance(ziel, dict):
-            zielsatz    = ziel.get("zielsatz", "")
-            similarity  = ziel.get("similarity", 0.0)
-            motivation  = ziel.get("motivation", 0.0)
-            gravitation = ziel.get("gravitation", 0.0)
+            zielsatz = ziel.get("zielsatz", "")
+            similarity = ziel.get("similarity", 0.0)
+            motivation = ziel.get("motivation", 0.0)
+            staerke    = ziel.get("aktivierungs_staerke", 0.0)
         else:
-            zielsatz    = getattr(ziel, "zielsatz", "")
-            similarity  = getattr(ziel, "similarity", 0.0)
-            motivation  = getattr(ziel, "motivation", 0.0)
-            gravitation = getattr(ziel, "gravitation", 0.0)
+            zielsatz = getattr(ziel, "zielsatz", "")
+            similarity = getattr(ziel, "similarity", 0.0)
+            motivation = getattr(ziel, "motivation", 0.0)
+            staerke    = getattr(ziel, "aktivierungs_staerke", 0.0)
 
         activated_goals.append({
             "goal_text":        zielsatz,
             "similarity":       float(similarity),
             "motivation":       float(motivation),
-            "gravity_strength": float(gravitation),
+            "gravity_strength": float(staerke),
         })
 
     conversation_vector: str = state.get("gespraechsvektor", "") or ""
