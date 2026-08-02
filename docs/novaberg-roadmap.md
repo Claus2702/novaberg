@@ -1983,6 +1983,36 @@ Beide Räder haben eine Nabe — den Wert ohne jede Ausprägung — und das Erge
 
 ---
 
+## Chat 125 (02.08.2026) — Der Synapsen-Umbau ist geschlossen: P9 ✅
+
+**P1 bis P9 sind durch.** Offen bleibt allein P10 (Wahrnehmungs-Gravitation), das laut Konzept §13.12 ohnehin orthogonal zum Umbau steht.
+
+**Der Stand war fünf Phasen älter als die Doku.** Der Backlog führte „P0–P3 implementiert, P4 wartet auf die MS-Welle" — Stand Chat 91. Gebaut waren P4 bis P8 längst; gemessen am Bestand statt an der Tabelle: 1108 Knoten, 110.340 Kanten, die alte `langzeitgedaechtnis` bei **0 Zeilen**.
+
+### P9a — die Leser, bevor der Drop ihnen die Grundlage nimmt
+
+Zwei lebende Pfade sprachen noch mit der abgelösten Tabelle, und beide taten es lautlos.
+
+**Die Vorwissens-Prüfung des RechercheAgenten** las `FROM langzeitgedaechtnis` — seit dem Reset am 27.07. also aus einer leeren Tabelle. Sie meldete für jedes Thema „kenne ich nicht", und nichts fiel aus: Eine Abfrage gegen eine leere Tabelle liefert eine gültige leere Liste. Gemessen mit dem Embedding eines vorhandenen Knotens: alte Abfrage 0 Treffer, neue 5, alle zum Thema. Nova hat recherchiert, was sie schon wusste.
+
+**Die emotionale Gravitation wandte den Zeitverfall zweimal an.** Sie liest `gewicht_decay` — den Wert, den der tägliche Decay-Lauf bereits als `gewicht_absolut × exp(−rate × tage)` materialisiert — und schickte ihn durch dieselbe Ebbinghaus-Formel mit derselben Rate. Der Kommentar sagte „Decay aus lzg.py wiederverwenden", und das stimmte, solange die Eingabe das rohe Gewicht war; der Synapsen-Umbau hat die Eingabe geändert, nicht den Aufruf. Jede Erinnerung wurde gewichtet, als wäre sie doppelt so alt.
+
+Die Wirkung ist heute klein und wächst: Der Korpus ist höchstens 6,4 Tage alt, der zweite Faktor liegt im Mittel bei 0,9972. Bei hundert Tagen wären es 0,86, bei einem Jahr 0,58. Ein Defekt der Zukunft — die Sorte, die spät gefunden wird, weil sie nie weh tut, solange man hinsieht.
+
+**Gegenprobe zweifach:** doppelten Verfall wiederhergestellt → 3 rot (vorhergesagt 3); Lesepfad zurück auf die alte Tabelle → 2 rot (vorhergesagt 2).
+
+### P9b — das Codeschloss
+
+`DROP TABLE langzeitgedaechtnis`, dazu **2172 Zeilen** aus dem Repositorium: die alte Cluster-Promotion (1620), das P8-Migrationswerkzeug (282), das alte LZG-Modul (172), der alte Decay-Agent (76). Das Feature-Flag `SYNAPSEN_PROMOTION_AKTIV` fällt mit — ein Schalter zwischen zwei Pfaden, von denen einer nicht mehr existiert, ist kein Schalter.
+
+**Zwei Stellen, die das Konzept nicht vorhersah.** `agents/timeline/init.sql` legte der Tabelle bei jedem Serverstart eine Spalte und einen Fremdschlüssel an — bliebe das stehen, hätte der Drop bei jedem Start eine leere Tabelle neu erzeugt. Und `SYNAPSEN_LESEPFAD_AKTIV`, das §13.11 zu entfernen verlangt, wurde nie gebaut.
+
+Der Redis-Zeitplan `pixie:schedule:decay` musste mit: Er hätte weiter einen Takt für einen gelöschten Agenten angefordert. Der alte Decay lief bis zuletzt — gegen eine leere Tabelle.
+
+**Umfang:** Suite 949 → **956**, grün. Nulllinie **2246 → 2182** (64 Treffer weniger, weil 2172 Zeilen weg sind). Beide Wände sauber. Migration von 148 auf 123 Statements.
+
+---
+
 ## Chat 125 (02.08.2026) — Novas Ziele gehören einer Beziehung, und Pixie bedient ein Paar ✅
 
 **Vorbereitung der Charakterbildungs-Messreihe.** Sechs Testpersonen sollen gegen dieselbe Nova laufen; geprüft wurde vorher, was von einem fremden Paar auf das produktive Paar `(meister, nova)` abstrahlt. Der Befund war **eine** Stelle, und sie löscht.

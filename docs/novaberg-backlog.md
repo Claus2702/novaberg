@@ -1780,7 +1780,9 @@ plausibel (frühestes Auftreten der Erinnerung).
 
 ## Epic: Memory-Kern-Umbau (Synapsen-Modell, Chat 86)
 
-**Status:** P0–P3 implementiert, P4 architektonisch geklärt (Chat 91), wartet auf MS-Welle
+**Status:** **P1–P9 abgeschlossen (Chat 125).** Offen ist allein P10 (Wahrnehmungs-Gravitation), das laut Konzept §13.12 ohnehin orthogonal zum Umbau steht.
+
+*Die vorige Angabe „P0–P3 implementiert, P4 wartet auf MS-Welle" stammte aus Chat 91 und war fünf Phasen im Rückstand — P4 bis P8 sind zwischen Chat 98 und 111 gebaut worden, ohne dass diese Tabelle nachgezogen wurde. Nachgemessen am 02.08.2026 gegen den Bestand, nicht gegen die Doku.*
 **Bezug:** novaberg-memory-synapsen_k.md, novaberg-memory-synapsen-p4-entscheidungen_k.md (Chat 91)
 **Vorbedingung:** Microservice-Modell-Queue (eigenes Epic, Chat 91). P4 setzt auf der MS-Welle auf — Embedding-Konsolidierung und `pixie_llm_call`-Konsolidierung sind strukturelle Blocker.
 
@@ -1796,8 +1798,29 @@ plausibel (frühestes Auftreten der Erinnerung).
 | Punkt 6 | Gesprächs- und Node-Log (Forensik-Schicht) | ✅ Chat 86 |
 | Punkt 7 | Migration und selektive Bestandsdaten-Übernahme | ✅ Chat 86 |
 | Punkt 8 | Bug- und Backlog-Reset | ✅ Chat 86 |
-| Punkt 9 | Implementierungs-Phasen P1-P9 für Brudi-Sprints | 🔧 In Umsetzung (P0–P3 ✅, P4 architektonisch geklärt Chat 91, blockiert auf MS-Welle) |
+| Punkt 9 | Implementierungs-Phasen P1–P10 | 🔧 **P1–P9 ✅ (Chat 125), P10 offen** — Stand am 02.08.2026 gegen den Bestand gemessen, siehe Tabelle unten |
 | Punkt 10 | P4-Klärungspunkte (K1–K10) | ✅ Chat 91 — `novaberg-memory-synapsen-p4-entscheidungen_k.md` |
+
+### Stand der Sprints, gemessen am 02.08.2026
+
+| Sprint | Belegt durch |
+|---|---|
+| **P1** Pipeline-Log | ✅ 34.832 Zeilen |
+| **P2** `lzg_knoten` / `lzg_kanten` | ✅ Tabellen gefüllt |
+| **P3** Magnetfelder im KZG-Schreibpfad | 🔶 themen 99 %, `entitaet_ids` 31 %, `timeline_id` **2,6 %** — siehe unten |
+| **P4** Neue Promotion | ✅ 1108 Knoten, 110.340 Kanten |
+| **P5** Enricher liest neu | ✅ `spreading_lesen` |
+| **P6** Decay für Knoten | ✅ `synapsen_decay` im Zeitplan |
+| **P7** Charakter-Hash auf neuer Topologie | ✅ liest `lzg_knoten` |
+| **P8** Migration Bestandsdaten | ✅ gegenstandslos: alte Tabelle hatte 0 Zeilen |
+| **P9** Codeschloss | ✅ Tabelle gelöscht, 2172 Zeilen entfernt |
+| **P10** Wahrnehmungs-Gravitation | ⬜ nicht gebaut |
+
+**Zu P3 — die dünnen Magnetfelder sind überwiegend kein Defekt.** Gemessen: Von 1076 Knoten ohne `timeline_id` enthalten **5** überhaupt einen Datums- oder Zeitausdruck; von 766 ohne `entitaet_ids` nennen 76 % nichts Bekanntes. Der Korpus besteht aus Weltwissen — Entropie, Hawking-Strahlung, Raumzeit —, und Weltwissen hat weder Referenz noch Datum. Verbleibende 185 Knoten nennen einen bekannten Begriff als ganzes Wort, ohne ihn zu verlinken; das ist ein Fundlisten-Eintrag, kein Sprint.
+
+**Woran das nicht messbar ist:** an diesem Korpus. Die Charakterbildungs-Messreihe (§0b) setzt in Turn 7 und 9 jedes Bogens einen harten Fakt mit Name, Zahl, Datum und Ort — sechs Läufe ergeben zwölf Referenzen mit Zeitbezug plus zwölf Abrufe. Erst danach lässt sich sagen, ob die Entitäts- und Zeitschicht greifen, wenn es etwas zu greifen gibt.
+
+**Kantenzusammensetzung heute:** embedding 87,7 %, themen 10,9 %, entitaet 1,1 %, timeline 0,3 %. Das ist erwartbar und kein Versagen — Embedding-Ähnlichkeit ist eine dichte Relation zwischen allen hinreichend ähnlichen Paaren, ein geteilter Begriff eine seltene. Der Kern des Umbaus war, dass jede Erinnerung ein eigener Knoten **bleibt** statt zu einem Aggregat zu verschmelzen; das hält.
 
 ### Hintergrund
 

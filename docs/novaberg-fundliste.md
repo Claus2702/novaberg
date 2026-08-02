@@ -25,6 +25,8 @@ Analog zum Kraft-1-Stichtag: ab wann eine Partition brauchbar ist. Kein Backfill
 
 - **2026-08-02** — **Vier Repo-Dateien nennen eine Rolle im Klartext:** `agents/promotion/AGENT.md`, `agents/wiedervorlage/AGENT.md`, `agents/synapsen_promotion/AGENT.md` (je „Gedaechtnis des Meisters" / „user_id des Meisters") und `prompts/default/tribunal_jurist.direktiven_pruefung.txt` (ein Beispielwort). Vorbestand, gepusht. Gefunden bei der Veröffentlichungsprüfung eines anderen Auftrags, nicht bei einer Suche danach.
 
+- **2026-08-02** — **Die Salienz-Bewertung scheitert an LaTeX in der Modellantwort.** Belegt beim Abnahme-Turn zu P9 (19:15:01 UTC): `ChatWorker 'chat': JSON-Parsing fehlgeschlagen (caller=salienz/segment, fehler=Invalid \escape)`. Das Modell antwortet mit Formeln — `$T_H$`, `\propto`, `\n\n` im Fließtext —, und `parse_json_strict` bricht am Backslash ab. **Das erklärt vermutlich die 6 `salienz`-Fehler**, die im Pipeline-Log der letzten sieben Tage stehen (von insgesamt 11): Der Korpus ist Physik, und Physik schreibt sich in LaTeX. Der Turn selbst lief durch, nur seine Bewertung fiel aus — der Eintrag bekommt damit keine Salienz und wird nicht promotet.
+
 - **2026-08-02** — **Zwei von drei Auftragsarten der Shadow-Queue haben keinen Agenten.** `services/pixie/router.py` bildet `vertiefen` auf den Agenten `vertiefung` ab und `nachfragen` auf `nachfragen` — **beide Verzeichnisse existieren nicht** (`server/agents/` trägt 15 Agenten, keiner davon heißt so). Im Bestand sind das **168 + 62 = 230 von 649 Aufträgen**, also 35 %.
 
   **Sie sind nie versucht worden:** Alle 230 tragen `_retries=0`. Zum Vergleich trägt `recherche` — der Agent existiert — 387 mit `_retries=0`, 16 mit 1 und 16 mit 2; dieser Pfad läuft also und scheitert gelegentlich.
