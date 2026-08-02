@@ -436,24 +436,32 @@ def _lzg_emotionale_eintraege(
 
     kandidaten: list[dict] = []
 
-    from memory.lzg import effektives_gewicht_berechnen
+    for inhalt, emotion, arousal, gewicht_decay, verstaerkt_am, similarity in rows:
+        # `gewicht_decay` ist BEREITS der zeitlich abgewertete Praesenz-Wert:
+        # Der Decay-Lauf materialisiert ihn taeglich als
+        # `gewicht_absolut * exp(-rate * tage_seit_verstaerkung)`
+        # (novaberg-memory-synapsen_k.md §9.2).
+        #
+        # Bis Chat 125 lief er hier ein zweites Mal durch dieselbe Formel mit
+        # derselben Rate — die Absicht war, den Ebbinghaus-Verfall zu teilen,
+        # aber die Eingabe war seit dem Synapsen-Umbau nicht mehr das rohe
+        # Gewicht. Jede Erinnerung wurde damit gewichtet, als waere sie doppelt
+        # so alt: exp(-2rt) statt exp(-rt).
 
-    for inhalt, emotion, arousal, gewicht, verstaerkt_am, similarity in rows:
-        # Ebbinghaus-Decay aus lzg.py wiederverwenden
-        eff_gewicht: float = effektives_gewicht_berechnen(gewicht, verstaerkt_am, jetzt)
-
-        # Zeit-Decay für emotionale Gravitation (eigener, langsamerer Decay)
+        # Zeit-Decay für emotionale Gravitation (eigener, langsamerer Decay).
+        # Er bleibt: Er ist keine Wiederholung, sondern eine zweite, bewusst
+        # flachere Kurve fuer die emotionale Praesenz (§8.4.3).
         zeit_decay: float = _zeit_decay_faktor(verstaerkt_am, jetzt)
 
         # Gravitation berechnen
-        gravitation: float = similarity * eff_gewicht * zeit_decay * EMOTIONALE_GRAVITATION_FAKTOR_LZG
+        gravitation: float = similarity * gewicht_decay * zeit_decay * EMOTIONALE_GRAVITATION_FAKTOR_LZG
 
         if gravitation >= EMOTIONALE_GRAVITATIONS_SCHWELLE:
             kandidaten.append({
                 "emotion":     emotion,
                 "arousal":     arousal or 0.5,
                 "similarity":  round(similarity, 3),
-                "gewicht":     round(eff_gewicht, 3),
+                "gewicht":     round(gewicht_decay, 3),
                 "zeit_decay":  round(zeit_decay, 3),
                 "gravitation": round(gravitation, 3),
                 "quelle":      "lzg",
@@ -462,7 +470,7 @@ def _lzg_emotionale_eintraege(
 
             logger.debug(
                 f"EmGrav LZG: {emotion}(a={arousal:.2f}), "
-                f"sim={similarity:.3f}, eff_gew={eff_gewicht:.3f}, "
+                f"sim={similarity:.3f}, gew_decay={gewicht_decay:.3f}, "
                 f"grav={gravitation:.3f}, '{(inhalt or '')[:40]}'"
             )
 

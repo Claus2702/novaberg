@@ -44,7 +44,7 @@ def kontext_paket_bauen(
     session_kontext = session_kontext_extrahieren(user_id)
 
     # 2. LZG-Vorwissen via Embedding-Suche
-    lzg_treffer = _lzg_vorwissen_laden(thema, user_id, lzg_limit)
+    lzg_treffer = _lzg_vorwissen_laden(thema, user_id, character_id, lzg_limit)
 
     # 3. KZG-Eintraege zum Thema
     kzg_eintraege = _kzg_eintraege_laden(thema, user_id, kzg_limit)
@@ -73,8 +73,35 @@ def kontext_paket_bauen(
     }
 
 
-def _lzg_vorwissen_laden(thema: str, user_id: str, limit: int) -> list[dict]:
-    """Laedt LZG-Eintraege via Embedding-Suche."""
+def _lzg_vorwissen_laden(
+    thema: str, user_id: str, character_id: str, limit: int,
+) -> list[dict]:
+    """Laedt Vorwissen aus `lzg_knoten` via Embedding-Suche.
+
+    **Las bis Chat 125 aus `langzeitgedaechtnis`** — der Tabelle, die der
+    Synapsen-Umbau abgeloest hat und die seit dem Reset vom 27.07.2026 null
+    Zeilen traegt. Die Vorwissens-Pruefung meldete damit ausnahmslos „kenne
+    ich nicht", und der RechercheAgent recherchierte Themen, die in 1108
+    Knoten bereits standen. Ein Lesepfad auf eine leere Tabelle faellt nicht
+    auf: Er liefert eine gueltige leere Liste.
+
+    Sortiert nach `gewicht_decay`-gewichteter Aehnlichkeit? Nein — nach
+    Aehnlichkeit allein, wie zuvor. Der Praesenz-Wert entscheidet im
+    Lesepfad des Enrichers ueber die Auswahl; hier geht es um die Frage
+    „gibt es dazu schon etwas", und die beantwortet die Naehe.
+
+    Vorbedingung: Beide Kennungen gesetzt — `lzg_knoten` ist paar-partitioniert.
+    Nachbedingung: Hoechstens `limit` Treffer dieses Paares.
+    Fehlerfaelle: Leere Kennung oder DB-Fehler — `logger.warning`, leere Liste.
+    """
+    # ── Eingabe-Validierung ─────────────────────
+    if not user_id or not character_id:
+        logger.warning(
+            f"LZG-Vorwissen: unvollstaendiges Paar ({user_id!r}, {character_id!r}) "
+            f"— kein Zugriff, Thema '{thema[:40]}'"
+        )
+        return []
+
     try:
         embed_response = model_service.embed.submit_sync(EmbedRequest(text=thema))
         thema_embedding: list[float] = embed_response.embedding
@@ -87,14 +114,14 @@ def _lzg_vorwissen_laden(thema: str, user_id: str, limit: int) -> list[dict]:
 
         treffer = db_manager.select(
             """
-            SELECT inhalt, dimension, erstellt_am, gewicht
-            FROM langzeitgedaechtnis
-            WHERE user_id = %s AND aktiv = TRUE
+            SELECT inhalt, dimension, erstellt_am, gewicht_decay
+            FROM lzg_knoten
+            WHERE user_id = %s AND character_id = %s AND aktiv = TRUE
               AND embedding IS NOT NULL
             ORDER BY 1 - (embedding <=> %s::vector) DESC
             LIMIT %s
             """,
-            (user_id, embedding_str, limit),
+            (user_id, character_id, embedding_str, limit),
         )
         return treffer
     except Exception as e:
