@@ -274,7 +274,6 @@ project/
 │   │   ├── delegation/                  #   DelegationsAgent (Halluzinations-Ventil, init.sql)
 │   │   ├── recherche/                   #   RechercheAgent (Pixie, Web-Recherche)
 │   │   ├── promotion/                   #   PromotionAgent (Pixie, KZG -> LZG)
-│   │   ├── decay/                       #   DecayAgent (Pixie, Ebbinghaus)
 │   │   ├── charakter/                   #   CharakterAgent (Pixie, Hash-Destillation + zwei Charakter-Raeder)
 │   │   │   ├── rad_messreihe.py         #     Messreihe der Raeder: rohe Messungen + gewichtetes Mittel (→ novaberg-charakter-rad-messreihe_k.md)
 │   │   │   └── init.sql                 #     Tabelle charakter_rad_messung (seit 01.08.2026)
@@ -537,10 +536,10 @@ Perzeption und Router bekommen die letzten 5 Session-Turns als Hintergrund-Konte
 | Graph-Pipeline (AgentGraph, 3 Nodes) | Implementiert & getestet | novaberg-graph.md, novaberg-pixie.md |
 | Kurzzeitgedaechtnis (Redis + Vektor) | Implementiert & getestet | novaberg-mem-kzg.md |
 | Kurzzeitgedaechtnis Magnet-Felder (entitaet_ids, timeline_id, Synapsen P3) | Implementiert | novaberg-mem-kzg.md, novaberg-pixie-kzg.md |
-| Langzeitgedaechtnis (PostgreSQL) | Implementiert & getestet | novaberg-mem-lzg.md |
+| Langzeitgedaechtnis (PostgreSQL) | **Abgeloest durch das Synapsen-Modell (P9, 02.08.2026)** | novaberg-memory-synapsen_k.md · archive/novaberg-mem-lzg.md |
 | Pipeline-Log-Forensik (asynchroner Writer, JSONB-Inhalt, Span-Korrelation, turn_id über /chat + /chat/stream + fail-loud bei leerem turn_id) | Implementiert (Chat 88 P1.1, vervollständigt Chat 90 TURN-ID-FIX) | novaberg-memory-synapsen_k.md §10 |
 | Synapsen-Tabellen (lzg_knoten, lzg_kanten, parallel zum LZG) | Schema angelegt, leer | novaberg-memory-synapsen_k.md §4 |
-| Ebbinghaus-Decay + Soft-Delete | Implementiert & getestet | novaberg-pixie-decay.md |
+| Ebbinghaus-Decay + Soft-Delete | **Abgeloest: `SynapsenDecayAgent` materialisiert `gewicht_decay`** (P9) | novaberg-memory-synapsen_k.md §9 · archive/novaberg-pixie-decay.md |
 | Salienz als Entscheider | Implementiert & getestet | novaberg-node-salience.md |
 | Fakten-Pipeline (Typ 1 + 2, bi-temporal) | Implementiert & getestet | novaberg-mem-knowledge-graph.md |
 | Timeline (CRUD + Vektor-Modus) | Implementiert & getestet | novaberg-agent-timeline.md |
@@ -567,7 +566,7 @@ Perzeption und Router bekommen die letzten 5 Session-Turns als Hintergrund-Konte
 | Client: Kompakte KZG/LZG-Listen | Implementiert | — |
 | EI-Plausibilitaets-Gate (8 Plutchik-Sektoren) | Implementiert | novaberg-node-perception.md |
 | EI-MIKRO (situative Mikro-Anweisungen) | Implementiert | novaberg-node-responder.md |
-| Arousal-basierter Decay (Emotions-Persistenz) | Implementiert | novaberg-pixie-decay.md |
+| Arousal-basierter Decay (Emotions-Persistenz) | Implementiert | archive/novaberg-pixie-decay.md |
 | Admin-API (Pixie Pause/Resume/Flush) | Implementiert | novaberg-architecture.md |
 | Sprachadaption (CAT): Feature-Scoring + Profil-Pipeline | Implementiert & validiert | novaberg-ei-character-profiles.md, novaberg-ei-language-adaptation.md |
 | Novas eigener Charakter-Hash im Responder | Implementiert & validiert | novaberg-ei-character-profiles.md |
@@ -655,7 +654,7 @@ Das Handbuch ist nach Betrachtungstiefen organisiert. Tiefe 0 ist der Einstiegsp
 |----------|-------------|
 | novaberg-pixie-kzg.md | KZG-Agent (5-Node-Subgraph, Verdichtung, Aehnlichkeit) |
 | novaberg-pixie-promotion.md | PromotionAgent (Zwei-Call-Promotion, KZG → LZG) |
-| novaberg-pixie-decay.md | DecayAgent (Ebbinghaus-Vergessenskurve) |
+| archive/novaberg-pixie-decay.md | DecayAgent — **archiviert (P9)**, Agent geloescht |
 | novaberg-pixie-character-hash.md | CharakterAgent (5-Profil-Destillation, alle im Prompt genutzt) |
 | novaberg-pixie-reminder.md | WiedervorlageAgent (4-Tabellen-Scan, Snooze) |
 | novaberg-pixie-research.md | RechercheAgent (Web-Recherche, Dual-Modell) |
@@ -668,7 +667,7 @@ Das Handbuch ist nach Betrachtungstiefen organisiert. Tiefe 0 ist der Einstiegsp
 |----------|-------------|
 | novaberg-mem-session.md | Session-Gedaechtnis (Redis, Turn-Formatierung) |
 | novaberg-mem-kzg.md | Kurzzeitgedaechtnis (Redis, TTL, Vektorsuche) |
-| novaberg-mem-lzg.md | Langzeitgedaechtnis (PostgreSQL, Ebbinghaus-Decay) |
+| archive/novaberg-mem-lzg.md | Langzeitgedaechtnis — **archiviert (P9)**, Tabelle und Modul geloescht |
 | novaberg-mem-knowledge-graph.md | Knowledge Graph (Entitaeten, Fakten, Entity Resolution) |
 
 ### Tiefe 2 — EI-Module (3)
@@ -887,8 +886,7 @@ Das Kern-Schema lebt in `db/init.sql` als Single Source of Truth (Synapsen P0). 
 
 | Tabelle | Quelle | Beschreibung |
 |---------|--------|-------------|
-| `langzeitgedaechtnis` | `db/init.sql` | LZG mit Ebbinghaus-Decay (legacy, bleibt bis P9 produktiv) |
-| `lzg_knoten` | `db/init.sql` | Synapsen-Knoten (Synapsen P2, parallel zu `langzeitgedaechtnis`, leer bis P4) |
+| `lzg_knoten` | `db/init.sql` | Synapsen-Knoten — **das Langzeitgedaechtnis** seit P9 (02.08.2026); 1108 Knoten am 02.08. |
 | `lzg_kanten` | `db/init.sql` | Synapsen-Kanten-Cache (Synapsen P2, abgeleiteter Cache; drei Trigger zur Neuberechnung) |
 | `pipeline_log` | `db/init.sql` | Forensik-Tabelle für Node-Entscheidungen pro Turn (Synapsen P1, JSONB-Inhalt) |
 | `charakter_hash` | `db/init.sql` | 5 Persoenlichkeitsprofile (kern_hash, adaptive_hash, beziehungsprofil, intentions_profil, emotions_profil), alle im Prompt injiziert (seit Chat 52) |

@@ -2,7 +2,13 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Konzept — Synapsen-Modell für das Langzeitgedächtnis
-**Stand:** 12. Juli 2026, Chat 107 (Gewichts-Reset des Bestands am 12.07.2026 dokumentiert — Bruch in der Historie, siehe §9; ivfflat-Index entfernt. Zuvor: Chat 87, Punkt 1–8 vollständig ausgearbeitet)
+**Stand:** 2. August 2026, Chat 125 — **der Umbau ist abgeschlossen: P1 bis P9 gebaut, P10 offen.** Die abgelöste Tabelle `langzeitgedaechtnis` ist gelöscht, der alte Cluster-Pfad aus dem Repositorium entfernt. Zuvor: Chat 107 (Gewichts-Reset des Bestands am 12.07.2026 — Bruch in der Historie, siehe §9; ivfflat-Index entfernt). Zuvor: Chat 87, Punkt 1–8 vollständig ausgearbeitet.
+
+> **Gemessen am 02.08.2026, nicht geschätzt:** 1108 Knoten, 110.340 Kanten, alte Tabelle 0 Zeilen. Kantenzusammensetzung: embedding 87,7 %, themen 10,9 %, entitaet 1,1 %, timeline 0,3 %.
+>
+> **Die dünnen Schichten sind überwiegend der Korpus, nicht der Schreibpfad.** Von 1076 Knoten ohne `timeline_id` enthalten fünf überhaupt einen Zeitausdruck; von 766 ohne `entitaet_ids` nennen drei Viertel nichts Bekanntes. Die Gespräche sind Weltwissen — Entropie, Hawking-Strahlung, Raumzeit —, und Weltwissen hat weder Referenz noch Datum. Dass die dichte Relation (Embedding) die seltenen (Entität, Zeit) zahlenmäßig überwiegt, ist erwartbar und kein Versagen: Der Kern des Umbaus war, dass jede Erinnerung ein **eigener Knoten bleibt** statt zu einem Aggregat zu verschmelzen. Das hält.
+>
+> **Woran es sich entscheiden wird:** an der Charakterbildungs-Messreihe. Jeder ihrer sechs Bögen setzt in Turn 7 einen Namen mit Zahl und in Turn 9 ein Datum mit Ort und fragt beides in Turn 22 und 24 zurück ab. Erst dieser Korpus kann zeigen, ob die Entitäts- und Zeitschicht greifen, wenn es etwas zu greifen gibt.
 **Pfad:** novaberg/docs/novaberg-memory-synapsen_k.md
 **Vorgänger-Konzepte:** novaberg-kzg-liberalisierung_k.md (Chat 64), novaberg-pixie-promotion.md
 
@@ -1335,6 +1341,10 @@ Spätere Konsumenten:
 
 ## 11. Migration und Bestandsdaten
 
+> **Gegenstandslos geworden am 27.07.2026, ausgeführt nie.** Der Abschnitt plante die selektive Übernahme von rund 150 Bestandseinträgen. Bevor es dazu kam, wurde das System auf einen leeren Datenbestand zurückgesetzt (`novaberg-backlog.md`, Stichtag 27.07.2026, 09:13 UTC) — die alte Tabelle stand danach bei null, und es gab nichts mehr zu übernehmen. P9 hat sie am 02.08.2026 gelöscht; das Migrationswerkzeug `tools/migrate_lzg_synapsen.py` ist mit entfernt.
+>
+> **Die Überlegungen bleiben lesenswert**, weil sie die Unverträglichkeit der beiden Architekturen begründen — und weil dieselbe Frage bei jeder künftigen Modell-Ablösung wiederkommt.
+
 Beim LZG-Umbau entstehen `lzg_knoten` und `lzg_kanten` parallel zum bestehenden `langzeitgedaechtnis`. Die alte Tabelle wird nicht weitergenutzt — sie hat eine andere Architektur (aggregierte Cluster-Einträge), die mit dem Synapsen-Modell strukturell unverträglich ist. Aber die Bestandsdaten der alten Tabelle tragen wertvolle Faktenlage und Erinnerungen, die nicht verloren gehen sollen.
 
 Beschluss aus Chat 86: **selektive manuelle Übernahme, danach alte Tabelle löschen.**
@@ -1495,6 +1505,24 @@ Im `novaberg-backlog.md` wird das Epic `Memory-Kern-Umbau (Synapsen-Modell, Chat
 ---
 
 ## 13. Implementierungs-Phasen
+
+> **Stand 02.08.2026 (Chat 125): P1 bis P9 sind gebaut. Offen ist allein P10.**
+>
+> | Sprint | Stand | Belegt durch |
+> |---|---|---|
+> | P1 Pipeline-Log | ✅ | 34.832 Zeilen |
+> | P2 Tabellen | ✅ | angelegt und gefüllt |
+> | P3 Magnetfelder | 🔶 | themen 99 %, `entitaet_ids` 31 %, `timeline_id` 2,6 % — siehe Kopf |
+> | P4 Neue Promotion | ✅ | `SynapsenPromotionAgent`, 1108 Knoten |
+> | P5 Enricher liest neu | ✅ | `spreading_lesen` |
+> | P6 Decay | ✅ | `SynapsenDecayAgent` materialisiert `gewicht_decay` |
+> | P7 Charakter-Hash | ✅ | liest `lzg_knoten` |
+> | P8 Migration | ✅ | gegenstandslos, siehe §11 |
+> | P9 Codeschloss | ✅ | Tabelle gelöscht, 2172 Zeilen entfernt |
+> | P10 Wahrnehmungs-Gravitation | ⬜ | nicht gebaut |
+>
+> **Die Sprint-Beschreibungen unten bleiben unverändert.** Sie sind die Absicht von damals und der Maßstab, an dem sich messen lässt, was daraus wurde — nicht der Zustand. Zwei Abweichungen sind beim Bauen von P9 aufgefallen und dort vermerkt: `agents/timeline/init.sql` legte die alte Tabelle bei jedem Serverstart neu an, und das in §13.11 zu entfernende Flag `SYNAPSEN_LESEPFAD_AKTIV` wurde nie gebaut.
+
 
 Der Synapsen-Umbau wird in zehn Sprints (P1 bis P10) umgesetzt. Jeder Sprint ist eine in sich abgeschlossene Lieferung, die für sich genommen funktioniert und vorzeigbar ist. Kein Sprint hinterlässt einen nicht-funktionierenden Zwischenzustand über seinen eigenen Lauf hinaus.
 

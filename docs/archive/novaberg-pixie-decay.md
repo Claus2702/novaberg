@@ -4,6 +4,8 @@
 **Dokument:** DecayAgent — Ebbinghaus-Vergessenskurve
 **Stand:** 16. Mai 2026, Chat 88 (Decay-Konstanten-Klarstellung für legacy `langzeitgedaechtnis` vs. neue `lzg_knoten`)
 **Pfad:** novaberg/docs/novaberg-pixie-decay.md
+**Status:** **Archiviert am 02.08.2026 (Synapsen P9).** Der beschriebene DecayAgent ist gelöscht. Er lief zuletzt gegen eine leere Tabelle: Sein Gegenstand `langzeitgedaechtnis` war seit dem Reset am 27.07.2026 leer und ist mit P9 entfernt. Den Verfall der Knoten besorgt seither der `SynapsenDecayAgent`, der `gewicht_decay` materialisiert statt ihn bei jedem Lesen zu rechnen.
+**Nachfolger:** `novaberg-memory-synapsen_k.md` §9 (Decay-Logik)
 **Quellen:** nova-05-m-a.md, nova-02-t-a.md
 
 ---

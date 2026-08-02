@@ -151,8 +151,8 @@ Kein Kollisionsrisiko: Pixie und Chat nutzen bei Idle dasselbe GPU-Modell (gemma
 
 | # | Agent | Typ | Periodisch | Prio | Intervall | LLM-Call | context_user | Status |
 |---|-------|-----|-----------|------|-----------|----------|-------------|--------|
-| 1 | **PromotionAgent** | Workflow | Ja | 0.9 | 5 min | Ja (CPU, 1-3 Calls) | `user` | ✅ |
-| 2 | **DecayAgent** | Workflow | Ja | 0.2 | 24 h | Nein | `user` + `nova` | ✅ |
+| 1 | ~~**PromotionAgent**~~ | — | — | — | — | — | — | **geloescht (P9, 02.08.2026)** — abgeloest durch `SynapsenPromotionAgent` |
+| 2 | ~~**DecayAgent**~~ | — | — | — | — | — | — | **geloescht (P9, 02.08.2026)** — abgeloest durch `SynapsenDecayAgent` |
 | 3 | **CharakterAgent** | Workflow | Ja | 0.3 | 10 min | Ja (CPU, 5 Calls) | `meister` + `nova` | ✅ |
 | 4 | **WiedervorlageAgent** | Workflow | Ja | 0.5 | 12 h | Ja (CPU, 1 pro Eintrag) | `user` | ✅ |
 | 5 | **RechercheAgent** | Workflow | Queue | — | — | Ja (CPU, 3-5 Calls) | `user` | ✅ |
@@ -160,9 +160,9 @@ Kein Kollisionsrisiko: Pixie und Chat nutzen bei Idle dasselbe GPU-Modell (gemma
 | 7 | NachfragenAgent | Workflow | Queue | — | — | — | `user` | ⬜ |
 | 8 | AufraeumAgent | Workflow | Ja | 0.1 | 24 h | — | `user` | ⬜ |
 
-**PromotionAgent:** Zwei-Call-Promotion (Klassifikation + Extraktion). Arbeitet die Promotion-Queue vollstaendig ab. 4 Qualitaetsfilter in der Nachbearbeitung. Setzt `hash_dirty` nach erfolgreicher Promotion.
+~~**PromotionAgent:**~~ **Geloescht mit dem Codeschloss P9 (02.08.2026).** Er verdichtete mehrere KZG-Eintraege zu einem Aggregat-Eintrag und loeschte die Quellen — genau die Bauart, die der Synapsen-Umbau ersetzt hat. Der `SynapsenPromotionAgent` promotet stattdessen jeden Eintrag als eigenen Knoten und bildet Kanten.
 
-**DecayAgent:** Berechnet Ebbinghaus-Decay fuer alle aktiven LZG-Eintraege beider User. Eintraege unter 0.1 werden per Soft-Delete inaktiv. Kein LLM-Call — reines Python/SQL.
+~~**DecayAgent:**~~ **Geloescht mit P9.** Er rechnete den Verfall bei jedem Lesen neu; der `SynapsenDecayAgent` materialisiert ihn stattdessen taeglich in `lzg_knoten.gewicht_decay`. Zuletzt lief er gegen eine leere Tabelle.
 
 **CharakterAgent:** Destilliert 5 Profile einzeln (Kern, Adaptiv, Intention, Emotion, Beziehung). Prueft `hash_dirty` fuer beide User. Kein dirty Flag bedeutet sofortiger Return.
 
@@ -188,7 +188,7 @@ Kein Perzeption, kein Router, kein Responder, kein Tribunal. Typischer LLM-Verbr
 
 Der AgentGraph schreibt **keinen Session-Turn** — ohne Responder waere seine Rolle „user" und der Inhalt das Wissensstueck; in der Session staende dann eine Nutzer-Aeusserung, die der Nutzer nie gemacht hat. Den Turn schreibt der CharacterGraph-Lauf. Im `pipeline_log` erscheint er seit Chat 110 als eigene `quelle="agent"` und ist damit vom CharacterGraph trennbar.
 
-Fuenf Pixie-Agenten laufen eigenstaendig ueber den Pixie-Heartbeat und die AgentRegistry: CharakterAgent, PromotionAgent, DecayAgent, RechercheAgent, WiedervorlageAgent. Der alte Plugin-basierte Runner (services/shadow_agent/runner.py) und sieben OLD-Task-Dateien wurden in Chat 79 (PIX-CLEAN) entfernt. Ein verbleibender Task (nova_gedaechtnis.py) ist als Post-Hook konserviert, aber nicht ueber den Pixie-Router verdrahtet — Migration zu einem echten Agent steht aus (PIX-MIG-NOVA).
+Die Pixie-Agenten laufen eigenstaendig ueber den Pixie-Heartbeat und die AgentRegistry. **Stand 02.08.2026: 13 registriert**, darunter CharakterAgent, SynapsenPromotionAgent, SynapsenDecayAgent, RechercheAgent, WiedervorlageAgent, WissensluckenAgent, ZielDecayAgent. PromotionAgent und DecayAgent sind mit P9 entfallen. Der alte Plugin-basierte Runner (services/shadow_agent/runner.py) und sieben OLD-Task-Dateien wurden in Chat 79 (PIX-CLEAN) entfernt. Ein verbleibender Task (nova_gedaechtnis.py) ist als Post-Hook konserviert, aber nicht ueber den Pixie-Router verdrahtet — Migration zu einem echten Agent steht aus (PIX-MIG-NOVA).
 
 Der geplante PixieGraph (PIX-GRAPH) wird den AgentGraph als zentrale Routing-Infrastruktur abloesen.
 
@@ -216,8 +216,8 @@ Naming-Konvention: Anzeige = "Pixie" (Logs, UI, Dokumentation). Technisch = "Sha
 | Agent | Status | Quelle |
 |-------|--------|--------|
 | CharakterAgent | ✅ Migriert (Chat 33, gefixt Chat 73+79) | agents/charakter/ |
-| PromotionAgent | ✅ Migriert (Chat 33) | agents/promotion/ |
-| DecayAgent | ✅ Migriert (Chat 33) | agents/decay/ |
+| ~~PromotionAgent~~ | **geloescht (P9)** | — |
+| ~~DecayAgent~~ | **geloescht (P9)** | — |
 | RechercheAgent | ✅ Migriert (Chat 35) | agents/recherche/ |
 | WiedervorlageAgent | ✅ Migriert (Chat 35) | agents/wiedervorlage/ |
 | NovaGedaechtnis | ⚠️ Post-Hook, nicht verdrahtet | services/shadow_agent/tasks/nova_gedaechtnis.py |
