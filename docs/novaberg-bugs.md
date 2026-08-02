@@ -171,6 +171,18 @@ thinking_len=0
 
 Die Denkspur war wieder leer, die Tokenzahl mit 11.858 die höchste bisher gemessene. Der Riegel meldete beide Stufen, und der Turn-Marker wurde trotz des Ausfalls sauber gelöst — die Eingabe blieb frei.
 
+**Vierter belegter Fall am 02.08.2026, 09:00:53 UTC — die Thinker-Signatur bestätigt sich, und der Turn überlebt sie:**
+
+```
+ChatWorker: LEERE Antwort (caller=thinker, tokens=7198, thinking_len=8087,
+thinking_anfang='The user is asking about the difference between the
+rotation curve of a spiral galaxy…')
+```
+
+Er fügt der Tabelle nichts Neues hinzu, sondern **bestätigt ihre Trennung**: gefüllte Denkspur beim Thinker (8.087 Zeichen, wieder auf Englisch beginnend), leere bei Verfasser und Responder. Damit sind es drei Thinker-Fälle mit derselben Signatur.
+
+**Neu ist der Ausgang:** Der Turn lief weiter und wurde beantwortet — der Thinker wiederholte, fand eine echte physikalische Korrektur (`1/r²` gegen `1/√r`), und das Tribunal bewertete die Antwort mit 0.0. Ein leerer Thinker-Aufruf ist damit **nicht** gleichbedeutend mit einem verlorenen Turn; die bisherigen drei Fälle betrafen Rollen, deren Ausfall die Antwort selbst kostete. Aufgefallen bei einem Messturn zu einem ganz anderen Auftrag (Ziele auf das Paar), nicht bei einer Suche danach.
+
 **Riegel gebaut am 01.08.2026 — der Ausfall ist jetzt laut, die Ursache noch offen.**
 
 - `services/model_services/chat_worker.py` prüft die Ausgabe, statt sie nur zu melden: Ein leerer Text erzeugt eine `error`-Zeile **mit Länge und Anfang von `thinking`**. Die Prüfung steht als eigene Funktion, weil eine Wächterkette die Zweigzahl ihres Aufrufers bestimmt und dort nichts erklärt.

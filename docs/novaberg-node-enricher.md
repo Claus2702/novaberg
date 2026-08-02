@@ -191,6 +191,8 @@ Die eigentliche Berechnung (Verlauf, Vektor, EI-Arousal, Modus-/Stil-Plausibilit
 
 **Reiner I/O-Node (seit Chat 59):** Keine Python-Berechnungen mehr — alles was rechnet, steht im EI-Calc. Der Enricher lädt Session-Turns aus Redis, erzeugt Embeddings via Ollama-Embed-Modell, liest aktivierte Ziele aus Postgres (`ziele`-Tabelle). Punkt.
 
+**Ziele je Beziehung (seit Chat 125):** Der Enricher liest die Ziele des Paares, nicht alle Ziele Novas. Beide Pfade — `_enrich_human` und `_enrich_character` — reichen ihr Turn-Paar an `ziel_paar_bestimmen()` weiter, weil sie es in verschiedener Reihenfolge führen: `(mensch, nova)` gegen `(nova, mensch)`. Wer das Turn-Paar direkt als Ziel-Paar verwendet, liest auf einem der beiden Pfade nichts.
+
 **Plugin-Erweiterbarkeit:** Neue Manager können Kontext liefern ohne den Enricher zu ändern. Der Hook `manager.enrich_entries(state, postgres_url)` ist das einzige Interface.
 
 ---

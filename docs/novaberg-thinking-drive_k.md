@@ -484,6 +484,12 @@ Im KZG wird der Eintrag mit beiden Emotionen annotiert. Novas Emotionsvektor wir
 
 Ziele sind keine Fakten und kein normales KZG. Sie brauchen eine eigene Tabelle, weil sie semantisch etwas anderes sind — ein Fakt informiert, ein Ziel zieht. Und weil der GV-Node und der Pixie-Router sie gezielt laden müssen, getrennt vom Wissensbestand. Alle Einträge sind `user_id="nova"` — es sind Novas Gedanken, nicht die des Nutzers.
 
+> **Widerlegt am 02.08.2026 (Chat 125): Ein Ziel gehört einer Beziehung, nicht Nova allein.** Der Satz oben bleibt in seinem ersten Teil richtig — das Subjekt ist immer Nova. Was fehlte, ist das Gegenüber. Die Destillation liest das Kurzzeitgedächtnis **genau eines Paares** und leitet daraus ab, was Nova langfristig will; das Ergebnis ist damit eine Aussage über Nova *in dieser Beziehung*.
+>
+> Sichtbar wurde es erst mit dem zweiten Paar: Vor dem Schreiben deaktiviert die Destillation **alle** aktiven langfristigen Ziele. Bei einem Paar ist das die vorgesehene Fortschreibung, bei zweien ein Wettlauf, den der zuletzt destillierte gewinnt — und der Enricher legte das Ergebnis anschließend jedem Turn in den Prompt, gleich aus welcher Beziehung es stammte.
+>
+> Die Tabelle trägt seither `character_id` (Gegenüber) nach `novaberg-convention-paar-schema.md` §2. Der Bestand von 91 Zeilen wurde auf `(nova, meister)` migriert.
+
 ### 7.1 Tabelle `ziele`
 
 Eine Tabelle für beide Zeithorizonte. Der `ziel_typ` bestimmt das Decay-Verhalten: Langfristige Ziele haben keinen Decay (werden nur bei Charakter-Destillation aktualisiert), mittelfristige Ziele verblassen über Zeit.
@@ -491,7 +497,8 @@ Eine Tabelle für beide Zeithorizonte. Der `ziel_typ` bestimmt das Decay-Verhalt
 | Spalte | Typ | Beschreibung |
 |--------|-----|-------------|
 | `id` | SERIAL | Primärschlüssel |
-| `user_id` | TEXT | Immer "nova" |
+| `user_id` | TEXT | Subjekt — immer "nova" |
+| `character_id` | TEXT | Gegenüber — der Mensch der Beziehung (Chat 125). **Kein Default:** Ein Schreiber ohne Gegenüber scheitert an `NOT NULL`, statt eine leere Zeichenkette abzulegen |
 | `ziel_typ` | TEXT | `langfristig` oder `mittelfristig` |
 | `zielsatz` | TEXT | Formulierte Absicht (1–2 Sätze) |
 | `thema` | TEXT | Themen-Stichwörter |

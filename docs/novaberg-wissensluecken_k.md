@@ -157,7 +157,9 @@ CREATE TABLE IF NOT EXISTS wissensluecken (
 
 `herkunft` trägt `'nachbar'`, `'gespraech'`, `'recherche'` oder `'vertiefung'` — welche der vier Quellen den Stichpunkt geliefert hat. Ohne das Feld ließe sich später nicht sagen, welcher Weg tatsächlich trägt.
 
-**Das Paar ist Pflicht.** `ziele` trägt heute nur `user_id`, `charakter_anweisungen` ebenso — bei mehreren Nutzern und Charakteren bricht beides. Diese Tabelle macht es von Anfang an richtig; die anderen zwei bleiben Vorbestand und gehören in die Fundliste.
+**Das Paar ist Pflicht.** ~~`ziele` trägt heute nur `user_id`,~~ `charakter_anweisungen` ebenso — bei mehreren Nutzern und Charakteren bricht beides. Diese Tabelle macht es von Anfang an richtig; die anderen zwei bleiben Vorbestand und gehören in die Fundliste.
+
+> **Zur Hälfte erledigt am 02.08.2026 (Chat 125):** `ziele` trägt jetzt `character_id`. Der Anlass war der hier vorhergesagte: das zweite Paar. `charakter_anweisungen` steht unverändert.
 
 Der `UNIQUE`-Schlüssel macht den Lauf idempotent: Dasselbe Thema erzeugt keine zweite Zeile, sondern frischt die Bewertung auf.
 

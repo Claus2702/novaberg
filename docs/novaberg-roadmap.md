@@ -1,6 +1,6 @@
 # Novaberg — Roadmap (Projektchronik)
 
-**Stand:** Chat 124, 1. August 2026
+**Stand:** Chat 125, 2. August 2026
 *(Die Kopfzeile stand bis Chat 109 auf „Chat 93, 21. Mai 2026" — 15 Chats hinter dem Inhalt. **Sie ist danach erneut zurückgefallen:** von Chat 110 bis 114 blieb sie auf „Chat 109" stehen, während der Inhalt weiterwuchs, und wurde in Chat 115 nachgezogen. Wer hier etwas ergänzt, zieht die Kopfzeile mit — sie driftet zuverlässig. Achtung beim Nachschlagen: Nur bis Chat 97 trägt jeder Chat eine eigene `## Chat NNN`-Überschrift; die Chats 98–108 stehen als `###`-Abschnitte unter dem Chat-97-Block, benannt nach Sprint statt nach Chat.)*
 **Pfad:** novaberg/docs/novaberg-roadmap.md
 **Single Source of Truth für abgeschlossene Arbeit.**
@@ -1980,6 +1980,32 @@ Beide Räder haben eine Nabe — den Wert ohne jede Ausprägung — und das Erge
 > **Die Zahlen selbst stehen nicht hier.** Ein Charakter-Rad ist ein Charakterprofil; aus den Summanden sind mit der Züge-Tabelle die Einzelspeichen rückrechenbar. Wer die Messung nachvollziehen will, fährt sie gegen den eigenen Bestand — sie ist in zwei Aufrufen wiederholbar.
 
 **Geschlossen:** `Bauteil 3 — Charakter-Räder im Client` (Rest benannt, siehe Backlog)
+
+---
+
+## Chat 125 (02.08.2026) — Novas Ziele gehören einer Beziehung, und Pixie bedient ein Paar ✅
+
+**Vorbereitung der Charakterbildungs-Messreihe.** Sechs Testpersonen sollen gegen dieselbe Nova laufen; geprüft wurde vorher, was von einem fremden Paar auf das produktive Paar `(meister, nova)` abstrahlt. Der Befund war **eine** Stelle, und sie löscht.
+
+**`ziele` trug kein Gegenüber.** Alle 91 Zeilen standen unter `user_id='nova'`, und die Charakter-Destillation deaktiviert vor dem Schreiben **alle** aktiven langfristigen Ziele. Bei einem Paar ist das die vorgesehene Fortschreibung; bei sieben wäre es ein Wettlauf, den der zuletzt destillierte gewinnt — und der Enricher legt das Ergebnis jedem Turn in den Prompt. Die Tabelle trägt jetzt `character_id` nach `novaberg-convention-paar-schema.md` §2, der Bestand ist auf `(nova, meister)` migriert, und die Spalte hat **keinen Default**: Ein Schreiber ohne Gegenüber scheitert an `NOT NULL`, statt eine leere Zeichenkette abzulegen.
+
+**Die Ableitung steht an einer Stelle.** `ziel_paar_bestimmen()` bildet das Turn-Paar auf das Ziel-Paar ab, weil die beiden Enricher-Pfade es in verschiedener Reihenfolge führen: `(mensch, nova)` gegen `(nova, mensch)`. Wer das Turn-Paar direkt übernimmt, liest auf einem der beiden Pfade nichts — der Test dagegen ist der Aufrufer, nicht die Ladefunktion.
+
+**`AKTIVES_PAAR_USER_ID` — Pixie bedient das konfigurierte Paar, nicht jeden, der schreibt.** Bisher sammelte `_aktive_user_ids()` jeden Nutzer mit `last_activity` in Redis (TTL 2 h). Bei einer Messreihe wären das die Testperson **und** der produktive Nutzer, mit einem Heartbeat für beide. Jetzt entscheidet die Konfiguration, und die Charakter-Destillation folgt derselben Quelle. Beide Seiten des Paares werden bedient — der Mensch trägt seine Aufträge unter `queue:{mensch}`, Novas eigene liegen unter `queue:nova`.
+
+**Was in den Queues anderer Paare liegt, bleibt liegen und geht nicht verloren:** Die Aufträge stehen in Redis, die KZG-TTL reicht von sieben bis dreißig Tagen.
+
+**Gegenprobe dreifach, jede Menge vorher benannt:** Paar-Filter im Lesepfad entfernt → 2 rot (vorhergesagt 2). Ableitung im Enricher übergangen → 2 rot (vorhergesagt 2; der Nova-Pfad bleibt zu Recht grün, sein Paar steht schon richtig). Gegenüber aus dem Schreibaufruf entfernt → 1 rot (vorhergesagt 1). Für die Pixie-Kandidaten: alte Scan-Fassung wiederhergestellt → **5 rot bei 3 vorhergesagten**; die zwei zusätzlichen prüfen Zusicherungen, die derselbe Eingriff mitzerstört.
+
+**Umfang:** Suite 919 → **942 Tests**, grün, 0 übersprungen. Nulllinie **2247**, unverändert. Beide Wände sauber.
+
+**Am echten Turn gemessen (02.08., 08:59 UTC, Astronomie):** Beide Enricher-Pfade lasen `7 aktive Ziele für Paar (nova, meister)` — 2 langfristig, 5 mittelfristig, exakt der Bestand der Tabelle.
+
+### Was dabei abfiel
+
+- **Ein Parameter ohne Aufrufer wurde wieder ausgebaut.** `ziel_decay_lauf` bekam zunächst einen Gegenüber-Filter, den kein Pfad und kein Test benutzte — eine ungeprüfte Verzweigung, und zugleich die zwei einzigen neuen Linter-Treffer des Tages. Der Verfall misst Zeit, nicht Beziehung: Ein Ziel, das zwei Wochen niemand angerührt hat, ist in jeder Beziehung gleich weit verblasst.
+- **`shadow_queue:meister` trägt 647 Aufträge** (gemessen 09:05 UTC). Ein Heartbeat nimmt einen je Takt — ein Kriterium „vor und nach dem Lauf leer" ist für dieses Paar heute nicht erfüllbar. In der Fundliste.
+- **Vierter Fall des Leer-Defekts**, beim Messturn aufgetreten und in `novaberg-bugs.md` nachgetragen: Thinker, `thinking_len=8087`. Er bestätigt die Rollen-Trennung der Signaturen — und der Turn wurde trotzdem beantwortet.
 
 ---
 

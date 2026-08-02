@@ -84,15 +84,23 @@ Für eine Messreihe ist das der Unterschied zwischen einer Messung und einer Erz
 
 **Bauart steht bereits:** dieselbe wie `charakter_rad_messung` — rohe Stände mit eigenem Zeitstempel, Modell, Temperatur und Quellen-Prüfsumme, der gelesene Wert bleibt in `charakter_hash`.
 
-**Priorität:** hoch, **vor** der Reihe. Ohne sie ist die Reihe nicht auswertbar.
+~~**Priorität:** hoch, **vor** der Reihe. Ohne sie ist die Reihe nicht auswertbar.~~
+
+> **Korrigiert am 02.08.2026: nicht vor der Reihe.** Die Behauptung war zu stark. `charakter_hash` führt das Paar im Primärschlüssel, also überschreibt kein Lauf den Profilstand eines anderen — nach sechs Läufen stehen sechs Profile nebeneinander, und der **Vergleich zwischen** den Beziehungen ist damit auch ohne Historie auswertbar. Was ohne sie fehlt, ist der Verlauf **innerhalb** eines Laufs; die Räder sind ohnehin historisiert.
+>
+> **Priorität:** hoch, aber nach der Reihe. Der Eintrag bleibt: Er zahlt weiter auf die Spur zum Leer-Defekt ein, die zuletzt an einem überschriebenen Profiltext endete.
 
 #### PAARLISTE-FEST — der CharakterAgent destilliert genau ein Paar
 
-`agents/charakter/agent.py` trägt die Paarliste als Literal: `[(DEFAULT_USER_ID, ASSISTANT_USER_ID)]`. Für weitere Nutzer entstünden weder Profile noch Räder — still, weil der Agent für sie schlicht nie läuft.
+`agents/charakter/agent.py` trägt die Paarliste als Literal: ~~`[(DEFAULT_USER_ID, ASSISTANT_USER_ID)]`~~ `[(AKTIVES_PAAR_USER_ID, ASSISTANT_USER_ID)]`. Für weitere Nutzer entstünden weder Profile noch Räder — still, weil der Agent für sie schlicht nie läuft.
 
 Das Datenmodell trägt das Paar überall; es fehlt die **Iteration**, nicht das Schema. Die Liste muss aus dem Bestand kommen, mit einer benannten Grenze, damit ein versehentlich angelegter Nutzer nicht zehn Destillationen je Lauf auslöst.
 
-**Priorität:** hoch, vor der Reihe.
+> **Kein Vorbau der Messreihe mehr — 02.08.2026.** Die Reihe fährt **ein Paar zur Zeit**: `AKTIVES_PAAR_USER_ID` benennt es, Pixie bedient nur dieses, und der Agent destilliert genau dafür. Die einelementige Liste ist damit kein Mangel, sondern der Mechanismus. Was offen bleibt, ist der **echte Mehrnutzerbetrieb**: mehrere Paare in einem Lauf, mit benannter Obergrenze.
+>
+> **Und die Reihenfolge hat sich umgekehrt:** Vor der Iteration muss geklärt sein, was Novas Seite pro Beziehung trennt. Bei `ziele` war es eine fehlende Spalte, die beim Destillieren mehrerer Paare *gelöscht* hätte (behoben am 02.08.); `charakter_anweisungen` und die Arbeitsqueues `queue:{user_id}` stehen unverändert ohne Gegenüber, beide in der Fundliste. Eine Iteration vor dieser Klärung vervielfacht die Schreiber auf gemeinsamen Zustand.
+
+~~**Priorität:** hoch, vor der Reihe.~~ **Priorität:** mittel — nach der Reihe, und erst nach der Klärung oben.
 
 ---
 
