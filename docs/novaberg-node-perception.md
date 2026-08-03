@@ -93,10 +93,13 @@ Gemessen über 180 Turns der Charakterbildungs-Messreihe:
 | Ton `direkt` | 29 | **2** |
 | Abwärts-Verlaufsform (`absturz`/`einbruch`/`spirale`) | 60 | 18 |
 | verschiedene Werte in `beziehungs_dynamik` | 6 | **3** |
+| Ton `empathisch` | 44 | **93 (51,7 %)** |
 
 `angriff` erscheint achtmal beim Nutzer und **nie** bei ihr, `hilfesuchend` und `dankbar` ebenso wenig.
 
 **Das Schema ist nicht die Ursache.** `perzeption.task.txt` und `perzeption.assistant_task.txt` bieten beide dieselbe Wertemenge an — `vertrauen|distanz|angriff|hilfesuchend|dankbar|neutral`. Der Klassifikator wählt drei davon für Nova nie. Der Reparaturort ist der Prompt oder seine Beispiele.
+
+**Der Ton ist der schärfste Einzelwert.** `empathisch` steht in mehr als der Hälfte aller Turns, `sachlich` in weiteren 80 — zusammen 96 %. Für die übrigen fünf Werte bleiben sieben Turns. Der Monotonie-Druck (`novaberg-metakognition_k.md` §5.2, Schwelle 40 %) schlüge hier an, bei den Verlaufsformen dagegen nicht (plateau 29,4 %): Dort fehlen Werte, statt dass einer dominiert — **ein Druck, der auf Dominanz misst, sieht ein leeres Feld nicht.**
 
 **Warum das über Statistik hinausgeht:** Ohne diese Werte hat Nova keinen Zustand, in dem „hier stimmt etwas nicht" ausdrückbar wäre. Ein Knoten, der einen Widerspruch fände, könnte ihn nirgendwo hinschreiben.
 

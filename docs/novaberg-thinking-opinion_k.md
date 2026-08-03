@@ -31,7 +31,11 @@ Was wie „Nova hat dazu eine Sicht" klingt, sind in Wahrheit zwei verschiedene 
 
 Der Stolperstein, der das lange verschleiert hat: Dieselbe Oberfläche — „Kino ist teuer" — kann *beides* sein. Als gespeicherte Haltung (eine sparsame Nova findet Kino den Aufwand nicht wert) ist es (A). Als situativer Schluss („teuer *für dich gerade*, weil du sparst") ist es (B). Das ursprüngliche Kino-Beispiel dieses Projekts hat (A) und (B) unbemerkt vermengt — genau deshalb fühlte es sich als Meinungs-Beispiel leicht schief an.
 
-**Scope:** Dieses Dokument baut (A). (B) ist eine verwandte, eigene Mechanik — vermutlich teils schon im Thinker vorhanden, teils auszubauen.
+**Scope:** Dieses Dokument baut (A). (B) ist eine verwandte, eigene Mechanik — ~~vermutlich teils schon im Thinker vorhanden, teils auszubauen~~.
+
+> **Widerlegt am 03.08.2026 (Chat 126).** Von (B) ist **nichts** vorhanden. Die Charakterbildungs-Messreihe hat über sechs Bögen à 30 Turns gemessen: Der Thinker läuft in jedem Turn und prüft nicht — die Turn-Dauern zeigen bei den Widerspruchs-Turns keinen Ausschlag in der Größenordnung eines Reasoning-Passes. Und selbst wenn er etwas fände, wäre es nicht feststellbar: Er schreibt `node_annotations` in einen Schlüssel, den niemand persistiert.
+>
+> Der Befund ist stärker als „fehlt": Der Nutzer widerspricht einem Fakt, den er selbst gesetzt hat, und Nova übernimmt ihn — **fünf von fünf** gut gebauten Sonden, obwohl derselbe Fakt fünf Turns später sechsmal von sechs richtig zurückkommt. Es liegt keine rationale Einschätzung dazwischen. Siehe `novaberg-sykophanz-eindaemmung_k.md`.
 
 ⬜ **Bewusst offen:** Die genaue Grenze zwischen (A) und (B), und wie eine live-Antwort beide sauber kombiniert, ohne sie zu verwechseln. Noch nicht vertieft.
 
@@ -171,6 +175,20 @@ Damit lässt sich der Mechanismus auf Themen-Ebene zünden und live beobachten, 
 ## 10. Bewusst offene Punkte (Sammlung)
 
 1. ⬜ Grenze zwischen Haltung (A) und rationaler Einschätzung (B); saubere Kombination beider in einer live-Antwort (§2).
+
+   **Dieser Punkt hat seit Chat 126 einen Namen: der Willensstrang.** Nicht (A) und nicht (B), sondern die Instanz, die beide führt und daraus einen Einwand komponiert — das *„Du hast im Prinzip recht, aber…"*. Es ist kein neuer Baustein, sondern die **Klammer um drei Stränge**, die einzeln vorliegen und nichts voneinander wissen:
+
+   | Strang | Stand |
+   |---|---|
+   | **Fakten** | vorhanden und intakt — der Abruf liefert den richtigen Wert |
+   | **Haltung** | entworfen (dieses Dokument), hängt an valenzierten Kanten |
+   | **Selbstbeobachtung** | entworfen — `novaberg-metakognition_k.md` §5.2/§5.3 |
+
+   **Was der Strang zusätzlich verlangt:** Zustimmung und Vorbehalt *gleichzeitig*, mit Mischungsverhältnis. Ein Aufzählungswert kann das nicht ausdrücken; eine Zahl allein ist weicher als Prosa und lädt zum Ausweichen ein. Die Form, die beides hält, trennt Entscheidung und Beschreibung — der diskrete Wert bindet, die Stärke steuert den Ton (§7), und ein Quellenfeld sagt, ob der Vorbehalt aus einem Fakt, aus einer Haltung oder aus beidem stammt.
+
+   **Reihenfolge:** Der Strang steht *hinter* der Eindämmung, nicht davor. §3 nennt den Grund selbst — eine Haltung, die im Turn gebildet wird, ist von dessen Rahmung infiziert; der Strang braucht den offline gefüllten Bodensatz. Die Eindämmung sorgt dafür, dass Nova **bemerkt**, wenn zwei Werte auseinandergehen; der Willensstrang dafür, dass sie etwas dazu **zu sagen** hat. Das erste ist Aufmerksamkeit, das zweite ist Charakter.
+
+   **Gemessen dazu am 03.08.2026:** Der Monotonie-Druck aus `novaberg-metakognition_k.md` §5.2 (Schwelle 40 %) schlüge auf zwei von Novas drei Verteilungen an — `tone` **51,7 %** empathisch und `beziehungs_dynamik` **45,0 %** vertrauen. Bei den Verlaufsformen greift er **nicht** (plateau 29,4 %): Dort fehlen drei Werte ganz, statt dass einer dominiert. **Ein Druck, der auf Dominanz misst, sieht ein leeres Feld nicht.**
 2. ⬜ Gewichtungs-Schema der Komposition — widersprüchliche Eigenschaften → Netto-Haltung (§6).
 3. ⬜ Die drei Kollisions-Schwellen (Schalentiefe, Kanten-Relevanz, Valenz) — der Schmeichler/Stänkerer-Drehknopf (§7).
 4. ⬜ `nova_kern`: Existiert ein Wert, der gegen pures Gefallen drückt? Inhalts-Entscheidung (§8).

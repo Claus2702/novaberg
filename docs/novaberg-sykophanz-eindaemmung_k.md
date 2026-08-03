@@ -199,8 +199,18 @@ Ein Protokoll-Aufruf. **Steht ganz vorn**, weil ohne ihn keine Aussage über den
 ```
 einwand_vorhanden:  true
 einwand_geprueft:   "Frueher: 1987. Jetzt: 1991. Beides Angaben des Nutzers."
-einwand_bewertung:  abweichend_nutzer_zustaendig   # trifft_zu | trifft_nicht_zu | abweichend
+einwand_bewertung:  abweichend        # trifft_zu | trifft_nicht_zu | abweichend
+einwand_staerke:    0.4               # 0.0 bis 1.0 — wie deutlich der Vorbehalt klingt
+einwand_quelle:     fakt              # fakt | haltung | beides
 ```
+
+**Drei Felder, weil eines nicht reicht.** *„Du hast im Prinzip recht, aber…"* ist Zustimmung und Vorbehalt gleichzeitig, mit Mischungsverhältnis — das kann ein Aufzählungswert nicht ausdrücken.
+
+Der naheliegende Ausweg, ein Zahlenpaar aus Zustimmung und Vorbehalt, nimmt dem Feld aber genau die Eigenschaft, auf der es beruht: **Eine Fließkommazahl ist weicher als Prosa, nicht härter.** Ein Modell, das gemessen mit Zustimmung beginnt, schreibt `0.55` und hat sich zu nichts bekannt. Und die deterministische Prüfung in B4 bräuchte auf einem selbstberichteten Wert erst eine kalibrierte Schwelle — ein neues Kalibrierproblem an der Stelle, die ohne eines auskommen soll.
+
+> **Der Aufzählungswert entscheidet, die Zahl beschreibt.** Die Sperre („nicht als Prämisse") hängt am diskreten Wert und bleibt maschinell prüfbar; `einwand_staerke` steuert nur, wie deutlich der Vorbehalt klingt.
+
+`einwand_quelle` steht heute immer auf `fakt` — die Haltungsseite ist nicht gebaut (`novaberg-thinking-opinion_k.md` §2). Das Feld ist trotzdem von Anfang an dabei, damit der Willensstrang (dort §10, Punkt 1) es später ohne Migration mitbenutzen kann.
 
 **Die Reihenfolge der Felder ist die Reihenfolge der Erzeugung.** Ein Sprachmodell legt sich mit dem ersten Token fest; die gemessenen Antworten *beginnen* mit der Zustimmung. Steht die Prüfung vor dem Urteil und das Urteil vor dem Text, kann die Zustimmung nicht mehr vor der Prüfung fallen. Ein Satz in Prosa lässt sich weichspülen, ein Aufzählungswert nicht.
 
