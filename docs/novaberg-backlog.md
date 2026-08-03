@@ -853,6 +853,46 @@ Die Projektseite ist beim Umzug **nicht** mitgezogen. Sie soll nachkommen, und z
 
 ---
 
+## Epic: Sykophanz eindämmen (Chat 126)
+
+**Status:** ⬜ nicht begonnen. Befund gemessen, Bauteile entworfen, Reihenfolge festgelegt.
+**Konzept:** `novaberg-sykophanz-eindaemmung_k.md` — dort stehen ZIEL, TEST, MESSUNG und Gegenprobe je Bauteil.
+**Befund:** `novaberg-bugs.md` → `NOVA-SYKOPHANZ-BESTAETIGT`, Update Chat 126.
+
+**Der Kern in einem Satz:** Widerspricht der Nutzer einem Fakt, den er selbst gesetzt hat, übernimmt Nova ihn — fünf von fünf Sonden über sechs Bögen — obwohl der richtige Wert vorliegt (Turn 22, sechs von sechs richtig) und das Modell den Widerspruch bei neutraler Frage erkennt (fünf von fünf, null Fehlalarme).
+
+**Zielgröße ist Markierung, nicht Korrektur.** Bei einem Biografiefaktum ist der Nutzer die zuständige Instanz; was fehlt, ist der Vermerk, dass sich etwas geändert hat — und die Sperre, auf einem abweichenden Wert weiterzubauen.
+
+| ID | Inhalt | Vorbedingung |
+|---|---|---|
+| **SYK-B-1-THINKER-WEICHE** | Der Thinker protokolliert den Ausgang seines Schnell-Checks dauerhaft. Heute schreibt er `node_annotations`, die nirgends persistiert werden — seine Anlaufquote ist nicht erhebbar. | keine |
+| **SYK-B0-FALLENBATTERIE** | 20 Prüfitems mit Gegenprobe, zweigeteilt: isolierte Einzelturns für die Rate, lange Bögen für die Akkumulation. Fünf Items liegen aus der Messreihe fertig vor. | keine |
+| **SYK-B1-URTEILSFELD** | Der Verfasser fällt ein dreiwertiges Urteil (`trifft_zu` / `trifft_nicht_zu` / `abweichend`), bevor Text entsteht — und ein abweichender Wert darf zitiert, aber nicht als Prämisse verwendet werden. | B0 |
+| **SYK-B4-VORZEICHENPRUEFUNG** | Zweistufig: deterministischer Wertevergleich als Filter, die neutrale Prüffrage als Entscheider. Eine Suche nach Zustimmungsmarken fände nur einen der fünf Fälle. | B1 |
+| **SYK-B8-SCHREIBPFAD** | Ein widersprochener Wert wird nicht ohne Marke destilliert. **Blocker:** In 583 KZG-Einträgen steht keine `turn_id` — die Klammer für die Vererbung fehlt. | B1, Klammer |
+| **SYK-B3-VORZEICHENREGEL** | Der Responder entscheidet, wie freundlich ein Nein klingt, nicht ob es eins ist. Dazu eine ausgesetzte Regel zurück: das Verbot falscher Erfolgsmeldungen. | B4 |
+| **SYK-B9-REGISTER** | Nova bekommt einen gelebten Zustand für „hier stimmt etwas nicht". Das Schema gibt ihn her; der Klassifikator wählt ihn nie. Entwurfsfrage vorgeschaltet. | Entscheidung |
+| **SYK-B2-IMPULS-GRENZE** | Der GV-Impuls darf die Richtung bestimmen, nicht die Faktenauswahl. | keine |
+| **SYK-B5-ESKALATION** | Der Thinker sieht das Verfasser-Urteil und bekommt Widerspruchs-Indikatoren im Schnell-Check. | B-1, B1 |
+| **SYK-B6-MOTIVENTLASTUNG** | Der Drang, die Beziehung zu schonen, wird entlastet statt verboten — gekoppelt an den gemessenen Zuwendungswert. | allein einzuführen |
+| **SYK-B7-ZWEITABLEITUNG** | Eine zweite Ableitung ohne Beziehungsdruck; die Differenz ist die Sykophanz. Erste Probe: 3 von 5 gegen 1 von 5, trägt noch nicht. | nur falls B-1…B6 nicht reichen |
+
+**Eine Änderung je Messfenster.** B1 und B4 sind die einzige Ausnahme — B4 ändert kein Verhalten.
+
+### Offene Messungen aus derselben Reihe
+
+| ID | Frage |
+|---|---|
+| **SYK-M-TRIBUNAL** | Erkennt das Tribunal die fünf Fälle? Seine Zuständigkeit ist aus den Prompts gelesen, nicht gefahren. Billigste der drei; hebt eine Zeile im Konzept von „gelesen" auf „gemessen". |
+| **SYK-M-VERFASSER** | Dämpft der Verfasser? Ein Zufallsvergleich zeigte ohne ihn 1355 Zeichen bei Arousal 0.8, mit ihm 340 bei 0.5 — ein Fall, kein Beleg. |
+| **SYK-M-RAHMUNG** | Trägt die Szenario-Rahmung? Braucht eine Nulllinie, die den Ausfall reproduziert, und Wiederholungen je Zelle. |
+
+### Was aus dieser Reihe nicht folgt
+
+Der LZG-Lesepfad war in **allen sechs Läufen untätig** — eine frische Persona hat kein Langzeitgedächtnis. Die Reihe sagt deshalb nichts über das Synapsennetz und nichts über die Wahrnehmungs-Gravitation aus P10. Beide bleiben an einem Korpus zu messen, der einen Bestand mitbringt.
+
+---
+
 ## Epic: Client-Dashboard (GTK4 / PyGObject)
 
 **Motivation:** Debugging, Kalibrierung und Einregelung des Dual-Emotion-Systems (Chat 53) erfordern visuelles Echtzeit-Feedback. Log-Grep ist kein Werkzeug für die Feinabstimmung von 8-dimensionalen Emotionsvektoren. Ohne Dashboard ist die Dual-Emotion-Architektur Blindflug.

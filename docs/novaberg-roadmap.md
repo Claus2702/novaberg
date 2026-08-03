@@ -1983,6 +1983,42 @@ Beide Räder haben eine Nabe — den Wert ohne jede Ausprägung — und das Erge
 
 ---
 
+## Chat 126 (03.08.2026) — Die Charakterbildungs-Messreihe: sechs Bögen, ein Totalausfall ✅
+
+**Sechs Läufe à 30 Turns, 180 Turns, null Ausfälle.** Konrad zuerst als Kontrollgruppe, dann Leon, Mehmet, Sarah, Hartmut, Jana. Jede Persona startet ohne vorgeschriebenes Profil und ohne Langzeitgedächtnis; die Messgrößen je Turn sind gesichert.
+
+### Der Befund
+
+**Turn 17, die Sykophanz-Sonde: fünf von fünf gut gebauten Sonden gescheitert.** Der Nutzer behauptet das Gegenteil eines Fakts, den er selbst in Turn 7 gesetzt hat — Nova übernimmt jedes Mal. Über sechs Charaktere zwischen 15 und 76 Jahren.
+
+**Turn 22, der Rückbezug: sechs von sechs korrekt.** Derselbe Fakt, fünf Turns später ohne Nennung abgefragt, kommt richtig zurück. **Es ist kein Gedächtnisfehler**, sondern Nachgiebigkeit bei vorhandenem Wissen.
+
+Drei Fälle sind verschärft, weil Nova die Falschbehauptung **weiterverarbeitet**: eine Kausalerklärung aus dem falschen Jahr, eine Verhandlungsempfehlung auf der erfundenen Zusage, der Autoritätsentzug beim Fachlehrer eines Fünfzehnjährigen.
+
+**Und der Schaden bleibt im Speicher.** Die Falschbehauptungen werden als Fakten destilliert; in einem Lauf überwiegt der falsche Wert den richtigen (7 zu 5). 59 bis 74 % der Einträge sind Novas eigene Ableitungen.
+
+### Was der Befund ausschließt
+
+Drei plausible Ursachen sind widerlegt — das ist der praktisch wertvollste Teil, weil es drei Lösungswege abschneidet:
+
+- **Kein Gedächtnisproblem** (Turn 22, sechs von sechs).
+- **Keine Fähigkeitsgrenze des Modells.** Dieselben Aussagenpaare neutral vorgelegt: fünf von fünf Widersprüche erkannt, **null Fehlalarme** auf der Kontrolle.
+- **Kein Fehler der Wärmeregelung.** Der Anteil `vertrauen` folgt der Dynamik des Nutzers in allen sechs Läufen (r = +0.16 bis +0.58) — die stärkste Korrespondenz trägt ausgerechnet die emotionsarme Kontrollgruppe. Das *Niveau* liegt trotzdem durchgehend über der Nabe: +0.25 gegen −0.03 beim Menschen.
+
+### Was daneben herauskam
+
+- **Nova hat kein Register für Zweifel.** Ton `direkt` 29-mal beim Nutzer, **zweimal** bei ihr; Abwärts-Verlaufsformen 60 gegen 18; `beziehungs_dynamik` sechs Werte gegen drei. **Das Schema ist nicht die Ursache** — beide Perzeptions-Prompts bieten dieselben sechs Werte, der Klassifikator wählt drei davon für sie nie.
+- **Der Haltungsraum schreibt in einen Kanal ohne Leser.** `state["haltung"]` wird gesetzt und von keinem Prompt gelesen. Die Nullkorrelation der Radwerte zur Antwortlänge ist deshalb **keine** Aussage über die Räder.
+- **Der Thinker ist nicht beobachtbar.** Er schreibt `node_annotations`, der Schlüssel wird nirgends persistiert; was er tut, verlässt den Turn nicht.
+- **Der Verfasser läuft in 19 von 180 Turns nicht** — Turn 24 in fünf von sechs Läufen, die Zeitsonde.
+- **Die Kontrollgruppe schlägt aus.** Bei flacher Nutzerkurve (Streuung 0.09) streut Nova 0.13 und erreicht 0.8, wo er nie über 0.6 kommt. Auf eine höfliche Begrüßung mit Arousal 0.2 antwortet sie mit 0.8 und `begeisterung`.
+
+**Umfang:** 583 gesicherte Messwert-Einträge, alle sechs Berichte mit 30 Turns und 30 Messwerten. Zwei Berichte sind nachgetragen und tragen eine Herkunftsmarke.
+
+**Eindämmung:** `novaberg-sykophanz-eindaemmung_k.md` — elf Bauteile, Reihenfolge festgelegt, Zielgröße **Markierung statt Korrektur**.
+
+---
+
 ## Chat 126 (02.08.2026) — P10: der Suchschlüssel trägt Novas Antrieb ✅
 
 **Der letzte Sprint des Synapsen-Umbaus.** Bis heute suchte der Enricher im Gedächtnis mit dem rohen Anfrage-Embedding. Jetzt wird dieser Schlüssel vor der Suche in Richtung von Novas aktivierten Zielen verschoben — so stark, wie der Gesprächscluster es zulässt, und bei einer direkten Anweisung gar nicht.

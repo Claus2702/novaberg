@@ -25,6 +25,18 @@ Nur im CharacterGraph (Pfad 2). Seit Chat 60 nicht mehr im HumanGraph.
 
 ---
 
+## 2a. Was der Thinker nicht hinterlässt (Chat 126)
+
+**Er ist im Nachhinein nicht beobachtbar.** Der Knoten schreibt an vier Stellen in `state["node_annotations"]` — dieser Schlüssel wird **nirgends persistiert**. Gelesen wird er turn-intern vom Verfasser und vom Tribunal; danach ist er weg.
+
+Damit ist von außen nicht feststellbar, ob der Schnell-Check in einem Turn ausgelöst und der Reasoning-Pass gelaufen ist. Seine Anlaufquote — die Größe, an der jede Aussage über seine Wirksamkeit hängt — ist heute **nicht erhebbar**.
+
+**Belegt am 03.08.2026:** In sechs Läufen à 30 Turns steht der Knoten in jeder Stufenfolge. Ob er gedacht hat, ließ sich nur aus den Turn-Dauern *ableiten* — die Residuen gegen die Antwortlänge lagen bei den Widerspruchs-Turns zwischen −21 und +10 Sekunden, alle innerhalb einer Standardabweichung von ±12 bis 14 Sekunden, während ein Reasoning-Pass rund eine Minute kostet. Eine Ableitung, keine Messung.
+
+→ Bauteil `SYK-B-1-THINKER-WEICHE` in `novaberg-backlog.md`; Begründung in `novaberg-sykophanz-eindaemmung_k.md` §5.2.
+
+---
+
 ## 3. ReAct-Pattern
 
 Der Thinker arbeitet mit dem ReAct-Pattern (Reasoning + Acting): Das LLM entscheidet selbst, welche Tools es braucht, ruft sie auf, analysiert das Ergebnis und denkt weiter.

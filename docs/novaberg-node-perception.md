@@ -84,6 +84,26 @@ Die Rolle „Nova" steht als Konstante `_ROLLE_NOVA = "assistant"` — der Wert 
 
 ---
 
+## 2b. Novas Seite nutzt die Hälfte des Wertevorrats (Chat 126)
+
+Gemessen über 180 Turns der Charakterbildungs-Messreihe:
+
+| | Nutzer | Nova |
+|---|---|---|
+| Ton `direkt` | 29 | **2** |
+| Abwärts-Verlaufsform (`absturz`/`einbruch`/`spirale`) | 60 | 18 |
+| verschiedene Werte in `beziehungs_dynamik` | 6 | **3** |
+
+`angriff` erscheint achtmal beim Nutzer und **nie** bei ihr, `hilfesuchend` und `dankbar` ebenso wenig.
+
+**Das Schema ist nicht die Ursache.** `perzeption.task.txt` und `perzeption.assistant_task.txt` bieten beide dieselbe Wertemenge an — `vertrauen|distanz|angriff|hilfesuchend|dankbar|neutral`. Der Klassifikator wählt drei davon für Nova nie. Der Reparaturort ist der Prompt oder seine Beispiele.
+
+**Warum das über Statistik hinausgeht:** Ohne diese Werte hat Nova keinen Zustand, in dem „hier stimmt etwas nicht" ausdrückbar wäre. Ein Knoten, der einen Widerspruch fände, könnte ihn nirgendwo hinschreiben.
+
+→ Bauteil `SYK-B9-REGISTER`; Zusammenhang in `novaberg-sykophanz-eindaemmung_k.md` §4.
+
+---
+
 ## 3. Drei Analyseebenen
 
 ### 3.1 Rational — Was wird gesagt?

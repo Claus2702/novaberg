@@ -11,6 +11,10 @@
 
 ---
 
+> **Gemessen am 03.08.2026 (Chat 126) — und eine Warnung vor einer Fehllesung.** Der Zustand oben ist bestätigt: `state["haltung"]` wird geschrieben und hat **keinen einzigen Leser**. Die Kanten `gv_node → haltungsraum → verfasser` existieren, der Knoten läuft, der Wert erreicht keinen Prompt.
+>
+> In sechs Läufen à 30 Turns korrelieren die Radwerte nicht mit der Antwortlänge (r = +0.11 und +0.06). **Das ist keine Aussage über die Wirksamkeit der Räder**, sondern die erwartbare Folge eines Werts, den niemand liest. Wer die Zahl später als Beleg gegen den Haltungsraum nimmt, liest falsch — die Frage ist erst nach dem Anschluss stellbar.
+
 ## 1. Die Beobachtung
 
 Am 31.07.2026 antwortete Nova auf einen lockeren Einzeiler über einen Igel mit zwei langen Absätzen in Seminarsprache — *„funktionale Differenzierung"*, *„die spürbare, fast schon strategische Wirksamkeit seines Auftretens"*.
