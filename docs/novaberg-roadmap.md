@@ -2039,6 +2039,26 @@ Eine abgeschlossene Recherche hinterlässt seither zwei Dateien und eine Metadat
 
 **Als Nächstes:** `WIS-4-STAPEL-SALIENZ` — oder die Neudimensionierung, die inzwischen der größere Hebel ist.
 
+### Der Engpass ist die Warteschlange — eine widerlegte eigene Vermutung 🔶
+
+Die Recherche starb an vier von fünf Läufen mit `TimeoutError` nach 302 Sekunden, an `MODEL_BACKGROUND_TIMEOUT_S = 300`. Die naheliegende Erklärung war das 256k-Fenster: Der Commit vom 31.07. hatte selbst geschrieben, dass ein einzelnes Hintergrund-Urteil bis zu 342 Sekunden braucht und die Latenz mit langen Prompts steigt.
+
+**Die Messung widerlegt das.** Ollama liefert die Zerlegung eines Aufrufs mit; verglichen wird `total_duration` gegen die Summe der drei ausgewiesenen Phasen:
+
+| | laden | prompt | eval | Summe | total | Lücke |
+|---|---|---|---|---|---|---|
+| unter Pixie-Last | 0,12 | 0,42 | 0,73 | 1,27 | **134,62** | **133,35** |
+| Pixie angehalten | 29,27 | 0,33 | 0,77 | 30,37 | 30,42 | 0,05 |
+| Pixie angehalten | 41,10 | 0,33 | 0,77 | 42,20 | 42,25 | 0,05 |
+
+**Die Prompt-Verarbeitung kostet 0,33 Sekunden** — genau der Posten, den ein größeres Fenster verteuern würde. Er ist vernachlässigbar, und damit ist `num_ctx` als Ursache der Zeitüberschreitungen erledigt. Was wartet, wartet auf ein **belegtes Modell**: Unter Last liegen 133 von 135 Sekunden in keiner Rechenphase, angehalten fällt dieselbe Lücke auf 0,05.
+
+Ein dritter Befund fiel dabei an, ungesucht: **29 bis 41 Sekunden `load_duration` bei zwei aufeinanderfolgenden Aufrufen** mit identischen Optionen. 26,8 GB, jedes Mal neu.
+
+> **Das Messgerät war dreimal an diesem Tag der unzuverlässige Teil, und beim dritten Mal war es die eigene Hand.** Der erste Entwurf wechselte `num_ctx` je Aufruf und hätte in jedem Wert eine Ladezeit gemessen. Der zweite maß die Wanduhr und damit die Länge einer unbegrenzten Denkspur statt die Kosten des Fensters. Der dritte lief korrekt — aber die erste Sonde wurde im selben Befehl gefahren, in dem Pixie wieder freigegeben wurde, und maß deshalb einen Wettbewerb statt eines Aufrufs. Erst die Wiederholung mit angehaltenem Pixie trennt die beiden, und genau diese Trennung ist das Ergebnis.
+
+Offen und benannt: Wer belegt das Modell, wenn ein Rechercheauftrag der einzige laufende Pixie-Auftrag sein sollte — und warum lädt es zwischen gleichartigen Aufrufen neu. Backlog: `PIX-WARTESCHLANGE-AM-MODELL`.
+
 ### Das Kurzzeitgedächtnis hört jetzt mit demselben Ohr ✅
 
 Die Wahrnehmungs-Gravitation aus P10 verschob bis heute **nur** den Suchschlüssel der LZG-Suche. Das KZG suchte roh — und für diese Grenze fand sich keine Begründung: weder im Konzept, das durchgehend vom LZG-Lesepfad spricht, noch im einführenden Commit, der sie nur als Umfang beschreibt („wires the shift into the LZG path"). Es war eine Auslassung des nachträglichen Einbaus, keine Entscheidung.
