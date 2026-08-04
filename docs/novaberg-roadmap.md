@@ -2015,6 +2015,24 @@ Die gültigen Werte stehen in `graph/einwand.py` und **nur** dort; der Prompt be
 
 **Umfang:** Suite 978 → **994 Tests**, grün, 0 übersprungen. Gegenprobe: Vorgabewert auf eine gültige Bewertung → **8 rot** (Vorhersage 7; die eigene Testklasse falsch gezählt). Nulllinie 2182 unverändert, beide Wände sauber.
 
+### Zwei Konzepte, und der Wissensspeicher bekommt seinen Ort ✅
+
+**`novaberg-klaerung_k.md` ist neu.** Der Anlass war die Frage, wie das Faktengedächtnis Werte korrigiert — die Antwort, dass es an einem Zeichenkettenvergleich entscheidet und drei verschiedene Fälle gleich behandelt. Daraus wurde ein allgemeinerer Grundsatz: **Abweichung und Lücke sind derselbe Vorgang**, beide heißen *erwartet ≠ vorhanden*, und beide enden in einer Frage. Mit zwei Toren — Notwendigkeit aus dem Objekt, Salienz aus dem Charakter — und der Erkenntnis, dass der Vorgang **vier Stufen** hat, von denen nur die letzte am Charakter hängt: Erkennen, nicht darauf bauen und nicht überschreiben sind still, gratis und unbedingt. Bei voller Distanz merkt Nova die Abweichung, baut nicht darauf, überschreibt nichts — und sagt nichts.
+
+**`novaberg-autonomous-wissen_k.md` ist auf den heutigen Stand gebracht.** Die Erstfassung lag drei Monate ungebaut; §11 trägt acht Teile. Darunter: `nachfragen` bekommt zum ersten Mal überhaupt eine Aufgabenbeschreibung — es existierte seit Monaten als Routing-Ziel ohne Konzept, weshalb 62 seiner Aufträge acht Tage in der Queue lagen. Die drei Modi unterscheiden sich in der **Quelle**: Recherche schöpft aus der Welt, Vertiefung aus dem eigenen Bestand, Nachfragen aus dem Gegenüber.
+
+**Und das Aufräumen wird umgedreht.** Der Zustellungspfad löschte nach jeder Äußerung alle thematisch nahen Einträge und nannte sie im Log `Duplikat`. Sie sind keine — sie sind der Rest des Themas und waren nie ausgesprochen. Künftig verstärkt dieselbe Nähe, statt zu löschen. **Die Schwelle 0.60 ist dafür an 778.128 Paaren aus 1248 Knoten gemessen** (Trefferverhältnis 10 : 1); ein Zwischenvorschlag von 0.50 aus 231 Paaren ist widerlegt.
+
+**Der Speicher hat seinen Ort.** `knowledge/` liegt als Geschwister der Repositoriumswurzel, im Behälter unter `/knowledge` eingehängt — damit ist die Veröffentlichungsgrenze eine Eigenschaft des Dateisystems statt einer Regel. Die Rechte sind gemessen, nicht abgeleitet: Ohne Modusbits scheitert der Wirtsnutzer mit `Keine Berechtigung`, mit `umask 000` / `0666` / `0777` funktioniert es, obwohl die Eigentümerkennung fremd bleibt.
+
+### Was dabei widerlegt wurde
+
+**Die Tabelle `fakten` hat null Zeilen.** Kein Aufrufer setzt jemals `ziel = "fakten"` — nur `kzg` und `notizen` kommen vor. Der Triple-Store war in Betrieb und ist beim Umbau nicht mitgezogen worden; der Backlog führt den fehlenden Erzeuger als `15e`. Der Zeichenkettenvergleich, der das Klärungskonzept ausgelöst hat, ist **nie eingetreten**. `KLA-K5` ist damit vom ersten zum letzten Bauteil gerückt und hängt an `15e` statt an `SYK-B1`.
+
+**Und Urteil und Schreibvorgang liegen nicht im selben Zustand.** Es sind zwei Graphen über denselben Turn, korreliert allein über `turn_id`; der HumanGraph hat gar keinen Verfasser. Daraus folgt aber etwas Besseres: Die Prüfung gehört in den **Schreibpfad** statt an das Verfasser-Urteil — dort deckt sie beide Graphen und den Aufgabenpfad ab.
+
+**Pixie ist vermessen worden.** 650 Aufträge, ältester acht Tage alt; **246 davon (37,8 %) zeigen auf Agenten, die es nicht gibt** (`vertiefung`, `nachfragen`). Der Heartbeat läuft alle 30 s mit `max_instances=1`; in sechs Stunden wurden 146 übersprungen, während eine Recherche den einzigen Platz belegte. Entnahme und Wiedereinreihung heben sich auf — `Retry 1/3` im Log. Widerlegt wurde dabei die Vermutung, die periodischen Tagesläufe verhungerten: `ziel_decay` steht mit 16, `synapsen_decay` mit 14 Läufen im Audit. Der Engpass trifft, was oft laufen soll, nicht was selten laufen muss.
+
 ---
 
 ## Chat 126 (03.08.2026) — Die Charakterbildungs-Messreihe: sechs Bögen, ein Totalausfall ✅

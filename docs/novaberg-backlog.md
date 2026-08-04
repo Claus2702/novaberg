@@ -892,6 +892,44 @@ Die Projektseite ist beim Umzug **nicht** mitgezogen. Sie soll nachkommen, und z
 Der LZG-Lesepfad war in **allen sechs Läufen untätig** — eine frische Persona hat kein Langzeitgedächtnis. Die Reihe sagt deshalb nichts über das Synapsennetz und nichts über die Wahrnehmungs-Gravitation aus P10. Beide bleiben an einem Korpus zu messen, der einen Bestand mitbringt.
 
 ---
+## Epic: Pixie — der Abfluss steht (04.08.2026)
+
+**Status:** ⬜ nicht begonnen. **Gemessen am 04.08.2026**, nicht vermutet.
+
+**Der Befund:** `shadow_queue:meister` trägt 650 Aufträge, der älteste vom 27.07. — acht Tage. **246 davon (37,8 %) zeigen auf Agenten, die es nicht gibt:** `vertiefen` → `vertiefung` (184) und `nachfragen` → `nachfragen` (62) sind im Router abgebildet, aber kein Verzeichnis existiert. Der Rest sind 404 `recherche`.
+
+**Warum nichts abfließt:** Der Heartbeat läuft alle 30 Sekunden mit `max_instances = 1`. In sechs Stunden wurden **146 übersprungen**, während eine Recherche den einzigen Platz belegte. Entnahme und Wiedereinreihung heben sich auf — im Log stehen `Queue-Eintrag entfernt` und `Retry 1/3` nebeneinander.
+
+**Widerlegt:** Die naheliegende Vermutung, die periodischen Tagesläufe verhungerten hinter der Blockade, trifft nicht zu. `ziel_decay` steht mit 16, `synapsen_decay` mit 14 Läufen im `hintergrund_log`, keine der sechs periodischen Aufgaben war überfällig. **Der eine serielle Platz trifft, was oft laufen soll, nicht was selten laufen muss.**
+
+| ID | Inhalt | Vorbedingung |
+|---|---|---|
+| **PIX-AGENTEN-FEHLEN** | `vertiefung` und `nachfragen` existieren nicht. Konzepte: `novaberg-pixie-deepdive_k.md` (69 Zeilen, „noch nicht implementiert") und `novaberg-autonomous-wissen_k.md` §11.3 für `nachfragen`. **Der Sockel** — solange 38 % der Queue ins Leere zeigen, ist jede Durchsatzrechnung sinnlos | Wissensspeicher |
+| **PIX-RETRY-KREIS** | Ein Auftrag, der nur scheitern kann, darf nicht dreimal wiederkommen. Ein Fehlschlag ohne Agenten ist ein anderer Fall als einer mit | PIX-AGENTEN-FEHLEN |
+| **PIX-SERIELLER-PLATZ** | Ein Takt von 30 s gegen einen Vorgang von Minuten ist eine Fehlanpassung. Entwurfsfrage, keine Fehlerbehebung | keine |
+| **PIX-PRIORITAET-STILL** | `kandidaten.py` fällt auf Priorität `0.0` zurück, wenn weder `prioritaet` noch `salienz` im Eintrag steht — 49 von 650 betroffen. Muss laut scheitern statt zur niedrigsten Priorität zu werden | keine |
+
+**Zur Einordnung:** `prioritaet = salienz × (1 + arousal × 0.5)` (`agents/delegation/akte.py`). Es sind zwei Größen — Salienz ist die Bedeutsamkeit, Priorität die durch Erregung verstärkte Dringlichkeit. Gespeichert wird die Salienz; die Priorität ist abgeleitet und gehört zur Auswahlzeit gerechnet.
+
+---
+
+## Epic: Wissensspeicher (04.08.2026)
+
+**Status:** 🔶 Schritt 1 von 6 gebaut.
+**Konzept:** `novaberg-autonomous-wissen_k.md` §11 — dort stehen alle Entscheidungen samt Herleitung.
+
+| ID | Inhalt | Stand |
+|---|---|---|
+| **WIS-1-MOUNT** | `knowledge/` als Geschwister der Repositoriumswurzel, im Behälter `/knowledge` | ✅ **04.08.2026** |
+| **WIS-2-TABELLE** | `autonomous_wissen` mit Paar-Schema, Salienz ohne Default, drei Gewichtsspalten | ⬜ DDL, anzukündigen |
+| **WIS-3-DATEIEN** | Agenten schreiben Wissen- und Bericht-Datei plus `INDEX.md`, mit `umask 000` / `0666` / `0777` | ⬜ |
+| **WIS-4-STAPEL-SALIENZ** | `stack_push()` bekommt Salienz und `verstaerkt_am` — beide fehlen heute ganz | ⬜ |
+| **WIS-5-VERFALL** | Dritter Schritt im vorhandenen Tageslauf `synapsen_decay`, je Schritt ein eigener Audit-Eintrag | ⬜ |
+| **WIS-6-FORTSETZEN** | Der Aufräumer verstärkt statt zu löschen, Schwelle 0.60 | WIS-3 |
+| **WIS-PRUEFUNG-F-WISSEN-1** | Pfadprüfung, dass kein Schreibziel des Wissenspfads innerhalb des Arbeitsbaums liegt (`50_FESTLEGUNGEN` → `F-WISSEN-1`, prüfbar und ungeprüft) | ⬜ |
+
+---
+
 ## Epic: Klärung — Abweichung und Lücke (04.08.2026)
 
 **Status:** ⬜ nicht begonnen. Grundsatz formuliert, Bestand belegt, Bauteile entworfen.

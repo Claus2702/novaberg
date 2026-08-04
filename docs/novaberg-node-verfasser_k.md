@@ -2,10 +2,20 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Konzept — ein Node vor dem Responder, der den fachlichen Inhalt der Antwort bestimmt
-**Stand:** 31. Juli 2026
+**Stand:** 4. August 2026 (Erstfassung 31. Juli 2026)
 **Pfad:** novaberg/docs/novaberg-node-verfasser_k.md
 **Typ:** Konzept (`_k`)
-**Status:** ⬜ Konzept, nicht gebaut
+**Status:** ✅ **gebaut.** Der Knoten läuft im CharacterGraph. Am 04.08.2026 um das Urteilsfeld erweitert — siehe unten.
+
+> **Nachgetragen am 04.08.2026 — was seit der Erstfassung dazukam.**
+>
+> Der Verfasser liefert nicht mehr nur Prosa, sondern **erst ein Urteil, dann den Text**. Vor der Antwort steht ein Kopfblock aus fünf Zeilen — Prüfung, dreiwertige Bewertung (`trifft_zu` / `trifft_nicht_zu` / `abweichend`), Stärke, Quelle — abgeschlossen durch eine Trennlinie. Ein Sprachmodell legt sich mit dem ersten Token fest; steht die Prüfung vor dem Urteil und das Urteil vor dem Text, kann die Zustimmung nicht mehr vor der Prüfung fallen.
+>
+> **Kein JSON, mit Grund.** Der Verfasser liefert Prosa bis über 3800 Zeichen; in JSON gepresst hinge der ganze Turn daran, dass das Modell einen langen Freitext fehlerfrei maskiert — ein Ausfall, der im Bestand belegt ist. Misslingt der Kopfblock, ist nur das Urteil weg, nicht die Antwort. Er erzeugt dann **keinen Vorgabewert**, sondern `geliefert=False` samt Fehlerzeile.
+>
+> Der Aufbau steht in `graph/einwand.py`, die gültigen Werte stehen **nur dort** und werden dem Prompt zur Laufzeit eingesetzt. Konzept des Bauteils: `novaberg-sykophanz-eindaemmung_k.md` §7 B1; übergeordnet `novaberg-klaerung_k.md`.
+>
+> **Nicht abgedeckt:** der Aufgabenpfad. Bei `task_context_cut` wird der Knoten übersprungen (§5.1), dort entsteht kein Urteil — und der HumanGraph hat ihn ohnehin nicht.
 **Voraussetzung:** `novaberg-gv-strategie_k.md` (Dreischicht: Strategie, Absicht, Vehikel)
 **Betrifft:** `novaberg-node-responder.md` · `graph/character_graph.py` · `graph/state.py`
 
