@@ -44,6 +44,11 @@ KEINE_NAMEN: frozenset[str] = frozenset({
     "Pfad",     # "aus Pfad 1" — die beiden Graph-Pfade heissen so. Der
                 # Ausdruck steht in Doku, Kommentaren und Tests und waechst
                 # mit jeder Stelle, die ueber die Graphgrenze schreibt.
+    "Gespraechen",  # "aus Gespraechen abgeleitete Recherchen" — die Formel,
+    "Gesprächen",   # mit der die Veroeffentlichungsgrenze des Wissensspeichers
+                    # begruendet wird (F-WISSEN-1). Sie steht in beiden
+                    # Schreibweisen im Bestand und wiederholt sich in jedem
+                    # Dokument und jeder Datei zur Bibliothek.
 })
 
 # Einfuehrungs-Konstruktionen. Erweitern, wenn ein Beispiel eine neue braucht.

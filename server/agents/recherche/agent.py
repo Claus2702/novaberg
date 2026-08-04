@@ -5,6 +5,9 @@ fuer einen breiten Ueberblick. Ergebnis -> Shadow-Stack + Novas KZG.
 """
 
 import logging
+from dataclasses import dataclass
+
+import psycopg2
 
 from agents.base import BaseAgent, AgentState
 from agents.recherche.lagebeurteilung import kontext_paket_bauen, lagebeurteilung_erstellen
@@ -12,8 +15,11 @@ from agents.recherche.planung import recherche_planen
 from agents.recherche.suche import suche_ausfuehren
 from agents.recherche.bewertung import ergebnisse_bewerten
 from agents.recherche.destillation import ergebnisse_destillieren, zwischen_destillieren
+from agents.recherche.gate import ergebnis_einordnen
 from memory.kontext import session_kontext_extrahieren
 from services.pixie.stack import stack_push
+from services.wissensspeicher import Arbeitsergebnis, embed_text_bauen, ergebnis_ablegen
+from tools.db_manager import db_manager
 from config import (
     ASSISTANT_USER_ID,
     DEFAULT_USER_ID,
@@ -94,6 +100,68 @@ def _ziel_aus_recherche_extrahieren(recherche_ziel: str, destillat: str) -> dict
         return None
 
 
+@dataclass
+class Durchlauf:
+    """Was ein Recherche-Durchlauf erarbeitet hat — reiner Datencontainer.
+
+    Traegt genau das, was der Bibliotheks-Schritt braucht, und wird an einer
+    Stelle gebaut. `destillat` darf leer sein: Dann ist der Durchlauf
+    gescheitert, und der Schritt legt einen Bericht statt einer Wissen-Datei
+    an (§5.1).
+    """
+
+    thema:         str
+    ziel:          str
+    destillat:     str
+    queries:       list[str]
+    lage:          dict
+    queue_eintrag: dict
+    user_id:       str
+
+
+def _salienz_aus_auftrag(queue_eintrag: dict) -> float:
+    """Liest die auslösende Salienz aus dem Queue-Auftrag.
+
+    Der Wert hat die Recherche ausgelöst und ist beim Schreiben immer
+    bekannt — er ist kein Vorgabewert und wird auch nicht zu einem (§11.4).
+
+    Vorbedingung: keine. Nachbedingung: eine Zahl in (0.0, 1.0].
+    Fehlerfälle: fehlender, nicht-numerischer oder nicht-positiver Wert
+    (ValueError). Der Aufrufer soll daran scheitern: Eine Null in
+    `salienz_anfang` sähe später aus wie ein Messergebnis, und in der
+    Shadow-Queue tragen belegbar Aufträge eine Null, die das
+    Hochsalienz-Tor passiert haben.
+
+    `get(schluessel, default)` allein reicht hier nicht: Ein ausdrücklich
+    auf null gesetztes Feld kommt durch den Default hindurch (11_EVA §2).
+    """
+    # ── Eingabe-Validierung ─────────────────────
+    roh = queue_eintrag.get("salienz", queue_eintrag.get("prioritaet"))
+    if roh is None:
+        meldung: str = (
+            f"_salienz_aus_auftrag: Auftrag ohne Salienz und ohne Prioritaet, "
+            f"Felder vorhanden: {sorted(queue_eintrag)}"
+        )
+        raise ValueError(meldung)
+
+    # ── Verarbeitung ────────────────────────────
+    try:
+        salienz: float = float(roh)
+    except (TypeError, ValueError) as fehler:
+        meldung = f"_salienz_aus_auftrag: Salienz {roh!r} ist keine Zahl"
+        raise ValueError(meldung) from fehler
+
+    # ── Ausgabe-Verifikation ────────────────────
+    if not 0.0 < salienz <= 1.0:
+        meldung = (
+            f"_salienz_aus_auftrag: Salienz {salienz!r} liegt ausserhalb der Spanne "
+            f"(0.0, 1.0] — der Auftrag traegt keinen brauchbaren Ausloesewert"
+        )
+        raise ValueError(meldung)
+
+    return salienz
+
+
 class RechercheAgent(BaseAgent):
 
     @property
@@ -120,6 +188,138 @@ class RechercheAgent(BaseAgent):
         """Kein LangGraph-Subgraph — der Ablauf ist eine lineare
         Python-Schleife mit Iteration. Subgraph waere Overhead."""
         return None
+
+    @staticmethod
+    def _audit_log(user_id: str, status: str, ergebnis: str) -> None:
+        """Schreibt einen hintergrund_log-Eintrag fuer den Bibliotheks-Schritt.
+
+        Eigener Eintrag je Schritt, keine Sammelmeldung: Erst dann ist im
+        Nachhinein unterscheidbar, ob die Ablage lief und nichts fand oder
+        ob sie gar nicht lief.
+
+        Failsafe: Bei DB-Fehler nur logger.critical, kein Retry — ein Retry
+        auf einer kaputten Audit-Senke liefe endlos.
+
+        **Enger gefasst als das Muster in synapsen_decay**, das hier blind
+        faengt: Aufgefangen werden Datenbank- und Netzfehler, also das, was
+        ein INSERT tatsaechlich wirft. Die Rekursionsgefahr, die dort den
+        breiten Fang begruendet, besteht ohne Retry nicht — und ein Defekt
+        ausserhalb dieser Menge soll sichtbar werden, statt als verlorener
+        Audit-Eintrag zu erscheinen.
+        """
+        try:
+            db_manager.execute(
+                """
+                INSERT INTO hintergrund_log
+                    (user_id, aufgabe, status, ergebnis, verarbeitet_am)
+                VALUES (%s, %s, %s, %s, NOW())
+                """,
+                (user_id, "recherche_bibliothek", status, ergebnis),
+            )
+        except (psycopg2.Error, OSError) as ex:
+            logger.critical(
+                f"hintergrund_log-INSERT fehlgeschlagen: {ex} "
+                f"(verlorener Audit-Eintrag: recherche_bibliothek/{status}/{ergebnis[:100]})"
+            )
+
+    def _bibliothek_schritt(self, durchlauf: Durchlauf, *, status: str = "") -> None:
+        """Ordnet das Ergebnis ein und legt es in der Bibliothek ab.
+
+        Eigener Schritt mit eigenem Audit-Eintrag: Ein Lauf, der mehreres
+        tut, faerbt bei einem Fehlschlag im dritten Teil sonst den ganzen
+        Auftrag rot, und hinterher ist nicht unterscheidbar, ob die Ablage
+        lief und nichts fand oder gar nicht lief.
+
+        `status` uebergeht das Gate. Genutzt wird das fuer den Fall, in dem
+        es nichts einzuordnen gibt — eine gescheiterte Destillation ist ein
+        `fehlschlag`, und ein Modellaufruf darueber waere eine Frage an ein
+        leeres Blatt.
+
+        Vorbedingung: keine — jeder Fehlerfall wird hier behandelt und nicht
+        an den Aufrufer weitergereicht.
+        Nachbedingung: Bericht-Datei geschrieben, Wissen-Datei bei
+        `echte_tiefe`/`ergaenzung`, genau eine Metadatenzeile; in jedem Fall
+        ein Audit-Eintrag mit `erledigt` oder `fehler`.
+        Fehlerfaelle: Ein Fehlschlag der Ablage wird laut protokolliert und
+        beendet den Schritt, **nicht die Recherche**. Ihr Ergebnis geht noch
+        auf den Stack und in Novas Gedaechtnis. Was fehlt, ist die Datei —
+        und genau das steht dann im Audit, statt still zu verschwinden.
+        """
+        self._audit_log(durchlauf.user_id, "gestartet", f"Bibliothek: '{durchlauf.thema}'")
+
+        try:
+            urteil: dict[str, str] = (
+                {"status": status, "begruendung": "Die Destillation lieferte keinen Text."}
+                if status else
+                ergebnis_einordnen(
+                    ziel=durchlauf.ziel, destillat=durchlauf.destillat, lage=durchlauf.lage,
+                )
+            )
+            ergebnis: Arbeitsergebnis = Arbeitsergebnis(
+                thema=durchlauf.thema,
+                # Ohne Destillat traegt der Bericht das Ziel als Gegenstand.
+                # Eine leere Zusammenfassung waere in der Metadatenzeile ein
+                # Pflichtfeld ohne Inhalt und scheiterte am Repository.
+                destillat=durchlauf.destillat or f"Ohne Ergebnis zum Ziel: {durchlauf.ziel}",
+                status=urteil["status"],
+                modus="recherche",
+                # Paar-Schema (§11.2): Subjekt ist der Mensch, fuer den
+                # recherchiert wurde; Gegenueber ist Nova; die Perspektive
+                # des Inhalts ist ihre — sie hat ihn erarbeitet.
+                user_id=durchlauf.user_id,
+                character_id=ASSISTANT_USER_ID,
+                beobachter="assistant",
+                salienz=_salienz_aus_auftrag(durchlauf.queue_eintrag),
+                ziel=durchlauf.ziel,
+                begruendung=urteil["begruendung"],
+                queries=durchlauf.queries,
+            )
+            ergebnis.themen_embedding = self._embedding_bauen(ergebnis.destillat)
+            pfade: dict[str, str] = ergebnis_ablegen(ergebnis)
+        except (ValueError, RuntimeError, OSError, psycopg2.Error) as fehler:
+            logger.exception(
+                f"RechercheAgent: Ablage in der Bibliothek fehlgeschlagen "
+                f"({type(fehler).__name__}) — Thema '{durchlauf.thema}'. "
+                f"Die Recherche selbst bleibt davon unberuehrt"
+            )
+            self._audit_log(durchlauf.user_id, "fehler", f"{type(fehler).__name__}: {fehler}")
+            return
+
+        self._audit_log(
+            durchlauf.user_id, "erledigt",
+            f"Status {ergebnis.status}, Zeile {pfade['zeilen_id']}, "
+            f"Bericht {pfade['bericht_pfad']}"
+            + (f", Wissen {pfade['wissen_pfad']}" if pfade["wissen_pfad"] else ""),
+        )
+
+    @staticmethod
+    def _embedding_bauen(destillat: str) -> str | None:
+        """Baut den Vektor der Zusammenfassung als pgvector-Literal.
+
+        Nachbedingung: eine Zeichenkette der Form "[v1,v2,...]" oder None.
+        None ist zulaessig — die Spalte ist nullbar, und eine Zeile ohne
+        Vektor bleibt ueber Thema und Paar auffindbar. Ein Ausfall des
+        Embedders darf die Ablage nicht verhindern; er wird protokolliert.
+
+        Aufgefangen werden die Ausnahmen, die die Worker-Schicht ausdruecklich
+        wirft (ValueError, RuntimeError) plus Netzfehler. Eine Ausnahme
+        ausserhalb dieser Menge wird NICHT hier behandelt — sie waere ein
+        unbekannter Zustand, und den still in ein `None` zu verwandeln waere
+        genau der Fallback, der einen Defekt maskiert.
+        """
+        try:
+            antwort = model_service.embed.submit_sync(
+                EmbedRequest(text=embed_text_bauen(destillat.strip()[:500]))
+            )
+        except (ValueError, RuntimeError, OSError, TimeoutError):
+            logger.exception(
+                "RechercheAgent: Embedding der Zusammenfassung fehlgeschlagen — die "
+                "Zeile entsteht ohne Vektor und ist ueber die Aehnlichkeitssuche "
+                "nicht auffindbar"
+            )
+            return None
+
+        return "[" + ",".join(str(w) for w in antwort.embedding) + "]"
 
     def invoke(self, state: AgentState) -> AgentState:
         """Orchestriert den Recherche-Ablauf.
@@ -248,14 +448,34 @@ class RechercheAgent(BaseAgent):
             kontext_paket=kontext_paket, lage=lage,
         ) if bisherige_zusammenfassung else ""
 
+        durchlauf: Durchlauf = Durchlauf(
+            thema=thema or session_kontext.get("thema_kern", ""),
+            ziel=recherche_ziel,
+            destillat=destillat,
+            queries=queries,
+            lage=lage,
+            queue_eintrag=queue_eintrag,
+            user_id=user_id,
+        )
+
+        # -- 6a. Gescheiterte Destillation ist ein Fehlschlag MIT Bericht --
+        # Die Suche lief, sie hat nur nichts Brauchbares ergeben — genau der
+        # Fall, den das Konzept `fehlschlag` nennt (§5.1). Ohne diesen Zweig
+        # verbraucht ein Durchlauf zehn Minuten am einzigen seriellen Platz
+        # und hinterlaesst keine Spur; die naechste Lagebeurteilung faengt
+        # bei null an und sucht dasselbe noch einmal.
         if not destillat:
+            self._bibliothek_schritt(durchlauf, status="fehlschlag")
             state["status"] = "fehler"
             state["fehler"] = "Destillation fehlgeschlagen"
             return state
 
         logger.info(f"RechercheAgent: Destillat — {destillat[:100]}...")
 
-        # -- 6. Ergebnis auf Shadow-Stack --
+        # -- 6b. Keep/Discard-Gate und Ablage in der Bibliothek --
+        self._bibliothek_schritt(durchlauf)
+
+        # -- 7. Ergebnis auf Shadow-Stack --
         try:
             stack_push(
                 redis_client=redis_client,
@@ -267,7 +487,7 @@ class RechercheAgent(BaseAgent):
         except Exception as e:
             logger.warning(f"RechercheAgent: Stack-Push fehlgeschlagen — {e}")
 
-        # -- 7. In Novas KZG speichern (Post-Hook nova_gedaechtnis) --
+        # -- 8. In Novas KZG speichern (Post-Hook nova_gedaechtnis) --
         try:
             from memory.kzg import kzg_store
 
@@ -316,7 +536,7 @@ class RechercheAgent(BaseAgent):
         except Exception as e:
             logger.warning(f"RechercheAgent: KZG-Write fehlgeschlagen — {e}")
 
-        # -- 8. Mittelfristiges Ziel extrahieren (Drive) --
+        # -- 9. Mittelfristiges Ziel extrahieren (Drive) --
         try:
             # Max-Check: nicht über ZIEL_MAX_MITTELFRISTIG
             # Novas Ziele stehen je Beziehung. `user_id` ist hier der Mensch,

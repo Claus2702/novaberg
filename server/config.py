@@ -266,6 +266,33 @@ PIXIE_RECHERCHE_MAX_ITERATIONEN:         int   = int(os.getenv("PIXIE_RECHERCHE_
 PIXIE_RECHERCHE_MAX_QUERIES:             int   = int(os.getenv("PIXIE_RECHERCHE_MAX_QUERIES", "4"))
 PIXIE_RECHERCHE_MAX_SEITEN_PRO_RUNDE:    int   = int(os.getenv("PIXIE_RECHERCHE_MAX_SEITEN_PRO_RUNDE", "3"))
 
+# --- Wissensspeicher (Bibliothek) ---
+# Spezifikation: docs/novaberg-autonomous-wissen_k.md §11.1.
+#
+# Die Wurzel liegt AUSSERHALB des Arbeitsbaums, im Behaelter unter /knowledge
+# eingehaengt. Das ist keine Ablage-Vorliebe: Die Dateien tragen aus
+# Gespraechen abgeleitete Recherchen, und unterhalb des Repositoriums
+# veroeffentlichte jeder Push sie. Ausserhalb kann `git add` sie nicht
+# erfassen — die Grenze ist dann eine Eigenschaft des Dateisystems.
+WISSENSSPEICHER_WURZEL:                  str   = os.getenv("WISSENSSPEICHER_WURZEL", "/knowledge")
+
+# Modusbits fuer alles, was der Wissenspfad anlegt. GEMESSENE Werte, keine
+# gewaehlten: Der Behaelter laeuft als root, auf dem Wirt erscheinen die
+# Dateien unter fremder Kennung. Am 04.08.2026 gegengeprobt — ohne diese Bits
+# scheitern Anhaengen und Neuanlage mit `Keine Berechtigung`, mit ihnen
+# funktioniert beides, obwohl die Eigentuemerkennung fremd bleibt.
+#
+# Der Weg ueber den Benutzernamensraum (Behaelter unter der Wirtskennung)
+# wurde verworfen: Er griffe in den laufenden Dienst ein und waere an die
+# Eigenheiten der Behaelterlaufzeit gebunden. Die Modusbits sind es nicht.
+#
+# Basis 8, weil eine Modusangabe zur Basis 10 bei jedem Lesen falsch
+# verstanden wird.
+WISSENSSPEICHER_DATEI_MODUS:       int = int(os.getenv("WISSENSSPEICHER_DATEI_MODUS", "666"), 8)
+WISSENSSPEICHER_VERZEICHNIS_MODUS: int = int(
+    os.getenv("WISSENSSPEICHER_VERZEICHNIS_MODUS", "777"), 8,
+)
+
 # ─── KZG (Kurzzeitgedaechtnis) ─────────────────
 # Die drei Tore stehen seit Chat 113 auf der GEKRUEMMTEN Skala — sie sind die
 # Bilder der alten Rohwerte unter der Salienzkurve. Fachlich hat sich nichts
