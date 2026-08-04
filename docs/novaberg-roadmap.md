@@ -2011,7 +2011,33 @@ Die erwartete Spaltenliste ist ein Literal, von Hand aus dem Konzept abgeleitet 
 
 **Nicht gefahren:** die stärkere Gegenprobe, den Vorgabewert live per `ALTER` zu setzen und die Verstoß-Fälle fallen zu sehen. Sie wäre ein zweiter, nicht angekündigter DDL-Eingriff. Die Live-Hälfte des Tests ist damit **wirksam belegt, aber nicht gegengeprobt**.
 
-**Geschlossen:** `WIS-2-TABELLE`. **Als Nächstes:** `WIS-3-DATEIEN`.
+**Geschlossen:** `WIS-2-TABELLE`.
+
+### `WIS-3-DATEIEN` — die Bibliothek bekommt ihren Schreibpfad ✅
+
+Eine abgeschlossene Recherche hinterlässt seither zwei Dateien und eine Metadatenzeile: **Wissen** (das *Was* — reines Destillat, für Retrieval gebaut), **Bericht** (das *Wie* — Ziel, Suchverlauf, Urteil) und die Zeile in `autonomous_wissen`. Gebaut am `recherche`-Agenten; die übrigen ziehen nach dem Beispiel nach.
+
+**Der Pfadwächter ist die eigentliche Zusicherung des Bauteils.** Er prüft zwei Bedingungen, nicht eine: Das Ziel liegt **innerhalb der Wurzel** und **außerhalb des Arbeitsbaums**. Die zweite trägt die Veröffentlichungsgrenze; die erste allein ließe sich mit einem `..` umgehen, weshalb jeder Pfad **vor** dem Vergleich aufgelöst wird. Das Anwendungsverzeichnis leitet der Wächter aus der Lage seines eigenen Moduls ab und nicht aus der Konfiguration — ein Wächter, den eine Umgebungsvariable verschieben kann, bewacht nichts. Damit hat `F-WISSEN-1` seine Prüfung.
+
+**Das Keep/Discard-Gate kam mit, weil der Schreiber ohne es unbedingt schreibt.** Vier Status, und nur zwei erzeugen eine Wissen-Datei; `wiederholung` und `fehlschlag` hinterlassen einen Bericht. Auch ein Durchlauf ohne Ertrag ist ein Ergebnis — die nächste Lagebeurteilung soll wissen, dass hier schon gesucht wurde.
+
+> **Die Richtung des Ausfalls ist die eigentliche Entscheidung am Gate.** Ein misslungener Aufruf, eine leere Antwort oder ein Status außerhalb des Kanons werden zu `fehlschlag`, nicht zu `echte_tiefe`. Andernfalls schriebe gerade der ausgefallene Aufruf in die Bibliothek, und ein Ausfall wäre von einem substanziellen Ergebnis nicht zu unterscheiden.
+
+**Die Modusbits stehen in der Konfiguration, nicht im Schreibpfad.** Sie sind ein gemessener Betriebsparameter, kein Literal — und die Messung ist wiederholt worden: Eine vom Behälter geschriebene Datei gehört auf dem Wirt `nfsnobody`, und der Wirtsnutzer konnte trotzdem **anhängen und im Verzeichnis neu anlegen**. Ohne die Bits scheitert beides.
+
+**Was das Schema durchsetzt, statt es zu erbitten:** `salienz_anfang` kommt aus dem auslösenden Auftrag. Fehlt der Wert, steht er ausdrücklich auf null oder außerhalb von (0,1], scheitert die Ablage — die Recherche selbst bleibt gültig, ihr Ergebnis geht weiter auf den Stack und ins Gedächtnis, und der Bibliotheks-Schritt bekommt einen eigenen `hintergrund_log`-Eintrag mit `fehler`. Erst dadurch ist im Nachhinein unterscheidbar, ob die Ablage lief und nichts fand oder ob sie gar nicht lief.
+
+**Umfang:** Suite 1003 → **1028 Tests**, grün, 0 übersprungen. Nulllinie **2182 unverändert**, beide Wände sauber, alle fünf neuen Dateien auf beiden Konfigurationen ohne Treffer.
+
+### Die Messung — und was sie über den Bestand sagt
+
+**Live belegt am 04.08.2026, 21:07:30 UTC**, an einem echten Queue-Auftrag: Bericht-Datei geschrieben (576 Bytes, Modus 666, auf dem Wirt beschreibbar trotz fremder Eigentümerkennung), Metadatenzeile 100 angelegt, Audit `gestartet` und `erledigt`. Die Zeile trägt `salienz_anfang = 1.00` aus dem auslösenden Auftrag, `gewicht_roh = 1.00` und `gewicht_absolut = 3.96` — **von Hand nachgerechnet und exakt getroffen** (`10 · sin(0.1 · π/2)^0.5`). Paar `(meister, nova, assistant)`, Vektor vorhanden.
+
+> **Gelandet ist die Messung auf dem Fehlschlag-Zweig — und das ist der Befund des Tages.** Von vier Recherche-Durchläufen scheiterten **alle vier an der Zwischen-Destillation**, zwei davon nach über fünfzehn Minuten am einzigen seriellen Platz. Ohne den Zweig aus §5.1 hätte keiner von ihnen eine Spur hinterlassen, und die nächste Lagebeurteilung hätte bei null angefangen.
+
+**Der Verdacht dazu ist gemessen, nicht geraten:** Der Hintergrundpfad hat **262144 Token**, nicht 32768 (Connector `qwen36`, `qwen36-cpu`, gemessen 21:02 UTC; der Gesprächspfad steht weiterhin bei 32768). Die Zwischen-Destillation ist in `novaberg-pixie-research.md` §108 ausdrücklich damit begründet, dass 75.000 Zeichen „weit ueber dem CPU-Kontext (32768 Tokens)" lägen — bei 262144 liegen sie bei rund einem Zehntel. **Der Schritt komprimiert verlustbehaftet gegen eine Grenze, die achtmal weiter weg ist, und ist zugleich der einzige gemessene Ausfallpunkt.** Sechs Dokumente tragen die alte Zahl; `novaberg-tool-dateien_k.md` §1 ist markiert, die übrigen stehen in der Fundliste. Backlog: `WIS-KONTEXT-NEU-DIMENSIONIEREN`.
+
+**Als Nächstes:** `WIS-4-STAPEL-SALIENZ` — oder die Neudimensionierung, die inzwischen der größere Hebel ist.
 
 ---
 

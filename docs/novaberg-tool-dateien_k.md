@@ -10,6 +10,14 @@
 
 ## 1. Aufgabe
 
+> **Die Prämisse dieses Abschnitts gilt nur noch für den Gesprächspfad.** Gemessen am laufenden System am 04.08.2026, 21:02 UTC, Connector `qwen36`: Der GPU-Pfad (`gemma4-gpu`, Gespräch) steht bei **32768**, der CPU- und der Analyse-Pfad (`qwen36-cpu`, Hintergrund) bei **262144** — dem Achtfachen.
+>
+> Für die Hintergrund-Agenten — Recherche, Vertiefung, Traum, Nachfragen — ist der fraktale Zoom damit **nicht mehr erzwungen**: Eine vollständige Wissen-Datei von wenigen Kilobyte passt mühelos in den Prompt. Er bleibt trotzdem sinnvoll, wo Token Geld und Zeit kosten oder wo ein gezielter Block genauer ist als eine ganze Datei; er ist nur keine Notwendigkeit mehr, sondern eine Wahl.
+>
+> **Für den Gesprächspfad bleibt der Abschnitt unverändert gültig.** Dort ist die Grenze real, und der Enricher liest gegen dieselben 32768 wie zuvor.
+>
+> Der Text unten bleibt als Herkunft stehen (`40_DOKU_GRUNDSAETZE`: markieren, nicht löschen).
+
 Novas Kontext hat 32768 Tokens. System-Prompt, Charakter, Session, Gedaechtnis belegen einen erheblichen Teil davon. Grosse Dateien koennen nicht vollstaendig in den Prompt geladen werden. Trotzdem muss Nova bestehende Dateien lesen, verstehen, gezielt durchsuchen und chirurgisch bearbeiten koennen.
 
 `tools/dateien/` stellt dafuer eine Sammlung deterministischer Python-Funktionen bereit. Kein LLM in den Tools — der Agent denkt (LLM), das Tool fuehrt aus (Python). Exakt das Prinzip "Berechnung in Python, nicht im LLM."

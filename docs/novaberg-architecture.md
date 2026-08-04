@@ -299,9 +299,11 @@ project/
 │   ├── tools/                           # Tool-Manager (Epic 11)
 │   │   ├── db_manager.py                #   PostgreSQL + Connection Pool
 │   │   ├── redis_manager.py             #   Redis (nativ threadsafe)
-│   │   └── web/                         #   Web-Infrastruktur (Chat 35)
-│   │       ├── search.py                #     WebSearchManager (SearXNG)
-│   │       └── fetch.py                 #     PageFetcher (trafilatura + BS4)
+│   │   ├── web/                         #   Web-Infrastruktur (Chat 35)
+│   │   │   ├── search.py                #     WebSearchManager (SearXNG)
+│   │   │   └── fetch.py                 #     PageFetcher (trafilatura + BS4)
+│   │   └── dateien/                     #   Datei-Werkzeuge (WIS-3)
+│   │       └── schreiben.py             #     Pfadwaechter + Modusbits (F-WISSEN-1); Lesepfad fehlt
 │   │
 │   ├── memory/                          # Gedaechtnis-Schicht
 │   │   ├── embedding.py                 #   Stub: EMBEDDING_DIM-Konstante (Logik in Block 1 → EmbedWorker migriert)
@@ -315,7 +317,8 @@ project/
 │   │   │   ├── entitaeten_repository.py #     Knowledge Graph Nodes
 │   │   │   ├── fakten_repository.py     #     Knowledge Graph Edges (bi-temporal)
 │   │   │   ├── timeline_repository.py   #     Termine und Ereignisse
-│   │   │   └── notizen_repository.py    #     Merkzettel und Listen
+│   │   │   ├── notizen_repository.py    #     Merkzettel und Listen
+│   │   │   └── autonomous_wissen_repository.py # Metadaten der Wissens-Bibliothek (WIS-2/3)
 │   │   └── services/
 │   │       └── entity_resolution.py     #   Entity Resolution (Name + Fuzzy + Embedding)
 │   │
