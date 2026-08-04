@@ -96,14 +96,16 @@ Dazu `distanz` von der Abwendungsseite des Zuwendungsrades und die `aufnahmebere
 | Stelle | Zustand |
 |---|---|
 | `fakten` — Triple-Store | ✅ **trägt die Struktur**: `subjekt_id` → `attribut` → `objekt_id \| objekt_wert`, bitemporal über `t_valid` / `t_invalid` / `aktiv` |
-| Aktualisierung eines Fakts | ❌ **entscheidet an einer Zeichenkette** — siehe §3.1 |
+| Aktualisierung eines Fakts | ❌ **entscheidet an einer Zeichenkette** — und läuft heute gar nicht: `fakten` hat 0 Zeilen, kein Aufrufer setzt `ziel = "fakten"` (Backlog `15e`). Siehe §3.1 |
 | GV4-Lückensuche | 🔶 findet die akute Lücke des Turns, **und vergisst sie**. Sie führt zu keiner Handlung |
 | `wissensluecken` | 🔶 ein **Themen**-Verzeichnis (`thema`, `resonanz`, `neuheit`) — es beantwortet „wohin zieht es sie über Wochen", nicht „welcher Slot dieses Objekts fehlt" |
 | Rückfrage samt Resume | 🔶 **gebaut, aber agentengebunden** — ausgelöst nur von Mehrdeutigkeit einer Agenten-Operation, nie von einer Wissenslücke |
 | Erwartungsschema je Objekttyp | ❌ **existiert nicht.** Nichts sagt, welche Eigenschaften ein „Besuch" hat |
 | Urteil über eine Abweichung | 🔶 neu mit `SYK-B1` — dreiwertig, aber **niemand liest es** |
 
-### 3.1 Der Kern des Defekts
+### 3.1 Der Kern des Defekts — heute unerreichbar
+
+> **Vorab, gemessen am 04.08.2026:** Die Tabelle `fakten` hat **null Zeilen**, und kein Aufrufer setzt jemals `ziel = "fakten"` — im Bestand kommen nur `kzg` und `notizen` vor. Der Triple-Store war in Betrieb und ist beim Umbau nicht mitgezogen worden; der Backlog führt den fehlenden Erzeuger als `15e`. Der folgende Code läuft also korrekt beschrieben, aber **nicht**. Er wird zum Defekt in dem Moment, in dem `15e` gebaut ist — und deshalb steht er hier, statt vergessen zu werden.
 
 Der Aktualisierungspfad des Faktengedächtnisses entscheidet so:
 
@@ -122,9 +124,22 @@ Ein reiner Ungleichheitsvergleich invalidiert den bestehenden Fakt und schreibt 
 
 Das ist Erkennung ohne Bewertung. Die bitemporale Maschinerie, die beide Werte halten könnte, ist vorhanden — es fehlt das Signal, sie unterschiedlich zu benutzen.
 
-### 3.2 Die strukturelle Lücke
+### 3.2 Die strukturelle Lücke: zwei Graphen, ein Turn
 
-Fakten werden aus zwei Quellen geschrieben: aus dem Salienz-Knoten auf normalen Turns, und über den Aufgabenpfad. **Auf dem Aufgabenpfad läuft der Verfasser nicht** (`task_context_cut`), also gibt es dort kein Urteil — ausgerechnet dort, wo ein Nutzer ausdrücklich etwas ändern lässt.
+~~Fakten werden aus zwei Quellen geschrieben: aus dem Salienz-Knoten auf normalen Turns, und über den Aufgabenpfad.~~ **Korrigiert am 04.08.2026** — der Salienz-Knoten schreibt ausschließlich `ziel: "kzg"`, keine Fakten.
+
+Die Lücke ist eine andere und größer:
+
+| Graph | Knotenfolge | Verfasser? |
+|---|---|---|
+| **HumanGraph** (Pfad 1) — die Nutzeräußerung | `perzeption → enricher → ei_calc → salience → dispatcher` | **nein** |
+| **CharacterGraph** (Pfad 2) — Novas Seite | u. a. `planner → … → verfasser → responder → … → salience → dispatcher` | ja, außer bei `task_context_cut` |
+
+**Es sind zwei getrennte Durchläufe über denselben Turn**, korreliert allein über `turn_id`. Das Urteil entsteht im zweiten Graphen; was der erste schreibt, sieht es nie. Eine Prüfung, die am Urteil des Verfassers hängt, deckt den HumanGraph also grundsätzlich nicht ab — nicht nur „manchmal nicht", wie es die Erstfassung nahelegte.
+
+**Dazu kommt der Aufgabenpfad:** Bei `task_context_cut` wird auch im CharacterGraph der Verfasser übersprungen (der Kontext-Schnitt beendete eine Halluzination bei Agent-Erfolg und ist so gewollt). Dort entsteht ebenfalls kein Urteil — ausgerechnet dann, wenn ein Nutzer ausdrücklich etwas ändern lässt.
+
+> **Daraus folgt der Ort der Prüfung.** Sie gehört in den **Schreibpfad**, nicht in den Antwortpfad: Dort deckt sie beide Graphen und den Aufgabenpfad ab, und sie ist Stufe 1 bis 3 aus §2.1 — still, unbedingt, ohne Charakteranteil. Das Verfasser-Urteil verfeinert sie, wo es vorliegt.
 
 ---
 
@@ -191,17 +206,27 @@ Der Rückfrage-Fluss samt Pending und Resume existiert, hängt aber am Agentenpf
 | **MESSUNG** | Anteil der Invalidierungen, die auf `trifft_zu` beruhen, gegen die auf reinem Wertvergleich. |
 | **Gegenprobe** | Eine zutreffende Berichtigung invalidiert weiterhin — sonst ist der Speicher nicht mehr fortschreibbar. |
 
-Das kleinste Bauteil mit der größten Schutzwirkung: Das Urteil und die Schreibvorgänge liegen im **selben Zustand desselben Turns**. Es muss nichts vererbt werden, nur gelesen.
+> ### ⚠ K5 hat heute keinen Gegenstand — korrigiert am 04.08.2026
+>
+> Die Erstfassung dieses Abschnitts stand auf zwei Annahmen, die beide falsch waren. Beide sind nachgemessen.
+>
+> **Die Tabelle `fakten` ist leer — null Zeilen.** Kein Aufrufer setzt jemals `ziel = "fakten"`; im ganzen Bestand kommen nur `kzg` (Salienz-Knoten) und `notizen` (Notizen-Manager) vor. Der `FaktenManager` ist registriert, seine Entscheidungslogik steht da — und wird nie erreicht. Der Zeichenketten-Vergleich, der diesen Abschnitt ausgelöst hat, ist **nie eingetreten**, weil der Pfad nicht läuft.
+>
+> **Und Urteil und Schreibvorgang liegen nicht im selben Zustand.** Es sind zwei Graphen: Der HumanGraph (`perzeption → enricher → ei_calc → salience → dispatcher`) verarbeitet die Nutzeräußerung und hat **keinen Verfasser**; der CharacterGraph erzeugt das Urteil. Beide laufen als getrennte Durchläufe über denselben Turn, korreliert allein über `turn_id`. Die Klammer fehlt hier also **genauso wie bei `SYK-B8`** — der Vergleich in der Erstfassung war falsch herum.
+>
+> **Der Grund ist bekannt und kein Defekt:** Der Triple-Store war in Betrieb und ist beim Umbau nicht mitgezogen worden. Der Backlog führt den fehlenden Erzeuger als **`15e — FaktenAgent (Salienz-Pipeline)`**. Wie weit der Umbau gekommen ist, zeigen die Nachbarn: `entitaeten` 433 Zeilen, `lzg_knoten` 1252, `fakten` **0**. Subjekt und Objekt entstehen, das Tripel dazwischen nicht.
+>
+> **K5 ist damit nicht das erste Bauteil, sondern eines der letzten.** Es setzt `15e` voraus. Solange nichts geschrieben wird, gibt es nichts zu schützen — und eine Prüfung in einen toten Pfad zu bauen hieße, sie nie zu messen.
 
-**Damit unterscheidet sich K5 von `SYK-B8`:** Dort fehlt die Klammer — in 583 geprüften Kurzzeit-Einträgen steht keine Turn-Kennung, eine Marke lässt sich nicht vererben. Hier besteht das Problem nicht.
+**Wenn der Pfad wieder trägt, gehört die Prüfung dorthin und nicht in den Verfasser.** Der Grund ist die Zweiteilung der Graphen: Eine Prüfung im Schreibpfad deckt **beide** ab — Nutzerfakten aus dem HumanGraph und Novas eigene Ableitungen aus dem CharacterGraph — und sie deckt den Aufgabenpfad mit ab, auf dem der Verfasser nicht läuft. Sie ist Stufe 1 bis 3 aus §2.1: still, unbedingt, ohne Charakteranteil.
+
+Das Urteil des Verfassers wird dann **Zusatzinformation statt Voraussetzung**: Liegt eines vor — über `turn_id` auffindbar —, verfeinert es die Entscheidung; liegt keines vor, prüft der Schreibpfad gröber, aber er prüft.
 
 ---
 
 ## 5. Reihenfolge
 
 ```
-K5   Faktenpfad liest das Urteil      ── kleinstes Stück, schuetzt den dauerhaften Speicher
- │
 K1   Erwartungsschema je Objekttyp    ── ohne es gibt es keinen Lücken-Ausgang
  │
 K2   Klärungstor                      ── braucht K1 und das Urteil aus SYK-B1
@@ -209,9 +234,13 @@ K2   Klärungstor                      ── braucht K1 und das Urteil aus SYK-
 K3   Salienz der Klärung              ── ohne sie ist K2 ein Verhör
  │
 K4   Zwischenschritt im Gesprächspfad ── die Frage, die aus alldem folgt
+
+K5   Faktenpfad prüft selbst          ── unabhängig, aber erst nach Backlog 15e
 ```
 
-K5 steht vorn, weil es allein wirkt und nichts voraussetzt außer `SYK-B1`. Die übrigen bauen aufeinander.
+**K5 stand in der Erstfassung vorn und ist ans Ende gerückt.** Es setzt nicht `SYK-B1` voraus, sondern **`15e — FaktenAgent (Salienz-Pipeline)`**: Solange die Tabelle `fakten` keinen Erzeuger hat, gibt es nichts zu prüfen. Danach wirkt es unabhängig von K1 bis K4 und deckt beide Graphen ab.
+
+K1 bis K4 bauen aufeinander.
 
 ---
 
@@ -249,6 +278,7 @@ K5 steht vorn, weil es allein wirkt und nichts voraussetzt außer `SYK-B1`. Die 
 
 ## Versionshistorie
 
+- **v0.2 — 04.08.2026:** **K5 zurückgestuft, nachdem zwei tragende Annahmen der Erstfassung nachgemessen und widerlegt wurden.** Erstens: Die Tabelle `fakten` hat null Zeilen, kein Aufrufer setzt `ziel = "fakten"` — der Triple-Store war in Betrieb und ist beim Umbau nicht mitgezogen worden (Backlog `15e`). Der beschriebene Zeichenketten-Vergleich ist damit nie eingetreten; er wird zum Defekt, sobald `15e` steht. Zweitens: Urteil und Schreibvorgang liegen **nicht** im selben Zustand — es sind zwei Graphen über denselben Turn, korreliert allein über `turn_id`, und der HumanGraph hat gar keinen Verfasser. Die Erstfassung hatte daraus geschlossen, K5 sei einfacher als `SYK-B8`; das Gegenteil stimmt, die Klammer fehlt genauso. **Daraus folgt aber auch etwas Besseres:** Die Prüfung gehört in den Schreibpfad statt an das Verfasser-Urteil, deckt dort beide Graphen und den Aufgabenpfad ab, und K5 hängt nicht mehr an `SYK-B1`.
 - **v0.1 — 04.08.2026:** Erstfassung. Anlass war die Frage, wie das Faktengedächtnis Werte korrigiert und aktualisiert — und die Feststellung, dass der Aktualisierungspfad an einem reinen Zeichenkettenvergleich entscheidet und drei verschiedene Fälle gleich behandelt. Der Grundsatz selbst ist allgemeiner als der Anlass: **Abweichung und Lücke sind derselbe Vorgang**, beide heißen *erwartet ≠ vorhanden*, und beide enden in einer Frage. Neu gegenüber der bisherigen Fassung des Gedankens: die Trennung in **zwei** Tore — Notwendigkeit aus dem Objekt, Salienz aus dem Charakter —, ohne die aus Aufmerksamkeit ein Verhör wird.
 
   **Noch am selben Tag korrigiert (§2.1, K3):** Die erste Fassung gab der Bedeutung eine Untergrenze, die der Charakter nicht unterschreiten darf. Das ist falsch — es zwänge eine distanzierte Nova zum Nachfragen und machte den Charakter zur Fassade. Der Vorgang hat **vier** Stufen, und nur die letzte hängt am Charakter: Erkennen, nicht darauf bauen und nicht überschreiben sind still, gratis und unbedingt; nur das Fragen kostet einen Gesprächszug. Bei voller Distanz merkt Nova die Abweichung, baut nicht darauf, überschreibt den Fakt nicht — und sagt nichts. Sie ist nicht blind, sie ist wortkarg.

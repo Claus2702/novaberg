@@ -905,7 +905,7 @@ Der LZG-Lesepfad war in **allen sechs Läufen untätig** — eine frische Person
 
 | ID | Inhalt | Vorbedingung |
 |---|---|---|
-| **KLA-K5-FAKTENPFAD** | Der Faktenpfad liest das Urteil des Verfassers, statt an der Zeichenkette zu entscheiden. Kleinstes Stück, größte Schutzwirkung: Urteil und Schreibvorgänge liegen im selben Zustand desselben Turns — es muss nichts vererbt werden, nur gelesen. | `SYK-B1` |
+| **KLA-K5-FAKTENPFAD** | Der Schreibpfad prüft selbst, statt an der Zeichenkette zu entscheiden — und deckt damit **beide Graphen** sowie den Aufgabenpfad ab, auf dem kein Verfasser läuft. **Am 04.08.2026 korrigiert:** Die Tabelle `fakten` hat 0 Zeilen und keinen Erzeuger; Urteil und Schreibvorgang liegen in **zwei** Graphen, korreliert nur über `turn_id`. Nicht mehr das erste Bauteil, sondern das letzte. | **`15e`** (FaktenAgent), nicht `SYK-B1` |
 | **KLA-K1-ERWARTUNGSSCHEMA** | Zu einem Objekttyp ist abrufbar, welche Eigenschaften er trägt und welche notwendig sind. Weltwissen, einmal abgelegt statt je Turn erfragt. | keine |
 | **KLA-K2-KLAERUNGSTOR** | Vergleicht erwartet gegen vorhanden und liefert beide Ausgänge — Lücke und Abweichung — aus einer Operation. | K1, `SYK-B1` |
 | **KLA-K3-SALIENZ** | Nur bedeutsamer Klärungsbedarf führt zu einer Frage. Gegenprobe: Bedeutung schlägt Charakter, sonst wird eine distanzierte Nova blind für Widersprüche. | K2 |
