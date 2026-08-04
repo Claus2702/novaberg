@@ -509,7 +509,19 @@ Im Behälter ist er unter `/knowledge` eingehängt, schreibbar.
 
 `novaberg-wissensluecken_k.md` §7 nennt dieselbe Bedingung; die Erstfassung dieses Dokuments nannte sie nicht.
 
-**Zwei Nebenbedingungen:** Der Behälter läuft als `root`, die Dateien gehören danach `root` — der Nutzer könnte sie sonst nicht bearbeiten, und ein Obsidian-Fenster darauf ist der halbe Zweck. Und der Mount ist schreibbar, anders als `db`.
+**Die Rechte sind eine Bedingung an den Schreiber, keine an die Konfiguration.** Gemessen am 04.08.2026: Der Behälter läuft als `root`; auf dem Wirt erscheinen die erzeugten Dateien unter einer fremden Kennung mit Modus 644, und der Nutzer kann sie **nicht** bearbeiten. Ein Obsidian-Fenster darauf ist aber der halbe Zweck des Speichers.
+
+Die Abhilfe liegt in der Anwendung, nicht im Benutzernamensraum:
+
+| | |
+|---|---|
+| `umask` beim Schreiben | `000` |
+| Dateien | `0666` |
+| Verzeichnisse | `0777` |
+
+**Gegenprobe gefahren:** Mit diesen Werten kann der Wirtsnutzer Dateien anhängen und im Verzeichnis neue anlegen, obwohl die Eigentümerkennung fremd bleibt. Ohne sie scheitert beides mit `Keine Berechtigung`.
+
+Der Weg über den Benutzernamensraum — den Behälter unter der Wirtskennung laufen zu lassen — wurde verworfen: Er griffe in den laufenden Dienst ein, um ein Problem zu lösen, das drei Zeilen im Schreibpfad ebenfalls lösen. Und er wäre an die Eigenheiten der Behälterlaufzeit gebunden, die Modusbits sind es nicht.
 
 **Gemessener Ist-Zustand (04.08.2026):** Der Server sieht heute genau zwei Mounts — `novaberg/server → /app` (rw) und `novaberg/db → /app/db` (ro). Ein Wissensverzeichnis ist ohne Compose-Änderung nicht erreichbar.
 
