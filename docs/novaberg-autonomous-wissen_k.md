@@ -495,17 +495,15 @@ Die Erstfassung ist drei Monate alt und nie gebaut worden. In der Zwischenzeit h
 
 ### 11.1 Der Speicherort liegt außerhalb des Git-Roots
 
+Der Speicher liegt **eine Ebene über dem Repositorium**, als Geschwister von dessen Wurzel:
+
 ```
-~/ki-assistent/
+<eltern>/
     novaberg/        ← das Repositorium
     knowledge/       ← der Wissensspeicher     (neu)
 ```
 
-Im Behälter erreichbar über einen Mount:
-
-```yaml
-- ./knowledge:/knowledge:rw
-```
+Im Behälter ist er unter `/knowledge` eingehängt, schreibbar.
 
 **Das ist keine Ablage-Vorliebe, sondern eine Sicherung.** Die Dateien enthalten Recherchen, die aus Gesprächen abgeleitet sind. Läge das Verzeichnis unter `novaberg/`, veröffentlichte jeder Push die gesammelten Inhalte. Außerhalb des Arbeitsbaums kann `git add` sie nicht erfassen — die Grenze ist dann eine Eigenschaft des Dateisystems und keine Regel, an die sich jemand erinnern muss.
 

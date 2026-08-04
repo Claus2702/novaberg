@@ -23,6 +23,12 @@ Analog zum Kraft-1-Stichtag: ab wann eine Partition brauchbar ist. Kein Backfill
 
 ## Offen
 
+- **2026-08-04** — **Fünf Fundstellen nennen den Wirtspfad oberhalb des Repositoriums**, alle gepusht: `novaberg-architecture.md` §Konfiguration und `novaberg-embedding-casing-blind_k.md` nennen die Compose-Datei mit vollem Pfad — die Architektur-Zeile sagt dabei ausdrücklich „liegt **außerhalb** dieses Repos" —, `novaberg-thinking-skills_k.md` dreimal ein Verzeichnis unterhalb desselben Elternordners. Damit ist für jeden öffentlichen Leser erkennbar, dass das Repositorium in einem größeren privaten Bereich liegt.
+
+- **2026-08-04** — **Der Shadow-Stack trägt einen Eintrag mit leerem `thema`.** Der Auswahlvektor wird aus `f"{thema} {inhalt[:200]}"` gebildet; fehlt das Thema, trägt die halbe Grundlage nichts bei. Zwei solche Einträge erreichten untereinander eine Kosinus-Ähnlichkeit von 0,933 und wären als Duplikate behandelt worden, obwohl sie inhaltlich nichts teilen.
+
+- **2026-08-04** — **Die Kandidatenauswahl fällt auf Priorität `0.0` zurück, wenn weder `prioritaet` noch `salienz` im Eintrag steht** (`services/pixie/kandidaten.py`). Ein unbeschriebener Auftrag wird damit zur niedrigsten Priorität und gewinnt nie, statt laut zu scheitern. Gemessen: 49 von 650 Einträgen der Shadow-Queue stehen auf 0.0.
+
 - **2026-08-04** — **`EBBINGHAUS_DECAY_RATE` und `EBBINGHAUS_MIN_GEWICHT` werden nirgends gelesen.** Beide stehen in `config.py` (0.0015 / 0.1) und haben in `server/` keine einzige Verwendungsstelle; wirksam ist das Paar `LZG_KNOTEN_DECAY_RATE` / `LZG_KNOTEN_MIN_GEWICHT` mit denselben Werten, das der Synapsen-Umbau eingeführt hat. Zwei Konstanten, ein Verhalten — wer die alte verstellt, ändert nichts und sieht es nicht.
 
 - **2026-08-04** — **Drei Stellen behaupten, das effektive Knotengewicht werde bei jedem Zugriff live berechnet und nicht gespeichert.** `config.py` §Ebbinghaus, `config.py` bei `LZG_KNOTEN_DECAY_RATE` und `novaberg-memory.md` §4. Tatsächlich materialisiert `run_node_decay` die Spalte `gewicht_decay` samt `decay_am` per UPDATE, und die Lesepfade selektieren die Spalte. Die Aussage beschreibt die Architektur vor dem Synapsen-Umbau.
