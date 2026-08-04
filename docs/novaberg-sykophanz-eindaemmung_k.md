@@ -210,7 +210,9 @@ Der naheliegende Ausweg, ein Zahlenpaar aus Zustimmung und Vorbehalt, nimmt dem 
 
 > **Der Aufzählungswert entscheidet, die Zahl beschreibt.** Die Sperre („nicht als Prämisse") hängt am diskreten Wert und bleibt maschinell prüfbar; `einwand_staerke` steuert nur, wie deutlich der Vorbehalt klingt.
 
-`einwand_quelle` steht heute immer auf `fakt` — die Haltungsseite ist nicht gebaut (`novaberg-thinking-opinion_k.md` §2). Das Feld ist trotzdem von Anfang an dabei, damit der Willensstrang (dort §10, Punkt 1) es später ohne Migration mitbenutzen kann.
+~~`einwand_quelle` steht heute immer auf `fakt`~~ — die Haltungsseite ist nicht gebaut (`novaberg-thinking-opinion_k.md` §2). Das Feld ist trotzdem von Anfang an dabei, damit der Willensstrang (dort §10, Punkt 1) es später ohne Migration mitbenutzen kann.
+
+> **Widerlegt am 04.08.2026 beim ersten echten Turn nach dem Bau von B1.** Das Modell lieferte `quelle: beides`, nicht `fakt`. Der Wert ist zulässig, die Vorhersage war es nicht: Das Feld wird frei gewählt, sobald es angeboten wird — auch für eine Seite, die es nicht gibt. Was daraus folgt, ist offen: Entweder die Wertemenge wird beschnitten, solange die Haltungsseite fehlt, oder `beides` wird als das gelesen, was es heute nur sein kann — eine Selbstauskunft ohne Gegenstück. **Ungeprüft bleibt, wie oft er abweicht**; ein Turn ist keine Rate.
 
 **Die Reihenfolge der Felder ist die Reihenfolge der Erzeugung.** Ein Sprachmodell legt sich mit dem ersten Token fest; die gemessenen Antworten *beginnen* mit der Zustimmung. Steht die Prüfung vor dem Urteil und das Urteil vor dem Text, kann die Zustimmung nicht mehr vor der Prüfung fallen. Ein Satz in Prosa lässt sich weichspülen, ein Aufzählungswert nicht.
 

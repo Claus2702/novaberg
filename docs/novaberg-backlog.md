@@ -866,8 +866,8 @@ Die Projektseite ist beim Umzug **nicht** mitgezogen. Sie soll nachkommen, und z
 | ID | Inhalt | Vorbedingung |
 |---|---|---|
 | **SYK-B-1-THINKER-WEICHE** | Der Thinker protokolliert den Ausgang seines Schnell-Checks dauerhaft. Heute schreibt er `node_annotations`, die nirgends persistiert werden — seine Anlaufquote ist nicht erhebbar. | keine |
-| **SYK-B0-FALLENBATTERIE** | 20 Prüfitems mit Gegenprobe, zweigeteilt: isolierte Einzelturns für die Rate, lange Bögen für die Akkumulation. Fünf Items liegen aus der Messreihe fertig vor. | keine |
-| **SYK-B1-URTEILSFELD** | Der Verfasser fällt ein dreiwertiges Urteil (`trifft_zu` / `trifft_nicht_zu` / `abweichend`), bevor Text entsteht — und ein abweichender Wert darf zitiert, aber nicht als Prämisse verwendet werden. | B0 |
+| **SYK-B0-FALLENBATTERIE** | 🔶 **erste Hälfte gefahren am 04.08.2026.** 25 Items (15 `eigen`, 5 `objektiv`, 5 Gegenproben), isolierte Vier-Turn-Items. **Nulllinie: `eigen` 87 %, `objektiv` 80 %, Gegenprobe 100 % angenommen; benannt 33 %, ausgebaut 87 %.** **Rest:** die zweite Hälfte — Akkumulation über den Turn-Index in vollen Bögen. Die gefahrene Anordnung misst den Wert im nahen Kontext, nicht aus dem Gedächtnis. | keine |
+| **SYK-B1-URTEILSFELD** | 🔶 **gebaut am 04.08.2026, nicht gemessen.** Der Verfasser fällt ein dreiwertiges Urteil (`trifft_zu` / `trifft_nicht_zu` / `abweichend`), bevor Text entsteht — als Kopfblock vor einer Trennlinie, nicht als JSON (`graph/einwand.py`). Die Ausbausperre steht im Prompt. **Rest:** die MESSUNG — wie oft der Wert falsch steht, und ob die Sperre die Kapitulationsrate von 87 % senkt. Dazu die Gegenprobe, dass die 100 % der zutreffenden Berichtigungen nicht mitfallen. Beides ist ein zweiter Batterielauf. | B0 ✅ |
 | **SYK-B4-VORZEICHENPRUEFUNG** | Zweistufig: deterministischer Wertevergleich als Filter, die neutrale Prüffrage als Entscheider. Eine Suche nach Zustimmungsmarken fände nur einen der fünf Fälle. | B1 |
 | **SYK-B8-SCHREIBPFAD** | Ein widersprochener Wert wird nicht ohne Marke destilliert. **Blocker:** In 583 KZG-Einträgen steht keine `turn_id` — die Klammer für die Vererbung fehlt. | B1, Klammer |
 | **SYK-B3-VORZEICHENREGEL** | Der Responder entscheidet, wie freundlich ein Nein klingt, nicht ob es eins ist. Dazu eine ausgesetzte Regel zurück: das Verbot falscher Erfolgsmeldungen. | B4 |
@@ -892,7 +892,6 @@ Die Projektseite ist beim Umzug **nicht** mitgezogen. Sie soll nachkommen, und z
 Der LZG-Lesepfad war in **allen sechs Läufen untätig** — eine frische Persona hat kein Langzeitgedächtnis. Die Reihe sagt deshalb nichts über das Synapsennetz und nichts über die Wahrnehmungs-Gravitation aus P10. Beide bleiben an einem Korpus zu messen, der einen Bestand mitbringt.
 
 ---
-
 ## Epic: Client-Dashboard (GTK4 / PyGObject)
 
 **Motivation:** Debugging, Kalibrierung und Einregelung des Dual-Emotion-Systems (Chat 53) erfordern visuelles Echtzeit-Feedback. Log-Grep ist kein Werkzeug für die Feinabstimmung von 8-dimensionalen Emotionsvektoren. Ohne Dashboard ist die Dual-Emotion-Architektur Blindflug.

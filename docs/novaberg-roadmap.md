@@ -1,6 +1,6 @@
 # Novaberg — Roadmap (Projektchronik)
 
-**Stand:** Chat 126, 2. August 2026
+**Stand:** Chat 127, 4. August 2026
 *(Die Kopfzeile stand bis Chat 109 auf „Chat 93, 21. Mai 2026" — 15 Chats hinter dem Inhalt. **Sie ist danach erneut zurückgefallen:** von Chat 110 bis 114 blieb sie auf „Chat 109" stehen, während der Inhalt weiterwuchs, und wurde in Chat 115 nachgezogen. Wer hier etwas ergänzt, zieht die Kopfzeile mit — sie driftet zuverlässig. Achtung beim Nachschlagen: Nur bis Chat 97 trägt jeder Chat eine eigene `## Chat NNN`-Überschrift; die Chats 98–108 stehen als `###`-Abschnitte unter dem Chat-97-Block, benannt nach Sprint statt nach Chat.)*
 **Pfad:** novaberg/docs/novaberg-roadmap.md
 **Single Source of Truth für abgeschlossene Arbeit.**
@@ -1980,6 +1980,40 @@ Beide Räder haben eine Nabe — den Wert ohne jede Ausprägung — und das Erge
 > **Die Zahlen selbst stehen nicht hier.** Ein Charakter-Rad ist ein Charakterprofil; aus den Summanden sind mit der Züge-Tabelle die Einzelspeichen rückrechenbar. Wer die Messung nachvollziehen will, fährt sie gegen den eigenen Bestand — sie ist in zwei Aufrufen wiederholbar.
 
 **Geschlossen:** `Bauteil 3 — Charakter-Räder im Client` (Rest benannt, siehe Backlog)
+
+---
+
+## Chat 127 (04.08.2026) — Die Nulllinie steht, und das Urteil kommt vor dem Text 🔶
+
+**Die Fallenbatterie (`SYK-B0`) ist gebaut und gefahren.** 25 Items — 15 vom Typ „der Nutzer widerspricht seinem eigenen Wort", 5 mit nachprüfbar falscher Behauptung, 5 Gegenproben, bei denen der Einwand **zutrifft**. Je Item vier Turns gegen eine frisch geleerte Partition: Fakt setzen, zwei Füllturns, widersprechen. 98 Turns, Median 40 s, zwei Ausfälle durch blockierende Recherchen nachgefahren.
+
+**Die Nulllinie:**
+
+| | Kapitulationsrate |
+|---|---|
+| Sorte `eigen` — Widerspruch zum eigenen Wort | **13/15 (87 %)** |
+| Sorte `objektiv` — nachprüfbar falsch | 4/5 (80 %) |
+| Gegenprobe — der Einwand trifft zu | 5/5 angenommen (**100 %**) |
+
+Die Zerlegung sagt, wo der Hebel sitzt: **benannt 33 %, ausgebaut 87 %.** Die Markierung fehlt in zwei Dritteln der Fälle, der Ausbau geschieht in fast allen. Das bestätigt die Vermutung des Konzepts, dass die Markierung allein nicht reicht.
+
+> **Was die Zahl nicht ist:** die Rate des ursprünglichen Befundes. Dort lagen zehn Turns zwischen Fakt und Widerspruch und der richtige Wert musste aus dem Gedächtnis kommen; hier sind es zwei Turns im nahen Kontext. Die zweite Hälfte von B0 — Akkumulation über den Turn-Index — steht aus.
+
+**Das Messgerät ist selbst geprüft.** Die erste Fassung der Prüffrage zählte die Rückfrage als Ausbau und hätte 100 % gemeldet, auch für ein fehlerfreies System. Fünf von Hand gebaute Antworten mit bekanntem Sollurteil laufen seither vor jeder Erhebung; die Störgrößen-Probe (Antwortlänge 317 gegen 334 Zeichen) zeigt, dass nicht die Länge beurteilt wird.
+
+### `SYK-B1` — das Urteil steht vor dem Text 🔶
+
+Der Verfasser liefert seit heute einen Kopfblock vor der Prosa: Prüfung, dreiwertige Bewertung, Stärke, Quelle — dann eine Trennlinie, dann der Inhalt. Ein Sprachmodell legt sich mit dem ersten Token fest; steht die Prüfung vor dem Urteil und das Urteil vor dem Text, kann die Zustimmung nicht mehr vor der Prüfung fallen.
+
+**Kein JSON, und das ist eine Entscheidung mit Grund.** Der Verfasser liefert Prosa bis über 3800 Zeichen; in JSON gepresst hinge der Turn daran, dass das Modell einen langen Freitext fehlerfrei maskiert — ein Ausfall, der im Bestand belegt ist. Der Kopfblock hält die Prosa aus dem Parser heraus: Misslingt er, ist nur das Urteil weg, nicht die Antwort.
+
+Die gültigen Werte stehen in `graph/einwand.py` und **nur** dort; der Prompt bekommt sie zur Laufzeit eingesetzt. Ein misslungener Kopfblock erzeugt keinen Vorgabewert, sondern `geliefert=False` — sonst wäre ein Ausfall von einem gefällten Urteil nicht zu unterscheiden, und die Batterie zählte Ausfälle als Erfolge.
+
+**Live belegt:** Ein echter Turn mit Widerspruch zu einem selbst gesetzten Fakt ergab `Bewertung=abweichend`, mit zutreffender Prüfung im Klartext, und eine saubere Prosa ohne Kopfreste.
+
+**Offen bleibt die MESSUNG** — wie oft der Wert *falsch* steht, und ob die Ausbausperre die 87 % senkt. Das ist ein zweiter Batterielauf.
+
+**Umfang:** Suite 978 → **994 Tests**, grün, 0 übersprungen. Gegenprobe: Vorgabewert auf eine gültige Bewertung → **8 rot** (Vorhersage 7; die eigene Testklasse falsch gezählt). Nulllinie 2182 unverändert, beide Wände sauber.
 
 ---
 
