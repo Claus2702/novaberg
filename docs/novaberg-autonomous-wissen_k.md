@@ -570,7 +570,15 @@ Daraus folgt für die Bibliothek: Ein Vertiefungsergebnis liegt seinem Ausgangst
 
 **Was dabei entsteht, ist Wissen wie bei den anderen:** was gefragt wurde, was zurückkam, was daraus folgt. Es fällt in dieselbe Bibliothek.
 
-**Offen:** Eine Eröffnung ohne Anlass ist ein Eingriff. Die vorhandene Zustellung hat dafür Cooldown, Burst-Grenze und Verträglichkeitsprüfung und schweigt bei Stress ganz. Ob ein bedeutsames Anliegen diese Sperren brechen darf, ist **nicht entschieden**.
+Eine Eröffnung ohne Anlass ist ein Eingriff. Die vorhandene Zustellung hat dafür Cooldown, Burst-Grenze und Verträglichkeitsprüfung und schweigt bei Stress ganz.
+
+> **Entschieden am 04.08.2026: Keine der Sperren wird gebrochen — von keinem Modus.**
+>
+> **Für `nachfragen`:** Das Fragen ist Stufe 4 der Klärung, und nur diese Stufe hängt am Charakter. Ein Anliegen, das die Zustellung nicht durchlässt, ist genau der Fall, für den die Stufen 1 bis 3 still, gratis und unbedingt sind — Nova merkt die Lücke, baut nicht darauf, überschreibt nichts, und sagt nichts. Wer das Anliegen die Sperre brechen ließe, hätte die vierte Stufe wieder unbedingt gemacht.
+>
+> **Für `traum`:** Die Frage stellt sich dort gar nicht. Der Traum ist **reines Hintergrundrauschen** mit niedriger Priorität; er stellt nichts zu, sondern füllt die Bibliothek. Was er findet, erreicht das Gespräch über den Enricher, wenn es passt — nicht über eine Unterbrechung. Ein Cooldown, den niemand berührt, muss nicht gebrochen werden.
+>
+> **Der gemeinsame Grund:** Die Sperren der Zustellung sind keine Bequemlichkeit, sondern die Zusicherung, dass Nova bei Stress schweigt. Eine Ausnahme „für Bedeutsames" hebt genau die Fälle auf, für die sie gebaut ist — denn unbedeutend ist ohnehin nichts, was bis zur Zustellung kommt.
 
 ### 11.4 Die auslösende Salienz ist die Salienz des Ergebnisses
 
@@ -726,7 +734,7 @@ Die Alternative — ein eigener Agent `gedanken_decay` — wäre sauberer getren
 
 **Woran wird eine Verstärkung erkannt?** Vorschlag: an derselben Embedding-Nähe von 0.60, die heute löscht. Das ist eine Entscheidung, keine Ableitung.
 
-**Darf ein bedeutsames Anliegen den Zustellungs-Cooldown brechen?** Siehe §11.3.
+~~**Darf ein bedeutsames Anliegen den Zustellungs-Cooldown brechen?**~~ **Entschieden am 04.08.2026: nein, von keinem Modus.** Begründung in §11.3.
 
 **Braucht der Verfall später eine eigene Frequenz?** Dann wird aus dem dritten Schritt ein eigener Agent (§11.7).
 

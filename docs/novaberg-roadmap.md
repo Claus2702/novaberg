@@ -2079,6 +2079,23 @@ Ein dritter Befund fiel dabei an, ungesucht: **29 bis 41 Sekunden `load_duration
 
 Offen und benannt: Wer belegt das Modell, wenn ein Rechercheauftrag der einzige laufende Pixie-Auftrag sein sollte — und warum lädt es zwischen gleichartigen Aufrufen neu. Backlog: `PIX-WARTESCHLANGE-AM-MODELL`.
 
+#### Nachtrag derselben Nacht: die Freisprechung war voreilig
+
+Der Abschnitt oben spricht das Kontextfenster frei, weil die **Prompt-Verarbeitung** 0,33 s kostet. Der Schluss ist falsch, und zwar aus einem Vergleich des falschen Postens: Diese 0,33 s stammen aus Läufen bei `num_ctx = 32768`. Bei dem Wert, den der Server tatsächlich fährt, sieht es anders aus.
+
+**Gemessen mit angehaltenem Pixie, derselbe triviale Aufruf, `num_predict = 8`:**
+
+| `num_ctx` | laden | prompt | eval | Summe | **total** |
+|---|---|---|---|---|---|
+| 262144 (residenter Wert) | 0,12 | 0,45 | 0,76 | 1,33 | **35,09** |
+| 262144, Wiederholung | 0,13 | 0,43 | 0,77 | 1,33 | **38,06** |
+
+**Rund 34 Sekunden je Aufruf, die Ollama in keiner Phase ausweist** — reproduziert. Bei einer Recherche mit gut zehn Modellaufrufen sind das über fünf Minuten reiner Aufschlag, bevor irgendetwas gerechnet wird. Die 300-Sekunden-Grenze ist damit sehr wohl im Spiel; sie war nur nicht dort zu sehen, wo ich zuerst nachgesehen habe.
+
+> **Und ein Vorschlag von mir ist damit gemessen widerlegt.** Ich hatte angeregt, `num_ctx` je Aufruf mitzugeben — kurze Prompts klein, die Destillation groß. Das Modell ist bei 262144 **resident**; jede abweichende Anforderung erzwingt einen Tausch. Gemessen: 19, 42, 54, 132 und 175 Sekunden Ladezeit, auch mit gesetztem `keep_alive`. Eine Klassifikation mit 800 Zeichen würde damit 26,8 GB umladen, und der nächste Hintergrund-Aufruf lüde zurück. **Der Weg ist nicht gangbar, solange beide Werte dieselbe Instanz teilen.**
+
+**Was damit ungeklärt bleibt, ausdrücklich:** Ein sauberer Vergleich der beiden Fenster fehlt weiterhin — für `32768` ist kein Aufruf ohne Ladevorgang zustande gekommen, auch nicht mit `keep_alive`. Etwas fordert dazwischen wieder 262144 an. Ohne diesen einen Wert steht fest, **dass** ein Aufruf bei 262144 rund 35 Sekunden kostet, aber nicht, wie viel davon das Fenster ist.
+
 ### Das Kurzzeitgedächtnis hört jetzt mit demselben Ohr ✅
 
 Die Wahrnehmungs-Gravitation aus P10 verschob bis heute **nur** den Suchschlüssel der LZG-Suche. Das KZG suchte roh — und für diese Grenze fand sich keine Begründung: weder im Konzept, das durchgehend vom LZG-Lesepfad spricht, noch im einführenden Commit, der sie nur als Umfang beschreibt („wires the shift into the LZG path"). Es war eine Auslassung des nachträglichen Einbaus, keine Entscheidung.
