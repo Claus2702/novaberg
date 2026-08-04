@@ -17,6 +17,7 @@ from langgraph.graph.state import CompiledStateGraph
 
 from config                 import ASSISTANT_NAME, ASSISTANT_USER_ID
 from graph.state           import ConversationState
+from graph.einwand         import Einwandsurteil
 from graph.personality     import Personality, InternalPersonality
 from graph.nodes.perzeption import perceive
 from graph.nodes.router     import route
@@ -188,6 +189,12 @@ class GraphBase(ABC):
 
             # Interne Anmerkungen
             node_annotations = [],
+
+            # Urteil des Verfassers ueber einen Einwand (B1). Die Vorbelegung
+            # traegt `geliefert=False` und ist damit als Vorbelegung
+            # erkennbar — sie sagt „kein Urteil gefaellt", nicht „kein
+            # Einwand gefunden".
+            einwandsurteil = Einwandsurteil(),
         )
 
     # ── Node-Wrapper ───────────────────────────

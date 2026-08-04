@@ -31,6 +31,7 @@ from datetime import datetime
 from config import PROMPTS, get_node_config
 from services.model_services import ChatRequest, model_service
 
+from graph.einwand import kopf_anweisung, urteil_lesen
 from graph.state import ConversationState
 
 logger = logging.getLogger("ki_server.verfasser")
@@ -125,6 +126,10 @@ def _build_system_prompt(state: ConversationState) -> str:
     # mit einer Prompt-Aenderung vermischt.
     teile: list[str] = [
         PROMPTS["verfasser.auftrag"],
+        # Der Kopfblock wird im Code gebaut, nicht im Prompttext ausgeschrieben:
+        # Die gueltigen Bewertungen und Quellen stehen in `graph/einwand.py` und
+        # duerfen nirgends ein zweites Mal stehen (13_DATENSTRUKTUREN §3).
+        kopf_anweisung(),
         f"Heute ist {jetzt.strftime('%A, %d.%m.%Y')}, es ist {jetzt.strftime('%H:%M')} Uhr.\n"
         "Der Charakter-Kontext im Gedaechtnis beschreibt den NUTZER — verwechsle\n"
         "seine Eigenschaften nicht mit deinen.\n"
@@ -229,8 +234,8 @@ def verfassen(state: ConversationState) -> ConversationState:
     ))
 
     # ── Ausgabe-Verifikation ────────────────────
-    inhalt: str = (antwort.text or "").strip()
-    if not inhalt:
+    roh: str = (antwort.text or "").strip()
+    if not roh:
         logger.error(
             "Verfasser: Modell lieferte keinen Inhalt (Tokens: %s) — "
             "antwort_inhalt bleibt leer, der Responder hat nichts zu formen",
@@ -238,6 +243,30 @@ def verfassen(state: ConversationState) -> ConversationState:
         )
         state["antwort_inhalt"] = ""
         return state
+
+    # Kopfblock vom Inhalt trennen (B1). Misslingt der Kopf, bleibt die Prosa
+    # erhalten — ein ausgefallenes Urteil darf den Turn nicht kosten.
+    urteil, inhalt = urteil_lesen(roh)
+    state["einwandsurteil"] = urteil
+
+    if not inhalt:
+        logger.error(
+            "Verfasser: nach dem Kopfblock blieb kein Inhalt (%s Zeichen roh) — "
+            "antwort_inhalt bleibt leer",
+            len(roh),
+        )
+        state["antwort_inhalt"] = ""
+        return state
+
+    if not urteil.geliefert:
+        # Laut, nicht still: Ohne diese Zeile ist ein ausgefallener Kopfblock
+        # in der Fallenbatterie von einem Turn ohne Einwand nicht zu
+        # unterscheiden, und die Rate zaehlte Ausfaelle als Erfolge.
+        logger.error(
+            "Verfasser: kein lesbares Urteil im Kopfblock — die Ausbausperre "
+            "greift in diesem Turn nicht. Erste 120 Zeichen der Rohantwort: %r",
+            roh[:120],
+        )
 
     state["antwort_inhalt"] = inhalt
 
@@ -247,6 +276,17 @@ def verfassen(state: ConversationState) -> ConversationState:
     anmerkungen: list = state.get("node_annotations") or []
     anmerkungen.append(f"[Verfasser] {antwort.token_total} Tokens")
     state["node_annotations"] = anmerkungen
+
+    # Das Urteil gehoert ins Protokoll, nicht nur in den State: Ohne diese
+    # Zeile ist im Nachhinein nicht feststellbar, ob der Verfasser geurteilt
+    # hat — und die Anlaufquote von B1 waere so wenig messbar wie die des
+    # Thinkers vor B-1.
+    logger.info(
+        "Verfasser: Urteil %s (Einwand=%s, Bewertung=%s, Staerke=%s, Quelle=%s) — %s",
+        "gefaellt" if urteil.geliefert else "AUSGEFALLEN",
+        urteil.vorhanden, urteil.bewertung, urteil.staerke, urteil.quelle,
+        (urteil.geprueft or "—")[:160],
+    )
 
     logger.info(
         "Verfasser: Inhalt bestimmt (%s Zeichen, %s Tokens, "

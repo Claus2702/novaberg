@@ -15,6 +15,7 @@ from graph.human_graph     import HumanGraph
 from graph.agent_graph     import AgentGraph
 from graph.character_graph import CharacterGraph
 from graph.state           import ConversationState
+from graph.einwand         import Einwandsurteil
 
 logger = logging.getLogger("ki_server.graph")
 
@@ -113,4 +114,5 @@ def create_initial_state(
         agent_name    = "",
         agent_results = [],
         node_annotations = [],
+        einwandsurteil = Einwandsurteil(),
     )

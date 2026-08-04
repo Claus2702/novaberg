@@ -11,6 +11,7 @@ from typing import TypedDict
 
 from ei.haltung import Haltung
 from graph.context_entry import ContextEntry
+from graph.einwand import Einwandsurteil
 from graph.personality import Personality, InternalPersonality
 
 
@@ -118,6 +119,13 @@ class ConversationState(TypedDict):
     # niemandem faellt etwas auf
     # (novaberg-lesson_l_stategraph-channel-zwang.md).
     antwort_inhalt: str
+
+    # Das Urteil des Verfassers ueber einen Einwand des Nutzers, gefaellt
+    # BEVOR ein Satz der Antwort formuliert ist (graph/einwand.py). Traegt die
+    # Ausbausperre: Bei `bewertung == "abweichend"` darf der abweichende Wert
+    # zitiert, aber nicht als Praemisse verwendet werden.
+    # `geliefert=False` heisst „kein lesbares Urteil" — nicht „kein Einwand".
+    einwandsurteil: Einwandsurteil
 
     # ── Haltungsraum ─────────────────────────
     # Die fuenf Verhaltensgroessen dieses Turns — Umfang, Fragen, Naehe,
