@@ -1,6 +1,6 @@
 # Novaberg — Roadmap (Projektchronik)
 
-**Stand:** Chat 127, 4. August 2026
+**Stand:** Chat 128, 4. August 2026
 *(Die Kopfzeile stand bis Chat 109 auf „Chat 93, 21. Mai 2026" — 15 Chats hinter dem Inhalt. **Sie ist danach erneut zurückgefallen:** von Chat 110 bis 114 blieb sie auf „Chat 109" stehen, während der Inhalt weiterwuchs, und wurde in Chat 115 nachgezogen. Wer hier etwas ergänzt, zieht die Kopfzeile mit — sie driftet zuverlässig. Achtung beim Nachschlagen: Nur bis Chat 97 trägt jeder Chat eine eigene `## Chat NNN`-Überschrift; die Chats 98–108 stehen als `###`-Abschnitte unter dem Chat-97-Block, benannt nach Sprint statt nach Chat.)*
 **Pfad:** novaberg/docs/novaberg-roadmap.md
 **Single Source of Truth für abgeschlossene Arbeit.**
@@ -1980,6 +1980,38 @@ Beide Räder haben eine Nabe — den Wert ohne jede Ausprägung — und das Erge
 > **Die Zahlen selbst stehen nicht hier.** Ein Charakter-Rad ist ein Charakterprofil; aus den Summanden sind mit der Züge-Tabelle die Einzelspeichen rückrechenbar. Wer die Messung nachvollziehen will, fährt sie gegen den eigenen Bestand — sie ist in zwei Aufrufen wiederholbar.
 
 **Geschlossen:** `Bauteil 3 — Charakter-Räder im Client` (Rest benannt, siehe Backlog)
+
+---
+
+## Chat 128 (04.08.2026) — Die Bibliothek bekommt ihre Tabelle, und der Test war sein eigener Zünder ✅
+
+**`WIS-2-TABELLE` steht.** `autonomous_wissen` trägt die Metadaten der Wissens-Bibliothek — Dateipfad, Thema, Zusammenfassung, Embedding —, **nicht ihren Inhalt**: Der liegt als Datei außerhalb des Git-Roots, wo `git add` ihn nicht erfassen kann. Rein additiv angelegt, eine Tabelle, ein Index, kein `ALTER`, kein Datenverlust.
+
+**Drei Zusicherungen sind in das Schema gebaut statt in den Code:**
+
+| | |
+|---|---|
+| **Paar-Schema ohne Vorgabewert** | `user_id`, `character_id`, `beobachter` sind `NOT NULL` **ohne Default** — anders als bei `lzg_knoten`, wo der Default den Bestand durch die Migration tragen musste. Eine leere Tabelle kann sich den strengeren Weg leisten |
+| **`salienz_anfang` ohne Vorgabewert** | Der Wert hat den Vorgang ausgelöst und ist beim Schreiben immer bekannt. Ein `DEFAULT 0.0` wäre eine Null, die wie ein Messwert aussieht |
+| **`dateipfad UNIQUE`** | Eine Wissensdatei hat genau eine Metadatenzeile. Die Verstärkung eines Themas aktualisiert sie; ohne die Sperre wäre Verstärken von Doppelt-Anlegen nicht unterscheidbar |
+
+**Der Vektor-Index aus dem Konzept ist bewusst nicht gebaut.** §7.2 nennt ihn, der Bestand widerlegt ihn: `ivfflat` durchsucht bei kleinen Zeilenzahlen mit `probes=1` eine einzige Zentroid-Liste, und der Recall bricht auf nahezu null ein — belegt in Chat 107 an `lzg_knoten`. Diese Tabelle startet bei null Zeilen. Der Index steht als Kommentar samt Schwelle (~10k Einträge) an seiner Stelle.
+
+**Umfang:** Suite 994 → **1003 Tests**, grün, 0 übersprungen. Nulllinie **2182 unverändert**, beide Wände sauber, die neue Datei auf beiden Konfigurationen ohne Treffer.
+
+### Was der Test prüft — und was er nicht kann
+
+Der Test hat zwei Hälften, und beide werden gebraucht. Der **Katalog** belegt, dass die Spalte keinen Vorgabewert hat, ein Weglassen also nicht still gefüllt wird. Der **Live-Lauf** belegt, dass der fehlende Wert tatsächlich abgewiesen wird — eine Spalte, die im Katalog `NOT NULL` heißt, ist erst dann eine Sperre, wenn ein Schreibversuch ohne sie scheitert. Dazu die Gegenprobe in umgekehrter Richtung: Eine vollständige Zeile **gelingt**, sonst belegten die Verstoß-Fälle auch eine Tabelle, die überhaupt nichts annimmt.
+
+Die erwartete Spaltenliste ist ein Literal, von Hand aus dem Konzept abgeleitet — nicht aus `db/init.sql` gelesen. Sonst prüfte der Test die Schemadatei gegen sich selbst und bliebe auch dann grün, wenn sie nie ausgeführt wurde.
+
+> **Eine Grenze, die benannt gehört:** `CREATE TABLE IF NOT EXISTS` ist gegen eine bestehende Tabelle wirkungslos. Schemadatei und laufendes Schema können deshalb auseinanderlaufen, ohne dass irgendetwas anschlägt. Der Test misst das **laufende** Schema und ist damit die einzige Stelle, an der die Drift sichtbar würde — für eine *geänderte* Spalte, nicht nur für eine fehlende.
+
+**Gegenprobe:** Erwartung „`salienz_anfang` hat einen Vorgabewert" → **1 rot** (Vorhersage 2). Der zweite vorhergesagte Fall liest gar nicht aus der Erwartungsliste, sondern direkt aus dem laufenden Katalog — er ist gegen eine verstellte Erwartung immun. Das ist die bessere Bauart und die schlechtere Vorhersage.
+
+**Nicht gefahren:** die stärkere Gegenprobe, den Vorgabewert live per `ALTER` zu setzen und die Verstoß-Fälle fallen zu sehen. Sie wäre ein zweiter, nicht angekündigter DDL-Eingriff. Die Live-Hälfte des Tests ist damit **wirksam belegt, aber nicht gegengeprobt**.
+
+**Geschlossen:** `WIS-2-TABELLE`. **Als Nächstes:** `WIS-3-DATEIEN`.
 
 ---
 

@@ -341,6 +341,10 @@ einen beruehrt hat.
 
 ### 7.2 Metadaten-Tabelle (PostgreSQL)
 
+> **Gebaut am 04.08.2026 — in der Fassung von §11, nicht in dieser.** Der Entwurf unten bleibt als Herkunft stehen; wo er §11 widerspricht, gilt §11: `context_user`/`charakter` sind durch das Paar-Tripel ersetzt (§11.2), `salienz FLOAT DEFAULT 0.0` durch `salienz_anfang` ohne Vorgabewert (§11.4), und die drei Gewichtsspalten sind hinzugekommen (§11.6).
+>
+> **Zusätzlich widerlegt hat das der Bau selbst:** Der `ivfflat`-Index unten ist **nicht angelegt**. Bei kleinen Zeilenzahlen durchsucht `ivfflat` mit `probes=1` eine einzige Zentroid-Liste, und der Recall bricht auf nahezu null ein — belegt in Chat 107 an `lzg_knoten`, wo derselbe Index 0 Treffer lieferte, während der Seq-Scan 118 mit Kosinus 0,67–0,74 fand. Diese Tabelle startet bei null Zeilen. Der Index steht in `db/init.sql` als Kommentar samt Schwelle (~10k Einträge) an seiner Stelle; der Partial Index auf Paar und Typ ist angelegt.
+
 Nicht die Dateiinhalte werden in PostgreSQL gespeichert — sondern die **Metadaten**.
 Der Enricher prueft zuerst die Metadaten (schnell, SQL), und greift nur bei
 Themennaehe oder Zusammenfassungs-Treffer auf die Datei zu (langsam, Mandelbrot).
@@ -685,6 +689,10 @@ aktiv             BOOLEAN          NOT NULL DEFAULT TRUE
 
 **`gewicht_decay` wird materialisiert, nicht bei Abfrage gerechnet.** Ein Stapellauf schreibt Spalte und `decay_am`, die Lesepfade lesen die Spalte — wie bei `run_node_decay`. Das steht hier ausdrücklich, weil dieselbe Aussage an drei Stellen im Bestand falsch dokumentiert ist.
 
+**Gebaut am 04.08.2026** in `db/init.sql`, mit drei Zusicherungen im Schema statt im Code: Das Paar-Tripel trägt — anders als `lzg_knoten` — **keinen Vorgabewert**, weil eine leere Tabelle sich den strengeren Weg leisten kann; `salienz_anfang` ebenfalls nicht; und `dateipfad` ist `UNIQUE`, damit Verstärken (§11.5) von Doppelt-Anlegen unterscheidbar bleibt. Die Zusicherungen sind live geprüft: Ein Schreibversuch ohne einen der vier Werte scheitert an der Datenbank, eine vollständige Zeile gelingt, eine zweite Zeile zum selben Pfad nicht.
+
+**Was damit noch nicht gebaut ist:** Die Kurve selbst. Die Spalten stehen, aber niemand schreibt sie — `gewicht_roh`, `gewicht_absolut` und `gewicht_decay` bekommen ihre Werte erst mit `WIS-3` (Schreibpfad) und `WIS-5` (Verfall). Eine vorhandene Spalte ist keine gerechnete Größe.
+
 ### 11.7 Wer den Verfall rechnet
 
 `gewicht_decay` wird materialisiert (§11.6), also braucht es einen Lauf, der es tut. **Der Weg dafür existiert und ist erprobt** — es wird kein neuer Mechanismus gebaut.
@@ -718,5 +726,6 @@ Die Alternative — ein eigener Agent `gedanken_decay` — wäre sauberer getren
 
 ## Versionshistorie
 
+- **v0.3 — 04.08.2026:** `WIS-2` gebaut. §7.2 trägt eine Marke: Die Tabelle steht in der Fassung von §11, und der dort genannte `ivfflat`-Index ist **nicht** angelegt — bei kleinen Zeilenzahlen bricht sein Recall auf nahezu null ein, belegt in Chat 107 an `lzg_knoten`. §11.6 hält fest, was gebaut ist und was nicht: Die Spalten stehen, die Kurve rechnet niemand, bis `WIS-3` und `WIS-5` da sind. Drei Zusicherungen liegen im Schema statt im Code — Paar-Tripel und `salienz_anfang` ohne Vorgabewert, `dateipfad UNIQUE` —, alle drei live geprüft.
 - **v0.2 — 04.08.2026:** §11 ergänzt — die Überarbeitung auf den heutigen Stand, nachdem die Erstfassung drei Monate ungebaut lag. Sechs Punkte: der Speicherort liegt **außerhalb des Git-Roots** (die Erstfassung nannte die Repo-Grenze nicht, obwohl die Dateien aus Gesprächen abgeleitete Inhalte tragen); das **Paar-Schema** ersetzt `context_user`/`charakter`; **`nachfragen` ist die dritte Quelle** und bekommt hier zum ersten Mal überhaupt eine Aufgabenbeschreibung — es existierte seit Monaten als Routing-Ziel ohne Konzept, weshalb der Agent nie gebaut wurde; die auslösende **Salienz ohne Vorgabewert**; das **Aufräumen wird Fortsetzen**, weil Embedding-Nähe „vom selben Thema" heißt und nicht „schon gesagt" — mit der Schwelle 0.60 an **778.128 Paaren** aus 1248 LZG-Knoten belegt (Trefferverhältnis 10 : 1) und einem Zwischenvorschlag von 0.50 widerlegt, der aus einer zu kleinen Stichprobe stammte; und **Gewichtung, Sättigung und Verfall nach dem Knoten-Schema** mit hergeleiteten Startwerten (Dämpfungs-Exponent 1.0, λ = 0.0768 für 60 Tage); ; die Bibliothek erbt den Verfall des LZG **samt Konstante**, nur der Stapel bekommt eine eigene Rate; und **wer den Verfall rechnet** — ein dritter Schritt im vorhandenen Tageslauf `synapsen_decay` statt eines neuen Agenten, weil jeder periodische Auftrag um denselben einen seriellen Platz konkurriert. Dabei widerlegt: die Vermutung, niedrig priorisierte Tagesläufe verhungerten hinter der blockierenden Recherche — 14 und 16 Läufe im Audit-Protokoll belegen das Gegenteil. Die §§1–10 bleiben stehen und tragen ihre Begründungen; §11 hat Vorrang, wo sie widersprechen.
 - **v0.1 — 29.04.2026:** Erstfassung. Verzeichnisstruktur, Wissen- und Bericht-Datei, Keep/Discard-Gate, agentische Iteration, Metadaten-Tabelle und Zwei-Stufen-Retrieval, Prune-Zyklus, Implementierungsreihenfolge.

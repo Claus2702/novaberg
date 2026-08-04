@@ -915,13 +915,13 @@ Der LZG-Lesepfad war in **allen sechs Läufen untätig** — eine frische Person
 
 ## Epic: Wissensspeicher (04.08.2026)
 
-**Status:** 🔶 Schritt 1 von 6 gebaut.
+**Status:** 🔶 Schritt 2 von 6 gebaut.
 **Konzept:** `novaberg-autonomous-wissen_k.md` §11 — dort stehen alle Entscheidungen samt Herleitung.
 
 | ID | Inhalt | Stand |
 |---|---|---|
 | **WIS-1-MOUNT** | `knowledge/` als Geschwister der Repositoriumswurzel, im Behälter `/knowledge` | ✅ **04.08.2026** |
-| **WIS-2-TABELLE** | `autonomous_wissen` mit Paar-Schema, Salienz ohne Default, drei Gewichtsspalten | ⬜ DDL, anzukündigen |
+| **WIS-2-TABELLE** | `autonomous_wissen` mit Paar-Schema, Salienz ohne Default, drei Gewichtsspalten | ✅ **04.08.2026** |
 | **WIS-3-DATEIEN** | Agenten schreiben Wissen- und Bericht-Datei plus `INDEX.md`, mit `umask 000` / `0666` / `0777` | ⬜ |
 | **WIS-4-STAPEL-SALIENZ** | `stack_push()` bekommt Salienz und `verstaerkt_am` — beide fehlen heute ganz | ⬜ |
 | **WIS-5-VERFALL** | Dritter Schritt im vorhandenen Tageslauf `synapsen_decay`, je Schritt ein eigener Audit-Eintrag | ⬜ |
