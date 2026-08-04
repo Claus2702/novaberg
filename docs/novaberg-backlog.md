@@ -892,6 +892,31 @@ Die Projektseite ist beim Umzug **nicht** mitgezogen. Sie soll nachkommen, und z
 Der LZG-Lesepfad war in **allen sechs Läufen untätig** — eine frische Persona hat kein Langzeitgedächtnis. Die Reihe sagt deshalb nichts über das Synapsennetz und nichts über die Wahrnehmungs-Gravitation aus P10. Beide bleiben an einem Korpus zu messen, der einen Bestand mitbringt.
 
 ---
+## Epic: Klärung — Abweichung und Lücke (04.08.2026)
+
+**Status:** ⬜ nicht begonnen. Grundsatz formuliert, Bestand belegt, Bauteile entworfen.
+**Konzept:** `novaberg-klaerung_k.md` — dort stehen ZIEL, TEST, MESSUNG und Gegenprobe je Bauteil.
+
+**Der Kern in einem Satz:** Weicht eine Eigenschaft eines Objekts von der gespeicherten ab, oder fehlt eine notwendige, ist das derselbe Zustand — *erwartet ≠ vorhanden* — und beide enden, wenn sie bedeutsam genug sind, in einer Frage, bevor weitergearbeitet wird.
+
+**Der Anlass ist ein gemessener Defekt:** Der Aktualisierungspfad des Faktengedächtnisses entscheidet an einem reinen Zeichenkettenvergleich (`alter_wert != neuer_wert` → invalidieren). Damit nehmen zutreffende Berichtigung, Fortschreibung und Widerspruch zum eigenen früheren Wort denselben Weg — der dritte Fall überschreibt einen Triple, ohne dass irgendwo steht, dass er strittig war. Die bitemporale Maschinerie (`t_valid`, `t_invalid`, `aktiv`) könnte beide Werte halten; es fehlt das Signal.
+
+**Zwei Tore, nicht eines.** Notwendigkeit kommt vom Objekt und der Aufgabe, Salienz vom Charakter. Ohne das erste fragt Nova nach Belanglosem, ohne das zweite nach allem Notwendigen sofort.
+
+| ID | Inhalt | Vorbedingung |
+|---|---|---|
+| **KLA-K5-FAKTENPFAD** | Der Faktenpfad liest das Urteil des Verfassers, statt an der Zeichenkette zu entscheiden. Kleinstes Stück, größte Schutzwirkung: Urteil und Schreibvorgänge liegen im selben Zustand desselben Turns — es muss nichts vererbt werden, nur gelesen. | `SYK-B1` |
+| **KLA-K1-ERWARTUNGSSCHEMA** | Zu einem Objekttyp ist abrufbar, welche Eigenschaften er trägt und welche notwendig sind. Weltwissen, einmal abgelegt statt je Turn erfragt. | keine |
+| **KLA-K2-KLAERUNGSTOR** | Vergleicht erwartet gegen vorhanden und liefert beide Ausgänge — Lücke und Abweichung — aus einer Operation. | K1, `SYK-B1` |
+| **KLA-K3-SALIENZ** | Nur bedeutsamer Klärungsbedarf führt zu einer Frage. Gegenprobe: Bedeutung schlägt Charakter, sonst wird eine distanzierte Nova blind für Widersprüche. | K2 |
+| **KLA-K4-ZWISCHENSCHRITT** | Eine Klärungsfrage im Gesprächspfad, mit zurückgestelltem Schreibvorgang. Der Rückfrage-Fluss samt Resume existiert, hängt aber am Agentenpfad. | K2, K3 |
+
+**Offene Entwurfsentscheidung:** Auf dem Aufgabenpfad läuft der Verfasser nicht — dort gibt es kein Urteil, ausgerechnet da, wo ein Nutzer ausdrücklich etwas ändern lässt. Entweder ein reduziertes Urteil, oder die ausdrückliche Festlegung, dass von dort ungeprüft geschrieben wird.
+
+**Verhältnis zum Sykophanz-Epic:** `SYK-B1` liefert das Urteil, das K2 für seinen Abweichungs-Ausgang braucht. Der Sykophanz-Sprint ist damit das erste Stück dieses Grundsatzes und kein eigenständiges Thema.
+
+---
+
 ## Epic: Client-Dashboard (GTK4 / PyGObject)
 
 **Motivation:** Debugging, Kalibrierung und Einregelung des Dual-Emotion-Systems (Chat 53) erfordern visuelles Echtzeit-Feedback. Log-Grep ist kein Werkzeug für die Feinabstimmung von 8-dimensionalen Emotionsvektoren. Ohne Dashboard ist die Dual-Emotion-Architektur Blindflug.

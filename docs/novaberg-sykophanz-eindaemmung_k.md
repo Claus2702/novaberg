@@ -7,6 +7,7 @@
 **Typ:** Konzept (`_k`)
 **Status:** ⬜ **nicht gebaut** — Befund gemessen, Bauteile entworfen, Reihenfolge festgelegt
 **Voraussetzung:** `novaberg-node-verfasser_k.md` · `novaberg-node-responder.md` · `novaberg-node-thinker.md` · `novaberg-charakter-resonanz_k.md`
+**Übergeordnet:** `novaberg-klaerung_k.md` — dieser Sprint behandelt einen **Sonderfall** des dort formulierten Grundsatzes: die Abweichung, bei der der Nutzer seinem eigenen früheren Wort widerspricht. Das Urteilsfeld aus B1 ist zugleich das erste Stück jenes Konzepts; die fehlende Eigenschaft (die Lücke) ist derselbe Vorgang und dort beschrieben.
 **Betrifft:** Verfasser · Responder · Thinker · Tribunal · Perzeption · Destillation
 
 ---
