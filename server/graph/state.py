@@ -194,6 +194,10 @@ class ConversationState(TypedDict):
     gravitationsterm:  float        # Salienz-Boost aus Ziel-Gravitation
     emotionale_gravitationspunkte: list[dict]   # Emotional aufgeladene Erinnerungen [{emotion, arousal, gravitation, ...}]
     prompt_embedding:  list[float]  # Embedding des aktuellen User-Prompts (768-dim, vom Enricher gesetzt)
+    # Suchschlüssel der Gedächtnissuche: das Prompt-Embedding nach der
+    # Wahrnehmungs-Gravitation (§8.5). KZG, LZG und die Bibliothek suchen
+    # damit; gesetzt vom Enricher, nur wenn überhaupt gesucht wird.
+    such_vektor:       list[float]
 
     # ── Interne Anmerkungen (Node-übergreifend) ──
     node_annotations: list[str]

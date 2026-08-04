@@ -288,6 +288,21 @@ WISSENSSPEICHER_WURZEL:                  str   = os.getenv("WISSENSSPEICHER_WURZ
 #
 # Basis 8, weil eine Modusangabe zur Basis 10 bei jedem Lesen falsch
 # verstanden wird.
+# Abruf der Bibliothek im Enricher (die sechste Kontextquelle).
+#
+# Die Schwelle ist von `anker_retrieval` uebernommen, NICHT gemessen: Dort
+# steht 0.40, kalibriert an 100 echten Prompts gegen nomic-embed-text-v2-moe.
+# Derselbe Embedding-Raum, dieselbe Art Anfrage — als Startwert vertretbar,
+# als Ergebnis nicht. Die Bibliothek hatte bei ihrer Einfuehrung drei Zeilen;
+# an drei Zeilen ist nichts kalibrierbar. Backlog: WIS-SCHWELLE-MESSEN.
+WISSEN_RETRIEVAL_SCHWELLE:         float = float(os.getenv("WISSEN_RETRIEVAL_SCHWELLE", "0.40"))
+
+# Wie viele Dateien der Enricher hoechstens heranzieht. Drei, weil ein
+# Bibliothekstreffer eine Zusammenfassung von bis zu 500 Zeichen mitbringt
+# und der Prompt des Gespraechspfads bei 32768 Token liegt — nicht bei den
+# 262144 des Hintergrunds.
+WISSEN_RETRIEVAL_TOP_K:            int   = int(os.getenv("WISSEN_RETRIEVAL_TOP_K", "3"))
+
 WISSENSSPEICHER_DATEI_MODUS:       int = int(os.getenv("WISSENSSPEICHER_DATEI_MODUS", "666"), 8)
 WISSENSSPEICHER_VERZEICHNIS_MODUS: int = int(
     os.getenv("WISSENSSPEICHER_VERZEICHNIS_MODUS", "777"), 8,

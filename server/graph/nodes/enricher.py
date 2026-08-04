@@ -579,35 +579,17 @@ def _enrich_character(
     )
 
     # ─────────────────────────────────────────
-    # 2. Plugin-Hooks: enrich() aller Manager
+    # 2. Gedaechtnis-Suche (KZG, LZG) — Vorcheck
     # ─────────────────────────────────────────
-    registry: dict = get_registry()
-
-    for name, manager in registry.items():
-        # DEAKTIVIERT Chat 71 — Fakten-Enrichment produziert 130+ Rausch-Eintraege
-        # Wird reaktiviert nach Fakten-Bereinigung
-        if name == "fakten":
-            # plugin_entries = manager.enrich_entries(state, postgres_url)
-            logger.info("Enricher: Fakten-Enrichment deaktiviert (Chat 71)")
-            continue
-
-        try:
-            plugin_entries: list[ContextEntry] = manager.enrich_entries(state, postgres_url)
-
-            if plugin_entries:
-                entries.extend(plugin_entries)
-                logger.info(
-                    f"Enricher: Plugin '{name}' lieferte {len(plugin_entries)} Eintraege"
-                )
-
-        except Exception as fehler:
-            logger.exception(f"{type(fehler).__name__}: Enricher: Plugin '{name}' Fehler")
-
-    # ─────────────────────────────────────────
-    # 3. KZG/LZG semantische Suche
-    # ─────────────────────────────────────────
-    kzg_keys: list = redis_client.keys(_kzg_prefix(user_id, character_id))
-    has_lzg:  bool = False
+    # Die Plugin-Hooks standen bis zum 04.08.2026 HIER, also vor dem
+    # Prompt-Embedding. Ein Plugin, das ueber Embedding-Naehe sucht, haette
+    # sich dreissig Zeilen vor dessen Erzeugung ein zweites rechnen lassen
+    # muessen — rund 1,6 Sekunden je Turn fuer denselben Vektor. Sie stehen
+    # jetzt hinter der Suche (Abschnitt 3b), damit jedes Plugin sowohl das
+    # rohe Embedding als auch den verschobenen Suchschluessel vorfindet.
+    kzg_keys:   list = redis_client.keys(_kzg_prefix(user_id, character_id))
+    has_lzg:    bool = False
+    has_wissen: bool = False
 
     try:
         conn   = psycopg2.connect(postgres_url)
@@ -618,6 +600,18 @@ def _enrich_character(
             (user_id, character_id),
         )
         has_lzg = cursor.fetchone()[0]
+
+        # Die Bibliothek ist die dritte Gedaechtnisschicht. Ihr Vorcheck steht
+        # hier und nicht im Plugin, weil er darueber entscheidet, ob die
+        # Verschiebung ueberhaupt gerechnet wird: Ein Turn, in dem nur die
+        # Bibliothek Bestand hat, braucht denselben Suchschluessel wie einer
+        # mit KZG.
+        cursor.execute(
+            "SELECT EXISTS(SELECT 1 FROM autonomous_wissen "
+            "WHERE user_id = %s AND character_id = %s AND aktiv = TRUE)",
+            (user_id, character_id),
+        )
+        has_wissen = cursor.fetchone()[0]
         conn.close()
     except Exception:
         pass
@@ -682,9 +676,10 @@ def _enrich_character(
     # ihr Gegenstand sich aendert, ist still falsch.
     verschiebung: Verschiebung | None = None
 
-    if kzg_keys or has_lzg:
+    if kzg_keys or has_lzg or has_wissen:
         logger.info(
-            f"Enricher: {len(kzg_keys)} KZG, LZG={'ja' if has_lzg else 'nein'} — suche Kontext..."
+            f"Enricher: {len(kzg_keys)} KZG, LZG={'ja' if has_lzg else 'nein'}, "
+            f"Bibliothek={'ja' if has_wissen else 'nein'} — suche Kontext..."
         )
 
         # §8.5: Wahrnehmungs-Gravitation. Der Suchschluessel ist nicht mehr
@@ -713,6 +708,21 @@ def _enrich_character(
             ist_anweisung     = INTENTION_ANWEISUNG in letzte_intentionen,
         )
         such_vektor: list[float] = verschiebung.vektor
+
+        # In den State, damit die Plugin-Schicht (Abschnitt 3b) mit
+        # DEMSELBEN Schluessel sucht wie KZG und LZG.
+        #
+        # Das weitet den Gegenstand von §8.5.4 aus: Dort steht, der
+        # verschobene Vektor sei „nicht eigenstaendig nutzbar — er existiert
+        # ausschliesslich als Such-Schluessel fuer die unmittelbar folgende
+        # pgvector-Abfrage". Das war richtig, solange es eine Abfrage gab.
+        # Die Bibliothek ist eine zweite, und sie liegt in einem Plugin.
+        # Entweder rechnet dieses Plugin sich denselben Vektor noch einmal,
+        # oder der Enricher reicht ihn weiter — das Zweite ist billiger und
+        # macht ausserdem sichtbar, dass alle Schichten denselben Schluessel
+        # benutzen. Wer hier liest, liest keinen Zwischenstand: Der Wert ist
+        # gesetzt, sobald ueberhaupt gesucht wird, und sonst nicht vorhanden.
+        state["such_vektor"] = such_vektor
 
         if kzg_keys:
             kzg_entries = kzg_entries_retrieve(
@@ -799,6 +809,49 @@ def _enrich_character(
         user_id      = user_id,
         character_id = character_id,
     )
+
+    # ─────────────────────────────────────────
+    # 3b. Plugin-Hooks: enrich_entries() aller Manager
+    # ─────────────────────────────────────────
+    # Verschoben am 04.08.2026 von vor die Suche hierher. Der Grund ist eine
+    # Reihenfolge, keine Vorliebe: Vorher lief die Plugin-Schicht, bevor das
+    # Prompt-Embedding ueberhaupt existierte, und ein Plugin mit
+    # Embedding-Suche haette sich ein zweites rechnen lassen muessen.
+    #
+    # Geprueft, was die Verschiebung anfasst: Von fuenf Managern liefern nur
+    # Timeline und Notizen; beide lesen ausschliesslich Felder, die vor dem
+    # Enricher feststehen (user_id, external, needs_timeline, timeline_query,
+    # management_target), und **keiner schreibt in den State**. Der Formatter
+    # gruppiert nach `quelle`, nicht nach Listenposition — die Plugin-Gruppe
+    # steht als Block, gleich wann sie angehaengt wurde.
+    #
+    # Der eine gefundene Effekt, benannt statt weggeredet: Der Reducer
+    # entdoppelt bei identischem Inhalt nach hoechstem Gewicht und bei
+    # Gleichstand nach Eingangsreihenfolge. Traegt ein Plugin-Eintrag
+    # denselben Text UND dasselbe Gewicht wie ein KZG-Treffer, ueberlebt
+    # seit der Verschiebung der andere von beiden — und weil `quelle` das
+    # Format steuert, erschiene derselbe Satz unter einem anderen Etikett.
+    registry: dict = get_registry()
+
+    for name, manager in registry.items():
+        # DEAKTIVIERT Chat 71 — Fakten-Enrichment produziert 130+ Rausch-Eintraege
+        # Wird reaktiviert nach Fakten-Bereinigung
+        if name == "fakten":
+            # plugin_entries = manager.enrich_entries(state, postgres_url)
+            logger.info("Enricher: Fakten-Enrichment deaktiviert (Chat 71)")
+            continue
+
+        try:
+            plugin_entries: list[ContextEntry] = manager.enrich_entries(state, postgres_url)
+
+            if plugin_entries:
+                entries.extend(plugin_entries)
+                logger.info(
+                    f"Enricher: Plugin '{name}' lieferte {len(plugin_entries)} Eintraege"
+                )
+
+        except Exception as fehler:
+            logger.exception(f"{type(fehler).__name__}: Enricher: Plugin '{name}' Fehler")
 
     # ─────────────────────────────────────────
     # 4. Charakter-Hash als ContextEntry
