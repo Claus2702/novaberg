@@ -915,7 +915,7 @@ Der LZG-Lesepfad war in **allen sechs Läufen untätig** — eine frische Person
 
 ## Epic: Wissensspeicher (04.08.2026)
 
-**Status:** 🔶 Schritt 3 von 6 gebaut.
+**Status:** 🔶 Vier von sechs Schritten gebaut, dazu der Enricher-Anschluss.
 **Konzept:** `novaberg-autonomous-wissen_k.md` §11 — dort stehen alle Entscheidungen samt Herleitung.
 
 | ID | Inhalt | Stand |
@@ -927,6 +927,9 @@ Der LZG-Lesepfad war in **allen sechs Läufen untätig** — eine frische Person
 | **WIS-5-VERFALL** | Dritter Schritt im vorhandenen Tageslauf `synapsen_decay`, je Schritt ein eigener Audit-Eintrag | ⬜ |
 | **WIS-6-FORTSETZEN** | Der Aufräumer verstärkt statt zu löschen, Schwelle 0.60 | WIS-3 |
 | **WIS-PRUEFUNG-F-WISSEN-1** | Pfadprüfung, dass kein Schreibziel des Wissenspfads innerhalb des Arbeitsbaums liegt | ✅ **04.08.2026** — `schreibziel_pruefen()`, jeder Schreib- und Lesevorgang geht hindurch; fünf Testfälle inklusive `..`-Ausbruch |
+| **WIS-7-ENRICHER** | Die Bibliothek als sechste Kontextquelle — `WissenManager`, Metadaten-Treffer über Embedding-Nähe, derselbe Suchschlüssel wie KZG und LZG | ✅ **04.08.2026** — Stufe 1 |
+| **WIS-8-STUFE-2** | Reicht die Zusammenfassung nicht, den **Dateiinhalt** lesen (§7.3). Braucht den Lesepfad in `tools/dateien/`, den es nicht gibt. **Andere Bauart prüfen:** Die Mandelbrot-Navigation ist aus dem 32k-Zwang abgeleitet; im Hintergrund stehen 262144 Token | WIS-7 |
+| **WIS-SCHWELLE-MESSEN** | `WISSEN_RETRIEVAL_SCHWELLE` steht auf **0.40 — übernommen von `anker_retrieval`, nicht gemessen.** Gleicher Embedding-Raum, gleiche Art Anfrage, aber die Bibliothek hatte bei ihrer Einführung drei Zeilen. Zu messen, sobald Bestand da ist: Abdeckung und Fehltreffer über echte Prompts, wie bei der Kalibrierung von 0.40 selbst | Bestand in `autonomous_wissen` |
 | **WIS-GATE-MESSUNG** | Wie oft das Keep/Discard-Gate falsch urteilt, ist **nicht gemessen**. Die Verteilung der vier Status über echte Durchläufe ist die Grundlage dafür, ob die Schwelle zwischen `ergaenzung` und `wiederholung` taugt | WIS-3 |
 | **PIX-WARTESCHLANGE-AM-MODELL** | **Der Engpass ist die Serialisierung am CPU-Modell.** Gemessen: dieselbe Anfrage kostet unter Pixie-Last 134,62 s bei 1,27 s tatsächlicher Arbeit — 133 s Wartezeit —, mit angehaltenem Pixie 0,05 s Lücke. Dazu 29–41 s `load_duration` je Aufruf. **Das ist die Ursache der 300-s-Zeitüberschreitungen der Recherche, nicht das Kontextfenster** — die Prompt-Verarbeitung kostet 0,33 s. Zu klären: Wer belegt das Modell, und warum lädt es zwischen gleichartigen Aufrufen neu | keine |
 | **WIS-KONTEXT-NEU-DIMENSIONIEREN** | ⚠ **Die Latenz-Begründung ist widerlegt** (siehe `PIX-WARTESCHLANGE-AM-MODELL`); es bleibt der Verlust durch die Kompression. Der Hintergrundpfad hat **262144** Token, nicht 32768 — gemessen am 04.08.2026, 21:02 UTC. Damit steht die Kompressionsstufe der Recherche (`zwischen_destillieren`) zur Disposition: Sie komprimiert verlustbehaftet gegen eine Grenze, die achtmal weiter weg ist, **und ist der gemessene Ausfallpunkt** eines Durchlaufs. Ebenso das Zwei-Stufen-Retrieval: Eine ganze Wissen-Datei passt in den Prompt, der fraktale Zoom ist für den Hintergrund keine Notwendigkeit mehr, sondern eine Wahl. **Der Gesprächspfad bleibt bei 32768** — beide Zahlen gehören getrennt gehalten | keine |

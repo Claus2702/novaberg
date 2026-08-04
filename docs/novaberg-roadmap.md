@@ -2039,6 +2039,26 @@ Eine abgeschlossene Recherche hinterlässt seither zwei Dateien und eine Metadat
 
 **Als Nächstes:** `WIS-4-STAPEL-SALIENZ` — oder die Neudimensionierung, die inzwischen der größere Hebel ist.
 
+### Die Bibliothek erreicht das Gespräch ✅
+
+Was Nova erarbeitet, war bis heute für sie selbst unerreichbar: Die Dateien lagen da, und kein Weg führte zurück in einen Turn. Der `WissenManager` schließt ihn — **über die Metadaten, nicht über den Dateiinhalt.** Eine Abfrage gegen `autonomous_wissen` auf Embedding-Nähe zur Zusammenfassung, gefiltert auf Paar, `aktiv` und `typ='wissen'`. Berichte bleiben draußen; sie sind Prozessdokumentation und im Prompt des Responders Rauschen.
+
+**Der Erweiterungspunkt war schon da** — die Doku sagt seit jeher „neue Plugins liefern automatisch Kontext, ohne Änderung am Enricher". Er war nur nicht benutzbar: **Die Plugin-Hooks liefen, bevor das Prompt-Embedding existierte.** Ein Plugin mit Embedding-Suche hätte sich dreißig Zeilen vor dessen Erzeugung ein zweites rechnen lassen müssen, rund 1,6 s je Turn für denselben Vektor. Der Block steht jetzt hinter der Gedächtnissuche; jedes Plugin findet `prompt_embedding` **und** `such_vektor` vor.
+
+Was die Verschiebung anfasst, ist geprüft und nicht behauptet: Nur drei Manager liefern überhaupt, alle lesen ausschließlich Felder, die vor dem Enricher feststehen, keiner schreibt in den State, und der Formatter gruppiert nach Quelle statt nach Listenposition. **Der eine gefundene Effekt steht benannt in der Doku:** Bei identischem Text *und* identischem Gewicht entscheidet die Eingangsreihenfolge, welcher von zwei Einträgen überlebt — und weil `quelle` das Format steuert, erschiene derselbe Satz unter einem anderen Etikett.
+
+**Zwei Entscheidungen, die im Code begründet stehen:**
+
+Der Suchschlüssel ist `state["such_vektor"]` — derselbe, mit dem KZG und LZG gesucht haben. Das weitet den Gegenstand von §8.5.4 aus, wo steht, der verschobene Vektor sei „ausschließlich Such-Schlüssel für die unmittelbar folgende pgvector-Abfrage". Das war richtig, solange es **eine** Abfrage gab. Die Bibliothek ist eine zweite.
+
+Und das Gewicht wird umgerechnet: `gewicht_decay` läuft bis 10.0, der ContextEntry-Pool bis 1.0. Ohne die Division schlüge jeder Bibliothekseintrag im Reducer jeden KZG-Treffer — eine Rangfolge aus zwei Skalen statt aus zwei Bedeutungen.
+
+**Die Schwelle ist übernommen, nicht gemessen.** 0.40 von `anker_retrieval`, dort an 100 echten Prompts kalibriert; gleicher Embedding-Raum, gleiche Art Anfrage. An drei Zeilen Bestand ist nichts kalibrierbar, und der Startwert steht mit dieser Herkunft in der Konfiguration statt als Zahl ohne Geschichte. Backlog: `WIS-SCHWELLE-MESSEN`.
+
+**Umfang:** Suite 1031 → **1040 Tests**, grün, 0 übersprungen. Nulllinie **2182**, beide Wände sauber. **Gegenprobe:** Hook-Verschiebung zurückgenommen → **1 rot**, der Reihenfolge-Test, wie vorhergesagt.
+
+> **Beim Bauen fiel ein eigener Verstoß auf:** `such_vektor` war im State-Typ nicht deklariert. Innerhalb einer Funktion funktioniert das, weil das Dict direkt mutiert wird — die Regel aus `13_DATENSTRUKTUREN` §4 existiert trotzdem, und zwar wegen genau der Fälle, in denen es nicht funktioniert. Nachgeholt.
+
 ### Der Engpass ist die Warteschlange — eine widerlegte eigene Vermutung 🔶
 
 Die Recherche starb an vier von fünf Läufen mit `TimeoutError` nach 302 Sekunden, an `MODEL_BACKGROUND_TIMEOUT_S = 300`. Die naheliegende Erklärung war das 256k-Fenster: Der Commit vom 31.07. hatte selbst geschrieben, dass ein einzelnes Hintergrund-Urteil bis zu 342 Sekunden braucht und die Latenz mit langen Prompts steigt.

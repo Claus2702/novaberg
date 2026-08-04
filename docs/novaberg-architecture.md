@@ -892,7 +892,7 @@ Das Kern-Schema lebt in `db/init.sql` als Single Source of Truth (Synapsen P0). 
 | `lzg_knoten` | `db/init.sql` | Synapsen-Knoten — **das Langzeitgedaechtnis** seit P9 (02.08.2026); 1108 Knoten am 02.08. |
 | `lzg_kanten` | `db/init.sql` | Synapsen-Kanten-Cache (Synapsen P2, abgeleiteter Cache; drei Trigger zur Neuberechnung) |
 | `pipeline_log` | `db/init.sql` | Forensik-Tabelle für Node-Entscheidungen pro Turn (Synapsen P1, JSONB-Inhalt) |
-| `autonomous_wissen` | `db/init.sql` | Metadaten der Wissens-Bibliothek (WIS-2, 04.08.2026) — **nicht der Inhalt**: Der liegt als Datei ausserhalb des Git-Roots. Paar-Schema und `salienz_anfang` ohne Vorgabewert; 0 Zeilen bei Anlage |
+| `autonomous_wissen` | `db/init.sql` | Metadaten der Wissens-Bibliothek (WIS-2, 04.08.2026) — **nicht der Inhalt**: Der liegt als Datei ausserhalb des Git-Roots. Paar-Schema und `salienz_anfang` ohne Vorgabewert; gelesen vom `WissenManager` als sechste Kontextquelle des Enrichers |
 | `charakter_hash` | `db/init.sql` | 5 Persoenlichkeitsprofile (kern_hash, adaptive_hash, beziehungsprofil, intentions_profil, emotions_profil), alle im Prompt injiziert (seit Chat 52) |
 | `hintergrund_log` | `db/init.sql` | Pixie-Aufgabenprotokoll |
 | `gespraech_archiv` | `db/init.sql` | Session-Archivierung |

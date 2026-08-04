@@ -53,7 +53,7 @@ db_zugriff → ei_calc → ▶ enricher ◀ → emotionale_gravitation → reduc
 
 ---
 
-## 3. Vier Kontextquellen
+## 3. Kontextquellen
 
 **Hinweis (seit Chat 59, vereinfacht in Phase 3):** Der fünfte Abschnitt „Emotionale Intelligenz" wurde entfernt. Alle EI-Berechnungen laufen jetzt im EI-Calc-Node (→ `novaberg-node-ei-calc.md`). Der Enricher übergibt als Brücke nur noch `raw_turns` an den State.
 
@@ -93,9 +93,31 @@ Der Enricher iteriert über alle registrierten Manager-Plugins und ruft den Hook
 | FaktenManager | **Deaktiviert seit Chat 71** (`enricher.py:416-419`) — Hook wird übersprungen |
 | TimelineManager | Anstehende Termine, heutige Ereignisse |
 | NotizenManager | Betroffene Notiz bei Management-Intent |
+| **WissenManager** | **Novas erarbeitete Bibliothek** (seit 04.08.2026) — Metadaten-Treffer über Embedding-Nähe |
 | KzgManager | (kein enrich-Hook, KZG wird direkt geladen) |
 
 Neue Plugins liefern automatisch Kontext — ohne Änderung am Enricher.
+
+> **Die Hooks laufen seit dem 04.08.2026 NACH der Gedächtnissuche, nicht davor.** Bis dahin standen sie vor der Erzeugung des Prompt-Embeddings; ein Plugin, das über Embedding-Nähe sucht, hätte sich dreißig Zeilen vor dessen Erzeugung ein **zweites** rechnen lassen müssen — rund 1,6 s je Turn für denselben Vektor. Jetzt findet jedes Plugin `state["prompt_embedding"]` **und** `state["such_vektor"]` vor.
+>
+> **Was die Verschiebung anfasst, geprüft statt behauptet:** Von den Managern liefern nur Timeline, Notizen und Wissen; sie lesen ausschließlich Felder, die vor dem Enricher feststehen, und **keiner schreibt in den State**. Der Formatter gruppiert nach `quelle` statt nach Listenposition — die Plugin-Gruppe steht als Block, gleich wann sie angehängt wurde.
+>
+> **Der eine gefundene Effekt, benannt statt weggeredet:** Der Reducer entdoppelt bei identischem Inhalt nach höchstem Gewicht, bei Gleichstand nach Eingangsreihenfolge. Trägt ein Plugin-Eintrag denselben Text **und** dasselbe Gewicht wie ein KZG-Treffer, überlebt seither der andere von beiden — und weil `quelle` das Format steuert, erschiene derselbe Satz unter einem anderen Etikett.
+
+### 3.2a Die Bibliothek als sechste Quelle (seit 04.08.2026)
+
+Der `WissenManager` findet Novas erarbeitete Dateien **über die Datenbank, nicht über ihren Inhalt**: eine Abfrage gegen `autonomous_wissen` auf Embedding-Nähe zur Zusammenfassung, gefiltert auf Paar, `aktiv` und `typ='wissen'`. Berichte bleiben draußen — sie sind Prozessdokumentation für die Lagebeurteilung und im Prompt des Responders Rauschen (§7.5 des Konzepts).
+
+**Der Suchschlüssel ist `state["such_vektor"]`** — derselbe, mit dem KZG und LZG gesucht haben, also die Frage plus Novas Motivation. Die Bibliothek ist Langzeitgedächtnis in Dateiform und wird mit demselben Ohr gehört.
+
+**Das Gewicht wird umgerechnet.** `gewicht_decay` läuft bis `LZG_KNOTEN_GEWICHT_CAP` (10.0), der ContextEntry-Pool erwartet 0.0 bis 1.0. Ohne die Division schlüge jeder Bibliothekseintrag im Reducer jeden KZG-Treffer — eine Rangfolge aus zwei Skalen statt aus zwei Bedeutungen.
+
+| Größe | Wert | Herkunft |
+|---|---|---|
+| Schwelle | 0.40 | **übernommen von `anker_retrieval`, nicht gemessen** — dort an 100 echten Prompts kalibriert. Gleicher Embedding-Raum, gleiche Art Anfrage; als Startwert vertretbar, als Ergebnis nicht |
+| Top-K | 3 | Der Gesprächspfad hat 32768 Token, nicht die 262144 des Hintergrunds |
+
+> **Stufe 2 fehlt.** Reicht die Zusammenfassung nicht, soll der Dateiinhalt gelesen werden (§7.3). Dafür fehlt der Lesepfad in `tools/dateien/` — und mit 262144 Token im Hintergrund ist dort eine andere Bauart möglich als die Mandelbrot-Navigation, die das Konzept aus dem 32k-Zwang ableitet.
 
 ### 3.3 KZG/LZG (semantische Suche)
 
