@@ -1924,9 +1924,10 @@ plausibel (frühestes Auftreten der Erinnerung).
 **Zu P10 — gebaut und live, die Wirkung aber ungemessen.** Die Verschiebung greift: Ein Turn nahe an einem langfristigen Ziel erreichte Aktivierungs-Stärke 0.631 und drehte den Suchschlüssel um 1,14° (Cluster `schlachtfeld`, Faktor 0.05). Genau diese Kleinheit ist der Befund — **Aktivierungsschwelle und Verschiebungswirkung ziehen gegeneinander:** Ein Ziel überschreitet die Schwelle von 0.4 nur, wenn es der Frage schon ähnlich ist, und in Richtung eines fast parallelen Vektors zu verschieben dreht kaum. Bei sieben aktiven Zielen und einem thematisch entfernten Turn lagen alle Stärken zwischen 0.102 und 0.212, also unter der Schwelle. Entscheidbar ist das erst an einem Korpus, in dem Ziele und Fragen auseinanderliegen — wie bei P3 also an der Charakterbildungs-Messreihe.
 
 **`P10-WIRKUNG-UNGEMESSEN`**
-**Frage:** Ändert die Verschiebung die Trefferliste der LZG-Suche, und ab welcher Drehung?
-**Vorgehen:** Je Turn beide Suchen fahren — roh und verschoben — und die Anker-Mengen vergleichen. Der Pipeline-Log trägt bereits Cluster, Faktor, Anteile und Cosinus je Turn; es fehlt der Vergleich der Ergebnisse.
-**Prio:** Mittel. Ohne diese Zahl ist nicht entscheidbar, ob die Cluster-Faktoren zu klein gesetzt sind oder die Schwelle zu hoch.
+**Frage:** Ändert die Verschiebung die Trefferliste — und ab welcher Drehung?
+**Umfang seit dem 04.08.2026: beide Gedächtnisschichten.** Das KZG hängt seither am selben Schlüssel wie das LZG; die Messung gilt damit für zwei Trefferlisten, nicht für eine. Der Unterschied zwischen ihnen ist selbst eine Frage: Das Kurzzeitgedächtnis trägt wenige, sehr nahe Einträge, das Langzeitgedächtnis viele entferntere — dieselbe Drehung kann dort etwas ändern und hier nichts.
+**Vorgehen:** Je Turn beide Suchen fahren — roh und verschoben — und die Ergebnismengen vergleichen. Der Pipeline-Log trägt bereits Cluster, Faktor, Anteile und Cosinus je Turn; es fehlt der Vergleich der Ergebnisse.
+**Prio:** Mittel. Ohne diese Zahl ist nicht entscheidbar, ob die Cluster-Faktoren zu klein gesetzt sind oder die Schwelle zu hoch. **Und ohne sie ist die Kalibrierung der Faktoren nicht beginnbar** — man kalibriert sonst gegen eine Wirkung, deren Existenz nicht belegt ist.
 
 **Zu P3 — die dünnen Magnetfelder sind überwiegend kein Defekt.** Gemessen: Von 1076 Knoten ohne `timeline_id` enthalten **5** überhaupt einen Datums- oder Zeitausdruck; von 766 ohne `entitaet_ids` nennen 76 % nichts Bekanntes. Der Korpus besteht aus Weltwissen — Entropie, Hawking-Strahlung, Raumzeit —, und Weltwissen hat weder Referenz noch Datum. Verbleibende 185 Knoten nennen einen bekannten Begriff als ganzes Wort, ohne ihn zu verlinken; das ist ein Fundlisten-Eintrag, kein Sprint.
 

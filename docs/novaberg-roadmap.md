@@ -2039,6 +2039,22 @@ Eine abgeschlossene Recherche hinterlässt seither zwei Dateien und eine Metadat
 
 **Als Nächstes:** `WIS-4-STAPEL-SALIENZ` — oder die Neudimensionierung, die inzwischen der größere Hebel ist.
 
+### Das Kurzzeitgedächtnis hört jetzt mit demselben Ohr ✅
+
+Die Wahrnehmungs-Gravitation aus P10 verschob bis heute **nur** den Suchschlüssel der LZG-Suche. Das KZG suchte roh — und für diese Grenze fand sich keine Begründung: weder im Konzept, das durchgehend vom LZG-Lesepfad spricht, noch im einführenden Commit, der sie nur als Umfang beschreibt („wires the shift into the LZG path"). Es war eine Auslassung des nachträglichen Einbaus, keine Entscheidung.
+
+**Seit dem 04.08. wird die Verschiebung einmal je Turn gerechnet, vor beiden Suchen.** KZG und LZG benutzen denselben Vektor; der Imperativ-Override gilt damit für beide — bei „trag mir den Termin ein" sucht auch das Kurzzeitgedächtnis roh.
+
+**Was ausdrücklich nicht mitzieht:** die Ziel-Aktivierung. Sie rechnet weiter gegen das rohe Embedding, weil sie mit dem verschobenen ihre eigene Eingabe wäre. Das ist keine Vorsicht, sondern eine Sperre gegen eine Rückkopplung — und der Unterschied zwischen den beiden Gründen ist der Punkt: Der eine war eine Entscheidung, der andere eine Lücke.
+
+**Der Herkunftsmarker `keine_lzg_suche` heißt jetzt `keine_gedaechtnis_suche`.** Seine Bedeutung ist mit dem Umfang gewandert; denselben String weiterzuverwenden hätte Einträge von vorher und nachher gleich aussehen lassen, obwohl sie Verschiedenes bedeuten. Wer Pipeline-Logs über den 04.08. hinweg vergleicht, muss beide Schreibweisen kennen.
+
+> **Der eigentliche Befund steckt in der grünen Suite.** Die Umstellung wechselt den Suchschlüssel des Kurzzeitgedächtnisses in **jedem** Turn — und die 1028 Tests blieben grün. Der vorhandene Verdrahtungstest griff den Schlüssel nur dort ab, wo er zum LZG geht; die KZG-Seite war ungeprüft. Eine Verhaltensänderung an jedem Turn, die eine volle Suite nicht anschlägt, ist genau die Klasse, für die das Netz da ist.
+
+**Umfang:** Suite 1028 → **1031 Tests**, grün, 0 übersprungen. Nulllinie **2182 unverändert**, beide Wände sauber. **Gegenprobe:** Umbau zurückgenommen → **3 rot, exakt die vorhergesagten.** Der vierte neue Test — Imperativ-Override auf beiden Schichten — blieb wie angekündigt grün: Vorher suchten beide Schichten bei einer Anweisung ohnehin roh, er trennt also nicht, er bewacht.
+
+**Die Wirkung bleibt ungemessen.** `P10-WIRKUNG-UNGEMESSEN` gilt ab jetzt für zwei Trefferlisten statt einer, und der Unterschied zwischen ihnen ist selbst eine Messgröße: Das Kurzzeitgedächtnis trägt wenige, sehr nahe Einträge, das Langzeitgedächtnis viele entferntere — dieselbe Drehung von gut einem Grad kann dort etwas ändern und hier nichts. **Vor dieser Zahl ist keine Kalibrierung der Cluster-Faktoren beginnbar**, sonst kalibriert man gegen eine Wirkung, deren Existenz nicht belegt ist.
+
 ---
 
 ## Chat 127 (04.08.2026) — Die Nulllinie steht, und das Urteil kommt vor dem Text 🔶

@@ -1006,6 +1006,12 @@ Das Konzept ist eine Erweiterung der bestehenden Drive-Mechanik. Bausteine sind 
 
 > **Gebaut am 02.08.2026 (P10, Chat 126).** `ei/gravitation.py:wahrnehmung_verschieben()`, Tabelle in `ei/dreischicht.py`, Aufruf im Enricher vor `spreading_lesen`. Was die Umsetzung an diesem Abschnitt widerlegt hat, steht in §8.5.2 und §8.5.3; was gemessen wurde, in §8.5.6.
 
+> **Umfang erweitert am 04.08.2026: beide Gedächtnisschichten.** Der Abschnitt ist als Teil des LZG-Lesepfads geschrieben und nennt durchgehend „die Cosine-Suche in 8.1" — deshalb bekam bis dahin nur das LZG den verschobenen Schlüssel. **Für diese Grenze gab es keine Begründung**, weder hier noch im einführenden Commit, der sie nur als Umfang beschreibt. Sie war eine Auslassung des nachträglichen Einbaus, keine Entscheidung.
+>
+> Seit dem 04.08. wird die Verschiebung **einmal je Turn** gerechnet, vor beiden Suchen; KZG und LZG benutzen denselben Vektor, und der Imperativ-Override gilt für beide. Was ausdrücklich **nicht** mitzieht, bleibt unverändert: die Ziel-Aktivierung, weil sie mit dem verschobenen Schlüssel ihre eigene Eingabe wäre.
+>
+> **Was das für die offene Wirkungsmessung heißt:** `P10-WIRKUNG-UNGEMESSEN` betrifft ab jetzt zwei Trefferlisten. Der Unterschied zwischen ihnen ist selbst eine Messgröße — das Kurzzeitgedächtnis trägt wenige, sehr nahe Einträge, das Langzeitgedächtnis viele entferntere, und dieselbe Drehung von gut einem Grad kann dort etwas ändern und hier nichts.
+
 #### 8.5.1 Berechnung der Verschiebung
 
 ```

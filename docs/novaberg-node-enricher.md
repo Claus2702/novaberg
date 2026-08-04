@@ -121,9 +121,17 @@ e_nova = e_anfrage × (1 − faktor) + Σ(e_ziel × aktivierungs_staerke) × fak
 
 `faktor` ist ein Wert **pro Turn** aus `CLUSTER_GRAVITATION_FAKTOR` (`ei/dreischicht.py`, 14 Cluster, 0.05 bis 0.30); `aktivierungs_staerke` ist ein Wert **pro Ziel** (`similarity × motivation`). Die Rechnung steht in `ei/gravitation.py:wahrnehmung_verschieben()`, der Enricher ruft sie nur auf.
 
-**Nur die LZG-Suche bekommt den verschobenen Schlüssel.** KZG-Suche, Ziel-Aktivierung und emotionale Gravitation rechnen weiter gegen das rohe Embedding — die Aktivierung wäre sonst ihre eigene Eingabe. Aus demselben Grund steht der Ziele-Block seit P10 **vor** der Memory-Suche statt danach.
+~~**Nur die LZG-Suche bekommt den verschobenen Schlüssel.**~~ **Seit dem 04.08.2026 bekommen ihn beide Gedächtnisschichten.** Die Verschiebung wird einmal je Turn gerechnet, vor beiden Suchen, und KZG wie LZG suchen mit demselben Vektor.
 
-**Sieben Ausgänge, jeder benannt.** Das Feld `herkunft` im Pipeline-Log (`quelle="wahrnehmungs_gravitation"`) trennt sie: `verschoben`, `anweisung` (Imperativ-Override), `keine_ziele`, `kein_ziel_embedding`, `cluster_unbekannt`, `dimension_ungleich`, `verworfen_ausser_spanne` — dazu `keine_lzg_suche` für den Durchlauf ohne Suche. Jeder Ausgang außer dem ersten sucht mit dem rohen Embedding weiter; ein Durchlauf ohne Eintrag gibt es nicht.
+> **Für die frühere Grenze gab es keine Begründung.** Weder das Konzept noch der einführende Commit nannten einen Grund; der Commit beschreibt nur den Umfang („wires the shift into the LZG path"). KZG und LZG sind dieselbe Art Speicher mit verschiedenen Zeithorizonten — Nova hört nicht mit zwei Ohren. Die Anpassung wurde beim nachträglichen Einbau der Gravitation schlicht übersehen.
+
+**Was ausdrücklich nicht mitzieht:** Ziel-Aktivierung und emotionale Gravitation rechnen weiter gegen das rohe Embedding — die Aktivierung wäre sonst ihre eigene Eingabe. Aus demselben Grund steht der Ziele-Block seit P10 **vor** der Memory-Suche statt danach. Das ist keine Ausnahme aus Vorsicht, sondern eine Sperre gegen eine Rückkopplung.
+
+**Der Imperativ-Override gilt damit für beide Schichten.** Bei der Intention `anweisung` sucht auch das Kurzzeitgedächtnis roh — sonst legte Nova zwar keinen Bratwurst-Termin aus dem Langzeitgedächtnis an, wohl aber aus dem Kurzzeitgedächtnis.
+
+**Sieben Ausgänge, jeder benannt.** Das Feld `herkunft` im Pipeline-Log (`quelle="wahrnehmungs_gravitation"`) trennt sie: `verschoben`, `anweisung` (Imperativ-Override), `keine_ziele`, `kein_ziel_embedding`, `cluster_unbekannt`, `dimension_ungleich`, `verworfen_ausser_spanne` — dazu **`keine_gedaechtnis_suche`** für den Durchlauf ohne jede Suche. Jeder Ausgang außer dem ersten sucht mit dem rohen Embedding weiter; ein Durchlauf ohne Eintrag gibt es nicht.
+
+> **Der Marker hieß bis zum 04.08.2026 `keine_lzg_suche`.** Umbenannt, weil seine Bedeutung mit dem Umfang gewandert ist: Solange nur das LZG den verschobenen Schlüssel bekam, war „keine LZG-Suche" dasselbe wie „nichts zu verschieben". Denselben String weiterzuverwenden hieße, Einträge von vorher und nachher gleich aussehen zu lassen, obwohl sie Verschiedenes bedeuten. **Wer Log-Einträge über den 04.08. hinweg vergleicht, muss beide Schreibweisen kennen.**
 
 **Die Summe wird nicht normiert.** Mehrere Ziele verstärken sich, und der Ziel-Anteil kann den Anfrage-Anteil überwiegen. Ein Ergebnis, dessen Cosinus zum rohen Embedding nicht in (0.0, 1.0] liegt, wird deshalb gemeldet und **verworfen, nicht gekappt** — es zeigt von der Frage weg und ist keine Färbung mehr.
 
