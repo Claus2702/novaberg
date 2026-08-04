@@ -429,9 +429,19 @@ def _verschiebungs_protokoll(
     beurteilbar, deshalb stehen die Aktivierungs-Staerken **einzeln** im
     Eintrag und nicht als Summe.
 
-    `verschiebung=None` heisst: In diesem Turn lief keine LZG-Suche. Auch
-    dieser Durchlauf bekommt einen Eintrag — sonst waere er von einem Turn
-    ohne Verschiebung nicht zu unterscheiden.
+    `verschiebung=None` heisst: In diesem Turn lief **gar keine**
+    Gedaechtnissuche — weder KZG noch LZG. Auch dieser Durchlauf bekommt
+    einen Eintrag, sonst waere er von einem Turn ohne Verschiebung nicht zu
+    unterscheiden.
+
+    **Der Marker heisst seit dem 04.08.2026 `keine_gedaechtnis_suche`**, vorher
+    `keine_lzg_suche`. Umbenannt, weil sich seine Bedeutung mit dem Umfang der
+    Verschiebung geaendert hat: Solange nur das LZG den verschobenen Schluessel
+    bekam, war „keine LZG-Suche" dasselbe wie „nichts zu verschieben"; seit das
+    KZG mitzieht, ist es das nicht mehr. Denselben String weiterzuverwenden
+    hiesse, Eintraege von vorher und nachher gleich aussehen zu lassen, obwohl
+    sie Verschiedenes bedeuten — der Bruch gehoert in die Daten, nicht in eine
+    Fussnote.
 
     Vorbedingung: keine.
     Nachbedingung: Eine Abbildung mit sieben Feldern; `herkunft` ist immer
@@ -439,7 +449,7 @@ def _verschiebungs_protokoll(
     """
     if verschiebung is None:
         return {
-            "herkunft":       "keine_lzg_suche",
+            "herkunft":       "keine_gedaechtnis_suche",
             "faktor":         0.0,
             "cluster":        "",
             "ziel_anteile":   [],
@@ -661,10 +671,15 @@ def _enrich_character(
     # zaehlt der Switch aus state["lzg_resonanz"] (kein memory_entries-Akkumulator).
     kzg_entries: list[ContextEntry] = []
 
-    # None heisst: In diesem Turn lief keine LZG-Suche, es gab keinen
-    # Suchschluessel zu verschieben. Der Protokoll-Eintrag unten haelt genau
-    # diesen Fall fest — ohne ihn saehe ein Turn ohne LZG aus wie ein Turn
-    # ohne Verschiebung.
+    # None heisst: In diesem Turn lief GAR KEINE Gedaechtnissuche — weder KZG
+    # noch LZG —, es gab also keinen Suchschluessel zu verschieben. Der
+    # Protokoll-Eintrag unten haelt genau diesen Fall fest; ohne ihn saehe ein
+    # Turn ohne Gedaechtnis aus wie ein Turn ohne Verschiebung.
+    #
+    # Bis zum 04.08.2026 hiess None enger "keine LZG-Suche", weil allein das
+    # LZG den verschobenen Schluessel bekam. Die Bedeutung ist mit dem Umfang
+    # mitgewandert — eine Protokoll-Zusicherung, die stehen bleibt, waehrend
+    # ihr Gegenstand sich aendert, ist still falsch.
     verschiebung: Verschiebung | None = None
 
     if kzg_keys or has_lzg:
@@ -672,9 +687,36 @@ def _enrich_character(
             f"Enricher: {len(kzg_keys)} KZG, LZG={'ja' if has_lzg else 'nein'} — suche Kontext..."
         )
 
+        # §8.5: Wahrnehmungs-Gravitation. Der Suchschluessel ist nicht mehr
+        # allein die Frage, sondern die Frage plus Novas Motivation.
+        #
+        # **Einmal je Turn, fuer BEIDE Gedaechtnisschichten.** Bis zum
+        # 04.08.2026 bekam ihn nur das LZG; fuer diese Grenze gab es keine
+        # Begruendung — weder im Konzept noch im einfuehrenden Commit, der
+        # sie nur als Umfang nennt. KZG und LZG sind dieselbe Art Speicher
+        # mit verschiedenen Zeithorizonten, und Nova hoert nicht mit zwei
+        # Ohren.
+        #
+        # Was ausdruecklich NICHT mitzieht: die Ziel-Aktivierung weiter oben.
+        # Sie rechnet gegen das rohe Embedding, weil sie mit dem verschobenen
+        # ihre eigene Eingabe waere.
+        #
+        # Der Cluster wird jetzt auch fuer einen Turn ohne LZG gelesen — ein
+        # zusaetzlicher Redis-Zugriff, der den Preis dafuer traegt, dass beide
+        # Suchen denselben Schluessel benutzen.
+        cluster: str = _vorturn_cluster_lesen(redis_client, user_id, character_id)
+
+        verschiebung = wahrnehmung_verschieben(
+            anfrage_embedding = embedding,
+            aktivierte_ziele  = aktiviert,
+            cluster           = cluster,
+            ist_anweisung     = INTENTION_ANWEISUNG in letzte_intentionen,
+        )
+        such_vektor: list[float] = verschiebung.vektor
+
         if kzg_keys:
             kzg_entries = kzg_entries_retrieve(
-                redis_client, user_id, character_id, embedding,
+                redis_client, user_id, character_id, such_vektor,
             )
             if kzg_entries:
                 entries.extend(kzg_entries)
@@ -683,7 +725,6 @@ def _enrich_character(
         if has_lzg:
             # B2 (§8.1-8.4): gerichteter Spreading-Lesepfad statt flachem LZG-Read.
             # Cluster aus dem Redis-Vorturn (GV-Node laeuft nach dem Enricher, §8.2.1).
-            cluster: str = _vorturn_cluster_lesen(redis_client, user_id, character_id)
 
             # Novas dominante Emotion des aktuellen Turns: [0] ist die staerkste
             # (Verlauf in allen ei_calc-Pfaden absteigend nach Gewicht sortiert).
@@ -691,18 +732,7 @@ def _enrich_character(
             nova_verlauf: list = state.get("nova_emotions_verlauf") or []
             nova_emotion: str = nova_verlauf[0]["emotion"] if nova_verlauf else ""
 
-            # §8.5: Wahrnehmungs-Gravitation. Der Suchschluessel ist nicht mehr
-            # allein die Frage, sondern die Frage plus Novas Motivation. Nur die
-            # LZG-Suche bekommt ihn — die KZG-Suche oben und die Ziel-Aktivierung
-            # rechnen weiter gegen das rohe Embedding.
-            verschiebung = wahrnehmung_verschieben(
-                anfrage_embedding = embedding,
-                aktivierte_ziele  = aktiviert,
-                cluster           = cluster,
-                ist_anweisung     = INTENTION_ANWEISUNG in letzte_intentionen,
-            )
-
-            embedding_str: str = embedding_zu_pgvector_str(verschiebung.vektor)
+            embedding_str: str = embedding_zu_pgvector_str(such_vektor)
             erinnerungen: list[dict] = spreading_lesen(
                 postgres_url, user_id, character_id, embedding_str,
                 cluster=cluster, nova_emotion=nova_emotion,

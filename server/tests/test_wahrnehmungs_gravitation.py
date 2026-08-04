@@ -305,14 +305,22 @@ class EnricherVerdrahtungTest(unittest.TestCase):
         intentionen: list[str],
         ziele:       list[ActivatedGoal],
         has_lzg:     bool = True,
+        hat_kzg:     bool = False,
     ) -> tuple[list[float] | None, list[dict]]:
-        """Faehrt `_enrich_character` und liefert (Suchschluessel, Protokoll).
+        """Faehrt `_enrich_character` und liefert (LZG-Suchschluessel, Protokoll).
 
-        Der Suchschluessel ist das Argument, das der Enricher an
+        Der LZG-Suchschluessel ist das Argument, das der Enricher an
         `embedding_zu_pgvector_str` reicht — die letzte Stelle, an der der
         Vektor noch ein Vektor ist. Laeuft keine LZG-Suche, bleibt er None.
+
+        **Der KZG-Suchschluessel steht danach in `self.kzg_gesucht`.** Er wird
+        nicht mit zurueckgegeben, damit die vorhandenen Faelle unveraendert
+        bleiben; seit dem 04.08.2026 bekommt auch das Kurzzeitgedaechtnis den
+        verschobenen Vektor, und eine Verdrahtung, die nur an einer der beiden
+        Schichten geprueft wird, ist halb geprueft.
         """
         gesucht: list = []
+        kzg_gesucht: list = []
         protokoll: list[dict] = []
 
         cursor = MagicMock()
@@ -324,7 +332,7 @@ class EnricherVerdrahtungTest(unittest.TestCase):
 
         redis_attrappe = MagicMock()
         redis_attrappe.get.return_value = None
-        redis_attrappe.keys.return_value = []
+        redis_attrappe.keys.return_value = ["kzg:test:1"] if hat_kzg else []
 
         state: dict = {
             "turn_id":          "test-turn",
@@ -346,7 +354,12 @@ class EnricherVerdrahtungTest(unittest.TestCase):
             ))
             p(patch.object(enricher_mod, "_vorturn_cluster_lesen", return_value=CLUSTER_FREI))
             p(patch.object(enricher_mod, "spreading_lesen", return_value=[]))
-            p(patch.object(enricher_mod, "kzg_entries_retrieve", return_value=[]))
+            p(patch.object(
+                enricher_mod, "kzg_entries_retrieve",
+                side_effect=lambda _redis, _user, _char, vektor: (
+                    kzg_gesucht.append(vektor) or []
+                ),
+            ))
             p(patch.object(enricher_mod, "emotionale_gravitation_scannen", return_value=[]))
             p(patch.object(
                 enricher_mod, "embedding_zu_pgvector_str",
@@ -366,6 +379,7 @@ class EnricherVerdrahtungTest(unittest.TestCase):
                 state, redis_attrappe, "postgresql://test", "test_mensch",
             )
 
+        self.kzg_gesucht: list[float] | None = kzg_gesucht[0] if kzg_gesucht else None
         return (gesucht[0] if gesucht else None), protokoll
 
     def _verschiebungs_eintrag(self, protokoll: list[dict]) -> dict:
@@ -429,19 +443,73 @@ class EnricherVerdrahtungTest(unittest.TestCase):
         )
         self.assertEqual(self._verschiebungs_eintrag(protokoll)["herkunft"], "anweisung")
 
-    def test_ohne_lzg_steht_der_uebersprung_im_protokoll(self) -> None:
-        """Ein Durchlauf ohne Suche schreibt trotzdem einen Eintrag.
+    def test_ohne_gedaechtnis_steht_der_uebersprung_im_protokoll(self) -> None:
+        """Ein Durchlauf ohne jede Gedaechtnissuche schreibt trotzdem einen Eintrag.
 
         Sonst waere er von einem Durchlauf ohne Verschiebung nicht zu
         unterscheiden, und der Leser saehe den Stand des Vorturns.
+
+        Der Marker heisst `keine_gedaechtnis_suche` und nicht mehr
+        `keine_lzg_suche`: Seit das KZG denselben Schluessel benutzt, ist
+        „kein LZG" nicht mehr dasselbe wie „nichts zu verschieben".
         """
         gesucht, protokoll = self._lauf(
-            intentionen=[], ziele=[_ziel(0.5, QUER)], has_lzg=False,
+            intentionen=[], ziele=[_ziel(0.5, QUER)], has_lzg=False, hat_kzg=False,
         )
 
         self.assertIsNone(gesucht)
+        self.assertIsNone(self.kzg_gesucht)
         self.assertEqual(
-            self._verschiebungs_eintrag(protokoll)["herkunft"], "keine_lzg_suche",
+            self._verschiebungs_eintrag(protokoll)["herkunft"], "keine_gedaechtnis_suche",
+        )
+
+    def test_beide_schichten_bekommen_denselben_schluessel(self) -> None:
+        """KZG und LZG suchen mit **einem** Vektor, nicht mit zwei gleichen.
+
+        Geprueft wird auf Gleichheit der beiden abgegriffenen Argumente und
+        darauf, dass es nicht das rohe Embedding ist. Ohne den zweiten Teil
+        waere der Test auch dann gruen, wenn gar nicht verschoben wuerde.
+        """
+        gesucht, _ = self._lauf(
+            intentionen=[], ziele=[_ziel(0.5, QUER)], has_lzg=True, hat_kzg=True,
+        )
+
+        self.assertIsNotNone(gesucht, "das LZG hat keinen Schluessel bekommen")
+        self.assertIsNotNone(self.kzg_gesucht, "das KZG hat keinen Schluessel bekommen")
+        self.assertEqual(gesucht, self.kzg_gesucht)
+        self.assertNotEqual(self.kzg_gesucht, ROH)
+
+    def test_bei_anweisung_suchen_beide_schichten_roh(self) -> None:
+        """Der Imperativ-Override gilt fuer beide Schichten, nicht nur fuers LZG.
+
+        Sonst legte Nova zwar keinen Bratwurst-Termin aus dem Langzeit-
+        gedaechtnis an, wohl aber aus dem Kurzzeitgedaechtnis.
+        """
+        gesucht, _ = self._lauf(
+            intentionen=[INTENTION_ANWEISUNG], ziele=[_ziel(0.5, QUER)],
+            has_lzg=True, hat_kzg=True,
+        )
+
+        self.assertEqual(gesucht, ROH)
+        self.assertEqual(self.kzg_gesucht, ROH)
+
+    def test_kzg_ohne_lzg_wird_trotzdem_verschoben(self) -> None:
+        """Der Fall, der die Umstellung ueberhaupt sichtbar macht.
+
+        Bis zum 04.08.2026 wurde die Verschiebung **innerhalb** des
+        LZG-Zweigs gerechnet. Ein Turn mit Kurzzeitgedaechtnis, aber ohne
+        Langzeitgedaechtnis — der Normalfall einer jungen Beziehung — suchte
+        deshalb roh, ohne dass es irgendwo aufgefallen waere.
+        """
+        gesucht, protokoll = self._lauf(
+            intentionen=[], ziele=[_ziel(0.5, QUER)], has_lzg=False, hat_kzg=True,
+        )
+
+        self.assertIsNone(gesucht, "ohne LZG darf keine LZG-Suche laufen")
+        self.assertIsNotNone(self.kzg_gesucht)
+        self.assertNotEqual(self.kzg_gesucht, ROH)
+        self.assertEqual(
+            self._verschiebungs_eintrag(protokoll)["herkunft"], "verschoben",
         )
 
 
