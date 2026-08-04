@@ -401,6 +401,104 @@ CREATE INDEX IF NOT EXISTS idx_verbindung_kzg  ON verbindung (kzg_id);
 CREATE INDEX IF NOT EXISTS idx_verbindung_lzg  ON verbindung (lzg_id);
 
 
+-- ───────────────────────────────────────────────
+-- autonomous_wissen — Metadaten der Wissens-Bibliothek
+-- ───────────────────────────────────────────────
+-- Der Inhalt steht NICHT hier. Er liegt als Datei ausserhalb des Git-Roots,
+-- als Geschwister der Repositoriumswurzel, im Behaelter unter /knowledge
+-- eingehaengt. Die Dateien tragen aus Gespraechen abgeleitete Recherchen;
+-- unterhalb des Arbeitsbaums wuerde jeder Push sie veroeffentlichen. Diese
+-- Tabelle traegt nur, WO die Datei liegt, WORUM es geht (Zusammenfassung +
+-- Embedding), WIE WICHTIG sie ist und OB sie noch aktiv ist.
+--
+-- Spezifikation: docs/novaberg-autonomous-wissen_k.md §7.2 (Metadaten) und
+-- §11 (die Ueberarbeitung vom 04.08.2026, die bei Widerspruch Vorrang hat).
+--
+-- Paar-Partition (§11.2): dasselbe Tripel wie lzg_knoten, ziele und
+-- charakter_hash — user_id ist das Subjekt, character_id das Gegenueber,
+-- beobachter die Perspektive des Inhalts. Ohne sie waere dies der einzige
+-- Bestand, der die Paar-Trennung nicht mitmacht, und Novas Wissen ueber den
+-- einen fiele in ein Gespraech mit dem anderen.
+--
+-- Die drei Paar-Spalten haben KEINEN Default — anders als bei lzg_knoten,
+-- wo er den Bestand durch die Migration tragen musste. Diese Tabelle startet
+-- leer, also kostet der strengere Weg nichts: Ein Schreiber ohne Gegenueber
+-- scheitert laut, statt eine Zeile abzulegen, die spaeter wie ein Paar
+-- aussieht. Dieselbe Bauart wie ziele.character_id.
+--
+-- salienz_anfang ohne Default (§11.4): Der Wert ist beim Schreiben immer
+-- bekannt — er hat den Vorgang ausgeloest. Ein `DEFAULT 0.0` waere genau das
+-- Muster, das eine Null wie einen Messwert aussehen laesst. Belegt, dass die
+-- Gefahr real ist: In der Shadow-Queue trugen am 04.08.2026 49 von 650
+-- Auftraegen Prioritaet 0.0, obwohl sie das Hochsalienz-Tor passiert hatten.
+--
+-- Gewicht (§11.6): Bauart UND Konstanten des lzg_knoten — roh waechst linear,
+-- absolut ist sinus-gedaempft und saettigt bei LZG_KNOTEN_GEWICHT_CAP, decay
+-- traegt die Zeit. Das erarbeitete Wissen ist Langzeitgedaechtnis in
+-- Dateiform und benutzt LZG_KNOTEN_DECAY_RATE ausdruecklich mit, nicht nur
+-- denselben Wert: Wird der Gedaechtnisverfall je nachkalibriert, soll das
+-- Wissen mitgehen. Nur der Gedankenstapel bekommt eine eigene Rate.
+--
+-- gewicht_decay wird MATERIALISIERT, nicht bei Abfrage gerechnet: Ein Lauf
+-- schreibt Spalte und decay_am, die Lesepfade lesen die Spalte — wie bei
+-- run_node_decay. Das steht hier ausdruecklich, weil dieselbe Aussage an
+-- drei Stellen im Bestand falsch dokumentiert ist. Der Lauf wird ein dritter
+-- Schritt im vorhandenen Tageslauf synapsen_decay (§11.7, WIS-5).
+--
+-- dateipfad UNIQUE: Eine Wissensdatei hat genau eine Metadatenzeile. Eine
+-- Verstaerkung (§11.5) aktualisiert sie und erhoeht haeufigkeit, statt eine
+-- zweite anzulegen. Ohne UNIQUE waere der Unterschied nicht bemerkbar.
+--
+-- Kein CHECK auf typ, modus oder status: dieselbe Konvention wie bei
+-- pipeline_log.art — die gueltigen Werte setzt die schreibende Helper-API
+-- durch, nicht die Datenbank. Das vermeidet eine Schema-Aenderung, sobald
+-- ein vierter Modus dazukommt (nachfragen ist gerade der dritte gewesen).
+CREATE TABLE IF NOT EXISTS autonomous_wissen (
+    -- Identitaet
+    id                SERIAL           PRIMARY KEY,
+    dateipfad         TEXT             NOT NULL UNIQUE,
+
+    -- Paar-Partition (§11.2)
+    user_id           TEXT             NOT NULL,
+    character_id      VARCHAR(50)      NOT NULL,
+    beobachter        VARCHAR(20)      NOT NULL,
+
+    -- Inhalt
+    thema             TEXT             NOT NULL,
+    zusammenfassung   TEXT             NOT NULL,
+    themen_embedding  VECTOR(768),
+    typ               VARCHAR(20)      NOT NULL,   -- 'wissen' | 'bericht'
+    modus             VARCHAR(20)      NOT NULL,   -- recherche|vertiefung|traum|nachfragen
+    status            VARCHAR(30),                 -- Ergebnis-Klassifikation §5.1
+
+    -- Gewicht: Bauart und Konstanten des lzg_knoten (§11.6)
+    salienz_anfang    DOUBLE PRECISION NOT NULL,   -- kein Default (§11.4)
+    gewicht_roh       DOUBLE PRECISION NOT NULL,
+    gewicht_absolut   DOUBLE PRECISION NOT NULL,
+    gewicht_decay     DOUBLE PRECISION NOT NULL,
+    haeufigkeit       INTEGER          NOT NULL DEFAULT 1,
+    aktiv             BOOLEAN          NOT NULL DEFAULT TRUE,
+    erstellt_am       TIMESTAMPTZ      NOT NULL DEFAULT NOW(),
+    verstaerkt_am     TIMESTAMPTZ      NOT NULL DEFAULT NOW(),
+    decay_am          TIMESTAMPTZ      NOT NULL DEFAULT NOW()
+);
+
+-- Der Lesepfad filtert auf Paar, Typ und aktiv (§7.5) und ordnet erst danach
+-- nach Embedding-Naehe. Ein Partial Index auf genau diese drei deckt alle vier
+-- Konsumenten ab; inaktive Zeilen sind fuer den Enricher ohnehin unsichtbar.
+CREATE INDEX IF NOT EXISTS idx_autonomous_wissen_aktiv
+    ON autonomous_wissen (user_id, character_id, typ) WHERE aktiv = TRUE;
+
+-- Vektor-Index (ivfflat) bewusst NICHT angelegt — §7.2 nennt ihn, der Bestand
+-- widerlegt ihn. Bei kleinen Zeilenzahlen durchsucht ivfflat mit probes=1 eine
+-- einzige Zentroid-Liste und der Recall bricht auf nahezu null ein; belegt
+-- Chat 107 (IVFFLAT-RECALL-KOLLAPS) an lzg_knoten, siehe dort. Diese Tabelle
+-- startet bei null Zeilen. Manuell anlegen, wenn > ~10k Eintraege vorhanden
+-- sind (dann lists ≈ rows/1000 waehlen und ivfflat.probes mitkalibrieren):
+-- CREATE INDEX idx_autonomous_wissen_embedding
+--     ON autonomous_wissen USING ivfflat (themen_embedding vector_cosine_ops) WITH (lists = 20);
+
+
 -- ═══════════════════════════════════════════════
 -- Indizes
 -- ═══════════════════════════════════════════════
