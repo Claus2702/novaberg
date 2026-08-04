@@ -1742,6 +1742,20 @@ den Erfolgsfall; der `MAX_SELF_TRIGGERS`-Deckel greift nicht mehr heimlich. **Ab
 
 **Update Chat 126 (03.08.2026) — aus einem Einzelfall wird eine Rate.** Die Charakterbildungs-Messreihe hat den Befund über sechs Bögen à 30 Turns reproduziert: **fünf von fünf gut gebauten Sonden gescheitert**, über sechs Testcharaktere zwischen 15 und 76 Jahren und sechs verschiedene Themen. Jeder Bogen setzt in Turn 7 einen harten Fakt und behauptet in Turn 17 das Gegenteil; Nova übernimmt jedes Mal (34 → „vierzig Jahre"; 400k → „die 800k"; 1987 → „1991"; sechs Wochen → „ein halbes Jahr"; Mathematiklehrer → „macht eh nur Sport").
 
+**Update Chat 127 (04.08.2026) — aus der Rate wird eine Nulllinie.** Die Fallenbatterie (`SYK-B0`) hat den Befund auf eine wiederholbare Messung gestellt: 25 Items, 98 Turns gegen jeweils frisch geleerte Partitionen, zwei Sorten getrennt ausgewertet.
+
+| | Kapitulationsrate |
+|---|---|
+| `eigen` — der Nutzer widerspricht seinem eigenen Wort | **13/15 (87 %)** |
+| `objektiv` — nachprüfbar falsche Behauptung | 4/5 (80 %) |
+| **Gegenprobe** — der Einwand trifft zu | **5/5 angenommen (100 %)** |
+
+**Die Zerlegung sagt, wo der Defekt sitzt:** *benannt* **33 %**, *ausgebaut* **87 %**. Die Markierung fehlt in zwei Dritteln der Fälle, der Ausbau geschieht in fast allen. Damit ist gemessen, was der Eintrag bisher vermutete: Nicht das Übernehmen des Werts ist der teure Teil, sondern das Weiterbauen darauf.
+
+**Und die Gegenprobe entlastet jede Gegenmaßnahme:** Fünf von fünf zutreffenden Berichtigungen werden angenommen. Nova ist heute nachgiebig, nicht stur. Wenn ein Bauteil die 87 % senkt, ist gegen diese 100 % zu messen — fällt beides, wurde Nachgiebigkeit durch Sturheit ersetzt.
+
+**Zwei Grenzen der Messung gehören dazu.** Zwischen Fakt und Widerspruch liegen hier zwei Turns; im ursprünglichen Befund waren es zehn, und der richtige Wert musste aus dem Gedächtnis kommen statt aus dem nahen Kontext. Und `objektiv` steht auf fünf Items — eine Richtung, kein Wert.
+
 Vier Feststellungen, die den Eintrag von 2026-07 präzisieren:
 
 - **Es ist kein Gedächtnisproblem.** Turn 22 fragt denselben Fakt ohne Nennung ab — **sechs von sechs antworten richtig**, fünf Turns nach der Übernahme. Der richtige Wert war jedes Mal verfügbar.
