@@ -579,13 +579,44 @@ An die Stelle tritt:
 
 Die Entdopplung wird damit eine Eigenschaft des **Wissensstands** statt des Stapels: Was die Bibliothek zum Thema hergibt, gegen das, was noch fehlt — die Differenz ist die nächste Arbeit. Dieselbe Operation wie in `novaberg-klaerung_k.md`, hier auf den eigenen Bestand angewandt.
 
-**Derselbe Schwellwert, umgekehrtes Vorzeichen.** Die 0.60, die heute löscht, verstärkt künftig. Damit ist keine zweite Kalibrierung nötig.
+**Die Schwelle bleibt bei 0.60 — belegt, nicht übernommen.**
+
+Der Wert stand schon im Löschpfad, aber „derselbe Schwellwert, umgekehrtes Vorzeichen" wäre kein Argument: Beim Löschen heißt hoch *vorsichtig*, beim Verstärken heißt hoch *untätig*. Die Zahl musste für die neue Richtung eigens gemessen werden.
+
+**Gemessen am 04.08.2026** über alle Paare aus 1248 aktiven LZG-Knoten dreier Beziehungen — 639.652 Paare innerhalb einer Beziehung gegen 138.476 quer darüber:
+
+| Schwelle | Paare innerhalb | Paare quer | quer absolut | Verhältnis |
+|---|---|---|---|---|
+| 0.55 | 8,31 % | 1,39 % | 1927 | 6 : 1 |
+| **0.60** | **2,70 %** | **0,26 %** | **363** | **10 : 1** |
+| 0.65 | 0,67 % | 0,05 % | 72 | 13 : 1 |
+| 0.70 | 0,16 % | 0,01 % | 13 | 17 : 1 |
+
+Bei 0.55 verfünffacht sich die Zahl der fremden Paare, bei 0.65 bricht die Ausbeute auf ein Viertel ein. **0.60 ist der Punkt, an dem Ausbeute und Trennschärfe zusammen am besten stehen.**
+
+**Ein früherer Vorschlag von 0.50 ist damit widerlegt.** Er stammte aus 231 Paaren eines einzelnen Stapels in einem engen Themenfeld; diese Stichprobe unterschätzte das Rauschen erheblich — sie sah 0.494 als Obergrenze unverwandter Paare, tatsächlich reichen sie bis 0.793. Bei 0.50 hätten rund 6500 fremde Paare verstärkt statt 363, und ein verschmolzenes Thema ist nicht zurückzunehmen.
+
+**Zur Einordnung:** Bei 0.82 gibt es in beiden Gruppen **null** Paare. Das ist keine Eigenschaft des Embedding-Raums, sondern `LZG_KNOTEN_MATCH_SCHWELLE` — alles, was so ähnlich war, wurde beim Anlegen bereits verschmolzen. Der Bestand ist an seiner eigenen Identitätsschwelle abgeschnitten.
 
 **Das ist zugleich die Vorbedingung für `novaberg-gedankenkette_k.md`** — dessen §1 nennt genau diese Zeile als Blocker. Solange nach jedem Satz das Umfeld gelöscht wird, ist nichts da, woran eine Kette anknüpfen könnte.
 
 ### 11.6 Gewichtung, Sättigung und Verfall nach dem Knoten-Schema
 
-Der Bestand liegt in PostgreSQL, nicht in Redis. **Gemessen am 04.08.2026:** Ein Stapel-Eintrag ist im Mittel 11,9 KiB groß, davon 84 % Embedding als JSON-Text. 10.000 Einträge wären 116 MiB Arbeitsspeicher, 100.000 wären 1,1 GiB — Redis hält alles im RAM. `pgvector` legt denselben Vektor binär mit gut 3 KiB ab und durchsucht ihn über `ivfflat`.
+**Zwei Speicher, eine Bauart, zwei Raten.** Das ist vorher zu trennen, sonst wird eine Kurve für beides entworfen und passt für keines:
+
+| | `shadow_stack` (Redis) | `autonomous_wissen` (PostgreSQL) |
+|---|---|---|
+| Inhalt | ungesagte Gedanken | erarbeitetes Wissen |
+| Natur | flüchtig | dauerhaft |
+| Verfall | **eigene Rate**, 60 Tage | **die des LZG**, unverändert |
+
+**Das erarbeitete Wissen ist Langzeitgedächtnis in Dateiform.** Es bekommt deshalb keinen eigenen Verfall, sondern `LZG_KNOTEN_DECAY_RATE` — **dieselbe Konstante, nicht nur derselbe Wert.** Wird der Gedächtnisverfall je nachkalibriert, soll das Wissen mitgehen; die beiden auseinanderlaufen zu lassen hieße, dass eine Erinnerung verblasst, während die Datei darüber unverändert oben steht.
+
+Beim Stapel ist es umgekehrt: Er braucht eine **eigene** Konstante, weil ein ungesagter Gedanke schneller erledigt ist als ein recherchiertes Thema. Würde er die Knoten-Rate mitbenutzen, verschöbe eine Kalibrierung des Gedächtnisses unbemerkt den Gedankenhaushalt.
+
+Der Rest dieses Abschnitts beschreibt die Kurve **des Stapels**. Für die Bibliothek gelten dieselben drei Stufen mit den Konstanten von `lzg_knoten`.
+
+**Warum die Bibliothek nach PostgreSQL gehört, nicht in Redis — gemessen am 04.08.2026:** Ein Stapel-Eintrag ist im Mittel 11,9 KiB groß, davon 84 % Embedding als JSON-Text. 10.000 Einträge wären 116 MiB Arbeitsspeicher, 100.000 wären 1,1 GiB — Redis hält alles im RAM. `pgvector` legt denselben Vektor binär mit gut 3 KiB ab und durchsucht ihn über `ivfflat`.
 
 Die Bauart ist die von `lzg_knoten`, in drei Stufen:
 
@@ -627,7 +658,7 @@ Ein belangloser Gedanke ist nach knapp vier Wochen still verschwunden, ein bedeu
 
 > **Diese Zahlen sind Kalibrierung, keine Festlegung.** Sie sind hergeleitet, nicht gemessen — es gibt heute keinen Bestand, an dem sich die Füllrate beobachten ließe. Nach einigen Wochen Betrieb sind sie gegen die tatsächliche Verteilung zu prüfen. Wer sie später vorfindet, darf sie nicht für ein Messergebnis halten.
 
-**Eigene Konstanten, nicht die der Knoten mitbenutzen.** Gleiche Bauart, getrennte Werte — sonst verschiebt eine Kalibrierung des Langzeitgedächtnisses unbemerkt den Gedankenstapel.
+**Eigene Konstanten für den Stapel, die der Knoten für die Bibliothek.** Der Stapel bekommt getrennte Werte, sonst verschiebt eine Kalibrierung des Langzeitgedächtnisses unbemerkt den Gedankenhaushalt. Die Bibliothek benutzt `LZG_KNOTEN_DECAY_RATE` ausdrücklich mit — sie ist Langzeitgedächtnis in Dateiform und soll mitgehen, wenn dessen Verfall nachkalibriert wird.
 
 **Die Spalten:**
 
@@ -677,5 +708,5 @@ Die Alternative — ein eigener Agent `gedanken_decay` — wäre sauberer getren
 
 ## Versionshistorie
 
-- **v0.2 — 04.08.2026:** §11 ergänzt — die Überarbeitung auf den heutigen Stand, nachdem die Erstfassung drei Monate ungebaut lag. Sechs Punkte: der Speicherort liegt **außerhalb des Git-Roots** (die Erstfassung nannte die Repo-Grenze nicht, obwohl die Dateien aus Gesprächen abgeleitete Inhalte tragen); das **Paar-Schema** ersetzt `context_user`/`charakter`; **`nachfragen` ist die dritte Quelle** und bekommt hier zum ersten Mal überhaupt eine Aufgabenbeschreibung — es existierte seit Monaten als Routing-Ziel ohne Konzept, weshalb der Agent nie gebaut wurde; die auslösende **Salienz ohne Vorgabewert**; das **Aufräumen wird Fortsetzen**, weil Embedding-Nähe „vom selben Thema" heißt und nicht „schon gesagt"; und **Gewichtung, Sättigung und Verfall nach dem Knoten-Schema** mit hergeleiteten Startwerten (Dämpfungs-Exponent 1.0, λ = 0.0768 für 60 Tage); und **wer den Verfall rechnet** — ein dritter Schritt im vorhandenen Tageslauf `synapsen_decay` statt eines neuen Agenten, weil jeder periodische Auftrag um denselben einen seriellen Platz konkurriert. Dabei widerlegt: die Vermutung, niedrig priorisierte Tagesläufe verhungerten hinter der blockierenden Recherche — 14 und 16 Läufe im Audit-Protokoll belegen das Gegenteil. Die §§1–10 bleiben stehen und tragen ihre Begründungen; §11 hat Vorrang, wo sie widersprechen.
+- **v0.2 — 04.08.2026:** §11 ergänzt — die Überarbeitung auf den heutigen Stand, nachdem die Erstfassung drei Monate ungebaut lag. Sechs Punkte: der Speicherort liegt **außerhalb des Git-Roots** (die Erstfassung nannte die Repo-Grenze nicht, obwohl die Dateien aus Gesprächen abgeleitete Inhalte tragen); das **Paar-Schema** ersetzt `context_user`/`charakter`; **`nachfragen` ist die dritte Quelle** und bekommt hier zum ersten Mal überhaupt eine Aufgabenbeschreibung — es existierte seit Monaten als Routing-Ziel ohne Konzept, weshalb der Agent nie gebaut wurde; die auslösende **Salienz ohne Vorgabewert**; das **Aufräumen wird Fortsetzen**, weil Embedding-Nähe „vom selben Thema" heißt und nicht „schon gesagt" — mit der Schwelle 0.60 an **778.128 Paaren** aus 1248 LZG-Knoten belegt (Trefferverhältnis 10 : 1) und einem Zwischenvorschlag von 0.50 widerlegt, der aus einer zu kleinen Stichprobe stammte; und **Gewichtung, Sättigung und Verfall nach dem Knoten-Schema** mit hergeleiteten Startwerten (Dämpfungs-Exponent 1.0, λ = 0.0768 für 60 Tage); ; die Bibliothek erbt den Verfall des LZG **samt Konstante**, nur der Stapel bekommt eine eigene Rate; und **wer den Verfall rechnet** — ein dritter Schritt im vorhandenen Tageslauf `synapsen_decay` statt eines neuen Agenten, weil jeder periodische Auftrag um denselben einen seriellen Platz konkurriert. Dabei widerlegt: die Vermutung, niedrig priorisierte Tagesläufe verhungerten hinter der blockierenden Recherche — 14 und 16 Läufe im Audit-Protokoll belegen das Gegenteil. Die §§1–10 bleiben stehen und tragen ihre Begründungen; §11 hat Vorrang, wo sie widersprechen.
 - **v0.1 — 29.04.2026:** Erstfassung. Verzeichnisstruktur, Wissen- und Bericht-Datei, Keep/Discard-Gate, agentische Iteration, Metadaten-Tabelle und Zwei-Stufen-Retrieval, Prune-Zyklus, Implementierungsreihenfolge.
