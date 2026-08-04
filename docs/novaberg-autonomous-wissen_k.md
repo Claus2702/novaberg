@@ -1,10 +1,14 @@
 # Novaberg — Autonomes Wissen (Konzept)
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
-**Dokument:** Autonomes Wissensverzeichnis — Recherche, Vertiefung, Traeumen
-**Stand:** 29. April 2026, Chat 70
+**Dokument:** Autonomes Wissensverzeichnis — Recherche, Vertiefung, Nachfragen, Traeumen
+**Stand:** 4. August 2026 (Erstfassung 29. April 2026, Chat 70)
 **Pfad:** novaberg/docs/novaberg-autonomous-wissen_k.md
+**Status:** ⬜ **nicht gebaut.** Die Erstfassung ist drei Monate alt und wurde nie umgesetzt; §11 traegt die Ueberarbeitung auf den heutigen Stand.
 **Quellen:** Chat 70 (autoresearch, Claude Code autoDream, SWE-agent, Letta, Sleep-time Compute Paper)
+**Verwandt:** `novaberg-klaerung_k.md` (woher der Auftrag kommt) · `novaberg-gedankenkette_k.md` (wie er ueber mehrere Zuege traegt) · `novaberg-wissensluecken_k.md` (Themen-Neugier, ein anderer Gegenstand)
+
+> **§11 ist gegenueber §1 bis §10 vorrangig.** Die frueheren Abschnitte beschreiben den Entwurf vom April; wo sie ihm widersprechen, gilt §11. Sie bleiben stehen, weil sie die Begruendungen tragen, die weiterhin gelten.
 
 ---
 
@@ -13,6 +17,8 @@
 RechercheAgent, VertiefungsAgent und Traum-Modus produzieren Wissen. Aktuell geht dieses Wissen auf den Shadow-Stack (Delivery, vergaenglich) und ins KZG (Decay, vergaenglich). Das erarbeitete Wissen verschwindet.
 
 Das `autonomous/`-Verzeichnis ist Novas persistenter Wissensspeicher. Jeder Durchlauf erzeugt bis zu zwei Dateien: eine **Wissen-Datei** (das Was) und eine **Bericht-Datei** (das Wie). Beide sind ueber RAG (Embedding + pgvector) fuer den Enricher abrufbar.
+
+> **Nachgetragen am 04.08.2026:** Es sind **drei** Quellen, nicht zwei — Recherche schoepft aus der Welt, Vertiefung aus dem eigenen Bestand, **Nachfragen aus dem Gegenueber**. Siehe §11.3.
 
 ---
 
@@ -480,3 +486,196 @@ Verwandte Dokumente:
 - Neugier / Traum-Modus: `novaberg-thinking-curiosity_k.md`
 - Drive-System: `novaberg-thinking-drive_k.md`
 - Web-Infrastruktur: `novaberg-tool-web.md`
+
+---
+
+## 11. Überarbeitung vom 4. August 2026
+
+Die Erstfassung ist drei Monate alt und nie gebaut worden. In der Zwischenzeit hat sich die Umgebung an sechs Stellen so verändert, dass der Entwurf ohne Nacharbeit nicht mehr umsetzbar wäre. Dieser Abschnitt hält fest, was heute gilt.
+
+### 11.1 Der Speicherort liegt außerhalb des Git-Roots
+
+```
+~/ki-assistent/
+    novaberg/        ← das Repositorium
+    knowledge/       ← der Wissensspeicher     (neu)
+```
+
+Im Behälter erreichbar über einen Mount:
+
+```yaml
+- ./knowledge:/knowledge:rw
+```
+
+**Das ist keine Ablage-Vorliebe, sondern eine Sicherung.** Die Dateien enthalten Recherchen, die aus Gesprächen abgeleitet sind. Läge das Verzeichnis unter `novaberg/`, veröffentlichte jeder Push die gesammelten Inhalte. Außerhalb des Arbeitsbaums kann `git add` sie nicht erfassen — die Grenze ist dann eine Eigenschaft des Dateisystems und keine Regel, an die sich jemand erinnern muss.
+
+`novaberg-wissensluecken_k.md` §7 nennt dieselbe Bedingung; die Erstfassung dieses Dokuments nannte sie nicht.
+
+**Zwei Nebenbedingungen:** Der Behälter läuft als `root`, die Dateien gehören danach `root` — der Nutzer könnte sie sonst nicht bearbeiten, und ein Obsidian-Fenster darauf ist der halbe Zweck. Und der Mount ist schreibbar, anders als `db`.
+
+**Gemessener Ist-Zustand (04.08.2026):** Der Server sieht heute genau zwei Mounts — `novaberg/server → /app` (rw) und `novaberg/db → /app/db` (ro). Ein Wissensverzeichnis ist ohne Compose-Änderung nicht erreichbar.
+
+### 11.2 Das Paar-Schema ist zwingend
+
+Die Tabelle in §7.2 trägt `context_user` und `charakter`. Verbindlich ist das Tripel:
+
+| Spalte | Bedeutung |
+|---|---|
+| `user_id` | das Subjekt — für wen gearbeitet wurde |
+| `character_id` | das Gegenüber |
+| `beobachter` | wessen Perspektive der Inhalt trägt |
+
+Dieselbe Partitionierung wie KZG, LZG-Knoten, `ziele` und `charakter_hash`. Ein Speicher ohne sie wäre der einzige Bestand, der die Paar-Trennung nicht mitmacht — und die Trennung ist der Grund, warum Novas Wissen über den einen nicht in ein Gespräch mit dem anderen fällt.
+
+### 11.3 Nachfragen ist die dritte Quelle
+
+Der Entwurf kennt `recherche`, `vertiefung` und `traum`. `nachfragen` kommt darin nicht vor — und es kommt in **keinem** Konzept vor. Es existiert seit Monaten als Routing-Ziel, ohne dass je beschrieben wurde, was der Agent tun soll; deshalb ist er nie gebaut worden, und deshalb liegen seine Aufträge unbearbeitet in der Queue.
+
+> **Der Unterschied zwischen den drei ist die Quelle, nicht der Ablauf.**
+>
+> | Modus | füllt die Lücke aus |
+> |---|---|
+> | `recherche` | der **Welt** |
+> | `vertiefung` | dem **eigenen Bestand** |
+> | `nachfragen` | dem **Gegenüber** — weil nur er die Antwort hat |
+
+Der Auftrag kommt aus `novaberg-klaerung_k.md`: Es gibt eine Lücke oder eine Abweichung, sie ist notwendig (Tor 1) und bedeutsam genug (Tor 2). Bei den ersten beiden Modi kann Nova die Antwort selbst beschaffen. Beim dritten nicht.
+
+**Und hier feuert Stufe 4 ohne Turn.** Die Klärungsfrage hängt sonst an einer Nutzeräußerung, die gerade vorliegt. Beim Nachfragen liegt keine vor — Nova eröffnet selbst. Das ist der Punkt, an dem sie von reagierend zu **absichtsvoll** wird: Ein Impuls ist heute ein Fund, der einen passenden Moment sucht; ein Nachfragen ist ein Anliegen, das eine Handlung erzeugt.
+
+**Das Interesse entscheidet, ob sie eröffnet.** Dieselben Speichen wie in `novaberg-klaerung_k.md` §2.2: `lenkungsdrang` und `eigensinn` ziehen hin, `zurueckhaltung` und `gespraechsdistanz` davon weg. Bei hoher Distanz eröffnet sie nicht — und die stillen Stufen laufen trotzdem.
+
+**Was dabei entsteht, ist Wissen wie bei den anderen:** was gefragt wurde, was zurückkam, was daraus folgt. Es fällt in dieselbe Bibliothek.
+
+**Offen:** Eine Eröffnung ohne Anlass ist ein Eingriff. Die vorhandene Zustellung hat dafür Cooldown, Burst-Grenze und Verträglichkeitsprüfung und schweigt bei Stress ganz. Ob ein bedeutsames Anliegen diese Sperren brechen darf, ist **nicht entschieden**.
+
+### 11.4 Die auslösende Salienz ist die Salienz des Ergebnisses
+
+`salienz FLOAT DEFAULT 0.0` in §7.2 ist genau das Muster, das der Standard verbietet: ein Vorgabewert, der aussieht wie ein Messwert.
+
+Der Wert ist beim Schreiben immer bekannt — er hat den Vorgang ausgelöst. Also:
+
+```sql
+salienz_anfang  DOUBLE PRECISION NOT NULL,   -- kein DEFAULT
+```
+
+Ein Schreiber ohne Salienz scheitert laut, statt eine Null abzulegen. Dieselbe Bauart wie `F-ZIEL-1`.
+
+**Belegt, dass die Gefahr real ist:** In der Shadow-Queue tragen am 04.08.2026 **49 von 650** Aufträgen Priorität `0.0` — obwohl sie das Hochsalienz-Tor passiert haben. Der Produzent reicht den Wert nicht durch. Auf dem Shadow-Stack ist es eine Stufe schlimmer: `stack_push()` nimmt Salienz gar nicht erst entgegen, das Feld existiert nicht.
+
+### 11.5 Aufräumen wird Fortsetzen
+
+Heute räumt `shadow_delivery.py` unmittelbar nach jeder Zustellung alle Stapel-Einträge ab, deren Embedding dem Gesagten mit Kosinus ≥ 0.60 nahe kommt. Das Log nennt sie `Duplikat`.
+
+> **Die Behauptung dahinter ist falsch.** Kosinus ≥ 0.60 heißt „handelt vom selben Thema". Der Code liest das als „ist schon gesagt". Aus dem ersten folgt das zweite nicht — die gelöschten Einträge sind nicht Duplikate, sondern **der Rest des Themas**, und er war nie ausgesprochen.
+
+An die Stelle tritt:
+
+| | heute | künftig |
+|---|---|---|
+| Zweiter Gedanke zum Thema | gelöscht | **Verstärkung** des vorhandenen |
+| Wiederholungsschutz | „ich habe etwas Ähnliches gesagt" | „das steht schon in der Datei" |
+| Thema nach dem Sprechen | verbrannt | offen, mit vermerktem Fortschritt |
+
+Die Entdopplung wird damit eine Eigenschaft des **Wissensstands** statt des Stapels: Was die Bibliothek zum Thema hergibt, gegen das, was noch fehlt — die Differenz ist die nächste Arbeit. Dieselbe Operation wie in `novaberg-klaerung_k.md`, hier auf den eigenen Bestand angewandt.
+
+**Derselbe Schwellwert, umgekehrtes Vorzeichen.** Die 0.60, die heute löscht, verstärkt künftig. Damit ist keine zweite Kalibrierung nötig.
+
+**Das ist zugleich die Vorbedingung für `novaberg-gedankenkette_k.md`** — dessen §1 nennt genau diese Zeile als Blocker. Solange nach jedem Satz das Umfeld gelöscht wird, ist nichts da, woran eine Kette anknüpfen könnte.
+
+### 11.6 Gewichtung, Sättigung und Verfall nach dem Knoten-Schema
+
+Der Bestand liegt in PostgreSQL, nicht in Redis. **Gemessen am 04.08.2026:** Ein Stapel-Eintrag ist im Mittel 11,9 KiB groß, davon 84 % Embedding als JSON-Text. 10.000 Einträge wären 116 MiB Arbeitsspeicher, 100.000 wären 1,1 GiB — Redis hält alles im RAM. `pgvector` legt denselben Vektor binär mit gut 3 KiB ab und durchsucht ihn über `ivfflat`.
+
+Die Bauart ist die von `lzg_knoten`, in drei Stufen:
+
+```
+gewicht_roh      Anfangs-Salienz + Boost je Verstärkung      wächst linear
+     ↓  cap · sin(min(roh/cap, 1) · π/2) ^ exp
+gewicht_absolut  gedämpft, gesättigt bei cap                 Sättigung
+     ↓  · e^(−λ · Tage seit verstaerkt_am)
+gewicht_decay    der effektive Wert                          Zeit
+     ↓  < min_gewicht
+aktiv = FALSE    inaktiv, nicht gelöscht                     reaktivierbar
+```
+
+**Die Sinus-Kurve sättigt, statt zu kappen.** Der erste Gedanke zu einem Thema zählt viel, der fünfzigste kaum noch — ein Dauerthema wächst nicht unbegrenzt und hebelt den Verfall nicht aus.
+
+**Die Startwerte, hergeleitet:**
+
+| Größe | Wert | Herleitung |
+|---|---|---|
+| `cap` | 10.0 | wie `lzg_knoten` |
+| `min_gewicht` | 0.1 | wie `lzg_knoten` |
+| **Dämpfungs-Exponent** | **1.0** | flacher als die 0.5 der Knoten: ein einzelner Gedanke landet bei 1,56 statt 3,96, die Kurve ist in der unteren Hälfte fast linear |
+| **Decay-Rate λ** | **0.0768 / Tag** | `ln(cap / min_gewicht) / 60` — ein gesättigtes Thema fällt nach **60 Tagen** inaktiv. Halbwertszeit 9,0 Tage |
+| Reinforcement-Boost | 0.1 | wie `lzg_knoten` |
+
+Zum Vergleich: Die Knoten laufen mit λ = 0.0015 und 462 Tagen Halbwertszeit. Ein Gedankenstapel ist kein Langzeitgedächtnis; die Rate ist hier 51-mal höher.
+
+**Was sich daraus ergibt:**
+
+| `gewicht_roh` | `absolut` (exp 1.0) | inaktiv nach |
+|---|---|---|
+| 0,5 | 0,78 | 26,8 Tagen |
+| 1,0 | 1,56 | 35,8 Tagen |
+| 3,0 | 4,54 | 49,7 Tagen |
+| 5,0 | 7,07 | 55,5 Tagen |
+| 10,0 | 10,00 | 60,0 Tagen |
+
+Ein belangloser Gedanke ist nach knapp vier Wochen still verschwunden, ein bedeutsames Dauerthema hält zwei Monate ab der letzten Berührung. Niemand muss dafür sortieren.
+
+> **Diese Zahlen sind Kalibrierung, keine Festlegung.** Sie sind hergeleitet, nicht gemessen — es gibt heute keinen Bestand, an dem sich die Füllrate beobachten ließe. Nach einigen Wochen Betrieb sind sie gegen die tatsächliche Verteilung zu prüfen. Wer sie später vorfindet, darf sie nicht für ein Messergebnis halten.
+
+**Eigene Konstanten, nicht die der Knoten mitbenutzen.** Gleiche Bauart, getrennte Werte — sonst verschiebt eine Kalibrierung des Langzeitgedächtnisses unbemerkt den Gedankenstapel.
+
+**Die Spalten:**
+
+```sql
+salienz_anfang    DOUBLE PRECISION NOT NULL,   -- kein Default (§11.4)
+gewicht_roh       DOUBLE PRECISION NOT NULL,
+gewicht_absolut   DOUBLE PRECISION NOT NULL,
+gewicht_decay     DOUBLE PRECISION NOT NULL,
+haeufigkeit       INTEGER          NOT NULL DEFAULT 1,
+verstaerkt_am     TIMESTAMPTZ      NOT NULL DEFAULT NOW(),
+decay_am          TIMESTAMPTZ      NOT NULL DEFAULT NOW(),
+aktiv             BOOLEAN          NOT NULL DEFAULT TRUE
+```
+
+**`gewicht_decay` wird materialisiert, nicht bei Abfrage gerechnet.** Ein Stapellauf schreibt Spalte und `decay_am`, die Lesepfade lesen die Spalte — wie bei `run_node_decay`. Das steht hier ausdrücklich, weil dieselbe Aussage an drei Stellen im Bestand falsch dokumentiert ist.
+
+### 11.7 Wer den Verfall rechnet
+
+`gewicht_decay` wird materialisiert (§11.6), also braucht es einen Lauf, der es tut. **Der Weg dafür existiert und ist erprobt** — es wird kein neuer Mechanismus gebaut.
+
+**Gemessen am 04.08.2026:** Die periodischen Aufgaben liegen als Redis-Hashes unter `pixie:schedule:{name}` mit `interval`, `priority` und `next_run`. Der Tageslauf `synapsen_decay` (Intervall 86400 s, Priorität 0.2) steht mit **14 Läufen** im `hintergrund_log`, `ziel_decay` mit **16**, beide zuletzt am Vorabend. Keine der sechs periodischen Aufgaben war zum Messzeitpunkt überfällig.
+
+> **Ein naheliegender Verdacht ist damit widerlegt.** Man könnte erwarten, dass die niedrig priorisierten Tagesläufe hinter der blockierenden Recherche verhungern — so wie es der Fund vom 27.07.2026 für den CharakterAgenten belegt. Sie tun es nicht. **Der Engpass des einen seriellen Platzes trifft, was oft laufen soll, nicht was selten laufen muss:** Ein Tagesintervall findet auch dann eine Lücke, wenn der Takt über Stunden übersprungen wird.
+
+**Der Verfall wird ein dritter Schritt des vorhandenen Tageslaufs.** `synapsen_decay` tut heute schon zweierlei — Knoten-Decay und `pipeline_log`-TTL-Aufräumen. Ein dritter Schritt darin kostet **keinen zusätzlichen Platz im Heartbeat**, und das ist bei einem einzigen seriellen Platz das ausschlaggebende Argument: Jeder neue periodische Auftrag konkurriert mit den bestehenden um dieselbe Stelle.
+
+Die Alternative — ein eigener Agent `gedanken_decay` — wäre sauberer getrennt und teurer im Takt. Sie bleibt die richtige Wahl, falls der Verfall später eine andere Frequenz braucht als der Knoten-Verfall.
+
+**Der Preis der gewählten Variante ist benannt:** Ein Lauf, der drei Dinge tut, färbt bei einem Fehlschlag im dritten den ganzen Auftrag rot. Dagegen hilft, was die Norm ohnehin verlangt — **je Schritt ein eigener `hintergrund_log`-Eintrag** mit `gestartet` / `erledigt` / `fehler`, keine Sammelmeldung. Erst dann ist im Nachhinein unterscheidbar, ob der Verfall lief und nichts fand, oder ob er gar nicht lief.
+
+### 11.8 Was offen bleibt
+
+**Sind Priorität und Salienz zwei Größen oder eine?** Die Shadow-Queue schreibt `prioritaet`, der Dispatcher liest `salienz` — zwei Funde vom 27.07.2026 beschreiben das als Defekt. Bevor eine zweistufige Sortierung „erst Priorität, dann Bedeutung" in eine Tabellendefinition eingeht, muss feststehen, ob sich die beiden überhaupt unterscheiden. Sollen sie es: **Priorität = wie dringend, Salienz = wie bedeutsam.**
+
+**Woran wird eine Verstärkung erkannt?** Vorschlag: an derselben Embedding-Nähe von 0.60, die heute löscht. Das ist eine Entscheidung, keine Ableitung.
+
+**Darf ein bedeutsames Anliegen den Zustellungs-Cooldown brechen?** Siehe §11.3.
+
+**Braucht der Verfall später eine eigene Frequenz?** Dann wird aus dem dritten Schritt ein eigener Agent (§11.7).
+
+**Braucht der Stapel zusätzlich eine harte Obergrenze?** Mit dem Verfall greift sie im Normalbetrieb nie. Als Netz gegen einen Fehler im Produzenten wäre sie trotzdem sinnvoll — die Größenordnung folgt aus §11.6, nicht aus einer runden Zahl.
+
+---
+
+
+---
+
+## Versionshistorie
+
+- **v0.2 — 04.08.2026:** §11 ergänzt — die Überarbeitung auf den heutigen Stand, nachdem die Erstfassung drei Monate ungebaut lag. Sechs Punkte: der Speicherort liegt **außerhalb des Git-Roots** (die Erstfassung nannte die Repo-Grenze nicht, obwohl die Dateien aus Gesprächen abgeleitete Inhalte tragen); das **Paar-Schema** ersetzt `context_user`/`charakter`; **`nachfragen` ist die dritte Quelle** und bekommt hier zum ersten Mal überhaupt eine Aufgabenbeschreibung — es existierte seit Monaten als Routing-Ziel ohne Konzept, weshalb der Agent nie gebaut wurde; die auslösende **Salienz ohne Vorgabewert**; das **Aufräumen wird Fortsetzen**, weil Embedding-Nähe „vom selben Thema" heißt und nicht „schon gesagt"; und **Gewichtung, Sättigung und Verfall nach dem Knoten-Schema** mit hergeleiteten Startwerten (Dämpfungs-Exponent 1.0, λ = 0.0768 für 60 Tage); und **wer den Verfall rechnet** — ein dritter Schritt im vorhandenen Tageslauf `synapsen_decay` statt eines neuen Agenten, weil jeder periodische Auftrag um denselben einen seriellen Platz konkurriert. Dabei widerlegt: die Vermutung, niedrig priorisierte Tagesläufe verhungerten hinter der blockierenden Recherche — 14 und 16 Läufe im Audit-Protokoll belegen das Gegenteil. Die §§1–10 bleiben stehen und tragen ihre Begründungen; §11 hat Vorrang, wo sie widersprechen.
+- **v0.1 — 29.04.2026:** Erstfassung. Verzeichnisstruktur, Wissen- und Bericht-Datei, Keep/Discard-Gate, agentische Iteration, Metadaten-Tabelle und Zwei-Stufen-Retrieval, Prune-Zyklus, Implementierungsreihenfolge.
