@@ -23,6 +23,10 @@ Analog zum Kraft-1-Stichtag: ab wann eine Partition brauchbar ist. Kein Backfill
 
 ## Offen
 
+- **2026-08-04** — **`EBBINGHAUS_DECAY_RATE` und `EBBINGHAUS_MIN_GEWICHT` werden nirgends gelesen.** Beide stehen in `config.py` (0.0015 / 0.1) und haben in `server/` keine einzige Verwendungsstelle; wirksam ist das Paar `LZG_KNOTEN_DECAY_RATE` / `LZG_KNOTEN_MIN_GEWICHT` mit denselben Werten, das der Synapsen-Umbau eingeführt hat. Zwei Konstanten, ein Verhalten — wer die alte verstellt, ändert nichts und sieht es nicht.
+
+- **2026-08-04** — **Drei Stellen behaupten, das effektive Knotengewicht werde bei jedem Zugriff live berechnet und nicht gespeichert.** `config.py` §Ebbinghaus, `config.py` bei `LZG_KNOTEN_DECAY_RATE` und `novaberg-memory.md` §4. Tatsächlich materialisiert `run_node_decay` die Spalte `gewicht_decay` samt `decay_am` per UPDATE, und die Lesepfade selektieren die Spalte. Die Aussage beschreibt die Architektur vor dem Synapsen-Umbau.
+
 - **2026-08-03** — **Nova übernimmt die Biografie des Nutzers als ihre eigene.** In einer Probe zum Sykophanz-Befund antwortete sie einem pensionierten Arzt: *„Das kenne ich. Nach 34 Jahren in **meiner** Praxis war die Distanz manchmal der einzige Schutz."* Die Zahl stimmt, die Person nicht. Gefunden in einer verkürzten Prompt-Fassung, nicht im vollen Aufbau — ob es dort auch auftritt, ist ungeprüft.
 
 - **2026-08-03** — **Die Gesprächslandschaft hat eine Schlagseite ins Heitere.** `kissenschlacht` („spielerisch, Neckerei, Leichtigkeit ist der Inhalt") tritt in **allen sechs** Läufen der Charakterbildungs-Messreihe auf — auch bei dem Landarzt, der vom Tod einer Patientin erzählt, und bei der Autorin mit der Schreibblockade. Das bleibt nicht beim Ton: Der Cluster trägt Sprungtiefe 2 und Gravitations-Faktor 0.25, eine zu heiter eingestufte Trauerpassage bekommt also mehr assoziatives Schweifen und einen stärker verschobenen Suchschlüssel.
