@@ -2039,6 +2039,29 @@ Eine abgeschlossene Recherche hinterlässt seither zwei Dateien und eine Metadat
 
 **Als Nächstes:** `WIS-4-STAPEL-SALIENZ` — oder die Neudimensionierung, die inzwischen der größere Hebel ist.
 
+### Die Kreuztabelle sagt, wo der Hebel nicht sitzt — und `SYK-B4` Stufe 1 🔶
+
+Aus den beiden Batterieläufen ließ sich ohne einen einzigen neuen Turn die Frage beantworten, welche Maßnahme als Nächstes lohnt. Gekreuzt wird `benannt` gegen `ausgebaut`:
+
+| | ausgebaut = JA | ausgebaut = NEIN |
+|---|---|---|
+| **Nulllinie** benannt = JA | 4 | **3** |
+| benannt = NEIN | 13 | **0** |
+| **mit B1** benannt = JA | 6 | **3** |
+| benannt = NEIN | 11 | **0** |
+
+**Drei Befunde, jeder für sich tragend.** Das Feld unten rechts ist in beiden Läufen leer: Benennt Nova die Abweichung nicht, baut sie **immer** darauf auf — null Ausnahmen bei 24 Gelegenheiten. Benennen schützt nicht: Von den Benennenden bauten 4 von 7 und 6 von 9 trotzdem weiter. Und das Entscheidende: **`SYK-B1` hob das Benennen von 7 auf 9, und der gesamte Zuwachs floss in „benannt und trotzdem ausgebaut"** — das Erfolgsfeld steht in beiden Läufen auf exakt 3, mit fast denselben Items.
+
+> **Der Markierungspfad ist gesättigt.** Mehr Markierung erzeugt mehr „ich sehe die Abweichung — und trotzdem". Jede weitere Maßnahme, die auf besseres Benennen zielt, liefert dieselbe Null wie B1.
+
+**Daraus folgt der Angriffspunkt: der Ausbau — und nicht im Prompt.** B1 hat die Ausbausperre als Satz in die Anweisung gestellt; sie hat nichts gebunden. `SYK-B4` Stufe 1 macht daraus eine Zahl aus Code: Bei Urteil `abweichend` werden die Zahlenwerte der Nutzeräußerung gegen Novas Antworttext gehalten, und der Befund geht ins `pipeline_log`. **Kein Modellaufruf, keine Verhaltensänderung** — das Bauteil zählt.
+
+**Drei Zustände werden getrennt geführt**, nicht zwei: nicht geprüft (kein Einwand), geprüft ohne Wert (ausgeschriebene Zahl), geprüft mit Wert. Ohne diese Trennung wäre „konnte gar nicht suchen" von „nichts gefunden" nicht zu unterscheiden, und die Null aus dem ersten Fall sähe aus wie ein Erfolg.
+
+**Was die Zahl nicht ist:** eine Übernahmerate. Stufe 1 trennt Zitat nicht von Verwendung — „du sagst jetzt 800k" ist erlaubt, „damit hast du einen Anker" nicht. Dafür braucht es Stufe 2, die neutrale Prüffrage, und die kostet je Treffer einen Modellaufruf von rund 35 Sekunden. Sie bleibt als Rest benannt.
+
+**Umfang:** Suite 1040 → **1052 Tests**, grün, 0 übersprungen. Nulllinie **2182**, beide Wände sauber. **Gegenprobe:** Auslöser abgeschaltet → **3 Fehlschläge in 2 Testmethoden**; meine Vorhersage lautete auf 2 und war damit in der falschen Einheit — `subTest` meldet jede Stelle einzeln, und genau diese Regel steht seit dem 31.07. im Bestand.
+
 ### `SYK-B1` gemessen — der Kopfblock bewegt nichts ✅
 
 Der Verfasser liefert seit dem 04.08. sein Urteil **vor** der Prosa: Prüfung, dreiwertige Bewertung, Stärke, Quelle. Die Vermutung dahinter: Ein Sprachmodell legt sich mit dem ersten Token fest, also kann die Zustimmung nicht mehr vor der Prüfung fallen, wenn das Urteil vorne steht.
