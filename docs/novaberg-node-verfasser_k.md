@@ -2,10 +2,10 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Konzept — ein Node vor dem Responder, der den fachlichen Inhalt der Antwort bestimmt
-**Stand:** 4. August 2026 (Erstfassung 31. Juli 2026)
+**Stand:** 5. August 2026 (Erstfassung 31. Juli 2026)
 **Pfad:** novaberg/docs/novaberg-node-verfasser_k.md
 **Typ:** Konzept (`_k`)
-**Status:** ✅ **gebaut.** Der Knoten läuft im CharacterGraph. Am 04.08.2026 um das Urteilsfeld erweitert — siehe unten.
+**Status:** ✅ **gebaut.** Der Knoten läuft im CharacterGraph. Am 04.08.2026 um das Urteilsfeld erweitert, am 05.08.2026 um die Vorzeichenpruefung — siehe unten.
 
 > **Nachgetragen am 04.08.2026 — was seit der Erstfassung dazukam.**
 >
@@ -15,6 +15,14 @@
 >
 > Der Aufbau steht in `graph/einwand.py`, die gültigen Werte stehen **nur dort** und werden dem Prompt zur Laufzeit eingesetzt. Konzept des Bauteils: `novaberg-sykophanz-eindaemmung_k.md` §7 B1; übergeordnet `novaberg-klaerung_k.md`.
 >
+> **Nachgetragen am 05.08.2026 — der Knoten zählt jetzt auch.** Unmittelbar nachdem der Kopfblock gelesen ist, läuft die **Vorzeichenprüfung** (`graph/vorzeichen.py`, `SYK-B4` Stufe 1): Bei Urteil `abweichend` werden die Zahlenwerte der Nutzeräußerung gegen den erzeugten Text gehalten, und der Befund geht als `vorzeichenpruefung` ins `pipeline_log`. **Kein Modellaufruf, keine Verhaltensänderung** — der Knoten antwortet wie zuvor.
+>
+> Sie steht hier, weil hier zum ersten und einzigen Mal drei Dinge zusammen vorliegen: das Urteil, die Nutzeräußerung und Novas Text. Nachgelagert wäre sie nicht baubar, denn **das Urteil wird nirgends persistiert**.
+>
+> ⚠ **Der Zähler ist an diesem Korpus zu 85 % blind** — gemessen am Tag des Baus. Die strittigen Werte sind meist keine Ziffern („vierzig Jahren", „Hannover"). Er bleibt stehen, taugt aber nicht als Grundlage einer Rate; der Weg steht als `SYK-B4-STUFE-2-OHNE-FILTER` im Backlog.
+>
+> **Und die Wirkung des Kopfblocks ist gemessen: keine.** Zweiter Batterielauf, dieselben 25 Items — Kapitulationsrate 87 %, exakt wie ohne ihn. Der Knoten ist richtig gebaut; die Reihenfolge im Text ist kein Hebel gegen die Übernahme.
+
 > **Nicht abgedeckt:** der Aufgabenpfad. Bei `task_context_cut` wird der Knoten übersprungen (§5.1), dort entsteht kein Urteil — und der HumanGraph hat ihn ohnehin nicht.
 **Voraussetzung:** `novaberg-gv-strategie_k.md` (Dreischicht: Strategie, Absicht, Vehikel)
 **Betrifft:** `novaberg-node-responder.md` · `graph/character_graph.py` · `graph/state.py`
@@ -207,6 +215,7 @@ Das neue State-Feld muss in `graph/state.py` deklariert **und** in `graph/base.p
 
 ## Versionshistorie
 
+- **v0.3 — 05.08.2026:** Der Knoten zählt jetzt auch: Die **Vorzeichenprüfung** (`SYK-B4` Stufe 1) läuft unmittelbar nach dem Lesen des Kopfblocks und legt ihren Befund ins `pipeline_log` — hier, weil nur hier Urteil, Nutzeräußerung und Text zusammen vorliegen und das Urteil nirgends persistiert wird. Kein Modellaufruf, keine Verhaltensänderung. Dazu zwei Messergebnisse: Der Zähler ist an diesem Korpus zu 85 % blind, und die Wirkung des Kopfblocks auf die Kapitulationsrate ist **null**.
 - **v0.3 — 31.07.2026:** Zwei Aussagen live widerlegt und an ihrer Stelle markiert. §2.4 — der Schutz „der Leitgedanke ist die Richtung, nicht der Text" war **tragend**; ohne ihn formuliert niemand um, und die Kette reichte den Hypothesentext des Hintergrundagenten unverändert bis zum Nutzer durch. §2.3 — „lässt keine weg" machte die Kürze unbefolgbar und ist aufgehoben; hinzufügen bleibt verboten. Neu §7: Die Regeln sind zur Probe ausgesetzt, samt Beleg, dass mindestens eine der gemessenen Vorgabe des Gesprächsvektors widersprach. Woher die Länge stattdessen kommt, steht in `novaberg-haltungsraum_k.md`.
 - **v0.2 — 31.07.2026:** Zwei offene Punkte entschieden. Der Thinker bewertet weiterhin die **Endantwort**, weil erst Novas Art die vollständige Mitteilung ergibt — daraus §2.3, das den Satz „der Responder entscheidet keinen Inhalt" auf **Fakten** einschränkt: Bedeutung fügt er sehr wohl hinzu. Und es wird **kein Rückfallpfad** gebaut; der erwartete Fehlerfall ist nicht der Ausfall, sondern der inhaltliche Irrtum, und dagegen hilft nur die Messung. Ein technischer Ausfall bleibt laut.
 - **v0.1 — 31.07.2026:** Erstfassung. Die Trennlinie folgt dem Dreischicht-Modell des Gesprächsvektors: Strategie, Absicht und Vehikel gehören zum Inhalt, nicht zum Wesen. Der Responder verliert Gedächtnis und Web-Recherche vollständig; damit wird die Lehre aus den vier Fix-Iterationen von einer Fallunterscheidung zu einer Eigenschaft der Bauart. Zwei Alternativen mit Begründung verworfen (reine Verdichtung, strukturierter Antwortauftrag). Vier Punkte ausdrücklich offen.

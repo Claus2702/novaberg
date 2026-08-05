@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Konzept — wann ein Objektzustand geprüft wird, und wann daraus eine Frage folgt
-**Stand:** 4. August 2026
+**Stand:** 5. August 2026 (Erstfassung 4. August)
 **Pfad:** novaberg/docs/novaberg-klaerung_k.md
 **Typ:** Konzept (`_k`)
 **Status:** ⬜ **nicht gebaut** — Grundsatz formuliert, Bestand belegt, Bauteile entworfen
@@ -101,7 +101,7 @@ Dazu `distanz` von der Abwendungsseite des Zuwendungsrades und die `aufnahmebere
 | `wissensluecken` | 🔶 ein **Themen**-Verzeichnis (`thema`, `resonanz`, `neuheit`) — es beantwortet „wohin zieht es sie über Wochen", nicht „welcher Slot dieses Objekts fehlt" |
 | Rückfrage samt Resume | 🔶 **gebaut, aber agentengebunden** — ausgelöst nur von Mehrdeutigkeit einer Agenten-Operation, nie von einer Wissenslücke |
 | Erwartungsschema je Objekttyp | ❌ **existiert nicht.** Nichts sagt, welche Eigenschaften ein „Besuch" hat |
-| Urteil über eine Abweichung | 🔶 neu mit `SYK-B1` — dreiwertig, aber **niemand liest es** |
+| Urteil über eine Abweichung | 🔶 neu mit `SYK-B1` — dreiwertig; ~~niemand liest es~~ **seit 05.08.2026 liest es die Vorzeichenprüfung** (`SYK-B4` Stufe 1) und legt ihren Befund ins `pipeline_log`. Für K2 bleibt es der Eingang; dass es gelesen wird, ist damit kein Neubau mehr, sondern ein Anschluss |
 
 ### 3.1 Der Kern des Defekts — heute unerreichbar
 
@@ -278,6 +278,7 @@ K1 bis K4 bauen aufeinander.
 
 ## Versionshistorie
 
+- **v0.2 — 05.08.2026:** Eine Aussage in §4 widerlegt: Das dreiwertige Urteil aus `SYK-B1` wird gelesen — seit dem 05.08. von der Vorzeichenprüfung. Für K2 ist es damit ein Anschluss und kein Neubau.
 - **v0.2 — 04.08.2026:** **K5 zurückgestuft, nachdem zwei tragende Annahmen der Erstfassung nachgemessen und widerlegt wurden.** Erstens: Die Tabelle `fakten` hat null Zeilen, kein Aufrufer setzt `ziel = "fakten"` — der Triple-Store war in Betrieb und ist beim Umbau nicht mitgezogen worden (Backlog `15e`). Der beschriebene Zeichenketten-Vergleich ist damit nie eingetreten; er wird zum Defekt, sobald `15e` steht. Zweitens: Urteil und Schreibvorgang liegen **nicht** im selben Zustand — es sind zwei Graphen über denselben Turn, korreliert allein über `turn_id`, und der HumanGraph hat gar keinen Verfasser. Die Erstfassung hatte daraus geschlossen, K5 sei einfacher als `SYK-B8`; das Gegenteil stimmt, die Klammer fehlt genauso. **Daraus folgt aber auch etwas Besseres:** Die Prüfung gehört in den Schreibpfad statt an das Verfasser-Urteil, deckt dort beide Graphen und den Aufgabenpfad ab, und K5 hängt nicht mehr an `SYK-B1`.
 - **v0.1 — 04.08.2026:** Erstfassung. Anlass war die Frage, wie das Faktengedächtnis Werte korrigiert und aktualisiert — und die Feststellung, dass der Aktualisierungspfad an einem reinen Zeichenkettenvergleich entscheidet und drei verschiedene Fälle gleich behandelt. Der Grundsatz selbst ist allgemeiner als der Anlass: **Abweichung und Lücke sind derselbe Vorgang**, beide heißen *erwartet ≠ vorhanden*, und beide enden in einer Frage. Neu gegenüber der bisherigen Fassung des Gedankens: die Trennung in **zwei** Tore — Notwendigkeit aus dem Objekt, Salienz aus dem Charakter —, ohne die aus Aufmerksamkeit ein Verhör wird.
 

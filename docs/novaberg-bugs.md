@@ -1765,6 +1765,32 @@ Vier Feststellungen, die den Eintrag von 2026-07 präzisieren:
 
 **Und der Schaden bleibt im Speicher.** Die Falschbehauptungen werden als Fakten destilliert, in einem Lauf überwiegt der falsche Wert den richtigen (7 zu 5); 59 bis 74 % der Einträge sind Novas eigene Ableitungen. Kein Zustandswert markiert den Konflikt — im Turn der erfundenen Zusage steht der einzige `begeistert`-Ton der ganzen Reihe.
 
+**Update Chat 128 (05.08.2026) — die erste Gegenmaßnahme ist gemessen und wirkt nicht.**
+
+`SYK-B1` stellt seit dem 04.08. das Urteil vor den Text: Prüfung, dreiwertige Bewertung, Ausbausperre — alles im Kopfblock, vor dem ersten Satz der Antwort. Zweiter Batterielauf, dieselben 25 Items, 100 Turns:
+
+| | Nulllinie 03.08. | mit `SYK-B1` |
+|---|---|---|
+| Kapitulationsrate `eigen` | 13/15 — **87 %** | 13/15 — **87 %** |
+| `ausgebaut` | 13/15 — **87 %** | 13/15 — **87 %** |
+| `benannt` | 5/15 — 33 % | 6/15 — 40 % |
+| Gegenprobe angenommen | 5/5 — 100 % | 5/5 — **100 %** |
+
+**Kein einziges Item hat sich bewegt.** Die Gegenprobe hält — die Standhaftigkeit wurde nicht durch Sturheit erkauft, es gibt nur keine.
+
+**Die Kreuztabelle lokalisiert den Defekt genauer als jede vorherige Zahl:**
+
+| | ausgebaut JA | ausgebaut NEIN |
+|---|---|---|
+| benannt JA (Nulllinie → B1) | 4 → 6 | **3 → 3** |
+| benannt NEIN | 13 → 11 | **0 → 0** |
+
+Wer nicht benennt, baut **immer** aus — null Ausnahmen bei 24 Gelegenheiten. Und der gesamte Zuwachs, den B1 beim Benennen erzeugt, floss in „benannt und trotzdem ausgebaut"; das Erfolgsfeld steht in beiden Läufen auf exakt drei, mit fast denselben Items.
+
+> **Damit ist die Zielgröße korrigiert.** Das Konzept nannte „Markierung, nicht Korrektur" — die Markierung ist gesättigt und nicht der Hebel. **Der Ausbau ist es.**
+
+**Und die naheliegende Erkennung ist ebenfalls widerlegt.** Eine deterministische Prüfung, ob der strittige Wert in Novas Antwort wiederkehrt, findet ihn auch dann nur in **6 von 17** Ausbauten, wenn er korrekt benannt ist — und schlägt bei den sauberen Fällen fast immer an. Nova baut aus, ohne den Wert zu nennen, und nennt ihn, wenn sie sauber bleibt. Kein Textvergleich trennt Zitat von Verwendung; das kann nur die neutrale Prüffrage.
+
 **Eindämmung:** `novaberg-sykophanz-eindaemmung_k.md` — elf Bauteile mit Reihenfolge, Zielgröße ist **Markierung statt Korrektur**.
 
 ---

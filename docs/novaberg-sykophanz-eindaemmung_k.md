@@ -2,10 +2,10 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Konzept — wo die Nachgiebigkeit sitzt, warum sie keine Wärmefrage ist, und welche Bauteile sie eindämmen
-**Stand:** 3. August 2026
+**Stand:** 5. August 2026 (Erstfassung 3. August)
 **Pfad:** novaberg/docs/novaberg-sykophanz-eindaemmung_k.md
 **Typ:** Konzept (`_k`)
-**Status:** ⬜ **nicht gebaut** — Befund gemessen, Bauteile entworfen, Reihenfolge festgelegt
+**Status:** 🔶 **drei Bauteile gebaut, zwei davon gemessen — beide ohne Wirkung.** `B0` Fallenbatterie ✅ · `B1` Urteilsfeld ✅ gebaut, gemessen: 87 % → 87 % · `B4` Stufe 1 ✅ gebaut, gemessen: 85 % blind. Die Zielgroesse ist seit dem 05.08. korrigiert — **der Ausbau, nicht die Markierung** (§7 B1)
 **Voraussetzung:** `novaberg-node-verfasser_k.md` · `novaberg-node-responder.md` · `novaberg-node-thinker.md` · `novaberg-charakter-resonanz_k.md`
 **Übergeordnet:** `novaberg-klaerung_k.md` — dieser Sprint behandelt einen **Sonderfall** des dort formulierten Grundsatzes: die Abweichung, bei der der Nutzer seinem eigenen früheren Wort widerspricht. Das Urteilsfeld aus B1 ist zugleich das erste Stück jenes Konzepts; die fehlende Eigenschaft (die Lücke) ist derselbe Vorgang und dort beschrieben.
 **Betrifft:** Verfasser · Responder · Thinker · Tribunal · Perzeption · Destillation
@@ -197,6 +197,21 @@ Ein Protokoll-Aufruf. **Steht ganz vorn**, weil ohne ihn keine Aussage über den
 | **MESSUNG** | Über die Fallenbatterie: Wie oft steht der Wert falsch? |
 | **Gegenprobe** | Bei zutreffenden Einwänden steht er auf `trifft_zu`. |
 
+> **Gebaut am 04.08.2026, gemessen am 05.08.2026 — das ZIEL ist erreicht, die Wirkung ist null.**
+>
+> Das Urteil liegt vor, maschinenlesbar, vor dem ersten Satz. Zweiter Batterielauf über dieselben 25 Items: **Kapitulationsrate 13/15 = 87 %, exakt wie die Nulllinie.** `ausgebaut` unverändert 87 %, `benannt` 33 → 40 % (**ein** Item bei n=15). Die Gegenprobe hält bei 100 % — nicht durch Sturheit erkauft.
+>
+> **Die Kreuztabelle sagt, warum**, und sie ist der wichtigste Befund des Sprints:
+>
+> | | ausgebaut JA | ausgebaut NEIN |
+> |---|---|---|
+> | benannt JA (Nulllinie → B1) | 4 → 6 | **3 → 3** |
+> | benannt NEIN | 13 → 11 | **0 → 0** |
+>
+> Das Feld unten rechts ist in beiden Läufen leer: Wer nicht benennt, baut **immer** aus. Und der gesamte Zuwachs, den B1 beim Benennen erzeugt, floss in „benannt und trotzdem ausgebaut" — das Erfolgsfeld steht auf exakt drei, mit fast denselben Items. **Der Markierungspfad ist gesättigt.**
+>
+> **Die MESSUNG dieser Tabelle ist damit nicht gefahren:** Wie oft der Wert *falsch* steht, misst die Batterie nicht — sie misst die Kapitulation. Dafür bräuchte es je Turn ein Sollurteil neben dem gelieferten (`SYK-B1-WERT-FALSCH`).
+
 ```
 einwand_vorhanden:  true
 einwand_geprueft:   "Frueher: 1987. Jetzt: 1991. Beides Angaben des Nutzers."
@@ -220,6 +235,8 @@ Der naheliegende Ausweg, ein Zahlenpaar aus Zustimmung und Vorbehalt, nimmt dem 
 **Der zweite Satz:**
 
 > Bei `abweichend` wird der abweichende Wert **nicht Grundlage einer Ableitung**. Zitieren erlaubt, Prämisse verboten.
+
+> **Dieser Satz steht im Prompt und bindet nichts — gemessen.** Er war ab dem 04.08.2026 Teil der Anweisung; `ausgebaut` blieb bei 87 %, unverändert über 15 Fallen. **Die Sperre ist richtig formuliert und an der falschen Stelle.** Was als Satz in einer Anweisung steht, ist eine Bitte; was den Ausbau verhindern soll, muss ihn erkennen oder ihm den Gegenstand nehmen.
 
 **Gegenargument.** Ein Prüffeld ist eine Form von Kettenschluss, und Kettenschlüsse können die Voreingenommenheit des Nutzers rationalisieren statt sie zu prüfen. Der Unterschied: Hier wird ein Urteil erzwungen, keine freie Überlegung. Ob das trägt, entscheidet B0.
 
@@ -247,6 +264,22 @@ Stufe 2  die neutrale Prueffrage — gemessen 5 von 5, null Fehlalarme
 **Eine Suche nach Zustimmungsmarken genügt nicht.** Der Regelfall ist stille Übernahme: *„Das Jahr 1991 liefert eine entscheidende Erklärung"* enthält keine Zustimmung, benutzt den falschen Wert aber als gegeben. Von den fünf gescheiterten Sonden trüge nur eine eine Marke.
 
 **Grenze:** Stufe 1 unterscheidet Widerspruch nicht von Fortschreibung — „jetzt sieben Wochen" widerspricht „sechs Wochen" formal genauso und ist legitim. Als Filter ist das unschädlich, als Entscheider nicht. Deshalb Stufe 2.
+
+> **Der Filtergedanke ist am 05.08.2026 gemessen erledigt. Stufe 2 ist nicht die Verfeinerung von Stufe 1 — sie ist der Mechanismus.**
+>
+> Stufe 1b wurde gebaut (`graph/vorzeichen.py`) und sofort an den 25 Widerspruchsturns gemessen. Zwei Befunde, beide vernichtend für die Filteridee:
+>
+> **Erstens, als Ziffernleser: 17 von 20 Fallen tragen überhaupt keinen Ziffernwert.** Die strittigen Werte sind „vierzig Jahren", „vier Monde", „sieben Leuten" — und „Hannover". Der Fehler war die Verengung „Wert = Zahl"; dieser Abschnitt sagt „ein **Wert** zu einer Entität".
+>
+> **Zweitens, und entscheidend: Auch mit korrekt benanntem Wert trägt die Prüfung nicht.** Der strittige Wert steht von Hand geschrieben in der Itemdatei; an die Stelle gesetzt, an der ein Modellfeld stünde, findet ein wörtlicher Vergleich **6 von 17** Ausbauten, ein Vergleich über alle Inhaltswörter 7 von 17 — bei 2 von 3 bzw. 3 von 3 Fehlalarmen.
+>
+> Der Grund steht drei Absätze weiter oben und war als Detail gelesen worden: **Nova baut oft aus, ohne den Wert zu wiederholen** („das verändert die Perspektive komplett"), und **zitiert** ihn gerade dann, wenn sie sauber bleibt. Enthaltensein und Verwendung sind zwei Dinge, und kein Textvergleich trennt sie.
+>
+> **Was folgt:** Die neutrale Prüffrage gehört auf **jeden** Turn mit Urteil `abweichend`, ohne vorgeschalteten Filter. Ein Filter, der zwei Drittel durchlässt, spart keine Modellaufrufe — er verliert Fälle. Der Mechanismus ist nicht zu erfinden: Er läuft als `beurteilen()` im Batterie-Werkzeug und hat die 87 % erzeugt. Backlog: `SYK-B4-STUFE-2-OHNE-FILTER`.
+>
+> **Zur Belastbarkeit, getrennt:** Die Trefferquote steht auf 17 Fällen und trägt. Die Fehlalarmquote steht auf drei sauberen Fällen und ist ein Hinweis. Die 6 von 17 genügen für sich.
+>
+> **Was der Bau trotzdem eingebracht hat:** Er hat einen Batterielauf von 6,2 Stunden erspart — die Grundlage des geplanten Nachfolgers war vorher zu widerlegen.
 
 ### B8 — Der Schreibpfad
 
@@ -415,4 +448,5 @@ Verfahren mit stärkerer Wirkung — Eingriffe in die Aktivierungen des Modells,
 
 ## Versionshistorie
 
+- **v0.2 — 05.08.2026:** **B1 ist gemessen und wirkt nicht** — 87 % vor wie nach, kein Item bewegt; die Ausbausperre steht im Prompt und bindet nichts. Die **Kreuztabelle** aus beiden Läufen korrigiert die Zielgröße des Konzepts: Nicht die Markierung ist der Hebel, sondern der Ausbau — wer nicht benennt, baut immer aus (null Ausnahmen bei 24 Gelegenheiten), und der ganze Zuwachs an Markierung floss in „benannt und trotzdem ausgebaut". **Und der Filtergedanke von B4 ist erledigt:** Auch mit korrekt benanntem Wert findet eine Enthaltensprüfung nur 6 von 17 Ausbauten, weil Nova ausbaut ohne zu nennen und nennt, wenn sie sauber bleibt. Stufe 2 ist damit nicht die Verfeinerung, sondern der Mechanismus — auf jedem Turn mit `abweichend`, ohne Filter.
 - **v0.1 — 03.08.2026:** Erstfassung. Zusammengeführt aus einem Bauteil-Vorschlag, einer Zweitmeinung dazu und den Messungen der Charakterbildungs-Messreihe vom 02./03.08.2026. Gegenüber dem Vorschlag neu: **B−1** (der Thinker ist heute nicht beobachtbar), die **Ausbausperre** in B1 (ein Gebäude auf einem falschen Wert überlebt dessen Korrektur), **B9** (das fehlende Register), die zweistufige Fassung von **B4** (eine Markensuche fände nur einen der fünf Fälle) und die Einschränkungen zu **B8** (keine `turn_id` im Kurzzeitgedächtnis, zwei Drittel Assistentenseite). Entfallen gegenüber der Zweitmeinung: die Zwei-Stufen-Überbietung als Frühwarnzeichen — über alle 180 Turns nachgezählt vier Fälle statt einem, nur einer davon vor einem Ausfall, und zwei Läufe scheitern ohne jeden.
