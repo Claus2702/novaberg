@@ -29,10 +29,12 @@ import logging
 from datetime import datetime
 
 from config import PROMPTS, get_node_config
+from memory.pipeline_log import log_berechnung
 from services.model_services import ChatRequest, model_service
 
 from graph.einwand import kopf_anweisung, urteil_lesen
 from graph.state import ConversationState
+from graph.vorzeichen import Vorzeichenbefund, vorzeichen_pruefen
 
 logger = logging.getLogger("ki_server.verfasser")
 
@@ -269,6 +271,38 @@ def verfassen(state: ConversationState) -> ConversationState:
         )
 
     state["antwort_inhalt"] = inhalt
+
+    # ── B4 Stufe 1: die Vorzeichenpruefung ──────
+    # Zaehlt, ohne zu aendern. Sie steht hier, weil hier zum ersten und
+    # einzigen Mal drei Dinge zusammen vorliegen: das Urteil, die
+    # Nutzeraeusserung und Novas Text. Nachgelagert waere sie nicht baubar —
+    # das Urteil wird nirgends persistiert.
+    #
+    # Der Eintrag entsteht NUR bei 'abweichend'. Das ist die Gegenprobe des
+    # Bauteils: Ein Turn ohne Einwand hinterlaesst keine Spur, sonst waere
+    # die Rate nicht lesbar.
+    befund: Vorzeichenbefund = vorzeichen_pruefen(
+        urteil, state.get("user_prompt", ""), inhalt,
+    )
+    if befund.geprueft:
+        log_berechnung(
+            turn_id      = state.get("turn_id", ""),
+            node         = "verfasser",
+            quelle       = "vorzeichenpruefung",
+            inhalt       = {
+                "werte":            befund.werte,
+                "uebernommen":      befund.uebernommen,
+                "kandidat":         befund.kandidat,
+                # Getrennt gefuehrt, weil "kein Wert gefunden" etwas anderes
+                # ist als "kein Wert uebernommen" — sonst zaehlte eine
+                # ausgeschriebene Zahl wie ein Erfolg.
+                "werte_gefunden":   len(befund.werte),
+                "staerke":          urteil.staerke,
+                "quelle_des_urteils": urteil.quelle,
+            },
+            user_id      = state.get("user_id", ""),
+            character_id = state.get("character_id", ""),
+        )
 
     # Die Kosten dieser Stufe gehoeren in die Anzeige. `token_total` scheidet
     # aus — das Feld gehoert dem Responder und wuerde ueberschrieben. Der
