@@ -2085,6 +2085,25 @@ Der Leser ist dabei **nicht** defekt — geprüft an den Äußerungen selbst. Di
 
 Das Bauteil bleibt stehen. Es ist richtig gebaut, an der falschen Größe.
 
+#### Und die nächste Messung erledigt auch den Nachfolger — vor dem Bau
+
+Der naheliegende Weg war, den strittigen Wert vom Kopfblock benennen zu lassen. Er kostet einen neuen Batterielauf: **gemessen 6,2 Stunden** für 102 Turns, davon nur 1,3 Stunden reine Antwortzeit — der Rest ist Leeren, Warten, Ausfall.
+
+Bevor diese sechs Stunden ausgegeben wurden, ließ sich die tragende Frage umsonst beantworten: **Würde die Prüfung überhaupt tragen, wenn der Wert korrekt benannt wäre?** Der strittige Wert steht von Hand geschrieben in der Itemdatei (`behauptung`) — er wurde an die Stelle gesetzt, an der später das Modellfeld stünde.
+
+| Vergleich | Trefferquote | Fehlalarme |
+|---|---|---|
+| **streng** — Behauptung wörtlich in der Antwort | **6 von 17** | 2 von 3 |
+| **locker** — alle Inhaltswörter in der Antwort | **7 von 17** | **3 von 3** |
+
+**Auch mit korrektem Wert findet die Enthaltensprüfung nur gut ein Drittel der Ausbauten.** Der Grund steht im Konzept und war als Detail gelesen worden: Nova baut oft aus, **ohne den Wert zu wiederholen** („das verändert die Perspektive komplett"), und **zitiert** ihn gerade dann, wenn sie sauber bleibt („du sagst jetzt ein halbes Jahr, aber vorhin…"). Enthaltensein und Verwendung sind zwei Dinge, und kein Textvergleich trennt sie.
+
+> **Damit ist der Filtergedanke erledigt, und Stufe 2 ist nicht die Verfeinerung — sie ist der Mechanismus.** Ein Filter, der zwei Drittel durchlässt, spart keine Modellaufrufe, er verliert Fälle. Die neutrale Prüffrage gehört auf **jeden** Turn mit Urteil `abweichend`; die sind selten, und der Mechanismus ist als `beurteilen()` im Batterie-Werkzeug bereits erprobt — er hat die 87 % erst erzeugt.
+
+**Zur Belastbarkeit, getrennt:** Die Trefferquote steht auf 17 Fällen und trägt. Die Fehlalarmquote steht auf **drei** sauberen Fällen und ist ein Hinweis, kein Beleg. Die 6 von 17 genügen für sich.
+
+**Was diese Stunde gespart hat:** einen Batterielauf von 6,2 Stunden, der einen Prompt-Umbau geprüft hätte, dessen Grundlage vorher zu widerlegen war.
+
 ### `SYK-B1` gemessen — der Kopfblock bewegt nichts ✅
 
 Der Verfasser liefert seit dem 04.08. sein Urteil **vor** der Prosa: Prüfung, dreiwertige Bewertung, Stärke, Quelle. Die Vermutung dahinter: Ein Sprachmodell legt sich mit dem ersten Token fest, also kann die Zustimmung nicht mehr vor der Prüfung fallen, wenn das Urteil vorne steht.
