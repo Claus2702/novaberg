@@ -226,7 +226,7 @@ Naming-Konvention: Anzeige = "Pixie" (Logs, UI, Dokumentation). Technisch = "Sha
 | WiedervorlageAgent | ✅ Migriert (Chat 35) | agents/wiedervorlage/ |
 | NovaGedaechtnis | ⚠️ Post-Hook, nicht verdrahtet | services/shadow_agent/tasks/nova_gedaechtnis.py |
 | VertiefungsAgent | ⬜ Konzept (PIX-MIG-6) | novaberg-pixie-deepdive_k.md |
-| NachfragenAgent | ⬜ Offen (PIX-MIG-7) — **Zuwendung**, nicht Wissen | novaberg-pixie-nachfragen_k.md |
+| NachfragenAgent | ✅ **gebaut 05.08.2026** (PIX-MIG-7) — **Zuwendung**, nicht Wissen. Liest den Druck frisch aus den Session-Turns, verdichtet ohne Modellaufruf | novaberg-pixie-nachfragen_k.md |
 | KlaerfrageAgent | ⬜ Konzept — Wissen aus dem Gegenueber; wartet auf `KLA-K1`/`KLA-K2` | novaberg-autonomous-wissen_k.md §11.3 |
 | AufraeumAgent | ⬜ Offen (PIX-MIG-8) | — |
 | TraumAgent | ⬜ Offen (Epic 8) | novaberg-backlog.md §1.7 |

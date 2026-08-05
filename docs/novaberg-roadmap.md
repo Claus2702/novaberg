@@ -1,6 +1,6 @@
 # Novaberg — Roadmap (Projektchronik)
 
-**Stand:** Chat 128, 4. August 2026
+**Stand:** Chat 129, 5. August 2026
 *(Die Kopfzeile stand bis Chat 109 auf „Chat 93, 21. Mai 2026" — 15 Chats hinter dem Inhalt. **Sie ist danach erneut zurückgefallen:** von Chat 110 bis 114 blieb sie auf „Chat 109" stehen, während der Inhalt weiterwuchs, und wurde in Chat 115 nachgezogen. Wer hier etwas ergänzt, zieht die Kopfzeile mit — sie driftet zuverlässig. Achtung beim Nachschlagen: Nur bis Chat 97 trägt jeder Chat eine eigene `## Chat NNN`-Überschrift; die Chats 98–108 stehen als `###`-Abschnitte unter dem Chat-97-Block, benannt nach Sprint statt nach Chat.)*
 **Pfad:** novaberg/docs/novaberg-roadmap.md
 **Single Source of Truth für abgeschlossene Arbeit.**
@@ -1980,6 +1980,30 @@ Beide Räder haben eine Nabe — den Wert ohne jede Ausprägung — und das Erge
 > **Die Zahlen selbst stehen nicht hier.** Ein Charakter-Rad ist ein Charakterprofil; aus den Summanden sind mit der Züge-Tabelle die Einzelspeichen rückrechenbar. Wer die Messung nachvollziehen will, fährt sie gegen den eigenen Bestand — sie ist in zwei Aufrufen wiederholbar.
 
 **Geschlossen:** `Bauteil 3 — Charakter-Räder im Client` (Rest benannt, siehe Backlog)
+
+---
+
+## Chat 129 (05.08.2026) — Ein Name trug zwei Rollen, und der Agent, der nichts beschafft ✅
+
+**`nachfragen` war zweimal konzipiert.** Zwei Konzepte beschrieben denselben Aufgabennamen in unvereinbaren Rollen — Zuwendung gegen Wissensbeschaffung —, und keines wusste vom anderen; das jüngere schrieb ausdrücklich, der Name komme „in keinem Konzept vor", während er an vier Stellen im Code verdrahtet war. Getrennt in zwei Agenten: `nachfragen` behält die verdrahtete Zuwendungs-Rolle, die Wissensrolle heißt `klaerfrage` und wartet auf das Klärungstor. Daraus die Festlegung, dass ein Aufgabenname genau einer Rolle gehört und die Suche **vor** dem Konzept steht.
+
+**`PIX-MIG-7` ist gebaut.** Der Agent beschafft nichts — der Anlass ist ein Zustand des Gegenübers, kein Wissensdefizit. Er liest den Druck **frisch** aus den Session-Turns statt aus dem Auftrag, weil die Aufträge fünf bis neun Tage in der Queue liegen und Zuwendung zu einem Druck, der vorbei ist, keine ist. Verdichtet wird **ohne Modellaufruf**: Der Farbton spricht bereits im Zielregister — er beschreibt einen Zustand und adressiert niemanden —, ein Hintergrundaufruf kostet hier 35 s am einzigen seriellen Platz, und die deterministische Fassung ist der Zeuge für eine spätere Modellfassung.
+
+> **Die Frage nach der Form war an der falschen Schicht gestellt.** Ein Pixie-Agent formuliert nicht, was Nova sagt; er legt einen Reiz ab, und der CharacterGraph macht daraus Emotion, Assoziation und Stimme. Ob die Zuwendung als Frage oder als Beobachtung herauskommt, entscheidet der Charakter zur Laufzeit.
+
+**Umfang:** Suite 1052 → **1068 Tests**, grün, 0 übersprungen. Nulllinie **2182 unverändert**, beide Wände sauber. **Zwei Gegenproben, beide vorher benannt und exakt eingetroffen:** Druck-Prüfung entfernt → 7 gemeldete Fehler in 2 Methoden; Kanon-Prüfung entfernt → 2.
+
+**Die Messung lief in zwei Hälften, und die stille ist die wertvollere:** Ein echter Auftrag vom 30.07. gegen die laufende Session ergab `eskalation`, keinen Stapel-Eintrag und zwei nachgewiesene Audit-Zeilen — die Frisch-Lese-Entscheidung im Betrieb. Die Druck-Hälfte lief gegen ein eigenes Paar mit `einbruch` und erzeugte einen Eintrag mit `aufgabe='nachfragen'`. **Ungemessen bleibt der Weg vom Turn zum Vektor:** Ein Absturz lässt sich nicht bestellen, und ihn in der Produktivsession zu setzen hieße, falsche Gefühlshistorie zu schreiben.
+
+**Der Auslöser ist mitkorrigiert.** `emotionaler_ausdruck` → `nachfragen` erzeugte Aufträge bei **Freude** — die Intention deckt jede Gefühlsäußerung ab, nicht nur Not. Entfernt in beiden Kopien der Tabelle. Der Vektor-Kanon steht jetzt als Konstante, die auch der Router liest.
+
+### Was dabei abfiel
+
+- **Die Zusicherung „von Priorität 0.0 ruhig gehalten" ist widerlegt.** `vertiefen` und `nachfragen` erreichen beide **1.000**; was sie zurückhält, ist die Listenreihenfolge — der älteste Eintrag bei 1.0 ist zufällig eine `recherche`. Die Entscheidung gegen das Aging bleibt richtig, ihre Begründung wird stärker.
+- **92 % der Heartbeats fallen aus.** 249 von 270 Auslösungen in 2,25 Stunden mit `maximum number of running instances reached` — eine Recherche hält den einzigen Slot über fünf Minuten und stirbt dann an der Zeitgrenze.
+- **Das Zuwendungsrad wirkt bisher nur stromabwärts.** Die Größe `fragen` existiert und wird von jeder Speiche gespeist — `pflicht` mit **−0.20**, weil „Aufträge ernst nehmen" abarbeitet statt fragt. Sie formt aber Novas Antwort, nachdem der Reiz durch ist, und nicht, ob er aufgeworfen wird. Als `PIX-STAPEL-RADFAKTOR` aufgenommen, multiplikativ mit Untergrenze über null, damit „kein Veto" eine Eigenschaft der Bauart ist.
+- **Der WiedervorlageAgent legt einen fertig formulierten Satz auf den Stapel**, wo die Zustellung Material erwartet — genau der Fall, den der Zustellungspfad für sich behoben hat. In der Fundliste.
+- **Das Messgerät war wieder der unzuverlässige Teil, dreimal.** Ein Agent, der Modell-Worker benutzt, ist in einem frisch gestarteten Prozess nicht messbar: erst fehlte der Worker, dann war die Ereignisschleife geschlossen. Erst der dritte Aufbau — eine Schleife, `invoke` über `to_thread`, wie der echte Dispatch — hat gemessen.
 
 ---
 

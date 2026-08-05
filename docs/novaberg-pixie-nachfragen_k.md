@@ -5,7 +5,7 @@
 **Stand:** 5. August 2026, Chat 129
 **Pfad:** novaberg/docs/novaberg-pixie-nachfragen_k.md
 **Typ:** Konzept
-**Status:** ⬜ Offen — `PIX-MIG-7`, Agent nicht implementiert
+**Status:** ✅ **Gebaut und gemessen am 05.08.2026** — `PIX-MIG-7`. Stufe 1 ohne Modellaufruf; §9 trägt die Messwerte. Offen bleibt der Radfaktor (`PIX-STAPEL-RADFAKTOR`, §8.8)
 **Verwandt:** `novaberg-pixie.md` §5 · `novaberg-pixie-deepdive_k.md` (Schwester-Agent) · `novaberg-autonomous-wissen_k.md` §11.3 (`klaerfrage` — der abgetrennte zweite Agent, §6)
 
 > **Dieses Dokument beschreibt ausschließlich die Zuwendungs-Rolle.** Am 05.08.2026 ist entschieden, dass `nachfragen` und die Klärungsfrage aus `novaberg-autonomous-wissen_k.md` §11.3 **zwei Agenten** sind, nicht einer. Die Begründung und die Abgrenzung stehen in §6.
@@ -306,8 +306,52 @@ Der Faktor wirkt auf **jeden** Stapel-Eintrag, nicht nur auf Nachfragen — auch
 
 ---
 
+## 9. Gebaut und gemessen — 05.08.2026
+
+`server/agents/nachfragen/` mit `AGENT.md`, dazu `ei/farbton.py::lage_beschreiben()` als öffentlicher Einstieg für Aufrufer ohne Zustandsverbund und der Vektor-Kanon in `config.py`. **1068 Tests grün, 0 übersprungen** (1052 vorher, 16 neu). Nulllinie **2182 unverändert**, beide Wände sauber.
+
+### Was der Reiz geworden ist
+
+Wörtlich aus dem Messlauf, bei `einbruch` und Arousal 0,75:
+
+> Die Stimmung kippt gerade ins Negative. Schwere liegt ueber dem Gespraech. Der Nutzer sucht Halt. Es ging zuletzt um: …
+
+Drei Sätze aus dem Farbton, dann der Anlass. **Er beschreibt und adressiert niemanden** — die Form, die §7 verlangt. Ein Test hält das fest: Der Reiz enthält kein Fragezeichen und keine Anrede.
+
+### Die Messung, in zwei Hälften
+
+| | Ergebnis |
+|---|---|
+| **Kein Druck**, echter Auftrag vom 30.07. gegen die laufende Session | Vektor `eskalation`, **kein** Stapel-Eintrag (37 → 37), Status `abgeschlossen`; beide Audit-Zeilen in `hintergrund_log` nachgewiesen |
+| **Druck**, eigenes Paar in derselben Anlage | Vektor `einbruch`, **ein** Eintrag (0 → 1), `aufgabe='nachfragen'`, Embedding 768 Dimensionen; danach aufgeräumt |
+| **Zustellung** | `nachfragen` kommt bei allen vier negativen Emotionen durch, `recherche` bei keiner; bei `stress` schweigt auch `nachfragen` |
+
+**Die erste Hälfte ist der wertvollere Beleg.** Sie ist die Entscheidung aus §8.1 im Betrieb: ein sechs Tage alter Auftrag, dessen Anlass vorbei ist, hinterlässt nichts als eine Audit-Zeile mit Grund.
+
+**Was ungemessen bleibt, ausdrücklich:** Die Druck-Hälfte lief gegen ein eigens angelegtes Paar mit gesetzten Turn-Werten, nicht gegen einen echten Gesprächsverlauf. Ein echter Absturz lässt sich nicht bestellen, und ihn in der Produktivsession zu setzen hieße, falsche Gefühlshistorie zu schreiben. Damit ist der Weg vom Turn zum Vektor **nicht** mitgemessen — nur der Weg vom Vektor zum Stapel-Eintrag.
+
+### Zwei Gegenproben
+
+Vorher benannt, beide exakt eingetroffen:
+
+| Eingriff | Vorhersage | Ergebnis |
+|---|---|---|
+| Druck-Prüfung entfernt | 7 gemeldete Fehler in 2 Methoden (6 davon `subTest`-Stellen) | **7** |
+| Kanon-Prüfung entfernt | 2 Fehler — unbekannter Vektor sähe aus wie Ruhe | **2** |
+
+Die drei übrigen „kein Druck"-Tests blieben bei der ersten Gegenprobe **grün**, wie angekündigt: Sie bewachen, sie trennen nicht.
+
+### Der Auslöser ist mitgeändert
+
+`emotionaler_ausdruck` → `""` in **beiden** Kopien von `_INTENTION_AUFGABE_MAP`. Die Zuordnung erzeugte Aufträge ohne Druck; die laufende Session belegt es beiläufig, sie trägt `emotion=freude` bei `vektor=eskalation`.
+
+Der Vektor-Kanon steht als Konstante in `config.py`, und der Router liest die Druck-Teilmenge von dort statt aus einem eigenen Literal. **Das ist eine Abweichung von der Abgrenzung in §8.7**, bewusst und hier benannt: Eine neu eingeführte Konstante neben einem stehengelassenen Duplikat wäre genau der Defekt, den die Fundliste am selben Tag für die Intentionstabelle notiert hat.
+
+---
+
 ## Versionshistorie
 
+- **v0.6 — 05.08.26:** **Gebaut und gemessen**, §9 neu. Stufe 1 laeuft ohne Modellaufruf und erzeugt den Reiz aus drei Farbton-Saetzen und dem Anlass. Die wertvollere Haelfte der Messung ist die stille: ein sechs Tage alter Auftrag gegen die laufende Session, Vektor `eskalation`, kein Stapel-Eintrag, beide Audit-Zeilen nachgewiesen — §8.1 im Betrieb. Zwei Gegenproben vorher benannt und exakt eingetroffen (7 und 2). Ausdruecklich ungemessen bleibt der Weg vom Turn zum Vektor: Ein Absturz laesst sich nicht bestellen, und ihn in der Produktivsession zu setzen hiesse, falsche Gefuehlshistorie zu schreiben. Der Auslöser `emotionaler_ausdruck` ist in beiden Kopien entfernt, der Vektor-Kanon steht als Konstante — Letzteres eine benannte Abweichung von der Abgrenzung in §8.7.
 - **v0.5 — 05.08.26:** §8.8 neu — **das Zuwendungsrad macht die Nachfrage wahrscheinlicher oder unwahrscheinlicher.** Die Größe war bereits gebaut und heißt `fragen` (`SPEICHEN_BEITRAG` in `ei/haltung.py`); `pflicht` trägt dort **−0.20**, weil „Auftraege ernst nehmen" abarbeitet statt fragt. Bis heute wirkt sie erst stromabwärts und formt, *wie* Nova fragt, nicht *ob* die Nachfrage aufgeworfen wird. **Damit ist die Entscheidung aus §4 korrigiert:** Aus „der Agent entscheidet nicht" war fälschlich „der Charakter spricht nicht mit" geworden, was `novaberg-klaerung_k.md` §2.1 widerspricht — das Fragen ist die eine Stufe, die der Charakter abwägen darf. Der Charakter wägt ab, aber in der Zustellung. Der Faktor ist **multiplikativ**, damit „kein Veto" eine Eigenschaft der Bauart ist und nicht der Kalibrierung: Ein Summand könnte den Score auf null drücken, und ein Eintrag mit Score ≤ 0 gewinnt auch als einziger nie. Das Rad wird zur Zustellzeit gelesen — womit das fehlende Gewichtsfeld des Stapels für diesen Zweck **entfällt**. Eigenes Bauteil `PIX-STAPEL-RADFAKTOR`, weil es alle Aufgabenarten betrifft.
 - **v0.4 — 05.08.26:** §8 neu — **der Bauplan.** Die tragende Entscheidung ist, dass der Druck **frisch gelesen** und nicht dem Auftrag entnommen wird: Die Aufträge im Bestand sind fünf bis neun Tage alt, und Zuwendung zu einem Druck, der vorbei ist, ist keine. Stufe 1 verdichtet **ohne Modellaufruf** — der Farbton spricht bereits im Zielregister, ein Hintergrundaufruf kostet hier 35 bis 38 Sekunden, und die deterministische Fassung ist der Zeuge, gegen den eine spätere Modellfassung zu messen wäre. Kein KZG-, Bibliotheks- oder Ziel-Schreiben, weil kein Wissen entsteht. Der Ausgang „kein Druck mehr" ist ausdrücklich `erledigt` und nicht `fehler`. ZIEL, TEST und MESSUNG stehen, samt der Hürde, dass ein Absturz sich nicht bestellen lässt — erreichbar über ein wissenschaftliches Thema mit negativer Valenz, weil der Vektor die Bewegung liest und nicht den Gegenstand.
 - **v0.3 — 05.08.26:** §2 um das prüfbare Kriterium geschärft — **die EI-Erkennung hat einen Druck gefunden**; Nova will präsent sein und fragt deshalb. Damit sind zwei Punkte ableitbar geworden, die eine Stunde vorher noch als „nicht abzuleiten" markiert waren. §7 neu — **die elementare Aufgabe**: Ein Agent legt einen Reiz ab und formuliert nicht; das Material ist der Druck, und die EI rechnet ihn bereits als Bewegung (`ei/berechnung.py`), als Klartext (`ei/farbton.py`) und als Schwere (`ei/dreischicht.py`). Der erste Punkt aus §4 ist damit nicht beantwortet, sondern als **falsch gestellt** erkannt: Er fragte nach einer Formulierung. In §6 entschieden: `emotionaler_ausdruck` → `nachfragen` ist ein **Defekt** und entfällt, weil die Intention keinen Druck trägt.
