@@ -84,6 +84,8 @@ Damit trägt der Agent eine Aufgabe, die kein anderer übernehmen kann: Fällt e
 
 ~~**Wann er schweigt.** Der Zustellungsfilter regelt, *ob* etwas rausgeht. Ob der Agent selbst zu dem Schluss kommen darf, dass Nachfragen gerade falsch wäre, ist offen.~~ → **Entschieden am 05.08.2026: Er schweigt nicht selbst.** Der Zustellungsfilter regelt das *Ob* und tut es bereits (§3). Ein zweiter Schweige-Entscheid im Agenten wäre dieselbe Logik an zwei Stellen — und die zweite Stelle wäre die, die niemand prüft, weil der Filter sichtbar davorsteht.
 
+> **Nachtrag am selben Tag — die erste Fassung dieses Absatzes war zu weit gefasst und ist korrigiert.** Sie schloss aus dem richtigen Satz „der Agent entscheidet nicht" den falschen „der Charakter spricht nicht mit". Das widerspricht `novaberg-klaerung_k.md` §2.1, wonach **das Fragen** die eine Stufe ist, die der Charakter abwägen darf — und eine Nachfrage ist ein Fragen, das einen Gesprächszug kostet. Richtig ist: Der Charakter wägt ab, aber **in der Zustellung**, nicht im Agenten. Damit bleibt es bei einer Stelle statt zweien. Die Bauart steht in §8.8.
+
 ~~**Der Bezug zum Anlass.** Der Auftrag trägt Thema und Kontext des auslösenden KZG-Eintrags. Ob die Rückfrage daran anknüpfen soll („du hattest gestern von … erzählt") oder offen bleibt, ist eine Charakterfrage.~~ → **Entschieden am 05.08.2026: offen, ohne Anlassbezug.** Nova nennt nicht, worauf sie sich bezieht. Der Preis ist benannt: Die Annäherung verliert ihre Verankerung. Der Grund, sie trotzdem so zu bauen, ist, dass ein genannter Anlass sichtbar macht, dass mitgeschrieben und bewertet wurde — in genau der Lage, in der das am wenigsten trägt.
 
 ~~**Der Abstand.** Kein Mechanismus begrenzt heute, wie oft nachgefragt wird. Bei anhaltend negativer Stimmung erzeugt jeder hinreichend saliente Turn einen neuen Auftrag.~~ → **Gegenstandslos für die Zustellung, offen für die Erzeugung.** Wie oft etwas *rausgeht*, begrenzt der Zustellungs-Cooldown (`shadow_cooldown:{user_id}`, TTL 3600 s, gelöscht durch die nächste Nutzeraktion) zusammen mit der Burst-Grenze; nach der Entscheidung vom 04.08.2026 bricht ihn **kein** Modus (`novaberg-autonomous-wissen_k.md` §11.3). Unberührt bleibt, wie oft ein *Auftrag entsteht* — das ist ein Mengenproblem der Queue und trifft alle Aufgabenarten gleich, nicht nur diese.
@@ -249,14 +251,64 @@ Ebenso ohne Stapel-Eintrag, aber mit `fehler`: keine Session-Turns lesbar, kein 
 
 ### 8.7 Was nicht geändert wird
 
-Die Zustellung — Cooldown, Burst, Verträglichkeit, das Schweigen bei Stress — bleibt unberührt; sie ist gebaut und entscheidet weiterhin allein über das *Ob* (§4). Der Router bleibt, wie er ist. Am Kandidatenverfahren wird nichts geändert, auch nicht an der Verdrängung durch die Recherche-Aufträge (§5). Und `vertiefen` bleibt agentenlos.
+Die Zustellung — Cooldown, Burst, Verträglichkeit, das Schweigen bei Stress — bleibt von **diesem** Bauteil unberührt; sie ist gebaut und entscheidet weiterhin allein über das *Ob* (§4). Der Radfaktor aus §8.8 ist ein **eigenes** Bauteil mit eigener ID und wird nicht hier mitgenommen. Der Router bleibt, wie er ist. Am Kandidatenverfahren wird nichts geändert, auch nicht an der Verdrängung durch die Recherche-Aufträge (§5). Und `vertiefen` bleibt agentenlos.
 
 **Eine Änderung gehört doch dazu, weil sie sonst gegen den Agenten arbeitet:** `emotionaler_ausdruck` → `nachfragen` entfällt auf `""`, in **beiden** Kopien von `_INTENTION_AUFGABE_MAP` (§6). Ohne sie liefe der neue Agent überwiegend auf Aufträgen an, die keinen Druck tragen, und die Messung liefe gegen den falschen Bestand.
+
+### 8.8 Das Zuwendungsrad macht die Nachfrage wahrscheinlicher oder unwahrscheinlicher
+
+**Die Größe ist bereits gebaut und heißt `fragen`.** `SPEICHEN_BEITRAG` in `ei/haltung.py` bildet jede Radspeiche auf fünf Haltungsgrößen ab, und eine davon ist genau diese:
+
+| Speiche | Beitrag auf `fragen` | |
+|---|---|---|
+| `wissbegier` | +0.40 | |
+| `aufmerksamkeit` | +0.20 | Gegenpol von `distanz` — „haelt Naehe" gegen „haelt Abstand" |
+| `misstrauen` | +0.10 | |
+| `pflicht` | **−0.20** | im Code begründet: *„nimmt Auftraege ernst" arbeitet ab statt zu fragen* |
+| `selbstbezogen`, `gleichgueltig` | −0.20 | |
+| `langeweile` | −0.30 | |
+
+`wohlwollen` wirkt nicht auf `fragen`, sondern auf `naehe` +0.10 und `waerme` +0.40. Und `distanz` trägt eine **Übersteuerung**: bei voller Ausprägung durchbricht sie die Grenze auf `naehe` — *„volle Distanz ueberwiegt jede warme Landschaft"*.
+
+**Bis heute wirkt das alles erst stromabwärts.** Die Haltung formt Novas *Antwort*, nachdem der Reiz die Zustellung passiert hat — sie verändert, **wie** Nova fragt, nicht **ob** die Nachfrage aufgeworfen wird. Genau diese Hälfte fehlt.
+
+#### Wo der Faktor sitzt
+
+In `_besten_eintrag_finden` (`services/shadow_delivery.py`), das heute mit `0.7 × Thema + 0.3 × Modus` gewichtet. Nicht im Agenten: Der Agent liefert Material (§7), und ein zweiter Ort für dieselbe Abwägung wäre der, den niemand prüft (§4).
+
+**Ohne Landschaft.** `haltung_berechnen()` verlangt einen Cluster, den die Zustellung nicht hat — und nicht braucht: Die Landschaft gehört zum Sprechen, nicht zu der Frage, ob der Impuls überhaupt aufgeworfen wird. Gebraucht wird der landschaftsfreie Anteil, den `_modifikation(rad, "fragen")` bereits liefert; er ist heute privat und wäre zu öffnen.
+
+**Das Rad wird zur Zustellzeit gelesen, nicht beim Ablegen** — derselbe Grund wie in §8.1: Es wird zweimal täglich neu erhoben, ein beim Push eingefrorener Wert wäre so veraltet wie die Aufträge in der Queue. Quelle ist `nova_charakter_hash_retrieve_dict(POSTGRES_URL, user_id)` — Novas Rad gegenüber genau diesem Menschen.
+
+> **Damit entfällt eine Änderung, die zuerst nötig schien.** `stack_push()` nimmt kein Gewicht entgegen, und der Stapel hat kein Salienzfeld (`novaberg-autonomous-wissen_k.md` §11.4). Wer den Faktor beim Ablegen einrechnen wollte, müsste es einführen. Wer zur Zustellzeit liest, braucht es nicht. Der Fund aus §11.4 bleibt bestehen, wird von hier aber nicht berührt.
+
+#### Multiplikativ, damit „kein Veto" eine Bauart ist und keine Kalibrierung
+
+**Entschieden am 05.08.2026: Modulation, kein Veto, keine Untergrenze.**
+
+Die Begründung für den Rand ist eine andere als bei der Klärung, und deshalb steht sie hier: Dort laufen die Stufen 1 bis 3 still weiter — Nova merkt die Abweichung, baut nicht darauf, überschreibt nichts, *und sagt nichts*. Bei der Zuwendung gibt es keine stillen Stufen. Schließt das Tor, geschieht gar nichts — und `nachfragen` ist das Einzige, was die Zustellung in negativen Phasen durchlässt (§3). Eine distanzierte Nova wäre dann genau dann vollständig abwesend, wenn es dem Menschen schlecht geht.
+
+Deshalb ein **Faktor**, kein Summand:
+
+```
+gesamt_score = (thema_sim × 0.7 + modus_score × 0.3) × radfaktor
+```
+
+Ein Summand könnte den Score auf null oder darunter drücken, und `_besten_eintrag_finden` startet mit `bester_score = 0.0` — ein Eintrag mit Score ≤ 0 gewinnt nie, auch als einziger nicht. Das wäre ein Veto, das wie eine Gewichtung aussieht. Ein Faktor mit einer Untergrenze über null kann das konstruktionsbedingt nicht.
+
+`radfaktor` bildet `_modifikation(rad, "fragen")` — heute im Bereich von rund −0.9 bis +0.7 — auf eine Spanne ab, die null nicht erreicht. **Die Grenzen sind eine Setzung und ausdrücklich zu kalibrieren**, nicht hier zu erfinden; die einzige bindende Bedingung ist, dass die Untergrenze echt größer als null bleibt.
+
+#### Ein eigenes Bauteil, nicht Teil von `PIX-MIG-7`
+
+Der Faktor wirkt auf **jeden** Stapel-Eintrag, nicht nur auf Nachfragen — auch auf Recherche und Wiedervorlage. Das ist konzeptgetreu: `novaberg-haltungsraum_k.md` sagt *„bei Wohlwollen und Treue redet sie, bei Distanz und Misstrauen sagt sie kaum etwas"* über Nova insgesamt, nicht über eine Aufgabenart. Es ist aber eine Änderung an gemeinsam genutztem Code mit eigener Wirkung auf zwei bereits laufende Agenten, und die gehört nicht in den Bau eines dritten.
+
+**Der NachfragenAgent hängt nicht davon ab.** Er arbeitet ohne den Faktor, nur ohne Charaktermodulation; der Faktor kann danach kommen. Geführt als `PIX-STAPEL-RADFAKTOR`.
 
 ---
 
 ## Versionshistorie
 
+- **v0.5 — 05.08.26:** §8.8 neu — **das Zuwendungsrad macht die Nachfrage wahrscheinlicher oder unwahrscheinlicher.** Die Größe war bereits gebaut und heißt `fragen` (`SPEICHEN_BEITRAG` in `ei/haltung.py`); `pflicht` trägt dort **−0.20**, weil „Auftraege ernst nehmen" abarbeitet statt fragt. Bis heute wirkt sie erst stromabwärts und formt, *wie* Nova fragt, nicht *ob* die Nachfrage aufgeworfen wird. **Damit ist die Entscheidung aus §4 korrigiert:** Aus „der Agent entscheidet nicht" war fälschlich „der Charakter spricht nicht mit" geworden, was `novaberg-klaerung_k.md` §2.1 widerspricht — das Fragen ist die eine Stufe, die der Charakter abwägen darf. Der Charakter wägt ab, aber in der Zustellung. Der Faktor ist **multiplikativ**, damit „kein Veto" eine Eigenschaft der Bauart ist und nicht der Kalibrierung: Ein Summand könnte den Score auf null drücken, und ein Eintrag mit Score ≤ 0 gewinnt auch als einziger nie. Das Rad wird zur Zustellzeit gelesen — womit das fehlende Gewichtsfeld des Stapels für diesen Zweck **entfällt**. Eigenes Bauteil `PIX-STAPEL-RADFAKTOR`, weil es alle Aufgabenarten betrifft.
 - **v0.4 — 05.08.26:** §8 neu — **der Bauplan.** Die tragende Entscheidung ist, dass der Druck **frisch gelesen** und nicht dem Auftrag entnommen wird: Die Aufträge im Bestand sind fünf bis neun Tage alt, und Zuwendung zu einem Druck, der vorbei ist, ist keine. Stufe 1 verdichtet **ohne Modellaufruf** — der Farbton spricht bereits im Zielregister, ein Hintergrundaufruf kostet hier 35 bis 38 Sekunden, und die deterministische Fassung ist der Zeuge, gegen den eine spätere Modellfassung zu messen wäre. Kein KZG-, Bibliotheks- oder Ziel-Schreiben, weil kein Wissen entsteht. Der Ausgang „kein Druck mehr" ist ausdrücklich `erledigt` und nicht `fehler`. ZIEL, TEST und MESSUNG stehen, samt der Hürde, dass ein Absturz sich nicht bestellen lässt — erreichbar über ein wissenschaftliches Thema mit negativer Valenz, weil der Vektor die Bewegung liest und nicht den Gegenstand.
 - **v0.3 — 05.08.26:** §2 um das prüfbare Kriterium geschärft — **die EI-Erkennung hat einen Druck gefunden**; Nova will präsent sein und fragt deshalb. Damit sind zwei Punkte ableitbar geworden, die eine Stunde vorher noch als „nicht abzuleiten" markiert waren. §7 neu — **die elementare Aufgabe**: Ein Agent legt einen Reiz ab und formuliert nicht; das Material ist der Druck, und die EI rechnet ihn bereits als Bewegung (`ei/berechnung.py`), als Klartext (`ei/farbton.py`) und als Schwere (`ei/dreischicht.py`). Der erste Punkt aus §4 ist damit nicht beantwortet, sondern als **falsch gestellt** erkannt: Er fragte nach einer Formulierung. In §6 entschieden: `emotionaler_ausdruck` → `nachfragen` ist ein **Defekt** und entfällt, weil die Intention keinen Druck trägt.
 - **v0.2 — 05.08.26:** §6 neu — die Trennung in zwei Agenten, entschieden, nachdem der Widerspruch zwischen diesem Dokument und `novaberg-autonomous-wissen_k.md` §11.3 gefunden war. Drei der vier offenen Punkte aus §4 entschieden, der erste (die Form) bleibt und ist als einziger offen gekennzeichnet — belegt durch eine Suche über alle Konzepte, die ihn nicht füllt. §5 um die Messung ergänzt, die den dort beschriebenen Defekt als **latent** ausweist: Die Recherche-Aufträge verdrängen die agentenlosen, und den Heartbeat blockiert stattdessen der besetzte Slot. Neu belegt und in §6 festgehalten: Der Auslöser `emotionaler_ausdruck` feuert auch bei positiver Emotion und widerspricht damit §2.
