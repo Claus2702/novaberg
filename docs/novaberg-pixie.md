@@ -45,7 +45,11 @@ Default: 0.5 je Stunde, Deckel 2.0 (erreicht nach vier Stunden). Nach zwei Stund
 
 **Der Massstab ist die absolute Wartezeit, nicht die Zahl verpasster Intervalle.** Die erste Fassung mass relativ und wurde live widerlegt: `synapsen_promotion` (Takt 300s) war 4916 s faellig, also 16 Intervalle, sass damit sofort am Deckel und kam auf Prioritaet 2.90 — waehrend `synapsen_decay` (Takt 86400s) bei zwoelf Stunden Wartezeit nur 1.22 erreichte. Ein kurzer Takt alterte 288-mal schneller als ein langer, und genau die Aufgabe, die der Zuschlag retten sollte, verlor weiter. Verhungern ist ein absolutes Zeitphaenomen.
 
-**Queue-Eintraege altern ausdruecklich nicht.** In der Shadow-Queue liegen Auftraege fuer Agenten, die es nicht gibt (`vertiefen`, `nachfragen`), heute allein von ihrer Prioritaet 0.0 ruhig gehalten. Aging auf der Queue holte genau sie nach oben und liesse sie ins Leere laufen.
+**Queue-Eintraege altern ausdruecklich nicht.** In der Shadow-Queue liegen Auftraege fuer Agenten, die es nicht gibt (`vertiefen`, `nachfragen`). ~~heute allein von ihrer Prioritaet 0.0 ruhig gehalten~~ **Widerlegt am 05.08.2026:** Gemessen an `shadow_queue:{user_id}` erreichen **beide** die Prioritaet **1.000** — `vertiefen` in 198 Auftraegen, `nachfragen` in 62. Von einer Prioritaet 0.0 werden sie nicht ruhig gehalten; sie liegen am oberen Rand des Wertebereichs.
+
+Was sie tatsaechlich ruhig haelt, ist die **Listenreihenfolge**: `_queue_peek` nimmt den ersten Eintrag mit *echt* groesserer Prioritaet (`prio > beste_prio`), und der aelteste Eintrag bei 1.0 ist zufaellig eine `recherche`. Die 390 Recherche-Auftraege verdraengen die 260 agentenlosen. Belegt in einem Fenster von rund 2,25 Stunden: 19 Gewinner, davon 11 `recherche`, 6 `synapsen_promotion`, je einer `wissensluecken` und `wiedervorlage` — **kein einziger agentenloser**, und keine Meldung „nicht in Registry".
+
+> **Die Entscheidung gegen das Aging bleibt richtig, ihre Begruendung wird staerker.** Wenn die agentenlosen Auftraege ohnehin bei 1.0 liegen, haette ein Aging-Zuschlag sie nicht erst nach oben geholt — sie sind schon dort. Die Sicherung ist eine Reihenfolge, kein Wert, und eine Reihenfolge kippt, sobald die Recherche-Auftraege vor ihnen abfliessen.
 
 Jeder Kandidat traegt beide Werte: `prioritaet` (effektiv, danach wird gewaehlt) und `prioritaet_basis` (ungealtert). Die Gewinner-Zeile im Log nennt beide, sobald der Zuschlag gegriffen hat — sonst waere aus dem Log nicht mehr erkennbar, ob eine Wahl auf der Rangfolge oder auf dem Verhungerungsschutz beruhte.
 
