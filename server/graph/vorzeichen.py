@@ -84,10 +84,17 @@ def werte_lesen(text: str) -> list[str]:
         normalisiert (ohne Leerraum, klein).
     Fehlerfälle: keine.
 
-    **Grenze, ausdrücklich:** Ausgeschriebene Zahlen („dreiunddreißig") werden
-    nicht erkannt. Stufe 1 zählt damit eher zu wenig als zu viel — als Filter
-    ist das die harmlosere Richtung, und die Fallenbatterie enthält
-    mindestens einen solchen Fall.
+    > **Diese Grenze ist gemessen und sie ist nicht harmlos.** Am 05.08.2026
+    > gegen die 25 Widerspruchsturns der Fallenbatterie gehalten: **17 von 20
+    > Fallen tragen überhaupt keinen Ziffernwert.** Die strittigen Werte sind
+    > ausgeschriebene Zahlen („vierzig Jahren", „vier Monde", „sieben Leuten")
+    > und Ortsnamen („Hannover"). Der Leser arbeitet korrekt; die Verengung
+    > „Wert = Zahl" ist der Fehler — das Konzept sagt „ein **Wert** zu einer
+    > Entität".
+    >
+    > **Diese Funktion taugt deshalb nicht als Grundlage einer Rate.** Der
+    > Weg steht im Backlog (`SYK-B4-WERT-BENENNEN`): Der strittige Wert wird
+    > vom Kopfblock benannt statt aus dem Text geraten.
     """
     if not text:
         return []

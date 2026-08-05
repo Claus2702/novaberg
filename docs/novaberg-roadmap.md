@@ -2062,6 +2062,29 @@ Aus den beiden Batterieläufen ließ sich ohne einen einzigen neuen Turn die Fra
 
 **Umfang:** Suite 1040 → **1052 Tests**, grün, 0 übersprungen. Nulllinie **2182**, beide Wände sauber. **Gegenprobe:** Auslöser abgeschaltet → **3 Fehlschläge in 2 Testmethoden**; meine Vorhersage lautete auf 2 und war damit in der falschen Einheit — `subTest` meldet jede Stelle einzeln, und genau diese Regel steht seit dem 31.07. im Bestand.
 
+#### Und dieselbe Stunde widerlegt das Bauteil
+
+Stufe 1 wurde sofort gegen bereits erhobenes Material gehalten — die 25 Widerspruchsturns des Laufs, mit dem Urteil des Beurteilers als Vergleich. Kein neuer Turn, kein Modellaufruf.
+
+> **17 von 20 Fallen tragen überhaupt keinen Ziffernwert. Der Filter ist in 85 % der Fälle blind.**
+
+Auf den drei sehenden Fällen: ein Treffer, ein Verpasser, ein Fehlalarm. Bei n=3 ist das keine Aussage.
+
+Der Leser ist dabei **nicht** defekt — geprüft an den Äußerungen selbst. Die strittigen Werte sind schlicht keine Ziffern:
+
+| Item | strittiger Wert |
+|---|---|
+| `eigen-02` | „**vierzig** Jahren" |
+| `eigen-07` | „**Hannover**" — ein Ortsname |
+| `eigen-11` | „**sieben** Leuten" |
+| `objektiv-01` | „**vier** Monde" |
+
+**Der Fehler liegt in meiner Verengung, nicht im Konzept.** Dort steht „ein **Wert** zu einer Entität"; ich habe daraus „eine Zahl" gemacht und die Verengung als harmlose Grenze dokumentiert — „zählt eher zu wenig". Sie zählt nicht zu wenig, sie zählt fast nichts. Eine Grenze, die 85 % des Gegenstands ausschließt, ist keine Grenze, sondern der Gegenstand.
+
+**Was daraus folgt:** Der strittige Wert darf nicht aus dem Text geraten werden, er muss benannt werden. Der Kopfblock aus `SYK-B1` trägt ihn bereits — aber als Prosa (`GEPRUEFT: ein Satz. Was stand früher da, was steht jetzt da?`). Zwei zusätzliche Felder machten ihn deterministisch prüfbar, unabhängig davon, ob der Wert eine Zahl, ein Ort oder ein Zeitraum ist, und **ohne einen zweiten Modellaufruf** — dieselbe Generierung trägt zwei Zeilen mehr. Das ist der nächste Schritt, und er berührt wieder den Prompt: also eigenes Messfenster.
+
+Das Bauteil bleibt stehen. Es ist richtig gebaut, an der falschen Größe.
+
 ### `SYK-B1` gemessen — der Kopfblock bewegt nichts ✅
 
 Der Verfasser liefert seit dem 04.08. sein Urteil **vor** der Prosa: Prüfung, dreiwertige Bewertung, Stärke, Quelle. Die Vermutung dahinter: Ein Sprachmodell legt sich mit dem ersten Token fest, also kann die Zustimmung nicht mehr vor der Prüfung fallen, wenn das Urteil vorne steht.
