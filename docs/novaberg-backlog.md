@@ -515,7 +515,9 @@ Der naechste Schritt in der Kommunikationsbandbreite: Spracheingabe (Speech-to-T
 | # | Thema | Status |
 |---|-------|--------|
 | PIX-MIG-6 | VertiefungsAgent | ⚠️ Konzept (novaberg-pixie-deepdive_k.md) |
-| PIX-MIG-7 | NachfragenAgent | ⬜ Queue-basiert, emotionale Rückfrage |
+| PIX-MIG-7 | NachfragenAgent | ⬜ Queue-basiert, emotionale Rückfrage. **Am 05.08.2026 auf die Zuwendungs-Rolle festgelegt und baufertig** — die Wissens-Rolle ist als `PIX-MIG-9` abgetrennt. **Alle vier Fragen aus §4 entschieden;** die vierte war falsch gestellt (sie fragte nach einer Formulierung, und ein Agent formuliert nicht). Kriterium ist ein von der EI erkannter **Druck**; die elementare Aufgabe ist, ihn zu einem Reiz zu verdichten und mit `aufgabe="nachfragen"` abzulegen — Bewegung, Klartext und Schwere rechnet die EI bereits (`ei/berechnung.py`, `ei/farbton.py`, `ei/dreischicht.py`). **Teil des Baus:** `emotionaler_ausdruck` → `nachfragen` entfällt auf `""` — in **beiden** Kopien von `_INTENTION_AUFGABE_MAP` (`memory/kzg.py`, `agents/kzg/queues.py`) |
+| PIX-MIG-9 | KlaerfrageAgent | ⬜ **Neu am 05.08.2026**, abgetrennt von `PIX-MIG-7`. Nova fragt das Gegenüber, weil nur er die Antwort hat — Stufe 4 der Klärung, Ergebnis fällt in die Bibliothek (`novaberg-autonomous-wissen_k.md` §11.3). **Blocker: `KLA-K1` und `KLA-K2`** — sein Eingang ist eine erkannte Lücke, und das Klärungstor ist ungebaut; im Code existiert zu beiden keine Zeile (geprüft 05.08.). Die 62 vorhandenen `nachfragen`-Aufträge sind **kein** Eingang: Sie tragen `freude`/`begeisterung` und keine Lücke |
+| PIX-AUFGABENNAMEN-GATE | Ein Aufgabenname, eine Rolle | ⬜ **Neu am 05.08.2026.** Maschineller Abgleich der von den Produzenten erzeugten `aufgabe`-Werte (`memory/kzg.py`, `agents/kzg/queues.py`, `services/pixie/router.py`) gegen die Agent-Registry **und** gegen die Konzeptdateien in `docs/`. Schlägt an, wenn ein Name geroutet wird, den kein Agent bedient, oder wenn zwei Konzepte denselben Namen führen. Anlass: der Doppelname `nachfragen` blieb acht Tage unbemerkt, weil ihn niemand suchen konnte |
 | PIX-MIG-8 | AufraeumAgent | ⬜ Duplikate, verwaiste Entitäten |
 | PIX-CLEAN | Alter Runner entfernt | ✅ Chat 79 — runner.py + 7 Task-Dateien geloescht, __init__.py bereinigt. base_task.py + nova_gedaechtnis.py bleiben (nicht-migrierter Task) |
 | PIX-MIG-NOVA | NovaGedaechtnis als Agent migrieren | ⬜ Post-Hook nova_gedaechtnis.py in services/shadow_agent/tasks/ ist nicht ueber Pixie-Router verdrahtet. Sprint-2-Fix (kanonisches Paar) konserviert, wirkt aber erst nach Migration zu einem echten Agent in agents/ |
@@ -4414,7 +4416,10 @@ Vier Konzepte ohne Code. Sie standen bis Chat 114 nur in der Sitzungsübergabe; 
 |---|---|---|
 | **Gedankenkette** — ein Gedanke über mehrere Turns | `novaberg-gedankenkette_k.md` | konzipiert Chat 111, kein Code ⬜ |
 | **Wissensspeicher (Strang B)** | außerhalb des Git-Roots | konzipiert, kein Code ⬜ |
-| **NachfragenAgent** | `novaberg-pixie-nachfragen_k.md` | Konzept steht, vier Fragen in §4 offen; Bau als `PIX-MIG-7` geführt ⬜ |
+| **NachfragenAgent** | `novaberg-pixie-nachfragen_k.md` | Konzept steht, ~~vier Fragen~~ **noch eine Frage** in §4 offen — die Form; Bau als `PIX-MIG-7` geführt ⬜ |
+| **KlaerfrageAgent** | `novaberg-autonomous-wissen_k.md` §11.3 | konzipiert, kein Code; blockiert durch `KLA-K1`/`KLA-K2`, Bau als `PIX-MIG-9` geführt ⬜ |
 | **Selbstreflexion** | `novaberg-thinking-curiosity_k.md` §4.7 | konzipiert, kein Code ⬜ |
 
 Der NachfragenAgent hat eine Kopplung: `services/pixie/router.py` bildet `nachfragen` auf einen Agenten ab, den es nicht gibt — siehe die Fundliste vom 27.07.2026. Der Bau schließt diesen Befund mit; die Reihenfolge ist dort beschrieben.
+
+**Nachtrag 05.08.2026 — der Befund ist latent, nicht aktiv.** Gemessen gewinnt heute kein agentenloser Auftrag den Heartbeat: Die 390 `recherche`-Aufträge stehen in der Listenreihenfolge vor ihnen, und `_queue_peek` nimmt den **ersten** Eintrag mit echt größerer Priorität. Er feuert wieder, sobald sie abfließen. Was den Heartbeat heute blockiert, ist der besetzte Slot — 249 von 270 Auslösungen fielen in 2,25 Stunden aus (Fundliste 05.08.).

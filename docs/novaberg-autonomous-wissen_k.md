@@ -1,7 +1,7 @@
 # Novaberg — Autonomes Wissen (Konzept)
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
-**Dokument:** Autonomes Wissensverzeichnis — Recherche, Vertiefung, Nachfragen, Traeumen
+**Dokument:** Autonomes Wissensverzeichnis — Recherche, Vertiefung, Klaerfrage, Traeumen
 **Stand:** 4. August 2026 (Erstfassung 29. April 2026, Chat 70)
 **Pfad:** novaberg/docs/novaberg-autonomous-wissen_k.md
 **Status:** ⬜ **nicht gebaut.** Die Erstfassung ist drei Monate alt und wurde nie umgesetzt; §11 traegt die Ueberarbeitung auf den heutigen Stand.
@@ -18,7 +18,7 @@ RechercheAgent, VertiefungsAgent und Traum-Modus produzieren Wissen. Aktuell geh
 
 Das `autonomous/`-Verzeichnis ist Novas persistenter Wissensspeicher. Jeder Durchlauf erzeugt bis zu zwei Dateien: eine **Wissen-Datei** (das Was) und eine **Bericht-Datei** (das Wie). Beide sind ueber RAG (Embedding + pgvector) fuer den Enricher abrufbar.
 
-> **Nachgetragen am 04.08.2026:** Es sind **drei** Quellen, nicht zwei — Recherche schoepft aus der Welt, Vertiefung aus dem eigenen Bestand, **Nachfragen aus dem Gegenueber**. Siehe §11.3.
+> **Nachgetragen am 04.08.2026:** Es sind **drei** Quellen, nicht zwei — Recherche schoepft aus der Welt, Vertiefung aus dem eigenen Bestand, **die Klaerfrage aus dem Gegenueber**. Siehe §11.3. *(Der Modus hiess hier bis zum 05.08.2026 `nachfragen`; der Name war doppelt vergeben und ist getrennt — §11.3.)*
 
 ---
 
@@ -541,9 +541,15 @@ Die Tabelle in §7.2 trägt `context_user` und `charakter`. Verbindlich ist das 
 
 Dieselbe Partitionierung wie KZG, LZG-Knoten, `ziele` und `charakter_hash`. Ein Speicher ohne sie wäre der einzige Bestand, der die Paar-Trennung nicht mitmacht — und die Trennung ist der Grund, warum Novas Wissen über den einen nicht in ein Gespräch mit dem anderen fällt.
 
-### 11.3 Nachfragen ist die dritte Quelle
+### 11.3 Die Klärfrage ist die dritte Quelle
 
-Der Entwurf kennt `recherche`, `vertiefung` und `traum`. `nachfragen` kommt darin nicht vor — und es kommt in **keinem** Konzept vor. Es existiert seit Monaten als Routing-Ziel, ohne dass je beschrieben wurde, was der Agent tun soll; deshalb ist er nie gebaut worden, und deshalb liegen seine Aufträge unbearbeitet in der Queue.
+> **Umbenannt am 05.08.2026.** Dieser Abschnitt hieß „Nachfragen ist die dritte Quelle" und beschrieb seine Rolle unter dem Aufgabennamen `nachfragen`. Der Name war bereits vergeben: `novaberg-pixie-nachfragen_k.md` (27.07.2026) beschreibt unter demselben Namen eine **andere** Rolle — Zuwendung statt Wissen —, und die ist an vier Stellen im Code verdrahtet. Entschieden ist, dass es **zwei Agenten** sind; die Abgrenzungstabelle steht in jenem Dokument §6. Was hier steht, gilt unverändert, aber für den Aufgabennamen **`klaerfrage`**.
+
+~~Der Entwurf kennt `recherche`, `vertiefung` und `traum`. `nachfragen` kommt darin nicht vor — und es kommt in **keinem** Konzept vor.~~ **Widerlegt am 05.08.2026:** Der erste Halbsatz stimmt — der Entwurf kennt die drei. Der zweite ist falsch: `novaberg-pixie-nachfragen_k.md` beschreibt den Aufgabennamen seit dem 27.07.2026, acht Tage vor diesem Abschnitt. Er ist bei der Abfassung nicht gefunden worden, und genau daraus entstand der Widerspruch.
+
+Was richtig bleibt, gilt für `klaerfrage`: Diese Quelle kommt im Entwurf nicht vor. Und der Aufgabenname `nachfragen` existiert seit Monaten als Routing-Ziel, ohne dass je beschrieben wurde, was der Agent tun soll; deshalb ist er nie gebaut worden, und deshalb liegen seine Aufträge unbearbeitet in der Queue.
+
+**Der Bestand widerlegt zusätzlich die Annahme, `klaerfrage` könne die vorhandenen Aufträge übernehmen.** Die 62 `nachfragen`-Aufträge in `shadow_queue:{user_id}` tragen `emotion: freude` bzw. `begeisterung` und **keine Wissenslücke** — das Feld existiert im Auftragsformat nicht. Sie stammen aus dem emotionalen Auslöser und sind für diesen Modus kein Eingang. `klaerfrage` braucht einen eigenen Erzeuger.
 
 > **Der Unterschied zwischen den drei ist die Quelle, nicht der Ablauf.**
 >
@@ -551,7 +557,7 @@ Der Entwurf kennt `recherche`, `vertiefung` und `traum`. `nachfragen` kommt dari
 > |---|---|
 > | `recherche` | der **Welt** |
 > | `vertiefung` | dem **eigenen Bestand** |
-> | `nachfragen` | dem **Gegenüber** — weil nur er die Antwort hat |
+> | `klaerfrage` | dem **Gegenüber** — weil nur er die Antwort hat |
 
 Der Auftrag kommt aus `novaberg-klaerung_k.md`: Es gibt eine Lücke oder eine Abweichung, sie ist notwendig (Tor 1) und bedeutsam genug (Tor 2). Bei den ersten beiden Modi kann Nova die Antwort selbst beschaffen. Beim dritten nicht.
 
@@ -564,7 +570,7 @@ Der Auftrag kommt aus `novaberg-klaerung_k.md`: Es gibt eine Lücke oder eine Ab
 
 Daraus folgt für die Bibliothek: Ein Vertiefungsergebnis liegt seinem Ausgangsthema im Vektorraum **näher** als ein Rechercheergebnis — es trifft die vorhandene Wissen-Datei eher als eine neue. Das ist derselbe Vorgang wie das Verstärken in §11.5, nur mit anderem Anlass: Recherche legt an, Vertiefung verstärkt und ergänzt. Eine Schwelle, ab der ein Ergebnis als „dieselbe Datei" gilt, ist damit **nicht** für beide Modi dieselbe Frage — die Schwelle 0.60 ist an Gedächtnisknoten gemessen, nicht an Vertiefungsergebnissen. **Offen, und vor `vertiefung` zu messen.**
 
-**Und hier feuert Stufe 4 ohne Turn.** Die Klärungsfrage hängt sonst an einer Nutzeräußerung, die gerade vorliegt. Beim Nachfragen liegt keine vor — Nova eröffnet selbst. Das ist der Punkt, an dem sie von reagierend zu **absichtsvoll** wird: Ein Impuls ist heute ein Fund, der einen passenden Moment sucht; ein Nachfragen ist ein Anliegen, das eine Handlung erzeugt.
+**Und hier feuert Stufe 4 ohne Turn.** Die Klärungsfrage hängt sonst an einer Nutzeräußerung, die gerade vorliegt. Bei der Klärfrage liegt keine vor — Nova eröffnet selbst. Das ist der Punkt, an dem sie von reagierend zu **absichtsvoll** wird: Ein Impuls ist heute ein Fund, der einen passenden Moment sucht; eine Klärfrage ist ein Anliegen, das eine Handlung erzeugt.
 
 **Das Interesse entscheidet, ob sie eröffnet.** Dieselben Speichen wie in `novaberg-klaerung_k.md` §2.2: `lenkungsdrang` und `eigensinn` ziehen hin, `zurueckhaltung` und `gespraechsdistanz` davon weg. Bei hoher Distanz eröffnet sie nicht — und die stillen Stufen laufen trotzdem.
 
@@ -574,7 +580,7 @@ Eine Eröffnung ohne Anlass ist ein Eingriff. Die vorhandene Zustellung hat daf�
 
 > **Entschieden am 04.08.2026: Keine der Sperren wird gebrochen — von keinem Modus.**
 >
-> **Für `nachfragen`:** Das Fragen ist Stufe 4 der Klärung, und nur diese Stufe hängt am Charakter. Ein Anliegen, das die Zustellung nicht durchlässt, ist genau der Fall, für den die Stufen 1 bis 3 still, gratis und unbedingt sind — Nova merkt die Lücke, baut nicht darauf, überschreibt nichts, und sagt nichts. Wer das Anliegen die Sperre brechen ließe, hätte die vierte Stufe wieder unbedingt gemacht.
+> **Für `klaerfrage`:** Das Fragen ist Stufe 4 der Klärung, und nur diese Stufe hängt am Charakter. Ein Anliegen, das die Zustellung nicht durchlässt, ist genau der Fall, für den die Stufen 1 bis 3 still, gratis und unbedingt sind — Nova merkt die Lücke, baut nicht darauf, überschreibt nichts, und sagt nichts. Wer das Anliegen die Sperre brechen ließe, hätte die vierte Stufe wieder unbedingt gemacht.
 >
 > **Für `traum`:** Die Frage stellt sich dort gar nicht. Der Traum ist **reines Hintergrundrauschen** mit niedriger Priorität; er stellt nichts zu, sondern füllt die Bibliothek. Was er findet, erreicht das Gespräch über den Enricher, wenn es passt — nicht über eine Unterbrechung. Ein Cooldown, den niemand berührt, muss nicht gebrochen werden.
 >
@@ -747,6 +753,7 @@ Die Alternative — ein eigener Agent `gedanken_decay` — wäre sauberer getren
 
 ## Versionshistorie
 
+- **v0.5 — 05.08.2026:** §11.3 heißt **Die Klärfrage ist die dritte Quelle** — der Modus hieß hier `nachfragen`, und der Name war bereits vergeben. `novaberg-pixie-nachfragen_k.md` (27.07.2026) beschreibt unter demselben Namen eine andere Rolle, Zuwendung statt Wissen, verdrahtet an vier Stellen im Code. **Widerlegt** ist damit der Satz dieses Abschnitts, `nachfragen` komme „in keinem Konzept vor" — es kam in einem vor, acht Tage älteren, das bei der Abfassung nicht gefunden wurde. Entschieden ist die Trennung in **zwei Agenten**; die Abgrenzung steht in jenem Dokument §6, hier bleibt alles inhaltlich gültig unter dem Namen `klaerfrage`. Zusätzlich am Bestand belegt: Die 62 vorhandenen `nachfragen`-Aufträge tragen `freude`/`begeisterung` und keine Wissenslücke — dieser Modus kann sie nicht übernehmen und braucht einen eigenen Erzeuger, der auf `KLA-K1`/`KLA-K2` wartet.
 - **v0.4 — 04.08.2026:** `WIS-3` gebaut, am `recherche`-Agenten. §11.3 um die **Reichweite** erweitert: Quelle ist nicht der einzige Unterschied zwischen `recherche` und `vertiefung` — Recherche steckt einen flachen, breiten Umkreis ab, Vertiefung gräbt an einer Stelle und liegt ihrem Ausgangsthema im Vektorraum **näher**. Daraus folgt, dass die Schwelle, ab der ein Ergebnis „dieselbe Datei" trifft, für die beiden Modi nicht dieselbe Frage ist; die 0.60 aus §11.5 ist an Gedächtnisknoten gemessen, nicht an Vertiefungsergebnissen. §11.6 hält fest, was der Bau ergänzt hat: Ein **gescheiterter Durchlauf hinterlässt einen Bericht**, und das Gate wird dabei übergangen.
 - **v0.3 — 04.08.2026:** `WIS-2` gebaut. §7.2 trägt eine Marke: Die Tabelle steht in der Fassung von §11, und der dort genannte `ivfflat`-Index ist **nicht** angelegt — bei kleinen Zeilenzahlen bricht sein Recall auf nahezu null ein, belegt in Chat 107 an `lzg_knoten`. §11.6 hält fest, was gebaut ist und was nicht: Die Spalten stehen, die Kurve rechnet niemand, bis `WIS-3` und `WIS-5` da sind. Drei Zusicherungen liegen im Schema statt im Code — Paar-Tripel und `salienz_anfang` ohne Vorgabewert, `dateipfad UNIQUE` —, alle drei live geprüft.
 - **v0.2 — 04.08.2026:** §11 ergänzt — die Überarbeitung auf den heutigen Stand, nachdem die Erstfassung drei Monate ungebaut lag. Sechs Punkte: der Speicherort liegt **außerhalb des Git-Roots** (die Erstfassung nannte die Repo-Grenze nicht, obwohl die Dateien aus Gesprächen abgeleitete Inhalte tragen); das **Paar-Schema** ersetzt `context_user`/`charakter`; **`nachfragen` ist die dritte Quelle** und bekommt hier zum ersten Mal überhaupt eine Aufgabenbeschreibung — es existierte seit Monaten als Routing-Ziel ohne Konzept, weshalb der Agent nie gebaut wurde; die auslösende **Salienz ohne Vorgabewert**; das **Aufräumen wird Fortsetzen**, weil Embedding-Nähe „vom selben Thema" heißt und nicht „schon gesagt" — mit der Schwelle 0.60 an **778.128 Paaren** aus 1248 LZG-Knoten belegt (Trefferverhältnis 10 : 1) und einem Zwischenvorschlag von 0.50 widerlegt, der aus einer zu kleinen Stichprobe stammte; und **Gewichtung, Sättigung und Verfall nach dem Knoten-Schema** mit hergeleiteten Startwerten (Dämpfungs-Exponent 1.0, λ = 0.0768 für 60 Tage); ; die Bibliothek erbt den Verfall des LZG **samt Konstante**, nur der Stapel bekommt eine eigene Rate; und **wer den Verfall rechnet** — ein dritter Schritt im vorhandenen Tageslauf `synapsen_decay` statt eines neuen Agenten, weil jeder periodische Auftrag um denselben einen seriellen Platz konkurriert. Dabei widerlegt: die Vermutung, niedrig priorisierte Tagesläufe verhungerten hinter der blockierenden Recherche — 14 und 16 Läufe im Audit-Protokoll belegen das Gegenteil. Die §§1–10 bleiben stehen und tragen ihre Begründungen; §11 hat Vorrang, wo sie widersprechen.

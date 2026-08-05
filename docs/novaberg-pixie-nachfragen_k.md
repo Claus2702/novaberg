@@ -2,11 +2,13 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Konzept — Rolle, Auslöser und Sonderstellung des NachfragenAgenten
-**Stand:** 27. Juli 2026, Chat 111
+**Stand:** 5. August 2026, Chat 129
 **Pfad:** novaberg/docs/novaberg-pixie-nachfragen_k.md
 **Typ:** Konzept
 **Status:** ⬜ Offen — `PIX-MIG-7`, Agent nicht implementiert
-**Verwandt:** `novaberg-pixie.md` §5 · `novaberg-pixie-deepdive_k.md` (Schwester-Agent)
+**Verwandt:** `novaberg-pixie.md` §5 · `novaberg-pixie-deepdive_k.md` (Schwester-Agent) · `novaberg-autonomous-wissen_k.md` §11.3 (`klaerfrage` — der abgetrennte zweite Agent, §6)
+
+> **Dieses Dokument beschreibt ausschließlich die Zuwendungs-Rolle.** Am 05.08.2026 ist entschieden, dass `nachfragen` und die Klärungsfrage aus `novaberg-autonomous-wissen_k.md` §11.3 **zwei Agenten** sind, nicht einer. Die Begründung und die Abgrenzung stehen in §6.
 
 ---
 
@@ -23,6 +25,12 @@ Vorfall, der es ausgelöst hat: Am 27.07.2026 gewann ein `nachfragen`-Auftrag dr
 **Nova geht von sich aus auf den Nutzer zu, wenn es ihm schlecht geht.**
 
 Das unterscheidet den Agenten von seinen Geschwistern. Recherche und Vertiefung bringen Inhalt; das Nachfragen bringt Zuwendung. Der Router benennt es in seinem Kommentar als *„einfühlsame Begleitung"*.
+
+**Geschärft am 05.08.2026 — das Kriterium ist der Druck:**
+
+> Nachfragen bedeutet, dass die **EI-Erkennung einen Druck auf dem Nutzer gefunden** hat. Nova möchte da sein, präsent sein, unterstützen. Dafür fragt sie. Es ist eine Zuwendung bei einem Absturz.
+
+Das ist keine Umformulierung, sondern ein prüfbares Kriterium, und es entscheidet §3 und §4. „Es geht ihm schlecht" ließ offen, woran man das erkennt; „die EI hat einen Druck gefunden" benennt den Erkenner und damit die Größe, an der der Auslöser hängt.
 
 ## 3. Was gebaut ist
 
@@ -68,20 +76,188 @@ Damit trägt der Agent eine Aufgabe, die kein anderer übernehmen kann: Fällt e
 
 `config.py:930` — `temperature: 0.6`, `max_output_tokens: 1024`. Die Temperatur liegt deutlich über den Analyse-Knoten (0.05–0.1) und über der Verdichtung (0.1). Das ist stimmig: Eine Rückfrage darf nicht schablonenhaft klingen.
 
-## 4. Was nicht entschieden ist
+## 4. Was nicht entschieden war — und wie es entschieden wurde
 
-**Was der Agent erzeugt.** Ob eine Frage, eine Beobachtung oder ein bloßes Dasein-Signal — nirgends festgelegt. Die alte Task-Datei `services/shadow_agent/tasks/nachfragen.py` wurde beim Runner-Rückbau gelöscht (Roadmap, Chat 79); ihr Inhalt ist nicht mehr die Vorlage.
+*Die Überschrift hieß bis zum 05.08.2026 „Was nicht entschieden ist". Alle vier Punkte sind an diesem Tag entschieden; sie bleiben mit ihrer ursprünglichen Fassung stehen, weil die Begründung sonst ihren Gegenstand verliert.*
 
-**Wann er schweigt.** Der Zustellungsfilter regelt, *ob* etwas rausgeht. Ob der Agent selbst zu dem Schluss kommen darf, dass Nachfragen gerade falsch wäre, ist offen.
+~~**Was der Agent erzeugt.** Ob eine Frage, eine Beobachtung oder ein bloßes Dasein-Signal — nirgends festgelegt.~~ → **Entschieden am 05.08.2026: keines von dreien — die Frage war an der falschen Schicht gestellt.** Ein Pixie-Agent formuliert nicht, was Nova sagt; er legt einen **Reiz** auf den Stapel, und der CharacterGraph macht daraus Emotion, Assoziation und Stimme (§7). Ob die Zuwendung als Frage oder als Beobachtung herauskommt, entscheidet sich zur Laufzeit am Charakter — nicht im Agenten. Die alte Task-Datei `services/shadow_agent/tasks/nachfragen.py` wurde beim Runner-Rückbau gelöscht (Roadmap, Chat 79); ihr Inhalt ist nicht mehr die Vorlage.
 
-**Der Bezug zum Anlass.** Der Auftrag trägt Thema und Kontext des auslösenden KZG-Eintrags. Ob die Rückfrage daran anknüpfen soll („du hattest gestern von … erzählt") oder offen bleibt, ist eine Charakterfrage.
+~~**Wann er schweigt.** Der Zustellungsfilter regelt, *ob* etwas rausgeht. Ob der Agent selbst zu dem Schluss kommen darf, dass Nachfragen gerade falsch wäre, ist offen.~~ → **Entschieden am 05.08.2026: Er schweigt nicht selbst.** Der Zustellungsfilter regelt das *Ob* und tut es bereits (§3). Ein zweiter Schweige-Entscheid im Agenten wäre dieselbe Logik an zwei Stellen — und die zweite Stelle wäre die, die niemand prüft, weil der Filter sichtbar davorsteht.
 
-**Der Abstand.** Kein Mechanismus begrenzt heute, wie oft nachgefragt wird. Bei anhaltend negativer Stimmung erzeugt jeder hinreichend saliente Turn einen neuen Auftrag.
+~~**Der Bezug zum Anlass.** Der Auftrag trägt Thema und Kontext des auslösenden KZG-Eintrags. Ob die Rückfrage daran anknüpfen soll („du hattest gestern von … erzählt") oder offen bleibt, ist eine Charakterfrage.~~ → **Entschieden am 05.08.2026: offen, ohne Anlassbezug.** Nova nennt nicht, worauf sie sich bezieht. Der Preis ist benannt: Die Annäherung verliert ihre Verankerung. Der Grund, sie trotzdem so zu bauen, ist, dass ein genannter Anlass sichtbar macht, dass mitgeschrieben und bewertet wurde — in genau der Lage, in der das am wenigsten trägt.
 
-Diese vier Punkte sind **nicht abzuleiten** — sie brauchen eine Entscheidung, bevor gebaut wird.
+~~**Der Abstand.** Kein Mechanismus begrenzt heute, wie oft nachgefragt wird. Bei anhaltend negativer Stimmung erzeugt jeder hinreichend saliente Turn einen neuen Auftrag.~~ → **Gegenstandslos für die Zustellung, offen für die Erzeugung.** Wie oft etwas *rausgeht*, begrenzt der Zustellungs-Cooldown (`shadow_cooldown:{user_id}`, TTL 3600 s, gelöscht durch die nächste Nutzeraktion) zusammen mit der Burst-Grenze; nach der Entscheidung vom 04.08.2026 bricht ihn **kein** Modus (`novaberg-autonomous-wissen_k.md` §11.3). Unberührt bleibt, wie oft ein *Auftrag entsteht* — das ist ein Mengenproblem der Queue und trifft alle Aufgabenarten gleich, nicht nur diese.
+
+**Damit sind alle vier entschieden.** Der erste stand seit dem 27.07.2026 als „nicht entschieden" — er war aber gar nicht offen, sondern falsch gestellt: Er fragte nach einer Formulierung, und Formulieren ist nicht die Aufgabe eines Agenten. Was tatsächlich zu entscheiden war, ist **woraus das Material besteht**; das steht in §7.
 
 ## 5. Ein Befund nebenbei
 
 Ein Queue-Auftrag für einen nicht registrierten Agenten **gewinnt** den Heartbeat und blockiert ihn für drei Durchläufe. Der fehlende Agent ist Roadmap und kein Defekt; die Verdrängung ist einer. Ein Auftrag für einen unbekannten Agenten sollte gar nicht erst gewinnen, sondern beim Einreihen oder spätestens bei der Auswahl aussortiert werden.
 
 Steht in `novaberg-fundliste.md`, 27.07.2026.
+
+**Nachtrag, gemessen am 05.08.2026 — der Defekt ist latent, nicht aktiv.** In einem Beobachtungsfenster von rund 2,25 Stunden gewann **kein einziger** agentenloser Auftrag; 19 Gewinner verteilten sich auf 11× `recherche`, 6× `synapsen_promotion`, 1× `wissensluecken`, 1× `wiedervorlage`, und die Meldung „nicht in Registry" fiel keinmal. Der Grund ist die Auswahl in `services/pixie/kandidaten.py`: Sie nimmt den **ersten** Eintrag mit echt größerer Priorität, und der älteste Eintrag bei Priorität 1,0 ist eine `recherche`. Die 390 Recherche-Aufträge verdrängen die 260 agentenlosen.
+
+**Der Befund bleibt gültig und wird durch die Messung schärfer:** Er feuert wieder, sobald die Recherche-Aufträge vor ihnen abfließen. Was den Heartbeat heute blockiert, ist ein anderes: 249 von 270 Auslösungen fielen im selben Fenster mit `maximum number of running instances reached (1)` aus, weil eine laufende Recherche den einzigen Slot fünf Minuten hält.
+
+---
+
+## 6. Die Trennung in zwei Agenten
+
+**Entschieden am 05.08.2026.** `nachfragen` war zweimal konzipiert, in zwei unvereinbaren Rollen — und keins der beiden Dokumente wusste vom anderen. `novaberg-autonomous-wissen_k.md` §11.3 (04.08.2026) schreibt ausdrücklich, `nachfragen` *„kommt in **keinem** Konzept vor"*; dieses Dokument beschreibt es seit dem 27.07.2026. Das neuere Konzept ist ohne Kenntnis des älteren entstanden, es ist deshalb **keine Ablösung**.
+
+Die beiden Rollen sind wirklich zwei Dinge und bekommen zwei Aufgabennamen:
+
+| | `nachfragen` (dieses Dokument) | `klaerfrage` (`novaberg-autonomous-wissen_k.md` §11.3) |
+|---|---|---|
+| **Was Nova bringt** | **Zuwendung** | **Wissen** |
+| **Warum sie eröffnet** | weil es dem Gegenüber schlecht geht | weil nur das Gegenüber die Antwort hat |
+| **Auslöser** | Intentionen `emotionaler_ausdruck`, `hilferuf`; Emotionsvektor `absturz`/`spirale`/`einbruch` | Lücke oder Abweichung aus der Klärung, Tor 1 und Tor 2 (`novaberg-klaerung_k.md` §2) |
+| **Steuerung** | keine — der Zustellungsfilter entscheidet | Interesse-Speichen: `lenkungsdrang`, `eigensinn`, `widerspruchsfreude` gegen `folgsamkeit`, `zurueckhaltung`, `gespraechsdistanz` |
+| **Ergebnis** | ein Gesprächszug, kein Speicherinhalt | Wissen in der Bibliothek: was gefragt wurde, was zurückkam, was folgt |
+| **Stand** | verdrahtet an vier Stellen (§3), Agent fehlt | weder verdrahtet noch gebaut |
+
+**Warum ein neuer Name und nicht der bestehende.** Genau die Doppelbelegung eines Namens hat diesen Widerspruch erzeugt und ein Konzept entstehen lassen, das die vorhandene Beschreibung nicht fand. `klaerfrage` bricht bewusst mit der Verbform von `vertiefen` und `nachfragen` — die Ähnlichkeit von `nachfragen` und `erfragen` wäre dieselbe Falle noch einmal. Der Name bindet stattdessen an sein Konzept, `novaberg-klaerung_k.md`.
+
+**Der zweite Agent ist heute nicht baubar.** Sein Eingang ist eine erkannte Lücke, und die erzeugt das Klärungstor `KLA-K2` — das auf `KLA-K1` wartet. Beide sind ungebaut, und im Code gibt es zu keinem von beiden eine Zeile (geprüft am 05.08.2026). Bis dahin bleibt er Konzept.
+
+### Was die Trennung am Bestand sichtbar macht
+
+**Die 62 `nachfragen`-Aufträge in der Queue passen zu keiner der beiden Rollen.** Die Form, **synthetisch nachgebaut** — die Feldbelegung ist die gemessene, das Thema konstruiert:
+
+```json
+{"aufgabe": "nachfragen", "thema": "Ringsystem des Saturn",
+ "intentionen": ["emotionaler_ausdruck"], "emotion": "freude", "modus": "emotional"}
+```
+
+- **Sie tragen `freude` und `begeisterung`**, nicht Not. Der Intentions-Auslöser `emotionaler_ausdruck` (§3) feuert bei **jeder** Gefühlsäußerung, auch bei einer positiven. Nur der Emotionsvektor-Pfad des Routers trifft die Lage, die §2 beschreibt. **Damit widerspricht der gebaute Auslöser dem §2 dieses Dokuments** — „wenn es ihm schlecht geht" gilt für einen der beiden Auslöser, nicht für beide.
+- **Sie tragen keine Wissenslücke.** Das Feld existiert im Auftragsformat nicht. Ein Agent nach §11.3 bekäme 62 Aufträge, die seinen Eingang nicht tragen.
+
+**Folge für den Bau, entschieden am 05.08.2026:** Mit dem Kriterium aus §2 — die EI hat einen **Druck** gefunden — ist das ableitbar, was vorher offen war. `emotionaler_ausdruck` ist **kein** Druck; die Intention deckt jede Gefühlsäußerung ab, auch Freude und Begeisterung. Die Zuordnung ist ein **Defekt**, kein zweiter gewollter Fall.
+
+| Auslöser | Trägt Druck? | |
+|---|---|---|
+| `emotions_vektor` ∈ `absturz`, `spirale`, `einbruch` | ja — es sind Bewegungen ins Negative | ✅ bleibt |
+| Intention `hilferuf` | ja | ✅ bleibt |
+| Intention `emotionaler_ausdruck` | **nein** | ❌ **entfällt** |
+
+Der Ersatzwert ist `""` — kein Auftrag. Jede andere Zuordnung erfände eine Absicht, die niemand genannt hat; eine rein gefühlsmäßige Äußerung ohne Druck ist kein Hintergrundauftrag, genau wie `smalltalk` und `feedback_geben` schon heute keinen erzeugen.
+
+**Die Zuordnungstabelle steht doppelt** — `memory/kzg.py` und `agents/kzg/queues.py` führen `_INTENTION_AUFGABE_MAP` je einmal, und sie sind bereits auseinandergelaufen (`bestätigung` gegen `bestaetigung`). Beide sind zu ändern; dass es zwei sind, steht in der Fundliste.
+
+---
+
+## 7. Die elementare Aufgabe
+
+**Ein Pixie-Agent beschafft Material und legt es als Reiz auf den Stapel. Er schreibt nicht, was Nova sagt.**
+
+Der Weg ist für alle Agenten derselbe:
+
+```
+Auftrag aus der Queue → Agent beschafft Material → stack_push(aufgabe, thema, inhalt)
+                                                          ↓
+              Zustellung: Thema, Emotion, Modus, Cooldown, Burst, Filter
+                                                          ↓
+                    inhalt → AgentGraph als user_prompt → CharacterGraph
+                                                          ↓
+                                          Emotion, Assoziation, Stimme
+```
+
+Die Begründung steht im Zustellungspfad selbst (`services/shadow_delivery.py`): *„Das Wissensstueck selbst ist der Reiz — nicht ein daraus formulierter Satz. […] Vorher sprach die Delivery den Gedanken aus, bevor er gedacht war."*
+
+**Für dieses Bauteil heißt das: Es beschafft nichts Neues.** Die Geschwister holen von außen — die Recherche aus der Welt, die Vertiefung aus dem eigenen Bestand, die Klärfrage aus einer erkannten Lücke. Beim Nachfragen gibt es nichts zu holen: Der Anlass ist ein Zustand des Gegenübers, kein Wissensdefizit. **Das Material ist der Druck selbst — und der ist bereits gerechnet.**
+
+| Was die EI liefert | Wo | Beispiel |
+|---|---|---|
+| die **Bewegung** | `ei/berechnung.py` — `absturz` = positiv→negativ, `einbruch` = neutral→negativ, `spirale` = negativ→negativ mit *neuen* negativen Gefühlen | der Druck als Richtung |
+| der **Klartext** | `ei/farbton.py` | „Die Stimmung ist eingebrochen." · „Die Belastung nimmt zu." · „Der Nutzer sucht Halt." · „Schwere liegt ueber dem Gespraech." |
+| die **Schwere** | `ei/dreischicht.py` | `absturz` −1.0 · `spirale` −1.0 · `einbruch` −0.7 |
+
+> **Der Farbton spricht bereits im richtigen Register.** Er *beschreibt* einen Zustand und *adressiert* niemanden — genau die Form, die der Stapel braucht. Eine an den Nutzer gerichtete Erinnerung wäre die falsche: Sie ginge als `user_prompt` in den Graphen und Nova reagierte darauf, als hätte jemand sie ihr gesagt.
+
+**Die Aufgabe ist damit: den erkannten Druck zu einem Reiz verdichten** — Bewegung, Schwere, Dynamik und woran er hängt — und ihn mit `aufgabe="nachfragen"` ablegen. Der Name ist Pflicht, nicht Kosmetik: Die Zustellung liest genau dieses Feld und lässt bei negativen Emotionen nur ihn durch (§3).
+
+**Der Anlass gehört ins Material, auch wenn er nicht ausgesprochen wird.** Die Entscheidung in §4 — offen, ohne Anlassbezug — betrifft die *Äußerung*. Nova muss trotzdem wissen, worum sie sich sorgt, sonst ist der Reiz inhaltslos. Ob sie den Anlass nennt, entscheidet der CharacterGraph.
+
+### Was daran noch zu messen ist
+
+**Ein einzelner Turn ist ein Moment, ein Verlauf ist ein Befinden.** Der `emotions_vektor` liest bereits ein Fenster über mehrere Turns (`EMOTION_VEKTOR_TURNS`) — der Druck ist also schon eine Bewegung. Ob das Material darüber hinaus den Verlauf mitträgt oder der Vektor genügt, ist am gebauten Agenten zu messen und nicht vorher zu entscheiden.
+
+---
+
+## 8. Der Bauplan
+
+### 8.1 Der Auftrag ist der Anlass, nicht der Inhalt
+
+**Der Druck wird frisch gelesen, nicht dem Auftrag entnommen.** Das ist die tragende Entscheidung dieses Bauteils, und sie folgt aus einer Messung: Die Aufträge in der Queue sind am 05.08.2026 zwischen **fünf und neun Tage alt** — die ältesten vom 27.07. Ein Auftrag, der einen Absturz vom vorletzten Wochenende trägt, beschreibt eine Lage, die es nicht mehr gibt.
+
+> Zuwendung zu einem Druck, der vorbei ist, ist keine Zuwendung. Sie ist ein Beleg dafür, dass niemand hingesehen hat.
+
+Der Auftrag liefert deshalb nur zweierlei: **dass** einmal ein Druck erkannt wurde, und **woran** er hing (`thema`, `kontext`). Ob er heute noch besteht, liest der Agent selbst.
+
+### 8.2 Woher das Material kommt
+
+Alles Nötige liegt vor; nichts wird beschafft. Die Session-Turns stehen als annotierte JSON-Sätze in Redis unter `_session_key(user_id, character_id, "turns")` und tragen je Turn `emotion`, `arousal`, `emotions_vektor`, `beziehungs_dynamik`, `themen` und `modus`.
+
+| Größe | Quelle | Wozu |
+|---|---|---|
+| `emotions_vektor` des jüngsten User-Turns | Session-Turns | **die Vorbedingung** — Druck ja oder nein |
+| Klartext des Vektors | `ei/farbton.py` → `_farbe_vektor` | die Bewegung in Worten |
+| `arousal` und Emotion | Session-Turns | die Schwere: *„Schwere liegt ueber dem Gespraech"* gegen *„Eine leise Schwere ist da"* |
+| `beziehungs_dynamik` | Session-Turns | *„Der Nutzer sucht Halt"* |
+| `thema`, `kontext` | der Queue-Auftrag | woran der Druck hängt |
+
+### 8.3 Stufe 1 verdichtet ohne Modellaufruf
+
+**Die erste Fassung baut den Reiz deterministisch zusammen.** Drei Gründe, in dieser Reihenfolge:
+
+1. **Der Farbton spricht bereits im Zielregister.** Er beschreibt einen Zustand und adressiert niemanden — genau das, was der Stapel braucht (§7). Ein Modell müsste diese Sätze nur umformulieren.
+2. **Ein Hintergrundaufruf kostet auf dieser Anlage gemessen 35 bis 38 Sekunden** (`PIX-WARTESCHLANGE-AM-MODELL`), und er hielte den einzigen seriellen Platz.
+3. **Er ist der Zeuge für eine spätere Stufe 2.** Wird der Reiz zu dünn, ist die Modellfassung gegen diese Nulllinie zu messen — statt gegen nichts.
+
+Ist der deterministische Reiz zu dünn, ist das ein Messergebnis und kein Fehlschlag. Der Weg zu Stufe 2 steht damit offen und hat einen Vergleichswert.
+
+### 8.4 Was er ablegt — und was ausdrücklich nicht
+
+```python
+stack_push(aufgabe="nachfragen", thema=…, inhalt=…)
+```
+
+`aufgabe="nachfragen"` ist **Pflicht und kein Etikett**: `_emotional_kompatibel()` in `services/shadow_delivery.py` vergleicht genau diese Zeichenkette und lässt bei negativen Emotionen nur sie durch. Ein abweichender Wert macht den Agenten unsichtbar für den einzigen Fall, für den er gebaut ist.
+
+**Er schreibt nicht ins KZG, nicht in die Bibliothek, und er leitet kein Ziel ab.** Der `RechercheAgent` tut alles drei, weil er Wissen erzeugt. Hier entsteht keins: Der Reiz ist eine Lagebeschreibung aus Größen, die schon gespeichert sind. Ein KZG-Eintrag darüber wäre eine Verdopplung, die beim nächsten Lauf wie neue Beobachtung aussähe.
+
+### 8.5 Wenn kein Druck mehr da ist
+
+Der häufigste Ausgang bei einem alten Auftrag. Er ist **kein Fehler** und darf auch nicht als einer gezählt werden — der Agent hat richtig gearbeitet und richtig geschwiegen.
+
+- **kein** `stack_push`
+- `logger.info` mit dem gelesenen Vektor und dem Alter des Auftrags — sonst ist ein stiller Übersprung von einem Ausfall nicht zu unterscheiden (`22_STILLE_FEHLER`)
+- Audit `erledigt` mit dem Grund im Ergebnis, nicht `fehler`
+
+Ebenso ohne Stapel-Eintrag, aber mit `fehler`: keine Session-Turns lesbar, kein `user_id` im Auftrag.
+
+### 8.6 Die drei Zeilen
+
+| | |
+|---|---|
+| **ZIEL** | Steht der Nutzer beim Lauf unter Druck, hinterlässt ein `nachfragen`-Auftrag genau einen Stapel-Eintrag mit `aufgabe="nachfragen"`; steht er nicht mehr unter Druck, hinterlässt er keinen und einen Audit-Eintrag mit dem Grund. |
+| **TEST** | Wird rot, wenn ein Auftrag bei `emotions_vektor="plateau"` einen Stapel-Eintrag erzeugt, und wenn einer bei `absturz` keinen erzeugt. Dazu die Gegenprobe auf das Feld: ein Eintrag mit abweichendem `aufgabe`-Wert kommt durch `_emotional_kompatibel()` bei negativer Emotion nicht durch. |
+| **MESSUNG** | Ein echter Durchlauf am laufenden System: Ein Turn erzeugt einen Vektor aus `absturz`, `spirale` oder `einbruch`, der Auftrag gewinnt den Heartbeat, der Stapel-Eintrag entsteht, und die Zustellung lässt ihn durch. |
+
+> **Die Messung hat eine Hürde, die vor dem Bau zu nennen ist.** Messturns sind auf wissenschaftliche Themen beschränkt (`F-MESS-1`), und ein Absturz entsteht nicht auf Bestellung. Er ist trotzdem im Rahmen erreichbar: Ein wissenschaftliches Thema mit negativer Valenz — der Wärmetod, das Verlöschen der letzten Sterne — erzeugt einen Übergang ins Negative, ohne dass ein persönlicher Inhalt nötig wäre. Der Vektor liest die Bewegung, nicht den Gegenstand.
+
+### 8.7 Was nicht geändert wird
+
+Die Zustellung — Cooldown, Burst, Verträglichkeit, das Schweigen bei Stress — bleibt unberührt; sie ist gebaut und entscheidet weiterhin allein über das *Ob* (§4). Der Router bleibt, wie er ist. Am Kandidatenverfahren wird nichts geändert, auch nicht an der Verdrängung durch die Recherche-Aufträge (§5). Und `vertiefen` bleibt agentenlos.
+
+**Eine Änderung gehört doch dazu, weil sie sonst gegen den Agenten arbeitet:** `emotionaler_ausdruck` → `nachfragen` entfällt auf `""`, in **beiden** Kopien von `_INTENTION_AUFGABE_MAP` (§6). Ohne sie liefe der neue Agent überwiegend auf Aufträgen an, die keinen Druck tragen, und die Messung liefe gegen den falschen Bestand.
+
+---
+
+## Versionshistorie
+
+- **v0.4 — 05.08.26:** §8 neu — **der Bauplan.** Die tragende Entscheidung ist, dass der Druck **frisch gelesen** und nicht dem Auftrag entnommen wird: Die Aufträge im Bestand sind fünf bis neun Tage alt, und Zuwendung zu einem Druck, der vorbei ist, ist keine. Stufe 1 verdichtet **ohne Modellaufruf** — der Farbton spricht bereits im Zielregister, ein Hintergrundaufruf kostet hier 35 bis 38 Sekunden, und die deterministische Fassung ist der Zeuge, gegen den eine spätere Modellfassung zu messen wäre. Kein KZG-, Bibliotheks- oder Ziel-Schreiben, weil kein Wissen entsteht. Der Ausgang „kein Druck mehr" ist ausdrücklich `erledigt` und nicht `fehler`. ZIEL, TEST und MESSUNG stehen, samt der Hürde, dass ein Absturz sich nicht bestellen lässt — erreichbar über ein wissenschaftliches Thema mit negativer Valenz, weil der Vektor die Bewegung liest und nicht den Gegenstand.
+- **v0.3 — 05.08.26:** §2 um das prüfbare Kriterium geschärft — **die EI-Erkennung hat einen Druck gefunden**; Nova will präsent sein und fragt deshalb. Damit sind zwei Punkte ableitbar geworden, die eine Stunde vorher noch als „nicht abzuleiten" markiert waren. §7 neu — **die elementare Aufgabe**: Ein Agent legt einen Reiz ab und formuliert nicht; das Material ist der Druck, und die EI rechnet ihn bereits als Bewegung (`ei/berechnung.py`), als Klartext (`ei/farbton.py`) und als Schwere (`ei/dreischicht.py`). Der erste Punkt aus §4 ist damit nicht beantwortet, sondern als **falsch gestellt** erkannt: Er fragte nach einer Formulierung. In §6 entschieden: `emotionaler_ausdruck` → `nachfragen` ist ein **Defekt** und entfällt, weil die Intention keinen Druck trägt.
+- **v0.2 — 05.08.26:** §6 neu — die Trennung in zwei Agenten, entschieden, nachdem der Widerspruch zwischen diesem Dokument und `novaberg-autonomous-wissen_k.md` §11.3 gefunden war. Drei der vier offenen Punkte aus §4 entschieden, der erste (die Form) bleibt und ist als einziger offen gekennzeichnet — belegt durch eine Suche über alle Konzepte, die ihn nicht füllt. §5 um die Messung ergänzt, die den dort beschriebenen Defekt als **latent** ausweist: Die Recherche-Aufträge verdrängen die agentenlosen, und den Heartbeat blockiert stattdessen der besetzte Slot. Neu belegt und in §6 festgehalten: Der Auslöser `emotionaler_ausdruck` feuert auch bei positiver Emotion und widerspricht damit §2.
+- **v0.1 — 27.07.26:** Erstfassung. Hält fest, was an vier Stellen verdrahtet ist, und trennt es von dem, was nicht entschieden ist.
