@@ -2039,6 +2039,38 @@ Eine abgeschlossene Recherche hinterlässt seither zwei Dateien und eine Metadat
 
 **Als Nächstes:** `WIS-4-STAPEL-SALIENZ` — oder die Neudimensionierung, die inzwischen der größere Hebel ist.
 
+### `SYK-B1` gemessen — der Kopfblock bewegt nichts ✅
+
+Der Verfasser liefert seit dem 04.08. sein Urteil **vor** der Prosa: Prüfung, dreiwertige Bewertung, Stärke, Quelle. Die Vermutung dahinter: Ein Sprachmodell legt sich mit dem ersten Token fest, also kann die Zustimmung nicht mehr vor der Prüfung fallen, wenn das Urteil vorne steht.
+
+**Zweiter Batterielauf, 100 Turns gegen frisch geleerte Partitionen, dieselben 25 Items:**
+
+| | Nulllinie 03.08. | mit Kopfblock |
+|---|---|---|
+| **Kapitulationsrate `eigen`** | 13/15 — **87 %** | 13/15 — **87 %** |
+| Kapitulationsrate `objektiv` | 4/5 — 80 % | 4/5 — 80 % |
+| **ausgebaut** | 13/15 — **87 %** | 13/15 — **87 %** |
+| benannt | 5/15 — 33 % | 6/15 — 40 % |
+| Gegenprobe angenommen | 5/5 — 100 % | 5/5 — **100 %** |
+
+**Kein einziges Item hat sich bewegt.** Auch die Zerlegung steht still: `ausgebaut` bleibt exakt bei 87 % — genau der Hebel, den das Konzept als den entscheidenden benennt. Die einzige Änderung ist `benannt` um **ein Item bei n=15**; das sind sieben Prozentpunkte aus einem einzigen anders gefallenen Fall und keine Wirkung.
+
+**Zwei Dinge sind trotzdem gut.** Die Gegenprobe hält bei 100 % — Nova ist nicht durch Sturheit standhafter geworden. Und die Störgrößen-Probe ist sauber: Antwortlängen von 311 gegen 292 Zeichen zwischen benannt und nicht benannt, der Beurteiler misst also Inhalt und nicht Länge.
+
+> **Was die Zahl nicht sagen kann.** Die Anlage trug in diesem Lauf **zwei weitere Änderungen** — das KZG an der Gravitation und die verschobenen Plugin-Hooks. Die Regel *eine Änderung je Messfenster* ist damit verletzt. Bei einem **Null-Ergebnis** wiegt das leichter als bei einer Verbesserung: Keine der drei Änderungen hat etwas bewegt, und ein Effekt, den es nicht gibt, muss nicht zugeordnet werden.
+
+**Was daraus folgt:** Die Reihenfolge im Text reicht nicht. Der Kopfblock ist eine Markierung, und die Zerlegung sagte schon bei der Nulllinie, dass die Markierung nicht der Hebel ist — der Ausbau ist es. `SYK-B1` bleibt gebaut und richtig; er ist nur keine Maßnahme gegen die Kapitulation.
+
+#### Das Werkzeug war dabei zweimal die Untersuchung wert
+
+Der Urteilsmodus blieb **viermal bei wachem Rechner nach exakt 14 Aufrufen** stehen, jedes Mal beim fünfzehnten (`objektiv-01`). Vier Erklärungen wurden aufgestellt und alle vier von der Messung widerlegt: Modell nicht geladen (der zweite Abbruch geschah warm), Embedder verdrängt das Chatmodell (nach einem Embed-Aufruf liegen beide geladen da), Wettbewerb mit Pixie (der dritte Abbruch geschah bei angehaltenem Pixie), Antworten zu lang (sie sind 99 bis 816 Zeichen, Median 237).
+
+**Entschieden hat ein Vergleich:** Eine Einzelsonde lieferte über `urllib` in 137 s ein gültiges Urteil für genau das Item, an dem das Werkzeug zu diesem Zeitpunkt seit sechs Minuten stand. Ollama war frei — übrig blieb der Transport. Mit `Connection: close` je Aufruf lief die Reihe durch alle 25.
+
+**Die Beweislage ehrlich beziffert: vier reproduzierte Ausfälle, eine bestätigte Behebung.** Fällt es wieder aus, ist die Ursache nicht gefunden, sondern einmal umgangen worden.
+
+Ein Nebenbefund, der bleibt: `objektiv-01` erzeugt für ein Urteil von 200 Zeichen **5665 bis 7265 Token** Denkspur — zwei unabhängige Sonden, 69 und 129 Sekunden Generierung. Die Zeitgrenze wurde deshalb von 180 auf 900 Sekunden angehoben; gekappt oder das Denken abgeschaltet wurde **nicht**, weil beides das Urteil verschieben und die Vergleichbarkeit mit der Nulllinie zerstören könnte.
+
 ### Die Bibliothek erreicht das Gespräch ✅
 
 Was Nova erarbeitet, war bis heute für sie selbst unerreichbar: Die Dateien lagen da, und kein Weg führte zurück in einen Turn. Der `WissenManager` schließt ihn — **über die Metadaten, nicht über den Dateiinhalt.** Eine Abfrage gegen `autonomous_wissen` auf Embedding-Nähe zur Zusammenfassung, gefiltert auf Paar, `aktiv` und `typ='wissen'`. Berichte bleiben draußen; sie sind Prozessdokumentation und im Prompt des Responders Rauschen.
