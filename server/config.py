@@ -492,6 +492,34 @@ EMOTION_MIN_WEIGHT: float = 0.15
 # Kurz halten — der Vektor soll Wendepunkte erkennen, nicht Grundstimmung.
 EMOTION_VEKTOR_TURNS: int = 8
 
+# Der Kanon der Emotionsvektoren — die geschlossene Menge, die
+# `ei/berechnung.py::emotions_vektor_bestimmen()` erzeugen kann.
+#
+# Er steht hier als **Obermenge**, damit ein gelesener Vektor validierbar ist
+# und nicht nur benutzbar: Ohne deklarierten Kanon ist ein unbekannter Wert
+# von einem gueltigen Nein nicht zu unterscheiden. Wer nur gegen die
+# Druck-Teilmenge prueft, liest bei einem Transportfehler „kein Druck" statt
+# „defekt" — und das sieht auf jeder Logstufe gleich aus.
+EMOTIONS_VEKTOREN: frozenset[str] = frozenset({
+    "absturz", "spirale", "einbruch",           # ins Negative
+    "abkuehlung", "plateau", "stabilisierung",  # seitwaerts
+    "erholung", "aufbluehen", "eskalation",     # ins Positive
+})
+
+# Die Teilmenge, die **Druck** bedeutet: eine Bewegung ins Negative.
+#
+#   absturz   positiv -> negativ
+#   einbruch  neutral -> negativ
+#   spirale   negativ -> negativ, mit neuen negativen Gefuehlen
+#
+# Kriterium des NachfragenAgenten (novaberg-pixie-nachfragen_k.md §2) und
+# zugleich die Emotionsvektor-Weiche des Pixie-Routers. Eine Konstante, weil
+# dieselbe Menge sonst an zwei Stellen als Literal stuende und auseinander-
+# laufen koennte — dieselbe Klasse wie die doppelte Intentionstabelle.
+EMOTIONS_VEKTOREN_DRUCK: frozenset[str] = frozenset({
+    "absturz", "spirale", "einbruch",
+})
+
 # Fenster für Sprachstil-Erkennung (regelbasiert).
 # Misst aktuelle Formulierung, nicht emotionalen Kontext.
 STIL_ANALYSE_TURNS: int = 5

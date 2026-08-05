@@ -15,7 +15,10 @@ logger = logging.getLogger("ki_server.agents.kzg.queues")
 
 # Intention -> Shadow-Aufgabe Mapping
 _INTENTION_AUFGABE_MAP: dict[str, str] = {
-    "emotionaler_ausdruck": "nachfragen",
+    # Kein Auftrag — siehe die gleichlautende Stelle in `memory/kzg.py`:
+    # `nachfragen` setzt einen erkannten Druck voraus, diese Intention traegt
+    # keinen. **Diese Tabelle steht doppelt und muss mitgeaendert werden.**
+    "emotionaler_ausdruck": "",
     "information_teilen":   "vertiefen",
     "recherche_vertiefen":  "recherche",
     "reflexion":            "recherche",

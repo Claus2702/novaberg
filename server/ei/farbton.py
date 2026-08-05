@@ -137,6 +137,56 @@ def _farbe_tone(tone: str, stil: str) -> str:
     return farben.get(tone, "")
 
 
+def lage_beschreiben(
+    vektor:  str,
+    emotion: str,
+    arousal: float,
+    dynamik: str,
+) -> str:
+    """Beschreibt eine emotionale Lage aus rohen Werten, ohne Zustandsverbund.
+
+    Fuer Aufrufer ausserhalb des Graphen — Hintergrundagenten haben keinen
+    `ConversationState`, brauchen aber dieselben Saetze. Die Texte stehen
+    deshalb weiterhin nur hier: Eine zweite Formulierung derselben Lage
+    liefe beim naechsten Nachschaerfen auseinander.
+
+    Bewusst nur drei der acht Dimensionen — Bewegung, Stimmung, Naehe. Modus,
+    Stil, Ton und Intent beschreiben die *Gespraechsform*; wer keinen Turn vor
+    sich hat, sondern eine Lage, hat sie nicht und soll sie nicht raten.
+
+    **Die Beschreibung adressiert niemanden.** Sie sagt „Die Stimmung ist
+    eingebrochen", nicht „Wie geht es dir?". Genau darin liegt ihr Wert fuer
+    den Shadow-Stack, der einen Reiz erwartet und keinen fertigen Satz.
+
+    Vorbedingung: `arousal` liegt in [0.0, 1.0]; `vektor`, `emotion` und
+        `dynamik` stammen aus ihren Kanons. Pruefung erfolgt beim Aufrufer —
+        die Werte kommen dort von der Eingabegrenze, hier nicht mehr.
+    Nachbedingung: Nicht-leere Zeichenkette. Schweigen alle drei Dimensionen,
+        steht dort der Ersatzsatz — eine leere Lage waere fuer den Aufrufer
+        von einem Fehlschlag nicht zu unterscheiden.
+    Fehlerfaelle: Keine. Unbekannte Werte tragen nichts bei, statt zu werfen;
+        die Zugehoerigkeit zum Kanon ist die Sache des Aufrufers.
+    """
+    farben: list[str] = [
+        _farbe_vektor(vektor),
+        _farbe_emotion(emotion, arousal),
+        _farbe_dynamik(dynamik),
+    ]
+
+    lage: str = " ".join(f for f in farben if f)
+
+    # ── Ausgabe-Verifikation ────────────────────
+    if not lage:
+        logger.info(
+            f"Farbton: Lage aus vektor={vektor!r}, emotion={emotion!r}, "
+            f"arousal={arousal:.2f}, dynamik={dynamik!r} ergab keinen Satz — "
+            f"Ersatzsatz gesetzt"
+        )
+        return "Die Lage ist unauffaellig."
+
+    return lage
+
+
 def farbton_berechnen(state: ConversationState) -> str:
     """Mischt die 8 Dimensionen zu einer Landschaftsbeschreibung.
 

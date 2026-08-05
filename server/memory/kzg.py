@@ -78,7 +78,12 @@ def _kzg_prefix(user_id: str, character_id: str) -> str:
 # Intention → Shadow-Aufgabe Mapping
 # ─────────────────────────────────────────────
 _INTENTION_AUFGABE_MAP: dict[str, str] = {
-    "emotionaler_ausdruck": "nachfragen",
+    # Kein Auftrag: `nachfragen` setzt einen von der EI erkannten **Druck**
+    # voraus, und diese Intention deckt jede Gefuehlsaeusserung ab, auch
+    # Freude und Begeisterung. Die Aufgabe blieb bis 05.08.2026 auf
+    # "nachfragen" und erzeugte ueberwiegend Auftraege ohne Druck.
+    # Den Druck liefert der Emotionsvektor-Pfad des Routers.
+    "emotionaler_ausdruck": "",
     "information_teilen":   "vertiefen",
     "recherche_vertiefen":  "recherche",
     "reflexion":            "recherche",

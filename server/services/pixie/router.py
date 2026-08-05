@@ -7,6 +7,7 @@ Einfache Heuristik fuer den Start — kann spaeter durch LLM-Router ersetzt werd
 import logging
 
 from agents import AgentRegistry
+from config import EMOTIONS_VEKTOREN_DRUCK
 
 logger = logging.getLogger("ki_server.pixie")
 
@@ -90,7 +91,11 @@ def _route_delegation(daten: dict) -> str:
     emotions_vektor: str = daten.get("emotions_vektor", "")
 
     # Emotionale Vektoren -> Nachfragen (einfuehlsame Begleitung)
-    if emotions_vektor in ("absturz", "spirale", "einbruch"):
+    #
+    # Dieselbe Menge benutzt der NachfragenAgent als Vorbedingung. Sie steht
+    # als Konstante in `config.py` statt hier als Literal, damit die beiden
+    # Stellen nicht auseinanderlaufen koennen.
+    if emotions_vektor in EMOTIONS_VEKTOREN_DRUCK:
         return "nachfragen"
 
     # Default: Recherche
