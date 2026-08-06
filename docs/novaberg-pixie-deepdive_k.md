@@ -6,6 +6,9 @@
 **Pfad:** novaberg/docs/novaberg-pixie-deepdive_k.md
 **Quellen:** nova-05-k-b.md (VertiefungsAgent-Abschnitte)
 
+> **Übergeordnet seit dem 06.08.2026: `novaberg-thinking-erkenntniszyklus_k.md`.** Dieses Dokument beschreibt einen **Bestandteil**; die Folge, in der er ausgelöst wird, besitzt der Zyklus. Insbesondere gilt: **Recherche und Vertiefung werden nicht mehr direkt aus einer Intention ausgelöst**, sondern erst, wenn das Nachdenken über den vorhandenen Bestand eine Lücke gefunden hat. Die Überarbeitung dieses Dokuments auf den Zyklus steht aus.
+
+
 > **Bestätigt am 06.08.2026: Die Quelle ist das Web**, wie in §4 beschrieben. `novaberg-autonomous-wissen_k.md` §11.3 führte `vertiefung` als „aus dem eigenen Bestand" — das gilt für die **Auswahl der Grabungsstelle**, nicht für das Material. Dieses Dokument ist vier Monate älter als der Wissensspeicher und kennt ihn nicht; seine Architektur bleibt trotzdem gültig.
 >
 > **Nicht baubar, solange `PIX-WARTESCHLANGE-AM-MODELL` steht:** Der Agent importiert die Aufrufkette der Recherche, und jeder Hintergrundaufruf läuft gegen eine 300-Sekunden-Grenze bei 35–38 s Grundkosten.

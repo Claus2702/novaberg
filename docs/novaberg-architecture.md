@@ -687,6 +687,7 @@ Das Handbuch ist nach Betrachtungstiefen organisiert. Tiefe 0 ist der Einstiegsp
 |----------|-------------|
 | novaberg-thinking-curiosity_k.md | Neugier (Charakter-Resonanz, intrinsische Motivation, Reflexion) |
 | novaberg-thinking-drive_k.md | Antrieb (Ziele, Motivation, Gravitation, Dual-Emotion) |
+| novaberg-thinking-erkenntniszyklus_k.md | **Der Erkenntniszyklus** — die Folge, in der Nova ein Thema durchdringt: Nachdenken vor Nachschlagen. Übergeordnet über Meinung, Neugier, Wissenslücken und Wissensspeicher |
 
 ### Tiefe 2 — Technik & Tools (3)
 

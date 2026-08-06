@@ -8,7 +8,10 @@
 **Quellen:** Chat 70 (autoresearch, Claude Code autoDream, SWE-agent, Letta, Sleep-time Compute Paper)
 **Verwandt:** `novaberg-klaerung_k.md` (woher der Auftrag kommt) · `novaberg-gedankenkette_k.md` (wie er ueber mehrere Zuege traegt) · `novaberg-wissensluecken_k.md` (Themen-Neugier, ein anderer Gegenstand)
 
-> **§11 ist gegenueber §1 bis §10 vorrangig.** Die frueheren Abschnitte beschreiben den Entwurf vom April; wo sie ihm widersprechen, gilt §11. Sie bleiben stehen, weil sie die Begruendungen tragen, die weiterhin gelten.
+> **§11 ist gegenueber §1 bis §10 vorrangig.**
+
+> **Übergeordnet seit dem 06.08.2026: `novaberg-thinking-erkenntniszyklus_k.md`.** Dieses Dokument beschreibt einen **Bestandteil**; die Folge, in der er ausgelöst wird, besitzt der Zyklus. Insbesondere gilt: **Recherche und Vertiefung werden nicht mehr direkt aus einer Intention ausgelöst**, sondern erst, wenn das Nachdenken über den vorhandenen Bestand eine Lücke gefunden hat. Die Überarbeitung dieses Dokuments auf den Zyklus steht aus.
+ Die frueheren Abschnitte beschreiben den Entwurf vom April; wo sie ihm widersprechen, gilt §11. Sie bleiben stehen, weil sie die Begruendungen tragen, die weiterhin gelten.
 
 ---
 

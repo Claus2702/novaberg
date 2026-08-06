@@ -7,6 +7,9 @@
 **Status:** Konzept. Skelett steht, Kalibrierung offen. Bewusst offene Punkte sind durchgehend mit ⬜ markiert und in §10 gesammelt.
 **Verwandt:** novaberg-thinking-drive_k.md · novaberg-thinking-frames_k.md · novaberg-memory-synapsen_k.md · novaberg-node-gv_k.md · novaberg-node-tribunal.md · novaberg-pixie.md · novaberg-ei.md
 
+> **Übergeordnet seit dem 06.08.2026: `novaberg-thinking-erkenntniszyklus_k.md`.** Dieses Dokument beschreibt einen **Bestandteil**; die Folge, in der er ausgelöst wird, besitzt der Zyklus. Insbesondere gilt: **Recherche und Vertiefung werden nicht mehr direkt aus einer Intention ausgelöst**, sondern erst, wenn das Nachdenken über den vorhandenen Bestand eine Lücke gefunden hat. Die Überarbeitung dieses Dokuments auf den Zyklus steht aus.
+
+
 ---
 
 ## 1. Leitidee — Meinung ist der Bodensatz eines Wesens

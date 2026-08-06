@@ -9,6 +9,9 @@
 **Voraussetzung:** `novaberg-convention-abgeleitete-werte.md`
 **Abnehmer:** `novaberg-salienz-berechnung_k.md` §4 — dritter Antrieb im Eigen-Pfad
 
+> **Übergeordnet seit dem 06.08.2026: `novaberg-thinking-erkenntniszyklus_k.md`.** Dieses Dokument beschreibt einen **Bestandteil**; die Folge, in der er ausgelöst wird, besitzt der Zyklus. Insbesondere gilt: **Recherche und Vertiefung werden nicht mehr direkt aus einer Intention ausgelöst**, sondern erst, wenn das Nachdenken über den vorhandenen Bestand eine Lücke gefunden hat. Die Überarbeitung dieses Dokuments auf den Zyklus steht aus.
+
+
 ---
 
 ## 1. Welche Neugier hier gemeint ist

@@ -6,6 +6,9 @@
 **Pfad:** novaberg/docs/novaberg-thinking-curiosity_k.md
 **Quellen:** Chat 10 (Traum-Modus-Entscheidung, Resonanz-Modell), Chat 20 (Spiegelproblem, Saatgut), Chat 39 (Gesprächsvektor), Chat 45 (Nova-Destillation), Chat 51 (Neugier-Mechanismus)
 
+
+> **Übergeordnet seit dem 06.08.2026: `novaberg-thinking-erkenntniszyklus_k.md`.** Dieses Dokument beschreibt einen **Bestandteil**; die Folge, in der er ausgelöst wird, besitzt der Zyklus. Insbesondere gilt: **Recherche und Vertiefung werden nicht mehr direkt aus einer Intention ausgelöst**, sondern erst, wenn das Nachdenken über den vorhandenen Bestand eine Lücke gefunden hat. Die Überarbeitung dieses Dokuments auf den Zyklus steht aus.
+
 ---
 
 > ## ⚠ Namens- und Zustandsvermerk (Chat 111, 27.07.2026)

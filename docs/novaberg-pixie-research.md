@@ -6,6 +6,9 @@
 **Pfad:** novaberg/docs/novaberg-pixie-research.md
 **Quellen:** nova-05-m-b.md, nova-05-k-b.md
 
+
+> **Übergeordnet seit dem 06.08.2026: `novaberg-thinking-erkenntniszyklus_k.md`.** Dieses Dokument beschreibt einen **Bestandteil**; die Folge, in der er ausgelöst wird, besitzt der Zyklus. Insbesondere gilt: **Recherche und Vertiefung werden nicht mehr direkt aus einer Intention ausgelöst**, sondern erst, wenn das Nachdenken über den vorhandenen Bestand eine Lücke gefunden hat. Die Überarbeitung dieses Dokuments auf den Zyklus steht aus.
+
 ---
 
 ## 1. Aufgabe
