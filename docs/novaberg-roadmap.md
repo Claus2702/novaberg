@@ -2022,6 +2022,20 @@ Beide Räder haben eine Nabe — den Wert ohne jede Ausprägung — und das Erge
 
 **Umfang:** 21 Items, 203 Turns, 18 gefahren. Erstmals eine zurückgewiesene Gegenprobe (4/5 statt 5/5).
 
+### Am Ende: der Erkenntniszyklus
+
+Aus der Frage, was eigentlich mit dem gesammelten Wissen geschieht, ist ein Konzept geworden. Der Bestand gab die Diagnose: **675 Aufträge in der Queue, 24 Wissenseinträge, `ergaenzung` genau einmal.** Zusammenhanglose Aufsätze, weil der Auftrag ein Reflex auf einen salienten Turn ist und kein Schritt fragt, ob Nova das Thema längst kennt.
+
+**Der Zyklus kehrt die Reihenfolge um: Nachdenken vor Nachschlagen.** Ein Thema wird zuerst gegen den eigenen Bestand gehalten; Recherche und Vertiefung entstehen erst aus einer gefundenen Lücke. Das Ergebnis fließt zurück, und über Runden um einen Themenanker entsteht Durchdringung statt Sammlung.
+
+Zwei Dinge brauchte er nicht neu zu erfinden: Der **Erfüllungsgrad** ist der laufende Ertrag des vorhandenen Keep/Discard-Gates über die Runden eines Themas, und der **Traum** ist kein fünfter Modus, sondern der Themengeber, wenn von außen nichts kommt.
+
+Zwei Wachen stehen darin, statt angenommen zu werden: Die Klasse `wiederholung` ist in 45 Läufen **nie** vergeben worden — eine Exit-Bedingung, die nie feuert, ist keine. Und die tragende Vorfrage steht vor dem Bau: Welcher Anteil der 606 Altaufträge fiele weg, weil Nova das Thema schon abdeckt? Ohne Lauf und ohne Modellaufruf zu beantworten.
+
+**Erfolgskriterium, billig und schon erhoben:** Trägt der Zyklus, steigt `ergaenzung` gegen `echte_tiefe`. Heute 1 : 23.
+
+Die sechs Konzepte, die die Bestandteile halten, tragen eine **Marke** statt einer Überarbeitung — die ist als eigener Auftrag geführt. Zwei Konzepte widersprachen sich dabei erneut: `vertiefen` schöpft aus dem **Web**, entschieden am 06.08.
+
 ---
 
 ## Chat 128 (04.08.2026) — Die Bibliothek bekommt ihre Tabelle, und der Test war sein eigener Zünder ✅
