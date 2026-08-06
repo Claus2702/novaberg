@@ -6,6 +6,10 @@
 **Pfad:** novaberg/docs/novaberg-pixie-deepdive_k.md
 **Quellen:** nova-05-k-b.md (VertiefungsAgent-Abschnitte)
 
+> **Bestätigt am 06.08.2026: Die Quelle ist das Web**, wie in §4 beschrieben. `novaberg-autonomous-wissen_k.md` §11.3 führte `vertiefung` als „aus dem eigenen Bestand" — das gilt für die **Auswahl der Grabungsstelle**, nicht für das Material. Dieses Dokument ist vier Monate älter als der Wissensspeicher und kennt ihn nicht; seine Architektur bleibt trotzdem gültig.
+>
+> **Nicht baubar, solange `PIX-WARTESCHLANGE-AM-MODELL` steht:** Der Agent importiert die Aufrufkette der Recherche, und jeder Hintergrundaufruf läuft gegen eine 300-Sekunden-Grenze bei 35–38 s Grundkosten.
+
 ---
 
 ## 1. Aufgabe

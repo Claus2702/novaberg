@@ -1,6 +1,6 @@
 # Novaberg — Roadmap (Projektchronik)
 
-**Stand:** Chat 129, 5. August 2026
+**Stand:** Chat 129, 6. August 2026
 *(Die Kopfzeile stand bis Chat 109 auf „Chat 93, 21. Mai 2026" — 15 Chats hinter dem Inhalt. **Sie ist danach erneut zurückgefallen:** von Chat 110 bis 114 blieb sie auf „Chat 109" stehen, während der Inhalt weiterwuchs, und wurde in Chat 115 nachgezogen. Wer hier etwas ergänzt, zieht die Kopfzeile mit — sie driftet zuverlässig. Achtung beim Nachschlagen: Nur bis Chat 97 trägt jeder Chat eine eigene `## Chat NNN`-Überschrift; die Chats 98–108 stehen als `###`-Abschnitte unter dem Chat-97-Block, benannt nach Sprint statt nach Chat.)*
 **Pfad:** novaberg/docs/novaberg-roadmap.md
 **Single Source of Truth für abgeschlossene Arbeit.**
@@ -1983,7 +1983,7 @@ Beide Räder haben eine Nabe — den Wert ohne jede Ausprägung — und das Erge
 
 ---
 
-## Chat 129 (05.08.2026) — Ein Name trug zwei Rollen, und der Agent, der nichts beschafft ✅
+## Chat 129 (05./06.08.2026) — Ein Name trug zwei Rollen, und der Agent, der nichts beschafft ✅
 
 **`nachfragen` war zweimal konzipiert.** Zwei Konzepte beschrieben denselben Aufgabennamen in unvereinbaren Rollen — Zuwendung gegen Wissensbeschaffung —, und keines wusste vom anderen; das jüngere schrieb ausdrücklich, der Name komme „in keinem Konzept vor", während er an vier Stellen im Code verdrahtet war. Getrennt in zwei Agenten: `nachfragen` behält die verdrahtete Zuwendungs-Rolle, die Wissensrolle heißt `klaerfrage` und wartet auf das Klärungstor. Daraus die Festlegung, dass ein Aufgabenname genau einer Rolle gehört und die Suche **vor** dem Konzept steht.
 
@@ -2004,6 +2004,23 @@ Beide Räder haben eine Nabe — den Wert ohne jede Ausprägung — und das Erge
 - **Das Zuwendungsrad wirkt bisher nur stromabwärts.** Die Größe `fragen` existiert und wird von jeder Speiche gespeist — `pflicht` mit **−0.20**, weil „Aufträge ernst nehmen" abarbeitet statt fragt. Sie formt aber Novas Antwort, nachdem der Reiz durch ist, und nicht, ob er aufgeworfen wird. Als `PIX-STAPEL-RADFAKTOR` aufgenommen, multiplikativ mit Untergrenze über null, damit „kein Veto" eine Eigenschaft der Bauart ist.
 - **Der WiedervorlageAgent legt einen fertig formulierten Satz auf den Stapel**, wo die Zustellung Material erwartet — genau der Fall, den der Zustellungspfad für sich behoben hat. In der Fundliste.
 - **Das Messgerät war wieder der unzuverlässige Teil, dreimal.** Ein Agent, der Modell-Worker benutzt, ist in einem frisch gestarteten Prozess nicht messbar: erst fehlte der Worker, dann war die Ereignisschleife geschlossen. Erst der dritte Aufbau — eine Schleife, `invoke` über `to_thread`, wie der echte Dispatch — hat gemessen.
+
+### In der Nacht: die zweite Hälfte von `SYK-B0` — ein Nullbefund, den die Auswahl erzwungen hat
+
+**Der Abstand zwischen Fakt und Widerspruch trägt nicht.** Dieselben fünf `eigen`-Items, wörtlich unverändert, nur die Zahl der Füllturns wächst — von zwei über sechs auf fünfzehn. Über die vier in allen Stufen vorliegenden Items: **100 / 75 / 100 Prozent** Kapitulation. Bei fünfzehn Turns, anderthalbmal so weit wie im ursprünglichen Befund, liegt die Rate wie bei zwei.
+
+**Dass es keinen Anstieg geben konnte, ist ein Fehler der Auswahl und keiner des Systems.** Genommen waren die Items aus dem Befund — genau die, die in beiden Vorläufen bei 5/5 lagen. Eine Rate am Anschlag kann nicht steigen. Die drei Items **mit** Spielraum standen die ganze Zeit in der Urteilsdatei des Vorlaufs; die Abfrage dauert zwei Minuten und wurde nicht gemacht. Der Harness trug seit dem Vortag die Regel, die genau das verhindern sollte — sie benannte nur die andere Hälfte, den Mechanismus statt der Stichprobe. Als Lesson eingetragen.
+
+**Zwei Ergebnisse trägt der Lauf trotzdem, und eines davon war der Grund für seinen Zuschnitt:**
+
+- **Die Nulllinie reproduziert sich zum dritten Mal in drei Tagen — erstmals über eine Systemänderung hinweg.** 5/5 Kapitulation, 5/5 ausgebaut, obwohl zwischen dem zweiten und dritten Lauf der NachfragenAgent in Betrieb ging. Er springt auf emotionale Lagen an, und die Zustellung lässt bei negativer Emotion genau ihn durch — der Verdacht auf eine Störung war real genug, um die Nulllinie eigens mitzufahren. **Sie hat sich nicht verschoben.**
+- **Der Ausbau ist abstandsunabhängig**, 11 von 12 über alle Stufen.
+
+> **Damit ist von den zwei Größen, die der ursprüngliche Befund vermengte, die eine entlastet.** Er hatte zehn Turns Abstand **und** eine über sechzehn Turns gewachsene Beziehung. Der Abstand trägt nicht — **es bleibt die Beziehung**, und die ist nur über volle Bögen zu variieren.
+
+**Drei Funde nebenbei:** `vorgabe: abstand` in der Batteriedatei wird von niemandem gelesen — der Abstand steckt allein in der Länge der Füllturnliste, weshalb die zweite Hälfte kein neues Rig brauchte. Der Beurteiler gibt seit drei Läufen eine Störgrößen-Warnung aus (`benannt` geht mit doppelter Antwortlänge einher), die nie ausgewertet wurde. Und die 420-Sekunden-Decke kostete drei Items, ohne zwischen einem verlorenen Füllturn und einem verlorenen Widerspruchsturn zu unterscheiden.
+
+**Umfang:** 21 Items, 203 Turns, 18 gefahren. Erstmals eine zurückgewiesene Gegenprobe (4/5 statt 5/5).
 
 ---
 

@@ -1791,7 +1791,27 @@ Wer nicht benennt, baut **immer** aus — null Ausnahmen bei 24 Gelegenheiten. U
 
 **Und die naheliegende Erkennung ist ebenfalls widerlegt.** Eine deterministische Prüfung, ob der strittige Wert in Novas Antwort wiederkehrt, findet ihn auch dann nur in **6 von 17** Ausbauten, wenn er korrekt benannt ist — und schlägt bei den sauberen Fällen fast immer an. Nova baut aus, ohne den Wert zu nennen, und nennt ihn, wenn sie sauber bleibt. Kein Textvergleich trennt Zitat von Verwendung; das kann nur die neutrale Prüffrage.
 
-**Eindämmung:** `novaberg-sykophanz-eindaemmung_k.md` — elf Bauteile mit Reihenfolge, Zielgröße ist **Markierung statt Korrektur**.
+**Update Chat 129 (06.08.2026) — der Abstand ist entlastet, die Nulllinie hält über eine Systemänderung.**
+
+Die zweite Hälfte von `SYK-B0` ist gefahren: dieselben fünf `eigen`-Items, wörtlich unverändert, nur die Zahl der Füllturns zwischen Fakt und Widerspruch wächst — von zwei auf sechs und fünfzehn. 21 Items, 203 Turns, 18 gefahren.
+
+| Abstand | Kapitulation über die vier gemeinsamen Items |
+|---|---|
+| 2 | 100 % |
+| 6 | 75 % |
+| 15 | 100 % |
+
+**Kein Anstieg.** Der ursprüngliche Befund hatte **zehn** Turns zwischen Fakt und Widerspruch, die erste Hälfte nur zwei — der Verdacht war, dass der Abstand die Rate treibt. Er tut es nicht: Bei fünfzehn Turns, anderthalbmal so weit wie im Befund, liegt die Rate wie bei zwei.
+
+> **Die Anordnung konnte einen Anstieg allerdings gar nicht zeigen.** Gewählt waren die Items des ursprünglichen Befundes, und die lagen in beiden Vorläufen bei 5/5 — eine Rate am Anschlag kann nicht steigen. Als Aussage über den Abstand ist der Lauf schwach; als Nullbefund über die harten Items gültig.
+
+**Was er sicher trägt:** Die Nulllinie reproduziert sich **zum dritten Mal in drei Tagen, erstmals über eine Systemänderung hinweg** — 5/5 Kapitulation, 5/5 ausgebaut, obwohl zwischen dem zweiten und dritten Lauf der NachfragenAgent in Betrieb ging. Sie wurde eigens im selben Lauf mitgefahren, um genau das zu prüfen. Und der **Ausbau ist abstandsunabhängig**, 11 von 12 über alle Stufen.
+
+**Folge für die Suche:** Der Befund unterschied sich in zwei Größen von der Batterie — Abstand **und** eine über sechzehn Turns gewachsene Beziehung. Die erste ist entlastet. **Es bleibt die Beziehung.**
+
+**Zwei Nebenbefunde:** Erstmals wurde eine Gegenprobe zurückgewiesen (4/5 statt 5/5) — bei n=1 kein Befund, aber die Stelle, an der ein Nebeneffekt zuerst sichtbar würde. Und der Beurteiler warnt vor sich selbst: `benannt` geht mit der doppelten Antwortlänge einher (Median 502 gegen 262 Zeichen).
+
+**Eindämmung:** `novaberg-sykophanz-eindaemmung_k.md` — elf Bauteile mit Reihenfolge, Zielgröße ist ~~Markierung statt Korrektur~~ **der Ausbau** (korrigiert am 05.08.2026, siehe Update Chat 128).
 
 ---
 

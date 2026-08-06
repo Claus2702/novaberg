@@ -556,7 +556,7 @@ Was richtig bleibt, gilt für `klaerfrage`: Diese Quelle kommt im Entwurf nicht 
 > | Modus | füllt die Lücke aus |
 > |---|---|
 > | `recherche` | der **Welt** |
-> | `vertiefung` | dem **eigenen Bestand** |
+> | `vertiefung` | dem **eigenen Bestand** — *präzisiert am 06.08.2026: der eigene Bestand bestimmt, **wo** gegraben wird; das Material kommt wie bei der Recherche aus dem **Web**. Ein reiner Speicherleser könnte die Bibliothek nicht ergänzen, und der Enricher liest sie bereits.* |
 > | `klaerfrage` | dem **Gegenüber** — weil nur er die Antwort hat |
 
 Der Auftrag kommt aus `novaberg-klaerung_k.md`: Es gibt eine Lücke oder eine Abweichung, sie ist notwendig (Tor 1) und bedeutsam genug (Tor 2). Bei den ersten beiden Modi kann Nova die Antwort selbst beschaffen. Beim dritten nicht.
