@@ -634,6 +634,7 @@ Das Handbuch ist nach Betrachtungstiefen organisiert. Tiefe 0 ist der Einstiegsp
 | novaberg-gv-initiative.md | Initiative-Achse — Modul: Datenfluss, Konstanten mit Kalibrierungsstand, Messungen |
 | novaberg-charakter-rad-messreihe_k.md | Die Charakter-Räder als Messreihe — Konzept: Das Rad misst einen akuten Zustand und wird durch die Messungen der letzten Tage stabilisiert; rohe Messungen in `charakter_rad_messung`, gelesener Wert als gewichtetes Mittel (🔶 gebaut für das Zuwendungs-Rad) |
 | novaberg-haltungsraum_k.md | Haltungsraum — Konzept: Landschaft setzt Grundwerte für fünf Verhaltensgrößen, das Zuwendungsrad modifiziert sie; Grenzen multiplizieren, Neigungen addieren, Übersteuerungen ersetzen (🔶 Rechnung und Knoten gebaut und im Betrieb, Protokoll und Prompt offen) |
+| novaberg-kalibrierung_k.md | **Kalibrierung** — Konzept über alle Stellschrauben: sechs Klassen (Naben, Beiträge, Schwellen, Verfall, Glättung, Kennlinien), der Erwartungskorridor als Pflicht vor jedem Dreh, und die Trennung von Ablesung und Wirkgröße — eine gestreckte Skala ist kein Befund (⬜ Verfahren steht, kein Korridor geschrieben) |
 | novaberg-node-verfasser_k.md | Verfasser — Konzept: ein Node vor dem Responder, der den fachlichen Inhalt bestimmt; Inhalt und Wesen werden getrennt (⬜ nicht gebaut) |
 | novaberg-node-responder.md | Responder (Antwortgenerierung, EI-MIKRO) |
 | novaberg-node-thinker.md | Thinker (Faktenpruefung, Web-Suche) |
