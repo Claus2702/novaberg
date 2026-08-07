@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Konzept — Kalibrierung und Messung der Stellschrauben
-**Stand:** 6. August 2026
+**Stand:** 8. August 2026
 **Bezug:** `novaberg-haltungsraum_k.md`, `novaberg-charakter-rad-messreihe_k.md`, `novaberg-charakter-resonanz_k.md`, `novaberg-convention-abgeleitete-werte.md`
 
 ---
@@ -22,7 +22,7 @@ Das System folgt einer nachvollziehbaren Logik und liefert Werte, die zu nah bei
 
 Sechs Menschen, die nichts miteinander zu tun haben, liegen in ihrer Beziehungsprosa bei 0.774. Das ist der Befund, den dieses Konzept bearbeitet: **Wo das System Haltung beschreibt, zieht es alles in dasselbe Register; wo es Inhalt auflistet, bleibt der Unterschied stehen.**
 
-**Und der Apparat schöpft aus, was er könnte, zu weniger als der Hälfte.** Gemessen am 07.08.2026 nach B1 (§7), 63 Antworten, Kosinus der Ausgänge bei festem Reiz und variiertem Charakterblock:
+**Und der Apparat schöpft aus, was er könnte, zu weniger als der Hälfte.** Gemessen am 07.08.2026 nach B1 (§8), 63 Antworten, Kosinus der Ausgänge bei festem Reiz und variiertem Charakterblock:
 
 | Arm | Median | |
 |---|---|---|
@@ -100,7 +100,7 @@ Glättung ist der direkte Gegenspieler der Unterscheidbarkeit: Sie kauft Stabili
 
 Heute die dünnste Klasse: Fast alle Abbildungen im System sind linear oder gar keine. Die Emotions-Normalisierung ist die Ausnahme und der Präzedenzfall — sie staucht und streckt nach Abstand im Plutchik-Kreis.
 
-Hier gehört die **Lupe** hin (§5).
+Hier gehört die **Lupe** hin (§6).
 
 ---
 
@@ -120,7 +120,83 @@ Eine Stellschraube wird nicht verstellt, bevor drei Zeilen geschrieben sind:
 
 ---
 
-## 5. Die Lupe — wo sie hingehört und wo nicht
+## 5. Kalibrieren und Validieren — zwei Mengen, die sich nicht berühren
+
+> **Eine Zahl, gegen die eingestellt wurde, ist als Beleg verbraucht.**
+
+Der Korridor aus §4 schützt vor der einen Hälfte des Problems: Er verhindert, dass man nachträglich für gut befindet, was herauskam. Er verhindert nicht die andere Hälfte — dass am Ende dieselbe Zahl den Erfolg belegt, gegen die eingestellt wurde. Diese Zahl misst dann, wie gut kalibriert wurde, und nicht, was das System leistet.
+
+**Entschieden am 08.08.2026, vor dem ersten Dreh an der Destillation.**
+
+### Die Kalibriermenge ist benannt und abgeschlossen
+
+Die **sechs Gesprächsbögen vom 02./03.08.2026** — sechs Personas, je 30 Turns, und alles daraus Destillierte: Profiltexte, Räder, KZG-Einträge, die 583 Einträge der Destillationsgrundlage.
+
+Auf ihr darf beliebig oft gemessen werden. Sie ist die Werkbank, und eine Werkbank wird nicht geschont. **Keine ihrer Zahlen ist je ein Beleg** — jede trägt den Vermerk „auf der Kalibriermenge" im Satz, nicht in einer Fußnote.
+
+Sie **wächst nicht**. Ein siebter Bogen, der zur Kalibrierung erhoben wird, gehört zu ihr; ein Bogen, der zur Validierung erhoben wird, darf nie zum Einstellen benutzt werden, auch nicht ein einziges Mal „zum Ansehen".
+
+### Was das die Trennschärfe kostet, und was von ihr bleibt
+
+Die 64,8 % der Blindtest-Reihe sind mit dieser Entscheidung als **Beleg** verbraucht, sobald die erste Schraube an der Destillation sich bewegt. Was von ihnen bleibt, ist der **Ausgangsstand**: die Trennschärfe des unkalibrierten Apparats auf der Kalibriermenge, gemessen am 06.08.2026. In dieser Rolle bleibt die Zahl gültig und wird gebraucht — ohne sie ist später keine Richtung ablesbar.
+
+**Und sie ist ungenauer, als sie aussieht.** Nachgerechnet am 08.08.2026 auf demselben Material:
+
+| Rechnung | Ergebnis |
+|---|---|
+| Binomialtest über 88 Urteile | 64,8 %, p = 0,007 |
+| Quoten der sechs Personas einzeln | 35,7 % · 50,0 % · 56,2 % · 66,7 % · 84,2 % · 100 % |
+| Streuung zwischen den Personas gegen reines Losen | Permutationstest, p = 0,010 — **größer als Losen** |
+| Bootstrap über ganze Personas, 20.000 Läufe | 64,8 %, **95 %-Intervall 49,4 % bis 80,0 %** |
+| Derselbe Bootstrap auf dem Kontrollarm `zufall` | 47,1 %, Intervall 40,7 % bis 55,0 % |
+
+Der Binomialtest zählt jedes Urteil als eigenen Fall. Das sind sie nicht: Alle Urteile einer Persona teilen sich denselben Profiltext und dieselben Antworten, und die Quoten zeigen es — von 35,7 % bis 100 %. Die unabhängige Einheit ist die **Persona**, und davon gibt es sechs.
+
+**Der Befund hält, seine Genauigkeit ist eine andere.** 96,6 % der Bootstrap-Läufe liegen über dem Zufall; das Intervall reicht aber bis 49,4 % hinunter. Die Gegenprobe steht im Kontrollarm: Dort, wo es nichts zu erkennen gibt, ist das Intervall halb so breit und schließt den Zufall ein — die Verbreiterung im Messarm ist der Personeneffekt und kein Artefakt der Rechnung.
+
+> **Eine Kalibrierung, die die Trennschärfe um zehn Punkte hebt, bewegt sich innerhalb dieses Intervalls.** Das ist der eigentliche Grund, warum die Validierungsmenge größer sein muss als die Kalibriermenge — nicht die Sauberkeit, sondern die Auflösung.
+
+### Die Validierungsmenge — was sie sein muss
+
+**Frische Bögen mit neuen Charakteren.** Nicht neue Gespräche derselben sechs: Deren Profile sind der Gegenstand der Kalibrierung, und ein zweites Gespräch mit Hartmut prüft ein Profil, das an Hartmut eingestellt wurde.
+
+**Der Bauplan steht vor der Kalibrierung, nicht die Texte.** Verbindlich festgelegt wird jetzt:
+
+- **Der Bogen ist derselbe** — sechs Phasen à fünf Turns, dieselben festen Sonden an denselben Turn-Nummern. Sonst vergleicht die Validierung zwei Anordnungen statt zwei Einstellungen.
+- **Die Sektorenbelegung wird vor der Kalibrierung geschrieben**, je Charakter ein Plutchik-Schwerpunkt und eine Kontrollperson mit flacher Kurve. Wer die Charaktere erst entwirft, nachdem er weiß, welche Sorte die neue Destillation gut trifft, hat die Menge kalibriert statt validiert.
+- **Der Umfang bemisst sich in Personas, nicht in Urteilen.** Mehr Urteile je Persona kaufen Genauigkeit, die nicht existiert.
+
+**Was die Zahl der Personas trägt** — gerechnet aus der beobachteten Streuung von 23,5 Punkten zwischen den sechs:
+
+| Personas | halbe Breite des Intervalls |
+|---|---|
+| 6 | ±19 Punkte |
+| 12 | ±13 Punkte |
+| 20 | ±10 Punkte |
+
+**Der Preis in Maschinenzeit ist nicht die Grenze.** Die sechs Bögen kosteten zusammen **2,65 Stunden** reine Turn-Zeit (gemessen am 08.08.2026 aus den Laufdateien, 26,5 Minuten je Bogen im Mittel). Zwölf kosten eine Nacht. Die Grenze ist das **Schreiben**: zwölf Charaktere mit je 30 gefüllten Turns, Fakt A, Fakt B, Peak, Bruch und Meinungssonde.
+
+### Die billige Vorfrage vor dem teuren Schreiben
+
+Bevor zwölf Bögen entstehen, ist auf der Kalibriermenge **umsonst** zu beantworten, wie viele es sein müssen. Die Destillation ist eine reine Funktion auf gespeicherten Einträgen: Alt und neu lassen sich auf denselben sechs Bögen rechnen, und die Trennschärfe je Persona lässt sich **paarweise** vergleichen.
+
+Was dabei herauskommt, ist die Streuung der **Differenz** je Persona — und die ist regelmäßig deutlich kleiner als die Streuung der Quoten selbst, weil die Schwierigkeit einer Persona sich herauskürzt. Sie, nicht die 23,5 Punkte, bestimmt den nötigen Umfang.
+
+**Diese Vorfrage ist selbst Kalibrierarbeit und läuft auf der Kalibriermenge.** Ihr Ergebnis ist eine Stichprobengröße, kein Beleg.
+
+### Die vier Regeln beim Validieren
+
+**Gemessen wird je eingefrorener Einstellung genau einmal.** Der Einfrierpunkt wird vorher geschrieben: woran erkennbar ist, dass die Kalibrierung fertig ist.
+
+**Jede Validierungsmessung wird gezählt und berichtet, auch die verworfene.** Wer drei Kandidaten validiert und den besten berichtet, berichtet ein Maximum aus drei — eine andere Größe, und eine, die systematisch höher liegt.
+
+**Alt und neu laufen auf denselben Validierungsbögen, verglichen wird je Persona.** Zwei Zahlen aus zwei verschiedenen Mengen sind bei dieser Streuung nicht vergleichbar, auch wenn beide sauber erhoben sind.
+
+**Der Urteiler der Validierung ist nicht das Modell, das die Antworten erzeugt hat.** Auf der Kalibriermenge trägt der interne Urteiler; für eine Aussage nach außen trägt er nicht.
+
+---
+
+## 6. Die Lupe — wo sie hingehört und wo nicht
 
 Der Vorschlag: Werte unterhalb einer Grenze ignorieren, den Bereich darüber spreizen — den mittleren Abschnitt am weitesten, die Ränder wieder stauchen. Ein Fischauge auf der Skala.
 
@@ -137,17 +213,17 @@ Der Vorschlag: Werte unterhalb einer Grenze ignorieren, den Bereich darüber spr
 
 ---
 
-## 6. Die Reihenfolge: Übertragung vor Kalibrierung
+## 7. Die Reihenfolge: Übertragung vor Kalibrierung
 
 > **Bevor eine Schraube gedreht wird, ist zu belegen, dass am anderen Ende überhaupt etwas ankommt.**
 
-Ein Apparat, der einen Unterschied nicht überträgt, liefert bei jeder Einstellung dasselbe Ergebnis — und jede Kalibrierung daran misst dann ihre eigene Anordnung. Der Nachweis der Übertragung ist billig und steht deshalb vor allem anderen (§7, B1).
+Ein Apparat, der einen Unterschied nicht überträgt, liefert bei jeder Einstellung dasselbe Ergebnis — und jede Kalibrierung daran misst dann ihre eigene Anordnung. Der Nachweis der Übertragung ist billig und steht deshalb vor allem anderen (§8, B1).
 
 Danach gilt für jede Reihe: **erst die Stichprobe prüfen, dann messen.** Ein Messobjekt, das bereits am Anschlag liegt, kann sich in die gemessene Richtung nicht bewegen; die Null, die herauskommt, ist eine Eigenschaft der Auswahl und keine des Systems.
 
 ---
 
-## 7. Die Bauteile
+## 8. Die Bauteile
 
 ### B1 — Übertragungsmessung
 
@@ -187,11 +263,22 @@ Danach gilt für jede Reihe: **erst die Stichprobe prüfen, dann messen.** Ein M
 | **MESSUNG** | Die Haltung wird über ihre Spanne gefahren, der Ausgang je Stufe verglichen. |
 | **Gegenprobe** | Haltung auf die Nabe: Das Ergebnis muss dem Lauf ohne Haltung entsprechen. |
 
-**Reihenfolge:** B1 vor allem anderen. B4 vor jedem Differenzweg — ein Delta ohne zweiten Pol ist eine Beschreibung des Gegenübers.
+### B5 — Die Validierungsmenge
+
+| Zeile | Inhalt |
+|---|---|
+| **ZIEL** | Es existiert eine Menge frischer Gesprächsbögen mit neuen Charakteren, auf der zum Zeitpunkt der Kalibrierung nicht gemessen wurde und auf der die Trennschärfe je Persona erhoben werden kann. |
+| **TEST** | Der Bogen ist strukturgleich zum Kalibrierbogen — dieselben Phasen, dieselben Sonden an denselben Turn-Nummern. Weicht er ab, vergleicht die Validierung zwei Anordnungen statt zwei Einstellungen. |
+| **MESSUNG** | Trennschärfe je Persona, alte und neue Einstellung auf **denselben** Bögen, paarweise je Persona verglichen. Berichtet werden das Mittel, das Intervall über ganze Personas und die **Zahl der bisherigen Validierungsläufe**. |
+| **Gegenprobe** | Der Kontrollarm mit dem Profil einer Unbeteiligten muss auf dem Zufall landen. Tut er das nicht, misst die Anordnung ihre eigene Bauart und nicht die Einstellung. |
+
+**Die Vorbedingung ist billig und steht auf der Kalibriermenge** (§5): die Streuung der paarweisen Differenz je Persona. Sie bestimmt, wie viele Bögen geschrieben werden müssen; ohne sie ist der Umfang geraten.
+
+**Reihenfolge:** B1 vor allem anderen. B4 vor jedem Differenzweg — ein Delta ohne zweiten Pol ist eine Beschreibung des Gegenübers. **B5 vor jeder Aussage nach außen** — und der Bauplan von B5 vor dem ersten Dreh, nicht erst vor dem ersten Bogen.
 
 ---
 
-## 8. Was ausdrücklich nicht enthalten ist
+## 9. Was ausdrücklich nicht enthalten ist
 
 - **Keine Entscheidung über einen einzelnen Wert.** Dieses Konzept regelt das Verfahren; welcher Beitrag auf welche Zahl gesetzt wird, entscheidet die Messung im jeweiligen Konzept.
 - **Keine Ablösung der Fachkonzepte.** Haltungsraum, Rad-Messreihe und Charakter-Resonanz behalten ihre Gegenstände; hier steht nur, was für alle drei gleich gilt.
@@ -200,8 +287,11 @@ Danach gilt für jede Reihe: **erst die Stichprobe prüfen, dann messen.** Ein M
 
 ---
 
-## 9. Was offen ist
+## 10. Was offen ist
 
+- **Die Validierungsmenge existiert nicht.** §5 legt ihren Bauplan fest und ihren Umfang als Kriterium; geschrieben ist kein einziger Bogen. Bis der erste steht, ist jede Zahl dieses Projekts über Charakterbildung eine Zahl auf der Kalibriermenge — und darf nur so berichtet werden.
+- **Die Sektorenbelegung der Validierungscharaktere ist nicht geschrieben**, und sie muss vor dem ersten Dreh an der Destillation stehen (§5). Danach ist sie eine Auswahl unter Kenntnis der Zwischenstände.
+- **Die Streuung der paarweisen Differenz je Persona ist unbekannt.** Sie bestimmt den nötigen Umfang der Validierungsmenge und ist auf der Kalibriermenge umsonst zu erheben (§5) — solange sie fehlt, ist die Zahl der zu schreibenden Bögen geraten.
 - **Der Erwartungskorridor ist für keine einzige Größe geschrieben.** Bis das für mindestens eine Klasse vorliegt, ist §4 eine Absicht.
 - **Die Entscheidung zwischen Sättigung und kleineren Beiträgen** (§3.2) steht seit dem 31.07.2026 aus und blockiert den Haltungsraum-Prompt.
 - **Ob die Lupe auf Ähnlichkeiten überhaupt Entscheidungen kippt**, ist unbekannt — B3 misst es, bevor sie eingeführt wird.
@@ -212,5 +302,6 @@ Danach gilt für jede Reihe: **erst die Stichprobe prüfen, dann messen.** Ein M
 
 ## Versionshistorie
 
+- **v0.3 — 08.08.2026:** **§5 neu — Kalibrieren und Validieren**, entschieden vor dem ersten Dreh an der Destillation. Die sechs Bögen vom 02./03.08.2026 sind **Kalibriermenge** und werden es bleiben; belegt wird ausschließlich auf frischen Bögen mit neuen Charakteren. Der naheliegende Ausweg — auf drei Personas kalibrieren, auf den anderen drei validieren — ist ausdrücklich ausgeschlossen: Die Einzelquoten der sechs sind bekannt, und wer sie kennt, kann keine unvoreingenommene Hälfte mehr bilden. Die Folgenummern §5 bis §9 sind zu §6 bis §10 geworden; §3.2 und §4 behalten ihre Nummern. **Dabei ist die Trennschärfe nachgerechnet worden, und das Ergebnis hat den Zuschnitt geändert:** Die 88 Urteile der Reihe verteilen sich auf sechs Personas mit Quoten von 35,7 % bis 100 %, und diese Streuung ist größer, als Losen sie erzeugt (Permutation, p = 0,010). Der Binomialtest, der zu p = 0,007 führte, zählt jedes Urteil als eigenen Fall; über ganze Personas gezogen steht dieselbe Zahl bei **64,8 % mit einem Intervall von 49,4 % bis 80,0 %**. Der Befund hält, aber eine Kalibrierung um zehn Punkte bewegt sich innerhalb des Intervalls — deshalb bemisst §5 den Umfang der Validierungsmenge in **Personas** und nicht in Urteilen. Die Gegenprobe steht im Kontrollarm derselben Reihe: halb so breites Intervall, Zufall eingeschlossen.
 - **v0.2 — 07.08.2026:** **B1 ist gefahren, und einer der fünf offenen Punkte ist damit erledigt** — der Rauschboden des Modells liegt bei 0.820, die Gegenprobe ohne Charakterblock bei 0.843, der Bestand bei 0.662 und die Obergrenze bei 0.464. Der Apparat schöpft rund **44 %** der Strecke aus; der Verlust sitzt in der Destillation, nicht in der Übertragung (§1). An die Stelle des erledigten Punktes tritt ein engerer: **Die Übertragung hängt am Reiz** — 80 % ausgeschöpft bei Beziehungsgehalt gegen 41 % bei einer Faktenfrage —, und damit ist offen, für welche Reiz-Mischung ein Korridor überhaupt gelten soll. §3.3 um eine gemessene Beobachtung erweitert, die beim Entwurf fehlte: **Eine Schwelle wirkt auch über die Größe der Trefferliste**, und die LZG-Liste ist bei drei Einträgen gedeckelt und in jedem sechsten Turn leer.
 - **v0.1 — 06.08.2026:** Erstfassung. Anlass ist die Profilähnlichkeits-Messung desselben Tages: Sechs unverwandte Menschen liegen in ihrer Beziehungsprosa bei 0.774, Novas sechs Selbstprofile bei 0.817, dieselben Menschen in ihren Themen bei 0.548 — dieselbe Skala, dasselbe Material, drei Lagen. Die tragende Unterscheidung des Konzepts (§2) folgt daraus: Eine gestreckte Skala ist kein Befund, und wer den Maßstab mit dem Gemessenen wandern lässt, kann später beides nicht mehr trennen. Die sechs Klassen in §3 sind aus dem Bestand gelesen, nicht entworfen.

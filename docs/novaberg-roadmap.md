@@ -1983,6 +1983,48 @@ Beide Räder haben eine Nabe — den Wert ohne jede Ausprägung — und das Erge
 
 ---
 
+## Chat 131 (08.08.2026) — Die Trennung von Kalibrieren und Validieren, und eine Zahl, die ungenauer ist als ihr p-Wert ✅
+
+Kein Produktivcode. Eine Entscheidung, die vor dem ersten Dreh an der Destillation fallen musste — und die Nachrechnung der Zahl, gegen die gedreht werden sollte, hat ihren Zuschnitt geändert.
+
+### Die Entscheidung
+
+- ✅ **`novaberg-kalibrierung_k.md` §5** — Kalibrieren und Validieren sind getrennte Mengen. Die **sechs Bögen vom 02./03.08.2026** sind Kalibriermenge und bleiben es; belegt wird ausschließlich auf frischen Bögen mit **neuen** Charakteren. Der Bauplan der Validierungsmenge steht: derselbe 30-Turn-Bogen mit denselben Sonden, die Sektorenbelegung vor dem ersten Dreh geschrieben, der Umfang bemessen in Personas.
+- ✅ **Der naheliegende Ausweg ist ausdrücklich ausgeschlossen** — auf drei Personas kalibrieren, auf den anderen drei validieren. Die Einzelquoten aller sechs sind seit dem 06.08. bekannt; wer sie kennt, kann keine unvoreingenommene Hälfte mehr bilden. Die Trennlinie entschiede das Ergebnis mit, und zwar unbewusst.
+- ✅ **Vier Regeln beim Validieren:** je eingefrorener Einstellung genau einmal messen · jede Messung zählen und berichten, auch die verworfene · alt und neu auf denselben Bögen, verglichen je Persona · der Urteiler ist nicht das Modell, das die Antworten erzeugt hat.
+
+> **Eine Zahl, gegen die eingestellt wurde, ist als Beleg verbraucht.** Die 64,8 % bleiben gültig als **Ausgangsstand des unkalibrierten Apparats auf der Kalibriermenge** — in dieser Rolle werden sie gebraucht, denn ohne sie ist später keine Richtung ablesbar. Als Beleg nach außen sind sie vergeben, sobald die erste Schraube sich bewegt.
+
+### Die Nachrechnung, die den Zuschnitt geändert hat
+
+Die Trennschärfe war als nächstes Kalibrierziel vorgesehen. Vor dem ersten Dreh nachgerechnet, auf demselben Material, ohne einen neuen Lauf:
+
+| Rechnung | Ergebnis |
+|---|---|
+| Binomialtest über 88 Urteile | 64,8 %, p = 0,007 |
+| Quoten der sechs Personas einzeln | 35,7 % · 50,0 % · 56,2 % · 66,7 % · 84,2 % · 100 % |
+| Permutationstest auf die Streuung zwischen ihnen | **p = 0,010 — größer, als Losen sie erzeugt** |
+| Bootstrap über ganze Personas, 20.000 Läufe | 64,8 %, **95 %-Intervall 49,4 % bis 80,0 %** |
+| Derselbe Bootstrap auf dem Kontrollarm `zufall` | 47,1 %, Intervall 40,7 % bis 55,0 % |
+
+**Der Binomialtest zählt jedes Urteil als eigenen Fall.** Das sind sie nicht: Alle Urteile einer Persona teilen sich denselben Profiltext und dieselben Antworten. Die unabhängige Einheit ist die **Persona**, und davon gibt es sechs.
+
+**Der Befund hält, seine Genauigkeit ist eine andere.** 96,6 % der Bootstrap-Läufe liegen über dem Zufall, das Intervall reicht aber bis 49,4 % hinunter — **±15 Punkte statt ±10**. Die Gegenprobe steht im Kontrollarm derselben Reihe: Dort, wo es nichts zu erkennen gibt, ist das Intervall halb so breit und schließt den Zufall ein. Die Verbreiterung im Messarm ist der Personeneffekt und kein Artefakt der Rechnung.
+
+> **Das ist der eigentliche Grund für die Größe der Validierungsmenge.** Eine Kalibrierung, die die Trennschärfe um zehn Punkte hebt, bewegt sich innerhalb dieses Intervalls. Sechs Personas tragen ±19 Punkte, zwölf ±13, zwanzig ±10 — und mehr Urteile je Persona kaufen Genauigkeit, die nicht existiert.
+
+**Der Preis in Maschinenzeit ist nicht die Grenze:** Die sechs Bögen kosteten zusammen **2,65 Stunden** reine Turn-Zeit, im Mittel 26,5 Minuten je Bogen (gerechnet aus den Laufdateien). Die Grenze ist das Schreiben der Charaktere.
+
+**Und die Zahl der Bögen ist auf der Kalibriermenge umsonst zu bestimmen:** Die Destillation ist eine reine Funktion auf gespeicherten Einträgen, alt und neu laufen auf denselben sechs Bögen, und die Streuung der **paarweisen Differenz** je Persona — nicht die 23,5 Punkte zwischen den Quoten — bestimmt den nötigen Umfang.
+
+**Umfang:** kein Produktivcode, keine DDL, Suite nicht gelaufen. Zwei Doku-Änderungen im Repositorium, dazu die Festlegung `F-KAL-1` im Register.
+
+### Was dabei abfiel
+
+- **Die p-Werte der Blindtest-Tabelle im Backlog sind als überholt markiert**, die Quoten nicht. Es ist kein falsch gerechneter Wert, sondern ein richtig gerechneter Wert der falschen Größe — die Form, die am schwersten auffällt, weil an der Rechnung nichts zu finden ist.
+
+---
+
 ## Chat 130 (06./07.08.2026) — Vier Messungen ohne eine Zeile Produktivcode, und der Auswahl-Kanal bekommt seine erste Zahl ✅
 
 ### Die beiden Maße, die §0b vorab festgeschrieben und nie erhoben hatte

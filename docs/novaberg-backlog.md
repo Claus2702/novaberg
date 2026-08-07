@@ -92,13 +92,19 @@ Sechs Menschen, die nichts miteinander zu tun haben, liegen in ihrer Beziehungsp
 
 **Trennschärfe, blind** — ein Urteiler bekommt ein Profil und zwei unbeschriftete Antworten desselben Turn-Index und ordnet zu; Zufall ist 50 %. 270 Urteile, Geräteprobe 4 von 4:
 
-| Arm | n | Quote | p (exakt, zweiseitig) | A-Wahl |
+| Arm | n | Quote | ~~p (exakt, zweiseitig)~~ | A-Wahl |
 |---|---|---|---|---|
-| `beziehung` (Beziehungsprofil) | 88 | **64,8 %** | 0,007 | 44,3 % |
-| `thema` (Themenliste, Störgröße) | 88 | 63,6 % | 0,014 | 53,4 % |
-| `zufall` (Profil einer Unbeteiligten) | 87 | 47,1 % | 0,67 | 51,7 % |
+| `beziehung` (Beziehungsprofil) | 88 | **64,8 %** | ~~0,007~~ | 44,3 % |
+| `thema` (Themenliste, Störgröße) | 88 | 63,6 % | ~~0,014~~ | 53,4 % |
+| `zufall` (Profil einer Unbeteiligten) | 87 | 47,1 % | ~~0,67~~ | 51,7 % |
 
-> **Der Blindtest landet nicht beim Zufall.** Damit ist die Frage aus dem Absatz darüber beantwortet: Die Kalibrierarbeit an Rädern und Beitragszahlen zielt auf etwas, das ein fremder Beurteiler sehen kann.
+> **Die p-Werte sind überholt, 08.08.2026 — die Quoten nicht.** Der Test zählt jedes Urteil als eigenen Fall. Das sind sie nicht: Alle Urteile einer Persona teilen sich denselben Profiltext und dieselben Antworten. Die 88 Urteile des Arms `beziehung` verteilen sich auf **sechs** Personas mit Quoten von 35,7 % bis 100 %, und ein Permutationstest weist diese Streuung als größer aus, als Losen sie erzeugt (p = 0,010). **Die unabhängige Einheit ist die Persona, und davon gibt es sechs.**
+>
+> Über ganze Personas gezogen — Bootstrap, 20.000 Läufe — steht dieselbe Zahl bei **64,8 % mit einem 95-Prozent-Intervall von 49,4 % bis 80,0 %**; 96,6 % der Läufe liegen über dem Zufall. Die Gegenprobe steht im Kontrollarm: `zufall` ergibt 47,1 % mit einem Intervall von 40,7 % bis 55,0 %, also halb so breit und den Zufall einschließend. Die Verbreiterung im Messarm ist der Personeneffekt und kein Artefakt der Rechnung.
+
+> **Der Blindtest landet nicht beim Zufall** — knapp. Damit ist die Frage aus dem Absatz darüber beantwortet: Die Kalibrierarbeit an Rädern und Beitragszahlen zielt auf etwas, das ein fremder Beurteiler sehen kann. **Ergänzt am 08.08.2026:** Die Genauigkeit der Zahl ist ±15 Punkte, nicht ±10. Eine Kalibrierung, die die Trennschärfe um zehn Punkte hebt, bewegt sich innerhalb des Intervalls — der Umfang der nächsten Reihe bemisst sich deshalb in **Personas**, nicht in Urteilen.
+
+> **Und diese Zahl ist als Beleg vergeben.** Nach `F-KAL-1` sind die sechs Bögen vom 02./03.08.2026 **Kalibriermenge**: Auf ihnen darf beliebig oft gemessen werden, und keine ihrer Zahlen ist je ein Beleg. Die 64,8 % bleiben gültig als **Ausgangsstand des unkalibrierten Apparats auf der Kalibriermenge** — in dieser Rolle werden sie gebraucht, denn ohne sie ist später keine Richtung ablesbar. Der Bauplan der Validierungsmenge steht in `novaberg-kalibrierung_k.md` §5.
 
 **Und das Beziehungsprofil trennt nicht besser als eine bloße Themenliste** — McNemar über die 27 diskordanten Fälle, p = 1,00. Kein knappes Ergebnis, das mehr Fälle bräuchte, sondern ein exaktes Unentschieden. Die beiden Arme sind aber auf **verschiedenen** Personas erfolgreich (Hartmut 84 % gegen 53 %, Sarah 50 % gegen 85 %) und tragen damit verschiedene Information; fallweise stimmen sie zu 68,6 % überein gegen 54,2 % bei Unabhängigkeit.
 
