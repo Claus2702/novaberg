@@ -76,6 +76,38 @@ Sonst sucht man hinterher die Zahl, die passt.
 
 **Priorität:** hoch. Sie steht vor der Justierung der Beitragszahlen und vor dem Prompt-Block: Landet der Blindtest beim Zufall, wird gerade sehr sorgfältig etwas kalibriert, das niemand sieht.
 
+#### Zwei der vier Maße sind erhoben — 06.08.2026
+
+Die Reihe lief am 02./03.08. über sechs Bögen; ausgewertet wurden damals die Sonden, der Emotionsstrang, die Räder und die Cluster. **Die beiden Maße, die die Titelfrage beantworten, blieben liegen** und sind jetzt aus demselben Material erhoben, ohne neuen Bogen.
+
+**Profilähnlichkeit** — paarweise Kosinus-Distanz der Profiltexte, Embedding `nomic-embed-text-v2-moe`, Geräteprobe vorweg (gleicher Inhalt in anderen Worten 0.806, fremdes Thema 0.077):
+
+| Gegenstand | Median | Spanne |
+|---|---|---|
+| Novas sechs Selbstprofile (`beziehungsprofil`) | **0.817** | 0.714–0.896 |
+| Die sechs Menschen (`beziehungsprofil`) | 0.774 | 0.740–0.834 |
+| Dieselben Menschen (`adaptive_hash`, Themen) | **0.548** | 0.448–0.642 |
+
+Sechs Menschen, die nichts miteinander zu tun haben, liegen in ihrer Beziehungsprosa bei 0.774 und in ihren Themen bei 0.548. **Wo die Destillation Haltung in Prosa fasst, zieht sie alles ins selbe Register; wo sie Inhalt auflistet, bleibt der Unterschied stehen.** Novas Profile liegen enger als die der Menschen, fallen aber nicht zusammen — ihre Spanne ist beim Beziehungsprofil sogar breiter.
+
+**Trennschärfe, blind** — ein Urteiler bekommt ein Profil und zwei unbeschriftete Antworten desselben Turn-Index und ordnet zu; Zufall ist 50 %. 270 Urteile, Geräteprobe 4 von 4:
+
+| Arm | n | Quote | p (exakt, zweiseitig) | A-Wahl |
+|---|---|---|---|---|
+| `beziehung` (Beziehungsprofil) | 88 | **64,8 %** | 0,007 | 44,3 % |
+| `thema` (Themenliste, Störgröße) | 88 | 63,6 % | 0,014 | 53,4 % |
+| `zufall` (Profil einer Unbeteiligten) | 87 | 47,1 % | 0,67 | 51,7 % |
+
+> **Der Blindtest landet nicht beim Zufall.** Damit ist die Frage aus dem Absatz darüber beantwortet: Die Kalibrierarbeit an Rädern und Beitragszahlen zielt auf etwas, das ein fremder Beurteiler sehen kann.
+
+**Und das Beziehungsprofil trennt nicht besser als eine bloße Themenliste** — McNemar über die 27 diskordanten Fälle, p = 1,00. Kein knappes Ergebnis, das mehr Fälle bräuchte, sondern ein exaktes Unentschieden. Die beiden Arme sind aber auf **verschiedenen** Personas erfolgreich (Hartmut 84 % gegen 53 %, Sarah 50 % gegen 85 %) und tragen damit verschiedene Information; fallweise stimmen sie zu 68,6 % überein gegen 54,2 % bei Unabhängigkeit.
+
+**Die Verwechslungen haben eine Richtung:** Jana verliert keine eigene Antwort (9/9), Konrad und Mehmet verlieren ihre überwiegend an sie. Die drei bilden im Profilraum ein enges Bündel (0.875–0.896). Der Apparat erzeugt **einen starken warmen Pol und zwei schwächere Kopien**, nicht drei eigene warme Beziehungen — dieselbe Stelle, auf die der Radbefund vom 03.08. zeigte.
+
+**Der Geltungsbereich beider Maße ist enger als er aussieht.** Auf diesem Korpus sind **drei der fünf Profile leer** — `kern_hash`, `intentions_profil` und `emotions_profil` tragen für alle sechs Personas in beiden Richtungen null Zeichen, weil alle drei `lzg_knoten` lesen und eine frische Persona kein Langzeitgedächtnis hat. Die 64,8 % sind damit das, was die **kurzfristige Hälfte allein** leistet, nicht der ganze Apparat.
+
+**Was weiter aussteht:** Antwortlänge und Fragenanteil (Maß 1) sind unerhoben. Und **keines der Maße prüft die Passung** — die vorab festzuschreibenden Erwartungen je Person existieren nicht, gemessen ist Unterscheidbarkeit, nicht Richtung. Der Urteiler war zudem dasselbe Modell, das die Antworten erzeugt hat; ein zweiter, fremder Urteiler auf demselben Zwischenstand ist offen.
+
 #### PROFIL-HISTORIE-FEHLT — der Profilstand ist nicht rekonstruierbar
 
 `kern_hash`, `adaptive_hash`, `intentions_profil`, `emotions_profil` und `beziehungsprofil` werden bei jeder Destillation **überschrieben**. Nach hundert Turns lässt sich nicht mehr sagen, welcher Profilstand welches Verhalten erzeugt hat.
@@ -1900,7 +1932,7 @@ plausibel (frühestes Auftreten der Erinnerung).
 
 ## Epic: Memory-Kern-Umbau (Synapsen-Modell, Chat 86)
 
-**Status:** **Alle zehn Sprints abgeschlossen (P1–P9 in Chat 125, P10 in Chat 126).** Der Umbau ist gebaut. Offen bleiben zwei Reste, die keine Sprints sind: die dünne Zeit- und Entitätsschicht aus P3 (unten) und die ungemessene Wirkung von P10 (`P10-WIRKUNG-UNGEMESSEN`).
+**Status:** **Alle zehn Sprints abgeschlossen (P1–P9 in Chat 125, P10 in Chat 126).** Der Umbau ist gebaut. ~~Offen bleiben zwei Reste, die keine Sprints sind: die dünne Zeit- und Entitätsschicht aus P3 (unten) und die ungemessene Wirkung von P10 (`P10-WIRKUNG-UNGEMESSEN`).~~ → **Ein Rest, seit 07.08.2026:** die dünne Zeit- und Entitätsschicht aus P3 (unten). `P10-WIRKUNG-UNGEMESSEN` ist beantwortet; die Kalibrierung der Cluster-Faktoren, die daraus folgt, ist keine Synapsen-Arbeit mehr, sondern ein Bauteil des Kalibrierungskonzepts.
 
 *Die vorige Angabe „P0–P3 implementiert, P4 wartet auf MS-Welle" stammte aus Chat 91 und war fünf Phasen im Rückstand — P4 bis P8 sind zwischen Chat 98 und 111 gebaut worden, ohne dass diese Tabelle nachgezogen wurde. Nachgemessen am 02.08.2026 gegen den Bestand, nicht gegen die Doku.*
 **Bezug:** novaberg-memory-synapsen_k.md, novaberg-memory-synapsen-p4-entscheidungen_k.md (Chat 91)
@@ -1938,11 +1970,33 @@ plausibel (frühestes Auftreten der Erinnerung).
 
 **Zu P10 — gebaut und live, die Wirkung aber ungemessen.** Die Verschiebung greift: Ein Turn nahe an einem langfristigen Ziel erreichte Aktivierungs-Stärke 0.631 und drehte den Suchschlüssel um 1,14° (Cluster `schlachtfeld`, Faktor 0.05). Genau diese Kleinheit ist der Befund — **Aktivierungsschwelle und Verschiebungswirkung ziehen gegeneinander:** Ein Ziel überschreitet die Schwelle von 0.4 nur, wenn es der Frage schon ähnlich ist, und in Richtung eines fast parallelen Vektors zu verschieben dreht kaum. Bei sieben aktiven Zielen und einem thematisch entfernten Turn lagen alle Stärken zwischen 0.102 und 0.212, also unter der Schwelle. Entscheidbar ist das erst an einem Korpus, in dem Ziele und Fragen auseinanderliegen — wie bei P3 also an der Charakterbildungs-Messreihe.
 
-**`P10-WIRKUNG-UNGEMESSEN`**
+**`P10-WIRKUNG-UNGEMESSEN`** ✅ **beantwortet am 07.08.2026**
 **Frage:** Ändert die Verschiebung die Trefferliste — und ab welcher Drehung?
-**Umfang seit dem 04.08.2026: beide Gedächtnisschichten.** Das KZG hängt seither am selben Schlüssel wie das LZG; die Messung gilt damit für zwei Trefferlisten, nicht für eine. Der Unterschied zwischen ihnen ist selbst eine Frage: Das Kurzzeitgedächtnis trägt wenige, sehr nahe Einträge, das Langzeitgedächtnis viele entferntere — dieselbe Drehung kann dort etwas ändern und hier nichts.
-**Vorgehen:** Je Turn beide Suchen fahren — roh und verschoben — und die Ergebnismengen vergleichen. Der Pipeline-Log trägt bereits Cluster, Faktor, Anteile und Cosinus je Turn; es fehlt der Vergleich der Ergebnisse.
-**Prio:** Mittel. Ohne diese Zahl ist nicht entscheidbar, ob die Cluster-Faktoren zu klein gesetzt sind oder die Schwelle zu hoch. **Und ohne sie ist die Kalibrierung der Faktoren nicht beginnbar** — man kalibriert sonst gegen eine Wirkung, deren Existenz nicht belegt ist.
+
+**Gemessen, beide Schichten auf demselben Korpus:** 322 Turns aus `pipeline_log` (`art='turn_roh'`), eine Sitzung, dieselben Embeddings — nicht gegen die fünf Tage ältere LZG-Zahl, weil deren Korpus ein anderer ist und die Schichtdifferenz sonst mit einer Korpusdifferenz vermischt wäre. Bei der produktiven Schwelle 0.40, nach Cluster-Faktor:
+
+| Faktor | KZG ändert die Trefferliste | LZG |
+|---|---|---|
+| 0.05 | **20,0 %** | 0,0 % |
+| 0.10 | 45,0 % | 0,0 % |
+| 0.20 | 55,0 % | 5,0 % |
+| 0.25 | 75,0 % | 15,0 % |
+| 0.30 | 75,0 % | 15,0 % |
+
+**Die Antwort ist ja — und das Kurzzeitgedächtnis reagiert über alle Schwellen drei- bis fünfmal so oft wie das Langzeitgedächtnis.** Die im Umfangsvermerk notierte Vermutung trifft damit zu, in dieser Richtung.
+
+**Der Mechanismus steht in den Listengrößen, nicht in der Verschiebung:** KZG Median **10**, nie leer; LZG Median **3**, Maximum 3, in **54 von 322 Turns leer**. Eine Menge aus drei Einträgen hat wenig Rand, an dem eine Drehung um ein Grad die Mitgliedschaft kippt.
+
+**Die Tiefe ist klein.** Ändert sich die KZG-Menge bei Faktor 0.05, tauscht der Median **1 von 10** Einträgen (Maximum 1); erst bei 0.30 sind es 2. Zusammengerechnet für den Betrieb: 6,2 % der Turns lösen aus, davon ändern 20 % ihre Liste — **rund ein Turn von achtzig** bekommt eine von zehn Kurzzeit-Erinnerungen ausgetauscht.
+
+**In 7 Fällen fand der verschobene Schlüssel Anker, wo der rohe keine fand** — die Verschiebung kann Erinnerung nicht nur umsortieren, sondern erzeugen.
+
+**Zwei Grenzen der Zahl, beide bindend für ihre Verwendung:**
+
+- **Untergrenze, kein Punktwert.** Verglichen werden *Mengen*. Eine Drehung, die dieselben zehn Einträge anders sortiert, zählt als „unverändert" — für den Prompt ist sie es nicht.
+- **Wirkung, nicht Güte.** Ob die veränderten Anker die *besseren* sind, sagt die Messung nicht.
+
+**Rest:** Die Kalibrierung der Cluster-Faktoren ist damit beginnbar — die Wirkung ist belegt, die Achse zeigt Reserve (20 % bei 0.05 gegen 75 % bei 0.30). Sie gehört als Bauteil der Klasse „Beiträge" in `novaberg-kalibrierung_k.md` §3.2 und braucht dort zuerst einen Erwartungskorridor.
 
 **Zu P3 — die dünnen Magnetfelder sind überwiegend kein Defekt.** Gemessen: Von 1076 Knoten ohne `timeline_id` enthalten **5** überhaupt einen Datums- oder Zeitausdruck; von 766 ohne `entitaet_ids` nennen 76 % nichts Bekanntes. Der Korpus besteht aus Weltwissen — Entropie, Hawking-Strahlung, Raumzeit —, und Weltwissen hat weder Referenz noch Datum. Verbleibende 185 Knoten nennen einen bekannten Begriff als ganzes Wort, ohne ihn zu verlinken; das ist ein Fundlisten-Eintrag, kein Sprint.
 

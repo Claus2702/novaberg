@@ -1,6 +1,6 @@
 # Novaberg — Roadmap (Projektchronik)
 
-**Stand:** Chat 129, 6. August 2026
+**Stand:** Chat 130, 7. August 2026
 *(Die Kopfzeile stand bis Chat 109 auf „Chat 93, 21. Mai 2026" — 15 Chats hinter dem Inhalt. **Sie ist danach erneut zurückgefallen:** von Chat 110 bis 114 blieb sie auf „Chat 109" stehen, während der Inhalt weiterwuchs, und wurde in Chat 115 nachgezogen. Wer hier etwas ergänzt, zieht die Kopfzeile mit — sie driftet zuverlässig. Achtung beim Nachschlagen: Nur bis Chat 97 trägt jeder Chat eine eigene `## Chat NNN`-Überschrift; die Chats 98–108 stehen als `###`-Abschnitte unter dem Chat-97-Block, benannt nach Sprint statt nach Chat.)*
 **Pfad:** novaberg/docs/novaberg-roadmap.md
 **Single Source of Truth für abgeschlossene Arbeit.**
@@ -1980,6 +1980,71 @@ Beide Räder haben eine Nabe — den Wert ohne jede Ausprägung — und das Erge
 > **Die Zahlen selbst stehen nicht hier.** Ein Charakter-Rad ist ein Charakterprofil; aus den Summanden sind mit der Züge-Tabelle die Einzelspeichen rückrechenbar. Wer die Messung nachvollziehen will, fährt sie gegen den eigenen Bestand — sie ist in zwei Aufrufen wiederholbar.
 
 **Geschlossen:** `Bauteil 3 — Charakter-Räder im Client` (Rest benannt, siehe Backlog)
+
+---
+
+## Chat 130 (06./07.08.2026) — Vier Messungen ohne eine Zeile Produktivcode, und der Auswahl-Kanal bekommt seine erste Zahl ✅
+
+### Die beiden Maße, die §0b vorab festgeschrieben und nie erhoben hatte
+
+Die Charakterbildungs-Messreihe lief am 02./03.08. über sechs Bögen. Ausgewertet wurden damals die Sonden, der Emotionsstrang, die Räder und die Cluster — **nicht** die zwei Maße, die die Titelfrage beantworten sollten. Beide sind jetzt erhoben, aus dem vorhandenen Material, ohne einen neuen Bogen.
+
+- ✅ **Profilähnlichkeit.** Paarweise Kosinus-Distanz der Profiltexte, Embedding `nomic-embed-text-v2-moe`, Geräteprobe vorweg (gleicher Inhalt in anderen Worten 0.806 gegen fremdes Thema 0.077). Novas sechs Selbstprofile liegen bei Md **0.817**, die sechs Menschen, die sie beschreiben, bei **0.774** — und dieselben Menschen in ihren *Themen* bei **0.548**. Dieselbe Skala, dasselbe Material, drei Lagen: **Wo die Destillation Haltung in Prosa fasst, zieht sie alles ins selbe Register; wo sie Inhalt auflistet, bleibt der Unterschied stehen.**
+- ✅ **Trennschärfe, blind.** Ein Urteiler bekommt ein Profil und zwei unbeschriftete Antworten und ordnet zu; Zufall ist 50 %. 270 Urteile in drei Armen. **`beziehung` 64,8 %** (p = 0,007 exakt), **`thema` 63,6 %**, **`zufall` 47,1 %**. Der Kontrollarm liegt auf dem Zufall, die Stellungskontrolle in allen Armen nahe 50 % — die Anordnung stellt nichts her.
+
+> **Charakterbildung ist damit belegt statt behauptet** — und zugleich beziffert: In gut einem Drittel der Fälle greift der Urteiler daneben, obwohl das Profil maximal aussagekräftig sein sollte. **Das Beziehungsprofil trennt dabei nicht besser als eine bloße Themenliste** (McNemar über 27 diskordante Fälle, p = 1,00). Beide Arme sind aber auf *verschiedenen* Personas erfolgreich — Hartmut 84 % gegen 53 %, Sarah 50 % gegen 85 % —, tragen also verschiedene Information.
+
+**Die Verwechslungen haben eine Richtung:** Jana verliert keine einzige eigene Antwort, Konrad und Mehmet verlieren ihre an sie. Die drei bilden im Profilraum ein enges Bündel (0.875 bis 0.896). Der Apparat erzeugt einen starken warmen Pol und zwei schwächere Kopien davon, nicht drei eigene warme Beziehungen — dasselbe, worauf die Rad-Messung vom 03.08. bereits zeigte.
+
+**Eine Vorfrage hat den Zuschnitt geändert, bevor gemessen wurde:** Auf diesem Korpus sind **drei der fünf Profile leer** — `kern_hash`, `intentions_profil` und `emotions_profil` tragen für alle sechs Personas in beiden Richtungen null Zeichen, weil alle drei `lzg_knoten` lesen und eine frische Persona kein Langzeitgedächtnis hat. Beide Maße sprechen damit über zwei von fünf Teilen, und die 64,8 % sind das, was die **kurzfristige Hälfte allein** leistet.
+
+### Ein Konzept für die Kalibrierung, und die Trennung, an der es hängt
+
+- ✅ **`novaberg-kalibrierung_k.md`** — Verfahren für alle Stellschrauben: sechs Klassen (Naben, Beiträge, Schwellen, Verfall, Glättung, Kennlinien), je mit Kalibrierregel und dem Bestand an Konstanten. Dazu der **Erwartungskorridor** als Pflicht vor jedem Dreh und vier Bauteile mit ZIEL/TEST/MESSUNG/Gegenprobe.
+
+> Die tragende Unterscheidung ist **Ablesung gegen Wirkgröße**: Eine gestreckte Skala ist kein Befund. Wer die Ähnlichkeiten durch eine Lupe zieht, bis sie auseinanderliegen, hat die Profile nicht verändert. Daraus die bindende Regel: Wandert der Maßstab mit dem Gemessenen, ist später nicht mehr trennbar, ob sich das Gemessene bewegt hat oder der Maßstab.
+
+### B1 — überträgt der Prompt-Pfad einen Charakterunterschied überhaupt?
+
+Ein fester Reiz, nur der Charakterblock variiert, gemessen wird der paarweise Abstand der **Ausgänge**. Der Identitätsblock ist nach `_build_system_prompt` nachgebaut, der Regelblock als Datei geladen statt abgetippt, die Responder-Einstellungen sind die echten (Temperatur 0.7). Alle Arme füllen dieselben zwei Profilfelder — sonst verglichen sie Kontrast *und* Textmenge.
+
+| Arm | Median | |
+|---|---|---|
+| `ohne` (kein Charakterblock) | 0.843 | Gegenprobe hält |
+| `rauschboden` (gleicher Charakter) | 0.820 | der Maßstab |
+| `bestand` (sechs destillierte Profile) | **0.662** | es kommt etwas an |
+| `obergrenze` (sechs handgeschriebene Gegensätze) | **0.464** | es könnte viel mehr ankommen |
+
+- ✅ **Der Prompt-Pfad überträgt — und schöpft rund 44 % der Strecke aus.** Damit ist die vorab festgeschriebene Lesart entschieden: **Der Verlust sitzt in der Destillation, nicht in der Übertragung.**
+- ✅ **Die Übertragung hängt am Reiz.** Ausgeschöpft: **80 %** bei einem Reiz mit Beziehungsgehalt, **41 %** bei einer Faktenfrage. Charakter kommt dort an, wo der Reiz ihm Raum lässt.
+- ✅ **Störgrößen-Probe eingebaut:** r = −0,192 zwischen Längendifferenz und Abstand — gemessen wird nicht Antwortlänge.
+
+**Was der dritte Reiz nicht trägt:** Auf ein inhaltsleeres „Und jetzt?" antwortete das Modell in 9 von 72 Läufen **gar nicht**, sechs davon in den Kontrollarmen. Der Rauschboden steht dort auf drei Paaren und ist als Bezugsgröße unbrauchbar; die 44 % ruhen auf den beiden anderen Reizen.
+
+### P10-WIRKUNG beantwortet — und die beiden Gedächtnisschichten verhalten sich gegensätzlich
+
+Beide Schichten auf **demselben** Korpus (322 Turns, eine Sitzung, dieselben Embeddings), statt gegen die fünf Tage alte LZG-Zahl. Bei der produktiven Schwelle 0.40, nach Cluster-Faktor:
+
+| Faktor | KZG ändert die Trefferliste | LZG |
+|---|---|---|
+| 0.05 | **20,0 %** | 0,0 % |
+| 0.10 | 45,0 % | 0,0 % |
+| 0.20 | 55,0 % | 5,0 % |
+| 0.25 | 75,0 % | 15,0 % |
+| 0.30 | 75,0 % | 15,0 % |
+
+- ✅ **Der Auswahl-Kanal wirkt** — die Verschiebung des Suchschlüssels ändert, welche Erinnerungen in den Prompt kommen, ohne ein Wort Anweisung. Über alle Schwellen reagiert das Kurzzeitgedächtnis **drei- bis fünfmal** so oft wie das Langzeitgedächtnis.
+- ✅ **Der Mechanismus steht in den Listengrößen.** KZG: Median 10, nie leer. LZG: Median 3, Maximum 3, **in 54 von 322 Turns leer**. Eine Menge aus drei Einträgen hat wenig Rand, an dem eine Drehung um ein Grad die Mitgliedschaft kippt; eine aus zehn hat viel.
+- ✅ **Die Tiefe ist klein.** Ändert sich die KZG-Menge bei Faktor 0.05, tauscht der Median **1 von 10** Einträgen. Zusammengerechnet: rund **ein Turn von achtzig** bekommt eine von zehn Kurzzeit-Erinnerungen ausgetauscht.
+- ✅ In **7 Fällen** fand der verschobene Schlüssel Anker, wo der rohe keine fand — die Verschiebung kann Erinnerung nicht nur umsortieren, sondern erzeugen.
+
+**Untergrenze, nicht Punktwert:** Verglichen werden *Mengen*. Eine Drehung, die dieselben zehn Einträge anders sortiert, zählt als „unverändert" — für den Prompt ist sie es nicht.
+
+**Am Werkzeug geändert:** eine Schicht-Achse mit `lzg` als Vorgabe, damit der Lauf vom 02.08. unverändert reproduziert; eine unbekannte Schicht wirft, statt still auf die andere zurückzufallen; und der Cosinus bleibt bei 0.0 statt die Salienz als Ähnlichkeit auszugeben.
+
+### Was diese Sitzung nicht angefasst hat
+
+**Keine Zeile Produktivcode.** Vier Messungen, drei Werkzeuge, ein Konzept — der Bestand unter `server/` ist unverändert, die Suite davon unberührt.
 
 ---
 
