@@ -294,6 +294,78 @@ Liefert der Verfasser nichts (`antwort_inhalt` fehlt), läuft der Responder unve
 
 **Priorität:** hoch, gemeinsam mit dem Eintrag darüber.
 
+### Chat 133 — aus der Fundliste klassifiziert, Block 05.–02.08. (08.08.2026)
+
+Acht Defekte aus dem zweiten Fundlisten-Block. **Der Befund steht im Wortlaut, in dem er notiert wurde** — er trägt Beleg und Datum und wird nicht nacherzählt; ergänzt sind Kennung, Priorität und die Zeile, an der man erkennt, wann der Eintrag geschlossen ist.
+
+Drei von ihnen sind stille Vorgabewerte an einer Stelle, an der ein Ausfall gehört: eine feste Salienz, eine Priorität, die auf null fällt, und ein Pflichtfeld, das leer durchgeht.
+
+#### WIEDERVORLAGE-SATZ-STATT-MATERIAL 🔧 offen
+
+**Befund (2026-08-05).** **Der WiedervorlageAgent legt einen fertig formulierten Satz auf den Stapel, wo die Zustellung Material erwartet.** `_nachfrage_formulieren()` lässt das Sprachmodell mit `BUTLER_SYSTEM_PROMPT` „eine kurze, freundliche Erinnerung für den Benutzer" schreiben, und dieser Satz wird als `inhalt` gepusht. Die Zustellung reicht jeden `inhalt` unverändert als `user_prompt` in den AgentGraph — mit dem Kommentar: *„Das Wissensstueck selbst ist der Reiz — nicht ein daraus formulierter Satz. […] Vorher sprach die Delivery den Gedanken aus, bevor er gedacht war."* Genau dieser Fall ist im Zustellungspfad behoben und im Agenten nicht: Nova bekommt eine an sie adressierte Butler-Erinnerung als Reiz und reagiert darauf, als hätte jemand sie ihr gesagt. Der `RechercheAgent` macht es anders und legt sein Destillat ab. **Zwei Bauarten, eine Zustellung.**
+
+**Was fertig waere.** Der Agent liefert Material statt eines fertigen Satzes, oder die Zustellung erklaert, dass sie einen fertigen Satz erwartet — beides, aber nicht keines.
+
+**Prioritaet:** hoch.
+
+#### RECHERCHE-SALIENZ-KONSTANT 🔧 offen
+
+**Befund (2026-08-04).** **Der RechercheAgent schreibt seinem KZG-Eintrag eine feste Salienz von 0.7** (`agents/recherche/agent.py`, `salienz_obj`). Der Wert ist ein Literal im Code, kein Ergebnis: Jede Recherche landet mit demselben Gewicht im Gedächtnis, gleich wie bedeutsam ihr Auslöser war. Der auslösende Wert steht im Queue-Auftrag und wird an dieser Stelle nicht gelesen — dieselbe Fehlerklasse wie der Vorgabewert, den `salienz_anfang` in der Bibliothek ausdrücklich verbietet.
+
+**Was fertig waere.** Die Salienz kommt aus dem ausloesenden Auftrag statt aus einem Literal.
+
+**Prioritaet:** mittel.
+
+#### RECHERCHE-OHNE-AUDIT 🔧 offen
+
+**Befund (2026-08-04).** **Der RechercheAgent schreibt keinen `hintergrund_log`-Eintrag.** Ein Durchlauf dauert zehn Minuten und belegt den einzigen seriellen Platz, hinterlässt im Audit aber nichts; im Protokoll der letzten sechs Stunden stehen nur `ziel_decay`, `synapsen_decay` und `synapsen_promotion`. Ob eine Recherche lief, ist damit nur aus dem Behälter-Log rekonstruierbar, das rotiert. Seit dem 04.08. schreibt der Bibliotheks-Schritt einen eigenen Eintrag — der Durchlauf selbst weiterhin nicht.
+
+**Was fertig waere.** `gestartet` / `erledigt` / `fehler` im `hintergrund_log`, wie bei jedem anderen Hintergrundlauf.
+
+**Prioritaet:** hoch.
+
+#### SHADOW-STACK-THEMA-LEER 🔧 offen
+
+**Befund (2026-08-04).** **Der Shadow-Stack trägt einen Eintrag mit leerem `thema`.** Der Auswahlvektor wird aus `f"{thema} {inhalt[:200]}"` gebildet; fehlt das Thema, trägt die halbe Grundlage nichts bei. Zwei solche Einträge erreichten untereinander eine Kosinus-Ähnlichkeit von 0,933 und wären als Duplikate behandelt worden, obwohl sie inhaltlich nichts teilen.
+
+**Was fertig waere.** Ein Eintrag ohne `thema` wird beim Schreiben laut abgelehnt statt mit halber Grundlage eingereiht.
+
+**Prioritaet:** mittel.
+
+#### KANDIDATEN-PRIORITAET-STILLE-NULL 🔧 offen
+
+**Befund (2026-08-04).** **Die Kandidatenauswahl fällt auf Priorität `0.0` zurück, wenn weder `prioritaet` noch `salienz` im Eintrag steht** (`services/pixie/kandidaten.py`). Ein unbeschriebener Auftrag wird damit zur niedrigsten Priorität und gewinnt nie, statt laut zu scheitern. Gemessen: 49 von 650 Einträgen der Shadow-Queue stehen auf 0.0.
+
+**Was fertig waere.** Ein Auftrag ohne Prioritaet und ohne Salienz scheitert laut, statt auf die niedrigste Stufe zu fallen.
+
+**Prioritaet:** mittel.
+
+#### NOVA-UEBERNIMMT-BIOGRAFIE 🔧 offen
+
+**Befund (2026-08-03).** **Nova übernimmt die Biografie des Nutzers als ihre eigene.** In einer Probe zum Sykophanz-Befund antwortete sie einem pensionierten Arzt: *„Das kenne ich. Nach 34 Jahren in **meiner** Praxis war die Distanz manchmal der einzige Schutz."* Die Zahl stimmt, die Person nicht. Gefunden in einer verkürzten Prompt-Fassung, nicht im vollen Aufbau — ob es dort auch auftritt, ist ungeprüft.
+
+**Was fertig waere.** Nachmessen am vollen Prompt, und falls reproduzierbar: die Grenze zwischen Novas Erinnerung und der des Nutzers im Prompt benennen.
+
+**Prioritaet:** hoch.
+
+#### LANDSCHAFT-SCHLAGSEITE-HEITER 🔧 offen
+
+**Befund (2026-08-03).** **Die Gesprächslandschaft hat eine Schlagseite ins Heitere.** `kissenschlacht` („spielerisch, Neckerei, Leichtigkeit ist der Inhalt") tritt in **allen sechs** Läufen der Charakterbildungs-Messreihe auf — auch bei dem Landarzt, der vom Tod einer Patientin erzählt, und bei der Autorin mit der Schreibblockade. Das bleibt nicht beim Ton: Der Cluster trägt Sprungtiefe 2 und Gravitations-Faktor 0.25, eine zu heiter eingestufte Trauerpassage bekommt also mehr assoziatives Schweifen und einen stärker verschobenen Suchschlüssel.
+
+**Was fertig waere.** Die Einstufung nachrechnen — bei welcher Achsenlage `kissenschlacht` faellt und ob die Schwellen dorthin ziehen.
+
+**Prioritaet:** hoch.
+
+#### SALIENZ-JSON-BRICHT-AN-LATEX 🔧 offen
+
+**Befund (2026-08-02).** **Die Salienz-Bewertung scheitert an LaTeX in der Modellantwort.** Belegt beim Abnahme-Turn zu P9 (19:15:01 UTC): `ChatWorker 'chat': JSON-Parsing fehlgeschlagen (caller=salienz/segment, fehler=Invalid \escape)`. Das Modell antwortet mit Formeln — `$T_H$`, `\propto`, `\n\n` im Fließtext —, und `parse_json_strict` bricht am Backslash ab. **Das erklärt vermutlich die 6 `salienz`-Fehler**, die im Pipeline-Log der letzten sieben Tage stehen (von insgesamt 11): Der Korpus ist Physik, und Physik schreibt sich in LaTeX. Der Turn selbst lief durch, nur seine Bewertung fiel aus — der Eintrag bekommt damit keine Salienz und wird nicht promotet.
+
+**Was fertig waere.** Der Parser haelt Backslash-Sequenzen aus, oder die Anweisung verbietet LaTeX im Fliesstext — und ein Parse-Fehler faellt nicht als leeres Ergebnis durch.
+
+**Prioritaet:** mittel.
+
+---
+
 ### Chat 133 — aus der Fundliste klassifiziert (08.08.2026)
 
 Drei Defekte, die am 08.08.2026 in der Fundliste standen und bei der Klassifizierung als solche erkannt wurden. Alle drei sind **still**: Keiner erzeugt eine Fehlermeldung, alle drei liefern ein Ergebnis, das richtig aussieht.
