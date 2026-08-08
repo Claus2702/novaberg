@@ -104,6 +104,88 @@ class TestBlockInhalt(unittest.TestCase):
         self.assertNotIn("Landschaft:", block)
 
 
+class TestLageVonGrobNachFein(unittest.TestCase):
+    """Dieselbe Lage in drei Aufloesungen, von oben nach unten immer genauer.
+
+    Entschieden am 08.08.2026: Die Landschaft geht in den Prompt, und zwar
+    gestaffelt — die grobe Beschreibung oben, die genaue Situation unten, wo
+    sie am dichtesten am Generierungspunkt steht.
+
+    Landschaft (1 von 14), Sektor (1 von 64) und Achsen (die sechs Bits, aus
+    denen beide gebaut sind) sind **nicht drei Angaben, sondern eine in drei
+    Koernungen**. Deshalb prueft dieser Block nicht nur, dass sie da sind,
+    sondern dass sie in dieser Reihenfolge stehen.
+    """
+
+    @staticmethod
+    def _mit_lage() -> dict:
+        zustand: dict = _state()
+        zustand["gv_detail"].update({
+            "sektor_name": "Kitzel",
+            "achsen": {
+                "energie": 1, "richtung_bin": 1, "naehe": 1,
+                "valenz_bin": 1, "tiefe": 0, "initiative": 1,
+                "initiative_roh": 0.21,
+            },
+        })
+        return zustand
+
+    def test_die_drei_stufen_stehen_von_grob_nach_fein(self) -> None:
+        """Die Reihenfolge ist die Aussage, nicht nur die Anwesenheit."""
+        block: str = _sprachstil_block(self._mit_lage())
+
+        self.assertLess(block.index("Landschaft:"), block.index("Genauer:"))
+        self.assertLess(block.index("Genauer:"),    block.index("Lage:"))
+
+    def test_die_achsen_stehen_im_klartext(self) -> None:
+        """Die feinste Stufe traegt Woerter, keine Bits."""
+        block: str = _sprachstil_block(self._mit_lage())
+
+        self.assertIn("viel Energie im Raum", block)
+        self.assertIn("ihr steht euch nah", block)
+        self.assertIn("flaches Gespraech", block)
+
+    def test_eine_nicht_messbare_initiative_wird_nicht_behauptet(self) -> None:
+        """Bit 1 ist bei fehlendem Mass ein Ausfall, keine Aussage.
+
+        `achsen_berechnen` setzt es und meldet das laut. Wer es trotzdem als
+        „du treibst" ausschreibt, macht aus dem Ausfall eine Behauptung —
+        genau die Klasse, die `22_STILLE_FEHLER.md` §3 verbietet.
+        """
+        zustand: dict = self._mit_lage()
+        zustand["gv_detail"]["achsen"]["initiative_roh"] = None
+
+        block: str = _sprachstil_block(zustand)
+
+        self.assertIn("Lage:", block)
+        self.assertNotIn("du treibst", block)
+        self.assertNotIn("der Mensch treibt", block)
+
+    def test_der_sektor_wiederholt_die_landschaft_nicht(self) -> None:
+        """10 der 64 Sektoren heissen wie ihre Landschaft.
+
+        Dort waere die Zeile eine Wiederholung — sie kostet Kontext und
+        traegt nichts.
+        """
+        zustand: dict = self._mit_lage()
+        zustand["gv_detail"]["sektor_name"] = "Kissenschlacht"
+
+        block: str = _sprachstil_block(zustand)
+
+        self.assertIn("Landschaft: Kissenschlacht", block)
+        self.assertNotIn("Genauer:", block)
+
+    def test_ein_abweichender_sektor_steht_weiterhin_da(self) -> None:
+        """Positiver Zwilling zur Unterdrueckung.
+
+        Ohne ihn koennte die Zeile immer wegfallen und die Zusicherung
+        darueber bliebe gruen.
+        """
+        block: str = _sprachstil_block(self._mit_lage())
+
+        self.assertIn("Genauer: Kitzel", block)
+
+
 class TestBlockPosition(unittest.TestCase):
     """Die Anweisung muss hinter dem Verlauf stehen, nicht davor.
 

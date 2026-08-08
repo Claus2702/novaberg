@@ -508,6 +508,55 @@ def _build_system_prompt(state: ConversationState) -> str:
     return "\n\n".join(parts)
 
 
+def _lage_zeilen(gv_detail: dict) -> list[str]:
+    """Die Lage des Turns in drei Aufloesungen, von grob nach fein.
+
+    Landschaft (eine von vierzehn), Sektor (einer von 64) und die sechs
+    Achsen sind **nicht drei Angaben, sondern eine in drei Koernungen** — der
+    Sektor ist aus den Achsen gebaut, die Landschaft fasst Sektoren zusammen.
+    Sie stehen trotzdem alle drei da: Der grobe Rahmen zuerst, die genaue
+    Situation zuletzt und damit am dichtesten am Generierungspunkt.
+
+    Vorbedingung: keine. Ein leeres `gv_detail` ergibt eine leere Liste.
+    Nachbedingung: Die Reihenfolge der Liste ist die Reihenfolge grob → fein.
+    Fehlerfaelle: Keine eigenen; eine unbeschreibbare Achsenlage meldet
+        `achsen_klartext` selbst.
+
+    Args:
+        gv_detail: das Detail-Dict des GV-Nodes.
+
+    Returns:
+        Null bis drei Zeilen.
+    """
+    from ei.dreischicht import CLUSTER_BESCHREIBUNGEN, achsen_klartext
+
+    # ── Eingabe ─────────────────────────────────
+    cluster:     str  = gv_detail.get("cluster", "")
+    sektor_name: str  = gv_detail.get("sektor_name", "")
+    achsen:      dict = gv_detail.get("achsen") or {}
+
+    # ── Verarbeitung ────────────────────────────
+    zeilen: list[str] = []
+
+    if cluster:
+        beschreibung: str = CLUSTER_BESCHREIBUNGEN.get(cluster, "")
+        zeilen.append(f"Landschaft: {cluster.capitalize()} — {beschreibung}")
+
+    # Der Sektor entfaellt, wenn er wie die Landschaft heisst: In 10 der 64
+    # Sektoren sind die Namen gleich ("Wartezimmer", "Foyer", "Regen"). Eine
+    # Zeile, die die darueber wiederholt, kostet Kontext und traegt nichts —
+    # und sie verwaessert die Staffelung, die dieser Block herstellen soll.
+    if sektor_name and sektor_name.lower() != cluster.lower():
+        zeilen.append(f"Genauer: {sektor_name}")
+
+    lage: str = achsen_klartext(achsen)
+    if lage:
+        zeilen.append(f"Lage: {lage}")
+
+    # ── Ausgabe ─────────────────────────────────
+    return zeilen
+
+
 def _sprachstil_block(state: ConversationState) -> str:
     """Baut den Sprachstil-Block, der hinter den Verlauf gehaengt wird.
 
@@ -524,9 +573,23 @@ def _sprachstil_block(state: ConversationState) -> str:
     Anweisungen wirken. Er beschreibt und fuehrt hin, statt zu verbieten:
     Der Verlauf ist nicht falsch, er ist nur in einer anderen Lage entstanden.
 
-    Quellen der Zeilen: Landschaft und Fragefrequenz aus dem Cluster (der
-    ueber Novas Raum traegheitsbehaftet nachzieht), der Ton aus `external` —
-    also aus dem Register DIESES Nutzer-Turns, nicht aus Novas alten Labels.
+    Quellen der Zeilen: Landschaft, Sektor, Achsen und Fragefrequenz aus der
+    Lage des Turns (die ueber Novas Raum traegheitsbehaftet nachzieht), der
+    Ton aus `external` — also aus dem Register DIESES Nutzer-Turns, nicht aus
+    Novas alten Labels.
+
+    **Die Zeilen stehen von grob nach fein, und das ist ihre Ordnung, nicht
+    ihre Reihenfolge.** Dieselbe Lage erscheint dreimal in wachsender
+    Aufloesung: die Landschaft ist eine von vierzehn, der Sektor einer von 64,
+    die Achsen sind die sechs Groessen, aus denen beide gebaut sind. Wer nur
+    den groben Rahmen braucht, findet ihn oben; wer die genaue Situation
+    braucht, liest weiter nach unten, wo sie am dichtesten am
+    Generierungspunkt steht.
+
+    Seit dem 08.08.2026 traegt **jeder** Turn eine Landschaft — auch der ohne
+    Vorausdenken (`novaberg-erreichbarkeit_k.md` B1). Die Werkzeug-Zeile fehlt
+    in diesen Turns weiterhin, weil es kein Werkzeug gibt: Sie stammt aus dem
+    LLM-Lauf, der nicht stattgefunden hat. Der Rahmen steht trotzdem.
 
     Vorbedingung: Keine — fehlende Teile werden weggelassen.
     Nachbedingung: Rueckgabe ist der fertige Block oder "", wenn keine
@@ -534,6 +597,8 @@ def _sprachstil_block(state: ConversationState) -> str:
     Fehlerfaelle: Keine; ein unbekannter Cluster liefert nur keine Landschaft.
     """
     # ── Eingabe ─────────────────────────────────
+    from ei.dreischicht import CLUSTER_FRAGEN, STRATEGIE_NAMEN
+
     gv_detail: dict = state.get("gv_detail", {}) or {}
     cluster:   str  = gv_detail.get("cluster", "")
     strategie: str  = gv_detail.get("strategie", "")
@@ -543,23 +608,18 @@ def _sprachstil_block(state: ConversationState) -> str:
     stil: str = external.emotion.language_style if external else ""
 
     # ── Verarbeitung ────────────────────────────
-    zeilen: list[str] = []
+    # Grob bis genau: Landschaft, Sektor, Achsen.
+    zeilen: list[str] = _lage_zeilen(gv_detail)
 
-    if cluster:
-        from ei.dreischicht import CLUSTER_BESCHREIBUNGEN
-        beschreibung: str = CLUSTER_BESCHREIBUNGEN.get(cluster, "")
-        zeilen.append(f"Landschaft: {cluster.capitalize()} — {beschreibung}")
-
+    # Am genauesten — wie in dieser Lage zu sprechen ist.
     ton_teile: list[str] = []
     if stil and stil != "neutral":
         ton_teile.append(f"Ton: {stil}")
     if cluster:
-        from ei.dreischicht import CLUSTER_FRAGEN
         fragen: str = CLUSTER_FRAGEN.get(cluster, "")
         if fragen:
             ton_teile.append(f"Fragen: {fragen}")
     if strategie:
-        from ei.dreischicht import STRATEGIE_NAMEN
         werkzeug: str = STRATEGIE_NAMEN.get(strategie, strategie)
         if vehikel:
             werkzeug += f", als {vehikel.capitalize()}"

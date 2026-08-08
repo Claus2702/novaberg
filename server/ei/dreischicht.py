@@ -172,6 +172,91 @@ CLUSTER_FRAGEN: dict[str, str] = {
 
 
 # ─────────────────────────────────────────────
+# Die sechs Achsen im Klartext
+# ─────────────────────────────────────────────
+# Die Pole sind woertlich aus novaberg-gv-strategie_k.md §3.1 uebernommen,
+# nicht neu formuliert: Der Sektor ist aus den sechs Bits gebaut, also muss
+# die Beschriftung dieselbe Bedeutung tragen wie die Tabelle, die ihn baut.
+#
+# Reihenfolge = Reihenfolge des Index (E R N V T I). Sie ist nicht beliebig:
+# Wer die Zeile neben SEKTOR_TABELLE liest, liest dieselbe Folge.
+#
+# **Kein Eintrag fuer die Initiative, wenn sie nicht messbar war.** Bit 1 wird
+# in dem Fall als Ausfall gesetzt (achsen_berechnen meldet es laut); es hier
+# als "Du treibst" auszuschreiben, machte aus dem Ausfall eine Aussage.
+
+ACHSEN_KLARTEXT: dict[str, tuple[str, str]] = {
+    # Schluessel im achsen-Dict → (Text bei Bit 0, Text bei Bit 1)
+    "energie":      ("wenig Energie im Raum",   "viel Energie im Raum"),
+    "richtung_bin": ("die Stimmung sinkt",      "die Stimmung steigt"),
+    "naehe":        ("ihr steht euch fern",     "ihr steht euch nah"),
+    "valenz_bin":   ("negativ gefaerbt",        "positiv gefaerbt"),
+    "tiefe":        ("flaches Gespraech",       "tiefes Gespraech"),
+    "initiative":   ("der Mensch treibt",       "du treibst"),
+}
+
+
+def achsen_klartext(achsen: dict) -> str:
+    """Schreibt die sechs Achsen als Satzglieder aus, in Index-Reihenfolge.
+
+    Die feinste Stufe der Lagebeschreibung: Landschaft (14) und Sektor (64)
+    sind Zusammenfassungen dieser sechs Bits, nicht zusaetzliche Information.
+    Sie stehen trotzdem daneben — der Prompt traegt dieselbe Lage in drei
+    Aufloesungen, von grob nach fein.
+
+    Vorbedingung: `achsen` stammt aus `achsen_berechnen`.
+    Nachbedingung: Ein Text mit einem Glied je messbarer Achse, durch " · "
+        getrennt; leer, wenn keine einzige Achse vorlag.
+    Fehlerfaelle: Eine fehlende Achse wird uebersprungen und benannt — ein
+        stilles Weglassen machte den Satz kuerzer, ohne dass jemand merkt,
+        dass eine Dimension fehlt. Eine nicht messbare Initiative wird
+        ausgelassen, weil ihr Bit dann ein Ausfall ist und keine Messung.
+
+    Args:
+        achsen: das Dict aus `achsen_berechnen`.
+
+    Returns:
+        Zum Beispiel "viel Energie im Raum · die Stimmung steigt · ihr steht
+        euch nah · positiv gefaerbt · tiefes Gespraech · du treibst".
+    """
+    # ── Eingabe-Validierung ─────────────────────
+    if not achsen:
+        logger.error(
+            "GV-Achsen-Klartext: leeres Achsen-Dict — die feinste Stufe der "
+            "Lagebeschreibung faellt fuer diesen Turn aus"
+        )
+        return ""
+
+    # ── Verarbeitung ────────────────────────────
+    glieder: list[str] = []
+    for schluessel, (bei_null, bei_eins) in ACHSEN_KLARTEXT.items():
+        if schluessel not in achsen:
+            logger.error(
+                "GV-Achsen-Klartext: Achse '%s' fehlt im Dict — sie wird nicht "
+                "beschrieben, und die Lage ist um eine Dimension aermer",
+                schluessel,
+            )
+            continue
+        if schluessel == "initiative" and achsen.get("initiative_roh") is None:
+            logger.info(
+                "GV-Achsen-Klartext: Initiative nicht messbar (fehlend: %s) — "
+                "die Achse bleibt unbeschrieben statt geraten",
+                achsen.get("initiative_fehlend"),
+            )
+            continue
+        glieder.append(bei_eins if achsen[schluessel] else bei_null)
+
+    # ── Ausgabe-Verifikation ────────────────────
+    if not glieder:
+        logger.error(
+            "GV-Achsen-Klartext: keine einzige Achse beschreibbar — das Dict "
+            "traegt %d Schluessel", len(achsen),
+        )
+
+    return " · ".join(glieder)
+
+
+# ─────────────────────────────────────────────
 # Spreading-Activation: Sprung-Tiefe pro GV-Cluster
 # ─────────────────────────────────────────────
 # Steuert, wie weit der Synapsen-Lesepfad ueber die Kanten von den
