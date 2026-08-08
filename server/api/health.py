@@ -1,5 +1,5 @@
 """
-Health-Check und Modellverwaltung.
+health-Check und Modellverwaltung.
 """
 
 import json
@@ -89,7 +89,7 @@ def searxng_testen() -> bool:
 # Endpunkte
 # ─────────────────────────────────────────────
 @router.get("/health")
-def Health():
+def health():
     """Systemstatus aller Komponenten + Shadow Agent."""
     # Shadow-Status aus Redis lesen
     shadow: dict = {"zustand": "idle", "thema": ""}
@@ -113,7 +113,7 @@ def Health():
 
 
 @router.get("/modelle")
-def ModelleAuflisten():
+def modelle_auflisten():
     """Verfügbare Ollama-Modelle."""
     try:
         models = ollama_gpu_client.list()
@@ -123,7 +123,7 @@ def ModelleAuflisten():
 
 
 @router.post("/modell/laden/{modell_name}")
-def ModellLaden(modell_name: str):
+def modell_laden(modell_name: str):
     """Ollama-Modell herunterladen."""
     try:
         logger.info(f"Lade Modell: {modell_name}")

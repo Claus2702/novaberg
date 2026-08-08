@@ -27,7 +27,7 @@ router = APIRouter()
 # KZG (Redis)
 # ─────────────────────────────────────────────
 @router.get("/gedaechtnis/kzg/{user_id}")
-def KzgAbrufen(
+def kzg_abrufen(
     user_id: str,
     character_id: str = ASSISTANT_USER_ID,
     beobachter: str | None = None,
@@ -80,7 +80,7 @@ def KzgAbrufen(
 # LZG (PostgreSQL)
 # ─────────────────────────────────────────────
 @router.get("/gedaechtnis/lzg/{user_id}")
-def LzgAbrufen(
+def lzg_abrufen(
     user_id: str,
     character_id: str = ASSISTANT_USER_ID,
     beobachter: str | None = None,
@@ -278,7 +278,7 @@ def _hash_leer() -> dict:
 
 
 @router.get("/gedaechtnis/hash/{user_id}")
-def HashAbrufen(user_id: str, character_id: str = ASSISTANT_USER_ID):
+def hash_abrufen(user_id: str, character_id: str = ASSISTANT_USER_ID):
     """Charakter-Hash eines Users fuer ein bestimmtes Gespraechspaar.
 
     Seit dem Paar-Schema (Chat 62) wird nach ``user_id`` + ``character_id``
@@ -312,7 +312,7 @@ def HashAbrufen(user_id: str, character_id: str = ASSISTANT_USER_ID):
 
         if not row:
             logger.info(
-                f"HashAbrufen: keine Zeile fuer {user_id}/{character_id}"
+                f"hash_abrufen: keine Zeile fuer {user_id}/{character_id}"
             )
             return _hash_leer()
 
@@ -347,7 +347,7 @@ def HashAbrufen(user_id: str, character_id: str = ASSISTANT_USER_ID):
 # Fakten
 # ─────────────────────────────────────────────
 @router.get("/fakten/{user_id}")
-def FaktenAbrufen(user_id: str):
+def fakten_abrufen(user_id: str):
     """Alle Entitäten mit ihren Fakten (M2-Schema)."""
     try:
         conn   = postgres_verbinden()
@@ -401,7 +401,7 @@ def FaktenAbrufen(user_id: str):
 # Emotionen (Radar-Daten)
 # ─────────────────────────────────────────────
 @router.get("/gedaechtnis/emotionen/{user_id}")
-def EmotionenAbrufen(
+def emotionen_abrufen(
     user_id: str,
     character_id: str = ASSISTANT_USER_ID,
     beobachter: str | None = None,

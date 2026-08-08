@@ -53,7 +53,7 @@ def _prompt_segmentieren(prompt: str) -> list[str]:
 
         # ── LLM-Call via ChatWorker (Microservice-Welle Block 2 Phase 4, G1) ──
         # _prompt_segmentieren() laeuft im HumanGraph aus
-        # api/chat.py:ChatSenden (sync def im FastAPI-Threadpool). Kein
+        # api/chat.py:chat_senden (sync def im FastAPI-Threadpool). Kein
         # Event-Loop im aufrufenden Thread → submit_sync bruckt in den
         # Worker-Loop (Loop-Binding-Lesson).
         chat_request = ChatRequest(
@@ -564,7 +564,7 @@ def analyze(
         node_cfg = get_node_config("salienz")
 
         # ── LLM-Call via ChatWorker (Microservice-Welle Block 2 Phase 4, G1) ──
-        # analyze() laeuft im HumanGraph aus api/chat.py:ChatSenden (sync def
+        # analyze() laeuft im HumanGraph aus api/chat.py:chat_senden (sync def
         # im FastAPI-Threadpool). Kein Event-Loop im aufrufenden Thread →
         # submit_sync bruckt in den Worker-Loop (Loop-Binding-Lesson).
         chat_request = ChatRequest(

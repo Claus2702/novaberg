@@ -139,7 +139,7 @@ class ZeitnahmeStehtVorDerVerarbeitungTest(unittest.TestCase):
 
     def test_synchroner_endpunkt_nimmt_die_zeit_zuerst(self) -> None:
         """Der Endpunkt, den der Telegram-Bot benutzt."""
-        funktion: ast.FunctionDef = self._funktion("ChatSenden")
+        funktion: ast.FunctionDef = self._funktion("chat_senden")
 
         self.assertLess(
             self._zeile_der_zeitnahme(funktion),
@@ -153,7 +153,7 @@ class ZeitnahmeStehtVorDerVerarbeitungTest(unittest.TestCase):
         gehoert vor die Entitaetspruefung, und der Generator laeuft ohnehin
         erst, wenn der Client zu lesen beginnt.
         """
-        funktion: ast.FunctionDef = self._funktion("ChatStreamSenden")
+        funktion: ast.FunctionDef = self._funktion("chat_stream_senden")
 
         self.assertLess(
             self._zeile_der_zeitnahme(funktion),

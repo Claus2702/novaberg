@@ -76,7 +76,7 @@ def _short_term_load(user_id: str, character_id: str) -> dict | None:
 
 
 @router.get("/gv_detail")
-def GvDetailLesen(user_id: str = DEFAULT_USER_ID, character_id: str = ASSISTANT_USER_ID):
+def gv_detail_lesen(user_id: str = DEFAULT_USER_ID, character_id: str = ASSISTANT_USER_ID):
     """Liefert das letzte vom Dispatcher persistierte GV-Detail.
 
     Key: gv:detail:{user_id}:{character_id}. Wird vom GV-Panel beim
@@ -95,7 +95,7 @@ def GvDetailLesen(user_id: str = DEFAULT_USER_ID, character_id: str = ASSISTANT_
 
 
 @router.get("/goals")
-def GoalsLesen(user_id: str = DEFAULT_USER_ID):
+def goals_lesen(user_id: str = DEFAULT_USER_ID):
     """Liefert alle Ziele einer Beziehung und den kurzfristigen Drive-Zustand.
 
     Lang- und mittelfristige Ziele kommen aus PostgreSQL (aktiv + inaktiv,
@@ -330,7 +330,7 @@ def _aggregate_dominant_topics(
 
 
 @router.get("/gravity_map")
-def GravityMapLesen(user_id: str = DEFAULT_USER_ID):
+def gravity_map_lesen(user_id: str = DEFAULT_USER_ID):
     """Liefert Turns + Ziele auf einer 2D-Ebene plus Gravitations-Connections.
 
     `user_id` ist der Mensch der Beziehung; Turns und Ziele stammen beide aus

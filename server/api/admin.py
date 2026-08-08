@@ -14,7 +14,7 @@ router = APIRouter(prefix="/admin", tags=["Admin"])
 
 
 @router.post("/pixie/pause")
-def PixiePausieren():
+def pixie_pausieren():
     """Pausiert Pixie. Scheduler-Job läuft weiter, aber überspringt die Arbeit."""
     redis_client.set("pixie:paused", "1")
     logger.info("Admin: Pixie pausiert")
@@ -22,7 +22,7 @@ def PixiePausieren():
 
 
 @router.post("/pixie/resume")
-def PixieFortsetzen():
+def pixie_fortsetzen():
     """Setzt Pixie fort."""
     redis_client.delete("pixie:paused")
     logger.info("Admin: Pixie fortgesetzt")
@@ -30,7 +30,7 @@ def PixieFortsetzen():
 
 
 @router.get("/pixie/status")
-def PixieStatus():
+def pixie_status():
     """Gibt den Pixie-Status zurück."""
     paused: bool = redis_client.exists("pixie:paused") > 0
     return {"paused": paused}

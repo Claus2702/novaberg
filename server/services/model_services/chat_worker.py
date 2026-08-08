@@ -80,7 +80,7 @@ class ChatWorker(ModelWorker[ChatRequest, ChatResponse]):
         (OllamaProvider oder AnthropicProvider). `name` ist ein nicht-leerer
         Logical-Name (z.B. "chat").
         Nachbedingung: Worker ist instanziiert (aber noch nicht gestartet —
-        `start()` ruft die Registry beim Lifespan).
+        `start()` ruft die Registry beim lifespan).
         Fehlerfaelle: keine — Validierung des Backends erfolgt im
         Konfigurations-Pfad (Registry-Factory).
         """

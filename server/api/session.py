@@ -12,14 +12,14 @@ router = APIRouter()
 
 
 @router.post("/session/reset/{user_id}")
-def SessionZuruecksetzen(user_id: str, character_id: str = ASSISTANT_USER_ID):
+def session_zuruecksetzen(user_id: str, character_id: str = ASSISTANT_USER_ID):
     """Gesprächs-Session eines Paares zurücksetzen."""
     session_reset(redis_client, user_id, character_id)
     return {"status": "ok", "nachricht": f"Session für '{user_id}:{character_id}' zurückgesetzt."}
 
 
 @router.get("/session/kontext/{user_id}")
-def SessionKontextAbrufen(
+def session_kontext_abrufen(
     user_id: str,
     character_id: str = ASSISTANT_USER_ID,
     beobachter: str | None = None,

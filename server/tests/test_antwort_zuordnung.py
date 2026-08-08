@@ -232,7 +232,7 @@ class BeideEndpunkteRufenDenBauerTest(unittest.TestCase):
 
     def test_synchroner_endpunkt_ruft_den_bauer(self) -> None:
         """Der synchrone Pfad baut die Bestaetigung nicht mehr selbst."""
-        self.assertIn("_bestaetigungs_nutzlast", self._gerufene_namen("ChatSenden"))
+        self.assertIn("_bestaetigungs_nutzlast", self._gerufene_namen("chat_senden"))
 
     def test_streamender_endpunkt_ruft_den_bauer(self) -> None:
         """Der streamende Pfad ebenso — er ist der, den der Client benutzt."""

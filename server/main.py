@@ -107,7 +107,7 @@ def schema_migrieren(postgres_url: str) -> None:
 # Lifespan (Start / Stop)
 # ─────────────────────────────────────────────
 @asynccontextmanager
-async def Lifespan(app: FastAPI):
+async def lifespan(app: FastAPI):
     # Health-Check-Spam aus dem Access-Log filtern
     class HealthCheckFilter(logging.Filter):
         def filter(self, record):
@@ -366,7 +366,7 @@ app = FastAPI(
     title       = "KI-Server",
     description = "Persönlicher KI-Assistent mit Gedächtnis und Hintergrund-Rauschen",
     version     = "0.3.0",
-    lifespan    = Lifespan,
+    lifespan    = lifespan,
 )
 
 app.include_router(health_router)

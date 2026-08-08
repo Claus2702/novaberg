@@ -143,7 +143,7 @@ def broadcast_threadsafe(
 
 
 @router.websocket("/ws/{user_id}")
-async def WebsocketVerbindung(
+async def websocket_verbindung(
     websocket: WebSocket,
     user_id: str,
     client_id: str = "unknown",

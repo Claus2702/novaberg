@@ -384,7 +384,7 @@ def _bestaetigungs_nutzlast(nachrichten_id: str) -> dict:
 
 
 @router.post("/chat")
-def ChatSenden(anfrage: GespraechAnfrage, request: Request):
+def chat_senden(anfrage: GespraechAnfrage, request: Request):
     """Nimmt eine Aeusserung an und reiht sie ein — kein Graph-Lauf im Request.
 
     Der HumanGraph laeuft im Prompt-Consumer. Vorher blockierte dieser
@@ -425,7 +425,7 @@ def ChatSenden(anfrage: GespraechAnfrage, request: Request):
 
 
 @router.post("/chat/stream")
-def ChatStreamSenden(anfrage: GespraechAnfrage, request: Request):
+def chat_stream_senden(anfrage: GespraechAnfrage, request: Request):
     """Nimmt eine Aeusserung an und bestaetigt sofort.
 
     Der Kanal bleibt SSE, traegt aber keine Stufen mehr: Pfad 1 laeuft hinter

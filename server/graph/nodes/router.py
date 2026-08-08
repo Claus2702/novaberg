@@ -118,7 +118,7 @@ def route(
     node_cfg = get_node_config("router")
 
     # ── LLM-Call via ChatWorker (Microservice-Welle Block 2 Phase 3) ──
-    # route() laeuft im FastAPI-Threadpool (api/chat.py:ChatSenden ist eine
+    # route() laeuft im FastAPI-Threadpool (api/chat.py:chat_senden ist eine
     # sync def). Kein Event-Loop im aufrufenden Thread → submit_sync nutzt
     # die Bruecke ueber asyncio.run_coroutine_threadsafe in den Haupt-Loop
     # des Workers (Loop-Binding-Lesson, novaberg-lesson_l_loop-binding.md).
