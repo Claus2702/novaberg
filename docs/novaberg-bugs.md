@@ -26,6 +26,7 @@ Gegenstandslos geworden: der Stichtag der assistant-Partition vom 26.07.2026, di
 
 | # | Problem | Lösung | Behoben in |
 |---|---------|--------|-----------|
+| ENDPUNKT-STATUS-UNEINHEITLICH | Beide Chat-Endpunkte gaben in der Bestätigung von Pfad 1 einen **verschiedenen `status`** zurück — `processing` im synchronen, `event_created` im streamenden. Gelesen hat den Wert niemand: Der Client reagiert auf den SSE-Ereignistyp, nicht auf das Feld. Zwei Werte für dieselbe Aussage, die auseinanderliefen, weil beide Endpunkte die Nutzlast getrennt bauten. *Beim Zusammenführen der Nutzlast in Chat 124 auf `processing` vereinheitlicht.* | Beim Zusammenfuehren der Nutzlast auf `processing` vereinheitlicht | Chat 124 |
 | VEKTOR-INTENSITAET-NAMENSMENGE | **Ein hoffnungsvolles Wort konnte einen Krisenmarker auslösen.** Was `negativ→negativ` zu `spirale` und `positiv→positiv` zu `eskalation` macht, war in `_emotions_vektor_bestimmen` die Bedingung „eine Emotion, die vorher nicht vorkam". Sie verglich **Namen** und nicht Gruppen, und die Größe, für die sie ein Stellvertreter war, lag die ganze Zeit im selben Turn-Dict: `arousal`. **Reproduktionsweg:** Die Folge `freude, wut, hoffnung, wut` ergab `spirale`, ausgelöst von `hoffnung`; `freude, freude, wut, freude` ergab `eskalation`, ausgelöst von `wut`. Über den vollständig ausgezählten Eingaberaum betraf das **12,0 %** der `spirale`- und **18,2 %** der `eskalation`-Fälle. **Warum es teuer war:** `spirale` ist einer der beiden Krisenmarker — bei Erregung ab 0,7 setzt `_ist_krise` die Vektorlänge auf 0 und `aufnahmebereitschaft_berechnen` die Bereitschaft auf exakt 0,00, den Wert, der der Krise vorbehalten ist. **`config.py` sagte schon vorher etwas anderes:** Der Kanon führt `spirale` als „negativ -> negativ, mit neuen **negativen** Gefuehlen". Code und Festlegung waren auseinandergelaufen. | Der Anstieg wird an der **mittleren Erregung** der beiden Fensterhälften gemessen (`GV_VEKTOR_INTENSITAET_SCHWELLE = 0,10`, abgeleitet aus dem Zehntelraster der Perzeption und 769 gemessenen Fenstern). Der Namensvergleich bleibt als benannter Rückfall für Fenster ohne Erregung und ist dort auf die Gruppe des Übergangs verengt; über 849 Bestands-Turns lief er **0 Mal**. Gerundet wird **vor** dem Vergleich: `0.6 - 0.5` ergibt 0.09999999999999998, und weil Arousal in Zehnteln kommt, wäre der Grenzfall der Normalfall gewesen. Am Bestand nachgespielt: `eskalation` 151 → 67, `spirale` 44 → 20, die sieben Vektoren über Gruppengrenzen ±0. Gegenprobe: Verengung heraus → 1 rot; Rundung heraus → 1 rot | Chat 133 |
 | VEKTOR-PLATEAU-OHNE-GRUNDLAGE | **`plateau` trug vier Bedeutungen, und eine davon war „keine Aussage".** Der Name entstand aus einem gemessenen Gleichstand zweier neutraler Hälften, aus zwei gleichen Gruppen ohne Anstieg — **und aus weniger als zwei verwertbaren Turns**. Der vierte Fall ist keine Richtung, sondern das Fehlen ihrer Grundlage, und er trug keine Marke; über `GV_RICHTUNG_MAP` fiel er wie die drei anderen auf Achse R = 0. **Zu Beginn eines Paars ist er der Regelfall und nicht die Ausnahme:** Novas Vektor rechnet über die `assistant`-Turns, und im ersten Turn gibt es keinen. Dieselbe Klasse wie die Landschafts-Ablesung vor `F-LAGE-1`. **Gegenstück im selben Achsensatz:** Die Initiative benennt jedes fehlende Maß in `Fuehrung.fehlend`, Achse V ihre Emotion in `valenz_quelle` — R war die einzige der sechs ohne Herkunftsangabe. | Die Richtung trägt ihre Grundlage als `Stimmungsvektor.quelle` und reist als `richtung_quelle` in dieselbe Protokollzeile wie das Ergebnis: `gemessen`, `gleichstand`, `zu_wenig_turns`, `nicht_gesetzt`. Der Wert bleibt unverändert — zählbar ist ab jetzt, worauf er beruht. Über 849 Bestands-Turns: `gemessen` 51,1 %, `gleichstand` 46,5 %, `zu_wenig_turns` 2,4 %. `nicht_gesetzt` deckt auch den Rückfall in `achsen_berechnen` ab, wo ein leerer Vektor zu `plateau` wird. Festlegung `F-LAGE-3`. Gegenprobe: 2 bzw. 3 rot | Chat 133 |
 | HALTUNG-NAHT-OHNE-ABBILDUNG | **Die Naht zwischen Landschaft und Zuwendungsrad verließ an den Enden in 62 von 62 Zellen die Spanne.** `haltung_berechnen()` verrechnete den Cluster-Grundwert additiv mit der Radsumme (`grund + summe`). Der Grundwert liegt in [0,1], die Radsumme hat eine eigene, nirgends benannte Spanne — aus `SPEICHEN_BEITRAG` gerechnet: `umfang` −1,00…+0,80 · `fragen` −0,90…+0,70 · `naehe` −1,20…+0,50 · `waerme` −1,50…+0,50 · `draengen` −0,50…+1,20. Über die volle Charakterspanne verließ **jede** der 62 Nicht-Grenz-Zellen [0,1]; `feuerwerk/draengen` erreichte 1,90. **Die bekannte Angabe „10 von 14 Landschaften laufen über" war am Mittelwert erhoben** und unterschätzte den Fall. Auch die im Konzept vorgesehene Sättigungsformel war ohne Normierung nicht geschlossen. | Sättigung **plus Normierung**, der Abbildungsfaktor aus der Beitragstabelle abgeleitet statt gesetzt, damit er mit ihr mitwandert. Nicht gekappt — Kappen macht aus zwei verschiedenen Lagen dieselbe Zahl und erzeugt genau die toten Enden, die der Raum nicht haben darf. Ergebnis: 62 von 62 außerhalb → **0 von 70**, bei gemessenem wie bei vollem Rad, ordnungserhaltend. Festlegung `F-NAHT-1`. Elf Tests waren dabei rot, und das war die Spezifikation | Chat 132 |
@@ -293,6 +294,38 @@ Liefert der Verfasser nichts (`antwort_inhalt` fehlt), läuft der Responder unve
 **Was zu tun ist:** Der Responder meldet einen fehlenden Verfasser-Inhalt und kennzeichnet, dass er ohne Material antwortet. Ob abgebrochen oder gekennzeichnet wird, ist zu entscheiden — abbrechen kostet den Turn, weitermachen kostet die Zuordenbarkeit.
 
 **Priorität:** hoch, gemeinsam mit dem Eintrag darüber.
+
+### Chat 133 — aus der Fundliste klassifiziert, Block 01.08. (08.08.2026)
+
+Drei Defekte, alle drei an der Grenze zwischen Turn und Oberflaeche. Der Befund steht im Wortlaut, in dem er notiert wurde.
+
+#### CLIENT-OFFENE-FRAGE-UNSICHTBAR 🔧 offen
+
+**Befund (2026-08-01).** **Eine nie beantwortete Frage ist im Client als offen vermerkt, aber auf dem Bildschirm unsichtbar.** Nach einem ausgefallenen Turn bleibt ihre Kennung in der Menge der offenen Fragen stehen; die nächste Antwort schließt nur die Kennungen, die sie nennt. Der Riegel verhindert damit die **falsche** Zuordnung, macht die **fehlende** Antwort aber nicht sichtbar — der Nutzer sieht drei Fragen und zwei Antworten und kann nicht erkennen, welche ins Leere ging. Die Daten liegen vor, es fehlt die Anzeige.
+
+**Was fertig waere.** Eine Frage, die als offen gefuehrt wird, ist auf dem Bildschirm auch als offen erkennbar — oder sie wird beim Ausfall geschlossen.
+
+**Prioritaet:** mittel.
+
+#### CLIENT-STUFEN-OHNE-TURN-KENNUNG 🔧 offen
+
+**Befund (2026-08-01).** **Die Pipeline-Stufen tragen keine Turn-Kennung.** Schreibt der Nutzer während eines laufenden Turns weiter, sammeln sich die Stufen optisch unter der zuletzt gesendeten Nachricht, obwohl sie zum ersten Turn gehören. Solange die Eingabe gesperrt war, konnte das nicht auffallen. Dieselbe fehlende Zuordnung wie bei der Antwort, eine Ebene früher. Dazu: Jede Bestätigung erzeugt eine eigene „denkt nach"-Zeile — drei Zeilen für einen Turn, der einmal läuft.
+
+**Was fertig waere.** Jede Pipeline-Stufe traegt die Kennung ihres Turns, und die Oberflaeche ordnet danach statt nach Ankunftszeit.
+
+**Prioritaet:** mittel. Sichtbar wurde es erst, als die Eingabesperre fiel — vorher konnte der Fall nicht eintreten.
+
+#### RAD-GESPEICHERT-NICHT-REPRODUZIERBAR 🔧 offen
+
+**Befund (2026-08-01).** **Das gespeicherte Zuwendungs-Rad ist nicht reproduzierbar.** Die Destillation mit exakt der Produktions-Eingabe (`kern` + `beziehungsprofil`, 1371 Zeichen, unverändert seit 20:18 UTC) liefert zweimal deterministisch `distanz 0.5`; gespeichert steht `distanz 0.0`. Mit `kern` + `adaptive_hash` statt des Beziehungsprofils antwortet dasselbe Modell `distanz 1.0`. **Genau diese Speiche trägt die größten negativen Beiträge des Haltungsraums** (Umfang −0.3, Nähe −0.5, Wärme −0.2) — sie entscheidet, ob die Modifikation überhaupt subtrahieren kann. Ob die gespeicherte Null aus einer anderen Temperatur, einem anderen Aufrufweg oder einem dritten Eingabetext stammt, ist offen.
+
+**Nachtrag desselben Tages, ein geprueftes Nein.** Die gesamte **Abwendungsseite** des gespeicherten Rades steht auf 0.0, die Zuwendungsseite trägt 5 von 6 Speichen (zwei davon auf 1.0). Der Verdacht, das Ausgabeschema im Prompt zeige alle zwölf Werte als `0.0` und verankere damit die Null, ist **geprüft und widerlegt**: Mit einem Platzhalter statt der Nullen ändert sich die Abwendungssumme nur von 1.5 auf 2.0.
+
+**Was fertig waere.** Die Eingabe, aus der das gespeicherte Rad entstand, ist benannt und reproduziert es — oder der Unterschied ist als Streuung des Verfahrens beziffert.
+
+**Prioritaet:** hoch. Ein Wert, der sich aus seiner eigenen Eingabe nicht reproduzieren laesst, traegt jede daraus abgeleitete Zahl mit.
+
+---
 
 ### Chat 133 — aus der Fundliste klassifiziert, Block 05.–02.08. (08.08.2026)
 

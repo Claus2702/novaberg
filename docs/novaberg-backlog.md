@@ -113,6 +113,34 @@ Die Begründung stimmt für vier von sechs Personas und stand als **allgemeine**
 
 ---
 
+### Block 01.08. — vier Einträge (08.08.2026)
+
+#### LLM-LOCK-SCHUETZT-DIE-GPU-NICHT-DEN-TURN
+
+**Befund (2026-08-01).** **Der `llm_lock` schützt die GPU, nicht den Turn — und der Modell-Worker hat einen eigenen Riegel dahinter.** Gemessen beim Umbau der Eingangs-Queue: Ein zweiter Durchlauf, der den `llm_lock` bekam, lief trotzdem in den 60-Sekunden-Timeout des Modell-Workers, weil dessen Warteschlange noch belegt war. Wer den Riegel hält, hat also noch keine Rechenzeit. Für den Prompt-Pfad ist das mit dem Turn-Marker entschärft; für jeden anderen Aufrufer besteht es fort, und die Zahl der Fälle ist nicht erhoben.
+
+**Was fertig waere.** Es ist entschieden und aufgeschrieben, welcher der beiden Riegel den Turn schuetzt — und der andere ist entweder entfernt oder als das benannt, was er tut.
+
+**Prioritaet:** mittel.
+
+#### CLIENT-OHNE-TESTLAUF
+
+**Befund (2026-08-01).** **Der Client hat keinen Testlauf, und die Zuordnungsprüfung liegt vollständig in ihm.** `_zuordnung_pruefen` in `client/ui/stream_handler.py` entscheidet über drei Ausgänge und ist die einzige Stelle, an der eine falsch zugeordnete Antwort auffällt — geprüft ist sie nur am laufenden Client, nicht von der Suite. Das Server-Abbild kann `client/` weder importieren (GTK-Abhängigkeiten) noch sehen (nicht gemountet). Derselbe blinde Fleck wie beim Impuls-Zweig, diesmal an einer Stelle mit Verzweigungslogik.
+
+**Was fertig waere.** Die Zuordnungspruefung hat einen Test, der ohne laufenden Client rot wird.
+
+**Prioritaet:** hoch. Sie ist die einzige Stelle, an der eine falsch zugeordnete Antwort auffaellt.
+
+#### RAD-STABILITAET-UNGEMESSEN
+
+**Befund (2026-08-01).** Das **Zuwendungs-Rad wird einmal erhoben**, ohne Median und ohne Streuungsmaß — anders als das Initiative-Rad, das dreimal läuft und den Median nimmt. Solange seine Schwankung nicht miterhoben wird, ist an keinem daraus abgeleiteten Wert erkennbar, ob eine Änderung Bewegung im Charakter oder Streuung des Verfahrens ist. (Verschärft den Fund vom 30.07. zur fehlenden Unsicherheit desselben Rades: die Schwankung ist jetzt beziffert.)
+
+**Was fertig waere.** Das Zuwendungs-Rad wird wie das Initiative-Rad mehrfach erhoben, mit Median und Streuungsmass.
+
+**Prioritaet:** hoch, und **vor** jeder Kalibrierung der Beitragsverhaeltnisse — wer gegen eine Groesse justiert, deren eigene Streuung er nicht kennt, justiert gegen Rauschen.
+
+---
+
 ### Block 05.–02.08. — sechzehn Einträge (08.08.2026)
 
 Der Befund steht im Wortlaut, in dem er notiert wurde; ergänzt sind Kennung, Priorität und die Zeile, an der erkennbar ist, wann der Eintrag geschlossen ist.
@@ -140,6 +168,8 @@ Der Befund steht im Wortlaut, in dem er notiert wurde; ergänzt sind Kennung, Pr
 #### PIXIE-EIN-SLOT-BLOCKIERT-ALLES
 
 **Befund (2026-08-05).** **92 % der Pixie-Heartbeats fallen aus, weil der einzige Slot besetzt ist.** In rund 2,25 Stunden: 270 Auslösungen, davon **249 übersprungen** mit `maximum number of running instances reached (1)`, 21 gelaufen. Eine Recherche hält den Slot über fünf Minuten (Lagebeurteilung plus Durchlauf) und stirbt danach an der 300-Sekunden-Grenze. Alle übrigen Hintergrundaufgaben — Charakter-Hash, Synapsen-Promotion, Wiedervorlage, Wissenslücken — warten in dieser Zeit. Der Stack steht bei 650 Aufträgen, seit dem 02.08. praktisch unverändert.
+
+**Nachtrag, derselbe Engpass am 01.08.2026 gemessen.** **Ein laufender RechercheAgent blockiert jeden weiteren Pixie-Heartbeat**, solange er läuft: `maximum number of running instances reached (1)`, im belegten Fall sechs übersprungene Läufe in Folge (19:33–19:39, drei Iterationen Web-Recherche auf dem CPU-Worker). Der Übersprung wird von der Scheduler-Bibliothek als `warning` gemeldet, nicht vom System selbst — es gibt keinen eigenen Eintrag darüber, dass ein Takt ausgefallen ist, und keine Zählung.
 
 **Was fertig waere.** Ein langer Lauf blockiert die uebrigen Hintergrundaufgaben nicht mehr — durch einen zweiten Platz, eine Laufzeitgrenze, oder eine Trennung nach Aufgabenart.
 
