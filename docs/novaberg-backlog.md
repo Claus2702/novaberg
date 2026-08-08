@@ -113,6 +113,52 @@ Die Begründung stimmt für vier von sechs Personas und stand als **allgemeine**
 
 ---
 
+### Block 31.07. — fünf Einträge (08.08.2026)
+
+Vier Doku- und Namensfunde, einer davon eine offene Prüfung am Initiative-Rad.
+
+#### GRAPH-TABELLE-OHNE-VERFASSER
+
+**Befund (2026-07-31).** Die Node-Tabelle in `novaberg-graph.md` §3 kennt den **Verfasser nicht**. Sie führt siebzehn Knoten und geht von `GV-Node` direkt zu `Responder`; der Verfasser existiert im Code seit dem Responder-Umbau. Wer die Tabelle liest, hält den Umbau für nicht gebaut.
+
+**Was fertig waere.** Die Tabelle fuehrt alle Knoten des heutigen Graphen.
+
+**Prioritaet:** mittel.
+
+#### INITIATIVE-RAD-GEGENPOL-UNGEPRUEFT
+
+**Befund (2026-07-31).** Das **Initiative-Rad** steht vor derselben Frage wie das Zuwendungs-Rad, und sie ist dort ungeprüft: Seine zehn Speichen (`INITIATIVE_ZUG_HOCH` / `INITIATIVE_ZUG_RUNTER`) stehen in der Reihenfolge ihrer Aufzählung, nicht in einer Gegenpol-Anordnung. Solange nur der Skalar gerechnet wird, ist das folgenlos; sobald aus ihnen ein Punkt gebildet wird, entscheidet die Ordnung, welche zwei Eigenschaften einander auslöschen. `F-RAD-1` gilt heute nur für das Zuwendungs-Rad.
+
+**Was fertig waere.** Es ist geprueft, ob die zehn Speichen des Initiative-Rades eine Gegenpol-Anordnung tragen — und wenn ja, haelt ein Test sie wie bei den Charakter-Raedern.
+
+**Prioritaet:** mittel.
+
+#### CLUSTERZAHL-13-GEGEN-14
+
+**Befund (2026-07-31).** `novaberg-gv-strategie_k.md` nennt **13 Cluster**, `CLUSTER_BESCHREIBUNGEN` in `ei/dreischicht.py` enthält **14**: feuerwerk, kissenschlacht, werkstatt, glut, bier, foyer, regen, schmollen, nebel, gewitter, schlachtfeld, beichte, wartezimmer, paradox. Eine Zahl, die in der Kopfzeile eines Konzepts steht und im Code anders lautet, wird bei jeder Ableitung daraus falsch mitgerechnet.
+
+**Was fertig waere.** Konzept und Code nennen dieselbe Zahl.
+
+**Prioritaet:** niedrig.
+
+#### GV-DETAIL-LAENGE-IRREFUEHREND
+
+**Befund (2026-07-31).** `gv_detail["laenge"]` heißt wie eine Antwortlänge und ist die **Vektorlänge**: die Zahl der Antizipationsschritte aus `_vektor_laenge_berechnen`, hart auf 3 gedeckelt (Cognitive Load Theory). Wer beim Bauen einer Umfangsregel darauf aufsetzt, rechnet auf einem Wert, der für etwas anderes erhoben wurde — dieselbe Fehlerklasse wie eine Schwelle aus einer anderen Größe.
+
+**Was fertig waere.** Der Schluessel heisst, was er traegt.
+
+**Prioritaet:** niedrig.
+
+#### BILD-VERWAIST
+
+**Befund (2026-07-31).** **`images/nova-ui-emotion-1.png` ist verwaist**, seit die README auf die neuere Aufnahme zeigt. Es zeigt die Emotionswerte des Nutzers unter einer Bildunterschrift, die Novas Zustand behauptete — der Widerspruch bestand seit April. Ebenfalls verwaist, aber älter: `images/nova-ui-memory-change-1.png` vom 15.05.2026, von keiner Fassung eingebunden. Löschen ist nicht entschieden.
+
+**Was fertig waere.** Das verwaiste Bild ist entfernt oder wieder eingebunden.
+
+**Prioritaet:** niedrig.
+
+---
+
 ### Block 01.08. — vier Einträge (08.08.2026)
 
 #### LLM-LOCK-SCHUETZT-DIE-GPU-NICHT-DEN-TURN

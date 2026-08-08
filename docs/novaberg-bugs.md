@@ -295,6 +295,78 @@ Liefert der Verfasser nichts (`antwort_inhalt` fehlt), läuft der Responder unve
 
 **Priorität:** hoch, gemeinsam mit dem Eintrag darüber.
 
+### Chat 133 — aus der Fundliste klassifiziert, Block 31.07. (08.08.2026)
+
+Acht Defekte. **Vier davon sind Prompt-Bloecke, die etwas ueber den Nutzer behaupten, was Novas Zustand ist** — dieselbe Verwechslung an vier Stellen, jede fuer sich unauffaellig.
+
+#### PIPELINE-QUELLE-ZWEI-SCHREIBWEISEN 🔧 offen
+
+**Befund (2026-07-31).** Der GV-Node schreibt seine Protokollzeile mit `quelle="character_graph"` als Literal, während Enricher und Salienz dafür `pipeline_quelle(state)` benutzen und `"character"` schreiben. Zwei Schreibweisen derselben Größe in derselben Spalte: Wer nach `quelle='character'` filtert, verliert die GV-Zeilen, ohne dass etwas fehlt.
+
+**Was fertig waere.** Alle Schreiber derselben Spalte benutzen dieselbe Funktion; eine Abfrage nach der Quelle findet alle Zeilen.
+
+**Prioritaet:** mittel.
+
+#### GV-HYPOTHESE-ROHE-AUSGABE 🔧 offen
+
+**Befund (2026-07-31).** Der Hypothesentext des Gesprächsvektors trägt die **rohe Dreischicht-Ausgabe**: `SPRUNG 1/2/3`, `ABSICHT:`, `STRATEGIE:`, `VEHIKEL:`, `IMPULS:` stehen unverarbeitet im String, der als `gespraechsvektor` in den Prompt geht. Der Node parst dieselben Felder sauber nach `gv_detail` — das Rohe bleibt zusätzlich stehen. Der `impuls` erscheint dadurch zweimal im selben Block.
+
+**Was fertig waere.** Der Hypothesentext traegt Prosa, nicht die Marken des Transportformats.
+
+**Prioritaet:** mittel.
+
+#### CHARAKTER-KONTEXT-VERWECHSELT-SEITE 🔧 offen
+
+**Befund (2026-07-31).** Der Satz „Der Charakter-Kontext im Gedaechtnis beschreibt den NUTZER" stimmt nicht in jedem Turn. Gemessen an zwei Läufen im Abstand einer Minute: einmal stand dort die Kern-Persönlichkeit des Nutzers, einmal die **Novas** — unter derselben Anweisung. Ein Satz, der dem Modell sagt, ein Text beschreibe jemand anderen als er tut, ist gefährlicher als gar keiner.
+
+**Dieselbe Verwechslung im Responder, am selben Tag beobachtet.** Dieselbe Verwechslung im Responder: Unter „So siehst du deinen Nutzer:" stand, wie **Nova** die Beziehung gestaltet, während `[KOMMUNIKATION]` im selben Prompt ein Beziehungsprofil über den Nutzer trug. Zwei Blöcke, die einander widersprechen, über dieselbe Größe.
+
+**Was fertig waere.** Der Block traegt, was seine Anweisung behauptet — oder die Anweisung sagt, was er traegt.
+
+**Prioritaet:** hoch.
+
+#### EIGENER-GEDANKE-BEHAUPTET-SCHWEIGEN 🔧 offen
+
+**Befund (2026-07-31).** `[EIGENER GEDANKE]` behauptet „der Nutzer hat gerade nichts gesagt, auf das du antwortest", während der Prompt des Nutzers im selben Prompt darunter steht. Beobachtet an einem Turn mit vorhandener Nutzeräußerung.
+
+**Was fertig waere.** Der Block erscheint nur, wenn der Nutzer tatsaechlich nichts gesagt hat.
+
+**Prioritaet:** mittel.
+
+#### SALIENZ-ZEITFELD-FAELLT-AM-LIMIT-ZUERST 🔧 offen
+
+**Befund (2026-07-31).** **`zeitausdruck_roh` ist das letzte Feld des Salienz-Antwortschemas**, und die Salienz läuft mit `max_output_tokens: 1024`. Läuft eine Antwort ans Limit, fehlt dieses Feld als erstes — und ein fehlendes Feld ist von „kein Zeitbezug erkannt" nicht zu unterscheiden. Ob es im Betrieb zuschlägt, ist **nicht gemessen**; die Beobachtung stammt aus dem Lesen des Schemas, nicht aus einem Ausfall. Dieselbe Klasse wie `lesson_l_default-wie-fehlschlag`: Der Ausfall sieht aus wie ein Ergebnis. Wer es prüft, zählt abgeschnittene Antworten im Salienz-Pfad; wer es entschärfen will, zieht das Feld im Schema nach vorn.
+
+**Was fertig waere.** Ein abgeschnittenes Schema ist von einem vollstaendigen mit leerem Feld unterscheidbar.
+
+**Prioritaet:** hoch.
+
+#### ZEIT-EXTRAKTION-UNSCHARF 🔧 offen
+
+**Befund (2026-07-31).** **Die Zeit-Extraktion ist über den Richtungsverlust hinaus unscharf.** Im Gespräch, aus dem `ZEIT-RUECKWAERTS-WIRD-ZUKUNFT` stammt, trug `zeitausdruck_roh` auch `'trockenen Sommer'` und `'Tageslicht'` — Zeichenketten, die keine Zeitangaben sind. Die Anweisung schließt allgemeine Bemerkungen ohne konkreten Anker zwar aus, nennt aber nur drei Beispiele dafür. Nicht nachgemessen nach der Prompt-Änderung vom 31.07.
+
+**Was fertig waere.** Was als Zeitausdruck geliefert wird, ist einer — oder das Feld traegt eine Marke, dass es ungeprueft ist.
+
+**Prioritaet:** mittel.
+
+#### ZEIT-EINZAHL-GREIFT-DANEBEN 🔧 offen
+
+**Befund (2026-07-31).** **`in einem Tag` und `in 1 Tag` lösen auf den 01.05.2027 auf.** Die Mehrzahlform `in zwei Tagen` funktioniert. Gemessen gegen Referenz 30.07.2026. Ein Ausdruck, der um Monate danebengreift, ist schlimmer als einer, der gar nicht parst — er legt einen Anker an, und zwar einen plausibel aussehenden. Betrifft `utils/zeitparser.py`, vermutlich die Normalisierung der Einzahlform.
+
+**Was fertig waere.** `in einem Tag` loest auf denselben Tag auf wie `in 1 Tag` und `in zwei Tagen`.
+
+**Prioritaet:** hoch.
+
+#### GV-PANEL-STRATEGIE-DOPPELT 🔧 offen
+
+**Befund (2026-07-31).** **Das GV-Panel zeigt die Strategie zweimal und widersprüchlich.** Die Kopfzeile trägt `Strategie: —`, während die Dreischicht-Zeile darunter im selben Turn `Strategie: Impuls (Im)` nennt. Eine der beiden Anzeigen liest die falsche Stelle. Beobachtet am 31.07.2026 auf einem Bildschirmfoto, nicht im Code nachverfolgt.
+
+**Was fertig waere.** Beide Anzeigen lesen dieselbe Stelle, oder es gibt nur noch eine.
+
+**Prioritaet:** niedrig.
+
+---
+
 ### Chat 133 — aus der Fundliste klassifiziert, Block 01.08. (08.08.2026)
 
 Drei Defekte, alle drei an der Grenze zwischen Turn und Oberflaeche. Der Befund steht im Wortlaut, in dem er notiert wurde.
@@ -302,6 +374,8 @@ Drei Defekte, alle drei an der Grenze zwischen Turn und Oberflaeche. Der Befund 
 #### CLIENT-OFFENE-FRAGE-UNSICHTBAR 🔧 offen
 
 **Befund (2026-08-01).** **Eine nie beantwortete Frage ist im Client als offen vermerkt, aber auf dem Bildschirm unsichtbar.** Nach einem ausgefallenen Turn bleibt ihre Kennung in der Menge der offenen Fragen stehen; die nächste Antwort schließt nur die Kennungen, die sie nennt. Der Riegel verhindert damit die **falsche** Zuordnung, macht die **fehlende** Antwort aber nicht sichtbar — der Nutzer sieht drei Fragen und zwei Antworten und kann nicht erkennen, welche ins Leere ging. Die Daten liegen vor, es fehlt die Anzeige.
+
+**Nachtrag 31.07.2026, die Rate im Messbestand.** In **5 von 19** Turns einer Messreihe trägt der Rohturn **kein** `antwort_inhalt`, der Verfasser hat also nichts geliefert. Das Feld erscheint nur, wenn es belegt ist — die Unterscheidung „nicht gelaufen" gegen „leer" ist damit gewahrt, aber ein Viertel der Turns ohne fachlichen Inhalt ist eine eigene Zahl. Kein Agent war beteiligt, `task_context_cut` also nicht der naheliegende Grund.
 
 **Was fertig waere.** Eine Frage, die als offen gefuehrt wird, ist auf dem Bildschirm auch als offen erkennbar — oder sie wird beim Ausfall geschlossen.
 
@@ -384,6 +458,8 @@ Drei von ihnen sind stille Vorgabewerte an einer Stelle, an der ein Ausfall geh�
 #### LANDSCHAFT-SCHLAGSEITE-HEITER 🔧 offen
 
 **Befund (2026-08-03).** **Die Gesprächslandschaft hat eine Schlagseite ins Heitere.** `kissenschlacht` („spielerisch, Neckerei, Leichtigkeit ist der Inhalt") tritt in **allen sechs** Läufen der Charakterbildungs-Messreihe auf — auch bei dem Landarzt, der vom Tod einer Patientin erzählt, und bei der Autorin mit der Schreibblockade. Das bleibt nicht beim Ton: Der Cluster trägt Sprungtiefe 2 und Gravitations-Faktor 0.25, eine zu heiter eingestufte Trauerpassage bekommt also mehr assoziatives Schweifen und einen stärker verschobenen Suchschlüssel.
+
+**Nachtrag 31.07.2026, derselbe Mechanismus in die andere Richtung.** **Zwei reine Sachfragen hintereinander** („Wie entsteht ein Gammablitz?", „Warum schwingen Gammawellen im Gehirn bei 40 Hz?") bekamen vom GV-Node beide die Landschaft **`beichte`**. Deren Grundwerte sind die intimsten im Bestand — Nähe 0.95, Wärme 0.90, Drängen als Grenze auf 0.00 —, und der Haltungsraum erbt sie unbesehen. Ob die Landschaftswahl hier danebengreift oder ob `beichte` in dieser Lage richtig ist, ist ungeprüft; auffällig ist, dass eine Frage ohne persönlichen Inhalt die Werte einer Beichte erzeugt.
 
 **Was fertig waere.** Die Einstufung nachrechnen — bei welcher Achsenlage `kissenschlacht` faellt und ob die Schwellen dorthin ziehen.
 

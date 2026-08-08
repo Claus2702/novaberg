@@ -297,6 +297,8 @@ Eine Übersteuerung ist keine Ausnahme von der Fläche, sondern eine Eigenschaft
 
 ---
 
+> **Die Antwortlänge streut innerhalb derselben Landschaft** — `gemessen` 31.07.2026. Die Antwortlänge streut **innerhalb derselben Landschaft** um mehr als das Zwanzigfache: `schlachtfeld` lieferte bei identischer Haltung 162 und 3895 Zeichen. Was die Länge im Bestand tatsächlich bestimmt, ist damit weder die Landschaft allein noch der Charakter — beide standen in diesen beiden Turns gleich.
+
 ## 6. Was offen ist
 
 > **Vorangestellt am 08.08.2026: Die Entscheidung zwischen kleineren Beiträgen und Sättigung ist erst nach einer Kalibrierung des Landschaftsraums beantwortbar.**

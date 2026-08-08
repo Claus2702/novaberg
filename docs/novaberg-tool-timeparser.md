@@ -448,3 +448,9 @@ Davor liegt, was den Rohausdruck bildet — und was er weglässt, kann der Parse
 → Lesson Zeitparser-Evolution: novaberg-tool-timeparser_l_evolution.md
 → Lesson Vektor-Modus: novaberg-tool-timeparser_l_vektor.md
 → Lesson Timezone: novaberg-tool-timeparser_l_timezone.md
+
+---
+
+## Eine Tür für die gesamte Zeitauflösung
+
+Die Bibliothek `dateparser` wird ausschließlich aus `utils/zeitparser.py` gerufen (Grep über `server/`, Positivkontrolle auf `zeit_parsen` = vier Dateien). Damit liegt die gesamte Zeitauflösung an **einer** Tür — das ist heute ein Vorteil und zugleich der Grund, warum ein Defekt der Bibliothek jeden Aufrufer gleichzeitig trifft. Kein Befund, eine Eigenschaft, die bei der nächsten Fremddefekt-Frage bekannt sein sollte.
