@@ -140,7 +140,7 @@ Modifikation je Speiche bei voller Ausprägung; halbe Ausprägung wirkt halb. `�
 | dienst | +0.2 | | | | +0.3 |
 | pflicht | +0.2 | −0.2 | | | +0.1 |
 | aufmerksamkeit | | +0.2 | +0.2 | | |
-| wissbegier | +0.3 | **+0.4 Ü** | | | +0.2 |
+| wissbegier | ~~+0.3~~ **—** | **+0.4 Ü** | | | +0.2 |
 | wohlwollen | | | +0.1 | +0.4 | |
 | selbstbezogen | +0.1 | −0.2 | −0.3 | | +0.3 |
 | gleichgueltig | −0.3 | −0.2 | −0.2 | −0.4 | |
@@ -148,6 +148,12 @@ Modifikation je Speiche bei voller Ausprägung; halbe Ausprägung wirkt halb. `�
 | distanz | −0.3 | | **−0.5 Ü** | −0.2 | |
 | langeweile | −0.4 | −0.3 | | −0.2 | −0.2 |
 | misstrauen | | +0.1 | −0.2 | −0.4 | |
+
+> **`wissbegier → umfang` gestrichen am 08.08.2026.** `umfang` ist die Länge von Novas **eigenem** Text; `wissbegier` heißt „fremde Themen wecken echtes Interesse" und ist damit eine **rezeptive** Disposition. Interesse an dem, was der andere bringt, äußert sich darin, sich ihm zuzuwenden — und dafür steht der Kanal eine Spalte weiter: `fragen +0.4` mit einer von nur zwei Übersteuerungen. Der Umfangsbeitrag leitete dieselbe Disposition ein zweites Mal, in expressive Menge, und war der **einzige** Zug nach oben im Anlassfall.
+>
+> **Sie senkt den Umfang auch nicht.** Eine ruhige, gespannt zuhörende Nova stellt kurze Fragen; „Raum lassen" ein zweites Mal zu kodieren wäre derselbe Fehler mit umgekehrtem Vorzeichen. **Der Gegenpol bleibt** — `langeweile → umfang −0.4` ist direkt: kein Interesse, nichts zu sagen, „Hmmm… ja." Die Tabelle ist nicht als Spiegelpaare gebaut (`treue` hat keinen Umfangsbeitrag, ihr Gegenpol `selbstbezogen` +0.1), also verlangt der eine Wert den anderen nicht.
+>
+> **Gemessen:** Der Anlassfall aus §1 — `kissenschlacht`, scherzhafter Einzeiler — geht von **0,43 auf 0,26**. Die Erreichbarkeit bleibt: `dienst` + `pflicht` + `selbstbezogen` ergeben bei voller Ausprägung genau die neue Aufwärtsspanne, also n = 1 und Umfang 1,0. **Weil der Abbildungsfaktor abgeleitet ist, erzeugt das Streichen einer Zelle kein totes Ende.**
 
 **Zwei Übersteuerungen, bewusst wenige.** `wissbegier` bei voller Ausprägung durchbricht das Fragenverbot — eine brennend neugierige Nova fragt auch im Gewitter. `distanz` bei 1.0 übersteuert die Nähe, gleich wie warm die Landschaft ist. Die übrigen Grenzen halten unter jedem Charakter.
 
@@ -304,6 +310,50 @@ Eine Übersteuerung ist keine Ausnahme von der Fläche, sondern eine Eigenschaft
 > **Und zwei Vorbehalte gehören an jede Zahl dieses Abschnitts:** Die Landschafts-Ablesung fällt in 101 von 720 Fällen aus, und das Charakter-Rad fehlte in 109 Rechnungen — eine frische Kennung hat keines. Turns ohne Rad können nicht überlaufen; die gemessene Überlaufhäufigkeit ist damit eine Aussage über die Landschaft, nicht über eingetretene Überläufe.
 
 - ~~**Die zwölf Speichen des Zuwendungs-Rades sind hier nicht benannt.** Sie liegen als JSON in der Destillation (`rad_roh`), nicht als Konstante.~~ → **Erledigt am 31.07.2026, und die Begründung war falsch.** Die Speichen **sind** Konstanten: `RAD_ZUG_HOCH` und `RAD_ZUG_RUNTER` in `agents/charakter/destillation.py`, dokumentiert in `novaberg-salienz-berechnung_k.md` §5. `rad_roh` trägt nur die Ausprägung je Paar. Die zwölf Namen stehen dort samt Gegenpol-Anordnung.
+- **Zwei Eigenschaften der Beitragstabelle, gemessen am 08.08.2026 — die Tabelle ist zeilenweise gesetzt, und geprüft wurde nie in Spaltenrichtung.**
+
+  **a) Der Anlassfall hat einen einzigen Verursacher.** In `kissenschlacht` besteht die Umfangs-Modifikation des gemessenen Rades aus genau zwei Beiträgen: `wissbegier` 1,0 × **+0,30** und `distanz` 0,5 × −0,30. **Neugier ist der einzige Zug nach oben.** Ohne diesen Beitrag läge der Umfang bei **0,26 statt 0,43** — der scherzhafte Einzeiler bekäme die kurze Antwort, um die es in §1 geht.
+
+  > **Die offene Frage war damit auf eine Zelle eingegrenzt: Ist Neugier ein Grund, länger zu antworten?** → **Beantwortet und gebaut am 08.08.2026: nein.** Die Zelle ist gestrichen, die Begründung steht bei der Tabelle in §2. Der Anlassfall geht von 0,43 auf 0,26.
+
+  Der Einwand dagegen steht in der Tabelle selbst. `wissbegier` hat für die Neugier bereits einen **benannten Kanal mit Begründung** — `fragen +0.40`, dazu die einzige Übersteuerung neben `distanz`, mit dem Satz „eine brennend neugierige Nova fragt auch im Gewitter". Der Beitrag auf `umfang` ist ein zweiter Kanal derselben Disposition **ohne genannten Grund**. Ein neugieriger Mensch will wissen; das äußert sich im Fragen, nicht im Ausführen. Dass eine Speiche mehrere Größen berührt, ist die Regel und kein Einwand — `selbstbezogen` berührt vier. Der Einwand gilt dieser einen Zelle, weil ihr Kanal unbegründet ist und weil sie den Fall trägt, aus dem dieses Konzept entstanden ist.
+
+  **Die Entscheidung ist eine Setzung und steht aus.** Sie ändert Novas Verhalten in jedem Turn mit ausgeprägter Wissbegier.
+
+  **b) Die Spalten sind schief — entstanden, und seit dem 08.08.2026 gesetzt.**
+
+  > **Die Richtung der Asymmetrie ist Absicht. Die Zahlen sind gefallen, nicht gewählt.**
+
+  Zwei Begründungen, nicht eine, und beide gehören hin — steht nur die erste da, sieht `draengen` beim nächsten Lesen wie ein Fehler aus und wird „korrigiert":
+
+  **1. `waerme`, `naehe`, `umfang` sind nach unten leichter zu bewegen: Negativitätsverzerrung.** Eine aggressive Wendung zerstört mehr Wärme, als viele freundliche aufbauen. Zuwendung baut langsam auf, Abwendung reißt schnell ein. Bei `waerme` ziehen nur zwei Speichen hoch (`treue` +0,10, `wohlwollen` +0,40) gegen fünf, die senken.
+
+  **2. `draengen` ist nach oben leichter zu bewegen, und das folgt einem anderen Satz: Drängen entsteht aus Wollen, gleich welcher Richtung.** Es steigt aus **beiden** Motivlagen — `dienst`, `pflicht`, `wissbegier` von der Zuwendungsseite, `selbstbezogen` und `widerspenstig` von der Abwendungsseite. Gebremst wird es nur von echter Zurückstellung (`treue` −0,30) und von Desinteresse (`langeweile` −0,20). Nicht drängen ist der seltenere Zustand, nicht der leichtere.
+
+  **Was diese Setzung ausdrücklich nicht behauptet:** dass ein Gespräch schneller kippt. Die Tabelle beschreibt, **wie weit ein gegebener Charakter die Landschaft verschiebt** — das Kippen im Gespräch sitzt in den Landschaftsachsen, die pro Turn wandern, und in der emotionalen Gravitation mit ihrer Halbwertszeit. Beides trifft sich erst, wenn das Zuwendungsrad selbst schnell nachzieht.
+
+  **Und genau dort steht der Vorbehalt:** Die Stabilität des Rades ist ungemessen — es läuft einmal, ohne Median und ohne Streuungsmaß, anders als das Initiative-Rad mit drei Läufen, und sein Bezugswert wanderte einmal um 100 % in zwei Stunden (siehe weiter unten in diesem Abschnitt). **Die Kalibrierung der Verhältnisse hängt an dieser Messung** und ist bis dahin nicht sinnvoll: Wer 0,33× gegen 0,42× gegen 2,40× justiert, justiert gegen eine Größe, deren eigene Streuung er nicht kennt.
+
+  Die Zahlen als Beleg der Setzung, mit dem Vermerk, dass sie aus 35 einzeln gesetzten Zellen gefallen sind:
+
+  **b-alt) Die Messung, aus der die Setzung entstand.** Summe der Aufwärts- gegen die Abwärtsbeiträge bei voller Ausprägung:
+
+  | Größe | hoch | runter | Verhältnis |
+  |---|---:|---:|---:|
+  | `draengen` | +1,20 | −0,50 | **2,40×** |
+  | `umfang` | ~~+0,80~~ **+0,50** | −1,00 | ~~0,80×~~ **0,50×** |
+  | `fragen` | +0,70 | −0,90 | 0,78× |
+  | `naehe` | +0,50 | −1,20 | 0,42× |
+  | `waerme` | +0,50 | −1,50 | **0,33×** |
+
+  **Wärme ist dreimal leichter zu verlieren als zu gewinnen, Drängen zweieinhalbmal leichter zu gewinnen als zu verlieren.** Nur zwei Speichen ziehen die Wärme hoch (`treue` +0,10, `wohlwollen` +0,40) gegen fünf, die sie senken — deshalb schöpfen diese beiden bei voller Ausprägung ihre Spanne exakt aus.
+
+  **Das ist eine Aussage über Novas Charakterraum, die niemand getroffen hat.** Sie fällt aus 35 einzeln gesetzten Zellen, deren Spaltensummen nie gebildet wurden. §2 nennt ausdrücklich einen unsicheren Beitrag (`misstrauen +0.1` auf Fragen) — die Schieflage steht nirgends.
+
+  ~~**Sie ist nicht automatisch falsch:** Dass Wärme schwerer zu gewinnen als zu verlieren ist, lässt sich vertreten. **Aber sie ist unausgesprochen**, und damit trägt sie jede Haltung mit, ohne dass jemand für sie einsteht. Zu entscheiden ist, ob sie als Setzung mit Begründung ins Konzept wandert oder ausgeglichen wird.~~ → **Entschieden am 08.08.2026: sie wandert als Setzung hinein, siehe oben.**
+
+  **Keine der beiden Fragen ist am Überlauf ablesbar gewesen.** Die Naht hält seit dem 08.08.2026 die Spanne — beide Befunde liegen darunter, in der Bedeutung der Beiträge statt in ihrer Verrechnung.
+
 - **Die Zellen selbst.** Das ist die eigentliche Arbeit und eine Setzung. Belegt sind bisher nur die zwei Pole: `Glut × Wohlwollen` weit, `Schlachtfeld × Abwendung` eng. **Beide sind noch auf die neue Adressierung zu übersetzen** (§2): Der eine nennt eine Speiche, der andere eine ganze Seite — als Sektor-und-Ausschlag ist keiner von beiden bereits ausgedrückt.
 - ~~**Wie viele Sektoren die Fläche bekommt.**~~ → **Gegenstandslos seit dem Beitragsmodell** (§2). Es gibt keine Sektoren mehr; die frühere Angabe „168" setzte zwölf diskrete Speichenpositionen voraus und gilt nicht.
 - ~~**Die Zahlen selbst.**~~ → **Entwurf steht** (§2.0), gesetzt zum Messen. Was daraus wird, entscheidet die erste Messreihe.
