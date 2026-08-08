@@ -211,6 +211,70 @@ class Haltung:
         return f"{self.cluster} · " + " · ".join(teile)
 
 
+def speichen_spanne(groesse: str) -> tuple[float, float]:
+    """Die Spanne, die die Radsumme einer Groesse ueberhaupt annehmen kann.
+
+    **Der benannte Abbildungsfaktor der Naht.** Landschaft und Rad sprechen
+    zwei verschiedene Skalen: Der Grundwert liegt in [0, 1], die Radsumme in
+    einer Spanne, die sich aus `SPEICHEN_BEITRAG` ergibt und nirgends stand.
+    Sie einfach zu addieren heisst, zwei Einheiten gleichzusetzen, die nicht
+    dieselben sind — gemessen am 08.08.2026 verliess dabei **jede** der 62
+    Nicht-Grenz-Zellen die Spanne an mindestens einem Ende.
+
+    Der Faktor wird **abgeleitet, nicht gesetzt**: Er ist die Summe der
+    positiven und die Summe der negativen Beitraege bei voller Auspraegung.
+    Damit wandert er mit der Tabelle mit, statt neben ihr zu veralten — eine
+    neue Speiche aendert ihn, ohne dass jemand daran denken muss.
+
+    Args:
+        groesse: eine der GROESSEN.
+
+    Returns:
+        (kleinstmoegliche Summe, groesstmoegliche Summe). Beide Werte sind
+        vorzeichenrichtig; die erste ist <= 0, die zweite >= 0.
+    """
+    positiv: float = sum(
+        max(beitraege.get(groesse, 0.0), 0.0) for beitraege in SPEICHEN_BEITRAG.values()
+    )
+    negativ: float = sum(
+        min(beitraege.get(groesse, 0.0), 0.0) for beitraege in SPEICHEN_BEITRAG.values()
+    )
+    return negativ, positiv
+
+
+def _normieren(summe: float, groesse: str) -> float:
+    """Bildet die Radsumme auf [-1, +1] ab, je Richtung auf ihre eigene Spanne.
+
+    **Getrennt je Richtung, nicht ueber die Gesamtbreite.** Die Beitraege sind
+    unsymmetrisch — `waerme` reicht von -1.50 bis +0.50 —, und eine gemeinsame
+    Normierung wuerde die schwaechere Richtung stauchen: Ein Rad, das die
+    Waerme so weit hebt, wie die Tabelle es zulaesst, kaeme nur auf +0.25 statt
+    auf +1. Die volle Auspraegung einer Richtung muss ihr volles Ergebnis
+    liefern, sonst ist ein Teil der Tabelle unerreichbar.
+
+    Vorbedingung: `groesse` ist eine der GROESSEN.
+    Nachbedingung: Rueckgabe in [-1, +1]; 0.0 genau dann, wenn die Summe 0 ist.
+    Fehlerfaelle: Eine Spanne von 0 in der beanspruchten Richtung bedeutet,
+        dass keine Speiche dorthin zieht — dann ist eine Summe in dieser
+        Richtung ein Defekt der Tabelle und wird laut gemeldet.
+    """
+    if summe == 0.0:
+        return 0.0
+
+    negativ, positiv = speichen_spanne(groesse)
+    grenze: float = positiv if summe > 0 else -negativ
+
+    if grenze <= 0.0:
+        logger.error(
+            f"Haltung: Radsumme {summe:+.2f} auf {groesse!r}, aber keine "
+            f"Speiche zieht in diese Richtung (Spanne {negativ:+.2f}..{positiv:+.2f}) "
+            "— die Normierung ist nicht moeglich, der Beitrag entfaellt"
+        )
+        return 0.0
+
+    return summe / grenze
+
+
 def _modifikation(rad: dict[str, float], groesse: str) -> float:
     """Summiert die Speichenbeitraege einer Groesse.
 
@@ -279,7 +343,7 @@ def _rad_pruefen(rad: dict[str, float], cluster: str) -> str:
     return ""
 
 
-def _verrechnen(grund: float, summe: float, art: str) -> float:
+def _verrechnen(grund: float, summe: float, art: str, groesse: str) -> float:
     """Verknuepft Grundwert und Modifikation nach der Rechenart der Zelle.
 
     Steht als eigene Funktion, weil sie sonst nicht pruefbar waere: Alle sechs
@@ -287,17 +351,61 @@ def _verrechnen(grund: float, summe: float, art: str) -> float:
     Multiplikation von "immer null" nicht zu unterscheiden. Hier laesst sie
     sich mit einem Grundwert groesser null pruefen.
 
-    Vorbedingung: `art` ist "neigung", "grenze" oder "uebersteuerung".
-        Pruefung erfolgt beim Aufrufer, der die Art selbst setzt.
-    Nachbedingung: Bei "grenze" und einem Grundwert von null ist das Ergebnis
-        null, gleich welche Summe anliegt.
+    **Der Charakter wirkt auf den verbleibenden Weg, nicht auf den Wert.**
+    Bis zum 08.08.2026 wurde addiert: `grund + summe`. Das setzt zwei Skalen
+    gleich, die es nicht sind, und verliess ueber die volle Charakterspanne in
+    **62 von 62** Zellen die Spanne [0, 1]. Gekappt wurde nicht, und das war
+    richtig — Kappen erzeugt genau die toten Enden, die der Raum nicht haben
+    darf: Zwei Landschaften, die oben anstossen, sind nicht mehr zu
+    unterscheiden.
+
+    Die Wegform loest beides ohne Kappen::
+
+        n > 0:  ergebnis = grund + n * (1 - grund)      # Weg nach oben
+        n < 0:  ergebnis = grund + n * grund            # Weg nach unten
+
+    Vier Eigenschaften, jede einzeln pruefbar:
+
+      * **Geschlossen** — das Ergebnis liegt in [0, 1] durch Konstruktion.
+      * **Ordnungserhaltend** — die Ableitung nach dem Grundwert ist (1 - n)
+        beziehungsweise (1 + n) und damit positiv; zwei Landschaften fallen
+        unter keinem Charakter zusammen.
+      * **Keine geschlossene Tuer** — 1.0 nur bei n = 1 exakt, 0.0 nur bei
+        n = -1 exakt. Der Charakter verschiebt, er schliesst nicht
+        (`novaberg-gv-initiative_k.md` §8, hier als Rechenform statt als
+        Absicht).
+      * **Neutral** — n = 0 gibt den Grundwert zurueck. Die Gegenprobe: ein
+        Rad auf der Nabe reproduziert die Landschaft exakt.
+
+    **Die Grenze behaelt ihre multiplikative Form**, und das ist Absicht: Sie
+    ist das eine gewollte tote Ende — in `gewitter` wird nicht gefragt. Die
+    Wegform wuerde sie oeffnen, weil ein Grundwert von 0 dort vollen Weg nach
+    oben haette. Ihre einzige Freigabe bleibt die Uebersteuerung.
+
+    Args:
+        grund:   Grundwert der Landschaft, in [0, 1].
+        summe:   rohe Radsumme, unnormiert.
+        art:     "neigung", "grenze" oder "uebersteuerung".
+        groesse: fuer die Normierung — jede Groesse hat ihre eigene Spanne.
+
+    Vorbedingung: `art` ist einer der drei Werte. Pruefung erfolgt beim
+        Aufrufer, der die Art selbst setzt.
+    Nachbedingung: Bei "neigung" und "uebersteuerung" liegt das Ergebnis in
+        [0, 1]. Bei "grenze" und einem Grundwert von null ist es null, gleich
+        welche Summe anliegt.
     """
+    n: float = _normieren(summe, groesse)
+
     if art == "grenze":
-        # Multiplikativ: Der Charakter skaliert, was die Lage zulaesst.
-        return grund * (1.0 + summe)
-    # Neigung und Uebersteuerung addieren; der Unterschied liegt darin, dass
-    # die Uebersteuerung die Grenze ueberhaupt erst aufhebt.
-    return grund + summe
+        # Multiplikativ: Der Charakter skaliert, was die Lage zulaesst — und
+        # sie laesst hier nichts zu. Bei einem Grundwert ueber 0.5 koennte
+        # diese Form die Spanne verlassen; im Bestand tragen alle Grenzzellen
+        # 0.00, und ein Test haelt das fest.
+        return grund * (1.0 + n)
+
+    # Neigung und Uebersteuerung teilen die Wegform; der Unterschied liegt
+    # darin, dass die Uebersteuerung die Grenze ueberhaupt erst aufhebt.
+    return grund + n * ((1.0 - grund) if n > 0 else grund)
 
 
 def haltung_berechnen(cluster: str, rad: dict[str, float]) -> Haltung | None:
@@ -357,7 +465,7 @@ def haltung_berechnen(cluster: str, rad: dict[str, float]) -> Haltung | None:
         else:
             art = "neigung"
 
-        ergebnis: float = _verrechnen(grund, summe, art)
+        ergebnis: float = _verrechnen(grund, summe, art, groesse)
 
         werte[groesse] = Groessenwert(
             name         = groesse,
@@ -379,14 +487,18 @@ def haltung_berechnen(cluster: str, rad: dict[str, float]) -> Haltung | None:
 
     for wert in werte.values():
         if wert.ausserhalb:
-            logger.warning(
+            # Seit dem 08.08.2026 ist das kein erwarteter Zustand mehr, sondern
+            # ein Defekt: Die Wegform kann die Spanne nicht verlassen. Bleibt
+            # nur die multiplikative Grenzzelle, und die kaeme nur bei einem
+            # Grundwert ueber 0.5 heraus — den es im Bestand nicht gibt.
+            logger.error(
                 f"Haltung: {wert.name} liegt mit {wert.ergebnis:.3f} ausserhalb "
                 f"[{GROESSE_MIN}, {GROESSE_MAX}] — Cluster {cluster!r}, "
                 f"Grundwert {wert.grundwert:.2f}, Modifikation "
-                f"{wert.modifikation:+.2f}, Art {wert.art}. Nicht gekappt: Die "
-                "Behandlung der Spannenenden ist eine offene Frage des "
-                "Konzepts, und die Haeufigkeit dieses Falls ist die "
-                "Messgroesse dafuer."
+                f"{wert.modifikation:+.2f}, Art {wert.art}. Nicht gekappt: "
+                "Kappen erzeugt tote Enden. Bei Art 'neigung' oder "
+                "'uebersteuerung' ist dieser Fall unmoeglich und zeigt einen "
+                "Defekt der Rechenform an."
             )
 
     return Haltung(cluster=cluster, werte=werte)

@@ -19,6 +19,7 @@ Zeugen dieser Datei:
 Kein skipUnless, kein skipIf, kein try/except um Importe.
 """
 
+import itertools
 import unittest
 
 from ei.dreischicht import CLUSTER_BESCHREIBUNGEN, CLUSTER_FRAGEN
@@ -41,19 +42,38 @@ HALTUNG_LOGGER: str = "ki_server.ei.haltung"
 class RechnungTest(unittest.TestCase):
     """Die Verknuepfung von Grundwert und Modifikation."""
 
-    def test_neigung_addiert(self) -> None:
-        """glut/umfang: 0.70 Grundwert, wissbegier 1.0 traegt +0.30."""
+    def test_die_neigung_geht_den_verbleibenden_weg(self) -> None:
+        """glut/umfang: 0.70 Grundwert, wissbegier 1.0 traegt +0.30.
+
+        Bis zum 08.08.2026 wurde addiert und ergab genau 1.00 — den Rand. Die
+        Wegform normiert die Summe auf die Spanne der Groesse (+0.80) und geht
+        diesen Anteil des verbleibenden Wegs: 0.70 + 0.375 * 0.30.
+
+        **Die Modifikation bleibt die rohe Summe.** Sie ist die Messgroesse
+        des Charakters und darf nicht durch die Normierung verschwinden — im
+        Protokoll steht weiter, was das Rad beigetragen hat.
+        """
         haltung = haltung_berechnen("glut", {"wissbegier": 1.0})
         self.assertIsNotNone(haltung)
-        self.assertAlmostEqual(haltung.werte["umfang"].ergebnis, 1.00, places=6)
+        self.assertAlmostEqual(haltung.werte["umfang"].ergebnis, 0.8125, places=6)
         self.assertAlmostEqual(haltung.werte["umfang"].grundwert, 0.70, places=6)
         self.assertAlmostEqual(haltung.werte["umfang"].modifikation, 0.30, places=6)
         self.assertEqual(haltung.werte["umfang"].art, "neigung")
 
-    def test_halbe_auspraegung_wirkt_halb(self) -> None:
-        """Wissbegier 0.5 traegt +0.15 statt +0.30 auf glut/umfang."""
-        haltung = haltung_berechnen("glut", {"wissbegier": 0.5})
-        self.assertAlmostEqual(haltung.werte["umfang"].ergebnis, 0.85, places=6)
+    def test_halbe_auspraegung_geht_den_halben_weg(self) -> None:
+        """Die Linearitaet ueberlebt die Wegform.
+
+        Geprueft wird die Eigenschaft, nicht die Zahl: Die halbe Auspraegung
+        legt genau die Haelfte der Strecke zurueck, die die volle zurueckgelegt
+        haette. Eine Zahl allein wuerde auch dann bestehen, wenn die Form
+        irgendwo geknickt waere.
+        """
+        voll  = haltung_berechnen("glut", {"wissbegier": 1.0}).werte["umfang"]
+        halb  = haltung_berechnen("glut", {"wissbegier": 0.5}).werte["umfang"]
+        grund = voll.grundwert
+
+        self.assertAlmostEqual(halb.ergebnis - grund,
+                               (voll.ergebnis - grund) / 2, places=9)
 
     def test_gegenlaeufige_speichen_verrechnen_sich(self) -> None:
         """glut/naehe: 0.90 + treue 0.20 + wohlwollen 0.10 - distanz 0.50."""
@@ -61,8 +81,10 @@ class RechnungTest(unittest.TestCase):
             "glut", {"treue": 1.0, "wohlwollen": 1.0, "distanz": 1.0},
         )
         # Distanz uebersteuert die Naehe nicht, weil glut dort keine Grenze hat.
+        # -0.20 auf der Abwaertsspanne (-1.20) sind -1/6 des Wegs nach unten:
+        # 0.90 - 0.16667 * 0.90 = 0.75.
         self.assertAlmostEqual(haltung.werte["naehe"].modifikation, -0.20, places=6)
-        self.assertAlmostEqual(haltung.werte["naehe"].ergebnis, 0.70, places=6)
+        self.assertAlmostEqual(haltung.werte["naehe"].ergebnis, 0.75, places=6)
 
     def test_leeres_rad_laesst_die_grundwerte_stehen(self) -> None:
         """Ohne Charakter bleibt die Landschaft, was sie ist."""
@@ -117,16 +139,24 @@ class GrenzeTest(unittest.TestCase):
         Ohne diese Zusicherung waere die Multiplikation ungeprueft: Alle sechs
         Grenzen im Bestand tragen 0.00, und dort liefert jede Rechnung null.
         """
-        self.assertAlmostEqual(_verrechnen(0.40, 0.50, "grenze"), 0.60, places=6)
-        self.assertAlmostEqual(_verrechnen(0.40, -0.50, "grenze"), 0.20, places=6)
-        self.assertAlmostEqual(_verrechnen(0.00, 9.90, "grenze"), 0.00, places=6)
+        # 0.50 auf der Aufwaertsspanne von `umfang` (+0.80) sind n = 0.625.
+        self.assertAlmostEqual(_verrechnen(0.40, 0.50, "grenze", "umfang"), 0.65, places=6)
+        # -0.50 auf der Abwaertsspanne (-1.00) sind n = -0.5.
+        self.assertAlmostEqual(_verrechnen(0.40, -0.50, "grenze", "umfang"), 0.20, places=6)
+        # Und null bleibt null, gleich wie gross die Summe ist.
+        self.assertAlmostEqual(_verrechnen(0.00, 9.90, "grenze", "umfang"), 0.00, places=6)
 
-    def test_neigung_und_uebersteuerung_addieren(self) -> None:
-        """Der Gegensatz zur Multiplikation, an denselben Zahlen."""
-        self.assertAlmostEqual(_verrechnen(0.40, 0.50, "neigung"), 0.90, places=6)
+    def test_neigung_und_uebersteuerung_gehen_den_weg(self) -> None:
+        """Der Gegensatz zur Multiplikation, an denselben Zahlen.
+
+        n = 0.625 auf einem Grundwert von 0.40: 0.40 + 0.625 * 0.60 = 0.775.
+        Die Grenze kaeme mit denselben Eingaben auf 0.65 — der Unterschied
+        zwischen "skaliert, was die Lage zulaesst" und "geht den Rest des Wegs".
+        """
         self.assertAlmostEqual(
-            _verrechnen(0.40, 0.50, "uebersteuerung"), 0.90, places=6,
-        )
+            _verrechnen(0.40, 0.50, "neigung", "umfang"), 0.775, places=6)
+        self.assertAlmostEqual(
+            _verrechnen(0.40, 0.50, "uebersteuerung", "umfang"), 0.775, places=6)
 
     def test_eine_grenze_ohne_ausloeser_haelt(self) -> None:
         """gewitter/fragen bleibt null, solange keine Uebersteuerung greift."""
@@ -145,7 +175,9 @@ class UebersteuerungTest(unittest.TestCase):
         wert = haltung.werte["fragen"]
         self.assertEqual(wert.art, "uebersteuerung")
         self.assertEqual(wert.ausloeser, "wissbegier")
-        self.assertAlmostEqual(wert.ergebnis, 0.40, places=6)
+        # +0.40 auf der Aufwaertsspanne von `fragen` (+0.70): n = 0.5714, und
+        # ein Grundwert von 0.00 hat den vollen Weg vor sich.
+        self.assertAlmostEqual(wert.ergebnis, 0.571429, places=5)
 
     def test_halbe_wissbegier_durchbricht_sie_nicht(self) -> None:
         """Genau unter der Schwelle: Der Beitrag wirkt als Neigung.
@@ -186,41 +218,123 @@ class UebersteuerungTest(unittest.TestCase):
 
 
 class SpanneTest(unittest.TestCase):
-    """Ein Ueberlauf wird gemeldet und markiert, nicht gekappt."""
+    """Die Spanne kann nicht mehr verlassen werden — und wird nicht gekappt.
 
-    def test_waerme_laeuft_ueber_und_wird_markiert(self) -> None:
-        """glut/waerme: 0.80 + treue 0.10 + wohlwollen 0.40 = 1.30.
+    **Diese Klasse sicherte bis zum 08.08.2026 das Gegenteil zu.** Sie hielt
+    fest, dass `glut/waerme` auf 1.30 laeuft und `glut/draengen` auf -0.10, und
+    das war richtig: Der Wert blieb stehen, damit die Messreihe ihn zaehlen
+    konnte. Die Zusicherung hat ihren Zweck erfuellt — die Haeufigkeit wurde
+    gezaehlt, und ueber die volle Charakterspanne gerechnet verliessen **62 von
+    62** Zellen die Spanne.
 
-        Der bekannte offene Punkt des Konzepts. Der Wert bleibt stehen, damit
-        die Messreihe ihn zaehlen kann.
-        """
+    Damit war die Frage beantwortet und die Rechenform geaendert. Die
+    Zusicherung dreht sich um: Nicht "der Ueberlauf bleibt sichtbar", sondern
+    "er kann nicht entstehen". **Gekappt wird weiterhin nichts** — Kappen
+    erzeugt genau die toten Enden, die der Raum nicht haben darf.
+    """
+
+    def test_die_warme_landschaft_bleibt_in_der_spanne(self) -> None:
+        """glut/waerme lief mit diesem Rad auf 1.30."""
         haltung = haltung_berechnen("glut", {"treue": 1.0, "wohlwollen": 1.0})
         wert = haltung.werte["waerme"]
-        self.assertAlmostEqual(wert.ergebnis, 1.30, places=6)
-        self.assertTrue(wert.ausserhalb)
-        self.assertGreater(wert.ergebnis, GROESSE_MAX)
 
-    def test_ein_ueberlauf_wird_gemeldet(self) -> None:
-        """Stumm waere er von einem richtigen Wert nicht zu unterscheiden."""
-        with self.assertLogs(HALTUNG_LOGGER, level="WARNING") as protokoll:
-            haltung_berechnen("glut", {"treue": 1.0, "wohlwollen": 1.0})
-        self.assertTrue(
-            any("waerme" in zeile and "ausserhalb" in zeile for zeile in protokoll.output),
-            f"keine Meldung zum Ueberlauf: {protokoll.output}",
-        )
+        self.assertFalse(wert.ausserhalb)
+        self.assertLessEqual(wert.ergebnis, GROESSE_MAX)
+        self.assertGreater(wert.ergebnis, wert.grundwert)
 
-    def test_draengen_laeuft_unter_null(self) -> None:
-        """glut/draengen: 0.20 Grundwert, treue 1.0 traegt -0.30.
-
-        Die untere Spanne bricht genauso wie die obere, und schon bei einer
-        einzigen voll ausgepraegten Speiche. Beim Entwurf war nur der Ueberlauf
-        benannt — dieser Fall kam erst beim Bauen zum Vorschein.
-        """
+    def test_die_untere_spanne_haelt_ebenso(self) -> None:
+        """glut/draengen lief mit einer einzigen Speiche auf -0.10."""
         haltung = haltung_berechnen("glut", {"treue": 1.0})
         wert = haltung.werte["draengen"]
-        self.assertAlmostEqual(wert.ergebnis, -0.10, places=6)
-        self.assertTrue(wert.ausserhalb)
-        self.assertLess(wert.ergebnis, GROESSE_MIN)
+
+        self.assertFalse(wert.ausserhalb)
+        self.assertGreaterEqual(wert.ergebnis, GROESSE_MIN)
+        self.assertLess(wert.ergebnis, wert.grundwert)
+
+    def test_keine_zelle_verlaesst_die_spanne_an_den_enden(self) -> None:
+        """Die Naht wird ueber die Enden gerechnet, nicht ueber die Mitte.
+
+        Das ist die eigentliche Zusicherung, und sie ist vollstaendig statt
+        gestichprobt: Bei festem Rad ist die Haltung eine reine Funktion der
+        Landschaft, also sind vierzehn Landschaften mal zwei Enden der ganze
+        Raum. Die alte Form fiel hier in 62 von 62 Zellen durch.
+
+        Gefahren wird mit **allen** Speichen voll ausgepraegt — einmal so, wie
+        die Tabelle sie fuehrt, und einmal ist das der staerkste Zug, den ein
+        Charakter ueberhaupt ausueben kann.
+        """
+        volles_rad: dict = dict.fromkeys(SPEICHEN_BEITRAG, 1.0)
+
+        for cluster in CLUSTER_GRUNDWERT:
+            haltung = haltung_berechnen(cluster, volles_rad)
+            self.assertIsNotNone(haltung, f"{cluster} lieferte keine Haltung")
+            for groesse, wert in haltung.werte.items():
+                with self.subTest(cluster=cluster, groesse=groesse):
+                    self.assertGreaterEqual(wert.ergebnis, GROESSE_MIN)
+                    self.assertLessEqual(wert.ergebnis, GROESSE_MAX)
+                    self.assertFalse(wert.ausserhalb)
+
+    def test_die_ordnung_der_landschaften_ueberlebt_jeden_charakter(self) -> None:
+        """Kein totes Ende: Zwei Landschaften fallen unter keinem Rad zusammen.
+
+        Das ist der Grund, warum nicht gekappt wird. Kappen macht aus zwei
+        verschiedenen Lagen dieselbe Zahl, und der Raum verliert genau dort
+        seine Aufloesung, wo der Charakter am staerksten zieht.
+
+        Geprueft an der Groesse mit der breitesten Beitragsspanne und ueber
+        alle Landschaftspaare, die sich in ihr unterscheiden.
+        """
+        volles_rad: dict = dict.fromkeys(SPEICHEN_BEITRAG, 1.0)
+        leeres_rad: dict = {}
+
+        for rad, name in ((volles_rad, "volles Rad"), (leeres_rad, "Nabe")):
+            ergebnisse: dict = {
+                cluster: haltung_berechnen(cluster, rad).werte["waerme"].ergebnis
+                for cluster in CLUSTER_GRUNDWERT
+            }
+            for a, b in itertools.combinations(CLUSTER_GRUNDWERT, 2):
+                grund_a = CLUSTER_GRUNDWERT[a]["waerme"]
+                grund_b = CLUSTER_GRUNDWERT[b]["waerme"]
+                if grund_a == grund_b or "waerme" in CLUSTER_GRENZE.get(a, ()) \
+                        or "waerme" in CLUSTER_GRENZE.get(b, ()):
+                    continue
+                with self.subTest(rad=name, a=a, b=b):
+                    self.assertEqual(
+                        grund_a > grund_b, ergebnisse[a] > ergebnisse[b],
+                        f"{a} und {b} haben ihre Ordnung verloren",
+                    )
+
+    def test_die_nabe_reproduziert_die_landschaft_exakt(self) -> None:
+        """Die Gegenprobe der Rechenform: n = 0 gibt den Grundwert zurueck."""
+        for cluster in CLUSTER_GRUNDWERT:
+            haltung = haltung_berechnen(cluster, {})
+            for groesse, wert in haltung.werte.items():
+                with self.subTest(cluster=cluster, groesse=groesse):
+                    self.assertAlmostEqual(
+                        wert.ergebnis, CLUSTER_GRUNDWERT[cluster][groesse],
+                        places=9,
+                    )
+
+    def test_der_rand_wird_erreicht_aber_nur_ganz_aussen(self) -> None:
+        """Der Unterschied zwischen "geht den ganzen Weg" und "gekappt".
+
+        `waerme` hat eine Aufwaertsspanne von +0.50, und `treue` (+0.10) plus
+        `wohlwollen` (+0.40) sind **genau diese Spanne**. Ein solches Rad steht
+        am aeussersten Rand dessen, was die Tabelle zulaesst — dass es 1.0
+        erreicht, ist die Zusicherung und nicht ihre Verletzung: Der Rand ist
+        erreichbar, sonst waere die obere Ecke ein totes Ende.
+
+        **Gekappt waere es dann, wenn auch ein schwaecheres Rad dort landete.**
+        Genau das prueft die zweite Haelfte: Bei halber Auspraegung liegt der
+        Wert echt darunter, und zwar streng.
+        """
+        ganz  = haltung_berechnen("glut", {"treue": 1.0, "wohlwollen": 1.0})
+        halb  = haltung_berechnen("glut", {"treue": 0.5, "wohlwollen": 0.5})
+
+        self.assertAlmostEqual(ganz.werte["waerme"].ergebnis, GROESSE_MAX, places=9)
+        self.assertLess(halb.werte["waerme"].ergebnis, GROESSE_MAX)
+        self.assertGreater(halb.werte["waerme"].ergebnis,
+                           halb.werte["waerme"].grundwert)
 
     def test_ein_wert_in_der_spanne_wird_nicht_markiert(self) -> None:
         """Der positive Zwilling — sonst markierte `ausserhalb` alles."""
@@ -228,13 +342,6 @@ class SpanneTest(unittest.TestCase):
         for groesse in GROESSEN:
             with self.subTest(groesse=groesse):
                 self.assertFalse(haltung.werte[groesse].ausserhalb)
-
-    def test_nichts_wird_gekappt(self) -> None:
-        """Das Ergebnis traegt den gerechneten Wert, nicht die Obergrenze."""
-        haltung = haltung_berechnen("glut", {"treue": 1.0, "wohlwollen": 1.0})
-        self.assertNotAlmostEqual(
-            haltung.werte["waerme"].ergebnis, GROESSE_MAX, places=6,
-        )
 
 
 class VorbedingungTest(unittest.TestCase):

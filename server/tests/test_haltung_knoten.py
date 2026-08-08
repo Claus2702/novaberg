@@ -330,13 +330,23 @@ class DasProtokollTraegtDieHerkunftTest(unittest.TestCase):
         self.assertEqual("nova",         aufruf["character_id"])
         self.assertEqual("haltungsraum", aufruf["node"])
 
-    def test_die_ueberlaeufe_stehen_zaehlbar_obenauf(self) -> None:
+    def test_die_liste_der_ueberlaeufe_steht_zaehlbar_obenauf(self) -> None:
         """Die Haeufigkeit ist die Messgroesse — sie darf keine Tiefensuche sein.
 
-        `glut` mit dem gemessenen Rad ergibt `waerme` 1.15; der Name gehoert
-        deshalb in die obere Liste, nicht nur in den Satz der Groesse.
+        **Bis zum 08.08.2026 stand hier `["waerme"]`.** `glut` ergab mit dem
+        gemessenen Rad 1.15, und der Name gehoerte in die obere Liste. Seit die
+        Naht auf die Wegform umgestellt ist, kann kein Wert die Spanne mehr
+        verlassen — die Liste ist leer, und das ist die Aussage.
+
+        **Der Schluessel bleibt trotzdem Pflicht.** Eine leere Liste heisst
+        "nichts ausserhalb", ein fehlender Schluessel heisst "nicht geprueft",
+        und die Messreihe muss beides unterscheiden koennen. Genau deshalb
+        wird hier auf die leere Liste geprueft und nicht auf ihre Abwesenheit.
         """
-        self.assertEqual(["waerme"], self._zeile()["ausserhalb"])
+        zeile: dict = self._zeile()
+
+        self.assertIn("ausserhalb", zeile)
+        self.assertEqual([], zeile["ausserhalb"])
 
     def test_die_herkunft_des_rades_steht_in_der_zeile(self) -> None:
         """Ein Default-Rad ist kein gemessener Charakter."""
