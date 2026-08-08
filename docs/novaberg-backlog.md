@@ -214,17 +214,19 @@ Nicht gekappt, sondern gemeldet und markiert; die Häufigkeit ist die Messgröß
 
 **Priorität:** mittel — erst nach der ersten Messreihe entscheidbar.
 
-#### HALTUNG-OHNE-LANDSCHAFT — der Prompt-Block muss den leeren Fall beantworten
+#### ~~HALTUNG-OHNE-LANDSCHAFT~~ — ✅ **erledigt am 08.08.2026, auf einem dritten Weg**
 
 Kehrt der GV-Node früh zurück — bei Vektorlänge 0 („kein Vorausdenken") oder beim Skip —, setzt er `gv_detail` **nicht**. Ohne Landschaft gibt es keine Grundwerte und damit keine Haltung. Der Haltungs-Knoten erbt diese Lücke; das ist kein Defekt in ihm, sondern eine Weitergabe.
 
 **Gemessen am 31.07.2026:** in einer Reihe von 20 Turns **einmal**, dazu **einmal** auf Novas Eigenimpuls unmittelbar danach — also rund jeder zehnte Haltungs-Vorgang. Kein Randfall.
 
-**Solange kein Prompt die Werte liest, ist das folgenlos.** Mit dem Prompt-Block wird es eine Fallunterscheidung: Nova bekäme in diesen Turns keine Verhaltensvorgaben, während die alte Längenregel abgelöst ist. Zwei Wege stehen offen — die letzte Haltung weiterverwenden (dann muss sie als übernommen markiert sein, sonst sieht ein alter Wert wie ein frischer aus) oder den Block weglassen und auf die Vorgabewerte des Prompts zurückfallen.
+~~**Solange kein Prompt die Werte liest, ist das folgenlos.** Mit dem Prompt-Block wird es eine Fallunterscheidung: Nova bekäme in diesen Turns keine Verhaltensvorgaben, während die alte Längenregel abgelöst ist. Zwei Wege stehen offen — die letzte Haltung weiterverwenden (dann muss sie als übernommen markiert sein, sonst sieht ein alter Wert wie ein frischer aus) oder den Block weglassen und auf die Vorgabewerte des Prompts zurückfallen.~~
 
-**Der Eintrag verlangt keinen der beiden Wege**, sondern die Entscheidung vor dem Einhängen des Blocks.
+**Beide vorgeschlagenen Wege sind hinfällig, weil der Fall nicht mehr eintritt.** Sie beantworteten die Frage „was tun, wenn keine Landschaft da ist" — und setzten damit voraus, dass eine fehlende Landschaft ein legitimer Zustand ist. Sie ist es nicht: Die Landschaft ist ein Zustand des Gesprächs und keine Funktion des Vorausdenkens. Seit dem 08.08.2026 wird sie vor beiden Toren vermessen; `gv_detail` ist auf jedem Weg gesetzt, und die Haltung rechnet auch im Skip- und im Krisenturn.
 
-**Priorität:** hoch, gleichzeitig mit dem Prompt-Block.
+**Die Neuerhebung war größer als die Diagnose von damals:** nicht rund jeder zehnte, sondern **184 von 845 Rohturns (21,8 %)**, in den zwölf Validierungsbögen 101 von 360 (28,1 %) — und nicht zufällig verteilt, sondern an der Nähe-Achse hängend. Beleg und Zahlen in `novaberg-erreichbarkeit_k.md` §4a, Bauteil B1.
+
+**Was als Rest bleibt:** Ein Turn ohne Vorausdenken bekommt weiterhin **kein Werkzeug** in den Prompt — Strategie und Vehikel stammen aus dem LLM-Lauf, der nicht stattgefunden hat. Das ist kein Ausfall, sondern die ehrliche Lage, und `gv_detail['vorausdenken']` benennt sie.
 
 #### HALTUNG-LAENGE-ZWEI-ERZEUGER — die alte Längenregel muss abgelöst werden
 

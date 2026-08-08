@@ -793,6 +793,30 @@ lohnt bei einem Ein-Schritt-Vektor nicht. Die **Aufnahmebereitschaft** steht dav
 wird in jedem Turn gerechnet: Sie ist ein Zustand Novas, keine Funktion der Vektorlänge,
 und sie ist rein (State-Lesen, Lookups, Arithmetik).
 
+**Erweitert am 08.08.2026 — dieselbe Regel, zwei Tore weiter vorn.** Chat 116 zog die
+Bereitschaft vor die Längen-*Schwelle* (Länge < 2), aber nicht vor die beiden frühen
+`return`s davor: den Skip und die Länge 0. Auf diesen zwei Wegen wurde sie nie gerechnet,
+und `gv_detail` wurde überhaupt nicht geschrieben. Mit ihr fiel die **Dreischicht** aus —
+Achsen, Sektor, Landschaft —, und damit die Ablesung, gegen die die
+Erreichbarkeits-Kalibrierung erhoben wird.
+
+> **Die Landschaft ist ein Zustand des Gesprächs, das Vorausdenken eine Entscheidung
+> darüber.** Ein Begrüßungsturn findet in einem Raum statt, ein Krisenturn erst recht.
+
+Seither steht vor beiden Toren: Farbton, Aufnahmebereitschaft, Initiative, Achsen,
+Sektor, Landschaft. Dahinter bleibt, was ohne LLM-Lauf niemand braucht: die Lückensuche
+(DB), das Repertoire des Clusters, die Charakter-Gewichtung (frisches Embedding) und der
+Prompt. Der Preis auf den frühen Wegen ist ein Redis-Lesezugriff mit Embedding der
+Vorantwort und ein Datenbanklauf für den Charakter-Versatz.
+
+**Was der Node dabei zusätzlich mitschreibt:** `gv_detail['vorausdenken']` mit einer von
+vier Marken — `gelaufen`, `skip`, `krise`, `laenge_null`. Sie ist Pflicht, seit die
+Landschaft in jedem Turn dasteht: Ohne sie wäre eine Landschaft ohne Strategie von einer
+mit ergebnislos gebliebener Strategie nicht mehr zu unterscheiden. Und sie trennt die
+**Krise** — eine Entscheidung dieses Konzepts — von der **arithmetisch erreichten Null**,
+die aus den Gewichten fällt. Gemessen über 845 Rohturns: 88 Skip, 4 Krise, 92 Länge 0.
+Belegt in `novaberg-erreichbarkeit_k.md` §4a.
+
 Diese Trennung ist nicht kosmetisch. **Der Wert `0.00` ist für die Krise reserviert** —
 `aufnahmebereitschaft_berechnen` liefert ihn genau bei Stimmungsvektor `spirale`/`absturz`
 mit Arousal ≥ 0.7; ein neutraler Zustand liegt bei ~0.56. Stand die Rechnung hinter dem

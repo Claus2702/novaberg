@@ -1983,6 +1983,34 @@ Beide Räder haben eine Nabe — den Wert ohne jede Ausprägung — und das Erge
 
 ---
 
+## Chat 132 (08.08.2026) — Ein Messgerät, das sich auf der fernen Hälfte der Nähe-Achse abschaltete ✅
+
+Bauteil B1 aus `novaberg-erreichbarkeit_k.md`. Der Auftrag war, eine Ablesung zu reparieren, die in einem Siebtel der Fälle ausfiel. Die Nachrechnung vor dem Bauen hat den Befund vergrößert und seine Art geändert.
+
+**Drei Korrekturen an der Ausgangslage, alle am Bestand gemessen.** Der Nenner war doppelt: Die zwölf Bögen tragen 360 Ablesungen, nicht 720 — die Quote ist **28,1 %** statt 14 %. Die Krise, der einzige Ausfall, den das GV-Konzept als gewollt beschreibt, trägt **0 von 101**. Und der Ausfall ist nicht gleichverteilt:
+
+| Beziehungsdynamik | Ausfälle |
+|---|---|
+| `neutral` · `vertrauen` · `dankbar` | **0 von 643** |
+| `distanz` | 82 von 164 |
+| `hilfesuchend` · `angriff` | 14 von 38 |
+
+**Die Ursache war eine Reihenfolge, kein Rechenfehler.** Die Landschaftsvermessung stand hinter dem Antizipations-Tor. Sie liest `internal` — Nähe und Tiefe aus Novas Raum; die Tore davor lesen `external`. Eine Aussage über den Nutzer schaltete damit eine Messung an Nova ab, und zwar auf der Achse, die in `wartezimmer`, `schlachtfeld`, `nebel` und `regen` führt. Der Befund „im echten Gespräch sind vier Landschaften nie betreten worden" stand auf genau diesem Gerät.
+
+**Das Verfahren, das den Befund tragfähig gemacht hat:** `turn_roh` speichert `external.emotion.to_dict()`, und im CharacterGraph läuft die späte Perzeption mit der Rolle `assistant`. `external.emotion` ist zwischen GV-Node und Dispatcher damit unverändert — die beiden Torfunktionen ließen sich **exakt wiedergeben statt nachgebaut** zu werden. Von 149 wiedergegebenen Ausfällen mit erhaltener Protokollzeile tragen 149 die erwartete; null Fehlzuordnungen.
+
+**Gebaut:** Farbton, Aufnahmebereitschaft, Initiative, Achsen, Sektor und Landschaft stehen vor beiden Toren; alle drei Ausgänge schreiben `gv_detail` durch einen gemeinsamen Erzeuger; `gv_detail['vorausdenken']` trägt eine von vier Marken und trennt die Krise von der arithmetisch erreichten Null. Was ein LLM, eine Lückensuche oder ein frisches Embedding kostet, bleibt hinter dem Längen-Tor — ein Test hält es dort.
+
+**Entschieden am selben Tag:** Die Landschaft geht in den Responder-Prompt, gestaffelt von grob nach fein — Landschaft (1 von 14), Sektor (1 von 64), die sechs Achsen im Klartext, dann Ton und Werkzeug. Dieselbe Lage in drei Körnungen, die genaueste am dichtesten am Generierungspunkt. Wo der Sektor wie seine Landschaft heißt — 10 der 64 —, entfällt die Zeile.
+
+**Nachgemessen über dieselben 845 Eingaben:** 845 von 845 tragen eine Landschaft, kein Pflichtfeld fehlt auf irgendeinem Weg, die Marken reproduzieren die Aufteilung unverändert. **Was die Nachmessung nicht zeigt:** die Verteilung der Landschaften — die Achsen lesen `internal`, das in `turn_roh` nicht steht. Das ist die erste Messung für B2.
+
+**Geschlossen:** `HALTUNG-OHNE-LANDSCHAFT` — auf einem dritten Weg, der beide vorgeschlagenen hinfällig macht: Sie setzten voraus, dass eine fehlende Landschaft ein legitimer Zustand ist.
+
+**Neu im Register:** `F-LAGE-1`.
+
+---
+
 ## Chat 131 (07.08.2026) — Die Trennung von Kalibrieren und Validieren, und eine Zahl, die ungenauer ist als ihr p-Wert ✅
 
 Kein Produktivcode. Eine Entscheidung, die vor dem ersten Dreh an der Destillation fallen musste — und die Nachrechnung der Zahl, gegen die gedreht werden sollte, hat ihren Zuschnitt geändert.

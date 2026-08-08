@@ -83,11 +83,51 @@ Erhoben am 08.08.2026 über 720 Landschafts-Ablesungen aus zwölf Gesprächsbög
 
 ### Drei Vorbehalte, ohne die diese Zahlen nicht zu lesen sind
 
-**Die Ablesung fällt in 101 von 720 Fällen aus** — Grund `keine Landschaft in gv_detail`, verteilt über alle zwölf Bögen. Ein leerer Wert sieht aus wie eine ruhige Lage. Bis das geklärt ist, fehlt jeder Verteilung ein Siebtel.
+~~**Die Ablesung fällt in 101 von 720 Fällen aus** — Grund `keine Landschaft in gv_detail`, verteilt über alle zwölf Bögen. Ein leerer Wert sieht aus wie eine ruhige Lage. Bis das geklärt ist, fehlt jeder Verteilung ein Siebtel.~~ → **Der Zähler stimmt, der Nenner war doppelt. Behoben am 08.08.2026, siehe §4a.** Die zwölf Bögen tragen 360 Ablesungen, nicht 720: 360 Rohturns, 360 `haltungsraum`-Zeilen, 360 verschiedene `turn_id`. Es fehlte **28,1 %** und nicht ein Siebtel — und der Ausfall war nicht gleichverteilt, sondern hing an einer der sechs Achsen.
 
 **Das Charakter-Rad fehlte in 109 Rechnungen** — Grund `Rad nicht ladbar (fehlt)`. Eine frische Kennung hat kein Rad; es wird aus dem Kurzzeitgedächtnis destilliert und existiert am Anfang eines Bogens noch nicht. **Diese Turns messen einen Apparat ohne seinen Charakterteil**, und sie stehen in derselben Tabelle wie die anderen.
 
 **Die Bögen bilden das echte Gespräch nicht ab.** Was produktiv dominiert — `schlachtfeld`, `werkstatt`, `feuerwerk`, zusammen 55 % — kommt in den Bögen auf 7,3 %. Eine Zielverteilung, die auf den Bögen kalibriert wird, kalibriert auf ein anderes Gespräch.
+
+---
+
+## 4a. Warum die Ablesung ausfiel — und warum das die Zahlen oben entwertet
+
+Erhoben am 08.08.2026 über **845 Rohturns** aus `pipeline_log` (`art='turn_roh'`). Die dort gespeicherte `user_emotion` ist dasselbe Objekt, das der GV-Node gelesen hat: Die späte Perzeption des CharacterGraph läuft mit der Rolle `assistant` und schreibt nach `internal`, `external.emotion` bleibt zwischen GV-Node und Dispatcher unverändert. Die beiden Torfunktionen ließen sich damit **exakt** wiedergeben statt nachgebaut zu werden.
+
+**Gegenprobe:** Von 149 wiedergegebenen Ausfällen, für die noch eine `haltungsraum`-Zeile existiert, tragen 149 genau `keine Landschaft in gv_detail`; kein Turn mit vorhergesagter Landschaft trägt sie. Null Fehlzuordnungen.
+
+### Die Ursachen, getrennt
+
+| Ursache | zwölf Bögen (n=360) | alle Rohturns (n=845) |
+|---|---|---|
+| Skip (Begrüßung/Meta) | 53 | 88 |
+| Krise (Notbremse) | **0** | 4 |
+| Länge 0 aus der Rechnung | 48 | 92 |
+| **ohne Landschaft** | **101 (28,1 %)** | **184 (21,8 %)** |
+
+Die Krise — der einzige Ausfall, den das Konzept des GV-Nodes als gewollt beschreibt — trägt 0 von 101.
+
+### Der Ausfall hing an der Nähe-Achse
+
+| Beziehungsdynamik | Ausfälle |
+|---|---|
+| `neutral` | 0 von 340 |
+| `vertrauen` | 0 von 296 |
+| `dankbar` | 0 von 7 |
+| `distanz` | **82 von 164 (50 %)** |
+| `hilfesuchend` | 9 von 23 (39 %) |
+| `angriff` | 5 von 15 (33 %) |
+
+Ohne den Distanz-Abzug hätten 76 der 96 Längen-Nullen eine Landschaft getragen.
+
+> **Das Messgerät schaltete sich genau auf der fernen Hälfte der Nähe-Achse ab und nie auf der nahen.** Achse 3 ist die Achse, die ins `wartezimmer`, ins `schlachtfeld`, in `nebel` und `regen` führt. **Der Befund in §4, im echten Gespräch seien vier Landschaften nie betreten worden, stand damit auf einer Ablesung, die auf genau diesen Eingaben aus war.** Er ist nicht widerlegt, aber er ist unbelegt, bis er auf dem reparierten Gerät neu erhoben ist.
+
+### Die Ursache war eine Reihenfolge
+
+Die Landschaftsvermessung stand **hinter** dem Antizipations-Tor, obwohl sie keine Funktion der Antizipation ist. Sie liest `internal` — Nähe und Tiefe aus Novas Raum; die Tore davor lesen `external`. **Eine Aussage über den Nutzer schaltete damit eine Messung an Nova ab.**
+
+Der Präzedenzfall steht in derselben Datei und im selben Konzept: Die Aufnahmebereitschaft wurde in Chat 116 aus genau diesem Grund vor die Längen-Schwelle gezogen (`novaberg-node-gv_k.md`, „Was hinter dem Längen-Tor steht und was davor"). Sie wurde jedoch nur vor die *Schwelle* gezogen, nicht vor die beiden frühen Rückkehrpunkte davor — bei Skip und bei Länge 0 fehlte deshalb bis zum 08.08.2026 nicht nur die Landschaft, sondern `gv_detail` vollständig.
 
 ---
 
@@ -117,14 +157,26 @@ Deshalb: kein Anteil davon in der Kalibrierung aus §5. Erschöpfung ist ein **Z
 
 ## 7. Die Bauteile
 
-### B1 — Die Ablesung, die ausfällt
+### B1 — Die Ablesung, die ausfällt ✅ **gebaut am 08.08.2026**
 
 | Zeile | Inhalt |
 |---|---|
 | **ZIEL** | Jeder Turn trägt eine Landschaft, oder der Ausfall ist als Zustand benannt und von „ruhige Lage" unterscheidbar. |
 | **TEST** | Ein Turn, dessen Landschaftsbestimmung scheitert, erzeugt einen Wert, den keine Auswertung als Landschaft zählt — und eine Meldung, die den Grund nennt. |
-| **MESSUNG** | Anteil der Ablesungen ohne Landschaft über den Bestand, je Ursache getrennt. Heute: 101 von 720 in den Bögen, 6 von 128 beim produktiven Paar. |
+| **MESSUNG** | Anteil der Ablesungen ohne Landschaft über den Bestand, je Ursache getrennt. ~~Heute: 101 von 720 in den Bögen, 6 von 128 beim produktiven Paar.~~ → **101 von 360 (28,1 %) in den Bögen, 184 von 845 über alle Rohturns**; die Aufteilung je Ursache steht in §4a. |
 | **Gegenprobe** | Ein absichtlich unvollständiger Zustand muss die Meldung auslösen. Bleibt sie aus, meldet der Pfad nicht, was er nicht konnte. |
+
+**Beide Hälften des ZIELs sind erfüllt, und zwar die erste.** Die Landschaftsvermessung steht seit dem 08.08.2026 vor beiden Toren des GV-Nodes; sie ist ein Zustand des Gesprächs und keine Funktion des Vorausdenkens. Wo trotzdem nicht vorausgedacht wird, trägt `gv_detail['vorausdenken']` eine von vier Marken — `gelaufen`, `skip`, `krise`, `laenge_null`.
+
+**Die Marke ist das Begleitfeld, das die Landschaft allein nicht mehr sein kann.** Seit sie in jedem Turn dasteht, ist eine Landschaft ohne Strategie von einer Landschaft mit ergebnislos gebliebener Strategie nicht mehr am Cluster zu unterscheiden. Die Trennung von `krise` und `laenge_null` ist dabei genau die Zeile, die die MESSUNG verlangt: Die Krise ist eine Entscheidung des Konzepts, die arithmetische Null ein Ergebnis der Gewichte.
+
+**Nachgemessen über dieselben 845 gespeicherten Eingaben:** 845 von 845 tragen eine Landschaft, 0 ohne, kein Pflichtfeld fehlt auf irgendeinem Weg. Die Marken reproduzieren die Aufteilung aus §4a unverändert — die Tore entscheiden weiterhin genauso, nur hängt die Messung nicht mehr an ihnen.
+
+**Was diese Nachmessung nicht zeigt:** die Verteilung der Landschaften. Die Achsen lesen `internal`, und Novas Raum ist in `turn_roh` nicht gespeichert; alle 845 fallen deshalb auf dieselbe Neutrallage. **Die Verteilung braucht echte Turns und ist die erste Messung für B2.**
+
+**Kosten:** ein Redis-Lesezugriff mit Embedding der Vorantwort und ein Datenbanklauf auf den beiden Wegen, die früh zurückkehren. Kein LLM — die teure Lückensuche und die Charakter-Gewichtung stehen weiterhin hinter dem Längen-Tor, und ein Test hält sie dort.
+
+**Nicht angefasst und weiterhin offen** (Zeilen in `novaberg-fundliste.md` vom 08.08.2026): die Rundung `round(0.5) → 0`, die 25 der 96 Längen-Nullen verursacht, und zwei der drei Skip-Auslöser (`begruessung`, `system`), die in 845 Turns null mal vorkommen. Beide betreffen das Vorausdenken, nicht mehr die Ablesung.
 
 ### B2 — Die Ist-Verteilung, getrennt nach Bedingung
 
@@ -179,7 +231,7 @@ Deshalb: kein Anteil davon in der Kalibrierung aus §5. Erschöpfung ist ein **Z
 ## 9. Was offen ist
 
 - **Die Untergrenze je Landschaft ist nicht bestimmt.** Der Präzedenzfall setzt 15 % für eine zweiwertige Achse; bei vierzehn Landschaften ist die Größenordnung eine andere, und sie ist zu setzen, nicht abzuleiten.
-- **Die Ablesung fällt in 14 % der Fälle aus** und ist vor allem anderen zu klären (B1).
+- ~~**Die Ablesung fällt in 14 % der Fälle aus** und ist vor allem anderen zu klären (B1).~~ → **Erledigt am 08.08.2026.** Sie fiel in **28,1 %** der Bogen-Ablesungen aus, nicht in 14 %, und nicht zufällig: 82 von 164 Turns mit `distanz`, 0 von 340 mit `neutral` (§4a). **Daraus ein neuer offener Punkt:** Alle Zahlen in §4 sind auf dem defekten Gerät erhoben und vor der Zielverteilung neu zu erheben — das ist die erste Aufgabe von B2.
 - **Auf welchem Bestand kalibriert wird, ist offen.** Die zwölf Bögen und das produktive Paar haben fast gegenläufige Verteilungen; eine Kalibrierung auf den Bögen kalibriert auf ein anderes Gespräch.
 - **Die Erreichbarkeit unter Charakter ist nie durchgerechnet worden** — für die GV-Achse liegt die Tabelle vor, für die Landschaften nicht.
 - **Ob die vierzehn Landschaften die richtige Auflösung sind**, ist nicht Gegenstand dieses Konzepts und bleibt beim Haltungsraum.
@@ -189,4 +241,5 @@ Deshalb: kein Anteil davon in der Kalibrierung aus §5. Erschöpfung ist ein **Z
 
 ## Versionshistorie
 
+- **v0.2 — 08.08.2026:** **B1 gebaut**, und die Nachrechnung vor dem Bauen hat den Befund vergrößert statt ihn zu bestätigen. Drei Korrekturen an v0.1: Der Nenner der Ausfallquote war doppelt (360 Ablesungen, nicht 720), die Quote also **28,1 %** statt 14 %; die Krise trägt **0 von 101** und nicht den Hauptteil; und der Ausfall ist nicht gleichverteilt, sondern hängt an Achse 3 — **82 von 164 Turns mit `distanz`, 0 von 340 mit `neutral`**. Damit steht §4a neu: Der Befund „vier Landschaften nie betreten" ist auf einem Gerät erhoben, das sich auf genau der fernen Hälfte der Nähe-Achse abschaltete. Die Ursache war eine Reihenfolge und kein Rechenfehler — die Landschaftsvermessung liest `internal`, die Tore davor lesen `external`, und eine Aussage über den Nutzer schaltete eine Messung an Nova ab. Der Präzedenzfall stand seit Chat 116 im GV-Konzept, wurde damals aber nur vor die Längen-*Schwelle* gezogen und nicht vor die beiden Rückkehrpunkte davor. **Entschieden am selben Tag:** Die Landschaft geht in den Responder-Prompt, gestaffelt von grob nach fein.
 - **v0.1 — 08.08.2026:** Erstfassung. Anlass ist die Frage, ob alle Landschaften gleich häufig erreichbar sein müssen — beantwortet mit **nein, aber erreichbar und im richtigen Verhältnis**. Die Suche nach dem Gegenstand vor dem Schreiben fand den Präzedenzfall: Für die 64 GV-Sektoren ist genau dieses Kriterium bereits entschieden, durchgerechnet und gebaut, samt der beiden Sätze *„Das Ziel ist Erreichbarkeit, nicht Häufigkeit"* und *„Der Charakter verschiebt, er schließt nicht"*, samt der Entscheidung gegen eine Laufzeit-Regelung. Dieses Konzept überträgt das Kriterium auf die vierzehn Gesprächslandschaften und erfindet es nicht. Gemessen am selben Tag: **alle vierzehn sind erreichbar**, aber im produktiven Bestand sind vier nie betreten worden, und die Verteilungen von Messbögen und echtem Gespräch sind fast gegenläufig. Drei Vorbehalte stehen bei den Zahlen — die Ablesung fällt in 101 von 720 Fällen aus, das Charakter-Rad fehlte in 109 Rechnungen, und die Bögen bilden das echte Gespräch nicht ab. Die tragende Reihenfolge: **Der Charakter muss auf einen kalibrierten Raum wirken, und diese Kalibrierung fehlt davor.**
