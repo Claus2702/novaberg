@@ -2063,6 +2063,48 @@ Nachgemessen über `has_lzg` und `lzg_resonanz_count`:
 
 **Die Falle, die mit dem Aufbau wächst, ist mitgeschrieben:** Das angesammelte Langzeitgedächtnis besteht zu hundert Prozent aus Messreihen. Der Präzedenzfall vom 29.07.2026 lag bei 32,7 % und hat eine Schwelle verdorben. Jede Episode muss das Leben der Persona weiterbewegen, statt dieselbe Sonde erneut zu treffen — **das System nähert sich der Wirklichkeit in der Menge, nicht in der Art.**
 
+### Die Staffel-Mechanik, ein zerstörter Bestand, und ein Riegel daraus
+
+Der Basisarm stand vollständig: **zwölf Bögen, je 30 Turns und 30 Rohturns ohne Ausfall, 1067 KZG-Einträge** gegen 583 der Kalibriermenge. Vier Bögen brauchten einen zweiten Anlauf; das gehört in jede Auswertung, denn sie liefen gegen eine Nova, die den ersten schon hinter sich hatte.
+
+- ✅ **Ein Zurücksetzen, das die Langzeitschicht verschont.** Verschont wird mehr als die Knoten: `lzg_kanten` hängt mit CASCADE an ihnen, `lzg_knoten.timeline_id` steht auf SET NULL, und die Kanten verweisen auf Entitäten. Ein Verschonen, das nur die Knoten meint, entkernt sie.
+- ✅ **Ein Rückrollen auf einen Stand.** Der ursprüngliche Entwurf — Promotion während einer Staffel aussetzen — ist nicht gangbar: Die Pause hält den ganzen Heartbeat an, also auch die Charakter-Destillation, und eine Staffel ohne Destillation hat keine Profile. Statt zu unterdrücken wird **zurückgenommen**: Die Knoten, die während eines Arms entstanden, werden vor dem zweiten entfernt. Beide Arme starten auf demselben K, ohne Server-Umbau.
+- ✅ **Beide Modi tragen einen Zeugen.** Knotenzahl vor und nach dem Lauf; weicht sie ab, wirft es. Ein Löschpfad mit Ausnahmen sieht in der Ausgabe sonst genauso aus, ob er die Ausnahme eingehalten hat oder nicht.
+
+**Beim Erproben ist eine Persona der Kalibriermenge zerstört worden.** Gewählt als vermeintlich fremde Kennung, weil sie nicht zur laufenden Reihe gehörte — sie gehörte zur vorigen. Weg sind **30 Rohturns und zwei destillierte Profile**, letztere unwiederbringlich, weil sie Modellausgabe sind und in keiner Sicherung stehen. Der Korpus trägt seither fünf von sechs Personas.
+
+> **Die Erlaubnisliste prüfte die falsche Eigenschaft.** Sie beantwortet „ist das eine Testkennung"; die Frage vor einem Löschen lautet **„ist das entbehrlich"**, und die beiden fallen auseinander, sobald an einer Testkennung einmal gemessen wurde.
+
+- ✅ **Der zweite Riegel fragt nach Spuren statt nach Zugehörigkeit:** Existieren Ergebnisdateien, wird verweigert und die Liste genannt; ein Überschreiben ist ein zweiter, ausdrücklicher Akt.
+- ⬜ **Der Löschzweig ist nie scharf erprobt.** Es gibt keinen entbehrlichen Gegenstand — alle sechzehn Testkennungen tragen Ergebnisdateien. Genau diese Lage hat den Verlust erzeugt.
+
+### Die Landschaften: alle erreichbar, das Verhältnis nicht
+
+Über **720 Ablesungen** aus den zwölf Bögen und 128 des produktiven Paares erhoben.
+
+**Alle vierzehn Landschaften sind erreichbar.** Aber im produktiven Bestand sind vier nie betreten worden — mit dem produktiven Paar hat noch niemand gestritten oder geschmollt. Und die beiden Verteilungen laufen fast gegenläufig: Was produktiv 55 % trägt (`schlachtfeld`, `werkstatt`, `feuerwerk`), kommt in den Bögen auf **7,3 %**.
+
+**Zwei Ausfälle entwerten die Zahlen zur Hälfte, und beide sind dieselbe Bauart:**
+
+| Grund | Fälle |
+|---|---|
+| `keine Landschaft in gv_detail` | **101 von 720** |
+| `Rad nicht ladbar (fehlt)` | **109** |
+
+Eine frische Kennung hat kein Charakter-Rad — es wird aus dem Kurzzeitgedächtnis destilliert. **Damit steht dasselbe Muster zum dritten Mal an einem Tag:** frische Kennung → kein Langzeitgedächtnis → kein Rad → leere Profile. Ein Dreißig-Turn-Bogen fährt einen Apparat, dem seine akkumulierten Teile fehlen. Turns ohne Rad können nicht überlaufen; die gemessene Überlaufhäufigkeit ist eine Aussage über die Landschaft, nicht über eingetretene Überläufe.
+
+### `novaberg-erreichbarkeit_k.md` — und die Suche, die es kürzer gemacht hat
+
+- ✅ **Neues Konzept mit fünf Bauteilen.** Ein Zustand, den das System nie erreicht, ist kein seltener Zustand — er ist keiner.
+
+**Die Suche nach dem Gegenstand vor dem Schreiben fand den Präzedenzfall.** Für die 64 Sektoren des Gesprächsvektors ist genau dieses Kriterium bereits entschieden, durchgerechnet und gebaut, samt seiner Sätze: *„Das Ziel ist Erreichbarkeit, nicht Häufigkeit"*, *„Der Charakter verschiebt, er schließt nicht"*, und der Entscheidung **gegen** eine Laufzeit-Regelung. Das Konzept überträgt es auf die vierzehn Landschaften, statt es zu erfinden — und erbt die Warnung: Dort wurde eine Schwelle für eine Größe erhoben, die Größe änderte sich, die Schwelle blieb, und die Achse stand live in 8 von 8 Turns auf demselben Bit.
+
+> **Der Charakter muss auf einen kalibrierten Raum wirken. Diese Kalibrierung fehlt davor.**
+
+Das ordnet den bekannten Überlauf neu ein: nicht „die Beiträge sind zu groß", sondern „sie wirken auf eine Lage, die nie gegen eine Verteilung geprüft wurde". `novaberg-haltungsraum_k.md` §6 trägt den Vorbehalt seither im Rumpf — die Auswahl zwischen kleineren Beiträgen und Sättigung bleibt gültig, ihr Zeitpunkt ist ein anderer geworden.
+
+**Getrennt gehalten:** Eine Zielverteilung ist ein Kalibrierkriterium und läuft offline; Erschöpfung ist ein Laufzeit-Zustand. Eine Quote, die zur Laufzeit eine Tür schließt, ließe das System eine Landschaft melden, in der das Gespräch nicht ist — und alles danach rechnete auf einer Falschangabe.
+
 ### Was dabei abfiel
 
 - **Die p-Werte der Blindtest-Tabelle im Backlog sind als überholt markiert**, die Quoten nicht. Es ist kein falsch gerechneter Wert, sondern ein richtig gerechneter Wert der falschen Größe — die Form, die am schwersten auffällt, weil an der Rechnung nichts zu finden ist.

@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Konzept — eine Fläche aus Gesprächslandschaft und Zuwendung, aus der Grenzen folgen
-**Stand:** 31. Juli 2026
+**Stand:** 8. August 2026
 **Pfad:** novaberg/docs/novaberg-haltungsraum_k.md
 **Typ:** Konzept (`_k`)
 **Status:** 🔶 teilweise gebaut — Rechnung, Lader, **Knoten** und **Protokoll** stehen und laufen im Produktivsystem (31.07.2026); es fehlen der Prompt-Block (§3) und die Ablösung der alten Längenregel (§6). **Nova verhält sich noch unverändert:** Die Haltung wird gerechnet, protokolliert und angezeigt, aber kein Prompt liest sie.
@@ -293,6 +293,16 @@ Eine Übersteuerung ist keine Ausnahme von der Fläche, sondern eine Eigenschaft
 
 ## 6. Was offen ist
 
+> **Vorangestellt am 08.08.2026: Die Entscheidung zwischen kleineren Beiträgen und Sättigung ist erst nach einer Kalibrierung des Landschaftsraums beantwortbar.**
+>
+> Die Auswahl unten stellt die Frage so, als sei der Überlauf eine Eigenschaft der Beiträge. Die Messung desselben Tages legt eine andere Ursache nahe: **Der Charakter wirkt heute auf Grundwerte, die nie gegen eine Verteilung geprüft wurden.** Warme Landschaft plus warmes Rad zählt Wärme doppelt — dass ausschließlich die warmen überlaufen und genau die kühlen sauber bleiben, ist dafür der Beleg.
+>
+> Über 720 Landschafts-Ablesungen erhoben: Alle vierzehn Landschaften sind erreichbar, aber im produktiven Bestand sind vier nie betreten worden, und die Verteilungen von Messbögen und echtem Gespräch laufen fast gegenläufig. **Solange die Verteilung nicht kalibriert ist, justiert jede Wahl zwischen Beiträgen und Sättigung an der falschen Stelle.**
+>
+> Die Reihenfolge und das Kriterium stehen in `novaberg-erreichbarkeit_k.md`. **Die Auswahl unten bleibt gültig als Auswahl** — nur ihr Zeitpunkt ist ein anderer geworden.
+>
+> **Und zwei Vorbehalte gehören an jede Zahl dieses Abschnitts:** Die Landschafts-Ablesung fällt in 101 von 720 Fällen aus, und das Charakter-Rad fehlte in 109 Rechnungen — eine frische Kennung hat keines. Turns ohne Rad können nicht überlaufen; die gemessene Überlaufhäufigkeit ist damit eine Aussage über die Landschaft, nicht über eingetretene Überläufe.
+
 - ~~**Die zwölf Speichen des Zuwendungs-Rades sind hier nicht benannt.** Sie liegen als JSON in der Destillation (`rad_roh`), nicht als Konstante.~~ → **Erledigt am 31.07.2026, und die Begründung war falsch.** Die Speichen **sind** Konstanten: `RAD_ZUG_HOCH` und `RAD_ZUG_RUNTER` in `agents/charakter/destillation.py`, dokumentiert in `novaberg-salienz-berechnung_k.md` §5. `rad_roh` trägt nur die Ausprägung je Paar. Die zwölf Namen stehen dort samt Gegenpol-Anordnung.
 - **Die Zellen selbst.** Das ist die eigentliche Arbeit und eine Setzung. Belegt sind bisher nur die zwei Pole: `Glut × Wohlwollen` weit, `Schlachtfeld × Abwendung` eng. **Beide sind noch auf die neue Adressierung zu übersetzen** (§2): Der eine nennt eine Speiche, der andere eine ganze Seite — als Sektor-und-Ausschlag ist keiner von beiden bereits ausgedrückt.
 - ~~**Wie viele Sektoren die Fläche bekommt.**~~ → **Gegenstandslos seit dem Beitragsmodell** (§2). Es gibt keine Sektoren mehr; die frühere Angabe „168" setzte zwölf diskrete Speichenpositionen voraus und gilt nicht.
@@ -356,6 +366,7 @@ Eine Übersteuerung ist keine Ausnahme von der Fläche, sondern eine Eigenschaft
 
 ## Versionshistorie
 
+- **v0.3 — 08.08.2026:** §6 bekommt einen vorangestellten Vorbehalt: **Die Entscheidung zwischen kleineren Beitraegen und Saettigung ist erst nach einer Kalibrierung des Landschaftsraums beantwortbar.** Die Auswahl stellte die Frage so, als sei der Ueberlauf eine Eigenschaft der Beitraege; die Messung vom selben Tag legt die andere Ursache nahe — der Charakter wirkt auf Grundwerte, die nie gegen eine Verteilung geprueft wurden, und dass ausschliesslich die warmen Landschaften ueberlaufen, waehrend genau die kuehlen sauber bleiben, ist dafuer der Beleg. Ueber 720 Ablesungen erhoben: alle vierzehn Landschaften erreichbar, im produktiven Bestand aber vier nie betreten, und die Verteilungen von Messboegen und echtem Gespraech laufen fast gegenlaeufig. **Die Auswahl bleibt gueltig, ihr Zeitpunkt ist ein anderer geworden.** Dazu zwei Vorbehalte an jede Zahl des Abschnitts: Die Ablesung faellt in 101 von 720 Faellen aus, und das Charakter-Rad fehlte in 109 Rechnungen — Turns ohne Rad koennen nicht ueberlaufen, die gemessene Ueberlaufhaeufigkeit ist also eine Aussage ueber die Landschaft und nicht ueber eingetretene Ueberlaeufe.
 - **v0.6 — 31.07.2026:** **Das Protokoll steht.** Drei Zahlen je Größe, Rechenart und Auslöser gehen über `log_berechnung` ins `pipeline_log`, die Spur zeigt `kurzfassung()` bei jeder Antwort. Zwei Präzisierungen gegenüber §2.0a: Ein **Ausfall** wird als `fehler`-Zeile geführt statt gar nicht — nicht als Messwert lesbar, aber zählbar; und die beiden Messgrößen `ausserhalb` und `uebersteuert` stehen zusätzlich obenauf, damit eine Reihe sie zählen kann. Der Join zwischen Haltung und Rohturn ist an einem echten Turn vorgeführt.
 - **v0.5 — 31.07.2026:** **Der Knoten steht.** Die Rechnung hatte bis dahin keinen Aufrufer; sie läuft jetzt in jedem Turn des CharacterGraph, zwischen GV-Node und der Verzweigung zum Verfasser. Der Status wechselt von „nicht gebaut" auf „teilweise gebaut" — mit der Einschränkung, die die Reihenfolge des Sprints trägt: **Nova verhält sich unverändert**, weil kein Prompt die Werte liest. Neu in §6 die erste Messung am echten Turn: Zwei von fünf Größen verlassen die Spanne bereits im ersten Lauf, beide nach oben. Der Überlauf ist damit kein Randfall.
 - **v0.4 — 31.07.2026:** §2.0 trägt die **Ausgangswerte** — 14 Cluster-Sets und 12 Speichen-Sets, gesetzt zum Messen und nicht als Ergebnis. Die Spalte `Fragen` ist aus `CLUSTER_FRAGEN` übersetzt statt gesetzt, die Grenzen sind wörtlich aus `CLUSTER_BESCHREIBUNGEN` abgelesen. Zwei Übersteuerungen sind vorgesehen, beide an den Grenzen, die am ehesten überschreitbar sein sollten. Am Entwurf trat sofort die **obere Grenze** auf: `Wärme` läuft bei reiner Addition über 1.0 hinaus. Beide Auswege stehen in §6 mit ihren Preisen; entschieden wird nach der ersten Messreihe, weil eine Setzung an der Messung justiert wird und nicht am Schreibtisch.
