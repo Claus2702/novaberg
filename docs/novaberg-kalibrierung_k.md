@@ -350,22 +350,72 @@ Und er wanderte **innerhalb** eines Bogens: Die Knoten entstanden während des L
 
 **Die Vorbedingung ist billig und steht auf der Kalibriermenge** (§5): die Zerlegung der Streuung in Personenanteil und Urteilsrauschen, gewonnen durch volle Ausschöpfung der vorhandenen Bögen. Sie bestimmt, wie viele Bögen geschrieben werden müssen; ohne sie ist der Umfang geraten.
 
-### B6 — Die Schwelle der Langzeitschicht
+### B6 — Der gestaffelte Bezugspunkt
+
+> ~~**B6 — Die Schwelle der Langzeitschicht.** `GRAVITATIONS_SCHWELLE` steht auf einem Wert, bei dem die Langzeitschicht nichts beiträgt; sie ist zu kalibrieren.~~ → **Widerlegt am 08.08.2026, noch am selben Tag, an dem der Punkt aufgenommen wurde.** Die Schwelle steht richtig: `anker_retrieval` verwendet `min_similarity = 0.40`, und der Code trägt die Kalibrierreihe bei sich — 0.50 → 53 % der Turns mit Anker, **0.40 → 82 %**, 0.35 → 89 % (Rauschen beginnt). Am produktiven Paar mit **1204 Knoten** feuert die Resonanz in **66,5 %** der Turns mit im Mittel **1,93** Einträgen. Die Leitung ist offen.
+>
+> **Was fehlt, ist Masse, nicht Durchlass.** Gemessen über dieselben Felder:
+
+| LZG-Knoten | Turns mit Resonanz | Einträge je Turn |
+|---|---|---|
+| **1204** (produktives Paar) | **66,5 %** | 1,93 |
+| 33 · 27 · 10 · 5 | 0 % · 3,3 % · 13,3 % · 6,7 % | ≤ 0,38 |
+| 2 · 1 · 0 | 0 bis 3,3 % | ≤ 0,03 |
+
+> **Eine Messreihe mit frischer Kennung kann die Langzeitschicht nicht prüfen — nicht weil sie abgeschaltet wäre, sondern weil dreißig Turns kein Langzeitgedächtnis ergeben.** Bei einem einzigen Knoten müsste die Frage zufällig genau ihn treffen. Das ist der Zwilling der Spielraum-Frage: Das Messobjekt hat in der gemessenen Richtung keinen.
+
+**Daran hängt der Zuschnitt jeder Validierung, und deshalb steht an dieser Stelle jetzt ein anderes Bauteil.**
 
 | Zeile | Inhalt |
 |---|---|
-| **ZIEL** | `GRAVITATIONS_SCHWELLE` steht auf einem Wert, bei dem die Langzeitschicht im Betrieb überhaupt etwas beiträgt — beziffert als Anteil der Turns mit Resonanz und als Zahl der durchgelassenen Einträge. |
-| **TEST** | Über einen vorhandenen Korpus gerechnet: Die Zahl der Turns mit Resonanz > 0 steigt mit sinkender Schwelle und ist bei der gewählten Einstellung von null verschieden. Bleibt sie null, trennt die Schwelle nichts — sie schaltet ab. |
-| **MESSUNG** | Die Verteilung der Kandidaten je Schwelle über den Bestand, nicht die Auslösequote (§3.3). Zusätzlich, was durchkommt: Einträge je Turn im Mittel und im Maximum. |
-| **Gegenprobe** | Schwelle auf 1.0: Die Resonanz muss überall auf null fallen. Tut sie das nicht, wird an anderer Stelle etwas durchgelassen, als die Schwelle vorgibt. |
+| **ZIEL** | Der Zustand der Langzeitschicht ist eine **gesetzte** Größe, nicht eine beobachtete: Eine Staffel läuft von Anfang bis Ende auf einer bezifferten Knotenzahl K, und die nächste Staffel läuft auf einem höheren K′, das aus der vorigen stammt. |
+| **TEST** | Die Knotenzahl je Persona ist am Ende einer Staffel dieselbe wie am Anfang. Weicht sie ab, war die Promotion nicht ausgesetzt, und der Bezugspunkt ist innerhalb der Staffel gewandert. |
+| **MESSUNG** | Je Staffel und je Persona: Knoten am Anfang, Knoten am Ende, Anteil der Turns mit Resonanz, Einträge je Turn. Über die Staffeln hinweg ergibt das die Kurve, ab der die Langzeitschicht teilnimmt. |
+| **Gegenprobe** | Eine Staffel mit K = 0 muss in allen Turns Resonanz null zeigen. Zeigt sie welche, stammt sie aus einer anderen Quelle als der Langzeitschicht. |
 
-**Warum das vor B5 steht:** Am Basisarm kam bei belegter Langzeitschicht im Mittel **weniger als ein halber Eintrag je Turn** an, meist exakt null — bei einer Schwelle von 0.40. Dasselbe zeigte P10 am produktiven Paar mit **0,0 % gegen 20,0 %** der Kurzzeitschicht.
+### Die Staffel: feste Besetzung, laufende Episoden
 
-> **Eine Validierung der Langzeitschicht bei dieser Einstellung prüft eine Leitung, durch die nichts fließt.** Sie liefert dann eine Null, die eine Eigenschaft der Schwelle ist und nicht des Gedächtnisses — und die nächste Sitzung liest sie als Aussage über das System.
+Die zwölf Charaktere sind **dauerhaft**. Was je Staffel neu entsteht, ist ihre **Episode** — dreißig Turns, die ihr Leben weiterbewegen. Der Steckbrief mit Sektor, Fakt A und Fakt B ist einmal geschrieben.
 
-Das ist dieselbe Form wie beim Cluster-Faktor: Wirkung belegt, Amplitude auf einen Wert eingestellt, bei dem sie kaum sichtbar wird (§3.2).
+| Schritt | Was geschieht |
+|---|---|
+| **Vor der Staffel** | Der Stand ist, was die vorige hinterlassen hat: K Knoten je Persona, beziffert und notiert. |
+| **Während der Staffel** | **Promotion ausgesetzt.** Die Warteschlange füllt sich und wird nicht abgearbeitet — K bleibt über alle Bögen und alle Turns konstant. |
+| **Nach der Staffel** | Promotion **vollständig leerlaufen** lassen, nicht ablaufen. Das Ergebnis ist K′ und der Bezugspunkt der nächsten Staffel. |
 
-**Reihenfolge:** B1 vor allem anderen. B4 vor jedem Differenzweg — ein Delta ohne zweiten Pol ist eine Beschreibung des Gegenübers. **B6 vor B5**, wenn die Validierung eine Aussage über die Langzeitschicht tragen soll. **B5 vor jeder Aussage nach außen** — und der Bauplan von B5 vor dem ersten Dreh, nicht erst vor dem ersten Bogen.
+**Das Zurücksetzen zwischen zwei Staffeln verschont die Langzeitschicht.** Gespräch, KZG, `pipeline_log` und Profile werden geleert; `lzg_knoten` und `lzg_kanten` bleiben. Ein Export mit Umschreiben der IDs wird erst nötig, wenn die Datenbank neu aufgesetzt wird — `lzg_kanten` trägt keine Paar-Spalten, die 124.332 Kanten hängen an Knoten- und Entitäts-IDs.
+
+**Damit wird der Bezugspunkt vom Beobachteten zum Eingestellten.** Bisher ließ er sich nur hinterher ablesen; so lässt er sich setzen — und beide Arme eines Vergleichs laufen garantiert auf demselben.
+
+### Die Falle, die mit dem Aufbau wächst
+
+Das angesammelte Langzeitgedächtnis besteht **ausschließlich** aus Messreihen. Ein Kalibrier-Korpus bestand am 29.07.2026 zu 32,7 % aus früheren Messturns, und die daraus erhobene Schwelle stand zu einem Drittel auf Turns, die kein Gesprächsverhalten abbilden. Hier wären es hundert Prozent.
+
+> **Das System nähert sich der Wirklichkeit in der Menge, nicht in der Art.** Jede Episode muss das Leben der Persona weiterbewegen statt dasselbe Thema erneut zu treffen — sonst wächst ein Gedächtnis, das sich selbst spiegelt, und die Resonanz misst am Ende, wie oft dieselbe Sonde gestellt wurde.
+
+**Pflichtangabe je Staffel:** K am Anfang, K′ am Ende, und woraus die neuen Knoten stammen.
+
+**Und warum es mehr ist als eine Feinjustage.** Die fünf Charakter-Profile teilen sich nach Gedächtnisschicht, und die Teilung läuft nicht dort, wo man sie vermutet:
+
+| Profil | Quelle | trägt |
+|---|---|---|
+| `adaptive_hash` — was Nova gerade beschäftigt | **KZG** | den Augenblick |
+| `beziehungsprofil` — ihr Bild vom Nutzer | **KZG** | den Augenblick |
+| `kern_hash` — der Kern | **LZG** | die Dauer |
+| `intentions_profil` — wie sie kommuniziert | **LZG** | die Dauer |
+| `emotions_profil` — ihre emotionale Grundstimmung | **LZG** | die Dauer |
+
+> **Was jetzt gilt, kommt aus dem Kurzzeitgedächtnis. Was bleibt, kommt aus dem Langzeitgedächtnis.** Die Trennlinie läuft zwischen Augenblick und Dauer, nicht zwischen Erinnerung und Gefühl — die emotionale Grundstimmung liest ausdrücklich das LZG, die Emotion des Augenblicks nicht.
+
+Damit trifft die Frage nach dem Langzeitgedächtnis **genau die drei Profile, die über Zeit tragen** — und Charakterbildung über Zeit ist der Gegenstand des Projekts. Die bisher gemessene Trennschärfe hat das `beziehungsprofil` beurteilt, also die Kurzzeit-Hälfte; die drei Langzeit-Profile waren auf dem Korpus leer.
+
+**B6 ist deshalb kein Kalibrierschritt unter anderen, sondern die Vorbedingung dafür, dass dieses Projekt seine eigene These überhaupt messen kann.**
+
+> ~~Eine Validierung der Langzeitschicht bei dieser Einstellung prüft eine Leitung, durch die nichts fließt — die Null wäre eine Eigenschaft der Schwelle.~~ → **Widerlegt am 08.08.2026, siehe B6.** Die Leitung ist offen: Am produktiven Paar feuert die Resonanz in 66,5 % der Turns. **Die Null ist eine Eigenschaft des Materials** — dreißig Turns mit frischer Kennung ergeben ein bis dreiunddreißig Knoten gegen 1204, und daran scheitert der Abruf, nicht an der Schwelle.
+
+**Der Zuschnitt jeder heutigen Validierung folgt daraus:** Sie prüft `adaptive_hash` und `beziehungsprofil` — die Kurzzeit-Hälfte — und sagt ausdrücklich, dass die drei Langzeit-Profile ungeprüft bleiben. Nicht als Einschränkung nebenbei, sondern als Teil der Aussage.
+
+**Reihenfolge:** B1 vor allem anderen. B4 vor jedem Differenzweg — ein Delta ohne zweiten Pol ist eine Beschreibung des Gegenübers. **B5 vor jeder Aussage nach außen** — und der Bauplan von B5 vor dem ersten Dreh, nicht erst vor dem ersten Bogen. **B6 läuft neben B5 und über Staffeln hinweg:** Es liefert nicht das Ergebnis einer Validierung, sondern die Bedingung, unter der eine spätere Validierung die Langzeitschicht überhaupt erreichen kann.
 
 ---
 
@@ -397,6 +447,7 @@ Das ist dieselbe Form wie beim Cluster-Faktor: Wirkung belegt, Amplitude auf ein
 
 ## Versionshistorie
 
+- **v0.6 — 08.08.2026:** **B6 ist neu gefasst, weil seine Begründung noch am selben Tag fiel.** Die Fassung von v0.5 hielt `GRAVITATIONS_SCHWELLE` für die Ursache dafür, dass die Langzeitschicht nichts beiträgt. Der Code widerlegt das an Ort und Stelle — `anker_retrieval` arbeitet mit `min_similarity = 0.40` und trägt seine Kalibrierreihe im Kommentar (0.50 → 53 %, **0.40 → 82 %**, 0.35 → 89 %) —, und die Messung bestätigt ihn: Am produktiven Paar mit **1204 Knoten** feuert die Resonanz in **66,5 %** der Turns mit 1,93 Einträgen, bei den zwölf Bögen mit 0 bis 33 Knoten in 2,2 % mit 0,05. **Was fehlt, ist Masse, nicht Durchlass** — dreißig Turns mit frischer Kennung ergeben kein Langzeitgedächtnis, und bei einem einzigen Knoten müsste die Frage zufällig genau ihn treffen. An die Stelle der Schwellen-Kalibrierung tritt **der gestaffelte Bezugspunkt**: Die zwölf Charaktere sind dauerhaft, ihre Bögen werden **Episoden**; das Langzeitgedächtnis wird zwischen zwei Staffeln verschont und **innerhalb** einer Staffel eingefroren (Promotion ausgesetzt), so dass K über alle Bögen konstant bleibt und die nächste Staffel auf einem höheren K′ läuft. **Damit wird der Bezugspunkt vom Beobachteten zum Eingestellten** — beide Arme eines Vergleichs laufen garantiert auf demselben. Dazu die Falle, die mit dem Aufbau wächst: Das angesammelte Gedächtnis besteht zu hundert Prozent aus Messreihen (der Präzedenzfall vom 29.07.2026 lag bei 32,7 %), also muss jede Episode das Leben der Persona weiterbewegen statt dieselbe Sonde erneut zu treffen. **Der Zuschnitt für heute:** Die Validierung prüft `adaptive_hash` und `beziehungsprofil` und sagt ausdrücklich, dass die drei Langzeit-Profile ungeprüft bleiben.
 - **v0.5 — 08.08.2026:** **Der Bezugspunkt ist als Teil des Maßstabs aufgenommen** (§5), nachdem die Abnahme des Basisarms zeigte, dass er wanderte: `anker_retrieval()` speist Thinker und Gesprächsvektor aus `lzg_knoten`, und über die zwölf Bögen war die Schicht in **neun** Fällen belegt und in **drei** in keinem einzigen Turn — dazu innerhalb der Bögen wandernd, weil die Knoten während des Laufs entstanden. Daraus die zwei bindenden Sätze: **Ein Bezugspunkt darf irgendwo liegen, er darf nur nicht wandern** — und **er wird mitgeschrieben, nicht erinnert.** B5 bekommt die Zeile **Bezugspunkt** als Pflicht: Je Bogen wird der Zustand der Langzeitschicht gegen sein Gegenstück im anderen Arm gestellt, und ein abweichender Bogen wird wiederholt. **B6 neu — die Schwelle der Langzeitschicht**, und **vor B5**, wenn die Validierung eine Aussage über das Langzeitgedächtnis tragen soll: Bei belegter Schicht kam im Mittel weniger als ein halber Eintrag je Turn an, meist exakt null; eine Validierung bei `GRAVITATIONS_SCHWELLE = 0.40` prüft eine Leitung, durch die nichts fließt. **Der Schaden am Basisarm blieb klein, weil der Bezugspunkt fast überall derselbe war: null** — ein glücklicher Umstand und kein Verfahren. Neu unter §10: Die Begründung für die drei leeren Profile der Kalibriermenge ist am Bestand widerlegt (zwei Personas trugen 82 und 38 Knoten), die Ursache ist wieder offen.
 - **v0.4 — 07.08.2026:** **Die Validierungsmenge ist auf zwölf festgelegt und ihre Sektorenbelegung geschrieben** — vor dem ersten Dreh, damit die Menge später noch validiert und nicht kalibriert. Alle acht Plutchik-Sektoren sind belegt, **drei Slots liegen im warmen Feld**: Der bekannte Zusammenfall des Apparats wird absichtlich nachgebaut, weil eine Menge mit einer warmen Person die Verbesserung nicht zeigen könnte, für die kalibriert wird. Die Kontrollperson läuft zuerst. **Dabei ist eine Falle korrigiert worden, die in v0.3 noch stand:** Aus „die Destillation ist eine reine Funktion auf gespeicherten Einträgen" folgt **nicht**, dass eine geänderte Einstellung auf den alten Bögen nachgerechnet werden kann — der Blindtest beurteilt Novas **Antworten**, und die hingen zur Laufzeit an dem Profil, das damals in ihrem Prompt stand. Ein gepaarter Vergleich verlangt deshalb **zwei Läufe derselben geschriebenen Turns**, mit eigenen Kennungen je Arm und unmittelbar nacheinander; ein Basisarm, der Wochen vor dem Vergleichsarm erhoben wurde, trägt jede zwischenzeitliche Änderung mit. Damit kostet die Menge das Doppelte — zwölf Bögen **je Arm**. Für den gepaarten Teil gilt die Umfangsregel außerdem umgekehrt: Der Personeneffekt kürzt sich heraus, übrig bleibt Urteilsrauschen, und das sinkt mit der Zahl der Urteile. Dort liegt ungenutzte Reserve — die Reihe vom 06.08. benutzte 6 Turn-Indizes je Paar, der Bestand trägt 25.
 - **v0.3 — 07.08.2026:** **§5 neu — Kalibrieren und Validieren**, entschieden vor dem ersten Dreh an der Destillation. Die sechs Bögen vom 02./03.08.2026 sind **Kalibriermenge** und werden es bleiben; belegt wird ausschließlich auf frischen Bögen mit neuen Charakteren. Der naheliegende Ausweg — auf drei Personas kalibrieren, auf den anderen drei validieren — ist ausdrücklich ausgeschlossen: Die Einzelquoten der sechs sind bekannt, und wer sie kennt, kann keine unvoreingenommene Hälfte mehr bilden. Die Folgenummern §5 bis §9 sind zu §6 bis §10 geworden; §3.2 und §4 behalten ihre Nummern. **Dabei ist die Trennschärfe nachgerechnet worden, und das Ergebnis hat den Zuschnitt geändert:** Die 88 Urteile der Reihe verteilen sich auf sechs Personas mit Quoten von 35,7 % bis 100 %, und diese Streuung ist größer, als Losen sie erzeugt (Permutation, p = 0,010). Der Binomialtest, der zu p = 0,007 führte, zählt jedes Urteil als eigenen Fall; über ganze Personas gezogen steht dieselbe Zahl bei **64,8 % mit einem Intervall von 49,4 % bis 80,0 %**. Der Befund hält, aber eine Kalibrierung um zehn Punkte bewegt sich innerhalb des Intervalls — deshalb bemisst §5 den Umfang der Validierungsmenge in **Personas** und nicht in Urteilen. Die Gegenprobe steht im Kontrollarm derselben Reihe: halb so breites Intervall, Zufall eingeschlossen.

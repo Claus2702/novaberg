@@ -2044,6 +2044,25 @@ Und er wanderte **innerhalb** der Bögen: Die Knoten entstanden während des Lau
 
 **Und eine Begründung aus dem Eintrag zu Chat 130 fällt damit:** Dort steht, die drei leeren Profile erklärten sich daraus, dass alle drei `lzg_knoten` lesen „und eine frische Persona kein Langzeitgedächtnis hat". **`konrad` trug 82 Knoten und `leon` 38**, entstanden während ihrer Bögen; die übrigen vier keinen. Der Satz stimmt für vier von sechs und wird als allgemeine Erklärung gelesen. Die Profile waren leer — die Ursache ist damit wieder offen.
 
+### Und dann fiel B6, wenige Stunden nach seiner Aufnahme
+
+Der Absatz darüber schließt mit „eine Validierung bei 0.40 prüft eine Leitung, durch die nichts fließt". **Das war falsch, und der Code sagte es an Ort und Stelle:** `anker_retrieval` arbeitet mit `min_similarity = 0.40` und trägt seine Kalibrierreihe im Kommentar — 0.50 → 53 % der Turns mit Anker, **0.40 → 82 %**, 0.35 → 89 % (Rauschen beginnt).
+
+Nachgemessen über `has_lzg` und `lzg_resonanz_count`:
+
+| LZG-Knoten | Turns mit Resonanz | Einträge je Turn |
+|---|---|---|
+| **1204** (produktives Paar, 451 Turns) | **66,5 %** | **1,93** |
+| 0 bis 33 (die zwölf Bögen, 360 Turns) | **2,2 %** | 0,05 |
+
+> **Die Leitung ist offen. Was fehlt, ist Masse.** Dreißig Turns mit frischer Kennung ergeben ein bis dreiunddreißig Knoten; bei einem einzigen müsste die Frage zufällig genau ihn treffen. Die Null ist eine Eigenschaft des Materials, nicht der Schwelle — der Zwilling der Spielraum-Frage: Das Messobjekt hat in der gemessenen Richtung keinen.
+
+- ✅ **B6 neu gefasst als „Der gestaffelte Bezugspunkt".** Die zwölf Charaktere sind dauerhaft, ihre Bögen werden **Episoden**. Das Langzeitgedächtnis wird zwischen zwei Staffeln verschont und **innerhalb** einer Staffel eingefroren — Promotion ausgesetzt, damit K über alle Bögen konstant bleibt; nach der Staffel läuft sie vollständig leer und ergibt K′ für die nächste.
+- ✅ **Damit wird der Bezugspunkt vom Beobachteten zum Eingestellten.** Bisher ließ er sich nur hinterher ablesen; so lässt er sich setzen, und beide Arme eines Vergleichs laufen garantiert auf demselben.
+- ✅ **Der Zuschnitt für heute steht ausdrücklich in der Aussage:** Die Validierung prüft `adaptive_hash` und `beziehungsprofil` — die Kurzzeit-Hälfte — und lässt `kern_hash`, `intentions_profil` und `emotions_profil` ungeprüft.
+
+**Die Falle, die mit dem Aufbau wächst, ist mitgeschrieben:** Das angesammelte Langzeitgedächtnis besteht zu hundert Prozent aus Messreihen. Der Präzedenzfall vom 29.07.2026 lag bei 32,7 % und hat eine Schwelle verdorben. Jede Episode muss das Leben der Persona weiterbewegen, statt dieselbe Sonde erneut zu treffen — **das System nähert sich der Wirklichkeit in der Menge, nicht in der Art.**
+
 ### Was dabei abfiel
 
 - **Die p-Werte der Blindtest-Tabelle im Backlog sind als überholt markiert**, die Quoten nicht. Es ist kein falsch gerechneter Wert, sondern ein richtig gerechneter Wert der falschen Größe — die Form, die am schwersten auffällt, weil an der Rechnung nichts zu finden ist.
