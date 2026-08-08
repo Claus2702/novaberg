@@ -14,6 +14,7 @@ Wird verwendet von:
 import logging
 import math
 import re
+from dataclasses import dataclass
 
 from config import (
     EMOTION_DECAY_FACTOR,
@@ -304,8 +305,37 @@ def _emotion_zu_gruppe(emotion: str) -> str:
     return SEKTOR_GRUPPE.get(sektor, "neutral")
 
 
-def _dominante_gruppe(turns: list[dict]) -> str:
-    """Bestimmt die dominante Emotions-Gruppe einer Turn-Liste."""
+@dataclass
+class Stimmungsvektor:
+    """Die Richtung eines Turns samt der Grundlage, auf der sie steht.
+
+    Der blosse Name reicht nicht: `plateau` entsteht sowohl aus einem
+    gemessenen Gleichstand als auch daraus, dass es nichts zu messen gab, und
+    beide sehen in jeder Auswertung gleich aus. Dieselbe Bauart wie
+    `Fuehrung.fehlend` bei der Initiative und `valenz_quelle` bei Achse V.
+
+    Attributes:
+        vektor: Einer der neun Namen aus `EMOTIONS_VEKTOREN`.
+        quelle: Ein Wert aus `VEKTOR_QUELLE_KANON` — worauf `vektor` beruht.
+    """
+
+    vektor: str = "plateau"
+    quelle: str = "zu_wenig_turns"
+
+
+def _dominante_gruppe(turns: list[dict]) -> tuple[str, bool]:
+    """Bestimmt die dominante Emotions-Gruppe einer Turn-Liste.
+
+    Returns:
+        (gruppe, gleichstand). `gleichstand` ist True, wenn mehrere Gruppen
+        gleichauf lagen und allein die zeitlich letzte Emotion entschieden
+        hat. Der Ruf "dominant" traegt dann keine Mehrheit: Bei einer
+        neueren Haelfte aus zwei Gliedern ist das jedes Mal der Fall, sobald
+        sie aus verschiedenen Gruppen stammen — die Haelfte ist dann
+        faktisch eine Stichprobe von eins. Gemessen am 08.08.2026 ueber den
+        vollstaendig ausgezaehlten Eingaberaum: **69,8 %** aller Folgen
+        stehen auf mindestens einem solchen Gleichstand.
+    """
     zaehler: dict[str, int] = {"positiv": 0, "negativ": 0, "neutral": 0}
 
     for turn in turns:
@@ -317,34 +347,36 @@ def _dominante_gruppe(turns: list[dict]) -> str:
     kandidaten: list[str] = [g for g, c in zaehler.items() if c == max_count]
 
     if len(kandidaten) == 1:
-        return kandidaten[0]
+        return kandidaten[0], False
 
     # Gleichstand: Gruppe der zeitlich letzten Emotion gewinnt
     if turns:
         letzte_emotion: str = turns[-1].get("emotion", "neutral")
-        return _emotion_zu_gruppe(letzte_emotion)
+        return _emotion_zu_gruppe(letzte_emotion), True
 
-    return "neutral"
+    return "neutral", True
 
 
-def _emotions_vektor_bestimmen(
+def stimmungsvektor_bestimmen(
     turns: list[dict],
     current_emotion: str = "neutral",
     rolle: str = "user",
     inject_current: bool = True,
-) -> str:
+) -> Stimmungsvektor:
     """
-    Bestimmt den emotionalen Vektor (Richtung) aus den letzten User-Turns.
+    Bestimmt den emotionalen Vektor (Richtung) samt seiner Grundlage.
 
     Der aktuelle Prompt (current_emotion von der Perzeption) wird als neuester
     Datenpunkt eingefügt, damit der Vektor Richtungswechsel sofort erkennt.
 
     Args:
+        turns: Session-Turns, jeweils mit `rolle` und `emotion`.
+        current_emotion: Emotion des laufenden Reizes.
         rolle: Welche Turns berücksichtigt werden ("user" oder "assistant").
+        inject_current: Ob der laufende Reiz angehängt wird.
 
     Returns:
-        Einer der 9 Vektor-Namen: "absturz", "spirale", "stabilisierung",
-        "erholung", "aufbluehen", "eskalation", "abkuehlung", "einbruch", "plateau"
+        `Stimmungsvektor` mit einem der 9 Namen und seiner Grundlage.
     """
     # 1. Nur User-Turns mit Emotion, kanonisiert, eigenes kurzes Fenster
     emotion_turns: list[dict] = []
@@ -358,14 +390,16 @@ def _emotions_vektor_bestimmen(
     # 1b. Aktuellen Prompt als neuesten Turn einfügen (optional — siehe inject_current)
     if inject_current and current_emotion:
         kanon_current: str = _emotion_kanonisieren(current_emotion)
-        emotion_turns.append({
-            "rolle": rolle,
-            "emotion": kanon_current,
-        })
+        emotion_turns.append({"rolle": rolle, "emotion": kanon_current})
 
-    # 2. Zu wenig Daten
+    # 2. Zu wenig Daten — das ist keine Richtung, sondern ihr Fehlen.
+    #    `plateau` steht hier als Wert, damit nachgelagerte Leser einen Namen
+    #    aus dem Kanon bekommen; die Marke daneben sagt, dass nichts gemessen
+    #    wurde. Zu Beginn eines Paars ist das der Regelfall und nicht der
+    #    Ausnahmefall: Novas Vektor rechnet über die `assistant`-Turns, und
+    #    davon gibt es im ersten Turn keinen.
     if len(emotion_turns) < 2:
-        return "plateau"
+        return Stimmungsvektor(vektor="plateau", quelle="zu_wenig_turns")
 
     # 3. In zwei Hälften teilen
     if len(emotion_turns) <= 3:
@@ -375,17 +409,14 @@ def _emotions_vektor_bestimmen(
         neuere = emotion_turns[-2:]
         aeltere = emotion_turns[-5:-2] if len(emotion_turns) >= 5 else emotion_turns[:-2]
 
-    # 4. Dominante Gruppe je Hälfte
-    gruppe_alt: str = _dominante_gruppe(aeltere)
-    gruppe_neu: str = _dominante_gruppe(neuere)
+    # 4. Dominante Gruppe je Hälfte, samt der Frage, ob es eine Mehrheit war
+    gruppe_alt, gleichstand_alt = _dominante_gruppe(aeltere)
+    gruppe_neu, gleichstand_neu = _dominante_gruppe(neuere)
+    quelle: str = (
+        "gleichstand" if (gleichstand_alt or gleichstand_neu) else "gemessen"
+    )
 
-    # 5. Intensitäts-Check für Spirale/Eskalation
-    # Neue Emotion die vorher nicht vorkam = Intensitätsanstieg
-    emotionen_alt: set[str] = {t.get("emotion", "") for t in aeltere}
-    emotionen_neu: set[str] = {t.get("emotion", "") for t in neuere}
-    neue_emotionen: set[str] = emotionen_neu - emotionen_alt
-
-    # 6. Vektor-Mapping
+    # 5. Vektor-Mapping
     uebergang: tuple[str, str] = (gruppe_alt, gruppe_neu)
 
     vektor_map: dict[tuple[str, str], str] = {
@@ -398,14 +429,42 @@ def _emotions_vektor_bestimmen(
         ("neutral", "neutral"):  "plateau",
     }
 
-    # Spezialfälle: gleiche Gruppe → Spirale/Eskalation oder Plateau
+    # 6. Intensitäts-Check für Spirale/Eskalation
+    # Neue Emotion die vorher nicht vorkam = Intensitätsanstieg
+    emotionen_alt: set[str] = {t.get("emotion", "") for t in aeltere}
+    emotionen_neu: set[str] = {t.get("emotion", "") for t in neuere}
+    neue_emotionen: set[str] = emotionen_neu - emotionen_alt
+
     if uebergang == ("negativ", "negativ"):
-        return "spirale" if neue_emotionen else "plateau"
+        return Stimmungsvektor(
+            vektor="spirale" if neue_emotionen else "plateau", quelle=quelle,
+        )
 
     if uebergang == ("positiv", "positiv"):
-        return "eskalation" if neue_emotionen else "plateau"
+        return Stimmungsvektor(
+            vektor="eskalation" if neue_emotionen else "plateau", quelle=quelle,
+        )
 
-    return vektor_map.get(uebergang, "plateau")
+    return Stimmungsvektor(
+        vektor=vektor_map.get(uebergang, "plateau"),
+        quelle=quelle,
+    )
+
+
+def _emotions_vektor_bestimmen(
+    turns: list[dict],
+    current_emotion: str = "neutral",
+    rolle: str = "user",
+    inject_current: bool = True,
+) -> str:
+    """Nur der Name des Vektors — für Aufrufer ohne Bedarf an der Grundlage.
+
+    Wer die Grundlage braucht, ruft `stimmungsvektor_bestimmen` direkt. Diese
+    Hülle bleibt, weil ein Name aus dem Kanon an vielen Stellen genügt.
+    """
+    return stimmungsvektor_bestimmen(
+        turns, current_emotion, rolle, inject_current,
+    ).vektor
 
 
 def _turn_features_bewerten(turn_text: str) -> dict[str, float]:

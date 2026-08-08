@@ -22,7 +22,7 @@ import logging
 from config import redis_client
 from ei.berechnung import (
     _emotions_verlauf_berechnen,
-    _emotions_vektor_bestimmen,
+    stimmungsvektor_bestimmen,
     _sprach_stil_erkennen,
     _ei_arousal_berechnen,
     _modus_plausibilitaet,
@@ -140,10 +140,16 @@ def _ei_calc_user(state: ConversationState) -> None:
     state["emotions_verlauf"] = emotions_verlauf
 
     # 2. Emotions-Vektor (in external.emotion.emotions_vector)
-    emotions_vektor: str = _emotions_vektor_bestimmen(
+    stimmung = stimmungsvektor_bestimmen(
         raw_turns, current_emotion, rolle="user",
     )
+    emotions_vektor: str = stimmung.vektor
     external.emotion.emotions_vector = emotions_vektor
+    external.emotion.emotions_vector_quelle = stimmung.quelle
+    logger.info(
+        "EI-Calc: Emotions-Vektor — %s (Grundlage %s)",
+        stimmung.vektor, stimmung.quelle,
+    )
 
     # 3. EI-Arousal
     ei_arousal: float = _ei_arousal_berechnen(
@@ -280,17 +286,21 @@ def _ei_calc_character(state: ConversationState) -> None:
         logger.info("EI-Calc/Character: Nova-Empathie übersprungen (event_source=character, nur Decay)")
 
     # Novas Emotions-Vektor (in internal.emotion.emotions_vector)
-    nova_emotions_vektor: str = _emotions_vektor_bestimmen(
+    #    Kein `inject_current`: Novas Wahrnehmung ihrer eigenen Antwort steht
+    #    bereits als juengster `assistant`-Turn in `nova_turns`.
+    nova_stimmung = stimmungsvektor_bestimmen(
         nova_turns, rolle="assistant", inject_current=False,
     )
+    nova_emotions_vektor: str = nova_stimmung.vektor
     internal = state.get("internal")
     if internal is None:
         internal = InternalPersonality()
         state["internal"] = internal
     internal.emotion.emotions_vector = nova_emotions_vektor
+    internal.emotion.emotions_vector_quelle = nova_stimmung.quelle
     logger.info(
-        "EI-Calc/Character: Emotions-Vektor — %s (nova_turns=%d)",
-        nova_emotions_vektor, len(nova_turns),
+        "EI-Calc/Character: Emotions-Vektor — %s (nova_turns=%d, Grundlage %s)",
+        nova_emotions_vektor, len(nova_turns), nova_stimmung.quelle,
     )
 
     # Novas dominante Emotion dieses Turns in internal.emotion uebertragen.

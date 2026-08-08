@@ -56,24 +56,39 @@ class Emotion:
     intent: str               = "smalltalk"
     prompt_topic: str         = ""
 
+    # Woraus `emotions_vector` entstanden ist — ein Wert aus
+    # `VEKTOR_QUELLE_KANON`. Der Name allein trennt nicht zwischen einem
+    # gemessenen Gleichstand und dem Fehlen jeder Grundlage; beide heissen
+    # `plateau`. Leer heisst **nicht gerechnet**, nicht "gemessen": Ein
+    # Vorgabewert haette aus Turns von vor dem 08.08.2026 rueckwirkend eine
+    # Aussage gemacht, die niemand erhoben hat — dieselbe Regel wie bei
+    # `herkunft` im Session-Turn.
+    emotions_vector_quelle: str = ""
+
     def to_dict(self) -> dict[str, Any]:
-        """Serialisiert alle neun EI-Dimensionen in ein dict.
+        """Serialisiert die EI-Dimensionen in ein dict.
 
         Explizite Feld-Abbildung (kein dataclasses.asdict) — ein neu
         hinzugefuegtes Emotion-Feld landet nur dann im Serialisat, wenn
         es hier bewusst ergaenzt wird. Verhindert unbeabsichtigtes Lecken
         interner Felder in dauerhafte Speicher (z.B. turn_roh).
+
+        `emotions_vector_quelle` steht bewusst mit drin: Sie ist die
+        Eingangsgroesse ihres eigenen Ergebnisses, und ein Vektor ohne sie
+        ist im Bestand nicht nachrechenbar — dasselbe Argument wie bei
+        `valenz_quelle` in der Landschaftszeile.
         """
         return {
-            "emotion":              self.emotion,
-            "arousal":              self.arousal,
-            "emotions_vector":      self.emotions_vector,
-            "mode":                 self.mode,
-            "language_style":       self.language_style,
-            "relationship_dynamic": self.relationship_dynamic,
-            "tone":                 self.tone,
-            "intent":               self.intent,
-            "prompt_topic":         self.prompt_topic,
+            "emotion":                self.emotion,
+            "arousal":                self.arousal,
+            "emotions_vector":        self.emotions_vector,
+            "emotions_vector_quelle": self.emotions_vector_quelle,
+            "mode":                   self.mode,
+            "language_style":         self.language_style,
+            "relationship_dynamic":   self.relationship_dynamic,
+            "tone":                   self.tone,
+            "intent":                 self.intent,
+            "prompt_topic":           self.prompt_topic,
         }
 
 

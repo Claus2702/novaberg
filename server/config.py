@@ -492,6 +492,22 @@ EMOTION_MIN_WEIGHT: float = 0.15
 # Kurz halten — der Vektor soll Wendepunkte erkennen, nicht Grundstimmung.
 EMOTION_VEKTOR_TURNS: int = 8
 
+# Woraus die Richtungsangabe eines Turns entstanden ist. Dieselbe Rolle, die
+# `valenz_quelle` für Achse V und `Fuehrung.fehlend` für Achse I hat: Das
+# Ergebnis reist mit seiner Eingangsgröße, sonst ist ein Ausfall von einer
+# Messung nicht zu unterscheiden.
+#
+#   gemessen        beide Hälften hatten eine echte Mehrheit
+#   gleichstand     mindestens eine Hälfte war ein Gleichstand, aufgelöst
+#                   über die zeitlich letzte Emotion — die Hälfte ist dann
+#                   faktisch eine Stichprobe von eins
+#   zu_wenig_turns  weniger als zwei verwertbare Turns; es gibt keine
+#                   Richtung, und `plateau` ist hier keine Aussage
+#   nicht_gesetzt   der Vektor war beim Lesen leer, die Rechnung lief nie
+VEKTOR_QUELLE_KANON: frozenset[str] = frozenset({
+    "gemessen", "gleichstand", "zu_wenig_turns", "nicht_gesetzt",
+})
+
 # Der Kanon der Emotionsvektoren — die geschlossene Menge, die
 # `ei/berechnung.py::emotions_vektor_bestimmen()` erzeugen kann.
 #

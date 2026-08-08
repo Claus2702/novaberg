@@ -411,6 +411,16 @@ def achsen_berechnen(
     emotion:  str   = internal.emotion.emotion              if internal else "neutral"
     modus:    str   = internal.emotion.mode                 if internal else "alltag"
 
+    # Woher die Richtung stammt. Der Rueckfall auf `plateau` eine Zeile weiter
+    # oben ist selbst ein Fall, der benannt gehoert: Ein leerer Vektor heisst,
+    # dass die Rechnung nie lief — und `plateau` sieht danach aus wie ein
+    # gemessener Gleichstand. Dieselbe Klasse wie die Landschafts-Ablesung vor
+    # dem 08.08.2026.
+    if internal is None or not internal.emotion.emotions_vector:
+        richtung_quelle: str = "nicht_gesetzt"
+    else:
+        richtung_quelle = internal.emotion.emotions_vector_quelle or "nicht_gesetzt"
+
     # ── E: Energie ──
     energie_roh:  float = arousal
     energie_bin:  int   = 1 if arousal >= GV_ACHSE_ENERGIE_SCHWELLE else 0
@@ -482,6 +492,11 @@ def achsen_berechnen(
         "energie_roh":     round(energie_roh, 2),
         "energie":         energie_bin,
         "richtung":        vektor,
+        # R traegt seine Eingangsgroesse mit, wie V ueber `valenz_quelle`:
+        # `plateau` entsteht aus einem gemessenen Gleichstand, aus zu wenigen
+        # Turns und aus einem nie gerechneten Vektor. Ohne diese Marke zaehlt
+        # jede Auswertung die drei als denselben Zustand.
+        "richtung_quelle": richtung_quelle,
         "richtung_bin":    richtung_bin,
         "naehe_roh":       round(naehe_roh, 2),
         "naehe":           naehe_bin,
