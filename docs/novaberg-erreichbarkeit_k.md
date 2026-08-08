@@ -203,6 +203,95 @@ Nur über die abgelesenen Turns. Was fehlt, steht in der Tabelle darüber.
 
 ---
 
+## 5a. Die Zielverteilung (B3) — drei Bänder, gesetzt am 08.08.2026
+
+Entschieden am 08.08.2026: **eine Rangfolge in Bändern**, keine vierzehn Einzelzahlen. Der Grund steht in §9 — zwölf Träger tragen ±14 Punkte, und auf dieser Auflösung sind `kissenschlacht`, `bier` und `wartezimmer` nicht voneinander zu trennen. Eine Ordnung von Gruppen ist es.
+
+### Woraus die Bänder abgeleitet sind
+
+Aus zwei Quellen, und **aus keiner dritten**:
+
+1. **Der Definition der Landschaften.** Jede besteht aus Sektoren mit festen Achsenwerten. Zwölf der vierzehn liegen vollständig in genau einer Zelle aus Erregung × Valenz; nur `schlachtfeld` (in 2 seiner 8 Sektoren positiv) und `paradox` sind gemischt.
+2. **Den drei Sätzen zur Form aus §5**, und nur ihnen: Zustände niedriger Erregung überwiegen im Alltag deutlich · hocherregte sind seltener und kürzer · negativ-hocherregte sind am seltensten.
+
+Diese drei Sätze ordnen **niedrige Erregung** vor **hohe positive** vor **hohe negative**. Mehr ordnen sie nicht — insbesondere sagen sie nichts über das Verhältnis von `wartezimmer` zu `bier` oder von niedrig-positiv zu niedrig-negativ. **Deshalb steht dort auch nichts.** Eine Ordnung, die weiter reicht als ihre Begründung, ist eine Zahl mit fremder Quelle.
+
+| Band | Achsenlage | Landschaften | Erwartung |
+|---|---|---|---|
+| **I — Grundlage** | niedrige Erregung | `wartezimmer` · `foyer` · `bier` · `glut` · `nebel` · `schmollen` · `regen` | trägt den größten Anteil |
+| **II — Ausschläge** | hohe Erregung, positiv | `kissenschlacht` · `beichte` · `werkstatt` · `feuerwerk` | seltener als I |
+| **III — selten und folgenreich** | hohe Erregung, negativ | `schlachtfeld` · `gewitter` | seltener als II |
+| **ohne Band** | gemischt | `paradox` | kein affektiver Zustand, siehe unten |
+
+**Innerhalb eines Bandes ist keine Ordnung gesetzt.** Das ist kein Versäumnis, sondern die Grenze der Begründung.
+
+### Der TEST des Bauteils, ausdrücklich geprüft
+
+> *Kein Wert der Zielverteilung ist aus der gemessenen Ist-Verteilung übernommen.*
+
+**Die Zielverteilung enthält keinen einzigen Zahlenwert.** Sie besteht aus einer Zuordnung von vierzehn Namen zu drei Bändern und einer Ordnung zwischen den Bändern. Die Zuordnung stammt aus `SEKTOR_TABELLE`, die Ordnung aus den drei Sätzen. §4b wurde dabei nicht gelesen — es gibt nichts, das abgeschrieben werden könnte.
+
+### Die Untergrenze — in Trägern, nicht in Prozent
+
+Der Präzedenzfall setzt 15 % für eine zweiwertige Achse. Auf vierzehn Landschaften ist dieser Wert nicht übertragbar, und ein neuer Prozentwert wäre auf zwölf Trägern ohnehin nicht messbar: Bei ±14 Punkten ist eine Untergrenze von 2 % von einer von 0 % nicht zu unterscheiden.
+
+> **Eine Landschaft gilt als erreichbar, wenn sie bei mindestens drei unabhängigen Trägern mindestens einmal vorkommt.**
+
+Die Drei ist gesetzt, und zwar so: Eine Landschaft, die nur bei **einem** Träger auftritt, ist von einer Eigenschaft dieses Trägers nicht zu unterscheiden. **Zwei** ist das Minimum, um „Landschaft" von „Person" zu trennen. **Drei** gibt einen Fall Spielraum. Die Zahl kommt damit aus der Cluster-Struktur, nicht aus dem gemessenen Ergebnis.
+
+Ein Zählkriterium ist gegenüber einer Quote im Vorteil, weil es die Auflösung nicht braucht: „kommt bei drei Trägern vor" ist auf zwölf Trägern robust, „liegt über 2 %" ist es nicht.
+
+### Die MESSUNG — der Abstand, benannt
+
+Gegen §4b, also gegen den Bestand **vor** der Reparatur der Ablesung. Der Vorbehalt gilt für die Bögen in voller Höhe.
+
+| Band | erwartet | zwölf Bögen | produktives Paar |
+|---|---|---|---|
+| I — Grundlage | am größten | 51,4 % | **17,8 %** |
+| II — Ausschläge | kleiner als I | 35,1 % | **56,1 %** |
+| III — selten | kleiner als II | 8,5 % | **24,3 %** |
+| `paradox` | — | 5,0 % | 1,9 % |
+
+**Die Bögen halten die Ordnung ein** (51,4 > 35,1 > 8,5). **Das produktive Paar verletzt sie an der ersten Stelle:** Es steht zu **80,4 %** in hoher Erregung, während die Form niedrige Erregung als Grundlage setzt.
+
+Das ist der Abstand, und er ist zu groß, um ihn dem Gerätefehler zuzuschreiben — dort fehlen 5,3 % der Ablesungen (§4b), und selbst wenn alle in Band I gefallen wären, bliebe die Ordnung verletzt.
+
+**Drei Lesarten, und die Entscheidung zwischen ihnen ist B4:**
+
+- Die Grenzen des Raums sind zu weit auf der Erregungsachse gesetzt — die Schwelle liegt bei 0,5, und Novas Arousal überschreitet sie zu oft.
+- Die Form gilt für Menschen im Alltag und nicht für ein Gespräch, das jemand absichtlich beginnt. Dann ist die Zielverteilung selbst zu ändern — **als Setzung mit neuem Datum, nicht durch Anpassen an die Messung.**
+- Beides.
+
+### Die Untergrenze am Bestand
+
+| Landschaft | Träger von zwölf | |
+|---|---|---|
+| `bier` | 12 | erreicht |
+| `kissenschlacht` · `wartezimmer` | 9 | erreicht |
+| `foyer` · `paradox` | 6 | erreicht |
+| `schmollen` · `beichte` · `werkstatt` · `schlachtfeld` · `gewitter` | 5 | erreicht |
+| `glut` · `feuerwerk` | 4 | erreicht |
+| **`nebel`** | **2** | **unter der Grenze** |
+| **`regen`** | **1** | **unter der Grenze** |
+
+Zwölf von vierzehn erreichen die Untergrenze. `nebel` und `regen` nicht — und `regen` bei genau einem Träger ist der Fall, für den die Grenze gesetzt wurde: nicht von einer Eigenschaft dieses Bogens zu unterscheiden.
+
+### Die Gegenprobe des Bauteils
+
+> *Eine nachträglich an die Messung angepasste Zielzahl wird als angepasst gekennzeichnet und zählt nicht mehr als bestandener Korridor.*
+
+**Als Regel für alles Weitere:** Wird ein Band oder die Untergrenze geändert, nachdem eine Ist-Verteilung dazu vorlag, trägt die Änderung ihr Datum **und** den Vermerk, welche Messung ihr vorausging. Ein Korridor, der nach der Messung entstand, ist keine Vorgabe, sondern ihre Beschreibung — und darf in keiner Auswertung als eingehalten geführt werden.
+
+**Diese Fassung ist die erste. Sie steht vor jeder Justierung** und ist gegen den Bestand vom 31.07. bis 08.08.2026 gesetzt.
+
+### Ein Befund aus der Ableitung
+
+**`paradox` belegt 14 der 64 Sektoren — 21,9 % des Rohraums, mehr als jede andere Landschaft.** Es ist keine Landschaft im Sinn der übrigen, sondern die Auffangzelle für widersprüchliche Achsenlagen, mit der Repertoire-Angabe „Keine — beobachten". Gemessen kommt es auf 5,0 % (Bögen) und 1,9 % (produktiv), liegt also weit unter seinem Anteil am Raum.
+
+Für B4 ist das der erste Ort zum Nachsehen: **Ein Fünftel des Raums, das „Vorsicht, beobachten" sagt, ist entweder eine bewusste Reserve oder eine unbesetzte Fläche.** Welches von beidem, steht nirgends.
+
+---
+
 ## 6. Erschöpfung ist ein anderer Mechanismus und bleibt getrennt
 
 Man kann nicht immer lachen — nicht weil die Lage aufhört, lustig zu sein, sondern weil das System ermüdet. Das ist ein realer Effekt und **etwas anderes als eine Quote**: Es beschreibt Nova, nicht die Lage.
@@ -292,7 +381,7 @@ Ein Turn, der heute Morgen nichts getragen hätte, gibt Nova jetzt drei Auflösu
 
 **Was B2 nicht liefert und auch nicht liefern kann:** eine Verteilung auf dem reparierten Gerät. Diese Zahlen sind vor dem 08.08.2026 erhoben. Die Neuerhebung braucht Turns, die nach der Reparatur gelaufen sind — sie ist kein neues Bauteil, sondern ein zweiter Lauf desselben Werkzeugs. **Vor B3 zu wiederholen.**
 
-### B3 — Die Zielverteilung als Setzung
+### B3 — Die Zielverteilung als Setzung ✅ **gesetzt am 08.08.2026, siehe §5a**
 
 | Zeile | Inhalt |
 |---|---|
@@ -300,6 +389,14 @@ Ein Turn, der heute Morgen nichts getragen hätte, gibt Nova jetzt drei Auflösu
 | **TEST** | Kein Wert der Zielverteilung ist aus der gemessenen Ist-Verteilung übernommen. Eine Zielzahl, die der Messung gleicht, ist keine Vorgabe, sondern ihre Abschrift. |
 | **MESSUNG** | Die Ist-Verteilung gegen die Zielverteilung, je Landschaft, mit benanntem Abstand. |
 | **Gegenprobe** | Eine nachträglich an die Messung angepasste Zielzahl wird als angepasst gekennzeichnet und zählt nicht mehr als bestandener Korridor. |
+
+**TEST bestanden, und zwar in der stärksten Form:** Die Zielverteilung enthält **keinen einzigen Zahlenwert**. Sie ist eine Zuordnung von vierzehn Namen zu drei Bändern plus eine Ordnung zwischen den Bändern; es gibt nichts, das aus einer Messung abgeschrieben werden könnte. Die Zuordnung stammt aus der Sektortabelle, die Ordnung aus den drei Sätzen zur Form in §5.
+
+**Die Untergrenze steht in Trägern statt in Prozent** — „bei mindestens drei unabhängigen Trägern mindestens einmal". Ein Prozentwert wäre auf zwölf Trägern nicht messbar (±14 Punkte), ein Zählkriterium ist es. Die Drei kommt aus der Cluster-Struktur: bei einem Träger ist eine Landschaft von einer Eigenschaft dieses Trägers nicht zu unterscheiden, zwei trennt, drei gibt einen Fall Spielraum.
+
+**MESSUNG:** Die Bögen halten die Ordnung ein (51,4 > 35,1 > 8,5 %). **Das produktive Paar verletzt sie an der ersten Stelle — 80,4 % in hoher Erregung**, während die Form niedrige Erregung als Grundlage setzt. Zwölf von vierzehn Landschaften erreichen die Untergrenze; `nebel` (2 Träger) und `regen` (1) nicht.
+
+**Was B3 ausdrücklich nicht entscheidet:** ob der Abstand am Raum liegt oder an der Form. Das ist B4.
 
 ### B4 — Die Grenzen des Raums, justiert
 
@@ -353,7 +450,11 @@ Die erste Zeile ist die Gegenprobe des Bauteils: unveränderte Grenzen, exakt da
 
 ## 9. Was offen ist
 
-- **Die Untergrenze je Landschaft ist nicht bestimmt.** Der Präzedenzfall setzt 15 % für eine zweiwertige Achse; bei vierzehn Landschaften ist die Größenordnung eine andere, und sie ist zu setzen, nicht abzuleiten.
+- ~~**Die Untergrenze je Landschaft ist nicht bestimmt.**~~ → **Gesetzt am 08.08.2026** (§5a): bei mindestens drei unabhängigen Trägern mindestens einmal. In Trägern statt in Prozent, weil ein Prozentwert auf zwölf Trägern nicht messbar ist.
+
+- **Der Abstand zwischen Form und produktivem Bestand ist offen und groß.** Das produktive Paar steht zu 80,4 % in hoher Erregung; die Form setzt niedrige Erregung als Grundlage. Entweder sind die Grenzen auf der Erregungsachse zu weit gesetzt, oder die Form gilt nicht für ein Gespräch, das jemand absichtlich beginnt. **Die Entscheidung ist B4** — und wenn sie auf die Form fällt, ist die Zielverteilung als Setzung mit neuem Datum zu ändern, nicht durch Anpassen an die Messung.
+
+- **`paradox` belegt 21,9 % des Rohraums** (14 von 64 Sektoren) und kommt gemessen auf 5,0 % bzw. 1,9 %. Ob das eine bewusste Reserve für widersprüchliche Lagen ist oder eine unbesetzte Fläche, steht nirgends. Erster Ort zum Nachsehen bei B4.
 - ~~**Die Ablesung fällt in 14 % der Fälle aus** und ist vor allem anderen zu klären (B1).~~ → **Erledigt am 08.08.2026.** Sie fiel in **28,1 %** der Bogen-Ablesungen aus, nicht in 14 %, und nicht zufällig: 82 von 164 Turns mit `distanz`, 0 von 340 mit `neutral` (§4a).
 
 - **Die Ist-Verteilung ist auf dem reparierten Gerät zu wiederholen.** §4b ist über 628 Ablesungen vom 31.07. bis 08.08.2026 erhoben, also vor der Reparatur. Der Lauf ist derselbe und kostet nichts; er braucht nur Turns, die danach entstanden sind. **Vor B3.**
@@ -370,6 +471,7 @@ Die erste Zeile ist die Gegenprobe des Bauteils: unveränderte Grenzen, exakt da
 
 ## Versionshistorie
 
+- **v0.6 — 08.08.2026:** **B3 gesetzt** — §5a neu. Entschieden: eine Rangfolge in **drei Bändern**, keine vierzehn Einzelzahlen. Die Bänder kommen aus zwei Quellen und aus keiner dritten: der Sektortabelle (zwölf der vierzehn Landschaften liegen vollständig in einer Zelle aus Erregung × Valenz) und den drei Sätzen zur Form aus §5. Sie ordnen niedrige Erregung vor hohe positive vor hohe negative — und mehr nicht, weshalb **innerhalb eines Bandes keine Ordnung steht**. Der TEST des Bauteils ist damit in seiner stärksten Form bestanden: Die Zielverteilung enthält keinen einzigen Zahlenwert, es gibt nichts zum Abschreiben. Die **Untergrenze steht in Trägern statt in Prozent** — mindestens drei —, weil ein Prozentwert auf zwölf Trägern nicht messbar ist und ein Zählkriterium es ist; die Drei kommt aus der Cluster-Struktur, nicht aus dem Ergebnis. **Der gemessene Abstand ist groß:** Die Bögen halten die Ordnung ein, das produktive Paar steht zu **80,4 % in hoher Erregung** und verletzt sie an der ersten Stelle. Zwölf von vierzehn Landschaften erreichen die Untergrenze; `nebel` und `regen` nicht. Aus der Ableitung fiel ein Befund ab: **`paradox` belegt 21,9 % des Rohraums** und kommt gemessen auf 5,0 % — ein Fünftel des Raums sagt „Vorsicht, beobachten", und ob das Reserve oder Leerstand ist, steht nirgends.
 - **v0.5 — 08.08.2026:** **Die Voraussetzung von B4 gebaut, nachdem sich zeigte, dass das Bauteil gar nicht fahrbar war.** Seine MESSUNG und seine Gegenprobe rechnen beide über gespeicherte Eingangsgrößen nach; haltbar war aber nur das Ergebnis. Eine Abfrage über alle `pipeline_log`-Schlüssel nach den Achsennamen kam leer zurück — die sechs Bits standen nur in einem Redis-Wert, den der nächste Turn überschreibt. Der GV-Node schreibt sie jetzt je Turn mit, roh und binär, samt der Eingangsgröße, die kein Rohwert ist (`valenz_quelle`), und samt **der geltenden Fassung**: vier Schwellen, Richtungsabbildung, Umfang der Sektortabelle. Am ersten Eintrag nachgerechnet: mit der gespeicherten Grenze kommt exakt der gespeicherte Sektor heraus (die Gegenprobe), mit 0,25 wandert derselbe Turn nach `glut`. **Die Kostenrechnung dreht sich damit um** — der Bestand wächst aus dem Normalbetrieb, und die Zahl der Träger ist eine Zeitfrage statt einer Budgetfrage. Dazu die Streuungsrechnung, die den Zuschnitt von B3 entscheidet: zwölf Träger tragen ±14 Punkte, für ±5 wären es 96 — eine Rangfolge in Bändern ist begründbar, vierzehn Einzelzahlen nicht.
 - **v0.4 — 08.08.2026:** **B1 am laufenden System gemessen**, nicht nur wiedergegeben. Drei echte Turns gegen eine frische Kennung, alle drei mit Landschaft, keine Ausfallzeile. Der tragende ist Turn 1: `distanz` bei `lernmodus` ergibt Länge 0, er hätte vorher kein `gv_detail` bekommen. Der Zustand aus Redis zeigt drei Dinge, die vorher fehlten — die Landschaft auf einem Turn ohne Vorausdenken, die Aufnahmebereitschaft mit 0,502 statt der für die Krise reservierten 0,0, und die ehrlich leere Antizipations-Hälfte mit der Marke daneben. Der Sektorindex ist am Ergebnis nachgerechnet (Bits → 6 → `Stiller Respekt`/`foyer`). Und die Leiter steht im Prompt: Der Server hat sie im selben Turn geschrieben.
 - **v0.3 — 08.08.2026:** **B2 erhoben** — §4b neu, über 628 Ablesungen. Die Zerlegung geht auf (628 = 628), und die Gegenprobe ist am Bestand erfüllt statt konstruiert: vier Kennungen haben nie ein Rad geladen. **Aus zwei Teilmengen wurden vier**, weil der Bestand drei Radzustände kennt — ein Vorgabe-Rad rechnet sich glatt und sagt nichts über diesen Charakter — und weil „keine Ablesung" weder „mit" noch „ohne" ist. Zwei Befunde: Der Basisarm der Validierungsmenge fuhr **80 von 360 Turns mit destilliertem Rad**; und die Tabelle aus §4 ist ersetzt, weil sie vier der vierzehn Landschaften wegließ und ihre Nenner nicht nachvollziehbar sind. **Eine Aussage aus v0.2 wird dabei zurückgenommen:** Der Vorbehalt gegen „vier Landschaften nie betreten" gilt in voller Höhe für die Bögen (28,1 % fehlend), aber nicht für das produktive Paar — dort fehlen 6 von 113 Ablesungen, und selbst wenn alle sechs kühl gewesen wären, blieben die vier unter 6 %.
