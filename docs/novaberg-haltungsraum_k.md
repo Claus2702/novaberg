@@ -354,6 +354,33 @@ Eine Übersteuerung ist keine Ausnahme von der Fläche, sondern eine Eigenschaft
 
   **Zwei von fünf Größen verlassen die Spanne im allerersten Turn**, beide nach oben, beide durch reine Addition auf ohnehin hohe Grundwerte (0.95 und 0.90). Die Grenze auf `draengen` hielt. Das ist ein Datenpunkt, keine Häufigkeit — aber er verschiebt die Erwartung: Der Überlauf ist nicht der Randfall, für den ihn §6 gehalten hat. Die Entscheidung zwischen kleineren Beiträgen und Sättigung bleibt bei der Messreihe.
 
+- ~~**Die Spannenenden — beide, und häufiger als gedacht.**~~ → **Entschieden und gebaut am 08.08.2026: Sättigung, und sie brauchte ein fehlendes Stück.**
+
+  **Gewählt ist der zweite der beiden hier beschriebenen Wege**, und zwar in genau der Form, die unten steht: `grund + summe × (1 − grund)` nach oben, `grund + summe × grund` nach unten.
+
+  > **Diese Formel ist so, wie sie hier stand, nicht geschlossen.** Sie setzt stillschweigend `summe ∈ [−1, +1]` voraus. Die Radsumme hat aber eine eigene Spanne, die nirgends benannt war und aus `SPEICHEN_BEITRAG` folgt: `umfang` −1,00…+0,80 · `fragen` −0,90…+0,70 · `naehe` −1,20…+0,50 · `waerme` −1,50…+0,50 · `draengen` −0,50…+1,20. Bei `draengen` mit Grundwert 0,20 und voller Summe ergäbe die Formel `0,20 + 1,20 × 0,80 = 1,16` — **wieder außerhalb.**
+
+  **Gebaut wurde deshalb Sättigung plus Normierung.** `speichen_spanne()` leitet die Spanne je Größe aus der Beitragstabelle ab — abgeleitet, nicht gesetzt, damit sie mit einer neuen Speiche mitwandert —, und `_normieren()` bildet die Summe **je Richtung getrennt** auf [−1, +1] ab. Getrennt, weil die Beiträge unsymmetrisch sind: Eine gemeinsame Normierung brächte ein Rad, das die Wärme so weit hebt, wie die Tabelle es zulässt, nur auf +0,25 statt +1, und ein Teil der Tabelle wäre unerreichbar.
+
+  **Der hier genannte Preis ist zur Hälfte nicht eingetreten.** „Die Beiträge werden gestaucht und die Skala ist nicht mehr linear zu lesen" — die Linearität *im Beitrag* bleibt: halbe Ausprägung legt genau den halben Weg zurück, als Eigenschaft geprüft. Nichtlinear ist allein die Abhängigkeit vom Grundwert, und das ist die Aussage der Bauart, nicht ihr Preis.
+
+  **Vollständig gerechnet über alle 14 Landschaften × 5 Größen** — bei festem Rad ist die Haltung eine reine Funktion der Landschaft, also ist das der ganze Raum:
+
+  | | Zellen | alte Form außerhalb | neue Form |
+  |---|---|---|---|
+  | gemessenes Rad (31.07.) | 70 | **10** | **0** |
+  | volles Rad, beide Enden | 70 | **33** | **0** |
+
+  Größte Überschreitung der alten Form: **+0,80**.
+
+  **Vier Eigenschaften, jede einzeln geprüft:** geschlossen durch Konstruktion statt durch Kappen · ordnungserhaltend, also fallen zwei Landschaften unter keinem Charakter zusammen · der Rand ist erreichbar, aber nur bei voller Ausprägung in genau die Richtung · und ein Rad auf der Nabe reproduziert die Landschaft exakt.
+
+  **Die Grenze behält ihre multiplikative Form.** Sie ist das eine gewollte tote Ende — in `gewitter` wird nicht gefragt —, und die Sättigungsform würde sie öffnen, weil ein Grundwert von 0 dort vollen Weg nach oben hätte. Die Übersteuerung bleibt ihre einzige Freigabe, wie es hier steht.
+
+  **Was das nicht löst, steht weiter unten in diesem Abschnitt und bleibt gültig:** der Anlassfall. `kissenschlacht/umfang` mit dem gemessenen Rad liegt jetzt bei 0,43 statt 0,45 — der scherzhafte Einzeiler bekommt weiter einen mittleren Umfang zugestanden. Der Hebel dafür ist nicht die Behandlung der Spannenenden.
+
+  Der ursprüngliche Text bleibt zur Nachvollziehbarkeit stehen:
+
 - **Die Spannenenden — beide, und häufiger als gedacht.** Bei reiner Addition läuft `Wärme` über: Grundwert `glut` 0.8 plus 0.35 aus dem Rad ergibt 1.15, bei `feuerwerk` sogar 1.25 und `Fragen` 1.40. **Die untere Grenze bricht ebenso**, und das kam erst beim Bauen zum Vorschein: `glut/draengen` steht auf 0.20, eine einzige voll ausgeprägte `treue` trägt −0.30, das Ergebnis ist −0.10. Es braucht also nicht einmal ein volles Rad — eine Speiche genügt. Gekappt wird nicht (§3.1) — es bleiben zwei Wege. **Kleinere Beiträge**, sodass die Summe passt; das ist die Bauart des Charakter-Rades, wo die Züge die Grenzen exakt treffen, funktioniert dort aber nur, weil die Nabe fest ist. Oder **Sättigung auf die Summe**: `neu = grund + summe × (1 − grund)` nach oben, `grund + summe × grund` nach unten — erst summieren, dann einmal sättigen, damit die Reihenfolge nichts entscheidet. Die zweite Bauart kann die Grenze nicht überschreiten, statt an ihr abgeschnitten zu werden, und sagt inhaltlich etwas: Wo die Lage schon warm ist, fügt der Charakter wenig hinzu; wo sie kalt ist, macht er den Unterschied. Ihr Preis ist, dass die Beiträge gestaucht werden und die Skala nicht mehr linear zu lesen ist. **Entschieden wird nach der ersten Messreihe, nicht davor** — eine Übersteuerung bleibt in jedem Fall ausgenommen, sonst wäre ihre Markierung sinnlos.
 - **Ob es fünf gleichrangige Größen sind.** Im abgeleiteten Entwurf hängt `Drängen` an vier Speichen, `Wärme` fast nur an der Deutungsachse. Möglicherweise sind es drei starke und zwei schwache. Das zeigt sich erst an den gesetzten Zahlen und gehört gemessen, bevor alle fünf gleich ernst genommen werden.
 - **Ob eine Speiche je Ausprägungsstufe ein eigenes Set braucht.** Multiplikativ mit 0.5 und 1.0 sind es 26 Sets, je Stufe eigene wären es 38. Die zweite Bauart erlaubt Nichtlinearität — „halb distanziert ist kaum etwas, ganz distanziert ändert alles". Anfangen mit der ersten, nachschärfen, wenn die Messung es verlangt.

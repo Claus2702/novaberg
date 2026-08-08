@@ -196,6 +196,20 @@ Dazu eine Zeile in der Spur (`services/event_consumer.py`), damit das Ergebnis b
 
 **Priorität:** hoch — die Sichtbarkeit ist Voraussetzung für die Messreihe.
 
+#### ~~HALTUNG-SPANNENENDEN-OFFEN~~ — ✅ **erledigt am 08.08.2026: Sättigung, plus das fehlende Stück**
+
+**Gewählt ist die Sättigung** — der Weg, den dieser Eintrag schon als den plausibleren benannt hat. Der Eintrag verlangte die Messung vor der Entscheidung; sie lag vor, und sie fiel eindeutig aus.
+
+**Die Formel im Konzept war jedoch nicht geschlossen.** Sie setzt `summe ∈ [−1, +1]` voraus, und die Radsumme hat eine eigene Spanne, die nirgends stand: `draengen` reicht bis +1,20, also ergäbe `0,20 + 1,20 × 0,80 = 1,16` — wieder außerhalb. Gebaut wurde deshalb **Sättigung plus Normierung**: `speichen_spanne()` leitet die Spanne je Größe aus der Beitragstabelle ab, `_normieren()` bildet je Richtung getrennt auf [−1, +1] ab.
+
+**Gerechnet über alle 14 Landschaften × 5 Größen** — bei festem Rad ist die Haltung eine reine Funktion, das Ergebnis also vollständig: gemessenes Rad **10 → 0** Zellen außerhalb, volles Rad an beiden Enden **33 → 0**. Größte Überschreitung der alten Form +0,80.
+
+**Der offene Punkt „Unterlauf ungeprüft" ist damit mit erledigt**, und zwar durch Rechnung statt durch eine zweite Messreihe: Das volle Rad fährt beide Enden ab.
+
+**Was bleibt und wohin es gehört:** Der Anlassfall ist nicht gelöst — `kissenschlacht/umfang` liegt jetzt bei 0,43 statt 0,45. Das ist keine Frage der Spannenenden, sondern der Beitragssemantik, und es steht als eigener Punkt in `novaberg-haltungsraum_k.md` §6.
+
+Der ursprüngliche Eintrag bleibt darunter stehen:
+
 #### HALTUNG-SPANNENENDEN-OFFEN — die Zahlen verlassen den Korridor
 
 Gemessen am Entwurf: `glut/waerme` ergibt 1.15, `feuerwerk/fragen` 1.40, und nach unten reicht **eine** voll ausgeprägte Speiche — `glut/draengen` fällt mit `treue` auf −0.10.

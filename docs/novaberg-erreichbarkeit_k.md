@@ -425,6 +425,52 @@ Die erste Zeile ist die Gegenprobe des Bauteils: unveränderte Grenzen, exakt da
 
 **Was das für den Umfang bedeutet:** Der Bestand wächst ab jetzt aus dem Normalbetrieb, ohne dass ein Bogen dafür gefahren wird. Die Zahl der Träger ist damit keine Budgetfrage mehr, sondern eine Zeitfrage. **Der Preis dafür, dass es zwei Monate lang niemand mitgeschrieben hat, ist bezahlt und nicht rückholbar:** Die 628 Ablesungen im Bestand tragen keine Achsen und sind für ein Replay verloren.
 
+Nachgeprüft am 08.08.2026, ob sich die Achsen aus anderen Quellen rekonstruieren ließen: **nein.** Aus `turn_roh` sind Energie, Richtung und Valenz herleitbar (`nova_emotion`), die Initiative steht in der Initiative-Zeile — **Nähe und Tiefe nicht.** Sie stammen aus Novas Raum, und der wird je Turn nach Redis geschrieben und dort überschrieben. Die Forensik-Zeile dazu (`ei_calc_persist`, `db_write`) nennt die **Feldnamen** und nicht die Werte: Sie belegt, dass geschrieben wurde, nicht was.
+
+### Die Diagnose (B4), soweit sie ohne Bestand möglich ist
+
+**Die Aufteilung des Raums erklärt die Erreichbarkeit nicht.** Die Landschaften bekommen 2 bis 14 der 64 Sektoren, aber der Anteil sagt nichts über den Zugang:
+
+| Vergleich | Sektoren | Träger von zwölf |
+|---|---|---|
+| `bier` gegen `nebel` | **beide 4** | 12 gegen **2** |
+| `schmollen` gegen `regen` | **beide 2** | 5 gegen **1** |
+| `beichte` | 2 | 5 |
+
+Gleich große Flächen, völlig verschiedene Erreichbarkeit. **Damit ist der in B4 vorgesehene Hebel — die Zuordnung von Achsenlage zu Landschaft — für `nebel` und `regen` der falsche.** Ihre Fläche zu vergrößern hilft nicht; `beichte` kommt mit zwei Sektoren auf fünf Träger.
+
+**Der Engpass ist eine Achse, und zwar die Valenz.** `nebel`, `schmollen` und `regen` sind genau die Landschaften mit niedriger Erregung **und** negativer Valenz. Von den niedrig erregten Ablesungen sind negativ:
+
+| Bestand | Anteil |
+|---|---|
+| zwölf Bögen | 8 von 133 (6,0 %) |
+| produktives Paar | **0 von 19 (0 %)** |
+
+### Und die Valenz misst zu einem großen Teil nicht, sondern setzt
+
+`valenz_bin` entsteht nicht an einer Schwelle, sondern an einem Nachschlagen: Novas Emotion → Plutchik-Sektor → Vorzeichen. Steht die Emotion nicht in der Karte, gilt:
+
+```python
+else:
+    valenz_bin = 1  # neutral → positiv (Default)
+```
+
+**Der Mechanismus ist sicher, seine Häufigkeit ist es nicht.** Aus dem Code und den Konstanten folgt ohne Messung: `EMOTION_KANON` hat **17** Werte, `EMOTION_SEKTOR_MAP` **16**, und der eine fehlende ist `neutral`. Jede neutrale Emotion Novas erhält damit V=1.
+
+> ~~Ein erster Messversuch am 08.08.2026 bezifferte den Anteil auf 29,2 % aller Turns und 55,4 % der niedrig erregten.~~ → **Zurückgenommen am selben Tag: falscher Zeitpunkt.** Die Zahlen stammten aus `turn_roh.nova_emotion`, und das schreibt der Dispatcher am Turn-Ende. Im CharacterGraph läuft die späte Perzeption mit der Rolle `assistant` **nach** dem Responder und überschreibt `internal.emotion` — der gespeicherte Wert ist Novas Wahrnehmung ihrer eigenen Antwort, nicht der, den `achsen_berechnen` gelesen hat. **Verraten hat es ein Widerspruch:** 52 % vermeintlicher Vorgabewerte in `gewitter`, das per Definition V=0 trägt — mit einer Vorgabe, die V=1 setzt, unmöglich.
+
+**Was die Perzeption an nicht kanonischen Emotionen liefert, bleibt davon unberührt** — es ist eine Aussage über die Ausgabe des Modells, nicht über einen Zeitpunkt im Graphen: `mitgefühl` 21 mal, `mitgefuehl` 6 mal (dieselbe Emotion in zweiter Schreibweise) und `nachdenklich` einmal, über 849 Rohturns. Keine der drei steht im Kanon, alle drei fielen aus der Sektorkarte.
+
+**Die Häufigkeit ist ab dem 08.08.2026 messbar und vorher nicht.** Die Landschaftszeile trägt `valenz_quelle` — die Emotion zum Zeitpunkt der Achsenrechnung. Vorher ist dieser Wert aus keiner Quelle rekonstruierbar, dieselbe Lage wie bei Nähe und Tiefe. **Der Anteil des Vorgabewerts ist damit heute unbekannt, und das ist die erste Zahl, die B4 braucht.**
+
+**Damit steht B4 vor einer Absichtsfrage und nicht vor einer Justierung.** Eine zweiwertige Achse hat für einen neutralen Zustand keine Seite; ihn der positiven zuzuschlagen ist eine Entscheidung, die nirgends steht und die die Hälfte des niedrig erregten Bestands betrifft. Drei Wege sind denkbar, und keiner davon ist eine Grenzverschiebung im Landschaftsraum:
+
+- ~~Die Achse bleibt zweiwertig, und `neutral` bekommt seine Seite **aus der Richtung** — der Stimmungsvektor desselben Turns sagt, wohin es geht.~~ → **Verworfen am 08.08.2026, ohne Messung.** Die Richtung **ist** Achse R; V daraus abzuleiten bringt kein Argument hinzu, sondern zählt ein vorhandenes doppelt. Der Sektorindex hätte für jeden neutralen Turn fünf unabhängige Bits statt sechs, und zwei Achsen könnten dort nie widersprechen. Ein Raum, dessen Dimensionen voneinander abhängen, ist kleiner als seine Sektorzahl behauptet.
+- Die Achse wird **dreiwertig**. Sie repräsentiert dann, was die Größe hat: `neutral` ist keine Lücke in der Karte, sondern eine Eigenschaft des Gegenstands — Plutchiks Rad hat acht Sektoren mit Vorzeichen, und ein neutraler Zustand liegt per Konstruktion nicht darauf. **Der Preis ist der Zuschnitt:** 64 Sektoren werden 96. Die 32 neuen brauchen aber nicht zwingend neue Landschaften, denn die vierzehn sind Gruppierungen. **Eine prüfbare Vermutung dazu:** Einige heute als positiv geführte Landschaften lesen sich in ihrer eigenen Beschreibung neutral — `wartezimmer` („Höfliche Distanz. Angenehm, aber oberflächlich"), `foyer` („Ruhiges Tiefgespräch mit respektvoller Distanz"). Träfe das zu, verschöbe die dritte Stufe die neutrale Last dorthin, wo sie ohnehin landet, statt 32 leere Zellen zu erzeugen. Entscheidbar an `valenz_quelle`.
+- Der Vorgabewert bleibt, wird aber **deklariert und mitgezählt**, sodass jede Auswertung „gemessen positiv" von „mangels Zuordnung positiv" trennen kann. Das ist keine Reparatur, sondern die Voraussetzung dafür, über eine zu entscheiden — die Häufigkeit des Vorgabewerts ist heute unbekannt, und bei 3 % wäre ein neuer Raumzuschnitt unverhältnismäßig, bei 30 % unausweichlich.
+
+**Vor dieser Entscheidung ist eine Justierung der Raumgrenzen nicht sinnvoll.** Sie würde gegen eine Verteilung kalibrieren, deren größter einzelner Beitrag ein Vorgabewert ist — dieselbe Lage wie am Morgen bei der ausgefallenen Ablesung, eine Ebene tiefer.
+
 ### B5 — Der Charakter verschiebt, er schließt nicht
 
 | Zeile | Inhalt |

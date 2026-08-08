@@ -2041,6 +2041,26 @@ Auf die Frage, was eine Neuerhebung kostet, kam eine Zwischenrechnung und dann e
 
 **Neu im Register:** `F-LAGE-2`.
 
+### B3, und dann die Naht zwischen Landschaft und Zuwendungsrad
+
+**B3 als Rangfolge in drei Bändern gesetzt**, ohne einen einzigen Zahlenwert — die Zuordnung stammt aus der Sektortabelle, die Ordnung aus den drei Sätzen zur Form. Die Untergrenze steht in Trägern statt in Prozent, weil ein Prozentwert auf zwölf Trägern nicht messbar ist. Gemessener Abstand: Die Bögen halten die Ordnung ein, das produktive Paar steht zu **80,4 % in hoher Erregung** und verletzt sie an der ersten Stelle.
+
+**B4 dagegen erwies sich als der falsche Hebel für seine eigene Frage.** Die Raumaufteilung erklärt die Erreichbarkeit nicht: `bier` und `nebel` haben beide vier Sektoren und kommen auf 12 gegen 2 Träger, `schmollen` und `regen` beide zwei und kommen auf 5 gegen 1. Der Engpass ist die Valenzachse, und die misst dort nicht, wo Novas Emotion nicht in der Sektorkarte steht — `EMOTION_KANON` hat 17 Werte, `EMOTION_SEKTOR_MAP` 16, und der fehlende ist `neutral`. **Wie oft das greift, ist am Bestand nicht ermittelbar** und ab dem 08.08.2026 über `valenz_quelle` messbar.
+
+**Stattdessen die Naht davor**, und mit ihr ein anderer Zuschnitt der Aufgabe: Nicht fragen, was vorliegt, sondern was die Rechnung braucht, um für sich allein richtig zu sein. Beim Zusammenführen zweier Systeme darf es kein totes Ende geben.
+
+Daraus gemessen: `haltung_berechnen()` addierte den Cluster-Grundwert in [0,1] auf eine Radsumme mit eigener, nirgends benannter Spanne. **Über die vollen Enden gerechnet verließ jede der 62 Nicht-Grenz-Zellen die Spanne**, größte Überschreitung +0,80 — die bekannte Angabe „10 von 14 Landschaften" ist am Mittelwert erhoben.
+
+**Gebaut: Sättigung plus Normierung.** Die Sättigungsformel stand im Konzept, war aber nicht geschlossen — sie setzt `summe ∈ [−1, +1]` voraus, und `draengen` reicht bis +1,20. `speichen_spanne()` leitet die Spanne je Größe aus der Beitragstabelle ab, `_normieren()` bildet je Richtung getrennt ab. Der Faktor ist damit ein benanntes Bauteil und kein Zurechtrücken im Rechenweg.
+
+Vollständig gerechnet, weil die Haltung bei festem Rad eine reine Funktion der Landschaft ist: **10 → 0** Zellen außerhalb beim gemessenen Rad, **33 → 0** beim vollen. Vier Eigenschaften einzeln geprüft — geschlossen durch Konstruktion statt durch Kappen, ordnungserhaltend über alle Landschaftspaare, der Rand erreichbar aber nur ganz außen, und die Nabe reproduziert die Landschaft exakt.
+
+**Elf Tests waren dabei rot, und das war die Spezifikation.** `SpanneTest` sicherte zu, dass `glut/waerme` auf 1,30 läuft — richtig, solange die Häufigkeit die Messgröße war. Die Zusicherung ist umgedreht statt gelöscht, und die Eigenschaften sind erhalten geblieben: Die Linearität wird jetzt als Eigenschaft geprüft (halbe Ausprägung → halber Weg) statt gegen ein Literal, und die Ordnungserhaltung ist neu dazugekommen.
+
+**Geschlossen:** `HALTUNG-SPANNENENDEN-OFFEN`, samt seinem offenen Rest „Unterlauf ungeprüft" — durch Rechnung über beide Enden statt durch eine zweite Messreihe.
+
+**Nicht gelöst und ausdrücklich so benannt:** der Anlassfall. `kissenschlacht/umfang` liegt jetzt bei 0,43 statt 0,45; der scherzhafte Einzeiler bekommt weiter einen mittleren Umfang. Das ist Beitragssemantik, nicht Spannenende.
+
 ---
 
 ## Chat 131 (07.08.2026) — Die Trennung von Kalibrieren und Validieren, und eine Zahl, die ungenauer ist als ihr p-Wert ✅
