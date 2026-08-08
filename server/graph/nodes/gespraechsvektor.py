@@ -16,6 +16,7 @@ Konzept: novaberg-gv-strategie_k.md
 
 import json
 import logging
+from dataclasses import dataclass
 
 import psycopg2
 
@@ -73,6 +74,29 @@ def _ist_skip(state: ConversationState) -> bool:
 # Laengenberechnung aus EI-Dimensionen
 # ─────────────────────────────────────────────
 
+def _ist_krise(state: ConversationState) -> bool:
+    """Prueft die Notbremse: Stimmungsvektor im Absturz bei hohem Arousal.
+
+    Eigene Funktion, weil zwei Aufrufer dieselbe Bedingung brauchen und keiner
+    von beiden sie ein zweites Mal hinschreiben darf: `_vektor_laenge_berechnen`
+    setzt daraufhin die Laenge auf 0, und `gespraechsvektor` muss die Krise vom
+    arithmetisch erreichten Nullwert **unterscheiden koennen**. Beides aus einer
+    Zeile abzulesen ginge nicht — eine 0 traegt ihren Grund nicht mit sich.
+
+    Vorbedingung: keine. Ohne `external` gelten die Neutralwerte, also keine Krise.
+    Nachbedingung: True genau dann, wenn das Konzept "nur Empathie, keine
+        Antizipation" verlangt (novaberg-node-gv_k.md §Laengenberechnung).
+    Fehlerfaelle: keine.
+    """
+    external = state.get("external")
+    if external is None:
+        return False
+    return (
+        external.emotion.emotions_vector in ("spirale", "absturz")
+        and external.emotion.arousal >= 0.7
+    )
+
+
 def _vektor_laenge_berechnen(state: ConversationState) -> int:
     """Berechnet die maximale Vektorlaenge aus den 8 EI-Dimensionen.
 
@@ -85,6 +109,13 @@ def _vektor_laenge_berechnen(state: ConversationState) -> int:
       - Modus → Zu-/Abschlag aus GV_LAENGE_MODUS_DELTA (alle Modi des Kanons)
       - Sprachstil (locker/formell) → Feintuning
       - Emotions-Vektor (Krise) → Notbremse auf 0
+
+    **Diese Zahl entscheidet ueber das Vorausdenken und ueber nichts sonst.**
+    Bis zum 08.08.2026 hing die Landschafts-Ablesung mit an ihr: Bei 0 kehrte
+    der Node zurueck, bevor er die Achsen gerechnet hatte. Gemessen ueber 845
+    Rohturns fielen dadurch 184 Ablesungen aus, davon 82 von 164 Turns mit
+    Beziehungsdynamik `distanz` und **keiner** der 340 mit `neutral` — das
+    Messgeraet schaltete sich genau auf der fernen Haelfte der Naehe-Achse ab.
     """
     external = state.get("external")
     arousal:  float = external.emotion.arousal              if external else 0.5
@@ -95,7 +126,7 @@ def _vektor_laenge_berechnen(state: ConversationState) -> int:
     vektor:   str   = external.emotion.emotions_vector      if external else ""
 
     # Krise → sofort 0 (nur Empathie, keine Antizipation)
-    if vektor in ("spirale", "absturz") and arousal >= 0.7:
+    if _ist_krise(state):
         logger.info("GV-Laenge: 0 (Krise — spirale/absturz bei hohem Arousal)")
         return 0
 
@@ -741,71 +772,77 @@ def _initiative_protokollieren(
         )
 
 
-def gespraechsvektor(state: ConversationState) -> ConversationState:
-    """Gespraechsvektor-Node: Antizipiert die Richtung des Gespraechs.
+# ─────────────────────────────────────────────
+# Landschaft — die Lage des Turns, unabhaengig vom Vorausdenken
+# ─────────────────────────────────────────────
 
-    Sequentieller Ablauf:
-      1. Skip-Check (Begruessung/Meta → durchreichen)
-      2. Laenge aus EI-Dimensionen berechnen (Python, deterministisch)
-      3. Resonanz-Kontext aus den Spreading-Erinnerungen des Enrichers
-      3b. Farbmisch-System (8 Dimensionen → Landschaftsbeschreibung)
-      3c. Effektive Neugier berechnen (6 Saeulen)
-      3d. Wissensluecken finden (DB-Queries, Relevanz-Berechnung)
-      3e. Dreischicht: Achsen → Sektor → Cluster → Repertoire
-      4. LLM-Call → Hypothese + Strategie destillieren
-      5. Ergebnis + Debug-Info in State schreiben
+# Was aus dem Vorausdenken geworden ist. Ein Begleitfeld im Sinn von
+# `22_STILLE_FEHLER.md` §3: Ohne es waere eine Landschaft ohne Strategie von
+# einer Landschaft mit leerer Strategie nicht zu unterscheiden.
+VORAUSDENKEN_GELAUFEN:    str = "gelaufen"
+VORAUSDENKEN_SKIP:        str = "skip"
+VORAUSDENKEN_KRISE:       str = "krise"
+VORAUSDENKEN_LAENGE_NULL: str = "laenge_null"
+
+
+@dataclass(frozen=True)
+class Lage:
+    """Der vermessene Zustand eines Turns, bevor ueber das Vorausdenken entschieden ist.
+
+    Ein Objekt statt acht loser Rueckgabewerte (`13_DATENSTRUKTUREN.md` §1):
+    Die Teile gehoeren zusammen, weil sie aus **einer** Messung stammen und
+    weil jeder der drei Ausgaenge des Nodes sie vollstaendig braucht. Wer den
+    Sektor ohne die Achsen weiterreicht, reicht ein Ergebnis ohne seine
+    Eingangsgroessen weiter.
+
+    Was hier **nicht** hineingehoert: alles, was aus dem LLM-Lauf stammt. Die
+    Grenze dieses Objekts ist genau die Grenze, an der die Tore stehen.
     """
-    logger.info("Gespraechsvektor: Analyse gestartet")
 
-    # 1. Skip?
-    if _ist_skip(state):
-        logger.info("Gespraechsvektor: Skip (Begruessung/Meta)")
-        state["gespraechsvektor"] = ""
-        return state
+    achsen:               dict
+    sektor_index:         int
+    sektor_name:          str
+    cluster:              str
+    fuehrung:             Fuehrung
+    versatz_quelle:       str
+    farbton:              str
+    aufnahmebereitschaft: float
 
-    # 2. Laenge berechnen
-    max_laenge: int = _vektor_laenge_berechnen(state)
 
-    if max_laenge == 0:
-        logger.info("Gespraechsvektor: Laenge 0 — kein Vorausdenken")
-        state["gespraechsvektor"] = ""
-        return state
+def _lage_vermessen(state: ConversationState) -> Lage:
+    """Misst den Zustand des Turns: Farbton, Aufnahmebereitschaft, Landschaft.
 
-    # 3. Zweite Wissensquelle: die Spreading-Erinnerungen des Enrichers.
-    #    Bis Chat 115 der Entity-Hop ueber `fakten` — umgehaengt, weil die
-    #    Tabelle seit Synapsen P4 keinen Produzenten mehr hat (K2).
-    resonanz_kontext: str = _resonanz_kontext_laden(state)
+    **Diese Rechnung steht vor jedem Tor des Nodes, und das ist ihr Zweck.**
+    Sie ist ein Zustand des Gespraechs und keine Funktion des Vorausdenkens —
+    dieselbe Begruendung, mit der die Aufnahmebereitschaft in Chat 116 vor die
+    Laengen-Schwelle gezogen wurde (`novaberg-node-gv_k.md`, Abschnitt "Was
+    hinter dem Laengen-Tor steht und was davor"). Sie stand trotzdem dahinter,
+    bis das am 08.08.2026 gemessen wurde.
 
-    # 3b. Farbton (einmal berechnen, durchreichen)
+    Sie liest **`internal`**, nicht `external`: Naehe und Tiefe kommen aus
+    Novas Raum. Die Tore davor lesen `external`. Der Ausfall entstand also
+    daraus, dass eine Aussage ueber den Nutzer eine Messung an Nova abschaltete.
+
+    Kosten ausserhalb des Prozesses: ein Redis-Lesezugriff mit Embedding der
+    Vorantwort und ein Datenbanklauf fuer den Charakter-Versatz. Kein LLM.
+    Farbton und Aufnahmebereitschaft sind rein — State-Lesen, Tabellen-
+    Lookups, Arithmetik.
+
+    Vorbedingung: keine. Fehlt `internal`, greifen die Neutralwerte von
+        `achsen_berechnen`, und die Initiative meldet ihre Masse als fehlend.
+    Nachbedingung: Jedes Feld ist besetzt; `cluster` ist nie leer, weil
+        `sektor_bestimmen` fuer jeden der 64 Indizes einen Eintrag hat.
+    Fehlerfaelle: Ein nicht ladbarer Charakter-Versatz wird laut gemeldet und
+        die Achse rechnet ohne ihn — ein erfundener Versatz waere schlimmer
+        als ein fehlender, weil er wie eine Charaktereigenschaft aussaehe.
+    """
+    # ── Eingabe ─────────────────────────────────
     farbton: str = farbton_berechnen(state)
     if farbton:
         logger.info(f"GV-Farbton: {farbton}")
 
-    # 3c. GV4: Aufnahmebereitschaft — Novas Faehigkeit, jetzt neugierig zu sein.
-    #
-    # Sie wird in JEDEM Turn gerechnet, nicht erst ab der Strategie-Laenge.
-    # Grund: Sie ist ein Zustand Novas (sechs Saeulen aus Emotion, Arousal,
-    # Stimmungsrichtung, Modus, Dynamik, Stil) und keine Funktion der
-    # Vektorlaenge. Der Wert 0.00 ist im Konzept fuer die Krise reserviert —
-    # ein neutraler Zustand liegt bei ~0.56. Stand die Rechnung hinter der
-    # Laengen-Schwelle, trug gv_detail bei jedem kurzen Vektor eine 0.0, die
-    # von einer gemessenen Krise nicht zu unterscheiden war (Chat 116,
-    # gemessen: 4 von 8 Laeufen; lesson_l_default-wie-fehlschlag).
-    #
-    # Die Rechnung ist rein: State-Lesen, Tabellen-Lookups, Arithmetik —
-    # keine DB, kein LLM. Die Laengen-Schwelle bleibt dort, wo sie hingehoert,
-    # naemlich an der teuren Luechensuche eine Zeile weiter unten.
-    strategie_aktiv:    bool       = max_laenge >= GV_STRATEGIE_MIN_LAENGE
-    wissensluecken:     list[dict] = []
-
     aufnahmebereitschaft: float = aufnahmebereitschaft_berechnen(state)
 
-    # 3d. GV4: Wissensluecken finden (DB-Queries — nur ab Strategie-Laenge,
-    #     und nur wenn ueberhaupt Bereitschaft da ist)
-    if strategie_aktiv and aufnahmebereitschaft > 0:
-        wissensluecken = wissensluecken_finden(state, aufnahmebereitschaft)
-
-    # 3e. Dreischicht: Achsen → Sektor → Cluster → Repertoire
     vorher_embedding, vorher_modus = _vorturn_laden(state)
 
     # Der Charakter-Versatz kommt aus dem zweiten Rad (Chat 116). Faellt das
@@ -827,6 +864,7 @@ def gespraechsvektor(state: ConversationState) -> ConversationState:
             versatz,
         )
 
+    # ── Verarbeitung ────────────────────────────
     fuehrung: Fuehrung = fuehrung_messen(
         state, vorher_embedding, vorher_modus, versatz,
     )
@@ -844,6 +882,189 @@ def gespraechsvektor(state: ConversationState) -> ConversationState:
     _initiative_protokollieren(state, fuehrung, achsen)
 
     sektor_index, sektor_name, cluster = sektor_bestimmen(achsen)
+
+    # ── Ausgabe-Verifikation ────────────────────
+    # `sektor_bestimmen` faellt bei einem Index ausserhalb der Tabelle auf
+    # 'wartezimmer' zurueck und meldet das. Ein leerer Cluster waere trotzdem
+    # ein anderer Fehler — er kaeme aus einem luckenhaften Tabelleneintrag und
+    # traefe den Verbraucher zwei Knoten spaeter.
+    if not cluster:
+        logger.error(
+            "GV-Landschaft: Sektor #%d '%s' liefert keinen Cluster — die "
+            "Landschaft dieses Turns ist nicht bestimmbar",
+            sektor_index, sektor_name,
+        )
+
+    return Lage(
+        achsen               = achsen,
+        sektor_index         = sektor_index,
+        sektor_name          = sektor_name,
+        cluster              = cluster,
+        fuehrung             = fuehrung,
+        versatz_quelle       = versatz_quelle,
+        farbton              = farbton,
+        aufnahmebereitschaft = aufnahmebereitschaft,
+    )
+
+
+def _gv_detail_bauen(
+    lage:         Lage,
+    vorausdenken: str,
+    max_laenge:   int,
+    antizipation: dict | None = None,
+) -> dict:
+    """Baut `gv_detail` — **die einzige Stelle, an der die Felder stehen**.
+
+    Alle drei Ausgaenge des Nodes gehen hier hindurch. Vorher schrieb nur der
+    lange Weg ein `gv_detail`; die beiden frueh zurueckkehrenden Wege schrieben
+    gar keins, und der Haltungs-Knoten erbte ein leeres Dict. Zwei Literale
+    haetten dasselbe Problem in langsamer: Sie waeren beim naechsten neuen Feld
+    auseinandergelaufen.
+
+    Args:
+        lage:         der vermessene Zustand — steht in jedem Turn.
+        vorausdenken: eine der vier `VORAUSDENKEN_*`-Marken.
+        max_laenge:   Zahl der erlaubten Gedankenspruenge, 0 bis 3.
+        antizipation: die Ausbeute des LLM-Laufs, oder None, wenn er nicht
+            stattgefunden hat. **Nicht `{}`** — ein leeres Dict waere von
+            einem leer gebliebenen Lauf nicht zu unterscheiden.
+
+    Returns:
+        Das vollstaendige `gv_detail`. Jeder Schluessel ist auf jedem Weg
+        vorhanden; die Antizipations-Haelfte traegt ihre Leerwerte, und
+        `vorausdenken` sagt, ob das eine Messung oder ein Ausfall ist.
+    """
+    # ── Verarbeitung ────────────────────────────
+    felder: dict = {
+        "sprung_1": "", "sprung_2": "", "sprung_3": "",
+        "absicht": "", "strategie": "", "vehikel": "", "impuls": "",
+        "repertoire": {}, "charakter_gewichtung": {},
+        "resonanz_kontext": "", "wissensluecken": [],
+        "strategie_aktiv": False, "korridor_verstoesse": [],
+    }
+    if antizipation:
+        felder.update(antizipation)
+
+    return {
+        **felder,
+        # Achsen (Python, deterministisch)
+        "achsen":       lage.achsen,
+        "sektor_index": lage.sektor_index,
+        "sektor_name":  lage.sektor_name,
+        "cluster":      lage.cluster,
+        "drive":        lage.achsen.get("drive", 0.0),
+        # Bestehende Felder
+        "laenge":       max_laenge,
+        "farbton":      lage.farbton,
+        "aufnahmebereitschaft": lage.aufnahmebereitschaft,
+        # Das Begleitfeld. Es traegt den Unterschied, den die Landschaft allein
+        # nicht mehr tragen kann, seit sie in jedem Turn dasteht.
+        "vorausdenken": vorausdenken,
+        # Initiative: die drei Masse einzeln, damit am Panel ablesbar bleibt,
+        # woraus das Achsen-Bit entstanden ist und was gefehlt hat.
+        "initiative": {
+            "wert":     lage.fuehrung.wert,
+            "rohwert":  lage.fuehrung.rohwert,
+            "versatz":  lage.fuehrung.versatz,
+            "wollen":   lage.fuehrung.wollen,
+            "bewegung": lage.fuehrung.bewegung,
+            "m1_roh":   lage.fuehrung.m1_roh,
+            "m2_roh":   lage.fuehrung.m2_roh,
+            "m3_roh":   lage.fuehrung.m3_roh,
+            "fehlend":  lage.fuehrung.fehlend,
+            "versatz_quelle": lage.versatz_quelle,
+        },
+    }
+
+
+def gespraechsvektor(state: ConversationState) -> ConversationState:
+    """Gespraechsvektor-Node: Antizipiert die Richtung des Gespraechs.
+
+    Sequentieller Ablauf:
+      1. Farbton, Aufnahmebereitschaft, Landschaft — der Zustand des Turns
+      2. Skip-Check und Laenge — die beiden Tore des Vorausdenkens
+      3. Resonanz-Kontext aus den Spreading-Erinnerungen des Enrichers
+      3d. Wissensluecken finden (DB-Queries, Relevanz-Berechnung)
+      3e. Repertoire und Charakter-Gewichtung fuer den Prompt
+      4. LLM-Call → Hypothese + Strategie destillieren
+      5. Ergebnis + Debug-Info in State schreiben
+
+    **Schritt 1 steht vor Schritt 2 und nicht dahinter.** Was dort gerechnet
+    wird, ist der Zustand des Gespraechs; ob vorausgedacht wird, ist eine
+    Entscheidung darueber. Solange die Reihenfolge umgekehrt war, hatte ein
+    Turn ohne Vorausdenken auch keine Landschaft — und ein leeres Feld sieht
+    aus wie eine ruhige Lage. Die Kosten der Umstellung sind ein Embedding und
+    ein Datenbanklauf auf den Wegen, die frueh zurueckkehren.
+
+    Nachbedingung: `gv_detail` ist auf **jedem** Weg gesetzt und traegt eine
+        Landschaft; `gv_detail['vorausdenken']` sagt, ob die Antizipations-
+        Haelfte gemessen oder ausgefallen ist.
+    """
+    logger.info("Gespraechsvektor: Analyse gestartet")
+
+    # 1. Der Zustand des Turns — vor jeder Verzweigung.
+    #
+    # Die Aufnahmebereitschaft wird in JEDEM Turn gerechnet, nicht erst ab der
+    # Strategie-Laenge. Grund: Sie ist ein Zustand Novas (sechs Saeulen aus
+    # Emotion, Arousal, Stimmungsrichtung, Modus, Dynamik, Stil) und keine
+    # Funktion der Vektorlaenge. Der Wert 0.00 ist im Konzept fuer die Krise
+    # reserviert — ein neutraler Zustand liegt bei ~0.56. Stand die Rechnung
+    # hinter der Laengen-Schwelle, trug gv_detail bei jedem kurzen Vektor eine
+    # 0.0, die von einer gemessenen Krise nicht zu unterscheiden war (Chat 116,
+    # gemessen: 4 von 8 Laeufen; lesson_l_default-wie-fehlschlag).
+    #
+    # Am 08.08.2026 kam die Landschaft dazu, aus demselben Grund und mit
+    # derselben Messung: Chat 116 zog die Bereitschaft vor die Laengen-
+    # SCHWELLE (Laenge < 2), aber nicht vor die beiden `return`s davor. Bei
+    # Skip und bei Laenge 0 fehlte deshalb bis heute nicht nur die Landschaft,
+    # sondern `gv_detail` vollstaendig.
+    lage: Lage = _lage_vermessen(state)
+
+    # 2. Die beiden Tore des Vorausdenkens.
+    if _ist_skip(state):
+        logger.info(
+            "Gespraechsvektor: Skip (Begruessung/Meta) — kein Vorausdenken, "
+            f"Landschaft '{lage.cluster}' steht trotzdem"
+        )
+        state["gespraechsvektor"] = ""
+        state["gv_detail"] = _gv_detail_bauen(lage, VORAUSDENKEN_SKIP, 0)
+        return state
+
+    max_laenge: int = _vektor_laenge_berechnen(state)
+
+    if max_laenge == 0:
+        # Die Krise ist eine Entscheidung des Konzepts, die arithmetische Null
+        # ein Ergebnis der Gewichte. Beide auf dieselbe Marke zu schreiben
+        # haette die Auswertung um genau die Frage gebracht, die B1 stellt.
+        grund: str = VORAUSDENKEN_KRISE if _ist_krise(state) else VORAUSDENKEN_LAENGE_NULL
+        logger.info(
+            f"Gespraechsvektor: Laenge 0 ({grund}) — kein Vorausdenken, "
+            f"Landschaft '{lage.cluster}' steht trotzdem"
+        )
+        state["gespraechsvektor"] = ""
+        state["gv_detail"] = _gv_detail_bauen(lage, grund, 0)
+        return state
+
+    # 3. Zweite Wissensquelle: die Spreading-Erinnerungen des Enrichers.
+    #    Bis Chat 115 der Entity-Hop ueber `fakten` — umgehaengt, weil die
+    #    Tabelle seit Synapsen P4 keinen Produzenten mehr hat (K2).
+    resonanz_kontext: str = _resonanz_kontext_laden(state)
+
+    # 3d. GV4: Wissensluecken finden (DB-Queries — nur ab Strategie-Laenge,
+    #     und nur wenn ueberhaupt Bereitschaft da ist). Das Laengen-Tor bleibt
+    #     hier stehen, wo es hingehoert: an der teuren Suche, nicht an einer
+    #     Messung.
+    strategie_aktiv:    bool       = max_laenge >= GV_STRATEGIE_MIN_LAENGE
+    wissensluecken:     list[dict] = []
+
+    if strategie_aktiv and lage.aufnahmebereitschaft > 0:
+        wissensluecken = wissensluecken_finden(state, lage.aufnahmebereitschaft)
+
+    # 3e. Der Teil der Dreischicht, der nur den Prompt bedient. Die Messung —
+    #     Achsen, Sektor, Cluster — ist oben schon gelaufen; hier kommt dazu,
+    #     was ohne LLM-Lauf niemand braucht: das Repertoire des Clusters und
+    #     die Charakter-Gewichtung, die ein frisches Embedding kostet.
+    cluster: str = lage.cluster
     repertoire: dict[str, str] = repertoire_laden(cluster)
     charakter_gewichtung: dict[str, float] = charakter_gewichtung_berechnen(state)
     dreischicht_block: str = dreischicht_prompt_bauen(
@@ -853,7 +1074,7 @@ def gespraechsvektor(state: ConversationState) -> ConversationState:
     # 4. Hypothese destillieren
     hypothese, gv_parsed = _hypothese_destillieren(
         state, max_laenge, resonanz_kontext,
-        farbton=farbton,
+        farbton=lage.farbton,
         wissensluecken=wissensluecken,
         strategie_aktiv=strategie_aktiv,
         dreischicht_block=dreischicht_block,
@@ -878,70 +1099,49 @@ def gespraechsvektor(state: ConversationState) -> ConversationState:
     # 5. State schreiben
     state["gespraechsvektor"] = hypothese
 
-    state["gv_detail"] = {
-        # Spruenge (LLM-Output geparst)
-        "sprung_1":              gv_parsed.get("sprung_1", ""),
-        "sprung_2":              gv_parsed.get("sprung_2", ""),
-        "sprung_3":              gv_parsed.get("sprung_3", ""),
-        # Dreischicht (LLM waehlt aus Python-Korridor)
-        "absicht":               gv_parsed.get("absicht", ""),
-        "strategie":             gv_parsed.get("strategie", ""),
-        "vehikel":               gv_parsed.get("vehikel", ""),
-        "impuls":                gv_parsed.get("impuls", ""),
-        # Achsen (Python, deterministisch)
-        "achsen":                achsen,
-        "sektor_index":          sektor_index,
-        "sektor_name":           sektor_name,
-        "cluster":               cluster,
-        "drive":                 achsen.get("drive", 0.0),
-        # Repertoire + Gewichtung (Python)
-        "repertoire":            repertoire,
-        "charakter_gewichtung":  charakter_gewichtung,
-        # Bestehende Felder
-        "laenge":                max_laenge,
-        "farbton":               farbton,
-        # Hiess bis Chat 115 "entity_hops" und trug den Faktengraph-Auszug.
-        # Umbenannt mit der Quelle: ein Feldname, der eine Herkunft nennt,
-        # die er nicht mehr hat, ist die teuerste Sorte Doku.
-        #
-        # Das Feld war von seiner Einfuehrung bis Chat 116 schreib-only — es
-        # ging nach Redis und ueber GET /drive/gv_detail an den Client, ohne
-        # dass es dort jemand las. Deshalb brach die Umbenennung nichts.
-        #
-        # Seit Chat 116 zeigt client/ui/panels/gv_panel.py es als Sektion
-        # "Verwandte Erinnerungen" und liest 'entity_hops' uebergangsweise
-        # mit (Redis-Key ohne TTL). Der Schluesselname ist damit ein Vertrag:
-        # tests/test_gv_resonanz_kontext.py wird rot, wenn er hier
-        # verschwindet — auch im Leerfall, wo er einen leeren String tragen
-        # muss und nicht fehlen darf.
-        "resonanz_kontext":      resonanz_kontext[:500] if resonanz_kontext else "",
-        "aufnahmebereitschaft":     aufnahmebereitschaft,
-        "wissensluecken": [
-            {
-                "konzept":       l["konzept"][:120],
-                "quelle":        l["quelle"],
-                "relevanz":      round(l["relevanz"], 3),
-                "neugier_boost": round(l.get("neugier_boost", 0), 3),
-                "register":      round(l.get("register", 1.0), 2),
-            }
-            for l in wissensluecken
-        ],
-        "strategie_aktiv":       strategie_aktiv,
-        "korridor_verstoesse":   korridor_verstoesse,
-        # Initiative: die drei Masse einzeln, damit am Panel ablesbar bleibt,
-        # woraus das Achsen-Bit entstanden ist und was gefehlt hat.
-        "initiative": {
-            "wert":     fuehrung.wert,
-            "rohwert":  fuehrung.rohwert,
-            "versatz":  fuehrung.versatz,
-            "wollen":   fuehrung.wollen,
-            "bewegung": fuehrung.bewegung,
-            "m1_roh":   fuehrung.m1_roh,
-            "m2_roh":   fuehrung.m2_roh,
-            "m3_roh":   fuehrung.m3_roh,
-            "fehlend":  fuehrung.fehlend,
-            "versatz_quelle": versatz_quelle,
+    state["gv_detail"] = _gv_detail_bauen(
+        lage, VORAUSDENKEN_GELAUFEN, max_laenge,
+        antizipation = {
+            # Spruenge (LLM-Output geparst)
+            "sprung_1":  gv_parsed.get("sprung_1", ""),
+            "sprung_2":  gv_parsed.get("sprung_2", ""),
+            "sprung_3":  gv_parsed.get("sprung_3", ""),
+            # Dreischicht (LLM waehlt aus Python-Korridor)
+            "absicht":   gv_parsed.get("absicht", ""),
+            "strategie": gv_parsed.get("strategie", ""),
+            "vehikel":   gv_parsed.get("vehikel", ""),
+            "impuls":    gv_parsed.get("impuls", ""),
+            # Repertoire + Gewichtung (Python)
+            "repertoire":           repertoire,
+            "charakter_gewichtung": charakter_gewichtung,
+            # Hiess bis Chat 115 "entity_hops" und trug den Faktengraph-Auszug.
+            # Umbenannt mit der Quelle: ein Feldname, der eine Herkunft nennt,
+            # die er nicht mehr hat, ist die teuerste Sorte Doku.
+            #
+            # Das Feld war von seiner Einfuehrung bis Chat 116 schreib-only — es
+            # ging nach Redis und ueber GET /drive/gv_detail an den Client, ohne
+            # dass es dort jemand las. Deshalb brach die Umbenennung nichts.
+            #
+            # Seit Chat 116 zeigt client/ui/panels/gv_panel.py es als Sektion
+            # "Verwandte Erinnerungen" und liest 'entity_hops' uebergangsweise
+            # mit (Redis-Key ohne TTL). Der Schluesselname ist damit ein Vertrag:
+            # tests/test_gv_resonanz_kontext.py wird rot, wenn er hier
+            # verschwindet — auch im Leerfall, wo er einen leeren String tragen
+            # muss und nicht fehlen darf.
+            "resonanz_kontext": resonanz_kontext[:500] if resonanz_kontext else "",
+            "wissensluecken": [
+                {
+                    "konzept":       l["konzept"][:120],
+                    "quelle":        l["quelle"],
+                    "relevanz":      round(l["relevanz"], 3),
+                    "neugier_boost": round(l.get("neugier_boost", 0), 3),
+                    "register":      round(l.get("register", 1.0), 2),
+                }
+                for l in wissensluecken
+            ],
+            "strategie_aktiv":     strategie_aktiv,
+            "korridor_verstoesse": korridor_verstoesse,
         },
-    }
+    )
 
     return state
