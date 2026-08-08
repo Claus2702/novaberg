@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Konzept — Kalibrierung und Messung der Stellschrauben
-**Stand:** 8. August 2026
+**Stand:** 7. August 2026
 **Bezug:** `novaberg-haltungsraum_k.md`, `novaberg-charakter-rad-messreihe_k.md`, `novaberg-charakter-resonanz_k.md`, `novaberg-convention-abgeleitete-werte.md`
 
 ---
@@ -126,7 +126,7 @@ Eine Stellschraube wird nicht verstellt, bevor drei Zeilen geschrieben sind:
 
 Der Korridor aus §4 schützt vor der einen Hälfte des Problems: Er verhindert, dass man nachträglich für gut befindet, was herauskam. Er verhindert nicht die andere Hälfte — dass am Ende dieselbe Zahl den Erfolg belegt, gegen die eingestellt wurde. Diese Zahl misst dann, wie gut kalibriert wurde, und nicht, was das System leistet.
 
-**Entschieden am 08.08.2026, vor dem ersten Dreh an der Destillation.**
+**Entschieden am 07.08.2026, vor dem ersten Dreh an der Destillation.**
 
 ### Die Kalibriermenge ist benannt und abgeschlossen
 
@@ -140,7 +140,7 @@ Sie **wächst nicht**. Ein siebter Bogen, der zur Kalibrierung erhoben wird, geh
 
 Die 64,8 % der Blindtest-Reihe sind mit dieser Entscheidung als **Beleg** verbraucht, sobald die erste Schraube an der Destillation sich bewegt. Was von ihnen bleibt, ist der **Ausgangsstand**: die Trennschärfe des unkalibrierten Apparats auf der Kalibriermenge, gemessen am 06.08.2026. In dieser Rolle bleibt die Zahl gültig und wird gebraucht — ohne sie ist später keine Richtung ablesbar.
 
-**Und sie ist ungenauer, als sie aussieht.** Nachgerechnet am 08.08.2026 auf demselben Material:
+**Und sie ist ungenauer, als sie aussieht.** Nachgerechnet am 07.08.2026 auf demselben Material:
 
 | Rechnung | Ergebnis |
 |---|---|
@@ -171,18 +171,68 @@ Der Binomialtest zählt jedes Urteil als eigenen Fall. Das sind sie nicht: Alle 
 | Personas | halbe Breite des Intervalls |
 |---|---|
 | 6 | ±19 Punkte |
-| 12 | ±13 Punkte |
+| **12** | **±13 Punkte** |
 | 20 | ±10 Punkte |
 
-**Der Preis in Maschinenzeit ist nicht die Grenze.** Die sechs Bögen kosteten zusammen **2,65 Stunden** reine Turn-Zeit (gemessen am 08.08.2026 aus den Laufdateien, 26,5 Minuten je Bogen im Mittel). Zwölf kosten eine Nacht. Die Grenze ist das **Schreiben**: zwölf Charaktere mit je 30 gefüllten Turns, Fakt A, Fakt B, Peak, Bruch und Meinungssonde.
+**Entschieden am 07.08.2026: zwölf.** Die sechs vorhandenen Bögen kosteten zusammen **2,65 Stunden** reine Turn-Zeit (gemessen aus den Laufdateien, 26,5 Minuten je Bogen im Mittel); zwölf frische kosten das Doppelte, und zwar **je Arm** — siehe unten.
+
+### Was gepaart heißt: zwei Läufe, nicht eine Neudestillation
+
+Hier steckt eine Falle, die beim Entwurf beinahe stehen geblieben wäre. Die Destillation ist eine reine Funktion auf gespeicherten Einträgen — daraus folgt aber **nicht**, dass eine geänderte Einstellung auf den alten Bögen nachgerechnet werden kann.
+
+> **Der Blindtest beurteilt Novas Antworten, nicht ihre Profile.** Und ihre Antworten hingen zur Laufzeit an dem Profil, das damals in ihrem Prompt stand. Eine neue Destillation erzeugt neue Profile — die alten Antworten hat sie nicht erzeugt.
+
+Ein gepaarter Vergleich verlangt deshalb **zwei Läufe derselben geschriebenen Turns**, einen je Einstellung. Gepaart wird über das **Skript**, nicht über die Kennung: Jeder Arm bekommt eigene Kennungen, sonst trägt der zweite Lauf das Gedächtnis des ersten.
+
+**Und daraus folgt die Reihenfolge.** Beide Arme laufen **unmittelbar nacheinander**, mit der Einstellung als einzigem Unterschied dazwischen. Ein Basisarm, der Wochen vor dem Vergleichsarm erhoben wurde, trägt jede Änderung mit, die in der Zwischenzeit am System vorgenommen wurde — und die Differenz mischt dann Ursachen, die niemand mehr trennen kann.
+
+### Für den gepaarten Teil gilt die Umfangsregel umgekehrt
+
+Für die absolute Quote kaufen mehr Urteile je Persona nichts, weil die Streuung zwischen Personas dominiert. Für die **Differenz** je Persona ist es umgekehrt: Der Personeneffekt kürzt sich heraus, übrig bleibt Urteilsrauschen — und das sinkt mit der Zahl der Urteile.
+
+**Dort liegt Reserve, die bisher nicht benutzt wurde.** Die Blindtest-Reihe vom 06.08.2026 nutzte **6 Turn-Indizes** je Personenpaar und damit **90 Fälle je Arm**; der Bestand trägt 25 verwendbare Indizes und damit **375 je Arm** — ein Vierfaches, das nur Modellzeit kostet und keinen einzigen neuen Bogen.
+
+> **Wie viel von den ±15 Punkten Personenstreuung ist und wie viel Urteilsrauschen, entscheidet, ob zwölf Bögen reichen.** Diese Zerlegung ist auf der Kalibriermenge zu haben, ohne einen neuen Bogen, und sie gehört vor das Schreiben der zwölf.
+
+**Die Grenze bleibt das Schreiben:** zwölf Charaktere mit je 30 gefüllten Turns, Fakt A, Fakt B, Peak, Bruch und Meinungssonde.
+
+### Die Sektorenbelegung der zwölf — festgeschrieben vor dem ersten Dreh
+
+Die Slots stehen, die Charaktertexte folgen. Genau diese Reihenfolge ist der Punkt: Wer die Charaktere entwirft, nachdem er weiß, welche Sorte die neue Destillation gut trifft, hat die Menge kalibriert statt validiert.
+
+| Slot | Plutchik-Schwerpunkt | Arousal | Warum dieser Slot |
+|---|---|---|---|
+| **V1** | 1 Freude + 2 Zuversicht | hoch | warmer Pol A |
+| **V2** | 2 Zuversicht + 1 Freude | niedrig | warmer Pol B — **derselbe Sektor, andere Erregung** |
+| **V3** | 1 Freude + 8 Neugier | mittel | warmer Pol C — **der Zusammenfall wird absichtlich nachgebaut** |
+| **V4** | 7 Ärger + 6 Ekel | hoch | die im Bestand unbesetzte Ecke |
+| **V5** | 6 Ekel + 5 Trauer | mittel | |
+| **V6** | 3 Angst + 4 Überraschung | schwankend | |
+| **V7** | 3 Angst + 5 Trauer | niedrig | |
+| **V8** | 4 Überraschung + 8 Neugier | hoch | |
+| **V9** | 5 Trauer + 2 Zuversicht | niedrig | |
+| **V10** | 8 Neugier + 7 Ärger | hoch | |
+| **V11** | 7 Ärger + 1 Freude | mittel | Spott, Triumph — die gemischte Ecke |
+| **V12** | neutral, flache Kurve | durchgehend niedrig | **Kontrollperson, läuft zuerst** |
+
+**Alle acht Plutchik-Sektoren sind belegt, und drei Slots liegen im warmen Feld.** Das ist Absicht und nicht Redundanz: Der bekannte Defekt des Apparats ist genau dort — ein starker warmer Pol und zwei schwächere Kopien. Eine Validierungsmenge mit einer warmen Person kann die Verbesserung nicht zeigen, für die kalibriert wird. **Drei warme Personen, die auseinandergehalten werden müssen, sind der harte Fall**, und der gehört in die Menge, bevor jemand weiß, wie er ausgeht.
+
+**Die Kontrollperson läuft zuerst.** Eine flache Nutzerkurve misst nicht mehr, was sie soll, wenn Novas eigener Zustand schon die Spuren von elf emotionalen Läufen trägt.
 
 ### Die billige Vorfrage vor dem teuren Schreiben
 
-Bevor zwölf Bögen entstehen, ist auf der Kalibriermenge **umsonst** zu beantworten, wie viele es sein müssen. Die Destillation ist eine reine Funktion auf gespeicherten Einträgen: Alt und neu lassen sich auf denselben sechs Bögen rechnen, und die Trennschärfe je Persona lässt sich **paarweise** vergleichen.
+Bevor zwölf Bögen geschrieben werden, ist auf der Kalibriermenge **ohne einen neuen Bogen** zu beantworten, woraus die ±15 Punkte eigentlich bestehen.
 
-Was dabei herauskommt, ist die Streuung der **Differenz** je Persona — und die ist regelmäßig deutlich kleiner als die Streuung der Quoten selbst, weil die Schwierigkeit einer Persona sich herauskürzt. Sie, nicht die 23,5 Punkte, bestimmt den nötigen Umfang.
+Zwei Quellen speisen sie, und sie verlangen entgegengesetzte Abhilfen:
 
-**Diese Vorfrage ist selbst Kalibrierarbeit und läuft auf der Kalibriermenge.** Ihr Ergebnis ist eine Stichprobengröße, kein Beleg.
+| Quelle | Abhilfe |
+|---|---|
+| **Streuung zwischen Personas** — die eine ist leichter zuzuordnen als die andere | mehr Personas |
+| **Urteilsrauschen** — dasselbe Paar, anderer Turn-Index, anderes Urteil | mehr Turn-Indizes je Persona |
+
+Die vorhandene Reihe kann das nicht trennen, weil sie nur 6 von 25 verfügbaren Indizes benutzt hat. Bei voller Ausschöpfung wird jede Personenquote aus dem Vierfachen an Urteilen gebildet: Bleibt die Streuung zwischen den Personas dann bestehen, ist sie echt und zwölf Bögen sind die richtige Antwort. Schrumpft sie, war ein Teil davon Rauschen — und ein Teil der Auflösung ist billiger zu haben als durch geschriebene Charaktere.
+
+**Diese Erhebung ist Kalibrierarbeit und läuft auf der Kalibriermenge.** Ihr Ergebnis ist eine Stichprobengröße, kein Beleg.
 
 ### Die vier Regeln beim Validieren
 
@@ -269,12 +319,53 @@ Danach gilt für jede Reihe: **erst die Stichprobe prüfen, dann messen.** Ein M
 |---|---|
 | **ZIEL** | Es existiert eine Menge frischer Gesprächsbögen mit neuen Charakteren, auf der zum Zeitpunkt der Kalibrierung nicht gemessen wurde und auf der die Trennschärfe je Persona erhoben werden kann. |
 | **TEST** | Der Bogen ist strukturgleich zum Kalibrierbogen — dieselben Phasen, dieselben Sonden an denselben Turn-Nummern. Weicht er ab, vergleicht die Validierung zwei Anordnungen statt zwei Einstellungen. |
-| **MESSUNG** | Trennschärfe je Persona, alte und neue Einstellung auf **denselben** Bögen, paarweise je Persona verglichen. Berichtet werden das Mittel, das Intervall über ganze Personas und die **Zahl der bisherigen Validierungsläufe**. |
+| **MESSUNG** | Trennschärfe je Persona, alte und neue Einstellung als **zwei Läufe derselben geschriebenen Turns**, unmittelbar nacheinander, paarweise je Skript verglichen. Berichtet werden das Mittel, das Intervall über ganze Personas und die **Zahl der bisherigen Validierungsläufe**. |
 | **Gegenprobe** | Der Kontrollarm mit dem Profil einer Unbeteiligten muss auf dem Zufall landen. Tut er das nicht, misst die Anordnung ihre eigene Bauart und nicht die Einstellung. |
+| **Bezugspunkt** | Je Bogen wird der Zustand der Langzeitschicht erhoben — Zahl der Turns mit belegter Schicht und mittlere Resonanz — und gegen das Gegenstück im anderen Arm gestellt. **Weicht ein Bogen ab, ist er zu wiederholen.** |
 
-**Die Vorbedingung ist billig und steht auf der Kalibriermenge** (§5): die Streuung der paarweisen Differenz je Persona. Sie bestimmt, wie viele Bögen geschrieben werden müssen; ohne sie ist der Umfang geraten.
+**Jeder Arm bekommt eigene Kennungen.** Zwei Läufe unter derselben Kennung sind kein Vergleich: Der zweite trägt das Gedächtnis des ersten.
 
-**Reihenfolge:** B1 vor allem anderen. B4 vor jedem Differenzweg — ein Delta ohne zweiten Pol ist eine Beschreibung des Gegenübers. **B5 vor jeder Aussage nach außen** — und der Bauplan von B5 vor dem ersten Dreh, nicht erst vor dem ersten Bogen.
+### Der Bezugspunkt ist Teil des Maßstabs, nicht Kulisse
+
+`anker_retrieval()` speist den Thinker und die Gesprächsvektor-Berechnung aus `lzg_knoten`. Eine Persona mit Knoten läuft damit gegen einen **anderen Apparat** als eine ohne — der Zustand der Langzeitschicht ist eine Bedingung des Versuchs und kein Nebenumstand.
+
+**Am Basisarm vom 07./08.08.2026 war er nicht konstant**, gemessen an `has_lzg` und `lzg_resonanz_count` über alle 360 Turns:
+
+| | |
+|---|---|
+| Bögen mit belegter Langzeitschicht | **9 von 12** (22 bis 29 der je 30 Turns) |
+| Bögen ohne — in **keinem** Turn belegt | **3 von 12** |
+| Resonanz je Turn, dort wo belegt | 0,000 bis **0,379** im Mittel, Maximum 3 |
+| LZG-Knoten je Persona | **0 bis 33** |
+
+Und er wanderte **innerhalb** eines Bogens: Die Knoten entstanden während des Laufs, ein früher Turn hatte also weniger als ein später.
+
+> **Der Schaden blieb klein, weil der Bezugspunkt fast überall derselbe war: null.** Selbst bei belegter Schicht kam im Mittel weniger als ein halber Eintrag je Turn an. Das ist ein glücklicher Umstand und kein Verfahren — beim nächsten Mal kann derselbe Fehler teuer sein, und dann steht die Zahl da, ohne dass jemand sie einordnen kann.
+
+**Daraus zwei Sätze, die für jede Messreihe dieses Projekts gelten:**
+
+> **Ein Bezugspunkt darf irgendwo liegen — er darf nur nicht wandern.** Ändert er sich innerhalb einer Reihe oder unterscheidet er sich zwischen zwei Reihen, wird nichts verglichen und nichts gemessen.
+
+> **Und er wird mitgeschrieben, nicht erinnert.** Eine Reihe ohne festgehaltenen Bezugspunkt ist über eine Kalibrierung hinweg nicht auswertbar, weil später nicht mehr trennbar ist, ob sich das Gemessene bewegt hat oder seine Voraussetzung.
+
+**Die Vorbedingung ist billig und steht auf der Kalibriermenge** (§5): die Zerlegung der Streuung in Personenanteil und Urteilsrauschen, gewonnen durch volle Ausschöpfung der vorhandenen Bögen. Sie bestimmt, wie viele Bögen geschrieben werden müssen; ohne sie ist der Umfang geraten.
+
+### B6 — Die Schwelle der Langzeitschicht
+
+| Zeile | Inhalt |
+|---|---|
+| **ZIEL** | `GRAVITATIONS_SCHWELLE` steht auf einem Wert, bei dem die Langzeitschicht im Betrieb überhaupt etwas beiträgt — beziffert als Anteil der Turns mit Resonanz und als Zahl der durchgelassenen Einträge. |
+| **TEST** | Über einen vorhandenen Korpus gerechnet: Die Zahl der Turns mit Resonanz > 0 steigt mit sinkender Schwelle und ist bei der gewählten Einstellung von null verschieden. Bleibt sie null, trennt die Schwelle nichts — sie schaltet ab. |
+| **MESSUNG** | Die Verteilung der Kandidaten je Schwelle über den Bestand, nicht die Auslösequote (§3.3). Zusätzlich, was durchkommt: Einträge je Turn im Mittel und im Maximum. |
+| **Gegenprobe** | Schwelle auf 1.0: Die Resonanz muss überall auf null fallen. Tut sie das nicht, wird an anderer Stelle etwas durchgelassen, als die Schwelle vorgibt. |
+
+**Warum das vor B5 steht:** Am Basisarm kam bei belegter Langzeitschicht im Mittel **weniger als ein halber Eintrag je Turn** an, meist exakt null — bei einer Schwelle von 0.40. Dasselbe zeigte P10 am produktiven Paar mit **0,0 % gegen 20,0 %** der Kurzzeitschicht.
+
+> **Eine Validierung der Langzeitschicht bei dieser Einstellung prüft eine Leitung, durch die nichts fließt.** Sie liefert dann eine Null, die eine Eigenschaft der Schwelle ist und nicht des Gedächtnisses — und die nächste Sitzung liest sie als Aussage über das System.
+
+Das ist dieselbe Form wie beim Cluster-Faktor: Wirkung belegt, Amplitude auf einen Wert eingestellt, bei dem sie kaum sichtbar wird (§3.2).
+
+**Reihenfolge:** B1 vor allem anderen. B4 vor jedem Differenzweg — ein Delta ohne zweiten Pol ist eine Beschreibung des Gegenübers. **B6 vor B5**, wenn die Validierung eine Aussage über die Langzeitschicht tragen soll. **B5 vor jeder Aussage nach außen** — und der Bauplan von B5 vor dem ersten Dreh, nicht erst vor dem ersten Bogen.
 
 ---
 
@@ -289,9 +380,13 @@ Danach gilt für jede Reihe: **erst die Stichprobe prüfen, dann messen.** Ein M
 
 ## 10. Was offen ist
 
-- **Die Validierungsmenge existiert nicht.** §5 legt ihren Bauplan fest und ihren Umfang als Kriterium; geschrieben ist kein einziger Bogen. Bis der erste steht, ist jede Zahl dieses Projekts über Charakterbildung eine Zahl auf der Kalibriermenge — und darf nur so berichtet werden.
-- **Die Sektorenbelegung der Validierungscharaktere ist nicht geschrieben**, und sie muss vor dem ersten Dreh an der Destillation stehen (§5). Danach ist sie eine Auswahl unter Kenntnis der Zwischenstände.
-- **Die Streuung der paarweisen Differenz je Persona ist unbekannt.** Sie bestimmt den nötigen Umfang der Validierungsmenge und ist auf der Kalibriermenge umsonst zu erheben (§5) — solange sie fehlt, ist die Zahl der zu schreibenden Bögen geraten.
+- ~~**Die Sektorenbelegung der Validierungscharaktere ist nicht geschrieben**, und sie muss vor dem ersten Dreh an der Destillation stehen (§5).~~ → **Erledigt am 07.08.2026.** Zwölf Slots, alle acht Sektoren belegt, drei im warmen Feld, Kontrollperson zuerst — festgeschrieben, bevor an der Destillation etwas bewegt wurde.
+- **Die Validierungsmenge trägt erst einen Arm.** Der Basisarm ist erhoben; der Vergleichsarm entsteht erst mit der geänderten Einstellung. **Bis dahin ist jede Zahl dieses Projekts über Charakterbildung eine Zahl auf der Kalibriermenge** — und darf nur so berichtet werden. Auf dem Basisarm wird bis zum Vergleich **nicht** blind gemessen: Wer die Zahl der Validierungsmenge kennt, bevor er kalibriert, hat sie als Beleg verbraucht.
+- **Warum die drei Profile auf der Kalibriermenge leer blieben, ist offen.** Die bisherige Begründung — eine frische Persona habe kein Langzeitgedächtnis — ist am Bestand widerlegt: Zwei der sechs Personas trugen 82 und 38 Knoten. Die Profile waren leer, die Ursache ist unbekannt, und sie betrifft drei von fünf Profilen.
+- **Der Basisarm trägt einen ausgewürfelten Gedächtnisstand.** Über zwölf Bögen lief das Promotionsfenster bei keinem leer — 4 bis 59 Aufträge blieben offen und wurden danach verworfen. Die Zahl der LZG-Knoten streut von 0 bis 33 **ohne Bezug zur Persona**, und drei der fünf Profile lesen genau diese Tabelle. **Für den gepaarten Vergleich ist das eine zweite Quelle von Unterschied neben der Einstellung**, und sie ist unsichtbar, weil sie wie ein Personenmerkmal aussieht. Vor dem Vergleichsarm muss das Fenster **leerlaufen statt ablaufen**; sonst misst die Differenz zum Teil, wie weit eine Warteschlange in fünf Minuten kam.
+
+- **Ob der Basisarm bis zum Vergleichsarm trägt, ist offen.** §5 verlangt beide Arme unmittelbar nacheinander. Liegt zwischen ihnen eine Änderung am System, die über die kalibrierte Einstellung hinausgeht, ist der Basisarm zu wiederholen — und das ist eine Nacht, keine Rechnung.
+- **Die Zerlegung der Streuung in Personenanteil und Urteilsrauschen ist unvollständig erhoben.** Sie entscheidet, ob zwölf Bögen der richtige Umfang sind, läuft auf der Kalibriermenge und braucht keinen neuen Bogen (§5).
 - **Der Erwartungskorridor ist für keine einzige Größe geschrieben.** Bis das für mindestens eine Klasse vorliegt, ist §4 eine Absicht.
 - **Die Entscheidung zwischen Sättigung und kleineren Beiträgen** (§3.2) steht seit dem 31.07.2026 aus und blockiert den Haltungsraum-Prompt.
 - **Ob die Lupe auf Ähnlichkeiten überhaupt Entscheidungen kippt**, ist unbekannt — B3 misst es, bevor sie eingeführt wird.
@@ -302,6 +397,8 @@ Danach gilt für jede Reihe: **erst die Stichprobe prüfen, dann messen.** Ein M
 
 ## Versionshistorie
 
-- **v0.3 — 08.08.2026:** **§5 neu — Kalibrieren und Validieren**, entschieden vor dem ersten Dreh an der Destillation. Die sechs Bögen vom 02./03.08.2026 sind **Kalibriermenge** und werden es bleiben; belegt wird ausschließlich auf frischen Bögen mit neuen Charakteren. Der naheliegende Ausweg — auf drei Personas kalibrieren, auf den anderen drei validieren — ist ausdrücklich ausgeschlossen: Die Einzelquoten der sechs sind bekannt, und wer sie kennt, kann keine unvoreingenommene Hälfte mehr bilden. Die Folgenummern §5 bis §9 sind zu §6 bis §10 geworden; §3.2 und §4 behalten ihre Nummern. **Dabei ist die Trennschärfe nachgerechnet worden, und das Ergebnis hat den Zuschnitt geändert:** Die 88 Urteile der Reihe verteilen sich auf sechs Personas mit Quoten von 35,7 % bis 100 %, und diese Streuung ist größer, als Losen sie erzeugt (Permutation, p = 0,010). Der Binomialtest, der zu p = 0,007 führte, zählt jedes Urteil als eigenen Fall; über ganze Personas gezogen steht dieselbe Zahl bei **64,8 % mit einem Intervall von 49,4 % bis 80,0 %**. Der Befund hält, aber eine Kalibrierung um zehn Punkte bewegt sich innerhalb des Intervalls — deshalb bemisst §5 den Umfang der Validierungsmenge in **Personas** und nicht in Urteilen. Die Gegenprobe steht im Kontrollarm derselben Reihe: halb so breites Intervall, Zufall eingeschlossen.
+- **v0.5 — 08.08.2026:** **Der Bezugspunkt ist als Teil des Maßstabs aufgenommen** (§5), nachdem die Abnahme des Basisarms zeigte, dass er wanderte: `anker_retrieval()` speist Thinker und Gesprächsvektor aus `lzg_knoten`, und über die zwölf Bögen war die Schicht in **neun** Fällen belegt und in **drei** in keinem einzigen Turn — dazu innerhalb der Bögen wandernd, weil die Knoten während des Laufs entstanden. Daraus die zwei bindenden Sätze: **Ein Bezugspunkt darf irgendwo liegen, er darf nur nicht wandern** — und **er wird mitgeschrieben, nicht erinnert.** B5 bekommt die Zeile **Bezugspunkt** als Pflicht: Je Bogen wird der Zustand der Langzeitschicht gegen sein Gegenstück im anderen Arm gestellt, und ein abweichender Bogen wird wiederholt. **B6 neu — die Schwelle der Langzeitschicht**, und **vor B5**, wenn die Validierung eine Aussage über das Langzeitgedächtnis tragen soll: Bei belegter Schicht kam im Mittel weniger als ein halber Eintrag je Turn an, meist exakt null; eine Validierung bei `GRAVITATIONS_SCHWELLE = 0.40` prüft eine Leitung, durch die nichts fließt. **Der Schaden am Basisarm blieb klein, weil der Bezugspunkt fast überall derselbe war: null** — ein glücklicher Umstand und kein Verfahren. Neu unter §10: Die Begründung für die drei leeren Profile der Kalibriermenge ist am Bestand widerlegt (zwei Personas trugen 82 und 38 Knoten), die Ursache ist wieder offen.
+- **v0.4 — 07.08.2026:** **Die Validierungsmenge ist auf zwölf festgelegt und ihre Sektorenbelegung geschrieben** — vor dem ersten Dreh, damit die Menge später noch validiert und nicht kalibriert. Alle acht Plutchik-Sektoren sind belegt, **drei Slots liegen im warmen Feld**: Der bekannte Zusammenfall des Apparats wird absichtlich nachgebaut, weil eine Menge mit einer warmen Person die Verbesserung nicht zeigen könnte, für die kalibriert wird. Die Kontrollperson läuft zuerst. **Dabei ist eine Falle korrigiert worden, die in v0.3 noch stand:** Aus „die Destillation ist eine reine Funktion auf gespeicherten Einträgen" folgt **nicht**, dass eine geänderte Einstellung auf den alten Bögen nachgerechnet werden kann — der Blindtest beurteilt Novas **Antworten**, und die hingen zur Laufzeit an dem Profil, das damals in ihrem Prompt stand. Ein gepaarter Vergleich verlangt deshalb **zwei Läufe derselben geschriebenen Turns**, mit eigenen Kennungen je Arm und unmittelbar nacheinander; ein Basisarm, der Wochen vor dem Vergleichsarm erhoben wurde, trägt jede zwischenzeitliche Änderung mit. Damit kostet die Menge das Doppelte — zwölf Bögen **je Arm**. Für den gepaarten Teil gilt die Umfangsregel außerdem umgekehrt: Der Personeneffekt kürzt sich heraus, übrig bleibt Urteilsrauschen, und das sinkt mit der Zahl der Urteile. Dort liegt ungenutzte Reserve — die Reihe vom 06.08. benutzte 6 Turn-Indizes je Paar, der Bestand trägt 25.
+- **v0.3 — 07.08.2026:** **§5 neu — Kalibrieren und Validieren**, entschieden vor dem ersten Dreh an der Destillation. Die sechs Bögen vom 02./03.08.2026 sind **Kalibriermenge** und werden es bleiben; belegt wird ausschließlich auf frischen Bögen mit neuen Charakteren. Der naheliegende Ausweg — auf drei Personas kalibrieren, auf den anderen drei validieren — ist ausdrücklich ausgeschlossen: Die Einzelquoten der sechs sind bekannt, und wer sie kennt, kann keine unvoreingenommene Hälfte mehr bilden. Die Folgenummern §5 bis §9 sind zu §6 bis §10 geworden; §3.2 und §4 behalten ihre Nummern. **Dabei ist die Trennschärfe nachgerechnet worden, und das Ergebnis hat den Zuschnitt geändert:** Die 88 Urteile der Reihe verteilen sich auf sechs Personas mit Quoten von 35,7 % bis 100 %, und diese Streuung ist größer, als Losen sie erzeugt (Permutation, p = 0,010). Der Binomialtest, der zu p = 0,007 führte, zählt jedes Urteil als eigenen Fall; über ganze Personas gezogen steht dieselbe Zahl bei **64,8 % mit einem Intervall von 49,4 % bis 80,0 %**. Der Befund hält, aber eine Kalibrierung um zehn Punkte bewegt sich innerhalb des Intervalls — deshalb bemisst §5 den Umfang der Validierungsmenge in **Personas** und nicht in Urteilen. Die Gegenprobe steht im Kontrollarm derselben Reihe: halb so breites Intervall, Zufall eingeschlossen.
 - **v0.2 — 07.08.2026:** **B1 ist gefahren, und einer der fünf offenen Punkte ist damit erledigt** — der Rauschboden des Modells liegt bei 0.820, die Gegenprobe ohne Charakterblock bei 0.843, der Bestand bei 0.662 und die Obergrenze bei 0.464. Der Apparat schöpft rund **44 %** der Strecke aus; der Verlust sitzt in der Destillation, nicht in der Übertragung (§1). An die Stelle des erledigten Punktes tritt ein engerer: **Die Übertragung hängt am Reiz** — 80 % ausgeschöpft bei Beziehungsgehalt gegen 41 % bei einer Faktenfrage —, und damit ist offen, für welche Reiz-Mischung ein Korridor überhaupt gelten soll. §3.3 um eine gemessene Beobachtung erweitert, die beim Entwurf fehlte: **Eine Schwelle wirkt auch über die Größe der Trefferliste**, und die LZG-Liste ist bei drei Einträgen gedeckelt und in jedem sechsten Turn leer.
 - **v0.1 — 06.08.2026:** Erstfassung. Anlass ist die Profilähnlichkeits-Messung desselben Tages: Sechs unverwandte Menschen liegen in ihrer Beziehungsprosa bei 0.774, Novas sechs Selbstprofile bei 0.817, dieselben Menschen in ihren Themen bei 0.548 — dieselbe Skala, dasselbe Material, drei Lagen. Die tragende Unterscheidung des Konzepts (§2) folgt daraus: Eine gestreckte Skala ist kein Befund, und wer den Maßstab mit dem Gemessenen wandern lässt, kann später beides nicht mehr trennen. Die sechs Klassen in §3 sind aus dem Bestand gelesen, nicht entworfen.

@@ -1983,7 +1983,7 @@ Beide Räder haben eine Nabe — den Wert ohne jede Ausprägung — und das Erge
 
 ---
 
-## Chat 131 (08.08.2026) — Die Trennung von Kalibrieren und Validieren, und eine Zahl, die ungenauer ist als ihr p-Wert ✅
+## Chat 131 (07.08.2026) — Die Trennung von Kalibrieren und Validieren, und eine Zahl, die ungenauer ist als ihr p-Wert ✅
 
 Kein Produktivcode. Eine Entscheidung, die vor dem ersten Dreh an der Destillation fallen musste — und die Nachrechnung der Zahl, gegen die gedreht werden sollte, hat ihren Zuschnitt geändert.
 
@@ -2018,6 +2018,31 @@ Die Trennschärfe war als nächstes Kalibrierziel vorgesehen. Vor dem ersten Dre
 **Und die Zahl der Bögen ist auf der Kalibriermenge umsonst zu bestimmen:** Die Destillation ist eine reine Funktion auf gespeicherten Einträgen, alt und neu laufen auf denselben sechs Bögen, und die Streuung der **paarweisen Differenz** je Persona — nicht die 23,5 Punkte zwischen den Quoten — bestimmt den nötigen Umfang.
 
 **Umfang:** kein Produktivcode, keine DDL, Suite nicht gelaufen. Zwei Doku-Änderungen im Repositorium, dazu die Festlegung `F-KAL-1` im Register.
+
+### Der Bezugspunkt wanderte, und eine Begründung von vorgestern fällt
+
+Bei der Abnahme des Basisarms fiel auf, dass die Langzeitschicht über die Bögen hinweg **ungleich belegt** war. `anker_retrieval()` speist Thinker und Gesprächsvektor aus `lzg_knoten` — eine Persona mit Knoten läuft damit gegen einen anderen Apparat als eine ohne.
+
+Gemessen über alle 360 Turns des Basisarms, an `has_lzg` und `lzg_resonanz_count`:
+
+| | |
+|---|---|
+| Bögen mit belegter Langzeitschicht | **9 von 12** (22 bis 29 der je 30 Turns) |
+| Bögen ohne — in keinem Turn belegt | **3 von 12** |
+| Resonanz je Turn, dort wo belegt | 0,000 bis **0,379** im Mittel |
+| LZG-Knoten je Persona | **0 bis 33** |
+
+Und er wanderte **innerhalb** der Bögen: Die Knoten entstanden während des Laufs, ein früher Turn hatte weniger als ein später.
+
+> **Ein Bezugspunkt darf irgendwo liegen — er darf nur nicht wandern.** Ändert er sich innerhalb einer Reihe oder unterscheidet er sich zwischen zwei Reihen, wird nichts verglichen und nichts gemessen.
+
+**Der Schaden blieb klein, weil der Bezugspunkt fast überall derselbe war: null.** Selbst bei belegter Schicht kam im Mittel weniger als ein halber Eintrag je Turn an — bei einer Schwelle von 0.40, und in derselben Größenordnung wie die P10-Messung am produktiven Paar (0,0 % gegen 20,0 %).
+
+- ✅ **Der Bezugspunkt je Bogen ist erhoben und dem Basisarm beigelegt** — ohne ihn ist die Reihe über eine Kalibrierung hinweg nicht auswertbar.
+- ✅ **B5 bekommt die Gleichheitsprüfung als Pflichtzeile:** Je Bogen wird der Zustand der Langzeitschicht gegen sein Gegenstück im anderen Arm gestellt; weicht er ab, wird der Bogen wiederholt.
+- ✅ **B6 neu — die Schwelle der Langzeitschicht**, mit ZIEL/TEST/MESSUNG/Gegenprobe, und **vor B5**, wenn die Validierung eine Aussage über das Langzeitgedächtnis tragen soll. Eine Validierung bei 0.40 prüft eine Leitung, durch die nichts fließt.
+
+**Und eine Begründung aus dem Eintrag zu Chat 130 fällt damit:** Dort steht, die drei leeren Profile erklärten sich daraus, dass alle drei `lzg_knoten` lesen „und eine frische Persona kein Langzeitgedächtnis hat". **`konrad` trug 82 Knoten und `leon` 38**, entstanden während ihrer Bögen; die übrigen vier keinen. Der Satz stimmt für vier von sechs und wird als allgemeine Erklärung gelesen. Die Profile waren leer — die Ursache ist damit wieder offen.
 
 ### Was dabei abfiel
 
