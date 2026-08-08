@@ -113,6 +113,20 @@ Die Begründung stimmt für vier von sechs Personas und stand als **allgemeine**
 
 ---
 
+### Block 31.07., Nachtrag (08.08.2026)
+
+#### PROMPT-DOPPELTE-FORMULIERUNG
+
+**Befund (2026-07-31).** `_ei_mikro_anweisung()` Punkt 7 und der `[KOMMUNIKATION]`-Block in `graph/nodes/responder.py` bilden beide dieselben fünf Werte auf Text ab, die Mikro-Fassung jeweils etwas länger: *„Der Nutzer haelt Distanz. Sachlich bleiben, nicht aufdraengen."* gegen *„Der Nutzer haelt Distanz. Sachlich bleiben."* Bei allen fünf Werten dasselbe Muster. Zwei Formulierungen derselben Größe im selben Prompt kosten Kontext und lassen offen, welche gilt.
+
+**Herkunft des Eintrags.** Er stand in der Fundliste **im selben Aufzählungspunkt** wie ein Fremddefekt zu LangGraph — zwei Funde unter einem Datum, in einer Zeile. Beim Klassifizieren am 08.08.2026 wanderte er dadurch zunächst mit an einen Ort für Fremddefekte und wurde erst beim Nachlesen getrennt. **Ein Aufzählungspunkt mit zwei Funden wird einmal gezählt und einmal klassifiziert** — der zweite Fund verschwindet lautlos in der Sorte des ersten.
+
+**Was fertig waere.** Eine der beiden Formulierungen bleibt, oder beide sind ausdrücklich als verschiedene Größen benannt.
+
+**Prioritaet:** niedrig im Aufwand — sie kosten Kontext und lassen offen, welche gilt.
+
+---
+
 ### Block 31.07. — fünf Einträge (08.08.2026)
 
 Vier Doku- und Namensfunde, einer davon eine offene Prüfung am Initiative-Rad.
