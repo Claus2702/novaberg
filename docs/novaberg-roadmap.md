@@ -2009,6 +2009,20 @@ Bauteil B1 aus `novaberg-erreichbarkeit_k.md`. Der Auftrag war, eine Ablesung zu
 
 **Neu im Register:** `F-LAGE-1`.
 
+### B2 — die Ist-Verteilung, und aus zwei Teilmengen wurden vier
+
+Erhoben über 628 Ablesungen. Die Zerlegung geht auf, und die Gegenprobe des Bauteils ist am Bestand erfüllt statt konstruiert: vier Kennungen haben nie ein Rad geladen.
+
+**Aus zwei Teilmengen wurden vier.** Der Bestand kennt drei Radzustände, und ein Vorgabe-Rad rechnet sich genauso glatt wie ein destilliertes, sagt aber nichts über diesen Charakter — es ist der gefährlichere der beiden Fälle, weil das fehlende wenigstens eine Fehlerzeile erzeugt. Die vierte Teilmenge ist „keine Ablesung"; sie einer der beiden zuzuschlagen wäre genau der Fehler, den B1 behoben hat.
+
+> **Der Basisarm der Validierungsmenge fuhr 80 von 360 Turns mit destilliertem Charakter-Rad** — 70 gegen ein Vorgabe-Rad, 109 gegen keines, 101 ohne Ablesung. Das produktive Paar steht bei 107 von 113.
+
+Die Gegenläufigkeit der beiden Verteilungen bestätigt sich und ist schärfer als in der alten Tabelle: `schlachtfeld`, `werkstatt` und `feuerwerk` tragen produktiv 56,1 %, in den Bögen 8,5 %. Die alte Tabelle ist ersetzt — sie führte zehn der vierzehn Landschaften und ließ `paradox` weg, das in den Bögen häufiger vorkommt als `schlachtfeld`.
+
+**Eine Aussage vom Morgen wird dabei zurückgenommen.** Der Vorbehalt gegen „vier Landschaften nie betreten" gilt für die Bögen in voller Höhe, für das produktive Paar aber nicht: Dort fehlen 6 von 113 Ablesungen. Die sechs sind genau die Turns mit `distanz` und `meta` — die einzigen Kandidaten, die es gab —, aber sechs Turns entscheiden nichts. Für das produktive Paar ist „nie betreten" eine belastbare Aussage über 107 Turns.
+
+**Offen daraus:** Die Erhebung ist auf dem reparierten Gerät zu wiederholen, bevor B3 eine Zielverteilung setzt. Derselbe Lauf, nur mit Turns von nach der Reparatur.
+
 ---
 
 ## Chat 131 (07.08.2026) — Die Trennung von Kalibrieren und Validieren, und eine Zahl, die ungenauer ist als ihr p-Wert ✅

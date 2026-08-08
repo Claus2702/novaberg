@@ -69,6 +69,8 @@ Erhoben am 08.08.2026 über 720 Landschafts-Ablesungen aus zwölf Gesprächsbög
 
 **Aber die beiden Verteilungen sind fast gegenläufig:**
 
+> ~~Die Tabelle unten~~ → **Ersetzt am 08.08.2026 durch die Erhebung in §4b.** Sie führte zehn der vierzehn Landschaften und ließ `paradox`, `foyer`, `beichte` und `glut` weg, obwohl alle vier im Bestand vorkommen; ihre Nenner sind nicht nachvollziehbar. Die Aussage über die Gegenläufigkeit **bleibt** — sie wird von der Neuerhebung bestätigt und ist dort schärfer.
+
 | Landschaft | Bögen | produktives Paar |
 |---|---|---|
 | `kissenschlacht` | 22,4 % | 19,5 % |
@@ -131,6 +133,62 @@ Der Präzedenzfall steht in derselben Datei und im selben Konzept: Die Aufnahmeb
 
 ---
 
+## 4b. Die Ist-Verteilung (B2), getrennt nach Bedingung
+
+Erhoben am 08.08.2026 über **628 Ablesungen** vom 31.07. bis 08.08.2026 — alle `haltungsraum`-Zeilen im `pipeline_log`. Der Knoten schreibt je Turn genau eine Zeile, damit ist die Zeilenmenge die Turnmenge.
+
+**Die Zerlegung geht auf:** 628 = 628, kein Turn in zwei Teilmengen, keine Teilmenge außerhalb des Kanons.
+
+### Vier Teilmengen, nicht zwei
+
+Das Bauteil verlangt „mit Charakter-Rad" und „ohne". Der Bestand kennt drei Radzustände, und die Trennung ist keine Feinheit: **Ein Vorgabe-Rad rechnet sich genauso glatt wie ein destilliertes und sagt nichts über diesen Charakter.** Dazu die Menge ohne jede Ablesung — sie ist weder „mit" noch „ohne", sondern nicht gemessen.
+
+| Teilmenge | Anteil | zwölf Bögen | produktives Paar | übrige |
+|---|---|---|---|---|
+| mit Rad (destilliert) | 269 (42,8 %) | 80 | 107 | 82 |
+| mit Rad (Vorgabe) | 70 (11,1 %) | **70** | 0 | 0 |
+| ohne Rad | 139 (22,1 %) | 109 | 0 | 30 |
+| keine Ablesung | 150 (23,9 %) | 101 | 6 | 43 |
+
+> **Der Basisarm der Validierungsmenge fuhr zu drei Vierteln ohne destilliertes Charakter-Rad.** 80 von 360 Bogenturns (22,2 %) hatten eines; 70 rechneten gegen ein Vorgabe-Rad, 109 gegen keines, 101 wurden gar nicht abgelesen. Das produktive Paar steht bei 107 von 113.
+
+**Die Gegenprobe ist am Bestand erfüllt, nicht konstruiert:** Vier Kennungen — `sylvie`, `halina`, `odo`, `falle` — haben in ihrem gesamten Bestand **nie** ein Rad geladen. Bei ihnen füllt die Teilmenge „ohne" vollständig, wie das Bauteil es fordert.
+
+### Die Verteilung je Bestand
+
+Nur über die abgelesenen Turns. Was fehlt, steht in der Tabelle darüber.
+
+| Landschaft | zwölf Bögen (n=259) | produktives Paar (n=107) |
+|---|---|---|
+| `kissenschlacht` | 27,8 % | 20,6 % |
+| `bier` | 23,6 % | 7,5 % |
+| `wartezimmer` | 18,9 % | 3,7 % |
+| `paradox` | 5,0 % | 1,9 % |
+| `gewitter` | 4,6 % | **0 %** |
+| `schlachtfeld` | 3,9 % | **24,3 %** |
+| `foyer` | 3,5 % | 4,7 % |
+| `werkstatt` | 3,1 % | **21,5 %** |
+| `beichte` | 2,7 % | 3,7 % |
+| `glut` | 2,3 % | 1,9 % |
+| `schmollen` | 1,9 % | **0 %** |
+| `feuerwerk` | 1,5 % | **10,3 %** |
+| `nebel` | 0,8 % | **0 %** |
+| `regen` | 0,4 % | **0 %** |
+
+**Die Gegenläufigkeit aus §4 bestätigt sich und ist schärfer als dort:** `schlachtfeld`, `werkstatt` und `feuerwerk` tragen produktiv 56,1 % und in den Bögen 8,5 %.
+
+### Was diese Zahlen über die vier unbetretenen Landschaften sagen — und was nicht
+
+**Für die zwölf Bögen sind alle vierzehn belegt.** Auch `nebel` und `regen`, die dort je ein- bis zweimal vorkommen.
+
+**Für das produktive Paar bleiben vier bei null**, und das ist **nicht** durch den Gerätefehler erklärt: Dort fehlen nur 6 von 113 Ablesungen (5,3 %). Selbst wenn alle sechs in die kühlen Landschaften gefallen wären, blieben diese unter 6 %.
+
+> **Der Vorbehalt ist damit kleiner als am Morgen angenommen, aber er ist nicht weg.** Die sechs fehlenden Ablesungen sind genau die Turns mit `distanz` und `meta` — also die einzigen Kandidaten für `nebel`, `regen` und `schmollen`, die es überhaupt gab. Sechs Turns entscheiden nichts, aber sie sind nicht zufällig gewählt, und deshalb ist „nie betreten" für das produktive Paar eine belastbare Aussage über 107 Turns und keine über den Raum.
+
+**Für die Bögen bleibt der Vorbehalt in voller Höhe:** 28,1 % fehlende Ablesungen, davon der größere Teil auf der fernen Achsenhälfte. Eine Zielverteilung darf auf diesem Material nicht kalibriert werden.
+
+---
+
 ## 5. Die Zielverteilung — was begründbar ist und was nicht
 
 **Belastbar ist die Form, nicht die Zahl.** Aus der Affektforschung ist eine Rangfolge ableitbar: Zustände niedriger Erregung überwiegen im Alltag deutlich; hocherregte sind seltener und kürzer; negativ-hocherregte sind am seltensten und zugleich am folgenreichsten; und Wiederholung dämpft sich selbst, weil Gewöhnung eintritt.
@@ -178,7 +236,7 @@ Deshalb: kein Anteil davon in der Kalibrierung aus §5. Erschöpfung ist ein **Z
 
 **Nicht angefasst und weiterhin offen** (Zeilen in `novaberg-fundliste.md` vom 08.08.2026): die Rundung `round(0.5) → 0`, die 25 der 96 Längen-Nullen verursacht, und zwei der drei Skip-Auslöser (`begruessung`, `system`), die in 845 Turns null mal vorkommen. Beide betreffen das Vorausdenken, nicht mehr die Ablesung.
 
-### B2 — Die Ist-Verteilung, getrennt nach Bedingung
+### B2 — Die Ist-Verteilung, getrennt nach Bedingung ✅ **erhoben am 08.08.2026, siehe §4b**
 
 | Zeile | Inhalt |
 |---|---|
@@ -186,6 +244,14 @@ Deshalb: kein Anteil davon in der Kalibrierung aus §5. Erschöpfung ist ein **Z
 | **TEST** | Die Summe der getrennten Teilmengen ergibt den Gesamtbestand; kein Turn fällt in beide oder in keine. |
 | **MESSUNG** | Häufigkeit je Landschaft, je Teilmenge, mit Datum und Umfang. |
 | **Gegenprobe** | Ein Bestand ohne jedes Rad muss die Teilmenge „ohne" vollständig füllen. |
+
+**TEST bestanden:** 628 = 628, kein Turn in zwei Teilmengen, keine Teilmenge außerhalb des Kanons. **Gegenprobe bestanden, und zwar am Bestand statt konstruiert:** vier Kennungen ohne jedes geladene Rad.
+
+**Aus zwei Teilmengen wurden vier.** Der Bestand kennt drei Radzustände statt zwei, und ein Vorgabe-Rad ist keine Messung an diesem Charakter. Die vierte — „keine Ablesung" — steht getrennt, weil sie weder „mit" noch „ohne" ist; sie einer der beiden zuzuschlagen wäre genau der Fehler, den B1 behoben hat.
+
+**Der Befund, der über das Bauteil hinausreicht:** Der Basisarm der Validierungsmenge fuhr **80 von 360 Turns (22,2 %) mit destilliertem Charakter-Rad**. Das gehört in jede Aussage über die zwölf Bögen und ist als Zeile in der Fundliste vermerkt.
+
+**Was B2 nicht liefert und auch nicht liefern kann:** eine Verteilung auf dem reparierten Gerät. Diese Zahlen sind vor dem 08.08.2026 erhoben. Die Neuerhebung braucht Turns, die nach der Reparatur gelaufen sind — sie ist kein neues Bauteil, sondern ein zweiter Lauf desselben Werkzeugs. **Vor B3 zu wiederholen.**
 
 ### B3 — Die Zielverteilung als Setzung
 
@@ -231,7 +297,11 @@ Deshalb: kein Anteil davon in der Kalibrierung aus §5. Erschöpfung ist ein **Z
 ## 9. Was offen ist
 
 - **Die Untergrenze je Landschaft ist nicht bestimmt.** Der Präzedenzfall setzt 15 % für eine zweiwertige Achse; bei vierzehn Landschaften ist die Größenordnung eine andere, und sie ist zu setzen, nicht abzuleiten.
-- ~~**Die Ablesung fällt in 14 % der Fälle aus** und ist vor allem anderen zu klären (B1).~~ → **Erledigt am 08.08.2026.** Sie fiel in **28,1 %** der Bogen-Ablesungen aus, nicht in 14 %, und nicht zufällig: 82 von 164 Turns mit `distanz`, 0 von 340 mit `neutral` (§4a). **Daraus ein neuer offener Punkt:** Alle Zahlen in §4 sind auf dem defekten Gerät erhoben und vor der Zielverteilung neu zu erheben — das ist die erste Aufgabe von B2.
+- ~~**Die Ablesung fällt in 14 % der Fälle aus** und ist vor allem anderen zu klären (B1).~~ → **Erledigt am 08.08.2026.** Sie fiel in **28,1 %** der Bogen-Ablesungen aus, nicht in 14 %, und nicht zufällig: 82 von 164 Turns mit `distanz`, 0 von 340 mit `neutral` (§4a).
+
+- **Die Ist-Verteilung ist auf dem reparierten Gerät zu wiederholen.** §4b ist über 628 Ablesungen vom 31.07. bis 08.08.2026 erhoben, also vor der Reparatur. Der Lauf ist derselbe und kostet nichts; er braucht nur Turns, die danach entstanden sind. **Vor B3.**
+
+- **Der Basisarm der Validierungsmenge fuhr zu drei Vierteln ohne destilliertes Charakter-Rad** — 80 von 360 Turns hatten eines, 70 rechneten gegen ein Vorgabe-Rad, 109 gegen keines (§4b). Das ist kein Befund dieses Konzepts, aber es begrenzt jede Aussage, die auf den zwölf Bögen fußt, und gehört deshalb hierher.
 - **Auf welchem Bestand kalibriert wird, ist offen.** Die zwölf Bögen und das produktive Paar haben fast gegenläufige Verteilungen; eine Kalibrierung auf den Bögen kalibriert auf ein anderes Gespräch.
 - **Die Erreichbarkeit unter Charakter ist nie durchgerechnet worden** — für die GV-Achse liegt die Tabelle vor, für die Landschaften nicht.
 - **Ob die vierzehn Landschaften die richtige Auflösung sind**, ist nicht Gegenstand dieses Konzepts und bleibt beim Haltungsraum.
@@ -241,5 +311,6 @@ Deshalb: kein Anteil davon in der Kalibrierung aus §5. Erschöpfung ist ein **Z
 
 ## Versionshistorie
 
+- **v0.3 — 08.08.2026:** **B2 erhoben** — §4b neu, über 628 Ablesungen. Die Zerlegung geht auf (628 = 628), und die Gegenprobe ist am Bestand erfüllt statt konstruiert: vier Kennungen haben nie ein Rad geladen. **Aus zwei Teilmengen wurden vier**, weil der Bestand drei Radzustände kennt — ein Vorgabe-Rad rechnet sich glatt und sagt nichts über diesen Charakter — und weil „keine Ablesung" weder „mit" noch „ohne" ist. Zwei Befunde: Der Basisarm der Validierungsmenge fuhr **80 von 360 Turns mit destilliertem Rad**; und die Tabelle aus §4 ist ersetzt, weil sie vier der vierzehn Landschaften wegließ und ihre Nenner nicht nachvollziehbar sind. **Eine Aussage aus v0.2 wird dabei zurückgenommen:** Der Vorbehalt gegen „vier Landschaften nie betreten" gilt in voller Höhe für die Bögen (28,1 % fehlend), aber nicht für das produktive Paar — dort fehlen 6 von 113 Ablesungen, und selbst wenn alle sechs kühl gewesen wären, blieben die vier unter 6 %.
 - **v0.2 — 08.08.2026:** **B1 gebaut**, und die Nachrechnung vor dem Bauen hat den Befund vergrößert statt ihn zu bestätigen. Drei Korrekturen an v0.1: Der Nenner der Ausfallquote war doppelt (360 Ablesungen, nicht 720), die Quote also **28,1 %** statt 14 %; die Krise trägt **0 von 101** und nicht den Hauptteil; und der Ausfall ist nicht gleichverteilt, sondern hängt an Achse 3 — **82 von 164 Turns mit `distanz`, 0 von 340 mit `neutral`**. Damit steht §4a neu: Der Befund „vier Landschaften nie betreten" ist auf einem Gerät erhoben, das sich auf genau der fernen Hälfte der Nähe-Achse abschaltete. Die Ursache war eine Reihenfolge und kein Rechenfehler — die Landschaftsvermessung liest `internal`, die Tore davor lesen `external`, und eine Aussage über den Nutzer schaltete eine Messung an Nova ab. Der Präzedenzfall stand seit Chat 116 im GV-Konzept, wurde damals aber nur vor die Längen-*Schwelle* gezogen und nicht vor die beiden Rückkehrpunkte davor. **Entschieden am selben Tag:** Die Landschaft geht in den Responder-Prompt, gestaffelt von grob nach fein.
 - **v0.1 — 08.08.2026:** Erstfassung. Anlass ist die Frage, ob alle Landschaften gleich häufig erreichbar sein müssen — beantwortet mit **nein, aber erreichbar und im richtigen Verhältnis**. Die Suche nach dem Gegenstand vor dem Schreiben fand den Präzedenzfall: Für die 64 GV-Sektoren ist genau dieses Kriterium bereits entschieden, durchgerechnet und gebaut, samt der beiden Sätze *„Das Ziel ist Erreichbarkeit, nicht Häufigkeit"* und *„Der Charakter verschiebt, er schließt nicht"*, samt der Entscheidung gegen eine Laufzeit-Regelung. Dieses Konzept überträgt das Kriterium auf die vierzehn Gesprächslandschaften und erfindet es nicht. Gemessen am selben Tag: **alle vierzehn sind erreichbar**, aber im produktiven Bestand sind vier nie betreten worden, und die Verteilungen von Messbögen und echtem Gespräch sind fast gegenläufig. Drei Vorbehalte stehen bei den Zahlen — die Ablesung fällt in 101 von 720 Fällen aus, das Charakter-Rad fehlte in 109 Rechnungen, und die Bögen bilden das echte Gespräch nicht ab. Die tragende Reihenfolge: **Der Charakter muss auf einen kalibrierten Raum wirken, und diese Kalibrierung fehlt davor.**
