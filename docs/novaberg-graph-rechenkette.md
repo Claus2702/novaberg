@@ -130,11 +130,17 @@ Beide Systeme laufen im **HumanGraph**, nicht im Charakter-Pfad. Sie stehen hier
 
 ### S5 — Emotionsvektor
 
-**Eingang:** dieselben Turns, eigenes kürzeres Fenster (`EMOTION_VEKTOR_TURNS`).
-**Rechnung:** Die Turnfolge wird in zwei Hälften geteilt und je Hälfte die dominante Gruppe bestimmt (positiv, negativ, neutral). Der Übergang zwischen beiden Gruppen wird auf einen von **neun** Vektoren abgebildet. Bleibt die Gruppe gleich, entscheidet das Auftreten einer **neuen** Emotion: negativ→negativ mit neuer Emotion ergibt `spirale`, positiv→positiv ergibt `eskalation`, sonst `plateau`.
+**Eingang:** dieselben Turns, eigenes kürzeres Fenster (`EMOTION_VEKTOR_TURNS`) — **mit ihrer Erregung**, nicht nur mit ihrem Emotionsnamen.
+**Rechnung:** Die Turnfolge wird in zwei Hälften geteilt und je Hälfte die dominante Gruppe bestimmt (positiv, negativ, neutral). Der Übergang zwischen beiden Gruppen wird auf einen von **neun** Vektoren abgebildet. Bleibt die Gruppe gleich, entscheidet der **Anstieg der mittleren Erregung** zwischen den Hälften gegen `GV_VEKTOR_INTENSITAET_SCHWELLE`: negativ→negativ mit Anstieg ergibt `spirale`, positiv→positiv ergibt `eskalation`, sonst `plateau`. Das Ergebnis ist ein `Stimmungsvektor` — Name, Grundlage, gemessener Anstieg und der Weg, auf dem er bestimmt wurde.
 **Beitrag:** Vier Verbraucher. Die Notbremse der Vektorlänge (S21), die Achse R der Landschaft (S20), der Farbton (S17) und die EI-Mikro-Anweisung des Responders (S28).
-**Reinheit:** rein. `_emotions_vektor_bestimmen`, `_dominante_gruppe`, `_emotion_zu_gruppe`.
-**Prüfstand:** keiner.
+**Reinheit:** rein. `stimmungsvektor_bestimmen`, `_dominante_gruppe`, `_emotion_zu_gruppe`, `_mittlere_erregung`.
+**Prüfstand:** `test_emotionsvektor_naht.py`, `test_stimmungsvektor_grundlage.py`.
+
+> **Bis zum 08.08.2026 stand an der Stelle der Erregung ein Stellvertreter:** „eine Emotion, die vorher nicht vorkam". Der verglich **Namen** und nicht Gruppen, und die Größe, die er vertrat, lag die ganze Zeit im selben Turn-Dict. Über den vollständig ausgezählten Eingaberaum lösten **12,0 %** der `spirale`- und **18,2 %** der `eskalation`-Fälle Emotionen der jeweils anderen Gruppe aus — `freude, wut, hoffnung, wut` ergab `spirale`, ausgelöst von `hoffnung`. Der Kanon in `config.py` führte `spirale` schon damals als „negativ -> negativ, mit neuen **negativen** Gefuehlen"; Code und Festlegung waren auseinandergelaufen. `gemessen` 08.08.2026. **Am Bestand nachgespielt** (849 Turns, 20 Paare, Nutzerseite): `eskalation` 151 → 67, `spirale` 44 → 20, die sieben Vektoren über Gruppengrenzen ±0 — und 28 Turns wandern **in** die Anstiegsvektoren hinein, die der Namensvergleich übersah.
+
+**Die Grundlage reist mit.** `Stimmungsvektor.quelle` trägt einen Wert aus `VEKTOR_QUELLE_KANON` und beantwortet, worauf der Name beruht: `gemessen`, `gleichstand`, `zu_wenig_turns`, `nicht_gesetzt`. Ohne sie trug `plateau` vier Bedeutungen, darunter „weniger als zwei verwertbare Turns" — keine Richtung, sondern das Fehlen ihrer Grundlage. Zu Beginn eines Paars ist das der Regelfall, weil Novas Vektor über die `assistant`-Turns rechnet.
+
+**Die dominante Gruppe ist oft keine Mehrheit.** `_dominante_gruppe` löst einen Gleichstand über die zeitlich letzte Emotion auf und meldet das seit dem 08.08.2026 mit. Die neuere Hälfte hat zwei Glieder; stammen sie aus verschiedenen Gruppen, entscheidet allein das letzte, und die Hälfte ist faktisch eine Stichprobe von eins. **69,8 %** des ausgezählten Raums und **46,5 %** der 849 Bestands-Turns stehen auf mindestens einem solchen Rückfall. `gemessen` 08.08.2026 — benannt, nicht behoben.
 
 ### S6 — Empathie-Injektion
 
@@ -288,6 +294,8 @@ Die Normierung ist **asymmetrisch** — nach unten gegen den Abstand zum Minimum
 **Reinheit:** rein, wenn die Führung übergeben wird. `achsen_berechnen`, `sektor_bestimmen`, `achsen_klartext`, `achsen_fassung`.
 **Prüfstand:** `test_gv_landschaft_immer.py`, `test_gv_landschaft_bestand.py`, `test_modus_kanon.py`, `test_gv_zeitstand.py`.
 **Absicht:** `novaberg-gv-strategie_k.md` §3.1, §6.
+
+**Die Achse R trägt seit dem 08.08.2026 ihre Herkunft** als `richtung_quelle` in derselben Zeile — aus demselben Grund wie `valenz_quelle` bei V. `plateau` entsteht aus einem gemessenen Gleichstand, aus zu wenigen Turns und aus einem nie gerechneten Vektor; ohne die Marke zählt jede Auswertung die drei als denselben Zustand. Der vierte Wert `nicht_gesetzt` deckt auch den Rückfall in `achsen_berechnen` selbst ab: Ein leerer `emotions_vector` wird dort zu `plateau`, und das sah bis dahin aus wie eine Messung.
 
 **Die Achse V trägt keinen Rohwert**, weil ihr Bit über den Plutchik-Sektor aus dem Emotionsnamen kommt. Damit die Achse nachrechenbar bleibt, reist der Name als `valenz_quelle` mit — aus einer 1 allein ließe sich nicht erschließen, welche Emotion sie erzeugt hat.
 
@@ -468,7 +476,7 @@ Drei Größen wirken **nicht** im Turn, in dem sie entstehen, sondern im nächst
 
 ## 12. Prüfstand
 
-**Fünf reine Systeme haben heute keinen eigenen Test:** S4 (Emotionsverlauf), S5 (Emotionsvektor), S8 (Ziel-Gravitation), S14 (Verdichtung), S17 (Farbton). Ohne Test sind außerdem die reinen Teile gemischter Systeme: die Register-Plausibilität in S32, der Blockbau in S16, die Vote-Ableitung in S30 — dazu die Kopplung `CLUSTER_FRAGEN` ↔ `CLUSTER_GRUNDWERT` in S26, die kein System ist, sondern eine Naht zwischen zweien.
+**Vier reine Systeme haben heute keinen eigenen Test:** S4 (Emotionsverlauf), S8 (Ziel-Gravitation), S14 (Verdichtung), S17 (Farbton). ~~S5 (Emotionsvektor)~~ → **seit dem 08.08.2026 geprüft**, und der erste Test hat zwei Defekte gefunden, die vorher niemand vermutet hatte (siehe §5, S5). Ohne Test sind außerdem die reinen Teile gemischter Systeme: die Register-Plausibilität in S32, der Blockbau in S16, die Vote-Ableitung in S30 — dazu die Kopplung `CLUSTER_FRAGEN` ↔ `CLUSTER_GRUNDWERT` in S26, die kein System ist, sondern eine Naht zwischen zweien.
 
 **Was eine Prüfung je System beantworten muss** — dieselben drei Fragen, die auch die Messreihen stellen:
 
@@ -480,4 +488,5 @@ Drei Größen wirken **nicht** im Turn, in dem sie entstehen, sondern im nächst
 
 ## Versionshistorie
 
+- **v0.2 — 08.08.2026:** **S5 hat einen Prüfstand, und der erste Test hat zwei Defekte gefunden.** Der Eingaberaum des Emotionsvektors ist geschlossen und wurde vollständig ausgezählt statt beprobt — 1.508.598 Folgen über alle 17 kanonischen Emotionen. Die Naht zu Achse R hält (kein totes Ende in beide Richtungen, R=0 zu R=1 steht bei 65,3 % zu 34,7 % des Raums). Gefunden wurde anderes: Der Intensitätsanstieg war an der **Namensmenge** gemessen statt an der Erregung, und ließ sich deshalb von einer Emotion der Gegengruppe auslösen — bis in den Krisenmarker `spirale` hinein. Und `plateau` trug vier Bedeutungen, darunter „es gab nichts zu messen", ohne Marke. Beides ist gebaut: Die Intensität kommt aus der Erregung (Schwelle **0,10**, abgeleitet aus dem Zehntelraster der liefernden Skala und 769 gemessenen Fenstern), die Grundlage reist als `richtung_quelle` in die Landschaftszeile. Dabei fiel eine dritte Zahl an, die niemand gesucht hatte: In **69,8 %** des Raums und **46,5 %** der Bestands-Turns ist die „dominante Gruppe" gar keine Mehrheit, sondern ein über die letzte Emotion aufgelöster Gleichstand — benannt, nicht behoben. §7 (S20) trägt die neue Marke, §12 zählt ein reines System weniger ohne Test.
 - **v0.1 — 08.08.2026:** Erstfassung. Vollständige Lesung des Charakter-Pfads und der Rechenmodule; 34 Systeme in sechs Stufen, davon fünfzehn rein. **S26 beschreibt die Wegform**, also den Stand nach dem Umbau der Naht vom selben Tag — die Fassung davor addierte Grundwert und rohe Radsumme. Wer eine Messreihe von vor diesem Tag liest, liest gegen die additive Form. Neu gegenüber dem Bestand ist nicht der Inhalt der einzelnen Rechnungen — der steht in den Node- und Konzeptdokumenten —, sondern die **Zerlegung entlang der Rechnungen statt entlang der Knoten**: Der GV-Knoten trägt sechs Systeme, die emotionale Gravitation läuft über zwei Knoten, und drei Größen wirken erst im Folgeturn (§11). Zwei Feststellungen aus dem Audit sind hier zum ersten Mal festgehalten: die Quelle des Farbtons weicht von seinen Satztexten ab (§7, S17), und die Kopplung der Fragen-Spalte an `CLUSTER_FRAGEN` ist von keinem Test gedeckt (§8, S26). Beide stehen als Zeile in `novaberg-fundliste.md`.

@@ -1,6 +1,6 @@
 # Novaberg — Roadmap (Projektchronik)
 
-**Stand:** Chat 130, 7. August 2026
+**Stand:** Chat 133, 8. August 2026
 *(Die Kopfzeile stand bis Chat 109 auf „Chat 93, 21. Mai 2026" — 15 Chats hinter dem Inhalt. **Sie ist danach erneut zurückgefallen:** von Chat 110 bis 114 blieb sie auf „Chat 109" stehen, während der Inhalt weiterwuchs, und wurde in Chat 115 nachgezogen. Wer hier etwas ergänzt, zieht die Kopfzeile mit — sie driftet zuverlässig. Achtung beim Nachschlagen: Nur bis Chat 97 trägt jeder Chat eine eigene `## Chat NNN`-Überschrift; die Chats 98–108 stehen als `###`-Abschnitte unter dem Chat-97-Block, benannt nach Sprint statt nach Chat.)*
 **Pfad:** novaberg/docs/novaberg-roadmap.md
 **Single Source of Truth für abgeschlossene Arbeit.**
@@ -1980,6 +1980,38 @@ Beide Räder haben eine Nabe — den Wert ohne jede Ausprägung — und das Erge
 > **Die Zahlen selbst stehen nicht hier.** Ein Charakter-Rad ist ein Charakterprofil; aus den Summanden sind mit der Züge-Tabelle die Einzelspeichen rückrechenbar. Wer die Messung nachvollziehen will, fährt sie gegen den eigenen Bestand — sie ist in zwei Aufrufen wiederholbar.
 
 **Geschlossen:** `Bauteil 3 — Charakter-Räder im Client` (Rest benannt, siehe Backlog)
+
+---
+
+## Chat 133 (08.08.2026) — Ein Krisenmarker, den ein hoffnungsvolles Wort auslösen konnte ✅
+
+Gegenstand waren die **reinen** Systeme der Rechenkette — die, deren Prüfung weder Datenbank noch Modell noch einen laufenden Turn braucht. `novaberg-graph-rechenkette.md` führt fünfzehn davon, und fünf hatten keinen eigenen Test. S5, der Emotionsvektor, war einer.
+
+**Der Eingaberaum ist geschlossen, also wurde er ausgezählt statt beprobt** — 1.508.598 Folgen über alle 17 kanonischen Emotionen, Länge 0 bis 5, gegen die echte Funktion. Die Reduktion auf fünf Glieder ist geprüft und nicht behauptet: 46.656 Folgen der Länge 6 gegen ihr Fünfer-Ende, null Abweichungen.
+
+**Die Naht S5 → Achse R hält.** Alle neun Vektoren sind erreichbar, jeder Eintrag der Richtungstabelle ist erzeugbar, kein totes Ende in beide Richtungen. Der Raum steht **65,3 % zu 34,7 %** auf R=0 gegen R=1 — ein Maß über gleichverteilte Eingaben und keine Häufigkeit.
+
+**Die zwei Befunde kamen aus der Gegenprobe, nicht aus dem Test.** Ein Eingriff, der rot werden sollte, blieb grün, weil die Begründung dahinter falsch war:
+
+**`spirale` und `eskalation` ließen sich von einer Emotion der Gegengruppe auslösen.** Die Bedingung „eine Emotion, die vorher nicht vorkam" verglich **Namen**, nicht Gruppen. `freude, wut, hoffnung, wut` ergab `spirale`, ausgelöst von `hoffnung`; `freude, freude, wut, freude` ergab `eskalation`, ausgelöst von `wut`. Über den vollen Raum betraf das 12,0 % der `spirale`- und 18,2 % der `eskalation`-Fälle. **`spirale` ist einer der beiden Krisenmarker:** Bei Erregung ab 0,7 setzt der eine Leser die Vektorlänge auf 0, der andere die Aufnahmebereitschaft auf exakt 0,00 — den Wert, der der Krise vorbehalten ist. Der Kanon in `config.py` sagte schon vorher „negativ -> negativ, mit neuen **negativen** Gefuehlen"; Code und Festlegung waren auseinandergelaufen.
+
+**`plateau` trug vier Bedeutungen, und eine davon war „keine Aussage".** Neben drei gemessenen Gleichständen steht der Fall „weniger als zwei verwertbare Turns" — keine Richtung, sondern das Fehlen ihrer Grundlage, ohne Marke und über dieselbe Tabelle auf R=0. Zu Beginn eines Paars ist er der Regelfall: Novas Vektor rechnet über die `assistant`-Turns, und im ersten Turn gibt es keinen.
+
+**Dazu eine dritte Zahl, die niemand gesucht hatte:** In **69,8 %** aller ausgezählten Folgen ist die „dominante Gruppe" gar keine Mehrheit, sondern ein Gleichstand, den die zeitlich letzte Emotion aufgelöst hat. Bei einer neueren Hälfte aus zwei Gliedern ist das jedes Mal so, sobald sie aus verschiedenen Gruppen stammen.
+
+**Gebaut, in drei Schritten:** Die Richtung trägt ihre Grundlage mit (`gemessen`, `gleichstand`, `zu_wenig_turns`, `nicht_gesetzt`) und reist als `richtung_quelle` in dieselbe Protokollzeile wie das Ergebnis — dieselbe Bauart wie `valenz_quelle` bei Achse V und `Fuehrung.fehlend` bei Achse I. R war die einzige der sechs Achsen ohne Herkunftsangabe. Und der **Intensitätsanstieg wird an der Erregung gemessen** statt an der Namensmenge; der Namensvergleich bleibt als benannter Rückfall, dann aber auf die Gruppe des Übergangs verengt.
+
+**Die Schwelle ist abgeleitet, nicht gesetzt:** 769 Fünfer-Fenster aus 849 Turns von 20 Paaren, Median der Differenz 0,000, Median ihres Betrages 0,067. Die Perzeption liefert Arousal in Zehnteln — **0,10** ist damit der kleinste Schritt, den die liefernde Skala als gewollten Anstieg ausdrücken kann, und trifft 20,5 % der Fenster.
+
+**Der Bestand durch beide Fassungen, die alte aus der Versionsgeschichte geladen statt nachgebaut:** 164 von 849 Turns (19,3 %) ändern sich. `eskalation` 151 → **67**, `spirale` 44 → **20**, `plateau` 275 → **383**. Die sieben Vektoren über Gruppengrenzen stehen auf **exakt null Differenz** — der Eingriff traf genau seinen Zweig. Und er wirkt in beide Richtungen: 136 Turns verlassen die Anstiegsvektoren, **28 kommen neu hinzu**. Der Namens-Rückfall lief **0 von 849 Mal**; wo Intensität anwendbar war, lag Erregung vor.
+
+**Was die Marken sofort sichtbar machen:** `gemessen` 51,1 %, **`gleichstand` 46,5 %**, `zu_wenig_turns` 2,4 %. Fast die Hälfte der Ablesungen steht auf einem Gleichstand. Das ist ab jetzt zählbar und nicht behoben.
+
+**Nebenbei gefangen:** `0.6 - 0.5` ergibt in Binärgleitkomma 0.09999999999999998. Da Arousal in Zehnteln kommt und die Schwelle auf einem Zehntel steht, wäre der Grenzfall der Normalfall gewesen — ein Anstieg um genau einen Schritt der Quelle hätte als keiner gezählt. Gerundet wird vor dem Vergleich, mit eigenem Test.
+
+**Nicht belegt und ausdrücklich offen:** dass 67 richtiger ist als 151. Belegt ist nur, dass 103 Turns ohne Anstieg der Erregung „Eskalation" hießen. Gemessen ist zudem die Nutzerseite; Achse R rechnet auf Novas Vektor, dessen Erregung je Turn nicht haltbar gespeichert ist. Die Schwelle bleibt bis zur nächsten Messreihe ein Stellvertreter.
+
+**Suite:** 1097 → **1113**, 0 übersprungen. Nulllinie **2183** unverändert.
 
 ---
 
