@@ -132,7 +132,26 @@ SPEICHEN_BEITRAG: dict[str, dict[str, float]] = {
     "dienst": {"umfang": 0.20, "draengen": 0.30},
     "pflicht": {"umfang": 0.20, "fragen": -0.20, "draengen": 0.10},
     "aufmerksamkeit": {"fragen": 0.20, "naehe": 0.20},
-    "wissbegier": {"umfang": 0.30, "fragen": 0.40, "draengen": 0.20},
+    # Kein Beitrag auf `umfang`. Gestrichen am 08.08.2026 nach der Definition
+    # beider Groessen: `umfang` ist die Laenge von Novas eigenem Text, und
+    # `wissbegier` heisst „fremde Themen wecken echtes Interesse" — eine
+    # rezeptive Disposition. Interesse an dem, was der andere bringt, aeussert
+    # sich darin, sich ihm zuzuwenden, nicht darin, den Raum zu fuellen. Der
+    # Kanal dafuer steht eine Spalte weiter: `fragen` +0.40, dazu eine von nur
+    # zwei Uebersteuerungen im ganzen System.
+    #
+    # Sie senkt den Umfang auch nicht: „Raum lassen" ein zweites Mal zu
+    # kodieren, waere derselbe Fehler mit umgekehrtem Vorzeichen. Eine ruhige,
+    # gespannt zuhoerende Nova stellt kurze Fragen — das leistet die
+    # Fragenspalte, und der Verfasser bekommt ueber den Umfang ohnehin weniger
+    # Material.
+    #
+    # Der Gegenpol bleibt: `langeweile` traegt `umfang -0.40`, und dieser Weg
+    # ist direkt — kein Interesse, also nichts zu sagen, „Hmmm... ja."
+    # **Die Tabelle ist nicht als Spiegelpaare gebaut** (`treue` hat keinen
+    # Umfangsbeitrag, ihr Gegenpol `selbstbezogen` +0.10), also verlangt der
+    # eine Wert den anderen nicht.
+    "wissbegier": {"fragen": 0.40, "draengen": 0.20},
     "wohlwollen": {"naehe": 0.10, "waerme": 0.40},
     "selbstbezogen": {"umfang": 0.10, "fragen": -0.20, "naehe": -0.30, "draengen": 0.30},
     "gleichgueltig": {"umfang": -0.30, "fragen": -0.20, "naehe": -0.20, "waerme": -0.40},

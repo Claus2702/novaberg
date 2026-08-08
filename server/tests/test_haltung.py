@@ -34,6 +34,7 @@ from ei.haltung import (
     UEBERSTEUERUNG_AB,
     _verrechnen,
     haltung_berechnen,
+    speichen_spanne,
 )
 
 HALTUNG_LOGGER: str = "ki_server.ei.haltung"
@@ -43,7 +44,7 @@ class RechnungTest(unittest.TestCase):
     """Die Verknuepfung von Grundwert und Modifikation."""
 
     def test_die_neigung_geht_den_verbleibenden_weg(self) -> None:
-        """glut/umfang: 0.70 Grundwert, wissbegier 1.0 traegt +0.30.
+        """glut/umfang: 0.70 Grundwert, dienst 1.0 traegt +0.20.
 
         Bis zum 08.08.2026 wurde addiert und ergab genau 1.00 — den Rand. Die
         Wegform normiert die Summe auf die Spanne der Groesse (+0.80) und geht
@@ -53,11 +54,11 @@ class RechnungTest(unittest.TestCase):
         des Charakters und darf nicht durch die Normierung verschwinden — im
         Protokoll steht weiter, was das Rad beigetragen hat.
         """
-        haltung = haltung_berechnen("glut", {"wissbegier": 1.0})
+        haltung = haltung_berechnen("glut", {"dienst": 1.0})
         self.assertIsNotNone(haltung)
-        self.assertAlmostEqual(haltung.werte["umfang"].ergebnis, 0.8125, places=6)
+        self.assertAlmostEqual(haltung.werte["umfang"].ergebnis, 0.82, places=6)
         self.assertAlmostEqual(haltung.werte["umfang"].grundwert, 0.70, places=6)
-        self.assertAlmostEqual(haltung.werte["umfang"].modifikation, 0.30, places=6)
+        self.assertAlmostEqual(haltung.werte["umfang"].modifikation, 0.20, places=6)
         self.assertEqual(haltung.werte["umfang"].art, "neigung")
 
     def test_halbe_auspraegung_geht_den_halben_weg(self) -> None:
@@ -68,8 +69,8 @@ class RechnungTest(unittest.TestCase):
         haette. Eine Zahl allein wuerde auch dann bestehen, wenn die Form
         irgendwo geknickt waere.
         """
-        voll  = haltung_berechnen("glut", {"wissbegier": 1.0}).werte["umfang"]
-        halb  = haltung_berechnen("glut", {"wissbegier": 0.5}).werte["umfang"]
+        voll  = haltung_berechnen("glut", {"dienst": 1.0}).werte["umfang"]
+        halb  = haltung_berechnen("glut", {"dienst": 0.5}).werte["umfang"]
         grund = voll.grundwert
 
         self.assertAlmostEqual(halb.ergebnis - grund,
@@ -139,24 +140,29 @@ class GrenzeTest(unittest.TestCase):
         Ohne diese Zusicherung waere die Multiplikation ungeprueft: Alle sechs
         Grenzen im Bestand tragen 0.00, und dort liefert jede Rechnung null.
         """
-        # 0.50 auf der Aufwaertsspanne von `umfang` (+0.80) sind n = 0.625.
-        self.assertAlmostEqual(_verrechnen(0.40, 0.50, "grenze", "umfang"), 0.65, places=6)
-        # -0.50 auf der Abwaertsspanne (-1.00) sind n = -0.5.
-        self.assertAlmostEqual(_verrechnen(0.40, -0.50, "grenze", "umfang"), 0.20, places=6)
+        # Die Eingabe wird aus der Spanne gebaut, damit n genau 1 ist — dann
+        # ist die **Form** sichtbar und der Test haengt nicht an einer Zahl der
+        # Beitragstabelle. Die Erwartungen bleiben Literale.
+        runter, hoch = speichen_spanne("umfang")
+
+        self.assertAlmostEqual(_verrechnen(0.40, hoch, "grenze", "umfang"), 0.80, places=6)
+        self.assertAlmostEqual(_verrechnen(0.40, runter, "grenze", "umfang"), 0.00, places=6)
         # Und null bleibt null, gleich wie gross die Summe ist.
         self.assertAlmostEqual(_verrechnen(0.00, 9.90, "grenze", "umfang"), 0.00, places=6)
 
     def test_neigung_und_uebersteuerung_gehen_den_weg(self) -> None:
         """Der Gegensatz zur Multiplikation, an denselben Zahlen.
 
-        n = 0.625 auf einem Grundwert von 0.40: 0.40 + 0.625 * 0.60 = 0.775.
-        Die Grenze kaeme mit denselben Eingaben auf 0.65 — der Unterschied
+        Bei vollem Weg nach oben (n = 1) geht ein Grundwert von 0.40 auf 1.00.
+        Die Grenze kaeme mit derselben Eingabe auf 0.80 — der Unterschied
         zwischen "skaliert, was die Lage zulaesst" und "geht den Rest des Wegs".
         """
+        _runter, hoch = speichen_spanne("umfang")
+
         self.assertAlmostEqual(
-            _verrechnen(0.40, 0.50, "neigung", "umfang"), 0.775, places=6)
+            _verrechnen(0.40, hoch, "neigung", "umfang"), 1.00, places=6)
         self.assertAlmostEqual(
-            _verrechnen(0.40, 0.50, "uebersteuerung", "umfang"), 0.775, places=6)
+            _verrechnen(0.40, hoch, "uebersteuerung", "umfang"), 1.00, places=6)
 
     def test_eine_grenze_ohne_ausloeser_haelt(self) -> None:
         """gewitter/fragen bleibt null, solange keine Uebersteuerung greift."""
