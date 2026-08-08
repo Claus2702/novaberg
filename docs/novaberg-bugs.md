@@ -230,6 +230,8 @@ Er fügt der Tabelle nichts Neues hinzu, sondern **bestätigt ihre Trennung**: g
 
 **Offen bleibt die Entscheidung Wiederholung oder Ausfallmeldung.** Der zweite Versuch mit demselben Prompt gelang beide Male — das spricht für einen Wiederholungsversuch. Ein stiller Retry verdeckt aber die Häufigkeit; ein Vermerk im Zustand nach dem Muster von `pfad1_ausfall` wäre die ehrlichere Form.
 
+**Nachtrag 08.08.2026 — die Rate ist beziffert: ein Turn von rund 120.** Beim Basisarm der Validierungsmenge lieferte Turn 17 eines Bogens binnen 420 s keine Antwort; dieselbe Sonde lief in drei anderen Bögen desselben Abends durch. Dazu aus der B1-Messung: 9 von 72 Läufen ohne Antwort auf einen inhaltsleeren Reiz. **Für eine Messreihe ist die Zahl folgenreicher, als sie klingt:** Bei 30 Turns je Bogen trifft sie rund **jeden vierten Bogen** — ein Rig, das bei Unvollständigkeit anhält, endet dann unbeaufsichtigt am ersten Ausfall. Damit ist die offene Entscheidung oben nicht mehr nur eine Frage der Ehrlichkeit, sondern eine der Durchführbarkeit längerer Reihen.
+
 **Was zu tun ist.**
 
 1. **Der Riegel gehört an die Entstehungsstelle**, in die Ausgabe-Verifikation des Workers: Ein leerer Text bei `expect_json=False` ist ein Fehlschlag, kein Ergebnis. `logger.error`, und der Aufrufer bekommt es zu wissen.
@@ -291,6 +293,52 @@ Liefert der Verfasser nichts (`antwort_inhalt` fehlt), läuft der Responder unve
 **Was zu tun ist:** Der Responder meldet einen fehlenden Verfasser-Inhalt und kennzeichnet, dass er ohne Material antwortet. Ob abgebrochen oder gekennzeichnet wird, ist zu entscheiden — abbrechen kostet den Turn, weitermachen kostet die Zuordenbarkeit.
 
 **Priorität:** hoch, gemeinsam mit dem Eintrag darüber.
+
+### Chat 133 — aus der Fundliste klassifiziert (08.08.2026)
+
+Drei Defekte, die am 08.08.2026 in der Fundliste standen und bei der Klassifizierung als solche erkannt wurden. Alle drei sind **still**: Keiner erzeugt eine Fehlermeldung, alle drei liefern ein Ergebnis, das richtig aussieht.
+
+#### PERZEPTION-EMOTION-AUSSER-KANON — die Perzeption liefert Emotionen, die es nicht geben darf 🔧 offen
+
+**Symptom.** Emotionswerte fallen aus der Sektorkarte und bekommen den Valenz-Vorgabewert, ohne dass etwas meldet.
+
+**Ursache.** Über 849 Rohturns liefert die Perzeption `mitgefühl` 21 mal, `mitgefuehl` 6 mal und `nachdenklich` einmal. Keine der drei steht in `EMOTION_KANON`, dessen Kommentar ausdrücklich sagt, die Perzeption solle **nur** diese liefern. `EMOTION_SEKTOR_MAP` kennt sie folglich nicht, und `achsen_berechnen` fällt auf `valenz_bin = 1`.
+
+**Warum es niemandem auffiel.** Die kanonische Form `mitgefuehl` **und** die Umlautform `mitgefühl` kommen beide vor — dieselbe Emotion, zweimal geschrieben. Das ist die unangenehmere Hälfte: Zwei Schreibweisen desselben Begriffs überleben jede Prüfung, die nach *einer* von beiden sucht, und eine Zählung je Schreibweise sieht nach zwei seltenen Fällen aus statt nach einem häufigen.
+
+**Belegt.** 849 Rohturns aus `pipeline_log`, `art='turn_roh'`, Feld `user_emotion.emotion`, ausgezählt am 08.08.2026.
+
+**Priorität.** Mittel. Betrifft 28 von 849 Turns (3,3 %), aber jeder davon bekommt eine Valenz, die nicht gemessen ist — und die Häufigkeit des Vorgabewerts ist genau die Zahl, an der die Entscheidung über die dritte Valenzstufe hängt.
+
+#### GV-LAENGE-RUNDUNG-ZUR-GERADEN — ein Viertel der Nullen entsteht aus Pythons Rundungsregel 🔧 offen
+
+**Symptom.** Turns bekommen Vektorlänge 0 und damit kein Vorausdenken, obwohl die Rechnung 0,5 ergeben hat.
+
+**Ursache.** `_vektor_laenge_berechnen()` in `graph/nodes/gespraechsvektor.py` schließt mit `round(laenge)`. Python rundet zur **geraden** Zahl: `round(0.5)` ist 0, nicht 1. Ein Grenzwert, der auf der Kante liegt, entscheidet damit nach einer Regel, die an keiner Stelle genannt ist.
+
+**Warum es niemandem auffiel.** Eine 0 ist ein gültiges Ergebnis dieser Funktion — sie heißt „kein Vorausdenken". Von einer gerechneten 0 ist eine gerundete nicht zu unterscheiden, solange niemand die Summe **vor** der Rundung ansieht.
+
+**Belegt.** Über 845 Rohturns wiedergegeben: 96 Turns erreichen Länge 0, bei **25 davon (26 %)** liegt die Summe vor der Rundung bei mindestens 0,5. Die häufigste Lage dieser Art ist `berichtend | neutral | distanz | fachlich` — 1,0 minus 0,5 für `distanz`, sonst kein Beitrag, also genau 0,5.
+
+**Priorität.** Mittel. Seit `F-LAGE-1` kostet eine 0 nicht mehr die Landschafts-Ablesung, sondern nur noch das Vorausdenken. Die Kante bleibt trotzdem eine ungenannte Regel an einem Tor.
+
+#### PROMOTION-FENSTER-LAEUFT-AB-STATT-LEER — das Langzeitgedächtnis einer Messreihe ist ausgewürfelt 🔧 offen
+
+**Symptom.** Zwei Personas mit gleich langen Bögen tragen danach völlig verschiedene Mengen an Langzeitwissen, ohne dass ihre Gespräche sich entsprechend unterscheiden.
+
+**Ursache.** Das Promotionsfenster von 300 s **läuft ab, statt leerzulaufen**, und danach wird die Warteschlange gelöscht statt abgearbeitet. Was ein Lauf an Langzeitgedächtnis behält, hängt damit daran, wie viele Aufträge zufällig innerhalb des Fensters an der Reihe waren.
+
+**Warum es niemandem auffiel.** Das Ergebnis ist in sich stimmig: Jeder Knoten, der entstanden ist, ist richtig entstanden. Sichtbar wird der Defekt erst im Vergleich zweier Läufe — und dort sieht er aus wie ein Unterschied zwischen den Personas.
+
+**Belegt.** Über zwölf Bögen gemessen: Das Fenster lief bei **keiner einzigen** Persona leer, es blieben zwischen **4 und 59** Aufträge offen. Das Ergebnis streut von **0 bis 33 LZG-Knoten** ohne Bezug zur Persona — `nils` hatte 4 Aufträge offen und bekam 33 Knoten, `sylvie` hatte 57 offen und bekam **null**.
+
+**Warum das für einen gepaarten Vergleich die gefährlichere Hälfte ist.** Er setzt voraus, dass sich zwei Arme allein in der Einstellung unterscheiden. Ein je Lauf ausgewürfelter Gedächtnisstand ist eine **zweite Quelle von Unterschied**, die niemand als solche sieht — und drei der fünf Charakter-Profile lesen `lzg_knoten`, sind über die Menge hinweg also ungleichmäßig leer.
+
+**Abhilfe, billig und ohne neuen Bogen.** Das Fenster muss leerlaufen statt ablaufen, und die Warteschlange darf nicht gelöscht werden, solange Einträge darin stehen.
+
+**Priorität.** Hoch für jede Messreihe, die Arme vergleicht. Ohne die Abhilfe trägt jeder gepaarte Vergleich auf diesem Korpus einen unbeobachteten Störfaktor.
+
+---
 
 ### Turn-Verlust auf dem Hauptpfad (Chat 119)
 
