@@ -295,6 +295,148 @@ Liefert der Verfasser nichts (`antwort_inhalt` fehlt), läuft der Responder unve
 
 **Priorität:** hoch, gemeinsam mit dem Eintrag darüber.
 
+### Chat 133 — aus der Fundliste klassifiziert, Block 30.–27.07. (08.08.2026)
+
+Siebzehn Defekte, der aelteste Bestand der Liste. **Sechs von ihnen sind derselbe Bauplan:** ein Vorgabewert an einer Stelle, an der ein Ausfall gehoert — beim Queue-Push, beim Dispatch, am Spalten-Default des Rades, bei zwei Kanon-Feldern, in der fehlenden Klemme und beim Suchdienst, dessen Ausfall wie ein leeres Ergebnis aussieht.
+
+#### QUEUE-PUSH-OHNE-PRIORITAET 🔧 offen
+
+**Befund (2026-07-27).** `memory/kzg.py` reicht beim `shadow_queue_push` **kein `prioritaet`** und nimmt damit den Default 0.0 — und zwar direkt unter dem Tor `if salienz >= KZG_SALIENZ_HIGH`. Die Zwillingsstelle in `agents/kzg/queues.py` übergibt `prioritaet=neue_salienz` korrekt. Gemessen in `shadow_queue:<user>`: acht `vertiefen`-Aufträge, alle mit `prioritaet: 0.0`, obwohl jeder nur entstand, weil seine Salienz ≥ 0.7 war; die zwei `nachfragen`-Aufträge (aus der anderen Stelle) tragen 0.7. Die beiden Schreiber sind am `kontext`-Feld unterscheidbar — `queues.py` legt den `kern` ab, `kzg.py` die `zusammenfassung`. Wirkung: Ein Auftrag aus hoher Salienz tritt mit 0.0 an und verliert gegen jede periodische Aufgabe.
+
+**Was fertig waere.** Der Schreiber reicht die Prioritaet mit, oder ihr Fehlen scheitert laut.
+
+**Prioritaet:** mittel.
+
+#### DISPATCH-SALIENZ-DEFAULT 🔧 offen
+
+**Befund (2026-07-27).** `services/pixie/dispatch.py` liest beim Bau des `AgentState` `eintrag.get("salienz", 0.0)`. Die Shadow-Queue schreibt das Feld aber als `prioritaet`; `salienz` schreibt nur die Promotion-Queue. `kontext["salienz"]` ist damit für **jeden** Shadow-Auftrag 0.0, auch bei echten 0.7. Eine Datei weiter macht `services/pixie/kandidaten.py` es richtig und liest beide Namen. Zusatzbefund: `kontext["salienz"]` wird nirgends gelesen (Grep leer, Positivkontrolle auf dasselbe Muster mit `user_id` = 34 Treffer).
+
+**Was fertig waere.** Ein fehlender Wert scheitert laut statt auf einen Vorgabewert zu fallen.
+
+**Prioritaet:** mittel.
+
+#### UNREGISTRIERTER-AGENT-GEWINNT 🔧 offen
+
+**Befund (2026-07-27).** Ein Queue-Auftrag für einen **nicht registrierten** Agenten gewinnt den Heartbeat und verdrängt laufende Arbeit. `services/pixie/router.py` bildet `vertiefen` → `vertiefung` und `nachfragen` → `nachfragen` ab; **beide Agenten existieren nicht**. Gemessen an der über `discover_agents()` befüllten Registry: 15 Agenten, `recherche` und `wiedervorlage` darunter, die zwei nicht. Beobachtet am selben Tag: `nachfragen` (Prio 0.97) gewann dreimal gegen `charakter_hash` (Prio 0.3) und scheiterte jedes Mal an `Agent 'nachfragen' nicht in Registry` — nach drei Fehlversuchen verworfen, sechs Minuten ohne anderen Job (Server-Log 13:19–13:23 UTC). Die fehlenden Agenten sind **kein Bug, sondern Roadmap** (`PIX-MIG-7`, dort aber nur einer von zweien); der Befund ist die Verdrängung: Ein Auftrag für einen unbekannten Agenten sollte gar nicht erst gewinnen. **Kopplung beachten:** Wird nur die `prioritaet` oben repariert, gewinnen acht liegengebliebene `vertiefen`-Aufträge sofort den Heartbeat und laufen ins Leere — der Nullwert hält sie heute ruhig.
+
+**Was fertig waere.** Ein Auftrag ohne Agenten kann den Heartbeat nicht gewinnen.
+
+**Prioritaet:** hoch.
+
+#### CHARAKTERAGENT-AUSGEHUNGERT 🔧 offen
+
+**Befund (2026-07-27).** `CharakterAgent` (Prio 0.3) wird ausgehungert, solange die Queue läuft: `lzg_promotion` steht bei 0.97, jeder Turn erzeugt welche. Vier Heartbeats in Folge ging der Charakter leer aus, obwohl `hash_dirty` gesetzt war. Vermutlich gewollt (Profil-Destillation ist nicht dringend) — als Verhalten aber nirgends festgehalten.
+
+**Was fertig waere.** Der CharakterAgent kommt zum Zug, auch wenn die Queue voll ist.
+
+**Prioritaet:** hoch.
+
+#### RAD-WERT-AUF-SPALTEN-DEFAULT 🔧 offen
+
+**Befund (2026-07-30).** Ein gerechneter Rad-Wert kann **exakt auf dem Spalten-Default landen**, und dann ist er von „nie erhoben" nur noch am Herkunftsfeld zu unterscheiden. Gemessen am 30.07.2026, 20:07 UTC: Novas `nutzer_gewichtung` stand auf **0.90** — dem Wert der Nabe und zugleich dem Default der Spalte —, entstanden aus `+0.12` Zuwendung gegen `−0.12` Abwendung, die sich exakt aufhoben. Fünf von zwölf Speichen waren belegt, die Fläche im Diagramm deutlich schief. Ohne `nutzer_gewichtung_quelle` wäre das ein Ausfall gewesen, der wie ein Messergebnis aussieht; mit ihm und der Speichen-Anzeige ist es auf einen Blick als Messung lesbar. Der Fund ist nicht der Wert — bei der nächsten Destillation um 22:00 UTC stand er auf 1.06 —, sondern der Beleg, dass der vorhergesagte Kollisionsfall im Bestand tatsächlich eintritt (`novaberg-lesson_l_default-wie-fehlschlag.md`, `novaberg-gv-initiative_k.md` §6.4).
+
+**Was fertig waere.** Ein gerechneter Wert ist ohne Blick aufs Herkunftsfeld von einem nie erhobenen unterscheidbar.
+
+**Prioritaet:** mittel.
+
+#### KANON-FELDER-NEHMEN-FREMDWERTE 🔧 offen
+
+**Befund (2026-07-29).** Zwei Kanon-Felder nehmen Werte außerhalb ihres Kanons stillschweigend an, und die Lücke sitzt **nur auf Novas Seite**. Gemessen über 493 KZG-Einträge: Beim `modus` liefert der Nutzer-Pfad **94 von 94** Kanon-Werten, der Assistant-Pfad **365 von 399** — **34 Einträge (9 %) tragen LLM-Freitext** statt eines der zehn Labels, darunter `'Kein Modus etabliert'`, `'theoretische_spezifikation'`, `'Wissensabfrage und fachliche Aufklärung'`; 32 verschiedene Werte insgesamt. Bei `intentionen` dasselbe Muster, kleiner: 2 von 874 Nennungen außerhalb des 16er-Kanons (`philosophischer_austausch`, `spielerisch_interagieren` — beides Modus-Werte im Intentionsfeld, beide von Nova). Die Asymmetrie ist lokalisierbar: `perzeption.task.txt` bindet, `perzeption.assistant_task.txt` nicht. `modus_pruefen` wurde in Chat 114 genau dafür gebaut und meldet `error` — sitzt aber im GV-Pfad; der KZG-Verdichtungs-Pfad, aus dem diese Einträge stammen, ruft es nicht. Der Chat-114-Fund ist damit halb geschlossen. **Verzerrung beachten:** Die Freitexte beschreiben überwiegend Registerwechsel in Prosa — also genau die Fälle, die eine Messung des Registerwegs braucht.
+
+**Was fertig waere.** Ein Wert ausserhalb des Kanons wird laut abgelehnt, auf beiden Seiten.
+
+**Prioritaet:** hoch.
+
+#### WISSENSLUECKEN-FELDER-LEER 🔧 offen
+
+**Befund (2026-07-29).** In den Wissenslücken-Einträgen des `gv_detail` bleiben `neugier_boost` und `register` ungelesen. Das Panel zeigt je Lücke Konzept, Quelle und Relevanz; die beiden Faktoren, aus denen die Relevanz mit entsteht, nicht. Wirkung klein — die Relevanz ist das Ergebnis, das man braucht —, aber bei einer auffälligen Rangfolge fehlt der Zerlegungsschritt. *(Der Top-Level-`drive` ist ebenfalls ohne Leser, das aber gegenstandslos: Das Panel liest `achsen["drive"]`, wo derselbe Wert nochmal steht.)*
+
+**Was fertig waere.** Die Felder tragen ihre Werte, oder sie stehen nicht im Eintrag.
+
+**Prioritaet:** mittel.
+
+#### ENTITAETEN-OHNE-EMBEDDING 🔧 offen
+
+**Befund (2026-07-29).** Entitäten entstehen ohne Zusammenfassung und ohne Embedding. Einziger aktiver Erzeuger ist `agents/kzg/magnete.py`, `_entitaeten_aufloesen` → `EntityResolutionService.create_new_entity(postgres_url, user_id, name, typ)` — vier Argumente, `zusammenfassung` und `embedding` sind nicht darunter. Gemessen 28.07.2026: **88 von 89** aktiven Entitäten haben ein leeres `zusammenfassung`-Feld; nur die eine `user`-Entität trägt eines (die aus `api/chat.py` stammt, wo beide Felder gesetzt werden). Die Spalten existieren beide in `entitaeten`. Wirkung heute: Jede Suche über die Zusammenfassung ist ohne Substrat — das war Tür 2 des GV-Entity-Hop-Befunds — und eine Embedding-Suche über Entitäten ist gar nicht möglich. Wirkung morgen: M2.5b und die Entity-Resolution selbst hängen an denselben zwei Feldern. Offen ist nicht der Fix, sondern die Frage, **woher** die Zusammenfassung einer im KZG-Pfad nebenbei aufgelösten Entität kommen soll — der Magnet-Pfad ist nicht-interaktiv und hat nur den Namen.
+
+**Was fertig waere.** Eine Entitaet entsteht mit Zusammenfassung und Embedding, oder ihr Fehlen ist gemeldet.
+
+**Prioritaet:** hoch.
+
+#### SUBMIT-SYNC-BEHAUPTET-WORKER-THREAD 🔧 offen
+
+**Befund (2026-07-29).** `submit_sync` behauptet in seiner Logzeile, aus einem Worker-Thread gerufen zu werden, und prüft es nicht. `services/model_services/worker_base.py`, `submit_sync`: Der Docstring nennt als Verwendung ausdrücklich „Konsumenten in sync-Kontexten (LangGraph-Nodes in `asyncio.to_thread`-Worker-Threads)", die Debug-Zeile schreibt wörtlich „submit_sync aus Worker-Thread" — beides ohne Prüfung. Wird die Funktion aus dem Event-Loop-Thread gerufen, blockiert sie den Loop, der die Antwort zustellen müsste, und läuft in den Timeout: gemessen am 29.07.2026 **33 Fehlschläge zu je 60 Sekunden hintereinander**, während dieselbe Ollama-Instanz direkt in 0,142 s antwortete. Die Fehlermeldung nennt dabei nur `TimeoutError` mit leerem Text und weist auf das Modell statt auf den Aufrufer. Die Prüfung wäre eine Zeile — ein `asyncio.get_running_loop()` in `try/except`: Gibt es im aufrufenden Thread einen laufenden Loop, ist der Aufruf falsch. Dieselbe Klasse wie `novaberg-lesson_l_log-behauptet-was-es-weiss.md`; Kontext in `novaberg-lesson_l_async-bruecken.md`.
+
+**Was fertig waere.** Der Aufruf prueft, ob er im Event-Loop-Thread laeuft, und scheitert dort laut statt in einen Timeout.
+
+**Prioritaet:** hoch.
+
+#### PROMOTION-LOG-ALTE-SKALA 🔧 offen
+
+**Befund (2026-07-29).** Die Gewinner-Log-Zeile der Synapsen-Promotion nennt die alte Salienz-Skala: `agents/synapsen_promotion/agent.py:256` schreibt `kzg_salienz={salienz:.3f} (0-10)`. Derselbe Commit, der die Skala auf 0–1 umgestellt hat, korrigierte den Modul-Docstring (Zeile 16) und den Kommentar an der Lesestelle (Zeile 235) — die Log-Zeile blieb stehen. Wer das Log liest, ordnet einen Wert von 0.95 auf einer Skala bis 10 ein und hält ihn für niedrig.
+
+**Was fertig waere.** Die Logzeile nennt die geltende Skala.
+
+**Prioritaet:** niedrig.
+
+#### GRAVITATION-KLEMME-FEHLT 🔧 offen
+
+**Befund (2026-07-29).** Die Klemme in `ei/gravitation.py` fehlt weiterhin: Zeile 336 übernimmt `salienz` ungeklemmt als `gewicht` in den Lesepfad. Der Backlog führt sie als Sofortfix (`KZG-SALIENZ-KONSUMENTEN-DISSENS`, Entscheidung aus Chat 109) und hält im selben Eintrag fest, dass sie nach dem Neubau zwar rechnerisch wirkungslos, aber **als Zusicherung des Lesers an sich selbst** richtig bleibt. Seit dem Salienz-Neubau vom 28.07. kann kein Wert über 1.0 mehr entstehen; die Zusicherung ist damit nicht erfüllt, sondern nur unbeobachtbar geworden.
+
+**Was fertig waere.** Der uebernommene Wert ist auf seine Spanne geklemmt, oder ein Wert ausserhalb wird gemeldet.
+
+**Prioritaet:** hoch.
+
+#### ROUTER-MISS-OHNE-ABSCHLUSS 🔧 offen
+
+**Befund (2026-07-28).** Der Router-Miss-Pfad in `services/pixie/scheduler.py` kehrt zurück, **ohne `abschluss()` zu rufen**. Ein periodischer Kandidat, für den kein Agent gefunden wird, behält damit sein `next_run` und wird beim nächsten Heartbeat erneut Kandidat. Ohne Aging war das harmlos — er verlor gegen die Queue. Mit dem Aging (Chat 113) wächst sein Zuschlag bis zum Deckel, und er gewinnt dann **jeden** Zyklus, ohne je zu laufen. Heute nicht akut: Alle sieben vorhandenen `pixie:schedule:*`-Einträge sind routebar, sechs über die Tabelle, `ziel_decay` über die Namensgleichheit. Der Fund ist die Falle für den nächsten Agenten ohne Routing-Eintrag.
+
+**Was fertig waere.** Jeder Pfad, der einen Auftrag annimmt, schliesst ihn auch ab.
+
+**Prioritaet:** hoch.
+
+#### DISPATCH-ABSCHLUSS-UNVOLLSTAENDIG 🔧 offen
+
+**Befund (2026-07-30).** `services/pixie/dispatch.py` `abschluss()`: Das Entfernen eines Queue-Auftrags steht **vor** der Abfrage auf `PIXIE_AKTIV`. Bei abgeschaltetem Pixie ist ein fehlgeschlagener Auftrag entfernt und wird nicht wieder eingereiht — er ist weg. Heute nicht akut, der Schalter steht im Betrieb auf `true`; eine Falle fuer den, der ihn umlegt. Durch einen Test gepinnt (`tests/test_pixie_abschluss.py`), damit die Reparatur eine Entscheidung ist und kein Nebeneffekt.
+
+**Was fertig waere.** Das Entfernen aus der Queue und der Abschluss gehoeren zusammen.
+
+**Prioritaet:** mittel.
+
+#### UNBEKANNTE-AKTION-FAELLT-DURCH 🔧 offen
+
+**Befund (2026-07-30).** `plugins/notizen_manager/manager.py` `execute()`: Eine **unbekannte Aktion** faellt stillschweigend durch — keine Zaehlung, keine Log-Zeile. Der stille Uebersprung, den der Standard verbietet. Zusaetzlich zaehlt der alte Update-Pfad **unbedingt**, der M6-Pfad nur bei gemeldetem Erfolg: `verarbeitet` bedeutet je Pfad etwas anderes. Beides mit `assertNoLogs` bzw. einem Vergleichstest gepinnt.
+
+**Was fertig waere.** Eine unbekannte Aktion scheitert laut.
+
+**Prioritaet:** mittel.
+
+#### THINKING-NULL-FALLE-LATENT 🔧 offen
+
+**Befund (2026-07-30).** Dieselbe Falle wie `OLLAMA-THINKING-NULL` sitzt latent drei Zeilen darüber: `services/llm_provider.py` liest `response.get("prompt_eval_count", 0)` und `response.get("eval_count", 0)`. Kommt dort je ein gesetztes `null` statt eines fehlenden Schlüssels, rechnet `input_tokens + output_tokens` mit `None` und stürzt — im Pfad der Token-Verbuchung, also **nach** dem erfolgreichen Call. Heute schlägt es nicht zu; Ollama liefert beide Zähler. *(Zeilennummern gemessen 30.07.2026: 166, 168, 169.)*
+
+**Was fertig waere.** Dieselbe Absicherung wie in der behobenen Stelle drei Zeilen darueber.
+
+**Prioritaet:** mittel.
+
+#### RECHERCHE-LEER-GLEICH-AUSFALL 🔧 offen
+
+**Befund (2026-07-30).** **„Keine Treffer" und „Suchdienst ausgefallen" nehmen im `RechercheAgent` denselben Weg.** Beide enden in `Keine Ergebnisse gefunden — Abbruch`, mit derselben Logzeile und ohne Unterscheidung. SearXNG liefert die Information mit: Jede Antwort trägt ein Feld `unresponsive_engines` mit Engine-Namen und Grund (`Suspended: CAPTCHA`, `Suspended: too many requests`, `access denied`, `timeout`). Das Feld wird nicht gelesen. Gemessen am 30.07.2026: 14 geprüfte Engines, 12 stumm, und die Ursache stand in jeder einzelnen Antwort.
+
+**Was fertig waere.** Keine Treffer und ein ausgefallener Suchdienst sind unterscheidbar.
+
+**Prioritaet:** hoch.
+
+#### RECHERCHE-RELEVANZ-UNGEPRUEFT 🔧 offen
+
+**Befund (2026-07-30).** **Der `RechercheAgent` prüft die Relevanz seiner Treffer nicht.** Nach der Wiederherstellung der Suche holte er für die Anfragen *information self-gravitation*, *neurobiological coherence resonance* und *topological phase transition* drei Texte: `photos.google.com` (3514 Zeichen), `support.microsoft.com` (4715) und einen Wikipedia-Artikel (5000). Zwei von drei sind Produktseiten ohne Bezug zur Anfrage und gehen unbewertet in die Weiterverarbeitung. Derselbe Effekt bei einer direkten Messung mit einer biologischen Fachanfrage aus drei Begriffen: erster Treffer eine Produktseite für ein Nahrungsergänzungsmittel. Die Trefferqualität hängt an der Engine, die Bewertung fehlt unabhängig davon.
+
+**Was fertig waere.** Die Treffer werden auf Bezug zum Thema geprueft, bevor sie ins Gedaechtnis gehen.
+
+**Prioritaet:** mittel.
+
+---
+
 ### Chat 133 — aus der Fundliste klassifiziert, Block 31.07. (08.08.2026)
 
 Acht Defekte. **Vier davon sind Prompt-Bloecke, die etwas ueber den Nutzer behaupten, was Novas Zustand ist** — dieselbe Verwechslung an vier Stellen, jede fuer sich unauffaellig.

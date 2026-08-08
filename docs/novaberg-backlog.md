@@ -113,6 +113,84 @@ Die Begründung stimmt für vier von sechs Personas und stand als **allgemeine**
 
 ---
 
+### Block 30.–27.07. — neun Einträge (08.08.2026)
+
+Der aelteste Bestand. **Acht der neun sind Struktur statt Verhalten** — tote Zweige, doppelte Formen, ein Dokument ohne Abgleich. Der neunte, die Ungleichverteilung des Repertoires, ist der einzige, der eine Absicht braucht.
+
+#### DOKU-MEHRDEUTIGE-ANKER
+
+**Befund (2026-07-28).** Doku-Hygiene, **gemessen**: Drei Dokumente vergeben Überschriften mehrfach und erzeugen damit mehrdeutige Anker — `novaberg-backlog.md` (3× „Phasen-Übersicht", 3× „Hintergrund", 2× „Auswirkung auf Akten-Vision"), `novaberg-roadmap.md` (je 2× „Dokumentation", „Backlog", „Bugfixes") und `novaberg-thinking-skills_k.md` (2× „Wetter-Anfragen"). Ein Zähler über alle `#`-Zeilen meldet zusätzlich `novaberg-memory-synapsen_k.md` mit 12 Treffern — das sind **Python-Kommentare in einem Code-Block**, kein Befund. Wer das nachmisst, muss Code-Fences überspringen.
+
+**Was fertig waere.** Jede Ueberschrift ist in ihrem Dokument eindeutig.
+
+**Prioritaet:** niedrig.
+
+#### AGENT-MD-NIE-GEPRUEFT
+
+**Befund (2026-07-28).** `server/agents/kzg/AGENT.md` ist nie gegen den Code geprüft worden. Der KZG-Agent hat seit der Erstfassung Nodes gewonnen und verloren (`magnete_aufloesen` kam, `aehnlichkeit_pruefen` ist gelöscht) — ob die AGENT.md das trägt, ist offen. Gilt sinngemäß für die übrigen AGENT.md-Dateien, die ebenfalls nie systematisch abgeglichen wurden.
+
+**Was fertig waere.** Das Agentendokument ist gegen den Code gelesen und trifft zu.
+
+**Prioritaet:** mittel.
+
+#### SESSION-CONTEXT-BUILD-OHNE-AUFRUFER
+
+**Befund (2026-07-28).** `memory/session.py:313` `session_context_build()` hat **keinen Aufrufer**. Sie setzt Zusammenfassung und Turns zu einem `[Aktuelle Unterhaltung]`-Block zusammen — genau die Aufgabe, die der Responder seit dem Verlaufs-Umbau selbst und in anderer Form erledigt (`graph/nodes/responder.py`, Turn-Paare unter `----- Turn n von m -----`). Gemessen repoweit über alle Dateitypen: **zwei** Treffer, beide Definition bzw. Re-Export (`memory/__init__.py:39`). Positivkontrolle auf dasselbe Muster mit `session_turns_retrieve`: 52 Treffer in 27 Dateien. Der Befund ist nicht der tote Code, sondern die Falle: Wer den Gesprächskontext nachvollziehen will, findet zuerst diese Funktion und liest eine Formatierung, die kein LLM mehr sieht. **Anhängend:** `SESSION_MAX_TURNS` (=20) wird ebenso exportiert, steht im Code aber an genau einer Stelle — dem `except`-Zweig von `session_summarize_if_needed` (`session.py:202`), also im Notpfad bei gescheitertem LLM-Call. Der reguläre Deckel heißt `SESSION_SUMMARIZE_AT` (=25). Der Name der exportierten Konstante behauptet, sie sei die Regel.
+
+**Was fertig waere.** Die Funktion hat einen Aufrufer oder ist entfernt.
+
+**Prioritaet:** niedrig.
+
+#### EIGENIMPULSE-IN-DER-SCHWELLE
+
+**Befund (2026-07-28).** Novas Eigen-Impulse zählen in die Zusammenfassungs-Schwelle, **erscheinen aber nie im Gesprächsverlauf**. Ein Impuls läuft durch den CharacterGraph; der Dispatcher schreibt dafür einen `assistant`-Session-Turn ohne `user`-Gegenstück. Beide Verlaufs-Bildner überspringen alleinstehende `assistant`-Turns: der Paar-Bildner im Responder (`graph/nodes/responder.py:672-674`) und `format_session_turns_numbered` (`memory/session.py:283-286`), das GV-Node, Router, Perzeption und vier Agenten-Klassifikationen lesen. *(Zeilennummern gemessen 28.07.2026.)* Gemessen am 28.07.2026, 20:15 UTC: `session:<user>:<character>:turns` = 20 Einträge, davon **12 `assistant` gegen 8 `user`**; der Responder-Prompt desselben Fensters trug 7 Turn-Paare. Vier Einträge zählen damit gegen `SESSION_SUMMARIZE_AT`, ohne je im Prompt gestanden zu haben — bei Erreichen der Schwelle schneiden sie echte Wortwechsel weg. Ob ein Impuls in den Verlauf gehört, ist eine offene Frage; dass er ihn verkürzt, ohne darin vorzukommen, ist keine.
+
+**Was fertig waere.** Die Zusammenfassungs-Schwelle zaehlt, was sie zaehlen soll — und es steht dabei, was das ist.
+
+**Prioritaet:** mittel.
+
+#### REPERTOIRE-UNGLEICH-VERTEILT
+
+**Befund (2026-07-29).** Die Repertoire-Matrix schließt keine Strategie global aus, verteilt sie aber stark ungleich — und der schiefste Punkt fällt mit dem häufigsten Zustand zusammen. Über alle 64 Sektoren und 14 Cluster gerechnet: Erreichbarkeit von **100 %** (`Bestaetigung`, nie `unpassend`) bis **28 %** (`Impuls`); im Mittel trägt ein Sektor **3,66 von 7** Strategien. Zwei Strukturbefunde daraus: **`Perspektivwechsel` ist in keinem der 14 Cluster Kernstrategie** (0× kern, 2× passt, 3× selten, 9× unpassend) — wählbar, aber nie das Werkzeug der Landschaft; und **`paradox` hat überhaupt keine Kernstrategie**, verfügbar sind dort nur `Sp` (passt), `Be` (passt), `Pr` (selten). `paradox` ist mit **14 von 64 Sektoren (21,9 %) der größte Raum**, das LLM bekommt dort einen `[WERKZEUGE]`-Block ohne ein einziges ★. Dazu Chat 114: Sektor **#37 „Fiebrige Heiterkeit" war über 45 Läufe der häufigste des Systems** — und #37 liegt in `paradox`. **Nicht gemessen ist die heutige Häufigkeit:** Der Container-Log deckt 11 Stunden und 9 Sektor-Zuweisungen ab, mehrere aus Probeläufen — keine Reihe; die 45-Läufe-Messung stammt von vor dem Raum-Umbau derselben Sitzung. Ob eine Landschaft ohne Kernstrategie vorgesehen ist, sagt das Konzept nicht (§10.1 regelt nur, dass der Cluster das Repertoire bestimmt und der Charakter darin gewichtet).
+
+**Was fertig waere.** Die Ungleichverteilung ist als gewollt benannt, oder sie ist ausgeglichen.
+
+**Prioritaet:** mittel.
+
+#### NOTIZEN-ENRICH-16-ZWEIGE
+
+**Befund (2026-07-30).** `plugins/notizen_manager/manager.py` `enrich_entries()` traegt **16 Verzweigungen und 67 Anweisungen** — mehr als jede der fuenf Funktionen, die an diesem Tag zerlegt wurden. Sie tauchte in der Liste der Zaehlregel-Funde nicht auf, weil sie im **Ueberlappungsbereich** von C901 und PLR0912 liegt: Wer nur die eigenstaendigen Treffer der einen Regel ansieht, uebersieht die groessten Faelle, weil die von beiden Regeln gemeldet werden. Der Fund ist nicht die Funktion, sondern die Auswahlmethode.
+
+**Was fertig waere.** Die Funktion ist zerlegt.
+
+**Prioritaet:** niedrig.
+
+#### LLM-PROVIDER-ZWEIG-UNERREICHBAR
+
+**Befund (2026-07-30).** `services/llm_provider.py`: Der defensive Zweig, der `message` als Dict *oder* Objekt behandelte, war **nie erreichbar**. Drei Zeilen darueber ruft die Token-Verbuchung `response.get(...)` — ein Objekt scheitert dort mit `AttributeError`, bevor die Absicherung greift. Beim Schreiben des Tests aufgefallen, nicht beim Lesen des Codes. Behoben: Der Typ ist jetzt festgelegt, ein Vertragsbruch kracht laut.
+
+**Was fertig waere.** Der nie erreichbare Zweig ist entfernt oder erreichbar.
+
+**Prioritaet:** niedrig.
+
+#### FUENF-STELLEN-FORM-MEHRFACH
+
+**Befund (2026-07-30).** Fünf Stellen schreiben eine Form mehrfach hin, statt sie einmal zu benennen. Alle fünf sind über die Verzweigungsregel des Linters aufgefallen und einzeln gelesen; keine ist ein Defekt, alle fünf sind Struktur. **Der gemeinsame Nenner ist die Wiederholung, nicht die Kompliziertheit** — die Verzweigungszahl ist bei diesen fünf kein Ausdruck von Sachkomplexität, sondern von einem zweimal hingeschriebenen Muster.
+
+**Was fertig waere.** Die Form steht einmal und wird benannt verwendet.
+
+**Prioritaet:** niedrig.
+
+#### LOGGING-PROZENT-STATT-FSTRING
+
+**Befund (2026-07-30).** **65 Logging-Aufrufe formatieren über `%`-Platzhalter mit Argumenten** statt über den vorgeschriebenen f-String, zum Beispiel `logger.info("… %s", basis_top)` in `graph/nodes/ei_calc.py:252` und `logger.exception("%s: kanten_alle_loeschen fehlgeschlagen", type(exc).__name__)` in `memory/lzg_kanten.py:512`. Zum Vergleich am selben Bestand gezählt: **538** Aufrufe mit f-String. Die Stellen verteilen sich über den Baum, sie sind kein Nest in einer Datei. Berührt die Begründung, mit der `G004` in der Linter-Konfiguration abgeschaltet ist — dort steht, f-Strings seien im Logging *vorgeschrieben*, was für 65 Stellen so nicht zutrifft. *(Zeilennummern gemessen 30.07.2026.)*
+
+**Was fertig waere.** Alle Aufrufe folgen der vorgeschriebenen Form, oder die Vorschrift nennt beide.
+
+**Prioritaet:** niedrig.
+
+---
+
 ### Block 31.07., Nachtrag (08.08.2026)
 
 #### PROMPT-DOPPELTE-FORMULIERUNG

@@ -717,3 +717,9 @@ charakter_filter:   kern_hash-Resonanz ≥ 0.40   (GV_CHARAKTER_RESONANZ_SCHWELL
 ---
 
 *Erstellt Chat 71. Synthetisiert Russell (1980), Leary (1957), Bales (1979), Schulz v. Thun (1981), Rogers (1961), Winnicott (1965), Loewenstein (1994). 64 Sektoren systematisch durchmustert. Dreischicht-Architektur (Strategie × Absicht × Vehikel) als Erweiterung der Vier-Seiten-Theorie. Charakter-abgeleitete Gewichtung über Embedding-Similarity.*
+
+---
+
+## Der Charakter zieht gegen die Landschaft, und die Landschaft gewinnt
+
+**`gemessen` 29.07.2026.** Der Charakter zieht im `schlachtfeld`-Cluster gegen die Landschaft, und die Landschaft gewinnt vollständig. Erster Befund aus der neuen Repertoire-Sektion, live abgelesen: Novas stärkste Affinität ist `Impuls` mit **35 %** — im Cluster als `unpassend` geführt und damit ausgeschlossen. Die Kernstrategie `Sachbeitrag` liegt bei **28 %**, gewählt wurde `Perspektivwechsel` (31 %, „passt"). Von den drei höchsten Charakterwerten sind zwei ausgeschlossen. Dass der Cluster das Repertoire bestimmt und der Charakter nur darin gewichtet, ist Konzept §10.1 und **kein Defekt** — offen ist, ob die Spreizung gewollt ist: In einem Cluster, das ihre drei liebsten Werkzeuge sperrt, arbeitet Nova dauerhaft unter ihrer Präferenz. Erst jetzt überhaupt beobachtbar; vor Chat 116 war das Repertoire im Panel nicht sichtbar. Zwei Zahlen aus einem Turn sind keine Reihe — vor einer Entscheidung über mehrere Cluster messen.
