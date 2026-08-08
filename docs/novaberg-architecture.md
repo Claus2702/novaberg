@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Systemarchitektur, Tech-Stack, Plugin-System
-**Stand:** 31. Juli 2026, abends (`graph/nodes/haltung.py` im Verzeichnisbaum ergänzt, Knotenzahlen des CharacterGraph und des Node-Verzeichnisses neu gezählt — beide standen älter als der Verfasser da. Zuvor: `ei/haltung.py` im Verzeichnisbaum ergänzt und der Eintrag zum Haltungsraum im Dokumenten-Index auf das Beitragsmodell umgestellt — die Rechnung ist gebaut, der Knoten fehlt. Zuvor: `novaberg-node-verfasser_k.md` im Dokumenten-Index ergänzt — Konzept, nicht gebaut. Zuvor: `ruff-hart.toml` im Verzeichnisbaum ergänzt, §3 — die harte Teilmenge ohne geduldeten Bestand. Zuvor: `ruff.toml` im Verzeichnisbaum ergänzt, §3. Zuvor: Verzeichnisbaum nachgezogen — `ei/` vollständig, vier fehlende Agenten ergänzt. Kern: Chat 94, Microservice-Welle Block 2+3; Embedding-Modellwechsel Chat 107, §2.4)
+**Stand:** 8. August 2026 (`novaberg-graph-rechenkette.md` im Dokumenten-Index Tiefe 1 ergänzt — das Register der 34 Rechensysteme des Charakter-Pfads, zerlegt entlang der Rechnungen statt entlang der Knoten. Zuvor: 31. Juli 2026, abends — `graph/nodes/haltung.py` im Verzeichnisbaum ergänzt, Knotenzahlen des CharacterGraph und des Node-Verzeichnisses neu gezählt — beide standen älter als der Verfasser da. Zuvor: `ei/haltung.py` im Verzeichnisbaum ergänzt und der Eintrag zum Haltungsraum im Dokumenten-Index auf das Beitragsmodell umgestellt — die Rechnung ist gebaut, der Knoten fehlt. Zuvor: `novaberg-node-verfasser_k.md` im Dokumenten-Index ergänzt — Konzept, nicht gebaut. Zuvor: `ruff-hart.toml` im Verzeichnisbaum ergänzt, §3 — die harte Teilmenge ohne geduldeten Bestand. Zuvor: `ruff.toml` im Verzeichnisbaum ergänzt, §3. Zuvor: Verzeichnisbaum nachgezogen — `ei/` vollständig, vier fehlende Agenten ergänzt. Kern: Chat 94, Microservice-Welle Block 2+3; Embedding-Modellwechsel Chat 107, §2.4)
 **Pfad:** novaberg/docs/novaberg-architecture.md
 **Quellen:** nova-00-a.md (Architektur-Übersicht), nova-07-a.md (Tech-Stack), nova-07-m-a.md (Plugin-System)
 
@@ -612,6 +612,7 @@ Das Handbuch ist nach Betrachtungstiefen organisiert. Tiefe 0 ist der Einstiegsp
 |----------|-------------|
 | novaberg-architecture.md | Systemarchitektur, Tech-Stack, Plugin-System (dieses Dokument) |
 | novaberg-graph.md | Graph-Architektur, HumanGraph, AgentGraph, Agent-System, State |
+| novaberg-graph-rechenkette.md | **Rechenkette des CharacterGraph** — Register der 34 Rechensysteme in sechs Stufen: was jedes aus welchen Eingängen berechnet und auf welchem Weg es die Antwort erreicht. Zerlegt entlang der Rechnungen statt entlang der Knoten (ein Knoten trägt bis zu sechs Systeme, ein System läuft über zwei Knoten) und weist je System Reinheit und Prüfstand aus; §11 nennt die drei Größen, die erst im Folgeturn wirken |
 | novaberg-memory.md | Gedaechtnis-Ueberblick (Session → KZG → LZG → KG) |
 | novaberg-ei.md | Emotionale Intelligenz Ueberblick |
 | novaberg-pixie.md | Pixie-System, Scheduling, Queue/Stack/Delivery |
