@@ -503,7 +503,15 @@ else:
 - **`paradox` belegt 21,9 % des Rohraums** (14 von 64 Sektoren) und kommt gemessen auf 5,0 % bzw. 1,9 %. Ob das eine bewusste Reserve für widersprüchliche Lagen ist oder eine unbesetzte Fläche, steht nirgends. Erster Ort zum Nachsehen bei B4.
 - ~~**Die Ablesung fällt in 14 % der Fälle aus** und ist vor allem anderen zu klären (B1).~~ → **Erledigt am 08.08.2026.** Sie fiel in **28,1 %** der Bogen-Ablesungen aus, nicht in 14 %, und nicht zufällig: 82 von 164 Turns mit `distanz`, 0 von 340 mit `neutral` (§4a).
 
-- **Die Ist-Verteilung ist auf dem reparierten Gerät zu wiederholen.** §4b ist über 628 Ablesungen vom 31.07. bis 08.08.2026 erhoben, also vor der Reparatur. Der Lauf ist derselbe und kostet nichts; er braucht nur Turns, die danach entstanden sind. **Vor B3.**
+- **Die Ist-Verteilung ist auf dem reparierten Gerät zu wiederholen.** §4b ist über 628 Ablesungen vom 31.07. bis 08.08.2026 erhoben, also vor der Reparatur. ~~Der Lauf ist derselbe und kostet nichts; er braucht nur Turns, die danach entstanden sind.~~ -> **Widerlegt am 08.08.2026, beim Versuch, ihn zu fahren.** Der Lauf ist derselbe, aber er kostet: **Alle siebzehn Personas der Validierungsmenge tragen bereits genau 30 Rohturns**, und das Rig verweigert einen zweiten Bogen gegen dieselbe Kennung - *"dieses Paar hat schon einen Bestand ... zwei Gespraeche in einem Profil sind nicht trennbar."* Der Riegel ist richtig; er verhindert genau die Vermischung, die jede Aussage ueber den Charakter entwertete.
+
+  **Damit hat die Wiederholung drei Wege, und keiner ist umsonst:**
+
+  1. **Bestand zuruecksetzen und neu fahren.** Zerstoert das Material, auf dem §4b beruht - dieselbe Klasse Verlust, die am 08.08.2026 eine Kalibrier-Persona gekostet hat.
+  2. **Frische Kennungen.** Kostet nichts, beantwortet aber nur eine der vier Teilmengen: Eine frische Kennung hat **kein destilliertes Rad**, und genau "mit destilliertem Rad" war beim ersten Mal mit 80 von 360 Turns die duennste.
+  3. **Das produktive Paar.** Es traegt ein destilliertes Rad, aber seine Turns entstehen im Gespraech und unterliegen der Themenbindung fuer Messturns.
+
+  **Die Wahl ist eine Absichtsfrage und keine Ausfuehrungsfrage** - sie entscheidet, was von der ersten Erhebung erhalten bleibt. **Vor B3.**
 
 - **Der Basisarm der Validierungsmenge fuhr zu drei Vierteln ohne destilliertes Charakter-Rad** — 80 von 360 Turns hatten eines, 70 rechneten gegen ein Vorgabe-Rad, 109 gegen keines (§4b). Das ist kein Befund dieses Konzepts, aber es begrenzt jede Aussage, die auf den zwölf Bögen fußt, und gehört deshalb hierher.
 - **Auf welchem Bestand kalibriert wird, ist offen.** Die zwölf Bögen und das produktive Paar haben fast gegenläufige Verteilungen; eine Kalibrierung auf den Bögen kalibriert auf ein anderes Gespräch.

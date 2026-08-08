@@ -254,6 +254,14 @@ Alle sechs Systeme dieser Stufe laufen im GV-Knoten. **S17 bis S21 stehen vor be
 **Reinheit:** rein. `aufnahmebereitschaft_berechnen`, `sektor_distanz`, `register_kompatibilitaet`, `session_aktualitaet`.
 **Prüfstand:** `test_gv_aufnahmebereitschaft.py`.
 
+> **Der Bereich ist ausgezaehlt, 08.08.2026 — und die Zusicherung haelt.** 826.200 Zellen ueber alle 17 kanonischen Emotionen, 10 beobachtete Erregungen, 9 Vektoren, 10 Modi, 6 Dynamiken und 9 Stile:
+>
+> - Spanne **0,0000 bis 1,0000**, Median **0,5363** — der Docstring sagt "neutral ~0.56", und das trifft.
+> - **Die reservierte Null ist reserviert:** 73.440 Zellen (8,89 %) erreichen 0,00, und **alle** davon ueber die Krise. Kein einziger arithmetischer Weg dorthin.
+> - Die Saettigung am oberen Ende greift in **0,01 %** der Zellen.
+>
+> **Die Vermutung, die dahinterstand, ist damit widerlegt:** Ein Produkt aus sechs multiplikativen Faktoren koennte die reservierte Null auch rechnerisch treffen — dieselbe Verwechslung von Ausfall und Messwert, die B1 gekostet hat. Es kann nicht. Die Zusicherung stand auf fuenf Personas und gilt ueber den Raum.
+
 **Die Null ist reserviert.** Ein neutraler Zustand liegt bei rund 0,56; 0,00 bedeutet Krise. Deshalb wird die Bereitschaft in **jedem** Turn gerechnet und nicht erst ab der Strategie-Länge — stünde sie hinter dem Tor, trüge jeder kurze Vektor eine Null, die von einer gemessenen Krise nicht zu unterscheiden wäre.
 
 ### S19 — Initiative
@@ -308,6 +316,19 @@ Die Normierung ist **asymmetrisch** — nach unten gegen den Abstand zum Minimum
 **Beitrag:** Entscheidet über das Vorausdenken **und über nichts sonst.** Bis zum 08.08.2026 hing die Landschafts-Ablesung mit an dieser Zahl; über 845 Rohturns fielen dadurch 184 Ablesungen aus, davon 82 von 164 Turns mit Beziehungsdynamik `distanz` und **keiner** der 340 mit `neutral` — das Messgerät schaltete sich auf der fernen Hälfte der Nähe-Achse ab. `gemessen` 08.08.2026.
 **Reinheit:** rein. `_vektor_laenge_berechnen`, `_ist_krise`, `_ist_skip`.
 **Prüfstand:** `test_gv_landschaft_immer.py`.
+
+> **Der Bereich ist ausgezaehlt, 08.08.2026 — und das obere Ende ist praktisch unerreichbar.** 16.200 Zellen (3 Emotionsgruppen x 10 im Bestand beobachtete Erregungen x 10 Modi x 6 Dynamiken x 9 Stile), gegen die echte Funktion gerechnet, Gegenprobe null Abweichungen:
+>
+> | Laenge | Anteil des Raums |
+> |---|---|
+> | 0 — kein Vorausdenken | 17,54 % |
+> | 1 | 55,52 % |
+> | 2 | 26,42 % |
+> | **3** | **0,51 %** (83 von 16.200) |
+>
+> Der Rohwert reicht von **−0,43 bis +3,02**; die 3,02 erreicht **eine** einzige Kombination. Die Kappung oben greift damit in 0,01 % der Zellen, die untere in 1,62 %. **Nicht die Kappungen sind der Befund, sondern dass die Skala vier Werte verspricht und drei liefert.** Dieselbe Klasse wie die vier nie betretenen Landschaften, eine Ebene tiefer.
+>
+> **Und 13,9 % aller Nullen entstehen aus der Rundungsregel**, nicht aus der Rechnung: Ihr Rohwert liegt bei mindestens 0,5, und Python rundet zur geraden Zahl (`GV-LAENGE-RUNDUNG-ZUR-GERADEN`). Ueber den Bestand gemessen waren es 26 % von 96 Nullen; ueber den Raum 13,9 % von 2.842.
 
 **Die Krise hat eine eigene Marke.** `_ist_krise` steht als eigene Funktion, weil zwei Aufrufer dieselbe Bedingung brauchen: Der eine setzt die Länge auf 0, der andere muss die Krise vom arithmetisch erreichten Nullwert **unterscheiden** können. Eine 0 trägt ihren Grund nicht mit sich; `gv_detail["vorausdenken"]` trägt ihn — `gelaufen`, `skip`, `krise` oder `laenge_null`.
 
@@ -488,5 +509,6 @@ Drei Größen wirken **nicht** im Turn, in dem sie entstehen, sondern im nächst
 
 ## Versionshistorie
 
+- **v0.3 — 08.08.2026:** **S21 und S18 sind ueber ihren vollen Eingaberaum ausgezaehlt** — die beiden reinen Systeme, die nach S5 auf der Liste standen. Bei S21 ein Erreichbarkeits-Befund derselben Bauart wie die vier nie betretenen Landschaften, eine Ebene tiefer: **Laenge 3 belegt 0,51 % des Raums**, die Skala verspricht vier Werte und liefert drei; der groesste Rohwert 3,02 wird von einer einzigen Kombination erreicht. Bei S18 das Gegenteil, und das ist genauso wichtig: **Die Zusicherung haelt.** Die reservierte Null ist ueber 826.200 Zellen ausschliesslich ueber die Krise erreichbar, kein arithmetischer Weg fuehrt dorthin, und der Median von 0,5363 trifft den Docstring-Wert. **Eine Vermutung, die sich nicht bestaetigt, ist ein Ergebnis** — sie stand auf fuenf Personas und gilt jetzt ueber den Raum.
 - **v0.2 — 08.08.2026:** **S5 hat einen Prüfstand, und der erste Test hat zwei Defekte gefunden.** Der Eingaberaum des Emotionsvektors ist geschlossen und wurde vollständig ausgezählt statt beprobt — 1.508.598 Folgen über alle 17 kanonischen Emotionen. Die Naht zu Achse R hält (kein totes Ende in beide Richtungen, R=0 zu R=1 steht bei 65,3 % zu 34,7 % des Raums). Gefunden wurde anderes: Der Intensitätsanstieg war an der **Namensmenge** gemessen statt an der Erregung, und ließ sich deshalb von einer Emotion der Gegengruppe auslösen — bis in den Krisenmarker `spirale` hinein. Und `plateau` trug vier Bedeutungen, darunter „es gab nichts zu messen", ohne Marke. Beides ist gebaut: Die Intensität kommt aus der Erregung (Schwelle **0,10**, abgeleitet aus dem Zehntelraster der liefernden Skala und 769 gemessenen Fenstern), die Grundlage reist als `richtung_quelle` in die Landschaftszeile. Dabei fiel eine dritte Zahl an, die niemand gesucht hatte: In **69,8 %** des Raums und **46,5 %** der Bestands-Turns ist die „dominante Gruppe" gar keine Mehrheit, sondern ein über die letzte Emotion aufgelöster Gleichstand — benannt, nicht behoben. §7 (S20) trägt die neue Marke, §12 zählt ein reines System weniger ohne Test.
 - **v0.1 — 08.08.2026:** Erstfassung. Vollständige Lesung des Charakter-Pfads und der Rechenmodule; 34 Systeme in sechs Stufen, davon fünfzehn rein. **S26 beschreibt die Wegform**, also den Stand nach dem Umbau der Naht vom selben Tag — die Fassung davor addierte Grundwert und rohe Radsumme. Wer eine Messreihe von vor diesem Tag liest, liest gegen die additive Form. Neu gegenüber dem Bestand ist nicht der Inhalt der einzelnen Rechnungen — der steht in den Node- und Konzeptdokumenten —, sondern die **Zerlegung entlang der Rechnungen statt entlang der Knoten**: Der GV-Knoten trägt sechs Systeme, die emotionale Gravitation läuft über zwei Knoten, und drei Größen wirken erst im Folgeturn (§11). Zwei Feststellungen aus dem Audit sind hier zum ersten Mal festgehalten: die Quelle des Farbtons weicht von seinen Satztexten ab (§7, S17), und die Kopplung der Fragen-Spalte an `CLUSTER_FRAGEN` ist von keinem Test gedeckt (§8, S26). Beide stehen als Zeile in `novaberg-fundliste.md`.
