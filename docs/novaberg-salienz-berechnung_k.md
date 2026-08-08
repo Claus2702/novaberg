@@ -175,6 +175,8 @@ Die zwölf Sektoren und ihre Züge sind **nachkalibrierbar**. Sie sind eine Setz
 
 **Wer diese Listen nach Zugstärke sortiert, zerstört die Anordnung**, ohne dass am Faktor etwas auffiele. Deshalb hält `GegenpolAnordnungTest` die Paare als Literal fest, und der Client führt dieselbe Ordnung.
 
+> **Der Prompt und die Geometrie deuten denselben Fall verschieden.** `auditiert` 31.07.2026. `CHARAKTER_RAD_PROMPT` sagt dem Modell ausdrücklich, *„eine Eigenschaft kann auch dann ausgepraegt sein, wenn ihr Gegenstueck es ebenfalls ist"* — beide Enden belegt ist dort ein **eigenständiger Zustand**. Auf dem Rad mit Gegenpol-Anordnung heißt derselbe Fall etwas anderes: Der Punkt wandert zur Nabe, also **Aufhebung**. Für das Beispiel im Prompt geht das gut, weil `widerspenstig` und `wissbegierig` einander nicht gegenüberliegen (siehe das dritte Beispiel unten). Für ein echtes Gegenpol-Paar ist offen, ob „beides stark" als *unentschieden* zu lesen ist oder als **zwei Aussagen, die man nicht verrechnen darf** — die Entscheidung steht aus, und bis sie fällt ist eine Abweichung kein Defekt.
+
 ### Drei Beispiele
 
 | Charakter | Rechnung | Faktor |
