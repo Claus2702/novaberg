@@ -53,6 +53,19 @@ COOLDOWN_TTL:         int   = 3600    # Cooldown-Key TTL in Sekunden
 # ─────────────────────────────────────────────
 # Cosine Similarity
 # ─────────────────────────────────────────────
+_COMPATIBLE_MODES: dict[str, set] = {
+    "fachgespraech":           {"lernmodus", "beratend", "berichtend"},
+    "philosophischer_austausch": {"kreativ", "emotional"},
+    "alltag":                  {"spielerisch", "emotional"},
+    "arbeitsmodus":            {"beratend", "berichtend", "fachgespraech"},
+    "emotional":               {"philosophischer_austausch", "alltag"},
+    "spielerisch":             {"alltag", "kreativ"},
+    "lernmodus":               {"fachgespraech", "beratend"},
+    "kreativ":                 {"philosophischer_austausch", "spielerisch"},
+    "beratend":                {"fachgespraech", "arbeitsmodus", "lernmodus"},
+    "berichtend":              {"arbeitsmodus", "fachgespraech"},
+}
+
 def _cosine_similarity(vec_a: list[float], vec_b: list[float]) -> float:
     """Berechnet die Cosine Similarity zwischen zwei Vektoren."""
     if not vec_a or not vec_b:
@@ -113,20 +126,8 @@ def _modus_kompatibel(
         return 1.0
 
     # Kompatibilitäts-Gruppen
-    KOMPATIBEL: dict[str, set] = {
-        "fachgespraech":           {"lernmodus", "beratend", "berichtend"},
-        "philosophischer_austausch": {"kreativ", "emotional"},
-        "alltag":                  {"spielerisch", "emotional"},
-        "arbeitsmodus":            {"beratend", "berichtend", "fachgespraech"},
-        "emotional":               {"philosophischer_austausch", "alltag"},
-        "spielerisch":             {"alltag", "kreativ"},
-        "lernmodus":               {"fachgespraech", "beratend"},
-        "kreativ":                 {"philosophischer_austausch", "spielerisch"},
-        "beratend":                {"fachgespraech", "arbeitsmodus", "lernmodus"},
-        "berichtend":              {"arbeitsmodus", "fachgespraech"},
-    }
 
-    kompatible: set = KOMPATIBEL.get(gespraechs_modus, set())
+    kompatible: set = _COMPATIBLE_MODES.get(gespraechs_modus, set())
 
     if stack_modus in kompatible:
         return 0.7

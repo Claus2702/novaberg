@@ -121,12 +121,12 @@ class BackgroundWorkerFifoTest(_BaseBackgroundWorkerTest):
 class BackgroundWorkerExceptionTest(_BaseBackgroundWorkerTest):
     """Test 3 — Backend wirft, Worker propagiert via Future (kein silent skip)."""
 
-    class _BackendFehler(RuntimeError):
+    class _BackendError(RuntimeError):
         pass
 
     async def _build_worker(self) -> None:
         self.worker, self.analyse, self.sprache = _make_worker(
-            analyse_exception=self._BackendFehler("Analyse kaputt"),
+            analyse_exception=self._BackendError("Analyse kaputt"),
         )
 
     async def test_exception_propagation(self) -> None:
@@ -134,7 +134,7 @@ class BackgroundWorkerExceptionTest(_BaseBackgroundWorkerTest):
             messages=[{"role": "user", "content": "X"}],
             modus="analyse",
         )
-        with self.assertRaises(self._BackendFehler) as cm:
+        with self.assertRaises(self._BackendError) as cm:
             await self.worker.submit(request)
         self.assertIn("Analyse kaputt", str(cm.exception))
 

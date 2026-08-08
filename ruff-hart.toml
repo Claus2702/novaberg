@@ -140,4 +140,38 @@ select = [
     "W292",
     "W293",
     "W605",
+
+    # N (pep8-naming) — Namensformen.
+    #
+    # Bestand am 08.08.2026, ruff 0.16.0, ueber server/: 0 Treffer, nachdem
+    # dreissig bereinigt wurden — 20x N802 (Endpunkt-Handler in PascalCase),
+    # 6x N806 (Konstanten im Funktionsrumpf), 4x N818 (Ausnahmen ohne
+    # Error-Suffix). Nulllinie 2177 -> 2147.
+    #
+    # Alle sechzehn Regeln sind stable, keine im Preview: N801-N807, N811-N818,
+    # N999. NPY001-003 und NPY201 beginnen zwar mit N, gehoeren aber zur
+    # Familie NPY und werden von diesem Kuerzel NICHT mitselektiert — gemessen
+    # am 08.08.2026, die Statistik meldet sie unter "N" nie.
+    #
+    # REICHWEITE, gemessen am 08.08.2026: Fuer **jede** der sechzehn Regeln
+    # wurde ein Verstoss konstruiert und gemeldet. Drei brauchten dabei einen
+    # zweiten Anlauf, und der Grund gehoert dazu, weil er sonst beim naechsten
+    # Mal wieder Zeit kostet:
+    #   N811 feuert nur bei einem echten Konstanten-Namen in der Quelle
+    #        (`from calendar import EPOCH as epoch`), nicht bei `sep as s`.
+    #   N817 feuert bei einem Akronym aus den Initialen (`TestCase as TC`);
+    #        ein Kuerzel wie `HTTPConnection as HC` faellt vorher auf N814.
+    #   N999 feuert nur INNERHALB eines Pakets — eine schlecht benannte Datei
+    #        ohne `__init__.py` daneben bleibt stumm.
+    #
+    # WAS DIESE WAND NICHT LEISTET, und das ist der Teil, der sonst spaeter
+    # falsch erinnert wird: Sie prueft die **Form**, nicht die **Sprache**.
+    # `12_NAMENSGEBUNG.md` §1 schreibt englische Bezeichner vor; eine neue
+    # Funktion namens `haltung_berechnen` ist snake_case und passiert diese
+    # Wand ohne Widerspruch. Sprachtrennung steht in §7a ausdruecklich als
+    # nicht maschinell pruefbar. Die Wand faengt PascalCase-Funktionen,
+    # Konstanten im Funktionsrumpf und Ausnahmen ohne Error-Suffix — mehr
+    # nicht, und der Bestand an deutschen Bezeichnern bleibt fuer sie
+    # unsichtbar.
+    "N",
 ]

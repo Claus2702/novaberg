@@ -382,6 +382,14 @@ _strategie_embeddings_cache: dict[str, list[float]] = {}
 # ─────────────────────────────────────────────
 
 
+_DRIVE_SIGN: dict[str, float] = {
+    "aufbluehen": 1.0, "eskalation": 0.8, "erholung": 0.5,
+    "stabilisierung": 0.0, "plateau": 0.0,
+    "abkuehlung": -0.3, "einbruch": -0.7, "spirale": -1.0, "absturz": -1.0,
+}
+
+_SUITABILITY_RANK: dict[str, int] = {"kern": 0, "passt": 1, "selten": 2}
+
 def achsen_berechnen(
     state:    ConversationState,
     fuehrung: Fuehrung | None = None,
@@ -481,12 +489,7 @@ def achsen_berechnen(
         initiative_bin = initiative_bit(initiative_roh, GV_INITIATIVE_SCHWELLE)
 
     # ── Drive (4-Achsen-Reduktion): E × R-Vorzeichen ──
-    _VORZEICHEN: dict[str, float] = {
-        "aufbluehen": 1.0, "eskalation": 0.8, "erholung": 0.5,
-        "stabilisierung": 0.0, "plateau": 0.0,
-        "abkuehlung": -0.3, "einbruch": -0.7, "spirale": -1.0, "absturz": -1.0,
-    }
-    drive: float = arousal * _VORZEICHEN.get(vektor, 0.0)
+    drive: float = arousal * _DRIVE_SIGN.get(vektor, 0.0)
 
     achsen: dict = {
         "energie_roh":     round(energie_roh, 2),
@@ -755,9 +758,7 @@ def dreischicht_prompt_bauen(
             continue
         char_sim: float = gewichtung.get(strat_id, 0.5)
         verfuegbar.append((strat_id, eignung, char_sim))
-
-    _EIGNUNG_RANG: dict[str, int] = {"kern": 0, "passt": 1, "selten": 2}
-    verfuegbar.sort(key=lambda x: (_EIGNUNG_RANG.get(x[1], 9), -x[2]))
+    verfuegbar.sort(key=lambda x: (_SUITABILITY_RANK.get(x[1], 9), -x[2]))
 
     # Der Marker steht HINTER dem Kuerzel. Stand er davor, begann die Zeile mit
     # einer Glyphe, das LLM antwortete formattreu "STRATEGIE: ● Sp" — und der

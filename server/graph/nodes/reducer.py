@@ -149,6 +149,8 @@ def _exakt_dedup(entries: list[ContextEntry]) -> list[ContextEntry]:
     return result
 
 
+_MIN_LENGTH: int = 10
+
 def _substring_dedup(entries: list[ContextEntry]) -> list[ContextEntry]:
     """Stufe 2: Kuerzere Eintraege, die in laengeren enthalten sind, verwerfen.
 
@@ -156,7 +158,6 @@ def _substring_dedup(entries: list[ContextEntry]) -> list[ContextEntry]:
     Sortierung nach Inhalt-Laenge absteigend stellt sicher, dass das laengste
     Original bestehen bleibt und nur Kuerzlinge wegfallen.
     """
-    MIN_LAENGE: int = 10
     sortiert: list[ContextEntry] = sorted(
         entries, key=lambda e: len(e["inhalt"]), reverse=True
     )
@@ -165,7 +166,7 @@ def _substring_dedup(entries: list[ContextEntry]) -> list[ContextEntry]:
 
     for entry in sortiert:
         norm: str = _normalisiere(entry["inhalt"])
-        if len(norm) < MIN_LAENGE:
+        if len(norm) < _MIN_LENGTH:
             result.append(entry)
             normalisierte.append(norm)
             continue

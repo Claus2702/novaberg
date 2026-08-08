@@ -81,16 +81,16 @@ class ChatWorkerFifoTest(_BaseChatWorkerTest):
 class ChatWorkerExceptionTest(_BaseChatWorkerTest):
     """Test 3 — Backend wirft, Worker propagiert via Future (kein silent skip)."""
 
-    class _BackendFehler(RuntimeError):
+    class _BackendError(RuntimeError):
         pass
 
-    backend_exception = _BackendFehler("Backend kaputt")
+    backend_exception = _BackendError("Backend kaputt")
     backend_contents = ["dummy"]  # wird nie verwendet
 
     async def test_exception_propagation(self) -> None:
         request = ChatRequest(messages=[{"role": "user", "content": "X"}])
 
-        with self.assertRaises(self._BackendFehler) as cm:
+        with self.assertRaises(self._BackendError) as cm:
             await self.worker.submit(request)
 
         self.assertIn("Backend kaputt", str(cm.exception))

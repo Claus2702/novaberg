@@ -266,7 +266,7 @@ def _erwartung_pruefen(
 
 # ── Lauf gegen den Parser ───────────────────────────────────────────────────
 
-class UmgebungFehlt(RuntimeError):
+class MissingEnvironmentError(RuntimeError):
     """Der Lauf ist nicht aussagekraeftig, weil eine Abhaengigkeit fehlt."""
 
 
@@ -318,13 +318,13 @@ def korpus_laufen(
             waere. Nur zum Pruefen des Laeufers selbst auf False setzen.
 
     Raises:
-        UmgebungFehlt: Wenn eine Abhaengigkeit fehlt und `umgebung_erzwingen`.
+        MissingEnvironmentError: Wenn eine Abhaengigkeit fehlt und `umgebung_erzwingen`.
     """
     # ── Eingabe ─────────────────────────────────
     if umgebung_erzwingen:
         maengel: list[str] = umgebung_pruefen()
         if maengel:
-            raise UmgebungFehlt(
+            raise MissingEnvironmentError(
                 "Korpuslauf abgebrochen — das Ergebnis waere nicht "
                 "aussagekraeftig:\n  " + "\n  ".join(maengel)
             )

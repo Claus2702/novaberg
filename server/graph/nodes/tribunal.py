@@ -58,6 +58,8 @@ _SCHWELLWERTE: dict[str, tuple[float, float]] = {
 }
 
 
+_VOTE_RANK: dict[str, int] = {"ok": 0, "warnung": 1, "ablehnen": 2}
+
 def _score_to_vote(agent_name: str, score: float) -> str:
     """Leitet Vote aus Score und konfigurierbaren Schwellwerten ab."""
     warnung_schwelle, ablehnen_schwelle = _SCHWELLWERTE.get(
@@ -186,8 +188,7 @@ def _agent_vote(
                 direktiven_score = max(0.0, min(1.0, float(ergebnis.get("direktiven_score", 0.0))))
                 allgemein_vote: str = _score_to_vote("jurist", score)
                 dir_vote: str = _score_to_vote_direktive(direktiven_score)
-                _VOTE_RANG: dict[str, int] = {"ok": 0, "warnung": 1, "ablehnen": 2}
-                derived_vote = max([allgemein_vote, dir_vote], key=lambda v: _VOTE_RANG[v])
+                derived_vote = max([allgemein_vote, dir_vote], key=lambda v: _VOTE_RANK[v])
             else:
                 direktiven_score = 0.0
                 derived_vote = _score_to_vote(agent_name, score)

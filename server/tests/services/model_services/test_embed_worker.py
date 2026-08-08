@@ -102,17 +102,17 @@ class EmbedWorkerExceptionTest(unittest.IsolatedAsyncioTestCase):
     async def test_embed_worker_exception_propagation(self):
         """submit() raised die Original-Exception, kein silent skip."""
 
-        class OllamaSimulierterFehler(RuntimeError):
+        class OllamaSimulatedError(RuntimeError):
             pass
 
         with patch.object(self.worker, "_client") as mock_client:
-            mock_client.embed.side_effect = OllamaSimulierterFehler(
+            mock_client.embed.side_effect = OllamaSimulatedError(
                 "Ollama nicht erreichbar"
             )
 
             request = EmbedRequest(text="X")
 
-            with self.assertRaises(OllamaSimulierterFehler) as cm:
+            with self.assertRaises(OllamaSimulatedError) as cm:
                 await self.worker.submit(request)
 
             self.assertIn("Ollama nicht erreichbar", str(cm.exception))

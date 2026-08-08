@@ -89,6 +89,15 @@ class MarkerRegel:
     notiz: str = ""
 
 
+_RELATIVE_DAYS: dict[str, int] = {
+    "heute": 0,
+    "morgen": 1,
+    "übermorgen": 2,
+    "uebermorgen": 2,
+    "vorgestern": -2,
+    "gestern": -1,
+}
+
 def _wortgruppe(*woerter: str) -> str:
     """Alternation aus Woertern, laengste zuerst."""
     return "|".join(sorted(woerter, key=len, reverse=True))
@@ -552,16 +561,8 @@ def _text_normalisieren(
     ergebnis = re.sub(r'\b[Aa]m\s+', '', ergebnis)
 
     # ── 0b. Relative Tage in konkrete ISO-Daten umrechnen ──
-    _RELATIVE_TAGE: dict[str, int] = {
-        "heute": 0,
-        "morgen": 1,
-        "übermorgen": 2,
-        "uebermorgen": 2,
-        "vorgestern": -2,
-        "gestern": -1,
-    }
 
-    for wort, offset in _RELATIVE_TAGE.items():
+    for wort, offset in _RELATIVE_DAYS.items():
         if re.search(r'\b' + wort + r'\b', ergebnis, flags=re.IGNORECASE):
             konkretes_datum: str = (heute + timedelta(days=offset)).isoformat()
             ergebnis = re.sub(
