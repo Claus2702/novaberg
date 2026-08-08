@@ -234,6 +234,45 @@ Deshalb: kein Anteil davon in der Kalibrierung aus §5. Erschöpfung ist ein **Z
 
 **Kosten:** ein Redis-Lesezugriff mit Embedding der Vorantwort und ein Datenbanklauf auf den beiden Wegen, die früh zurückkehren. Kein LLM — die teure Lückensuche und die Charakter-Gewichtung stehen weiterhin hinter dem Längen-Tor, und ein Test hält sie dort.
 
+#### Die Messung am laufenden System
+
+Die Wiedergabe über gespeicherte Eingaben ist kein Beleg dafür, dass der Weg im Betrieb trägt. Drei echte Turns gegen eine frische, isolierte Kennung, 12:35 bis 12:37 UTC am 08.08.2026:
+
+| Turn | Eingabe | Lage | Ablesung |
+|---|---|---|---|
+| 1 | Sachfrage | `knowledge · distanz · lernmodus` | `wartezimmer` |
+| 2 | Rückblick auf das Gespräch | `task · neutral · berichtend` | `wartezimmer` |
+| 3 | betont förmliche Sachfrage | — | `foyer` |
+
+**Alle drei tragen eine Landschaft. Keine Zeile `keine Landschaft in gv_detail`.**
+
+Turn 1 ist der Beleg, auf den es ankommt: `distanz` bei `lernmodus` ergibt 1,0 − 0,5 − 0,3 = 0,2, also Länge 0. **Vor der Reparatur hätte dieser Turn kein `gv_detail` bekommen.**
+
+Der Zustand nach Turn 3, aus Redis gelesen:
+
+```
+vorausdenken          'laenge_null'
+cluster               'foyer'          sektor_name  'Stiller Respekt'
+laenge                0                strategie/vehikel/absicht  ''
+aufnahmebereitschaft  0.502
+achsen                E=0 R=0 N=0 V=1 T=1 I=0   →  Index 6
+```
+
+Drei Dinge stehen darin, die vorher nicht dastanden. Die **Landschaft** auf einem Turn ohne Vorausdenken. Die **Aufnahmebereitschaft** mit 0,502 statt der 0,0, die das Konzept der Krise vorbehält — dieselbe Lücke, eine Größe weiter, auf demselben Weg. Und die **Antizipations-Hälfte ehrlich leer**, mit der Marke daneben, die sagt warum.
+
+Der Sektorindex rechnet sich aus den Bits zu 6, und Eintrag 6 der Tabelle ist `("Stiller Respekt", "foyer")` — die Zuordnung ist damit nicht nur geschrieben, sondern am Ergebnis nachgerechnet.
+
+**Und die Leiter erreicht den Prompt.** Aus dem Server-Log desselben Turns:
+
+```
+Landschaft: Foyer — Ruhiges Tiefgespraech mit respektvoller Distanz.
+Genauer: Stiller Respekt
+Lage: wenig Energie im Raum · die Stimmung sinkt · ihr steht euch fern ·
+      positiv gefaerbt · tiefes Gespraech · der Mensch treibt
+```
+
+Ein Turn, der heute Morgen nichts getragen hätte, gibt Nova jetzt drei Auflösungsstufen seiner Lage.
+
 **Nicht angefasst und weiterhin offen** (Zeilen in `novaberg-fundliste.md` vom 08.08.2026): die Rundung `round(0.5) → 0`, die 25 der 96 Längen-Nullen verursacht, und zwei der drei Skip-Auslöser (`begruessung`, `system`), die in 845 Turns null mal vorkommen. Beide betreffen das Vorausdenken, nicht mehr die Ablesung.
 
 ### B2 — Die Ist-Verteilung, getrennt nach Bedingung ✅ **erhoben am 08.08.2026, siehe §4b**
@@ -271,6 +310,24 @@ Deshalb: kein Anteil davon in der Kalibrierung aus §5. Erschöpfung ist ein **Z
 | **MESSUNG** | Dieselbe Entscheidungsfolge vor und nach der Justierung über denselben Bestand: Wie viele Turns wechseln die Landschaft, und wohin? |
 | **Gegenprobe** | Grenzen unverändert: Das Ergebnis muss dem heutigen Verhalten exakt entsprechen. |
 
+> **MESSUNG und Gegenprobe waren bis zum 08.08.2026 nicht fahrbar, und niemand hatte es bemerkt.** Beide sind ein Nachrechnen über gespeicherte Eingangsgrößen. Haltbar war aber nur das *Ergebnis* — der Cluster in der `haltungsraum`-Zeile — und vom Weg dorthin genau ein Bit, die Initiative. Eine Abfrage über **alle** Schlüssel aller `pipeline_log`-Einträge nach `achse|naehe|tiefe|valenz|energie|richtung|sektor` kam leer zurück. Die sechs Achsen standen ausschließlich im `gv_detail`, also in einem Redis-Wert, den der nächste Turn überschreibt.
+
+**Seit dem 08.08.2026 ist die Voraussetzung gebaut.** Der GV-Node schreibt je Turn eine Zeile mit `schritt='landschaft'`: die sechs Achsen roh **und** binär, dazu die Eingangsgrößen, die kein Rohwert ist (`valenz_quelle` — die Emotion, aus der der Plutchik-Sektor fällt), Sektor und Landschaft, und **die geltende Fassung** — alle vier Schwellen, die Richtungsabbildung und der Umfang der Sektortabelle.
+
+Die Fassung reist mit, aus demselben Grund, aus dem die Initiative seit Chat 116 ihre `skalenfassung()` mitschreibt: Ein Nähe-Rohwert von 0,48 heißt bei Schwelle 0,50 „fern" und bei 0,45 „nah". Ohne die Grenze im selben Eintrag ist nach der ersten Justierung nicht mehr trennbar, ob sich Novas Raum bewegt hat oder der Maßstab.
+
+**Am ersten gespeicherten Eintrag nachgerechnet:**
+
+| Grenze | Sektor | Landschaft |
+|---|---|---|
+| 0,50 (gespeichert) | #6 Stiller Respekt | `foyer` — **identisch mit dem gespeicherten Ergebnis** |
+| 0,25 | #14 Stilles Vertrauen | `glut` |
+| 0,75 | #6 Stiller Respekt | `foyer` |
+
+Die erste Zeile ist die Gegenprobe des Bauteils: unveränderte Grenzen, exakt dasselbe Ergebnis. Die zweite zeigt, dass eine Verschiebung am Bestand sichtbar wird — ohne einen einzigen neuen Turn.
+
+**Was das für den Umfang bedeutet:** Der Bestand wächst ab jetzt aus dem Normalbetrieb, ohne dass ein Bogen dafür gefahren wird. Die Zahl der Träger ist damit keine Budgetfrage mehr, sondern eine Zeitfrage. **Der Preis dafür, dass es zwei Monate lang niemand mitgeschrieben hat, ist bezahlt und nicht rückholbar:** Die 628 Ablesungen im Bestand tragen keine Achsen und sind für ein Replay verloren.
+
 ### B5 — Der Charakter verschiebt, er schließt nicht
 
 | Zeile | Inhalt |
@@ -304,6 +361,8 @@ Deshalb: kein Anteil davon in der Kalibrierung aus §5. Erschöpfung ist ein **Z
 - **Der Basisarm der Validierungsmenge fuhr zu drei Vierteln ohne destilliertes Charakter-Rad** — 80 von 360 Turns hatten eines, 70 rechneten gegen ein Vorgabe-Rad, 109 gegen keines (§4b). Das ist kein Befund dieses Konzepts, aber es begrenzt jede Aussage, die auf den zwölf Bögen fußt, und gehört deshalb hierher.
 - **Auf welchem Bestand kalibriert wird, ist offen.** Die zwölf Bögen und das produktive Paar haben fast gegenläufige Verteilungen; eine Kalibrierung auf den Bögen kalibriert auf ein anderes Gespräch.
 - **Die Erreichbarkeit unter Charakter ist nie durchgerechnet worden** — für die GV-Achse liegt die Tabelle vor, für die Landschaften nicht.
+
+- ~~**Ohne gespeicherte Achsen kostet jede Grenzvariante einen neuen Messlauf.**~~ → **Erledigt am 08.08.2026** (B4, Voraussetzung). Der Bestand entsteht ab jetzt aus dem Normalbetrieb. **Was offen bleibt, ist die Zeit:** Die Streuung zwischen Trägern ist groß — `kissenschlacht` steht im Mittel bei 24,8 % mit einer Spanne von 0 bis 65,4 % über zwölf Bögen, Streuung 24,5 Punkte. Zwölf Träger tragen ±14 Punkte, 24 tragen ±10, für ±5 wären es 96. **Daraus folgt der Zuschnitt von B3:** eine Rangfolge in Bändern ist auf zwölf Trägern begründbar, vierzehn Einzelzahlen sind es nicht.
 - **Ob die vierzehn Landschaften die richtige Auflösung sind**, ist nicht Gegenstand dieses Konzepts und bleibt beim Haltungsraum.
 - **Der Präzedenzfall selbst hat einmal versagt**, und der Grund gehört hierher: Eine Schwelle wurde für eine Größe erhoben, dann änderte sich die Größe, und die Schwelle blieb. Auf dem späteren Bestand trug die Minderheit 4,7 % statt der geforderten 15 %; live stand die Achse in 8 von 8 Turns auf demselben Bit. **Eine Erreichbarkeits-Kalibrierung ist kein Zustand, sondern eine Aussage über einen Bestand** — ändert sich der Bestand oder die Größe, ist sie neu zu erheben.
 
@@ -311,6 +370,8 @@ Deshalb: kein Anteil davon in der Kalibrierung aus §5. Erschöpfung ist ein **Z
 
 ## Versionshistorie
 
+- **v0.5 — 08.08.2026:** **Die Voraussetzung von B4 gebaut, nachdem sich zeigte, dass das Bauteil gar nicht fahrbar war.** Seine MESSUNG und seine Gegenprobe rechnen beide über gespeicherte Eingangsgrößen nach; haltbar war aber nur das Ergebnis. Eine Abfrage über alle `pipeline_log`-Schlüssel nach den Achsennamen kam leer zurück — die sechs Bits standen nur in einem Redis-Wert, den der nächste Turn überschreibt. Der GV-Node schreibt sie jetzt je Turn mit, roh und binär, samt der Eingangsgröße, die kein Rohwert ist (`valenz_quelle`), und samt **der geltenden Fassung**: vier Schwellen, Richtungsabbildung, Umfang der Sektortabelle. Am ersten Eintrag nachgerechnet: mit der gespeicherten Grenze kommt exakt der gespeicherte Sektor heraus (die Gegenprobe), mit 0,25 wandert derselbe Turn nach `glut`. **Die Kostenrechnung dreht sich damit um** — der Bestand wächst aus dem Normalbetrieb, und die Zahl der Träger ist eine Zeitfrage statt einer Budgetfrage. Dazu die Streuungsrechnung, die den Zuschnitt von B3 entscheidet: zwölf Träger tragen ±14 Punkte, für ±5 wären es 96 — eine Rangfolge in Bändern ist begründbar, vierzehn Einzelzahlen nicht.
+- **v0.4 — 08.08.2026:** **B1 am laufenden System gemessen**, nicht nur wiedergegeben. Drei echte Turns gegen eine frische Kennung, alle drei mit Landschaft, keine Ausfallzeile. Der tragende ist Turn 1: `distanz` bei `lernmodus` ergibt Länge 0, er hätte vorher kein `gv_detail` bekommen. Der Zustand aus Redis zeigt drei Dinge, die vorher fehlten — die Landschaft auf einem Turn ohne Vorausdenken, die Aufnahmebereitschaft mit 0,502 statt der für die Krise reservierten 0,0, und die ehrlich leere Antizipations-Hälfte mit der Marke daneben. Der Sektorindex ist am Ergebnis nachgerechnet (Bits → 6 → `Stiller Respekt`/`foyer`). Und die Leiter steht im Prompt: Der Server hat sie im selben Turn geschrieben.
 - **v0.3 — 08.08.2026:** **B2 erhoben** — §4b neu, über 628 Ablesungen. Die Zerlegung geht auf (628 = 628), und die Gegenprobe ist am Bestand erfüllt statt konstruiert: vier Kennungen haben nie ein Rad geladen. **Aus zwei Teilmengen wurden vier**, weil der Bestand drei Radzustände kennt — ein Vorgabe-Rad rechnet sich glatt und sagt nichts über diesen Charakter — und weil „keine Ablesung" weder „mit" noch „ohne" ist. Zwei Befunde: Der Basisarm der Validierungsmenge fuhr **80 von 360 Turns mit destilliertem Rad**; und die Tabelle aus §4 ist ersetzt, weil sie vier der vierzehn Landschaften wegließ und ihre Nenner nicht nachvollziehbar sind. **Eine Aussage aus v0.2 wird dabei zurückgenommen:** Der Vorbehalt gegen „vier Landschaften nie betreten" gilt in voller Höhe für die Bögen (28,1 % fehlend), aber nicht für das produktive Paar — dort fehlen 6 von 113 Ablesungen, und selbst wenn alle sechs kühl gewesen wären, blieben die vier unter 6 %.
 - **v0.2 — 08.08.2026:** **B1 gebaut**, und die Nachrechnung vor dem Bauen hat den Befund vergrößert statt ihn zu bestätigen. Drei Korrekturen an v0.1: Der Nenner der Ausfallquote war doppelt (360 Ablesungen, nicht 720), die Quote also **28,1 %** statt 14 %; die Krise trägt **0 von 101** und nicht den Hauptteil; und der Ausfall ist nicht gleichverteilt, sondern hängt an Achse 3 — **82 von 164 Turns mit `distanz`, 0 von 340 mit `neutral`**. Damit steht §4a neu: Der Befund „vier Landschaften nie betreten" ist auf einem Gerät erhoben, das sich auf genau der fernen Hälfte der Nähe-Achse abschaltete. Die Ursache war eine Reihenfolge und kein Rechenfehler — die Landschaftsvermessung liest `internal`, die Tore davor lesen `external`, und eine Aussage über den Nutzer schaltete eine Messung an Nova ab. Der Präzedenzfall stand seit Chat 116 im GV-Konzept, wurde damals aber nur vor die Längen-*Schwelle* gezogen und nicht vor die beiden Rückkehrpunkte davor. **Entschieden am selben Tag:** Die Landschaft geht in den Responder-Prompt, gestaffelt von grob nach fein.
 - **v0.1 — 08.08.2026:** Erstfassung. Anlass ist die Frage, ob alle Landschaften gleich häufig erreichbar sein müssen — beantwortet mit **nein, aber erreichbar und im richtigen Verhältnis**. Die Suche nach dem Gegenstand vor dem Schreiben fand den Präzedenzfall: Für die 64 GV-Sektoren ist genau dieses Kriterium bereits entschieden, durchgerechnet und gebaut, samt der beiden Sätze *„Das Ziel ist Erreichbarkeit, nicht Häufigkeit"* und *„Der Charakter verschiebt, er schließt nicht"*, samt der Entscheidung gegen eine Laufzeit-Regelung. Dieses Konzept überträgt das Kriterium auf die vierzehn Gesprächslandschaften und erfindet es nicht. Gemessen am selben Tag: **alle vierzehn sind erreichbar**, aber im produktiven Bestand sind vier nie betreten worden, und die Verteilungen von Messbögen und echtem Gespräch sind fast gegenläufig. Drei Vorbehalte stehen bei den Zahlen — die Ablesung fällt in 101 von 720 Fällen aus, das Charakter-Rad fehlte in 109 Rechnungen, und die Bögen bilden das echte Gespräch nicht ab. Die tragende Reihenfolge: **Der Charakter muss auf einen kalibrierten Raum wirken, und diese Kalibrierung fehlt davor.**

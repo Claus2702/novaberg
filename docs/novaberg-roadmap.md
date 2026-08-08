@@ -2023,6 +2023,24 @@ Die Gegenläufigkeit der beiden Verteilungen bestätigt sich und ist schärfer a
 
 **Offen daraus:** Die Erhebung ist auf dem reparierten Gerät zu wiederholen, bevor B3 eine Zielverteilung setzt. Derselbe Lauf, nur mit Turns von nach der Reparatur.
 
+### Die Kostenfrage, und ein Bauteil, das nie fahrbar war
+
+Auf die Frage, was eine Neuerhebung kostet, kam eine Zwischenrechnung und dann ein Befund, der die Frage überflüssig machte.
+
+**Die Zwischenrechnung:** Die Streuung *zwischen* den Bögen ist der begrenzende Faktor, nicht die Zahl der Turns. `kissenschlacht` steht im Mittel bei 24,8 %, mit einer Spanne von 0 bis 65,4 % über zwölf Bögen und einer Streuung von 24,5 Punkten. Jeder Bogen besucht nur 4 bis 8 der vierzehn Landschaften, seine häufigste trägt 28 bis 65 %. **360 Turns aus zwölf Bögen sind zwölf Fälle** — dieselbe Cluster-Struktur wie beim Blindtest. Zwölf Träger tragen ±14 Punkte, 24 tragen ±10, für ±5 wären es 96, also acht Nächte auf Material, das das falsche Gespräch abbildet.
+
+**Der Befund:** Die sechs Achsen wurden **nirgends dauerhaft gespeichert**. Eine Abfrage über alle `pipeline_log`-Schlüssel nach `achse|naehe|tiefe|valenz|energie|richtung|sektor` kam leer zurück. Haltbar war nur das Ergebnis — der Cluster — und vom Weg dorthin genau ein Bit, die Initiative. Die Achsen standen vollständig im `gv_detail`, also in einem Redis-Wert, den der nächste Turn überschreibt.
+
+> **Damit war B4 seit seiner Formulierung nicht fahrbar, ohne dass es jemandem auffiel.** Seine MESSUNG ist „dieselbe Entscheidungsfolge vor und nach der Justierung über denselben Bestand", seine Gegenprobe verlangt, dass unveränderte Grenzen exakt dasselbe Ergebnis liefern. Beides rechnet über gespeicherte Eingangsgrößen nach.
+
+**Gebaut:** Der GV-Node schreibt je Turn eine Zeile mit `schritt='landschaft'` — die sechs Achsen roh und binär, `valenz_quelle` als Eingangsgröße der Achse ohne Rohwert, Sektor, Landschaft und die geltende Fassung mit allen vier Schwellen, der Richtungsabbildung und dem Umfang der Sektortabelle. Sie entsteht in der Vermessung selbst und damit auf jedem Weg des Knotens, auch auf denen ohne Vorausdenken.
+
+**Am ersten Eintrag nachgerechnet:** Mit der gespeicherten Grenze kommt exakt der gespeicherte Sektor heraus — das ist B4s Gegenprobe. Mit einer Nähe-Schwelle von 0,25 wandert derselbe Turn von `foyer` nach `glut`. Ohne einen einzigen neuen Turn.
+
+**Die Kostenrechnung dreht sich damit um.** Der Bestand wächst ab jetzt aus dem Normalbetrieb; die Zahl der Träger ist eine Zeitfrage statt einer Budgetfrage. **Der Preis für die zwei Monate ohne Mitschrift ist bezahlt und nicht rückholbar:** Die 628 Ablesungen im Bestand tragen keine Achsen.
+
+**Neu im Register:** `F-LAGE-2`.
+
 ---
 
 ## Chat 131 (07.08.2026) — Die Trennung von Kalibrieren und Validieren, und eine Zahl, die ungenauer ist als ihr p-Wert ✅

@@ -809,6 +809,21 @@ Sektor, Landschaft. Dahinter bleibt, was ohne LLM-Lauf niemand braucht: die Lüc
 Prompt. Der Preis auf den frühen Wegen ist ein Redis-Lesezugriff mit Embedding der
 Vorantwort und ein Datenbanklauf für den Charakter-Versatz.
 
+**Der Node schreibt seine Messung außerdem dauerhaft mit.** Je Turn eine Zeile im
+`pipeline_log` unter `node='gespraechsvektor'`, `art='berechnung'`, mit der Marke
+`schritt='landschaft'` — sie unterscheidet die Zeile von der Initiative-Zeile desselben
+Knotens und Turns. Inhalt: die sechs Achsen roh **und** binär, die Eingangsgröße, die
+kein Rohwert ist (`valenz_quelle`, die Emotion hinter dem Plutchik-Sektor), Sektor und
+Landschaft, und die **geltende Fassung** — alle vier Schwellen, die Richtungsabbildung
+und der Umfang der Sektortabelle.
+
+Der Grund ist derselbe wie bei `skalenfassung()`, nur für fünf weitere Achsen: Ein
+Nähe-Rohwert von 0,48 heißt bei Schwelle 0,50 „fern" und bei 0,45 „nah". Bis zum
+08.08.2026 standen die Achsen ausschließlich im `gv_detail` — also in einem Redis-Wert,
+den der nächste Turn überschreibt. **Haltbar war nur das Ergebnis**, und damit war jede
+spätere Justierung der Raumgrenzen nur durch einen neuen Messlauf prüfbar statt durch ein
+Nachrechnen.
+
 **Was der Node dabei zusätzlich mitschreibt:** `gv_detail['vorausdenken']` mit einer von
 vier Marken — `gelaufen`, `skip`, `krise`, `laenge_null`. Sie ist Pflicht, seit die
 Landschaft in jedem Turn dasteht: Ohne sie wäre eine Landschaft ohne Strategie von einer
