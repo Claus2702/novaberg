@@ -140,15 +140,20 @@ def _ei_calc_user(state: ConversationState) -> None:
     state["emotions_verlauf"] = emotions_verlauf
 
     # 2. Emotions-Vektor (in external.emotion.emotions_vector)
+    #    Die Erregung des laufenden Reizes wird mitgereicht: Ohne sie fehlt
+    #    dem eingespeisten Turn genau die Groesse, an der der Intensitaets-
+    #    anstieg gemessen wird, und die Rechnung faellt auf den Namensweg.
     stimmung = stimmungsvektor_bestimmen(
-        raw_turns, current_emotion, rolle="user",
+        raw_turns, current_emotion, current_arousal, rolle="user",
     )
     emotions_vektor: str = stimmung.vektor
     external.emotion.emotions_vector = emotions_vektor
     external.emotion.emotions_vector_quelle = stimmung.quelle
     logger.info(
-        "EI-Calc: Emotions-Vektor — %s (Grundlage %s)",
+        "EI-Calc: Emotions-Vektor — %s (Grundlage %s, Intensitaet %s ueber %s)",
         stimmung.vektor, stimmung.quelle,
+        f"{stimmung.intensitaet:+.3f}" if stimmung.intensitaet is not None else "n/a",
+        stimmung.intensitaet_quelle,
     )
 
     # 3. EI-Arousal
@@ -299,8 +304,12 @@ def _ei_calc_character(state: ConversationState) -> None:
     internal.emotion.emotions_vector = nova_emotions_vektor
     internal.emotion.emotions_vector_quelle = nova_stimmung.quelle
     logger.info(
-        "EI-Calc/Character: Emotions-Vektor — %s (nova_turns=%d, Grundlage %s)",
+        "EI-Calc/Character: Emotions-Vektor — %s (nova_turns=%d, Grundlage %s, "
+        "Intensitaet %s ueber %s)",
         nova_emotions_vektor, len(nova_turns), nova_stimmung.quelle,
+        f"{nova_stimmung.intensitaet:+.3f}"
+        if nova_stimmung.intensitaet is not None else "n/a",
+        nova_stimmung.intensitaet_quelle,
     )
 
     # Novas dominante Emotion dieses Turns in internal.emotion uebertragen.

@@ -492,6 +492,31 @@ EMOTION_MIN_WEIGHT: float = 0.15
 # Kurz halten — der Vektor soll Wendepunkte erkennen, nicht Grundstimmung.
 EMOTION_VEKTOR_TURNS: int = 8
 
+# Ab welchem Anstieg der mittleren Erregung zwischen den beiden Hälften des
+# Fensters ein gleichbleibender Gruppenverlauf als **Intensitätsanstieg** gilt
+# — die Bedingung, die `negativ→negativ` zu `spirale` und `positiv→positiv` zu
+# `eskalation` macht.
+#
+# **Herkunft, gemessen am 08.08.2026** über 769 Fünfer-Fenster aus 849 Turns
+# von 20 Paaren (`pipeline_log`, `art='turn_roh'`, Feld `user_emotion.arousal`
+# — der Wert, den der GV-Knoten gesehen hat). Der Median der Differenz ist
+# 0,000, der Median ihres Betrages **0,067**. Die Perzeption liefert Arousal in
+# **Zehntelschritten** (zehn Ausprägungen im Bestand, 0,1 bis 0,85).
+#
+# Daraus die 0,10 und nicht 0,067: Sie ist der kleinste Schritt, den die
+# liefernde Skala als gewollten Anstieg überhaupt ausdrücken kann. Alles
+# darunter entsteht durch die Mittelung der beiden Hälften und ist kein Signal
+# der Quelle. Sie liegt zugleich über der üblichen Schwankung und trifft
+# **20,5 %** der gemessenen Fenster — eine Minderheit, kein Münzwurf.
+#
+# **Der Vorbehalt gehört an die Zahl:** Gemessen ist die Nutzerseite, weil
+# Novas Erregungsverlauf je Turn nicht haltbar gespeichert ist
+# (`turn_roh.nova_emotion` entsteht nach der späten Perzeption). Achse R der
+# Landschaft rechnet aber auf **Novas** Vektor. Die Schwelle ist damit ein
+# Stellvertreter und nach der nächsten Messreihe gegen Novas eigene Verteilung
+# zu prüfen.
+GV_VEKTOR_INTENSITAET_SCHWELLE: float = 0.10
+
 # Woraus die Richtungsangabe eines Turns entstanden ist. Dieselbe Rolle, die
 # `valenz_quelle` für Achse V und `Fuehrung.fehlend` für Achse I hat: Das
 # Ergebnis reist mit seiner Eingangsgröße, sonst ist ein Ausfall von einer

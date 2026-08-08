@@ -23,6 +23,7 @@ from config import (
     EMOTION_MAX_TURNS,
     EMOTION_MIN_WEIGHT,
     EMOTION_VEKTOR_TURNS,
+    GV_VEKTOR_INTENSITAET_SCHWELLE,
     STIL_ANALYSE_TURNS,
     EI_AROUSAL_PERSISTENCE,
     EI_DYNAMIK_FAKTOREN,
@@ -317,10 +318,17 @@ class Stimmungsvektor:
     Attributes:
         vektor: Einer der neun Namen aus `EMOTIONS_VEKTOREN`.
         quelle: Ein Wert aus `VEKTOR_QUELLE_KANON` — worauf `vektor` beruht.
+        intensitaet: Anstieg der mittleren Erregung zwischen den Haelften.
+            `None`, wenn der Uebergang keiner mit gleicher Gruppe war oder
+            keine Erregung vorlag; dann ist die Groesse nicht anwendbar und
+            nicht etwa null.
+        intensitaet_quelle: `arousal`, `namensmenge` oder `nicht_anwendbar`.
     """
 
-    vektor: str = "plateau"
-    quelle: str = "zu_wenig_turns"
+    vektor:             str = "plateau"
+    quelle:             str = "zu_wenig_turns"
+    intensitaet:        float | None = None
+    intensitaet_quelle: str = "nicht_anwendbar"
 
 
 def _dominante_gruppe(turns: list[dict]) -> tuple[str, bool]:
@@ -357,9 +365,26 @@ def _dominante_gruppe(turns: list[dict]) -> tuple[str, bool]:
     return "neutral", True
 
 
+def _mittlere_erregung(haelfte: list[dict]) -> float | None:
+    """Mittlere Erregung einer Fensterhaelfte, oder None ohne Messwert.
+
+    Kein Vorgabewert: Ein Turn ohne Erregung liefert hier keine 0.5, sonst
+    zoege ein fehlender Wert das Mittel zur Mitte und die Differenz saehe
+    aus wie eine gemessene Ruhe.
+    """
+    werte: list[float] = [
+        float(t["arousal"]) for t in haelfte
+        if isinstance(t.get("arousal"), (int, float))
+    ]
+    if not werte:
+        return None
+    return sum(werte) / len(werte)
+
+
 def stimmungsvektor_bestimmen(
     turns: list[dict],
     current_emotion: str = "neutral",
+    current_arousal: float | None = None,
     rolle: str = "user",
     inject_current: bool = True,
 ) -> Stimmungsvektor:
@@ -369,14 +394,33 @@ def stimmungsvektor_bestimmen(
     Der aktuelle Prompt (current_emotion von der Perzeption) wird als neuester
     Datenpunkt eingefügt, damit der Vektor Richtungswechsel sofort erkennt.
 
+    Der **Intensitätsanstieg**, der `negativ→negativ` zu `spirale` und
+    `positiv→positiv` zu `eskalation` macht, wird an der mittleren Erregung
+    der beiden Hälften gemessen (`GV_VEKTOR_INTENSITAET_SCHWELLE`). Bis zum
+    08.08.2026 stand dort ein Stellvertreter: „eine Emotion, die vorher nicht
+    vorkam". Der verglich **Namen** und nicht Gruppen — über den vollständig
+    ausgezählten Eingaberaum lösten in 12,0 % der `spirale`- und 18,2 % der
+    `eskalation`-Fälle Emotionen der jeweils **anderen** Gruppe den Anstieg
+    aus. `freude, wut, hoffnung, wut` ergab `spirale`, ausgelöst von
+    `hoffnung`. Der Kanon in `config.py` sagt dagegen ausdrücklich „negativ ->
+    negativ, mit neuen **negativen** Gefuehlen"; Code und Festlegung liefen
+    auseinander.
+
+    Liegt keine Erregung vor, greift der Namensvergleich als benannter
+    Rückfall — dann aber **auf die Gruppe des Übergangs verengt**, wie der
+    Kanon es sagt. Welcher Weg gelaufen ist, steht in `intensitaet_quelle`.
+
     Args:
-        turns: Session-Turns, jeweils mit `rolle` und `emotion`.
+        turns: Session-Turns, jeweils mit `rolle`, `emotion` und `arousal`.
         current_emotion: Emotion des laufenden Reizes.
+        current_arousal: Erregung des laufenden Reizes. `None` heißt, dass
+            der eingespeiste Turn keine trägt — nicht, dass sie null ist.
         rolle: Welche Turns berücksichtigt werden ("user" oder "assistant").
         inject_current: Ob der laufende Reiz angehängt wird.
 
     Returns:
-        `Stimmungsvektor` mit einem der 9 Namen und seiner Grundlage.
+        `Stimmungsvektor` mit einem der 9 Namen, der Grundlage und der
+        gemessenen Intensität.
     """
     # 1. Nur User-Turns mit Emotion, kanonisiert, eigenes kurzes Fenster
     emotion_turns: list[dict] = []
@@ -390,7 +434,10 @@ def stimmungsvektor_bestimmen(
     # 1b. Aktuellen Prompt als neuesten Turn einfügen (optional — siehe inject_current)
     if inject_current and current_emotion:
         kanon_current: str = _emotion_kanonisieren(current_emotion)
-        emotion_turns.append({"rolle": rolle, "emotion": kanon_current})
+        laufender: dict = {"rolle": rolle, "emotion": kanon_current}
+        if current_arousal is not None:
+            laufender["arousal"] = current_arousal
+        emotion_turns.append(laufender)
 
     # 2. Zu wenig Daten — das ist keine Richtung, sondern ihr Fehlen.
     #    `plateau` steht hier als Wert, damit nachgelagerte Leser einen Namen
@@ -429,20 +476,49 @@ def stimmungsvektor_bestimmen(
         ("neutral", "neutral"):  "plateau",
     }
 
-    # 6. Intensitäts-Check für Spirale/Eskalation
-    # Neue Emotion die vorher nicht vorkam = Intensitätsanstieg
-    emotionen_alt: set[str] = {t.get("emotion", "") for t in aeltere}
-    emotionen_neu: set[str] = {t.get("emotion", "") for t in neuere}
-    neue_emotionen: set[str] = emotionen_neu - emotionen_alt
+    # 6. Gleiche Gruppe → steigt die Intensität, oder steht sie?
+    gleiche_gruppe: dict[str, str] = {
+        "negativ": "spirale",
+        "positiv": "eskalation",
+    }
+    if gruppe_alt == gruppe_neu and gruppe_alt in gleiche_gruppe:
+        erregung_alt: float | None = _mittlere_erregung(aeltere)
+        erregung_neu: float | None = _mittlere_erregung(neuere)
 
-    if uebergang == ("negativ", "negativ"):
-        return Stimmungsvektor(
-            vektor="spirale" if neue_emotionen else "plateau", quelle=quelle,
+        if erregung_alt is not None and erregung_neu is not None:
+            # Gerundet **vor** dem Vergleich, nicht erst fuer die Anzeige.
+            # Die Perzeption liefert Arousal in Zehnteln, die Schwelle steht
+            # auf einem Zehntel — der Grenzfall ist damit der Normalfall und
+            # nicht die Ausnahme. `0.6 - 0.5` ergibt in Binaergleitkomma
+            # 0.09999999999999998 und laege darunter: Ein Anstieg um genau
+            # einen Schritt der Quelle wuerde als kein Anstieg gelesen.
+            anstieg: float = round(erregung_neu - erregung_alt, 3)
+            steigt: bool = anstieg >= GV_VEKTOR_INTENSITAET_SCHWELLE
+            return Stimmungsvektor(
+                vektor=gleiche_gruppe[gruppe_alt] if steigt else "plateau",
+                quelle=quelle,
+                intensitaet=anstieg,
+                intensitaet_quelle="arousal",
+            )
+
+        # Rückfall ohne Erregung: der Namensvergleich, aber auf die Gruppe
+        # des Übergangs verengt — sonst hebt eine Emotion der Gegengruppe
+        # einen Anstieg, den es nicht gibt.
+        emotionen_alt: set[str] = {t.get("emotion", "") for t in aeltere}
+        emotionen_neu: set[str] = {t.get("emotion", "") for t in neuere}
+        neue_gleicher_gruppe: set[str] = {
+            e for e in (emotionen_neu - emotionen_alt)
+            if _emotion_zu_gruppe(e) == gruppe_alt
+        }
+        logger.info(
+            "EI-Vektor: keine Erregung im Fenster (%s) — Intensitaet ueber "
+            "die Namensmenge, auf Gruppe '%s' verengt",
+            rolle, gruppe_alt,
         )
-
-    if uebergang == ("positiv", "positiv"):
         return Stimmungsvektor(
-            vektor="eskalation" if neue_emotionen else "plateau", quelle=quelle,
+            vektor=gleiche_gruppe[gruppe_alt] if neue_gleicher_gruppe else "plateau",
+            quelle=quelle,
+            intensitaet_quelle="namensmenge",
         )
 
     return Stimmungsvektor(
@@ -460,10 +536,11 @@ def _emotions_vektor_bestimmen(
     """Nur der Name des Vektors — für Aufrufer ohne Bedarf an der Grundlage.
 
     Wer die Grundlage braucht, ruft `stimmungsvektor_bestimmen` direkt. Diese
-    Hülle bleibt, weil ein Name aus dem Kanon an vielen Stellen genügt.
+    Hülle bleibt, weil ein Name aus dem Kanon an vielen Stellen genügt; sie
+    reicht **keine** Erregung durch und läuft damit im Rückfallweg.
     """
     return stimmungsvektor_bestimmen(
-        turns, current_emotion, rolle, inject_current,
+        turns, current_emotion, None, rolle, inject_current,
     ).vektor
 
 
