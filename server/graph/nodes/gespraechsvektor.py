@@ -28,7 +28,7 @@ from config import (
     GV_LAENGE_MODUS_DELTA,
     GV_STRATEGIE_MIN_LAENGE,
 )
-from graph.state import ConversationState
+from graph.state import ConversationState, pipeline_quelle
 from memory.charakter import initiative_versatz_laden
 from memory.pipeline_log import log_berechnung, log_fehler
 from memory.session import format_session_turns_numbered
@@ -41,6 +41,7 @@ from ei.wissensluecken import wissensluecken_finden
 from ei.initiative import Fuehrung, fuehrung_messen, skalenfassung
 from ei.dreischicht import (
     achsen_berechnen,
+    achsen_fassung,
     sektor_bestimmen,
     repertoire_laden,
     charakter_gewichtung_berechnen,
@@ -785,6 +786,89 @@ VORAUSDENKEN_KRISE:       str = "krise"
 VORAUSDENKEN_LAENGE_NULL: str = "laenge_null"
 
 
+def _landschaft_protokollieren(
+    state:        ConversationState,
+    achsen:       dict,
+    sektor_index: int,
+    sektor_name:  str,
+    cluster:      str,
+) -> None:
+    """Schreibt die Achsen, den Sektor und die geltenden Grenzen in eine Zeile.
+
+    **Das Ergebnis allein ist kein Bestand.** Bis zum 08.08.2026 wurde von der
+    Landschaftsbestimmung nur der fertige Cluster haltbar (`haltungsraum`,
+    `berechnung`); die sechs Bits, aus denen er entsteht, standen ausschliesslich
+    im `gv_detail` und damit in einem Redis-Wert, den der naechste Turn
+    ueberschreibt. Eine Abfrage ueber alle `pipeline_log`-Schluessel nach den
+    Achsennamen kam an diesem Tag **leer** zurueck.
+
+    Die Folge war keine Luecke in der Doku, sondern ein nicht fahrbares Bauteil:
+    Die Justierung der Raumgrenzen (`novaberg-erreichbarkeit_k.md` B4) misst
+    „dieselbe Entscheidungsfolge vor und nach der Justierung ueber denselben
+    Bestand", und ihre Gegenprobe verlangt, dass unveraenderte Grenzen exakt
+    dasselbe Ergebnis liefern. Beides ist ein Nachrechnen ueber gespeicherte
+    Eingangsgroessen. Ohne sie kostet jede Grenzvariante einen neuen Messlauf,
+    in dem sich ausser den Grenzen auch alles andere geaendert hat.
+
+    **Die geltende Fassung reist mit.** Ein Naehe-Rohwert von 0,48 heisst bei
+    Schwelle 0,50 „fern" und bei 0,45 „nah"; ohne die Grenze im selben Eintrag
+    ist nach der ersten Justierung nicht mehr trennbar, ob sich Novas Raum
+    bewegt hat oder der Massstab — dieselbe Fehlerklasse, gegen die die
+    Initiative seit Chat 116 ihre `skalenfassung()` mitschreibt.
+
+    Geschrieben wird auf **jedem** Weg des Nodes, weil diese Funktion aus
+    `_lage_vermessen` heraus laeuft und das vor beiden Toren steht. Ein Bestand,
+    der die Turns ohne Vorausdenken auslaesst, haette denselben blinden Fleck,
+    den B1 gerade beseitigt hat.
+
+    Args:
+        state:        Zustand, aus dem Turn- und Paarbezug stammen.
+        achsen:       das Dict aus `achsen_berechnen`, roh und binaer.
+        sektor_index: 0 bis 63.
+        sektor_name:  der Name des Sektors.
+        cluster:      die Landschaft.
+
+    Vorbedingung: `state` traegt eine `turn_id`; ohne sie ist die Zeile keiner
+        Messung zuzuordnen und wird nicht geschrieben.
+    Nachbedingung: Eine `pipeline_log`-Zeile mit `schritt='landschaft'`.
+    Fehlerfaelle: Ein Forensik-Schreibfehler darf den Turn nicht toeten —
+        gekapselt und als `warning` gemeldet, wie in den uebrigen Knoten.
+    """
+    # ── Eingabe-Validierung ─────────────────────
+    turn_id: str = state.get("turn_id", "")
+    if not turn_id:
+        logger.error(
+            "Landschafts-Protokoll: kein turn_id im State — die Zeile waere "
+            "keiner Messung zuzuordnen und wird nicht geschrieben"
+        )
+        return
+
+    # ── Verarbeitung / Ausgabe ──────────────────
+    try:
+        log_berechnung(
+            turn_id      = turn_id,
+            node         = "gespraechsvektor",
+            quelle       = pipeline_quelle(state),
+            inhalt       = {
+                # Die Marke, an der diese Zeile von der Initiative-Zeile
+                # desselben Knotens und Turns zu unterscheiden ist.
+                "schritt":      "landschaft",
+                "achsen":       achsen,
+                "sektor_index": sektor_index,
+                "sektor_name":  sektor_name,
+                "cluster":      cluster,
+                "fassung":      achsen_fassung(),
+            },
+            user_id      = state.get("user_id", ""),
+            character_id = state.get("character_id", ""),
+        )
+    except Exception as fehler:
+        logger.warning(
+            f"Landschafts-Protokoll nicht geschrieben ({type(fehler).__name__}: "
+            f"{fehler}) — der Turn laeuft weiter, die Reihe hat eine Luecke"
+        )
+
+
 @dataclass(frozen=True)
 class Lage:
     """Der vermessene Zustand eines Turns, bevor ueber das Vorausdenken entschieden ist.
@@ -882,6 +966,10 @@ def _lage_vermessen(state: ConversationState) -> Lage:
     _initiative_protokollieren(state, fuehrung, achsen)
 
     sektor_index, sektor_name, cluster = sektor_bestimmen(achsen)
+
+    # Der Bestand, gegen den die Raumgrenzen spaeter justiert werden. Steht
+    # hier und nicht beim Aufrufer, damit er auf jedem Weg des Nodes entsteht.
+    _landschaft_protokollieren(state, achsen, sektor_index, sektor_name, cluster)
 
     # ── Ausgabe-Verifikation ────────────────────
     # `sektor_bestimmen` faellt bei einem Index ausserhalb der Tabelle auf

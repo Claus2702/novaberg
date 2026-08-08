@@ -485,9 +485,18 @@ def achsen_berechnen(
         "richtung_bin":    richtung_bin,
         "naehe_roh":       round(naehe_roh, 2),
         "naehe":           naehe_bin,
+        # V hat keinen Rohwert — das Bit kommt ueber den Plutchik-Sektor aus
+        # dem Emotionsnamen. Ohne ihn ist die Achse nicht nachrechenbar: Aus
+        # einer 1 allein laesst sich nicht erschliessen, welche Emotion sie
+        # erzeugt hat, und eine Aenderung an EMOTION_SEKTOR_MAP waere am
+        # Bestand nicht nachvollziehbar. Dasselbe Prinzip wie Rohwert und Bit
+        # bei den uebrigen: Das Ergebnis reist mit seiner Eingangsgroesse.
+        "valenz_quelle":   emotion,
         "valenz_bin":      valenz_bin,
         "tiefe_roh":       round(tiefe_roh, 2),
         "tiefe":           tiefe_bin,
+        # Der Modus zieht das Ziel des Raums, aus dem `tiefe_roh` stammt.
+        "tiefe_label":     modus,
         "initiative_roh":  round(initiative_roh, 3) if initiative_roh is not None else None,
         "initiative_fehlend": fuehrung.fehlend,
         "initiative":      initiative_bin,
@@ -562,6 +571,43 @@ def initiative_berechnen(state: ConversationState) -> float:
         f"(User avg={avg_user:.0f}, Nova avg={avg_nova:.0f})"
     )
     return verhaeltnis
+
+
+def achsen_fassung() -> dict:
+    """Liefert die Grenzen, die die sechs Achsen gerade binarisieren.
+
+    **Warum das mitgeschrieben werden muss** — dieselbe Begruendung wie bei
+    `skalenfassung()` in `ei/initiative.py`, nur fuer fuenf weitere Achsen.
+    Ein Naehe-Rohwert von 0,48 heisst bei Schwelle 0,50 „fern" und bei 0,45
+    „nah". Steht im Protokoll nur der Rohwert, ist nach der ersten Justierung
+    nicht mehr trennbar, ob sich Novas Raum bewegt hat oder die Grenze.
+
+    **Der Anlass ist ein konkretes Bauteil.** Die Justierung der Raumgrenzen
+    (`novaberg-erreichbarkeit_k.md` B4) misst „dieselbe Entscheidungsfolge vor
+    und nach der Justierung ueber denselben Bestand". Das ist ein Nachrechnen
+    ueber gespeicherte Eingangsgroessen — und es ist nur moeglich, wenn zu
+    jedem Bestandseintrag steht, gegen welche Grenzen er entstanden ist.
+
+    Die Sektortabelle steht mit drin, nicht als Inhalt, sondern als Laenge und
+    Fassung: Aendert sich die Zuordnung von Sektor zu Landschaft, sind zwei
+    Bestandsteile nicht mehr vergleichbar, auch wenn alle Grenzen gleich
+    blieben.
+
+    Vorbedingung: keine.
+    Nachbedingung: Ein flaches, JSON-taugliches Dict.
+    Fehlerfaelle: keine.
+
+    Returns:
+        Die geltenden Grenzen samt Umfang der Sektortabelle.
+    """
+    return {
+        "energie_schwelle":    GV_ACHSE_ENERGIE_SCHWELLE,
+        "naehe_schwelle":      GV_ACHSE_NAEHE_SCHWELLE,
+        "tiefe_schwelle":      GV_ACHSE_TIEFE_SCHWELLE,
+        "initiative_schwelle": GV_INITIATIVE_SCHWELLE,
+        "richtung_map":        dict(GV_RICHTUNG_MAP),
+        "sektoren":            len(SEKTOR_TABELLE),
+    }
 
 
 def sektor_bestimmen(achsen: dict) -> tuple[int, str, str]:
