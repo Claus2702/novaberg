@@ -33,6 +33,84 @@ Erste Erhebung der KZG-Salienz **nach** dem Reset, 400 Schlüssel des Paares `me
 
 ---
 
+## 0c. Aus der Fundliste klassifiziert — Chat 133 (08.08.2026)
+
+Sieben Einträge der Fundliste waren offene Arbeit: abschließbar, in unserem Code, und mit einer Antwort auf die Prüffrage *welche Arbeit wäre fertig, wenn der Eintrag geschlossen wird*. Drei davon sind Nähte ohne Prüfung, zwei sind Aussagen über den Zustand, die veraltet sind, und zwei sind Rechnungen ohne Abnehmer.
+
+#### KOPPLUNG-FRAGENSPALTE-UNGEPRUEFT — eine Tabelle ist aus einer zweiten übersetzt, und nichts hält sie zusammen
+
+Die Spalte `fragen` in `CLUSTER_GRUNDWERT` (`server/ei/haltung.py`) ist keine eigene Setzung, sondern eine Übersetzung von `CLUSTER_FRAGEN` (`server/ei/dreischicht.py`): „Häufig, begeistert" wird zu 0,90, „Keine" zu 0,00. Der Kommentar sagt es — *„Wer dort etwas ändert, ändert hier mit"* —, aber **kein Test erzwingt die Kopplung**, und die beiden Tabellen stehen in verschiedenen Modulen mit verschiedenen Wertetypen: Text gegen Zahl.
+
+Eine Änderung an der Fragefrequenz einer Landschaft schlägt damit auf die Prompt-Seite durch und auf die Haltungsrechnung nicht. Dieselbe Naht trägt beide Enden der Dreischicht: `CLUSTER_FRAGEN` geht in den GV-Prompt und in den Sprachstil-Block des Responders, `CLUSTER_GRUNDWERT` in die fünf Verhaltensgrößen.
+
+**Was fertig wäre:** ein Test, der beide Tabellen gegeneinander hält — Textstufe zu Zahlenwert, über alle vierzehn Landschaften. Der bestehende `test_die_fragenspalte_folgt_dem_bestand` prüft nur die Null-Richtung.
+
+**Priorität:** mittel. Der Bestand ist heute stimmig; der Defekt entsteht bei der nächsten Änderung und ist dann still.
+
+#### EINWANDSURTEIL-OHNE-LESER — eine Rechnung, deren Ergebnis nirgends ankommt
+
+Der Verfasser schreibt den Kanal `einwandsurteil`, `graph/state.py` deklariert ihn, `graph/base.py` und `graph/builder.py` legen ihn beim Zustandsaufbau an. **Ein Verbraucher existiert nicht.**
+
+Dieselbe Klasse wie die Haltung, deren fehlender Abnehmer in `novaberg-graph-rechenkette.md` S26 ausdrücklich als „Beitrag: heute keiner" steht — hier steht es nirgends. Eine Rechnung, deren Ergebnis nirgends ankommt, ist von einer wirksamen nicht zu unterscheiden, solange niemand die Kanäle zählt.
+
+**Was fertig wäre:** entweder der Anschluss an einen Leser, oder der Vermerk „Beitrag: heute keiner" am Erzeuger — mit dem Grund, warum die Rechnung trotzdem läuft.
+
+**Priorität:** niedrig. Kostet nichts außer Rechenzeit; teuer wird es erst, wenn jemand das Feld für wirksam hält.
+
+#### KANAELE-OHNE-VERTRAG — vier Kanäle des Zustands ohne beidseitige Zusage
+
+Über 63 deklarierte Kanäle des `ConversationState` mechanisch geprüft: `memory_entries_raw`, `system_prompt` und `timeline_id` haben **weder Schreiber noch Leser** — sie existieren nur im Schema. Und **`response` hat vier Schreiber** (`responder.py`, `thinker.py`, `corrector.py`, `character_graph.py`), `pending_writes` drei, fünf weitere je zwei. Mehrere Erzeuger für eine Größe sind die Klasse, die auseinanderläuft.
+
+**Die Prüfung hat zwei benannte blinde Flecken:** Sie sieht den Erzeugungspfad in `create_state` nicht — daher 15 Falschmeldungen „gelesen, nie geschrieben" — und keine Verbraucher außerhalb von `graph/` und `services/`; so fiel `such_vektor` zu Unrecht auf, den ein Plugin liest.
+
+**Was fertig wäre:** die Prüfung als wiederholbares Werkzeug, mit beiden blinden Flecken einmal beschrieben statt jedes Mal neu — und danach die Zahl, die heute fehlt: 63 Kanäle, davon *n* mit geprüftem Vertrag auf beiden Seiten.
+
+**Priorität:** hoch. Ohne die Zahl ist jede Aussage über die Zuverlässigkeit der Kette ein Eindruck.
+
+#### GV-SKIP-TOTE-AUSLOESER — eine dreiteilige Bedingung, die einteilig wirkt
+
+`_ist_skip()` überspringt bei `intent` in `("begruessung", "meta", "system")`. Über 845 Rohturns kommt `begruessung` **null** mal vor und `system` **null** mal; das Feld trägt `personal` (321), `knowledge` (248), `meta` (88), `smalltalk` (77), `task` (59), `creative` (32), `philosophischer_austausch` (17), `berichtend` (3). **Wirksam ist allein `meta`.**
+
+Ein Zweig, der auf einen Wert wartet, den niemand schreibt, ist von einem Zweig ohne Wirkung nicht zu unterscheiden — und die Bedingung sieht dreiteilig aus, während sie einteilig ist.
+
+**Was fertig wäre:** die Entscheidung, ob die Perzeption die beiden Werte liefern **soll** (dann fehlt sie dort) oder nicht (dann sind die beiden Zweige zu entfernen) — und die Umsetzung der einen oder anderen Seite.
+
+**Priorität:** niedrig als Defekt, mittel als Irreführung. Der Zweig kostet nichts und behauptet etwas.
+
+#### RESPONDER-KOMMENTAR-FALSCHE-SCHICHT — ein Kommentar nennt die falsche Gedächtnisschicht
+
+Die Zeile lautet `# Bild vom Nutzer (beziehungsprofil aus LZG-Destillation)`; der Erzeuger ruft `beziehungsprofil_destillieren(kzg_eintraege)`. Die drei Nachbarzeilen darüber stimmen — `adaptive` aus KZG, `emotions_profil` und `intentions_profil` aus LZG —, und genau das macht die falsche unauffällig: **Sie steht in einer Reihe richtiger Angaben, an der Stelle, an der jemand nachsieht, um die Herkunft zu klären.**
+
+Ein Kommentar, der die Quelle eines Wertes benennt, ist eine Zustandsaussage und veraltet wie jede andere.
+
+**Was fertig wäre:** die Zeile korrigieren.
+
+**Priorität:** niedrig im Aufwand, mittel in der Wirkung — sie ist genau die Zeile, die bei der nächsten Suche nach „warum ist das Profil leer" gelesen wird.
+
+#### PROFILE-LEER-URSACHE-UNBEKANNT — die bisherige Begründung ist am Bestand widerlegt
+
+Backlog und Chronik führen als Grund für die drei leeren Profile, alle drei läsen `lzg_knoten` „und eine frische Persona hat kein Langzeitgedächtnis". Am Bestand gemessen: **`konrad` trägt 82 Knoten, `leon` 38** — beide entstanden während ihrer Bögen am 02.08.2026; die übrigen vier tragen keinen einzigen.
+
+Die Begründung stimmt für vier von sechs Personas und stand als **allgemeine** Erklärung da. Die Profile waren leer, aber die Ursache ist damit unbekannt und braucht eine eigene Messung.
+
+> **Die Form ist die teure:** eine plausible Erklärung, die zwei Monate lang niemand gegen den Bestand geprüft hat, weil sie zu allem passte, was man sah.
+
+**Was fertig wäre:** die Ursache für die beiden Personas **mit** Langzeitgedächtnis bestimmen. Erster Ort zum Nachsehen ist `PROMOTION-FENSTER-LAEUFT-AB-STATT-LEER` in `novaberg-bugs.md` — dort steht, warum der Knotenstand einer Persona ausgewürfelt ist.
+
+**Priorität:** mittel. Betrifft die Aussagekraft jeder Charakterbildungs-Messung.
+
+#### CHARAKTER-HASH-DOKU-FALSCHE-QUELLE — das Dokument nennt eine Quelle, die der Code nicht liest
+
+`novaberg-pixie-character-hash.md` §3.3 und §3.4 führen für das Intentions-Profil *„Aggregiert aus Session-Annotationen (Intentionen + Modus + Stil)"* und für das Emotions-Profil eine Grundtendenz „über Monate". Im Code nehmen `intentions_profil_destillieren` und `emotions_profil_destillieren` beide `lzg_eintraege` als einziges Material und geben bei leerer Liste `""` zurück (`server/agents/charakter/destillation.py`).
+
+**Wer nach §3.3 sucht, warum das Profil leer ist, sucht in den Session-Annotationen — und findet dort nichts Falsches.** Das ist die Sorte Doku-Fehler, die Suchzeit kostet statt Verhalten zu ändern.
+
+**Was fertig wäre:** beide Abschnitte auf die tatsächliche Quelle ziehen, mit Datum und Vermerk, was vorher dastand.
+
+**Priorität:** mittel. Hängt unmittelbar an `PROFILE-LEER-URSACHE-UNBEKANNT` — wer dort misst, liest zuerst dieses Dokument.
+
+---
+
 ## 0b. Charakterbildung messen — der nächste Sprint (01.08.2026)
 
 Das System misst sich inzwischen selbst sehr genau und seine **Wirkung auf das Gespräch gar nicht**. Es gibt keine Zahl, die sagt, ob der Apparat aus Perzeption, EI-Profil, Gesprächsvektor und Charakter-Rädern eine Antwort erzeugt, die ein nacktes Sprachmodell nicht erzeugt hätte.
