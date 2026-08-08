@@ -89,6 +89,8 @@ Ein Kommentar, der die Quelle eines Wertes benennt, ist eine Zustandsaussage und
 
 #### PROFILE-LEER-URSACHE-UNBEKANNT — die bisherige Begründung ist am Bestand widerlegt
 
+**Der Erstbefund vom 06.08.2026, aus dem dieser Eintrag entstand:** Gemessen an `charakter_hash` tragen für alle sechs Personas und in **beiden** Richtungen `kern_hash`, `intentions_profil` und `emotions_profil` null Zeichen; gefüllt sind allein `adaptive_hash` (KZG) und `beziehungsprofil` (KZG). Die damals notierte Ursache — alle drei leeren lesen `lzg_knoten`, und eine frische Persona hat kein Langzeitgedächtnis — ist zwei Tage später am Bestand widerlegt worden; sie steht hier, weil sie erklärt, warum zwei Monate lang niemand weitergesucht hat.
+
 Backlog und Chronik führen als Grund für die drei leeren Profile, alle drei läsen `lzg_knoten` „und eine frische Persona hat kein Langzeitgedächtnis". Am Bestand gemessen: **`konrad` trägt 82 Knoten, `leon` 38** — beide entstanden während ihrer Bögen am 02.08.2026; die übrigen vier tragen keinen einzigen.
 
 Die Begründung stimmt für vier von sechs Personas und stand als **allgemeine** Erklärung da. Die Profile waren leer, aber die Ursache ist damit unbekannt und braucht eine eigene Messung.
@@ -108,6 +110,144 @@ Die Begründung stimmt für vier von sechs Personas und stand als **allgemeine**
 **Was fertig wäre:** beide Abschnitte auf die tatsächliche Quelle ziehen, mit Datum und Vermerk, was vorher dastand.
 
 **Priorität:** mittel. Hängt unmittelbar an `PROFILE-LEER-URSACHE-UNBEKANNT` — wer dort misst, liest zuerst dieses Dokument.
+
+---
+
+### Block 05.–02.08. — sechzehn Einträge (08.08.2026)
+
+Der Befund steht im Wortlaut, in dem er notiert wurde; ergänzt sind Kennung, Priorität und die Zeile, an der erkennbar ist, wann der Eintrag geschlossen ist.
+
+**Vier davon gehören zusammen und ergeben erst zusammen ein Bild.** `PIXIE-EIN-SLOT-BLOCKIERT-ALLES`, `RECHERCHE-RETRY-BLOCKIERT-QUEUE`, `AUFTRAGSARTEN-OHNE-AGENTEN` und `SHADOW-QUEUE-RUECKSTAND-UNGEMESSEN` beschreiben denselben Engpass von vier Seiten: Ein serieller Platz, ein Lauf, der ihn über seine Zeitgrenze hinaus hält und danach mit vollem Anspruch zurückkehrt, 230 Aufträge für Agenten, die es nicht gibt, und ein Rückstand von 649, dessen Abfluss niemand gemessen hat. **Wer einen davon einzeln angeht, misst die Wirkung der anderen drei mit.**
+
+**Zwei weitere hängen an derselben Zahl:** `KONTEXT-32768-IN-SECHS-DOKUMENTEN` und `RECHERCHE-ZWISCHENDESTILLATION-OHNE-GRUND`. Der zweite ist eine Folge des ersten — ein Verarbeitungsschritt, der verlustbehaftet gegen eine Grenze komprimiert, die achtmal weiter weg ist als angenommen.
+
+#### INTENTION-AUFGABE-MAP-DOPPELT
+
+**Befund (2026-08-05).** **`_INTENTION_AUFGABE_MAP` steht doppelt und ist bereits auseinandergelaufen.** Dieselbe Tabelle Intention → Shadow-Aufgabe liegt in `memory/kzg.py` und in `agents/kzg/queues.py`, je als eigenes Literal. Sie stimmen bis auf einen Schlüssel überein: einmal `bestätigung`, einmal `bestaetigung` — beide auf `""`, also heute folgenlos, aber genau die Drift, die eine doppelte Wahrheit erzeugt. Wer eine Zuordnung ändert, muss beide finden.
+
+**Was fertig waere.** Eine Quelle, ein Literal — die zweite Kopie liest die erste.
+
+**Prioritaet:** mittel.
+
+#### QUEUE-RUHE-DURCH-REIHENFOLGE
+
+**Befund (2026-08-05).** **Die Shadow-Queue hält agentenlose Aufträge nicht durch ihre Priorität ruhig, sondern durch die Listenreihenfolge.** `novaberg-pixie.md` schreibt, `vertiefen` und `nachfragen` seien „heute allein von ihrer Prioritaet 0.0 ruhig gehalten". Gemessen erreichen beide **1.000** (198 bzw. 62 Aufträge). Was sie zurückhält, ist `_queue_peek` in `services/pixie/kandidaten.py`: Es nimmt den ersten Eintrag mit *echt* größerer Priorität, und der älteste bei 1.0 ist eine `recherche`. Die Sicherung ist eine Reihenfolge und kippt, sobald die 390 Recherche-Aufträge davor abfließen. Im Modul-Dokument markiert.
+
+**Was fertig waere.** Die Doku sagt, was tatsaechlich zurueckhaelt; und danach die Entscheidung, ob die Ruhe an der Prioritaet haengen soll statt an der Listenreihenfolge.
+
+**Prioritaet:** mittel.
+
+#### PIXIE-EIN-SLOT-BLOCKIERT-ALLES
+
+**Befund (2026-08-05).** **92 % der Pixie-Heartbeats fallen aus, weil der einzige Slot besetzt ist.** In rund 2,25 Stunden: 270 Auslösungen, davon **249 übersprungen** mit `maximum number of running instances reached (1)`, 21 gelaufen. Eine Recherche hält den Slot über fünf Minuten (Lagebeurteilung plus Durchlauf) und stirbt danach an der 300-Sekunden-Grenze. Alle übrigen Hintergrundaufgaben — Charakter-Hash, Synapsen-Promotion, Wiedervorlage, Wissenslücken — warten in dieser Zeit. Der Stack steht bei 650 Aufträgen, seit dem 02.08. praktisch unverändert.
+
+**Was fertig waere.** Ein langer Lauf blockiert die uebrigen Hintergrundaufgaben nicht mehr — durch einen zweiten Platz, eine Laufzeitgrenze, oder eine Trennung nach Aufgabenart.
+
+**Prioritaet:** hoch.
+
+#### KONTEXT-32768-IN-SECHS-DOKUMENTEN
+
+**Befund (2026-08-04).** **Sechs Dokumente rechnen mit einem CPU-Kontext von 32768 Tokens; gemessen sind es 262144.** Am laufenden System um 21:02 UTC: Connector `qwen36`, GPU `gemma4-gpu` bei 32768, **CPU und Analyse `qwen36-cpu` bei je 262144** — das Achtfache. Betroffen: `novaberg-tool-dateien_k.md` §1 (die Mandelbrot-Navigation ist damit für den Hintergrundpfad nicht mehr erzwungen, für den Gesprächspfad sehr wohl), `novaberg-pixie-research.md` §108, `novaberg-gedankenkette_k.md` §186 (sagt ausdrücklich „auf **allen** Pfaden des `qwen36`-Connectors" — für zwei von drei falsch), `novaberg-hermes-substrat_k.md` §366 („eine harte Grenze"), `novaberg-node-gv_k.md` §607, `novaberg-pixie.md` §135. **Die Trennung ist der Kern:** Gesprächspfad 32k, Hintergrundpfad 256k — wer die alte Zahl liest, dimensioniert beide gleich.
+
+**Was fertig waere.** Alle sechs Stellen tragen den gemessenen Wert samt Messdatum, und jede daraus abgeleitete Aussage ist nachgerechnet.
+
+**Prioritaet:** hoch.
+
+#### RECHERCHE-ZWISCHENDESTILLATION-OHNE-GRUND
+
+**Befund (2026-08-04).** **Die Zwischen-Destillation der Recherche löst ein Problem, das es nicht mehr gibt.** `novaberg-pixie-research.md` §108 begründet sie damit, dass 75.000 Zeichen „weit ueber dem CPU-Kontext (32768 Tokens)" lägen; bei 262144 sind sie es nicht — sie liegen bei rund einem Zehntel. Der Schritt komprimiert also verlustbehaftet gegen eine Grenze, die achtmal weiter weg ist als angenommen. **Und genau dieser Schritt ist der gemessene Ausfallpunkt:** Am 04.08. scheiterten zwischen 20:30 und 21:10 UTC **vier von vier** Durchläufen an ihm, zwei davon nach über fünfzehn Minuten am einzigen seriellen Platz. Kein einziger Durchlauf des Tages hat ein Destillat erzeugt.
+
+**Was fertig waere.** Der Schritt faellt weg, oder seine Begruendung steht neu — gegen die tatsaechliche Grenze.
+
+**Prioritaet:** mittel.
+
+#### ARCHITEKTUR-TABELLENLISTE-UNVOLLSTAENDIG
+
+**Befund (2026-08-04).** **Die Tabellenliste in `novaberg-architecture.md` §10 ist unvollständig.** `verbindung` (Chat 109) und `ziele` fehlen, obwohl beide im Kern-Schema stehen; `ziele` ist zusätzlich die Tabelle, an der `F-ZIEL-1` hängt. Die Liste sieht vollständig aus und ist es nicht — wer sie als Übersicht liest, übersieht zwei Tabellen.
+
+**Was fertig waere.** `verbindung` und `ziele` stehen in der Liste.
+
+**Prioritaet:** niedrig.
+
+#### KERN-SCHEMA-OHNE-DRIFTPRUEFUNG
+
+**Befund (2026-08-04).** **`CREATE TABLE IF NOT EXISTS` bewacht eine bestehende Tabelle nicht.** Ändert jemand eine Spaltendefinition in `db/init.sql`, ist das gegen eine schon angelegte Tabelle wirkungslos und bleibt still: Schemadatei und laufendes Schema laufen auseinander, ohne dass etwas anschlägt. Das Kern-Schema hat dagegen keine Prüfung — nur `autonomous_wissen` hat seit heute einen Test, der das laufende Schema gegen eine von Hand geführte Sollliste stellt.
+
+**Was fertig waere.** Das Kern-Schema bekommt dieselbe Pruefung, die `autonomous_wissen` schon hat — Schemadatei gegen laufendes Schema, und eine Abweichung schlaegt an.
+
+**Prioritaet:** hoch.
+
+#### EBBINGHAUS-KONSTANTEN-TOT
+
+**Befund (2026-08-04).** **`EBBINGHAUS_DECAY_RATE` und `EBBINGHAUS_MIN_GEWICHT` werden nirgends gelesen.** Beide stehen in `config.py` (0.0015 / 0.1) und haben in `server/` keine einzige Verwendungsstelle; wirksam ist das Paar `LZG_KNOTEN_DECAY_RATE` / `LZG_KNOTEN_MIN_GEWICHT` mit denselben Werten, das der Synapsen-Umbau eingeführt hat. Zwei Konstanten, ein Verhalten — wer die alte verstellt, ändert nichts und sieht es nicht.
+
+**Was fertig waere.** Die beiden toten Konstanten sind entfernt, oder sie sind die wirksamen und das Paar daneben ist es nicht.
+
+**Prioritaet:** niedrig.
+
+#### KNOTENGEWICHT-DOKU-BEHAUPTET-LIVE
+
+**Befund (2026-08-04).** **Drei Stellen behaupten, das effektive Knotengewicht werde bei jedem Zugriff live berechnet und nicht gespeichert.** `config.py` §Ebbinghaus, `config.py` bei `LZG_KNOTEN_DECAY_RATE` und `novaberg-memory.md` §4. Tatsächlich materialisiert `run_node_decay` die Spalte `gewicht_decay` samt `decay_am` per UPDATE, und die Lesepfade selektieren die Spalte. Die Aussage beschreibt die Architektur vor dem Synapsen-Umbau.
+
+**Was fertig waere.** Alle drei Stellen sagen, dass `gewicht_decay` materialisiert wird.
+
+**Prioritaet:** mittel.
+
+#### RECHERCHE-RETRY-BLOCKIERT-QUEUE
+
+**Befund (2026-08-03).** **Eine `recherche` belegte den einzigen Pixie-Platz zwölf Minuten und ging danach mit „Retry 2/3" zurück in die Queue.** In zwölf Minuten lief ein Heartbeat, 23 wurden übersprungen (`maximum number of running instances`). Zusammen mit den Auftragsarten ohne Agenten steht die Queue dabei still, obwohl gearbeitet wird — Entnahme und Wiedereinreihung heben sich in der Länge auf.
+
+**Was fertig waere.** Ein Lauf, der in seine Zeitgrenze faellt, gibt den Platz frei und geht nicht mit vollem Anspruch zurueck in die Queue.
+
+**Prioritaet:** hoch.
+
+#### ENTITAET-IDS-LEER-82-PROZENT
+
+**Befund (2026-08-03).** **`entitaet_ids` ist in 482 von 583 frischen KZG-Einträgen leer (82 %), `timeline_id` steht in 98 (17 %).** Gemessen an sechs Läufen der Charakterbildungs-Messreihe, also an Material, das Namen, Zahlen, Daten und Orte ausdrücklich setzt. Der Backlog notiert für `entitaet_ids` 31 % — der frische Wert liegt darunter.
+
+**Was fertig waere.** Der Sollwert steht — oder es ist belegt, dass 82 % leer der erwartete Zustand sind.
+
+**Prioritaet:** mittel.
+
+#### GRAVITATION-CLUSTER-AUS-VORTURN-UNGEPRUEFT
+
+**Befund (2026-08-02).** **Der Cluster, aus dem die Wahrnehmungs-Gravitation ihren Faktor nimmt, stand bei zwei aufeinanderfolgenden Astronomie-Turns auf `schlachtfeld`** (Faktor 0.05, der niedrigste). Er stammt aus `gv:detail:{user_id}:{character_id}`, also aus dem Vorturn — ob die GV-Einstufung selbst zutraf oder der Schlüssel alt war, ist nicht geprüft. Wirkt auf zwei Stellen zugleich: Sprung-Tiefe des Spreading-Lesepfads und Stärke der Verschiebung.
+
+**Was fertig waere.** Es ist entschieden, ob die Einstufung falsch war oder der Schluessel alt — dafuer reicht die Landschaftszeile, die seit dem 08.08.2026 je Turn geschrieben wird.
+
+**Prioritaet:** mittel.
+
+#### AUFTRAGSARTEN-OHNE-AGENTEN
+
+**Befund (2026-08-02).** **Zwei von drei Auftragsarten der Shadow-Queue haben keinen Agenten.** `services/pixie/router.py` bildet `vertiefen` auf den Agenten `vertiefung` ab und `nachfragen` auf `nachfragen` — **beide Verzeichnisse existieren nicht** (`server/agents/` trägt 15 Agenten, keiner davon heißt so). Im Bestand sind das **168 + 62 = 230 von 649 Aufträgen**, also 35 %.
+
+**Was fertig waere.** Beide Agenten existieren, oder beide Auftragsarten werden nicht mehr erzeugt und der Bestand ist abgeraeumt.
+
+**Prioritaet:** hoch.
+
+#### SHADOW-QUEUE-RUECKSTAND-UNGEMESSEN
+
+**Befund (2026-08-02).** **`shadow_queue:meister` trägt 649 Aufträge** (418 `recherche`, 167 `vertiefen`, 62 `nachfragen`, Prioritäten 0.95 bis 1.0). **Ob der Rückstand abfließt, ist weiterhin nicht gemessen** — es gab bis jetzt kein ungestörtes Fenster.
+
+**Was fertig waere.** Der Abfluss ist ueber ein ungestoertes Fenster gemessen — Zugang gegen Abgang, mit Datum.
+
+**Prioritaet:** mittel.
+
+#### ARBEITSQUEUES-OHNE-GEGENUEBER
+
+**Befund (2026-08-02).** **Die Arbeitsqueues tragen nur das Subjekt, kein Gegenüber:** `queue:{user_id}`, `shadow_queue:{user_id}`, `shadow_stack:{user_id}`. Novas eigene Aufträge liegen damit für **alle** Beziehungen in demselben `queue:nova`. Heute folgenlos — die Partition `kzg:nova:*` ist leer (0 von 1445 Schlüsseln, gemessen 02.08.) —, aber dieselbe Klasse wie `ziele` vor der Paar-Spalte: Was ohne Gegenüber abgelegt wird, lässt sich später nicht mehr einer Beziehung zuordnen. Betrifft auch das Leer-Kriterium eines Messlaufs, das über zwei Paar-Seiten prüfen muss statt über eine.
+
+**Was fertig waere.** Die drei Schluessel tragen das Paar, wie `ziele` es seit dem 02.08.2026 tut.
+
+**Prioritaet:** mittel.
+
+#### CHARAKTER-ANWEISUNGEN-OHNE-GEGENUEBER
+
+**Befund (2026-08-02).** **`charakter_anweisungen` trägt weiterhin kein Gegenüber.** `novaberg-wissensluecken_k.md` §4 nennt die Tabelle zusammen mit `ziele` als Vorbestand; `ziele` ist am 02.08. nachgezogen, diese nicht. Der Lese- und Schreibpfad filtert heute auf `user_id` des schreibenden Menschen, ein Übergriff zwischen Paaren entsteht dadurch nicht — die Anweisungen über Nova sind aber je Mensch getrennt, ohne dass das irgendwo als Entscheidung steht.
+
+**Was fertig waere.** Die Tabelle traegt das Gegenueber, und Lese- wie Schreibpfad nennen beide Kennungen.
+
+**Prioritaet:** mittel.
 
 ---
 
