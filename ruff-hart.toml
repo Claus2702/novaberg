@@ -106,4 +106,38 @@ select = [
     # denn sobald jemand die Annotationen auflöst, kracht es. Der Bestand
     # annotiert deshalb direkt und importiert das Modul.
     "F821",
+
+    # W191, W291, W292, W293, W605 (pycodestyle Warning) — Weissraum und
+    # ungueltige Escape-Sequenzen.
+    #
+    # Bestand am 08.08.2026, ruff 0.16.0, ueber server/: 0 Treffer, nachdem
+    # sechs bereinigt wurden (3x W292 fehlende Schlusszeile, 3x W293 Leerzeile
+    # mit Leerzeichen, alle vier betroffenen Dateien maschinell behoben).
+    #
+    # WARUM NICHT DIE FAMILIE "W", obwohl sie bei null steht: **W391 ist im
+    # Preview.** Aufnahmekriterium 2 schliesst das aus, und der Grund ist hier
+    # greifbar — wuerde W391 mit einer spaeteren Werkzeugversion stable, waechse
+    # die Wand ohne Zutun um eine Regel, gegen die der Bestand nie geprueft
+    # wurde. Eine Wand, die sich mit dem Werkzeug bewegt, ist keine. Die
+    # Familie steht deshalb einzeln aufgezaehlt, nicht als Kuerzel.
+    #
+    # W505 ist bewusst NICHT dabei, obwohl stable: Die Regel wirkt nur mit
+    # gesetztem max-doc-length, und ruff.toml setzt es nicht (gemessen: 0
+    # Vorkommen). Sie waere eine Wand ohne Deckung — sie kann nie feuern und
+    # sagt trotzdem null.
+    #
+    # REICHWEITE, gemessen am 08.08.2026: Fuer jede der fuenf Regeln wurde ein
+    # Verstoss konstruiert und unter dieser Auswahl gemeldet — Tabulator-
+    # Einrueckung, Leerzeichen am Zeilenende, fehlende Schlusszeile, Leerzeile
+    # mit Leerzeichen, "\d" in einer gewoehnlichen Zeichenkette. Fuenf von
+    # fuenf. Die Null sagt damit "kein Verstoss vorhanden".
+    #
+    # W605 ist die einzige der fuenf, die kein Stilbefund ist: Eine ungueltige
+    # Escape-Sequenz in einer gewoehnlichen Zeichenkette ist heute eine
+    # Warnung und in kuenftigen Python-Fassungen ein Fehler.
+    "W191",
+    "W291",
+    "W292",
+    "W293",
+    "W605",
 ]

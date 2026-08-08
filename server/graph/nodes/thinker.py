@@ -196,7 +196,7 @@ def create_tools(
             f"Output-Laenge {len(formatierter_kontext)}"
         )
         return formatierter_kontext
-    
+
     @tool
     def web_search(suchbegriff: Annotated[str, "Suchbegriff für Web-Recherche"]) -> str:
         """Durchsuche das Internet nach aktuellen Informationen.
@@ -420,7 +420,7 @@ def think(
     tools: list = create_tools(
         postgres_url, user_id, character_id, tool_cache
     )
-  
+
     # ── Reasoning-Prompt zusammenbauen ───────
     system_prompt: str = _build_thinker_prompt(today)
 

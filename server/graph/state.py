@@ -252,4 +252,3 @@ def reiz_herkunft(state: ConversationState) -> str:
     """
     # ── Verarbeitung / Ausgabe ──────────────────
     return str((state.get("event_payload") or {}).get("reiz_herkunft") or "nutzer_turn")
-    
