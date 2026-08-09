@@ -1,6 +1,6 @@
 # Novaberg — Roadmap (Projektchronik)
 
-**Stand:** Chat 134, 9. August 2026
+**Stand:** Chat 135, 9. August 2026
 *(Die Kopfzeile stand bis Chat 109 auf „Chat 93, 21. Mai 2026" — 15 Chats hinter dem Inhalt. **Sie ist danach erneut zurückgefallen:** von Chat 110 bis 114 blieb sie auf „Chat 109" stehen, während der Inhalt weiterwuchs, und wurde in Chat 115 nachgezogen. Wer hier etwas ergänzt, zieht die Kopfzeile mit — sie driftet zuverlässig. Achtung beim Nachschlagen: Nur bis Chat 97 trägt jeder Chat eine eigene `## Chat NNN`-Überschrift; die Chats 98–108 stehen als `###`-Abschnitte unter dem Chat-97-Block, benannt nach Sprint statt nach Chat.)*
 **Pfad:** novaberg/docs/novaberg-roadmap.md
 **Single Source of Truth für abgeschlossene Arbeit.**
@@ -1980,6 +1980,24 @@ Beide Räder haben eine Nabe — den Wert ohne jede Ausprägung — und das Erge
 > **Die Zahlen selbst stehen nicht hier.** Ein Charakter-Rad ist ein Charakterprofil; aus den Summanden sind mit der Züge-Tabelle die Einzelspeichen rückrechenbar. Wer die Messung nachvollziehen will, fährt sie gegen den eigenen Bestand — sie ist in zwei Aufrufen wiederholbar.
 
 **Geschlossen:** `Bauteil 3 — Charakter-Räder im Client` (Rest benannt, siehe Backlog)
+
+---
+
+## Chat 135 (09.08.2026) — Das Log überlebt den Behälter, der es geschrieben hat ✅
+
+**Der Dienst schreibt sein Log jetzt zusätzlich in eine Datei**, rotierend, unter `/logs` — eingehängt außerhalb des Arbeitsbaums, weil Logzeilen Gesprächsinhalte tragen. Dieselbe Begründung wie beim Wissensspeicher.
+
+**Der Anlass ist eine Fehlerklasse, keine Unbequemlichkeit.** Das Behälter-Log stirbt mit dem Behälter: Ein Neustart mit geänderter Umgebung erzeugt ihn neu, und das Log des gerade gefahrenen Laufs ist fort. An einem Tag kostete das drei Untersuchungen — jedes Mal hatte die Antwort im Log gestanden, jedes Mal war sie beim Nachsehen weg, und **zweimal wurde die leere Ausgabe als Ergebnis gelesen statt als fehlende Datei.**
+
+**Zwei Stellen, an denen der naheliegende Bau falsch gewesen wäre.**
+
+**Der LLM-Logger steht auf `propagate = False`**, damit seine Token-Zeilen nicht doppelt auf der Konsole landen. Genau deshalb erreicht ihn ein Handler an der Wurzel nicht — und die `LLM-Call`-Zeilen sind der meistgelesene Teil des Logs. Ohne die zweite, ausdrückliche Zuweisung wäre die Datei ausgerechnet dort leer gewesen, wo zuerst hingesehen wird. Belegt am laufenden Dienst: 67 LLM-Zeilen in den ersten 37 279.
+
+**Der Behälter läuft als `root`.** Ohne gesetzte Modusbits gehört die Datei auf dem Wirt `root`, und der Nutzer kann sein eigenes Log weder auswerten noch entfernen. Das war beim Wissensspeicher schon einmal gemessen worden und steht dort als Festlegung; hier ist es dieselbe Erfahrung an einer zweiten Stelle.
+
+**Ein Fehlschlag beim Anhängen ist laut.** Er meldet `error` und lässt den Dienst weiterlaufen: Kein dauerhaftes Log ist ein degradierter Zustand, der die Auswertung kostet — aber er darf nicht still eintreten. Der Fehlerpfad hat deshalb einen eigenen Zeugen, der die Logzeile prüft und nicht nur die Abwesenheit eines Absturzes.
+
+**Gemessen.** Suite 1137 → 1140, OK, 0 übersprungen. Zwei Neuerzeugungen gegen dieselbe Datei: 201 Zeilen → 396, erste Zeile unverändert. Gegenprobe mit entfernter zweiter Handler-Zuweisung: rot, mit leerer Handler-Liste am LLM-Logger.
 
 ---
 
