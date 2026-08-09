@@ -77,7 +77,7 @@ Die bisherigen Enricher-Berechnungen sind vollständig nach EI-Calc gewandert (C
 1. **Emotions-Verlauf** — `_emotions_verlauf_berechnen(raw_turns, current_emotion, current_arousal, rolle="user")`
    Logarithmischer Decay über alle User-Turns, Turn 0 aus Perzeption, sektorabhängige Normalisierung.
 
-2. **Emotions-Vektor** — `_emotions_vektor_bestimmen(raw_turns, current_emotion, rolle="user")`
+2. **Emotions-Vektor** — `stimmungsvektor_bestimmen(raw_turns, current_emotion, current_arousal, rolle="user")`. Die **Erregung wird mitgereicht**, seit der Intensitaetsanstieg an ihr gemessen wird; ohne sie faellt der eingespeiste Turn auf den Namens-Rueckfall. Neben `emotions_vector` wird `emotions_vector_quelle` gesetzt — die **Grundlage** der Richtung (`gemessen`, `gleichstand`, `zu_wenig_turns`), die als `richtung_quelle` in die Landschaftszeile reist.
    Einer der 9 Vektoren (absturz, spirale, stabilisierung, erholung, aufbluehen, eskalation, abkuehlung, einbruch, plateau).
 
 3. **EI-Arousal** — `_ei_arousal_berechnen(current_arousal, beziehungs_dynamik, intent, tone)`
@@ -116,7 +116,7 @@ Novas emotionaler Zustand entsteht aus zwei Kräften, die in Folge berechnet wer
 
 3. **Konflikt-Erkennung** — Wenn Novas eigener Zustand und der User-Vektor auf gegenüberliegende Sektoren zeigen UND beide mindestens `EMPATHIE_KONFLIKT_MIN_AROUSAL = 0.4` Arousal haben, wird `nova_emotion_konflikt = True` gesetzt. Beispiel: „Ich freue mich für dich, und gleichzeitig mache ich mir Sorgen."
 
-4. **Nova-Emotions-Vektor** — `_emotions_vektor_bestimmen(nova_turns, rolle="assistant", inject_current=False)`
+4. **Nova-Emotions-Vektor** — `stimmungsvektor_bestimmen(nova_turns, rolle="assistant", inject_current=False)`. **Dies ist der Vektor, aus dem Achse R der Landschaft faellt** — und die Seite, auf der `zu_wenig_turns` zu Beginn eines Paars der Regelfall ist, weil es noch keinen `assistant`-Turn gibt. Auch hier wird `emotions_vector_quelle` gesetzt.
    Richtung von Novas eigenem emotionalen Bogen, unabhängig vom User-Vektor.
 
 > **Designentscheidung (Chat 59): Kein doppelter Decay.** Novas Antwort wird im async-Pfad (`services/nachbearbeitung.py`) per Perzeption analysiert und als Emotion + Arousal in den Session-Turn annotiert — genau wie beim User. Der Decay läuft beim Lesen im synchronen EI-Calc des nächsten Turns. Eine Berechnung, nicht zwei.

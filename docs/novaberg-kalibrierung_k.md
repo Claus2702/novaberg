@@ -246,6 +246,13 @@ Die vorhandene Reihe kann das nicht trennen, weil sie nur 6 von 25 verfügbaren 
 
 ---
 
+
+> **Eine Kennung traegt genau einen Bogen — belegt am 08./09.08.2026 beim Versuch, einen zweiten zu fahren.** Das Rig weist ihn ab: *„dieses Paar hat schon einen Bestand ... zwei Gespraeche in einem Profil sind nicht trennbar."* Gemessen tragen **alle siebzehn Personas der Validierungsmenge genau 30 Rohturns**.
+>
+> **Damit ist eine Messreihe auf dieser Menge nicht wiederholbar, ohne etwas aufzugeben** — entweder den Bestand, auf dem die erste Erhebung beruht, oder die Teilmengen, die ein destilliertes Rad voraussetzen: Eine frische Kennung hat keines. Wer eine Wiederholung plant, plant deshalb **vorher**, welche Kennungen sie fahren soll, und legt sie an, bevor die erste Reihe laeuft.
+>
+> Das gilt fuer jede Groesse, die aus diesen Boegen faellt — nicht nur fuer die Landschaftsverteilung, wegen der es aufgefallen ist.
+
 ## 6. Die Lupe — wo sie hingehört und wo nicht
 
 Der Vorschlag: Werte unterhalb einer Grenze ignorieren, den Bereich darüber spreizen — den mittleren Abschnitt am weitesten, die Ränder wieder stauchen. Ein Fischauge auf der Skala.

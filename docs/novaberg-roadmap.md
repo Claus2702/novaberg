@@ -1,6 +1,6 @@
 # Novaberg — Roadmap (Projektchronik)
 
-**Stand:** Chat 133, 8. August 2026
+**Stand:** Chat 133, 9. August 2026
 *(Die Kopfzeile stand bis Chat 109 auf „Chat 93, 21. Mai 2026" — 15 Chats hinter dem Inhalt. **Sie ist danach erneut zurückgefallen:** von Chat 110 bis 114 blieb sie auf „Chat 109" stehen, während der Inhalt weiterwuchs, und wurde in Chat 115 nachgezogen. Wer hier etwas ergänzt, zieht die Kopfzeile mit — sie driftet zuverlässig. Achtung beim Nachschlagen: Nur bis Chat 97 trägt jeder Chat eine eigene `## Chat NNN`-Überschrift; die Chats 98–108 stehen als `###`-Abschnitte unter dem Chat-97-Block, benannt nach Sprint statt nach Chat.)*
 **Pfad:** novaberg/docs/novaberg-roadmap.md
 **Single Source of Truth für abgeschlossene Arbeit.**
@@ -1983,7 +1983,7 @@ Beide Räder haben eine Nabe — den Wert ohne jede Ausprägung — und das Erge
 
 ---
 
-## Chat 133 (08.08.2026) — Ein Krisenmarker, den ein hoffnungsvolles Wort auslösen konnte ✅
+## Chat 133 (08./09.08.2026) — Drei Orte, die es nicht gab, und ein Krisenmarker, den ein hoffnungsvolles Wort auslösen konnte ✅
 
 Gegenstand waren die **reinen** Systeme der Rechenkette — die, deren Prüfung weder Datenbank noch Modell noch einen laufenden Turn braucht. `novaberg-graph-rechenkette.md` führt fünfzehn davon, und fünf hatten keinen eigenen Test. S5, der Emotionsvektor, war einer.
 
@@ -2011,7 +2011,45 @@ Gegenstand waren die **reinen** Systeme der Rechenkette — die, deren Prüfung 
 
 **Nicht belegt und ausdrücklich offen:** dass 67 richtiger ist als 151. Belegt ist nur, dass 103 Turns ohne Anstieg der Erregung „Eskalation" hießen. Gemessen ist zudem die Nutzerseite; Achse R rechnet auf Novas Vektor, dessen Erregung je Turn nicht haltbar gespeichert ist. Die Schwelle bleibt bis zur nächsten Messreihe ein Stellvertreter.
 
-**Suite:** 1097 → **1113**, 0 übersprungen. Nulllinie **2183** unverändert.
+### Die Fundliste ist klassifiziert — 155 offene Funde auf null
+
+Der zweite Teil der Sitzung galt der Fundliste. Sie trug 155 offene Einträge vom 27.07. bis 08.08.2026.
+
+**Der Ertrag ist nicht die geleerte Liste, sondern warum sie voll war.** Für rund ein Drittel der Einträge gab es **kein Ziel** — und ein Sortierender, der kein Fach findet, geht weiter. Drei Orte fehlten und sind angelegt worden: dauerhafte äußere Schranken (die nicht ins Repositorium dürfen und trotzdem nicht in eine Sitzungsübergabe gehören), **Defekte der eigenen Messwerkzeuge** (behebbar, unser Code, und trotzdem kein Repo-Gegenstand), und **ausstehende Entscheidungen** (die von Chat zu Chat mit „unverändert offen" weitergereicht wurden — der Vermerk war das Symptom).
+
+Dazu ein vierter Widerspruch: Die **Lesson** war als Doku-Sorte vollständig beschrieben und fehlte in der Zielliste. Zwölf Lesson-Dateien lagen im Bestand, und keine Klassifizierung hatte je eine als Ziel genannt.
+
+**Was das Nebeneinander zeigte, das die Einzelzeilen nicht zeigten.** Vier Einträge beschreiben denselben Engpass von vier Seiten — ein serieller Platz, ein Lauf, der ihn über seine Zeitgrenze hält, 230 Aufträge für Agenten, die es nicht gibt, ein Rückstand von 649 ohne gemessenen Abfluss; **wer einen einzeln angeht, misst die anderen drei mit.** Vier weitere sind **ein einziger Fehler**: Prompt-Blöcke, die etwas über den Nutzer behaupten, was Novas Zustand ist. Sechs sind derselbe Bauplan: ein Vorgabewert dort, wo ein Ausfall gehört. Und einer war gar kein Fund, sondern der **eingetretene Fall** zu einer offenen Entscheidung.
+
+**Ein Fehler der Liste selbst kam dabei heraus:** Ein Aufzählungspunkt trug zwei Funde. Er wird einmal gezählt und einmal klassifiziert, und der zweite verschwindet lautlos in der Sorte des ersten.
+
+Ergebnis: **39 Defekte mit Kennung, 41 Backlog-Einträge**, 20 Messaussagen in ihre Konzept- und Moduldokumente, 10 Werkzeugdefekte, 7 offene Entscheidungen, 15 äußere Schranken, 2 Lessons, 3 widerlegte Einträge mit ihrer Gegenmessung. **Keiner erzwungen.**
+
+### Drei Linter-Wände statt einer
+
+`W` stand nach dem Bereinigen von sechs Treffern bei null und war trotzdem **nicht als Familie schaltbar**: Eine ihrer Regeln steht im Preview, und eine Wand, die sich mit dem Werkzeug bewegt, ist keine. Das Aufnahmekriterium stand seit dem 30.07. da und hat an diesem Tag zum ersten Mal etwas verhindert. Dazu ein zweiter Ausschluss aus demselben Geist: `W505` ist stabil und bleibt draußen, weil sie ohne gesetzte Obergrenze **nie feuern kann** und trotzdem null meldet.
+
+**`N` (Namensformen) ist vollständig geleert** — dreißig Treffer. Die Vermutung dahinter kehrte sich beim Lesen um: Zwanzig Endpunkt-Handler in `PascalCase` sahen nach einer eigenen Konvention aus, gegen die das Werkzeug anrennt. Die Namensregel reserviert `PascalCase` aber für Klassen und Typaliase — **das Werkzeug setzte den eigenen Standard durch, nicht seinen.** Sechs Konstanten lagen im Funktionsrumpf und wurden bei jedem Aufruf neu gebaut; sie stehen jetzt auf Modulebene. Vier Ausnahmenamen tragen einen englischen `Error`-Suffix.
+
+Nulllinie **2183 → 2147**, harte Familien **1 → 4**.
+
+### S21 und S18 über den vollen Eingaberaum
+
+Beide ausgezählt statt beprobt, beide ohne einen einzigen Turn.
+
+**S21 trägt einen Erreichbarkeits-Befund derselben Bauart wie die vier nie betretenen Landschaften, eine Ebene tiefer:** Über 16.200 Zellen belegt Länge 3 **0,51 %** des Raums. Der größte Rohwert 3,02 wird von einer einzigen Kombination erreicht; die Kappung oben greift in 0,01 %. **Die Skala verspricht vier Werte und liefert drei.** Und 13,9 % aller Nullen entstehen aus der Rundung zur geraden Zahl, nicht aus der Rechnung.
+
+**S18 gibt das Gegenteil, und das wiegt gleich schwer:** Über 826.200 Zellen ist die der Krise vorbehaltene 0,00 **ausschließlich** über die Krise erreichbar. Der Median 0,5363 trifft den zugesicherten Wert. Die Zusicherung stand auf fünf Stichproben und gilt seither über den Raum. **Eine Vermutung, die sich nicht bestätigt, ist ein Ergebnis.**
+
+### B2s Wiederholung ist nicht fahrbar
+
+Der Riegel lief: drei Turns, drei Landschaften, kein Ausfall — und zwei der drei standen auf „zu wenig Turns", wären also vorher zwei stille Nullen auf Achse R gewesen.
+
+Dann brach die Reihe beim ersten Bogen ab. **Alle siebzehn Personas der Validierungsmenge tragen bereits genau 30 Rohturns**, und das Rig verweigert einen zweiten Bogen gegen dieselbe Kennung: *„Zwei Gespräche in einem Profil sind nicht trennbar."* Der Riegel ist richtig.
+
+Damit ist ein Satz widerlegt, der seit dem Vortag im Erreichbarkeits-Konzept stand: *„Der Lauf ist derselbe und kostet nichts."* **Dieselbe Form wie B4 am Vortag: ein Bauteil, dessen Wiederholung nie fahrbar war, und niemand hat es bemerkt, bis jemand es versucht hat.** Es wurde nichts zurückgesetzt.
+
+**Suite:** 1097 → **1113 grün**, 0 übersprungen. **Nulllinie 2183 → 2147.**
 
 ---
 

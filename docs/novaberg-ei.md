@@ -94,7 +94,9 @@ Neun Vektoren beschreiben die emotionale Dynamik eines Gespraechs. Jeder Vektor 
 | `einbruch` | neutral → negativ | Frueh erkennen, nachfragen. |
 | `plateau` | stabil | Ton halten, keine Wechsel. |
 
-**Spirale vs. Plateau:** Beide haben die gleiche Emotions-Gruppe (negativ → negativ). Der Unterschied: Spirale zeigt *neue* negative Emotionen (Intensitaetsanstieg), Plateau zeigt dieselben (keine Veraenderung). Gleiches gilt fuer Eskalation vs. Plateau bei positiv → positiv.
+**Spirale vs. Plateau:** Beide haben die gleiche Emotions-Gruppe (negativ → negativ). Der Unterschied ist der **Intensitaetsanstieg**, und er wird seit dem 08.08.2026 an der **mittleren Erregung** der beiden Fensterhaelften gemessen (`GV_VEKTOR_INTENSITAET_SCHWELLE`, 0,10). Gleiches gilt fuer Eskalation vs. Plateau bei positiv → positiv.
+
+> ~~Spirale zeigt *neue* negative Emotionen, Plateau zeigt dieselben.~~ → **Der Satz war richtig und der Code nicht.** Bis zum 08.08.2026 verglich `_emotions_vektor_bestimmen` die **Namensmenge** beider Haelften und fragte nicht nach der Gruppe — `freude, wut, hoffnung, wut` ergab `spirale`, ausgeloest von `hoffnung`. Ueber den vollstaendig ausgezaehlten Eingaberaum betraf das 12,0 % der `spirale`- und 18,2 % der `eskalation`-Faelle, und `spirale` ist einer der beiden Krisenmarker. **Dieses Dokument und `config.py` trugen die richtige Bedeutung die ganze Zeit; nur der Code ist abgewichen.** Der Namensvergleich bleibt als benannter Rueckfall fuer Fenster ohne Erregung und ist dort auf die Gruppe verengt; ueber 849 Bestands-Turns lief er 0 Mal. Details: `novaberg-graph-rechenkette.md` §5 (S5), Defekt `VEKTOR-INTENSITAET-NAMENSMENGE`.
 
 Der GV-Node berechnet den Vektor als eigener Node im CharacterGraph (Pfad 2, seit Chat 60). Farbmisch-System, zweite Wissensquelle und Charakter-Linse steuern die Nuancen. *(~~Entity-Hop~~ → Resonanz-Kontext aus `state["lzg_resonanz"]`, seit Chat 115.)*
 
