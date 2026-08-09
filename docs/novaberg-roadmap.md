@@ -2011,6 +2011,20 @@ Beide Räder haben eine Nabe — den Wert ohne jede Ausprägung — und das Erge
 
 **Was das für den Rückstand heißt.** Die Summe stand in sieben Tagen scheinbar still (649 → 661), und die Zahl täuscht: `recherche` −73 und `nachfragen` −15 gegen `vertiefen` **+102**. Es fließt ab; es kommt nur mehr nach, als abfließt, und ein Teil des Zuwachses kann gar nicht abfließen. **Eine Summe über alle Auftragsarten ist als Maß untauglich** — beide Backlog-Einträge tragen das jetzt.
 
+### Die Rangordnung — Bänder statt Einzelurteile
+
+Die Prioritäten sollten einmal gegeneinander gehalten werden statt je Eintrag gesetzt. **Der Befund beim Nachzählen war ein anderer als erwartet:** Von **184 offenen Einträgen** (56 Backlog, 128 Bugs) tragen **18 eine Priorität und 166 keine**. Die Priorität ist Pflichtteil jedes Eintrags — sie fehlt in neun von zehn Fällen. Das Problem war also nicht eine Inflation von „hoch", sondern ihre fast vollständige Abwesenheit.
+
+> **Eine Priorität, die nur gegen sich selbst steht, ist ein Gefühl über einen Eintrag — keine Reihenfolge.**
+
+An ihre Stelle treten **vier Bänder und eine Tabelle**: A hält eine laufende Reihe an, B läuft in einer mit, C entwertet eine Aussage außerhalb, D hat keinen Anschluss. Gewichtet wird nach Zugehörigkeit zu einer der vier laufenden Reihen — Charakterbildung, Haltungsraum, Erkenntniszyklus, Linter-Wände.
+
+**Band A trägt zwei Einträge**, und die Zahl ist selbst die Aussage: `PROMOTION-FENSTER-LAEUFT-AB-STATT-LEER`, weil es jeden gepaarten Vergleich entwertet, und `RAD-STABILITAET-UNGEMESSEN`, weil es vor jeder Kalibrierung der Beitragsverhältnisse steht. Dazu die Regel, die das Band knapp hält: **Wächst der Bedarf, muss etwas heraus — nicht das Band wachsen.**
+
+**Und das Verfahren hat sich beim ersten Gebrauch selbst korrigiert.** `PROFIL-HISTORIE-FEHLT` stand im ersten Entwurf in Band A, mit der Begründung, ohne Profilhistorie sei nicht messbar, ob ein behaltenes Rad früh genug wirkt. **Der Eintrag trug die Widerlegung seit dem 02.08. im eigenen Text:** `charakter_hash` führt das Paar im Primärschlüssel, und die Räder sind ohnehin historisiert — `charakter_rad_messung` mit 231 Zeilen über 20 Kennungen. Er steht in Band B. Ein Band, das gegen den Eintrag gehalten wird statt gegen die Erinnerung an ihn, korrigiert sich beim Lesen.
+
+**Die übrigen 171 bleiben ungebändert, und das ist eine Angabe und keine Auslassung.** 166 Einträge in einem Zug zu bebändern hieße, genau das Verfahren zu wiederholen, gegen das der Abschnitt geschrieben ist.
+
 ---
 
 ## Chat 133 (08./09.08.2026) — Drei Orte, die es nicht gab, und ein Krisenmarker, den ein hoffnungsvolles Wort auslösen konnte ✅

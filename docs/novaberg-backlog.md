@@ -2,9 +2,72 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Backlog — Konzipierte, noch nicht implementierte Features
-**Stand:** 9. August 2026 (Chat 133 - **41 Eintraege aus der klassifizierten Fundliste**, jeder mit Kennung, Prioritaet und der Zeile *Was fertig waere*: Ein Eintrag, dessen Abschluss niemand erkennen kann, wird nie geschlossen. **Vier davon beschreiben denselben Engpass von vier Seiten** - ein serieller Platz fuer alle Hintergrundarbeit, ein Lauf, der ihn ueber seine eigene Zeitgrenze haelt und danach mit vollem Anspruch zurueckkehrt, 230 Auftraege an zwei Agenten, die es nicht gibt, und ein Rueckstand von 649, dessen Abfluss nie gemessen wurde. **Wer einen davon einzeln angeht, misst die Wirkung der anderen drei mit** - das steht bei allen vieren dabei. Zwei weitere haengen an einer einzigen Zahl: sechs Dokumente rechnen mit einem achtfach falschen Kontextfenster, und ein Verarbeitungsschritt komprimiert verlustbehaftet gegen genau diese Grenze. Zuvor: 1. August 2026, spät (Epic „Client WebSocket-Umbau" aus Chat 60 **abgeschlossen** — der SSE-Kanal trägt nur noch die Bestätigung, alle Stufen gehen über den WebSocket; darüber hinaus liegt jetzt eine Eingangs-Queue vor Pfad 1. Zwei Reste benannt, beide in der Fundliste. Zuvor: Abschnitt „Charakterbildung messen" ergänzt — der nächste Sprint, mit `PROFIL-HISTORIE-FEHLT` und `PAARLISTE-FEST` als Voraussetzungen. Zuvor: 31. Juli 2026, abends — `HALTUNG-KNOTEN-FEHLT` geschlossen, `HALTUNG-SPANNENENDEN-OFFEN` um die erste Messung am echten Turn ergänzt. Zuvor: Abschnitt „Haltungsraum — der unterbrochene Sprint" ergänzt — vier Einträge: der fehlende Knoten, das fehlende Protokoll, die offenen Spannenenden und die abzulösende Längenregel. Zuvor: Abschnitt „Zeitparser und Kalibrierung" ergänzt — vier Einträge aus dem Korpus-Erstlauf und der Neuerhebung der Positions-Kontrolle. Zuvor: Chat 117, zwei KZG-Einträge gegen den Code nachgezogen. Kern: Chat 111)
+**Stand:** 9. August 2026 (Chat 134 — **die Rangordnung steht**, siehe den gleichnamigen Abschnitt. Gemessen: 184 offene Eintraege, davon **18 mit Prioritaet und 166 ohne** — die Prioritaet ist Pflichtteil und fehlte in neun von zehn Faellen, waehrend die vorhandenen je Eintrag beim Anlegen gesetzt und nie gegeneinander gehalten wurden. Statt Einzelwerten jetzt **vier Baender und eine Tabelle**, gewichtet nach Zugehoerigkeit zu einer der vier laufenden Reihen. Band A traegt **zwei** Eintraege, und die Zahl ist die Aussage: Ein Band, das zwanzig fasst, ist dasselbe wie „hoch" mit siebenundzwanzig. Beim Aufstellen hat sich ein Eintrag selbst aus Band A herauskorrigiert — `PROFIL-HISTORIE-FEHLT` trug die Widerlegung seit dem 02.08. im eigenen Text. Zuvor: Chat 133 - **41 Eintraege aus der klassifizierten Fundliste**, jeder mit Kennung, Prioritaet und der Zeile *Was fertig waere*: Ein Eintrag, dessen Abschluss niemand erkennen kann, wird nie geschlossen. **Vier davon beschreiben denselben Engpass von vier Seiten** - ein serieller Platz fuer alle Hintergrundarbeit, ein Lauf, der ihn ueber seine eigene Zeitgrenze haelt und danach mit vollem Anspruch zurueckkehrt, 230 Auftraege an zwei Agenten, die es nicht gibt, und ein Rueckstand von 649, dessen Abfluss nie gemessen wurde. **Wer einen davon einzeln angeht, misst die Wirkung der anderen drei mit** - das steht bei allen vieren dabei. Zwei weitere haengen an einer einzigen Zahl: sechs Dokumente rechnen mit einem achtfach falschen Kontextfenster, und ein Verarbeitungsschritt komprimiert verlustbehaftet gegen genau diese Grenze. Zuvor: 1. August 2026, spät (Epic „Client WebSocket-Umbau" aus Chat 60 **abgeschlossen** — der SSE-Kanal trägt nur noch die Bestätigung, alle Stufen gehen über den WebSocket; darüber hinaus liegt jetzt eine Eingangs-Queue vor Pfad 1. Zwei Reste benannt, beide in der Fundliste. Zuvor: Abschnitt „Charakterbildung messen" ergänzt — der nächste Sprint, mit `PROFIL-HISTORIE-FEHLT` und `PAARLISTE-FEST` als Voraussetzungen. Zuvor: 31. Juli 2026, abends — `HALTUNG-KNOTEN-FEHLT` geschlossen, `HALTUNG-SPANNENENDEN-OFFEN` um die erste Messung am echten Turn ergänzt. Zuvor: Abschnitt „Haltungsraum — der unterbrochene Sprint" ergänzt — vier Einträge: der fehlende Knoten, das fehlende Protokoll, die offenen Spannenenden und die abzulösende Längenregel. Zuvor: Abschnitt „Zeitparser und Kalibrierung" ergänzt — vier Einträge aus dem Korpus-Erstlauf und der Neuerhebung der Positions-Kontrolle. Zuvor: Chat 117, zwei KZG-Einträge gegen den Code nachgezogen. Kern: Chat 111)
 **Pfad:** novaberg/docs/novaberg-backlog.md
 **Quellen:** nova-08-k.md (Kognitive Anreicherung), nova-10-k-backlog.md (Skill-System), nova-01-t-c-backlog.md (Node-Konfiguration)
+
+---
+
+## Die Rangordnung — Bänder statt Einzelurteile (09.08.2026)
+
+**Der Anlass ist ein Befund über diese Datei, nicht über die Arbeit.** Gemessen am 09.08.2026: **184 offene Einträge** — 56 hier, 128 in `novaberg-bugs.md`. Davon tragen **18 eine Priorität und 166 keine.** Die Priorität ist Pflichtteil jedes Eintrags; sie fehlt in neun von zehn Fällen.
+
+Und die 18 vorhandenen sind das kleinere Problem in der besseren Verkleidung: Jede wurde beim **Anlegen** des Eintrags gesetzt, keine je gegen die anderen gehalten.
+
+> **Eine Priorität, die nur gegen sich selbst steht, ist ein Gefühl über einen Eintrag — keine Reihenfolge.** „Hoch" heißt dann „das ärgerte mich, als ich es aufschrieb".
+
+Deshalb steht hier eine **Tabelle** und nicht in jedem Eintrag eine Zahl. Ein Band ist eine Aussage über das Verhältnis zu den anderen; es entsteht dadurch, dass der Eintrag neben die anderen gelegt wird.
+
+### Die vier Bänder
+
+| Band | Bedeutung | Die Prüffrage |
+|---|---|---|
+| **A** | **Hält eine laufende Reihe an.** Solange er offen ist, ist eine aufgesetzte oder laufende Messung nicht auswertbar. | *Verfällt Maschinenzeit oder Material, wenn er liegen bleibt?* |
+| **B** | **Gehört zu einer laufenden Reihe.** Sie läuft auch ohne ihn, aber sein Ergebnis geht in ihres ein. | *Würde ich ihn beim Auswerten der Reihe vermissen?* |
+| **C** | **Entwertet eine Aussage außerhalb der laufenden Reihen.** Stiller Fehler, Defekt am Messwerkzeug, Vorgabewert an einer Stelle, an der ein Ausfall gehört. | *Steht heute irgendwo eine Zahl, die dadurch falsch ist?* |
+| **D** | **Richtig, aber ohne Anschluss an eine offene Frage.** | — |
+
+### Zwei Regeln, ohne die die Bänder wieder Stimmungen werden
+
+**1. Band A ist knapp und bleibt es.** Es fasst nur, was als Nächstes tatsächlich angefasst wird. Wächst der Bedarf, muss etwas **heraus** — nicht das Band wachsen. Ein A mit zwanzig Einträgen ist dasselbe wie „hoch" mit siebenundzwanzig.
+
+**2. Das Band wird beim Lesen vergeben, nicht beim Anlegen.** Ein neuer Eintrag kommt **ohne** Band herein. Er bekommt eins, wenn die Tabelle das nächste Mal gegen den Bestand gehalten wird. Das ist der ganze Unterschied zum bisherigen Verfahren und der Grund, warum ein fehlendes Band hier kein Mangel ist.
+
+### Die laufenden Reihen — Stand 09.08.2026
+
+Die Zugehörigkeit zu einer dieser Reihen hebt einen Eintrag; alles andere sinkt.
+
+| Reihe | Zustand |
+|---|---|
+| **1 — Charakterbildung** | 18 Bögen, 540 Turns, aufgesetzt und zurückgesetzt, wartet auf die GPU |
+| **2 — Haltungsraum und Zuwendungsrad** | Beitragsverhältnisse gefallen, nicht kalibriert (`F-HALTUNG-1`) |
+| **3 — Erkenntniszyklus und der Abfluss der Shadow-Queue** | Vorfrage am 09.08. beantwortet, Entscheidung über 614 Altaufträge offen |
+| **4 — Die Linter-Wände** | vier Familien hart, `B` bei null und nicht als Kürzel schaltbar |
+
+### Band A — zwei Einträge
+
+| Kennung | Reihe | Was er anhält |
+|---|---|---|
+| `PROMOTION-FENSTER-LAEUFT-AB-STATT-LEER` | 1 | Entwertet **jeden gepaarten Vergleich** — und die Charakterbildungs-Reihe ist einer. Live bestätigt: 30 Minuten Nachlauf, 15× „3 Schlüssel belegt", null Abfluss |
+| `RAD-STABILITAET-UNGEMESSEN` | 2 | Steht **vor** jeder Kalibrierung der Beitragsverhältnisse. Wer vorher kalibriert, kalibriert gegen Rauschen unbekannter Breite |
+
+**`PROFIL-HISTORIE-FEHLT` stand beim ersten Entwurf dieser Tabelle in Band A und gehört nicht dorthin.** Die Begründung lautete: Ohne Profilhistorie sei nicht messbar, ob ein behaltenes Rad früh genug wirkt. Der Eintrag selbst widerlegt das seit dem 02.08.2026 — `charakter_hash` führt das Paar im Primärschlüssel, und **die Räder sind ohnehin historisiert**: `charakter_rad_messung` trägt am 09.08.2026 231 Zeilen über 20 Kennungen seit dem 01.08. Die Frage nach dem Rad hängt an dieser Tabelle, nicht an der Profilhistorie. Er steht in Band B. **Das ist die Regel bei der Arbeit:** Ein Band, das gegen den Eintrag gehalten wird statt gegen die Erinnerung an ihn, korrigiert sich beim Lesen.
+
+### Band B — was in einer laufenden Reihe mitläuft
+
+| Kennung | Reihe |
+|---|---|
+| `KALIBRIERUNG-ZEUGE-TRENNT-SCHWACH` · `PROFILE-LEER-URSACHE-UNBEKANNT` · `PAARLISTE-FEST` · `PROFIL-HISTORIE-FEHLT` | 1 |
+| `HALTUNG-SPANNENENDEN-OFFEN` · `HALTUNG-LAENGE-ZWEI-ERZEUGER` | 2 |
+| `AUFTRAGSARTEN-OHNE-AGENTEN` · `SHADOW-QUEUE-RUECKSTAND-UNGEMESSEN` · `PIXIE-EIN-SLOT-BLOCKIERT-ALLES` · `RECHERCHE-RETRY-BLOCKIERT-QUEUE` · `VERTIEFEN-AUFTRAEGE-OHNE-THEMA` | 3 |
+
+**Die vier Einträge der Reihe 3 sind derselbe Engpass von vier Seiten** und werden nicht einzeln bewertet — wer einen angeht, misst die anderen drei mit. Ihre Reihenfolge untereinander steht bei `AUFTRAGSARTEN-OHNE-AGENTEN`.
+
+### Was mit den übrigen 171 ist
+
+**Sie sind nicht C oder D — sie sind ungebändert**, und das ist eine ehrliche Angabe und keine Auslassung. Ein Band im Sinne von Regel 2 entsteht durch Vergleich; 166 Einträge in einem Zug zu bebändern hieße, genau das Verfahren zu wiederholen, gegen das dieser Abschnitt geschrieben ist.
+
+**Die Reihenfolge für den nächsten Durchgang:** Zuerst die Bugs mit `🔧 offen`, die eine heute berichtete Zahl tragen — das ist Band C und die einzige Gruppe, bei der Liegenlassen weiterläuft statt nur zu warten.
 
 ---
 
@@ -275,7 +338,7 @@ Vier Doku- und Namensfunde, einer davon eine offene Prüfung am Initiative-Rad.
 
 **Was fertig waere.** Das Zuwendungs-Rad wird wie das Initiative-Rad mehrfach erhoben, mit Median und Streuungsmass.
 
-**Prioritaet:** hoch, und **vor** jeder Kalibrierung der Beitragsverhaeltnisse — wer gegen eine Groesse justiert, deren eigene Streuung er nicht kennt, justiert gegen Rauschen.
+**Band A** (Rangordnung, Reihe 2) — und **vor** jeder Kalibrierung der Beitragsverhaeltnisse — wer gegen eine Groesse justiert, deren eigene Streuung er nicht kennt, justiert gegen Rauschen.
 
 ---
 
@@ -526,7 +589,7 @@ Für eine Messreihe ist das der Unterschied zwischen einer Messung und einer Erz
 
 > **Korrigiert am 02.08.2026: nicht vor der Reihe.** Die Behauptung war zu stark. `charakter_hash` führt das Paar im Primärschlüssel, also überschreibt kein Lauf den Profilstand eines anderen — nach sechs Läufen stehen sechs Profile nebeneinander, und der **Vergleich zwischen** den Beziehungen ist damit auch ohne Historie auswertbar. Was ohne sie fehlt, ist der Verlauf **innerhalb** eines Laufs; die Räder sind ohnehin historisiert.
 >
-> **Priorität:** hoch, aber nach der Reihe. Der Eintrag bleibt: Er zahlt weiter auf die Spur zum Leer-Defekt ein, die zuletzt an einem überschriebenen Profiltext endete.
+> **Band B** (Rangordnung, Reihe 1) — hoch, aber nach der Reihe. Der Eintrag bleibt: Er zahlt weiter auf die Spur zum Leer-Defekt ein, die zuletzt an einem überschriebenen Profiltext endete.
 
 #### PAARLISTE-FEST — der CharakterAgent destilliert genau ein Paar
 

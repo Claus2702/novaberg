@@ -675,7 +675,7 @@ Drei Defekte, die am 08.08.2026 in der Fundliste standen und bei der Klassifizie
 
 **Abhilfe, billig und ohne neuen Bogen.** Das Fenster muss leerlaufen statt ablaufen, und die Warteschlange darf nicht gelöscht werden, solange Einträge darin stehen.
 
-**Priorität.** Hoch für jede Messreihe, die Arme vergleicht. Ohne die Abhilfe trägt jeder gepaarte Vergleich auf diesem Korpus einen unbeobachteten Störfaktor.
+**Band A** (Rangordnung in `novaberg-backlog.md`, Reihe 1). Hoch für jede Messreihe, die Arme vergleicht. Ohne die Abhilfe trägt jeder gepaarte Vergleich auf diesem Korpus einen unbeobachteten Störfaktor.
 
 ---
 
