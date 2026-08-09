@@ -1,6 +1,6 @@
 # Novaberg — Roadmap (Projektchronik)
 
-**Stand:** Chat 133, 9. August 2026
+**Stand:** Chat 134, 9. August 2026
 *(Die Kopfzeile stand bis Chat 109 auf „Chat 93, 21. Mai 2026" — 15 Chats hinter dem Inhalt. **Sie ist danach erneut zurückgefallen:** von Chat 110 bis 114 blieb sie auf „Chat 109" stehen, während der Inhalt weiterwuchs, und wurde in Chat 115 nachgezogen. Wer hier etwas ergänzt, zieht die Kopfzeile mit — sie driftet zuverlässig. Achtung beim Nachschlagen: Nur bis Chat 97 trägt jeder Chat eine eigene `## Chat NNN`-Überschrift; die Chats 98–108 stehen als `###`-Abschnitte unter dem Chat-97-Block, benannt nach Sprint statt nach Chat.)*
 **Pfad:** novaberg/docs/novaberg-roadmap.md
 **Single Source of Truth für abgeschlossene Arbeit.**
@@ -1980,6 +1980,20 @@ Beide Räder haben eine Nabe — den Wert ohne jede Ausprägung — und das Erge
 > **Die Zahlen selbst stehen nicht hier.** Ein Charakter-Rad ist ein Charakterprofil; aus den Summanden sind mit der Züge-Tabelle die Einzelspeichen rückrechenbar. Wer die Messung nachvollziehen will, fährt sie gegen den eigenen Bestand — sie ist in zwei Aufrufen wiederholbar.
 
 **Geschlossen:** `Bauteil 3 — Charakter-Räder im Client` (Rest benannt, siehe Backlog)
+
+---
+
+## Chat 134 (09.08.2026) — Sieben `zip`, die nicht dasselbe meinen, und eine Wand, die nicht aufgeht ✅
+
+**Neun `B`-Treffer bereinigt, Nulllinie 2147 → 2138.** Sieben `zip` ohne `strict`, zwei Schleifenvariablen ohne Gebrauch.
+
+**Die sieben `zip` zerfallen nicht in eine Klasse, und das ist der ganze Befund.** Sechs stehen dort, wo gleiche Länge **Bedingung** ist — zweimal durch eine Längenprüfung zwei Zeilen darüber (`_cosine`, der M2-Skalar der Initiative), einmal durch Konstruktion aus derselben Anzahl (`spread_xs` aus `len(goals)`), zweimal durch die 1:1-Zusicherung des Force-Directed Layouts, einmal durch dasselbe Drei-Element-Literal auf beiden Seiten. Dort steht jetzt `strict=True`.
+
+**Die siebte ist das Gegenteil:** `zip(cosines, cosines[1:])` prüft die absteigende Sortierung, indem es eine Liste gegen ihren eigenen Schwanz zippt — dafür **muss** die kürzere Seite gewinnen. `strict=True` hätte dort bei jedem Aufruf geworfen. Sie trägt jetzt `strict=False` und den Satz, warum das die Aussage ist und nicht die Nachlässigkeit.
+
+**Was die Gegenprobe herausgefunden hat, und es ist unangenehm:** Von den sieben Stellen ist **eine einzige** durch die Suite bezeugt. Jede der sechs anderen wurde einzeln auf eine Längenabweichung gesetzt — dreimal `drive.py`, einmal `_cosine`, einmal der M2-Skalar —, und die Suite blieb **jedes Mal grün**. Nur der Eingriff in der Testdatei selbst wurde rot, genau einer. `strict=True` ist an sechs Stellen damit eine begründete Behauptung ohne Zeugen; das Grün nach der Änderung sagt dort nichts, weil das Grün nach dem Bruch dasselbe sagt.
+
+**Und die Wand geht so nicht auf.** `B` steht nach dem Bereinigen bei null, ist aber **nicht als Kürzel schaltbar: vier der 43 Regeln stehen im Preview** — `B043`, `B901`, `B903`, `B909`. Dasselbe Aufnahmekriterium, das schon `W` gekippt hat, und derselbe Grund: Eine Wand, die mit der nächsten Werkzeugversion um eine ungeprüfte Regel wächst, ist keine. Aufnehmbar wären die **39 stabilen Regeln einzeln**, jede mit eigener Reichweiten-Prüfung — eine andere Größenordnung als die neun Treffer vermuten lassen. Die Entscheidung darüber steht aus; `ruff-hart.toml` führt weiterhin vier Familien.
 
 ---
 
