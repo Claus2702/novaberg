@@ -365,7 +365,7 @@ def _thema_messen(state: dict, vorher_embedding: list[float] | None) -> float | 
         return None
 
     # ── Verarbeitung ────────────────────────────
-    skalar: float = sum(a * b for a, b in zip(jetzt, vorher_embedding))
+    skalar: float = sum(a * b for a, b in zip(jetzt, vorher_embedding, strict=True))
     abstand: float = 1.0 - skalar
 
     # ── Ausgabe-Verifikation ────────────────────

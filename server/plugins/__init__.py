@@ -38,7 +38,7 @@ def discover_managers() -> dict[str, BaseManager]:
         try:
             module = importlib.import_module(f"plugins.{item.name}")
 
-            for name, obj in inspect.getmembers(module, inspect.isclass):
+            for _name, obj in inspect.getmembers(module, inspect.isclass):
                 if issubclass(obj, BaseManager) and obj is not BaseManager:
                     instance: BaseManager = obj()
                     _registry[instance.ziel] = instance

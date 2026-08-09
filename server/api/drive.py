@@ -424,7 +424,7 @@ def gravity_map_lesen(user_id: str = DEFAULT_USER_ID):
             spread_xs = [0.05 + 0.9 * i / (anzahl - 1) for i in range(anzahl)]
 
         goals_response: list[dict] = []
-        for goal, x in zip(goals, spread_xs):
+        for goal, x in zip(goals, spread_xs, strict=True):
             goals_response.append({
                 "x":                    float(x),
                 "y":                    0.5,
@@ -456,7 +456,7 @@ def gravity_map_lesen(user_id: str = DEFAULT_USER_ID):
     goal_coords: list[tuple[float, float]] = coords[n_turns:]
 
     turns_response: list[dict] = []
-    for turn, (x, y) in zip(user_turns, turn_coords):
+    for turn, (x, y) in zip(user_turns, turn_coords, strict=True):
         turns_response.append({
             "x":               float(x),
             "y":               float(y),
@@ -468,7 +468,7 @@ def gravity_map_lesen(user_id: str = DEFAULT_USER_ID):
         })
 
     goals_response: list[dict] = []
-    for goal, (x, y) in zip(goals, goal_coords):
+    for goal, (x, y) in zip(goals, goal_coords, strict=True):
         goals_response.append({
             "x":                    float(x),
             "y":                    float(y),

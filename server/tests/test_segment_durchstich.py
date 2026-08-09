@@ -193,7 +193,7 @@ class VerdichtungBevorzugtSegmentTest(unittest.TestCase):
             for i, seg in enumerate([SEG_0, SEG_1, SEG_2])
         ]
         self.assertEqual(len(set(objekte)), 3)
-        for seg, objekt in zip([SEG_0, SEG_1, SEG_2], objekte):
+        for seg, objekt in zip([SEG_0, SEG_1, SEG_2], objekte, strict=True):
             self.assertIn(seg, objekt)
 
     def test_lagebild_bleibt_die_andere_turn_haelfte(self):

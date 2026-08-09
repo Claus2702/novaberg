@@ -312,7 +312,7 @@ class WissensluecketAgent(BaseAgent):
                 f"({len(a)} vs {len(b)}) — 0.0"
             )
             return 0.0
-        punkt: float = sum(x * y for x, y in zip(a, b))
+        punkt: float = sum(x * y for x, y in zip(a, b, strict=True))
         norm_a: float = sum(x * x for x in a) ** 0.5
         norm_b: float = sum(y * y for y in b) ** 0.5
         if norm_a == 0.0 or norm_b == 0.0:

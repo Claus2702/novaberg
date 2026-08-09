@@ -285,7 +285,7 @@ def plan(
     if not zustaendiger:
         target_lower: str = state.get("management_target", "").lower()
         if target_lower:
-            for name, manager in registry.items():
+            for _name, manager in registry.items():
                 if manager.ziel in target_lower or target_lower in manager.ziel:
                     zustaendiger = manager
                     logger.info(f"Planner: Match via target '{target_lower}' → {manager.ziel}")

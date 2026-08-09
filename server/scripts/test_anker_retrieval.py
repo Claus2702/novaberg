@@ -109,9 +109,13 @@ def main() -> None:
         print(f"  -> Treffer ohne vollstaendige Keys (id-Anzeige): {fehlende}")
 
     cosines = [t.get("cosine") for t in treffer]
+    # `strict=False` ist hier die Aussage und nicht die Nachlaessigkeit: Eine
+    # Liste gegen ihren eigenen Schwanz gezippt ergibt die aufeinander-
+    # folgenden Paare, und dafuer MUSS die kuerzere Seite gewinnen. Mit
+    # `strict=True` wuerde diese Pruefung bei jedem Aufruf werfen.
     sortiert_ok: bool = all(
         a is not None and b is not None and a >= b
-        for a, b in zip(cosines, cosines[1:])
+        for a, b in zip(cosines, cosines[1:], strict=False)
     )
     print(f"Reihenfolge cosine-absteigend: {sortiert_ok}")
     if not sortiert_ok:
