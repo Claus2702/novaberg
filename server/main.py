@@ -228,25 +228,46 @@ async def lifespan(app: FastAPI):
         logger.debug("main: Periodic-Task-Discovery uebersprungen (PIXIE_AKTIV=False)")
 
     # Scheduler starten — Pixie-Heartbeat (kompetitives Scheduling)
-    from config import PIXIE_INTERVALL_SEKUNDEN
+    from config import PIXIE_INTERVALL_SEKUNDEN, PIXIE_CPU_INTERVALL_SEKUNDEN
 
     if PIXIE_AKTIV:
         from services.pixie.scheduler import pixie_heartbeat
 
-        async def _pixie_job():
-            await pixie_heartbeat(app.state)
+        from services.model_services.spur import SPUR_CPU, SPUR_LLM
+
+        # Zwei Spuren, zwei Jobs, zwei Sperren. Je `max_instances=1`, damit
+        # innerhalb einer Spur weiterhin genau einer laeuft — darauf beruht
+        # die Arbeitsliste der Promotion. Ein Agent gehoert zu genau einer
+        # Spur, also kann er auch nicht doppelt laufen.
+        async def _pixie_job_llm() -> None:
+            await pixie_heartbeat(app.state, SPUR_LLM)
+
+        async def _pixie_job_cpu() -> None:
+            await pixie_heartbeat(app.state, SPUR_CPU)
 
         scheduler.add_job(
-            _pixie_job,
+            _pixie_job_llm,
             trigger       = "interval",
             seconds       = PIXIE_INTERVALL_SEKUNDEN,
-            id            = "pixie_heartbeat",
-            name          = "Pixie Heartbeat",
+            id            = "pixie_heartbeat_llm",
+            name          = "Pixie Heartbeat (LLM-Spur)",
+            max_instances = 1,
+            coalesce      = True,
+        )
+        scheduler.add_job(
+            _pixie_job_cpu,
+            trigger       = "interval",
+            seconds       = PIXIE_CPU_INTERVALL_SEKUNDEN,
+            id            = "pixie_heartbeat_cpu",
+            name          = "Pixie Heartbeat (CPU-Spur)",
             max_instances = 1,
             coalesce      = True,
         )
         scheduler.start()
-        logger.info(f"Scheduler gestartet (Pixie-Heartbeat: {PIXIE_INTERVALL_SEKUNDEN}s).")
+        logger.info(
+            f"Scheduler gestartet — LLM-Spur {PIXIE_INTERVALL_SEKUNDEN}s, "
+            f"CPU-Spur {PIXIE_CPU_INTERVALL_SEKUNDEN}s."
+        )
     else:
         logger.debug("main: Pixie-Heartbeat-Job uebersprungen (PIXIE_AKTIV=False)")
         logger.info("Pixie-Master-Switch: AKTIV=False — alle Pixie-Pfade ruhen")

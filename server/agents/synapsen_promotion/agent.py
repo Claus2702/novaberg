@@ -66,6 +66,14 @@ class SynapsenPromotionAgent(BaseAgent):
         return ["synapsen_promotion"]
 
     @property
+    def lastart(self) -> str:
+        """Die CPU-Spur. Nur Embed-Worker und Datenbank — kein Sprachmodell. Sie ist der
+        Grund, aus dem es die Trennung gibt: Waehrend Konrads Bogen am
+        09.08.2026 kam sie in 28 Minuten einmal dran und brachte 1 von 72
+        Auftraegen durch."""
+        return "cpu"
+
+    @property
     def graph_eignung(self) -> list[str]:
         return ["pixie"]
 

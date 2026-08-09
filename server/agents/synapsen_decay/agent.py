@@ -56,6 +56,11 @@ class SynapsenDecayAgent(BaseAgent):
         return ["synapsen_decay"]
 
     @property
+    def lastart(self) -> str:
+        """Die CPU-Spur. Reine Rechnung ueber Bestandswerte, kein Modellaufruf."""
+        return "cpu"
+
+    @property
     def graph_eignung(self) -> list[str]:
         # Reiner Pixie-Hintergrund-Agent, keine User-Graph-Eignung.
         return ["pixie"]

@@ -46,11 +46,11 @@ def kandidaten_sammeln() -> list[dict]:
     """
     kandidaten: list[dict] = []
 
-    # Quelle 1: Queue-Peek
+    # Quelle 1: Queue-Peek — je Queue ein Gewinner, nicht einer ueber beide.
+    # Ein zusammengefasster Gewinner waere immer der Gespraechsauftrag und
+    # die CPU-Spur bekaeme nie einen Kandidaten zu sehen (siehe _queue_peek).
     for user_id in _aktive_user_ids():
-        queue_kandidat = _queue_peek(user_id)
-        if queue_kandidat:
-            kandidaten.append(queue_kandidat)
+        kandidaten.extend(_queue_peek(user_id))
 
     # Quelle 2: Faellige periodische Aufgaben
     kandidaten.extend(_periodische_faellig())
@@ -96,18 +96,38 @@ def _aktive_user_ids() -> list[str]:
     return aktive
 
 
-def _queue_peek(user_id: str) -> dict | None:
-    """Peek auf shadow_queue und queue (Promotion) fuer einen User.
+def _queue_peek(user_id: str) -> list[dict]:
+    """Peek auf shadow_queue und queue (Promotion) — **je einen** Gewinner.
 
-    Gibt den Eintrag mit der hoechsten Prioritaet zurueck, ohne ihn zu entfernen.
+    **Je Queue einen, nicht einen ueber beide.** Bis zum 09.08.2026 faltete
+    diese Funktion beide Listen auf einen einzigen besten Eintrag zusammen.
+    Solange ein Scheduler daraus einen Agenten waehlte, war das richtig; mit
+    den zwei Spuren wurde es zum Defekt:
+
+    Die Gespraechsauftraege in `shadow_queue` tragen 0,94 bis 1,00, die
+    Promotionsauftraege in `queue` ihre Salienz. Der Gesamtsieger war damit
+    **immer** ein Gespraechsauftrag — also immer ein Kandidat der LLM-Spur.
+    Die CPU-Spur bekam nie einen zu sehen und meldete "Keine Kandidaten
+    dieser Spur", waehrend 15 Promotionsauftraege danebenlagen.
+
+    > **Eine Zusammenfassung vor der Aufteilung macht die Aufteilung
+    > wirkungslos.** Die Spur wird nach dem Agenten entschieden; wer vorher
+    > auf einen Gewinner reduziert, hat die Entscheidung schon getroffen.
+
+    Der Vergleich innerhalb einer Queue bleibt unveraendert, und der
+    Scheduler waehlt weiterhin einen Gewinner — nur eben aus den Kandidaten
+    **seiner** Spur.
+
+    Nachbedingung: Hoechstens ein Eintrag je Queue, in der Reihenfolge
+        shadow_queue, queue. Leere Liste, wenn beide leer sind.
     """
-    bester: dict | None = None
-    beste_prio: float = -1.0
+    gewinner: list[dict] = []
 
     for queue_key in [f"shadow_queue:{user_id}", f"queue:{user_id}"]:
-        eintraege = redis_client.lrange(queue_key, 0, -1)
+        bester: dict | None = None
+        beste_prio: float = -1.0
 
-        for raw in eintraege:
+        for raw in redis_client.lrange(queue_key, 0, -1):
             try:
                 eintrag = json.loads(raw)
             except (json.JSONDecodeError, TypeError):
@@ -133,7 +153,10 @@ def _queue_peek(user_id: str) -> dict | None:
                     "themen": eintrag.get("themen", ""),
                 }
 
-    return bester
+        if bester:
+            gewinner.append(bester)
+
+    return gewinner
 
 
 def _aging_zuschlag(ueberfaellig_s: float, name: str) -> float:

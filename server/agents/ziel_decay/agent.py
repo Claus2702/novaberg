@@ -43,6 +43,11 @@ class ZielDecayAgent(BaseAgent):
         return ["ziel_decay"]
 
     @property
+    def lastart(self) -> str:
+        """Die CPU-Spur. Reine Rechnung ueber Bestandswerte, kein Modellaufruf."""
+        return "cpu"
+
+    @property
     def graph_eignung(self) -> list[str]:
         return ["pixie"]
 

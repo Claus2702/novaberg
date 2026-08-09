@@ -79,6 +79,36 @@ class BaseAgent(ABC):
         """In welchen Graphen darf dieser Agent laufen: ['user'], ['pixie'], oder beide."""
         return ["user", "pixie"]
 
+    @property
+    def lastart(self) -> str:
+        """Welche Pixie-Spur diesen Agenten faehrt: 'llm' oder 'cpu'.
+
+        Der Hintergrund laeuft in zwei Spuren, weil zwei Lasten sich nicht
+        behindern: Wer das Sprachmodell braucht, haelt es minutenlang; wer
+        nur rechnet und einbettet, ist in Sekunden fertig. In einer
+        gemeinsamen Schlange verhungert der Schnelle hinter dem Langsamen —
+        gemessen am 09.08.2026: Die Synapsen-Promotion kam waehrend eines
+        28-Minuten-Bogens **einmal** dran und brachte 1 von 72 Auftraegen
+        durch, weil jeder Gespraechsauftrag mit 0,94 bis 1,00 ueber ihrer
+        Basis von 0,90 stand.
+
+        **Die Vorgabe ist `llm`, und das ist eine Entscheidung.** Ein neu
+        hinzugekommener Agent, den niemand eingeordnet hat, landet damit in
+        der langsamen Spur — dort ist Blockieren erwartet und schadet nichts.
+        Die Vorgabe `cpu` waere die gefaehrliche: Ein uebersehener
+        LLM-Aufrufer verstopfte die schnelle Spur und erzeugte genau den
+        Defekt wieder, gegen den die Trennung gebaut ist.
+
+        **Die Angabe wird erzwungen, nicht geglaubt** (`_spur_kontext` in
+        `services/model_services`): Ein Agent der `cpu`-Spur, der doch das
+        Sprachmodell ruft, scheitert laut, statt seine Spur zu verstopfen.
+        Der Grund steht in der Messung, die zu dieser Trennung gefuehrt hat:
+        Die Lastart ist eine Eigenschaft des ganzen Aufrufbaums, nicht der
+        Klasse — beim ersten Einordnen wurde `charakter` faelschlich fuer
+        modellfrei gehalten, weil sein Modellaufruf ein Modul tiefer steht.
+        """
+        return "llm"
+
     def periodic_task(self) -> PeriodicTask | None:
         """Periodische Aufgabe dieses Agenten fuer Pixie-Scheduling.
         None = Agent arbeitet nur Queue-basiert.

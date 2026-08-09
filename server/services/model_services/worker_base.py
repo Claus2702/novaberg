@@ -15,6 +15,8 @@ import asyncio
 import logging
 from typing import Generic, TypeVar
 
+from services.model_services.spur import sprachmodell_erlaubt
+
 logger = logging.getLogger(__name__)
 
 TRequest = TypeVar("TRequest")
@@ -116,9 +118,16 @@ class ModelWorker(Generic[TRequest, TResponse]):
             Die Response des Workers.
 
         Raises:
+            SpurVerletzung, wenn ein Sprachmodell-Worker aus der CPU-Spur
+            gerufen wird — siehe `spur.py`. Der Embed-Worker ist ausgenommen:
+            Die CPU-Spur braucht ihn, seine Aufrufe sind kurz, und beide
+            Spuren treffen sich dort planmaessig.
             Beliebige Exception, die der Worker beim Modell-Call wirft —
             propagiert über die Future.
         """
+        if self._name != "embed":
+            sprachmodell_erlaubt(self._name)
+
         if not self._running:
             raise RuntimeError(
                 f"ModelWorker '{self._name}' nicht gestartet — "
@@ -165,6 +174,9 @@ class ModelWorker(Generic[TRequest, TResponse]):
             concurrent.futures.TimeoutError: Bei Überschreitung des Timeouts.
             Beliebige Exception aus dem Modell-Call (über die Future propagiert).
         """
+        if self._name != "embed":
+            sprachmodell_erlaubt(self._name)
+
         if not self._running or self._loop is None:
             raise RuntimeError(
                 f"ModelWorker '{self._name}' nicht gestartet — "

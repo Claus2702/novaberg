@@ -192,6 +192,17 @@ PIXIE_INTERVALL_MIN: int = int(os.getenv("PIXIE_INTERVALL_MIN", "2"))
 
 # Pixie Heartbeat (kompetitives Scheduling, Chat 33)
 PIXIE_INTERVALL_SEKUNDEN: int = int(os.getenv("PIXIE_INTERVALL_SEKUNDEN", "120"))
+
+# Der Takt der CPU-Spur. Sie faehrt Agenten ohne Sprachmodell — Promotion,
+# Synapsen-Decay, Ziel-Decay —, die in Sekunden fertig sind und die meiste
+# Zeit leerlaufen. Ein kurzer Takt kostet dort fast nichts und entscheidet
+# alles: Gemessen am 09.08.2026 kam die Promotion in einem 28-Minuten-Bogen
+# EINMAL dran und brachte 1 von 72 Auftraegen durch, weil sie in derselben
+# Schlange stand wie eine Recherche.
+#
+# GESETZT, nicht hergeleitet — entschieden am 09.08.2026. 30 s heisst: Der
+# Rueckstand eines Bogens laeuft waehrend des Bogens ab, nicht nach ihm.
+PIXIE_CPU_INTERVALL_SEKUNDEN: int = int(os.getenv("PIXIE_CPU_INTERVALL_SEKUNDEN", "30"))
 PIXIE_LOCK_TTL_SEKUNDEN:  int = int(os.getenv("PIXIE_LOCK_TTL_SEKUNDEN", "600"))
 
 # --- Pixie Aging (Verhungerungsschutz, Chat 113) ---
