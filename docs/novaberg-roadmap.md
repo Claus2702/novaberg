@@ -2049,6 +2049,26 @@ Dann brach die Reihe beim ersten Bogen ab. **Alle siebzehn Personas der Validier
 
 Damit ist ein Satz widerlegt, der seit dem Vortag im Erreichbarkeits-Konzept stand: *„Der Lauf ist derselbe und kostet nichts."* **Dieselbe Form wie B4 am Vortag: ein Bauteil, dessen Wiederholung nie fahrbar war, und niemand hat es bemerkt, bis jemand es versucht hat.** Es wurde nichts zurückgesetzt.
 
+### Das Basis-Rad, und warum es heute nicht gesetzt wird
+
+Zum Abschluss die Frage, ob ein frisches Paar besser als mit einem Rad aus lauter Nullen starten kann — es reproduziert die Landschaft exakt und trägt nichts bei, bis genug Material für eine Destillation da ist. Drei Messungen, und die dritte verschiebt die Frage.
+
+**Die acht toten Enden stehen in der Grundwerttabelle, nicht im Rad.** Mit dem Rad auf der Nabe liegen bereits 8 von 70 Zellen exakt auf 0,0 — alle in den beiden Größen, die als **Grenze** geführt werden und nicht als Neigung. Das ist die gewollte tote Ecke: Im Gewitter wird nicht gefragt, wer beichtet wird nicht gedrängt.
+
+**Ein uniformes Rad kann die Landschaften nur stauchen, nie spreizen.** Über beide Richtungen in Stufen gemessen erhöht keine einzige Kombination die Streuung zwischen den vierzehn; in Richtung Abwendung fällt sie monoton von −6,8 % auf −47 %. Der Grund steht in der Wegform: Ein einziger Vektor, der auf alle vierzehn gleich wirkt, kann sie verschieben und zusammendrücken — auseinanderziehen könnte er sie nur, wenn er verschiedene Landschaften in verschiedene Richtungen zöge. **Was die vierzehn unterscheidbar macht, ist die Tabelle; das Rad moduliert sie, es verteilt sie nicht.** Bei voller Ausprägung auf einer Seite bricht die Ordnung zusammen: 158 Landschaftspaare fallen zusammen, die vorher unterscheidbar waren.
+
+**Und die Verschiebung: Die zwölf Speichen haben heute keinen Abnehmer.** Der Skalar des Rades wirkt über die Salienzformel und entscheidet, was ins Gedächtnis wandert; die Speichen enden in der Anzeige. Ein Basis-Rad kann die Sektorverteilung deshalb nicht ermöglichen — der Sektor fällt aus sechs Achsen, bevor die Haltung überhaupt gerechnet wird.
+
+**Die Richtung ist entschieden — ein frisches Paar startet eher distanziert — und die Setzung wartet.** Solange die Haltung keinen Leser hat, würde ein Basis-Rad an dem Tag stillschweigend gelten, an dem sie einen bekommt, ohne je gegen etwas geprüft worden zu sein. Der Preis jeder Stärke ist beziffert, bevor er gezahlt wird.
+
+### Die Entscheidung zu B2s Wiederholung ist gefallen
+
+**Zurücksetzen, aber die Justierung des Rades behalten** — und vorher sichern. Der alte Bestand ist als Maßstab entwertet, weil sich die Rechnung darunter geändert hat: Achse R fällt seit dem 08.08.2026 anders, und 164 von 849 Turns wechseln ihren Vektor. Ein Bestand, der gegen eine abgelöste Regel erhoben wurde, ist ein Protokoll dieser Regel und kein Vergleichsmaßstab.
+
+**Gesichert ist bereits:** alle 32 Zeilen aus `charakter_hash` mit Rädern und Profiltexten, gegen den Bestand per Prüfsumme belegt statt angenommen. Die Profile sind Modellausgabe und stehen in keiner anderen Sicherung.
+
+**Der Lauf ist verschoben** — er braucht die GPU.
+
 **Suite:** 1097 → **1113 grün**, 0 übersprungen. **Nulllinie 2183 → 2147.**
 
 ---
