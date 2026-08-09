@@ -112,6 +112,22 @@ Gegenstandslos geworden: der Stichtag der assistant-Partition vom 26.07.2026, di
 
 ## Offene Bugs
 
+### Chat 134 — aus der Abdeckungsmessung der Shadow-Queue (09.08.2026)
+
+#### VERTIEFEN-AUFTRAEGE-OHNE-THEMA — ein Drittel aller `vertiefen`-Auftraege traegt keinen Gegenstand 🔧 offen
+
+**Symptom.** **96 der 269 `vertiefen`-Auftraege in `shadow_queue:meister` haben ein leeres Feld `thema`** — 35,7 % dieser Auftragsart. Von 100 themenlosen Eintraegen insgesamt (96 `vertiefen`, 4 `nachfragen`) sind **97 im August entstanden**, der Fehler ist also aktiv und kein Altbestand. `recherche` ist nicht betroffen: kein einziger Eintrag ohne Thema.
+
+**Warum es niemandem auffiel.** Die Auftragsart hat keinen Agenten (`AUFTRAGSARTEN-OHNE-AGENTEN` im Backlog). **Ein Auftrag, den nie jemand ausfuehrt, kann seinen leeren Pflichtwert nicht melden** — die beiden Defekte haben sich gegenseitig verdeckt. Aufgefallen ist es erst, als eine Messung die Themen aller Auftraege einbetten wollte und bei 96 nichts vorfand.
+
+**Warum es zaehlt, auch wenn der Agent fehlt.** Solange der Gegenstand fehlt, ist der Eintrag durch nichts zu retten: Er ist weder ausfuehrbar, wenn der Agent gebaut wird, noch in den Erkenntniszyklus einspeisbar, noch als Altlast beurteilbar. Er belegt Platz in einer Queue, deren Laenge als Kennzahl gelesen wird — **100 von 661 Eintraegen sind damit Fuellmasse, und jede Aussage ueber den Rueckstand traegt sie mit.**
+
+**Reproduktion.** Die Eintraege der Queue lesen und auf ein nichtleeres `thema` pruefen, aufgeteilt nach `aufgabe`.
+
+**Geschlossen, wenn.** Der Erzeuger legt keinen Auftrag ohne Gegenstand mehr an — er scheitert laut statt still —, und der vorhandene Bestand ist entschieden.
+
+---
+
 ### Leere Modellantwort (01.08.2026)
 
 #### VORWISSEN-LIEST-LEERE-TABELLE — die Recherche fragt seit dem Umbau eine abgelöste Tabelle ✅ **behoben am 02.08.2026 (Chat 125, P9a)**

@@ -389,7 +389,15 @@ Der Befund steht im Wortlaut, in dem er notiert wurde; ergänzt sind Kennung, Pr
 
 **Befund (2026-08-02).** **Zwei von drei Auftragsarten der Shadow-Queue haben keinen Agenten.** `services/pixie/router.py` bildet `vertiefen` auf den Agenten `vertiefung` ab und `nachfragen` auf `nachfragen` — **beide Verzeichnisse existieren nicht** (`server/agents/` trägt 15 Agenten, keiner davon heißt so). Im Bestand sind das **168 + 62 = 230 von 649 Aufträgen**, also 35 %.
 
-**Was fertig waere.** Beide Agenten existieren, oder beide Auftragsarten werden nicht mehr erzeugt und der Bestand ist abgeraeumt.
+**Nachgemessen am 09.08.2026 — der Eintrag stimmt nicht mehr, und die Frage ist eine andere geworden.**
+
+**Eine von drei Auftragsarten hat keinen Agenten, nicht zwei.** `nachfragen` hat seit der Trennung vom 05.08.2026 einen eigenen Agenten (`server/agents/nachfragen/`) und fliesst ab: 62 → **47**. Ohne Agenten ist nur noch `vertiefen` — und das ist die einzige Art, die **waechst**: 167 → **269**, von 26 % auf 41 % des Rueckstands. `recherche` 418 → **345**. Summe 649 → **661**. Der Rueckstand ist damit kein Stau mehr, sondern eine Halde: Was abfliessen kann, fliesst; was nicht kann, sammelt sich.
+
+**Und die Frage selbst ist ueberholt.** `novaberg-thinking-erkenntniszyklus_k.md` §10 waehlt einen dritten Weg, den es beim Schreiben dieses Eintrags nicht gab: Die Intention bildet auf `nachdenken` ab, und **Schritt 6 des Zyklus waehlt** zwischen `recherche`, `vertiefen` und `klaerfrage`. Die Auftragsart bleibt also, ihr Erzeuger wechselt. **Wer jetzt den `vertiefung`-Agenten an den heutigen Router baut, baut den alten Reflexpfad** — genau den, den der Zyklus abschafft.
+
+**Dazu ein eigener Defekt:** 96 der 269 `vertiefen` tragen gar kein Thema (`VERTIEFEN-AUFTRAEGE-OHNE-THEMA` in `novaberg-bugs.md`). Fuer diesen Teil erledigt sich die Frage ohne Entscheidung — ein Auftrag ohne Gegenstand ist auch mit Agent nicht ausfuehrbar.
+
+**Was fertig waere.** ~~Beide Agenten existieren, oder beide Auftragsarten werden nicht mehr erzeugt und der Bestand ist abgeraeumt.~~ Es ist entschieden, ob `vertiefen` bis zum Zyklus weiter direkt erzeugt wird oder nicht mehr, und der Bestand ist entsprechend behandelt.
 
 **Prioritaet:** hoch.
 
@@ -397,7 +405,9 @@ Der Befund steht im Wortlaut, in dem er notiert wurde; ergänzt sind Kennung, Pr
 
 **Befund (2026-08-02).** **`shadow_queue:meister` trägt 649 Aufträge** (418 `recherche`, 167 `vertiefen`, 62 `nachfragen`, Prioritäten 0.95 bis 1.0). **Ob der Rückstand abfließt, ist weiterhin nicht gemessen** — es gab bis jetzt kein ungestörtes Fenster.
 
-**Was fertig waere.** Der Abfluss ist ueber ein ungestoertes Fenster gemessen — Zugang gegen Abgang, mit Datum.
+**Nachgemessen am 09.08.2026.** Der Rueckstand steht bei **661** (345 `recherche`, 269 `vertiefen`, 47 `nachfragen`). In sieben Tagen also **+12** — und diese Zahl taeuscht, weil sie zwei gegenlaeufige Bewegungen verrechnet: `recherche` −73 und `nachfragen` −15 gegen `vertiefen` **+102**. **Es fliesst ab, und zwar messbar; es kommt nur mehr nach, als abfliesst, und ein Drittel des Zuwachses kann gar nicht abfliessen.** Der aelteste Eintrag im Kopf stammt vom **27.07.2026** — dreizehn Tage —, und `services/pixie/kandidaten.py` haelt fest, dass Queue-Eintraege **nicht altern**, waehrend periodische Aufgaben es tun. Ein alter Eintrag mit Prioritaet 0,7 steigt damit nie.
+
+**Was fertig waere.** ~~Der Abfluss ist ueber ein ungestoertes Fenster gemessen — Zugang gegen Abgang, mit Datum.~~ Zugang und Abgang sind **getrennt je Auftragsart** ueber ein ungestoertes Fenster gemessen. Eine Summe ueber alle Arten ist als Mass untauglich: Sie stand sieben Tage lang scheinbar still, waehrend sich die Zusammensetzung um 100 Eintraege verschob.
 
 **Prioritaet:** mittel.
 

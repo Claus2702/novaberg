@@ -1995,6 +1995,22 @@ Beide Räder haben eine Nabe — den Wert ohne jede Ausprägung — und das Erge
 
 **Und die Wand geht so nicht auf.** `B` steht nach dem Bereinigen bei null, ist aber **nicht als Kürzel schaltbar: vier der 43 Regeln stehen im Preview** — `B043`, `B901`, `B903`, `B909`. Dasselbe Aufnahmekriterium, das schon `W` gekippt hat, und derselbe Grund: Eine Wand, die mit der nächsten Werkzeugversion um eine ungeprüfte Regel wächst, ist keine. Aufnehmbar wären die **39 stabilen Regeln einzeln**, jede mit eigener Reichweiten-Prüfung — eine andere Größenordnung als die neun Treffer vermuten lassen. Die Entscheidung darüber steht aus; `ruff-hart.toml` führt weiterhin vier Familien.
 
+### Die tragende Vorfrage des Erkenntniszyklus ist beantwortet — er spart
+
+`novaberg-thinking-erkenntniszyklus_k.md` §11 stellte die Frage, die vor seinem Bau zu beantworten war: **Welcher Anteil der Altaufträge fiele an Schritt 5 weg, weil Nova das Thema bereits abgedeckt hat?** Sie ist ohne Turn und ohne Sprachmodell zu beantworten und war es zehn Wochen lang nicht.
+
+614 Altaufträge, 518 mit Thema, jedes eingebettet und gegen Bibliothek und Langzeitgedächtnis gehalten. **Bei der Bibliotheksschwelle 0,60 fallen 77,4 % weg, bei einer strengen 0,70 noch 41,5 %.** Median der höchsten Ähnlichkeit: 0,681. Die Aussage hängt damit nicht an der Schwellenwahl — deshalb steht im Konzept die **Kurve** und keine Quote. Der Denkaufruf vor der Recherche ist kein Aufschlag, sondern eine Einsparung.
+
+**Drei Befunde, die niemand gesucht hat.**
+
+**`recherche` ist an jeder Schwelle deutlich besser abgedeckt als `vertiefen`** — 84,1 % gegen 64,2 % bei 0,60. Das passt zur Bauart beider Arten, und ein Gesamtwert allein hätte es verdeckt. Die Aufteilung nach Eingangsgröße war hier nicht Zierde, sondern der Befund.
+
+**Die Abdeckung kommt zu 86 % aus dem Langzeitgedächtnis, nicht aus der Bibliothek** — obwohl die Bibliothek seit dem 06.08. von 24 auf 168 Einträge gewachsen ist. Der erste Rohwert lautete 2,1 % und war zu einem Teil ein **Messgerätfehler**: `themen_embedding` bildet die lange Zusammenfassung ab, ein Queue-Thema ist eine kurze Phrase. Die Kontrolle Thema-gegen-Thema hebt den Anteil auf 14 % und den Median von 0,505 auf 0,563. **Das Register erklärt einen Teil des Abstands, aber nicht den Abstand** — auch fair verglichen liegt die Bibliothek 0,126 tiefer. Wer die Kaltstart-Vorprüfung nur gegen die Bibliothek baut, misst am falschen Bestand.
+
+**Und 96 der 269 `vertiefen`-Aufträge tragen gar kein Thema** — `VERTIEFEN-AUFTRAEGE-OHNE-THEMA`, 35,7 % dieser Art, 97 von 100 im August entstanden. Aufgefallen ist es erst, als eine Messung ihre Themen einbetten wollte: **Ein Auftrag, den nie jemand ausführt, kann seinen leeren Pflichtwert nicht melden.** Die fehlende Ausführung und der leere Wert haben sich gegenseitig verdeckt.
+
+**Was das für den Rückstand heißt.** Die Summe stand in sieben Tagen scheinbar still (649 → 661), und die Zahl täuscht: `recherche` −73 und `nachfragen` −15 gegen `vertiefen` **+102**. Es fließt ab; es kommt nur mehr nach, als abfließt, und ein Teil des Zuwachses kann gar nicht abfließen. **Eine Summe über alle Auftragsarten ist als Maß untauglich** — beide Backlog-Einträge tragen das jetzt.
+
 ---
 
 ## Chat 133 (08./09.08.2026) — Drei Orte, die es nicht gab, und ein Krisenmarker, den ein hoffnungsvolles Wort auslösen konnte ✅
