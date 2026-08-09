@@ -112,6 +112,22 @@ Gegenstandslos geworden: der Stichtag der assistant-Partition vom 26.07.2026, di
 
 ## Offene Bugs
 
+### Chat 134 — beim Bau der zwei Pixie-Spuren (09.08.2026)
+
+#### SUITE-HAENGT-AM-AKTIVEN-PAAR — zwei Tests werden rot, sobald eine Messreihe läuft 🔧 offen
+
+**Symptom.** `TestWahlGegenDieQueue` in `tests/test_pixie_aging.py` ist grün, solange `AKTIVES_PAAR_USER_ID` auf `meister` steht, und **rot, sobald das aktive Paar auf eine Testpersona umgestellt ist** — also während jeder Messreihe. Am Code ändert sich dabei nichts.
+
+**Ursache.** Die beiden Tests füllen `shadow_queue:meister`. `_aktive_user_ids()` liefert aber `[AKTIVES_PAAR_USER_ID, ASSISTANT_USER_ID]`; steht dort `konrad`, wird `meister` nie abgefragt und `kandidaten_sammeln()` liefert null Kandidaten. Der Test setzt die Umgebung des Behälters als gegeben voraus, ohne sie zu setzen.
+
+**Warum es zählt.** Der Fehlschlag trifft genau dann ein, wenn ohnehin etwas untersucht wird. Eine rote Suite mitten in einer Messreihe schickt den Suchenden in den Code statt in die Umgebung — **am 09.08.2026 zuerst den Autor der laufenden Änderung, der eine Stunde lang seinen eigenen Umbau verdächtigte.** Belegt durch den Gegenbeweis: Paar auf `meister` zurückgestellt, dieselbe Suite, 1133 grün.
+
+**Reproduktion.** Suite einmal mit `AKTIVES_PAAR_USER_ID=meister` und einmal mit einer Testpersona fahren.
+
+**Geschlossen, wenn.** Die beiden Tests setzen die Kennung, gegen die sie prüfen, selbst — oder `_aktive_user_ids` wird für sie gepatcht. Kein Test der Suite hängt dann noch an der Konfiguration des Behälters.
+
+---
+
 ### Chat 134 — aus der Abdeckungsmessung der Shadow-Queue (09.08.2026)
 
 #### VERTIEFEN-AUFTRAEGE-OHNE-THEMA — ein Drittel aller `vertiefen`-Auftraege traegt keinen Gegenstand 🔧 offen
@@ -692,6 +708,24 @@ Drei Defekte, die am 08.08.2026 in der Fundliste standen und bei der Klassifizie
 **Offen ist der Engpass.** 71 wartende Aufträge sind jetzt **sichtbar** statt still gelöscht — auswertbar ist der Gedächtnisstand deshalb noch nicht. Das ist `PIXIE-EIN-SLOT-BLOCKIERT-ALLES`, und die Reihe ist bis dahin nicht fahrbar: Siebzehn weitere Bögen ergäben siebzehn Personas mit je etwa einem Knoten.
 
 **Was der Eintrag über Bug-Einträge zeigt.** Er benannte die Wirkung präzise und die Ursache plausibel — und die plausible Ursache hätte zu einem Umbau geführt, der nichts behoben hätte (ein Fenster, das es nicht gibt, zum Leerlaufen zu bringen). **Vor der Umsetzung eines Eintrags wird nicht seine Abhilfe gebaut, sondern seine Ursache nachgemessen.**
+
+### ✅ Behoben am 09.08.2026 — zwei Spuren statt einer Schlange
+
+Die Promotion konkurrierte um denselben Platz wie die Recherche, obwohl sie einen anderen Worker braucht. Der Hintergrund läuft seitdem in **zwei Spuren**: `llm` für alles mit Sprachmodell und Websuche, `cpu` für Rechnung und Einbettung, je mit eigenem Job, eigener Sperre und `max_instances=1`. Die Lastart steht am Agenten und wird **erzwungen** — ein `cpu`-Agent, der das Sprachmodell ruft, scheitert laut, statt seine Spur zu verstopfen.
+
+**Der Beleg, derselbe Bogen wie der Nachweis des Defekts:**
+
+| | vorher | nachher |
+|---|---|---|
+| Turns | 30/30, 0 Ausfälle | 30/30, 0 Ausfälle, 0 Zeitabläufe |
+| Promotionen | **1** | **200** |
+| LZG-Knoten | **1** | **55** |
+| wartend am Ende | **71** | **3** |
+| Arbeitsliste / Fehlerstapel | leer | leer |
+
+Über neun Messpunkte während des Laufs blieb die Warteschlange zwischen 0 und 4 — sie schwankte im Takt, statt zu wachsen.
+
+**Ein Rest bleibt, klein und systematisch:** Die drei am Ende sind der Schwanz zwischen dem letzten Takt und dem Zurückschalten auf das produktive Paar. Ab da bedient der Heartbeat die Persona nicht mehr, und diese drei werden nie promotet. Das trifft jede Persona in zufälliger Höhe. **Die Abhilfe gehört ins Messrig, nicht hierher:** Es wartet vor dem Zurückschalten, bis die Queue leer ist — was erst jetzt baubar ist, weil Warten gegen Verhungern nicht half.
 
 **Band A** (Rangordnung in `novaberg-backlog.md`, Reihe 1). Hoch für jede Messreihe, die Arme vergleicht. Ohne die Abhilfe trägt jeder gepaarte Vergleich auf diesem Korpus einen unbeobachteten Störfaktor.
 

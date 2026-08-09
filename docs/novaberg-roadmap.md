@@ -2025,6 +2025,24 @@ Beide Räder haben eine Nabe — den Wert ohne jede Ausprägung — und das Erge
 
 ---
 
+### Zwei Spuren, und der erste Bogen der Reihe steht
+
+Die Promotion konkurrierte um denselben Platz wie die Recherche, obwohl sie einen anderen Worker braucht: Embed und Datenbank gegen Sprachmodell und Websuche. **Zwei Lasten, die sich nicht behindern, standen in einer Schlange.**
+
+Der Hintergrund läuft seitdem in zwei Spuren — `llm` im bisherigen Takt, `cpu` alle 30 Sekunden —, je mit eigenem Job, eigener Sperre und `max_instances=1`. Die Zusicherung, auf der die Arbeitsliste beruht, überlebt: Wer läuft, läuft allein **in seiner Spur**, und ein Agent gehört zu genau einer.
+
+**Die Lastart steht am Agenten und wird erzwungen, nicht geglaubt.** Ein `cpu`-Agent, der doch das Sprachmodell ruft, scheitert laut. Der Grund ist aus erster Hand: Beim Einordnen des Bestands wurde `charakter` für modellfrei gehalten, weil sein Modellaufruf ein Modul tiefer steht als die Klasse. **Die Lastart ist eine Eigenschaft des Aufrufbaums, nicht der Klasse** — und eine Angabe, die nichts erzwingt, driftet beim ersten Zusatz.
+
+**Der erste Bau war falsch, und der Fehler ist die eigentliche Lehre.** Der Spurfilter saß hinter `_queue_peek`, das `shadow_queue` und `queue` auf **einen** Gewinner zusammenfaltete. Weil die Gesprächsaufträge diesen Vergleich immer gewinnen, bekam die CPU-Spur nie einen Kandidaten zu sehen und meldete „Keine Kandidaten dieser Spur", während fünfzehn Promotionsaufträge danebenlagen. Aufgefallen ist es erst im laufenden Bogen, an einer Warteschlange, die trotz zweier Spuren weiterkletterte.
+
+> **Eine Zusammenfassung vor der Aufteilung macht die Aufteilung wirkungslos.** Die Spur wird nach dem Agenten entschieden; wer vorher auf einen Gewinner reduziert, hat die Entscheidung schon getroffen.
+
+Und der Test, der gefehlt hatte, war nicht der schwierige: Geprüft war, dass der Filter richtig **einordnet** — ungeprüft, ob die schnelle Spur überhaupt je etwas **zu sehen bekommt**. Der erste war grün, während die Spur leer lief.
+
+**Der Beleg, derselbe Bogen wie der Nachweis des Defekts:** 30 von 30 Turns, 0 Ausfälle, 0 Zeitabläufe, **200 Promotionen statt einer**, **55 Langzeitknoten statt einem**, drei Wartende statt einundsiebzig, Arbeitsliste und Fehlerstapel über neun Messpunkte hinweg leer. **Damit ist der erste Bogen der Charakterbildungs-Reihe erhoben** — die Kontrollgruppe, gegen die heutige Rechnung, mit vollständigem Gedächtnis.
+
+---
+
 ### Die Rangordnung — Bänder statt Einzelurteile
 
 Die Prioritäten sollten einmal gegeneinander gehalten werden statt je Eintrag gesetzt. **Der Befund beim Nachzählen war ein anderer als erwartet:** Von **184 offenen Einträgen** (56 Backlog, 128 Bugs) tragen **18 eine Priorität und 166 keine**. Die Priorität ist Pflichtteil jedes Eintrags — sie fehlt in neun von zehn Fällen. Das Problem war also nicht eine Inflation von „hoch", sondern ihre fast vollständige Abwesenheit.
