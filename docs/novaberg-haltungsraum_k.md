@@ -299,6 +299,54 @@ Eine Übersteuerung ist keine Ausnahme von der Fläche, sondern eine Eigenschaft
 
 > **Die Antwortlänge streut innerhalb derselben Landschaft** — `gemessen` 31.07.2026. Die Antwortlänge streut **innerhalb derselben Landschaft** um mehr als das Zwanzigfache: `schlachtfeld` lieferte bei identischer Haltung 162 und 3895 Zeichen. Was die Länge im Bestand tatsächlich bestimmt, ist damit weder die Landschaft allein noch der Charakter — beide standen in diesen beiden Turns gleich.
 
+## 5a. Das Basis-Rad — gemessen am 09.08.2026, und die Frage verschoben
+
+**Der Anlass.** Ein frisches Paar startet mit einem Vorgabe-Rad aus lauter Nullen. Es reproduziert die Landschaft exakt und ist damit verlustfrei — aber der Charakter kommt in der Rechnung tagelang gar nicht vor, bis genug Material für eine Destillation da ist. Die Frage war deshalb: **Gibt es einen Ausgangszustand, der keine Verluste und keine toten Enden enthält und trotzdem etwas beiträgt?**
+
+Die Antwort besteht aus drei Messungen, und die dritte verschiebt die Frage.
+
+### Die acht toten Enden stehen in der Tabelle, nicht im Rad
+
+Über alle vierzehn Landschaften × fünf Größen gerechnet, mit dem Rad auf der Nabe: **8 von 70 Zellen liegen exakt auf 0,0 oder 1,0**, bevor ein Rad sie anfasst.
+
+| Landschaften | Größe |
+|---|---|
+| `gewitter` · `nebel` · `paradox` | `fragen` = 0,0 |
+| `beichte` · `nebel` · `paradox` · `regen` · `schmollen` | `draengen` = 0,0 |
+
+**Alle acht liegen in den beiden Größen, die als Grenze geführt werden** (`grund × (1 + n)`) und nicht als Neigung. Das ist die eine gewollte tote Ecke aus §2 — im Gewitter wird nicht gefragt, wer beichtet wird nicht gedrängt. **Kein Basis-Rad kann sie auflösen, und keines soll es.** Was ein Basis-Rad leisten kann, ist, keine neuen hinzuzufügen — und das ist prüfbar.
+
+### Ein uniformes Rad kann die Landschaften nur stauchen, nie spreizen
+
+Gemessen über beide Richtungen in Stufen: **keine einzige Kombination erhöht die Streuung zwischen den Landschaften.** In Richtung Abwendung fällt sie von −6,8 % bei der schwächsten Stufe monoton auf −47 % bei der stärksten.
+
+Der Grund steht in der Wegform selbst: Ein abwendendes Rad rechnet `grund × (1 + n)` mit `n < 0`, und das ist eine **proportionale Stauchung zur Null hin**. Ein einziger Vektor, der auf alle vierzehn Landschaften gleich wirkt, kann sie verschieben und zusammendrücken — auseinanderziehen könnte er sie nur, wenn er verschiedene Landschaften in verschiedene Richtungen zöge.
+
+> **Was die vierzehn Landschaften unterscheidbar macht, ist die Grundwerttabelle. Das Rad moduliert sie, es verteilt sie nicht.**
+
+Unbedenklich sind alle Stufen bis 0,5 auf einer Seite: null neue tote Enden, null Kollisionen. **Bei 1,0 auf einer Seite bricht die Ordnung zusammen** — 158 Landschaftspaare fallen in einer Größe zusammen, die vorher unterscheidbar waren, dazu 25 bis 28 neue tote Enden. Das ist ein Befund über die **Charakterspanne** und gehört zu `F-HALTUNG-1`, nicht zum Basis-Rad.
+
+### Und die Verschiebung: die zwölf Speichen haben heute keinen Abnehmer
+
+Das Rad hat zwei Ausgänge, und nur einer wirkt:
+
+| | Verbraucher | Wirkung |
+|---|---|---|
+| `nutzer_gewichtung` (Skalar) | Salienzformel | **real** — entscheidet, was ins Gedächtnis wandert |
+| `nutzer_gewichtung_rad` (12 Speichen) | `haltung_berechnen` → `state["haltung"]` | nur die Anzeige im Event-Consumer |
+
+**Damit kann ein Basis-Rad die Sektorverteilung nicht ermöglichen** — der Sektor fällt aus sechs Achsen im GV-Knoten, die Haltung wird danach gerechnet, und ihr Ergebnis liest kein Prompt. Der Gedanke „ein frisches Paar soll nicht tagelang bei nichts anfangen" trifft zu; er trifft aber den **Skalar** und nicht die Speichen. Dort startet ein frisches Paar auf dem Spalten-Default 0,9, und dieser Wert geht direkt in die Salienzformel — siehe `RAD-WERT-AUF-SPALTEN-DEFAULT` in `novaberg-bugs.md`.
+
+### Vormerkung: die Richtung ist entschieden, die Setzung wartet
+
+**Ein frisches Paar startet eher distanziert.** Entschieden am 09.08.2026.
+
+Die Setzung erfolgt **nicht heute**: Solange die Haltung keinen Leser hat, wäre ein Basis-Rad eine Vorgabe ohne messbare Wirkung — und sie würde beim Anschluss der Haltung stillschweigend gelten, ohne je gegen etwas geprüft worden zu sein. Dieselbe Klasse wie ein Vorgabewert, der wie ein Messwert aussieht, nur eine Ebene früher.
+
+Sobald die Haltung einen Verbraucher hat, gilt: Richtung **Abwendung**, Stärke aus der Messung oben. Die schwächste Stufe (`hoch 0,0 / runter 0,1`) kostet 6,8 % Streuung, jede stärkere mehr. **Die Wahl der Stärke ist damit ein Tausch zwischen „nicht bei null anfangen" und „die Landschaften unterscheidbar halten"** — und dieser Tausch ist beziffert, bevor er gemacht wird.
+
+---
+
 ## 6. Was offen ist
 
 > **Vorangestellt am 08.08.2026: Die Entscheidung zwischen kleineren Beiträgen und Sättigung ist erst nach einer Kalibrierung des Landschaftsraums beantwortbar.**
@@ -445,6 +493,7 @@ Eine Übersteuerung ist keine Ausnahme von der Fläche, sondern eine Eigenschaft
 
 ## Versionshistorie
 
+- **09.08.2026:** §5a neu — **das Basis-Rad, gemessen statt gesetzt.** Drei Befunde, und der dritte verschiebt die Frage. Die **acht toten Enden stehen in der Grundwerttabelle**, nicht im Rad: alle liegen in den beiden Größen, die als Grenze geführt werden, und sind damit die gewollte tote Ecke aus §2. Ein **uniformes Rad kann die Landschaften nur stauchen** — über beide Richtungen gemessen erhöht keine einzige Stufe die Streuung zwischen ihnen; in Richtung Abwendung fällt sie monoton von −6,8 % auf −47 %. Der Grund steht in der Wegform: ein einziger Vektor, der auf alle vierzehn gleich wirkt, kann sie nicht auseinanderziehen. **Und die zwölf Speichen haben heute keinen Abnehmer** — der Skalar wirkt über die Salienzformel, die Speichen enden in der Anzeige. Ein Basis-Rad kann die Sektorverteilung deshalb nicht ermöglichen; der Sektor fällt vorher. Die Richtung ist entschieden — **ein frisches Paar startet eher distanziert** —, die Setzung wartet auf einen Leser der Haltung, und die Stärke ist als Tausch zwischen „nicht bei null anfangen" und „die Landschaften unterscheidbar halten" beziffert, bevor er gemacht wird.
 - **v0.3 — 08.08.2026:** §6 bekommt einen vorangestellten Vorbehalt: **Die Entscheidung zwischen kleineren Beitraegen und Saettigung ist erst nach einer Kalibrierung des Landschaftsraums beantwortbar.** Die Auswahl stellte die Frage so, als sei der Ueberlauf eine Eigenschaft der Beitraege; die Messung vom selben Tag legt die andere Ursache nahe — der Charakter wirkt auf Grundwerte, die nie gegen eine Verteilung geprueft wurden, und dass ausschliesslich die warmen Landschaften ueberlaufen, waehrend genau die kuehlen sauber bleiben, ist dafuer der Beleg. Ueber 720 Ablesungen erhoben: alle vierzehn Landschaften erreichbar, im produktiven Bestand aber vier nie betreten, und die Verteilungen von Messboegen und echtem Gespraech laufen fast gegenlaeufig. **Die Auswahl bleibt gueltig, ihr Zeitpunkt ist ein anderer geworden.** Dazu zwei Vorbehalte an jede Zahl des Abschnitts: Die Ablesung faellt in 101 von 720 Faellen aus, und das Charakter-Rad fehlte in 109 Rechnungen — Turns ohne Rad koennen nicht ueberlaufen, die gemessene Ueberlaufhaeufigkeit ist also eine Aussage ueber die Landschaft und nicht ueber eingetretene Ueberlaeufe.
 - **v0.6 — 31.07.2026:** **Das Protokoll steht.** Drei Zahlen je Größe, Rechenart und Auslöser gehen über `log_berechnung` ins `pipeline_log`, die Spur zeigt `kurzfassung()` bei jeder Antwort. Zwei Präzisierungen gegenüber §2.0a: Ein **Ausfall** wird als `fehler`-Zeile geführt statt gar nicht — nicht als Messwert lesbar, aber zählbar; und die beiden Messgrößen `ausserhalb` und `uebersteuert` stehen zusätzlich obenauf, damit eine Reihe sie zählen kann. Der Join zwischen Haltung und Rohturn ist an einem echten Turn vorgeführt.
 - **v0.5 — 31.07.2026:** **Der Knoten steht.** Die Rechnung hatte bis dahin keinen Aufrufer; sie läuft jetzt in jedem Turn des CharacterGraph, zwischen GV-Node und der Verzweigung zum Verfasser. Der Status wechselt von „nicht gebaut" auf „teilweise gebaut" — mit der Einschränkung, die die Reihenfolge des Sprints trägt: **Nova verhält sich unverändert**, weil kein Prompt die Werte liest. Neu in §6 die erste Messung am echten Turn: Zwei von fünf Größen verlassen die Spanne bereits im ersten Lauf, beide nach oben. Der Überlauf ist damit kein Randfall.
