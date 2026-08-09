@@ -68,6 +68,31 @@ DEFAULT_USER_ID:   str = os.getenv("DEFAULT_USER_ID",   "meister")
 # bis dreissig Tagen.
 AKTIVES_PAAR_USER_ID: str = os.getenv("AKTIVES_PAAR_USER_ID", DEFAULT_USER_ID)
 
+# Auftragsarten, die waehrend eines Messreihen-Laufs gar nicht erst in die
+# Shadow-Queue kommen. Leer im Normalbetrieb.
+#
+# **Eine Messreihe muss abschliessen.** Die Charakterbildungs-Reihe misst
+# Turns, Charakter und Rad; Recherche, Vertiefung und Nachfragen tragen dazu
+# nichts bei. Sie verbrauchen aber die LLM-Spur: Ein Bogen erzeugt rund
+# sechzig solcher Auftraege mit Prioritaet 0.94 bis 1.00, jeder Minuten lang,
+# und die Destillation steht mit Basis 0.30 dahinter. Gemessen am 09.08.2026:
+# Nach zwei vollstaendigen Boegen hatte Nova fuer die eine Persona **kein**
+# Profil und fuer die andere ein Drittel — nicht weil die Destillation
+# scheiterte, sondern weil sie nie an die Reihe kam.
+#
+# Warten hilft nicht: Um eine 1.00 zu ueberholen, braeuchte sie bei 0.5/h
+# Alterung **84 Minuten** Ueberfaelligkeit; ein Bogen dauert 27 bis 33. Und
+# sieben der Auftraege sind `vertiefen`, deren Agent nicht existiert — die
+# Queue wuerde selbst nach Stunden nicht leer.
+#
+# Deshalb nicht spaeter abraeumen, sondern **gar nicht erst einreihen**. Der
+# Preis steht dabei: Eine so erhobene Persona traegt kein recherchiertes
+# Wissen. Das ist eine Verengung der Messung, keine Nebensache — Boegen mit
+# und ohne Unterdrueckung sind nicht miteinander vergleichbar.
+MESSREIHE_OHNE_AUFTRAGSARTEN: frozenset[str] = frozenset(
+    art.strip() for art in os.getenv("MESSREIHE_OHNE_AUFTRAGSARTEN", "").split(",") if art.strip()
+)
+
 redis_client:   redis.Redis     = redis.from_url(REDIS_URL, decode_responses=True)
 llm_lock:       threading.Lock  = threading.Lock()
 shutdown_event: threading.Event = threading.Event()

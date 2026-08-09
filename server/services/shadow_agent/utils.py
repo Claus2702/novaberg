@@ -6,7 +6,7 @@ from datetime import datetime
 
 import redis
 
-from config import PIXIE_AKTIV
+from config import MESSREIHE_OHNE_AUFTRAGSARTEN, PIXIE_AKTIV
 
 logger = logging.getLogger("ki_server.shadow")
 
@@ -25,9 +25,29 @@ def shadow_queue_push(
     emotion:      str  = "",
     modus:        str  = "",
 ) -> None:
-    """Legt einen Auftrag in die Shadow-Queue."""
+    """Legt einen Auftrag in die Shadow-Queue.
+
+    Waehrend eines Messreihen-Laufs werden die Auftragsarten aus
+    `MESSREIHE_OHNE_AUFTRAGSARTEN` **gar nicht erst eingereiht**. Der Grund
+    steht dort: Eine Messreihe muss abschliessen, und ein Bogen ist erst zu
+    Ende, wenn die Queues leer sind — mit sechzig Recherche-Auftraegen darin
+    kommt die Destillation nie an die Reihe, und ohne Destillation misst die
+    Reihe nicht, was sie messen soll.
+
+    **Unterdrueckt heisst protokolliert, nicht verschwiegen.** Eine leere
+    Queue ohne Spur waere von einer Queue, die nie befuellt wurde, nicht zu
+    unterscheiden — und genau diese Verwechslung kostet spaeter die
+    Erklaerung, warum eine Persona kein recherchiertes Wissen traegt.
+    """
     if not PIXIE_AKTIV:
         logger.debug("shadow_agent.utils: shadow_queue_push uebersprungen (PIXIE_AKTIV=False)")
+        return
+
+    if aufgabe in MESSREIHE_OHNE_AUFTRAGSARTEN:
+        logger.info(
+            f"Shadow-Queue: '{aufgabe}' fuer '{user_id}' NICHT eingereiht "
+            f"(Messreihen-Modus) — {thema[:60]}"
+        )
         return
 
     eintrag: dict = {

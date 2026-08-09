@@ -2043,6 +2043,51 @@ Und der Test, der gefehlt hatte, war nicht der schwierige: Geprüft war, dass de
 
 ---
 
+### Die Reihe beginnt: eine Messreihe muss abschließen
+
+**Die zwei Spuren allein genügten nicht.** Nach zwei vollständigen Bögen — 30 von 30 Turns, keine Ausfälle, vollständiges Langzeitgedächtnis — hatte Nova für die eine Persona **kein** Charakterprofil und für die andere ein Drittel. Also genau das nicht, was die Reihe misst.
+
+Die erste Diagnose rechnete drei Zahlen gegeneinander: Destillation mit Prioritätsbasis 0,30, Gesprächsaufträge bei 0,94 bis 1,00, Alterung 0,5/h — daraus **84 Minuten** nötige Überfälligkeit gegen 27 bis 33 Minuten Bogenlänge. Sauber beziffert und als Diagnose falsch.
+
+> **Es war kein Missverhältnis, sondern ein Lauf, der vor seinem Ende abbricht.** Die Destillation verlor nicht — sie war nie an der Reihe, weil vor ihr Arbeit lag.
+
+Daraus der Schnitt, der es gelöst hat: **Was zur Frage nichts beiträgt, wird gar nicht erst erzeugt.** `MESSREIHE_OHNE_AUFTRAGSARTEN` unterdrückt während eines Messlaufs `recherche`, `vertiefen` und `nachfragen` schon beim Einreihen — protokolliert, nicht verschwiegen. Der Preis steht in der Konstante: Eine so erhobene Persona trägt kein recherchiertes Wissen, und Bögen mit und ohne Unterdrückung sind nicht vergleichbar.
+
+**Die Wirkung, gemessen am selben Bogen:**
+
+| | ohne Unterdrückung | mit Unterdrückung |
+|---|---|---|
+| Shadow-Queue nach dem Bogen | 63 | **0** |
+| Destillationen im Lauf | 0 | **2** |
+| Charakterprofil | **keine Zeile** | **10 Felder, ~5.900 Zeichen** |
+
+Dazu zwei Nachbedingungen, die aus Hoffnung Prüfung machen: Das Rig wartet vor dem Zurückschalten, bis die Promotionsqueue leer ist, und meldet den Bogen sonst als **unvollständig**. Und es sichert das Server-Log, **bevor** es den Behälter neu erzeugt — ein Defekt, der an einem Tag drei Untersuchungen gekostet hatte, weil ein Grep in eine gelöschte Datei wie ein leeres Ergebnis aussieht.
+
+**Zwei Bögen stehen damit als erste der Reihe:** Konrad (Kontrollgruppe, 58 Knoten) und Leon (mit destilliertem Rad, 94 Knoten, Rad 0,610 → 0,859 im Lauf neu gerechnet).
+
+### Die Plausibilitätsprüfung — drei Nähte, ein Ergebnis, vier offene Punkte
+
+Die Rechnung des Rades ist **exakt nachvollzogen**: `Nabe 0,9 + Σ(hoch × Zug) − Σ(runter × Zug)` ergibt für Leon 0,8595 gegen gespeicherte 0,859. Jede belegte Speiche hat einen Beleg im Profiltext, jede Null keinen — die Naht Profiltext → Rad trägt in beide Richtungen. Und das Profil ist eine faire Zusammenfassung des Turn-Protokolls.
+
+**Das stärkste Ergebnis sind die vier Räder im Vergleich:**
+
+| Paar | Faktor | Zuwendung | Abwendung |
+|---|---|---|---|
+| `nova\|konrad` | 1,209 | 5/6 | 3/6 |
+| `konrad\|nova` | 1,112 | 5/6 — pflicht 1,00 | 3/6 |
+| `nova\|leon` | 1,016 | 3/6 | **1/6** |
+| `leon\|nova` | 0,859 | 2/6 | **6/6** |
+
+Die Reihenfolge ist durchgehend stimmig: Das ruhige Paar liegt auf **beiden** Seiten höher als das schwierige. Nova ist gegenüber dem frustrierten Gesprächspartner messbar weniger nachgiebig (`widerspenstig 0,36` — ihre einzige Abwendungsspeiche in allen vier Rädern), ohne dass ihr Interesse fällt (`wissbegier 1,00`). **Das fällt aus zwei unabhängigen Destillationen über zwei verschiedene Bögen und ist nicht konstruiert.**
+
+**Offen geblieben:** `distanz = 1,00` in beiden Nutzerrädern gegen 0,36 und 0,00 bei Nova · `arousal` exakt 0,5 in 43 % der Turns, was der Spalten-Default ist · ein `spirale` bei `emotion=freude` und arousal 0,75 · vier Speichen, die in allen vier Rädern nahe null bleiben.
+
+**Zum ersten Punkt läuft ein Kreuzversuch**, und seine Frage ist präzise: Der Rad-Prompt ist **rollenblind**, die Profil-Prompts sind es nicht — `_perspektive_aufloesen` setzt für Nova einen Eigennamen und für den Menschen die Rolle „der Nutzer". Dieselbe Rohmenge läuft deshalb durch beide Etiketten. Wandert `distanz` mit dem Etikett, misst die Reihe zum Teil ihre eigene Beschriftung; wandert es mit dem Material, unterscheiden sich die Personen.
+
+**Die Ungleichheit der Materialmenge ist dabei kein Fehler, sondern der Zweck:** Vom Menschen soll aus seinen Äußerungen eine *ungefähre* Beschreibung entstehen, die Nova hilft, ihm angemessen zu begegnen — Nova selbst soll *exakt* erfasst werden und ein Gedächtnis aufbauen. Leon 849 Zeichen Material, Nova 3601.
+
+---
+
 ### Die Rangordnung — Bänder statt Einzelurteile
 
 Die Prioritäten sollten einmal gegeneinander gehalten werden statt je Eintrag gesetzt. **Der Befund beim Nachzählen war ein anderer als erwartet:** Von **184 offenen Einträgen** (56 Backlog, 128 Bugs) tragen **18 eine Priorität und 166 keine**. Die Priorität ist Pflichtteil jedes Eintrags — sie fehlt in neun von zehn Fällen. Das Problem war also nicht eine Inflation von „hoch", sondern ihre fast vollständige Abwesenheit.
