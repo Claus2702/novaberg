@@ -1999,6 +1999,20 @@ Beide Räder haben eine Nabe — den Wert ohne jede Ausprägung — und das Erge
 
 **Gemessen.** Suite 1137 → 1140, OK, 0 übersprungen. Zwei Neuerzeugungen gegen dieselbe Datei: 201 Zeilen → 396, erste Zeile unverändert. Gegenprobe mit entfernter zweiter Handler-Zuweisung: rot, mit leerer Handler-Liste am LLM-Logger.
 
+### Das Sampling-Profil reist mit der Messung
+
+**Die Rad-Messreihe hielt `modell` und `temperatur` fest — aber nicht die `presence_penalty`.** Der Kommentar über beiden Spalten trug die Begründung schon: *„Ein Rad, das mit einem anderen Modell oder einer anderen Temperatur erhoben wurde, ist mit einem anderen Instrument gemessen."* Die Penalty gehört zum selben Instrument und war übersehen worden.
+
+Das fiel auf, als sie geändert werden sollte. Zwei Profile hätten Zeilen mit **identischem `temperatur = 0,2` und verschiedenem Maßstab** erzeugt, und `reihe_laden` mittelt über die letzten N Erhebungen, ohne den Unterschied zu kennen. Dieselbe Klasse wie `F-LAGE-2`.
+
+**Dabei kam ein Befund heraus, der die Ausgangsfrage umgedreht hat.** Das Modelfile führt `temperature 1` — die Destillation rechnet aber mit **0,2**, weil die Aufrufstelle den Wert setzt und der Modelfile-Wert dort nie ankommt. Gefahren wurde also nie ein Herstellerprofil, sondern eine Mischung: eine Temperatur strenger als jede Empfehlung, und daneben die `presence_penalty` der *allgemeinen* Aufgaben. Sie war das einzige Stück, das nicht zum Rest passte.
+
+**Deshalb steht die Penalty jetzt an der Aufrufstelle, nicht im Modelfile.** Das Modelfile gilt für jeden Aufrufer des Hintergrundmodells; Recherche und Lagebeurteilung sind freie Textarbeit, für die der Hersteller 1,5 empfiehlt. Die Destillation füllt feste Felder und liest ein JSON mit zwölf Schlüsseln — eine präzise Aufgabe, für die 0,0 empfohlen ist. Ein Wert im Modelfile hätte beide zugleich verstellt. `BackgroundRequest` konnte den Parameter vorher überhaupt nicht tragen.
+
+**Und ein Herkunftsfeld, dessen Wert der Code nicht selbst setzt, ist eine Lüge mit Verfallsdatum** — es steht still falsch da, sobald jemand das Modelfile anfasst. Das ist der eigentliche Grund, warum beides zusammengehört: Wer den Wert aufschreibt, muss ihn auch setzen.
+
+**Gemessen.** Suite 1140 → 1143, OK. Die 247 Altzeilen tragen 1,5, weil sie darunter erhoben wurden. Drei Bestandstests brachen am nun verpflichtenden Feld — die beabsichtigte Wirkung; einer davon prüfte über Positionsindizes, wurde vom zusätzlichen Parameter verschoben und liest seine Spalten jetzt aus dem SQL.
+
 ---
 
 ## Chat 134 (09.08.2026) — Sieben `zip`, die nicht dasselbe meinen, und eine Wand, die nicht aufgeht ✅
