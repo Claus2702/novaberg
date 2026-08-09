@@ -270,10 +270,22 @@ def _llm_call(prompt: str, profil_name: str) -> str:
     # keinen, das war auch vor der Migration so (PIXIE-LLM-PARAM-LEAK
     # historisch). _antwort_bereinigen bleibt aktiv, da es auch Quote-
     # Strip macht, was der Worker im expect_json=False-Pfad nicht tut.
+    # `presence_penalty` steht hier und nicht im Modelfile, aus demselben
+    # Grund wie die Temperatur eine Zeile darueber: Das Modelfile gilt fuer
+    # jeden Aufrufer des CPU-Modells, und Recherche und Lagebeurteilung sind
+    # freie Textarbeit — fuer die empfiehlt der Hersteller 1.5. Die
+    # Destillation ist es nicht: Sie fuellt feste Felder und liest am Ende ein
+    # JSON mit zwoelf Schluesseln, also eine praezise Aufgabe, fuer die 0.0
+    # empfohlen ist. Ein Modelfile-Wert haette beide zugleich gestellt.
+    #
+    # Und er steht hier, damit die Rad-Messreihe ihn mitschreiben kann: Ein
+    # Herkunftsfeld, dessen Wert der Code nicht selbst setzt, faellt beim
+    # naechsten Modelfile-Edit still auseinander.
     response = model_service.background.submit_sync(BackgroundRequest(
         messages          = [{"role": "user", "content": prompt}],
         modus             = "sprache",
         temperature       = node_cfg.get("temperature", 0.2),
+        presence_penalty  = node_cfg.get("presence_penalty", 0.0),
         max_output_tokens = node_cfg.get("max_output_tokens"),
         caller            = "pixie/hash",
     ))

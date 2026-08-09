@@ -241,6 +241,10 @@ class Messung:
                       stattdessen — aus `speichen` nachrechenbar.
         modell:       Modellname, mit dem gemessen wurde.
         temperatur:   Temperatur des Aufrufs.
+        presence_penalty: Penalty des Aufrufs. **Pflichtfeld ohne Vorgabewert**
+                      — ein Vorgabewert schriebe fuer jeden Aufrufer, der ihn
+                      vergisst, eine Zahl in die Herkunft, die niemand gesetzt
+                      hat, und sie saehe aus wie eine Messung.
         quelle:       der Profiltext, aus dem gelesen wurde. Gespeichert werden
                       nur Pruefsumme und Laenge, nie der Text.
         erhebung_id:  klammert die Laeufe einer Erhebung; leer erzeugt eine neue.
@@ -252,11 +256,12 @@ class Messung:
     rad_art:      str
     speichen:     dict[str, float]
     faktor:       float
-    modell:       str
-    temperatur:   float
-    quelle:       str
-    erhebung_id:  str = ""
-    lauf:         int = 1
+    modell:           str
+    temperatur:       float
+    presence_penalty: float
+    quelle:           str
+    erhebung_id:      str = ""
+    lauf:             int = 1
 
 
 def messung_ablegen(messung: Messung) -> bool:
@@ -297,15 +302,15 @@ def messung_ablegen(messung: Messung) -> bool:
             """
             INSERT INTO charakter_rad_messung
                 (user_id, character_id, rad_art, erhebung_id, lauf,
-                 speichen, faktor, modell, temperatur,
+                 speichen, faktor, modell, temperatur, presence_penalty,
                  quelle_pruefsumme, quelle_zeichen)
-            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
             """,
             (
                 messung.user_id, messung.character_id, messung.rad_art,
                 messung.erhebung_id or str(uuid.uuid4()), messung.lauf,
                 json.dumps(messung.speichen), messung.faktor,
-                messung.modell, messung.temperatur,
+                messung.modell, messung.temperatur, messung.presence_penalty,
                 pruefsumme, len(messung.quelle),
             ),
         )

@@ -551,6 +551,7 @@ class CharakterAgent(BaseAgent):
             faktor       = faktor_frisch,
             modell       = PIXIE_ANALYSE_MODEL,
             temperatur   = float(node_cfg.get("temperature", 0.2)),
+            presence_penalty = float(node_cfg.get("presence_penalty", 0.0)),
             quelle       = quelle,
         ))
 
@@ -627,6 +628,7 @@ class CharakterAgent(BaseAgent):
                 faktor       = versatz,
                 modell       = PIXIE_ANALYSE_MODEL,
                 temperatur   = float(node_cfg.get("temperature", 0.2)),
+                presence_penalty = float(node_cfg.get("presence_penalty", 0.0)),
                 quelle       = quelle,
                 erhebung_id  = erhebung_id,
                 lauf         = nummer,

@@ -282,6 +282,8 @@ class BackgroundWorker(ModelWorker[BackgroundRequest, BackgroundResponse]):
             kwargs["system"] = request.system
         if request.temperature is not None:
             kwargs["temperature"] = request.temperature
+        if request.presence_penalty is not None:
+            kwargs["presence_penalty"] = request.presence_penalty
         if request.max_output_tokens is not None:
             kwargs["max_output_tokens"] = request.max_output_tokens
         if request.num_ctx is not None:

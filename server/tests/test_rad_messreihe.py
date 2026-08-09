@@ -191,7 +191,7 @@ class NurRoheMessungenGehenInDieReiheTest(unittest.TestCase):
             rad_messreihe.messung_ablegen(Messung(
                 user_id="nova", character_id="meister",
                 rad_art=RAD_ART_ZUWENDUNG, speichen=_rad(0.5),
-                faktor=1.02, modell="qwen36-cpu", temperatur=0.2,
+                faktor=1.02, modell="qwen36-cpu", temperatur=0.2, presence_penalty=0.0,
                 quelle="Profiltext",
             ))
 
@@ -210,14 +210,23 @@ class NurRoheMessungenGehenInDieReiheTest(unittest.TestCase):
             rad_messreihe.messung_ablegen(Messung(
                 user_id="nova", character_id="meister",
                 rad_art=RAD_ART_ZUWENDUNG, speichen=_rad(0.5),
-                faktor=1.02, modell="qwen36-cpu", temperatur=0.2,
+                faktor=1.02, modell="qwen36-cpu", temperatur=0.2, presence_penalty=0.0,
                 quelle="Ein Profiltext mit 33 Zeichen.",
             ))
 
-        werte = schreiber.call_args.args[1]
+        # Die Spalten werden aus dem SQL gelesen statt gezaehlt. Der Test stand
+        # vorher auf festen Indizes (werte[9], werte[10]) und wurde rot, als
+        # am 09.08.2026 ein Parameter dazwischen kam — obwohl das Gepruefte
+        # unveraendert stimmte. Ein Zeuge, der bei jeder Erweiterung bricht,
+        # wird beim naechsten Mal angepasst statt gelesen.
+        sql, werte = schreiber.call_args.args
+        spalten = [s.strip() for s in
+                   sql.split("(", 1)[1].split(")", 1)[0].split(",")]
+        nach_name = dict(zip(spalten, werte, strict=True))
+
         self.assertNotIn("Profiltext", str(werte))
-        self.assertEqual(30, werte[10])
-        self.assertEqual(32, len(werte[9]))
+        self.assertEqual(30, nach_name["quelle_zeichen"])
+        self.assertEqual(32, len(nach_name["quelle_pruefsumme"]))
 
     def test_ein_leeres_rad_wird_nicht_abgelegt(self) -> None:
         """Eine Messung ohne Speichen ist keine."""
@@ -228,7 +237,7 @@ class NurRoheMessungenGehenInDieReiheTest(unittest.TestCase):
                 erfolg = rad_messreihe.messung_ablegen(Messung(
                     user_id="nova", character_id="meister",
                     rad_art=RAD_ART_ZUWENDUNG, speichen={},
-                    faktor=1.0, modell="m", temperatur=0.2, quelle="x",
+                    faktor=1.0, modell="m", temperatur=0.2, presence_penalty=0.0, quelle="x",
                 ))
 
         self.assertFalse(erfolg)

@@ -163,6 +163,12 @@ class BackgroundRequest:
                Pflicht. Andere Werte werden vom Worker als Fehler abgelehnt.
         system: Optionaler System-Prompt. None ⇒ Provider-Default.
         temperature: Sampling-Temperatur. None ⇒ Provider-Default.
+        presence_penalty: Penalty pro Call. None ⇒ Modelfile-Wert des Modells.
+                 Praezise Aufgaben — ein JSON mit festen Schluesseln — brauchen
+                 einen anderen Wert als freie Textarbeit; der Hersteller
+                 empfiehlt fuer sie 0.0 statt 1.5. Ohne dieses Feld liesse sich
+                 das nur im Modelfile stellen, also fuer alle Aufrufer
+                 gleichzeitig.
         expect_json: True ⇒ JSON-Parsing wie beim ChatWorker.
         max_output_tokens: Optionales Token-Limit fuer die Antwort.
         num_ctx: Optionaler Context-Window-Override pro Call. None ⇒
@@ -177,6 +183,7 @@ class BackgroundRequest:
     modus:             str             = "analyse"
     system:            Optional[str]   = None
     temperature:       Optional[float] = None
+    presence_penalty:  Optional[float] = None
     expect_json:       bool            = False
     max_output_tokens: Optional[int]   = None
     num_ctx:           Optional[int]   = None

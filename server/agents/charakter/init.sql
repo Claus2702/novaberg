@@ -41,6 +41,11 @@ CREATE TABLE IF NOT EXISTS charakter_rad_messung (
     -- Charakterbewegung nicht zu unterscheiden.
     modell             TEXT NOT NULL,
     temperatur         DOUBLE PRECISION NOT NULL,
+    -- Dieselbe Begruendung wie eine Zeile darueber, am 09.08.2026 nachgetragen:
+    -- Die Penalty gehoert zum Instrument. Sie stand bis dahin nur im Modelfile,
+    -- also an einem Ort, den die Messung nicht mitliest — zwei Profile ergaben
+    -- Zeilen mit identischem `temperatur` und unterschiedlichem Massstab.
+    presence_penalty   DOUBLE PRECISION NOT NULL,
 
     -- Welcher Profiltext gelesen wurde. Gleiche Pruefsumme mit anderem
     -- Ergebnis ist Verfahrensstreuung, andere Pruefsumme mit anderem Ergebnis
@@ -49,6 +54,16 @@ CREATE TABLE IF NOT EXISTS charakter_rad_messung (
     quelle_pruefsumme  TEXT NOT NULL,
     quelle_zeichen     INTEGER NOT NULL
 );
+
+-- Bestandsdatenbanken nachziehen. Der Vorgabewert 1.5 ist keine Bequemlichkeit,
+-- sondern die Wahrheit ueber die Altzeilen: Sie sind unter der `presence_penalty`
+-- des Modelfiles erhoben worden, und die stand bis zum 09.08.2026 auf 1.5.
+-- Danach faellt der Vorgabewert weg, damit jeder neue Schreiber den Wert nennen
+-- muss, statt einen geerbt zu bekommen.
+ALTER TABLE charakter_rad_messung
+    ADD COLUMN IF NOT EXISTS presence_penalty DOUBLE PRECISION NOT NULL DEFAULT 1.5;
+ALTER TABLE charakter_rad_messung
+    ALTER COLUMN presence_penalty DROP DEFAULT;
 
 -- Der Lesepfad der Aggregation: die letzten N Erhebungen eines Rades.
 CREATE INDEX IF NOT EXISTS idx_rad_messung_reihe
