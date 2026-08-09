@@ -2013,6 +2013,31 @@ Das fiel auf, als sie geändert werden sollte. Zwei Profile hätten Zeilen mit *
 
 **Gemessen.** Suite 1140 → 1143, OK. Die 247 Altzeilen tragen 1,5, weil sie darunter erhoben wurden. Drei Bestandstests brachen am nun verpflichtenden Feld — die beabsichtigte Wirkung; einer davon prüfte über Positionsindizes, wurde vom zusätzlichen Parameter verschoben und liest seine Spalten jetzt aus dem SQL.
 
+### `distanz = 1,00` war kein Messwert, sondern die Tonlage eines Aktenauszugs
+
+**Beide Nutzerräder standen auf `distanz = 1,00`.** Die Vermutung war, dass das Etikett es verursacht: Der Profil-Prompt nennt Nova beim Eigennamen und den Menschen „der Nutzer". Ein Kreuzversuch sollte das trennen — dieselbe Rohmenge, einmal so und einmal so bezeichnet.
+
+**Er hat die Frage beantwortet, und die Antwort war keine der beiden erwarteten.** Über neun Läufe in drei Zellen stand `distanz` auf **1,00 — bei beiden Materialien und bei beiden Etiketten.** Bei gleichem Material und getauschter Beschriftung kamen die Faktoren 0,93 / 0,77 / 0,71 gegen 0,89 / 0,79 / 0,71 heraus, der dritte Lauf auf die Stelle gleich. **Das Etikett bewegt nichts.**
+
+**Ein Wert, der sich unter keiner Bedingung bewegt, misst nichts** — unabhängig davon, ob er zufällig zutrifft.
+
+**Die Ursache liegt eine Stufe früher, in der Quelle.** Der Prompt fragt nach NÄHE — Anrede, Kosenamen, Ton. Gefüttert wurde er mit dem Kurzzeitgedächtnis, und das trägt bereits eine Aussage in der dritten Person:
+
+```
+Rohturn:  „jo"
+KZG:      „Der Nutzer weiß nicht, was er hier tun soll. Der Nutzer ist gelangweilt."
+```
+
+Die Anrede überlebt diese Umwandlung nicht, und mit ihr der Gegenstand der Frage. Der Umgang war nur noch als **Etikett** da (`tone: sachlich`), nicht als Beleg — der Profiler sollte den Umgang deuten und bekam die fertige Deutung von jemand anderem.
+
+**Und der Beleg für Nähe war die ganze Zeit vorhanden.** Derselbe Turn im Wortlaut: *„Na, bist du schon am Ende deiner Kräfte oder brauchst du nur einen kleinen Anstoß? Ich warte hier nicht auf die Stille, ich warte auf den ersten Angriff!"* — geduzt, neckend, mit Ausrufezeichen. Das ist keine Distanz. Nur stand es an keiner Stelle, die das Rad liest.
+
+**Der Weg dorthin existierte ebenfalls schon.** `verbindung` führt `kzg_id` und `turn_id`, `pipeline_log` hält den Rohturn mit `user_prompt` und `response`. Es fehlte eine einzige Zeile: Der KZG-Schlüssel wurde beim Laden der Einträge fallengelassen. Kein neues Schema, ein Join — und 89 von 89 Schlüsseln des gespeicherten Bogens lösen auf.
+
+**Kein Rückfall auf die Zusammenfassung**, wenn kein Wortlaut erreichbar ist. Er stellte den Defekt über einen Umweg wieder her und bestünde seinen eigenen Test.
+
+**Gemessen.** Suite 1143 → 1147, OK. Kein Bestandstest brach — die Funktion hatte bis dahin keinen.
+
 ---
 
 ## Chat 134 (09.08.2026) — Sieben `zip`, die nicht dasselbe meinen, und eine Wand, die nicht aufgeht ✅
