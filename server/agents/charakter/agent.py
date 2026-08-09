@@ -476,6 +476,12 @@ class CharakterAgent(BaseAgent):
                     continue
 
             eintrag: dict = {
+                # Der Schluessel wandert mit. Ueber ihn findet das
+                # Beziehungsprofil via `verbindung` zurueck zum Wortlaut des
+                # Turns — bis zum 09.08.2026 wurde er hier fallengelassen,
+                # und damit war der Weg zur Aeusserung abgeschnitten,
+                # obwohl die Tabelle ihn die ganze Zeit fuehrte.
+                "_key":               key,
                 "themen":             _hget(redis_client, key, "themen"),
                 "inhalt":             _hget(redis_client, key, "inhalt"),
                 "salienz":            _hget(redis_client, key, "salienz", "0"),

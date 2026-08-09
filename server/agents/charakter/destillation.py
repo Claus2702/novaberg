@@ -25,6 +25,7 @@ from config import (
     INITIATIVE_RAD_LAEUFE,
 )
 from services.model_services import model_service, BackgroundRequest
+from tools.db_manager import db_manager
 
 logger = logging.getLogger("ki_server.agents.charakter.destillation")
 
@@ -460,29 +461,101 @@ def emotions_profil_destillieren(
     )
 
 
+def wortlaut_holen(kzg_schluessel: list[str]) -> dict[str, dict[str, str]]:
+    """Holt zu KZG-Schluesseln den Wortlaut ihrer Turns.
+
+    Der Weg ist `verbindung.kzg_id` -> `verbindung.turn_id` ->
+    `pipeline_log` mit `art = 'turn_roh'`. Die Tabelle fuehrt ihn seit jeher;
+    fuer das Beziehungsprofil hat ihn nie jemand benutzt.
+
+    Vorbedingung: nichtleere Liste von Schluesseln.
+    Nachbedingung: Abbildung Schluessel -> {'aeusserung', 'antwort'}. Ein
+        Schluessel ohne Verbindung fehlt in der Rueckgabe — der Aufrufer
+        entscheidet, was das bedeutet, und meldet es.
+    """
+    if not kzg_schluessel:
+        return {}
+
+    zeilen: list[dict] = db_manager.select(
+        """
+        SELECT v.kzg_id,
+               p.inhalt ->> 'user_prompt' AS aeusserung,
+               p.inhalt ->> 'response'    AS antwort
+        FROM verbindung v
+        JOIN pipeline_log p
+          ON p.turn_id = v.turn_id AND p.art = 'turn_roh'
+        WHERE v.kzg_id = ANY(%s)
+        """,
+        (kzg_schluessel,),
+    ) or []
+
+    return {
+        z["kzg_id"]: {"aeusserung": z["aeusserung"] or "",
+                      "antwort":    z["antwort"] or ""}
+        for z in zeilen
+    }
+
+
 def beziehungsprofil_destillieren(kzg_eintraege: list[dict], user_id: str = DEFAULT_USER_ID) -> str:
-    """Destilliert das Beziehungsprofil aus KZG-Eintraegen."""
+    """Destilliert das Beziehungsprofil aus dem **Wortlaut** der Turns.
+
+    **Warum nicht mehr aus dem KZG-Inhalt.** Der Prompt fragt nach NAEHE —
+    Anrede, Kosenamen, Ton. Der KZG-Inhalt ist bereits eine Aussage in der
+    dritten Person: aus »jo« wird »Der Nutzer weiss nicht, was er hier tun
+    soll«. Die Anrede ueberlebt diese Umwandlung nicht, und mit ihr der
+    ganze Gegenstand der Frage. Gemessen am 09.08.2026: `distanz` stand in
+    jeder Zelle eines Kreuzversuchs auf 1.00 — bei beiden Materialien und
+    beiden Etiketten. Das Rad hat nicht die Beziehung gelesen, sondern die
+    Tonlage eines Aktenauszugs.
+
+    Die Metadaten stehen weiterhin dabei, aber als Beiwerk. Ein `tone:
+    sachlich` ist die fertige Charakterisierung; wer den Umgang deuten
+    soll, braucht den Satz, an dem sie haengt, nicht das Urteil darueber.
+
+    Nachbedingung: Profiltext oder "". Findet sich zu **keinem** Eintrag ein
+        Wortlaut, wird das als Fehler gemeldet und nicht auf die
+        Zusammenfassung zurueckgefallen — ein stiller Rueckfall ergaebe
+        denselben Defekt mit einem Umweg und saehe wie ein Ergebnis aus.
+    """
     if not kzg_eintraege:
         return ""
 
-    beziehungs_eintraege: list[str] = []
+    schluessel: list[str] = [e["_key"] for e in kzg_eintraege if e.get("_key")]
+    ohne_schluessel: int = len(kzg_eintraege) - len(schluessel)
+    if ohne_schluessel:
+        logger.error(
+            f"Beziehungsprofil: {ohne_schluessel} von {len(kzg_eintraege)} "
+            "KZG-Eintraegen ohne '_key' — fuer sie ist der Wortlaut nicht "
+            "erreichbar"
+        )
 
+    wortlaute: dict[str, dict[str, str]] = wortlaut_holen(schluessel)
+
+    beziehungs_eintraege: list[str] = []
     for eintrag in kzg_eintraege:
-        inhalt: str = eintrag.get("inhalt", "")
-        if not inhalt:
+        wortlaut = wortlaute.get(eintrag.get("_key", ""))
+        if not wortlaut or not (wortlaut["aeusserung"] or wortlaut["antwort"]):
             continue
 
-        modus:              str = eintrag.get("modus", "")
-        emotion:            str = eintrag.get("emotion", "")
-        beziehungs_dynamik: str = eintrag.get("beziehungs_dynamik", "")
-        tone:               str = eintrag.get("tone", "")
-
+        kopf: str = (
+            f"[Modus: {eintrag.get('modus', '')}, "
+            f"Emotion: {eintrag.get('emotion', '')}, "
+            f"Dynamik: {eintrag.get('beziehungs_dynamik', '')}, "
+            f"Tone: {eintrag.get('tone', '')}]"
+        )
         beziehungs_eintraege.append(
-            f"[Modus: {modus}, Emotion: {emotion}, "
-            f"Dynamik: {beziehungs_dynamik}, Tone: {tone}] {inhalt}"
+            f"{kopf}\n"
+            f"  Gegenueber: „{wortlaut['aeusserung']}“\n"
+            f"  {ASSISTANT_NAME}: „{wortlaut['antwort']}“"
         )
 
     if not beziehungs_eintraege:
+        logger.error(
+            f"Beziehungsprofil ({user_id}): zu keinem von "
+            f"{len(kzg_eintraege)} KZG-Eintraegen ist ein Wortlaut "
+            "erreichbar — kein Profil. Kein Rueckfall auf den KZG-Inhalt: "
+            "der traegt die Anrede nicht, nach der der Prompt fragt"
+        )
         return ""
 
     perspektive: dict[str, str] = _perspektive_aufloesen(user_id)
