@@ -673,7 +673,25 @@ Drei Defekte, die am 08.08.2026 in der Fundliste standen und bei der Klassifizie
 
 **Warum das für einen gepaarten Vergleich die gefährlichere Hälfte ist.** Er setzt voraus, dass sich zwei Arme allein in der Einstellung unterscheiden. Ein je Lauf ausgewürfelter Gedächtnisstand ist eine **zweite Quelle von Unterschied**, die niemand als solche sieht — und drei der fünf Charakter-Profile lesen `lzg_knoten`, sind über die Menge hinweg also ungleichmäßig leer.
 
-**Abhilfe, billig und ohne neuen Bogen.** Das Fenster muss leerlaufen statt ablaufen, und die Warteschlange darf nicht gelöscht werden, solange Einträge darin stehen.
+**Abhilfe, billig und ohne neuen Bogen.** ~~Das Fenster muss leerlaufen statt ablaufen, und die Warteschlange darf nicht gelöscht werden, solange Einträge darin stehen.~~
+
+### Neu gemessen am 09.08.2026 — die Ursache war eine andere, und die Hälfte ist behoben
+
+**Der Befund oben beschreibt die Wirkung richtig und die Ursache falsch.** Nachgemessen am Code und an einem vollständigen Bogen:
+
+- **Der Agent läuft nicht ab und löscht nichts.** `invoke` leerte die Queue schon immer in einer `while`-Schleife vollständig.
+- **Die 300 s sind kein Fenster, sondern sein Takt** (`PIXIE_PROMOTION_INTERVALL_SEKUNDEN`).
+- **Die Promotion ist nicht defekt — sie verhungert.** Sie tritt mit Prioritätsbasis **0,90** gegen die Aufträge an, die das Gespräch selbst erzeugt: nach Konrads Bogen lagen **63 Einträge mit Priorität 0,94 bis 1,00** in seiner Shadow-Queue. Dazu hält eine laufende `recherche` den einen Pixie-Platz minutenlang.
+
+**Der Zeuge, Bogen konrad vom 09.08.2026:** 30 von 30 Turns, **0 Ausfälle**, 106 KZG-Einträge — und die Promotion kam in 28 Minuten **genau einmal** dran. **1 von 72 Aufträgen promotet, 71 warten, 1 LZG-Knoten entstanden.**
+
+**Behoben ist der Verlust.** Der Auftrag wird nicht mehr per `lpop` entnommen, sondern per `LMOVE` in `queue:{paar}:arbeit` verschoben und erst nach grünem Ergebnis daraus entfernt; nach zwei Rückstellungen geht er auf den Fehlerstapel `queue:{paar}:gescheitert`. Nach dem Bogen waren Arbeitsliste, Fehlerstapel und Zählerhash **leer** — kein einziger Auftrag wurde verbraucht-und-verloren, keiner scheiterte.
+
+**Dabei fiel eine zweite Hälfte des Defekts an, die niemand gesucht hatte:** Ein Lauf, in dem *jeder* Eintrag scheiterte, meldete `debug: „Queue leer — nichts zu tun"` — der Zweig unterschied nicht zwischen *nichts da* und *alles kaputt*, und die Zahl, die es unterscheidet, stand in derselben Funktion. Die Meldung nennt jetzt alle vier Größen auf `info`.
+
+**Offen ist der Engpass.** 71 wartende Aufträge sind jetzt **sichtbar** statt still gelöscht — auswertbar ist der Gedächtnisstand deshalb noch nicht. Das ist `PIXIE-EIN-SLOT-BLOCKIERT-ALLES`, und die Reihe ist bis dahin nicht fahrbar: Siebzehn weitere Bögen ergäben siebzehn Personas mit je etwa einem Knoten.
+
+**Was der Eintrag über Bug-Einträge zeigt.** Er benannte die Wirkung präzise und die Ursache plausibel — und die plausible Ursache hätte zu einem Umbau geführt, der nichts behoben hätte (ein Fenster, das es nicht gibt, zum Leerlaufen zu bringen). **Vor der Umsetzung eines Eintrags wird nicht seine Abhilfe gebaut, sondern seine Ursache nachgemessen.**
 
 **Band A** (Rangordnung in `novaberg-backlog.md`, Reihe 1). Hoch für jede Messreihe, die Arme vergleicht. Ohne die Abhilfe trägt jeder gepaarte Vergleich auf diesem Korpus einen unbeobachteten Störfaktor.
 

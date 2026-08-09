@@ -2011,6 +2011,20 @@ Beide Räder haben eine Nabe — den Wert ohne jede Ausprägung — und das Erge
 
 **Was das für den Rückstand heißt.** Die Summe stand in sieben Tagen scheinbar still (649 → 661), und die Zahl täuscht: `recherche` −73 und `nachfragen` −15 gegen `vertiefen` **+102**. Es fließt ab; es kommt nur mehr nach, als abfließt, und ein Teil des Zuwachses kann gar nicht abfließen. **Eine Summe über alle Auftragsarten ist als Maß untauglich** — beide Backlog-Einträge tragen das jetzt.
 
+### Die Promotion verhungert, sie läuft nicht ab — und ein Fehler kostete bis heute den Gedächtniskandidaten
+
+`PROMOTION-FENSTER-LAEUFT-AB-STATT-LEER` stand als erster Eintrag in Band A. Die Neumessung hat seine Ursache widerlegt: Der Agent leert seine Queue vollständig, die 300 s sind sein Takt und kein Fenster, und gelöscht wird nichts. **Er kommt nur fast nie dran** — mit Prioritätsbasis 0,90 gegen 63 Aufträge zwischen 0,94 und 1,00, die das Gespräch selbst erzeugt, und gegen eine `recherche`, die den einen Platz minutenlang hält.
+
+**Der Beleg ist ein vollständiger Bogen:** konrad, 30 von 30 Turns, 0 Ausfälle, 106 KZG-Einträge — die Promotion kam in 28 Minuten **einmal** dran. **1 von 72 Aufträgen promotet, 71 warten, 1 LZG-Knoten.**
+
+**Behoben ist der Verlust, nicht der Engpass.** Der Auftrag wird per `LMOVE` in eine Arbeitsliste verschoben statt per `lpop` entnommen, und erst nach grünem Ergebnis daraus entfernt; nach zwei Rückstellungen landet er auf einem Fehlerstapel. Die tragende Eigenschaft dahinter ist eine, die das System schon hatte: **Der Pixie-Heartbeat ist ein Job mit `max_instances=1`, also läuft, wer läuft, allein** — ein gefüllter Arbeitstopf kann deshalb nur der Rest eines abgebrochenen Laufs sein und wird zurückgelegt. Das ersetzt jede Zeitheuristik. Nach Konrads Bogen waren Arbeitsliste, Fehlerstapel und Zählerhash leer: **kein Auftrag verbraucht-und-verloren, keiner gescheitert.**
+
+**Und eine zweite Hälfte, die niemand gesucht hatte:** Ein Lauf, in dem *jeder* Eintrag scheiterte, meldete `debug: „Queue leer — nichts zu tun"`. Der Zweig unterschied nicht zwischen *nichts da* und *alles kaputt* — und die Zahl, die beides trennt, stand in derselben Funktion.
+
+**Was der Fall über Bug-Einträge zeigt:** Der Eintrag benannte die Wirkung präzise und die Ursache plausibel. Die plausible Ursache hätte zu einem Umbau geführt, der nichts behoben hätte — ein Fenster zum Leerlaufen zu bringen, das es nicht gibt. **Vor der Umsetzung wird nicht die vorgeschlagene Abhilfe gebaut, sondern die Ursache nachgemessen.**
+
+---
+
 ### Die Rangordnung — Bänder statt Einzelurteile
 
 Die Prioritäten sollten einmal gegeneinander gehalten werden statt je Eintrag gesetzt. **Der Befund beim Nachzählen war ein anderer als erwartet:** Von **184 offenen Einträgen** (56 Backlog, 128 Bugs) tragen **18 eine Priorität und 166 keine**. Die Priorität ist Pflichtteil jedes Eintrags — sie fehlt in neun von zehn Fällen. Das Problem war also nicht eine Inflation von „hoch", sondern ihre fast vollständige Abwesenheit.
