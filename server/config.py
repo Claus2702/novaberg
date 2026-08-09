@@ -36,6 +36,88 @@ _llm_logger.addHandler(_llm_handler)
 _llm_logger.propagate = False
 
 # ─────────────────────────────────────────────
+# Dauerhaftes Datei-Log
+# ─────────────────────────────────────────────
+# **Das Behaelter-Log stirbt mit dem Behaelter.** `docker compose up -d` mit
+# geaenderter Umgebung erzeugt ihn neu, und `docker compose logs` zeigt
+# danach ausschliesslich den neuen — das Log des gerade gefahrenen Laufs ist
+# fort. Am 09.08.2026 kostete das drei Untersuchungen: Jedesmal hatte die
+# Antwort im Log gestanden, jedesmal war sie beim Nachsehen weg, und
+# zweimal wurde die leere Ausgabe als Ergebnis gelesen.
+#
+# Die Ablage liegt **ausserhalb des Arbeitsbaums**, eingehaengt unter
+# `/logs`. Dieselbe Begruendung wie bei `/knowledge` (Register F-WISSEN-1):
+# Server-Logs tragen Gespraechsinhalte, und unterhalb von `novaberg/` wuerde
+# sie jeder Push veroeffentlichen.
+SERVER_LOG_DATEI:        str = os.getenv("SERVER_LOG_DATEI", "/logs/server.log")
+SERVER_LOG_BYTES:        int = int(os.getenv("SERVER_LOG_BYTES", str(128 * 1024 * 1024)))
+SERVER_LOG_GENERATIONEN: int = int(os.getenv("SERVER_LOG_GENERATIONEN", "9"))
+
+
+def _dateilog_einrichten(pfad: str) -> bool:
+    """Haengt einen rotierenden Datei-Handler an Wurzel- und LLM-Logger.
+
+    Vorbedingung: `pfad` ist nichtleer und sein Verzeichnis beschreibbar.
+    Nachbedingung: True, wenn beide Logger in die Datei schreiben. Sonst
+        False und eine `error`-Zeile — der Dienst laeuft dann weiter, aber
+        ohne dauerhaftes Log. Das ist ein degradierter Zustand, der die
+        Auswertung kostet, und er darf nicht still eintreten
+        (`22_STILLE_FEHLER.md`).
+
+    **Der LLM-Logger braucht denselben Handler eigens.** Er steht auf
+    `propagate = False`, damit seine Token-Zeilen nicht doppelt auf der
+    Konsole landen; genau deshalb erreicht ihn ein Handler an der Wurzel
+    nicht. Die `LLM-Call`-Zeilen sind der meistgelesene Teil des Logs — ohne
+    diese zweite Zuweisung waere die Datei genau dort leer, wo zuerst
+    hingesehen wird.
+
+    **Die Modusbits sind gemessen, nicht abgeleitet.** Der Behaelter laeuft
+    als `root`; ohne sie gehoert die Datei auf dem Wirt `root`, und der
+    Nutzer kann sein eigenes Log weder auswerten noch loeschen. Dieselbe
+    Erfahrung steht als F-WISSEN-1 im Register.
+    """
+    if not pfad:
+        logger.error("Datei-Log: leerer Pfad — kein dauerhaftes Log")
+        return False
+
+    try:
+        from logging.handlers import RotatingFileHandler
+
+        verzeichnis = os.path.dirname(pfad)
+        if verzeichnis:
+            os.makedirs(verzeichnis, exist_ok=True)
+            os.chmod(verzeichnis, 0o777)
+
+        handler = RotatingFileHandler(
+            pfad,
+            maxBytes    = SERVER_LOG_BYTES,
+            backupCount = SERVER_LOG_GENERATIONEN,
+            encoding    = "utf-8",
+        )
+        handler.setLevel(logging.DEBUG)
+        handler.setFormatter(
+            logging.Formatter("%(asctime)s [%(levelname)s] %(name)s: %(message)s")
+        )
+        logging.getLogger().addHandler(handler)
+        _llm_logger.addHandler(handler)
+        os.chmod(pfad, 0o666)
+    except OSError as fehler:
+        logger.error(
+            f"Datei-Log: '{pfad}' nicht beschreibbar ({fehler}) — "
+            f"der Dienst laeuft ohne dauerhaftes Log weiter"
+        )
+        return False
+
+    logger.info(
+        f"Datei-Log: '{pfad}', Rotation bei {SERVER_LOG_BYTES} Bytes, "
+        f"{SERVER_LOG_GENERATIONEN} Generationen"
+    )
+    return True
+
+
+DATEILOG_AKTIV: bool = _dateilog_einrichten(SERVER_LOG_DATEI)
+
+# ─────────────────────────────────────────────
 # Infrastruktur (profilunabhaengig)
 # ─────────────────────────────────────────────
 REDIS_URL:    str = os.getenv("REDIS_URL",    "redis://localhost:6379")
