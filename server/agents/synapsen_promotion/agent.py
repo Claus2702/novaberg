@@ -26,8 +26,10 @@ Jedes Promotion-Event wird in beide Gedaechtnis-Spuren geschrieben (K5):
 hintergrund_log (Pixie-Arbeitsgedaechtnis, via _audit_log) und pipeline_log
 (Novas Selbstreflexion, via Span + log_db_write).
 
-Der KZG-Hash wird wie im alten Pfad NICHT geloescht — der Queue-Task ist per
-lpop konsumiert, der Hash verfaellt ueber seine TTL.
+Der KZG-Hash wird wie im alten Pfad NICHT geloescht — er verfaellt ueber seine
+TTL. Der Queue-Task wird seit dem 09.08.2026 nicht mehr per `lpop` konsumiert,
+sondern per `LMOVE` in eine Arbeitsliste verschoben und erst nach gruenem
+Ergebnis daraus entfernt; siehe `invoke`.
 """
 
 import json
@@ -39,7 +41,7 @@ from config import (
     ASSISTANT_USER_ID, DEFAULT_USER_ID,
     redis_client, POSTGRES_URL,
     PIXIE_PROMOTION_PRIORITAET, PIXIE_PROMOTION_INTERVALL_SEKUNDEN,
-    PIXIE_AKTIV,
+    PIXIE_AKTIV, MAX_PROMOTION_RUECKSTELLUNGEN,
 )
 from memory import lzg_knoten, lzg_kanten, pipeline_log
 from memory.repositories.verbindung_repository import VerbindungRepository
@@ -118,33 +120,137 @@ class SynapsenPromotionAgent(BaseAgent):
             )
 
     def invoke(self, state: AgentState) -> AgentState:
-        """Arbeitet die Promotion-Queue vollstaendig ab (KZG hat TTL)."""
+        """Arbeitet die Promotion-Queue vollstaendig ab (KZG hat TTL).
+
+        **Der Auftrag wird nicht entnommen, sondern verschoben.** `lpop` nahm
+        ihn aus der Liste, bevor die Arbeit begann; scheiterte sie, war die
+        Zeile weg — und nichts reihte sie je wieder ein, weil der Erzeuger nur
+        bei einem neuen Turn schreibt. Der KZG-Hash ueberlebte seine sieben
+        bis dreissig Tage und wurde nie promotet. **Jeder voruebergehende
+        Fehler kostete so dauerhaft einen Gedaechtniskandidaten**, und die
+        Zaehlung sagte es nicht (siehe die Meldung am Ende).
+
+        Deshalb zwei Listen und ein `LMOVE`, das beides in einem Schritt tut:
+
+            queue:{paar}            wartend
+            queue:{paar}:arbeit     in Arbeit — genau ein Eintrag, solange
+                                    die Verarbeitung laeuft
+
+        Grün heisst `LREM` aus der Arbeitsliste. Rot heisst: der Eintrag
+        **bleibt dort liegen** und ist damit sichtbar statt verschwunden.
+
+        **Warum ein gefuelltes `:arbeit` beim Start eindeutig ist.** Der
+        Pixie-Heartbeat ist EIN Job mit `max_instances=1` und `coalesce=True`
+        (`main.py`), und dieser Agent ist ueber `graph_eignung` nur ueber ihn
+        erreichbar. Wer hier laeuft, laeuft allein — es kann also kein zweiter
+        gerade an diesen Eintraegen arbeiten. Ein gefuelltes `:arbeit` ist
+        damit **immer** der Rest eines abgebrochenen Laufs und wird
+        zurueckgelegt, nicht abgewartet. Das ersetzt jede Zeitheuristik.
+
+        > Diese Eindeutigkeit haengt daran, dass **niemand den Agenten von
+        > ausserhalb des Serverprozesses aufruft.** Ein Standalone-Skript, das
+        > ihn direkt baut, laeuft neben dem Heartbeat und macht `:arbeit`
+        > mehrdeutig — und es scheitert ohnehin, weil die ModelWorker nur im
+        > Server-Loop laufen.
+
+        Nachbedingung: `queue:{paar}` ist leer. In `:arbeit` steht genau das,
+            was in diesem Lauf gescheitert ist — beim naechsten Lauf wird es
+            zurueckgelegt und erneut versucht.
+        """
 
         user_id: str = state["kontext"].get("user_id", "") or DEFAULT_USER_ID
         queue_key: str = f"queue:{user_id}"
+        arbeit_key: str = f"{queue_key}:arbeit"
         promotet: int = 0
         fehler: int = 0
 
+        gescheitert_key: str = f"{queue_key}:gescheitert"
+        versuche_key: str = f"{queue_key}:versuche"
+
+        # ── Souveraenitaetspruefung ─────────────────
+        # Vom Ende der Arbeitsliste nach vorn in die Warteschlange: Damit
+        # behalten die Reste ihre urspruengliche Reihenfolge und stehen vor
+        # dem, was inzwischen dazugekommen ist — sie sind ja aelter.
+        #
+        # Der Zaehler steht bewusst NICHT in der Nutzlast. Er dort
+        # hochzuzaehlen hiesse entnehmen, aendern, neu schreiben — und ein
+        # Absturz zwischen den Schritten verloere genau den Eintrag, den
+        # diese Mechanik retten soll. Als eigener Hash bleibt jede
+        # Verschiebung ein atomares LMOVE; ein Absturz kostet dann
+        # schlimmstenfalls einen falsch gezaehlten Versuch.
+        #
+        # `lindex` vor dem `lmove` ist hier gefahrlos, weil der Souveraen
+        # allein laeuft: Zwischen Blick und Griff kann sich die Liste nicht
+        # bewegen.
+        zurueckgelegt: int = 0
+        endgueltig: int = 0
+        while (roh := redis_client.lindex(arbeit_key, -1)) is not None:
+            try:
+                text = roh.decode("utf-8") if isinstance(roh, bytes) else roh
+                kzg_key: str = json.loads(text).get("key", "")
+            except (json.JSONDecodeError, TypeError, AttributeError):
+                # Ein unlesbarer Eintrag kann nie gruen werden. Er wandert
+                # sofort auf den Fehlerstapel statt zweimal zu kreisen.
+                kzg_key = ""
+
+            versuch: int = redis_client.hincrby(versuche_key, kzg_key or "<unlesbar>", 1)
+
+            if not kzg_key or versuch > MAX_PROMOTION_RUECKSTELLUNGEN:
+                redis_client.lmove(arbeit_key, gescheitert_key, "RIGHT", "RIGHT")
+                redis_client.hdel(versuche_key, kzg_key or "<unlesbar>")
+                endgueltig += 1
+            else:
+                redis_client.lmove(arbeit_key, queue_key, "RIGHT", "LEFT")
+                zurueckgelegt += 1
+
+        if zurueckgelegt or endgueltig:
+            logger.warning(
+                f"Synapsen-Promotion: Reste eines abgebrochenen Laufs in "
+                f"'{arbeit_key}' — {zurueckgelegt} zurueckgelegt, {endgueltig} "
+                f"nach {MAX_PROMOTION_RUECKSTELLUNGEN} Versuchen auf den "
+                f"Fehlerstapel '{gescheitert_key}'"
+            )
+
+        # ── Verarbeitung ────────────────────────────
         while True:
-            raw = redis_client.lpop(queue_key)
-            if not raw:
+            roh = redis_client.lmove(queue_key, arbeit_key, "LEFT", "RIGHT")
+            if not roh:
                 break
             try:
-                if isinstance(raw, bytes):
-                    raw = raw.decode("utf-8")
-                auftrag: dict = json.loads(raw)
+                text: str = roh.decode("utf-8") if isinstance(roh, bytes) else roh
+                auftrag: dict = json.loads(text)
                 self._eintrag_verarbeiten(auftrag, user_id)
                 promotet += 1
+                redis_client.lrem(arbeit_key, 1, roh)
+                # Der Zaehler gehoert zum Auftrag, nicht zum Schluessel: Ein
+                # Eintrag, der nach zwei Fehlversuchen durchlaeuft, startet
+                # beim naechsten Mal wieder bei null.
+                redis_client.hdel(versuche_key, auftrag.get("key", ""))
             except Exception as ex:
+                # Kein lrem: Der Eintrag bleibt in der Arbeitsliste. Das ist
+                # der ganze Unterschied zu vorher — er ist danach auffindbar
+                # und wird beim naechsten Lauf zurueckgelegt.
                 logger.error(f"Synapsen-Promotion: Fehler bei Eintrag: {ex}", exc_info=True)
                 fehler += 1
 
-        if promotet > 0:
-            logger.info(f"Synapsen-Promotion: {promotet} Eintraege promotet, {fehler} Fehler")
+        # ── Ausgabe-Verifikation ────────────────────
+        # Die alte Fassung meldete "Queue leer — nichts zu tun" auf debug,
+        # sobald `promotet == 0` war — auch dann, wenn JEDER Eintrag
+        # gescheitert war. Ein Lauf, der fuenf Gedaechtniskandidaten verliert,
+        # sah aus wie ein Lauf ohne Arbeit, und die Zahl, die beides
+        # unterscheidet, stand in derselben Funktion.
+        if promotet or fehler or zurueckgelegt:
+            logger.info(
+                f"Synapsen-Promotion: {promotet} promotet, {fehler} gescheitert "
+                f"(liegen in '{arbeit_key}'), {zurueckgelegt} zurueckgelegt"
+            )
         else:
             logger.debug("Synapsen-Promotion: Queue leer — nichts zu tun")
 
-        state["ergebnis"] = {"promotet": promotet, "fehler": fehler}
+        state["ergebnis"] = {
+            "promotet": promotet, "fehler": fehler,
+            "zurueckgelegt": zurueckgelegt, "endgueltig": endgueltig,
+        }
         state["status"] = "abgeschlossen"
         return state
 

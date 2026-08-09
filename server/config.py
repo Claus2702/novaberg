@@ -228,6 +228,23 @@ PIXIE_AGING_MAX_ZUSCHLAG: float = float(os.getenv("PIXIE_AGING_MAX_ZUSCHLAG", "2
 PIXIE_PROMOTION_PRIORITAET:          float = float(os.getenv("PIXIE_PROMOTION_PRIORITAET", "0.9"))
 PIXIE_PROMOTION_INTERVALL_SEKUNDEN:  int   = int(os.getenv("PIXIE_PROMOTION_INTERVALL_SEKUNDEN", "300"))   # 5 Minuten
 
+# Wie oft ein gescheiterter Promotionsauftrag aus der Arbeitsliste in die
+# Warteschlange zurueckgelegt wird, bevor er auf den Fehlerstapel wandert.
+#
+# GESETZT, nicht hergeleitet — entschieden am 09.08.2026. Die Zahl beantwortet
+# eine Abwaegung, fuer die es keine Messung gibt: Ein voruebergehender Fehler
+# (Modell kurz weg, Datenbank kurz zu) soll den Gedaechtniskandidaten nicht
+# kosten; ein dauerhaft unverarbeitbarer Eintrag darf nicht ewig kreisen und
+# dabei alle 300 s den einzigen Pixie-Platz verbrennen, um den ohnehin 92 %
+# der Takte scheitern (PIXIE-EIN-SLOT-BLOCKIERT-ALLES).
+#
+# Zwei Rueckstellungen heisst: drei Verarbeitungsversuche insgesamt. Beim
+# dritten Fehlschlag geht der Auftrag nach `queue:{paar}:gescheitert` — er
+# wird dort NICHT automatisch wiederholt, aber er ist gezaehlt und lesbar.
+# Das ist der Unterschied zum Zustand bis zum 09.08.2026, in dem ein einziger
+# Fehler den Auftrag spurlos verschwinden liess.
+MAX_PROMOTION_RUECKSTELLUNGEN:       int   = int(os.getenv("MAX_PROMOTION_RUECKSTELLUNGEN", "2"))
+
 # --- Pixie Agent: Decay ---
 PIXIE_DECAY_PRIORITAET:              float = float(os.getenv("PIXIE_DECAY_PRIORITAET", "0.2"))
 PIXIE_DECAY_INTERVALL_SEKUNDEN:      int   = int(os.getenv("PIXIE_DECAY_INTERVALL_SEKUNDEN", "86400"))     # 24 Stunden
