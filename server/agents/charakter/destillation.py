@@ -1056,11 +1056,17 @@ def langfristige_ziele_destillieren(kern_hash: str, user_id: str = "nova") -> li
     # sein (Type-Hint Optional[dict] des Workers ist hier breit gefasst).
     try:
         response = model_service.background.submit_sync(BackgroundRequest(
-            messages    = [{"role": "user", "content": prompt}],
-            modus       = "analyse",
-            temperature = 0.3,
-            expect_json = True,
-            caller      = "charakter/ziele",
+            messages         = [{"role": "user", "content": prompt}],
+            modus            = "analyse",
+            temperature      = 0.3,
+            # Wie bei den fuenf Profil-Aufrufen: `expect_json=True` macht
+            # daraus eine praezise Aufgabe, und fuer die empfiehlt der
+            # Hersteller 0.0 statt der 1.5 des Modelfiles. Dieser Aufruf war
+            # am 09.08.2026 der einzige, der beim alten Wert stehenblieb —
+            # er ruft nicht ueber `_llm_call`, sondern direkt.
+            presence_penalty = 0.0,
+            expect_json      = True,
+            caller           = "charakter/ziele",
         ))
         ziele = response.parsed
 
