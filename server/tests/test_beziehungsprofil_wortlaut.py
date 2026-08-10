@@ -110,5 +110,38 @@ class WortlautTest(unittest.TestCase):
         self.assertIn("ohne '_key'", "\n".join(gefangen.output))
 
 
+class KernWortlautTest(unittest.TestCase):
+    """Auch die Grundpersoenlichkeit liest den Wortlaut.
+
+    Der Kern ist die groessere Haelfte der Rad-Quelle — bei Leon 689 von
+    1230 Zeichen. Solange er aus Langzeit-Knoten entstand, las das Rad
+    mehrheitlich das Worueber, obwohl sein Prompt ausdruecklich das Wie
+    verlangt.
+    """
+
+    def test_der_kern_prompt_traegt_die_gesprochenen_worte(self) -> None:
+        """Die Aeusserung steht im Prompt, nicht ihre Zusammenfassung."""
+        from agents.charakter.destillation import kern_hash_destillieren
+
+        with patch(f"{_MODUL}._llm_call", return_value="Profil") as ruf:
+            kern_hash_destillieren(
+                [{"aeusserung": "jo", "antwort": "Na, alles klar bei dir?"}],
+                user_id="leon",
+            )
+
+        prompt: str = ruf.call_args[0][0]
+        self.assertIn("jo", prompt)
+        self.assertIn("Na, alles klar bei dir?", prompt)
+
+    def test_ohne_wortlaut_meldet_der_kern_es(self) -> None:
+        """Leere Eingabe ist ein `error`, kein stilles leeres Profil."""
+        from agents.charakter.destillation import kern_hash_destillieren
+
+        with patch(f"{_MODUL}._llm_call") as ruf, \
+             self.assertLogs("ki_server", level="ERROR"):
+            self.assertEqual("", kern_hash_destillieren([], user_id="leon"))
+        ruf.assert_not_called()
+
+
 if __name__ == "__main__":
     unittest.main()

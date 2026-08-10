@@ -351,16 +351,31 @@ def _perspektive_aufloesen(user_id: str) -> dict[str, str]:
     return aufloesung
 
 
-def kern_hash_destillieren(lzg_eintraege: list[dict], user_id: str = DEFAULT_USER_ID) -> str:
-    """Destilliert die Grundpersoenlichkeit aus LZG-Eintraegen."""
-    if not lzg_eintraege:
+def kern_hash_destillieren(turn_eintraege: list[dict], user_id: str = DEFAULT_USER_ID) -> str:
+    """Destilliert die Grundpersoenlichkeit aus dem **Wortlaut** der Turns.
+
+    **Der Prompt verlangt es woertlich.** `KERN_HASH_PROMPT` sagt: »Erschliesse
+    aus dem WIE — wie {traeger} spricht, worauf {traeger} achtet« und schaerft
+    nach: »Nicht WORUEBER {traeger} spricht charakterisiert {traeger}, sondern
+    WIE.« Bis zum 10.08.2026 bekam er Langzeit-Knoten, also genau das
+    Worueber: Aus »jo« ist dort »Der Nutzer weiss nicht, was er hier tun soll«
+    geworden. Wie jemand spricht, ist daran nicht mehr ablesbar — die
+    Satzlaenge nicht, die Kleinschreibung nicht, der Scherz nicht.
+
+    Vorbedingung: Eintraege mit `aeusserung` und `antwort`.
+    Nachbedingung: Profiltext oder "". Leere Eingabe wird gemeldet, nicht
+        stillschweigend als leeres Profil zurueckgegeben.
+    """
+    if not turn_eintraege:
+        logger.error(
+            f"Kern-Hash ({user_id}): kein Wortlaut vorhanden — kein Profil"
+        )
         return ""
 
     eintraege: str = "\n".join(
-        f"[{row['dimension']}] "
-        f"(Gewicht: {row['gewicht_absolut']:.2f}, "
-        f"Häufigkeit: {row['haeufigkeit']}): {row['inhalt']}"
-        for row in lzg_eintraege
+        f"  Gegenueber: „{(row.get('aeusserung') or '').strip()}“\n"
+        f"  {ASSISTANT_NAME}: „{(row.get('antwort') or '').strip()}“"
+        for row in turn_eintraege
     )
 
     perspektive: dict[str, str] = _perspektive_aufloesen(user_id)

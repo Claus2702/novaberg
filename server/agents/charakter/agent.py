@@ -157,9 +157,15 @@ class CharakterAgent(BaseAgent):
                 # CHAR-LZG-LEAK: LZG-Lookup ueber das kanonische Paar (analog
                 # zum KZG-Lookup), nicht ueber subjekt_user_id. Damit fliessen
                 # nur Eintraege der gewuenschten Perspektive ins Profil.
-                lzg_kern = self._lzg_kern_laden(
-                    kanon_user_id, kanon_character_id, beobachter,
-                )
+                # Der Kern liest den **Wortlaut**, nicht die Langzeit-Knoten.
+                # `KERN_HASH_PROMPT` verlangt es woertlich: »Erschliesse aus
+                # dem WIE — wie {traeger} spricht« und schaerft nach: »Nicht
+                # WORUEBER {traeger} spricht charakterisiert {traeger},
+                # sondern WIE.« Die Knoten tragen das Worueber; aus »jo« ist
+                # dort »Der Nutzer weiss nicht, was er hier tun soll«
+                # geworden. Wie jemand spricht, ist daran nicht mehr
+                # ablesbar. Vorgabe des Meisters vom 10.08.2026.
+                turn_wortlaut = self._turns_laden(kanon_user_id)
                 lzg_intentionen = self._lzg_intentionen_laden(
                     kanon_user_id, kanon_character_id, beobachter,
                 )
@@ -188,7 +194,7 @@ class CharakterAgent(BaseAgent):
                 }
 
                 try:
-                    ergebnis["kern"] = kern_hash_destillieren(lzg_kern, user_id=subjekt_user_id)
+                    ergebnis["kern"] = kern_hash_destillieren(turn_wortlaut, user_id=subjekt_user_id)
                 except Exception as ex:
                     logger.exception(f"{type(ex).__name__}: CharakterAgent: Kern-Hash fehlgeschlagen fuer {subjekt_user_id}")
 
@@ -368,6 +374,38 @@ class CharakterAgent(BaseAgent):
     # ─────────────────────────────────────────
     # Daten laden
     # ─────────────────────────────────────────
+
+    def _turns_laden(self, user_id: str, grenze: int = 40) -> list[dict]:
+        """Laedt den Wortlaut der Turns eines Paares aus `pipeline_log`.
+
+        Vorbedingung: `user_id` ist die Kennung des Menschen im Paar — unter
+            ihr laufen die Rohturns, unabhaengig davon, wessen Charakter
+            destilliert wird. Die Perspektive macht der Prompt.
+        Nachbedingung: Liste von {'aeusserung', 'antwort'}, aelteste zuerst.
+            Leer heisst: kein Wortlaut vorhanden, und der Aufrufer meldet es.
+        """
+        zeilen = db_manager.select(
+            """
+            SELECT inhalt ->> 'user_prompt' AS aeusserung,
+                   inhalt ->> 'response'    AS antwort
+            FROM pipeline_log
+            WHERE art = 'turn_roh' AND user_id = %s
+            ORDER BY erstellt_am DESC
+            LIMIT %s
+            """,
+            (user_id, grenze),
+        ) or []
+
+        eintraege = [
+            {"aeusserung": z["aeusserung"] or "", "antwort": z["antwort"] or ""}
+            for z in reversed(zeilen)
+            if (z["aeusserung"] or z["antwort"])
+        ]
+        logger.info(
+            f"CharakterAgent: Wortlaut geladen fuer '{user_id}' — "
+            f"{len(eintraege)} Turns"
+        )
+        return eintraege
 
     def _lzg_kern_laden(
         self,

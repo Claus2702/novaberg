@@ -39,6 +39,7 @@ KEINE_NAMEN: frozenset[str] = frozenset({
     "Konzept",  # "aus Konzept §7.5" in test_synapsen_kanten
     "Cohen",    # "aus Cohen (1960)" — die Quelle der Kappa-Formel, kein Gespraechsname
     "Chat",     # "aus Chat 116" — Sitzungsverweis, wie ihn jedes Dokument traegt
+    "Langzeit", # "aus Langzeit-Knoten" — Speicherschicht, kein Gespraechsname
     "Postgre",  # "aus PostgreSQL" — der Slot bricht nach dem ersten
                 # Kleinbuchstaben-Block ab. Zwilling zu "Redis" darueber.
     "Pfad",     # "aus Pfad 1" — die beiden Graph-Pfade heissen so. Der
