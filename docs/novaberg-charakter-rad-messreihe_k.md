@@ -66,6 +66,24 @@ Damit ist Regel (4) erfüllt: Die **Aggregation** ist idempotent. Das Anhängen 
 
 **Der Preis, benannt:** Zwischen zwei Messungen kann sich der Profiltext mehrfach ändern — der Agent ist auf zehn Minuten getaktet. Das Rad ist damit eine Stichprobe eines driftenden Textes, nicht sein Spiegel. Deshalb trägt jede Zeile die Prüfsumme ihrer Quelle (§5): Gleiche Prüfsumme mit anderem Ergebnis ist Rauschen, andere Prüfsumme mit anderem Ergebnis kann Bewegung sein.
 
+**Der Preis ist am 11.08.2026 eingetreten und beziffert worden.** In einem Bogen von 40 Minuten wurde das Rad **einmal** erhoben, auf einem Profil von 373 Zeichen; jeder spätere Destillationslauf fand die Zwölf-Stunden-Sperre und ließ es stehen. Am Ende stand in derselben Zeile ein Rad von 09:23 neben einem Profil von 10:00 — **das gespeicherte Rad gehörte zu einem Text, den es nicht mehr gab.** Die Prüfsumme hat es festgehalten; gelesen hatte sie niemand.
+
+### 3a. Der Takt einer Messreihe
+
+**Für eine Messreihe ist der feste Takt untauglich, und zwar aus demselben Grund, aus dem er im Regelbetrieb richtig ist.** Er entkoppelt den Zeitpunkt der Messung vom Gegenstand. Im Betrieb ist das erwünscht — die Reihe soll Tage abbilden, nicht Ereignisse. In einem Bogen entscheidet er, dass der Charakter mal nach dem zwölften, mal nach dem vierzehnten Turn entsteht, je nach Auslastung des Modells; Bögen werden damit unvergleichbar.
+
+**Ein Messlauf bestimmt den Zeitpunkt deshalb selbst:**
+
+| | |
+|---|---|
+| `MESSREIHE_OHNE_AUTOMATISCHE_DESTILLATION` | kein Turn setzt mehr `hash_dirty` — der Lauf ist der einzige Auslöser |
+| `RAD_MESSUNG_ABSTAND_STUNDEN=0` | sonst greift beim zweiten Anstoß die Sperre, und der Bogen bekommt nur ein Rad |
+| Phasenmuster | Ausgangszustand (Queue leer) → Eingriff (`hash_dirty`) → Zielzustand oder Frist (Profil **und** Rad jünger als der Anstoß) |
+
+**Der Bogen zerfällt damit in Phasen mit fester Grenze**: N Turns ohne Charakter, Destillation, Rest der Turns gegen diesen Charakter, Destillation. Beide Erhebungen tragen dieselbe `erhebung_id`-Systematik wie im Betrieb und stehen in derselben Reihe.
+
+**Im Regelbetrieb bleibt alles wie beschrieben.** Beide Schalter tragen ihren Vorgabewert; die zwölf Stunden gelten weiter, damit Rang und Zeit dasselbe bedeuten.
+
 ---
 
 ## 4. Die Gewichtung
@@ -193,11 +211,17 @@ Seine Destillation begründete ausdrücklich, warum sie **ein echtes Rad** speic
 
 - **Warum zwanzig Einträge gegen tausend durchschlagen, ist ungeklärt.** Das Beziehungsprofil liest alle KZG-Einträge des Paares, ungeordnet und ungekürzt, in der Reihenfolge des Scans. Eine Auswahl nach Salienz gibt es nicht — und sie könnte nichts trennen, weil die Salienz bei Median 0.98 steht. Die Glättung dämpft dieses Symptom, ohne die Ursache zu berühren.
 
-- **Ob eine Erhebung mehr als einen Lauf braucht.** Die Verfahrensstreuung liegt bei 0.08, die Historie deckt die Restschwankung ab. Ein Lauf je Erhebung genügt vermutlich; die Tabelle trägt `lauf`, damit die Frage später ohne Schemaänderung entschieden werden kann.
+- ~~**Ob eine Erhebung mehr als einen Lauf braucht.** Ein Lauf je Erhebung genügt vermutlich.~~ → **Widerlegt am 11.08.2026.** Über drei Quellen mit je vier Läufen bei unveränderter Eingabe: Streuung **0,18 · 0,18 · 0,22** auf der Dreierskala. Das ist mehr als das Doppelte der angenommenen 0,08 — und genauso groß wie der Abstand zwischen zwei Personen. Das Zuwendungs-Rad wird seither dreimal erhoben, gespeichert wird der Median (`F-RAD-2`); die Wirkung ist aus denselben Läufen gerechnet und senkt die Streuung auf 5 bis 40 %. Die Tabelle brauchte dafür keine Änderung, weil sie `lauf` seit dem 01.08. trägt.
+
+- **Die Dreierskala war ein Teil des Rauschens.** Beide Rad-Prompts ließen nur 0,0 / 0,5 / 1,0 zu; lag ein Urteil dazwischen, musste das Modell runden — `distanz` stand in sechs von sechs Messungen über drei Personen und beide Paarrichtungen auf 1,00. Mit einer Nachkommastelle fällt die Streuung von 0,18–0,22 auf 0,061–0,080 und die Trennschärfe zweier Personen steigt von 2,4–3,3 σ auf 10,2–12,9 σ (`F-RAD-3`). **Die Arithmetik hat die grobe Skala nie verlangt:** Die Gewichte summieren sich auf 0,60 und 0,40 und treffen mit der Nabe 0,9 die Klemme exakt.
+
+- **Die Gewichtung zählt Zeilen, nicht Erhebungen — und das ist seit dem 11.08.2026 ein Unterschied.** §4 verfällt über den Rang, `reihe_laden` liefert alle Zeilen der letzten N Erhebungen. Solange eine Erhebung eine Zeile hatte, war das dasselbe. Jetzt hat sie drei: Die drei Läufe **einer** Messung besetzen die Ränge 0, 1 und 2 und werden behandelt, als wären sie drei Zeitpunkte. Zwei Wege: je Erhebung gewichten statt je Zeile, oder die Läufe vor der Reihe auf ihren Median zusammenziehen. **Noch nicht entschieden**; die Wirkung setzt ab der zweiten Erhebung eines Paares ein.
 
 ---
 
 ## Versionshistorie
+
+- **v0.3 — 11.08.2026:** §3a neu — **eine Messreihe bestimmt den Zeitpunkt der Destillation selbst.** Anlass ist ein gemessener Fall: In einem Bogen von 40 Minuten stand am Ende ein Rad von 09:23 neben einem Profil von 10:00, weil die Zwölf-Stunden-Sperre jede zweite Messung verhinderte. Der feste Takt bleibt im Regelbetrieb; im Messlauf schalten zwei Umgebungswerte ihn ab, und der Bogen zerfällt in Phasen mit fester Grenze. In §8 sind zwei offene Punkte beantwortet: **Ein Lauf je Erhebung genügt nicht** (Streuung 0,18–0,22 statt der angenommenen 0,08), und **die Dreierskala war ein Teil des Rauschens** (Trennschärfe 2,4–3,3 σ → 10,2–12,9 σ). Ein neuer offener Punkt tritt an ihre Stelle: Die Gewichtung zählt Zeilen, eine Erhebung hat jetzt drei.
 
 - **v0.2 — 01.08.2026:** Gebaut für das Zuwendungs-Rad. **Eine Entscheidung des Entwurfs ist dabei umgekehrt worden:** Zusammengefasst wird mit dem gewichteten **Mittel** je Speiche, nicht mit dem Median. Ein gewichteter Median auf einer Dreierskala ist eine Sprungfunktion — unter vier Messungen entscheidet die jüngste weiterhin allein, und gerade die ersten Tage wären ungeschützt. Die Einschwingzeiten der Tabelle in §4 waren ohnehin auf Mittelwert-Grundlage gerechnet. Neu benannt ist die Folge für den Haltungsraum: Eine Ausprägung von 1.0 bedeutet jetzt „seit Tagen durchgehend voll", und seine Übersteuerung greift entsprechend seltener. Das Initiative-Rad bleibt vorerst außen vor.
 - **v0.1 — 01.08.2026:** Erstfassung. Anlass ist ein gemessener Sprung des Zuwendungsfaktors von 1.215 auf 0.980 innerhalb von zwei Stunden, bei einer Verfahrensstreuung von 0.08 — also echte Bewegung, ausgelöst von zwanzig gleichförmigen Turns. Die Entscheidung, die das Konzept trägt: Das Rad misst einen **akuten** Zustand und wird durch die Messungen der letzten Tage stabilisiert. Kurve und Bauart der Gewichtung sind aus dem Emotions-Verlauf übernommen, das Historiengewicht ist eine eigene Konstante, weil dort der aktuelle Wert dominieren soll und hier gerade nicht. Offen bleibt die semantische Frage: Die Quelle ist zur einen Hälfte zeitlos, obwohl das Ergebnis akut sein soll.

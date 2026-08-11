@@ -49,11 +49,20 @@ Die Zugehörigkeit zu einer dieser Reihen hebt einen Eintrag; alles andere sinkt
 | Kennung | Reihe | Was er anhält |
 |---|---|---|
 | `PROMOTION-FENSTER-LAEUFT-AB-STATT-LEER` | 1 | Entwertet **jeden gepaarten Vergleich** — und die Charakterbildungs-Reihe ist einer. Live bestätigt: 30 Minuten Nachlauf, 15× „3 Schlüssel belegt", null Abfluss |
-| `RAD-STABILITAET-UNGEMESSEN` | 2 | Steht **vor** jeder Kalibrierung der Beitragsverhältnisse. Wer vorher kalibriert, kalibriert gegen Rauschen unbekannter Breite |
+| ~~`RAD-STABILITAET-UNGEMESSEN`~~ | 2 | **✅ gemessen am 11.08.2026 — der Eintrag ist beantwortet.** Über drei Quellen mit je vier Läufen bei unveränderter Eingabe: Streuung **0,18 · 0,18 · 0,22** auf der Dreierskala, **0,061 · 0,062 · 0,080** mit einer Nachkommastelle. Die Trennschärfe zweier Personen steigt dabei von 2,4–3,3 σ auf 10,2–12,9 σ. Daraus zwei Bauten: `F-RAD-2` (drei Läufe, Median) und `F-RAD-3` (elf Stufen statt drei). **Die Kalibrierung der Beitragsverhältnisse ist damit freigegeben** — sie liefe jetzt gegen ein Rauschen bekannter und kleiner Breite |
+| `REIHE-GEWICHTET-ZEILEN-STATT-ERHEBUNGEN` | 2 | **Neu am 11.08.2026, und die Folge des vorigen Eintrags.** `rad_zusammenfassen` gewichtet je **Zeile** nach Aktualität, `reihe_laden` liefert alle Zeilen der letzten N Erhebungen. Solange eine Erhebung eine Zeile hatte, war das dasselbe; seit der Dreifach-Erhebung besetzen die drei Läufe **einer** Messung die Ränge 0, 1 und 2 und werden wie drei Zeitpunkte behandelt. Zwei Wege: je Erhebung gewichten, oder die Läufe vor der Reihe auf ihren Median zusammenziehen. **Wirkt ab der zweiten Erhebung eines Paares** — bei Mehmet und Sarah liegen sie seit heute vor |
 
 **`PROFIL-HISTORIE-FEHLT` stand beim ersten Entwurf dieser Tabelle in Band A und gehört nicht dorthin.** Die Begründung lautete: Ohne Profilhistorie sei nicht messbar, ob ein behaltenes Rad früh genug wirkt. Der Eintrag selbst widerlegt das seit dem 02.08.2026 — `charakter_hash` führt das Paar im Primärschlüssel, und **die Räder sind ohnehin historisiert**: `charakter_rad_messung` trägt am 09.08.2026 231 Zeilen über 20 Kennungen seit dem 01.08. Die Frage nach dem Rad hängt an dieser Tabelle, nicht an der Profilhistorie. Er steht in Band B. **Das ist die Regel bei der Arbeit:** Ein Band, das gegen den Eintrag gehalten wird statt gegen die Erinnerung an ihn, korrigiert sich beim Lesen.
 
 ### Band B — was in einer laufenden Reihe mitläuft
+
+**Neu aus Chat 135 (11.08.2026):**
+
+| Kennung | Was er anhält |
+|---|---|
+| `HASH-DIRTY-ALTLASTEN` | Der CharakterAgent räumt `hash_dirty` nur für das **aktive** Paar weg. Jede Person, die je einen Bogen hatte, trägt einen liegengebliebenen Schlüssel — am 11.08.2026 fünf Stück. Sie lassen die Vorbedingung des nächsten Bogens dieser Person anschlagen, und der Abbruch sieht aus wie ein Fehler des Laufs statt wie ein Rest des vorigen |
+| `PROFILTEXT-SCHRUMPFT-MIT-MATERIAL` | Zweimal gemessen, in zwei Bögen: Mehmet 1597 → 1293 Zeichen, Sarah 1240 → 989, jeweils mit **zwanzig Turns mehr** Material. Vermutlich die Vorgabe *„kompakt … in 2-5 Sätzen"*: Je mehr das Modell sagen will, desto härter verdichtet es. Ungeprüft |
+| `VERDICHTUNG-UNGEPRUEFT` | Fünf Profil-Prompts verlangen *„kompakt"* und deckeln auf zwei bis fünf Sätze — eine Vorgabe aus der Zeit knapper Kontextfenster. Heute schreibt das Hintergrundmodell mit 262 144 Token, gelesen wird mit 32 768; ein Profil von 4000 Zeichen wäre drei Prozent des Lesefensters. **Verdichtung nimmt weg, was Charakter ausmacht.** Die Gegenprobe steht bereit — identisches Material, einmal mit Deckel und einmal ohne —, ist aber nicht gefahren. Zu vergleichen sind zwei Dinge getrennt: der Text zum Lesen und die Streuung des Rades. Fallen sie auseinander, ist das ein Hinweis auf zwei Texte statt einem |
 
 | Kennung | Reihe |
 |---|---|

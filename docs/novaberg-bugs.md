@@ -110,6 +110,32 @@ Gegenstandslos geworden: der Stichtag der assistant-Partition vom 26.07.2026, di
 
 ---
 
+### Chat 135 — beim Bau der Phasensteuerung (11.08.2026)
+
+#### RAD-AELTER-ALS-PROFIL — das gespeicherte Rad gehörte zu einem Text, den es nicht mehr gab ✅ behoben
+
+**Symptom.** Nach einem Bogen stand in `charakter_hash` ein Rad von 09:23 neben einem Beziehungsprofil von 10:00. Die Messzeile trug `quelle_zeichen = 373`, das Profil daneben hatte 1456.
+
+**Ursache.** `RAD_MESSUNG_ABSTAND_STUNDEN = 12`. In einem Bogen von 40 Minuten wurde das Rad **einmal** erhoben; jeder spätere Destillationslauf fand `messung_faellig` = nicht fällig, erneuerte die Profile und ließ das Rad stehen. Der Zeitpunkt der einen Messung hing an der Auslastung des Modells, nicht am Gegenstand.
+
+**Warum es zählt.** Das Rad ist die Eingangsgröße der Salienz **jedes** Nutzer-Beitrags, und es war an einen Text gebunden, der zu dieser Zeit ein Drittel seiner späteren Länge hatte. Die Prüfsumme in `charakter_rad_messung` hat den Fall die ganze Zeit festgehalten — gelesen hatte sie niemand.
+
+**Behoben am 11.08.2026.** Eine Messreihe bestimmt den Zeitpunkt selbst: `MESSREIHE_OHNE_AUTOMATISCHE_DESTILLATION` legt die automatischen Auslöser still, `RAD_MESSUNG_ABSTAND_STUNDEN=0` hebt die Sperre für den Lauf auf, und der Bogenläufer stößt nach dem Schnitt und am Ende an. Belegt: Nach dem Umbau stimmen `profil_am` und `rad_am` beider Paare auf die Sekunde überein. Im Regelbetrieb bleiben die zwölf Stunden.
+
+---
+
+#### HASH-DIRTY-DRITTER-SETZER — die Stilllegung war unvollständig ✅ behoben
+
+**Symptom.** Nach einer Phase mit stillgelegter Automatik stand `hash_dirty:sarah:nova` wieder gesetzt da. Die Vorbedingung des nächsten Laufs schlug an.
+
+**Ursache.** Drei Stellen setzen das Flag — `memory/kzg.py`, `agents/kzg/queues.py` und **`agents/synapsen_promotion/agent.py`**. Nur die ersten beiden waren stillgelegt. Die Promotion läuft **nach** den Turns und schärfte die Destillation damit erneut, an einer Stelle, die niemand bestimmt hat.
+
+**Warum es zählt.** Es untergräbt genau die Eigenschaft, für die der Schalter gebaut wurde: die Bestimmtheit des Zeitpunkts. Der Bogen sah dabei vollständig aus — beide Phasen lieferten Profil und Rad; nur die Vorbedingung des Folgelaufs machte es sichtbar.
+
+**Behoben am 11.08.2026**, samt einem Zeugen, der die Setzer am Syntaxbaum **zählt** statt sie zu erinnern: Ein vierter bekommt ein rotes Licht, statt in Wochen eine unerklärliche Erhebung zu erzeugen.
+
+---
+
 ## Offene Bugs
 
 ### Chat 134 — beim Bau der zwei Pixie-Spuren (09.08.2026)

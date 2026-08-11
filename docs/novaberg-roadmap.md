@@ -2066,6 +2066,24 @@ Aus denselben Läufen gerechnet senkt der Median über drei die Streuung auf **5
 
 **Ein Befund am Rande, der eine Aussage von gestern zurücknimmt.** Die zuvor berichtete Gleichheit von Signal und Rauschen stammte aus dem schlechtesten von fünf Laufpaaren einer einzigen Quelle. Über 37 Paare und 61 Erhebungen liegt das Rauschen des Initiative-Rades bei **0,021 bis 0,048** gegen ein Signal von **0,40** — rund 1:10. Für das Zuwendungs-Rad war dieselbe Zahl nie erhoben worden, weil es nie mehr als einmal lief.
 
+### Der Lauf bestimmt, wann der Charakter entsteht ✅
+
+**Das Rad gehörte zu einem Text, den es nicht mehr gab.** Nach einem Bogen stand in derselben Zeile ein Rad von 09:23 neben einem Profil von 10:00; die Messzeile trug 373 Zeichen Quelle, das Profil daneben 1456. Ursache war kein Zufall, sondern eine Sperre: `RAD_MESSUNG_ABSTAND_STUNDEN = 12`. In einem Bogen von vierzig Minuten wurde **einmal** gemessen, und jeder spätere Lauf erneuerte die Profile und ließ das Rad stehen.
+
+**Vier Möglichkeiten standen zur Wahl** — nach den Turns (dann laufen dreißig Turns ohne Charakter), vor den Turns (dann fehlt die Grundlage), wann der Worker will (dann ist kein Bogen mit einem anderen vergleichbar), oder an **gesetzten Punkten**. Gewählt wurde die vierte:
+
+```
+10 Turns → Queue leerlaufen → Charakter + Rad → 20 Turns → Queue leerlaufen → Charakter + Rad
+```
+
+**Das Muster jeder Phase ist dasselbe:** Ausgangszustand (die Promotionsqueue muss leer sein, sonst ist das Material unvollständig), Eingriff (`hash_dirty` setzen), Zielzustand oder Frist (warten, bis Profil **und** Rad jünger sind als der Anstoß), Befund. Zwei Umgebungswerte machen das möglich: einer legt die automatischen Auslöser still, der andere hebt die Zwölf-Stunden-Sperre für den Lauf auf. **Im Regelbetrieb bleibt beides, wie es war.**
+
+**Gemessen an zwei Bögen.** Beide Phasen lieferten Profil und Rad, 30 von 30 Turns, und `profil_am` stimmt mit `rad_am` auf die Sekunde überein — der Defekt ist konstruktiv ausgeschlossen statt dokumentiert.
+
+**Und zwei Zahlen, die es vorher nicht gab.** Zehn Turns ergeben rund 1600 Zeichen Profil, nicht 373 — der Verdacht, der Schnitt sei zu früh, ist widerlegt. Dafür zeigt sich etwas anderes, zweimal in zwei Bögen: **Der Profiltext schrumpft mit mehr Material** (1597 → 1293, 1240 → 989). Vermutlich die Vorgabe „kompakt, 2-5 Sätze"; ungeprüft.
+
+**Ein Fehlschlag gehört dazu.** Die Stilllegung war unvollständig — ein **dritter** Setzer in der Synapsen-Promotion schärfte die Destillation nach den Turns erneut. Der Bogen sah dabei vollständig aus; sichtbar wurde es erst, als die Vorbedingung des Folgelaufs anschlug. Der Zeuge dazu **zählt** die Setzer am Syntaxbaum, statt sie zu erinnern.
+
 ---
 
 ## Chat 134 (09.08.2026) — Sieben `zip`, die nicht dasselbe meinen, und eine Wand, die nicht aufgeht ✅
