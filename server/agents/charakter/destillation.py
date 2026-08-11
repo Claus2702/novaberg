@@ -595,10 +595,13 @@ RICHTUNG SETZT — nicht um Freundlichkeit, Kompetenz oder Zuwendung.
 Bewerte, was die Person TUT, nicht wie sie IST. Eine warmherzige Person kann
 das Gespraech fest fuehren; eine distanzierte kann jedem Thema folgen.
 
-Gib je Verhalten genau einen von drei Werten:
+Gib je Verhalten einen Wert zwischen 0.0 und 1.0, auf eine
+Nachkommastelle. Die drei Marken bleiben als Anhalt:
   0.0  = nicht erkennbar
   0.5  = angedeutet
   1.0  = ausgepraegt
+Zwischenwerte sind ausdruecklich erlaubt und erwuenscht: 0.7 heisst
+"deutlich mehr als angedeutet, aber nicht durchgaengig".
 
 Ueberlaesst die Fuehrung:
 - folgsamkeit       — uebernimmt das gesetzte Thema, ohne es zu drehen
@@ -636,10 +639,13 @@ Bewerte zwoelf Eigenschaften danach, wie stark sie in diesem Profil erkennbar
 sind. Es geht ausschliesslich um die Haltung GEGENUEBER DEM ANDEREN — nicht um
 allgemeine Charakterstaerke.
 
-Gib je Eigenschaft genau einen von drei Werten:
+Gib je Eigenschaft einen Wert zwischen 0.0 und 1.0, auf eine
+Nachkommastelle. Die drei Marken bleiben als Anhalt:
   0.0  = nicht erkennbar
   0.5  = angedeutet
   1.0  = ausgepraegt
+Zwischenwerte sind ausdruecklich erlaubt und erwuenscht: 0.7 heisst
+"deutlich mehr als angedeutet, aber nicht durchgaengig".
 
 Zuwendung zum Anderen:
 - treue            — stellt die Belange des Anderen ueber die eigenen
