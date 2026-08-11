@@ -2038,6 +2038,34 @@ Die Anrede überlebt diese Umwandlung nicht, und mit ihr der Gegenstand der Frag
 
 **Gemessen.** Suite 1143 → 1147, OK. Kein Bestandstest brach — die Funktion hatte bis dahin keinen.
 
+### Die Skala war das Messgerät, nicht der Gegenstand ✅
+
+**`distanz` stand in sechs von sechs Messungen auf 1,00** — über drei Personen und beide Paarrichtungen. Vier Erklärungen wurden geprüft, drei fielen: die Beschriftung des Prompts (neun Läufe über drei Zellen), die Quelle (beide Hälften auf den Wortlaut umgebaut, der Wert blieb), die `presence_penalty` (neun von zehn Läufen über fünf Werte zeigten 1,00).
+
+**Die vierte trägt.** Beide Rad-Prompts ließen nur `0.0`, `0.5` und `1.0` zu. Lag ein Urteil dazwischen, musste das Modell runden — und rundete nach oben.
+
+Gemessen über drei Quellen, vier Läufe je Fassung, gleiche Eingabe, gleiches Sampling:
+
+| | grob | fein |
+|---|---|---|
+| Streuung je Quelle | 0,18 · 0,18 · 0,22 | **0,061 · 0,062 · 0,080** |
+| Trennschärfe zweier Personen | 2,4 bis 3,3 σ | **10,2 bis 12,9 σ** |
+| Werte zwischen den Marken | 0 von 12 | bis 11,2 von 12 |
+
+**Das Rauschen fällt um das Dreifache, die Trennschärfe steigt um das Vierfache.** Die Arithmetik hat die grobe Skala nie verlangt: Die Speichengewichte summieren sich auf 0,60 und 0,40, mit der Nabe 0,9 trifft die Faktorspanne die Klemme exakt — jede Speiche in [0, 1] füllt sie aus.
+
+Die drei verbalen Marken bleiben als Anhalt. Ohne sie hätte `0.7` keinen Bezug mehr.
+
+### Das zweite Rad bekommt, was das erste seit drei Wochen hat ✅
+
+Das Initiative-Rad wird seit dem 29.07.2026 dreimal erhoben und median-gemittelt. Die Begründung galt für das Zuwendungs-Rad wörtlich genauso — *der Wert wird bei der Destillation einmal geschrieben und bleibt bis zur nächsten stehen* — und war dort nie angewandt worden.
+
+**Die Lücke traf das Rad, das jeder Turn liest.** Der Zuwendungs-Faktor geht in die Salienz jedes Nutzer-Beitrags ein; das seltener gelesene Initiative-Rad war geschützt, das häufig gelesene nicht.
+
+Aus denselben Läufen gerechnet senkt der Median über drei die Streuung auf **5 bis 40 %** (feine Skala). Gespeichert wird das Rad des Median-Laufs, nicht ein gemitteltes: Ein Durchschnitt ergäbe Ausprägungen, die kein Lauf vergeben hat, und `Rad × Züge = Faktor` wäre nicht mehr von Hand nachrechenbar. Dieselbe Wahl wie beim ersten Rad.
+
+**Ein Befund am Rande, der eine Aussage von gestern zurücknimmt.** Die zuvor berichtete Gleichheit von Signal und Rauschen stammte aus dem schlechtesten von fünf Laufpaaren einer einzigen Quelle. Über 37 Paare und 61 Erhebungen liegt das Rauschen des Initiative-Rades bei **0,021 bis 0,048** gegen ein Signal von **0,40** — rund 1:10. Für das Zuwendungs-Rad war dieselbe Zahl nie erhoben worden, weil es nie mehr als einmal lief.
+
 ---
 
 ## Chat 134 (09.08.2026) — Sieben `zip`, die nicht dasselbe meinen, und eine Wand, die nicht aufgeht ✅
