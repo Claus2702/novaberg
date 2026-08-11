@@ -8,7 +8,8 @@ import logging
 
 from agents.base import AgentState
 from services.shadow_agent.utils import shadow_queue_push, promotion_queue_push
-from config import ASSISTANT_USER_ID, redis_client, KZG_SALIENZ_HIGH, PIXIE_AKTIV
+from config import (ASSISTANT_USER_ID, redis_client, KZG_SALIENZ_HIGH,
+                    PIXIE_AKTIV, MESSREIHE_OHNE_AUTOMATISCHE_DESTILLATION)
 
 logger = logging.getLogger("ki_server.agents.kzg.queues")
 
@@ -122,9 +123,14 @@ def queues_befuellen(state: AgentState) -> dict:
             ):
                 aktionen.append("promotion_verstaerkt")
 
-    # Dirty-Flag fuer Hash-Destillation
-    redis_client.set(f"hash_dirty:{user_id}:{character_id}", "1")
-    aktionen.append("dirty_flag")
+    # Dirty-Flag fuer Hash-Destillation. Im Messlauf faellt es aus: Dort
+    # stoesst der Bogenlaeufer nach Turn 10 und nach Turn 30 selbst an, damit
+    # jeder Bogen den Charakter an derselben Stelle bildet.
+    if MESSREIHE_OHNE_AUTOMATISCHE_DESTILLATION:
+        aktionen.append("dirty_flag_unterdrueckt")
+    else:
+        redis_client.set(f"hash_dirty:{user_id}:{character_id}", "1")
+        aktionen.append("dirty_flag")
 
     logger.info(f"KZG-Queues: {', '.join(aktionen)}")
 

@@ -175,6 +175,31 @@ MESSREIHE_OHNE_AUFTRAGSARTEN: frozenset[str] = frozenset(
     art.strip() for art in os.getenv("MESSREIHE_OHNE_AUFTRAGSARTEN", "").split(",") if art.strip()
 )
 
+# Stellt den **automatischen** Anstoss der Charakter-Destillation still.
+#
+# Im Regelbetrieb setzt jeder Turn `hash_dirty`, und Pixie destilliert, sobald
+# ein Platz frei wird. Fuer eine Messreihe ist genau das untauglich: Der
+# Zeitpunkt haengt dann an der Auslastung des Modells, und der Charakter
+# entsteht mal nach dem zwoelften, mal nach dem vierzehnten Turn — jeder Bogen
+# unter anderen Bedingungen.
+#
+# **Gemessen am 11.08.2026, woran das haengt:** In Mehmets 40-Minuten-Bogen
+# wurde das Rad einmal erhoben, auf einem Profil von 373 Zeichen; alle
+# spaeteren Laeufe fanden `messung_faellig` = nicht faellig (Sperre 12
+# Stunden) und liessen es stehen. Am Ende lag ein Rad von 09:23 neben einem
+# Profil von 10:00 — zwei Momente, eine Zeile.
+#
+# Mit diesem Schalter setzt niemand mehr automatisch; der Bogenlaeufer stoesst
+# an definierten Punkten an (nach Turn 10 und nach Turn 30) und wartet auf das
+# Ergebnis. `RAD_MESSUNG_ABSTAND_STUNDEN=0` gehoert im selben Lauf dazu, sonst
+# greift die Zwoelf-Stunden-Sperre beim zweiten Anstoss.
+#
+# **Der Agent raeumt das Flag nach getaner Arbeit selbst weg** (agent.py) —
+# ein Anstoss ergibt deshalb genau eine Destillation.
+MESSREIHE_OHNE_AUTOMATISCHE_DESTILLATION: bool = (
+    os.getenv("MESSREIHE_OHNE_AUTOMATISCHE_DESTILLATION", "false").lower() == "true"
+)
+
 redis_client:   redis.Redis     = redis.from_url(REDIS_URL, decode_responses=True)
 llm_lock:       threading.Lock  = threading.Lock()
 shutdown_event: threading.Event = threading.Event()

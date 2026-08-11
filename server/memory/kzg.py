@@ -30,6 +30,7 @@ from config                                import (
     KZG_TTL_MID_SEKUNDEN,
     KZG_TTL_HIGH_SEKUNDEN,
     PIXIE_AKTIV,
+    MESSREIHE_OHNE_AUTOMATISCHE_DESTILLATION,
 )
 from graph.context_entry                   import ContextEntry
 from memory.pipeline_log                   import log_db_write
@@ -505,10 +506,15 @@ def kzg_store(
             except Exception as ex:
                 logger.warning(f"KZG: Verstärkungsfehler bei {other_key}: {ex}")
 
-    if PIXIE_AKTIV:
-        redis_client.set(f"hash_dirty:{user_id}:{character_id}", "1")
-    else:
+    if not PIXIE_AKTIV:
         logger.debug("kzg: hash_dirty-Setzer uebersprungen (PIXIE_AKTIV=False)")
+    elif MESSREIHE_OHNE_AUTOMATISCHE_DESTILLATION:
+        # Im Messlauf stoesst der Bogenlaeufer an definierten Punkten an.
+        logger.debug(
+            "kzg: hash_dirty-Setzer uebersprungen (Messreihe steuert selbst)"
+        )
+    else:
+        redis_client.set(f"hash_dirty:{user_id}:{character_id}", "1")
     return "neu"
 
 
