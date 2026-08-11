@@ -19,6 +19,7 @@ Anstoss ergibt also genau eine Destillation.
 """
 
 import unittest
+from pathlib import Path
 from unittest.mock import patch
 
 import config
@@ -95,6 +96,41 @@ class OhneAutomatischeDestillationTest(unittest.TestCase):
         for schritt in ergebnis.get("schritte", []):
             aktionen.extend(schritt.get("aktionen", []))
         return gesetzt, aktionen
+
+
+class AlleSetzerStillgelegtTest(unittest.TestCase):
+    """Kein Modul setzt `hash_dirty` ohne den Riegel.
+
+    **Der Grund ist ein Fehlschlag vom 11.08.2026.** Zwei Setzer waren
+    stillgelegt, ein dritter nicht: Die Synapsen-Promotion laeuft NACH den
+    Turns und schaerfte die Destillation erneut — an einer Stelle, die
+    niemand bestimmt hat. Aufgefallen ist es nur, weil die Vorbedingung des
+    naechsten Laufs anschlug.
+
+    Dieser Zeuge zaehlt die Setzer am Syntaxbaum, statt sie zu erinnern. Wer
+    einen vierten baut, bekommt hier ein rotes Licht statt in drei Wochen
+    eine unerklaerliche Erhebung.
+    """
+
+    def test_jeder_setzer_steht_hinter_dem_riegel(self) -> None:
+        wurzel = Path(__file__).resolve().parent.parent
+        ohne_riegel: list[str] = []
+
+        for datei in wurzel.rglob("*.py"):
+            if "tests" in datei.parts or datei.name.startswith("migrate_"):
+                continue
+            text = datei.read_text(encoding="utf-8")
+            for nr, zeile in enumerate(text.splitlines(), 1):
+                if 'set(f"hash_dirty:' not in zeile:
+                    continue
+                if "MESSREIHE_OHNE_AUTOMATISCHE_DESTILLATION" not in text:
+                    ohne_riegel.append(f"{datei.relative_to(wurzel)}:{nr}")
+
+        self.assertEqual(
+            ohne_riegel, [],
+            "Diese Setzer laufen ohne den Messreihen-Riegel — sie schaerfen "
+            "die Destillation an unbestimmter Stelle nach",
+        )
 
 
 if __name__ == "__main__":

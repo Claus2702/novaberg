@@ -38,6 +38,7 @@ from datetime import datetime, timezone
 
 from agents.base import BaseAgent, AgentState, PeriodicTask
 from config import (
+    MESSREIHE_OHNE_AUTOMATISCHE_DESTILLATION,
     ASSISTANT_USER_ID, DEFAULT_USER_ID,
     redis_client, POSTGRES_URL,
     PIXIE_PROMOTION_PRIORITAET, PIXIE_PROMOTION_INTERVALL_SEKUNDEN,
@@ -453,7 +454,19 @@ class SynapsenPromotionAgent(BaseAgent):
         self._verbindung_lzg_id_nachtragen(kzg_key, knoten_id, user_id, character_id)
 
         # ── hash_dirty (Charakter-Hash neu berechnen lassen) ──────
-        if PIXIE_AKTIV:
+        # **Der dritte Setzer.** Im Messlauf schaerft er die Destillation
+        # nach dem Phasenanstoss erneut: Die Promotion laeuft nach den Turns,
+        # setzt das Flag, und der naechste Pixie-Takt destilliert ein zweites
+        # Mal — an einer Stelle, die niemand bestimmt hat. Gefunden am
+        # 11.08.2026, weil die Vorbedingung des naechsten Laufs anschlug.
+        if not PIXIE_AKTIV:
+            pass
+        elif MESSREIHE_OHNE_AUTOMATISCHE_DESTILLATION:
+            logger.debug(
+                "Synapsen-Promotion: hash_dirty-Setzer uebersprungen "
+                "(Messreihe steuert selbst)"
+            )
+        else:
             redis_client.set(f"hash_dirty:{user_id}:{character_id}", "1")
 
         # ── Ausgabe: beide Gedaechtnis-Spuren (K5) ──────
