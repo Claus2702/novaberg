@@ -246,7 +246,40 @@ class CharakterAgent(BaseAgent):
                             "nicht faellig — bestehender Wert bleibt"
                         )
                     else:
-                        erhoben = charakter_rad_destillieren(rad_quelle, user_id=subjekt_user_id)
+                        # Jeder Lauf geht als eigene Zeile in die Reihe —
+                        # dieselbe Bauart wie beim Initiative-Rad, mit
+                        # gemeinsamer `erhebung_id`. Die Senke wirft nicht.
+                        node_cfg_rad: dict = get_node_config("charakter_hash")
+                        erhebung_zuw: str  = str(uuid.uuid4())
+
+                        def lauf_ablegen_zuw(nummer: int, rad: dict,
+                                             faktor: float,
+                                             _u=subjekt_user_id,
+                                             _c=subjekt_character_id,
+                                             _q=rad_quelle,
+                                             _e=erhebung_zuw,
+                                             _n=node_cfg_rad) -> None:
+                            """Senke fuer `charakter_rad_destillieren`."""
+                            messung_ablegen(Messung(
+                                user_id      = _u,
+                                character_id = _c,
+                                rad_art      = RAD_ART_ZUWENDUNG,
+                                speichen     = {**rad.get("hoch", {}),
+                                                **rad.get("runter", {})},
+                                faktor       = faktor,
+                                modell       = PIXIE_ANALYSE_MODEL,
+                                temperatur   = float(_n.get("temperature", 0.2)),
+                                presence_penalty = float(
+                                    _n.get("presence_penalty", 0.0)),
+                                quelle       = _q,
+                                erhebung_id  = _e,
+                                lauf         = nummer,
+                            ))
+
+                        erhoben = charakter_rad_destillieren(
+                            rad_quelle, user_id=subjekt_user_id,
+                            lauf_melden=lauf_ablegen_zuw,
+                        )
                         if erhoben is not None:
                             ergebnis["nutzer_gewichtung_rad"], ergebnis["nutzer_gewichtung"] = (
                                 self._rad_ueber_reihe_stabilisieren(
@@ -586,19 +619,11 @@ class CharakterAgent(BaseAgent):
             return rad_frisch, faktor_frisch
 
         # ── Verarbeitung ────────────────────────
-        node_cfg: dict = get_node_config("charakter_hash")
-        messung_ablegen(Messung(
-            user_id      = user_id,
-            character_id = character_id,
-            rad_art      = RAD_ART_ZUWENDUNG,
-            speichen     = {**hoch, **runter},
-            faktor       = faktor_frisch,
-            modell       = PIXIE_ANALYSE_MODEL,
-            temperatur   = float(node_cfg.get("temperature", 0.2)),
-            presence_penalty = float(node_cfg.get("presence_penalty", 0.0)),
-            quelle       = quelle,
-        ))
-
+        # **Hier wird nicht mehr abgelegt.** Seit dem 11.08.2026 erhebt
+        # `charakter_rad_destillieren` mehrfach und meldet JEDEN Lauf an die
+        # Senke des Aufrufers; der Median ist einer davon und liegt damit
+        # bereits in der Reihe. Eine Ablage an dieser Stelle zaehlte ihn ein
+        # zweites Mal und zoege das Reihenmittel zu ihm hin.
         reihe: list[dict] = reihe_laden(user_id, character_id, RAD_ART_ZUWENDUNG)
         if len(reihe) < 2:
             logger.info(

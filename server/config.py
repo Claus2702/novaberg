@@ -517,6 +517,19 @@ INITIATIVE_RAD_SPANNE:        float = float(os.getenv("INITIATIVE_RAD_SPANNE", "
 # ungluecklicher Lauf legte ihn sonst fuer Tage fest.
 INITIATIVE_RAD_LAEUFE:        int   = int(os.getenv("INITIATIVE_RAD_LAEUFE", "3"))
 
+# Dasselbe fuer das Zuwendungs-Rad — nachgetragen am 11.08.2026.
+#
+# **Die Ueberlegung darueber galt woertlich auch hier und wurde nur nie
+# angewandt.** Das Zuwendungs-Rad lief einmal je Destillation, und dieser
+# eine Wert stand bis zur naechsten: Mehmets 1.1750 vom 10.08.2026 ist eine
+# einzige Ziehung. Die Luecke traf ausgerechnet das Rad, das JEDER Turn
+# liest — der Faktor geht in die Salienz jedes Nutzer-Beitrags ein —,
+# waehrend das seltener gelesene Initiative-Rad seit dem 29.07. geschuetzt
+# war.
+#
+# Gemessen am 11.08.2026 ueber drei Quellen: `labor/ergebnis/rad_rauschen_*`.
+ZUWENDUNG_RAD_LAEUFE:         int   = int(os.getenv("ZUWENDUNG_RAD_LAEUFE", "3"))
+
 # ─── Messreihe der Charakter-Raeder (Chat 123) ──
 # Das Rad misst einen akuten Zustand und wird durch die Messungen der letzten
 # Tage stabilisiert (novaberg-charakter-rad-messreihe_k.md). Anlass ist ein

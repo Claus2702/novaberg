@@ -24,6 +24,7 @@ from agents.charakter.destillation import (
     RAD_ZUG_HOCH,
     RAD_ZUG_RUNTER,
     charakter_rad_destillieren,
+    ZUWENDUNG_RAD_LAEUFE,
     nutzer_gewichtung_berechnen,
 )
 
@@ -163,20 +164,28 @@ class RadDestillationTest(unittest.TestCase):
 
         self.assertIsNotNone(ergebnis)
         erhalten, faktor = ergebnis
-        self.assertEqual(erhalten, rad)
+        # Die Speichen sind unveraendert; seit dem 11.08.2026 traegt das Rad
+        # zusaetzlich die Herkunft der Mehrfach-Erhebung.
+        self.assertEqual({"hoch": erhalten["hoch"], "runter": erhalten["runter"]},
+                         rad)
+        self.assertEqual(erhalten["streuung"], 0.0,
+                         "Drei gleiche Antworten duerfen keine Streuung ergeben")
+        self.assertEqual(len(erhalten["laeufe"]), ZUWENDUNG_RAD_LAEUFE)
         self.assertAlmostEqual(faktor, RAD_NABE + 0.16 + 0.03, places=9)
 
     def test_kein_json_liefert_none_und_eine_fehlerzeile(self):
         with self.assertLogs(DESTILLATION_LOGGER, level="ERROR") as log:
             self.assertIsNone(self._destillieren("Das ist kein JSON."))
-        self.assertIn("kein JSON", log.records[-1].getMessage())
+        self.assertIn("kein JSON",
+                      "\n".join(r.getMessage() for r in log.records))
 
     def test_unvollstaendiges_rad_liefert_none_und_eine_fehlerzeile(self):
         rad: dict = _rad()
         del rad["runter"]["distanz"]
         with self.assertLogs(DESTILLATION_LOGGER, level="ERROR") as log:
             self.assertIsNone(self._destillieren(json.dumps(rad)))
-        self.assertIn("distanz", log.records[-1].getMessage())
+        self.assertIn("distanz",
+                      "\n".join(r.getMessage() for r in log.records))
 
     def test_leerer_profiltext_ruft_kein_llm(self):
         """Ohne Profil gibt es nichts zu bewerten — und keinen Grund, ein

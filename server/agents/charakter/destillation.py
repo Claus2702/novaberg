@@ -23,6 +23,7 @@ from config import (
     INITIATIVE_RAD_NABE,
     INITIATIVE_RAD_SPANNE,
     INITIATIVE_RAD_LAEUFE,
+    ZUWENDUNG_RAD_LAEUFE,
 )
 from services.model_services import model_service, BackgroundRequest
 from tools.db_manager import db_manager
@@ -732,15 +733,20 @@ def nutzer_gewichtung_berechnen(rad: dict) -> float:
     return gekappt
 
 
-def charakter_rad_destillieren(
+def _zuwendung_rad_einmal(
     profil_text: str,
     user_id:     str = DEFAULT_USER_ID,
 ) -> tuple[dict, float] | None:
-    """Erhebt die zwoelf Speichen aus dem Profiltext und rechnet den Faktor.
+    """Erhebt die zwoelf Speichen EINMAL und rechnet den Faktor.
 
     Laeuft NACH den fuenf Profilen und liest deren Ergebnis, nicht erneut das
     KZG — das Rad ist eine Eigenschaft des destillierten Charakters, keine
     zweite Beobachtung der Rohdaten.
+
+    Der einzelne Lauf; die Wiederholung steht in
+    `charakter_rad_destillieren`. Getrennt, damit die Schleife dieselbe
+    Gestalt hat wie beim Initiative-Rad und beide Raeder von derselben
+    Stelle aus zu lesen sind.
 
     Vorbedingung: `profil_text` ist nicht leer.
     Nachbedingung: (rad, faktor) mit vollstaendigem Rad und faktor in
@@ -784,6 +790,109 @@ def charakter_rad_destillieren(
 
     # ── Ausgabe ─────────────────────────────────
     logger.info(f"Charakter-Rad ({user_id}) erhoben: nutzer_gewichtung={faktor:.4f}")
+    return rad, faktor
+
+
+def charakter_rad_destillieren(
+    profil_text: str,
+    user_id:     str = DEFAULT_USER_ID,
+    laeufe:      int = ZUWENDUNG_RAD_LAEUFE,
+    lauf_melden: Callable[[int, dict, float], None] | None = None,
+) -> tuple[dict, float] | None:
+    """Erhebt das Zuwendungs-Rad mehrfach und nimmt den Median.
+
+    **Warum mehrfach — und warum erst seit dem 11.08.2026.** Das
+    Initiative-Rad wird seit dem 29.07.2026 dreimal erhoben; die Begruendung
+    steht in `config.py` und gilt fuer dieses Rad woertlich genauso: Der Wert
+    wird bei der Destillation EINMAL geschrieben und bleibt bis zur naechsten
+    stehen, ein unglueklicher Lauf legte ihn sonst fuer Tage fest. Dass die
+    Ueberlegung auf das Zuwendungs-Rad nie angewandt wurde, war eine Luecke
+    und keine Entscheidung — und sie traf das Rad, das jeder Turn liest,
+    waehrend das seltener gelesene geschuetzt war.
+
+    **Zurueckgegeben wird das Rad des Median-Laufs**, nicht ein gemitteltes.
+    Dieselbe Wahl wie beim Initiative-Rad: Ein Durchschnitt aus drei Raedern
+    ergaebe Auspraegungen, die kein Lauf vergeben hat, und der Zusammenhang
+    `Rad x Zuege = Faktor` waere nicht mehr von Hand nachrechenbar. Die
+    Streuung reist als Metadatum mit.
+
+    Args:
+        lauf_melden: wird nach jedem **gelungenen** Lauf mit (Nummer, Rad,
+            Faktor) gerufen — die Senke fuer die Messreihe.
+            **Vertrag: Die Senke wirft nicht.** Eine Ausnahme aus ihr wuerde
+            die Destillation abbrechen, und ein Forensik-Ziel darf einen
+            Charakterlauf nicht toeten.
+
+    Vorbedingung: `profil_text` ist nicht leer, `laeufe` >= 1.
+    Nachbedingung: (rad, faktor) — das Rad traegt zusaetzlich 'laeufe' und
+        'streuung'; der Faktor ist der Median der gelungenen Erhebungen.
+    Fehlerfaelle: **keine** gelungene Erhebung — dann None und eine
+        error-Zeile; der Aufrufer behaelt den bestehenden Wert. Teilausfaelle
+        sind kein Fehler, werden aber benannt und stehen in 'laeufe'.
+    """
+    # ── Eingabe-Validierung ─────────────────────
+    # Der leere Profiltext wird HIER abgefangen und nicht erst im Einzellauf:
+    # sonst liefe die Schleife dreimal ins Leere und erzeugte vier Fehlerzeilen
+    # fuer einen Fehler. Dieselbe Reihenfolge wie beim Initiative-Rad.
+    if not profil_text or not profil_text.strip():
+        logger.error(
+            f"Charakter-Rad ({user_id}): Profiltext leer — nicht erhoben, "
+            f"bestehender Faktor bleibt"
+        )
+        return None
+
+    if laeufe < 1:
+        logger.error(
+            f"Charakter-Rad ({user_id}): laeufe={laeufe} ist kleiner als 1 — "
+            f"nicht erhoben"
+        )
+        return None
+
+    # ── Verarbeitung ────────────────────────────
+    erhebungen: list[tuple[dict, float]] = []
+    for nummer in range(1, laeufe + 1):
+        ergebnis = _zuwendung_rad_einmal(profil_text, user_id)
+        if ergebnis is None:
+            logger.error(
+                f"Charakter-Rad ({user_id}): Lauf {nummer}/{laeufe} "
+                f"gescheitert — zaehlt nicht mit"
+            )
+            continue
+        erhebungen.append(ergebnis)
+        if lauf_melden is not None:
+            lauf_melden(nummer, ergebnis[0], ergebnis[1])
+
+    if not erhebungen:
+        logger.error(
+            f"Charakter-Rad ({user_id}): alle {laeufe} Laeufe gescheitert — "
+            f"nicht erhoben, bestehender Faktor bleibt"
+        )
+        return None
+
+    # Median ueber die Faktoren; bei gerader Anzahl der untere der beiden
+    # mittleren, damit ein ECHTES Rad gespeichert wird.
+    erhebungen.sort(key=lambda paar: paar[1])
+    rad, faktor = erhebungen[(len(erhebungen) - 1) // 2]
+
+    werte:    list[float] = [f for _, f in erhebungen]
+    streuung: float       = max(werte) - min(werte)
+
+    # ── Ausgabe-Verifikation ────────────────────
+    rad = dict(rad)
+    rad["laeufe"]   = [round(w, 4) for w in werte]
+    rad["streuung"] = round(streuung, 4)
+
+    if len(erhebungen) < laeufe:
+        logger.error(
+            f"Charakter-Rad ({user_id}): nur {len(erhebungen)} von {laeufe} "
+            f"Laeufen gelungen — der Median steht auf duennerer Grundlage"
+        )
+
+    logger.info(
+        f"Charakter-Rad ({user_id}) erhoben: nutzer_gewichtung={faktor:.4f} "
+        f"(Median aus {len(erhebungen)} Laeufen: "
+        f"{[f'{w:.4f}' for w in werte]}, Streuung {streuung:.4f})"
+    )
     return rad, faktor
 
 
