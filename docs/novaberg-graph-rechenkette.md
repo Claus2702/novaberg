@@ -400,7 +400,9 @@ Ausprägung   0.90   0.93   0.95   0.97   1.00
 Zug          0.00   0.09   0.25   0.49   1.00
 ```
 
-Ziehen dürfen **sieben von zwölf** Speichen — die sechs der Abwendungsseite und `wissbegier`: *Ziehen darf, was sich abwendet, nicht was sich zuwendet.* Bei zwei gleichzeitigen Ausschlägen gewinnt der stärkere Zug; sie summieren sich nicht.
+Ziehen dürfen **sechs von zwölf** Speichen — die ganze Abwendungsseite: *Ziehen darf, was sich abwendet, nicht was sich zuwendet.* Bei zwei gleichzeitigen Ausschlägen gewinnt der stärkere Zug; sie summieren sich nicht.
+
+> `wissbegier` war bis zum 12.08.2026 als einzige Zuwendungsspeiche zugelassen und ist gestrichen: Sie ist das **Ergebnis** einer Eigenschaft und kein Zustand, der überstimmt — gemessen zog sie beim produktiven Paar in 14 von 14 Landschaften.
 **Beitrag:** **Heute keiner.** Die Haltung wird gerechnet, protokolliert und im Client angezeigt, aber **kein Prompt liest sie** — der einzige Konsument von `state["haltung"]` ist die Anzeige im Event-Consumer. Das ist die Reihenfolge des Sprints und kein Versehen: Die Zahlen sollen gegen echte Turns prüfbar sein, ohne diese Turns beeinflusst zu haben. `novaberg-haltungsraum_k.md` Status, `novaberg-sykophanz-eindaemmung_k.md` §Haltungsraum.
 **Reinheit:** rein, ohne jeden Datenzugriff. `haltung_berechnen`, `_normieren`, `speichen_spanne`, `_modifikation`, `_uebersteuerer`, `_rad_pruefen`, `_verrechnen`.
 **Prüfstand:** `test_haltung.py`, `test_haltung_knoten.py`.
