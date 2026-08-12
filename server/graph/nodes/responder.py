@@ -656,6 +656,18 @@ def respond(
     """Generiert die LLM-Antwort basierend auf angereichertem State."""
     system_prompt: str = _build_system_prompt(state)
 
+    # **Der Prompt, der die Antwort erzeugt, gehoert ins Log** — bis zum
+    # 12.08.2026 war er der einzige, der fehlte. Thinker, Tribunal, Perzeption
+    # und Salienz schreiben ihren System-Prompt seit jeher; ueber 600 Dumps
+    # liegen im Log, und ausgerechnet der Prompt des Responders war nicht
+    # darunter. Aufgefallen beim Versuch, den Ist-Zustand fuer einen Umbau
+    # anzusehen: Er liess sich nicht ansehen.
+    #
+    # `debug`, nicht `info`: Der Block traegt Charakterprofile und
+    # Gespraechsverlauf und ist mehrere Kilobyte gross. Er gehoert in die
+    # Datei (`F-LOG-2`), aber nicht in die Konsole des Regelbetriebs.
+    logger.debug(f"Responder: System-Prompt:\n{system_prompt}")
+
     external = state.get("external")
     log_intent: str = external.emotion.intent if external else ""
     log_tone:   str = external.emotion.tone   if external else ""
