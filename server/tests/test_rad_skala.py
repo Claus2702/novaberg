@@ -35,6 +35,7 @@ from agents.charakter.destillation import (
     RAD_ZUG_HOCH,
     RAD_ZUG_RUNTER,
     nutzer_gewichtung_berechnen,
+    rad_klemmen,
 )
 
 
@@ -42,13 +43,23 @@ class SkalaTest(unittest.TestCase):
     """Beide Prompts lassen Zwischenwerte zu, und die Formel traegt sie."""
 
     def test_beide_prompts_erlauben_zwischenwerte(self) -> None:
-        """Rot, sobald einer der beiden auf drei Werte zurueckgedreht wird."""
+        """Rot, sobald einer der beiden auf drei Werte zurueckgedreht wird.
+
+        **Seit dem 11.08.2026 ohne Rundungsvorgabe.** Bis dahin verlangten
+        beide Prompts »auf eine Nachkommastelle«. Diese Vorgabe ist selbst
+        eine Skala: Oberhalb von 0.9 bleibt dann nur noch die 1.0, und jede
+        Schwelle, die feiner steht, kann nicht mehr ausloesen — genau daran
+        ist `UEBERSTEUERUNG_AB` zweimal haengengeblieben. Ein Urteil, das
+        zwischen zwei Rasterpunkten liegt, wird sonst gerundet und die
+        Rundung als Messwert gelesen.
+        """
         for name, prompt in (("Zuwendung", CHARAKTER_RAD_PROMPT),
                              ("Initiative", INITIATIVE_RAD_PROMPT)):
             with self.subTest(rad=name):
-                self.assertIn("Nachkommastelle", prompt)
+                self.assertIn("Runde nicht", prompt)
                 self.assertIn("Zwischenwerte sind ausdruecklich erlaubt", prompt)
                 self.assertNotIn("genau einen von drei Werten", prompt)
+                self.assertNotIn("auf eine\nNachkommastelle", prompt)
 
     def test_die_drei_marken_bleiben_als_anhalt(self) -> None:
         """Die feine Skala ersetzt die Kalibrierung nicht, sie erweitert sie.
@@ -89,6 +100,69 @@ class SkalaTest(unittest.TestCase):
                                RAD_MAX, places=9)
         self.assertAlmostEqual(nutzer_gewichtung_berechnen(voll_runter),
                                RAD_MIN, places=9)
+
+
+class KlemmeTest(unittest.TestCase):
+    """Die Gegenleistung zur weggefallenen Rundungsvorgabe."""
+
+    def _rad(self, **abweichungen: float | str) -> dict:
+        """Ein vollstaendiges Rad auf der Nabe, mit gesetzten Ausreissern."""
+        rad = {"hoch":   {n: 0.5 for n in RAD_ZUG_HOCH},
+               "runter": {n: 0.5 for n in RAD_ZUG_RUNTER}}
+        for speiche, wert in abweichungen.items():
+            seite = "hoch" if speiche in RAD_ZUG_HOCH else "runter"
+            rad[seite][speiche] = wert
+        return rad
+
+    def test_ein_wert_ueber_eins_kostet_nicht_das_ganze_rad(self) -> None:
+        """Der eigentliche Zweck: elf gute Urteile ueberleben ein zwoelftes.
+
+        Ohne Klemme weist `nutzer_gewichtung_berechnen` das Rad als Ganzes
+        ab, der Aufrufer verwirft die Erhebung, und zwoelf Urteile sind
+        wegen einer zweiten Nachkommastelle verloren.
+        """
+        erste = next(iter(RAD_ZUG_HOCH))
+        roh = self._rad(**{erste: 1.02})
+        with self.assertRaises(ValueError):
+            nutzer_gewichtung_berechnen(roh)
+
+        geklemmt = rad_klemmen(roh, "Testrad")
+        self.assertEqual(geklemmt["hoch"][erste], 1.0)
+        self.assertIsInstance(nutzer_gewichtung_berechnen(geklemmt), float)
+
+    def test_die_klemme_meldet_jede_korrektur(self) -> None:
+        """Still geklemmt waere genau die Sorte Fehler, gegen die sie steht.
+
+        Ein Modell, das regelmaessig ueber den Rand schreibt, muss im Log
+        sichtbar bleiben — sonst verschwindet der Befund in geglaetteten
+        Zahlen.
+        """
+        erste = next(iter(RAD_ZUG_RUNTER))
+        with self.assertLogs("ki_server.agents.charakter", level="WARNING") as log:
+            rad_klemmen(self._rad(**{erste: -0.3}), "Testrad")
+        self.assertTrue(any(erste in zeile and "-0.3" in zeile
+                            for zeile in log.output),
+                        f"Speiche und Ausgangswert fehlen in {log.output}")
+
+    def test_die_klemme_laesst_unzahlen_durch(self) -> None:
+        """Eine Zeichenkette ist kein Randfall, sondern ein kaputtes Rad.
+
+        Sie darf nicht zu 0.0 geglaettet werden — dann saehe ein defektes
+        Rad wie ein gemessenes aus. Die laute Ablehnung eine Stufe weiter
+        muss sie noch erreichen.
+        """
+        erste = next(iter(RAD_ZUG_HOCH))
+        geklemmt = rad_klemmen(self._rad(**{erste: "viel"}), "Testrad")
+        self.assertEqual(geklemmt["hoch"][erste], "viel")
+        with self.assertRaises(ValueError):
+            nutzer_gewichtung_berechnen(geklemmt)
+
+    def test_die_klemme_laesst_die_eingabe_unveraendert(self) -> None:
+        """Sie liefert ein neues Rad; das rohe bleibt fuer die Logzeile."""
+        erste = next(iter(RAD_ZUG_HOCH))
+        roh = self._rad(**{erste: 1.4})
+        rad_klemmen(roh, "Testrad")
+        self.assertEqual(roh["hoch"][erste], 1.4)
 
 
 if __name__ == "__main__":

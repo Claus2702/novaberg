@@ -150,9 +150,13 @@ sondern WIE. Wer beim Beschreiben eines Sonnenuntergangs ins Schwärmen gerät,
 offenbart eine poetische, empfindsame Ader — unabhängig vom Sonnenuntergang
 selbst.
 
-Erstelle ein kompaktes Persönlichkeitsprofil von {traeger} in 2-5 Sätzen auf
-Deutsch. Tiefenwerte, dauerhafte Interessen, Denkweise, Grundhaltung. Zeitlos
-— keine Tagesstimmung, keine aktuellen Projekte.
+Beschreibe das dauerhafte Wesen von {traeger} auf Deutsch. Tiefenwerte,
+dauerhafte Interessen, Denkweise, Grundhaltung. Zeitlos — keine
+Tagesstimmung, keine aktuellen Projekte.
+
+Nimm dir den Raum, den der Gegenstand braucht. Verdichte nicht: Behalte die
+Wendungen, den Ton und das Beilaeufige, an dem man {traeger} erkennt. Ein
+Beispiel im Wortlaut sagt mehr als ein Urteil darueber.
 
 Einträge:
 {eintraege}
@@ -259,6 +263,57 @@ def _antwort_bereinigen(text: str) -> str:
     return text.strip()
 
 
+def rad_klemmen(rad: dict, rad_name: str) -> dict:
+    """Holt Auspraegungen ausserhalb [0.0, 1.0] an ihren Rand zurueck.
+
+    **Die Gegenleistung zur weggefallenen Rundungsvorgabe** (11.08.2026).
+    Solange die Prompts »auf eine Nachkommastelle« verlangten, kam ein Wert
+    ausserhalb der Spanne praktisch nicht vor. Ohne Raster ist eine 1.02
+    wahrscheinlicher — und sie kostete bisher das **ganze** Rad, weil
+    `nutzer_gewichtung_berechnen` sie als `ValueError` abweist und der
+    Aufrufer die Erhebung verwirft. Zwoelf Urteile wegen einer zweiten
+    Stelle wegzuwerfen ist der teurere Fehler.
+
+    **Geklemmt wird laut.** Jede Korrektur bekommt ihre Zeile mit Speiche
+    und Ausgangswert. Ein Modell, das regelmaessig ueber den Rand schreibt,
+    soll sichtbar bleiben, statt in geglaetteten Zahlen zu verschwinden —
+    und die Klemme darf nicht zu der stillen Korrektur werden, gegen die
+    `22_STILLE_FEHLER.md` steht.
+
+    Nicht-Zahlen bleiben unberuehrt: Sie sind kein Randfall, sondern ein
+    kaputtes Rad, und gehoeren in die Ablehnung eine Stufe weiter.
+
+    Args:
+        rad:      geparste Modellantwort, Form {seite: {speiche: wert}}.
+        rad_name: fuer die Logzeile, damit sie das Rad benennt.
+
+    Returns:
+        Ein neues Rad derselben Form. Die Eingabe bleibt unveraendert.
+    """
+    if not isinstance(rad, dict):
+        return rad
+
+    geklemmt: dict = {}
+    for seite, werte in rad.items():
+        if not isinstance(werte, dict):
+            geklemmt[seite] = werte
+            continue
+        neue_seite: dict = {}
+        for speiche, wert in werte.items():
+            if isinstance(wert, bool) or not isinstance(wert, (int, float)):
+                neue_seite[speiche] = wert
+                continue
+            rand: float = min(1.0, max(0.0, float(wert)))
+            if rand != float(wert):
+                logger.warning(
+                    f"{rad_name}: Auspraegung von '{speiche}' war {wert} und "
+                    f"liegt ausserhalb [0.0, 1.0] — auf {rand} geklemmt"
+                )
+            neue_seite[speiche] = rand
+        geklemmt[seite] = neue_seite
+    return geklemmt
+
+
 def _llm_call(prompt: str, profil_name: str) -> str:
     """Fuehrt einen LLM-Call durch und gibt den bereinigten Text zurueck."""
     node_cfg = get_node_config("charakter_hash")
@@ -283,6 +338,23 @@ def _llm_call(prompt: str, profil_name: str) -> str:
     # Und er steht hier, damit die Rad-Messreihe ihn mitschreiben kann: Ein
     # Herkunftsfeld, dessen Wert der Code nicht selbst setzt, faellt beim
     # naechsten Modelfile-Edit still auseinander.
+    # Die Frist steht an der Aufrufstelle und nicht am Worker, aus demselben
+    # Grund wie Temperatur und Penalty zwei Zeilen weiter unten: Der
+    # Vorgabewert `MODEL_BACKGROUND_TIMEOUT_S = 300` gilt fuer **jeden**
+    # Hintergrund-Aufrufer, und die Recherche braucht eine andere Zahl als
+    # die Destillation.
+    #
+    # **Sie ist grosszuegig gesetzt, und das ist eine Entscheidung** und kein
+    # Schaetzwert: Die Destillation darf die Zeit brauchen, die sie braucht.
+    # Der offene Prompt erzeugt rund
+    # fuenfmal so viel Text wie der gedeckelte; gemessen wurden 3288 Zeichen
+    # und rund 18 Minuten fuer Kern und Rad zusammen, bei einem einzelnen
+    # Rad-Aufruf von rund 8 Minuten. 300 s haetten den Aufruf sicher
+    # abgebrochen — und ein Abbruch dauert dieselbe Zeit und hat nichts.
+    #
+    # Der Wert ist eine Obergrenze, kein Ziel: Ein Aufruf, der frueher fertig
+    # ist, kostet nicht mehr. Eine genauere Zerlegung steht aus
+    # (`labor/werkzeug/offen_frist_probe.py`, gebaut und nicht gefahren).
     response = model_service.background.submit_sync(BackgroundRequest(
         messages          = [{"role": "user", "content": prompt}],
         modus             = "sprache",
@@ -290,7 +362,7 @@ def _llm_call(prompt: str, profil_name: str) -> str:
         presence_penalty  = node_cfg.get("presence_penalty", 0.0),
         max_output_tokens = node_cfg.get("max_output_tokens"),
         caller            = "pixie/hash",
-    ))
+    ), timeout=node_cfg.get("timeout_s", 1800))
 
     ergebnis = _antwort_bereinigen(response.text)
     logger.info(f"{profil_name} destilliert: '{ergebnis[:80]}...'")
@@ -595,12 +667,13 @@ RICHTUNG SETZT — nicht um Freundlichkeit, Kompetenz oder Zuwendung.
 Bewerte, was die Person TUT, nicht wie sie IST. Eine warmherzige Person kann
 das Gespraech fest fuehren; eine distanzierte kann jedem Thema folgen.
 
-Gib je Verhalten einen Wert zwischen 0.0 und 1.0, auf eine
-Nachkommastelle. Die drei Marken bleiben als Anhalt:
+Gib je Verhalten einen Wert zwischen 0.0 und 1.0. Runde nicht — die Zahl
+darf so fein sein, wie dein Urteil es hergibt. Die drei Marken bleiben als
+Anhalt:
   0.0  = nicht erkennbar
   0.5  = angedeutet
   1.0  = ausgepraegt
-Zwischenwerte sind ausdruecklich erlaubt und erwuenscht: 0.7 heisst
+Zwischenwerte sind ausdruecklich erlaubt und erwuenscht: 0.72 heisst
 "deutlich mehr als angedeutet, aber nicht durchgaengig".
 
 Ueberlaesst die Fuehrung:
@@ -639,12 +712,13 @@ Bewerte zwoelf Eigenschaften danach, wie stark sie in diesem Profil erkennbar
 sind. Es geht ausschliesslich um die Haltung GEGENUEBER DEM ANDEREN — nicht um
 allgemeine Charakterstaerke.
 
-Gib je Eigenschaft einen Wert zwischen 0.0 und 1.0, auf eine
-Nachkommastelle. Die drei Marken bleiben als Anhalt:
+Gib je Eigenschaft einen Wert zwischen 0.0 und 1.0. Runde nicht — die Zahl
+darf so fein sein, wie dein Urteil es hergibt. Die drei Marken bleiben als
+Anhalt:
   0.0  = nicht erkennbar
   0.5  = angedeutet
   1.0  = ausgepraegt
-Zwischenwerte sind ausdruecklich erlaubt und erwuenscht: 0.7 heisst
+Zwischenwerte sind ausdruecklich erlaubt und erwuenscht: 0.72 heisst
 "deutlich mehr als angedeutet, aber nicht durchgaengig".
 
 Zuwendung zum Anderen:
@@ -783,6 +857,8 @@ def _zuwendung_rad_einmal(
             f"({type(fehler).__name__}) — nicht erhoben. Roh: '{roh[:120]}'"
         )
         return None
+
+    rad = rad_klemmen(rad, f"Charakter-Rad ({user_id})")
 
     try:
         faktor: float = nutzer_gewichtung_berechnen(rad)
@@ -998,6 +1074,8 @@ def _initiative_rad_einmal(profil_text: str, user_id: str) -> tuple[dict, float]
             f"({type(fehler).__name__}). Roh: '{roh[:120]}'"
         )
         return None
+
+    rad = rad_klemmen(rad, f"Initiative-Rad ({user_id})")
 
     # ── Ausgabe-Verifikation ────────────────────
     try:

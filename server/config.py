@@ -1438,9 +1438,21 @@ NODE_LLM_CONFIG: dict = {
         "temperature": 0.1,
         "max_output_tokens": 1024,
     },
+    # `max_output_tokens` und `timeout_s` gehoeren zusammen und beide zum
+    # offenen Kern-Prompt (11.08.2026). Er verlangt ausdruecklich Raum statt
+    # Verdichtung; gemessen wurden 3288 Zeichen Profiltext gegen 667
+    # gedeckelt. Dazu kommt das Denken des Modells — ein Profil-Aufruf hat
+    # dafuer 2310 Token gebraucht, gemessen am 09.08.2026. 2048 haetten den
+    # Text mitten im Wort abgeschnitten, und ein abgeschnittenes Profil
+    # sieht aus wie ein Modell, das aufgehoert hat zu denken.
+    #
+    # Beide Werte sind **Obergrenzen, keine Ziele**: Wer frueher fertig ist,
+    # kostet nicht mehr. Sie stehen bewusst weit, weil der teurere Fehler
+    # der Abbruch ist — er dauert dieselbe Zeit und liefert nichts.
     "charakter_hash": {
         "temperature": 0.2,
-        "max_output_tokens": 2048,
+        "max_output_tokens": 8192,
+        "timeout_s": 1800,
     },
     "wiedervorlage": {
         "temperature": 0.2,
