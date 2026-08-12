@@ -340,6 +340,63 @@ Das Muster ist im Responder etabliert und begründet — `_ei_mikro_anweisung()`
 
 **Der Prompt wird dadurch kürzer, nicht länger.** Wer die Fläche in den Prompt schreibt, hat den Raum missverstanden.
 
+### 3.0 Gemessen am 12.08.2026 — die Form entscheidet, nicht der Inhalt
+
+**Der Anlass war ein Beleg gegen den Bestand.** Die heutige Längenregel sagt in allen drei Zweigen „MAXIMAL 1-2 Sätze", und gemessen streut die Antwortlänge in derselben Landschaft von 162 bis 3895 Zeichen. Eine Anweisung steht da und regiert nicht. Geprüft wurden deshalb sieben Prompt-Formen desselben Materials, gegen `gemma4-gpu` mit der Konfiguration des Responder-Knotens, mit **zwei gegenläufigen Haltungen** — eine Form, die nur bei „mittellang und freundlich" trifft, hat nichts bewiesen.
+
+```
+Form                     karg (1–2 S)      weit (8–12 S)
+bestand                  0/3   ⌀ 4.7       0/3   ⌀ 17.0
+bestand_block            0/3   ⌀ 3.0       3/3   ⌀  9.3
+aufgabe_du               3/3   ⌀ 2.0       3/3   ⌀ 10.0
+aufgabe_person           3/3   ⌀ 2.0       3/3   ⌀ 10.0
+aufgabe_ohne_zahl        0/3   ⌀ 6.0       3/3   ⌀ 10.0
+aufgabe_ohne_verlauf     3/3   ⌀ 2.0       3/3   ⌀ 10.0
+nur_haltung              3/3   ⌀ 2.0       3/3   ⌀  9.7
+```
+
+**Die beschreibende Form bindet nicht, die anweisende bindet** — 0 von 6 gegen 6 von 6. Der Grund ist strukturell: Der Bestand stellt **Kontext** mit einer Stilnotiz darin; die Destillations-Prompts dieses Projekts, die nachweislich funktionieren, stellen eine **Aufgabe** mit prüfbarer Ausgabe. Das Modell ist nicht Nova — eine Beschreibung ist für es Information, erst ein Auftrag macht daraus etwas zu Erfüllendes.
+
+**Die Zahl bindet, das Adjektiv nicht.** `aufgabe_ohne_zahl` ist der schärfste Einzelbefund: dieselbe Form ohne die Mengenangabe → 6 Sätze statt 2. „Einsilbig und wortkarg" allein bewirkt nichts. Nach oben zieht das Adjektiv, nach unten nicht.
+
+**Aber die Mengenangabe gehört in Zeichen, nicht in Sätze** — und das ist der Befund, der eine Fehlentscheidung verhindert hat. „1 bis 2 Sätze" bindet und **zerstört dabei ein Register**: Es verlangt *Sätze* und bekommt ordentliche Prosa. Der Telegrammstil, der zu `schmollen` und `nebel` gehört — *„Kepler-452b. Masse unsicher. Felsig? Unklar."* — verschwindet. Mit einem Zeichenkorridor bleibt er, und es kommen mehr Fakten durch:
+
+```
+Vorgabe                    Sätze  Zeichen  Z./Satz   Inhaltsmarken
+1 bis 2 Sätze                2.0      149       75      1 von 3
+höchstens 120 Zeichen        4.7      113       24      3 von 3
+```
+
+**Die dritte Person ist kein Risiko und erzeugt den stärkeren Charakter.** Null Stimmbrüche in 42 Läufen; die Antworten bleiben in der Ich-Form. Gelesen ist die dritte Person die persönlichere — *„Was mich dabei am meisten beschäftigt…"*, *„Es ist diese Unschärfe, die mich so packt"* — gegen die analytischere zweite. Eine Vermutung zum Mechanismus, kein Befund: „Du bist Nova" spricht das Modell als **Assistenten** an; „Person A ist so — formuliere als Person A" gibt ihm eine **Rolle**.
+
+**Charakterprofile tragen Inhalt, nicht Bindung.** `nur_haltung` — ohne jedes Profil — trifft die Korridore genauso (6/6), liefert aber die wenigsten Inhaltsmarken. Daraus folgt die Reihenfolge: Die Profile dürfen früh und lang stehen, wo die Aufmerksamkeit schwächer ist; die Regie muss zuletzt stehen.
+
+**Und die Ausschmückung bringt nichts.** Stichworte, ganze Sätze und ausgeschriebene Anweisung mit Bild („sie spürt den Moment, er fesselt sie") liefern dieselbe Länge, dieselben Inhaltsmarken und dieselbe Charakterdichte. Die kürzeste gewinnt, weil sie den Prompt am wenigsten füllt.
+
+### 3.0a Die Gliederung, die daraus folgt
+
+**Vom Groben zum Feinen, jedes Element an einem eigenen Platz** — die Form ist beim Gesprächsvektor-Knoten abgeschaut, der sie bereits hat (`[GESPRAECHSLANDSCHAFT]` · `[WERKZEUGE]` · `[SITUATION]`), während der Responder alles in einen `[KOMMUNIKATION]`-Block schüttet.
+
+```
+[AUFGABE]   Rolle und Konstellation: A spielt, B steht gegenüber
+[PERSON A]  Wesen und Blick auf B
+[PERSON B]  Wesen und Blick auf A
+[SZENE]     Landschaft als Raum · Farbton · Register
+[REGIE]     Umfang in Zeichen · die Haltungswörter · Werkzeug · Energie · Ton
+[TEXT]      was gesagt wird
+            Ausgabezeile
+```
+
+**Die Konstellation steht vor den Beschreibungen**, damit beim Lesen jeder Zeile klar ist, aus wessen Sicht sie geschrieben ist. Ein Modell, das erst am Ende erfährt, welche Perspektive ein Absatz hatte, hat ihn bereits falsch eingeordnet.
+
+**Die Regie steht unmittelbar vor dem Text** — an der stärksten Position, die ein Prompt hat. Im Bestand steht die Längenregel mitten im Kontextblock, an der schwächsten.
+
+### 3.0b Szene und Regie sind zwei Dinge
+
+Die Landschaft ist das **Bühnenbild**, die Haltung die **Regieanweisung**. Heute stehen beide in einem Feld: Vier der vierzehn `CLUSTER_BESCHREIBUNGEN` tragen einen Befehl (`regen` „Halten, da sein"), der für jeden Charakter gleich gilt und **vor** dem Rad steht — die Haltungsgrößen können ihn nicht bewegen.
+
+**Die Regel für die Trennung:** Die Szene sagt, was *ist*. Kein Imperativ, kein „nicht", kein Du-Befehl. Was heute Anweisung ist, wird Eigenschaft des Raums — aus „Trauer teilen. Halten, da sein." wird „Ein Raum, in dem man füreinander da ist und sich gegenseitig hält." Der Raum **bietet** das Halten an; ob dieser Charakter hält, entscheidet die Regie.
+
 ### 3.1 Drei Regeln aus dem Bestand
 
 Sie stammen aus der Initiative-Achse und gelten hier unverändert:
@@ -577,6 +634,7 @@ Sobald die Haltung einen Verbraucher hat, gilt: Richtung **Abwendung**, Stärke 
 
 ## Versionshistorie
 
+- **v0.9 — 12.08.2026:** **§3 trägt die Messung, in welcher Form eine Haltungsvorgabe überhaupt ankommt** — 42 Läufe über sieben Prompt-Formen, zwei gegenläufige Haltungen, gegen das Modell des Responder-Knotens. **Die beschreibende Form bindet in 0 von 6 Korridoren, die anweisende in 6 von 6.** Dazu vier Einzelbefunde: Die Mengenangabe bindet, das Adjektiv nicht; sie gehört in **Zeichen**, weil eine Satzzahl das Telegramm-Register zerstört; die dritte Person bricht die Stimme nicht (0 Stimmbrüche) und erzeugt den persönlicheren Ton; Charakterprofile tragen Inhalt, nicht Bindung. Neu §3.0a mit der Gliederung vom Groben zum Feinen — abgeschaut beim GV-Knoten, der sie bereits hat — und §3.0b mit der Trennung von Szene und Regie: Die Szene sagt, was ist, kein Imperativ. Vier der vierzehn Landschaftsbeschreibungen tragen heute einen Befehl, der vor dem Rad steht und den es nicht bewegen kann.
 - **v0.8 — 12.08.2026:** **`wissbegier` ist aus den ziehberechtigten Speichen gestrichen** — die einzige Ausnahme des Kriteriums, gemessen und dann entschieden. Sie zog beim produktiven Paar in **14 von 14** Landschaften, weil der Wert dauerhaft bei 0,97 liegt; `fragen` fiel dort in keiner Landschaft unter 0,50, auch nicht wo die Landschaft eine Grenze bei 0,00 setzt. **Der Grund ist die Art der Größe, nicht die Schwelle:** Wissbegier ist das *Ergebnis* einer Eigenschaft und kein Zustand, der überstimmt. Die naheliegende Gegenerklärung — das Gesprächsthema — ist geprüft und trägt nicht (0,97 · 0,86 · 0,83 über drei Paare, gleiche Anordnung). Damit gilt das Kriterium ohne Ausnahme, und der Zug ist in keinem der drei Paare aktiv. Dazu nachgetragen: die Zugrate über drei Paare, die Korrektur an der Trennschärfe von `distanz` (die scharfe Trennung war eine Eigenschaft des gedeckelten Textes) und der Beleg, dass die offene Destillation je Paar einen eigenen Charakter erzeugt.
 - **v0.7 — 11.08.2026:** **Die Übersteuerung ist keine Rechenart mehr, sondern ein Zug — und sie war bis heute halb wirkungslos.** Als dritte Rechenart teilte sie sich die Wegform mit der Neigung und lieferte dort dieselbe Zahl wie ohne sie; unterscheidbar war sie nur in Grenzzellen. Weil `naehe` in **keiner** der vierzehn Landschaften eine Grenze ist, war `distanz → naehe` seit dem Bau am 31.07.2026 in **0 von 14** Fällen erreichbar, ohne Meldung und ohne roten Test. Der Zug wirkt jetzt nach der Rechnung, in jeder Zelle, und fließt durch die **Beitragszeile** der auslösenden Speiche — die zweite Tabelle, die je Speiche eine Größe nannte, entfällt. Neu: das Kriterium, **wer** ziehen darf (*abwenden ja, zuwenden nein* — sieben von zwölf, mit `wissbegier` als begründeter Ausnahme), die **Kurve** statt eines Sprungs (0,8 → 0 · 0,9 → 0,25 · 1,0 → 1), und die **Wegform statt einer Klemme**, weil Kappen die toten Enden erzeugt, die §3.1 verbietet. Der Korridor kennt dadurch nur noch zwei Fälle statt drei: Der Fall *„außerhalb und markiert, gewollt"* kann nicht mehr eintreten. §3.2 ist eingelöst — `misstrauen −0,40` und `wohlwollen +0,40` hoben sich auf `waerme` exakt auf, genau der Fall, den der Absatz verbietet. **Nova verhält sich weiterhin unverändert:** Der Prompt-Block (§3) fehlt nach wie vor, der Umbau betrifft die gerechneten und protokollierten Zahlen.
 - **09.08.2026:** §5a neu — **das Basis-Rad, gemessen statt gesetzt.** Drei Befunde, und der dritte verschiebt die Frage. Die **acht toten Enden stehen in der Grundwerttabelle**, nicht im Rad: alle liegen in den beiden Größen, die als Grenze geführt werden, und sind damit die gewollte tote Ecke aus §2. Ein **uniformes Rad kann die Landschaften nur stauchen** — über beide Richtungen gemessen erhöht keine einzige Stufe die Streuung zwischen ihnen; in Richtung Abwendung fällt sie monoton von −6,8 % auf −47 %. Der Grund steht in der Wegform: ein einziger Vektor, der auf alle vierzehn gleich wirkt, kann sie nicht auseinanderziehen. **Und die zwölf Speichen haben heute keinen Abnehmer** — der Skalar wirkt über die Salienzformel, die Speichen enden in der Anzeige. Ein Basis-Rad kann die Sektorverteilung deshalb nicht ermöglichen; der Sektor fällt vorher. Die Richtung ist entschieden — **ein frisches Paar startet eher distanziert** —, die Setzung wartet auf einen Leser der Haltung, und die Stärke ist als Tausch zwischen „nicht bei null anfangen" und „die Landschaften unterscheidbar halten" beziffert, bevor er gemacht wird.

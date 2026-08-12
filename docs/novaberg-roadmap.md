@@ -2060,6 +2060,25 @@ sarah → nova          0.30     0.92       0.83   0.874
 
 > **Und ein Befund aus derselben Reihe nimmt eine Aussage vom Vortag zurück.** Die scharfe Trennung von `distanz` (0,03–0,11 gegen 0,86–0,96) war an **gedeckelten** Profilen gemessen. Mit offenen rücken die Werte zusammen: 0,38 · 0,30 · 0,15 auf Novas Seite. `distanz` trennt weiterhin den distanziert geschriebenen Menschen (`sarah → nova` 0,92) von allen übrigen — aber nicht mehr das produktive Paar von einer zugewandten Persona.
 
+### Abends: In welcher Form kommt eine Vorgabe überhaupt an?
+
+Der Zug ist gebaut, das Kriterium steht — und niemand liest die fünf Größen. Vor dem Einbau war zu klären, in welcher **Form** eine Haltungsvorgabe bindet. Der Bestand lieferte den Anlass: Die Längenregel sagt in allen drei Zweigen „MAXIMAL 1-2 Sätze", und die Antwortlänge streut in derselben Landschaft von 162 bis 3895 Zeichen.
+
+**42 Läufe, sieben Formen, zwei gegenläufige Haltungen** — eine Form, die nur bei „mittellang und freundlich" trifft, hätte nichts bewiesen.
+
+```
+Form                     karg (1–2 S)      weit (8–12 S)
+bestand                  0/3               0/3
+aufgabe_du / _person     3/3               3/3
+aufgabe_ohne_zahl        0/3               3/3
+```
+
+**Die beschreibende Form bindet nicht, die anweisende bindet** — 0 von 6 gegen 6 von 6. Der Grund ist strukturell: Der Bestand stellt Kontext mit einer Stilnotiz darin, die funktionierenden Destillations-Prompts stellen eine **Aufgabe** mit prüfbarer Ausgabe. Das Modell ist nicht Nova; eine Beschreibung ist für es Information, erst ein Auftrag macht daraus etwas zu Erfüllendes.
+
+**Und ein Befund, der eine Fehlentscheidung verhindert hat.** „1 bis 2 Sätze" bindet — und zerstört dabei ein Register. Es verlangt *Sätze* und bekommt ordentliche Prosa; der Telegrammstil, der zu `schmollen` und `nebel` gehört, verschwindet. Mit einem **Zeichenkorridor** bleibt er, und es kommen mehr Fakten durch: 3 von 3 Inhaltsmarken statt 1 von 3. Der Satzzähler hatte diesen Stil zuvor als Weitschweifigkeit gemeldet — dieselbe Klasse wie die Skalen der Vortage, eine Messgröße, die ihren Gegenstand nicht trifft.
+
+**Nebenbei fielen vier Kanäle auf, die gerechnet und nicht gelesen werden:** die Haltung, die zwölf Speichen, der **Farbton** (acht Dimensionen, 2–5 Sätze, geht in den GV-Prompt und ins Log, nicht in den Responder) — und der Responder-Prompt selbst stand als einziger von fünf nicht im Log. Diese Zeile ist gebaut.
+
 ### Der Beleg, dass die offene Destillation trägt: drei Personen, drei Novas
 
 Novas Kern ist je Paar ein anderer Text — nicht in Nuancen, sondern im Wesen. Ausgezählt über die Leitbegriffe des produktiven Gesprächs:

@@ -29,6 +29,16 @@ Nur im CharacterGraph (Pfad 2). Seit Chat 60 nicht mehr im HumanGraph.
 
 Der System-Prompt wird dynamisch aus dem State zusammengebaut (`_build_system_prompt`). Er folgt dem einheitlichen [BLOCKNAME]-Schema (`nova-01-t-d`, Chat 27). Reihenfolge: Primacy → Kontext → Recency.
 
+> **Seit dem 12.08.2026 steht er im Log.** `logger.debug("Responder: System-Prompt:\n…")` — er war der **einzige** der fünf prompterzeugenden Knoten ohne diese Zeile. Thinker, Tribunal, Perzeption und Salienz schreiben ihren Prompt seit jeher, über 600 Dumps liegen in der Datei; ausgerechnet der Prompt, der Novas Antwort erzeugt, ließ sich nicht ansehen. Aufgefallen beim Versuch, den Ist-Zustand für einen Umbau zu lesen. `debug` und nicht `info`, weil der Block Charakterprofile und Verlauf trägt und mehrere Kilobyte groß ist — er gehört in die Datei (`F-LOG-2`), nicht in die Konsole.
+
+> **Drei Befunde am Ist-Zustand, gemessen am 12.08.2026** und noch nicht behoben (Fundliste):
+>
+> **Vom Nutzer kommt fast nichts an.** Von Nova gehen alle fünf Profile in den Prompt, vom Nutzer geht **eines** hinein — sein Beziehungsprofil. Sein Kern erreicht den Knoten nicht, auch nicht, seit die offene Destillation daraus mehrere tausend Zeichen macht. Für einen Prompt, der einen Dialog zweier Charaktere darstellen soll, ist die eine Seite unbeschrieben.
+>
+> **Die beiden Beziehungsprofile sind unbeschriftet.** Novas trägt „So siehst du deinen Nutzer", das des Nutzers „Langzeit-Beziehungsprofil" — ohne Angabe der Perspektive. Nach dem Paar-Schema ist es seine Sicht auf sie; im Prompt liest es sich wie eine Anweisung an sie.
+>
+> **Eine Anweisung steht doppelt.** *„Der Nutzer öffnet sich. Du darfst persönlicher werden."* kommt aus der EI-Mikroanweisung **und** als eigene Zeile „Beziehungsdynamik".
+
 1. **[IDENTITAET]** — "Du bist Nova." + Charakter-Anweisung (Saatgut, statisch) + Gewachsene Persönlichkeit (nova_kern) + Aktuelle Themen (nova_adaptiv) + Emotionale Grundstimmung (nova_emotions, seit Chat 52) + Kommunikationsstil (nova_intentionen) + Bild vom Nutzer (nova_beziehung) + Datum/Uhrzeit + Rollenklarheit + Web-Zugriff
 2. **[EIGENE_EMOTION]** *(seit Dual-Emotion Phase 2; Vektor-Quelle korrigiert Chat 106)* — Novas berechneter Emotionszustand: Verlauf aus `nova_emotions_verlauf` (State-Feld), Vektor aus `internal.emotion.emotions_vector` (Personality-Klasse — NICHT aus einem flachen State-Key; der alte Lesepfad `state.get("nova_emotions_vektor")` war seit dem Personality-Umbau tot, die Zeile erschien nie: RESPONDER-VEKTOR-TOT), Konflikt-Flag aus `nova_emotion_konflikt`. Gibt Nova eine eigene emotionale Grundfärbung pro Turn — beeinflusst, diktiert nicht. Jeder Vektor-Ausfallweg ist seit Chat 106 einzeln laut: `internal`/`emotion` fehlt → error, Vektor leer (Kaltstart / ei_calc lief nicht) → warning, Vektor unbekannt (nicht in `EMOTIONS_VEKTOREN_NOVA`) → error. Der Zustand „Zeile fehlt still" existiert nicht mehr.
 3. **[AUFGABE]** *(bedingt, seit Chat 54 aus State)* — Wird vom Planner als fertiger Block in `task_block` geschrieben. Fünf Varianten: Rückfrage, Erfolg, Verworfen (dismissed), Fehler, Legacy-Management. Der Responder setzt den Block ein ohne eigene Interpretation. Kontext-Schnitt (Gedächtnis/Web weglassen) wird über `task_context_cut` gesteuert.
@@ -176,6 +186,8 @@ MAXIMAL 1-2 Sätze. Kurz und passend zum Ton.
 | `angriff` | Ruhig bleiben, Frustration validieren, nicht defensiv |
 | `hilfesuchend` | Fürsorglich, Halt bieten, nicht auf Lösungen drängen |
 | `dankbar` | Annehmen, warm bleiben, nicht übertreiben |
+
+> **Die Antwortkürze aus dem Arousal ist gemessen wirkungslos** (12.08.2026). Alle drei Zweige von `_ei_mikro_anweisung` sagen „kurz" — ab 0.7 „MAXIMAL 1-2 kurze Saetze", ab 0.4 „2-3 Saetze", sonst „MAXIMAL 1-2 Saetze". Es gibt damit keinen Weg, auf dem Nova eine lange Antwort angewiesen bekommt. Und die Regel regiert nicht: In derselben Landschaft streut die Antwortlänge von 162 bis 3895 Zeichen. In einer kontrollierten Probe über sieben Prompt-Formen traf diese Form **0 von 6** Längenkorridoren, während die Aufgabenform 6 von 6 traf (`novaberg-haltungsraum_k.md` §3.0). Die Ablösung durch die Haltungsgröße `umfang` ist entschieden, der Umbau steht aus.
 
 ### 3.3 Antwortkürze, Anti-Floskeln, Butler-Prinzip, Pseudo-Rückfragen-Verbot (Chats 19–24)
 
