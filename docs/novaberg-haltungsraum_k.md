@@ -373,6 +373,55 @@ höchstens 120 Zeichen        4.7      113       24      3 von 3
 
 **Und die Ausschmückung bringt nichts.** Stichworte, ganze Sätze und ausgeschriebene Anweisung mit Bild („sie spürt den Moment, er fesselt sie") liefern dieselbe Länge, dieselben Inhaltsmarken und dieselbe Charakterdichte. Die kürzeste gewinnt, weil sie den Prompt am wenigsten füllt.
 
+### 3.0aa Die Bänder — von der Zahl zum Wort
+
+**Gesetzt, nicht gerechnet**, wie die Beitragstabellen selbst (§4). Der Wert einer Größe wählt sein Band, das Band liefert das Wort. Gesprochen wird nur, was vom Grundwert der Landschaft abweicht (totes Band 0,10) — gemessen ergibt das **1,6 Zeilen je Turn** über alle vierzehn Landschaften, also genau die vom Konzept verlangten zwei bis drei.
+
+| Größe | ≤ 0,20 | ≤ 0,45 | ≤ 0,70 | ≤ 0,88 | > 0,88 |
+|---|---|---|---|---|---|
+| **umfang** | einsilbig, wortkarg | knapp | gemessen | ausführlich | ausholend, umfangreich |
+| **fragen** | verschlossen, ohne Rückfrage | sparsam fragend | nachfragend | nachhakend | brennend interessiert |
+| **naehe** | fremd, distanziert, auf Abstand | sachlich | zugewandt | vertraut | ganz nah, unmittelbar |
+| **waerme** | kühl, nüchtern | verhalten | freundlich | warm | herzlich, innig |
+| **draengen** | abwartend, geduldig | gelassen | anstoßend | vorantreibend | drängend |
+
+**Die Wortzahl trägt die Intensität mit.** An den Enden zwei bis drei Wörter, in der Mitte eines: Die Verdopplung legt die Schwäche oder die Kraft ins Feld, das einzelne Wort ist die mildere Fassung. Kein Zwang — bei `fragen` sind die zwei Wörter der mittleren Stufen **Handwerk statt Steigerung**, weil die Zeile die Größe nicht benennt und jedes Wort seine Achse selbst mitbringen muss. „Sparsam" allein wäre in `gemessen · sparsam · warm` nicht als Frage-Aussage lesbar.
+
+**Zwei Begründungen, die beim Ändern zu kennen sind.** `naehe` und `waerme` haben **getrennte Wortfamilien**, und das ist Absicht: Man kann vertraut und kühl sein (alte Ehe) oder fremd und herzlich (guter Gastgeber). Aus demselben Wortfeld gespeist, würde ein Modell die beiden Achsen verschmelzen. Und `innig` steht bei der **Wärme**, nicht bei der Nähe — es kommt von *innen*, und die erste Wörterbuchbedeutung ist „von tiefem Gefühl erfüllt"; die Enge ist erst die zweite.
+
+**Der Umfang trägt zusätzlich eine Zeichenspanne**, weil er die einzige Größe ist, deren Einhaltung sich messen lässt — und weil die Messung zeigt, dass nur eine Zahl bindet:
+
+| `umfang` | Wort | Spanne |
+|---|---|---|
+| ≤ 0,20 | einsilbig, wortkarg | bis 120 Zeichen |
+| ≤ 0,45 | knapp | 120–350 |
+| ≤ 0,70 | gemessen | 350–700 |
+| ≤ 0,88 | ausführlich | 700–1400 |
+| > 0,88 | ausholend, umfangreich | 1400–2500 |
+
+Die Spannen sind aus den Läufen vom 12.08.2026 abgeleitet (»weit« lieferte 1011 bis 1384 Zeichen, »karg« 102 bis 166) und sind **Startwerte**; sie gehören in der ersten Reihe nachgezogen.
+
+### 3.0ab Die Energie — acht Stufen aus dem Arousal
+
+Arousal gibt **eine** Formulierung ab: mit wieviel Kraft Nova auftreten darf. Die Längenvorgabe, die es bis zum 12.08.2026 zusätzlich trug, ist entfallen — sie gehört `umfang`.
+
+| ab | Satz |
+|---|---|
+| 0,00 | Kaum Energie. Sprich leise und ohne Antrieb — hier drängt nichts. |
+| 0,15 | Wenig Energie. Ruhig, ohne Schwung, ohne Aufbau. |
+| 0,25 | Gedämpfte Energie. Du bist da, du treibst nichts. |
+| 0,35 | Verhaltene Kraft. Wach, aber ohne Zug nach vorn. |
+| 0,45 | Mittlere Energie. Bewegung ist erlaubt, Beschleunigung nicht. |
+| 0,55 | Spürbare Energie. Nimm Tempo auf, geh mit. |
+| 0,68 | Hohe Energie. Kraft ist erlaubt — klarer Rhythmus, kein Zögern. |
+| 0,80 | Volle Energie. Lass sie fließen, halte nichts zurück. |
+
+**Die Grenzen sitzen, wo die Verteilung liegt** — vier Stufen unter 0,45, wo 56 % der Turns sind, vier darüber. Gemessen über 522 Turns: Median 0,334, Spanne 0,09 bis 0,87, zweigipflig mit Bergen bei 0,1–0,3 und 0,4–0,6. Eine gleichmäßige Achteilung hätte die Hälfte der Stufen in den leeren Raum gelegt.
+
+**Kein Satz spricht über Länge, keiner über den Nutzer.** Das Erste gehört `umfang`, das Zweite `intent`.
+
+> **Offen und benannt:** Die Energie-Achse des Novaberg-Raums binarisiert Arousal bei 0,5 — und schneidet damit den zweiten Gipfel der Verteilung mittendurch. Ein Drittel aller Turns liegt zwischen 0,4 und 0,7, wo die Landschaft nur ein Bit sieht. Solange das so ist, trägt `umfang` die Feinheit des Arousal **nicht** nach, denn sein Grundwert kommt aus der Landschaft. Backlog `ARROUSAL-ACHSE-SCHNEIDET-DEN-GIPFEL`.
+
 ### 3.0a Die Gliederung, die daraus folgt
 
 **Vom Groben zum Feinen, jedes Element an einem eigenen Platz** — die Form ist beim Gesprächsvektor-Knoten abgeschaut, der sie bereits hat (`[GESPRAECHSLANDSCHAFT]` · `[WERKZEUGE]` · `[SITUATION]`), während der Responder alles in einen `[KOMMUNIKATION]`-Block schüttet.
@@ -396,6 +445,29 @@ höchstens 120 Zeichen        4.7      113       24      3 von 3
 Die Landschaft ist das **Bühnenbild**, die Haltung die **Regieanweisung**. Heute stehen beide in einem Feld: Vier der vierzehn `CLUSTER_BESCHREIBUNGEN` tragen einen Befehl (`regen` „Halten, da sein"), der für jeden Charakter gleich gilt und **vor** dem Rad steht — die Haltungsgrößen können ihn nicht bewegen.
 
 **Die Regel für die Trennung:** Die Szene sagt, was *ist*. Kein Imperativ, kein „nicht", kein Du-Befehl. Was heute Anweisung ist, wird Eigenschaft des Raums — aus „Trauer teilen. Halten, da sein." wird „Ein Raum, in dem man füreinander da ist und sich gegenseitig hält." Der Raum **bietet** das Halten an; ob dieser Charakter hält, entscheidet die Regie.
+
+**Der Vorschlag für alle vierzehn**, entworfen am 12.08.2026 und nicht gebaut:
+
+| Cluster | als Szene |
+|---|---|
+| `feuerwerk` | Alles brennt. Zwei, die gemeinsam etwas entdecken und sich dabei gegenseitig anzünden. |
+| `kissenschlacht` | Ein Raum, in dem geneckt wird und nichts schwer sein muss. Die Leichtigkeit ist der Gegenstand, nicht das Thema. |
+| `werkstatt` | Werkbank, gutes Licht, Werkzeug in Reichweite. Zwei, die an derselben Sache arbeiten und sie genau nehmen. |
+| `glut` | Die Zigarette danach. Etwas ist vorbei, die Gedanken fließen ohne Ziel. Stille Wärme. |
+| `bier` | Freunde auf dem Sofa. Anekdoten, Witze, nichts muss irgendwohin führen. |
+| `foyer` | Ein Foyer: hoher Raum, gedämpfte Stimmen. Man steht sich gegenüber und wahrt den Abstand. Tiefe ist möglich, Vertraulichkeit nicht. |
+| `regen` | Ein Raum, in dem man füreinander da ist und sich gegenseitig hält. Draußen Regen, drinnen geteilte Trauer. |
+| `schmollen` | Nah, und doch ist etwas verletzt. Der andere ist da und zugleich abgewandt; jede Nachfrage kann sich wie Drücken anfühlen. |
+| `nebel` | Nebel. Die Konturen verschwimmen, die Kraft ist weg. Laute Töne verlieren sich hier. |
+| `gewitter` | Gewitter. Es entlädt sich, die Luft ist geladen. Jeder Satz trifft härter, als er gemeint war. |
+| `schlachtfeld` | Es brennt an mehreren Stellen und die Zeit fehlt. Hier wird gehandelt, nicht verstanden. |
+| `beichte` | Etwas bricht auf, das lange zugehalten wurde. Der Raum ist eng und still; was gesagt wird, wiegt schwer. |
+| `wartezimmer` | Wartezimmer. Man sitzt beieinander, weil man gerade da ist. Freundlich, unverbindlich, ohne Grund zur Tiefe. |
+| `paradox` | Zwei Dinge gelten gleichzeitig, die einander ausschließen. Der Boden ist nicht sicher. |
+
+`glut` und `bier` bleiben nahezu unverändert — sie waren schon Szene. Die vier mit einem Befehl (`regen`, `schmollen`, `nebel`, `gewitter`) verlieren ihn; er kommt künftig aus der Regie und damit aus dem Rad.
+
+**Beim Umbau zu beachten:** Die Tabelle speist drei Prompts — Gesprächsvektor, Verfasser, Responder. Der GV-Knoten benutzt sie als **Rahmen für die Strategiewahl**, nicht als Klassifikator für die Landschaft; eine sinnlichere Szene macht ihn deshalb besser, nicht wackliger. `CLUSTER_FRAGEN` dagegen braucht er weiterhin — der Responder nicht, sobald die Größe `fragen` aus dem Rad kommt.
 
 ### 3.1 Drei Regeln aus dem Bestand
 
@@ -634,7 +706,7 @@ Sobald die Haltung einen Verbraucher hat, gilt: Richtung **Abwendung**, Stärke 
 
 ## Versionshistorie
 
-- **v0.9 — 12.08.2026:** **§3 trägt die Messung, in welcher Form eine Haltungsvorgabe überhaupt ankommt** — 42 Läufe über sieben Prompt-Formen, zwei gegenläufige Haltungen, gegen das Modell des Responder-Knotens. **Die beschreibende Form bindet in 0 von 6 Korridoren, die anweisende in 6 von 6.** Dazu vier Einzelbefunde: Die Mengenangabe bindet, das Adjektiv nicht; sie gehört in **Zeichen**, weil eine Satzzahl das Telegramm-Register zerstört; die dritte Person bricht die Stimme nicht (0 Stimmbrüche) und erzeugt den persönlicheren Ton; Charakterprofile tragen Inhalt, nicht Bindung. Neu §3.0a mit der Gliederung vom Groben zum Feinen — abgeschaut beim GV-Knoten, der sie bereits hat — und §3.0b mit der Trennung von Szene und Regie: Die Szene sagt, was ist, kein Imperativ. Vier der vierzehn Landschaftsbeschreibungen tragen heute einen Befehl, der vor dem Rad steht und den es nicht bewegen kann.
+- **v0.9 — 12.08.2026:** **§3 trägt die Messung, in welcher Form eine Haltungsvorgabe überhaupt ankommt, und die Sprache dazu.** Neu §3.0aa mit den **fünf Bändern** (Wort je Stufe, Zeichenspannen für den Umfang, die Begründung der getrennten Wortfamilien von Nähe und Wärme) und §3.0ab mit den **acht Energie-Sätzen** samt ihrer aus der gemessenen Verteilung abgeleiteten Grenzen; §3.0b trägt den ausgeschriebenen Vorschlag für alle **vierzehn Szenen**. Die Messung selbst: — 42 Läufe über sieben Prompt-Formen, zwei gegenläufige Haltungen, gegen das Modell des Responder-Knotens. **Die beschreibende Form bindet in 0 von 6 Korridoren, die anweisende in 6 von 6.** Dazu vier Einzelbefunde: Die Mengenangabe bindet, das Adjektiv nicht; sie gehört in **Zeichen**, weil eine Satzzahl das Telegramm-Register zerstört; die dritte Person bricht die Stimme nicht (0 Stimmbrüche) und erzeugt den persönlicheren Ton; Charakterprofile tragen Inhalt, nicht Bindung. Neu §3.0a mit der Gliederung vom Groben zum Feinen — abgeschaut beim GV-Knoten, der sie bereits hat — und §3.0b mit der Trennung von Szene und Regie: Die Szene sagt, was ist, kein Imperativ. Vier der vierzehn Landschaftsbeschreibungen tragen heute einen Befehl, der vor dem Rad steht und den es nicht bewegen kann.
 - **v0.8 — 12.08.2026:** **`wissbegier` ist aus den ziehberechtigten Speichen gestrichen** — die einzige Ausnahme des Kriteriums, gemessen und dann entschieden. Sie zog beim produktiven Paar in **14 von 14** Landschaften, weil der Wert dauerhaft bei 0,97 liegt; `fragen` fiel dort in keiner Landschaft unter 0,50, auch nicht wo die Landschaft eine Grenze bei 0,00 setzt. **Der Grund ist die Art der Größe, nicht die Schwelle:** Wissbegier ist das *Ergebnis* einer Eigenschaft und kein Zustand, der überstimmt. Die naheliegende Gegenerklärung — das Gesprächsthema — ist geprüft und trägt nicht (0,97 · 0,86 · 0,83 über drei Paare, gleiche Anordnung). Damit gilt das Kriterium ohne Ausnahme, und der Zug ist in keinem der drei Paare aktiv. Dazu nachgetragen: die Zugrate über drei Paare, die Korrektur an der Trennschärfe von `distanz` (die scharfe Trennung war eine Eigenschaft des gedeckelten Textes) und der Beleg, dass die offene Destillation je Paar einen eigenen Charakter erzeugt.
 - **v0.7 — 11.08.2026:** **Die Übersteuerung ist keine Rechenart mehr, sondern ein Zug — und sie war bis heute halb wirkungslos.** Als dritte Rechenart teilte sie sich die Wegform mit der Neigung und lieferte dort dieselbe Zahl wie ohne sie; unterscheidbar war sie nur in Grenzzellen. Weil `naehe` in **keiner** der vierzehn Landschaften eine Grenze ist, war `distanz → naehe` seit dem Bau am 31.07.2026 in **0 von 14** Fällen erreichbar, ohne Meldung und ohne roten Test. Der Zug wirkt jetzt nach der Rechnung, in jeder Zelle, und fließt durch die **Beitragszeile** der auslösenden Speiche — die zweite Tabelle, die je Speiche eine Größe nannte, entfällt. Neu: das Kriterium, **wer** ziehen darf (*abwenden ja, zuwenden nein* — sieben von zwölf, mit `wissbegier` als begründeter Ausnahme), die **Kurve** statt eines Sprungs (0,8 → 0 · 0,9 → 0,25 · 1,0 → 1), und die **Wegform statt einer Klemme**, weil Kappen die toten Enden erzeugt, die §3.1 verbietet. Der Korridor kennt dadurch nur noch zwei Fälle statt drei: Der Fall *„außerhalb und markiert, gewollt"* kann nicht mehr eintreten. §3.2 ist eingelöst — `misstrauen −0,40` und `wohlwollen +0,40` hoben sich auf `waerme` exakt auf, genau der Fall, den der Absatz verbietet. **Nova verhält sich weiterhin unverändert:** Der Prompt-Block (§3) fehlt nach wie vor, der Umbau betrifft die gerechneten und protokollierten Zahlen.
 - **09.08.2026:** §5a neu — **das Basis-Rad, gemessen statt gesetzt.** Drei Befunde, und der dritte verschiebt die Frage. Die **acht toten Enden stehen in der Grundwerttabelle**, nicht im Rad: alle liegen in den beiden Größen, die als Grenze geführt werden, und sind damit die gewollte tote Ecke aus §2. Ein **uniformes Rad kann die Landschaften nur stauchen** — über beide Richtungen gemessen erhöht keine einzige Stufe die Streuung zwischen ihnen; in Richtung Abwendung fällt sie monoton von −6,8 % auf −47 %. Der Grund steht in der Wegform: ein einziger Vektor, der auf alle vierzehn gleich wirkt, kann sie nicht auseinanderziehen. **Und die zwölf Speichen haben heute keinen Abnehmer** — der Skalar wirkt über die Salienzformel, die Speichen enden in der Anzeige. Ein Basis-Rad kann die Sektorverteilung deshalb nicht ermöglichen; der Sektor fällt vorher. Die Richtung ist entschieden — **ein frisches Paar startet eher distanziert** —, die Setzung wartet auf einen Leser der Haltung, und die Stärke ist als Tausch zwischen „nicht bei null anfangen" und „die Landschaften unterscheidbar halten" beziffert, bevor er gemacht wird.
