@@ -193,6 +193,18 @@ Zug je Größe = kurve(ausprägung) × beitrag[größe] / max|beitrag der Zeile|
 
 **Gemessen, 30 Läufe der feinen Skala (11.08.2026):** Speichen über 0,8 fielen 36 mal, davon **21 auf die drei ausgeschlossenen Zuwendungsspeichen** (`aufmerksamkeit` 13, `wohlwollen` 5, `treue` 3). Das Kriterium halbiert die Zugrate auf 0,50 je Lauf, bevor die Kurve überhaupt greift. Von den sechs Abwendungsspeichen erreichte allein `distanz` je 0,8 — die übrigen fünf kosten heute nichts und stehen bereit.
 
+> **Nachgemessen am 12.08.2026 über drei Paare mit offenem Profil und freiem Rad — das Kriterium trägt, und es zeigt seinen eigenen Fehler.** Novas Rad ist das, welches die Haltung steuert (`nutzer_gewichtung_rad_laden` liest `(nova, <nutzer>)`); für jedes der drei Paare steht mindestens eine Speiche über der Schwelle:
+>
+> ```
+> nova → sarah     aufmerksamkeit 0.98 · treue 0.95 · wohlwollen 0.95    Zug  0/14
+> nova → mehmet    aufmerksamkeit 0.98 · treue 0.95 · wohlwollen 0.95    Zug  0/14
+> nova → meister   aufmerksamkeit 0.94 · wissbegier 0.97                 Zug 14/14
+> ```
+>
+> **Jedes Paar hat Speichen am Anschlag; das Kriterium fängt sie ab — außer der einen Ausnahme.** `wissbegier` ist die einzige zugelassene Zuwendungsspeiche und die einzige, die dauerhaft zieht. Der Grund ist keine falsche Schwelle: `wissbegier` beschreibt eine **stabile Eigenschaft**, der Zug ist für **Zustände** gebaut. Wer dauerhaft neugierig ist, zieht dauerhaft, und keine Schwelle unter dem gemessenen Wert ändert das.
+>
+> **Die Gegenprobe zur nächstliegenden Erklärung ist gefahren:** Der hohe Wert ist kein Artefakt des Gesprächsthemas. Novas Kern beschreibt eine Denkart und keine Themenliste, und über drei Paare mit **derselben** Messanordnung liegt `wissbegier` bei 0,97 · 0,86 · 0,83 — nur ein Paar überschreitet die Schwelle. Die drei Abwendungsspeichen, für die der Zug gedacht ist, erreichen sie in keinem Paar; Novas höchste ist `distanz` mit 0,38.
+
 ### Die Kurve: kein Sprung, sondern ein Zug
 
 Der Zug ist null unterhalb und **genau auf** der Schwelle und eins bei voller Ausprägung; dazwischen liegt eine Potenzkurve. Ein Schwellenwert, der von 0 auf 1 springt, machte aus einer Zehntelstelle im Modellurteil einen Zustandswechsel im Verhalten — genau die Härte, die das Rad mit der feinen Skala loswerden sollte.
@@ -212,14 +224,14 @@ frei        0.93 · 0.91 · 0.91 · 0.95 · 0.96 · 0.86   (mehmet → nova)
 
 Der wahre Wert liegt bei 0,93 bis 0,96. Eine Schwelle auf dem Rasterwert löst deshalb nie aus — nicht weil das Urteil darunter liegt, sondern weil es darüber nicht darstellbar war. Ziehende Speichen je Lauf über zwölf freie Läufe: bei Schwelle 0,8 **2,0 bis 2,5** (kein Ausnahmezustand mehr), bei 0,9 **0,8 bis 1,2** — etwa eine je Rad.
 
-**Und die Schwelle trennt, auch ohne Raster.** Das aktive Paar, drei freie Läufe:
+**Und die Schwelle trennt, auch ohne Raster.** Das aktive Paar, drei freie Läufe auf der **gespeicherten, gedeckelten** Quelle:
 
 ```
 nova → meister   distanz 0.11 · 0.063 · 0.03     Faktor 1.226 · 1.225 · 1.210
 Personas         distanz 0.86 bis 0.96           Faktor 0.77 bis 0.89
 ```
 
-Keine Überschneidung. **Die Null des aktiven Paares war keine Rundung** — sie ist mit Auflösung eine kleine Zahl geblieben. Die Schwelle 0,9 löst bei den Personas aus und beim aktiven Paar in keinem Lauf.
+> **Diese scharfe Trennung war eine Eigenschaft des gedeckelten Textes** und hält am offenen Profil nicht (12.08.2026). Mit offenen Profilen rücken die Werte zusammen: `nova → meister` 0,38, `nova → mehmet` 0,30, `nova → sarah` 0,15 — das aktive Paar liegt sogar über den Personas. **`distanz` trennt weiterhin, aber anderes als gedacht:** Es trennt den Menschen, der distanziert *geschrieben* ist (`sarah → nova` 0,92) von allen übrigen (0,12 bis 0,42), nicht das produktive Paar von einer zugewandten Persona. Wer nur die obere Tabelle liest, hält eine Trennschärfe für gegeben, die es so nicht mehr gibt.
 
 **Die Wegform statt einer Klemme.** Ein einfaches Abziehen mit `max(wert, 0)` wäre näher an der Anschauung und ist verworfen: Es erzeugt genau die toten Enden, die §3.1 verbietet — zwei Landschaften, die beide unter null gedrückt werden, sind danach dieselbe Zahl. Die Wegform bleibt in [0, 1] durch Konstruktion, ist ordnungserhaltend für jeden Zug unter 1 und schließt die Tür **nur** bei Ausprägung exakt 1,0. Dort ist sie gewollt: Wer ganz zugemacht hat, ist überall gleich zu, und die Lage trägt nichts mehr bei.
 

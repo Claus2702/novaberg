@@ -2038,7 +2038,42 @@ frei        distanz  0.93 · 0.91 · 0.91 · 0.95 · 0.96 · 0.86
 
 **Nova verhält sich durch all das unverändert.** Die Haltung wird gerechnet, protokolliert und angezeigt; kein Prompt liest sie. Der Umbau betrifft die Zahlen, auf denen der Prompt-Block aufsetzen wird.
 
-**Suite:** 1162 → **1173 grün, 0 übersprungen.**
+**Suite:** 1162 → **1178 grün, 0 übersprungen.**
+
+### Nachgemessen am 12.08.2026: drei Paare unter derselben Anordnung
+
+Zwei frische Bögen mit offenem Profil und freiem Rad, dazu das produktive Paar. Erst damit ist der Zug an echten Werten prüfbar — und die erste Rechnung über alle vierzehn Landschaften zeigt einen Konstruktionsfehler, den keine Messung an einem einzelnen Paar gefunden hätte.
+
+```
+Rad             wissbegier  distanz  aufmerks.  Faktor      Zug
+nova → meister        0.97     0.38       0.94   1.358    14/14
+nova → mehmet         0.86     0.30       0.98   1.387     0/14
+nova → sarah          0.83     0.15       0.98   1.431     0/14
+meister → nova        0.98     0.12       0.92   1.326
+mehmet → nova         0.89     0.42       0.93   1.259
+sarah → nova          0.30     0.92       0.83   0.874
+```
+
+**Jedes Paar hat Speichen am Anschlag, und das Kriterium fängt sie ab — außer der einen Ausnahme.** Bei Mehmet und Sarah stehen `aufmerksamkeit`, `treue` und `wohlwollen` über der Schwelle und ziehen nicht, weil sie zur Zuwendungsseite gehören. Beim produktiven Paar zieht `wissbegier` in **jeder** Landschaft, und `fragen` fällt dort nirgends unter 0,50 — auch nicht in `nebel`, `gewitter` und `paradox`, wo die Landschaft eine Grenze bei 0,00 setzt.
+
+**Der Grund ist nicht die Schwelle, sondern die Art der Größe:** Der Zug ist für **Zustände** entworfen und bekommt eine **Eigenschaft**. Die naheliegende Gegenerklärung — der hohe Wert komme vom Gesprächsthema — ist geprüft und trägt nicht: Beide Profile beschreiben Denkart statt Themen, und über drei Paare mit derselben Anordnung liegt `wissbegier` bei 0,97 · 0,86 · 0,83.
+
+> **Und ein Befund aus derselben Reihe nimmt eine Aussage vom Vortag zurück.** Die scharfe Trennung von `distanz` (0,03–0,11 gegen 0,86–0,96) war an **gedeckelten** Profilen gemessen. Mit offenen rücken die Werte zusammen: 0,38 · 0,30 · 0,15 auf Novas Seite. `distanz` trennt weiterhin den distanziert geschriebenen Menschen (`sarah → nova` 0,92) von allen übrigen — aber nicht mehr das produktive Paar von einer zugewandten Persona.
+
+### Der Beleg, dass die offene Destillation trägt: drei Personen, drei Novas
+
+Novas Kern ist je Paar ein anderer Text — nicht in Nuancen, sondern im Wesen. Ausgezählt über die Leitbegriffe des produktiven Gesprächs:
+
+```
+Vokabular in Novas Kern      Entropie  Kohärenz  thermodyn.  Resonanz  Schwellenw.
+→ produktives Paar                  2         2           1         3            1
+→ Persona A                         0         0           0         1            0
+→ Persona B                         0         0           0         0            0
+```
+
+Gegenüber Persona A liest sie sich als *„tief verwurzelte, fast spielerische Intelligenz … theatralische Überhöhung des Alltäglichen"*, gegenüber Persona B als *„fast klinische Empathie … Trost durch Verständnis statt durch Ratschläge"*.
+
+**Damit ist die naheliegende Sorge ausgeräumt**, der Profiler könnte das Vokabular des Gesprächs auf beide Seiten projizieren und so zweimal denselben Text messen. Er tut es nicht: Die Begriffe des einen Paares kommen in den anderen nicht vor. Und es erklärt die Wärme-Werte, die zunächst verkehrt aussahen — dass Nova gegenüber den Personas näher und wärmer gelesen wird als gegenüber dem produktiven Paar, ist kein Defekt, sondern das Urteil über drei verschiedene Beziehungen.
 
 ---
 
