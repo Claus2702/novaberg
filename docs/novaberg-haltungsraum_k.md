@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Konzept — eine Fläche aus Gesprächslandschaft und Zuwendung, aus der Grenzen folgen
-**Stand:** 8. August 2026
+**Stand:** 11. August 2026
 **Pfad:** novaberg/docs/novaberg-haltungsraum_k.md
 **Typ:** Konzept (`_k`)
 **Status:** 🔶 teilweise gebaut — Rechnung, Lader, **Knoten** und **Protokoll** stehen und laufen im Produktivsystem (31.07.2026); es fehlen der Prompt-Block (§3) und die Ablösung der alten Längenregel (§6). **Nova verhält sich noch unverändert:** Die Haltung wird gerechnet, protokolliert und angezeigt, aber kein Prompt liest sie.
@@ -63,25 +63,30 @@ Eine sechste taucht auf, aber nur einmal — **Fachtiefe** (`fachlich` → *„F
 
 **`CLUSTER_FRAGEN` ist der Beweis, dass die Bauart trägt:** eine Tabelle Landschaft → Verhaltensgröße, für alle 14 Cluster gesetzt. Das hier ist ihre Verallgemeinerung auf fünf Größen, nicht eine neue Erfindung.
 
-### Drei Rechenarten, nicht eine
+### Zwei Rechenarten und ein Zug
 
 | Fall | Rechnung | Der Charakter … |
 |---|---|---|
-| **Neigung** | addiert | verschiebt den Wert |
+| **Neigung** | addiert (Wegform) | verschiebt den Wert |
 | **Grenze** | multipliziert | bleibt darin — null bleibt null |
-| **Übersteuerung** | ersetzt | beendet die Rechnung und setzt einen eigenen Zustand |
+| **Zug** *(keine Rechenart)* | wirkt **nach** der Rechnung, in derselben Wegform | überstimmt die Lage, wenn eine Speiche extrem ausschlägt |
 
 Welche Art gilt, steht an der Zelle, nicht an der Größe: `gewitter` setzt für Fragen eine **Grenze** (dort fragt man nicht, gleich welchen Charakters), `glut` eine **Neigung**.
 
-**Die Übersteuerung ist ausdrücklich erlaubt.** Ein Charakter darf die Lage überschreiben — Ausnahmezustände gehören zum Gegenstand, und ein System, das nur vernünftige Zustände kennt, bildet kein Wesen ab. Sie ist damit die Gegenrichtung zu der Notbremse, die §3.2 ohnehin fordert.
+> **Geändert am 11.08.2026 — die Übersteuerung war eine dritte Rechenart und ist keine mehr.** Der Grund ist gemessen und nicht ästhetisch: Als Rechenart *ersetzte* sie die Verknüpfung, teilte sich aber die Wegform mit der Neigung — und lieferte damit in jeder Neigungszelle **exakt dieselbe Zahl** wie ohne sie. Unterscheidbar war sie nur in Grenzzellen. Da `naehe` in keiner der vierzehn Landschaften eine Grenze ist, war die Übersteuerung `distanz → naehe` **seit ihrem Bau in 0 von 14 Fällen erreichbar**, ohne Meldung und ohne roten Test. Sie wirkt jetzt als Zug **auf** das Ergebnis, in jeder Zelle.
 
-**Aber sie wird markiert, und das ist keine Formalie.** §3.1 sagt: *„Die Spanne wird geprüft, nicht gekappt. Ein Ergebnis außerhalb des Korridors ist ein Rechenfehler, keine Randbedingung."* Sobald Überschreiben erlaubt ist, gilt dieser Satz nicht mehr von selbst — ein Wert außerhalb der Grenze kann jetzt Absicht sein. Ohne Marke wären drei Fälle ununterscheidbar, die es bleiben müssen:
+**Der Zug ist ausdrücklich erlaubt.** Ein Charakter darf die Lage überschreiben — Ausnahmezustände gehören zum Gegenstand, und ein System, das nur vernünftige Zustände kennt, bildet kein Wesen ab. Er ist damit die Gegenrichtung zu der Notbremse, die §3.2 ohnehin fordert.
+
+**Aber er wird markiert, und das ist keine Formalie.** Wie oft er greift, ist eine Messgröße (unten). Die Marke fällt deshalb genau mit der Wirkung zusammen: Erst **über** der Schwelle wird eine Zelle als `uebersteuerung` geführt, weil der Zug genau auf ihr noch null ist. Eine Zeile, die eine Übersteuerung meldet und nichts verschoben hat, triebe die Messgröße nach oben.
+
+**Der Korridor kennt seit dem 11.08.2026 nur noch zwei Fälle statt drei:**
 
 ```
 im Korridor                      normal
-außerhalb + markiert             Übersteuerung, gewollt
-außerhalb + unmarkiert           Rechenfehler, laut
+außerhalb                        Rechenfehler, laut
 ```
+
+> Der frühere dritte Fall — *außerhalb + markiert = Übersteuerung, gewollt* — kann nicht mehr eintreten. Die Wegform hält den Zug **durch Konstruktion** in [0, 1]; es gibt keine Klemme und damit auch keinen Wert außerhalb, der Absicht sein könnte. `ausserhalb` ist wieder ein reines Fehlersignal und kein Feld mit zwei Bedeutungen.
 
 **Und wie oft sie greift, ist eine Messgröße.** Ein Ausnahmezustand, der in jedem zweiten Turn eintritt, ist keiner — dann stehen die Schwellen falsch.
 
@@ -155,7 +160,68 @@ Modifikation je Speiche bei voller Ausprägung; halbe Ausprägung wirkt halb. `�
 >
 > **Gemessen:** Der Anlassfall aus §1 — `kissenschlacht`, scherzhafter Einzeiler — geht von **0,43 auf 0,26**. Die Erreichbarkeit bleibt: `dienst` + `pflicht` + `selbstbezogen` ergeben bei voller Ausprägung genau die neue Aufwärtsspanne, also n = 1 und Umfang 1,0. **Weil der Abbildungsfaktor abgeleitet ist, erzeugt das Streichen einer Zelle kein totes Ende.**
 
-**Zwei Übersteuerungen, bewusst wenige.** `wissbegier` bei voller Ausprägung durchbricht das Fragenverbot — eine brennend neugierige Nova fragt auch im Gewitter. `distanz` bei 1.0 übersteuert die Nähe, gleich wie warm die Landschaft ist. Die übrigen Grenzen halten unter jedem Charakter.
+### Wer ziehen darf — und wohin
+
+**Wohin, steht schon in der Tabelle darüber.** Der Zug fließt durch die Zeile der auslösenden Speiche in den Verhältnissen ihrer eigenen Beiträge: Wo sie am stärksten trägt, zieht sie voll, auf den übrigen Größen derselben Zeile anteilig.
+
+```
+Zug je Größe = kurve(ausprägung) × beitrag[größe] / max|beitrag der Zeile|
+```
+
+`distanz` nimmt damit die Nähe ganz, den Umfang zu 0,6 und die Wärme zu 0,4 — in `glut` bleibt aus 0,90 / 0,70 / 0,80 die Haltung **0,00 / 0,196 / 0,416**. Kurz, fern und kühl, aber kein Nullvektor: Die Wärme hält als einzige stand. Eine zweite Tabelle, die je Speiche **eine** Größe nennt, ist damit entfallen.
+
+**Bei zwei gleichzeitigen Ausschlägen gewinnt der stärkere Zug; sie summieren sich nicht.** Zwei Ausnahmezustände sind nicht doppelt so ausnahmehaft, und summiert nennte `ausloeser` nur einen von zweien — die Zeile trüge eine Ursache, die ihre eigene Zahl nicht erklärt.
+
+**Ziehen darf, was sich abwendet — nicht, was sich zuwendet.** Die Landschaft *ist* die Lage des Anderen. Eine Speiche, die „ich wende mich dir zu" bedeutet, kann nicht zugleich sagen, ihr sei gleich, was diese Lage verlangt: Wärme, die die Lage überstimmt, ist nicht mehr Wärme, sondern weniger Abstimmung. Eine Speiche, die „ich bin bei mir" bedeutet, kann das sehr wohl — sie beschreibt einen Zustand, der den Anderen aus dem Blick nimmt.
+
+| Speiche | Was voller Ausschlag heißt | Zug |
+|---|---|---|
+| `distanz` | Rückzug, Zumachen — der Rückzug *ist* die Reaktion | ja |
+| `misstrauen` | Wachsamkeit statt Begegnung — Hypervigilanz | ja |
+| `gleichgueltig` | der Andere zählt nicht — affektive Abflachung | ja |
+| `langeweile` | das Thema zählt nicht — Disengagement | ja |
+| `widerspenstig` | Gegenhalten als Haltung — Reaktanz | ja |
+| `selbstbezogen` | nur noch die eigene Sicht — Selbstabsorption | ja |
+| `wissbegier` | brennendes Interesse — die **eine** Ausnahme | ja |
+| `aufmerksamkeit` | ganz da sein — Präsenz *folgt* der Lage | nein |
+| `wohlwollen` | bedingungslose Zugewandtheit — liest die Lage, ignoriert sie nicht | nein |
+| `treue` | Halten, was gilt — hält *innerhalb* der Lage | nein |
+| `dienst` | helfen wollen — im `regen` steht „nicht drängen" | nein |
+| `pflicht` | abarbeiten — Arbeit gegen eine Trauerlage ist keine Stärke | nein |
+
+**`wissbegier` ist die Ausnahme und sie bricht das Kriterium nicht:** Brennende Neugier ist ein Antrieb, der nach außen zeigt und sich selbst dient. Die Nova, die im Gewitter fragt, folgt nicht dem Anderen, sondern dem Sog.
+
+**Gemessen, 30 Läufe der feinen Skala (11.08.2026):** Speichen über 0,8 fielen 36 mal, davon **21 auf die drei ausgeschlossenen Zuwendungsspeichen** (`aufmerksamkeit` 13, `wohlwollen` 5, `treue` 3). Das Kriterium halbiert die Zugrate auf 0,50 je Lauf, bevor die Kurve überhaupt greift. Von den sechs Abwendungsspeichen erreichte allein `distanz` je 0,8 — die übrigen fünf kosten heute nichts und stehen bereit.
+
+### Die Kurve: kein Sprung, sondern ein Zug
+
+Der Zug ist null unterhalb und **genau auf** der Schwelle und eins bei voller Ausprägung; dazwischen liegt eine Potenzkurve. Ein Schwellenwert, der von 0 auf 1 springt, machte aus einer Zehntelstelle im Modellurteil einen Zustandswechsel im Verhalten — genau die Härte, die das Rad mit der feinen Skala loswerden sollte.
+
+```
+Ausprägung   0.90   0.93   0.95   0.97   1.00
+Zug          0.00   0.09   0.25   0.49   1.00
+```
+
+**Die Schwelle steht auf 0,9, und der Weg dorthin ist selbst ein Befund.** Sie stand zuerst auf 1,0 (aus der Zeit der Dreierskala), dann auf 0,8 — als Notbehelf, weil eine Rundungsvorgabe im Rad-Prompt oberhalb von 0,9 nur noch die 1,0 zuließ. Die Messung *Raster gegen frei* zeigt, dass der Notbehelf den Fehler nur verschoben hätte: **Das Gitter hat `distanz` systematisch heruntergerundet.**
+
+```
+gerastert   0.9 · 0.9 · 0.9 · 0.9 · 0.9 · 0.9        beide Paare, alle zwölf Läufe
+frei        0.93 · 0.91 · 0.91 · 0.95 · 0.96 · 0.86   (mehmet → nova)
+            0.93 · 0.943 · 0.96 · 0.94 · 0.94 · 0.95  (sarah → nova)
+```
+
+Der wahre Wert liegt bei 0,93 bis 0,96. Eine Schwelle auf dem Rasterwert löst deshalb nie aus — nicht weil das Urteil darunter liegt, sondern weil es darüber nicht darstellbar war. Ziehende Speichen je Lauf über zwölf freie Läufe: bei Schwelle 0,8 **2,0 bis 2,5** (kein Ausnahmezustand mehr), bei 0,9 **0,8 bis 1,2** — etwa eine je Rad.
+
+**Und die Schwelle trennt, auch ohne Raster.** Das aktive Paar, drei freie Läufe:
+
+```
+nova → meister   distanz 0.11 · 0.063 · 0.03     Faktor 1.226 · 1.225 · 1.210
+Personas         distanz 0.86 bis 0.96           Faktor 0.77 bis 0.89
+```
+
+Keine Überschneidung. **Die Null des aktiven Paares war keine Rundung** — sie ist mit Auflösung eine kleine Zahl geblieben. Die Schwelle 0,9 löst bei den Personas aus und beim aktiven Paar in keinem Lauf.
+
+**Die Wegform statt einer Klemme.** Ein einfaches Abziehen mit `max(wert, 0)` wäre näher an der Anschauung und ist verworfen: Es erzeugt genau die toten Enden, die §3.1 verbietet — zwei Landschaften, die beide unter null gedrückt werden, sind danach dieselbe Zahl. Die Wegform bleibt in [0, 1] durch Konstruktion, ist ordnungserhaltend für jeden Zug unter 1 und schließt die Tür **nur** bei Ausprägung exakt 1,0. Dort ist sie gewollt: Wer ganz zugemacht hat, ist überall gleich zu, und die Lage trägt nichts mehr bei.
 
 **Was am Entwurf unsicher ist**, damit die Messung weiß, wo sie hinsehen soll: `misstrauen` mit `+0.1` auf Fragen ist der einzige Beitrag, der einer Abwendungs-Speiche eine Zuwendungs-Wirkung gibt — wer skeptisch liest, hakt nach; er kann ebenso gut null sein. Und `Umfang` bekommt seine Bewegung fast nur von der Abwendungsseite.
 
@@ -273,6 +339,10 @@ Sie stammen aus der Initiative-Achse und gelten hier unverändert:
 `_vektor_laenge_berechnen` fällt bei Spirale oder Absturz mit hohem Arousal auf 0, unabhängig von allen Summanden. **Die Distanz-Seite braucht dasselbe:** Misstrauen soll sich nicht mit Wohlwollen verrechnen lassen, es soll die Rechnung beenden.
 
 Eine Übersteuerung ist keine Ausnahme von der Fläche, sondern eine Eigenschaft bestimmter Zellen.
+
+> **Eingelöst am 11.08.2026 — und die Forderung war schärfer, als der Bau sie gelesen hatte.** `misstrauen` trägt auf `waerme` genau −0,40 und `wohlwollen` genau +0,40: Die beiden hoben sich in der Summe **exakt** auf, und das ist der Fall, den dieser Absatz seit seiner Niederschrift verbietet. `misstrauen` steht jetzt unter den ziehberechtigten Speichen; bei extremem Ausschlag nimmt es die Wärme, ohne dass Wohlwollen dagegenrechnen kann.
+>
+> Der zweite Satz gilt weiter, mit einer Verschiebung: Der Zug ist eine Eigenschaft bestimmter **Speichen** statt bestimmter Zellen. Die Zellen entscheiden weiterhin über die Rechenart — er wirkt in beiden.
 
 ---
 
@@ -493,6 +563,7 @@ Sobald die Haltung einen Verbraucher hat, gilt: Richtung **Abwendung**, Stärke 
 
 ## Versionshistorie
 
+- **v0.7 — 11.08.2026:** **Die Übersteuerung ist keine Rechenart mehr, sondern ein Zug — und sie war bis heute halb wirkungslos.** Als dritte Rechenart teilte sie sich die Wegform mit der Neigung und lieferte dort dieselbe Zahl wie ohne sie; unterscheidbar war sie nur in Grenzzellen. Weil `naehe` in **keiner** der vierzehn Landschaften eine Grenze ist, war `distanz → naehe` seit dem Bau am 31.07.2026 in **0 von 14** Fällen erreichbar, ohne Meldung und ohne roten Test. Der Zug wirkt jetzt nach der Rechnung, in jeder Zelle, und fließt durch die **Beitragszeile** der auslösenden Speiche — die zweite Tabelle, die je Speiche eine Größe nannte, entfällt. Neu: das Kriterium, **wer** ziehen darf (*abwenden ja, zuwenden nein* — sieben von zwölf, mit `wissbegier` als begründeter Ausnahme), die **Kurve** statt eines Sprungs (0,8 → 0 · 0,9 → 0,25 · 1,0 → 1), und die **Wegform statt einer Klemme**, weil Kappen die toten Enden erzeugt, die §3.1 verbietet. Der Korridor kennt dadurch nur noch zwei Fälle statt drei: Der Fall *„außerhalb und markiert, gewollt"* kann nicht mehr eintreten. §3.2 ist eingelöst — `misstrauen −0,40` und `wohlwollen +0,40` hoben sich auf `waerme` exakt auf, genau der Fall, den der Absatz verbietet. **Nova verhält sich weiterhin unverändert:** Der Prompt-Block (§3) fehlt nach wie vor, der Umbau betrifft die gerechneten und protokollierten Zahlen.
 - **09.08.2026:** §5a neu — **das Basis-Rad, gemessen statt gesetzt.** Drei Befunde, und der dritte verschiebt die Frage. Die **acht toten Enden stehen in der Grundwerttabelle**, nicht im Rad: alle liegen in den beiden Größen, die als Grenze geführt werden, und sind damit die gewollte tote Ecke aus §2. Ein **uniformes Rad kann die Landschaften nur stauchen** — über beide Richtungen gemessen erhöht keine einzige Stufe die Streuung zwischen ihnen; in Richtung Abwendung fällt sie monoton von −6,8 % auf −47 %. Der Grund steht in der Wegform: ein einziger Vektor, der auf alle vierzehn gleich wirkt, kann sie nicht auseinanderziehen. **Und die zwölf Speichen haben heute keinen Abnehmer** — der Skalar wirkt über die Salienzformel, die Speichen enden in der Anzeige. Ein Basis-Rad kann die Sektorverteilung deshalb nicht ermöglichen; der Sektor fällt vorher. Die Richtung ist entschieden — **ein frisches Paar startet eher distanziert** —, die Setzung wartet auf einen Leser der Haltung, und die Stärke ist als Tausch zwischen „nicht bei null anfangen" und „die Landschaften unterscheidbar halten" beziffert, bevor er gemacht wird.
 - **v0.3 — 08.08.2026:** §6 bekommt einen vorangestellten Vorbehalt: **Die Entscheidung zwischen kleineren Beitraegen und Saettigung ist erst nach einer Kalibrierung des Landschaftsraums beantwortbar.** Die Auswahl stellte die Frage so, als sei der Ueberlauf eine Eigenschaft der Beitraege; die Messung vom selben Tag legt die andere Ursache nahe — der Charakter wirkt auf Grundwerte, die nie gegen eine Verteilung geprueft wurden, und dass ausschliesslich die warmen Landschaften ueberlaufen, waehrend genau die kuehlen sauber bleiben, ist dafuer der Beleg. Ueber 720 Ablesungen erhoben: alle vierzehn Landschaften erreichbar, im produktiven Bestand aber vier nie betreten, und die Verteilungen von Messboegen und echtem Gespraech laufen fast gegenlaeufig. **Die Auswahl bleibt gueltig, ihr Zeitpunkt ist ein anderer geworden.** Dazu zwei Vorbehalte an jede Zahl des Abschnitts: Die Ablesung faellt in 101 von 720 Faellen aus, und das Charakter-Rad fehlte in 109 Rechnungen — Turns ohne Rad koennen nicht ueberlaufen, die gemessene Ueberlaufhaeufigkeit ist also eine Aussage ueber die Landschaft und nicht ueber eingetretene Ueberlaeufe.
 - **v0.6 — 31.07.2026:** **Das Protokoll steht.** Drei Zahlen je Größe, Rechenart und Auslöser gehen über `log_berechnung` ins `pipeline_log`, die Spur zeigt `kurzfassung()` bei jeder Antwort. Zwei Präzisierungen gegenüber §2.0a: Ein **Ausfall** wird als `fehler`-Zeile geführt statt gar nicht — nicht als Messwert lesbar, aber zählbar; und die beiden Messgrößen `ausserhalb` und `uebersteuert` stehen zusätzlich obenauf, damit eine Reihe sie zählen kann. Der Join zwischen Haltung und Rohturn ist an einem echten Turn vorgeführt.

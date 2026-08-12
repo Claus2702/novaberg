@@ -110,7 +110,11 @@ hash_dirty = TRUE in Redis?
     hash_dirty = FALSE
 ```
 
-Jedes Profil ist komprimierter Fließtext (2–5 Sätze). Keine Listen, keine Stichworte — natürlichsprachliche Beschreibungen, die direkt in den Responder-Prompt einfließen.
+Jedes Profil ist Fließtext. Keine Listen, keine Stichworte — natürlichsprachliche Beschreibungen, die direkt in den Responder-Prompt einfließen.
+
+> **Der Kern trägt seit dem 11.08.2026 keinen Deckel mehr.** Bis dahin verlangten alle fünf Prompts „kompakt … in 2–5 Sätzen" — eine Vorgabe aus der Zeit knapper Kontextfenster. Gemessen über zwei Personen mit je drei Läufen über die ganze Kette: **Die Streuung des daraus gelesenen Rades fällt um das Vierfache** (Spanne 0,2510 → 0,0630 und 0,1040 → 0,0040), der Faktor bleibt (−0,024). Der Deckel kaufte nichts und war die lauteste Stufe der Kette. Live gemessen am 12.08.2026 am produktiven Paar: Kern **916 → 3578 Zeichen**, Aufruf 11 min 35 s bei 26 879 Token — beides jenseits der alten Frist von 300 s und des alten Token-Deckels von 2048, die deshalb mitgehoben wurden (1800 s, 8192).
+>
+> **Die vier übrigen Profile bleiben gedeckelt** (adaptiv, Intention, Emotion, Beziehung). Jedes hat einen eigenen Abnehmer, und gemessen ist bisher nur der Kern — Backlog `VERDICHTUNG-UEBRIGE-VIER-PROMPTS`.
 
 **Getrennte Prompts (seit Chat 45):** Die Destillation verwendet fuer user_id="nova" eigene Prompt-Texte. Alle vier Nova-Prompts haben die gleiche Qualitaetsstruktur wie die User-Prompts — identische Fokus-Dimensionen, Beispiele und Anleitungen, nur mit Nova-Rahmung ("Nova ist..." statt "Der Nutzer ist..."):
 

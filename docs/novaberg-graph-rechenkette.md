@@ -381,18 +381,34 @@ Aus der normierten Summe `n ∈ [−1, +1]` folgt das Ergebnis in einer von zwei
 
 | Art | Verknüpfung | Bedeutung |
 |---|---|---|
-| Neigung, Übersteuerung | `grund + n·(1−grund)` bei `n > 0`, `grund + n·grund` bei `n < 0` | der Charakter geht den verbleibenden **Weg**, nicht den Wert |
+| Neigung | `grund + n·(1−grund)` bei `n > 0`, `grund + n·grund` bei `n < 0` | der Charakter geht den verbleibenden **Weg**, nicht den Wert |
+| Zug *(nach der Rechnung, seit 11.08.2026)* | `wert + zug·(1−wert)` bei `zug > 0`, `wert + zug·wert` bei `zug < 0` | dieselbe Wegform, auf das Ergebnis der Zelle |
 | Grenze | `grund × (1 + n)` | das eine gewollte tote Ende — im Gewitter wird nicht gefragt |
 
 **Die Wegform ist geschlossen durch Konstruktion:** Das Ergebnis kann `[0, 1]` nicht verlassen, ohne dass gekappt wird. Sie ist ordnungserhaltend — zwei Landschaften fallen unter keinem Charakter zusammen —, und sie schließt keine Tür: 1,0 nur bei `n = 1` exakt, 0,0 nur bei `n = −1` exakt. Bei `n = 0` gibt sie den Grundwert zurück; ein Rad auf der Nabe reproduziert die Landschaft exakt. Die Grenze behält ihre multiplikative Form, weil die Wegform sie öffnen würde: Ein Grundwert von 0 hätte dort vollen Weg nach oben.
 
-Eine Übersteuerung greift nur bei **voller** Ausprägung der auslösenden Speiche; darunter wirkt ihr Beitrag als gewöhnliche Neigung und gegen eine Grenze damit gar nicht. Vorgesehen sind zwei: `wissbegier` hebt die Fragen-Grenze, `distanz` die Nähe-Grenze.
+~~Eine Übersteuerung greift nur bei **voller** Ausprägung der auslösenden Speiche; darunter wirkt ihr Beitrag als gewöhnliche Neigung und gegen eine Grenze damit gar nicht. Vorgesehen sind zwei: `wissbegier` hebt die Fragen-Grenze, `distanz` die Nähe-Grenze.~~
+
+**Umgebaut am 11.08.2026 — die Übersteuerung ist keine Rechenart mehr, sondern ein Zug nach der Rechnung.** Als Rechenart teilte sie sich die Wegform mit der Neigung und lieferte in jeder Neigungszelle dieselbe Zahl wie ohne sie; unterscheidbar war sie nur in Grenzzellen. Weil `naehe` in **keiner** der vierzehn Landschaften eine Grenze ist, war `distanz → naehe` seit dem Bau in **0 von 14** Fällen erreichbar.
+
+Heute gilt: Die Zellart bleibt Grenze oder Neigung, und darauf legt sich der Zug — in jeder Zelle, mit stetiger Kurve über der Schwelle 0,9, verteilt über die Zeile der auslösenden Speiche in `SPEICHEN_BEITRAG` und in derselben Wegform, damit er die Spanne nicht verlässt und die Ordnung der Landschaften erhält.
+
+```
+Zug je Größe = kurve(ausprägung) × beitrag[größe] / max|beitrag der Zeile|
+
+Ausprägung   0.90   0.93   0.95   0.97   1.00
+Zug          0.00   0.09   0.25   0.49   1.00
+```
+
+Ziehen dürfen **sieben von zwölf** Speichen — die sechs der Abwendungsseite und `wissbegier`: *Ziehen darf, was sich abwendet, nicht was sich zuwendet.* Bei zwei gleichzeitigen Ausschlägen gewinnt der stärkere Zug; sie summieren sich nicht.
 **Beitrag:** **Heute keiner.** Die Haltung wird gerechnet, protokolliert und im Client angezeigt, aber **kein Prompt liest sie** — der einzige Konsument von `state["haltung"]` ist die Anzeige im Event-Consumer. Das ist die Reihenfolge des Sprints und kein Versehen: Die Zahlen sollen gegen echte Turns prüfbar sein, ohne diese Turns beeinflusst zu haben. `novaberg-haltungsraum_k.md` Status, `novaberg-sykophanz-eindaemmung_k.md` §Haltungsraum.
 **Reinheit:** rein, ohne jeden Datenzugriff. `haltung_berechnen`, `_normieren`, `speichen_spanne`, `_modifikation`, `_uebersteuerer`, `_rad_pruefen`, `_verrechnen`.
 **Prüfstand:** `test_haltung.py`, `test_haltung_knoten.py`.
 **Absicht:** `novaberg-haltungsraum_k.md` §2, §6.
 
 **Gekappt wird weiterhin nicht, und der Grund hat sich umgedreht.** Bis zum 08.08.2026 wurde addiert (`grund + summe`); das setzte zwei Skalen gleich, die es nicht sind, und verließ über die volle Charakterspanne in **62 von 62** Nicht-Grenz-Zellen die Spanne. Nicht zu kappen war schon damals richtig — Kappen erzeugt genau die toten Enden, die der Raum nicht haben darf: Zwei Landschaften, die oben anstoßen, wären nicht mehr zu unterscheiden. Seit der Wegform ist ein Überlauf **kein erwarteter Zustand mehr, sondern ein Defekt.** Bei `neigung` und `uebersteuerung` ist er unmöglich; erreichbar bliebe allein eine Grenzzelle mit einem Grundwert über 0,5, und die gibt es im Bestand nicht. Das Feld `ausserhalb` bleibt als Prüfung stehen und meldet seither als `error`.
+
+> **Das gilt seit dem 11.08.2026 auch für den Zug, und deshalb ist er in der Wegform gebaut.** Ein einfaches Abziehen mit `max(wert, 0)` wäre näher an der Anschauung und ist verworfen: Zwei verschieden warme Landschaften, die beide unter null gedrückt werden, sind danach dieselbe Zahl. Der Zeuge dafür ist `test_die_ordnung_der_landschaften_ueberlebt_jeden_charakter`, und er wurde beim Bau der Klemme rot. Die Wegform schließt die Tür nur bei Ausprägung **exakt 1,0** — dort gewollt, mit eigenem Test.
 
 **Eine Kopplung ohne Prüfung:** Die Spalte `fragen` in `CLUSTER_GRUNDWERT` ist keine eigene Setzung, sondern eine Übersetzung von `CLUSTER_FRAGEN` aus `ei/dreischicht.py` — „Häufig, begeistert" wird zu 0,90, „Keine" zu 0,00. Wer dort etwas ändert, ändert hier mit; **kein Test erzwingt das.** `auditiert` 08.08.2026.
 

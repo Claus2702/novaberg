@@ -19,9 +19,19 @@ Analog zum Kraft-1-Stichtag: ab wann eine Partition brauchbar ist. Kein Backfill
 
 - **Neuer Nullpunkt — 2026-07-27 09:13 UTC.** Alle Partitionen beginnen hier. Der erste Eintrag nach diesem Zeitpunkt ist der erste überhaupt.
 
+- **Rad-Messreihe (`charakter_rad_messung`) — brauchbar ab 2026-08-12 02:00 UTC.** Davor liegen drei verschiedene Messgeräte nebeneinander: Dreierskala, eine Nachkommastelle, und gedeckelte Profile als Quelle. `reihe_laden` mittelt über die letzten fünf Erhebungen und hielt sie für vergleichbar — bei `nova → meister` kamen dadurch **58,7 %** des angezeigten Wertes aus abgelösten Geräten, und die frische Messung mit 1,3582 erschien als 1,2099. **Die 259 Zeilen davor sind gelöscht**, gesichert in `charakter_rad_messung_archiv_20260812`; sie bleiben der Beleg für die Skalenumstellung (50 Läufe grob, 30 gerastert), taugen aber für keinen Wert. Kein Backfill.
+
 ---
 
 ## Offen
+
+- **2026-08-11** — Die Übersteuerung `distanz → naehe` greift in **0 von 14** Landschaften, auch bei voller Ausprägung 1.0 und unabhängig von der Schwelle. Eine Übersteuerung wirkt nur, wo die Größe eine **Grenze** ist; `CLUSTER_GRENZE` führt über alle Landschaften ausschließlich `draengen` und `fragen`, `naehe` in keiner. Sie war damit seit dem Bau am 31.07.2026 wirkungslos. `wissbegier → fragen` greift dagegen in 3 von 14 (`nebel`, `gewitter`, `paradox`). `novaberg-haltungsraum_k.md` §2 sagt das Gegenteil — *„`distanz` bei 1.0 übersteuert die Nähe, gleich wie warm die Landschaft ist"* —, das Konzept ist also die Absicht und der Code bleibt dahinter zurück.
+
+- **2026-08-11** — `UEBERSTEUERUNG_AB = 1.0` in `ei/haltung.py` ist für die Dreierskala geeicht und greift auf der feinen Skala nicht mehr. Über alle Zuwendungsrad-Läufe: grob 50 Läufe mit `distanz >= 1.0` in 27 (54 %) und `wissbegier >= 1.0` in 26 (52 %); fein 30 Läufe mit 1 (3 %) und 0 (0 %). Beide Übersteuerungen — die einzigen zwei Wege, auf denen eine Speiche die Grenze ihrer Landschaft durchbrechen kann — sind damit praktisch abgeschaltet, ohne Meldung und ohne roten Test. Die Schwelle verlangt eine Entscheidung, keinen Wert: Vorher feuerte sie auf dem Rundungsanschlag, den die feine Skala gerade beseitigt hat. **Auf Novas Verhalten wirkt es heute nicht** — die Haltung wird gerechnet, protokolliert und angezeigt, aber kein Prompt liest sie (Konzept-Status). Die Wirkung tritt in dem Moment ein, in dem §3 gebaut wird; bis dahin betrifft der Schaden die gemessenen und protokollierten Zahlen.
+
+- **2026-08-11** — `_perspektive_aufloesen` kennt für den generischen Nutzer nur Nominativ und Genitiv (`der Nutzer` / `des Nutzers`), kein Dativ. Vier der fünf Profil-Prompts setzen den Träger hinter „von" ein und lesen dadurch bei jedem menschlichen Paar „ein kompaktes Persönlichkeitsprofil von **der Nutzer**". Für die Assistentin tritt der Fall nicht auf, weil dort ein Eigenname steht.
+
+- **2026-08-11** — Die Zwischen-Destillation der Recherche (`recherche/zwischen`) läuft in ihre Frist von 300 s, ohne dass eine zweite Last am selben Modell liegt: Iteration 1 desselben Auftrags brauchte 124 s bei 2779 Eingabe-Token, Iteration 2 brach nach exakt 300,000 s ab. Der Auftrag lief danach mit leerer Zwischenzusammenfassung weiter.
 
   **Sie sind nie versucht worden:** Alle 230 tragen `_retries=0`. Zum Vergleich trägt `recherche` — der Agent existiert — 387 mit `_retries=0`, 16 mit 1 und 16 mit 2; dieser Pfad läuft also und scheitert gelegentlich.
 

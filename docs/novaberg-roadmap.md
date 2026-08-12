@@ -1983,6 +1983,65 @@ Beide Räder haben eine Nabe — den Wert ohne jede Ausprägung — und das Erge
 
 ---
 
+## Chat 136 (11.08.2026) — Der Deckel war die Rauschquelle, und die Übersteuerung hatte nie gegriffen ✅
+
+**Zwei Umbauten an zwei Enden derselben Kette**, beide aus einer Messung und nicht aus einer Meinung.
+
+### Die Verdichtung: gemessen, und der Deckel verliert
+
+`KERN_HASH_PROMPT` verlangte *„ein kompaktes Persönlichkeitsprofil in 2-5 Sätzen"* — eine Vorgabe aus der Zeit knapper Kontextfenster. Die Gegenprobe fuhr dasselbe Material zweimal, einmal mit Deckel und einmal ohne, je drei Läufe über die ganze Kette (Kern destillieren → Rad daraus lesen):
+
+```
+Fassung          n  Kern-Zeichen    Faktor   Spanne
+gedeckelt        3           667    0.9433   0.2510
+offen            3          3288    0.9197   0.0630
+```
+
+**Die Spanne fällt um das Vierfache, der Faktor bleibt** — der Deckel kauft nichts und kostet Verlässlichkeit. Der Vergleichswert macht es scharf: Das Eigenrauschen des Rades auf fester Quelle liegt bei 0,061–0,080; die offene Destillation legt also **nichts** obendrauf, die gedeckelte das Vierfache davon. Ein zweiter Bogen bestätigt die Richtung (Spanne 0,104 gegen 0,004).
+
+**Und der Text trägt den Menschen statt eines Urteils über ihn.** Der gedeckelte schreibt *„Sein Grundmuster ist pragmatisch-resilient"*, der offene zitiert: *„Du klingst wie ein Ratgeberbuch. Ich brauche keinen, der mir Fragen stellt, ich brauche jemanden, der mitzieht."* Genau das verlangt derselbe Prompt zwei Absätze höher — nicht WORÜBER, sondern WIE.
+
+> **Ein Nebenbefund über die Mehrfach-Erhebung:** Der Bestand destilliert den Kern **einmal** und liest das Rad dreimal daraus. `F-RAD-2` mittelt damit das Rauschen des **Rades**, nicht das der **Destillation** — und nach dieser Messung ist das zweite das größere. Drei identische Faktoren über einen festen Text sehen aus wie Stabilität und sind die Stabilität eines einzigen Textes.
+
+### Der Haltungsraum: eine Übersteuerung, die es nie gab
+
+Beim Nacheichen der Schwelle fiel auf, dass die Übersteuerung `distanz → naehe` **seit ihrem Bau in 0 von 14 Landschaften erreichbar** war: Sie griff nur in Grenzzellen, und `naehe` ist in keiner Landschaft eine Grenze. Zwei Schichten Stille übereinander — als dritte Rechenart lieferte sie in jeder Neigungszelle ohnehin dieselbe Zahl wie ohne sie, und `UEBERSTEUERUNG_AB = 1.0` war zusätzlich auf eine Skala geeicht, die es seit einem Tag nicht mehr gab (Trefferquote 54 % → 3 %).
+
+Gebaut ist daraus ein **Zug**: keine Rechenart mehr, sondern eine Wirkung **nach** der Rechnung, in jeder Zelle, verteilt über die Beitragszeile der auslösenden Speiche.
+
+```
+Ausprägung   0.8    0.9    0.95     1.0
+Zug          0.00   0.25   0.5625   1.00
+```
+
+`distanz` bei vollem Ausschlag macht aus `glut` (0,90 / 0,70 / 0,80) die Haltung **0,00 / 0,196 / 0,416** — kurz, fern und kühl, aber kein Nullvektor. Ziehen darf, **was sich abwendet, nicht was sich zuwendet**; das Kriterium halbiert die Zugrate, bevor die Kurve greift, weil 21 von 36 gemessenen Extremwerten auf ausgeschlossene Zuwendungsspeichen fallen. Die **Wegform statt einer Klemme**, weil Kappen zwei verschieden warme Landschaften auf dieselbe Zahl drückt — ein Test hielt genau das fest und wurde rot.
+
+**Damit ist auch §3.2 des Konzepts eingelöst**, drei Wochen nach seiner Niederschrift: `misstrauen −0,40` und `wohlwollen +0,40` hoben sich auf `waerme` **exakt** auf — der Fall, den der Absatz wörtlich verbietet.
+
+### Die Rundungsvorgabe fällt
+
+Beide Rad-Prompts verlangten *„auf eine Nachkommastelle"*. Diese Vorgabe ist selbst eine Skala und schlägt dorthin durch, wo Schwellen stehen: Oberhalb von 0,9 bleibt nur die 1,0. Sie ist gestrichen (`F-RAD-4`), dafür wird an der Eingangsgrenze **geklemmt und geloggt** statt abgewiesen — zwölf Urteile wegen einer zweiten Nachkommastelle wegzuwerfen ist der teurere Fehler.
+
+**Und die Gegenmessung noch in derselben Nacht zeigte, dass das Raster mehr verdeckt hatte als eine Stelle.** Zwei Paare, je sechs Läufe gerastert und sechs frei:
+
+```
+gerastert   distanz  0.9 · 0.9 · 0.9 · 0.9 · 0.9 · 0.9        zwölf von zwölf
+frei        distanz  0.93 · 0.91 · 0.91 · 0.95 · 0.96 · 0.86
+            distanz  0.93 · 0.943 · 0.96 · 0.94 · 0.94 · 0.95
+```
+
+**Das Gitter hat den Wert systematisch heruntergerundet.** Elf bis zwölf der zwölf Speichen liegen frei abseits des 0,1-Gitters — das Modell nutzt den Raum, und `distanz` liegt in Wahrheit bei 0,93 bis 0,96. Eine Schwelle auf dem Rasterwert löst deshalb nie aus, nicht weil das Urteil darunter läge, sondern weil es darüber nicht darstellbar war. Die Schwelle des Zuges steht seither auf **0,9** statt 0,8; ziehende Speichen je Lauf fallen damit von zwei bis zweieinhalb auf knapp eine.
+
+**Das dritte Paar zeigt, dass die Schwelle trennt.** `nova → meister` frei: `distanz` 0,11 · 0,063 · 0,03 gegen 0,86 bis 0,96 bei den Personas — keine Überschneidung, Faktoren 1,21–1,23 gegen 0,77–0,89. **Die Null des aktiven Paares war keine Rundung**, sondern ist mit Auflösung eine kleine Zahl geblieben.
+
+> **Was die Messung *nicht* zeigt:** eine Richtung beim Rauschen. Ein Paar wurde unruhiger (0,0151 → 0,0344), zwei ruhiger (0,0467 → 0,0370 und 0,0247 → 0,0092). Bei drei bis sechs Läufen je Zelle trägt das nichts. Der Gewinn des Entrundens liegt nicht in der Streuung, sondern darin, dass Werte oberhalb von 0,9 überhaupt existieren können.
+
+**Nova verhält sich durch all das unverändert.** Die Haltung wird gerechnet, protokolliert und angezeigt; kein Prompt liest sie. Der Umbau betrifft die Zahlen, auf denen der Prompt-Block aufsetzen wird.
+
+**Suite:** 1162 → **1173 grün, 0 übersprungen.**
+
+---
+
 ## Chat 135 (09.08.2026) — Das Log überlebt den Behälter, der es geschrieben hat ✅
 
 **Der Dienst schreibt sein Log jetzt zusätzlich in eine Datei**, rotierend, unter `/logs` — eingehängt außerhalb des Arbeitsbaums, weil Logzeilen Gesprächsinhalte tragen. Dieselbe Begründung wie beim Wissensspeicher.

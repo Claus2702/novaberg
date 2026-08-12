@@ -595,9 +595,13 @@ Drei Defekte, alle drei an der Grenze zwischen Turn und Oberflaeche. Der Befund 
 
 **Nachtrag desselben Tages, ein geprueftes Nein.** Die gesamte **Abwendungsseite** des gespeicherten Rades steht auf 0.0, die Zuwendungsseite trägt 5 von 6 Speichen (zwei davon auf 1.0). Der Verdacht, das Ausgabeschema im Prompt zeige alle zwölf Werte als `0.0` und verankere damit die Null, ist **geprüft und widerlegt**: Mit einem Platzhalter statt der Nullen ändert sich die Abwendungssumme nur von 1.5 auf 2.0.
 
-**Was fertig waere.** Die Eingabe, aus der das gespeicherte Rad entstand, ist benannt und reproduziert es — oder der Unterschied ist als Streuung des Verfahrens beziffert.
+**Nachtrag 12.08.2026 — die Abnahmebedingung ist heute unerreichbar, und das ist kein Defekt.** Der gespeicherte Wert ist seit dem 01.08. **kein Einzelmessergebnis mehr**, sondern das gewichtete Mittel der Reihe über die letzten fünf Erhebungen (`novaberg-charakter-rad-messreihe_k.md` §4). Eine einzelne Destillation kann ihn deshalb **konstruktionsbedingt** nicht reproduzieren — gemessen an `nova → meister` am 12.08.: frische Erhebung 1,3582, gespeichert 1,2099, weil 58,7 % des Wertes aus vier älteren Erhebungen kamen.
 
-**Prioritaet:** hoch. Ein Wert, der sich aus seiner eigenen Eingabe nicht reproduzieren laesst, traegt jede daraus abgeleitete Zahl mit.
+Zum Befund selbst: Das Archiv (`charakter_rad_messung_archiv_20260812`) trägt für den 01.08. genau **eine** Reihenzeile je Richtung — `meister → nova` mit `distanz 0.5` um 13:20. Der damals gespeicherte Wert 0,0 war damit **älter als die erste Reihenzeile**; verglichen wurde eine frische Destillation gegen einen Wert aus dem vorigen Stand, nicht gegen dieselbe Rechnung.
+
+**Was fertig waere — neu gefasst.** ~~Die Eingabe, aus der das gespeicherte Rad entstand, ist benannt und reproduziert es~~ → Die **Reihenrechnung** ist aus ihren Zeilen nachgerechnet und trifft den gespeicherten Wert; ein Einzellauf wird dabei ausdrücklich **nicht** erwartet. Für `nova → meister` ist das am 12.08. geschehen: `reihe_laden` + `rad_zusammenfassen` reproduzieren die 1,2099 auf vier Stellen.
+
+**Prioritaet:** ~~hoch~~ → **niedrig.** Die ursprüngliche Sorge — ein Wert, der jede abgeleitete Zahl mitträgt — bleibt richtig; sie richtet sich aber gegen die **Reihe**, und die ist nachrechenbar. Offen bleibt allein, was den Wert vor dem 01.08. geschrieben hat, und das ist nicht mehr feststellbar.
 
 ---
 
