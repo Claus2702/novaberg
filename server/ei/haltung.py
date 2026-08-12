@@ -161,18 +161,133 @@ SPEICHEN_BEITRAG: dict[str, dict[str, float]] = {
     "misstrauen": {"fragen": 0.10, "naehe": -0.20, "waerme": -0.40},
 }
 
-# Welche Speiche bei voller Auspraegung eine **Grenze durchbricht**, und in
-# welcher Groesse. Bewusst wenige, beide an den Grenzen, die am ehesten
-# ueberschreitbar sein sollten: Eine brennend neugierige Nova fragt auch im
-# Gewitter, und volle Distanz ueberwiegt jede warme Landschaft.
-SPEICHEN_UEBERSTEUERUNG: dict[str, frozenset[str]] = {
-    "wissbegier": frozenset({"fragen"}),
-    "distanz":    frozenset({"naehe"}),
-}
+# Welche Speichen bei extremem Ausschlag **ziehen** duerfen — die Lage also
+# ueberstimmen statt sie nur zu verschieben.
+#
+# **Eine Liste, keine Abbildung** (11.08.2026). Bis dahin stand hier je
+# Speiche **eine** Groesse. Das war eine zweite Tabelle neben
+# `SPEICHEN_BEITRAG`, die dieselbe Frage schon beantwortet — und schlechter,
+# weil eine Speiche auf mehrere Groessen traegt. Der Zug fliesst jetzt durch
+# die Zeile der Speiche in `SPEICHEN_BEITRAG`, in ihren eigenen
+# Verhaeltnissen; hier steht nur noch, **wer** ziehen darf.
+#
+# **Das Kriterium: Ziehen darf, was sich abwendet — nicht, was sich
+# zuwendet.** Die Landschaft *ist* die Lage des Anderen. Eine Speiche, die
+# "ich wende mich dir zu" bedeutet, kann nicht zugleich sagen, ihr sei
+# gleich, was diese Lage verlangt: Waerme, die die Lage ueberstimmt, ist
+# nicht mehr Waerme, sondern weniger Abstimmung. Eine Speiche, die "ich bin
+# bei mir" bedeutet, kann das sehr wohl — sie beschreibt einen Zustand, der
+# den Anderen aus dem Blick nimmt.
+#
+#     distanz         Rueckzug, Zumachen — der Rueckzug ist die Reaktion
+#     misstrauen      Wachsamkeit statt Begegnung (Konzept §3.2 verlangt es
+#                     woertlich: "soll sich nicht mit Wohlwollen verrechnen
+#                     lassen, es soll die Rechnung beenden" — und genau das
+#                     tat es nicht: `misstrauen -0.40` und `wohlwollen +0.40`
+#                     auf `waerme` heben sich exakt auf)
+#     gleichgueltig   der Andere zaehlt nicht — affektive Abflachung
+#     langeweile      das Thema zaehlt nicht — Disengagement
+#     widerspenstig   Gegenhalten als Haltung — Reaktanz
+#     selbstbezogen   nur noch die eigene Sicht — Selbstabsorption
+#     wissbegier      die **eine** Ausnahme auf der Zuwendungsseite: ein
+#                     Antrieb, der nach aussen zeigt und sich selbst dient.
+#                     Die Nova, die im Gewitter fragt, folgt nicht dem
+#                     Anderen, sondern dem Sog
+#
+# Draussen bleiben `aufmerksamkeit`, `wohlwollen`, `treue`, `dienst` und
+# `pflicht`. Bei den letzten beiden ist es das staerkste Argument: Im `regen`
+# steht "nicht draengen", und der Helfer, der es doch tut, ist der Fehler und
+# nicht die Ausnahme.
+#
+# **Gemessen, 30 Laeufe der feinen Skala:** Speichen ueber 0.8 fielen 36 mal,
+# davon 21 auf die drei ausgeschlossenen Zuwendungsspeichen
+# (`aufmerksamkeit` 13, `wohlwollen` 5, `treue` 3). Das Kriterium halbiert
+# die Zugrate auf 0.50 je Lauf, bevor die Kurve ueberhaupt greift. Von den
+# sechs Abwendungsspeichen erreichte allein `distanz` je 0.8 — die uebrigen
+# fuenf kosten heute nichts und stehen bereit.
+UEBERSTEUERUNG_SPEICHEN: frozenset[str] = frozenset({
+    "distanz", "misstrauen", "gleichgueltig", "langeweile",
+    "widerspenstig", "selbstbezogen", "wissbegier",
+})
 
 # Ab dieser Auspraegung greift eine Uebersteuerung. Darunter wirkt der Beitrag
 # der Speiche als gewoehnliche Neigung — gegen eine Grenze also gar nicht.
-UEBERSTEUERUNG_AB: float = 1.0
+#
+# **Nachgeeicht am 11.08.2026 von 1.0 auf 0.8, weil die Skala darunter eine
+# andere geworden ist.** Der Wert stammt aus der Zeit der Dreierskala, in der
+# 1.0 eine der drei erlaubten Ausprägungen war und entsprechend haeufig fiel.
+# Seit `F-RAD-3` wurde auf eine Nachkommastelle erhoben, und eine exakte 1.0
+# ist dort ein Eckfall. Gemessen ueber alle Laeufe des Zuwendungsrades:
+#
+#     grobe Skala, 50 Laeufe   distanz >= 1.0 in 54 %, wissbegier in 52 %
+#     feine Skala, 30 Laeufe   distanz >= 1.0 in  3 %, wissbegier in  0 %
+#
+# Beide Uebersteuerungen waren damit praktisch abgeschaltet — ohne Meldung,
+# ohne roten Test, weil die Tests die Schwelle symbolisch fuehren und nicht
+# als Zahl. Genau die Klasse aus `22_STILLE_FEHLER.md`.
+#
+# Die Schwelle trennt dabei, was sie trennen soll: Das aktive Paar
+# (`meister` <-> `nova`, distanz 0.0 bis 0.2) loest in 0 von 6 Laeufen aus,
+# die distanzierten Personas in 3 bis 6 von 6. Sie steht auf 0.8, weil die
+# Kurve darueber Raum braucht — die Begruendung dazu eine Konstante weiter
+# unten.
+#
+# **Auf Novas Verhalten wirkt das heute noch nicht** — die Haltung wird
+# gerechnet, protokolliert und angezeigt, aber kein Prompt liest sie
+# (`novaberg-haltungsraum_k.md` §3, offen). Der Wert muss trotzdem stimmen,
+# bevor der Prompt-Block kommt: Sonst startet die erste Messreihe ueber
+# Novas Verhalten auf einer Schwelle, die nie ausloest.
+#
+# **Auf 0.9 gesetzt, nachdem das Raster gefallen war** (11.08.2026, spät).
+# Die 0.8 war ein Notbehelf: Solange die Prompts »auf eine Nachkommastelle«
+# verlangten, war oberhalb von 0.9 nur die 1.0 erreichbar, und die Kurve
+# brauchte Raum darunter. Die Messung Raster gegen frei zeigt, warum das
+# der falsche Ausweg gewesen wäre — **das Gitter hat `distanz` systematisch
+# heruntergerundet:**
+#
+#     gerastert   0.9 · 0.9 · 0.9 · 0.9 · 0.9 · 0.9        (beide Paare)
+#     frei        0.93 · 0.91 · 0.91 · 0.95 · 0.96 · 0.86   (mehmet)
+#                 0.93 · 0.943 · 0.96 · 0.94 · 0.94 · 0.95  (sarah)
+#
+# Der wahre Wert liegt bei 0.93 bis 0.96. Auf dem Gitter war er nicht
+# darstellbar, und deshalb sah 0.9 aus wie eine Schwelle, die nie ausloest.
+# Ziehende Speichen je Lauf, ueber 12 freie Laeufe zweier Paare:
+#
+#     Schwelle 0.8    2.0 bis 2.5 je Lauf   — kein Ausnahmezustand mehr
+#     Schwelle 0.9    0.8 bis 1.2 je Lauf   — je Rad etwa eine
+#
+# **Und sie trennt, auch ohne Raster.** Das aktive Paar `nova -> meister`,
+# drei freie Laeufe am selben Abend: `distanz` 0.11 / 0.063 / 0.03 gegen
+# 0.86 bis 0.96 bei den beiden Personas. Keine Ueberschneidung, und die
+# Null war keine Rundung — sie ist mit Aufloesung eine kleine Zahl
+# geblieben. Die Schwelle 0.9 loest bei den Personas aus und beim aktiven
+# Paar in keinem Lauf.
+UEBERSTEUERUNG_AB: float = 0.9
+
+# Die Steilheit der Uebersteuerungskurve.
+#
+# **Kein Sprung, sondern ein Zug.** Bis zum 11.08.2026 war die
+# Uebersteuerung ein Umschalten der Rechenart und aenderte fuer eine
+# Neigungszelle keine einzige Zahl. Statt zu **ersetzen** zieht sie jetzt:
+# Ueber der Schwelle liefert `uebersteuerungs_zug` einen Betrag zwischen 0
+# und 1, der auf das Ergebnis der Zelle addiert oder von ihm abgezogen wird
+# — in der Richtung, in die die ausloesende Speiche ohnehin traegt.
+#
+# **Die Begruendung ist die Natur der Sache:** Ein Wesen kennt selten nur 0
+# und 1. Ein extremer Ausschlag soll seinen Gegenpol niederziehen, aber
+# graduell — bei knapper Ueberschreitung kaum, bei voller Auspraegung ganz.
+#
+# Der Exponent 2 macht die Kurve lange flach und dann steil. Mit der
+# Schwelle 0.9 trifft sie die entworfene Form fast genau — verlangt waren
+# rund ein halber Zug bei 0.97 und der ganze bei 1.0:
+#
+#     Auspraegung   0.90   0.93   0.95   0.97   1.00
+#     Zug           0.00   0.09   0.25   0.49   1.00
+#
+# Auf den gemessenen `distanz`-Werten der beiden Personas (0.93 bis 0.96)
+# liegt der Zug damit zwischen 0.09 und 0.36: spuerbar, aber nicht am
+# Anschlag. Der volle Zug bleibt dem vollen Ausschlag vorbehalten.
+UEBERSTEUERUNG_EXPONENT: float = 2.0
 
 
 @dataclass(frozen=True)
@@ -310,20 +425,76 @@ def _modifikation(rad: dict[str, float], groesse: str) -> float:
     )
 
 
-def _uebersteuerer(rad: dict[str, float], groesse: str) -> str:
-    """Nennt die Speiche, die diese Groesse uebersteuert, sonst "".
+def uebersteuerungs_zug(auspraegung: float) -> float:
+    """Wie stark eine Speiche ueber der Schwelle ihre Groesse an den Anschlag zieht.
 
-    Bei mehreren zutreffenden gewinnt die erste in SPEICHEN_UEBERSTEUERUNG;
-    das ist heute nicht erreichbar, weil keine zwei Speichen dieselbe Groesse
-    uebersteuern, bleibt aber deterministisch, falls eine dazukommt.
+    Null unterhalb und **genau auf** der Schwelle, eins bei voller
+    Auspraegung, dazwischen die Potenzkurve mit `UEBERSTEUERUNG_EXPONENT`.
+
+    **Stetig an der Schwelle, und das ist der Zweck.** Ein Schwellenwert, der
+    einen Sprung von 0 auf 1 ausloest, macht aus einer Zehntelstelle im
+    Modellurteil einen Zustandswechsel im Verhalten — genau die Haerte, die
+    das Rad mit der feinen Skala loswerden sollte.
+
+    Vorbedingung: `auspraegung` in [0.0, 1.0]. Ausserhalb ist ein Defekt des
+        Aufrufers und wird laut gemeldet, nicht stillschweigend geklemmt.
+    Nachbedingung: Rueckgabe in [0.0, 1.0]; 0.0 genau dann, wenn die
+        Auspraegung die Schwelle nicht ueberschreitet.
+    """
+    if not 0.0 <= auspraegung <= 1.0:
+        raise ValueError(
+            f"uebersteuerungs_zug: Auspraegung {auspraegung} liegt ausserhalb "
+            "[0.0, 1.0] — das Rad ist an seiner Eingabegrenze zu pruefen"
+        )
+    if auspraegung <= UEBERSTEUERUNG_AB:
+        return 0.0
+    anteil: float = (auspraegung - UEBERSTEUERUNG_AB) / (1.0 - UEBERSTEUERUNG_AB)
+    return anteil ** UEBERSTEUERUNG_EXPONENT
+
+
+def _uebersteuerer(rad: dict[str, float], groesse: str) -> tuple[str, float]:
+    """Nennt die Speiche, die diese Groesse am staerksten zieht, und den Zug.
+
+    Der Zug einer Speiche auf eine Groesse ist ihre Kurve, verteilt in den
+    Verhaeltnissen ihrer eigenen Zeile in `SPEICHEN_BEITRAG`::
+
+        zug = kurve(auspraegung) * beitrag[groesse] / max|beitrag der Zeile|
+
+    Damit zieht sie dort voll, wo sie am staerksten traegt, und anteilig auf
+    den uebrigen Groessen derselben Zeile — `distanz` nimmt die Naehe ganz,
+    den Umfang zu 0.6 und die Waerme zu 0.4. Das Vorzeichen kommt aus dem
+    Beitrag, nicht aus einer zweiten Setzung.
+
+    **Bei mehreren zutreffenden gewinnt der staerkste Zug, sie summieren
+    sich nicht.** Zwei gleichzeitige Ausnahmezustaende sind nicht doppelt so
+    ausnahmehaft; der extremere bestimmt die Groesse. Summiert stuende
+    ausserdem in `ausloeser` nur einer von zweien, und die Zeile logeine
+    Ursache, die die Zahl nicht allein erklaert. Bei gleichem Betrag
+    entscheidet der Name, damit die Auswahl deterministisch bleibt.
+
+    **Echt groesser, nicht groesser-gleich.** Genau auf der Schwelle ist der
+    Zug null (`uebersteuerungs_zug`), und eine Marke ohne Wirkung waere
+    schlimmer als keine: Wie oft die Uebersteuerung greift, ist eine
+    Messgroesse des Konzepts (§2) — eine Zeile, die »uebersteuerung« sagt
+    und nichts verschoben hat, treibt sie nach oben.
 
     Vorbedingung: wie `_modifikation`.
-    Nachbedingung: Speichenname aus SPEICHEN_UEBERSTEUERUNG oder "".
+    Nachbedingung: (Speichenname, Zug) mit Zug != 0.0, oder ("", 0.0).
     """
-    for speiche, groessen in SPEICHEN_UEBERSTEUERUNG.items():
-        if groesse in groessen and rad.get(speiche, 0.0) >= UEBERSTEUERUNG_AB:
-            return speiche
-    return ""
+    beste: tuple[str, float] = ("", 0.0)
+    for speiche in sorted(UEBERSTEUERUNG_SPEICHEN):
+        auspraegung: float = rad.get(speiche, 0.0)
+        if auspraegung <= UEBERSTEUERUNG_AB:
+            continue
+        zeile: dict[str, float] = SPEICHEN_BEITRAG[speiche]
+        beitrag: float = zeile.get(groesse, 0.0)
+        if beitrag == 0.0:
+            continue
+        staerkste: float = max(abs(wert) for wert in zeile.values())
+        zug: float = uebersteuerungs_zug(auspraegung) * beitrag / staerkste
+        if abs(zug) > abs(beste[1]):
+            beste = (speiche, zug)
+    return beste
 
 
 def _rad_pruefen(rad: dict[str, float], cluster: str) -> str:
@@ -401,17 +572,24 @@ def _verrechnen(grund: float, summe: float, art: str, groesse: str) -> float:
     Wegform wuerde sie oeffnen, weil ein Grundwert von 0 dort vollen Weg nach
     oben haette. Ihre einzige Freigabe bleibt die Uebersteuerung.
 
+    **Die Uebersteuerung ist hier keine Rechenart mehr** (11.08.2026). Sie
+    ersetzte bis dahin die Art und lieferte damit fuer jede Neigungszelle
+    exakt dieselbe Zahl wie ohne sie — sie war nur in Grenzzellen ueberhaupt
+    unterscheidbar. Sie wirkt jetzt als **Zug nach der Rechnung**
+    (`uebersteuerungs_zug`, angewandt in `haltung_berechnen`); diese
+    Funktion kennt deshalb nur noch die zwei Arten der Zelle.
+
     Args:
         grund:   Grundwert der Landschaft, in [0, 1].
         summe:   rohe Radsumme, unnormiert.
-        art:     "neigung", "grenze" oder "uebersteuerung".
+        art:     "neigung" oder "grenze" — die Art der Zelle.
         groesse: fuer die Normierung — jede Groesse hat ihre eigene Spanne.
 
-    Vorbedingung: `art` ist einer der drei Werte. Pruefung erfolgt beim
+    Vorbedingung: `art` ist einer der beiden Werte. Pruefung erfolgt beim
         Aufrufer, der die Art selbst setzt.
-    Nachbedingung: Bei "neigung" und "uebersteuerung" liegt das Ergebnis in
-        [0, 1]. Bei "grenze" und einem Grundwert von null ist es null, gleich
-        welche Summe anliegt.
+    Nachbedingung: Bei "neigung" liegt das Ergebnis in [0, 1]. Bei "grenze"
+        und einem Grundwert von null ist es null, gleich welche Summe
+        anliegt.
     """
     n: float = _normieren(summe, groesse)
 
@@ -422,8 +600,6 @@ def _verrechnen(grund: float, summe: float, art: str, groesse: str) -> float:
         # 0.00, und ein Test haelt das fest.
         return grund * (1.0 + n)
 
-    # Neigung und Uebersteuerung teilen die Wegform; der Unterschied liegt
-    # darin, dass die Uebersteuerung die Grenze ueberhaupt erst aufhebt.
     return grund + n * ((1.0 - grund) if n > 0 else grund)
 
 
@@ -473,18 +649,46 @@ def haltung_berechnen(cluster: str, rad: dict[str, float]) -> Haltung | None:
     for groesse in GROESSEN:
         grund:  float = grundwerte[groesse]
         summe:  float = _modifikation(rad, groesse)
-        traeger: str  = _uebersteuerer(rad, groesse) if groesse in grenzen else ""
+        # **Nicht mehr auf Grenzzellen beschraenkt.** Bis zum 11.08.2026 stand
+        # hier `if groesse in grenzen`, und weil `naehe` in keiner der
+        # vierzehn Landschaften eine Grenze ist, war die Uebersteuerung
+        # `distanz -> naehe` seit dem Bau in 0 von 14 Faellen erreichbar —
+        # ohne Meldung, ohne roten Test. Das Konzept verlangt das Gegenteil:
+        # »`distanz` uebersteuert die Naehe, gleich wie warm die Landschaft
+        # ist« (`novaberg-haltungsraum_k.md` §2).
+        traeger, zug = _uebersteuerer(rad, groesse)
+
+        # Die Zellart bleibt, was die Landschaft sagt — die Uebersteuerung
+        # ersetzt sie nicht, sie zieht danach. Eine Grenze haelt damit
+        # weiterhin (multiplikativ, null bleibt null) und oeffnet sich nur
+        # so weit, wie der Zug sie aufzieht.
+        zellart: str = "grenze" if groesse in grenzen else "neigung"
+        ergebnis: float = _verrechnen(grund, summe, zellart, groesse)
+        art: str = zellart
 
         if traeger:
-            # Die Uebersteuerung hebt die Grenze auf. Sie ersetzt die
-            # Rechenart, nicht den Beitrag.
-            art: str = "uebersteuerung"
-        elif groesse in grenzen:
-            art = "grenze"
-        else:
-            art = "neigung"
-
-        ergebnis: float = _verrechnen(grund, summe, art, groesse)
+            art = "uebersteuerung"
+            # **Der Zug geht den Weg, er wird nicht abgeschnitten.** Dieselbe
+            # Form wie bei der Neigung, hier auf das fertige Ergebnis
+            # angewandt: Der Zug nimmt den Anteil des Wegs, der in seiner
+            # Richtung noch offen ist.
+            #
+            # Ein einfaches Abziehen mit `max(wert, 0)` waere naeher an der
+            # Anschauung und ist verworfen: Es erzeugt genau die toten Enden,
+            # die der Raum nicht haben darf. Zwei Landschaften, die beide
+            # unter null gedrueckt werden, sind danach dieselbe Zahl — und
+            # `test_die_ordnung_der_landschaften_ueberlebt_jeden_charakter`
+            # faellt darueber, zu Recht.
+            #
+            # Die Wegform hat vier Eigenschaften, die das Kappen nicht hat:
+            # Sie bleibt in [0, 1] **durch Konstruktion** (keine Klemme
+            # noetig, `ausserhalb` bleibt allein das Zeichen eines Defekts),
+            # sie ist ordnungserhaltend fuer jeden Zug unter 1, sie ist bei
+            # Zug 0 neutral, und sie schliesst die Tuer **nur** bei
+            # Auspraegung exakt 1.0 — der einen Stelle, an der das Konzept
+            # ein totes Ende ausdruecklich will: Dort ist der Charakter der
+            # Zustand, und die Landschaft zaehlt nicht mehr.
+            ergebnis += zug * ((1.0 - ergebnis) if zug > 0 else ergebnis)
 
         werte[groesse] = Groessenwert(
             name         = groesse,
