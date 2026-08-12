@@ -189,19 +189,23 @@ class GrenzeTest(unittest.TestCase):
 class UebersteuerungTest(unittest.TestCase):
     """Der Charakter darf die Lage ueberschreiben — markiert."""
 
-    def test_volle_wissbegier_durchbricht_das_fragenverbot(self) -> None:
-        """gewitter/fragen ist eine Grenze bei 0.00; wissbegier traegt +0.40.
+    def test_volle_widerspenstigkeit_durchbricht_das_draengverbot(self) -> None:
+        """regen/draengen ist eine Grenze bei 0.00; widerspenstig traegt +0.30.
 
-        **Volle Auspraegung heisst voller Anschlag** (11.08.2026). Die Grenze
-        haelt weiter multiplikativ — 0.00 mal irgendetwas bleibt 0.00 —, und
-        darauf legt sich der Zug: bei 1.0 ist er 1.0, das Fragenverbot ist
-        ganz aufgehoben. Bis zu diesem Tag ergab derselbe Fall 0.571429,
-        weil die Uebersteuerung die Rechenart tauschte statt zu ziehen.
+        **Volle Auspraegung heisst voller Anschlag.** Die Grenze haelt weiter
+        multiplikativ — 0.00 mal irgendetwas bleibt 0.00 —, und darauf legt
+        sich der Zug: bei 1.0 ist er 1.0, das Draengverbot ist ganz
+        aufgehoben. Im `regen` steht »nicht draengen«; wer voll dagegenhaelt,
+        draengt trotzdem.
+
+        **Der Fall stand bis zum 12.08.2026 auf `wissbegier` im `gewitter`.**
+        Sie ist seither nicht mehr ziehberechtigt — sie ist das Ergebnis
+        einer Eigenschaft und kein Zustand, der ueberstimmt.
         """
-        haltung = haltung_berechnen("gewitter", {"wissbegier": 1.0})
-        wert = haltung.werte["fragen"]
+        haltung = haltung_berechnen("regen", {"widerspenstig": 1.0})
+        wert = haltung.werte["draengen"]
         self.assertEqual(wert.art, "uebersteuerung")
-        self.assertEqual(wert.ausloeser, "wissbegier")
+        self.assertEqual(wert.ausloeser, "widerspenstig")
         self.assertAlmostEqual(wert.ergebnis, 1.00, places=6)
 
     def test_halbe_wissbegier_durchbricht_sie_nicht(self) -> None:
@@ -224,11 +228,11 @@ class UebersteuerungTest(unittest.TestCase):
         Uebersteuerung, die nichts verschoben hat — und wie oft sie greift,
         ist eine Messgroesse des Konzepts (§2).
         """
-        genau  = haltung_berechnen("gewitter", {"wissbegier": UEBERSTEUERUNG_AB})
-        drueber = haltung_berechnen("gewitter", {"wissbegier": UEBERSTEUERUNG_AB + 0.01})
-        self.assertEqual(genau.werte["fragen"].art, "grenze")
-        self.assertEqual(genau.werte["fragen"].ausloeser, "")
-        self.assertEqual(drueber.werte["fragen"].art, "uebersteuerung")
+        genau   = haltung_berechnen("regen", {"widerspenstig": UEBERSTEUERUNG_AB})
+        drueber = haltung_berechnen("regen", {"widerspenstig": UEBERSTEUERUNG_AB + 0.01})
+        self.assertEqual(genau.werte["draengen"].art, "grenze")
+        self.assertEqual(genau.werte["draengen"].ausloeser, "")
+        self.assertEqual(drueber.werte["draengen"].art, "uebersteuerung")
 
     def test_die_schwelle_liegt_im_bereich_der_gemessenen_werte(self) -> None:
         """0.94 ist ein Wert, den das Rad ohne Raster wirklich vergibt.
@@ -249,16 +253,21 @@ class UebersteuerungTest(unittest.TestCase):
         Geprueft an einer Grenzzelle, weil dort der Unterschied zwischen
         »haelt« und »oeffnet sich« am schaerfsten ist.
         """
-        haltung = haltung_berechnen("gewitter", {"wissbegier": 0.94})
-        self.assertEqual(haltung.werte["fragen"].art, "uebersteuerung")
-        self.assertAlmostEqual(haltung.werte["fragen"].ergebnis, 0.16, places=6)
+        haltung = haltung_berechnen("regen", {"widerspenstig": 0.94})
+        self.assertEqual(haltung.werte["draengen"].art, "uebersteuerung")
+        self.assertAlmostEqual(haltung.werte["draengen"].ergebnis, 0.16, places=6)
 
     def test_der_zug_verteilt_sich_ueber_die_zeile_der_speiche(self) -> None:
-        """Wissbegier zieht Fragen ganz und Draengen halb — beides Grenzen.
+        """Langeweile zieht den Umfang ganz und die Waerme halb.
 
-        `SPEICHEN_BEITRAG["wissbegier"]` traegt `fragen +0.40` und
-        `draengen +0.20`; die staerkste Zelle der Zeile ist 0.40. Also
-        bekommt `fragen` den vollen Zug und `draengen` die Haelfte.
+        `SPEICHEN_BEITRAG["langeweile"]` traegt `umfang -0.40`,
+        `fragen -0.30`, `waerme -0.20` und `draengen -0.20`; die staerkste
+        Zelle der Zeile ist 0.40. Also bekommt `umfang` den vollen Zug,
+        `fragen` drei Viertel, die beiden uebrigen die Haelfte — »Hmmm… ja.«
+
+        Geprueft in `werkstatt`, weil dort **alle fuenf** Zellen Neigungen
+        sind: Der Zug ist damit allein an den Ergebnissen ablesbar und nicht
+        von einer Grenze ueberdeckt.
 
         **Bis zum 11.08.2026 hiess dieser Test »eine Uebersteuerung wirkt nur
         in ihrer Groesse« und behauptete das Gegenteil.** Er war richtig fuer
@@ -267,13 +276,18 @@ class UebersteuerungTest(unittest.TestCase):
         Verteilung der Punkt: Eine Speiche wirkt dorthin, wohin sie ohnehin
         traegt, in ihren eigenen Verhaeltnissen.
         """
-        haltung = haltung_berechnen("paradox", {"wissbegier": 1.0})
-        # Beide Zellen sind in `paradox` Grenzen bei Grundwert 0.00; was
-        # dasteht, ist allein der Zug.
-        self.assertEqual(haltung.werte["fragen"].art, "uebersteuerung")
-        self.assertAlmostEqual(haltung.werte["fragen"].ergebnis, 1.00, places=6)
-        self.assertEqual(haltung.werte["draengen"].art, "uebersteuerung")
-        self.assertAlmostEqual(haltung.werte["draengen"].ergebnis, 0.50, places=6)
+        werte = haltung_berechnen("werkstatt", {"langeweile": 1.0}).werte
+        for groesse in ("umfang", "fragen", "waerme", "draengen"):
+            with self.subTest(groesse=groesse):
+                self.assertEqual(werte[groesse].art, "uebersteuerung")
+                self.assertEqual(werte[groesse].ausloeser, "langeweile")
+        # Voller Zug: der Umfang faellt ganz, die uebrigen anteilig.
+        self.assertAlmostEqual(werte["umfang"].ergebnis, 0.0000, places=4)
+        self.assertAlmostEqual(werte["fragen"].ergebnis, 0.1500, places=4)
+        self.assertAlmostEqual(werte["waerme"].ergebnis, 0.2167, places=4)
+        self.assertAlmostEqual(werte["draengen"].ergebnis, 0.2100, places=4)
+        # `naehe` steht nicht in der Zeile und bleibt unberuehrt.
+        self.assertEqual(werte["naehe"].art, "neigung")
 
     def test_bei_zwei_ausschlaegen_gewinnt_der_staerkere_zug(self) -> None:
         """Sie summieren sich nicht — der extremere Zustand bestimmt.
@@ -323,12 +337,12 @@ class UebersteuerungTest(unittest.TestCase):
         Das Konzept sagt das Gegenteil: »`distanz` uebersteuert die Naehe,
         gleich wie warm die Landschaft ist« (§2).
         """
-        haltung = haltung_berechnen("glut", {"wissbegier": 1.0})
-        wert = haltung.werte["fragen"]
+        haltung = haltung_berechnen("glut", {"widerspenstig": 1.0})
+        wert = haltung.werte["waerme"]
         self.assertEqual(wert.art, "uebersteuerung")
-        self.assertEqual(wert.ausloeser, "wissbegier")
-        # Neigung 0.70, dazu der volle Zug 1.0 — geklemmt auf 1.00.
-        self.assertAlmostEqual(wert.ergebnis, 1.00, places=6)
+        self.assertEqual(wert.ausloeser, "widerspenstig")
+        # `waerme` ist in `glut` eine Neigung; der volle Zug nimmt sie ganz.
+        self.assertAlmostEqual(wert.ergebnis, 0.00, places=6)
 
     def test_distanz_zieht_die_naehe_in_jeder_warmen_landschaft(self) -> None:
         """Der Fall, den es vor dem 11.08.2026 in keiner Landschaft gab.
@@ -663,10 +677,10 @@ class KurzfassungTest(unittest.TestCase):
 
     def test_eine_uebersteuerung_steht_in_der_zeile(self) -> None:
         """Ein durchbrochenes Verbot muss in der Spur zu sehen sein."""
-        haltung = haltung_berechnen("gewitter", {"wissbegier": 1.0})
+        haltung = haltung_berechnen("regen", {"widerspenstig": 1.0})
         zeile: str = haltung.kurzfassung()
         self.assertIn("UEBERSTEUERT", zeile)
-        self.assertIn("wissbegier", zeile)
+        self.assertIn("widerspenstig", zeile)
 
     def test_ohne_uebersteuerung_steht_sie_nicht_da(self) -> None:
         """Der Zwilling — sonst meldete jede Zeile eine Uebersteuerung."""

@@ -189,25 +189,44 @@ SPEICHEN_BEITRAG: dict[str, dict[str, float]] = {
 #     langeweile      das Thema zaehlt nicht — Disengagement
 #     widerspenstig   Gegenhalten als Haltung — Reaktanz
 #     selbstbezogen   nur noch die eigene Sicht — Selbstabsorption
-#     wissbegier      die **eine** Ausnahme auf der Zuwendungsseite: ein
-#                     Antrieb, der nach aussen zeigt und sich selbst dient.
-#                     Die Nova, die im Gewitter fragt, folgt nicht dem
-#                     Anderen, sondern dem Sog
 #
-# Draussen bleiben `aufmerksamkeit`, `wohlwollen`, `treue`, `dienst` und
-# `pflicht`. Bei den letzten beiden ist es das staerkste Argument: Im `regen`
-# steht "nicht draengen", und der Helfer, der es doch tut, ist der Fehler und
-# nicht die Ausnahme.
+# Draussen bleibt die **ganze** Zuwendungsseite: `aufmerksamkeit`,
+# `wohlwollen`, `treue`, `dienst`, `pflicht` — und seit dem 12.08.2026 auch
+# `wissbegier`. Bei `dienst` und `pflicht` ist das Argument am schaerfsten:
+# Im `regen` steht "nicht draengen", und der Helfer, der es doch tut, ist der
+# Fehler und nicht die Ausnahme.
 #
-# **Gemessen, 30 Laeufe der feinen Skala:** Speichen ueber 0.8 fielen 36 mal,
-# davon 21 auf die drei ausgeschlossenen Zuwendungsspeichen
-# (`aufmerksamkeit` 13, `wohlwollen` 5, `treue` 3). Das Kriterium halbiert
-# die Zugrate auf 0.50 je Lauf, bevor die Kurve ueberhaupt greift. Von den
-# sechs Abwendungsspeichen erreichte allein `distanz` je 0.8 — die uebrigen
-# fuenf kosten heute nichts und stehen bereit.
+# **`wissbegier` war die eine zugelassene Ausnahme und ist gestrichen** —
+# gemessen und dann entschieden. Sie zog beim produktiven Paar in **14 von
+# 14** Landschaften, weil der Wert bei 0.97 steht und damit dauerhaft ueber
+# der Schwelle liegt; `fragen` fiel dort in keiner Landschaft unter 0.50,
+# auch nicht in `nebel`, `gewitter` und `paradox`, wo die Landschaft eine
+# Grenze bei 0.00 setzt. Das Konzept nennt als Kriterium: »Ein
+# Ausnahmezustand, der in jedem zweiten Turn eintritt, ist keiner.«
+#
+# **Der Grund ist nicht die Schwelle, sondern die Art der Groesse.**
+# Wissbegier ist das *Ergebnis* einer Eigenschaft und kein Zustand, der
+# ueberstimmt — deshalb kein Zug bei Extremen. Der Zug ist fuer Zustaende
+# gebaut: Rueckzug, Wachsamkeit, Reaktanz. Wer dauerhaft neugierig ist,
+# zoege dauerhaft, und keine Schwelle unterhalb des gemessenen Wertes
+# aenderte daran etwas.
+#
+# **Die naheliegende Gegenerklaerung ist geprueft und traegt nicht:** Der
+# hohe Wert ist kein Artefakt des Gespraechsthemas. Die Profile beschreiben
+# Denkart statt Themen, und ueber drei Paare mit derselben Messanordnung
+# liegt `wissbegier` bei 0.97, 0.86 und 0.83.
+#
+# **Gemessen, drei Paare mit offenem Profil und freiem Rad (12.08.2026):**
+# Jedes Paar traegt Speichen ueber der Schwelle — bei den beiden Personas
+# `aufmerksamkeit` 0.98, `treue` 0.95 und `wohlwollen` 0.95, alle drei von
+# diesem Kriterium ausgeschlossen. Ohne es haetten alle drei Paare
+# Dauerzuege. Die sechs verbliebenen Speichen erreichen die Schwelle in
+# keinem Paar; Novas hoechste ist `distanz` mit 0.38. **Der Zug ist damit
+# heute in 0 von 14 Landschaften aktiv** — und steht bereit fuer den Tag,
+# an dem ein Gespraech wirklich in einen Abwendungszustand laeuft.
 UEBERSTEUERUNG_SPEICHEN: frozenset[str] = frozenset({
     "distanz", "misstrauen", "gleichgueltig", "langeweile",
-    "widerspenstig", "selbstbezogen", "wissbegier",
+    "widerspenstig", "selbstbezogen",
 })
 
 # Ab dieser Auspraegung greift eine Uebersteuerung. Darunter wirkt der Beitrag
