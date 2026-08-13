@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Node-Referenz Responder
-**Stand:** 28. Juli 2026, Chat 114 ([DEIN SPRACHSTIL] hinter dem Verlauf, §4.1)
+**Stand:** 13. August 2026, Chat 137 (der Prompt ist ein Drehbuch, §3)
 **Pfad:** novaberg/docs/novaberg-node-responder.md
 **Quellen:** nova-01-m-e.md, nova-12-k.md §7
 **Datei:** `graph/nodes/responder.py`
@@ -26,6 +26,72 @@ Nur im CharacterGraph (Pfad 2). Seit Chat 60 nicht mehr im HumanGraph.
 ---
 
 ## 3. System-Prompt-Aufbau
+
+**Seit dem 13.08.2026 ist der Prompt ein Drehbuch und kein Lagebericht.** Der Umbau folgt einer Messung: Dieselbe Vorgabe traf als **Aufgabe** 6 von 6 Längenkorridore und als **Beschreibung** 0 von 6 (`novaberg-haltungsraum_k.md` §3.0). Der Grund ist strukturell — eine Beschreibung ist Information, erst ein Auftrag macht daraus etwas zu Erfüllendes. Das Modell ist nicht Nova; es kann sie spielen, wenn die Szene spielbar geschrieben ist.
+
+### 3.1 Die Blockfolge
+
+```
+── System ────────────────────────────────────────────────────────────
+[ROLLE]                       Konstellation · doppelte Prüfbedingung
+[SZENE]                       Landschaft · Sektor · Achsen · Farbton · Zeit
+[PERSON A — WER SIE IST]      Kern · Adaptiv · Emotionen · Intentionen
+[PERSON A — IHRE EMOTION]     Verlauf · Vektor · Konflikt
+[PERSON B — WER ER IST]       sein Kern · was ihn beschäftigt
+[ZWISCHEN BEIDEN]             beide Blickrichtungen, beschriftet
+[EIGENER GEDANKE]             bedingt, bei eigenem Impuls
+[AUFGABE]                     fertiger Block des Planners
+[PERSON B — WIE ER GERADE DA IST]   Emotion · Vektor · Register · Stil · Wille
+[INHALT]                      der Text des Verfassers
+[DIREKTIVEN]                  absolute Vorgaben des Nutzers
+[PERSON A — IHR WESEN]        Charakter-Anweisung, zuletzt
+── Nutzer ────────────────────────────────────────────────────────────
+[GESPRAECHSVERLAUF] · [AKTUELLER PROMPT]
+[REGIE FUER DIESE REPLIK]     Werkzeug · Umfang in Zeichen · Haltung · Energie · EI-Mikro
+```
+
+**Die Ordnung folgt zwei Befunden.** Vom Groben ins Feine, damit beim Lesen jeder Zeile klar ist, aus wessen Sicht sie geschrieben ist. Und die bindende Vorgabe zuletzt, weil Modelle Anfang und Ende eines langen Prompts stärker gewichten als die Mitte — die Profile dürfen dort liegen, die Zahl nicht.
+
+### 3.2 Eine Anrede, eine Bedeutung
+
+**»Du« ist der Schauspieler.** Über Person A wird in der dritten Person gesprochen; das »du« **innerhalb** der wörtlichen Rede meint Person B und bleibt.
+
+Vor dem 13.08.2026 mischte der Prompt alle drei Bedeutungen: In sieben von dreizehn Blöcken wurde geduzt, und »du« meinte mal den Spieler, mal die Rolle, mal das Gegenüber. Ein Modell musste bei jedem Block neu raten, wer gemeint ist — im `[INHALT]`-Block wechselte die Bedeutung sogar innerhalb des Blocks.
+
+### 3.3 Was jeder Block trägt
+
+**`[ROLLE]`** führt beide Personen ein und nennt zwei Bedingungen: Die Replik muss erkennbar von Person A stammen **und** erkennbar für Person B gemacht sein. Ohne diese Einführung stünden die Personenblöcke ohne Grund da — und ein Block, den der Auftrag nicht einführt, ist Kontext, der nicht bindet. Der Name ist nicht `[AUFGABE]`, weil den bereits der fertige Block des Planners trägt.
+
+**`[SZENE]`** trägt dieselbe Lage in drei Körnungen (Landschaft, Sektor, sechs Achsen — darunter die Initiative) und **den Farbton**, der den Responder bis dahin nie erreichte. Eine Wirkung des Farbtons ist nicht nachgewiesen; er steht dort, weil er die Lage beschreibt.
+
+**`[PERSON B — WER ER IST]`** trägt den Kern des Menschen. Bis zum 13.08.2026 erreichte vom Nutzer ein einziges Profil den Prompt — sein Beziehungsprofil, auf 300 Zeichen gekappt —, während von Nova alle fünf hineingingen.
+
+**`[ZWISCHEN BEIDEN]`** beschriftet beide Richtungen. Nach dem Paar-Schema sind `(nova, mensch)` und `(mensch, nova)` verschiedene Aussagen; unbeschriftet nebeneinander sahen sie aus wie zwei Fassungen derselben.
+
+**`[REGIE FUER DIESE REPLIK]`** ist der einzige anweisende Block: Werkzeug und Vehikel aus dem GV-Knoten, der Umfang als **Zeichenspanne**, die abweichenden Haltungswörter, der Energiesatz und die EI-Mikroanweisung. Er steht am Ende der Nutzer-Nachricht.
+
+### 3.4 Vier Doppelungen, die entfallen sind
+
+| Aussage | stand | jetzt |
+|---|---|---|
+| Antwortton | `tone` **und** `language_style`, widersprüchlich | entfallen — der Ton kommt aus der Regie |
+| Längenvorgabe | Arousal-Zweig **und** Stil-Zweig (»kürzere Sätze«) | nur der Zeichenkorridor |
+| Beziehungsdynamik | eigene Zeile **und** EI-Mikroanweisung | einmal, als Lage |
+| Landschaft | `[SZENE]` **und** Regie | nur `[SZENE]` |
+
+Die vierte entstand beim Umbau selbst und wurde von der Gegenprobe gefunden, nicht vom Bau.
+
+### 3.5 Was gemessen ist und was nicht
+
+**Gemessen:** Die Aufgabenform bindet (6/6 gegen 0/6). Die Zahl bindet, das Adjektiv nicht. Eine charakterabhängige Regie hält die Figur über Landschaften hinweg (27/27 gegen 22/25). Der Prompt bewegt die Antwort weit über das nackte Modell hinaus — Abstand 0,05–0,09 gegen 0,39 Eigenstreuung, bei einem Wesenswert von 1,00 gegen 0,10.
+
+**Nicht gemessen:** ob die Antwort auf **diesen** Menschen zugeht. Vier Verfahren sind an Fällen mit bekanntem Sollurteil gescheitert.
+
+**Offen und außerhalb dieses Knotens:** Der Verfasser bekommt keine Mengenangabe und liefert rund 1400 Zeichen für einen 350-Zeichen-Korridor. Der Responder kürzt, und das Kriterium kennt niemand.
+
+## 3a. Der Prompt bis zum 13.08.2026 — Herkunft
+
+> **Dieser Abschnitt beschreibt den abgelösten Aufbau.** Er bleibt stehen, weil die Begründungen darin — Lesson SYS1, die vier Fix-Iterationen, das Butler-Prinzip, die Yin-Yang-Rahmung der Direktiven — weiter gelten und weil ohne sie nicht nachvollziehbar wäre, warum der neue Aufbau ist, wie er ist.
 
 Der System-Prompt wird dynamisch aus dem State zusammengebaut (`_build_system_prompt`). Er folgt dem einheitlichen [BLOCKNAME]-Schema (`nova-01-t-d`, Chat 27). Reihenfolge: Primacy → Kontext → Recency.
 

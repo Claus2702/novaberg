@@ -1,6 +1,6 @@
 # Novaberg — Roadmap (Projektchronik)
 
-**Stand:** Chat 135, 9. August 2026
+**Stand:** Chat 137, 13. August 2026
 *(Die Kopfzeile stand bis Chat 109 auf „Chat 93, 21. Mai 2026" — 15 Chats hinter dem Inhalt. **Sie ist danach erneut zurückgefallen:** von Chat 110 bis 114 blieb sie auf „Chat 109" stehen, während der Inhalt weiterwuchs, und wurde in Chat 115 nachgezogen. Wer hier etwas ergänzt, zieht die Kopfzeile mit — sie driftet zuverlässig. Achtung beim Nachschlagen: Nur bis Chat 97 trägt jeder Chat eine eigene `## Chat NNN`-Überschrift; die Chats 98–108 stehen als `###`-Abschnitte unter dem Chat-97-Block, benannt nach Sprint statt nach Chat.)*
 **Pfad:** novaberg/docs/novaberg-roadmap.md
 **Single Source of Truth für abgeschlossene Arbeit.**
@@ -1980,6 +1980,55 @@ Beide Räder haben eine Nabe — den Wert ohne jede Ausprägung — und das Erge
 > **Die Zahlen selbst stehen nicht hier.** Ein Charakter-Rad ist ein Charakterprofil; aus den Summanden sind mit der Züge-Tabelle die Einzelspeichen rückrechenbar. Wer die Messung nachvollziehen will, fährt sie gegen den eigenen Bestand — sie ist in zwei Aufrufen wiederholbar.
 
 **Geschlossen:** `Bauteil 3 — Charakter-Räder im Client` (Rest benannt, siehe Backlog)
+
+---
+
+## Chat 137 (12./13.08.2026) — Der Prompt wird ein Drehbuch, und vier Messgeräte messen nichts ✅
+
+**Der Haltungsraum bekommt seinen ersten Leser, und der Responder-Prompt seine Gliederung.** Beides war seit Wochen vorbereitet und nie gebaut.
+
+### Die Wörter kommen an
+
+`ei/haltungssprache.py` übersetzt die fünf Verhaltensgrößen in die Bänder des Konzepts, den Umfang zusätzlich in eine Zeichenspanne, das Arousal in einen der acht Energie-Sätze. `HALTUNG-OHNE-LESER` ist damit geschlossen — der Zug war gebaut, das Kriterium stand, die Zahlen waren gemessen, und keine Antwort hatte sich je geändert.
+
+**Die erste Fassung des Kriteriums war falsch und wurde korrigiert.** Sie verglich Zahlen und schwieg unter 0,10 Abweichung; damit verschwand genau der Fall, für den die Bänder da sind. Ein höflich distanzierter Charakter drückt die Nähe im `feuerwerk` von 0,90 auf 0,82 — acht Hundertstel, aber »ganz nah« wird »vertraut«. Seither entscheidet der **Bandwechsel**.
+
+```
+einheitliche Regie   22/25 Läufe richtig zugeordnet, Butler im feuerwerk 0/3
+eigene Regie je Figur                                              27/27
+```
+
+### Der Prompt wird ein Drehbuch
+
+`[ROLLE]` führt beide Personen ein und stellt zwei Prüfbedingungen. `[SZENE]` trägt die Lage in drei Körnungen **und den Farbton**, der den Responder nie erreicht hatte. `[PERSON B]` trägt erstmals den Kern des Menschen statt 300 gekappter Zeichen. `[ZWISCHEN BEIDEN]` beschriftet beide Blickrichtungen des Paares. Die Regie steht zuletzt.
+
+Vier Doppelungen sind entfallen — drei aus dem Bestand, **eine beim Umbau selbst entstanden** und von der Gegenprobe gefunden, nicht vom Bau.
+
+**Und eine Anrede, eine Bedeutung:** »du« meinte in sieben von dreizehn Blöcken drei verschiedene Personen. Jetzt ist »du« der Schauspieler; über Person A wird in dritter Person gesprochen.
+
+### Die Nulllinie — macht der Prompt eine Nova?
+
+```
+nackt   Wesen 0.10   245 Zeichen   0/4 im Korridor
+Kern    Wesen 1.00   747           0/4
+Regie   Wesen 0.68  2473           2/4
+beides  Wesen 1.00  2438           3/4
+Abstand zum nackten Modell 0.05–0.09 gegen 0.39 Eigenstreuung
+```
+
+**Der Kern macht das Wesen, die Regie macht die Form.** Keines ersetzt das andere.
+
+### Vier Messgeräte, die nichts gemessen haben
+
+Die Frage »geht die Antwort auf **diesen** Menschen zu?« ist mit den verfügbaren Mitteln nicht messbar. Dreifachzuordnung 3/6 bei Zufall 2, Zwangswahl 3/6 bei Zufall 3, dasselbe mit dem stärkeren Analysemodell 2/6 und **systematisch invers**, ein lexikalisches Maß verzerrt. Alle vier fielen an Fällen mit bekanntem Sollurteil.
+
+Die Gegenprobe trägt: Dieselbe Anlage auf die Frage *wer spricht* traf 8 von 8 Eichfällen und danach 27 von 27. **Nicht das Verfahren war untauglich, sondern die Frage.**
+
+**Geschlossen:** `HALTUNG-OHNE-LESER` · `RESPONDER-ALS-AUFGABE` · `FARBTON-OHNE-LESER` (Wirkung unbelegt) · `PERSON-B-OHNE-BESCHREIBUNG` (Wirkung unbelegt)
+
+**Neuer Bug:** `VERFASSER-KENNT-DIE-QUELLE-NICHT` — der Verfasser liest Novas eigenen Impuls als Nutzeräußerung und schreibt die Zuschreibung ins Material; der Schutzblock des Responders greift danach ins Leere.
+
+**Offen und benannt:** Der Verfasser bekommt keine Mengenangabe und liefert rund 1400 Zeichen für einen 350-Zeichen-Korridor.
 
 ---
 

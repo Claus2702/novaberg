@@ -375,7 +375,7 @@ höchstens 120 Zeichen        4.7      113       24      3 von 3
 
 ### 3.0aa Die Bänder — von der Zahl zum Wort
 
-**Gesetzt, nicht gerechnet**, wie die Beitragstabellen selbst (§4). Der Wert einer Größe wählt sein Band, das Band liefert das Wort. Gesprochen wird nur, was vom Grundwert der Landschaft abweicht (totes Band 0,10) — gemessen ergibt das **1,6 Zeilen je Turn** über alle vierzehn Landschaften, also genau die vom Konzept verlangten zwei bis drei.
+**Gesetzt, nicht gerechnet**, wie die Beitragstabellen selbst (§4). Der Wert einer Größe wählt sein Band, das Band liefert das Wort. Gesprochen wird nur, was vom Grundwert der Landschaft abweicht — und ~~das tote Band von 0,10~~ **der Bandwechsel** entscheidet darüber (13.08.2026, siehe unten) — gemessen ergibt das **1,6 Zeilen je Turn** über alle vierzehn Landschaften, also genau die vom Konzept verlangten zwei bis drei.
 
 | Größe | ≤ 0,20 | ≤ 0,45 | ≤ 0,70 | ≤ 0,88 | > 0,88 |
 |---|---|---|---|---|---|
@@ -388,6 +388,14 @@ höchstens 120 Zeichen        4.7      113       24      3 von 3
 **Die Wortzahl trägt die Intensität mit.** An den Enden zwei bis drei Wörter, in der Mitte eines: Die Verdopplung legt die Schwäche oder die Kraft ins Feld, das einzelne Wort ist die mildere Fassung. Kein Zwang — bei `fragen` sind die zwei Wörter der mittleren Stufen **Handwerk statt Steigerung**, weil die Zeile die Größe nicht benennt und jedes Wort seine Achse selbst mitbringen muss. „Sparsam" allein wäre in `gemessen · sparsam · warm` nicht als Frage-Aussage lesbar.
 
 **Zwei Begründungen, die beim Ändern zu kennen sind.** `naehe` und `waerme` haben **getrennte Wortfamilien**, und das ist Absicht: Man kann vertraut und kühl sein (alte Ehe) oder fremd und herzlich (guter Gastgeber). Aus demselben Wortfeld gespeist, würde ein Modell die beiden Achsen verschmelzen. Und `innig` steht bei der **Wärme**, nicht bei der Nähe — es kommt von *innen*, und die erste Wörterbuchbedeutung ist „von tiefem Gefühl erfüllt"; die Enge ist erst die zweite.
+
+> **Gebaut am 13.08.2026, mit einer Korrektur am Kriterium.** `ei/haltungssprache.py` trägt die drei Tabellen; der Responder liest sie unmittelbar vor dem Text.
+>
+> **Nicht der Abstand entscheidet, sondern der Bandwechsel.** Die erste Fassung schwieg, solange eine Größe um weniger als 0,10 vom Grundwert abwich — und verschluckte damit genau den Fall, für den die Bänder da sind: Ein höflich distanzierter Charakter drückt die Nähe im `feuerwerk` von 0,90 auf 0,82, acht Hundertstel, und aus »ganz nah« wird »vertraut«. Gemessen: Unter der alten Regel bekam er **dieselbe Regie wie Nova** und wurde dreimal von drei als sie gelesen.
+>
+> Gegen das Flattern schützt die Diskretisierung selbst: Eine Schwankung ändert das Wort nur, wenn der Wert ohnehin auf einer Bandgrenze sitzt — und dort sind beide Wörter richtig. Beide Eingangsgrößen sind pro Turn deterministisch, der Grundwert kommt aus der Landschaftstabelle und das Rad steht bis zur nächsten Destillation still.
+>
+> **Was in der Praxis spricht:** über alle vierzehn Landschaften **2,3 von 4** Größen, Spanne 0 bis 4. Eine Figur spricht dort, wo sie der Landschaft widerspricht — Nova sagt im `feuerwerk` nur »vorantreibend«, im `foyer` alle vier; ein distanzierter Butler trägt »fremd, distanziert, auf Abstand« in 11 von 14 Landschaften und schweigt im `schlachtfeld` ganz, weil die Lage dort selbst kühl ist.
 
 **Der Umfang trägt zusätzlich eine Zeichenspanne**, weil er die einzige Größe ist, deren Einhaltung sich messen lässt — und weil die Messung zeigt, dass nur eine Zahl bindet:
 
@@ -439,6 +447,10 @@ Arousal gibt **eine** Formulierung ab: mit wieviel Kraft Nova auftreten darf. Di
 **Die Konstellation steht vor den Beschreibungen**, damit beim Lesen jeder Zeile klar ist, aus wessen Sicht sie geschrieben ist. Ein Modell, das erst am Ende erfährt, welche Perspektive ein Absatz hatte, hat ihn bereits falsch eingeordnet.
 
 **Die Regie steht unmittelbar vor dem Text** — an der stärksten Position, die ein Prompt hat. Im Bestand steht die Längenregel mitten im Kontextblock, an der schwächsten.
+
+> **Gebaut am 13.08.2026.** Der Prompt trägt die Gliederung; `novaberg-node-responder.md` §3 beschreibt sie im Bestand. Zwei Abweichungen vom Entwurf, beide begründet: Der Kopfblock heißt **`[ROLLE]`** und nicht `[AUFGABE]`, weil den Namen bereits der fertige Block des Planners trägt — zwei gleichnamige Blöcke in einem Prompt sind die stille Verwechslung, gegen die `22_STILLE_FEHLER.md` geschrieben ist. Und die Prüfbedingung ist **doppelt**: Die Replik muss von dieser Person stammen *und* für dieses Gegenüber gemacht sein. Ohne die zweite hätte der Block über Person B keine Rolle im Auftrag — und ein Block ohne Rolle ist Kontext, der nicht bindet.
+>
+> **Eine Anrede, eine Bedeutung.** Vor dem Umbau meinte »du« in sieben von dreizehn Blöcken drei verschiedene Personen. Seither ist »du« der Schauspieler; über Person A wird in dritter Person gesprochen, und das »du« innerhalb der Rede meint Person B.
 
 ### 3.0b Szene und Regie sind zwei Dinge
 
