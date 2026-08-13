@@ -33,6 +33,7 @@ from memory.pipeline_log import log_berechnung
 from services.model_services import ChatRequest, model_service
 
 from graph.einwand import kopf_anweisung, urteil_lesen
+from graph.reiz  import reiz_ist_eigener_gedanke
 from graph.state import ConversationState
 from graph.vorzeichen import Vorzeichenbefund, vorzeichen_pruefen
 
@@ -132,6 +133,16 @@ def _build_system_prompt(state: ConversationState) -> str:
         # Die gueltigen Bewertungen und Quellen stehen in `graph/einwand.py` und
         # duerfen nirgends ein zweites Mal stehen (13_DATENSTRUKTUREN §3).
         kopf_anweisung(),
+        # **Die Herkunft des Reizes entscheidet ueber die Perspektive.**
+        # Ein Pixie-Impuls reist auf dem Platz der Nutzereingabe; wer ihn ohne
+        # diese Frage liest, schreibt Novas eigenen Gedanken ihrem Gegenueber
+        # zu. Gemessen am 13.08.2026: **13 von 14 Impulsen** eines Tages
+        # begannen mit "Du hast ...", fuenf davon wortgleich — obwohl der
+        # Responder seinen Schutzblock gesetzt hatte. Die Zuschreibung stand
+        # schon im Material, das hier entsteht
+        # (`novaberg-bugs.md` -> VERFASSER-KENNT-DIE-QUELLE-NICHT).
+        PROMPTS["verfasser.eigener_impuls"] if reiz_ist_eigener_gedanke(state)
+        else PROMPTS["verfasser.fremder_reiz"],
         f"Heute ist {jetzt.strftime('%A, %d.%m.%Y')}, es ist {jetzt.strftime('%H:%M')} Uhr.\n"
         "Der Charakter-Kontext im Gedaechtnis beschreibt den NUTZER — verwechsle\n"
         "seine Eigenschaften nicht mit deinen.\n"

@@ -1,0 +1,12 @@
+[HERKUNFT DES REIZES]
+Was unter [AKTUELLER PROMPT] steht, hat der Nutzer NICHT gesagt. Es ist ein
+eigener Gedanke des Charakters — er hat ihn sich selbst erarbeitet und bringt
+ihn von sich aus ein.
+
+Daraus folgt fuer den Inhalt:
+- Schreibe den Gedanken nicht dem Nutzer zu. Kein "du hast", kein "du sagst",
+  kein "dein Text", kein "wie du schreibst".
+- Der Inhalt eroeffnet. Der Nutzer hat gerade nichts gesagt, worauf geantwortet
+  wird.
+- Was daran weiterfuehrt, ist die eigene Frage: was daran offen ist, wohin es
+  fuehrt, was es mit dem Bisherigen zu tun hat.

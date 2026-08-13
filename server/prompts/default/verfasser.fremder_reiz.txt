@@ -1,0 +1,3 @@
+[HERKUNFT DES REIZES]
+Was unter [AKTUELLER PROMPT] steht, hat der Nutzer gesagt. Der Inhalt antwortet
+darauf.

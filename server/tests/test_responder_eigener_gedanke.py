@@ -14,7 +14,8 @@ wiederholt aber eine echte Nutzer-Aeusserung und darf den Block NICHT bekommen.
 
 import unittest
 
-from graph.nodes.responder import _build_system_prompt, _reiz_ist_eigener_gedanke
+from graph.nodes.responder import _build_system_prompt
+from graph.reiz import reiz_ist_eigener_gedanke
 
 MARKER: str = "[EIGENER GEDANKE]"
 
@@ -46,19 +47,27 @@ def _state(payload: dict | None = None, event_source: str = "user") -> dict:
 
 
 class ReizHerkunftTest(unittest.TestCase):
-    """Der Marker entscheidet, nicht die event_source."""
+    """Der Marker entscheidet, nicht die event_source.
+
+    Die Funktion liegt seit dem 13.08.2026 in `graph/reiz.py` — beide Stufen
+    brauchen sie, und ein Schutz, den nur die zweite kennt, greift ins Leere,
+    sobald die erste den Text schreibt (`VERFASSER-KENNT-DIE-QUELLE-NICHT`).
+    Diese Klasse prueft sie weiter von hier aus, weil der Responder ihr
+    aeltester Leser ist; die Zwillinge fuer den Verfasser stehen in
+    `test_verfasser_herkunft.py`.
+    """
 
     def test_eigener_impuls_wird_erkannt(self):
-        self.assertTrue(_reiz_ist_eigener_gedanke(
+        self.assertTrue(reiz_ist_eigener_gedanke(
             _state({"reiz_herkunft": "eigener_impuls"}, event_source="character")
         ))
 
     def test_nutzer_turn_ist_kein_eigener_gedanke(self):
-        self.assertFalse(_reiz_ist_eigener_gedanke(_state()))
+        self.assertFalse(reiz_ist_eigener_gedanke(_state()))
 
     def test_thinker_retry_ist_kein_eigener_gedanke(self):
         """Gleiche event_source, aber eine wiederholte NUTZER-Aeusserung."""
-        self.assertFalse(_reiz_ist_eigener_gedanke(
+        self.assertFalse(reiz_ist_eigener_gedanke(
             _state({"thinker_unsicher_retry": True, "turn_id": "t-1"},
                    event_source="character")
         ))
@@ -66,7 +75,7 @@ class ReizHerkunftTest(unittest.TestCase):
     def test_fehlender_payload_gilt_als_fremd(self):
         zustand = _state()
         zustand["event_payload"] = None
-        self.assertFalse(_reiz_ist_eigener_gedanke(zustand))
+        self.assertFalse(reiz_ist_eigener_gedanke(zustand))
 
 
 class ResponderPromptTest(unittest.TestCase):

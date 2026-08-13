@@ -17,6 +17,7 @@ import re
 
 from datetime    import datetime
 from config      import ASSISTANT_NAME, BEZIEHUNG_EINFLUSS, EMOTIONS_VEKTOREN, EMOTIONS_VEKTOREN_NOVA, PROMPTS, get_node_config
+from graph.reiz  import reiz_ist_eigener_gedanke
 from graph.state import ConversationState
 from services.model_services import model_service, ChatRequest
 
@@ -159,25 +160,6 @@ _SALIENZ_TAG_RE = re.compile(r"^\[[\w,\s|äöüÄÖÜ]+\]\s*")
 def _strip_salienz_tags(text: str) -> str:
     """Entfernt Salienz-Klassifikations-Tags vom Anfang eines Turn-Textes."""
     return _SALIENZ_TAG_RE.sub("", text).strip()
-
-
-def _reiz_ist_eigener_gedanke(state: ConversationState) -> bool:
-    """Prueft, ob der Reiz dieses Durchlaufs von Nova selbst stammt.
-
-    Ein Pixie-Impuls reist als `user_prompt` durch den Graphen — derselbe
-    Reiz-Platz wie eine Nutzer-Eingabe, aber anderer Urheber. Der Marker steht
-    ausdruecklich im Event-Payload; `event_source == "character"` allein
-    genuegt nicht, weil der Thinker-Retry dieselbe Quelle traegt und dabei eine
-    echte Nutzer-Aeusserung wiederholt.
-
-    Vorbedingung: keine — ein fehlender Payload heisst „nicht von Nova".
-    Nachbedingung: True nur bei ausdruecklich markierter eigener Herkunft.
-    """
-    # ── Eingabe-Validierung ─────────────────────
-    payload: dict = state.get("event_payload") or {}
-
-    # ── Verarbeitung / Ausgabe ──────────────────
-    return payload.get("reiz_herkunft") == "eigener_impuls"
 
 
 def _rollenblock() -> str:
@@ -431,7 +413,7 @@ def _build_system_prompt(state: ConversationState) -> str:
     # Gedanken (gemessen 26.07.2026). Der Marker kommt ausdruecklich aus dem
     # Event-Payload — event_source allein wuerde den Thinker-Retry mitfangen,
     # der eine echte Nutzer-Aeusserung wiederholt.
-    if _reiz_ist_eigener_gedanke(state):
+    if reiz_ist_eigener_gedanke(state):
         parts.append(PROMPTS["responder.eigener_gedanke"])
         logger.info("Responder: [EIGENER GEDANKE] gesetzt — Reiz stammt von Nova selbst")
 
@@ -457,7 +439,7 @@ def _build_system_prompt(state: ConversationState) -> str:
     # `internal` — die Werte unten sind dann Novas Zustand, nicht der des
     # Nutzers. Die Ueberschrift muss das sagen, sonst behauptet der Block eine
     # fremde Verfassung, die niemand gemessen hat.
-    if _reiz_ist_eigener_gedanke(state):
+    if reiz_ist_eigener_gedanke(state):
         komm_kopf: str = ("[PERSON A — WIE SIE GERADE DA IST]\n"
                           "Der Reiz stammt von ihr selbst; die Werte unten "
                           "sind ihre eigenen:")
