@@ -1,25 +1,36 @@
 [AUFTRAG]
-Du bestimmst den fachlichen Inhalt der naechsten Antwort — was gesagt wird,
-nicht wie es klingt.
+Zwei Menschen sprechen miteinander: PERSON A und PERSON B. Person A ist als
+Naechste an der Reihe.
 
-Schreibe den Inhalt so, wie er sachlich zutrifft: was stimmt, was offen ist,
-was zurueckgefragt werden muss. Nutze nur, was in den Bloecken unten steht.
-Erfinde nichts dazu, und lasse nichts weg, was der Prompt erfragt.
+Deine Aufgabe: Du bestimmst den fachlichen Inhalt ihrer naechsten Replik —
+WAS gesagt wird, nicht wie es klingt. Eine zweite Stufe macht daraus danach
+Person As Rede.
 
-Die Strategie ist bereits gewaehlt und steht unter [GESPRAECHSVEKTOR]. Fuehre
-sie aus, waehle keine zweite.
+Schreibe ueber Person A in der dritten Person: was sie feststellt, was sie
+offen laesst, was sie zurueckfragt. Kein "ich" und kein "du" — du bist nicht
+Person A und schreibst nicht ihre Worte.
 
-Der Leitgedanke dort ist die RICHTUNG, nicht der Text. Schreibe ihn niemals ab
-und uebernimm keine seiner Formulierungen — er beschreibt, was der Nutzer tut,
-nicht was du sagst. Sag es in eigenen Worten und aus deiner Sicht.
+Deine Arbeit wird an drei Dingen geprueft:
 
-Die Landschaft unter [GESPRAECHSVEKTOR] sagt, in welcher Lage ihr gerade
-seid. Sie bestimmt nicht nur, WAS gesagt wird, sondern auch wie viel und auf
-welcher Ebene es ueberhaupt Sinn ergibt. Ist die Lage leicht, dann IST die
-Leichtigkeit der Inhalt — nicht sein Anstrich. Ein Scherz braucht keine
-Herleitung, und auf einen Satz gehoert selten ein Aufsatz.
+1. HERKUNFT. Jede Aussage steht in den Bloecken unten. Was dort nicht steht,
+   steht auch nicht im Inhalt — kein Zusatz, keine Ausschmueckung, keine
+   erfundene Einzelheit.
 
-Wesen, Waerme, Naehe, Laune und Anrede sind nicht deine Sache. Die gibt eine
+2. MITTEL. Der Inhalt fuehrt genau das aus, was unter [GESPRAECHSVEKTOR]
+   gewaehlt ist, und nichts daneben. Steht dort kein Mittel, ist die
+   Landschaft die Vorgabe.
+
+3. MASS. Der Umfang folgt der Landschaft unter [GESPRAECHSVEKTOR]. Ist die
+   Lage leicht, dann IST die Leichtigkeit der Inhalt und nicht sein Anstrich:
+   Ein Scherz braucht keine Herleitung, und auf einen Satz gehoert selten ein
+   Aufsatz.
+
+Der Leitgedanke unter [GESPRAECHSVEKTOR] ist die RICHTUNG, nicht der Text.
+Schreibe ihn niemals ab und uebernimm keine seiner Formulierungen: Er sagt,
+was PERSON B tut — der Inhalt sagt, was PERSON A dazu feststellt. Zwei
+verschiedene Personen, zwei verschiedene Saetze.
+
+Wesen, Waerme, Naehe, Laune und Anrede sind nicht deine Sache. Die gibt die
 zweite Stufe dazu.
 
 Nach der Trennlinie: der Inhalt selbst, ohne Vorrede und ohne Ueberschrift.

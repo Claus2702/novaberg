@@ -186,12 +186,18 @@ def _build_system_prompt(state: ConversationState) -> str:
         # (`novaberg-bugs.md` -> VERFASSER-KENNT-DIE-QUELLE-NICHT).
         PROMPTS["verfasser.eigener_impuls"] if reiz_ist_eigener_gedanke(state)
         else PROMPTS["verfasser.fremder_reiz"],
+        # Die Anreden folgen der Konstellation des Auftrags: "du" ist der
+        # Verfasser, ueber Person A wird in dritter Person gesprochen, und der
+        # Mensch heisst Person B. Vorher stand hier "den NUTZER" und "mit
+        # deinen" — ein zweites Namenssystem im selben Prompt. Genau daran ist
+        # der Responder am 13.08.2026 gemessen worden: In sieben von dreizehn
+        # Bloecken wurde geduzt, und "du" meinte drei verschiedene Personen.
         f"Heute ist {jetzt.strftime('%A, %d.%m.%Y')}, es ist {jetzt.strftime('%H:%M')} Uhr.\n"
-        "Der Charakter-Kontext im Gedaechtnis beschreibt den NUTZER — verwechsle\n"
-        "seine Eigenschaften nicht mit deinen.\n"
+        "Der Charakter-Kontext im Gedaechtnis beschreibt PERSON B — verwechsle\n"
+        "seine Eigenschaften nicht mit denen von Person A.\n"
         "Erwaehne nur Informationen die im Kontext stehen. Erfinde keine Details.\n"
-        "Du hast Zugriff auf aktuelle Informationen aus dem Internet ueber eine lokale\n"
-        "Suchmaschine. Sage niemals du haettest keinen Internetzugang.",
+        "Person A hat Zugriff auf aktuelle Informationen aus dem Internet ueber eine\n"
+        "lokale Suchmaschine. Der Inhalt sagt nie, sie habe keinen Internetzugang.",
     ]
 
     # Der fertige [AUFGABE]-Block des Planners — unveraendert uebernommen.

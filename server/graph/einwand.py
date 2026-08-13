@@ -109,7 +109,7 @@ def kopf_anweisung() -> str:
         "Beginne JEDE Antwort mit genau diesen fuenf Zeilen, in dieser\n"
         "Reihenfolge, danach eine Zeile mit " + _TRENNER + " und erst dann der\n"
         "Inhalt selbst:\n\n"
-        "EINWAND: ja oder nein — widerspricht der Nutzer etwas, das frueher\n"
+        "EINWAND: ja oder nein — widerspricht PERSON B etwas, das frueher\n"
         "  gesagt wurde, oder etwas Nachpruefbarem?\n"
         "GEPRUEFT: ein Satz. Was stand frueher da, was steht jetzt da?\n"
         "BEWERTUNG: " + " oder ".join(BEWERTUNGEN) + "\n"
@@ -121,12 +121,12 @@ def kopf_anweisung() -> str:
         "Reihenfolge ist der Zweck: Wer erst zustimmt und dann prueft, hat\n"
         "sich schon festgelegt.\n\n"
         "Bei BEWERTUNG: abweichend gilt fuer den Inhalt danach:\n"
-        "Der abweichende Wert darf ZITIERT werden — „du sagst jetzt 800k\" —\n"
-        "aber er wird NICHT Grundlage einer Ableitung. Keine Empfehlung, keine\n"
-        "Folgerung, keine Handlungsanweisung, die auf ihm steht. „Damit hast\n"
-        "du einen Anker\" ist verboten, auch wenn der Vorbehalt danebensteht.\n"
-        "Ein Gebaeude auf einem falschen Wert ueberlebt jede spaetere\n"
-        "Korrektur des Werts."
+        "Der abweichende Wert darf ZITIERT werden — „Person B nennt jetzt\n"
+        "800k\" — aber er wird NICHT Grundlage einer Ableitung. Keine\n"
+        "Empfehlung, keine Folgerung, keine Handlungsanweisung, die auf ihm\n"
+        "steht. „Damit hat sie einen Anker\" ist verboten, auch wenn der\n"
+        "Vorbehalt danebensteht. Ein Gebaeude auf einem falschen Wert\n"
+        "ueberlebt jede spaetere Korrektur des Werts."
     )
 
 

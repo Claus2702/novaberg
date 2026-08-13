@@ -21,6 +21,12 @@ Zeugen dieser Datei:
   * **Die Abgrenzung gegen den Thinker-Retry gehoert dazu:** gleiche
     `event_source`, aber eine wiederholte Nutzer-Aeusserung.
 
+Der gepruefte Wortlaut hat am 14.08.2026 gewechselt: Der Auftrag traegt seit
+dem die Konstellation aus PERSON A und PERSON B, und der Herkunftsblock nennt
+den Menschen mit derselben Bezeichnung wie der Rest des Prompts. Vorher stand
+dort "der Nutzer" — ein zweites Namenssystem neben dem Auftrag. Die Aussage
+der Zeugen ist unveraendert; nur die Zeichenfolge ist es nicht.
+
 Kein skipUnless, kein skipIf, kein try/except um Importe.
 """
 
@@ -67,8 +73,8 @@ class VerfasserPromptTest(unittest.TestCase):
         prompt: str = verf_mod._build_system_prompt(
             _state({"reiz_herkunft": "eigener_impuls"}, "character"))
 
-        self.assertIn("hat der Nutzer NICHT gesagt", prompt)
-        self.assertIn("eigener Gedanke des Charakters", prompt)
+        self.assertIn("hat PERSON B NICHT gesagt", prompt)
+        self.assertIn("eigener Gedanke von Person A", prompt)
 
     def test_der_block_verbietet_die_zuschreibung_woertlich(self) -> None:
         """Die gemessene Formulierung war „Du hast …" — sie steht im Verbot."""
@@ -77,18 +83,32 @@ class VerfasserPromptTest(unittest.TestCase):
 
         self.assertIn('Kein "du hast"', prompt)
 
+    def test_das_verbot_deckt_auch_die_dritte_person(self) -> None:
+        """Seit der Inhalt in dritter Person steht, hat die Zuschreibung eine
+        zweite Gestalt.
+
+        „Du hast den Anker geworfen" ist verboten und wird es bleiben; „Person
+        B hat den Anker geworfen" waere derselbe Fehler in neuer Kleidung.
+        Ohne diese Zeile haette der Umbau vom 14.08.2026 das Verbot an genau
+        der Stelle entwertet, an der er die Person wechselt.
+        """
+        prompt: str = verf_mod._build_system_prompt(
+            _state({"reiz_herkunft": "eigener_impuls"}, "character"))
+
+        self.assertIn('kein "Person B hat"', prompt)
+
     def test_beim_nutzer_turn_steht_die_fremde_herkunft(self) -> None:
         """Der positive Zwilling: Sonst wäre ein immer gleicher Satz auch grün."""
         prompt: str = verf_mod._build_system_prompt(_state())
 
-        self.assertIn("hat der Nutzer gesagt", prompt)
-        self.assertNotIn("hat der Nutzer NICHT gesagt", prompt)
+        self.assertIn("hat PERSON B gesagt", prompt)
+        self.assertNotIn("hat PERSON B NICHT gesagt", prompt)
 
     def test_der_thinker_retry_bekommt_die_fremde_herkunft(self) -> None:
         prompt: str = verf_mod._build_system_prompt(
             _state({"thinker_unsicher_retry": True}, "character"))
 
-        self.assertIn("hat der Nutzer gesagt", prompt)
+        self.assertIn("hat PERSON B gesagt", prompt)
 
 
 if __name__ == "__main__":

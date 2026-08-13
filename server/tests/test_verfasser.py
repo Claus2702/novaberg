@@ -169,12 +169,19 @@ class TestDerResponderSiehtDasWissenNicht(unittest.TestCase):
         sondern gar nicht: Der Block nennt den Inhalt und ueberlaesst ihr den
         Rest. Was hier geprueft wird, ist die **Abwesenheit** der alten
         Fessel — nicht eine neue Anweisung an ihre Stelle.
+
+        Der Wortlaut hat am 14.08.2026 gewechselt, weil der Verfasser seither
+        in dritter Person notiert: Aus „Person A sagt ihn auf ihre Art" wurde
+        die ausdrueckliche Umwandlung in ihre Rede. Die Zusicherung ist
+        dieselbe — die Form gehoert dem Responder, das Hinzufuegen bleibt ihm
+        verboten.
         """
         prompt: str = resp_mod._build_system_prompt(_state(
             antwort_inhalt="Ein Gammablitz entsteht beim Kollaps eines Sterns.",
         ))
 
-        self.assertIn("Person A sagt ihn auf ihre Art", prompt)
+        self.assertIn("Mach daraus Person As Rede", prompt)
+        self.assertIn("Keine Aussage, die hier nicht steht", prompt)
         self.assertNotIn("lass keine weg", prompt)
 
     def test_die_stimme_bleibt_beim_responder(self) -> None:

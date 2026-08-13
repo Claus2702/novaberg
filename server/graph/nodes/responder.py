@@ -542,12 +542,22 @@ def _build_system_prompt(state: ConversationState) -> str:
     #
     # Bei aktivem Kontext-Schnitt laeuft der Verfasser nicht; dann ist das Feld
     # leer und der [AUFGABE]-Block traegt allein, genau wie bisher (§5.1).
+    # **Der Inhalt kommt seit dem 14.08.2026 in dritter Person.** Der Verfasser
+    # notiert, was Person A feststellt, offen laesst und zurueckfragt — er
+    # schreibt ihre Rede nicht mehr selbst. Ohne die ausdrueckliche Anweisung,
+    # daraus Rede zu machen, entschiede hier der Vorgabewert — und der
+    # naheliegende waere, die Notiz durchzureichen. Eine weggelassene Vorgabe
+    # ist keine offene Wahl.
+    #
+    # Die Umwandlung ist erlaubt und keine Inhaltsaenderung: §2.3 verbietet dem
+    # Responder, eine Behauptung **hinzuzufuegen** — die Form ist seine Sache.
     antwort_inhalt: str = state.get("antwort_inhalt", "")
     if antwort_inhalt:
         parts.append(
             f"[INHALT]\n"
-            f"Das ist der fachliche Inhalt der Replik. Person A sagt ihn auf "
-            f"ihre Art.\n\n"
+            f"Das ist der fachliche Inhalt der Replik, in dritter Person "
+            f"notiert. Mach daraus Person As Rede: dieselben Aussagen, ihre "
+            f"Stimme, ihre Art. Keine Aussage, die hier nicht steht.\n\n"
             f"{antwort_inhalt}"
         )
 
