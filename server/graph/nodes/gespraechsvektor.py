@@ -28,6 +28,7 @@ from config import (
     GV_LAENGE_MODUS_DELTA,
     GV_STRATEGIE_MIN_LAENGE,
 )
+from graph.reiz  import reiz_ist_eigener_gedanke
 from graph.state import ConversationState, pipeline_quelle
 from memory.charakter import initiative_versatz_laden
 from memory.pipeline_log import log_berechnung, log_fehler
@@ -63,12 +64,42 @@ def _ist_skip(state: ConversationState) -> bool:
     Nur bei reiner Begruessung oder Meta-Operationen.
     Management-Intents werden NICHT uebersprungen —
     auch bei Tasks kann Nova vorausdenken (Zahnarzt → Metzgerei).
+
+    **Ein eigener Impuls wird nie uebersprungen.** Das Tor liest den Intent
+    der NUTZER-Aeusserung; auf einem Impuls-Turn gibt es keine. `db_zugriff`
+    setzt dort `external` als Kopie von `internal` (Pixie-Pfad), und der
+    Intent beschreibt dann Novas **eigene letzte Antwort** — ein Wert ueber
+    den vorigen Turn entscheidet ueber diesen.
+
+    Gemessen am 13.08.2026 ueber einen Tag: **15 von 20** eigenen Impulsen
+    fielen so aus dem Vorausdenken, die uebrigen fuenf nicht — allein danach,
+    worauf Novas voriger Intent gefallen war. Der Verfasser bekam auf genau
+    diesen 15 Turns keinen `[GESPRAECHSVEKTOR]`-Block, waehrend sein Auftrag
+    viermal darauf verwies (`novaberg-fundliste.md`, 2026-08-14).
+
+    Die Landschaft steht auch beim Skip — `_gv_detail_bauen` setzt sie auf
+    jedem Weg. Was mit dieser Zeile zurueckkommt, ist die Antizipations-
+    Haelfte: Strategie, Vehikel, Leitgedanke, Spruenge.
+
+    Vorbedingung: keine. Ohne `external` gilt der leere Intent, also kein Skip.
+    Nachbedingung: True genau dann, wenn eine NUTZER-Aeusserung vorliegt und
+        ihr Intent in der geschlossenen Menge der drei Marken steht.
+    Fehlerfaelle: keine.
     """
+    # ── Eingabe-Validierung ─────────────────────
+    # Die Herkunftsfrage steht vor der Intent-Frage, weil sie entscheidet, ob
+    # der Intent ueberhaupt etwas ueber diesen Reiz aussagt (`graph/reiz.py`).
+    if reiz_ist_eigener_gedanke(state):
+        logger.info(
+            "Gespraechsvektor: eigener Impuls — das Skip-Tor greift nicht, "
+            "es liest den Intent der Nutzer-Aeusserung und hier gibt es keine"
+        )
+        return False
+
+    # ── Verarbeitung / Ausgabe ──────────────────
     external = state.get("external")
     intent: str = external.emotion.intent if external else ""
-    if intent in ("begruessung", "meta", "system"):
-        return True
-    return False
+    return intent in ("begruessung", "meta", "system")
 
 
 # ─────────────────────────────────────────────
