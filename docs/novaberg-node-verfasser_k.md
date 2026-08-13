@@ -2,10 +2,10 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Konzept — ein Node vor dem Responder, der den fachlichen Inhalt der Antwort bestimmt
-**Stand:** 5. August 2026 (Erstfassung 31. Juli 2026)
+**Stand:** 14. August 2026 (Erstfassung 31. Juli 2026)
 **Pfad:** novaberg/docs/novaberg-node-verfasser_k.md
 **Typ:** Konzept (`_k`)
-**Status:** ✅ **gebaut.** Der Knoten läuft im CharacterGraph. Am 04.08.2026 um das Urteilsfeld erweitert, am 05.08.2026 um die Vorzeichenpruefung — siehe unten.
+**Status:** ✅ **gebaut.** Der Knoten läuft im CharacterGraph. Am 04.08.2026 um das Urteilsfeld erweitert, am 05.08.2026 um die Vorzeichenpruefung, am 13.08.2026 um die Herkunft des Reizes — siehe unten.
 
 > **Nachgetragen am 04.08.2026 — was seit der Erstfassung dazukam.**
 >
@@ -93,6 +93,32 @@ Der Gesprächsvektor hat seine Wahl damit bereits getroffen, bevor der Verfasser
 | fachlicher Inhalt der Antwort | erzeugt ihn | erhält ihn |
 
 **Die beiden fett gesetzten Zeilen sind der tragende Teil.** Der Responder verliert Gedächtnis und Web-Recherche vollständig. Er kann dann nichts aus einem Wissen erfinden, das er nicht sieht — die Lehre aus den vier Fix-Iterationen wird von einer Fallunterscheidung zu einer Eigenschaft der Bauart.
+
+### 2.2a Wessen Reiz — die Herkunft entscheidet über die Perspektive
+
+**Ein eigener Impuls reist auf dem Platz der Nutzereingabe.** Er steht unter
+`[AKTUELLER PROMPT]`, dort, wo sonst steht, was der Mensch gesagt hat. Wer
+diesen Platz liest, ohne nach der Herkunft zu fragen, hält Novas eigenen
+Gedanken für eine fremde Äußerung — und schreibt die Zuschreibung in den
+Inhalt.
+
+**Der Responder unterschied den Fall seit dem 26.07.2026, der Verfasser nicht.**
+Das ging gut, solange der Responder den Text selbst formulierte. Seit der
+Trennung schreibt ihn diese Stufe, und ein Schutz, den nur die zweite kennt,
+greift ins Leere: Gemessen am 13.08.2026 über einen Tag begannen **13 von 14**
+Impulsen mit *„Du hast …"*, fünf davon wortgleich — obwohl der Responder seinen
+Block gesetzt hatte.
+
+**Die Prüfung gehört deshalb an einen Ort für beide Stufen** (`graph/reiz.py`).
+Der Auftrag trägt einen `[HERKUNFT DES REIZES]`-Block in **zwei** Fassungen:
+bei eigenem Impuls die Herkunft samt wörtlichem Verbot der Zuschreibung, beim
+Nutzer-Turn die Gegenaussage. Zwei Fassungen und nicht eine bedingte, weil ein
+Prompt, der in jedem Fall denselben Satz trägt, nicht prüfbar ist.
+
+> **Die Lehre reicht über den Fall hinaus:** Jeder Block, der den Responder
+> gegen eine Verwechslung schützt, ist daraufhin zu prüfen, ob die erste Stufe
+> ihn ebenfalls braucht. Was beide brauchen, gehört an einen Ort — sonst läuft
+> die Kopie auseinander.
 
 ### 2.3 Die Art ist selbst Information
 

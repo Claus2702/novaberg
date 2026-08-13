@@ -2026,7 +2026,9 @@ Die Gegenprobe trägt: Dieselbe Anlage auf die Frage *wer spricht* traf 8 von 8 
 
 **Geschlossen:** `HALTUNG-OHNE-LESER` · `RESPONDER-ALS-AUFGABE` · `FARBTON-OHNE-LESER` (Wirkung unbelegt) · `PERSON-B-OHNE-BESCHREIBUNG` (Wirkung unbelegt)
 
-**Neuer Bug:** `VERFASSER-KENNT-DIE-QUELLE-NICHT` — der Verfasser liest Novas eigenen Impuls als Nutzeräußerung und schreibt die Zuschreibung ins Material; der Schutzblock des Responders greift danach ins Leere.
+**Der Bug, gefunden und am selben Abend behoben:** `VERFASSER-KENNT-DIE-QUELLE-NICHT`. Der Verfasser las Novas eigenen Impuls als Nutzeräußerung; der Schutzblock des Responders lief danach ins Leere, weil die Zuschreibung schon im Material stand. **Über einen Tag gemessen: 14 stündliche Impulse, 13 mit »Du hast …«, fünf davon wortgleich.** Die Prüfung liegt jetzt in `graph/reiz.py`, wo beide Stufen sie erreichen; der Verfasser bekommt einen Herkunftsblock in zwei Fassungen. Suite 1220 → 1227, Gegenprobe 2 rot.
+
+**Und der Befund daneben, der bleibt:** Die fünf wortgleichen Anfänge kommen aus dem **Verlauf**, nicht aus der Herkunft. Jeder Impuls wird zum Verlauf, der nächste bestätigt das Muster — 22.545 Zeichen eigener Prosa gegen 1.195 Zeichen Auftrag im Verfasser-Prompt. Der Regieblock schreibt seit Chat 114 dagegen an und hat gegen fünf Belege nicht getragen.
 
 **Offen und benannt:** Der Verfasser bekommt keine Mengenangabe und liefert rund 1400 Zeichen für einen 350-Zeichen-Korridor.
 

@@ -140,7 +140,7 @@ Gegenstandslos geworden: der Stichtag der assistant-Partition vom 26.07.2026, di
 
 ### Chat 137 — aus dem Umbau des Responder-Prompts (13.08.2026)
 
-#### VERFASSER-KENNT-DIE-QUELLE-NICHT — Novas eigener Impuls wird ihr als Nutzeräußerung zugeschrieben 🔧 offen
+#### VERFASSER-KENNT-DIE-QUELLE-NICHT — Novas eigener Impuls wird ihr als Nutzeräußerung zugeschrieben ✅ behoben (Chat 137)
 
 **Symptom.** Nach einem eigenen Impuls antwortet Nova, als hätte der Nutzer gesagt, was sie selbst gedacht hat. Am 13.08.2026 im Betrieb beobachtet: *„Du hast das gerade nicht nur zitiert, du hast es als strukturellen Anker in den Raum geworfen."* — der zitierte Text stammte von ihr.
 
@@ -150,7 +150,13 @@ Gegenstandslos geworden: der Stichtag der assistant-Partition vom 26.07.2026, di
 
 **Reproduktion.** Einen Pixie-Impuls auslösen und den Verfasser-Prompt im Log ansehen: `[AKTUELLER PROMPT]` trägt Novas eigenen Text, und kein Block sagt, von wem er stammt.
 
-**Geschlossen, wenn.** Der Verfasser dieselbe Unterscheidung trifft wie der Responder und sein Auftrag die Herkunft nennt. **Und die Klasse ist größer als dieser eine Fall:** Jeder Block, der den Responder gegen eine Verwechslung schützt, ist daraufhin zu prüfen, ob die erste Stufe ihn ebenfalls braucht.
+**Geschlossen, wenn.** Der Verfasser dieselbe Unterscheidung trifft wie der Responder und sein Auftrag die Herkunft nennt.
+
+**Wie groß es war — gemessen am 13.08.2026 über einen ganzen Tag.** Vierzehn Impulse, stündlich von 07:52 bis 20:59 UTC, alle mit `herkunft: eigener_impuls` in der Session gespeichert. **Dreizehn von vierzehn** begannen mit *„Du hast …"*, **fünf davon wortgleich** (*„Du hast den Anker geworfen. Indem du diesen Block …"*). Der Defekt war also nicht der Ausnahmefall, sondern der Regelfall — und die Information lag die ganze Zeit im Zustand.
+
+**Behoben.** Die Prüfung liegt jetzt in `graph/reiz.py`, wo beide Stufen sie erreichen, statt privat im Responder. Der Verfasser bekommt einen `[HERKUNFT DES REIZES]`-Block in zwei Fassungen — bei eigenem Impuls mit dem wörtlichen Verbot der gemessenen Formulierung, beim Nutzer-Turn mit der Gegenaussage. Beide Fassungen sind nötig: Ein Prompt, der in jedem Fall denselben Satz trägt, bestünde einen Test, der nur eine Seite prüft. Sieben Zeugen in `tests/test_verfasser_herkunft.py`; Gegenprobe mit ignorierter Herkunft: 2 rot.
+
+**Was der Fix nicht behebt, und was daraus folgt.** Die fünf wortgleichen Anfänge stammen aus dem **Verlauf**, nicht aus der Herkunft: Jeder Impuls wird zum Verlauf, der nächste sieht zwanzig Turns eigener Prosa und schreibt die Wendung wieder. Der Verfasser-Prompt trug an diesem Tag 22.545 Zeichen Verlauf aus 18 eigenen Beiträgen gegen 1.195 Zeichen Auftrag. **Das ist ein eigener Gegenstand** und steht in der Fundliste. **Und die Klasse ist größer als dieser eine Fall:** Jeder Block, der den Responder gegen eine Verwechslung schützt, ist daraufhin zu prüfen, ob die erste Stufe ihn ebenfalls braucht.
 
 ---
 
