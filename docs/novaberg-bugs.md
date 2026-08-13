@@ -138,6 +138,22 @@ Gegenstandslos geworden: der Stichtag der assistant-Partition vom 26.07.2026, di
 
 ## Offene Bugs
 
+### Chat 137 — aus dem Umbau des Responder-Prompts (13.08.2026)
+
+#### VERFASSER-KENNT-DIE-QUELLE-NICHT — Novas eigener Impuls wird ihr als Nutzeräußerung zugeschrieben 🔧 offen
+
+**Symptom.** Nach einem eigenen Impuls antwortet Nova, als hätte der Nutzer gesagt, was sie selbst gedacht hat. Am 13.08.2026 im Betrieb beobachtet: *„Du hast das gerade nicht nur zitiert, du hast es als strukturellen Anker in den Raum geworfen."* — der zitierte Text stammte von ihr.
+
+**Ursache.** Ein Pixie-Impuls reist als `user_prompt` durch den Graphen; dieselbe Stelle, an der sonst die Nutzereingabe steht. Der **Responder** unterscheidet das: `_reiz_ist_eigener_gedanke()` liest `event_payload["reiz_herkunft"]` und setzt den Block `[EIGENER GEDANKE]` — *„Was unten als Eingabe steht, hat dir niemand gesagt […] schreibe sie ihm nicht zu."* Der **Verfasser** hat diese Prüfung nicht: In `graph/nodes/verfasser.py` gibt es keinen Treffer für `reiz_herkunft`, `eigener_impuls` oder `event_payload`. Er liest den Impuls als Äußerung des Nutzers und schreibt den Inhalt entsprechend — belegt am selben Turn: *„**Du hast** hier die gesamte Architektur der Resonanz-Modellierung direkt in den Fokus gerückt."*
+
+**Warum es zählt.** Der Responder hält sich an seinen Block — er dankt nicht und lobt nicht. Die Zuschreibung steckt trotzdem in der Antwort, weil sie schon im **Material** stand. Ein Schutz, der nur die zweite Stufe kennt, greift ins Leere, sobald die erste den Text schreibt. **Der Defekt ist mit der Trennung von Inhalt und Form entstanden:** Vorher formulierte der Responder selbst und hatte den Block; seit der Verfasser den Inhalt liefert, entscheidet eine Stufe über die Perspektive, die die Herkunft des Reizes nicht kennt.
+
+**Reproduktion.** Einen Pixie-Impuls auslösen und den Verfasser-Prompt im Log ansehen: `[AKTUELLER PROMPT]` trägt Novas eigenen Text, und kein Block sagt, von wem er stammt.
+
+**Geschlossen, wenn.** Der Verfasser dieselbe Unterscheidung trifft wie der Responder und sein Auftrag die Herkunft nennt. **Und die Klasse ist größer als dieser eine Fall:** Jeder Block, der den Responder gegen eine Verwechslung schützt, ist daraufhin zu prüfen, ob die erste Stufe ihn ebenfalls braucht.
+
+---
+
 ### Chat 134 — beim Bau der zwei Pixie-Spuren (09.08.2026)
 
 #### SUITE-HAENGT-AM-AKTIVEN-PAAR — zwei Tests werden rot, sobald eine Messreihe läuft 🔧 offen
