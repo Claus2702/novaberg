@@ -664,11 +664,35 @@ Der existierende Task `vertiefen` ist konzeptionell der richtige Ort für den Ge
 **Node:** `graph/nodes/gespraechsvektor.py` — Node im CharacterGraph (Pfad 2). Seit Chat 60 nicht mehr im HumanGraph. Beide Wege zum Responder (Management und Nicht-Management) laufen durch den GV-Node.
 
 **Sequentieller Ablauf:**
-1. [Python] Skip-Check: Begrüßung/Meta → Durchreichen (Länge 0)
+1. [Python] Skip-Check: Begrüßung/Meta → Durchreichen (Länge 0). **Ein eigener Impuls wird nie übersprungen** — siehe §10.1a.
 2. [Python] Max-Länge aus 8 EI-Dimensionen berechnen (0–3 Schritte)
 3. [Python] Zweite Wissensquelle: 2-Stufen-Traversierung. ~~über `fakten`-Tabelle~~ → **seit Chat 115 über den Erinnerungsgraphen** (`lzg_knoten` + `lzg_kanten`, gelesen aus `state["lzg_resonanz"]`). Die zwei Stufen bleiben, der Graph wechselt — siehe unten.
 4. [LLM] Hypothese destillieren (Session + Emotion + Charakter + Fakten + KZG)
 5. [State] `gespraechsvektor_block` → Responder liest als `[GESPRAECHSVEKTOR]`-Block
+
+### 10.1a Das Skip-Tor gilt nur für Nutzer-Äußerungen (14.08.2026)
+
+Das Tor liest `external.emotion.intent` und weist `begruessung`, `meta` und `system` ab. Diese drei sind Eigenschaften **dessen, was der Mensch gesagt hat**.
+
+**Auf einem Impuls-Turn gibt es keine Nutzer-Äußerung.** `db_zugriff` setzt dort `external` als Kopie von `internal` (Pixie-Pfad); der Intent beschreibt dann Novas **eigene vorige Antwort**. Ein Wert über den letzten Turn entschied damit über diesen.
+
+**Gemessen am 13.08.2026 über einen Tag Serverlog:**
+
+```
+eigene Impulse                        20
+  davon am Skip-Tor abgewiesen        15
+  davon durchgelaufen                  5
+Verfasser-Läufe                       26
+  davon ohne [GESPRAECHSVEKTOR]       15   (dieselben 15)
+```
+
+**Die Auswahl war keine Regel, sondern ein Nebeneffekt.** Wäre sie eine Impuls-Regel gewesen, hätte sie 20 von 20 getroffen. Die fünf Ausnahmen sind die Turns, in denen Novas voriger Intent zufällig nicht auf einer der drei Marken lag.
+
+Seither fragt das Tor zuerst nach der Herkunft (`graph/reiz.py`, dieselbe Auskunft, die beide Erzeugungsstufen benutzen) und greift bei einem eigenen Impuls nicht.
+
+**Die Absicht dahinter, entschieden am 14.08.2026:** Ein Impuls ist Novas Gedanke und wird nicht noch einmal umgeformt — die Empathie-Differenz zwischen dem, was gesagt wurde, und dem, was sie hört, entfällt dort zu Recht (`db_zugriff` Pixie-Pfad, `ei_calc` ohne Empathie). **Landschaft und Strategie entfallen deshalb nicht.** Die Strategie ist das Mittel, mit dem ein Gedanke an den Menschen herangetragen wird; sie hängt nicht daran, wer ihn angestoßen hat.
+
+**Offen und ausdrücklich nicht in diesem Zug geändert:** Die emotionale Gravitation läuft auf Impuls-Turns weiter und färbt Novas Lage, aus der Landschaft und Dreischicht gelesen werden. Ob sie dort hingehört, ist entschieden (nein), aber nicht gebaut — zusammen mit dieser Änderung wäre eine Verschlechterung keiner der beiden Ursachen zuzuordnen.
 
 **⚠ Entity-Hop-Historie (Chat 107):** Der Entity-Hop war von seiner Einführung bis zum 12.07.2026 **tot**. Beide Fakten-Queries in `_entity_kontext_laden` selektierten `f.beziehung` — eine Spalte, die nie existierte (sie heißt seit Bestehen der `fakten`-Tabelle `attribut`). Jede Ausführung warf `UndefinedColumn`; das pauschale `except Exception` degradierte den Crash zu `logger.warning` und gab `""` zurück — der Entity-Kontext hat den GV-Prompt **nie** erreicht (411 aktive Fakten, keiner je geliefert). Behoben in Commit `7df65f1` (GV-ENTITY-HOP-TOT, bugs.md), live belegt am 12.07.2026.
 

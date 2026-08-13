@@ -1,6 +1,6 @@
 # Novaberg — Roadmap (Projektchronik)
 
-**Stand:** Chat 137, 13. August 2026
+**Stand:** Chat 138, 14. August 2026
 *(Die Kopfzeile stand bis Chat 109 auf „Chat 93, 21. Mai 2026" — 15 Chats hinter dem Inhalt. **Sie ist danach erneut zurückgefallen:** von Chat 110 bis 114 blieb sie auf „Chat 109" stehen, während der Inhalt weiterwuchs, und wurde in Chat 115 nachgezogen. Wer hier etwas ergänzt, zieht die Kopfzeile mit — sie driftet zuverlässig. Achtung beim Nachschlagen: Nur bis Chat 97 trägt jeder Chat eine eigene `## Chat NNN`-Überschrift; die Chats 98–108 stehen als `###`-Abschnitte unter dem Chat-97-Block, benannt nach Sprint statt nach Chat.)*
 **Pfad:** novaberg/docs/novaberg-roadmap.md
 **Single Source of Truth für abgeschlossene Arbeit.**
@@ -1980,6 +1980,47 @@ Beide Räder haben eine Nabe — den Wert ohne jede Ausprägung — und das Erge
 > **Die Zahlen selbst stehen nicht hier.** Ein Charakter-Rad ist ein Charakterprofil; aus den Summanden sind mit der Züge-Tabelle die Einzelspeichen rückrechenbar. Wer die Messung nachvollziehen will, fährt sie gegen den eigenen Bestand — sie ist in zwei Aufrufen wiederholbar.
 
 **Geschlossen:** `Bauteil 3 — Charakter-Räder im Client` (Rest benannt, siehe Backlog)
+
+---
+
+## Chat 138 (14.08.2026) — Der Verfasser bekommt eine Aufgabe, und ein Tor liest den falschen Turn ✅
+
+**Die zweite Stufe war ein Drehbuch geworden, die erste nicht.** Dieser Zug holt sie nach — und stößt dabei auf ein Tor, dessen Auswahl niemand getroffen hatte.
+
+### Ein Wert über den vorigen Turn entschied über diesen
+
+Das Skip-Tor des GV-Node liest `external.emotion.intent`. Auf einem Impuls-Turn setzt `db_zugriff` `external` als Kopie von `internal` — der Intent beschreibt dann **Novas eigene vorige Antwort**.
+
+```
+eigene Impulse                        20
+  davon am Skip-Tor abgewiesen        15
+Verfasser-Läufe                       26
+  davon ohne [GESPRAECHSVEKTOR]       15   (dieselben 15)
+```
+
+**Wäre es eine Regel gewesen, hätte sie 20 von 20 getroffen.** Die fünf Ausnahmen sind die Turns, in denen Novas voriger Intent zufällig nicht auf `meta`, `begruessung` oder `system` lag. Das Tor fragt seither zuerst nach der Herkunft — dieselbe Auskunft, die beide Erzeugungsstufen seit dem Vortag benutzen.
+
+**Die Absicht dahinter ist entschieden und enger als die Wirkung war:** Ein Impuls ist Novas Gedanke und wird nicht noch einmal umgeformt — deshalb entfällt dort die Empathie-Differenz. Landschaft und Strategie entfallen deshalb nicht: Die Strategie ist das Mittel, mit dem ein Gedanke an den Menschen herangetragen wird, und das hängt nicht daran, wer ihn angestoßen hat.
+
+### Der Block hing an der Hypothese und nahm die Landschaft mit
+
+`_gespraechsvektor_block` kehrte bei leerem Vektor sofort leer zurück — obwohl die Landschaft in `gv_detail` steht und der GV-Node am 08.08. eigens so umgebaut worden war, dass sie **jeden** Turn trägt. Der Verfasser hob das für sich wieder auf; der Responder liest `gv_detail` unmittelbar und war nie betroffen.
+
+Seither hängt der Block an der Landschaft, und ein fehlendes Vorausdenken wird **angesagt** statt weggelassen. Welcher Fall vorliegt, sagt die Marke `vorausdenken` — der leere Strategie-String kann es nicht, weil `korridor_pruefen` ihn auch auf einem gelaufenen Turn leert.
+
+### Der Auftrag wird eine Aufgabe
+
+Konstellation, Aufgabe, drei prüfbare Bedingungen: Herkunft des Materials, gewähltes Mittel, Maß. Die Form ist die gemessene — dieselbe Vorgabe traf als Aufgabe 6 von 6 Längenkorridore und als Beschreibung 0 von 6.
+
+**Der Inhalt entsteht in dritter Person.** Der Verfasser schreibt nicht mehr Person As Rede, sondern was sie feststellt, offen lässt, zurückfragt. Damit verschwindet die Zuschreibung »Du hast …« baulich statt per Verbot, und der Responder **kann** die Notiz nicht mehr durchreichen — er muss sie in Rede verwandeln, und der `[INHALT]`-Block sagt ihm das ausdrücklich an.
+
+Der ganze Verfasser-Prompt trägt jetzt **eine** Anrede. Herkunftsblock, Wissenssätze und der Kopfblock des Urteils sprachen vorher von »dem Nutzer« — derselbe Befund wie beim Responder einen Tag zuvor. Den letzten Rest im Kopfblock hat nicht der Bau gefunden, sondern der Zeuge.
+
+**Und die Gegenprobe fand einen wertlosen Zeugen von mir:** Ein Test auf `[GESPRAECHSVEKTOR]` im Prompt blieb auch mit der alten Bauart grün — der Auftrag nennt den Block ja. Dieselbe Verwechslung hatte am selben Tag schon die erste Messung verdorben, die 26 von 26 Treffern meldete.
+
+### Was offen bleibt
+
+Der Umfang bekommt weiterhin **keine Zahl**. Die emotionale Gravitation färbt auch Novas eigene Gedanken und ist als eigener Schritt zurückgestellt, weil sie vor dem GV-Node steht und die Landschaft mitfärbt.
 
 ---
 

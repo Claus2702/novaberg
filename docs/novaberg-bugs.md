@@ -156,6 +156,8 @@ Gegenstandslos geworden: der Stichtag der assistant-Partition vom 26.07.2026, di
 
 **Behoben.** Die Prüfung liegt jetzt in `graph/reiz.py`, wo beide Stufen sie erreichen, statt privat im Responder. Der Verfasser bekommt einen `[HERKUNFT DES REIZES]`-Block in zwei Fassungen — bei eigenem Impuls mit dem wörtlichen Verbot der gemessenen Formulierung, beim Nutzer-Turn mit der Gegenaussage. Beide Fassungen sind nötig: Ein Prompt, der in jedem Fall denselben Satz trägt, bestünde einen Test, der nur eine Seite prüft. Sieben Zeugen in `tests/test_verfasser_herkunft.py`; Gegenprobe mit ignorierter Herkunft: 2 rot.
 
+**Nachgetragen am 14.08.2026 — die Bedingung ist entfallen.** Der Defekt konnte entstehen, weil „der Nutzer" die einzige Adresse im Verfasser-Prompt war. Der Auftrag trägt seither die Konstellation aus Person A und Person B, und der Inhalt entsteht in **dritter Person**: „Du hast …" kann dort nicht mehr gebildet werden, weil es kein „du" gibt. Das Verbot bleibt trotzdem stehen und deckt jetzt auch die Zuschreibung in dritter Person — „Person B hat den Anker geworfen" wäre derselbe Fehler in neuer Kleidung.
+
 **Was der Fix nicht behebt, und was daraus folgt.** Die fünf wortgleichen Anfänge stammen aus dem **Verlauf**, nicht aus der Herkunft: Jeder Impuls wird zum Verlauf, der nächste sieht zwanzig Turns eigener Prosa und schreibt die Wendung wieder. Der Verfasser-Prompt trug an diesem Tag 22.545 Zeichen Verlauf aus 18 eigenen Beiträgen gegen 1.195 Zeichen Auftrag. **Das ist ein eigener Gegenstand** und steht in der Fundliste. **Und die Klasse ist größer als dieser eine Fall:** Jeder Block, der den Responder gegen eine Verwechslung schützt, ist daraufhin zu prüfen, ob die erste Stufe ihn ebenfalls braucht.
 
 ---

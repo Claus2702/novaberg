@@ -120,6 +120,50 @@ Prompt, der in jedem Fall denselben Satz trägt, nicht prüfbar ist.
 > ihn ebenfalls braucht. Was beide brauchen, gehört an einen Ort — sonst läuft
 > die Kopie auseinander.
 
+### 2.2b Der Auftrag ist eine Aufgabe, kein Zuständigkeitsbereich (14.08.2026)
+
+Der alte Auftrag beschrieb, **wofür der Verfasser zuständig ist**. Er nannte keine Konstellation, stellte keine prüfbare Bedingung und verwies viermal auf `[GESPRAECHSVEKTOR]` — einen Block, den es in 15 von 26 Läufen nicht gab.
+
+**Die Form ist gemessen, nicht gewählt** (12./13.08.2026, sechs Prompt-Formen gegen zwei Szenen):
+
+```
+dieselbe Vorgabe als Aufgabe          6/6 Längenkorridore
+dieselbe Vorgabe als Beschreibung     0/6
+Aufgabe mit Prüfbedingung             5,7 Profilmerkmale
+bloße Stilnotiz                       3,0
+```
+
+Der Auftrag trägt seither drei Teile: die **Konstellation** (Person A und Person B), die **Aufgabe** (den fachlichen Inhalt der nächsten Replik bestimmen) und **drei prüfbare Bedingungen** — Herkunft des Materials, gewähltes Mittel, Maß.
+
+**Der Inhalt entsteht in dritter Person.** Der Verfasser schreibt nicht mehr „aus deiner Sicht", sondern was Person A feststellt, offen lässt, zurückfragt. Drei Gründe, und nur der erste war der Anlass:
+
+- **Die Zuschreibung verschwindet baulich statt per Verbot.** „Du hast …" kann nicht entstehen, wo es kein „du" gibt. Eine Verbotsformulierung ist die schwächste verfügbare Durchsetzung; hier trägt die Form.
+- **Die zweite Stufe muss umformulieren.** Solange der Verfasser fertige Rede lieferte, konnte der Responder sie durchreichen — und tat es. Eine Notiz in dritter Person lässt sich nicht durchreichen.
+- **Die Stufen konkurrieren nicht mehr um die Stimme.** §3.3 nennt das Auseinanderlaufen der beiden Texte als bewusst getragenen Preis. Er sinkt, wenn nur eine Stufe überhaupt eine Stimme hat.
+
+**Was dadurch schärfer bewacht werden muss:** Der Schutz aus §2.4 stand auf einem Kontrast zweier Formen — *„er beschreibt, was der Nutzer tut, nicht was du sagst"*. Jetzt stehen beide Sätze in dritter Person, und die Unterscheidung hängt allein am Subjekt. Sie steht deshalb ausgeschrieben im Auftrag: **was Person B tut** gegen **was Person A dazu feststellt**.
+
+**Eine Anrede für den ganzen Prompt.** Mit der Konstellation wurden alle Blöcke des Verfassers auf dieselbe Bezeichnung gezogen — Herkunftsblock, Wissenssätze und der Kopfblock des Urteils sprachen vorher von „dem Nutzer". Das ist derselbe Befund wie beim Responder am 13.08.2026: In sieben von dreizehn Blöcken wurde geduzt, und „du" meinte drei verschiedene Personen. **„du" ist der Verfasser; über Person A wird in dritter Person gesprochen; der Mensch heißt Person B.**
+
+> **Nicht enthalten: eine Zahl für den Umfang.** Die Mengenangabe bindet nach unten (17/18 getroffen) und nach oben nicht (4/17). Der Verfasser liefert rund 1400 Zeichen für einen 350er-Korridor, und der Responder kürzt nach keinem bekannten Kriterium. Das ist die nächstliegende offene Frage — sie war am 13.08.2026 ausdrücklich zurückgestellt, bis der Prompt sitzt.
+
+### 2.2c Der Gesprächsvektor-Block hängt an der Landschaft (14.08.2026)
+
+`_gespraechsvektor_block` kehrte bei leerem `gespraechsvektor` sofort leer zurück — und nahm die **Landschaft** mit, obwohl sie in `gv_detail` steht.
+
+Das hob eine Zusicherung auf, die eine Ebene tiefer eigens gebaut worden war: Der GV-Node wurde am 08.08.2026 so umgestellt, dass die Landschaft **jeden** Turn trägt, weil vorher 184 von 845 Ablesungen ausfielen. Der Verfasser machte das für sich rückgängig. Der Responder macht es richtig — er liest `gv_detail` unmittelbar.
+
+Seither hängt der Block am `cluster`. Fehlt das Vorausdenken, **sagt der Block das an**, statt es wegzulassen: Eine weggelassene Vorgabe ist keine offene Wahl, sondern die Vorgabe des Vorgabewerts.
+
+Welcher Fall vorliegt, entscheidet `vorausdenken` und nicht der leere Strategie-String — `korridor_pruefen` leert die Strategie auch auf einem Turn, der vorausgedacht hat. Drei Fälle, drei Texte:
+
+| Lage | Was im Block steht |
+|---|---|
+| vorausgedacht, Strategie gewählt | Landschaft · Strategie und Vehikel · Hypothese · Leitgedanke |
+| vorausgedacht, Strategie verworfen | Landschaft · *„Für diesen Turn steht kein Mittel fest."* |
+| nicht vorausgedacht | Landschaft · *„Für diesen Turn wurde nicht vorausgedacht."* |
+| keine Landschaft (vor dem ersten Turn) | kein Block |
+
 ### 2.3 Die Art ist selbst Information
 
 **Das Ergebnis des Verfassers ist nicht die vollständige Nachricht.** Erst durch Novas Art kommen alle Informationen in die Kommunikation: Nähe oder Distanz, Zustimmung oder Vorbehalt, Wärme oder Zurückhaltung stehen nicht in den Fakten, sondern in der Form, in der sie gesagt werden.
@@ -241,6 +285,7 @@ Das neue State-Feld muss in `graph/state.py` deklariert **und** in `graph/base.p
 
 ## Versionshistorie
 
+- **v0.4 — 14.08.2026:** Der Auftrag ist eine **Aufgabe** geworden (§2.2b): Konstellation, Aufgabe, drei prüfbare Bedingungen — die Form, die als Aufgabe 6 von 6 Längenkorridore traf und als Beschreibung 0 von 6. Der Inhalt entsteht seither in **dritter Person**; die Zuschreibung „Du hast …" verschwindet damit baulich statt per Verbot, und der Responder kann die Notiz nicht mehr durchreichen. Der Schutz aus §2.4 steht weiter, aber auf einem anderen Kontrast: Beide Sätze sind jetzt dritte Person, die Unterscheidung hängt am Subjekt und ist deshalb ausgeschrieben. Der ganze Prompt trägt **eine** Anrede. §2.2c: Der `[GESPRAECHSVEKTOR]`-Block hängt an der Landschaft statt an der Hypothese — er fehlte in 15 von 26 Läufen, während der Auftrag viermal auf ihn verwies; ein fehlendes Vorausdenken wird jetzt angesagt statt weggelassen. Der Umfang bekommt weiterhin **keine Zahl**.
 - **v0.3 — 05.08.2026:** Der Knoten zählt jetzt auch: Die **Vorzeichenprüfung** (`SYK-B4` Stufe 1) läuft unmittelbar nach dem Lesen des Kopfblocks und legt ihren Befund ins `pipeline_log` — hier, weil nur hier Urteil, Nutzeräußerung und Text zusammen vorliegen und das Urteil nirgends persistiert wird. Kein Modellaufruf, keine Verhaltensänderung. Dazu zwei Messergebnisse: Der Zähler ist an diesem Korpus zu 85 % blind, und die Wirkung des Kopfblocks auf die Kapitulationsrate ist **null**.
 - **v0.3 — 31.07.2026:** Zwei Aussagen live widerlegt und an ihrer Stelle markiert. §2.4 — der Schutz „der Leitgedanke ist die Richtung, nicht der Text" war **tragend**; ohne ihn formuliert niemand um, und die Kette reichte den Hypothesentext des Hintergrundagenten unverändert bis zum Nutzer durch. §2.3 — „lässt keine weg" machte die Kürze unbefolgbar und ist aufgehoben; hinzufügen bleibt verboten. Neu §7: Die Regeln sind zur Probe ausgesetzt, samt Beleg, dass mindestens eine der gemessenen Vorgabe des Gesprächsvektors widersprach. Woher die Länge stattdessen kommt, steht in `novaberg-haltungsraum_k.md`.
 - **v0.2 — 31.07.2026:** Zwei offene Punkte entschieden. Der Thinker bewertet weiterhin die **Endantwort**, weil erst Novas Art die vollständige Mitteilung ergibt — daraus §2.3, das den Satz „der Responder entscheidet keinen Inhalt" auf **Fakten** einschränkt: Bedeutung fügt er sehr wohl hinzu. Und es wird **kein Rückfallpfad** gebaut; der erwartete Fehlerfall ist nicht der Ausfall, sondern der inhaltliche Irrtum, und dagegen hilft nur die Messung. Ein technischer Ausfall bleibt laut.

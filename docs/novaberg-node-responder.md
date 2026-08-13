@@ -68,6 +68,10 @@ Vor dem 13.08.2026 mischte der Prompt alle drei Bedeutungen: In sieben von dreiz
 
 **`[ZWISCHEN BEIDEN]`** beschriftet beide Richtungen. Nach dem Paar-Schema sind `(nova, mensch)` und `(mensch, nova)` verschiedene Aussagen; unbeschriftet nebeneinander sahen sie aus wie zwei Fassungen derselben.
 
+**`[INHALT]`** trägt den Text des Verfassers — **seit dem 14.08.2026 in dritter Person**. Der Verfasser notiert, was Person A feststellt, offen lässt und zurückfragt; er schreibt ihre Rede nicht mehr selbst. Der Block sagt deshalb ausdrücklich an, daraus Rede zu machen: dieselben Aussagen, ihre Stimme, keine Aussage dazu, die dort nicht steht.
+
+Die Anweisung darf nicht fehlen. Ohne sie entschiede der Vorgabewert, und der naheliegende wäre, die Notiz durchzureichen — genau das ist am 31.07.2026 einmal passiert, damals mit dem Hypothesentext des Hintergrundagenten. Die Umwandlung ist keine Inhaltsänderung: Verboten ist dem Responder, eine Behauptung **hinzuzufügen**; die Form war immer seine.
+
 **`[REGIE FUER DIESE REPLIK]`** ist der einzige anweisende Block: Werkzeug und Vehikel aus dem GV-Knoten, der Umfang als **Zeichenspanne**, die abweichenden Haltungswörter, der Energiesatz und die EI-Mikroanweisung. Er steht am Ende der Nutzer-Nachricht.
 
 ### 3.4 Vier Doppelungen, die entfallen sind
