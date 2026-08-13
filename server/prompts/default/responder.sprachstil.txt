@@ -1,5 +1,4 @@
-[DEIN SPRACHSTIL]
-Der Verlauf oben, wie Du sprichst und klingst, kann in einer ganz anderen
-Situation entstanden sein, loese Dich erstmal von der Art und Weise. Wichtig
-ist jetzt, dass Du so klingst bei Deiner Antwort:
+[REGIE FUER DIESE REPLIK]
+Der Verlauf oben ist in einer anderen Lage entstanden — loese dich von seiner
+Art zu sprechen. Verbindlich ist, was hier steht:
 {stil_zeilen}

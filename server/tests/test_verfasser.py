@@ -146,7 +146,7 @@ class TestDerResponderSiehtDasWissenNicht(unittest.TestCase):
 
         prompt: str = resp_mod._build_system_prompt(_state(internal=innen))
 
-        self.assertIn("[DEIN WESEN]", prompt)
+        self.assertIn("[PERSON A — IHR WESEN]", prompt)
         self.assertIn("Das kesse Maedel vom Land", prompt)
         self.assertTrue(
             prompt.rstrip().endswith("- Das kesse Maedel vom Land"),
@@ -174,14 +174,23 @@ class TestDerResponderSiehtDasWissenNicht(unittest.TestCase):
             antwort_inhalt="Ein Gammablitz entsteht beim Kollaps eines Sterns.",
         ))
 
-        self.assertIn("Sag ihn auf deine Art", prompt)
+        self.assertIn("Person A sagt ihn auf ihre Art", prompt)
         self.assertNotIn("lass keine weg", prompt)
 
     def test_die_stimme_bleibt_beim_responder(self) -> None:
-        """Der positive Zwilling: Die Rollenklarheit ist keine Wissensfrage."""
+        """Der positive Zwilling: Die Rollenklarheit ist keine Wissensfrage.
+
+        Der Wortlaut hat am 13.08.2026 gewechselt. Bis dahin stand die
+        Rollenklarheit als **Verbot** am Ende der Identitaet — „Sprich als du
+        selbst, niemals als der Nutzer". Jetzt steht sie als **Konstellation**
+        im Auftrag: zwei Personen, eine davon wird gespielt, die andere
+        angesprochen. Das ist dieselbe Zusicherung in der staerkeren Form; der
+        Zeuge prueft sie deshalb an der Aussage und nicht am Satz.
+        """
         prompt: str = resp_mod._build_system_prompt(_state())
 
-        self.assertIn("Sprich als du selbst", prompt)
+        self.assertIn("[ROLLE]", prompt)
+        self.assertIn("Du spielst sie nicht, du sprichst zu ihr", prompt)
 
     def test_ohne_inhalt_kein_leerer_inhaltsblock(self) -> None:
         """Ein Block ohne Inhalt taeuscht eine Vorgabe vor, die es nicht gibt."""

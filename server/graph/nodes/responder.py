@@ -54,19 +54,21 @@ def _ei_mikro_anweisung(
     """
     teile: list[str] = []
 
-    # ── 1. Laenge (immer, aus Arousal) ─────────
-    if arousal >= 0.7:
-        teile.append(
-            "MAXIMAL 1-2 kurze Saetze."
-        )
-    elif arousal >= 0.4:
-        teile.append(
-            "2-3 Saetze."
-        )
-    else:
-        teile.append(
-            "MAXIMAL 1-2 Saetze. Kurz und passend zum Ton."
-        )
+    # ── 1. Laenge ── entfaellt seit dem 13.08.2026 ──
+    #
+    # Sie stand hier in drei Zweigen, und alle drei sagten "kurz" — ab 0.7
+    # "MAXIMAL 1-2 kurze Saetze", ab 0.4 "2-3 Saetze", sonst wieder "MAXIMAL
+    # 1-2". Es gab damit keinen Weg, auf dem Nova eine lange Antwort
+    # angewiesen bekam, und die Regel regierte ohnehin nicht: In derselben
+    # Landschaft streute die Antwortlaenge von 162 bis 3895 Zeichen, und in
+    # einer kontrollierten Probe traf diese Form 0 von 6 Laengenkorridoren.
+    #
+    # Die Laenge kommt jetzt aus der Haltungsgroesse `umfang`, in **Zeichen**
+    # statt in Saetzen und an der staerksten Stelle des Prompts
+    # (`_sprachstil_block`). Zwei Mengenangaben aus zwei Quellen waeren die
+    # Doppelung, die dieser Umbau beseitigt — und die Satzzahl zerstoert
+    # ausserdem den Telegrammstil, der zu `schmollen` und `nebel` gehoert
+    # (novaberg-haltungsraum_k.md §3.0).
 
     # ── 2. Energie-Spiegelung (nur bei hohem Arousal) ─
     if arousal >= 0.7:
@@ -178,6 +180,67 @@ def _reiz_ist_eigener_gedanke(state: ConversationState) -> bool:
     return payload.get("reiz_herkunft") == "eigener_impuls"
 
 
+def _rollenblock() -> str:
+    """Die Konstellation, vor allen Beschreibungen.
+
+    **Ohne sie stehen die Personenbloecke ohne Grund da.** Der Prompt nannte
+    bis zum 13.08.2026 nur Novas Namen; wer ihr gegenuebersteht, ging aus
+    keinem Satz hervor. Ein Block, den der Auftrag nicht einfuehrt, ist
+    Kontext — und Kontext bindet nicht (gemessen 12.08.2026: die anweisende
+    Form traf 6 von 6 Laengenkorridoren, die beschreibende 0 von 6).
+
+    **Die Pruefung ist doppelt**, weil zwei Dinge stimmen muessen: Die Replik
+    soll von dieser Person stammen und an dieses Gegenueber gerichtet sein.
+    Der erste Teil ist gemessen (5.7 gegen 3.0 Profilmerkmale gegenueber der
+    Stilform), der zweite ist begruendet und unbelegt — vier Verfahren, ihn zu
+    messen, sind an Faellen mit bekanntem Urteil gescheitert.
+
+    Der Block heisst `[ROLLE]` und nicht `[AUFGABE]`: Den Namen traegt bereits
+    der fertige Block des Planners, und zwei gleichnamige Bloecke in einem
+    Prompt sind genau die stille Verwechslung, gegen die `22_STILLE_FEHLER.md`
+    geschrieben ist.
+    """
+    return PROMPTS["responder.rolle"].format(name=ASSISTANT_NAME)
+
+
+def _szenenblock(state: ConversationState) -> str:
+    """Der Raum, in dem gesprochen wird — Landschaft, Farbton, Zeit.
+
+    **Der Farbton erreicht hier zum ersten Mal den Responder.** Er wird in
+    jedem Turn aus acht Dimensionen gemischt und ging bisher nur in den
+    Gespraechsvektor-Prompt und ins Log (`FARBTON-OHNE-LESER`). Eine Wirkung
+    auf die Antwort ist **nicht nachgewiesen** — drei Laeufe je Fassung zeigten
+    keinen Unterschied ueber dem Rauschen; er steht hier, weil er die Lage
+    beschreibt, nicht weil eine Messung ihn verlangt.
+
+    Vorbedingung: keine. Fehlt `gv_detail`, entfaellt die Landschaft und der
+        Block traegt nur die Zeit — das steht dann in einer Logzeile.
+    Nachbedingung: nichtleerer Block; die Zeitangabe steht immer.
+    """
+    # ── Eingabe ─────────────────────────────────
+    gv_detail: dict = state.get("gv_detail") or {}
+    farbton: str = gv_detail.get("farbton", "")
+    jetzt = datetime.now()
+
+    # ── Verarbeitung ────────────────────────────
+    # **Dieselbe Lage in drei Koernungen**, von grob nach fein: die Landschaft
+    # (eine von vierzehn), der Sektor (einer von 64) und die sechs Achsen, aus
+    # denen beide gebaut sind. Sie standen bis zum 13.08.2026 am Ende der
+    # Nutzer-Nachricht; mit dem Umbau auf die Drehbuch-Gliederung gehoeren sie
+    # nach vorn — sie sind der Rahmen, nicht die Anweisung.
+    zeilen: list[str] = _lage_zeilen(gv_detail)
+    if not zeilen:
+        logger.info("Responder: keine Lage im Zustand — [SZENE] ohne Raum")
+    if farbton:
+        zeilen.append(farbton)
+    zeilen.append(
+        f"Es ist {jetzt.strftime('%A, %d.%m.%Y')}, {jetzt.strftime('%H:%M')} Uhr."
+    )
+
+    # ── Ausgabe ─────────────────────────────────
+    return "[SZENE]\n" + "\n".join(zeilen)
+
+
 def _build_system_prompt(state: ConversationState) -> str:
     """Baut den System-Prompt nach einheitlichem [BLOCKNAME]-Schema."""
     parts: list[str] = []
@@ -185,11 +248,20 @@ def _build_system_prompt(state: ConversationState) -> str:
     external = state.get("external")
     internal = state.get("internal")
 
-    # ── [IDENTITAET] ── Primacy: Wer bin ich ──
+    # ── [ROLLE] und [SZENE] ── vom Groben ins Feine ──
+    #
+    # Beide stehen vor allen Beschreibungen: Erst wer spielt und wer
+    # gegenuebersteht, dann der Raum, dann die Personen. Ein Modell, das erst
+    # am Ende erfaehrt, aus wessen Sicht ein Absatz geschrieben war, hat ihn
+    # bereits falsch eingeordnet (novaberg-haltungsraum_k.md §3.0a).
+    parts.append(_rollenblock())
+    parts.append(_szenenblock(state))
+
+    # ── [PERSON A] ── Wer spielt ──
     jetzt = datetime.now()
     identitaet_parts: list[str] = [
-        "[IDENTITAET]\n"
-        f"Du bist {ASSISTANT_NAME}, ein persoenlicher KI-Assistent. Du antwortest auf deutsch."
+        "[PERSON A — WER SIE IST]\n"
+        f"Person A ist {ASSISTANT_NAME}. Sie spricht deutsch."
     ]
 
     # Die Charakter-Anweisungen stehen NICHT mehr hier, sondern als letzter
@@ -201,52 +273,70 @@ def _build_system_prompt(state: ConversationState) -> str:
     # Gewachsene Persoenlichkeit (kern aus LZG-Destillation, internal.character.core)
     nova_kern: str = internal.character.core if internal else ""
     if nova_kern:
-        identitaet_parts.append(f"Deine gewachsene Persoenlichkeit:\n{nova_kern}")
+        identitaet_parts.append(f"Ihre gewachsene Persoenlichkeit:\n{nova_kern}")
 
     # Was Nova gerade beschaeftigt (adaptive aus KZG-Destillation)
     nova_adaptiv: str = internal.character.adaptive if internal else ""
     if nova_adaptiv:
-        identitaet_parts.append(f"Was dich gerade beschaeftigt:\n{nova_adaptiv}")
+        identitaet_parts.append(f"Was sie gerade beschaeftigt:\n{nova_adaptiv}")
 
     # Emotionale Grundstimmung (emotions_profil aus LZG-Destillation)
     nova_emotions: str = internal.character.emotions if internal else ""
     if nova_emotions:
-        identitaet_parts.append(f"Deine emotionale Grundstimmung:\n{nova_emotions}")
+        identitaet_parts.append(f"Ihre emotionale Grundstimmung:\n{nova_emotions}")
 
     # Wie Nova kommuniziert (intentions_profil aus LZG-Destillation)
     nova_intentionen: str = internal.character.intentions if internal else ""
     if nova_intentionen:
-        identitaet_parts.append(f"Deine Art zu kommunizieren:\n{nova_intentionen}")
+        identitaet_parts.append(f"Ihre Art zu kommunizieren:\n{nova_intentionen}")
 
-    # Bild vom Nutzer (beziehungsprofil aus LZG-Destillation)
+    # Novas Blick auf ihr Gegenueber steht NICHT mehr hier, sondern im Block
+    # [ZWISCHEN BEIDEN] — zusammen mit seinem Blick auf sie und ausdruecklich
+    # beschriftet. Nach dem Paar-Schema sind es zwei verschiedene Aussagen;
+    # unbeschriftet nebeneinander sahen sie aus wie zwei Fassungen derselben.
     nova_beziehung: str = internal.character.relationship if internal else ""
-    if nova_beziehung:
-        identitaet_parts.append(f"So siehst du deinen Nutzer:\n{nova_beziehung}")
 
-    # Datum + Rollenklarheit + Regeln (Recency — am Ende des Blocks)
-    identitaet_parts.append(
-        # Drei Saetze sind seit der Trennung in den Verfasser gewandert: der
-        # Hinweis auf den Charakter-Kontext im Gedaechtnis, "erwaehne nur
-        # Informationen die im Kontext stehen" und der Internetzugang. Alle
-        # drei sprechen ueber Wissen, das der Responder nicht mehr sieht — eine
-        # Anweisung zu Quellen, die nicht im Prompt stehen, ist entweder
-        # wirkungslos oder eine Aufforderung zum Erfinden
-        # (novaberg-node-verfasser_k.md §2.2).
-        #
-        # Datum und Uhrzeit bleiben hier UND stehen beim Verfasser: Sie sind
-        # kein Wissen aus einer Quelle, sondern die Lage, in der beide Stufen
-        # stehen. Novas Art um 03:00 ist eine andere als um 14:00.
-        f"Heute ist {jetzt.strftime('%A, %d.%m.%Y')}, es ist {jetzt.strftime('%H:%M')} Uhr.\n"
-        "Sprich als du selbst, niemals als der Nutzer."
-    )
-
-    if nova_kern or nova_beziehung:
-        logger.info(
-            f"Responder: Nova-Identitaet in [IDENTITAET] "
-            f"(kern={len(nova_kern)} Zeichen, beziehung={len(nova_beziehung)} Zeichen)"
-        )
+    # Datum und Uhrzeit stehen jetzt in [SZENE] — sie beschreiben die Lage,
+    # nicht die Person. "Sprich als du selbst, niemals als der Nutzer" ist
+    # entfallen: Die Konstellation in [ROLLE] sagt dasselbe positiv, und ein
+    # Verbot neben einer Rollenzuweisung ist die schwaechere Form.
 
     parts.append("\n\n".join(identitaet_parts))
+
+    # ── [PERSON B] ── Wer gegenuebersteht ──
+    #
+    # **Der Kern des Menschen erreicht den Responder hier zum ersten Mal.**
+    # Bisher ging vom Nutzer ein einziges Profil in den Prompt — sein
+    # Beziehungsprofil, auf 300 Zeichen gekappt —, waehrend von Nova alle
+    # fuenf hineingingen. Fuer einen Prompt, der einen Dialog zweier Menschen
+    # darstellen soll, war die eine Seite unbeschrieben
+    # (`PERSON-B-OHNE-BESCHREIBUNG`).
+    #
+    # Die Wirkung ist **nicht nachgewiesen**: Vier Verfahren, das Zugehen auf
+    # einen bestimmten Menschen zu messen, sind an Faellen mit bekanntem
+    # Sollurteil gescheitert. Der Block steht, weil ein Dialog ohne
+    # beschriebenes Gegenueber ein Monolog mit Stichwortgeber ist — und weil
+    # der Auftrag in [ROLLE] jetzt ausdruecklich nach ihm fragt.
+    person_b_parts: list[str] = []
+    nutzer_kern: str = external.character.core if external else ""
+    if nutzer_kern:
+        person_b_parts.append(f"[PERSON B — WER ER IST]\n{nutzer_kern}")
+    else:
+        logger.warning(
+            "Responder: Kern von Person B fehlt — der Dialog hat nur eine "
+            "beschriebene Seite"
+        )
+
+    nutzer_adaptiv: str = external.character.adaptive if external else ""
+    if nutzer_adaptiv:
+        person_b_parts.append(f"Was ihn gerade beschaeftigt:\n{nutzer_adaptiv}")
+
+    if person_b_parts:
+        parts.append("\n\n".join(person_b_parts))
+        logger.info(
+            "Responder: [PERSON B] mit %d Zeichen Kern, %d Zeichen adaptiv",
+            len(nutzer_kern), len(nutzer_adaptiv),
+        )
 
     # ── [EIGENE_EMOTION] ── Novas eigener Emotionszustand (Dual-Emotion Phase 2) ──
     nova_emotions_verlauf: list = state.get("nova_emotions_verlauf", [])
@@ -278,7 +368,7 @@ def _build_system_prompt(state: ConversationState) -> str:
         )
 
     if nova_emotions_verlauf:
-        eigene_emo_parts: list[str] = ["[EIGENE_EMOTION]\nDein aktueller emotionaler Zustand:"]
+        eigene_emo_parts: list[str] = ["[PERSON A — IHRE EMOTION]\nIhr aktueller emotionaler Zustand:"]
 
         # Top-Emotionen aus dem Verlauf
         emo_text: str = ", ".join(
@@ -294,9 +384,9 @@ def _build_system_prompt(state: ConversationState) -> str:
         # Konflikt-Signal
         if nova_emotion_konflikt:
             eigene_emo_parts.append(
-                "Du spuerst einen inneren Konflikt — dein eigener Zustand "
-                "und der des Nutzers zeigen in verschiedene Richtungen. "
-                "Das darf sich in deiner Antwort zeigen."
+                "Sie spuert einen inneren Konflikt — ihr eigener Zustand "
+                "und der ihres Gegenuebers zeigen in verschiedene Richtungen. "
+                "Das darf sich in der Antwort zeigen."
             )
 
         parts.append("\n".join(eigene_emo_parts))
@@ -309,6 +399,29 @@ def _build_system_prompt(state: ConversationState) -> str:
             f"Responder: [EIGENE_EMOTION] injiziert — {top_nova}"
             f"{', KONFLIKT' if nova_emotion_konflikt else ''}"
             f"{f', Vektor={nova_emotions_vektor}' if nova_emotions_vektor else ''}"
+        )
+
+    # ── [ZWISCHEN BEIDEN] ── beide Blickrichtungen, beschriftet ──
+    #
+    # **Nach dem Paar-Schema sind das zwei verschiedene Aussagen**, nicht zwei
+    # Fassungen derselben: `(nova, mensch)` ist ihr Blick auf ihn,
+    # `(mensch, nova)` seiner auf sie. Bis zum 13.08.2026 standen sie
+    # unbeschriftet an zwei Stellen des Prompts — Novas als "So siehst du
+    # deinen Nutzer", seines als "Langzeit-Beziehungsprofil" —, und seines war
+    # auf 300 Zeichen gekappt. Der Deckel stammt aus der Zeit knapper
+    # Kontextfenster und faellt hier: Das Profil misst rund 500 Zeichen, der
+    # Prompt traegt Tausende.
+    nutzer_beziehung: str = external.character.relationship if external else ""
+    zwischen_parts: list[str] = []
+    if nova_beziehung:
+        zwischen_parts.append(f"So sieht Person A ihr Gegenueber:\n{nova_beziehung}")
+    if nutzer_beziehung and BEZIEHUNG_EINFLUSS > 0:
+        zwischen_parts.append(f"So sieht Person B sie:\n{nutzer_beziehung}")
+    if zwischen_parts:
+        parts.append("[ZWISCHEN BEIDEN]\n" + "\n\n".join(zwischen_parts))
+        logger.info(
+            "Responder: [ZWISCHEN BEIDEN] — A→B %d Zeichen, B→A %d Zeichen",
+            len(nova_beziehung), len(nutzer_beziehung),
         )
 
     # ── [EIGENER GEDANKE] ── Reiz stammt von Nova selbst ──
@@ -345,9 +458,11 @@ def _build_system_prompt(state: ConversationState) -> str:
     # Nutzers. Die Ueberschrift muss das sagen, sonst behauptet der Block eine
     # fremde Verfassung, die niemand gemessen hat.
     if _reiz_ist_eigener_gedanke(state):
-        komm_kopf: str = "[KOMMUNIKATION]\nSo ist deine eigene Verfassung gerade:"
+        komm_kopf: str = ("[PERSON A — WIE SIE GERADE DA IST]\n"
+                          "Der Reiz stammt von ihr selbst; die Werte unten "
+                          "sind ihre eigenen:")
     else:
-        komm_kopf = "[KOMMUNIKATION]\nSo nimmt der Nutzer gerade am Gespraech teil:"
+        komm_kopf = "[PERSON B — WIE ER GERADE DA IST]"
 
     komm_parts: list[str] = [komm_kopf]
 
@@ -365,17 +480,14 @@ def _build_system_prompt(state: ConversationState) -> str:
     if emotions_vektor and emotions_vektor in EMOTIONS_VEKTOREN:
         komm_parts.append(f"Vektor: {EMOTIONS_VEKTOREN[emotions_vektor]}")
 
-    # EI-Mikro-Anweisung
-    mikro: str = _ei_mikro_anweisung(
-        arousal            = current_arousal,
-        emotion            = current_emotion,
-        vektor             = emotions_vektor,
-        verlauf            = emotions_verlauf,
-        intentionen        = user_intentionen,
-        beziehungs_dynamik = beziehungs_dynamik,
-    )
-    if mikro:
-        komm_parts.append(mikro)
+    # **Die EI-Mikroanweisung steht nicht mehr hier.** Sie ist das einzige
+    # Stueck dieses Blocks, das Nova etwas auftraegt, und sie stand mitten in
+    # einer Lagebeschreibung — rund 8.000 Zeichen vor dem Generierungspunkt.
+    # Anweisungen gehoeren zur Regie; sie wird in `_sprachstil_block` gerechnet
+    # und dort ans Ende gehaengt. Kein Zwischenspeicher im Zustand: Ein
+    # State-Key ohne Kanal ist nach der Knotengrenze weg
+    # (novaberg-lesson_l_stategraph-channel-zwang.md), und hier braucht es ihn
+    # ohnehin nicht — beide Bloecke entstehen im selben Aufruf.
 
     # Delegations-Beruhigung (VENT1) — unsichtbar fuer den User
     agent_results: list = state.get("agent_results", [])
@@ -388,45 +500,47 @@ def _build_system_prompt(state: ConversationState) -> str:
                 komm_parts.append(r.ergebnis)
                 break
 
-    # Sprachstil-Adaption
+    # **Der Sprachstil beschreibt hier nur noch, er weist nicht mehr an.**
+    # Die alte Fassung sagte "Sei natuerlich, verwende kuerzere Saetze" — eine
+    # zweite Laengenvorgabe neben dem Zeichenkorridor der Regie, aus einer
+    # Quelle, die von ihm nichts weiss. Wie Nova spricht, steht in der Regie;
+    # hier steht, wie **er** spricht.
     if sprach_stil and sprach_stil != "neutral":
-        stil_anweisungen: dict[str, str] = {
-            "locker":      "Der Nutzer kommuniziert locker. Sei natuerlich, verwende kuerzere Saetze.",
-            "formell":     "Der Nutzer kommuniziert formell. Respektvoll und strukturiert, aber beim Du.",
-            "fachlich":    "Der Nutzer kommuniziert fachlich. Fachbegriffe verwenden, keine Grundlagen erklaeren.",
-            "emotional":   "Der Nutzer kommuniziert emotional. Auf Gefuehle eingehen, warm formulieren.",
-            "jugendlich":  "Der Nutzer kommuniziert jugendlich. Locker und auf Augenhoehe, aber eigene Stimme behalten.",
-        }
-        anweisung: str = stil_anweisungen.get(sprach_stil, "")
-        if anweisung:
-            komm_parts.append(anweisung)
+        komm_parts.append(f"Sein Sprachstil: {sprach_stil}")
 
-    # Beziehungs-Langzeitprofil
-    if beziehungs_kontext and BEZIEHUNG_EINFLUSS > 0:
-        komm_parts.append(f"Langzeit-Beziehungsprofil: {beziehungs_kontext[:300]}")
+    # Das Beziehungsprofil steht jetzt vollstaendig und beschriftet in
+    # [ZWISCHEN BEIDEN] — hier stand es gekappt und ohne Angabe der
+    # Perspektive.
 
     # Gespraechsmodus + Intentionen
     if gespraechs_modus:
-        komm_parts.append(f"Gespraechsmodus: {gespraechs_modus}")
+        komm_parts.append(f"Register: {gespraechs_modus}")
     if user_intentionen:
-        komm_parts.append(f"Intentionen: {', '.join(user_intentionen)}")
+        komm_parts.append(f"Was er will: {', '.join(user_intentionen)}")
 
-    # Tonalitaet
-    user_tone: str = external.emotion.tone if external else "sachlich"
-    tone_text: str = TONE_INSTRUCTIONS.get(user_tone, TONE_INSTRUCTIONS["sachlich"])
-    komm_parts.append(f"Antwortton: {tone_text}")
+    # **Der Antwortton ist entfallen.** `tone` aus der Perzeption und
+    # `language_style` aus dem EI-Calc widersprachen sich im selben Prompt —
+    # gemessen am 13.08.2026: "Antwortton: praezise, klar und faktenbasiert"
+    # neben "Ton: locker". Zwei Quellen, eine Aussage, keine weiss von der
+    # anderen. Der Ton der Antwort kommt aus der Regie; `tone` beschreibt,
+    # was er sich wuenscht, und das steht in seiner Intention.
 
-    # Beziehungsdynamik
-    dynamik_text: dict[str, str] = {
-        "vertrauen":    "Der Nutzer oeffnet sich. Du darfst persoenlicher werden.",
-        "distanz":      "Der Nutzer haelt Distanz. Sachlich bleiben.",
-        "angriff":      "Der Nutzer greift an. Ruhig bleiben, nicht defensiv.",
-        "hilfesuchend": "Der Nutzer sucht Halt. Fuersorglich sein.",
-        "dankbar":      "Der Nutzer ist dankbar. Warm annehmen.",
+    # **Die Beziehungsdynamik beschreibt, sie weist nicht mehr an.** Dieselbe
+    # Aussage stand zweimal im Prompt: hier als eigene Zeile und in der
+    # EI-Mikroanweisung, aus zwei Quellen, die nichts voneinander wissen —
+    # woertlich "Der Nutzer oeffnet sich. Du darfst persoenlicher werden."
+    # Was Nova daraufhin tut, entscheidet die Regie; hier steht nur, wie er
+    # sich zeigt.
+    dynamik_lage: dict[str, str] = {
+        "vertrauen":    "Er oeffnet sich.",
+        "distanz":      "Er haelt Abstand.",
+        "angriff":      "Er greift an.",
+        "hilfesuchend": "Er sucht Halt.",
+        "dankbar":      "Er ist dankbar.",
     }
-    dynamik_anw = dynamik_text.get(beziehungs_dynamik, "")
+    dynamik_anw = dynamik_lage.get(beziehungs_dynamik, "")
     if dynamik_anw:
-        komm_parts.append(f"Beziehungsdynamik: {dynamik_anw}")
+        komm_parts.append(f"Wie er sich zeigt: {dynamik_anw}")
 
     parts.append("\n".join(komm_parts))
 
@@ -450,8 +564,8 @@ def _build_system_prompt(state: ConversationState) -> str:
     if antwort_inhalt:
         parts.append(
             f"[INHALT]\n"
-            f"Das ist der fachliche Inhalt deiner Antwort. Sag ihn auf deine "
-            f"Art.\n\n"
+            f"Das ist der fachliche Inhalt der Replik. Person A sagt ihn auf "
+            f"ihre Art.\n\n"
             f"{antwort_inhalt}"
         )
 
@@ -482,27 +596,37 @@ def _build_system_prompt(state: ConversationState) -> str:
         parts.append("\n".join(dir_zeilen))
         logger.info(f"Responder: {len(direktiven)} Direktiven in [DIREKTIVEN]")
 
-    # ── [DEIN WESEN] ── zuletzt, damit es am staerksten wirkt ──
+    # ── [PERSON A — IHR WESEN] ── zuletzt, damit es am staerksten wirkt ──
     #
     # Alles darueber ist Grundlage: gewachsene Persoenlichkeit, Stimmung,
-    # Beziehung, Lage, Regeln. Das vom Nutzer gesetzte Wesen soll sich dort
-    # nicht einreihen — es steht am Ende und damit an der Stelle, an der eine
+    # Beziehung, Lage. Das vom Nutzer gesetzte Wesen soll sich dort nicht
+    # einreihen — es steht am Ende und damit an der Stelle, an der eine
     # Vorgabe am meisten ausrichtet.
+    #
+    # **Der Block hiess bis zum 13.08.2026 `[DEIN WESEN]` und sprach in der
+    # zweiten Person.** In einem Prompt, der die Figur als Person A einfuehrt
+    # und den Leser als ihren Schauspieler anspricht, meinte „du" damit zwei
+    # verschiedene Personen — im Rollenblock den Spieler, hier die Rolle. Wer
+    # bei jedem Block neu raten muss, wer gemeint ist, hat die Konstellation
+    # nicht mehr. Seither gilt: **»du« ist der Schauspieler, ueber Person A
+    # wird in der dritten Person gesprochen** — mit einer Ausnahme, die keine
+    # ist: das „du" **innerhalb** der woertlichen Rede meint Person B und
+    # bleibt.
     #
     # Nur wenn es eine gibt. Ein leerer Block waere eine Ueberschrift ohne
     # Aussage und naehme der Stelle genau die Wirkung, fuer die sie gewaehlt ist.
     charakter_anweisungen: list[str] = list(internal.identities) if internal else []
     if charakter_anweisungen:
         wesen_zeilen: list[str] = [
-            "[DEIN WESEN]",
-            "So bist du gemeint. Das hier ist keine Beschreibung neben anderen,",
-            "sondern der Kern, aus dem heraus du sprichst:",
+            "[PERSON A — IHR WESEN]",
+            "So ist sie gemeint. Das hier ist keine Beschreibung neben anderen,",
+            "sondern der Kern, aus dem heraus sie spricht:",
         ]
         wesen_zeilen.extend(f"- {anweisung}" for anweisung in charakter_anweisungen)
         parts.append("\n".join(wesen_zeilen))
         logger.info(
             f"Responder: {len(charakter_anweisungen)} Charakter-Anweisungen "
-            f"als [DEIN WESEN] am Prompt-Ende"
+            f"als [PERSON A — IHR WESEN] am Prompt-Ende"
         )
 
     return "\n\n".join(parts)
@@ -597,7 +721,8 @@ def _sprachstil_block(state: ConversationState) -> str:
     Fehlerfaelle: Keine; ein unbekannter Cluster liefert nur keine Landschaft.
     """
     # ── Eingabe ─────────────────────────────────
-    from ei.dreischicht import CLUSTER_FRAGEN, STRATEGIE_NAMEN
+    from ei.dreischicht import STRATEGIE_NAMEN
+    from ei.haltungssprache import regie_zeilen
 
     gv_detail: dict = state.get("gv_detail", {}) or {}
     cluster:   str  = gv_detail.get("cluster", "")
@@ -608,17 +733,25 @@ def _sprachstil_block(state: ConversationState) -> str:
     stil: str = external.emotion.language_style if external else ""
 
     # ── Verarbeitung ────────────────────────────
-    # Grob bis genau: Landschaft, Sektor, Achsen.
-    zeilen: list[str] = _lage_zeilen(gv_detail)
+    # **Die Lage steht hier nicht mehr.** Landschaft, Sektor und Achsen sind
+    # der Rahmen, und der Rahmen gehoert nach vorn — er steht seit dem
+    # 13.08.2026 im Block `[SZENE]`. Bliebe er zusaetzlich hier, saehe das
+    # Modell dieselbe Landschaft zweimal; genau diese Doppelung hat der Umbau
+    # an drei anderen Stellen beseitigt, und im ersten Lauf hatte ich sie hier
+    # selbst erzeugt.
+    #
+    # Was bleibt, ist reine Regie: Werkzeug, Umfang, Haltungswoerter, Energie.
+    zeilen: list[str] = []
 
-    # Am genauesten — wie in dieser Lage zu sprechen ist.
+    # Der Sprachstil des Nutzers steht als Lage in `[PERSON B]`; hier steht
+    # nur noch, womit Nova arbeitet.
+    #
+    # Die Fragenfrequenz aus `CLUSTER_FRAGEN` steht hier seit dem 13.08.2026
+    # **nicht** mehr: Dieselbe Aussage kommt jetzt aus der Haltungsgroesse
+    # `fragen`, und zwar charakterabhaengig statt fuer jede Nova gleich. Die
+    # Tabelle bleibt, weil der GV-Knoten sie fuer die Strategiewahl braucht —
+    # der Responder nicht (novaberg-haltungsraum_k.md §3.0b).
     ton_teile: list[str] = []
-    if stil and stil != "neutral":
-        ton_teile.append(f"Ton: {stil}")
-    if cluster:
-        fragen: str = CLUSTER_FRAGEN.get(cluster, "")
-        if fragen:
-            ton_teile.append(f"Fragen: {fragen}")
     if strategie:
         werkzeug: str = STRATEGIE_NAMEN.get(strategie, strategie)
         if vehikel:
@@ -626,6 +759,52 @@ def _sprachstil_block(state: ConversationState) -> str:
         ton_teile.append(f"Werkzeug: {werkzeug}")
     if ton_teile:
         zeilen.append(" · ".join(ton_teile))
+
+    # ── Die Regie, ganz zuletzt ─────────────────
+    #
+    # **Der erste Leser der Haltung** (`HALTUNG-OHNE-LESER`, offen seit dem
+    # 31.07.2026): Der Zug war gebaut, das Kriterium stand, die Zahlen waren
+    # gemessen — und keine Antwort aenderte sich, weil kein Prompt die
+    # Groessen las. `state["haltung"]` hatte ausser dem rechnenden Knoten nur
+    # die Anzeige als Leser.
+    #
+    # Sie steht **hinter** Landschaft, Sektor, Lage und Ton, weil sie die
+    # einzige Angabe mit einer Zahl ist und die Zahl bindet. Die Stelle ist
+    # gemessen: Dieselbe Vorgabe ohne Mengenangabe verfehlte den Korridor um
+    # das Fuenffache (12.08.2026, 626 Zeichen statt 120).
+    haltung = state.get("haltung")
+    arousal: float = external.emotion.arousal if external else 0.5
+    if haltung is None:
+        # Fail loud: Ein stiller Rueckfall auf "keine Vorgabe" waere von einer
+        # Haltung ohne Abweichung nicht zu unterscheiden — und die alte
+        # Laengenregel ist entfernt, es gibt also keinen zweiten Weg.
+        logger.error(
+            "Responder: Keine Haltung im Zustand — die Regie entfaellt und "
+            "dieser Turn bekommt KEINE Umfangsvorgabe. Der Knoten "
+            "`haltungsraum` ist nicht gelaufen."
+        )
+    else:
+        try:
+            zeilen.extend(regie_zeilen(haltung, arousal))
+            # Die EI-Mikroanweisung schliesst die Regie ab: Sie ist situativ
+            # gerechnet und traegt genau die Faelle, die der Haltungsraum nicht
+            # kennt — Anti-Therapeut, Energie-Spiegelung, Rueckbezug.
+            mikro: str = _ei_mikro_anweisung(
+                arousal            = arousal,
+                emotion            = external.emotion.emotion if external else "neutral",
+                vektor             = external.emotion.emotions_vector if external else "",
+                verlauf            = state.get("emotions_verlauf", []),
+                intentionen        = state.get("user_intentionen", []),
+                beziehungs_dynamik = (external.emotion.relationship_dynamic
+                                      if external else "neutral"),
+            )
+            if mikro:
+                zeilen.extend(mikro.split("\n"))
+        except ValueError as fehler:
+            logger.error(
+                "Responder: Regie nicht bildbar (%s) — der Turn laeuft ohne "
+                "Umfangsvorgabe weiter", fehler,
+            )
 
     # Der Leitgedanke steht hier NICHT mehr. Er ist Inhalt und gehoert zum
     # Verfasser — hier war er die zweite Tuer: Der GV-Block war schon aus dem

@@ -17,8 +17,14 @@ import unittest
 from graph.nodes.responder import _build_system_prompt, _reiz_ist_eigener_gedanke
 
 MARKER: str = "[EIGENER GEDANKE]"
-KOPF_EIGEN: str = "So ist deine eigene Verfassung gerade:"
-KOPF_FREMD: str = "So nimmt der Nutzer gerade am Gespraech teil:"
+
+# Die Koepfe des Lageblocks, nachgezogen am 13.08.2026 mit dem Umbau auf die
+# Drehbuch-Gliederung. **Die Aussage ist dieselbe geblieben** — beim eigenen
+# Impuls traegt `external` eine Kopie von `internal`, und der Block muss
+# sagen, wessen Werte darunter stehen. Nur die Ueberschriften heissen jetzt
+# nach den Personen statt nach der Funktion.
+KOPF_EIGEN: str = "[PERSON A — WIE SIE GERADE DA IST]"
+KOPF_FREMD: str = "[PERSON B — WIE ER GERADE DA IST]"
 
 
 def _state(payload: dict | None = None, event_source: str = "user") -> dict:
@@ -102,16 +108,24 @@ class ResponderPromptTest(unittest.TestCase):
         # Bis zum Beginn des naechsten Blocks — der Block selbst enthaelt
         # Leerzeilen, ein Split auf "\n\n" wuerde ihn mittendrin abschneiden.
         block: str = prompt.split(MARKER, 1)[1].split("\n\n[", 1)[0]
-        self.assertIn("schreibe sie ihm nicht zu", block)
-        self.assertIn("DEINER", block)
+        # Seit dem 13.08.2026 in dritter Person: „du" ist im Prompt der
+        # Schauspieler, ueber Person A wird gesprochen.
+        self.assertIn("schreibt sie ihm nicht zu", block)
+        self.assertIn("IHRER", block)
 
     def test_beide_prompts_bleiben_im_blockschema(self):
         for payload, name in (({"reiz_herkunft": "eigener_impuls"}, "impuls"),
                               ({}, "nutzer")):
             with self.subTest(fall=name):
                 prompt: str = _build_system_prompt(_state(payload, "character"))
-                self.assertIn("[IDENTITAET]", prompt)
-                self.assertIn("[KOMMUNIKATION]", prompt)
+                # Seit dem 13.08.2026 heissen die Bloecke nach den Personen:
+                # `[ROLLE]` fuehrt die Konstellation ein, `[PERSON A — …]`
+                # und `[PERSON B — …]` tragen, was vorher `[IDENTITAET]` und
+                # `[KOMMUNIKATION]` hiessen. Das Schema selbst — ein Name in
+                # eckigen Klammern je Block — gilt unveraendert.
+                self.assertIn("[ROLLE]", prompt)
+                self.assertIn("[SZENE]", prompt)
+                self.assertIn("[PERSON A — WER SIE IST]", prompt)
                 # [REGELN] steht seit dem 31.07.2026 zur Probe nicht mehr
                 # im Prompt — die Regeln waren Narben des ueberladenen
                 # Prompts, und die Ursache ist seit der Trennung von Inhalt
