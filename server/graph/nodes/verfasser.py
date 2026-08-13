@@ -33,6 +33,11 @@ from memory.pipeline_log import log_berechnung
 from services.model_services import ChatRequest, model_service
 
 from graph.einwand import kopf_anweisung, urteil_lesen
+# Die Marke gehoert zum Vertrag von `gv_detail` und hat genau eine Quelle.
+# Sie hier als Literal zu wiederholen waere der zweite Ort fuer denselben
+# Wert — und der Fall, in dem sie gebraucht wird, ist
+# genau der, in dem niemand hinsieht.
+from graph.nodes.gespraechsvektor import VORAUSDENKEN_GELAUFEN
 from graph.reiz  import reiz_ist_eigener_gedanke
 from graph.state import ConversationState
 from graph.vorzeichen import Vorzeichenbefund, vorzeichen_pruefen
@@ -53,55 +58,93 @@ def _gespraechsvektor_block(state: ConversationState) -> str:
     entfaellt: Das ist ab jetzt die Aufgabe der zweiten Stufe und keine Bitte
     mehr (§2.4).
 
+    **Der Block haengt an der Landschaft, nicht an der Hypothese.** Bis zum
+    14.08.2026 kehrte er bei leerem `gespraechsvektor` sofort leer zurueck —
+    und nahm die Landschaft mit, obwohl sie in `gv_detail` steht. Der GV-Node
+    war am 08.08.2026 ausdruecklich so umgebaut worden, dass sie **jeden**
+    Turn traegt; diese Zeile hob das fuer den Verfasser wieder auf. Gemessen
+    am 13.08.2026: In **15 von 26** Verfasser-Laeufen stand gar kein Block,
+    waehrend der Auftrag viermal auf ihn verwies. Der Responder macht es
+    richtig und liest `gv_detail` unmittelbar.
+
+    **Der Ausfall des Vorausdenkens wird benannt, nicht verschwiegen.** Eine
+    fehlende Strategie ist eine Vorgabe — naemlich die des Vorgabewerts, den
+    das Modell aus der Dichte seines Materials waehlt. Welcher der beiden
+    Faelle vorliegt, sagt `vorausdenken`: Der leere Strategie-String allein
+    trueg den Unterschied nicht, weil `korridor_pruefen` ihn auch auf einem
+    gelaufenen Turn leert.
+
     Vorbedingung: `state` stammt aus dem CharacterGraph.
-    Nachbedingung: Leerer String genau dann, wenn der GV-Node nichts geliefert
-    hat.
-    Fehlerfaelle: keine — ein fehlender Gespraechsvektor ist kein Defekt,
-    sondern der Zustand vor dem ersten Turn.
+    Nachbedingung: Leerer String genau dann, wenn keine Landschaft vermessen
+    wurde — das ist der Zustand vor dem ersten Turn und der einzige Fall, in
+    dem der Auftrag ins Leere zeigt.
+    Fehlerfaelle: keine — ein fehlendes Vorausdenken ist kein Defekt, sondern
+    eine Entscheidung des GV-Node, und der Block sagt sie an.
 
     Returns:
         Der Block oder ein leerer String.
     """
     # ── Eingabe-Validierung ─────────────────────
-    hypothese: str = state.get("gespraechsvektor", "")
-    if not hypothese:
+    detail:  dict = state.get("gv_detail") or {}
+    cluster: str  = detail.get("cluster", "")
+    if not cluster:
         return ""
 
     # ── Verarbeitung ────────────────────────────
-    detail:    dict = state.get("gv_detail", {})
-    cluster:   str  = detail.get("cluster", "")
-    strategie: str  = detail.get("strategie", "")
-    vehikel:   str  = detail.get("vehikel", "")
-    impuls:    str  = detail.get("impuls", "")
+    from ei.dreischicht import (
+        CLUSTER_BESCHREIBUNGEN,
+        CLUSTER_FRAGEN,
+        STRATEGIE_NAMEN,
+    )
 
-    rahmen: str = ""
-    if cluster:
-        from ei.dreischicht import (
-            CLUSTER_BESCHREIBUNGEN,
-            CLUSTER_FRAGEN,
-            STRATEGIE_NAMEN,
-        )
-        rahmen = (
-            f"Gespraechslandschaft: {cluster.capitalize()} — "
-            f"{CLUSTER_BESCHREIBUNGEN.get(cluster, '')}\n"
-            f"Fragen: {CLUSTER_FRAGEN.get(cluster, '')}\n"
-        )
-        if strategie:
-            rahmen += f"Die gewaehlte Strategie: {STRATEGIE_NAMEN.get(strategie, strategie)}"
-            if vehikel:
-                rahmen += f" als {vehikel.capitalize()}"
-            rahmen += ".\n"
+    strategie: str = detail.get("strategie", "")
+    vehikel:   str = detail.get("vehikel", "")
+    impuls:    str = detail.get("impuls", "")
+    hypothese: str = state.get("gespraechsvektor", "")
 
-    leitgedanke: str = f"\nLeitgedanke fuer diese Antwort: {impuls}\n" if impuls else ""
+    zeilen: list[str] = [
+        f"Gespraechslandschaft: {cluster.capitalize()} — "
+        f"{CLUSTER_BESCHREIBUNGEN.get(cluster, '')}",
+        f"Fragen: {CLUSTER_FRAGEN.get(cluster, '')}",
+    ]
+
+    if strategie:
+        satz: str = (
+            f"Die gewaehlte Strategie: "
+            f"{STRATEGIE_NAMEN.get(strategie, strategie)}"
+        )
+        if vehikel:
+            satz += f" als {vehikel.capitalize()}"
+        zeilen.append(satz + ".")
+
+    if hypothese:
+        zeilen.append("")
+        zeilen.append("So bewegt sich das Gespraech gerade.")
+        zeilen.append("")
+        zeilen.append(hypothese)
+
+    if impuls:
+        zeilen.append("")
+        zeilen.append(f"Leitgedanke fuer diese Antwort: {impuls}")
+
+    # Die Ansage des Ausfalls. Sie steht zuletzt, damit sie nicht zwischen
+    # Landschaft und Hypothese gelesen wird, als gehoerte sie zur Lage.
+    if detail.get("vorausdenken", "") != VORAUSDENKEN_GELAUFEN:
+        zeilen.append("")
+        zeilen.append(
+            "Fuer diesen Turn wurde nicht vorausgedacht: Es gibt weder eine "
+            "gewaehlte Strategie noch einen Leitgedanken. Die Landschaft "
+            "oben ist die ganze Vorgabe."
+        )
+    elif not strategie:
+        zeilen.append("")
+        zeilen.append(
+            "Fuer diesen Turn steht kein Mittel fest. Die Landschaft oben "
+            "ist die Vorgabe."
+        )
 
     # ── Ausgabe ─────────────────────────────────
-    return (
-        f"[GESPRAECHSVEKTOR]\n"
-        f"{rahmen}"
-        f"So bewegt sich das Gespraech gerade.\n\n"
-        f"{hypothese}"
-        f"{leitgedanke}"
-    )
+    return "[GESPRAECHSVEKTOR]\n" + "\n".join(zeilen)
 
 
 def _build_system_prompt(state: ConversationState) -> str:
