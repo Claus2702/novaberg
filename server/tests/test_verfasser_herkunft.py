@@ -76,26 +76,55 @@ class VerfasserPromptTest(unittest.TestCase):
         self.assertIn("hat PERSON B NICHT gesagt", prompt)
         self.assertIn("eigener Gedanke von Person A", prompt)
 
-    def test_der_block_verbietet_die_zuschreibung_woertlich(self) -> None:
-        """Die gemessene Formulierung war „Du hast …" — sie steht im Verbot."""
-        prompt: str = verf_mod._build_system_prompt(
-            _state({"reiz_herkunft": "eigener_impuls"}, "character"))
+    def test_der_block_fuehrt_statt_zu_verbieten(self) -> None:
+        """**Am 14.08.2026 umgedreht, nicht geloescht.**
 
-        self.assertIn('Kein "du hast"', prompt)
+        Bis dahin stand hier die Zusicherung, dass der Block die gemessene
+        Formulierung „Du hast …" **woertlich verbietet**. Der Gegenstand ist
+        derselbe geblieben — die Zuschreibung —, das Mittel hat gewechselt:
+        Ein Verbot nennt das Unerwuenschte und macht es damit zum Gegenstand;
+        es arbeitet gegen den Zug des Modells statt mit ihm. Moeglich ist der
+        Wechsel erst, seit der Materialblock die Zuschreibung baulich
+        verhindert — solange nur Text zur Verfuegung stand, war das Verbot die
+        einzige, schwache Durchsetzung.
 
-    def test_das_verbot_deckt_auch_die_dritte_person(self) -> None:
-        """Seit der Inhalt in dritter Person steht, hat die Zuschreibung eine
-        zweite Gestalt.
-
-        „Du hast den Anker geworfen" ist verboten und wird es bleiben; „Person
-        B hat den Anker geworfen" waere derselbe Fehler in neuer Kleidung.
-        Ohne diese Zeile haette der Umbau vom 14.08.2026 das Verbot an genau
-        der Stelle entwertet, an der er die Person wechselt.
+        Geprueft wird deshalb, dass der Block eine **Richtung** nennt und
+        keine Wand: Wem der Gedanke gehoert und was mit ihm zu tun ist.
         """
         prompt: str = verf_mod._build_system_prompt(
             _state({"reiz_herkunft": "eigener_impuls"}, "character"))
 
-        self.assertIn('kein "Person B hat"', prompt)
+        self.assertIn("ES IST IHRE ENTDECKUNG", prompt)
+        self.assertIn("SIE EROEFFNET", prompt)
+
+    def test_der_block_traegt_kein_verbot_mehr(self) -> None:
+        """Die Gegenrichtung, und sie ist der eigentliche Zeuge.
+
+        Ohne sie bestuende der Test oben auch dann, wenn die Fuehrung
+        **neben** dem alten Verbot stuende — und genau so entsteht der fuenfte
+        Anlauf: Man ergaenzt, statt zu ersetzen, und der Block waechst um eine
+        Wand, die niemand mehr abbaut.
+        """
+        prompt: str = verf_mod._build_system_prompt(
+            _state({"reiz_herkunft": "eigener_impuls"}, "character"))
+
+        for verbot in ('Kein "du hast"', 'kein "Person B hat"',
+                       "Schreibe den Gedanken nicht Person B zu"):
+            with self.subTest(verbot=verbot):
+                self.assertNotIn(verbot, prompt)
+
+    def test_wem_der_gedanke_gehoert_steht_weiterhin_da(self) -> None:
+        """Die Fuehrung ersetzt das Verbot, nicht die Auskunft.
+
+        Die Herkunft ist eine Tatsache ueber den Turn und bleibt: Ohne sie
+        haette die Fuehrung keinen Grund, und der naechste Leser haelt sie fuer
+        eine Stilfrage.
+        """
+        prompt: str = verf_mod._build_system_prompt(
+            _state({"reiz_herkunft": "eigener_impuls"}, "character"))
+
+        self.assertIn("hat PERSON B NICHT gesagt", prompt)
+        self.assertIn("eigener Gedanke von Person A", prompt)
 
     def test_beim_nutzer_turn_steht_die_fremde_herkunft(self) -> None:
         """Der positive Zwilling: Sonst wäre ein immer gleicher Satz auch grün."""

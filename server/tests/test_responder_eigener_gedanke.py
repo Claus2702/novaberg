@@ -109,8 +109,16 @@ class ResponderPromptTest(unittest.TestCase):
         self.assertIn(KOPF_FREMD, fremd)
         self.assertNotIn(KOPF_EIGEN, fremd)
 
-    def test_der_block_verbietet_die_zuschreibung_an_den_nutzer(self):
-        """Der gemessene Defekt war eine Zuschreibung — der Block adressiert sie."""
+    def test_der_block_fuehrt_die_zuschreibung_um(self):
+        """Der gemessene Defekt war eine Zuschreibung — der Block adressiert sie.
+
+        **Am 14.08.2026 umgedreht, nicht geloescht.** Bis dahin pruefte diese
+        Zusicherung das Verbot woertlich („schreibt sie ihm nicht zu"). Der
+        Gegenstand ist derselbe geblieben, das Mittel hat gewechselt: Der Block
+        sagt jetzt, wem der Gedanke gehoert und wohin er geht, statt zu nennen,
+        was nicht geschehen soll. Moeglich ist das erst, seit die Struktur die
+        Zuschreibung verhindert.
+        """
         prompt: str = _build_system_prompt(
             _state({"reiz_herkunft": "eigener_impuls"}, event_source="character")
         )
@@ -119,8 +127,21 @@ class ResponderPromptTest(unittest.TestCase):
         block: str = prompt.split(MARKER, 1)[1].split("\n\n[", 1)[0]
         # Seit dem 13.08.2026 in dritter Person: „du" ist im Prompt der
         # Schauspieler, ueber Person A wird gesprochen.
-        self.assertIn("schreibt sie ihm nicht zu", block)
+        self.assertIn("SIE TEILT EINEN EINFALL", block)
+        self.assertIn("SIE WENDET SICH IHM ZU", block)
         self.assertIn("IHRER", block)
+
+    def test_der_block_traegt_kein_verbot_mehr(self) -> None:
+        """Ergaenzen statt ersetzen waere der fuenfte Anlauf in neuer Kleidung."""
+        prompt: str = _build_system_prompt(
+            _state({"reiz_herkunft": "eigener_impuls"}, event_source="character")
+        )
+        block: str = prompt.split(MARKER, 1)[1].split("\n\n[", 1)[0]
+
+        for verbot in ("schreibt sie ihm nicht zu", "dankt ihm nicht",
+                       "lobt ihn nicht"):
+            with self.subTest(verbot=verbot):
+                self.assertNotIn(verbot, block)
 
     def test_beide_prompts_bleiben_im_blockschema(self):
         for payload, name in (({"reiz_herkunft": "eigener_impuls"}, "impuls"),
