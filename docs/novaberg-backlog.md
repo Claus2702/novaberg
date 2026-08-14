@@ -4849,6 +4849,37 @@ Der Aufrufer sieht echte Zeilen und meldet Erfolg. Genau das ist einmal geschehe
 
 ---
 
+## IMPULS-HANDLUNG-OHNE-HERKUNFT — was sie selbst angelegt hat, ist nicht erkennbar (14.08.2026)
+
+**Band:** C — es steht heute Bestand in der Datenbank, dessen Urheber nicht feststellbar ist.
+
+**Entschieden am 14.08.2026: Ein eigener Gedanke darf handeln.** Nova soll agieren können — Termine, Notizen, Direktiven —, und ein versehentlich angelegter Eintrag ist kein Grund, ihr das zu nehmen: Ein Mensch legt auch versehentlich Termine an. Der gebaute Zustand entspricht dieser Entscheidung bereits; die Dispatcher der Management-Agenten lesen den Reiz des Turns, und auf einem Impuls-Turn ist das Novas Gedanke. **Es ist nichts zu bauen, um das zu erlauben.**
+
+**Was fehlt, ist die andere Hälfte des Satzes.** „Versehentlich" setzt voraus, dass hinterher erkennbar ist, wessen Versehen es war. Weder `timeline` noch `notizen` trägt eine Spalte dafür:
+
+```
+timeline   id · user_id · event_time · event_type · title · details · recurring ·
+           precision · created_at · aktiv · last_touched · wiedervorlage_am ·
+           entitaet_ids · event_ende · binding · remind · conflict_check · themen
+notizen    id · user_id · name · typ · text · faellig_am · status · created_at ·
+           updated_at · zusammenfassung · themen · entitaet_ids · aktiv ·
+           last_touched · wiedervorlage_am · suchtext · timeline_id
+```
+
+Ein Termin aus ihrem Impuls ist von einem, um den gebeten wurde, nicht zu unterscheiden. Damit ist er auch nicht gezielt zurücknehmbar — nur einzeln und von Hand, nachdem er aufgefallen ist.
+
+**Die Angabe existiert bereits im Turn** (`reiz_herkunft`, `nutzer_turn` oder `eigener_impuls`) und wird schon in den Rohturn geschrieben. Sie erreicht die Schreibpfade der Agenten nur nicht.
+
+**Was fertig wäre.** Jeder von einem Agenten angelegte Eintrag trägt die Herkunft des Turns, der ihn ausgelöst hat. Eine Abfrage beantwortet „was hat sie diese Woche selbst angelegt", und der Bestand vor der Einführung ist als *unbekannt* erkennbar — nicht als *vom Menschen*, denn das wäre ein Vorgabewert im plausiblen Bereich.
+
+**Schemaänderung — nicht ohne ausdrückliche Freigabe.** Eine Spalte je betroffener Tabelle, und ein `.py`-Edit zündet beim Neuladen die Schemadatei mit.
+
+**Und ein Ausblick, der nicht mitentschieden ist:** Sobald Hände dazukommen, die außerhalb der Datenbank wirken, ist dieselbe Angabe die Grundlage jedes Handlungsprotokolls. Sie jetzt einzuziehen ist billiger als später, hat aber keinen eigenen Termindruck.
+
+**Der Sonderfall daneben ist ein Defekt und kein Teil dieser Entscheidung:** Ein Impuls-Turn läuft heute in den Resume-Pfad eines wartenden Agenten und löscht dessen Rückfrage — `novaberg-bugs.md` → `RESUME-VERBRAUCHT-DEN-IMPULS`. In fremdem Namen zu antworten ist etwas anderes, als selbst zu handeln.
+
+---
+
 ## Audit: PUB-ROLLENNAMEN-IM-BESTAND — die Doku nennt die internen Rollen (Chat 120)
 
 Rollennamen der Zusammenarbeit gehören nicht ins öffentliche Repositorium. Sie stehen trotzdem darin, und zwar nicht vereinzelt.

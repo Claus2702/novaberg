@@ -140,6 +140,24 @@ Gegenstandslos geworden: der Stichtag der assistant-Partition vom 26.07.2026, di
 
 ### Chat 138 — aus einem Tag Betrieb nach dem Umbau (14.08.2026)
 
+#### RESUME-VERBRAUCHT-DEN-IMPULS — ein eigener Gedanke löscht die Rückfrage eines wartenden Agenten 🔧 offen
+
+**Symptom.** Ein Agent stellt eine Rückfrage („Welche Notiz meinst du?"). Trifft innerhalb der fünf Minuten Wartezeit ein eigener Impuls ein, ist die Rückfrage danach weg — der Mensch bekommt keine Gelegenheit mehr zu antworten, und der Agent hat mit etwas gearbeitet, das niemand gesagt hat.
+
+**Ursache.** Der Router setzt `management_action="resume"`, sobald ein `pending_agent:<kennung>`-Schlüssel existiert — **ohne die Herkunft des Reizes zu prüfen**. Ein Impuls-Turn läuft damit in `_handle_resume`, und dort wird der Wartezustand **vor** dem Agentenlauf gelöscht (ausdrücklich, gegen Endlosschleifen). Danach gibt es nichts mehr, worauf der Mensch antworten könnte.
+
+**Die Fehlerwirkung hat sich am 14.08.2026 verschoben, nicht aufgelöst.** Vorher stand Novas Gedanke auf dem Reiz-Platz und wurde als Antwort des Menschen verarbeitet — eine falsche Antwort. Seit der Ablösung des Reiz-Platzes ist er dort leer, und der Agent bekommt eine **leere** Antwort. Beide Male ist die Rückfrage danach gelöscht. Der zweite Fall ist der bessere: Er erfindet keine Antwort. Er ist trotzdem ein Verlust, und er ist still — es gibt keine Meldung „Rückfrage von einem Impuls verbraucht".
+
+**Warum es zählt.** Ein eigener Impuls **soll** handeln dürfen (entschieden am 14.08.2026, siehe `novaberg-backlog.md` → `IMPULS-LOEST-MANAGEMENT-AGENT-AUS`). Das ist etwas anderes, als in fremdem Namen zu antworten: Eine Rückfrage richtet sich an den Menschen, und ihre Beantwortung ist keine Handlung Novas, sondern eine an seiner Stelle.
+
+**Reproduktion.** Einen Agenten in den Wartezustand bringen (eine mehrdeutige Notiz-Anfrage), dann innerhalb von 300 Sekunden einen Impuls zustellen lassen. `pending_agent:<kennung>` ist danach gelöscht, im Log steht `Resume-Flow — action='…', user_answer=''`.
+
+**Nicht gemessen** ist, wie oft der Fall eintritt: Die Wartezeit beträgt 300 Sekunden, Impulse kommen etwa stündlich — das Fenster ist schmal, aber jeder Treffer kostet eine Rückfrage.
+
+**Geschlossen, wenn.** Ein Reiz eigener Herkunft den Wartezustand nicht anfasst: Der Router führt einen Impuls-Turn nicht in den Resume-Pfad, der Wartezustand bleibt stehen, und der Impuls nimmt seinen gewöhnlichen Weg. Dazu eine Meldung, wenn ein Turn den Resume-Pfad ohne Antworttext erreicht.
+
+---
+
 #### WEBSOCKET-OHNE-KEEPALIVE — die Verbindung stirbt im Leerlauf, und der Client merkt es nie 🔧 offen
 
 **Symptom.** Der Client zeigt „denkt nach" und bekommt nie eine Antwort. Nachrichten des Nutzers gehen weiter ein und werden vollständig verarbeitet; die Antworten entstehen und werden gespeichert. Zugestellt wird nichts. Der Zustand hält an, bis der Client neu gestartet wird.

@@ -1,6 +1,6 @@
 # Novaberg — Roadmap (Projektchronik)
 
-**Stand:** Chat 138, 14. August 2026
+**Stand:** Chat 139, 14. August 2026
 *(Die Kopfzeile stand bis Chat 109 auf „Chat 93, 21. Mai 2026" — 15 Chats hinter dem Inhalt. **Sie ist danach erneut zurückgefallen:** von Chat 110 bis 114 blieb sie auf „Chat 109" stehen, während der Inhalt weiterwuchs, und wurde in Chat 115 nachgezogen. Wer hier etwas ergänzt, zieht die Kopfzeile mit — sie driftet zuverlässig. Achtung beim Nachschlagen: Nur bis Chat 97 trägt jeder Chat eine eigene `## Chat NNN`-Überschrift; die Chats 98–108 stehen als `###`-Abschnitte unter dem Chat-97-Block, benannt nach Sprint statt nach Chat.)*
 **Pfad:** novaberg/docs/novaberg-roadmap.md
 **Single Source of Truth für abgeschlossene Arbeit.**
@@ -1980,6 +1980,77 @@ Beide Räder haben eine Nabe — den Wert ohne jede Ausprägung — und das Erge
 > **Die Zahlen selbst stehen nicht hier.** Ein Charakter-Rad ist ein Charakterprofil; aus den Summanden sind mit der Züge-Tabelle die Einzelspeichen rückrechenbar. Wer die Messung nachvollziehen will, fährt sie gegen den eigenen Bestand — sie ist in zwei Aufrufen wiederholbar.
 
 **Geschlossen:** `Bauteil 3 — Charakter-Räder im Client` (Rest benannt, siehe Backlog)
+
+---
+
+## Chat 139 (14.08.2026) — Der Reiz-Platz trägt nur noch fremde Rede 🔶
+
+**Bauteil E, erste Hälfte.** Ein eigener Gedanke reiste bisher auf demselben Zustandsfeld wie eine Nutzeräußerung — `user_prompt`. Das ist der Grund, warum vier Prompt-Anläufe über Monate gegen die Zuschreibung *„Du hast …"* nicht getragen haben: Eine Rollenzuweisung ist keine Anweisung, sondern eine Struktur.
+
+### Aus vier Stellen wurden elf
+
+Das Konzept nannte vier Stellen, die einen leeren Reiz-Platz als Ausfall lesen: Salienz, KZG-Verdichtung, Ablage, Leerprüfung des Verfassers. Gesucht wurde stattdessen nach dem **Kriterium** — *wer liest `user_prompt`, um den Gegenstand dieses Turns zu bekommen?* Dazu kamen sieben:
+
+| Stelle | wofür der Text gebraucht wird |
+|---|---|
+| Prompt-Embedding des Enrichers | Suchschlüssel für Gedächtnis **und** Zielaktivierung |
+| Router | worüber Gedächtnis, Web und Zeitachse entschieden werden |
+| `[AKTUELLER PROMPT]` des GV-Node | der Reiz, aus dem die Landschaft entsteht |
+| Thinker | Schnell-Check und die Nutzlast des Wiederholungsversuchs |
+| Tribunal · Corrector | der Bezug, gegen den die Antwort bewertet wird |
+| Vorzeichenprüfung des Verfassers | der Text, dem ein widersprochener Wert entstammt |
+| Management-Agenten | der Auftrag, den sie ausführen |
+
+**Der Unterschied ist nicht die Zahl, sondern die Art des Ausfalls.** Die vier genannten melden laut. Die sieben hinzugekommenen melden nichts: Ein Embedding über einer leeren Zeichenkette ist ein gültiger Vektor an der falschen Stelle im Raum.
+
+### Die Bauart
+
+`eigener_gedanke` ist ein eigener Zustandskanal; `user_prompt` trägt ab jetzt nur noch, was das Gegenüber gesagt hat. Ein Zugang beantwortet für alle Leser dieselbe Frage, und **er fällt nicht auf den Reiz-Platz zurück**, wenn der Gedanke fehlt — ein Impuls ohne Gedanken ist ein Defekt und soll wie einer aussehen.
+
+Die Leser wurden umgestellt, **bevor** die Quelle wegfiel: erst ein Zug ohne Verhaltensänderung, dann der Zug, der den Reiz-Platz leert. Wer zuerst löscht, nimmt einem stillen Leser die Grundlage und erfährt es nicht.
+
+**Eine Stelle bleibt ausdrücklich auf `user_prompt`:** die Ablage des Session-Turns. Sie ist die einzige, die *„was hat der Mensch gesagt"* fragt, und dort ist leer die richtige Antwort.
+
+### Die Messung
+
+Impuls-Turn `065a5d5f` um 19:15 UTC, Reiz-Platz leer, Gedanke 193 Zeichen:
+
+```
+Enricher    Embedding Dim 768        statt über der leeren Zeichenkette
+Router      Route Prompt 193 Zeichen statt 0
+GV-Node     User-Prompt 2241 Zeichen Landschaft mit Gegenstand
+Verfasser   Inhalt bestimmt, 669 Z.  kein „leerer Reiz"
+Salienz     lagebild_laenge=193      kein leeres Bewertungsobjekt
+Verdichtung lagebild_laenge=193      zweimal, je Segment
+Session     rolle=assistant          der Gedanke steht nicht als fremde Rede
+Rohturn     prompt=193 Z.            die Messreihe bleibt fortschreibbar
+```
+
+**Und derselbe Turn zeigt, was noch fehlt.** Der Verfasser schrieb: *„PERSON B stellt die physikalische Beobachtung der flachen Rotationskurven … in den Raum."* Person B ist der Mensch, und der hatte nichts gesagt. Der Reiz-Platz war leer — die Zuschreibung stand trotzdem da, **weil der Gedanke weiterhin als Nachricht in der Rolle des Gegenübers ankommt.** Der Materialblock ist die zweite Hälfte von Bauteil E und nicht gebaut.
+
+**Suite:** 1260 → **1289 grün, 0 übersprungen.** Gegenprobe: die Ablösung im Zugang zurückgenommen, **11 rote Stellen vorhergesagt und 11 gezählt**.
+
+**Entschieden am selben Tag: Ein eigener Gedanke darf handeln.** Erkennt der Router auf einem Impuls-Turn eine Management-Absicht, führen die Agenten sie aus. Der gebaute Zustand entsprach dem bereits — die Dispatcher lesen den Reiz. **Was fehlt, ist die Erkennbarkeit:** Weder `timeline` noch `notizen` trägt eine Spalte für die Herkunft, ein von ihr angelegter Termin ist von einem erbetenen nicht zu unterscheiden und damit nicht gezielt zurücknehmbar. Als `IMPULS-HANDLUNG-OHNE-HERKUNFT` im Backlog, Schemaänderung, nicht ohne Freigabe.
+
+**Dabei fiel ein Defekt auf, der keine Entscheidung ist:** Ein Impuls-Turn läuft in den Resume-Pfad eines wartenden Agenten und löscht dessen Rückfrage, bevor der Mensch sie sehen konnte — vor der Ablösung mit einer erfundenen Antwort, seither mit einer leeren. `RESUME-VERBRAUCHT-DEN-IMPULS`.
+
+### Der Materialblock — und die Zuschreibung kippt
+
+Der Gedanke steht jetzt in beiden erzeugenden Stufen als Block neben Gedächtnis und Recherche. Auf dem Platz des Gegenübers steht nur noch der Auftrag: Eine Nachricht muss dort stehen, aber ein Auftrag ist keine fremde Rede.
+
+`[gemessen]` — 19:50 UTC, derselbe Knoten, der 35 Minuten zuvor die Beobachtung noch Person B zuschrieb:
+
+> *„**Person A** stellt fest, dass die newtonsche Mechanik eine spezifische, messbare Abweichung beim Perihel-Vorlauf des Merkur aufweist …"*
+
+Die Antwort daraus: *„Weißt du, ich muss ständig an diese 43 Bogensekunden denken … Ist das nicht wahnsinnig?"* — sie spielt den Gedanken, statt auf ihn zu reagieren.
+
+**Die Zuschreibung ist zwischen zwei Turns desselben Tages gekippt, ohne dass ein Verbot geändert wurde.** Der Prompt-Log belegt die Ursache: Der Gedanke steht im System-Prompt, die Nachricht in der Rolle des Gegenübers trägt nur den Auftrag. **Ein Turn ist keine Messung** — genau dieser Schluss wurde am selben Tag schon einmal zu früh gezogen; der Anteil zugeschriebener Antworten gehört über einen Tag gemessen.
+
+**Suite:** 1260 → **1306 grün, 0 übersprungen.** Drei Gegenproben, je mit Vorhersage: 11/11 (die Ablösung), 7 vorhergesagt und **12** gezählt (der Initiator — die Logzeile las dasselbe Feld, der Eingriff hat die Funktion zerbrochen statt nur die Zusicherung), 4/4 (der Materialblock).
+
+**Zwei Zeugen sind umgedreht worden, keiner gelöscht:** der Verfasser-Zeuge von heute Morgen, der den Gedanken noch in der Nachrichtenfolge erwartete, und ein Reihenfolge-Test, der die Position im **Quelltext** las statt in der gebauten Nachricht — er wäre bei jedem Umbau rot geworden und bei falscher Ausgabe grün geblieben.
+
+**Offen aus diesem Zug:** das Etikett
 
 ---
 

@@ -2,10 +2,10 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Konzept — Novas Zustand zwischen den Begegnungen, ob sie zugeht und in welchem Zustand sie ihrem Menschen begegnet
-**Stand:** 14. August 2026 (v0.5)
+**Stand:** 14. August 2026 (v0.9)
 **Pfad:** novaberg/docs/novaberg-eigenzeit_k.md
 **Typ:** Konzept (`_k`)
-**Status:** ⬜ Konzept, nicht gebaut
+**Status:** 🔶 Konzept — **Bauteil E gebaut**, die übrigen fünf nicht
 **Berührt:** `graph/nodes/db_zugriff.py` · `graph/nodes/verfasser.py` · `graph/nodes/responder.py` · `agents/recherche/destillation.py` · `graph/nodes/haltung.py` · `services/shadow_delivery.py` · `services/pixie/stack.py` · `memory/session.py`
 **Nachbarn:** `novaberg-pixie-nachfragen_k.md` §3 (der Zustellungsfilter) · `novaberg-gedankenkette_k.md` (zusammenhängende Einwürfe) · `novaberg-haltungsraum_k.md` (woraus die Regie entsteht)
 
@@ -186,6 +186,14 @@ Einträge warten auf dem Stapel
 
 **Die billigen Prüfungen zuerst.** Die Riegel 1 bis 4 sind Zahlenvergleiche auf bereits gerechneten Werten; erst bei 5 entsteht ein Embedding und eine Suche über den ganzen Stapel. Will sie nicht zugehen, kostet die Runde nichts.
 
+### Die Riegel lösen die Uhr ab
+
+**Entschieden am 14.08.2026: Die stündliche Decke fällt, sobald die Riegel stehen.** Sie war nie eine Aussage über den Gedanken, sondern ein Ersatz für ein Urteil, das es noch nicht gab. Wer sie neben sieben Riegeln stehen ließe, begrenzte nicht mehr — er nähme Nova die Fähigkeit, im richtigen Moment zu sprechen, weil im falschen schon jemand gesprochen hat.
+
+**Was heute wirklich begrenzt, ist enger und blinder als „stündlich".** Nach einer Zustellung wird ein Cooldown mit einer Stunde Frist gesetzt, dazu zählt ein Burst-Zähler bis zwei; **beide werden bei jeder Äußerung des Menschen gelöscht.** Die Regel lautet damit tatsächlich: *ein Gedanke je Stunde Schweigen, zwei je Gespräch* — und keine der beiden Zahlen hat etwas damit zu tun, ob der Gedanke passt. Die Decke ist überdies in die falsche Richtung geneigt: Sie wird großzügiger, je länger niemand da ist.
+
+**Die Reihenfolge ist die Bedingung, nicht ein Vorbehalt.** Fällt die Decke, bevor die Riegel stehen, bleibt gar keine Begrenzung. Fällt sie mit ihnen, trägt **Riegel 2** allein die Häufigkeit — und damit hört seine Schwelle auf, ein offener Punkt unter anderen zu sein: Sie wird der Ersatz für die Stunde. Dass das Führungsmaß über die Paare hinweg genug streut, um eine Frequenz zu tragen, ist bis heute unbelegt (§6). **Zuwendung entscheidet weiterhin das Ob, Initiative die Häufigkeit** — was hier wegfällt, ist nur die Uhr, die bisher beides überstimmt hat.
+
 Die Riegel 3, 6 und 7 bestehen bereits. Neu sind 1, 2, 4 und die Schwelle in 5.
 
 **Die maßgebliche Größe ist die Haltung, nicht die Lage-Achse.** Die Nähe-Achse der Landschaft beschreibt den Moment; sie steht in jedem Turn zur Verfügung und wäre der billige Weg. Sie ist aber der falsche: Eine dauerhaft distanzierte Figur dürfte dann einwerfen, sobald die Landschaft zufällig warm ist. Was gebraucht wird, ist die Größe, die **Landschaft und Charakterrad verrechnet** — dieselbe, aus der die Regie entsteht.
@@ -246,6 +254,14 @@ Daraus ein Prinzip mit zwei Enden:
 
 **Der Preis steht am Reiz-Platz.** Auf dem Impulsweg ist `user_prompt` heute der Träger für Salienz, Verdichtung, Ablage und die Leerprüfung der erzeugenden Stufe. Ein Turn ohne Nutzeräußerung darf dort nicht wie ein Ausfall aussehen. **Das ist die eigentliche Arbeit** — nicht der neue Block, sondern die Stellen, die einen leeren Reiz heute als Defekt lesen. Wer das übersieht, tauscht eine laute Zuschreibung gegen einen stillen Turnverlust.
 
+> **Es sind nicht vier, es sind elf.** Die Aufzählung oben war eine Aufzählung und kein Kriterium; gesucht wurde am 14.08.2026 nach der Frage *wer liest `user_prompt`, um den Gegenstand dieses Turns zu bekommen?* Dazu kamen: das **Prompt-Embedding** des Enrichers (Suchschlüssel für Gedächtnis **und** Zielaktivierung), der **Router**, der `[AKTUELLER PROMPT]`-Block des **GV-Node** — also genau die Landschaft, die §2.6 unangetastet lassen will —, der **Thinker** samt der Nutzlast seines Wiederholungsversuchs, **Tribunal** und **Corrector**, und die **Vorzeichenprüfung** des Verfassers. Dazu die Management-Agenten, die ihren Auftrag von dort lesen.
+>
+> **Der Unterschied ist nicht die Zahl, sondern die Art des Ausfalls.** Die vier genannten melden laut: Der Verfasser bricht ab, die Salienz meldet ein leeres Bewertungsobjekt. Die sieben hinzugekommenen melden **nichts** — ein Embedding über einer leeren Zeichenkette ist ein gültiger Vektor an der falschen Stelle im Raum, und eine Landschaft ohne Gegenstand ist eine Landschaft.
+
+**Der Reiz bekommt einen eigenen Platz, statt sich einen zu teilen.** `user_prompt` trägt, was das Gegenüber gesagt hat; ein eigener Gedanke steht in `eigener_gedanke`, und die Herkunft steht wie bisher im Ereignis. Ein Zugang beantwortet für alle Leser dieselbe Frage — *was hat diesen Durchlauf ausgelöst* —, und **er fällt nicht auf den Reiz-Platz zurück, wenn der Gedanke fehlt**: Ein Impuls ohne Gedanken ist ein Defekt und soll wie einer aussehen.
+
+**Eine Stelle bleibt ausdrücklich auf dem Reiz-Platz:** die Ablage des Session-Turns. Sie ist die einzige, die *„was hat der Mensch gesagt"* fragt, und dort ist leer die richtige Antwort. Ein Gedanke, der dort landete, stünde als fremde Rede im Verlauf, aus dem der nächste Turn liest — genau die Rückkopplung, die §1 misst.
+
 ---
 
 ## 3. Warum so und nicht anders
@@ -280,7 +296,17 @@ Der naheliegende nächste Schritt nach vier gescheiterten Anläufen ist ein fün
 
 **Verworfen, weil die Ursache nicht im Text liegt.** Vier Formulierungen über mehrere Monate haben gegen eine Rollenzuweisung angeschrieben und verloren. Ein Prompt ist die schwächste verfügbare Durchsetzung; wo ein Verhalten verlässlich sein muss, wird es in der Struktur erzwungen. §2.6 ist der erste Anlauf, der nicht bittet.
 
-### 3.6 Der bewusst getragene Preis
+### 3.6 Verworfen: das Verbot als Mittel
+
+Nach dem Materialblock ist der Platz frei geworden, an dem vier Anläufe lang ein Verbot stand — *kein „du hast", kein „dein Text"*. Ihn mit einem besseren Verbot zu füllen wäre der fünfte Anlauf in neuer Kleidung.
+
+**Verworfen, weil ein Verbot gegen den Zug arbeitet statt mit ihm.** Es nennt das Unerwünschte und macht es damit zum Gegenstand; das Modell muss etwas unterlassen, statt etwas zu tun. Was an seine Stelle gehört, ist die Führung: **wohin die Energie geht**, nicht wovon sie wegbleiben soll. Nicht *„schreib es ihm nicht zu"*, sondern *„sie bringt es von sich aus ein, und was daran weiterführt, ist ihre eigene Frage"*.
+
+**Das ist erst möglich, seit die Struktur trägt.** Solange die Zuschreibung nur durch Text verhindert werden konnte, war das Verbot die einzige verfügbare Durchsetzung — schwach, aber die einzige. Seit der Gedanke auf dem Platz des Materials steht, ist das Verhalten baulich erzwungen, und der Prompt darf wieder leiten statt zu bewachen.
+
+**Die Umschreibung ist ein eigener Zug.** Sie ändert die Modellausgabe, und die Messung vom 14.08.2026 steht auf dem heutigen Wortlaut. Zusammen gebaut wäre eine Verschlechterung keiner der beiden Ursachen zuzuordnen — dieselbe Trennung wie zwischen E und F.
+
+### 3.7 Der bewusst getragene Preis
 
 **Der Verfall gibt ihr den Zustand zurück, nicht das Material.** Die Session, aus der die inhaltbestimmende Stufe liest, wird davon nicht angefasst. Sie kann morgens ruhig sein und trotzdem ein Wort aus der Nacht mitbringen.
 
@@ -340,6 +366,33 @@ Der naheliegende nächste Schritt nach vier gescheiterten Anläufen ist ein fün
 
 ### 5.5 Bauteil E — der Platz des Gedankens
 
+**Stand 14.08.2026: gebaut.** Der Gedanke hat einen eigenen Kanal, alle elf Leser sind umgestellt, die Zustellung befüllt den Reiz-Platz nicht mehr, und beide erzeugenden Stufen bekommen ihn als **Block** neben Gedächtnis und Recherche. Auf dem Platz des Gegenübers steht nur noch der Auftrag — eine Nachricht muss dort stehen, aber ein Auftrag ist keine fremde Rede.
+
+`[gemessen]` — 14.08.2026, 19:15 UTC, ein Impuls-Turn mit leerem Reiz-Platz (Gedanke: 193 Zeichen über Rotationskurven von Spiralgalaxien):
+
+```
+Enricher    Embedding Dim 768        (nicht über der leeren Zeichenkette)
+Router      Route Prompt 193 Zeichen (nicht 0)
+GV-Node     User-Prompt 2241 Zeichen (Landschaft mit Gegenstand)
+Verfasser   Inhalt bestimmt, 669 Z.  (kein „leerer Reiz")
+Salienz     lagebild_laenge=193      (kein leeres Bewertungsobjekt)
+Verdichtung lagebild_laenge=193      (zweimal, je Segment)
+Session     rolle=assistant          (der Gedanke steht nicht als fremde Rede)
+Rohturn     prompt=193 Z.            (die Messreihe bleibt fortschreibbar)
+```
+
+**Und derselbe Turn belegte, warum der Block nötig war.** Der Verfasser schrieb: *„PERSON B stellt die physikalische Beobachtung der flachen Rotationskurven … in den Raum."* Person B ist der Mensch, und der hatte nichts gesagt. Der Reiz-Platz war bereits leer, die Zuschreibung stand trotzdem da.
+
+`[gemessen]` — 14.08.2026, 19:50 UTC, derselbe Knoten, ein Gedanke über die Periheldrehung des Merkur, diesmal mit dem Materialblock:
+
+> *„**Person A** stellt fest, dass die newtonsche Mechanik eine spezifische, messbare Abweichung beim Perihel-Vorlauf des Merkur aufweist … Person A hinterfragt, ob diese mathematische Unvollkommenheit nicht vielmehr als ein Signal für eine tieferliegende Struktur zu deuten ist."*
+
+Und die Antwort daraus: *„Weißt du, ich muss ständig an diese 43 Bogensekunden denken … Ist das nicht wahnsinnig?"* — sie **spielt** den Gedanken, statt auf ihn zu reagieren.
+
+**Die Zuschreibung ist von Person B auf Person A gekippt, zwischen zwei Turns desselben Tages, ohne dass ein Verbot geändert wurde.** Der Prompt-Log belegt die Ursache: Der Gedanke steht im System-Prompt unter `[EIGENER GEDANKE]`, die Nachricht in der Rolle des Gegenübers trägt nur den Auftrag.
+
+> ⚠ **Ein Turn ist keine Messung.** Am 14.08.2026 wurde aus genau einem Turn geschlossen, die dritte Person trage — nachgemessen duzten danach 9 von 14. Was hier anders ist, ist die Art der Zusicherung, nicht ihre Belegdichte: Eine Struktur kann nicht ignoriert werden wie ein Satz. Der Anteil zugeschriebener Antworten gehört über einen Tag gemessen, bevor daraus etwas folgt.
+
 | Zeile | Inhalt |
 |---|---|
 | **ZIEL** | Ein eigener Gedanke erreicht die erzeugenden Stufen als **Material** in einem eigenen Block, nicht als Nachricht in der Rolle des Gegenübers. Der Auftrag führt ihn ein; der Reiz-Platz bleibt leer. |
@@ -385,6 +438,10 @@ Der naheliegende nächste Schritt nach vier gescheiterten Anläufen ist ein fün
 
 ## Versionshistorie
 
+- **v0.9 — 14.08.2026:** §3.6 neu — **das Verbot als Mittel ist verworfen.** Nach dem Materialblock ist der Platz frei, an dem vier Anläufe lang ein Verbot stand; ihn mit einem besseren Verbot zu füllen wäre der fünfte Anlauf. Ein Verbot arbeitet gegen den Zug statt mit ihm: Es nennt das Unerwünschte und macht es zum Gegenstand. An seine Stelle gehört die Führung — wohin die Energie geht, nicht wovon sie wegbleiben soll. **Möglich ist das erst, seit die Struktur trägt:** Solange nur Text zur Verfügung stand, war das Verbot die einzige Durchsetzung. Die Umschreibung ist ein eigener Zug mit eigener Messung, weil sie die Modellausgabe ändert.
+- **v0.8 — 14.08.2026:** **Bauteil E ist gebaut.** Der Materialblock steht in beiden erzeugenden Stufen; auf dem Platz des Gegenübers steht nur noch der Auftrag. `[gemessen]` — 19:50 UTC: Derselbe Knoten, der um 19:15 noch „PERSON B stellt … in den Raum" schrieb, schreibt jetzt „Person A stellt fest …", und die Antwort spielt den Gedanken statt auf ihn zu reagieren. **Die Zuschreibung ist zwischen zwei Turns desselben Tages gekippt, ohne dass ein Verbot geändert wurde** — der Prompt-Log belegt die Ursache. Mit der Warnung daneben, dass ein Turn keine Messung ist: Genau dieser Schluss wurde am selben Tag schon einmal zu früh gezogen.
+- **v0.7 — 14.08.2026:** Zwei Entscheidungen. **Ein eigener Impuls darf handeln** — Termin, Notiz, Direktive —, und der Initiator steht im Protokoll statt in der Fachtabelle: Die Fachtabelle beschreibt den Termin, nicht den Turn. Gebaut an den zwei Stellen, durch die etwas entsteht (Agentenlauf und geplanter Schreibvorgang), mit dem Ausgang daneben, weil „was hat sie angelegt" die Frage nach Initiator **und** Status ist. **Und die stündliche Decke fällt, sobald die Riegel stehen** (§2.5, neuer Abschnitt): Sie war ein Ersatz für ein Urteil, das es noch nicht gab, und neben sieben Riegeln wäre sie keine Begrenzung mehr, sondern eine Beschneidung. Was heute wirklich begrenzt, ist enger und blinder — ein Gedanke je Stunde Schweigen, zwei je Gespräch, beide Zähler bei jeder Äußerung des Menschen gelöscht, und die Decke wird großzügiger, je länger niemand da ist. Die Reihenfolge ist Bedingung: Fällt sie vor den Riegeln, bleibt keine Begrenzung; fällt sie mit ihnen, trägt Riegel 2 allein die Häufigkeit — und seine Schwelle hört auf, ein offener Punkt unter anderen zu sein.
+- **v0.6 — 14.08.2026:** **Die erste Hälfte von Bauteil E ist gebaut.** §2.6 um den Befund erweitert, dass die vier genannten Stellen **elf** sind — gesucht wurde nach dem Kriterium statt nach der Aufzählung. Der Unterschied ist nicht die Zahl: Die vier melden laut, die sieben hinzugekommenen melden nichts. Ein Embedding über einer leeren Zeichenkette ist ein gültiger Vektor an der falschen Stelle im Raum, und eine Landschaft ohne Gegenstand ist eine Landschaft. Dazu die Bauart — der Gedanke bekommt einen eigenen Kanal statt sich den Reiz-Platz zu teilen, ein Zugang beantwortet für alle Leser dieselbe Frage, und er fällt **nicht** auf den Reiz-Platz zurück, wenn der Gedanke fehlt. Eine Stelle bleibt ausdrücklich auf `user_prompt`: die Ablage des Session-Turns, die einzige, die nach der Äußerung des Menschen fragt. §5.5 um den Stand und die Messung von 19:15 UTC ergänzt — acht Stellen tragen den Gedanken, keine meldet einen Ausfall. **Und derselbe Turn belegt, warum die zweite Hälfte nötig ist:** Der Verfasser schrieb die Beobachtung „PERSON B" zu, bei leerem Reiz-Platz, weil der Gedanke weiterhin in der Rolle des Gegenübers ankommt.
 - **v0.5 — 14.08.2026:** Die **Zuwendungs-Schwelle ist gerechnet: 0,25** — 17 Paare über vierzehn Landschaften, ohne Modellaufruf. Ferne Figuren liegen in allen 28 Zellen auf 0,00, nahe zwischen 0,20 und 1,00; nicht 0,20 als Schnitt, weil eine Schwelle auf einem Bestandswert die bekannte Kante ist. Der Preis von 10,7 % geblockten nahen Zellen sind die kalten Landschaften und damit ein zweiter Nutzen. **Der befürchtete Defekt der Beitragstabelle trifft den Riegel nicht** — bei voller Distanz greift der Zug —, und der offene Punkt dazu ist entsprechend markiert. **Neu offen und wichtiger:** Der Bestand enthält in dieser Richtung keine Figur zwischen 0,60 und 1,00, also das Band, in dem der Zug schwach wird; die Trennung ist nicht bewiesen, sondern nicht widerlegt. Dazu §2.5 um die **Protokollpflicht der Riegelkette**: Der erste Blocker entscheidet, aber die billigen Riegel werden alle gerechnet — sonst verdeckt Riegel 1 den Riegel 2 und dessen Schwelle ist nie kalibrierbar —, und ein nicht gerechneter Riegel trägt eine Marke statt eines Leerwerts. Bauteil D um beide Zeugen erweitert.
 - **v0.4 — 14.08.2026:** Der offene Punkt „darf sie ein Thema anfangen" ist **entschieden: ja, als Anriss statt als Aufsatz.** Riegel 5 gilt für ein neues Thema nicht — es setzt keines fort und kann keinem ähneln; es tragen die Riegel 1 bis 4. Was danach geschieht, gehört in die Gedankenkette und steht dort als §6a: Anriss, dann Zustimmung des Menschen als Tor zum zweiten Glied, sonst ein Satz, der sanft abschließt. Kein zweites Dokument für denselben Gegenstand — dieses Konzept regelt den Eintritt, das andere den Verlauf.
 - **v0.3 — 14.08.2026:** §2.6 neu — **ein Gedanke ist Material, keine Äußerung.** Er landet heute in beiden erzeugenden Stufen in der Rolle des Gegenübers, und was dort steht, wird beantwortet statt gesagt. Das erklärt, warum vier Prompt-Anläufe über Monate nicht getragen haben: Eine Rollenzuweisung ist keine Anweisung, sondern eine Struktur. Daraus zwei Enden — am Eingang wird das Rechercheergebnis als **Wissen** geschrieben statt als fertige Rede, am Ausgang steht es in einem **Materialblock** statt auf dem Reiz-Platz. Die ältere Entscheidung („das Wissensstück ist der Reiz") ist in ihrer einen Hälfte bestätigt und in der anderen abgelöst. §3.5 neu: den Prompt ein fünftes Mal zu schärfen ist verworfen. Bauteile **E** (Platz) und **F** (Form) in §5.5 und §5.6, neue Reihenfolge **E → F → C → A → B → D**. Dazu §2.4 auf die gemessenen Werte gestellt: Bezug bis zur letzten Äußerung statt Zeitfenster, Schwelle **0,30** auf dem **besten** Eintrag, mit der Eichung als Beleg und der Warnung, dass sie auf drei Äußerungen steht. §2.5 um die vollständige Riegelkette erweitert; §4 gibt die Form des Ergebnisses ausdrücklich frei; §6 um drei offene Punkte ergänzt.
