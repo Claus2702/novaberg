@@ -1,6 +1,6 @@
 # Novaberg — Roadmap (Projektchronik)
 
-**Stand:** Chat 139, 14. August 2026
+**Stand:** Chat 139, 15. August 2026
 *(Die Kopfzeile stand bis Chat 109 auf „Chat 93, 21. Mai 2026" — 15 Chats hinter dem Inhalt. **Sie ist danach erneut zurückgefallen:** von Chat 110 bis 114 blieb sie auf „Chat 109" stehen, während der Inhalt weiterwuchs, und wurde in Chat 115 nachgezogen. Wer hier etwas ergänzt, zieht die Kopfzeile mit — sie driftet zuverlässig. Achtung beim Nachschlagen: Nur bis Chat 97 trägt jeder Chat eine eigene `## Chat NNN`-Überschrift; die Chats 98–108 stehen als `###`-Abschnitte unter dem Chat-97-Block, benannt nach Sprint statt nach Chat.)*
 **Pfad:** novaberg/docs/novaberg-roadmap.md
 **Single Source of Truth für abgeschlossene Arbeit.**
@@ -1980,6 +1980,20 @@ Beide Räder haben eine Nabe — den Wert ohne jede Ausprägung — und das Erge
 > **Die Zahlen selbst stehen nicht hier.** Ein Charakter-Rad ist ein Charakterprofil; aus den Summanden sind mit der Züge-Tabelle die Einzelspeichen rückrechenbar. Wer die Messung nachvollziehen will, fährt sie gegen den eigenen Bestand — sie ist in zwei Aufrufen wiederholbar.
 
 **Geschlossen:** `Bauteil 3 — Charakter-Räder im Client` (Rest benannt, siehe Backlog)
+
+---
+
+## Chat 139 (14./15.08.2026) — Drei Bauteile, und ein Verbot räumt seinen Platz ✅
+
+**Gebaut: E, F und C.** Dazu der Initiator im Protokoll, zwei Riegel gegen einen Defekt, und die Verbote im Prompt durch Führung ersetzt.
+
+**Bauteil F** — die Recherche-Destillation liefert Material statt Rede: kein Identitäts-, Empfänger- und Stilblock mehr, dafür ein **Raum von 600 bis 1200 Zeichen** mit drei Bewegungen als Gestalt und einer Prüfbedingung von außen. **Der Raum wird zugesprochen, nicht begrenzt.** Die Messung hat dabei F zur Hälfte umgedreht: Nicht die Recherche spricht in Novas Person (1 von 87), sondern die Wiedervorlage (20 von 20).
+
+**Bauteil C** — das Themen-Tor misst das Thema: Bezugsvektor aus den Äußerungen des Menschen, ohne Zeitfenster, Schwelle **0,30** mit ihrer Paarung im Kommentar, und ein Eintrag ohne Embedding wird abgelehnt statt als exakt auf der Schwelle liegend durchgelassen. Der Fall ohne Bezug ist eine benannte offene Kante.
+
+**Führung statt Verbot** — nachdem die Struktur die Zuschreibung trägt, ist der Platz frei geworden, an dem vier Anläufe lang ein Verbot stand. Gemessen ohne jedes Verbot: Die Zuschreibung hält, und es entstand eine Zuwendung samt Rückfrage, die ein Verbot nie hätte erzeugen können.
+
+**Suite:** 1260 → **1337 grün, 0 übersprungen.** Fünf Gegenproben, vier davon zu eng vorhergesagt.
 
 ---
 
