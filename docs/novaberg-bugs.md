@@ -140,7 +140,7 @@ Gegenstandslos geworden: der Stichtag der assistant-Partition vom 26.07.2026, di
 
 ### Chat 138 — aus einem Tag Betrieb nach dem Umbau (14.08.2026)
 
-#### RESUME-VERBRAUCHT-DEN-IMPULS — ein eigener Gedanke löscht die Rückfrage eines wartenden Agenten 🔧 offen
+#### RESUME-VERBRAUCHT-DEN-IMPULS — ein eigener Gedanke löscht die Rückfrage eines wartenden Agenten ✅ behoben (14.08.2026)
 
 **Symptom.** Ein Agent stellt eine Rückfrage („Welche Notiz meinst du?"). Trifft innerhalb der fünf Minuten Wartezeit ein eigener Impuls ein, ist die Rückfrage danach weg — der Mensch bekommt keine Gelegenheit mehr zu antworten, und der Agent hat mit etwas gearbeitet, das niemand gesagt hat.
 
@@ -154,7 +154,15 @@ Gegenstandslos geworden: der Stichtag der assistant-Partition vom 26.07.2026, di
 
 **Nicht gemessen** ist, wie oft der Fall eintritt: Die Wartezeit beträgt 300 Sekunden, Impulse kommen etwa stündlich — das Fenster ist schmal, aber jeder Treffer kostet eine Rückfrage.
 
-**Geschlossen, wenn.** Ein Reiz eigener Herkunft den Wartezustand nicht anfasst: Der Router führt einen Impuls-Turn nicht in den Resume-Pfad, der Wartezustand bleibt stehen, und der Impuls nimmt seinen gewöhnlichen Weg. Dazu eine Meldung, wenn ein Turn den Resume-Pfad ohne Antworttext erreicht.
+**Behoben am 14.08.2026, mit zwei Riegeln für zwei verschiedene Fragen.**
+
+**Der Router entscheidet die Zuständigkeit:** Ein Reiz eigener Herkunft nimmt den Resume-Pfad nicht, der Wartezustand bleibt stehen, der Impuls nimmt seinen gewöhnlichen Weg. Das gilt unabhängig vom Zeitpunkt der Zustellung — auch ein Wiederholungsversuch trägt dieselbe Marke und käme ohne diesen Riegel auf demselben Weg herein.
+
+**Die Zustellung entscheidet den Zeitpunkt:** Solange ein Agent wartet, wird kein Impuls zugestellt. Der Eintrag verfällt dabei nicht, er bleibt auf dem Stapel; die Wartezeit ist auf 300 Sekunden begrenzt. Die Prüfung steht **vor** dem Burst-Zähler, weil ein Zähler, der für einen unterdrückten Impuls hochliefe, die nächste Gelegenheit mit verbrauchte.
+
+**Der zweite ersetzt den ersten nicht.** Wer nur den Zeitpunkt sichert, hat den Weg offen gelassen, auf dem ein Reiz eigener Herkunft ohne Zustellung ankommt.
+
+Zeugen in `tests/test_impuls_und_rueckfrage.py`, beide Herkünfte je Riegel. Gegenprobe mit beiden Riegeln abgeschaltet: 4 rot. **Ein fünfter Zeuge war vorhergesagt und blieb grün** — er prüfte die nicht gelöschte Wartemarke, und gelöscht wird eine Schicht tiefer, wo der Router nie hinkommt. Er konnte nicht rot werden und ist ersetzt.
 
 ---
 
