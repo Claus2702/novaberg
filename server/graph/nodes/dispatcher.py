@@ -37,7 +37,7 @@ from config import (
     redis_client as cfg_redis_client,
 )
 from memory.session import session_turn_store, session_summarize_if_needed
-from memory.pipeline_log import log_turn_roh, log_fehler
+from memory.pipeline_log import log_turn_roh, log_fehler, log_db_write
 from memory.repositories.verbindung_repository import VerbindungRepository
 
 logger = logging.getLogger("ki_server.dispatcher")
@@ -615,6 +615,24 @@ def dispatch(
             gesamt += count
             logger.info(f"Dispatcher: '{ziel}' -> {count} Operationen ausgefuehrt")
 
+            # Der zweite Weg, auf dem etwas entsteht: nicht ein Agent, der
+            # handelt, sondern ein geplanter Schreibvorgang, der ausgefuehrt
+            # wird. Er braucht denselben Eintrag — sonst waere die Frage
+            # "was ist aus ihrem eigenen Gedanken entstanden" nur zur Haelfte
+            # beantwortbar, und die fehlende Haelfte saehe aus wie keine.
+            log_db_write(
+                turn_id      = state.get("turn_id", "unbekannt"),
+                node         = "dispatcher",
+                quelle       = ziel,
+                inhalt       = {
+                    "initiator":  reiz_herkunft(state),
+                    "operationen": count,
+                    "writes":      len(ziel_writes),
+                    "aktionen":    [w.get("aktion", "") for w in ziel_writes],
+                },
+                user_id      = user_id,
+                character_id = state.get("character_id", ""),
+            )
 
         except Exception as fehler:
             logger.exception(f"{type(fehler).__name__}: Dispatcher: Fehler bei '{ziel}'")
