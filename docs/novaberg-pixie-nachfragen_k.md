@@ -59,6 +59,8 @@ Nicht die momentane Emotion entscheidet, sondern die **Bewegung**: Ein Verlauf, 
 
 ### Sonderstellung in der Zustellung
 
+> **Der Zustellungsfilter wird von `novaberg-eigenzeit_k.md` §2.4 und §2.5 überholt (14.08.2026).** Was hier beschrieben ist, bleibt richtig und bleibt der **letzte** Riegel einer Kette: Vor die emotionale Kompatibilität treten die Zuwendung, das Führungsmaß, der Bezug auf die Äußerungen des Menschen und ein Themen-Tor mit gemessener Schwelle. Die Sonderstellung dieser Aufgabenart ändert sich dadurch nicht — sie ist weiterhin die einzige, die bei negativer Stimmung durchkommt.
+
 `services/shadow_delivery.py:86-92` — hier liegt die eigentliche Bedeutung:
 
 ```python

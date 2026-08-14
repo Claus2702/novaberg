@@ -102,6 +102,8 @@ Promotion-Queue Eintragsformat:
 
 **Shadow-Stack** (`shadow_stack:{user_id}`, Sorted Set, Pixie nach Chat): Ergebnisse von Pixie-Agenten. Jeder Eintrag hat ein Embedding. Zwei Konsumenten: der Enricher (reaktiv, beim naechsten Turn, bester Cosine-Match) und der Shadow Delivery Service (proaktiv, via WebSocket).
 
+> **Wann ein Eintrag den Stapel verlaesst, regelt `novaberg-eigenzeit_k.md` (Konzept, 14.08.2026).** Der heutige Zustellungsfilter misst thematische Passung gegen ein Embedding der letzten fuenf Session-Turns — und die Session enthaelt Novas eigene Impulse. Gemessen am 14.08.2026 liess er dadurch **52 von 56** Impulsen durch. Das Konzept setzt den Bezugsvektor auf die Aeusserungen des Menschen und stellt vier weitere Riegel davor.
+
 Shadow-Stack Eintragsformat:
 ```json
 {
