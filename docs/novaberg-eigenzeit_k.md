@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Konzept — Novas Zustand zwischen den Begegnungen, ob sie zugeht und in welchem Zustand sie ihrem Menschen begegnet
-**Stand:** 14. August 2026 (v0.11)
+**Stand:** 14. August 2026 (v0.12)
 **Pfad:** novaberg/docs/novaberg-eigenzeit_k.md
 **Typ:** Konzept (`_k`)
 **Status:** 🔶 Konzept — **Bauteil E gebaut**, die übrigen fünf nicht
@@ -40,6 +40,26 @@ Bei einer Nutzeräußerung fügt sie das Vokabular hinzu, das im Reiz nicht steh
 **Die Session stirbt nicht.** Ihre Frist wird bei jedem Schreibvorgang erneuert, und ein Impuls ist ein Schreibvorgang. Bei stündlichen Impulsen läuft sie nie ab — die „letzten fünf Turns" sind dann fünf Impulse über fünf Stunden.
 
 `[gemessen]` — 14.08.2026: Nach einer Nacht mit einem Impuls je Stunde bestand der Bezugsvektor am Morgen aus fünf Stunden eigener Prosa. Ein knapper, spielerischer Morgengruß wurde daraufhin als Landschaft `beichte / Katharsis` vermessen, und die Antwort darauf griff die Begriffe der Nacht auf, die im Gruß nicht vorkamen.
+
+`[gemessen]` — 14.08.2026, 21:21 bis 22:04 UTC, **turngenau statt als Tagesmittel.** Anteil derselben Wortfamilie, Turn für Turn:
+
+```
+21:21  Mensch     75 Z.   0,00 %   →  sie   379 Z.  0,00 %
+21:23  Impuls   1847 Z.   5,96 %   →  sie   357 Z.  8,40 %
+21:32  Mensch     91 Z.  10,99 %   →  sie  1478 Z.  2,71 %
+21:35  Impuls   2586 Z.   3,87 %   →  sie  1905 Z.  2,62 %
+21:47  Mensch    106 Z.   0,00 %   →  sie  1467 Z.  0,68 %
+22:03  Mensch     26 Z.   0,00 %   →  sie   474 Z.  0,00 %
+22:04  Impuls   2181 Z.   3,21 %   →  sie   683 Z.  2,93 %
+```
+
+**Die Ratsche greift zweimal, und der zweite Weg war nicht vorhergesehen.** Der Einwurf um 21:23 trägt 5,96 % — dreimal die Tagesdichte —, ihre Antwort geht auf 8,40 %. Das wandert in die Session. Neun Minuten später kommt die Äußerung des Menschen mit **10,99 %** zurück, auf 91 Zeichen: **Er hat das Vokabular des Einwurfs übernommen.** Der Gedanke findet damit einen zweiten Weg zurück in sie — nicht nur über den Verlauf, sondern über den Menschen.
+
+**Und der Gegenversuch steht daneben, auf die Sekunde.** Um 22:03:24 wechselt der Mensch mit 26 Zeichen die Tonlage; sie fällt von 1467 auf 474 Zeichen und auf null Prozent, ihre eigene Regieanweisung lautet *„hält kurz inne, die hochgepeitschte Energie der letzten Minuten bricht"*. **Um 22:04:54 — neunzig Sekunden später — zieht ein Einwurf mit 2181 Zeichen sie wieder hoch**, und sie *„lehnt sich vor, ihre Augen leuchten"*.
+
+Dasselbe Paar wie am Morgen desselben Tages (Schwenk, dann Impuls), diesmal mit Zeitstempel, Dichte und Umfang in einer Zeile. **Vier ungebaute Bauteile stehen in diesem einen Turnpaar:** der Umfang von 2181 Zeichen (F, gebaut, greift erst bei neuem Material), der Abstand von neunzig Sekunden zu einem Tonlagenwechsel (Riegel 3 kennt Cooldown und Burst, aber keinen Wechsel), 3,21 % in eine Lage mit 0,00 % (Riegel 5), und das Anheben ohne Entscheidung (B).
+
+> ⚠ **n ist winzig, und auf kurzen Texten ist der Anteil grob** — bei 91 Zeichen ist ein einziges Wort schon 11 %. Was die Reihe trägt, ist die **Richtung** und der **zeitliche Abstand**, nicht die Höhe der Prozentwerte.
 
 **Und der Filter, der das verhindern sollte, misst die falsche Größe.** `_besten_eintrag_finden` prüft einen Stapel-Eintrag gegen ein Embedding der letzten fünf Session-Turns — und die Session enthält ihre eigenen Impulse. Je mehr Einwürfe zu einem Thema bereits gesendet wurden, desto besser passt der nächste Einwurf desselben Themas. **Der Filter misst, ob ein Gedanke zu ihr passt, nicht ob er zum Gespräch passt.**
 
@@ -450,6 +470,7 @@ Und die Antwort daraus: *„Weißt du, ich muss ständig an diese 43 Bogensekund
 
 ## Versionshistorie
 
+- **v0.12 - 14.08.2026:** §1 um eine **turngenaue** Messung erweitert (21:21 bis 22:04 UTC). Sie zeigt den Weg statt des Zustands: Ein Einwurf mit 5,96 % hebt ihre Antwort auf 8,40 %, und neun Minuten später kommt die Äußerung des Menschen mit **10,99 %** zurück — **er hat das Vokabular des Einwurfs übernommen.** Der Gedanke findet damit einen zweiten Weg in sie, nicht nur über den Verlauf. Dazu der Gegenversuch auf die Sekunde: Ein Tonlagenwechsel mit 26 Zeichen bringt sie von 1467 auf 474 Zeichen und auf null Prozent — **neunzig Sekunden später zieht ein Einwurf sie wieder hoch.** Vier ungebaute Bauteile stehen in diesem einen Turnpaar.
 - **v0.11 - 14.08.2026:** **Bauteil F gebaut, und die Messung hat seine Adresse gedreht.** §2.6 markiert widerlegt: Nicht die Recherche spricht in Novas Person (1 von 87), sondern die **Wiedervorlage** (20 von 20) - der Sprecher stand im Auftrag, nicht im Ergebnis. Der Auftrag der Recherche-Destillation traegt jetzt keinen Identitaets-, Empfaenger- und Stilblock mehr, dafuer einen **Raum von 600 bis 1200 Zeichen** mit drei Bewegungen als Gestalt und eine Pruefbedingung von aussen. **Der Raum wird zugesprochen, nicht begrenzt** - dieselbe Zahl in der anderen Richtung. Der MESSUNG-Wert steht jetzt auf dem gemessenen Bestand: Median 1748 statt der genannten 2100.
 - **v0.10 — 14.08.2026:** §3.6 umgesetzt — beide Herkunftsblöcke tragen Führung statt Verbot. `[gemessen]` 20:30 UTC mit prohibitionsfreiem Prompt: Die Zuschreibung bleibt auf Person A, **ohne dass ein Verbot sie hält** — die Struktur trägt sie. Und die Führung hat etwas hinzugefügt, was ein Verbot nie erzeugen könnte: Sie wendet sich ihm zu und fragt ihn. Mit der Einschränkung, dass zwei Turns keine Reihe sind und nicht kontrolliert verglichen wurden.
 - **v0.9 — 14.08.2026:** §3.6 neu — **das Verbot als Mittel ist verworfen.** Nach dem Materialblock ist der Platz frei, an dem vier Anläufe lang ein Verbot stand; ihn mit einem besseren Verbot zu füllen wäre der fünfte Anlauf. Ein Verbot arbeitet gegen den Zug statt mit ihm: Es nennt das Unerwünschte und macht es zum Gegenstand. An seine Stelle gehört die Führung — wohin die Energie geht, nicht wovon sie wegbleiben soll. **Möglich ist das erst, seit die Struktur trägt:** Solange nur Text zur Verfügung stand, war das Verbot die einzige Durchsetzung. Die Umschreibung ist ein eigener Zug mit eigener Messung, weil sie die Modellausgabe ändert.
