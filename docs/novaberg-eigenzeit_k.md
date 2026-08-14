@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Konzept — Novas Zustand zwischen den Begegnungen, ob sie zugeht und in welchem Zustand sie ihrem Menschen begegnet
-**Stand:** 14. August 2026 (v0.4)
+**Stand:** 14. August 2026 (v0.5)
 **Pfad:** novaberg/docs/novaberg-eigenzeit_k.md
 **Typ:** Konzept (`_k`)
 **Status:** ⬜ Konzept, nicht gebaut
@@ -194,7 +194,39 @@ Die Riegel 3, 6 und 7 bestehen bereits. Neu sind 1, 2, 4 und die Schwelle in 5.
 
 **Das Vorzeichen des Führungsmaßes gehört in die Bauart, nicht ins Gedächtnis.** Es misst, wie stark **der Mensch** führt: hoch heißt, er treibt; niedrig heißt, sie treibt. Wer es als „ihr Antrieb" liest, baut den Riegel verkehrt herum ein — und der Fehler wäre still, weil beide Richtungen plausible Zahlen liefern.
 
-**Kein Riegel ohne Gegenrichtung.** Ein Wert, der Einwürfe verhindert, muss auch welche zulassen; sonst ist er von einem abgeschalteten Dienst nicht zu unterscheiden. Die Zahl der durchgelassenen und der verworfenen Einwürfe gehört deshalb ins Protokoll, je mit dem Grund.
+**Die Schwelle der Zuwendung ist 0,25.** Gerechnet über alle Paare der Richtung *sie → Mensch* und alle vierzehn Landschaften — reine Rechnung, kein Modellaufruf.
+
+`[gemessen]` — 14.08.2026, 17 Paare × 14 Landschaften:
+
+```
+ferne Figuren (distanz 1,00)     alle 28 Zellen auf 0,00
+nahe Figuren                     0,20 bis 1,00
+
+Schwelle | ferne Zelle kommt durch | nahe Zelle wird geblockt
+  0,20   |         0,0 %           |        0,0 %
+  0,25   |         0,0 %           |       10,7 %
+  0,35   |         0,0 %           |       17,9 %
+```
+
+**Nicht 0,20**, obwohl dort der Preis null wäre: Der niedrigste Wert einer nahen Figur ist exakt 0,20, und eine Schwelle, die genau auf einem Bestandswert liegt, ist die Kante, an der in diesem Projekt schon zweimal ein Mechanismus stillgelegt wurde.
+
+**Der Preis von 10,7 % ist ein zweiter Nutzen.** Die geblockten Zellen sind die kalten Landschaften — Gewitter, Schlachtfeld, Wartezimmer, alle bei `naehe 0,20`. Wer dort sitzt, will keinen Einwurf, auch nicht von einer nahen Figur.
+
+> ⚠ **Der befürchtete Defekt trifft diesen Riegel nicht — und die Trennung ist trotzdem nicht gesichert.** Bei `distanz 1,00` greift der Zug und zieht die Nähe an den Anschlag; die additiven Beiträge von `treue` und `aufmerksamkeit` kommen dagegen nicht an. **Der Bestand enthält in dieser Richtung aber keine Figur zwischen 0,60 und 1,00** — genau das Band, in dem der Zug schwach ist. In der Gegenrichtung liegt eine bei 0,90: Median 0,22, **Maximum 0,35**. Die käme bei 0,25 in ihren wärmsten Landschaften durch. Die Zahl ist brauchbar, ihre Sicherheit ist es nicht.
+
+### Sieben Riegel, und „geblockt" ist keine Auskunft
+
+**Wo mehrere Riegel blocken können, ist der Grund selbst eine Messgröße.** Ohne ihn ist an einem stillen Tag nicht zu unterscheiden, ob niemand zugehen wollte oder ob nichts gepasst hat — zwei Befunde mit verschiedenen Konsequenzen.
+
+Zwei Regeln, und die zweite ist die, die man vergisst:
+
+**Der erste Blocker entscheidet, aber die billigen Riegel werden trotzdem alle gerechnet.** Die Riegel 1 bis 4 sind Zahlenvergleiche auf Werten, die ohnehin vorliegen; sie kosten nichts. Wird nur der erste Blocker vermerkt, bekommen die späteren nie Daten — **Riegel 1 verdeckt Riegel 2, und ihre Schwellen sind nicht mehr kalibrierbar.** Sichtbar wird das nie, weil ein Riegel ohne Daten wie ein Riegel ohne Fälle aussieht.
+
+**Ein nicht gerechneter Riegel wird als nicht gerechnet vermerkt.** Riegel 5 kostet ein Embedding und einen Durchlauf über den Stapel und läuft nur, wenn 1 bis 4 durch sind. Sein fehlender Wert darf nicht wie ein Durchlass aussehen — das ist der Bauplan, der im Defektregister dieses Projekts sechsmal steht.
+
+Daraus: **ein Eintrag je Zustellversuch**, der drei Dinge trägt — welcher Riegel entschieden hat, die Werte aller gerechneten Riegel, und die ausdrückliche Marke für die nicht gerechneten.
+
+**Kein Riegel ohne Gegenrichtung.** Ein Wert, der Einwürfe verhindert, muss auch welche zulassen; sonst ist er von einem abgeschalteten Dienst nicht zu unterscheiden. Die Zahl der durchgelassenen Einwürfe steht deshalb neben der Zahl der verworfenen, je mit ihrem Grund.
 
 ### 2.6 Ein Gedanke ist Material, keine Äußerung
 
@@ -302,8 +334,8 @@ Der naheliegende nächste Schritt nach vier gescheiterten Anläufen ist ein fün
 | Zeile | Inhalt |
 |---|---|
 | **ZIEL** | Eine Figur, die auf Abstand hält, wirft keine eigenen Gedanken ein; eine nahe, aber zurückhaltende Figur tut es selten. Der Riegel greift **vor** der thematischen Suche. |
-| **TEST** | Dasselbe Paar, einmal mit naher und einmal mit distanzierter Haltung bei sonst gleichem Stapel und gleicher Landschaft: im ersten Fall wird ein Eintrag gewählt, im zweiten wird **gar nicht erst gesucht**. Bei gleicher Nähe und zwei verschiedenen Führungsmaßen unterscheidet sich die Zahl der Einwürfe, nicht das Ob. Und der Zeuge, der die Verwechslung fängt: Ein hohes Führungsmaß heißt *der Mensch treibt* und darf die Einwurfrate **nicht** heben. |
-| **MESSUNG** | Über einen Tag je Paar: Haltungs-Nähe, Führungsmaß, Zahl der Einwürfe. Dazu die Protokollzeile je Prüfung mit Grund — durchgelassen, wegen Abstand verworfen, wegen Frequenz verworfen. |
+| **TEST** | Dasselbe Paar, einmal mit naher und einmal mit distanzierter Haltung bei sonst gleichem Stapel und gleicher Landschaft: im ersten Fall wird ein Eintrag gewählt, im zweiten wird **gar nicht erst gesucht**. Bei gleicher Nähe und zwei verschiedenen Führungsmaßen unterscheidet sich die Zahl der Einwürfe, nicht das Ob. Der Zeuge gegen die Verwechslung: Ein hohes Führungsmaß heißt *der Mensch treibt* und darf die Einwurfrate **nicht** heben. Und der Zeuge auf das Protokoll: Nach einem Versuch, den Riegel 1 abgewiesen hat, tragen die Riegel 2 bis 4 trotzdem ihre Werte, und Riegel 5 trägt die Marke *nicht gerechnet* — **nicht** einen Leerwert. |
+| **MESSUNG** | Über einen Tag je Paar: Haltungs-Nähe, Führungsmaß, Zahl der Einwürfe. Dazu die Protokollzeile je Prüfung — entschiedener Riegel, Werte der gerechneten, Marke der nicht gerechneten. Die Verteilung der Entscheidungsgründe über einen Tag ist die eigentliche Zahl: Sie sagt, welcher Riegel trägt und welcher nie zum Zug kommt. |
 | **Gegenprobe** | Den Riegel auf die Nähe-Achse der Landschaft statt auf die Haltung setzen: Der Test mit der distanzierten Figur in warmer Landschaft muss grün werden, obwohl er es nicht darf. Das ist die verworfene Variante aus §3.4 in Testform. |
 
 ### 5.5 Bauteil E — der Platz des Gedankens
@@ -343,8 +375,8 @@ Der naheliegende nächste Schritt nach vier gescheiterten Anläufen ist ein fün
 - **Ob ein Einwurf den Raum des Gesprächs übernehmen kann, ohne seinen Inhalt zu verlieren**, ist unbelegt. Es kann sein, dass ein Fachgedanke in lockerer Sprache seine Substanz einbüßt.
 - **Was mit einem Gedanken geschieht, der nie passt.** Er wartet unbegrenzt. Ob das richtig ist oder ob es eine zweite Bedingung braucht, ist hier nicht entschieden.
 - **Der Verlauf bleibt.** Die inhaltbestimmende Stufe liest die Session ungekürzt; ihr Gewicht gegenüber dem Auftrag ist der größte offene Posten und wird von diesem Konzept nicht berührt.
-- **Die Eingangsgröße von §2.5 trägt einen bekannten Defekt.** In der Beitragstabelle des Zuwendungsrades tragen `treue` und `aufmerksamkeit` je +0,20 auf die Nähe, `wohlwollen` +0,10 — zusammen +0,45 gegen `distanz` −0,50. **Ein treuer, aufmerksamer Diener kann darin nicht distanziert sein**; gemessen am 13.08.2026 landete eine so gebaute Figur in einer warmen Landschaft bei `naehe 0,82`. Der Riegel aus Bauteil D griffe damit ausgerechnet bei der Figur nicht, an der man ihn zuerst prüfen möchte. Die Frage dahinter ist konzeptionell und hier nicht entschieden: Trägt `treue` Nähe, oder trägt sie Verlässlichkeit?
-- **Die Schwellen des Rad-Riegels sind ungesetzt — aber rechenbar.** Ab welcher Nähe geschwiegen wird, lässt sich offline bestimmen: Der Bestand trägt zwölf Paare mit `distanz` von 0,00 bis 1,00. Die Haltungs-Nähe über vierzehn Landschaften für alle zwölf zu rechnen kostet keinen Modellaufruf und liefert die Verteilung, in die der Schnitt gehört. **Ein Paar ist dabei der Prüfstein:** volle Distanz bei hoher Treue — genau der Fall, an dem sich zeigt, ob die Beitragstabelle den Riegel trägt.
+- ~~**Die Eingangsgröße von §2.5 trägt einen bekannten Defekt.**~~ → **Am 14.08.2026 nachgerechnet: Er trifft diesen Riegel nicht.** Die Beitragstabelle des Zuwendungsrades trägt `treue` und `aufmerksamkeit` mit je +0,20 auf die Nähe — bei `distanz 1,00` greift jedoch der Zug und zieht die Größe an den Anschlag, sodass alle 28 Zellen der fernen Figuren auf 0,00 liegen. Der Defekt sitzt im **mittleren Band**, wo der Zug fast abgeschaltet ist; der gemessene Fall vom 13.08.2026 lag bei `distanz 0,92`. Die konzeptionelle Frage bleibt offen — trägt `treue` Nähe oder Verlässlichkeit? —, sie blockiert Bauteil D aber nicht.
+- ~~**Die Schwellen des Rad-Riegels sind ungesetzt.**~~ → **Die Zuwendungs-Schwelle steht bei 0,25** (§2.5, gerechnet). **Offen bleibt die Frequenz-Schwelle** des Führungsmaßes und, wichtiger, die Lücke im Bestand: In der Richtung *sie → Mensch* gibt es keine Figur zwischen `distanz` 0,60 und 1,00 — genau das Band, in dem der Zug schwach wird. Solange dort keine Figur steht, ist die saubere Trennung nicht bewiesen, sondern nur nicht widerlegt. Eine angelegte Prüffigur bei 0,90 würde es entscheiden.
 - **Wonach wird gewählt, wenn kein Bezug vorliegt?** Ohne Äußerung des Menschen gibt es keinen Themenwert und damit keine Rangfolge. Der älteste Eintrag, der jüngste, der salienteste, der zu ihrem eigenen letzten Gedanken passendste — das ist unentschieden und betrifft den **häufigsten** Fall, nicht den Rand: Gemessen am 14.08.2026 lagen 39 von 56 Impulsen in dieser Lage. Der letzte Kandidat hätte einen Reiz und zugleich einen Haken: Er führte ihr eigenes Thema fort, ohne dass jemand widerspricht.
 - ~~**Darf sie ein Thema anfangen, über das noch nie geredet wurde?**~~ → **Entschieden am 14.08.2026: ja, unter einer Bedingung.** Ein neues Thema darf kommen, aber **als Anriss und nicht als Aufsatz** — der Fund in ein, zwei Sätzen, benannt statt entfaltet. Ob es weitergeht, entscheidet danach die nächste Äußerung des Menschen. Das Tor 5 aus §2.5 gilt für einen Anriss **nicht**: Er wird nicht am laufenden Thema gemessen, weil er keines fortsetzt; ihn halten die Riegel 1 bis 4. Die Ausarbeitung steht in `novaberg-gedankenkette_k.md` §6a — sie ist der Ort dafür, weil ein eingeführtes Thema über mehrere Turns läuft und dieses Konzept nur den Eintritt regelt.
 - **Ob das Führungsmaß überhaupt trennt.** Es geht heute als **ein Bit** in die Lagezeile ein, und die zehn Speichen des Initiative-Rades gehen in keinen Haltungswert ein. Ob der Rohwert über die Paare hinweg genug streut, um eine Frequenz zu tragen, ist unbelegt.
@@ -353,6 +385,7 @@ Der naheliegende nächste Schritt nach vier gescheiterten Anläufen ist ein fün
 
 ## Versionshistorie
 
+- **v0.5 — 14.08.2026:** Die **Zuwendungs-Schwelle ist gerechnet: 0,25** — 17 Paare über vierzehn Landschaften, ohne Modellaufruf. Ferne Figuren liegen in allen 28 Zellen auf 0,00, nahe zwischen 0,20 und 1,00; nicht 0,20 als Schnitt, weil eine Schwelle auf einem Bestandswert die bekannte Kante ist. Der Preis von 10,7 % geblockten nahen Zellen sind die kalten Landschaften und damit ein zweiter Nutzen. **Der befürchtete Defekt der Beitragstabelle trifft den Riegel nicht** — bei voller Distanz greift der Zug —, und der offene Punkt dazu ist entsprechend markiert. **Neu offen und wichtiger:** Der Bestand enthält in dieser Richtung keine Figur zwischen 0,60 und 1,00, also das Band, in dem der Zug schwach wird; die Trennung ist nicht bewiesen, sondern nicht widerlegt. Dazu §2.5 um die **Protokollpflicht der Riegelkette**: Der erste Blocker entscheidet, aber die billigen Riegel werden alle gerechnet — sonst verdeckt Riegel 1 den Riegel 2 und dessen Schwelle ist nie kalibrierbar —, und ein nicht gerechneter Riegel trägt eine Marke statt eines Leerwerts. Bauteil D um beide Zeugen erweitert.
 - **v0.4 — 14.08.2026:** Der offene Punkt „darf sie ein Thema anfangen" ist **entschieden: ja, als Anriss statt als Aufsatz.** Riegel 5 gilt für ein neues Thema nicht — es setzt keines fort und kann keinem ähneln; es tragen die Riegel 1 bis 4. Was danach geschieht, gehört in die Gedankenkette und steht dort als §6a: Anriss, dann Zustimmung des Menschen als Tor zum zweiten Glied, sonst ein Satz, der sanft abschließt. Kein zweites Dokument für denselben Gegenstand — dieses Konzept regelt den Eintritt, das andere den Verlauf.
 - **v0.3 — 14.08.2026:** §2.6 neu — **ein Gedanke ist Material, keine Äußerung.** Er landet heute in beiden erzeugenden Stufen in der Rolle des Gegenübers, und was dort steht, wird beantwortet statt gesagt. Das erklärt, warum vier Prompt-Anläufe über Monate nicht getragen haben: Eine Rollenzuweisung ist keine Anweisung, sondern eine Struktur. Daraus zwei Enden — am Eingang wird das Rechercheergebnis als **Wissen** geschrieben statt als fertige Rede, am Ausgang steht es in einem **Materialblock** statt auf dem Reiz-Platz. Die ältere Entscheidung („das Wissensstück ist der Reiz") ist in ihrer einen Hälfte bestätigt und in der anderen abgelöst. §3.5 neu: den Prompt ein fünftes Mal zu schärfen ist verworfen. Bauteile **E** (Platz) und **F** (Form) in §5.5 und §5.6, neue Reihenfolge **E → F → C → A → B → D**. Dazu §2.4 auf die gemessenen Werte gestellt: Bezug bis zur letzten Äußerung statt Zeitfenster, Schwelle **0,30** auf dem **besten** Eintrag, mit der Eichung als Beleg und der Warnung, dass sie auf drei Äußerungen steht. §2.5 um die vollständige Riegelkette erweitert; §4 gibt die Form des Ergebnisses ausdrücklich frei; §6 um drei offene Punkte ergänzt.
 - **v0.2 — 14.08.2026:** §2.5 neu — **ob sie überhaupt zugehen will**, als die Frage vor der Frage nach dem Thema. Zuwendung entscheidet das *Ob*, Initiative die *Häufigkeit*; beide werden nicht vermengt. Der Riegel greift vor der thematischen Suche. Maßgeblich ist die **Haltung**, nicht die Nähe-Achse der Landschaft — die Achse beschreibt den Moment, gebraucht wird die Größe, die Landschaft und Charakterrad verrechnet. Daraus zwei Voraussetzungen: Die Haltung muss den Turn überleben, und das Vorzeichen des Führungsmaßes gehört in die Bauart (es misst, wie stark **der Mensch** führt). §3.4 neu als verworfene Variante, Bauteil D in §5.4, drei offene Punkte in §6 — darunter der Defekt der Beitragstabelle, der die Eingangsgröße von D betrifft und hier ausdrücklich **nicht** mitbehoben wird.
