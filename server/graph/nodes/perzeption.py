@@ -24,6 +24,7 @@ from dataclasses import dataclass
 from datetime import datetime
 
 from graph.personality import Personality, InternalPersonality
+from graph.reiz import reiz_text
 from graph.state import ConversationState
 from config import redis_client, get_node_config, PROMPTS
 from memory.session import session_turns_retrieve, format_session_turns_numbered
@@ -109,14 +110,16 @@ def _eingabe_waehlen(state: ConversationState, rolle: str) -> str:
     """Waehlt den zu analysierenden Text nach Rolle.
 
     Vorbedingung: `rolle` ist gesetzt.
-    Nachbedingung: Novas Antwort bei der Nova-Rolle, sonst der Nutzer-Prompt.
+    Nachbedingung: Novas Antwort bei der Nova-Rolle, sonst der Reiz dieses
+    Durchlaufs — die Aeusserung des Menschen oder, auf einem Impuls-Turn,
+    Novas eigener Gedanke.
     Fehlerfaelle: Keine — ein fehlendes Feld ergibt eine leere Zeichenkette,
     und die Laenge steht in der Log-Zeile des Aufrufers.
     """
     # ── Ausgabe ─────────────────────────────────
     if rolle == _ROLLE_NOVA:
         return state.get("response", "")
-    return state.get("user_prompt", "")
+    return reiz_text(state)
 
 
 def _ziel_personality(state: ConversationState, rolle: str) -> Personality:

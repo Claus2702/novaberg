@@ -17,7 +17,7 @@ import re
 
 from datetime    import datetime
 from config      import ASSISTANT_NAME, BEZIEHUNG_EINFLUSS, EMOTIONS_VEKTOREN, EMOTIONS_VEKTOREN_NOVA, PROMPTS, get_node_config
-from graph.reiz  import reiz_ist_eigener_gedanke
+from graph.reiz  import reiz_ist_eigener_gedanke, reiz_text
 from graph.state import ConversationState
 from services.model_services import model_service, ChatRequest
 
@@ -415,6 +415,14 @@ def _build_system_prompt(state: ConversationState) -> str:
     # der eine echte Nutzer-Aeusserung wiederholt.
     if reiz_ist_eigener_gedanke(state):
         parts.append(PROMPTS["responder.eigener_gedanke"])
+        # Der Gedanke selbst steht ebenfalls hier — als Material neben
+        # Gedaechtnis und Recherche, nicht auf dem Platz der fremden Rede.
+        # Der Responder braucht ihn, obwohl er `[INHALT]` bekommt: Was die
+        # erste Stufe weggelassen hat, kann er sonst nicht wiederfinden, und
+        # ein Verweis auf einen Gedanken, den er nicht sieht, waere blind.
+        parts.append(
+            PROMPTS["verfasser.eigener_gedanke"].format(gedanke=reiz_text(state))
+        )
         logger.info("Responder: [EIGENER GEDANKE] gesetzt — Reiz stammt von Nova selbst")
 
     # ── [AUFGABE] ── Fertiger Block aus dem Planner ──
@@ -861,7 +869,11 @@ def respond(
 
     # Aktuellen User-Prompt aus den Session-Turns entfernen (wird als
     # AKTUELLER PROMPT separat angehaengt — sonst erscheint er doppelt).
-    user_prompt: str = state["user_prompt"]
+    # Der Reiz dieses Durchlaufs. Auf einem Impuls-Turn hat niemand
+    # gesprochen — der Gegenstand ist Novas eigener Gedanke, und er geht
+    # nicht auf den Platz der fremden Rede.
+    user_prompt: str = reiz_text(state)
+    eigener_gedanke: bool = reiz_ist_eigener_gedanke(state)
     if session_turns:
         # Der letzte User-Turn ist der aktuelle Prompt (in chat.py VOR dem
         # Graph-Invoke gespeichert). Entfernen wenn inhaltlich identisch.
@@ -913,15 +925,30 @@ def respond(
 
         verlauf_text: str = "\n".join(verlauf_zeilen)
 
+        # Auf einem Impuls-Turn traegt die letzte Nachricht den Verlauf und
+        # den Auftrag, aber **nicht** den Gedanken: Der steht als Block im
+        # System-Prompt. Ein [AKTUELLER PROMPT] mit Novas eigenem Text waere
+        # die Behauptung, Person B habe ihn gesagt.
+        if not eigener_gedanke:
+            letzter_teil: str = (
+                "[AKTUELLER PROMPT]\n"
+                "Dies ist die aktuelle Nachricht. Alles davor war Hintergrund.\n"
+                f"{user_prompt}"
+                f"{sprachstil}"
+            )
+        else:
+            letzter_teil = f"{PROMPTS['responder.auftrag_ohne_reiz']}{sprachstil}"
         messages.append({"role": "user", "content": (
             "[GESPRAECHSVERLAUF]\n"
             "Bisherige Turns dieses Gespraechs. Aeltere zuerst, hoehere Nummern sind aktueller.\n\n"
             f"{verlauf_text}"
-            "[AKTUELLER PROMPT]\n"
-            "Dies ist die aktuelle Nachricht. Alles davor war Hintergrund.\n"
-            f"{user_prompt}"
-            f"{sprachstil}"
+            f"{letzter_teil}"
         )})
+    elif eigener_gedanke:
+        messages.append({
+            "role": "user",
+            "content": PROMPTS["responder.auftrag_ohne_reiz"] + sprachstil,
+        })
     else:
         messages.append({"role": "user", "content": user_prompt + sprachstil})
 

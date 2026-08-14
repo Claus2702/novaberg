@@ -63,8 +63,18 @@ class ImpulsInDenCharaktergraphTest(unittest.TestCase):
         self.assertEqual(kwargs["character_id"], ASSISTANT_USER_ID)
 
         payload: dict = kwargs["payload"]
-        self.assertEqual(payload["user_prompt"], WISSEN)
+        self.assertEqual(payload["eigener_gedanke"], WISSEN)
         self.assertEqual(payload["turn_id"], "t-impuls-1")
+
+    def test_der_reiz_platz_bleibt_leer(self) -> None:
+        """Was dort staende, waere eine Aeusserung des Menschen — es gab keine.
+
+        Der Schluessel fehlt ganz statt leer dazustehen: Ein leeres Feld
+        traegt dieselbe Aussage und laedt zugleich dazu ein, es spaeter wieder
+        zu befuellen.
+        """
+        _, ruf = self._feuern()
+        self.assertNotIn("user_prompt", ruf.call_args.kwargs["payload"])
 
     def test_event_traegt_die_emotion_des_stack_eintrags(self):
         """Pixies Zustand beim Recherchieren ist die Reiz-Haelfte des Paares."""

@@ -272,7 +272,7 @@ class TestDerAusfallSiehtNichtWieEineAntwortAus(unittest.TestCase):
             ergebnis = verf_mod.verfassen(_state(user_prompt="   "))
 
         self.assertEqual("", ergebnis["antwort_inhalt"])
-        self.assertIn("leerer user_prompt", "".join(log.output))
+        self.assertIn("leerer Reiz (herkunft=nutzer_turn)", "".join(log.output))
 
     def test_leere_modellantwort_wird_laut_gemeldet(self) -> None:
         """Das Modell antwortet, aber ohne Text. Kein Fuelltext, keine Ausrede."""

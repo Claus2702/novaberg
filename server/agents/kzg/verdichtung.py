@@ -88,8 +88,11 @@ def verdichten(state: AgentState) -> dict:
     laut abgebrochen und ein leerer Kern zurueckgegeben.
     """
     # ── Eingabe-Validierung ─────────────────────
-    user_prompt: str = state["parameter"].get("user_prompt", "")
-    response:    str = state["parameter"].get("response", "")
+    # `reiz` traegt, was diesen Turn ausgeloest hat — die Nutzer-Aeusserung auf
+    # einem Nutzer-Turn, Novas eigenen Gedanken auf einem Impuls-Turn. Der
+    # Dispatcher entscheidet das, nicht diese Funktion.
+    reiz:     str = state["parameter"].get("reiz", "")
+    response: str = state["parameter"].get("response", "")
     kontext:     dict = state.get("kontext") or {}
 
     beobachter: str = kontext.get("beobachter", "")
@@ -105,19 +108,19 @@ def verdichten(state: AgentState) -> dict:
     # ── Verarbeitung ────────────────────────────
     if graph_rolle == "character":
         bewertungs_text: str = response
-        lagebild_text:   str = user_prompt
+        lagebild_text:   str = reiz
         lagebild_label:  str = "Dies ist die Eingabe des Nutzers."
         eingabe_label:   str = "Antwort der Assistentin"
     elif graph_rolle == "agent":
         # Der entstehende Gedanke. Kein Lagebild: Es gibt keine Antwort, auf die
         # er sich bezieht, und die leere `response` als Hintergrund auszugeben
         # waere eine Behauptung ueber etwas, das nicht stattgefunden hat.
-        bewertungs_text = user_prompt
+        bewertungs_text = reiz
         lagebild_text   = ""
         lagebild_label  = ""
         eingabe_label   = "Eigener Gedanke der Assistentin"
     else:
-        bewertungs_text = user_prompt
+        bewertungs_text = reiz
         lagebild_text   = response
         lagebild_label  = "Dies ist die Antwort des Assistenten."
         eingabe_label   = "Eingabe des Nutzers"

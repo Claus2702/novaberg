@@ -24,6 +24,7 @@ from typing import Any
 
 import redis
 
+from graph.reiz  import reiz_text
 from graph.state import ConversationState, reiz_herkunft
 from plugins     import get_registry
 from agents.kzg.dispatch import dispatch_kzg
@@ -285,7 +286,13 @@ def _session_turn_schreiben(state: ConversationState) -> None:
         rolle:  str = "assistant"
         inhalt: str = response
     else:
-        # Pfad 1: User hat geschrieben
+        # Pfad 1: User hat geschrieben.
+        #
+        # **Hier steht bewusst der Reiz-Platz und nicht der Reiz.** Dies ist
+        # die einzige Stelle des Durchlaufs, die fragt „was hat der Mensch
+        # gesagt" — und auf einem Impuls-Turn ist die Antwort darauf nichts.
+        # Ein Gedanke, der hier landete, staende als Nutzer-Aeusserung im
+        # Verlauf, aus dem der naechste Turn liest.
         rolle  = "user"
         inhalt = state.get("user_prompt", "")
 
@@ -388,7 +395,12 @@ def _turn_roh_schreiben(state: ConversationState) -> None:
 
     try:
         inhalt: dict[str, Any] = {
-            "user_prompt": state.get("user_prompt", ""),
+            # Die Reiz-Haelfte des Paares — und auf einem Impuls-Turn ist das
+            # Novas eigener Gedanke, nicht der leere Reiz-Platz. Der Feldname
+            # bleibt: Er steht so in Messreihen ueber Wochen, und `herkunft`
+            # eine Zeile tiefer sagt bereits, von wem der Reiz stammt. Wer den
+            # Namen aendert, entwertet den Vergleich mit dem Bestand.
+            "user_prompt": reiz_text(state),
             "response":    response,
             "user_emotion": external.emotion.to_dict(),
             "nova_emotion": internal.emotion.to_dict(),
@@ -602,6 +614,7 @@ def dispatch(
 
             gesamt += count
             logger.info(f"Dispatcher: '{ziel}' -> {count} Operationen ausgefuehrt")
+
 
         except Exception as fehler:
             logger.exception(f"{type(fehler).__name__}: Dispatcher: Fehler bei '{ziel}'")

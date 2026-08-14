@@ -30,6 +30,7 @@ from langchain_core.tools import tool
 
 from agents.timeline.event_time import precision_has_time, precision_format
 from graph.nodes.thinker_cache import ThinkerToolCache
+from graph.reiz          import reiz_ist_eigener_gedanke, reiz_text
 from graph.state         import ConversationState
 from memory.repositories.timeline_repository import TimelineRepository
 from memory.lzg_knoten    import anker_retrieval
@@ -312,6 +313,53 @@ def _build_verarbeitungs_block(agent_results: list) -> str:
 # ─────────────────────────────────────────────
 # Faktencheck-Treffer (anker_retrieval → Prompt)
 # ─────────────────────────────────────────────
+def _retry_nutzlast(state: ConversationState) -> dict:
+    """Baut das Ereignis-Payload fuer den zweiten Versuch desselben Reizes.
+
+    **Der Reiz reist in derselben Gestalt weiter, in der er ankam.** Wer einen
+    eigenen Gedanken auf den Reiz-Platz des Folge-Ereignisses legt, macht aus
+    der Wiederholung einen Nutzer-Turn: Der Zugriffsknoten verzweigt danach,
+    der Rohturn schreibt die Herkunft, und ab dem zweiten Versuch ist beides
+    falsch. Auffallen kann es nicht — ein Nutzer-Turn mit Text sieht
+    vollstaendig aus.
+
+    Eigene Funktion und nicht drei Zeilen im Rumpf, weil die Zusicherung sonst
+    nur ueber einen vollstaendigen Thinker-Lauf pruefbar waere.
+
+    Vorbedingung: `state` traegt den Reiz dieses Durchlaufs.
+    Nachbedingung: Genau eines von `user_prompt` und `eigener_gedanke` ist
+        belegt, und `reiz_herkunft` benennt, welches.
+    Fehlerfaelle: keine — ein leerer Reiz erzeugt ein leeres Feld, und der
+        Folgelauf meldet ihn an derselben Stelle wie dieser.
+
+    Args:
+        state: der Zustand des Durchlaufs.
+
+    Returns:
+        Das Payload des Folge-Ereignisses.
+    """
+    # ── Eingabe-Validierung ─────────────────────
+    eigener: bool = reiz_ist_eigener_gedanke(state)
+
+    # ── Verarbeitung ────────────────────────────
+    nutzlast: dict = {
+        "user_prompt":            "" if eigener else state.get("user_prompt", ""),
+        "eigener_gedanke":        state.get("eigener_gedanke", "") if eigener else "",
+        "reiz_herkunft":          "eigener_impuls" if eigener else "",
+        "turn_id":                state.get("turn_id", ""),
+        "thinker_unsicher_retry": True,
+    }
+
+    # ── Ausgabe-Verifikation ────────────────────
+    if nutzlast["user_prompt"] and nutzlast["eigener_gedanke"]:
+        logger.error(
+            "Thinker: Retry-Nutzlast traegt beide Reiz-Plaetze — der Folgelauf "
+            "haette zwei Gegenstaende (turn_id=%s)", nutzlast["turn_id"],
+        )
+
+    return nutzlast
+
+
 def _format_faktencheck_treffer(treffer: list[dict]) -> str:
     """Formatiert anker_retrieval-Knoten fuer den Thinker-Faktencheck.
 
@@ -368,7 +416,9 @@ def think(
 
     # ── Schnell-Check: Braucht es überhaupt Nachdenken? ──
     response: str = state["response"]
-    prompt:   str = state["user_prompt"]
+    # Der Reiz dieses Durchlaufs, nicht der Reiz-Platz — auf einem Impuls-Turn
+    # ist der Gegenstand Novas eigener Gedanke.
+    prompt:   str = reiz_text(state)
 
     # Block 3 Teil D: Erkennen, ob wir bereits im Unsicherheits-Retry sind.
     # Der Self-Trigger aus dem ersten Doppel-Fehlschlag legt diesen Marker
@@ -593,11 +643,7 @@ def think(
                 state["response"] = geste
 
             state["self_trigger"] = True
-            state["self_trigger_payload"] = {
-                "user_prompt":            state["user_prompt"],
-                "turn_id":                state.get("turn_id", ""),
-                "thinker_unsicher_retry": True,
-            }
+            state["self_trigger_payload"] = _retry_nutzlast(state)
 
             logger.warning(
                 "Thinker: Doppel-Fehlschlag — Self-Trigger im State gesetzt "

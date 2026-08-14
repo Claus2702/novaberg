@@ -48,7 +48,7 @@ def _state(beobachter: str | None, graph_rolle: str | None = None) -> dict:
     return {
         "aufgabe":    "kzg_verarbeitung",
         "kontext":    kontext,
-        "parameter":  {"user_prompt": USER_TEXT, "response": NOVA_TEXT},
+        "parameter":  {"reiz": USER_TEXT, "response": NOVA_TEXT},
         "schritte":   [],
         "ergebnis":   None,
         "status":     "laufend",
@@ -121,7 +121,7 @@ class VerdichtungDatenpfadTest(unittest.TestCase):
     def test_agentgraph_ohne_reiz_bricht_laut_ab(self):
         """Leeres Bewertungsobjekt: kein Kern, kein Satz ueber das Fehlen."""
         zustand = _state("assistant", graph_rolle="agent")
-        zustand["parameter"]["user_prompt"] = ""
+        zustand["parameter"]["reiz"] = ""
         zustand["parameter"]["response"]    = ""
 
         with self.assertLogs(VERDICHTUNG_LOGGER, level="ERROR") as log:

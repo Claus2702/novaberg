@@ -88,6 +88,12 @@ class GraphBase(ABC):
         return ConversationState(
             # Eingang
             user_prompt   = user_prompt,
+            # Kein Vorgabewert aus `user_prompt`: Wer den Gedanken hierher
+            # bringt, ist die Zustellung — und nur sie weiss, dass es einer
+            # ist. Ein Rueckfall auf den Reiz-Platz machte jeden Nutzer-Turn
+            # zu einem eigenen Gedanken; ein Kanal, dessen einzige Schreiber
+            # aus ihm selbst lesen, hat keine Quelle.
+            eigener_gedanke = kwargs.get("eigener_gedanke", ""),
             user_id       = user_id,
             character_id  = character_id or ASSISTANT_USER_ID,
             turn_id       = kwargs.get("turn_id", ""),

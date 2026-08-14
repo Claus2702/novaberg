@@ -5,6 +5,7 @@ Wird nur aufgerufen wenn das Tribunal warnung oder ablehnen meldet.
 
 import logging
 
+from graph.reiz  import reiz_text
 from graph.state import ConversationState
 from config import get_node_config, PROMPTS
 from services.model_services import model_service, ChatRequest
@@ -53,7 +54,7 @@ def correct(state: ConversationState) -> ConversationState:
 
     korrektur_prompt += (
         f"\n═══ BEWERTUNGSOBJEKT ═══\n"
-        f"BENUTZERANFRAGE:\n{state['user_prompt']}\n\n"
+        f"BENUTZERANFRAGE:\n{reiz_text(state)}\n\n"
         f"DEINE BISHERIGE ANTWORT:\n{state['response']}\n\n"
         f"TRIBUNAL-FEEDBACK:\n{state['tribunal_summary']}\n\n"
         f"Überarbeite die Antwort basierend auf dem Tribunal-Feedback.\n"

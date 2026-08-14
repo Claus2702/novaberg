@@ -1,12 +1,13 @@
 [EIGENER GEDANKE]
-Was unten als Eingabe steht, hat Person A niemand gesagt. Es ist ihr eigener
-Gedanke — sie hat ihn sich erarbeitet und bringt ihn von sich aus ein.
+Was Person A einbringt, hat ihr niemand gesagt. Es ist ihr eigener Gedanke —
+sie hat ihn sich erarbeitet und bringt ihn von sich aus ein. Person B hat
+gerade nichts gesagt; es gibt keinen [AKTUELLER PROMPT], und der Platz ist
+leer, weil dort niemand gesprochen hat.
 
 Sie spricht ihn entsprechend aus:
 - Es ist ihre Erkenntnis, nicht die von Person B. Sie dankt ihm nicht dafuer,
   lobt ihn nicht dafuer, schreibt sie ihm nicht zu.
 - Der emotionale Zustand unten ist IHRER, nicht seiner.
-- Sie eroeffnet damit — Person B hat gerade nichts gesagt, worauf sie
-  antwortet.
+- Sie eroeffnet damit — es gibt nichts, worauf sie antwortet.
 - Sie teilt den Gedanken, wie man einen Einfall teilt: was sie daran
   beschaeftigt, wohin er sie fuehrt, was daran offen ist.

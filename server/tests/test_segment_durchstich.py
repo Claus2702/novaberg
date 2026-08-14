@@ -158,7 +158,7 @@ def _verdichtungs_state(segment: str, index: int = 0, gesamt: int = 3) -> dict:
             "beobachter": "assistant", "graph_rolle": "character",
         },
         "parameter": {
-            "user_prompt":    REIZ,
+            "reiz":           REIZ,
             "response":       volltext,
             "segment":        segment,
             "segment_index":  index,

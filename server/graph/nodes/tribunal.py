@@ -18,6 +18,7 @@ import json
 import logging
 from typing import Callable
 
+from graph.reiz  import reiz_text
 from graph.state import ConversationState, TribunalVote
 from config import (
     get_node_config, PROMPTS,
@@ -141,7 +142,7 @@ def _agent_vote(
     msg_parts.append(
         "[BEWERTUNGSOBJEKT]\n"
         "Bewerte NUR den folgenden Teil.\n\n"
-        f"Benutzeranfrage:\n{state['user_prompt']}\n\n"
+        f"Benutzeranfrage:\n{reiz_text(state)}\n\n"
         f"Antwort des Assistenten:\n{state['response']}"
     )
 

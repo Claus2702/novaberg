@@ -10,6 +10,7 @@ import logging
 from agents import AgentRegistry
 from agents.base import AgentState
 from config import ASSISTANT_USER_ID, redis_client as cfg_redis_client
+from graph.reiz import reiz_text
 
 logger = logging.getLogger("ki_server.agents.kzg.dispatch")
 
@@ -109,7 +110,12 @@ def dispatch_kzg(
             },
             "parameter": {
                 "salienz_obj":  salienz_obj,
-                "user_prompt":  state.get("user_prompt", ""),
+                # Der Reiz dieses Turns, nicht der Reiz-Platz: Auf einem
+                # Impuls-Turn hat niemand gesprochen, und der Gegenstand ist
+                # Novas eigener Gedanke. Das Feld heisst deshalb `reiz` und
+                # nicht `user_prompt` — ein Name, der auf einem von zwei Wegen
+                # falsch ist, verleitet den naechsten Leser zur falschen Frage.
+                "reiz":         reiz_text(state),
                 "response":     state.get("response", ""),
                 # Das Segment, das die Salienz bewertet hat. Der Verdichter
                 # zieht es dem Turn-Volltext vor; fehlt es — etwa bei einem

@@ -43,3 +43,36 @@ def reiz_ist_eigener_gedanke(state: dict) -> bool:
 
     # ── Verarbeitung / Ausgabe ──────────────────
     return payload.get("reiz_herkunft") == "eigener_impuls"
+
+
+def reiz_text(state: dict) -> str:
+    """Der Text, der diesen Durchlauf ausgeloest hat — gleich, von wem er kam.
+
+    **Warum das nicht `state["user_prompt"]` ist.** Der Reiz-Platz traegt, was
+    das Gegenueber gesagt hat. Auf einem Impuls-Turn hat niemand gesprochen —
+    dort steht der Gedanke in `eigener_gedanke`, und `user_prompt` ist leer.
+    Wer trotzdem den Reiz-Platz liest, bekommt eine leere Zeichenkette und
+    meldet einen Ausfall, obwohl der Turn vollstaendig ist.
+
+    **Kein Rueckfall auf den Reiz-Platz, wenn der Gedanke fehlt.** Ein Impuls
+    ohne Gedanken ist ein Defekt und soll wie einer aussehen; ein Rueckfall
+    machte daraus einen Turn, der laeuft und den falschen Text bewertet. Die
+    Leerprueferei bleibt beim Aufrufer — er allein weiss, ob der Text fuer ihn
+    Pflicht ist.
+
+    Vorbedingung: keine — ein fehlendes Payload heisst „Nutzer-Turn".
+    Nachbedingung: der Gedanke bei eigener Herkunft, sonst die Nutzer-
+    Aeusserung; nie None.
+
+    Args:
+        state: der Zustand des Durchlaufs.
+
+    Returns:
+        Der Text des Reizes, moeglicherweise leer.
+    """
+    # ── Eingabe-Validierung / Verarbeitung ──────
+    if reiz_ist_eigener_gedanke(state):
+        return state.get("eigener_gedanke") or ""
+
+    # ── Ausgabe ─────────────────────────────────
+    return state.get("user_prompt") or ""

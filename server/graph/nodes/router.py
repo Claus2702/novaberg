@@ -15,6 +15,7 @@ import json
 import logging
 from datetime import datetime
 
+from graph.reiz  import reiz_text
 from graph.state import ConversationState
 from plugins     import get_combined_router_prompt
 from config import redis_client, get_node_config, PROMPTS
@@ -75,8 +76,14 @@ def _build_router_prompt(
 def route(
     state: ConversationState,
 ) -> ConversationState:
-    """Entscheidet ueber Ressourcen-Routing basierend auf Perzeption-Ergebnissen."""
-    logger.info(f"Router: Route Prompt ({len(state['user_prompt'])} Zeichen)")
+    """Entscheidet ueber Ressourcen-Routing basierend auf Perzeption-Ergebnissen.
+
+    Geroutet wird der Reiz dieses Durchlaufs, nicht der Reiz-Platz: Auf einem
+    Impuls-Turn steht dort nichts, und ein Router ohne Text entscheidet ueber
+    Gedaechtnis, Web und Zeitachse auf einer leeren Zeichenkette.
+    """
+    reiz: str = reiz_text(state)
+    logger.info(f"Router: Route Prompt ({len(reiz)} Zeichen)")
 
     # ── Pending Agent Check (Resume-Flow) ──────────
     # Wenn ein Agent auf Antwort wartet, ueberspringen wir den LLM-Call.
@@ -123,7 +130,7 @@ def route(
     # die Bruecke ueber asyncio.run_coroutine_threadsafe in den Haupt-Loop
     # des Workers (Loop-Binding-Lesson, novaberg-lesson_l_loop-binding.md).
     chat_request = ChatRequest(
-        messages          = [{"role": "user", "content": state["user_prompt"]}],
+        messages          = [{"role": "user", "content": reiz}],
         system            = system_prompt,
         temperature       = node_cfg.get("temperature", 0.05),
         expect_json       = True,

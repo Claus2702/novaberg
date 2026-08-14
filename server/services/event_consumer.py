@@ -506,6 +506,11 @@ async def _event_verarbeiten(
     payload:     dict = event.get("payload", {})
     user_prompt: str  = payload.get("user_prompt", "")
 
+    # Novas eigener Gedanke, wenn die Zustellung diesen Lauf angestossen hat.
+    # Er reist getrennt vom Reiz-Platz, weil auf einem Impuls-Turn niemand
+    # gesprochen hat — was dort steht, waere eine Aeusserung, die es nicht gab.
+    eigener_gedanke: str = payload.get("eigener_gedanke", "")
+
     # Die Kennung des Reizes, den dieser Durchlauf beantwortet. Sie reist bis
     # in die Antwort-Nutzlast durch: Ohne sie ordnet der Client der letzten
     # Nachricht zu, was ankommt — und nach einem Ausfall verschiebt sich alles
@@ -547,6 +552,7 @@ async def _event_verarbeiten(
     # ── State erzeugen ──
     state: dict = character_graph.create_state(
         user_prompt   = user_prompt,
+        eigener_gedanke = eigener_gedanke,
         user_id       = user_id,
         character_id  = character_id,
         event_source  = event.get("source", "user"),

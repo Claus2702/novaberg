@@ -525,9 +525,11 @@ def _impuls_in_den_charaktergraph(
 ) -> bool:
     """Feuert das Event, mit dem der CharacterGraph den Gedanken denkt.
 
-    Der Pixie-Impuls ist ein Reiz wie ein Nutzer-Prompt: Er geht als
-    `user_prompt` ins Payload, der Consumer faehrt den vollen Graphen, der
-    Responder gibt ihm eine Stimme, der Dispatcher schreibt den Rohturn.
+    Der Pixie-Impuls ist ein Reiz wie ein Nutzer-Prompt, aber nicht auf
+    demselben Platz: Er geht als `eigener_gedanke` ins Payload, der Consumer
+    faehrt den vollen Graphen, der Responder gibt ihm eine Stimme, der
+    Dispatcher schreibt den Rohturn. **Der Reiz-Platz bleibt leer** — was dort
+    stuende, waere eine Aeusserung des Menschen, und es gab keine.
 
     Vorbedingung: turn_id und wissensstueck sind gesetzt.
     Nachbedingung: genau ein Event mit source="character" liegt in der Queue.
@@ -553,7 +555,11 @@ def _impuls_in_den_charaktergraph(
             typ          = "message",
             payload      = {
                 "turn_id":          turn_id,
-                "user_prompt":      wissensstueck,
+                # Der Gedanke steht auf seinem eigenen Platz — und **nur**
+                # dort. `user_prompt` fehlt im Payload, weil auf diesem Weg
+                # niemand gesprochen hat; ein leeres Feld waere dieselbe
+                # Aussage, ein gefuelltes eine Aeusserung, die es nicht gab.
+                "eigener_gedanke":  wissensstueck,
                 # Ausdruecklicher Herkunfts-Marker statt Ableitung aus
                 # source="character": Der Thinker-Retry traegt dieselbe source,
                 # ist aber ein Wiederholungsversuch auf eine NUTZER-Aeusserung.

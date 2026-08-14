@@ -9,6 +9,7 @@ import logging
 
 from agents import AgentRegistry
 from agents.base import AgentState, AgentResult
+from graph.reiz import reiz_text
 from config import DELEGATION_SIGNALE, DELEGATION_SIGNALE_FALLBACK
 
 logger = logging.getLogger("ki_server.agents.delegation.dispatch")
@@ -61,7 +62,10 @@ def dispatch_delegation(state: dict) -> None:
         "parameter": {
             "salienz_obj":         salienz_obj,
             "trigger":             trigger,
-            "user_prompt":         state.get("user_prompt", ""),
+            # Der Reiz dieses Turns. Der Feldname bleibt, weil er so in die
+            # persistierte Akte wandert; auf einem Impuls-Turn traegt er
+            # Novas eigenen Gedanken statt einer Aeusserung des Menschen.
+            "user_prompt":         reiz_text(state),
             "response":            state.get("response", ""),
             "current_emotion":     external.emotion.emotion              if external else "neutral",
             "current_arousal":     external.emotion.arousal              if external else 0.5,

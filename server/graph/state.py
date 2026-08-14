@@ -34,7 +34,16 @@ class ConversationState(TypedDict):
     """Zustand, der durch alle Nodes fließt."""
 
     # ── Eingang ──────────────────────────────
+    # Was das Gegenueber gesagt hat — und nur das. Auf einem Impuls-Turn hat
+    # niemand gesprochen; dort steht der Gedanke in `eigener_gedanke`, und
+    # dieses Feld ist leer. Wer den Reiz dieses Durchlaufs braucht, gleich von
+    # wem er stammt, liest ihn ueber `graph/reiz.py`.
     user_prompt:    str
+    # Novas eigener Gedanke, wenn dieser Durchlauf von ihr selbst angestossen
+    # wurde. Leer auf jedem Nutzer-Turn. Die Herkunft steht nicht in diesem
+    # Feld, sondern im Ereignis (`reiz_herkunft`) — ein Text allein kann nicht
+    # sagen, ob er der Reiz dieses Turns ist.
+    eigener_gedanke: str
     user_id:        str
     character_id:   str      # Aktiver Charakter (z.B. "nova") — bildet mit user_id den Session-Key
     turn_id:        str      # UUID4-Hex zur Korrelation von HumanGraph- und CharacterGraph-Lauf am selben Konversations-Turn. Befüllt im /chat-Handler.

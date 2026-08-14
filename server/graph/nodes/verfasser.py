@@ -38,7 +38,7 @@ from graph.einwand import kopf_anweisung, urteil_lesen
 # Wert — und der Fall, in dem sie gebraucht wird, ist
 # genau der, in dem niemand hinsieht.
 from graph.nodes.gespraechsvektor import VORAUSDENKEN_GELAUFEN
-from graph.reiz  import reiz_ist_eigener_gedanke
+from graph.reiz  import reiz_ist_eigener_gedanke, reiz_text
 from graph.state import ConversationState
 from graph.vorzeichen import Vorzeichenbefund, vorzeichen_pruefen
 
@@ -223,6 +223,20 @@ def _build_system_prompt(state: ConversationState) -> str:
             PROMPTS["responder.web"].format(web_context=state["web_context"])
         )
 
+    # ── Der Gedanke als Material, nicht als Rede ──
+    # Er steht **hier**, neben Gedaechtnis und Recherche, und ausdruecklich
+    # nicht als Nachricht in der Rolle des Gegenuebers. Was auf jenem Platz
+    # steht, wird von einem Sprachmodell beantwortet, eingeordnet und jemandem
+    # zugeschrieben — vier Anlaeufe im Prompttext haben dagegen angeschrieben
+    # und verloren. Gemessen am 14.08.2026, 19:15 UTC, mit bereits leerem
+    # Reiz-Platz: "PERSON B stellt die physikalische Beobachtung ... in den
+    # Raum", obwohl Person B nichts gesagt hatte. Eine Rollenzuweisung ist
+    # keine Anweisung, sie ist eine Struktur.
+    if reiz_ist_eigener_gedanke(state):
+        teile.append(
+            PROMPTS["verfasser.eigener_gedanke"].format(gedanke=reiz_text(state))
+        )
+
     # ── Ausgabe ─────────────────────────────────
     return "\n\n".join(teile)
 
@@ -230,7 +244,10 @@ def _build_system_prompt(state: ConversationState) -> str:
 def verfassen(state: ConversationState) -> ConversationState:
     """Bestimmt den fachlichen Inhalt der Antwort und legt ihn in den State.
 
-    Vorbedingung: `user_prompt` ist gesetzt. Der Aufrufer stellt sicher, dass
+    Vorbedingung: Der Reiz dieses Durchlaufs ist gesetzt — die Nutzer-
+    Aeusserung auf einem Nutzer-Turn, Novas Gedanke auf einem Impuls-Turn.
+    **Nicht `user_prompt`:** Auf einem Impuls-Turn hat niemand gesprochen, und
+    dieses Feld ist dort leer. Der Aufrufer stellt sicher, dass
     dieser Node bei `task_context_cut=True` gar nicht erst laeuft — dort ist
     das Wenig-Kontext-Verhalten Absicht (novaberg-node-verfasser_k.md §5.1).
     Nachbedingung: `antwort_inhalt` traegt einen nicht-leeren Text.
@@ -243,11 +260,18 @@ def verfassen(state: ConversationState) -> ConversationState:
         Der State mit gesetztem `antwort_inhalt`.
     """
     # ── Eingabe-Validierung ─────────────────────
-    user_prompt: str = state.get("user_prompt", "")
-    if not user_prompt.strip():
+    # Der Reiz, nicht der Reiz-Platz: Auf einem Impuls-Turn steht die Vorlage
+    # in `eigener_gedanke`, und ein leerer `user_prompt` ist dort kein Ausfall,
+    # sondern die Auskunft, dass niemand gesprochen hat.
+    reiz: str = reiz_text(state)
+    if not reiz.strip():
+        # Die Meldung nennt die Herkunft: Ohne sie ist ein Nutzer-Turn ohne
+        # Eingabe von einem Impuls ohne Gedanken nicht zu unterscheiden — zwei
+        # Defekte an zwei verschiedenen Stellen, mit derselben Zeile.
         logger.error(
-            "Verfasser: leerer user_prompt — es gibt nichts zu beantworten, "
-            "antwort_inhalt bleibt leer"
+            "Verfasser: leerer Reiz (herkunft=%s) — es gibt nichts zu "
+            "beantworten, antwort_inhalt bleibt leer",
+            "eigener_impuls" if reiz_ist_eigener_gedanke(state) else "nutzer_turn",
         )
         state["antwort_inhalt"] = ""
         return state
@@ -264,8 +288,18 @@ def verfassen(state: ConversationState) -> ConversationState:
         if inhalt:
             messages.append({"role": rolle, "content": inhalt})
 
-    if not messages or messages[-1].get("content") != user_prompt:
-        messages.append({"role": "user", "content": user_prompt})
+    # **Auf einem Impuls-Turn bleibt der Platz des Gegenuebers leer.** Der
+    # Gedanke steht als Block im System-Prompt; hier steht nur der Auftrag,
+    # denn die Nachrichtenfolge darf nicht leer sein und ein Auftrag ist keine
+    # fremde Rede. Der Zeuge dafuer prueft die Nachrichtenfolge, nicht den
+    # Prompttext — eine Gegenprobe im Text war viermal gruen, waehrend das
+    # Verhalten blieb.
+    if reiz_ist_eigener_gedanke(state):
+        messages.append({
+            "role": "user", "content": PROMPTS["verfasser.auftrag_ohne_reiz"],
+        })
+    elif not messages or messages[-1].get("content") != reiz:
+        messages.append({"role": "user", "content": reiz})
 
     # Log: Inhalt direkt ausgeben, ohne JSON-Wrapping — dieselbe Form wie beim
     # Responder, damit sich beide Stufen im Log gegenueberstellen lassen.
@@ -335,15 +369,13 @@ def verfassen(state: ConversationState) -> ConversationState:
     # ── B4 Stufe 1: die Vorzeichenpruefung ──────
     # Zaehlt, ohne zu aendern. Sie steht hier, weil hier zum ersten und
     # einzigen Mal drei Dinge zusammen vorliegen: das Urteil, die
-    # Nutzeraeusserung und Novas Text. Nachgelagert waere sie nicht baubar —
-    # das Urteil wird nirgends persistiert.
+    # den Reiz dieses Turns und Novas Text. Nachgelagert waere sie nicht
+    # baubar — das Urteil wird nirgends persistiert.
     #
     # Der Eintrag entsteht NUR bei 'abweichend'. Das ist die Gegenprobe des
     # Bauteils: Ein Turn ohne Einwand hinterlaesst keine Spur, sonst waere
     # die Rate nicht lesbar.
-    befund: Vorzeichenbefund = vorzeichen_pruefen(
-        urteil, state.get("user_prompt", ""), inhalt,
-    )
+    befund: Vorzeichenbefund = vorzeichen_pruefen(urteil, reiz, inhalt)
     if befund.geprueft:
         log_berechnung(
             turn_id      = state.get("turn_id", ""),

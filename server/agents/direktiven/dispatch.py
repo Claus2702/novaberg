@@ -9,6 +9,7 @@ Resume-Flow:
 import logging
 from agents import AgentRegistry
 from agents.base import AgentState, AgentResult
+from graph.reiz import reiz_text
 from tools.redis_manager import redis_manager
 
 logger = logging.getLogger("ki_server.agents.direktiven.dispatch")
@@ -34,7 +35,7 @@ def dispatch_direktiven(state: dict) -> dict:
 
     # Normaler Flow
     agent_state: AgentState = {
-        "aufgabe": state.get("user_prompt", ""),
+        "aufgabe": reiz_text(state),
         "aufgabe_typ": "workflow",
         "agent_name": "direktiven",
         "kontext": {

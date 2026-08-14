@@ -28,7 +28,7 @@ from config import (
     GV_LAENGE_MODUS_DELTA,
     GV_STRATEGIE_MIN_LAENGE,
 )
-from graph.reiz  import reiz_ist_eigener_gedanke
+from graph.reiz  import reiz_ist_eigener_gedanke, reiz_text
 from graph.state import ConversationState, pipeline_quelle
 from memory.charakter import initiative_versatz_laden
 from memory.pipeline_log import log_berechnung, log_fehler
@@ -501,7 +501,10 @@ def _hypothese_destillieren(
     modus:       str   = external.emotion.mode                 if external else "alltag"
     dynamik:     str   = external.emotion.relationship_dynamic if external else "neutral"
     intentionen: list  = state.get("user_intentionen", [])
-    user_prompt: str   = state.get("user_prompt", "")
+    # Der Reiz, aus dem die Landschaft entsteht — auf einem Impuls-Turn ist
+    # das Novas eigener Gedanke. Ein leerer Reiz-Platz vermaesse hier die
+    # Landschaft eines Turns ohne Gegenstand.
+    user_prompt: str   = reiz_text(state)
 
     # Charakter (Nova-Linse aus internal.character)
     internal = state.get("internal")

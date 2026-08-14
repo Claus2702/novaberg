@@ -33,6 +33,62 @@ from graph.personality import Emotion, Personality
 
 RESPONDER_LOGGER: str = "ki_server.responder"
 
+# Von Hand gesetzt, nicht aus dem Pruefobjekt gelesen.
+AEUSSERUNG: str = "Was macht der Sternhaufen im Perseus so alt?"
+# Der Blockname des Regie-Teils, von Hand aus dem Prompt-Baustein uebernommen.
+STILMARKE:  str = "[REGIE FUER DIESE REPLIK]"
+
+
+def _zustand_mit_verlauf(turns: list | None = None) -> dict:
+    """Ein Zustand, aus dem `respond` seine letzte Nutzer-Nachricht baut.
+
+    Vorbedingung: keine.
+    Nachbedingung: ein Nutzer-Turn (keine eigene Herkunft), mit oder ohne
+        Gespraechsverlauf.
+    Fehlerfaelle: keine.
+    """
+    basis: dict = _state()
+    basis.update({
+        "user_prompt":     AEUSSERUNG,
+        "eigener_gedanke": "",
+        "event_payload":   {},
+        "session_turns":   turns if turns is not None else [
+            {"rolle": "user", "inhalt": "Und davor?", "emotion": "", "arousal": 0.0},
+            {"rolle": "assistant", "inhalt": "Eine fruehere Antwort."},
+        ],
+        "user_id": "u", "character_id": "c", "turn_id": "t",
+        "memory_context": "", "web_context": "", "task_block": "",
+        "antwort_inhalt": "Ein Inhalt.", "gespraechsvektor": "",
+        "emotions_verlauf": [], "nova_emotions_verlauf": [],
+        "user_intentionen": [], "agent_results": [],
+    })
+    return basis
+
+
+def _letzte_nutzer_nachricht(zustand: dict) -> str:
+    """Baut den Responder-Auftrag und liefert seine letzte Nutzer-Nachricht.
+
+    Geprueft wird damit der Bauteil und nicht der Quelltext: Eine Reihenfolge
+    im Code sagt nichts darueber, was beim Modell ankommt.
+
+    Vorbedingung: `zustand` ist vollstaendig genug fuer `respond`.
+    Nachbedingung: der Inhalt der letzten Nachricht in der Rolle des Nutzers.
+    Fehlerfaelle: keine — fehlt sie, scheitert der Aufrufer sichtbar.
+    """
+    from unittest.mock import patch
+    from types import SimpleNamespace
+
+    from graph.nodes import responder as modul
+
+    antwort = SimpleNamespace(text="Eine Antwort.", token_total=3, model="m")
+    with patch.object(modul.model_service.chat, "submit_sync",
+                      return_value=antwort) as ruf:
+        modul.respond(zustand)
+
+    nachrichten: list = ruf.call_args.args[0].messages
+    nutzer: list = [m for m in nachrichten if m["role"] == "user"]
+    return nutzer[-1]["content"]
+
 
 def _state(cluster: str = "kissenschlacht", stil: str = "locker") -> dict:
     """Ein State, wie ihn der GV-Node und die Perzeption hinterlassen."""
@@ -291,26 +347,31 @@ class TestBlockPosition(unittest.TestCase):
     """
 
     def test_reihenfolge_verlauf_prompt_sprachstil(self) -> None:
-        import inspect
+        """Verlauf, dann Prompt, dann Stil — in der **gebauten Nachricht**.
 
-        from graph.nodes import responder as modul
+        **Am 14.08.2026 umgestellt, nicht abgeschwaecht.** Vorher las dieser
+        Zeuge die Reihenfolge im Quelltext von `respond`. Das misst zweimal
+        das Falsche: Er wird rot, wenn jemand die Zeilen umstellt, ohne die
+        Ausgabe zu aendern, und er bliebe gruen, wenn die Reihenfolge im
+        Quelltext stimmte und in der Nachricht nicht. Geprueft wird jetzt der
+        Bauteil und nicht der Prompt.
+        """
+        nachricht: str = _letzte_nutzer_nachricht(_zustand_mit_verlauf())
 
-        quelle: str = inspect.getsource(modul.respond)
-        pos_verlauf: int = quelle.find("[GESPRAECHSVERLAUF]")
-        pos_prompt:  int = quelle.find("[AKTUELLER PROMPT]")
-        pos_stil:    int = quelle.find("{sprachstil}")
+        pos_verlauf: int = nachricht.find("[GESPRAECHSVERLAUF]")
+        pos_prompt:  int = nachricht.find("[AKTUELLER PROMPT]")
+        pos_stil:    int = nachricht.find(STILMARKE)
 
-        self.assertGreater(pos_verlauf, 0)
+        self.assertGreater(pos_verlauf, -1)
         self.assertGreater(pos_prompt, pos_verlauf)
         self.assertGreater(pos_stil, pos_prompt)
 
     def test_auch_ohne_verlauf_angehaengt(self) -> None:
-        import inspect
+        """Ohne Verlauf steht der Stil trotzdem hinter der Aeusserung."""
+        nachricht: str = _letzte_nutzer_nachricht(_zustand_mit_verlauf(turns=[]))
 
-        from graph.nodes import responder as modul
-
-        quelle: str = inspect.getsource(modul.respond)
-        self.assertIn("user_prompt + sprachstil", quelle)
+        self.assertIn(STILMARKE, nachricht)
+        self.assertGreater(nachricht.find(STILMARKE), nachricht.find(AEUSSERUNG))
 
 
 if __name__ == "__main__":

@@ -109,10 +109,15 @@ def werte_lesen(text: str) -> list[str]:
 
 def vorzeichen_pruefen(
     urteil:      Einwandsurteil,
-    nutzertext:  str,
+    reiztext:    str,
     antworttext: str,
 ) -> Vorzeichenbefund:
     """Prüft, ob ein widersprochener Wert in Novas Antwort wiederkehrt.
+
+    `reiztext` ist der Text, dem der Wert entstammt — die Äußerung des Menschen
+    auf einem Nutzer-Turn, Novas eigener Gedanke auf einem Impuls-Turn. Die
+    Prüfung ist für beide dieselbe: Ein Wert, dem widersprochen wurde, darf
+    nicht unverändert wiederkehren, gleich wer ihn eingebracht hat.
 
     Vorbedingung: `urteil` stammt aus `urteil_lesen`. Nachbedingung: Ein
     Befund, dessen `geprueft` genau dann True ist, wenn der Verfasser
@@ -129,16 +134,16 @@ def vorzeichen_pruefen(
     if not urteil.geliefert or urteil.bewertung != BEWERTUNG_ABWEICHEND:
         return Vorzeichenbefund(geprueft=False)
 
-    if not nutzertext or not antworttext:
+    if not reiztext or not antworttext:
         logger.error(
             f"Vorzeichenpruefung: Urteil 'abweichend', aber "
-            f"Nutzertext {len(nutzertext or '')} und Antwort {len(antworttext or '')} "
+            f"Reiztext {len(reiztext or '')} und Antwort {len(antworttext or '')} "
             f"Zeichen — nicht pruefbar, kein Befund"
         )
         return Vorzeichenbefund(geprueft=False)
 
     # ── Verarbeitung ────────────────────────────
-    werte: list[str] = werte_lesen(nutzertext)
+    werte: list[str] = werte_lesen(reiztext)
     antwort_klein: str = antworttext.lower()
     uebernommen: list[str] = [w for w in werte if w in antwort_klein]
 
@@ -147,8 +152,8 @@ def vorzeichen_pruefen(
         # Getrennt gemeldet: „nichts gefunden" ist hier ein Befund ueber die
         # Aeusserung, nicht ueber Nova.
         logger.info(
-            "Vorzeichenpruefung: Urteil 'abweichend', aber kein Zahlenwert in der "
-            "Nutzeraeusserung — Stufe 1 kann hier nichts sehen"
+            "Vorzeichenpruefung: Urteil 'abweichend', aber kein Zahlenwert im "
+            "Reiztext — Stufe 1 kann hier nichts sehen"
         )
 
     befund: Vorzeichenbefund = Vorzeichenbefund(

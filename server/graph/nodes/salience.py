@@ -22,6 +22,7 @@ import logging
 
 import redis
 
+from graph.reiz  import reiz_text
 from graph.state import ConversationState, pipeline_quelle
 from config import get_node_config, PROMPTS, ASSISTANT_NAME
 from ei.salienz import salienz_effektiv_berechnen
@@ -355,21 +356,27 @@ def analyze(
     # Wissensstueck lag ungelesen im [LAGEBILD].
     rolle: str = state.get("graph_rolle", "human")
 
+    # Gelesen wird der Reiz dieses Durchlaufs, nicht der Reiz-Platz. Auf einem
+    # Impuls-Turn ist `user_prompt` leer, weil niemand gesprochen hat — der
+    # Gegenstand steht dort in `eigener_gedanke`. Wer den Platz liest, bewertet
+    # auf einem vollstaendigen Turn ein leeres Objekt und bricht ab.
+    reiz: str = reiz_text(state)
+
     if rolle == "character":
         bewertungs_text: str = state.get("response", "")
-        lagebild_text:   str = state.get("user_prompt", "")
+        lagebild_text:   str = reiz
         lagebild_label:  str = "Dies ist die Eingabe des Nutzers."
         eingabe_label:   str = "Antwort der Assistentin"
     elif rolle == "agent":
         # Novas eigener Gedanke. Kein Lagebild — es gibt kein Gegenueber, auf
         # das er antwortet, und eine leere response als Hintergrund waere eine
         # Behauptung ueber etwas, das nicht stattgefunden hat.
-        bewertungs_text = state.get("user_prompt", "")
+        bewertungs_text = reiz
         lagebild_text   = ""
         lagebild_label  = ""
         eingabe_label   = "Eigener Gedanke der Assistentin"
     else:
-        bewertungs_text = state.get("user_prompt", "")
+        bewertungs_text = reiz
         lagebild_text   = state.get("response", "")
         lagebild_label  = "Dies ist die Antwort des Assistenten."
         eingabe_label   = "Eingabe des Nutzers"

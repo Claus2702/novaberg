@@ -32,6 +32,7 @@ import psycopg2
 import redis
 
 from graph.context_entry import ContextEntry
+from graph.reiz          import reiz_text
 from graph.state         import ConversationState, pipeline_quelle
 from memory.kzg          import kzg_entries_retrieve, _kzg_prefix
 from memory.lzg_knoten   import spreading_lesen
@@ -169,12 +170,18 @@ def _intentionen_bestimmen(aus_ereignis: list, raw_turns: list[dict]) -> list:
 def _create_prompt_embedding(
     state: ConversationState,
 ) -> list[float]:
-    """Erzeugt das Embedding fuer den aktuellen User-Prompt.
+    """Erzeugt das Embedding fuer den Reiz dieses Durchlaufs.
 
-    Vorbedingung: state["user_prompt"] vorhanden und nicht leer.
+    Der Vektor ist der Suchschluessel fuer das Gedaechtnis **und** die Eingabe
+    der Zielaktivierung. Er muss deshalb den Text tragen, um den es in diesem
+    Turn geht — auf einem Impuls-Turn ist das Novas eigener Gedanke, und der
+    Reiz-Platz ist dort leer.
+
+    Vorbedingung: der Reiz ist gesetzt — `user_prompt` auf einem Nutzer-Turn,
+    `eigener_gedanke` auf einem Impuls-Turn.
     Nachbedingung: liefert Embedding-Vektor.
     """
-    request = EmbedRequest(text=state["user_prompt"])
+    request = EmbedRequest(text=reiz_text(state))
     embed_response = model_service.embed.submit_sync(request)
     embedding = embed_response.embedding
     logger.debug(
@@ -266,8 +273,8 @@ def _enrich_human(
        memory_entries, memory_context, emotionale_gravitationspunkte,
        Plugin-Outputs, KZG/LZG-Eintraege, Charakter-Hash.
 
-    Vorbedingung: state["ei_calc_rolle"] == "user", state["user_prompt"]
-                  vorhanden.
+    Vorbedingung: state["ei_calc_rolle"] == "user", der Reiz dieses
+                  Durchlaufs vorhanden.
     Nachbedingung: die fuenf produktiven Felder oben sind im state
                    gesetzt.
     """
@@ -325,7 +332,10 @@ def _enrich_human(
         node    = "enricher",
         quelle  = "embedding",
         inhalt  = {
-            "prompt_length": len(state.get("user_prompt", "")),
+            # Die Laenge des Textes, der wirklich eingebettet wurde. Stuende
+            # hier der Reiz-Platz, meldete ein Impuls-Turn 0 Zeichen neben
+            # einem 768er Vektor — und die Zeile saehe aus wie ein Ausfall.
+            "prompt_length": len(reiz_text(state)),
             "embedding_dim": len(embedding) if embedding else 0,
         },
         span_id = span_id,
@@ -481,8 +491,8 @@ def _enrich_character(
     laesst Plugin-Hooks laufen, baut Ziel- und emotionale Gravitation
     und schreibt memory_entries fuer den nachgelagerten Reducer.
 
-    Vorbedingung: state ist valider ConversationState, state["user_prompt"]
-                  und character_id gesetzt.
+    Vorbedingung: state ist valider ConversationState, der Reiz dieses
+                  Durchlaufs und character_id gesetzt.
     Nachbedingung: alle CG-konsumierten Felder im state gesetzt
                    (raw_turns, session_turns, user_intentionen,
                    prompt_embedding, memory_entries, aktivierte_ziele,
@@ -632,7 +642,7 @@ def _enrich_character(
         node    = "enricher",
         quelle  = "embedding",
         inhalt  = {
-            "prompt_length":  len(state.get("user_prompt", "")),
+            "prompt_length":  len(reiz_text(state)),
             "embedding_dim":  len(embedding) if embedding else 0,
         },
         span_id = span_id,
