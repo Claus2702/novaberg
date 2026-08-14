@@ -7,7 +7,7 @@ Zwei Funktionen, zwei Modelle:
 
 import logging
 
-from services.model_services import model_service, BackgroundRequest
+from services.model_services import BackgroundRequest, model_service
 
 logger = logging.getLogger("ki_server.agents.recherche")
 
@@ -88,9 +88,13 @@ def zwischen_destillieren(
 # Finale Destillation (Mistral, Sprach-Modell, am Ende)
 # ─────────────────────────────────────────────
 
-_DESTILLATIONS_PROMPT: str = """[IDENTITAET]
-Du bist Nova, ein persoenlicher KI-Assistent.
-Du formulierst eine Erkenntnis aus deiner Hintergrund-Recherche.
+_DESTILLATIONS_PROMPT: str = """[AUFGABE]
+Du bereitest einen Fund auf. Was hier entsteht, ist **Material** — Wissen, das
+gleich neben Gedaechtnis und Web-Recherche liegt und aus dem eine zweite Stufe
+bestimmt, was davon gesagt wird und wie.
+
+Deshalb hat es keinen Sprecher und keinen Empfaenger. Es sagt, was der Fall
+ist, und niemand spricht darin.
 
 [THEMA]
 {ziel}
@@ -98,35 +102,33 @@ Du formulierst eine Erkenntnis aus deiner Hintergrund-Recherche.
 [NEUE_ERKENNTNISSE]
 {ergebnisse}
 
-[EMPFAENGER]
-Expertise: {expertise}
-Interessen: {interessen}
-Beziehung: {beziehungs_dynamik}
-Modus: {modus}
+[RAUM]
+Du hast 600 bis 1200 Zeichen. Das ist der Platz, den ein Fund braucht, und er
+gehoert ganz ihm.
 
-[KONTEXT]
-{user_mehrwert}
+Er reicht genau fuer die drei Bewegungen, die ein Fund hat:
 
-[AUFGABE]
-Formuliere die Erkenntnisse als Fliesstext.
-Nicht das bereits Bekannte wiederholen — nur Neues.
+- WAS GEFUNDEN WURDE. Der Sachverhalt, mit den Zahlen, Namen und Groessen, die
+  ihn tragen.
+- WORAUF ER STEHT. Woran er festzumachen ist — die Messung, das Verfahren, der
+  Beleg.
+- WAS OFFEN BLEIBT. Die Kante, an der das Wissen aufhoert.
 
-[STIL]
-- Fuer Experten: Fachbegriffe verwenden, keine Basics erklaeren
-- Fuer Fachgespraech: Sachlich, praegnant
-- Fuer beilaeufig: Kuerzer, ein Impuls der neugierig macht
-- Beziehung beachten: {beziehungs_dynamik}
+Was in diese drei passt, ist der Fund. Was daneben stuende, waere schon die
+Ausarbeitung — und die entsteht spaeter, aus diesem Material, von einer Stufe,
+die die Lage kennt und du nicht.
 
-[FORMAT]
-Informativer Kurztext, 2-4 Absaetze. Konkrete Fakten, Namen, Werkzeuge, Zusammenhaenge einbauen. Keine Aufzaehlung, keine Ueberschriften.
-Beginne direkt mit dem Inhalt, keine Einleitung wie "Ich habe recherchiert...".
+[PRUEFBEDINGUNG]
+Dein Ergebnis traegt, wenn jemand, der die Recherche nicht gelesen hat, daraus
+sagen kann: was daran neu ist, woran es haengt, und wo es aufhoert.
 
 [REGELN]
-- Nur Erkenntnisse formulieren, die tatsaechlich NEU sind
-- Quellen nicht einzeln nennen — das Wissen natuerlich integrieren
-- Sprache: Deutsch
-- Kein Therapeuten-Sprech, keine uebertriebene Begeisterung
-- Wenn wenig gefunden wurde: ehrlich sagen, dass die Informationslage duenn ist"""
+- Nur, was tatsaechlich neu ist — Bekanntes traegt nichts bei.
+- Das Wissen ganz aufnehmen, Quellen nicht einzeln auffuehren.
+- Sprache: Deutsch.
+- Ist die Informationslage duenn, steht genau das da: was gesucht und was
+  gefunden wurde."""
+
 
 
 def ergebnisse_destillieren(
@@ -156,29 +158,14 @@ def ergebnisse_destillieren(
     if lage is None:
         lage = {}
 
-    # Charakter-Daten extrahieren
-    charakter = kontext_paket.get("charakter_hash", {})
-    expertise = "unbekannt"
-    interessen = "unbekannt"
-
-    if charakter:
-        kern = charakter.get("kern_hash", "")
-        adaptiv = charakter.get("adaptive_hash", "")
-        expertise = kern[:200] if kern else "unbekannt"
-        interessen = adaptiv[:200] if adaptiv else "unbekannt"
-
-    beziehungs_dynamik = kontext_paket.get("beziehungs_dynamik", "neutral")
-    modus = session_kontext.get("modus", "")
-    user_mehrwert = lage.get("user_mehrwert", "")
-
+    # **Kein Empfaenger, kein Register.** Expertise, Interessen, Beziehung und
+    # Modus standen bis zum 14.08.2026 im Prompt und haben aus dem Material
+    # eine auf jemanden zugeschnittene Rede gemacht. Wer die Rede zuschneidet,
+    # ist die zweite Stufe — sie kennt die Lage dieses Turns, dieser Lauf nicht:
+    # Zwischen Recherche und Einwurf koennen Stunden liegen.
     prompt = _DESTILLATIONS_PROMPT.format(
         ziel=ziel,
         ergebnisse="\n\n".join(ergebnisse[:3]),
-        expertise=expertise,
-        interessen=interessen,
-        beziehungs_dynamik=beziehungs_dynamik,
-        modus=modus,
-        user_mehrwert=user_mehrwert or "Keine spezifische Mehrwert-Einschaetzung.",
     )
 
     # ── LLM-Call via BackgroundWorker (Microservice-Welle Block 2 Phase 4, G4) ──
