@@ -1983,7 +1983,7 @@ Beide Räder haben eine Nabe — den Wert ohne jede Ausprägung — und das Erge
 
 ---
 
-## Chat 138 (14.08.2026) — Der Verfasser bekommt eine Aufgabe, und ein Tor liest den falschen Turn ✅
+## Chat 138 (13./14.08.2026) — Der Verfasser bekommt eine Aufgabe, und die Messung dreht den Tag ✅
 
 **Die zweite Stufe war ein Drehbuch geworden, die erste nicht.** Dieser Zug holt sie nach — und stößt dabei auf ein Tor, dessen Auswahl niemand getroffen hatte.
 
@@ -2021,6 +2021,34 @@ Der ganze Verfasser-Prompt trägt jetzt **eine** Anrede. Herkunftsblock, Wissens
 ### Was offen bleibt
 
 Der Umfang bekommt weiterhin **keine Zahl**. Die emotionale Gravitation färbt auch Novas eigene Gedanken und ist als eigener Schritt zurückgestellt, weil sie vor dem GV-Node steht und die Landschaft mitfärbt.
+
+### Der Tag danach — gemessen statt gebaut
+
+Der Umbau lief seit der Nacht. Am Nachmittag wurde er an einem Tag Betrieb nachgemessen, und die Messung fiel unbequem aus.
+
+**Die dritte Person hält nicht.** Von vierzehn Verfasser-Texten nach dem Umbau duzen neun weiter den Nutzer, fünf stehen in dritter Person. Vorher waren es 23 von 26. Im Prompt steht wörtlich `Kein "du hast"` — und derselbe Turn beginnt mit *„Du hast den Anker geworfen."* Vier Prompt-Anläufe über Monate gegen eine Rollenzuweisung, viermal verloren.
+
+**Das Fachvokabular kommt aus den Impulsen.** Anteil an allen Zeichen der Antwort: bei einer Nutzeräußerung 0,12 % im Reiz und 0,80 % in der Antwort — sie fügt es hinzu. Bei einem eigenen Impuls 2,07 % gegen 2,02 % — es kommt schon so herein. 49 von 122 Turns waren Impulse, und jeder wandert in die Session.
+
+**Drei Mechanismen zählen Turns statt Zeit.** Der Emotionsverfall indiziert die Turn-Historie, der persistierte Zustand trägt keinen Zeitstempel, und die Session läuft nie ab, weil ihre Frist bei jedem Schreibvorgang erneuert wird und ein Impuls ein Schreibvorgang ist. Nach einer Nacht mit stündlichen Impulsen bestand der Bezugsvektor am Morgen aus fünf Stunden eigener Prosa; ein knapper Morgengruß wurde daraufhin als `beichte / Katharsis` vermessen.
+
+**Und ein Blocker, der nichts mit dem Umbau zu tun hatte:** Zwei WebSocket-Verbindungen starben im Leerlauf, acht Stunden lang erreichte keine Antwort mehr den Client, und der Client versuchte in dieser Zeit keinen einzigen Wiederverbindungsversuch. `WEBSOCKET-OHNE-KEEPALIVE`.
+
+### Zwei Konzepte statt eines Baus
+
+Aus den Messungen wurde `novaberg-eigenzeit_k.md` — was zwischen zwei Turns geschieht, ob sie zugeht, und in welchem Zustand sie ihrem Menschen begegnet. Sechs Bauteile in der Reihenfolge **E → F → C → A → B → D**.
+
+**E ist der Wurzelbefund.** Ein eigener Gedanke landet in beiden erzeugenden Stufen in der Rolle des Gegenübers. Was dort steht, wird beantwortet statt gesagt — und keine Prompt-Zeile kann eine Rollenzuweisung überstimmen.
+
+**Zwei Schwellen sind gerechnet statt gesetzt.** Das Themen-Tor steht bei **0,30**: An etikettierten Paaren findet eine Sachfrage ihren passenden Eintrag bei 0,358 bis 0,438, eine Alltagsäußerung kommt auf höchstens 0,256. Höher geht nicht — 0,438 ist der beste je erreichte echte Treffer. Der Zuwendungs-Riegel steht bei **0,25**, gerechnet über 17 Paare und vierzehn Landschaften: Ferne Figuren liegen in allen 28 Zellen auf 0,00, nahe zwischen 0,20 und 1,00.
+
+**Zwei Eichungen waren nötig, weil die erste den falschen Stellvertreter nahm** — zeitliche Nachbarschaft statt Themengleichheit — und das Urteil auf dem Median statt auf dem Maximum stand, obwohl die Zustellung das Maximum wählt.
+
+**Der Nebenfund wiegt schwerer als die Schwellen selbst:** Dieselbe Kosinusrechnung trennt Themenphrasen (0,44–0,90), misst zwischen Langtexten die Textsorte (Median 0,557) und trennt zwischen Langtext und kurzer Äußerung kaum (Median 0,105). Der bestehende Zustellungsfilter läuft auf der zweiten Paarung und ließ deshalb 52 von 56 Impulsen durch. Der Bestand führt zehn solcher Schwellen, fünf davon auf exakt 0,40 über mindestens vier Paarungen — die Herkunft überall dokumentiert, die Paarung bei keiner.
+
+`novaberg-gedankenkette_k.md` bekam §6a: Ein neues Thema beginnt mit einem **Ruf**, nicht mit dem Fund. Ruf, Feld, Fund — jeder Schritt ein, zwei Sätze, jeder vom Menschen freigegeben. Nur der erste Schritt ist ein Einwurf; alles danach sind Antworten. Dabei stellte sich heraus, dass die Bibliothek längst in beide Richtungen steht: geschrieben von jeder Recherche, gelesen in jedem Turn, 2 bis 3 Treffer bei Cosinus 0,896 bis 0,437.
+
+---
 
 ---
 

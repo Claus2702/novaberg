@@ -138,6 +138,26 @@ Gegenstandslos geworden: der Stichtag der assistant-Partition vom 26.07.2026, di
 
 ## Offene Bugs
 
+### Chat 138 — aus einem Tag Betrieb nach dem Umbau (14.08.2026)
+
+#### WEBSOCKET-OHNE-KEEPALIVE — die Verbindung stirbt im Leerlauf, und der Client merkt es nie 🔧 offen
+
+**Symptom.** Der Client zeigt „denkt nach" und bekommt nie eine Antwort. Nachrichten des Nutzers gehen weiter ein und werden vollständig verarbeitet; die Antworten entstehen und werden gespeichert. Zugestellt wird nichts. Der Zustand hält an, bis der Client neu gestartet wird.
+
+**Ursache.** Der Client ruft `run_forever(reconnect=…)` **ohne `ping_interval` und `ping_timeout`** auf; im ganzen Client gibt es kein Keepalive (`client/ui/stream_handler.py`). Eine im Leerlauf gestorbene Verbindung ist damit von einer stillen nicht zu unterscheiden: Der Server bekommt beim Senden einen Fehler und räumt die Verbindung weg, der Client bekommt nichts. `on_close` feuert nie, `run_forever` kehrt nie zurück — und die Wiederverbindungsschleife darum herum ist genau deshalb wirkungslos. Ihr eigener Kommentar sagt es: Sie fängt nur den Fall ab, *dass `run_forever` früh zurückkehrt*.
+
+**Reproduktion.** Eine Verbindung aufbauen, sie ohne Verkehr liegen lassen, bis sie unterwegs abgeräumt wird, und dann eine Nachricht senden. Der Server meldet einmal `WebSocket-Send (threadsafe) fehlgeschlagen`, danach für jeden weiteren Turn `Kein WebSocket für '<Kennung>'`.
+
+**Gemessen am 14.08.2026.** Zwei Verbindungen starben am selben Vormittag auf dieselbe Weise, 05:45:50 und 06:39:48, beide beim Senden nach einer Ruhephase — zwischen der letzten Zustellung und dem Bruch lagen 47 Minuten. Danach acht Stunden **kein einziger Handshake-Versuch**, obwohl der Client-Prozess durchgehend lief. In dieser Zeit entstanden zwei vollständige Antworten (730 und 261 Zeichen), die beide nur in der Session landeten.
+
+**Ein zweiter Defekt daneben:** Die Meldung lautet `… fehlgeschlagen für '<Kennung>' (client=…): ` — nach dem Doppelpunkt steht nichts. Die Ausnahme wird protokolliert, ihr Text ist leer, ihr Typ wird nicht genannt. Zweimal an einem Tag, beide Male ohne rekonstruierbaren Grund.
+
+**Nicht zu verwechseln mit `CLIENT-EINGABESPERRE-OHNE-RUECKWEG`** (Chat 124, behoben). Dort hing die Eingabesperre, hier fehlt der Kanal.
+
+**Geschlossen, wenn.** Der Client sendet ein Keepalive und erkennt eine halboffene Verbindung selbst; die Fehlermeldung nennt Typ und Text der Ausnahme. Offen bleibt dann noch, ob eine unzustellbare Antwort beim Wiederverbinden nachgereicht wird — das ist eine Entscheidung über das Zustellverhalten und kein Defekt.
+
+---
+
 ### Chat 137 — aus dem Umbau des Responder-Prompts (13.08.2026)
 
 #### VERFASSER-KENNT-DIE-QUELLE-NICHT — Novas eigener Impuls wird ihr als Nutzeräußerung zugeschrieben ✅ behoben (Chat 137)

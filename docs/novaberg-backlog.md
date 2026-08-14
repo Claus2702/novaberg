@@ -97,6 +97,18 @@ Die Zugehörigkeit zu einer dieser Reihen hebt einen Eintrag; alles andere sinkt
 
 ---
 
+## Block 14.08.2026 — aus der Eigenzeit-Messung
+
+Drei Einträge. Der erste ist ein Zeiger auf ein Konzept und **keine Wiederholung seines Inhalts** — die sechs Bauteile stehen dort mit ZIEL, TEST, MESSUNG und Gegenprobe; hier steht nur, dass sie offen sind und in welcher Reihenfolge.
+
+| Kennung | Was offen ist | Band |
+|---|---|---|
+| `EIGENZEIT-BAUTEILE` | Sechs Bauteile aus `novaberg-eigenzeit_k.md` §5, Reihenfolge **E → F → C → A → B → D**. E und F stehen vorn, weil sie das Material selbst betreffen; jeder Riegel danach entscheidet auf dem, was sie hinterlassen. **Die eigentliche Arbeit an E** ist nicht der neue Block, sondern die Stellen, die auf dem Impulsweg einen leeren Reiz als Ausfall lesen — Salienz, Verdichtung, Ablage, die Leerprüfung der erzeugenden Stufe. Wer das übersieht, tauscht eine laute Zuschreibung gegen einen stillen Turnverlust. | ungebändert |
+| `SCHWELLE-OHNE-PAARUNG` | Zehn Schwellen über Embedding-Kosinus zwischen 0,40 und 0,95, fünf davon auf exakt 0,40 über mindestens vier Paarungen (Fundliste, 14.08.). **Kein Aufräum-Auftrag** — wer eine anfasst, schreibt ihre Paarung dazu. **Maschinell prüfbar** und damit ein Gate-Kandidat: Eine Konstante, deren Name auf eine Ähnlichkeitsschwelle deutet, trägt in ihrem Kommentar eine Paarungsangabe. | ungebändert |
+| `PRUEFFIGUR-DISTANZ-090` | Der Zuwendungs-Riegel (Bauteil D) steht bei 0,25 und trennt im Bestand sauber — **aber der Bestand enthält in der Richtung *sie → Mensch* keine Figur zwischen `distanz` 0,60 und 1,00**, also das Band, in dem der Zug schwach wird. Eine angelegte Prüffigur bei 0,90 entscheidet, ob die Trennung hält. Kosten: eine Kennung, ein Rad, ein Lauf von `haltung_naehe_verteilung`. | ungebändert |
+
+---
+
 ## Stichtag Bestandsdaten — 27.07.2026, 09:13 UTC
 
 Das System wurde zu diesem Zeitpunkt auf einen leeren Datenbestand zurückgesetzt. Geleert wurden `pipeline_log`, `hintergrund_log`, `lzg_knoten`, `lzg_kanten`, `verbindung`, `langzeitgedaechtnis`, `timeline`, `ziele`, `notizen`, `fakten`, `entitaeten`, `delegations_akten`, `delegations_seiten` sowie die vollständige KZG-Partition in Redis (864 Schlüssel). Erhalten blieben `charakter_hash`, `charakter_anweisungen` und `direktiven`.
