@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Konzept — Novas Zustand zwischen den Begegnungen, ob sie zugeht und in welchem Zustand sie ihrem Menschen begegnet
-**Stand:** 14. August 2026 (v0.9)
+**Stand:** 14. August 2026 (v0.10)
 **Pfad:** novaberg/docs/novaberg-eigenzeit_k.md
 **Typ:** Konzept (`_k`)
 **Status:** 🔶 Konzept — **Bauteil E gebaut**, die übrigen fünf nicht
@@ -304,7 +304,17 @@ Nach dem Materialblock ist der Platz frei geworden, an dem vier Anläufe lang ei
 
 **Das ist erst möglich, seit die Struktur trägt.** Solange die Zuschreibung nur durch Text verhindert werden konnte, war das Verbot die einzige verfügbare Durchsetzung — schwach, aber die einzige. Seit der Gedanke auf dem Platz des Materials steht, ist das Verhalten baulich erzwungen, und der Prompt darf wieder leiten statt zu bewachen.
 
-**Die Umschreibung ist ein eigener Zug.** Sie ändert die Modellausgabe, und die Messung vom 14.08.2026 steht auf dem heutigen Wortlaut. Zusammen gebaut wäre eine Verschlechterung keiner der beiden Ursachen zuzuordnen — dieselbe Trennung wie zwischen E und F.
+**Umgesetzt am 14.08.2026, als eigener Zug mit eigener Messung.** Beide Herkunftsblöcke tragen jetzt Führung statt Verbot — *„Es ist ihre Entdeckung", „Sie eröffnet", „Sie zeigt ihm, was sie sieht"* statt *„kein du hast", „schreibt sie ihm nicht zu"*.
+
+`[gemessen]` — 14.08.2026, 20:30 UTC, ein Gedanke über die Silikatpartikel in den Fontänen des Enceladus, mit prohibitionsfreiem Prompt:
+
+> *„**Person A** stellt die Entdeckung der Silikatpartikel … zur Diskussion. Sie weist darauf hin … Sie stellt die Frage nach der biologischen Implikation …"*
+
+Und die Antwort: *„Weißt du, ich muss ständig an diesen einen Datenpunkt denken: Enceladus … **glaubst du**, dass diese thermische Energie die notwendige Resonanz für biologische Prozesse bietet?"*
+
+**Die Zuschreibung bleibt auf Person A, ohne dass ein Verbot sie hält** — die Struktur trägt sie, wie §2.6 es vorhergesagt hat. Und die Führung hat etwas hinzugefügt, was vorher nicht da war: Sie wendet sich ihm zu und fragt ihn. Ein Verbot hätte das nie erzeugen können; es nennt nur, was ausbleiben soll.
+
+> ⚠ **Zwei Turns sind keine Reihe, und sie sind nicht kontrolliert** — verschiedene Themen, verschiedene Landschaften. Was sie zeigen, ist das Ausbleiben eines Rückfalls, nicht die Wirkung der Führung.
 
 ### 3.7 Der bewusst getragene Preis
 
@@ -438,6 +448,7 @@ Und die Antwort daraus: *„Weißt du, ich muss ständig an diese 43 Bogensekund
 
 ## Versionshistorie
 
+- **v0.10 — 14.08.2026:** §3.6 umgesetzt — beide Herkunftsblöcke tragen Führung statt Verbot. `[gemessen]` 20:30 UTC mit prohibitionsfreiem Prompt: Die Zuschreibung bleibt auf Person A, **ohne dass ein Verbot sie hält** — die Struktur trägt sie. Und die Führung hat etwas hinzugefügt, was ein Verbot nie erzeugen könnte: Sie wendet sich ihm zu und fragt ihn. Mit der Einschränkung, dass zwei Turns keine Reihe sind und nicht kontrolliert verglichen wurden.
 - **v0.9 — 14.08.2026:** §3.6 neu — **das Verbot als Mittel ist verworfen.** Nach dem Materialblock ist der Platz frei, an dem vier Anläufe lang ein Verbot stand; ihn mit einem besseren Verbot zu füllen wäre der fünfte Anlauf. Ein Verbot arbeitet gegen den Zug statt mit ihm: Es nennt das Unerwünschte und macht es zum Gegenstand. An seine Stelle gehört die Führung — wohin die Energie geht, nicht wovon sie wegbleiben soll. **Möglich ist das erst, seit die Struktur trägt:** Solange nur Text zur Verfügung stand, war das Verbot die einzige Durchsetzung. Die Umschreibung ist ein eigener Zug mit eigener Messung, weil sie die Modellausgabe ändert.
 - **v0.8 — 14.08.2026:** **Bauteil E ist gebaut.** Der Materialblock steht in beiden erzeugenden Stufen; auf dem Platz des Gegenübers steht nur noch der Auftrag. `[gemessen]` — 19:50 UTC: Derselbe Knoten, der um 19:15 noch „PERSON B stellt … in den Raum" schrieb, schreibt jetzt „Person A stellt fest …", und die Antwort spielt den Gedanken statt auf ihn zu reagieren. **Die Zuschreibung ist zwischen zwei Turns desselben Tages gekippt, ohne dass ein Verbot geändert wurde** — der Prompt-Log belegt die Ursache. Mit der Warnung daneben, dass ein Turn keine Messung ist: Genau dieser Schluss wurde am selben Tag schon einmal zu früh gezogen.
 - **v0.7 — 14.08.2026:** Zwei Entscheidungen. **Ein eigener Impuls darf handeln** — Termin, Notiz, Direktive —, und der Initiator steht im Protokoll statt in der Fachtabelle: Die Fachtabelle beschreibt den Termin, nicht den Turn. Gebaut an den zwei Stellen, durch die etwas entsteht (Agentenlauf und geplanter Schreibvorgang), mit dem Ausgang daneben, weil „was hat sie angelegt" die Frage nach Initiator **und** Status ist. **Und die stündliche Decke fällt, sobald die Riegel stehen** (§2.5, neuer Abschnitt): Sie war ein Ersatz für ein Urteil, das es noch nicht gab, und neben sieben Riegeln wäre sie keine Begrenzung mehr, sondern eine Beschneidung. Was heute wirklich begrenzt, ist enger und blinder — ein Gedanke je Stunde Schweigen, zwei je Gespräch, beide Zähler bei jeder Äußerung des Menschen gelöscht, und die Decke wird großzügiger, je länger niemand da ist. Die Reihenfolge ist Bedingung: Fällt sie vor den Riegeln, bleibt keine Begrenzung; fällt sie mit ihnen, trägt Riegel 2 allein die Häufigkeit — und seine Schwelle hört auf, ein offener Punkt unter anderen zu sein.
