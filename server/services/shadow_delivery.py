@@ -348,6 +348,57 @@ def shadow_cooldown_reset(redis_client: redis.Redis, user_id: str) -> None:
 # ─────────────────────────────────────────────
 # Burst-Verwaltung
 # ─────────────────────────────────────────────
+def _rueckfrage_offen(redis_client: redis.Redis, user_id: str) -> bool:
+    """Prueft, ob ein Agent gerade auf eine Antwort des Menschen wartet.
+
+    **Warum das eine Wartebedingung ist und kein Verbot.** Der Eintrag
+    verfaellt nicht, er bleibt auf dem Stapel und kommt beim naechsten Zyklus
+    wieder — und die Wartezeit eines Agenten ist auf fuenf Minuten begrenzt.
+    Der Preis ist also ein aufgeschobener Gedanke, der Gewinn eine Frage, die
+    ihre Antwort bekommt.
+
+    Sie steht **vor** dem Burst-Zaehler, weil sie nichts kostet und weil ein
+    Zaehler, der fuer einen unterdrueckten Impuls hochliefe, die naechste
+    Gelegenheit mit verbrauchte.
+
+    Diese Pruefung ersetzt den Riegel im Router nicht: Sie regelt den
+    Zeitpunkt der Zustellung, er die Zustaendigkeit. Ein Reiz eigener Herkunft
+    kann den Graphen auch auf anderem Weg erreichen — ein Wiederholungsversuch
+    traegt dieselbe Marke.
+
+    Vorbedingung: keine.
+    Nachbedingung: True genau dann, wenn ein Wartezustand fuer dieses Paar
+        existiert.
+    Fehlerfaelle: Ein Redis-Fehler gilt als „keine Rueckfrage offen" und wird
+        laut gemeldet — ein ausgefallener Speicher darf die Zustellung nicht
+        dauerhaft stilllegen.
+
+    Args:
+        redis_client: Redis-Verbindung.
+        user_id:      Kennung des Menschen.
+
+    Returns:
+        True, wenn ein Agent auf eine Antwort wartet.
+    """
+    # ── Verarbeitung ────────────────────────────
+    try:
+        offen: bool = redis_client.exists(f"pending_agent:{user_id}") == 1
+    except Exception:
+        logger.exception(
+            "Delivery: Wartezustand nicht lesbar fuer '%s' — es wird "
+            "zugestellt, als waere keine Rueckfrage offen", user_id,
+        )
+        return False
+
+    # ── Ausgabe ─────────────────────────────────
+    if offen:
+        logger.info(
+            "Delivery: Impuls zurueckgestellt fuer '%s' — ein Agent wartet auf "
+            "eine Antwort, der Eintrag bleibt auf dem Stapel", user_id,
+        )
+    return offen
+
+
 def _burst_erlaubt(redis_client: redis.Redis, user_id: str) -> bool:
     """Prüft ob der Burst-Limit noch nicht erreicht ist."""
     count: str | None = redis_client.get(f"shadow_burst_count:{user_id}")
@@ -620,6 +671,10 @@ async def shadow_delivery_loop(
 
             # Alle User mit aktiven WebSocket-Verbindungen prüfen
             for user_id in list(websocket_map.keys()):
+
+                # ── Prüfung 0: Wartet ein Agent auf eine Antwort? ──
+                if _rueckfrage_offen(redis_client, user_id):
+                    continue
 
                 # ── Prüfung 1: Burst-Limit ────────
                 if not _burst_erlaubt(redis_client, user_id):

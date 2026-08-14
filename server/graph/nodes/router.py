@@ -15,7 +15,7 @@ import json
 import logging
 from datetime import datetime
 
-from graph.reiz  import reiz_text
+from graph.reiz  import reiz_ist_eigener_gedanke, reiz_text
 from graph.state import ConversationState
 from plugins     import get_combined_router_prompt
 from config import redis_client, get_node_config, PROMPTS
@@ -94,7 +94,23 @@ def route(
     pending_key = f"pending_agent:{user_id}"
     pending = redis_manager.get_json(pending_key)
 
-    if pending:
+    if pending and reiz_ist_eigener_gedanke(state):
+        # **Ein eigener Gedanke beantwortet keine Frage, die dem Menschen
+        # gestellt wurde.** Der Wartezustand wird im Resume-Pfad geloescht,
+        # bevor der Agent laeuft — ein Impuls, der dort hineinlaeuft, nimmt
+        # dem Menschen also die Gelegenheit zu antworten, und der Agent
+        # arbeitet mit etwas, das niemand gesagt hat.
+        #
+        # Handeln darf sie; an seiner Stelle antworten nicht. Das ist die
+        # Grenze der Entscheidung vom 14.08.2026, und sie laesst sich nicht
+        # ueber den Zeitpunkt der Zustellung sichern: Auch ein Retry oder ein
+        # Selbstausloeser traegt dieselbe Herkunft.
+        logger.info(
+            "Router: Pending Agent '%s' bleibt stehen — der Reiz ist ein "
+            "eigener Gedanke und beantwortet keine Rueckfrage",
+            pending.get("agent_name", ""),
+        )
+    elif pending:
         agent_name = pending.get("agent_name", "")
         logger.info(f"Router: Pending Agent erkannt — '{agent_name}', Resume-Flow aktiviert")
         state["management_action"] = "resume"
