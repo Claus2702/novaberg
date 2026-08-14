@@ -43,10 +43,22 @@ logger = logging.getLogger("ki_server.shadow_delivery")
 PRÜF_INTERVALL:       float = 5.0     # Sekunden zwischen Prüfungen
 MOMENTUM_PAUSE:       float = 3.0     # Pause nach Momentum-Low bevor Delivery
 INAKTIVITAET_GRENZE:  float = 30.0    # Sekunden ohne User-Aktion → Timeout-Trigger
-# Minimum für thematischen Match. Chat 107 geprüft und BEWUSST nicht
-# geändert (Kalibrierung nomic-embed-text-v2-moe) — nicht vergessen.
-# ⚠ Wachposten: Gesprächsvektor↔Stack-Wert, nicht gemessen — Startwert.
-SIMILARITY_THRESHOLD: float = 0.40    # Minimum für thematischen Match
+# **Die Schwelle des Themen-Tors, und ihre Paarung gehoert zur Zahl.**
+# Sie gilt fuer **Stapeltext gegen Nutzeraeusserung** — einen langen Fachtext
+# gegen einen kurzen Zuruf. Gemessen am 14.08.2026 an etikettierten Paaren,
+# bester Eintrag je Aeusserung: zum Thema 0,358 / 0,364 / 0,438, daneben
+# Median 0,181 und Maximum 0,256. Beide Mengen trennen mit rund 0,10 Abstand.
+#
+# **Hoeher geht nicht:** Der beste je erreichte echte Treffer liegt bei 0,438;
+# ab 0,45 kommt nichts mehr durch, auch das Passende nicht.
+#
+# ⚠ Die Zahl steht auf **drei** Aeusserungen — eine begruendete Setzung, kein
+# belastbarer Messwert. Nach der naechsten Themenrunde nachmessen.
+#
+# Der Vorgaenger stand bei 0,40 auf der Paarung Langtext gegen Langtext und
+# hat damit Textsortengleichheit gemessen (Median 0,557 im Bestand): 52 von 56
+# Impulsen kamen durch. Eine Zahl ohne ihre Paarung ist keine Schwelle.
+THEMEN_SCHWELLE: float = 0.30
 MAX_BURST:            int   = 2       # Max aufeinanderfolgende Impulse
 COOLDOWN_TTL:         int   = 3600    # Cooldown-Key TTL in Sekunden
 
@@ -149,12 +161,31 @@ async def _gespraechs_embedding(
     if not turns:
         return []
 
-    # Letzte 5 Turns konkatenieren
-    letzte_turns: list[dict] = turns[-5:]
-    kontext: str = " ".join(turn.get("inhalt", "") for turn in letzte_turns)
+    # **Nur die Aeusserungen des Menschen.** Ein Vektor aus allen Rollen misst,
+    # ob ein Gedanke zu ihren **eigenen vorigen Gedanken** passt — und das tut
+    # er immer: Jeder zugestellte Einwurf liegt danach selbst in der Session.
+    # Je mehr zu einem Thema gesendet wurde, desto besser passte das naechste.
+    #
+    # **Und kein Zeitfenster.** Ein Fenster schneidet den Bezug ab, sobald
+    # jemand eine Nacht schlaeft, und laesst danach alles ungefiltert durch —
+    # also genau dort, wo die Nachricht liegen bleibt und am Morgen als erstes
+    # gelesen wird. Der Bezug reicht bis zur letzten Aeusserung zurueck, gleich
+    # wie lange sie her ist.
+    aeusserungen: list[str] = [
+        (t.get("inhalt") or "").strip() for t in turns
+        if t.get("rolle") == "user" and (t.get("inhalt") or "").strip()
+    ]
 
-    if not kontext.strip():
+    if not aeusserungen:
+        # Kein Bezugsvektor heisst: Dieses Tor entfaellt. Der Aufrufer
+        # entscheidet, was daraus folgt — hier wird nichts erfunden.
+        logger.info(
+            "Delivery: keine Aeusserung des Menschen in der Session — kein "
+            "Bezugsvektor fuer '%s', das Themen-Tor entfaellt", user_id,
+        )
         return []
+
+    kontext: str = " ".join(aeusserungen[-5:])
 
     embed_response = await model_service.embed.submit(EmbedRequest(text=kontext))
     embedding: list[float] = embed_response.embedding
@@ -209,11 +240,19 @@ def _besten_eintrag_finden(
         embedding: list[float] = eintrag.get("embedding", [])
 
         if not embedding:
-            thema_sim: float = SIMILARITY_THRESHOLD
-        else:
-            thema_sim = _cosine_similarity(gespraechs_vector, embedding)
+            # **Ein Ausfall darf nicht wie ein Treffer aussehen.** Vorher galt
+            # ein Eintrag ohne Embedding als exakt auf der Schwelle liegend und
+            # passierte damit — ein fehlender Wert wurde zum bestandenen Test.
+            logger.error(
+                "Delivery: Stapel-Eintrag ohne Embedding abgelehnt "
+                "(thema='%s') — nicht pruefbar ist nicht dasselbe wie passend",
+                eintrag.get("thema", "")[:40],
+            )
+            continue
 
-        if thema_sim < SIMILARITY_THRESHOLD:
+        thema_sim: float = _cosine_similarity(gespraechs_vector, embedding)
+
+        if thema_sim < THEMEN_SCHWELLE:
             continue
 
         # Filter 3: Modus-Kompatibilität (weicher Score)
@@ -454,7 +493,23 @@ async def _delivery_ausfuehren(
     )
 
     if not gespraechs_vector:
-        logger.debug("Delivery: Kein Gesprächskontext — überspringe")
+        # **Hier steht eine offene Entscheidung, kein gebautes Verhalten.**
+        # Das Konzept will, dass ohne Aeusserung des Menschen nur *dieses* Tor
+        # entfaellt und die uebrigen bleiben. Wonach dann gewaehlt wird —
+        # aeltester, juengster, salientester Eintrag —, ist unentschieden, und
+        # es ist der **haeufigste** Fall: 39 von 56 Impulsen lagen am
+        # 14.08.2026 in dieser Lage.
+        #
+        # Bis das entschieden ist, bleibt es beim bisherigen Verhalten: Es
+        # wird nichts zugestellt. Das ist keine Wahl, sondern ihr Aufschub —
+        # und es steht als `error` da, damit der Aufschub im Betrieb zaehlbar
+        # ist statt unsichtbar zu bleiben.
+        logger.error(
+            "Delivery: kein Bezugsvektor fuer '%s' — keine Aeusserung des "
+            "Menschen in der Session. Das Themen-Tor entfaellt, und wonach "
+            "ohne Themenwert zu waehlen waere, ist unentschieden: nichts "
+            "zugestellt", user_id,
+        )
         return False
 
     # Aktuelle Emotion und Modus aus letzten Turns

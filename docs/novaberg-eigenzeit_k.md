@@ -378,6 +378,11 @@ Und die Antwort: *„Weißt du, ich muss ständig an diesen einen Datenpunkt den
 
 ### 5.3 Bauteil C — das Tor
 
+**Stand 15.08.2026: gebaut, mit einem benannten Aufschub.** Der Bezugsvektor kommt aus den Aeusserungen des Menschen und ohne Zeitfenster, die Schwelle steht bei **0,30** als eigene Konstante mit ihrer Paarung im Kommentar, und ein Eintrag ohne Embedding wird **abgelehnt** statt als exakt auf der Schwelle liegend durchgelassen.
+
+**Nicht gebaut ist der Fall ohne Bezug.** Das Konzept will, dass dann nur dieses Tor entfaellt und die uebrigen bleiben — aber wonach ohne Themenwert zu waehlen waere, ist unentschieden (§6), und es ist der **haeufigste** Fall: 39 von 56. Bis das entschieden ist, wird dort nichts zugestellt, und die Stelle meldet sich als `error`, damit der Aufschub zaehlbar ist statt unsichtbar zu bleiben. **Das ist eine bewusst offene Kante und kein fertiges Bauteil.**
+
+
 | Zeile | Inhalt |
 |---|---|
 | **ZIEL** | Ein Gedanke erreicht ein laufendes Gespräch nur, wenn er thematisch und im Modus dazu passt; sonst bleibt er auf dem Stapel. Ohne Äußerung des Menschen im Fenster gibt es kein Tor. |
