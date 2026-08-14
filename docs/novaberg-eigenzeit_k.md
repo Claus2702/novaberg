@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Konzept — Novas Zustand zwischen den Begegnungen, ob sie zugeht und in welchem Zustand sie ihrem Menschen begegnet
-**Stand:** 14. August 2026 (v0.10)
+**Stand:** 14. August 2026 (v0.11)
 **Pfad:** novaberg/docs/novaberg-eigenzeit_k.md
 **Typ:** Konzept (`_k`)
 **Status:** 🔶 Konzept — **Bauteil E gebaut**, die übrigen fünf nicht
@@ -244,7 +244,9 @@ Daraus: **ein Eintrag je Zustellversuch**, der drei Dinge trägt — welcher Rie
 
 Daraus ein Prinzip mit zwei Enden:
 
-**Am Eingang: Das Material wird als Material geschrieben, nicht als Rede.** Die Destillation einer Recherche spricht heute in Novas Person und formuliert eine fertige Erkenntnis. Damit ist der Gedanke schon gesagt, bevor jemand entschieden hat, ob und wie er gesagt wird — und wenn er später eintrifft, antwortet sie sich selbst. Ein Rechercheergebnis ist **Wissen**, kein Beitrag.
+**Am Eingang: Das Material wird als Material geschrieben, nicht als Rede.** ~~Die Destillation einer Recherche spricht heute in Novas Person und formuliert eine fertige Erkenntnis.~~ -> **Am 14.08.2026 zur Haelfte widerlegt.** Ueber 107 Stapel-Eintraege gezaehlt: Von **87** Recherche-Destillaten trug **eines** eine erste Person und **keines** eine Anrede. Der Sprecher stand nicht im Ergebnis, sondern im Auftrag - ein Identitaetsblock, ein Empfaenger mit Expertise und Beziehung, eine Stilzeile, die das Register setzte. Dass kaum eine erste Person herauskam, war Glueck und nicht Bauart.
+
+**Wo die Annahme zutrifft, ist die Wiedervorlage - und dort vollstaendig:** 20 von 20 mit erster Person, 20 von 20 mit Anrede. Ein Eintrag ist woertlich eine **Fehlermeldung an den Nutzer**, die als Gedanke auf dem Stapel liegt und auf ihren Einwurf wartet. Sie ist noch nicht umgestellt. Damit ist der Gedanke schon gesagt, bevor jemand entschieden hat, ob und wie er gesagt wird — und wenn er später eintrifft, antwortet sie sich selbst. Ein Rechercheergebnis ist **Wissen**, kein Beitrag.
 
 **Am Ausgang: Das Material steht in einem Materialblock, nicht auf dem Reiz-Platz.** Es gehört neben Gedächtnis und Web-Recherche, mit einem Auftrag, der es einführt: *Person A bringt von sich aus etwas ein; bestimme, was sie davon sagt.* Der Platz des Gegenübers bleibt leer, weil dort niemand gesprochen hat.
 
@@ -416,7 +418,7 @@ Und die Antwort daraus: *„Weißt du, ich muss ständig an diese 43 Bogensekund
 |---|---|
 | **ZIEL** | Die Destillation einer Recherche liefert **Wissen**, nicht Novas Rede: kein Sprecher, kein Register, keine Anrede. Der Auftrag hat die Form einer Aufgabe mit prüfbarer Bedingung und einer Mengenangabe **als Zahl**. |
 | **TEST** | Das Destillat enthält keine erste Person und keine Anrede des Gegenübers. Sein Umfang liegt im vorgegebenen Zeichenkorridor. Der Auftrag nennt mindestens eine Bedingung, an der das Ergebnis prüfbar ist. |
-| **MESSUNG** | Anteil des fachlichen Vokabulars und Zeichenzahl über zwanzig Destillate, gegen den Stand vom 14.08.2026 (2,07 % im Reiz, rund 2100 Zeichen). |
+| **MESSUNG** | Anteil des fachlichen Vokabulars und Zeichenzahl ueber zwanzig Destillate, gegen den **gemessenen** Stand vom 14.08.2026: ueber 87 Recherche-Destillate **Median 1748 Zeichen** (510 bis 3309, p10 1112, p90 2577), Fachvokabular **1,63 %**. Die frueher genannten rund 2100 Zeichen reproduzieren sich nicht; die 2,07 % waren ueber die Reiz-Texte des Rohturns gemessen und nicht ueber den Stapel - zwei Populationen, kein Widerspruch. |
 | **Gegenprobe** | Die Stilzeile zurücknehmen, die Fachbegriffe für Experten verlangt: Der Vokabular-Anteil muss messbar steigen. |
 
 > **Die beiden hängen zusammen und werden trotzdem getrennt gebaut.** F ändert, in welcher Gestalt das Wissen entsteht; E, auf welchem Platz es ankommt. Zusammen gebaut wäre bei einer Verschlechterung nicht mehr trennbar, welches von beiden sie verursacht hat.
@@ -448,6 +450,7 @@ Und die Antwort daraus: *„Weißt du, ich muss ständig an diese 43 Bogensekund
 
 ## Versionshistorie
 
+- **v0.11 - 14.08.2026:** **Bauteil F gebaut, und die Messung hat seine Adresse gedreht.** §2.6 markiert widerlegt: Nicht die Recherche spricht in Novas Person (1 von 87), sondern die **Wiedervorlage** (20 von 20) - der Sprecher stand im Auftrag, nicht im Ergebnis. Der Auftrag der Recherche-Destillation traegt jetzt keinen Identitaets-, Empfaenger- und Stilblock mehr, dafuer einen **Raum von 600 bis 1200 Zeichen** mit drei Bewegungen als Gestalt und eine Pruefbedingung von aussen. **Der Raum wird zugesprochen, nicht begrenzt** - dieselbe Zahl in der anderen Richtung. Der MESSUNG-Wert steht jetzt auf dem gemessenen Bestand: Median 1748 statt der genannten 2100.
 - **v0.10 — 14.08.2026:** §3.6 umgesetzt — beide Herkunftsblöcke tragen Führung statt Verbot. `[gemessen]` 20:30 UTC mit prohibitionsfreiem Prompt: Die Zuschreibung bleibt auf Person A, **ohne dass ein Verbot sie hält** — die Struktur trägt sie. Und die Führung hat etwas hinzugefügt, was ein Verbot nie erzeugen könnte: Sie wendet sich ihm zu und fragt ihn. Mit der Einschränkung, dass zwei Turns keine Reihe sind und nicht kontrolliert verglichen wurden.
 - **v0.9 — 14.08.2026:** §3.6 neu — **das Verbot als Mittel ist verworfen.** Nach dem Materialblock ist der Platz frei, an dem vier Anläufe lang ein Verbot stand; ihn mit einem besseren Verbot zu füllen wäre der fünfte Anlauf. Ein Verbot arbeitet gegen den Zug statt mit ihm: Es nennt das Unerwünschte und macht es zum Gegenstand. An seine Stelle gehört die Führung — wohin die Energie geht, nicht wovon sie wegbleiben soll. **Möglich ist das erst, seit die Struktur trägt:** Solange nur Text zur Verfügung stand, war das Verbot die einzige Durchsetzung. Die Umschreibung ist ein eigener Zug mit eigener Messung, weil sie die Modellausgabe ändert.
 - **v0.8 — 14.08.2026:** **Bauteil E ist gebaut.** Der Materialblock steht in beiden erzeugenden Stufen; auf dem Platz des Gegenübers steht nur noch der Auftrag. `[gemessen]` — 19:50 UTC: Derselbe Knoten, der um 19:15 noch „PERSON B stellt … in den Raum" schrieb, schreibt jetzt „Person A stellt fest …", und die Antwort spielt den Gedanken statt auf ihn zu reagieren. **Die Zuschreibung ist zwischen zwei Turns desselben Tages gekippt, ohne dass ein Verbot geändert wurde** — der Prompt-Log belegt die Ursache. Mit der Warnung daneben, dass ein Turn keine Messung ist: Genau dieser Schluss wurde am selben Tag schon einmal zu früh gezogen.
