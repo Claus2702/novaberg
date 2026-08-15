@@ -23,29 +23,38 @@ Konzept: docs/novaberg-path2-perzeption_k.md §4.2.
 """
 
 import logging
+import time
 from dataclasses import dataclass, replace
 
-from config import POSTGRES_URL, ASSISTANT_USER_ID, redis_client
-from graph.personality import (
-    Character,
-    Emotion,
-    Personality,
-    InternalPersonality,
-    Raum,
+from config import ASSISTANT_USER_ID, POSTGRES_URL, redis_client
+from ei.eigenzeit import (
+    KATEGORIE_NEUTRAL,
+    arousal_daempfen,
+    kategorien_gesprungen,
+    verfall_faktor,
 )
 from ei.raum import raum_ziel_bestimmen
-from graph.state import ConversationState
 from memory.charakter import (
     charakter_hash_retrieve_dict,
     nova_charakter_hash_retrieve_dict,
 )
 from memory.pipeline_log import (
+    log_berechnung,
     log_db_read,
     log_switch,
     span_end,
     span_start,
 )
 from tools.db_manager import db_manager
+
+from graph.personality import (
+    Character,
+    Emotion,
+    InternalPersonality,
+    Personality,
+    Raum,
+)
+from graph.state import ConversationState, reiz_herkunft
 
 logger = logging.getLogger("ki_server.db_zugriff")
 
@@ -260,12 +269,22 @@ def _raum_aus_nova_state(roh: dict, emotion: Emotion) -> tuple[Raum, bool]:
     return geladen, True
 
 
-def _nova_zustand_laden(kopf: Protokollkopf) -> tuple[Emotion, Raum]:
+def _nova_zustand_laden(kopf: Protokollkopf, herkunft: str) -> tuple[Emotion, Raum]:
     """Laedt Novas persistierten Zustand aus Redis und protokolliert das Lesen.
 
+    Der geladene Zustand ist der von damals; was jetzt gilt, haengt am
+    Intervall seit der letzten Nutzeraeusserung. Der Verfall gehoert deshalb
+    hierher und nicht in einen Hintergrundlauf — er wird von der Aeusserung
+    ausgeloest, nicht von der Uhr (novaberg-eigenzeit_k.md §2.2).
+
+    Args:
+        kopf: traegt das Paar und die Turn-Kennung.
+        herkunft: ``"nutzer_turn"`` oder ``"eigener_impuls"``.
+
     Vorbedingung: `kopf` traegt das Paar.
-    Nachbedingung: (Emotion, Raum). Der Lesevorgang steht im ``pipeline_log``,
-    auch wenn der Hash leer war — ein Cold-Start ist eine Auskunft.
+    Nachbedingung: (Emotion, Raum), die Emotion um das Intervall gesenkt.
+    Der Lesevorgang steht im ``pipeline_log``, auch wenn der Hash leer war —
+    ein Cold-Start ist eine Auskunft.
     Fehlerfaelle: Siehe `_emotion_aus_nova_state` und `_raum_aus_nova_state`;
     beide fallen feldweise zurueck und melden es.
     """
@@ -275,6 +294,7 @@ def _nova_zustand_laden(kopf: Protokollkopf) -> tuple[Emotion, Raum]:
     _lesevorgang(kopf, "redis:nova_state", key=key, exists=bool(roh))
 
     emotion: Emotion = _emotion_aus_nova_state(roh)
+    emotion = _zustand_verfallen(kopf, emotion, roh, herkunft)
     raum, geladen = _raum_aus_nova_state(roh, emotion)
 
     # ── Ausgabe-Verifikation ────────────────────
@@ -286,6 +306,120 @@ def _nova_zustand_laden(kopf: Protokollkopf) -> tuple[Emotion, Raum]:
         f"{'' if geladen else ' [aus Labels abgeleitet]'}"
     )
     return emotion, raum
+
+
+def _pause_bestimmen(kopf: Protokollkopf, roh: dict) -> float | None:
+    """Liest den Abstand zur letzten Nutzeraeusserung aus dem Zustand.
+
+    Args:
+        kopf: traegt das Paar und die Turn-Kennung.
+        roh: der Hash aus ``redis:nova_state``.
+
+    Returns:
+        Sekunden seit der letzten Nutzeraeusserung, oder ``None``, wenn keine
+        verzeichnet ist. **None heisst unbekannt und nicht „keine Pause"** —
+        ein fehlender Zeitstempel darf nicht wie ein frischer wirken.
+    """
+    # ── Eingabe-Validierung ─────────────────────
+    roh_zeit: str = str(roh.get("nutzer_zeit", "")).strip()
+    if not roh_zeit:
+        return None
+
+    try:
+        zuletzt: float = float(roh_zeit)
+    except ValueError:
+        logger.error(
+            "%s: db_zugriff: nutzer_zeit in redis:nova_state unlesbar "
+            "(%r) — kein Verfall angewandt",
+            kopf.turn_id, roh_zeit,
+        )
+        return None
+
+    # ── Verarbeitung / Ausgabe ──────────────────
+    return time.time() - zuletzt
+
+
+def _zustand_verfallen(
+    kopf:     Protokollkopf,
+    emotion:  Emotion,
+    roh:      dict,
+    herkunft: str,
+) -> Emotion:
+    """Senkt den geladenen Zustand um das Intervall seit der letzten Aeusserung.
+
+    Gedaempft wird das Fluechtige: Erregung als Zahl, Emotion und die
+    Kategorien durch Sprung auf ihren Neutralwert. Naehe, Tiefe und
+    Beziehungsdynamik bleiben unberuehrt — sie tragen die Bindung, nicht die
+    Energie (novaberg-eigenzeit_k.md §2.2).
+
+    Args:
+        kopf: traegt das Paar und die Turn-Kennung.
+        emotion: der geladene Zustand.
+        roh: der Hash aus ``redis:nova_state``.
+        herkunft: ``"nutzer_turn"`` oder ``"eigener_impuls"``.
+
+    Returns:
+        Den gedaempften Zustand. Unveraendert auf einem Impuls-Turn, bei
+        fehlendem Zeitstempel und bei Faktor 1,0.
+    """
+    # ── Eingabe-Validierung ─────────────────────
+    # Auf einem Impuls-Turn findet kein Verfall statt: Er ist keine Pause,
+    # sondern Novas eigene Regung darin.
+    if herkunft != "nutzer_turn":
+        return emotion
+
+    pause: float | None = _pause_bestimmen(kopf, roh)
+    if pause is None:
+        logger.info(
+            "%s: db_zugriff: kein nutzer_zeit im Zustand — kein Verfall "
+            "(erster Turn dieses Paares oder Zustand von vor Bauteil A)",
+            kopf.turn_id,
+        )
+        return emotion
+
+    # ── Verarbeitung ────────────────────────────
+    faktor: float = verfall_faktor(pause)
+    if faktor >= 1.0:
+        return emotion
+
+    vorher_arousal: float = emotion.arousal
+    vorher_modus:   str   = emotion.mode
+
+    emotion.arousal = arousal_daempfen(emotion.arousal, faktor)
+
+    gesprungen: bool = kategorien_gesprungen(faktor)
+    if gesprungen:
+        emotion.emotion         = KATEGORIE_NEUTRAL["emotion"]
+        emotion.mode            = KATEGORIE_NEUTRAL["mode"]
+        emotion.language_style  = KATEGORIE_NEUTRAL["language_style"]
+        emotion.tone            = KATEGORIE_NEUTRAL["tone"]
+        emotion.emotions_vector = ""
+
+    # ── Ausgabe-Verifikation ────────────────────
+    log_berechnung(
+        turn_id = kopf.turn_id,
+        node    = "db_zugriff",
+        quelle  = "character",
+        inhalt  = {
+            "schritt":          "eigenzeit_verfall",
+            "pause_sekunden":   round(pause, 1),
+            "faktor":           round(faktor, 4),
+            "arousal_vorher":   round(vorher_arousal, 4),
+            "arousal_nachher":  round(emotion.arousal, 4),
+            "kategorien":       "gesprungen" if gesprungen else "gehalten",
+            "modus_vorher":     vorher_modus,
+            "modus_nachher":    emotion.mode,
+        },
+        user_id      = kopf.user_id,
+        character_id = kopf.character_id,
+    )
+    logger.info(
+        "%s: db_zugriff: Eigenzeit-Verfall — Pause %.0f s, Faktor %.2f, "
+        "Erregung %.2f → %.2f, Kategorien %s",
+        kopf.turn_id, pause, faktor, vorher_arousal, emotion.arousal,
+        "gesprungen" if gesprungen else "gehalten",
+    )
+    return emotion
 
 
 def _character_aus_hash(hash_dict: dict) -> Character:
@@ -492,7 +626,7 @@ def db_zugriff(state: ConversationState) -> ConversationState:
         )
 
     external_emotion: Emotion = _emotion_aus_payload(payload)
-    internal_emotion, internal_raum = _nova_zustand_laden(kopf)
+    internal_emotion, internal_raum = _nova_zustand_laden(kopf, reiz_herkunft(state))
     external_character, internal_character = _charaktere_laden(kopf)
     identities: list[str]  = _identities_laden(kopf)
     directives: list[dict] = _directives_laden(kopf)

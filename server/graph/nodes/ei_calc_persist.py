@@ -13,6 +13,7 @@ Konzept: docs/novaberg-path2-perzeption_k.md §4.6.
 """
 
 import logging
+import time
 
 from config import redis_client
 from ei.berechnung import (
@@ -21,7 +22,6 @@ from ei.berechnung import (
     _sprach_stil_erkennen,
     _stil_plausibilitaet,
 )
-from graph.state import ConversationState
 from memory.pipeline_log import (
     log_berechnung,
     log_db_write,
@@ -29,7 +29,57 @@ from memory.pipeline_log import (
     span_start,
 )
 
+from graph.state import ConversationState, reiz_herkunft
+
 logger = logging.getLogger("ki_server.ei_calc_persist")
+
+
+def _aeusserungszeit(
+    state: ConversationState, herkunft: str, turn_id: str,
+) -> float | None:
+    """Bestimmt, wann die Aeusserung eintraf, die diesen Turn ausgeloest hat.
+
+    Genommen wird `empfangen_am` aus dem Ereignis — der Zeitpunkt **vor** jeder
+    Verarbeitung. Die Uhr dieses Knotens taugt dafuer nicht: Er laeuft am Ende
+    des Durchlaufs, hinter Perzeption, Salienz und den Modellaufrufen, und
+    truege deren Dauer samt Wartezeit am `llm_lock` in den Abstand hinein.
+    Dieselbe Begruendung steht an der Quelle in `api/chat.py`, wo `erstellt_am`
+    aus genau diesem Grund verworfen wurde.
+
+    Args:
+        state: der Zustand des Laufs.
+        herkunft: ``"nutzer_turn"`` oder ``"eigener_impuls"``.
+        turn_id: fuer die Meldung.
+
+    Returns:
+        Die Empfangszeit, oder ``None`` auf einem Impuls-Turn — er ist keine
+        Aeusserung und setzt die Uhr nicht.
+    """
+    # ── Eingabe-Validierung ─────────────────────
+    if herkunft != "nutzer_turn":
+        return None
+
+    roh = (state.get("event_payload") or {}).get("empfangen_am")
+    if roh is None:
+        # Kein Grund, den Turn abzubrechen — aber die Uhr traegt dann die
+        # Dauer dieses Durchlaufs mit, und das gehoert gesagt.
+        logger.warning(
+            "%s: ei_calc_persist: empfangen_am fehlt im Ereignis — "
+            "nutzer_zeit traegt die Verarbeitungsdauer dieses Turns mit",
+            turn_id,
+        )
+        return time.time()
+
+    # ── Verarbeitung / Ausgabe ──────────────────
+    try:
+        return float(roh)
+    except (TypeError, ValueError):
+        logger.exception(
+            "%s: ei_calc_persist: empfangen_am unlesbar (%r) — nutzer_zeit "
+            "traegt die Verarbeitungsdauer dieses Turns mit",
+            turn_id, roh,
+        )
+        return time.time()
 
 
 def ei_calc_persist(state: ConversationState) -> ConversationState:
@@ -161,6 +211,10 @@ def ei_calc_persist(state: ConversationState) -> ConversationState:
 
     # Schritt 4: Persistierung in Redis. Kein TTL — konsistent zur
     # gv:detail:-Konvention, jeder CharacterGraph-Lauf ueberschreibt.
+    jetzt:    float = time.time()
+    herkunft: str   = reiz_herkunft(state)
+    nutzer_zeit: float | None = _aeusserungszeit(state, herkunft, turn_id)
+
     nova_state_key: str  = f"nova_state:{user_id}:{character_id}"
     nova_state_mapping: dict = {
         # Novas Raum (Chat 114) — er ueberlebt den Turn, weil ein
@@ -177,7 +231,24 @@ def ei_calc_persist(state: ConversationState) -> ConversationState:
         "tone":                 internal.emotion.tone,
         "intent":               internal.emotion.intent,
         "prompt_topic":         internal.emotion.prompt_topic,
+        # Die Uhr der Eigenzeit (Bauteil A). **Jeder** Turn setzt `turn_zeit`;
+        # `nutzer_zeit` nur der, den ein Mensch ausgeloest hat.
+        #
+        # Die Trennung ist der Bauteil: Liefe der Verfall auf dem letzten Turn,
+        # setzte der stuendliche Impuls die Uhr zurueck und die Nacht waere nie
+        # eine Pause (novaberg-eigenzeit_k.md §2.2).
+        #
+        # Und er liegt hier statt im Session-Verlauf, obwohl der dort ein
+        # `zeit`-Feld je Turn traegt: Die Session verfaellt nach zwei Stunden
+        # Inaktivitaet und haelt nur zwanzig Turns. Beides greift genau dort,
+        # wo dieser Wert gebraucht wird — die Kurve laeuft bis drei Stunden,
+        # und eine Nacht mit stuendlichen Impulsen schoebe die letzte
+        # Nutzeraeusserung aus dem Fenster, waehrend sie die Frist erneuert.
+        "turn_zeit":            str(jetzt),
     }
+    if nutzer_zeit is not None:
+        nova_state_mapping["nutzer_zeit"] = str(nutzer_zeit)
+
     redis_client.hset(nova_state_key, mapping=nova_state_mapping)
     log_db_write(
         turn_id = turn_id,

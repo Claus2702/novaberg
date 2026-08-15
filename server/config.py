@@ -2108,6 +2108,37 @@ LZG_PIPELINE_LOG_FLUSH_SEKUNDEN: int = int(os.getenv("LZG_PIPELINE_LOG_FLUSH_SEK
 
 
 # ─────────────────────────────────────────────
+# Eigenzeit — der Verfall ueber das Intervall (Bauteil A)
+# ─────────────────────────────────────────────
+# Drei Marken beschreiben die Kurve; dazwischen wird linear interpoliert.
+# Sie sind **geschaetzt** und ausdruecklich zum Nachjustieren gedacht, ohne
+# dass jemand eine Formel anfasst (novaberg-eigenzeit_k.md §2.2, §6).
+#
+# Die Kurve faellt erst flach, dann steil, dann auf null. Ein Exponential-
+# verfall waere falsch: Er faellt sofort am steilsten und naehme jeder kurzen
+# Unterbrechung ihre Energie — wer fuer zehn Minuten den Raum verlaesst, soll
+# dieselbe Person wiederfinden.
+# Kipppunkt 1 h, Halbwert 2 h, Nullpunkt 3 h.
+EIGENZEIT_KIPPPUNKT_SEKUNDEN: float = float(os.getenv("EIGENZEIT_KIPPPUNKT_SEKUNDEN", "3600"))
+EIGENZEIT_KIPPPUNKT_FAKTOR:   float = float(os.getenv("EIGENZEIT_KIPPPUNKT_FAKTOR", "0.90"))
+EIGENZEIT_HALBWERT_SEKUNDEN:  float = float(os.getenv("EIGENZEIT_HALBWERT_SEKUNDEN", "7200"))
+EIGENZEIT_HALBWERT_FAKTOR:    float = float(os.getenv("EIGENZEIT_HALBWERT_FAKTOR", "0.45"))
+EIGENZEIT_NULLPUNKT_SEKUNDEN: float = float(os.getenv("EIGENZEIT_NULLPUNKT_SEKUNDEN", "10800"))
+
+# Unterhalb dieses Faktors springen die **Kategorien** auf ihren Neutralwert.
+# Sie kennen keinen Zwischenwert: Ein halber Modus bedeutet nichts, waehrend
+# eine halbe Erregung eine Aussage ist (§2.2). Der Wert liegt auf dem
+# Halbwert — traegt eine Kategorie zu weniger als der Haelfte, ist sie keine
+# mehr. **Setzung, nicht gemessen**; sie gehoert mit den drei Marken geprueft.
+EIGENZEIT_KATEGORIE_SCHWELLE: float = float(os.getenv("EIGENZEIT_KATEGORIE_SCHWELLE", "0.45"))
+
+# Die Ruhelage der Erregung. Der Verfall zieht sie hierhin, er multipliziert
+# sie **nicht** gegen null: Eine Erregung von 0,00 waere keine Ruhe, sondern
+# ein toter Wert, und sie ist im Bestand der Ausfallwert der Wahrnehmung.
+EIGENZEIT_AROUSAL_RUHE: float = float(os.getenv("EIGENZEIT_AROUSAL_RUHE", "0.5"))
+
+
+# ─────────────────────────────────────────────
 # Prompt-System (Connector-Segregation)
 # ─────────────────────────────────────────────
 from prompt_loader import prompt_laden
