@@ -2041,7 +2041,17 @@ Abgelegt im vorhandenen `pipeline_log` unter Knoten `zustellung` und einer Versu
 
 **Der Doku-Nachzug dieses Zuges nach der geschärften Regel:** Die Kandidatenmenge aus der Dateiliste ergab zunächst **50** — und das war ein Befund über das Kriterium, nicht über die Doku: `config.py` wird von vierzig Dokumenten genannt. **Für eine geteilte Datei entartet die Dateiliste**; dort trägt nur der neue Bezeichner (`ZUWENDUNG_SCHWELLE`: 0 Treffer, neue Konstante). Je Datei gerechnet: 18 Kandidaten für die Zustellung, 0 für die neue Datei. Davon **5 geändert, 13 mit Grund verworfen**.
 
-Suite 1404 → 1424 → 1435 → 1439 → **1458 grün, 0 übersprungen.**
+### Die zweite Kontrolle des Riegels — und was sie fand
+
+Zugriffe, die der Bau nicht benutzt hat: das Kriterium über **Leser und Schreiber** der neuen Werte, und der **Bestand** statt der Zeugen.
+
+**Der Defekt:** `durchgelassen()` hing allein am fehlenden Blocker — und eine **leere Kette** hat keinen. Fiele eine Aufnahme aus (ein Name außerhalb des Kanons wird gemeldet und verworfen), ginge **jeder** Gedanke hinaus, bei grüner Suite. Dieselbe Klasse, gegen die `zuwendung_pruefen` selbst gebaut ist, eine Ebene höher: *nichts geprüft* sah aus wie *nichts einzuwenden*. Dazu passend war die Sektion `Ausgabe-Verifikation` der Kettenprüfung eine **leere** — sie loggte und entschied nichts. Beides behoben: Pflicht-Riegel, `vollstaendig` samt fehlender Namen im Eintrag, und eine Verifikation, unter der ein Wort steht, das entscheidet. Gegenprobe: 2 von 23 rot, Menge vorher benannt.
+
+**Der Bestand sagt etwas, das kein Zeuge sagen konnte:** Acht Paare haben Turns, **genau eines hat einen Haltungsstand** — der Speicher entstand erst heute. Für die übrigen sieben blockt der Riegel mit `kein_stand`, bis ihr nächster Turn gelaufen ist. Das ist selbstheilend und **zählbar**, weil jeder blockierte Versuch seinen Grund schreibt; ohne die Trennung der vier Unbekannt-Gründe von der einen Aussage hätte es später wie eine Reihe distanzierter Figuren ausgesehen.
+
+**Und der Betrieb hat den Riegel bestätigt**, 180 s nach Ablauf des Cooldowns: Eintrag `zv-34067ad3…` mit `wollen 0,9089 durchlässig`, `ruhe` gerechnet, die vier übrigen als *nicht erreicht* markiert. Der zweite Leser des `pipeline_log` filtert auf `art = turn_roh` — die Versuchskennungen verschmutzen ihn nicht.
+
+Suite 1404 → 1424 → 1435 → 1439 → 1458 → **1462 grün, 0 übersprungen.**
 
 ## Chat 141 (15.08.2026) — Die Queue zieht um, und ein Gedanke verfällt, statt gelöscht zu werden ✅
 

@@ -491,6 +491,8 @@ im Defektregister.
 
 **Vier seiner fünf Blockgründe heißen „unbekannt", einer heißt „nein".** Kein Stand, ein Stand ohne Rechnung, ein zu alter Stand und eine fehlende Nähe blocken alle — aber sie werden **getrennt gezählt**, sonst sieht ein kaputter Speicher in jeder Auswertung aus wie eine distanzierte Figur. Ein unbekannter Riegel lässt nicht durch, sondern verweigert; die Frist für den Stand liegt bei 24 h und ist eine Setzung.
 
+**Und die Kette verweigert, wenn sie unvollständig ist.** `durchgelassen()` hing zunächst allein am fehlenden Blocker — eine Kette ohne einen einzigen Eintrag hat keinen, und damit hätte ein Ausfall der Aufnahme **jeden** Gedanken durchgelassen, bei grüner Suite. Ein Urteil ohne die Pflicht-Riegel ist keines; „nichts geprüft" darf nicht aussehen wie „nichts einzuwenden". Die Vollständigkeit steht mit den fehlenden Namen im Eintrag, damit eine Auswertung sie nicht an `durchgelassen: false` raten muss.
+
 **Die Protokollpflicht ist zur Hälfte eingelöst.** Je Zustellversuch entsteht ein Eintrag im `pipeline_log` (Knoten `zustellung`) mit dem entscheidenden Riegel, den Werten der gerechneten und der Marke für die nicht gerechneten — alle sieben stehen darin, auch die nie berührten. **Zwei benannte Reste:** Der Eintrag beginnt am Trigger (`umfang: ab_trigger`), weil Rückfrage, Burst, Cooldown und leerer Stapel davor abbrechen und ihre Umstellung das Verbrauchsverhalten des Momentums änderte; und die Riegel 5 bis 7 entscheiden **innerhalb** der Zustellung und tragen ihre Werte noch nicht in denselben Eintrag ein.
 
 | Zeile | Inhalt |

@@ -123,6 +123,8 @@ Promotion-Queue Eintragsformat:
 >
 > **Und er schreibt, auch wenn er blockt.** Je Zustellversuch geht ein Eintrag ins `pipeline_log` (Knoten `zustellung`, Kennung `zv-…`, vom Turn unterscheidbar) mit dem entscheidenden Riegel, den Werten der gerechneten und einer ausdruecklichen Marke fuer die nicht gerechneten. Ohne ihn ist an einem stillen Tag nicht zu unterscheiden, ob niemand zugehen wollte oder ob nichts gepasst hat.
 >
+> **Eine unvollstaendige Kette laesst nichts durch.** Fehlt ein Pflicht-Riegel, ist das Urteil keines; der Eintrag traegt `vollstaendig` und die fehlenden Namen, damit eine Auswertung den Ausfall vom blockierenden Riegel trennen kann.
+>
 > **Zwei Grenzen, beide benannt.** Der Eintrag beginnt am Trigger (`umfang: ab_trigger`): Was davor abbricht — offene Rueckfrage, erschoepfter Burst, aktiver Cooldown, leerer Stapel —, erzeugt keinen. Und **Riegel 2 (Frequenz) ist nicht gebaut**; er steht als *nicht gerechnet* in den Daten, weil seine Schwelle unentschieden ist. Solange das so ist, bleibt die stuendliche Decke, wo sie ist.
 
 Shadow-Stack Eintragsformat:
