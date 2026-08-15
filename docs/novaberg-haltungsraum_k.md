@@ -2,10 +2,10 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Konzept — eine Fläche aus Gesprächslandschaft und Zuwendung, aus der Grenzen folgen
-**Stand:** 11. August 2026
+**Stand:** 15. August 2026
 **Pfad:** novaberg/docs/novaberg-haltungsraum_k.md
 **Typ:** Konzept (`_k`)
-**Status:** 🔶 teilweise gebaut — Rechnung, Lader, **Knoten** und **Protokoll** stehen und laufen im Produktivsystem (31.07.2026); es fehlen der Prompt-Block (§3) und die Ablösung der alten Längenregel (§6). **Nova verhält sich noch unverändert:** Die Haltung wird gerechnet, protokolliert und angezeigt, aber kein Prompt liest sie.
+**Status:** 🔶 teilweise gebaut — Rechnung, Lader, **Knoten**, **Protokoll** und seit dem 15.08.2026 der **Stand** stehen und laufen im Produktivsystem; es fehlen der Prompt-Block (§3) und die Ablösung der alten Längenregel (§6). **Nova verhält sich noch unverändert:** Die Haltung wird gerechnet, protokolliert, angezeigt und aufbewahrt, aber kein Prompt liest sie — und der erste Leser des Standes, der Zuwendungs-Riegel, ist noch nicht gebaut.
 **Voraussetzung:** `novaberg-gv-strategie_k.md` (14 Cluster) · `novaberg-charakter-resonanz_k.md` (Räder)
 **Betrifft:** `novaberg-node-verfasser_k.md` · `novaberg-node-responder.md`
 
@@ -246,6 +246,26 @@ Personas         distanz 0.86 bis 0.96           Faktor 0.77 bis 0.89
 **Ins `pipeline_log`, geschrieben vom rechnenden Knoten** über `log_berechnung`. Das Muster steht im Bestand: Der Gesprächsvektor und die Salienz protokollieren ihre Rechnungen selbst. Der Eintrag trägt eine `turn_id` und steht damit neben `log_turn_roh` desselben Turns — der Vergleich „diese Haltung → diese Antwort" ist ein Join, keine Rekonstruktion aus zwei Quellen.
 
 **Kein Redis-Blob.** Der Weg von `gv_detail` — ein Schlüssel je Paar, kein TTL, beim nächsten Turn überschrieben — trägt genau einen Turn. Beim Zurückblättern zeigte jede ältere Antwort dieselbe neueste Rechnung, und ein übersprungener Turn hinterlässt den Vorstand ohne Kennzeichnung (Fundliste seit Chat 116). **Ein Speicher, der bei jedem Turn überschrieben wird, ist kein Protokoll** — er trägt den Zustand, nicht den Verlauf. Die Beitragszahlen sind Setzungen und werden nachkalibriert; ohne Historie ist das nicht möglich.
+
+#### Und seit dem 15.08.2026 zusätzlich ein Stand — der andere Gegenstand
+
+**Der Satz oben bleibt gültig und wird nicht aufgeweicht.** Er sagt, dass ein überschriebener Schlüssel kein *Protokoll* ist, und begründet es damit, dass er den **Zustand** trägt statt des Verlaufs. Genau dieser Zustand wird von außerhalb des Graphen gebraucht: Der Zuwendungs-Riegel entscheidet, **ob** Nova von sich aus zugeht, und er läuft im Zustelldienst (`novaberg-eigenzeit_k.md` §2.5). Bis dahin stand die Haltung nur im Zustand des Durchlaufs und war für ihn unsichtbar.
+
+Der Knoten schreibt deshalb **zweimal**, in zwei Speicher mit zwei Gegenständen:
+
+| Speicher | Gegenstand | Frage, die er beantwortet |
+|---|---|---|
+| `pipeline_log` | der **Verlauf** | Wie kam dieser Wert zustande? Grundlage der Nachkalibrierung |
+| `haltung:{user_id}:{character_id}` | der **Zustand** | Wie steht sie **gerade** zu ihm? |
+
+Der zweite ersetzt den ersten nicht — er hat einen anderen Leser und eine andere Frage. Was hier gilt, ist aus dem Fehler des `gv_detail`-Wegs abgeleitet, den §2.0a benennt:
+
+- **Jeder Turn schreibt, auch der ohne Rechnung.** Ein Ausfall setzt die Marke und seinen Grund, statt den alten Stand stehen zu lassen. Genau das ist der Fehler, an dem `gv_detail` seit Chat 116 in der Fundliste steht: Der Vorstand bleibt ohne Kennzeichnung stehen, und ein Riegel darauf entschiede nach der Lage von vorgestern.
+- **Jeder Schreibvorgang setzt jedes Feld.** Ein `hset` mit einer Teilmenge ließe die Zahlen des vorigen Turns im Hash — derselbe Vorstand, eine Ebene tiefer.
+- **Drei Fälle, drei Antworten.** Kein Schlüssel heißt *nie gerechnet*, die Marke heißt *diesmal nicht gerechnet*, ein unlesbarer Wert heißt *defekt*. Sie liegen nicht auf einem Ergebnis.
+- **Kein TTL**, konsistent zu `nova_state`; das **Alter reist im Stand mit**, damit der Leser selbst entscheidet, ob ihm ein Stand von gestern reicht.
+
+Datei: `memory/haltung.py`. Der Riegel, der ihn liest, ist noch nicht gebaut.
 
 **In der Spur eine Zeile**, damit es ohne Umweg lesbar ist:
 
@@ -505,7 +525,7 @@ Eine Übersteuerung ist keine Ausnahme von der Fläche, sondern eine Eigenschaft
 
 - **Keine Berechnung der Beitragswerte aus den Achsen.** Sie werden gesetzt — je Cluster und je Speiche. Eine Formel, die sie erzeugt, ersetzt die Landkarte durch eine Gerade. Gerechnet wird nur ihre **Verknüpfung** (§2).
 - **Keine stille Kappung.** Ein Ergebnis außerhalb des Korridors ist entweder markierte Übersteuerung oder ein Rechenfehler. Wer es kappt, macht beides ununterscheidbar (§3.1).
-- **Kein Redis-Blob für das Ergebnis.** Die Rechnung geht ins `pipeline_log`, nicht in einen Schlüssel, der beim nächsten Turn überschrieben wird (§2.0a).
+- **Kein Redis-Blob für das Ergebnis.** Die Rechnung geht ins `pipeline_log`, nicht in einen Schlüssel, der beim nächsten Turn überschrieben wird (§2.0a). **Unberührt davon der Stand seit dem 15.08.2026:** Er trägt den Zustand für einen Leser außerhalb des Graphen und ist kein Ersatz für die Reihe — der Unterschied steht in §2.0a.
 - **Keine Änderung an Gesprächsvektor, Rädern oder Destillation.** Der Raum liest, was sie liefern.
 - **Kein zweiter Längenbegriff.** `gv_detail["laenge"]` bleibt, was es ist — die **Vektorlänge**, also die Zahl der Antizipationsschritte, gedeckelt auf 3. Sie ist **nicht** die Antwortlänge, und darauf zu rechnen wäre derselbe Fehler wie eine Schwelle, die für eine andere Größe erhoben wurde.
 
@@ -718,6 +738,7 @@ Sobald die Haltung einen Verbraucher hat, gilt: Richtung **Abwendung**, Stärke 
 
 ## Versionshistorie
 
+- **v0.10 — 15.08.2026:** **Die Haltung überlebt den Turn.** §2.0a um den **Stand** erweitert — ein zweiter Speicher mit einem anderen Gegenstand, nicht als Aufweichung des „kein Redis-Blob", sondern als dessen Folge: Der Satz begründet sich selbst damit, dass ein überschriebener Schlüssel den **Zustand** trägt statt des Verlaufs, und genau dieser Zustand wird von außerhalb des Graphen gebraucht. Ohne ihn ist der Zuwendungs-Riegel nicht baubar, der im Zustelldienst läuft (`novaberg-eigenzeit_k.md` §2.5). **Die Bauart ist aus dem benannten Fehler des `gv_detail`-Wegs abgeleitet:** Jeder Turn schreibt — auch der ohne Rechnung, mit Marke und Grund —, jeder Schreibvorgang setzt jedes Feld, und *nie gerechnet* / *diesmal nicht* / *defekt* liegen nicht auf einem Ergebnis. Kein TTL, das Alter reist mit. Der erste Leser fehlt noch. **Nebenbei gemessen und behoben:** Der neue Schreibvorgang machte die Suite zum Schreiber im laufenden System — nach dem ersten Lauf stand unter `haltung:meister:nova` ein Stand mit dem Testwert `turn_id = "t"`.
 - **v0.9 — 12.08.2026:** **§3 trägt die Messung, in welcher Form eine Haltungsvorgabe überhaupt ankommt, und die Sprache dazu.** Neu §3.0aa mit den **fünf Bändern** (Wort je Stufe, Zeichenspannen für den Umfang, die Begründung der getrennten Wortfamilien von Nähe und Wärme) und §3.0ab mit den **acht Energie-Sätzen** samt ihrer aus der gemessenen Verteilung abgeleiteten Grenzen; §3.0b trägt den ausgeschriebenen Vorschlag für alle **vierzehn Szenen**. Die Messung selbst: — 42 Läufe über sieben Prompt-Formen, zwei gegenläufige Haltungen, gegen das Modell des Responder-Knotens. **Die beschreibende Form bindet in 0 von 6 Korridoren, die anweisende in 6 von 6.** Dazu vier Einzelbefunde: Die Mengenangabe bindet, das Adjektiv nicht; sie gehört in **Zeichen**, weil eine Satzzahl das Telegramm-Register zerstört; die dritte Person bricht die Stimme nicht (0 Stimmbrüche) und erzeugt den persönlicheren Ton; Charakterprofile tragen Inhalt, nicht Bindung. Neu §3.0a mit der Gliederung vom Groben zum Feinen — abgeschaut beim GV-Knoten, der sie bereits hat — und §3.0b mit der Trennung von Szene und Regie: Die Szene sagt, was ist, kein Imperativ. Vier der vierzehn Landschaftsbeschreibungen tragen heute einen Befehl, der vor dem Rad steht und den es nicht bewegen kann.
 - **v0.8 — 12.08.2026:** **`wissbegier` ist aus den ziehberechtigten Speichen gestrichen** — die einzige Ausnahme des Kriteriums, gemessen und dann entschieden. Sie zog beim produktiven Paar in **14 von 14** Landschaften, weil der Wert dauerhaft bei 0,97 liegt; `fragen` fiel dort in keiner Landschaft unter 0,50, auch nicht wo die Landschaft eine Grenze bei 0,00 setzt. **Der Grund ist die Art der Größe, nicht die Schwelle:** Wissbegier ist das *Ergebnis* einer Eigenschaft und kein Zustand, der überstimmt. Die naheliegende Gegenerklärung — das Gesprächsthema — ist geprüft und trägt nicht (0,97 · 0,86 · 0,83 über drei Paare, gleiche Anordnung). Damit gilt das Kriterium ohne Ausnahme, und der Zug ist in keinem der drei Paare aktiv. Dazu nachgetragen: die Zugrate über drei Paare, die Korrektur an der Trennschärfe von `distanz` (die scharfe Trennung war eine Eigenschaft des gedeckelten Textes) und der Beleg, dass die offene Destillation je Paar einen eigenen Charakter erzeugt.
 - **v0.7 — 11.08.2026:** **Die Übersteuerung ist keine Rechenart mehr, sondern ein Zug — und sie war bis heute halb wirkungslos.** Als dritte Rechenart teilte sie sich die Wegform mit der Neigung und lieferte dort dieselbe Zahl wie ohne sie; unterscheidbar war sie nur in Grenzzellen. Weil `naehe` in **keiner** der vierzehn Landschaften eine Grenze ist, war `distanz → naehe` seit dem Bau am 31.07.2026 in **0 von 14** Fällen erreichbar, ohne Meldung und ohne roten Test. Der Zug wirkt jetzt nach der Rechnung, in jeder Zelle, und fließt durch die **Beitragszeile** der auslösenden Speiche — die zweite Tabelle, die je Speiche eine Größe nannte, entfällt. Neu: das Kriterium, **wer** ziehen darf (*abwenden ja, zuwenden nein* — sieben von zwölf, mit `wissbegier` als begründeter Ausnahme), die **Kurve** statt eines Sprungs (0,8 → 0 · 0,9 → 0,25 · 1,0 → 1), und die **Wegform statt einer Klemme**, weil Kappen die toten Enden erzeugt, die §3.1 verbietet. Der Korridor kennt dadurch nur noch zwei Fälle statt drei: Der Fall *„außerhalb und markiert, gewollt"* kann nicht mehr eintreten. §3.2 ist eingelöst — `misstrauen −0,40` und `wohlwollen +0,40` hoben sich auf `waerme` exakt auf, genau der Fall, den der Absatz verbietet. **Nova verhält sich weiterhin unverändert:** Der Prompt-Block (§3) fehlt nach wie vor, der Umbau betrifft die gerechneten und protokollierten Zahlen.

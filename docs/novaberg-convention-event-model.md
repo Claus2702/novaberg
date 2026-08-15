@@ -100,7 +100,7 @@ Jedes Event ist ein JSON-Dict:
 | Erzeuger | `source` | `typ` | Anlass |
 |---|---|---|---|
 | `api/chat.py` (sync + stream) | `user` | `message` | Der Nutzer hat geschrieben. Payload traegt `turn_id` und die neun EI-Dimensionen aus `external.emotion`. |
-| `services/shadow_delivery.py` | `character` | `message` | **Neu Chat 110, geaendert am 15.08.2026.** Ein Pixie-Impuls: das Wissensstueck steht in **`eigener_gedanke`**, dazu `turn_id` und `reiz_herkunft="eigener_impuls"`. ~~das Wissensstueck als `user_prompt`~~ — **`user_prompt` fehlt im Payload ganz**, siehe unten. Das Payload traegt nur, was der Stack-Eintrag wirklich hat — die uebrigen EI-Dimensionen bleiben leer statt plausibel gefuellt. |
+| `services/shadow_delivery.py` | `character` | `message` | **Neu Chat 110, geaendert am 15.08.2026.** Ein Pixie-Impuls: das Wissensstueck steht in **`eigener_gedanke`**, dazu `turn_id`, `reiz_herkunft="eigener_impuls"` und der mitgebrachte Zustand des Gedankens (`gedanke_arousal`, siehe unten). ~~das Wissensstueck als `user_prompt`~~ — **`user_prompt` fehlt im Payload ganz**, siehe unten. Das Payload traegt nur, was der Stack-Eintrag wirklich hat — die uebrigen EI-Dimensionen bleiben leer statt plausibel gefuellt. |
 | `services/event_consumer.py` | `character` | `continue` | Thinker-Selbsttrigger bei Doppel-Fehlschlag. **Erbt** die `turn_id` — es ist derselbe Gedanke, nochmal versucht. |
 
 > **Abwesend, nicht leer — der Reiz-Platz des Impuls-Ereignisses (15.08.2026).** Ein Pixie-Impuls trug den Gedanken bis dahin als `user_prompt`, auf demselben Platz, an dem sonst steht, was der Mensch gesagt hat. Seither hat er einen eigenen: `eigener_gedanke`. **`user_prompt` wird im Payload nicht gesetzt** — weder gefuellt noch leer.
@@ -118,6 +118,12 @@ Jedes Event ist ein JSON-Dict:
 Der Anlass steht in `novaberg-bugs.md` → `ANTWORT-OHNE-ZUORDNUNG`: Ohne die Zuordnung ordnet der Client der letzten Nachricht zu, was ankommt. Solange jeder Turn antwortet, stimmt das; faellt einer aus, verschiebt sich alles um eins.
 
 **`reiz_herkunft`.** Markiert einen Reiz, den Nova sich selbst erarbeitet hat. Gelesen vom Responder (Block `[EIGENER GEDANKE]`) und vom Event-Consumer, der das Feld ins `character_response`-Payload weiterreicht, damit der Client den Impuls einfaerben kann. Fehlt das Feld, gilt der Reiz als fremd.
+
+**`gedanke_arousal` (15.08.2026).** Die Erregung, in der der Gedanke gefasst wurde — sie **hebt** Novas Zustand beim Einwurf, wenn sie hoeher liegt als der geladene Wert. Der Wert stammt aus dem Stapel-Eintrag und wird im Zugriffsknoten angewandt; gelesen wird er ueber `reiz_level()` aus `graph/reiz.py`, dem einzigen Zugang.
+
+**Das Feld steht immer im Payload, auch leer** — anders als der Reiz-Platz oben, und aus einem anderen Grund. Beim Reiz-Platz sagt die Abwesenheit *„niemand hat gesprochen"*; hier gaebe es fuer die Abwesenheit **zwei** Lesarten, weil auf dem Stapel Eintraege alter Bauart liegen, die das Feld gar nicht kennen. Ein `None` unterscheidet den Eintrag, der keinen Level hat, von dem, der noch keinen haben konnte. **Ein Vorgabewert waere hier der teuerste Fehler:** Er saehe wie eine Messung aus und hoebe Novas Zustand auf eine erfundene Zahl.
+
+Die Pruefung liegt an der Eingangsgrenze und nicht am Wirkort: Sorte, Spanne [0,0; 1,0] und der Sonderfall, dass ein `True` in Python eine Eins ist. Ein Wert ausserhalb der Spanne wird **verworfen und gemeldet, nicht gekappt**.
 
 ### 3.2 Event-Typen
 

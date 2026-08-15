@@ -1,6 +1,6 @@
 # Novaberg — Roadmap (Projektchronik)
 
-**Stand:** Chat 141, 15. August 2026
+**Stand:** Chat 142, 15. August 2026
 *(Die Kopfzeile stand bis Chat 109 auf „Chat 93, 21. Mai 2026" — 15 Chats hinter dem Inhalt. **Sie ist danach erneut zurückgefallen:** von Chat 110 bis 114 blieb sie auf „Chat 109" stehen, während der Inhalt weiterwuchs, und wurde in Chat 115 nachgezogen. Wer hier etwas ergänzt, zieht die Kopfzeile mit — sie driftet zuverlässig. Achtung beim Nachschlagen: Nur bis Chat 97 trägt jeder Chat eine eigene `## Chat NNN`-Überschrift; die Chats 98–108 stehen als `###`-Abschnitte unter dem Chat-97-Block, benannt nach Sprint statt nach Chat.)*
 **Pfad:** novaberg/docs/novaberg-roadmap.md
 **Single Source of Truth für abgeschlossene Arbeit.**
@@ -1982,6 +1982,38 @@ Beide Räder haben eine Nabe — den Wert ohne jede Ausprägung — und das Erge
 **Geschlossen:** `Bauteil 3 — Charakter-Räder im Client` (Rest benannt, siehe Backlog)
 
 ---
+
+## Chat 142 (15.08.2026) — Der Gedanke bringt seinen Zustand mit, und die Haltung überlebt den Turn 🔶
+
+**Bauteil B gebaut — das hintere Ende des Kanals aus `novaberg-eigenzeit_k.md` §2.3.** Vorne bediente `stack_push` die Felder seit dem 15.08.; hinten fehlten **beide** Hälften, und die zweite war die stillere: Die Zustellung reichte Emotion, Modus und Thema ins Ereignis, **den Level nicht** — und der Zugriffsknoten hätte ihn ohnehin verworfen, weil `external` auf dem Impuls-Pfad durch eine Kopie von `internal` ersetzt wird.
+
+**Gebaut als Zwilling des Verfalls.** `_level_anheben` steht neben `_zustand_verfallen`, beide im selben Schritt des Zugriffsknotens, beide mit derselben Weiche: Der Verfall greift auf einer Äußerung, das Anheben auf einem Gedanken, **je Turn höchstens eines**. Er **hebt und setzt nicht** — es gilt der höhere von hinterlegtem und geladenem Wert, weil ein Einwurf mitten in ein Gespräch fallen kann und ein Setzen dann beide herauszöge. Gehoben wird allein die Zahl: Ein Maximum über einer Kategorie bedeutet nichts, und der Raum bleibt unberührt, weil ein Gedanke im laufenden Gespräch dessen Raum nimmt.
+
+**Die Prüfung liegt an der Eingangsgrenze, nicht am Wirkort.** `reiz_level()` in `graph/reiz.py` ist der einzige Zugang und prüft Sorte, Spanne [0,0; 1,0] und den Sonderfall, dass ein `True` in Python eine Eins ist — ein durchgelassenes `True` hätte Novas Zustand an den Anschlag gehoben. Ein Wert außerhalb der Spanne wird **verworfen und gemeldet, nicht gekappt**.
+
+**Und dann hat die Messung den Bauteil relativiert, bevor er wirken konnte.** Über den gesamten Stapel-Bestand: **kein einziger Eintrag trägt einen Level.** Der Grund steht in der Tabelle, nicht im Code — `shadow_auftrag` führt `emotion` und `modus`, aber **keine Spalte für die Erregung**; die Recherche kann nicht durchreichen, was sie nie bekommt. Einen Wert trägt allein das Nachfragen, das ihn direkt vom auslösenden Turn liest: 45 von 1036 Aufträgen. Der Bauteil ist gebaut, bezeugt und wirkungslos bis zum ersten zugestellten Nachfragen-Eintrag.
+
+**Daraus die Bauart der Protokollzeile:** Sie steht **auch dann, wenn nichts hinterlegt war** (`wirkung: kein_level`). Ohne sie wäre *„kein Level im Bestand"* von *„der Bauteil läuft nicht"* nicht zu unterscheiden — dieselbe Verwechslung, die in diesem Projekt sechsmal im Defektregister steht. Ob die Queue eine Spalte für die Erregung bekommt, ist **nicht nebenbei entschieden worden**: Dahinter steht die inhaltliche Frage, ob der Stand, in dem ein *Auftrag* entstand, überhaupt der Stand ist, in dem der *Gedanke* gefasst wurde — bei der Recherche liegen Minuten bis Tage dazwischen.
+
+**Zwei Gegenproben, beide vorhergesagt und beide getroffen.** Das Anheben entfernt: 3 von 20 rot, und die Zusicherungen *senkt nicht* und *kein Level* blieben grün. Das Payload-Feld der Zustellung entfernt: 3 von 3 Nahtzeugen rot. Die zweite gibt es nur wegen des Vortages — ein Zeuge auf die Funktion prüft nicht die Verdrahtung.
+
+**Beim Nachzug gefunden: Das Moduldokument des Zugriffsknotens kannte den Eigenzeit-Verfall nicht.** Bauteil A ist am 15.08. gebaut und in Konzept, Register und Zeugen nachgezogen worden — `novaberg-node-db-zugriff.md` beschrieb Schritt 2 weiterhin als reines Laden. Dieselbe Klasse, die der Vortag zweimal traf: **Der Nachzug folgt der Karte des Baus**, und das Moduldokument lag quer dazu. Schritt 2 trägt jetzt beide Bewegungen.
+
+**Keine Änderung an der Signatur ohne Aufrufstelle.** `_nova_zustand_laden` bekam den Level als dritten Parameter **ohne Vorgabewert**; die beiden Aufrufe im Bestandszeugen sind nachgezogen. Ein Vorgabewert wäre an der Aufrufstelle unsichtbar — genau die stille Null, die am Vortag 233 Aufträge getroffen hat.
+
+### Die Haltung überlebt den Turn — die Voraussetzung von Bauteil D
+
+**Die Haltung stand nur im Zustand des Durchlaufs.** Der Zuwendungs-Riegel entscheidet, **ob** Nova von sich aus zugeht, und er läuft im Zustelldienst — außerhalb des Graphen, für den er den Wert braucht. Der `haltungsraum`-Knoten schreibt ihn jetzt nach `haltung:{user_id}:{character_id}`.
+
+**Das ist kein Bruch mit „kein Redis-Blob", sondern dessen Folge.** Der Satz aus `novaberg-haltungsraum_k.md` §2.0a begründet sich selbst damit, dass ein überschriebener Schlüssel den **Zustand** trägt statt des Verlaufs — und genau der Zustand wird gebraucht. Zwei Speicher, zwei Gegenstände: die Reihe bleibt unberührt im `pipeline_log`, der Stand beantwortet *wie steht sie gerade zu ihm*.
+
+**Die Bauart ist aus einem bekannten Defekt abgeleitet, nicht erfunden.** Der `gv_detail`-Weg hinterlässt bei einem übersprungenen Turn den Vorstand ohne Kennzeichnung — seit Chat 116 in der Fundliste. Ein Riegel darauf entschiede nach der Lage von vorgestern, und niemand sähe es. Daraus drei Regeln: **jeder Turn schreibt**, auch der ohne Rechnung, mit Marke und Grund; **jeder Schreibvorgang setzt jedes Feld**, weil eine Teilmenge die Zahlen des vorigen Turns stehen ließe; und *nie gerechnet* / *diesmal nicht* / *defekt* liegen **nicht auf einem Ergebnis**. Kein TTL, das Alter reist mit.
+
+**Und der neue Schreibvorgang hat die Suite zum Schreiber im laufenden System gemacht.** Nach dem ersten Lauf stand unter `haltung:meister:nova` ein Stand mit `turn_id = "t"` — dem Testwert von `test_haltung_knoten.py`; `redis_client` ist ein Modulwert, und wer ihn nicht ersetzt, schreibt in die Produktion. **Der erste Anlauf reichte nicht:** Die Ersetzung im Rad-Kontext ließ einen Aufruf durch, der seinen eigenen Patch setzt. Gefunden hat das keine Überlegung, sondern die Messung — Schlüssel löschen, Suite fahren, nachsehen. Sie steht jetzt in `setUpModule`, wo jeder Lauf der Datei sie passiert, auch ein künftiger. Zweite Klasse desselben Musters innerhalb von zwei Tagen, nach `SUITE-HAENGT-AM-AKTIVEN-PAAR`.
+
+**Gegenproben:** Ausfall-Zweig ausgeklinkt **3 von 11** rot, Erfolgs-Zweig ausgeklinkt **6 von 11** — beide Mengen vorher benannt und beide getroffen.
+
+Suite 1404 → 1424 → **1435 grün, 0 übersprungen.**
 
 ## Chat 141 (15.08.2026) — Die Queue zieht um, und ein Gedanke verfällt, statt gelöscht zu werden ✅
 

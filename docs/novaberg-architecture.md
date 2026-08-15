@@ -311,6 +311,7 @@ project/
 │   │   ├── lzg.py                       #   Langzeitgedaechtnis (PostgreSQL, Ebbinghaus)
 │   │   ├── pipeline_log.py              #   Forensik-Sink (Synapsen P1, asynchroner Writer-Task)
 │   │   ├── charakter.py                 #   Charakter-Hash (Read)
+│   │   ├── haltung.py                   #   Haltungsstand je Paar (Zustand, nicht Verlauf)
 │   │   ├── session.py                   #   Session (_session_key mit character_id, Chat 60)
 │   │   ├── kontext.py                   #   Session-Kontext-Extraktion (LLM-gestuetzt)
 │   │   ├── repositories/                #   Daten-Repositories (CRUD gegen PostgreSQL)

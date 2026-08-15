@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Pipeline-Node `db_zugriff` (Eingangsnode des CharacterGraphs)
-**Stand:** 30. Juli 2026, Chat 118 (Zerlegung in Orchestrator + zwölf Helfer; Verhalten unverändert)
+**Stand:** 15. August 2026 (Schritt 2 trägt die beiden Bewegungen der Eigenzeit — Verfall und Anheben; davor: 30. Juli 2026, Chat 118, Zerlegung in Orchestrator und zwölf Helfer)
 **Pfad:** novaberg/docs/novaberg-node-db-zugriff.md
 **Quellen:** novaberg-path2-perzeption_k.md (archiviert)
 **Datei:** `graph/nodes/db_zugriff.py`
@@ -46,6 +46,7 @@ Bis Chat 118 stand alles Folgende im Rumpf von `db_zugriff()` — 333 Zeilen, el
 | `_kopf_eroeffnen`, `_lesevorgang`, `_zweig_protokollieren` | Pipeline-Log (§5) |
 | `_emotion_aus_payload` | Schritt 1 |
 | `_emotion_aus_nova_state`, `_raum_aus_nova_state`, `_raum_aus_labels`, `_nova_zustand_laden` | Schritt 2 |
+| `_pause_bestimmen`, `_zustand_verfallen`, `_level_anheben` | Schritt 2, die beiden Bewegungen (15.08.2026) |
 | `_character_aus_hash`, `_charaktere_laden` | Schritt 3 |
 | `_identities_laden`, `_directives_laden` | Schritt 4 |
 | `_external_bestimmen` | Personality-Zusammenbau (§4) |
@@ -120,6 +121,31 @@ emotion=neugierig, arousal=0.5, raum=(0.90, 0.45) [aus Labels abgeleitet]
 ```
 
 Unlesbare Werte im Hash (kein `float`) sind kein Leerfall, sondern ein Defekt: `logger.error`, danach dieselbe Ableitung. Ein stiller Default wäre hier besonders teuer, weil zwei der sechs Gesprächsachsen darauf stehen.
+
+#### Der geladene Zustand ist der von damals — zwei Bewegungen richten ihn aus
+
+Was in Redis steht, ist der Stand am Ende des letzten Durchlaufs. Was für **diesen** Turn gilt, hängt daran, was ihn ausgelöst hat. Der Schritt kennt deshalb zwei Bewegungen, und **je Turn greift höchstens eine**:
+
+| Bewegung | greift bei | Funktion | Richtung |
+|---|---|---|---|
+| **Verfall** | einer Nutzeräußerung | `_zustand_verfallen` | senkt über das Intervall seit der vorigen Äußerung |
+| **Anheben** | einem eigenen Gedanken | `_level_anheben` | hebt auf den Stand, in dem der Gedanke gefasst wurde |
+
+Beide sitzen hier und nicht in einem Hintergrundlauf: Sie werden vom **Reiz** ausgelöst, nicht von einer Uhr. Ein Verfall, der immer liefe, machte aus jeder Ruhephase einen Rückbau.
+
+**Der Verfall (Bauteil A, 15.08.2026).** Die Pause kommt aus `nutzer_zeit` im Hash — einer Uhr, die **nur** eine Nutzeräußerung stellt; `turn_zeit` läuft daneben bei jedem Turn. Liefe der Verfall auf `turn_zeit`, setzte der stündliche Impuls sie zurück und die Nacht wäre nie eine Pause. Gedämpft wird das Flüchtige: die Erregung als Zahl zur Ruhelage hin, die Kategorien durch **Sprung** auf ihren Neutralwert unterhalb des Halbwerts. Nähe, Tiefe und Beziehungsdynamik bleiben unberührt — sie tragen die Bindung, nicht die Energie. Ein fehlender Zeitstempel heißt **unbekannt** und nicht „keine Pause"; ein unlesbarer ist ein Defekt und meldet sich.
+
+**Das Anheben (Bauteil B, 15.08.2026).** Der Level kommt aus dem Ereignis, gelesen über `reiz_level()` aus `graph/reiz.py` — dem einzigen Zugang, der auch die Prüfung trägt (Sorte, Spanne [0,0; 1,0], und dass ein `True` keine Erregung ist). Er **hebt und setzt nicht**: Es gilt der höhere von hinterlegtem und geladenem Wert, weil ein Einwurf auch mitten in ein Gespräch fallen kann und ein Setzen dann beide herauszöge. **Ein leerer Level ändert nichts** — kein Vorgabewert, keine Null. Gehoben wird allein die Zahl; ein Maximum über einer Kategorie bedeutet nichts.
+
+Beide schreiben eine Berechnungszeile ins `pipeline_log`. Die des Anhebens steht **auch dann, wenn nichts hinterlegt war** (`wirkung: kein_level`): Wie oft ein Gedanke überhaupt einen Stand mitbringt, ist die Messgröße des Bauteils, und ohne die Zeile wäre „kein Level im Bestand" von „der Bauteil läuft nicht" nicht zu unterscheiden.
+
+```
+db_zugriff: Eigenzeit-Verfall — Pause 14425 s, Faktor 0.00,
+            Erregung 0.90 → 0.50, Kategorien gesprungen
+db_zugriff: Gedanken-Level — hinterlegt 0.85, Erregung 0.30 → 0.85 (gehoben)
+```
+
+Konzept: `novaberg-eigenzeit_k.md` §2.2 und §2.3.
 
 **Persistiert wird durch:** den `ei_calc_persist`-Node am Ende desselben Graphen-Laufs. Siehe `novaberg-node-ei-calc-persist.md`.
 

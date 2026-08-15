@@ -2,10 +2,10 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Konzept — Novas Zustand zwischen den Begegnungen, ob sie zugeht und in welchem Zustand sie ihrem Menschen begegnet
-**Stand:** 14. August 2026 (v0.12)
+**Stand:** 15. August 2026 (v0.13)
 **Pfad:** novaberg/docs/novaberg-eigenzeit_k.md
 **Typ:** Konzept (`_k`)
-**Status:** 🔶 Konzept — **Bauteil E gebaut**, die übrigen fünf nicht
+**Status:** 🔶 Konzept — **fünf der sechs Bauteile gebaut** (E, F, C, A, B); **D fehlt** und ist ohne die Haltungs-Persistenz nicht baubar. C trägt eine benannte offene Kante (der Fall ohne Bezug), B wartet auf seinen ersten Eintrag mit Level.
 **Berührt:** `graph/nodes/db_zugriff.py` · `graph/nodes/verfasser.py` · `graph/nodes/responder.py` · `agents/recherche/destillation.py` · `graph/nodes/haltung.py` · `services/shadow_delivery.py` · `services/pixie/stack.py` · `memory/session.py`
 **Nachbarn:** `novaberg-pixie-nachfragen_k.md` §3 (der Zustellungsfilter) · `novaberg-gedankenkette_k.md` (zusammenhängende Einwürfe) · `novaberg-haltungsraum_k.md` (woraus die Regie entsteht)
 
@@ -121,7 +121,11 @@ Der Grund für die rechte Spalte: Wer morgens hereinkommt, soll eine ruhige Nova
 
 Gemessen am selben Tag über 1028 Queue-Aufträge: Die Werte lagen dort seit jeher und streuen — `emotion` in sechs Ausprägungen ohne eine einzige Lücke, `modus` in sechs mit 141 leeren. Sie kamen nur nie an; der Stapel-Bestand trug bei allen 86 Einträgen ausschließlich das Embedding.
 
-**Das hintere Ende steht weiterhin aus:** Der Zugriffsknoten verwirft den mitgereichten Zustand auf dem Impuls-Pfad nach wie vor. Das ist Bauteil B, und es ist jetzt baubar — der Kanal hat einen Erzeuger.
+~~**Das hintere Ende steht weiterhin aus:** Der Zugriffsknoten verwirft den mitgereichten Zustand auf dem Impuls-Pfad nach wie vor.~~ → **Am 15.08.2026 geschlossen.** Die Zustellung reicht den Wert als `gedanke_arousal` ins Ereignis, `graph/reiz.py` liest ihn als einziger Zugang, und der Zugriffsknoten hebt damit Novas Erregung — das Gegenstück zum Verfall, je Turn greift höchstens eines von beiden. Das ist Bauteil B (§5.2).
+
+**Der Kanal hat damit an beiden Enden einen Anschluss und trotzdem noch keinen Verkehr.** Gemessen am 15.08.2026 über den gesamten Stapel-Bestand: **kein einziger Eintrag trägt einen Level.** Der Grund steht in der Tabelle und nicht im Code — `shadow_auftrag` führt `emotion` und `modus`, aber **keine Spalte für die Erregung**. Die Recherche kann also nichts durchreichen, was sie nicht bekommt; einen Wert trägt allein das Nachfragen, das ihn direkt vom auslösenden Turn liest (45 von 1036 Aufträgen).
+
+Ob die Queue die Erregung mitführen soll, ist **hier nicht entschieden** — es wäre eine Spalte und damit eine Schemaänderung. Bis dahin gilt: Der Bauteil ist gebaut, bezeugt und wirkt an dem Tag, an dem der erste Nachfragen-Eintrag zugestellt wird.
 
 **Die Wiedervorlage bleibt ohne Werte, und das ist kein Versäumnis.** Ihr Anlass ist ein Timeline-Eintrag; die Tabelle führt weder Salienz noch Emotion, Modus oder Erregung. Was sie führt — `binding`, `recurring`, `remind` —, wäre erst über eine Abbildung ein Level, und die ist eine Absicht und keine Implementierungsfrage. Sie ist hier ausdrücklich **nicht** entschieden.
 
@@ -226,7 +230,9 @@ Die Riegel 3, 6 und 7 bestehen bereits. Neu sind 1, 2, 4 und die Schwelle in 5.
 
 **Die maßgebliche Größe ist die Haltung, nicht die Lage-Achse.** Die Nähe-Achse der Landschaft beschreibt den Moment; sie steht in jedem Turn zur Verfügung und wäre der billige Weg. Sie ist aber der falsche: Eine dauerhaft distanzierte Figur dürfte dann einwerfen, sobald die Landschaft zufällig warm ist. Was gebraucht wird, ist die Größe, die **Landschaft und Charakterrad verrechnet** — dieselbe, aus der die Regie entsteht.
 
-**Voraussetzung: Die Haltung muss den Turn überleben.** Sie steht heute nur im Zustand des Durchlaufs; ein Hintergrunddienst außerhalb des Graphen kann sie nicht sehen. Ohne diese Persistenz ist §2.5 nicht baubar — und mit der Lage-Achse ersatzweise gebaut wäre er eine Zusicherung, die ihren Gegenstand verfehlt.
+~~**Voraussetzung: Die Haltung muss den Turn überleben.** Sie steht heute nur im Zustand des Durchlaufs; ein Hintergrunddienst außerhalb des Graphen kann sie nicht sehen.~~ → **Am 15.08.2026 eingelöst.** Der `haltungsraum`-Knoten schreibt den Stand nach `haltung:{user_id}:{character_id}`; die Bauart und ihre Begründung stehen in `novaberg-haltungsraum_k.md` §2.0a. Zwei Eigenschaften sind für den Riegel wesentlich: **Ein Turn ohne Rechnung überschreibt den Stand mit einer Marke**, statt den alten stehen zu lassen — sonst entschiede der Riegel nach der Lage von vorgestern —, und **das Alter reist mit**, damit er selbst beurteilen kann, ob ein Stand von gestern trägt.
+
+Ohne diese Persistenz war §2.5 nicht baubar — und mit der Lage-Achse ersatzweise gebaut wäre er eine Zusicherung, die ihren Gegenstand verfehlt.
 
 **Das Vorzeichen des Führungsmaßes gehört in die Bauart, nicht ins Gedächtnis.** Es misst, wie stark **der Mensch** führt: hoch heißt, er treibt; niedrig heißt, sie treibt. Wer es als „ihr Antrieb" liest, baut den Riegel verkehrt herum ein — und der Fehler wäre still, weil beide Richtungen plausible Zahlen liefern.
 
@@ -426,12 +432,35 @@ steckten.
 
 ### 5.2 Bauteil B — der Level, den ein Gedanke mitträgt
 
+**Stand 15.08.2026: gebaut, und ohne Wirkung auf dem heutigen Bestand.** Die
+Zustellung reicht den Wert des Stapel-Eintrags als `gedanke_arousal` ins
+Ereignis — **immer, auch leer**, weil ein weggelassenes Feld von einem Eintrag
+alter Bauart nicht zu unterscheiden wäre. `graph/reiz.py` ist der einzige
+Zugang und prüft dort, wo der Wert das System betritt: Sorte, Spanne und die
+Falle, dass `True` in Python eine Eins ist. Ein Wert außerhalb von [0,0; 1,0]
+wird **verworfen und gemeldet, nicht gekappt**. Der Zugriffsknoten hebt damit
+die Erregung per Maximum; `_level_anheben` steht neben `_zustand_verfallen`
+und beide haben dieselbe Weiche: der Verfall greift auf einer Äußerung, das
+Anheben auf einem Gedanken.
+
+**Drei Größen bleiben ausdrücklich unberührt.** Die Kategorien, weil ein
+Maximum über ihnen nichts bedeutet. Der Raum, weil ein Gedanke im laufenden
+Gespräch dessen Raum nimmt und nicht seine alte Lage mitbringt (§2.4). Und die
+Bindung, aus demselben Grund wie beim Verfall.
+
+**Die Wirkung ist heute null, und das ist messbar und nicht vermutet:** Kein
+Eintrag des Stapels trägt einen Level (§2.3). Die Protokollzeile steht deshalb
+auch dann, wenn nichts hinterlegt war — mit `wirkung: kein_level`. Ohne sie
+wäre *„kein Level im Bestand"* von *„der Bauteil läuft nicht"* nicht zu
+unterscheiden, und genau diese Verwechslung steht in diesem Projekt sechsmal
+im Defektregister.
+
 | Zeile | Inhalt |
 |---|---|
 | **ZIEL** | Ein Einwurf hebt Novas Zustand auf den Stand, in dem der Gedanke gefasst wurde — per Maximum, und nur, wenn ein Stand hinterlegt ist. |
 | **TEST** | Ein Stapel-Eintrag mit hinterlegter Erregung hebt einen niedrigeren Zustand; derselbe Eintrag senkt einen höheren **nicht**; ein Eintrag ohne hinterlegten Stand lässt den Zustand unverändert. |
-| **MESSUNG** | Ein echter Einwurf nach einer Pause: der Zustand vor und nach dem Impuls-Turn, gegen den hinterlegten Wert des Eintrags. |
-| **Gegenprobe** | Das Anheben entfernen: Der Test zum Heben wird rot, die beiden anderen bleiben grün. |
+| **MESSUNG** | Ein echter Einwurf nach einer Pause: der Zustand vor und nach dem Impuls-Turn, gegen den hinterlegten Wert des Eintrags. **Steht aus** — sie braucht einen Stapel-Eintrag mit Level, und am 15.08.2026 trug keiner einen. |
+| **Gegenprobe** | Das Anheben entfernen: Der Test zum Heben wird rot, die beiden anderen bleiben grün. **Gefahren am 15.08.2026: 3 von 20 rot** — die beiden Zusicherungen *senkt nicht* und *kein Level* blieben grün, wie vorhergesagt. Dazu die zweite Gegenprobe auf die Naht — das Feld aus dem Payload der Zustellung entfernt: 3 von 3 Nahtzeugen rot. |
 
 ### 5.3 Bauteil C — das Tor
 
@@ -449,7 +478,14 @@ steckten.
 
 ### 5.4 Bauteil D — der Rad-Riegel
 
-**Voraussetzung:** Die Haltung überlebt den Turn (§2.5). Ohne sie ist D nicht baubar.
+~~**Voraussetzung:** Die Haltung überlebt den Turn (§2.5). Ohne sie ist D nicht baubar.~~ → **Am 15.08.2026 erfüllt.** Der Stand liegt unter `haltung:{user_id}:{character_id}` und ist von außerhalb des Graphen lesbar (`memory/haltung.py`).
+
+**Was jetzt noch fehlt, sind zwei Dinge, und nur eines davon ist Bauarbeit:**
+
+1. **Die Prüffigur bei `distanz 0,90`** (`novaberg-backlog.md` → `PRUEFFIGUR-DISTANZ-090`). Ohne sie ist die Trennung bei 0,25 nicht widerlegt, aber auch nicht belegt (§6).
+2. **Die Frequenz-Schwelle des Führungsmaßes** für Riegel 2. Sie ist unentschieden, und mit ihr steht und fällt das Fallen der stündlichen Decke: Fällt die Decke, trägt Riegel 2 allein die Häufigkeit.
+
+**Riegel 1 ist davon unabhängig baubar** — er entscheidet das *Ob*, nicht die Häufigkeit. Was er ohne Riegel 2 nicht darf, ist die Decke ablösen.
 
 | Zeile | Inhalt |
 |---|---|
@@ -526,12 +562,14 @@ Und die Antwort daraus: *„Weißt du, ich muss ständig an diese 43 Bogensekund
 - ~~**Die Schwellen des Rad-Riegels sind ungesetzt.**~~ → **Die Zuwendungs-Schwelle steht bei 0,25** (§2.5, gerechnet). **Offen bleibt die Frequenz-Schwelle** des Führungsmaßes und, wichtiger, die Lücke im Bestand: In der Richtung *sie → Mensch* gibt es keine Figur zwischen `distanz` 0,60 und 1,00 — genau das Band, in dem der Zug schwach wird. Solange dort keine Figur steht, ist die saubere Trennung nicht bewiesen, sondern nur nicht widerlegt. Eine angelegte Prüffigur bei 0,90 würde es entscheiden.
 - **Wonach wird gewählt, wenn kein Bezug vorliegt?** Ohne Äußerung des Menschen gibt es keinen Themenwert und damit keine Rangfolge. Der älteste Eintrag, der jüngste, der salienteste, der zu ihrem eigenen letzten Gedanken passendste — das ist unentschieden und betrifft den **häufigsten** Fall, nicht den Rand: Gemessen am 14.08.2026 lagen 39 von 56 Impulsen in dieser Lage. Der letzte Kandidat hätte einen Reiz und zugleich einen Haken: Er führte ihr eigenes Thema fort, ohne dass jemand widerspricht.
 - ~~**Darf sie ein Thema anfangen, über das noch nie geredet wurde?**~~ → **Entschieden am 14.08.2026: ja, unter einer Bedingung.** Ein neues Thema darf kommen, aber **als Anriss und nicht als Aufsatz** — der Fund in ein, zwei Sätzen, benannt statt entfaltet. Ob es weitergeht, entscheidet danach die nächste Äußerung des Menschen. Das Tor 5 aus §2.5 gilt für einen Anriss **nicht**: Er wird nicht am laufenden Thema gemessen, weil er keines fortsetzt; ihn halten die Riegel 1 bis 4. Die Ausarbeitung steht in `novaberg-gedankenkette_k.md` §6a — sie ist der Ort dafür, weil ein eingeführtes Thema über mehrere Turns läuft und dieses Konzept nur den Eintritt regelt.
+- **Trägt die Queue die Erregung?** `shadow_auftrag` führt `emotion` und `modus` des auslösenden Turns, aber **keine Spalte für die Erregung** — und damit kann die Recherche keinen Level auf den Stapel legen. Gemessen am 15.08.2026: kein Eintrag des Bestands trägt einen. Bauteil B ist dadurch gebaut und wirkungslos, bis ein Nachfragen-Eintrag zugestellt wird (45 von 1036 Aufträgen). Eine Spalte wäre eine Schemaänderung und ist hier nicht entschieden; die Frage lautet, ob der Stand, in dem ein *Auftrag* entstand, überhaupt der Stand ist, in dem der *Gedanke* gefasst wurde — zwischen beiden liegen bei der Recherche Minuten bis Tage.
 - **Ob das Führungsmaß überhaupt trennt.** Es geht heute als **ein Bit** in die Lagezeile ein, und die zehn Speichen des Initiative-Rades gehen in keinen Haltungswert ein. Ob der Rohwert über die Paare hinweg genug streut, um eine Frequenz zu tragen, ist unbelegt.
 
 ---
 
 ## Versionshistorie
 
+- **v0.13 — 15.08.2026:** **Bauteil B ist gebaut** — der Kanal aus §2.3 hat jetzt an beiden Enden einen Anschluss. Die Zustellung reicht den Level ins Ereignis, `graph/reiz.py` prüft ihn an der Eingangsgrenze, der Zugriffsknoten hebt per Maximum. Gegenprobe 3 von 20 rot, die zweite auf die Naht 3 von 3. **Und derselbe Zug hat die Grenze des Bauteils gemessen statt sie zu vermuten:** Kein Eintrag des Stapel-Bestands trägt einen Level, weil `shadow_auftrag` **keine Spalte für die Erregung** hat — die Recherche kann nicht durchreichen, was sie nie bekommt. Der Bauteil ist damit gebaut und wirkungslos bis zum ersten Nachfragen-Eintrag; die Protokollzeile steht auch bei `wirkung: kein_level`, damit „kein Level im Bestand" von „läuft nicht" unterscheidbar bleibt. Die Spaltenfrage steht als offener Punkt in §6 und ist **nicht** nebenbei entschieden worden.
 - **v0.12 - 14.08.2026:** §1 um eine **turngenaue** Messung erweitert (21:21 bis 22:04 UTC). Sie zeigt den Weg statt des Zustands: Ein Einwurf mit 5,96 % hebt ihre Antwort auf 8,40 %, und neun Minuten später kommt die Äußerung des Menschen mit **10,99 %** zurück — **er hat das Vokabular des Einwurfs übernommen.** Der Gedanke findet damit einen zweiten Weg in sie, nicht nur über den Verlauf. Dazu der Gegenversuch auf die Sekunde: Ein Tonlagenwechsel mit 26 Zeichen bringt sie von 1467 auf 474 Zeichen und auf null Prozent — **neunzig Sekunden später zieht ein Einwurf sie wieder hoch.** Vier ungebaute Bauteile stehen in diesem einen Turnpaar.
 - **v0.11 - 14.08.2026:** **Bauteil F gebaut, und die Messung hat seine Adresse gedreht.** §2.6 markiert widerlegt: Nicht die Recherche spricht in Novas Person (1 von 87), sondern die **Wiedervorlage** (20 von 20) - der Sprecher stand im Auftrag, nicht im Ergebnis. Der Auftrag der Recherche-Destillation traegt jetzt keinen Identitaets-, Empfaenger- und Stilblock mehr, dafuer einen **Raum von 600 bis 1200 Zeichen** mit drei Bewegungen als Gestalt und eine Pruefbedingung von aussen. **Der Raum wird zugesprochen, nicht begrenzt** - dieselbe Zahl in der anderen Richtung. Der MESSUNG-Wert steht jetzt auf dem gemessenen Bestand: Median 1748 statt der genannten 2100.
 - **v0.10 — 14.08.2026:** §3.6 umgesetzt — beide Herkunftsblöcke tragen Führung statt Verbot. `[gemessen]` 20:30 UTC mit prohibitionsfreiem Prompt: Die Zuschreibung bleibt auf Person A, **ohne dass ein Verbot sie hält** — die Struktur trägt sie. Und die Führung hat etwas hinzugefügt, was ein Verbot nie erzeugen könnte: Sie wendet sich ihm zu und fragt ihn. Mit der Einschränkung, dass zwei Turns keine Reihe sind und nicht kontrolliert verglichen wurden.

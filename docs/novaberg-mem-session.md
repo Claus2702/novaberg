@@ -25,7 +25,8 @@ Das Session-Gedächtnis ist Novas Arbeitsgedächtnis für das laufende Gespräch
 |-----|-----|-----|-------------|
 | `session:{user_id}:{character_id}:turns` | List | 14400s (4h) | Geordnete Liste aller Turns |
 | `session:{user_id}:{character_id}:summary` | String | 14400s (4h) | Zusammenfassung älterer Turns |
-| `nova_state:{user_id}:{character_id}` | Hash | kein TTL | Persistierter Nova-Zustand: neun EI-Dimensionen (Chat 89) + `raum_tiefe`/`raum_naehe` (Chat 114) |
+| `nova_state:{user_id}:{character_id}` | Hash | kein TTL | Persistierter Nova-Zustand: neun EI-Dimensionen (Chat 89) + `raum_tiefe`/`raum_naehe` (Chat 114) + die beiden Uhren der Eigenzeit `turn_zeit`/`nutzer_zeit` (15.08.2026) |
+| `haltung:{user_id}:{character_id}` | Hash | kein TTL | Der zuletzt gerechnete **Haltungsstand** (15.08.2026): die fünf Verhaltensgrößen, `cluster`, `turn_id`, `zeit`, dazu die Marke `gerechnet` und ein `grund`. Geschrieben vom `haltungsraum`-Knoten, **auch wenn er nichts rechnen konnte** — sonst bliebe der Vorstand ohne Kennzeichnung stehen. Verwaltet in `memory/haltung.py` |
 
 Seit Chat 60: Session-Key enthält `character_id`. Die Session repräsentiert das Gespräch zwischen einem bestimmten User und einem bestimmten Charakter (z.B. `session:meister:nova:turns`). Helfer: `_session_key(user_id, character_id, suffix)`.
 

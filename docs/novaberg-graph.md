@@ -279,7 +279,7 @@ Das State-Dict durchlaeuft alle Nodes. Jeder Node liest was er braucht und schre
 
 > **Die beiden Reiz-Plaetze schliessen einander aus (seit 15.08.2026).** Genau eines von `user_prompt` und `eigener_gedanke` ist belegt, und **`event_payload["reiz_herkunft"]` benennt, welches**. Der Marker ist noetig, weil `event_source == "character"` allein nicht genuegt: Der Thinker-Retry traegt dieselbe Quelle und wiederholt dabei eine echte Nutzer-Aeusserung.
 >
-> **Kein Node liest die beiden Felder direkt.** Wer den Reiz dieses Durchlaufs braucht, gleich von wem er stammt, ruft `reiz_text(state)` aus `graph/reiz.py`; wer die Herkunft braucht, `reiz_ist_eigener_gedanke(state)`. **Es gibt keinen Rueckfall vom einen Platz auf den anderen** — ein Impuls ohne Gedanken ist ein Defekt und soll wie einer aussehen, statt als Turn zu laufen, der den falschen Text bewertet.
+> **Kein Node liest die beiden Felder direkt.** Wer den Reiz dieses Durchlaufs braucht, gleich von wem er stammt, ruft `reiz_text(state)` aus `graph/reiz.py`; wer die Herkunft braucht, `reiz_ist_eigener_gedanke(state)`; wer den **Zustand** braucht, in dem der Gedanke gefasst wurde, `reiz_level(state)` — seit dem 15.08.2026, gelesen vom Zugriffsknoten, der Novas Erregung damit hebt. **Es gibt keinen Rueckfall vom einen Platz auf den anderen** — ein Impuls ohne Gedanken ist ein Defekt und soll wie einer aussehen, statt als Turn zu laufen, der den falschen Text bewertet.
 
 ### 4.1a Event- und Rollen-Flags (Chat 60/62)
 
