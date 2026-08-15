@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Modul Session-Gedächtnis
-**Stand:** 17. Mai 2026, Chat 90 (PFAD2-PERZEPTION-FIX abgeschlossen, HumanGraph-Slimming Phase 4)
+**Stand:** 15. August 2026 (Schlüssel `haltung:{user_id}:{character_id}`, dazu die beiden Uhren der Eigenzeit in `nova_state`); davor 17. Mai 2026, Chat 90 (PFAD2-PERZEPTION-FIX abgeschlossen, HumanGraph-Slimming Phase 4)
 **Pfad:** novaberg/docs/novaberg-mem-session.md
 **Quellen:** nova-02-m-a.md
 **Datei:** `memory/session.py`

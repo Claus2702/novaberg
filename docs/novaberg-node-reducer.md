@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Pipeline-Node `reducer` (Memory-Konsolidierung im CharacterGraph)
-**Stand:** 12. Juli 2026, Chat 107 (Reducer-Audit: lzg_resonanz-Durchreiche, Summary-Produzent-Korrektur)
+**Stand:** 15. August 2026 (Zeilenzitat auf `thinker.py` durch den Ankernamen ersetzt); davor 12. Juli 2026, Chat 107 (Reducer-Audit: lzg_resonanz-Durchreiche, Summary-Produzent-Korrektur)
 **Pfad:** novaberg/docs/novaberg-node-reducer.md
 **Datei:** `server/graph/nodes/reducer.py` (Wrapper in `server/graph/base.py:215-216`)
 **Formatter:** `server/graph/format/memory_context.py`

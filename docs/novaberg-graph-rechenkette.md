@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Register der Rechensysteme im Charakter-Pfad — was jedes berechnet, woraus, und was es zur Antwort beiträgt
-**Stand:** 8. August 2026, Erstfassung. Alle Aussagen über den Zustand sind **auditiert am Code** vom 08.08.2026, sofern keine andere Herkunft danebensteht.
+**Stand:** 15. August 2026 (S3 trägt die beiden Bewegungen der Eigenzeit); davor 8. August 2026, Erstfassung. Alle Aussagen über den Zustand sind **auditiert am Code** vom 08.08.2026, sofern keine andere Herkunft danebensteht.
 **Pfad:** novaberg/docs/novaberg-graph-rechenkette.md
 **Quellen:** Vollständige Lesung von `graph/character_graph.py`, `graph/nodes/*.py` und `ei/*.py`
 
@@ -527,6 +527,8 @@ Drei Größen wirken **nicht** im Turn, in dem sie entstehen, sondern im nächst
 ---
 
 ## Versionshistorie
+
+- **15.08.2026:** **S3 kannte keine der beiden Bewegungen**, die dort inzwischen sitzen — weder den Eigenzeit-Verfall noch das Anheben durch den mitgebrachten Level. Der Eintrag beschrieb vier Lesevorgänge und den Raum-Cold-Start; beides ist ergänzt, samt der Weiche (je Turn höchstens eines), der Reinheitsangabe für `_zustand_verfallen` und `_level_anheben` und den beiden fehlenden Zeugen im Prüfstand. **Gefunden von der Kandidatenmenge aus der Dateiliste, nicht vom Nachzug:** Das Dokument beschreibt denselben Knoten aus der anderen Richtung und lag damit quer zum gebauten Weg.
 
 - **v0.3 — 08.08.2026:** **S21 und S18 sind ueber ihren vollen Eingaberaum ausgezaehlt** — die beiden reinen Systeme, die nach S5 auf der Liste standen. Bei S21 ein Erreichbarkeits-Befund derselben Bauart wie die vier nie betretenen Landschaften, eine Ebene tiefer: **Laenge 3 belegt 0,51 % des Raums**, die Skala verspricht vier Werte und liefert drei; der groesste Rohwert 3,02 wird von einer einzigen Kombination erreicht. Bei S18 das Gegenteil, und das ist genauso wichtig: **Die Zusicherung haelt.** Die reservierte Null ist ueber 826.200 Zellen ausschliesslich ueber die Krise erreichbar, kein arithmetischer Weg fuehrt dorthin, und der Median von 0,5363 trifft den Docstring-Wert. **Eine Vermutung, die sich nicht bestaetigt, ist ein Ergebnis** — sie stand auf fuenf Personas und gilt jetzt ueber den Raum.
 - **v0.2 — 08.08.2026:** **S5 hat einen Prüfstand, und der erste Test hat zwei Defekte gefunden.** Der Eingaberaum des Emotionsvektors ist geschlossen und wurde vollständig ausgezählt statt beprobt — 1.508.598 Folgen über alle 17 kanonischen Emotionen. Die Naht zu Achse R hält (kein totes Ende in beide Richtungen, R=0 zu R=1 steht bei 65,3 % zu 34,7 % des Raums). Gefunden wurde anderes: Der Intensitätsanstieg war an der **Namensmenge** gemessen statt an der Erregung, und ließ sich deshalb von einer Emotion der Gegengruppe auslösen — bis in den Krisenmarker `spirale` hinein. Und `plateau` trug vier Bedeutungen, darunter „es gab nichts zu messen", ohne Marke. Beides ist gebaut: Die Intensität kommt aus der Erregung (Schwelle **0,10**, abgeleitet aus dem Zehntelraster der liefernden Skala und 769 gemessenen Fenstern), die Grundlage reist als `richtung_quelle` in die Landschaftszeile. Dabei fiel eine dritte Zahl an, die niemand gesucht hatte: In **69,8 %** des Raums und **46,5 %** der Bestands-Turns ist die „dominante Gruppe" gar keine Mehrheit, sondern ein über die letzte Emotion aufgelöster Gleichstand — benannt, nicht behoben. §7 (S20) trägt die neue Marke, §12 zählt ein reines System weniger ohne Test.

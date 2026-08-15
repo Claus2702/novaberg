@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Node-Referenz Thinker
-**Stand:** 24. Juni 2026, Chat 100 (Thinker-Read-Migration auf `lzg_knoten`/`anker_retrieval` + Faktencheck-Formatter, NORMALIZER-CONNECTOR-NOOP-Fix)
+**Stand:** 15. August 2026 (die Retry-Nutzlast rekonstruiert den Reiz vollständig — sie ist der zweite Erzeuger jedes Reiz-Feldes); davor 24. Juni 2026, Chat 100 (Thinker-Read-Migration auf `lzg_knoten`/`anker_retrieval` + Faktencheck-Formatter, NORMALIZER-CONNECTOR-NOOP-Fix)
 **Pfad:** novaberg/docs/novaberg-node-thinker.md
 **Quellen:** nova-01-m-f.md
 **Datei:** `graph/nodes/thinker.py`
