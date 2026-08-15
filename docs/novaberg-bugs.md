@@ -166,7 +166,7 @@ Zeugen in `tests/test_impuls_und_rueckfrage.py`, beide Herkünfte je Riegel. Geg
 
 ---
 
-#### WEBSOCKET-OHNE-KEEPALIVE — die Verbindung stirbt im Leerlauf, und der Client merkt es nie 🔧 offen
+#### WEBSOCKET-OHNE-KEEPALIVE — die Verbindung stirbt im Leerlauf, und der Client merkt es nie ✅ behoben (15.08.2026)
 
 **Symptom.** Der Client zeigt „denkt nach" und bekommt nie eine Antwort. Nachrichten des Nutzers gehen weiter ein und werden vollständig verarbeitet; die Antworten entstehen und werden gespeichert. Zugestellt wird nichts. Der Zustand hält an, bis der Client neu gestartet wird.
 
@@ -179,6 +179,20 @@ Zeugen in `tests/test_impuls_und_rueckfrage.py`, beide Herkünfte je Riegel. Geg
 **Ein zweiter Defekt daneben:** Die Meldung lautet `… fehlgeschlagen für '<Kennung>' (client=…): ` — nach dem Doppelpunkt steht nichts. Die Ausnahme wird protokolliert, ihr Text ist leer, ihr Typ wird nicht genannt. Zweimal an einem Tag, beide Male ohne rekonstruierbaren Grund.
 
 **Nicht zu verwechseln mit `CLIENT-EINGABESPERRE-OHNE-RUECKWEG`** (Chat 124, behoben). Dort hing die Eingabesperre, hier fehlt der Kanal.
+
+**Behoben am 15.08.2026 — und die Ursache oben ist dabei zur Hälfte widerlegt worden.**
+
+Der Eintrag nennt als Ursache das fehlende Keepalive im Client und ordnet den leeren Fehlertext als „zweiten Defekt daneben" ein, *„ohne rekonstruierbaren Grund"*. Beides ist so nicht haltbar:
+
+- **Der leere Text hat einen Grund.** Er stammt von `concurrent.futures.TimeoutError` — `str()` darauf ist die leere Zeichenkette. Die Meldung nennt jetzt den Ausnahmetyp, in beiden Broadcast-Funktionen und im Client.
+- **Der Auslöser saß am Server, nicht am Client.** `broadcast_threadsafe` wartete mit `future.result(timeout=5.0)` auf eine Zustellung, die es in den Haupt-Loop eingestellt hatte, und wertete den Ablauf dieser Frist als Verbindungsfehler. Die Frist misst aber die Auslastung des Loops. Gemessen am 14.08.2026: Der Server verwarf die Verbindung um 22:24:24,992 — der Client protokollierte die **erfolgreiche** Zustellung derselben Nachricht um 22:24:25,015, 23 ms später. Dieselbe Abfolge um 21:19:56 und 22:02:43.
+- **Ein Keepalive allein hätte diese Fälle nicht erfasst.** Der Server nahm die Verbindung aus der Liste, **ohne den Socket zu schließen**. Damit beantwortet die Protokollschicht weiterhin jeden Ping, während die Anwendung den Client nicht mehr kennt — für den Client ist die Leitung nach jedem Maßstab gesund, den er selbst anlegen kann. Am 14./15.08. blieb der Telegram-Client so **elfeinhalb Stunden** angeschlossen und stumm, obwohl er `ping_interval=30` fährt.
+
+**Was gebaut wurde.** Serverseitig: Der Timeout wird eigens gefangen und verwirft nicht mehr; eine wirklich verworfene Verbindung wird geschlossen (`_socket_schliessen`); beide Meldungen nennen den Ausnahmetyp. Clientseitig: `run_forever` fährt `ping_interval=30`/`ping_timeout=10` (`WS_PING_INTERVAL`, `WS_PING_TIMEOUT` in `client/config.py`), und der Thread-Fehler wird mit Typ protokolliert. **Beide Hälften werden gebraucht** — die eine gegen die stumm abgeräumte Leitung, die andere gegen die wirklich gestorbene.
+
+**Gegengemessen am 15.08.2026, 10:31:08 UTC:** `Antwort gesendet per WebSocket (588 Zeichen, 2 Clients)`, und eine Millisekunde später `[meister] Sende an Telegram: …`. Zuvor stand dort an diesem Tag durchgehend `1 Clients`.
+
+**Nicht behoben:** `BROADCAST-VERSCHLUCKT-FEHLER` bleibt offen. `broadcast()` gibt dem Aufrufer weiterhin keinen Rückgabewert; die Zahl in „2 Clients" zählt die Verbindungen in der Liste, nicht die bestätigten Zustellungen.
 
 **Geschlossen, wenn.** Der Client sendet ein Keepalive und erkennt eine halboffene Verbindung selbst; die Fehlermeldung nennt Typ und Text der Ausnahme. Offen bleibt dann noch, ob eine unzustellbare Antwort beim Wiederverbinden nachgereicht wird — das ist eine Entscheidung über das Zustellverhalten und kein Defekt.
 
@@ -2377,7 +2391,7 @@ keine Log-Lüge — das ist eine Funktion, die es unmöglich macht, die Wahrheit
 Jeder Aufrufer, der „gesendet" schreibt, ist ungedeckt — nicht aus Nachlässigkeit,
 sondern weil `broadcast()` ihm die Information vorenthält.
 
-**Beleg:** `api/websocket.py:67-74` — `send_text`-Exception wird pro Verbindung gefangen
+**Beleg:** `api/websocket.py:149-156` (am 15.08.2026 nachgezogen, zuvor `67-74`) — `send_text`-Exception wird pro Verbindung gefangen
 (nur `logger.warning`, kaputte Verbindung entfernt), kein Rückgabewert an den Aufrufer.
 
 **Auswirkung:** Jede Zustellungs-Behauptung stromabwärts (Event-Consumer, Shadow-Delivery)

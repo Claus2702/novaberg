@@ -1,6 +1,6 @@
 # Novaberg — Roadmap (Projektchronik)
 
-**Stand:** Chat 139, 15. August 2026
+**Stand:** Chat 140, 15. August 2026
 *(Die Kopfzeile stand bis Chat 109 auf „Chat 93, 21. Mai 2026" — 15 Chats hinter dem Inhalt. **Sie ist danach erneut zurückgefallen:** von Chat 110 bis 114 blieb sie auf „Chat 109" stehen, während der Inhalt weiterwuchs, und wurde in Chat 115 nachgezogen. Wer hier etwas ergänzt, zieht die Kopfzeile mit — sie driftet zuverlässig. Achtung beim Nachschlagen: Nur bis Chat 97 trägt jeder Chat eine eigene `## Chat NNN`-Überschrift; die Chats 98–108 stehen als `###`-Abschnitte unter dem Chat-97-Block, benannt nach Sprint statt nach Chat.)*
 **Pfad:** novaberg/docs/novaberg-roadmap.md
 **Single Source of Truth für abgeschlossene Arbeit.**
@@ -1980,6 +1980,27 @@ Beide Räder haben eine Nabe — den Wert ohne jede Ausprägung — und das Erge
 > **Die Zahlen selbst stehen nicht hier.** Ein Charakter-Rad ist ein Charakterprofil; aus den Summanden sind mit der Züge-Tabelle die Einzelspeichen rückrechenbar. Wer die Messung nachvollziehen will, fährt sie gegen den eigenen Bestand — sie ist in zwei Aufrufen wiederholbar.
 
 **Geschlossen:** `Bauteil 3 — Charakter-Räder im Client` (Rest benannt, siehe Backlog)
+
+---
+
+## Chat 140 (15.08.2026) — Eine Verbindung, die verworfen wird, erfährt davon ✅
+
+**Der Anlass war die Beobachtung, dass Nachrichten am Telegram-Kanal ausblieben.** Gemessen: Der Telegram-Client war seit dem 14.08. um 22:24 UTC **elfeinhalb Stunden** vom Server abgemeldet, ohne es zu wissen — während ein vollständiger Turn durchlief und an genau einen Client ging.
+
+**Zwei Defekte in einer Logzeile**, die dreimal identisch dastand und deren Fehlertext **leer** war:
+
+- **Die Frist maß das Falsche.** `broadcast_threadsafe` stellt die Zustellung in den Haupt-Loop ein und wartet mit `future.result(timeout=5.0)`. Läuft die Frist ab, weil der Loop mit einem Turn beschäftigt ist, war das bis heute ein „Verbindungsfehler". Belegt, dass sie es nicht war: Der Server verwarf um 22:24:24,992, der Client protokollierte die erfolgreiche Zustellung derselben Nachricht um 22:24:25,015 — **23 ms später**.
+- **Die Gegenseite erfuhr nichts.** Die Verbindung wurde aus der Liste genommen, der Socket nie geschlossen. Die Protokollschicht beantwortet danach weiterhin jeden Ping, während die Anwendung den Client nicht mehr kennt: eine Leitung, die nach jedem Maßstab gesund ist, den der Client selbst anlegen kann.
+
+**Daraus die Regel, die den Fix trägt:** Ein Keepalive prüft den Transport, nicht die Registrierung. Wer eine Verbindung verwirft, schließt sie — sonst ist der Reconnect-Pfad der Gegenseite unerreichbar. Der fehlende `ping_interval` im Desktop-Client (`WEBSOCKET-OHNE-KEEPALIVE`) ist derselbe Ausgang aus der anderen Richtung und im selben Zug behoben; **beide Hälften werden gebraucht.**
+
+**Gegengemessen um 10:31:08 UTC:** `Antwort gesendet per WebSocket (588 Zeichen, 2 Clients)`, eine Millisekunde später die Ankunft in Telegram. Zuvor stand dort den ganzen Tag `1 Clients`.
+
+**Nicht behoben:** `BROADCAST-VERSCHLUCKT-FEHLER` bleibt offen — `broadcast()` liefert dem Aufrufer weiterhin keinen Rückgabewert, und die Zahl in „2 Clients" zählt die Liste, nicht die bestätigten Zustellungen.
+
+**Suite:** 1337 → **1345 grün, 0 übersprungen.** Drei Gegenproben, alle drei in der Menge getroffen (3/3, 2/2, 1/1).
+
+**Geschlossen:** `WEBSOCKET-OHNE-KEEPALIVE`
 
 ---
 
