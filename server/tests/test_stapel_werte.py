@@ -136,13 +136,20 @@ class DieAgentenReichenDurchTest(unittest.TestCase):
     Zustand, der zwei Monate lang bestand.
     """
 
-    def test_der_auftrag_liefert_alle_vier_werte(self) -> None:
-        """Emotion, Modus, Intentionen und Salienz stammen aus dem Auftrag."""
+    def test_der_auftrag_liefert_alle_fuenf_werte(self) -> None:
+        """Emotion, Modus, Intentionen, Salienz und Erregung aus dem Auftrag.
+
+        **Es waren vier bis zum 15.08.2026.** Die Queue fuehrte die Lage ueber
+        Emotion und Modus und liess die dritte Groesse derselben Lage weg —
+        damit konnte die Recherche keinen Level auf den Stapel legen, und
+        Bauteil B war gebaut und ohne Eingabe.
+        """
         werte = stapel_werte_aus_auftrag({
             "thema":       "Enceladus",
             "emotion":     "neugierig",
             "modus":       "fachgespraech",
             "prioritaet":  0.87,
+            "arousal":     0.72,
             "intentionen": ["reflexion"],
         })
 
@@ -150,6 +157,26 @@ class DieAgentenReichenDurchTest(unittest.TestCase):
         self.assertEqual("fachgespraech", werte["modus"])
         self.assertEqual(["reflexion"],   werte["intentionen"])
         self.assertAlmostEqual(0.87,      werte["salienz"], places=4)
+        self.assertAlmostEqual(0.72,      werte["arousal"], places=4)
+
+    def test_ein_auftrag_alter_bauart_liefert_keine_erregung(self) -> None:
+        """Die Spalte gibt es seit dem 15.08.2026 — 1050 Zeilen tragen sie nicht.
+
+        `None` heisst unbekannt. Eine 0.5 saehe wie eine Messung aus und hoebe
+        beim Einwurf Novas Zustand auf eine erfundene Zahl.
+        """
+        werte = stapel_werte_aus_auftrag({"prioritaet": 0.5})
+
+        self.assertIsNone(werte["arousal"])
+
+    def test_eine_unbrauchbare_erregung_bricht_die_ablage_nicht_ab(self) -> None:
+        """Sie fuehrt zu None, nicht zu einer Ausnahme — wie bei der Salienz."""
+        for unbrauchbar in ("ziemlich hoch", True, 1.4, -0.2):
+            with self.subTest(wert=unbrauchbar):
+                werte = stapel_werte_aus_auftrag(
+                    {"prioritaet": 0.5, "arousal": unbrauchbar},
+                )
+                self.assertIsNone(werte["arousal"])
 
     def test_ein_auftrag_mit_null_liefert_keine_salienz(self) -> None:
         """230 von 1028 Auftraegen tragen eine 0.0 — sie ist kein Rangwert.

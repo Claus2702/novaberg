@@ -61,6 +61,12 @@ ERWARTETE_SPALTEN: dict[str, tuple[bool, bool]] = {
     "intentionen":     (False, True),
     "emotion":         (False, True),
     "modus":           (False, True),
+    # **NULL-faehig und ohne Vorgabewert, und das ist die Zusicherung.**
+    # Die Erregung des ausloesenden Turns liegt nicht immer vor — die
+    # Salienz-Quelle liefert stellenweise selbst `null`. Ein Vorgabewert 0.5
+    # waere hier die stille Null: ein gueltig aussehender Messwert, der nie
+    # gemessen wurde. NULL heisst unbekannt, und der Leser prueft darauf.
+    "arousal":         (True,  False),
     "salienz_roh":     (False, False),
     "salienz_absolut": (False, False),
     "salienz_decay":   (False, False),

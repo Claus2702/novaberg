@@ -690,6 +690,18 @@ CREATE INDEX IF NOT EXISTS idx_verb_mappings_user
 -- ist nichts mehr zu tun, und eine Frischinstallation kennt die Tabelle nie.
 DROP TABLE IF EXISTS langzeitgedaechtnis CASCADE;
 
+-- ── shadow_auftrag ─────────────────────────────
+-- Die Erregung des ausloesenden Turns, nachgezogen am 15.08.2026. Der Auftrag
+-- trug die Lage seit jeher ueber `emotion` und `modus` — die dritte Groesse
+-- derselben Lage fehlte, und damit konnte die Recherche keinen Level auf den
+-- Stapel legen: Bauteil B war gebaut und ohne Eingabe (gemessen: kein einziger
+-- Stapel-Eintrag mit Level).
+--
+-- **Ohne Vorgabewert und NULL-faehig**, anders als die beiden Nachbarn. NULL
+-- heisst unbekannt — ein Vorgabewert waere ein Messwert, den nie jemand gemessen
+-- hat. Bestandszeilen bleiben deshalb NULL statt still auf 0.5 zu stehen.
+ALTER TABLE shadow_auftrag ADD COLUMN IF NOT EXISTS arousal DOUBLE PRECISION NULL;
+
 -- ── charakter_hash ─────────────────────────────
 ALTER TABLE charakter_hash ADD COLUMN IF NOT EXISTS intentions_profil          TEXT        NOT NULL DEFAULT '';
 ALTER TABLE charakter_hash ADD COLUMN IF NOT EXISTS emotions_profil            TEXT        NOT NULL DEFAULT '';

@@ -176,6 +176,51 @@ def _salienz_aus_auftrag(queue_eintrag: dict) -> float:
     return salienz
 
 
+def _arousal_aus_auftrag(queue_eintrag: dict) -> float | None:
+    """Liest die Erregung des ausloesenden Turns aus dem Auftrag.
+
+    Args:
+        queue_eintrag: der Auftrag aus der Shadow-Queue.
+
+    Vorbedingung: keine.
+    Nachbedingung: Eine Zahl in [0.0, 1.0] oder ``None``. **`None` heisst
+        unbekannt** — ein Auftrag alter Bauart traegt die Spalte gar nicht,
+        und die Salienz-Quelle liefert sie stellenweise selbst als leer.
+    Fehlerfaelle: Ein unbrauchbarer Wert wird gemeldet und zu ``None``. Er
+        bricht die Ablage **nicht** ab: Der Gedanke ist fertig recherchiert,
+        und ihn wegen eines fehlenden Standes zu verwerfen waere teurer, als
+        ihn ohne abzulegen — dieselbe Abwaegung wie bei der Salienz.
+
+    Returns:
+        Der Stand, oder ``None``.
+    """
+    # ── Eingabe-Validierung ─────────────────────
+    roh: object = queue_eintrag.get("arousal")
+    if roh is None:
+        return None
+
+    # `bool` ist in Python eine Ganzzahl und hier trotzdem kein Messwert.
+    if isinstance(roh, bool) or not isinstance(roh, (int, float)):
+        logger.warning(
+            "RechercheAgent: Auftrag traegt arousal=%r (%s) statt einer Zahl "
+            "— Eintrag geht ohne Stand auf den Stapel", roh, type(roh).__name__,
+        )
+        return None
+
+    # ── Ausgabe-Verifikation ────────────────────
+    # Spanne laut Nachbedingung: 0.0 bis 1.0 — dieselbe Skala, auf der die
+    # Perzeption die Erregung fuehrt. Ausserhalb wird verworfen, nicht gekappt.
+    wert: float = float(roh)
+    if not (0.0 <= wert <= 1.0):
+        logger.warning(
+            "RechercheAgent: Auftrag traegt arousal=%r ausserhalb 0.0–1.0 "
+            "— Eintrag geht ohne Stand auf den Stapel", wert,
+        )
+        return None
+
+    return wert
+
+
 def stapel_werte_aus_auftrag(queue_eintrag: dict) -> dict:
     """Die Werte, die vom Auftrag mit auf den Stapel wandern.
 
@@ -211,6 +256,12 @@ def stapel_werte_aus_auftrag(queue_eintrag: dict) -> dict:
         "emotion":     queue_eintrag.get("emotion", ""),
         "modus":       queue_eintrag.get("modus", ""),
         "salienz":     salienz,
+        # Der Stand, in dem der Auftrag entstand — seit dem 15.08.2026 eine
+        # Spalte der Queue. **Kein Ersatzwert:** Ein Auftrag alter Bauart
+        # traegt hier `None`, und das heisst unbekannt. Eine 0.5 saehe wie
+        # eine Messung aus und hoebe beim Einwurf Novas Zustand auf eine
+        # erfundene Zahl (Bauteil B, `novaberg-eigenzeit_k.md` §2.3).
+        "arousal":     _arousal_aus_auftrag(queue_eintrag),
     }
 
 

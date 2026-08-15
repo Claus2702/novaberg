@@ -34,7 +34,7 @@ logger = logging.getLogger("ki_server.memory.repositories.shadow_auftrag")
 # damit Abfrage und Auswertung nicht getrennt voneinander driften.
 LESE_SPALTEN: str = (
     "id, user_id, character_id, beobachter, aufgabe, thema, kontext, "
-    "intentionen, emotion, modus, salienz_roh, salienz_absolut, "
+    "intentionen, emotion, modus, arousal, salienz_roh, salienz_absolut, "
     "salienz_decay, haeufigkeit, aktiv, erstellt_am, verstaerkt_am, "
     "decay_am, versuche"
 )
@@ -158,6 +158,11 @@ class ShadowAuftrag:
     intentionen:  list[str] = field(default_factory=list)
     emotion:      str = ""
     modus:        str = ""
+    # **None heisst unbekannt und wird nie zu einer Zahl.** Anders als die
+    # beiden Nachbarn hat die Erregung keinen leeren Ersatzwert: Eine 0.5
+    # saehe wie eine Messung aus und hoebe beim Einwurf Novas Zustand auf
+    # eine erfundene Zahl (Bauteil B).
+    arousal:      float | None = None
 
 
 class ShadowAuftragRepository:
@@ -234,15 +239,15 @@ class ShadowAuftragRepository:
                         """
                         INSERT INTO shadow_auftrag
                             (user_id, character_id, beobachter, aufgabe, thema,
-                             kontext, intentionen, emotion, modus,
+                             kontext, intentionen, emotion, modus, arousal,
                              salienz_roh, salienz_absolut, salienz_decay)
-                        VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                        VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
                         RETURNING id
                         """,
                         (auftrag.user_id, auftrag.character_id, auftrag.beobachter,
                          auftrag.aufgabe, auftrag.thema, auftrag.kontext,
                          auftrag.intentionen, auftrag.emotion, auftrag.modus,
-                         roh, absolut, absolut),
+                         auftrag.arousal, roh, absolut, absolut),
                     )
                     neue_id: int = cur.fetchone()[0]
                     conn.commit()

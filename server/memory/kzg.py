@@ -350,7 +350,19 @@ def kzg_store(
     themen_str: str = ", ".join(salienz_obj.get("themen", []))
     dimension:  str = salienz_obj.get("dimension", "kontext")
 
+    # **Zwei Groessen, zwei Namen — derselbe Rohwert, zwei Bedeutungen.**
+    # Der KZG-Hash fuehrt `arousal` als Pflichtfeld und nimmt deshalb den
+    # geklemmten Wert mit Ausfallwert 0.5; das ist Bestand und bleibt.
+    # Die **Queue** darf ihn nicht bekommen: Dort heisst `None`
+    # unbekannt, und eine 0.5 waere ein Messwert, den nie jemand gemessen
+    # hat — sie hoebe beim Einwurf Novas Zustand auf eine erfundene Zahl
+    # (Bauteil B, `novaberg-eigenzeit_k.md` §2.3).
+    #
+    # Ein einziger Name fuer beides waere die Falle gewesen: Die zweite
+    # Zuweisung ueberschreibt die erste **vor** dem Queue-Aufruf, still
+    # und ohne rote Zeile.
     arousal:          float = max(0.0, min(1.0, float(salienz_obj.get("arousal", 0.5))))
+    arousal_gemessen: float | None = salienz_obj.get("arousal")
     emotions_vektor:  str   = salienz_obj.get("emotions_vektor", "")
 
     entitaet_ids_str: str = ",".join(str(eid) for eid in (entitaet_ids or []))
@@ -444,6 +456,7 @@ def kzg_store(
                     intentionen  = intentionen,
                     emotion      = emotion,
                     modus        = modus,
+                    arousal      = arousal_gemessen,
                 )
         else:
             logger.debug("kzg: Promotion-Queue-Push uebersprungen (PIXIE_AKTIV=False)")

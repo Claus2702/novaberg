@@ -59,6 +59,9 @@ def queues_befuellen(state: AgentState) -> dict:
     intentionen: list  = salienz_obj.get("intentionen", [])
     emotion:     str   = salienz_obj.get("emotion", "neutral")
     modus:       str   = salienz_obj.get("modus", "")
+    # Ohne Ersatzwert — was die Salienz nicht gemessen hat, bleibt
+    # unbekannt und wird nie zu einer Zahl (Bauteil B).
+    arousal:     float | None = salienz_obj.get("arousal")
 
     # Exakte Werte aus speicher.py. `neue_salienz` steht auf der gekruemmten
     # Skala, gegen die auch KZG_SALIENZ_HIGH prueft; `salienz` aus dem
@@ -106,7 +109,7 @@ def queues_befuellen(state: AgentState) -> dict:
                     aufgabe=aufgabe, thema=kzg_themen_str,
                     kontext=kern, prioritaet=neue_salienz,
                     intentionen=intentionen,
-                    emotion=emotion, modus=modus,
+                    emotion=emotion, modus=modus, arousal=arousal,
                 )
                 aktionen.append(f"shadow_{aufgabe}")
 
