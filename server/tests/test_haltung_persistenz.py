@@ -37,6 +37,7 @@ from graph.nodes import haltung as haltung_modul
 from graph.nodes.haltung import haltung_bestimmen
 from memory.haltung import (
     HALTUNG_FELDER,
+    INITIATIVE_FELDER,
     Standkopf,
     haltung_lesen,
     haltung_schluessel,
@@ -217,6 +218,8 @@ class DreiFaelleDreiAntwortenTest(unittest.TestCase):
                 "waerme": 0.5, "draengen": 0.5,
             },
             grund   = "",
+            initiative       = 0.0,
+            initiative_grund = "",
         )
         speicher.hashes[haltung_schluessel("meister", "nova")]["naehe"] = "ziemlich nah"
 
@@ -237,11 +240,110 @@ class DerSpeicherSchreibtAlleFelderTest(unittest.TestCase):
         haltung_speichern(
             speicher, Standkopf("meister", "nova", "t-1"),
             cluster = "", werte = {}, grund = "kein Rad",
+            initiative       = None,
+            initiative_grund = "gv_ohne_lauf",
         )
 
         geschrieben: dict = speicher.hashes[haltung_schluessel("meister", "nova")]
 
         self.assertEqual(set(HALTUNG_FELDER), set(geschrieben))
+
+
+class DasFuehrungsmassUeberlebtDenTurnTest(unittest.TestCase):
+    """Die Voraussetzung von Riegel 2 — und ihre Unabhaengigkeit von Riegel 1.
+
+    Der Stand traegt seit dem 15.08.2026 zwei Messungen mit zwei Ausgaengen:
+    die **Haltung** (fuenf Verhaltensgroessen, Marke `gerechnet`) und das
+    **Fuehrungsmass** (eine Zahl, eigener Grund). Sie duerfen nicht auf einer
+    Marke liegen — sonst verdeckt ein Ausfall der Haltung den Riegel 2, und
+    dessen Verteilung ist nie kalibrierbar (`novaberg-eigenzeit_k.md` §2.5).
+    """
+
+    def test_das_mass_liegt_nicht_auf_der_marke_der_haltung(self) -> None:
+        """Ein Turn ohne Haltung kann sehr wohl ein Fuehrungsmass getragen haben."""
+        speicher = _Redis()
+        haltung_speichern(
+            speicher, Standkopf("meister", "nova", "t-1"),
+            cluster = "", werte = {}, grund = "Rad nicht ladbar",
+            initiative       = -0.42,
+            initiative_grund = "",
+        )
+
+        stand = haltung_lesen(speicher, "meister", "nova")
+
+        self.assertFalse(stand.gerechnet, "die Haltung ist ausgefallen")
+        self.assertAlmostEqual(-0.42, stand.initiative, places=4)
+        self.assertEqual("", stand.initiative_grund)
+
+    def test_ein_fehlendes_mass_traegt_seinen_grund(self) -> None:
+        """`None` ohne Grund waere ein Leerwert, der wie eine Messung aussieht."""
+        speicher = _Redis()
+        haltung_speichern(
+            speicher, Standkopf("meister", "nova", "t-1"),
+            cluster = "glut",
+            werte   = {
+                "umfang": 0.5, "fragen": 0.5, "naehe": 0.5,
+                "waerme": 0.5, "draengen": 0.5,
+            },
+            grund   = "",
+            initiative       = None,
+            initiative_grund = "masse_fehlen: ['wollen']",
+        )
+
+        stand = haltung_lesen(speicher, "meister", "nova")
+
+        self.assertTrue(stand.gerechnet, "die Haltung steht")
+        self.assertIsNone(stand.initiative)
+        self.assertIn("wollen", stand.initiative_grund)
+
+    def test_ein_bestandsschluessel_ohne_das_feld_ist_nicht_dasselbe(self) -> None:
+        """Nie geschrieben ist kein Messausfall.
+
+        Ein Schluessel aus der Zeit vor diesem Feld traegt es gar nicht. Beide
+        Faelle liefern ``None``, aber mit verschiedenem Grund — sonst zaehlte
+        eine Auswertung alte Schluessel als Ausfaelle des Messgeraets.
+        """
+        speicher = _Redis()
+        haltung_speichern(
+            speicher, Standkopf("meister", "nova", "t-1"),
+            cluster = "glut",
+            werte   = {
+                "umfang": 0.5, "fragen": 0.5, "naehe": 0.5,
+                "waerme": 0.5, "draengen": 0.5,
+            },
+            grund   = "",
+            initiative       = 0.1,
+            initiative_grund = "",
+        )
+        for feld in INITIATIVE_FELDER:
+            del speicher.hashes[haltung_schluessel("meister", "nova")][feld]
+
+        stand = haltung_lesen(speicher, "meister", "nova")
+
+        self.assertIsNone(stand.initiative)
+        self.assertEqual("feld_fehlt", stand.initiative_grund)
+
+    def test_ein_unlesbares_mass_wird_zur_zahl_nicht_geglaettet(self) -> None:
+        """Ein Defekt liefert `None` mit Grund, nie eine Zahl."""
+        speicher = _Redis()
+        haltung_speichern(
+            speicher, Standkopf("meister", "nova", "t-1"),
+            cluster = "glut",
+            werte   = {
+                "umfang": 0.5, "fragen": 0.5, "naehe": 0.5,
+                "waerme": 0.5, "draengen": 0.5,
+            },
+            grund   = "",
+            initiative       = 0.1,
+            initiative_grund = "",
+        )
+        speicher.hashes[haltung_schluessel("meister", "nova")]["initiative"] = "ziemlich"
+
+        with self.assertLogs("ki_server.memory.haltung", level="ERROR"):
+            stand = haltung_lesen(speicher, "meister", "nova")
+
+        self.assertIsNone(stand.initiative)
+        self.assertEqual("unlesbar", stand.initiative_grund)
 
 
 class DerSchreibfehlerToetetDenTurnNichtTest(unittest.TestCase):

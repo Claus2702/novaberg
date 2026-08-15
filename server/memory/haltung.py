@@ -48,10 +48,27 @@ logger = logging.getLogger("ki_server.memory.haltung")
 # stillschweigend mitgewanderter Import naehme ihm die Entscheidung ab.
 GROESSEN_FELDER: tuple[str, ...] = ("umfang", "fragen", "naehe", "waerme", "draengen")
 
+# Das Fuehrungsmass des Turns — **keine sechste Verhaltensgroesse.** Es steht
+# bewusst neben `GROESSEN_FELDER` und nicht darin:
+#
+#   * Es ist ein anderer Gegenstand. Die fuenf beschreiben, **wie Nova sich
+#     verhaelt**; dieses misst, **wer das Gespraech treibt**. Zwei Bedeutungen
+#     unter einem Namen ist der Defekt, der am 15.08.2026 in `kzg_store` eine
+#     gemessene Erregung still ueberschrieben hat.
+#   * Es hat einen **eigenen Ausfall**. Die Haltung faellt aus, wenn das Rad
+#     fehlt; das Fuehrungsmass, wenn seine Masse im Turn keine Quelle hatten.
+#     Laegen beide auf `gerechnet`, verdeckte ein Ausfall der Haltung das
+#     Fuehrungsmass — und damit **Riegel 1 den Riegel 2**, genau das, was
+#     `novaberg-eigenzeit_k.md` §2.5 als nicht mehr kalibrierbar benennt.
+#
+# Deshalb ein Wertfeld **und** ein Grundfeld, wie beim Stand als Ganzem.
+INITIATIVE_FELDER: tuple[str, ...] = ("initiative", "initiative_grund")
+
 # Der vollstaendige Feldsatz. Er steht hier, weil **jeder** Schreibvorgang ihn
 # setzt; ohne ihn waere die Vollstaendigkeit eine Absicht statt einer Regel.
 HALTUNG_FELDER: tuple[str, ...] = (
-    "gerechnet", "cluster", "turn_id", "zeit", "grund", *GROESSEN_FELDER,
+    "gerechnet", "cluster", "turn_id", "zeit", "grund",
+    *GROESSEN_FELDER, *INITIATIVE_FELDER,
 )
 
 
@@ -85,6 +102,10 @@ class Haltungsstand:
         turn_id:   der Turn, der diesen Stand geschrieben hat.
         zeit:      Epochensekunden des Schreibvorgangs.
         grund:     was gefehlt hat; leer, wenn gerechnet wurde.
+        initiative: das Fuehrungsmass des Turns auf [-1, +1], oder ``None``.
+            **Unabhaengig von `gerechnet`** — es ist eine eigene Messung mit
+            einem eigenen Ausfall (siehe `INITIATIVE_FELDER`).
+        initiative_grund: warum es fehlt; leer, wenn es da ist.
     """
 
     gerechnet: bool
@@ -93,6 +114,8 @@ class Haltungsstand:
     turn_id:   str
     zeit:      float
     grund:     str
+    initiative:       float | None
+    initiative_grund: str
 
     def alter_sekunden(self, jetzt: float) -> float:
         """Wie alt dieser Stand ist.
@@ -137,8 +160,16 @@ def haltung_speichern(
     cluster:      str,
     werte:        dict[str, float],
     grund:        str,
+    initiative:       float | None,
+    initiative_grund: str,
 ) -> bool:
     """Schreibt den Stand dieses Turns — auch den, an dem nichts gerechnet wurde.
+
+    `initiative` und `initiative_grund` sind **Pflichtargumente ohne
+    Vorgabewert**, obwohl ein `None` bequem waere. Ein Vorgabewert hiesse, dass
+    eine vergessene Uebergabe still „kein Fuehrungsmass" schreibt; Riegel 2
+    laese das als *unbekannt* und blockte — richtig im Ergebnis, unsichtbar in
+    der Ursache. So faellt eine vergessene Stelle beim ersten Aufruf auf.
 
     Args:
         redis_client: Verbindung.
@@ -146,6 +177,8 @@ def haltung_speichern(
         cluster:      die Landschaft, oder leer bei einem Ausfall.
         werte:        je Groessenname das Ergebnis, oder leer bei einem Ausfall.
         grund:        was gefehlt hat; leer, wenn gerechnet wurde.
+        initiative:       das Fuehrungsmass des Turns, oder ``None``.
+        initiative_grund: warum es fehlt; leer, wenn es da ist.
 
     Vorbedingung: Die drei Felder des Kopfes sind belegt. Ein Stand ohne
         Turnbezug liesse sich keiner Lage zuordnen und wird nicht geschrieben.
@@ -192,6 +225,11 @@ def haltung_speichern(
     for name in GROESSEN_FELDER:
         wert: float | None = werte.get(name)
         inhalt[name] = "" if wert is None else str(wert)
+
+    # Das Fuehrungsmass wird **nicht** an `gerechnet` gehaengt: Ein Turn ohne
+    # Haltung kann sehr wohl ein Fuehrungsmass getragen haben, und umgekehrt.
+    inhalt["initiative"]       = "" if initiative is None else str(initiative)
+    inhalt["initiative_grund"] = initiative_grund
 
     try:
         redis_client.hset(
@@ -247,6 +285,48 @@ def _werte_lesen(roh: dict, schluessel: str) -> tuple[dict[str, float], str]:
 
     # ── Ausgabe ─────────────────────────────────
     return werte, ""
+
+
+def _initiative_lesen(roh: dict, schluessel: str) -> tuple[float | None, str]:
+    """Liest das Fuehrungsmass aus dem Hash.
+
+    **Drei Faelle, wie beim Stand als Ganzem.** Ein Bestandsschluessel aus der
+    Zeit vor diesem Feld traegt es gar nicht — das ist *nie geschrieben* und
+    etwas anderes als ein Turn, in dem das Mass keine Quelle hatte. Beide
+    liefern ``None``, aber mit verschiedenem Grund, damit eine Auswertung einen
+    alten Schluessel nicht als Messausfall zaehlt.
+
+    Vorbedingung: keine.
+    Nachbedingung: (Wert, Grund). Der Grund ist leer, wenn ein Wert da ist.
+    Fehlerfaelle: Ein unlesbarer Wert ist ein **Defekt** und wird gemeldet; er
+        liefert ``None`` mit benanntem Grund, nie eine Zahl.
+
+    Args:
+        roh:        der Hash.
+        schluessel: fuer die Meldung.
+
+    Returns:
+        Das Fuehrungsmass und den Grund seines Fehlens.
+    """
+    # ── Eingabe-Validierung ─────────────────────
+    if "initiative" not in roh:
+        return None, "feld_fehlt"
+
+    rohwert = roh.get("initiative", "")
+    if rohwert == "":
+        # Der Turn hat geschrieben und hatte kein Mass. Sein Grund steht im
+        # Nachbarfeld; ist auch der leer, ist das selbst ein Befund.
+        return None, str(roh.get("initiative_grund", "")) or "ohne_grund"
+
+    # ── Verarbeitung / Ausgabe ──────────────────
+    try:
+        return float(rohwert), ""
+    except (TypeError, ValueError):
+        logger.exception(
+            "Haltungsstand %s: Feld 'initiative' traegt %r und ist keine Zahl "
+            "— gilt als kein Fuehrungsmass", schluessel, rohwert,
+        )
+        return None, "unlesbar"
 
 
 def haltung_lesen(
@@ -308,6 +388,8 @@ def haltung_lesen(
         )
         zeit = 0.0
 
+    initiative, initiative_grund = _initiative_lesen(roh, schluessel)
+
     # ── Ausgabe ─────────────────────────────────
     return Haltungsstand(
         gerechnet = gerechnet,
@@ -316,4 +398,6 @@ def haltung_lesen(
         turn_id   = str(roh.get("turn_id", "")),
         zeit      = zeit,
         grund     = grund,
+        initiative       = initiative,
+        initiative_grund = initiative_grund,
     )

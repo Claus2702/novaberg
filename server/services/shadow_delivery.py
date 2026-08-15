@@ -15,9 +15,15 @@ Keine Rückfallebene: Erreicht der Impuls den CharacterGraph nicht, bleibt der
 Stack-Eintrag liegen und der nächste Zyklus versucht es erneut. Ein Gedanke,
 der nicht gedacht wurde, wird nicht ausgesprochen.
 
-Flood-Schutz:
-  - Thematischer Cooldown: Anderes Thema → wartet auf User-Aktion
-  - Burst-Limit: Max 3 aufeinanderfolgende Impulse ohne User-Reaktion
+Flood-Schutz — **seit dem 15.08.2026 ohne die stuendliche Decke**
+(`novaberg-eigenzeit_k.md` §2.5). Was den Zeitpunkt beurteilt, sind jetzt die
+Riegel; was die Wiederholung begrenzt, ist der Zaehler:
+
+  - Riegel 2 (`frequenz`): Hat Nova gerade die Initiative? Sonst kein Impuls.
+  - Burst-Limit: hoechstens `MAX_BURST` Impulse ohne Reaktion des Menschen.
+
+Der Kopf nannte hier bis zum 15.08.2026 „Max 3" — `MAX_BURST` stand zu dem
+Zeitpunkt bereits auf 2.
 """
 
 import asyncio
@@ -36,7 +42,11 @@ from memory.pipeline_log import log_berechnung
 from memory.session import session_turns_retrieve
 from services.events import event_erzeugen
 from services.model_services import model_service, EmbedRequest
-from services.pixie.riegel import Riegelkette, zuwendung_pruefen
+from services.pixie.riegel import (
+    Riegelkette,
+    initiative_pruefen,
+    zuwendung_pruefen,
+)
 
 logger = logging.getLogger("ki_server.shadow_delivery")
 
@@ -63,7 +73,22 @@ INAKTIVITAET_GRENZE:  float = 30.0    # Sekunden ohne User-Aktion → Timeout-Tr
 # Impulsen kamen durch. Eine Zahl ohne ihre Paarung ist keine Schwelle.
 THEMEN_SCHWELLE: float = 0.30
 MAX_BURST:            int   = 2       # Max aufeinanderfolgende Impulse
-COOLDOWN_TTL:         int   = 3600    # Cooldown-Key TTL in Sekunden
+
+# **Die stuendliche Decke ist am 15.08.2026 gefallen** — mit dem Bau von
+# Riegel 2 (`novaberg-eigenzeit_k.md` §2.5). Sie war nie eine Aussage ueber den
+# Gedanken, sondern ein Ersatz fuer ein Urteil, das es noch nicht gab; sie war
+# ueberdies in die falsche Richtung geneigt, weil sie umso grosszuegiger wurde,
+# je laenger niemand da war.
+#
+# **Was bleibt, ist der Burst-Zaehler** — und er ist etwas anderes als die
+# Decke. Die Decke sagte *nicht jetzt*; der Zaehler sagt *nicht schon wieder,
+# ohne dass jemand geantwortet hat*. Nach dem Wegfall der Uhr ist er das
+# einzige, was verhindert, dass Nova in die Stille hineinredet.
+#
+# Diese Frist ist nicht seine Sperre, sondern sein **Gedaechtnis**: Nach ihr
+# hat der Zaehler vergessen, wie viele Impulse ohne Antwort blieben. Geloescht
+# wird er ohnehin bei jeder Aeusserung des Menschen.
+BURST_TTL:            int   = 3600    # Wie lange der Burst-Zaehler sich erinnert
 
 # ─────────────────────────────────────────────
 # Cosine Similarity
@@ -365,26 +390,28 @@ def _zeitlicher_kontext(erstellt: str) -> str:
 
 
 # ─────────────────────────────────────────────
-# Cooldown-Verwaltung
+# Burst-Ruecksetzung
 # ─────────────────────────────────────────────
-def _cooldown_aktiv(redis_client: redis.Redis, user_id: str) -> bool:
-    """Prüft ob der thematische Cooldown aktiv ist."""
-    return redis_client.exists(f"shadow_cooldown:{user_id}") == 1
+def shadow_burst_reset(redis_client: redis.Redis, user_id: str) -> None:
+    """Loescht den Burst-Zaehler — der Mensch hat geantwortet.
 
+    **Hiess bis zum 15.08.2026 `shadow_cooldown_reset` und loeschte zwei
+    Schluessel.** Mit der stuendlichen Decke ist der Cooldown-Schluessel
+    weggefallen; der Name ist mitgezogen, weil ein Bezeichner, der einen nicht
+    mehr existierenden Gegenstand nennt, beim naechsten Leser eine Suche nach
+    etwas ausloest, das es nicht gibt.
 
-def _cooldown_setzen(redis_client: redis.Redis, user_id: str) -> None:
-    """Setzt den Cooldown — wird durch nächste User-Aktion gelöscht."""
-    redis_client.set(f"shadow_cooldown:{user_id}", "1", ex=COOLDOWN_TTL)
+    Der Bestandsschluessel `shadow_cooldown:*` wird **nicht** aufgeraeumt: Er
+    traegt eine Frist und verschwindet von selbst, und ein Loeschlauf ueber
+    fremde Schluessel gehoert nicht in eine Zustellung.
 
-
-def shadow_cooldown_reset(redis_client: redis.Redis, user_id: str) -> None:
+    Args:
+        redis_client: Verbindung.
+        user_id:      Kennung des Menschen.
     """
-    Löscht Cooldown und Burst-Counter.
-    Wird bei jeder User-Nachricht aufgerufen (aus dem Chat-Endpoint).
-    """
-    redis_client.delete(f"shadow_cooldown:{user_id}")
+    # ── Ausgabe ─────────────────────────────────
     redis_client.delete(f"shadow_burst_count:{user_id}")
-    logger.debug(f"Delivery: Cooldown + Burst reset für '{user_id}'")
+    logger.debug("Delivery: Burst-Zaehler zurueckgesetzt fuer '%s'", user_id)
 
 
 # ─────────────────────────────────────────────
@@ -456,7 +483,7 @@ def _burst_erhoehen(redis_client: redis.Redis, user_id: str) -> None:
     key: str = f"shadow_burst_count:{user_id}"
 
     redis_client.incr(key)
-    redis_client.expire(key, COOLDOWN_TTL)
+    redis_client.expire(key, BURST_TTL)
 
 
 # ─────────────────────────────────────────────
@@ -755,18 +782,24 @@ def _riegelkette_pruefen(
     # ── Verarbeitung ────────────────────────────
     kette = Riegelkette()
 
-    kette.aufnehmen(
-        zuwendung_pruefen(haltung_lesen(redis_client, user_id, ASSISTANT_USER_ID), time.time()),
-    )
+    # **Ein Stand, zwei Riegel.** Beide lesen denselben Schluessel; er wird
+    # einmal geholt, damit sie nicht ueber zwei Lesevorgaenge hinweg
+    # verschiedene Staende beurteilen — zwischen zwei `hgetall` kann ein Turn
+    # liegen, und dann entschiede die Kette ueber zwei Momente zugleich.
+    stand = haltung_lesen(redis_client, user_id, ASSISTANT_USER_ID)
+    jetzt: float = time.time()
 
-    # Riegel 2 ist nicht gebaut — seine Schwelle ist unentschieden. Er steht
-    # als **nicht gerechnet** in den Daten und nicht als Durchlass: Solange die
-    # stuendliche Decke traegt, fehlt hier keine Begrenzung, aber wer die
-    # Verteilung liest, muss sehen, dass diese Frage nie gestellt wurde.
-    kette.nicht_gerechnet("frequenz", "nicht gebaut — Schwelle unentschieden")
+    kette.aufnehmen(zuwendung_pruefen(stand, jetzt))
 
-    # Riegel 3 ist an dieser Stelle notwendig passiert: Burst und Cooldown
-    # haben die Runde schon vorher abgebrochen, wenn sie zugeschlagen haetten.
+    # **Riegel 2 wird gerechnet, auch wenn Riegel 1 schon geblockt hat.** Die
+    # billigen Riegel laufen alle — sonst verdeckt der erste den zweiten und
+    # dessen Verteilung ist nie kalibrierbar (`novaberg-eigenzeit_k.md` §2.5).
+    kette.aufnehmen(initiative_pruefen(stand, jetzt))
+
+    # Riegel 3 ist an dieser Stelle notwendig passiert: Der Burst-Zaehler hat
+    # die Runde schon vorher abgebrochen, wenn er zugeschlagen haette. Die
+    # stuendliche Decke, die hier bis zum 15.08.2026 mitgemeint war, gibt es
+    # nicht mehr.
     kette.gerechnet("ruhe", True, None)
 
     # ── Ausgabe-Verifikation ────────────────────
@@ -861,10 +894,6 @@ async def shadow_delivery_loop(
 
                 # Trigger 1: Momentum low
                 if momentum == "low":
-                    # Cooldown prüfen
-                    if _cooldown_aktiv(redis_client, user_id):
-                        continue
-
                     trigger = "momentum_low"
 
                     # Momentum verbrauchen (nicht nochmal triggern)
@@ -883,10 +912,6 @@ async def shadow_delivery_loop(
                             # Nicht feuern wenn noch kein Gespräch läuft
                             turns: list = session_turns_retrieve(redis_client, user_id, ASSISTANT_USER_ID)
                             if not turns:
-                                continue
-
-                            # Cooldown prüfen
-                            if _cooldown_aktiv(redis_client, user_id):
                                 continue
 
                             trigger = "timeout"
@@ -930,11 +955,12 @@ async def shadow_delivery_loop(
                     )
 
                     if gesendet:
-                        # Cooldown setzen — wird durch nächste User-Aktion gelöscht
-                        _cooldown_setzen(redis_client, user_id)
-
-                        # Prüfe ob thematische Fortsetzung möglich
-                        # (nächster Zyklus wird das über Similarity entscheiden)
+                        # **Hier stand die stuendliche Decke.** Sie ist am
+                        # 15.08.2026 gefallen; was den naechsten Zeitpunkt
+                        # beurteilt, sind die Riegel. Der Burst-Zaehler steigt
+                        # weiterhin — er zaehlt nicht die Zeit, sondern die
+                        # Impulse ohne Antwort, und wird in
+                        # `_delivery_ausfuehren` erhoeht.
                         logger.info(f"Delivery: Erfolgreich für '{user_id}' (trigger={trigger})")
 
                 finally:

@@ -144,6 +144,50 @@ def _pipeline_zeile(
         )
 
 
+def _initiative_aus_state(state: ConversationState) -> tuple[float | None, str]:
+    """Holt das Fuehrungsmass des Turns aus dem Zustand.
+
+    Der Gespraechsvektor-Knoten rechnet es und legt es unter `initiative` ab;
+    er laeuft vor diesem Knoten (`graph.add_edge("gv_node", "haltungsraum")`).
+    Hier wird es nur weitergereicht — gerechnet wird an einer Stelle.
+
+    **Der Ausfall wird benannt, nicht geglaettet.** Wer hier bei fehlendem Wert
+    eine Zahl einsetzte, gaebe Riegel 2 eine Messung, die keine war. Und wer
+    ``achsen["initiative"]`` naehme statt des rohen Wertes, erbte dessen
+    Umkehrung: `ei/dreischicht.py` setzt bei fehlendem Mass **Bit 1** — *Nova
+    fuehrt* —, was fuer eine Achse vertretbar ist und fuer einen Riegel den
+    Schalter im Moment des Ausfalls **oeffnen** wuerde.
+
+    Vorbedingung: keine.
+    Nachbedingung: (Wert, Grund). Genau eines von beidem ist belegt.
+
+    Args:
+        state: Zustand des laufenden Durchlaufs.
+
+    Returns:
+        Das Fuehrungsmass und den Grund seines Fehlens.
+    """
+    # ── Eingabe-Validierung ─────────────────────
+    roh = state.get("initiative")
+    if not isinstance(roh, dict):
+        # Der GV-Knoten hat nichts hinterlassen — uebersprungener Turn oder ein
+        # Pfad, der ihn nicht durchlaeuft. Kein Messausfall, sondern gar keine
+        # Messung; die beiden werden getrennt benannt.
+        return None, "gv_ohne_lauf"
+
+    wert = roh.get("wert")
+    if not isinstance(wert, (int, float)) or isinstance(wert, bool):
+        fehlend = roh.get("fehlend") or []
+        grund: str = (
+            f"masse_fehlen: {sorted(str(m) for m in fehlend)}"
+            if fehlend else "ohne_wert"
+        )
+        return None, grund
+
+    # ── Ausgabe ─────────────────────────────────
+    return float(wert), ""
+
+
 def _stand_schreiben(
     state:   ConversationState,
     cluster: str,
@@ -163,6 +207,12 @@ def _stand_schreiben(
     Zuwendungs-Riegel nach der Lage des letzten gerechneten Turns, ohne dass es
     jemand saehe — der benannte Fehler des ``gv:detail:``-Wegs.
 
+    **Das Fuehrungsmass reist mit und haengt nicht an `werte`.** Ein Turn ohne
+    Haltung kann eines getragen haben; laege es auf derselben Marke, verdeckte
+    ein Ausfall der Haltung den Riegel 2 und seine Schwelle waere nicht mehr
+    kalibrierbar (`novaberg-eigenzeit_k.md` §2.5). Deshalb wird es hier
+    unabhaengig vom Ausgang der Rechnung aus dem Zustand geholt.
+
     Args:
         state:   Zustand des laufenden Durchlaufs.
         cluster: die Landschaft, oder leer bei einem Ausfall.
@@ -170,6 +220,8 @@ def _stand_schreiben(
         grund:   was gefehlt hat; leer, wenn gerechnet wurde.
     """
     # ── Verarbeitung / Ausgabe ──────────────────
+    initiative, initiative_grund = _initiative_aus_state(state)
+
     # Der Rueckgabewert wird nicht geprueft: `haltung_speichern` meldet seinen
     # Fehlschlag selbst, und ein Turn stirbt nicht an einem Speicherfehler.
     haltung_speichern(
@@ -182,6 +234,8 @@ def _stand_schreiben(
         cluster = cluster,
         werte   = werte,
         grund   = grund,
+        initiative       = initiative,
+        initiative_grund = initiative_grund,
     )
 
 

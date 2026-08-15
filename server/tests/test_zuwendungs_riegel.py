@@ -64,6 +64,10 @@ def _stand(naehe: float, alter: float = 0.0, **abweichung: object) -> Haltungsst
         "turn_id":   "t-1",
         "zeit":      JETZT - alter,
         "grund":     "",
+        # Riegel 1 liest sie nicht — der Stand traegt sie seit dem 15.08.2026
+        # trotzdem, weil Riegel 2 aus demselben Schluessel liest.
+        "initiative":       0.0,
+        "initiative_grund": "",
     }
     felder.update(abweichung)
     return Haltungsstand(**felder)
@@ -182,7 +186,8 @@ class DieKetteZaehltAlleTest(unittest.TestCase):
     def test_ohne_blocker_ist_die_kette_durchlaessig(self) -> None:
         """Der positive Zwilling."""
         kette = Riegelkette()
-        kette.gerechnet("wollen", True, 0.91)
+        kette.gerechnet("wollen",   True, 0.91)
+        kette.gerechnet("frequenz", True, -0.35)
 
         self.assertTrue(kette.durchgelassen())
         self.assertEqual("", kette.entschieden_von())
@@ -220,7 +225,9 @@ class DieKetteZaehltAlleTest(unittest.TestCase):
 
         self.assertFalse(kette.durchgelassen())
         self.assertFalse(kette.vollstaendig())
-        self.assertEqual(["wollen"], kette.fehlende_pflicht())
+        # Seit dem Bau von Riegel 2 sind es zwei Pflicht-Riegel: Mit dem Fall
+        # der stuendlichen Decke traegt `frequenz` die Zeitbeurteilung mit.
+        self.assertEqual(["frequenz", "wollen"], kette.fehlende_pflicht())
 
     def test_eine_kette_ohne_pflicht_riegel_laesst_nichts_durch(self) -> None:
         """Auch nicht, wenn die uebrigen Riegel alle durchgelassen haben."""
@@ -231,21 +238,30 @@ class DieKetteZaehltAlleTest(unittest.TestCase):
         self.assertFalse(kette.durchgelassen())
         self.assertEqual("", kette.entschieden_von())
 
-    def test_mit_dem_pflicht_riegel_laesst_sie_durch(self) -> None:
+    def test_mit_den_pflicht_riegeln_laesst_sie_durch(self) -> None:
         """Der positive Zwilling — sonst prueft der Test nur das Verweigern."""
         kette = Riegelkette()
-        kette.gerechnet("wollen", True, 0.91)
+        kette.gerechnet("wollen",   True, 0.91)
+        kette.gerechnet("frequenz", True, -0.35)
 
         self.assertTrue(kette.vollstaendig())
         self.assertTrue(kette.durchgelassen())
         self.assertEqual([], kette.fehlende_pflicht())
+
+    def test_ein_einzelner_pflicht_riegel_genuegt_nicht(self) -> None:
+        """Riegel 1 allein ist kein Urteil mehr, seit die Uhr weg ist."""
+        kette = Riegelkette()
+        kette.gerechnet("wollen", True, 0.91)
+
+        self.assertFalse(kette.durchgelassen())
+        self.assertEqual(["frequenz"], kette.fehlende_pflicht())
 
     def test_die_unvollstaendigkeit_steht_im_protokoll(self) -> None:
         """Eine Auswertung soll sie nicht an `durchgelassen: false` raten."""
         protokoll: dict = Riegelkette().als_protokoll()
 
         self.assertFalse(protokoll["vollstaendig"])
-        self.assertEqual(["wollen"], protokoll["fehlende_pflicht"])
+        self.assertEqual(["frequenz", "wollen"], protokoll["fehlende_pflicht"])
 
     def test_ein_fremder_name_wird_abgewiesen_und_gemeldet(self) -> None:
         """Ein stillschweigend aufgenommener Name erschiene als Riegel."""
@@ -280,12 +296,26 @@ class DieVerdrahtungTest(unittest.TestCase):
         self.assertIn("haltung_lesen", quelle)
         self.assertIn("zuwendung_pruefen", quelle)
 
-    def test_die_frequenz_wird_als_nicht_gebaut_vermerkt(self) -> None:
-        """Riegel 2 fehlt, und das steht in den Daten statt in einem Kopf."""
+    def test_die_kette_rechnet_riegel_zwei_mit(self) -> None:
+        """Seit dem 15.08.2026 gebaut — und er wird **immer** gerechnet.
+
+        Vorher stand hier die Gegenzusicherung: dass sein Fehlen als
+        `nicht_gerechnet` in den Daten steht statt in einem Kopf. Die Frage
+        wird jetzt gestellt, also prueft der Zeuge, dass sie gestellt wird.
+        """
         quelle: str = inspect.getsource(delivery_modul._riegelkette_pruefen)
 
-        self.assertIn("nicht_gerechnet", quelle)
-        self.assertIn("frequenz", quelle)
+        self.assertIn("initiative_pruefen", quelle)
+
+    def test_beide_riegel_lesen_denselben_stand(self) -> None:
+        """Ein zweiter Lesevorgang koennte einen anderen Turn erwischen.
+
+        Dann entschiede die Kette ueber zwei Momente zugleich — und der
+        Unterschied waere in keiner Auswertung sichtbar.
+        """
+        quelle: str = inspect.getsource(delivery_modul._riegelkette_pruefen)
+
+        self.assertEqual(1, quelle.count("haltung_lesen("))
 
 
 if __name__ == "__main__":

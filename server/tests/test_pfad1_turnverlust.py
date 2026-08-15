@@ -197,7 +197,7 @@ class ConsumerErzeugtDasEreignisTrotzAusnahme(unittest.IsolatedAsyncioTestCase):
 
         with patch.object(modul, "event_erzeugen") as ereignis, \
              patch.object(modul, "redis_client", MagicMock()), \
-             patch.object(modul, "shadow_cooldown_reset", MagicMock()), \
+             patch.object(modul, "shadow_burst_reset", MagicMock()), \
              patch.object(modul, "broadcast_threadsafe", MagicMock()), \
              patch.object(modul, "_audit_log", MagicMock()), \
              patch.object(modul, "turn_beenden", MagicMock()):

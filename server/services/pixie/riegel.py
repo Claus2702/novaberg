@@ -42,7 +42,12 @@ Figur.
 import logging
 from dataclasses import dataclass
 
-from config import ZUWENDUNG_SCHWELLE, ZUWENDUNG_STAND_MAX_ALTER_SEKUNDEN
+from config import (
+    GV_INITIATIVE_SCHWELLE,
+    ZUWENDUNG_SCHWELLE,
+    ZUWENDUNG_STAND_MAX_ALTER_SEKUNDEN,
+)
+from ei.initiative import initiative_bit
 from memory.haltung import Haltungsstand
 
 logger = logging.getLogger("ki_server.pixie.riegel")
@@ -69,12 +74,30 @@ GRUENDE_UNBEKANNT: frozenset[str] = frozenset({
     GRUND_KEIN_STAND, GRUND_OHNE_RECHNUNG, GRUND_ZU_ALT, GRUND_NAEHE_FEHLT,
 })
 
+# Die Gruende von Riegel 2. Dieselbe Trennung, derselbe Grund: **einer heisst
+# „nein", die uebrigen heissen „unbekannt".**
+#
+# Nur `GRUND_MENSCH_FUEHRT` ist eine Aussage ueber den Moment — der Mensch
+# treibt gerade, also ist sie nicht dran. Die anderen sagen, dass niemand es
+# weiss.
+GRUND_MENSCH_FUEHRT:   str = "mensch_fuehrt"
+GRUND_INITIATIVE_FEHLT: str = "initiative_fehlt"
+
+GRUENDE_UNBEKANNT_FREQUENZ: frozenset[str] = frozenset({
+    GRUND_KEIN_STAND, GRUND_ZU_ALT, GRUND_INITIATIVE_FEHLT,
+})
+
 # **Die Riegel, ohne die ein Urteil keines ist.** Eine Kette ohne sie hat
 # nichts geprueft — und „nichts geprueft" darf nicht wie „nichts einzuwenden"
 # aussehen. Ohne diese Menge waere eine **leere** Kette durchlaessig: Faellt
 # eine Aufnahme aus (ein Name ausserhalb des Kanons wird gemeldet und
 # verworfen), ginge jeder Gedanke hinaus, und kein Zeuge wuerde rot.
-RIEGEL_PFLICHT: frozenset[str] = frozenset({"wollen"})
+#
+# **`frequenz` steht hier seit dem 15.08.2026, und zwar als Folge davon, dass
+# die stuendliche Decke gefallen ist.** Solange sie stand, war ein nicht
+# gerechneter Riegel 2 eine Luecke in den Daten; jetzt ist er das Fehlen der
+# einzigen Begrenzung, die den Zeitpunkt noch beurteilt.
+RIEGEL_PFLICHT: frozenset[str] = frozenset({"wollen", "frequenz"})
 
 
 @dataclass(frozen=True)
@@ -308,3 +331,83 @@ def zuwendung_pruefen(
         return Riegel("wollen", True, False, naehe, GRUND_UNTER_SCHWELLE)
 
     return Riegel("wollen", True, True, naehe, "")
+
+
+def initiative_pruefen(
+    stand: Haltungsstand | None,
+    jetzt: float,
+) -> Riegel:
+    """Riegel 2 — ob sie gerade dran ist.
+
+    **Ein Schalter, kein Frequenzmass.** Hat Nova im letzten Turn die
+    Initiative gehabt, darf ein Impuls kommen; hatte der Mensch sie, nicht.
+    Mehr entscheidet er nicht — *was* und *wie viel* durchkommt, entscheiden
+    die uebrigen Riegel. Entschieden am 15.08.2026, und die Entscheidung hat
+    eine Messung im Ruecken: Ueber sechs Paare mit je mindestens zwanzig Turns
+    spannen die Paar-Mediane des Fuehrungsmasses 0,318, waehrend ein einzelnes
+    Paar im Mittel 1,436 durchlaeuft. **Es traegt keine Frequenz je Paar** —
+    aber genau diese Schwankung im Paar ist das, was ein Schalter auf den
+    Moment braucht.
+
+    **Die Schwelle wird nicht neu gesetzt.** `ei/dreischicht.py` macht aus
+    demselben Fuehrungsmass seit Langem ein Bit, mit `GV_INITIATIVE_SCHWELLE`
+    gegen 83 unabhaengige Lesarten kalibriert. Bit 1 heisst *du treibst*. Eine
+    zweite Schwelle daneben hiesse, dass zwei Stellen dasselbe Wort verschieden
+    lesen — und die Fassung wandert (34 Zeilen des Bestandes stehen noch auf
+    -0.45, 424 auf -0.05).
+
+    **Und er liest den rohen Wert, nicht das Achsen-Bit.** Bei fehlendem Mass
+    setzt `dreischicht.py` Bit 1 — *Nova fuehrt* — und meldet es laut. Fuer
+    eine Achse, die immer ein Bit braucht, ist das vertretbar; fuer einen
+    Riegel waere es die Umkehrung seiner Aufgabe: Der Ausfall oeffnete den
+    Schalter, statt ihn zu schliessen. Hier gilt dieselbe Regel wie bei
+    Riegel 1 — **unbekannt ist nicht dasselbe wie in Ordnung.**
+
+    Args:
+        stand: der zuletzt geschriebene Haltungsstand des Paares, oder ``None``.
+        jetzt: Bezugszeit in Epochensekunden, fuer das Alter des Standes.
+
+    Vorbedingung: keine.
+    Nachbedingung: Ein gerechneter Riegel. **Nur ein Grund heisst „nein"**
+        (`GRUND_MENSCH_FUEHRT`); die uebrigen heissen „unbekannt" und werden
+        getrennt gezaehlt.
+    Fehlerfaelle: Keiner fuehrt zum Durchlass.
+
+    Returns:
+        Das Ergebnis von Riegel 2.
+    """
+    # ── Eingabe-Validierung ─────────────────────
+    if stand is None:
+        return Riegel("frequenz", True, False, None, GRUND_KEIN_STAND)
+
+    # **Kein `stand.gerechnet` an dieser Stelle.** Die Marke gilt der Haltung;
+    # das Fuehrungsmass ist eine eigene Messung mit eigenem Ausfall. Wer hier
+    # darauf pruefte, liesse Riegel 1 den Riegel 2 verdecken — und dessen
+    # Verteilung waere nie wieder kalibrierbar.
+    alter: float = stand.alter_sekunden(jetzt)
+    if alter > ZUWENDUNG_STAND_MAX_ALTER_SEKUNDEN:
+        logger.info(
+            "Riegel frequenz: Haltungsstand ist %.0f s alt (Grenze %.0f) — wer "
+            "gerade fuehrt, sagt er nicht mehr, kein Einwurf",
+            alter, ZUWENDUNG_STAND_MAX_ALTER_SEKUNDEN,
+        )
+        return Riegel("frequenz", True, False, None, GRUND_ZU_ALT)
+
+    if stand.initiative is None:
+        logger.info(
+            "Riegel frequenz: Stand aus Turn %r fuehrt kein Fuehrungsmass "
+            "(%s) — gilt als unbekannt, kein Einwurf",
+            stand.turn_id, stand.initiative_grund or "ohne Grund",
+        )
+        return Riegel("frequenz", True, False, None, GRUND_INITIATIVE_FEHLT)
+
+    # ── Verarbeitung / Ausgabe ──────────────────
+    # Bit 1 = „du treibst" = sie ist dran. Die Binarisierung steht in
+    # `ei/initiative.py`, damit Laufzeit und Kalibrierlauf dieselbe Regel
+    # benutzen — und dieser Riegel jetzt auch.
+    if initiative_bit(stand.initiative, GV_INITIATIVE_SCHWELLE) != 1:
+        return Riegel(
+            "frequenz", True, False, stand.initiative, GRUND_MENSCH_FUEHRT,
+        )
+
+    return Riegel("frequenz", True, True, stand.initiative, "")

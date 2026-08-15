@@ -33,7 +33,7 @@ from services.prompt_eingang import (
     turn_beenden,
     turn_beginnen,
 )
-from services.shadow_delivery import shadow_cooldown_reset
+from services.shadow_delivery import shadow_burst_reset
 
 logger = logging.getLogger("ki_server.prompt_consumer")
 
@@ -211,7 +211,7 @@ async def _block_verarbeiten(
         loop: asyncio.AbstractEventLoop = asyncio.get_running_loop()
 
         redis_client.set(f"last_activity:{user_id}", str(time.time()), ex=7200)
-        shadow_cooldown_reset(redis_client, user_id)
+        shadow_burst_reset(redis_client, user_id)
 
         zustand: dict = human_graph.create_state(
             user_prompt  = prompt,
