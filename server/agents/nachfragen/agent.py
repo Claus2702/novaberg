@@ -349,6 +349,17 @@ class NachfragenAgent(BaseAgent):
                 inhalt=reiz,
                 emotion=turn.get("emotion") or TURN_EMOTION_LEER,
                 modus=turn.get("modus") or "",
+                # Die Erregung des ausloesenden Turns ist der Wert, in dem
+                # dieser Gedanke gefasst wurde — Bauteil B hebt Novas Zustand
+                # spaeter darauf, falls er niedriger liegt. **Hier `None` statt
+                # `TURN_AROUSAL_LEER`:** Der Ausfallwert taugt fuer eine
+                # Lagebeschreibung, aber nicht als hinterlegter Level; ein
+                # erfundener Wert wuerde Novas Zustand tatsaechlich verschieben.
+                arousal=(
+                    float(turn["arousal"])
+                    if isinstance(turn.get("arousal"), (int, float))
+                    else None
+                ),
             )
         except (redis.RedisError, OSError, RuntimeError, ValueError) as ex:
             return self._abbrechen(

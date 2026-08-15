@@ -24,8 +24,31 @@ def stack_push(
     intentionen:   list = None,
     emotion:       str  = "",
     modus:         str  = "",
+    salienz:       float | None = None,
+    arousal:       float | None = None,
 ) -> None:
-    """Legt ein Ergebnis mit Embedding und Meta-Daten auf den Shadow-Stack."""
+    """Legt ein Ergebnis mit Embedding und Meta-Daten auf den Shadow-Stack.
+
+    Args:
+        redis_client: Verbindung.
+        user_id: Paar-Kennung.
+        aufgabe: Art des Auftrags (`recherche`, `nachfragen`, …).
+        thema: Gegenstand, geht in das Embedding ein.
+        inhalt: das Destillat.
+        intentionen: Absichten des ausloesenden Turns.
+        emotion: Gefuehlslage, in der der Auftrag entstand.
+        modus: Gespraechsmodus, in dem er entstand.
+        salienz: der **ausloesende** Wert, (0.0, 1.0]. Traegt die Rangfolge,
+            wenn kein Bezugsvektor vorliegt — der haeufigste Fall.
+        arousal: die Erregung, in der der Gedanke gefasst wurde. Sie hebt
+            Novas Zustand beim Einwurf, wenn er niedriger liegt (Bauteil B).
+
+    **`None` heisst unbekannt und wird nie zu einer Zahl.** Beide Werte stehen
+    ausdruecklich im Eintrag, auch wenn sie fehlen: Ein weggelassenes Feld
+    waere von einem Eintrag alter Bauart nicht zu unterscheiden, eine 0.0
+    saehe aus wie eine Messung. Wer sie liest, prueft auf `None` und reiht
+    einen Eintrag ohne Wert hinten ein, statt ihn mit null zu bewerten.
+    """
     if not PIXIE_AKTIV:
         logger.debug("pixie.stack: stack_push uebersprungen (PIXIE_AKTIV=False)")
         return
@@ -49,6 +72,8 @@ def stack_push(
         "intentionen": intentionen or [],
         "emotion":     emotion,
         "modus":       modus,
+        "salienz":     salienz,
+        "arousal":     arousal,
     }
 
     redis_client.rpush(

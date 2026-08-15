@@ -162,6 +162,44 @@ def _salienz_aus_auftrag(queue_eintrag: dict) -> float:
     return salienz
 
 
+def stapel_werte_aus_auftrag(queue_eintrag: dict) -> dict:
+    """Die Werte, die vom Auftrag mit auf den Stapel wandern.
+
+    Der Auftrag traegt Emotion, Modus, Intentionen und den ausloesenden Wert;
+    bis zum 15.08.2026 blieben sie an der Schreibstelle liegen. Als eigene
+    Funktion, weil die Uebergabe sonst nur im Rumpf von `invoke` steht und
+    dort von keinem Zeugen erreichbar ist — eine ausgeklinkte Uebergabe liess
+    am 15.08.2026 alle 1370 Tests gruen.
+
+    Args:
+        queue_eintrag: der Auftrag aus der Shadow-Queue.
+
+    Returns:
+        Die Schluesselwoerter fuer `stack_push`. `salienz` ist ``None``, wenn
+        der Auftrag keinen brauchbaren Ausloesewert traegt — **das bricht die
+        Ablage nicht ab**: Der Gedanke ist fertig recherchiert, und ihn wegen
+        eines fehlenden Rangwerts zu verwerfen waere teurer, als ihn ohne Rang
+        abzulegen. Er reiht sich dann hinten ein.
+    """
+    # ── Eingabe-Validierung / Verarbeitung ──────
+    try:
+        salienz: float | None = _salienz_aus_auftrag(queue_eintrag)
+    except ValueError as fehler:
+        logger.warning(
+            "RechercheAgent: Auftrag ohne brauchbare Salienz — Eintrag geht "
+            "ohne Rangwert auf den Stapel (%s)", fehler,
+        )
+        salienz = None
+
+    # ── Ausgabe ─────────────────────────────────
+    return {
+        "intentionen": queue_eintrag.get("intentionen") or [],
+        "emotion":     queue_eintrag.get("emotion", ""),
+        "modus":       queue_eintrag.get("modus", ""),
+        "salienz":     salienz,
+    }
+
+
 class RechercheAgent(BaseAgent):
 
     @property
@@ -483,6 +521,7 @@ class RechercheAgent(BaseAgent):
                 aufgabe="recherche",
                 thema=thema or session_kontext.get("thema_kern", ""),
                 inhalt=destillat,
+                **stapel_werte_aus_auftrag(queue_eintrag),
             )
         except Exception as e:
             logger.warning(f"RechercheAgent: Stack-Push fehlgeschlagen — {e}")
