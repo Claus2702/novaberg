@@ -24,6 +24,8 @@ HEALTH_URL  = f"{SERVER_URL}/health"
 SSE_CONNECT_TIMEOUT: float       = 10.0   # requests-Connect-Timeout für SSE
 SSE_READ_TIMEOUT                 = None   # None = kein Read-Timeout (Server entscheidet)
 WS_RECONNECT_INTERVAL: float     = 5.0    # Wartezeit zwischen WS-Reconnect-Versuchen
+WS_PING_INTERVAL: float          = 30.0   # Keepalive-Takt: erkennt die stumm gestorbene Leitung
+WS_PING_TIMEOUT: float           = 10.0   # Frist auf ein Pong; muss unter WS_PING_INTERVAL liegen
 SSE_STOP_WAIT_TIMEOUT: float     = 5.0    # Schlafzeit in der WS-Reconnect-Schleife (stopbar)
 THREAD_SHUTDOWN_TIMEOUT: float   = 2.0    # Max. Wartezeit beim Join während Shutdown
 PANEL_REQUEST_TIMEOUT: float     = 8.0    # Einheitlicher Timeout für Panel-Requests

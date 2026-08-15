@@ -36,6 +36,8 @@ from config import (
     SSE_STOP_WAIT_TIMEOUT,
     SSE_URL,
     THREAD_SHUTDOWN_TIMEOUT,
+    WS_PING_INTERVAL,
+    WS_PING_TIMEOUT,
     WS_RECONNECT_INTERVAL,
     WS_URL,
 )
@@ -348,10 +350,20 @@ class StreamHandler:
                 # ``reconnect`` wird vom websocket-client-Paket selbst gehandhabt,
                 # aber nur innerhalb dieses run_forever-Aufrufs. Unsere while-
                 # Schleife fängt den Fall ab, dass run_forever früh zurückkehrt.
+                # Ohne Keepalive ist eine stumm abgeräumte Leitung von einer
+                # gesunden nicht zu unterscheiden: ``on_close`` feuert nie,
+                # ``run_forever`` kehrt nie zurück, und die Schleife darum
+                # herum bleibt genau deshalb wirkungslos.
                 logger.info("WebSocket: run_forever wird gestartet")
-                self._ws_app.run_forever(reconnect=WS_RECONNECT_INTERVAL)
+                self._ws_app.run_forever(
+                    reconnect     = WS_RECONNECT_INTERVAL,
+                    ping_interval = WS_PING_INTERVAL,
+                    ping_timeout  = WS_PING_TIMEOUT,
+                )
             except Exception as fehler:
-                logger.error(f"WebSocket-Thread-Fehler: {fehler}")
+                logger.error(
+                    f"WebSocket-Thread-Fehler: {type(fehler).__name__}: {fehler}"
+                )
 
             if self._ws_should_run:
                 logger.info(
