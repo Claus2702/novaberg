@@ -19,13 +19,23 @@ def shadow_queue_push(
     user_id:      str,
     aufgabe:      str,
     thema:        str,
+    prioritaet:   float,
     kontext:      str = "",
-    prioritaet:   float = 0.0,
     intentionen:  list = None,
     emotion:      str  = "",
     modus:        str  = "",
 ) -> None:
     """Legt einen Auftrag in die Shadow-Queue.
+
+    **`prioritaet` ist Pflicht und hatte bis zum 15.08.2026 den Vorgabewert
+    0.0.** Der Wert traegt die Ausloese-Salienz des Turns; eine 0.0 ist ein
+    gueltiger Salienzwert, unterschreitet aber jede Schwelle und sortiert den
+    Auftrag an das Ende jeder Rangfolge — lautlos. Von zwei Aufrufern uebergab
+    ihn genau einer, und der Aufruf des anderen sah dabei vollstaendig aus.
+    Gemessen ueber 1036 Auftraege: 233 trugen 0.0, alle davon `vertiefen`.
+    Deshalb kein Vorgabewert: Wer die Salienz nicht hat, soll hier scheitern
+    und nicht spaeter eine Zahl vorfinden, die wie eine Messung aussieht
+    (`KANDIDATEN-PRIORITAET-STILLE-NULL`).
 
     Waehrend eines Messreihen-Laufs werden die Auftragsarten aus
     `MESSREIHE_OHNE_AUFTRAGSARTEN` **gar nicht erst eingereiht**. Der Grund

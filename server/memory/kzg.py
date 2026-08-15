@@ -434,6 +434,12 @@ def kzg_store(
                     user_id      = user_id,
                     aufgabe      = aufgabe,
                     thema        = themen_str,
+                    # Die Ausloese-Salienz gehoert an den Auftrag. Bis zum
+                    # 15.08.2026 fehlte sie hier, und der Vorgabewert 0.0 der
+                    # Signatur machte daraus einen gueltig aussehenden Wert
+                    # unterhalb jeder Schwelle — 233 von 1036 Auftraegen
+                    # (`KANDIDATEN-PRIORITAET-STILLE-NULL`).
+                    prioritaet   = salienz,
                     kontext      = salienz_obj.get("zusammenfassung", ""),
                     intentionen  = intentionen,
                     emotion      = emotion,
