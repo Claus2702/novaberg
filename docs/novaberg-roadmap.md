@@ -2001,7 +2001,11 @@ Beide Räder haben eine Nabe — den Wert ohne jede Ausprägung — und das Erge
 
 **Weitere Funde:** `novaberg-pixie.md` führte *„Max 20 Eintraege pro User"* — es gibt keinen Begrenzer, der Bestand war 1036. Das dokumentierte Eintragsformat nannte vier Felder, die es nicht gibt. `EMOTIONS_VEKTOREN` ist in `config.py` zweimal definiert; die zweite Definition gewinnt und macht den als Kanon angelegten frozenset zu totem Code.
 
-Suite 1373 → **1399 grün, 0 übersprungen.**
+**Der Audit der Nähte nach dem Bau fand drei Leser, die niemand mitgeändert hatte** — und keinen davon hatte die Suite bemerkt, weil alle drei hinter den geprüften Stellen lagen. Der **Router** kannte den neuen `quelle`-Wert nicht und verzweigte weiter auf `"queue"`: Der Heartbeat wählte im Dreißig-Sekunden-Takt einen Auftrag, fand keinen Agenten und ließ ihn liegen — **kein einziger Shadow-Auftrag lief mehr**, und die Warnung je Zyklus sah aus wie der lange bekannte Fall des fehlenden Agenten. **`_salienz_aus_auftrag`** las `salienz` und `prioritaet`, die ein migrierter Auftrag nicht trägt; jeder der 608 Recherche-Aufträge wäre mit `ValueError` gescheitert und nach drei Versuchen verworfen worden. Dazu eine Logzeile, die den Auftrag über `erstellt` statt `erstellt_am` datierte.
+
+**Die Lesson: Wer einen Wert einführt, muss seine *Leser* suchen, nicht nur seine Schreiber.** Die Zeugen des Umbaus prüften Erzeuger, Auswahl und Abschluss — zwischen Auswahl und Abschluss steht der Router, und ihn hat niemand gefragt. Der neue Zeuge liest die möglichen Werte aus dem Quelltext des Erzeugers, statt sie aufzuzählen. Nebenbei bezeugt statt vermutet: `vertiefen` löst auf einen nicht registrierten Agenten auf — der Grund, warum 383 Aufträge liegen.
+
+Suite 1373 → **1404 grün, 0 übersprungen.**
 
 ## Chat 140 (15.08.2026) — Eine Verbindung, die verworfen wird, erfährt davon ✅
 

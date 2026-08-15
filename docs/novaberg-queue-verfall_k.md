@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Konzept — Warum ein Auftrag verfällt, wie er verfällt, und wohin die Queue dafür umzieht
-**Stand:** 15. August 2026, Chat 141 — v0.4, **gebaut und gemessen** (§16)
+**Stand:** 15. August 2026, Chat 141 — v0.5, gebaut, gemessen und die Nähte auditiert (§16)
 **Pfad:** novaberg/docs/novaberg-queue-verfall_k.md
 **Typ:** Konzept
 **Status:** ✅ **Gebaut und gemessen am 15.08.2026.** Tabelle, Repository, Migration (1036 Aufträge), Schreib- und Auswahlpfad, Verfallslauf. §16 trägt die Messwerte. Offen: die Messung über 30 Tage Betrieb
@@ -633,6 +633,68 @@ liegen.**
 > stand. Sie stellen die Queue jetzt über einen Patch, statt sie zu lesen —
 > sie prüfen die Wahl des Schedulers, nicht den Speicher.
 
+### Was der Audit der Nähte fand — drei Leser, die niemand mitgeändert hat
+
+**Nach dem Bau wurden die Schnittstellen einzeln durchgegangen.** Fünf Nähte,
+drei davon gebrochen — und keine hatte die Suite bemerkt, weil alle drei
+*hinter* den geprüften Stellen lagen.
+
+| Naht | Befund |
+|---|---|
+| Redis-Schlüssel `shadow_queue:*` | sauber, kein Leser mehr im Produktivcode |
+| `queue_key` / `queue_raw` / `auftrag_id` | sauber, nach Speicher getrennt |
+| **`quelle`-Wert** | **gebrochen** — `services/pixie/router.py` |
+| **Auftragsfelder in den Agenten** | **gebrochen** — `recherche`, `nachfragen` |
+| Promotions-Queue | sauber, liest ihre eigenen Felder |
+
+**Der Router kannte den neuen Wert nicht.** Er verzweigte weiter auf
+`quelle == "queue"`. Die Wirkung war vollständig und still: Der Heartbeat
+wählte im Dreißig-Sekunden-Takt einen Auftrag, der Router fand keinen Agenten,
+der Auftrag blieb liegen. **Kein einziger Shadow-Auftrag lief mehr** — und die
+Warnung je Zyklus sah aus wie der lange bekannte Fall *„Auftrag für einen
+Agenten, den es nicht gibt"*. Kein Datenverlust, weil `abschluss` erst nach
+einer Ausführung greift.
+
+**`_salienz_aus_auftrag` las zwei Felder, die es nicht mehr gibt.** Der
+Recherche-Agent griff nach `salienz` oder `prioritaet`; ein migrierter Auftrag
+trägt keines von beiden, sondern drei Salienz-Stände. **Jeder Recherche-Auftrag
+hätte `ValueError` geworfen, wäre als Fehlversuch gezählt und nach drei
+Versuchen verworfen worden** — bei 608 Aufträgen. Er liest jetzt
+`salienz_absolut` zuerst: den **Anker**, nicht die Präsenz. Der Anker ist, was
+der Auftrag beim Anlass wert war; die Präsenz schriebe sein Alter in die
+Bibliothek.
+
+Dazu eine Logzeile im Nachfragen-Agenten, die den Auftrag über `erstellt`
+datierte — jetzt `erstellt_am`.
+
+> **Wer einen Wert einführt, muss seine Leser suchen — nicht nur seine
+> Schreiber.** Die Zeugen des Umbaus prüfen den Erzeuger, die Auswahl und den
+> Abschluss. **Zwischen Auswahl und Abschluss steht der Router, und ihn hat
+> niemand gefragt.** `tests/test_pixie_verdrahtung.py` prüft seither die
+> **Kette** statt ihrer Glieder: Es liest die möglichen `quelle`-Werte aus dem
+> Quelltext des Erzeugers, statt sie aufzuzählen — eine Aufzählung wäre beim
+> nächsten neuen Wert wieder still veraltet.
+
+**Nebenbei bezeugt statt vermutet:** Der Router löst `vertiefen` auf
+`vertiefung` auf, und kein Agent dieses Namens ist registriert
+(`PIXIE-ROUTING-DOPPELREGISTRY`). Das ist der Grund, warum 383 Aufträge liegen.
+Der Fall steht jetzt als Zeuge und ist zu **streichen**, nicht anzupassen,
+sobald der Agent existiert.
+
+### Die Kette, am laufenden Server belegt
+
+```
+15:46:23  Pixie[llm]: Gewinner — recherche (Prio 1.00, Quelle: shadow_auftrag)
+15:46:23  RechercheAgent: Start — Thema aus Queue: 'kosmische Präzision, …'
+```
+
+Auswahl aus der Tabelle, Router, Registry, Agent — mit dem richtigen Thema.
+Vor der Berichtigung endete es nach der ersten Zeile. Ein Auftrag mit Salienz
+0,0 scheitert weiterhin laut, wie gefordert.
+
+**Suite 1399 → 1404 grün** (fünf Zeugen der Verdrahtung).
+
+
 ### Was ungemessen bleibt, ausdrücklich
 
 **Die eigentliche Wirkung — ein Auftrag fällt durch Alter heraus — ist am
@@ -648,6 +710,7 @@ nicht.
 
 ## Versionshistorie
 
+- **v0.5 — 15.08.26:** §16 um den **Audit der Nähte** erweitert. Fünf Schnittstellen einzeln durchgegangen, **drei gebrochen** — und keine hatte die Suite bemerkt, weil alle drei hinter den geprüften Stellen lagen. Der **Router** kannte `quelle = "shadow_auftrag"` nicht und verzweigte weiter auf `"queue"`: Der Heartbeat wählte im Dreißig-Sekunden-Takt einen Auftrag, fand keinen Agenten und ließ ihn liegen — **kein einziger Shadow-Auftrag lief mehr**, und die Warnung sah aus wie der bekannte Fall des fehlenden Agenten. **`_salienz_aus_auftrag`** las `salienz`/`prioritaet`, die ein migrierter Auftrag nicht trägt; jeder der 608 Recherche-Aufträge wäre mit `ValueError` gescheitert und nach drei Versuchen verworfen worden. Dazu eine Logzeile auf `erstellt` statt `erstellt_am`. **Die Lesson:** Wer einen Wert einführt, muss seine **Leser** suchen, nicht nur seine Schreiber — die Zeugen prüften Erzeuger, Auswahl und Abschluss, und zwischen Auswahl und Abschluss stand der Router. Der neue Zeuge liest die möglichen Werte aus dem Quelltext des Erzeugers statt sie aufzuzählen. Nebenbei bezeugt: `vertiefen` löst auf einen nicht registrierten Agenten auf (`PIXIE-ROUTING-DOPPELREGISTRY`) — der Grund für die 383 liegenden Aufträge.
 - **v0.4 — 15.08.26:** **Gebaut und gemessen**, §16 neu. Die Migration übernahm **1036 von 1036** Aufträgen; danach 803 aktiv, 233 ruhend — und die 233 sind ausnahmslos `vertiefen`, die Vorhersage aus §13 traf exakt. Der Verfallslauf am echten Bestand: 805 verarbeitet, 0 deaktiviert, Summe unverändert — **nichts gelöscht**, und 0 Deaktivierungen sind hier das richtige Ergebnis. Drei Dinge hat der Bau am Konzept berichtigt: Die Migration übernimmt **1:1 ohne Verdichtung**, weil eine Verdichtung `haeufigkeit` eine nie gemessene Zahl gäbe; ein **zirkulärer Import** zwischen `shadow_agent.utils` und `memory.kzg` war lokal zu brechen; und der Dispatcher las mit `themen` und `salienz` **zwei Feldnamen, die es nie gab** — der AgentState bekam dauerhaft `""` und `0.0`. Fünf Bestandszeugen sind nachgezogen, vier davon unverändert gültig; der fünfte trug den Satz „Queue-Einträge altern nicht", den dieser Bau aufhebt. Nebenbei behoben: `SUITE-HAENGT-AM-AKTIVEN-PAAR`.
 - **v0.3 — 15.08.26:** **§12 auf die Entscheidungen umgeschrieben — was in v0.2 wie vier Mängel aussah, ist die Bauart.** §12.1 neu: **drei Wege aus der Queue, und nur einer ist ein Löschen** — was abgearbeitet wurde, wird entnommen (heute schon: `abschluss(erfolg=True)` → `LREM`), was scheitert, wird nach drei Versuchen verworfen, was nur wartet, wird deaktiviert und bleibt. Dazu der Vergleich, der die Bauart begründet: **Der KZG löscht hart** über Redis-TTL (7 / 14 / 30 Tage nach Salienz), **das LZG nie** — die Queue nimmt vom KZG die Frist und vom LZG den Rückweg. Ein Detail des KZG stützt §12.2: Eine Verstärkung verlängert dort die **TTL**, sie hebt nicht den Wert; auch im Kurzzeitgedächtnis wirkt Wiederholung über die Uhr. **Die Sättigung ist der Zweck der Sinus-Kurve, nicht ihr Versagen** — wer oben ist, gewinnt durch eine weitere Verstärkung fast nichts, und ein Dauerthema hebelt den Verfall damit nicht aus; der Boost ist dafür ausdrücklich **keine Stellschraube der Frist**. **Die Rangfolge ist Dringlichkeit, und Dringlichkeit ist Frische:** Der letzte Gedanke ist der präsenteste, nicht der von vor dreißig Tagen — die Umkehr von FIFO auf LIFO ist damit die Absicht und nicht eine Nebenwirkung. Benannt bleibt die Wechselwirkung mit dem Aging der periodischen Aufgaben: zwei gegenläufige Zeitregeln im selben Scheduler, beide für ihren Gegenstand richtig, mit einer langsamen Verschiebung zugunsten der Wartungsaufgaben. **Die Reaktivierung hält am Leben und drängelt nicht vor** — wiederholt sich der Anlass mehrfach, holt die zurückgesetzte Uhr den Auftrag von selbst nach oben. **Keine Mengengrenze und kein Jahresablauf:** Wächst der Bestand über das Erträgliche, wird `QUEUE_DECAY_RATE` verstärkt — eine Obergrenze würde nach Zahl statt nach Dringlichkeit verwerfen. Als Gewinn des Umzugs neu benannt: `LREM` adressiert den Eintrag über seinen exakten JSON-Wortlaut und ist bei jeder Abweichung **wirkungslos und stumm**; ein Primärschlüssel kann das nicht.
 - **v0.2 — 15.08.26:** **§12 neu — der Lebenszyklus ist gegen den Bestand durchgerechnet**, und vier Stellen trugen nicht, wie sie in v0.1 standen. **Die Verstärkung wirkt nicht über die Höhe:** Zehn Verstärkungen heben `salienz_absolut` um 0,024 und kaufen 0,61 Tage, weil ein Auftrag bei `salienz_roh ≈ 0,80` von Cap 1,0 einsteigt und die Sinus-Kurve dort waagerecht ist — die Sättigung ist erreicht, bevor der erste Auftrag entsteht. Die Wirkung sitzt in `verstaerkt_am`, das 30 Tage neu schenkt; der Boost bleibt im Schema, aber **niemand darf von ihm eine Rangwirkung erwarten**. **Die Rangfolge kehrt sich um:** Heute gewinnt der älteste Eintrag des Höchstwerts (das Maximum 1,0 tragen 59 Einträge, der erste steht an Listenposition 894 von 1036) — nach dem Umzug gewinnt über `ORDER BY salienz_decay DESC` der jüngste überhaupt, weil der Verfall `salienz_decay` zur Umkehrfunktion des Alters macht. Aus FIFO wird LIFO, ohne dass eine Zeile es ankündigt, und für die periodischen Aufgaben ist dieselbe Frage ausdrücklich anders entschieden. **Die Reaktivierung stellt die Existenz wieder her, nicht die Chance:** 0,638 gegen 0,976 der Neuzugänge. **Der Lebenszyklus hat kein Ende** — es wird nichts mehr gelöscht, die Tabelle wächst monoton. **Was die Prüfung stützt:** Die Altersverteilung dünnt zu den alten Tagen hin nicht aus (57 Aufträge vom ältesten Tag liegen unberührt), der Abfluss ist also so klein, dass die Reihenfolge heute kaum zählt — die Umkehrung wird erst wichtig, wenn der Engpass am einen seriellen Platz fällt, und dann ist sie eingebaut und unbenannt.
