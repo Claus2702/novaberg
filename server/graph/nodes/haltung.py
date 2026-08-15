@@ -41,8 +41,10 @@ pruefen, ohne diese Turns beeinflusst zu haben.
 import logging
 from collections.abc import Callable
 
+from config import redis_client
 from ei.haltung import GROESSEN, Haltung, haltung_berechnen
 from memory.charakter import nutzer_gewichtung_rad_laden
+from memory.haltung import Standkopf, haltung_speichern
 from memory.pipeline_log import log_berechnung, log_fehler
 
 from graph.state import ConversationState, pipeline_quelle
@@ -142,6 +144,47 @@ def _pipeline_zeile(
         )
 
 
+def _stand_schreiben(
+    state:   ConversationState,
+    cluster: str,
+    werte:   dict[str, float],
+    grund:   str,
+) -> None:
+    """Legt den Stand dieses Turns in den Speicher, aus dem Fremde lesen.
+
+    **Zwei Speicher, zwei Gegenstaende.** Die Zeile im ``pipeline_log`` traegt
+    den **Verlauf** und ist die Grundlage der Nachkalibrierung; dieser Stand
+    traegt den **Zustand** und beantwortet die Frage eines Dienstes ausserhalb
+    des Graphen: *Wie steht sie gerade zu ihm?* Das Verbot des Redis-Blobs aus
+    Konzept §2.0a gilt dem ersten Gegenstand, nicht dem zweiten
+    (`memory/haltung.py`).
+
+    **Auch der Ausfall schreibt.** Bliebe der alte Stand stehen, entschiede der
+    Zuwendungs-Riegel nach der Lage des letzten gerechneten Turns, ohne dass es
+    jemand saehe — der benannte Fehler des ``gv:detail:``-Wegs.
+
+    Args:
+        state:   Zustand des laufenden Durchlaufs.
+        cluster: die Landschaft, oder leer bei einem Ausfall.
+        werte:   je Groessenname das Ergebnis, oder leer bei einem Ausfall.
+        grund:   was gefehlt hat; leer, wenn gerechnet wurde.
+    """
+    # ── Verarbeitung / Ausgabe ──────────────────
+    # Der Rueckgabewert wird nicht geprueft: `haltung_speichern` meldet seinen
+    # Fehlschlag selbst, und ein Turn stirbt nicht an einem Speicherfehler.
+    haltung_speichern(
+        redis_client,
+        Standkopf(
+            user_id      = state.get("user_id", ""),
+            character_id = state.get("character_id", ""),
+            turn_id      = state.get("turn_id", ""),
+        ),
+        cluster = cluster,
+        werte   = werte,
+        grund   = grund,
+    )
+
+
 def _ausfall_protokollieren(state: ConversationState, grund: str, cluster: str) -> None:
     """Haelt fest, dass dieser Turn keine Haltung bekam, und warum.
 
@@ -151,6 +194,11 @@ def _ausfall_protokollieren(state: ConversationState, grund: str, cluster: str) 
     statt einer leeren (§2.0a). Ganz zu schweigen ginge aber ebenso wenig — die
     Haeufigkeit der Ausfaelle gehoert zur Messreihe. Eine Fehlerzeile ist
     beides: nicht als Messwert lesbar und trotzdem zaehlbar.
+
+    **Und derselbe Ausfall loescht den Stand.** Beides gehoert zusammen, weil
+    ein Ausfall, der nur protokolliert wird, den Speicher des vorigen Turns
+    stehen laesst — genau die Stelle, an der eine Messreihe stimmt und ein
+    Riegel trotzdem falsch entscheidet.
 
     Args:
         state:   Zustand des laufenden Durchlaufs.
@@ -163,6 +211,7 @@ def _ausfall_protokollieren(state: ConversationState, grund: str, cluster: str) 
         {"schritt": "haltung", "grund": grund, "cluster": cluster},
         "Ausfall",
     )
+    _stand_schreiben(state, cluster, {}, grund)
 
 
 def haltung_bestimmen(state: ConversationState, postgres_url: str) -> ConversationState:
@@ -267,6 +316,12 @@ def haltung_bestimmen(state: ConversationState, postgres_url: str) -> Conversati
         return state
 
     state["haltung"] = haltung
+    _stand_schreiben(
+        state,
+        haltung.cluster,
+        {name: wert.ergebnis for name, wert in haltung.werte.items()},
+        "",
+    )
 
     # Die Historie, nicht der Zustand: Die Beitragszahlen sind Setzungen und
     # werden nachkalibriert; ohne Verlauf ist das nicht moeglich (Konzept

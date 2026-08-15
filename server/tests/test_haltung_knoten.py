@@ -25,12 +25,41 @@ import unittest
 from contextlib import AbstractContextManager
 from unittest.mock import MagicMock, patch
 
+from graph.nodes import haltung as haltung_modul
 from graph.nodes.haltung import haltung_bestimmen
 from graph.state import ConversationState
 from langgraph.graph import END, StateGraph
 from services.event_consumer import CHARACTER_NODE_LABELS, _stage_detail_bauen
 
 HALTUNG_LOGGER: str = "ki_server.graph.haltung"
+
+# Der Speicher des Nodes, ersetzt fuer die ganze Datei.
+_SPEICHER_ERSATZ = patch.object(haltung_modul, "redis_client", MagicMock())
+
+
+def setUpModule() -> None:
+    """Legt den echten Redis fuer die Dauer dieser Datei still.
+
+    **Seit dem 15.08.2026 schreibt der Node einen Haltungsstand nach Redis**,
+    und `redis_client` ist ein Modulwert: Wer ihn nicht ersetzt, schreibt aus
+    der Suite in das **laufende System**. Gemessen am selben Tag — nach dem
+    ersten Lauf stand unter `haltung:meister:nova` ein Stand mit
+    `turn_id = "t"`, dem Testwert dieser Datei, und die Zustellung haette ihn
+    fuer den Zustand des Meisters gehalten.
+
+    **Warum hier und nicht im Rad-Kontext:** Dort stand er zuerst, und ein
+    Aufruf ging daran vorbei — der Test des nicht ladbaren Rades setzt seinen
+    eigenen Patch. Eine Ersetzung, die jeder Lauf dieser Datei passiert, haengt
+    nicht daran, dass ein kuenftiger Test daran denkt. Gemessen wurde beides:
+    Schluessel geloescht, Suite gefahren, nachgesehen — beim ersten Anlauf war
+    er wieder da.
+    """
+    _SPEICHER_ERSATZ.start()
+
+
+def tearDownModule() -> None:
+    """Gibt den echten Redis zurueck."""
+    _SPEICHER_ERSATZ.stop()
 
 # Novas Zuwendung zum Nutzer, gemessen am 31.07.2026 und im Konzept §2.2a
 # abgedruckt. Die uebrigen sieben Speichen standen auf null und fehlen hier
