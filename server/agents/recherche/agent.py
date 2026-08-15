@@ -136,7 +136,21 @@ def _salienz_aus_auftrag(queue_eintrag: dict) -> float:
     auf null gesetztes Feld kommt durch den Default hindurch (11_EVA §2).
     """
     # ── Eingabe-Validierung ─────────────────────
-    roh = queue_eintrag.get("salienz", queue_eintrag.get("prioritaet"))
+    # **`salienz_absolut` zuerst, seit dem Umzug der Queue am 15.08.2026.**
+    # Der Auftrag traegt drei Salienz-Staende; gebraucht wird der **Anker** —
+    # was er beim ausloesenden Anlass wert war, nicht was er heute noch wert
+    # ist. `salienz_decay` waere die Praesenz und schriebe das Alter des
+    # Auftrags in die Bibliothek.
+    #
+    # Die beiden alten Namen bleiben als Rueckfall stehen, weil derselbe
+    # Helfer auch Auftraege aus der Promotions-Queue erreichen kann — die
+    # liegt weiterhin in Redis und traegt `salienz`.
+    roh = None
+    for schluessel in ("salienz_absolut", "salienz", "prioritaet"):
+        if schluessel in queue_eintrag:
+            roh = queue_eintrag[schluessel]
+            break
+
     if roh is None:
         meldung: str = (
             f"_salienz_aus_auftrag: Auftrag ohne Salienz und ohne Prioritaet, "

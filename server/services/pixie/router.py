@@ -37,7 +37,8 @@ def route(kandidat: dict) -> str | None:
     """Bestimmt den Agent-Namen fuer einen Kandidaten.
 
     Args:
-        kandidat: Dict mit 'quelle' ("queue" | "periodisch"), 'name', 'daten'
+        kandidat: Dict mit `quelle` ("shadow_auftrag" | "queue" | "periodisch"),
+            `name`, `daten`
 
     Returns:
         Agent-Name (str) oder None wenn kein Agent gefunden
@@ -65,7 +66,17 @@ def route(kandidat: dict) -> str | None:
 
         return agent_name
 
-    elif kandidat["quelle"] == "queue":
+    elif kandidat["quelle"] in ("shadow_auftrag", "queue"):
+        # **Beide Quellen, seit dem 15.08.2026.** Die Shadow-Queue liegt in
+        # PostgreSQL und traegt `quelle = "shadow_auftrag"`, die
+        # Promotions-Queue weiterhin in Redis mit `"queue"`. Die Aufloesung
+        # haengt an der Aufgabenart, nicht am Speicherort — sie ist fuer beide
+        # dieselbe.
+        #
+        # Diese Zeile stand einen Zug lang nur auf `"queue"`, und die Folge war
+        # still: Der Heartbeat waehlte im Dreissig-Sekunden-Takt einen Auftrag,
+        # fand keinen Agenten und liess ihn liegen. Zeuge:
+        # `tests/test_pixie_verdrahtung.py`.
         aufgabe: str = kandidat["daten"].get("aufgabe", "")
 
         # Spezialfall: delegation — inhaltliche Routing-Entscheidung

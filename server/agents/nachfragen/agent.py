@@ -313,7 +313,9 @@ class NachfragenAgent(BaseAgent):
             grund: str = (
                 f"kein Druck — Vektor '{vektor}' liegt ausserhalb von "
                 f"{sorted(EMOTIONS_VEKTOREN_DRUCK)}, Auftrag vom "
-                f"{auftrag.get('erstellt', '?')}"
+                # `erstellt_am` seit dem Umzug der Queue (15.08.2026);
+                # `erstellt` war der Name in der Redis-Fassung.
+                f"{auftrag.get('erstellt_am', auftrag.get('erstellt', '?'))}"
             )
             logger.info(f"NachfragenAgent: {grund} — kein Stapel-Eintrag")
             self._audit_log(user_id, "erledigt", grund)
