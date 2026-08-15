@@ -17,8 +17,19 @@ logger = logging.getLogger("ki_server.memory.session")
 # Konstanten
 # ─────────────────────────────────────────────
 SESSION_MAX_TURNS:    int = 20
-SESSION_TTL:          int = 7200    # 2 Stunden Inaktivität
 SESSION_SUMMARIZE_AT: int = 25      # Ab 25 Turns: älteste 10 zusammenfassen
+
+# Wie lange ein Verlauf ohne Aeusserung ueberdauert. **Sie muss mindestens so
+# lang sein wie die Verfallskurve der Eigenzeit** (`EIGENZEIT_NULLPUNKT_SEKUNDEN`,
+# 3 h): Sonst entsteht ein Fenster, in dem der Verlauf vor dem Zustand
+# verschwindet — Nova waere noch nicht zur Ruhe gekommen und haette schon
+# vergessen, worueber gesprochen wurde. Genau die fremde Nova, die
+# `novaberg-eigenzeit_k.md` §2.2 vermeiden will, nur von der anderen Seite.
+#
+# Am 15.08.2026 von 7200 (2 h) auf 14400 erhoeht. Die Frist kostet nichts pro
+# Turn: Die Laenge des Verlaufs begrenzen SESSION_SUMMARIZE_AT und
+# SESSION_MAX_TURNS, nicht sie.
+SESSION_TTL:          int = 14400   # 4 Stunden Inaktivitaet
 
 
 def _session_key(user_id: str, character_id: str, suffix: str) -> str:
