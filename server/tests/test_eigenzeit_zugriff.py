@@ -139,7 +139,7 @@ class DieVerdrahtungTest(unittest.TestCase):
 
         with patch.object(db_zugriff_modul, "redis_client", redis_mock):
             emotion, _raum = db_zugriff_modul._nova_zustand_laden(
-                _kopf(), "nutzer_turn",
+                _kopf(), "nutzer_turn", None,
             )
 
         self.assertAlmostEqual(EIGENZEIT_AROUSAL_RUHE, emotion.arousal, places=4)
@@ -158,7 +158,7 @@ class DieVerdrahtungTest(unittest.TestCase):
 
         with patch.object(db_zugriff_modul, "redis_client", redis_mock):
             emotion, _raum = db_zugriff_modul._nova_zustand_laden(
-                _kopf(), "eigener_impuls",
+                _kopf(), "eigener_impuls", None,
             )
 
         self.assertAlmostEqual(0.95, emotion.arousal, places=2)

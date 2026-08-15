@@ -54,6 +54,7 @@ from graph.personality import (
     Personality,
     Raum,
 )
+from graph.reiz import reiz_level
 from graph.state import ConversationState, reiz_herkunft
 
 logger = logging.getLogger("ki_server.db_zugriff")
@@ -269,20 +270,28 @@ def _raum_aus_nova_state(roh: dict, emotion: Emotion) -> tuple[Raum, bool]:
     return geladen, True
 
 
-def _nova_zustand_laden(kopf: Protokollkopf, herkunft: str) -> tuple[Emotion, Raum]:
+def _nova_zustand_laden(
+    kopf:     Protokollkopf,
+    herkunft: str,
+    level:    float | None,
+) -> tuple[Emotion, Raum]:
     """Laedt Novas persistierten Zustand aus Redis und protokolliert das Lesen.
 
-    Der geladene Zustand ist der von damals; was jetzt gilt, haengt am
-    Intervall seit der letzten Nutzeraeusserung. Der Verfall gehoert deshalb
-    hierher und nicht in einen Hintergrundlauf — er wird von der Aeusserung
-    ausgeloest, nicht von der Uhr (novaberg-eigenzeit_k.md §2.2).
+    Der geladene Zustand ist der von damals; was jetzt gilt, haengt an der
+    Herkunft dieses Turns. **Zwei Bewegungen, und je Turn hoechstens eine:**
+    Eine Nutzeraeusserung senkt ihn um das Intervall seit der vorigen (§2.2),
+    ein eigener Gedanke hebt ihn auf den Stand, in dem er gefasst wurde (§2.3).
+    Beide gehoeren hierher und nicht in einen Hintergrundlauf — sie werden vom
+    Reiz ausgeloest, nicht von der Uhr (novaberg-eigenzeit_k.md).
 
     Args:
         kopf: traegt das Paar und die Turn-Kennung.
         herkunft: ``"nutzer_turn"`` oder ``"eigener_impuls"``.
+        level: der Stand, den der Gedanke mitbringt, oder ``None``.
 
     Vorbedingung: `kopf` traegt das Paar.
-    Nachbedingung: (Emotion, Raum), die Emotion um das Intervall gesenkt.
+    Nachbedingung: (Emotion, Raum), die Emotion um das Intervall gesenkt oder
+    auf den mitgebrachten Stand gehoben.
     Der Lesevorgang steht im ``pipeline_log``, auch wenn der Hash leer war —
     ein Cold-Start ist eine Auskunft.
     Fehlerfaelle: Siehe `_emotion_aus_nova_state` und `_raum_aus_nova_state`;
@@ -295,6 +304,7 @@ def _nova_zustand_laden(kopf: Protokollkopf, herkunft: str) -> tuple[Emotion, Ra
 
     emotion: Emotion = _emotion_aus_nova_state(roh)
     emotion = _zustand_verfallen(kopf, emotion, roh, herkunft)
+    emotion = _level_anheben(kopf, emotion, level, herkunft)
     raum, geladen = _raum_aus_nova_state(roh, emotion)
 
     # ── Ausgabe-Verifikation ────────────────────
@@ -418,6 +428,87 @@ def _zustand_verfallen(
         "Erregung %.2f → %.2f, Kategorien %s",
         kopf.turn_id, pause, faktor, vorher_arousal, emotion.arousal,
         "gesprungen" if gesprungen else "gehalten",
+    )
+    return emotion
+
+
+def _level_anheben(
+    kopf:     Protokollkopf,
+    emotion:  Emotion,
+    level:    float | None,
+    herkunft: str,
+) -> Emotion:
+    """Hebt den geladenen Zustand auf den Stand, in dem der Gedanke entstand.
+
+    Das Gegenstueck zu `_zustand_verfallen`: Der Verfall greift auf einer
+    Nutzeraeusserung, das Anheben auf einem eigenen Gedanken. Kehrt Nova zu
+    einem Gedanken zurueck, kehrt sie in den Zustand zurueck, in dem sie ihn
+    gefasst hat — das ist der Weg zurueck in ihr Element
+    (novaberg-eigenzeit_k.md §2.3).
+
+    **Der hinterlegte Level hebt, er setzt nicht.** Ein Einwurf kann auch
+    mitten in ein Gespraech fallen; ein Setzen zoege beide heraus, wenn der
+    hinterlegte Wert der niedrigere ist. Es gilt der hoehere von beiden.
+
+    **Gehoben wird die Zahl, nicht die Kategorie.** Emotion, Modus, Sprachstil
+    und Ton kennen keinen Zwischenwert, und ein Maximum ueber ihnen bedeutet
+    nichts. Ebenso unberuehrt bleibt der Raum: Ein Gedanke, der in ein
+    laufendes Gespraech faellt, nimmt dessen Raum und bringt nicht seine alte
+    Lage mit (§2.4).
+
+    Args:
+        kopf: traegt das Paar und die Turn-Kennung.
+        emotion: der geladene Zustand.
+        level: der mitgebrachte Stand in [0.0, 1.0], oder ``None``.
+            Spanne und Sorte sind beim Leser geprueft (`graph/reiz.py`).
+        herkunft: ``"nutzer_turn"`` oder ``"eigener_impuls"``.
+
+    Returns:
+        Den Zustand. Unveraendert auf jedem Turn ausser einem eigenen Impuls,
+        bei fehlendem Level und bei einem Level unterhalb des geladenen Werts.
+    """
+    # ── Eingabe-Validierung ─────────────────────
+    # Ein Level gehoert zu einem Gedanken. Auf einem Nutzer-Turn hat niemand
+    # einen gefasst — und ein unbekannter Herkunftswert hebt ebenfalls nicht.
+    if herkunft != "eigener_impuls":
+        return emotion
+
+    # ── Verarbeitung ────────────────────────────
+    vorher: float = emotion.arousal
+
+    if level is not None:
+        emotion.arousal = max(vorher, level)
+
+    # ── Ausgabe-Verifikation ────────────────────
+    # **Die Zeile steht auch dann, wenn nichts hinterlegt war.** Wie oft ein
+    # Gedanke ueberhaupt einen Stand mitbringt, ist die Messgroesse dieses
+    # Bauteils — heute traegt ihn nur, wer aus einem Nachfragen-Auftrag
+    # stammt. Ohne die Zeile waere „kein Level im Bestand" von „der Bauteil
+    # laeuft nicht" nicht zu unterscheiden.
+    wirkung: str = (
+        "kein_level" if level is None
+        else "gehoben" if emotion.arousal > vorher
+        else "gehalten"
+    )
+    log_berechnung(
+        turn_id = kopf.turn_id,
+        node    = _NODE,
+        quelle  = "character",
+        inhalt  = {
+            "schritt":         "gedanke_level",
+            "hinterlegt":      None if level is None else round(level, 4),
+            "arousal_vorher":  round(vorher, 4),
+            "arousal_nachher": round(emotion.arousal, 4),
+            "wirkung":         wirkung,
+        },
+        user_id      = kopf.user_id,
+        character_id = kopf.character_id,
+    )
+    logger.info(
+        "%s: db_zugriff: Gedanken-Level — hinterlegt %s, Erregung %.2f → %.2f (%s)",
+        kopf.turn_id,
+        "keiner" if level is None else f"{level:.2f}",
+        vorher, emotion.arousal, wirkung,
     )
     return emotion
 
@@ -626,7 +717,9 @@ def db_zugriff(state: ConversationState) -> ConversationState:
         )
 
     external_emotion: Emotion = _emotion_aus_payload(payload)
-    internal_emotion, internal_raum = _nova_zustand_laden(kopf, reiz_herkunft(state))
+    internal_emotion, internal_raum = _nova_zustand_laden(
+        kopf, reiz_herkunft(state), reiz_level(state),
+    )
     external_character, internal_character = _charaktere_laden(kopf)
     identities: list[str]  = _identities_laden(kopf)
     directives: list[dict] = _directives_laden(kopf)

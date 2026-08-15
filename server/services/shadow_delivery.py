@@ -675,6 +675,14 @@ def _impuls_in_den_charaktergraph(
                 "gespraechs_modus": eintrag.get("modus", ""),
                 "prompt_thema":     eintrag.get("thema", ""),
                 "impuls_aufgabe":   eintrag.get("aufgabe", ""),
+                # Der Stand, in dem der Gedanke gefasst wurde. Er **hebt**
+                # Novas Zustand beim Einwurf, wenn er hoeher liegt — der Weg
+                # zurueck in ihr Element (Bauteil B). Das Feld steht immer im
+                # Payload, auch leer: `None` heisst unbekannt und darf nie zu
+                # einer Zahl werden, und ein weggelassenes Feld waere von
+                # einem Eintrag alter Bauart nicht zu unterscheiden.
+                # Der Leser liegt in `graph/reiz.py` (`LEVEL_FELD`).
+                "gedanke_arousal":  eintrag.get("arousal"),
             },
         )
     except Exception as ex:
