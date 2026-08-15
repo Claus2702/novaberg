@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Konzept — zusammenhängende Zustellungen zu einem Thema
-**Stand:** 14. August 2026 (v0.3, Erstfassung 27. Juli 2026)
+**Stand:** 15. August 2026 (v0.4, Erstfassung 27. Juli 2026)
 **Pfad:** novaberg/docs/novaberg-gedankenkette_k.md
 **Typ:** Konzept
 **Status:** ⬜ Konzept, nicht gebaut
@@ -25,7 +25,7 @@ Alles auf ihrem Stapel, das dem eben Gesagten mit **0.60 Cosine** ähnelt, flieg
 
 > **Eingegrenzt am 14.08.2026.** Was hier verlorengeht, ist der **Einwurf-Kandidat**, nicht das Wissen. Jede Recherche legt ihr Ergebnis zusätzlich in der Bibliothek ab — Bericht und Wissensdatei plus eine Metadatenzeile —, und die überlebt das Aufräumen des Stapels. Der Verlust ist damit schmaler als dieser Abschnitt ursprünglich sagte: Sie kann den Gedanken nicht mehr **von sich aus** einwerfen, aber sie findet ihn wieder, wenn danach gefragt wird (§10).
 
-Dazu `MAX_BURST = 2` und ein Cooldown von einer Stunde.
+Dazu `MAX_BURST = 2`. ~~und ein Cooldown von einer Stunde~~ → **Der Cooldown ist am 15.08.2026 gefallen** (`novaberg-eigenzeit_k.md` §2.5); die Frist von einer Stunde hängt seither am Burst-Zähler, der sie als *Gedächtnis* trägt und nicht als Sperre.
 
 **Der Filter ist als Dublettenschutz gemeint und das ist richtig gedacht** — sie soll nicht zweimal dasselbe sagen. Nur unterscheidet ein Kosinus von 0.60 nicht zwischen *„dasselbe nochmal"* und *„der nächste Gedanke zum selben Thema"*.
 
@@ -317,6 +317,8 @@ Die Bibliothek ist gebaut und läuft in beide Richtungen:
 ---
 
 ## Versionshistorie
+
+- **v0.4 — 15.08.2026:** §2 nachgezogen: **Der Cooldown von einer Stunde ist gefallen** (`novaberg-eigenzeit_k.md` §2.5). Was von der Stunde bleibt, hängt am Burst-Zähler und ist dort sein *Gedächtnis*, keine Sperre. Die Feststellung aus §11, dass Burst und Cooldown eine Kette nicht zerreißen, bleibt richtig — sie greifen weiterhin nur zwischen Ketten.
 
 - **v0.3 — 14.08.2026:** Die Bibliothek ist nachgeprüft und **steht in beide Richtungen** — §10 hatte sie als Voraussetzung geführt, die noch fehle. Sie wird von jeder Recherche beschrieben und in **jedem** Turn gelesen; gemessen 2 bis 3 Treffer je Turn bei Cosinus 0,896 bis 0,437. Damit ist §1 eingegrenzt: Das Aufräumen des Stapels kostet den Einwurf-Kandidaten, nicht das Wissen — die Nachfrage wird aus der Bibliothek bedient. Und die „kleine Form" aus §6a braucht weniger als dort stand: Der Rückgriff im Gespräch ist gebaut. **Der Nebenfund gehört festgehalten:** Diese Ähnlichkeitsrechnung trennt, wo dieselbe Rechnung zwischen Aufsatz und Zuruf versagt — der Unterschied ist die Skalengleichheit, Themenphrase gegen Themenphrase. Was offen bleibt, ist schmal: Das Gefundene kommt als Erinnerung an, nicht als das eben Erzählte.
 - **v0.2 — 14.08.2026:** §6a neu — **ein neues Thema beginnt mit einem Ruf, nicht mit dem Fund.** Das erste Glied trug bisher die Substanz; für ein Thema, das niemand aufgerufen hat, ist das eine Ablage statt eines Beitrags. An seine Stelle tritt eine **Treppe**: Ruf, Feld, Fund — jeder Schritt ein, zwei Sätze, und vor jedem eine Freigabe durch den Menschen. Der Ruf trägt **keine Information**, das ist seine Eigenschaft und nicht sein Mangel; auch der Fund bleibt eine Portion und wird nicht zur Ausarbeitung. Dazu der **Abschluss** für den Fall, dass die Neugier ausbleibt. Das Tor ist die nächste Äußerung, gelesen über den vorhandenen Intentionen-Kanon — keine neue Mechanik, keine neue Schwelle. **Nur der erste Schritt ist ein Einwurf**, alles danach sind Antworten auf einen Nutzer-Turn; damit ist die offene Frage aus §11 erledigt, ob Burst und Cooldown eine Kette zerreißen. Bleibt eine Äußerung ganz aus, wartet die Kette; nur eine abwendende schließt sie. Der Kettenzustand braucht ein Feld mehr — *wartet auf Zustimmung* — und die Treppenstufe. **Die Zahl der Schritte ist offen und hängt an einem Willen** — drei ist ein Beispiel, nicht die Form; eine feste Stufenzahl wäre eine Schablone. Weil dieser Wille fehlt, trägt §6a zusätzlich eine **kleinere Form ohne Ziel**: Hinführung, bei Neugier ein Teil, und danach bleibt das Wissen im Gespräch **verfügbar** statt weiter zugestellt zu werden. Sie setzt zweierlei voraus, das schon benannt ist — der Eintrag darf nicht gelöscht werden (§1, §9), und er muss als Material erreichbar sein statt als Reiz. §6 ist im Rumpf markiert, nicht ersetzt. Fünf offene Punkte ergänzt oder geschärft, darunter: Die Untergrenze eines Schritts ist kein Satz, sondern ein Laut — und der Wille, der eine Kette führt, ist der eigentliche offene Gegenstand dahinter.

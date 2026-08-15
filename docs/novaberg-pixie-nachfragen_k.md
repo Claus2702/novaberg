@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Konzept — Rolle, Auslöser und Sonderstellung des NachfragenAgenten
-**Stand:** 15. August 2026, Chat 141 — §3 und §7 auf den Zustellungspfad nachgezogen
+**Stand:** 15. August 2026, Chat 143 — §8.8 auf den Wegfall des Zustellungs-Cooldowns nachgezogen; davor Chat 141 — §3 und §7 auf den Zustellungspfad
 **Pfad:** novaberg/docs/novaberg-pixie-nachfragen_k.md
 **Typ:** Konzept
 **Status:** ✅ **Gebaut und gemessen am 05.08.2026** — `PIX-MIG-7`. Stufe 1 ohne Modellaufruf; §9 trägt die Messwerte. Offen bleibt der Radfaktor (`PIX-STAPEL-RADFAKTOR`, §8.8)
@@ -111,7 +111,7 @@ Damit trägt der Agent eine Aufgabe, die kein anderer übernehmen kann: Fällt e
 
 ~~**Der Bezug zum Anlass.** Der Auftrag trägt Thema und Kontext des auslösenden KZG-Eintrags. Ob die Rückfrage daran anknüpfen soll („du hattest gestern von … erzählt") oder offen bleibt, ist eine Charakterfrage.~~ → **Entschieden am 05.08.2026: offen, ohne Anlassbezug.** Nova nennt nicht, worauf sie sich bezieht. Der Preis ist benannt: Die Annäherung verliert ihre Verankerung. Der Grund, sie trotzdem so zu bauen, ist, dass ein genannter Anlass sichtbar macht, dass mitgeschrieben und bewertet wurde — in genau der Lage, in der das am wenigsten trägt.
 
-~~**Der Abstand.** Kein Mechanismus begrenzt heute, wie oft nachgefragt wird. Bei anhaltend negativer Stimmung erzeugt jeder hinreichend saliente Turn einen neuen Auftrag.~~ → **Gegenstandslos für die Zustellung, offen für die Erzeugung.** Wie oft etwas *rausgeht*, begrenzt der Zustellungs-Cooldown (`shadow_cooldown:{user_id}`, TTL 3600 s, gelöscht durch die nächste Nutzeraktion) zusammen mit der Burst-Grenze; nach der Entscheidung vom 04.08.2026 bricht ihn **kein** Modus (`novaberg-autonomous-wissen_k.md` §11.3). Unberührt bleibt, wie oft ein *Auftrag entsteht* — das ist ein Mengenproblem der Queue und trifft alle Aufgabenarten gleich, nicht nur diese.
+~~**Der Abstand.** Kein Mechanismus begrenzt heute, wie oft nachgefragt wird. Bei anhaltend negativer Stimmung erzeugt jeder hinreichend saliente Turn einen neuen Auftrag.~~ → **Gegenstandslos für die Zustellung, offen für die Erzeugung.** Wie oft etwas *rausgeht*, begrenzten bis zum 15.08.2026 der Zustellungs-Cooldown (`shadow_cooldown:{user_id}`, TTL 3600 s) und die Burst-Grenze gemeinsam. **Der Cooldown ist am 15.08.2026 mit dem Bau von Riegel 2 gefallen** (`novaberg-eigenzeit_k.md` §2.5): Was den Zeitpunkt beurteilt, sind jetzt die Riegel; was die Wiederholung begrenzt, ist allein der Burst-Zähler. Die Entscheidung vom 04.08.2026 — kein Modus bricht ihn — hat damit ihren Gegenstand verloren. Unberührt bleibt, wie oft ein *Auftrag entsteht* — das ist ein Mengenproblem der Queue und trifft alle Aufgabenarten gleich, nicht nur diese.
 
 > **Nachtrag 15.08.2026 — es sind seither drei Bedingungen, nicht zwei.** Zu Cooldown und Burst-Grenze ist **`_rueckfrage_offen`** getreten: Solange eine Rückfrage Novas unbeantwortet ist, geht kein Impuls hinaus. Sie steht **vor** dem Burst-Zähler, und diese Reihenfolge ist die Aussage — ein unterdrückter Impuls soll die nächste Gelegenheit nicht mitverbrauchen. Stünde sie dahinter, zählte das Warten als Verbrauch.
 >

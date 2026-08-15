@@ -1,6 +1,6 @@
 # Novaberg — Roadmap (Projektchronik)
 
-**Stand:** Chat 142, 15. August 2026
+**Stand:** Chat 143, 15. August 2026
 *(Die Kopfzeile stand bis Chat 109 auf „Chat 93, 21. Mai 2026" — 15 Chats hinter dem Inhalt. **Sie ist danach erneut zurückgefallen:** von Chat 110 bis 114 blieb sie auf „Chat 109" stehen, während der Inhalt weiterwuchs, und wurde in Chat 115 nachgezogen. Wer hier etwas ergänzt, zieht die Kopfzeile mit — sie driftet zuverlässig. Achtung beim Nachschlagen: Nur bis Chat 97 trägt jeder Chat eine eigene `## Chat NNN`-Überschrift; die Chats 98–108 stehen als `###`-Abschnitte unter dem Chat-97-Block, benannt nach Sprint statt nach Chat.)*
 **Pfad:** novaberg/docs/novaberg-roadmap.md
 **Single Source of Truth für abgeschlossene Arbeit.**
@@ -1982,6 +1982,37 @@ Beide Räder haben eine Nabe — den Wert ohne jede Ausprägung — und das Erge
 **Geschlossen:** `Bauteil 3 — Charakter-Räder im Client` (Rest benannt, siehe Backlog)
 
 ---
+
+## Chat 143 (15.08.2026) — Der Riegel misst den Moment, nicht die Person, und die Uhr fällt ✅
+
+**Bauteil D ist fertig, und damit alle sechs.** Riegel 2 steht, die stündliche Decke ist gefallen.
+
+**Der Tag begann mit einer Messung, die den Bauplan widerlegte.** `novaberg-eigenzeit_k.md` §6 hielt seit dem 14.08. offen, ob das Führungsmaß über die Paare hinweg genug streut, um eine Frequenz zu tragen. Über 457 Turns aus acht Paaren: **Verhältnis zwischen/innerhalb 0,22** — der Wert schwankt im Paar rund fünfmal stärker, als er die Paare trennt. Eine Schwelle darauf misst den Turn und nicht die Person.
+
+**Die naheliegende Abhilfe wurde gemessen statt vorgeschlagen** und trug nicht: Ein gleitendes Mittel hebt das Verhältnis über zwanzig Turns nur auf 0,38, und die Zwischen-Spanne **sinkt** dabei. Bei reinem Rauschen müsste die Innen-Spanne um √20 ≈ 4,5 fallen; sie fällt um 1,9. Die Schwankung ist Gesprächsdrift, nicht Zufall.
+
+**Die Entscheidung hat die Bauart geändert, nicht den Bau aufgehalten.** Riegel 2 ist ein **Schalter** auf den Moment — hat sie gerade die Initiative, darf ein Impuls kommen —, und dafür ist die Schwankung im Paar genau das Richtige. Dieselbe Messung kehrte damit vom Einwand zur Bestätigung.
+
+**Die Schwelle wurde nicht gesetzt, sondern gefunden.** `initiative_bit` mit `GV_INITIATIVE_SCHWELLE` macht seit Langem denselben Schalter für die Lagezeile, gegen 83 unabhängige Lesarten kalibriert. Eine zweite Zahl hieße, dass zwei Stellen dasselbe Wort verschieden lesen — und die Fassung wandert: 34 Zeilen des Bestandes stehen auf −0,45, 424 auf −0,05.
+
+> **Der Riegel liest den rohen Wert, nicht das Achsen-Bit.** Bei fehlendem Maß setzt `ei/dreischicht.py` **Bit 1** — *Nova führt* —, weil eine Achse immer ein Bit braucht. Ein Riegel darauf **öffnete im Moment des Ausfalls**. Das ist die Umkehrung der Regel, nach der Riegel 1 gebaut ist, und der teuerste Fehler, den dieser Tag nicht gemacht hat.
+
+**Die Voraussetzung war dieselbe wie bei Riegel 1 und nicht erfüllt:** Das Führungsmaß entsteht im Graphen, der Riegel entscheidet außerhalb. Der Haltungsstand trägt es jetzt als **eigenes Feld mit eigenem Grund**, ausdrücklich nicht an der Marke `gerechnet` — sonst verdeckte ein Ausfall der Haltung den Riegel 2.
+
+**`frequenz` ist Pflicht-Riegel geworden**, als Folge des Deckenfalls: Solange die Uhr stand, war ein nicht gerechneter Riegel 2 eine Lücke in den Daten; jetzt wäre er das Fehlen der einzigen Begrenzung, die den Zeitpunkt beurteilt.
+
+**Zwei eigene Messfehler, beide vom eigenen Werkzeug gefangen.** Die erste Verteilungsmessung meldete 37,3 % Turns ohne Führungsmaß — ein Artefakt der Zählvorschrift: Unter demselben `node` und derselben `art` schreibt ein zweiter Erzeuger die Landschaft. Und die Nachrechnung des Bits mit der heutigen Konstante wich in fünf Zeilen ab, weil die Schwelle damals −0,45 war; **`skalenfassung()` hat genau dafür den Maßstab je Zeile mitgeschrieben.**
+
+```
+Fuehrungsmass     457 Turns, 8 Paare, 0 ohne Wert
+Verhaeltnis       0,22   (geglaettet ueber 20 Turns: 0,38)
+Schalter offen    38,7 % gesamt · 47,9 % produktives Paar · 0 Ausfaelle
+Suite             1473 -> 1494 gruen, 0 uebersprungen
+Gegenproben       3 Eingriffe: 1 / 1 / 12 rot
+Nachzug           24 Kandidaten -> 10 geaendert, 14 verworfen
+```
+
+**Im Betrieb bestätigt**, unmittelbar nach dem Umbau: `[wollen+0.91 frequenz- ruhe+] entschieden=frequenz`, Grund `initiative_fehlt`. Der Trigger fällt jetzt alle 30 s statt einmal je Stunde — die Decke ist sichtbar weg. Der einzige Haltungsstand im Bestand trug das Feld noch nicht; es entsteht beim nächsten Turn je Paar, und bis dahin blockt Riegel 2 selbstheilend und zählbar.
 
 ## Chat 142 (15.08.2026) — Der Gedanke bringt seinen Zustand mit, und die Haltung überlebt den Turn 🔶
 

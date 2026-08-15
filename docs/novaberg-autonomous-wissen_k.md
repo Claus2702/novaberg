@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Autonomes Wissensverzeichnis — Recherche, Vertiefung, Klaerfrage, Traeumen
-**Stand:** 4. August 2026 (Erstfassung 29. April 2026, Chat 70)
+**Stand:** 15. August 2026 (v0.6); davor 4. August 2026 (Erstfassung 29. April 2026, Chat 70)
 **Pfad:** novaberg/docs/novaberg-autonomous-wissen_k.md
 **Status:** ⬜ **nicht gebaut.** Die Erstfassung ist drei Monate alt und wurde nie umgesetzt; §11 traegt die Ueberarbeitung auf den heutigen Stand.
 **Quellen:** Chat 70 (autoresearch, Claude Code autoDream, SWE-agent, Letta, Sleep-time Compute Paper)
@@ -579,7 +579,7 @@ Daraus folgt für die Bibliothek: Ein Vertiefungsergebnis liegt seinem Ausgangst
 
 **Was dabei entsteht, ist Wissen wie bei den anderen:** was gefragt wurde, was zurückkam, was daraus folgt. Es fällt in dieselbe Bibliothek.
 
-Eine Eröffnung ohne Anlass ist ein Eingriff. Die vorhandene Zustellung hat dafür Cooldown, Burst-Grenze und Verträglichkeitsprüfung und schweigt bei Stress ganz.
+Eine Eröffnung ohne Anlass ist ein Eingriff. Die vorhandene Zustellung hat dafür Burst-Grenze und Verträglichkeitsprüfung und schweigt bei Stress ganz. (Der Cooldown stand hier bis zum 15.08.2026 mit; er ist mit dem Bau von Riegel 2 gefallen — `novaberg-eigenzeit_k.md` §2.5.)
 
 > **Entschieden am 04.08.2026: Keine der Sperren wird gebrochen — von keinem Modus.**
 >
@@ -745,7 +745,7 @@ Die Alternative — ein eigener Agent `gedanken_decay` — wäre sauberer getren
 
 **Woran wird eine Verstärkung erkannt?** Vorschlag: an derselben Embedding-Nähe von 0.60, die heute löscht. Das ist eine Entscheidung, keine Ableitung.
 
-~~**Darf ein bedeutsames Anliegen den Zustellungs-Cooldown brechen?**~~ **Entschieden am 04.08.2026: nein, von keinem Modus.** Begründung in §11.3.
+~~**Darf ein bedeutsames Anliegen den Zustellungs-Cooldown brechen?**~~ **Entschieden am 04.08.2026: nein, von keinem Modus.** Begründung in §11.3. → **Seit dem 15.08.2026 gegenstandslos:** Es gibt keinen Cooldown mehr, den ein Modus brechen könnte. Die Entscheidung bleibt richtig und hat keinen Gegenstand.
 
 **Braucht der Verfall später eine eigene Frequenz?** Dann wird aus dem dritten Schritt ein eigener Agent (§11.7).
 
@@ -757,6 +757,8 @@ Die Alternative — ein eigener Agent `gedanken_decay` — wäre sauberer getren
 ---
 
 ## Versionshistorie
+
+- **v0.6 — 15.08.2026:** Zwei Stellen nachgezogen, weil **der Zustellungs-Cooldown nicht mehr existiert** (`novaberg-eigenzeit_k.md` §2.5). §11 nennt als Schutz jetzt Burst-Grenze und Verträglichkeitsprüfung ohne ihn, und die Entscheidung vom 04.08.2026 — kein Modus bricht den Cooldown — ist als **gegenstandslos** markiert statt gelöscht: Sie war richtig und hat ihren Gegenstand verloren.
 
 - **v0.5 — 05.08.2026:** §11.3 heißt **Die Klärfrage ist die dritte Quelle** — der Modus hieß hier `nachfragen`, und der Name war bereits vergeben. `novaberg-pixie-nachfragen_k.md` (27.07.2026) beschreibt unter demselben Namen eine andere Rolle, Zuwendung statt Wissen, verdrahtet an vier Stellen im Code. **Widerlegt** ist damit der Satz dieses Abschnitts, `nachfragen` komme „in keinem Konzept vor" — es kam in einem vor, acht Tage älteren, das bei der Abfassung nicht gefunden wurde. Entschieden ist die Trennung in **zwei Agenten**; die Abgrenzung steht in jenem Dokument §6, hier bleibt alles inhaltlich gültig unter dem Namen `klaerfrage`. Zusätzlich am Bestand belegt: Die 62 vorhandenen `nachfragen`-Aufträge tragen `freude`/`begeisterung` und keine Wissenslücke — dieser Modus kann sie nicht übernehmen und braucht einen eigenen Erzeuger, der auf `KLA-K1`/`KLA-K2` wartet.
 - **v0.4 — 04.08.2026:** `WIS-3` gebaut, am `recherche`-Agenten. §11.3 um die **Reichweite** erweitert: Quelle ist nicht der einzige Unterschied zwischen `recherche` und `vertiefung` — Recherche steckt einen flachen, breiten Umkreis ab, Vertiefung gräbt an einer Stelle und liegt ihrem Ausgangsthema im Vektorraum **näher**. Daraus folgt, dass die Schwelle, ab der ein Ergebnis „dieselbe Datei" trifft, für die beiden Modi nicht dieselbe Frage ist; die 0.60 aus §11.5 ist an Gedächtnisknoten gemessen, nicht an Vertiefungsergebnissen. §11.6 hält fest, was der Bau ergänzt hat: Ein **gescheiterter Durchlauf hinterlässt einen Bericht**, und das Gate wird dabei übergangen.

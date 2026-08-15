@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Pixie — Hintergrundverarbeitung (Übersicht)
-**Stand:** 15. August 2026 (Riegel 1 der Zustellung und sein Protokoll je Zustellversuch); davor 29. Juli 2026, Chat 117 (`ziel_decay` läuft wieder — die Stilllegung galt einen halben Tag. Kern: Chat 113, Aging gegen das Verhungern periodischer Aufgaben)
+**Stand:** 15. August 2026 (Riegel 1 **und Riegel 2** der Zustellung und ihr Protokoll je Zustellversuch; mit Riegel 2 ist die stündliche Decke gefallen); davor 29. Juli 2026, Chat 117 (`ziel_decay` läuft wieder — die Stilllegung galt einen halben Tag. Kern: Chat 113, Aging gegen das Verhungern periodischer Aufgaben)
 **Pfad:** novaberg/docs/novaberg-pixie.md
 **Quellen:** nova-05-k.md (Pixie-Konzept), nova-05-a.md (AgentGraph), nova-05-t-a.md (Queue/Stack/Delivery), nova-05-m-a.md (Agenten-Referenz)
 
@@ -125,7 +125,9 @@ Promotion-Queue Eintragsformat:
 >
 > **Eine unvollstaendige Kette laesst nichts durch.** Fehlt ein Pflicht-Riegel, ist das Urteil keines; der Eintrag traegt `vollstaendig` und die fehlenden Namen, damit eine Auswertung den Ausfall vom blockierenden Riegel trennen kann.
 >
-> **Zwei Grenzen, beide benannt.** Der Eintrag beginnt am Trigger (`umfang: ab_trigger`): Was davor abbricht — offene Rueckfrage, erschoepfter Burst, aktiver Cooldown, leerer Stapel —, erzeugt keinen. Und **Riegel 2 (Frequenz) ist nicht gebaut**; er steht als *nicht gerechnet* in den Daten, weil seine Schwelle unentschieden ist. Solange das so ist, bleibt die stuendliche Decke, wo sie ist.
+> **Zwei Grenzen, beide benannt.** Der Eintrag beginnt am Trigger (`umfang: ab_trigger`): Was davor abbricht — offene Rueckfrage, erschoepfter Burst, leerer Stapel —, erzeugt keinen. Und die Riegel 5 bis 7 entscheiden **innerhalb** der Zustellung und tragen ihre Werte noch nicht in denselben Eintrag ein.
+
+**Riegel 2 (`frequenz`) ist seit dem 15.08.2026 gebaut** — als **Schalter**, nicht als Frequenzmass: Hat Nova gerade die Initiative, darf ein Impuls kommen; hatte der Mensch sie, nicht. Er liest das Fuehrungsmass aus dem persistierten Haltungsstand und binarisiert es mit der vorhandenen `GV_INITIATIVE_SCHWELLE`. **Mit ihm ist die stuendliche Decke gefallen**; was die Wiederholung begrenzt, ist der Burst-Zaehler, was den Zeitpunkt beurteilt, sind die Riegel. Er ist **Pflicht-Riegel** — eine Kette ohne ihn laesst nicht durch. Herleitung und Messung in `novaberg-eigenzeit_k.md` §2.5.
 
 Shadow-Stack Eintragsformat:
 ```json
