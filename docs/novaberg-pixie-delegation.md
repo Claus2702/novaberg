@@ -103,7 +103,9 @@ Wenn keiner der drei Trigger zündet — Smalltalk, Plateau mit neutraler Valenz
 
 ### Queue-Ziel
 
-`shadow_queue:{user_id}` — dieselbe Queue, die der KZG-Agent für Recherche/Vertiefen/Nachfragen befüllt. Der Pixie-Router nimmt die Einträge auf und entscheidet, welcher Pixie-Agent zuständig ist.
+~~`shadow_queue:{user_id}`~~ → **Tabelle `shadow_auftrag` (PostgreSQL), seit 15.08.2026** — dieselbe Queue, die der KZG-Agent für Recherche/Vertiefen/Nachfragen befüllt. Der Pixie-Router nimmt die Einträge auf und entscheidet, welcher Pixie-Agent zuständig ist.
+
+> **Der Umzug berührt diesen Agenten nicht in seiner Arbeitsweise, nur im Ort.** Er schreibt nicht selbst in die Queue; sein Auftrag entsteht über `shadow_queue_push`, und die Funktion legt seit dem 15.08.2026 eine Zeile an statt eines Listeneintrags. **Zwei Dinge ändern sich dabei für jeden Erzeuger:** `prioritaet` ist ein **Pflichtargument** ohne Vorgabewert, und derselbe Gegenstand erzeugt keine zweite Zeile mehr, sondern **verstärkt** die vorhandene. Konzept: `novaberg-queue-verfall_k.md`.
 
 ---
 
@@ -125,7 +127,7 @@ AgentResult(
     agent_name="delegation",
     ergebnis="Das Problem ist erkannt. Lösung wird erarbeitet. Aufgabe: emotionale Stabilisierung.",
     status="abgeschlossen",
-    meta={"trigger": "effektivwert", "queue_key": "shadow_queue:meister"}
+    meta={"trigger": "effektivwert", "queue_key": "shadow_queue:meister"}  # bis 15.08.2026
 )
 ```
 
@@ -139,7 +141,7 @@ Der Responder sieht das AgentResult in `agent_results`. Wenn ein DelegationsAgen
 
 | | KZG-Agent | DelegationsAgent |
 |---|-----------|-----------------|
-| **Schreibt in** | Redis KZG (`kzg:{user_id}:*`) | Shadow-Queue (`shadow_queue:{user_id}`) |
+| **Schreibt in** | Redis KZG (`kzg:{user_id}:*`) | Shadow-Queue (~~`shadow_queue:{user_id}`~~ → Tabelle `shadow_auftrag`, 15.08.2026) |
 | **Zweck** | Gedächtnis sichern | Pixie beauftragen + Nova beruhigen |
 | **LLM-Call** | Ja (Verdichtung/kern) | Nein (Daten liegen vor) |
 | **Trigger** | Jeder Turn (Salienz > 0.5) | ODER-Verknüpfung (Effektivwert / Vektor / Salienz) |

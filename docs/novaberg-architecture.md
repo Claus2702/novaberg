@@ -318,7 +318,9 @@ project/
 │   │   │   ├── fakten_repository.py     #     Knowledge Graph Edges (bi-temporal)
 │   │   │   ├── timeline_repository.py   #     Termine und Ereignisse
 │   │   │   ├── notizen_repository.py    #     Merkzettel und Listen
-│   │   │   └── autonomous_wissen_repository.py # Metadaten der Wissens-Bibliothek (WIS-2/3)
+│   │   │   ├── autonomous_wissen_repository.py # Metadaten der Wissens-Bibliothek (WIS-2/3)
+│   │   │   ├── verbindung_repository.py #     KZG-Verbindungen
+│   │   │   └── shadow_auftrag_repository.py # Shadow-Queue samt Verfall (→ novaberg-queue-verfall_k.md)
 │   │   └── services/
 │   │       └── entity_resolution.py     #   Entity Resolution (Name + Fuzzy + Embedding)
 │   │
@@ -898,6 +900,7 @@ Das Kern-Schema lebt in `db/init.sql` als Single Source of Truth (Synapsen P0). 
 | `lzg_kanten` | `db/init.sql` | Synapsen-Kanten-Cache (Synapsen P2, abgeleiteter Cache; drei Trigger zur Neuberechnung) |
 | `pipeline_log` | `db/init.sql` | Forensik-Tabelle für Node-Entscheidungen pro Turn (Synapsen P1, JSONB-Inhalt) |
 | `autonomous_wissen` | `db/init.sql` | Metadaten der Wissens-Bibliothek (WIS-2, 04.08.2026) — **nicht der Inhalt**: Der liegt als Datei ausserhalb des Git-Roots. Paar-Schema und `salienz_anfang` ohne Vorgabewert; gelesen vom `WissenManager` als sechste Kontextquelle des Enrichers |
+| `shadow_auftrag` | `db/init.sql` | **Die Shadow-Queue** (15.08.2026) — bis dahin eine Redis-Liste. Traegt die Auftraege des Pixie-Heartbeats samt Verfallsmodell nach dem Muster von `lzg_knoten`: drei Salienz-Staende, `haeufigkeit`, `aktiv` als Soft-Delete, zwei Uhren. **Acht Spalten ohne Vorgabewert** — Paar-Tripel, Gegenstand und die drei Salienz-Staende; die Sperre wanderte aus der Signatur hierher. Uebernommen wurden 1036 Auftraege. Konzept: `novaberg-queue-verfall_k.md` |
 | `charakter_hash` | `db/init.sql` | 5 Persoenlichkeitsprofile (kern_hash, adaptive_hash, beziehungsprofil, intentions_profil, emotions_profil), alle im Prompt injiziert (seit Chat 52) |
 | `hintergrund_log` | `db/init.sql` | Pixie-Aufgabenprotokoll |
 | `gespraech_archiv` | `db/init.sql` | Session-Archivierung |

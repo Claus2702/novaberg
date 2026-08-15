@@ -94,7 +94,9 @@ if domain in PIXIE_DOMAINS:
         "kern": zusammenfassung,
         "context_user": user_id
     }
-    shadow_queue_push(user_id, queue_eintrag)
+    shadow_queue_push(user_id, queue_eintrag)   # seit 15.08.2026: Zeile
+                                                # in shadow_auftrag, und
+                                                # prioritaet ist Pflicht
     
     # Responder bekommt Hinweis fuer sofortige Antwort
     return {"agent_result": AgentResult(

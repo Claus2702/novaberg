@@ -198,6 +198,10 @@ Was passiert wenn ein User chattet waehrend Pixie gerade einen PixieGraph-Durchl
 
 RECH-SPIRAL entsteht, weil die Queue keine Themen-Aehnlichkeit prueft. Im PixieGraph wuerde der Thinker die Qualitaet pruefen, aber die Queue-Insertion passiert VOR dem Graph-Durchlauf. Braucht `shadow_queue_push` einen Embedding-Vergleich gegen die letzten N Eintraege?
 
+> **Zur Haelfte beantwortet am 15.08.2026.** `shadow_queue_push` prueft seither auf **Gleichheit** von `aufgabe` + `thema` und verstaerkt den vorhandenen Auftrag, statt einen zweiten anzulegen — die Queue liegt seit dem Umzug als Tabelle `shadow_auftrag` vor, und der Vergleich laeuft ueber einen Index statt ueber „die letzten N Eintraege".
+>
+> **Der Embedding-Vergleich fehlt weiterhin, und er ist der Teil, der diese Spirale trifft:** Sie entsteht aus *verwandten* Themen, nicht aus identischen. Er braucht eine gemessene Schwelle auf einer benannten Paarung und ist in `novaberg-queue-verfall_k.md` §6.1 ausdruecklich als zweiter Schritt ausgeschlossen.
+
 ## 7. Prinzipien
 
 > **"Pixie denkt mit Novas Kopf."** Dieselben Nodes, dieselbe Identitaet, dieselben Qualitaetsfilter. Der Unterschied ist nur die Trigger-Quelle (Queue statt User) und die Hardware (CPU statt GPU).

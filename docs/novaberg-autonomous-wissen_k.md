@@ -552,7 +552,7 @@ Dieselbe Partitionierung wie KZG, LZG-Knoten, `ziele` und `charakter_hash`. Ein 
 
 Was richtig bleibt, gilt für `klaerfrage`: Diese Quelle kommt im Entwurf nicht vor. Und der Aufgabenname `nachfragen` existiert seit Monaten als Routing-Ziel, ohne dass je beschrieben wurde, was der Agent tun soll; deshalb ist er nie gebaut worden, und deshalb liegen seine Aufträge unbearbeitet in der Queue.
 
-**Der Bestand widerlegt zusätzlich die Annahme, `klaerfrage` könne die vorhandenen Aufträge übernehmen.** Die 62 `nachfragen`-Aufträge in `shadow_queue:{user_id}` tragen `emotion: freude` bzw. `begeisterung` und **keine Wissenslücke** — das Feld existiert im Auftragsformat nicht. Sie stammen aus dem emotionalen Auslöser und sind für diesen Modus kein Eingang. `klaerfrage` braucht einen eigenen Erzeuger.
+**Der Bestand widerlegt zusätzlich die Annahme, `klaerfrage` könne die vorhandenen Aufträge übernehmen.** Die 62 `nachfragen`-Aufträge in ~~`shadow_queue:{user_id}`~~ (heute Tabelle `shadow_auftrag`; am 15.08.2026 waren es 45) tragen `emotion: freude` bzw. `begeisterung` und **keine Wissenslücke** — das Feld existiert im Auftragsformat nicht. Sie stammen aus dem emotionalen Auslöser und sind für diesen Modus kein Eingang. `klaerfrage` braucht einen eigenen Erzeuger.
 
 > **Der Unterschied zwischen den drei ist die Quelle, nicht der Ablauf.**
 >
