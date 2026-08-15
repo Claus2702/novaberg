@@ -73,19 +73,30 @@ Stand der Tabelle:
 
 Drei Redis-Strukturen verbinden Chat und Pixie:
 
-**Shadow-Queue** (`shadow_queue:{user_id}`, List, Chat nach Pixie): Wird automatisch aus dem KZG befuellt, wenn Salienz >= 0.7. Die primaere Intention bestimmt die Aufgabe (recherche, vertiefen, nachfragen). Max 20 Eintraege pro User. Nova-Guard: kein Push fuer `user_id="nova"` (verhindert Feedback-Loop).
+**Shadow-Queue** (`shadow_queue:{user_id}`, List, Chat nach Pixie): Wird automatisch aus dem KZG befuellt, wenn Salienz >= 0.7. Die primaere Intention bestimmt die Aufgabe (recherche, vertiefen, nachfragen). ~~Max 20 Eintraege pro User.~~ Nova-Guard: kein Push fuer `user_id="nova"` (verhindert Feedback-Loop).
 
-Shadow-Queue Eintragsformat:
+> **Widerlegt am 15.08.2026 — es gibt keine Obergrenze.** Im Schreibpfad `shadow_queue_push` steht kein `LTRIM`, keine Laengenpruefung und keine Konstante dieser Art; im ganzen Modul gibt es keinen Begrenzer. **Gemessen am 15.08.2026 um 13:52 UTC: 1036 Eintraege** in `shadow_queue:meister`, der aelteste 18 Tage alt. Die Zahl 20 war eine Absicht, die als Zustand geschrieben stand.
+>
+> **Es gibt bis heute auch keinen Verfall.** Ein Auftrag verlaesst die Queue nur durch Ausfuehrung oder durch Verwerfen nach drei Fehlversuchen. Das Konzept dazu steht in **`novaberg-queue-verfall_k.md`** — Soft-Delete statt hartem Loeschen, Frist 30 Tage, Schwelle 0,3, und dafuer der Umzug der Queue nach PostgreSQL.
+
+Shadow-Queue Eintragsformat — **berichtigt am 15.08.2026**, mechanisch ueber alle 1036 Eintraege des Bestands erhoben:
+
 ```json
 {
-    "aufgabe": "recherche",
-    "key": "kzg:meister:1711234567890",
-    "themen": "Quantencomputing, Physik",
-    "salienz": 0.85,
-    "emotion": "neugierig",
-    "modus": "fachgespraech"
+    "aufgabe":     "recherche",
+    "user_id":     "meister",
+    "thema":       "Quantencomputing",
+    "kontext":     "",
+    "prioritaet":  0.9764,
+    "intentionen": ["recherche_vertiefen"],
+    "emotion":     "neugierig",
+    "modus":       "fachgespraech",
+    "erstellt":    "2026-08-06T12:34:56.789012",
+    "_retries":    1
 }
 ```
+
+> **Die alte Fassung nannte vier Felder, die es nicht gibt** — `key`, `themen`, `salienz` und ein fehlendes `user_id`. Der Fall ist im Bug-Register als `KANDIDATEN-PRIORITAET-STILLE-NULL` gefuehrt: **`salienz` existiert im Auftragsformat nicht, der Wert heisst `prioritaet`** — was den Rueckfall `eintrag.get("prioritaet", eintrag.get("salienz", 0.0))` im Auswahlpfad erklaert und dazu, dass der zweite Griff nie zieht. `_retries` traegt der Eintrag erst nach einem Fehlversuch (43 von 1036); der Unterstrich verraet ein Feld, das nachtraeglich hinzukam. Der Inhalt ist **synthetisch** — die Feldbelegung ist die gemessene, das Thema konstruiert.
 
 **Promotion-Queue** (`queue:{user_id}`, List, Chat nach Pixie): Separater Kanal fuer Gedaechtnis-Promotion. Trigger: KZG-Eintrag erreicht Salienz >= PROMOTION_THRESHOLD (0.8). Hoechste Prioritaet — wird vollstaendig abgearbeitet.
 
