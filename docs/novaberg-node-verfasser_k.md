@@ -96,11 +96,25 @@ Der Gesprächsvektor hat seine Wahl damit bereits getroffen, bevor der Verfasser
 
 ### 2.2a Wessen Reiz — die Herkunft entscheidet über die Perspektive
 
-**Ein eigener Impuls reist auf dem Platz der Nutzereingabe.** Er steht unter
-`[AKTUELLER PROMPT]`, dort, wo sonst steht, was der Mensch gesagt hat. Wer
-diesen Platz liest, ohne nach der Herkunft zu fragen, hält Novas eigenen
-Gedanken für eine fremde Äußerung — und schreibt die Zuschreibung in den
-Inhalt.
+~~**Ein eigener Impuls reist auf dem Platz der Nutzereingabe.** Er steht unter
+`[AKTUELLER PROMPT]`, dort, wo sonst steht, was der Mensch gesagt hat.~~
+**Überholt am 15.08.2026 — beide Hälften.** Der Impuls hat seither einen
+eigenen Zustandskanal (`eigener_gedanke`), und auf einem Impuls-Turn wird
+**gar kein `[AKTUELLER PROMPT]` gesetzt**; an seine Stelle tritt
+`responder.auftrag_ohne_reiz`. Der Gedanke kommt statt dessen in beiden
+erzeugenden Stufen als Block `[EIGENER GEDANKE]` an, aus derselben
+Prompt-Datei.
+
+**Der Satz, der die Diagnose trägt, bleibt gültig:** Wer den Reiz-Platz liest,
+ohne nach der Herkunft zu fragen, hält Novas eigenen Gedanken für eine fremde
+Äußerung — und schreibt die Zuschreibung in den Inhalt.
+
+> **Der eigene Platz ist die Antwort auf genau diese Diagnose, und sie ist
+> baulich statt textlich.** Solange der Gedanke auf dem Reiz-Platz stand, war
+> die Verwechslung nur durch einen Prompt-Satz zu verhindern — vier Anläufe
+> haben dagegen angeschrieben und verloren. Ein Feld, das die falsche Aussage
+> nicht mehr transportieren kann, braucht kein Verbot. Was hier gestrichen ist,
+> ist deshalb nicht die Lehre, sondern nur die Lage, aus der sie stammte.
 
 **Der Responder unterschied den Fall seit dem 26.07.2026, der Verfasser nicht.**
 Das ging gut, solange der Responder den Text selbst formulierte. Seit der
@@ -285,6 +299,7 @@ Das neue State-Feld muss in `graph/state.py` deklariert **und** in `graph/base.p
 
 ## Versionshistorie
 
+- **v0.5 — 15.08.2026:** §2.2a nachgezogen — **der Impuls reist nicht mehr auf dem Platz der Nutzereingabe.** Beide Hälften des Eingangssatzes sind überholt: Er hat seit dem 15.08. einen eigenen Zustandskanal (`eigener_gedanke`), und auf einem Impuls-Turn wird **gar kein `[AKTUELLER PROMPT]` gesetzt** — an seine Stelle tritt `responder.auftrag_ohne_reiz`. Der Gedanke kommt statt dessen in beiden erzeugenden Stufen als Block `[EIGENER GEDANKE]` an, aus derselben Prompt-Datei. **Die Diagnose bleibt stehen und ist der Grund für die Änderung:** Wer den Reiz-Platz liest, ohne nach der Herkunft zu fragen, hält Novas Gedanken für eine fremde Äußerung — vier Anläufe im Prompttext haben dagegen angeschrieben und verloren, gemessen 13 von 14 Impulsen mit *„Du hast …"*. Ein Feld, das die falsche Aussage nicht mehr transportieren kann, braucht kein Verbot; gestrichen ist die Lage, nicht die Lehre.
 - **v0.4 — 14.08.2026:** Der Auftrag ist eine **Aufgabe** geworden (§2.2b): Konstellation, Aufgabe, drei prüfbare Bedingungen — die Form, die als Aufgabe 6 von 6 Längenkorridore traf und als Beschreibung 0 von 6. Der Inhalt entsteht seither in **dritter Person**; die Zuschreibung „Du hast …" verschwindet damit baulich statt per Verbot, und der Responder kann die Notiz nicht mehr durchreichen. Der Schutz aus §2.4 steht weiter, aber auf einem anderen Kontrast: Beide Sätze sind jetzt dritte Person, die Unterscheidung hängt am Subjekt und ist deshalb ausgeschrieben. Der ganze Prompt trägt **eine** Anrede. §2.2c: Der `[GESPRAECHSVEKTOR]`-Block hängt an der Landschaft statt an der Hypothese — er fehlte in 15 von 26 Läufen, während der Auftrag viermal auf ihn verwies; ein fehlendes Vorausdenken wird jetzt angesagt statt weggelassen. Der Umfang bekommt weiterhin **keine Zahl**.
 - **v0.3 — 05.08.2026:** Der Knoten zählt jetzt auch: Die **Vorzeichenprüfung** (`SYK-B4` Stufe 1) läuft unmittelbar nach dem Lesen des Kopfblocks und legt ihren Befund ins `pipeline_log` — hier, weil nur hier Urteil, Nutzeräußerung und Text zusammen vorliegen und das Urteil nirgends persistiert wird. Kein Modellaufruf, keine Verhaltensänderung. Dazu zwei Messergebnisse: Der Zähler ist an diesem Korpus zu 85 % blind, und die Wirkung des Kopfblocks auf die Kapitulationsrate ist **null**.
 - **v0.3 — 31.07.2026:** Zwei Aussagen live widerlegt und an ihrer Stelle markiert. §2.4 — der Schutz „der Leitgedanke ist die Richtung, nicht der Text" war **tragend**; ohne ihn formuliert niemand um, und die Kette reichte den Hypothesentext des Hintergrundagenten unverändert bis zum Nutzer durch. §2.3 — „lässt keine weg" machte die Kürze unbefolgbar und ist aufgehoben; hinzufügen bleibt verboten. Neu §7: Die Regeln sind zur Probe ausgesetzt, samt Beleg, dass mindestens eine der gemessenen Vorgabe des Gesprächsvektors widersprach. Woher die Länge stattdessen kommt, steht in `novaberg-haltungsraum_k.md`.

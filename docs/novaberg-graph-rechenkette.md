@@ -441,7 +441,7 @@ Ziehen dürfen **sechs von zwölf** Speichen — die ganze Abwendungsseite: *Zie
 3. **Die Platzierung.** Der Sprachstil-Block steht am **Ende der Nutzer-Nachricht**, hinter dem Verlauf — dort, wo eine Anweisung gegen mehrere tausend Tokens fremder Prosa noch etwas ausrichtet. Novas Wesen steht als letzter Block des System-Prompts, damit es am stärksten wirkt.
 
 **Beitrag:** Hier entsteht die Antwort auf den Prompt.
-**Reinheit:** der Modellaufruf unrein; `_ei_mikro_anweisung`, `_lage_zeilen`, `_sprachstil_block`, `_strip_salienz_tags`, `_reiz_ist_eigener_gedanke`, `achsen_klartext` rein.
+**Reinheit:** der Modellaufruf unrein; `_ei_mikro_anweisung`, `_lage_zeilen`, `_sprachstil_block`, `_strip_salienz_tags`, `achsen_klartext` rein — dazu `reiz_ist_eigener_gedanke` und `reiz_text`, beide rein, aber **nicht mehr Hilfsfunktionen dieses Knotens**: Sie stehen seit dem 13.08.2026 in `graph/reiz.py`, weil der Verfasser dieselbe Auskunft braucht (~~`_reiz_ist_eigener_gedanke`~~, vormals privat im Responder).
 **Prüfstand:** `test_responder_sprachstil.py`, `test_responder_eigener_gedanke.py`, `test_leere_antwort.py`.
 **Absicht:** `novaberg-node-responder.md`.
 

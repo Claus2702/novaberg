@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Konzept — Rolle, Auslöser und Sonderstellung des NachfragenAgenten
-**Stand:** 5. August 2026, Chat 129
+**Stand:** 15. August 2026, Chat 141 — §3 und §7 auf den Zustellungspfad nachgezogen
 **Pfad:** novaberg/docs/novaberg-pixie-nachfragen_k.md
 **Typ:** Konzept
 **Status:** ✅ **Gebaut und gemessen am 05.08.2026** — `PIX-MIG-7`. Stufe 1 ohne Modellaufruf; §9 trägt die Messwerte. Offen bleibt der Radfaktor (`PIX-STAPEL-RADFAKTOR`, §8.8)
@@ -36,24 +36,28 @@ Das ist keine Umformulierung, sondern ein prüfbares Kriterium, und es entscheid
 
 ### Auslöser — zwei Intentionen
 
-`memory/kzg.py:80,85` und `agents/kzg/queues.py:18,23` bilden Intentionen auf Shadow-Aufgaben ab:
+`_INTENTION_AUFGABE_MAP` — je einmal in `memory/kzg.py` und in `agents/kzg/queues.py` (§6: die Tabelle steht doppelt) — bildet Intentionen auf Shadow-Aufgaben ab:
 
 | Intention | Aufgabe |
 |---|---|
-| `emotionaler_ausdruck` | `nachfragen` |
+| ~~`emotionaler_ausdruck`~~ | ~~`nachfragen`~~ → **`""`, kein Auftrag** (05.08.2026) |
 | `hilferuf` | `nachfragen` |
+
+> **Der erste Auslöser ist entfallen, und dieser Abschnitt hat es bis zum 15.08.2026 nicht gesagt.** Die Entscheidung steht in §6, ihr Vollzug in §9 — **hier** stand weiter die Tabelle, die den Leser zuerst erreicht. `emotionaler_ausdruck` deckt jede Gefühlsäußerung ab, auch Freude und Begeisterung, und trägt damit keinen Druck im Sinne von §2; die Zuordnung war ein Defekt, kein zweiter gewollter Fall. Geprüft am 15.08.2026: In **beiden** Kopien von `_INTENTION_AUFGABE_MAP` steht `""`. Den Druck liefert seither allein der Emotionsvektor-Pfad des Routers.
 
 Der Eintrag entsteht nur, wenn die Salienz `KZG_SALIENZ_HIGH` erreicht (`novaberg-pixie.md` §3). Ein Nova-Guard verhindert Aufträge für `user_id="nova"` — sonst entstünde eine Rückkopplung, in der sie sich selbst nachfragt.
 
 ### Routing — der fallende Verlauf
 
-`services/pixie/router.py:76-78` wählt den Agenten zusätzlich über den Emotions-Vektor:
+`services/pixie/router.py` wählt den Agenten zusätzlich über den Emotions-Vektor:
 
 ```python
 # Emotionale Vektoren -> Nachfragen (einfuehlsame Begleitung)
-if emotions_vektor in ("absturz", "spirale", "einbruch"):
+if emotions_vektor in EMOTIONS_VEKTOREN_DRUCK:
     return "nachfragen"
 ```
+
+> **Bis zum 05.08.2026 stand hier ein Literal** — `("absturz", "spirale", "einbruch")`, im Router selbst aufgeschrieben. Es ist durch `EMOTIONS_VEKTOREN_DRUCK` aus `config.py` ersetzt; die drei Namen sind dieselben. §9 hält den Vorgang fest, **§3 hat ihn bis zum 15.08.2026 nicht nachgezogen** — der Abschnitt zeigte weiter das Literal, das der Grep im Router nicht mehr findet. Eine Korrektur weiter unten erreicht den Leser nicht, der oben aufhört.
 
 Nicht die momentane Emotion entscheidet, sondern die **Bewegung**: Ein Verlauf, der abstürzt, sich eindreht oder einbricht. Bei allem anderen fällt der Router auf Recherche zurück.
 
@@ -61,7 +65,24 @@ Nicht die momentane Emotion entscheidet, sondern die **Bewegung**: Ein Verlauf, 
 
 > **Der Zustellungsfilter wird von `novaberg-eigenzeit_k.md` §2.4 und §2.5 überholt (14.08.2026).** Was hier beschrieben ist, bleibt richtig und bleibt der **letzte** Riegel einer Kette: Vor die emotionale Kompatibilität treten die Zuwendung, das Führungsmaß, der Bezug auf die Äußerungen des Menschen und ein Themen-Tor mit gemessener Schwelle. Die Sonderstellung dieser Aufgabenart ändert sich dadurch nicht — sie ist weiterhin die einzige, die bei negativer Stimmung durchkommt.
 
-`services/shadow_delivery.py:86-92` — hier liegt die eigentliche Bedeutung:
+> **Nachtrag 15.08.2026 — der Absatz darüber ist eine Absicht, und sie ist zur Hälfte eingetreten.** Er nennt vier vorgelagerte Riegel im Futur (*„treten"*); zwei davon sind seither gebaut. Die Nummerierung ist die der Kette in `novaberg-eigenzeit_k.md` §2.5:
+>
+> | Riegel | Stand am 15.08.2026 |
+> |---|---|
+> | 1 — Zuwendung (*ob* überhaupt) | Konzept. Braucht die Haltungs-Persistenz, die es noch nicht gibt |
+> | 2 — Führungsmaß (*wie oft*) | Konzept. Seine Schwelle ist eine Entscheidung, die noch aussteht |
+> | 3 — Cooldown, Burst | bestand schon · **erweitert**, siehe §4 („Der Abstand") |
+> | 4 — Bezug auf die Äußerungen des Menschen | **gebaut** — ohne Zeitfenster, mit einer benannten offenen Kante |
+> | 5 — Themen-Tor | **gebaut** — `THEMEN_SCHWELLE`, 0,30 |
+> | 6 — Modus · 7 — Emotion | bestanden schon; **7 ist das, was dieser Abschnitt beschreibt** |
+>
+> **Zu Riegel 4, die offene Kante:** Liegt kein Bezugsvektor vor, wird **nichts** zugestellt, und die Stelle meldet den Grund. Das ist der häufigste Fall — 39 von 56 Impulsen am 14.08.2026. Wonach ohne Bezug gewählt werden soll, ist entschieden (höchste Salienz), aber nicht gebaut.
+>
+> **Zu Riegel 5, die Zahl und ihre Paarung:** Die Schwelle gilt für **Stapeltext gegen Nutzeräußerung**. Ihr Vorgänger stand bei 0,40 auf der Paarung Langtext gegen Langtext und hat damit Textsortengleichheit gemessen — 52 von 56 Impulsen kamen durch. **Eine Zahl ohne ihre Paarung ist keine Schwelle.** Höher als 0,30 geht nicht: Der beste je erreichte echte Treffer liegt bei 0,438. Die Zahl steht auf **drei** Äußerungen — eine begründete Setzung, kein belastbarer Messwert.
+>
+> Ebenfalls seit dem 15.08.2026 gebaut, ohne eigene Riegel-Nummer: **Ein Stapel-Eintrag ohne Embedding wird abgelehnt**, laut und mit Thema in der Meldung. Vorher galt er als exakt auf der Schwelle liegend und passierte — ein fehlender Wert wurde zum bestandenen Test.
+
+`_emotional_kompatibel()` in `services/shadow_delivery.py` — hier liegt die eigentliche Bedeutung:
 
 ```python
 if user_emotion == "stress":
@@ -76,7 +97,7 @@ Damit trägt der Agent eine Aufgabe, die kein anderer übernehmen kann: Fällt e
 
 ### Konfiguration
 
-`config.py:930` — `temperature: 0.6`, `max_output_tokens: 1024`. Die Temperatur liegt deutlich über den Analyse-Knoten (0.05–0.1) und über der Verdichtung (0.1). Das ist stimmig: Eine Rückfrage darf nicht schablonenhaft klingen.
+`NODE_LLM_CONFIG["nachfragen"]` in `config.py` — `temperature: 0.6`, `max_output_tokens: 1024`. Die Temperatur liegt deutlich über den Analyse-Knoten (0.05–0.1) und über der Verdichtung (0.1). Das ist stimmig: Eine Rückfrage darf nicht schablonenhaft klingen.
 
 ## 4. Was nicht entschieden war — und wie es entschieden wurde
 
@@ -91,6 +112,10 @@ Damit trägt der Agent eine Aufgabe, die kein anderer übernehmen kann: Fällt e
 ~~**Der Bezug zum Anlass.** Der Auftrag trägt Thema und Kontext des auslösenden KZG-Eintrags. Ob die Rückfrage daran anknüpfen soll („du hattest gestern von … erzählt") oder offen bleibt, ist eine Charakterfrage.~~ → **Entschieden am 05.08.2026: offen, ohne Anlassbezug.** Nova nennt nicht, worauf sie sich bezieht. Der Preis ist benannt: Die Annäherung verliert ihre Verankerung. Der Grund, sie trotzdem so zu bauen, ist, dass ein genannter Anlass sichtbar macht, dass mitgeschrieben und bewertet wurde — in genau der Lage, in der das am wenigsten trägt.
 
 ~~**Der Abstand.** Kein Mechanismus begrenzt heute, wie oft nachgefragt wird. Bei anhaltend negativer Stimmung erzeugt jeder hinreichend saliente Turn einen neuen Auftrag.~~ → **Gegenstandslos für die Zustellung, offen für die Erzeugung.** Wie oft etwas *rausgeht*, begrenzt der Zustellungs-Cooldown (`shadow_cooldown:{user_id}`, TTL 3600 s, gelöscht durch die nächste Nutzeraktion) zusammen mit der Burst-Grenze; nach der Entscheidung vom 04.08.2026 bricht ihn **kein** Modus (`novaberg-autonomous-wissen_k.md` §11.3). Unberührt bleibt, wie oft ein *Auftrag entsteht* — das ist ein Mengenproblem der Queue und trifft alle Aufgabenarten gleich, nicht nur diese.
+
+> **Nachtrag 15.08.2026 — es sind seither drei Bedingungen, nicht zwei.** Zu Cooldown und Burst-Grenze ist **`_rueckfrage_offen`** getreten: Solange eine Rückfrage Novas unbeantwortet ist, geht kein Impuls hinaus. Sie steht **vor** dem Burst-Zähler, und diese Reihenfolge ist die Aussage — ein unterdrückter Impuls soll die nächste Gelegenheit nicht mitverbrauchen. Stünde sie dahinter, zählte das Warten als Verbrauch.
+>
+> **Der Satz von 04.08.2026 gilt unverändert:** Den Cooldown bricht **kein** Modus. Die neue Bedingung bricht ihn nicht, sie kommt hinzu — sie kann nur zusätzlich verhindern, nie zusätzlich erlauben.
 
 **Damit sind alle vier entschieden.** Der erste stand seit dem 27.07.2026 als „nicht entschieden" — er war aber gar nicht offen, sondern falsch gestellt: Er fragte nach einer Formulierung, und Formulieren ist nicht die Aufgabe eines Agenten. Was tatsächlich zu entscheiden war, ist **woraus das Material besteht**; das steht in §7.
 
@@ -158,16 +183,33 @@ Der Ersatzwert ist `""` — kein Auftrag. Jede andere Zuordnung erfände eine Ab
 Der Weg ist für alle Agenten derselbe:
 
 ```
-Auftrag aus der Queue → Agent beschafft Material → stack_push(aufgabe, thema, inhalt)
+Auftrag aus der Queue → Agent beschafft Material → stack_push(…)
                                                           ↓
-              Zustellung: Thema, Emotion, Modus, Cooldown, Burst, Filter
+                                   Zustellung — die Riegel aus §3
                                                           ↓
-                    inhalt → AgentGraph als user_prompt → CharacterGraph
+                     inhalt → AgentGraph  (auf dem Reiz-Platz, user_prompt)
+                            → CharacterGraph (auf eigenem Platz, eigener_gedanke)
                                                           ↓
                                           Emotion, Assoziation, Stimme
 ```
 
+> **Die Kompaktzeile hieß bis zum 15.08.2026** *„Zustellung: Thema, Emotion, Modus, Cooldown, Burst, Filter"* **und trug einen Weg über `user_prompt` in beide Graphen.** Beides ist überholt, in drei Punkten:
+>
+> - Die Aufzählung war schon damals unvollständig und ist es seither mehr: Die Riegel stehen vollständig und nummeriert in §3 und in `novaberg-eigenzeit_k.md` §2.5. Eine zweite Liste an dieser Stelle wäre die Kopie, die ausgerechnet hier zuerst altert — deshalb steht hier ein Zeiger und keine Aufzählung.
+> - **„Thema" bedeutet nicht mehr dasselbe.** Es ist heute ein Tor mit einer Schwelle auf einer benannten Paarung, nicht ein Ähnlichkeitswert unter anderen.
+> - **Die beiden Graphen bekommen den Reiz nicht mehr auf demselben Platz.** Der AgentGraph nimmt ihn weiterhin als `user_prompt`; im Ereignis für den CharacterGraph steht er in `eigener_gedanke`, und `user_prompt` **fehlt dort ganz** — nicht leer, sondern abwesend. Ein leeres Feld wäre dieselbe Aussage, ein gefülltes eine Äußerung, die es nicht gab.
+>
+> `stack_push` nimmt seit dem 15.08.2026 zusätzlich `salienz` und `arousal`; `None` heißt dort **unbekannt** und wird nie zu einer Zahl.
+
 Die Begründung steht im Zustellungspfad selbst (`services/shadow_delivery.py`): *„Das Wissensstueck selbst ist der Reiz — nicht ein daraus formulierter Satz. […] Vorher sprach die Delivery den Gedanken aus, bevor er gedacht war."*
+
+> **Nachtrag 15.08.2026 — der Satz gilt weiter, aber er beantwortet nur noch eine von zwei Fragen.**
+>
+> **Er gilt unverändert für *wer formuliert*.** Die Zustellung spricht den Gedanken nicht aus; das Material geht roh in den Graphen, und die Stimme entsteht dort. Das ist die tragende Aussage dieses Abschnitts und sie ist unberührt.
+>
+> **Er gilt nicht mehr für *auf welchen Platz das Material geht*.** Als der Satz geschrieben wurde, war das dieselbe Frage — der Reiz reiste auf dem Platz der Nutzereingabe, und „roh" hieß deshalb zwangsläufig „an der Stelle, wo sonst der Mensch steht". Seit dem 14./15.08.2026 sind es zwei Fragen: Der Gedanke reist als `eigener_gedanke` und kommt in **beiden** erzeugenden Stufen — Verfasser und Responder — als **Block** an, nicht als Prompt. Auf einem Impuls-Turn wird gar kein `[AKTUELLER PROMPT]` gesetzt.
+>
+> **Warum das kein Widerspruch zum Satz oben ist, sondern seine Fortsetzung:** Ein Reiz auf dem Platz der Nutzereingabe ist bereits eine Behauptung darüber, wer gesprochen hat. Gemessen am 13.08.2026 begannen **13 von 14** Impulsen mit *„Du hast …"* — die Zuschreibung stand im Material, nicht im Prompt, und vier Anläufe im Prompttext haben dagegen angeschrieben und verloren. Der eigene Platz nimmt ihr die Grundlage, statt sie zu verbieten.
 
 **Für dieses Bauteil heißt das: Es beschafft nichts Neues.** Die Geschwister holen von außen — die Recherche aus der Welt, die Vertiefung aus dem eigenen Bestand, die Klärfrage aus einer erkannten Lücke. Beim Nachfragen gibt es nichts zu holen: Der Anlass ist ein Zustand des Gegenübers, kein Wissensdefizit. **Das Material ist der Druck selbst — und der ist bereits gerechnet.**
 
@@ -353,6 +395,7 @@ Der Vektor-Kanon steht als Konstante in `config.py`, und der Router liest die Dr
 
 ## Versionshistorie
 
+- **v0.7 — 15.08.26:** **Nachzug auf den Zustellungspfad**, fällig seit dem 14.08.2026 — der Code lief diesem Abschnitt einen Tag voraus, in Teilen zehn. §3: Der überholende Absatz war im **Futur** geschrieben (*„Vor die emotionale Kompatibilität **treten** …"*) und ist zur Hälfte eingetreten; die Riegel tragen jetzt einzeln ihren Stand, in der Nummerierung von `novaberg-eigenzeit_k.md` §2.5. Gebaut sind **4** (Bezug auf die Äußerungen des Menschen, ohne Zeitfenster) und **5** (Themen-Tor, 0,30); **1** und **2** — Zuwendung und Führungsmaß — bleiben Konzept. **Die Paarung gehört zur Zahl:** Der Vorgänger 0,40 galt auf Langtext gegen Langtext und maß damit Textsortengleichheit, 52 von 56 Impulsen kamen durch; die 0,30 gilt auf Stapeltext gegen Nutzeräußerung und steht auf drei Äußerungen — begründete Setzung, kein belastbarer Messwert. Riegel **3** hat eine dritte Bedingung bekommen (`_rueckfrage_offen`, **vor** dem Burst-Zähler, damit ein unterdrückter Impuls die nächste Gelegenheit nicht mitverbraucht); der Satz von 04.08., dass **kein** Modus den Cooldown bricht, bleibt davon unberührt — die Bedingung kann nur zusätzlich verhindern, nie zusätzlich erlauben. **§3 war darüber hinaus an drei Stellen älter als das eigene Dokument** — alle drei sind Fälle von *nicht nur weiter unten korrigieren*: Die Intentions-Tabelle führte `emotionaler_ausdruck` → `nachfragen` weiter, obwohl §6 den Wegfall entscheidet und §9 ihn vollzieht (geprüft: in beiden Kopien steht `""`). Das Codebeispiel des Routers zeigte ein Literal, das seit dem 05.08. durch `EMOTIONS_VEKTOREN_DRUCK` ersetzt ist — der Grep im Router findet es nicht mehr. Und **fünf von fünf Zeilenzitaten des Abschnitts waren überholt**; sie sind durch Ankernamen ersetzt, wie es die Doku-Grundsätze verlangen. §7: Die Kompaktzeile ist durch einen **Zeiger** ersetzt statt durch eine zweite Aufzählung, weil eine Kopie der Riegelliste hier zuerst altern würde. **Der Reiz-Satz ist halb überholt und bleibt stehen:** Er gilt weiter für *wer formuliert*, nicht mehr für *auf welchen Platz das Material geht* — als er geschrieben wurde, war das dieselbe Frage. Der Gedanke reist als `eigener_gedanke` und kommt in beiden erzeugenden Stufen als **Block** an; im Ereignis für den CharacterGraph **fehlt `user_prompt` ganz**, nicht leer, sondern abwesend.
 - **v0.6 — 05.08.26:** **Gebaut und gemessen**, §9 neu. Stufe 1 laeuft ohne Modellaufruf und erzeugt den Reiz aus drei Farbton-Saetzen und dem Anlass. Die wertvollere Haelfte der Messung ist die stille: ein sechs Tage alter Auftrag gegen die laufende Session, Vektor `eskalation`, kein Stapel-Eintrag, beide Audit-Zeilen nachgewiesen — §8.1 im Betrieb. Zwei Gegenproben vorher benannt und exakt eingetroffen (7 und 2). Ausdruecklich ungemessen bleibt der Weg vom Turn zum Vektor: Ein Absturz laesst sich nicht bestellen, und ihn in der Produktivsession zu setzen hiesse, falsche Gefuehlshistorie zu schreiben. Der Auslöser `emotionaler_ausdruck` ist in beiden Kopien entfernt, der Vektor-Kanon steht als Konstante — Letzteres eine benannte Abweichung von der Abgrenzung in §8.7.
 - **v0.5 — 05.08.26:** §8.8 neu — **das Zuwendungsrad macht die Nachfrage wahrscheinlicher oder unwahrscheinlicher.** Die Größe war bereits gebaut und heißt `fragen` (`SPEICHEN_BEITRAG` in `ei/haltung.py`); `pflicht` trägt dort **−0.20**, weil „Auftraege ernst nehmen" abarbeitet statt fragt. Bis heute wirkt sie erst stromabwärts und formt, *wie* Nova fragt, nicht *ob* die Nachfrage aufgeworfen wird. **Damit ist die Entscheidung aus §4 korrigiert:** Aus „der Agent entscheidet nicht" war fälschlich „der Charakter spricht nicht mit" geworden, was `novaberg-klaerung_k.md` §2.1 widerspricht — das Fragen ist die eine Stufe, die der Charakter abwägen darf. Der Charakter wägt ab, aber in der Zustellung. Der Faktor ist **multiplikativ**, damit „kein Veto" eine Eigenschaft der Bauart ist und nicht der Kalibrierung: Ein Summand könnte den Score auf null drücken, und ein Eintrag mit Score ≤ 0 gewinnt auch als einziger nie. Das Rad wird zur Zustellzeit gelesen — womit das fehlende Gewichtsfeld des Stapels für diesen Zweck **entfällt**. Eigenes Bauteil `PIX-STAPEL-RADFAKTOR`, weil es alle Aufgabenarten betrifft.
 - **v0.4 — 05.08.26:** §8 neu — **der Bauplan.** Die tragende Entscheidung ist, dass der Druck **frisch gelesen** und nicht dem Auftrag entnommen wird: Die Aufträge im Bestand sind fünf bis neun Tage alt, und Zuwendung zu einem Druck, der vorbei ist, ist keine. Stufe 1 verdichtet **ohne Modellaufruf** — der Farbton spricht bereits im Zielregister, ein Hintergrundaufruf kostet hier 35 bis 38 Sekunden, und die deterministische Fassung ist der Zeuge, gegen den eine spätere Modellfassung zu messen wäre. Kein KZG-, Bibliotheks- oder Ziel-Schreiben, weil kein Wissen entsteht. Der Ausgang „kein Druck mehr" ist ausdrücklich `erledigt` und nicht `fehler`. ZIEL, TEST und MESSUNG stehen, samt der Hürde, dass ein Absturz sich nicht bestellen lässt — erreichbar über ein wissenschaftliches Thema mit negativer Valenz, weil der Vektor die Bewegung liest und nicht den Gegenstand.

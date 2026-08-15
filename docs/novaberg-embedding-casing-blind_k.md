@@ -202,13 +202,19 @@ Wachposten-Kommentare.
 | `EMOTIONALE_GRAVITATIONS_SCHWELLE` | `config.py` | 0.50 | **0.40** |
 | `GV_CHARAKTER_RESONANZ_SCHWELLE` | `config.py` | 0.40 (Fallback 0.5) | **0.40** (geprüft, bewusst unverändert) |
 | `GV_NEUGIER_BOOST_SCHWELLE` | `config.py` | 0.30 | **0.30** (geprüft, bewusst unverändert) |
-| `shadow_delivery` `SIMILARITY_THRESHOLD` | `shadow_delivery.py` | 0.40 | **0.40** (geprüft, bewusst unverändert) |
+| ~~`shadow_delivery` `SIMILARITY_THRESHOLD`~~ | `shadow_delivery.py` | 0.40 | ~~**0.40** (geprüft, bewusst unverändert)~~ → **überholt am 14.08.2026**, siehe unten |
 
 > **`anker_retrieval` ist der wichtigste Einzelwert im System — an ihm hängt Schale 0
 > der gesamten Spreading Activation.** 100 % Abdeckung ist NICHT das Ziel: „Hast Du
 > mich denn vermisst?" braucht keinen Anker — Cold Start ist dort die richtige
 > Antwort, kein Ausfall. (Alter Raum bei 0.50: 100 % Abdeckung, Ø 299,6 von 302 —
 > jeder Turn bekam praktisch den gesamten Korpus.)
+
+> **Überholt am 14.08.2026 — die Zeile zu `shadow_delivery` war richtig und ist es nicht mehr.** Die Konstante heißt heute `THEMEN_SCHWELLE` und steht bei **0,30**. Die Absenkung ist keine Nachjustierung derselben Größe: **Der Wert wird auf einer anderen Paarung gemessen.** Die 0,40 galt für Langtext gegen Langtext und hat damit vor allem Textsortengleichheit erfasst — Median 0,557 im Bestand, 52 von 56 Impulsen kamen durch. Die 0,30 gilt für **Stapeltext gegen Nutzeräußerung**, einen langen Fachtext gegen einen kurzen Zuruf; dort liegt der beste je erreichte echte Treffer bei 0,438, und über 0,45 kommt nichts mehr durch, auch das Passende nicht.
+>
+> **Das ist der Fall, vor dem der Wachposten unten warnt, in einer zweiten Gestalt.** Dort steht die Sorge, ein Fallback-Wert könne eine Schwelle immer passieren; hier hat eine Schwelle über Monate fast alles passieren lassen, weil sie gegen die falsche Paarung gehalten wurde. **Eine Zahl ohne ihre Paarung ist keine Schwelle** — und ein „geprüft, bewusst unverändert" prüft die Zahl, nicht die Paarung.
+>
+> Die 0,30 steht auf **drei** Äußerungen: eine begründete Setzung, kein belastbarer Messwert. Herleitung in `novaberg-pixie-nachfragen_k.md` §3.
 
 **Wachposten:** Ziele und `nova_kern` wurden nicht gemessen; nach Live-Betrieb
 prüfen. Der `charakter_resonanz`-Fallback 0.5 (bei fehlendem Kern-Embedding) passiert

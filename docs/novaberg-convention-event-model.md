@@ -100,8 +100,14 @@ Jedes Event ist ein JSON-Dict:
 | Erzeuger | `source` | `typ` | Anlass |
 |---|---|---|---|
 | `api/chat.py` (sync + stream) | `user` | `message` | Der Nutzer hat geschrieben. Payload traegt `turn_id` und die neun EI-Dimensionen aus `external.emotion`. |
-| `services/shadow_delivery.py` | `character` | `message` | **Neu Chat 110.** Ein Pixie-Impuls: das Wissensstueck als `user_prompt`, dazu `turn_id` und `reiz_herkunft="eigener_impuls"`. Das Payload traegt nur, was der Stack-Eintrag wirklich hat — die uebrigen EI-Dimensionen bleiben leer statt plausibel gefuellt. |
+| `services/shadow_delivery.py` | `character` | `message` | **Neu Chat 110, geaendert am 15.08.2026.** Ein Pixie-Impuls: das Wissensstueck steht in **`eigener_gedanke`**, dazu `turn_id` und `reiz_herkunft="eigener_impuls"`. ~~das Wissensstueck als `user_prompt`~~ — **`user_prompt` fehlt im Payload ganz**, siehe unten. Das Payload traegt nur, was der Stack-Eintrag wirklich hat — die uebrigen EI-Dimensionen bleiben leer statt plausibel gefuellt. |
 | `services/event_consumer.py` | `character` | `continue` | Thinker-Selbsttrigger bei Doppel-Fehlschlag. **Erbt** die `turn_id` — es ist derselbe Gedanke, nochmal versucht. |
+
+> **Abwesend, nicht leer — der Reiz-Platz des Impuls-Ereignisses (15.08.2026).** Ein Pixie-Impuls trug den Gedanken bis dahin als `user_prompt`, auf demselben Platz, an dem sonst steht, was der Mensch gesagt hat. Seither hat er einen eigenen: `eigener_gedanke`. **`user_prompt` wird im Payload nicht gesetzt** — weder gefuellt noch leer.
+>
+> **Die Unterscheidung traegt die Aussage.** Ein gefuelltes Feld waere die Behauptung, jemand habe gesprochen; ein leeres Feld waere dieselbe Aussage in schwaecherer Form, denn es liesse offen, ob niemand sprach oder ob die Erhebung ausfiel. Die Abwesenheit sagt das eine, was zutrifft: **Auf diesem Weg hat niemand gesprochen.**
+>
+> **Kein Rueckfall auf den Reiz-Platz, wenn der Gedanke fehlt.** Ein Impuls ohne Gedanken ist ein Defekt und soll wie einer aussehen. Wer den Reiz eines Durchlaufs braucht, gleich von wem er stammt, liest ihn ueber `graph/reiz.py` statt ueber eines der beiden Felder.
 
 **`turn_id`: erzeugen oder erben.** Wer einen neuen Turn ausloest, erzeugt eine neue `turn_id` (Chat-API, Delivery). Nur der Retry erbt sie. Die Unterscheidung ist nicht aus `source` ableitbar — Delivery und Retry tragen beide `character` —, deshalb steht die Herkunft ausdruecklich im Payload.
 

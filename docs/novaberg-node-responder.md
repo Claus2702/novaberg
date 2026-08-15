@@ -347,6 +347,16 @@ Der Responder sendet eine einzige User-Message an das LLM, die den Gesprächsver
 [user]   → [GESPRAECHSVERLAUF] + [AKTUELLER PROMPT] + [DEIN SPRACHSTIL]
 ```
 
+**Auf einem Impuls-Turn schliesst die Nutzer-Message anders (15.08.2026).** Der Schlussteil traegt dann nicht `[AKTUELLER PROMPT]`, sondern `responder.auftrag_ohne_reiz` — *„Person A ist an der Reihe und eroeffnet von sich aus. Forme den Inhalt zu ihrer Rede."*:
+
+```
+[user]   → [GESPRAECHSVERLAUF] + auftrag_ohne_reiz + [DEIN SPRACHSTIL]
+```
+
+**Der Gedanke steht dabei nicht in der Nutzer-Message, sondern als `[EIGENER GEDANKE]` im System-Prompt** (§3.1). Ein `[AKTUELLER PROMPT]` mit Novas eigenem Text waere die Behauptung, Person B habe ihn gesagt — und der Verlauf darueber bleibt in beiden Faellen derselbe, weil er in beiden Faellen dasselbe ist.
+
+> **Warum die Unterscheidung baulich ist und nicht per Anweisung.** Solange der Gedanke auf dem Reiz-Platz stand, war die Verwechslung nur durch einen Prompt-Satz zu verhindern; vier Anlaeufe haben dagegen angeschrieben und verloren. Gemessen am 14.08.2026 mit bereits leerem Reiz-Platz schrieb das Modell weiterhin *„PERSON B stellt die physikalische Beobachtung … in den Raum"*, obwohl Person B nichts gesagt hatte — **eine Rollenzuweisung ist keine Anweisung, sie ist eine Struktur.** Deshalb wird der Block ersetzt und nicht ergaenzt.
+
 ### 4.1 [DEIN SPRACHSTIL] — der eine Block außerhalb des System-Prompts (Chat 114)
 
 Alles über das *Wie* der Antwort steht im System-Prompt und damit vor dem Verlauf. Gemessen an einem Turn hieß das:

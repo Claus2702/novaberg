@@ -271,10 +271,15 @@ Das State-Dict durchlaeuft alle Nodes. Jeder Node liest was er braucht und schre
 |------|-----|-------------|-------------|
 | `user_id` | `str` | API-Layer | Alle Nodes |
 | `character_id` | `str` | API-Layer / `create_state` | Alle Nodes (Paar-Partitionierung, seit Chat 60) |
-| `user_prompt` | `str` | API-Layer | Perzeption (HG), Router, Salienz (HG) |
+| `user_prompt` | `str` | API-Layer | Perzeption (HG), Router, Salienz (HG). **Traegt nur, was das Gegenueber gesagt hat.** Auf einem Impuls-Turn leer — dort steht der Gedanke in `eigener_gedanke` |
+| `eigener_gedanke` | `str` | Event-Consumer (Impuls-Payload) | Verfasser, Responder, Router, Thinker, Salienz, Gespraechsvektor — durchweg ueber `graph/reiz.py`, nicht direkt. **Neu seit 15.08.2026.** Leer auf jedem Nutzer-Turn |
 | `turn_id` | `str` | API-Layer (`/chat`, `/chat/stream`) | Pipeline-Log-Korrelation aller Nodes eines Konversations-Turns — derselbe Wert durch HumanGraph und CharacterGraph (Chat 88 P1.1, vervollstaendigt Chat 90 TURN-ID-FIX) |
 | `system_prompt` | `str` | API-Layer | Responder |
 | `temperature` | `float` | API-Layer | LLM-Calls |
+
+> **Die beiden Reiz-Plaetze schliessen einander aus (seit 15.08.2026).** Genau eines von `user_prompt` und `eigener_gedanke` ist belegt, und **`event_payload["reiz_herkunft"]` benennt, welches**. Der Marker ist noetig, weil `event_source == "character"` allein nicht genuegt: Der Thinker-Retry traegt dieselbe Quelle und wiederholt dabei eine echte Nutzer-Aeusserung.
+>
+> **Kein Node liest die beiden Felder direkt.** Wer den Reiz dieses Durchlaufs braucht, gleich von wem er stammt, ruft `reiz_text(state)` aus `graph/reiz.py`; wer die Herkunft braucht, `reiz_ist_eigener_gedanke(state)`. **Es gibt keinen Rueckfall vom einen Platz auf den anderen** — ein Impuls ohne Gedanken ist ein Defekt und soll wie einer aussehen, statt als Turn zu laufen, der den falschen Text bewertet.
 
 ### 4.1a Event- und Rollen-Flags (Chat 60/62)
 
