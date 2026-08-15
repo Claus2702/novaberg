@@ -733,9 +733,24 @@ Drei von ihnen sind stille Vorgabewerte an einer Stelle, an der ein Ausfall geh�
 
 **Nachgemessen am 15.08.2026: der Anteil hat sich verdreifacht.** **230 von 1028** Aufträgen tragen `prioritaet: 0.0` — 22,4 % statt 7,5 %. Dabei zeigte sich, dass der Schlüssel `salienz` in **keinem einzigen** Auftrag belegt ist; der Rückfall auf `prioritaet` ist nicht der Sonderfall, sondern der Normalfall. Zwei Folgen: `_salienz_aus_auftrag` (`agents/recherche/agent.py`) wirft auf diesen 230 Aufträgen einen `ValueError` — seit dem 15.08.2026 fangen der Stapel-Pfad ihn ab und legen den Eintrag ohne Rangwert ab, der KZG-Pfad nicht. **Und beim Verfall der Queue nach `novaberg-eigenzeit_k.md` fielen sie sämtlich beim ersten Lauf heraus**, weil die Löschschwelle bei 0,3 liegt (entschieden am 15.08.2026). Das ist gewollt — es steht hier, damit es später niemand für einen Unfall hält.
 
-**Was fertig waere.** Ein Auftrag ohne Prioritaet und ohne Salienz scheitert laut, statt auf die niedrigste Stufe zu fallen.
+**Ursache gefunden am 15.08.2026 — zwei Schreibpfade, und einer übergibt den Wert nicht.**
 
-**Prioritaet:** mittel.
+```
+agents/kzg/queues.py   shadow_queue_push(… prioritaet=neue_salienz …)   ✅
+memory/kzg.py          shadow_queue_push(… kein prioritaet-Argument …)  ❌
+```
+
+`shadow_queue_push` trägt in seiner Signatur `prioritaet: float = 0.0`. **Der Vorgabewert macht aus einem nicht übergebenen Argument eine Zahl, die wie eine gemessene aussieht** — der Aufruf ist syntaktisch vollständig, es fehlt nichts, und niemand sieht es an der Aufrufstelle. Beide Pfade laufen unter derselben Bedingung (`salienz >= KZG_SALIENZ_HIGH`) und beide bilden dieselbe Intention auf dieselbe Aufgabe ab; der Unterschied ist ausschließlich das fehlende Argument.
+
+**Das ist die Fehlerklasse „weggelassene Vorgabe ist die Vorgabe des Vorgabewerts"** — der Wert 0,0 ist hier nicht nur falsch, sondern der ungünstigste mögliche: Er ist ein gültiger Salienzwert, er unterschreitet jede Schwelle, und er sortiert den Auftrag an das Ende jeder Rangfolge, ohne dass irgendwo eine Meldung entsteht.
+
+**Nachgemessen am 15.08.2026 um 13:52 UTC, mit Aufschlüsselung nach Aufgabenart:** **233 von 1036** Aufträgen tragen `prioritaet: 0.0` — und **alle 233 sind `vertiefen`**, keine einzige `recherche`, keine `nachfragen`. Diese Verteilung war aus der Gesamtzahl nicht zu sehen; sie verbindet den Defekt mit zwei weiteren Befunden auf demselben Pfad (`information_teilen` → `vertiefen`): 141 dieser Aufträge tragen zusätzlich ein **leeres `thema`**, und für die Aufgabenart existiert **kein Agent**.
+
+**Was fertig waere.** `memory/kzg.py` übergibt die Salienz, **und** der Vorgabewert `0.0` fällt aus der Signatur von `shadow_queue_push` — ein Auftrag ohne Prioritaet scheitert dann laut, statt auf die niedrigste Stufe zu fallen. Ohne den zweiten Teil behebt der erste nur den heute bekannten Aufrufer.
+
+> **Der Verfall behebt das nicht, er räumt nur auf.** Nach `novaberg-queue-verfall_k.md` fallen die 233 beim ersten Lauf sämtlich unter die Schwelle 0,3 — **gewollt, und dank Soft-Delete rückholbar**, statt wie zunächst entschieden hart gelöscht. Genau dafür ist das Soft-Delete da: Die Null ist hier nachweislich ein Schreibfehler und kein schwacher Anlass. **Solange der Defekt steht, entstehen nach dem Umzug weiter Nullen** — dann allerdings gegen ein `NOT NULL` ohne Vorgabewert, das sie laut abweist.
+
+**Prioritaet:** mittel. **Aber Vorbedingung des Queue-Umzugs**, denn dessen Schema erzwingt genau das, was hier fehlt.
 
 #### NOVA-UEBERNIMMT-BIOGRAFIE 🔧 offen
 
