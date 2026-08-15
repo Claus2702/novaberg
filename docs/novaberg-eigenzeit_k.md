@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Konzept — Novas Zustand zwischen den Begegnungen, ob sie zugeht und in welchem Zustand sie ihrem Menschen begegnet
-**Stand:** 15. August 2026 (v0.16)
+**Stand:** 15. August 2026 (v0.17)
 **Pfad:** novaberg/docs/novaberg-eigenzeit_k.md
 **Typ:** Konzept (`_k`)
 **Status:** 🔶 Konzept — **fünf der sechs Bauteile gebaut** (E, F, C, A, B); **D fehlt** und ist ohne die Haltungs-Persistenz nicht baubar. C trägt eine benannte offene Kante (der Fall ohne Bezug), B wartet auf seinen ersten Eintrag mit Level.
@@ -245,6 +245,8 @@ Verhaeltnis        0,22 0,30 0,32 0,35 0,38
 **Entschieden am 15.08.2026: Riegel 2 ist ein Schalter, kein Frequenzmaß.** Hat Nova gerade die Initiative, darf ein Impuls kommen; hatte der Mensch sie, nicht. Mehr entscheidet er nicht — *was* und *wie viel* durchkommt, entscheiden die übrigen Riegel. Damit kehrt sich die Messung vom Einwand zur Bestätigung: Ein Schalter auf den Moment braucht die Trennung der Paare gar nicht, er braucht die Schwankung **im** Paar — und die ist da.
 
 **Die Decke ist mit ihm gefallen.** Was die Wiederholung begrenzt, ist der Burst-Zähler; was den Zeitpunkt beurteilt, sind die Riegel.
+
+> **Damit ändert sich, was die beiden offenen Reste der Protokollpflicht kosten.** Solange die Decke stand, waren sie eine Lücke in den Daten. Jetzt ist der Burst-Zähler die einzige Wiederholungsgrenze — und er erzeugt **keinen Eintrag, wenn er blockt**, weil er vor dem Trigger steht. Eine Auswertung kann seine Durchlässe zählen und seine Blockaden nie. Die Lücke sitzt seit dem Deckenfall genau an der Grenze, die beobachtet werden soll (`novaberg-backlog.md` → `ZUSTELLUNG-ABBRUCH-UNGEZAEHLT`).
 
 **Zuwendung entscheidet das Ob, Initiative den Moment.** Die Häufigkeit entsteht aus dem Zusammenspiel aller Riegel und ist keine eigene Größe mehr.
 
@@ -519,7 +521,7 @@ im Defektregister.
 
 **Und die Kette verweigert, wenn sie unvollständig ist.** `durchgelassen()` hing zunächst allein am fehlenden Blocker — eine Kette ohne einen einzigen Eintrag hat keinen, und damit hätte ein Ausfall der Aufnahme **jeden** Gedanken durchgelassen, bei grüner Suite. Ein Urteil ohne die Pflicht-Riegel ist keines; „nichts geprüft" darf nicht aussehen wie „nichts einzuwenden". Die Vollständigkeit steht mit den fehlenden Namen im Eintrag, damit eine Auswertung sie nicht an `durchgelassen: false` raten muss.
 
-**Die Protokollpflicht ist zur Hälfte eingelöst.** Je Zustellversuch entsteht ein Eintrag im `pipeline_log` (Knoten `zustellung`) mit dem entscheidenden Riegel, den Werten der gerechneten und der Marke für die nicht gerechneten — alle sieben stehen darin, auch die nie berührten. **Zwei benannte Reste:** Der Eintrag beginnt am Trigger (`umfang: ab_trigger`), weil Rückfrage, Burst und leerer Stapel davor abbrechen und ihre Umstellung das Verbrauchsverhalten des Momentums änderte; und die Riegel 5 bis 7 entscheiden **innerhalb** der Zustellung und tragen ihre Werte noch nicht in denselben Eintrag ein.
+**Die Protokollpflicht ist zur Hälfte eingelöst.** Je Zustellversuch entsteht ein Eintrag im `pipeline_log` (Knoten `zustellung`) mit dem entscheidenden Riegel, den Werten der gerechneten und der Marke für die nicht gerechneten — alle sieben stehen darin, auch die nie berührten. **Zwei benannte Reste** (`novaberg-backlog.md` → `ZUSTELLUNG-ABBRUCH-UNGEZAEHLT` und `RIEGEL-5-7-OHNE-EINTRAG`)**:** Der Eintrag beginnt am Trigger (`umfang: ab_trigger`), weil Rückfrage, Burst und leerer Stapel davor abbrechen und ihre Umstellung das Verbrauchsverhalten des Momentums änderte; und die Riegel 5 bis 7 entscheiden **innerhalb** der Zustellung und tragen ihre Werte noch nicht in denselben Eintrag ein.
 
 **Stand 15.08.2026: Riegel 2 ist gebaut** (`services/pixie/riegel.py`, `initiative_pruefen`), als **Schalter** auf dem Führungsmaß des persistierten Standes, mit der vorhandenen Schwelle `GV_INITIATIVE_SCHWELLE`. **Mit ihm ist die stündliche Decke gefallen** — `_cooldown_aktiv` und `_cooldown_setzen` sind weg, `shadow_cooldown_reset` heißt jetzt `shadow_burst_reset` und löscht nur noch den Zähler.
 
@@ -615,6 +617,8 @@ Und die Antwort daraus: *„Weißt du, ich muss ständig an diese 43 Bogensekund
 ---
 
 ## Versionshistorie
+
+- **v0.17 — 15.08.2026:** Die zwei Reste der Protokollpflicht haben eine Kennung (`ZUSTELLUNG-ABBRUCH-UNGEZAEHLT`, `RIEGEL-5-7-OHNE-EINTRAG`) und §2.5 sagt jetzt, **was sie seit dem Deckenfall kosten**: Der Burst-Zähler ist die einzige verbliebene Wiederholungsgrenze und erzeugt keinen Eintrag, wenn er blockt — die Lücke im Protokoll sitzt damit genau an der Grenze, die beobachtet werden soll. Vorher war sie eine Lücke in den Daten, jetzt eine im Messinstrument.
 
 - **v0.16 — 15.08.2026:** **Riegel 2 ist gebaut, und die stündliche Decke ist gefallen.** Der offene Punkt aus §6 ist gemessen und **negativ beantwortet**: Das Führungsmaß schwankt innerhalb eines Paares rund fünfmal stärker, als es die Paare trennt (Verhältnis 0,22; geglättet über zwanzig Turns nur 0,38, und dabei sinkt die Zwischen-Spanne sogar). Es kann keine Frequenz je Paar tragen. **Die Widerlegung hat die Bauart geändert, nicht den Bau aufgehalten:** Riegel 2 ist ein **Schalter** auf den Moment — hat sie gerade die Initiative, darf ein Impuls kommen —, und dafür ist die Schwankung im Paar genau das Richtige. Damit kehrt sich dieselbe Messung vom Einwand zur Bestätigung. **Die Schwelle wurde nicht gesetzt, sondern gefunden:** `initiative_bit` mit `GV_INITIATIVE_SCHWELLE` macht seit Langem denselben Schalter für die Lagezeile; eine zweite Zahl hieße, dass zwei Stellen dasselbe Wort verschieden lesen. **Der Riegel liest den rohen Wert und nicht das Achsen-Bit** — bei fehlendem Maß setzt `dreischicht.py` Bit 1 („Nova führt"), und ein Riegel darauf öffnete im Moment des Ausfalls. Seine Voraussetzung ist eingelöst wie die von Riegel 1: Das Führungsmaß reist im Haltungsstand mit, als **eigenes Feld mit eigenem Grund** und ausdrücklich nicht an der Marke `gerechnet` — sonst verdeckte Riegel 1 den Riegel 2. `frequenz` ist **Pflicht-Riegel** geworden, als Folge des Deckenfalls. Gemessen: Der Schalter stünde in **38,7 %** aller Turns offen (produktives Paar 47,9 %, 0 Ausfälle); im Betrieb fällt der Trigger jetzt alle 30 s statt einmal je Stunde.
 
