@@ -97,6 +97,14 @@ Die Zugehörigkeit zu einer dieser Reihen hebt einen Eintrag; alles andere sinkt
 
 ---
 
+## Block 15.08.2026 — aus dem Nachzug selbst
+
+| Kennung | Was offen ist | Band |
+|---|---|---|
+| `NACHZUG-KANDIDATEN-GATE` | **Ein Riegel vor dem Doku-Commit, der die Kandidatenmenge aus der Dateiliste des Diffs ableitet** — für jede geänderte Produktivdatei alle Dokumente, die ihren Pfad oder Dateinamen nennen — und anschlägt, solange ein Kandidat weder geändert noch mit Grund verworfen ist. **Der Anlass ist gemessen, nicht vermutet:** Am 15.08.2026 galt ein Nachzug nach dem Bezeichner-Kriterium als vollständig (zehn Dokumente); die Ableitung aus der Dateiliste ergab **28 Kandidaten** und darin **drei echte Lücken**, keine davon über die geänderten Bezeichner erreichbar. Der Grund ist strukturell: Ein Dokument, das den Vorgang beschreibt, ohne den neuen Namen zu nennen, **kann** ihn nicht nennen. **Bekannte Grenze:** 36 der 149 Dokumente nennen überhaupt keine Datei und stehen damit in keiner Kandidatenliste — der Riegel deckt die dateibenennende Klasse ab, nicht die begriffliche. | ungebändigt |
+
+---
+
 ## Block 14.08.2026 — aus der Eigenzeit-Messung
 
 Drei Einträge. Der erste ist ein Zeiger auf ein Konzept und **keine Wiederholung seines Inhalts** — die sechs Bauteile stehen dort mit ZIEL, TEST, MESSUNG und Gegenprobe; hier steht nur, dass sie offen sind und in welcher Reihenfolge.

@@ -92,7 +92,7 @@ Format-Wissen lebt **nicht** im Reducer. Nach der Dedup übergibt der Reducer di
 - Der Formatter ist eine **reine Funktion**, kein Graph-Node. Er trifft keine Entscheidungen, sondern baut den finalen Memory-Context-String aus den strukturierten Entries.
 - **Sortierung:** `summary` zuerst, dann `charakter`, dann `kzg`+`lzg` gemeinsam absteigend nach `gewicht`, dann `plugin_*` in Eingangsreihenfolge, unbekannte Quellen als Fallback ans Ende (mit Logging-Warnung pro Eintrag).
 - **Format-Konvention pro Quelle** ist im Formatter-Modul zentralisiert — beim nächsten Format-Wechsel ist genau ein Ort betroffen, weder die Memory-Module noch die Plugin-Manager noch der Reducer kennen Output-Format.
-- Der Formatter wird außerdem vom `thinker`-Memory-Search-Tool direkt aufgerufen ([thinker.py:189](novaberg/server/graph/nodes/thinker.py#L189)), um identische Format-Konventionen über beide Pfade zu garantieren.
+- Der Formatter wird außerdem vom `thinker`-Memory-Search-Tool direkt aufgerufen — im Werkzeug `memory_search` in `graph/nodes/thinker.py`, am Aufruf von `_format_faktencheck_treffer` —, um identische Format-Konventionen über beide Pfade zu garantieren. **Ankername statt Zeilennummer:** Die Zahl stand auf 189 und traf schon vor der Änderung vom 15.08.2026 nicht mehr zu.
 
 ---
 
