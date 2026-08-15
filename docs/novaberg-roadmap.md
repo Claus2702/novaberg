@@ -2002,6 +2002,20 @@ Beide Räder haben eine Nabe — den Wert ohne jede Ausprägung — und das Erge
 
 **Geschlossen:** `WEBSOCKET-OHNE-KEEPALIVE`
 
+### Bauteil A — der Verfall über das Intervall
+
+**Gebaut.** Eine Äußerung nach einer Pause trifft Nova nicht mehr auf dem Zustand von gestern Nacht. Der Verfall sitzt im Zugriffsknoten und wird von der Äußerung ausgelöst, nicht von einer Uhr; gedämpft wird das Flüchtige (Erregung als Zahl, Modus/Stil/Ton/Emotion als springende Kategorien), während Nähe, Tiefe und Beziehungsdynamik unberührt bleiben.
+
+**Die Uhr fehlte und ist mitgebaut worden.** `nova_state` trug elf Felder und keinen Zeitstempel. Der Session-Verlauf führt zwar einen je Turn, taugt aber nicht als Quelle: Ab 25 Turns werden die ältesten zehn zusammengefasst und entfernt — eine Nacht mit stündlichen Impulsen schiebt die letzte Äußerung aus dem Fenster, während sie die Frist immer wieder erneuert. Der Zustand trägt jetzt `turn_zeit` (jeder Turn) und `nutzer_zeit` (nur eine Äußerung). **Die Trennung ist der Bauteil:** Liefe die Uhr auf jedem Turn, setzte der stündliche Impuls sie zurück und die Nacht wäre nie eine Pause.
+
+**Die Session-Frist steigt auf vier Stunden** (`SESSION_TTL`, vorher zwei). Sie lag unter dem Nullpunkt der Verfallskurve, und dazwischen klaffte ein Fenster, in dem der **Verlauf vor dem Zustand** verschwindet — Nova wäre noch nicht zur Ruhe gekommen und hätte schon vergessen, worüber gesprochen wurde. Ein Zeuge bindet die beiden Zahlen aneinander; sie stehen an verschiedenen Orten und sind je für sich plausibel.
+
+**Ein Fund am eigenen Code, bevor er einer wurde:** Die erste Fassung nahm die Uhr des schreibenden Knotens. Der läuft am Ende des Durchlaufs — gemessen **127,8 Sekunden** hinter dem Empfang der Äußerung, die sonst als Fehler in jedem Abstand steckten. Genommen wird jetzt `empfangen_am` aus dem Ereignis; dieselbe Begründung stand seit Chat 124 in `api/chat.py`, wo `erstellt_am` aus genau diesem Grund verworfen wurde.
+
+**Gemessen am 15.08.2026:** Ein Impuls-Turn setzt `turn_zeit` und **nicht** `nutzer_zeit`, und löst keinen Verfall aus. Eine Äußerung nach 14425 s Pause ergab `Faktor 0.00, Erregung 0.90 → 0.50, Kategorien gesprungen` — danach steht der Zustand wieder bei 0,90, weil die Wahrnehmung sie von dem gefallenen Wert aus hinaufgezogen hat.
+
+**Suite:** 1345 → **1365 grün, 0 übersprungen.** Zwei Gegenproben; die zweite war **grün** und hat damit eine Lücke gezeigt statt einen Erfolg: Der Bauteil ließ sich vollständig ausklinken, ohne dass ein Test rot wurde. Zwei Zeugen auf die Verdrahtung nachgezogen, danach schlägt sie an.
+
 ---
 
 ## Chat 139 (14./15.08.2026) — Drei Bauteile, und ein Verbot räumt seinen Platz ✅

@@ -36,7 +36,7 @@ Das heutige Charakter-System leistet diese These **nicht** — und der Grund ist
 **Folge:** Novas „Selbstbild" wird aus nutzer-handelndem Material destilliert und ihr übergestülpt. Live beobachtet: Das Nova-Profil las sich als Kopie des Nutzer-Profils („Nova ist ein analytischer Perfektionist… **er** neigt… **sein** Beschützerinstinkt"), das Pflänzchen wurde dem Nutzer zugeschrieben, die Profile waren homogen. Die Deutung des LLM war *korrekt* — nur aus den falschen Daten.
 
 **Wurzel (Stand Chat 103 — ~~gilt~~ **galt**):** Novas wörtliche Rede (Responder) und ihr Denken (Thinker) werden ~~**nirgends dauerhaft gespeichert**~~:
-- Session-Turns leben nur in Redis (`session:*:turns`, TTL 7200s / 2h) und verfallen.
+- Session-Turns leben nur in Redis (`session:*:turns`, TTL 14400s / 4h) und verfallen.
 - `gespraech_archiv` ist die exakt dafür geformte Tabelle (user_id, session_id, rolle, inhalt, salienz) — aber ohne Writer/Reader, dauerhaft leer (Struktur-Fossil aus `db/init.sql`).
 - ~~`pipeline_log` ist Ausführungs-Forensik (Spans, Timings, DB), kein Transkript — und TTL-behaftet (`LZG_PIPELINE_LOG_VORHALTUNG_TAGE`, Live-Default 365 Tage).~~ → **überholt Chat 104:** `pipeline_log` trägt seit dem `turn_roh`-Schreibpfad das vollständige Transkript-Paar a–d, und die Retention nimmt `art='turn_roh'` ausdrücklich aus (§4.1). Für die drei anderen Aufzählungspunkte gilt der Befund unverändert.
 

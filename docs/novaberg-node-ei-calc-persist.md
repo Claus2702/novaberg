@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Pipeline-Node `ei_calc_persist` (Konsolidierung und Persistierung der Nova-EI)
-**Stand:** 28. Juli 2026, Chat 114 (elf Felder: die neun EI-Dimensionen plus die beiden Raum-Achsen)
+**Stand:** 15. August 2026, Chat 140 (dreizehn Felder: die neun EI-Dimensionen, die beiden Raum-Achsen aus Chat 114 und die beiden Uhren der Eigenzeit)
 **Pfad:** novaberg/docs/novaberg-node-ei-calc-persist.md
 **Quellen:** novaberg-path2-perzeption_k.md (archiviert)
 **Datei:** `graph/nodes/ei_calc_persist.py`
@@ -84,7 +84,7 @@ Die Plausibilitäts-Funktionen sind beschrieben in `novaberg-ei.md`. Sie sind ni
 
 ### Schritt 2 — Redis-Persistierung
 
-Die elf konsolidierten Felder werden in einen Redis-Hash geschrieben — die neun EI-Dimensionen plus die beiden Achsen von Novas Raum (Chat 114).
+Die dreizehn konsolidierten Felder werden in einen Redis-Hash geschrieben — die neun EI-Dimensionen, die beiden Achsen von Novas Raum (Chat 114) und die beiden Uhren der Eigenzeit (Chat 140).
 
 ```python
 nova_state_key = f"nova_state:{user_id}:{character_id}"
@@ -100,13 +100,25 @@ nova_state_mapping = {
     "tone":                 internal.emotion.tone,
     "intent":               internal.emotion.intent,
     "prompt_topic":         internal.emotion.prompt_topic,
+    "turn_zeit":            str(jetzt),          # jeder Turn
 }
+if nutzer_zeit is not None:                      # nur eine Aeusserung
+    nova_state_mapping["nutzer_zeit"] = str(nutzer_zeit)
+
 redis_client.hset(nova_state_key, mapping=nova_state_mapping)
 ```
 
 **Kein TTL.** Der Hash überlebt zwischen Turns und Server-Restarts. Konsistent zur `gv:detail:`-Konvention: jeder CharacterGraph-Lauf überschreibt den vorigen Stand, kein Verfall.
 
-**Schreib-Modus `hset` mit `mapping`:** Atomischer Update aller elf Felder gleichzeitig, nicht inkrementell — der Hash wird durch jeden Lauf vollständig neu beschrieben.
+**Schreib-Modus `hset` mit `mapping`:** Atomischer Update aller Felder gleichzeitig, nicht inkrementell — der Hash wird durch jeden Lauf vollständig neu beschrieben. `nutzer_zeit` ist die Ausnahme: Es wird auf einem Impuls-Turn **nicht mitgeschrieben** und behält damit seinen Stand.
+
+**Warum zwei Uhren (Chat 140).** Der Verfall über das Intervall (`novaberg-eigenzeit_k.md` Bauteil A) braucht den Abstand zur letzten **Nutzeräußerung**. Liefe er auf dem letzten Turn, setzte der stündliche Impuls die Uhr zurück und die Nacht wäre nie eine Pause — das ist die Bedingung, an der der Bauteil scheitert, wenn man sie übersieht. `turn_zeit` trägt deshalb jeden Turn, `nutzer_zeit` nur den, den ein Mensch ausgelöst hat.
+
+**Und warum hier statt im Session-Verlauf**, der ein `zeit`-Feld je Turn führt: **Die Länge des Verlaufs ist begrenzt, nicht nur seine Frist.** Ab 25 Turns werden die ältesten zehn zusammengefasst und entfernt (`SESSION_SUMMARIZE_AT`) — als Zahl überlebt ein Zeitstempel das nicht. Eine Nacht mit stündlichen Impulsen schiebt die letzte Nutzeräußerung damit aus dem Fenster, **während sie die Frist immer wieder erneuert**: Der Verlauf lebt, und gerade der eine Eintrag, auf den es ankäme, ist fort.
+
+Die Frist selbst war bis zum 15.08.2026 das zweite Argument — sie lag bei zwei Stunden, also **unter** der Verfallskurve. Sie steht jetzt bei vier (`SESSION_TTL`) und deckt die Kurve ab; das Argument der Kappung bleibt davon unberührt. Unabhängig von beidem gilt: Der Zustand liegt ohnehin in diesem Hash, und seine Uhr gehört dorthin, wo er selbst liegt.
+
+**Die Quelle von `nutzer_zeit` ist `empfangen_am` aus dem Ereignis, nicht die Uhr dieses Knotens.** Er läuft am Ende des Durchlaufs, hinter Perzeption, Salienz und den Modellaufrufen. Gemessen am 15.08.2026 lagen zwischen beiden **127,8 Sekunden** — sie steckten sonst als Fehler in jedem Abstand. Dieselbe Begründung steht an der Quelle in `api/chat.py`, wo `erstellt_am` aus genau diesem Grund verworfen wurde.
 
 **Warum der Raum hier mitfährt (Chat 114):** Die neun EI-Felder beschreiben je eine Äußerung — sie werden pro Turn neu klassifiziert. Die beiden Raum-Achsen beschreiben einen **Zustand**, der zwischen zwei Labels liegen kann und über mehrere Turns wandert. Ohne Persistenz gäbe es keinen Zwischenzustand und damit keinen Zug, nur ein Springen von Label zu Label. Geschrieben werden sie hier, weil der Raum denselben Lebenszyklus hat wie der übrige Nova-Zustand: ein Wert je Paar, kein Verfall, überschrieben am Ausgang jedes CharacterGraph-Laufs.
 
@@ -185,6 +197,8 @@ Tabellarisch zur Übersicht:
 | `tone` | string | `empathisch` |
 | `intent` | string | `personal` |
 | `prompt_topic` | string | `Gefuehl des Einklangs` |
+| `turn_zeit` | string (Unix-Zeit) | `1786792663.6` |
+| `nutzer_zeit` | string (Unix-Zeit) | `1786792535.8` — fehlt, solange nie eine Äußerung einging |
 
 Inspektion per `redis-cli`:
 

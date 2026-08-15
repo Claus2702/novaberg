@@ -360,6 +360,55 @@ Und die Antwort: *„Weißt du, ich muss ständig an diesen einen Datenpunkt den
 
 ### 5.1 Bauteil A — der Verfall über das Intervall
 
+**Stand 15.08.2026: gebaut.** Der Verfall sitzt im Zugriffsknoten
+(`graph/nodes/db_zugriff.py`, `_zustand_verfallen`) und wird von der Äußerung
+ausgelöst, nicht von einer Uhr. Die Kurve steht in `ei/eigenzeit.py`, ihre drei
+Marken in der Konfiguration.
+
+**Die Uhr war nicht vorhanden und ist mitgebaut worden.** `nova_state` trug
+elf Felder und keinen Zeitstempel. Der Session-Verlauf trägt zwar einen je
+Turn, taugt aber nicht als Quelle: Ab 25 Turns werden die ältesten zehn
+zusammengefasst und entfernt, und als Zahl überlebt ein Zeitstempel das nicht.
+Eine Nacht mit stündlichen Impulsen schiebt die letzte Äußerung damit aus dem
+Fenster, **während sie die Frist immer wieder erneuert** — der Verlauf lebt,
+und gerade der Eintrag, auf den es ankäme, ist fort. Der Zustand trägt deshalb
+jetzt **zwei** Uhren: `turn_zeit` bei jedem Turn, `nutzer_zeit` nur bei einer
+Äußerung.
+
+**Die Session-Frist ist dabei auf vier Stunden gestiegen** (vorher zwei). Sie
+lag unter dem Nullpunkt der Kurve, und daraus entstand ein Fenster, in dem der
+**Verlauf vor dem Zustand** verschwindet: Nova wäre noch nicht zur Ruhe
+gekommen und hätte schon vergessen, worüber gesprochen wurde — dieselbe fremde
+Nova wie in §2.2, nur von der anderen Seite. Ein Zeuge hält seither fest, dass
+`SESSION_TTL` die Kurve überdauert; beide Zahlen stehen an verschiedenen Orten
+und sind je für sich plausibel, also genau die Konstellation, in der sie
+auseinanderlaufen.
+
+**Drei Setzungen, die das Konzept offengelassen hat:**
+
+1. **Zwischen den Marken wird linear interpoliert.** Die Sieben-Werte-Tabelle
+   oben ist damit eine Illustration, keine Vorschrift — die gebaute Kurve
+   weicht von ihr um bis zu **0,055** ab (bei 1,5 h: 0,675 statt 0,73). Das
+   liegt unter der Unsicherheit der Marken selbst, die geschätzt sind (§6).
+2. **Die Kategorien springen unterhalb des Halbwerts** (0,45,
+   `EIGENZEIT_KATEGORIE_SCHWELLE`). Begründung: Trägt eine Kategorie zu
+   weniger als der Hälfte, ist sie keine mehr. Setzung, nicht gemessen.
+3. **Die Erregung wird zur Ruhelage 0,5 gezogen, nicht gegen null
+   multipliziert.** Eine Erregung von 0,00 wäre keine Ruhe, sondern ein toter
+   Wert — und im Bestand ist 0,5 der Ausfallwert der Wahrnehmung.
+
+`[gemessen]` — 15.08.2026. Ein Impuls-Turn setzt `turn_zeit` und **nicht**
+`nutzer_zeit`; auf ihm findet kein Verfall statt (null Verfallszeilen im
+Protokoll). Eine Äußerung nach einer Pause von 14425 s ergab
+`Faktor 0.00, Erregung 0.90 → 0.50, Kategorien gesprungen`. Der Zustand danach
+steht wieder bei 0,90 — die Wahrnehmung der Äußerung hat sie von dem Wert aus
+hinaufgezogen, auf den sie gefallen war. Genau das ist der Mechanismus aus §2.2.
+
+**Die Uhr der Äußerung ist `empfangen_am` aus dem Ereignis, nicht die Uhr des
+schreibenden Knotens.** Er läuft am Ende des Durchlaufs; gemessen lagen
+zwischen beiden **127,8 Sekunden**, die sonst als Fehler in jedem Abstand
+steckten.
+
 | Zeile | Inhalt |
 |---|---|
 | **ZIEL** | Eine Nutzeräußerung nach einer Pause trifft Nova auf einem über die Kurve gedämpften Zustand; Nähe, Tiefe und Beziehungsdynamik bleiben unberührt, Impuls-Turns sind nicht betroffen. |

@@ -11,7 +11,7 @@
 
 ## 1. Aufgabe
 
-Das Session-Gedächtnis ist Novas Arbeitsgedächtnis für das laufende Gespräch. Es speichert jeden Turn (User + Assistent), reichert User-Turns nachträglich mit Salienz-Metadaten an und fasst ältere Turns zusammen, wenn der Stapel zu groß wird. Es lebt in Redis mit TTL — nach 2 Stunden Inaktivität verschwindet es.
+Das Session-Gedächtnis ist Novas Arbeitsgedächtnis für das laufende Gespräch. Es speichert jeden Turn (User + Assistent), reichert User-Turns nachträglich mit Salienz-Metadaten an und fasst ältere Turns zusammen, wenn der Stapel zu groß wird. Es lebt in Redis mit TTL — nach 4 Stunden Inaktivität verschwindet es.
 
 > **Kognitionswissenschaftliche Analogie:** Das Arbeitsgedächtnis nach Baddeley (1974) hat eine begrenzte Kapazität und hält Informationen nur aktiv, solange sie gebraucht werden. Novas Session ist das Äquivalent: Begrenzt auf die letzten ~20 Turns, mit einer „phonologischen Schleife" (Summary) für ältere Inhalte.
 
@@ -23,8 +23,8 @@ Das Session-Gedächtnis ist Novas Arbeitsgedächtnis für das laufende Gespräch
 
 | Key | Typ | TTL | Beschreibung |
 |-----|-----|-----|-------------|
-| `session:{user_id}:{character_id}:turns` | List | 7200s (2h) | Geordnete Liste aller Turns |
-| `session:{user_id}:{character_id}:summary` | String | 7200s (2h) | Zusammenfassung älterer Turns |
+| `session:{user_id}:{character_id}:turns` | List | 14400s (4h) | Geordnete Liste aller Turns |
+| `session:{user_id}:{character_id}:summary` | String | 14400s (4h) | Zusammenfassung älterer Turns |
 | `nova_state:{user_id}:{character_id}` | Hash | kein TTL | Persistierter Nova-Zustand: neun EI-Dimensionen (Chat 89) + `raum_tiefe`/`raum_naehe` (Chat 114) |
 
 Seit Chat 60: Session-Key enthält `character_id`. Die Session repräsentiert das Gespräch zwischen einem bestimmten User und einem bestimmten Charakter (z.B. `session:meister:nova:turns`). Helfer: `_session_key(user_id, character_id, suffix)`.
@@ -186,7 +186,7 @@ Der Marker verhindert, dass Classify-Nodes erledigte Anweisungen als aktive Auft
 | Konstante | Wert | Beschreibung |
 |-----------|------|-------------|
 | `SESSION_MAX_TURNS` | 20 | Maximale Turns bei Fallback-Trimming |
-| `SESSION_TTL` | 7200 (2h) | Inaktivitäts-Timeout |
+| `SESSION_TTL` | 14400 (4h) | Inaktivitäts-Timeout |
 | `SESSION_SUMMARIZE_AT` | 25 | Ab diesem Füllstand wird zusammengefasst |
 
 ---
@@ -211,7 +211,9 @@ Seit Chat 60: Der Dispatcher (`graph/nodes/dispatcher.py`) schreibt alle Session
 
 **Kein LLM-Call im Normalbetrieb:** Die Session speichert und liest — reine Redis-Operationen. Nur die Zusammenfassung (`session_summarize_if_needed`) braucht einen LLM-Call, und die wird nur bei langen Gesprächen (> 25 Turns) getriggert.
 
-**TTL statt explizites Löschen:** Die Session verfällt automatisch nach 2 Stunden Inaktivität. Das ist bewusst: Ein neues Gespräch am nächsten Tag soll nicht von den Turns des Vortags kontaminiert werden. Das KZG und LZG halten die wichtigen Inhalte — die Session ist nur für den aktuellen Dialog.
+**TTL statt explizites Löschen:** Die Session verfällt automatisch nach 4 Stunden Inaktivität. Das ist bewusst: Ein neues Gespräch am nächsten Tag soll nicht von den Turns des Vortags kontaminiert werden. Das KZG und LZG halten die wichtigen Inhalte — die Session ist nur für den aktuellen Dialog.
+
+**Die Untergrenze der Frist steht fest, seit es die Eigenzeit gibt** (15.08.2026, vorher 2 Stunden): Sie muss den Nullpunkt der Verfallskurve überdauern (`EIGENZEIT_NULLPUNKT_SEKUNDEN`, 3 h). Läge sie darunter, entstünde ein Fenster, in dem der **Verlauf vor dem Zustand** verschwindet — Nova wäre noch nicht zur Ruhe gekommen und hätte schon vergessen, worüber gesprochen wurde. Ein Zeuge in `test_eigenzeit_verfall.py` hält die beiden Zahlen aneinander.
 
 **Annotation nachträglich, nicht beim Speichern:** Der Turn muss gespeichert werden bevor die Salienz analysiert, weil der Responder den Turn als Kontext braucht. Die Salienz läuft aber erst nach dem Responder. Deshalb: Speichern → Responder sieht den Turn → Salienz analysiert → `annotate` reichert nach → beim nächsten Turn sieht der Enricher die Annotation.
 
