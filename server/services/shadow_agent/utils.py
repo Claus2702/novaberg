@@ -1,12 +1,23 @@
-"""Shadow Agent — Shared Utilities."""
+"""Shadow Agent — Shared Utilities.
+
+Die **Shadow-Queue** liegt seit dem 15.08.2026 in PostgreSQL
+(`novaberg-queue-verfall_k.md`), die **Promotions-Queue** weiterhin in Redis.
+Beide Schreibpfade stehen hier nebeneinander; der Unterschied ist gewollt und
+in §7.2 des Konzepts begruendet.
+"""
 
 import json
 import logging
-from datetime import datetime
 
+import psycopg2
 import redis
 
-from config import MESSREIHE_OHNE_AUFTRAGSARTEN, PIXIE_AKTIV
+from config import (
+    ASSISTANT_USER_ID,
+    MESSREIHE_OHNE_AUFTRAGSARTEN,
+    PIXIE_AKTIV,
+    POSTGRES_URL,
+)
 
 logger = logging.getLogger("ki_server.shadow")
 
@@ -60,24 +71,52 @@ def shadow_queue_push(
         )
         return
 
-    eintrag: dict = {
-        "aufgabe":     aufgabe,
-        "user_id":     user_id,
-        "thema":       thema,
-        "kontext":     kontext,
-        "prioritaet":  prioritaet,
-        "intentionen": intentionen or [],
-        "emotion":     emotion,
-        "modus":       modus,
-        "erstellt":    datetime.now().isoformat(),
-    }
-
-    redis_client.rpush(
-        f"shadow_queue:{user_id}",
-        json.dumps(eintrag, ensure_ascii=False),
+    # **Der Import steht hier und nicht am Modulkopf**, weil er sonst einen
+    # Zyklus schliesst: `memory/__init__` laedt `memory.kzg`, und die holt sich
+    # `shadow_queue_push` aus genau diesem Modul. Ein lokaler Import bricht
+    # ihn auf; dieselbe Bauart benutzt `pixie/dispatch.py` fuer die Registry.
+    from memory.repositories.shadow_auftrag_repository import (
+        ShadowAuftrag,
+        ShadowAuftragRepository,
     )
 
-    logger.info(f"Shadow-Queue: '{aufgabe}' für '{user_id}' — {thema[:60]}")
+    # Die Queue liegt seit dem 15.08.2026 in PostgreSQL statt als Redis-Liste
+    # (`novaberg-queue-verfall_k.md` §7). Der Parameter `redis_client` bleibt
+    # in der Signatur, weil er die Schwester `promotion_queue_push` bedient und
+    # jede Aufrufstelle beide Wege kennt; hier wird er nicht mehr gebraucht.
+    #
+    # **Derselbe Gegenstand erzeugt keine zweite Zeile mehr**, sondern
+    # verstaerkt die vorhandene — und weckt sie, wenn sie ruht (§6.1). Das
+    # Repository entscheidet das; hier steht nur der Auftrag.
+    auftrag = ShadowAuftrag(
+        user_id      = user_id,
+        character_id = ASSISTANT_USER_ID,
+        beobachter   = "user",
+        aufgabe      = aufgabe,
+        thema        = thema,
+        salienz      = prioritaet,
+        kontext      = kontext,
+        intentionen  = intentionen or [],
+        emotion      = emotion,
+        modus        = modus,
+    )
+
+    try:
+        _auftrag_id, vorgang = ShadowAuftragRepository.einreihen(POSTGRES_URL, auftrag)
+    except (psycopg2.Error, ValueError):
+        # **Kein stiller Verlust.** Ein Auftrag, der hier verlorengeht, ist ein
+        # Gedanke, den niemand je aufgreift — und niemand wuerde ihn vermissen,
+        # weil er nie existiert hat. Deshalb laut und mit dem Gegenstand.
+        logger.exception(
+            "Shadow-Queue: '%s' fuer '%s' konnte nicht eingereiht werden — %s",
+            aufgabe, user_id, thema[:60],
+        )
+        return
+
+    logger.info(
+        "Shadow-Queue: '%s' fuer '%s' %s — %s",
+        aufgabe, user_id, vorgang, thema[:60] or "<ohne Thema>",
+    )
 
 
 # ─────────────────────────────────────────────

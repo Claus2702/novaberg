@@ -1960,6 +1960,46 @@ LZG_KNOTEN_MIN_GEWICHT: float = float(os.getenv("LZG_KNOTEN_MIN_GEWICHT", "0.1")
 # Wert 0.1 vom KZG-Boost uebernommen (war exemplarisch 0.5).
 LZG_KNOTEN_REINFORCEMENT_BOOST: float = float(os.getenv("LZG_KNOTEN_REINFORCEMENT_BOOST", "0.1"))
 
+# ─────────────────────────────────────────────
+# Shadow-Queue: Verfall (novaberg-queue-verfall_k.md §9)
+# ─────────────────────────────────────────────
+# Dieselbe Bauart wie die Knoten oben — Sinus-Saettigung im Aufbau,
+# exponentieller Verfall, Soft-Delete unter der Schwelle — mit **eigenen**
+# Konstanten. Getrennt, weil ein unerledigter Auftrag schneller
+# gegenstandslos wird als eine Erinnerung; teilten sie sich die Werte,
+# verschoebe eine Kalibrierung des Gedaechtnisses den Auftragshaushalt mit.
+
+# Obergrenze der gedaempften Salienz. **1.0 und nicht 10.0 wie beim Knoten:**
+# Die Queue fuehrt Salienz, und die laeuft im Bereich 0..1 (KZG_SALIENZ_CAP).
+# Auf der Knoten-Skala waere die Schwelle 0,3 gleich 3 % — sie wuerde
+# praktisch nie erreicht, und der Verfall liefe still ins Leere.
+QUEUE_SALIENZ_CAP: float = float(os.getenv("QUEUE_SALIENZ_CAP", "1.0"))
+
+# Exponent der Sin^X-Daempfung. Wie beim Knoten und wie im KZG-Aufbau.
+QUEUE_DAEMPFUNG_EXP: float = float(os.getenv("QUEUE_DAEMPFUNG_EXP", "0.5"))
+
+# Taegliche exponentielle Verfallsrate der effektiven Salienz.
+# Hergeleitet aus ln(0.9764 / 0.3) / 30: Der am 15.08.2026 gemessene Median
+# des Bestands erreicht nach **30 Tagen** die Deaktivierungsschwelle.
+# 26-mal die Knoten-Rate — dort faellt derselbe Wert erst nach 787 Tagen.
+QUEUE_DECAY_RATE: float = float(os.getenv("QUEUE_DECAY_RATE", "0.0393"))
+
+# Schwellwert: Unterschreitet die effektive Salienz diesen Wert, wird der
+# Auftrag auf aktiv = FALSE gesetzt. Er bleibt gespeichert und ist ueber die
+# Halbreaktivierung weckbar. **Gilt auf dem gedaempften Wert**, nicht auf dem
+# Rohwert — ein Rohwert von 0,3 entspraeche gedaempft 0,674
+# (= KZG_SALIENZ_MINIMUM), und die Frist waere dann 9 statt 30 Tage.
+QUEUE_SCHWELLE: float = float(os.getenv("QUEUE_SCHWELLE", "0.3"))
+
+# Additiver Boost auf salienz_roh bei einer Verstaerkung — wenn derselbe
+# Anlass denselben Gegenstand erneut trifft. Wert vom KZG uebernommen.
+# **Keine Stellschraube der Frist:** Ein Auftrag steigt bei salienz_roh ~0,80
+# von Cap 1,0 ein und liegt damit im flachen Teil der Kurve; zehn
+# Verstaerkungen heben den Anker um 0,024 und kaufen 0,6 Tage. Die Wirkung
+# der Verstaerkung sitzt im Zuruecksetzen von verstaerkt_am, das 30 Tage neu
+# schenkt. Wer die Haltedauer aendern will, dreht an QUEUE_DECAY_RATE.
+QUEUE_VERSTAERKUNG_BOOST: float = float(os.getenv("QUEUE_VERSTAERKUNG_BOOST", "0.03"))
+
 # Cosine-Schwelle, ab der ein neuer KZG-Eintrag als Quasi-Dublette eines
 # bestehenden Knotens gilt und diesen verstaerkt, statt einen neuen Knoten
 # anzulegen. Bewusst hoch — Standardfall ist Knoten-Erhalt, nur echte

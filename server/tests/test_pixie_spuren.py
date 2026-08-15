@@ -41,6 +41,19 @@ from services.model_services.spur import (
 SCHEDULER: str = "services.pixie.scheduler"
 
 
+def _shadow_auftrag(salienz: float) -> dict:
+    """Ein Auftrag, wie ihn ShadowAuftragRepository.bester_kandidat liefert."""
+    return {
+        "id": 1, "user_id": "meister", "character_id": "nova",
+        "beobachter": "user", "aufgabe": "recherche", "thema": "Gravitation",
+        "kontext": "", "intentionen": [], "emotion": "", "modus": "",
+        "salienz_roh": salienz, "salienz_absolut": salienz,
+        "salienz_decay": salienz, "haeufigkeit": 1, "aktiv": True,
+        "erstellt_am": None, "verstaerkt_am": None, "decay_am": None,
+        "versuche": 0,
+    }
+
+
 class DerRiegelZwischenDenSpurenTest(unittest.TestCase):
     """Die dritte Zusicherung: eine Fehleinsortierung faellt laut auf."""
 
@@ -183,14 +196,19 @@ class BeideSpurenBekommenEinenKandidatenTest(unittest.TestCase):
     """
 
     def test_der_promotionsauftrag_ueberlebt_neben_einem_hoeheren_gespraechsauftrag(self) -> None:
-        """Das ZIEL: zwei Queues, zwei Gewinner — auch bei ungleicher Prioritaet."""
+        """Das ZIEL: zwei Quellen, zwei Gewinner — auch bei ungleicher Prioritaet.
+
+        **Die beiden Spuren liegen seit dem 15.08.2026 in verschiedenen
+        Speichern:** die Shadow-Queue in PostgreSQL, die Promotions-Queue
+        weiterhin in Redis. Die Zusicherung ist dieselbe geblieben — wer vor
+        der Aufteilung zusammenfasst, macht die Aufteilung wirkungslos.
+        """
         import json as _json
 
         from services.pixie import kandidaten
 
         listen: dict[str, list[str]] = {
-            "shadow_queue:meister": [_json.dumps({"aufgabe": "recherche", "prioritaet": 1.0})],
-            "queue:meister":        [_json.dumps({"aufgabe": "lzg_promotion", "salienz": 0.9})],
+            "queue:meister": [_json.dumps({"aufgabe": "lzg_promotion", "salienz": 0.9})],
         }
 
         class _Redis:
@@ -198,16 +216,25 @@ class BeideSpurenBekommenEinenKandidatenTest(unittest.TestCase):
             def lrange(key: str, _start: int, _stop: int) -> list[str]:
                 return listen.get(key, [])
 
-        with patch.object(kandidaten, "redis_client", _Redis):
+        with patch.object(kandidaten, "redis_client", _Redis), \
+             patch.object(
+                 kandidaten.ShadowAuftragRepository, "bester_kandidat",
+                 return_value=_shadow_auftrag(1.0),
+             ):
             gewinner = kandidaten._queue_peek("meister")
 
         namen = [g["name"] for g in gewinner]
-        self.assertEqual(len(gewinner), 2, f"Beide Queues muessen liefern, war: {namen}")
+        self.assertEqual(len(gewinner), 2, f"Beide Quellen muessen liefern, war: {namen}")
         self.assertIn("lzg_promotion", namen,
                       "Der Promotionsauftrag darf nicht vom Gespraechsauftrag verdeckt werden")
 
     def test_eine_leere_queue_liefert_keinen_kandidaten(self) -> None:
-        """Die Gegenprobe: aus nichts wird kein Kandidat."""
+        """Die Gegenprobe: aus nichts wird kein Kandidat.
+
+        **Beide Speicher werden leer gestellt.** Ein Test, der nur Redis
+        leerte, liefe gegen den echten Tabellenbestand und faende dort 1036
+        Auftraege — er haenge damit am aktiven Paar statt an seiner Aussage.
+        """
         from services.pixie import kandidaten
 
         class _Redis:
@@ -215,7 +242,11 @@ class BeideSpurenBekommenEinenKandidatenTest(unittest.TestCase):
             def lrange(_key: str, _start: int, _stop: int) -> list[str]:
                 return []
 
-        with patch.object(kandidaten, "redis_client", _Redis):
+        with patch.object(kandidaten, "redis_client", _Redis), \
+             patch.object(
+                 kandidaten.ShadowAuftragRepository, "bester_kandidat",
+                 return_value=None,
+             ):
             self.assertEqual(kandidaten._queue_peek("meister"), [])
 
 

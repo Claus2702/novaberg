@@ -9,7 +9,8 @@ import logging
 import time
 
 from agents.base import AgentState
-from config import redis_client, PIXIE_AKTIV, DEFAULT_USER_ID
+from config import redis_client, PIXIE_AKTIV, DEFAULT_USER_ID, POSTGRES_URL
+from memory.repositories.shadow_auftrag_repository import ShadowAuftragRepository
 from services.llm_provider import set_aktiver_pixie_user
 
 logger = logging.getLogger("ki_server.pixie")
@@ -35,7 +36,7 @@ async def agent_ausfuehren(agent_name: str, kandidat: dict, app_state) -> bool:
         return False
 
     # AgentState aufbauen
-    if kandidat["quelle"] == "queue":
+    if kandidat["quelle"] in ("shadow_auftrag", "queue"):
         eintrag: dict = kandidat["daten"]
         agent_state: AgentState = {
             "aufgabe":     eintrag.get("aufgabe", ""),
@@ -43,9 +44,17 @@ async def agent_ausfuehren(agent_name: str, kandidat: dict, app_state) -> bool:
             "agent_name":  agent_name,
             "kontext": {
                 "user_id": eintrag.get("user_id", ""),
-                "themen":  eintrag.get("themen", ""),
+                # **Die Feldnamen sind am 15.08.2026 berichtigt.** Hier stand
+                # `themen` und `salienz` — beides Schluessel, die ein
+                # Shadow-Auftrag nie trug. Der Kontext bekam damit dauerhaft
+                # "" und 0.0, ohne dass eine Meldung entstand; derselbe
+                # Namensirrtum steckte im Moduldokument und im Rueckfall der
+                # Kandidatenwahl (KANDIDATEN-PRIORITAET-STILLE-NULL).
+                "themen":  eintrag.get("thema", eintrag.get("themen", "")),
                 "emotion": eintrag.get("emotion", ""),
-                "salienz": eintrag.get("salienz", 0.0),
+                "salienz": eintrag.get(
+                    "salienz_decay", eintrag.get("salienz", eintrag.get("prioritaet", 0.0)),
+                ),
             },
             "parameter":   eintrag,
             "schritte":    [],
@@ -225,6 +234,27 @@ def abschluss(kandidat: dict, erfolg: bool) -> None:
     Fehlerfaelle: Eine unbekannte Quelle laesst alles unberuehrt.
     """
     # ── Verarbeitung ────────────────────────────
+    # Die Shadow-Queue liegt seit dem 15.08.2026 in PostgreSQL. Der Abschluss
+    # ist derselbe wie vorher — erledigt heisst entfernen, gescheitert heisst
+    # zaehlen und an der Grenze verwerfen —, aber er trifft den Auftrag ueber
+    # seinen Primaerschluessel statt ueber seinen exakten JSON-Wortlaut.
+    if kandidat["quelle"] == "shadow_auftrag":
+        auftrag_id = kandidat.get("auftrag_id")
+        if not auftrag_id:
+            logger.error(
+                "Pixie: Shadow-Auftrag ohne auftrag_id abgeschlossen (erfolg=%s) — "
+                "die Zeile bleibt stehen und wird beim naechsten Heartbeat "
+                "wieder Kandidat", erfolg,
+            )
+            return
+        if erfolg:
+            ShadowAuftragRepository.entfernen(POSTGRES_URL, auftrag_id)
+        else:
+            ShadowAuftragRepository.versuch_zaehlen(
+                POSTGRES_URL, auftrag_id, _RETRY_GRENZE,
+            )
+        return
+
     if kandidat["quelle"] == "queue":
         if erfolg:
             _eintrag_entfernen(kandidat)

@@ -33,7 +33,13 @@ Kein skipUnless, kein skipIf, kein try/except um Importe.
 import unittest
 from unittest.mock import patch
 
+import psycopg2
+from config import POSTGRES_URL
 from services.shadow_agent.utils import shadow_queue_push
+
+# Ein testeigenes Paar: Ein Test unter einer produktiven Kennung raeumte
+# spaeter fremde Zeilen mit ab.
+TEST_MENSCH: str = "test_messreihe_mensch"
 
 UTILS: str = "services.shadow_agent.utils"
 UTILS_LOGGER: str = "ki_server.shadow"
@@ -58,24 +64,64 @@ class FakeRedis:
 
 def _einreihen(fake: FakeRedis, aufgabe: str, unterdrueckt: frozenset[str]) -> None:
     # `redis_client` ist ein Parameter, kein Modul-Global — der Fake geht
-    # als Argument hinein, nicht ueber patch.
+    # als Argument hinein, nicht ueber patch. **Seit dem Umzug der Queue nach
+    # PostgreSQL (15.08.2026) beruehrt der Erzeuger ihn nicht mehr**; er
+    # bleibt in der Signatur fuer die Schwester `promotion_queue_push`.
     with patch(f"{UTILS}.PIXIE_AKTIV", True), \
          patch(f"{UTILS}.MESSREIHE_OHNE_AUFTRAGSARTEN", unterdrueckt):
         shadow_queue_push(
-            fake, user_id="leon", aufgabe=aufgabe, thema="Gravitation",
+            fake, user_id=TEST_MENSCH, aufgabe=aufgabe, thema="Gravitation",
             kontext="", prioritaet=0.99,
         )
 
 
+def _eingereihte_zeilen() -> int:
+    """Zaehlt, was der Erzeuger fuer das Fixture-Paar angelegt hat.
+
+    **Der Beleg liegt seit dem 15.08.2026 in der Tabelle, nicht in einer
+    Redis-Liste.** Die geprueften Zusicherungen sind dieselben geblieben —
+    unterdrueckt heisst nicht eingereiht, und alles andere geht unveraendert
+    durch —, nur ihr Nachweis hat den Ort gewechselt.
+    """
+    conn = psycopg2.connect(POSTGRES_URL)
+    try:
+        with conn.cursor() as cur:
+            cur.execute(
+                "SELECT COUNT(*) FROM shadow_auftrag WHERE user_id = %s", (TEST_MENSCH,),
+            )
+            return cur.fetchone()[0]
+    finally:
+        conn.close()
+
+
+def _fixture_raeumen() -> None:
+    """Loescht alle Zeilen des Fixture-Paares."""
+    conn = psycopg2.connect(POSTGRES_URL)
+    try:
+        with conn.cursor() as cur:
+            cur.execute("DELETE FROM shadow_auftrag WHERE user_id = %s", (TEST_MENSCH,))
+        conn.commit()
+    finally:
+        conn.close()
+
+
 class UnterdrueckteArtenErreichenDieQueueNichtTest(unittest.TestCase):
     """Die erste Zusicherung."""
+
+    def setUp(self) -> None:
+        """Leert das Fixture-Paar vor jedem Fall."""
+        _fixture_raeumen()
+
+    def tearDown(self) -> None:
+        """Und danach — die Suite laeuft gegen die Produktiv-Datenbank."""
+        _fixture_raeumen()
 
     def test_recherche_wird_im_messreihen_modus_nicht_eingereiht(self) -> None:
         """Das ZIEL: die LLM-Spur bleibt frei fuer die Destillation."""
         fake = FakeRedis()
         _einreihen(fake, "recherche", frozenset({"recherche", "vertiefen", "nachfragen"}))
 
-        self.assertEqual(fake.listen.get("shadow_queue:leon", []), [],
+        self.assertEqual(0, _eingereihte_zeilen(),
                          "Ein unterdrueckter Auftrag darf die Queue nicht erreichen")
 
     def test_die_unterdrueckung_wird_protokolliert(self) -> None:
@@ -97,19 +143,27 @@ class UnterdrueckteArtenErreichenDieQueueNichtTest(unittest.TestCase):
 class NichtUnterdruecktesGehtUnveraendertDurchTest(unittest.TestCase):
     """Die zweite Zusicherung — sonst waere der Normalbetrieb beschaedigt."""
 
+    def setUp(self) -> None:
+        """Leert das Fixture-Paar vor jedem Fall."""
+        _fixture_raeumen()
+
+    def tearDown(self) -> None:
+        """Und danach — die Suite laeuft gegen die Produktiv-Datenbank."""
+        _fixture_raeumen()
+
     def test_ohne_messreihen_modus_wird_alles_eingereiht(self) -> None:
         """Die Vorgabe ist leer: Ausserhalb einer Reihe aendert sich nichts."""
         fake = FakeRedis()
         _einreihen(fake, "recherche", frozenset())
 
-        self.assertEqual(len(fake.listen.get("shadow_queue:leon", [])), 1)
+        self.assertEqual(1, _eingereihte_zeilen())
 
     def test_eine_nicht_genannte_art_passiert_die_unterdrueckung(self) -> None:
         """Die Gegenprobe: Der Filter trifft nur, was benannt ist."""
         fake = FakeRedis()
         _einreihen(fake, "wiedervorlage", frozenset({"recherche", "vertiefen"}))
 
-        self.assertEqual(len(fake.listen.get("shadow_queue:leon", [])), 1)
+        self.assertEqual(1, _eingereihte_zeilen())
 
 
 if __name__ == "__main__":

@@ -1,12 +1,20 @@
 """Pixie-Agent: synapsen_decay — täglicher Decay-Lauf für das Synapsen-Netz.
 
-Orchestriert einmal täglich zwei entkoppelte Wartungsaufgaben (Konzept
-synapsen_k §9, P6):
+Orchestriert einmal täglich drei entkoppelte Wartungsaufgaben (Konzept
+synapsen_k §9, P6; queue-verfall_k §11):
 
   1. run_node_decay      — materialisiert gewicht_decay je aktivem lzg_knoten
                            (exponentieller Verfall aus verstaerkt_am) und
                            deaktiviert Knoten unter LZG_KNOTEN_MIN_GEWICHT.
   2. delete_expired_entries — TTL-Cleanup alter pipeline_log-Einträge.
+  3. verfall_lauf        — dasselbe für die Shadow-Queue, mit **eigener Rate**
+                           (30 Tage statt 787) und eigenem Audit-Eintrag.
+
+**Der dritte Schritt steht hier und nicht in einem eigenen Agenten**, weil er
+so keinen zusätzlichen Platz im Heartbeat kostet — bei einem einzigen
+seriellen Platz konkurriert jeder neue periodische Auftrag mit den
+bestehenden. Ein eigener Agent bleibt die richtige Wahl, falls der
+Queue-Verfall später eine andere Frequenz braucht als der Knoten-Verfall.
 
 Struktur nach dem Konventions-Träger synapsen_promotion: kein LangGraph
 (build_graph gibt None), die Arbeit läuft synchron in invoke. Der Agent selbst
@@ -21,7 +29,6 @@ memory/lzg_knoten.py (P6 Teil B).
 import logging
 import uuid
 
-from agents.base import AgentState, BaseAgent, PeriodicTask
 from config import (
     DEFAULT_USER_ID,
     PIXIE_DECAY_INTERVALL_SEKUNDEN,
@@ -30,7 +37,10 @@ from config import (
     SYNAPSEN_DECAY_AKTIV,
 )
 from memory import lzg_knoten, pipeline_log
+from memory.repositories.shadow_auftrag_repository import ShadowAuftragRepository
 from tools.db_manager import db_manager
+
+from agents.base import AgentState, BaseAgent, PeriodicTask
 
 logger = logging.getLogger("ki_server.agents.synapsen_decay")
 
@@ -181,19 +191,57 @@ class SynapsenDecayAgent(BaseAgent):
                 f"pipeline_log-Einträge per TTL entfernt"
             )
 
+            # 3. Verfall der Shadow-Queue (novaberg-queue-verfall_k.md §11).
+            #    Ein dritter Schritt im vorhandenen Tageslauf kostet **keinen
+            #    zusätzlichen Platz im Heartbeat** — bei einem einzigen
+            #    seriellen Platz ist das ausschlaggebend.
+            #
+            #    **Eigener Audit-Eintrag**, und nur dieser Schritt hat einen:
+            #    Ein Lauf, der drei Dinge tut, färbt bei einem Fehlschlag im
+            #    dritten den ganzen Auftrag rot. Ohne getrennte Zeile ist
+            #    hinterher nicht unterscheidbar, ob der Verfall lief und
+            #    nichts fand, oder ob er gar nicht lief. Die beiden Schritte
+            #    darüber haben diese Trennung noch nicht.
+            self._audit_log(
+                DEFAULT_USER_ID, "queue_verfall", "gestartet", f"run_id={run_id}",
+            )
+            queue_result = ShadowAuftragRepository.verfall_lauf(POSTGRES_URL)
+            if queue_result["error"]:
+                self._audit_log(
+                    DEFAULT_USER_ID, "queue_verfall", "fehler", queue_result["error"],
+                )
+            else:
+                self._audit_log(
+                    DEFAULT_USER_ID, "queue_verfall", "erledigt",
+                    f"{queue_result['verarbeitet']} verarbeitet, "
+                    f"{queue_result['deaktiviert']} deaktiviert",
+                )
+            logger.info(
+                f"Synapsen-Decay: {queue_result['verarbeitet']} Queue-Aufträge "
+                f"verarbeitet, {queue_result['deaktiviert']} deaktiviert"
+            )
+
             # --- Ausgabe (EVA): Ergebnis + Fehler aggregieren ---
             fehler = [
                 e
-                for e in (decay_result["error"], cleanup_result["error"])
+                for e in (
+                    decay_result["error"], cleanup_result["error"], queue_result["error"],
+                )
                 if e is not None
             ]
-            state["ergebnis"] = {"decay": decay_result, "cleanup": cleanup_result}
+            state["ergebnis"] = {
+                "decay": decay_result,
+                "cleanup": cleanup_result,
+                "queue_verfall": queue_result,
+            }
 
             ende_inhalt = {
                 "phase": "ende",
                 "total_processed": decay_result["total_processed"],
                 "deactivated_count": decay_result["deactivated_count"],
                 "deleted_count": cleanup_result["deleted_count"],
+                "queue_verarbeitet": queue_result["verarbeitet"],
+                "queue_deaktiviert": queue_result["deaktiviert"],
             }
 
             if fehler:

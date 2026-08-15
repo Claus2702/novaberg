@@ -172,21 +172,58 @@ class TestPeriodischeKandidaten(unittest.TestCase):
 
 
 class TestWahlGegenDieQueue(unittest.TestCase):
-    """Der eigentliche Befund: Wer gewinnt, wenn die Queue dauerhaft voll ist."""
+    """Der eigentliche Befund: Wer gewinnt, wenn die Queue dauerhaft voll ist.
+
+    **Die Shadow-Queue wird gestellt, nicht gelesen (15.08.2026).** Sie liegt
+    seit dem Umzug in PostgreSQL, und diese Faelle pruefen die **Wahl** des
+    Schedulers, nicht den Speicher. Ein Test, der dafuer den echten Bestand
+    braeuchte, haenge am aktiven Paar und wuerde rot, sobald eine Messreihe
+    laeuft — genau der Defekt `SUITE-HAENGT-AM-AKTIVEN-PAAR`, den diese Datei
+    bis dahin trug.
+    """
 
     @staticmethod
     def _gewinner(kandidaten: list[dict]) -> dict:
         """Bildet die Wahl des Schedulers nach (max ueber die Prioritaet)."""
         return max(kandidaten, key=lambda k: k["prioritaet"])
 
+    @staticmethod
+    def _shadow_auftrag(salienz: float, aufgabe: str = "recherche") -> dict:
+        """Ein Auftrag, wie ihn das Repository liefert."""
+        return {
+            "id": 1, "user_id": "meister", "character_id": "nova",
+            "beobachter": "user", "aufgabe": aufgabe, "thema": "Gravitation",
+            "kontext": "", "intentionen": [], "emotion": "", "modus": "",
+            "salienz_roh": salienz, "salienz_absolut": salienz,
+            "salienz_decay": salienz, "haeufigkeit": 1, "aktiv": True,
+            "erstellt_am": None, "verstaerkt_am": None, "decay_am": None,
+            "versuche": 0,
+        }
+
+    def _mit_queue(self, auftrag: dict | None):
+        """Stellt die Shadow-Queue auf genau einen Auftrag — oder auf leer.
+
+        **Paarabhaengig**, weil `_aktive_user_ids` beide Seiten liefert: Der
+        Mensch traegt Auftraege, Nova nicht (der Nova-Guard verhindert sie).
+        Ein Patch, der fuer beide antwortet, erzeugte zwei Kandidaten aus
+        einem Auftrag.
+        """
+        def _antwort(_url: str, user_id: str, _character_id: str) -> dict | None:
+            return auftrag if user_id == "meister" else None
+
+        return patch(
+            "services.pixie.kandidaten.ShadowAuftragRepository.bester_kandidat",
+            side_effect=_antwort,
+        )
+
     def test_ueberfaellige_wartung_schlaegt_vollen_queue_eintrag(self) -> None:
         fake = FakeRedis()
         jetzt: float = time.time()
         # Der hoechstmoegliche Queue-Wert, wie am 28.07.2026 real gemessen.
-        fake.queue_setzen("meister", [{"aufgabe": "recherche", "prioritaet": 1.0}])
         fake.schedule_setzen("synapsen_decay", 0.2, 86400, jetzt - 7200.0)
 
-        with patch("services.pixie.kandidaten.redis_client", fake):
+        with patch("services.pixie.kandidaten.redis_client", fake), \
+             self._mit_queue(self._shadow_auftrag(1.0)):
             gewinner: dict = self._gewinner(kandidaten_sammeln())
 
         self.assertEqual(gewinner["quelle"], "periodisch")
@@ -199,31 +236,40 @@ class TestWahlGegenDieQueue(unittest.TestCase):
         zieht, den Test oben ebenfalls bestehen — und echte Arbeit verdraengen.
         """
         fake = FakeRedis()
-        fake.queue_setzen("meister", [{"aufgabe": "recherche", "prioritaet": 1.0}])
         fake.schedule_setzen("synapsen_decay", 0.2, 86400, time.time())
 
-        with patch("services.pixie.kandidaten.redis_client", fake):
+        with patch("services.pixie.kandidaten.redis_client", fake), \
+             self._mit_queue(self._shadow_auftrag(1.0)):
             gewinner: dict = self._gewinner(kandidaten_sammeln())
 
-        self.assertEqual(gewinner["quelle"], "queue")
+        self.assertEqual(gewinner["quelle"], "shadow_auftrag")
 
-    def test_liegengebliebener_queue_eintrag_altert_nicht(self) -> None:
+    def test_liegengebliebener_queue_eintrag_wandert_nicht_nach_oben(self) -> None:
         """Auftraege ohne registrierten Agenten duerfen nicht nach oben wandern.
 
-        In der Shadow-Queue liegen `vertiefen`-Auftraege mit Prioritaet 0.0,
-        deren Agent nicht existiert. Heute haelt genau dieser Nullwert sie
-        ruhig. Ein Aging, das auch die Queue erfasst, wuerde sie ins Leere
-        laufen lassen — deshalb altert dort nichts.
+        In der Shadow-Queue liegen `vertiefen`-Auftraege, deren Agent nicht
+        existiert. Sie bekommen **keinen** Aging-Zuschlag: `ueberfaellig_s`
+        bleibt None, und die effektive Prioritaet ist der gelieferte Wert.
+
+        ~~Heute haelt genau dieser Nullwert sie ruhig.~~ **Ueberholt am
+        15.08.2026:** Was sie ruhig haelt, ist der **Verfall** — ihre Salienz
+        faellt mit der Zeit, statt stehenzubleiben. Die Zusicherung dieses
+        Falls ist damit staerker geworden, nicht schwaecher: Ein Auftrag ohne
+        Agenten wandert nicht nach oben, und er bleibt auch nicht liegen.
         """
         fake = FakeRedis()
-        fake.queue_setzen("meister", [{"aufgabe": "vertiefen", "prioritaet": 0.0}])
 
-        with patch("services.pixie.kandidaten.redis_client", fake):
+        with patch("services.pixie.kandidaten.redis_client", fake), \
+             self._mit_queue(self._shadow_auftrag(0.42, aufgabe="vertiefen")):
             kandidaten: list[dict] = kandidaten_sammeln()
 
         self.assertEqual(len(kandidaten), 1)
-        self.assertEqual(kandidaten[0]["prioritaet"], 0.0)
-        self.assertIsNone(kandidaten[0]["ueberfaellig_s"])
+        self.assertEqual(kandidaten[0]["prioritaet"], 0.42)
+        self.assertIsNone(
+            kandidaten[0]["ueberfaellig_s"],
+            "Ein Queue-Auftrag bekommt keinen Aging-Zuschlag — das Aging "
+            "gehoert den periodischen Aufgaben.",
+        )
 
 
 if __name__ == "__main__":

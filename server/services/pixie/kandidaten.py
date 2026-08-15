@@ -1,13 +1,23 @@
 """Kandidaten-Sammlung fuer Pixie-Heartbeat.
 
-Zwei Quellen:
-  1. Queue-Peek: shadow_queue:{user_id} + queue:{user_id}
-  2. Faellige periodische Aufgaben: pixie:schedule:*
+Drei Quellen:
+  1. Shadow-Queue: Tabelle `shadow_auftrag` (PostgreSQL, seit 15.08.2026)
+  2. Promotions-Queue: queue:{user_id} (Redis)
+  3. Faellige periodische Aufgaben: pixie:schedule:*
 
 Periodische Aufgaben altern: Je laenger eine faellige Aufgabe nicht laeuft,
 desto hoeher ihre effektive Prioritaet (siehe _aging_zuschlag). Ohne das
 gewinnt eine dauerhaft gefuellte Queue jeden Heartbeat, und Wartungslaeufe
-mit niedriger Basis-Prioritaet laufen nie. Queue-Eintraege altern nicht.
+mit niedriger Basis-Prioritaet laufen nie.
+
+**Zwei gegenlaeufige Zeitregeln, und beide sind fuer ihren Gegenstand
+richtig.** Eine faellige Wartungsaufgabe wird dringlicher, je laenger sie
+aussteht — ihre Prioritaet **steigt** mit der Wartezeit. Ein unerledigter
+Auftrag der Shadow-Queue wird es nicht: Seine Salienz **faellt**, weil ein
+Vorsatz seinen Anlass verliert (`novaberg-queue-verfall_k.md` §12.3). Die
+Folge ist eine langsame Verschiebung zugunsten der Wartungsaufgaben; sie ist
+gewollt und hier benannt, damit sie nicht spaeter als Defekt gemeldet wird.
+Promotionsauftraege altern in keine Richtung.
 
 Jeder Kandidat traegt beides: `prioritaet` ist der Wert, nach dem der
 Scheduler waehlt, `prioritaet_basis` der ungealterte Ausgangswert. Wer nur
@@ -23,8 +33,10 @@ from config import (
     ASSISTANT_USER_ID,
     PIXIE_AGING_MAX_ZUSCHLAG,
     PIXIE_AGING_PRO_STUNDE,
+    POSTGRES_URL,
     redis_client,
 )
+from memory.repositories.shadow_auftrag_repository import ShadowAuftragRepository
 
 logger = logging.getLogger("ki_server.pixie")
 
@@ -37,10 +49,11 @@ def kandidaten_sammeln() -> list[dict]:
         - prioritaet: float (effektiv — bei periodischen Aufgaben gealtert)
         - prioritaet_basis: float (ungealtert, fuer die Begruendung im Log)
         - ueberfaellig_s: float | None (None = Queue-Eintrag, altert nicht)
-        - quelle: "queue" | "periodisch"
+        - quelle: "shadow_auftrag" | "queue" | "periodisch"
         - daten: dict
-        - queue_key: str | None
-        - queue_raw: bytes | None (fuer exaktes LREM)
+        - auftrag_id: int | None (Primaerschluessel in shadow_auftrag)
+        - queue_key: str | None (nur Promotions-Queue)
+        - queue_raw: bytes | None (nur Promotions-Queue, fuer exaktes LREM)
         - schedule_key: str | None
         - themen: str
     """
@@ -123,38 +136,71 @@ def _queue_peek(user_id: str) -> list[dict]:
     """
     gewinner: list[dict] = []
 
-    for queue_key in [f"shadow_queue:{user_id}", f"queue:{user_id}"]:
-        bester: dict | None = None
-        beste_prio: float = -1.0
+    # ── Spur 1: die Shadow-Queue, seit dem 15.08.2026 in PostgreSQL ──
+    # Die Auswahl macht der Index, nicht dieser Prozess: `ORDER BY
+    # salienz_decay DESC LIMIT 1` statt eines Vollscans ueber die ganze Liste.
+    # **Die Rangfolge ist Dringlichkeit** — und weil der Verfall sie ueber die
+    # Zeit senkt, gewinnt der juengste Auftrag. Die Redis-Fassung nahm unter
+    # Gleichstaenden den aeltesten; das war keine Entscheidung, sondern eine
+    # Folge der Einfuegereihenfolge (novaberg-queue-verfall_k.md §12.3).
+    auftrag: dict | None = ShadowAuftragRepository.bester_kandidat(
+        POSTGRES_URL, user_id, ASSISTANT_USER_ID,
+    )
+    if auftrag:
+        gewinner.append({
+            "name": auftrag["aufgabe"] or "unbekannt",
+            "prioritaet": auftrag["salienz_decay"],
+            # Der Auftrag altert jetzt sehr wohl — aber nach unten. Basis ist
+            # der Anker, effektiv die verfallene Praesenz; die Differenz ist
+            # im Log ablesbar und sagt, wie lange er schon liegt.
+            "prioritaet_basis": auftrag["salienz_absolut"],
+            "ueberfaellig_s": None,
+            "quelle": "shadow_auftrag",
+            "daten": auftrag,
+            "auftrag_id": auftrag["id"],
+            "queue_key": None,
+            "queue_raw": None,
+            "schedule_key": None,
+            "themen": auftrag["thema"],
+        })
 
-        for raw in redis_client.lrange(queue_key, 0, -1):
-            try:
-                eintrag = json.loads(raw)
-            except (json.JSONDecodeError, TypeError):
-                continue
+    # ── Spur 2: die Promotions-Queue, weiterhin in Redis ──
+    # Sie zieht **nicht** mit: Sie traegt keine Salienz-Dynamik, kein
+    # Verfallsmodell und keinen Soft-Delete — ein KZG-Key wartet dort auf
+    # seine Promotion und ist danach weg.
+    promotion_key: str = f"queue:{user_id}"
+    bester: dict | None = None
+    beste_prio: float = -1.0
 
-            prio: float = float(eintrag.get("prioritaet", eintrag.get("salienz", 0.0)))
+    for raw in redis_client.lrange(promotion_key, 0, -1):
+        try:
+            eintrag = json.loads(raw)
+        except (json.JSONDecodeError, TypeError):
+            continue
 
-            if prio > beste_prio:
-                beste_prio = prio
-                bester = {
-                    "name": eintrag.get("aufgabe", "unbekannt"),
-                    "prioritaet": prio,
-                    # Queue-Eintraege altern nicht: basis == effektiv, und
-                    # None statt 0.0, weil "altert nicht" etwas anderes ist
-                    # als "ist gerade eben faellig geworden".
-                    "prioritaet_basis": prio,
-                    "ueberfaellig_s": None,
-                    "quelle": "queue",
-                    "daten": eintrag,
-                    "queue_key": queue_key,
-                    "queue_raw": raw,
-                    "schedule_key": None,
-                    "themen": eintrag.get("themen", ""),
-                }
+        prio: float = float(eintrag.get("prioritaet", eintrag.get("salienz", 0.0)))
 
-        if bester:
-            gewinner.append(bester)
+        if prio > beste_prio:
+            beste_prio = prio
+            bester = {
+                "name": eintrag.get("aufgabe", "unbekannt"),
+                "prioritaet": prio,
+                # Promotionsauftraege altern nicht: basis == effektiv, und
+                # None statt 0.0, weil "altert nicht" etwas anderes ist
+                # als "ist gerade eben faellig geworden".
+                "prioritaet_basis": prio,
+                "ueberfaellig_s": None,
+                "quelle": "queue",
+                "daten": eintrag,
+                "auftrag_id": None,
+                "queue_key": promotion_key,
+                "queue_raw": raw,
+                "schedule_key": None,
+                "themen": eintrag.get("themen", ""),
+            }
+
+    if bester:
+        gewinner.append(bester)
 
     return gewinner
 
@@ -246,6 +292,7 @@ def _periodische_faellig() -> list[dict]:
                 "prioritaet_basis": basis,
                 "ueberfaellig_s": ueberfaellig_s,
                 "quelle": "periodisch",
+                "auftrag_id": None,
                 "daten": daten,
                 "queue_key": None,
                 "queue_raw": None,
