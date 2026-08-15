@@ -4853,15 +4853,35 @@ Der Aufrufer sieht echte Zeilen und meldet Erfolg. Genau das ist einmal geschehe
 
 **Band:** B — die Queue wächst schneller, als sie abfließt, und niemand räumt sie.
 
-**Entschieden am 15.08.2026, noch nicht gebaut.** Aufträge und Stapel-Einträge sollen verfallen wie Erinnerungen: mit einem Einstiegswert, einer Verstärkung, einem sinus-gedämpften effektiven Wert, einer letzten Änderung und einem gerechneten Verfall. **Was unter die Schwelle fällt, wird hart gelöscht** — der Gedanke ist dann unwiederbringlich weg. Die Schwelle steht bei **0,3**: Gedanken mit niedriger Salienz verlieren, und damit fällt das Rauschen heraus. Die Frist ist an das KZG angelehnt und nicht an das LZG — höchstens **30 Tage**, gestaffelt nach Salienz.
+**Konzept geschrieben am 15.08.2026 — `novaberg-queue-verfall_k.md`. Der Bau steht aus.**
+
+**Zwei Entscheidungen von diesem Tag haben den Eintrag darunter überholt:**
+
+- ~~**Was unter die Schwelle fällt, wird hart gelöscht** — der Gedanke ist dann unwiederbringlich weg.~~ → **Ersetzt durch Soft-Delete nach LZG-Vorbild.** Ein Auftrag unter der Schwelle wird auf `aktiv = FALSE` gesetzt, bleibt gespeichert und ist über die Halbreaktivierung aus `novaberg-memory-synapsen_k.md` §9.3 weckbar. **Der Grund, der den Ausschlag gab:** Alle 233 Aufträge auf Salienz 0,0 sind `vertiefen` — ihre Null ist ein Schreibfehler und kein schwacher Anlass. Bei hartem Löschen wären sie beim ersten Lauf endgültig weg.
+- ~~Die Frist ist an das KZG angelehnt … höchstens **30 Tage**, gestaffelt nach Salienz.~~ → **Die 30 Tage bleiben, die Staffelung entfällt.** Sie sind keine Löschfrist, sondern die Zeit, in der ein unberührter Auftrag von voller Salienz auf die Schwelle 0,3 fällt. Eine Staffelung wäre daneben eine zweite Kurve; die eine Rate **λ = 0,0393/Tag** leistet dasselbe, weil ein schwächerer Auftrag von einem niedrigeren Anker startet und deshalb früher unten ankommt.
+
+**Der ursprüngliche Eintrag, als Begründung erhalten.** Aufträge und Stapel-Einträge sollen verfallen wie Erinnerungen: mit einem Einstiegswert, einer Verstärkung, einem sinus-gedämpften effektiven Wert, einer letzten Änderung und einem gerechneten Verfall. Die Schwelle steht bei **0,3**: Gedanken mit niedriger Salienz verlieren, und damit fällt das Rauschen heraus.
 
 **Zwei Vorbilder, zwei Hälften.** Die Sinus-Sättigung samt Verstärkung steht in `novaberg-kzg-salienz_k.md` §3; der materialisierte Verfall mit `decay_am` in `novaberg-memory-synapsen_k.md` §9. **Der KZG selbst hat keinen rechnenden Decay** — dort verfallen Einträge über die Redis-Frist, sie sinken nicht. Die Kombination ist neu und hat noch kein Dokument; die Shadow-Queue hat überhaupt keines.
 
-**Was fertig waere.** Ein eigenes `novaberg-queue-verfall_k.md` nach dem Muster der beiden Vorbilder — Befund, Bedeutung des Werts, Formel, Felder, Konstanten, Migration des Bestands, ZIEL/TEST/MESSUNG, was nicht enthalten ist —, danach der Bau. **Erst das Konzept, dann der Code:** Hier ändert sich die Absicht, nicht nur der Zustand.
+~~**Was fertig waere.** Ein eigenes `novaberg-queue-verfall_k.md` …~~ → **Geschrieben am 15.08.2026.** Dabei hat die Suche nach dem *Gegenstand* ergeben, dass die Bauart bereits beschrieben war: `novaberg-autonomous-wissen_k.md` §11.6/§11.7, für Stapel und Bibliothek. Das neue Dokument ist deshalb die Übertragung auf einen dritten Speicher und verweist, wo das Schwesterdokument trägt, statt es zu wiederholen.
 
-**Drei Punkte, die es entscheiden muss.** Die dritte Rolle von `prioritaet` — der Wert trägt heute die Auslöse-Salienz und den Scheduler-Rang; mit dem Stapel-Rang käme eine weitere dazu. Der Umgang mit den 230 Aufträgen auf `0.0`, die beim ersten Lauf sämtlich herausfielen (gewollt, siehe `KANDIDATEN-PRIORITAET-STILLE-NULL`). Und die Abgrenzung zu den **380 verwaisten `vertiefen`-Aufträgen**: Der Verfall räumt sie ab, aber sie entstehen weiter, solange kein Agent dafür existiert — der Verfall ist dort ein Ventil und kein Fix.
+**Die drei Punkte sind entschieden:**
 
-**Gemessen am 15.08.2026:** 1028 Aufträge in der Queue — 608 `recherche`, **380 `vertiefen` ohne Agenten**, 45 `nachfragen`. Ältester Auftrag vom 27.07.2026.
+1. **Die dritte Rolle von `prioritaet` kommt nicht dazu, sie ersetzt die zweite.** Der Wert zerfällt nach `lzg_knoten`-Vorbild in `salienz_roh` / `salienz_absolut` / `salienz_decay`; der Scheduler wählt künftig nach der Präsenz, die Herkunft steht im Anker. Damit ist die Zwei-Rollen-Vermengung aufgelöst statt erweitert.
+2. **Die 233 Aufträge auf `0.0` fallen beim ersten Lauf heraus** — gewollt, und dank Soft-Delete rückholbar. Sie sind ausnahmslos `vertiefen`.
+3. **Die 383 verwaisten `vertiefen`-Aufträge bleiben ein Ventil, kein Fix**, und die Wahl ist als Absichtsfrage benannt: den Agenten bauen (`novaberg-pixie-deepdive_k.md` — das Konzept existiert) oder `information_teilen` nicht mehr einreihen.
+
+**Der Lebenszyklus ist am 15.08.2026 durchgerechnet und entschieden** (`novaberg-queue-verfall_k.md` §12):
+
+- **Drei Wege hinaus, einer davon ein Löschen.** Erledigt → die Zeile wird entnommen (schon heute so: `abschluss(erfolg=True)` → `LREM`). Gescheitert nach drei Versuchen → verworfen. Nur wartend → `aktiv = FALSE`, bleibt. **Zum Vergleich: Der KZG löscht hart** über Redis-TTL (7 / 14 / 30 Tage nach Salienz), **das LZG nie** — die Queue nimmt vom KZG die Frist und vom LZG den Rückweg.
+- **Die Rangfolge ist Dringlichkeit, und damit LIFO.** Der frische Gedanke ist der präsente; ein Vorsatz wird nicht dringlicher, weil er lange liegt. Das kehrt die heutige Ordnung um (heute gewinnt der älteste Eintrag des Höchstwerts) und ist ausdrücklich gewollt. **Kein Verhungerungsschutz für Queue-Aufträge** — anders als bei den periodischen Aufgaben.
+- **Die Sättigung der Sinus-Kurve ist der Zweck, nicht ein Mangel.** Zehn Verstärkungen heben `salienz_absolut` um 0,024; die Wirkung sitzt in `verstaerkt_am` und schenkt 30 Tage neu. Derselbe Bau im KZG, wo eine Verstärkung die TTL verlängert. **Der Boost ist keine Stellschraube der Frist.**
+- **Keine Mengengrenze, kein Jahresablauf.** Wächst der Bestand über das Erträgliche, wird `QUEUE_DECAY_RATE` verstärkt — eine Obergrenze würde nach Zahl statt nach Dringlichkeit verwerfen.
+
+**Was jetzt aussteht — der Bau, in dieser Reihenfolge:** die Tabelle `shadow_auftrag` samt Index (**DDL, vorher anzukündigen**), die Migration der 1036 Einträge aus Redis, der Umbau von Schreib- und Auswahlpfad, und der Verfall als dritter Schritt des Tageslaufs `synapsen_decay`.
+
+**Gemessen am 15.08.2026 um 13:52 UTC:** 1036 Aufträge — 608 `recherche`, **383 `vertiefen` ohne Agenten**, 45 `nachfragen`. 233 auf Salienz 0,0 (alle `vertiefen`), 145 ohne Thema, Median 0,9764, ältester 18 Tage. **Der Bestand wuchs während der Messung** von 1032 auf 1036.
 
 ## IMPULS-HANDLUNG-OHNE-HERKUNFT — was sie selbst angelegt hat, ist nicht erkennbar (14.08.2026)
 

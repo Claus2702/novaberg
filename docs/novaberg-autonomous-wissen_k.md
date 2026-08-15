@@ -642,6 +642,8 @@ Bei 0.55 verfünffacht sich die Zahl der fremden Paare, bei 0.65 bricht die Ausb
 
 ### 11.6 Gewichtung, Sättigung und Verfall nach dem Knoten-Schema
 
+> **Seit dem 15.08.2026 sind es drei Speicher, und der dritte hat ein eigenes Dokument.** Die **Shadow-Queue** übernimmt dieselbe Bauart mit einer dritten Rate: `novaberg-queue-verfall_k.md`. Sie kam hier nicht vor, weil dieser Abschnitt vom erarbeiteten Wissen aus gedacht ist, nicht von den Aufträgen. **Zwei Unterschiede sind beim Quervergleich wichtig**, damit niemand die Zahlen von hier dorthin trägt: Die Queue rechnet auf **Cap 1,0** statt 10,0, weil sie Salienz führt — auf der Skala dieses Abschnitts wäre ihre Schwelle 0,3 gleich 3 % und der Verfall liefe still ins Leere. Und sie zieht dafür **nach PostgreSQL** um, während der Stapel in Redis bleibt; der Grund ist die Lesefrequenz, gemessen, und er steht dort in §7.2.
+
 **Zwei Speicher, eine Bauart, zwei Raten.** Das ist vorher zu trennen, sonst wird eine Kurve für beides entworfen und passt für keines:
 
 | | `shadow_stack` (Redis) | `autonomous_wissen` (PostgreSQL) |

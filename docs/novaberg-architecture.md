@@ -616,6 +616,7 @@ Das Handbuch ist nach Betrachtungstiefen organisiert. Tiefe 0 ist der Einstiegsp
 | novaberg-memory.md | Gedaechtnis-Ueberblick (Session → KZG → LZG → KG) |
 | novaberg-ei.md | Emotionale Intelligenz Ueberblick |
 | novaberg-pixie.md | Pixie-System, Scheduling, Queue/Stack/Delivery |
+| novaberg-queue-verfall_k.md | **Verfall der Shadow-Queue** — Konzept: Ein Auftrag ist ein Vorsatz und verliert seinen Anlass; die Queue kannte bis dahin keinen Weg hinaus außer Ausführung. Übernimmt die Bauart von `lzg_knoten` (Sinus-Sättigung im Aufbau, exponentieller Verfall, **Soft-Delete statt Löschen**, Halbreaktivierung auf 50 % des Bandes über der Schwelle) mit eigener Rate: 30 Tage bis Schwelle 0,3. **Die Queue zieht dafür nach PostgreSQL um, der Stapel nicht** — gemessen an der Lesefrequenz, nicht an der Datenmenge (⬜ nicht gebaut, Bestand 1036 am 15.08.2026 gemessen) |
 
 ### Tiefe 2 — Pipeline-Nodes (15)
 
