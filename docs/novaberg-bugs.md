@@ -224,7 +224,7 @@ Der Eintrag nennt als Ursache das fehlende Keepalive im Client und ordnet den le
 
 ### Chat 134 — beim Bau der zwei Pixie-Spuren (09.08.2026)
 
-#### SUITE-HAENGT-AM-AKTIVEN-PAAR — zwei Tests werden rot, sobald eine Messreihe läuft 🔧 offen
+#### SUITE-HAENGT-AM-AKTIVEN-PAAR — zwei Tests werden rot, sobald eine Messreihe läuft ✅ behoben (15.08.2026)
 
 **Symptom.** `TestWahlGegenDieQueue` in `tests/test_pixie_aging.py` ist grün, solange `AKTIVES_PAAR_USER_ID` auf `meister` steht, und **rot, sobald das aktive Paar auf eine Testpersona umgestellt ist** — also während jeder Messreihe. Am Code ändert sich dabei nichts.
 
@@ -727,7 +727,7 @@ Drei von ihnen sind stille Vorgabewerte an einer Stelle, an der ein Ausfall geh�
 
 **Prioritaet:** mittel.
 
-#### KANDIDATEN-PRIORITAET-STILLE-NULL 🔧 offen
+#### KANDIDATEN-PRIORITAET-STILLE-NULL ✅ behoben (15.08.2026)
 
 **Befund (2026-08-04).** **Die Kandidatenauswahl fällt auf Priorität `0.0` zurück, wenn weder `prioritaet` noch `salienz` im Eintrag steht** (`services/pixie/kandidaten.py`). Ein unbeschriebener Auftrag wird damit zur niedrigsten Priorität und gewinnt nie, statt laut zu scheitern. Gemessen: 49 von 650 Einträgen der Shadow-Queue stehen auf 0.0.
 
@@ -750,7 +750,11 @@ memory/kzg.py          shadow_queue_push(… kein prioritaet-Argument …)  ❌
 
 > **Der Verfall behebt das nicht, er räumt nur auf.** Nach `novaberg-queue-verfall_k.md` fallen die 233 beim ersten Lauf sämtlich unter die Schwelle 0,3 — **gewollt, und dank Soft-Delete rückholbar**, statt wie zunächst entschieden hart gelöscht. Genau dafür ist das Soft-Delete da: Die Null ist hier nachweislich ein Schreibfehler und kein schwacher Anlass. **Solange der Defekt steht, entstehen nach dem Umzug weiter Nullen** — dann allerdings gegen ein `NOT NULL` ohne Vorgabewert, das sie laut abweist.
 
-**Prioritaet:** mittel. **Aber Vorbedingung des Queue-Umzugs**, denn dessen Schema erzwingt genau das, was hier fehlt.
+**Behoben am 15.08.2026, beide Haelften.** `memory/kzg.py` uebergibt die Salienz, und der Vorgabewert `0.0` ist aus der Signatur von `shadow_queue_push` verschwunden — ohne den zweiten Teil waere nur der heute bekannte Aufrufer gedeckt und die Falle fuer den naechsten gestellt geblieben. Der Zeuge prueft ein **Kriterium**: ein AST-Scan ueber den ganzen Produktivbaum faellt bei jedem Aufruf ohne `prioritaet`, auch bei spaeter hinzugekommenen. In der roten Phase zeigte er exakt `memory/kzg.py:432`. Gemessen am laufenden System: Salienz 0,8412 kommt an, ein Aufruf ohne sie wirft `TypeError`.
+
+**Die Sperre steht seither zusaetzlich im Schema.** `shadow_auftrag.salienz_absolut` ist `NOT NULL` ohne Vorgabewert; dort kann kein Aufrufer sie umgehen. Die 233 Altbestaende sind mit dem Umzug uebernommen und ruhen — sie fielen beim ersten Verfallslauf heraus, wie angekuendigt, und sind dank Soft-Delete rueckholbar.
+
+**Prioritaet:** mittel.
 
 #### NOVA-UEBERNIMMT-BIOGRAFIE 🔧 offen
 

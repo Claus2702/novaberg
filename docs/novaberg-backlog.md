@@ -4849,7 +4849,7 @@ Der Aufrufer sieht echte Zeilen und meldet Erfolg. Genau das ist einmal geschehe
 
 ---
 
-## QUEUE-VERFALL-KONZEPT — der Stapel und die Queue brauchen ein Verfallsmodell (15.08.2026)
+## QUEUE-VERFALL-KONZEPT — der Stapel und die Queue brauchen ein Verfallsmodell ✅ (15.08.2026)
 
 **Band:** B — die Queue wächst schneller, als sie abfließt, und niemand räumt sie.
 
@@ -4879,7 +4879,9 @@ Der Aufrufer sieht echte Zeilen und meldet Erfolg. Genau das ist einmal geschehe
 - **Die Sättigung der Sinus-Kurve ist der Zweck, nicht ein Mangel.** Zehn Verstärkungen heben `salienz_absolut` um 0,024; die Wirkung sitzt in `verstaerkt_am` und schenkt 30 Tage neu. Derselbe Bau im KZG, wo eine Verstärkung die TTL verlängert. **Der Boost ist keine Stellschraube der Frist.**
 - **Keine Mengengrenze, kein Jahresablauf.** Wächst der Bestand über das Erträgliche, wird `QUEUE_DECAY_RATE` verstärkt — eine Obergrenze würde nach Zahl statt nach Dringlichkeit verwerfen.
 
-**Was jetzt aussteht — der Bau, in dieser Reihenfolge:** die Tabelle `shadow_auftrag` samt Index (**DDL, vorher anzukündigen**), die Migration der 1036 Einträge aus Redis, der Umbau von Schreib- und Auswahlpfad, und der Verfall als dritter Schritt des Tageslaufs `synapsen_decay`.
+**Gebaut und gemessen am 15.08.2026** — Tabelle samt zwei Indizes (Log: 132 Statements statt 129), Repository, Migration **1036 von 1036** (danach 803 aktiv, 233 ruhend), Schreib- und Auswahlpfad, Verfall als dritter Schritt in `synapsen_decay` mit eigenem Audit-Eintrag. Der Verfallslauf am echten Bestand: 805 verarbeitet, 0 deaktiviert, Summe unveraendert. Suite 1373 → **1399 grün**. Messwerte in `novaberg-queue-verfall_k.md` §16.
+
+**Der Rest, als Rest benannt:** Die Wirkung *ein Auftrag faellt durch Alter heraus* ist am Bestand nicht zu beobachten — keiner ist 30 Tage alt. Sie ist ueber gesetzte Zeitstempel bezeugt, nicht gemessen; die echte Messung braucht 30 Tage Betrieb. Ebenso ungemessen: die Reaktivierung durch einen echten wiederkehrenden Anlass.
 
 **Gemessen am 15.08.2026 um 13:52 UTC:** 1036 Aufträge — 608 `recherche`, **383 `vertiefen` ohne Agenten**, 45 `nachfragen`. 233 auf Salienz 0,0 (alle `vertiefen`), 145 ohne Thema, Median 0,9764, ältester 18 Tage. **Der Bestand wuchs während der Messung** von 1032 auf 1036.
 

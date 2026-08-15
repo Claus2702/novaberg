@@ -1,6 +1,6 @@
 # Novaberg — Roadmap (Projektchronik)
 
-**Stand:** Chat 140, 15. August 2026
+**Stand:** Chat 141, 15. August 2026
 *(Die Kopfzeile stand bis Chat 109 auf „Chat 93, 21. Mai 2026" — 15 Chats hinter dem Inhalt. **Sie ist danach erneut zurückgefallen:** von Chat 110 bis 114 blieb sie auf „Chat 109" stehen, während der Inhalt weiterwuchs, und wurde in Chat 115 nachgezogen. Wer hier etwas ergänzt, zieht die Kopfzeile mit — sie driftet zuverlässig. Achtung beim Nachschlagen: Nur bis Chat 97 trägt jeder Chat eine eigene `## Chat NNN`-Überschrift; die Chats 98–108 stehen als `###`-Abschnitte unter dem Chat-97-Block, benannt nach Sprint statt nach Chat.)*
 **Pfad:** novaberg/docs/novaberg-roadmap.md
 **Single Source of Truth für abgeschlossene Arbeit.**
@@ -1982,6 +1982,26 @@ Beide Räder haben eine Nabe — den Wert ohne jede Ausprägung — und das Erge
 **Geschlossen:** `Bauteil 3 — Charakter-Räder im Client` (Rest benannt, siehe Backlog)
 
 ---
+
+## Chat 141 (15.08.2026) — Die Queue zieht um, und ein Gedanke verfällt, statt gelöscht zu werden ✅
+
+**Der Nachzug aus Chat 139 abgetragen.** Das Moduldokument des NachfragenAgenten stand an vier benannten Stellen älter als der Code — und die Suche nach dem *Kriterium* statt nach der Aufzählung fand vier weitere Dokumente. §3 war zusätzlich an drei Stellen älter als sein eigenes Dokument: Die Intentionstabelle führte einen Auslöser weiter, den §6 entscheidet und §9 vollzieht, das Router-Beispiel zeigte ein Literal, das der Grep nicht mehr findet, und **fünf von fünf Zeilenzitaten waren überholt**.
+
+**Das Verfallsmodell der Shadow-Queue — Konzept vor Code, ausdrücklich.** Die Suche nach dem *Gegenstand* ergab, dass die Bauart bereits beschrieben war (`novaberg-autonomous-wissen_k.md` §11.6/§11.7, für Stapel und Bibliothek); das neue Dokument ist deshalb die Übertragung auf einen dritten Speicher. Entschieden: **Soft-Delete statt hartem Löschen**, Reaktivierung auf 50 % des Bandes über der Schwelle, Frist 30 Tage, Schwelle 0,3 — daraus die Rate **0,0393/Tag**, gerechnet aus dem gemessenen Median, 26-mal die LZG-Rate.
+
+**Der Lebenszyklus wurde gegen den Bestand durchgerechnet, und vier Stellen sahen aus wie Mängel.** Sie sind die Bauart: Die Sättigung der Sinus-Kurve ist ihr Zweck (zehn Verstärkungen heben den Anker um 0,024 — die Wirkung sitzt in `verstaerkt_am` und schenkt 30 Tage neu, genau wie der KZG bei Verstärkung die TTL verlängert); die Rangfolge ist Dringlichkeit und damit LIFO, weil der frische Gedanke der präsente ist; die Reaktivierung hält am Leben, ohne vorzudrängeln; und statt einer Mengengrenze wird der Verfall verstärkt, wenn der Bestand über das Erträgliche wächst.
+
+**Gebaut in einem Zug, in der von der DDL-Regel geforderten Reihenfolge.** Zuerst die stille Null als Vorbedingung — `shadow_queue_push` trug `prioritaet: float = 0.0`, und von zwei Aufrufern übergab einer den Wert; **233 von 1036 Aufträgen trugen 0.0, ausnahmslos `vertiefen`**. Dann der Zeuge (rot gegen das unveränderte Schema), dann die Tabelle: Der Log belegt **132 Statements statt 129**. Dann Repository, Migration, Umbau von Schreib- und Auswahlpfad, Verfall als dritter Schritt in `synapsen_decay`.
+
+**Die Migration übernahm 1036 von 1036** — danach 803 aktiv, 233 ruhend, und die Vorhersage aus dem Konzept traf exakt. Der Verfallslauf am echten Bestand: 805 verarbeitet, 0 deaktiviert, Summe unverändert. **Nichts gelöscht.**
+
+**Drei Dinge hat der Bau am Konzept berichtigt:** Die Migration übernimmt 1:1 ohne Verdichtung, weil eine Verdichtung `haeufigkeit` eine nie gemessene Zahl gäbe. Ein zirkulärer Import zwischen `shadow_agent.utils` und `memory.kzg` war lokal zu brechen. Und der Dispatcher las mit `themen` und `salienz` **zwei Feldnamen, die es nie gab** — der AgentState bekam dauerhaft `""` und `0.0`.
+
+**Fünf Bestandszeugen mussten nachgezogen werden**, vier davon unverändert gültig. Der fünfte trug den Satz *„Queue-Einträge altern nicht"*, den dieser Bau aufhebt: Sie altern jetzt nach unten. Nebenbei behoben: `SUITE-HAENGT-AM-AKTIVEN-PAAR`.
+
+**Weitere Funde:** `novaberg-pixie.md` führte *„Max 20 Eintraege pro User"* — es gibt keinen Begrenzer, der Bestand war 1036. Das dokumentierte Eintragsformat nannte vier Felder, die es nicht gibt. `EMOTIONS_VEKTOREN` ist in `config.py` zweimal definiert; die zweite Definition gewinnt und macht den als Kanon angelegten frozenset zu totem Code.
+
+Suite 1373 → **1399 grün, 0 übersprungen.**
 
 ## Chat 140 (15.08.2026) — Eine Verbindung, die verworfen wird, erfährt davon ✅
 

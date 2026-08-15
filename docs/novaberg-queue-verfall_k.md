@@ -2,10 +2,10 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Konzept — Warum ein Auftrag verfällt, wie er verfällt, und wohin die Queue dafür umzieht
-**Stand:** 15. August 2026, Chat 141 — v0.3, Lebenszyklus geprüft und entschieden (§12)
+**Stand:** 15. August 2026, Chat 141 — v0.4, **gebaut und gemessen** (§16)
 **Pfad:** novaberg/docs/novaberg-queue-verfall_k.md
 **Typ:** Konzept
-**Status:** ⬜ **Konzept, nichts gebaut.** Backlog `QUEUE-VERFALL-KONZEPT`. Die Doku kommt vor dem Bau, ausdrücklich
+**Status:** ✅ **Gebaut und gemessen am 15.08.2026.** Tabelle, Repository, Migration (1036 Aufträge), Schreib- und Auswahlpfad, Verfallslauf. §16 trägt die Messwerte. Offen: die Messung über 30 Tage Betrieb
 **Verwandt:** `novaberg-autonomous-wissen_k.md` §11.6/§11.7 (**das Schwesterdokument — dort steht der Stapel, hier die Queue**) · `novaberg-memory-synapsen_k.md` §9 (das Vorbild) · `novaberg-kzg-salienz_k.md` §3 (die Aufbaukurve) · `novaberg-pixie.md` (das Modul)
 
 ---
@@ -549,8 +549,106 @@ Vier Fragen sahen nach offenen Punkten aus und sind am 15.08.2026 entschieden; s
 
 ---
 
+## 16. Gebaut und gemessen — 15.08.2026
+
+`shadow_auftrag` in `db/init.sql`, `memory/repositories/shadow_auftrag_repository.py`,
+fünf Konstanten in `config.py`, Umbau von `services/shadow_agent/utils.py`,
+`services/pixie/kandidaten.py` und `services/pixie/dispatch.py`, dritter Schritt
+in `agents/synapsen_decay/`. **1399 Tests grün, 0 übersprungen** (1373 vorher,
+26 neu). Beide Wände sauber, alle berührten Dateien auf ihrer Nulllinie.
+
+### Die Reihenfolge, in der gebaut wurde
+
+**Die stille Null zuerst** — sie war Vorbedingung, weil das Schema erzwingt,
+was in der Signatur fehlte. `memory/kzg.py` übergibt seither die Salienz, und
+der Vorgabewert `0.0` ist aus `shadow_queue_push` verschwunden.
+
+**Dann die Tabelle**, in der von `16_PERSISTENZ.md` §2 geforderten Folge:
+Zeuge zuerst — er brannte gegen das unveränderte Schema und war rot —, dann
+der Schema-Edit, dann ein Anfasser. Der Beleg steht im Behälter-Log:
+**132 Statements** statt 129, also genau eine Tabelle und zwei Indizes.
+
+### Die Migration
+
+| | |
+|---|---|
+| gelesen / geschrieben | **1036 / 1036**, 0 unlesbar |
+| danach aktiv | **803** |
+| danach ruhend | **233** — ausnahmslos `vertiefen` |
+| je Aufgabenart | recherche 608 (608 aktiv) · vertiefen 383 (150 aktiv) · nachfragen 45 (45 aktiv) |
+| `erstellt_am` | 27.07. bis 15.08.2026 |
+
+**Die Vorhersage aus §13 ist exakt eingetroffen:** 233 Deaktivierungen, keine
+weiteren. Gegengeprüft wurde außerdem, dass keine Zeile `salienz_decay >
+salienz_absolut` trägt, keine aktive Zeile unter der Schwelle liegt und keine
+ein fremdes Paar-Tripel hat — je 0 Treffer.
+
+### Der Verfallslauf am echten Bestand
+
+```
+vorher    aktiv 803, ruhend 233
+Lauf      805 verarbeitet, 0 deaktiviert, kein Fehler
+nachher   aktiv 803, ruhend 233
+Summe     1036 -> 1036   — nichts gelöscht
+```
+
+**0 Deaktivierungen sind das richtige Ergebnis**, nicht ein wirkungsloser
+Lauf: Die 233 ruhen bereits, und kein übriger Auftrag ist 30 Tage alt. Die 805
+gegenüber 803 sind zwei Zeilen eines Testpaares, die der Lauf global miterfasst
+hat — der Verfall filtert nicht auf ein Paar, wie `run_node_decay` auch nicht.
+
+Der Gewinner der Auswahl war der **jüngste** Auftrag (erstellt am selben Tag,
+`salienz_decay` 0,9974) — die Rangfolge aus §12.3 im Betrieb.
+
+### Was der Bau am Konzept berichtigt hat
+
+**Die Migration übernimmt 1:1, ohne Verdichtung.** Das Konzept ließ offen, ob
+gleiche Gegenstände beim Übernehmen verschmelzen sollen. Sie tun es nicht: Eine
+Verdichtung setzte `haeufigkeit` auf eine Zahl, die nie gemessen wurde. Echte
+Dubletten verschmelzen beim nächsten Anlass von selbst.
+
+**Ein zirkulärer Import war zu brechen.** `services/shadow_agent/utils.py`
+holt das Repository, `memory/__init__` lädt `memory.kzg`, und die holt sich
+`shadow_queue_push` aus genau diesem Modul. Der Import steht deshalb lokal in
+der Funktion.
+
+**Der Dispatcher las zwei Feldnamen, die es nie gab.** Der AgentState bekam
+`themen` und `salienz` aus dem Auftrag — beides Schlüssel, die ein
+Shadow-Auftrag nicht trägt; er erhielt dauerhaft `""` und `0.0`. Derselbe
+Namensirrtum stand im Moduldokument und im Rückfall der Kandidatenwahl.
+Berichtigt im Zug des Umbaus, weil die alten Namen nach dem Umzug ohnehin
+nicht mehr existieren.
+
+### Fünf Bestandszeugen mussten nachgezogen werden
+
+Sie prüften richtige Zusicherungen über den Redis-Umweg. Vier davon gelten
+unverändert und belegen sich jetzt an der Tabelle. **Einer beschrieb eine
+Zusicherung, die dieser Bau aufhebt:** *„Queue-Einträge altern nicht"* — sie
+altern jetzt nach unten. Sein Kern bleibt und ist schärfer geworden: Ein
+Auftrag ohne Agenten wandert nicht nach oben, **und er bleibt auch nicht
+liegen.**
+
+> **Nebenbei behoben: `SUITE-HAENGT-AM-AKTIVEN-PAAR`.** Zwei Fälle in
+> `test_pixie_aging.py` wurden rot, sobald das aktive Paar auf eine Testpersona
+> stand. Sie stellen die Queue jetzt über einen Patch, statt sie zu lesen —
+> sie prüfen die Wahl des Schedulers, nicht den Speicher.
+
+### Was ungemessen bleibt, ausdrücklich
+
+**Die eigentliche Wirkung — ein Auftrag fällt durch Alter heraus — ist am
+Bestand nicht zu beobachten**, weil keiner alt genug ist. Sie ist über gesetzte
+Zeitstempel geprüft (29 Tage aktiv, 31 Tage nicht), und das ist ein Zeuge,
+keine Messung. Die echte Messung braucht 30 Tage Betrieb.
+
+Ebenso ungemessen: die **Reaktivierung im Betrieb**. Dass sie rechnet, ist
+belegt; dass ein wiederkehrender echter Anlass denselben Gegenstand trifft,
+nicht.
+
+---
+
 ## Versionshistorie
 
+- **v0.4 — 15.08.26:** **Gebaut und gemessen**, §16 neu. Die Migration übernahm **1036 von 1036** Aufträgen; danach 803 aktiv, 233 ruhend — und die 233 sind ausnahmslos `vertiefen`, die Vorhersage aus §13 traf exakt. Der Verfallslauf am echten Bestand: 805 verarbeitet, 0 deaktiviert, Summe unverändert — **nichts gelöscht**, und 0 Deaktivierungen sind hier das richtige Ergebnis. Drei Dinge hat der Bau am Konzept berichtigt: Die Migration übernimmt **1:1 ohne Verdichtung**, weil eine Verdichtung `haeufigkeit` eine nie gemessene Zahl gäbe; ein **zirkulärer Import** zwischen `shadow_agent.utils` und `memory.kzg` war lokal zu brechen; und der Dispatcher las mit `themen` und `salienz` **zwei Feldnamen, die es nie gab** — der AgentState bekam dauerhaft `""` und `0.0`. Fünf Bestandszeugen sind nachgezogen, vier davon unverändert gültig; der fünfte trug den Satz „Queue-Einträge altern nicht", den dieser Bau aufhebt. Nebenbei behoben: `SUITE-HAENGT-AM-AKTIVEN-PAAR`.
 - **v0.3 — 15.08.26:** **§12 auf die Entscheidungen umgeschrieben — was in v0.2 wie vier Mängel aussah, ist die Bauart.** §12.1 neu: **drei Wege aus der Queue, und nur einer ist ein Löschen** — was abgearbeitet wurde, wird entnommen (heute schon: `abschluss(erfolg=True)` → `LREM`), was scheitert, wird nach drei Versuchen verworfen, was nur wartet, wird deaktiviert und bleibt. Dazu der Vergleich, der die Bauart begründet: **Der KZG löscht hart** über Redis-TTL (7 / 14 / 30 Tage nach Salienz), **das LZG nie** — die Queue nimmt vom KZG die Frist und vom LZG den Rückweg. Ein Detail des KZG stützt §12.2: Eine Verstärkung verlängert dort die **TTL**, sie hebt nicht den Wert; auch im Kurzzeitgedächtnis wirkt Wiederholung über die Uhr. **Die Sättigung ist der Zweck der Sinus-Kurve, nicht ihr Versagen** — wer oben ist, gewinnt durch eine weitere Verstärkung fast nichts, und ein Dauerthema hebelt den Verfall damit nicht aus; der Boost ist dafür ausdrücklich **keine Stellschraube der Frist**. **Die Rangfolge ist Dringlichkeit, und Dringlichkeit ist Frische:** Der letzte Gedanke ist der präsenteste, nicht der von vor dreißig Tagen — die Umkehr von FIFO auf LIFO ist damit die Absicht und nicht eine Nebenwirkung. Benannt bleibt die Wechselwirkung mit dem Aging der periodischen Aufgaben: zwei gegenläufige Zeitregeln im selben Scheduler, beide für ihren Gegenstand richtig, mit einer langsamen Verschiebung zugunsten der Wartungsaufgaben. **Die Reaktivierung hält am Leben und drängelt nicht vor** — wiederholt sich der Anlass mehrfach, holt die zurückgesetzte Uhr den Auftrag von selbst nach oben. **Keine Mengengrenze und kein Jahresablauf:** Wächst der Bestand über das Erträgliche, wird `QUEUE_DECAY_RATE` verstärkt — eine Obergrenze würde nach Zahl statt nach Dringlichkeit verwerfen. Als Gewinn des Umzugs neu benannt: `LREM` adressiert den Eintrag über seinen exakten JSON-Wortlaut und ist bei jeder Abweichung **wirkungslos und stumm**; ein Primärschlüssel kann das nicht.
 - **v0.2 — 15.08.26:** **§12 neu — der Lebenszyklus ist gegen den Bestand durchgerechnet**, und vier Stellen trugen nicht, wie sie in v0.1 standen. **Die Verstärkung wirkt nicht über die Höhe:** Zehn Verstärkungen heben `salienz_absolut` um 0,024 und kaufen 0,61 Tage, weil ein Auftrag bei `salienz_roh ≈ 0,80` von Cap 1,0 einsteigt und die Sinus-Kurve dort waagerecht ist — die Sättigung ist erreicht, bevor der erste Auftrag entsteht. Die Wirkung sitzt in `verstaerkt_am`, das 30 Tage neu schenkt; der Boost bleibt im Schema, aber **niemand darf von ihm eine Rangwirkung erwarten**. **Die Rangfolge kehrt sich um:** Heute gewinnt der älteste Eintrag des Höchstwerts (das Maximum 1,0 tragen 59 Einträge, der erste steht an Listenposition 894 von 1036) — nach dem Umzug gewinnt über `ORDER BY salienz_decay DESC` der jüngste überhaupt, weil der Verfall `salienz_decay` zur Umkehrfunktion des Alters macht. Aus FIFO wird LIFO, ohne dass eine Zeile es ankündigt, und für die periodischen Aufgaben ist dieselbe Frage ausdrücklich anders entschieden. **Die Reaktivierung stellt die Existenz wieder her, nicht die Chance:** 0,638 gegen 0,976 der Neuzugänge. **Der Lebenszyklus hat kein Ende** — es wird nichts mehr gelöscht, die Tabelle wächst monoton. **Was die Prüfung stützt:** Die Altersverteilung dünnt zu den alten Tagen hin nicht aus (57 Aufträge vom ältesten Tag liegen unberührt), der Abfluss ist also so klein, dass die Reihenfolge heute kaum zählt — die Umkehrung wird erst wichtig, wenn der Engpass am einen seriellen Platz fällt, und dann ist sie eingebaut und unbenannt.
 - **v0.1 — 15.08.26:** Erstfassung. Entstanden aus dem Backlog-Eintrag `QUEUE-VERFALL-KONZEPT`, der ein eigenes Dokument verlangte — **die Suche nach dem Gegenstand fand `novaberg-autonomous-wissen_k.md` §11.6/§11.7**, wo dieselbe Bauart für Stapel und Bibliothek bereits steht. Dieses Dokument ist deshalb die Übertragung auf einen dritten Speicher und verweist, wo das Schwesterdokument trägt. Entschieden: **Soft-Delete statt hartem Löschen**, Reaktivierung auf 50 % des Bandes über der Schwelle nach `novaberg-memory-synapsen_k.md` §9.3, Frist **30 Tage**, Schwelle **0,3**. Daraus die Rate **λ = 0,0393/Tag**, gerechnet aus dem gemessenen Median 0,9764 — 26-mal die LZG-Rate. **Die Skala ist 1,0 und nicht die 10,0 des Schwesterdokuments**, weil die Queue Salienz führt; auf Cap 10 wäre die Schwelle 3 % und der Verfall liefe still ins Leere. **Die Queue zieht nach PostgreSQL um, der Stapel nicht** — gemessen: Die Queue wird alle 30 bis 120 s gelesen, der Stapel alle 5 s je Client, und die Postgres-Zugriffe dieses Projekts öffnen je Aufruf eine eigene Verbindung. Das Schema bildet jedes heutige JSON-Feld auf eine Spalte ab, einschließlich des bis dahin undokumentierten `_retries`; neu sind das Paar-Tripel und die Verfallsfelder. Die 233 Aufträge auf Salienz 0,0 fallen beim ersten Lauf heraus — vorher aufgeschrieben, damit es niemand für einen Unfall hält, und dank Soft-Delete rückholbar. Offen und als Absichtsfrage benannt: die 383 verwaisten `vertiefen`-Aufträge, für die der Verfall ein Ventil ist und kein Fix.

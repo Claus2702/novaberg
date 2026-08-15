@@ -73,11 +73,15 @@ Stand der Tabelle:
 
 Drei Redis-Strukturen verbinden Chat und Pixie:
 
-**Shadow-Queue** (`shadow_queue:{user_id}`, List, Chat nach Pixie): Wird automatisch aus dem KZG befuellt, wenn Salienz >= 0.7. Die primaere Intention bestimmt die Aufgabe (recherche, vertiefen, nachfragen). ~~Max 20 Eintraege pro User.~~ Nova-Guard: kein Push fuer `user_id="nova"` (verhindert Feedback-Loop).
+**Shadow-Queue** (~~`shadow_queue:{user_id}`, List~~ → **Tabelle `shadow_auftrag`, PostgreSQL, seit 15.08.2026**, Chat nach Pixie): Wird automatisch aus dem KZG befuellt, wenn Salienz >= 0.7. Die primaere Intention bestimmt die Aufgabe (recherche, vertiefen, nachfragen). ~~Max 20 Eintraege pro User.~~ Nova-Guard: kein Push fuer `user_id="nova"` (verhindert Feedback-Loop).
 
 > **Widerlegt am 15.08.2026 — es gibt keine Obergrenze.** Im Schreibpfad `shadow_queue_push` steht kein `LTRIM`, keine Laengenpruefung und keine Konstante dieser Art; im ganzen Modul gibt es keinen Begrenzer. **Gemessen am 15.08.2026 um 13:52 UTC: 1036 Eintraege** in `shadow_queue:meister`, der aelteste 18 Tage alt. Die Zahl 20 war eine Absicht, die als Zustand geschrieben stand.
 >
-> **Es gibt bis heute auch keinen Verfall.** Ein Auftrag verlaesst die Queue nur durch Ausfuehrung oder durch Verwerfen nach drei Fehlversuchen. Das Konzept dazu steht in **`novaberg-queue-verfall_k.md`** — Soft-Delete statt hartem Loeschen, Frist 30 Tage, Schwelle 0,3, und dafuer der Umzug der Queue nach PostgreSQL.
+> **Der Verfall ist am 15.08.2026 gebaut** (`novaberg-queue-verfall_k.md`). Ein Auftrag verlaesst die Queue auf drei Wegen, und nur zwei davon sind ein Loeschen: **erledigt** → die Zeile wird entfernt; **nach drei Fehlversuchen** → verworfen; **verfallen** → `aktiv = FALSE`, die Zeile bleibt und ist ueber einen wiederkehrenden Anlass weckbar. Frist 30 Tage bis Schwelle 0,3, Rate 0,0393/Tag.
+>
+> **Die Rangfolge hat sich dabei umgekehrt und das ist gewollt:** Die Auswahl nimmt jetzt `ORDER BY salienz_decay DESC` — den **dringlichsten** Auftrag, und weil der Verfall die Dringlichkeit senkt, ist das der juengste. Die Listenfassung nahm unter Gleichstaenden den aeltesten.
+>
+> **Die Promotions-Queue zieht nicht mit** und bleibt in Redis: Sie traegt keine Salienz-Dynamik, kein Verfallsmodell und keinen Soft-Delete.
 
 Shadow-Queue Eintragsformat — **berichtigt am 15.08.2026**, mechanisch ueber alle 1036 Eintraege des Bestands erhoben:
 
