@@ -31,9 +31,12 @@ import numpy as np
 import redis
 
 from config         import ASSISTANT_USER_ID, shutdown_event
+from memory.haltung import haltung_lesen
+from memory.pipeline_log import log_berechnung
 from memory.session import session_turns_retrieve
 from services.events import event_erzeugen
 from services.model_services import model_service, EmbedRequest
+from services.pixie.riegel import Riegelkette, zuwendung_pruefen
 
 logger = logging.getLogger("ki_server.shadow_delivery")
 
@@ -711,6 +714,90 @@ def _impuls_in_den_charaktergraph(
 # ─────────────────────────────────────────────
 # Haupt-Loop: Prüft periodisch alle User
 # ─────────────────────────────────────────────
+def _riegelkette_pruefen(
+    redis_client: redis.Redis,
+    user_id:      str,
+    trigger:      str,
+) -> Riegelkette:
+    """Rechnet die billigen Riegel und haelt das Ergebnis dauerhaft fest.
+
+    **Riegel 1 steht vor der Suche, nicht dahinter.** Will sie nicht zugehen,
+    kostet die Runde nichts — kein Embedding, kein Durchlauf ueber den Stapel.
+    Das ist nicht Sparsamkeit, sondern die Ordnung der Fragen: erst die Person,
+    dann der Gegenstand (`novaberg-eigenzeit_k.md` §2.5).
+
+    **Der Eintrag entsteht auch dann, wenn geblockt wird** — er ist die
+    eigentliche Messgroesse des Bauteils. An einem stillen Tag ist sonst nicht
+    zu unterscheiden, ob niemand zugehen wollte oder ob nichts gepasst hat.
+
+    **Der Umfang des Eintrags ist benannt, nicht stillschweigend:** Er beginnt
+    am Trigger. Was davor abbricht — eine offene Rueckfrage, ein erschoepfter
+    Burst, ein leerer Stapel —, erzeugt keinen Eintrag, weil diese Abbrueche
+    vor der Kette liegen und ihre Umstellung das Verbrauchsverhalten des
+    Momentums aendern wuerde. Das Feld `umfang` sagt es dem Leser, damit
+    niemand die Verteilung fuer die ueber **alle** Zyklen haelt.
+
+    Args:
+        redis_client: Verbindung.
+        user_id:      das Paar, fuer das zugestellt werden soll.
+        trigger:      `momentum_low` oder `timeout` — steht im Eintrag, weil
+            die beiden verschiedene Lagen sind.
+
+    Vorbedingung: Ein Trigger ist gefallen, Burst und Cooldown sind passiert.
+    Nachbedingung: Eine Kette, in der Riegel 1 gerechnet ist. Genau ein
+        Protokolleintrag, auch bei einem Fehlschlag beim Schreiben.
+    Fehlerfaelle: Ein Forensik-Schreibfehler darf die Zustellung nicht
+        anhalten — gekapselt und gemeldet, wie in den Knoten des Graphen.
+
+    Returns:
+        Die Kette. `durchgelassen()` sagt, ob weitergegangen wird.
+    """
+    # ── Verarbeitung ────────────────────────────
+    kette = Riegelkette()
+
+    kette.aufnehmen(
+        zuwendung_pruefen(haltung_lesen(redis_client, user_id, ASSISTANT_USER_ID), time.time()),
+    )
+
+    # Riegel 2 ist nicht gebaut — seine Schwelle ist unentschieden. Er steht
+    # als **nicht gerechnet** in den Daten und nicht als Durchlass: Solange die
+    # stuendliche Decke traegt, fehlt hier keine Begrenzung, aber wer die
+    # Verteilung liest, muss sehen, dass diese Frage nie gestellt wurde.
+    kette.nicht_gerechnet("frequenz", "nicht gebaut — Schwelle unentschieden")
+
+    # Riegel 3 ist an dieser Stelle notwendig passiert: Burst und Cooldown
+    # haben die Runde schon vorher abgebrochen, wenn sie zugeschlagen haetten.
+    kette.gerechnet("ruhe", True, None)
+
+    # ── Ausgabe-Verifikation ────────────────────
+    inhalt: dict = {
+        "schritt": "riegelkette",
+        "trigger": trigger,
+        "umfang":  "ab_trigger",
+        **kette.als_protokoll(),
+    }
+    try:
+        log_berechnung(
+            turn_id = f"zv-{uuid.uuid4().hex}",
+            node    = "zustellung",
+            quelle  = "character",
+            inhalt  = inhalt,
+            user_id      = user_id,
+            character_id = ASSISTANT_USER_ID,
+        )
+    except (redis.RedisError, ValueError, TypeError):
+        # Nur die Fehler der Senke selbst. Ein Programmierfehler soll laut
+        # sein — sonst ist er von einem ausgefallenen Speicher nicht mehr zu
+        # unterscheiden.
+        logger.exception(
+            "Delivery: Riegel-Protokoll nicht geschrieben — die Zustellung "
+            "laeuft weiter, die Reihe hat eine Luecke",
+        )
+
+    logger.info("Delivery: Riegelkette fuer '%s' — %s", user_id, kette.kurzfassung())
+    return kette
+
+
 async def shadow_delivery_loop(
     redis_client:  redis.Redis,
     websocket_map: dict,
@@ -808,6 +895,14 @@ async def shadow_delivery_loop(
                     continue
 
                 logger.info(f"Delivery: Trigger '{trigger}' für '{user_id}'")
+
+                # ── Riegel 1: will sie überhaupt zugehen? ──
+                # **Vor dem LLM-Lock**, weil ein „sie will nicht" sonst erst
+                # die GPU belegt, um danach nichts zu tun. Und vor der Suche,
+                # weil die Ordnung der Fragen es so will: erst die Person,
+                # dann der Gegenstand (novaberg-eigenzeit_k.md §2.5).
+                if not _riegelkette_pruefen(redis_client, user_id, trigger).durchgelassen():
+                    continue
 
                 # ── LLM-Lock prüfen (GPU-Modell nicht blockieren) ──
                 acquired: bool = llm_lock.acquire(blocking=False)

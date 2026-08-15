@@ -2177,6 +2177,44 @@ EIGENZEIT_KATEGORIE_SCHWELLE: float = float(os.getenv("EIGENZEIT_KATEGORIE_SCHWE
 # ein toter Wert, und sie ist im Bestand der Ausfallwert der Wahrnehmung.
 EIGENZEIT_AROUSAL_RUHE: float = float(os.getenv("EIGENZEIT_AROUSAL_RUHE", "0.5"))
 
+# **Der Zuwendungs-Riegel: ob sie ueberhaupt zugeht** (Bauteil D).
+# Ein Einwurf ist eine Zuwendung, die niemand erbeten hat — eine Figur, die auf
+# Abstand haelt, tut das nicht, egal wie gut der Gedanke zum Thema passt. Der
+# Riegel entscheidet das **Ob**, nicht die Haeufigkeit; letztere ist das
+# Fuehrungsmass und hat noch keine Schwelle.
+#
+# **Die Groesse ist die Haltung, nicht die Naehe-Achse der Landschaft.** Die
+# Achse beschreibt den Moment und laege billig bereit — eine dauerhaft
+# distanzierte Figur duerfte dann einwerfen, sobald die Landschaft zufaellig
+# warm ist. Gebraucht wird die Groesse, die Landschaft und Charakterrad
+# verrechnet: `haltung.werte["naehe"]`.
+#
+# Gerechnet am 14.08.2026 ueber 17 Paare x 14 Landschaften, ohne Modellaufruf:
+# ferne Figuren (distanz 1,00) liegen in allen 28 Zellen auf 0,00, nahe
+# zwischen 0,20 und 1,00. Bei 0,25 kommt keine ferne Zelle durch und 10,7 % der
+# nahen werden geblockt — die kalten Landschaften (Gewitter, Schlachtfeld,
+# Wartezimmer), und wer dort sitzt, will keinen Einwurf.
+#
+# **Nicht 0,20**, obwohl der Preis dort null waere: Der niedrigste Wert einer
+# nahen Figur ist exakt 0,20, und eine Schwelle auf einem Bestandswert ist die
+# Kante, an der in diesem Projekt schon zweimal ein Mechanismus stilllag.
+#
+# ⚠ Die Trennung ist **nicht widerlegt, aber auch nicht belegt**: Im Bestand
+# fehlt in Richtung *sie → Mensch* jede Figur zwischen `distanz` 0,60 und 1,00,
+# also das Band, in dem der Zug schwach wird (`PRUEFFIGUR-DISTANZ-090`).
+ZUWENDUNG_SCHWELLE: float = float(os.getenv("ZUWENDUNG_SCHWELLE", "0.25"))
+
+# Wie alt ein Haltungsstand hoechstens sein darf, um den Riegel zu tragen.
+# Der Stand entsteht je Turn; liegt der letzte Turn lange zurueck, beschreibt
+# er eine Lage, die es nicht mehr gibt. **Ein zu alter Stand blockt nicht, er
+# gilt als unbekannt** — und ein unbekannter Riegel laesst nicht durch,
+# sondern verweigert (`21_MESSUNG.md` §2: unbekannt ist nicht dasselbe wie in
+# Ordnung). Setzung, nicht gemessen: 24 h, weil ein Gespraech am Vortag noch
+# etwas ueber die Haltung sagt und eines von letzter Woche nicht.
+ZUWENDUNG_STAND_MAX_ALTER_SEKUNDEN: float = float(
+    os.getenv("ZUWENDUNG_STAND_MAX_ALTER_SEKUNDEN", "86400")
+)
+
 
 # ─────────────────────────────────────────────
 # Prompt-System (Connector-Segregation)
