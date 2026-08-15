@@ -298,6 +298,7 @@ CREATE INDEX IF NOT EXISTS idx_shadow_auftrag_gegenstand
 | `_retries` | `versuche` | **war undokumentiert** — 43 von 1036 tragen es; die Unterstrich-Konvention verrät ein Feld, das nachträglich hinzukam |
 | — | `character_id`, `beobachter` | **neu**, aus dem Paar-Schema |
 | — | `haeufigkeit`, `aktiv`, `verstaerkt_am`, `decay_am` | **neu**, aus der Verfallsmechanik |
+| — | `arousal` | **nachgetragen am 15.08.2026** — die dritte Größe derselben Lage, die `emotion` und `modus` beschreiben. Sie fehlte, und damit konnte die Recherche keinen Level auf den Stapel legen: Bauteil B war gebaut und ohne Eingabe. **NULL-fähig und ohne Vorgabewert**, anders als ihre beiden Nachbarn — die Quelle liefert sie stellenweise selbst leer, und eine 0,5 wäre ein Messwert, den nie jemand gemessen hat. Bestandszeilen bleiben NULL |
 
 **Drei Zusicherungen stehen im Schema statt im Code**, nach dem Vorbild von `autonomous_wissen`:
 

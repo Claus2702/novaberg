@@ -2051,7 +2051,21 @@ Zugriffe, die der Bau nicht benutzt hat: das Kriterium über **Leser und Schreib
 
 **Und der Betrieb hat den Riegel bestätigt**, 180 s nach Ablauf des Cooldowns: Eintrag `zv-34067ad3…` mit `wollen 0,9089 durchlässig`, `ruhe` gerechnet, die vier übrigen als *nicht erreicht* markiert. Der zweite Leser des `pipeline_log` filtert auf `art = turn_roh` — die Versuchskennungen verschmutzen ihn nicht.
 
-Suite 1404 → 1424 → 1435 → 1439 → 1458 → **1462 grün, 0 übersprungen.**
+### Die Queue bekommt die dritte Größe ihrer Lage
+
+Der Auftrag trug seit jeher `emotion` und `modus` der auslösenden Lage — die Erregung fehlte, und damit konnte die Recherche keinen Level auf den Stapel legen. **Angekündigt, dann gebaut**, in der Reihenfolge, die die DDL-Regel verlangt: erst der Zeuge (rot gegen das unveränderte Schema), dann das Schema, dann ein beliebiger Anfasser. Beleg im Log: **133 Statements** statt 132.
+
+`arousal DOUBLE PRECISION NULL` — **NULL-fähig und ohne Vorgabewert**, anders als die beiden Nachbarn. Die Quelle liefert sie stellenweise selbst leer, und ein Vorgabewert 0,5 wäre ein Messwert, den nie jemand gemessen hat. 1050 Bestandszeilen bleiben NULL.
+
+**Zwei Befunde am Rand, beide durch das Messen und nicht durch das Nachdenken:**
+
+Die Statement-Zahl sprang von 132 auf **135** statt auf 133 — und das ist kein Defekt, sondern eine Eigenschaft des Belegs: Der Lader führt die Datei als Ganzes aus und zählt für die Meldung nur `count(";")`. Zwei Semikolons in meinen **Kommentaren** hatten die Zahl aufgebläht. Nach dem Entfernen stand sie auf 133. Die Zahl belegt also, **dass** die Migration lief, nicht **was** lief.
+
+Und der neue Zeuge fing einen Defekt, den der Bau erzeugt hatte: `kzg_store` führt seither **zwei** Erregungen — den geklemmten Wert mit Ausfallwert 0,5 für den KZG-Hash (Bestand) und den ungefilterten für die Queue. Unter **einem** Namen überschrieb die zweite Zuweisung die erste **vor** dem Queue-Aufruf; jeder Auftrag ohne gemessene Erregung hätte eine 0,5 getragen — genau die stille Null, gegen die die Spalte gebaut ist. Zwei Bedeutungen brauchen zwei Namen.
+
+**Nachzug nach abgeleiteter Kandidatenmenge:** `init.sql` ist geteilt, dort trug der Bezeichner (`shadow_auftrag`: 12 Kandidaten); die fünf Python-Dateien über ihre Namen. Insgesamt **12 Kandidaten, 5 geändert, 7 mit Grund verworfen**.
+
+Suite 1404 → 1424 → 1435 → 1439 → 1458 → 1462 → **1473 grün, 0 übersprungen.**
 
 ## Chat 141 (15.08.2026) — Die Queue zieht um, und ein Gedanke verfällt, statt gelöscht zu werden ✅
 
