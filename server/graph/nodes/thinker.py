@@ -30,7 +30,7 @@ from langchain_core.tools import tool
 
 from agents.timeline.event_time import precision_has_time, precision_format
 from graph.nodes.thinker_cache import ThinkerToolCache
-from graph.reiz          import reiz_ist_eigener_gedanke, reiz_text
+from graph.reiz          import LEVEL_FELD, reiz_ist_eigener_gedanke, reiz_level, reiz_text
 from graph.state         import ConversationState
 from memory.repositories.timeline_repository import TimelineRepository
 from memory.lzg_knoten    import anker_retrieval
@@ -326,11 +326,21 @@ def _retry_nutzlast(state: ConversationState) -> dict:
     Eigene Funktion und nicht drei Zeilen im Rumpf, weil die Zusicherung sonst
     nur ueber einen vollstaendigen Thinker-Lauf pruefbar waere.
 
+    **Und der Reiz ist mehr als sein Text.** Ein eigener Gedanke bringt den
+    Zustand mit, in dem er gefasst wurde; laesst der Folgelauf ihn weg, faellt
+    der Wiederholungsversuch auf Novas gespeicherten Stand zurueck. Das faellt
+    nicht auf, weil der Zugriffsknoten dann ordnungsgemaess `kein_level`
+    meldet — die Meldung ist richtig, ihre Ursache ist es nicht. **Dieses
+    Payload ist der zweite Erzeuger des Feldes neben der Zustellung**, und wer
+    einen Wert einfuehrt, muss beide bedienen.
+
     Vorbedingung: `state` traegt den Reiz dieses Durchlaufs.
     Nachbedingung: Genau eines von `user_prompt` und `eigener_gedanke` ist
-        belegt, und `reiz_herkunft` benennt, welches.
+        belegt, `reiz_herkunft` benennt, welches, und der mitgebrachte Stand
+        reist unveraendert mit — ``None``, wenn keiner vorlag.
     Fehlerfaelle: keine — ein leerer Reiz erzeugt ein leeres Feld, und der
-        Folgelauf meldet ihn an derselben Stelle wie dieser.
+        Folgelauf meldet ihn an derselben Stelle wie dieser. Ein unbrauchbarer
+        Stand ist beim Lesen bereits gemeldet und reist als ``None`` weiter.
 
     Args:
         state: der Zustand des Durchlaufs.
@@ -346,6 +356,9 @@ def _retry_nutzlast(state: ConversationState) -> dict:
         "user_prompt":            "" if eigener else state.get("user_prompt", ""),
         "eigener_gedanke":        state.get("eigener_gedanke", "") if eigener else "",
         "reiz_herkunft":          "eigener_impuls" if eigener else "",
+        # Ueber denselben Zugang gelesen, ueber den der Folgelauf ihn liest —
+        # eine zweite Leseart waere die Stelle, an der beide auseinanderlaufen.
+        LEVEL_FELD:               reiz_level(state),
         "turn_id":                state.get("turn_id", ""),
         "thinker_unsicher_retry": True,
     }

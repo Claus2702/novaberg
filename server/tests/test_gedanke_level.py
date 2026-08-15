@@ -31,6 +31,7 @@ import unittest
 from unittest.mock import MagicMock, patch
 
 from graph.nodes import db_zugriff as db_zugriff_modul
+from graph.nodes import thinker as thinker_modul
 from graph.nodes.db_zugriff import Protokollkopf, _level_anheben
 from graph.personality import Emotion
 from graph.reiz import LEVEL_FELD, reiz_level
@@ -212,6 +213,71 @@ class DieNahtTest(unittest.TestCase):
         )
 
         self.assertAlmostEqual(0.8, reiz_level({"event_payload": payload}), places=4)
+
+
+class DerZweiteErzeugerTest(unittest.TestCase):
+    """Der Wiederholungsversuch baut das Payload neu — und muss den Stand mitnehmen.
+
+    Gefunden bei der Nachprüfung, nicht beim Bau, und genau in der Klasse, die
+    diesen Umbau schon einmal getroffen hat: **Ein neu eingefuehrter Wert hat
+    mehr als einen Erzeuger.** Die Zustellung war bedient, der Thinker-Retry
+    nicht — er setzt `reiz_herkunft` auf `eigener_impuls` und baut die uebrigen
+    Reiz-Felder von Hand nach.
+
+    **Der Ausfall waere still gewesen.** Der Zugriffsknoten meldet dann
+    ordnungsgemaess `kein_level`; die Meldung ist richtig, ihre Ursache ist es
+    nicht — und von einem Eintrag ohne Stand ist der Fall nicht zu
+    unterscheiden.
+    """
+
+    def test_der_retry_eines_impulses_traegt_den_stand_mit(self) -> None:
+        """Was ankam, reist weiter."""
+        nutzlast: dict = thinker_modul._retry_nutzlast({
+            "eigener_gedanke": "ein Gedanke",
+            "turn_id":         "t-1",
+            "event_payload":   {
+                "reiz_herkunft": "eigener_impuls",
+                LEVEL_FELD:      0.77,
+            },
+        })
+
+        self.assertAlmostEqual(0.77, nutzlast[LEVEL_FELD], places=4)
+
+    def test_der_folgelauf_liest_denselben_wert(self) -> None:
+        """Die Naht: Payload des Retrys, Leser des Knotens."""
+        nutzlast: dict = thinker_modul._retry_nutzlast({
+            "eigener_gedanke": "ein Gedanke",
+            "turn_id":         "t-1",
+            "event_payload":   {
+                "reiz_herkunft": "eigener_impuls",
+                LEVEL_FELD:      0.77,
+            },
+        })
+
+        self.assertAlmostEqual(
+            0.77, reiz_level({"event_payload": nutzlast}), places=4,
+        )
+
+    def test_ein_impuls_ohne_stand_traegt_das_feld_leer_weiter(self) -> None:
+        """Kein Wert wird erfunden, nur weil das Feld Pflicht ist."""
+        nutzlast: dict = thinker_modul._retry_nutzlast({
+            "eigener_gedanke": "ein Gedanke",
+            "turn_id":         "t-1",
+            "event_payload":   {"reiz_herkunft": "eigener_impuls"},
+        })
+
+        self.assertIn(LEVEL_FELD, nutzlast)
+        self.assertIsNone(nutzlast[LEVEL_FELD])
+
+    def test_ein_nutzer_retry_bringt_keinen_stand_mit(self) -> None:
+        """Auf dem Nutzer-Weg hat niemand einen Gedanken gefasst."""
+        nutzlast: dict = thinker_modul._retry_nutzlast({
+            "user_prompt":   "Wie entsteht ein Gammablitz?",
+            "turn_id":       "t-1",
+            "event_payload": {},
+        })
+
+        self.assertIsNone(nutzlast[LEVEL_FELD])
 
 
 class DieVerdrahtungTest(unittest.TestCase):
