@@ -69,6 +69,13 @@ GRUENDE_UNBEKANNT: frozenset[str] = frozenset({
     GRUND_KEIN_STAND, GRUND_OHNE_RECHNUNG, GRUND_ZU_ALT, GRUND_NAEHE_FEHLT,
 })
 
+# **Die Riegel, ohne die ein Urteil keines ist.** Eine Kette ohne sie hat
+# nichts geprueft — und „nichts geprueft" darf nicht wie „nichts einzuwenden"
+# aussehen. Ohne diese Menge waere eine **leere** Kette durchlaessig: Faellt
+# eine Aufnahme aus (ein Name ausserhalb des Kanons wird gemeldet und
+# verworfen), ginge jeder Gedanke hinaus, und kein Zeuge wuerde rot.
+RIEGEL_PFLICHT: frozenset[str] = frozenset({"wollen"})
+
 
 @dataclass(frozen=True)
 class Riegel:
@@ -155,10 +162,39 @@ class Riegelkette:
                 return name
         return ""
 
-    def durchgelassen(self) -> bool:
-        """Ob kein gerechneter Riegel geblockt hat."""
+    def vollstaendig(self) -> bool:
+        """Ob jeder Pflicht-Riegel tatsaechlich gerechnet wurde.
+
+        **Eine leere Kette ist kein Freibrief.** Ohne diese Pruefung waere
+        `durchgelassen()` fuer eine Kette ohne einen einzigen Eintrag wahr —
+        „nichts geprueft" saehe aus wie „nichts einzuwenden", und genau das
+        ist die Klasse, gegen die `zuwendung_pruefen` selbst gebaut ist.
+
+        Returns:
+            True, wenn alle Riegel aus `RIEGEL_PFLICHT` gerechnet vorliegen.
+        """
         # ── Ausgabe ─────────────────────────────────
-        return self.entschieden_von() == ""
+        return all(
+            (r := self._riegel.get(name)) is not None and r.gerechnet
+            for name in RIEGEL_PFLICHT
+        )
+
+    def fehlende_pflicht(self) -> list[str]:
+        """Welche Pflicht-Riegel fehlen — fuer die Meldung, die es benennt."""
+        # ── Ausgabe ─────────────────────────────────
+        return sorted(
+            name for name in RIEGEL_PFLICHT
+            if (r := self._riegel.get(name)) is None or not r.gerechnet
+        )
+
+    def durchgelassen(self) -> bool:
+        """Ob die Kette vollstaendig ist **und** kein Riegel geblockt hat.
+
+        Zwei Bedingungen, nicht eine: Ein Urteil ohne die Pflicht-Riegel ist
+        keines. Eine unvollstaendige Kette laesst deshalb **nicht** durch.
+        """
+        # ── Ausgabe ─────────────────────────────────
+        return self.vollstaendig() and self.entschieden_von() == ""
 
     def als_protokoll(self) -> dict:
         """Das JSON-taugliche Abbild fuer den Protokolleintrag.
@@ -172,6 +208,11 @@ class Riegelkette:
         return {
             "entschieden_von": self.entschieden_von(),
             "durchgelassen":   self.durchgelassen(),
+            # **Steht im Eintrag, nicht nur im Code.** Eine Auswertung soll
+            # eine unvollstaendige Kette von einer durchgelassenen trennen
+            # koennen, ohne sie an `durchgelassen: false` zu raten.
+            "vollstaendig":    self.vollstaendig(),
+            "fehlende_pflicht": self.fehlende_pflicht(),
             "riegel": {
                 name: (
                     {

@@ -794,6 +794,18 @@ def _riegelkette_pruefen(
             "laeuft weiter, die Reihe hat eine Luecke",
         )
 
+    # **Hier steht ein Wort, das etwas entscheidet.** Eine unvollstaendige
+    # Kette hat nichts geprueft; `durchgelassen()` antwortet darauf mit Nein,
+    # und diese Zeile sagt, warum — sonst waere der Ausfall von einem
+    # blockierenden Riegel nicht zu unterscheiden.
+    if not kette.vollstaendig():
+        logger.error(
+            "Delivery: Riegelkette fuer '%s' unvollstaendig — es fehlen %s. "
+            "Kein Einwurf; eine Kette ohne Pflicht-Riegel ist kein Urteil",
+            user_id, kette.fehlende_pflicht(),
+        )
+        return kette
+
     logger.info("Delivery: Riegelkette fuer '%s' — %s", user_id, kette.kurzfassung())
     return kette
 

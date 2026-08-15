@@ -207,6 +207,46 @@ class DieKetteZaehltAlleTest(unittest.TestCase):
         self.assertIsNone(thema["durchlaessig"])
         self.assertNotEqual("", thema["grund"])
 
+    def test_eine_leere_kette_laesst_nichts_durch(self) -> None:
+        """„Nichts geprueft" darf nicht aussehen wie „nichts einzuwenden".
+
+        Gefunden bei der Nachpruefung: `durchgelassen()` hing allein am
+        fehlenden Blocker, und eine Kette ohne einen einzigen Eintrag hat
+        keinen. Faellt eine Aufnahme aus — ein Name ausserhalb des Kanons wird
+        gemeldet und verworfen —, ginge damit **jeder** Gedanke hinaus, ohne
+        dass ein Zeuge rot wird.
+        """
+        kette = Riegelkette()
+
+        self.assertFalse(kette.durchgelassen())
+        self.assertFalse(kette.vollstaendig())
+        self.assertEqual(["wollen"], kette.fehlende_pflicht())
+
+    def test_eine_kette_ohne_pflicht_riegel_laesst_nichts_durch(self) -> None:
+        """Auch nicht, wenn die uebrigen Riegel alle durchgelassen haben."""
+        kette = Riegelkette()
+        kette.gerechnet("ruhe",  True, None)
+        kette.gerechnet("thema", True, 0.9)
+
+        self.assertFalse(kette.durchgelassen())
+        self.assertEqual("", kette.entschieden_von())
+
+    def test_mit_dem_pflicht_riegel_laesst_sie_durch(self) -> None:
+        """Der positive Zwilling — sonst prueft der Test nur das Verweigern."""
+        kette = Riegelkette()
+        kette.gerechnet("wollen", True, 0.91)
+
+        self.assertTrue(kette.vollstaendig())
+        self.assertTrue(kette.durchgelassen())
+        self.assertEqual([], kette.fehlende_pflicht())
+
+    def test_die_unvollstaendigkeit_steht_im_protokoll(self) -> None:
+        """Eine Auswertung soll sie nicht an `durchgelassen: false` raten."""
+        protokoll: dict = Riegelkette().als_protokoll()
+
+        self.assertFalse(protokoll["vollstaendig"])
+        self.assertEqual(["wollen"], protokoll["fehlende_pflicht"])
+
     def test_ein_fremder_name_wird_abgewiesen_und_gemeldet(self) -> None:
         """Ein stillschweigend aufgenommener Name erschiene als Riegel."""
         kette = Riegelkette()
