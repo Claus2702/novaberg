@@ -4849,6 +4849,20 @@ Der Aufrufer sieht echte Zeilen und meldet Erfolg. Genau das ist einmal geschehe
 
 ---
 
+## QUEUE-VERFALL-KONZEPT — der Stapel und die Queue brauchen ein Verfallsmodell (15.08.2026)
+
+**Band:** B — die Queue wächst schneller, als sie abfließt, und niemand räumt sie.
+
+**Entschieden am 15.08.2026, noch nicht gebaut.** Aufträge und Stapel-Einträge sollen verfallen wie Erinnerungen: mit einem Einstiegswert, einer Verstärkung, einem sinus-gedämpften effektiven Wert, einer letzten Änderung und einem gerechneten Verfall. **Was unter die Schwelle fällt, wird hart gelöscht** — der Gedanke ist dann unwiederbringlich weg. Die Schwelle steht bei **0,3**: Gedanken mit niedriger Salienz verlieren, und damit fällt das Rauschen heraus. Die Frist ist an das KZG angelehnt und nicht an das LZG — höchstens **30 Tage**, gestaffelt nach Salienz.
+
+**Zwei Vorbilder, zwei Hälften.** Die Sinus-Sättigung samt Verstärkung steht in `novaberg-kzg-salienz_k.md` §3; der materialisierte Verfall mit `decay_am` in `novaberg-memory-synapsen_k.md` §9. **Der KZG selbst hat keinen rechnenden Decay** — dort verfallen Einträge über die Redis-Frist, sie sinken nicht. Die Kombination ist neu und hat noch kein Dokument; die Shadow-Queue hat überhaupt keines.
+
+**Was fertig waere.** Ein eigenes `novaberg-queue-verfall_k.md` nach dem Muster der beiden Vorbilder — Befund, Bedeutung des Werts, Formel, Felder, Konstanten, Migration des Bestands, ZIEL/TEST/MESSUNG, was nicht enthalten ist —, danach der Bau. **Erst das Konzept, dann der Code:** Hier ändert sich die Absicht, nicht nur der Zustand.
+
+**Drei Punkte, die es entscheiden muss.** Die dritte Rolle von `prioritaet` — der Wert trägt heute die Auslöse-Salienz und den Scheduler-Rang; mit dem Stapel-Rang käme eine weitere dazu. Der Umgang mit den 230 Aufträgen auf `0.0`, die beim ersten Lauf sämtlich herausfielen (gewollt, siehe `KANDIDATEN-PRIORITAET-STILLE-NULL`). Und die Abgrenzung zu den **380 verwaisten `vertiefen`-Aufträgen**: Der Verfall räumt sie ab, aber sie entstehen weiter, solange kein Agent dafür existiert — der Verfall ist dort ein Ventil und kein Fix.
+
+**Gemessen am 15.08.2026:** 1028 Aufträge in der Queue — 608 `recherche`, **380 `vertiefen` ohne Agenten**, 45 `nachfragen`. Ältester Auftrag vom 27.07.2026.
+
 ## IMPULS-HANDLUNG-OHNE-HERKUNFT — was sie selbst angelegt hat, ist nicht erkennbar (14.08.2026)
 
 **Band:** C — es steht heute Bestand in der Datenbank, dessen Urheber nicht feststellbar ist.

@@ -115,7 +115,15 @@ Der Grund für die rechte Spalte: Wer morgens hereinkommt, soll eine ruhige Nova
 
 **Ein Gedanke wird in einem Zustand gefasst, und er bringt ihn mit, wenn er auftaucht.** Kehrt Nova zu einem Gedanken zurück, kehrt sie in den Zustand zurück, in dem sie ihn gefasst hat — das ist der Weg zurück in ihr Element, und er braucht keinen zweiten Mechanismus.
 
-Der Kanal dafür ist vorhanden und wird an beiden Enden nicht bedient: Der Stapel-Eintrag hat Felder für Emotion und Modus, die Zustellung reicht sie ins Ereignis, der Zugriffsknoten baut daraus einen Zustand — **und verwirft ihn auf dem Impuls-Pfad.** Vorne befüllt nur einer von drei Agenten die Felder; die Erregung ist gar kein Feld.
+~~Der Kanal dafür ist vorhanden und wird an beiden Enden nicht bedient: Der Stapel-Eintrag hat Felder für Emotion und Modus, die Zustellung reicht sie ins Ereignis, der Zugriffsknoten baut daraus einen Zustand — **und verwirft ihn auf dem Impuls-Pfad.** Vorne befüllt nur einer von drei Agenten die Felder; die Erregung ist gar kein Feld.~~ → **Am 15.08.2026 zur Hälfte behoben: Das vordere Ende ist bedient.**
+
+`stack_push` nimmt seither `salienz` und `arousal` entgegen; die Recherche reicht Emotion, Modus, Intentionen und den auslösenden Wert aus dem Queue-Auftrag durch, das Nachfragen zusätzlich die Erregung des auslösenden Turns. **`None` heißt darin unbekannt und wird nie zu einer Zahl** — beide Felder stehen immer im Eintrag, auch leer, weil ein weggelassenes Feld von einem Eintrag alter Bauart nicht zu unterscheiden wäre.
+
+Gemessen am selben Tag über 1028 Queue-Aufträge: Die Werte lagen dort seit jeher und streuen — `emotion` in sechs Ausprägungen ohne eine einzige Lücke, `modus` in sechs mit 141 leeren. Sie kamen nur nie an; der Stapel-Bestand trug bei allen 86 Einträgen ausschließlich das Embedding.
+
+**Das hintere Ende steht weiterhin aus:** Der Zugriffsknoten verwirft den mitgereichten Zustand auf dem Impuls-Pfad nach wie vor. Das ist Bauteil B, und es ist jetzt baubar — der Kanal hat einen Erzeuger.
+
+**Die Wiedervorlage bleibt ohne Werte, und das ist kein Versäumnis.** Ihr Anlass ist ein Timeline-Eintrag; die Tabelle führt weder Salienz noch Emotion, Modus oder Erregung. Was sie führt — `binding`, `recurring`, `remind` —, wäre erst über eine Abbildung ein Level, und die ist eine Absicht und keine Implementierungsfrage. Sie ist hier ausdrücklich **nicht** entschieden.
 
 **Der hinterlegte Level hebt, er setzt nicht.** Ein Einwurf kann auch mitten in ein Gespräch fallen. Ein Setzen zöge beide heraus, wenn der hinterlegte Wert niedriger ist als der gemeinsame. Der Gedanke soll sie in ihr Element zurückholen und nicht aus einem Gespräch herausziehen — also gilt der höhere der beiden Werte.
 

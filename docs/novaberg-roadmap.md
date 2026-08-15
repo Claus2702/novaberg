@@ -2016,6 +2016,18 @@ Beide Räder haben eine Nabe — den Wert ohne jede Ausprägung — und das Erge
 
 **Suite:** 1345 → **1365 grün, 0 übersprungen.** Zwei Gegenproben; die zweite war **grün** und hat damit eine Lücke gezeigt statt einen Erfolg: Der Bauteil ließ sich vollständig ausklinken, ohne dass ein Test rot wurde. Zwei Zeugen auf die Verdrahtung nachgezogen, danach schlägt sie an.
 
+### Der Stapel bekommt, was der Auftrag trägt
+
+**Vorbereitung für Bauteil B.** `stack_push` nahm Emotion und Modus schon immer entgegen — von drei Agenten übergab sie genau einer. Der Queue-Auftrag führt beide Werte seit jeher, dazu den auslösenden Wert; sie blieben an der Schreibstelle liegen. Gemessen über **1028** Aufträge: `emotion` streut über sechs Ausprägungen ohne eine einzige Lücke, `modus` über sechs mit 141 leeren. Der Stapel-Bestand trug bei allen 86 Einträgen ausschließlich das Embedding.
+
+`stack_push` nimmt jetzt zusätzlich `salienz` und `arousal`. Die Recherche reicht Emotion, Modus, Intentionen und den Auslösewert durch, das Nachfragen die Erregung des auslösenden Turns. **`None` heißt unbekannt und wird nie zu einer Zahl** — beide Felder stehen immer im Eintrag, auch leer, weil ein weggelassenes Feld von einem Eintrag alter Bauart nicht zu unterscheiden wäre.
+
+**Die Wiedervorlage bleibt ohne Werte.** Ihr Anlass ist ein Timeline-Eintrag, und die Tabelle führt keine der vier Größen. Was sie führt — `binding`, `recurring`, `remind` —, wäre erst über eine Abbildung ein Level; das ist eine Absicht und wurde nicht erfunden.
+
+**Dabei nachgemessen:** `KANDIDATEN-PRIORITAET-STILLE-NULL` ist von 49 von 650 auf **230 von 1028** gewachsen, und der Schlüssel `salienz` ist in **keinem** Auftrag belegt — der Rückfall auf `prioritaet` ist der Normalfall, nicht der Sonderfall.
+
+**Suite:** 1365 → **1373 grün, 0 übersprungen.** Die Gegenprobe war beim ersten Anlauf **grün** — dieselbe Lücke wie bei Bauteil A am selben Tag, Zeugen auf die Funktion und keiner auf die Verdrahtung. Die Übergabe steht seither in `stapel_werte_aus_auftrag` und ist prüfbar.
+
 ---
 
 ## Chat 139 (14./15.08.2026) — Drei Bauteile, und ein Verbot räumt seinen Platz ✅

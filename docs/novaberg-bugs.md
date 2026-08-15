@@ -731,6 +731,8 @@ Drei von ihnen sind stille Vorgabewerte an einer Stelle, an der ein Ausfall geh�
 
 **Befund (2026-08-04).** **Die Kandidatenauswahl fällt auf Priorität `0.0` zurück, wenn weder `prioritaet` noch `salienz` im Eintrag steht** (`services/pixie/kandidaten.py`). Ein unbeschriebener Auftrag wird damit zur niedrigsten Priorität und gewinnt nie, statt laut zu scheitern. Gemessen: 49 von 650 Einträgen der Shadow-Queue stehen auf 0.0.
 
+**Nachgemessen am 15.08.2026: der Anteil hat sich verdreifacht.** **230 von 1028** Aufträgen tragen `prioritaet: 0.0` — 22,4 % statt 7,5 %. Dabei zeigte sich, dass der Schlüssel `salienz` in **keinem einzigen** Auftrag belegt ist; der Rückfall auf `prioritaet` ist nicht der Sonderfall, sondern der Normalfall. Zwei Folgen: `_salienz_aus_auftrag` (`agents/recherche/agent.py`) wirft auf diesen 230 Aufträgen einen `ValueError` — seit dem 15.08.2026 fangen der Stapel-Pfad ihn ab und legen den Eintrag ohne Rangwert ab, der KZG-Pfad nicht. **Und beim Verfall der Queue nach `novaberg-eigenzeit_k.md` fielen sie sämtlich beim ersten Lauf heraus**, weil die Löschschwelle bei 0,3 liegt (entschieden am 15.08.2026). Das ist gewollt — es steht hier, damit es später niemand für einen Unfall hält.
+
 **Was fertig waere.** Ein Auftrag ohne Prioritaet und ohne Salienz scheitert laut, statt auf die niedrigste Stufe zu fallen.
 
 **Prioritaet:** mittel.
