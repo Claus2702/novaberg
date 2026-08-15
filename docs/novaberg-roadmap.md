@@ -2013,7 +2013,19 @@ Beide Räder haben eine Nabe — den Wert ohne jede Ausprägung — und das Erge
 
 **Gegenproben:** Ausfall-Zweig ausgeklinkt **3 von 11** rot, Erfolgs-Zweig ausgeklinkt **6 von 11** — beide Mengen vorher benannt und beide getroffen.
 
-Suite 1404 → 1424 → **1435 grün, 0 übersprungen.**
+### Die Nachprüfung — und was sie noch fand
+
+Auf die Frage, ob der Umbau trägt, lief eine Prüfung mit **anderem Zugriff**: die Erzeuger über ein Kriterium gesucht statt den gebauten Weg noch einmal abgegangen, und die Produktivfunktionen gegen das laufende System gefahren statt gegen die Zeugen.
+
+**Der Fund: `gedanke_arousal` hat zwei Erzeuger, und einer war nicht bedient.** Der Thinker-Wiederholungsversuch baut das Payload des Folgelaufs Feld für Feld neu — `user_prompt`, `eigener_gedanke`, `reiz_herkunft`, `turn_id` — und ließ den Level weg. Der zweite Versuch eines Impulses wäre damit auf Novas gespeicherten Stand zurückgefallen. **Der Ausfall wäre still gewesen:** Der Zugriffsknoten meldet dann korrekt `kein_level`, die Meldung ist richtig und ihre Ursache nicht, und von einem Stapel-Eintrag ohne Stand ist der Fall nicht zu unterscheiden. Dieselbe Klasse wie am Vortag, nur auf der Schreiberseite — gefunden hat sie die Frage *wer erzeugt ein Payload mit dieser Herkunft?*, nicht die Selbstprüfung. Er liest den Wert jetzt über denselben Zugang, über den der Folgelauf ihn liest. Gegenprobe: 4 von 4 rot.
+
+**Und der Lauf gegen das echte System hat den Bauteil im Betrieb belegt.** Zwei echte Impuls-Turns (17:07 und 18:07 UTC) tragen die Zeile `schritt=gedanke_level` mit `wirkung=kein_level` und `arousal 0,75 → 0,75`; derselbe Turn hinterließ einen Haltungsstand mit echter `turn_id` und Landschaft `feuerwerk`. Damit ist beides belegt statt behauptet: **Der Mechanismus läuft, und seine Eingabe ist leer** — genau die Unterscheidung, für die die Zeile bei `kein_level` überhaupt geschrieben wird.
+
+Am echten Bestand nachgefahren: Level 0,88 hebt den gespeicherten Stand von 0,70 auf 0,88, Level 0,01 lässt ihn bei 0,70, und derselbe Level auf einem Nutzer-Turn ändert nichts — dort greift stattdessen der Verfall.
+
+**Zwei weitere Funde, beide nicht mitgeändert:** Der AgentGraph bekommt den eigenen Gedanken weiter auf dem Reiz-Platz, weil er direkt aufgerufen wird und kein Ereignis hat — er lag quer zu den elf umgestellten Lesern. Und der Haltungsstand hat keine Zeile im `pipeline_log`, anders als der Nova-Zustand.
+
+Suite 1404 → 1424 → 1435 → **1439 grün, 0 übersprungen.**
 
 ## Chat 141 (15.08.2026) — Die Queue zieht um, und ein Gedanke verfällt, statt gelöscht zu werden ✅
 
