@@ -358,6 +358,7 @@ project/
 │           ├── kandidaten.py            #     Queue-Peek + periodische Aufgaben
 │           ├── router.py                #     Aufgabe -> Agent-Name
 │           ├── dispatch.py              #     Agent-Ausfuehrung
+│           ├── riegel.py                #     Riegelkette der Zustellung (Riegel 1 gebaut)
 │           └── stack.py                 #     Shadow-Stack Push
 │
 ├── db/

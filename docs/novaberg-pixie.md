@@ -119,6 +119,12 @@ Promotion-Queue Eintragsformat:
 
 > **Wann ein Eintrag den Stapel verlaesst, regelt `novaberg-eigenzeit_k.md` (Konzept, 14.08.2026).** Der heutige Zustellungsfilter misst thematische Passung gegen ein Embedding der letzten fuenf Session-Turns — und die Session enthaelt Novas eigene Impulse. Gemessen am 14.08.2026 liess er dadurch **52 von 56** Impulsen durch. Das Konzept setzt den Bezugsvektor auf die Aeusserungen des Menschen und stellt vier weitere Riegel davor.
 
+> **Riegel 1 steht seit dem 15.08.2026** (`services/pixie/riegel.py`). Er fragt **nicht**, ob der Gedanke passt, sondern ob Nova ueberhaupt zugehen will: `haltung.werte["naehe"]` gegen `ZUWENDUNG_SCHWELLE` (0,25), gelesen aus dem persistierten Haltungsstand. **Er steht vor der Suche** — will sie nicht, entsteht kein Embedding und kein Durchlauf ueber den Stapel; das ist die Ordnung der Fragen, nicht Sparsamkeit.
+>
+> **Und er schreibt, auch wenn er blockt.** Je Zustellversuch geht ein Eintrag ins `pipeline_log` (Knoten `zustellung`, Kennung `zv-…`, vom Turn unterscheidbar) mit dem entscheidenden Riegel, den Werten der gerechneten und einer ausdruecklichen Marke fuer die nicht gerechneten. Ohne ihn ist an einem stillen Tag nicht zu unterscheiden, ob niemand zugehen wollte oder ob nichts gepasst hat.
+>
+> **Zwei Grenzen, beide benannt.** Der Eintrag beginnt am Trigger (`umfang: ab_trigger`): Was davor abbricht — offene Rueckfrage, erschoepfter Burst, aktiver Cooldown, leerer Stapel —, erzeugt keinen. Und **Riegel 2 (Frequenz) ist nicht gebaut**; er steht als *nicht gerechnet* in den Daten, weil seine Schwelle unentschieden ist. Solange das so ist, bleibt die stuendliche Decke, wo sie ist.
+
 Shadow-Stack Eintragsformat:
 ```json
 {

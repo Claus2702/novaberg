@@ -2025,7 +2025,23 @@ Am echten Bestand nachgefahren: Level 0,88 hebt den gespeicherten Stand von 0,70
 
 **Zwei weitere Funde, beide nicht mitgeändert:** Der AgentGraph bekommt den eigenen Gedanken weiter auf dem Reiz-Platz, weil er direkt aufgerufen wird und kein Ereignis hat — er lag quer zu den elf umgestellten Lesern. Und der Haltungsstand hat keine Zeile im `pipeline_log`, anders als der Nova-Zustand.
 
-Suite 1404 → 1424 → 1435 → **1439 grün, 0 übersprungen.**
+### Riegel 1 — ob sie überhaupt zugeht
+
+Der erste Riegel der Kette aus `novaberg-eigenzeit_k.md` §2.5. Er fragt **nicht**, ob der Gedanke passt, sondern ob Nova zugehen will: `haltung.werte["naehe"]` gegen 0,25, gelesen aus dem Stand, den derselbe Tag persistierbar gemacht hat. Er steht **vor** der Suche und vor dem LLM-Lock — will sie nicht, kostet die Runde weder ein Embedding noch die GPU. Das ist die Ordnung der Fragen: erst die Person, dann der Gegenstand.
+
+**Die inhaltlich wichtigste Entscheidung steckt nicht in der Schwelle, sondern in der Trennung der Gründe.** Vier von fünf heißen *unbekannt* — kein Stand, ein Stand ohne Rechnung, ein zu alter Stand, eine fehlende Nähe —, einer heißt *nein*. Alle blocken; ein Riegel, der seine Eingangsgröße nicht lesen kann, verweigert, statt durchzulassen. Aber sie werden **getrennt gezählt**: Ohne das sähe ein kaputter Speicher in jeder Auswertung aus wie eine distanzierte Figur, und die Schwelle wäre auf einem Ausfall kalibriert worden.
+
+**„Geblockt" ist keine Auskunft**, deshalb die Protokollpflicht: ein Eintrag je Zustellversuch mit dem entscheidenden Riegel, den Werten der gerechneten und der Marke für die nicht gerechneten. **Alle sieben stehen darin**, auch die nie berührten — sonst hängt eine Auswertung am Baustand des Tages, an dem sie geschrieben wurde. Riegel 2 trägt ausdrücklich *nicht gebaut, Schwelle unentschieden*; solange das gilt, bleibt die stündliche Decke.
+
+Abgelegt im vorhandenen `pipeline_log` unter Knoten `zustellung` und einer Versuchskennung `zv-…`, die vom Turn unterscheidbar ist. **Kein neues Schema** — der Ablageort ist eine Implementierungsentscheidung, eine Tabelle wäre DDL gewesen.
+
+**Zwei Reste, benannt statt beschwiegen:** Der Eintrag beginnt am Trigger. Was davor abbricht — offene Rückfrage, erschöpfter Burst, aktiver Cooldown, leerer Stapel — erzeugt keinen, weil deren Umstellung das Verbrauchsverhalten des Momentums änderte; das Feld `umfang` sagt es dem Leser. Und die Riegel 5 bis 7 entscheiden innerhalb der Zustellung und tragen noch nicht in denselben Eintrag ein.
+
+**Gegenproben:** Schwellenvergleich ausgebaut → 1 von 19 rot (die distanzierte Figur); Aufruf aus der Schleife ausgebaut → 1 von 19 rot. Beide Mengen vorher benannt.
+
+**Der Doku-Nachzug dieses Zuges nach der geschärften Regel:** Die Kandidatenmenge aus der Dateiliste ergab zunächst **50** — und das war ein Befund über das Kriterium, nicht über die Doku: `config.py` wird von vierzig Dokumenten genannt. **Für eine geteilte Datei entartet die Dateiliste**; dort trägt nur der neue Bezeichner (`ZUWENDUNG_SCHWELLE`: 0 Treffer, neue Konstante). Je Datei gerechnet: 18 Kandidaten für die Zustellung, 0 für die neue Datei. Davon **5 geändert, 13 mit Grund verworfen**.
+
+Suite 1404 → 1424 → 1435 → 1439 → **1458 grün, 0 übersprungen.**
 
 ## Chat 141 (15.08.2026) — Die Queue zieht um, und ein Gedanke verfällt, statt gelöscht zu werden ✅
 
