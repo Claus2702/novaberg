@@ -499,6 +499,85 @@ CREATE INDEX IF NOT EXISTS idx_autonomous_wissen_aktiv
 --     ON autonomous_wissen USING ivfflat (themen_embedding vector_cosine_ops) WITH (lists = 20);
 
 
+-- ───────────────────────────────────────────────
+-- shadow_auftrag — die Shadow-Queue (novaberg-queue-verfall_k.md §8)
+-- ───────────────────────────────────────────────
+--
+-- Die Queue lag bis zum 15.08.2026 als Redis-Liste unter
+-- `shadow_queue:{user_id}`. Sie zieht hierher, weil das Verfallsmodell eine
+-- Zeile braucht, die einen deaktivierten Auftrag aufbewahrt, ohne ihn im
+-- Auswahlpfad mitzulesen: In einer Liste markiert ein Soft-Delete das Rauschen,
+-- statt es abzuraeumen — der Vollscan (LRANGE 0 -1) wird nie kleiner.
+--
+-- **Der Stapel zieht NICHT mit** (§7.2). Die Grenze folgt der Lesefrequenz,
+-- nicht der Datenmenge: Die Queue liest der Heartbeat alle 30 bis 120 s, den
+-- Stapel der Zustellungs-Loop alle 5 s je verbundenem Client — und die
+-- Postgres-Zugriffe dieses Projekts oeffnen je Aufruf eine eigene Verbindung.
+--
+-- Die acht Spalten ohne Vorgabewert sind die Zusicherung des Bauteils. In
+-- Redis konnte nichts erzwungen werden, und genau das war messbar: 233 von
+-- 1036 Auftraegen trugen Salienz 0.0, weil ein Aufrufer das Argument ausliess
+-- und die Signatur einen Default trug (KANDIDATEN-PRIORITAET-STILLE-NULL).
+-- Die Sperre wandert damit von der Signatur in das Schema.
+--
+-- Kein CHECK auf aufgabe oder emotion: dieselbe Konvention wie bei
+-- autonomous_wissen und pipeline_log.art — die gueltigen Werte setzt die
+-- schreibende API durch, nicht die Datenbank.
+CREATE TABLE IF NOT EXISTS shadow_auftrag (
+    -- Identitaet
+    id                SERIAL           PRIMARY KEY,
+
+    -- Paar-Partition (Subjekt x Gegenueber x Beobachter)
+    user_id           TEXT             NOT NULL,
+    character_id      VARCHAR(50)      NOT NULL,
+    beobachter        VARCHAR(20)      NOT NULL,
+
+    -- Auftrag: was getan werden soll
+    aufgabe           TEXT             NOT NULL,
+    thema             TEXT             NOT NULL,
+    kontext           TEXT             NOT NULL DEFAULT '',
+
+    -- Anlass: die Lage, aus der er entstand
+    intentionen       TEXT[]           NOT NULL DEFAULT '{}',
+    emotion           TEXT             NOT NULL DEFAULT '',
+    modus             TEXT             NOT NULL DEFAULT '',
+
+    -- Salienz: Bauart und Konstanten des lzg_knoten, eigene Rate (§4, §9).
+    -- Aufbau ueber Sinus-Saettigung, Verfall exponentiell, Cap 1.0 statt 10.0
+    -- — die Queue fuehrt Salienz, und auf Cap 10 waere die Schwelle 0,3
+    -- gleich 3 % und der Verfall liefe still ins Leere.
+    salienz_roh       DOUBLE PRECISION NOT NULL,   -- Akkumulator
+    salienz_absolut   DOUBLE PRECISION NOT NULL,   -- Anker, kein Default
+    salienz_decay     DOUBLE PRECISION NOT NULL,   -- Praesenz, materialisiert
+    haeufigkeit       INTEGER          NOT NULL DEFAULT 1,
+
+    -- Soft-Delete: ein verfallener Auftrag verschwindet nicht, er ruht (§12.1)
+    aktiv             BOOLEAN          NOT NULL DEFAULT TRUE,
+
+    -- Zeit
+    erstellt_am       TIMESTAMPTZ      NOT NULL DEFAULT NOW(),
+    verstaerkt_am     TIMESTAMPTZ      NOT NULL DEFAULT NOW(),
+    decay_am          TIMESTAMPTZ      NOT NULL DEFAULT NOW(),
+
+    -- Ausfuehrung: 0 heisst "noch kein Versuch", NULL waere "unbekannt"
+    versuche          INTEGER          NOT NULL DEFAULT 0
+);
+
+-- Der Auswahlpfad nimmt den dringlichsten aktiven Auftrag eines Paares.
+-- `salienz_decay DESC` steht in der Definition, weil die Rangfolge Dringlichkeit
+-- ist und der Verfall sie ueber die Zeit senkt (§12.3) — ein aufsteigender
+-- Index kehrte die Reihenfolge um und lieferte den schwaechsten zuerst.
+CREATE INDEX IF NOT EXISTS idx_shadow_auftrag_wahl
+    ON shadow_auftrag (user_id, character_id, aktiv, salienz_decay DESC);
+
+-- Der Reaktivierungspfad sucht denselben Gegenstand desselben Paares (§6.1).
+-- Er trifft auch ruhende Zeilen und darf deshalb NICHT auf `aktiv` filtern:
+-- Ein deaktivierter Auftrag ist genau der, den ein wiederkehrender Anlass
+-- wecken soll.
+CREATE INDEX IF NOT EXISTS idx_shadow_auftrag_gegenstand
+    ON shadow_auftrag (user_id, character_id, aufgabe, thema);
+
+
 -- ═══════════════════════════════════════════════
 -- Indizes
 -- ═══════════════════════════════════════════════
