@@ -10,6 +10,15 @@
 
 ## Chats 3–20: Grundlagen (März 2026)
 
+### 16.08.2026 — Ausgabe-Verifikation der Knoten
+
+`zustand_verifizieren()` in `graph/state.py` prüft die Rückgabe eines Knotens gegen den Zustandstyp und gegen die Felder, die der Knoten in **jedem** Pfad schreibt. Der Reducer ist der erste Nutzer, alle drei Rückkehrpfade laufen darüber.
+
+**Der Anlass ist eine Messung.** Eine statische Prüfung desselben Sachverhalts erreichte über 19 Knoten nur **22 % Abdeckung**: 45 von 53 Rückgaben bauen ihr Dict schrittweise auf, und der Schlüssel existiert zur Analysezeit nicht. Zur Laufzeit liegt er fertig vor.
+
+Gegenprobe: Zusicherung entkernt → **6 von 10** Zeugen rot, wie vorhergesagt. Suite 1509 grün.
+
+
 ### Infrastruktur & Architektur
 - ✅ A1 — Entscheider/Arbeiter-Trennung (Salienz → pending_writes → Dispatcher)
 - ✅ A2 — Datei-Refactoring (memory.py → Package, main.py → api/)
@@ -4264,3 +4273,5 @@ Das Haltungs-Rad belegt ausschließlich Speichen der Zuwendungsseite — `aufmer
 ---
 
 *Aktualisiert in Chat 116 (29.07.2026). Offene Punkte → novaberg-backlog.md. Bugs → novaberg-bugs.md.*
+
+<!-- ../harness/00_INDEX.md -->

@@ -87,6 +87,17 @@ Zwei Stufen, beide rein in-memory.
 
 ## 5. Formatter-Trennung
 
+## Ausgabe-Verifikation
+
+Alle drei Rückkehrpfade geben über `zustand_verifizieren(...)` zurück (`server/graph/state.py`). Die Funktion prüft zweierlei, bevor die Rückgabe die Knotengrenze passiert:
+
+1. **Jeder Schlüssel ist im `ConversationState` deklariert.** Ein nicht deklarierter Schlüssel wird an der Knotengrenze stillschweigend verworfen — kein Fehler, keine Warnung, der Wert ist weg.
+2. **Jedes Feld aus `SCHREIBT` ist gesetzt.** Der Reducer schreibt in jedem Pfad `memory_entries_raw`, `memory_entries` und `memory_context`. Ein Pfad, der eines auslässt, ließe den vorigen Stand stehen — und der läse sich wie ein frisches Ergebnis.
+
+Beide Fälle werfen `ValueError` statt zu protokollieren: Der verworfene Schlüssel ist ohne die Prüfung schon still, und eine Logzeile stünde im Erfolgsfall genauso da wie im Ausfall.
+
+Der Reducer ist der erste Knoten mit dieser Verifikation. Zeugen: `server/tests/test_zustand_verifizieren.py`.
+
 Format-Wissen lebt **nicht** im Reducer. Nach der Dedup übergibt der Reducer die Liste an `format_memory_entries(entries) -> str` aus `server/graph/format/memory_context.py`.
 
 - Der Formatter ist eine **reine Funktion**, kein Graph-Node. Er trifft keine Entscheidungen, sondern baut den finalen Memory-Context-String aus den strukturierten Entries.
