@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Konzept — Verbindliche Konvention für Werte, die aus anderen Werten berechnet werden
-**Stand:** 27. Juli 2026, Chat 111
+**Stand:** 16. August 2026 (gegen den Code gehalten: alle sieben Regeln stehen, die Bestandstabelle stimmt — **zwei nach ihr entstandene Speicher fehlten darin**). Davor: 27. Juli 2026, Chat 111
 **Pfad:** novaberg/docs/novaberg-convention-abgeleitete-werte.md
 **Typ:** Convention
 **Anlass:** `KZG-SALIENZ-SKALENBRUCH`, `ZIEL-DECAY-FORMEL-KUMULATIV` — dieselbe Bauart, zwei Fundorte
@@ -87,6 +87,20 @@ Diese Konvention beschreibt einen Zielzustand, den heute kein Modul vollständig
 
 Das LZG-Gewicht ist damit **halb** konform: Die Kurve ist sauber, der Anker darunter nicht. Es taugt als Vorbild für die Formkurve und ausdrücklich **nicht** als Vorbild für den Anker.
 
+**Stand 16.08.2026 — zwei Speicher sind nach dieser Konvention entstanden und standen nicht in der Tabelle:**
+
+| Ort | Bauart | Bewertung |
+|---|---|---|
+| `memory/repositories/shadow_auftrag_repository.py` — `salienz_roh` | Akkumulator mit Umkehrfunktion (`salienz_roh += BOOST`, `salienz_roh_zurueckrechnen`) | **halb** — wie `gewicht_roh`, siehe unten |
+| dieselbe Datei — `salienz_absolut`, `salienz_decay` | reine Funktionen aus `salienz_roh` bzw. aus `salienz_absolut` und `verstaerkt_am` | erfüllt |
+| `autonomous_wissen` — `gewicht_roh` / `_absolut` / `_decay` | dieselbe Dreiteilung | erfüllt, soweit geprüft |
+
+**Die Queue erfüllt Regel 5 sauber:** Der Zuwachs greift am **Anker** (`salienz_roh += BOOST`), nicht auf dem gekrümmten Wert. Das ist genau die Bauart, die §3 (5) verlangt und die dem LZG-Gewicht als Vorbild dient.
+
+> **Eine Eigenheit, die über `gewicht_roh` hinausgeht und benannt gehört.** Beim Einreihen gibt es keinen Vorgängerwert; der Anker wird aus der übergebenen — bereits gekrümmten — Salienz **zurückgerechnet** (`salienz_roh_zurueckrechnen`). Das ist kein selbstbezüglicher Akkumulator, sondern eine Skalenumrechnung an der Grenze, und sie ist wohldefiniert, solange die Kurve monoton bleibt.
+>
+> **Der Preis ist trotzdem einer.** `salienz_roh` wird an keiner Stelle unabhängig gemessen — er ist immer eine Funktion der Kurve. Die Umkehrung bei `gewicht_roh` setzt voraus, dass der **Zuwachs** nie geändert wurde; diese hier setzt voraus, dass die **Kurve** nie geändert wurde. Ändert jemand `QUEUE_SALIENZ_CAP` oder die Sättigungsform, werden alle bestehenden Anker still falsch, und es gibt keinen gemessenen Wert, gegen den man das prüfen könnte.
+
 **Stand 28.07.2026:** Von den fünf Zeilen erfüllen vier die Regeln. Offen bleibt allein `gewicht_roh` — ein Akkumulator, der sich nur deshalb nicht rächt, weil sein Zuwachs konstant ist und `haeufigkeit` danebensteht: `initial_roh = gewicht_roh − (haeufigkeit − 1) × BOOST` rechnet ihn zurück, und `knoten_gewichte_zuruecksetzen()` tut genau das. Ein Akkumulator mit Umkehrfunktion ist die mildeste Form des Problems, aber er bleibt einer: Die Umkehrung setzt voraus, dass der Zuwachs nie geändert wurde.
 
 **Was die beiden Reparaturen gemeinsam hatten:** In beiden Fällen war die *Zeitbasis* oder der *Multiplikand* aus dem Ergebnis abgeleitet, und in beiden Fällen fiel es erst auf, als jemand die Zahlen gegen ihre eigene Skala hielt. Der Ziel-Decay las sein Alter aus `erstellt_am` statt aus einem eigenen Ankerzeitpunkt — `aktualisiert_am` wäre als Referenz ebenso untauglich gewesen, weil jeder Schreiber sie setzt, auch der Decay-Lauf selbst. **Ein Anker braucht seinen eigenen Zeitstempel, der nur mit ihm zusammen geschrieben wird.** Sonst hängt die Rechnung an einem Feld, das jemand anders aus einem anderen Grund berührt.
@@ -104,3 +118,10 @@ Vor jedem Feld, das eine berechnete Zahl hält:
 5. Wenn eine Kurve im Spiel ist: Auf welcher Skala steht der gespeicherte Wert, und stehen alle Schwellwerte auf derselben?
 
 **Zusammenhang:** `novaberg-kzg-salienz_k.md` (erste Anwendung) · `KZG-SALIENZ-SKALENBRUCH` · `ZIEL-DECAY-FORMEL-KUMULATIV` · `KZG-SALIENZ-KONSUMENTEN-DISSENS` · `novaberg-mem-lzg.md` (Ebbinghaus-Decay)
+
+---
+
+## Versionshistorie
+
+- **v0.2 — 16.08.2026:** Gegen den Code gehalten. **Alle sieben Regeln stehen**, und die Bestandstabelle stimmte für ihre fünf Zeilen: `gewicht_roh` ist weiterhin ein Akkumulator mit Umkehrfunktion, `knoten_gewichte_zuruecksetzen` existiert. **Regel 7 ist vorbildlich eingelöst** — `KZG_SALIENZ_MINIMUM` trägt sein Roh-Äquivalent inline (`# roh 0.3`) und vier Zeilen Herleitung darüber. **Was fehlte, war der Geltungsbereich:** Zwei Speicher sind nach dem 27.07. entstanden und standen nicht in §4 — die Auftrags-Queue und die Wissens-Bibliothek. Beide tragen die Dreiteilung roh/absolut/decay, und die Queue erfüllt Regel 5 sauber. **Neu benannt ist ihre Eigenheit:** Ihr Anker wird beim Einreihen aus einem bereits gekrümmten Wert zurückgerechnet und damit nie unabhängig gemessen — wo `gewicht_roh` voraussetzt, dass der Zuwachs nie geändert wurde, setzt sie voraus, dass die Kurve nie geändert wurde.
+- **v0.1 — 27.07.2026, Chat 111:** Erstfassung aus zwei Fundorten derselben Bauart.
