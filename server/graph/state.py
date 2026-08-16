@@ -261,3 +261,74 @@ def reiz_herkunft(state: ConversationState) -> str:
     """
     # ── Verarbeitung / Ausgabe ──────────────────
     return str((state.get("event_payload") or {}).get("reiz_herkunft") or "nutzer_turn")
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Ausgabe-Verifikation der Knoten
+# ─────────────────────────────────────────────────────────────────────────────
+
+def zustand_verifizieren(
+    ergebnis: dict,
+    knoten: str,
+    pflicht: frozenset[str] = frozenset(),
+) -> dict:
+    """Prueft die Rueckgabe eines Knotens, bevor sie die Knotengrenze passiert.
+
+    **Warum das kein Werkzeug leisten kann.** Ein Schluessel, der nicht im
+    Zustandstyp deklariert ist, wird an der Knotengrenze stillschweigend
+    verworfen — kein Fehler, keine Warnung, der Wert ist weg. Eine statische
+    Pruefung darueber erreichte am 16.08.2026 nur **22 % Abdeckung**, weil 45
+    von 53 Rueckgaben ihr Dict schrittweise aufbauen und der Schluessel zur
+    Analysezeit gar nicht existiert. Hier liegt er fertig vor.
+
+    Zwei Zusicherungen, und sie treffen zwei verschiedene stille Fehler:
+
+    1. **Kanalzwang.** Jeder Schluessel ist im Zustandstyp deklariert. Sonst
+       verschwindet der Wert zwischen zwei Knoten.
+    2. **Rueckkehrpfad.** Jedes Pflichtfeld ist gesetzt. Wer es nur im
+       Erfolgsfall schreibt, macht "nicht gerechnet" von "so gerechnet"
+       ununterscheidbar — der vorige Stand bleibt stehen und liest sich wie ein
+       frisches Ergebnis.
+
+    Args:
+        ergebnis: Die Abbildung, die der Knoten zurueckgeben will.
+        knoten: Name des Knotens, fuer die Fehlermeldung.
+        pflicht: Felder, die in JEDEM Rueckkehrpfad dieses Knotens stehen
+            muessen. Leer, wenn der Knoten keine hat.
+
+    Vorbedingung: `ergebnis` ist eine Abbildung; `knoten` ist nicht leer.
+    Nachbedingung: dieselbe Abbildung, unveraendert — oder es wurde geworfen.
+    Fehlerfaelle: `TypeError` bei falschem Eingabetyp, `ValueError` bei einem
+        undeklarierten Schluessel oder einem fehlenden Pflichtfeld.
+
+    Warum geworfen und nicht protokolliert wird: Der verworfene Schluessel ist
+    heute schon still. Ihn in eine Logzeile zu verschieben aendert daran
+    nichts — sie wuerde im Erfolgsfall genauso dastehen wie im Ausfall.
+    """
+    # ── Eingabe-Validierung ─────────────────────
+    if not isinstance(ergebnis, dict):
+        raise TypeError(
+            f"zustand_verifizieren: {knoten} gibt {type(ergebnis).__name__} "
+            f"zurueck, erwartet wird eine Abbildung"
+        )
+    if not knoten:
+        raise ValueError("zustand_verifizieren: der Knotenname fehlt")
+
+    # ── Verarbeitung ────────────────────────────
+    erlaubt = set(ConversationState.__annotations__)
+    unbekannt = sorted(set(ergebnis) - erlaubt)
+    fehlend = sorted(pflicht - set(ergebnis))
+
+    # ── Ausgabe-Verifikation ────────────────────
+    if unbekannt:
+        raise ValueError(
+            f"{knoten}: {unbekannt} sind im Zustandstyp nicht deklariert und "
+            f"wuerden an der Knotengrenze stillschweigend verworfen"
+        )
+    if fehlend:
+        raise ValueError(
+            f"{knoten}: {fehlend} fehlen in diesem Rueckkehrpfad. Ein Feld, das "
+            f"nur manchmal gesetzt wird, laesst den vorigen Stand stehen und "
+            f"macht 'nicht gerechnet' von 'so gerechnet' ununterscheidbar"
+        )
+    return ergebnis

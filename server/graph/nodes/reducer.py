@@ -13,9 +13,16 @@ Doku: novaberg-node-reducer.md (Format-Vertrag und Dedup-Mechanik).
 import logging
 import re
 from graph.context_entry import ContextEntry
+from graph.state import zustand_verifizieren
 from graph.format import format_memory_entries
 
 logger = logging.getLogger(__name__)
+
+
+# Die Felder, die JEDER Rueckkehrpfad dieses Knotens setzt. Ein Pfad, der eines
+# auslaesst, liesse den vorigen Stand stehen — und der laese sich wie ein
+# frisches Ergebnis (22_STILLE_FEHLER §5).
+SCHREIBT = frozenset({"memory_entries_raw", "memory_entries", "memory_context"})
 
 
 def reduce_memory(state: dict) -> dict:
@@ -62,17 +69,19 @@ def reduce_memory(state: dict) -> dict:
                 f"Reducer: Keine Eintraege, aber lzg_resonanz mit {resonanz_anzahl} "
                 f"Erinnerungen — nur Resonanz-Block"
             )
-            return {
+            # ── Ausgabe-Verifikation ────────────────────
+            return zustand_verifizieren({
                 "memory_entries_raw": raw_backup,
                 "memory_entries": [],
                 "memory_context": format_memory_entries([], lzg_resonanz=lzg_resonanz),
-            }
+            }, "reducer", SCHREIBT)
         logger.info("Reducer: Keine Eintraege — leerer memory_context")
-        return {
+        # ── Ausgabe-Verifikation ────────────────────
+        return zustand_verifizieren({
             "memory_entries_raw": raw_backup,
             "memory_entries": [],
             "memory_context": "",
-        }
+        }, "reducer", SCHREIBT)
 
     # Stufe 1: Exakt-Dedup
     nach_stufe1: list[ContextEntry] = _exakt_dedup(entries)
@@ -99,11 +108,12 @@ def reduce_memory(state: dict) -> dict:
         f"({entfernt_stufe1 + entfernt_stufe2} entfernt), Output-Laenge {len(memory_context)} Zeichen"
     )
 
-    return {
+    # ── Ausgabe-Verifikation ────────────────────
+    return zustand_verifizieren({
         "memory_entries_raw": raw_backup,
         "memory_entries": nach_stufe2,
         "memory_context": memory_context,
-    }
+    }, "reducer", SCHREIBT)
 
 
 # ---------- Private Helfer ----------
