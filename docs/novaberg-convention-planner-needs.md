@@ -2,11 +2,27 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Convention — Multi-Agent-Schreibpfad mit Vorbedingungs-Auflösung
-**Stand:** 06. Mai 2026, Chat 78
+**Stand:** 16. August 2026 (gegen den Code gehalten: **die Voraussetzung steht, die beschriebene Erweiterung ist nicht gebaut — und ihr motivierender Anwendungsfall wurde anders gelöst**). Davor: 06. Mai 2026, Chat 78
 **Pfad:** novaberg/docs/novaberg-convention-planner-needs.md
 **Typ:** Convention
 **Voraussetzung:** Agent-System (Epic 11) ✅, BaseAgent + AgentResult + Planner-Schleife (E9) ✅
 **Folgendes:** M5 (Salienz-Multi-Agent-Pipeline), M6 (Proaktive Disambiguierung)
+
+---
+
+---
+
+> ## ⚠ Stand 16.08.2026 — was hiervon gebaut ist
+>
+> **Die Voraussetzung im Kopf ist zutreffend.** `BaseAgent` und `AgentResult` liegen in `agents/base.py`, die Planner-Schleife in `graph/nodes/planner.py` samt der Schleifenschutz-Marke `bereits_gelaufen` aus §6, dazu `AgentRegistry`, `discover_agents` und `agent_results`. Beide in §10 verwiesenen Dokumente existieren.
+>
+> **Die in diesem Dokument beschriebene Erweiterung existiert nicht.** Kein `provides` an einer Agentenklasse, kein `AgentInput`, kein Status `needs_pending`, kein `teilergebnis`, keine `resolved_needs`/`failed_needs`. Der Planner führt keinen Provides-Index.
+>
+> **Und der Anwendungsfall aus §1 ist inzwischen gelöst — auf einem anderen Weg.** Das Beispiel *„Wir gehen morgen mit Anna ins Tandoor"* verlangt aufgelöste Entitäten, einen Timeline-Bezug und einen KZG-Eintrag mit beidem als Magneten. Genau das leistet heute **ein zweckgebauter Knoten**: `agents/kzg/magnete.py::magnete_aufloesen` löst Entitäten über `EntityResolutionService.resolve_batch` und die Zeit über `TimelineRepository` auf und reicht beides in den KZG-Schreibpfad. Kein Bedarfszettel, kein Index, keine Vermittlung.
+>
+> **Damit steht die Frage anders als beim Schreiben dieses Dokuments.** Sie lautet nicht mehr *„wann bauen wir das"*, sondern: **Braucht es den generischen Mechanismus noch, nachdem der konkrete Fall ohne ihn gelöst ist?** Das ist eine Absicht und keine Implementierungsfrage — geführt als offener Punkt, siehe unten.
+>
+> **Der Text darunter steht durchgehend im Präsens** (*„Jeder Agent deklariert…", „Der Planner pflegt keine statische Routing-Tabelle"*). Er beschreibt ein **Soll**, keinen Zustand. Das ist für eine Konvention zulässig — aber ohne diesen Kasten war es nicht erkennbar, und dieselbe Verwechslung hat am 16.08.2026 einmal dazu geführt, das Dokument für den schwersten Doku-Befund des Bestandes zu halten.
 
 ---
 
@@ -291,3 +307,24 @@ strukturelle Anker brauchen, die andere Agenten erst auflösen oder erzeugen.
 
 - M5: Salienz-Pfad nutzt diese Convention für Multi-Agent-Schreibpfad
 - M6: Proaktive Disambiguierung erweitert das Pattern um aktive Rückfragen
+
+---
+
+## 11. Offener Punkt
+
+**Wird der generische Needs-Mechanismus noch gebraucht?**
+
+Der Fall, für den er entworfen wurde, läuft ohne ihn (siehe Kasten oben). Damit sind drei Antworten möglich, und keine ist aus dem Code ableitbar:
+
+1. **Ja, für die nächsten Fälle.** `magnete_aufloesen` löst genau eine Kette; jede weitere Kette bräuchte einen weiteren zweckgebauten Knoten. Der Mechanismus wäre die allgemeine Antwort auf ein wiederkehrendes Muster.
+2. **Nein, YAGNI.** Ein zweckgebauter Knoten je Kette ist lesbarer als ein Index mit Laufzeitauflösung, und die Zahl der Ketten ist klein.
+3. **Teilweise** — die Provides-Deklaration ohne den Re-Entry-Zyklus wäre schon ein Gewinn, weil sie die Zuständigkeit lokal hält, ohne die Planner-Schleife anzufassen.
+
+Solange das offen ist, bleibt dieses Dokument stehen: Seine Analyse des Problems (§1, §2, §9) gilt unabhängig davon, ob die vorgeschlagene Lösung gebaut wird.
+
+---
+
+## Versionshistorie
+
+- **v0.2 — 16.08.2026:** Erstmals gegen den Code gehalten, mit einem Ergebnis, das die erste Einschätzung umkehrt. **Die Voraussetzung im Kopf ist zutreffend** — Agentenklasse, Ergebnisklasse, Planner-Schleife samt Schleifenschutz und Registry stehen alle. **Die beschriebene Erweiterung ist nicht gebaut**, und **der Anwendungsfall aus §1 wurde inzwischen ohne sie gelöst**: Ein zweckgebauter Knoten löst Entitäten und Zeitbezug auf und speist beide in den Schreibpfad. Daraus §11, der offene Punkt — nicht *wann* bauen, sondern *ob* noch. Neu ist ein Kasten vor §1, der Gebautes von Beschriebenem trennt: Der Text steht durchgehend im Präsens und war ohne ihn nicht als Soll erkennbar.
+- **v0.1 — 06.05.2026, Chat 78:** Erstfassung.
