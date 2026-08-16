@@ -280,9 +280,10 @@ bei fünf nicht mehr.
 
 ## 5. bis 7. — archiviert
 
-Der generische Vermittlungs-Mechanismus (`provides`, Provides-Index,
-`AgentInput`, `needs_pending`, Re-Entry-Zyklus, Continue-on-Error als
-Resolver-Eigenschaft) steht vollständig in
+Der generische Vermittlungs-Mechanismus ist verworfen und archiviert; keiner
+seiner Bezeichner existiert im Code — `provides`, Provides-Index,
+`AgentInput`, `needs_pending`, Re-Entry-Zyklus und Continue-on-Error als
+Resolver-Eigenschaft stehen vollständig in
 `archive/novaberg-convention-planner-needs-erweiterung.md`, dort unter den
 ursprünglichen Nummern §3 bis §7.
 

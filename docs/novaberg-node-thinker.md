@@ -116,7 +116,9 @@ Datenstruktur: `OrderedDict` mit `MAX_GROESSE=20` und FIFO-Verdraengung via `pop
 
 ## 4. Tools
 
-Die Tools werden als Closures erzeugt (`create_tools()`), damit sie Zugriff auf `postgres_url`, `embed_client`, etc. haben, ohne globale Variablen zu brauchen.
+Die Tools werden als Closures erzeugt (`create_tools()`), damit sie Zugriff auf ihren Kontext haben, ohne globale Variablen zu brauchen. Eingeschlossen werden `postgres_url`, `user_id`, `character_id` und `cache` (der Per-Turn-Cache, der nur an `memory_search` durchgereicht wird).
+
+> **Am 16.08.2026 berichtigt:** Hier stand ~~`embed_client`~~ in der Aufzählung. **Der Bezeichner existiert nirgends im Code** — `create_tools()` schließt ihn nicht ein und hat es vermutlich nie getan; die Einbettung läuft nicht über ein hier durchgereichtes Objekt.
 
 ### 4.1 timeline_check
 

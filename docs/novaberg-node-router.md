@@ -206,8 +206,10 @@ Neue Fähigkeiten werden automatisch erkannt — ohne Änderung am Router. Die e
 | `PROMPTS` | `config` | Dictionary mit `[BLOCKNAME]`-Bausteinen (seit Prompt-Segregation, Chat 46) |
 | `session_turns_retrieve` | `memory/session` | Letzte Turns aus Redis laden |
 | `format_session_turns_numbered` | `memory/session` | Nummerierte Turn-Formatierung (zentrale Funktion, seit Chat 24) |
-| `get_chat_provider` | `services/llm_provider` | LLM-Abstraktionsschicht |
+| `model_service`, `ChatRequest` | `services/model_services` | Der Modelldienst, an den der Knoten eine typisierte Anfrage übergibt |
 | `redis_manager` | `tools/redis_manager` | Pending-Agent-Check (Resume-Flow) |
+
+> **Am 16.08.2026 berichtigt.** Hier stand ~~`get_chat_provider` aus `services/llm_provider`~~ als LLM-Abstraktionsschicht. **Das ist keine Umbenennung, sondern eine eingezogene Schicht:** Der Knoten spricht die Provider-Abstraktion nicht mehr an, sondern reicht eine `ChatRequest` an `model_service`; dieser besitzt die Spurwahl (LLM- gegen CPU-Last) und die Provider-Registry. `services/llm_provider` existiert unverändert weiter mit `LLMProvider`, `OllamaProvider` und `AnthropicProvider` — es wird nur nicht mehr von Knoten importiert, sondern ausschließlich von `model_services` selbst.
 
 ---
 

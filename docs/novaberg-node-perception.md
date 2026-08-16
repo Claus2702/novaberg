@@ -260,7 +260,9 @@ Output-Switch nach Rolle: `ziel_personality` ist `state["external"]` bei `perzep
 | `PROMPTS` | `config` | Dictionary mit allen `[BLOCKNAME]`-Bausteinen (seit Prompt-Segregation, Chat 46) |
 | `session_turns_retrieve` | `memory/session` | Letzte Turns aus Redis laden |
 | `format_session_turns_numbered` | `memory/session` | Nummerierte Turn-Formatierung (zentrale Funktion, seit Chat 24) |
-| `get_chat_provider` | `services/llm_provider` | LLM-Abstraktionsschicht (seit Chat 17, LLM1) |
+| `model_service`, `ChatRequest` | `services/model_services` | Der Modelldienst, an den der Knoten eine typisierte Anfrage übergibt |
+
+> **Am 16.08.2026 berichtigt.** Hier stand ~~`get_chat_provider` aus `services/llm_provider`~~ als LLM-Abstraktionsschicht (seit Chat 17, LLM1). **Das ist keine Umbenennung, sondern eine eingezogene Schicht:** Der Knoten reicht eine `ChatRequest` an `model_service`, der die Spurwahl und die Provider-Registry besitzt. `services/llm_provider` existiert weiter mit `LLMProvider`, `OllamaProvider` und `AnthropicProvider`, wird aber nur noch von `model_services` importiert. Dieselbe Berichtigung steht in `novaberg-node-router.md` — die Zeile war in beiden Knotendokumenten gleich.
 
 ---
 

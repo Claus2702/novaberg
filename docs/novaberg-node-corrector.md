@@ -87,7 +87,9 @@ Regeln:
 - Gib NUR die verbesserte Antwort aus, keine Meta-Kommentare
 ```
 
-**LLM-Parameter:** Temperature-Default `0.5` (höher als Entscheider-Nodes mit 0.05 — der Corrector darf kreativ umformulieren), `caller="corrector"`. Kein `format_json` — Freitext-Antwort.
+**LLM-Parameter:** Temperature-Default `0.5` (höher als Entscheider-Nodes mit 0.05 — der Corrector darf kreativ umformulieren), `caller="corrector"`. Kein `expect_json` — Freitext-Antwort.
+
+> **Am 16.08.2026 berichtigt:** Der Parameter hieß hier ~~`format_json`~~. Die **Aussage** war und ist richtig — der Corrector setzt ihn nicht —, nur der Name ist mit dem Modelldienst gewandert: Er heißt `expect_json` und sitzt auf `ChatRequest` (`services/model_services/types.py`).
 
 **Keine Meta-Kommentare:** Der Corrector gibt nur die überarbeitete Antwort aus — kein „Ich habe folgende Änderungen vorgenommen..." Sein Output ersetzt direkt `state["response"]`.
 

@@ -474,7 +474,9 @@ Ich bin so hyped gerade, das ist nicht real!
 
 ### API-Response (seit Chat 16)
 
-Die `GespraechAntwort` enthält neben der Antwort alle EI- und Routing-Daten aus dem State:
+Die Antwort des Chat-Endpunkts enthält neben der Antwort alle EI- und Routing-Daten aus dem State:
+
+> **Am 16.08.2026 berichtigt:** Hier stand ~~`GespraechAntwort`~~ als Name der Antwortklasse. **Eine solche Klasse existiert nicht.** `api/models.py` führt allein `GespraechAnfrage` — es gibt ein typisiertes Modell für die *Anfrage* und keines für die *Antwort*; der Endpunkt liefert `JSONResponse` bzw. `StreamingResponse`. Die folgende Tabelle beschreibt damit die Felder der ausgelieferten Struktur, nicht die eines Modells.
 
 | Feld | Quelle | Beschreibung |
 |------|--------|-------------|
