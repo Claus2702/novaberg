@@ -1658,7 +1658,7 @@ Die folgenden Abschnitte (13.3 bis 13.12) sind **Stufe 1** der Sprint-Definition
 
 2. **Neuer Node `magnete_aufloesen`** in `server/agents/kzg/magnete.py` — sitzt im KzgAgent-Subgraph zwischen `schwelle_pruefen` und `verdichten` (defensiv: Resolver-Fehler verwerfen den teuren LLM-Call nicht). Entitäten-Pfad via `EntityResolutionService.resolve_batch` plus `create_new_entity` für neue Namen (analog zum bestehenden FaktenManager-Pattern). Timeline-Pfad via `zeit_parsen_vektor` und `TimelineRepository.find_by_date`/`insert` mit `event_type='erinnerungs_anker'` (Klasse Bezug nach `convention-magneten.md` §5).
 
-3. **Clipboard-Pattern** — der `TimelineAgent` schreibt eine im selben Turn angelegte `timeline_id` via `dispatch_timeline._build_return` flach in den `ConversationState` (`state["timeline_id"]`). Der `magnete_aufloesen`-Node übernimmt diesen Wert, wenn vorhanden, statt einen eigenen Erinnerungs-Anker für den gleichen Tag anzulegen.
+3. **Clipboard-Pattern** (Regel seit 16.08.2026 in `novaberg-convention-planner-needs.md` §3) — der `TimelineAgent` schreibt eine im selben Turn angelegte `timeline_id` via `dispatch_timeline._build_return` flach in den `ConversationState` (`state["timeline_id"]`). Der `magnete_aufloesen`-Node übernimmt diesen Wert, wenn vorhanden, statt einen eigenen Erinnerungs-Anker für den gleichen Tag anzulegen.
 
 **Datei-Scopes.**
 

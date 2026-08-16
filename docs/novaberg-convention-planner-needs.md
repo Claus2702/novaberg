@@ -73,10 +73,12 @@ anders beschrieben und nie so gebaut — siehe §9.3.
 
 ### 3.1 Die Regel
 
-> **Ein Wert, den ein Agent erzeugt und ein späterer Knoten desselben Turns
-> braucht, wandert über einen im Zustandstyp deklarierten Schlüssel — flach,
-> benannt und optional.** Der lesende Knoten arbeitet weiter, wenn der Schlüssel
-> leer ist; er hält nicht an.
+> **Ein Wert, den eine Stufe erzeugt und eine spätere desselben Turns braucht,
+> wandert über einen im Zustandstyp deklarierten Schlüssel — flach, benannt und
+> optional.** Der lesende Knoten arbeitet weiter, wenn der Schlüssel leer ist;
+> er hält nicht an.
+
+*„Stufe" statt „Agent": Die Regel gilt zwischen Agent und Knoten **und** zwischen zwei Knoten — der dritte Fall im Bestand ist genau das (§4). Und ein Clipboard darf **mehrere Leser** haben; die Regel begrenzt die Zahl der Leser nicht, sondern verlangt, dass jeder von ihnen ohne den Wert weiterkommt.*
 
 Drei Teile, und jeder trägt seinen eigenen Grund:
 
@@ -99,8 +101,9 @@ den Mechanismus überlebt.
 
 ### 3.2 Geltungsbereich
 
-**Erfasst:** der **Schreibpfad innerhalb eines Turns**, wo ein Agent einen
-strukturellen Anker erzeugt, den ein späterer Knoten braucht.
+**Erfasst:** der **Weg innerhalb eines Turns**, auf dem eine Stufe einen Wert
+erzeugt, den eine spätere braucht und den sie nicht selbst herstellen kann —
+gleich ob Agent oder Knoten auf beiden Seiten steht.
 
 **Ausdrücklich nicht erfasst** — jede dieser Grenzen ist am Bestand geprüft und
 nicht abgeleitet:
@@ -261,13 +264,28 @@ diese eine ist falsch.**
 > wie es am 16.08.2026 aussieht. Sie ändern sich mit dem nächsten Commit und
 > haben nicht den Rang der Regel in §3.
 
-Zwei Clipboards, beide in `graph/state.py` deklariert und in
-`novaberg-graph.md` §4.8a beschrieben:
+**Drei** Clipboards, alle in `graph/state.py` deklariert:
 
 | Schlüssel | Erzeuger | Leser | Zweck |
 |---|---|---|---|
 | `timeline_id` | `agents/timeline/dispatch.py` | `agents/kzg/magnete.py` | Der KZG-Schreibpfad übernimmt einen im selben Turn angelegten Timeline-Eintrag, statt einen zweiten `erinnerungs_anker` für denselben Tag zu erzeugen |
 | `session_turn_kern` | `agents/kzg/dispatch.py` | `graph/nodes/dispatcher.py` | Der verdichtete Kern des Turns wandert vom KZG-Agent zum Schreiber des Session-Turns |
+| `lzg_resonanz` | `graph/nodes/enricher.py` | `graph/nodes/reducer.py`, `graph/nodes/gespraechsvektor.py` | Die assoziative Spreading-Resonanz wandert vom Enricher zu Formatter und Gesprächsvektor |
+
+> **Der dritte ist am 16.08.2026 nachgetragen, und er hat die Regel erweitert.**
+> Dieser Abschnitt nannte zunächst zwei, weil die Suche an der Zustandstabelle
+> von `novaberg-graph.md` §4.8a hielt — dort stehen die beiden Agenten-Fälle.
+> `lzg_resonanz` steht in einem anderen Abschnitt und erfüllt die Regel Punkt
+> für Punkt: deklariert (mit ausdrücklicher Kanalzwang-Begründung im Kommentar),
+> flach, benannt, und der Reducer arbeitet ohne ihn weiter.
+>
+> **Er unterscheidet sich in zwei Punkten, die §3.1 und §3.2 daraufhin
+> gefasst wurden:** Er läuft **Knoten zu Knoten** statt Agent zu Knoten, und er
+> hat **zwei Leser** statt einem.
+>
+> **Und die Lehre über die Suche ist die wichtigere:** Die Kandidatenmenge kam
+> aus einem Dokument statt aus dem Zustandstyp. Wer Clipboards zählen will,
+> zählt sie in `graph/state.py`.
 
 **Und eine Doppelung, die zum Preis dieser Bauart gehört:**
 `agents/kzg/magnete.py` löst Entitäten selbst auf und folgt dabei dem
@@ -444,6 +462,7 @@ bei fünf nicht mehr.
 
 ## Versionshistorie
 
+- **v0.6 — 16.08.2026:** **§4 nannte zwei Clipboards, es sind drei** — und der dritte hat die Regel erweitert. `lzg_resonanz` (Enricher → Reducer und Gesprächsvektor) erfüllt sie Punkt für Punkt, läuft aber **Knoten zu Knoten** statt Agent zu Knoten und hat **zwei Leser**; §3.1 und §3.2 sprechen deshalb von *Stufen* statt von Agenten und begrenzen die Zahl der Leser nicht. **Die Lehre über die Suche wiegt schwerer als der Nachtrag:** Die Kandidatenmenge kam aus der Zustandstabelle eines Dokuments statt aus `graph/state.py` — dort standen nur die beiden Agenten-Fälle. Wer Clipboards zählt, zählt sie im Zustandstyp. Dazu der Nachzug in die Gegenrichtung: `novaberg-graph.md` §4.8a, `novaberg-agent-timeline.md` und `novaberg-memory-synapsen_k.md` zeigen jetzt auf diese Regel — sie beschrieben den Mechanismus, ohne dass ein Leser von hier aus zu ihnen fand.
 - **v0.5 — 16.08.2026:** **Die zweite Kontrolle hat §3.7 zur Hälfte widerlegt, und zwar die härtere Hälfte.** Dort stand, der Planner wähle über Zeichenketten-Abgleich *statt* über die Selbstauskunft. Falsch: **Der Router läuft davor und wählt sehr wohl über sie** — per Modellaufruf über die `router_prompt`-Aushänge der Manager, eingesammelt von `get_combined_router_prompt()`. Richtig ist die Zweiteilung in §3.7a: **zwei Deklarationsflächen, die ältere an beiden Stufen verdrahtet, die jüngere an keiner**, und ein Agent wird gefunden, indem er den Namen seines Managers erbt (5 von 14 auf dem Nutzerpfad erreichbar). Daraus die eigentliche Lehre, die den Befund vom Einzelfall zur Klasse hebt: **Eine Selbstauskunft stirbt daran, dass sie die Frage des Anbieters beantwortet statt der des Aufrufers** — `["termin_erstellen"]` gegen *„entscheidend ist nicht die Satzform, sondern ob der Prompt ein Datum enthält"*. Neu §3.7b: **Eine ungelesene Deklaration verrottet unbemerkt** — `delegation` deklariert `["user"]` und läuft über den Hintergrund-Router; dreizehn stimmen, diese eine nicht, und kein Lauf konnte es melden. Daraus eine Reihenfolge gegen die naheliegende: erst die Deklarationen gegenprüfen, dann den Leser bauen. Neu §11.2: der Abgleich mit dem Model Context Protocol (Revision `2026-07-28`) — dieselbe Trennung, dieselbe Lücke bei der Auswahl, und ein **deckungsgleiches** Clipboard-Prinzip beim Zustandstransport.
 - **v0.4 — 16.08.2026:** **Die Frage aus §11 war zu eng gestellt.** Der Vorschlag von Chat 78 enthielt zwei Dinge unter einem Namen: die **Auflösung zur Laufzeit** und die **Selbstanmeldung** eines Agenten. Verworfen ist nur die erste. Die zweite ist **gebaut und von 14 der 14 Agenten gepflegt** — `faehigkeiten`, `AGENT.md`, `graph_eignung`, `lastart` — und `AgentRegistry.beschreibungen()` fügt sie zu einem Text „für den Planner-Prompt" zusammen, **den kein Produktivcode aufruft**. Der Planner wählt über Zeichenketten-Abgleich statt über die Selbstauskunft, also über genau die zentrale Zuordnung, die §1 als Bruch des Plugin-Prinzips benennt. Neu §3.7 mit dem Fehler-Zustand und seinen Zahlen, §11.1 mit der Trennung der beiden Teile. Die Trennung steht ausdrücklich da, weil sie beim Verwerfen beinahe verlorengegangen wäre: Wer *„Needs-Mechanismus"* verwirft, verwirft bei unachtsamer Lesart auch die Selbstauskunft.
 - **v0.3 — 16.08.2026:** **Der offene Punkt aus v0.2 ist entschieden, und das Dokument hat dabei seinen Gegenstand gewechselt.** Der generische Mechanismus ist verworfen und liegt vollständig unter `archive/` — die Zahl, die ihn verworfen hat: **eine Kette und ein Anbieter je Bedarf**, aus vier Kandidaten, von denen drei bei Einzelprüfung wegfielen (ein unbenutzter Import, ein Lesepfad, ein Querschnitts-Scan). An seine Stelle tritt **§3, das Clipboard-Prinzip** — die Regel für den Weg, der wirklich gebaut ist, mit Geltungsbereich, vier Verstoßformen, dem Stand der maschinellen Prüfbarkeit und der benannten Schwäche, dass die Reihenfolge aus der Graph-Topologie folgt und aus keiner Zusicherung. **§9.3 ist berichtigt statt gestrichen:** Dort stand *„Alle Daten fließen über `AgentResult` und `AgentInput`"* — `AgentInput` hat nie existiert, und kein Agent liest die Akte eines anderen. Die Absicht dahinter hält der gebaute Weg trotzdem ein. §2 und §9.2 mitgezogen, weil der Planner nichts vermittelt, sondern auswählt. §4 trägt den Bestand als ausdrücklich gekennzeichneten Zustandsteil: zwei Clipboards und die Doppelung, die ein zweckgebauter Knoten je Kette kostet. Die Nummern §5 bis §7 bleiben frei, damit bestehende Verweise auf den archivierten Text zeigen können.

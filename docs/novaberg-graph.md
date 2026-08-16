@@ -448,6 +448,8 @@ Die Modus-/Stil-Plausibilitaet fuer `internal.emotion` wird **nicht** hier gemac
 
 ### 4.8a KZG-Dispatch (Chat 60)
 
+> **Die Regel für diese Schlüssel steht in `novaberg-convention-planner-needs.md` §3** (Clipboard-Prinzip, seit 16.08.2026): deklariert, flach, benannt und **optional** — der lesende Knoten arbeitet weiter, wenn der Schlüssel leer ist. Ein dritter Schlüssel derselben Bauart, `lzg_resonanz`, steht in §4.5 (Enricher) und nicht hier; wer die Clipboards zählen will, zählt sie in `graph/state.py` und nicht in dieser Tabelle.
+
 | Feld | Typ | Beschreibung |
 |------|-----|-------------|
 | `session_turn_kern` | `str` | Verdichteter Kern fuer den Session-Turn. Vom KZG-Dispatch geschrieben, vom Dispatcher (Session-Turn-Schreiber) eingesammelt. |
