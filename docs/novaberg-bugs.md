@@ -171,6 +171,19 @@ Derselbe Fehlertyp hat in diesem Register bereits eine Spur: `CHAR-HASH-FILTER` 
 
 **Herkunft.** `novaberg-convention-paar-schema.md` §2.1 schrieb bis zum 16.08.2026 ausdrücklich vor, die Figur ins Subjektfeld zu setzen, und §2.2 verteidigte es. Beides ist gestrichen. **§3.3 desselben Dokuments fordert seit dem 29.04.2026 die dritte Schlüsselspalte `beobachter`** — der Abschnitt war von Anfang an richtig und ist nie gebaut worden. Die gespiegelten Zeilen sind das Symptom, die zweispaltige Struktur ist die Ursache.
 
+**Der Fußabdruck reicht über den Code hinaus.** Die zweite Kontrolle am 16.08.2026 hielt die widerrufene Regel gegen den ganzen Bestand: **17 Dokumente** nennen den verbotenen Schlüssel oder die Lesefunktion. **Zwölf sind historisch oder richtig** — Backlog- und Roadmap-Einträge über die damalige Bereinigung, und eine Messung in `novaberg-charakter-resonanz_k.md`, die `kzg:nova:meister:* = 0` festhält. **Fünf beschreiben den Zustand von heute und geben die widerrufene Regel weiter:**
+
+| Dokument | Was dort steht |
+|---|---|
+| `novaberg-personality.md` | `charakter_hash` mit `(ASSISTANT_USER_ID, user_id)` — die verbotene Richtung als Tatsache |
+| `novaberg-node-db-zugriff.md` | dokumentiert `nova_charakter_hash_retrieve_dict` als den Helfer, ohne Vorbehalt |
+| `novaberg-graph.md` | dasselbe, in der Kanaltabelle |
+| `novaberg-ei-character-profiles.md` · `novaberg-pixie-character-hash.md` | nennen `kzg:nova:*` als **Quelle** von Novas Profil — **diese Quelle ist leer**, 0 Schlüssel |
+
+**Die letzten beiden wiegen am schwersten:** Sie beschreiben eine Herkunft, die es nicht gibt. Wer nachvollziehen will, woraus Novas Selbstbild entsteht, wird dort in die Irre geführt — es entsteht aus dem kanonischen Paar, gefiltert über `beobachter`.
+
+**Ein Beleg für die Kostenrechnung:** `novaberg-roadmap.md` hält fest, dass in Chat 79 **24 Alt-Einträge gelöscht** wurden — *17× `kzg:nova:meister:*` + 7× `kzg:nova:nova:*`*. Die 17 ist dieselbe Zahl wie die der gespiegelten Hash-Zeilen heute. Der Fehler wurde im Gedächtnis einmal bezahlt und im Charakter-Hash nie.
+
 **Kein Lösungsweg notiert.** Er berührt das Schema und ist eine eigene Entscheidung.
 
 **Prio:** offen — die Auswirkung ist heute still (kein Lesepfad bricht), die Fehlerwirkung liegt in jeder Auswertung über die Nutzerschaft.
