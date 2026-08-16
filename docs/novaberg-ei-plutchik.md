@@ -197,7 +197,7 @@ Drei Gründe:
 
 1. **Gegenüber-Distanz skaliert mit Arousal:** Begeisterung (Sektor 1, Arousal 0.8) und Verzweiflung (Sektor 5, Arousal 0.8) liegen maximal weit auseinander. Leichte Freude und leichte Traurigkeit (beide Arousal 0.3) sind räumlich näher — sie können koexistieren. Bitteres Lächeln, melancholische Zufriedenheit. Begeisterung und Verzweiflung können das nicht.
 
-2. **Neutrale Mitte:** Bei Arousal unter dem Schwellwert (`EMOTION_NEUTRAL_SCHWELLE` in `config.py`) sind alle Sektoren verschmolzen. Ein Mensch im neutralen Zustand ist nicht „freudig-neutral" oder „ärgerlich-neutral" — er ist einfach da. Keine Richtung, nur Ruhe.
+2. **Neutrale Mitte:** Bei Arousal unter dem Schwellwert (`EMOTION_NEUTRAL_SCHWELLE` — ~~in `config.py`~~, **am 16.08.2026 berichtigt: die Konstante existiert dort nicht**, siehe die Parametertabelle weiter unten, die sie seit jeher als offen führt) sind alle Sektoren verschmolzen. Ein Mensch im neutralen Zustand ist nicht „freudig-neutral" oder „ärgerlich-neutral" — er ist einfach da. Keine Richtung, nur Ruhe.
 
 3. **Radar-Darstellung:** Größere Ausschläge nach außen = intensivere Emotion. Intuitiv lesbar: Ein ruhiges Radar (kleine Fläche) = neutraler Zustand. Ein zackiges Radar (große Ausschläge) = emotionale Aktivierung.
 

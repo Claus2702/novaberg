@@ -203,7 +203,9 @@ Bei `add_content` oder `remove_content` + Notiz nicht gefunden: Echte Rueckfrage
 
 Vorher: "ja, bitte" als Notiz-Inhalt. Nachher: "Kuemmel" korrekt aus dem Originaltext extrahiert.
 
-**GIN-Indexes:** `idx_notizen_name_trgm` (Chat 23), `idx_notizen_text_trgm` (Chat 24).
+**Indexe:** `idx_notizen_user`, `idx_notizen_status`, `idx_notizen_themen`, `idx_notizen_entitaet_ids` (alle `db/init.sql`), dazu `idx_notizen_timeline_id` aus `agents/timeline/init.sql`.
+
+> **Am 16.08.2026 berichtigt.** Hier standen ~~`idx_notizen_name_trgm` (Chat 23)~~ und ~~`idx_notizen_text_trgm` (Chat 24)~~ als GIN-Indexe. **Beide existieren nicht** — weder unter diesem noch unter einem ähnlichen Namen. Die Erweiterung `pg_trgm` ist in `db/init.sql` aktiviert, aber **auf `notizen` liegt kein einziger Trigramm-Index**; die fünf vorhandenen decken Besitzer, Status, Themen, Entitäten und den Timeline-Bezug ab. Wer sich auf unscharfe Namenssuche verlassen hat, hat sie nie gehabt.
 
 ---
 
