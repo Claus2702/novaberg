@@ -59,6 +59,31 @@ Die Zugehörigkeit zu einer dieser Reihen hebt einen Eintrag; alles andere sinkt
 >
 > **Was das fuer den naechsten Durchgang heisst:** Band A ist nicht abgearbeitet, es ist **leergeraeumt**. Es muss aus den ungebaenderten Eintraegen neu gefuellt werden, und die Kandidaten sind diesmal gegen den Code zu halten, bevor sie ein Band bekommen.
 
+### Band A — neu gefuellt am 16.08.2026, ein Eintrag
+
+**Der Durchgang folgte der eigenen Reihenfolge dieses Abschnitts** — zuerst die Bugs mit `🔧 offen` — und der neuen Regel, dass ein Rang **gegen den Code** vergeben wird, nicht gegen den Eintrag.
+
+| Kennung | Reihe | Was er anhaelt |
+|---|---|---|
+| `UNREGISTRIERTER-AGENT-GEWINNT` | 3 | **Er zerstoert laufend Material, und seit dem 16.08.2026 schneller.** Ein Queue-Auftrag fuer einen nicht registrierten Agenten gewinnt den Heartbeat, scheitert sofort und verbrennt seine drei Versuche im Takt des Heartbeats — gemessen am laufenden System: `vertiefen` id=1004 durchlief `1/3`, `2/3` und die Verwerfung in **90 Sekunden**, danach `DELETE`. **192 aktive `vertiefen`-Auftraege stehen darauf**, ⌀ Salienz 0,750, aeltester vom 30.07. Bisher kam die Auftragsart kaum dran, weil eine Recherche den Platz minutenlang hielt; **seit der Frist-Reparatur vom 16.08. dreht der Platz schneller**, und `vertiefen` rueckt nach — in zwei Stunden dreimal gezogen. Der Eintrag ist vom 27.07. und trug seither Prioritaet *hoch*, ohne je ein Band zu bekommen. **Sein `Was fertig waere` ist die kleinste denkbare Abhilfe:** *„Ein Auftrag ohne Agenten kann den Heartbeat nicht gewinnen."* **Zur Haelfte veraltet:** Der Eintrag nennt `vertiefung` **und** `nachfragen` als fehlend; `nachfragen` ist seit dem 05.08.2026 gebaut (`PIX-MIG-7`), nur `vertiefung` fehlt |
+
+**Was der Durchgang sonst ergab — mit Zahlen, damit die Reichweite nachrechenbar ist.** Geprueft wurden **41** offene Bug-Eintraege mit drei mechanischen Kriterien und **5** davon zusaetzlich von Hand gegen Code und Betrieb.
+
+| Kriterium | Treffer | davon echt |
+|---|---|---|
+| Ein genannter Bezeichner existiert nicht mehr | 5 | **0** — Datenwerte, URLs, Fremdfelder und ein Archivtabellenname |
+| Eine Erledigt-Vokabel im Koerper | 9 | **0** — durchweg *„Geschlossen, wenn"* als Abschlusskriterium |
+| Ein `✅`-Abschnitt im Koerper eines `🔧`-Eintrags | 0 | — (das Kriterium hat heute frueh seinen einen Fall gefunden) |
+
+**Zwei Eintraege mit Prioritaet *hoch* sind durch die Handpruefung hinfaellig geworden** und gehoeren in den naechsten Durchgang zur Schliessung, nicht in ein Band:
+
+- `ENTITAETEN-OHNE-EMBEDDING` (29.07.) — *„Entitaeten entstehen ohne Zusammenfassung und ohne Embedding."* Gemessen am 16.08.2026: **0 von 704** ohne Embedding. Ob der Erzeuger nachgezogen wurde oder ein Nachlauf gefuellt hat, ist ungeprueft — die Frage nach dem **Warum** steht noch, das Symptom nicht mehr.
+- `CHARAKTERAGENT-AUSGEHUNGERT` (27.07.) — *„Vier Heartbeats in Folge ging der Charakter leer aus."* Gemessen ueber 39 h: **22 Gewinne**, Wartezeit zuletzt **0,37 h**. Vermutlich eine Folge der Zwei-Spuren-Trennung; nicht abschliessend geprueft.
+
+**Einer wurde bestaetigt und gehoert nicht nach A:** `RECHERCHE-SALIENZ-KONSTANT` — das Literal `"salienz": 0.7` steht unveraendert in `agents/recherche/agent.py`. Er entwertet eine gespeicherte Groesse, zerstoert aber nichts; das ist Band **C**.
+
+> **Kein stiller Deckel:** Von 41 offenen Eintraegen sind **5** von Hand gegen den Code gehalten worden, ausgewaehlt danach, ob ihr Wortlaut laufenden Verlust behauptet. **Die uebrigen 36 sind ungeprueft** und koennen denselben Zustand tragen wie die beiden oben — erledigt und unmarkiert. Der Durchgang ist damit begonnen und nicht abgeschlossen.
+
 ### Band A — die geschlossenen Eintraege
 
 | Kennung | Reihe | Was er anhält |

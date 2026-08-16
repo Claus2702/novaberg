@@ -511,13 +511,17 @@ Siebzehn Defekte, der aelteste Bestand der Liste. **Sechs von ihnen sind derselb
 
 #### UNREGISTRIERTER-AGENT-GEWINNT 🔧 offen
 
+**Band A seit dem 16.08.2026** (Rangordnung in `novaberg-backlog.md`, Reihe 3) — der einzige Eintrag des neu gefuellten Bandes. **Zur Haelfte veraltet:** `nachfragen` ist seit dem 05.08.2026 gebaut, nur `vertiefung` fehlt weiterhin. **Die lebende Haelfte kostet laufend Material:** Gemessen am 16.08.2026 durchlief `vertiefen` id=1004 die drei Fehlversuche in **90 Sekunden** und wurde dann hart geloescht; **192 aktive Auftraege** stehen darauf, ⌀ Salienz 0,750, aeltester vom 30.07. Und der Verlust hat sich am selben Tag **beschleunigt**: Seit die Zwischen-Destillation der Recherche ihre eigene Frist traegt, dreht der einzige LLM-Platz schneller, und `vertiefen` wird oefter gezogen — in zwei Stunden dreimal.
+
 **Befund (2026-07-27).** Ein Queue-Auftrag für einen **nicht registrierten** Agenten gewinnt den Heartbeat und verdrängt laufende Arbeit. `services/pixie/router.py` bildet `vertiefen` → `vertiefung` und `nachfragen` → `nachfragen` ab; **beide Agenten existieren nicht**. Gemessen an der über `discover_agents()` befüllten Registry: 15 Agenten, `recherche` und `wiedervorlage` darunter, die zwei nicht. Beobachtet am selben Tag: `nachfragen` (Prio 0.97) gewann dreimal gegen `charakter_hash` (Prio 0.3) und scheiterte jedes Mal an `Agent 'nachfragen' nicht in Registry` — nach drei Fehlversuchen verworfen, sechs Minuten ohne anderen Job (Server-Log 13:19–13:23 UTC). Die fehlenden Agenten sind **kein Bug, sondern Roadmap** (`PIX-MIG-7`, dort aber nur einer von zweien); der Befund ist die Verdrängung: Ein Auftrag für einen unbekannten Agenten sollte gar nicht erst gewinnen. **Kopplung beachten:** Wird nur die `prioritaet` oben repariert, gewinnen acht liegengebliebene `vertiefen`-Aufträge sofort den Heartbeat und laufen ins Leere — der Nullwert hält sie heute ruhig.
 
 **Was fertig waere.** Ein Auftrag ohne Agenten kann den Heartbeat nicht gewinnen.
 
 **Prioritaet:** hoch.
 
-#### CHARAKTERAGENT-AUSGEHUNGERT 🔧 offen
+#### CHARAKTERAGENT-AUSGEHUNGERT 🔧 offen — Symptom am 16.08.2026 nicht mehr auffindbar
+
+**Nachgemessen am 16.08.2026 ueber 39 h Laufzeit: 22 Gewinne, zuletzt 0,37 h Wartezeit.** Von *vier Heartbeats in Folge leer* ist nichts mehr zu sehen. Vermutlich eine Folge der Zwei-Spuren-Trennung vom 09.08.2026, die Rechnung und Sprachmodell trennte. **Nicht abschliessend geprueft** — die Messung sagt, dass er drankommt, nicht dass die Ursache verstanden ist.
 
 **Befund (2026-07-27).** `CharakterAgent` (Prio 0.3) wird ausgehungert, solange die Queue läuft: `lzg_promotion` steht bei 0.97, jeder Turn erzeugt welche. Vier Heartbeats in Folge ging der Charakter leer aus, obwohl `hash_dirty` gesetzt war. Vermutlich gewollt (Profil-Destillation ist nicht dringend) — als Verhalten aber nirgends festgehalten.
 
@@ -549,7 +553,9 @@ Siebzehn Defekte, der aelteste Bestand der Liste. **Sechs von ihnen sind derselb
 
 **Prioritaet:** mittel.
 
-#### ENTITAETEN-OHNE-EMBEDDING 🔧 offen
+#### ENTITAETEN-OHNE-EMBEDDING 🔧 offen — Symptom am 16.08.2026 nicht mehr auffindbar
+
+**Nachgemessen am 16.08.2026: 0 von 704 Entitaeten ohne Embedding.** Das Symptom ist weg. **Ungeprueft bleibt das Warum** — ob der Erzeuger nachgezogen wurde oder ein Nachlauf gefuellt hat; ohne diese Antwort ist nicht entscheidbar, ob neue Entitaeten weiterhin leer entstehen und nur nachtraeglich gefuellt werden. Der Eintrag bleibt bis dahin offen.
 
 **Befund (2026-07-29).** Entitäten entstehen ohne Zusammenfassung und ohne Embedding. Einziger aktiver Erzeuger ist `agents/kzg/magnete.py`, `_entitaeten_aufloesen` → `EntityResolutionService.create_new_entity(postgres_url, user_id, name, typ)` — vier Argumente, `zusammenfassung` und `embedding` sind nicht darunter. Gemessen 28.07.2026: **88 von 89** aktiven Entitäten haben ein leeres `zusammenfassung`-Feld; nur die eine `user`-Entität trägt eines (die aus `api/chat.py` stammt, wo beide Felder gesetzt werden). Die Spalten existieren beide in `entitaeten`. Wirkung heute: Jede Suche über die Zusammenfassung ist ohne Substrat — das war Tür 2 des GV-Entity-Hop-Befunds — und eine Embedding-Suche über Entitäten ist gar nicht möglich. Wirkung morgen: M2.5b und die Entity-Resolution selbst hängen an denselben zwei Feldern. Offen ist nicht der Fix, sondern die Frage, **woher** die Zusammenfassung einer im KZG-Pfad nebenbei aufgelösten Entität kommen soll — der Magnet-Pfad ist nicht-interaktiv und hat nur den Namen.
 
