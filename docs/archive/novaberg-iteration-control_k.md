@@ -5,14 +5,14 @@
 **Stand:** 04. Juli 2026, Chat 100+
 **Pfad:** novaberg/docs/novaberg-iteration-control_k.md
 **Typ:** Konzept (`_k`)
-**Status:** Geparkt (Chat 101). Der adressierte `AGENT-RUECKFRAGE-LOOP` ist im aktuellen Codestand nicht reproduzierbar — der `bereits_gelaufen`-Guard im heutigen single-pass `planner.plan()` terminiert jeden geprüften Turn. Das Konzept setzt einen Needs/Resolver-Planner (`novaberg-convention-planner-needs.md` §6) voraus, der so noch nicht implementiert ist. Aktivierungs-Trigger: Bau dieses Planners.
+**Status:** Geparkt (Chat 101). Der adressierte `AGENT-RUECKFRAGE-LOOP` ist im aktuellen Codestand nicht reproduzierbar — der `bereits_gelaufen`-Guard im heutigen single-pass `planner.plan()` terminiert jeden geprüften Turn. Das Konzept setzt einen Needs/Resolver-Planner (`archive/novaberg-convention-planner-needs-erweiterung.md` §6) voraus, der so noch nicht implementiert ist. ~~Aktivierungs-Trigger: Bau dieses Planners.~~ → **Am 16.08.2026 gegenstandslos geworden: Der Needs/Resolver-Planner ist verworfen und archiviert.** Der Auslöser dieses Konzepts kann damit nicht mehr eintreten; es bleibt als Beleg der damaligen Analyse stehen. Wird eine Iterations-Kontrolle je gebraucht, entsteht sie an der heutigen Bauart — dem Clipboard-Prinzip aus `novaberg-convention-planner-needs.md` §3 — und nicht an dieser.
 **Quellen:** Analyse eines externen Agentic-Knowledge-Orchestration-Protokolls (M365 Copilot, 04.07.2026) für das Kontrollobjekt-Paar `TaskLedger` + `IterationBudget`. Konzeptuelle Erweiterung (Chat 100+): Unterscheidung **Gedankenbildung vs. Gedankenverkettung**, dritter Fall **Rückfrage**, emotionale Iteration in Nicht-User-Läufen. Bezug: `AGENT-RUECKFRAGE-LOOP`, `RECH-SPIRAL`.
 
 ---
 
 ## 1. Problem
 
-Der Planner-Loop löst Agenten-`needs` über Resolver-Agenten auf. Solange der Original-Agent `needs_pending` zurückgibt, wird er bewusst **nicht** als `bereits_gelaufen` markiert (`novaberg-convention-planner-needs.md` §6). Der bestehende Loop-Schutz (`bereits_gelaufen`-Dict, AGT-FIX3, Chat 22) greift damit pro **Agenten-Name** — nicht pro **Aufgabe**.
+Der Planner-Loop löst Agenten-`needs` über Resolver-Agenten auf. Solange der Original-Agent `needs_pending` zurückgibt, wird er bewusst **nicht** als `bereits_gelaufen` markiert (`archive/novaberg-convention-planner-needs-erweiterung.md` §6). Der bestehende Loop-Schutz (`bereits_gelaufen`-Dict, AGT-FIX3, Chat 22) greift damit pro **Agenten-Name** — nicht pro **Aufgabe**.
 
 Dadurch fällt eine ganze Fehlerklasse durch:
 
@@ -142,7 +142,7 @@ class TaskLedger(TypedDict):
 
 ## 5. Einbindung in den Planner-Loop
 
-Zwei Prüfpunkte um die bestehende Loop-Logik aus `convention-planner-needs.md` §6 herum:
+Zwei Prüfpunkte um die bestehende Loop-Logik aus `archive/novaberg-convention-planner-needs-erweiterung.md` §6 herum:
 
 ```python
 def planner_loop(state: ConversationState) -> ConversationState:
@@ -218,7 +218,7 @@ Lebt der `TaskLedger` nur pro Turn (In-Memory State-Channel) oder persistent üb
 
 ## 8. Verweise
 
-- `novaberg-convention-planner-needs.md` — Planner-Loop, `needs`/`failed_needs`, §6 (Ursprung der Lücke)
+- `archive/novaberg-convention-planner-needs-erweiterung.md` — Planner-Loop, `needs`/`failed_needs`, §6 (Ursprung der Lücke). **Seit dem 16.08.2026 selbst archiviert und verworfen** — siehe die Statuszeile oben
 - `novaberg-node-planner.md` — `bereits_gelaufen`-Guard (AGT-FIX3), `_write_task_block`-Kette
 - `novaberg-node-thinker.md` — `ThinkerToolCache`, THINK-MEM-LOOP (Präzedenz für Fingerprint-Dedup)
 - `novaberg-convention-event-model.md` — Self-Event, `source`/`typ`, `MAX_SELF_TRIGGERS` (Gedankenverkettung, §2.2/§2.3)
