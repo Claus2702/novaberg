@@ -1438,6 +1438,33 @@ NODE_LLM_CONFIG: dict = {
         "temperature": 0.1,
         "max_output_tokens": 1024,
     },
+    # Die Zwischen-Destillation der Recherche ist der einzige
+    # Hintergrund-Aufruf, der ohne eigene Frist an den Vorgabewert
+    # `MODEL_BACKGROUND_TIMEOUT_S = 300` geriet und ihn regelmaessig riss.
+    # Gemessen ueber 24 h am 16.08.2026, 190 Antworten: Median 181 s,
+    # p90 314 s, Maximum 638 s — **24 davon (12 %) trafen nach dem
+    # Fristablauf ein.** Die Antwort war da, nur hatte der Aufrufer schon
+    # aufgegeben; das eingestellte Werk laeuft weiter.
+    #
+    # Der Schaden lag nicht beim einzelnen Aufruf, sondern in der Auswahl:
+    # Ein Fehlversuch loescht den Queue-Eintrag nach drei Laeufen **hart**,
+    # waehrend der Verfall nur weich deaktiviert. Und die Fehlversuche
+    # trafen die Wichtigen — ueber die 582 aktiven `recherche`-Eintraege
+    # stieg die mittlere `salienz_roh` monoton mit der Zahl der Versuche
+    # (0,867 bei null · 0,947 bei einem · 0,990 bei zwei). Der Grund ist
+    # mechanisch: Der Wichtigste wird zuerst gezogen, hat das meiste
+    # Material und laeuft deshalb als erster in die Frist.
+    #
+    # Beide Werte sind **Obergrenzen, keine Ziele** — wer frueher fertig
+    # ist, kostet nicht mehr. Sie sind als Paar gesetzt und muessen es
+    # bleiben: 5120 Token liegen ueber dem beobachteten Maximum von 4176
+    # (kein Abschnitt mitten im Wort) und brauchen bei den gemessenen
+    # ~7,3 Token/s rund 700 s — mit Abstand innerhalb der Frist.
+    "recherche_zwischen": {
+        "temperature": 0.1,
+        "max_output_tokens": 5120,
+        "timeout_s": 1200,
+    },
     # `max_output_tokens` und `timeout_s` gehoeren zusammen und beide zum
     # offenen Kern-Prompt (11.08.2026). Er verlangt ausdruecklich Raum statt
     # Verdichtung; gemessen wurden 3288 Zeichen Profiltext gegen 667

@@ -7,6 +7,7 @@ Zwei Funktionen, zwei Modelle:
 
 import logging
 
+from config import get_node_config
 from services.model_services import BackgroundRequest, model_service
 
 logger = logging.getLogger("ki_server.agents.recherche")
@@ -68,13 +69,24 @@ def zwischen_destillieren(
     # services/pixie/dispatch.py via asyncio.to_thread → Worker-Thread ohne
     # Event-Loop → submit_sync. expect_json=False, da Fliesstext-Zusammen-
     # fassung. CJK-Guard bleibt im Worker.
+    #
+    # Die Frist steht an der Aufrufstelle und nicht am Worker, aus demselben
+    # Grund wie die Sampling-Parameter: Der Vorgabewert
+    # `MODEL_BACKGROUND_TIMEOUT_S = 300` gilt fuer **jeden** Hintergrund-
+    # Aufrufer, und dieser hier braucht eine andere Zahl als die neun
+    # uebrigen Aufrufstellen der Recherche — die liegen bei hoechstens 89 s,
+    # dieser bei einem Median von 181 s (gemessen am 16.08.2026). Die
+    # Begruendung der beiden Werte steht bei `recherche_zwischen` in
+    # `config.py`; sie gehoeren als Paar zusammen.
+    node_cfg = get_node_config("recherche_zwischen")
     try:
         response = model_service.background.submit_sync(BackgroundRequest(
-            messages    = [{"role": "user", "content": prompt}],
-            modus       = "analyse",
-            temperature = 0.1,
-            caller      = "recherche/zwischen",
-        ))
+            messages          = [{"role": "user", "content": prompt}],
+            modus             = "analyse",
+            temperature       = node_cfg.get("temperature", 0.1),
+            max_output_tokens = node_cfg.get("max_output_tokens"),
+            caller            = "recherche/zwischen",
+        ), timeout=node_cfg.get("timeout_s", 1200))
         zusammenfassung = response.text
         logger.info(f"Zwischen-Destillation: {len(zusammenfassung)} Zeichen")
         return zusammenfassung
