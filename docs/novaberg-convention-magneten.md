@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Convention — Drei-Achsen-Modell für die Bündelung von Erinnerungen
-**Stand:** 06. Mai 2026 (Chat 78), aktualisiert 16. Mai 2026 (Chat 88, Synapsen P3)
+**Stand:** 16. August 2026 (gegen den Code und den Bestand geprüft: die Regeln in §2, §3, §5–§8 halten; die **Befüllungstabelle in §4 war überholt** — P4 ist gelaufen). Davor: 06. Mai 2026 (Chat 78), aktualisiert 16. Mai 2026 (Chat 88, Synapsen P3)
 **Pfad:** novaberg/docs/novaberg-convention-magneten.md
 **Typ:** Convention
 **Voraussetzung:** M1 (Promotion-Doppelpipeline aufgelöst) ✅, M2 (Schema-Magneten ausgerollt) ✅
@@ -130,21 +130,29 @@ Status nach M2-Schema-Migration und M2.5a-Implementierung:
 
 | Speicher | entitaet_ids (n:m) | timeline_id (1:n) | themen (n:m) |
 |---|:---:|:---:|:---:|
-| `langzeitgedaechtnis` | INTEGER[] + GIN ✓ | INTEGER FK + BTREE ✓ | TEXT[] + GIN ✓ |
+| `lzg_knoten` (hieß `langzeitgedaechtnis`) | INTEGER[] + GIN ✓ | INTEGER FK + BTREE ✓ | TEXT[] + GIN ✓ |
 | `notizen` | INTEGER[] + GIN ✓ | INTEGER FK + BTREE ✓ | TEXT[] + GIN ✓ |
 | KZG (Redis) | TAG-Feld ✓ | NUMERIC-Feld ✓ | TAG-Feld ✓ (vorhanden) |
 | `timeline` | INTEGER[] (vorhanden, leer) | (selbst) | TEXT[] + GIN ✓ |
 | `fakten` | über `subjekt_id`/`objekt_id` (vorhanden) | — | — |
 
-**Befüllungs-Status (Stand Chat 88):**
+**Befüllungs-Status.**
 
-| Speicher | entitaet_ids | timeline_id | themen | Verhaltens-Flags |
-|---|:---:|:---:|:---:|:---:|
-| `langzeitgedaechtnis` | leer (P4) | leer (P4) | **befüllt seit M3 (Chat 84)** | — |
-| `notizen` | leer | leer | leer | — |
-| KZG (Redis) | **befüllt seit P3 (Chat 88)** | **befüllt seit P3 (Chat 88)** | befüllt (vor M2) | — |
-| `timeline` | leer (P4) | (selbst) | **befüllt seit M2.5a** | **befüllt seit M2.5a** |
-| `fakten` | (über Subject/Object-FK) | — | — | — |
+> ⚠ **Dieser Abschnitt beschreibt, er legt nicht fest.** Er wird nachgezogen, wenn sich der Bestand ändert. Die Regeln stehen in §2, §3 und §5 bis §8.
+
+`[gemessen]` — 16. August 2026:
+
+| Speicher | entitaet_ids | timeline_id | themen |
+|---|---|---|---|
+| `lzg_knoten` | **591 von 2271** (26 %) | **110 von 2271** (4,8 %) | 2096 von 2271 (92 %) |
+| `notizen` | 0 | 0 | 1 — *bei genau einer Zeile im Bestand* |
+| KZG (Redis) | Feld auf **60 von 60**, belegt auf **18** (30 %) | auf 1 von 60 | befüllt |
+| `timeline` | **0 von 55** | (selbst) | 55 von 55 |
+| `fakten` | (über Subject/Object-FK) | — | — |
+
+**Was sich gegenüber dem Stand von Chat 88 geändert hat:** Dort stand für das LZG *„leer (P4)"* in beiden Magnet-Spalten. **P4 ist gelaufen** — beide sind befüllt, und niemand hat es hier nachgetragen. Umgekehrt gilt *„`timeline.entitaet_ids` leer"* unverändert: 0 von 55, drei Monate später. Das ist derselbe Befund, den §1 schon als Ausgangslage nennt (*„Timeline hat Entitäts-Verknüpfung, aber leer"*).
+
+**Die niedrigen Quoten sind kein Mangel, sondern §3.** Magnete sind optional: Eine Äußerung ohne Eigennamen bekommt keine Entität, eine ohne Zeitbezug keinen Timeline-Anker. Im KZG ist das Feld deshalb auf **allen** Einträgen vorhanden und auf 30 % belegt — Anwesenheit und Belegung sind zwei verschiedene Aussagen, und nur die erste belegt, dass der Mechanismus läuft.
 
 Stand Chat 88: Der KZG-Schreibpfad trägt jetzt die Magnet-Auflösung pro Turn — Salience liefert
 `entitaeten_roh` und `zeitausdruck_roh`, der neue `magnete_aufloesen`-Node im KzgAgent-Subgraph
@@ -210,7 +218,7 @@ ein Eintrag?*
 | Klasse | Skopierung | Tabellen |
 |---|---|---|
 | **Welt-Referenz** | `user_id` global | `entitaeten` |
-| **Erlebnis-Wissen** | `(user_id, character_id)` paar-spezifisch | `langzeitgedaechtnis`, KZG, `timeline`, `notizen`, `fakten`, `dateien` |
+| **Erlebnis-Wissen** | `(user_id, character_id)` paar-spezifisch | `lzg_knoten`, KZG, `timeline`, `notizen`, `fakten` — ~~`dateien`~~ (**am 16.08.2026 geprüft: die Tabelle existiert nicht**; die Wissens-Bibliothek heißt `autonomous_wissen` und trägt heute keine Magnet-Spalten) |
 
 Begründung: Anna ist Anna — eine Entität existiert in der Welt, unabhängig
 davon, mit welchem Charakter Meister gerade spricht. Wenn morgen ein zweiter
@@ -315,3 +323,11 @@ nutzen dieselben Magnete.
 - M4.5: Substanz-Filter für Fakten
 - M5: Salienz-Pfad befüllt Magnete pro Turn
 - M7: Butler-Reflexion für lose Zettel
+
+---
+
+## Versionshistorie
+
+- **v0.3 — 16.08.2026:** Erstmals gegen Code **und Bestand** gehalten. **Die Regeln halten** — die drei Achsen mit ihren Kardinalitäten, die Optionalität, die Verhaltens-Flags, die Trennung Welt-Referenz/Erlebnis-Wissen, der Substanz-Filter. Auch die benannten Bauteile stehen: `magnete_aufloesen` liegt im KzgAgent-Subgraph, `agents/timeline/magneten.py` ist die einzige Quelle des `event_type → Magnete`-Mappings, `EVENT_TYPES_ERINNERUNGS_ANKER` existiert. **Die Befüllungstabelle in §4 war überholt, und zwar nach oben:** Für das LZG stand dort *„leer (P4)"*, gemessen sind 591 von 2271 Einträgen mit `entitaet_ids` und 110 mit `timeline_id` — P4 ist gelaufen, ohne dass es jemand nachgetragen hat. Unverändert gilt dagegen `timeline.entitaet_ids` = 0 von 55, derselbe Befund, den §1 als Ausgangslage nennt. Zwei Tabellennamen berichtigt: `langzeitgedaechtnis` heißt seit der Aufteilung `lzg_knoten`, und **`dateien` gibt es nicht**. §4 ist als beschreibend markiert.
+- **v0.2 — 16.05.2026, Chat 88:** Synapsen P3 — der KZG-Schreibpfad löst Magnete pro Turn auf.
+- **v0.1 — 06.05.2026, Chat 78:** Erstfassung, Drei-Achsen-Modell.
