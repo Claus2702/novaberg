@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Konzept — Event-Modell (Architektur-Evolution)
-**Stand:** 15. August 2026 (`gedanke_arousal` und sein **zweiter** Erzeuger, der Thinker-Retry); davor 1. August 2026, Chat 124 (Eingangs-Queue vor Pfad 1, Turn-Marker, fire-and-forget — Migrationsschritte 6 und 7 abgeschlossen). Kern: 21. April 2026, Chat 60
+**Stand:** 16. August 2026 (gegen den Code gehalten: alle benannten Mechanismen stehen; die Migrationsliste in §9.1 unterzeichnete den Stand, §9.3 ist **nicht** umgesetzt). Davor: 15. August 2026 (`gedanke_arousal` und sein **zweiter** Erzeuger, der Thinker-Retry); davor 1. August 2026, Chat 124 (Eingangs-Queue vor Pfad 1, Turn-Marker, fire-and-forget — Migrationsschritte 6 und 7 abgeschlossen). Kern: 21. April 2026, Chat 60
 **Pfad:** novaberg/docs/novaberg-convention-event-model.md
 **Typ:** Convention
 **Voraussetzung:** Session-Trennung (user_id × character_id), Chat 60 ✅
@@ -366,14 +366,20 @@ Pfad 1 (User) braucht auch den Lock für Perzeption + Salienz. Kontention minima
 
 Der Umbau kann schrittweise erfolgen:
 
-1. Event-Infrastruktur bauen (services/events.py)
-2. Dispatcher erweitern (Session-Turn schreiben)
-3. Pfad 1 als eigenen Graph extrahieren
-4. Pfad 2 als eigenen Graph extrahieren
-5. Event-Consumer bauen
+1. Event-Infrastruktur bauen (`services/events.py`) ✅
+2. Dispatcher erweitern (Session-Turn schreiben) ✅
+3. Pfad 1 als eigenen Graph extrahieren ✅ `graph/human_graph.py`
+4. Pfad 2 als eigenen Graph extrahieren ✅ `graph/character_graph.py`
+5. Event-Consumer bauen ✅ `services/event_consumer.py`
 6. chat.py umbauen (fire-and-forget) ✅ **01.08.2026**
 7. Client auf WebSocket-only umstellen ✅ **01.08.2026** — die Stufen von Pfad 1 gehen als `character_stage` über den WebSocket, der SSE-Kanal trägt nur noch die Bestätigung
-8. Aufräumen (nachbearbeitung.py, SSE, Annotate-Funktionen)
+8. Aufräumen (nachbearbeitung.py, SSE, Annotate-Funktionen) — **zwei von drei**
+
+> `[gemessen]` — 16.08.2026. **Die Liste unterzeichnete den Stand:** Die Schritte 1 bis 5 waren gebaut und trugen kein Häkchen. Sie tragen jetzt eines, mit der Datei daneben.
+>
+> **Von Schritt 8 sind zwei Teile erledigt:** `nachbearbeitung.py` existiert nicht mehr, und die Annotate-Funktionen sind entfallen — der Turn wird seit Chat 60 vollständig in einem Zug gespeichert, was §2 als Eigenschaft von Pfad 1 bereits beschreibt.
+>
+> **Der SSE-Rest steht:** `api/chat.py` liefert weiterhin eine `StreamingResponse` mit `media_type="text/event-stream"`. Schritt 7 ist als erledigt vermerkt (*Client auf WebSocket-only*) — der Server-Pfad daneben ist es nicht.
 
 Jeder Schritt ist testbar. Der alte Graph läuft parallel, bis der neue validiert ist.
 
@@ -384,6 +390,10 @@ Bereits umgebaut auf `session:{user_id}:{character_id}:turns` (Chat 60). Keine w
 ### 9.3 Pending-Agent-Flow
 
 Wandert von `pending_agent:{user_id}` (Redis-Key) ins Event-Payload. Das Event `awaiting_user` speichert den Agent-Kontext. Das nächste User-Event löst den Resume aus.
+
+> ⚠ **Am 16.08.2026 geprüft: nicht umgesetzt.** Der Redis-Schlüssel ist weiterhin der Träger, und er ist tief verdrahtet — **acht Dateien** lesen oder setzen ihn: `graph/nodes/planner.py`, `graph/nodes/router.py`, `services/event_consumer.py`, `services/shadow_delivery.py` und die Dispatches von vier Agenten.
+>
+> **Der Satz steht im Präsens und liest sich wie eine Beschreibung.** Er ist eine Absicht — festgehalten als `PENDING-AGENT-INS-PAYLOAD` in `novaberg-backlog.md`, damit er nicht länger wie ein Zustand aussieht.
 
 ---
 
