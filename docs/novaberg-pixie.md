@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Pixie — Hintergrundverarbeitung (Übersicht)
-**Stand:** 15. August 2026 (Riegel 1 **und Riegel 2** der Zustellung und ihr Protokoll je Zustellversuch; mit Riegel 2 ist die stündliche Decke gefallen); davor 29. Juli 2026, Chat 117 (`ziel_decay` läuft wieder — die Stilllegung galt einen halben Tag. Kern: Chat 113, Aging gegen das Verhungern periodischer Aufgaben)
+**Stand:** 16. August 2026 (gegen den Code geprüft: die beschriebene Idle-Umleitung auf das GPU-Modell existiert nicht — `pixie_llm_call`, `PIXIE_IDLE_SCHWELLE_SEKUNDEN` und `PIXIE_GPU_IDLE` kommen im Code nicht vor). Davor: 15. August 2026 (Riegel 1 **und Riegel 2** der Zustellung und ihr Protokoll je Zustellversuch; mit Riegel 2 ist die stündliche Decke gefallen); davor 29. Juli 2026, Chat 117 (`ziel_decay` läuft wieder — die Stilllegung galt einen halben Tag. Kern: Chat 113, Aging gegen das Verhungern periodischer Aufgaben)
 **Pfad:** novaberg/docs/novaberg-pixie.md
 **Quellen:** nova-05-k.md (Pixie-Konzept), nova-05-a.md (AgentGraph), nova-05-t-a.md (Queue/Stack/Delivery), nova-05-m-a.md (Agenten-Referenz)
 
@@ -170,9 +170,11 @@ Statisches Routing pro Workflow-Schritt: Analyse (Reasoning, JSON-Output) auf Qw
 
 ### GPU-Idle-Modus (Chat 79, PIX-GPU-IDLE)
 
-Wenn der User laenger als `PIXIE_IDLE_SCHWELLE_SEKUNDEN` (Default: 300) nicht gechattet hat, routet `pixie_llm_call` Sprach-Calls auf das GPU-Modell (`gemma4-gpu` auf Port 11434) statt auf das CPU-Modell. Analyse-Calls bleiben immer auf Qwen3-32B-CPU — die dichte 32B-Architektur liefert besseres Reasoning als Gemma4 mit 3.8B aktiven Parametern.
+> ⚠ **Am 16.08.2026 gegen den Code geprüft: Dieses Verfahren existiert nicht.** Weder `pixie_llm_call` noch `PIXIE_IDLE_SCHWELLE_SEKUNDEN` noch das Feature-Flag `PIXIE_GPU_IDLE` kommen im Code vor. Der Redis-Schlüssel `last_activity:{user_id}` **gibt es** — er wird von `prompt_consumer` gesetzt und von `shadow_delivery` als Timeout-Auslöser der Zustellung gelesen, nicht für eine Modellwahl. Ob die Idle-Umleitung auf das GPU-Modell entfernt oder nie gebaut wurde, ist aus dem Code nicht zu sehen; **beschrieben ist sie, vorhanden nicht.**
 
-Idle-Erkennung ueber bestehenden Redis-Key `last_activity:{user_id}` (gesetzt bei jedem Chat-Turn, TTL 7200s). Feature-Flag `PIXIE_GPU_IDLE` in `config.py`.
+~~Wenn der User laenger als `PIXIE_IDLE_SCHWELLE_SEKUNDEN` (Default: 300) nicht gechattet hat, routet `pixie_llm_call` Sprach-Calls auf das GPU-Modell (`gemma4-gpu` auf Port 11434) statt auf das CPU-Modell. Analyse-Calls bleiben immer auf Qwen3-32B-CPU — die dichte 32B-Architektur liefert besseres Reasoning als Gemma4 mit 3.8B aktiven Parametern.~~
+
+~~Idle-Erkennung ueber bestehenden Redis-Key `last_activity:{user_id}` (gesetzt bei jedem Chat-Turn, TTL 7200s). Feature-Flag `PIXIE_GPU_IDLE` in `config.py`.~~
 
 Kein Kollisionsrisiko: Pixie und Chat nutzen bei Idle dasselbe GPU-Modell (gemma4-gpu). Falls ein Chat-Turn waehrend eines Pixie-GPU-Calls eingeht, teilen sich beide die GPU fuer einen Call — danach faellt der naechste Pixie-Call zurueck auf CPU.
 

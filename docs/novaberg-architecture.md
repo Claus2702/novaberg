@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Systemarchitektur, Tech-Stack, Plugin-System
-**Stand:** 15. August 2026 (`services/pixie/riegel.py` und `memory/haltung.py` im Baum, `shadow_auftrag.arousal` in der Tabellenliste); davor 8. August 2026 (`novaberg-graph-rechenkette.md` im Dokumenten-Index Tiefe 1 ergänzt — das Register der 34 Rechensysteme des Charakter-Pfads, zerlegt entlang der Rechnungen statt entlang der Knoten. Zuvor: 31. Juli 2026, abends — `graph/nodes/haltung.py` im Verzeichnisbaum ergänzt, Knotenzahlen des CharacterGraph und des Node-Verzeichnisses neu gezählt — beide standen älter als der Verfasser da. Zuvor: `ei/haltung.py` im Verzeichnisbaum ergänzt und der Eintrag zum Haltungsraum im Dokumenten-Index auf das Beitragsmodell umgestellt — die Rechnung ist gebaut, der Knoten fehlt. Zuvor: `novaberg-node-verfasser_k.md` im Dokumenten-Index ergänzt — Konzept, nicht gebaut. Zuvor: `ruff-hart.toml` im Verzeichnisbaum ergänzt, §3 — die harte Teilmenge ohne geduldeten Bestand. Zuvor: `ruff.toml` im Verzeichnisbaum ergänzt, §3. Zuvor: Verzeichnisbaum nachgezogen — `ei/` vollständig, vier fehlende Agenten ergänzt. Kern: Chat 94, Microservice-Welle Block 2+3; Embedding-Modellwechsel Chat 107, §2.4)
+**Stand:** 16. August 2026 (gegen den Code geprüft: die Modelle kommen aus der **Connector-Tabelle**, nicht aus `OLLAMA_GPU_MODEL`/`OLLAMA_CPU_MODEL`; der Baum unter `memory/` nannte `embedding.py` und `lzg.py`, die es beide nicht gibt — §2.5 und §4 nachgezogen); davor 15. August 2026 (`services/pixie/riegel.py` und `memory/haltung.py` im Baum, `shadow_auftrag.arousal` in der Tabellenliste); davor 8. August 2026 (`novaberg-graph-rechenkette.md` im Dokumenten-Index Tiefe 1 ergänzt — das Register der 34 Rechensysteme des Charakter-Pfads, zerlegt entlang der Rechnungen statt entlang der Knoten. Zuvor: 31. Juli 2026, abends — `graph/nodes/haltung.py` im Verzeichnisbaum ergänzt, Knotenzahlen des CharacterGraph und des Node-Verzeichnisses neu gezählt — beide standen älter als der Verfasser da. Zuvor: `ei/haltung.py` im Verzeichnisbaum ergänzt und der Eintrag zum Haltungsraum im Dokumenten-Index auf das Beitragsmodell umgestellt — die Rechnung ist gebaut, der Knoten fehlt. Zuvor: `novaberg-node-verfasser_k.md` im Dokumenten-Index ergänzt — Konzept, nicht gebaut. Zuvor: `ruff-hart.toml` im Verzeichnisbaum ergänzt, §3 — die harte Teilmenge ohne geduldeten Bestand. Zuvor: `ruff.toml` im Verzeichnisbaum ergänzt, §3. Zuvor: Verzeichnisbaum nachgezogen — `ei/` vollständig, vier fehlende Agenten ergänzt. Kern: Chat 94, Microservice-Welle Block 2+3; Embedding-Modellwechsel Chat 107, §2.4)
 **Pfad:** novaberg/docs/novaberg-architecture.md
 **Quellen:** nova-00-a.md (Architektur-Übersicht), nova-07-a.md (Tech-Stack), nova-07-m-a.md (Plugin-System)
 
@@ -306,14 +306,16 @@ project/
 │   │       └── schreiben.py             #     Pfadwaechter + Modusbits (F-WISSEN-1); Lesepfad fehlt
 │   │
 │   ├── memory/                          # Gedaechtnis-Schicht
-│   │   ├── embedding.py                 #   Stub: EMBEDDING_DIM-Konstante (Logik in Block 1 → EmbedWorker migriert)
 │   │   ├── kzg.py                       #   Kurzzeitgedaechtnis (Redis, RediSearch-Index, Magnet-Felder P3)
-│   │   ├── lzg.py                       #   Langzeitgedaechtnis (PostgreSQL, Ebbinghaus)
+│   │   ├── lzg_knoten.py                #   Langzeitgedaechtnis: Knoten (PostgreSQL, Ebbinghaus)
+│   │   ├── lzg_kanten.py                #   Langzeitgedaechtnis: Kanten
 │   │   ├── pipeline_log.py              #   Forensik-Sink (Synapsen P1, asynchroner Writer-Task)
 │   │   ├── charakter.py                 #   Charakter-Hash (Read)
 │   │   ├── haltung.py                   #   Haltungsstand je Paar (Zustand, nicht Verlauf)
 │   │   ├── session.py                   #   Session (_session_key mit character_id, Chat 60)
 │   │   ├── kontext.py                   #   Session-Kontext-Extraktion (LLM-gestuetzt)
+│   │   ├── ziele.py                     #   Langfristige Ziele
+│   │   ├── utils.py                     #   Gemeinsame Helfer der Schicht
 │   │   ├── repositories/                #   Daten-Repositories (CRUD gegen PostgreSQL)
 │   │   │   ├── entitaeten_repository.py #     Knowledge Graph Nodes
 │   │   │   ├── fakten_repository.py     #     Knowledge Graph Edges (bi-temporal)
@@ -878,12 +880,28 @@ Alles Konfigurierbare lebt in `config.py`, gelesen aus Umgebungsvariablen mit De
 | Kategorie | Beispiele |
 |-----------|-----------|
 | Verbindungen | `OLLAMA_GPU_URL`, `OLLAMA_CPU_URL`, `POSTGRES_URL`, `REDIS_URL` |
-| Modelle | `OLLAMA_GPU_MODEL`, `OLLAMA_CPU_MODEL`, `EMBED_MODEL` |
-| Context | `OLLAMA_GPU_NUM_CTX` (16384), `OLLAMA_CPU_NUM_CTX` (32768) |
+| Modelle | `OLLAMA_CONNECTOR` (aktiv: `qwen36`), `EMBED_MODEL` — ~~`OLLAMA_GPU_MODEL`, `OLLAMA_CPU_MODEL`~~ existieren nicht mehr, siehe unten |
+| Context | `OLLAMA_GPU_NUM_CTX`, `OLLAMA_CPU_NUM_CTX` — **abgeleitet, nicht gesetzt** |
 | Pixie | `PIXIE_INTERVALL_MIN` (10), `PIXIE_PROMOTION_PRIORITAET` (0.9), `PIXIE_PROMOTION_INTERVALL_SEKUNDEN` (300), `PROMOTION_THRESHOLD` (0.8, in `memory/kzg.py` — Salienz-Schwelle, nicht in config.py) |
 | EI | `EMOTION_DECAY_FACTOR` (0.8), `EMOTION_DECAY_BASE` (10) |
 | Decay | `EBBINGHAUS_DECAY_RATE` (0.0015), `EBBINGHAUS_MIN_GEWICHT` (0.1) |
 | Namen | `ASSISTANT_NAME` ("Nova"), `BACKGROUND_NAME` ("Pixie") |
+
+> **Am 16.08.2026 gegen den Code geprueft: Die Modelle werden nicht mehr einzeln gesetzt.**
+>
+> `config.py` fuehrt eine **Connector-Tabelle** `OLLAMA_CONNECTORS` mit je einem Satz aus `gpu_model`, `gpu_num_ctx`, `cpu_model`, `cpu_num_ctx`, `analyse_model` und `analyse_num_ctx`. Eine einzige Umgebungsvariable waehlt aus:
+>
+> ```python
+> OLLAMA_CONNECTOR = os.getenv("OLLAMA_CONNECTOR", "qwen36")
+> _connector = OLLAMA_CONNECTORS[OLLAMA_CONNECTOR]
+> OLLAMA_MODEL          = _connector["gpu_model"]
+> SHADOW_MODEL          = _connector["cpu_model"]
+> PIXIE_ANALYSE_MODEL   = _connector["analyse_model"]
+> ```
+>
+> **Was daraus folgt und in der alten Tabelle nicht stand:** Modell und Kontextgroesse sind **zusammen** gewaehlt und koennen nicht einzeln verstellt werden — genau der Fehler, den getrennte Variablen erlauben (ein Modell mit dem Fenster eines anderen). Die Klammerwerte der Zeile `Context` waren deshalb ebenfalls falsch: `(16384)` ist der Wert des Connectors `mistral`, waehrend `qwen36` aktiv ist und 32768 fuehrt.
+>
+> Die drei Verbraucher heissen `OLLAMA_MODEL` (GPU), `SHADOW_MODEL` (CPU) und `PIXIE_ANALYSE_MODEL` (Analyse).
 | Zeitzonen | `TIMEZONE` ("Europe/Berlin") |
 | LLM-Backends | `WORKER_BACKEND_CHAT` (ollama_gpu), `WORKER_BACKEND_BG_ANALYSE`, `WORKER_BACKEND_BG_SPRACHE`, `ANTHROPIC_API_KEY`, `ANTHROPIC_MODEL`, `LLM_PROFILE` (lokal — nur noch ThinkingNormalizer-Schalter, siehe §2.5/§2.7) |
 | Web-Suche | `SEARXNG_URL` (http://searxng:8080), `SEARXNG_TIMEOUT` (10.0), `SEARXNG_MAX_RESULTS` (10) |

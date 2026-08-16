@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Technik Plutchik-Emotionsmodell (Oktagon, sektorabhängige Normalisierung, Arousal-Radius)
-**Stand:** 17. April 2026, Chat 52 (Code-Alignment)
+**Stand:** 16. August 2026 (gegen den Code geprüft: der Vorschlag, die drei Emotions-Sets abzuschaffen, ist **nicht ausgeführt** — und dabei kam eine zweite, kleinere `NEGATIVE_EMOTIONEN` im Zustelldienst zum Vorschein, die den Emotions-Riegel bedient; Fundliste 16.08.). Davor: 17. April 2026, Chat 52 (Code-Alignment)
 **Pfad:** novaberg/docs/novaberg-ei-plutchik.md
 **Quellen:** nova-04-t-a.md
 **Dateien:** `config.py` (Sektor-Map, Distanzmatrix, Exponenten), `graph/nodes/enricher.py` (Normalisierung), Perzeption-Prompt (16+1 Emotionen), `client/ui/emotionen_tab.py` (Oktagon-Radar)
@@ -419,6 +419,12 @@ def _emotion_zu_gruppe(emotion: str) -> str:
 ```
 
 Die drei separaten Sets `POSITIVE_EMOTIONEN`, `NEGATIVE_EMOTIONEN`, `NEUTRALE_EMOTIONEN` im Enricher entfallen. Eine Quelle der Wahrheit (die Sektor-Map) statt drei synchron zu haltende Listen.
+
+> ⚠ **Am 16.08.2026 gegen den Code geprüft: Der Vorschlag ist nicht ausgeführt, und die Hälfte davon ist ein Defekt.**
+>
+> `ei/utils.py` leitet `POSITIVE_EMOTIONEN` und `NEGATIVE_EMOTIONEN` tatsächlich aus `EMOTION_SEKTOR_MAP` und `SEKTOR_GRUPPE` ab — insofern ist die eine Quelle der Wahrheit da. `NEUTRALE_EMOTIONEN` gibt es nirgends; der Name in diesem Absatz ist der Grund, warum die Doku-Prüfung hier angeschlagen hat.
+>
+> **Was sie dabei gefunden hat, wiegt schwerer:** `services/shadow_delivery.py` schreibt **eine zweite** `NEGATIVE_EMOTIONEN` als Literal hin — vier Emotionen gegen die acht der abgeleiteten Menge. Es fehlen `enttaeuschung`, `stress`, `verzweiflung` und `wut`. Diese zweite Fassung bedient den Emotions-Riegel der Zustellung, also **genau die Entscheidung, bei negativer Stimmung zu schweigen** — und drei der vier fehlenden fallen dort auf *erlaubt* durch. Eingetragen in `novaberg-fundliste.md`.
 
 **Auswirkung auf `EI_PASSIV_NEGATIVE`:** Die passiv-negativen Emotionen, die im EI-Plausibilitäts-Gate den Modus `emotional` erzwingen, werden ebenfalls über den Sektor definiert: Sektor 5 (Trauer) erzwingt immer `emotional`, unabhängig vom Arousal. Die übrigen negativen Sektoren (6–8) erzwingen ab Mid-Arousal.
 
