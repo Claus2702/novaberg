@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** RechercheAgent — Web-Recherche für Pixie
-**Stand:** 19. April 2026, Chat 57 (Modell-Alignment auf aktiven Connector)
+**Stand:** 16. August 2026 (die Zwischen-Destillation traegt eine eigene Frist — §7; drei Angaben in §5 sind gemessen widerlegt und durchgestrichen statt entfernt. Zuvor: 19. April 2026, Chat 57 — Modell-Alignment auf aktiven Connector)
 **Pfad:** novaberg/docs/novaberg-pixie-research.md
 **Quellen:** nova-05-m-b.md, nova-05-k-b.md
 
@@ -108,16 +108,26 @@ Queue-Eintrag (aufgabe: recherche, thema: "...")
 
 ## 5. Zwischen-Destillation (RECH1-Fix)
 
-Max 5000 Zeichen pro Seite mal max 3 Seiten = 15.000 Zeichen pro Suchrunde. Bei 5 Iterationen ohne Komprimierung: 75.000 Zeichen — weit ueber dem CPU-Kontext (32768 Tokens).
+Max 5000 Zeichen pro Seite mal max 3 Seiten = 15.000 Zeichen pro Suchrunde. Bei 5 Iterationen ohne Komprimierung: 75.000 Zeichen — ~~weit ueber dem CPU-Kontext (32768 Tokens)~~.
 
-**Lösung:** Nach jeder Suchrunde die bisherigen Ergebnisse zu einer Zusammenfassung komprimieren (~500 Zeichen). Die nächste Runde bekommt die Zusammenfassung + die neuen Rohtexte. Token-Verbrauch bleibt konstant pro LLM-Call.
+**Lösung:** Nach jeder Suchrunde die bisherigen Ergebnisse zu einer Zusammenfassung komprimieren (~~~500 Zeichen~~). Die nächste Runde bekommt die Zusammenfassung + die neuen Rohtexte. ~~Token-Verbrauch bleibt konstant pro LLM-Call.~~
 
 ```
-Iteration 1: 3 Rohtexte → Zwischen-Destillation → Zusammenfassung (~500 Zeichen)
+Iteration 1: 3 Rohtexte → Zwischen-Destillation → Zusammenfassung
 Iteration 2: Zusammenfassung + 2 neue Rohtexte → Zwischen-Destillation → Zusammenfassung
 ...
 Iteration N: Zusammenfassung + neue Rohtexte → finale Zusammenfassung = Destillat
 ```
+
+> **Drei Angaben dieses Abschnitts sind gemessen widerlegt (16.08.2026).** Sie sind durchgestrichen statt entfernt, weil die Bauart auf ihnen steht.
+>
+> **Die Grenze.** Der Hintergrundpfad liest mit **262144** Token, nicht mit 32768. Die 75.000 Zeichen liegen damit bei rund einem Zehntel des Fensters statt darueber — der Schritt komprimiert verlustbehaftet gegen eine Grenze, die achtmal weiter weg ist als angenommen. Gefuehrt als `RECHERCHE-ZWISCHENDESTILLATION-OHNE-GRUND`, und die dort gestellte Frage steht weiter offen: **faellt der Schritt weg, oder steht seine Begruendung neu?**
+>
+> **Die Laenge.** Ueber 164 Laeufe in 24 h: Minimum **2161** Zeichen, Median **4122**, Maximum **9328**. **Kein einziger** lag unter 800. Der Prompt bittet um hoechstens 2000 Token und uebergab bis zum 16.08.2026 **kein `max_output_tokens`** — `num_predict` blieb ungesetzt, die Ausgabe unbegrenzt. Ein Prompt bittet; ein Parameter haelt.
+>
+> **Der konstante Verbrauch.** Er ist nicht konstant. Ausgabe-Token je Aufruf: Median **1330**, p90 **2425**, Maximum **4176**.
+>
+> **Was daraus folgte.** Bei den gemessenen ~7,3 Token/s auf dem CPU-Backend dauert der Aufruf im Median **181 s**, p90 **314 s**, maximal **638 s** — gegen eine Frist von 300 s, die der Aufruf nicht selbst nannte und deshalb vom Worker erbte. **24 von 190 Antworten (12 %) trafen nach dem Fristablauf ein**: Das Modell hatte geantwortet, der Aufrufer hatte aufgegeben. Seit dem 16.08.2026 traegt die Aufrufstelle ihre eigene Frist, siehe §7.
 
 ---
 
@@ -145,6 +155,22 @@ FERTIG wenn mindestens Prüfung 1 UND 2 erfüllt. Im Zweifel: FERTIG — lieber 
 | `PAGE_FETCH_MAX_CHARS` | 5000 | Max Zeichen pro Seite |
 | `PIXIE_ANALYSE_MODEL` | `qwen3-32b-cpu` | Reasoning/JSON-Output (über alle Connectors gleich) |
 | `SHADOW_MODEL` | `gemma4-cpu` (Connector `gemma4`, Default) bzw. `mistral-small3.2-cpu` (Connector `mistral`) | Fließtext/Deutsch |
+
+### Die Frist der Zwischen-Destillation (16.08.2026)
+
+**Zehn Aufrufstellen des Agenten rufen das Hintergrundmodell, und genau eine braucht eine eigene Frist.** Die uebrigen neun liegen bei hoechstens 89 s und sind mit dem Vorgabewert `MODEL_BACKGROUND_TIMEOUT_S = 300` bequem versorgt; `recherche/zwischen` liegt im Median bei 181 s und riss die Frist regelmaessig. Sie steht deshalb an der Aufrufstelle und nicht am Worker — derselbe Grund wie bei den Sampling-Parametern (`F-SAMPLING-1`): Der Vorgabewert gilt fuer **jeden** Hintergrund-Aufrufer.
+
+| Schlüssel in `NODE_LLM_CONFIG` | Wert | Herkunft |
+|---|---|---|
+| `recherche_zwischen.timeout_s` | 1200 | 1,9× über dem groessten gemessenen Lauf (638 s) |
+| `recherche_zwischen.max_output_tokens` | 5120 | über der groessten gemessenen Antwort (4176 Token) |
+| `recherche_zwischen.temperature` | 0.1 | unveraendert, vorher fest an der Aufrufstelle |
+
+**Beide Werte sind Obergrenzen, keine Ziele** — wer frueher fertig ist, kostet nicht mehr. Sie gehoeren als Paar zusammen und muessen es bleiben: 5120 Token brauchen bei den gemessenen ~7,3 Token/s rund 700 s und liegen damit mit Abstand innerhalb der Frist. Ein Deckel, der innerhalb der Frist nicht erreichbar waere, ist wirkungslos — die Frist schluege vorher zu.
+
+**Warum das mehr ist als eine Bequemlichkeit.** Ein Fehlversuch loescht den Queue-Eintrag nach drei Laeufen **hart** (`versuch_zaehlen` → `DELETE`), waehrend der Verfall ihn nur weich deaktiviert und weckbar laesst. Und die Fehlversuche trafen die Wichtigen: Über die 582 aktiven `recherche`-Einträge stieg die mittlere `salienz_roh` monoton mit der Zahl der Versuche — 0,867 bei null, 0,947 bei einem, **0,990 bei zwei**. Der Grund ist mechanisch: Der Wichtigste wird zuerst gezogen, hat das meiste Material und laeuft deshalb als erster in die Frist. Sechzehn Eintraege standen einen Fehllauf vor der Loeschung.
+
+Zeugen: `tests/test_recherche_frist.py` — zwei auf den Werten, einer auf ihrem Verhaeltnis, und zwei **am Syntaxbaum** darauf, dass die Aufrufstelle sie ueberhaupt liest. Der letzte Punkt ist der, der den Defekt gefunden haette: `NODE_LLM_CONFIG["recherche"]` existiert seit langem, ist vollstaendig — und hat **null Aufrufer**.
 
 **Genutzte Infrastruktur:**
 

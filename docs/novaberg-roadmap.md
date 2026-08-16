@@ -1,6 +1,6 @@
 # Novaberg — Roadmap (Projektchronik)
 
-**Stand:** Chat 144, 16. August 2026
+**Stand:** Chat 145, 16. August 2026
 *(Die Kopfzeile stand bis Chat 109 auf „Chat 93, 21. Mai 2026" — 15 Chats hinter dem Inhalt. **Sie ist danach erneut zurückgefallen:** von Chat 110 bis 114 blieb sie auf „Chat 109" stehen, während der Inhalt weiterwuchs, und wurde in Chat 115 nachgezogen. Wer hier etwas ergänzt, zieht die Kopfzeile mit — sie driftet zuverlässig. Achtung beim Nachschlagen: Nur bis Chat 97 trägt jeder Chat eine eigene `## Chat NNN`-Überschrift; die Chats 98–108 stehen als `###`-Abschnitte unter dem Chat-97-Block, benannt nach Sprint statt nach Chat.)*
 **Pfad:** novaberg/docs/novaberg-roadmap.md
 **Single Source of Truth für abgeschlossene Arbeit.**
@@ -1980,6 +1980,56 @@ Beide Räder haben eine Nabe — den Wert ohne jede Ausprägung — und das Erge
 > **Die Zahlen selbst stehen nicht hier.** Ein Charakter-Rad ist ein Charakterprofil; aus den Summanden sind mit der Züge-Tabelle die Einzelspeichen rückrechenbar. Wer die Messung nachvollziehen will, fährt sie gegen den eigenen Bestand — sie ist in zwei Aufrufen wiederholbar.
 
 **Geschlossen:** `Bauteil 3 — Charakter-Räder im Client` (Rest benannt, siehe Backlog)
+
+---
+
+## Chat 145 (16.08.2026) — Die Frist löschte die Wichtigsten, weil sie die Wichtigsten sind 🔶
+
+**Die Zwischen-Destillation der Recherche nannte keine eigene Frist** und erbte damit den Vorgabewert `MODEL_BACKGROUND_TIMEOUT_S = 300`, der für **jeden** Hintergrund-Aufrufer gilt. Gemessen über 24 h am laufenden System, 190 Antworten des Aufrufs `recherche/zwischen`:
+
+```
+Dauer            Median 181 s · p90 314 s · Maximum 638 s
+Ausgabe-Token    Median 1330  · p90 2425 · Maximum 4176
+Durchsatz        ~7,3 Token/s auf dem CPU-Backend
+
+24 von 190 Antworten (12 %) trafen NACH dem Fristablauf ein
+```
+
+**Die Antwort war jedes Mal da.** Das Modell hatte gerechnet und geliefert, nur hatte der Aufrufer schon aufgegeben — die Frist beendet allein das Warten, nicht die Ausführung. Der einzige serielle Platz blieb unterdessen belegt, und das Ergebnis wurde verworfen.
+
+### Der Befund liegt in der Auswahl, nicht im einzelnen Aufruf
+
+Ein Fehlversuch löscht den Queue-Eintrag nach drei Läufen **hart** (`versuch_zaehlen` → `DELETE`), während der Verfall ihn nur weich deaktiviert und weckbar lässt. Über die 582 aktiven `recherche`-Einträge:
+
+| `versuche` | n | ⌀ `salienz_roh` |
+|---|---|---|
+| 0 | 539 | 0,867 |
+| 1 | 27 | 0,947 |
+| 2 | **16** | **0,990** |
+
+**Monoton, keine Ausnahme.** Der Grund ist mechanisch: Der Wichtigste wird zuerst gezogen, hat das meiste Material, seine Zwischen-Destillation läuft am längsten — und läuft deshalb als erster in die Frist. Sechzehn Einträge standen einen Fehllauf vor der Löschung.
+
+> **Der Verfall wirft die Unwichtigen weich hinaus. Die Frist löschte die Wichtigsten hart.** Ein Eintrag, der an Bedeutungslosigkeit stirbt, ist weckbar; einer, der an einer Frist stirbt, ist fort.
+
+### Gebaut
+
+`NODE_LLM_CONFIG["recherche_zwischen"]` mit `timeout_s` **1200** (1,9× über dem größten gemessenen Lauf) und `max_output_tokens` **5120** (über der größten gemessenen Antwort), gelesen an der Aufrufstelle. Die Frist steht dort und nicht am Worker — derselbe Grund wie bei den Sampling-Parametern (`F-SAMPLING-1`).
+
+**Die beiden Werte sind ein Paar und keine zwei Einstellungen.** Ein Deckel, der innerhalb der Frist nicht erreichbar ist, ist wirkungslos; eine Frist ohne Deckel begrenzt nichts. Bis zum 16.08. übergab der Aufruf **kein** `max_output_tokens` — `num_predict` blieb ungesetzt und die Ausgabe unbegrenzt, während der Prompt um höchstens 2000 Token bat. Ein Prompt bittet, ein Parameter hält.
+
+**Umfang:** Suite 1494 → **1499 Tests**, grün, 0 übersprungen. Gegenprobe: Eingriff zurückgenommen → **5 von 5 rot**. Linter-Nulllinie unverändert (42 → 42 und 2 → 2), die neue Testdatei ohne Treffer, die harten Familien sauber.
+
+**Messung am laufenden System:** dieselbe Aufrufstelle um 13:12:29 UTC mit `Timeout: 300.0s`, um 13:17:43 UTC mit `Timeout: 1200.0s`.
+
+### Was der Zeuge kann, was ein Wertetest nicht kann
+
+Zwei der fünf Zeugen stehen **am Syntaxbaum** und prüfen, ob die Aufrufstelle die Konfiguration überhaupt **liest**. Das ist der Punkt, an dem der Defekt hing: `NODE_LLM_CONFIG["recherche"]` existiert seit langem, ist vollständig gefüllt — und hat **null Aufrufer**. Eine Konfiguration ohne Leser sieht in jedem Wertetest richtig aus.
+
+### Offen geblieben
+
+**Der Eintrag `RECHERCHE-ZWISCHENDESTILLATION-OHNE-GRUND` bleibt offen, und die Messung hat seine Frage schwerer gemacht.** Gebaut ist, dass der Schritt seine Frist *überlebt* — nicht, ob es ihn geben soll. Er erzeugt im Median 1330 Ausgabe-Token bei ~7,3 Token/s, kostet also rund drei Minuten je Iteration, während die Rohtexte, gegen die er komprimiert, mit ~19.000 Token bequem in das Fenster von 262144 passen. **Ein Wegfall wäre nicht nur verlustfrei, sondern schneller.** Das ist eine Absicht und keine Implementierungsfrage.
+
+Ebenfalls unberührt: der harte `DELETE` im Fehlversuchspfad, der die Auswahl gegen die Bauart des Verfalls stellt.
 
 ---
 
