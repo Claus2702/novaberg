@@ -6,6 +6,7 @@ Migriert aus: services/shadow_agent/tasks/charakter_hash.py
 
 import json
 import logging
+import time
 import uuid
 
 from agents.base import BaseAgent, AgentState, PeriodicTask
@@ -21,11 +22,13 @@ from config import (
     PIXIE_CHARAKTER_INTERVALL_SEKUNDEN,
     PIXIE_CHARAKTER_LZG_LIMIT,
     PIXIE_CHARAKTER_KZG_LIMIT,
+    PIXIE_CHARAKTER_KZG_LADEGRENZE_TAGE,
     PIXIE_ANALYSE_MODEL,
     get_node_config,
 )
 from tools.db_manager import db_manager
 from agents.charakter.destillation import (
+    zeitgewicht,
     kern_hash_destillieren,
     adaptive_hash_destillieren,
     intentions_profil_destillieren,
@@ -523,29 +526,96 @@ class CharakterAgent(BaseAgent):
         character_id:      str,
         beobachter_filter: str = "",
     ) -> list[dict]:
-        """Laedt KZG-Eintraege aus dem kanonischen Paar via SCAN.
+        """Laedt die staerksten KZG-Eintraege des kanonischen Paares.
 
-        Args:
-            user_id: Subjekt-ID des kanonischen Paares.
-            character_id: Charakter-ID des kanonischen Paares.
-            beobachter_filter: Wenn gesetzt, nur Eintraege mit diesem
-                Beobachter-Wert laden ('user' oder 'assistant').
-                Leerer String = kein Filter.
+        Vorbedingung: `user_id` und `character_id` bilden das kanonische Paar;
+            `beobachter_filter` ist 'user', 'assistant' oder leer.
+        Nachbedingung: hoechstens `PIXIE_CHARAKTER_KZG_LIMIT` Eintraege,
+            absteigend nach `salienz x zeitgewicht`. Leer heisst: kein
+            Material in der Ladegrenze, und der Aufrufer meldet es.
+
+        **Ausgewaehlt wird nach Staerke, nicht nach Fundreihenfolge.** Bis zum
+        16.08.2026 nahm diese Funktion die ersten 20, die `scan_iter` lieferte,
+        und brach ab. SCAN gibt keine Ordnung zu — gemessen am produktiven
+        Paar lagen die genommenen 20 auf den Zeitraengen 245 bis 2162 von
+        2202, im Mittel 18 Tage alt, fuer ein Profil mit der Frage "Was
+        beschaeftigt ihn gerade?".
+
+        Der Aufwand bleibt trotz vollstaendiger Ordnung klein, und zwar
+        beweisbar: Die Schluessel tragen ihren Zeitstempel, lassen sich also
+        ohne einen einzigen Redis-Zugriff sortieren. Wird absteigend gelesen,
+        faellt das Zeitgewicht monoton. Sobald es unter die schwaechste bereits
+        gewaehlte effektive Salienz sinkt, kann kein aelterer Eintrag mehr
+        aufholen — denn `salienz` ist durch 1 begrenzt, also
+        `salienz x gewicht <= gewicht`. Ab da wird nicht weitergelesen.
         """
-        eintraege: list[dict] = []
-        uebersprungen: int = 0
+        # ── Eingabe-Validierung ──
+        if beobachter_filter and beobachter_filter not in ("user", "assistant"):
+            raise ValueError(
+                f"_kzg_laden: unbekannte Perspektive '{beobachter_filter}' — "
+                f"erlaubt sind 'user', 'assistant' oder leer"
+            )
 
-        for key in redis_client.scan_iter(match=f"kzg:{user_id}:{character_id}:*", count=100):
+        jetzt: float = time.time()
+        praefix: str = f"kzg:{user_id}:{character_id}:"
+
+        # ── Schluessel in Zeitordnung bringen (ohne Redis-Zugriff) ──
+        datiert:   list[tuple[float, str]] = []
+        undatiert: list[str] = []
+        for key in redis_client.scan_iter(match=f"{praefix}*", count=100):
             if isinstance(key, bytes):
                 key = key.decode("utf-8")
+            marke: str = key.rsplit(":", 1)[-1]
+            try:
+                # Der Schluessel fuehrt Millisekunden, `erstellt_am` Sekunden.
+                datiert.append((float(marke) / 1000.0, key))
+            except ValueError:
+                # Kein Grund zum Verwerfen: Der Schluessel ist nur die
+                # Sortierhilfe, massgeblich ist `erstellt_am` aus dem Hash.
+                undatiert.append(key)
 
-            # Beobachter-Filter: nur Eintraege der gewuenschten Perspektive
+        datiert.sort(reverse=True)
+        if undatiert:
+            logger.warning(
+                f"CharakterAgent: {len(undatiert)} KZG-Schluessel ohne lesbare "
+                f"Zeitmarke unter '{praefix}' — sie werden zusaetzlich geprueft"
+            )
+
+        # Ein Schluessel ohne lesbare Marke gilt als frisch und wird zuerst
+        # geprueft: Lieber einmal zuviel geladen als eine Zeile uebersehen,
+        # deren wahres Alter erst im Hash steht.
+        kandidaten: list[tuple[float, str]] = [(jetzt, k) for k in undatiert] + datiert
+
+        # ── Kandidaten sammeln, staerkster zuerst ──
+        gewaehlt:      list[tuple[float, dict]] = []
+        fremde_sicht:  int = 0
+        gelesen:       int = 0
+        zu_alt:        int = 0
+        ohne_themen:   int = 0
+        abgebrochen:   bool = False
+
+        for position, (zeit, key) in enumerate(kandidaten):
+            alter_tage: float = (jetzt - zeit) / 86400
+
+            if alter_tage > PIXIE_CHARAKTER_KZG_LADEGRENZE_TAGE:
+                # Zeitsortiert: ab hier ist alles Weitere aelter.
+                zu_alt = len(kandidaten) - position
+                break
+
+            gewicht: float = zeitgewicht(alter_tage)
+
+            # Der Beweis-Abbruch. `gewicht` ist die Obergrenze jeder
+            # effektiven Salienz, die hier noch entstehen kann.
+            if len(gewaehlt) >= PIXIE_CHARAKTER_KZG_LIMIT and gewicht <= gewaehlt[-1][0]:
+                abgebrochen = True
+                break
+
             if beobachter_filter:
-                eintrag_beobachter: str = _hget(redis_client, key, "beobachter")
-                if eintrag_beobachter != beobachter_filter:
-                    uebersprungen += 1
+                if _hget(redis_client, key, "beobachter") != beobachter_filter:
+                    fremde_sicht += 1
                     continue
 
+            gelesen += 1
             eintrag: dict = {
                 # Der Schluessel wandert mit. Ueber ihn findet das
                 # Beziehungsprofil via `verbindung` zurueck zum Wortlaut des
@@ -562,17 +632,51 @@ class CharakterAgent(BaseAgent):
                 "beziehungs_dynamik": _hget(redis_client, key, "beziehungs_dynamik"),
                 "tone":               _hget(redis_client, key, "tone"),
             }
-            eintraege.append(eintrag)
 
-            if len(eintraege) >= PIXIE_CHARAKTER_KZG_LIMIT:
-                break
+            # Ein Eintrag ohne Themenfeld kann im Adaptiv-Prompt nicht landen —
+            # die Destillation verwirft ihn. Er darf deshalb keinen der zwanzig
+            # Plaetze belegen. Gemessen am 16.08.2026: Unter den juengsten
+            # `assistant`-Eintraegen tragen nur 70 % ein Themenfeld, unter den
+            # `user`-Eintraegen 100 %; ohne diesen Filter waehlt die Auswahl
+            # gerade fuer Nova Plaetze, die garantiert leer bleiben.
+            # Das Beziehungsprofil verliert dadurch nichts: Es liest den
+            # Wortlaut ueber `_key`, nicht die Themen.
+            if not eintrag["themen"].strip():
+                ohne_themen += 1
+                continue
 
-        if beobachter_filter:
-            logger.info(
-                f"CharakterAgent: KZG geladen fuer Paar ({user_id}, {character_id}) — "
-                f"{len(eintraege)} Eintraege (beobachter={beobachter_filter}, "
-                f"{uebersprungen} uebersprungen)"
+            # Massgeblich ist `erstellt_am`, nicht die Marke im Schluessel.
+            echtes_alter: float = (jetzt - float(eintrag["erstellt_am"] or 0)) / 86400
+            effektive_salienz: float = (
+                float(eintrag["salienz"] or 0) * zeitgewicht(echtes_alter)
             )
+
+            gewaehlt.append((effektive_salienz, eintrag))
+            gewaehlt.sort(key=lambda paar: paar[0], reverse=True)
+            del gewaehlt[PIXIE_CHARAKTER_KZG_LIMIT:]
+
+        eintraege: list[dict] = [eintrag for _, eintrag in gewaehlt]
+
+        # ── Ausgabe-Verifikation ──
+        if len(eintraege) > PIXIE_CHARAKTER_KZG_LIMIT:
+            raise ValueError(
+                f"_kzg_laden: {len(eintraege)} Eintraege bei Limit "
+                f"{PIXIE_CHARAKTER_KZG_LIMIT} — die Kuerzung hat nicht gegriffen"
+            )
+
+        spanne: str = "leer"
+        if eintraege:
+            alter = [(jetzt - float(e["erstellt_am"] or 0)) / 86400 for e in eintraege]
+            spanne = f"{min(alter):.1f} bis {max(alter):.1f} Tage"
+
+        logger.info(
+            f"CharakterAgent: KZG gewaehlt fuer Paar ({user_id}, {character_id}) — "
+            f"{len(eintraege)} von {gelesen} gelesenen, Alter {spanne} "
+            f"(beobachter={beobachter_filter or 'alle'}, "
+            f"{fremde_sicht} fremde Perspektive, {zu_alt} ueber der Ladegrenze, "
+            f"{ohne_themen} ohne Themen, "
+            f"Abbruch durch Gewichtsschranke: {'ja' if abgebrochen else 'nein'})"
+        )
 
         return eintraege
 

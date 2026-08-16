@@ -415,6 +415,31 @@ PIXIE_CHARAKTER_INTERVALL_SEKUNDEN:  int   = int(os.getenv("PIXIE_CHARAKTER_INTE
 PIXIE_CHARAKTER_LZG_LIMIT:          int   = int(os.getenv("PIXIE_CHARAKTER_LZG_LIMIT", "50"))
 PIXIE_CHARAKTER_KZG_LIMIT:          int   = int(os.getenv("PIXIE_CHARAKTER_KZG_LIMIT", "20"))
 
+# Halbwertszeit des Zeitgewichts, mit dem die KZG-Eintraege des Adaptiv-Hash
+# ausgewaehlt werden. Sie ist kein Geschmackswert: In einer Auswahl wirkt ein
+# Zeitfaktor nur ueber die Ordnung, und die Halbwertszeit bestimmt genau eine
+# Groesse — wieviel Salienz-Vorsprung ein aelterer Eintrag braucht, um einen
+# juengeren zu ueberholen (Faktor 2^(dt/T)). Mit der am 16.08.2026 gemessenen
+# Salienzspanne von 1.49 (0.67 bis 1.00) ergibt T=1.7 ein Wirkfenster von 0.98
+# Tagen: Innerhalb einer Gespraechssitzung ordnet die Salienz, zwischen
+# Sitzungen die Zeit.
+#
+# Der Wert ist die am 16.08.2026 gemessene mittlere Gespraechsluecke des
+# produktiven Paares (12 belegte Tage, Luecken 1 bis 7, Mittel 1.7).
+# Nachmessvorschrift: mittlerer Abstand zwischen belegten Kalendertagen der
+# KZG-Eintraege mit beobachter='user'.
+PIXIE_CHARAKTER_ADAPTIV_HALBWERTSZEIT_TAGE: float = float(
+    os.getenv("PIXIE_CHARAKTER_ADAPTIV_HALBWERTSZEIT_TAGE", "1.7")
+)
+
+# Aelter als das wird gar nicht erst geladen. Bis zum 16.08.2026 war dieselbe
+# Zahl eine reine Gewichtskante in der Destillation — sie warf Eintraege still
+# weg, nachdem sie geladen waren. Als Ladegrenze begrenzt sie stattdessen den
+# Aufwand der Auswahl, und der Verwurf wird gezaehlt.
+PIXIE_CHARAKTER_KZG_LADEGRENZE_TAGE: int = int(
+    os.getenv("PIXIE_CHARAKTER_KZG_LADEGRENZE_TAGE", "30")
+)
+
 # --- Pixie Agent: Wiedervorlage ---
 PIXIE_WIEDERVORLAGE_PRIORITAET:          float = float(os.getenv("PIXIE_WIEDERVORLAGE_PRIORITAET", "0.5"))
 PIXIE_WIEDERVORLAGE_INTERVALL_SEKUNDEN:  int   = int(os.getenv("PIXIE_WIEDERVORLAGE_INTERVALL_SEKUNDEN", "43200"))  # 12 Stunden

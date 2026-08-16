@@ -17,6 +17,7 @@ from config import (
     ASSISTANT_USER_ID,
     DEFAULT_USER_ID,
     get_node_config,
+    PIXIE_CHARAKTER_ADAPTIV_HALBWERTSZEIT_TAGE,
     RAD_NABE,
     RAD_MIN,
     RAD_MAX,
@@ -29,6 +30,77 @@ from services.model_services import model_service, BackgroundRequest
 from tools.db_manager import db_manager
 
 logger = logging.getLogger("ki_server.agents.charakter.destillation")
+
+
+# ─────────────────────────────────────────────
+# Zeitgewicht des Adaptiv-Hash
+# ─────────────────────────────────────────────
+# Eine Quelle fuer Auswahl und Beschriftung. Bis zum 16.08.2026 rechnete nur
+# die Destillation ein Gewicht — und schrieb es als Zahl in den Prompt, ohne
+# dass es die Auswahl beruehrte. Die Auswahl nahm, was SCAN zuerst lieferte.
+# Gemessen am produktiven Paar: 12 von 19 Eintraegen im Prompt waren 15 bis 20
+# Tage alt und trugen ein Gewicht unter 0.09.
+
+
+def zeitgewicht(alter_tage: float) -> float:
+    """Gewicht eines KZG-Eintrags nach seinem Alter — stetig, ohne Kante.
+
+    Vorbedingung: `alter_tage` ist nicht negativ. Ein negativer Wert hiesse,
+        der Eintrag stammt aus der Zukunft; er wird auf 0 geklemmt, weil ein
+        Gewicht ueber 1 die Ordnung gegen jede juengere Zeile kippen wuerde.
+    Nachbedingung: Ergebnis in (0, 1]. 1.0 bei Alter 0, 0.5 nach einer
+        Halbwertszeit; streng monoton fallend, nirgends springend.
+
+    Die Form ist die kanonische Verfallsform des Systems — dieselbe wie in
+    `memory/ziele.py` (`exp(-ln2/HWZ * t)`) und `memory/lzg_knoten.py`. Die
+    abgeloeste Fassung setzte drei Stuecke aneinander (konstant, linear,
+    exponentiell) und sprang dabei bei genau einem Tag von 1.00 auf 0.80: Zwei
+    Eintraege, die eine Minute trennte, unterschieden sich um ein Fuenftel.
+    """
+    # ── Eingabe-Validierung ──
+    if alter_tage < 0:
+        logger.warning(
+            f"zeitgewicht: negatives Alter {alter_tage:.4f} Tage — "
+            f"auf 0 geklemmt (Eintrag aus der Zukunft?)"
+        )
+        alter_tage = 0.0
+
+    if PIXIE_CHARAKTER_ADAPTIV_HALBWERTSZEIT_TAGE <= 0:
+        raise ValueError(
+            f"zeitgewicht: Halbwertszeit "
+            f"{PIXIE_CHARAKTER_ADAPTIV_HALBWERTSZEIT_TAGE} Tage ist nicht "
+            f"positiv — ohne sie hat der Verfall keine Skala"
+        )
+
+    # ── Verarbeitung ──
+    zerfallsrate: float = math.log(2) / PIXIE_CHARAKTER_ADAPTIV_HALBWERTSZEIT_TAGE
+    gewicht: float = math.exp(-zerfallsrate * alter_tage)
+
+    # ── Ausgabe-Verifikation ──
+    if not 0.0 < gewicht <= 1.0:
+        raise ValueError(
+            f"zeitgewicht: Gewicht {gewicht} liegt ausserhalb (0, 1] bei "
+            f"Alter {alter_tage} Tagen — die Ordnung waere nicht mehr gueltig"
+        )
+
+    return gewicht
+
+
+def alterszone(alter_tage: float) -> str:
+    """Benennt das Alter fuer den Prompt — AKUT, PHASE oder TREND.
+
+    Vorbedingung: `alter_tage` ist eine Zahl; negative gelten als frisch.
+    Nachbedingung: einer der drei Namen, die `ADAPTIVE_HASH_PROMPT` erklaert.
+
+    Die Zone beschreibt **wie alt**, das Gewicht **wie stark**. Bis zum
+    16.08.2026 war beides dasselbe Stueckwerk, und die Kante zwischen zwei
+    Zonen war zugleich ein Sprung im Gewicht.
+    """
+    if alter_tage <= 1:
+        return "AKUT"
+    if alter_tage <= 7:
+        return "PHASE"
+    return "TREND"
 
 
 # ─────────────────────────────────────────────
@@ -465,38 +537,44 @@ def adaptive_hash_destillieren(kzg_eintraege: list[dict], user_id: str = DEFAULT
 
     jetzt: float = time.time()
     zonen_eintraege: list[str] = []
+    ohne_themen: int = 0
 
     for eintrag in kzg_eintraege:
         themen: str = eintrag.get("themen", "")
         if not themen:
+            # Frueher ein stilles `continue`: Der Aufrufer sah 20 geladene
+            # Eintraege und wusste nicht, dass weniger im Prompt landeten.
+            ohne_themen += 1
             continue
 
         inhalt:   str   = eintrag.get("inhalt", "")
         salienz:  float = float(eintrag.get("salienz", 0))
         erstellt: float = float(eintrag.get("erstellt_am", 0))
 
-        alter_sekunden: float = jetzt - erstellt
-        alter_tage:     float = alter_sekunden / 86400
+        alter_tage: float = (jetzt - erstellt) / 86400
 
-        if alter_tage <= 1:
-            zone:    str   = "AKUT"
-            gewicht: float = 1.0
-        elif alter_tage <= 7:
-            zone    = "PHASE"
-            gewicht = 0.8 - (0.6 * (alter_tage - 1) / 6)
-        elif alter_tage <= 30:
-            zone    = "TREND"
-            gewicht = 0.2 * math.exp(-0.1 * (alter_tage - 7))
-        else:
-            continue
-
+        gewicht:           float = zeitgewicht(alter_tage)
         effektive_salienz: float = salienz * gewicht
 
         zonen_eintraege.append(
-            f"[{zone}] (Salienz: {effektive_salienz:.2f}) {themen}: {inhalt}"
+            f"[{alterszone(alter_tage)}] (Salienz: {effektive_salienz:.2f}) "
+            f"{themen}: {inhalt}"
         )
 
+    # Die Zahl gehoert in den Verlauf, nicht nur ins Ergebnis: Ohne sie ist
+    # "wenig Material" von "viel Material, davon das meiste verworfen" nicht
+    # zu unterscheiden.
+    logger.info(
+        f"Adaptive-Hash ({user_id}): {len(zonen_eintraege)} von "
+        f"{len(kzg_eintraege)} Eintraegen im Prompt, "
+        f"{ohne_themen} ohne Themen verworfen"
+    )
+
     if not zonen_eintraege:
+        logger.error(
+            f"Adaptive-Hash ({user_id}): kein einziger von "
+            f"{len(kzg_eintraege)} Eintraegen war brauchbar — Profil bleibt leer"
+        )
         return ""
 
     perspektive: dict[str, str] = _perspektive_aufloesen(user_id)

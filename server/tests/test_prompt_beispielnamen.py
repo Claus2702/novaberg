@@ -50,6 +50,9 @@ KEINE_NAMEN: frozenset[str] = frozenset({
                     # begruendet wird (F-WISSEN-1). Sie steht in beiden
                     # Schreibweisen im Bestand und wiederholt sich in jedem
                     # Dokument und jeder Datei zur Bibliothek.
+    "Salienz",      # "aus Salienz und Zeitgewicht" — die Auswahlgroesse des
+                    # Adaptiv-Hash. Der Ausdruck steht ueberall dort, wo eine
+                    # Rangfolge ueber KZG-Eintraege beschrieben wird.
 })
 
 # Einfuehrungs-Konstruktionen. Erweitern, wenn ein Beispiel eine neue braucht.
