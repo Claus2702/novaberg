@@ -1983,6 +1983,51 @@ Beide Räder haben eine Nabe — den Wert ohne jede Ausprägung — und das Erge
 
 ---
 
+## Chat 145 (16.08.2026) — Das oberste Band war leer, und niemand wusste es ✅
+
+**Ein Rückwärtsgang durch die Chronik statt eines Baus.** Die Frage war, welche Umbauphasen offen liegen und wo es weitergeht. Die Antwort steht in `novaberg-backlog.md`: **Band A trug zwei Einträge, und beide waren erledigt, bevor sie dort standen.**
+
+| Eintrag | Abhilfe gebaut | in Band A geführt |
+|---|---|---|
+| `PROMOTION-FENSTER-LAEUFT-AB-STATT-LEER` | 09.08.2026 | stand bereits, Marke nie gezogen |
+| `REIHE-GEWICHTET-ZEILEN-STATT-ERHEBUNGEN` | **01.08.2026** | **11.08.2026** — zehn Tage nach der Abhilfe |
+
+### Der erste: die Ursache war widerlegt, die Marke blieb
+
+Der Eintrag stand seit dem 08.08. an der Spitze. Seine Ursache — ein ablaufendes Promotionsfenster, das die Warteschlange löscht — war am 09.08. am Code widerlegt: Der Agent leert die Queue vollständig, die 300 s sind sein Takt, gelöscht wird nichts. Die **echte** Ursache war Konkurrenz um den einen Pixie-Platz, und die Zwei-Spuren-Trennung vom selben Tag hat sie beseitigt.
+
+**Nachgemessen am Bestand statt am Zeugen, sieben Tage später:**
+
+```
+Paar        KZG    LZG    Verhaeltnis
+konrad       88     69      0,78     (der Defektbeleg nannte: 1 Knoten)
+mehmet       98     59      0,60
+sarah        92     51      0,55
+leon         89     50      0,56
+hartmut      95     48      0,51
+meister    2203   2005      0,91     letzter Knoten: heute
+```
+
+Fünf Personas mit vergleichbaren Bögen tragen vergleichbare Mengen — Spanne 48 bis 69 gegen KZG-Stände von 88 bis 98. **Das Symptom ist widerlegt, nicht nur die Ursache.** Über zwei Stunden gewann die Promotion 22-mal die CPU-Spur und fand jedes Mal eine leere Queue; in Redis existieren weder `queue:meister` noch `queue:meister:arbeit`.
+
+### Der zweite: die Abhilfe war zehn Tage älter als der Eintrag
+
+`reihe_laden` gruppiert seit `837d6df` vom **01.08.2026, 16:13** nach `erhebung_id` und zieht die Läufe einer Erhebung mit `rad_zusammenfassen_gleichgewichtig` zusammen — *ohne Verfall, alle gleich alt*. Der Kommentar im Code trägt denselben Satz wie der Backlog-Eintrag: **„Das Fenster zählt Erhebungen, nicht Zeilen."** Bezeugt ist es ebenfalls, mit zwei Zeugen, die den Fall wörtlich beschreiben; 28 Tests grün.
+
+### Was daraus für das Verfahren folgt
+
+Die Rangordnung sagt selbst: *„Das Band wird beim **Lesen** vergeben, nicht beim Anlegen."* Gelesen wurde der **Eintrag** — und ein Eintrag beschreibt den Code von damals. Die Pflicht, ihn gegen heute zu halten, greift bisher erst **vor der Umsetzung**; dazwischen liegt die ganze Zeit, in der das Band steuert.
+
+> **Ein Rang wird gegen den Code vergeben, nicht gegen den Eintrag.** Ein erledigter Eintrag an der Spitze verstellt die Sicht auf alles darunter, und er tut es lautlos: Er sieht aus wie Arbeit, die niemand anfasst, statt wie Arbeit, die es nicht gibt.
+
+Der Aufwand dagegen ist klein und steht im Eintrag selbst — er nennt Bezeichner, und ein `git log -S` darauf beantwortet die Frage.
+
+**Band A ist damit leer** und wird im nächsten Durchgang aus den ungebänderten Einträgen neu gefüllt, diesmal gegen den Code.
+
+**Kein Code geändert.** Suite unberührt bei 1499 grün.
+
+---
+
 ## Chat 145 (16.08.2026) — Die Frist löschte die Wichtigsten, weil sie die Wichtigsten sind 🔶
 
 **Die Zwischen-Destillation der Recherche nannte keine eigene Frist** und erbte damit den Vorgabewert `MODEL_BACKGROUND_TIMEOUT_S = 300`, der für **jeden** Hintergrund-Aufrufer gilt. Gemessen über 24 h am laufenden System, 190 Antworten des Aufrufs `recherche/zwischen`:

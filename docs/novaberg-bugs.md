@@ -864,7 +864,7 @@ Drei Defekte, die am 08.08.2026 in der Fundliste standen und bei der Klassifizie
 
 **Priorität.** Mittel. Seit `F-LAGE-1` kostet eine 0 nicht mehr die Landschafts-Ablesung, sondern nur noch das Vorausdenken. Die Kante bleibt trotzdem eine ungenannte Regel an einem Tor.
 
-#### PROMOTION-FENSTER-LAEUFT-AB-STATT-LEER — das Langzeitgedächtnis einer Messreihe ist ausgewürfelt 🔧 offen
+#### PROMOTION-FENSTER-LAEUFT-AB-STATT-LEER — das Langzeitgedächtnis einer Messreihe ist ausgewürfelt ✅ behoben
 
 **Symptom.** Zwei Personas mit gleich langen Bögen tragen danach völlig verschiedene Mengen an Langzeitwissen, ohne dass ihre Gespräche sich entsprechend unterscheiden.
 
@@ -892,7 +892,7 @@ Drei Defekte, die am 08.08.2026 in der Fundliste standen und bei der Klassifizie
 
 **Dabei fiel eine zweite Hälfte des Defekts an, die niemand gesucht hatte:** Ein Lauf, in dem *jeder* Eintrag scheiterte, meldete `debug: „Queue leer — nichts zu tun"` — der Zweig unterschied nicht zwischen *nichts da* und *alles kaputt*, und die Zahl, die es unterscheidet, stand in derselben Funktion. Die Meldung nennt jetzt alle vier Größen auf `info`.
 
-**Offen ist der Engpass.** 71 wartende Aufträge sind jetzt **sichtbar** statt still gelöscht — auswertbar ist der Gedächtnisstand deshalb noch nicht. Das ist `PIXIE-EIN-SLOT-BLOCKIERT-ALLES`, und die Reihe ist bis dahin nicht fahrbar: Siebzehn weitere Bögen ergäben siebzehn Personas mit je etwa einem Knoten.
+~~**Offen ist der Engpass.**~~ → **am selben Tag geschlossen** (siehe unten, zwei Spuren). 71 wartende Aufträge sind jetzt **sichtbar** statt still gelöscht — auswertbar ist der Gedächtnisstand deshalb noch nicht. Das ist `PIXIE-EIN-SLOT-BLOCKIERT-ALLES`, und die Reihe ist bis dahin nicht fahrbar: Siebzehn weitere Bögen ergäben siebzehn Personas mit je etwa einem Knoten.
 
 **Was der Eintrag über Bug-Einträge zeigt.** Er benannte die Wirkung präzise und die Ursache plausibel — und die plausible Ursache hätte zu einem Umbau geführt, der nichts behoben hätte (ein Fenster, das es nicht gibt, zum Leerlaufen zu bringen). **Vor der Umsetzung eines Eintrags wird nicht seine Abhilfe gebaut, sondern seine Ursache nachgemessen.**
 
@@ -914,7 +914,26 @@ Die Promotion konkurrierte um denselben Platz wie die Recherche, obwohl sie eine
 
 **Ein Rest bleibt, klein und systematisch:** Die drei am Ende sind der Schwanz zwischen dem letzten Takt und dem Zurückschalten auf das produktive Paar. Ab da bedient der Heartbeat die Persona nicht mehr, und diese drei werden nie promotet. Das trifft jede Persona in zufälliger Höhe. **Die Abhilfe gehört ins Messrig, nicht hierher:** Es wartet vor dem Zurückschalten, bis die Queue leer ist — was erst jetzt baubar ist, weil Warten gegen Verhungern nicht half.
 
-**Band A** (Rangordnung in `novaberg-backlog.md`, Reihe 1). Hoch für jede Messreihe, die Arme vergleicht. Ohne die Abhilfe trägt jeder gepaarte Vergleich auf diesem Korpus einen unbeobachteten Störfaktor.
+~~**Band A** (Rangordnung in `novaberg-backlog.md`, Reihe 1). Hoch für jede Messreihe, die Arme vergleicht. Ohne die Abhilfe trägt jeder gepaarte Vergleich auf diesem Korpus einen unbeobachteten Störfaktor.~~
+
+### ✅ Nachgemessen am 16.08.2026 — die Abhilfe hält nach sieben Tagen
+
+**Der Beleg vom 09.08. stammt aus dem Bogen, an dem gebaut wurde.** Das ist der gebaute Weg; diese Prüfung geht quer dazu — sie fragt den **Bestand** statt den Zeugen, sieben Tage und einen laufenden Produktivbetrieb später.
+
+| Paar | KZG-Schlüssel | LZG-Knoten | Verhältnis |
+|---|---|---|---|
+| `konrad` | 88 | **69** | 0,78 |
+| `mehmet` | 98 | 59 | 0,60 |
+| `sarah` | 92 | 51 | 0,55 |
+| `leon` | 89 | 50 | 0,56 |
+| `hartmut` | 95 | 48 | 0,51 |
+| `meister` (produktiv) | 2203 | 2005 | 0,91 |
+
+**Das Symptom ist damit widerlegt, nicht nur die Ursache.** Der Eintrag beschrieb *„völlig verschiedene Mengen an Langzeitwissen bei gleich langen Bögen"* und belegte es mit `konrad`: ein einziger Knoten. Konrad trägt heute **69**, und die fünf Personas liegen zwischen 48 und 69 — eine Spanne, die zur Spanne ihrer KZG-Stände passt (88 bis 98).
+
+**Dazu der Betrieb statt der Suite:** Über zwei Stunden am 16.08.2026 gewann die Promotion **22-mal** die CPU-Spur und meldete dabei durchgehend `Queue leer — nichts zu tun`; in Redis existieren weder `queue:meister` noch `queue:meister:arbeit`, und eine leere Liste löscht sich dort selbst. **Rückstand null.**
+
+**Was den Ausschlag gab, war nicht die Abhilfe an diesem Eintrag, sondern die Zwei-Spuren-Trennung.** Die Promotion braucht keinen Sprachmodell-Platz; seit sie auf der `cpu`-Spur läuft, konkurriert sie nicht mehr mit einer Recherche. Der benannte Rest — die letzten Aufträge einer Persona nach dem Zurückschalten — bleibt bestehen und ist unverändert klein.
 
 ---
 

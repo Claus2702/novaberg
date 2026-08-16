@@ -44,13 +44,28 @@ Die Zugehörigkeit zu einer dieser Reihen hebt einen Eintrag; alles andere sinkt
 | **3 — Erkenntniszyklus und der Abfluss der Shadow-Queue** | Vorfrage am 09.08. beantwortet, Entscheidung über 614 Altaufträge offen |
 | **4 — Die Linter-Wände** | vier Familien hart, `B` bei null und nicht als Kürzel schaltbar |
 
-### Band A — zwei Einträge
+### Band A — leer, Stand 16.08.2026
+
+> **Beide Eintraege waren erledigt, bevor sie hier oben standen — und keiner der beiden wurde je angefasst, weil an keinem etwas zu tun war.**
+>
+> | Eintrag | Abhilfe gebaut | in Band A gefuehrt |
+> |---|---|---|
+> | `PROMOTION-FENSTER-LAEUFT-AB-STATT-LEER` | 09.08.2026 | stand bereits, Marke nie gezogen |
+> | `REIHE-GEWICHTET-ZEILEN-STATT-ERHEBUNGEN` | **01.08.2026** | **11.08.2026** — zehn Tage nach der Abhilfe |
+>
+> **Der Befund ist ueber die beiden Faelle hinaus einer ueber dieses Verfahren.** Regel 2 dieses Abschnitts sagt: *„Das Band wird beim **Lesen** vergeben, nicht beim Anlegen."* Genau das ist geschehen — gelesen wurde der **Eintrag**. Ein Eintrag beschreibt aber den Code von damals, und die Pflicht, ihn gegen heute zu halten, greift bisher erst **vor der Umsetzung**. Zwischen Rangvergabe und Umsetzung liegt jedoch die ganze Zeit, in der das Band steuert.
+>
+> **Daraus die Schaerfung, die hier fehlte: Ein Band wird gegen den Code vergeben, nicht gegen den Eintrag.** Der Aufwand ist klein und im Nachhinein beziffert — bei `REIHE-GEWICHTET-ZEILEN-STATT-ERHEBUNGEN` genuegte ein `git log -S` auf den Bezeichner, den der Eintrag selbst nennt; der Kommentar im Code trug denselben Satz wie der Eintrag.
+>
+> **Was das fuer den naechsten Durchgang heisst:** Band A ist nicht abgearbeitet, es ist **leergeraeumt**. Es muss aus den ungebaenderten Eintraegen neu gefuellt werden, und die Kandidaten sind diesmal gegen den Code zu halten, bevor sie ein Band bekommen.
+
+### Band A — die geschlossenen Eintraege
 
 | Kennung | Reihe | Was er anhält |
 |---|---|---|
-| `PROMOTION-FENSTER-LAEUFT-AB-STATT-LEER` | 1 | Entwertet **jeden gepaarten Vergleich** — und die Charakterbildungs-Reihe ist einer. Live bestätigt: 30 Minuten Nachlauf, 15× „3 Schlüssel belegt", null Abfluss |
+| ~~`PROMOTION-FENSTER-LAEUFT-AB-STATT-LEER`~~ | 1 | **Geschlossen am 16.08.2026 — der Eintrag stand acht Tage zu Unrecht an der Spitze.** Die Ursache war bereits am 09.08. widerlegt (kein Fenster, kein Loeschen — die Promotion **verhungerte**) und die Abhilfe am selben Tag gebaut: die Zwei-Spuren-Trennung, seit der die Promotion auf der `cpu`-Spur laeuft und nicht mehr gegen eine Recherche antritt. **Nur die Marke wurde nie nachgezogen.** Nachgemessen am **Bestand** statt am Zeugen, sieben Tage spaeter: `konrad` traegt **69** LZG-Knoten statt des einen, der den Defekt belegte; die fuenf Personas liegen zwischen 48 und 69 bei KZG-Staenden von 88 bis 98, das produktive Paar bei 2005 zu 2203. Ueber zwei Stunden gewann die Promotion **22-mal** die CPU-Spur und fand jedes Mal eine leere Queue vor — **Rueckstand null**. Der benannte kleine Rest (die letzten Auftraege einer Persona nach dem Zurueckschalten) bleibt und ist kein Band-A-Fall |
 | ~~`RAD-STABILITAET-UNGEMESSEN`~~ | 2 | **✅ gemessen am 11.08.2026 — der Eintrag ist beantwortet.** Über drei Quellen mit je vier Läufen bei unveränderter Eingabe: Streuung **0,18 · 0,18 · 0,22** auf der Dreierskala, **0,061 · 0,062 · 0,080** mit einer Nachkommastelle. Die Trennschärfe zweier Personen steigt dabei von 2,4–3,3 σ auf 10,2–12,9 σ. Daraus zwei Bauten: `F-RAD-2` (drei Läufe, Median) und `F-RAD-3` (elf Stufen statt drei). **Die Kalibrierung der Beitragsverhältnisse ist damit freigegeben** — sie liefe jetzt gegen ein Rauschen bekannter und kleiner Breite |
-| `REIHE-GEWICHTET-ZEILEN-STATT-ERHEBUNGEN` | 2 | **Neu am 11.08.2026, und die Folge des vorigen Eintrags.** `rad_zusammenfassen` gewichtet je **Zeile** nach Aktualität, `reihe_laden` liefert alle Zeilen der letzten N Erhebungen. Solange eine Erhebung eine Zeile hatte, war das dasselbe; seit der Dreifach-Erhebung besetzen die drei Läufe **einer** Messung die Ränge 0, 1 und 2 und werden wie drei Zeitpunkte behandelt. Zwei Wege: je Erhebung gewichten, oder die Läufe vor der Reihe auf ihren Median zusammenziehen. **Wirkt ab der zweiten Erhebung eines Paares** — bei Mehmet und Sarah liegen sie seit heute vor |
+| ~~`REIHE-GEWICHTET-ZEILEN-STATT-ERHEBUNGEN`~~ | 2 | **Geschlossen am 16.08.2026 — und er war bereits erledigt, als er hier eingetragen wurde.** Der Eintrag entstand am 11.08.2026; `reihe_laden` gruppiert seit **`837d6df` vom 01.08.2026, 16:13** nach `erhebung_id` und zieht die Laeufe einer Erhebung mit `rad_zusammenfassen_gleichgewichtig` zusammen — *ohne Verfall, alle gleich alt*. Der Kommentar im Code nennt sogar denselben Grund wie der Eintrag: **Das Fenster zaehlt Erhebungen, nicht Zeilen.** Das ist Weg 2 der beiden hier vorgeschlagenen, zehn Tage vor dem Vorschlag gebaut. **Bezeugt ist er auch:** `test_drei_laeufe_einer_erhebung_ergeben_einen_punkt` und `test_die_laeufe_einer_erhebung_werden_gleich_gewichtet` in `tests/test_rad_messreihe.py`, am 16.08.2026 gruen (28 Tests). Nachgesehen wurde am Code, nicht am Eintrag |
 
 **`PROFIL-HISTORIE-FEHLT` stand beim ersten Entwurf dieser Tabelle in Band A und gehört nicht dorthin.** Die Begründung lautete: Ohne Profilhistorie sei nicht messbar, ob ein behaltenes Rad früh genug wirkt. Der Eintrag selbst widerlegt das seit dem 02.08.2026 — `charakter_hash` führt das Paar im Primärschlüssel, und **die Räder sind ohnehin historisiert**: `charakter_rad_messung` trägt am 09.08.2026 231 Zeilen über 20 Kennungen seit dem 01.08. Die Frage nach dem Rad hängt an dieser Tabelle, nicht an der Profilhistorie. Er steht in Band B. **Das ist die Regel bei der Arbeit:** Ein Band, das gegen den Eintrag gehalten wird statt gegen die Erinnerung an ihn, korrigiert sich beim Lesen.
 
