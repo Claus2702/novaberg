@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** CharakterAgent — Charakter-Hash aus KZG/LZG destillieren
-**Stand:** 1. August 2026 (**beide Räder sind eine Messreihe** — rohe Läufe in `charakter_rad_messung`, gespeichert wird das gewichtete Mittel der letzten fünf Erhebungen, Takt zweimal täglich; §4a. Zuvor: 29. Juli 2026, Chat 117 — die zwei Charakter-Räder und die vollständige Spaltenliste nachgetragen, §2, §4a, §7. ⚠ Fundament-Warnung nach Gewichts-Reset, siehe Kasten in §3. Kern: Chat 79, P7-Update Chat 103)
+**Stand:** 16. August 2026 (gegen den Code geprüft: die getrennten `*_PROMPT_NOVA` sind zu **einem parametrisierten Satz** zusammengezogen, Träger über `_perspektive_aufloesen`; §3.3 nachgezogen). Davor: 1. August 2026 (**beide Räder sind eine Messreihe** — rohe Läufe in `charakter_rad_messung`, gespeichert wird das gewichtete Mittel der letzten fünf Erhebungen, Takt zweimal täglich; §4a. Zuvor: 29. Juli 2026, Chat 117 — die zwei Charakter-Räder und die vollständige Spaltenliste nachgetragen, §2, §4a, §7. ⚠ Fundament-Warnung nach Gewichts-Reset, siehe Kasten in §3. Kern: Chat 79, P7-Update Chat 103)
 **Pfad:** novaberg/docs/novaberg-pixie-character-hash.md
 **Quellen:** nova-05-m-a.md, nova-04-m-b.md, nova-04-t-b.md
 
@@ -116,14 +116,24 @@ Jedes Profil ist Fließtext. Keine Listen, keine Stichworte — natürlichsprach
 >
 > **Die vier übrigen Profile bleiben gedeckelt** (adaptiv, Intention, Emotion, Beziehung). Jedes hat einen eigenen Abnehmer, und gemessen ist bisher nur der Kern — Backlog `VERDICHTUNG-UEBRIGE-VIER-PROMPTS`.
 
-**Getrennte Prompts (seit Chat 45):** Die Destillation verwendet fuer user_id="nova" eigene Prompt-Texte. Alle vier Nova-Prompts haben die gleiche Qualitaetsstruktur wie die User-Prompts — identische Fokus-Dimensionen, Beispiele und Anleitungen, nur mit Nova-Rahmung ("Nova ist..." statt "Der Nutzer ist..."):
+~~**Getrennte Prompts (seit Chat 45):** Die Destillation verwendet fuer user_id="nova" eigene Prompt-Texte. Alle vier Nova-Prompts haben die gleiche Qualitaetsstruktur wie die User-Prompts — identische Fokus-Dimensionen, Beispiele und Anleitungen, nur mit Nova-Rahmung ("Nova ist..." statt "Der Nutzer ist..."). Die User-Destillation (meister) bleibt unveraendert.~~
 
-- `KERN_HASH_PROMPT_NOVA`: Fokus auf Tiefenwerte, dauerhafte Interessen, Denkweise
-- `ADAPTIVE_HASH_PROMPT_NOVA`: Zeitgewichtung [AKUT/PHASE/TREND], Fokus auf aktuelle Themen
-- `INTENTIONS_PROFIL_PROMPT_NOVA`: Drei Aspekte (STIL/MODUS/INTENTIONEN) + Beispiel
-- `BEZIEHUNGS_PROFIL_PROMPT_NOVA`: Vier Dimensionen (Naehe/Hierarchie/Vertrauen/Ton)
+→ **Am 16.08.2026 gegen den Code geprueft: Die Verdopplung ist aufgeloest.** Es gibt keine `*_PROMPT_NOVA` mehr — weder die vier genannten noch sonst eine. An ihre Stelle ist **ein Satz parametrisierter Prompts** getreten, dessen Traeger zur Laufzeit eingesetzt wird.
 
-Die User-Destillation (meister) bleibt unveraendert.
+**Die Bauart** (`agents/charakter/destillation.py`): Jeder Prompt traegt die Platzhalter `{traeger}`, `{traeger_gen}` und `{perspektive}`. `_perspektive_aufloesen(user_id)` liefert die passenden Formen — fuer `ASSISTANT_USER_ID` den Namen aus `ASSISTANT_NAME` samt Genitiv ueber `_genitiv_bilden`, sonst *der Nutzer* / *des Nutzers*.
+
+**Zwei Eigenschaften, die die alte Fassung nicht hatte** und die den Umbau erklaeren:
+
+- **Der Name steht nicht mehr im Prompt.** Die alte Fassung schrieb *Nova ist…* woertlich in vier Texte. Heute kommt er aus `ASSISTANT_NAME`; eine Umbenennung der Figur beruehrt keinen Prompt.
+- **Eine Aenderung wirkt auf beide Seiten.** Bei zwei Saetzen musste jede Schaerfung zweimal gepflegt werden, und genau daran laufen sie auseinander.
+
+**Die Prompts, die es heute gibt** — fuenf, nicht vier; `EMOTIONS_PROFIL_PROMPT` fehlte in der Aufzaehlung oben:
+
+- `KERN_HASH_PROMPT`: Tiefenwerte, dauerhafte Interessen, Denkweise
+- `ADAPTIVE_HASH_PROMPT`: Zeitgewichtung [AKUT/PHASE/TREND], aktuelle Themen
+- `INTENTIONS_PROFIL_PROMPT`: drei Aspekte (STIL/MODUS/INTENTIONEN) + Beispiel
+- `EMOTIONS_PROFIL_PROMPT`
+- `BEZIEHUNGS_PROFIL_PROMPT`: vier Dimensionen (Naehe/Hierarchie/Vertrauen/Ton)
 
 ---
 

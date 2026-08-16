@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Modul Session-Gedächtnis
-**Stand:** 15. August 2026 (Schlüssel `haltung:{user_id}:{character_id}`, dazu die beiden Uhren der Eigenzeit in `nova_state`); davor 17. Mai 2026, Chat 90 (PFAD2-PERZEPTION-FIX abgeschlossen, HumanGraph-Slimming Phase 4)
+**Stand:** 16. August 2026 (gegen den Code geprüft: `session_turn_annotate` ist entfallen, der Turn entsteht vollständig — §1, §2.2 und §3.2 nachgezogen); davor 15. August 2026 (Schlüssel `haltung:{user_id}:{character_id}`, dazu die beiden Uhren der Eigenzeit in `nova_state`); davor 17. Mai 2026, Chat 90 (PFAD2-PERZEPTION-FIX abgeschlossen, HumanGraph-Slimming Phase 4)
 **Pfad:** novaberg/docs/novaberg-mem-session.md
 **Quellen:** nova-02-m-a.md
 **Datei:** `memory/session.py`
@@ -11,7 +11,7 @@
 
 ## 1. Aufgabe
 
-Das Session-Gedächtnis ist Novas Arbeitsgedächtnis für das laufende Gespräch. Es speichert jeden Turn (User + Assistent), reichert User-Turns nachträglich mit Salienz-Metadaten an und fasst ältere Turns zusammen, wenn der Stapel zu groß wird. Es lebt in Redis mit TTL — nach 4 Stunden Inaktivität verschwindet es.
+Das Session-Gedächtnis ist Novas Arbeitsgedächtnis für das laufende Gespräch. Es speichert jeden Turn (User + Assistent) **vollständig in einem Zug** — samt der Salienz-Metadaten, die der Dispatcher aus dem State mitgibt — und fasst ältere Turns zusammen, wenn der Stapel zu groß wird. (Bis zum 16.08.2026 stand hier *reichert User-Turns nachträglich an*; das beschrieb den zweistufigen Weg, den Chat 60 abgelöst hat — §3.2.) Es lebt in Redis mit TTL — nach 4 Stunden Inaktivität verschwindet es.
 
 > **Kognitionswissenschaftliche Analogie:** Das Arbeitsgedächtnis nach Baddeley (1974) hat eine begrenzte Kapazität und hält Informationen nur aktiv, solange sie gebraucht werden. Novas Session ist das Äquivalent: Begrenzt auf die letzten ~20 Turns, mit einer „phonologischen Schleife" (Summary) für ältere Inhalte.
 
@@ -72,10 +72,21 @@ befüllt:
 Der Turn ist also nach Speicherung der konsolidierte Schnappschuss der
 jeweiligen Personality-Klasse zum Zeitpunkt des Dispatcher-Laufs.
 
-**Drei Zustände eines User-Turns:**
-1. **Frisch gespeichert:** `intentionen`, `emotion`, `modus`, `kern` sind leer — die Salienz hat noch nicht annotiert.
-2. **Annotiert:** Die Salienz hat den Turn nachträglich angereichert (`session_turn_annotate`). Der Enricher sieht dann den destillierten `kern` statt des rohen `inhalt`.
+~~**Drei Zustände eines User-Turns:**~~
+1. ~~**Frisch gespeichert:** `intentionen`, `emotion`, `modus`, `kern` sind leer — die Salienz hat noch nicht annotiert.~~
+2. ~~**Annotiert:** Die Salienz hat den Turn nachträglich angereichert (`session_turn_annotate`). Der Enricher sieht dann den destillierten `kern` statt des rohen `inhalt`.~~
 3. **Aktions-markiert (Chat 43):** Nach Agent-Dispatch via `session_turn_mark_action`. Felder `aktion_erledigt` + `aktion_erfolgreich` gesetzt.
+
+→ **Am 16.08.2026 gegen den Code geprüft: Es sind zwei Zustände, nicht drei.** Die für Chat 60 angekündigte Deprecation von `session_turn_annotate` ist vollzogen; die Funktion existiert nicht mehr, und kein Knoten annotiert einen Turn nachträglich.
+
+**Der Turn entsteht vollständig.** `graph/nodes/dispatcher.py` ruft `session_turn_store` mit allen Feldern zugleich — `intentionen`, `emotion`, `arousal`, `modus`, `kern`, `emotions_vektor`, `sprach_stil`. Damit gibt es den Zwischenzustand „gespeichert, aber noch leer" nicht: Was der Enricher liest, ist von der ersten Sekunde an der destillierte `kern`.
+
+**Zwei Zustände:**
+
+1. **Gespeichert:** vollständig, mit allen Feldern (`session_turn_store`).
+2. **Aktions-markiert (Chat 43):** nach Agent-Dispatch via `session_turn_mark_action`; `aktion_erledigt` und `aktion_erfolgreich` gesetzt.
+
+Die Zusammenlegung ist keine Vereinfachung der Beschreibung, sondern eine des Mechanismus: Ein zweistufiger Schreibvorgang hat einen Zeitraum, in dem der Turn unvollständig gelesen werden kann — dieser Zeitraum ist entfallen.
 
 ### 2.3 nova_state-Persistierung (Default Mode Network, Chat 89)
 
@@ -121,17 +132,15 @@ Speichert einen Turn (User oder Assistent) am Ende der Liste. Setzt die TTL bei 
 
 Seit Chat 60: Erweitert um `arousal`, `emotions_vektor`, `sprach_stil`, `beziehungs_dynamik`, `tone`, `themen`. Damit kann ein Turn vollständig in einem Aufruf gespeichert werden — kein nachträgliches Annotieren nötig.
 
-### 3.2 session_turn_annotate
+### 3.2 session_turn_annotate — entfallen
 
-Signatur: `session_turn_annotate(redis_client, user_id, character_id, ...)`.
+**Am 16.08.2026 gegen den Code geprüft: Die Funktion existiert nicht mehr**, ebenso wenig `session_assistant_turn_annotate`. Die für Chat 60 als „perspektivisch" angekündigte Deprecation ist vollzogen, und der Legacy-Code, auf den dieser Abschnitt verwies, ist weg.
 
-**Perspektivisch deprecated (Chat 60).** Der Dispatcher schreibt Turns ab Chat 60 vollständig via `session_turn_store()`. Die Annotate-Funktionen (auch `session_assistant_turn_annotate()`) werden nur noch von Legacy-Code aufgerufen.
+Der Abschnitt bleibt als Marke stehen, weil andere Dokumente auf den Namen zeigen — die Beschreibung darunter ist **widerlegt** und nicht mehr gültig:
 
-Sucht den letzten User-Turn ohne `kern`-Annotation (von hinten nach vorne) und reichert ihn an. Wird von der Salienz nach der Analyse aufgerufen.
+> ~~Sucht den letzten User-Turn ohne `kern`-Annotation (von hinten nach vorne) und reichert ihn an. Wird von der Salienz nach der Analyse aufgerufen. **Warum nachträglich?** Die Salienz läuft nach dem Responder — erst dann ist die Analyse des User-Turns abgeschlossen.~~
 
-**Warum nachträglich?** Die Salienz läuft nach dem Responder — erst dann ist die Analyse des User-Turns abgeschlossen. Der Turn wird beim Eingang gespeichert (für den Responder als Kontext), aber erst nach der Salienz-Analyse vollständig annotiert.
-
-**Felder:** `intentionen`, `emotion`, `modus`, `kern`, `arousal`, `emotions_vektor`, `sprach_stil`, `beziehungs_dynamik`, `tone` — alles aus dem Salienz-Ergebnis des Segments mit der höchsten Salienz. Die letzten vier Felder werden nicht von der Salienz selbst berechnet, sondern aus dem State durchgereicht (Enricher/Perzeption → State → Salienz → Session).
+**Was an ihre Stelle getreten ist:** `graph/nodes/dispatcher.py` ruft `session_turn_store` mit dem vollständigen Feldsatz. Die Begründung „warum nachträglich" ist damit gegenstandslos — die Felder sind zum Speicherzeitpunkt da, weil der Dispatcher sie aus dem State nimmt, statt auf die Salienz zu warten.
 
 ### 3.3 session_summarize_if_needed
 
@@ -162,7 +171,7 @@ Löscht alle Session-Daten eines Users: Turns, Summary, Stack, Pending.
 
 Signatur: `session_turn_mark_action(redis_client, user_id, character_id, ...)`.
 
-Markiert den letzten User-Turn mit dem Ergebnis einer Agent-Aktion. Wird nach dem Agent-Dispatch aufgerufen, analog zu `session_turn_annotate`.
+Markiert den letzten User-Turn mit dem Ergebnis einer Agent-Aktion. Wird nach dem Agent-Dispatch aufgerufen. (Der Vergleich mit `session_turn_annotate` stand hier bis zum 16.08.2026 — die Funktion gibt es nicht mehr, siehe §3.2.)
 
 Zwei Flags:
 - `aktion_erledigt`: Agent hat Verarbeitung abgeschlossen (true bei `abgeschlossen` und `fehler`)
@@ -202,7 +211,7 @@ Seit Chat 60: Der Dispatcher (`graph/nodes/dispatcher.py`) schreibt alle Session
 | **Enricher** | Liest Turns via `session_turns_retrieve`, destilliert sie, blendet Shadow-Impulse aus |
 | **db_zugriff** | Liest `nova_state:{user_id}:{character_id}` am CG-Eingang, befüllt `state["internal"].emotion` (Chat 89) und `.raum` (Chat 114; fehlen die Achsen, werden sie aus den Register-Labels abgeleitet) |
 | **ei_calc_persist** | Schreibt `nova_state:{user_id}:{character_id}` am CG-Ausgang (Chat 89) |
-| **Salienz** | Legacy-Annotation via `session_turn_annotate` (perspektivisch deprecated, Chat 60) |
+| **Salienz** | ~~Legacy-Annotation via `session_turn_annotate`~~ → **entfallen** (16.08.2026 geprüft). Die Salienz schreibt nicht mehr in die Session; der Dispatcher speichert den Turn vollständig |
 | **API-Layer** (`api/chat.py`) | Markiert User-Turns nach Agent-Dispatch via `session_turn_mark_action` |
 | **Responder** | Sieht die destillierten Turns (über den Enricher, nicht direkt) |
 
