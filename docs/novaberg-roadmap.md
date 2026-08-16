@@ -1,6 +1,6 @@
 # Novaberg — Roadmap (Projektchronik)
 
-**Stand:** Chat 143, 15. August 2026
+**Stand:** Chat 143, 16. August 2026
 *(Die Kopfzeile stand bis Chat 109 auf „Chat 93, 21. Mai 2026" — 15 Chats hinter dem Inhalt. **Sie ist danach erneut zurückgefallen:** von Chat 110 bis 114 blieb sie auf „Chat 109" stehen, während der Inhalt weiterwuchs, und wurde in Chat 115 nachgezogen. Wer hier etwas ergänzt, zieht die Kopfzeile mit — sie driftet zuverlässig. Achtung beim Nachschlagen: Nur bis Chat 97 trägt jeder Chat eine eigene `## Chat NNN`-Überschrift; die Chats 98–108 stehen als `###`-Abschnitte unter dem Chat-97-Block, benannt nach Sprint statt nach Chat.)*
 **Pfad:** novaberg/docs/novaberg-roadmap.md
 **Single Source of Truth für abgeschlossene Arbeit.**
@@ -1982,6 +1982,39 @@ Beide Räder haben eine Nabe — den Wert ohne jede Ausprägung — und das Erge
 **Geschlossen:** `Bauteil 3 — Charakter-Räder im Client` (Rest benannt, siehe Backlog)
 
 ---
+
+## Chat 143 (16.08.2026) — Die Konventionen werden gegen den Code gehalten, und eine schrieb den Fehler vor ✅
+
+**Der Auftrag war eine Doku-Vollprüfung** — 149 Dokumente gegen 362 Python-Dateien, über drei mechanische Kriterien statt eines Durchlesens. Ergebnis: 153 tote Pfade, 2 Zeilenzitate hinter dem Dateiende, 399 Bezeichner ohne Gegenstand. **Nach Dokumentenklasse getrennt** — ein Konzept darf Ungebautes benennen, ein Moduldokument behauptet den Zustand von heute — blieben **33 offene Befunde in beschreibenden Dokumenten**, davon neun behoben.
+
+**Drei Defekte an den eigenen Messgeräten**, alle gefunden und benannt: Das Pfad-Kriterium durchsuchte nur `server/` und meldete jeden Verweis auf `client/` als tot (187 → 153). Das Bezeichner-Kriterium las keine endungslosen Dateien und kannte den führenden Unterstrich privater Funktionen nicht (406 → 399). **Und ein viertes fiel erst beim Beheben auf:** Die Trefferzahl *stieg*, weil ein korrekt als entfallen markierter Name weiterhin genannt wird — Widerlegtes wird markiert und nicht gelöscht. Ohne diesen Filter taugte die Zahl nicht als Fortschrittsmaß.
+
+**Der Sprung des Tages war eine Frage nach einem Begriff.** Was bedeutet *Convention*? Die geltende Definition verlangte eine normative Festlegung samt Registerzeile — und **keine der sechs erfüllte das**: null Registerzeilen, null Angaben zur maschinellen Prüfbarkeit, eine von sechs sagte, woran man einen Verstoß erkennt. Die Sorte war seit Monaten in Gebrauch und ihre Definition von keinem einzigen Fall erfüllt.
+
+**Neu gefasst — die Sorte selbst:** Eine Konvention legt fest, **wie eine Sache grundsätzlich gehandhabt wird**, für ein Thema, das über den Schnitt eines Moduls hinausreicht — thematisch, nicht modular. Sie setzt das **Soll**; dass sie bei ihrer Entstehung meist den Ist-Zustand trifft, liegt daran, dass sie am gebauten Gegenstand entsteht. **Weicht der Code anderswo ab, ist das ein Fehler-Zustand, der untersucht und bewertet wird** — und ausdrücklich unzulässig ist die stille Annahme, der Code habe recht, weil er läuft.
+
+**Vier Konventionen gegen den Code gehalten:**
+
+| | Ergebnis |
+|---|---|
+| **Paar-Schema** | **Die Konvention selbst war der Fehler**, an sechs Stellen. §2 las `user_id` als „Subjekt" und erlaubte damit, die Figur ins Subjektfeld zu setzen; §2.1 schrieb `kzg:nova:{mensch}` vor. Einträge dieser Form hatten das Projekt schon einmal Arbeit gekostet und waren im KZG und LZG beseitigt (0 Schlüssel, 0 Zeilen). **Alles gestrichen.** §3.3 hatte von Anfang an recht und ist nie gebaut worden — daraus `CHAR-HASH-PAAR-VERTAUSCHT` |
+| **Embedding** | Zwei von drei Regeln halten, auch in den scharfen Teilen. Die Casing-Probe ist **zur Hälfte gebaut** — vor dem Lauf ja, täglich nein, und das ist die Hälfte, die den vier Monate laufenden Defekt gefunden hätte. Ein siebter Speicher stand nicht im Geltungsbereich → `REEMBED-WISSENSSPEICHER` |
+| **Magneten** | **Alle Regeln halten.** Überholt war allein der Zustandsteil, und zwar nach oben: Das LZG stand als „leer" und trägt 591 Entitäts- und 110 Zeitbindungen. Die Timeline-Lücke gilt dagegen unverändert, 0 von 55 |
+| **Verfall** (neu geschrieben) | Die Regel war Praxis und stand in keinem Dokument. Zwei Sätze machen sie anwendbar: **Der Verfall sitzt, wo gesucht wird**, und **die Trennlinie ist der Fremdschlüssel** — die Entität bleibt, die Bindung darf verfallen |
+
+**Und ein Schritt ist an den Abschluss gewandert:** Der Umbau wird gegen die Konventionen gehalten, mit dem Ergebnis *bestätigt*, *geändert* oder *Fehler-Zustand*. Der Grund liegt in der Sorte: Eine Konvention gilt an zehn Orten, der Bauende arbeitet an einem — ihre Verletzung **kann** beim Bauen nicht auffallen.
+
+```
+Doku-Kriterien   1835 Pfade -> 153 tot · 270 Zitate -> 2 · 5213 Bezeichner -> 399
+beschreibend     33 offen -> 26 (davon 7 behoben, 3 waren nie offen)
+Konventionen     4 von 6 geprueft, 3 Registerzeilen neu
+Register         F-VERFALL-1 · F-EMBED-1 · F-MAGNET-1
+Bugs             CHAR-HASH-PAAR-VERTAUSCHT
+Backlog          REEMBED-WISSENSSPEICHER · FACHSPEICHER-AGENTEN · FAKTEN-BINDUNG-OHNE-VERFALL
+Fundliste        40 -> 42
+```
+
+**Nebenbei aus der Doku-Prüfung gefallen, ohne dass jemand danach suchte:** `NEGATIVE_EMOTIONEN` ist zweimal definiert — abgeleitet acht Emotionen, handgeschrieben vier —, und die kürzere bedient den Emotions-Riegel der Zustellung. `wut`, `verzweiflung` und `enttaeuschung` fallen dort auf *erlaubt* durch.
 
 ## Chat 143 (15.08.2026) — Der Riegel misst den Moment, nicht die Person, und die Uhr fällt ✅
 

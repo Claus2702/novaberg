@@ -218,7 +218,7 @@ ein Eintrag?*
 | Klasse | Skopierung | Tabellen |
 |---|---|---|
 | **Welt-Referenz** | `user_id` global | `entitaeten` |
-| **Erlebnis-Wissen** | `(user_id, character_id)` paar-spezifisch | `lzg_knoten`, KZG, `timeline`, `notizen`, `fakten` — ~~`dateien`~~ (**am 16.08.2026 geprüft: die Tabelle existiert nicht**; die Wissens-Bibliothek heißt `autonomous_wissen` und trägt heute keine Magnet-Spalten) |
+| **Erlebnis-Wissen** | `(user_id, character_id)` paar-spezifisch | `lzg_knoten`, KZG, `timeline`, `notizen`, `fakten`, `dateien` |
 
 Begründung: Anna ist Anna — eine Entität existiert in der Welt, unabhängig
 davon, mit welchem Charakter Meister gerade spricht. Wenn morgen ein zweiter
@@ -237,6 +237,8 @@ nicht, was Aria über Anna gespeichert hat — auch wenn beide auf dieselbe
 Anna-Entität zeigen.
 
 Diese Asymmetrie ist gewollt: Welt geteilt, Erinnerungen perspektivisch.
+
+> **`dateien` steht hier als Soll, nicht als Bestand.** Der Speicher ist seit Langem als eigener Agent geplant — neben Notizen, Fakten, Timeline und Wissen (`novaberg-backlog.md` → `FACHSPEICHER-AGENTEN`). Eine Konvention setzt das Soll; dass eine Tabelle noch nicht steht, macht die Zeile nicht falsch. Die Wissens-Bibliothek `autonomous_wissen` existiert und trägt heute keine Magnet-Spalten — auch das gehört in den Zuschnitt jenes Auftrags.
 
 ---
 
@@ -328,6 +330,6 @@ nutzen dieselben Magnete.
 
 ## Versionshistorie
 
-- **v0.3 — 16.08.2026:** Erstmals gegen Code **und Bestand** gehalten. **Die Regeln halten** — die drei Achsen mit ihren Kardinalitäten, die Optionalität, die Verhaltens-Flags, die Trennung Welt-Referenz/Erlebnis-Wissen, der Substanz-Filter. Auch die benannten Bauteile stehen: `magnete_aufloesen` liegt im KzgAgent-Subgraph, `agents/timeline/magneten.py` ist die einzige Quelle des `event_type → Magnete`-Mappings, `EVENT_TYPES_ERINNERUNGS_ANKER` existiert. **Die Befüllungstabelle in §4 war überholt, und zwar nach oben:** Für das LZG stand dort *„leer (P4)"*, gemessen sind 591 von 2271 Einträgen mit `entitaet_ids` und 110 mit `timeline_id` — P4 ist gelaufen, ohne dass es jemand nachgetragen hat. Unverändert gilt dagegen `timeline.entitaet_ids` = 0 von 55, derselbe Befund, den §1 als Ausgangslage nennt. Zwei Tabellennamen berichtigt: `langzeitgedaechtnis` heißt seit der Aufteilung `lzg_knoten`, und **`dateien` gibt es nicht**. §4 ist als beschreibend markiert.
+- **v0.3 — 16.08.2026:** Erstmals gegen Code **und Bestand** gehalten. **Die Regeln halten** — die drei Achsen mit ihren Kardinalitäten, die Optionalität, die Verhaltens-Flags, die Trennung Welt-Referenz/Erlebnis-Wissen, der Substanz-Filter. Auch die benannten Bauteile stehen: `magnete_aufloesen` liegt im KzgAgent-Subgraph, `agents/timeline/magneten.py` ist die einzige Quelle des `event_type → Magnete`-Mappings, `EVENT_TYPES_ERINNERUNGS_ANKER` existiert. **Die Befüllungstabelle in §4 war überholt, und zwar nach oben:** Für das LZG stand dort *„leer (P4)"*, gemessen sind 591 von 2271 Einträgen mit `entitaet_ids` und 110 mit `timeline_id` — P4 ist gelaufen, ohne dass es jemand nachgetragen hat. Unverändert gilt dagegen `timeline.entitaet_ids` = 0 von 55, derselbe Befund, den §1 als Ausgangslage nennt. Ein Tabellenname berichtigt: `langzeitgedaechtnis` heißt seit der Aufteilung `lzg_knoten`. **`dateien` bleibt stehen** — der Speicher ist als Agent geplant, und eine Konvention setzt das Soll; §6 sagt das jetzt ausdrücklich, damit die Zeile nicht beim nächsten Abgleich als Drift gelesen wird. §4 ist als beschreibend markiert.
 - **v0.2 — 16.05.2026, Chat 88:** Synapsen P3 — der KZG-Schreibpfad löst Magnete pro Turn auf.
 - **v0.1 — 06.05.2026, Chat 78:** Erstfassung, Drei-Achsen-Modell.
