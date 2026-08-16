@@ -142,7 +142,8 @@ Konsequenz für Lese-Pfade:
 > `graph/nodes/db_zugriff.py` (verbraucht ihn für `state["internal"]`).
 >
 > **Kein Weg zur Behebung in diesem Dokument.** Er berührt das Schema, und das
-> ist eine eigene Entscheidung.
+> ist eine eigene Entscheidung. Geführt als **`CHAR-HASH-PAAR-VERTAUSCHT`**
+> in `novaberg-bugs.md`.
 
 ---
 
