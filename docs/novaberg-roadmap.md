@@ -1,6 +1,6 @@
 # Novaberg — Roadmap (Projektchronik)
 
-**Stand:** Chat 143, 16. August 2026
+**Stand:** Chat 144, 16. August 2026
 *(Die Kopfzeile stand bis Chat 109 auf „Chat 93, 21. Mai 2026" — 15 Chats hinter dem Inhalt. **Sie ist danach erneut zurückgefallen:** von Chat 110 bis 114 blieb sie auf „Chat 109" stehen, während der Inhalt weiterwuchs, und wurde in Chat 115 nachgezogen. Wer hier etwas ergänzt, zieht die Kopfzeile mit — sie driftet zuverlässig. Achtung beim Nachschlagen: Nur bis Chat 97 trägt jeder Chat eine eigene `## Chat NNN`-Überschrift; die Chats 98–108 stehen als `###`-Abschnitte unter dem Chat-97-Block, benannt nach Sprint statt nach Chat.)*
 **Pfad:** novaberg/docs/novaberg-roadmap.md
 **Single Source of Truth für abgeschlossene Arbeit.**
@@ -1980,6 +1980,55 @@ Beide Räder haben eine Nabe — den Wert ohne jede Ausprägung — und das Erge
 > **Die Zahlen selbst stehen nicht hier.** Ein Charakter-Rad ist ein Charakterprofil; aus den Summanden sind mit der Züge-Tabelle die Einzelspeichen rückrechenbar. Wer die Messung nachvollziehen will, fährt sie gegen den eigenen Bestand — sie ist in zwei Aufrufen wiederholbar.
 
 **Geschlossen:** `Bauteil 3 — Charakter-Räder im Client` (Rest benannt, siehe Backlog)
+
+---
+
+## Chat 144 (16.08.2026) — Ein verworfener Mechanismus, und darunter ein zweiter, der gebaut ist und keinen Leser hat ✅
+
+**Der offene Punkt aus `novaberg-convention-planner-needs.md` §11 ist entschieden.** Die Frage war, ob der seit Mai beschriebene generische Vermittler — Plugins melden Bedarfe an, der Planner löst sie über einen Provides-Index auf und ruft den Agenten erneut auf — noch gebraucht wird, nachdem sein motivierender Fall ohne ihn läuft.
+
+**Die Antwort hängt an einer Zahl statt an einer Meinung.** Gezählt wurden die Fremdzugriffe auf die beiden Dienste, um die es geht — vier Kandidaten, jeder einzeln nachgesehen, und drei fielen dabei weg: ein **unbenutzter Import** in `plugins/notizen_manager/manager.py`, ein reiner **Lesepfad** in `graph/nodes/thinker.py`, und ein **Querschnitts-Scan** über vier Repositorien in `agents/wiedervorlage/agent.py`. Übrig bleibt **eine** Kette im Schreibpfad und **ein** Anbieter je Bedarf. Ein Index über einen Eintrag vermittelt nichts.
+
+**Verworfen, archiviert, und an seiner Stelle steht die Regel für das, was wirklich gebaut ist.** Der Mechanismus liegt vollständig unter `archive/novaberg-convention-planner-needs-erweiterung.md`. Das Dokument trägt jetzt das **Clipboard-Prinzip**: Ein Wert, den ein Agent erzeugt und ein späterer Knoten desselben Turns braucht, wandert über einen im Zustandstyp deklarierten Schlüssel — flach, benannt und optional; der lesende Knoten hält nicht an, wenn der Schlüssel leer ist. Zwei solche Schlüssel gibt es (`timeline_id`, `session_turn_kern`), beide deklariert, beide in `novaberg-graph.md` §4.8a beschrieben. Die bekannte Schwäche steht dabei statt verschwiegen zu werden: **Die Reihenfolge Erzeuger-vor-Leser folgt aus den Graph-Kanten und aus keiner Zusicherung.**
+
+**Und §9.3 war falsch, nicht überholt.** Dort stand *„Alle Daten fließen über `AgentResult` und `AgentInput`"* — `AgentInput` hat nie existiert, und kein Agent liest die Akte eines anderen. Berichtigt statt gestrichen: Die Absicht dahinter — kein horizontaler Verkehr — hält der gebaute Weg ein; sie hing nie an dieser Umsetzung.
+
+### Unter einem Namen standen zwei Dinge
+
+**Verworfen ist nur eines.** Der Vorschlag von Chat 78 enthielt neben der Auflösung zur Laufzeit auch die **Selbstanmeldung** eines Agenten — er gibt Aufgabe, Nutzen und Dienste bekannt. Die Messung oben trifft davon nichts.
+
+```
+faehigkeiten deklariert         14 von 14 Agenten
+AGENT.md vorhanden              12 von 14
+AgentRegistry.beschreibungen()  fuegt beides zum Planner-Prompt zusammen
+Aufrufer im Produktivcode        0
+```
+
+**Die erzeugende Seite ist vollzählig gepflegt, die lesende fehlt ganz.** `planner.plan()` sucht den Zuständigen stattdessen über Zeichenketten-Abgleich auf `router_intents`, `manager.ziel` und `management_target` — also über genau die zentrale Zuordnung, die §1 desselben Dokuments als Bruch des Plugin-Prinzips benennt. Ein neuer Agent kann lückenlos deklarieren, was er kann, und wird nur gefunden, wenn sein Name zum Abgleich passt.
+
+**Das ist das erste Fundstück der Klasse, die `KANAL-OHNE-GEGENSTUECK` seit demselben Tag im Backlog beschreibt** — ein Bauteil, das gebaut ist und das niemand liest. **Kein Werkzeug hat es gefunden**, sondern die Frage nach dem Gegenstand des Mechanismus: Anmeldung und Registrierung eines Anbieters sind etwas anderes als die Auflösung von Vorbedingungen, und nur das zweite war vermessen worden. Geführt als `SELBSTAUSKUNFT-OHNE-LESER`.
+
+### Und die zweite Kontrolle hat den Befund zur Hälfte widerlegt — die härtere Hälfte
+
+Der erste Anlauf sagte, der Planner wähle über Zeichenketten-Abgleich *statt* über die Selbstauskunft. **Falsch.** Der Router läuft davor und wählt sehr wohl über sie: `get_combined_router_prompt()` sammelt die `router_prompt`-Deklarationen aller Manager ein, `graph/nodes/router.py` setzt sie als `[AGENTEN]`-Block in einen Modellaufruf, und ein Sprachmodell entscheidet daraufhin. Der Mechanismus stammt aus Chat 5 und läuft seither.
+
+**Es gibt also zwei Deklarationsflächen — die ältere ist an beiden Stufen verdrahtet, die jüngere an keiner.** Ein Agent wird gefunden, indem er den Namen seines Managers erbt; 5 von 14 sind auf dem Nutzerpfad erreichbar, für die neun Hintergrund-Agenten ist das richtig so.
+
+**Daraus die Lehre, die den Befund vom Einzelfall zur Klasse hebt:**
+
+> `["termin_erstellen", "termin_lesen"]` ist eine Auskunft in der Sprache des **Anbieters**. *„Entscheidend ist NICHT die Satzform, sondern ob der Prompt ein Datum enthält"* ist eine Anweisung in der Sprache des **Aufrufers**. Nur die zweite ist benutzbar — **eine Selbstauskunft stirbt nicht an mangelnder Güte, sondern daran, dass sie die falsche Frage beantwortet.**
+
+Die Manager-Fassung trägt zusätzlich **Negativregeln** (*„NICHT triggern bei emotionalen Ausdrücken — das ist Feedback, kein Charakter"*), die in keiner Fähigkeitenliste ausdrückbar sind. Damit ist auch die Abhilfe eine andere als zunächst notiert: nicht `beschreibungen()` einen Leser geben, sondern den Agenten geben, was die Manager haben.
+
+**Ein zweiter Fund derselben Kontrolle, und er kehrt die Reihenfolge um:** `delegation` deklariert `graph_eignung = ["user"]` und läuft tatsächlich über den Hintergrund-Router. Dreizehn Deklarationen stimmen, diese eine nicht — **und kein Lauf konnte es melden, weil das Feld keinen Leser hat.** Wer den Leser zuerst baut, schaltet eine nie gegengeprüfte Datenbasis scharf. Also erst gegenprüfen, dann anschließen.
+
+### Der Abgleich nach außen
+
+Weil die Frage ansteht, sobald fremde Dienste eingebunden werden: Das **Model Context Protocol** (Revision `2026-07-28`) trennt genauso. Ein Werkzeug meldet Name, Beschreibung und Schemata — die Sprache des Anbieters; **die Auswahl ist ausdrücklich kein Protokollgegenstand**, im Ablaufdiagramm steht zwischen Auflistung und Aufruf ein Abschnitt *Tool Selection* ohne eine einzige Nachricht. Ein Feld für den Aushang gibt es (`instructions` in `server/discover`), aber je Server statt je Dienst, optional an beiden Enden und ohne Zusammenführung. **Der Zustandstransport dagegen ist deckungsgleich mit dem Clipboard-Prinzip** und unabhängig entstanden — expliziter Handle, der Aufrufer trägt ihn weiter, die Lebensdauer gehört in die Beschreibung. Steht als §11.2 in der Konvention.
+
+**Register:** `F-PLANNER-1` neu gefasst (das Clipboard-Prinzip statt der Akte als einzigem Datenträger), `F-PLANNER-2` neu (die Selbstauskunft, mit ihrem Fehler-Zustand).
+
+**Nachgezogen:** `archive/novaberg-iteration-control_k.md` — sein Aktivierungs-Trigger war *„Bau dieses Planners"* und kann nicht mehr eintreten; drei Verweise auf §6 zeigen jetzt auf den archivierten Text.
 
 ---
 
