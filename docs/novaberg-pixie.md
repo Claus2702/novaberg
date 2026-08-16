@@ -82,6 +82,18 @@ Drei Redis-Strukturen verbinden Chat und Pixie:
 > **Die Rangfolge hat sich dabei umgekehrt und das ist gewollt:** Die Auswahl nimmt jetzt `ORDER BY salienz_decay DESC` — den **dringlichsten** Auftrag, und weil der Verfall die Dringlichkeit senkt, ist das der juengste. Die Listenfassung nahm unter Gleichstaenden den aeltesten.
 >
 > **Die Promotions-Queue zieht nicht mit** und bleibt in Redis: Sie traegt keine Salienz-Dynamik, kein Verfallsmodell und keinen Soft-Delete.
+>
+> **Nachgetragen am 16.08.2026 — der zweite Weg loescht haerter als der dritte, und er waehlt umgekehrt aus.** Die drei Wege stehen oben nebeneinander, als seien sie gleichrangig. Sie sind es nicht: *verfallen* setzt `aktiv = FALSE` und bleibt weckbar, *nach drei Fehlversuchen* fuehrt ein `DELETE` aus. `novaberg-convention-verfall.md` §6 hat hartes Loeschen fuer den Verfallspfad ausdruecklich verworfen — *„Ein Gedanke waere unwiederbringlich weg"* —, und der Fehlversuchspfad ist davon abgegrenzt (*„ein Ausfuehrungsfehler, kein Verfall"*).
+>
+> **Gemessen steht diese Abgrenzung unter Druck.** Ueber die 582 aktiven `recherche`-Eintraege stieg die mittlere `salienz_roh` **monoton** mit dem Versuchszaehler:
+>
+> ```
+> versuche 0   n=539   salienz_roh 0,867
+> versuche 1   n= 27   salienz_roh 0,947
+> versuche 2   n= 16   salienz_roh 0,990
+> ```
+>
+> Der Grund liegt in der Rangfolge selbst: `ORDER BY salienz_decay DESC` zieht den Dringlichsten zuerst, also am haeufigsten — und er traegt das meiste Material, reisst also ein Zeitlimit als erster. **Der Verfall entfernt unten, der Fehlversuch entfernt oben.** Sechzehn Eintraege mit dem hoechsten Wert des Bestands standen einen Fehllauf vor der Loeschung; die Ursache war eine geerbte Frist (`F-FRIST-1`, behoben), nicht ihr Inhalt. Ob die Ausnahme so gemeint war, ist eine offene Absicht und steht in der Fundliste.
 
 Shadow-Queue Eintragsformat — **berichtigt am 15.08.2026**, mechanisch ueber alle 1036 Eintraege des Bestands erhoben:
 

@@ -293,6 +293,23 @@ Die MS-Welle räumt die **Modell-Schicht** auf, nicht die Memory-Schicht und nic
 
 ---
 
+## 9a. Der Vorgabewert ist die Frist der Aufrufer, nicht ihre Reserve (16.08.2026)
+
+Der Fußtext unten nennt das Ergebnis von Block 5 richtig: *„Worker-Instanz-Default per Konstruktor, **pro Call überschreibbar**"*. Der Mechanismus ist gebaut und funktioniert. **Gemessen wurde am 16.08.2026, wie oft er benutzt wird:**
+
+```
+Aufrufstellen von submit_sync im Baum        62
+davon mit einer eigenen Frist                 1
+```
+
+**Damit ist der Vorgabewert keine Reserve, sondern die geltende Frist von 61 Aufrufstellen.** Das ist keine Nachlässigkeit der Aufrufer, sondern die Bauart: Wer nichts angibt, bekommt die Zahl, die für lauter verschiedene Aufgaben zugleich gesetzt ist. Ein Vorgabewert wird deshalb **nach der langsamsten Aufgabe bemessen, die ihn erbt** — oder die langsame Aufgabe nennt ihre eigene Frist.
+
+Der Fall, an dem es sichtbar wurde: `recherche/zwischen` lag im Median bei **181 s** gegen die 300 s des `background`-Workers und riss sie in **12 %** der Läufe; die übrigen neun Aufrufstellen desselben Agenten lagen bei höchstens 89 s. Die beiden anderen Worker sind unauffällig — `chat` max 30,0 s und `embed` max 2,26 s gegen je 60 s, über 1303 Aufrufe null Überschreitungen.
+
+**Und die Frist gehört mit einer Ausgabegrenze zusammen.** Eine Frist ohne Grenze begrenzt nichts, weil die Arbeit wächst, bis die Frist reißt; eine Grenze jenseits der Frist ist wirkungslos. Prüfbar ist ihr Verhältnis: Grenze geteilt durch den gemessenen Durchsatz muss deutlich unter der Frist liegen. Registriert als `F-FRIST-1`; die Herleitung am konkreten Fall steht in `novaberg-pixie-research.md` §7.
+
+---
+
 ## 10. Verwandte Dokumente
 
 - `novaberg-architecture.md` — Provider-Architektur und Connector-System, wird durch die MS-Welle aktualisiert
