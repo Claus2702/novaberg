@@ -450,7 +450,77 @@ class BaseAgent(ABC):
             db_manager.execute_script(sql)
             logger.info(f"Schema für Agent '{self.name}' angelegt")
 
+    def _zustand_zuschneiden(self, state: AgentState) -> AgentState:
+        """Entfernt Clipboard-Werte, die dieser Dienst nicht angemeldet hat.
+
+        Vorbedingung: `state` traegt ein `kontext`-Dict; fehlt es, wird der
+        Zustand unveraendert zurueckgegeben und der Fall gemeldet.
+
+        Nachbedingung: `kontext` enthaelt von den zusagbaren Schluesseln
+        genau die, die dieser Dienst als Bedarf angemeldet hat. Alle
+        uebrigen sind entfernt, jeder einzeln protokolliert.
+
+        **Ein Dienst erhaelt, was er angemeldet hat — nicht, was vorhanden
+        ist.** Ohne diesen Schnitt bedeutet "nimm dir, was du brauchst"
+        faktisch "ich gebe dir alles", und damit ist der Zustand kein
+        Clipboard mehr, sondern ein Kontext-Abwurf.
+
+        Der Schnitt sitzt hier und nicht in den Dispatches, weil das der
+        einzige Engpass ist, durch den jeder Dienst laeuft. In jedem
+        Dispatch einzeln waere er vierzehnmal zu pflegen und beim
+        fuenfzehnten vergessen.
+        """
+        from agents.nmcp import ZUSAGEN  # lokal: Zyklus base <-> nmcp
+
+        # ── Eingabe-Validierung ──────────────────────────────────────
+        kontext = state.get("kontext")
+        if not isinstance(kontext, dict):
+            logger.error(
+                "Zustandszuschnitt '%s': kontext ist %s statt dict — kein "
+                "Schnitt, der Dienst erhaelt den Zustand unveraendert",
+                self.name, type(kontext).__name__,
+            )
+            return state
+
+        # ── Verarbeitung ─────────────────────────────────────────────
+        angemeldet = {b.schluessel for b in self.bedarf}
+        ungebeten = [
+            s for s in kontext
+            if s in ZUSAGEN and s not in angemeldet
+        ]
+        if not ungebeten:
+            return state
+
+        beschnitten = {k: v for k, v in kontext.items() if k not in ungebeten}
+        for schluessel in ungebeten:
+            logger.error(
+                "Zustandszuschnitt '%s': Clipboard '%s' wurde uebergeben, "
+                "aber nicht angemeldet — entfernt. Wer den Wert braucht, "
+                "meldet ihn als Bedarf an; wer ihn ohne Anmeldung "
+                "durchreicht, hat den Zustand zum Kontext-Abwurf gemacht",
+                self.name, schluessel,
+            )
+
+        # ── Ausgabe-Verifikation ─────────────────────────────────────
+        verblieben = {s for s in beschnitten if s in ZUSAGEN}
+        if not verblieben <= angemeldet:
+            logger.error(
+                "Zustandszuschnitt '%s': nach dem Schnitt stehen %s im "
+                "Kontext, angemeldet sind %s — der Schnitt hat nicht "
+                "gegriffen",
+                self.name, sorted(verblieben), sorted(angemeldet),
+            )
+
+        return {**state, "kontext": beschnitten}
+
     def invoke(self, state: AgentState) -> AgentState:
-        """Führt den Subgraph aus und gibt den finalen State zurück."""
+        """Führt den Subgraph aus und gibt den finalen State zurück.
+
+        Vorbedingung: `state` ist ein AgentState mit `kontext`.
+        Nachbedingung: der finale Zustand des Subgraphen.
+
+        Vor dem Lauf wird der Zustand auf den angemeldeten Bedarf
+        zugeschnitten (`_zustand_zuschneiden`).
+        """
         graph = self.build_graph()
-        return graph.invoke(state)
+        return graph.invoke(self._zustand_zuschneiden(state))
