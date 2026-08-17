@@ -113,6 +113,20 @@ class QuotenRegister:
 
     Der Zaehler sitzt im Empfang, nicht in der Pruefstrecke: Er zaehlt,
     was tatsaechlich zugestellt wurde, und das weiss nur der Empfang.
+
+    **Benannte Schwaeche: Die Staende leben im Prozess und werden bei
+    jedem Neustart zurueckgesetzt.** Gemessen am 17.08.2026 — nach einem
+    Neuladen steht der Nenner wieder bei null. Fuer die Mindest-Stichprobe
+    von 100 Aeusserungen heisst das: Nach jedem Aufsetzen urteilt der
+    Abgleich zunaechst gar nicht, und in einer Umgebung mit haeufigem
+    Neuladen kommt er nie ueber "keine Aussage" hinaus.
+
+    Das ist kein stiller Fehler — der Zustand ist ueber `/health` lesbar
+    und der Nenner steht in jeder Meldung. Aber es begrenzt die
+    Aussagekraft, und die Abhilfe ist ein eigener Schritt: die Staende in
+    Redis fuehren statt im Prozess, mit demselben rollenden Fenster.
+    Solange das nicht gebaut ist, taugt der Abgleich fuer einen langen
+    Betriebsabschnitt und nicht ueber einen Neustart hinweg.
     """
 
     def __init__(self) -> None:
@@ -403,3 +417,54 @@ class QuotenRegister:
 #: Das Register des laufenden Prozesses. Ein Modul-Singleton, weil der
 #: Empfang genau einer ist.
 REGISTER = QuotenRegister()
+
+
+def abgleich_protokollieren(agenten: dict) -> list[Abgleich]:
+    """Haelt jede angemeldete Quote gegen ihre Messung und protokolliert.
+
+    Vorbedingung: `agenten` ist die Registry; jeder Wert traegt `quote`,
+    `zustellart` und `graph_eignung`.
+
+    Nachbedingung: je Empfangsdienst und angemeldetem Graphen ein Abgleich.
+    Dienste ohne Zustellentscheidung werden uebergangen — sie werden nicht
+    gewaehlt, es gibt nichts zu vergleichen.
+
+    **Diese Funktion ist der Aufrufer, ohne den der ganze Abgleich eine
+    Deklaration ohne Leser waere** — genau die Klasse, gegen die er gebaut
+    ist. Ein Mechanismus, der niemanden hat, der ihn ruft, verrottet
+    unbemerkt wie jedes ungelesene Feld.
+    """
+    # ── Eingabe-Validierung ──────────────────────────────────────────
+    if not isinstance(agenten, dict):
+        logger.error(
+            "Quotenabgleich: agenten ist %s statt dict — kein Lauf",
+            type(agenten).__name__,
+        )
+        return []
+
+    # ── Verarbeitung ─────────────────────────────────────────────────
+    ergebnisse: list[Abgleich] = []
+    for name, agent in sorted(agenten.items()):
+        if getattr(agent, "zustellart", "") != "empfang":
+            continue
+        for graph, geschaetzt in getattr(agent, "quote", {}).items():
+            if geschaetzt not in QUOTEN_KANON or graph not in GRAPH_KANON:
+                continue
+            ergebnisse.append(REGISTER.abgleichen(name, graph, geschaetzt))
+
+    # ── Ausgabe-Verifikation ─────────────────────────────────────────
+    urteile: dict[str, int] = {}
+    for a in ergebnisse:
+        urteile[a.urteil] = urteile.get(a.urteil, 0) + 1
+    if ergebnisse and not urteile:
+        logger.error(
+            "Quotenabgleich: %d Ergebnisse ohne Urteil — Bilanz unbrauchbar",
+            len(ergebnisse),
+        )
+    logger.info(
+        "Quotenabgleich: %d Dienst/Graph-Paare geprueft — %s "
+        "(Nenner: user=%d, pixie=%d)",
+        len(ergebnisse), urteile or "keine",
+        REGISTER.turns("user"), REGISTER.turns("pixie"),
+    )
+    return ergebnisse

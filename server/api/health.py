@@ -88,9 +88,49 @@ def searxng_testen() -> bool:
 # ─────────────────────────────────────────────
 # Endpunkte
 # ─────────────────────────────────────────────
+def _nmcp_stand() -> dict:
+    """Sammelt den NMCP-Zustand: Einbindung, Quoten und Zaehlerstaende.
+
+    Vorbedingung: keine — vor dem Handshake ist der Zustand leer.
+
+    Nachbedingung: ein Dict mit `verweigert`, `ohne_zweifelsfaelle` und je
+    Empfangsdienst dem Paar aus geschaetzter und gemessener Quote.
+
+    **Der Grund fuer diesen Lesepfad steht in der Konvention:** Eine
+    verweigerte Einbindung muss zur LAUFZEIT sichtbar bleiben, nicht nur in
+    einer Startmeldung. Eine Zeile beim Hochlauf ist nach zehn Minuten aus
+    dem Blick, und danach verhaelt sich der fehlende Dienst wie einer, den
+    niemand braucht — genau der stille Zustand, gegen den der
+    Quotenabgleich gebaut ist.
+    """
+    from agents import AgentRegistry
+    from agents.nmcp_quote import REGISTER
+
+    dienste: dict = {}
+    for name, agent in sorted(AgentRegistry.alle().items()):
+        if getattr(agent, "zustellart", "") != "empfang":
+            continue
+        for graph, geschaetzt in getattr(agent, "quote", {}).items():
+            stand = REGISTER.stand(name, graph)
+            nenner = REGISTER.turns(graph)
+            dienste[f"{name}/{graph}"] = {
+                "geschaetzt":  geschaetzt,
+                "zugestellt":  stand.zugestellt,
+                "bearbeitet":  stand.bearbeitet,
+                "abgelehnt":   stand.abgelehnt,
+                "nenner":      nenner,
+                "gemessen":    round(stand.zugestellt / nenner * 100, 1) if nenner else None,
+            }
+
+    return {
+        "nenner":  {g: REGISTER.turns(g) for g in ("user", "pixie")},
+        "dienste": dienste,
+    }
+
+
 @router.get("/health")
 def health():
-    """Systemstatus aller Komponenten + Shadow Agent."""
+    """Systemstatus aller Komponenten + Shadow Agent + NMCP-Stand."""
     # Shadow-Status aus Redis lesen
     shadow: dict = {"zustand": "idle", "thema": ""}
 
@@ -109,6 +149,7 @@ def health():
         "ollama":   "ok" if ollama_testen()   else "fehler",
         "searxng":  "ok" if searxng_testen()  else "fehler",
         "shadow":   shadow,
+        "nmcp":     _nmcp_stand(),
     }
 
 

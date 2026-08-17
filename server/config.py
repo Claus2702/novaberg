@@ -2274,3 +2274,12 @@ ZUWENDUNG_STAND_MAX_ALTER_SEKUNDEN: float = float(
 from prompt_loader import prompt_laden
 
 PROMPTS: dict[str, str] = prompt_laden(OLLAMA_CONNECTOR)
+
+
+# --- NMCP: Takt des Quotenabgleichs ---
+# Bewusst lang. Der Abgleich darf erst ab 30 Aeusserungen ueberhaupt
+# urteilen und ab 100 fuer die Viertel-Abweichung; haeufigere Laeufe
+# erzeugen nur "keine Aussage" und stumpfen die Meldung ab.
+NMCP_ABGLEICH_INTERVALL_SEKUNDEN: int = int(
+    os.getenv("NMCP_ABGLEICH_INTERVALL_SEKUNDEN", "1800")
+)

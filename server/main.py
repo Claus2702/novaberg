@@ -13,6 +13,7 @@ from fastapi                        import FastAPI
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 
 from config import (
+    NMCP_ABGLEICH_INTERVALL_SEKUNDEN,
     redis_client, ollama_gpu_client, ollama_cpu_client, llm_lock,
     OLLAMA_MODEL, OLLAMA_GPU_NUM_CTX, OLLAMA_CPU_NUM_CTX,
     SHADOW_MODEL, POSTGRES_URL,
@@ -304,6 +305,25 @@ async def lifespan(app: FastAPI):
             seconds       = PIXIE_CPU_INTERVALL_SEKUNDEN,
             id            = "pixie_heartbeat_cpu",
             name          = "Pixie Heartbeat (CPU-Spur)",
+            max_instances = 1,
+            coalesce      = True,
+        )
+        # Der Quotenabgleich braucht einen Aufrufer, sonst ist er selbst
+        # eine Deklaration ohne Leser. Der Takt ist bewusst lang: Der
+        # Abgleich braucht 30 bis 100 Aeusserungen, bevor er ueberhaupt
+        # urteilen darf — haeufiger zu pruefen erzeugt nur "keine Aussage".
+        async def _nmcp_abgleich() -> None:
+            """Haelt die angemeldeten Quoten gegen die gezaehlten Zustellungen."""
+            from agents import AgentRegistry
+            from agents.nmcp_quote import abgleich_protokollieren
+            abgleich_protokollieren(AgentRegistry.alle())
+
+        scheduler.add_job(
+            _nmcp_abgleich,
+            trigger       = "interval",
+            seconds       = NMCP_ABGLEICH_INTERVALL_SEKUNDEN,
+            id            = "nmcp_quotenabgleich",
+            name          = "NMCP-Quotenabgleich",
             max_instances = 1,
             coalesce      = True,
         )
