@@ -168,6 +168,50 @@ async def lifespan(app: FastAPI):
         agent.setup(POSTGRES_URL)
     logger.info(f"Agent-Discovery: {len(AgentRegistry.alle())} Agenten registriert")
 
+    # NMCP-Handshake: Naht herstellen und Kompatibilitaet pruefen.
+    #
+    # Das ist der einzige Zeitpunkt mit einem echten Verweigerungsrecht —
+    # zur Laufzeit kann niemand nein sagen, ohne das Gespraech anzuhalten.
+    # Die Ablehnung trifft den einzelnen Dienst und NICHT das System: Ein
+    # fehlerhaft angemeldetes Plugin darf den Start nicht verhindern.
+    from agents.nmcp import anmelden, gesamtbild_pruefen
+    _befunde = {}
+    for _agent in AgentRegistry.alle().values():
+        try:
+            _befunde[_agent.name] = anmelden(_agent)
+        except (TypeError, ValueError) as _fehler:
+            logger.error(
+                f"NMCP: Dienst '{_agent.name}' nicht anmeldbar "
+                f"({type(_fehler).__name__}: {_fehler}) — nicht eingebunden"
+            )
+    app.state.nmcp_befunde = _befunde
+
+    _nicht = [b.name for b in _befunde.values() if not b.eingebunden]
+    _ohne_zweifel = [
+        b.name for b in _befunde.values()
+        if b.eingebunden and not b.zweifel_erlaubt
+    ]
+    logger.info(
+        f"NMCP-Handshake: {len(_befunde)} geprueft, "
+        f"{len(_befunde) - len(_nicht)} eingebunden, "
+        f"{len(_nicht)} verweigert, {len(_ohne_zweifel)} ohne Zweifelsfaelle"
+    )
+    # Eine verweigerte Einbindung muss zur LAUFZEIT sichtbar bleiben, nicht
+    # nur hier. Eine Startmeldung ist nach zehn Minuten aus dem Blick, und
+    # danach verhaelt sich der fehlende Dienst wie einer, den niemand
+    # braucht — genau der stille Zustand, gegen den der Quotenabgleich
+    # gebaut ist. Deshalb liegt der Befund in app.state und wird von
+    # /health mitgemeldet.
+    if _nicht:
+        logger.error(f"NMCP: NICHT eingebunden — {_nicht}")
+    if _ohne_zweifel:
+        logger.warning(
+            f"NMCP: ohne Zweifelsfaelle (vierter Ausgang fehlt) — {_ohne_zweifel}"
+        )
+
+    for _meldung in gesamtbild_pruefen(AgentRegistry.alle()):
+        logger.warning(f"NMCP-Gesamtbild [{_meldung.regel}]: {_meldung.text}")
+
     # Periodische Pixie-Aufgaben registrieren (aus Agent periodic_task())
     if PIXIE_AKTIV:
         import time as _time

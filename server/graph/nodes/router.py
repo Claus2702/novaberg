@@ -15,12 +15,14 @@ import json
 import logging
 from datetime import datetime
 
-from graph.reiz  import reiz_ist_eigener_gedanke, reiz_text
+from agents.nmcp_quote import REGISTER
+from config import PROMPTS, get_node_config, redis_client
+from memory.session import format_session_turns_numbered, session_turns_retrieve
+from plugins import get_combined_router_prompt
+from services.model_services import ChatRequest, model_service
+
+from graph.reiz import reiz_ist_eigener_gedanke, reiz_text
 from graph.state import ConversationState
-from plugins     import get_combined_router_prompt
-from config import redis_client, get_node_config, PROMPTS
-from memory.session import session_turns_retrieve, format_session_turns_numbered
-from services.model_services import model_service, ChatRequest
 
 logger = logging.getLogger("ki_server.router")
 
@@ -82,6 +84,14 @@ def route(
     Impuls-Turn steht dort nichts, und ein Router ohne Text entscheidet ueber
     Gedaechtnis, Web und Zeitachse auf einer leeren Zeichenkette.
     """
+    # Der Nenner des Quotenabgleichs: eine Aeusserung, die den Empfang
+    # erreicht hat. Je Graph getrennt, weil die Impulsrate des
+    # Hintergrunds keinem Fachdienst gehoert — ein gemeinsamer Nenner
+    # schwankt, sobald jemand den Takt aendert.
+    REGISTER.turn_zaehlen(
+        "pixie" if state.get("graph_rolle") == "pixie" else "user"
+    )
+
     reiz: str = reiz_text(state)
     logger.info(f"Router: Route Prompt ({len(reiz)} Zeichen)")
 

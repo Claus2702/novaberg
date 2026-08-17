@@ -18,6 +18,7 @@ import logging
 
 from agents import get_dispatch
 from agents.base import AgentResult
+from agents.nmcp_quote import REGISTER
 from memory.pipeline_log import log_ausgabe
 
 from graph.reiz import reiz_text
@@ -132,6 +133,14 @@ def agent_dispatch_node(state: dict) -> dict:
         _handlung_protokollieren(state, agent_name, rueckgabe)
         return rueckgabe
 
+    # Der Quotenzaehler sitzt hier, weil nur der Empfang weiss, WAS er
+    # zugestellt hat. Gezaehlt wird die Zustellung und nicht der Erfolg:
+    # Die Differenz zu `bearbeitet` ist ein Zustellverlust und hat mit dem
+    # Aushang nichts zu tun — wer nur den Erfolg zaehlt, liest einen
+    # Pipeline-Defekt als Routing-Problem.
+    _graph = "pixie" if state.get("graph_rolle") == "pixie" else "user"
+    REGISTER.zustellung_zaehlen(agent_name, _graph)
+
     logger.info(f"Agent-Dispatch: {agent_name}")
     try:
         rueckgabe = dispatch_fn(state)
@@ -148,6 +157,14 @@ def agent_dispatch_node(state: dict) -> dict:
             "agent_results": bisherige + [result],
             "agent_name": "",
         }
+
+    # Bearbeitung samt Ausgang zaehlen. Die Ablehnungsquote ist das zweite
+    # Signal des Abgleichs: Trifft die Zustellquote und wird trotzdem viel
+    # abgelehnt, ist der Aushang richtig und die Grenzangabe fehlt.
+    for _r in rueckgabe.get("agent_results", [])[len(state.get("agent_results", [])):]:
+        REGISTER.bearbeitung_zaehlen(
+            agent_name, _graph, getattr(_r, "status", "")
+        )
 
     _handlung_protokollieren(state, agent_name, rueckgabe)
     return rueckgabe
