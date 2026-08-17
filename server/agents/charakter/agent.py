@@ -412,13 +412,28 @@ class CharakterAgent(BaseAgent):
     # ─────────────────────────────────────────
 
     def _turns_laden(self, user_id: str, grenze: int = 40) -> list[dict]:
-        """Laedt den Wortlaut der Turns eines Paares aus `pipeline_log`.
+        """Laedt den Wortlaut der Begegnungen eines Paares aus `pipeline_log`.
 
         Vorbedingung: `user_id` ist die Kennung des Menschen im Paar — unter
             ihr laufen die Rohturns, unabhaengig davon, wessen Charakter
             destilliert wird. Die Perspektive macht der Prompt.
-        Nachbedingung: Liste von {'aeusserung', 'antwort'}, aelteste zuerst.
-            Leer heisst: kein Wortlaut vorhanden, und der Aufrufer meldet es.
+        Nachbedingung: Liste von {'aeusserung', 'antwort'}, aelteste zuerst,
+            **ausschliesslich aus Turns mit `herkunft='nutzer_turn'`**.
+            Leer heisst: keine Begegnung vorhanden, und der Aufrufer meldet es.
+
+        **Ein eigener Impuls ist keine Begegnung und gehoert in kein Profil.**
+        Beide Raeder messen eine Haltung GEGENUEBER jemandem; bei einem Impuls
+        gibt es kein Gegenueber, also nichts zu bewerten — weder fuer den
+        Menschen noch fuer die Figur. Vorgabe vom 16.08.2026.
+
+        Der Grund, warum das nicht bloss eine Feinheit ist: Ein Impuls legt
+        seinen Text in dasselbe Feld `user_prompt` wie eine Nutzeraeusserung.
+        Ungefiltert las diese Funktion die eigenen Gedanken der Figur als
+        Aeusserungen des Menschen und destillierte daraus **sein** Wesen.
+        `[gemessen]` — 16.08.2026 am produktiven Paar: Von den 40 gelesenen
+        Turns waren **25 eigene Impulse mit 95,4 % des Materials**; die
+        tatsaechlichen Aeusserungen des Menschen trugen 1761 Zeichen (4,6 %).
+        Die Marke `herkunft` liegt seit dem 05.08.2026 in derselben Zeile.
         """
         zeilen = db_manager.select(
             """
@@ -426,21 +441,47 @@ class CharakterAgent(BaseAgent):
                    inhalt ->> 'response'    AS antwort
             FROM pipeline_log
             WHERE art = 'turn_roh' AND user_id = %s
+              AND inhalt ->> 'herkunft' = 'nutzer_turn'
             ORDER BY erstellt_am DESC
             LIMIT %s
             """,
             (user_id, grenze),
         ) or []
 
+        # Wieviel der Bestand haette liefern koennen — ohne diese Zahl ist
+        # "wenig Material" nicht von "viel Material, davon das meiste
+        # ausgenommen" zu unterscheiden.
+        gesamt = db_manager.select(
+            """
+            SELECT count(*) FILTER (
+                       WHERE inhalt ->> 'herkunft' = 'eigener_impuls') AS impulse,
+                   count(*) FILTER (
+                       WHERE coalesce(inhalt ->> 'herkunft', '') = '')  AS ohne_marke
+            FROM pipeline_log
+            WHERE art = 'turn_roh' AND user_id = %s
+            """,
+            (user_id,),
+        ) or [{"impulse": 0, "ohne_marke": 0}]
+
         eintraege = [
             {"aeusserung": z["aeusserung"] or "", "antwort": z["antwort"] or ""}
             for z in reversed(zeilen)
             if (z["aeusserung"] or z["antwort"])
         ]
-        logger.info(
-            f"CharakterAgent: Wortlaut geladen fuer '{user_id}' — "
-            f"{len(eintraege)} Turns"
-        )
+
+        if not eintraege:
+            logger.error(
+                f"CharakterAgent: kein Begegnungs-Wortlaut fuer '{user_id}' — "
+                f"{gesamt[0]['impulse']} Impulse und "
+                f"{gesamt[0]['ohne_marke']} unmarkierte Turns bleiben ausgenommen"
+            )
+        else:
+            logger.info(
+                f"CharakterAgent: Wortlaut geladen fuer '{user_id}' — "
+                f"{len(eintraege)} Begegnungen "
+                f"({gesamt[0]['impulse']} Impulse ausgenommen, "
+                f"{gesamt[0]['ohne_marke']} ohne Marke)"
+            )
         return eintraege
 
     def _lzg_kern_laden(
