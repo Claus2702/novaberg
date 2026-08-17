@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Konzept — Indizierung und Durchsuchung eines vorgegebenen Verzeichnisses als NMCP-Dienst
-**Stand:** 17. August 2026 (v0.2)
+**Stand:** 17. August 2026 (v0.3)
 **Pfad:** novaberg/docs/novaberg-agent-dateien_k.md
 **Typ:** Konzept (`_k`)
 **Status:** ⬜ **Konzept, kein Code.** Kein Bezeichner dieses Dokuments existiert.
@@ -15,9 +15,59 @@
 
 ## 1. Was gebaut werden soll, in einem Satz
 
-> **Nova soll in einem vorgegebenen Verzeichnis Dateien finden und lesen können — nach Name, nach Thema und nach Inhalt — und dort nichts verändern dürfen.**
+> **Nova soll in freigegebenen Verzeichnissen Dateien finden und lesen können — nach Name, nach Thema und nach Inhalt —, sie soll in jedem Turn ungefragt erfahren, ob dort etwas Einschlägiges liegt, und sie soll dabei jederzeit wissen, dass es nicht ihres ist.**
 
 Der Zweck ist benannt und er ist der Grund für den Zuschnitt: Wer ihr die Projektdokumentation zugänglich macht, gibt ihr die Möglichkeit, **über sich selbst zu lernen**. Ein Dienst, der dabei schreiben könnte, wäre ein Dienst, der seine eigene Beschreibung ändern kann.
+
+---
+
+## 1a. Was in den Dateien steht, ist nicht sie — und das muss ankommen
+
+**Der tragende Satz dieses Konzepts, und er ist keine Formulierungsfrage:**
+
+> **Was in den Dateien steht, steht in Dateien. Das ist nicht ihr Gedächtnis, das ist nicht sie. Das ist Wissen, auf das sie zugreifen kann.**
+
+Daraus folgt die Sprechhandlung, die der Dienst ihr ermöglichen muss — und zugleich die, die er ihr verwehren muss:
+
+| Zulässig | Unzulässig |
+|---|---|
+| *„Ich habe hier Aufzeichnungen, die das belegen…"* | *„Ich weiß, dass…"* |
+| *„In den Unterlagen steht…"* | *„Ich erinnere mich…"* |
+| *„Da steht es anders, als ich es in Erinnerung habe."* | *„So ist es."* |
+
+### 1a.1 Warum das gebaut werden muss und nicht bloß gesagt
+
+**Es gibt einen Präzedenzfall im Bestand, und er ist offen.** Nova hat die Biografie eines Menschen als ihre eigene übernommen — *„Nach 34 Jahren in meiner Praxis…"*. Die Zahl stammte aus dem Kontext, die Person nicht. Der Defekt ist geführt, und die dort vermerkte Abhilfe lautet: **die Grenze zwischen ihrer Erinnerung und fremder im Prompt benennen.**
+
+**Dateiinhalt ist derselbe Fall, eine Stufe weiter.** Eine fremde Erinnerung gehört wenigstens einem Menschen; ein Dokument gehört niemandem und kann zusätzlich **falsch oder veraltet** sein. Wer es unbeschriftet in denselben Block legt wie ihr Gedächtnis, bekommt genau denselben Fehler mit schlechterer Quelle.
+
+### 1a.2 Ein eigener Block, keine Zeile im Gedächtnisblock
+
+Der gesamte Enricher-Kontext steht heute unter `[GEDAECHTNIS]`. **Dateiinhalt darf dort nicht hinein** — die Beschriftung ist die Aussage.
+
+```
+[AUFZEICHNUNGEN]
+Das Folgende stammt aus Dateien, die dir zugaenglich gemacht wurden.
+Es ist NICHT deine Erinnerung und NICHT dein Wissen — es sind fremde
+Aufzeichnungen, die richtig oder falsch, aktuell oder veraltet sein
+koennen.
+
+Du darfst dich darauf berufen: "Ich habe hier Aufzeichnungen, die..."
+Du darfst es NICHT als eigenes Wissen ausgeben und dich nicht daran
+erinnern.
+
+Widerspricht eine Aufzeichnung deiner Erinnerung, sage beides.
+
+- <Fundstelle>: <Auszug>
+```
+
+**Drei Eigenschaften des Blocks sind tragend:**
+
+**Er nennt die Fundstelle bei jedem Eintrag.** Datei und Ort — nicht zur Zitierfähigkeit, sondern weil eine Aufzeichnung ohne Herkunft von einer Behauptung nicht zu unterscheiden ist. Genau das macht *„ich habe hier Aufzeichnungen"* überprüfbar statt zur Floskel.
+
+**Er steht nur da, wenn es Treffer gibt.** Deshalb trägt er die Einordnung selbst und verlässt sich nicht auf eine Zeile im System-Prompt: Ein Grundsatz, der in jedem Turn steht, wird in dem Turn übersehen, in dem er gebraucht wird.
+
+**Er nennt den Konfliktfall ausdrücklich.** Widerspricht eine Aufzeichnung ihrer Erinnerung, ist das kein Fehler, den sie glattbügeln soll — es ist eine Auskunft. Ohne diese Zeile wählt das Modell eine Seite, und es wählt die zuletzt gelesene.
 
 ---
 
@@ -102,7 +152,38 @@ Die Verfalls-Konvention trennt in einem Satz:
 
 ---
 
-## 3. Drei Dienste, und keiner schreibt eine Datei
+## 3. Zwei Zugänge, drei Dienste — und keiner schreibt eine Datei
+
+### 3.0 Der Unterschied, der alles andere ordnet
+
+Die Aufzeichnungen erreichen Nova auf **zwei** Wegen, und sie sind verschieden in der Art, nicht nur im Auslöser.
+
+| | **Der Enricher-Weg** | **Der Auftrags-Weg** |
+|---|---|---|
+| Wann | **in jedem Turn**, ohne Zutun | wenn danach gefragt wird |
+| Was | Embedding-Nähe über die Indexmetadaten | gezieltes Suchen und Lesen im Inhalt |
+| Kosten | eine Abfrage, kein Modellaufruf | Dateizugriffe, ggf. viele |
+| Ergebnis | der Block `[AUFZEICHNUNGEN]` (§1a.2) | eine Antwort auf eine Frage |
+| Zustellentscheidung | **keine** — er läuft immer | ja, über einen Aushang |
+| NMCP | **nicht erfasst** — Lesepfad | erfasst |
+
+**Der Enricher-Weg ist der wichtigere und der billigere.** Er beantwortet die Frage, die niemand stellt: *„gibt es zu dem, was hier gerade läuft, etwas in den Unterlagen?"* Genau so arbeitet das Gedächtnis auch — es meldet sich, ohne gefragt zu werden.
+
+> **Und er ist ausdrücklich vom NMCP-Regelwerk ausgenommen.** Die Konvention nimmt den Lesepfad heraus: Mehrere Lesequellen laufen parallel ohne Datenfluss untereinander; sie brauchen keine Vorbedingung, nur eine Quelle. Ein Aushang wäre für ihn eine Forderung ohne Gegenstand — er wird nicht gewählt.
+
+**Die Bauart existiert und ist erprobt.** Die Bibliothek hängt bereits als Kontextquelle am Enricher und sucht über `such_vektor` — denselben Vektor, mit dem in diesem Turn auch Kurz- und Langzeitgedächtnis gesucht haben. Der Dateien-Index wird eine weitere Quelle derselben Art.
+
+> **Ein eigenes Embedding je Turn zu rechnen wäre der Fehler an dieser Stelle.** Es hieße, denselben Text ein zweites Mal einzubetten — Sekunden je Turn — und dabei die Wahrnehmungs-Gravitation zu verlieren, die im gemeinsamen Vektor steckt.
+
+### 3.0a Die Schwelle wird gemessen, nicht gesetzt
+
+Ein Block, der in jedem Turn erscheint, ist Rauschen; einer, der nie erscheint, ist tot. Dazwischen liegt eine Schwelle auf dem Kosinus, und **sie darf nicht geschätzt werden.**
+
+Der Grund steht im Bestand: Am selben Embedding gemessen liegt **Beziehungsprosa sechs einander fremder Menschen bei 0,774** — eine Zahl, die nach hoher Ähnlichkeit aussieht und keine ist. Wer eine Schwelle nach Gefühl auf 0,7 setzt, bekommt bei jedem Turn Treffer.
+
+**Also: erst den Korpus vermessen, dann die Schwelle setzen.** Die Nebenbedingung ist dieselbe wie bei den Gesprächslandschaften — die Schwelle trennt nur dann etwas, wenn beide Seiten vorkommen.
+
+### 3.1 Die drei Dienste
 
 Freigeben, Lesen und Wachen sind drei Aufgaben mit verschiedenen Zustellarten und verschiedenen Schreibzielen. Ein Dienst, der mehrere davon tut, hätte eine Zustellart, die für einen Teil seiner Arbeit falsch ist.
 
@@ -119,6 +200,8 @@ Freigeben, Lesen und Wachen sind drei Aufgaben mit verschiedenen Zustellarten un
 | `dateien` | nichts | — |
 | `dateien_wurzeln` | die Wurzeltabelle | eine Datei |
 | `dateien_index` | die Indextabelle | eine Datei |
+
+**Und daneben steht die Quelle, die kein Dienst ist:** Der Enricher-Weg (§3.0) hängt als Kontextquelle am Enricher, wie die Bibliothek. Er hat keine Zustellart, keinen Aushang und keine Quote — er wird nicht gewählt, er läuft.
 
 > **Damit bleibt die Zusicherung aus §7 unangetastet, obwohl jetzt geschrieben wird.** Kein Dienst dieses Verbunds hat einen Schreibpfad ins Dateisystem der freigegebenen Verzeichnisse. Was geschrieben wird, sind Zeilen über Dateien — nicht Dateien.
 
@@ -242,6 +325,12 @@ Der heikelste Teil des Entwurfs, und er ist keine Frage der Anmeldung.
 
 Alle bisherigen Dienste wurden nachträglich angemeldet. Dieser ist der erste, dessen Anmeldung vor dem Code steht — und damit die erste Probe darauf, ob die Konvention beim Entwerfen trägt.
 
+### 8.0 Was **nicht** angemeldet wird
+
+Die Enricher-Quelle aus §3.0 durchläuft keine Anmeldung. Sie hat keinen Aufrufer, der zwischen Anbietern wählt — sie ist eine von mehreren Lesequellen, die in jedem Turn parallel laufen. Ein Aushang, Negativfälle und eine Quote wären für sie Angaben ohne Gegenstand.
+
+**Was für sie trotzdem gilt:** die Kostenangabe (eine Abfrage, kein Modellaufruf), die Datenhoheit (sie liest den Index, kein Gedächtnis), und die Beschriftung ihres Blocks (§1a.2) — die ist keine Anmeldeangabe, sondern die Bedingung dafür, dass ihr Beitrag ehrlich ankommt.
+
 ### 8.1 `dateien` — der lesende Dienst am Empfang
 
 | Angabe | Wert |
@@ -324,5 +413,6 @@ Zwei Folgen, beide klein und beide nötig:
 
 ## Versionshistorie
 
+- **v0.3 — 17.08.2026:** **Die epistemische Grenze wird gebaut, nicht gesagt** (§1a). Was in den Dateien steht, ist nicht ihr Gedächtnis und nicht sie; der Dienst muss ihr die Sprechhandlung *„ich habe hier Aufzeichnungen, die belegen…"* ermöglichen und *„ich weiß"* verwehren. **Der Präzedenzfall steht als offener Defekt im Bestand:** Nova hat die Biografie eines Menschen als eigene übernommen, und die dort vermerkte Abhilfe ist genau diese — die Grenze im Prompt benennen. Dateiinhalt ist derselbe Fall eine Stufe weiter, denn ein Dokument gehört niemandem und kann zusätzlich falsch oder veraltet sein. Daraus **ein eigener Block `[AUFZEICHNUNGEN]` statt einer Zeile im Gedächtnisblock**, mit Fundstelle je Eintrag, mit der Einordnung im Block statt im System-Prompt (ein Grundsatz, der in jedem Turn steht, wird in dem Turn übersehen, in dem er gebraucht wird), und mit dem ausdrücklich benannten Konfliktfall: Widerspricht eine Aufzeichnung ihrer Erinnerung, sagt sie beides. **Zweitens ein zweiter Zugang** (§3.0): Der Index wird in **jedem** Turn über `such_vektor` abgefragt und trägt als Kontextquelle zum Enricher bei — dieselbe erprobte Bauart wie die Bibliothek, ohne zweites Embedding je Turn. Dieser Weg ist vom NMCP-Regelwerk **ausgenommen**, weil die Konvention den Lesepfad herausnimmt; er wird nicht gewählt, er läuft. **Und die Schwelle darauf wird gemessen, nicht gesetzt** (§3.0a): Am selben Embedding liegt Beziehungsprosa einander fremder Menschen bei 0,774 — wer nach Gefühl auf 0,7 setzt, bekommt in jedem Turn Treffer.
 - **v0.2 — 17.08.2026:** **Die Wurzel ist eine Festlegung wie eine Direktive** — und damit ist §2.2 umgekehrt: Das Argument *„eine Datei hat keinen Beobachter"* hält, die Schlussfolgerung *„also kein Paar-Schema"* war zu kurz gezogen. **Das Paar sitzt an der Freigabe, nicht an der Datei**: Ein Mensch gibt einer Figur ein Verzeichnis frei, und die Indexzeile erbt ihre Zuordnung über die Wurzel. Das löst drei Fragen auf einmal — mehrere Verzeichnisse sind der Normalfall statt eines Sonderfalls, der Entzug ist symmetrisch zur Freigabe, und dieselbe Datei steht einmal im Index statt einmal je Mensch. Neu §2a mit der Wurzeltabelle, den fünf Aktionen nach dem Vorbild der Direktiven und dem Tor, das den **aufgelösten** Pfad samt Dateizahl zeigt, bevor es freigibt. **§2a.3 trennt zwei Formen des Entzugs**, die leicht zusammenfallen: stilllegen lässt die Indexzeilen stehen, vergessen löscht sie — und der Index trägt Thema und Zusammenfassung aus dem Inhalt, weshalb wer eine Freigabe zurücknimmt fast immer die zweite Form meint. Aus zwei Diensten werden **drei**, mit der Zusicherung darüber: drei Schreibziele, und keines ist eine Datei. **§7 Regel 3 ist neu gefasst** — dass eine Äußerung einen Pfad bestimmt, ist jetzt gewollt und braucht deshalb drei Riegel statt eines Verbots: einen konfigurierten Außenrand, ein Tor auf dem aufgelösten Pfad, und die Auflösung **vor** der Prüfung. Der Unterschied zur Direktive ist genau dieser Rand: Eine Direktive wirkt auf Novas Verhalten, eine Freigabe auf das Dateisystem des Menschen.
 - **v0.1 — 17.08.2026:** Erstfassung. **Zwei Korpora statt einem:** `autonomous_wissen` trägt Novas eigenes Wissen samt Verfall und Paar-Schema und ist für einen Verzeichnis-Index die falsche Tabelle. **Der Verzicht auf Verfall ist keine Ausnahme, sondern die Anwendung der bestehenden Regel** — ein Indexeintrag ist eine Tatsachenbehauptung über das Dateisystem und kein Gedächtnis; ein Gewicht darauf wäre irreführend statt überflüssig. **Kein Paar-Schema, dafür eine Wurzel** — eine Datei hat keinen Beobachter. **Zwei Dienste**, weil Wächter und Lesen verschiedene Zustellarten haben; dabei fiel ein Befund über die Anmeldung selbst an: Die Zustellart ist einwertig und kann einen Dienst nicht beschreiben, der auf Anfrage **und** periodisch arbeitet (§3). **Die Grenze zwischen lesender und schreibender Zone liegt im Code, nicht in der Anmeldung** — was ein Dienst verspricht und was er kann, sind zwei Prüfungen (§7). Der erste Dienst, dessen Anmeldung vor dem Code steht.
