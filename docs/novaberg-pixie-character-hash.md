@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** CharakterAgent — Charakter-Hash aus KZG/LZG destillieren
-**Stand:** 16. August 2026 (gegen den Code geprüft: die getrennten `*_PROMPT_NOVA` sind zu **einem parametrisierten Satz** zusammengezogen, Träger über `_perspektive_aufloesen`; §3.3 nachgezogen). Davor: 1. August 2026 (**beide Räder sind eine Messreihe** — rohe Läufe in `charakter_rad_messung`, gespeichert wird das gewichtete Mittel der letzten fünf Erhebungen, Takt zweimal täglich; §4a. Zuvor: 29. Juli 2026, Chat 117 — die zwei Charakter-Räder und die vollständige Spaltenliste nachgetragen, §2, §4a, §7. ⚠ Fundament-Warnung nach Gewichts-Reset, siehe Kasten in §3. Kern: Chat 79, P7-Update Chat 103)
+**Stand:** 16. August 2026 (**die Auswahl der KZG-Einträge ordnet nach `salienz × zeitgewicht`** statt nach Fundreihenfolge — neuer §4b samt Herleitung der Halbwertszeit; §3.2 nachgezogen. Dabei am Code geprüft und **widerlegt**: Der Kern-Hash liest seit dem 10.08.2026 den **Turn-Wortlaut**, nicht `lzg_knoten` — §3.1 sagte vier Wochen lang das Falsche, ebenso `AGENT.md`. Davor am selben Tag: die getrennten `*_PROMPT_NOVA` sind zu **einem parametrisierten Satz** zusammengezogen, Träger über `_perspektive_aufloesen`; §3.3 nachgezogen). Davor: 1. August 2026 (**beide Räder sind eine Messreihe** — rohe Läufe in `charakter_rad_messung`, gespeichert wird das gewichtete Mittel der letzten fünf Erhebungen, Takt zweimal täglich; §4a. Zuvor: 29. Juli 2026, Chat 117 — die zwei Charakter-Räder und die vollständige Spaltenliste nachgetragen, §2, §4a, §7. ⚠ Fundament-Warnung nach Gewichts-Reset, siehe Kasten in §3. Kern: Chat 79, P7-Update Chat 103)
 **Pfad:** novaberg/docs/novaberg-pixie-character-hash.md
 **Quellen:** nova-05-m-a.md, nova-04-m-b.md, nova-04-t-b.md
 
@@ -38,11 +38,13 @@ Kein dirty Flag → sofort return. Fehlerbehandlung pro Profil (try/except).
 
 > **⚠ Fundament-Warnung (Chat 107, 12.07.2026):** Bis zum Gewichts-Reset am 12.07.2026 rechnete die Destillation auf **Zufallsgewichten** — im casing-blinden Embedding-Raum hatten 2910 Skelett-Kollisionen die `gewicht_absolut`-Ordnung bedeutungslos gemacht (EMBEDDING-CASING-BLIND; „Der Nutzer heißt Claus" stand bei 61, „Der Nutzer beobachtet dich" bei 44). Der bestehende `charakter_hash` — insbesondere `kern_hash` und `emotions_profil` — ist auf diesem Fundament entstanden und muss neu destilliert werden. **Der Reset stößt das nicht automatisch an:** Die Destillation läuft nur bei `hash_dirty`, und die Reset-/Re-Embed-Tools setzen das Flag nicht — offener Punkt CHARHASH-RESET-TRIGGER-FEHLT (bugs.md).
 
-### 3.1 Kern-Hash (LZG, Monate)
+### 3.1 Kern-Hash (Turn-Wortlaut, Monate)
 
 **Frage:** Wer ist dieser Mensch?
-**Quelle:** Langzeitgedächtnis (`lzg_knoten`, PostgreSQL), selektiert und gewichtet nach Anker-Stärke `gewicht_absolut` (nicht nach Präsenz/Decay). Seit Synapsen P7 (Chat 103). Der Kern beschreibt, wer jemand *dauerhaft* ist — die stärkste Verankerung, nicht die momentane Präsenz.
-**Stabilität:** Verändert sich langsam.
+
+~~**Quelle:** Langzeitgedächtnis (`lzg_knoten`, PostgreSQL), selektiert und gewichtet nach Anker-Stärke `gewicht_absolut` (nicht nach Präsenz/Decay). Seit Synapsen P7 (Chat 103).~~ → **Am 16.08.2026 gegen den Code geprüft und widerlegt.** `agent.py` übergibt an `kern_hash_destillieren` das Ergebnis von `_turns_laden` — **40 Rohturns aus `pipeline_log`** (`art='turn_roh'`), nicht die Langzeit-Knoten. Die Umstellung ist vom 10.08.2026 und im Code begründet: `KERN_HASH_PROMPT` fragt nach dem **WIE** jemand spricht, und die Knoten tragen das WORÜBER — aus einem *„jo"* ist dort *„Der Nutzer weiss nicht, was er hier tun soll"* geworden. Dieses Dokument war bis zum 16.08.2026 nicht nachgezogen; dieselbe falsche Quelle stand in `server/agents/charakter/AGENT.md`.
+
+**Stabilität:** Verändert sich langsam — *als Absicht*. Gemessen am 16.08.2026 liegt dem Profil ein Fenster von **40 der 444 vorhandenen Turns (9 %)** zugrunde, und die decken **2 von 20** Bestandstagen ab. Der Wortlaut wird für **beide** Perspektiven desselben Paares gelesen, ohne Trennung nach Sprecher: 55,9 % der Zeichen stammen von der Figur, 44,1 % vom Menschen. Belegte Folge im Profil des Menschen: eine Anrede, die er **an** die Figur richtet, steht dort als seine Selbstbeschreibung. Offen in der Fundliste.
 
 **Beispiel:**
 > "Der Nutzer ist ein analytischer Denker, der komplexe Themen ganzheitlich betrachtet und dabei intuitiv von der Sachebene zur emotionalen Bedeutung wechselt. Ihm ist Wohlbefinden und Qualität wichtiger als reine Effizienz. Er kommuniziert direkt, schätzt fundierte Zwischenbestätigungen und hat ein starkes Interesse an der Schnittstelle von Technologie und menschlichem Erleben."
@@ -50,8 +52,10 @@ Kein dirty Flag → sofort return. Fehlerbehandlung pro Profil (try/except).
 ### 3.2 Adaptiv-Hash (KZG, Tage)
 
 **Frage:** Was beschäftigt ihn gerade?
-**Quelle:** Kurzzeitgedächtnis (Redis).
+**Quelle:** Kurzzeitgedächtnis (Redis) — die `PIXIE_CHARAKTER_KZG_LIMIT` Einträge mit der höchsten **effektiven Salienz** (§4b).
 **Stabilität:** Wechselt mit Themen.
+
+> **Bis zum 16.08.2026 wählte diese Quelle nicht aus, sie griff zu.** `_kzg_laden` nahm die ersten zwanzig, die `scan_iter` lieferte, und brach ab. `SCAN` sagt keine Reihenfolge zu: Gemessen am produktiven Paar lagen die genommenen zwanzig auf den **Zeiträngen 245 bis 2162 von 2202**, Median 1284, im Mittel **18 Tage** alt — bei einem Profil, dessen Frage *„gerade"* lautet. Zwölf der neunzehn im Prompt trugen ein Zeitgewicht unter 0,09 und standen trotzdem mit vollem Text da.
 
 **Beispiel:**
 > "Quantencomputing, Beziehung zu Nova, Abnehmen, Eis essen."
@@ -95,7 +99,8 @@ Fünf LLM-Calls auf dem CPU-Modell für die Profile, danach die beiden Räder (�
 hash_dirty = TRUE in Redis?
     │
     Ja → lzg_knoten laden (aktiv = TRUE, sortiert nach gewicht_absolut DESC)
-    │    KZG-Einträge laden (für Adaptiv-Hash)
+    │    Turn-Wortlaut laden (pipeline_log, 40 Turns — für den Kern, §3.1)
+    │    KZG-Einträge wählen (höchste salienz × zeitgewicht, §4b)
     │
     ▼
     5 LLM-Calls (CPU-Modell) → 5 Profile generieren
@@ -177,6 +182,46 @@ Bis dahin war der gespeicherte Wert **eine einzelne Erhebung**, beim nächsten L
 ---
 
 **Gewichtung:** Hohe Anker-Stärken (`gewicht_absolut`) dominieren das Profil — was sich als dauerhaft prägend verankert hat, nicht was gerade präsent ist. `aktiv = TRUE` bleibt als Gate: inaktive (decay-deaktivierte) Knoten werden nicht geladen. Präsenz gated, Anker-Stärke ranked. Angezeigtes Gewicht im Kern-/Emotions-Prompt ist `gewicht_absolut` direkt (kein Read-Time-Decay mehr; `effektives_gewicht_berechnen` an diesen Stellen entfernt).
+
+---
+
+## 4b. Die Auswahl der KZG-Einträge
+
+**Gewählt werden die stärksten, nicht die ersten** — seit dem 16.08.2026. Die Größe ist die **effektive Salienz**:
+
+```
+effektive_salienz = salienz × zeitgewicht(alter_in_tagen)
+zeitgewicht(t)    = exp(-ln2 / T · t)      T = 1,7 Tage
+```
+
+Die Form ist die kanonische Verfallsform des Systems — dieselbe wie in `memory/ziele.py` und `memory/lzg_knoten.py`. Sie löst drei aneinandergesetzte Stücke ab (konstant, linear, exponentiell), die bei genau einem Tag von 1,00 auf 0,80 sprangen: Zwei Einträge, die eine Minute trennte, unterschieden sich um ein Fünftel.
+
+### Warum die Halbwertszeit 1,7 Tage ist
+
+**In einer Auswahl wirkt ein Zeitfaktor nur über die Ordnung, nie über den Betrag** — ein Faktor auf alle Einträge ändert die Rangfolge nicht. Die Halbwertszeit steuert deshalb genau eine Größe: wieviel Salienz-Vorsprung ein älterer Eintrag braucht, um einen jüngeren zu überholen, nämlich `2^(Δt/T)`.
+
+Gemessen am 16.08.2026 spannt die KZG-Salienz nur von 0,67 bis 1,00 (Faktor 1,49), und **87 % der Einträge liegen über 0,90** (Faktor 1,11). Bei `T = 1,7` — der gemessenen mittleren Gesprächslücke des produktiven Paares — ergibt das ein Wirkfenster von **0,98 Tagen**: Innerhalb einer Gesprächssitzung ordnet die Salienz, zwischen Sitzungen die Zeit.
+
+| T | Wirkfenster der Salienz |
+|---|---|
+| 1,0 Tag | 0,58 Tage |
+| **1,7 Tage** | **0,98 Tage** |
+| 3,0 Tage | 1,73 Tage |
+| 7,0 Tage | 4,03 Tage |
+
+Bei `T = 7` dürfte die Salienz über vier Tage hinweg umsortieren — dann zieht sie wieder Wochen altes Material nach oben. Die Nachmessvorschrift für den Stellwert steht im Kommentar bei `PIXIE_CHARAKTER_ADAPTIV_HALBWERTSZEIT_TAGE`.
+
+### Warum die volle Ordnung billiger ist als die alte Willkür
+
+Die Schlüssel tragen ihre Zeitmarke (`kzg:{user}:{character}:{ms}`) — sortieren kostet keinen Redis-Zugriff. Absteigend gelesen fällt das Zeitgewicht monoton; sobald es unter die schwächste bereits gewählte effektive Salienz sinkt, **kann kein älterer Eintrag mehr aufholen**, denn `salienz ≤ 1` und damit `salienz × gewicht ≤ gewicht`. Ab da wird nicht weitergelesen.
+
+**Gemessen am 16.08.2026:** 28 gelesene statt 2202 durchsuchter Schlüssel, mittleres Alter der Auswahl **18,0 → 2,06 Tage**, Laufzeit 30 ms.
+
+### Zwei Verwerfungen, die jetzt zählen
+
+Ein Eintrag ohne Themenfeld belegt keinen der Plätze — die Destillation verwirft ihn ohnehin, und unter den jüngsten `assistant`-Einträgen tragen nur **70 %** eines. Ebenso die Ladegrenze von 30 Tagen: Sie war bis dahin eine reine Gewichtskante *nach* dem Laden. Beide Pfade waren stille `continue`; beide stehen jetzt mit ihrer Zahl in der Logzeile.
+
+**Das Beziehungsprofil erbt dieselbe Auswahl** (`agent.py` reicht `kzg_eintraege` weiter). Es verliert durch den Themenfilter nichts, weil es den Wortlaut über `_key` liest, nicht die Themen.
 
 ---
 

@@ -10,6 +10,21 @@
 
 ## Chats 3–20: Grundlagen (März 2026)
 
+### 16.08.2026 — Der Adaptiv-Hash wählt nach Stärke statt nach Fundreihenfolge
+
+`_kzg_laden` nahm die ersten zwanzig Einträge, die `scan_iter` lieferte, und brach ab. `SCAN` sagt keine Ordnung zu: Die genommenen zwanzig lagen auf den **Zeiträngen 245 bis 2162 von 2202**, im Mittel **18 Tage** alt — bei einem Profil mit der Frage *„Was beschäftigt ihn gerade?"*.
+
+Gewählt wird jetzt nach `salienz × zeitgewicht`, das Gewicht als kanonische Verfallsform `exp(-ln2/T · t)` mit **T = 1,7 Tagen**. Die Halbwertszeit ist hergeleitet, nicht gewählt: In einer Auswahl wirkt ein Zeitfaktor nur über die Ordnung, und `T` bestimmt das Fenster, in dem die Salienz noch umsortieren kann. Bei der gemessenen Salienzspanne von 1,49 sind das **0,98 Tage** — innerhalb einer Sitzung ordnet die Salienz, zwischen Sitzungen die Zeit. Die abgelöste Kurve sprang bei genau einem Tag von 1,00 auf 0,80.
+
+Der Aufwand sinkt trotz vollständiger Ordnung: Die Schlüssel tragen ihre Zeitmarke, und sobald das Gewicht unter die schwächste gewählte effektive Salienz fällt, kann kein älterer Eintrag mehr aufholen. **28 gelesene statt 2202 durchsuchter Schlüssel; mittleres Alter 18,0 → 2,06 Tage.**
+
+Dazu zwei stille `continue` beseitigt (fehlendes Themenfeld, Ladegrenze) — beide zählen jetzt in der Logzeile. Einträge ohne Themenfeld belegen keinen der zwanzig Plätze mehr; unter den jüngsten `assistant`-Einträgen tragen nur 70 % eines.
+
+Gegenprobe: vorhergesagt 4 rot, gezählt 4. Suite 1527 grün.
+
+**Beim Prüfen aufgefallen und nicht behoben:** Der Kern-Hash liest seit dem 10.08.2026 den Turn-Wortlaut statt `lzg_knoten` — für beide Perspektiven denselben Text, ohne Sprechertrennung. Steht in der Fundliste.
+
+
 ### 16.08.2026 — Ausgabe-Verifikation der Knoten
 
 `zustand_verifizieren()` in `graph/state.py` prüft die Rückgabe eines Knotens gegen den Zustandstyp und gegen die Felder, die der Knoten in **jedem** Pfad schreibt. Der Reducer ist der erste Nutzer, alle drei Rückkehrpfade laufen darüber.
