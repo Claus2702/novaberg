@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Konzept — Indizierung und Durchsuchung eines vorgegebenen Verzeichnisses als NMCP-Dienst
-**Stand:** 17. August 2026 (v0.1)
+**Stand:** 17. August 2026 (v0.2)
 **Pfad:** novaberg/docs/novaberg-agent-dateien_k.md
 **Typ:** Konzept (`_k`)
 **Status:** ⬜ **Konzept, kein Code.** Kein Bezeichner dieses Dokuments existiert.
@@ -32,8 +32,8 @@ Es gibt schon eine Tabelle mit `dateipfad`, `thema`, `zusammenfassung` und `them
 | Wer schreibt die Zeile | Nova, beim Ablegen | der Wächter, beim Erkennen |
 | Zugriff des Dienstes | lesend **und** schreibend | **nur lesend** |
 | Verfall | ja — vier Spalten, mit Halbwertszeit | **nein** |
-| Paar-Schema | ja (`user_id` × `character_id` × `beobachter`) | **nein**, siehe §2.2 |
-| Verzeichnis | `knowledge/` | ein vorgegebenes, konfiguriertes |
+| Paar-Schema | ja, an der Zeile (`user_id` × `character_id` × `beobachter`) | **an der Wurzel**, nicht an der Datei — §2.2 |
+| Verzeichnis | `knowledge/`, fest | **vom Menschen freigegeben**, mehrere möglich — §2a |
 
 ### 2.1 Der Verzicht auf Verfall folgt aus der bestehenden Regel — er ist keine Ausnahme
 
@@ -45,24 +45,82 @@ Die Verfalls-Konvention trennt in einem Satz:
 
 > **Deshalb wäre ein Gewicht auf dem Index nicht bloß überflüssig, sondern irreführend.** Eine Datei mit sinkendem Gewicht sähe aus wie eine, die an Bedeutung verliert, während sie unverändert dort liegt. Das ist derselbe Fehler wie ein Default im plausiblen Wertebereich: eine Zahl, die etwas behauptet, was niemand gemessen hat.
 
-### 2.2 Kein Paar-Schema, und warum das keine Verletzung ist
+### 2.2 Das Paar sitzt an der Wurzel, nicht an der Datei
 
-Das Paar-Schema (`user_id` × `character_id` × `beobachter`) ist für die **Gedächtnisschichten** verbindlich — Kurzzeit, Langzeit, Charakter-Hash. Es trägt dort die Frage *„wessen Sicht ist das"*.
+**Eine Datei hat keinen Beobachter.** Sie ist nicht die Erinnerung eines Menschen an etwas, sondern eine Datei; die Frage *„wessen Sicht ist das"*, die das Paar-Schema in den Gedächtnisschichten beantwortet, hat hier keinen Gegenstand.
 
-**Ein Index über ein Verzeichnis hat diese Frage nicht.** Eine Datei ist nicht die Erinnerung eines Menschen an etwas, sondern eine Datei. Sie hat keinen Beobachter.
+**Die Zuordnung entsteht trotzdem — eine Ebene höher.** Ein Verzeichnis wird nicht gefunden, sondern **freigegeben**: Ein Mensch legt fest, dass dieses Verzeichnis für diese Figur lesbar ist. Genau diese Festlegung trägt das Paar.
 
-**Was der Index stattdessen braucht, ist die Wurzel.** Jede Zeile trägt, aus welchem konfigurierten Verzeichnis sie stammt. Damit ist ein zweites Verzeichnis später ohne Migration hinzufügbar, und die Zugriffsfrage bleibt beantwortbar: nicht *„wem gehört die Erinnerung"*, sondern *„welche Wurzel darf dieser Dienst lesen"*.
+| Ebene | Paar-Schema | Warum |
+|---|---|---|
+| **Wurzel** (die Festlegung) | **ja** — `user_id` × `character_id` | ein Mensch gibt einer Figur ein Verzeichnis frei |
+| **Indexzeile** (die Datei) | **nein**, nur `wurzel_id` | die Datei erbt ihre Zuordnung über die Wurzel |
+
+> **Das ist der saubere Schnitt, und er löst drei Fragen auf einmal.** Mehrere Verzeichnisse sind dann kein Sonderfall, sondern der Normalfall — es sind mehrere Festlegungen. Der Entzug ist symmetrisch zur Freigabe. Und ein Verzeichnis, das ein Mensch für eine Figur freigegeben hat, ist für ein anderes Paar nicht sichtbar, ohne dass die Indexzeile das wissen muss.
+
+**Die Indexzeile bleibt paar-frei, und das ist kein Kompromiss.** Läge das Paar an der Datei, stünde dieselbe Datei mehrfach im Index, sobald zwei Menschen dasselbe Verzeichnis freigeben — mit derselben Zusammenfassung, demselben Embedding und einem zweiten Modellaufruf beim Indizieren. Über die Wurzel steht sie einmal da und ist über beide Festlegungen erreichbar.
 
 ---
 
-## 3. Zwei Dienste, nicht einer
+## 2a. Die Wurzel ist eine Festlegung wie eine Direktive
 
-Der Wächter und das Lesen sind zwei Aufgaben mit verschiedenen Zustellarten. Ein Dienst, der beides tut, hätte eine Zustellart, die für die halbe Arbeit falsch ist.
+**Die Bauart ist bereits im Bestand**, und sie wird nicht neu erfunden: Der Direktiven-Dienst führt CRUD über Festlegungen, die ein Mensch im Gespräch ausspricht — anlegen, lesen, ändern, deaktivieren, reaktivieren —, mit einem Tor davor, an dem der Mensch bestätigt. Eine Verzeichnis-Freigabe ist dieselbe Sorte Sache.
+
+### 2a.1 Die Tabelle der Wurzeln
+
+| Spalte | Zweck |
+|---|---|
+| `id` | Schlüssel; die Indexzeilen zeigen darauf |
+| `user_id` × `character_id` | **das Paar** — wer hat wem freigegeben |
+| `pfad` | der **aufgelöste** absolute Pfad, siehe §7 |
+| `bezeichnung` | wie der Mensch das Verzeichnis nennt (*„meine Projektdoku"*) — damit er es wieder ansprechen kann, ohne den Pfad zu tippen |
+| `aktiv` | Soft-Delete, wie bei den Direktiven |
+| `erstellt_am`, `geaendert_am` | |
+
+### 2a.2 Die fünf Aktionen
+
+| Aktion | Was geschieht | Tor |
+|---|---|---|
+| `create` | Verzeichnis freigeben | **ja** — der Mensch bestätigt Pfad und Dateizahl |
+| `read` | *„welche Verzeichnisse hast du?"* | nein |
+| `update` | Bezeichnung ändern | ja |
+| `delete` | Freigabe zurücknehmen — `aktiv = false` | **ja** |
+| `reactivate` | Freigabe wieder aufnehmen | ja |
+
+**Das Tor beim Anlegen zeigt, was es freigibt, bevor es freigibt:** den aufgelösten Pfad und die Zahl der gefundenen Dateien. *„Ich habe 667 Dateien unter diesem Pfad gefunden — freigeben?"* Ein Mensch, der einen Pfad falsch genannt hat, sieht es an der Zahl.
+
+### 2a.3 Der Entzug hat zwei Formen, und sie sind nicht dasselbe
+
+| Form | Wirkung auf die Indexzeilen | Wann |
+|---|---|---|
+| **stilllegen** (`delete`) | bleiben, werden unerreichbar | *„lies da erstmal nicht mehr"* — eine spätere Wiederaufnahme braucht keine Neu-Indizierung |
+| **vergessen** | werden gelöscht | *„das soll weg"* |
+
+> **Die zweite Form ist nötig und darf nicht unter den Tisch fallen.** Der Index trägt Thema, Zusammenfassung und Stichwörter — **aus dem Inhalt gewonnen**. Ein Verzeichnis stillzulegen entfernt den Zugriff auf die Dateien, nicht das, was über sie in der Datenbank steht. Wer eine Freigabe zurücknimmt, weil dort etwas liegt, das nicht dort liegen sollte, meint fast immer die zweite Form.
+>
+> **Der Dienst darf das nicht raten.** Er fragt, welche Form gemeint ist — das ist ein Fall für die differenzierte Rückfrage, nicht für einen Vorgabewert.
+
+---
+
+## 3. Drei Dienste, und keiner schreibt eine Datei
+
+Freigeben, Lesen und Wachen sind drei Aufgaben mit verschiedenen Zustellarten und verschiedenen Schreibzielen. Ein Dienst, der mehrere davon tut, hätte eine Zustellart, die für einen Teil seiner Arbeit falsch ist.
 
 | Dienst | Zustellart | Aufgabe | Lastart |
 |---|---|---|---|
 | **`dateien`** | Empfang | eine Frage beantworten: finden, lesen, Fundstellen liefern | LLM-Spur (Klassifikation der Anfrage) |
-| **`dateien_index`** | Zeitplan | den Bestand gegen das Verzeichnis halten und Änderungen indizieren | Rechenspur — **außer** bei der Zusammenfassung, siehe §5.3 |
+| **`dateien_wurzeln`** | Empfang | Verzeichnisse freigeben, benennen, zurücknehmen — CRUD über die Festlegungen (§2a) | LLM-Spur |
+| **`dateien_index`** | Zeitplan | den Bestand gegen die freigegebenen Verzeichnisse halten | LLM-Spur, siehe §5.3 |
+
+**Drei Dienste, drei Schreibziele — und keines davon ist eine Datei:**
+
+| Dienst | schreibt in | schreibt **nie** |
+|---|---|---|
+| `dateien` | nichts | — |
+| `dateien_wurzeln` | die Wurzeltabelle | eine Datei |
+| `dateien_index` | die Indextabelle | eine Datei |
+
+> **Damit bleibt die Zusicherung aus §7 unangetastet, obwohl jetzt geschrieben wird.** Kein Dienst dieses Verbunds hat einen Schreibpfad ins Dateisystem der freigegebenen Verzeichnisse. Was geschrieben wird, sind Zeilen über Dateien — nicht Dateien.
 
 Das ist dieselbe Aufteilung wie bei `synapsen_promotion` und `synapsen_decay`: ein Dienst, der auf Anfrage arbeitet, und einer, der den Bestand pflegt.
 
@@ -77,7 +135,7 @@ Das ist dieselbe Aufteilung wie bei `synapsen_promotion` und `synapsen_decay`: e
 | Spalte | Zweck | Anmerkung |
 |---|---|---|
 | `id` | Schlüssel | |
-| `wurzel` | aus welchem konfigurierten Verzeichnis | §2.2 |
+| `wurzel_id` | Zeiger auf die Freigabe, aus der diese Datei stammt | §2a.1 — hier hängt das Paar |
 | `pfad` | Pfad **relativ zur Wurzel** | absolut wäre ein Umgebungsdetail und nicht verschiebbar |
 | `name` | Dateiname | für die Namenssuche, ohne Pfadzerlegung zur Abfragezeit |
 | `thema` | ein Satz: worum es geht | vom Modell, beim Indizieren |
@@ -166,7 +224,15 @@ Der heikelste Teil des Entwurfs, und er ist keine Frage der Anmeldung.
 
 1. **Jeder Pfad wird gegen seine Wurzel aufgelöst und geprüft**, nachdem Symlinks und `..` aufgelöst sind. Ein Pfad, der nach der Auflösung außerhalb liegt, wird abgewiesen und gemeldet — nicht zurechtgebogen.
 2. **Der lesende Dienst hat keine Schreibfunktion.** Nicht „er benutzt sie nicht", sondern er importiert sie nicht. Ein Recht, das nicht im Modul liegt, kann kein Prompt herbeireden.
-3. **Die Wurzeln stehen in der Konfiguration, nicht im Auftrag.** Ein Verzeichnis, das aus einer Äußerung kommt, ist eine Äußerung — und die kommt von außen.
+3. **Eine Wurzel entsteht aus einer Festlegung, und die Festlegung hat drei Riegel.** Dass ein Mensch das Verzeichnis im Gespräch nennt, ist gewollt (§2a) — und damit bestimmt eine Äußerung einen Pfad im Dateisystem. Das ist genau die Stelle, an der ein Dienst mit Dateizugriff gefährlich wird, und sie braucht mehr als ein Tor:
+
+   **a) Ein konfigurierter Außenrand.** Es gibt eine Menge zulässiger Elternverzeichnisse, und sie steht in der Konfiguration. Innerhalb davon darf der Mensch freigeben, außerhalb nicht — auch nicht mit Bestätigung. Ohne diesen Rand könnte ein Gespräch das Wurzelverzeichnis freigeben.
+
+   **b) Das Tor zeigt das Ergebnis der Auflösung, nicht die Eingabe.** Bestätigt wird der aufgelöste absolute Pfad samt Dateizahl — nicht das, was gesagt wurde. Wer `../..` schreibt, sieht, wo er landet.
+
+   **c) Die Auflösung passiert vor der Prüfung, nicht danach.** Symlinks und `..` werden aufgelöst, dann wird gegen den Außenrand geprüft. Umgekehrt prüft man eine Zeichenkette und nicht ein Verzeichnis.
+
+   > **Der Unterschied zu einer Direktive ist genau dieser Rand.** Eine Direktive wirkt auf Novas Verhalten und ist damit im System eingeschlossen. Eine Verzeichnis-Freigabe wirkt auf das Dateisystem des Menschen. Dieselbe Bauart, eine Schranke mehr.
 
 > **Warum das nicht in die Anmeldung gehört:** Die Anmeldung sagt, was ein Dienst zu tun *verspricht*. Bei einem Dienst mit Dateizugriff ist das zu wenig — was er verspricht und was er kann, müssen zwei verschiedene Prüfungen sein. Die Anmeldung nennt die Grenze, damit der Aufrufer sie kennt; der Code hält sie, damit sie gilt.
 
@@ -203,6 +269,21 @@ Eine Suche, die nichts findet, hat fast immer einen benachbarten Treffer. Die Ab
 
 **Das ist der Unterschied zwischen einer Suche und einer Auskunft.** Ein blankes *„nichts gefunden"* ist genau die Sackgasse, die die Konvention benennt — und bei einer Dateisuche ist sie besonders teuer, weil der Mensch nicht weiß, ob die Datei fehlt oder die Frage.
 
+### 8.2a `dateien_wurzeln` — die Freigaben am Empfang
+
+| Angabe | Wert |
+|---|---|
+| **Aushang** | Die Äußerung gibt ein **Verzeichnis frei**, nimmt eine Freigabe zurück oder fragt nach den bestehenden: *„du darfst in X nachsehen"*, *„nimm das Verzeichnis wieder weg"*, *„worauf hast du Zugriff?"*. Entscheidend ist der Bezug auf ein **Verzeichnis als Ganzes**, nicht auf eine Datei darin. |
+| **Negativfälle** | eine Frage nach dem **Inhalt** einer Datei — das gehört zu `dateien` · die Erwähnung eines Ordners im Gespräch ohne Freigabeabsicht (*„das liegt bei mir unter Projekte"*) · die Bitte, etwas **abzulegen** — dieser Verbund schreibt keine Dateien |
+| **Grenze** | legt keine Verzeichnisse an · löscht keine Dateien · gibt nichts außerhalb des konfigurierten Außenrands frei, auch nicht auf Bestätigung (§7) |
+| **Kosten** | LLM-Spur |
+| **Kadenz** | keine |
+| **Datenhoheit** | schreibt ausschließlich in die Wurzeltabelle; liest beim Tor das Verzeichnis, um zu zählen |
+| **Bedarf** | keiner |
+| **Quote** | **0 %** — eine Freigabe ist ein seltener Vorgang |
+| **Wiederholverhalten** | dieselbe Freigabe zweimal ergibt keine zweite Zeile, sondern die Auskunft, dass sie besteht |
+| **Ausgänge** | alle vier — und der vierte trägt hier den wichtigsten Fall: *„liegt außerhalb des zulässigen Bereichs"* mit dem aufgelösten Pfad als Beleg und dem zulässigen Rand als Vorschlag |
+
 ### 8.3 `dateien_index` — der Wächter am Zeitplan
 
 | Angabe | Wert |
@@ -222,7 +303,7 @@ Eine Suche, die nichts findet, hat fast immer einen benachbarten Treffer. Die Ab
 Vier Fragen, die der Entwurf offenlässt, weil sie Absichten sind und keine Umsetzungsdetails:
 
 1. **Welche Wurzel zuerst?** Die Projektdokumentation ist der genannte Zweck. Sie ist zugleich der Korpus, in dem Nova über sich selbst liest — was eine eigene Frage aufwirft (§10).
-2. **Sieht jedes Paar denselben Index?** Der Entwurf sagt: ja, ein Index je Wurzel, kein Paar-Bezug. Bei mehreren Menschen am selben System ist das eine Zugriffsentscheidung und keine Schemafrage.
+2. ~~**Sieht jedes Paar denselben Index?**~~ → **Beantwortet (§2.2):** Das Paar hängt an der Freigabe. Zwei Menschen, die dasselbe Verzeichnis freigeben, teilen sich die Indexzeilen und haben zwei Wurzeln. Offen bleibt der Anschlussfall: **Was geschieht mit den Indexzeilen, wenn die letzte Freigabe auf ein Verzeichnis zurückgenommen wird** — sie sind dann von niemandem mehr erreichbar und stehen weiter da.
 3. **Wie tief darf `datei_grep` gehen?** Eine Obergrenze für Treffer und Dateien ist nötig; ohne sie ist eine unglückliche Anfrage ein Vollscan.
 4. **Was passiert bei einer Datei, die kein Text ist?** PDF, Bild, Tabelle. Der Entwurf behandelt Text; alles andere wird erkannt und mit Grund übergangen, nicht stillschweigend.
 
@@ -243,4 +324,5 @@ Zwei Folgen, beide klein und beide nötig:
 
 ## Versionshistorie
 
+- **v0.2 — 17.08.2026:** **Die Wurzel ist eine Festlegung wie eine Direktive** — und damit ist §2.2 umgekehrt: Das Argument *„eine Datei hat keinen Beobachter"* hält, die Schlussfolgerung *„also kein Paar-Schema"* war zu kurz gezogen. **Das Paar sitzt an der Freigabe, nicht an der Datei**: Ein Mensch gibt einer Figur ein Verzeichnis frei, und die Indexzeile erbt ihre Zuordnung über die Wurzel. Das löst drei Fragen auf einmal — mehrere Verzeichnisse sind der Normalfall statt eines Sonderfalls, der Entzug ist symmetrisch zur Freigabe, und dieselbe Datei steht einmal im Index statt einmal je Mensch. Neu §2a mit der Wurzeltabelle, den fünf Aktionen nach dem Vorbild der Direktiven und dem Tor, das den **aufgelösten** Pfad samt Dateizahl zeigt, bevor es freigibt. **§2a.3 trennt zwei Formen des Entzugs**, die leicht zusammenfallen: stilllegen lässt die Indexzeilen stehen, vergessen löscht sie — und der Index trägt Thema und Zusammenfassung aus dem Inhalt, weshalb wer eine Freigabe zurücknimmt fast immer die zweite Form meint. Aus zwei Diensten werden **drei**, mit der Zusicherung darüber: drei Schreibziele, und keines ist eine Datei. **§7 Regel 3 ist neu gefasst** — dass eine Äußerung einen Pfad bestimmt, ist jetzt gewollt und braucht deshalb drei Riegel statt eines Verbots: einen konfigurierten Außenrand, ein Tor auf dem aufgelösten Pfad, und die Auflösung **vor** der Prüfung. Der Unterschied zur Direktive ist genau dieser Rand: Eine Direktive wirkt auf Novas Verhalten, eine Freigabe auf das Dateisystem des Menschen.
 - **v0.1 — 17.08.2026:** Erstfassung. **Zwei Korpora statt einem:** `autonomous_wissen` trägt Novas eigenes Wissen samt Verfall und Paar-Schema und ist für einen Verzeichnis-Index die falsche Tabelle. **Der Verzicht auf Verfall ist keine Ausnahme, sondern die Anwendung der bestehenden Regel** — ein Indexeintrag ist eine Tatsachenbehauptung über das Dateisystem und kein Gedächtnis; ein Gewicht darauf wäre irreführend statt überflüssig. **Kein Paar-Schema, dafür eine Wurzel** — eine Datei hat keinen Beobachter. **Zwei Dienste**, weil Wächter und Lesen verschiedene Zustellarten haben; dabei fiel ein Befund über die Anmeldung selbst an: Die Zustellart ist einwertig und kann einen Dienst nicht beschreiben, der auf Anfrage **und** periodisch arbeitet (§3). **Die Grenze zwischen lesender und schreibender Zone liegt im Code, nicht in der Anmeldung** — was ein Dienst verspricht und was er kann, sind zwei Prüfungen (§7). Der erste Dienst, dessen Anmeldung vor dem Code steht.
