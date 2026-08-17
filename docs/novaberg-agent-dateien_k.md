@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Konzept — Indizierung und Durchsuchung eines vorgegebenen Verzeichnisses als NMCP-Dienst
-**Stand:** 17. August 2026 (v0.3)
+**Stand:** 17. August 2026 (v0.4)
 **Pfad:** novaberg/docs/novaberg-agent-dateien_k.md
 **Typ:** Konzept (`_k`)
 **Status:** ⬜ **Konzept, kein Code.** Kein Bezeichner dieses Dokuments existiert.
@@ -182,6 +182,64 @@ Ein Block, der in jedem Turn erscheint, ist Rauschen; einer, der nie erscheint, 
 Der Grund steht im Bestand: Am selben Embedding gemessen liegt **Beziehungsprosa sechs einander fremder Menschen bei 0,774** — eine Zahl, die nach hoher Ähnlichkeit aussieht und keine ist. Wer eine Schwelle nach Gefühl auf 0,7 setzt, bekommt bei jedem Turn Treffer.
 
 **Also: erst den Korpus vermessen, dann die Schwelle setzen.** Die Nebenbedingung ist dieselbe wie bei den Gesprächslandschaften — die Schwelle trennt nur dann etwas, wenn beide Seiten vorkommen.
+
+### 3.0b Der dritte Zugang: sie liest nach, weil sie will
+
+Zwischen der stillen Beilage und dem ausdrücklichen Auftrag steht ein dritter Fall, und er ist der eigentümlichste: **Nova entscheidet mitten im Turn, dass ihr die Zusammenfassung nicht reicht.**
+
+```
+[AUFZEICHNUNGEN] meldet: "Datei X handelt von Quarks."
+        ↓
+Nova: "Warte — ich habe hier was dazu, lass mich das nachlesen."
+        ↓
+neuer Eintrag in die Ereignis-Queue
+        ↓
+zweiter Durchlauf: gezielt greppen, Fundstellen sammeln, abwaegen
+        ↓
+Verfasser baut die Antwort aus Vorwissen UND Fundstellen
+        ↓
+Responder
+```
+
+**Die Maschine dafür existiert und muss nicht gebaut werden.** Der Zustand trägt `self_trigger` und `self_trigger_payload`, der Ereignis-Consumer führt den Folgedurchlauf aus, und ein Zähler begrenzt ihn auf drei je Turn.
+
+> **Heute gibt es genau einen Aufrufer, und er zeigt zugleich, was zu ändern ist.** Der Thinker setzt den Self-Trigger nach einem **Doppel-Fehlschlag** und hängt die Geste *„Hmm... ich muss das nochmal durchgehen."* an. Der Mechanismus ist also als **Reparatur** gebaut.
+>
+> **Der Dateien-Fall ist derselbe Mechanismus mit umgekehrtem Vorzeichen: keine Reparatur, sondern eine Vertiefung.** Nicht *„das ging schief"*, sondern *„da ist mehr, und ich will es haben"*.
+
+#### Drei Dinge folgen daraus, und zwei sind Fallen
+
+**Die Geste wird ehrlich statt überbrückend.** Beim Fehlschlag ist sie ein Füller, während der zweite Versuch läuft. Hier ist sie **Inhalt**: *„Warte, ich habe dazu Aufzeichnungen — lass mich nachsehen."* Das ist wahr, es erklärt die Pause, und es ist genau die Sprechhandlung aus §1a.
+
+**Die Nutzlast muss die Kandidaten tragen, nicht nur den Prompt.** Der heutige Payload trägt die Äußerung für einen erneuten Versuch. Für die Vertiefung muss er tragen, **welche Dateien** gemeint sind und **wonach** gesucht werden soll — sonst beginnt der zweite Durchlauf bei null und findet über das Embedding dieselbe Zusammenfassung wieder, aus der er gerade kam.
+
+**Und das Budget ist geteilt — das ist die Falle.** Drei Selbstauslösungen je Turn gelten für **alle** Gründe zusammen. Eine Vertiefung verbraucht ein Kontingent, das eine Reparatur später brauchen könnte; wer sie ohne eigene Buchung einführt, nimmt der Fehlerbehandlung stillschweigend Luft weg.
+
+> **Die Entscheidung dazu gehört nicht in dieses Dokument:** getrennte Zähler je Grund, oder ein gemeinsamer mit Vorrang für die Reparatur. Was nicht geht, ist beides aus demselben Topf ohne Buchung — dann fällt die Reparatur genau in den Turns aus, in denen viel nachzulesen war.
+
+#### Wann sie das tun darf, und wann nicht
+
+Die Vertiefung kostet einen ganzen zweiten Durchlauf. Sie lohnt, wenn die Zusammenfassung ein Thema **trifft** und der Auszug die Frage **nicht beantwortet** — und sie lohnt nicht, wenn der Treffer schwach ist oder die Frage schon beantwortet werden kann.
+
+**Das ist eine Abwägung und keine Regel**, und sie gehört deshalb zu ihr und nicht in eine Schwelle. Was der Bau dazu liefern muss, ist die Grundlage: Der Block sagt, **wie gut** der Treffer war und **wie groß** die Datei ist. Ohne diese zwei Angaben entscheidet sie zwischen Nachlesen und Weiterreden im Blindflug.
+
+### 3.0c „Weißt du was über X" ist ein Auftrag über mehrere Bestände
+
+Der ausdrückliche Auftrag ist **nicht** auf die Dateien beschränkt, und das ist beim Zuschnitt des Aushangs zu beachten. *„Weißt du was über schwarze Löcher?"* heißt: **such in allem, was du hast.** Das sind heute drei verschiedene Bestände mit drei verschiedenen Zugängen:
+
+| Bestand | Was darin liegt | Wie er heute erreicht wird |
+|---|---|---|
+| **`knowledge/`** — ihr eigenes | was sie selbst erarbeitet hat | Kontextquelle des Enrichers |
+| **freigegebene Dateien** | fremde Aufzeichnungen | dieses Konzept |
+| **Web** | was draußen steht | ein Zustandsmerker, den der Empfang setzt, kein Dienst |
+
+**Drei Zugänge, drei Mechanismen, eine Absicht.** Das ist kein Mangel dieses Konzepts, sondern der Zustand, den es vorfindet — und es darf ihn nicht schlimmer machen.
+
+**Was daraus für den Aushang folgt, ist eine Enthaltung.** Der Zettel des Dateien-Dienstes beschreibt, woran man erkennt, dass **in Aufzeichnungen** etwas zu holen ist. Er sagt **nicht**, ob stattdessen oder zusätzlich das eigene Wissen oder das Web zu befragen wäre — das wäre ein Urteil über andere Anbieter, und kein Zettel darf das (§8.1).
+
+> **Der Empfang löst das, indem er jeden Zettel für sich beurteilt und mehrfach zustellt.** Eine Frage nach schwarzen Löchern darf gleichzeitig den Dateien-Dienst treffen und den Web-Merker setzen. Mehrere Treffer sind der Normalfall, nicht der Konflikt.
+
+**Und eine Lücke wird dabei sichtbar, die älter ist als dieses Konzept:** Das eigene Wissen und das Web sind über den Empfang **nicht als Dienste wählbar** — das eine ist eine Kontextquelle, das andere ein Merker. Ein Mensch, der *„such mal in deinem Wissen"* sagt, spricht damit etwas an, das keinen Zettel hat. Das gehört in die Fundliste und nicht in dieses Konzept.
 
 ### 3.1 Die drei Dienste
 
@@ -413,6 +471,7 @@ Zwei Folgen, beide klein und beide nötig:
 
 ## Versionshistorie
 
+- **v0.4 — 17.08.2026:** **Ein dritter Zugang zwischen Beilage und Auftrag** (§3.0b): Nova entscheidet mitten im Turn, dass ihr die Zusammenfassung nicht reicht, und liest nach. **Die Maschine dafür existiert** — Selbstauslösung samt Nutzlast, Ereignis-Consumer und eine Schranke von drei je Turn. Heute hat sie genau einen Aufrufer, und der zeigt zugleich, was zu ändern ist: Der Denkknoten setzt sie nach einem **Doppel-Fehlschlag** und hängt eine überbrückende Geste an. **Der Dateien-Fall ist derselbe Mechanismus mit umgekehrtem Vorzeichen — keine Reparatur, sondern eine Vertiefung.** Daraus drei Folgen, zwei davon Fallen: Die Geste wird **ehrlich statt überbrückend** (*„ich habe dazu Aufzeichnungen — lass mich nachsehen"* ist wahr und erklärt die Pause); die **Nutzlast muss die Kandidaten tragen**, sonst beginnt der zweite Durchlauf bei null und findet über dasselbe Embedding dieselbe Zusammenfassung wieder; und **das Budget ist geteilt** — eine Vertiefung verbraucht ein Kontingent, das eine Reparatur später brauchen könnte, weshalb beides nicht ohne Buchung aus demselben Topf gehen darf. Dazu die Grundlage ihrer Abwägung: Der Block muss **Trefferqualität und Dateigröße** nennen, sonst entscheidet sie zwischen Nachlesen und Weiterreden im Blindflug. **Neu §3.0c:** *„Weißt du was über X"* ist ein Auftrag über **drei** Bestände mit drei Zugängen — eigenes Wissen, freigegebene Dateien, Web. Der Zettel des Dienstes enthält sich dazu, weil ein Urteil über andere Anbieter auf keinen Zettel gehört; der Empfang löst es durch Mehrfachzustellung. Dabei wird eine ältere Lücke sichtbar: **Das eigene Wissen und das Web sind über den Empfang nicht als Dienste wählbar** — das eine ist Kontextquelle, das andere ein Merker.
 - **v0.3 — 17.08.2026:** **Die epistemische Grenze wird gebaut, nicht gesagt** (§1a). Was in den Dateien steht, ist nicht ihr Gedächtnis und nicht sie; der Dienst muss ihr die Sprechhandlung *„ich habe hier Aufzeichnungen, die belegen…"* ermöglichen und *„ich weiß"* verwehren. **Der Präzedenzfall steht als offener Defekt im Bestand:** Nova hat die Biografie eines Menschen als eigene übernommen, und die dort vermerkte Abhilfe ist genau diese — die Grenze im Prompt benennen. Dateiinhalt ist derselbe Fall eine Stufe weiter, denn ein Dokument gehört niemandem und kann zusätzlich falsch oder veraltet sein. Daraus **ein eigener Block `[AUFZEICHNUNGEN]` statt einer Zeile im Gedächtnisblock**, mit Fundstelle je Eintrag, mit der Einordnung im Block statt im System-Prompt (ein Grundsatz, der in jedem Turn steht, wird in dem Turn übersehen, in dem er gebraucht wird), und mit dem ausdrücklich benannten Konfliktfall: Widerspricht eine Aufzeichnung ihrer Erinnerung, sagt sie beides. **Zweitens ein zweiter Zugang** (§3.0): Der Index wird in **jedem** Turn über `such_vektor` abgefragt und trägt als Kontextquelle zum Enricher bei — dieselbe erprobte Bauart wie die Bibliothek, ohne zweites Embedding je Turn. Dieser Weg ist vom NMCP-Regelwerk **ausgenommen**, weil die Konvention den Lesepfad herausnimmt; er wird nicht gewählt, er läuft. **Und die Schwelle darauf wird gemessen, nicht gesetzt** (§3.0a): Am selben Embedding liegt Beziehungsprosa einander fremder Menschen bei 0,774 — wer nach Gefühl auf 0,7 setzt, bekommt in jedem Turn Treffer.
 - **v0.2 — 17.08.2026:** **Die Wurzel ist eine Festlegung wie eine Direktive** — und damit ist §2.2 umgekehrt: Das Argument *„eine Datei hat keinen Beobachter"* hält, die Schlussfolgerung *„also kein Paar-Schema"* war zu kurz gezogen. **Das Paar sitzt an der Freigabe, nicht an der Datei**: Ein Mensch gibt einer Figur ein Verzeichnis frei, und die Indexzeile erbt ihre Zuordnung über die Wurzel. Das löst drei Fragen auf einmal — mehrere Verzeichnisse sind der Normalfall statt eines Sonderfalls, der Entzug ist symmetrisch zur Freigabe, und dieselbe Datei steht einmal im Index statt einmal je Mensch. Neu §2a mit der Wurzeltabelle, den fünf Aktionen nach dem Vorbild der Direktiven und dem Tor, das den **aufgelösten** Pfad samt Dateizahl zeigt, bevor es freigibt. **§2a.3 trennt zwei Formen des Entzugs**, die leicht zusammenfallen: stilllegen lässt die Indexzeilen stehen, vergessen löscht sie — und der Index trägt Thema und Zusammenfassung aus dem Inhalt, weshalb wer eine Freigabe zurücknimmt fast immer die zweite Form meint. Aus zwei Diensten werden **drei**, mit der Zusicherung darüber: drei Schreibziele, und keines ist eine Datei. **§7 Regel 3 ist neu gefasst** — dass eine Äußerung einen Pfad bestimmt, ist jetzt gewollt und braucht deshalb drei Riegel statt eines Verbots: einen konfigurierten Außenrand, ein Tor auf dem aufgelösten Pfad, und die Auflösung **vor** der Prüfung. Der Unterschied zur Direktive ist genau dieser Rand: Eine Direktive wirkt auf Novas Verhalten, eine Freigabe auf das Dateisystem des Menschen.
 - **v0.1 — 17.08.2026:** Erstfassung. **Zwei Korpora statt einem:** `autonomous_wissen` trägt Novas eigenes Wissen samt Verfall und Paar-Schema und ist für einen Verzeichnis-Index die falsche Tabelle. **Der Verzicht auf Verfall ist keine Ausnahme, sondern die Anwendung der bestehenden Regel** — ein Indexeintrag ist eine Tatsachenbehauptung über das Dateisystem und kein Gedächtnis; ein Gewicht darauf wäre irreführend statt überflüssig. **Kein Paar-Schema, dafür eine Wurzel** — eine Datei hat keinen Beobachter. **Zwei Dienste**, weil Wächter und Lesen verschiedene Zustellarten haben; dabei fiel ein Befund über die Anmeldung selbst an: Die Zustellart ist einwertig und kann einen Dienst nicht beschreiben, der auf Anfrage **und** periodisch arbeitet (§3). **Die Grenze zwischen lesender und schreibender Zone liegt im Code, nicht in der Anmeldung** — was ein Dienst verspricht und was er kann, sind zwei Prüfungen (§7). Der erste Dienst, dessen Anmeldung vor dem Code steht.
