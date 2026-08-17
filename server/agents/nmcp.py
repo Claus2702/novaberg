@@ -658,3 +658,121 @@ def _merkmale(aushang: str) -> set[str]:
         for w in aushang.split()
     }
     return {w for w in worte if len(w) >= 4 and w not in stopp}
+
+
+# ══════════════════════════════════════════════════════════════════════
+# Das schwarze Brett — die Aushaenge, die der Empfang liest
+# ══════════════════════════════════════════════════════════════════════
+
+#: Ruecknahme der Zweifelsregel fuer einen Dienst ohne vierten Ausgang.
+#: Wortlaut am Zettel und nicht als Rangfolge: Er sagt etwas ueber DIESEN
+#: Dienst, nicht ueber sein Verhaeltnis zu einem anderen.
+_OHNE_ZWEIFEL: str = (
+    "BEI UNSICHERHEIT NICHT ZUSTELLEN: Dieser Dienst kann einen Auftrag "
+    "nicht begruendet ablehnen. Stelle ihm nur zu, wenn der Aushang klar "
+    "passt."
+)
+
+
+def aushaenge_sammeln(graph_typ: str) -> str:
+    """Sammelt die Aushaenge aller Dienste am Empfang zu einem Brett.
+
+    Vorbedingung: `graph_typ` liegt in GRAPH_KANON.
+
+    Nachbedingung: Text mit einem Abschnitt je Dienst, oder leer, wenn kein
+    Dienst fuer diesen Graphen einen Aushang hat. Jeder Abschnitt traegt den
+    Aushang und — falls deklariert — die Negativfaelle als eigenen Block.
+
+    **Der Aushang kommt vom Dienst, wo es einen gibt, und sonst vom
+    Manager.** Beide Flaechen tragen im Bestand denselben Text: Der Dienst
+    erbt ihn vom gleichnamigen Manager. Ihn zweimal auszugeben hiesse, dem
+    Modell dieselbe Regel doppelt vorzulegen — und zwei Regeln, die
+    dasselbe sagen, heben sich in der Wirkung auf. Deshalb gewinnt der
+    Dienst, und der Manager kommt nur zum Zug, wenn kein Dienst seinen
+    Namen traegt (im Bestand ist das `fakten`).
+
+    **Die Negativfaelle sind der Zugewinn dieses Aggregators.** Auf der
+    Manager-Flaeche stehen sie als Prosa mitten im Aushang und nur bei
+    einigen; hier stehen sie bei jedem Dienst an derselben Stelle in
+    derselben Form. Fehlrouting scheitert an oberflaechlicher Aehnlichkeit,
+    nicht an fehlender Faehigkeit — und dagegen wirkt nur der Negativfall.
+
+    Was NICHT hineinkommt: eine Rangfolge, ein Vorrang, ein Hinweis auf
+    Ueberlappungen. Der Empfang beurteilt jeden Zettel fuer sich; ein
+    Verhaeltnis zwischen zwei Zetteln waere die zentrale Zuordnungstabelle,
+    gegen die die ganze Bauart gerichtet ist.
+    """
+    from plugins import get_registry
+
+    from agents import AgentRegistry  # lokal: Zyklus Registry <-> nmcp
+
+    # ── Eingabe-Validierung ──────────────────────────────────────────
+    if graph_typ not in GRAPH_KANON:
+        logger.error(
+            "Aushaenge: unbekannter Graph '%s', Kanon ist %s — leeres Brett",
+            graph_typ, sorted(GRAPH_KANON),
+        )
+        return ""
+
+    # ── Verarbeitung ─────────────────────────────────────────────────
+    agenten = AgentRegistry.alle()
+    manager = get_registry()
+
+    bloecke: list[str] = []
+
+    for name, agent in sorted(agenten.items()):
+        if agent.zustellart != "empfang":
+            continue
+        if graph_typ not in agent.graph_eignung:
+            continue
+        aushang = agent.aushang.strip()
+        if not aushang:
+            logger.warning(
+                "Aushaenge: Dienst '%s' steht am Empfang und hat keinen "
+                "Aushang — der Empfang hat kein Erkennungsmerkmal fuer ihn",
+                name,
+            )
+            continue
+        teile = [aushang]
+        if agent.negativfaelle:
+            teile.append(
+                "NICHT zustellen bei:\n"
+                + "\n".join(f"  - {f}" for f in agent.negativfaelle)
+            )
+        # Die Zustellung im Zweifel setzt den vierten Ausgang voraus: Sie ist
+        # nur billig, weil die Fachabteilung ablehnen KANN. Ein Dienst ohne
+        # begruendete Ablehnung fuehrt aus, was ihn erreicht — er beurteilt
+        # es nicht. Deshalb wird die Zweifelsregel fuer ihn ausdruecklich
+        # zurueckgenommen, am Zettel und nicht in einer Rangfolge.
+        if "abgelehnt" not in agent.ausgaenge:
+            teile.append(_OHNE_ZWEIFEL)
+        bloecke.append("\n\n".join(teile))
+
+    # Manager ohne gleichnamigen Dienst: ihr Aushang wuerde sonst entfallen.
+    for ziel, m in sorted(manager.items()):
+        if ziel in agenten:
+            continue
+        aushang = (m.router_prompt or "").strip()
+        if aushang:
+            # Ein Manager ohne Dienst hat keine vier Ausgaenge und kann
+            # nicht begruendet ablehnen. Fuer ihn gilt die Zweifelsregel
+            # deshalb nicht.
+            bloecke.append(f"{aushang}\n\n{_OHNE_ZWEIFEL}")
+
+    brett = "\n\n".join(bloecke)
+
+    # ── Ausgabe-Verifikation ─────────────────────────────────────────
+    if not brett:
+        logger.error(
+            "Aushaenge: leeres Brett fuer Graph '%s' — %d Dienste und %d "
+            "Manager geprueft, keiner traegt einen Aushang. Der Empfang "
+            "kann damit keinen Dienst waehlen",
+            graph_typ, len(agenten), len(manager),
+        )
+        return ""
+
+    logger.debug(
+        "Aushaenge: %d Zettel fuer Graph '%s', %d Zeichen",
+        len(bloecke), graph_typ, len(brett),
+    )
+    return brett

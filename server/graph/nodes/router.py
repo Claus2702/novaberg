@@ -15,10 +15,10 @@ import json
 import logging
 from datetime import datetime
 
+from agents.nmcp import aushaenge_sammeln
 from agents.nmcp_quote import REGISTER
 from config import PROMPTS, get_node_config, redis_client
 from memory.session import format_session_turns_numbered, session_turns_retrieve
-from plugins import get_combined_router_prompt
 from services.model_services import ChatRequest, model_service
 
 from graph.reiz import reiz_ist_eigener_gedanke, reiz_text
@@ -61,12 +61,30 @@ def _build_router_prompt(
             f"\n{session_turns}"
         )
 
-    plugin_additions: str = get_combined_router_prompt()
+    # Das schwarze Brett: die Aushaenge aller Dienste am Empfang, gesammelt
+    # von der Dienst-Flaeche und nicht mehr nur von der Manager-Flaeche.
+    #
+    # Die Anweisung "beurteile jeden Zettel fuer sich" ist Pflicht und nicht
+    # Verzierung: Liegen alle Zettel in einem Aufruf, waegt das Modell sie
+    # unvermeidlich gegeneinander ab, ob es soll oder nicht. Die
+    # Unabhaengigkeit ist damit eine Bitte an das Modell und keine
+    # Eigenschaft des Aufbaus — deshalb steht sie hier ausdruecklich und
+    # wird durch einen Zeugen geprueft.
+    plugin_additions: str = aushaenge_sammeln(
+        "pixie" if state.get("graph_rolle") == "pixie" else "user"
+    )
     if plugin_additions:
         bloecke.append(
             "[AGENTEN]\n"
-            "Die folgenden Regeln stammen von registrierten Agenten. "
+            "Die folgenden Aushaenge stammen von registrierten Diensten. "
             "Nur diese Regeln duerfen die Management-Felder setzen.\n"
+            "\n"
+            "Beurteile JEDEN Aushang FUER SICH: Passt er auf die Aeusserung "
+            "oder nicht? Vergleiche die Aushaenge NICHT gegeneinander und "
+            "waehle nicht den besten Treffer — mehrere duerfen passen. "
+            "Kannst du bei einem Aushang nicht klar entscheiden, gilt er als "
+            "passend; die Fachabteilung urteilt selbst und kann begruendet "
+            "ablehnen.\n"
             f"\n{plugin_additions}"
         )
 
