@@ -53,6 +53,11 @@ KEINE_NAMEN: frozenset[str] = frozenset({
     "Salienz",      # "aus Salienz und Zeitgewicht" — die Auswahlgroesse des
                     # Adaptiv-Hash. Der Ausdruck steht ueberall dort, wo eine
                     # Rangfolge ueber KZG-Eintraege beschrieben wird.
+    "Impuls",       # "aus Impuls-Turns" — die Herkunftsmarke eines eigenen
+                    # Gedankens. Zusammen mit "Salienz" der zweite Fall an
+                    # einem Tag: Der Slot `aus X` nimmt jedes gross
+                    # geschriebene deutsche Substantiv mit, und Fachbegriffe
+                    # dieses Systems stehen fast immer nach "aus".
 })
 
 # Einfuehrungs-Konstruktionen. Erweitern, wenn ein Beispiel eine neue braucht.

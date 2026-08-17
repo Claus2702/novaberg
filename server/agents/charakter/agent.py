@@ -68,6 +68,32 @@ def _hget(rc, key: str, field: str, default: str = "") -> str:
     return val.decode("utf-8") if isinstance(val, bytes) else val
 
 
+def _begegnungs_schluessel(user_id: str, character_id: str) -> set[str]:
+    """Die KZG-Schluessel, die auf einen echten Turn zurueckgehen.
+
+    Vorbedingung: kanonisches Paar.
+    Nachbedingung: Menge der Schluessel, deren Ursprungs-Turn **nicht**
+        als `eigener_impuls` markiert ist. Ein Schluessel ohne Bruecke
+        fehlt — fuer ihn ist kein Wortlaut erreichbar, und genau darauf
+        kommt es dem einzigen Aufrufer an.
+
+    Eine Abfrage statt einer je Kandidat: Die Menge wird einmal geholt und
+    als Nachschlagewerk benutzt.
+    """
+    zeilen = db_manager.select(
+        """
+        SELECT v.kzg_id
+        FROM verbindung v
+        JOIN pipeline_log p
+          ON p.turn_id = v.turn_id AND p.art = 'turn_roh'
+        WHERE v.kzg_id LIKE %s
+          AND p.inhalt ->> 'herkunft' IS DISTINCT FROM 'eigener_impuls'
+        """,
+        (f"kzg:{user_id}:{character_id}:%",),
+    ) or []
+    return {z["kzg_id"] for z in zeilen}
+
+
 class CharakterAgent(BaseAgent):
 
     @property
@@ -177,9 +203,20 @@ class CharakterAgent(BaseAgent):
                 )
 
                 # ── KZG-Eintraege laden (kanonisches Paar + beobachter-Filter) ──
+                # Zwei Auswahlen, weil zwei Fragen: Der Adaptiv-Hash fragt,
+                # was den Traeger gerade beschaeftigt — dazu gehoeren seine
+                # eigenen Gedanken. Das Beziehungsprofil fragt nach der Naehe
+                # zum Gegenueber und liest dafuer den Wortlaut; ein Impuls hat
+                # dort kein Gegenueber und erschiene als dessen Rede.
+                # Entscheidung vom 17.08.2026.
                 kzg_eintraege = self._kzg_laden(
                     kanon_user_id, kanon_character_id,
                     beobachter_filter=beobachter,
+                )
+                kzg_begegnungen = self._kzg_laden(
+                    kanon_user_id, kanon_character_id,
+                    beobachter_filter=beobachter,
+                    nur_begegnungen=True,
                 )
 
                 # ── 5 Profile destillieren ───────────
@@ -217,7 +254,7 @@ class CharakterAgent(BaseAgent):
                     logger.exception(f"{type(ex).__name__}: CharakterAgent: Emotions-Profil fehlgeschlagen fuer {subjekt_user_id}")
 
                 try:
-                    ergebnis["beziehungsprofil"] = beziehungsprofil_destillieren(kzg_eintraege, user_id=subjekt_user_id)
+                    ergebnis["beziehungsprofil"] = beziehungsprofil_destillieren(kzg_begegnungen, user_id=subjekt_user_id)
                 except Exception as ex:
                     logger.exception(f"{type(ex).__name__}: CharakterAgent: Beziehungsprofil fehlgeschlagen fuer {subjekt_user_id}")
 
@@ -518,20 +555,42 @@ class CharakterAgent(BaseAgent):
         character_id: str,
         beobachter:   str,
     ) -> list[dict]:
-        """Laedt LZG-Eintraege mit Kommunikations-Signalen (paar- + perspektivgefiltert)."""
+        """Laedt LZG-Eintraege mit Kommunikations-Signalen (paar- + perspektivgefiltert).
+
+        Vorbedingung: kanonisches Paar und eine Perspektive ('user' oder
+            'assistant').
+        Nachbedingung: hoechstens `PIXIE_CHARAKTER_LZG_LIMIT` Knoten, absteigend
+            nach Anker-Staerke, **ohne solche aus eigenen Impulsen**.
+
+        **Warum hier gefiltert wird und beim Emotions- und Adaptiv-Profil
+        nicht:** Dieses Profil fragt, wie der Traeger **mit anderen umgeht** —
+        eine Aussage ueber Umgang setzt ein Gegenueber voraus, und ein Impuls
+        hat keines. Was jemanden gerade beschaeftigt (adaptiv) und was er
+        fuehlt (emotionen) steht dagegen sehr wohl in seinen eigenen Gedanken;
+        dort waere der Filter ein Verlust. Entscheidung vom 17.08.2026.
+
+        Der Filter laeuft ueber die Bruecke `verbindung` -> `pipeline_log`.
+        `IS DISTINCT FROM` statt `<>`, und ein Knoten **ohne** Bruecke bleibt
+        erhalten: Er ist nicht nachweislich ein Impuls, und am 17.08.2026 waren
+        das 371 von 1922 Knoten der Figur (19 %).
+        """
         logger.debug(
             f"CharakterAgent: LZG-Intentionen laden fuer user={user_id}, "
             f"character={character_id}, beobachter={beobachter}"
         )
         return db_manager.select(
             """
-            SELECT intentionen, emotion, modus, sprach_stil, tone,
-                   dimension, inhalt
-            FROM lzg_knoten
-            WHERE user_id = %s AND character_id = %s AND beobachter = %s
-              AND aktiv = TRUE
-              AND (intentionen != '[]' OR emotion != '' OR sprach_stil != '')
-            ORDER BY gewicht_absolut DESC
+            SELECT l.intentionen, l.emotion, l.modus, l.sprach_stil, l.tone,
+                   l.dimension, l.inhalt
+            FROM lzg_knoten l
+            LEFT JOIN verbindung v   ON v.kzg_id = l.kzg_quell_key
+            LEFT JOIN pipeline_log p ON p.turn_id = v.turn_id
+                                    AND p.art = 'turn_roh'
+            WHERE l.user_id = %s AND l.character_id = %s AND l.beobachter = %s
+              AND l.aktiv = TRUE
+              AND (l.intentionen != '[]' OR l.emotion != '' OR l.sprach_stil != '')
+              AND p.inhalt ->> 'herkunft' IS DISTINCT FROM 'eigener_impuls'
+            ORDER BY l.gewicht_absolut DESC
             LIMIT %s
             """,
             (user_id, character_id, beobachter, PIXIE_CHARAKTER_LZG_LIMIT),
@@ -566,6 +625,7 @@ class CharakterAgent(BaseAgent):
         user_id:           str,
         character_id:      str,
         beobachter_filter: str = "",
+        nur_begegnungen:   bool = False,
     ) -> list[dict]:
         """Laedt die staerksten KZG-Eintraege des kanonischen Paares.
 
@@ -574,6 +634,16 @@ class CharakterAgent(BaseAgent):
         Nachbedingung: hoechstens `PIXIE_CHARAKTER_KZG_LIMIT` Eintraege,
             absteigend nach `salienz x zeitgewicht`. Leer heisst: kein
             Material in der Ladegrenze, und der Aufrufer meldet es.
+
+        **`nur_begegnungen`** beschraenkt auf Eintraege, deren Ursprungs-Turn
+        kein eigener Impuls war. Das Beziehungsprofil braucht das, weil es den
+        **Wortlaut** liest und ein Impuls dort als Rede des Gegenuebers
+        erschiene. Der Filter gehoert in die Auswahl und nicht dahinter:
+        `[gemessen]` 17.08.2026 — von Novas zwanzig staerksten KZG-Eintraegen
+        hatten **null** einen erreichbaren Begegnungs-Wortlaut. Nachgelagert
+        gefiltert waere ihr Beziehungsprofil dauerhaft leer geblieben, und es
+        ist die zweite Haelfte der Rad-Quelle. Derselbe Fehler wie beim
+        fehlenden Themenfeld, an derselben Stelle.
 
         **Ausgewaehlt wird nach Staerke, nicht nach Fundreihenfolge.** Bis zum
         16.08.2026 nahm diese Funktion die ersten 20, die `scan_iter` lieferte,
@@ -599,6 +669,10 @@ class CharakterAgent(BaseAgent):
 
         jetzt: float = time.time()
         praefix: str = f"kzg:{user_id}:{character_id}:"
+        begegnungen: set[str] = (
+            _begegnungs_schluessel(user_id, character_id)
+            if nur_begegnungen else set()
+        )
 
         # ── Schluessel in Zeitordnung bringen (ohne Redis-Zugriff) ──
         datiert:   list[tuple[float, str]] = []
@@ -633,6 +707,7 @@ class CharakterAgent(BaseAgent):
         gelesen:       int = 0
         zu_alt:        int = 0
         ohne_themen:   int = 0
+        ohne_begegnung: int = 0
         abgebrochen:   bool = False
 
         for position, (zeit, key) in enumerate(kandidaten):
@@ -650,6 +725,10 @@ class CharakterAgent(BaseAgent):
             if len(gewaehlt) >= PIXIE_CHARAKTER_KZG_LIMIT and gewicht <= gewaehlt[-1][0]:
                 abgebrochen = True
                 break
+
+            if nur_begegnungen and key not in begegnungen:
+                ohne_begegnung += 1
+                continue
 
             if beobachter_filter:
                 if _hget(redis_client, key, "beobachter") != beobachter_filter:
@@ -715,7 +794,7 @@ class CharakterAgent(BaseAgent):
             f"{len(eintraege)} von {gelesen} gelesenen, Alter {spanne} "
             f"(beobachter={beobachter_filter or 'alle'}, "
             f"{fremde_sicht} fremde Perspektive, {zu_alt} ueber der Ladegrenze, "
-            f"{ohne_themen} ohne Themen, "
+            f"{ohne_themen} ohne Themen, {ohne_begegnung} ohne Begegnung, "
             f"Abbruch durch Gewichtsschranke: {'ja' if abgebrochen else 'nein'})"
         )
 

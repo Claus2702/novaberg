@@ -507,9 +507,18 @@ def kern_hash_destillieren(turn_eintraege: list[dict], user_id: str = DEFAULT_US
     geworden. Wie jemand spricht, ist daran nicht mehr ablesbar — die
     Satzlaenge nicht, die Kleinschreibung nicht, der Scherz nicht.
 
+    **Gegenstand ist die eigene Seite.** Fuer das Profil des Menschen seine
+    Aeusserungen, fuer das der Figur ihre Antworten — nie beide. Die Vorgabe
+    stand seit je im Konzept (§6: »Gleicher Mechanismus, getrennte Daten«);
+    der Umbau vom 10.08.2026 hat sie verloren, als er eine Quelle **mit**
+    Perspektivfilter (`_lzg_kern_laden(user, character, beobachter)`) durch
+    eine **ohne** ersetzte (`_turns_laden(user_id)`). Drei Argumente wurden zu
+    einem, und der Filter verschwand mit dem dritten.
+
     Vorbedingung: Eintraege mit `aeusserung` und `antwort`.
     Nachbedingung: Profiltext oder "". Leere Eingabe wird gemeldet, nicht
-        stillschweigend als leeres Profil zurueckgegeben.
+        stillschweigend als leeres Profil zurueckgegeben — ebenso der Fall,
+        dass Begegnungen vorliegen, aber keine mit einem Beitrag des Traegers.
     """
     if not turn_eintraege:
         logger.error(
@@ -517,13 +526,37 @@ def kern_hash_destillieren(turn_eintraege: list[dict], user_id: str = DEFAULT_US
         )
         return ""
 
-    eintraege: str = "\n".join(
-        f"  Gegenueber: „{(row.get('aeusserung') or '').strip()}“\n"
-        f"  {ASSISTANT_NAME}: „{(row.get('antwort') or '').strip()}“"
+    perspektive: dict[str, str] = _perspektive_aufloesen(user_id)
+    traeger: str = perspektive["traeger"]
+
+    # Gegenstand ist **die eigene Seite**, und sie traegt den Namen des
+    # Traegers. Bis zum 16.08.2026 bekamen beide Perspektiven denselben Text
+    # mit beiden Sprechern; unterschieden wurden sie allein durch die
+    # Anweisung, und die ist 1,4 % des Prompts. Gemessen am produktiven Paar:
+    # 90,5 % des Materials stammte von der Figur (Faktor 9,5), und der Traeger
+    # "der Nutzer" kam im Material **null mal** vor — der Mensch stand dort nur
+    # als "Gegenueber", ein relativer Begriff, dessen Bezugspunkt die Anweisung
+    # gerade verschiebt. Der Traeger im Text macht ihn auffindbar.
+    feld: str = "antwort" if user_id == ASSISTANT_USER_ID else "aeusserung"
+    zeilen: list[str] = [
+        f"  {traeger}: „{(row.get(feld) or '').strip()}“"
         for row in turn_eintraege
+        if (row.get(feld) or "").strip()
+    ]
+
+    if not zeilen:
+        logger.error(
+            f"Kern-Hash ({user_id}): {len(turn_eintraege)} Begegnungen, aber "
+            f"keine einzige mit einem Beitrag von {traeger} — kein Profil"
+        )
+        return ""
+
+    eintraege: str = "\n".join(zeilen)
+    logger.info(
+        f"Kern-Hash ({user_id}): {len(zeilen)} Beitraege von {traeger}, "
+        f"{len(eintraege)} Zeichen"
     )
 
-    perspektive: dict[str, str] = _perspektive_aufloesen(user_id)
     return _llm_call(
         KERN_HASH_PROMPT.format(eintraege=eintraege, **perspektive),
         f"Kern-Hash ({user_id})",
@@ -634,10 +667,19 @@ def wortlaut_holen(kzg_schluessel: list[str]) -> dict[str, dict[str, str]]:
     `pipeline_log` mit `art = 'turn_roh'`. Die Tabelle fuehrt ihn seit jeher;
     fuer das Beziehungsprofil hat ihn nie jemand benutzt.
 
+    **Impulse bleiben draussen.** Ein eigener Impuls legt seinen Text in
+    dasselbe Feld `user_prompt` wie eine Nutzeraeusserung; ungefiltert kaeme
+    er hier als Aeusserung des Gegenuebers zurueck — im Profil der Figur also
+    ihr eigener Monolog als Rede des Menschen. Gemessen am 17.08.2026: **591
+    von 744 rueckverfolgbaren KZG-Verweisen des produktiven Paares stammen aus
+    Impuls-Turns**, im Fenster der letzten zwei Tage 86 von 122.
+    `IS DISTINCT FROM` statt `<>`, damit ein Turn ohne Marke erhalten bleibt —
+    er ist nicht nachweislich ein Impuls.
+
     Vorbedingung: nichtleere Liste von Schluesseln.
     Nachbedingung: Abbildung Schluessel -> {'aeusserung', 'antwort'}. Ein
-        Schluessel ohne Verbindung fehlt in der Rueckgabe — der Aufrufer
-        entscheidet, was das bedeutet, und meldet es.
+        Schluessel ohne Verbindung **oder aus einem Impuls** fehlt in der
+        Rueckgabe — der Aufrufer entscheidet, was das bedeutet, und meldet es.
     """
     if not kzg_schluessel:
         return {}
@@ -651,6 +693,7 @@ def wortlaut_holen(kzg_schluessel: list[str]) -> dict[str, dict[str, str]]:
         JOIN pipeline_log p
           ON p.turn_id = v.turn_id AND p.art = 'turn_roh'
         WHERE v.kzg_id = ANY(%s)
+          AND p.inhalt ->> 'herkunft' IS DISTINCT FROM 'eigener_impuls'
         """,
         (kzg_schluessel,),
     ) or []
@@ -709,9 +752,15 @@ def beziehungsprofil_destillieren(kzg_eintraege: list[dict], user_id: str = DEFA
             f"Dynamik: {eintrag.get('beziehungs_dynamik', '')}, "
             f"Tone: {eintrag.get('tone', '')}]"
         )
+        # **Beide Sprecher tragen ihren Namen, nicht ihre Rolle.** Anders als
+        # beim Kern sind hier beide Seiten noetig — der Prompt fragt nach
+        # NAEHE, und Anrede ist relational. Was nicht bleiben darf, ist das
+        # relative "Gegenueber": Sein Bezugspunkt ist die Figur, waehrend der
+        # Traeger im Prompt wechselt. Fuer das Profil des Menschen bezeichnete
+        # dasselbe Wort damit ihn selbst, fuer ihres seinen Gespraechspartner.
         beziehungs_eintraege.append(
             f"{kopf}\n"
-            f"  Gegenueber: „{wortlaut['aeusserung']}“\n"
+            f"  der Nutzer: „{wortlaut['aeusserung']}“\n"
             f"  {ASSISTANT_NAME}: „{wortlaut['antwort']}“"
         )
 

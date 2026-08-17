@@ -120,18 +120,34 @@ class KernWortlautTest(unittest.TestCase):
     """
 
     def test_der_kern_prompt_traegt_die_gesprochenen_worte(self) -> None:
-        """Die Aeusserung steht im Prompt, nicht ihre Zusammenfassung."""
+        """Die Aeusserung steht im Prompt, nicht ihre Zusammenfassung.
+
+        **Seit dem 16.08.2026 je Perspektive die eigene Seite.** Die
+        Zusicherung dieses Zeugen ist unveraendert — der Wortlaut erreicht den
+        Prompt, nicht ein Referat darueber. Geprueft wird sie jetzt fuer beide
+        Sprecher getrennt, weil das Profil des Menschen seine Aeusserungen
+        liest und das der Figur ihre Antworten. Vorher standen beide in beiden,
+        und daraus entstand die Spiegelung der Charakter-Raeder.
+        """
+        from config import ASSISTANT_USER_ID
         from agents.charakter.destillation import kern_hash_destillieren
 
-        with patch(f"{_MODUL}._llm_call", return_value="Profil") as ruf:
-            kern_hash_destillieren(
-                [{"aeusserung": "jo", "antwort": "Na, alles klar bei dir?"}],
-                user_id="leon",
-            )
+        begegnung = [{"aeusserung": "jo", "antwort": "Na, alles klar bei dir?"}]
 
-        prompt: str = ruf.call_args[0][0]
-        self.assertIn("jo", prompt)
-        self.assertIn("Na, alles klar bei dir?", prompt)
+        with patch(f"{_MODUL}._llm_call", return_value="Profil") as ruf:
+            kern_hash_destillieren(begegnung, user_id="leon")
+        prompt_mensch: str = ruf.call_args[0][0]
+
+        with patch(f"{_MODUL}._llm_call", return_value="Profil") as ruf:
+            kern_hash_destillieren(begegnung, user_id=ASSISTANT_USER_ID)
+        prompt_figur: str = ruf.call_args[0][0]
+
+        self.assertIn("jo", prompt_mensch)
+        self.assertIn("Na, alles klar bei dir?", prompt_figur)
+
+        # Und keiner traegt den Beitrag des anderen.
+        self.assertNotIn("Na, alles klar bei dir?", prompt_mensch)
+        self.assertNotIn("jo", prompt_figur.split("Einträge:", 1)[-1])
 
     def test_ohne_wortlaut_meldet_der_kern_es(self) -> None:
         """Leere Eingabe ist ein `error`, kein stilles leeres Profil."""
