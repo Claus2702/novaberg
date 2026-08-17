@@ -16,10 +16,12 @@ Prompt-Schema: [BLOCKNAME]-Format (nova-01-t-d, Chat 27).
 
 import json
 import logging
+from datetime import datetime
 from typing import Callable
 
 from graph.reiz  import reiz_text
 from graph.state import ConversationState, TribunalVote
+from utils.datum_pruefung import korrekturauftrag, widersprueche_finden
 from config import (
     get_node_config, PROMPTS,
     TRIBUNAL_JURIST_WARNUNG, TRIBUNAL_JURIST_ABLEHNEN,
@@ -265,10 +267,45 @@ def evaluate(state: ConversationState) -> ConversationState:
         for v in votes
         if v["vote"] in ("ablehnen", "warnung")
     ]
+    # Die Zeitangabe wird gerechnet, nicht beurteilt.
+    #
+    # Die drei Voten sind Modellurteile ueber Haltung und Inhalt. Ein
+    # Wochentag, der nicht zu seinem Datum passt, ist dagegen ein
+    # Rechenfehler und in Python entscheidbar — er gehoert nicht in einen
+    # vierten Modellaufruf.
+    #
+    # Der Befund hebt das Urteil auf mindestens `warnung`, weil genau das
+    # die Korrekturrunde ausloest. Er kann ein `ablehnen` nicht abschwaechen:
+    # Ein falsches Datum ist ein Grund mehr zur Korrektur, nie einer weniger.
+    zeit_befunde = widersprueche_finden(
+        state.get("response") or "", datetime.now().date()
+    )
+    if zeit_befunde:
+        if state["tribunal_verdict"] == "ok":
+            state["tribunal_verdict"] = "warnung"
+        critical_feedback.insert(0, korrekturauftrag(zeit_befunde))
+        logger.error(
+            "Tribunal: %d Zeitangabe(n) widersprechen sich — Urteil auf '%s' "
+            "gehoben. %s",
+            len(zeit_befunde), state["tribunal_verdict"],
+            "; ".join(w.satz() for w in zeit_befunde),
+        )
+
     state["tribunal_summary"] = "\n".join(critical_feedback) if critical_feedback else ""
 
+    # ── Ausgabe-Verifikation ────────────────────────────────────────
+    # Ein Zeitbefund ohne Eintrag in der Zusammenfassung erreicht die
+    # Korrekturrunde nicht — der Corrector liest ausschliesslich sie.
+    if zeit_befunde and "ZEITANGABE FALSCH" not in state["tribunal_summary"]:
+        logger.error(
+            "Tribunal: %d Zeitbefund(e) gefunden, aber der Korrekturauftrag "
+            "steht nicht in der Zusammenfassung — die Korrekturrunde bekommt "
+            "ihn nicht", len(zeit_befunde),
+        )
+
     logger.info(f"Tribunal-Auswertung: verdict={state['tribunal_verdict']} "
-                f"(ablehnungen={len(rejections)}, warnungen={len(warnings)})")
+                f"(ablehnungen={len(rejections)}, warnungen={len(warnings)}, "
+                f"zeitbefunde={len(zeit_befunde)})")
 
     for vote in votes:
         logger.info(f"  [{vote['agent']}] {vote['vote']}: {vote['reasoning'][:80]}")

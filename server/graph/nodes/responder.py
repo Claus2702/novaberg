@@ -16,9 +16,11 @@ import logging
 import re
 
 from datetime    import datetime
-from config      import ASSISTANT_NAME, BEZIEHUNG_EINFLUSS, EMOTIONS_VEKTOREN, EMOTIONS_VEKTOREN_NOVA, PROMPTS, get_node_config
+from zoneinfo    import ZoneInfo
+from config      import ASSISTANT_NAME, BEZIEHUNG_EINFLUSS, EMOTIONS_VEKTOREN, EMOTIONS_VEKTOREN_NOVA, PROMPTS, TIMEZONE, get_node_config
 from graph.reiz  import reiz_ist_eigener_gedanke, reiz_text
 from graph.state import ConversationState
+from utils.datum_pruefung import NAMEN as WOCHENTAGSNAMEN
 from services.model_services import model_service, ChatRequest
 
 logger = logging.getLogger("ki_server.responder")
@@ -215,8 +217,19 @@ def _szenenblock(state: ConversationState) -> str:
         logger.info("Responder: keine Lage im Zustand — [SZENE] ohne Raum")
     if farbton:
         zeilen.append(farbton)
+    # Ortszeit und deutscher Wochentagsname — beides war falsch.
+    #
+    # `datetime.now()` ohne Zeitzone liefert im Behaelter UTC: Nova sagte den
+    # ganzen Tag eine Zeit, die zwei Stunden zurueckliegt. Und `%A` gibt in der
+    # Locale `C` "Monday" statt "Montag" — ein englischer Wochentag mitten in
+    # einem deutschen Prompt, aus dem das Modell einen deutschen ableiten muss.
+    #
+    # Der Wochentag wird deshalb aus der Tabelle geholt und nicht formatiert:
+    # Ein Name aus einer Locale, die niemand gesetzt hat, ist keine Zusicherung.
+    jetzt_lokal = datetime.now(ZoneInfo(TIMEZONE))
     zeilen.append(
-        f"Es ist {jetzt.strftime('%A, %d.%m.%Y')}, {jetzt.strftime('%H:%M')} Uhr."
+        f"Es ist {WOCHENTAGSNAMEN[jetzt_lokal.weekday()]}, "
+        f"{jetzt_lokal.strftime('%d.%m.%Y')}, {jetzt_lokal.strftime('%H:%M')} Uhr."
     )
 
     # ── Ausgabe ─────────────────────────────────
