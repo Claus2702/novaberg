@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Node-Referenz Agent-Dispatch (zentraler Agenten-Router im Graph)
-**Stand:** 21. April 2026, Chat 60 (Event-Modell, Graph-Split)
+**Stand:** 17. August 2026 (Zustellung und Bearbeitung werden gezählt)
 **Pfad:** novaberg/docs/novaberg-node-agent-dispatch.md
 **Quellen:** nova-11-m-a.md
 **Datei:** `graph/nodes/agent_dispatch.py`
@@ -195,3 +195,22 @@ Der Agent-Dispatch-Node bedient nur den Front-end-Pfad. Back-end-Agenten werden 
 → Planner (setzt agent_name): `nova-01-m-d.md`
 → Dispatcher (Back-end-Pfad): `nova-01-m-h.md`
 → BaseAgent + AgentState + AgentResult: `nova-11-a.md`, Abschnitt 3
+
+---
+
+## Die Quotenzähler am Engpass (17.08.2026)
+
+Der Knoten zählt zwei Größen je Dienst und Graph:
+
+| Zähler | Wann | Warum getrennt |
+|---|---|---|
+| `zugestellt` | vor dem Aufruf des Dispatches | die Quote vergleicht dagegen |
+| `bearbeitet` samt Ausgang | nach der Rückgabe | die Differenz ist ein **Zustellverlust** |
+
+**Wer nur den Erfolg zählt, liest einen Pipeline-Defekt als Routing-Problem.** Die Differenz zwischen beiden hat mit dem Aushang nichts zu tun.
+
+Der Zähler sitzt hier, weil nur der Empfang weiß, **was** er zugestellt hat. Der Nenner steht im Router, getrennt je Graph.
+
+> **Benannte Schwäche:** Die Stände leben im Prozess und werden bei jedem Neustart genullt. Bei einer Mindest-Stichprobe von 100 Äußerungen urteilt der Abgleich nach jedem Aufsetzen zunächst gar nicht. Der Zustand ist über `/health` lesbar und der Nenner steht in jeder Meldung — die Abhilfe (Stände in Redis) ist ein eigener Schritt.
+
+Zusätzlich schneidet `BaseAgent.invoke` den Zustand vor jedem Lauf auf den angemeldeten Bedarf zu: Ein Clipboard-Wert, den ein Dienst nicht angemeldet hat, erreicht ihn nicht und wird einzeln protokolliert.

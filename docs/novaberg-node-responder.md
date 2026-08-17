@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Node-Referenz Responder
-**Stand:** 13. August 2026, Chat 137 (der Prompt ist ein Drehbuch, §3)
+**Stand:** 17. August 2026 (Ortszeit und deutscher Wochentag im Szenenblock)
 **Pfad:** novaberg/docs/novaberg-node-responder.md
 **Quellen:** nova-01-m-e.md, nova-12-k.md §7
 **Datei:** `graph/nodes/responder.py`
@@ -518,3 +518,15 @@ Der Responder ist der einzige Node, der bewusst den vollen Kontext bekommt. Das 
 → Lesson Daten vollständig transportieren: novaberg-graph_l_datentransport.md
 → Charakter & Direktiven Konzept: novaberg-agent-directives.md / novaberg-agent-character.md
 → Gesprächsvektor-Konzept: novaberg-node-gv_k.md
+
+---
+
+## Der Szenenblock nennt Ortszeit und deutschen Wochentag (17.08.2026)
+
+Zwei Defekte, und der erste kostete jede Stunde des Tages.
+
+**`datetime.now()` ohne Zeitzone liefert im Behälter UTC.** Nova nannte den ganzen Tag eine Zeit, die zwei Stunden zurücklag. Der Block rechnet jetzt gegen `TIMEZONE`.
+
+**Und `%A` gibt in der Locale `C` „Monday" statt „Montag"** — ein englischer Wochentag mitten in einem deutschen Prompt, aus dem das Modell einen deutschen ableiten muss. Der Name kommt jetzt aus einer Tabelle: Ein Name aus einer Locale, die niemand gesetzt hat, ist keine Zusicherung.
+
+> **Beides zusammen erklärt eine Erfindung nicht, sondern begünstigt sie.** Am selben Tag bestätigte Nova einen Termin mit *„Mittwoch, 20.08."*, während Aufgabe-Block und Szenenblock beide das richtige Datum trugen und der 20.08.2026 ein Donnerstag ist. Die Abhilfe dagegen liegt im Tribunal, nicht hier — die Eingabe war richtig.

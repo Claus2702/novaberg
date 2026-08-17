@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Node-Referenz Planner
-**Stand:** 21. April 2026, Chat 60 (Event-Modell, Graph-Split)
+**Stand:** 17. August 2026 (der vierte Ausgang hat einen Leser)
 **Pfad:** novaberg/docs/novaberg-node-planner.md
 **Quellen:** nova-01-m-d.md
 **Datei:** `graph/nodes/planner.py`
@@ -193,3 +193,17 @@ Der Planner schreibt nichts in die Datenbank.
 → TimelineAgent (Agent-Pfad): novaberg-agent-timeline.md
 → Epic 11 Konzept: novaberg-graph.md
 → Lesson Doppelspeicherung: novaberg-node-dispatcher_l.md
+
+---
+
+## Der vierte Ausgang und seine Rangfolge (17.08.2026)
+
+**Der Knoten liest seit heute einen fünften Ergebniszustand: `abgelehnt`.** Er trägt eine Korrektur aus Befund, Beleg und Vorschlag und erzeugt einen eigenen Aufgabe-Block.
+
+**Er steht in der Rangfolge VOR dem Fehler.** Ein Urteil ist keine Störung, und wer beides vorliegen hat, braucht zuerst die Auskunft, was stattdessen ginge. Die Reihenfolge lautet damit: Rückfrage · **Ablehnung** · Fehler · Verworfen · Erfolg · Legacy.
+
+**`rejected` bleibt unbehandelt, und das ist Absicht.** Es ist die Vorform des vierten Ausgangs — eine Ablehnung ohne Begründung —, und ein Block darüber könnte dem Nutzer nichts sagen außer *„ging nicht"*. Der Weg führt nach `abgelehnt`, wo Befund und Vorschlag mitkommen.
+
+> **Der Kontext wird geschnitten, wie bei Erfolg und Fehler.** Hier stand zuerst `False` mit der Begründung, der Vorschlag sei nur im Zusammenhang der Äußerung verständlich. Die Begründung war falsch: Der Schnitt entfernt Gedächtnis und Web, nicht die Äußerung. Gemessen am 17.08.2026 — zwei Ablehnungen mit ungeschnittenem Kontext erreichten die Antwort **nicht**, während eine Erfolgsmeldung mit Schnitt am selben Tag Tag, Uhrzeit und Eintrag nannte.
+
+Regelwerk: `novaberg-convention-nmcp.md` §6.7, §6.8.

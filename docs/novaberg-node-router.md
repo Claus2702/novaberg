@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Node-Referenz Router
-**Stand:** 26. April 2026, Chat 66 (Dispatch-Guard dokumentiert)
+**Stand:** 17. August 2026 (das Brett kommt von der Dienst-Fläche)
 **Pfad:** novaberg/docs/novaberg-node-router.md
 **Quellen:** nova-01-m-b.md
 **Datei:** `graph/nodes/router.py`
@@ -222,3 +222,23 @@ Neue Fähigkeiten werden automatisch erkannt — ohne Änderung am Router. Die e
 → Session-Turns (zentrale Formatierung): `memory/session.py` → `format_session_turns_numbered()`
 → Epic 11 Konzept (Agent-System): novaberg-graph.md
 → Lesson: "NIEMALS" ist kein Proxy: novaberg-node-router_l.md
+
+---
+
+## Das schwarze Brett statt der Manager-Sammlung (17.08.2026)
+
+**Die Aushänge werden nicht mehr nur von den Managern eingesammelt.** Der `[AGENTEN]`-Block entsteht aus der Dienst-Fläche; ein Manager kommt nur zum Zug, wenn kein Dienst seinen Namen trägt (im Bestand ist das `fakten`).
+
+Der Grund: Beide Flächen tragen denselben Text — der Dienst erbt ihn vom gleichnamigen Manager. Ihn zweimal auszugeben hieße, dieselbe Regel doppelt vorzulegen, und zwei Regeln, die dasselbe sagen, heben sich in der Wirkung auf.
+
+**Drei Dinge sind neu im Block:**
+
+- **Die Negativfälle** stehen bei jedem Dienst an derselben Stelle in derselben Form. Auf der Manager-Fläche standen sie als Prosa mitten im Aushang und nur bei einigen.
+- **Die Anweisung, jeden Zettel für sich zu beurteilen** — ausdrücklich, weil das Modell mit allen Zetteln in einem Aufruf sie unvermeidlich gegeneinander abwägt, ob es soll oder nicht. Damit ist die Unabhängigkeit eine Bitte und keine Eigenschaft des Aufbaus; die Gegenprobe dazu steht aus.
+- **Die Zustellung im Zweifel** — mit einer Rücknahme je Zettel für Anbieter ohne begründete Ablehnung.
+
+**Was der Block nicht enthält:** eine Rangfolge, einen Vorrang, einen Hinweis auf Überlappungen. Ein Verhältniswissen zwischen zwei Zetteln wäre die zentrale Zuordnungstabelle, gegen die die Bauart gerichtet ist — ein Zeuge prüft auf Rangworte.
+
+> **Der Dispatch-Guard in `router.task.txt` spricht dem Zweifelssatz entgegen** (*„Im Zweifel: kein Dispatch"*) und steht im Prompt davor. Beide Sätze sind für sich begründet; die Auflösung ist eine offene Entscheidung und steht in der Fundliste.
+
+Zusätzlich zählt der Knoten den Nenner des Quotenabgleichs — eine Äußerung je Graph, getrennt, weil die Impulsrate des Hintergrunds keinem Fachdienst gehört.

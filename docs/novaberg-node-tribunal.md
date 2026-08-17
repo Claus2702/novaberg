@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Node-Referenz Tribunal
-**Stand:** 21. April 2026, Chat 60 (Event-Modell, Graph-Split)
+**Stand:** 17. August 2026 (die Zeitangabe wird gerechnet, nicht beurteilt)
 **Pfad:** novaberg/docs/novaberg-node-tribunal.md
 **Quellen:** nova-01-m-i.md
 **Datei:** `graph/nodes/tribunal.py`
@@ -254,3 +254,21 @@ Neue Tribunal-Perspektiven = neues Dict in der `AGENTS`-Liste. Kein anderer Code
 → Kontaminations-Lesson: novaberg-graph_l.md
 → Graph-Konzept (Tribunal-Philosophie): novaberg-graph.md, Abschnitt 3
 → Charakter & Direktiven Konzept: novaberg-agent-directives.md / novaberg-agent-character.md
+
+---
+
+## Die Datumsprüfung in der Auswertung (17.08.2026)
+
+**Die drei Voten sind Modellurteile über Haltung und Inhalt. Ein Wochentag, der nicht zu seinem Datum passt, ist dagegen ein Rechenfehler** — in Python entscheidbar und deshalb kein vierter Modellaufruf.
+
+Der Anlass ist gemessen: Nova bestätigte einen Termin mit *„Mittwoch, 20.08."*, obwohl ihre Eingabe zweimal den 19.08. trug. Der 20.08.2026 ist ein Donnerstag; der Satz widersprach sich selbst.
+
+**Ort im Code:** `server/utils/datum_pruefung.py`, gerufen in der Auswertung des Knotens.
+
+**Die Prüfung braucht keine Bezugsdaten.** Nennt der Antworttext einen Wochentag unmittelbar vor einem Datum, müssen beide zusammenpassen. Ein Befund hebt das Urteil auf mindestens `warnung` — genau das löst die bestehende, begrenzte Korrekturrunde aus — und trägt den Korrekturauftrag an den Anfang der Zusammenfassung, weil der Corrector ausschließlich sie liest.
+
+**Der Auftrag nennt den richtigen Wochentag**, statt nur zu rügen: Ein Modell, das erfährt, dass etwas falsch ist, erfindet sonst den nächsten Wert.
+
+**Die Kopplung ist eng gewählt.** Ein Fehlalarm schickt eine richtige Antwort in die Korrekturschleife und ist teurer als ein übersehener Widerspruch; die weite Kopplung über Satzteile hinweg ist negativ geprüft.
+
+Ein Befund kann ein `ablehnen` nicht abschwächen — ein falsches Datum ist ein Grund mehr zur Korrektur, nie einer weniger.

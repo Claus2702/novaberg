@@ -159,6 +159,8 @@ Das ist ein Zeuge, der falsch sein kann, und er gehört zum Mechanismus. Ohne ih
 
 ## 4. Die Zustellung — der Zweifel geht an die Fachabteilung
 
+**Ort im Code:** die Anmeldung in `server/agents/nmcp.py`, der Abgleich samt Zählern in `server/agents/nmcp_quote.py`.
+
 ### 4.1 Die Regel
 
 > **Kann der Empfang nicht klar entscheiden, ob ein Dienst zuständig ist, wird zugestellt. Die Unschärfe wird dort aufgelöst, wo das Fachwissen liegt — nicht am Empfang.**

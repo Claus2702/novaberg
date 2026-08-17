@@ -10,6 +10,28 @@
 
 ## Chats 3–20: Grundlagen (März 2026)
 
+### 17.08.2026 — Die Anmeldung bekommt einen Leser, der ihr widersprechen kann
+
+Die Dienste melden sich seit heute an, und die Anmeldung wird beim Start geprüft: **14 Dienste, 14 eingebunden, 0 verweigert.** Drei Grade statt eines — verweigert, eingeschränkt, gemeldet —, und die Ablehnung trifft den Dienst, nie das System.
+
+Vier der vierzehn sind vollständig, und es sind genau die vier am Empfang. Sie bedienen den **vierten Ausgang**: eine begründete Ablehnung mit Befund, Beleg und Vorschlag. Er hat noch am selben Tag zweimal live gefeuert; vorher wurde das Urteil vom Planner verworfen.
+
+**Die Auswahl liest jetzt die Zettel der Dienste**, nicht mehr nur die der Manager — mit den Negativfällen in einheitlicher Form und einer Rücknahme der Zweifelsregel für jeden Anbieter, der nicht begründet ablehnen kann.
+
+**Und der Zustand wird auf den angemeldeten Bedarf zugeschnitten.** Ein Clipboard-Wert ohne Anmeldung erreicht seinen Dienst nicht mehr.
+
+Der tragende Gedanke dahinter ist die **Quote**: Jeder Dienst schätzt, in welchem Anteil der Äußerungen er vorkommt, der Empfang zählt, der Abgleich meldet. Damit bekommt jeder Aushang einen Leser, der ihm widersprechen kann — ohne ihn ist eine Anmeldung eine Behauptung, die nicht falsch sein kann, und genau daran verrotten Deklarationen unbemerkt.
+
+Vier Schwächen fand erst der Lauf gegen den echten Bestand: zwei Knoten-zu-Knoten-Clipboards als Fehlalarm, acht Hintergrunddienste mit einer Aushang-Forderung ohne Gegenstand, eine Ausschlussprüfung, die Domänenwörter für Dienstnamen hielt, und ein Abgleich ohne Aufrufer.
+
+### 17.08.2026 — Ein erfundenes Datum, und die Prüfung dagegen
+
+Nova bestätigte einen Termin mit *„Mittwoch, 20.08."*, während Agent und Szenenblock beide den 19.08. trugen — und der 20.08.2026 ist ein Donnerstag. Der Mensch suchte am falschen Tag, fand nichts und hielt den Schreibpfad für defekt; er war es nie.
+
+**Die Eingabe war richtig, also gehört die Abhilfe in die Ausgabe-Verifikation.** Die Prüfung braucht keine Bezugsdaten: Nennt ein Text einen Wochentag vor einem Datum, müssen beide zusammenpassen. Ein Befund hebt das Tribunal-Urteil auf `warnung` und löst damit die bestehende Korrekturrunde aus; der Auftrag nennt den richtigen Wochentag, statt nur zu rügen.
+
+Zwei Defekte kamen dabei heraus, und der erste kostete jede Stunde: Der Szenenblock lief auf **UTC statt Ortszeit** — zwei Stunden daneben, den ganzen Tag —, und `%A` gab „Monday" statt „Montag".
+
 ### 17.08.2026 — Impulse fallen aus drei von fünf Profilen, und zwar begründet
 
 Die Prüfung der übrigen vier Hashes nach dem Kern ergab zweierlei. **Die Perspektivtrennung hält** — belegt am Bestand, nicht nur im Code: **null** LZG-Knoten mit `beobachter='user'` stammen aus einem Impuls-Turn. KZG und LZG führen die Perspektive als eigenes Feld, statt sie aus einem Textfeld erschließen zu müssen; der Fehler des Kern-Hash sitzt hier nicht.
