@@ -10,6 +10,21 @@
 
 ## Chats 3–20: Grundlagen (März 2026)
 
+### 16.08.2026 — Der Charakter des Menschen wurde aus den Gedanken der Figur destilliert
+
+`_turns_laden` las alle `turn_roh`-Zeilen eines Paares. Ein **eigener Impuls** legt seinen Text aber in dasselbe Feld `user_prompt` wie eine Nutzeräußerung — ungefiltert wurden Novas eigene Gedanken als Äußerungen des Menschen gelesen und in **sein** Wesensprofil destilliert.
+
+Gemessen über die 40 gelesenen Turns: **25 Impulse mit 36 183 Zeichen (95,4 % des Materials)** gegen 15 echte Turns mit 1761 Zeichen. Mit der Antwortseite entstand das Profil des Menschen aus einem Material, das zu **98 %** von der Figur stammte. Unabhängiger Beleg über die Diktion: von 138 Einträgen über 1500 Zeichen tragen 88 das Vokabular der Figur und 2 ein Fragezeichen; von den kurzen tragen 126 eines.
+
+**Das erklärt die Spiegelung der Charakter-Räder.** Über zwölf Speichen lagen beide Räder des produktiven Paares bei einer mittleren Abweichung von **0,0202** — Lenkungsdrang 0,923 gegen 0,896, Folgsamkeit 0,050 gegen 0,034. Bei Paaren **ohne** Impulse tritt das nicht auf (0,128 bis 0,533 bei gleichem Messgerät). Nicht die Deutung war falsch, sondern das Material.
+
+Behoben: `herkunft='nutzer_turn'` ist Bedingung, das Ausgenommene wird gezählt. **Ein Impuls hat kein Gegenüber und gehört in kein Profil, das eine Haltung gegenüber jemandem misst.**
+
+Nicht behoben und gemessen: Auch danach bleibt das Material zu **90,5 %** von der Figur (Faktor 9,5), und beide Perspektiven lesen weiterhin denselben Text — unterschieden nur durch 1,4 % Anweisung.
+
+Gegenprobe: vorhergesagt 1 rot, gezählt 1. Suite 1532 grün.
+
+
 ### 16.08.2026 — Der Adaptiv-Hash wählt nach Stärke statt nach Fundreihenfolge
 
 `_kzg_laden` nahm die ersten zwanzig Einträge, die `scan_iter` lieferte, und brach ab. `SCAN` sagt keine Ordnung zu: Die genommenen zwanzig lagen auf den **Zeiträngen 245 bis 2162 von 2202**, im Mittel **18 Tage** alt — bei einem Profil mit der Frage *„Was beschäftigt ihn gerade?"*.

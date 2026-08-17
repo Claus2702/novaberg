@@ -9,11 +9,22 @@ Destilliert 5 Charakter-Profile aus LZG (PostgreSQL) und KZG (Redis).
 ## Profile
 | Profil | Quelle | Beschreibt |
 |--------|--------|-----------|
-| kern_hash | ~~LZG~~ → **Turn-Wortlaut** (`pipeline_log`, 40 Turns) | Grundpersönlichkeit |
+| kern_hash | ~~LZG~~ → **Wortlaut der Begegnungen** (`pipeline_log`, 40 Turns mit `herkunft='nutzer_turn'`) | Grundpersönlichkeit |
 | adaptive_hash | KZG | Aktuelle Phase |
 | intentions_profil | LZG | Kommunikationsstil |
 | emotions_profil | LZG | Emotionale Grundtendenz |
 | beziehungsprofil | KZG-Schlüssel → Turn-Wortlaut | Beziehungsdynamik |
+
+## Nur Begegnungen speisen den Kern (seit 16.08.2026)
+
+`_turns_laden` verlangt `herkunft='nutzer_turn'`. **Ein eigener Impuls hat kein
+Gegenüber**, und beide Räder messen eine Haltung *gegenüber* jemandem — er
+trägt deshalb zu keinem der beiden Profile bei.
+
+Der Anlass war ein Defekt: Ein Impuls schreibt seinen Text in dasselbe Feld
+`user_prompt` wie eine Nutzeräußerung. Ungefiltert las der Kern die eigenen
+Gedanken der Figur als Äußerungen des Menschen — gemessen **25 von 40 Turns,
+95,4 % des Materials**. Was ausgenommen wird, steht mit seiner Zahl im Log.
 
 ## Auswahl der KZG-Einträge (seit 16.08.2026)
 
