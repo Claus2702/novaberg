@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Konzept — Indizierung und Durchsuchung eines vorgegebenen Verzeichnisses als NMCP-Dienst
-**Stand:** 17. August 2026 (v0.7)
+**Stand:** 17. August 2026 (v0.8)
 **Pfad:** novaberg/docs/novaberg-agent-dateien_k.md
 **Typ:** Konzept (`_k`)
 **Status:** ⬜ **Konzept, kein Code.** Kein Bezeichner dieses Dokuments existiert.
@@ -215,6 +215,18 @@ Die Gegenprobe über die Geometrie des Korpus selbst sagt dasselbe. Alle 217 akt
 
 **Damit liegt 0,40 fast genau auf dem Median des Rauschens.** Ausgezählt: **35,6 % aller Paare liegen darüber** — für eine beliebige Anfrage qualifizieren sich rund **77 von 217** Einträgen. Was die Bibliothek vor diesem Ergebnis bewahrt, ist allein die Kappung bei drei.
 
+#### Der Median sagt etwas über den Korpus, nicht über das Embedding
+
+**Bevor man aus 0,369 auf ein schwaches Einbettungsmodell schließt, ist nachzusehen, was dort eigentlich liegt.** Alle 217 Einträge sind vom Modus `recherche`, alle mit eindeutigem Thema, entstanden in dreizehn Tagen — und sie stehen in **einem einzigen Register**:
+
+> *Achtsamkeit, Präsenz im Augenblick* · *Bewusstsein, thermodynamische Entropie, ästhetische Erfahrung* · *Architektur der Beziehung, Gegensätzliche Vektoren* · *Bindung, Energie, Chaos vs. Ordnung* · *biologische Desidentifikation, Selbstschutz, Ich-Auflösung*
+
+**Das ist kein Wissensbestand über die Welt, sondern eine Sammlung von Reflexionen über die Gespräche selbst** — durchweg abstrakt, relational, in derselben Sprachform.
+
+> **Ein homogener Korpus hat eine hohe Grundähnlichkeit, und eine Schwelle darauf misst die Zugehörigkeit zur Textsorte statt das Thema.** Die teilen aber alle Einträge. Deshalb konnte hier keine Schwelle trennen — nicht weil das Maß schlecht ist, sondern weil beide Seiten fehlen, die sie trennen soll.
+
+**Für den Dateien-Index ist das mehr als die Feststellung „anderer Korpus".** Fachtexte, Tabellen, Codeblöcke und Verzeichnisstrukturen sind **heterogen**; dort kann eine Schwelle trennen, wo sie es hier nie konnte. Die Zahl ist damit nicht nur zu übertragen verboten — sie ist auch in ihrer Richtung nicht übertragbar: Der eigene Korpus wird vermutlich eine **niedrigere** Grundähnlichkeit zeigen und damit eine andere Schwelle brauchen als die hier gerechnete.
+
 | Schwelle | Anteil der Paare darüber | Treffer je Abfrage (217 Einträge) |
 |---|---|---|
 | **0,40** | 35,6 % | **77** |
@@ -238,6 +250,41 @@ Die Gegenprobe über die Geometrie des Korpus selbst sagt dasselbe. Alle 217 akt
 > **Der Index bekommt beides, und die Reihenfolge der Begründung ist wichtig:** Die Kappung ist die Zusicherung, die Schwelle ist die Feinjustage. Wer es umgekehrt liest, baut denselben Boden noch einmal — eine Zahl, die etwas verspricht, was eine andere Stelle einhält.
 
 **Drittens folgt daraus eine Prüfregel für den Bau:** Der Enricher-Weg protokolliert je Turn die Trefferzahl **und** den Kosinus des schlechtesten gelieferten Treffers. Liegt die Trefferzahl dauerhaft auf der Kappung, ist die Schwelle unbelegt — genau der Zustand, den diese Messung bei der Bibliothek vorgefunden hat.
+
+### 3.0a-bis Die Schwelle wird gerechnet, nicht gesetzt — und zwar fortlaufend
+
+**Der eigentliche Konstruktionsfehler ist nicht der Wert, sondern die Bauart: eine Konstante.** Eine feste Schwelle über einem wachsenden Bestand kann gar nicht halten. Die Trefferzahl über einem festen Kosinus wächst mit dem Bestand mit — und die Bibliothek hatte bei Einführung der 0,40 **drei Zeilen** und hat heute **217**, gewachsen in dreizehn Tagen.
+
+> **Die 0,40 war richtig, als sie gerechnet wurde, und musste falsch werden.** Das ist keine Nachlässigkeit, sondern die Eigenschaft einer Konstante in einer wachsenden Menge. Wer sie durch eine bessere Konstante ersetzt, kauft nur Zeit.
+
+#### Den Rang festhalten, nicht den Abstand
+
+```
+Schwelle = Quantil(1 − K/N) der eigenen Ähnlichkeitsverteilung
+```
+
+`N` ist der Bestand, `K` die Kappung. **Gegenprobe an der Messung oben:** N = 217, K = 3 → Quantil(0,9862) = p98,6 → **0,55**. Genau der Wert, den die Auszählung ergeben hat. Die Formel reproduziert das Messergebnis, statt es zu ersetzen.
+
+**Damit sind Kappung und Schwelle keine zwei unabhängigen Größen mehr, sondern über `K/N` gekoppelt** — und die Frage nach der „richtigen" Schwelle wird zu der Frage, wie viele Einträge ein Block tragen soll. Das ist eine Frage, die man beantworten kann.
+
+#### Die wahre Paarung fällt umsonst an
+
+**Die Verteilung muss nicht geschätzt und nicht über einen Stellvertreter erhoben werden.** Jeder Turn rechnet den Kosinus des Suchvektors gegen den gesamten Bestand, **bevor** gefiltert wird. Wer je Turn den **K-ten** Wert mitschreibt, sammelt die Verteilung der echten Paarung — Anfrage gegen Eintrag — ohne eine zusätzliche Abfrage, ohne Modellaufruf und ohne den Vorbehalt, der oben für die 35,6 % gilt.
+
+> **Das ist der Unterschied zwischen kalibrieren und nachführen.** Eine Kalibrierung ist ein Ereignis und altert ab dem Tag danach. Eine mitlaufende Verteilung altert nicht — sie *ist* der Bestand von heute.
+
+#### Zwei Zahlen, zwei Ämter — und das ist keine Verdopplung
+
+**Eine Quantilschwelle liefert immer etwas.** Sie ist per Konstruktion relativ zum Bestand und kann *„hier ist nichts Passendes"* nicht ausdrücken: Zu einer Frage, zu der der Korpus nichts hat, liefert sie die besten drei Fehltreffer — und der Block behauptet dann eine Einschlägigkeit, die es nicht gibt. Bei einem Block, der ausdrücklich *„ich habe hier Aufzeichnungen"* ermöglichen soll (§1a), ist das der teuerste denkbare Fehler.
+
+| Größe | Art | Amt |
+|---|---|---|
+| **Quantil** `1 − K/N` | gerechnet, wandert mit dem Bestand | **wie viele** |
+| **Absoluter Boden** | gemessen, steht fest | **ob überhaupt** |
+
+**Der Boden ist die Cold-Start-Zusicherung**, und der Ankerabruf hat sie bereits richtig benannt: *„100 % Abdeckung ist NICHT das Ziel — Cold Start ist bei ankerlosen Prompts die richtige Antwort, kein Ausfall."* Ein Turn ohne `[AUFZEICHNUNGEN]`-Block ist der Normalfall und kein Ausfall.
+
+> **Und eine Grenze der Selbstkalibrierung gehört dazu, weil sie sonst überschätzt wird:** Eine Zahl, gegen die eingestellt wurde, ist als Beleg verbraucht. Die Quantilschwelle sichert eine **Rate** zu und nie eine **Qualität** — sie garantiert, dass etwa K Einträge kommen, und sagt nichts darüber, ob sie taugen. Wer sie als Beleg für die Güte des Zugriffs berichtet, berichtet einen Zirkel. Die Güte misst der Boden und die Trefferqualität aus §9.6, nicht das Quantil.
 
 ### 3.0b Der dritte Zugang: sie liest nach, weil sie will
 
@@ -580,7 +627,7 @@ Vier Fragen, die der Entwurf offenlässt, weil sie Absichten sind und keine Umse
 2. ~~**Sieht jedes Paar denselben Index?**~~ → **Beantwortet (§2.2):** Das Paar hängt an der Freigabe. Zwei Menschen, die dasselbe Verzeichnis freigeben, teilen sich die Indexzeilen und haben zwei Wurzeln. Offen bleibt der Anschlussfall: **Was geschieht mit den Indexzeilen, wenn die letzte Freigabe auf ein Verzeichnis zurückgenommen wird** — sie sind dann von niemandem mehr erreichbar und stehen weiter da.
 3. **Wie tief darf `datei_grep` gehen?** Eine Obergrenze für Treffer und Dateien ist nötig; ohne sie ist eine unglückliche Anfrage ein Vollscan.
 4. **Was passiert bei einer Datei, die kein Text ist?** PDF, Bild, Tabelle. Der Entwurf behandelt Text; alles andere wird erkannt und mit Grund übergangen, nicht stillschweigend.
-5. **Wie groß ist die Kappung des Enricher-Wegs?** Dass es eine gibt, ist seit v0.7 entschieden und begründet (§3.0a); ihre Höhe ist es nicht. Die Bibliothek steht bei drei — das ist ein Anhalt und kein Beleg, denn der `[AUFZEICHNUNGEN]`-Block trägt je Eintrag zusätzlich eine Fundstelle und kostet damit mehr Platz im Prompt als eine Bibliothekszeile.
+5. ~~**Wie groß ist die Kappung des Enricher-Wegs?**~~ → **Umgestellt in v0.8 (§3.0a-bis).** Kappung und Schwelle sind über `K/N` gekoppelt; es gibt keine zwei unabhängigen Größen mehr, und die Schwelle ist keine Konstante, sondern das Quantil `1 − K/N` der mitlaufenden Verteilung. **Offen bleibt damit nur noch `K` selbst** — und das ist keine Messfrage, sondern eine Platzfrage: Wie viele Einträge soll der Block tragen? Die Bibliothek steht bei drei; der `[AUFZEICHNUNGEN]`-Block trägt je Eintrag zusätzlich eine Fundstelle und kostet mehr Prompt als eine Bibliothekszeile. **Neu offen ist dafür der absolute Boden** — die Zahl, unter der gar nichts geliefert wird. Sie kann nicht aus der Verteilung kommen, weil sie genau den Fall abdecken muss, in dem der Bestand nichts hat.
 6. **Was misst die Trefferqualität, die der Block ausweisen soll?** §3.0b verlangt, dass Nova *wie gut* der Treffer war erfährt, um zwischen Nachlesen und Weiterreden zu entscheiden. Nach der Messung in §3.0a ist der rohe Kosinus dafür untauglich: 0,588 klingt nach mittelmäßig und ist der Normalfall, 0,45 klingt nach brauchbar und ist Rauschen. **Eine Zahl, deren Skala niemand kennt, ist keine Entscheidungsgrundlage** — was sie braucht, ist der Rang im Korpus, nicht der Abstand im Raum.
 
 ---
@@ -600,6 +647,7 @@ Zwei Folgen, beide klein und beide nötig:
 
 ## Versionshistorie
 
+- **v0.8 — 17.08.2026:** **Der Konstruktionsfehler war nicht der Wert, sondern die Bauart — eine Konstante.** Eine feste Schwelle über einem wachsenden Bestand kann nicht halten: Die Trefferzahl über einem festen Kosinus wächst mit dem Bestand mit, und die Bibliothek hatte bei Einführung der 0,40 **drei Zeilen** und hat heute **217**, gewachsen in dreizehn Tagen. Die 0,40 war richtig, als sie gerechnet wurde, und **musste** falsch werden; eine bessere Konstante kauft nur Zeit. **Daher: den Rang festhalten, nicht den Abstand** — `Schwelle = Quantil(1 − K/N)`. Die Gegenprobe stimmt: N = 217, K = 3 → p98,6 → **0,55**, genau der ausgezählte Wert. Damit sind Kappung und Schwelle über `K/N` gekoppelt und §9.5 ist umgestellt: offen bleibt nur `K`, und das ist eine Platzfrage. **Die Verteilung fällt umsonst an und ohne Stellvertreter** — jeder Turn rechnet den Kosinus gegen den ganzen Bestand, bevor gefiltert wird; wer je Turn den K-ten Wert mitschreibt, sammelt die echte Paarung Anfrage × Eintrag. *Kalibrieren ist ein Ereignis und altert; eine mitlaufende Verteilung ist der Bestand von heute.* **Dazu die Grenze, ohne die das überschätzt wird: Eine Quantilschwelle liefert immer etwas.** Sie kann *„hier ist nichts Passendes"* nicht ausdrücken und liefert zu einer fremden Frage die besten drei Fehltreffer — bei einem Block, der *„ich habe hier Aufzeichnungen"* ermöglichen soll, der teuerste Fehler. **Deshalb zwei Zahlen mit zwei Ämtern:** das Quantil sagt *wie viele*, ein absoluter Boden sagt *ob überhaupt*. Der Boden ist die Cold-Start-Zusicherung und neu offen. Und die Quantilschwelle sichert eine **Rate** zu, nie eine **Qualität** — als Beleg für die Güte des Zugriffs wäre sie ein Zirkel. **Zweitens ist die Deutung des Medians berichtigt:** 0,369 sagt nichts über das Einbettungsmodell, sondern über den Korpus. Alle 217 Einträge sind `recherche` in **einem Register** — abstrakte Reflexionen über die Gespräche selbst, kein Wissen über die Welt. Ein homogener Korpus hat hohe Grundähnlichkeit, und eine Schwelle darauf misst die Zugehörigkeit zur Textsorte, die alle teilen. **Für den Dateien-Index kehrt sich die Richtung damit um:** Fachtexte, Tabellen und Codeblöcke sind heterogen; dort kann eine Schwelle trennen, wo sie hier nie konnte — und der eigene Korpus wird vermutlich eine **niedrigere** Grundähnlichkeit zeigen als die Bibliothek.
 - **v0.7 — 17.08.2026:** **Der Präzedenzwert 0,40 ist widerlegt, und der Fund ist nicht die Zahl, sondern ein verdunsteter Vorbehalt.** Der Wert hat eine Herkunftskette: Im Ankerabruf des Langzeitgedächtnisses ist er **kalibriert** (100 echte Prompts gegen 302 Knoten, 0,40 → 82 % Abdeckung bei 4,1 Ankern) und trägt dort die Marke *„begründeter Startwert, kein Verteilungs-Messergebnis"*. Die Bibliothek hat ihn **übernommen** und sagt es auch — *„NICHT gemessen"*, mit Grund und offenem Backlog-Eintrag. **Erst dieses Konzept nannte ihn in v0.5 „ein gemessener Wert".** Zwei Code-Stellen waren ehrlich; übernommen wurde die Zahl, nicht der Satz daneben. Die Messung gibt der Übernahme quantitativ Unrecht: Im Knotenraum qualifiziert 0,40 rund **1,4 %** des Bestandes, in der Bibliothek **35,6 %** — derselbe Embedding-Raum, **Faktor 26**. Eine Schwelle ist keine Eigenschaft des Raums, sondern des Raums **und** der Dichte des Korpus darin. Gegen den laufenden Bestand gemessen: In **40 von 42** protokollierten Bibliotheksaufrufen kamen genau drei Treffer zurück — so viele, wie die Kappung zulässt. **Die Schwelle hat nie gegriffen, die Kappung hat gegriffen**, und ein Boden, den niemand berührt, belegt nichts. Die Geometrie des Korpus bestätigt es von der anderen Seite: 217 aktive Einträge, 23.436 Paare, **Median 0,369** — **35,6 % aller Paare liegen über 0,40**, also rund 77 von 217 Einträgen je Abfrage. Gerechnet trifft erst **0,55** die drei Treffer, die tatsächlich geliefert werden, und der gemessene Median des dritten Treffers (**0,588**) trifft sich damit. **Die wirksame Schwelle der Bibliothek ist 0,55; die konfigurierte ist Zierde.** Daraus drei Änderungen: Der Index startet bei **0,55**; er bekommt eine **Kappung**, die dieses Konzept bis v0.6 überhaupt nicht kannte — es hatte von der Bibliothek die Schwelle übernommen und den Mechanismus weggelassen, der dort die Arbeit tut (bei 667 Dateien hätte 0,40 rund **237** je Turn qualifiziert); und der Enricher-Weg protokolliert Trefferzahl **und** schlechtesten gelieferten Kosinus, damit *„die Kappung greift dauerhaft"* sichtbar wird statt still zu bleiben. **Zweitens ist die Diagnose zur Selbstauslösung nur halb gewesen:** Nicht nur das Budget ist geteilt, sondern das **Tor**. Die Lückensuche hängt an `aufnahmebereitschaft > 0`, die Selbstauslösung an einem Zähler und einem Riegel auf wartende Agenten — **keine Bereitschaft**. Heute ist das richtig, weil der einzige Aufrufer die Reparatur ist und **eine Reparatur in der Krise feuern muss**. Für die Vertiefung gilt das Gegenteil: *„lass mich nachsehen"* ist in einem Gespräch über Quarks eine Auskunft und in einem Absturz eine Zumutung. **Dieselbe Schranke, die für die Reparatur zu eng wäre, ist für die Vertiefung notwendig** — der Riegel hängt deshalb am Grund, nicht am Mechanismus, und die Vertiefung wird nicht als zweiter Aufrufer der Selbstauslösung gebaut. **Zwei neue offene Fragen** (§9): die Höhe der Kappung, und woraus sich die Trefferqualität ergibt, die der Block ausweisen soll — der rohe Kosinus taugt dafür nach dieser Messung nicht, weil niemand seine Skala kennt.
 - **v0.6 — 17.08.2026:** **Die Vertiefung füllt den Vorrat, nicht die Antwort** — die Beschränkung, ohne die dieses Konzept gegen die Gedankenkette arbeitet. Deren Satz trifft den zweiten Durchlauf unmittelbar: *„Wer hier den Aufsatz einsetzt, hat die Treppe gebaut und oben doch die Ablage abgeladen."* Was die Vertiefung vergrößert, ist was Nova **weiß**, nicht was sie **sagt**; das gesammelte Material ist der Vorrat, aus dem sie schöpft, und nicht der Entwurf, den sie vorliest. **Der Längenregler allein reicht dafür nicht, und das ist gemessen:** Über zehn Turns des produktiven Paares schwankt die Vorgabe um den Faktor 1,50, die Antwortlänge um 3,93 — und bei **identischer** Vorgabe (0,652, fünf Turns) noch um 2,68, von 813 auf 2181 Zeichen. Die Richtung stimmt (r = +0,78), die Bindung fehlt. **Eine Zahl bindet nicht, eine Struktur bindet:** Die Treppe aus Ruf, Feld und Fund ist ein Ablauf, in den der Aufsatz nicht hineinpasst, weil zwischen jeder Portion eine Freigabe steht.
 - **v0.5 — 17.08.2026:** Zwei Berichtigungen gegen den Bestand. **Die Schwelle hat einen Präzedenzwert:** Die Bibliothek sucht in jedem Turn über dasselbe Themen-Embedding und liegt bei **0,40** — deutlich niedriger, als eine Schätzung ausgefallen wäre, und damit die Warnung aus §3.0a von der anderen Seite bestätigt. Der Index startet dort, nicht weil der Wert richtig ist, sondern weil ein gemessener Wert eines anderen Korpus ein besserer Anfang ist als eine Schätzung. **Und die Gedankenkette benutzt die Selbstauslösung nicht** — sie hängt am Impuls-Stapel mit einer eigenen Schranke. Für den Menschen ist *„sie macht weiter"* ein Verhalten; im System sind es zwei Mechanismen mit zwei Schranken, die nichts voneinander wissen. Die Vertiefung dieses Konzepts gehört zur Selbstauslösung — sie ist ein zweiter Anlauf auf dieselbe Frage, keine Fortsetzung über den Turn hinaus. Beide Schranken zählen dabei die falsche Einheit: die eine alle Gründe gemeinsam, die andere Zustellungen statt abgeschlossener Gedanken.
