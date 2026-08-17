@@ -43,6 +43,47 @@ class CharakterIdentitaetAgent(BaseAgent):
     def graph_eignung(self) -> list[str]:
         return ["user"]
 
+
+    @property
+    def negativfaelle(self) -> list[str]:
+        """Aeusserungen, die wie Charakterzuweisung klingen und keine sind."""
+        return [
+            "emotionale Ausdruecke ('du bist toll') — das ist Rueckmeldung",
+            "einmalige Rollenspiele ('antworte mal als Pirat') — "
+            "kein dauerhafter Charakter",
+            "eine Beschreibung des Nutzers statt Novas ('ich bin eher ruhig')",
+        ]
+
+    @property
+    def grenze(self) -> list[str]:
+        """Was dieser Dienst nicht tut."""
+        return [
+            "keine absoluten Verbote — die gehoeren zu den Direktiven",
+            "keine Sprachwahl oder Anredeform",
+            "keine Charakteraenderung fuer einen einzelnen Turn",
+        ]
+
+    @property
+    def quote(self) -> dict[str, int]:
+        """Geschaetzter Anteil: eine Ausnahme, unter einem Achtel."""
+        return {"user": 0}
+
+
+    @property
+    def ausgaenge(self) -> frozenset[str]:
+        """Bedient alle vier Ausgaenge, einschliesslich der Ablehnung.
+
+        Der vierte Ausgang traegt einen Korrekturvorschlag: Erkennt die
+        Klassifikation Rueckmeldungen und einmalige Rollenspiele,
+        lehnt der Dienst mit Befund, Beleg und Gegenangebot ab statt mit
+        einem blanken Nein. Damit darf er Zweifelsfaelle bekommen — die
+        Zustellung im Zweifel setzt voraus, dass die Fachabteilung
+        ablehnen **kann**.
+        """
+        return frozenset(
+            {"abgeschlossen", "fehler", "rueckfrage", "abgelehnt"}
+        )
+
     def build_graph(self):
         graph = StateGraph(AgentState)
 

@@ -8,7 +8,7 @@ Graph-Aufbau und Routing-Logik. Die Business-Logik liegt in:
 
 import logging
 
-from agents.base import BaseAgent, AgentState
+from agents.base import Bedarf, BaseAgent, AgentState
 from langgraph.graph import StateGraph, END
 from agents.kzg.magnete import magnete_aufloesen
 from agents.kzg.verdichtung import verdichten
@@ -33,6 +33,35 @@ class KzgAgent(BaseAgent):
     @property
     def graph_eignung(self) -> list[str]:
         return ["user"]
+
+
+    @property
+    def zustellart(self) -> str:
+        """Laeuft in jedem Durchlauf, ohne Zustellentscheidung.
+
+        Der KZG-Schreibpfad haengt am Dispatcher-Knoten und nicht am
+        Aushang: Es gibt keine Entscheidung, ob er laeuft. Damit hat er
+        auch keinen Aushang und keine Quote — ein Abgleich haette nichts
+        zu vergleichen.
+        """
+        return "queue"
+
+    @property
+    def bedarf(self) -> list[Bedarf]:
+        """Uebernimmt einen im selben Durchlauf angelegten Timeline-Eintrag.
+
+        Ohne diesen Wert legt der Schreibpfad einen eigenen
+        Erinnerungs-Anker fuer denselben Tag an — der Wert ist optional,
+        sein Fehlen kostet eine Dublette und keinen Fehler.
+        """
+        return [Bedarf(
+            schluessel="timeline_id",
+            typ="int | None",
+            bedeutung=(
+                "ID des im SELBEN Durchlauf angelegten Timeline-Eintrags. "
+                "NICHT die ID eines gefundenen oder gesuchten Eintrags."
+            ),
+        )]
 
     def build_graph(self):
         graph = StateGraph(AgentState)

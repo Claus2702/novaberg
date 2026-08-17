@@ -40,6 +40,49 @@ class DirektivenAgent(BaseAgent):
     def graph_eignung(self) -> list[str]:
         return ["user"]
 
+
+    @property
+    def negativfaelle(self) -> list[str]:
+        """Aeusserungen, die wie eine Regel klingen und keine sind."""
+        return [
+            "eine einmalige Bitte fuer den laufenden Turn "
+            "('antworte kurz') — das ist keine dauerhafte Regel",
+            "eine Kritik ohne Regelinhalt ('das war zu lang') — "
+            "Rueckmeldung ist keine Anweisung",
+            "eine Aussage ueber Nova statt an Nova "
+            "('du bist manchmal zu ausfuehrlich')",
+        ]
+
+    @property
+    def grenze(self) -> list[str]:
+        """Was dieser Dienst nicht tut."""
+        return [
+            "keine Charakterzuege — die gehoeren zur Identitaet",
+            "keine inhaltlichen Vorgaben zu einem einzelnen Thema",
+            "keine Regeln mit Bedingung ('wenn X, dann Y')",
+        ]
+
+    @property
+    def quote(self) -> dict[str, int]:
+        """Geschaetzter Anteil: eine Ausnahme, unter einem Achtel."""
+        return {"user": 0}
+
+
+    @property
+    def ausgaenge(self) -> frozenset[str]:
+        """Bedient alle vier Ausgaenge, einschliesslich der Ablehnung.
+
+        Der vierte Ausgang traegt einen Korrekturvorschlag: Erkennt die
+        Klassifikation einmalige Bitten, die keine dauerhafte Regel sind,
+        lehnt der Dienst mit Befund, Beleg und Gegenangebot ab statt mit
+        einem blanken Nein. Damit darf er Zweifelsfaelle bekommen — die
+        Zustellung im Zweifel setzt voraus, dass die Fachabteilung
+        ablehnen **kann**.
+        """
+        return frozenset(
+            {"abgeschlossen", "fehler", "rueckfrage", "abgelehnt"}
+        )
+
     def build_graph(self):
         graph = StateGraph(AgentState)
 

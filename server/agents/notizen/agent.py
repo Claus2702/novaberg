@@ -50,6 +50,49 @@ class NotizenAgent(BaseAgent):
     def graph_eignung(self) -> list[str]:
         return ["user"]
 
+
+    @property
+    def negativfaelle(self) -> list[str]:
+        """Aeusserungen ueber Inhalte, die KEIN Notiz-Auftrag sind."""
+        return [
+            "blosse Erwaehnung eines Themas, das zufaellig auch in einer "
+            "Notiz steht — Erwaehnung ist keine Aenderung",
+            "eine Aufzaehlung im Gespraech ohne Speicherabsicht "
+            "('mir fallen drei Gruende ein')",
+            "eine Frage nach Weltwissen, die wie eine Liste klingt "
+            "('welche Planeten gibt es')",
+        ]
+
+    @property
+    def grenze(self) -> list[str]:
+        """Was dieser Dienst nicht tut."""
+        return [
+            "keine Termine — Zeitgebundenes gehoert nicht hierher",
+            "keine Verhaltensregeln fuer Nova",
+            "keine Zusammenfassung fremder Dokumente",
+        ]
+
+    @property
+    def quote(self) -> dict[str, int]:
+        """Geschaetzter Anteil: ein Viertel der Nutzer-Aeusserungen."""
+        return {"user": 25}
+
+
+    @property
+    def ausgaenge(self) -> frozenset[str]:
+        """Bedient alle vier Ausgaenge, einschliesslich der Ablehnung.
+
+        Der vierte Ausgang traegt einen Korrekturvorschlag: Erkennt die
+        Klassifikation Erwaehnungen ohne Aenderungsabsicht,
+        lehnt der Dienst mit Befund, Beleg und Gegenangebot ab statt mit
+        einem blanken Nein. Damit darf er Zweifelsfaelle bekommen — die
+        Zustellung im Zweifel setzt voraus, dass die Fachabteilung
+        ablehnen **kann**.
+        """
+        return frozenset(
+            {"abgeschlossen", "fehler", "rueckfrage", "abgelehnt"}
+        )
+
     def build_graph(self):
         graph = StateGraph(AgentState)
 

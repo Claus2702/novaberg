@@ -47,6 +47,49 @@ class TimelineAgent(BaseAgent):
     def graph_eignung(self) -> list[str]:
         return ["user"]
 
+
+    @property
+    def negativfaelle(self) -> list[str]:
+        """Aeusserungen mit Zeitbezug, die KEIN Timeline-Auftrag sind."""
+        return [
+            "Zeitangaben in einer Erzaehlung ueber die Vergangenheit "
+            "('letztes Jahr war ich in Rom') — es gibt nichts einzutragen",
+            "Zeitangaben als Teil einer Sachfrage "
+            "('wie lange braucht Licht von der Sonne') — das ist Wissen, kein Termin",
+            "Zeitangaben in einer Absichtserklaerung ohne Datum "
+            "('irgendwann will ich mal') — ohne Zeitpunkt kein Eintrag",
+        ]
+
+    @property
+    def grenze(self) -> list[str]:
+        """Was dieser Dienst nicht tut."""
+        return [
+            "keine Zeitraum-Arithmetik ueber mehrere Eintraege",
+            "keine Termine fuer dritte Personen ohne benannten Bezug",
+            "keine Wiederholungsregeln ausser jaehrlich",
+        ]
+
+    @property
+    def quote(self) -> dict[str, int]:
+        """Geschaetzter Anteil: ein Viertel der Nutzer-Aeusserungen."""
+        return {"user": 25}
+
+
+    @property
+    def ausgaenge(self) -> frozenset[str]:
+        """Bedient alle vier Ausgaenge, einschliesslich der Ablehnung.
+
+        Der vierte Ausgang traegt einen Korrekturvorschlag: Erkennt die
+        Klassifikation Zeitangaben ohne Ereignis oder Ereignisse ohne Zeitpunkt,
+        lehnt der Dienst mit Befund, Beleg und Gegenangebot ab statt mit
+        einem blanken Nein. Damit darf er Zweifelsfaelle bekommen — die
+        Zustellung im Zweifel setzt voraus, dass die Fachabteilung
+        ablehnen **kann**.
+        """
+        return frozenset(
+            {"abgeschlossen", "fehler", "rueckfrage", "abgelehnt"}
+        )
+
     def build_graph(self):
         graph = StateGraph(AgentState)
 

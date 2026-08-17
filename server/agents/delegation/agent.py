@@ -32,6 +32,23 @@ class DelegationsAgent(BaseAgent):
     def graph_eignung(self) -> list[str]:
         return ["user"]
 
+
+    @property
+    def zustellart(self) -> str:
+        """Laeuft ueber den Hintergrund-Router, nicht ueber den Empfang.
+
+        Die Deklaration `graph_eignung = ["user"]` ist Bestand und
+        irrefuehrend: Auf dem Nutzerpfad ist dieser Dienst nicht waehlbar,
+        weil kein Manager sein Ziel traegt. Er laeuft ueber einen
+        Sonderfall des Hintergrund-Routers.
+
+        **Das ist der Fall, an dem eine ungelesene Deklaration nachweislich
+        verrottet ist** — dreizehn Angaben stimmten, diese nicht, und kein
+        Lauf konnte es melden. Die Zustellart traegt die Wahrheit, bis die
+        Graph-Eignung selbst berichtigt wird.
+        """
+        return "queue"
+
     def build_graph(self):
         graph = StateGraph(AgentState)
 
