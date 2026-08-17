@@ -555,6 +555,25 @@ Die fehlende Schicht ist **eine** und wird viermal gebraucht. Das ist der Grund,
 
 > **Der zweite Abnehmer wartet seit dem 04.08.2026.** Die Bibliothek hat ihre Stufe 2 nie bekommen, und der Grund ist genau dieser fehlende Lesepfad. Der Dateien-Dienst baut ihn ohnehin — er löst damit eine ältere Blockade mit, ohne dafür einen eigenen Auftrag zu brauchen.
 
+### 3a.2a Was sie überschreibt, ist nicht weg — sonst ist es keine Geschichte
+
+**Ein Wissenstext, der über Monate wächst, ist ein Verlauf.** Ohne Gegenmaßnahme ist ein chirurgischer Schnitt endgültig, und damit erführe niemand — auch sie nicht —, dass sie ihre Auffassung geändert hat.
+
+**Das Projekt behandelt Überholtes an drei Stellen bereits gleich**, und ihre Wissenstexte wären die vierte:
+
+| Schicht | Wie Überholtes behandelt wird |
+|---|---|
+| Faktengedächtnis | `t_invalid` — der Fakt wird ungültig, nicht gelöscht |
+| Index (§2.1, §5.5) | verschwundene Datei: `aktiv = false`, die Zeile bleibt |
+| Dokumentation | Widerlegtes wird markiert, nicht entfernt — es erklärt, warum etwas so aussieht, wie es aussieht |
+| **ihre Wissenstexte** | **heute nichts** |
+
+**Das Format steht im Werkzeug-Konzept** (`novaberg-tool-dateien_k.md` §3.4): drei Marken — `[cN>]` für eine Änderung, `[dN>]` für eine Löschung, `[iN>]` für einen Zusatz —, der alte Wortlaut ausgelagert unter `[<cN_version_datum]`. **Anker beim Leser, Rumpf am Ende** — weil eine Markierung im Fließtext den Text genau dort wachsen lässt, wo gelesen wird.
+
+**Der Verlauf ist damit umkehrbar**, und das ist mehr als eine Markierung: Archiveinträge sind gewöhnlicher Text und tragen selbst Marken, sodass ein Absatz, der geändert und später gelöscht wurde, beide Vorgänge in einer Kette hält. Eine frühere Fassung entsteht, indem man rückwärts über die Versionen geht — `d` wieder einsetzen, `c` durch den Vorgänger ersetzen, `i` entfernen.
+
+> **Und es ist die erste Stelle in diesem Bereich, die überhaupt einen Detektor bekommt.** Auf dem Inhalt einer Wissensdatei steht kein Zeuge; eine vergessene Markierung in Prosa fällt niemandem auf. Die Ankerpaarung dagegen ist eine Invariante über eine einzelne Datei und ohne Modell prüfbar — jeder Anker hat genau einen Eintrag und umgekehrt.
+
 ### 3a.3 Die Rechte bleiben getrennt, und die Trennung wird schärfer
 
 **Dass sie schreiben darf, ändert die Zusicherung aus §7 nicht — es macht sie dringlicher.**
