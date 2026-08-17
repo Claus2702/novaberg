@@ -91,10 +91,20 @@ def _build_task_block(
     #
     # Sie steht VOR dem Fehler: Ein Urteil ist keine Stoerung, und wer
     # beides vorliegen hat, braucht zuerst die Auskunft, was stattdessen
-    # ginge. Ein Kontext-Schnitt findet nicht statt — der Vorschlag ist
-    # nur im Zusammenhang der Aeusserung verstaendlich.
+    # ginge.
+    #
+    # Der Kontext wird geschnitten, wie bei Erfolg und Fehler.
+    #
+    # **Hier stand zuerst `False`, mit der Begruendung, der Vorschlag sei
+    # nur im Zusammenhang der Aeusserung verstaendlich. Die Begruendung war
+    # falsch:** Der Schnitt entfernt Gedaechtnis und Web, nicht die
+    # Aeusserung — die steht ohnehin im Prompt. Gemessen am 17.08.2026:
+    # Zwei Ablehnungen mit ungeschnittenem Kontext erreichten die Antwort
+    # NICHT (Nova beantwortete nur die Sachfrage), waehrend eine
+    # Erfolgsmeldung mit Schnitt am selben Tag Tag, Uhrzeit und Eintrag
+    # nannte. Der ungeschnittene Kontext liess den Block untergehen.
     if refusals:
-        return (_build_task_ablehnung(refusals), False)
+        return (_build_task_ablehnung(refusals), True)
 
     # Prioritaet 3: Fehler
     if errors:
