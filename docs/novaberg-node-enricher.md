@@ -114,8 +114,14 @@ Der `WissenManager` findet Novas erarbeitete Dateien **über die Datenbank, nich
 
 | Größe | Wert | Herkunft |
 |---|---|---|
-| Schwelle | 0.40 | **übernommen von `anker_retrieval`, nicht gemessen** — dort an 100 echten Prompts kalibriert. Gleicher Embedding-Raum, gleiche Art Anfrage; als Startwert vertretbar, als Ergebnis nicht |
-| Top-K | 3 | Der Gesprächspfad hat 32768 Token, nicht die 262144 des Hintergrunds |
+| Schwelle | 0.40 | **übernommen von `anker_retrieval`, nicht gemessen** — dort an 100 echten Prompts kalibriert. Gleicher Embedding-Raum, gleiche Art Anfrage; als Startwert vertretbar, als Ergebnis nicht. **Seit dem 17.08.2026 gemessen: sie greift nicht** — siehe unten |
+| Top-K | 3 | Der Gesprächspfad hat 32768 Token, nicht die 262144 des Hintergrunds. **Faktisch ist dies die Auswahl, nicht die Kappung** |
+
+> **Gemessen am 17.08.2026 — was hier auswählt, ist Top-K und nicht die Schwelle.** Über 42 protokollierte Aufrufe kamen **40 mal genau drei** Treffer zurück, also die Obergrenze; der Kosinus des dritten Treffers liegt bei Median **0,588** (min 0,404, max 0,691). Über den Korpus gerechnet — 217 aktive Einträge, 23.436 Paare, Median-Kosinus 0,369 — liegen **35,6 % aller Paare über 0,40**, für eine Abfrage also rund 77 von 217 Einträgen. Erst **0,55** ergibt gerechnet die drei Treffer, die tatsächlich ankommen. **Die wirksame Schwelle ist damit 0,55, und sie steht in keiner Konfiguration.**
+>
+> Die Übernahme von `anker_retrieval` war der Fehler und ist jetzt beziffert: Im Knotenraum, für den 0,40 kalibriert wurde, qualifiziert der Wert rund **1,4 %** des Bestandes (4,1 von 302) — in der Bibliothek **35,6 %**. Derselbe Embedding-Raum, **Faktor 26**. Eine Schwelle ist keine Eigenschaft des Raums allein, sondern des Raums **und** der Dichte des Korpus darin.
+>
+> **Offen bleibt die andere Hälfte** (`WIS-SCHWELLE-MESSEN`): Abdeckung und Fehltreffer über echte Prompts sind nicht gemessen, weil `such_vektor` nicht aufbewahrt wird. Die 35,6 % sind an Einträgen gegen Einträge gerechnet; belastbar ist die Richtung, nicht die zweite Nachkommastelle.
 
 > **Stufe 2 fehlt.** Reicht die Zusammenfassung nicht, soll der Dateiinhalt gelesen werden (§7.3). Dafür fehlt der Lesepfad in `tools/dateien/` — und mit 262144 Token im Hintergrund ist dort eine andere Bauart möglich als die Mandelbrot-Navigation, die das Konzept aus dem 32k-Zwang ableitet.
 

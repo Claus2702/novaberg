@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Konzept — Indizierung und Durchsuchung eines vorgegebenen Verzeichnisses als NMCP-Dienst
-**Stand:** 17. August 2026 (v0.6)
+**Stand:** 17. August 2026 (v0.7)
 **Pfad:** novaberg/docs/novaberg-agent-dateien_k.md
 **Typ:** Konzept (`_k`)
 **Status:** ⬜ **Konzept, kein Code.** Kein Bezeichner dieses Dokuments existiert.
@@ -175,7 +175,7 @@ Die Aufzeichnungen erreichen Nova auf **zwei** Wegen, und sie sind verschieden i
 
 > **Ein eigenes Embedding je Turn zu rechnen wäre der Fehler an dieser Stelle.** Es hieße, denselben Text ein zweites Mal einzubetten — Sekunden je Turn — und dabei die Wahrnehmungs-Gravitation zu verlieren, die im gemeinsamen Vektor steckt.
 
-### 3.0a Die Schwelle wird gemessen, nicht gesetzt
+### 3.0a Die Schwelle wird gemessen, nicht gesetzt — und 0,40 war keine Messung
 
 Ein Block, der in jedem Turn erscheint, ist Rauschen; einer, der nie erscheint, ist tot. Dazwischen liegt eine Schwelle auf dem Kosinus, und **sie darf nicht geschätzt werden.**
 
@@ -183,7 +183,61 @@ Der Grund steht im Bestand: Am selben Embedding gemessen liegt **Beziehungsprosa
 
 **Also: erst den Korpus vermessen, dann die Schwelle setzen.** Die Nebenbedingung ist dieselbe wie bei den Gesprächslandschaften — die Schwelle trennt nur dann etwas, wenn beide Seiten vorkommen.
 
-> **Es gibt bereits einen Präzedenzwert, und er ist der beste Anhalt:** Die Bibliothek sucht in jedem Turn über dasselbe Themen-Embedding und liegt bei **0,40**. Das ist deutlich niedriger, als man raten würde, und bestätigt die Warnung oben von der anderen Seite. Der Dateien-Index startet dort und wird gegen seinen eigenen Korpus nachgezogen — **er startet dort nicht, weil 0,40 richtig ist, sondern weil ein gemessener Wert eines anderen Korpus ein besserer Anfang ist als eine Schätzung.**
+#### Der Präzedenzwert hat der Prüfung nicht standgehalten
+
+Bis v0.6 stand hier, die Bibliothek liefere mit **0,40** einen gemessenen Anhalt, und der Index solle dort starten. **Das ist widerlegt — und der Bestand hatte es die ganze Zeit dazugesagt.**
+
+Der Wert hat eine Herkunftskette, und jede Stufe außer der letzten trägt ihren Vorbehalt mit:
+
+| Stufe | Was dort steht |
+|---|---|
+| **Ankerabruf** des Langzeitgedächtnisses | 0,40 ist **kalibriert** — 100 echte Prompts gegen 302 Knoten: 0,50 → 53 % Abdeckung, **0,40 → 82 % bei 4,1 Ankern**, 0,35 → 89 % und Rauschen. Dazu die Marke *„begründeter Startwert, kein Verteilungs-Messergebnis"* |
+| **Bibliothek** | *„von `anker_retrieval` übernommen, **NICHT gemessen**"* — mit Grund: *„die Bibliothek hatte bei ihrer Einführung drei Zeilen"*. Ein offener Backlog-Eintrag verlangt die Messung, sobald Bestand da ist |
+| **dieses Konzept, v0.5** | *„ein gemessener Wert eines anderen Korpus"* |
+
+> **Der Vorbehalt ist beim Kopieren verdunstet.** Zwei Code-Stellen sagen ausdrücklich, dass die Zahl ein Startwert und kein Ergebnis ist; übernommen wurde die Zahl, nicht der Satz daneben. **Das ist keine Nachlässigkeit einer Person, sondern die Eigenschaft eines Wertes, der ohne seine Messbedingung reist** — und der Grund, warum die Berichtigung hier nicht bloß eine andere Zahl einsetzt, sondern sagt, woran sie hängt.
+
+Am 17.08.2026 gegen den laufenden Bestand gemessen:
+
+| Messung | Ergebnis |
+|---|---|
+| Aufrufe der Bibliothek im Protokoll | 42 |
+| davon mit **genau 3** Treffern | **40** — und `WISSEN_RETRIEVAL_TOP_K` ist 3 |
+| Kosinus des **dritten** Treffers | min 0,404 · **Median 0,588** · max 0,691 |
+
+**In 40 von 42 Aufrufen hat nicht die Schwelle ausgewählt, sondern die Kappung.** Das Ergebnis war genau so groß wie die Obergrenze — mehr Einträge lagen über 0,40, als geliefert wurden. Nur in **zwei** Aufrufen hat die Schwelle tatsächlich begrenzt; auf zwei Beobachtungen ist kein Wert kalibrierbar.
+
+Die Gegenprobe über die Geometrie des Korpus selbst sagt dasselbe. Alle 217 aktiven Einträge paarweise gegeneinander, 23.436 Paare:
+
+| Kosinus | Median | 95. Perzentil | Maximum |
+|---|---|---|---|
+| über alle Paare | **0,369** | 0,503 | 0,830 |
+
+**Damit liegt 0,40 fast genau auf dem Median des Rauschens.** Ausgezählt: **35,6 % aller Paare liegen darüber** — für eine beliebige Anfrage qualifizieren sich rund **77 von 217** Einträgen. Was die Bibliothek vor diesem Ergebnis bewahrt, ist allein die Kappung bei drei.
+
+| Schwelle | Anteil der Paare darüber | Treffer je Abfrage (217 Einträge) |
+|---|---|---|
+| **0,40** | 35,6 % | **77** |
+| 0,45 | 16,6 % | 36 |
+| 0,50 | 5,4 % | 12 |
+| **0,55** | 1,4 % | **3** |
+| 0,60 | 0,4 % | 0,8 |
+
+> **Die wirksame Schwelle der Bibliothek ist 0,55, nicht 0,40** — die Zeile in der Konfiguration und die Zahl, die den Ausschlag gibt, sind zwei verschiedene Dinge. Der gemessene Median des dritten Treffers (0,588) und der gerechnete Wert für drei Treffer (0,55) treffen sich; zwei Zugänge, ein Ergebnis.
+
+**Damit gibt die Messung der Übernahme quantitativ Unrecht.** Im Knotenraum, für den 0,40 kalibriert wurde, qualifiziert der Wert rund **1,4 %** des Bestandes (4,1 von 302). In der Bibliothek qualifiziert derselbe Wert **35,6 %**. Derselbe Embedding-Raum, **Faktor 26 im Trennverhalten** — eine Schwelle ist keine Eigenschaft des Raums, sondern eine Eigenschaft des Raums **und** der Dichte des Korpus darin.
+
+> **Ein Vorbehalt zur Genauigkeit, weil er hierher gehört:** Die 35,6 % sind an Einträgen gegen Einträge gemessen, nicht an echten Anfragevektoren gegen Einträge — die Anfragevektoren werden nicht aufbewahrt. Als Beleg trägt das nur zusammen mit dem Betriebsbefund, und der ist unabhängig davon: **40 von 42 Aufrufen auf der Kappung** heißt, dass die Schwelle mehr durchgelassen hat, als geliefert wurde. Die Richtung ist damit belegt, die zweite Nachkommastelle nicht.
+
+#### Was daraus für den Index folgt — und es ist nicht nur eine andere Zahl
+
+**Erstens: der Startwert ist 0,55, nicht 0,40.** Er ist gegen einen fremden Korpus gemessen und wird gegen den eigenen nachgezogen — die Bedingung aus §5.4 bleibt bestehen.
+
+**Zweitens, und das ist der eigentliche Fund: dieses Konzept hatte gar keine Kappung.** Es hat von der Bibliothek die Schwelle übernommen und den Mechanismus weggelassen, der dort die Arbeit tut. Bei **667 Dateien** im genannten Verzeichnis hätte 0,40 rund **237 Dateien** je Turn qualifiziert.
+
+> **Der Index bekommt beides, und die Reihenfolge der Begründung ist wichtig:** Die Kappung ist die Zusicherung, die Schwelle ist die Feinjustage. Wer es umgekehrt liest, baut denselben Boden noch einmal — eine Zahl, die etwas verspricht, was eine andere Stelle einhält.
+
+**Drittens folgt daraus eine Prüfregel für den Bau:** Der Enricher-Weg protokolliert je Turn die Trefferzahl **und** den Kosinus des schlechtesten gelieferten Treffers. Liegt die Trefferzahl dauerhaft auf der Kappung, ist die Schwelle unbelegt — genau der Zustand, den diese Messung bei der Bibliothek vorgefunden hat.
 
 ### 3.0b Der dritte Zugang: sie liest nach, weil sie will
 
@@ -505,6 +559,8 @@ Vier Fragen, die der Entwurf offenlässt, weil sie Absichten sind und keine Umse
 2. ~~**Sieht jedes Paar denselben Index?**~~ → **Beantwortet (§2.2):** Das Paar hängt an der Freigabe. Zwei Menschen, die dasselbe Verzeichnis freigeben, teilen sich die Indexzeilen und haben zwei Wurzeln. Offen bleibt der Anschlussfall: **Was geschieht mit den Indexzeilen, wenn die letzte Freigabe auf ein Verzeichnis zurückgenommen wird** — sie sind dann von niemandem mehr erreichbar und stehen weiter da.
 3. **Wie tief darf `datei_grep` gehen?** Eine Obergrenze für Treffer und Dateien ist nötig; ohne sie ist eine unglückliche Anfrage ein Vollscan.
 4. **Was passiert bei einer Datei, die kein Text ist?** PDF, Bild, Tabelle. Der Entwurf behandelt Text; alles andere wird erkannt und mit Grund übergangen, nicht stillschweigend.
+5. **Wie groß ist die Kappung des Enricher-Wegs?** Dass es eine gibt, ist seit v0.7 entschieden und begründet (§3.0a); ihre Höhe ist es nicht. Die Bibliothek steht bei drei — das ist ein Anhalt und kein Beleg, denn der `[AUFZEICHNUNGEN]`-Block trägt je Eintrag zusätzlich eine Fundstelle und kostet damit mehr Platz im Prompt als eine Bibliothekszeile.
+6. **Was misst die Trefferqualität, die der Block ausweisen soll?** §3.0b verlangt, dass Nova *wie gut* der Treffer war erfährt, um zwischen Nachlesen und Weiterreden zu entscheiden. Nach der Messung in §3.0a ist der rohe Kosinus dafür untauglich: 0,588 klingt nach mittelmäßig und ist der Normalfall, 0,45 klingt nach brauchbar und ist Rauschen. **Eine Zahl, deren Skala niemand kennt, ist keine Entscheidungsgrundlage** — was sie braucht, ist der Rang im Korpus, nicht der Abstand im Raum.
 
 ---
 
@@ -523,6 +579,7 @@ Zwei Folgen, beide klein und beide nötig:
 
 ## Versionshistorie
 
+- **v0.7 — 17.08.2026:** **Der Präzedenzwert 0,40 ist widerlegt, und der Fund ist nicht die Zahl, sondern ein verdunsteter Vorbehalt.** Der Wert hat eine Herkunftskette: Im Ankerabruf des Langzeitgedächtnisses ist er **kalibriert** (100 echte Prompts gegen 302 Knoten, 0,40 → 82 % Abdeckung bei 4,1 Ankern) und trägt dort die Marke *„begründeter Startwert, kein Verteilungs-Messergebnis"*. Die Bibliothek hat ihn **übernommen** und sagt es auch — *„NICHT gemessen"*, mit Grund und offenem Backlog-Eintrag. **Erst dieses Konzept nannte ihn in v0.5 „ein gemessener Wert".** Zwei Code-Stellen waren ehrlich; übernommen wurde die Zahl, nicht der Satz daneben. Die Messung gibt der Übernahme quantitativ Unrecht: Im Knotenraum qualifiziert 0,40 rund **1,4 %** des Bestandes, in der Bibliothek **35,6 %** — derselbe Embedding-Raum, **Faktor 26**. Eine Schwelle ist keine Eigenschaft des Raums, sondern des Raums **und** der Dichte des Korpus darin. Gegen den laufenden Bestand gemessen: In **40 von 42** protokollierten Bibliotheksaufrufen kamen genau drei Treffer zurück — so viele, wie die Kappung zulässt. **Die Schwelle hat nie gegriffen, die Kappung hat gegriffen**, und ein Boden, den niemand berührt, belegt nichts. Die Geometrie des Korpus bestätigt es von der anderen Seite: 217 aktive Einträge, 23.436 Paare, **Median 0,369** — **35,6 % aller Paare liegen über 0,40**, also rund 77 von 217 Einträgen je Abfrage. Gerechnet trifft erst **0,55** die drei Treffer, die tatsächlich geliefert werden, und der gemessene Median des dritten Treffers (**0,588**) trifft sich damit. **Die wirksame Schwelle der Bibliothek ist 0,55; die konfigurierte ist Zierde.** Daraus drei Änderungen: Der Index startet bei **0,55**; er bekommt eine **Kappung**, die dieses Konzept bis v0.6 überhaupt nicht kannte — es hatte von der Bibliothek die Schwelle übernommen und den Mechanismus weggelassen, der dort die Arbeit tut (bei 667 Dateien hätte 0,40 rund **237** je Turn qualifiziert); und der Enricher-Weg protokolliert Trefferzahl **und** schlechtesten gelieferten Kosinus, damit *„die Kappung greift dauerhaft"* sichtbar wird statt still zu bleiben. **Zwei neue offene Fragen** (§9): die Höhe der Kappung, und woraus sich die Trefferqualität ergibt, die der Block ausweisen soll — der rohe Kosinus taugt dafür nach dieser Messung nicht, weil niemand seine Skala kennt.
 - **v0.6 — 17.08.2026:** **Die Vertiefung füllt den Vorrat, nicht die Antwort** — die Beschränkung, ohne die dieses Konzept gegen die Gedankenkette arbeitet. Deren Satz trifft den zweiten Durchlauf unmittelbar: *„Wer hier den Aufsatz einsetzt, hat die Treppe gebaut und oben doch die Ablage abgeladen."* Was die Vertiefung vergrößert, ist was Nova **weiß**, nicht was sie **sagt**; das gesammelte Material ist der Vorrat, aus dem sie schöpft, und nicht der Entwurf, den sie vorliest. **Der Längenregler allein reicht dafür nicht, und das ist gemessen:** Über zehn Turns des produktiven Paares schwankt die Vorgabe um den Faktor 1,50, die Antwortlänge um 3,93 — und bei **identischer** Vorgabe (0,652, fünf Turns) noch um 2,68, von 813 auf 2181 Zeichen. Die Richtung stimmt (r = +0,78), die Bindung fehlt. **Eine Zahl bindet nicht, eine Struktur bindet:** Die Treppe aus Ruf, Feld und Fund ist ein Ablauf, in den der Aufsatz nicht hineinpasst, weil zwischen jeder Portion eine Freigabe steht.
 - **v0.5 — 17.08.2026:** Zwei Berichtigungen gegen den Bestand. **Die Schwelle hat einen Präzedenzwert:** Die Bibliothek sucht in jedem Turn über dasselbe Themen-Embedding und liegt bei **0,40** — deutlich niedriger, als eine Schätzung ausgefallen wäre, und damit die Warnung aus §3.0a von der anderen Seite bestätigt. Der Index startet dort, nicht weil der Wert richtig ist, sondern weil ein gemessener Wert eines anderen Korpus ein besserer Anfang ist als eine Schätzung. **Und die Gedankenkette benutzt die Selbstauslösung nicht** — sie hängt am Impuls-Stapel mit einer eigenen Schranke. Für den Menschen ist *„sie macht weiter"* ein Verhalten; im System sind es zwei Mechanismen mit zwei Schranken, die nichts voneinander wissen. Die Vertiefung dieses Konzepts gehört zur Selbstauslösung — sie ist ein zweiter Anlauf auf dieselbe Frage, keine Fortsetzung über den Turn hinaus. Beide Schranken zählen dabei die falsche Einheit: die eine alle Gründe gemeinsam, die andere Zustellungen statt abgeschlossener Gedanken.
 - **v0.4 — 17.08.2026:** **Ein dritter Zugang zwischen Beilage und Auftrag** (§3.0b): Nova entscheidet mitten im Turn, dass ihr die Zusammenfassung nicht reicht, und liest nach. **Die Maschine dafür existiert** — Selbstauslösung samt Nutzlast, Ereignis-Consumer und eine Schranke von drei je Turn. Heute hat sie genau einen Aufrufer, und der zeigt zugleich, was zu ändern ist: Der Denkknoten setzt sie nach einem **Doppel-Fehlschlag** und hängt eine überbrückende Geste an. **Der Dateien-Fall ist derselbe Mechanismus mit umgekehrtem Vorzeichen — keine Reparatur, sondern eine Vertiefung.** Daraus drei Folgen, zwei davon Fallen: Die Geste wird **ehrlich statt überbrückend** (*„ich habe dazu Aufzeichnungen — lass mich nachsehen"* ist wahr und erklärt die Pause); die **Nutzlast muss die Kandidaten tragen**, sonst beginnt der zweite Durchlauf bei null und findet über dasselbe Embedding dieselbe Zusammenfassung wieder; und **das Budget ist geteilt** — eine Vertiefung verbraucht ein Kontingent, das eine Reparatur später brauchen könnte, weshalb beides nicht ohne Buchung aus demselben Topf gehen darf. Dazu die Grundlage ihrer Abwägung: Der Block muss **Trefferqualität und Dateigröße** nennen, sonst entscheidet sie zwischen Nachlesen und Weiterreden im Blindflug. **Neu §3.0c:** *„Weißt du was über X"* ist ein Auftrag über **drei** Bestände mit drei Zugängen — eigenes Wissen, freigegebene Dateien, Web. Der Zettel des Dienstes enthält sich dazu, weil ein Urteil über andere Anbieter auf keinen Zettel gehört; der Empfang löst es durch Mehrfachzustellung. Dabei wird eine ältere Lücke sichtbar: **Das eigene Wissen und das Web sind über den Empfang nicht als Dienste wählbar** — das eine ist Kontextquelle, das andere ein Merker.
