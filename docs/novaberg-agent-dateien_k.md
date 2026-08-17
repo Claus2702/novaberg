@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Konzept — Indizierung und Durchsuchung eines vorgegebenen Verzeichnisses als NMCP-Dienst
-**Stand:** 17. August 2026 (v0.4)
+**Stand:** 17. August 2026 (v0.5)
 **Pfad:** novaberg/docs/novaberg-agent-dateien_k.md
 **Typ:** Konzept (`_k`)
 **Status:** ⬜ **Konzept, kein Code.** Kein Bezeichner dieses Dokuments existiert.
@@ -183,6 +183,8 @@ Der Grund steht im Bestand: Am selben Embedding gemessen liegt **Beziehungsprosa
 
 **Also: erst den Korpus vermessen, dann die Schwelle setzen.** Die Nebenbedingung ist dieselbe wie bei den Gesprächslandschaften — die Schwelle trennt nur dann etwas, wenn beide Seiten vorkommen.
 
+> **Es gibt bereits einen Präzedenzwert, und er ist der beste Anhalt:** Die Bibliothek sucht in jedem Turn über dasselbe Themen-Embedding und liegt bei **0,40**. Das ist deutlich niedriger, als man raten würde, und bestätigt die Warnung oben von der anderen Seite. Der Dateien-Index startet dort und wird gegen seinen eigenen Korpus nachgezogen — **er startet dort nicht, weil 0,40 richtig ist, sondern weil ein gemessener Wert eines anderen Korpus ein besserer Anfang ist als eine Schätzung.**
+
 ### 3.0b Der dritte Zugang: sie liest nach, weil sie will
 
 Zwischen der stillen Beilage und dem ausdrücklichen Auftrag steht ein dritter Fall, und er ist der eigentümlichste: **Nova entscheidet mitten im Turn, dass ihr die Zusammenfassung nicht reicht.**
@@ -206,6 +208,22 @@ Responder
 > **Heute gibt es genau einen Aufrufer, und er zeigt zugleich, was zu ändern ist.** Der Thinker setzt den Self-Trigger nach einem **Doppel-Fehlschlag** und hängt die Geste *„Hmm... ich muss das nochmal durchgehen."* an. Der Mechanismus ist also als **Reparatur** gebaut.
 >
 > **Der Dateien-Fall ist derselbe Mechanismus mit umgekehrtem Vorzeichen: keine Reparatur, sondern eine Vertiefung.** Nicht *„das ging schief"*, sondern *„da ist mehr, und ich will es haben"*.
+
+#### Es gibt eine zweite Maschine für Mehr-Turn-Verhalten, und sie ist nicht diese
+
+Für den Menschen ist *„sie macht weiter"* ein Verhalten. Im System sind es **zwei getrennte Mechanismen mit zwei getrennten Schranken**, die nichts voneinander wissen:
+
+| | **Selbstauslösung** | **Gedankenkette** (Konzept, nicht gebaut) |
+|---|---|---|
+| Richtung | ein **Folgedurchlauf** auf dieselbe Äußerung | **Zustellungen** über mehrere Turns |
+| Träger | Ereignis-Queue, `self_trigger` | der Impuls-Stapel |
+| Schranke | drei je Turn, über alle Gründe | `MAX_BURST = 2`, zählt Zustellungen |
+| Auslöser heute | Doppel-Fehlschlag im Denkknoten | — |
+| Geplant | **die Vertiefung aus diesem Konzept** | ein Gedanke, der über Turns wächst |
+
+**Die Vertiefung gehört zur linken Spalte, nicht zur rechten.** Sie ist ein zweiter Anlauf auf dieselbe Frage, keine Fortsetzung über den Turn hinaus.
+
+> **Und die Gedankenkette hat ihr eigenes Budgetproblem, das dem hier ähnelt und nicht dasselbe ist:** Ihre Schranke zählt heute Zustellungen, wo sie **abgeschlossene Gedanken** zählen müsste — vier Zustellungen zu einem Thema sind ein Gedanke. Zwei Mechanismen, zwei Schranken, beide zählen die falsche Einheit. Wer eine davon anfasst, sollte wissen, dass es die andere gibt.
 
 #### Drei Dinge folgen daraus, und zwei sind Fallen
 
@@ -471,6 +489,7 @@ Zwei Folgen, beide klein und beide nötig:
 
 ## Versionshistorie
 
+- **v0.5 — 17.08.2026:** Zwei Berichtigungen gegen den Bestand. **Die Schwelle hat einen Präzedenzwert:** Die Bibliothek sucht in jedem Turn über dasselbe Themen-Embedding und liegt bei **0,40** — deutlich niedriger, als eine Schätzung ausgefallen wäre, und damit die Warnung aus §3.0a von der anderen Seite bestätigt. Der Index startet dort, nicht weil der Wert richtig ist, sondern weil ein gemessener Wert eines anderen Korpus ein besserer Anfang ist als eine Schätzung. **Und die Gedankenkette benutzt die Selbstauslösung nicht** — sie hängt am Impuls-Stapel mit einer eigenen Schranke. Für den Menschen ist *„sie macht weiter"* ein Verhalten; im System sind es zwei Mechanismen mit zwei Schranken, die nichts voneinander wissen. Die Vertiefung dieses Konzepts gehört zur Selbstauslösung — sie ist ein zweiter Anlauf auf dieselbe Frage, keine Fortsetzung über den Turn hinaus. Beide Schranken zählen dabei die falsche Einheit: die eine alle Gründe gemeinsam, die andere Zustellungen statt abgeschlossener Gedanken.
 - **v0.4 — 17.08.2026:** **Ein dritter Zugang zwischen Beilage und Auftrag** (§3.0b): Nova entscheidet mitten im Turn, dass ihr die Zusammenfassung nicht reicht, und liest nach. **Die Maschine dafür existiert** — Selbstauslösung samt Nutzlast, Ereignis-Consumer und eine Schranke von drei je Turn. Heute hat sie genau einen Aufrufer, und der zeigt zugleich, was zu ändern ist: Der Denkknoten setzt sie nach einem **Doppel-Fehlschlag** und hängt eine überbrückende Geste an. **Der Dateien-Fall ist derselbe Mechanismus mit umgekehrtem Vorzeichen — keine Reparatur, sondern eine Vertiefung.** Daraus drei Folgen, zwei davon Fallen: Die Geste wird **ehrlich statt überbrückend** (*„ich habe dazu Aufzeichnungen — lass mich nachsehen"* ist wahr und erklärt die Pause); die **Nutzlast muss die Kandidaten tragen**, sonst beginnt der zweite Durchlauf bei null und findet über dasselbe Embedding dieselbe Zusammenfassung wieder; und **das Budget ist geteilt** — eine Vertiefung verbraucht ein Kontingent, das eine Reparatur später brauchen könnte, weshalb beides nicht ohne Buchung aus demselben Topf gehen darf. Dazu die Grundlage ihrer Abwägung: Der Block muss **Trefferqualität und Dateigröße** nennen, sonst entscheidet sie zwischen Nachlesen und Weiterreden im Blindflug. **Neu §3.0c:** *„Weißt du was über X"* ist ein Auftrag über **drei** Bestände mit drei Zugängen — eigenes Wissen, freigegebene Dateien, Web. Der Zettel des Dienstes enthält sich dazu, weil ein Urteil über andere Anbieter auf keinen Zettel gehört; der Empfang löst es durch Mehrfachzustellung. Dabei wird eine ältere Lücke sichtbar: **Das eigene Wissen und das Web sind über den Empfang nicht als Dienste wählbar** — das eine ist Kontextquelle, das andere ein Merker.
 - **v0.3 — 17.08.2026:** **Die epistemische Grenze wird gebaut, nicht gesagt** (§1a). Was in den Dateien steht, ist nicht ihr Gedächtnis und nicht sie; der Dienst muss ihr die Sprechhandlung *„ich habe hier Aufzeichnungen, die belegen…"* ermöglichen und *„ich weiß"* verwehren. **Der Präzedenzfall steht als offener Defekt im Bestand:** Nova hat die Biografie eines Menschen als eigene übernommen, und die dort vermerkte Abhilfe ist genau diese — die Grenze im Prompt benennen. Dateiinhalt ist derselbe Fall eine Stufe weiter, denn ein Dokument gehört niemandem und kann zusätzlich falsch oder veraltet sein. Daraus **ein eigener Block `[AUFZEICHNUNGEN]` statt einer Zeile im Gedächtnisblock**, mit Fundstelle je Eintrag, mit der Einordnung im Block statt im System-Prompt (ein Grundsatz, der in jedem Turn steht, wird in dem Turn übersehen, in dem er gebraucht wird), und mit dem ausdrücklich benannten Konfliktfall: Widerspricht eine Aufzeichnung ihrer Erinnerung, sagt sie beides. **Zweitens ein zweiter Zugang** (§3.0): Der Index wird in **jedem** Turn über `such_vektor` abgefragt und trägt als Kontextquelle zum Enricher bei — dieselbe erprobte Bauart wie die Bibliothek, ohne zweites Embedding je Turn. Dieser Weg ist vom NMCP-Regelwerk **ausgenommen**, weil die Konvention den Lesepfad herausnimmt; er wird nicht gewählt, er läuft. **Und die Schwelle darauf wird gemessen, nicht gesetzt** (§3.0a): Am selben Embedding liegt Beziehungsprosa einander fremder Menschen bei 0,774 — wer nach Gefühl auf 0,7 setzt, bekommt in jedem Turn Treffer.
 - **v0.2 — 17.08.2026:** **Die Wurzel ist eine Festlegung wie eine Direktive** — und damit ist §2.2 umgekehrt: Das Argument *„eine Datei hat keinen Beobachter"* hält, die Schlussfolgerung *„also kein Paar-Schema"* war zu kurz gezogen. **Das Paar sitzt an der Freigabe, nicht an der Datei**: Ein Mensch gibt einer Figur ein Verzeichnis frei, und die Indexzeile erbt ihre Zuordnung über die Wurzel. Das löst drei Fragen auf einmal — mehrere Verzeichnisse sind der Normalfall statt eines Sonderfalls, der Entzug ist symmetrisch zur Freigabe, und dieselbe Datei steht einmal im Index statt einmal je Mensch. Neu §2a mit der Wurzeltabelle, den fünf Aktionen nach dem Vorbild der Direktiven und dem Tor, das den **aufgelösten** Pfad samt Dateizahl zeigt, bevor es freigibt. **§2a.3 trennt zwei Formen des Entzugs**, die leicht zusammenfallen: stilllegen lässt die Indexzeilen stehen, vergessen löscht sie — und der Index trägt Thema und Zusammenfassung aus dem Inhalt, weshalb wer eine Freigabe zurücknimmt fast immer die zweite Form meint. Aus zwei Diensten werden **drei**, mit der Zusicherung darüber: drei Schreibziele, und keines ist eine Datei. **§7 Regel 3 ist neu gefasst** — dass eine Äußerung einen Pfad bestimmt, ist jetzt gewollt und braucht deshalb drei Riegel statt eines Verbots: einen konfigurierten Außenrand, ein Tor auf dem aufgelösten Pfad, und die Auflösung **vor** der Prüfung. Der Unterschied zur Direktive ist genau dieser Rand: Eine Direktive wirkt auf Novas Verhalten, eine Freigabe auf das Dateisystem des Menschen.
