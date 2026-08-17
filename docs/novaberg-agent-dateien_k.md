@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Konzept — Indizierung und Durchsuchung eines vorgegebenen Verzeichnisses als NMCP-Dienst
-**Stand:** 17. August 2026 (v0.5)
+**Stand:** 17. August 2026 (v0.6)
 **Pfad:** novaberg/docs/novaberg-agent-dateien_k.md
 **Typ:** Konzept (`_k`)
 **Status:** ⬜ **Konzept, kein Code.** Kein Bezeichner dieses Dokuments existiert.
@@ -234,6 +234,36 @@ Für den Menschen ist *„sie macht weiter"* ein Verhalten. Im System sind es **
 **Und das Budget ist geteilt — das ist die Falle.** Drei Selbstauslösungen je Turn gelten für **alle** Gründe zusammen. Eine Vertiefung verbraucht ein Kontingent, das eine Reparatur später brauchen könnte; wer sie ohne eigene Buchung einführt, nimmt der Fehlerbehandlung stillschweigend Luft weg.
 
 > **Die Entscheidung dazu gehört nicht in dieses Dokument:** getrennte Zähler je Grund, oder ein gemeinsamer mit Vorrang für die Reparatur. Was nicht geht, ist beides aus demselben Topf ohne Buchung — dann fällt die Reparatur genau in den Turns aus, in denen viel nachzulesen war.
+
+#### Die Vertiefung füllt den Vorrat, nicht die Antwort
+
+**Der gefährlichste Satz dieses Konzepts steht in einem anderen:**
+
+> **Der Aufsatz kommt nie — sein Inhalt kommt in Portionen, und jede Portion ist bezahlt.**
+>
+> Wer hier den Aufsatz einsetzt, hat die Treppe gebaut und oben doch die Ablage abgeladen.
+
+**Genau das droht die Vertiefung zu tun.** Sie sammelt Fundstellen, reichert massiv an — und legt das Ergebnis dann dem Gegenüber hin. Damit wäre der ganze Aufwand in die falsche Richtung geflossen: **Nova ist kein Lexikon. Sie ist ein Assistent mit Zugriff auf ein Lexikon.**
+
+**Die Regel für den zweiten Durchlauf ist deshalb eine Beschränkung, keine Erlaubnis:**
+
+> **Was die Vertiefung vergrößert, ist was sie *weiß* — nicht was sie *sagt*.** Das gesammelte Material ist der Vorrat, aus dem sie schöpft, und nicht der Entwurf, den sie vorliest.
+
+#### Warum das nicht der Umfangswert allein regelt — gemessen
+
+Es gibt einen Längenregler, er ist verdrahtet und er wirkt. Gemessen am 17.08.2026 über zehn Turns des produktiven Paares:
+
+| | Spanne | Faktor |
+|---|---|---|
+| **Vorgabe** (Umfangsgröße der Regie) | 0,590 bis 0,883 | **1,50** |
+| **Ergebnis** (Antwortlänge) | 813 bis 3193 Zeichen | **3,93** |
+| **bei identischer Vorgabe 0,652** (5 Turns) | 813 bis 2181 Zeichen | **2,68** |
+
+Die Richtung stimmt — Pearson r = +0,78 über die zehn Turns, die höchste Vorgabe erzeugt die längste Antwort. **Aber die Streuung bei gleicher Vorgabe ist größer als die Spanne der Vorgabe selbst.** Fünf Turns mit derselben Zahl ergaben 813 bis 2181 Zeichen.
+
+> **Daraus folgt der Kern, und er ist eine Bauaussage:** Eine Zahl bindet nicht, eine **Struktur** bindet. Der Umfangswert ist eine Bitte; die Treppe aus Ruf, Feld und Fund ist ein Ablauf, in dem der Aufsatz **gar nicht erst hineinpasst** — weil zwischen jeder Portion eine Freigabe des Gegenübers steht.
+
+**Für die Vertiefung heißt das:** Ihr Ergebnis geht nicht als Ganzes in die Antwort, sondern in denselben Vorrat, aus dem eine Kette ihre Portionen nimmt. Ob und wie das gebaut wird, gehört ins Gedankenketten-Konzept; **dieses Konzept muss nur sicherstellen, dass es nicht dagegen arbeitet** — und ein zweiter Durchlauf, der massiv Material sammelt und es unvermittelt ausgibt, täte genau das.
 
 #### Wann sie das tun darf, und wann nicht
 
@@ -489,6 +519,7 @@ Zwei Folgen, beide klein und beide nötig:
 
 ## Versionshistorie
 
+- **v0.6 — 17.08.2026:** **Die Vertiefung füllt den Vorrat, nicht die Antwort** — die Beschränkung, ohne die dieses Konzept gegen die Gedankenkette arbeitet. Deren Satz trifft den zweiten Durchlauf unmittelbar: *„Wer hier den Aufsatz einsetzt, hat die Treppe gebaut und oben doch die Ablage abgeladen."* Was die Vertiefung vergrößert, ist was Nova **weiß**, nicht was sie **sagt**; das gesammelte Material ist der Vorrat, aus dem sie schöpft, und nicht der Entwurf, den sie vorliest. **Der Längenregler allein reicht dafür nicht, und das ist gemessen:** Über zehn Turns des produktiven Paares schwankt die Vorgabe um den Faktor 1,50, die Antwortlänge um 3,93 — und bei **identischer** Vorgabe (0,652, fünf Turns) noch um 2,68, von 813 auf 2181 Zeichen. Die Richtung stimmt (r = +0,78), die Bindung fehlt. **Eine Zahl bindet nicht, eine Struktur bindet:** Die Treppe aus Ruf, Feld und Fund ist ein Ablauf, in den der Aufsatz nicht hineinpasst, weil zwischen jeder Portion eine Freigabe steht.
 - **v0.5 — 17.08.2026:** Zwei Berichtigungen gegen den Bestand. **Die Schwelle hat einen Präzedenzwert:** Die Bibliothek sucht in jedem Turn über dasselbe Themen-Embedding und liegt bei **0,40** — deutlich niedriger, als eine Schätzung ausgefallen wäre, und damit die Warnung aus §3.0a von der anderen Seite bestätigt. Der Index startet dort, nicht weil der Wert richtig ist, sondern weil ein gemessener Wert eines anderen Korpus ein besserer Anfang ist als eine Schätzung. **Und die Gedankenkette benutzt die Selbstauslösung nicht** — sie hängt am Impuls-Stapel mit einer eigenen Schranke. Für den Menschen ist *„sie macht weiter"* ein Verhalten; im System sind es zwei Mechanismen mit zwei Schranken, die nichts voneinander wissen. Die Vertiefung dieses Konzepts gehört zur Selbstauslösung — sie ist ein zweiter Anlauf auf dieselbe Frage, keine Fortsetzung über den Turn hinaus. Beide Schranken zählen dabei die falsche Einheit: die eine alle Gründe gemeinsam, die andere Zustellungen statt abgeschlossener Gedanken.
 - **v0.4 — 17.08.2026:** **Ein dritter Zugang zwischen Beilage und Auftrag** (§3.0b): Nova entscheidet mitten im Turn, dass ihr die Zusammenfassung nicht reicht, und liest nach. **Die Maschine dafür existiert** — Selbstauslösung samt Nutzlast, Ereignis-Consumer und eine Schranke von drei je Turn. Heute hat sie genau einen Aufrufer, und der zeigt zugleich, was zu ändern ist: Der Denkknoten setzt sie nach einem **Doppel-Fehlschlag** und hängt eine überbrückende Geste an. **Der Dateien-Fall ist derselbe Mechanismus mit umgekehrtem Vorzeichen — keine Reparatur, sondern eine Vertiefung.** Daraus drei Folgen, zwei davon Fallen: Die Geste wird **ehrlich statt überbrückend** (*„ich habe dazu Aufzeichnungen — lass mich nachsehen"* ist wahr und erklärt die Pause); die **Nutzlast muss die Kandidaten tragen**, sonst beginnt der zweite Durchlauf bei null und findet über dasselbe Embedding dieselbe Zusammenfassung wieder; und **das Budget ist geteilt** — eine Vertiefung verbraucht ein Kontingent, das eine Reparatur später brauchen könnte, weshalb beides nicht ohne Buchung aus demselben Topf gehen darf. Dazu die Grundlage ihrer Abwägung: Der Block muss **Trefferqualität und Dateigröße** nennen, sonst entscheidet sie zwischen Nachlesen und Weiterreden im Blindflug. **Neu §3.0c:** *„Weißt du was über X"* ist ein Auftrag über **drei** Bestände mit drei Zugängen — eigenes Wissen, freigegebene Dateien, Web. Der Zettel des Dienstes enthält sich dazu, weil ein Urteil über andere Anbieter auf keinen Zettel gehört; der Empfang löst es durch Mehrfachzustellung. Dabei wird eine ältere Lücke sichtbar: **Das eigene Wissen und das Web sind über den Empfang nicht als Dienste wählbar** — das eine ist Kontextquelle, das andere ein Merker.
 - **v0.3 — 17.08.2026:** **Die epistemische Grenze wird gebaut, nicht gesagt** (§1a). Was in den Dateien steht, ist nicht ihr Gedächtnis und nicht sie; der Dienst muss ihr die Sprechhandlung *„ich habe hier Aufzeichnungen, die belegen…"* ermöglichen und *„ich weiß"* verwehren. **Der Präzedenzfall steht als offener Defekt im Bestand:** Nova hat die Biografie eines Menschen als eigene übernommen, und die dort vermerkte Abhilfe ist genau diese — die Grenze im Prompt benennen. Dateiinhalt ist derselbe Fall eine Stufe weiter, denn ein Dokument gehört niemandem und kann zusätzlich falsch oder veraltet sein. Daraus **ein eigener Block `[AUFZEICHNUNGEN]` statt einer Zeile im Gedächtnisblock**, mit Fundstelle je Eintrag, mit der Einordnung im Block statt im System-Prompt (ein Grundsatz, der in jedem Turn steht, wird in dem Turn übersehen, in dem er gebraucht wird), und mit dem ausdrücklich benannten Konfliktfall: Widerspricht eine Aufzeichnung ihrer Erinnerung, sagt sie beides. **Zweitens ein zweiter Zugang** (§3.0): Der Index wird in **jedem** Turn über `such_vektor` abgefragt und trägt als Kontextquelle zum Enricher bei — dieselbe erprobte Bauart wie die Bibliothek, ohne zweites Embedding je Turn. Dieser Weg ist vom NMCP-Regelwerk **ausgenommen**, weil die Konvention den Lesepfad herausnimmt; er wird nicht gewählt, er läuft. **Und die Schwelle darauf wird gemessen, nicht gesetzt** (§3.0a): Am selben Embedding liegt Beziehungsprosa einander fremder Menschen bei 0,774 — wer nach Gefühl auf 0,7 setzt, bekommt in jedem Turn Treffer.
