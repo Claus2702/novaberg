@@ -8,7 +8,7 @@ Resume-Flow:
 
 import logging
 from agents import AgentRegistry
-from agents.base import AgentState, AgentResult
+from agents.base import Korrektur, AgentState, AgentResult
 from graph.reiz import reiz_text
 from tools.redis_manager import redis_manager
 
@@ -81,10 +81,21 @@ def dispatch_direktiven(state: dict) -> dict:
         grund = result_state.get("schritte", [{}])[-1].get("ergebnis", "unbekannt")
         logger.info(f"Agent 'direktiven': Classify rejected — {grund}")
         bisherige = list(state.get("agent_results", []))
+        # Der vierte Ausgang: eine Ablehnung mit Gegenangebot statt einer
+        # Sackgasse. Der Vorschlag geht an den Auftraggeber und NICHT in
+        # den Bestand — ein Dienst, der seine eigene Korrektur ausfuehrt,
+        # hat den Auftrag ersetzt statt ihn beurteilt.
         result = AgentResult(
             agent_name="direktiven",
             ergebnis=None,
-            status="rejected",
+            status="abgelehnt",
+            korrektur=Korrektur(
+                befund="Das habe ich nicht als Auftrag an mich verstanden.",
+                beleg=f"Klassifikation: {grund}",
+                vorschlag=(
+                    "Formuliere die Regel als dauerhafte Anweisung, etwa 'sprich mich ab jetzt immer mit Du an'."
+                ),
+            ),
         )
         return {"agent_results": bisherige + [result], "agent_name": None}
 

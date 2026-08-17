@@ -9,7 +9,7 @@ Erweiterung AGT1-Fix:
 import json
 import logging
 from agents import AgentRegistry
-from agents.base import AgentState, AgentResult
+from agents.base import Korrektur, AgentState, AgentResult
 from graph.reiz import reiz_text
 from tools.redis_manager import redis_manager
 
@@ -88,10 +88,21 @@ def dispatch_notizen(state: dict) -> dict:
         grund = result_state.get("schritte", [{}])[-1].get("ergebnis", "unbekannt")
         logger.info(f"Agent 'notizen': Classify rejected — {grund}")
         bisherige = list(state.get("agent_results", []))
+        # Der vierte Ausgang: eine Ablehnung mit Gegenangebot statt einer
+        # Sackgasse. Der Vorschlag geht an den Auftraggeber und NICHT in
+        # den Bestand — ein Dienst, der seine eigene Korrektur ausfuehrt,
+        # hat den Auftrag ersetzt statt ihn beurteilt.
         result = AgentResult(
             agent_name="notizen",
             ergebnis=None,
-            status="rejected",
+            status="abgelehnt",
+            korrektur=Korrektur(
+                befund="Das habe ich nicht als Auftrag an mich verstanden.",
+                beleg=f"Klassifikation: {grund}",
+                vorschlag=(
+                    "Sage, welche Liste gemeint ist und was hinein oder heraus soll, etwa 'setz Milch auf die Einkaufsliste'."
+                ),
+            ),
         )
         return {"agent_results": bisherige + [result], "agent_name": None}
 

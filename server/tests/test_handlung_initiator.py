@@ -33,7 +33,7 @@ Kein skipUnless, kein skipIf, kein try/except um Importe.
 import unittest
 from unittest.mock import MagicMock, patch
 
-from agents.base import AgentResult
+from agents.base import Korrektur, AgentResult
 from graph.nodes import agent_dispatch as ad_mod
 
 GEDANKE: str = (
@@ -73,9 +73,26 @@ def _lauf(zustand: dict, status: str = "abgeschlossen") -> dict:
     Nachbedingung: liefert den Inhalt des geschriebenen Protokolleintrags.
     Fehlerfaelle: keine — ein fehlender Eintrag laesst den Aufrufer scheitern.
     """
+    # Die Pflichtfelder je Ausgang mitgeben. Ein Ergebnis mit Status
+    # "rueckfrage" ohne Rueckfragetext oder "fehler" ohne Fehlertext ist
+    # kein Ergebnis, das im Betrieb vorkommen kann — AgentResult weist es
+    # seit dem 17.08.2026 ab. Der Test faehrt deshalb, was der Betrieb
+    # faehrt, statt eine unmoegliche Gestalt zu bauen.
     ergebnis = AgentResult(
         agent_name="timeline", ergebnis="Termin angelegt: Vortrag",
-        status=status, fehler=None,
+        status=status,
+        fehler="Testfehler" if status == "fehler" else None,
+        rueckfrage=(
+            "Soll ich den Vortrag am Donnerstag eintragen?"
+            if status == "rueckfrage" else None
+        ),
+        korrektur=(
+            Korrektur(
+                befund="Das habe ich nicht als Auftrag verstanden.",
+                beleg="Klassifikation: kein Zeitbezug",
+                vorschlag="Nenne einen Zeitpunkt und das Ereignis.",
+            ) if status == "abgelehnt" else None
+        ),
     )
     rueckgabe: dict = {
         "agent_results":     [ergebnis],

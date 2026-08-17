@@ -15,11 +15,12 @@ Position im Graph:
 import json
 import logging
 
-from config       import PROMPTS
+from agents import AgentRegistry
+from config import PROMPTS
+from plugins import get_registry
+
 from graph.format.agent_results import format_success_lines
-from graph.state  import ConversationState
-from plugins      import get_registry
-from agents       import AgentRegistry
+from graph.state import ConversationState
 
 logger = logging.getLogger("ki_server.planner")
 
@@ -53,7 +54,18 @@ def _build_task_block(
     if not agent_results and not mgmt_result:
         return ("", False)
 
-    # Ergebnisse nach Status gruppieren (rejected bewusst ignoriert)
+    # Ergebnisse nach Status gruppieren.
+    #
+    # `rejected` bleibt bewusst unbehandelt: Es ist die Vorform des vierten
+    # Ausgangs, eine Ablehnung ohne Begruendung, und ein Block darueber
+    # koennte dem Nutzer nichts sagen ausser "ging nicht". Der Weg fuehrt
+    # nach `abgelehnt`, wo Befund und Vorschlag mitkommen — nicht in einen
+    # Block fuer den blanken Fall.
+    refusals: list = [
+        r for r in agent_results
+        if hasattr(r, "status") and r.status == "abgelehnt"
+        and getattr(r, "korrektur", None) is not None
+    ]
     inquiries: list = [
         r for r in agent_results
         if hasattr(r, "status") and r.status == "rueckfrage" and hasattr(r, "rueckfrage") and r.rueckfrage
@@ -75,19 +87,28 @@ def _build_task_block(
     if inquiries:
         return (_build_task_inquiry(inquiries[0]), False)
 
-    # Prioritaet 2: Fehler
+    # Prioritaet 2: Ablehnung mit Gegenangebot.
+    #
+    # Sie steht VOR dem Fehler: Ein Urteil ist keine Stoerung, und wer
+    # beides vorliegen hat, braucht zuerst die Auskunft, was stattdessen
+    # ginge. Ein Kontext-Schnitt findet nicht statt — der Vorschlag ist
+    # nur im Zusammenhang der Aeusserung verstaendlich.
+    if refusals:
+        return (_build_task_ablehnung(refusals), False)
+
+    # Prioritaet 3: Fehler
     if errors:
         return (_build_task_error(errors), True)
 
-    # Prioritaet 3: Dismissed (User hat abgelehnt)
+    # Prioritaet 4: Dismissed (User hat abgelehnt)
     if dismissed:
         return (_build_task_dismissed(dismissed), True)
 
-    # Prioritaet 4: Erfolg
+    # Prioritaet 5: Erfolg
     if successes:
         return (_build_task_success(successes), True)
 
-    # Prioritaet 5: Legacy-Management (kein Agent, alter Manager-Pfad)
+    # Prioritaet 6: Legacy-Management (kein Agent, alter Manager-Pfad)
     if mgmt_result:
         return (_build_task_legacy(mgmt_result, mgmt_detail), True)
 
@@ -128,6 +149,40 @@ def _build_task_dismissed(results: list) -> str:
         f"- Agent '{r.agent_name}': {r.ergebnis}" for r in results
     )
     return PROMPTS["responder.aufgabe_verworfen"].format(
+        ergebnis_texte=ergebnis_texte
+    )
+
+
+def _build_task_ablehnung(results: list) -> str:
+    """[AUFGABE] fuer eine begruendete Ablehnung mit Gegenangebot.
+
+    Vorbedingung: jedes Ergebnis traegt `status == "abgelehnt"` und eine
+    Korrektur — geprueft beim Aufrufer und von AgentResult erzwungen.
+
+    Nachbedingung: nicht-leerer Text mit Befund und Vorschlag je Dienst.
+
+    Die drei Teile der Korrektur wandern vollstaendig in den Block. Der
+    Befund allein waere eine Sackgasse; der Vorschlag ist das, was den
+    Unterschied zwischen "ging nicht" und "so ginge es" macht.
+    """
+    zeilen: list[str] = []
+    for r in results:
+        k = r.korrektur
+        zeilen.append(
+            f"- Agent '{r.agent_name}': {k.befund} "
+            f"Stattdessen moeglich: {k.vorschlag}"
+        )
+    ergebnis_texte: str = "\n".join(zeilen)
+
+    # ── Ausgabe-Verifikation ─────────────────────────────────────────
+    if not ergebnis_texte.strip():
+        logger.error(
+            "Ablehnungs-Block: %d Ergebnisse, aber leerer Text — der "
+            "Vorschlag erreicht den Nutzer nicht", len(results),
+        )
+        return ""
+
+    return PROMPTS["responder.aufgabe_ablehnung"].format(
         ergebnis_texte=ergebnis_texte
     )
 
@@ -316,7 +371,7 @@ def plan(
             f"(intent='{user_intent}', target='{state.get('management_target')}', "
             f"action='{state.get('management_action')}')"
         )
-        state["node_annotations"].append(f"Planner: Kein Manager gefunden")
+        state["node_annotations"].append("Planner: Kein Manager gefunden")
         return state
 
     logger.info(f"Planner: Delegiere an '{zustaendiger.ziel}'")
