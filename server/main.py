@@ -185,7 +185,6 @@ async def lifespan(app: FastAPI):
                 f"NMCP: Dienst '{_agent.name}' nicht anmeldbar "
                 f"({type(_fehler).__name__}: {_fehler}) — nicht eingebunden"
             )
-    app.state.nmcp_befunde = _befunde
 
     _nicht = [b.name for b in _befunde.values() if not b.eingebunden]
     _ohne_zweifel = [
@@ -201,8 +200,8 @@ async def lifespan(app: FastAPI):
     # nur hier. Eine Startmeldung ist nach zehn Minuten aus dem Blick, und
     # danach verhaelt sich der fehlende Dienst wie einer, den niemand
     # braucht — genau der stille Zustand, gegen den der Quotenabgleich
-    # gebaut ist. Deshalb liegt der Befund in app.state und wird von
-    # /health mitgemeldet.
+    # gebaut ist. `/health` rechnet den Befund dafuer neu, statt diesen
+    # Startzustand mitzuschleppen: ein Schnappschuss altert.
     if _nicht:
         logger.error(f"NMCP: NICHT eingebunden — {_nicht}")
     if _ohne_zweifel:
