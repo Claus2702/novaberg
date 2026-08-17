@@ -376,6 +376,10 @@ Eingebettet werden Thema und Stichwörter, nicht der Dateiinhalt. Drei Gründe, 
 - Der Inhalt ist über `datei_grep` erreichbar; dafür braucht er kein Embedding.
 - **Das eingesetzte Einbettungsmodell muss vorher gegen den Korpus geprüft werden.** Ein Embedding, das den Bedeutungsträger nicht sieht, liefert eine Ähnlichkeit, die keine ist — und der Fehler zeigt sich nicht als Ausfall, sondern als schlechtes Ergebnis, das wie ein schlechter Korpus aussieht. Die Prüfung ist eine Zeile: zwei fachlich verschiedene Themen einbetten und den Kosinus ansehen.
 
+> **Der Präzedenzfall steht im Bestand und ist der Grund, warum diese Zeile hier steht.** Ein früher eingesetztes Einbettungsmodell trug ein Vokabular ohne Großbuchstaben; im Deutschen fiel damit **jedes Substantiv** auf den Unbekannt-Platz. `embed("Hund")` und `embed("Katze")` waren über alle 768 Komponenten **bit-identisch**. Die Grundschicht des semantischen Gedächtnisses war blind, und nichts meldete es — Suchen lieferten Treffer, nur die falschen.
+>
+> **Für den Dateien-Index kommt eine zweite Frage hinzu, die für Gesprächstext nicht galt:** Der Korpus ist anders. Fachtexte, Tabellen, Aufzählungen und Codeblöcke sind kein Dialog, und ein Modell, das an Gesprächen gemessen wurde, ist damit für diesen Korpus **ungemessen**.
+
 ### 5.5 Verschwundene Dateien werden markiert, nicht gelöscht
 
 Die Zeile bleibt mit `aktiv = false`. Zwei Gründe: Eine Datei, die wieder auftaucht, ist als dieselbe erkennbar; und die Frage *„wo war das noch"* ist auch für eine entfernte Datei eine sinnvolle Frage, solange die Antwort sagt, dass sie weg ist.
