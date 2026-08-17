@@ -10,6 +10,46 @@
 
 ## Chats 3–20: Grundlagen (März 2026)
 
+### 17.08.2026 — Impulse fallen aus drei von fünf Profilen, und zwar begründet
+
+Die Prüfung der übrigen vier Hashes nach dem Kern ergab zweierlei. **Die Perspektivtrennung hält** — belegt am Bestand, nicht nur im Code: **null** LZG-Knoten mit `beobachter='user'` stammen aus einem Impuls-Turn. KZG und LZG führen die Perspektive als eigenes Feld, statt sie aus einem Textfeld erschließen zu müssen; der Fehler des Kern-Hash sitzt hier nicht.
+
+**Die Impuls-Ausnahme fehlte dagegen überall.** Betroffen ist allein die Seite der Figur: **496 von 1551 rückverfolgbaren Knoten (32 %)** stammen aus Impulsen, im Fenster der letzten zwei Tage **86 von 122 KZG-Verweisen (70 %)**.
+
+Ausgenommen wird jetzt dort, wo die Frage ein Gegenüber voraussetzt:
+
+| Profil | Frage | Impulse |
+|---|---|---|
+| Kern, Beziehung, Intentionen | wer ist er · wie steht er zum Gegenüber · wie geht er mit anderen um | **raus** |
+| Adaptiv, Emotionen | was beschäftigt ihn · was fühlt er | **bleiben** |
+
+Das Beziehungsprofil trug zusätzlich beide Fehler des Kern-Hash: `wortlaut_holen` lieferte Äußerung und Antwort ohne Herkunftsfilter, formatiert als relatives `Gegenueber:`. Beide Sprecher tragen jetzt ihren Namen — beim Beziehungsprofil sind beide Seiten nötig, weil Anrede relational ist.
+
+**Und der Filter gehört in die Auswahl, nicht dahinter.** Nachgelagert gefiltert hatten **null** von Novas zwanzig stärksten KZG-Einträgen einen erreichbaren Begegnungs-Wortlaut — ihr Beziehungsprofil wäre dauerhaft leer geblieben, und es ist die zweite Hälfte der Rad-Quelle. Mit einer eigenen Auswahl (`nur_begegnungen`) sind es **20 von 20**. Derselbe Fehler wie beim fehlenden Themenfeld am Vortag, an derselben Stelle.
+
+Gegenprobe: vorhergesagt 4 rot, gezählt 4. Suite 1546 grün.
+
+
+### 17.08.2026 — Jede Perspektive liest ihre eigene Seite
+
+Der Kern-Hash gab **beiden** Perspektiven denselben Text mit beiden Sprechern; unterschieden wurden sie allein durch die Anweisung darüber — und die macht **1,4 % des Prompts** aus. Gemessen am produktiven Paar stammten danach immer noch **90,5 %** des Materials von der Figur (Faktor 9,5), und der Träger *„der Nutzer"* kam im Material **null mal** vor: Der Mensch stand dort nur als *„Gegenueber"*, ein relativer Begriff, dessen Bezugspunkt die Anweisung gerade verschiebt.
+
+Gegenstand ist jetzt **die eigene Seite** — für das Profil des Menschen seine Äußerungen, für das der Figur ihre Antworten — und jede Zeile trägt den Namen des Trägers.
+
+| | vorher | jetzt |
+|---|---|---|
+| Material beider Perspektiven | identisch | verschieden |
+| Prompt des Menschen | 88 517 Zeichen | 6 351 |
+| Träger im eigenen Material | 0 mal | 40 mal |
+| `Gegenueber:` | 40 mal | 0 |
+
+**Die Vorgabe stand seit je im Konzept** (§6: *„Gleicher Mechanismus, getrennte Daten"*). Verloren hat sie der Umbau vom 10.08.2026, der eine Quelle **mit** Perspektivfilter durch eine **ohne** ersetzte: `_lzg_kern_laden(user, character, beobachter)` wurde zu `_turns_laden(user_id)`. Drei Argumente wurden zu einem, und der Filter verschwand mit dem dritten — im Diff sichtbar, aber als Vereinfachung gelesen. Gedeckt wurde es dadurch, dass die drei Nachbarzeilen ihren `beobachter` behielten, der Prompt weiterhin einen Träger nannte und das Ergebnis plausibel aussah.
+
+Ein bestehender Zeuge wurde dabei rot und ist ausgerichtet, nicht abgeschwächt: Er sichert weiterhin *„Wortlaut statt Zusammenfassung"*, jetzt je Sprecher in seinem eigenen Profil.
+
+Gegenprobe: vorhergesagt 5 rot, gezählt 5. Suite 1538 grün.
+
+
 ### 16.08.2026 — Der Charakter des Menschen wurde aus den Gedanken der Figur destilliert
 
 `_turns_laden` las alle `turn_roh`-Zeilen eines Paares. Ein **eigener Impuls** legt seinen Text aber in dasselbe Feld `user_prompt` wie eine Nutzeräußerung — ungefiltert wurden Novas eigene Gedanken als Äußerungen des Menschen gelesen und in **sein** Wesensprofil destilliert.

@@ -26,6 +26,32 @@ Der Anlass war ein Defekt: Ein Impuls schreibt seinen Text in dasselbe Feld
 Gedanken der Figur als Äußerungen des Menschen — gemessen **25 von 40 Turns,
 95,4 % des Materials**. Was ausgenommen wird, steht mit seiner Zahl im Log.
 
+## Wo Impulse ausgenommen werden — und wo nicht (17.08.2026)
+
+Nicht überall. Der Trennstrich ist das **Gegenüber**: Eine Aussage über Umgang
+setzt eines voraus, ein Impuls hat keines. Was jemanden beschäftigt und was er
+fühlt, steht dagegen sehr wohl in seinen eigenen Gedanken.
+
+| Profil | Frage | Impulse |
+|---|---|---|
+| Kern | wer ist er dauerhaft | **raus** |
+| Beziehung | wie steht er zum Gegenüber | **raus** |
+| Intentionen | wie geht er mit anderen um | **raus** |
+| Adaptiv | was beschäftigt ihn gerade | **bleiben** |
+| Emotionen | was fühlt er | **bleiben** |
+
+Deshalb zwei KZG-Auswahlen je Perspektive: `_kzg_laden(...)` für den
+Adaptiv-Hash und `_kzg_laden(..., nur_begegnungen=True)` für das
+Beziehungsprofil. **Der Filter gehört in die Auswahl, nicht dahinter** —
+gemessen am 17.08.2026 hatten *null* von Novas zwanzig stärksten KZG-Einträgen
+einen erreichbaren Begegnungs-Wortlaut; nachgelagert gefiltert wäre ihr
+Beziehungsprofil dauerhaft leer geblieben. Mit der eigenen Auswahl sind es 20.
+
+`wortlaut_holen` und `_lzg_intentionen_laden` filtern über die Brücke
+`verbindung` → `pipeline_log` mit `IS DISTINCT FROM 'eigener_impuls'` — ein
+Knoten ohne Brücke bleibt erhalten, er ist nicht nachweislich ein Impuls
+(19 % der Knoten der Figur).
+
 ## Auswahl der KZG-Einträge (seit 16.08.2026)
 
 `_kzg_laden` liefert die `PIXIE_CHARAKTER_KZG_LIMIT` Einträge mit der höchsten
