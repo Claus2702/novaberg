@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Konzept — Indizierung und Durchsuchung eines vorgegebenen Verzeichnisses als NMCP-Dienst
-**Stand:** 17. August 2026 (v0.8)
+**Stand:** 17. August 2026 (v0.9)
 **Pfad:** novaberg/docs/novaberg-agent-dateien_k.md
 **Typ:** Konzept (`_k`)
 **Status:** ⬜ **Konzept, kein Code.** Kein Bezeichner dieses Dokuments existiert.
@@ -68,6 +68,37 @@ Widerspricht eine Aufzeichnung deiner Erinnerung, sage beides.
 **Er steht nur da, wenn es Treffer gibt.** Deshalb trägt er die Einordnung selbst und verlässt sich nicht auf eine Zeile im System-Prompt: Ein Grundsatz, der in jedem Turn steht, wird in dem Turn übersehen, in dem er gebraucht wird.
 
 **Er nennt den Konfliktfall ausdrücklich.** Widerspricht eine Aufzeichnung ihrer Erinnerung, ist das kein Fehler, den sie glattbügeln soll — es ist eine Auskunft. Ohne diese Zeile wählt das Modell eine Seite, und es wählt die zuletzt gelesene.
+
+### 1a.3 Drei Zustände, nicht zwei — und nur einer macht es zu ihrem
+
+Die Grenze verläuft **nicht** zwischen „Datei" und „Gedächtnis", sondern zwischen *benutzen* und *erarbeiten*:
+
+| Zustand | Was geschieht | Wird es ihres? |
+|---|---|---|
+| **Beilage** | der Block liegt im Prompt, ungefragt | nein |
+| **Auskunft** | sie **antwortet daraus**, ohne zu lernen | **nein** — die Datei bleibt, wo sie ist |
+| **Erarbeitetes** | sie findet eine Lücke, studiert, destilliert, legt ab (§3.0b) | **ja**, mit Herkunft |
+
+**Der mittlere Zustand ist der häufigste und war bis v0.8 nicht benannt.** Ein Mensch fragt nach etwas, das in den Unterlagen steht; sie beantwortet es. Damit ist nichts gelernt und nichts gespeichert — das Wissen liegt weiter in der Datei und ist beim nächsten Mal genauso erreichbar. **Sie muss nichts übernehmen, um auskunftsfähig zu sein.**
+
+### 1a.4 Die Beschriftung trägt die Herkunft über den Gedächtnis-Übergang
+
+**Es gibt einen vierten Weg, und er geht an beiden Toren vorbei.** Eine Antwort — auch eine aus dem Zustand *Auskunft* — läuft durch den Gesprächsgraphen, und bei hoher Salienz wird ihr Inhalt gespeichert. Weder die Lückenprüfung noch das Ablage-Gate sind daran beteiligt; das ist die Gesprächsschiene, nicht die Wissensschiene.
+
+**Dass der Turn erinnert wird, ist richtig. Gespeichert wird aber ihre Formulierung** — und deren Inhalt stammt aus der Datei. Steht dort kein Hinweis darauf, liegt beim nächsten Mal eine herkunftslose Aussage im Gedächtnis, die sie als eigene vertritt.
+
+> **Das ist die Form des Präzedenzfalls aus §1a.1.** Auch dort hat sie nur formuliert, was im Kontext lag, und der Satz wurde ihrer.
+
+| was gespeichert wird | Folge |
+|---|---|
+| *„X ist so."* | Herkunft weg — eine Aufzeichnung ist zur Erinnerung geworden |
+| *„Ich habe Aufzeichnungen, die sagen, X."* | Herkunft überlebt den Übergang |
+
+> **Damit hat die Beschriftung des Blocks eine zweite Aufgabe, und sie ist die wichtigere.** Sie ist nicht nur Redlichkeit im Moment der Antwort — **sie ist das Einzige, was die Herkunft in das Gedächtnis hinüberträgt.** Fällt die Absicherung in der Antwort weg, pflanzt sich der Fehler über einen Weg fort, den kein Tor bewacht.
+>
+> **Und die Selbstbeschreibung ist der teuerste Fall.** Die Projektdokumentation besteht großenteils aus **Konzepten**; §10 sagt, dass ein Leser dort Beschreibungen von Dingen findet, die nicht gebaut sind. Über diesen Weg lernt sie bei hoher Salienz, Fähigkeiten zu haben, die es nicht gibt — und behauptet sie danach **ohne jeden Dateizugriff**, weil die Aussage inzwischen im Gedächtnis steht.
+
+**Das ist prüfbar und gehört in die Messung:** gespeicherte Einträge zu dateigestützten Turns daraufhin ansehen, ob die Herkunft im Wortlaut steht.
 
 ---
 
@@ -304,6 +335,8 @@ Verfasser baut die Antwort aus Vorwissen UND Fundstellen
 Responder
 ```
 
+> **Seit v0.9 ist das anders zugeschnitten, und der Zuschnitt ist kleiner:** Was hier „Vertiefung" heißt, ist **die Recherche mit lokaler Quelle statt Web**. Studieren, Destillieren, das Keep/Discard-Gate und die Ablage in der Bibliothek sind gebaut und laufen seit dem 04.08.2026; alle Bibliothekszeilen stammen von dort. Neu sind die **Quelle** und **ein Torschritt** — nicht der Apparat. Siehe §3.0d.
+
 **Die Maschine dafür existiert und muss nicht gebaut werden.** Der Zustand trägt `self_trigger` und `self_trigger_payload`, der Ereignis-Consumer führt den Folgedurchlauf aus, und ein Zähler begrenzt ihn auf drei je Turn.
 
 > **Heute gibt es genau einen Aufrufer, und er zeigt zugleich, was zu ändern ist.** Der Thinker setzt den Self-Trigger nach einem **Doppel-Fehlschlag** und hängt die Geste *„Hmm... ich muss das nochmal durchgehen."* an. Der Mechanismus ist also als **Reparatur** gebaut.
@@ -393,6 +426,50 @@ Die Vertiefung kostet einen ganzen zweiten Durchlauf. Sie lohnt, wenn die Zusamm
 
 **Das ist eine Abwägung und keine Regel**, und sie gehört deshalb zu ihr und nicht in eine Schwelle. Was der Bau dazu liefern muss, ist die Grundlage: Der Block sagt, **wie gut** der Treffer war und **wie groß** die Datei ist. Ohne diese zwei Angaben entscheidet sie zwischen Nachlesen und Weiterreden im Blindflug.
 
+### 3.0d Das frühe Tor: der Bedarf wird an `knowledge/` beantwortet
+
+> **Der Buchstabe ist eine Adresse, keine Position.** Dieser Abschnitt steht vor §3.0c, weil er unmittelbar an §3.0b anschließt; die Buchstaben werden nicht umsortiert, damit bestehende Verweise auflösbar bleiben.
+
+**Die Frage, ob eine Datei geöffnet wird, ist keine Ähnlichkeitsfrage, sondern eine Bedarfsfrage** — und sie wird dort beantwortet, wo Novas ausformuliertes Wissen liegt: in der Bibliothek. Nicht in den Assoziationen.
+
+Das ergibt sich aus der Schichtung des Gedächtnisses, die dieses Konzept vorfindet:
+
+| Schicht | Inhalt | beantwortet |
+|---|---|---|
+| **Faktengedächtnis** | Entitäten mit Kanten: `Subjekt → Attribut → Wert`. Entitäten fest, Gültigkeit über `t_valid`/`t_invalid` | *was ist der Fall* |
+| **KZG / LZG** | Assoziationen, Kantengewicht mit Verfall | *was fällt ihr dazu ein* |
+| **Bibliothek (`knowledge/`)** | **ganze Texte, die sie erarbeitet** — ihr lebendes Wissen | ***was weiß sie darüber, und wo fehlt es*** |
+
+**Nur an einem ausformulierten Text lässt sich Vollständigkeit beurteilen.** Ein Assoziationsnetz kann dicht sein, ohne dass ein Gedanke ausgearbeitet wäre; eine Entität kann viele Kanten haben, ohne dass jemand das Thema durchdrungen hätte. Deshalb sitzt das Tor an der Bibliothek.
+
+#### Zwei Tore an zwei Stellen — eines fehlt
+
+| Wann | Frage | sieht | Stand |
+|---|---|---|---|
+| **vorher** | Soll die Datei überhaupt geöffnet werden? | die Zusammenfassung im Index | **fehlt** |
+| **nachher** | Geht der Fund in die Bibliothek? | das Destillat | **gebaut** — das Keep/Discard-Gate |
+
+Das späte Tor kennt bereits genau diese Abstufung: `echte_tiefe` und `ergaenzung` werden abgelegt, `wiederholung` nicht. **Das frühe Tor stellt dieselbe Frage eine Stufe früher und spart damit den Dateizugriff**, nicht erst die Ablage.
+
+> **Ein Befund des Bestandes gehört hierher, weil er das Tor betrifft:** Der Recherche-Pfad bildet sein Vorwissen aus Session, LZG, KZG, Charakter-Hash und Beziehungsdynamik — **die Bibliothek ist nicht darunter.** Der Agent, der sie füllt, liest sie nie. Wer das frühe Tor baut, baut damit den ersten Leser der Bibliothek außerhalb des Gesprächspfads — und schließt nebenbei diese Lücke.
+
+#### Eine Lücke ist Abwesenheit **oder** Widerspruch
+
+**Die naheliegende Fassung — „kein Wissen zum Thema, also Lücke" — hätte einen selbstverschließenden Fehler.** Glaubt sie, ein Thema zu kennen, meldet die Prüfung „keine Lücke", die Datei wird nie geöffnet, und **genau die Datei, die sie korrigiert hätte, bleibt zu.** Damit könnte der Konfliktfall aus §1a.2 — *„widerspricht eine Aufzeichnung deiner Erinnerung, sage beides"* — nie eintreten.
+
+**Deshalb gilt beides als Lücke:**
+
+| Fall | Lücke? |
+|---|---|
+| kein Text zum Thema | ja — Abwesenheit |
+| Text vorhanden, aber dünn | ja — Ergänzung |
+| Text vorhanden, **widerspricht der Zusammenfassung** | **ja — und der wichtigste Fall** |
+| Text vorhanden und deckt es ab | nein |
+
+**Der Widerspruch ist billig zu prüfen:** Verglichen werden zwei Texte über dasselbe Thema — ihre Wissensdatei gegen die Zusammenfassung im Index. Das ist eine Frage, die ein Modell beantworten kann, und sie kostet **keinen Dateizugriff**.
+
+> **Damit ist auch §9.6 erledigt.** Die Frage lautete, woraus die „Trefferqualität" entsteht, die sie zum Abwägen braucht — der rohe Kosinus taugt dafür nicht, weil niemand seine Skala kennt (§3.0a). **Es braucht gar keine Qualitätszahl: Das Kriterium ist die Lücke, nicht die Nähe.**
+
 ### 3.0c „Weißt du was über X" ist ein Auftrag über mehrere Bestände
 
 Der ausdrückliche Auftrag ist **nicht** auf die Dateien beschränkt, und das ist beim Zuschnitt des Aushangs zu beachten. *„Weißt du was über schwarze Löcher?"* heißt: **such in allem, was du hast.** Das sind heute drei verschiedene Bestände mit drei verschiedenen Zugängen:
@@ -436,6 +513,60 @@ Freigeben, Lesen und Wachen sind drei Aufgaben mit verschiedenen Zustellarten un
 Das ist dieselbe Aufteilung wie bei `synapsen_promotion` und `synapsen_decay`: ein Dienst, der auf Anfrage arbeitet, und einer, der den Bestand pflegt.
 
 > **Ein Befund über die Anmeldung selbst, aufgefallen beim Entwurf:** Die Zustellart ist heute einwertig und aus `graph_eignung` und `periodic_task()` abgeleitet. Ein Dienst, der **beides** legitim ist — auf Anfrage erreichbar und zusätzlich periodisch —, lässt sich damit nicht beschreiben. Die Aufteilung in zwei Dienste umgeht das hier; sie löst es nicht. Gehört in die Fundliste.
+
+---
+
+## 3a. Sie muss schreiben können — nicht ablegen, sondern redigieren
+
+**Ohne diese Fähigkeit trägt das Konzept nicht.** Ein lebendes Wissen entsteht nicht dadurch, dass ein Agent je Durchlauf eine Datei ablegt, sondern dadurch, dass sie an einem Gegenstand **weiterarbeitet**: eine Datei „Der 30-jährige Krieg" anlegen, sie erweitern, umstellen, eine Stelle berichtigen, einen Abschnitt ergänzen.
+
+| | Ablage (heute) | Redaktion (nötig) |
+|---|---|---|
+| Auslöser | ein Rechercheergebnis | ein Fund, der in einen **bestehenden** Text gehört |
+| Einheit | eine neue Datei je Durchlauf | ein **Block** in einer bestehenden Datei |
+| Wirkung | anhängen | ändern, einfügen, umschreiben |
+
+### 3a.1 Was gebaut ist und was fehlt
+
+| Werkzeug | Aufgabe | Stand |
+|---|---|---|
+| `schreibziel_pruefen` | Grenzprüfung des Schreibziels | **gebaut** |
+| `datei_schreiben` / `datei_lesen` | ganze Datei | **gebaut** |
+| `struktur_analysieren`, `block_lesen`, `zeilen_lesen`, `datei_grep` | die Karte und der gezielte Blick | entworfen |
+| `block_ersetzen`, `block_anfuegen`, `block_einfuegen`, `metadaten_aktualisieren` | die chirurgischen Schnitte | entworfen |
+| `str_replace_in_block` | feinkörnig, mit Eindeutigkeitsprüfung | entworfen |
+
+**Sie kann heute eine Datei anlegen und überschreiben — sie kann keine bearbeiten.**
+
+> **Und der Ersatzweg ist kein Ersatz, sondern die gefährlichere Bauart.** Wer eine Datei erweitern will und nur „ganz schreiben" kann, muss sie vollständig durch das Modell schicken und neu erzeugen. Das ist teuer — und es ist **verlustbehaftet ohne Alarm**: Eine Neuerzeugung, die einen Absatz fallen lässt, sieht aus wie eine Neuerzeugung. Es gibt keinen Zeugen auf dem Inhalt einer Wissensdatei, der das bemerken würde.
+>
+> Genau dagegen ist `str_replace_in_block` entworfen: Es prüft die Eindeutigkeit der Fundstelle und **scheitert laut**, wenn sie mehrfach vorkommt, statt eine Stelle zu raten. Das ist dieselbe Haltung, die im ganzen System gilt — ein Fehlgriff soll auffallen, nicht durchgehen.
+
+### 3a.2 Ein Werkzeugsatz, vier Abnehmer
+
+Die fehlende Schicht ist **eine** und wird viermal gebraucht. Das ist der Grund, sie früh zu bauen:
+
+| Abnehmer | braucht daraus |
+|---|---|
+| **Sie als Verfasserin** — dieser Abschnitt | die chirurgischen Schnitte |
+| **`WIS-8-STUFE-2`** — reicht die Zusammenfassung ihrer eigenen Datei nicht, den Inhalt lesen | Karte und gezielten Blick |
+| **Stufe 3 dieses Konzepts** (§6) — im Inhalt freigegebener Dateien suchen | `datei_grep`, `block_lesen` |
+| **Der Studien-Durchlauf** (§3.0b/§3.0d) — eine freigegebene Datei durcharbeiten | Karte und gezielten Blick |
+
+> **Der zweite Abnehmer wartet seit dem 04.08.2026.** Die Bibliothek hat ihre Stufe 2 nie bekommen, und der Grund ist genau dieser fehlende Lesepfad. Der Dateien-Dienst baut ihn ohnehin — er löst damit eine ältere Blockade mit, ohne dafür einen eigenen Auftrag zu brauchen.
+
+### 3a.3 Die Rechte bleiben getrennt, und die Trennung wird schärfer
+
+**Dass sie schreiben darf, ändert die Zusicherung aus §7 nicht — es macht sie dringlicher.**
+
+| Zone | lesen | schreiben |
+|---|---|---|
+| `knowledge/` — **ihres** | ja | **ja, redigierend** |
+| freigegebene Wurzeln — **fremd** | ja | **nie** |
+
+Der Werkzeugsatz trägt damit zwei Hälften mit verschiedenen Rechten, und die Trennung darf nicht am Aufrufer hängen, sondern an der Zone: Ein schreibender Aufruf gegen eine freigegebene Wurzel wird abgewiesen und gemeldet, nicht zurechtgebogen.
+
+> **Der Grund steht in §1:** Wer ihr die Projektdokumentation zugänglich macht und zugleich Schreibrechte darauf gäbe, hätte einen Dienst gebaut, der seine eigene Beschreibung ändern kann. Ihre Aufsätze über sich selbst darf sie schreiben — **das Dokument, aus dem sie sie gewonnen hat, nicht.**
 
 ---
 
@@ -483,6 +614,16 @@ Er läuft nach Zeitplan über die konfigurierten Wurzeln und bringt den Index au
 **`mtime` allein reicht nicht, und `mtime` allein ist auch zu viel.** Zu wenig, weil ein Werkzeug eine Datei mit gleicher Zeit neu schreiben kann; zu viel, weil ein Kopiervorgang die Zeit ändert, ohne den Inhalt anzufassen — und eine Neu-Indizierung kostet einen Modellaufruf je Datei.
 
 **Also: `mtime` als Vorfilter, `inhalt_hash` als Entscheidung.** Nur wenn der Hash abweicht, wird neu indiziert. Bei 667 Dateien im vorhandenen Verzeichnis ist der Unterschied zwischen „alle" und „die geänderten" die Frage, ob der Wächter Minuten oder Stunden läuft.
+
+### 5.2a Die Änderungserkennung ist zugleich der Wiedereröffner
+
+**Der Wächter hat eine zweite Aufgabe, die erst mit dem frühen Tor entsteht.** Ist eine Lücke einmal geschlossen — sie hat die Datei studiert und das Ergebnis abgelegt —, würde das Tor sie danach nie wieder öffnen. Das ist gewollt und genau der Zweck (§3.0d), **hätte aber ohne Gegenstück zur Folge, dass ihr Wissen über die Zeit selbstbestätigend wird:** einmal gelernt, für immer erledigt.
+
+**Dagegen wirkt der `inhalt_hash`.** Ändert sich die Datei, ändert sich der Hash, und die geschlossene Lücke ist wieder offen.
+
+> **Das ist der Punkt, an dem die freigegebene Datei der Websuche überlegen ist.** Was im Netz stand, als recherchiert wurde, ist später nicht mehr auffindbar; eine Änderung bleibt unbemerkt. Eine Datei im freigegebenen Verzeichnis wird **beobachtet** — der Wächter sieht die Änderung und kann sagen, dass das, was sie gelernt hat, auf einem alten Stand beruht.
+
+Damit trägt die Indexzeile eine Angabe mehr, als §4 vorsieht: **welcher `inhalt_hash` galt, als zuletzt daraus gelernt wurde.** Ohne sie ist „geändert seit dem Lernen" nicht von „noch nie gelernt" zu unterscheiden.
 
 ### 5.3 Die Lastart ist gemischt, und das muss die Anmeldung sagen
 
@@ -628,7 +769,9 @@ Vier Fragen, die der Entwurf offenlässt, weil sie Absichten sind und keine Umse
 3. **Wie tief darf `datei_grep` gehen?** Eine Obergrenze für Treffer und Dateien ist nötig; ohne sie ist eine unglückliche Anfrage ein Vollscan.
 4. **Was passiert bei einer Datei, die kein Text ist?** PDF, Bild, Tabelle. Der Entwurf behandelt Text; alles andere wird erkannt und mit Grund übergangen, nicht stillschweigend.
 5. ~~**Wie groß ist die Kappung des Enricher-Wegs?**~~ → **Umgestellt in v0.8 (§3.0a-bis).** Kappung und Schwelle sind über `K/N` gekoppelt; es gibt keine zwei unabhängigen Größen mehr, und die Schwelle ist keine Konstante, sondern das Quantil `1 − K/N` der mitlaufenden Verteilung. **Offen bleibt damit nur noch `K` selbst** — und das ist keine Messfrage, sondern eine Platzfrage: Wie viele Einträge soll der Block tragen? Die Bibliothek steht bei drei; der `[AUFZEICHNUNGEN]`-Block trägt je Eintrag zusätzlich eine Fundstelle und kostet mehr Prompt als eine Bibliothekszeile. **Neu offen ist dafür der absolute Boden** — die Zahl, unter der gar nichts geliefert wird. Sie kann nicht aus der Verteilung kommen, weil sie genau den Fall abdecken muss, in dem der Bestand nichts hat.
-6. **Was misst die Trefferqualität, die der Block ausweisen soll?** §3.0b verlangt, dass Nova *wie gut* der Treffer war erfährt, um zwischen Nachlesen und Weiterreden zu entscheiden. Nach der Messung in §3.0a ist der rohe Kosinus dafür untauglich: 0,588 klingt nach mittelmäßig und ist der Normalfall, 0,45 klingt nach brauchbar und ist Rauschen. **Eine Zahl, deren Skala niemand kennt, ist keine Entscheidungsgrundlage** — was sie braucht, ist der Rang im Korpus, nicht der Abstand im Raum.
+6. ~~**Was misst die Trefferqualität, die der Block ausweisen soll?**~~ → **Beantwortet in v0.9 (§3.0d):** Es braucht keine Qualitätszahl. Das Kriterium ist die **Lücke**, nicht die Nähe — und sie wird an der Bibliothek geprüft, nicht am Kosinus. Der rohe Kosinus wäre ohnehin untauglich gewesen, weil niemand seine Skala kennt (0,588 klingt mittelmäßig und ist der Normalfall).
+7. **Wo entsteht ein neuer Wissenstext, und wo wird ein bestehender erweitert?** Findet sie einen Fund, ist zu entscheiden, ob er in eine vorhandene Datei gehört oder eine neue rechtfertigt (§3a). Das ist dieselbe Bedarfsfrage eine Ebene höher und heute nirgends beantwortet — der Ablage-Weg legt je Durchlauf eine neue Datei an.
+8. **Was geschieht mit dem Gelernten, wenn die Quelldatei sich als falsch erweist?** Der Wächter meldet die Änderung und öffnet die Lücke wieder (§5.2a) — das deckt den Fall *„es steht jetzt etwas anderes da"*. Nicht gedeckt ist *„das Gelernte war falsch"*: Ihr Wissenstext ist dann bereits geschrieben, und ob ein erneuter Durchlauf ihn berichtigt oder danebenlegt, ist eine Absicht und keine Umsetzungsfrage.
 
 ---
 
@@ -647,6 +790,7 @@ Zwei Folgen, beide klein und beide nötig:
 
 ## Versionshistorie
 
+- **v0.9 — 17.08.2026:** **Der dritte Zugang ist kein neuer Apparat, sondern die Recherche mit lokaler Quelle** — Studieren, Destillieren, Keep/Discard-Gate und Ablage laufen seit dem 04.08.2026, und das Gate stellt bereits die richtige Frage (*„steht im Destillat etwas, das über Novas Vorwissen hinausgeht?"* mit `echte_tiefe` / `ergaenzung` / `wiederholung`). Neu sind Quelle und **ein** Torschritt. **Das frühe Tor sitzt an der Bibliothek, nicht an den Assoziationen** (§3.0d): Nur an einem ausformulierten Text lässt sich Vollständigkeit beurteilen; ein Assoziationsnetz kann dicht sein, ohne dass ein Gedanke ausgearbeitet wäre. **Und eine Lücke ist Abwesenheit ODER Widerspruch** — die naheliegende Fassung hätte einen selbstverschließenden Fehler gehabt: Wer glaubt, ein Thema zu kennen, öffnet die Datei nie, die ihn korrigiert, und der Konfliktfall aus §1a.2 könnte nie eintreten. Der Widerspruch ist an der Zusammenfassung prüfbar und kostet keinen Dateizugriff. **Damit ist §9.6 erledigt: Es braucht keine Qualitätszahl, das Kriterium ist die Lücke und nicht die Nähe.** — **Drei Zustände statt zwei** (§1a.3): Beilage, **Auskunft** und Erarbeitetes. Der mittlere war nie benannt und ist der häufigste: Sie kann aus einer Datei antworten, **ohne zu lernen**; das Wissen bleibt liegen und ist beim nächsten Mal genauso erreichbar. **Dazu ein vierter Weg, den kein Tor bewacht** (§1a.4): Jede Antwort läuft durch den Gesprächsgraphen und wird bei hoher Salienz gespeichert — an Lückenprüfung und Gate vorbei. Gespeichert wird ihre **Formulierung**, deren Inhalt aus der Datei stammt. **Daraus die zweite und wichtigere Aufgabe der Blockbeschriftung: Sie ist das Einzige, was die Herkunft über den Gedächtnis-Übergang trägt.** *„X ist so"* verliert sie, *„ich habe Aufzeichnungen, die sagen X"* trägt sie. Der teuerste Fall ist die Selbstbeschreibung — die Doku besteht großenteils aus Konzepten, und über diesen Weg lernt sie Fähigkeiten zu haben, die es nicht gibt, und behauptet sie danach ohne jeden Dateizugriff. **Neu §3a — sie muss redigieren können, nicht ablegen.** Lebendes Wissen entsteht durch Weiterarbeiten an einem Gegenstand, nicht durch eine neue Datei je Durchlauf. Gebaut sind `datei_schreiben`, `datei_lesen`, `schreibziel_pruefen`; entworfen und fehlend sind Karte, gezielter Blick und die chirurgischen Schnitte. **Der Ersatzweg ist die gefährlichere Bauart:** Wer nur ganz schreiben kann, erzeugt die Datei neu — teuer und **verlustbehaftet ohne Alarm**, denn auf dem Inhalt einer Wissensdatei steht kein Zeuge. **Ein Werkzeugsatz, vier Abnehmer** (§3a.2): sie als Verfasserin, `WIS-8-STUFE-2` (wartet seit dem 04.08. auf genau diesen Lesepfad), Stufe 3 dieses Konzepts, und der Studien-Durchlauf. Die Rechte bleiben getrennt und die Trennung hängt an der Zone, nicht am Aufrufer (§3a.3): Ihre Aufsätze über sich selbst darf sie schreiben, das Dokument nicht, aus dem sie sie gewonnen hat. **Neu §5.2a — der Wächter ist zugleich der Wiedereröffner:** Eine geschlossene Lücke bliebe sonst für immer zu und ihr Wissen selbstbestätigend; ein geänderter `inhalt_hash` öffnet sie wieder. Dafür trägt die Indexzeile eine Angabe mehr — welcher Hash galt, als zuletzt daraus gelernt wurde —, sonst ist *„geändert seit dem Lernen"* nicht von *„nie gelernt"* zu unterscheiden. **Darin liegt die Überlegenheit der Datei über die Websuche:** Was im Netz stand, ist später nicht mehr auffindbar; die freigegebene Datei wird beobachtet. **Zwei neue offene Fragen** (§9.7, §9.8): wo ein neuer Text entsteht statt einen bestehenden zu erweitern, und was mit Gelerntem geschieht, dessen Quelle sich als falsch erweist.
 - **v0.8 — 17.08.2026:** **Der Konstruktionsfehler war nicht der Wert, sondern die Bauart — eine Konstante.** Eine feste Schwelle über einem wachsenden Bestand kann nicht halten: Die Trefferzahl über einem festen Kosinus wächst mit dem Bestand mit, und die Bibliothek hatte bei Einführung der 0,40 **drei Zeilen** und hat heute **217**, gewachsen in dreizehn Tagen. Die 0,40 war richtig, als sie gerechnet wurde, und **musste** falsch werden; eine bessere Konstante kauft nur Zeit. **Daher: den Rang festhalten, nicht den Abstand** — `Schwelle = Quantil(1 − K/N)`. Die Gegenprobe stimmt: N = 217, K = 3 → p98,6 → **0,55**, genau der ausgezählte Wert. Damit sind Kappung und Schwelle über `K/N` gekoppelt und §9.5 ist umgestellt: offen bleibt nur `K`, und das ist eine Platzfrage. **Die Verteilung fällt umsonst an und ohne Stellvertreter** — jeder Turn rechnet den Kosinus gegen den ganzen Bestand, bevor gefiltert wird; wer je Turn den K-ten Wert mitschreibt, sammelt die echte Paarung Anfrage × Eintrag. *Kalibrieren ist ein Ereignis und altert; eine mitlaufende Verteilung ist der Bestand von heute.* **Dazu die Grenze, ohne die das überschätzt wird: Eine Quantilschwelle liefert immer etwas.** Sie kann *„hier ist nichts Passendes"* nicht ausdrücken und liefert zu einer fremden Frage die besten drei Fehltreffer — bei einem Block, der *„ich habe hier Aufzeichnungen"* ermöglichen soll, der teuerste Fehler. **Deshalb zwei Zahlen mit zwei Ämtern:** das Quantil sagt *wie viele*, ein absoluter Boden sagt *ob überhaupt*. Der Boden ist die Cold-Start-Zusicherung und neu offen. Und die Quantilschwelle sichert eine **Rate** zu, nie eine **Qualität** — als Beleg für die Güte des Zugriffs wäre sie ein Zirkel. **Zweitens ist die Deutung des Medians berichtigt:** 0,369 sagt nichts über das Einbettungsmodell, sondern über den Korpus. Alle 217 Einträge sind `recherche` in **einem Register** — abstrakte Reflexionen über die Gespräche selbst, kein Wissen über die Welt. Ein homogener Korpus hat hohe Grundähnlichkeit, und eine Schwelle darauf misst die Zugehörigkeit zur Textsorte, die alle teilen. **Für den Dateien-Index kehrt sich die Richtung damit um:** Fachtexte, Tabellen und Codeblöcke sind heterogen; dort kann eine Schwelle trennen, wo sie hier nie konnte — und der eigene Korpus wird vermutlich eine **niedrigere** Grundähnlichkeit zeigen als die Bibliothek.
 - **v0.7 — 17.08.2026:** **Der Präzedenzwert 0,40 ist widerlegt, und der Fund ist nicht die Zahl, sondern ein verdunsteter Vorbehalt.** Der Wert hat eine Herkunftskette: Im Ankerabruf des Langzeitgedächtnisses ist er **kalibriert** (100 echte Prompts gegen 302 Knoten, 0,40 → 82 % Abdeckung bei 4,1 Ankern) und trägt dort die Marke *„begründeter Startwert, kein Verteilungs-Messergebnis"*. Die Bibliothek hat ihn **übernommen** und sagt es auch — *„NICHT gemessen"*, mit Grund und offenem Backlog-Eintrag. **Erst dieses Konzept nannte ihn in v0.5 „ein gemessener Wert".** Zwei Code-Stellen waren ehrlich; übernommen wurde die Zahl, nicht der Satz daneben. Die Messung gibt der Übernahme quantitativ Unrecht: Im Knotenraum qualifiziert 0,40 rund **1,4 %** des Bestandes, in der Bibliothek **35,6 %** — derselbe Embedding-Raum, **Faktor 26**. Eine Schwelle ist keine Eigenschaft des Raums, sondern des Raums **und** der Dichte des Korpus darin. Gegen den laufenden Bestand gemessen: In **40 von 42** protokollierten Bibliotheksaufrufen kamen genau drei Treffer zurück — so viele, wie die Kappung zulässt. **Die Schwelle hat nie gegriffen, die Kappung hat gegriffen**, und ein Boden, den niemand berührt, belegt nichts. Die Geometrie des Korpus bestätigt es von der anderen Seite: 217 aktive Einträge, 23.436 Paare, **Median 0,369** — **35,6 % aller Paare liegen über 0,40**, also rund 77 von 217 Einträgen je Abfrage. Gerechnet trifft erst **0,55** die drei Treffer, die tatsächlich geliefert werden, und der gemessene Median des dritten Treffers (**0,588**) trifft sich damit. **Die wirksame Schwelle der Bibliothek ist 0,55; die konfigurierte ist Zierde.** Daraus drei Änderungen: Der Index startet bei **0,55**; er bekommt eine **Kappung**, die dieses Konzept bis v0.6 überhaupt nicht kannte — es hatte von der Bibliothek die Schwelle übernommen und den Mechanismus weggelassen, der dort die Arbeit tut (bei 667 Dateien hätte 0,40 rund **237** je Turn qualifiziert); und der Enricher-Weg protokolliert Trefferzahl **und** schlechtesten gelieferten Kosinus, damit *„die Kappung greift dauerhaft"* sichtbar wird statt still zu bleiben. **Zweitens ist die Diagnose zur Selbstauslösung nur halb gewesen:** Nicht nur das Budget ist geteilt, sondern das **Tor**. Die Lückensuche hängt an `aufnahmebereitschaft > 0`, die Selbstauslösung an einem Zähler und einem Riegel auf wartende Agenten — **keine Bereitschaft**. Heute ist das richtig, weil der einzige Aufrufer die Reparatur ist und **eine Reparatur in der Krise feuern muss**. Für die Vertiefung gilt das Gegenteil: *„lass mich nachsehen"* ist in einem Gespräch über Quarks eine Auskunft und in einem Absturz eine Zumutung. **Dieselbe Schranke, die für die Reparatur zu eng wäre, ist für die Vertiefung notwendig** — der Riegel hängt deshalb am Grund, nicht am Mechanismus, und die Vertiefung wird nicht als zweiter Aufrufer der Selbstauslösung gebaut. **Zwei neue offene Fragen** (§9): die Höhe der Kappung, und woraus sich die Trefferqualität ergibt, die der Block ausweisen soll — der rohe Kosinus taugt dafür nach dieser Messung nicht, weil niemand seine Skala kennt.
 - **v0.6 — 17.08.2026:** **Die Vertiefung füllt den Vorrat, nicht die Antwort** — die Beschränkung, ohne die dieses Konzept gegen die Gedankenkette arbeitet. Deren Satz trifft den zweiten Durchlauf unmittelbar: *„Wer hier den Aufsatz einsetzt, hat die Treppe gebaut und oben doch die Ablage abgeladen."* Was die Vertiefung vergrößert, ist was Nova **weiß**, nicht was sie **sagt**; das gesammelte Material ist der Vorrat, aus dem sie schöpft, und nicht der Entwurf, den sie vorliest. **Der Längenregler allein reicht dafür nicht, und das ist gemessen:** Über zehn Turns des produktiven Paares schwankt die Vorgabe um den Faktor 1,50, die Antwortlänge um 3,93 — und bei **identischer** Vorgabe (0,652, fünf Turns) noch um 2,68, von 813 auf 2181 Zeichen. Die Richtung stimmt (r = +0,78), die Bindung fehlt. **Eine Zahl bindet nicht, eine Struktur bindet:** Die Treppe aus Ruf, Feld und Fund ist ein Ablauf, in den der Aufsatz nicht hineinpasst, weil zwischen jeder Portion eine Freigabe steht.
