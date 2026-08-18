@@ -162,14 +162,42 @@ def dateipfad_bauen(*, charakter: str, context_user: str, thema: str, typ: str, 
     return Path(WISSENSSPEICHER_WURZEL) / BEREICH / charakter / name
 
 
+# Der Block, der den lebenden Text trägt. Er bildet mit `## HISTORIE` aus
+# `tools/dateien/versionierung.py` ein **Paar**: Jeder sagt, was der andere
+# ist. Der Gewinn liegt beim Lesen — der lebende Text hat damit eine
+# Adresse, und die Historie wird nie geladen, solange niemand fragt.
+WISSEN_STANDARDBLOCK: str = "## AKTUELL"
+
+# Die Anfangsversion jeder neuen Wissensdatei. Ohne sie weiß beim ersten
+# Eingriff niemand, gegen welchen Stand er schreibt.
+WISSEN_ANFANGSVERSION: str = "1.0"
+
+
 def wissen_text_bauen(ergebnis: Arbeitsergebnis, datum_lang: str) -> str:
     """Baut den Inhalt der Wissen-Datei — reines Destillat, kein Prozess-Rauschen.
 
     Vorbedingung: `ergebnis.destillat` ist nicht leer.
-    Nachbedingung: Ein Markdown-Text mit Kopfblock und Destillat.
+    Nachbedingung: Ein Markdown-Text mit Kopfblock, Versionsangabe und
+    **mindestens einem adressierbaren Block** unterhalb der Titelzeile.
     Fehlerfälle: leeres Destillat (ValueError) — eine Wissen-Datei ohne
     Wissen ist der Fall, den das Gate abfangen soll; kommt sie hier an, ist
     das ein Defekt im Aufrufer und keine leere Datei.
+
+    **Warum der Block erzwungen wird.** Gemessen am 17.08.2026 trugen
+    **223 von 223** Wissensdateien keine einzige `##`-Überschrift, während
+    461 von 462 übrigen Dateien welche hatten. Damit hat jedes blockweise
+    arbeitende Werkzeug — gezieltes Lesen, chirurgisches Ersetzen, die
+    Versionierung — auf genau dem Bestand nichts zu adressieren, für den es
+    gebaut ist. Der Zuschnitt ist keine Verschönerung, sondern die
+    Vorbedingung dafür, dass eine Datei später *bearbeitet* statt neu
+    erzeugt werden kann.
+
+    **Vorhandene Gliederung bleibt erhalten, rückt aber eine Ebene tiefer.**
+    Bringt das Destillat eigene `##`-Blöcke mit, werden sie zu `###` und
+    liegen damit *innerhalb* von `## AKTUELL`. Ohne diese Absenkung endete
+    der lebende Block bei der ersten eigenen Überschrift, und `## AKTUELL`
+    trüge nur den Text davor — die Adresse wäre dann eine halbe. Die Absenkung
+    ist strukturell und rührt den Wortlaut nicht an.
     """
     # ── Eingabe-Validierung ─────────────────────
     if not ergebnis.destillat.strip():
@@ -177,14 +205,39 @@ def wissen_text_bauen(ergebnis: Arbeitsergebnis, datum_lang: str) -> str:
         raise ValueError(meldung)
 
     # ── Verarbeitung ────────────────────────────
-    return (
+    # Eigene Gliederung eine Ebene absenken, damit sie unter AKTUELL liegt.
+    abgesenkt: list[str] = [
+        f"#{zeile.lstrip()}" if zeile.lstrip().startswith("## ") else zeile
+        for zeile in ergebnis.destillat.strip().splitlines()
+    ]
+    rumpf: str = f"{WISSEN_STANDARDBLOCK}\n\n" + "\n".join(abgesenkt)
+
+    text: str = (
         f"# {ergebnis.thema}\n\n"
         f"**Erstellt:** {datum_lang}\n"
         f"**Recherchiert fuer:** {ergebnis.user_id}\n"
-        f"**Modus:** {ergebnis.modus}\n\n"
+        f"**Modus:** {ergebnis.modus}\n"
+        f"**Version:** {WISSEN_ANFANGSVERSION}\n\n"
         f"---\n\n"
-        f"{ergebnis.destillat.strip()}\n"
+        f"{rumpf}\n"
     )
+
+    # ── Ausgabe-Verifikation ────────────────────
+    # Eine Datei ohne adressierbaren Block ist genau der Zustand, gegen den
+    # dieser Zuschnitt gebaut ist — sie darf nicht entstehen. Geprüft wird
+    # auf **genau einen** Block der zweiten Ebene: Ein zweiter stünde neben
+    # AKTUELL statt darin, und die Absenkung hätte nicht gegriffen.
+    zweitrangig: list[str] = [
+        z for z in text.splitlines() if z.lstrip().startswith("## ")
+    ]
+    if len(zweitrangig) != 1 or zweitrangig[0].strip() != WISSEN_STANDARDBLOCK:
+        meldung = (
+            f"wissen_text_bauen: {ergebnis.thema!r} ergäbe eine Datei mit "
+            f"{len(zweitrangig)} Blöcken der zweiten Ebene ({zweitrangig}) — "
+            f"erwartet war genau {WISSEN_STANDARDBLOCK}"
+        )
+        raise RuntimeError(meldung)
+    return text
 
 
 def bericht_text_bauen(ergebnis: Arbeitsergebnis, datum_lang: str) -> str:

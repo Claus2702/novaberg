@@ -45,10 +45,13 @@ from agents.recherche.agent import Durchlauf, RechercheAgent, _salienz_aus_auftr
 from agents.recherche.gate import ergebnis_einordnen
 from config import POSTGRES_URL, WISSENSSPEICHER_DATEI_MODUS, WISSENSSPEICHER_WURZEL
 from services.wissensspeicher import (
+    WISSEN_ANFANGSVERSION,
+    WISSEN_STANDARDBLOCK,
     Arbeitsergebnis,
     dateipfad_bauen,
     ergebnis_ablegen,
     slug_bauen,
+    wissen_text_bauen,
 )
 from tools.dateien.schreiben import ARBEITSBAUM, datei_schreiben, schreibziel_pruefen
 
@@ -306,6 +309,86 @@ class AblageTest(unittest.TestCase):
         """
         with self.assertRaises(ValueError):
             ergebnis_ablegen(self._ergebnis("echte_tiefe", salienz=0.0))
+
+
+class WissenVorlageTest(unittest.TestCase):
+    """Zuschnitt der Wissen-Datei — jede neue trägt einen adressierbaren Block.
+
+    Der Befund, gegen den dieser Zuschnitt gebaut ist, steht als Zeuge fest:
+    Gemessen am 17.08.2026 trugen **223 von 223** Wissensdateien keine
+    `##`-Überschrift. Damit hatte jedes blockweise arbeitende Werkzeug auf
+    genau dem Bestand nichts zu adressieren, für den es gebaut ist.
+    """
+
+    def _ergebnis(self, destillat: str) -> Arbeitsergebnis:
+        """Baut ein Arbeitsergebnis mit dem übergebenen Destillat."""
+        return Arbeitsergebnis(
+            thema="Ein Prüfthema",
+            destillat=destillat,
+            status="echte_tiefe",
+            modus="recherche",
+            user_id=TEST_MENSCH,
+            character_id=TEST_CHARAKTER,
+            beobachter="assistant",
+            salienz=0.7,
+            ziel="Das Testziel",
+            begruendung="Testbegruendung",
+            queries=["q"],
+        )
+
+    def test_gliederungsloses_destillat_bekommt_einen_block(self) -> None:
+        text = wissen_text_bauen(
+            self._ergebnis("Ein Absatz Fliesstext ohne jede Unterteilung."),
+            "17.08.2026",
+        )
+        self.assertIn(WISSEN_STANDARDBLOCK, text)
+        bloecke = [z for z in text.splitlines() if z.startswith("## ")]
+        self.assertEqual(len(bloecke), 1)
+
+    def test_eigene_gliederung_rueckt_unter_aktuell(self) -> None:
+        """Eigene Blöcke bleiben erhalten, rücken aber eine Ebene tiefer.
+
+        Ohne die Absenkung endete `## AKTUELL` bei der ersten eigenen
+        Überschrift, und die Adresse für den lebenden Text wäre eine halbe.
+        """
+        text = wissen_text_bauen(
+            self._ergebnis("## Aufbau\n\nErstens.\n\n## Folgen\n\nZweitens."),
+            "17.08.2026",
+        )
+        zweitrangig = [z for z in text.splitlines() if z.startswith("## ")]
+        self.assertEqual(zweitrangig, [WISSEN_STANDARDBLOCK])
+        drittrangig = [z for z in text.splitlines() if z.startswith("### ")]
+        self.assertEqual(drittrangig, ["### Aufbau", "### Folgen"])
+        self.assertIn("Erstens.", text)
+        self.assertIn("Zweitens.", text)
+
+    def test_der_lebende_block_heisst_wie_sein_gegenstueck_es_verlangt(self) -> None:
+        """AKTUELL und HISTORIE sind ein Paar — jeder sagt, was der andere ist."""
+        from tools.dateien.versionierung import ARCHIVBLOCK, LEBENDBLOCK
+        self.assertEqual(WISSEN_STANDARDBLOCK, LEBENDBLOCK)
+        self.assertEqual(ARCHIVBLOCK, "## HISTORIE")
+
+    def test_jede_datei_traegt_eine_anfangsversion(self) -> None:
+        text = wissen_text_bauen(self._ergebnis("Fliesstext."), "17.08.2026")
+        self.assertIn(f"**Version:** {WISSEN_ANFANGSVERSION}", text)
+
+    def test_der_kopf_bleibt_vor_der_trennlinie(self) -> None:
+        text = wissen_text_bauen(self._ergebnis("Fliesstext."), "17.08.2026")
+        zeilen = text.splitlines()
+        self.assertLess(
+            zeilen.index(f"**Version:** {WISSEN_ANFANGSVERSION}"),
+            zeilen.index("---"),
+        )
+
+    def test_leeres_destillat_scheitert_weiterhin(self) -> None:
+        with self.assertRaises(ValueError):
+            wissen_text_bauen(self._ergebnis("   "), "17.08.2026")
+
+    def test_das_destillat_bleibt_woertlich_erhalten(self) -> None:
+        """Der Zuschnitt umgibt den Text; er formt ihn nicht um."""
+        destillat = "Ein Satz mit „Anfuehrungszeichen“ und — Gedankenstrich."
+        text = wissen_text_bauen(self._ergebnis(destillat), "17.08.2026")
+        self.assertIn(destillat, text)
 
 
 class GescheiterterDurchlaufTest(unittest.TestCase):
