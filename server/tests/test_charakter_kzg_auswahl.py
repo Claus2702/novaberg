@@ -39,6 +39,13 @@ DESTILLATION_LOGGER: str = "ki_server.agents.charakter.destillation"
 
 TAG: float = 86400.0
 
+# **Einmal gelesen, dann festgehalten.** Der Schluessel eines Eintrags wird an
+# zwei Stellen gebraucht — beim Aufbau des Bestandes und in der Zusicherung —
+# und muss beidemal derselbe sein. Eine Uhr, die bei jedem Aufruf neu gelesen
+# wird, liefert dazwischen eine getickte Millisekunde und damit zwei
+# Schluessel fuer denselben Eintrag (`ZEUGE-ERWARTUNG-AUS-DER-UHR`).
+SCHLUESSEL_BASIS: float = time.time()
+
 
 class _Redis:
     """Redis-Attrappe: haelt Hashes und zaehlt die Feldzugriffe.
@@ -84,12 +91,37 @@ def _eintrag(
 
 
 def _schluessel(alter_tage: float) -> str:
-    """Der Schluessel traegt seine Zeitmarke in Millisekunden."""
-    return f"kzg:meister:nova:{int((time.time() - alter_tage * TAG) * 1000)}"
+    """Der Schluessel traegt seine Zeitmarke in Millisekunden.
+
+    Die Marke ist **Identitaet, kein Alter**: Das Alter eines Eintrags liest
+    die Destillation aus `erstellt_am` (`destillation.py`), den Schluessel
+    benutzt sie nur zum Nachschlagen des Wortlauts. Deshalb rechnet er gegen
+    die festgehaltene Basis, waehrend `_eintrag` die laufende Uhr liest —
+    die Alterswerte der uebrigen Zeugen bleiben damit unveraendert.
+    """
+    return f"kzg:meister:nova:{int((SCHLUESSEL_BASIS - alter_tage * TAG) * 1000)}"
 
 
 def _bestand(*paare: tuple[float, float]) -> dict[str, dict[str, str]]:
     return {_schluessel(alter): _eintrag(alter, salienz) for alter, salienz in paare}
+
+
+class TestSchluesselIstStabil(unittest.TestCase):
+    """Derselbe Eintrag bekommt denselben Schluessel, wann immer man fragt.
+
+    Der Zeuge stellt den Fall deterministisch her, der die volle Suite in
+    einem von vier Laeufen rot machte (`ZEUGE-ERWARTUNG-AUS-DER-UHR`): Der
+    Erwartungswert entstand zweimal aus der Uhr, und dazwischen tickte eine
+    Millisekunde. **Der betroffene Zeuge kann seine eigene Abhilfe nicht
+    bewachen** — ob er rot wird, entscheidet die Laufzeit der Suite.
+    """
+
+    def test_zwei_aufrufe_liefern_denselben_schluessel(self) -> None:
+        """Die Uhr rueckt zwischen den Aufrufen vor; der Schluessel nicht."""
+        with patch("time.time", side_effect=[
+            SCHLUESSEL_BASIS, SCHLUESSEL_BASIS + 0.001,
+        ]):
+            self.assertEqual(_schluessel(1.0), _schluessel(1.0))
 
 
 class TestZeitgewicht(unittest.TestCase):
