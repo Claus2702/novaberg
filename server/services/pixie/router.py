@@ -18,6 +18,7 @@ _QUEUE_ROUTING: dict[str, str] = {
     "vertiefen":     "vertiefung",
     "nachfragen":    "nachfragen",
     "wiedervorlage": "wiedervorlage",
+    "wissen_rueckweg": "wissen_rueckweg",  # Rueckweg: Fund -> Wissensdatei (§4b)
 }
 
 # Mapping: Periodische Aufgabe (Schedule-Key-Suffix) -> Agent-Name

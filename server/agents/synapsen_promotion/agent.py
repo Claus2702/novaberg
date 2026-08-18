@@ -45,6 +45,8 @@ from config import (
     PIXIE_AKTIV, MAX_PROMOTION_RUECKSTELLUNGEN,
 )
 from memory import lzg_knoten, lzg_kanten, pipeline_log
+from agents.wissen_rueckweg.herkunft import material_waehlen
+from services.shadow_agent import shadow_queue_push
 from memory.repositories.verbindung_repository import VerbindungRepository
 from services.model_services import model_service, EmbedRequest
 from tools.db_manager import db_manager
@@ -469,6 +471,19 @@ class SynapsenPromotionAgent(BaseAgent):
         else:
             redis_client.set(f"hash_dirty:{user_id}:{character_id}", "1")
 
+        # ── Das dritte Schreibziel: der Rueckweg (§4b.1b) ──────
+        # **Was die Promotion geschafft hat, hat die Bewaehrung bestanden.**
+        # Der Fund kann damit auch in eine Wissensdatei — eingeordnet, nicht
+        # angehaengt. Der Vorgang laeuft NICHT hier: Die Zuordnung ist eine
+        # Modellentscheidung (§4a.1), und dieser Agent faehrt die CPU-Spur.
+        # Eingereiht statt ausgefuehrt ist deshalb keine Bequemlichkeit,
+        # sondern die einzige Form, in der beides zusammengeht.
+        self._rueckweg_einreihen(
+            kzg_key=kzg_key, user_id=user_id, character_id=character_id,
+            inhalt=inhalt, themen_str=themen_str, salienz=salienz,
+            turn_id=_hget("turn_id"),
+        )
+
         # ── Ausgabe: beide Gedaechtnis-Spuren (K5) ──────
         ausgabe_zsf: str = f"aktion={aktion}, {info}, gewicht_roh={salienz:.3f}"
         logger.info(f"Synapsen-Promotion: erledigt — {ausgabe_zsf}")
@@ -485,6 +500,62 @@ class SynapsenPromotionAgent(BaseAgent):
             turn_id=kzg_key, node=NODE, quelle=QUELLE, span_id=span_id,
             inhalt={"aktion": aktion, "knoten_id": knoten_id},
             user_id=user_id, character_id=character_id,
+        )
+
+    @staticmethod
+    def _rueckweg_einreihen(
+        *, kzg_key: str, user_id: str, character_id: str, inhalt: str,
+        themen_str: str, salienz: float, turn_id: str,
+    ) -> None:
+        """Reiht den promoteten Fund fuer den Rueckweg in die Shadow-Queue.
+
+        Vorbedingung: Die Promotion dieses Eintrags ist gelungen.
+        Nachbedingung: Ein Auftrag `wissen_rueckweg` liegt in der Queue, oder
+        der Grund seines Ausbleibens steht im Protokoll.
+        Fehlerfaelle: **Ein Fehlschlag beim Einreihen reisst die Promotion
+        nicht.** Der Knoten ist geschrieben und die Kanten stehen; ein
+        nicht eingereihter Rueckweg kostet eine Einarbeitung, ein
+        abgebrochener Promotionslauf kostet die Erinnerung.
+
+        Die Prioritaet traegt die Salienz des Eintrags. Sie ist Pflicht und
+        hat keinen Vorgabewert: Eine 0.0 waere ein gueltiger Wert, der jeden
+        Auftrag lautlos ans Ende jeder Rangfolge sortiert.
+        """
+        # ── Eingabe-Validierung ─────────────────
+        if not inhalt.strip():
+            logger.error(
+                "Synapsen-Promotion: Rueckweg nicht eingereiht — Eintrag '%s' "
+                "traegt keinen Inhalt", kzg_key,
+            )
+            return
+
+        # ── Verarbeitung ────────────────────────
+        # **Das Material wird hier aufgeloest, nicht drueben.** Der Auftrag
+        # der Shadow-Queue hat keine Spalte fuer den Turnbezug, und eine
+        # anzulegen waere DDL — angekuendigt, nicht nebenbei. Der Weg ohne
+        # Schema-Aenderung ist, den Wortlaut gleich mitzugeben: Es ist ein
+        # Lesezugriff auf das Protokoll und damit auf dieser Spur zulaessig.
+        material, quelle = material_waehlen(turn_id, inhalt, user_id, character_id)
+        try:
+            shadow_queue_push(
+                redis_client, user_id, "wissen_rueckweg",
+                thema=themen_str, prioritaet=salienz,
+                kontext=material, modus=f"rueckweg_{quelle}",
+            )
+        except Exception as fehler:  # noqa: BLE001 — die Promotion steht bereits
+            logger.exception(
+                "%s: Synapsen-Promotion: Rueckweg zu '%s' nicht eingereiht — die "
+                "Promotion bleibt gueltig, die Einarbeitung faellt aus",
+                type(fehler).__name__, kzg_key,
+            )
+            return
+
+        # ── Ausgabe-Verifikation ────────────────
+        logger.info(
+            "Synapsen-Promotion: Rueckweg eingereiht — kzg='%s', turn_id='%s', "
+            "prioritaet=%.3f%s",
+            kzg_key, turn_id, salienz,
+            f" — Material: {quelle}, {len(material)} Zeichen",
         )
 
     def _verbindung_lzg_id_nachtragen(

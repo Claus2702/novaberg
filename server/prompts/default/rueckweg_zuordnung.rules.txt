@@ -1,0 +1,9 @@
+[REGELN]
+- Antwort als JSON: {{"ziel": 3, "begruendung": "...", "kern": "..."}}
+- `ziel` ist eine der genannten Nummern oder null. Erfinde keine Nummer.
+- Waehle **eine** Datei. Gehoert der Fund wirklich in zwei, nimm die, in der
+  mehr verwandtes Material steht.
+- `kern` ist nicht die Zusammenfassung der Zieldatei und nicht der Fund im
+  Wortlaut, sondern das, was hinzukommt.
+- Bei null bleibt `kern` trotzdem gefuellt — die Begruendung wird protokolliert
+  und der naechste Durchlauf soll sie lesen koennen.

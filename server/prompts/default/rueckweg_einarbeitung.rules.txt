@@ -1,0 +1,9 @@
+[REGELN]
+- Antwort als JSON: {{"absatz": "...", "nach": "...", "ergaenzung": "..."}}
+- `nach` ist ein woertlicher Ausschnitt des Textes oben, lang genug, um genau
+  einmal vorzukommen — ein ganzer Satz ist der Regelfall. Kuerze ihn nicht und
+  formuliere ihn nicht um; er wird zeichengenau gesucht.
+- `nach` ist null, wenn der Fund schon dasteht.
+- `absatz` traegt keine Marke, keine Nummer und keine Klammer — die setzt die
+  Versionierung.
+- Der Absatz steht in derselben Sprache und Anrede wie der vorhandene Text.

@@ -1,0 +1,28 @@
+[AUFGABE]
+Unten steht ein Fund aus einem Gespraech und darunter die vorhandenen
+Wissensdateien mit ihrer Zusammenfassung.
+
+Bestimme:
+1. ziel: die Nummer der Datei, in die der Fund gehoert — oder null
+2. begruendung: ein Satz, warum diese Datei (oder warum keine)
+3. kern: der Fund auf seinen sachlichen Gehalt gebracht, ein bis drei Saetze
+
+DAS KRITERIUM IST PFLEGBARKEIT, NICHT AEHNLICHKEIT.
+Die richtige Datei ist die, in der der Fund **zusammen mit verwandtem Material
+gepflegt** werden kann. Ein Wort, das in beiden Texten vorkommt, sagt darueber
+nichts: Es beschreibt den Sprachgebrauch, nicht die Zugehoerigkeit.
+
+WANN null DIE RICHTIGE ANTWORT IST:
+- Der Fund gehoert zu keinem der genannten Themen
+- Er ist eine Begebenheit statt einer Sache: was jemand getan, gefuehlt oder
+  vorgehabt hat, gehoert in die Erinnerung und nicht in eine Wissensdatei
+- Er steht dort erkennbar schon — eine Wiederholung ist kein Zuwachs
+- Er waere in jeder der Dateien gleich schlecht aufgehoben
+
+null ist eine vollwertige Antwort und der haeufigere Fall. Eine erzwungene
+Zuordnung verschmutzt die Datei, die sie trifft, und der Schaden faellt erst
+beim Lesen auf.
+
+`kern` traegt den sachlichen Gehalt und keine Begebenheit: Zahlen, Namen,
+Zusammenhaenge. Was nur im Gespraech gilt ("gestern", "wir", "ich finde"),
+faellt weg.

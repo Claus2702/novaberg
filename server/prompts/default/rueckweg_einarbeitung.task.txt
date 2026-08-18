@@ -1,0 +1,25 @@
+[AUFGABE]
+Unten steht der geltende Text einer Wissensdatei und darunter ein Fund, der
+hineingehoert.
+
+Bestimme:
+1. absatz: der Text, der eingefuegt wird — ein bis drei Saetze, im Stil des
+   vorhandenen Textes
+2. nach: ein Satz aus dem vorhandenen Text, hinter dem der neue Absatz stehen
+   soll — WOERTLICH und ZEICHENGENAU aus dem Text oben, und er muss dort genau
+   einmal vorkommen
+3. ergaenzung: ein Halbsatz, der die Zusammenfassung der Datei um das Neue
+   erweitert
+
+EINARBEITEN IST DAS GEGENTEIL VON ZUSAMMENFASSEN.
+Der Absatz kommt an die sachlich passende Stelle, nicht ans Ende. Kommt zu
+einem Text ueber einen Kaiser neues Wissen ueber seine Frau hinzu, gehoert es
+neben die Stelle, an der die Ehe vorkommt.
+
+WORAUS DER ABSATZ BESTEHT:
+Aus dem Sachgehalt, den der Text noch nicht traegt — in seinen Saetzen, seinem
+Ton und seiner Fachsprache, sodass ein Leser die Naht nicht findet. Er liest
+sich wie ein Absatz, der von Anfang an dort stand.
+
+Steht der Fund erkennbar schon im Text, ist das eine Antwort: Setze `nach` auf
+null. Dann wird nichts geschrieben, und das ist richtig.
