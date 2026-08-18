@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Node-Referenz Planner
-**Stand:** 17. August 2026 (der vierte Ausgang hat einen Leser)
+**Stand:** 18. August 2026 (Priorität 3 der Manager-Auflösung: exakt vor unscharf, Mehrdeutigkeit ergibt keinen Gewinner); davor 17. August 2026 (der vierte Ausgang hat einen Leser)
 **Pfad:** novaberg/docs/novaberg-node-planner.md
 **Quellen:** nova-01-m-d.md
 **Datei:** `graph/nodes/planner.py`
@@ -61,8 +61,16 @@ Wenn kein Resume: Der Planner findet den zuständigen Manager über die Plugin-R
 |-----------|------------|---------|
 | 1 | `needs_timeline` Flag | Router setzt Flag → TimelineManager |
 | 2 | Intent-Match (`router_intents`) | `timeline_management` → TimelineManager |
-| 3 | Target-Match | Target enthält Manager-Ziel |
+| 3 | Target-Match — **exakt vor unscharf** | Ziel gleich Manager-Ziel; sonst genau **ein** unscharfer Treffer |
 | 4 | Fallback | NotizenManager als Auffangbecken |
+
+> **Priorität 3 ist am 18.08.2026 geschärft worden** (`_manager_zu_target`). Bis dahin nahm sie den **ersten** Manager, dessen Ziel eine Teilzeichenkette des Targets war oder umgekehrt — und die Registry wird in der Reihenfolge des sortierten Verzeichnis-Scans durchlaufen. Das hielt genau so lange, wie kein Dienstname in einem anderen steckte.
+>
+> **Beim Paar `dateien` und `dateien_wurzeln` hält es nicht:** `"dateien" in "dateien_wurzeln"` ist wahr, und `dateien_manager` kommt alphabetisch zuerst — der lesende Dienst hätte jede Freigabe-Anfrage geschluckt, und der Fehler sähe wie eine falsche Klassifikation aus statt wie eine Namenskollision.
+>
+> Seither gilt: **ein exakter Treffer schlägt jeden unscharfen**, und **zwei unscharfe ergeben keinen Gewinner** — der Planner fällt auf Priorität 4 zurück und meldet die Mehrdeutigkeit mit beiden Namen. Der erste wäre der alphabetisch erste, und das ist eine Münze, kein Urteil. Gegenprobe: 4 vorhergesagt, 4 gezählt.
+>
+> **Nebenbefund derselben Gegenprobe:** Die alte Fassung hätte bei **leerem** Target den ersten Manager geliefert, weil `"" in x` immer wahr ist. Gedeckt war das allein durch die Prüfung beim Aufrufer.
 
 ### 3.3 Agent-Prüfung (Epic 11)
 
