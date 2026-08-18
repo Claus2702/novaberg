@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Konzept — Indizierung und Durchsuchung eines vorgegebenen Verzeichnisses als NMCP-Dienst
-**Stand:** 18. August 2026 (v0.13)
+**Stand:** 18. August 2026 (v0.14)
 **Pfad:** novaberg/docs/novaberg-agent-dateien_k.md
 **Typ:** Konzept (`_k`)
 **Status:** 🟠 **Stufe 1 bis 3 gebaut und gemessen** (18.08.2026) — Freigabe, Wächter und die Enricher-Quelle laufen; **eine indizierte Datei erreicht die Figur.** Offen bleiben der lesende Dienst am Empfang (§8.1), der Zoom (§6.4) und der Rückweg (§4b).
@@ -724,7 +724,7 @@ Bis heute führt **kein Weg** von einem Nutzer-Turn in eine Datei: `ergebnis_abl
 
 **Der Rückweg schließt den Kreis:** Entsteht aus einem Turn eine Erinnerung, kann derselbe Fund auch in eine themenbezogene Datei — eingeordnet, nicht angehängt.
 
-### 4b.1 Die Salienz hat zwei Skalen, und „0,7" ist mehrdeutig
+### 4b.1 Die Salienz hat zwei Skalen — entschieden am 18.08.2026: es gilt die rohe
 
 ```
 KZG_SALIENZ_MINIMUM = 0,67379   (roh 0,3)  ← ab hier entsteht eine Erinnerung
@@ -734,12 +734,59 @@ KZG_SALIENZ_HIGH    = 0,94393   (roh 0,7)
 
 Die Umrechnung ist `sin(roh · π/2)^0,5`, nachgerechnet auf fünf Stellen.
 
-| Lesart von „ab 0,7" | wirksam | Folge |
-|---|---|---|
-| auf der wirksamen Skala | 0,70 | knapp über der Erinnerungsschwelle — **fast jede** Erinnerung löst einen Modellaufruf aus |
-| roh 0,7 (das HIGH-Band) | **0,944** | nur die Spitze |
+> **Alle Schwellen dieses Konzepts stehen auf der ROHEN Skala.** Eine Salienzangabe ohne Skala ist keine Angabe — dieselbe Zahl bedeutet auf beiden Seiten der Kurve etwas anderes, und die Kurve ist oben so flach, dass die Unterscheidung genau dort verschwindet, wo entschieden wird.
 
-**Da jeder Rückschreibvorgang einen Modellaufruf kostet, ist das keine Feinheit.** Welche Lesart gilt, ist eine Absicht und in §9 offen.
+**Der Grund ist gemessen, nicht gewählt.** Am 18.08.2026 gegen den laufenden Bestand, 2394 Einträge des Paares:
+
+| | n | min | Median | ≥ 0,7 | ≥ 0,9 |
+|---|---|---|---|---|---|
+| **wirksam**, `user` | 160 | 0,674 | 0,955 | 95,0 % | 79,4 % |
+| **wirksam**, `assistant` | 2234 | 0,718 | 0,999 | 100 % | 98,8 % |
+| **roh**, `user` | 160 | 0,300 | 0,730 | 58,8 % | 20,0 % |
+| **roh**, `assistant` | 2234 | 0,345 | 0,952 | 81,5 % | 57,5 % |
+
+**Auf der wirksamen Skala ist eine Schwelle im Band 0,7 bis 0,9 nahezu wirkungslos** — sie nimmt 95 bis 100 % des Bestandes. Auf der rohen trennt dieselbe Frage.
+
+> **Das Minimum 0,674 ist kein Ergebnis über die Verteilung, sondern das Tor.** `KZG_SALIENZ_MINIMUM` weist alles unter roh 0,3 ab; gemessen wurde deshalb eine **abgeschnittene** Verteilung. Wer aus ihr auf die Bewertung des Modells schließt, misst das Tor mit.
+
+**Ein Nebenbefund, der die Auswahl mitbestimmt:** **2234 der 2394 Einträge sind `assistant`** — 93 % des Bestandes ist die eigene Seite der Figur, und sie liegt durchgängig höher als die des Menschen. Eine rein salienzgetriebene Rückschreibung schriebe damit überwiegend **ihre eigenen Formulierungen** zurück, nicht das, was der Mensch gesagt hat.
+
+### 4b.1a Wann geschrieben wird — drei Wege, und nur einer hat eine Schwelle
+
+**Entschieden am 18.08.2026.**
+
+| Weg | Kriterium | wann |
+|---|---|---|
+| **Das Einprägsame** | `salienz_roh ≥ 0,7` | sofort |
+| **Das Überlebende** | der Eintrag schafft die Promotion ins Langzeitgedächtnis | nach Tagen, von selbst |
+| **Das Zugehörige** | er ist einer vorhandenen Wissensdatei **zuordenbar** | als Ergänzung, nicht als neue Datei |
+
+**Der zweite Weg löst das Problem, das er zu stellen schien.** Ein Fund unterhalb der Schwelle soll weder sofort verworfen noch sofort geschrieben werden — er soll sich über Tage bewähren. Dafür braucht es **keinen zweiten Speicher und kein Zwischenstadium**: Das Kurzzeitgedächtnis *ist* der Warteraum, mit einer Frist von 7 bis 30 Tagen je nach Band, und die Promotion ins Langzeitgedächtnis *ist* die Bewährungsprüfung. Sie ist gebaut und läuft.
+
+> **Was es ins Langzeitgedächtnis geschafft hat, hat den Test bereits bestanden.** Eine eigene Wartelogik daneben wäre eine zweite Antwort auf dieselbe Frage — und die beiden liefen auseinander.
+
+**Der dritte Weg trägt ausdrücklich keine Salienzschwelle**, und das ist eine Berichtigung am naheliegenden Entwurf. Gemessen am 18.08.2026 über die 246 aktiven Wissenseinträge:
+
+```
+autonomous_wissen.salienz_anfang:  min 0,944 · Median 1,000 · 100 % ≥ 0,7
+```
+
+**Eine Bedingung „das Ziel hat Salienz ≥ 0,7" ist auf diesem Bestand eine Tautologie.** Was den Weg trägt, ist die **Zuordenbarkeit** — und die ist nach §4a.1 keine Schwellenfrage, sondern die Entscheidung eines Modells über die Zusammenfassungen der vorhandenen Dateien, mit **Pflegbarkeit** als Kriterium. Eine Ähnlichkeitsschwelle an dieser Stelle wäre genau der Fehler, den §4a beschreibt.
+
+### 4b.1b Was die Promotion zusätzlich tut, und woher der Text kommt
+
+**Die Promotion bekommt ein drittes Schreibziel.** Heute schreibt sie Kurzzeit → Langzeit; künftig schreibt sie denselben Fund zusätzlich in die Wissensdateien. Damit ist der Rückweg kein eigener Auslöser, sondern die Erweiterung eines Vorgangs, der ohnehin läuft.
+
+**Der Text dafür ist vorhanden, und zwar in zwei Fassungen:**
+
+| Quelle | Inhalt | Frist |
+|---|---|---|
+| Kurzzeitgedächtnis | die **verdichtete** Fassung | 7 bis 30 Tage |
+| `pipeline_log` | die **Rohfassung** des Turns | **365 Tage** (`LZG_PIPELINE_LOG_VORHALTUNG_TAGE`) |
+
+`[gemessen]` — 18.08.2026: 91 121 Zeilen seit dem Nullpunkt am 27.07.2026, nichts abgeräumt. **Die Rohfassung überlebt den Kurzzeit-Eintrag um mehr als das Zwölffache** — ein Fund, der über die Promotion kommt, hat seinen Volltext also noch.
+
+> **Offen und ausdrücklich nicht nebenbei entschieden: welche der beiden Fassungen eingearbeitet wird.** §4b.3 sagt *„Einarbeiten ist das Gegenteil von Destillieren"* — das spricht für die Rohfassung als Material, weil die verdichtete bereits einmal komprimiert wurde und sonst ein Destillat auf einem Destillat entstünde. Dagegen steht der Preis: mehr Text je Aufruf. **Die Wahl bestimmt, was am Ende in den Dateien steht, und ist damit eine Absicht.**
 
 ### 4b.2 Die Verstärkung ist bereits gebaut
 
@@ -978,7 +1025,7 @@ Eine Suche, die nichts findet, hat fast immer einen benachbarten Treffer. Die Ab
 
 ## 9. Was zu entscheiden ist, bevor gebaut wird
 
-Vier Fragen, die der Entwurf offenlässt, weil sie Absichten sind und keine Umsetzungsdetails:
+Die Fragen, die der Entwurf offenlässt, weil sie Absichten sind und keine Umsetzungsdetails. **Beantwortete bleiben durchgestrichen stehen** — sie erklären, warum der Code so aussieht, wie er aussieht:
 
 1. **Welche Wurzel zuerst?** Die Projektdokumentation ist der genannte Zweck. Sie ist zugleich der Korpus, in dem Nova über sich selbst liest — was eine eigene Frage aufwirft (§10).
 2. ~~**Sieht jedes Paar denselben Index?**~~ → **Beantwortet (§2.2):** Das Paar hängt an der Freigabe. Zwei Menschen, die dasselbe Verzeichnis freigeben, teilen sich die Indexzeilen und haben zwei Wurzeln. Offen bleibt der Anschlussfall: **Was geschieht mit den Indexzeilen, wenn die letzte Freigabe auf ein Verzeichnis zurückgenommen wird** — sie sind dann von niemandem mehr erreichbar und stehen weiter da.
@@ -996,8 +1043,10 @@ Vier Fragen, die der Entwurf offenlässt, weil sie Absichten sind und keine Umse
    **Offen bleibt die Quantilschwelle** `1 − K/N`. Sie ist nicht vergessen, sondern noch nicht rechenbar: Sie ist das Quantil der **mitlaufenden** Verteilung, und diese Verteilung beginnt erst mit diesem Bauteil zu entstehen. Der K-te Wert wird seit dem 18.08.2026 je Turn protokolliert (`schlechtester`); sobald er trägt, tritt das Quantil neben den Boden — Backlog `AUFZEICHNUNGEN-QUANTIL`.
 6. ~~**Was misst die Trefferqualität, die der Block ausweisen soll?**~~ → **Beantwortet in v0.9 (§3.0d):** Es braucht keine Qualitätszahl. Das Kriterium ist die **Lücke**, nicht die Nähe — und sie wird an der Bibliothek geprüft, nicht am Kosinus. Der rohe Kosinus wäre ohnehin untauglich gewesen, weil niemand seine Skala kennt (0,588 klingt mittelmäßig und ist der Normalfall).
 7. **Wo entsteht ein neuer Wissenstext, und wo wird ein bestehender erweitert?** Findet sie einen Fund, ist zu entscheiden, ob er in eine vorhandene Datei gehört oder eine neue rechtfertigt (§3a). Das ist dieselbe Bedarfsfrage eine Ebene höher und heute nirgends beantwortet — der Ablage-Weg legt je Durchlauf eine neue Datei an.
-8. **Welche Salienz-Lesart gilt für den Rückweg?** 0,70 auf der wirksamen Skala lässt fast jede Erinnerung eine Dateischreibung auslösen; roh 0,7 (= 0,944) nur die Spitze (§4b.1). Da jeder Vorgang einen Modellaufruf kostet, entscheidet die Lesart die Betriebskosten.
-9. **Was geschieht mit dem Gelernten, wenn die Quelldatei sich als falsch erweist?** Der Wächter meldet die Änderung und öffnet die Lücke wieder (§5.2a) — das deckt den Fall *„es steht jetzt etwas anderes da"*. Nicht gedeckt ist *„das Gelernte war falsch"*: Ihr Wissenstext ist dann bereits geschrieben, und ob ein erneuter Durchlauf ihn berichtigt oder danebenlegt, ist eine Absicht und keine Umsetzungsfrage.
+8. ~~**Welche Salienz-Lesart gilt für den Rückweg?**~~ → **Beantwortet am 18.08.2026 (§4b.1): die ROHE.** Gemessen an 2394 Einträgen des laufenden Bestandes nimmt eine Schwelle von 0,7 auf der *wirksamen* Skala 95 bis 100 % — sie trennt dort nichts, weil die Kurve oben staucht und `KZG_SALIENZ_MINIMUM` unten abschneidet. Auf der rohen nimmt dieselbe Zahl 59 % (`user`) und 82 % (`assistant`). **Damit steht zugleich der Zuschnitt des Rückwegs** (§4b.1a): eine Schwelle für das Einprägsame, die vorhandene Promotion für das Überlebende, und für das Zugehörige **keine Schwelle**, weil `autonomous_wissen` bei min 0,944 liegt und jede Bedingung „≥ 0,7" dort eine Tautologie wäre.
+
+9. **Welche Textfassung wird eingearbeitet — die verdichtete oder die rohe?** Neu offen seit dem 18.08.2026 (§4b.1b). Beide sind vorhanden und beide erreichbar: die verdichtete im Kurzzeitgedächtnis, die rohe im `pipeline_log` mit 365 Tagen Vorhaltung gegen 7 bis 30 Tage. §4b.3 spricht für die rohe — sonst entsteht ein Destillat auf einem Destillat —, dagegen steht der Preis je Aufruf. **Die Wahl bestimmt, was am Ende in den Dateien steht.**
+10. **Was geschieht mit dem Gelernten, wenn die Quelldatei sich als falsch erweist?** Der Wächter meldet die Änderung und öffnet die Lücke wieder (§5.2a) — das deckt den Fall *„es steht jetzt etwas anderes da"*. Nicht gedeckt ist *„das Gelernte war falsch"*: Ihr Wissenstext ist dann bereits geschrieben, und ob ein erneuter Durchlauf ihn berichtigt oder danebenlegt, ist eine Absicht und keine Umsetzungsfrage.
 
 ---
 
@@ -1032,6 +1081,8 @@ Die Abschnitte §4a, §4b und §6 stützen sich auf eine Sichtung des Standes de
 ---
 
 ## Versionshistorie
+
+- **v0.14 — 18.08.2026:** **Der Rückweg hat seinen Zuschnitt** (§4b.1, §4b.1a, §4b.1b). Die Salienz-Lesart aus §9 Punkt 8 ist beantwortet und die Antwort ist gemessen: **es gilt die rohe Skala.** An 2394 Einträgen des laufenden Bestandes nimmt eine Schwelle von 0,7 auf der *wirksamen* Skala 95 bis 100 % — dort trennt sie nichts, weil die Kurve oben staucht und `KZG_SALIENZ_MINIMUM` unten abschneidet; das gemessene Minimum von 0,674 ist deshalb **das Tor und kein Verteilungsergebnis**. Auf der rohen nimmt dieselbe Zahl 59 % und 82 %. **Daraus drei Wege, und nur einer trägt eine Schwelle:** das Einprägsame über `salienz_roh ≥ 0,7`, das Überlebende über die **vorhandene** Promotion ins Langzeitgedächtnis, das Zugehörige über **Zuordenbarkeit ohne jede Schwelle**. Der zweite Weg löst das Problem, das er zu stellen schien: Ein Fund, der sich über Tage bewähren soll, braucht keinen zweiten Speicher — das Kurzzeitgedächtnis *ist* der Warteraum (7 bis 30 Tage), die Promotion *ist* die Bewährungsprüfung. Der dritte ist eine Berichtigung am naheliegenden Entwurf: `autonomous_wissen` liegt bei **min 0,944, Median 1,000, 100 % ≥ 0,7**, eine Bedingung *„das Ziel hat Salienz ≥ 0,7"* wäre dort eine Tautologie — was trägt, ist die Zuordnung nach §4a.1, und die ist keine Schwellenfrage. **Die Promotion bekommt ein drittes Schreibziel** und holt den Text; beide Fassungen sind erreichbar, denn das `pipeline_log` hält 365 Tage gegen die 7 bis 30 des Kurzzeitgedächtnisses (91 121 Zeilen, nichts abgeräumt). **Neu offen als §9 Punkt 9: welche der beiden Fassungen eingearbeitet wird** — §4b.3 spricht für die rohe, der Preis je Aufruf dagegen. **Ein Nebenbefund gehört zur Entscheidung:** 2234 der 2394 Einträge sind `assistant`, eine rein salienzgetriebene Rückschreibung schriebe also überwiegend die eigenen Formulierungen der Figur zurück.
 
 - **v0.13 — 18.08.2026:** **Stufe 3 ist gebaut, und eine indizierte Datei erreicht damit zum ersten Mal die Figur.** Der Enricher fragt den Index in jedem Turn über denselben `such_vektor` ab, mit dem KZG, LZG und die Bibliothek suchen; die Treffer laufen über einen **eigenen Zustandskanal** in den Block `[AUFZEICHNUNGEN]` des Verfassers. **Der eigene Kanal ist die tragende Entscheidung und keine Bauform:** Ein Plugin hätte `ContextEntry` in den `memory_entries`-Pool geliefert, und alles aus diesem Pool rendert der Formatter unter `[GEDAECHTNIS]` — also unter der Beschriftung „das ist ihre Erinnerung". Genau das verbietet §1a.2, und der Präzedenzfall steht offen im Bestand. **Der Wortlaut des Blocks aus §1a.2 ist beim Bauen ersetzt worden**, die drei tragenden Eigenschaften nicht: `F-PROMPT-1` verlangt Führung statt Verbot, und die Struktur trägt hier bereits — der Block *ist* ein anderer Block. **Zwei Zahlen sind entschieden statt gemeldet:** `K = 3` als Platzfrage, und der absolute Boden **0,30 als Messung** aus acht Sonden mit beiden Seiten (einschlägig ab 0,3800, fremd bis 0,2014). Die Messbedingung steht an der Zahl in `config.py` — der Fehler, an dem die übernommene 0,40 gescheitert ist, war nicht die Zahl, sondern der verlorene Vorbehalt. **Gegenprobe zweimal, beide vorhergesagt und gezählt:** Verdrahtung entfernt → 5 von 5; Treffer in den Gedächtnisblock umgeleitet → 3 von 3, und dabei blieben zwei Zeugen grün, die den Verstoß nicht sehen können, weil sie prüfen, *dass* der Text im Prompt steht und nicht *wo*. **Im Betrieb gemessen:** einschlägiger Turn 3 Treffer (0,4752 bis 0,3780), Fremdthema 0 Treffer über dem Boden — und in Novas Antwort standen alle drei Fundstellen im Wortlaut, womit auch §1a.4 belegt ist. **Offen bleibt die Quantilschwelle:** Sie ist das Quantil der mitlaufenden Verteilung, und diese Verteilung beginnt erst mit diesem Bauteil zu entstehen.
 
