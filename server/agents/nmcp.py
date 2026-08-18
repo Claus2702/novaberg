@@ -73,6 +73,17 @@ ZUSAGEN: dict[str, Zusage] = {
         lebensdauer="ein Durchlauf",
         verbraucher_art="knoten",   # Reducer und Gespraechsvektor, keine Agenten
     ),
+    "such_vektor": Zusage(
+        schluessel="such_vektor",
+        typ="list[float]",
+        bedeutung=(
+            "Der Suchschluessel DIESES Turns, erzeugt vom Enricher und "
+            "verschoben um die Wahrnehmungs-Gravitation. Damit haben in "
+            "demselben Durchlauf auch KZG, LZG und die Bibliothek gesucht. "
+            "NICHT das rohe Embedding der Aeusserung."
+        ),
+        lebensdauer="ein Durchlauf",
+    ),
 }
 
 
