@@ -488,6 +488,49 @@ WISSEN_RETRIEVAL_SCHWELLE:         float = float(os.getenv("WISSEN_RETRIEVAL_SCH
 # 262144 des Hintergrunds.
 WISSEN_RETRIEVAL_TOP_K:            int   = int(os.getenv("WISSEN_RETRIEVAL_TOP_K", "3"))
 
+# ── Der Enricher-Weg des Dateien-Index (novaberg-agent-dateien_k.md §3.0) ──
+#
+# **Die Kappung ist die Zusicherung, die Schwelle ist die Feinjustage** (§3.0a).
+# Wer es umgekehrt liest, baut denselben Boden zweimal — eine Zahl, die etwas
+# verspricht, was eine andere Stelle einhaelt. Genau daran ist die Bibliothek
+# vorbeigelaufen: In 40 von 42 Aufrufen hat dort nicht die Schwelle
+# ausgewaehlt, sondern die Kappung.
+#
+# Drei, weil der Block je Eintrag zusaetzlich die Fundstelle traegt — sie ist
+# das, was "ich habe hier Aufzeichnungen" ueberpruefbar macht (§1a.2) und
+# nicht kuerzbar. Dieselbe Zahl wie bei der Bibliothek, und ueber `K/N` ist
+# sie zugleich die Antwort auf die Frage, wie streng die spaetere
+# Quantilschwelle steht.
+AUFZEICHNUNGEN_KAPPUNG: int = int(os.getenv("AUFZEICHNUNGEN_KAPPUNG", "3"))
+
+# Der absolute Boden — das Amt "ob ueberhaupt" (§3.0a-bis).
+#
+# **Er ist gemessen, und die Messbedingung gehoert an die Zahl.** Am
+# 18.08.2026 acht Sondentexte gegen die drei Indexzeilen, beide Seiten:
+#
+#     einschlaegig   bester Treffer je Sonde   0.3800 · 0.4610 · 0.4961
+#     fremd          bester Treffer je Sonde   0.2014 · 0.2010 · 0.1896
+#                                              0.1861 · 0.0729
+#
+# 0.30 liegt fast mittig in der Luecke — 0.10 ueber der hoechsten fremden,
+# 0.08 unter der niedrigsten einschlaegigen Sonde. Keine Seite ist knapp
+# geschnitten.
+#
+# **Was die Messung NICHT deckt, und es reist mit der Zahl:** Sie lief mit dem
+# rohen Anfrage-Embedding, der Betrieb sucht mit dem verschobenen
+# `such_vektor` (Wahrnehmungs-Gravitation). Und der Bestand war **drei
+# Zeilen** aus einem Register. Ein Startwert mit benannter Bedingung, kein
+# Verteilungs-Ergebnis — nachzuziehen, sobald die mitlaufende Verteilung
+# traegt (§3.0a-bis).
+#
+# Ein Turn ohne diesen Block ist der Normalfall und kein Ausfall.
+AUFZEICHNUNGEN_BODEN: float = float(os.getenv("AUFZEICHNUNGEN_BODEN", "0.30"))
+
+# Wie viel Zusammenfassung ein Eintrag mitbringt. Der Block soll die Datei
+# auffindbar machen, nicht ihren Inhalt ersetzen — der bleibt in der Datei
+# und wird ueber den Auftrags-Weg gelesen (§3.0).
+AUFZEICHNUNGEN_AUSZUG_ZEICHEN: int = int(os.getenv("AUFZEICHNUNGEN_AUSZUG_ZEICHEN", "300"))
+
 WISSENSSPEICHER_DATEI_MODUS:       int = int(os.getenv("WISSENSSPEICHER_DATEI_MODUS", "666"), 8)
 WISSENSSPEICHER_VERZEICHNIS_MODUS: int = int(
     os.getenv("WISSENSSPEICHER_VERZEICHNIS_MODUS", "777"), 8,

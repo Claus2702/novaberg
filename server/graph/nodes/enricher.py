@@ -54,6 +54,10 @@ from ei.gravitation      import (
     emotionale_gravitation_scannen,
     wahrnehmung_verschieben,
 )
+from agents.dateien_index.aufzeichnungen import (
+    Aufzeichnungsfund,
+    aufzeichnungen_suchen,
+)
 from ei.dreischicht      import CLUSTER_ENRICHER_SPRUENGE, INTENTION_ANWEISUNG
 from plugins             import get_registry
 from services.model_services import model_service, EmbedRequest
@@ -864,6 +868,37 @@ def _enrich_character(
             logger.exception(f"{type(fehler).__name__}: Enricher: Plugin '{name}' Fehler")
 
     # ─────────────────────────────────────────
+    # 3c. Der Dateien-Index — die Quelle, die kein Dienst ist
+    # ─────────────────────────────────────────
+    # Sie steht hier und nicht in der Plugin-Schleife darueber, und der Grund
+    # ist kein Ordnungsgeschmack: Ein Plugin liefert `ContextEntry` in den
+    # `memory_entries`-Pool, und alles in diesem Pool wird vom Formatter unter
+    # [GEDAECHTNIS] gerendert. **Dateiinhalt darf dort nicht hinein**
+    # (novaberg-agent-dateien_k.md §1a.2) — was in den Dateien steht, ist
+    # nicht ihr Gedaechtnis, und die Beschriftung ist die Aussage.
+    #
+    # Der Praezedenzfall steht offen im Bestand: Nova hat die Biografie eines
+    # Menschen als ihre eigene uebernommen. Ein Dokument ist derselbe Fall
+    # eine Stufe weiter — eine fremde Erinnerung gehoert wenigstens jemandem.
+    #
+    # Denselben Schluessel wie KZG, LZG und die Bibliothek: `such_vektor`
+    # steht seit der Suche oben im State. Ein eigenes Embedding waere hier
+    # der Fehler (§3.0).
+    try:
+        fund: Aufzeichnungsfund = aufzeichnungen_suchen(
+            state.get("such_vektor") or [], user_id, character_id,
+        )
+        state["aufzeichnungen"] = fund.treffer
+    except Exception as fehler:
+        # Der Enricher faengt ab, damit ein Ausfall dieser Quelle den Turn
+        # nicht mitnimmt — aber er sagt, welche Quelle es war.
+        logger.exception(
+            f"{type(fehler).__name__}: Enricher: Dateien-Index Fehler — "
+            f"kein [AUFZEICHNUNGEN]-Block in diesem Turn"
+        )
+        state["aufzeichnungen"] = []
+
+    # ─────────────────────────────────────────
     # 4. Charakter-Hash als ContextEntry
     #     Der Hash-String wird inline aus external.character.core/adaptive
     #     formatiert und in memory_entries gehaengt. Geladen wird er im
@@ -940,6 +975,7 @@ def _enrich_character(
             "emotionale_gravitationspunkte_count": len(
                 state.get("emotionale_gravitationspunkte", [])
             ),
+            "aufzeichnungen_count":              len(state.get("aufzeichnungen", [])),
         },
         span_id = span_id,
         user_id      = user_id,

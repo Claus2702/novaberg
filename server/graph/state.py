@@ -95,6 +95,20 @@ class ConversationState(TypedDict):
     memory_entries:    list[ContextEntry]   # Strukturierte Eintraege (vor Reducer-Dedup, vor Formatter)
     lzg_resonanz: dict | None  # Assoziative Spreading-Resonanz (Synapsen §8.4.2): Enricher schreibt {anker_anzahl, sprung_tiefe, cluster, nova_sektor, erinnerungen[]}, Reducer/Formatter lesen. MUSS als Channel deklariert sein — StateGraph(ConversationState) rekonstruiert den State pro Node aus den Channels; ein undeklarierter Key wird am Node-Uebergang (Enricher → Reducer) still verworfen, nicht durchgereicht.
     memory_entries_raw: list[ContextEntry]   # Ungekuerzte Eintraege vor Reducer-Dedup (Debug)
+    # Die Treffer des Dateien-Index in diesem Turn — Elemente sind
+    # `agents.dateien_index.aufzeichnungen.Aufzeichnung`. Der Enricher
+    # schreibt, der Verfasser rendert daraus den [AUFZEICHNUNGEN]-Block.
+    #
+    # **Ein eigener Kanal und nicht `memory_entries`, und das ist die
+    # tragende Aussage des Bauteils** (novaberg-agent-dateien_k.md §1a.2):
+    # Was in den Dateien steht, ist nicht ihr Gedaechtnis. Liefe es durch
+    # den Pool, stuende es unter [GEDAECHTNIS] — und die Beschriftung ist
+    # hier die Aussage, nicht die Verpackung.
+    #
+    # MUSS als Channel deklariert sein: StateGraph(ConversationState) baut
+    # den State je Node aus den Channels; ein undeklarierter Key wird am
+    # Uebergang still verworfen (13_DATENSTRUKTUREN §4).
+    aufzeichnungen: list
     web_context:       str
     session_turns:     list   # list[dict] — destillierte Turns für den Responder
     user_intentionen:  list   # Intentionen des aktuellen Turns (aus letztem User-Turn)

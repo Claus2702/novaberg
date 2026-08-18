@@ -147,16 +147,67 @@ def _gespraechsvektor_block(state: ConversationState) -> str:
     return "[GESPRAECHSVEKTOR]\n" + "\n".join(zeilen)
 
 
+def _aufzeichnungen_block(state: ConversationState) -> str:
+    """Baut den [AUFZEICHNUNGEN]-Block aus den Treffern des Dateien-Index.
+
+    Vorbedingung: `state["aufzeichnungen"]` traegt die Treffer dieses Turns
+    (`agents.dateien_index.aufzeichnungen.Aufzeichnung`), moeglicherweise
+    keine. Der Enricher setzt den Kanal in jedem Turn.
+    Nachbedingung: Leerer String genau dann, wenn kein Treffer vorliegt —
+    **ein Turn ohne diesen Block ist der Normalfall und kein Ausfall**
+    (novaberg-agent-dateien_k.md §3.0a-bis). Sonst ein Block, in dem jeder
+    Eintrag seine Fundstelle traegt.
+    Fehlerfaelle: keine.
+
+    **Der Block steht getrennt von [GEDAECHTNIS], und das ist seine Aussage**
+    (§1a.2). Was in den Dateien steht, ist nicht Novas Erinnerung und nicht
+    ihr Wissen; wer es unbeschriftet in denselben Block legt, bekommt den
+    Fehler aus dem offenen Praezedenzfall mit schlechterer Quelle — dort hat
+    sie die Biografie eines Menschen als ihre eigene uebernommen.
+
+    **Die Fundstelle je Eintrag ist nicht kuerzbar.** Eine Aufzeichnung ohne
+    Herkunft ist von einer Behauptung nicht zu unterscheiden — sie ist das,
+    was "ich habe hier Aufzeichnungen" ueberpruefbar macht statt zur Floskel.
+    Und sie hat eine zweite Aufgabe, die schwerer wiegt als die erste
+    (§1a.4): Laeuft die Antwort durch den Gespraechsgraphen und wird bei
+    hoher Salienz gespeichert, ist die Beschriftung das Einzige, was die
+    Herkunft ueber den Gedaechtnis-Uebergang traegt. Faellt sie im Wortlaut
+    weg, liegt beim naechsten Mal eine herkunftslose Aussage im Gedaechtnis.
+    """
+    # ── Eingabe-Validierung ─────────────────────
+    treffer: list = state.get("aufzeichnungen") or []
+    if not treffer:
+        return ""
+
+    # ── Verarbeitung ────────────────────────────
+    zeilen: list[str] = [
+        f"- {eintrag.fundstelle}: {eintrag.thema}"
+        + (f" — {eintrag.zusammenfassung}" if eintrag.zusammenfassung else "")
+        for eintrag in treffer
+    ]
+
+    # ── Ausgabe-Verifikation ────────────────────
+    logger.info(
+        f"Verfasser: [AUFZEICHNUNGEN] mit {len(zeilen)} Eintrag(en), "
+        f"Kosinus {treffer[0].kosinus:.4f} bis {treffer[-1].kosinus:.4f}"
+    )
+    return PROMPTS["verfasser.aufzeichnungen"].format(
+        aufzeichnungen="\n".join(zeilen)
+    )
+
+
 def _build_system_prompt(state: ConversationState) -> str:
     """Baut den System-Prompt des Verfassers: Auftrag plus Wissen.
 
     Enthaelt ausdruecklich KEINE Identitaet, keine Emotion, keinen Sprachstil
     und keine Direktiven — die gehoeren zur Form und damit zum Responder.
 
-    Vorbedingung: `state` traegt `memory_context` und `web_context` (moeglich
-    leer).
+    Vorbedingung: `state` traegt `memory_context`, `web_context` und
+    `aufzeichnungen` (jedes moeglich leer).
     Nachbedingung: Der Auftragsblock steht immer, die Wissensbloecke nur, wenn
-    sie Inhalt haben.
+    sie Inhalt haben. **[GEDAECHTNIS] und [AUFZEICHNUNGEN] bleiben zwei
+    Bloecke** — die Trennung ist eine Aussage ueber die Herkunft und keine
+    Formatierung (novaberg-agent-dateien_k.md §1a.2).
     Fehlerfaelle: keine.
 
     Returns:
@@ -217,6 +268,14 @@ def _build_system_prompt(state: ConversationState) -> str:
                 memory_context=state["memory_context"]
             )
         )
+
+    # Unmittelbar hinter dem Gedaechtnis, weil die Nachbarschaft die Grenze
+    # lesbar macht: Der eine Block ist ihre Erinnerung, der andere ist es
+    # nicht. Getrennt sind sie ohnehin — hier stehen sie so, dass der
+    # Unterschied im Prompt sichtbar wird und nicht bloss zutrifft.
+    aufzeichnungen_block: str = _aufzeichnungen_block(state)
+    if aufzeichnungen_block:
+        teile.append(aufzeichnungen_block)
 
     if state.get("web_context"):
         teile.append(
@@ -416,8 +475,9 @@ def verfassen(state: ConversationState) -> ConversationState:
 
     logger.info(
         "Verfasser: Inhalt bestimmt (%s Zeichen, %s Tokens, "
-        "Wissen: Gedaechtnis=%s Web=%s)",
+        "Wissen: Gedaechtnis=%s Web=%s Aufzeichnungen=%s)",
         len(inhalt), antwort.token_total,
         bool(state.get("memory_context")), bool(state.get("web_context")),
+        len(state.get("aufzeichnungen") or []),
     )
     return state

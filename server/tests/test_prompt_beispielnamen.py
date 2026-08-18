@@ -58,6 +58,11 @@ KEINE_NAMEN: frozenset[str] = frozenset({
                     # einem Tag: Der Slot `aus X` nimmt jedes gross
                     # geschriebene deutsche Substantiv mit, und Fachbegriffe
                     # dieses Systems stehen fast immer nach "aus".
+    "Dateien",      # "aus Dateien, die dir zugaenglich gemacht wurden" — die
+                    # Herkunftsangabe des [AUFZEICHNUNGEN]-Blocks. Sie MUSS
+                    # dort stehen: Der Block sagt, dass das Folgende aus
+                    # Dateien stammt und nicht aus ihrer Erinnerung, und das
+                    # ist die tragende Aussage des Bauteils.
 })
 
 # Einfuehrungs-Konstruktionen. Erweitern, wenn ein Beispiel eine neue braucht.
