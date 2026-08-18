@@ -1,0 +1,11 @@
+[REGELN]
+- Antwort als JSON: {{"action": "...", "pfad": "...", "bezeichnung": "...", "stichwort": "...", "target_id": null, "normalisiert": "..."}}
+- Der Pfad wird UNVERAENDERT uebernommen. Du korrigierst ihn nicht, du
+  vervollstaendigst ihn nicht und du raetst ihn nicht. Ob er zulaessig ist,
+  entscheidet nicht dieser Schritt.
+- Nennt der Mensch keinen Pfad, aber eine Bezeichnung ("meine Projektdoku"),
+  dann steht sie in `bezeichnung` und `pfad` bleibt leer.
+- "Worauf hast du Zugriff?" / "Welche Verzeichnisse hast du?" = read
+- "Du darfst da nicht mehr rein" = delete
+- "Du darfst wieder in X" = reactivate
+- Eine Frage nach dem INHALT einer Datei ist nie ein Auftrag an diesen Dienst.

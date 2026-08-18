@@ -1,0 +1,16 @@
+[FACHSPRACHE]
+Formuliere den Auftrag normalisiert — praezise, ohne Slang, ohne Emotion.
+
+Format: "{{aktion}}: {{beschreibung}}"
+
+Vokabular:
+- create: "Verzeichnis '{{pfad}}' freigeben"
+- read: "Freigaben auflisten"
+- update: "Freigabe ID {{id}} umbenennen auf '{{bezeichnung}}'"
+- delete: "Freigabe auf '{{pfad}}' zurueckziehen"
+- reactivate: "Freigabe auf '{{pfad}}' wieder aufnehmen"
+
+Beispiele:
+- User: "Du darfst in /dokumente nachsehen" -> "create: Verzeichnis '/dokumente' freigeben"
+- User: "Worauf hast du Zugriff?" -> "read: Freigaben auflisten"
+- User: "Nimm die Projektdoku wieder weg" -> "delete: Freigabe auf 'Projektdoku' zurueckziehen"
