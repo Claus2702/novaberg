@@ -2,14 +2,26 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Konzept — Indizierung und Durchsuchung eines vorgegebenen Verzeichnisses als NMCP-Dienst
-**Stand:** 17. August 2026 (v0.9)
+**Stand:** 18. August 2026 (v0.10)
 **Pfad:** novaberg/docs/novaberg-agent-dateien_k.md
 **Typ:** Konzept (`_k`)
 **Status:** ⬜ **Konzept, kein Code.** Kein Bezeichner dieses Dokuments existiert.
 **Voraussetzung:** `novaberg-tool-dateien_k.md` (die Operationen — teils gebaut) · `novaberg-convention-nmcp.md` (die Anmeldung) · `novaberg-convention-verfall.md` (warum hier kein Verfall)
 **Abgrenzung:** `novaberg-autonomous-wissen_k.md` — die Bibliothek ist Novas **eigenes** Wissen und ein anderer Korpus, siehe §2
 
-> **Zustandsteil, ausdrücklich getrennt.** Von diesem Konzept ist nichts gebaut. Was existiert: die Werkzeugschicht `tools/dateien/` mit `schreiben.py` (nur schreibend), die Bibliothek `autonomous_wissen` mit 463 Zeilen für Novas eigenes Wissen, und `such_vektor` im Zustandstyp. Der Wächter, die Indextabelle und der Dienst sind Entwurf.
+> **Zustandsteil, ausdrücklich getrennt.** **Die Werkzeugschicht ist seit dem 18.08.2026 gebaut**, die Dienste sind es nicht.
+>
+> | | Stand |
+> |---|---|
+> | `tools/dateien/operationen.py` — Karte, Block, Fenster, Fundstelle | **gebaut**, 26 Zeugen |
+> | `tools/dateien/redaktion.py` — chirurgische Schnitte | **gebaut**, 20 Zeugen |
+> | `tools/dateien/versionierung.py` — `[cN>]`/`[dN>]`/`[iN>]`, Paarungsprüfung | **gebaut**, 20 Zeugen |
+> | `tools/dateien/hand.py` — Auftragsform `DATEI: {json}` | **gebaut**, 22 Zeugen |
+> | Schreibvorlage erzeugt `## AKTUELL` + Version | **gebaut und produktiv** — 10 Dateien belegt |
+> | **Kein Aufrufer** — kein Knoten ruft die Werkzeuge, keine Anleitung in einem Prompt | ⬜ |
+> | Die drei Dienste, Wurzeltabelle, Indextabelle | ⬜ Entwurf, DDL angekündigt |
+>
+> **Die Werkzeuge funktionieren, das System benutzt sie nicht.** Das ist der Unterschied zwischen einem geprüften Bauteil und einer Verdrahtung.
 
 ---
 
@@ -611,8 +623,127 @@ Der Werkzeugsatz trägt damit zwei Hälften mit verschiedenen Rechten, und die T
 | `indiziert_am` | wann diese Zeile entstand | |
 | `aktiv` | ob die Datei noch existiert | Soft-Delete, §5.5 |
 | `verschwunden_am` | wann sie zuletzt fehlte | |
+| `entitaet_ids` | `integer[]` — welche Entitäten die Datei berührt | **der Graph-Kanal** (§6.1) |
+| `timeline_id` | `integer` — Zeitbezug, falls einer besteht | Eingang der Regel *„das Neuere sticht"* |
+| `suchtext` | `tsvector` | **der lexikalische Kanal** — bei 234 Dateien der stärkere |
+| `zuletzt_gelernt_hash` | der `inhalt_hash`, als zuletzt daraus gelernt wurde | §5.2a — sonst ist „geändert seit dem Lernen" nicht von „nie gelernt" zu unterscheiden |
+
+### 4.1 Dieselben vier Spalten fehlen der Bibliothek
+
+`autonomous_wissen` trägt heute **nur** `themen_embedding`. Die drei Kanäle aus §6.1 sind dort nicht vorhanden, obwohl `notizen` und `lzg_knoten` sie führen:
+
+```sql
+ALTER TABLE autonomous_wissen
+  ADD COLUMN entitaet_ids INTEGER[],
+  ADD COLUMN timeline_id  INTEGER,
+  ADD COLUMN stichwoerter TEXT[],
+  ADD COLUMN suchtext     TSVECTOR;
+```
+
+**Vier Spalten, alle nullable, kein Datenverlust — aber DDL**, und ein Schemawechsel wirkt erst nach einem Neustart des betroffenen Dienstes.
+
+> **`timeline_id` ist dabei keine Zierde.** Ohne Zeitbezug gibt es keine Regel, nach der ein neuer Fakt einen alten ablöst — und genau daran scheitern Gedächtnissysteme messbar (§4a).
 
 **Keine Gewichts-, Häufigkeits- oder Verfallsspalte.** Das ist die Aussage aus §2.1 in Schemaform.
+
+---
+
+## 4a. Die Zuordnung ist keine Ähnlichkeitsfrage
+
+**Wohin gehört ein neuer Fund?** Der naheliegende Weg — den nächstliegenden Vektor nehmen — trägt nicht, und der Grund ist grundsätzlich:
+
+> **Ein Embedding misst Wortwahl, nicht Zugehörigkeit.** *„Napoleons Feldzüge in Ägypten"* liegt näher an einer Napoleon-Datei, weil *„Feldzüge"* lexikalisch ein Napoleon-Wort ist. Das ist eine Aussage über den Sprachgebrauch, nicht darüber, wohin das Wissen gehört.
+
+**Und die Frage hat zwei richtige Antworten.** Der Fund gehört wirklich in beide Dateien. Jede Einfachzuordnung liegt in der Hälfte der Fälle falsch — nicht aus schlechter Einstellung, sondern weil die Frage falsch gestellt ist.
+
+### 4a.1 Der Stand der Technik entscheidet mit einem Modell, nicht mit einer Schwelle
+
+Ein System, das genau diesen Gegenstand behandelt — gepflegte Themendokumente als Langzeitgedächtnis —, lässt einen **Planer die Zusammenfassungen der vorhandenen Dokumente lesen** und daraus entscheiden. Sein Kriterium ist nicht Nähe, sondern **Pflegbarkeit**:
+
+> *„The correct target document is the one in which the block **can be maintained together with related evidence**."*
+
+**Mehrdeutige Inhalte werden nach Thema geteilt, nicht verdoppelt.** Ein Fund über zwei Gegenstände wird zerlegt; jedes Stück geht dorthin, wo es gepflegt werden kann.
+
+**Damit entfällt die Schwelle, die dieses Konzept bis v0.9 messen wollte.** Es gibt nichts zu kalibrieren, weil es keine Schwellenentscheidung ist. Die drei Kanäle aus §6.1 liefern die **Kandidaten**; die Entscheidung trifft ein Aufruf, der ihre Zusammenfassungen sieht.
+
+### 4a.2 Die Fehlermodi sind benannt und treffen den Rückweg
+
+Drei stehen in der Literatur, und alle drei drohen beim Einarbeiten:
+
+| Fehlermodus | Was geschieht |
+|---|---|
+| **Kontext-Verschmutzung** | *„fünf widersprüchliche Fakten über dieselbe Entität ergeben keine kohärente Antwort, auch nicht von einem starken Modell"* |
+| **Entity-Drift ohne Merge** | alt und neu mit gleichem Gewicht abgelegt — das Modell nimmt, was der Abruf gerade höher bewertet |
+| **Index-Degradation** | mehr Fastdubletten konkurrieren um dieselben Plätze; ein veralteter Fakt schlägt einen aktuellen |
+
+Und die Zahlen dazu sind hart: Über einen Langzeitgedächtnis-Vergleich liegen Systeme zwischen **67,6 % und 94,6 %** — *„diese Abstände spiegeln Fehler der **Konsolidierungs-Politik**, nicht der Abrufarchitektur."*
+
+> **Der Abstand entsteht nicht am Finden, sondern am Pflegen.** Das ist die Begründung dafür, die Schreibschicht vor den Dienst zu setzen — und sie ist gemessen, nicht überlegt.
+
+### 4a.3 Ein Wächter, der nichts kostet
+
+Als Betriebssignal wird **Token-Verbrauch je Turn** genannt: **steigende Kosten zeigen Rauschansammlung an.** Die Zahl fällt ohnehin an — `prompt_eval_count` steht im Protokoll — und sie schlägt an, bevor jemand die Verschlechterung bemerkt.
+
+---
+
+## 4b. Der Rückweg: Wissen aus dem Gespräch in die Dateien
+
+Bis heute führt **kein Weg** von einem Nutzer-Turn in eine Datei: `ergebnis_ablegen` hat genau einen Aufrufer, den Recherche-Agenten, und der arbeitet autonom im Hintergrund.
+
+**Der Rückweg schließt den Kreis:** Entsteht aus einem Turn eine Erinnerung, kann derselbe Fund auch in eine themenbezogene Datei — eingeordnet, nicht angehängt.
+
+### 4b.1 Die Salienz hat zwei Skalen, und „0,7" ist mehrdeutig
+
+```
+KZG_SALIENZ_MINIMUM = 0,67379   (roh 0,3)  ← ab hier entsteht eine Erinnerung
+KZG_SALIENZ_MID     = 0,84090   (roh 0,5)
+KZG_SALIENZ_HIGH    = 0,94393   (roh 0,7)
+```
+
+Die Umrechnung ist `sin(roh · π/2)^0,5`, nachgerechnet auf fünf Stellen.
+
+| Lesart von „ab 0,7" | wirksam | Folge |
+|---|---|---|
+| auf der wirksamen Skala | 0,70 | knapp über der Erinnerungsschwelle — **fast jede** Erinnerung löst einen Modellaufruf aus |
+| roh 0,7 (das HIGH-Band) | **0,944** | nur die Spitze |
+
+**Da jeder Rückschreibvorgang einen Modellaufruf kostet, ist das keine Feinheit.** Welche Lesart gilt, ist eine Absicht und in §9 offen.
+
+### 4b.2 Die Verstärkung ist bereits gebaut
+
+Trifft ein Fund ein Thema, das schon eine Datei hat, steigt `haeufigkeit` um eins, `gewicht_roh` um den Reinforcement-Boost, die abgeleiteten Gewichte werden neu gerechnet und `verstaerkt_am` rückt vor. **Der Mechanismus läuft; der Rückweg müsste ihn nur auslösen.**
+
+### 4b.3 Einarbeiten ist das Gegenteil von Destillieren
+
+Der Recherche-Pfad **komprimiert**. Der Rückweg muss **anreichern**: Fakten und Daten ergänzen, an der richtigen Stelle, ohne Dopplung, und ohne dass ein vernünftiger Text zerfällt.
+
+> Kommt zu einer Napoleon-Datei neues Wissen über Marie-Louise hinzu, gehört es **an die passende Stelle im Text** — nicht ans Ende und nicht in eine Zusammenfassung.
+
+Genau dafür sind die Werkzeuge gebaut:
+
+```
+aktuell_lesen           →  was steht schon drin (gegen Dopplung)
+struktur_analysieren    →  welche Abschnitte gibt es
+absatz_einfuegen(nach=) →  an die passende Stelle
+absatz_aendern          →  einen Satz um Fakten erweitern
+Versionierung           →  jeder Eingriff bleibt umkehrbar
+```
+
+**Ohne die Schreibschicht wäre dieser Aufruf zwangsläufig ein „ganze Datei neu erzeugen"** — teuer und **verlustbehaftet ohne Alarm**. Mit chirurgischen Schnitten ist der Verlust auf den angefassten Absatz begrenzt und über die Historie rückholbar.
+
+---
+
+## 4c. Der Reducer darf Etiketten nicht einebnen
+
+Der Reducer dedupliziert die Kontexteinträge in zwei Stufen, **beide rein inhaltlich**: exakt über den normalisierten Text (höchstes Gewicht gewinnt), dann über Teilzeichenketten (der **längere** Eintrag gewinnt).
+
+**Er kennt keine Quellenklassen.** Der Code benennt die Folge selbst: *„…weil `quelle` das Format steuert, erschiene derselbe Satz unter einem anderen Etikett."*
+
+> **Das trifft §1a an seiner tragenden Stelle.** Sagt eine Datei dasselbe wie eine Erinnerung, wirft der Reducer eine von beiden weg — und welche überlebt, entscheidet, ob der Satz als *ihre Erinnerung* oder als *fremde Aufzeichnung* erscheint. Ein Dateiauszug ist fast immer länger als ein Gedächtnissatz und gewinnt damit die zweite Stufe.
+
+**Die Abhilfe ist klein: Der Dedup läuft innerhalb einer Quellenklasse, nicht über sie hinweg.** Ein Dateieintrag und ein Gedächtniseintrag gleichen Inhalts sind **kein** Duplikat, sondern der Konfliktfall aus §1a.2 — *„widerspricht eine Aufzeichnung deiner Erinnerung, sage beides."*
+
+**Diese Änderung gehört vor das Plugin.** Läuft die Quelle zuerst, verdrängen Dateiauszüge stillschweigend Erinnerungen, und es fällt niemandem auf, weil beide unter demselben Etikett erscheinen.
 
 ---
 
@@ -668,21 +799,51 @@ Die Zeile bleibt mit `aktiv = false`. Zwei Gründe: Eine Datei, die wieder aufta
 
 ---
 
-## 6. Drei Stufen der Auffindbarkeit
+## 6. Drei Kanäle, und der scharfe kommt zuerst
 
-Die Stufen sind die des vorhandenen Werkzeug-Konzepts, hier auf den Index gelegt. Jede Stufe kostet mehr als die vorige, und jede beantwortet eine andere Frage.
+Bis v0.9 beschrieb dieser Abschnitt drei **Stufen** — Name, Thema, Inhalt —, die nacheinander enger zoomen. Das bleibt richtig für das *Lesen einer bekannten Datei*. Für das **Finden** ist es zu wenig, und das ist gemessen.
 
-| Stufe | Frage | Weg | Kosten |
+### 6.1 Der Bestand hat nur einen von drei Kanälen
+
+Der Stand der Technik nennt drei Zugänge, die nebeneinander laufen und deren Ergebnisse verschmolzen werden. Gegen unsere Tabellen gehalten:
+
+| Kanal | Was er trifft | `autonomous_wissen` | `notizen` |
 |---|---|---|---|
-| **1 — Name** | *„gibt es eine Datei über X"* | `LIKE` auf `name`, plus `stichwoerter` | eine Abfrage |
-| **2 — Thema** | *„was habe ich über X"* | Kosinus gegen `themen_embedding` | eine Abfrage |
-| **3 — Inhalt** | *„wo steht dieser Satz"* | `datei_grep` über die Treffer aus 1 oder 2 | Dateizugriff je Treffer |
+| **lexikalisch** (BM25 / `tsvector`) | exakte Wörter, Namen, Kennungen | ❌ | ✅ `suchtext` |
+| **dense** (Embedding) | Bedeutung, Umschreibung | ✅ `themen_embedding` | — |
+| **Graph** (Entitäten) | Beziehungen, Mehrschritt | ❌ | ✅ `entitaet_ids` |
 
-**Stufe 3 setzt Stufe 1 oder 2 voraus.** Ein `grep` über die ganze Wurzel ist kein Suchweg, sondern ein Vollscan; er wird erst brauchbar, wenn die Kandidatenmenge klein ist. Das ist derselbe Zoom wie im Werkzeug-Konzept — nur beginnt er hier im Index statt im Verzeichnis, und das erspart den ersten Dateizugriff.
+**Die Bibliothek — der Ort des ausformulierten Wissens — hat genau einen Kanal.** Die übrigen Speicher desselben Systems haben die anderen längst; die Bauart ist im Haus, nur nicht dort, wo das Wissen liegt.
 
-**Die Blockkarte macht Stufe 3 gezielt.** `struktur` liegt im Index; der Dienst weiß also, welche Abschnitte eine Datei hat, bevor er sie öffnet, und kann `block_lesen` statt `datei_lesen` rufen.
+### 6.2 Und es ist ausgerechnet der schwächere für diese Größe
 
----
+Gemessen auf dem WANDS-Vergleich:
+
+| Verfahren | NDCG |
+|---|---|
+| BM25 allein | 0,6983 |
+| Vektorsuche allein | 0,6953 |
+| **hybrid, abgestimmt** | **0,7497** — +7,4 % |
+
+> **Der Zusatzbefund wiegt für uns schwerer als die Zahl:** Die lexikalische Suche ist bei **kleinen** Korpora relativ wertvoller; die semantische gewinnt erst bei Zehntausenden von Blöcken. Die Bibliothek trägt **234 Dateien**. Wir liegen genau in dem Bereich, in dem der fehlende Kanal der stärkere wäre.
+
+**Verschmolzen wird über Ränge, nicht über Werte** (Reciprocal Rank Fusion). Zwei Verfahren haben zwei Skalen; ein gewichteter Mittelwert über sie hinweg vergleicht Unvergleichbares — derselbe Fehler wie zwei Ähnlichkeitswerte aus zwei Paarungen (§3.0a).
+
+### 6.3 Scharf vor unscharf — und das Filter gehört davor
+
+`pgvector` filtert nach Voreinstellung **hinterher**: Der Index läuft, dann greift die Bedingung auf die Kandidaten. Bei einer engen Bedingung bleiben dadurch weniger als `K` Treffer übrig, ohne dass es auffällt.
+
+**Also: erst einschränken, dann suchen.** Entitäten und Stichwörter sind exakt; sie bilden die Kandidatenmenge. Der Kosinus entscheidet innerhalb dieser Menge und nicht über sie.
+
+### 6.4 Die drei Stufen bleiben — als Zoom, nicht als Suche
+
+| Stufe | Frage | Weg |
+|---|---|---|
+| **1 — Karte** | welche Abschnitte hat die Datei | `struktur_analysieren` |
+| **2 — Block** | was steht in diesem Abschnitt | `block_lesen`, gefenstert |
+| **3 — Nadel** | wo steht dieser Satz | `datei_grep` |
+
+**Gemessen am 18.08.2026 über 689 Dateien:** 1389 Blöcke, Median **4 Zeilen**, größter **7**. **Kein einziger** Block überschreitet das Fensterlimit. Die Fenstermechanik ist gebaut und hat auf dem heutigen Bestand keinen Fall — sie wird gebraucht, wenn Dateien wachsen, und nicht vorher.
 
 ## 7. Die Grenze wird erzwungen, nicht deklariert
 
@@ -790,7 +951,8 @@ Vier Fragen, die der Entwurf offenlässt, weil sie Absichten sind und keine Umse
 5. ~~**Wie groß ist die Kappung des Enricher-Wegs?**~~ → **Umgestellt in v0.8 (§3.0a-bis).** Kappung und Schwelle sind über `K/N` gekoppelt; es gibt keine zwei unabhängigen Größen mehr, und die Schwelle ist keine Konstante, sondern das Quantil `1 − K/N` der mitlaufenden Verteilung. **Offen bleibt damit nur noch `K` selbst** — und das ist keine Messfrage, sondern eine Platzfrage: Wie viele Einträge soll der Block tragen? Die Bibliothek steht bei drei; der `[AUFZEICHNUNGEN]`-Block trägt je Eintrag zusätzlich eine Fundstelle und kostet mehr Prompt als eine Bibliothekszeile. **Neu offen ist dafür der absolute Boden** — die Zahl, unter der gar nichts geliefert wird. Sie kann nicht aus der Verteilung kommen, weil sie genau den Fall abdecken muss, in dem der Bestand nichts hat.
 6. ~~**Was misst die Trefferqualität, die der Block ausweisen soll?**~~ → **Beantwortet in v0.9 (§3.0d):** Es braucht keine Qualitätszahl. Das Kriterium ist die **Lücke**, nicht die Nähe — und sie wird an der Bibliothek geprüft, nicht am Kosinus. Der rohe Kosinus wäre ohnehin untauglich gewesen, weil niemand seine Skala kennt (0,588 klingt mittelmäßig und ist der Normalfall).
 7. **Wo entsteht ein neuer Wissenstext, und wo wird ein bestehender erweitert?** Findet sie einen Fund, ist zu entscheiden, ob er in eine vorhandene Datei gehört oder eine neue rechtfertigt (§3a). Das ist dieselbe Bedarfsfrage eine Ebene höher und heute nirgends beantwortet — der Ablage-Weg legt je Durchlauf eine neue Datei an.
-8. **Was geschieht mit dem Gelernten, wenn die Quelldatei sich als falsch erweist?** Der Wächter meldet die Änderung und öffnet die Lücke wieder (§5.2a) — das deckt den Fall *„es steht jetzt etwas anderes da"*. Nicht gedeckt ist *„das Gelernte war falsch"*: Ihr Wissenstext ist dann bereits geschrieben, und ob ein erneuter Durchlauf ihn berichtigt oder danebenlegt, ist eine Absicht und keine Umsetzungsfrage.
+8. **Welche Salienz-Lesart gilt für den Rückweg?** 0,70 auf der wirksamen Skala lässt fast jede Erinnerung eine Dateischreibung auslösen; roh 0,7 (= 0,944) nur die Spitze (§4b.1). Da jeder Vorgang einen Modellaufruf kostet, entscheidet die Lesart die Betriebskosten.
+9. **Was geschieht mit dem Gelernten, wenn die Quelldatei sich als falsch erweist?** Der Wächter meldet die Änderung und öffnet die Lücke wieder (§5.2a) — das deckt den Fall *„es steht jetzt etwas anderes da"*. Nicht gedeckt ist *„das Gelernte war falsch"*: Ihr Wissenstext ist dann bereits geschrieben, und ob ein erneuter Durchlauf ihn berichtigt oder danebenlegt, ist eine Absicht und keine Umsetzungsfrage.
 
 ---
 
@@ -807,8 +969,26 @@ Zwei Folgen, beide klein und beide nötig:
 
 ---
 
+## Quellen der Recherche (18.08.2026)
+
+Die Abschnitte §4a, §4b und §6 stützen sich auf eine Sichtung des Standes der Technik. Sie ist **nicht** aus dem eigenen Bestand gemessen und trägt deshalb ihre Herkunft:
+
+| Gegenstand | Quelle |
+|---|---|
+| Themendokumente als Langzeitgedächtnis, Zuordnung über einen Planer, Teilen statt Verdoppeln | [Infini Memory: Maintainable Topic Documents for Long-Term LLM Agent Memory](https://arxiv.org/html/2606.10677v1) |
+| Fehlermodi der Konsolidierung, Entity-Drift, Token-Kosten als Wächter | [The Consolidation Problem in Agent Memory](https://hindsight.vectorize.io/blog/2026/05/21/agent-memory-consolidation) |
+| Hybrid-Retrieval, Rangfusion, Korpusgröße gegen Kanalstärke | [Hybrid Search: BM25, Vector & Reranking Reference 2026](https://www.digitalapplied.com/blog/hybrid-search-bm25-vector-reranking-reference-2026) · [Hybrid Search for RAG](https://denser.ai/blog/hybrid-search-for-rag/) |
+| Graph- und Vektorkanal nebeneinander, Entity-Linking | [HybridRAG: Integrating Knowledge Graphs and Vector RAG](https://arxiv.org/pdf/2408.04948) |
+| Übersicht und Grenzen der Bewertung von Agentengedächtnis | [Anatomy of Agentic Memory](https://arxiv.org/html/2602.19320v1) |
+| Vor- und Nachfilterung in `pgvector` | [pgvector Guide: Vector Search and RAG in PostgreSQL](https://encore.dev/blog/you-probably-dont-need-a-vector-database) |
+
+> **Eine fremde Messung ist keine eigene.** Die Zahlen oben stammen aus fremden Korpora; sie begründen eine **Bauart**, nicht einen Wert. Jede Schwelle dieses Konzepts wird gegen den eigenen Bestand gemessen (§3.0a).
+
+---
+
 ## Versionshistorie
 
+- **v0.10 — 18.08.2026:** **Die Werkzeugschicht ist gebaut, und die Recherche hat den Entwurf an zwei Stellen umgeworfen.** Gebaut und bezeugt: Leseschicht, Schreibschicht, Versionierung und die Auftragsform `DATEI: {json}` — 88 Zeugen, dazu die Schreibvorlage, die seit dem 18.08. **produktiv** jede neue Wissensdatei mit `## AKTUELL` und Version anlegt (an 10 Dateien belegt). **Was fehlt, ist der Aufrufer:** kein Knoten ruft die Werkzeuge, keine Anleitung steht in einem Prompt. **Erste Umwerfung — die Zuordnung ist keine Ähnlichkeitsfrage** (§4a). Ein Embedding misst Wortwahl, nicht Zugehörigkeit: *„Napoleons Feldzüge in Ägypten"* liegt näher an Napoleon, weil *„Feldzüge"* ein Napoleon-Wort ist. Und die Frage hat **zwei richtige Antworten**. Der Stand der Technik entscheidet deshalb mit einem **Planer auf den Zusammenfassungen** und nach **Pflegbarkeit** statt Nähe — *„the one in which the block can be maintained together with related evidence"* —, und teilt mehrdeutige Inhalte nach Thema, statt sie zu verdoppeln. **Damit entfällt die dritte Schwelle, die v0.9 messen wollte:** Es gibt nichts zu kalibrieren, weil es keine Schwellenentscheidung ist. **Zweite Umwerfung — die Bibliothek hat nur einen von drei Kanälen** (§6.1). Lexikalisch, dense und Graph laufen im Stand der Technik nebeneinander; `autonomous_wissen` trägt allein `themen_embedding`, während `notizen` und `lzg_knoten` `suchtext` und `entitaet_ids` längst führen. Und es ist der schwächere: Hybrid liegt bei 0,7497 NDCG gegen 0,6983 (BM25) und 0,6953 (Vektor), **und die lexikalische Suche ist bei kleinen Korpora relativ wertvoller** — die Bibliothek trägt 234 Dateien. Verschmolzen wird über **Ränge**, nicht über Werte; ein Mittelwert über zwei Skalen vergleicht Unvergleichbares. **Daraus die DDL** (§4.1): `entitaet_ids`, `timeline_id`, `stichwoerter`, `suchtext` — vier Spalten, nullable, angekündigt. `timeline_id` ist der Eingang der Regel *„das Neuere sticht"*, ohne die Entity-Drift nicht auflösbar ist. **Neu §4b — der Rückweg**, der heute vollständig fehlt: `ergebnis_ablegen` hat genau einen Aufrufer, den Recherche-Agenten. Dabei zwei Befunde: Die **Salienz hat zwei Skalen** (`sin(roh·π/2)^0,5`, nachgerechnet), und „ab 0,7" heißt entweder 0,70 — knapp über der Erinnerungsschwelle 0,674, also fast jede Erinnerung — oder roh 0,7 = **0,944**, nur die Spitze; die Lesart entscheidet die Betriebskosten und ist offen. Und die **Verstärkung ist bereits gebaut** (`haeufigkeit`, `gewicht_roh` + Boost, `verstaerkt_am`) — der Rückweg müsste sie nur auslösen. **Einarbeiten ist dabei das Gegenteil von Destillieren:** anreichern an der richtigen Stelle, nicht verdichten. **Neu §4c — der Reducer darf Etiketten nicht einebnen.** Er dedupliziert rein inhaltlich, und der längere Eintrag gewinnt; ein Dateiauszug ist fast immer länger als ein Gedächtnissatz. Damit verdrängte die Datei die Erinnerung **und erbte deren Etikett** — §1a von hinten ausgehebelt. Der Dedup gehört je Quellenklasse, **und diese Änderung vor das Plugin**. **§6 neu gefasst:** die drei Stufen bleiben als *Zoom*, nicht als *Suche*; gemessen über 689 Dateien sind die Blöcke Median **4 Zeilen**, größter 7, und **kein einziger** überschreitet das Fensterlimit.
 - **v0.9 — 17.08.2026:** **Der dritte Zugang ist kein neuer Apparat, sondern die Recherche mit lokaler Quelle** — Studieren, Destillieren, Keep/Discard-Gate und Ablage laufen seit dem 04.08.2026, und das Gate stellt bereits die richtige Frage (*„steht im Destillat etwas, das über Novas Vorwissen hinausgeht?"* mit `echte_tiefe` / `ergaenzung` / `wiederholung`). Neu sind Quelle und **ein** Torschritt. **Das frühe Tor sitzt an der Bibliothek, nicht an den Assoziationen** (§3.0d): Nur an einem ausformulierten Text lässt sich Vollständigkeit beurteilen; ein Assoziationsnetz kann dicht sein, ohne dass ein Gedanke ausgearbeitet wäre. **Und eine Lücke ist Abwesenheit ODER Widerspruch** — die naheliegende Fassung hätte einen selbstverschließenden Fehler gehabt: Wer glaubt, ein Thema zu kennen, öffnet die Datei nie, die ihn korrigiert, und der Konfliktfall aus §1a.2 könnte nie eintreten. Der Widerspruch ist an der Zusammenfassung prüfbar und kostet keinen Dateizugriff. **Damit ist §9.6 erledigt: Es braucht keine Qualitätszahl, das Kriterium ist die Lücke und nicht die Nähe.** — **Drei Zustände statt zwei** (§1a.3): Beilage, **Auskunft** und Erarbeitetes. Der mittlere war nie benannt und ist der häufigste: Sie kann aus einer Datei antworten, **ohne zu lernen**; das Wissen bleibt liegen und ist beim nächsten Mal genauso erreichbar. **Dazu ein vierter Weg, den kein Tor bewacht** (§1a.4): Jede Antwort läuft durch den Gesprächsgraphen und wird bei hoher Salienz gespeichert — an Lückenprüfung und Gate vorbei. Gespeichert wird ihre **Formulierung**, deren Inhalt aus der Datei stammt. **Daraus die zweite und wichtigere Aufgabe der Blockbeschriftung: Sie ist das Einzige, was die Herkunft über den Gedächtnis-Übergang trägt.** *„X ist so"* verliert sie, *„ich habe Aufzeichnungen, die sagen X"* trägt sie. Der teuerste Fall ist die Selbstbeschreibung — die Doku besteht großenteils aus Konzepten, und über diesen Weg lernt sie Fähigkeiten zu haben, die es nicht gibt, und behauptet sie danach ohne jeden Dateizugriff. **Neu §3a — sie muss redigieren können, nicht ablegen.** Lebendes Wissen entsteht durch Weiterarbeiten an einem Gegenstand, nicht durch eine neue Datei je Durchlauf. Gebaut sind `datei_schreiben`, `datei_lesen`, `schreibziel_pruefen`; entworfen und fehlend sind Karte, gezielter Blick und die chirurgischen Schnitte. **Der Ersatzweg ist die gefährlichere Bauart:** Wer nur ganz schreiben kann, erzeugt die Datei neu — teuer und **verlustbehaftet ohne Alarm**, denn auf dem Inhalt einer Wissensdatei steht kein Zeuge. **Ein Werkzeugsatz, vier Abnehmer** (§3a.2): sie als Verfasserin, `WIS-8-STUFE-2` (wartet seit dem 04.08. auf genau diesen Lesepfad), Stufe 3 dieses Konzepts, und der Studien-Durchlauf. Die Rechte bleiben getrennt und die Trennung hängt an der Zone, nicht am Aufrufer (§3a.3): Ihre Aufsätze über sich selbst darf sie schreiben, das Dokument nicht, aus dem sie sie gewonnen hat. **Neu §5.2a — der Wächter ist zugleich der Wiedereröffner:** Eine geschlossene Lücke bliebe sonst für immer zu und ihr Wissen selbstbestätigend; ein geänderter `inhalt_hash` öffnet sie wieder. Dafür trägt die Indexzeile eine Angabe mehr — welcher Hash galt, als zuletzt daraus gelernt wurde —, sonst ist *„geändert seit dem Lernen"* nicht von *„nie gelernt"* zu unterscheiden. **Darin liegt die Überlegenheit der Datei über die Websuche:** Was im Netz stand, ist später nicht mehr auffindbar; die freigegebene Datei wird beobachtet. **Zwei neue offene Fragen** (§9.7, §9.8): wo ein neuer Text entsteht statt einen bestehenden zu erweitern, und was mit Gelerntem geschieht, dessen Quelle sich als falsch erweist.
 - **v0.8 — 17.08.2026:** **Der Konstruktionsfehler war nicht der Wert, sondern die Bauart — eine Konstante.** Eine feste Schwelle über einem wachsenden Bestand kann nicht halten: Die Trefferzahl über einem festen Kosinus wächst mit dem Bestand mit, und die Bibliothek hatte bei Einführung der 0,40 **drei Zeilen** und hat heute **217**, gewachsen in dreizehn Tagen. Die 0,40 war richtig, als sie gerechnet wurde, und **musste** falsch werden; eine bessere Konstante kauft nur Zeit. **Daher: den Rang festhalten, nicht den Abstand** — `Schwelle = Quantil(1 − K/N)`. Die Gegenprobe stimmt: N = 217, K = 3 → p98,6 → **0,55**, genau der ausgezählte Wert. Damit sind Kappung und Schwelle über `K/N` gekoppelt und §9.5 ist umgestellt: offen bleibt nur `K`, und das ist eine Platzfrage. **Die Verteilung fällt umsonst an und ohne Stellvertreter** — jeder Turn rechnet den Kosinus gegen den ganzen Bestand, bevor gefiltert wird; wer je Turn den K-ten Wert mitschreibt, sammelt die echte Paarung Anfrage × Eintrag. *Kalibrieren ist ein Ereignis und altert; eine mitlaufende Verteilung ist der Bestand von heute.* **Dazu die Grenze, ohne die das überschätzt wird: Eine Quantilschwelle liefert immer etwas.** Sie kann *„hier ist nichts Passendes"* nicht ausdrücken und liefert zu einer fremden Frage die besten drei Fehltreffer — bei einem Block, der *„ich habe hier Aufzeichnungen"* ermöglichen soll, der teuerste Fehler. **Deshalb zwei Zahlen mit zwei Ämtern:** das Quantil sagt *wie viele*, ein absoluter Boden sagt *ob überhaupt*. Der Boden ist die Cold-Start-Zusicherung und neu offen. Und die Quantilschwelle sichert eine **Rate** zu, nie eine **Qualität** — als Beleg für die Güte des Zugriffs wäre sie ein Zirkel. **Zweitens ist die Deutung des Medians berichtigt:** 0,369 sagt nichts über das Einbettungsmodell, sondern über den Korpus. Alle 217 Einträge sind `recherche` in **einem Register** — abstrakte Reflexionen über die Gespräche selbst, kein Wissen über die Welt. Ein homogener Korpus hat hohe Grundähnlichkeit, und eine Schwelle darauf misst die Zugehörigkeit zur Textsorte, die alle teilen. **Für den Dateien-Index kehrt sich die Richtung damit um:** Fachtexte, Tabellen und Codeblöcke sind heterogen; dort kann eine Schwelle trennen, wo sie hier nie konnte — und der eigene Korpus wird vermutlich eine **niedrigere** Grundähnlichkeit zeigen als die Bibliothek.
 - **v0.7 — 17.08.2026:** **Der Präzedenzwert 0,40 ist widerlegt, und der Fund ist nicht die Zahl, sondern ein verdunsteter Vorbehalt.** Der Wert hat eine Herkunftskette: Im Ankerabruf des Langzeitgedächtnisses ist er **kalibriert** (100 echte Prompts gegen 302 Knoten, 0,40 → 82 % Abdeckung bei 4,1 Ankern) und trägt dort die Marke *„begründeter Startwert, kein Verteilungs-Messergebnis"*. Die Bibliothek hat ihn **übernommen** und sagt es auch — *„NICHT gemessen"*, mit Grund und offenem Backlog-Eintrag. **Erst dieses Konzept nannte ihn in v0.5 „ein gemessener Wert".** Zwei Code-Stellen waren ehrlich; übernommen wurde die Zahl, nicht der Satz daneben. Die Messung gibt der Übernahme quantitativ Unrecht: Im Knotenraum qualifiziert 0,40 rund **1,4 %** des Bestandes, in der Bibliothek **35,6 %** — derselbe Embedding-Raum, **Faktor 26**. Eine Schwelle ist keine Eigenschaft des Raums, sondern des Raums **und** der Dichte des Korpus darin. Gegen den laufenden Bestand gemessen: In **40 von 42** protokollierten Bibliotheksaufrufen kamen genau drei Treffer zurück — so viele, wie die Kappung zulässt. **Die Schwelle hat nie gegriffen, die Kappung hat gegriffen**, und ein Boden, den niemand berührt, belegt nichts. Die Geometrie des Korpus bestätigt es von der anderen Seite: 217 aktive Einträge, 23.436 Paare, **Median 0,369** — **35,6 % aller Paare liegen über 0,40**, also rund 77 von 217 Einträgen je Abfrage. Gerechnet trifft erst **0,55** die drei Treffer, die tatsächlich geliefert werden, und der gemessene Median des dritten Treffers (**0,588**) trifft sich damit. **Die wirksame Schwelle der Bibliothek ist 0,55; die konfigurierte ist Zierde.** Daraus drei Änderungen: Der Index startet bei **0,55**; er bekommt eine **Kappung**, die dieses Konzept bis v0.6 überhaupt nicht kannte — es hatte von der Bibliothek die Schwelle übernommen und den Mechanismus weggelassen, der dort die Arbeit tut (bei 667 Dateien hätte 0,40 rund **237** je Turn qualifiziert); und der Enricher-Weg protokolliert Trefferzahl **und** schlechtesten gelieferten Kosinus, damit *„die Kappung greift dauerhaft"* sichtbar wird statt still zu bleiben. **Zweitens ist die Diagnose zur Selbstauslösung nur halb gewesen:** Nicht nur das Budget ist geteilt, sondern das **Tor**. Die Lückensuche hängt an `aufnahmebereitschaft > 0`, die Selbstauslösung an einem Zähler und einem Riegel auf wartende Agenten — **keine Bereitschaft**. Heute ist das richtig, weil der einzige Aufrufer die Reparatur ist und **eine Reparatur in der Krise feuern muss**. Für die Vertiefung gilt das Gegenteil: *„lass mich nachsehen"* ist in einem Gespräch über Quarks eine Auskunft und in einem Absturz eine Zumutung. **Dieselbe Schranke, die für die Reparatur zu eng wäre, ist für die Vertiefung notwendig** — der Riegel hängt deshalb am Grund, nicht am Mechanismus, und die Vertiefung wird nicht als zweiter Aufrufer der Selbstauslösung gebaut. **Zwei neue offene Fragen** (§9): die Höhe der Kappung, und woraus sich die Trefferqualität ergibt, die der Block ausweisen soll — der rohe Kosinus taugt dafür nach dieser Messung nicht, weil niemand seine Skala kennt.

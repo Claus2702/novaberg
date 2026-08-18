@@ -10,6 +10,22 @@
 
 ## Chats 3–20: Grundlagen (März 2026)
 
+### 18.08.2026 — Die Werkzeugschicht für Dateien steht, der Dienst nicht
+
+**Gebaut:** vier Module unter `tools/dateien/` mit zusammen **1656 Zeilen und 88 Zeugen** — `operationen.py` (Karte, Block, Fenster, Fundstelle), `redaktion.py` (chirurgische Schnitte), `versionierung.py` (Marken `[cN>]`/`[dN>]`/`[iN>]`, Kette, Paarungsprüfung) und `hand.py` (Auftragsform `DATEI: {json}`). Dazu erzeugt `wissen_text_bauen` seit heute jede neue Wissensdatei mit einem adressierbaren Block `## AKTUELL` und einer Versionszeile.
+
+**Suite 1617 → 1714 grün, 0 übersprungen.** Harte Wand grün; die weichen Befunde wurden abgeräumt statt geduldet.
+
+**Der Anlass war gemessen:** 223 von 223 Wissensdateien trugen keine einzige `##`-Überschrift, während 461 von 462 übrigen Dateien welche hatten. Jedes blockweise arbeitende Werkzeug hatte auf genau dem Bestand nichts zu adressieren, für den es gebaut ist. Nach der Änderung schreibt der Recherche-Pfad selbsttätig Dateien mit Block und Version — **14 Stück am selben Tag**, alle mit unversehrtem Destillat.
+
+**Die Ankertreue wurde vor dem Bau gemessen**, mit vorab notierter Erwartung von 60–75 %: **30 von 30** zeichengenaue, eindeutige Anker auf beiden Modellen (`gemma4-gpu` Median 1,7 s, `qwen36-cpu` 17,9 s). Die Erwartung ist nach oben gescheitert.
+
+> **Was fehlt, ist der Aufrufer.** Kein Knoten importiert die Werkzeuge, keine Anleitung steht in einem Prompt, und es gibt keinen Agenten — null von sechzehn Pflichtangaben der Basisklasse. 88 grüne Zeugen sagen darüber nichts.
+
+**Konzept `novaberg-agent-dateien_k.md` v0.6 → v0.10.** Drei Messungen haben es dabei **kleiner** gemacht: Die Schwelle 0,40 hat nie ausgewählt (40 von 42 Aufrufen lagen auf der Kappung, wirksam waren 0,55); eine Konstante über wachsendem Bestand kann grundsätzlich nicht halten; und der dritte Zugang ist kein neuer Apparat, sondern die vorhandene Recherche mit lokaler Quelle. Aus einer Recherche zum Stand der Technik kam die vierte Verkleinerung: **Die Zuordnung eines Fundes zu einer Datei ist keine Ähnlichkeitsfrage** — ein Embedding misst Wortwahl, nicht Zugehörigkeit.
+
+---
+
 ### 17.08.2026 — Die Anmeldung bekommt einen Leser, der ihr widersprechen kann
 
 Die Dienste melden sich seit heute an, und die Anmeldung wird beim Start geprüft: **14 Dienste, 14 eingebunden, 0 verweigert.** Drei Grade statt eines — verweigert, eingeschränkt, gemeldet —, und die Ablehnung trifft den Dienst, nie das System.
