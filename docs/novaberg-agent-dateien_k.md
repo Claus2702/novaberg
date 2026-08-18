@@ -2,10 +2,10 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Konzept — Indizierung und Durchsuchung eines vorgegebenen Verzeichnisses als NMCP-Dienst
-**Stand:** 18. August 2026 (v0.14)
+**Stand:** 18. August 2026 (v0.15)
 **Pfad:** novaberg/docs/novaberg-agent-dateien_k.md
 **Typ:** Konzept (`_k`)
-**Status:** 🟠 **Stufe 1 bis 3 gebaut und gemessen** (18.08.2026) — Freigabe, Wächter und die Enricher-Quelle laufen; **eine indizierte Datei erreicht die Figur.** Offen bleiben der lesende Dienst am Empfang (§8.1), der Zoom (§6.4) und der Rückweg (§4b).
+**Status:** 🟠 **Stufe 1 bis 3 gebaut und gemessen, Stufe 4 zur Hälfte** (18.08.2026) — Freigabe, Wächter und die Enricher-Quelle laufen, letztere seit heute **zweikanalig**; Suche und Zoom des Auftrags-Wegs stehen. **Was fehlt, ist der Aufrufer:** Aushang, Klassifikation und Dispatch des Dienstes `dateien` (§8.1). Offen bleibt der Rückweg (§4b).
 **Voraussetzung:** `novaberg-tool-dateien_k.md` (die Operationen — teils gebaut) · `novaberg-convention-nmcp.md` (die Anmeldung) · `novaberg-convention-verfall.md` (warum hier kein Verfall)
 **Abgrenzung:** `novaberg-autonomous-wissen_k.md` — die Bibliothek ist Novas **eigenes** Wissen und ein anderer Korpus, siehe §2
 
@@ -25,8 +25,11 @@
 > | `dateien_index` — Indextabelle und Wächter | **gebaut**, 18 Zeugen · Erstlauf 3 Dateien in 16 s, zweiter Lauf 0 Modellaufrufe |
 > | Der **Takt** des Wächters | ⬜ — `periodic_task()` ist None, bis die Änderungsrate gemessen ist; Anstoß über `/admin/dateien/index` |
 > | `zuletzt_gelernt_hash` | ⬜ Spalte steht, **kein Schreiber** — sie gehört zum frühen Tor (§3.0d) |
-> | `dateien` — der lesende Dienst am Empfang | ⬜ Entwurf |
-> | Die Enricher-Quelle und der Block `[AUFZEICHNUNGEN]` (§1a.2) | **gebaut**, 19 Zeugen · im Betrieb gemessen: einschlägiger Turn 3 Treffer (0,4752 bis 0,3780), Fremdthema 0 Treffer |
+> | `dateien` — der lesende Dienst am Empfang | 🟠 **halb** — Suche und Zoom stehen, der Empfang fehlt |
+> | Die Enricher-Quelle und der Block `[AUFZEICHNUNGEN]` (§1a.2) | **gebaut**, 27 Zeugen · seit dem 18.08.2026 **zweikanalig** (§6.3a) · im Betrieb: scharfer Kanal 0,4879, Fremdthema 0 Treffer, und zwei Treffer unter dem Boden, die nur der scharfe Kanal fand |
+> | `agents/dateien/suche.py` — drei Kanäle, scharf vor unscharf | **gebaut**, gegen den echten Bestand gemessen · **kein Aufrufer** |
+> | `agents/dateien/zoom.py` — Karte, Block, Nadel | **gebaut** · die Karte kostet keinen Dateizugriff · **kein Aufrufer** |
+> | `dateien` — Aushang, Klassifikation, Dispatch | ⬜ **fehlt** — damit hat der Zoom kein Gespräch, das ihn ruft |
 >
 > **Die Werkzeuge funktionieren, das System benutzt sie nicht.** Das ist der Unterschied zwischen einem geprüften Bauteil und einer Verdrahtung.
 >
@@ -914,6 +917,41 @@ Gemessen auf dem WANDS-Vergleich:
 
 **Also: erst einschränken, dann suchen.** Entitäten und Stichwörter sind exakt; sie bilden die Kandidatenmenge. Der Kosinus entscheidet innerhalb dieser Menge und nicht über sie.
 
+### 6.3a Der Enricher-Weg bekommt denselben Vorrang — und der Anlass ist gemessen
+
+**Bis zum 18.08.2026 hatte der Enricher-Weg nur den dense Kanal.** Das war kein Versehen, sondern folgte aus §3.0: eine Abfrage, kein Modellaufruf. Es hielt nicht.
+
+**Der Fall, der es kippte.** Die Frage *„Bei welcher Temperatur läuft der Schrühbrand?"* trifft `toepferei.md` — der Begriff steht in dessen Stichwörtern. Der dense Kanal gibt ihr **0,2899**, unter dem Boden. Der Einbettungstext ist ein Themensatz plus acht Stichwörter; ein passender Begriff darunter wird weggemittelt. Das ist dieselbe Mittelung, vor der §5.4 beim Volltext warnt, eine Größenordnung kleiner.
+
+Der scharfe Kanal findet ihn sofort. Gemessen über acht Fachbegriffe: **sieben trafen genau eine Datei, und die richtige.**
+
+```
+Schrühbrand → toepferei.md        Areole       → kakteen-gattungen.md
+Senfölglykoside → radieschen.md   Barteln      → katzenfische.md
+Weißer Zwerg → sterntypen.md      Velamen      → orchideen.md
+Cucurbitacine → zierkuerbisse.md  Thomaskantor → 0 Treffer
+```
+
+**Der achte zeigt die Grenze des Kanals**, und sie ist bauartbedingt: `suchtext` wird aus Name, Thema, Zusammenfassung und Stichwörtern gebaut — der Dateiinhalt gehört ausdrücklich nicht hinein. *Thomaskantor* steht im Text von `bach.md` und in keinem Metadatum. Wer solche Begriffe finden will, braucht die Nadel (§6.4), also den Auftrags-Weg.
+
+**Die Zerlegung der Frage kostet keinen Modellaufruf.** `to_tsvector('german', …)` liefert die Lexeme ohne Stoppwörter. Die Fachfrage ergibt drei, *„Wie war dein Tag?"* ergibt **keins** — der Kanal löst also von selbst nicht aus, wo nichts zu finden ist.
+
+#### Seltenheit ist nicht Einschlägigkeit
+
+**Die erste Fassung matchte gegen den ganzen `suchtext` und lieferte zur Töpferfrage eine Sterndatei.** Der Grund: *„Temperatur"* steht in der Zusammenfassung von `sterntypen.md` und trifft **1 von 13** Dateien — es kommt also durch jeden Häufigkeitsriegel, den man darüberlegt.
+
+> **Ein seltener Begriff sieht unterscheidend aus und ist es nicht.** Häufigkeit misst, wie viele Dokumente ein Wort tragen; sie misst nicht, ob das Wort von ihnen *handelt*.
+
+Der Treffer verlangt seither **beides**: den Begriff im lexikalischen Kanal — das nutzt den Index und engt ein — **und** in den beim Indizieren **erhobenen Stichwörtern**, und das entscheidet. Die Stichwörter sind das, was das Modell als Schlüsselbegriffe der Datei benannt hat; sie tragen die Aussage, der Volltext nicht.
+
+#### Was der Boden danach noch tut
+
+Er bleibt und behält sein Amt für den **dense** Kanal: *„ist überhaupt etwas einschlägig"*, wenn Nähe geschätzt wird. **Der scharfe Kanal kennt ihn nicht** — ein exakter Begriff schätzt nicht.
+
+`[gemessen]` — 18.08.2026, fünf Sonden gegen 14 Zeilen: Zwei Treffer lagen bei **0,1901** und **0,2148**, also weit unter dem Boden, und **nur der scharfe Kanal hat sie gefunden**. Umgekehrt fiel eine Frage aus dem scharfen Kanal, weil das Erschließungsmodell das Stichwort verstümmelt hatte (`DAEMPFUNGSEEXPONENT`), und **der dense fing sie bei 0,4904 auf**.
+
+> **Die beiden Kanäle sind nicht redundant, sondern gegenseitige Absicherung.** Der eine fällt aus, wenn die Metadaten falsch geschrieben sind; der andere, wenn der Begriff zu speziell ist, um den Mittelwert zu bewegen.
+
 ### 6.4 Die drei Stufen bleiben — als Zoom, nicht als Suche
 
 | Stufe | Frage | Weg |
@@ -983,6 +1021,27 @@ Die Enricher-Quelle aus §3.0 durchläuft keine Anmeldung. Sie hat keinen Aufruf
 | **Wiederholverhalten** | idempotent — eine Suche ändert nichts |
 | **Ausgänge** | alle vier |
 
+### 8.1a Warum dieser Dienst nicht optional ist — gemessen, nicht argumentiert
+
+Am 18.08.2026 wurde eigens eine Datei angelegt, die **Wissen trägt, das kein Sprachmodell haben kann**: die Rechenweise der Salienz im Kurzzeitgedächtnis, mit Schwelle 0,67379, den Bändern 0,84090 und 0,94393 und den Fristen 7 / 14 / 30 Tage. Damit ist *„aus der Datei"* von *„aus sich"* unterscheidbar — bei einer Frage nach Orchideen ist es das nicht.
+
+**Das Ergebnis hat zwei Hälften.**
+
+**Die Zuschreibung hält.** Der Enricher-Weg fand die Datei über den scharfen Kanal (0,4718), und die Antwort nannte die Fundstelle im Wortlaut: *„Wie in den Aufzeichnungen unter `/files/kzg-salienz.md` beschrieben …"*. Die Zusicherung aus §1a.4 ist damit an einem harten Fall belegt.
+
+**Die Auskunft nicht.**
+
+| Was in der Datei steht | Was die Antwort sagte |
+|---|---|
+| Schwelle bei **0,67379** | *„liegt nicht an einem festen Ort … eine bestimmte kritische Marke"* |
+| **7 / 14 / 30 Tage** als Fristen **im** Kurzzeitgedächtnis | *„drei spezifische Fristen"* ohne Zahlen — und die hohe Frist als **Übergang ins Langzeitgedächtnis** gedeutet |
+
+Die zweite Zeile ist eine sachliche Verschiebung, dazu eigene Ausschmückung, die in der Datei nicht vorkommt.
+
+> **Und der Grund ist bauartbedingt, kein Modellfehler:** Der Enricher-Weg liefert **Thema und Zusammenfassung, nicht den Dateiinhalt**. Sie *konnte* die Zahl nicht wissen — sie hatte die Karte und nicht das Gebiet. In diese Lücke setzt ein Sprachmodell plausibel klingende Prosa.
+
+**Damit ist die Arbeitsteilung aus §3.0 gemessen statt behauptet:** Der Enricher-Weg beantwortet *„hier liegt etwas"*. Wer *„und darin steht Folgendes"* beantworten will, muss die Datei lesen — und genau das ist dieser Dienst. Solange er fehlt, ist die Fundstelle richtig und die Auskunft daneben, **und beides steht im selben Satz**.
+
 ### 8.2 Der vierte Ausgang ist hier besonders brauchbar
 
 Eine Suche, die nichts findet, hat fast immer einen benachbarten Treffer. Die Ablehnung trägt ihn:
@@ -1038,7 +1097,11 @@ Die Fragen, die der Entwurf offenlässt, weil sie Absichten sind und keine Umset
    | einschlägig | 0,3800 · 0,4610 · 0,4961 |
    | fremd | 0,2014 · 0,2010 · 0,1896 · 0,1861 · 0,0729 |
 
-   0,30 liegt fast mittig in der Lücke — 0,10 über der höchsten fremden, 0,08 unter der niedrigsten einschlägigen Sonde. **Die Messbedingung reist mit der Zahl** und steht an ihr in `config.py`, weil genau das beim Präzedenzwert 0,40 verdunstet ist: Die Sonden liefen mit dem **rohen** Anfrage-Embedding, der Betrieb sucht mit dem verschobenen `such_vektor`, und der Bestand war **drei Zeilen aus einem Register**. Ein Startwert mit benannter Bedingung, kein Verteilungs-Ergebnis.
+   0,30 lag fast mittig in der Lücke — 0,10 über der höchsten fremden, 0,08 unter der niedrigsten einschlägigen Sonde.
+
+   > **Am selben Tag widerlegt, und zwar planmäßig** (18.08.2026, Nachmittag). Sobald der Korpus **heterogen** war — 10 Sachdateien dazu, 13 Zeilen —, ergab dieselbe Messung: einschlägige Sonden ab **0,2899** (Töpferei), fremde bis **0,2515** (Gravitationslinsen). **Die Lücke schrumpfte von 0,18 auf 0,038**, und 0,30 schnitt einen echten Treffer ab. Der Vorbehalt, der an der Zahl stand, hat genau das vorhergesagt.
+   >
+   > **Die Abhilfe ist nicht die nächste Zahl, sondern der zweite Kanal** (§6.3a). Ein Boden in einer Lücke von 0,038 wäre ein Münzwurf mit Nachkommastellen. **Die Messbedingung reist mit der Zahl** und steht an ihr in `config.py`, weil genau das beim Präzedenzwert 0,40 verdunstet ist: Die Sonden liefen mit dem **rohen** Anfrage-Embedding, der Betrieb sucht mit dem verschobenen `such_vektor`, und der Bestand war **drei Zeilen aus einem Register**. Ein Startwert mit benannter Bedingung, kein Verteilungs-Ergebnis.
 
    **Offen bleibt die Quantilschwelle** `1 − K/N`. Sie ist nicht vergessen, sondern noch nicht rechenbar: Sie ist das Quantil der **mitlaufenden** Verteilung, und diese Verteilung beginnt erst mit diesem Bauteil zu entstehen. Der K-te Wert wird seit dem 18.08.2026 je Turn protokolliert (`schlechtester`); sobald er trägt, tritt das Quantil neben den Boden — Backlog `AUFZEICHNUNGEN-QUANTIL`.
 6. ~~**Was misst die Trefferqualität, die der Block ausweisen soll?**~~ → **Beantwortet in v0.9 (§3.0d):** Es braucht keine Qualitätszahl. Das Kriterium ist die **Lücke**, nicht die Nähe — und sie wird an der Bibliothek geprüft, nicht am Kosinus. Der rohe Kosinus wäre ohnehin untauglich gewesen, weil niemand seine Skala kennt (0,588 klingt mittelmäßig und ist der Normalfall).
@@ -1081,6 +1144,8 @@ Die Abschnitte §4a, §4b und §6 stützen sich auf eine Sichtung des Standes de
 ---
 
 ## Versionshistorie
+
+- **v0.15 — 18.08.2026:** **Der Enricher-Weg ist zweikanalig** (§6.3a), und der Anlass ist eine Widerlegung am selben Tag. Sobald der Korpus **heterogen** war — zehn Sachdateien dazu, 13 Zeilen —, fiel die Töpferfrage mit **0,2899** unter den vormittags gemessenen Boden von 0,30, während eine Frage ohne Gegenstand **0,2515** erreichte: **die Lücke schrumpfte von 0,18 auf 0,038.** Der Vorbehalt, der an der Zahl in `config.py` stand, hat genau das vorhergesagt — und die Abhilfe ist nicht die nächste Zahl, sondern der zweite Kanal. **Der Grund liegt in der Mittelung:** `Schrühbrand` steht in den Stichwörtern der Datei, und ein passender Begriff unter acht bewegt den Vektor nicht weit genug. Der lexikalische Kanal findet ihn; über acht Fachbegriffe trafen **sieben genau eine Datei, und die richtige**. **Eine Berichtigung steckt im Bau:** Die erste Fassung matchte gegen den ganzen `suchtext` und antwortete auf die Töpferfrage mit einer Sterndatei, weil *„Temperatur"* dort in der Zusammenfassung steht und nur 1 von 13 Dateien trifft — **Seltenheit ist nicht Einschlägigkeit**, und der Treffer verlangt seither zusätzlich die erhobenen Stichwörter. **Der Boden bleibt und behält sein Amt für den dense Kanal**; der scharfe kennt ihn nicht, weil ein exakter Begriff nicht schätzt. Gemessen: zwei Treffer bei **0,1901** und **0,2148** fand nur der scharfe Kanal, und eine Frage, deren Stichwort das Erschließungsmodell verstümmelt hatte, fing der dense bei 0,4904 auf — **die beiden sind gegenseitige Absicherung, nicht Redundanz**. **Dazu die halbe Stufe 4:** `agents/dateien/suche.py` und `zoom.py` stehen, gegen den echten Bestand gemessen, und haben **keinen Aufrufer**. **Der Befund, der das begründet, ist gemessen und nicht argumentiert** (§8.1a).
 
 - **v0.14 — 18.08.2026:** **Der Rückweg hat seinen Zuschnitt** (§4b.1, §4b.1a, §4b.1b). Die Salienz-Lesart aus §9 Punkt 8 ist beantwortet und die Antwort ist gemessen: **es gilt die rohe Skala.** An 2394 Einträgen des laufenden Bestandes nimmt eine Schwelle von 0,7 auf der *wirksamen* Skala 95 bis 100 % — dort trennt sie nichts, weil die Kurve oben staucht und `KZG_SALIENZ_MINIMUM` unten abschneidet; das gemessene Minimum von 0,674 ist deshalb **das Tor und kein Verteilungsergebnis**. Auf der rohen nimmt dieselbe Zahl 59 % und 82 %. **Daraus drei Wege, und nur einer trägt eine Schwelle:** das Einprägsame über `salienz_roh ≥ 0,7`, das Überlebende über die **vorhandene** Promotion ins Langzeitgedächtnis, das Zugehörige über **Zuordenbarkeit ohne jede Schwelle**. Der zweite Weg löst das Problem, das er zu stellen schien: Ein Fund, der sich über Tage bewähren soll, braucht keinen zweiten Speicher — das Kurzzeitgedächtnis *ist* der Warteraum (7 bis 30 Tage), die Promotion *ist* die Bewährungsprüfung. Der dritte ist eine Berichtigung am naheliegenden Entwurf: `autonomous_wissen` liegt bei **min 0,944, Median 1,000, 100 % ≥ 0,7**, eine Bedingung *„das Ziel hat Salienz ≥ 0,7"* wäre dort eine Tautologie — was trägt, ist die Zuordnung nach §4a.1, und die ist keine Schwellenfrage. **Die Promotion bekommt ein drittes Schreibziel** und holt den Text; beide Fassungen sind erreichbar, denn das `pipeline_log` hält 365 Tage gegen die 7 bis 30 des Kurzzeitgedächtnisses (91 121 Zeilen, nichts abgeräumt). **Neu offen als §9 Punkt 9: welche der beiden Fassungen eingearbeitet wird** — §4b.3 spricht für die rohe, der Preis je Aufruf dagegen. **Ein Nebenbefund gehört zur Entscheidung:** 2234 der 2394 Einträge sind `assistant`, eine rein salienzgetriebene Rückschreibung schriebe also überwiegend die eigenen Formulierungen der Figur zurück.
 

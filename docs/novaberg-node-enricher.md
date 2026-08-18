@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Node-Referenz Enricher
-**Stand:** 18. August 2026 (der Dateien-Index als Kontextquelle neben der Plugin-Schleife, §3.1a)
+**Stand:** 18. August 2026 (der Dateien-Index als Kontextquelle neben der Plugin-Schleife, §3.1a — seit dem Nachmittag zweikanalig)
 **Pfad:** novaberg/docs/novaberg-node-enricher.md
 **Quellen:** nova-01-m-c.md
 **Datei:** `graph/nodes/enricher.py`
@@ -97,6 +97,15 @@ Der Enricher fragt in jedem Turn den Index der freigegebenen Verzeichnisse ab (`
 | Auszug je Eintrag | 300 Zeichen | `AUFZEICHNUNGEN_AUSZUG_ZEICHEN` |
 
 **Kein Dateizugriff und kein Modellaufruf** — die Zeile trägt Thema und Zusammenfassung, beides beim Indizieren einmal bezahlt.
+
+**Seit dem 18.08.2026 zweikanalig, und der scharfe läuft zuerst.** Postgres zerlegt den Wortlaut des Turns mit `to_tsvector` in Lexeme — ohne Stoppwörter, ohne Modellaufruf. Trägt eine Datei einen davon in ihren **erhobenen Stichwörtern**, ist sie einschlägig, und **der Boden gilt für sie nicht**: Ein exakter Begriff schätzt nicht.
+
+| Kanal | findet | Boden |
+|---|---|---|
+| scharf (Stichwörter) | den genannten Fachbegriff | nein |
+| dense (Vektor) | Themennähe | ja, 0,30 |
+
+`[gemessen]` — 18.08.2026: Zwei Treffer bei 0,1901 und 0,2148 lagen unter dem Boden und wurden **nur** scharf gefunden; eine Frage, deren Stichwort das Erschließungsmodell verstümmelt hatte, fing der dense Kanal bei 0,4904 auf. **Die beiden sind gegenseitige Absicherung, nicht Redundanz.**
 
 **Die Protokollzeile trägt Trefferzahl, Bestand und den Kosinus des schlechtesten gelieferten Treffers.** Liegt die Trefferzahl dauerhaft auf der Kappung, hat nicht der Boden ausgewählt, sondern die Kappung — genau der Zustand, in dem die Bibliothek gemessen wurde (40 von 42 Aufrufen).
 

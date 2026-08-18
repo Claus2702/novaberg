@@ -10,6 +10,35 @@
 
 ## Chats 3–20: Grundlagen (März 2026)
 
+### 18.08.2026 — Ein Boden, der am selben Tag fiel, und zwei Kanäle statt einer besseren Zahl
+
+**Gebaut:** der Riegel im Planner, Suche und Zoom des lesenden Wegs, und der **lexikalische Kanal für den Enricher-Weg**.
+
+**Suite 1785 → 1841 grün, 0 übersprungen.** Harte Wand grün.
+
+**Der Planner-Riegel war Voraussetzung, nicht Zugabe.** Die Zuordnung eines Auftrags nahm den ersten Dienst, dessen Name eine Teilzeichenkette des Ziels war — und die Registry läuft in der Reihenfolge des sortierten Verzeichnis-Scans. Solange kein Dienstname in einem anderen steckte, fiel das nicht auf; beim Paar aus lesendem und verwaltendem Dateien-Dienst fällt es auf. Der Fund stand notiert, **bevor** der zweite Dienst gebaut wurde. Jetzt schlägt ein exakter Treffer jeden unscharfen, und **Mehrdeutigkeit ergibt keinen Gewinner**: Der erste wäre der alphabetisch erste, und das ist eine Münze, kein Urteil. Gegenprobe 4 von 4 vorhergesagt und gezählt.
+
+**Dann fiel der Boden, den derselbe Tag vormittags gemessen hatte.** Zehn Sachdateien kamen in das freigegebene Verzeichnis — Katzenfische, Orchideen, Kakteen, Radieschen, zwei Komponisten, Sterntypen, Metallurgie, Töpferei, Zierkürbisse —, der Korpus wurde damit **heterogen**, und dieselbe Sondenmessung ergab:
+
+| Seite | bester Treffer je Sonde |
+|---|---|
+| einschlägig | 0,4610 · 0,4603 · 0,4370 · 0,4302 · 0,3300 · **0,2899** |
+| fremd | **0,2515** · 0,2014 · 0,1896 · 0,1716 |
+
+**Die Lücke schrumpfte von 0,18 auf 0,038**, und der Boden schnitt einen echten Treffer ab. Der Vorbehalt, der am Vormittag an die Zahl geschrieben wurde, hat genau diesen Fall vorhergesagt.
+
+**Die Abhilfe war nicht die nächste Zahl.** Der Begriff, um den es ging, stand in den Stichwörtern der Datei — ein Themensatz plus acht Stichwörter mittelt ihn weg. Der lexikalische Kanal findet ihn: über acht Fachbegriffe trafen **sieben genau eine Datei, und die richtige**. Der achte zeigt die Grenze, und sie ist gewollt — der Suchtext enthält Metadaten und keinen Dateiinhalt.
+
+**Eine Berichtigung steckt im Bau, und sie ist der Satz des Tages.** Die erste Fassung suchte im ganzen Suchtext und antwortete auf die Töpferfrage mit einer Datei über Sterne, weil *„Temperatur"* dort in der Zusammenfassung steht und nur eine von dreizehn Dateien trifft — sie kommt also durch jeden Häufigkeitsriegel:
+
+> **Seltenheit ist nicht Einschlägigkeit.** Häufigkeit misst, wie viele Dokumente ein Wort tragen; sie misst nicht, ob das Wort von ihnen handelt.
+
+Der Treffer verlangt seither zusätzlich die beim Indizieren **erhobenen Stichwörter**, und die Sterndatei ist weg.
+
+**Die beiden Kanäle fangen einander auf**, gemessen: Zwei Treffer bei 0,1901 und 0,2148 lagen unter dem Boden und wurden nur scharf gefunden; eine Frage, deren Stichwort das Erschließungsmodell verstümmelt hatte, fing der dense Kanal bei 0,4904 auf.
+
+**Und zum Schluss der Befund, der die nächste Etappe begründet — gemessen statt behauptet.** Eine eigens angelegte Datei trug Wissen, das kein Sprachmodell haben kann. Die Figur **nannte die Fundstelle im Wortlaut** und **umschrieb die Zahlen**: „eine bestimmte kritische Marke" statt der Schwelle, „drei spezifische Fristen" ohne die Tage. Sie konnte es nicht wissen — der Weg liefert Thema und Zusammenfassung, nicht den Inhalt. **Fundstelle richtig, Auskunft daneben, beides im selben Satz.** Das ist die Begründung dafür, dass der lesende Dienst einen Aufrufer braucht.
+
 ### 18.08.2026 — Eine Datei erreicht die Figur, und die Beschriftung ist die Aussage
 
 **Gebaut:** die Enricher-Quelle des Dateien-Index und der Prompt-Block `[AUFZEICHNUNGEN]`. Der Index wird in **jedem** Turn über denselben Suchvektor abgefragt, mit dem auch Kurzzeit-, Langzeitgedächtnis und die Bibliothek suchen; die Treffer stehen als eigener Block im Prompt des Verfassers. **Damit erreicht zum ersten Mal ein Dateiinhalt die Figur** — der Index stand seit dem Vormittag und wurde von nichts gelesen.
