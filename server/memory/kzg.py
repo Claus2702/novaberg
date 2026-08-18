@@ -393,6 +393,15 @@ def kzg_store(
         "beziehungs_dynamik": salienz_obj.get("beziehungs_dynamik", "neutral"),
         "tone":               salienz_obj.get("tone", "sachlich"),
         "erstellt_am":        str(timestamp),
+        # Der Turnbezug, seit dem 18.08.2026 im Hash statt nur im Protokoll.
+        # Er ist das einzige Glied zwischen einer Erinnerung und ihrem
+        # Wortlaut: `turn_roh` ist von der Aufraeumfrist ausgenommen und
+        # bleibt dauerhaft, waehrend dieser Eintrag nach Tagen verfaellt.
+        # Ohne ihn kann der Rueckweg nur die verdichtete Fassung einarbeiten
+        # — ein Destillat auf einem Destillat (novaberg-agent-dateien_k.md
+        # §4b.1b). Bestandseintraege tragen ihn nicht; der Rueckweg faellt
+        # fuer sie erkennbar zurueck und kennzeichnet das Ergebnis.
+        "turn_id":            turn_id,
         "entitaet_ids":       entitaet_ids_str,
         "embedding":        embedding_bytes,
     }
