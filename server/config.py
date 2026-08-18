@@ -493,6 +493,33 @@ WISSENSSPEICHER_VERZEICHNIS_MODUS: int = int(
     os.getenv("WISSENSSPEICHER_VERZEICHNIS_MODUS", "777"), 8,
 )
 
+# --- Dateien-Verbund: der Aussenrand der Freigaben ---
+# Spezifikation: docs/novaberg-agent-dateien_k.md §7 Regel 3a.
+#
+# Eine Verzeichnis-Freigabe entsteht aus einer Aeusserung im Gespraech —
+# damit bestimmt ein gesprochener Satz einen Pfad im Dateisystem. Das ist die
+# Stelle, an der ein Dienst mit Dateizugriff gefaehrlich wird, und ein Tor
+# allein genuegt dort nicht: Ohne konfigurierten Rand koennte ein Gespraech
+# das Wurzelverzeichnis freigeben.
+#
+# INNERHALB dieser Elternverzeichnisse darf der Mensch freigeben, AUSSERHALB
+# nicht — auch nicht mit Bestaetigung. Der Rand ist damit die einzige Groesse
+# des Verbunds, die kein Gespraech verschieben kann.
+#
+# Leer heisst: nichts ist freigebbar. Fail closed, und laut — die Alternative
+# waere ein leerer Rand, der wie "alles erlaubt" wirkt.
+DATEIEN_AUSSENRAND: list[str] = [
+    teil.strip()
+    for teil in os.getenv("DATEIEN_AUSSENRAND", "/files").split(",")
+    if teil.strip()
+]
+
+# Obergrenze der Dateizaehlung am Tor. Das Tor zeigt die Zahl, damit ein
+# Mensch einen falsch genannten Pfad an ihr erkennt (§2a.2) — eine Zaehlung
+# ohne Grenze macht aus einem Vertipper einen Vollscan. Wird die Grenze
+# erreicht, meldet das Tor "mindestens N" statt einer erfundenen Endzahl.
+DATEIEN_WURZEL_ZAEHLGRENZE: int = int(os.getenv("DATEIEN_WURZEL_ZAEHLGRENZE", "20000"))
+
 # ─── KZG (Kurzzeitgedaechtnis) ─────────────────
 # Die drei Tore stehen seit Chat 113 auf der GEKRUEMMTEN Skala — sie sind die
 # Bilder der alten Rohwerte unter der Salienzkurve. Fachlich hat sich nichts
