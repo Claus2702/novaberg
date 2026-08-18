@@ -497,7 +497,7 @@ Diese Tabelle dient als Nachschlage-Anker: wer schreibt was wohin, wer liest was
 | TimelineAgent | `timeline`-Tabelle | n/a | Termin-Eintrag mit `themen`-Array | Logischer Container, keine Salienz |
 | NotizenAgent | `notizen`-Tabelle | n/a | Notiz mit `themen`-Array | Logischer Container, keine Salienz |
 | FaktenAgent (geplant) | Knowledge Graph | n/a | Triple mit Subject/Predicate/Object | Strukturiertes Wissen |
-| DateienAgent (geplant) | `dateien`-Tabelle | n/a | Datei mit `themen`-Array | Logischer Container, keine Salienz |
+| DateienAgent (seit 18.08.2026) | `dateien_index` (Zeilen über Dateien, **keine** `dateien`-Tabelle) | n/a | Datei mit Thema, Stichwörtern und Blockkarte | Logischer Container, keine Salienz — der Dienst **liest** und schreibt nichts |
 
 ### 13.2 Lesepfade
 

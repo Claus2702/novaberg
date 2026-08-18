@@ -1,6 +1,6 @@
 # Novaberg — Roadmap (Projektchronik)
 
-**Stand:** Chat 150, 18. August 2026
+**Stand:** Chat 151, 18. August 2026
 *(Die Kopfzeile stand bis Chat 109 auf „Chat 93, 21. Mai 2026" — 15 Chats hinter dem Inhalt. **Sie ist danach erneut zurückgefallen:** von Chat 110 bis 114 blieb sie auf „Chat 109" stehen, während der Inhalt weiterwuchs, und wurde in Chat 115 nachgezogen. Wer hier etwas ergänzt, zieht die Kopfzeile mit — sie driftet zuverlässig. Achtung beim Nachschlagen: Nur bis Chat 97 trägt jeder Chat eine eigene `## Chat NNN`-Überschrift; die Chats 98–108 stehen als `###`-Abschnitte unter dem Chat-97-Block, benannt nach Sprint statt nach Chat.)*
 **Pfad:** novaberg/docs/novaberg-roadmap.md
 **Single Source of Truth für abgeschlossene Arbeit.**
@@ -9,6 +9,26 @@
 ---
 
 ## Chats 3–20: Grundlagen (März 2026)
+
+### 18.08.2026 — Der lesende Dienst bekommt seinen Aufrufer, und die Zahl steht in der Antwort
+
+**Stufe 4 ist vollständig.** Suche und Zoom lagen seit dem Vormittag im Baum und hatten kein Gespräch, das sie rief. Jetzt tragen sie einen Aushang, eine Klassifikation und einen Dispatch: `plugins/dateien_manager/` (der Zettel am schwarzen Brett), dazu `agents/dateien/klassifikation.py`, `agent.py`, `dispatch.py`, `auskunft.py`, vier Prompt-Bausteine und `AGENT.md`.
+
+**Die Messung ist die Gegenprobe zu der vom Vormittag.** Damals nannte ein Turn die Fundstelle richtig und umschrieb die Zahlen — *„eine bestimmte kritische Marke"* statt 0,67379 —, weil der Enricher-Weg Thema und Zusammenfassung liefert und nicht den Inhalt. Am selben Bestand, dieselbe Sache gefragt:
+
+> „Ich habe die entsprechende Stelle in den Unterlagen unter `/files/kzg-salienz.md` verifiziert. […] liegt bei einem Wert von **0,67379**."
+
+**Fundstelle und Zahl im selben Satz, und beide stimmen.** Der Weg im Betriebslog: scharfer Kanal 1 Treffer, Karte 7 Blöcke ohne Dateizugriff, Nadel 2 Fundstellen, 489 Zeichen Auskunft.
+
+**Der erste Messturn ging in den vierten Ausgang, und das war richtig.** Gefragt war nach der *„Salienzschwelle"*; das Kompositum steht so nicht im Text, die Nadel sucht zeichengenau, und die Antwort lautete *„steht in dieser Datei nicht — es gibt die Abschnitte …"*. **Daraus die einzige Änderung, die die Messung erzwungen hat:** Der Zoom versucht jeden Begriff der Klassifikation, nicht nur den ersten. Der Preis ist gedeckelt — höchstens ein Dateizugriff je Begriff auf **eine** Datei, und die Zahl der Begriffe ist gekappt.
+
+**Der Riegel vom Vormittag hat seinen ersten echten Fall bekommen.** `"dateien" in "dateien_wurzeln"` ist wahr; im Betriebslog steht `Planner: Match via target 'dateien' → dateien (exakt)`. Ohne ihn hätte der lesende Dienst jede Freigabe-Anfrage geschluckt.
+
+**Ein Defekt im Bau, gefunden von einem Zeugen und nicht vom Betrieb:** Der Dispatch stufte eine Ablehnung ohne Korrektur auf `fehler` herunter und ließ dabei den Pflichtteil weg — `AgentResult` verlangt bei diesem Ausgang eine Begründung und wirft sonst. Der Turn wäre gerissen, und zwar genau dann, wenn ohnehin schon etwas nicht stimmte.
+
+**Der Suchschlüssel des Turns ist jetzt zusagbar.** `such_vektor` steht im Katalog der Zusagen; der Dienst meldet ihn als Bedarf an und bekommt damit denselben Vektor, mit dem in diesem Turn auch die Gedächtnisschichten gesucht haben — kein zweites Embedding desselben Textes.
+
+**Umfang:** Suite 1841 → **1883 grün, 0 übersprungen**. Zwei Gegenproben mit schriftlicher Vorhersage: Zoom ohne Dateizugriff — 3 vorhergesagt, 3 gezählt, dieselben drei. Auskunft ohne Fundstelle — 4 vorhergesagt, **3 gezählt**: Der Eingriff traf den frühen Rückgabepfad nicht, den der vierte Zeuge prüft.
 
 ### 18.08.2026 — Ein Boden, der am selben Tag fiel, und zwei Kanäle statt einer besseren Zahl
 
