@@ -503,6 +503,12 @@ WISSEN_RETRIEVAL_TOP_K:            int   = int(os.getenv("WISSEN_RETRIEVAL_TOP_K
 # Quantilschwelle steht.
 AUFZEICHNUNGEN_KAPPUNG: int = int(os.getenv("AUFZEICHNUNGEN_KAPPUNG", "3"))
 
+# Wie viele Kandidaten der lesende Dienst je Kanal heranzieht (§6.3). Groesser
+# als die Kappung des Enricher-Wegs, weil hier gefragt wurde: Ein Mensch, der
+# ausdruecklich in den Unterlagen suchen laesst, vertraegt eine Auswahl — der
+# ungefragte Block im Prompt nicht.
+DATEIEN_SUCHE_KAPPUNG: int = int(os.getenv("DATEIEN_SUCHE_KAPPUNG", "8"))
+
 # Der absolute Boden — das Amt "ob ueberhaupt" (§3.0a-bis).
 #
 # **Er ist gemessen, und die Messbedingung gehoert an die Zahl.** Am
