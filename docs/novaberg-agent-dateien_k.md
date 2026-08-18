@@ -723,7 +723,18 @@ Als Betriebssignal wird **Token-Verbrauch je Turn** genannt: **steigende Kosten 
 
 ## 4b. Der Rückweg: Wissen aus dem Gespräch in die Dateien
 
-Bis heute führt **kein Weg** von einem Nutzer-Turn in eine Datei: `ergebnis_ablegen` hat genau einen Aufrufer, den Recherche-Agenten, und der arbeitet autonom im Hintergrund.
+> **Gebaut am 18.08.2026, und der Weg steht** (`agents/wissen_rueckweg/`). Ein Fund, den die Promotion ins Langzeitgedächtnis getragen hat, wird einer vorhandenen Wissensdatei zugeordnet und dort **eingearbeitet** — mit Marke, umkehrbar, und die Bibliothekszeile zieht nach. **Gemessen an zwei echten Läufen gegen den Bestand:**
+>
+> | Lauf | 8 Kandidaten, bester Kosinus | Ergebnis |
+> |---|---|---|
+> | Salienzschwelle und Fristen | 0,3137 | **keine Datei passt** — mit Begründung, nichts geschrieben |
+> | Sättigung der Kennlinie | 0,4529 | `[i1>]` in die Datei, Version 1.0 → 1.1, Häufigkeit 1 → 2 |
+>
+> **Der erste Lauf ist der wichtigere.** Er zeigt den Ausgang, den §4a verlangt: *„keine passende Datei"* ist eine vollwertige Antwort, und der Aufruf hat sie mit einem Satz begründet, statt den nächstgelegenen Vektor zu nehmen. Im zweiten Lauf stand der neue Absatz **zwischen** der Definition und ihrem Beleg — nicht am Ende, und das ist die ganze Aussage von §4b.3.
+>
+> **Von den drei Wegen aus §4b.1a ist einer verdrahtet: das Überlebende.** Der Mechanismus ist für alle drei derselbe; die beiden anderen sind je eine Zeile an ihrem Einreihpunkt.
+
+Bis zum 18.08.2026 führte **kein Weg** von einem Nutzer-Turn in eine Datei: `ergebnis_ablegen` hat genau einen Aufrufer, den Recherche-Agenten, und der arbeitet autonom im Hintergrund.
 
 **Der Rückweg schließt den Kreis:** Entsteht aus einem Turn eine Erinnerung, kann derselbe Fund auch in eine themenbezogene Datei — eingeordnet, nicht angehängt.
 
@@ -787,7 +798,11 @@ autonomous_wissen.salienz_anfang:  min 0,944 · Median 1,000 · 100 % ≥ 0,7
 | Kurzzeitgedächtnis | die **verdichtete** Fassung | 7 bis 30 Tage |
 | `pipeline_log` | die **Rohfassung** des Turns | **365 Tage** (`LZG_PIPELINE_LOG_VORHALTUNG_TAGE`) |
 
-`[gemessen]` — 18.08.2026: 91 121 Zeilen seit dem Nullpunkt am 27.07.2026, nichts abgeräumt. **Die Rohfassung überlebt den Kurzzeit-Eintrag um mehr als das Zwölffache** — ein Fund, der über die Promotion kommt, hat seinen Volltext also noch.
+`[gemessen]` — 18.08.2026: 91 121 Zeilen seit dem Nullpunkt am 27.07.2026, nichts abgeräumt.
+
+> **Beim Bauen fiel auf, dass das Glied dazwischen fehlte.** Der Kurzzeit-Eintrag trug seinen `turn_id` nicht mit — er wurde beim Anlegen übergeben und nur ins Protokoll geschrieben. Damit war die Rohfassung zwar vorhanden, aber von der Erinnerung aus nicht adressierbar. **Seit dem 18.08.2026 steht er im Hash**; Bestandseinträge tragen ihn nicht, und für sie fällt der Rückweg erkennbar auf die verdichtete Fassung zurück. **Die Marke reist mit** (`rueckweg_roh` gegen `rueckweg_verdichtet`), denn ohne sie wäre am Ende nicht mehr zu sehen, welcher Absatz aus dem Wortlaut stammt und welcher aus einer Zusammenfassung davon — und genau diese Unterscheidung war die Entscheidung.
+>
+> **`turn_roh` ist überdies von der Aufräumfrist ausgenommen** und bleibt dauerhaft; die 365 Tage gelten für die übrigen Forensik-Arten. Die Rohfassung überlebt den Kurzzeit-Eintrag damit nicht um das Zwölffache, sondern unbegrenzt. **Die Rohfassung überlebt den Kurzzeit-Eintrag um mehr als das Zwölffache** — ein Fund, der über die Promotion kommt, hat seinen Volltext also noch.
 
 > **Offen und ausdrücklich nicht nebenbei entschieden: welche der beiden Fassungen eingearbeitet wird.** §4b.3 sagt *„Einarbeiten ist das Gegenteil von Destillieren"* — das spricht für die Rohfassung als Material, weil die verdichtete bereits einmal komprimiert wurde und sonst ein Destillat auf einem Destillat entstünde. Dagegen steht der Preis: mehr Text je Aufruf. **Die Wahl bestimmt, was am Ende in den Dateien steht, und ist damit eine Absicht.**
 
@@ -1160,6 +1175,8 @@ Die Abschnitte §4a, §4b und §6 stützen sich auf eine Sichtung des Standes de
 ---
 
 ## Versionshistorie
+
+- **v0.17 — 18.08.2026, spät:** **Der Rückweg ist gebaut** (§4b) — Zuordnung über die Zusammenfassungen, Einarbeitung mit chirurgischem Schnitt, Verstärkung der Bibliothekszeile. Zwei Läufe gegen den echten Bestand: einer schrieb nicht und begründete es, einer setzte `[i1>]` zwischen Definition und Beleg. **Der Turnbezug fehlte und ist ergänzt**: Ohne ihn wäre die entschiedene rohe Fassung nicht adressierbar gewesen. **Ein Zuschnitt, ausdrücklich:** Von den drei Wegen ist das Überlebende verdrahtet, die beiden anderen nicht. Suite 1883 → 1909.
 
 - **v0.16 — 18.08.2026, abends:** **Der lesende Dienst hat seinen Aufrufer** — Aushang (`plugins/dateien_manager/`), Klassifikation, Dispatch und Auskunft. Damit ist §8.1a von einer Begründung zu einer **Messung mit zwei Läufen** geworden: derselbe Bestand, dieselbe Sache gefragt, ein Bauteil Unterschied — vormittags *„eine bestimmte kritische Marke"*, abends *„unter `/files/kzg-salienz.md` […] **0,67379**"*. **Neu §8.1b**, und der Anlass ist der erste Messturn desselben Abends: Die Nadel sucht zeichengenau, ein deutsches Kompositum aus der Frage steht so im Text fast nie, und der Dienst ging in den vierten Ausgang — richtig, aber eine Frage später als nötig. Die Abhilfe ist **mehr als ein Versuch**, nicht eine unschärfere Suche. **Zwei Fragen aus §9 sind beantwortet:** die Textfassung (**die rohe**, auch beim Recherche-Weg — die eigene Sprache entsteht beim Antworten, nicht beim Ablegen) und der Übergang von Dateiinhalt ins Gedächtnis (**er darf**, kein Tor). **Der Bedarf hat seine Zusage**: `such_vektor` steht im Katalog, der Handshake prüft die Naht. Suite 1841 → 1883.
 

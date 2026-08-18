@@ -10,6 +10,29 @@
 
 ## Chats 3–20: Grundlagen (März 2026)
 
+### 18.08.2026 — Der Rückweg schließt den Kreis, und der erste Lauf schrieb nichts
+
+**Bis heute führte kein Weg von einem Turn in eine Datei.** `ergebnis_ablegen` hatte genau einen Aufrufer, den Recherche-Agenten. Jetzt gibt es einen zweiten Weg, und er legt nicht ab, sondern **arbeitet ein**: `agents/wissen_rueckweg/` mit Zuordnung, Einarbeitung und Herkunft, ausgelöst von der Promotion ins Langzeitgedächtnis.
+
+**Zwei Läufe gegen den echten Bestand, und der erste ist der wichtigere:**
+
+| Fund | Kandidaten | Ergebnis |
+|---|---|---|
+| Salienzschwelle und Fristen | 8, bester Kosinus 0,3137 | **keine Datei passt** — begründet, nichts geschrieben |
+| Sättigung der Kennlinie | 8, bester Kosinus 0,4529 | `[i1>]`, Version 1.0 → 1.1, Häufigkeit 1 → 2 |
+
+Der erste zeigt den Ausgang, den das Konzept verlangt: *„keine passende Datei"* ist eine vollwertige Antwort. Der Aufruf hat sie mit einem Satz begründet, statt den nächstliegenden Vektor zu nehmen — genau die Bauart, gegen die §4a geschrieben ist.
+
+**Im zweiten stand der neue Absatz zwischen der Definition und ihrem Beleg**, nicht am Ende. Das ist die ganze Aussage von *„Einarbeiten ist das Gegenteil von Destillieren"*, und sie ist damit gemessen statt behauptet.
+
+**Ein fehlendes Glied kam beim Bauen ans Licht.** Die Entscheidung lautet *die rohe Fassung*; der Kurzzeit-Eintrag trug seinen Turnbezug aber nicht mit — er wurde beim Anlegen übergeben und nur ins Protokoll geschrieben. Er steht jetzt im Hash. Für Bestandseinträge gibt es ihn nicht, und für sie fällt der Weg **erkennbar** auf die verdichtete Fassung zurück: Die Herkunftsmarke reist mit, sonst wäre später nicht mehr zu sehen, welcher Absatz aus dem Wortlaut stammt.
+
+**Zwei Entscheidungen, die keine Schemaänderung wurden.** Der Queue-Auftrag hat keine Spalte für den Turnbezug. Statt eine anzulegen — DDL, und die wird angekündigt statt nebenbei gelegt — löst der Auslöser das Material selbst auf und gibt den Wortlaut mit; die Marke reist im vorhandenen `modus`-Feld.
+
+**Der Zuschnitt ist schmaler als das Bauteil, und das steht im Bericht:** Von den drei Wegen ist **einer** verdrahtet — das Überlebende. Der Mechanismus ist für alle drei derselbe; das Einprägsame und das Zugehörige sind je eine Zeile an ihrem Einreihpunkt.
+
+**Umfang:** Suite 1883 → **1909 grün, 0 übersprungen**. 26 neue Zeugen.
+
 ### 18.08.2026 — Der lesende Dienst bekommt seinen Aufrufer, und die Zahl steht in der Antwort
 
 **Stufe 4 ist vollständig.** Suche und Zoom lagen seit dem Vormittag im Baum und hatten kein Gespräch, das sie rief. Jetzt tragen sie einen Aushang, eine Klassifikation und einen Dispatch: `plugins/dateien_manager/` (der Zettel am schwarzen Brett), dazu `agents/dateien/klassifikation.py`, `agent.py`, `dispatch.py`, `auskunft.py`, vier Prompt-Bausteine und `AGENT.md`.
