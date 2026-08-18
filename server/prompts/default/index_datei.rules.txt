@@ -1,0 +1,9 @@
+[REGELN]
+- Antwort als JSON: {{"thema": "...", "zusammenfassung": "...", "stichwoerter": ["...", "..."]}}
+- Du siehst moeglicherweise nur den ANFANG der Datei. Sage nichts ueber Teile,
+  die du nicht gesehen hast, und behaupte keine Vollstaendigkeit.
+- Die Stichwoerter stammen aus dem Text. Ein Begriff, den du nicht im Auszug
+  findest, gehoert nicht in die Liste.
+- Ist der Auszug fuer eine Aussage zu duenn, sage das im thema statt zu raten:
+  "Auszug zu kurz fuer eine Aussage ueber den Inhalt."
+- Deutsch, auch wenn die Datei englisch ist.

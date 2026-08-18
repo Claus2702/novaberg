@@ -1,0 +1,20 @@
+[AUFGABE]
+Vor dir steht der Anfang einer Datei und ihre Blockstruktur. Bestimme:
+
+1. thema: EIN Satz, worum die Datei geht. Konkret, nicht kategorisch.
+   Gut:     "Der Aussenrand begrenzt, welche Verzeichnisse freigegeben werden duerfen."
+   Schlecht: "Ein technisches Dokument ueber Konfiguration."
+
+2. zusammenfassung: zwei bis vier Saetze. Was steht drin, in welcher Reihenfolge,
+   und wofuer man es aufschlagen wuerde.
+
+3. stichwoerter: 3 bis 8 Begriffe, die IM TEXT vorkommen. Fachbegriffe, Namen,
+   Bezeichner. Keine Oberbegriffe, die du dazuerfindest.
+
+DATEI: {name}
+PFAD:  {pfad}
+BLOECKE:
+{struktur}
+
+AUSZUG:
+{auszug}
