@@ -1,6 +1,6 @@
 # Novaberg — Roadmap (Projektchronik)
 
-**Stand:** Chat 151, 18. August 2026
+**Stand:** 18. August 2026, spät
 *(Die Kopfzeile stand bis Chat 109 auf „Chat 93, 21. Mai 2026" — 15 Chats hinter dem Inhalt. **Sie ist danach erneut zurückgefallen:** von Chat 110 bis 114 blieb sie auf „Chat 109" stehen, während der Inhalt weiterwuchs, und wurde in Chat 115 nachgezogen. Wer hier etwas ergänzt, zieht die Kopfzeile mit — sie driftet zuverlässig. Achtung beim Nachschlagen: Nur bis Chat 97 trägt jeder Chat eine eigene `## Chat NNN`-Überschrift; die Chats 98–108 stehen als `###`-Abschnitte unter dem Chat-97-Block, benannt nach Sprint statt nach Chat.)*
 **Pfad:** novaberg/docs/novaberg-roadmap.md
 **Single Source of Truth für abgeschlossene Arbeit.**
@@ -9,6 +9,25 @@
 ---
 
 ## Chats 3–20: Grundlagen (März 2026)
+
+### 18.08.2026 — Der Wackelzeuge ist still, und die Zahl, die den Fall trägt, ist eine Null
+
+**`ZEUGE-ERWARTUNG-AUS-DER-UHR` behoben** — der Defekt, der zwei Sitzungen lang gejagt und in Chat 151 in einer fremden Gegenprobe gefangen wurde. Sein Erwartungswert entstand **zweimal aus der Uhr**: `_schluessel()` las `time.time()` bei jedem Aufruf, und der Zeuge rief ihn einmal beim Aufbau des Bestandes und einmal in der Zusicherung. Tickte dazwischen eine Millisekunde, unterschieden sich beide Schlüssel um eins — **1 von 4 vollständigen Läufen rot, einzeln immer grün.**
+
+**Die Abhilfe sitzt am Helfer, nicht am Zeugen.** Die Uhr ist aus `_schluessel()` genommen und steht als `SCHLUESSEL_BASIS` einmal beim Laden des Moduls. Der Grund für diese Wahl statt der einen Zeile im Zeugen: Der Helfer hat sieben Aufrufstellen; wer den einen Aufruf festhält, schließt den einen Fall, wer die Uhr aus dem Helfer nimmt, schließt ihn für jeden künftigen Aufrufer. **Die Zeitmarke im Schlüssel ist dabei Identität, kein Alter** — das Alter liest die Destillation aus `erstellt_am` —, deshalb behält `_eintrag` die laufende Uhr und kein anderer Zeuge ändert seine Werte.
+
+**Der betroffene Zeuge kann seine eigene Abhilfe nicht bewachen.** Ob er rot wird, entscheidet die Laufzeit der Suite. Daneben steht deshalb ein zweiter, der den Fall **deterministisch** herstellt: Die Uhr wird so gestellt, dass der zweite Aufruf eine Millisekunde später liest.
+
+| | Zahl |
+|---|---|
+| Gegenprobe | **1 vorhergesagt, 1 gezählt** — und der alte Zeuge blieb dabei grün, wie ausdrücklich vorhergesagt |
+| Wiederholte Läufe | **10 von 10 grün**, `Ran 1910 tests` je Lauf |
+| AST-Scan über den Testbaum | **135 Testdateien**, **4** Zeugen mit ≥ 2 uhrabhängigen Ausdrücken, **0** davon mit einem in einer Zusicherung |
+| Auslösefall desselben Scans gegen den Stand *vor* der Abhilfe | **1 scharf** — der Defekt selbst |
+
+> **Die Zahl, die den Fall trägt, ist nicht die zehn, sondern die Null.** Zehn grüne Läufe belegen, dass *dieser* Zeuge ruhig ist; erst das Kriterium sagt, dass kein zweiter derselben Bauart im Baum steht. Und dass es das sagen **kann**, belegt der Auslösefall — ein Scan, der nie anschlägt, ist von einem sauberen Bestand nicht zu unterscheiden.
+
+Suite 1909 → **1910 grün, 0 übersprungen.**
 
 ### 18.08.2026 — Der Rückweg schließt den Kreis, und der erste Lauf schrieb nichts
 
