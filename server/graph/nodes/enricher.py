@@ -885,8 +885,14 @@ def _enrich_character(
     # steht seit der Suche oben im State. Ein eigenes Embedding waere hier
     # der Fehler (§3.0).
     try:
+        # Der Wortlaut des Turns geht mit, weil der scharfe Kanal ihn braucht
+        # und kein Modell dafuer laeuft: Postgres zerlegt ihn mit
+        # `to_tsvector` in Lexeme ohne Stoppwoerter. `reiz_text` liefert die
+        # Aeusserung, gleich von wem sie stammt — auch ein eigener Gedanke
+        # darf in Unterlagen nachsehen.
         fund: Aufzeichnungsfund = aufzeichnungen_suchen(
             state.get("such_vektor") or [], user_id, character_id,
+            frage=reiz_text(state),
         )
         state["aufzeichnungen"] = fund.treffer
     except Exception as fehler:

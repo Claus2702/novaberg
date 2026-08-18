@@ -302,3 +302,111 @@ class TestDieAbfrageHaeltIhreZusicherungen(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class TestScharfVorDense(unittest.TestCase):
+    """Der lexikalische Kanal läuft vor dem dense — und ohne Bodenprüfung.
+
+    **Was diese Klasse prüfen kann und was nicht, gehört hierher.** Geprüft ist
+    die *Weiche*: welcher Kanal wann läuft, was gemeldet wird, was bei fehlender
+    Eingabe geschieht. **Die Semantik der Abfrage selbst prüft kein Zeuge** —
+    sie steckt in einer CTE mit `to_tsvector`, `plainto_tsquery` und einem
+    Häufigkeitsriegel, und ein Mock über `db_manager` führt keine Zeile SQL aus.
+    Dafür steht die Messung am echten Bestand vom 18.08.2026:
+
+        Schrühbrand   → toepferei.md         (scharf, 0,3109)
+        nur Temperatur→ 0 Treffer            (der gemessene Fehltreffer, behoben)
+        Areole        → kakteen-gattungen.md (scharf)
+        Velamen       → orchideen.md         (scharf)
+        Zierkürbis    → zierkuerbisse.md     (dense, 0,5309)
+        3× Fremdthema → 0 Treffer
+
+    Ein Zeuge, der nur behauptete, die Bedingung stehe im SQL-Text, wäre ein
+    Anwesenheits-Zeuge und sagte nichts über die Wirkung
+    (`20_TESTS/anwesenheit-statt-ort.md`).
+    """
+
+    def test_ein_scharfer_treffer_verhindert_die_dense_abfrage(self) -> None:
+        """Scharf vor unscharf: der dense Kanal läuft dann gar nicht."""
+        with patch.object(auf_mod, "_scharfe_treffer",
+                          return_value=[_zeile("a.md", 0.11)]), \
+             patch.object(auf_mod, "_bestand_zaehlen", return_value=13), \
+             patch.object(auf_mod.db_manager, "select") as select:
+            fund = aufzeichnungen_suchen([0.1] * 768, "u", "c", frage="Schrühbrand")
+
+        self.assertEqual(auf_mod.KANAL_SCHARF, fund.kanal)
+        self.assertEqual(1, len(fund.treffer))
+        select.assert_not_called()
+
+    def test_der_scharfe_kanal_kennt_keinen_boden(self) -> None:
+        """0,11 liegt weit unter 0,30 und wird trotzdem geliefert.
+
+        Ein exakter Begriff schätzt nicht — der Boden beantwortet „ist
+        überhaupt etwas einschlägig" für den dense Kanal, nicht für diesen.
+        """
+        with patch.object(auf_mod, "_scharfe_treffer",
+                          return_value=[_zeile("a.md", 0.11)]), \
+             patch.object(auf_mod, "_bestand_zaehlen", return_value=13):
+            fund = aufzeichnungen_suchen([0.1] * 768, "u", "c", frage="Schrühbrand")
+
+        self.assertLess(fund.treffer[0].kosinus, AUFZEICHNUNGEN_BODEN)
+        self.assertEqual(1, len(fund.treffer))
+
+    def test_ohne_scharfen_treffer_entscheidet_der_dense_kanal(self) -> None:
+        """Und dann gilt der Boden wieder."""
+        with patch.object(auf_mod, "_scharfe_treffer", return_value=[]), \
+             patch.object(auf_mod, "_bestand_zaehlen", return_value=13), \
+             patch.object(auf_mod.db_manager, "select",
+                          return_value=[_zeile("b.md", 0.53)]) as select:
+            fund = aufzeichnungen_suchen([0.1] * 768, "u", "c", frage="irgendwas")
+
+        self.assertEqual(auf_mod.KANAL_DENSE, fund.kanal)
+        select.assert_called_once()
+        self.assertIn(AUFZEICHNUNGEN_BODEN, select.call_args[0][1])
+
+    def test_der_scharfe_kanal_braucht_keinen_suchvektor(self) -> None:
+        """Er vergleicht Begriffe, nicht Richtungen — ein Kaltstart hindert ihn nicht."""
+        with patch.object(auf_mod, "_scharfe_treffer",
+                          return_value=[_zeile("a.md", 0.0)]), \
+             patch.object(auf_mod, "_bestand_zaehlen", return_value=13):
+            fund = aufzeichnungen_suchen([], "u", "c", frage="Schrühbrand")
+
+        self.assertEqual(auf_mod.KANAL_SCHARF, fund.kanal)
+
+    def test_ohne_vektor_und_ohne_scharfen_treffer_kein_dense_lauf(self) -> None:
+        """Der dense Kanal ohne Richtung wäre eine Abfrage ohne Frage."""
+        with patch.object(auf_mod, "_scharfe_treffer", return_value=[]), \
+             patch.object(auf_mod, "_bestand_zaehlen", return_value=13), \
+             patch.object(auf_mod.db_manager, "select") as select:
+            fund = aufzeichnungen_suchen([], "u", "c", frage="Schrühbrand")
+
+        self.assertEqual([], fund.treffer)
+        self.assertEqual(13, fund.bestand)
+        select.assert_not_called()
+
+    def test_weder_vektor_noch_wortlaut_ergibt_gar_keine_abfrage(self) -> None:
+        """Ein Turn ohne beides hat keine Eingabe für keinen der Kanäle."""
+        with patch.object(auf_mod.db_manager, "select") as select, \
+             patch.object(auf_mod.db_manager, "select_one") as select_one:
+            fund = aufzeichnungen_suchen([], "u", "c", frage="   ")
+
+        self.assertEqual([], fund.treffer)
+        self.assertEqual("", fund.kanal)
+        select.assert_not_called()
+        select_one.assert_not_called()
+
+    def test_der_kanal_steht_im_fund_und_ohne_treffer_leer(self) -> None:
+        """Ohne Treffer gibt es keinen Kanal, der etwas geliefert hätte."""
+        with patch.object(auf_mod, "_scharfe_treffer", return_value=[]), \
+             patch.object(auf_mod, "_bestand_zaehlen", return_value=13), \
+             patch.object(auf_mod.db_manager, "select", return_value=[]):
+            fund = aufzeichnungen_suchen([0.1] * 768, "u", "c", frage="x")
+
+        self.assertEqual("", fund.kanal)
+
+    def test_ein_unbekannter_kanal_wird_gemeldet(self) -> None:
+        """Der Fund entsteht, aber seine Herkunft wäre sonst still falsch."""
+        with self.assertLogs(auf_mod.logger, level="ERROR"):
+            fund = auf_mod._fund_bauen([_zeile("a.md", 0.5)], 13, "erfunden")
+
+        self.assertEqual(1, len(fund.treffer))
