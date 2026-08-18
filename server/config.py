@@ -520,6 +520,34 @@ DATEIEN_AUSSENRAND: list[str] = [
 # erreicht, meldet das Tor "mindestens N" statt einer erfundenen Endzahl.
 DATEIEN_WURZEL_ZAEHLGRENZE: int = int(os.getenv("DATEIEN_WURZEL_ZAEHLGRENZE", "20000"))
 
+# --- Der Waechter des Dateien-Index ---
+# Spezifikation: docs/novaberg-agent-dateien_k.md §5.
+#
+# Welche Dateien der Waechter ueberhaupt liest. Der Entwurf behandelt Text;
+# alles andere wird erkannt und MIT GRUND uebergangen, nicht stillschweigend
+# (§9 Punkt 4). Die Liste ist bewusst eng: Eine Endung aufzunehmen, deren
+# Inhalt das Modell nicht sinnvoll zusammenfassen kann, kostet je Datei einen
+# Modellaufruf fuer ein Ergebnis, das niemand brauchen kann.
+DATEIEN_INDEX_ENDUNGEN: frozenset[str] = frozenset(
+    teil.strip().lower()
+    for teil in os.getenv(
+        "DATEIEN_INDEX_ENDUNGEN", ".md,.txt,.rst,.org,.adoc",
+    ).split(",")
+    if teil.strip()
+)
+
+# Obergrenze je Datei. Darueber wird uebergangen und der Grund genannt: Eine
+# Datei, die den Prompt sprengt, erzeugt sonst eine Zusammenfassung ueber ihr
+# erstes Viertel — und die sieht aus wie eine Zusammenfassung.
+DATEIEN_INDEX_MAX_BYTES: int = int(os.getenv("DATEIEN_INDEX_MAX_BYTES", "1000000"))
+
+# Wie viele Dateien ein Lauf hoechstens INDIZIERT (nicht: ansieht). Der
+# Vorfilter ist billig, der Modellaufruf ist es nicht: Ein Erstlauf ueber
+# einen grossen Bestand haelt die LLM-Spur sonst stundenlang. Was die Grenze
+# stehenlaesst, wird im Lauf GEMELDET — eine stille Kappung saehe aus wie ein
+# vollstaendiger Lauf.
+DATEIEN_INDEX_MAX_PRO_LAUF: int = int(os.getenv("DATEIEN_INDEX_MAX_PRO_LAUF", "50"))
+
 # ─── KZG (Kurzzeitgedaechtnis) ─────────────────
 # Die drei Tore stehen seit Chat 113 auf der GEKRUEMMTEN Skala — sie sind die
 # Bilder der alten Rohwerte unter der Salienzkurve. Fachlich hat sich nichts
