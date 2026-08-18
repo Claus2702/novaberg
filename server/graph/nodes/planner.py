@@ -18,6 +18,7 @@ import logging
 from agents import AgentRegistry
 from config import PROMPTS
 from plugins import get_registry
+from plugins.base import BaseManager
 
 from graph.format.agent_results import format_success_lines
 from graph.state import ConversationState
@@ -263,6 +264,67 @@ def _agent_bereits_gelaufen(state: ConversationState, agent_name: str):
     return vorheriges
 
 
+def _manager_zu_target(registry: dict, target_lower: str) -> BaseManager | None:
+    """Waehlt den Manager, dessen Ziel zum `management_target` passt.
+
+    Vorbedingung: `target_lower` ist nicht leer und bereits kleingeschrieben.
+    Nachbedingung: Genau ein Manager oder None. **Ein exakter Treffer schlaegt
+    jeden unscharfen**, und bei mehreren unscharfen wird keiner gewaehlt.
+    Fehlerfaelle: Mehrdeutigkeit — laut gemeldet, None zurueckgegeben. Der
+    Planner faellt dann auf seine spaeteren Prioritaeten zurueck, statt einen
+    Dienst nach Verzeichnisreihenfolge zu erwischen.
+
+    **Warum Mehrdeutigkeit nicht still auf den ersten faellt:** Der erste ist
+    der alphabetisch erste, und das ist keine fachliche Aussage. Ein falsch
+    zugestellter Auftrag laeuft durch und liefert ein Ergebnis, das richtig
+    aussieht — die teuerste Form des Fehlers (`22_STILLE_FEHLER`).
+
+    Args:
+        registry: Die Manager-Registry.
+        target_lower: Das kleingeschriebene `management_target`.
+
+    Returns:
+        Der zustaendige Manager oder None.
+    """
+    # ── Eingabe-Validierung ─────────────────────
+    if not target_lower:
+        logger.error(
+            "_manager_zu_target: leeres Ziel — der Aufrufer prueft das vorher"
+        )
+        return None
+
+    # ── Verarbeitung ────────────────────────────
+    for manager in registry.values():
+        if manager.ziel == target_lower:
+            logger.info(
+                f"Planner: Match via target '{target_lower}' → {manager.ziel} (exakt)"
+            )
+            return manager
+
+    unscharf: list = [
+        manager for manager in registry.values()
+        if manager.ziel in target_lower or target_lower in manager.ziel
+    ]
+
+    # ── Ausgabe-Verifikation ────────────────────
+    if len(unscharf) > 1:
+        namen: str = ", ".join(sorted(m.ziel for m in unscharf))
+        logger.error(
+            f"Planner: Ziel '{target_lower}' passt unscharf auf mehrere Dienste "
+            f"({namen}) — keiner gewaehlt. Eine Zuordnung nach "
+            f"Verzeichnisreihenfolge waere eine Muenze, kein Urteil"
+        )
+        return None
+
+    if unscharf:
+        logger.info(
+            f"Planner: Match via target '{target_lower}' → {unscharf[0].ziel} (unscharf)"
+        )
+        return unscharf[0]
+
+    return None
+
+
 def plan(
     state:        ConversationState,
     postgres_url: str
@@ -346,15 +408,21 @@ def plan(
                     logger.info(f"Planner: Match via intent '{intent}' → {manager.ziel}")
                     break
 
-    # Priorität 3: management_target enthält Manager-Ziel
+    # Priorität 3: management_target gegen die Manager-Ziele
+    #
+    # **Exakt vor unscharf, und Mehrdeutigkeit wird gemeldet.** Die frühere
+    # Fassung nahm den ersten Manager, dessen Ziel eine Teilzeichenkette des
+    # Ziels war oder umgekehrt — und die Registry wird in der Reihenfolge des
+    # sortierten Verzeichnis-Scans durchlaufen. Solange kein Zielname eine
+    # Teilzeichenkette eines anderen war, fiel das nicht auf; bei `dateien`
+    # und `dateien_wurzeln` fällt es auf, denn `"dateien" in "dateien_wurzeln"`
+    # ist wahr und `dateien_manager` kommt alphabetisch zuerst. Der lesende
+    # Dienst schluckte damit jede Freigabe-Anfrage, und der Fehler sähe wie
+    # eine falsche Klassifikation aus statt wie eine Namenskollision.
     if not zustaendiger:
         target_lower: str = state.get("management_target", "").lower()
         if target_lower:
-            for _name, manager in registry.items():
-                if manager.ziel in target_lower or target_lower in manager.ziel:
-                    zustaendiger = manager
-                    logger.info(f"Planner: Match via target '{target_lower}' → {manager.ziel}")
-                    break
+            zustaendiger = _manager_zu_target(registry, target_lower)
 
     # Priorität 4: Fallback — NotizenManager als Auffangbecken
     # Timeline-Kontext allein reicht NICHT — ohne Datumsbezug im Prompt
