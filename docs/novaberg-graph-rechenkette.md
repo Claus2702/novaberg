@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Register der Rechensysteme im Charakter-Pfad — was jedes berechnet, woraus, und was es zur Antwort beiträgt
-**Stand:** 15. August 2026 (S3 trägt die beiden Bewegungen der Eigenzeit); davor 8. August 2026, Erstfassung. Alle Aussagen über den Zustand sind **auditiert am Code** vom 08.08.2026, sofern keine andere Herkunft danebensteht.
+**Stand:** 18. August 2026 (**S11a** neu — die Aufzeichnungen aus dem Dateien-Index, die als einzige Lesequelle **nicht** über S14 laufen); davor 15. August 2026 (S3 trägt die beiden Bewegungen der Eigenzeit); davor 8. August 2026, Erstfassung. Alle Aussagen über den Zustand sind **auditiert am Code** vom 08.08.2026, sofern keine andere Herkunft danebensteht.
 **Pfad:** novaberg/docs/novaberg-graph-rechenkette.md
 **Quellen:** Vollständige Lesung von `graph/character_graph.py`, `graph/nodes/*.py` und `ei/*.py`
 
@@ -199,6 +199,17 @@ Beide Systeme laufen im **HumanGraph**, nicht im Charakter-Pfad. Sie stehen hier
 **Reinheit:** unrein. Rein ist `_resonanz_kontext_laden` im GV-Knoten.
 **Prüfstand:** `test_gv_resonanz_kontext.py`, `test_p9a_lesepfade.py`, `test_synapsen_kanten.py`.
 **Absicht:** `novaberg-memory-synapsen_k.md` §8.1–8.4.
+
+### S11a — Aufzeichnungen aus dem Dateien-Index (18.08.2026)
+
+**Eingang:** derselbe verschobene Suchschlüssel aus S9, dazu das Paar aus der Freigabe.
+**Rechnung:** Kosinus gegen `dateien_index.themen_embedding` über den JOIN auf `dateien_wurzeln` — das Paar hängt an der Wurzel, nicht an der Datei. Zwei Größen mit zwei getrennten Ämtern: der **absolute Boden** `AUFZEICHNUNGEN_BODEN` beantwortet *ob überhaupt*, die **Kappung** `AUFZEICHNUNGEN_KAPPUNG` beantwortet *wie viele*. Kein Modellaufruf, kein zweites Embedding, **kein Dateizugriff** — gelesen werden Thema und Zusammenfassung der Indexzeile.
+**Beitrag:** Ein **eigener** Zustandskanal `aufzeichnungen` und daraus der Block `[AUFZEICHNUNGEN]` im Verfasser — **nicht** über S14 und nicht in `memory_entries`. Der Umweg ist die Aussage: Alles, was durch S14 läuft, erscheint unter `[GEDAECHTNIS]`, und Dateiinhalt ist nicht ihr Gedächtnis (`novaberg-agent-dateien_k.md` §1a.2).
+**Reinheit:** unrein (eine Abfrage); die Blockbildung ist rein (`_aufzeichnungen_block`).
+**Prüfstand:** `test_aufzeichnungen.py` — 19 Zeugen, Gegenprobe 5/5 und 3/3.
+**Absicht:** `novaberg-agent-dateien_k.md` §3.0, §3.0a-bis.
+
+> **Die Protokollzeile trägt Trefferzahl, Bestand und den Kosinus des schlechtesten gelieferten Treffers.** Liegt die Trefferzahl dauerhaft auf der Kappung, wählt die Kappung aus statt des Bodens — und der Boden ist dann unbelegt, gleich welche Zahl in der Konfiguration steht.
 
 ### S12 / S13 — Emotionale Gravitation
 

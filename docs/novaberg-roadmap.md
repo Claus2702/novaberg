@@ -1,6 +1,6 @@
 # Novaberg — Roadmap (Projektchronik)
 
-**Stand:** Chat 149, 18. August 2026
+**Stand:** Chat 150, 18. August 2026
 *(Die Kopfzeile stand bis Chat 109 auf „Chat 93, 21. Mai 2026" — 15 Chats hinter dem Inhalt. **Sie ist danach erneut zurückgefallen:** von Chat 110 bis 114 blieb sie auf „Chat 109" stehen, während der Inhalt weiterwuchs, und wurde in Chat 115 nachgezogen. Wer hier etwas ergänzt, zieht die Kopfzeile mit — sie driftet zuverlässig. Achtung beim Nachschlagen: Nur bis Chat 97 trägt jeder Chat eine eigene `## Chat NNN`-Überschrift; die Chats 98–108 stehen als `###`-Abschnitte unter dem Chat-97-Block, benannt nach Sprint statt nach Chat.)*
 **Pfad:** novaberg/docs/novaberg-roadmap.md
 **Single Source of Truth für abgeschlossene Arbeit.**
@@ -9,6 +9,49 @@
 ---
 
 ## Chats 3–20: Grundlagen (März 2026)
+
+### 18.08.2026 — Eine Datei erreicht die Figur, und die Beschriftung ist die Aussage
+
+**Gebaut:** die Enricher-Quelle des Dateien-Index und der Prompt-Block `[AUFZEICHNUNGEN]`. Der Index wird in **jedem** Turn über denselben Suchvektor abgefragt, mit dem auch Kurzzeit-, Langzeitgedächtnis und die Bibliothek suchen; die Treffer stehen als eigener Block im Prompt des Verfassers. **Damit erreicht zum ersten Mal ein Dateiinhalt die Figur** — der Index stand seit dem Vormittag und wurde von nichts gelesen.
+
+**Suite 1785 → 1804 grün, 0 übersprungen.** Harte Wand grün, Rückgabewert 0.
+
+**Der eigene Zustandskanal ist die tragende Entscheidung, nicht die Bauform.** Der naheliegende Weg wäre ein Manager-Plugin gewesen — die Bibliothek hängt so am Enricher. Ein Plugin liefert aber in den gemeinsamen Kontext-Pool, und alles aus diesem Pool rendert der Formatter unter der Beschriftung `[GEDAECHTNIS]`. Dateiinhalt darf dort nicht hinein:
+
+> **Was in den Dateien steht, ist nicht ihr Gedächtnis und nicht sie. Es ist Wissen, auf das sie zugreifen kann.**
+
+Der Präzedenzfall steht offen im Bestand — die Figur hat die Biografie eines Menschen als ihre eigene übernommen. Ein Dokument ist derselbe Fall eine Stufe weiter: Eine fremde Erinnerung gehört wenigstens jemandem, ein Dokument gehört niemandem und kann zusätzlich falsch oder veraltet sein.
+
+**Der Boden wurde gemessen, nicht gesetzt.** Acht Sonden gegen den Bestand, **beide Seiten erhoben** — denn eine Schwelle trennt nur dann etwas, wenn beide vorkommen:
+
+| Seite | bester Treffer je Sonde |
+|---|---|
+| einschlägig | 0,3800 · 0,4610 · 0,4961 |
+| fremd | 0,2014 · 0,2010 · 0,1896 · 0,1861 · 0,0729 |
+
+Gewählt: **0,30**, fast mittig in der Lücke. **Die Messbedingung steht an der Zahl** und nicht in einem Dokument daneben — die Sonden liefen mit dem rohen Anfrage-Embedding, der Betrieb sucht mit dem verschobenen Vektor, und der Bestand waren drei Zeilen. Das ist die Lehre aus dem Vorgängerwert: Nicht die 0,40 war der Fehler, sondern ihr verdunsteter Vorbehalt.
+
+**Zwei Gegenproben, beide vorher vorhergesagt.** Verdrahtung entfernt → **5 vorhergesagt, 5 gezählt**. Treffer in den Gedächtnisblock umgeleitet, also der Verstoß gegen die tragende Zusicherung → **3 vorhergesagt, 3 gezählt** — und dabei blieben zwei Zeugen grün, **die den Verstoß nicht sehen können**: Sie prüfen, *dass* der Text im Prompt steht, nicht *wo*. Das ist ein Befund über das Messgerät und stand so in der Vorhersage.
+
+**Im Betrieb gemessen, zwei echte Turns:**
+
+| Turn | Ergebnis |
+|---|---|
+| einschlägige Frage | 3 Treffer über dem Boden, Kosinus **0,4752 bis 0,3780** — Block im Prompt |
+| Fremdthema (Gravitationslinsen) | **0 Treffer** bei 3 Indexzeilen — kein Block |
+
+**Und die Herkunft hat die Antwort überlebt:** Die Figur nannte in allen drei Punkten die Datei, aus der die Aussage stammt. Das ist die eigentlich gefährdete Stelle — eine Antwort läuft durch den Gesprächsgraphen und wird bei hoher Salienz gespeichert, an jedem Tor vorbei. Steht die Herkunft dann nicht im Wortlaut, ist aus einer Aufzeichnung eine Erinnerung geworden.
+
+**Dass dieser Weg wirklich läuft, ist am selben Tag nachgewiesen worden — und zwar über die Turn-Grenze hinaus, wo alle anderen Belege des Tages enden.** Der Messturn erzeugte genau einen Kurzzeit-Eintrag mit Dateibezug; der Abruf holt ihn zurück, und der Formatter rendert ihn als Gedächtniszeile. Von 2908 Einträgen trägt einer einen Dateipfad. **Der Inhalt einer Datei steht damit ab dem Folgeturn unter der Beschriftung „Gedächtnis" — mit der Herkunft im Wortlaut, aber unter dieser Beschriftung.**
+
+Zwei Folgen, und die erste ist eine Berichtigung am eigenen Text desselben Tages:
+
+- **Der Blockentwurf enthielt den Satz *„Woran du dich erinnerst, steht im Gedächtnisblock. Was hier steht, hast du nachgesehen."*** Ab dem Folgeturn ist er unwahr. Ersetzt durch eine Fassung, die in jedem Turn gilt: Was entsteht, ist die Erinnerung **an das Nachsehen** — der Inhalt liegt weiter in der Datei.
+- **Ob diese Aneignung gewollt ist, sagt weder Konzept noch Code.** Das ist keine Umsetzungsfrage, sondern eine Absicht: Beide Lesarten sind vertretbar, und die Wahl ändert das Verhalten. Sie steht offen.
+
+**Der Blocktext ist Führung statt Verbot.** Die Entwurfsfassung trug drei `NICHT`-Sätze; ein Verbot macht das Unerwünschte zum Gegenstand, und die Zusicherung hängt hier ohnehin nicht am Text, sondern daran, dass es **ein anderer Block ist**.
+
+**Was ausdrücklich nicht gebaut ist:** die Quantilschwelle. Sie ist das Quantil der mitlaufenden Verteilung — und diese Verteilung beginnt erst mit diesem Bauteil zu entstehen. Der maßgebliche Wert wird seit heute je Turn protokolliert.
 
 ### 18.08.2026 — Der Wächter, und ein Vorfilter, den ein Zeuge widerlegt hat
 

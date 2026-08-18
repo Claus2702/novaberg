@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Technik — Einheitliches Prompt-Schema für alle Nodes
-**Stand:** 17. April 2026, Chat 52 (Code-Alignment)
+**Stand:** 18. August 2026 (`[AUFZEICHNUNGEN]` ergänzt); davor 17. April 2026, Chat 52 (Code-Alignment). **Die Matrix in §3 ist älter als die Trennung von Verfasser und Responder** — sie führt `GEDAECHTNIS` beim Responder, der ihn seit dem 14.08.2026 nicht mehr sieht; als Fund notiert, hier nicht mitrepariert
 **Pfad:** novaberg/docs/novaberg-pattern-prompt-schema.md
 **Quellen:** nova-01-t-d.md
 **Betrifft:** Alle Nodes mit LLM-Prompts (Perzeption, Router, Responder, Thinker, Tribunal, Salienz, Classify-Nodes)
@@ -54,6 +54,8 @@ MITTE — Kontext (stabile Hintergrundinformation):
   [KOMMUNIKATION]    Emotionaler Zustand, Stil, Modus (Responder)
   [GESPRAECHSVEKTOR] Landschaftsbeschreibung (Responder, seit Chat 39)
   [KONTEXT]/[AGENTEN]/[GEDAECHTNIS]/[WEB-RECHERCHE] (je nach Node)
+  [AUFZEICHNUNGEN]   Fremdes Material aus Dateien (Verfasser, seit 18.08.2026)
+                     — steht neben [GEDAECHTNIS], nie darin
 
 UNTEN — Recency (letzte Einprägung vor der Generierung):
   [REGELN]           Verbote, Kürze, Prinzipien
@@ -83,9 +85,14 @@ Nicht jeder Node hat alle Blöcke. Die Tabelle zeigt, welcher Node welche Blöck
 | KONTEXT | ✅ (bedingt) | ✅ | ✅ | — | ✅ | ✅ | ✅ |
 | AGENTEN | — | — | ✅ (Plugin-Additions) | — | — | — | — |
 | GEDAECHTNIS / WEB-RECHERCHE | ✅ (bei Nicht-Agent-Erfolg) | — | — | — | — | — | — |
+| AUFZEICHNUNGEN | — | — | — | — | — | — | — | *(Verfasser, seit 18.08.2026 — der Knoten steht in dieser Tabelle nicht)* |
 | REGELN | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
 | DIREKTIVEN | ✅ (seit Chat 40) | — | — | — | — | ✅ (nur Jurist) | — |
 | DATENFORMAT | entfallen (Chat 30) | — | — | — | — | — | — |
+
+> **`[AUFZEICHNUNGEN]` ist der Anwendungsfall von §1 in seiner schärfsten Form** (18.08.2026). Der Block trägt fremdes Material aus Dateien und steht **neben** `[GEDAECHTNIS]`, nie darin. Der Grund ist genau der Satz oben: *Der Prompt darf Informationen haben; er muss nur mitteilen, um was für Informationen es sich handelt.* Ohne eigene Beschriftung wäre der Dateiinhalt von ihrer Erinnerung ununterscheidbar — und der offene Defekt `NOVA-UEBERNIMMT-BIOGRAFIE` zeigt, was dann geschieht.
+>
+> **Er löst §1 auch in der zweiten Hälfte ein**, die im Bestand seltener befolgt wird: *„Die Lösung sind nicht Imperative (‚Erfinde KEINE…'), sondern Kontext-Beschreibungen."* Der Entwurf des Blocks trug drei `NICHT`-Sätze; gebaut ist die Aufgabenform mit drei prüfbaren Bedingungen.
 
 **Erläuterung:**
 - CHARAKTER und KOMMUNIKATION sind Responder-spezifisch (nur er formt die Persönlichkeit)

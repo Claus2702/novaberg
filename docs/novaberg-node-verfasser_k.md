@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Konzept — ein Node vor dem Responder, der den fachlichen Inhalt der Antwort bestimmt
-**Stand:** 14. August 2026 (Erstfassung 31. Juli 2026)
+**Stand:** 18. August 2026 (Erstfassung 31. Juli 2026)
 **Pfad:** novaberg/docs/novaberg-node-verfasser_k.md
 **Typ:** Konzept (`_k`)
 **Status:** ✅ **gebaut.** Der Knoten läuft im CharacterGraph. Am 04.08.2026 um das Urteilsfeld erweitert, am 05.08.2026 um die Vorzeichenpruefung, am 13.08.2026 um die Herkunft des Reizes — siehe unten.
@@ -82,6 +82,7 @@ Der Gesprächsvektor hat seine Wahl damit bereits getroffen, bevor der Verfasser
 |---|---|---|
 | `[AUFGABE]` | ✅ | — |
 | `[GEDAECHTNIS]` | ✅ | **—** |
+| `[AUFZEICHNUNGEN]` | ✅ | **—** |
 | `[WEB-RECHERCHE]` | ✅ | **—** |
 | `[GESPRAECHSVEKTOR]` | ✅ | — |
 | `[IDENTITAET]` | — | ✅ |
@@ -93,6 +94,22 @@ Der Gesprächsvektor hat seine Wahl damit bereits getroffen, bevor der Verfasser
 | fachlicher Inhalt der Antwort | erzeugt ihn | erhält ihn |
 
 **Die beiden fett gesetzten Zeilen sind der tragende Teil.** Der Responder verliert Gedächtnis und Web-Recherche vollständig. Er kann dann nichts aus einem Wissen erfinden, das er nicht sieht — die Lehre aus den vier Fix-Iterationen wird von einer Fallunterscheidung zu einer Eigenschaft der Bauart.
+
+### 2.2aa `[AUFZEICHNUNGEN]` steht neben `[GEDAECHTNIS]`, nicht darin (18.08.2026)
+
+Der Verfasser trägt seit dem 18.08.2026 einen weiteren Wissensblock: die Treffer des Dateien-Index (`novaberg-agent-dateien_k.md` §1a.2). Er steht unmittelbar hinter `[GEDAECHTNIS]` und ist von ihm getrennt.
+
+> **Die Trennung ist die Aussage, nicht die Formatierung.** Was in den Dateien steht, ist nicht Novas Erinnerung und nicht ihr Wissen — es sind fremde Aufzeichnungen, die falsch oder veraltet sein können. Ein Dokument gehört zusätzlich niemandem. Wer es unbeschriftet in denselben Block legt, bekommt den Fehler aus dem offenen Präzedenzfall mit schlechterer Quelle.
+
+Drei Eigenschaften tragen, und keine ist Zierde:
+
+- **Jeder Eintrag nennt seine Fundstelle.** Eine Aufzeichnung ohne Herkunft ist von einer Behauptung nicht zu unterscheiden.
+- **Der Block steht nur bei Treffern** und trägt seine Einordnung selbst. Ein Grundsatz im System-Prompt wird in dem Turn übersehen, in dem er gebraucht wird.
+- **Er nennt den Konfliktfall.** Widerspricht eine Aufzeichnung ihrer Erinnerung, sagt sie beides — sonst wählt das Modell die zuletzt gelesene Seite.
+
+**Der Blocktext ist in Aufgabenform geschrieben, nicht als Verbot.** Die ursprüngliche Fassung des Konzepts trug zwei `NICHT`-Sätze; an ihre Stelle tritt die positive Führung, weil ein Verbot das Unerwünschte zum Gegenstand macht (`F-PROMPT-1`) — und weil das Verhalten hier ohnehin baulich erzwungen ist: Der Block *ist* ein anderer Block. Das ist derselbe Grundsatz wie in §2.2b: Wo die Struktur trägt, wird der Text frei für die Führung.
+
+`[gemessen]` — 18.08.2026, echter Turn: Nova nannte in allen drei Punkten ihrer Antwort die Datei, aus der die Aussage stammt. Die Herkunft überlebt damit auch den Gedächtnis-Übergang, über den kein Tor wacht (§1a.4).
 
 ### 2.2a Wessen Reiz — die Herkunft entscheidet über die Perspektive
 
@@ -299,6 +316,7 @@ Das neue State-Feld muss in `graph/state.py` deklariert **und** in `graph/base.p
 
 ## Versionshistorie
 
+- **v0.6 — 18.08.2026:** §2.2aa — der Verfasser trägt einen **zweiten Wissensblock**: `[AUFZEICHNUNGEN]`, die Treffer des Dateien-Index, unmittelbar hinter `[GEDAECHTNIS]` und **getrennt von ihm**. Die Trennung ist die Aussage: Was in den Dateien steht, ist nicht Novas Erinnerung. Jeder Eintrag trägt seine Fundstelle, der Block steht nur bei Treffern und nennt den Konfliktfall. Der Text ist Führung statt Verbot (`F-PROMPT-1`), weil die Struktur die Zusicherung trägt. Gemessen: ein echter Turn, in dem Nova alle drei Fundstellen im Wortlaut nannte.
 - **v0.5 — 15.08.2026:** §2.2a nachgezogen — **der Impuls reist nicht mehr auf dem Platz der Nutzereingabe.** Beide Hälften des Eingangssatzes sind überholt: Er hat seit dem 15.08. einen eigenen Zustandskanal (`eigener_gedanke`), und auf einem Impuls-Turn wird **gar kein `[AKTUELLER PROMPT]` gesetzt** — an seine Stelle tritt `responder.auftrag_ohne_reiz`. Der Gedanke kommt statt dessen in beiden erzeugenden Stufen als Block `[EIGENER GEDANKE]` an, aus derselben Prompt-Datei. **Die Diagnose bleibt stehen und ist der Grund für die Änderung:** Wer den Reiz-Platz liest, ohne nach der Herkunft zu fragen, hält Novas Gedanken für eine fremde Äußerung — vier Anläufe im Prompttext haben dagegen angeschrieben und verloren, gemessen 13 von 14 Impulsen mit *„Du hast …"*. Ein Feld, das die falsche Aussage nicht mehr transportieren kann, braucht kein Verbot; gestrichen ist die Lage, nicht die Lehre.
 - **v0.4 — 14.08.2026:** Der Auftrag ist eine **Aufgabe** geworden (§2.2b): Konstellation, Aufgabe, drei prüfbare Bedingungen — die Form, die als Aufgabe 6 von 6 Längenkorridore traf und als Beschreibung 0 von 6. Der Inhalt entsteht seither in **dritter Person**; die Zuschreibung „Du hast …" verschwindet damit baulich statt per Verbot, und der Responder kann die Notiz nicht mehr durchreichen. Der Schutz aus §2.4 steht weiter, aber auf einem anderen Kontrast: Beide Sätze sind jetzt dritte Person, die Unterscheidung hängt am Subjekt und ist deshalb ausgeschrieben. Der ganze Prompt trägt **eine** Anrede. §2.2c: Der `[GESPRAECHSVEKTOR]`-Block hängt an der Landschaft statt an der Hypothese — er fehlte in 15 von 26 Läufen, während der Auftrag viermal auf ihn verwies; ein fehlendes Vorausdenken wird jetzt angesagt statt weggelassen. Der Umfang bekommt weiterhin **keine Zahl**.
 - **v0.3 — 05.08.2026:** Der Knoten zählt jetzt auch: Die **Vorzeichenprüfung** (`SYK-B4` Stufe 1) läuft unmittelbar nach dem Lesen des Kopfblocks und legt ihren Befund ins `pipeline_log` — hier, weil nur hier Urteil, Nutzeräußerung und Text zusammen vorliegen und das Urteil nirgends persistiert wird. Kein Modellaufruf, keine Verhaltensänderung. Dazu zwei Messergebnisse: Der Zähler ist an diesem Korpus zu 85 % blind, und die Wirkung des Kopfblocks auf die Kapitulationsrate ist **null**.

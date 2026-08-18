@@ -2,10 +2,10 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Konzept — Indizierung und Durchsuchung eines vorgegebenen Verzeichnisses als NMCP-Dienst
-**Stand:** 18. August 2026 (v0.12)
+**Stand:** 18. August 2026 (v0.13)
 **Pfad:** novaberg/docs/novaberg-agent-dateien_k.md
 **Typ:** Konzept (`_k`)
-**Status:** 🟠 **Stufe 1 und 2 gebaut und gemessen** (18.08.2026) — Freigabe und Wächter laufen; die Enricher-Quelle ist Entwurf, und ohne sie erreicht kein Dateiinhalt die Figur.
+**Status:** 🟠 **Stufe 1 bis 3 gebaut und gemessen** (18.08.2026) — Freigabe, Wächter und die Enricher-Quelle laufen; **eine indizierte Datei erreicht die Figur.** Offen bleiben der lesende Dienst am Empfang (§8.1), der Zoom (§6.4) und der Rückweg (§4b).
 **Voraussetzung:** `novaberg-tool-dateien_k.md` (die Operationen — teils gebaut) · `novaberg-convention-nmcp.md` (die Anmeldung) · `novaberg-convention-verfall.md` (warum hier kein Verfall)
 **Abgrenzung:** `novaberg-autonomous-wissen_k.md` — die Bibliothek ist Novas **eigenes** Wissen und ein anderer Korpus, siehe §2
 
@@ -26,7 +26,7 @@
 > | Der **Takt** des Wächters | ⬜ — `periodic_task()` ist None, bis die Änderungsrate gemessen ist; Anstoß über `/admin/dateien/index` |
 > | `zuletzt_gelernt_hash` | ⬜ Spalte steht, **kein Schreiber** — sie gehört zum frühen Tor (§3.0d) |
 > | `dateien` — der lesende Dienst am Empfang | ⬜ Entwurf |
-> | Die Enricher-Quelle und der Block `[AUFZEICHNUNGEN]` (§1a.2) | ⬜ Entwurf — **solange sie fehlt, erreicht kein Dateiinhalt die Figur**, auch aus einer indizierten Datei nicht |
+> | Die Enricher-Quelle und der Block `[AUFZEICHNUNGEN]` (§1a.2) | **gebaut**, 19 Zeugen · im Betrieb gemessen: einschlägiger Turn 3 Treffer (0,4752 bis 0,3780), Fremdthema 0 Treffer |
 >
 > **Die Werkzeuge funktionieren, das System benutzt sie nicht.** Das ist der Unterschied zwischen einem geprüften Bauteil und einer Verdrahtung.
 >
@@ -66,21 +66,36 @@ Daraus folgt die Sprechhandlung, die der Dienst ihr ermöglichen muss — und zu
 
 Der gesamte Enricher-Kontext steht heute unter `[GEDAECHTNIS]`. **Dateiinhalt darf dort nicht hinein** — die Beschriftung ist die Aussage.
 
-```
+~~```
 [AUFZEICHNUNGEN]
 Das Folgende stammt aus Dateien, die dir zugaenglich gemacht wurden.
-Es ist NICHT deine Erinnerung und NICHT dein Wissen — es sind fremde
-Aufzeichnungen, die richtig oder falsch, aktuell oder veraltet sein
-koennen.
-
-Du darfst dich darauf berufen: "Ich habe hier Aufzeichnungen, die..."
+Es ist NICHT deine Erinnerung und NICHT dein Wissen ...
 Du darfst es NICHT als eigenes Wissen ausgeben und dich nicht daran
 erinnern.
+```~~
 
-Widerspricht eine Aufzeichnung deiner Erinnerung, sage beides.
+> **Der Wortlaut ist beim Bauen ersetzt worden, die drei Eigenschaften nicht** (18.08.2026). Die Entwurfsfassung trug drei `NICHT`-Sätze. `F-PROMPT-1` verlangt an dieser Stelle die positive Führung: Ein Verbot nennt das Unerwünschte und macht es damit zum Gegenstand — vier Anläufe im Bestand haben so gegen eine Struktur angeschrieben und verloren. **Und die Struktur trägt hier bereits:** Der Block *ist* ein anderer Block; die Zusicherung hängt nicht am Text.
 
-- <Fundstelle>: <Auszug>
+Gebaut ist deshalb diese Fassung (`server/prompts/default/verfasser.aufzeichnungen.txt`):
+
 ```
+[AUFZEICHNUNGEN]
+Das Folgende stammt aus Dateien, die dir zugaenglich gemacht wurden. Es sind
+fremde Aufzeichnungen: Sie koennen richtig oder falsch, aktuell oder veraltet
+sein, und sie liegen weiter dort, wo sie liegen.
+
+Deine Aufgabe damit:
+- Beziehst du dich darauf, sage woher — "Ich habe hier Aufzeichnungen, die ..."
+  oder "In den Unterlagen steht ..." — und nenne die Fundstelle dazu.
+- Widerspricht eine Aufzeichnung dem, woran du dich erinnerst, sage beides:
+  was du erinnerst und was dort steht.
+- Woran du dich erinnerst, steht in [GEDAECHTNIS]. Was hier steht, hast du
+  nachgesehen.
+
+- <Fundstelle>: <Thema> — <Auszug>
+```
+
+**Die Aufgabenform ist nicht Geschmack, sondern dieselbe Messung wie in `15_ARCHITEKTUR` §5a:** Ein Block, den der Auftrag nicht einführt, wird gelesen und liegengelassen — dieselbe Vorgabe traf als Aufgabe 6 von 6 Korridore und als Beschreibung 0 von 6. Die drei Bedingungen oben sind prüfbar und zeigen auf den Block.
 
 **Drei Eigenschaften des Blocks sind tragend:**
 
@@ -120,6 +135,14 @@ Die Grenze verläuft **nicht** zwischen „Datei" und „Gedächtnis", sondern z
 > **Und die Selbstbeschreibung ist der teuerste Fall.** Die Projektdokumentation besteht großenteils aus **Konzepten**; §10 sagt, dass ein Leser dort Beschreibungen von Dingen findet, die nicht gebaut sind. Über diesen Weg lernt sie bei hoher Salienz, Fähigkeiten zu haben, die es nicht gibt — und behauptet sie danach **ohne jeden Dateizugriff**, weil die Aussage inzwischen im Gedächtnis steht.
 
 **Das ist prüfbar und gehört in die Messung:** gespeicherte Einträge zu dateigestützten Turns daraufhin ansehen, ob die Herkunft im Wortlaut steht.
+
+> **`[gemessen]` — 18.08.2026, und der Weg ist am Tag seines Baus gelaufen.** Der Messturn erzeugte genau einen KZG-Eintrag mit Dateibezug (`beobachter=assistant`, 13:53:31). Nachgeholt über den Suchvektor desselben Themas, liefert der Abruf ihn zurück, und der Formatter rendert ihn als `[KZG]`-Zeile — **also unter `[GEDAECHTNIS]`**. Von 2908 KZG-Einträgen trägt einer einen Dateipfad; `/files` steht dort sogar in der Themenspalte.
+>
+> **Die Zusicherung dieses Abschnitts hat gehalten, und zwar als einzige:** Der gespeicherte Wortlaut trägt die Herkunft dreimal mit — *„… laut `/files/novaberg-papers-stoffsammlung_k.md`"*. Ohne die Beschriftung stünde dort ab Turn N+1 eine herkunftslose Aussage, die sie als eigene vertritt, **und kein Tor liegt auf diesem Weg**.
+>
+> **Was die Messung offenlässt, ist keine Umsetzungsfrage:** Ob die Aneignung *„sie hat es gelesen, also erinnert sie sich, es gelesen zu haben"* gewollt ist, sagt weder dieses Konzept noch der Code. Beide Lesarten sind vertretbar, und die Wahl ändert das Verhalten — sie gehört entschieden, nicht abgeleitet. Bis dahin gilt die gebaute: Die Erinnerung an das **Nachsehen** entsteht, der Dateiinhalt bleibt in der Datei. Der Blocktext sagt seit dem 18.08.2026 genau das, nachdem seine erste Fassung (*„Woran du dich erinnerst, steht in [GEDAECHTNIS]"*) ab Turn N+1 unwahr geworden wäre.
+>
+> **Was den Weg sichtbar gemacht hat, war der Blick über die Turn-Grenze** — alle Belege des Umbaus (19 Zeugen, zwei Gegenproben, zwei Messturns) liegen **innerhalb** eines Turns, und diese Zusicherung gilt über ihn hinaus. Wer den gebauten Weg abgeht, findet sie nicht; sie liegt quer dazu.
 
 ---
 
@@ -907,7 +930,7 @@ Die Enricher-Quelle aus §3.0 durchläuft keine Anmeldung. Sie hat keinen Aufruf
 | **Kosten** | LLM-Spur — die Anfrage wird klassifiziert |
 | **Kadenz** | keine, er wartet |
 | **Geltungsbereich** | `user` und `pixie` — auch ein eigener Gedanke darf in Unterlagen nachsehen |
-| **Datenhoheit** | liest Dateien, **kein** Gedächtnis. Rührt weder KZG noch LZG an |
+| **Datenhoheit** | liest Dateien, **kein** Gedächtnis. Rührt weder KZG noch LZG an — **wohl aber ihr Inhalt, über Novas Antwort** (§1a.4, am 18.08.2026 gemessen): Der Dienst schreibt dort nichts, und der Gesprächsgraph speichert trotzdem, was sie daraus formuliert hat |
 | **Bedarf** | `such_vektor` — der Vektor, mit dem in diesem Turn auch die Gedächtnisschichten gesucht haben. **Ein eigenes Embedding zu rechnen hieße, denselben Text ein zweites Mal einzubetten** und dabei die Wahrnehmungs-Gravitation zu verlieren; der Wert ist im Zustandstyp vorhanden und muss dafür in den Zusagenkatalog aufgenommen werden |
 | **Quote** | **0 %** — eine Ausnahme. Begründung: Bis der Mensch Verzeichnisse einlegt, kommt der Fall selten vor. Die Angabe ist eine Schätzung und soll widerlegt werden; genau dafür steht sie da |
 | **Wiederholverhalten** | idempotent — eine Suche ändert nichts |
@@ -961,7 +984,16 @@ Vier Fragen, die der Entwurf offenlässt, weil sie Absichten sind und keine Umse
 2. ~~**Sieht jedes Paar denselben Index?**~~ → **Beantwortet (§2.2):** Das Paar hängt an der Freigabe. Zwei Menschen, die dasselbe Verzeichnis freigeben, teilen sich die Indexzeilen und haben zwei Wurzeln. Offen bleibt der Anschlussfall: **Was geschieht mit den Indexzeilen, wenn die letzte Freigabe auf ein Verzeichnis zurückgenommen wird** — sie sind dann von niemandem mehr erreichbar und stehen weiter da.
 3. **Wie tief darf `datei_grep` gehen?** Eine Obergrenze für Treffer und Dateien ist nötig; ohne sie ist eine unglückliche Anfrage ein Vollscan.
 4. **Was passiert bei einer Datei, die kein Text ist?** PDF, Bild, Tabelle. Der Entwurf behandelt Text; alles andere wird erkannt und mit Grund übergangen, nicht stillschweigend.
-5. ~~**Wie groß ist die Kappung des Enricher-Wegs?**~~ → **Umgestellt in v0.8 (§3.0a-bis).** Kappung und Schwelle sind über `K/N` gekoppelt; es gibt keine zwei unabhängigen Größen mehr, und die Schwelle ist keine Konstante, sondern das Quantil `1 − K/N` der mitlaufenden Verteilung. **Offen bleibt damit nur noch `K` selbst** — und das ist keine Messfrage, sondern eine Platzfrage: Wie viele Einträge soll der Block tragen? Die Bibliothek steht bei drei; der `[AUFZEICHNUNGEN]`-Block trägt je Eintrag zusätzlich eine Fundstelle und kostet mehr Prompt als eine Bibliothekszeile. **Neu offen ist dafür der absolute Boden** — die Zahl, unter der gar nichts geliefert wird. Sie kann nicht aus der Verteilung kommen, weil sie genau den Fall abdecken muss, in dem der Bestand nichts hat.
+5. ~~**Wie groß ist die Kappung des Enricher-Wegs, und wo liegt der absolute Boden?**~~ → **Beantwortet und gebaut am 18.08.2026.** `K = 3` — dieselbe Zahl wie die Bibliothek; die Fundstelle je Eintrag ist nicht kürzbar, aber sie kostet eine Zeile und keine Verdopplung, und der Auszug ist bei 300 Zeichen gekappt. **Der Boden ist gemessen, nicht gesetzt: 0,30**, aus acht Sonden gegen die drei Indexzeilen, beide Seiten erhoben:
+
+   | Seite | bester Treffer je Sonde |
+   |---|---|
+   | einschlägig | 0,3800 · 0,4610 · 0,4961 |
+   | fremd | 0,2014 · 0,2010 · 0,1896 · 0,1861 · 0,0729 |
+
+   0,30 liegt fast mittig in der Lücke — 0,10 über der höchsten fremden, 0,08 unter der niedrigsten einschlägigen Sonde. **Die Messbedingung reist mit der Zahl** und steht an ihr in `config.py`, weil genau das beim Präzedenzwert 0,40 verdunstet ist: Die Sonden liefen mit dem **rohen** Anfrage-Embedding, der Betrieb sucht mit dem verschobenen `such_vektor`, und der Bestand war **drei Zeilen aus einem Register**. Ein Startwert mit benannter Bedingung, kein Verteilungs-Ergebnis.
+
+   **Offen bleibt die Quantilschwelle** `1 − K/N`. Sie ist nicht vergessen, sondern noch nicht rechenbar: Sie ist das Quantil der **mitlaufenden** Verteilung, und diese Verteilung beginnt erst mit diesem Bauteil zu entstehen. Der K-te Wert wird seit dem 18.08.2026 je Turn protokolliert (`schlechtester`); sobald er trägt, tritt das Quantil neben den Boden — Backlog `AUFZEICHNUNGEN-QUANTIL`.
 6. ~~**Was misst die Trefferqualität, die der Block ausweisen soll?**~~ → **Beantwortet in v0.9 (§3.0d):** Es braucht keine Qualitätszahl. Das Kriterium ist die **Lücke**, nicht die Nähe — und sie wird an der Bibliothek geprüft, nicht am Kosinus. Der rohe Kosinus wäre ohnehin untauglich gewesen, weil niemand seine Skala kennt (0,588 klingt mittelmäßig und ist der Normalfall).
 7. **Wo entsteht ein neuer Wissenstext, und wo wird ein bestehender erweitert?** Findet sie einen Fund, ist zu entscheiden, ob er in eine vorhandene Datei gehört oder eine neue rechtfertigt (§3a). Das ist dieselbe Bedarfsfrage eine Ebene höher und heute nirgends beantwortet — der Ablage-Weg legt je Durchlauf eine neue Datei an.
 8. **Welche Salienz-Lesart gilt für den Rückweg?** 0,70 auf der wirksamen Skala lässt fast jede Erinnerung eine Dateischreibung auslösen; roh 0,7 (= 0,944) nur die Spitze (§4b.1). Da jeder Vorgang einen Modellaufruf kostet, entscheidet die Lesart die Betriebskosten.
@@ -1000,6 +1032,8 @@ Die Abschnitte §4a, §4b und §6 stützen sich auf eine Sichtung des Standes de
 ---
 
 ## Versionshistorie
+
+- **v0.13 — 18.08.2026:** **Stufe 3 ist gebaut, und eine indizierte Datei erreicht damit zum ersten Mal die Figur.** Der Enricher fragt den Index in jedem Turn über denselben `such_vektor` ab, mit dem KZG, LZG und die Bibliothek suchen; die Treffer laufen über einen **eigenen Zustandskanal** in den Block `[AUFZEICHNUNGEN]` des Verfassers. **Der eigene Kanal ist die tragende Entscheidung und keine Bauform:** Ein Plugin hätte `ContextEntry` in den `memory_entries`-Pool geliefert, und alles aus diesem Pool rendert der Formatter unter `[GEDAECHTNIS]` — also unter der Beschriftung „das ist ihre Erinnerung". Genau das verbietet §1a.2, und der Präzedenzfall steht offen im Bestand. **Der Wortlaut des Blocks aus §1a.2 ist beim Bauen ersetzt worden**, die drei tragenden Eigenschaften nicht: `F-PROMPT-1` verlangt Führung statt Verbot, und die Struktur trägt hier bereits — der Block *ist* ein anderer Block. **Zwei Zahlen sind entschieden statt gemeldet:** `K = 3` als Platzfrage, und der absolute Boden **0,30 als Messung** aus acht Sonden mit beiden Seiten (einschlägig ab 0,3800, fremd bis 0,2014). Die Messbedingung steht an der Zahl in `config.py` — der Fehler, an dem die übernommene 0,40 gescheitert ist, war nicht die Zahl, sondern der verlorene Vorbehalt. **Gegenprobe zweimal, beide vorhergesagt und gezählt:** Verdrahtung entfernt → 5 von 5; Treffer in den Gedächtnisblock umgeleitet → 3 von 3, und dabei blieben zwei Zeugen grün, die den Verstoß nicht sehen können, weil sie prüfen, *dass* der Text im Prompt steht und nicht *wo*. **Im Betrieb gemessen:** einschlägiger Turn 3 Treffer (0,4752 bis 0,3780), Fremdthema 0 Treffer über dem Boden — und in Novas Antwort standen alle drei Fundstellen im Wortlaut, womit auch §1a.4 belegt ist. **Offen bleibt die Quantilschwelle:** Sie ist das Quantil der mitlaufenden Verteilung, und diese Verteilung beginnt erst mit diesem Bauteil zu entstehen.
 
 - **v0.12 — 18.08.2026:** **Stufe 2 ist gebaut und am echten Bestand gemessen** — der Wächter mit den drei Wegen aus §5.1, Indextabelle mit 20 Spalten, 18 Zeugen. Er ist der **erste Produktivaufrufer der Werkzeugschicht**: `struktur_analysieren` füllt die Blockkarte jeder Zeile. **§5.2 ist dabei in einem Punkt geschärft, und der Bau hat es auf die harte Tour gelernt:** Der Abschnitt schreibt `mtime` als Vorfilter und den Inhalts-Hash als Entscheidung vor — ein Vorfilter über Zeit und Größe lässt aber genau die Änderung durch, die derselbe Abschnitt zwei Sätze vorher als Grund nennt, warum die Zeit nicht reicht: dass ein Werkzeug eine Datei mit gleicher Zeit neu schreiben kann. Ein Zeuge wurde rot und hatte recht. **Der Vorfilter ist entfallen**; jede Datei wird gehasht. Der Verzicht kostet fast nichts, weil das Teure der Modellaufruf je geänderter Datei ist und nicht das Lesen — und der bleibt vom Hash bewacht. Am Bestand belegt: gleiche Größe, gleiche `mtime`, anderer Inhalt → erkannt. **§5.4 ist vor dem Bau eingelöst worden:** Die Einbettung wurde gegen den Zielkorpus geprüft — 768 Dimensionen, `Hund` und `Katze` nicht bit-identisch (0,306), Spanne von 0,036 (fachfremd) bis 0,436 (verwandte Form), Median **0,091**. Damit ist auch die Vorhersage aus §3.0a gemessen: Der eigene Korpus zeigt eine **vierfach niedrigere** Grundähnlichkeit als die Bibliothek (0,369) — hier kann eine Schwelle trennen, wo sie es dort nie konnte. **Zwei Dinge stehen ausdrücklich als nicht gebaut da:** der Takt (§8.3 verlangt die Änderungsrate, die ist nicht erhoben) und `zuletzt_gelernt_hash` (die Spalte steht, der Schreiber gehört zum frühen Tor).
 

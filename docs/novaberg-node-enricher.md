@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Node-Referenz Enricher
-**Stand:** 2. August 2026, Chat 126 (Wahrnehmungs-Gravitation P10: der LZG-Suchschlüssel wird vor der Suche verschoben)
+**Stand:** 18. August 2026 (der Dateien-Index als Kontextquelle neben der Plugin-Schleife, §3.1a)
 **Pfad:** novaberg/docs/novaberg-node-enricher.md
 **Quellen:** nova-01-m-c.md
 **Datei:** `graph/nodes/enricher.py`
@@ -83,6 +83,22 @@ Jeder konsumierende Node formatiert die Turn-Dicts selbst:
 > **Lesson gelernt (Chat 7):** Shadow-Delivery-Turns verunreinigten den Responder-Kontext. Lösung: Shadow-Turns werden komplett gefiltert. → novaberg-pixie_l_kontamination.md
 
 > **Lesson gelernt (Chat 30):** Die frühe Destillation (`kern` statt `inhalt`, Metadaten als String-Tags) zerstörte emotionale Information. Der Responder sah sachliche Zusammenfassungen statt Originaltext und antwortete therapeutisch. Lösung: Vollständiges Durchreichen. → novaberg-graph_l_datentransport.md
+
+### 3.1a Der Dateien-Index — die Quelle, die kein Plugin ist (18.08.2026)
+
+Der Enricher fragt in jedem Turn den Index der freigegebenen Verzeichnisse ab (`agents/dateien_index/aufzeichnungen.py`), mit demselben `such_vektor`, mit dem KZG, LZG und die Bibliothek suchen. Die Treffer gehen in den eigenen Zustandskanal `aufzeichnungen`; der Verfasser rendert daraus den Block `[AUFZEICHNUNGEN]`.
+
+> **Sie steht ausdrücklich neben der Plugin-Schleife und nicht darin, und das ist keine Ordnungsfrage.** Ein Plugin liefert `ContextEntry` in den `memory_entries`-Pool, und alles aus diesem Pool rendert der Formatter unter `[GEDAECHTNIS]`. **Dateiinhalt darf dort nicht hinein** (`novaberg-agent-dateien_k.md` §1a.2): Was in den Dateien steht, ist nicht Novas Erinnerung, und die Beschriftung ist die Aussage. Der Präzedenzfall steht offen im Bestand — sie hat die Biografie eines Menschen als ihre eigene übernommen.
+
+| Größe | Wert | Herkunft |
+|---|---|---|
+| Kappung | 3 | `AUFZEICHNUNGEN_KAPPUNG` — die Zusicherung |
+| Absoluter Boden | 0,30 | `AUFZEICHNUNGEN_BODEN` — gemessen am 18.08.2026, acht Sonden, beide Seiten |
+| Auszug je Eintrag | 300 Zeichen | `AUFZEICHNUNGEN_AUSZUG_ZEICHEN` |
+
+**Kein Dateizugriff und kein Modellaufruf** — die Zeile trägt Thema und Zusammenfassung, beides beim Indizieren einmal bezahlt.
+
+**Die Protokollzeile trägt Trefferzahl, Bestand und den Kosinus des schlechtesten gelieferten Treffers.** Liegt die Trefferzahl dauerhaft auf der Kappung, hat nicht der Boden ausgewählt, sondern die Kappung — genau der Zustand, in dem die Bibliothek gemessen wurde (40 von 42 Aufrufen).
 
 ### 3.2 Plugin-Hooks (dynamisch)
 
