@@ -262,7 +262,7 @@ project/
 │   │       ├── agent_dispatch.py        #     Agent-Dispatch (Epic 11)
 │   │       └── gespraechsvektor.py      #     → novaberg-node-gv_k.md
 │   │
-│   ├── agents/                          # Agent-System (Epic 11 + Epic 5) — 16 Agenten
+│   ├── agents/                          # Agent-System (Epic 11 + Epic 5) — 17 Agenten
 │   │   ├── __init__.py                  #   AgentRegistry, Auto-Discovery
 │   │   ├── base.py                      #   BaseAgent, AgentState, AgentResult, PeriodicTask
 │   │   ├── crud_validation.py           #   Gemeinsame CRUD-Haertung (Chat 42)
@@ -270,6 +270,10 @@ project/
 │   │   ├── timeline/                    #   TimelineAgent (User-Agent, Zeitparser + Resume)
 │   │   ├── charakter_identitaet/        #   CharakterIdentitaetAgent (User-Agent, Resume + init.sql)
 │   │   ├── direktiven/                  #   DirektivenAgent (User-Agent, HITL-Gate + init.sql)
+│   │   ├── dateien_index/               #   DateienIndexAgent (Waechter, ohne Takt, init.sql)
+│   │   │   ├── wandern.py               #     neu | geaendert | verschwunden — der Hash entscheidet
+│   │   │   ├── indizieren.py            #     Thema, Stichwoerter, Blockkarte, Einbettung
+│   │   │   └── speicher.py              #     Zeilen ueber Dateien, nie Dateien
 │   │   ├── dateien_wurzeln/             #   DateienWurzelnAgent (User-Agent, Tor + Aussenrand + init.sql)
 │   │   │   ├── aussenrand.py            #     Die Schranke: aufloesen, dann pruefen (→ novaberg-agent-dateien_k.md §7)
 │   │   │   ├── resume.py                #     Rueckweg der Rueckfrage — nein und unklar fuehren nie zur Ausfuehrung

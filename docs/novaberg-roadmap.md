@@ -10,6 +10,41 @@
 
 ## Chats 3–20: Grundlagen (März 2026)
 
+### 18.08.2026 — Der Wächter, und ein Vorfilter, den ein Zeuge widerlegt hat
+
+**Gebaut:** `dateien_index` — der Wächter, der den Index gegen die freigegebenen Verzeichnisse hält. Drei Wege: neu indizieren, Geändertes auffrischen, Verschwundenes markieren. Vier Module, 18 Zeugen, neue Tabelle mit 20 Spalten. Dazu die vier fehlenden Kanalspalten auf `autonomous_wissen` (§4.1), angekündigt am 17.08. und heute gezündet.
+
+**Suite 1762 → 1780 grün, 0 übersprungen.** Harte Wand grün, der neue Verbund ohne Linter-Befund.
+
+**Er ist der erste Produktivaufrufer der Werkzeugschicht.** `struktur_analysieren` füllt die Blockkarte jeder Indexzeile — 50, 21 und 32 Blöcke in den drei Dateien des Erstlaufs. Die Schicht stand seit dem Vortag mit 88 Zeugen und ohne jeden Aufrufer.
+
+**Gemessen am echten Bestand**, drei Dateien in einem read-only eingehängten Verzeichnis:
+
+| Lauf | Ergebnis |
+|---|---|
+| Erstlauf | 3 neu, 3 indiziert, **16 s** — Thema, Stichwörter, Blockkarte, Vektor und lexikalischer Kanal je Zeile gefüllt |
+| zweiter Lauf, nichts geändert | 0 neu, 0 geändert, 3 unverändert, **0 Modellaufrufe** |
+| Probedatei geändert — gleiche Größe, gleiche `mtime`, anderer Inhalt | **1 geändert, erkannt** |
+| Probedatei entfernt | 1 verschwunden, Zeile bleibt mit `aktiv = false` |
+
+### Der Vorfilter, den ein Zeuge gekippt hat
+
+Der erste Entwurf hatte einen Vorfilter über `mtime` und Größe: Stimmen beide, wird nicht gelesen. Ein Zeuge wurde rot, und er hatte recht — das Konzept nennt genau diesen Fall als **erstes** Argument dafür, dass die Zeit nicht reicht: *„ein Werkzeug kann eine Datei mit gleicher Zeit neu schreiben"*. Der Vorfilter ließ die Änderung durch, die er hätte fangen sollen, und sie wäre danach nie wieder aufgefallen.
+
+**Der Verzicht kostet fast nichts, und das war der Denkfehler.** Teuer ist der Modellaufruf je geänderter Datei, nicht das Lesen; die Stunden, von denen das Konzept spricht, entstehen beim Indizieren und werden weiterhin vom Hash bewacht. Der Vorfilter hat eine Zusicherung gegen eine Ersparnis getauscht, die es nicht gab.
+
+**Am Bestand nachgemessen**, nicht nur am Zeugen: eine Datei mit identischer Größe und identischer `mtime`, aber geändertem Inhalt — der Lauf meldet `geaendert: 1`.
+
+**Gegenprobe:** Hash-Vergleich ausgehebelt → **2 vorhergesagt, 2 gezählt**. Die Vorhersage benannte ausdrücklich einen dritten Zeugen, der **nicht** fällt: Er zählt die Summe und nicht die Verteilung und kann diesen Eingriff nicht sehen. Er blieb grün, wie vorhergesagt.
+
+### Was ausdrücklich nicht gebaut ist
+
+**Der Takt.** `periodic_task()` liefert None. Die Kadenz soll der Änderungsrate des Verzeichnisses folgen, und die ist nicht erhoben; bis dahin läuft der Wächter von Hand über `/admin/dateien/index`. Eine geratene Zahl im Scheduler wäre dieselbe Sorte wie eine geratene Schwelle.
+
+**`zuletzt_gelernt_hash`.** Die Spalte steht, und niemand schreibt sie. Sie gehört zum frühen Tor, das erst mit Stufe 3 entsteht — ohne sie wäre später *„geändert seit dem Lernen"* nicht von *„noch nie gelernt"* zu unterscheiden. Ein Feld ohne Schreiber, und die Featureliste führt es als solches.
+
+**Die vier Kanalspalten der Bibliothek** sind angelegt und leer. Sie sind die Vorbedingung des Kanal-Umbaus, nicht seine Umsetzung.
+
 ### 18.08.2026 — Der erste Dienst, dessen Anmeldung vor dem Code stand
 
 **Gebaut:** `dateien_wurzeln` — der Dienst, über den ein Mensch im Gespräch ein Verzeichnis freigibt, die Freigabe zurücknimmt, wieder aufnimmt, umbenennt und erfährt, worauf die Figur Zugriff hat. Sechs Module unter `agents/dateien_wurzeln/`, ein Aushang unter `plugins/dateien_wurzeln_manager/`, vier Prompt-Blöcke, **48 Zeugen**. Neue Tabelle `dateien_wurzeln` (angekündigt und freigegeben), neuer Außenrand in der Konfiguration, ein read-only Mount.

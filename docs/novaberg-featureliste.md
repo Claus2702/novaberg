@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Vollständiges Register aller Features mit Zustandsampel und Beleg
-**Stand:** 18. August 2026, ~11:30 UTC (Fortführung: der Wurzeln-Dienst ist gebaut und gemessen; Stufe 1 auf 🟢, Stufe 0 entfallen, zwei Zeilen neu)
+**Stand:** 18. August 2026, ~13:10 UTC (Fortführung: Stufe 1 und 2 des Dateien-Dienstes stehen und sind am echten Bestand gemessen; drei Zeilen neu)
 **Pfad:** novaberg/docs/novaberg-featureliste.md
 **Typ:** Register
 **Quellen:** die 44 Konzeptdokumente, `novaberg-architecture.md`, die Moduldokumente, `novaberg-roadmap.md`, `novaberg-backlog.md`, `novaberg-bugs.md`, `novaberg-fundliste.md` — gehalten gegen Code und Produktivsystem
@@ -292,20 +292,23 @@ Die Feature-Matrix in `novaberg-architecture.md` §6 ist mit dieser Liste abgel�
 | **Multi-Channel — Matrix + WireGuard** | ⚫ | kein Code `[Code]` | alles |
 | **Voice (TTS/STT)** | ⚫ | Vision `[Doku]` | alles |
 | **Dateien — Schreibwerkzeug** | 🟢 | `tools/dateien/schreiben.py` `[Code]` | nur schreibend, für Novas eigene Bibliothek |
-| **Dateien — Leseschicht** (Karte, Block, Fenster, Fundstelle) | 🟢 | `tools/dateien/operationen.py`, 26 Zeugen · Lauf über 689 Dateien, 1389 Blöcke `[gemessen]` | — |
+| **Dateien — Leseschicht** (Karte, Block, Fenster, Fundstelle) | 🟢 | `tools/dateien/operationen.py`, 26 Zeugen · **erster Produktivaufrufer seit 18.08.2026**: `struktur_analysieren` füllt die Blockkarte des Index `[gemessen]` | — |
 | **Dateien — Schreibschicht** (chirurgische Schnitte) | 🟢 | `tools/dateien/redaktion.py`, 20 Zeugen `[Code]` | — |
 | **Dateien — Versionierung im Dokument** (`[cN>]`/`[dN>]`/`[iN>]`, Paarungsprüfung) | 🟢 | `tools/dateien/versionierung.py`, 20 Zeugen · Kette an echter Wissensdatei gefahren, 0 Befunde `[gemessen]` | — |
-| **Dateien — Auftragsform `DATEI: {json}`** | 🟠 | `tools/dateien/hand.py`, 22 Zeugen `[Code]` — **kein Aufrufer**: kein Knoten importiert es, keine Anleitung in einem Prompt | die Verdrahtung |
+| **Dateien — Auftragsform `DATEI: {json}`** | 🟠 | `tools/dateien/hand.py`, 22 Zeugen `[Code]` — **weiterhin kein Aufrufer** | die Verdrahtung |
 | **Wissensdatei — adressierbarer Block + Version** | 🟢 | `wissen_text_bauen` erzeugt `## AKTUELL` + `**Version:**` · **14 Dateien produktiv geschrieben** `[gemessen]` | — |
 | **Ankertreue des Schreibmodells** | 🟢 | 30/30 zeichengenau und eindeutig, `gemma4-gpu` Median 1,7 s, `qwen36-cpu` 17,9 s `[gemessen]` | — |
 | ~~**Dateien-Dienst — Stufe 0** (Einbettung gegen den Korpus prüfen)~~ | — | **entfallen** mit `novaberg-agent-dateien_k.md` v0.10 §3.0a-bis `[Doku]` | Die Schwelle ist keine Konstante mehr, sondern das Quantil `1 − K/N` der mitlaufenden Verteilung — es gibt keine einmalige Vermessung mehr, die vorher stattfinden müsste |
 | **Dateien-Dienst — Stufe 1** (`dateien_wurzeln` + Freigabe) | 🟢 | `agents/dateien_wurzeln/`, 48 Zeugen · Tabelle steht, **Zeile 1 aus einem echten Turn** · Kette im Betriebslog von `Router: mgmt=agent/dateien_wurzeln` bis `verifiziert=True` `[gemessen]` | das **Vergessen** aus §2a.3 — es hat ohne Indextabelle keinen Gegenstand |
-| **Dateien-Dienst — Stufe 2** (`dateien_index` + Wächter) | ⚫ | `grep dateien_index server/` → **0 Treffer** `[gemessen]` | alles; DDL noch nicht angekündigt |
+| **Dateien-Dienst — Stufe 2** (`dateien_index` + Wächter) | 🟢 | `agents/dateien_index/`, 18 Zeugen · Erstlauf **3 Dateien in 16 s**, Blockkarten 50/21/32, zweiter Lauf 0 neu / 3 unverändert `[gemessen]` | der **Takt** — `periodic_task()` ist None, bis die Änderungsrate gemessen ist |
 | **Dateien-Dienst — Stufe 3** (Enricher-Quelle, `[AUFZEICHNUNGEN]`) | ⚫ | `grep AUFZEICHNUNGEN server/` → **0 Treffer** `[gemessen]` | alles — und daran hängt `NOVA-UEBERNIMMT-BIOGRAFIE`. **Solange sie fehlt, erreicht eine Datei im freigegebenen Verzeichnis die Figur nicht** |
 | **Dateien-Dienst — Stufe 4** (Auftragsweg mit Grep) | 🟠 | `datei_grep` **existiert seit 18.08.2026** `[Code]` — das Werkzeug steht, der Weg dorthin nicht | der Agent, der es ruft |
 | **Dateien-Dienst — Stufe 5** (Vertiefung) | ⚫ | `[Doku]` | **zuletzt**, hinter der Gedankenkette |
 | **Außenrand der Freigaben** (erzwungen, nicht deklariert) | 🟢 | `agents/dateien_wurzeln/aussenrand.py` · Gegenprobe: Randprüfung ausgehebelt → **5 vorhergesagt, 5 rot** · im Betrieb `/files/../knowledge` → `/knowledge` abgewiesen `[gemessen]` | — |
 | **Rückweg der Rückfrage** (`dismissed`, Unklarheit fragt erneut) | 🟢 | `agents/dateien_wurzeln/resume.py` · Wortgrenzen statt Teilzeichenketten, im Betrieb nachgemessen `[gemessen]` | gilt nur für diesen Dienst; **drei Torwächter des Bestandes haben ihn weiterhin nicht** |
+| **Änderungserkennung über den Inhalt** (Hash statt Zeit) | 🟢 | `agents/dateien_index/wandern.py` · am Bestand belegt: gleiche Größe, gleiche `mtime`, anderer Inhalt → **erkannt**; Gegenprobe 2 vorhergesagt, 2 rot `[gemessen]` | — |
+| **Bibliothek — drei Kanäle** (`suchtext`, `entitaet_ids`, `timeline_id`, `stichwoerter`) | 🟠 | vier Spalten auf `autonomous_wissen`, DDL gezündet, Schema-Zeuge deckt sie `[gemessen]` | **kein Schreiber** — die Spalten sind die Vorbedingung, nicht die Umsetzung |
+| **`zuletzt_gelernt_hash`** (§5.2a — der Wiedereröffner) | ⚫ | Spalte steht in `dateien_index`, **niemand schreibt sie** `[Code]` | das frühe Tor aus §3.0d, also Stufe 3 |
 | **Verb-Mapping lernen** (nutzereigene Sprache) | 🔴 | `verb_mapping_lernen` **ohne Aufrufer**, `verb_mappings` **0 Zeilen** `[gemessen]` | Schreibpfad steht seit Chat 42 und wurde nie verdrahtet |
 | **Hermes-Substrat** (Ausführungsschicht) | ⚫ | kein Code, keine Anbindungsspezifikation `[Code]` | sieben Messfragen M0–M6 unbeantwortet |
 | **Skill-System** (Epic 10) | ⚫ | kein Code `[Code]` | alles |

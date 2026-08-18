@@ -2,10 +2,10 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Konzept — Indizierung und Durchsuchung eines vorgegebenen Verzeichnisses als NMCP-Dienst
-**Stand:** 18. August 2026 (v0.11)
+**Stand:** 18. August 2026 (v0.12)
 **Pfad:** novaberg/docs/novaberg-agent-dateien_k.md
 **Typ:** Konzept (`_k`)
-**Status:** 🟠 **Stufe 1 gebaut und gemessen** (18.08.2026) — `dateien_wurzeln` läuft; Wächter und Enricher-Quelle sind Entwurf.
+**Status:** 🟠 **Stufe 1 und 2 gebaut und gemessen** (18.08.2026) — Freigabe und Wächter laufen; die Enricher-Quelle ist Entwurf, und ohne sie erreicht kein Dateiinhalt die Figur.
 **Voraussetzung:** `novaberg-tool-dateien_k.md` (die Operationen — teils gebaut) · `novaberg-convention-nmcp.md` (die Anmeldung) · `novaberg-convention-verfall.md` (warum hier kein Verfall)
 **Abgrenzung:** `novaberg-autonomous-wissen_k.md` — die Bibliothek ist Novas **eigenes** Wissen und ein anderer Korpus, siehe §2
 
@@ -22,9 +22,11 @@
 > | `agents/dateien_wurzeln/` — Freigeben, Lesen, Umbenennen, Zurücknehmen, Wiederaufnehmen | **gebaut**, 48 Zeugen, im Betrieb gemessen |
 > | `agents/dateien_wurzeln/aussenrand.py` — die Schranke aus §7 | **gebaut**, Gegenprobe 5/5 |
 > | Tabelle `dateien_wurzeln` | **steht** — DDL am 18.08.2026 angekündigt und freigegeben |
-> | `dateien_index` — Indextabelle und Wächter | ⬜ Entwurf, DDL **noch nicht** angekündigt |
+> | `dateien_index` — Indextabelle und Wächter | **gebaut**, 18 Zeugen · Erstlauf 3 Dateien in 16 s, zweiter Lauf 0 Modellaufrufe |
+> | Der **Takt** des Wächters | ⬜ — `periodic_task()` ist None, bis die Änderungsrate gemessen ist; Anstoß über `/admin/dateien/index` |
+> | `zuletzt_gelernt_hash` | ⬜ Spalte steht, **kein Schreiber** — sie gehört zum frühen Tor (§3.0d) |
 > | `dateien` — der lesende Dienst am Empfang | ⬜ Entwurf |
-> | Die Enricher-Quelle und der Block `[AUFZEICHNUNGEN]` (§1a.2) | ⬜ Entwurf — **solange sie fehlt, erreicht kein Dateiinhalt die Figur** |
+> | Die Enricher-Quelle und der Block `[AUFZEICHNUNGEN]` (§1a.2) | ⬜ Entwurf — **solange sie fehlt, erreicht kein Dateiinhalt die Figur**, auch aus einer indizierten Datei nicht |
 >
 > **Die Werkzeuge funktionieren, das System benutzt sie nicht.** Das ist der Unterschied zwischen einem geprüften Bauteil und einer Verdrahtung.
 >
@@ -998,6 +1000,8 @@ Die Abschnitte §4a, §4b und §6 stützen sich auf eine Sichtung des Standes de
 ---
 
 ## Versionshistorie
+
+- **v0.12 — 18.08.2026:** **Stufe 2 ist gebaut und am echten Bestand gemessen** — der Wächter mit den drei Wegen aus §5.1, Indextabelle mit 20 Spalten, 18 Zeugen. Er ist der **erste Produktivaufrufer der Werkzeugschicht**: `struktur_analysieren` füllt die Blockkarte jeder Zeile. **§5.2 ist dabei in einem Punkt geschärft, und der Bau hat es auf die harte Tour gelernt:** Der Abschnitt schreibt `mtime` als Vorfilter und den Inhalts-Hash als Entscheidung vor — ein Vorfilter über Zeit und Größe lässt aber genau die Änderung durch, die derselbe Abschnitt zwei Sätze vorher als Grund nennt, warum die Zeit nicht reicht: dass ein Werkzeug eine Datei mit gleicher Zeit neu schreiben kann. Ein Zeuge wurde rot und hatte recht. **Der Vorfilter ist entfallen**; jede Datei wird gehasht. Der Verzicht kostet fast nichts, weil das Teure der Modellaufruf je geänderter Datei ist und nicht das Lesen — und der bleibt vom Hash bewacht. Am Bestand belegt: gleiche Größe, gleiche `mtime`, anderer Inhalt → erkannt. **§5.4 ist vor dem Bau eingelöst worden:** Die Einbettung wurde gegen den Zielkorpus geprüft — 768 Dimensionen, `Hund` und `Katze` nicht bit-identisch (0,306), Spanne von 0,036 (fachfremd) bis 0,436 (verwandte Form), Median **0,091**. Damit ist auch die Vorhersage aus §3.0a gemessen: Der eigene Korpus zeigt eine **vierfach niedrigere** Grundähnlichkeit als die Bibliothek (0,369) — hier kann eine Schwelle trennen, wo sie es dort nie konnte. **Zwei Dinge stehen ausdrücklich als nicht gebaut da:** der Takt (§8.3 verlangt die Änderungsrate, die ist nicht erhoben) und `zuletzt_gelernt_hash` (die Spalte steht, der Schreiber gehört zum frühen Tor).
 
 - **v0.11 — 18.08.2026:** **Stufe 1 ist gebaut, gemessen und im Betrieb belegt** — `dateien_wurzeln` mit fünf Aktionen, Tor, Außenrand und Rückweg; 48 Zeugen, Tabelle steht, Zeile 1 aus einem echten Turn. Der Zustandsteil ist entsprechend neu gefasst: Was gebaut ist, steht mit Beleg da, und was fehlt, steht mit einem `grep`-Ergebnis daneben statt mit einer Behauptung. **Der Betrieb hat zwei Befunde geliefert, die 46 grüne Zeugen nicht hatten:** Die Randablehnung kam als `status='fehler'` zurück statt als `abgelehnt` — Verstoßform 8.5 der Anmeldekonvention, also genau die Regel, gegen die dieser Dienst gebaut wurde; und die Ja/Nein-Deutung am Tor las eine Zustimmung als Ablehnung, weil sie Teilzeichenketten verglich und `ne` in `gerne` steckt. Beide behoben, beide nachgemessen. **§7 ist damit nicht mehr nur Entwurf:** Die drei Riegel — konfigurierter Rand, Tor auf dem aufgelösten Pfad, Auflösung vor der Prüfung — sind gebaut, und die Gegenprobe hat sie mit 5 vorhergesagten und 5 gezählten roten Zeugen belegt. **§9 Punkt 1 ist beantwortet:** Die erste Wurzel ist nicht die Projektdokumentation, sondern ein eigens angelegtes, read-only eingehängtes Verzeichnis neben dem Repositorium — dieselbe Begründung wie bei `knowledge/` und `labor/log`. Damit ist §10 (die Figur liest über sich selbst) auf einen späteren Zeitpunkt verschoben und nicht beiläufig mitentschieden.
 

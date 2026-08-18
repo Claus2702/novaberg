@@ -55,7 +55,7 @@ Ein Dienst entspricht der NMCP-Konvention, wenn er sechs Angaben trägt und vier
 
 ---
 
-## 3. Der Stand der fünfzehn Dienste
+## 3. Der Stand der sechzehn Dienste
 
 **Erhoben am 17.08.2026 am laufenden Bestand; die Zeile `dateien_wurzeln` am 18.08.2026 ergänzt.** `Aus` = Aushang vorhanden, `Neg`/`Grz`/`Bed` = Anzahl der Einträge, `4.Ausg` = bedient die begründete Ablehnung.
 
@@ -76,8 +76,11 @@ Ein Dienst entspricht der NMCP-Konvention, wenn er sechs Angaben trägt und vier
 | wiedervorlage | Zeitplan | — | 0 | 0 | — | 0 | ❌ | eingeschränkt |
 | wissensluecken | Zeitplan | — | 0 | 0 | — | 0 | ❌ | eingeschränkt |
 | ziel_decay | Zeitplan | — | 0 | 0 | — | 0 | ❌ | eingeschränkt |
+| dateien_index | Zeitplan | — | 0 | **4** | — | 0 | ❌ | eingeschränkt |
 
-**Fünf von fünfzehn sind vollständig, und es sind genau die fünf am Empfang.** Kein Dienst ist verweigert; alle fünfzehn sind eingebunden — am 18.08.2026 im Startlog: `NMCP-Handshake: 15 geprueft, 15 eingebunden, 0 verweigert, 10 ohne Zweifelsfaelle`.
+**Fünf von sechzehn sind vollständig, und es sind genau die fünf am Empfang.** Kein Dienst ist verweigert; alle sechzehn sind eingebunden — am 18.08.2026 im Startlog: `NMCP-Handshake: 16 geprueft, 16 eingebunden, 0 verweigert, 11 ohne Zweifelsfaelle`.
+
+> **`dateien_index` ist der erste Zeitplan-Dienst mit einer ausgefüllten Grenzangabe** (vier Einträge), und er ist zugleich der erste **ohne Takt**: `periodic_task()` liefert None, bis die Änderungsrate des Verzeichnisses gemessen ist. Angestoßen wird er über `/admin/dateien/index`. Eine geratene Kadenz wäre dasselbe wie eine geratene Schwelle — und dieses Projekt hat für geratene Schwellen bereits bezahlt.
 
 > **`dateien_wurzeln` ist der erste Dienst, dessen Anmeldung vor seinem Code stand** (18.08.2026). Die übrigen vierzehn wurden nachträglich angemeldet. Die Probe darauf, ob die Konvention beim *Entwerfen* trägt, ist damit einmal gelaufen — und sie hat unterwegs zwei Befunde geliefert, die kein Zeuge gemeldet hätte: eine Ablehnung, die als Störung zurückkam (Verstoßform 8.5), und ein Tor, das eine Zustimmung als Ablehnung las. Beide fand der Betrieb, nicht die Suite.
 
@@ -129,7 +132,7 @@ Bei allen zehn steht genau **ein** Mangel: der fehlende vierte Ausgang. Aushang,
 
 Vier Sätze, jeder mit seiner Zahl:
 
-**Die Anmeldung steht.** Fünfzehn Dienste geprüft, fünfzehn eingebunden, null verweigert (18.08.2026). Der Handshake läuft bei jedem Start; eine fehlerhafte Anmeldung würde den Dienst ausschließen und nicht das System.
+**Die Anmeldung steht.** Sechzehn Dienste geprüft, sechzehn eingebunden, null verweigert (18.08.2026). Der Handshake läuft bei jedem Start; eine fehlerhafte Anmeldung würde den Dienst ausschließen und nicht das System.
 
 **Die Auswahl liest die Zettel der Dienste.** Sechs Aushänge stehen am Brett — fünf von Diensten, einer vom Anbieter `fakten` —, dazu fünf Negativblöcke und eine Rücknahme der Zweifelsregel.
 
