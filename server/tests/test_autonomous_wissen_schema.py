@@ -68,6 +68,14 @@ ERWARTETE_SPALTEN: dict[str, tuple[bool, bool]] = {
     "erstellt_am":      (False, True),
     "verstaerkt_am":    (False, True),
     "decay_am":         (False, True),
+    # Die drei Kanaele, seit dem 18.08.2026 (Konzept §4.1). Alle vier
+    # NULL-faehig und ohne Vorgabewert: NULL heisst "noch nicht erhoben".
+    # **Noch ohne Schreiber** — die Spalten sind die Vorbedingung des
+    # Kanal-Umbaus, nicht seine Umsetzung.
+    "entitaet_ids":     (True,  False),
+    "timeline_id":      (True,  False),
+    "stichwoerter":     (True,  False),
+    "suchtext":         (True,  False),
 }
 
 # Die vier Spalten, deren fehlender Vorgabewert die eigentliche Zusicherung

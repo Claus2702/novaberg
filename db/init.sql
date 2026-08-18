@@ -924,3 +924,29 @@ WHERE NOT EXISTS (
     SELECT 1 FROM ziele
     WHERE user_id = 'nova' AND character_id = 'meister' AND ziel_typ = 'langfristig' AND id > 1
 );
+
+-- ── autonomous_wissen: die drei fehlenden Kanaele (Chat 149, 18.08.2026) ──
+-- Spezifikation: docs/novaberg-agent-dateien_k.md §4.1 und §6.1.
+--
+-- Die Bibliothek trug bis heute NUR themen_embedding und hatte damit einen
+-- von drei Kanaelen: lexikalisch, dense, Graph. `notizen` und `lzg_knoten`
+-- fuehren suchtext und entitaet_ids laengst — und bei der Groesse dieses
+-- Bestandes ist der fehlende lexikalische der staerkere.
+--
+-- Alle vier NULL-faehig und ohne Vorgabewert: NULL heisst hier "noch nicht
+-- erhoben" und nicht "leer". Ein leeres Array oder ein leerer tsvector waere
+-- eine Aussage, die niemand gemacht hat — dieselbe Klasse wie ein Default im
+-- plausiblen Wertebereich.
+--
+-- `timeline_id` ist keine Zierde: Ohne Zeitbezug gibt es keine Regel, nach
+-- der ein neuer Fakt einen alten abloest.
+--
+-- ACHTUNG: Es gibt noch keinen Schreiber fuer diese vier Spalten. Sie sind
+-- die Vorbedingung des Kanal-Umbaus, nicht seine Umsetzung.
+ALTER TABLE autonomous_wissen ADD COLUMN IF NOT EXISTS entitaet_ids INTEGER[];
+ALTER TABLE autonomous_wissen ADD COLUMN IF NOT EXISTS timeline_id  INTEGER;
+ALTER TABLE autonomous_wissen ADD COLUMN IF NOT EXISTS stichwoerter TEXT[];
+ALTER TABLE autonomous_wissen ADD COLUMN IF NOT EXISTS suchtext     TSVECTOR;
+
+CREATE INDEX IF NOT EXISTS idx_autonomous_wissen_suchtext
+    ON autonomous_wissen USING gin (suchtext);
