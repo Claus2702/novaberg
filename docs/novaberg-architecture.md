@@ -262,7 +262,7 @@ project/
 │   │       ├── agent_dispatch.py        #     Agent-Dispatch (Epic 11)
 │   │       └── gespraechsvektor.py      #     → novaberg-node-gv_k.md
 │   │
-│   ├── agents/                          # Agent-System (Epic 11 + Epic 5) — 15 Agenten
+│   ├── agents/                          # Agent-System (Epic 11 + Epic 5) — 16 Agenten
 │   │   ├── __init__.py                  #   AgentRegistry, Auto-Discovery
 │   │   ├── base.py                      #   BaseAgent, AgentState, AgentResult, PeriodicTask
 │   │   ├── crud_validation.py           #   Gemeinsame CRUD-Haertung (Chat 42)
@@ -270,6 +270,10 @@ project/
 │   │   ├── timeline/                    #   TimelineAgent (User-Agent, Zeitparser + Resume)
 │   │   ├── charakter_identitaet/        #   CharakterIdentitaetAgent (User-Agent, Resume + init.sql)
 │   │   ├── direktiven/                  #   DirektivenAgent (User-Agent, HITL-Gate + init.sql)
+│   │   ├── dateien_wurzeln/             #   DateienWurzelnAgent (User-Agent, Tor + Aussenrand + init.sql)
+│   │   │   ├── aussenrand.py            #     Die Schranke: aufloesen, dann pruefen (→ novaberg-agent-dateien_k.md §7)
+│   │   │   ├── resume.py                #     Rueckweg der Rueckfrage — nein und unklar fuehren nie zur Ausfuehrung
+│   │   │   └── init.sql                 #     Tabelle dateien_wurzeln (seit 18.08.2026)
 │   │   ├── kzg/                         #   KZG-Agent (LangGraph-Subgraph, 5 Nodes inkl. magnete_aufloesen)
 │   │   ├── delegation/                  #   DelegationsAgent (Halluzinations-Ventil, init.sql)
 │   │   ├── recherche/                   #   RechercheAgent (Pixie, Web-Recherche)
@@ -447,7 +451,9 @@ Die drei Prompt-Properties (`router_prompt`, `salienz_prompt`, `enricher_prompt`
 
 Kein manuelles Registrieren, keine Import-Liste. Neuer Ordner = neuer Manager.
 
-### 4.5 Die sechs Manager
+### 4.5 Die acht Manager
+
+> **Acht sind registriert, sieben stehen in der Tabelle.** `ls -d server/plugins/*_manager | wc -l` → **8**; die Tabelle unten trägt **7** Zeilen. Es fehlt `WissenManager` (`plugins/wissen_manager/`) — er ist seit dem 04.08.2026 im Bestand und hat nie eine Zeile bekommen. **Bestandsbefund, hier benannt und nicht im Vorbeigehen aufgefüllt** (Fundliste, 18.08.2026).
 
 | Manager | Ordner | Verantwortung |
 |---------|--------|---------------|
@@ -457,6 +463,7 @@ Kein manuelles Registrieren, keine Import-Liste. Neuer Ordner = neuer Manager.
 | **NotizenManager** | `plugins/notizen_manager/` | Merkzettel, Listen, Snippets (CRUD + Append) |
 | **CharakterIdentitaetManager** | `plugins/charakter_identitaet_manager/` | Router-Prompt für Identitätszuweisungen (CRUD via CharakterIdentitaetAgent) |
 | **DirektivenManager** | `plugins/direktiven_manager/` | Router-Prompt für Verhaltensdirektiven (CRUD via DirektivenAgent) |
+| **DateienWurzelnManager** | `plugins/dateien_wurzeln_manager/` | Router-Prompt für Verzeichnis-Freigaben (CRUD via DateienWurzelnAgent) |
 
 | Manager | `enrich()` | `plan()` | `execute()` | Besonderheit |
 |---------|-----------|---------|-------------|-------------|
@@ -563,7 +570,7 @@ Perzeption und Router bekommen die letzten 5 Session-Turns als Hintergrund-Konte
 | Perzeption-Node | Implementiert & getestet | novaberg-node-perception.md |
 | Pixie (9 Tasks, CPU-Runner) | Implementiert & getestet | novaberg-pixie.md, novaberg-pixie.md |
 | Shadow Delivery Service | Implementiert & getestet | novaberg-pixie.md |
-| Plugin-System (6 Manager) | Implementiert & getestet | novaberg-architecture.md |
+| Plugin-System (8 Manager) | Implementiert & getestet | novaberg-architecture.md |
 | LLM-Abstraktionsschicht (Provider, Profile, Anthropic Claude API) | Implementiert | novaberg-architecture.md |
 | Tri-LLM-Architektur (GPU Chat + CPU Analyse + CPU Sprache) | Implementiert | novaberg-pixie_l_spezialisierung.md |
 | Gespraechsvektor-Node (GV1+GV2) | Implementiert | novaberg-node-gv_k.md |

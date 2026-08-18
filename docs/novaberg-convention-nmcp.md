@@ -12,7 +12,13 @@
 
 > ## Zustandsteil — ausdrücklich getrennt vom Regelteil
 >
-> **Von dieser Konvention ist am 17.08.2026 nichts gebaut.** Kein `NMCP`-Bezeichner existiert im Code, kein Handshake läuft, kein Dienst meldet einen Bedarf an, und der vierte Ausgang fehlt im Ergebnistyp.
+> ~~**Von dieser Konvention ist am 17.08.2026 nichts gebaut.** Kein `NMCP`-Bezeichner existiert im Code, kein Handshake läuft, kein Dienst meldet einen Bedarf an, und der vierte Ausgang fehlt im Ergebnistyp.~~
+>
+> **Widerlegt am 18.08.2026, und der Satz stand über den Tag hinaus, an dem er wahr war.** Gemessen am Startlog: `NMCP-Handshake: 15 geprueft, 15 eingebunden, 0 verweigert, 10 ohne Zweifelsfaelle`. Im Code stehen `agents/nmcp.py` mit `anmelden()` und `gesamtbild_pruefen()`, `Bedarf` und `Zusage` in `agents/base.py`, und `AgentResult` trägt `korrektur` samt Pflichtprüfung im `__post_init__`. Fünf Dienste bedienen den vierten Ausgang.
+>
+> **Der Zustandskasten ist damit selbst ein Beleg für seine eigene Warnung.** Er wurde geschrieben, um zu verhindern, dass ein Bezeichner als vorhanden gelesen wird, bevor er existiert — und ist in die andere Richtung veraltet: Er behauptet Abwesenheit, wo längst Code steht. **Eine Zustandsaussage altert in beide Richtungen**, und ein Kasten, der nur vor der einen warnt, hat die andere nicht im Blick.
+>
+> **Neu am 18.08.2026:** `dateien_wurzeln` ist der **erste Dienst, dessen Anmeldung vor seinem Code stand**. Damit ist §3.4 einmal beim Entwerfen erprobt statt beim Nachtragen.
 >
 > Was existiert, sind ihre **Bestandteile in verstreuter Form**: die Aushänge der Manager samt Aggregator und Modellaufruf, drei Clipboards im Zustandstyp, die neunfache Deklarationsfläche der Agenten (davon fünf Felder ohne Leser), die Normalisierung im Klassifikationsschritt, und die deterministische Bearbeitung.
 >
@@ -579,7 +585,7 @@ Acht Formen, in absteigender Schwere. Die ersten drei sind harte Brüche, die ü
 
 **8.1 Ein Aushang in Fachsprache.** Er verlangt vom Empfang Fachwissen und macht ihn zur zentralen Zuordnung. Erkennbar daran, dass der Aushang eine Operation des Dienstes nennt statt eines Merkmals der Äußerung.
 
-**8.2 Eine Anmeldeangabe ohne Leser.** Der teuerste Verstoß, weil er kein Symptom hat: Er wird gepflegt und nie widerlegt. Ein Feld ohne Leser sieht so lange richtig aus, wie niemand hinsieht — im Bestand deklarieren 14 von 14 Agenten ihre Fähigkeiten, und einer davon deklariert einen Geltungsbereich, in dem er gar nicht erreichbar ist. **Dreizehn stimmen, einer nicht, und kein Lauf konnte es melden** (`novaberg-convention-planner-needs.md` §3.7b).
+**8.2 Eine Anmeldeangabe ohne Leser.** Der teuerste Verstoß, weil er kein Symptom hat: Er wird gepflegt und nie widerlegt. Ein Feld ohne Leser sieht so lange richtig aus, wie niemand hinsieht — im Bestand deklarieren 15 von 15 Agenten ihre Fähigkeiten, und einer davon deklariert einen Geltungsbereich, in dem er gar nicht erreichbar ist. **Dreizehn stimmen, einer nicht, und kein Lauf konnte es melden** (`novaberg-convention-planner-needs.md` §3.7b).
 
 > **Daraus die Reihenfolge, die nicht die naheliegende ist: Die Anmeldeangaben werden vor dem Anschließen gegengeprüft, nicht danach.** Wer den fehlenden Leser zuerst baut, schaltet eine Datenbasis scharf, die niemand je geprüft hat, und bekommt Fehlrouting in beide Richtungen gleichzeitig.
 

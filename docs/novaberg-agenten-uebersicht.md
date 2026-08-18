@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Überblick — welche Dienste es gibt, wie sie erreicht werden, und wie weit sie der NMCP-Konvention entsprechen
-**Stand:** 17. August 2026
+**Stand:** 18. August 2026
 **Pfad:** novaberg/docs/novaberg-agenten-uebersicht.md
 **Typ:** Überblick (Zustandsdokument)
 **Regelwerk:** `novaberg-convention-nmcp.md` · `novaberg-convention-planner-needs.md`
@@ -55,14 +55,15 @@ Ein Dienst entspricht der NMCP-Konvention, wenn er sechs Angaben trägt und vier
 
 ---
 
-## 3. Der Stand der vierzehn Dienste
+## 3. Der Stand der fünfzehn Dienste
 
-**Erhoben am 17.08.2026 am laufenden Bestand.** `Aus` = Aushang vorhanden, `Neg`/`Grz`/`Bed` = Anzahl der Einträge, `4.Ausg` = bedient die begründete Ablehnung.
+**Erhoben am 17.08.2026 am laufenden Bestand; die Zeile `dateien_wurzeln` am 18.08.2026 ergänzt.** `Aus` = Aushang vorhanden, `Neg`/`Grz`/`Bed` = Anzahl der Einträge, `4.Ausg` = bedient die begründete Ablehnung.
 
 | Dienst | Zustellart | Aus | Neg | Grz | Quote | Bed | 4.Ausg | Grad |
 |---|---|---|---|---|---|---|---|---|
 | **charakter_identitaet** | Empfang | ✅ | 3 | 3 | 0 % | 0 | ✅ | **vollständig** |
 | **direktiven** | Empfang | ✅ | 3 | 3 | 0 % | 0 | ✅ | **vollständig** |
+| **dateien_wurzeln** | Empfang | ✅ | 3 | 4 | 0 % | 0 | ✅ | **vollständig** |
 | **notizen** | Empfang | ✅ | 3 | 3 | 25 % | 0 | ✅ | **vollständig** |
 | **timeline** | Empfang | ✅ | 3 | 3 | 25 % | 0 | ✅ | **vollständig** |
 | kzg | Queue | — | 0 | 0 | — | **1** | ❌ | eingeschränkt |
@@ -76,7 +77,9 @@ Ein Dienst entspricht der NMCP-Konvention, wenn er sechs Angaben trägt und vier
 | wissensluecken | Zeitplan | — | 0 | 0 | — | 0 | ❌ | eingeschränkt |
 | ziel_decay | Zeitplan | — | 0 | 0 | — | 0 | ❌ | eingeschränkt |
 
-**Vier von vierzehn sind vollständig, und es sind genau die vier am Empfang.** Kein Dienst ist verweigert; alle vierzehn sind eingebunden.
+**Fünf von fünfzehn sind vollständig, und es sind genau die fünf am Empfang.** Kein Dienst ist verweigert; alle fünfzehn sind eingebunden — am 18.08.2026 im Startlog: `NMCP-Handshake: 15 geprueft, 15 eingebunden, 0 verweigert, 10 ohne Zweifelsfaelle`.
+
+> **`dateien_wurzeln` ist der erste Dienst, dessen Anmeldung vor seinem Code stand** (18.08.2026). Die übrigen vierzehn wurden nachträglich angemeldet. Die Probe darauf, ob die Konvention beim *Entwerfen* trägt, ist damit einmal gelaufen — und sie hat unterwegs zwei Befunde geliefert, die kein Zeuge gemeldet hätte: eine Ablehnung, die als Störung zurückkam (Verstoßform 8.5), und ein Tor, das eine Zustimmung als Ablehnung las. Beide fand der Betrieb, nicht die Suite.
 
 ### 3.1 Was „eingeschränkt" bei den zehn wirklich bedeutet — und wo die Angabe irreführt
 
@@ -126,11 +129,11 @@ Bei allen zehn steht genau **ein** Mangel: der fehlende vierte Ausgang. Aushang,
 
 Vier Sätze, jeder mit seiner Zahl:
 
-**Die Anmeldung steht.** Vierzehn Dienste geprüft, vierzehn eingebunden, null verweigert. Der Handshake läuft bei jedem Start; eine fehlerhafte Anmeldung würde den Dienst ausschließen und nicht das System.
+**Die Anmeldung steht.** Fünfzehn Dienste geprüft, fünfzehn eingebunden, null verweigert (18.08.2026). Der Handshake läuft bei jedem Start; eine fehlerhafte Anmeldung würde den Dienst ausschließen und nicht das System.
 
-**Die Auswahl liest die Zettel der Dienste.** Fünf Aushänge stehen am Brett — vier von Diensten, einer vom Anbieter `fakten` —, dazu vier Negativblöcke und eine Rücknahme der Zweifelsregel.
+**Die Auswahl liest die Zettel der Dienste.** Sechs Aushänge stehen am Brett — fünf von Diensten, einer vom Anbieter `fakten` —, dazu fünf Negativblöcke und eine Rücknahme der Zweifelsregel.
 
-**Die Ablehnung ist gebaut und wirkt.** Vier Dienste bedienen den vierten Ausgang; am 17.08.2026 hat er zweimal live gefeuert, und der Vorschlag erreichte den Antwortpfad.
+**Die Ablehnung ist gebaut und wirkt.** Fünf Dienste bedienen den vierten Ausgang; am 17.08.2026 hat er zweimal live gefeuert, und der Vorschlag erreichte den Antwortpfad.
 
 **Und die Zustellentscheidung ist nicht stabil.** Dieselbe Klasse Frage wurde einmal zugestellt und einmal nicht. Solange das gilt, ist eine ausgebliebene Zustellung von einer richtigen Auskunft nicht zu unterscheiden — das ist die offene Schwäche des Systems, nicht die Anmeldung.
 

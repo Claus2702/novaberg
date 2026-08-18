@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Vollständiges Register aller Features mit Zustandsampel und Beleg
-**Stand:** 18. August 2026, ~02:00 UTC (Fortführung: die Werkzeugschicht für Dateien ist gebaut; sechs Zeilen neu, eine berichtigt)
+**Stand:** 18. August 2026, ~11:30 UTC (Fortführung: der Wurzeln-Dienst ist gebaut und gemessen; Stufe 1 auf 🟢, Stufe 0 entfallen, zwei Zeilen neu)
 **Pfad:** novaberg/docs/novaberg-featureliste.md
 **Typ:** Register
 **Quellen:** die 44 Konzeptdokumente, `novaberg-architecture.md`, die Moduldokumente, `novaberg-roadmap.md`, `novaberg-backlog.md`, `novaberg-bugs.md`, `novaberg-fundliste.md` — gehalten gegen Code und Produktivsystem
@@ -223,13 +223,13 @@ Die Feature-Matrix in `novaberg-architecture.md` §6 ist mit dieser Liste abgel�
 
 | Feature | Ampel | Beleg | Rest |
 |---|---|---|---|
-| **NMCP-Handshake beim Start** | 🟢 | **14 von 14 Diensten eingebunden, 0 verweigert** `[Doku, 16.08.]` | — |
+| **NMCP-Handshake beim Start** | 🟢 | **15 von 15 Diensten eingebunden, 0 verweigert** `[gemessen, 18.08.]` | — |
 | **Zuschnitt des Zustands auf die Anmeldung** | 🟢 | `agents/nmcp.py` `[Code]` | — |
 | **Quotenabgleich** (angemeldet gegen gezählt) | 🟠 | Job im Scheduler, `NMCP_ABGLEICH_INTERVALL` `[Code]` | braucht 30–100 Äußerungen je Dienst — noch kein Urteil |
-| **Vierter Ausgang** (`abgelehnt` = Zweifelsfall) | 🟠 | **4 von 14 Diensten** melden ihn an `[gemessen]` | für die zehn Hintergrunddienste ist der Grad „eingeschränkt" eine Aussage **ohne Wirkung** |
-| **Selbstauskunft der Dienste** (`beschreibungen()`) | 🔴 | 14 Anmeldungen, **kein Produktivaufrufer** `[gemessen]` | `SELBSTAUSKUNFT-OHNE-LESER` |
+| **Vierter Ausgang** (`abgelehnt` = Zweifelsfall) | 🟠 | **5 von 15 Diensten** melden ihn an `[gemessen, 18.08.]` | für die zehn Hintergrunddienste ist der Grad „eingeschränkt" eine Aussage **ohne Wirkung** |
+| **Selbstauskunft der Dienste** (`beschreibungen()`) | 🔴 | 15 Anmeldungen, **kein Produktivaufrufer** `[gemessen, 18.08.]` | `SELBSTAUSKUNFT-OHNE-LESER` |
 | **Grenze** (`grenze`-Eigenschaft) | 🔴 | **5 Deklaranten, 0 Leser** `[gemessen]` | Ablageort entscheiden: Brett oder vierter Ausgang |
-| **Audit-Pflicht** (`hintergrund_log`) | 🔴 | **6 von 14 Agenten** schreiben; über die gesamte Lebenszeit nur **7 Aufgabenarten** `[gemessen]` | acht Agenten ohne Eintrag, darunter drei periodische; fünf eigene Kopien von `_audit_log` |
+| **Audit-Pflicht** (`hintergrund_log`) | 🔴 | **6 von 15 Agenten** schreiben; über die gesamte Lebenszeit nur **7 Aufgabenarten** `[gemessen]` | acht Agenten ohne Eintrag, darunter drei periodische; fünf eigene Kopien von `_audit_log` |
 
 ### 7.2 Die Agenten des Menschen
 
@@ -298,12 +298,14 @@ Die Feature-Matrix in `novaberg-architecture.md` §6 ist mit dieser Liste abgel�
 | **Dateien — Auftragsform `DATEI: {json}`** | 🟠 | `tools/dateien/hand.py`, 22 Zeugen `[Code]` — **kein Aufrufer**: kein Knoten importiert es, keine Anleitung in einem Prompt | die Verdrahtung |
 | **Wissensdatei — adressierbarer Block + Version** | 🟢 | `wissen_text_bauen` erzeugt `## AKTUELL` + `**Version:**` · **14 Dateien produktiv geschrieben** `[gemessen]` | — |
 | **Ankertreue des Schreibmodells** | 🟢 | 30/30 zeichengenau und eindeutig, `gemma4-gpu` Median 1,7 s, `qwen36-cpu` 17,9 s `[gemessen]` | — |
-| **Dateien-Dienst — Stufe 0** (Einbettung gegen den Korpus prüfen) | ⚫ | `[Doku]` | **die erste Handlung** der Bauordnung |
-| **Dateien-Dienst — Stufe 1** (`dateien_wurzeln` + Freigabe) | ⚫ | Tabelle existiert nicht `[gemessen]` | alles |
-| **Dateien-Dienst — Stufe 2** (`dateien_index` + Wächter) | ⚫ | Tabelle existiert nicht `[gemessen]` | alles |
-| **Dateien-Dienst — Stufe 3** (Enricher-Quelle, `[AUFZEICHNUNGEN]`) | ⚫ | Block existiert nicht `[gemessen]` | alles — und daran hängt `NOVA-UEBERNIMMT-BIOGRAFIE` |
+| ~~**Dateien-Dienst — Stufe 0** (Einbettung gegen den Korpus prüfen)~~ | — | **entfallen** mit `novaberg-agent-dateien_k.md` v0.10 §3.0a-bis `[Doku]` | Die Schwelle ist keine Konstante mehr, sondern das Quantil `1 − K/N` der mitlaufenden Verteilung — es gibt keine einmalige Vermessung mehr, die vorher stattfinden müsste |
+| **Dateien-Dienst — Stufe 1** (`dateien_wurzeln` + Freigabe) | 🟢 | `agents/dateien_wurzeln/`, 48 Zeugen · Tabelle steht, **Zeile 1 aus einem echten Turn** · Kette im Betriebslog von `Router: mgmt=agent/dateien_wurzeln` bis `verifiziert=True` `[gemessen]` | das **Vergessen** aus §2a.3 — es hat ohne Indextabelle keinen Gegenstand |
+| **Dateien-Dienst — Stufe 2** (`dateien_index` + Wächter) | ⚫ | `grep dateien_index server/` → **0 Treffer** `[gemessen]` | alles; DDL noch nicht angekündigt |
+| **Dateien-Dienst — Stufe 3** (Enricher-Quelle, `[AUFZEICHNUNGEN]`) | ⚫ | `grep AUFZEICHNUNGEN server/` → **0 Treffer** `[gemessen]` | alles — und daran hängt `NOVA-UEBERNIMMT-BIOGRAFIE`. **Solange sie fehlt, erreicht eine Datei im freigegebenen Verzeichnis die Figur nicht** |
 | **Dateien-Dienst — Stufe 4** (Auftragsweg mit Grep) | 🟠 | `datei_grep` **existiert seit 18.08.2026** `[Code]` — das Werkzeug steht, der Weg dorthin nicht | der Agent, der es ruft |
 | **Dateien-Dienst — Stufe 5** (Vertiefung) | ⚫ | `[Doku]` | **zuletzt**, hinter der Gedankenkette |
+| **Außenrand der Freigaben** (erzwungen, nicht deklariert) | 🟢 | `agents/dateien_wurzeln/aussenrand.py` · Gegenprobe: Randprüfung ausgehebelt → **5 vorhergesagt, 5 rot** · im Betrieb `/files/../knowledge` → `/knowledge` abgewiesen `[gemessen]` | — |
+| **Rückweg der Rückfrage** (`dismissed`, Unklarheit fragt erneut) | 🟢 | `agents/dateien_wurzeln/resume.py` · Wortgrenzen statt Teilzeichenketten, im Betrieb nachgemessen `[gemessen]` | gilt nur für diesen Dienst; **drei Torwächter des Bestandes haben ihn weiterhin nicht** |
 | **Verb-Mapping lernen** (nutzereigene Sprache) | 🔴 | `verb_mapping_lernen` **ohne Aufrufer**, `verb_mappings` **0 Zeilen** `[gemessen]` | Schreibpfad steht seit Chat 42 und wurde nie verdrahtet |
 | **Hermes-Substrat** (Ausführungsschicht) | ⚫ | kein Code, keine Anbindungsspezifikation `[Code]` | sieben Messfragen M0–M6 unbeantwortet |
 | **Skill-System** (Epic 10) | ⚫ | kein Code `[Code]` | alles |

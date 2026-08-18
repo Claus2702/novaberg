@@ -1,6 +1,6 @@
 # Novaberg — Roadmap (Projektchronik)
 
-**Stand:** Chat 145, 16. August 2026
+**Stand:** Chat 149, 18. August 2026
 *(Die Kopfzeile stand bis Chat 109 auf „Chat 93, 21. Mai 2026" — 15 Chats hinter dem Inhalt. **Sie ist danach erneut zurückgefallen:** von Chat 110 bis 114 blieb sie auf „Chat 109" stehen, während der Inhalt weiterwuchs, und wurde in Chat 115 nachgezogen. Wer hier etwas ergänzt, zieht die Kopfzeile mit — sie driftet zuverlässig. Achtung beim Nachschlagen: Nur bis Chat 97 trägt jeder Chat eine eigene `## Chat NNN`-Überschrift; die Chats 98–108 stehen als `###`-Abschnitte unter dem Chat-97-Block, benannt nach Sprint statt nach Chat.)*
 **Pfad:** novaberg/docs/novaberg-roadmap.md
 **Single Source of Truth für abgeschlossene Arbeit.**
@@ -9,6 +9,30 @@
 ---
 
 ## Chats 3–20: Grundlagen (März 2026)
+
+### 18.08.2026 — Der erste Dienst, dessen Anmeldung vor dem Code stand
+
+**Gebaut:** `dateien_wurzeln` — der Dienst, über den ein Mensch im Gespräch ein Verzeichnis freigibt, die Freigabe zurücknimmt, wieder aufnimmt, umbenennt und erfährt, worauf die Figur Zugriff hat. Sechs Module unter `agents/dateien_wurzeln/`, ein Aushang unter `plugins/dateien_wurzeln_manager/`, vier Prompt-Blöcke, **48 Zeugen**. Neue Tabelle `dateien_wurzeln` (angekündigt und freigegeben), neuer Außenrand in der Konfiguration, ein read-only Mount.
+
+**Suite 1714 → 1762 grün, 0 übersprungen.** Harte Wand grün, Produktivcode ohne Linter-Befund.
+
+**Der Unterschied zum Vortag ist der Aufrufer.** Am 17.08. entstand die Werkzeugschicht, und niemand rief sie. Heute belegt das Betriebslog die ganze Kette: `Router: mgmt=agent/dateien_wurzeln` → `Planner: Match via target` → `Agent-Dispatch` → Klassifikation → Außenrand → Tor → Ausführung → `verifiziert=True`.
+
+**Die Schranke, und warum sie im Code liegt und nicht in einer Zusage.** Eine Verzeichnis-Freigabe entsteht aus einer Äußerung — damit bestimmt ein gesprochener Satz einen Pfad im Dateisystem. Drei Riegel: ein konfigurierter Außenrand, innerhalb dessen freigegeben werden darf und außerhalb dessen **auch eine Bestätigung nichts ändert**; ein Tor, das den **aufgelösten** Pfad samt Dateizahl zeigt statt der Eingabe; und die Auflösung **vor** der Prüfung. Gemessen am laufenden System: `/files/../knowledge` löst auf zu `/knowledge` und wird abgewiesen — als Zeichenkette hätte es jede Präfixprüfung bestanden.
+
+**Gegenprobe:** Randprüfung ausgehebelt → **5 Zeugen vorhergesagt, 5 gezählt**, und es waren genau die fünf. Die Vorhersage stand vor dem Eingriff fest.
+
+### Zwei Defekte, die erst die Messung fand — beide im eigenen Neubau
+
+**Die Ablehnung kam als Störung zurück.** Ein Pfad außerhalb des Randes endete mit `status='fehler'` statt `abgelehnt`. Das ist Verstoßform 8.5 der Anmeldekonvention, gegen die derselbe Dienst gebaut ist: Ein Fehler ist eine Störung und geht den Betreiber an, eine Ablehnung ist ein Urteil und geht den Auftraggeber an. Behoben; die Randablehnung trägt jetzt Befund, Beleg und Vorschlag. **Kein Zeuge hätte das gemeldet** — der Text an den Menschen war in beiden Fällen brauchbar, falsch war nur der Ausgang, über den er kam.
+
+**„Ja, gerne." wurde als Ablehnung gedeutet.** Die Ja/Nein-Prüfung am Tor verglich Teilzeichenketten, und `ne` steckt in `gerne`. Ein echter Turn bestätigte die Freigabe, und der Dienst meldete dem Menschen, er habe abgelehnt. Umgestellt auf Wortgrenzen; die wiederholte Messung mit **demselben Satz** ergab `bestaetigt` → `wieder aufgenommen`. **Dieselbe Bauart steht im Bestand** (`charakter_identitaet/resume.py`) und liest dort ebenso `gerne` und `meinetwegen` als Nein — gemessen, in der Fundliste, nicht im Vorbeigehen repariert.
+
+> **Beide Defekte lagen quer zu den Zeugen und wurden vom Betrieb gefunden.** 46 grüne Tests sagten über den gewählten Ausgang nichts, und über die Deutung einer echten Antwort auch nicht.
+
+**Der Rückweg der Rückfrage ist gebaut.** Eine unklare Antwort am Tor führt zur erneuten Frage und **nie** zur Ausführung; ein Nein endet als `dismissed`, ohne zu schreiben. Von den vier Torwächtern des Bestandes hatte das zuvor einer.
+
+**Was nicht gebaut ist und heute nichts tut:** Der Wächter (Indextabelle) und die Enricher-Quelle mit dem Block `[AUFZEICHNUNGEN]`. Eine Datei im freigegebenen Verzeichnis erreicht die Figur damit noch nicht.
 
 ### 18.08.2026 — Die Werkzeugschicht für Dateien steht, der Dienst nicht
 
