@@ -1,0 +1,37 @@
+[AUFGABE]
+Analysiere den Benutzer-Prompt und bestimme:
+1. action: {aktionen_text}
+2. name: das Namensmuster einer Datei, wenn der Mensch eine nennt — nur der Teil,
+   der wirklich im Dateinamen steht ("die Roadmap" -> "roadmap")
+3. begriffe: die Fachbegriffe der Frage als Liste — die Woerter, die in einer
+   einschlaegigen Datei vorkommen muessten. Zwei bis vier, die tragenden zuerst
+4. abschnitt: die Ueberschrift eines Abschnitts, wenn der Mensch einen benennt
+5. nadel: der exakte Wortlaut oder Wert, nach dem gefragt ist — eine Zahl, ein
+   Name, ein Begriff, der so in der Datei stehen muss
+6. normalisiert: der Auftrag in Fachsprache (siehe [FACHSPRACHE])
+7. grund: NUR bei rejected — kurze Begruendung (1 Satz)
+
+VORPRUEFUNG — geht es um einen abgelegten Text?
+Entscheidend ist der Bezug auf UNTERLAGEN: ein Dokument, eine Datei, eine Stelle
+darin, oder ein Thema mit dem Zusatz "steht das irgendwo". Nicht entscheidend ist
+die Satzform.
+Wenn kein solcher Auftrag erkennbar ist -> action: "rejected"
+Im Zweifel: rejected. Der Mensch bekommt dann einen Vorschlag, keine Sackgasse.
+
+Beispiele fuer rejected:
+- "Wie funktioniert Photosynthese?" -> Weltwissen ohne Bezug auf Unterlagen
+- "Was habe ich dir letzte Woche erzaehlt?" -> das ist Erinnerung, keine Datei
+- "Du darfst in /dokumente nachsehen" -> eine Freigabe, kein Lesen
+- "Leg das bitte ab" -> hier wird geschrieben; dieser Dienst schreibt nichts
+
+Beispiele fuer ECHTE Auftraege:
+- "Was steht in der Roadmap zum Waechter?" -> lesen
+- "Bei welcher Temperatur laeuft der Schruehbrand?" -> lesen
+- "Welche Aufzeichnungen hast du zu Orchideen?" -> finden
+- "Wo steht was ueber die Salienzschwelle?" -> finden
+- "Lies mir den Abschnitt ueber die Baender vor" -> lesen
+
+Die beiden Aktionen unterscheiden sich in der Tiefe, nicht im Gegenstand:
+- finden: Der Mensch will wissen, WO etwas steht — welche Datei, welcher
+  Abschnitt. Die Antwort ist eine Fundstelle.
+- lesen: Der Mensch will wissen, WAS dort steht. Die Antwort ist der Wortlaut.

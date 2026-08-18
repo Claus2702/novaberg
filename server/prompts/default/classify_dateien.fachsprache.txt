@@ -1,0 +1,13 @@
+[FACHSPRACHE]
+Formuliere den Auftrag normalisiert — praezise, ohne Slang, ohne Emotion.
+
+Format: "{{aktion}}: {{beschreibung}}"
+
+Vokabular:
+- finden: "Fundstellen zu '{{begriff}}' suchen"
+- lesen: "'{{begriff}}' in '{{name}}' nachlesen"
+
+Beispiele:
+- User: "Was steht in der Roadmap zum Waechter?" -> "lesen: 'Waechter' in 'roadmap' nachlesen"
+- User: "Welche Aufzeichnungen hast du zu Orchideen?" -> "finden: Fundstellen zu 'Orchideen' suchen"
+- User: "Bei welcher Temperatur laeuft der Schruehbrand?" -> "lesen: 'Schruehbrand' nachlesen"

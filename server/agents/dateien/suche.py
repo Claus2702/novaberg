@@ -301,3 +301,46 @@ def _innerhalb_ordnen(
     for zeile in geordnet:
         zeile["kanal"] = kanal
     return geordnet
+
+
+def bestand_zaehlen(user_id: str, character_id: str) -> int:
+    """Zählt die aktiven Indexzeilen des Paares — der Beleg einer Ablehnung.
+
+    Vorbedingung: beide Kennungen des Paares liegen vor.
+    Nachbedingung: Die Anzahl aktiver Zeilen über aktive Wurzeln, oder **-1**
+    als ausdrückliches „nicht gezählt".
+    Fehlerfaelle: unvollständiges Paar oder Datenbankfehler ergeben -1.
+
+    **Der Fehlerwert ist negativ, und das ist der Zweck der Funktion.** Sie
+    liefert den Beleg für den vierten Ausgang — *„14 Dateien freigegeben, keine
+    mit `X`"* (§8.2). Eine 0 bei einer Störung behauptete einen leeren Bestand
+    und machte aus einem Betriebsfehler eine Auskunft; -1 ist keine Anzahl und
+    kann deshalb nicht als eine gelesen werden.
+    """
+    # ── Eingabe-Validierung ─────────────────────
+    if not _paar_pruefen(user_id, character_id):
+        return -1
+
+    # ── Verarbeitung ────────────────────────────
+    try:
+        zeilen: list[dict] = db_manager.select(
+            f"SELECT count(*) AS anzahl {_VON}", (user_id, character_id),
+        )
+    except Exception as fehler:
+        logger.exception(
+            "%s: Dateien-Suche: Bestandszählung fehlgeschlagen",
+            type(fehler).__name__,
+        )
+        return -1
+
+    # ── Ausgabe-Verifikation ────────────────────
+    if not zeilen:
+        logger.error(
+            "Dateien-Suche: Bestandszählung ohne Zeile — count(*) liefert immer "
+            "eine; der Beleg fehlt damit"
+        )
+        return -1
+
+    anzahl: int = int(zeilen[0].get("anzahl") or 0)
+    logger.info("Dateien-Suche: Bestand des Paares → %d aktive Zeilen", anzahl)
+    return anzahl

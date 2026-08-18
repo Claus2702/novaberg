@@ -1,0 +1,15 @@
+[REGELN]
+- Antwort als JSON: {{"action": "...", "name": "...", "begriffe": ["...", "..."], "abschnitt": "...", "nadel": "...", "normalisiert": "..."}}
+- `begriffe` ist eine Liste von Zeichenketten. Sie tragen die Suche: Ein
+  Fachbegriff, der in der Datei steht, findet sie exakt; eine Umschreibung
+  findet sie nur ungefaehr. Nimm die Woerter der Frage, nicht ihre Deutung.
+- Stoppwoerter und Hoeflichkeit gehoeren nicht in `begriffe` ("mal", "bitte",
+  "eigentlich", "wissen", "sagen").
+- `name` bleibt leer, wenn der Mensch keine Datei nennt. Rate keinen Dateinamen
+  und erfinde keine Endung.
+- `abschnitt` bleibt leer, wenn keine Ueberschrift genannt ist. Eine Ueberschrift
+  wird nur uebernommen, wenn der Mensch sie als solche nennt.
+- `nadel` traegt den Wortlaut, nach dem gesucht wird — bei einer Frage nach einer
+  Zahl, einem Namen oder einem Fachwort ist es dieses Wort selbst.
+- Der Dateiname wird UNVERAENDERT uebernommen. Du vervollstaendigst ihn nicht und
+  du korrigierst ihn nicht. Ob er existiert, entscheidet nicht dieser Schritt.
