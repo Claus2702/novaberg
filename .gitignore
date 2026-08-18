@@ -67,3 +67,7 @@ node_modules/
 
 # Claude Code
 CLAUDE.md
+# Das Arbeitsverzeichnis des Werkzeugs beschreibt die Art der Entwicklung,
+# nicht das Produkt — es gehoert damit nicht ins Repositorium. Ohne diese
+# Zeile nimmt ein `git add -A` es mit, sobald ein Lauf dort etwas ablegt.
+.claude/
