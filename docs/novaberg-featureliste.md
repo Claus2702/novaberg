@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Vollständiges Register aller Features mit Zustandsampel und Beleg
-**Stand:** 18. August 2026, ~13:10 UTC (Fortführung: Stufe 1 und 2 des Dateien-Dienstes stehen und sind am echten Bestand gemessen; drei Zeilen neu)
+**Stand:** 18. August 2026, ~15:40 UTC (Fortführung: Stufe 1 und 2 des Dateien-Dienstes stehen und sind am echten Bestand gemessen; fünf Zeilen neu, **eine auf 🔴** wegen `ZUSTIMMUNG-GILT-ALS-ABLEHNUNG`)
 **Pfad:** novaberg/docs/novaberg-featureliste.md
 **Typ:** Register
 **Quellen:** die 44 Konzeptdokumente, `novaberg-architecture.md`, die Moduldokumente, `novaberg-roadmap.md`, `novaberg-backlog.md`, `novaberg-bugs.md`, `novaberg-fundliste.md` — gehalten gegen Code und Produktivsystem
@@ -91,7 +91,7 @@ Die Feature-Matrix in `novaberg-architecture.md` §6 ist mit dieser Liste abgel�
 | **Prompt-Schema `[BLOCKNAME]`** auf allen Knoten | 🟢 | `novaberg-pattern-prompt-schema.md` `[Doku]` | — |
 | **Entscheidungs-Eintrag je Knoten** (jede Weiche dauerhaft belegt) | 🔴 | **9 von 20 Knoten** schreiben einen Pipeline-Eintrag `[gemessen]` | 11 Knoten ohne, darunter Router, Responder, Thinker, Planner, Perzeption |
 | **Pipeline-Log** (Forensik, Spans, JSONB) | 🟢 | **87.913 Zeilen**, 10 Eintragsarten, täglich wachsend `[gemessen]` | `log_prompt`, `log_bemerkung`, `log_token` haben **keinen Aufrufer** `[gemessen]` |
-| **Rückfrage-Kette** (Redis-Pending, Resume) | 🟢 | `[Code]` · `novaberg-graph.md` | `RESUME-VERBRAUCHT-DEN-IMPULS` ✅ behoben 14.08. |
+| **Rückfrage-Kette** (Redis-Pending, Resume) | 🔴 | `[Code]` · `novaberg-graph.md` — **`ZUSTIMMUNG-GILT-ALS-ABLEHNUNG` offen seit 18.08.**: Die Ja/Nein-Deutung vergleicht Teilzeichenketten, `gerne` gilt als Nein `[gemessen]` | `RESUME-VERBRAUCHT-DEN-IMPULS` ✅ behoben 14.08. · die Deutung an Wortgrenzen, je Torwächter ein Zeuge |
 
 ---
 
@@ -237,7 +237,7 @@ Die Feature-Matrix in `novaberg-architecture.md` §6 ist mit dieser Liste abgel�
 |---|---|---|---|
 | **NotizenAgent** (CRUD, pg_trgm) | 🟠 | 1 Zeile in `notizen` `[gemessen]` | sechs offene Bugs: Container-Wechsel, Kontext-Rekonstruktion, Skill-Manifest, leeres UPDATE-Ziel, Befehl als Titel |
 | **TimelineAgent** (bi-temporal, ZeitVektor) | 🔴 | **61 Einträge** `[gemessen]` — aber der **Lesepfad ist instabil**: Nova verneinte einen aktiven Termin `[gemessen, 17.08.]` | eine ausgebliebene Zustellung ist von einer richtigen Auskunft nicht zu unterscheiden |
-| **DirektivenAgent** (HITL-Gate) | 🟢 | **12 Direktiven** `[gemessen]` | — |
+| **DirektivenAgent** (HITL-Gate) | 🟢 | **12 Direktiven** `[gemessen]` | teilt die Deutung aus `ZUSTIMMUNG-GILT-ALS-ABLEHNUNG` — **nicht nachgemessen** |
 | **CharakterIdentitätsAgent** | 🟢 | siehe §4 | — |
 | **KZG-Agent** (5-Knoten-Subgraph) | 🟢 | 2.803 Keys `[gemessen]` | `QUEUE-PUSH-OHNE-PRIORITAET` offen |
 | **DelegationsAgent** (Halluzinationsventil) | 🟢 | **1.557 Akten / 2.068 Seiten** `[gemessen]` | `DELEG-SEITEN-VALENZ-TOT`, `DELEG-VEKTOR-EINGEFROREN` offen |
@@ -305,7 +305,7 @@ Die Feature-Matrix in `novaberg-architecture.md` §6 ist mit dieser Liste abgel�
 | **Dateien-Dienst — Stufe 4** (Auftragsweg mit Grep) | 🟠 | `datei_grep` **existiert seit 18.08.2026** `[Code]` — das Werkzeug steht, der Weg dorthin nicht | der Agent, der es ruft |
 | **Dateien-Dienst — Stufe 5** (Vertiefung) | ⚫ | `[Doku]` | **zuletzt**, hinter der Gedankenkette |
 | **Außenrand der Freigaben** (erzwungen, nicht deklariert) | 🟢 | `agents/dateien_wurzeln/aussenrand.py` · Gegenprobe: Randprüfung ausgehebelt → **5 vorhergesagt, 5 rot** · im Betrieb `/files/../knowledge` → `/knowledge` abgewiesen `[gemessen]` | — |
-| **Rückweg der Rückfrage** (`dismissed`, Unklarheit fragt erneut) | 🟢 | `agents/dateien_wurzeln/resume.py` · Wortgrenzen statt Teilzeichenketten, im Betrieb nachgemessen `[gemessen]` | gilt nur für diesen Dienst; **drei Torwächter des Bestandes haben ihn weiterhin nicht** |
+| **Rückweg der Rückfrage** (`dismissed`, Unklarheit fragt erneut) | 🟢 | `agents/dateien_wurzeln/resume.py` · Wortgrenzen statt Teilzeichenketten, im Betrieb nachgemessen `[gemessen]` | gilt nur für diesen Dienst; **drei Torwächter des Bestandes haben ihn weiterhin nicht**, und ihre Deutung ist als `ZUSTIMMUNG-GILT-ALS-ABLEHNUNG` offen |
 | **Änderungserkennung über den Inhalt** (Hash statt Zeit) | 🟢 | `agents/dateien_index/wandern.py` · am Bestand belegt: gleiche Größe, gleiche `mtime`, anderer Inhalt → **erkannt**; Gegenprobe 2 vorhergesagt, 2 rot `[gemessen]` | — |
 | **Bibliothek — drei Kanäle** (`suchtext`, `entitaet_ids`, `timeline_id`, `stichwoerter`) | 🟠 | vier Spalten auf `autonomous_wissen`, DDL gezündet, Schema-Zeuge deckt sie `[gemessen]` | **kein Schreiber** — die Spalten sind die Vorbedingung, nicht die Umsetzung |
 | **`zuletzt_gelernt_hash`** (§5.2a — der Wiedereröffner) | ⚫ | Spalte steht in `dateien_index`, **niemand schreibt sie** `[Code]` | das frühe Tor aus §3.0d, also Stufe 3 |
