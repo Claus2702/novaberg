@@ -10,6 +10,22 @@
 
 ## Chats 3–20: Grundlagen (März 2026)
 
+### 19.08.2026 — Drei Rollen je Silo, und die Regel steht vor dem Bau
+
+**Gezählt, nicht behauptet:** Ein Wissen-Silo kann drei Rollen tragen — **Quelle** (fließt bei, niemand entscheidet), **Zettel** (bestellbar, der Empfang entscheidet anhand der Äußerung), **Werkzeug** (greifbar, das Modell entscheidet mitten im Denken). Über neun Silos gezählt trägt **genau eines alle drei**: die Timeline. Das Web ist der Spiegelfall — Werkzeug ohne Quelle, weil es keine sein kann. Und das am schlechtesten angebundene Silo ist ihr **eigenes erarbeitetes Wissen** mit einer Rolle von dreien: Es fließt bei und ist weder bestellbar noch greifbar.
+
+**Daraus §6a der NMCP-Konvention, geschrieben bevor eine Zeile Code entsteht.** Der zweite Eingang ist keine Erweiterung des Schemas, sondern die Rückkehr der Hälfte, die §1 ausklammert: Das etablierte Protokoll lässt die Auswahl *model-controlled*, NMCP ist die andere Hälfte. Drei Regeln mit ihrem Preis:
+
+| Regel | Was sie verhindert |
+|---|---|
+| Ein Silo hat **einen** Dienst — zwei Eingänge, eine Implementierung | zwei Suchen über denselben Bestand mit zwei Rangfolgen, die auseinanderlaufen |
+| Die vier Ausgänge werden für den Werkzeug-Weg **benannt** in Text gefaltet | dass *„begründet abgelehnt"* und *„nichts gefunden"* dieselbe leere Antwort werden |
+| Die Zustandsfrage des Werkzeug-Wegs gehört an den **Aushang** | ein Dienst, der auf einem Weg schlechter arbeitet und nichts davon sagt |
+
+**Dazu ein Befund, der beim Zählen anfiel:** Der Recherche-Agent schreibt in `autonomous_wissen` und liest nie daraus — seine einzige Quelle ist das Netz, sein Vorwissen kommt aus dem Gedächtnis. Er füllt eine Bibliothek, die er selbst nicht befragt.
+
+Vier Backlog-Einträge, ein Konventionsabschnitt, kein Code.
+
 ### 19.08.2026 — Der Rückweg bekommt seinen zweiten Weg, und der dritte fällt weg
 
 **Gebaut ist Weg 3, *das Zugehörige*** (`wissen_verweis`): Ein abgelegtes Recherche-Ergebnis wird einer vorhandenen Wissensdatei zugeordnet, und **deren Zeile wird verstärkt** — Häufigkeit, Gewicht, `verstaerkt_am`. **Kein Schnitt.** Das Ergebnis behält seine eigene Datei; sie ist die Ausarbeitung ihres Wissens und steht für weitere Vertiefungen bereit. Denselben Inhalt zusätzlich in die verwandte Datei zu schneiden, legte ihn zweimal ab — was die verwandte Zeile braucht, ist nicht der Text, sondern das Gewicht.
