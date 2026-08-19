@@ -208,6 +208,47 @@ class UmschlagTest(unittest.TestCase):
         self.assertIn("done_reason='stop'", zeile)
         self.assertNotIn("Vertragsbruch", zeile)
 
+    def test_umschlag_nennt_die_kanaele_der_nachricht(self) -> None:
+        """Ein Kanal, den niemand liest, sieht aus wie eine leere Ausgabe.
+
+        Der Parser des Modells legt die Ausgabe in Kanäle. Der Bestand liest
+        `content` und `thinking`; kommt ein dritter hinzu, ist er ohne die
+        Schlüsselliste unsichtbar.
+        """
+        antwort: dict = {
+            "message": {"content": "", "thinking": "", "tool_calls": [{"x": 1}]},
+            "done": True, "done_reason": "stop",
+            "prompt_eval_count": 10, "eval_count": 40,
+        }
+        with self.assertLogs("ki_server.llm_provider", level="INFO") as protokoll:
+            _antwort_umschlag_melden(antwort, "responder")
+        self.assertIn("tool_calls", protokoll.output[0])
+        # Und der Ausfall nennt sie ebenfalls — dort wird sie gebraucht.
+        self.assertIn("tool_calls", protokoll.output[-1])
+
+    def test_leere_kanaele_erscheinen_nicht(self) -> None:
+        """Gemessen am 19.08.2026: `model_dump` liefert ALLE Felder.
+
+        Beim Bestand sind das immer dieselben sechs, gleich was drinsteht.
+        Eine Liste, die sich nie ändert, kann keinen Befund tragen — gezählt
+        wird deshalb, was belegt ist.
+        """
+        antwort: dict = {
+            "message": {
+                "content": "Text", "role": "assistant",
+                "thinking": None, "tool_calls": None,
+                "images": None, "tool_name": None,
+            },
+            "done": True, "done_reason": "stop",
+            "prompt_eval_count": 5, "eval_count": 2,
+        }
+        with self.assertLogs("ki_server.llm_provider", level="INFO") as protokoll:
+            _antwort_umschlag_melden(antwort, "responder")
+        zeile: str = protokoll.output[0]
+        self.assertIn("kanaele=['content']", zeile)
+        self.assertNotIn("tool_calls", zeile)
+        self.assertNotIn("images", zeile)
+
     def test_fehlender_abbruchgrund_wird_benannt_statt_ersetzt(self) -> None:
         """Ein Vorgabewert an dieser Stelle sähe wie eine Meldung aus."""
         with self.assertLogs("ki_server.llm_provider", level="INFO") as protokoll:

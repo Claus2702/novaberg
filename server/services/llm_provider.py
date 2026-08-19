@@ -70,6 +70,23 @@ class LLMProvider(ABC):
         ...
 
 
+def _belegte_kanaele(nachricht: dict) -> list[str]:
+    """Nennt die Kanaele der Nachricht, die tatsaechlich etwas tragen.
+
+    Vorbedingung: `nachricht` ist das `message`-Feld der Anbieter-Antwort.
+    Nachbedingung: sortierte Liste der Feldnamen mit belegtem Wert; `role`
+    ist ausgenommen, weil es immer steht und nichts unterscheidet.
+
+    **Der Unterschied zu `sorted(nachricht)` ist der ganze Zweck.**
+    `model_dump()` liefert alle deklarierten Felder, auch die leeren — beim
+    Bestand immer dieselben sechs. Eine Liste, die sich nie aendert, kann
+    keinen Befund tragen.
+    """
+    if not isinstance(nachricht, dict):
+        return ["(kein Dict)"]
+    return sorted(k for k, v in nachricht.items() if v and k != "role")
+
+
 def _antwort_umschlag_melden(response: dict, caller: str | None) -> None:
     """Protokolliert die Anbieter-Antwort, bevor irgendetwas aus ihr gelesen wird.
 
@@ -118,10 +135,22 @@ def _antwort_umschlag_melden(response: dict, caller: str | None) -> None:
     ausgang:   int  = int(daten.get("eval_count", 0) or 0)
 
     # ── Ausgabe-Verifikation ────────────────────
+    # **Die BELEGTEN Kanaele der Nachricht, nicht ihre Felder.** Der Parser
+    # des Modells legt die Ausgabe in Kanaele; `model_dump()` gibt aber
+    # **alle deklarierten Felder** zurueck, auch die leeren — beim Bestand
+    # sind das immer sechs (`content`, `images`, `role`, `thinking`,
+    # `tool_calls`, `tool_name`), gleich was drinsteht.
+    #
+    # Eine Liste, die in jedem Fall gleich aussieht, ist keine Messung. Sie
+    # war die erste Fassung dieser Zeile und haette beim naechsten Ausfall
+    # genau nichts gesagt. Gezaehlt wird deshalb, was **belegt** ist: Ein
+    # Kanal, der ploetzlich auftaucht, waehrend `content` leer bleibt, ist
+    # der gesuchte Befund.
     logger.info(
         f"Anbieter-Umschlag {ort}: done={fertig}, done_reason='{grund}', "
         f"eval_count={ausgang}, prompt_eval_count={eingang}, "
         f"content={len(inhalt)} Z., thinking={len(denken)} Z., "
+        f"kanaele={_belegte_kanaele(nachricht)}, "
         f"schluessel={sorted(daten)}"
     )
 
@@ -133,8 +162,12 @@ def _antwort_umschlag_melden(response: dict, caller: str | None) -> None:
         logger.error(
             f"Anbieter-Umschlag {ort}: {ausgang} Ausgabe-Token erzeugt und "
             f"WEDER content NOCH thinking gefuellt — die Ausgabe ist zwischen "
-            f"Erzeugung und Antwortfeldern verloren. done_reason='{grund}'. "
-            f"Rumpf: {str(daten)[:1200]}"
+            f"Erzeugung und Antwortfeldern verloren. done_reason='{grund}', "
+            f"belegte-kanaele={_belegte_kanaele(nachricht)}. "
+            f"**Bei done_reason='stop' ist die Haltefolge der erste Verdacht** — "
+            f"eine Haltefolge, die am Anfang der Ausgabe trifft, laesst die "
+            f"Zaehler stehen und den Text leer (nachgestellt am 19.08.2026: "
+            f"eval_count=6, content=0). Rumpf: {str(daten)[:1200]}"
         )
 
 
