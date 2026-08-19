@@ -26,6 +26,36 @@
 
 Vier Backlog-Einträge, ein Konventionsabschnitt, kein Code.
 
+### 19.08.2026, nachts — Die Schwelle war nie das Problem
+
+**Gemessen in der Richtung, in der sie benutzt wird.** Der Befund vom 17.08. maß
+Korpuspaare und fand 0,40 zu lasch; der vom 19.08. maß acht Fragen und fand dieselbe
+Zahl zu streng. Beide stimmen — es sind zwei Größen, und benutzt wird nur eine:
+**Frage gegen Bestand.** 40 Fragen gegen 249 Einträge, je Frage ist die richtige
+Antwort bekannt.
+
+| Ziel | richtige Antwort | bester Fehltreffer | auf Rang 1 |
+|---|---|---|---|
+| `themen_embedding` im Bestand | median 0,4045 | median **0,4781** | **8/40 — 20 %** |
+| frisch eingebettetes Thema | median 0,8766 | median 0,5575 | 39/40 — 98 % |
+
+**Der beste falsche Treffer liegt im Median näher als der richtige.** Bei 0,40 werden
+gleichzeitig 50 % der richtigen verworfen und 80 % der Fehltreffer durchgelassen; keine
+andere Zahl schafft beides, weil beide Verteilungen sich vollständig überlappen.
+
+> **Eine Schwelle entscheidet, wie viel einer Rangfolge durchkommt — sie kann sie nicht
+> herstellen.** Wer sie kalibriert, ohne die Ordnung darunter geprüft zu haben, stellt
+> die falsche Frage sorgfältig.
+
+**Die Ursache ist ein Feldname.** `themen_embedding` wird aus dem **Destillat** gebaut;
+der Docstring nennt es Zusammenfassung, die Spalte Thema. Ø 552 gegen Ø 110 Zeichen —
+eine kurze Frage gegen einen fünfmal längeren Fließtext.
+
+**Die Grenze der Messung steht dabei:** Die Frage trägt das Thema wörtlich, was das
+Thema-Ziel begünstigt. Belastbar ist deshalb nur die Untergrenze — selbst im günstigsten
+Fall liegt der Bestand bei 20 %. Ein neues Embedding-Ziel wäre eine Migration von 249
+Zeilen und ist eine Absicht, keine Umsetzung.
+
 ### 19.08.2026, nachts — Die Laufzeit springt zwölf Versionen, und ein Vorgabewert kippt
 
 **0.20.7 → 0.32.14 eingespielt, beide Instanzen neu gestartet.** Suite `Ran 1965 tests — OK`,
