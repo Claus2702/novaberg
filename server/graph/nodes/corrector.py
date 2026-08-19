@@ -7,6 +7,7 @@ import logging
 
 from graph.reiz  import reiz_text
 from graph.state import ConversationState
+from graph.antwort_spur import antwort_setzen
 from config import get_node_config, PROMPTS
 from services.model_services import model_service, ChatRequest
 
@@ -77,7 +78,7 @@ def correct(state: ConversationState) -> ConversationState:
     )
     response = model_service.chat.submit_sync(chat_request)
 
-    state["response"]     = response.text
+    antwort_setzen(state, response.text, "corrector")
     state["token_total"] += response.token_total
 
     logger.info(f"Corrector: Antwort überarbeitet ({state['token_total']} Tokens gesamt)")

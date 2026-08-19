@@ -167,6 +167,16 @@ class ChatWorker(ModelWorker[ChatRequest, ChatResponse]):
         text:   str         = antwort.content
         parsed: dict | None = None
 
+        # Zweite tragende Zuweisung der Kette: Der Text wechselt hier vom
+        # Provider-Objekt in das Worker-Ergebnis. Ohne diese Zeile ist im
+        # Protokoll nicht unterscheidbar, ob der Provider nichts geliefert
+        # hat oder der Worker etwas verloren hat.
+        logger.info(
+            "ChatWorker '%s': Text uebernommen (caller=%s, %d Zeichen, "
+            "thinking=%d Zeichen)",
+            self._name, caller_label, len(text), len(antwort.thinking or ""),
+        )
+
         if request.expect_json:
             try:
                 parsed = postprocess.parse_json_strict(text)

@@ -19,6 +19,7 @@ from datetime    import datetime
 from zoneinfo    import ZoneInfo
 from config      import ASSISTANT_NAME, BEZIEHUNG_EINFLUSS, EMOTIONS_VEKTOREN, EMOTIONS_VEKTOREN_NOVA, PROMPTS, TIMEZONE, get_node_config
 from graph.reiz  import reiz_ist_eigener_gedanke, reiz_text
+from graph.antwort_spur import antwort_setzen
 from graph.state import ConversationState
 from utils.datum_pruefung import NAMEN as WOCHENTAGSNAMEN
 from services.model_services import model_service, ChatRequest
@@ -1000,7 +1001,7 @@ def respond(
     )
     response = model_service.chat.submit_sync(chat_request)
 
-    state["response"]    = response.text
+    antwort_setzen(state, response.text, "responder")
     state["model"]       = "chat_worker"
     state["token_total"] = response.token_total
 

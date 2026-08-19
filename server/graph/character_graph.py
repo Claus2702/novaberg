@@ -32,6 +32,7 @@ from langgraph.graph.state import CompiledStateGraph
 
 from graph.base  import GraphBase
 from graph.state import ConversationState
+from graph.antwort_spur import antwort_setzen
 
 logger = logging.getLogger("ki_server.graph.character")
 
@@ -226,9 +227,11 @@ class CharacterGraph(GraphBase):
                 return "output"
 
             logger.warning("Graph: Max Korrekturen, verdict=ablehnen — Fallback")
-            state["response"] = (
+            antwort_setzen(
+                state,
                 "Ich kann diese Anfrage leider nicht beantworten. "
-                "Bitte formuliere deine Frage anders."
+                "Bitte formuliere deine Frage anders.",
+                "character_graph/rueckfall-ablehnen",
             )
             return "fallback"
 

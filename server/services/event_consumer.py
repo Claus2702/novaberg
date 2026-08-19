@@ -676,6 +676,20 @@ async def _event_verarbeiten(
             f"Antwort nur in Session"
         )
 
+    else:
+        # **Der stille Ausgang am Ende der Kette, bis zum 19.08.2026 ohne
+        # eine einzige Zeile.** Eine leere Antwort fiel hier durch: kein
+        # Senden, keine Meldung, und der Client blieb auf dem letzten
+        # Stufen-Ereignis stehen — vom Menschen nicht von einem Haenger zu
+        # unterscheiden. Ein Rueckkehrpfad, der die Arbeit nicht tut, ist ein
+        # Fehler und keine Warnung.
+        logger.error(
+            f"Event-Consumer: NICHTS ZUGESTELLT für '{user_id}:{character_id}' — "
+            f"die Antwort ist leer (0 Zeichen). Der Turn ist gelaufen und "
+            f"erreicht den Menschen nicht; welcher Schreiber sie geleert hat, "
+            f"steht in den Zeilen 'Antwort-Spur' darueber"
+        )
+
     # ── Self-Trigger prüfen ──
     trigger_count: int = event.get("trigger_count", 0)
 

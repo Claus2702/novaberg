@@ -30,6 +30,7 @@ from langchain_core.tools import tool
 
 from agents.timeline.event_time import precision_has_time, precision_format
 from graph.nodes.thinker_cache import ThinkerToolCache
+from graph.antwort_spur import antwort_setzen
 from graph.reiz          import LEVEL_FELD, reiz_ist_eigener_gedanke, reiz_level, reiz_text
 from graph.state         import ConversationState
 from memory.repositories.timeline_repository import TimelineRepository
@@ -651,9 +652,12 @@ def think(
             geste: str = "Hmm... ich muss das nochmal durchgehen."
             bestehende_antwort: str = state.get("response") or ""
             if bestehende_antwort:
-                state["response"] = f"{bestehende_antwort}\n\n{geste}"
+                antwort_setzen(
+                    state, f"{bestehende_antwort}\n\n{geste}",
+                    "thinker/geste-angehaengt",
+                )
             else:
-                state["response"] = geste
+                antwort_setzen(state, geste, "thinker/geste-ersetzt")
 
             state["self_trigger"] = True
             state["self_trigger_payload"] = _retry_nutzlast(state)
@@ -686,7 +690,7 @@ def think(
 
             if corrected:
                 logger.info("Thinker: Antwort korrigiert")
-                state["response"] = corrected
+                antwort_setzen(state, corrected, "thinker/korrektur")
                 state["node_annotations"].append(
                     f"[Thinker] Korrektur durchgeführt: {', '.join(issues)}"
                 )

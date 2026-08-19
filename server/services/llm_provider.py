@@ -70,6 +70,74 @@ class LLMProvider(ABC):
         ...
 
 
+def _antwort_umschlag_melden(response: dict, caller: str | None) -> None:
+    """Protokolliert die Anbieter-Antwort, bevor irgendetwas aus ihr gelesen wird.
+
+    Vorbedingung: `response` ist das Antwort-Dict des Clients.
+    Nachbedingung: genau eine Zeile mit Schluesseln, Abbruchgrund und
+    Zaehlerstaenden; bei leerem Inhalt zusaetzlich eine Fehlerzeile mit dem
+    Rumpf.
+
+    **Der Abbruchgrund ist der Teil, der bisher fehlte.** `done_reason`
+    unterscheidet eine sauber beendete Erzeugung (`stop`) von einer
+    abgeschnittenen (`length`) und von einem Abbruch beim Laden (`load`).
+    Ohne ihn sagt das Protokoll *„Token verbraucht, kein Text"* — wahr und
+    unbrauchbar.
+    """
+    # ── Eingabe-Validierung ─────────────────────
+    #
+    # **Der Client liefert kein Dict, sondern ein `ChatResponse`** — ein
+    # Pydantic-Modell, das Indexzugriff und `.get` beherrscht und sich
+    # deshalb ueberall im Bestand wie ein Dict verhaelt. Die erste Fassung
+    # dieses Helfers prueft auf `dict` und stieg aus; sie meldete einen
+    # Vertragsbruch, wo keiner war, und verschluckte dabei genau den
+    # Umschlag, um dessentwillen sie gebaut ist.
+    #
+    # `model_dump()` ist der Weg an ALLE Felder — auch an die, die der
+    # Bestand heute nicht liest. Genau das ist der Zweck: Was hier nicht
+    # abgebildet wird, ist danach fort.
+    ort: str = f"[{caller}]" if caller else "[ohne Aufrufer]"
+    if hasattr(response, "model_dump"):
+        daten: dict = response.model_dump()
+    elif isinstance(response, dict):
+        daten = response
+    else:
+        logger.error(
+            f"Anbieter-Umschlag {ort}: Antwort ist {type(response).__name__} "
+            f"— weder Dict noch Pydantic-Modell, der Umschlag ist nicht lesbar"
+        )
+        return
+
+    # ── Verarbeitung ────────────────────────────
+    nachricht: dict = daten.get("message") or {}
+    inhalt:    str  = nachricht.get("content") or "" if isinstance(nachricht, dict) else ""
+    denken:    str  = nachricht.get("thinking") or "" if isinstance(nachricht, dict) else ""
+    grund:     str  = str(daten.get("done_reason", "(nicht gemeldet)"))
+    fertig          = daten.get("done", "(nicht gemeldet)")
+    eingang:   int  = int(daten.get("prompt_eval_count", 0) or 0)
+    ausgang:   int  = int(daten.get("eval_count", 0) or 0)
+
+    # ── Ausgabe-Verifikation ────────────────────
+    logger.info(
+        f"Anbieter-Umschlag {ort}: done={fertig}, done_reason='{grund}', "
+        f"eval_count={ausgang}, prompt_eval_count={eingang}, "
+        f"content={len(inhalt)} Z., thinking={len(denken)} Z., "
+        f"schluessel={sorted(daten)}"
+    )
+
+    # Der Ausfall, um dessentwillen dieser Helfer existiert: Token erzeugt,
+    # aber in KEINEM der beiden Ausgabefelder angekommen. Dann geht der Rumpf
+    # mit ins Protokoll — er ist die einzige Stelle, an der stehen kann, wohin
+    # sie gegangen sind.
+    if ausgang > 0 and not inhalt and not denken:
+        logger.error(
+            f"Anbieter-Umschlag {ort}: {ausgang} Ausgabe-Token erzeugt und "
+            f"WEDER content NOCH thinking gefuellt — die Ausgabe ist zwischen "
+            f"Erzeugung und Antwortfeldern verloren. done_reason='{grund}'. "
+            f"Rumpf: {str(daten)[:1200]}"
+        )
+
+
 class OllamaProvider(LLMProvider):
     """LLM-Provider fuer lokale Ollama-Instanz."""
 
@@ -163,6 +231,23 @@ class OllamaProvider(LLMProvider):
 
         response: dict = self._client.chat(**kwargs)
 
+        # ── Die Antwort des Anbieters, vollstaendig und vor jeder Zuweisung ──
+        #
+        # **Hier ist die Ausgabe des Modells zum letzten Mal ganz da.** Ab der
+        # naechsten Zeile wird sie zerlegt, und jedes Feld, das dabei nicht
+        # gelesen wird, ist danach fort. Genau das ist am 19.08.2026 teuer
+        # geworden: Ein Aufruf meldete 243 erzeugte Ausgabe-Token und lieferte
+        # `content` **und** `thinking` leer — und weil `done_reason` niemand
+        # las, war im Nachhinein nicht entscheidbar, ob die Erzeugung sauber
+        # endete oder abbrach. Die Frage steht seit dem 01.08.2026 offen
+        # (RESPONDER-LEERE-ANTWORT-STILL), und ihr fehlte genau dieses Feld.
+        #
+        # Deshalb wird der **Umschlag** immer protokolliert — Schluessel,
+        # Abbruchgrund, Zaehlerstaende, Laengen —, und im Ausfall zusaetzlich
+        # der Rumpf. Nicht der Inhalt im Normalfall: Der steht eine Zeile
+        # tiefer als RAW und flutet sonst das Protokoll.
+        _antwort_umschlag_melden(response, caller)
+
         input_tokens = response.get("prompt_eval_count", 0)
         if not input_tokens:
             input_tokens = response.get("message", {}).get("prompt_eval_count", 0)
@@ -181,6 +266,13 @@ class OllamaProvider(LLMProvider):
         nachricht: dict = response["message"]
 
         raw_content: str = nachricht["content"]
+        # Die erste tragende Zuweisung der Kette. Die Laenge auf INFO, weil
+        # der Rohtext selbst auf DEBUG steht und im Betrieb nicht sichtbar
+        # ist — ohne die Zahl ist die Stelle im Nachhinein stumm.
+        logger.info(
+            f"Anbieter-Inhalt [{caller}]: content uebernommen, "
+            f"{len(raw_content)} Zeichen"
+        )
         logger.debug(f"OLLAMA RAW [{caller}]: '{raw_content[:500]}'")
 
         # thinking-Feld additiv auslesen — Ollama trennt Reasoning vom content
