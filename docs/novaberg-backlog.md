@@ -162,6 +162,15 @@ Die Zugehörigkeit zu einer dieser Reihen hebt einen Eintrag; alles andere sinkt
 
 ---
 
+## Block 19.08.2026 — der Antwortpfad meldet seinen Verlust und behebt ihn nicht
+
+| Kennung | Was offen ist | Band |
+|---|---|---|
+| `ANTWORT-LEER-OHNE-WIEDERHOLUNG` | **Der Leer-Ausfall ist seit dem 19.08.2026 vollständig sichtbar und wird weiterhin nicht behandelt.** Liefert der Anbieter null Zeichen, läuft der Turn zu Ende: Tribunal mit drei Modellaufrufen (gemessen 6,8 s) und die Antwort-Perzeption arbeiten über ein Nichts, danach wird nichts zugestellt. **Der Verfasser-Inhalt liegt zu diesem Zeitpunkt vor** — im gemessenen Fall 300 Zeichen —, der Aufruf ist also wiederholbar, ohne irgendetwas neu zu rechnen. **Was fertig wäre:** ein Wiederholversuch im Responder bei `text_len == 0`, mit Obergrenze und eigener Protokollzeile; scheitert auch er, geht der Turn in einen benannten Ausgang statt in Schweigen. **Zu entscheiden ist die Absicht, nicht die Umsetzung:** Ein zweiter Aufruf kostet Zeit auf dem seriellen Platz und kann eine **andere** Antwort liefern als die, die das Tribunal später bewertet — wer wiederholt, muss sagen, ab welcher Stufe neu gelaufen wird. **Hängt nicht an der Ursache:** Warum die Token verschwinden, ist unbekannt und muss es für diese Abhilfe auch bleiben. | ungebändigt |
+| `ANBIETER-FELDER-UNGELESEN` | **Der Anbieter liefert zwölf Felder, der Bestand liest drei.** Gezählt am 19.08.2026 aus der Schlüsselliste einer echten Antwort: `created_at`, `done`, `done_reason`, `eval_count`, `eval_duration`, `load_duration`, `logprobs`, `message`, `model`, `prompt_eval_count`, `prompt_eval_duration`, `total_duration`. Gelesen wurden `prompt_eval_count`, `eval_count` und `message`; seit dem 19.08. steht der ganze Umschlag im Protokoll, **verarbeitet** wird weiterhin nichts davon. **Der Verlust ist nicht theoretisch:** `done_reason` hätte einen offenen Defekt aufklären können und war vier Wochen lang da. **Was fertig wäre:** je Feld eine Entscheidung — gelesen und wohin, oder begründet verworfen. Die Dauern (`eval_duration`, `load_duration`, `total_duration`) sind dabei der billigste Gewinn: Sie trennen Wartezeit am Modell von Wartezeit im Graphen, und diese Trennung wird heute aus Zeitstempeln erschlossen. | ungebändigt |
+
+---
+
 ## Block 16.08.2026 — die Gegenrichtung der Doku-Pruefung
 
 | Kennung | Was offen ist | Band |

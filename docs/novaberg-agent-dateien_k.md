@@ -533,7 +533,7 @@ Der ausdrückliche Auftrag ist **nicht** auf die Dateien beschränkt, und das is
 
 > **Der Empfang löst das, indem er jeden Zettel für sich beurteilt und mehrfach zustellt.** Eine Frage nach schwarzen Löchern darf gleichzeitig den Dateien-Dienst treffen und den Web-Merker setzen. Mehrere Treffer sind der Normalfall, nicht der Konflikt.
 
-**Und eine Lücke wird dabei sichtbar, die älter ist als dieses Konzept:** Das eigene Wissen und das Web sind über den Empfang **nicht als Dienste wählbar** — das eine ist eine Kontextquelle, das andere ein Merker. Ein Mensch, der *„such mal in deinem Wissen"* sagt, spricht damit etwas an, das keinen Zettel hat. Das gehört in die Fundliste und nicht in dieses Konzept.
+**Und eine Lücke wird dabei sichtbar, die älter ist als dieses Konzept:** ~~Das eigene Wissen und das Web sind~~ **Das Web ist** über den Empfang **nicht als Dienst wählbar** — es ist ein Merker. ~~Ein Mensch, der *„such mal in deinem Wissen"* sagt, spricht damit etwas an, das keinen Zettel hat.~~ → **Für das eigene Wissen erledigt am 19.08.2026:** `wissen` hat seinen Zettel und seinen Dienst (`novaberg-autonomous-wissen_k.md` §7.3a), gemessen an zwei echten Turns. **Für das Web steht die Lücke.** Der Satz bleibt hier stehen und nicht gelöscht, weil er der Ort war, an dem die Lücke zuerst benannt wurde.
 
 ### 3.1 Die drei Dienste
 

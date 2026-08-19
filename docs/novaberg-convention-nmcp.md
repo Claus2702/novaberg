@@ -668,7 +668,24 @@ Acht Formen, in absteigender Schwere. Die ersten drei sind harte Brüche, die ü
 | 8.1 Aushang in Fachsprache | Abgleich des Aushangs gegen die Fachbegriffe des eigenen Dienstes | Prüfstrecke, heuristisch |
 | 8.2b Abgleich unter der Mindest-Stichprobe | Zählerstand gegen die Schwellen aus §4.8 | **Betrieb, im Abgleich selbst** |
 | 8.4 Aufruf ohne Audit | Abgleich der Aufrufe gegen die Audit-Einträge | Betrieb |
-| — **Rollenmatrix** (§6a) | Je Silo zählen, welche der drei Rollen es trägt — Quelle über `immer_aktiv`, Zettel über `router_prompt`, Werkzeug über den Werkzeugkasten des Denkknotens. **Eine leere Zelle ohne Begründung am Silo ist der Befund** | **Start** — Meldung an den Autor, keine Verweigerung: Eine fehlende Rolle kann richtig sein, aber nicht unbemerkt |
+| — **Rollenmatrix** (§6a) | Je Silo zählen, welche der drei Rollen es trägt — Quelle über ~~`immer_aktiv`~~ **`enrich_entries`** (⚠ berichtigt am 19.08.2026, siehe unter der Tabelle), Zettel über `router_prompt`, Werkzeug über den Werkzeugkasten des Denkknotens. **Eine leere Zelle ohne Begründung am Silo ist der Befund** | **Start** — Meldung an den Autor, keine Verweigerung: Eine fehlende Rolle kann richtig sein, aber nicht unbemerkt |
+
+> **⚠ Berichtigt am 19.08.2026 — das ursprüngliche Merkmal der Rolle *Quelle* war falsch, und es wäre schweigend falsch gezählt worden.**
+>
+> Diese Tabelle nannte `immer_aktiv`. Der Enricher ruft `enrich_entries` aber bei **jedem** Manager (`graph/nodes/enricher.py`), gleich was `immer_aktiv` sagt; die Eigenschaft steuert nach `BaseManager` den **Schreibpfad** — *„False = nur bei pending_writes"*. Beides sind Merkmale, aber nicht dasselbe Merkmal.
+>
+> Maschinell über zehn Silos gezählt: **`immer_aktiv` ergibt 3 Quellen, `enrich_entries` ergibt 4**, und die beiden gehen bei **zweien** auseinander:
+>
+> | Silo | `immer_aktiv` | eigenes `enrich_entries` | tatsächlich Quelle |
+> |---|---|---|---|
+> | `kzg` | ja | nein | **nein** — sein Beitrag ist im Dispatcher-Knoten verdrahtet |
+> | `timeline` | nein | ja | **ja** |
+>
+> **Der Fall `timeline` ist der teure:** Er ist der einzige Silo mit allen drei Rollen und damit der Bezugsfall der Matrix. Nach dem alten Merkmal hätte die Prüfung ihn als 2 von 3 gemeldet — und eine Meldung über eine fehlende Rolle, die es gibt, ist schlimmer als keine Meldung.
+>
+> **Ein dritter Zustand fehlt der Matrix weiterhin:** `fakten` überschreibt `enrich_entries` und ist im Enricher abgeschaltet — mit `continue` übersprungen, begründet im Code mit *„produziert 130+ Rausch-Eintraege"*. *Gebaut und stillgelegt* ist weder ja noch nein und sieht in jeder Zählung wie eine Entscheidung aus.
+>
+> Gemessen mit `labor/2026-08-19_rollenmatrix.py`; der Anlass war die zweite Kontrolle beim Bau des `wissen`-Dienstes.
 
 **Nicht mechanisch prüfbar:** 8.5 bis 8.8 hängen an Bedeutung — ob eine Rückmeldung ein Urteil oder eine Störung ist, ob ein Vorschlag brauchbar ist, ob eine Zustellentscheidung Fachwissen voraussetzte.
 

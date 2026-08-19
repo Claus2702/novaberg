@@ -26,6 +26,48 @@
 
 Vier Backlog-Einträge, ein Konventionsabschnitt, kein Code.
 
+### 19.08.2026, abends — Die tragende Variable bekommt ihre Spur
+
+**Ein Turn erreichte den Menschen nicht, und niemand konnte sagen, wo er verloren ging.** Der
+Responder lieferte 6433 Token und null Zeichen; die Antwort wurde nicht zugestellt, und der
+Client blieb auf dem letzten Stufen-Ereignis stehen. Der Defekt ist seit dem 01.08.2026 bekannt
+(`RESPONDER-LEERE-ANTWORT-STILL`) — was fehlte, war die Spur.
+
+**Der Pfad wurde vollständig verfolgt: sechs Schreiber auf `state["response"]`, keiner
+protokollierte.**
+
+| Stufe | Ort | Zustand vorher |
+|---|---|---|
+| Anbieter-Antwort | `services/llm_provider.py` | **zwölf Felder geliefert, drei gelesen** |
+| `raw_content` | `services/llm_provider.py` | nur DEBUG, auf 500 Zeichen gekappt |
+| `text` | `services/model_services/chat_worker.py` | keine Zeile |
+| `state["response"]` | Responder, Thinker (3×), Corrector, Graph-Rückfall | keine Zeile |
+| Zustellung | `services/event_consumer.py` | **`if … elif …` ohne `else` — lautloser Ausgang** |
+
+**Gebaut ist `graph/antwort_spur.py`:** eine Funktion, durch die jede Schreibung geht und die
+alte Länge, neue Länge, Schreibernamen und Vorschau protokolliert. Nichtleer → leer ist `error`,
+nicht `warning` — ein Pfad, der die Arbeit nicht tut, ist ein Fehler.
+
+**Dazu der Umschlag des Anbieters, vollständig und vor jeder Zuweisung.** Er trägt `done_reason`
+— das Feld, dessen Fehlen den Defekt unaufklärbar machte. Erzeugt das Modell Token und füllt
+**weder** `content` **noch** `thinking`, geht der Rumpf als Fehler ins Protokoll.
+
+> **Der Riegel dagegen, dass die Spur wieder löchrig wird, ist ein AST-Zeuge:** Jede Zuweisung an
+> `state["response"]` außerhalb des Helfers macht ihn rot. Mit Auslösefall — ein schweigender
+> Riegel ist von einem sauberen Bestand nicht zu unterscheiden.
+
+**Die Instrumentierung fand im ersten Lauf einen Fehler in sich selbst.** Der Umschlag-Melder
+prüfte auf `dict` und stieg aus; der Client liefert ein Pydantic-Modell, das sich überall wie ein
+Dict verhält. Er meldete einen Vertragsbruch, wo keiner war, und verschluckte dabei genau den
+Umschlag, für den er gebaut ist. Behoben über `model_dump()`, mit eigenem Zeugen.
+
+| | Zahl |
+|---|---|
+| Suite | 1953 → **1963 grün, 0 übersprungen** |
+| Schreibstellen der tragenden Variablen | **6**, alle über den Helfer |
+| Felder der Anbieter-Antwort | **12 geliefert, 3 gelesen** vor dem Umbau |
+| Echte Turns | 2, Kette lückenlos im Protokoll, 3000 Zeichen zugestellt |
+
 ### 19.08.2026 — Die Bibliothek wird bestellbar, und ein Riegel sperrt beinahe zwei Dienste aus
 
 **Das eigene erarbeitete Wissen war angebunden wie ein Gedächtnis, nicht wie eine Quelle.** Es

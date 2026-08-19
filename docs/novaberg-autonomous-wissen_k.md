@@ -419,6 +419,38 @@ Das LZG steuert die Gewichtung: Wenn Nova im LZG einen aktiven Eintrag zu
 Blockchain hoeher priorisiert. **Das Gedaechtnis steuert, wie wichtig der
 Bibliotheksinhalt genommen wird.**
 
+### 7.3a Der zweite Eingang — die Bibliothek ist bestellbar (19.08.2026)
+
+**Gebaut, nicht geplant.** Bis zum 19.08.2026 war die Bibliothek über **einen** Eingang erreichbar: den Enricher. Sie floss bei jedem Turn bei, und niemand konnte sie **bestellen** — weder der Mensch (*„Was hast du selbst dazu erarbeitet?"*) noch sie selbst. Von den drei Rollen eines Silos (`novaberg-convention-nmcp.md` §6a) trug sie genau eine.
+
+| Rolle | Wer entscheidet | Zustand |
+|---|---|---|
+| **Quelle** | niemand — sie fließt bei | `WissenManager.enrich_entries`, unverändert |
+| **Zettel** | der Empfang, anhand der Äußerung | **neu:** `WissenManager.router_prompt` + `agents/wissen/` |
+| **Werkzeug** | das Modell selbst | **offen** (`SILO-OHNE-WERKZEUG`) |
+
+#### Eine Suche, zwei Tiefen
+
+**Beide Eingänge gehen durch dieselbe Abfrage** — `AutonomousWissenRepository.suchen` (§6a.1). Zwei Abfragen über denselben Bestand ergäben zwei Rangfolgen, und die Abweichung fiele erst auf, wenn jemand dieselbe Frage zweimal stellt und zwei Antworten bekommt.
+
+**Was der Eingang wählen darf, ist die Tiefe — nicht die Ordnung.** Schwelle, Typ und Sortierung sind für beide gleich; allein die Obergrenze unterscheidet sich (Quelle 3, Zettel 5). Der Grund für den Unterschied ist die Lage: Der Enricher-Weg drückt seine Treffer ungefragt in *jeden* Turn und muss sparsam sein; beim bestellten Weg hat der Mensch gefragt und wartet.
+
+#### Der vierte Ausgang ist hier der eigentliche Zugewinn
+
+**Die Quelle kann nur beitragen oder schweigen**, und Schweigen ist keine Antwort: *„dazu habe ich nichts"* und *„dazu habe ich nicht nachgesehen"* sehen im Gespräch gleich aus. Der Dienst trennt beides und legt die Zahl dazu — wie viele Ausarbeitungen durchsucht wurden und wie nah die knappste lag.
+
+> **Und er hat in seinem ersten Lauf einen Befund geliefert, den die Quelle in Monaten nicht liefern konnte.**
+>
+> `[gemessen]` — 19.08.2026, 12:41 UTC. Frage nach Sternentwicklung und Kernfusion; **0 Treffer über der Schwelle, Bestand 242, nächste Nähe 0,3084** — und die nächste Zeile war die sachlich richtige, mit dem wortgleichen Thema. Acht Fragen nachgemessen: Der richtige Treffer liegt bei **0,3054** und wird abgewiesen, ein Fall ohne einschlägigen Treffer bei **0,4700** und kommt durch. **Die Schwelle sortiert an diesem Korpus genau falsch herum.** Sie ist aus `anker_retrieval` übernommen und für diese Richtung nie gemessen worden (`WIS-SCHWELLE-MESSEN`).
+>
+> Der Befund vom 17.08.2026 maß **Korpuspaare** und fand 0,40 zu lasch. Diese Messung ist seine Kehrseite: **Frage gegen Korpus** verhält sich anders als Korpus gegen Korpus. Wer eine Schwelle an Bestandspaaren kalibriert, kalibriert sie für die falsche Richtung.
+
+#### Die Tiefe bleibt Stufe 1, und der Dienst sagt es
+
+Er liefert **Thema und Zusammenfassung, nicht den Wortlaut** der Ausarbeitung; Stufe 2 (§7.3) ist nicht gebaut. Das steht in seiner `grenze` und in jeder Auskunft, weil ein unbenannter Verzicht sich als Vollständigkeit liest — die gemessene Folge dieser Lücke steht in `novaberg-agent-dateien_k.md` §8.1a.
+
+---
+
 ### 7.4 Soft-Delete statt Loeschung
 
 Dateien werden nie geloescht. Metadaten-Eintraege werden auf `aktiv = FALSE`
