@@ -19,6 +19,11 @@ Die Zusicherungen, die hier geprüft werden:
   6. **Die Version steigt vor dem Schnitt**, nicht danach.
   7. **Der Auslöser reisst die Promotion nicht.** Ein Fehlschlag beim
      Einreihen kostet eine Einarbeitung, kein Gedächtnis.
+  8. **Der Verweis schneidet nicht.** Weg 3 ordnet zu und verstärkt die
+     Zeile; die Datei bleibt unangetastet, weil das Recherche-Ergebnis seine
+     eigene behält. Geprüft mit positivem Zwilling: Weg 2 schneidet weiterhin.
+  9. **Die fehlende Ergänzung ist beim Verweis kein Befund.** Die Warnung
+     darüber wäre ein Fehlalarm und machte die echte unglaubwürdig.
 
 Kein skipUnless, kein skipIf, kein try/except um Importe.
 """
@@ -26,7 +31,13 @@ Kein skipUnless, kein skipIf, kein try/except um Importe.
 import unittest
 from unittest.mock import patch
 
-from agents.wissen_rueckweg import einarbeitung, herkunft, zuordnung
+from agents.wissen_rueckweg import (
+    AUFGABE_EINARBEITEN,
+    AUFGABE_VERWEIS,
+    einarbeitung,
+    herkunft,
+    zuordnung,
+)
 from agents.wissen_rueckweg.agent import WissenRueckwegAgent
 from services.pixie.router import _QUEUE_ROUTING
 
@@ -211,12 +222,260 @@ class EinarbeitungTest(unittest.TestCase):
         self.assertEqual("1.1", ergebnis["version"])
 
 
+class VerweisTest(unittest.TestCase):
+    """Weg 3 — zuordnen und verstärken, ohne Schnitt in der Datei."""
+
+    def _state(self, aufgabe: str) -> dict:
+        """Baut den Auftrag, wie der Dispatcher ihn dem Agenten übergibt."""
+        return {
+            "aufgabe":   aufgabe,
+            "kontext":   {"user_id": PAAR_USER, "character_id": PAAR_FIGUR},
+            "parameter": {
+                "kontext": "Areolen sind die Kurztriebe der Kakteen",
+                "thema":   "Kakteen",
+                "modus":   "rueckweg_verdichtet",
+            },
+            "schritte":  [],
+            "ergebnis":  None,
+            "status":    "laufend",
+            "fehler":    None,
+        }
+
+    def _fahren(self, aufgabe: str):
+        """Fährt `invoke` mit gestellter Zuordnung und zählt die Schnitte."""
+        entscheidung: dict = {"ziel": KANDIDATEN[0], "kern": "Areolen tragen Dornen."}
+
+        with patch("agents.wissen_rueckweg.agent.model_service") as modell, \
+             patch("agents.wissen_rueckweg.agent.kandidaten_laden",
+                   return_value=KANDIDATEN), \
+             patch("agents.wissen_rueckweg.agent.ziel_bestimmen",
+                   return_value=entscheidung), \
+             patch("agents.wissen_rueckweg.agent.einarbeiten",
+                   return_value={"geschrieben": True, "marke": "[i1>]",
+                                 "version": "1.1", "ergaenzung": "Areolen."}) as schnitt, \
+             patch("agents.wissen_rueckweg.agent.pipeline_log"), \
+             patch.object(WissenRueckwegAgent, "_verstaerken") as verstaerken:
+            modell.embed.submit_sync.return_value.embedding = [0.1, 0.2]
+            zustand = WissenRueckwegAgent().invoke(self._state(aufgabe))
+
+        return zustand, schnitt, verstaerken
+
+    def test_verweis_arbeitet_nicht_ein(self) -> None:
+        """Der Verweis will das Gewicht, nicht ein zweites Exemplar des Textes."""
+        zustand, schnitt, verstaerken = self._fahren(AUFGABE_VERWEIS)
+
+        schnitt.assert_not_called()
+        verstaerken.assert_called_once()
+        self.assertFalse(verstaerken.call_args.kwargs["datei_gewachsen"])
+        self.assertEqual("abgeschlossen", zustand["status"])
+        self.assertFalse(zustand["ergebnis"]["geschrieben"])
+        self.assertEqual("verweis", zustand["ergebnis"]["vorgang"])
+        self.assertEqual(KANDIDATEN[0]["dateipfad"], zustand["ergebnis"]["dateipfad"])
+
+    def test_einarbeiten_schneidet_weiterhin(self) -> None:
+        """Der positive Zwilling: ohne ihn wäre die Zusicherung oben leer."""
+        zustand, schnitt, verstaerken = self._fahren(AUFGABE_EINARBEITEN)
+
+        schnitt.assert_called_once()
+        verstaerken.assert_called_once()
+        self.assertEqual("[i1>]", zustand["ergebnis"]["marke"])
+
+    def test_die_beiden_wege_tragen_verschiedene_namen(self) -> None:
+        """Ein Aufgabenname gehört genau einer Rolle (`F-AUFGABE-1`)."""
+        self.assertNotEqual(AUFGABE_EINARBEITEN, AUFGABE_VERWEIS)
+
+    def test_beim_verweis_fehlt_die_ergaenzung_zu_recht(self) -> None:
+        """Eine Warnung über eine Datei, die nicht gewachsen ist, ist ein Fehlalarm."""
+        agent = WissenRueckwegAgent()
+        with patch("agents.wissen_rueckweg.agent.db_manager") as db:
+            db.select.return_value = [{
+                "beobachter": "user", "typ": "wissen", "modus": "recherche",
+                "status": "echte_tiefe", "salienz_anfang": 1.0,
+            }]
+            with patch("agents.wissen_rueckweg.agent.AutonomousWissenRepository"):
+                with self.assertNoLogs("ki_server.agents.wissen_rueckweg", level="WARNING"):
+                    agent._verstaerken(
+                        KANDIDATEN[0], "", PAAR_USER, PAAR_FIGUR,
+                        datei_gewachsen=False,
+                    )
+
+    def test_beim_schnitt_ohne_ergaenzung_bleibt_die_warnung(self) -> None:
+        """Der positive Zwilling: dort ist die Datei gewachsen und der Text nicht."""
+        agent = WissenRueckwegAgent()
+        with patch("agents.wissen_rueckweg.agent.db_manager") as db:
+            db.select.return_value = [{
+                "beobachter": "user", "typ": "wissen", "modus": "recherche",
+                "status": "echte_tiefe", "salienz_anfang": 1.0,
+            }]
+            with patch("agents.wissen_rueckweg.agent.AutonomousWissenRepository"):
+                with self.assertLogs("ki_server.agents.wissen_rueckweg", level="WARNING"):
+                    agent._verstaerken(KANDIDATEN[0], "", PAAR_USER, PAAR_FIGUR)
+
+
+class VerweisFragtAndersTest(unittest.TestCase):
+    """Die beiden Wege stellen entgegengesetzte Fragen — an einem Zettel je.
+
+    `[gemessen]` — 19.08.2026, fünfter echter Lauf: bester Kosinus **0,9226**,
+    und die Ablehnung lautete *„exakte textliche Wiederholung … kein
+    Wissenszuwachs"*. Für den Schnitt ist das richtig, für den Verweis die
+    Umkehrung seines Zwecks — dass der Fund schon dasteht, ist der stärkste
+    Grund, das Gewicht der Datei zu heben.
+    """
+
+    def _system_prompt(self, *, verweis: bool) -> str:
+        """Fährt `ziel_bestimmen` und gibt den benutzten Systemzettel zurück."""
+        with patch("agents.wissen_rueckweg.zuordnung.model_service") as modell:
+            modell.chat.submit_sync.return_value.parsed = {
+                "ziel": 11, "begruendung": "passt", "kern": "Areolen.",
+            }
+            zuordnung.ziel_bestimmen("Ein Fund", KANDIDATEN, verweis=verweis)
+            return modell.chat.submit_sync.call_args.args[0].system
+
+    def test_der_verweis_verwirft_die_wiederholung_nicht(self) -> None:
+        """Sein bester Fall darf ihm nicht als Ausschlussgrund vorgelegt werden."""
+        zettel = self._system_prompt(verweis=True)
+
+        self.assertNotIn("kein Zuwachs", zettel)
+        self.assertIn("BESTAETIGUNG", zettel)
+
+    def test_der_schnitt_verwirft_sie_weiterhin(self) -> None:
+        """Der positive Zwilling — ohne ihn wäre die Zusicherung oben leer."""
+        zettel = self._system_prompt(verweis=False)
+
+        self.assertIn("kein Zuwachs", zettel)
+
+    def test_beide_teilen_die_identitaet(self) -> None:
+        """Zuordnen statt formulieren gilt für beide — ein Satz, nicht zwei."""
+        self.assertIn("Planer des Rueckwegs", self._system_prompt(verweis=True))
+        self.assertIn("Planer des Rueckwegs", self._system_prompt(verweis=False))
+
+
+class EigeneZeileTest(unittest.TestCase):
+    """Ohne diesen Ausschluss verstärkt jedes Ergebnis seine eigene Zeile.
+
+    Der Recherche-Weg legt Sekunden vor dem Auftrag eine Zeile mit genau der
+    Zusammenfassung an, aus der das Material des Verweises stammt — sie wäre
+    der nächste Kandidat, mit Kosinus nahe eins.
+    """
+
+    def _abfrage(self, ausschluss: int | None):
+        """Fängt SQL und Parameter der Kandidatenabfrage ab."""
+        with patch("agents.wissen_rueckweg.zuordnung.db_manager") as db:
+            db.select.return_value = []
+            zuordnung.kandidaten_laden(PAAR_USER, PAAR_FIGUR, [0.1, 0.2], ausschluss)
+            return db.select.call_args.args
+
+    def test_die_eigene_zeile_wird_ausgeschlossen(self) -> None:
+        """Die Nummer steht in den Parametern, nicht nur in der Absicht."""
+        sql, parameter = self._abfrage(8050)
+
+        self.assertIn("id <> ", sql)
+        self.assertIn(8050, parameter)
+
+    def test_ohne_bezug_schliesst_er_nichts_aus(self) -> None:
+        """Der positive Zwilling: Weg 2 hat keine eigene Zeile herauszuhalten."""
+        sql, parameter = self._abfrage(None)
+
+        self.assertIn("id <> ", sql)
+        self.assertEqual(2, sum(1 for p in parameter if p is None))
+
+
+class VerweisAusloeserTest(unittest.TestCase):
+    """Der Einreihpunkt in der Recherche — Weg 3 hat einen Erzeuger."""
+
+    def _ergebnis(self, destillat: str = "Areolen tragen Dornen."):
+        """Baut das Arbeitsergebnis, wie es nach der Ablage vorliegt."""
+        from services.wissensspeicher import Arbeitsergebnis
+
+        return Arbeitsergebnis(
+            thema="Kakteen", destillat=destillat, status="echte_tiefe",
+            modus="recherche", user_id=PAAR_USER, character_id=PAAR_FIGUR,
+            beobachter="assistant", salienz=0.8, ziel="Wuchsformen",
+            begruendung="", queries=[],
+        )
+
+    def test_der_verweis_wird_eingereiht(self) -> None:
+        """Ohne diesen Aufruf entsteht Weg 3 nie — der Mechanismus stünde ungenutzt."""
+        from agents.recherche.agent import RechercheAgent
+
+        with patch("agents.recherche.agent.shadow_queue_push") as push:
+            RechercheAgent._verweis_einreihen(RechercheAgent(), self._ergebnis(), "/w.md", "7")
+
+        push.assert_called_once()
+        self.assertEqual(AUFGABE_VERWEIS, push.call_args.args[2])
+        self.assertEqual("Kakteen", push.call_args.kwargs["thema"])
+
+    def test_ohne_destillat_wird_nicht_eingereiht(self) -> None:
+        """Ein Auftrag ohne Text hätte nichts zuzuordnen."""
+        from agents.recherche.agent import RechercheAgent
+
+        with patch("agents.recherche.agent.shadow_queue_push") as push:
+            RechercheAgent._verweis_einreihen(RechercheAgent(), self._ergebnis("   "), "/w.md", "7")
+
+        push.assert_not_called()
+
+    def test_die_recherche_ruft_den_ausloeser(self) -> None:
+        """**Die Verdrahtung, nicht die Fähigkeit.**
+
+        Die drei Zeugen daneben rufen `_verweis_einreihen` selbst — sie
+        blieben grün, wenn niemand ihn mehr riefe. Die Gegenprobe hat genau
+        das gezeigt: Der Aufruf aus dem Bibliotheks-Schritt entfernt, 1918
+        Tests grün. Dieser Zeuge schließt die Lücke.
+        """
+        from agents.recherche.agent import Durchlauf, RechercheAgent
+
+        durchlauf = Durchlauf(
+            thema="Kakteen", ziel="Wuchsformen", destillat="Areolen tragen Dornen.",
+            queries=[], lage={}, queue_eintrag={"salienz": 0.8},
+            user_id=PAAR_USER,
+        )
+        agent = RechercheAgent()
+
+        with patch.object(RechercheAgent, "_audit_log"), \
+             patch.object(RechercheAgent, "_embedding_bauen", return_value=None), \
+             patch("agents.recherche.agent.ergebnis_einordnen",
+                   return_value={"status": "echte_tiefe", "begruendung": ""}), \
+             patch("agents.recherche.agent.ergebnis_ablegen",
+                   return_value={"bericht_pfad": "/b.md", "wissen_pfad": "/w.md",
+                                 "zeilen_id": "7"}), \
+             patch.object(RechercheAgent, "_verweis_einreihen") as ausloeser:
+            agent._bibliothek_schritt(durchlauf)
+
+        ausloeser.assert_called_once()
+
+    def test_ohne_wissensdatei_wird_nicht_eingereiht(self) -> None:
+        """**Am Bestand gefunden, nicht am Zeugen.**
+
+        Eine gescheiterte Recherche schreibt nur einen Bericht; ihr Destillat
+        ist der Platzhalter „Ohne Ergebnis zum Ziel: …". Ohne diese Bedingung
+        standen am 19.08.2026 binnen Minuten zwei Aufträge der Form
+        „Gescheitert <hash>" in der Queue — je zwei Modellaufrufe für einen
+        Ausgang, der nur „keine Datei passt" lauten kann.
+        """
+        from agents.recherche.agent import RechercheAgent
+
+        gescheitert = self._ergebnis("Ohne Ergebnis zum Ziel: Ein Ziel, das nicht erreicht wurde")
+        with patch("agents.recherche.agent.shadow_queue_push") as push:
+            RechercheAgent._verweis_einreihen(RechercheAgent(), gescheitert, "", "7")
+
+        push.assert_not_called()
+
+    def test_der_ausloeser_reisst_die_recherche_nicht(self) -> None:
+        """Ein Fehlschlag beim Einreihen kostet eine Verstärkung, kein Ergebnis."""
+        from agents.recherche.agent import RechercheAgent
+
+        with patch("agents.recherche.agent.shadow_queue_push",
+                   side_effect=RuntimeError("Queue weg")):
+            RechercheAgent._verweis_einreihen(RechercheAgent(), self._ergebnis(), "/w.md", "7")
+
+
 class VerdrahtungTest(unittest.TestCase):
     """Den Baustein zu prüfen genügt nicht — die Verdrahtung ist der Defekt."""
 
     def test_die_aufgabe_hat_ihren_agenten(self) -> None:
         """Ohne Eintrag im Routing wählt der Heartbeat und findet niemanden."""
         self.assertEqual("wissen_rueckweg", _QUEUE_ROUTING["wissen_rueckweg"])
+        self.assertEqual("wissen_rueckweg", _QUEUE_ROUTING[AUFGABE_VERWEIS])
 
     def test_der_dienst_faehrt_die_llm_spur(self) -> None:
         """Zwei Modellaufrufe je Fund — die CPU-Spur würde laut scheitern."""

@@ -19,6 +19,10 @@ _QUEUE_ROUTING: dict[str, str] = {
     "nachfragen":    "nachfragen",
     "wiedervorlage": "wiedervorlage",
     "wissen_rueckweg": "wissen_rueckweg",  # Rueckweg: Fund -> Wissensdatei (§4b)
+    # Weg 3 desselben Agenten: zuordnen und die Zeile **verstaerken**, ohne
+    # Schnitt. Eigene Auftragsart statt eines Feldes im Auftrag, damit die
+    # beiden Wege in der Queue zaehlbar bleiben (§4b.1a).
+    "wissen_verweis":   "wissen_rueckweg",
 }
 
 # Mapping: Periodische Aufgabe (Schedule-Key-Suffix) -> Agent-Name

@@ -8,12 +8,19 @@ Recherche-Agenten, und der arbeitet autonom im Hintergrund. Entsteht aus einem
 Turn eine Erinnerung, kann derselbe Fund auch in eine themenbezogene Datei —
 **eingeordnet, nicht angehängt.**
 
-**Von den drei Wegen aus §4b.1a ist einer verdrahtet: das Überlebende.** Was
-die Promotion ins Langzeitgedächtnis geschafft hat, hat die Bewährung über
-Tage bereits bestanden; eine eigene Wartelogik daneben wäre eine zweite
-Antwort auf dieselbe Frage. Die beiden anderen Wege — das Einprägsame
-(`salienz_roh ≥ 0,7`, sofort) und das Zugehörige — sind je eine Zeile an ihrem
-Einreihpunkt und ausdrücklich nicht Teil dieses Zuschnitts.
+**Zwei Wege, nicht drei — berichtigt am 19.08.2026.** Verdrahtet sind *das
+Überlebende* (`AUFGABE_EINARBEITEN`) und *das Zugehörige* (`AUFGABE_VERWEIS`).
+Der dritte, *das Einprägsame* (`salienz_roh ≥ 0,7`, sofort), ist **entfallen**:
+Seine Schwelle ist zeichengleich `KZG_SALIENZ_HIGH`, und an genau der hängt
+schon der Einreihpunkt der Promotion — er hätte auf derselben Menge gefeuert,
+nur ohne die Bewährungsprüfung, die das Argument für den zweiten Weg war.
+Gemessen: 2597 von 2942 Einträgen (88,3 %) liegen über der Schwelle.
+
+**Die beiden Wege unterscheiden sich im Ergebnis, nicht im Ablauf.** Beide
+ordnen zu; der eine **schneidet** den Fund in die Datei, der andere
+**verstärkt** nur ihre Zeile. Das Recherche-Ergebnis behält dabei seine eigene
+Datei — sie ist die Ausarbeitung ihres Wissens und steht für weitere
+Vertiefungen bereit.
 
 **Die LLM-Spur, und das ist keine Wahl.** Die Zuordnung ist nach §4a.1 eine
 Modellentscheidung über die Zusammenfassungen; die Einarbeitung ist eine
@@ -45,6 +52,7 @@ from services.model_services import EmbedRequest, model_service
 from tools.db_manager import db_manager
 
 from agents.base import AgentState, BaseAgent
+from agents.wissen_rueckweg import AUFGABE_EINARBEITEN, AUFGABE_VERWEIS
 from agents.wissen_rueckweg.einarbeitung import einarbeiten
 from agents.wissen_rueckweg.herkunft import herkunft_lesen
 from agents.wissen_rueckweg.zuordnung import kandidaten_laden, ziel_bestimmen
@@ -72,7 +80,10 @@ NODE: str = "wissen_rueckweg"
 
 #: Der Aufgabenname in der Shadow-Queue. Er gehört genau dieser Rolle
 #: (`F-AUFGABE-1`) und steht im Routing des Pixie-Routers.
-AUFGABE: str = "wissen_rueckweg"
+#: **Der Wert steht im Paket**, damit ein Auslöser ihn benennen kann, ohne
+#: diesen Modulbaum zu laden; der Name bleibt hier, weil Verweise auf ihn
+#: zeigen — zwei Konstanten mit demselben Wert wären zwei Quellen.
+AUFGABE: str = AUFGABE_EINARBEITEN
 
 
 class WissenRueckwegAgent(BaseAgent):
@@ -86,11 +97,15 @@ class WissenRueckwegAgent(BaseAgent):
     @property
     def faehigkeiten(self) -> list[str]:
         """Auskunft für Menschen und Anzeige — nie Auswahlkriterium."""
-        return ["fund_zuordnen", "fund_einarbeiten"]
+        return ["fund_zuordnen", "fund_einarbeiten", "fund_verweisen"]
 
     @property
     def lastart(self) -> str:
-        """Die LLM-Spur: zwei Modellaufrufe je Fund — Zuordnung und Absatz.
+        """Die LLM-Spur: bis zu zwei Modellaufrufe je Fund.
+
+        Zuordnung und Absatz beim Einarbeiten, allein die Zuordnung beim
+        Verweis. Die Angabe nennt den teureren der beiden Wege — eine Spur,
+        die nach dem billigeren bemessen wäre, verspräche zu wenig.
 
         Die Angabe wird erzwungen und nicht geglaubt: Ein Agent der CPU-Spur,
         der doch das Sprachmodell ruft, scheitert laut, statt die schnelle
@@ -133,7 +148,12 @@ class WissenRueckwegAgent(BaseAgent):
         return None
 
     def invoke(self, state: AgentState) -> AgentState:
-        """Arbeitet einen Auftrag ab: zuordnen, einarbeiten, verstärken.
+        """Arbeitet einen Auftrag ab: zuordnen, dann schneiden oder verweisen.
+
+        **Die Auftragsart entscheidet den Ausgang, nicht der Inhalt.**
+        `AUFGABE_EINARBEITEN` schneidet den Fund in die zugeordnete Datei und
+        verstärkt danach ihre Zeile; `AUFGABE_VERWEIS` verstärkt nur — die
+        Datei bleibt unangetastet.
 
         Vorbedingung: `state["parameter"]` trägt den Queue-Auftrag mit
         `kontext` (der verdichtete Fund), optional `turn_id`, und das Paar
@@ -180,8 +200,13 @@ class WissenRueckwegAgent(BaseAgent):
                 grund=f"Einbettung fehlgeschlagen: {type(fehler).__name__}",
             )
 
-        kandidaten: list[dict] = kandidaten_laden(user_id, character_id, embedding)
-        entscheidung: dict | None = ziel_bestimmen(material, kandidaten)
+        verweis: bool = state.get("aufgabe", "") == AUFGABE_VERWEIS
+        kandidaten: list[dict] = kandidaten_laden(
+            user_id, character_id, embedding, auftrag.get("bezug_id"),
+        )
+        entscheidung: dict | None = ziel_bestimmen(
+            material, kandidaten, verweis=verweis,
+        )
 
         if entscheidung is None or entscheidung["ziel"] is None:
             grund: str = (
@@ -193,6 +218,20 @@ class WissenRueckwegAgent(BaseAgent):
             )
 
         ziel: dict = entscheidung["ziel"]
+
+        # **Weg 3 endet hier, und das ist seine ganze Bauart.** Der Verweis
+        # will kein zweites Exemplar des Textes, sondern das Gewicht: Das
+        # Recherche-Ergebnis hat seine eigene Datei, und die verwandte Zeile
+        # bekommt Haeufigkeit, Gewicht und ein frisches `verstaerkt_am`.
+        if verweis:
+            self._verstaerken(ziel, "", user_id, character_id, datei_gewachsen=False)
+            return self._verweisen(
+                state, span_id, user_id=user_id, character_id=character_id,
+                ausgang=Ausgang(
+                    "verweis", ziel["dateipfad"], quelle, len(kandidaten),
+                ),
+            )
+
         ergebnis: dict = einarbeiten(
             ziel["dateipfad"], WISSENSSPEICHER_WURZEL, entscheidung["kern"],
         )
@@ -237,6 +276,7 @@ class WissenRueckwegAgent(BaseAgent):
 
     def _verstaerken(
         self, ziel: dict, ergaenzung: str, user_id: str, character_id: str,
+        *, datei_gewachsen: bool = True,
     ) -> None:
         """Zieht die Bibliothekszeile nach: Häufigkeit, Gewicht, Zusammenfassung.
 
@@ -256,11 +296,14 @@ class WissenRueckwegAgent(BaseAgent):
         zusammenfassung: str = (ziel.get("zusammenfassung") or "").strip()
         if ergaenzung.strip():
             zusammenfassung = f"{zusammenfassung} {ergaenzung.strip()}".strip()
-        else:
+        elif datei_gewachsen:
             logger.warning(
                 "Rückweg: keine Ergänzung für die Zusammenfassung von %s — die "
                 "Datei ist gewachsen, ihr Embed-Text nicht", ziel["dateipfad"],
             )
+        # **Beim Verweis fehlt die Ergänzung zu Recht.** Die Datei ist nicht
+        # gewachsen, also darf ihr Embed-Text stehen bleiben; die Warnung
+        # darüber wäre ein Fehlalarm und machte die echte unglaubwürdig.
 
         # ── Verarbeitung ────────────────────────
         try:
@@ -295,6 +338,55 @@ class WissenRueckwegAgent(BaseAgent):
                 "trägt den Absatz, die Zeile zählt ihn nicht",
                 type(fehler).__name__, ziel["dateipfad"],
             )
+
+    def _verweisen(
+        self, state: AgentState, span_id: uuid.UUID, *, user_id: str,
+        character_id: str, ausgang: Ausgang,
+    ) -> AgentState:
+        """Verstärkt die zugeordnete Zeile, ohne die Datei anzufassen (Weg 3).
+
+        Vorbedingung: Die Zuordnung ist gelungen und die Zeile bereits
+        verstärkt; `ausgang.detail` trägt den Pfad der getroffenen Datei.
+        Nachbedingung: Der Vorgang steht im Protokoll, **keine Datei ist
+        verändert**, `status` ist "abgeschlossen".
+        Fehlerfaelle: keine eigenen — die Verstärkung davor meldet selbst und
+        wirft nicht; ein Fehlschlag dort kostet die Gewichtung, nicht den Lauf.
+
+        **Warum hier nichts geschrieben wird, ist eine Absicht und keine
+        Sparsamkeit.** Das Recherche-Ergebnis hat seine eigene Datei — sie ist
+        die Ausarbeitung ihres Wissens und steht für weitere Vertiefungen
+        bereit. Denselben Inhalt zusätzlich in die verwandte Datei zu
+        schneiden, legte ihn zweimal ab; was die verwandte Zeile braucht, ist
+        nicht der Text, sondern das Gewicht.
+        """
+        # ── Ausgabe-Verifikation ────────────────
+        pipeline_log.log_db_write(
+            turn_id=NODE, node=NODE, quelle=QUELLE, span_id=span_id,
+            inhalt={
+                "dateipfad": ausgang.detail, "vorgang": ausgang.grund,
+                "geschrieben": False, "material": ausgang.quelle,
+                "kandidaten": ausgang.kandidaten,
+            },
+            user_id=user_id, character_id=character_id,
+        )
+        pipeline_log.span_end(
+            span_id=span_id, turn_id=NODE, node=NODE, quelle=QUELLE,
+            inhalt={
+                "phase": "ende", "vorgang": ausgang.grund, "geschrieben": False,
+            },
+            user_id=user_id, character_id=character_id,
+        )
+        logger.info(
+            "Rückweg: Verweis auf %s — Zeile verstärkt, Datei unverändert "
+            "(%d Kandidaten)", ausgang.detail, ausgang.kandidaten,
+        )
+
+        state["status"] = "abgeschlossen"
+        state["ergebnis"] = {
+            "dateipfad": ausgang.detail, "vorgang": ausgang.grund,
+            "geschrieben": False,
+        }
+        return state
 
     def _ohne_schnitt(
         self, state: AgentState, span_id: uuid.UUID, *, user_id: str,

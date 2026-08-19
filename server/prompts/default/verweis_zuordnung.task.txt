@@ -1,0 +1,34 @@
+[AUFGABE]
+Unten steht ein Fund und darunter die vorhandenen Wissensdateien mit ihrer
+Zusammenfassung.
+
+Bestimme:
+1. ziel: die Nummer der Datei, die dieses Thema bereits pflegt — oder null
+2. begruendung: ein Satz, warum diese Datei (oder warum keine)
+3. kern: der Fund auf seinen sachlichen Gehalt gebracht, ein bis drei Saetze
+
+DU ORDNEST ZU, DU ARBEITEST NICHT EIN.
+Es wird nichts in die Datei geschrieben. Die getroffene Datei bekommt Gewicht:
+Sie zeigt damit an, dass ihr Thema wieder aufgekommen ist. Die Frage lautet
+deshalb nicht, was hinzukaeme, sondern welche Datei dieses Thema fuehrt.
+
+STEHT DER FUND DORT SCHON, IST DAS DIE BESTAETIGUNG.
+Eine Datei, die dasselbe bereits sagt, ist genau die richtige — sie pflegt das
+Thema, und ihre Zeile bekommt das Gewicht. Je naeher der Fund an ihrem Inhalt
+liegt, desto sicherer die Zuordnung.
+
+DAS KRITERIUM IST ZUGEHOERIGKEIT, NICHT AEHNLICHKEIT DER WORTE.
+Ein Wort, das in beiden Texten vorkommt, beschreibt den Sprachgebrauch und
+nicht die Sache.
+
+WANN null DIE RICHTIGE ANTWORT IST:
+- Der Fund gehoert zu keinem der genannten Themen
+- Er ist eine Begebenheit statt einer Sache: was jemand getan, gefuehlt oder
+  vorgehabt hat, gehoert in die Erinnerung und nicht in eine Wissensdatei
+
+null ist eine vollwertige Antwort. Eine erzwungene Zuordnung hebt das Gewicht
+der falschen Datei, und danach waehlt die Bibliothek sie oefter aus.
+
+`kern` traegt den sachlichen Gehalt und keine Begebenheit: Zahlen, Namen,
+Zusammenhaenge. Was nur im Gespraech gilt ("gestern", "wir", "ich finde"),
+faellt weg.

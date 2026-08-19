@@ -17,7 +17,10 @@ from agents.recherche.bewertung import ergebnisse_bewerten
 from agents.recherche.destillation import ergebnisse_destillieren, zwischen_destillieren
 from agents.recherche.gate import ergebnis_einordnen
 from memory.kontext import session_kontext_extrahieren
+from agents.wissen_rueckweg import AUFGABE_VERWEIS
+from agents.wissen_rueckweg.herkunft import QUELLE_VERDICHTET
 from services.pixie.stack import stack_push
+from services.shadow_agent.utils import shadow_queue_push
 from services.wissensspeicher import Arbeitsergebnis, embed_text_bauen, ergebnis_ablegen
 from tools.db_manager import db_manager
 from config import (
@@ -388,11 +391,96 @@ class RechercheAgent(BaseAgent):
             self._audit_log(durchlauf.user_id, "fehler", f"{type(fehler).__name__}: {fehler}")
             return
 
+        # ── Der Rueckweg, Weg 3: das Zugehoerige (§4b.1a) ──────
+        # **Das Ergebnis behaelt seine eigene Datei.** Sie ist die Ausarbeitung
+        # ihres Wissens und steht fuer weitere Vertiefungen bereit; was der
+        # Auftrag ausloest, ist deshalb kein zweiter Schnitt, sondern die
+        # Verstaerkung der verwandten Zeile. Wer den Inhalt zusaetzlich
+        # einarbeitete, legte ihn zweimal ab.
+        self._verweis_einreihen(ergebnis, pfade["wissen_pfad"], pfade["zeilen_id"])
+
         self._audit_log(
             durchlauf.user_id, "erledigt",
             f"Status {ergebnis.status}, Zeile {pfade['zeilen_id']}, "
             f"Bericht {pfade['bericht_pfad']}"
             + (f", Wissen {pfade['wissen_pfad']}" if pfade["wissen_pfad"] else ""),
+        )
+
+    def _verweis_einreihen(
+        self, ergebnis: Arbeitsergebnis, wissen_pfad: str, zeilen_id: str,
+    ) -> None:
+        """Reiht den Verweis auf eine verwandte Wissensdatei ein (§4b.1a, Weg 3).
+
+        Vorbedingung: `ergebnis` ist abgelegt, `wissen_pfad` nennt die
+        geschriebene Wissensdatei und `zeilen_id` ihre Bibliothekszeile.
+        **Ein leerer Pfad ist der Regelfall bei einer gescheiterten
+        Recherche** und beendet den Schritt.
+
+        **Die eigene Zeilennummer reist mit, und ohne sie waere der Weg ein
+        Selbstlaeufer.** Die gerade angelegte Zeile traegt dieselbe
+        Zusammenfassung wie das Material des Verweises; sie waere der
+        naechste Kandidat jeder Zuordnung, mit Kosinus nahe eins. Der
+        Verweis verstaerkte dann bei **jedem** Recherche-Ergebnis seine
+        eigene Zeile, und `haeufigkeit` und `gewicht_roh` sind die Groessen,
+        nach denen die Bibliothek spaeter auswaehlt.
+        Nachbedingung: Ein Auftrag `wissen_verweis` liegt in der Queue, oder
+        der Grund seines Ausbleibens steht im Protokoll.
+        Fehlerfaelle: **Ein Fehlschlag beim Einreihen reisst die Recherche
+        nicht.** Sie ist zu diesem Zeitpunkt gueltig abgeschlossen und
+        abgelegt; ein ausgefallener Verweis kostet eine Verstaerkung, ein
+        abgebrochener Lauf kostet das Ergebnis.
+
+        **Das Material ist die verdichtete Fassung, und das ist hier die
+        richtige.** Der Text dient allein der Zuordnung, und die vergleicht
+        Zusammenfassung gegen Zusammenfassung — die Kandidaten stehen mit
+        ihrer eigenen in der Bibliothek. Die Entscheidung *rohe Fassung* aus
+        §9 Punkt 9 gilt dem Text, der **eingearbeitet** wird; auf diesem Weg
+        wird keiner eingearbeitet.
+        """
+        # ── Eingabe-Validierung ─────────────────
+        # **Ohne Wissen gibt es nichts zuzuordnen.** Eine gescheiterte
+        # Recherche schreibt nur einen Bericht, und ihr Destillat ist der
+        # Platzhalter "Ohne Ergebnis zum Ziel: …". Ein Verweis darauf kostet
+        # zwei Modellaufrufe und kann bestenfalls "keine Datei passt" sagen —
+        # schlimmstenfalls verstaerkt er eine Zeile auf einen Platzhalter hin.
+        # `[gemessen]` — 19.08.2026: Ohne diese Bedingung standen binnen
+        # Minuten zwei Auftraege der Form "Gescheitert <hash>" in der Queue.
+        if not wissen_pfad.strip():
+            logger.info(
+                "RechercheAgent: kein Verweis zu '%s' — ohne Wissen-Datei gibt "
+                "es nichts zuzuordnen (Status %s)", ergebnis.thema, ergebnis.status,
+            )
+            return
+
+        kern: str = (ergebnis.destillat or "").strip()
+        if not kern:
+            logger.error(
+                "RechercheAgent: Verweis nicht eingereiht — '%s' traegt kein "
+                "Destillat", ergebnis.thema,
+            )
+            return
+
+        # ── Verarbeitung ────────────────────────
+        try:
+            shadow_queue_push(
+                redis_client, ergebnis.user_id, AUFGABE_VERWEIS,
+                thema=ergebnis.thema, prioritaet=ergebnis.salienz,
+                kontext=kern, modus=f"rueckweg_{QUELLE_VERDICHTET}",
+                bezug_id=int(zeilen_id) if zeilen_id.isdigit() else None,
+            )
+        except Exception as fehler:  # noqa: BLE001 — die Ablage steht bereits
+            logger.exception(
+                "%s: RechercheAgent: Verweis zu '%s' nicht eingereiht — die "
+                "Ablage bleibt gueltig, die Verstaerkung faellt aus",
+                type(fehler).__name__, ergebnis.thema,
+            )
+            return
+
+        # ── Ausgabe-Verifikation ────────────────
+        logger.info(
+            "RechercheAgent: Verweis eingereiht — Thema '%s', prioritaet=%.3f, "
+            "%d Zeichen Material, eigene Zeile %s ausgeschlossen",
+            ergebnis.thema, ergebnis.salienz, len(kern), zeilen_id or "<keine>",
         )
 
     @staticmethod
