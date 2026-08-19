@@ -162,6 +162,31 @@ Die Zugehörigkeit zu einer dieser Reihen hebt einen Eintrag; alles andere sinkt
 
 ---
 
+## Block 19.08.2026 — ein Vektor je Gegenstand
+
+**Entschieden am 19.08.2026, festgehalten als Konvention 4** (`novaberg-convention-embedding.md` §5): Ein Vektor repräsentiert genau einen Gegenstand. Über sieben Vektorspalten gezählt folgen **fünf** der Regel, bevor sie geschrieben war — sie ist die Hausform. Zwei weichen ab, und es sind die jüngsten Speicher.
+
+| Kennung | Was offen ist | Band |
+|---|---|---|
+| `EMBED-LISTE-AUTONOMES-WISSEN` | **Die Bibliothek bettet eine Themenliste als einen Vektor ein — und trifft damit nicht.** `autonomous_wissen.thema` trägt Ø **4,37** Themen je Feld (max 17), **558 von 559** Feldern mehr als eins. Zusätzlich stammt der Vektor gar nicht aus diesem Feld, sondern aus dem **Destillat** (`agents/recherche/agent.py`, siehe Fundliste). **Gemessen:** Bei einer Frage nach *einem* Thema liegt die richtige Antwort in **6 von 40** Fällen auf Rang 1, Kosinus-Median **0,2821** — unterhalb der eigenen Schwelle von 0,40, die Antwort wird also im Regelfall verworfen. Mit einem Vektor je Thema: 31 von 40 und Median 0,7425. **Was fertig wäre:** je Thema eine Zeile mit eigenem Vektor, die Lesepfade von `AutonomousWissenRepository.suchen` darauf umgestellt, und ein echter Turn, der eine Ausarbeitung über ein einzelnes ihrer Themen findet. **Nicht vergessen:** Der Rückweg fragt mit Ø 713 Zeichen (n=924) und braucht daneben weiterhin ein Ziel seiner Größenordnung — ein Themenvektor ersetzt keinen Inhaltsvektor. **Ist DDL und eine Migration von 249 Zeilen** (`F-DDL-1`) | ungebändigt |
+| `EMBED-LISTE-DELEGATIONSAKTEN` | **Derselbe Verstoß am größeren Bestand, ungemessen.** `delegations_akten.themen` trägt Ø **2,76** Gegenstände je Feld, **1510 von 1586** mehr als eins — Beispiele: *„Mut, Vertrauen"*, *„aktuelle Lebenssituation, Prozess des Aufbaus"*. Gelesen wird die Spalte von `agents/delegation/deduplizierung.py`. **Ausdrücklich nicht gemessen:** ob die Deduplizierung heute danebengreift. Der Verstoß gegen Konvention 4 steht fest, seine Wirkung nicht — und die Wirkung entscheidet, ob der Umbau lohnt. **Was fertig wäre:** dieselbe Messung wie an der Bibliothek (bekannte richtige Antwort, Anteil auf Rang 1), *bevor* etwas umgebaut wird | ungebändigt |
+| `EMBED-RUECKWEG-UNGEMESSEN` | **Der zweite Konsument der Bibliotheksspalte ist nie gemessen worden.** `agents/wissen_rueckweg/zuordnung.kandidaten_laden` vergleicht `auftrag['kontext']` gegen `themen_embedding` — Ø **713** Zeichen Anfrage (n=924, min 28, max 3309) gegen ein Ziel von Ø 552. Die Längen passen; **ob er trifft, ist unbekannt.** **Warum das vor dem Umbau zählt:** Wer die Spalte auf Themen umstellt, stellt den Rückweg von einem passenden Ziel auf ein fünfmal kürzeres um — und würde eine Seite reparieren und die andere brechen, ohne es zu merken. ~~**Was fertig wäre:** beide Zugriffe gegen beide Ziele, vier Zellen, dieselbe Methode~~ — **gemessen am 19.08.2026, und das Ergebnis kehrt die Empfehlung für diesen Zugriff um.**
+
+| | bester Kosinus (median) | Spreizung Rang 1 → 8 |
+|---|---|---|
+| Ziel Destillat (heute) | **0,5530** | 0,0664 |
+| Ziel Themenvektoren | 0,4601 | 0,0718 |
+
+**Die Kandidatenlisten sind fast disjunkt: Überlappung der Top-8 im Median 1 von 8** (min 0, max 3). Eine Umstellung tauscht also sieben von acht Kandidaten aus — es ist keine Verbesserung derselben Suche, sondern eine andere Suche.
+
+**Mit Ground Truth** (die Zusammenfassung eines Eintrags als Anfrage, gesucht wird sein eigener Eintrag): Destillat **25/25 Recall@8**, Themenvektoren **12/25**. **Die Grenze ist ausdrücklich zu nennen:** Die Zusammenfassung ist ein Ausschnitt des Textes, aus dem das Destillat-Embedding gebaut wurde — die 100 % sind trivial günstig und keine Aussage über den Betrieb. Belastbar ist die Richtung, nicht der Abstand.
+
+> **Damit ist belegt, was vorher nur ein Vorbehalt war: Ein Vektor je Thema ersetzt keinen Inhaltsvektor.** Wer allein umstellt, hebt die Bestellung von 15 % auf 78 % und senkt den Rückweg von 25/25 auf 12/25. **Beide Ziele werden gebraucht.**
+
+**Ein dritter Befund fiel dabei an und gehört keinem der beiden Ziele:** Die Spreizung zwischen Rang 1 und Rang 8 liegt bei **0,066 bzw. 0,072** — die acht Kandidaten liegen dicht beieinander. Der Vektor wählt also kaum vor; das Modell in `ziel_bestimmen` entscheidet fast blind. Eigener Eintrag, siehe Fundliste. | ungebändigt |
+
+---
+
 ## Block 19.08.2026 — der Antwortpfad meldet seinen Verlust und behebt ihn nicht
 
 | Kennung | Was offen ist | Band |
@@ -1711,7 +1736,18 @@ Der LZG-Lesepfad war in **allen sechs Läufen untätig** — eine frische Person
 
 **Die Grenze der Messung, ausdrücklich:** Die Frage trägt das Thema wörtlich, was das Thema-Ziel systematisch begünstigt — die 98 % sind keine Vorhersage für den Betrieb. Belastbar ist die andere Seite, und zwar als **Untergrenze**: Selbst im günstigsten denkbaren Fall liegt der Bestand bei 20 %.
 
-**Was jetzt fehlt, ist eine Absicht und keine Umsetzung:** Ein neues Embedding-Ziel heißt, 249 Bestandszeilen neu einzubetten. Drei Wege stehen offen — nur das Thema; Thema und Zusammenfassung in zwei Spalten; Thema plus gekappte Zusammenfassung in einem Vektor. **Welcher trägt, ist nicht gemessen** und wäre der nächste Lauf. | Bestand in `autonomous_wissen` |
+**Was jetzt fehlt, ist eine Absicht und keine Umsetzung:** Ein neues Embedding-Ziel heißt, 249 Bestandszeilen neu einzubetten. Drei Wege stehen offen — nur das Thema; Thema und Zusammenfassung in zwei Spalten; Thema plus gekappte Zusammenfassung in einem Vektor. **Welcher trägt, ist nicht gemessen** und wäre der nächste Lauf.
+
+**Wofür getrennte Spalten — gemessen am 19.08.2026:** Die Spalte hat **zwei** Konsumenten, und ihre Anfragen liegen längenmäßig auseinander.
+
+| Konsument | Anfrage | Länge | passt zu |
+|---|---|---|---|
+| Bestellung (`AutonomousWissenRepository.suchen`) | die Frage des Nutzers | ~60–100 Z. | **Thema** (Ø 110) |
+| Rückweg (`agents/wissen_rueckweg/zuordnung.kandidaten_laden`) | `auftrag['kontext']` | **Ø 713 Z.** (n=924, min 28, max 3309) | **Destillat** (Ø 552) |
+
+**Damit hat die naheliegende Abhilfe einen Preis, den bisher niemand genannt hat.** Wer allein auf das Thema umstellt, repariert die Bestellung und stellt den Rückweg auf ein fünfmal kürzeres Ziel um — dieselbe Asymmetrie, nur andersherum, und sie träfe 924 gelaufene Zuordnungen.
+
+**Ausdrücklich offen:** Ob der Rückweg heute *trifft*, ist **nicht gemessen**. Die Längenpassung ist ein Argument dafür, ihn vor der Umstellung zu messen — kein Beleg dafür, dass er funktioniert. **Der nächste Lauf misst deshalb beide Zugriffe gegen beide Ziele**, nicht nur den einen, der aufgefallen ist. | Bestand in `autonomous_wissen` |
 | **WIS-GATE-MESSUNG** | Wie oft das Keep/Discard-Gate falsch urteilt, ist **nicht gemessen**. Die Verteilung der vier Status über echte Durchläufe ist die Grundlage dafür, ob die Schwelle zwischen `ergaenzung` und `wiederholung` taugt | WIS-3 |
 | **PIX-WARTESCHLANGE-AM-MODELL** | **Zwei Posten, beide gemessen.** (1) Serialisierung: dieselbe Anfrage kostet unter Pixie-Last 134,62 s bei 1,27 s Arbeit, mit angehaltenem Pixie 0,05 s Luecke. (2) **Fenster:** Ein trivialer Aufruf bei `num_ctx=262144` kostet 35–38 s, davon 1,33 s ausgewiesen — rund 34 s in keiner Phase, zweimal reproduziert. Bei zehn Aufrufen je Recherche sind das fuenf Minuten Aufschlag. **Nicht gangbar:** `num_ctx` je Aufruf — das Modell ist bei 262144 resident, jede Abweichung laedt 26,8 GB um (19–175 s gemessen, auch mit `keep_alive`). **Fehlt:** ein Aufruf bei 32768 ohne Ladevorgang; ohne ihn ist der Anteil des Fensters an den 35 s nicht zu beziffern | keine |
 | **WIS-KONTEXT-NEU-DIMENSIONIEREN** | ⚠ **Die Latenz-Begründung war zwischenzeitlich als widerlegt vermerkt — die Rücknahme ist selbst zurückgenommen.** Der Aufschlag von 35 s je Aufruf bei 262144 (`PIX-WARTESCHLANGE-AM-MODELL`) trifft die Recherche mit ihren gut zehn Aufrufen sehr wohl; er steckt nur nicht in `prompt_eval_duration`. Dazu kommt weiterhin der Verlust durch die Kompression. Der Hintergrundpfad hat **262144** Token, nicht 32768 — gemessen am 04.08.2026, 21:02 UTC. Damit steht die Kompressionsstufe der Recherche (`zwischen_destillieren`) zur Disposition: Sie komprimiert verlustbehaftet gegen eine Grenze, die achtmal weiter weg ist, **und ist der gemessene Ausfallpunkt** eines Durchlaufs. Ebenso das Zwei-Stufen-Retrieval: Eine ganze Wissen-Datei passt in den Prompt, der fraktale Zoom ist für den Hintergrund keine Notwendigkeit mehr, sondern eine Wahl. **Der Gesprächspfad bleibt bei 32768** — beide Zahlen gehören getrennt gehalten | keine |

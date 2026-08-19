@@ -69,7 +69,44 @@ Metadaten (Valenz, Zeit, Ort, IDs, Flags) machen den Vektor **unschärfer, nicht
 
 ---
 
-## 5. Der Bestand — Zustandssätze
+## 5. Konvention 4: Ein Vektor repräsentiert genau einen Gegenstand
+
+Trägt ein Feld mehrere Gegenstände — mehrere Themen, mehrere Begriffe —, bekommt **jeder seinen eigenen Vektor in einer eigenen Zeile**. Nicht einen gemittelten für alle.
+
+**Der Grund ist geometrisch und nicht Geschmackssache.** Ein Vektor über mehrere Gegenstände liegt in ihrem Schwerpunkt, und der Schwerpunkt von fünf unverwandten Begriffen ist keinem davon nah. Die Suche findet ihn dann weder über den einen noch über den anderen.
+
+**Gemessen am 19.08.2026** an der Bibliothek (`autonomous_wissen`, 249 aktive Einträge, Ø 4,37 Themen je Feld). 40 Fragen nach **einem** Thema, die richtige Antwort ist je Frage bekannt:
+
+| Ziel des Vergleichs | richtige Antwort auf Rang 1 | Kosinus (Median) |
+|---|---|---|
+| Destillat des Eintrags | **6 / 40 — 15 %** | **0,2821** |
+| das ganze Themenfeld | 26 / 40 — 65 % | 0,4564 |
+| **ein Vektor je Thema** | **31 / 40 — 78 %** | **0,7425** |
+
+Die mittlere Zeile ist die aufschlussreichere: Ein Vektor über das ganze Themenfeld liegt mit 0,4564 **knapp** über der Abweisungsschwelle von 0,40 — bei jeder Umformulierung der Frage kippt er darunter. Ein Vektor je Thema hat Abstand.
+
+### Die Probe hängt nicht am Trennzeichen
+
+**Die Frage ist nicht, ob ein Komma vorkommt, sondern ob das Feld eine Aufzählung oder eine Aussage ist.**
+
+| | Beispiel | Gegenstände |
+|---|---|---|
+| **Aufzählung** — je Glied ein Vektor | *„Mut, Vertrauen"* · *„Begegnung, Entropie, Informationsaustausch, Ontologie"* | mehrere |
+| **Aussage** — ein Vektor | *„Nova hat erklärt, dass sie die Frage nicht auflösen wird"* | einer |
+
+Beide tragen Kommas. Eine Kommazählung über sieben Vektorspalten meldete am 19.08.2026 `lzg_knoten.inhalt` mit **2315 von 2545** Feldern als Verdachtsfall — es sind Sätze, und es ist **kein** Verstoß. Wer das Zeichen zählt statt der Sache, bekommt eine Zahl, die dreimal zu hoch ist.
+
+> **Vier Werte des Feldes ansehen kostet eine Minute und ist nicht ersetzbar.** Eine Aufzählung erkennt man daran, dass ihre Glieder nebeneinander stehen und keines vom anderen abhängt.
+
+### Und sie hebt die Frage nach dem langen Text nicht auf
+
+Wer mit einem **langen** Text sucht, braucht ein Ziel in seiner Größenordnung. Der Rückweg der Bibliothek fragt mit Ø 713 Zeichen (n=924); ein Themenvektor von Ø 23 Zeichen ist für ihn die umgekehrte Asymmetrie. **Ein Vektor je Thema ersetzt keinen Inhaltsvektor** — er ersetzt den gemittelten Themenvektor.
+
+---
+
+## 5a. Der Bestand — Zustandssätze
+
+> **Dieser Abschnitt hieß bis zum 19.08.2026 §5.** Er trägt jetzt §5a, weil Konvention 4 vor ihn gehört — die Regeln stehen beieinander, der Bestand dahinter. Geprüft: Kein Dokument im Repositorium und keins daneben verwies auf `§5`; die vorhandenen Verweise nennen `§2` und `§2–§4` und sind unberührt.
 
 > ⚠ **Dieser Abschnitt beschreibt, er legt nicht fest.** Er wird nachgezogen, wenn sich der Code ändert. Die Regeln stehen in §2 bis §4.
 
@@ -98,6 +135,8 @@ Metadaten (Valenz, Zeit, Ort, IDs, Flags) machen den Vektor **unschärfer, nicht
 ---
 
 ## Versionshistorie
+
+- **19.08.2026** — **Konvention 4 neu: Ein Vektor repräsentiert genau einen Gegenstand.** Gemessen an der Bibliothek: Bei einer Frage nach *einem* Thema findet ein Vektor über das Destillat den eigenen Eintrag in 15 % der Fälle auf Rang 1 (Kosinus-Median 0,2821 — unterhalb der eigenen Schwelle), ein Vektor je Thema in 78 % (Median 0,7425). Dazu die Probe, die **nicht am Komma hängt**: Aufzählung oder Aussage. Der bisherige §5 (Bestand) trägt seither §5a; keine Verweise betroffen.
 
 - **v0.2 — 16.08.2026:** Erstmals gegen den Code gehalten. **Konvention 1 und 3 sind eingelöst**, und zwar auch in ihren scharfen Teilen: Das Wartungswerkzeug importiert die Bauer, statt eigene Formeln zu führen, und die Begründung für den entfernten `valenz`-Token steht im Docstring. **Konvention 2 ist zur Hälfte gebaut** — die Prüfung vor einem Lauf steht, das tägliche Vitalzeichen fehlt, und das ist die Hälfte, die den ursprünglichen Defekt gefunden hätte. **Der Geltungsbereich war nicht nachgezogen:** `services/wissensspeicher.py` ist nach dieser Konvention entstanden, folgt ihrer Form und stand nicht in ihrer Aufzählung — mit der Folge, dass 390 Vektoren aus dem Re-Embedding-Werkzeug fielen, ohne dass etwas anschlug. Neu §5 mit dem Bestand, ausdrücklich als beschreibend markiert.
 - **v0.1 — 12.07.2026, Chat 107:** Erstfassung aus drei Fehlerklassen mit derselben Wurzel — der Vektor als Nebensache seines Textes behandelt.
