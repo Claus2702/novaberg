@@ -33,6 +33,11 @@ from config import (
     WISSEN_RETRIEVAL_TOP_K,
 )
 from graph.context_entry import ContextEntry
+from memory.repositories.autonomous_wissen_repository import (
+    AutonomousWissenRepository,
+    Bibliotheksfrage,
+    Bibliothekszeile,
+)
 from memory.utils import embedding_zu_pgvector_str
 
 from plugins.base import BaseManager
@@ -50,8 +55,77 @@ class WissenManager(BaseManager):
 
     @property
     def immer_aktiv(self) -> bool:
-        """Läuft in jedem Turn — der Enricher fragt, die Abfrage entscheidet."""
+        """Läuft in jedem Turn — der Enricher fragt, die Abfrage entscheidet.
+
+        **Bleibt True, obwohl es seit dem 19.08.2026 auch einen Zettel gibt.**
+        Quelle und Zettel sind zwei Rollen desselben Silos und schließen
+        einander nicht aus (`novaberg-convention-nmcp.md` §6a): Die Quelle
+        fließt bei, ohne dass jemand sie bestellt; der Zettel wird bestellt,
+        wenn die Äußerung danach fragt. Wer die Quelle beim Bau des Zettels
+        abschaltet, nimmt der Bibliothek ihr Beifließen und tauscht eine
+        Lücke gegen die andere.
+        """
         return True
+
+    @property
+    def router_intents(self) -> list[str]:
+        """Keine Intent-Kürzel — die Erkennung läuft über den Aushang."""
+        return []
+
+    @property
+    def router_prompt(self) -> str:
+        """Der Zettel am schwarzen Brett — Merkmale der Äußerung.
+
+        Bis zum 19.08.2026 trug dieser Manager **keinen** Zettel: Die
+        Bibliothek war angebunden wie ein Gedächtnis und nicht wie eine
+        Quelle, die man befragen kann. Sie floss bei jedem Turn bei, und
+        niemand konnte sie **bestellen** — weder der Mensch (*„Was hast du
+        selbst dazu erarbeitet?"*) noch sie selbst. Der Befund steht als
+        Lücke schon in `novaberg-agent-dateien_k.md` §3.0c.
+
+        **Der Zettel spricht die Sprache des Empfangs** (§3.2): Er benennt
+        Merkmale der Äußerung und keine Operationen — der Empfang kennt die
+        Fachsprache keiner Abteilung und darf sie nicht kennen.
+
+        **Er enthält sich über die Nachbarn** (§3.0c, §3.6b). *„Weißt du was
+        über X"* heißt „such in allem, was du hast"; dieser Zettel sagt
+        allein, woran man erkennt, dass in **selbst Erarbeitetem** etwas zu
+        holen ist. Ob zusätzlich anderswo zu suchen wäre, ist ein Urteil
+        über andere Anbieter, und kein Zettel darf das.
+
+        Nachbedingung: nichtleerer Text, der die beiden Management-Felder
+        benennt. Ohne sie wäre der Zettel eine Beschreibung ohne Wirkung.
+        """
+        return """
+ERARBEITETES WISSEN ABFRAGEN:
+Setze management_action = "agent" wenn:
+1. Der User danach fragt, was SIE SELBST zu einem Thema erarbeitet hat:
+   "Was hast du selbst zu ... herausgefunden?", "Was ist bei deiner
+   Beschaeftigung mit ... rausgekommen?", "Was hast du dir zu ... angelesen?"
+2. Der User den Stand ihres eigenen Wissens zu einem Thema wissen will:
+   "Kennst du dich mit ... aus?", "Weisst du was ueber ...?",
+   "Hast du zu ... schon was zusammengetragen?"
+3. Der User nach dem Umfang oder Bestand dieses Wissens fragt:
+   "Wozu hast du ueberhaupt schon gearbeitet?", "Hast du dazu was liegen?"
+
+Erkennungsmerkmal:
+- Der Bezug geht auf EIGENE, VORHER ERARBEITETE Durchdringung eines Themas —
+  etwas, das sie sich selbst zusammengetragen hat, bevor die Frage kam.
+- Entscheidend ist der Bezug, nicht die Satzform: Auch eine schlichte
+  Sachfrage passt, wenn ihre Antwort in einer eigenen Ausarbeitung steht.
+- "selbst", "eigenes", "erarbeitet", "angelesen" sind starke Merkmale.
+
+Bei Erkennung:
+  management_action = "agent"
+  management_target = "wissen"
+  management_target_typ = ""
+
+BEISPIELE (alle -> management_action = "agent"):
+- "Was hast du selbst zur Resonanz erarbeitet?"
+- "Kennst du dich mit assoziativem Gedaechtnis aus?"
+- "Hast du zu Gravitationswellen schon was zusammengetragen?"
+- "Wozu hast du dir eigentlich schon Wissen aufgebaut?"
+"""
 
     def execute(
         self,
@@ -118,36 +192,31 @@ class WissenManager(BaseManager):
             return []
 
         # ── Verarbeitung ────────────────────────────
+        # Die Abfrage liegt im Repository und nicht hier: Seit dem 19.08.2026
+        # ist die Bibliothek über zwei Eingänge erreichbar — als Quelle, die
+        # beifließt, und als Dienst, den man bestellt. Zwei Abfragen über
+        # denselben Bestand ergäben zwei Rangfolgen, die auseinanderlaufen
+        # (`novaberg-convention-nmcp.md` §6a.1).
         vektor_str: str = embedding_zu_pgvector_str(such_vektor)
 
         try:
-            conn = psycopg2.connect(postgres_url)
-            try:
-                with conn.cursor() as cur:
-                    cur.execute(
-                        """
-                        SELECT thema, zusammenfassung, dateipfad, modus, status,
-                               gewicht_decay,
-                               1 - (themen_embedding <=> %s::vector) AS cosine
-                        FROM   autonomous_wissen
-                        WHERE  user_id = %s AND character_id = %s
-                          AND  aktiv = TRUE
-                          AND  typ = 'wissen'
-                          AND  themen_embedding IS NOT NULL
-                          AND  1 - (themen_embedding <=> %s::vector) >= %s
-                        ORDER  BY themen_embedding <=> %s::vector
-                        LIMIT  %s
-                        """,
-                        (
-                            vektor_str, user_id, character_id, vektor_str,
-                            WISSEN_RETRIEVAL_SCHWELLE, vektor_str,
-                            WISSEN_RETRIEVAL_TOP_K,
-                        ),
-                    )
-                    zeilen: list = cur.fetchall()
-            finally:
-                conn.close()
+            zeilen: list[Bibliothekszeile] = AutonomousWissenRepository.suchen(
+                Bibliotheksfrage(
+                    postgres_url = postgres_url,
+                    user_id      = user_id,
+                    character_id = character_id,
+                    vektor_str   = vektor_str,
+                    typ          = "wissen",
+                    schwelle     = WISSEN_RETRIEVAL_SCHWELLE,
+                    limit        = WISSEN_RETRIEVAL_TOP_K,
+                )
+            )
         except psycopg2.Error:
+            # Hier verschluckt, im Dienst nicht: Die Quelle hat keinen
+            # Ausgang, über den sie "ich konnte nicht" sagen könnte — sie
+            # trägt bei oder sie trägt nicht bei. Deshalb reicht das
+            # Repository den Fehler hoch, statt ihn selbst zu schlucken:
+            # Der Dienst braucht die Unterscheidung, die Quelle hat sie nicht.
             logger.exception(
                 "WissenManager: Abfrage der Bibliothek fehlgeschlagen — "
                 "kein Bibliothekskontext in diesem Turn"
@@ -156,25 +225,25 @@ class WissenManager(BaseManager):
 
         # ── Ausgabe-Verifikation ────────────────────
         eintraege: list[ContextEntry] = []
-        for thema, zusammenfassung, dateipfad, modus, status, gewicht, cosine in zeilen:
+        for zeile in zeilen:
             # Der Pool erwartet 0.0 bis 1.0; die Bibliothek rechnet mit den
             # Knoten-Konstanten und laeuft bis zum Cap. Ohne die Umrechnung
             # schluege ein Bibliothekseintrag im Reducer jeden KZG-Treffer,
             # weil dort "hoechstes Gewicht gewinnt" — und das waere eine
             # Rangfolge aus zwei Skalen statt aus zwei Bedeutungen.
-            normiert: float = min(float(gewicht) / LZG_KNOTEN_GEWICHT_CAP, 1.0)
+            normiert: float = min(zeile.gewicht_decay / LZG_KNOTEN_GEWICHT_CAP, 1.0)
 
             eintraege.append({
                 "quelle":  "plugin_wissen",
-                "subtyp":  modus or "",
-                "inhalt":  f"{thema}: {zusammenfassung}",
+                "subtyp":  zeile.modus,
+                "inhalt":  f"{zeile.thema}: {zeile.zusammenfassung}",
                 "gewicht": normiert,
                 "meta":    {
-                    "praefix":   f"Wissen/{thema}",
-                    "thema":     thema,
-                    "dateipfad": dateipfad,
-                    "status":    status or "",
-                    "cosine":    round(float(cosine), 4),
+                    "praefix":   f"Wissen/{zeile.thema}",
+                    "thema":     zeile.thema,
+                    "dateipfad": zeile.dateipfad,
+                    "status":    zeile.status,
+                    "cosine":    round(zeile.cosine, 4),
                 },
             })
 

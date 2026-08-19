@@ -58,6 +58,50 @@ class WissensEintrag:
     themen_embedding: str | None = None
 
 
+@dataclass
+class Bibliotheksfrage:
+    """Was ein Eingang von der Bibliothek wissen will — reiner Datencontainer.
+
+    **Ein Container und nicht sieben Argumente**, und der Grund ist nicht die
+    Zahl: `user_id` und `character_id` sind zwei Zeichenketten nebeneinander,
+    und eine Vertauschung ergäbe eine syntaktisch einwandfreie Abfrage über
+    eine Beziehung, die es nicht gibt. Am Feldnamen ist sie nicht möglich.
+
+    **Die Felder zerfallen in zwei Sorten, und die Grenze ist §6a.1:**
+    `typ` und `schwelle` bestimmen die **Ordnung** und sind für beide
+    Eingänge gleich; `limit` bestimmt die **Tiefe** und ist es nicht.
+    """
+
+    postgres_url: str
+    user_id:      str
+    character_id: str
+    vektor_str:   str
+    typ:          str
+    schwelle:     float
+    limit:        int
+
+
+@dataclass
+class Bibliothekszeile:
+    """Ein Treffer der Bibliothek — reiner Datencontainer.
+
+    Trägt, was beide Eingänge brauchen: den Inhalt (Thema, Zusammenfassung),
+    die Fundstelle (Dateipfad) und die beiden Zahlen, an denen ein Treffer
+    beurteilt werden kann — sein Gewicht im Gedächtnis und seine Nähe zur
+    Frage. Der Kosinus steht ausdrücklich mit dabei: Er ist die Zahl, die
+    eine Ablehnung belegbar macht (`novaberg-convention-nmcp.md` §6.8).
+    """
+
+    thema:           str
+    zusammenfassung: str
+    dateipfad:       str
+    modus:           str
+    status:          str
+    gewicht_decay:   float
+    haeufigkeit:     int
+    cosine:          float
+
+
 class AutonomousWissenRepository:
     """Datenzugriffsschicht für die autonomous_wissen-Tabelle. Keine Business-Logik."""
 
@@ -227,3 +271,133 @@ class AutonomousWissenRepository:
             return int(zeile[0])
         finally:
             conn.close()
+
+    @staticmethod
+    def suchen(frage: Bibliotheksfrage) -> list[Bibliothekszeile]:
+        """Findet Bibliothekszeilen über die Nähe zum Suchschlüssel.
+
+        **Die eine Suche für beide Eingänge** (`novaberg-convention-nmcp.md`
+        §6a.1). Die Bibliothek ist über zwei Wege erreichbar — als Quelle, die
+        bei jedem Turn beifließt, und seit dem 19.08.2026 als bestellbarer
+        Dienst. Zwei Abfragen über denselben Bestand ergäben zwei Rangfolgen,
+        die auseinanderlaufen, und die Abweichung fiele erst auf, wenn jemand
+        dieselbe Frage zweimal stellt und zwei Antworten bekommt.
+
+        **Was der Eingang wählen darf, ist die Tiefe — nicht die Ordnung.**
+        `limit` sagt, wie weit unten gelesen wird; `schwelle` und die
+        Sortierung sind für beide dieselben.
+
+        Vorbedingung: `frage.vektor_str` ist eine pgvector-Literaldarstellung,
+        `frage.typ` liegt in WISSEN_TYPEN, `frage.limit` ist positiv.
+        Nachbedingung: höchstens `frage.limit` Zeilen, absteigend nach Nähe,
+        alle über der Schwelle und alle aus dem angegebenen Paar.
+        Fehlerfälle: ein Datenbankfehler wird **nicht** verschluckt, sondern
+        weitergereicht. Der Grund steht in §6a.2: Wer hier die leere Liste
+        zurückgibt, macht *„nichts gefunden"* von *„ich konnte nicht"*
+        ununterscheidbar — und genau diese beiden gehören in zwei
+        verschiedene Ausgänge.
+        """
+        # ── Eingabe-Validierung ─────────────────────
+        if frage.typ not in WISSEN_TYPEN:
+            meldung = (
+                f"AutonomousWissenRepository.suchen: typ={frage.typ!r} steht "
+                f"nicht im Kanon {sorted(WISSEN_TYPEN)}"
+            )
+            raise ValueError(meldung)
+
+        if frage.limit <= 0:
+            meldung = (
+                f"AutonomousWissenRepository.suchen: limit={frage.limit} ist "
+                f"nicht positiv — eine Abfrage ohne Obergrenze ist keine Suche"
+            )
+            raise ValueError(meldung)
+
+        if not frage.user_id or not frage.character_id:
+            meldung = (
+                f"AutonomousWissenRepository.suchen: unvollstaendiges Paar "
+                f"(user_id={frage.user_id!r}, character_id={frage.character_id!r}) "
+                f"— ein Treffer ohne Paar kaeme aus einer fremden Beziehung"
+            )
+            raise ValueError(meldung)
+
+        # ── Verarbeitung ────────────────────────────
+        conn = psycopg2.connect(frage.postgres_url)
+        try:
+            with conn.cursor() as cur:
+                cur.execute(
+                    """
+                    SELECT thema, zusammenfassung, dateipfad, modus, status,
+                           gewicht_decay, haeufigkeit,
+                           1 - (themen_embedding <=> %s::vector) AS cosine
+                    FROM   autonomous_wissen
+                    WHERE  user_id = %s AND character_id = %s
+                      AND  aktiv = TRUE
+                      AND  typ = %s
+                      AND  themen_embedding IS NOT NULL
+                      AND  1 - (themen_embedding <=> %s::vector) >= %s
+                    ORDER  BY themen_embedding <=> %s::vector
+                    LIMIT  %s
+                    """,
+                    (
+                        frage.vektor_str, frage.user_id, frage.character_id,
+                        frage.typ, frage.vektor_str, frage.schwelle,
+                        frage.vektor_str, frage.limit,
+                    ),
+                )
+                zeilen: list = cur.fetchall()
+        finally:
+            conn.close()
+
+        # ── Ausgabe-Verifikation ────────────────────
+        return [
+            Bibliothekszeile(
+                thema=thema,
+                zusammenfassung=zusammenfassung,
+                dateipfad=dateipfad,
+                modus=modus or "",
+                status=status or "",
+                gewicht_decay=float(gewicht),
+                haeufigkeit=int(haeufigkeit),
+                cosine=float(cosine),
+            )
+            for thema, zusammenfassung, dateipfad, modus, status,
+                gewicht, haeufigkeit, cosine in zeilen
+        ]
+
+    @staticmethod
+    def zaehlen(postgres_url: str, user_id: str, character_id: str, typ: str) -> int:
+        """Zählt die aktiven Zeilen eines Paares — der Beleg der Ablehnung.
+
+        Eine Ablehnung ohne Zahl ist eine Behauptung: *„dazu liegt nichts vor"*
+        sagt nicht, ob die Bibliothek leer ist oder die Frage danebenlag
+        (`novaberg-convention-nmcp.md` §6.8).
+
+        Vorbedingung: `typ` liegt in WISSEN_TYPEN.
+        Nachbedingung: die Zahl der aktiven Zeilen dieses Paares und Typs.
+        Fehlerfälle: ein Datenbankfehler wird weitergereicht — derselbe Grund
+        wie bei `suchen`.
+        """
+        # ── Eingabe-Validierung ─────────────────────
+        if typ not in WISSEN_TYPEN:
+            meldung = (
+                f"AutonomousWissenRepository.zaehlen: typ={typ!r} steht nicht im "
+                f"Kanon {sorted(WISSEN_TYPEN)}"
+            )
+            raise ValueError(meldung)
+
+        # ── Verarbeitung ────────────────────────────
+        conn = psycopg2.connect(postgres_url)
+        try:
+            with conn.cursor() as cur:
+                cur.execute(
+                    "SELECT COUNT(*) FROM autonomous_wissen "
+                    "WHERE user_id = %s AND character_id = %s "
+                    "AND typ = %s AND aktiv = TRUE",
+                    (user_id, character_id, typ),
+                )
+                zeile = cur.fetchone()
+        finally:
+            conn.close()
+
+        # ── Ausgabe-Verifikation ────────────────────
+        return int(zeile[0]) if zeile else 0

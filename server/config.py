@@ -488,6 +488,19 @@ WISSEN_RETRIEVAL_SCHWELLE:         float = float(os.getenv("WISSEN_RETRIEVAL_SCH
 # 262144 des Hintergrunds.
 WISSEN_RETRIEVAL_TOP_K:            int   = int(os.getenv("WISSEN_RETRIEVAL_TOP_K", "3"))
 
+# Wie tief der BESTELLTE Weg liest (novaberg-convention-nmcp.md §6a.1).
+#
+# **Eine Tiefe, keine Schwelle — und der Unterschied ist der Grund, warum
+# hier eine neue Zahl stehen darf und dort nicht.** Die Schwelle entscheidet,
+# WAS als Treffer gilt; sie bleibt fuer beide Eingaenge dieselbe, sonst
+# haette derselbe Bestand zwei Rangfolgen. Die Tiefe entscheidet nur, wie
+# weit unten gelesen wird — sie aendert die Ordnung nicht.
+#
+# Fuenf statt drei, weil die Lage eine andere ist: Der Enricher-Weg drueckt
+# seine Treffer ungefragt in JEDEN Turn und muss deshalb sparsam sein; hier
+# hat der Mensch ausdruecklich gefragt und wartet auf die Antwort.
+WISSEN_AUFTRAG_TOP_K:              int   = int(os.getenv("WISSEN_AUFTRAG_TOP_K", "5"))
+
 # ── Der Enricher-Weg des Dateien-Index (novaberg-agent-dateien_k.md §3.0) ──
 #
 # **Die Kappung ist die Zusicherung, die Schwelle ist die Feinjustage** (§3.0a).
