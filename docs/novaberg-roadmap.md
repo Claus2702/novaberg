@@ -1,6 +1,6 @@
 # Novaberg — Roadmap (Projektchronik)
 
-**Stand:** 19. August 2026
+**Stand:** 19. August 2026, nachts
 *(Die Kopfzeile stand bis Chat 109 auf „Chat 93, 21. Mai 2026" — 15 Chats hinter dem Inhalt. **Sie ist danach erneut zurückgefallen:** von Chat 110 bis 114 blieb sie auf „Chat 109" stehen, während der Inhalt weiterwuchs, und wurde in Chat 115 nachgezogen. Wer hier etwas ergänzt, zieht die Kopfzeile mit — sie driftet zuverlässig. Achtung beim Nachschlagen: Nur bis Chat 97 trägt jeder Chat eine eigene `## Chat NNN`-Überschrift; die Chats 98–108 stehen als `###`-Abschnitte unter dem Chat-97-Block, benannt nach Sprint statt nach Chat.)*
 **Pfad:** novaberg/docs/novaberg-roadmap.md
 **Single Source of Truth für abgeschlossene Arbeit.**
@@ -25,6 +25,38 @@
 **Dazu ein Befund, der beim Zählen anfiel:** Der Recherche-Agent schreibt in `autonomous_wissen` und liest nie daraus — seine einzige Quelle ist das Netz, sein Vorwissen kommt aus dem Gedächtnis. Er füllt eine Bibliothek, die er selbst nicht befragt.
 
 Vier Backlog-Einträge, ein Konventionsabschnitt, kein Code.
+
+### 19.08.2026, nachts — Die Laufzeit springt zwölf Versionen, und ein Vorgabewert kippt
+
+**0.20.7 → 0.32.14 eingespielt, beide Instanzen neu gestartet.** Suite `Ran 1965 tests — OK`,
+0 übersprungen; ein echter Turn zugestellt (Responder 666 Zeichen nach 23 s, alle
+JSON-Aufrufer `parsed=True`); alle fünf Modelle geladen, **Digests unverändert** — kein
+Manifest-Umschreiben.
+
+**Der Befund liegt im Vorgabewert, nicht im Fehlerbild.** 0.32.14 schaltet Thinking per
+Default ein. Dieselbe Frage an `gemma4-gpu`, dreimal:
+
+| Anfrage | eval_count | content | thinking |
+|---|---|---|---|
+| ohne `think`-Feld | 425 | 214 | **1467** |
+| **`think=false`** | **60** | 248 | **0** |
+| `think=true` | 411 | 248 | 1405 |
+
+Ein Aufrufer, der das Feld wegläßt, verlöre ~85 % seiner Ausgabe in einen Kanal, den der
+Bestand nicht liest — und zahlte das Siebenfache an Token. `services/llm_provider.py` setzt
+`"think": think` **unbedingt** ins Payload; der Bestand ist deshalb nicht betroffen, im
+Betrieb bestätigt mit 22 Umschlägen `['content']` gegen 2 mit `['content','thinking']`.
+
+**Was das Update nicht liefert, ist die Entlastung des Leer-Ausfalls.** Die Nachmessung hat
+n=1 bis 5 je Aufrufer gegen n=30 bis 224 der Nulllinie; `0 Fehlschläge` sagt bei dieser
+Stichprobe nichts. Der `thinker`-Median steht bei 12 Zeichen wie zuvor.
+
+**Zwei Sätze des eigenen Übergabezettels trugen nicht, und beide waren Verfahrensangaben.**
+Die Sicherung sollte *„ein `cp` und zwei Neustarts"* sein — neben der 43-MB-Binärdatei liegen
+**7,2 GB Laufzeitbibliotheken**, die dasselbe Archiv ersetzt. Und das Messwerkzeug sollte
+*„unverändert wiederholbar"* sein — der Server-Container läuft über den Neustart hinweg durch,
+sein Log ist kumulativ: **129 neue Zeilen gegen 325.987 gesamt**. Beide Abhilfen sind gebaut
+(Sicherung samt Rückweg-Skript; Zeitfenster im Werkzeug, absolut mit Zonenkennung).
 
 ### 19.08.2026, spät — Die Laufzeit ist vier Monate alt, und die Nulllinie steht
 
