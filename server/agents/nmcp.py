@@ -305,8 +305,41 @@ def _ausschluss_pruefen(agent: BaseAgent) -> list[Mangel]:
     als Verstoss, weil dessen Negativfall "kein dauerhafter Charakter"
     den Namen des Dienstes `charakter` enthaelt. **Agentennamen sind
     Domaenenwoerter** — deshalb wird auf Wortgrenzen geprueft und die
-    eigene Namensfamilie ausgenommen. Was danach bleibt, findet nur der
-    Review.
+    eigene Namensfamilie ausgenommen.
+
+    **Der Grad haengt seit dem 19.08.2026 an der Form des Namens, und der
+    Anlass ist gemessen.** An diesem Tag wurde das Silo `wissen` zum
+    Dienst. Damit wurde ein gewoehnliches deutsches Sachwort zum
+    Dienstnamen — und **zwei unveraenderte, richtige Zettel wurden
+    schlagartig zu harten Verstoessen**: `dateien` sagt *"das ist Wissen,
+    keine Fundstelle"*, `timeline` sagt *"das ist Wissen, kein Termin"*.
+    Beide benennen eine **Eigenschaft der Aeusserung**, genau wie §3.2 es
+    verlangt; keiner von beiden schliesst jemanden aus. Beide waeren mit
+    dem haertesten Grad aus dem Betrieb genommen worden.
+
+    > **Damit erzeugte die Pruefung genau den Fehler, gegen den die
+    > geprueft Regel gebaut ist:** Der *korrekte* Dienst waere ausgesperrt
+    > worden — aus dem billigen sichtbaren Fehler der teure unsichtbare
+    > (§3.6b). Und sie tat es **rueckwirkend**: Das Urteil ueber einen
+    > Zettel haengt daran, ob anderswo ein Dienst hinzukam.
+
+    **Die Trennlinie ist deshalb die Form des Namens, nicht das Wort:**
+
+    | Name | Kann er deutsche Prosa sein? | Grad |
+    |---|---|---|
+    | mehrteilig (`dateien_wurzeln`) | nein — wer beide Teile nennt, meint den Dienst | `verweigert` |
+    | einteilig (`wissen`, `fakten`) | ja, und meistens ist er es | `gemeldet` |
+
+    Gezaehlt am 19.08.2026: **12 von 19** Dienstnamen sind einteilige
+    Sachwoerter. Fuer sie bleibt der Befund und verliert seine Haerte — er
+    geht als Meldung an den Menschen, der beide Zettel pflegt (§5.6a), und
+    genau dort gehoert er hin: Ob ein Satz die Kategorie meint oder den
+    Nachbarn, ist am Wort nicht entscheidbar.
+
+    **Was dadurch nicht mehr hart faellt**, ist benannt und nicht
+    verschwiegen: ein Zettel, der einen einteilig benannten Dienst
+    tatsaechlich ausschliesst. Er wird gemeldet und nicht mehr
+    verweigert.
     """
     from agents import AgentRegistry  # lokal: Zyklus Registry <-> nmcp
 
@@ -324,18 +357,37 @@ def _ausschluss_pruefen(agent: BaseAgent) -> list[Mangel]:
         worte = {
             w.strip(".,:;!?()\"'—").lower() for w in nf.replace("_", " ").split()
         }
-        genannt = sorted(
-            n for n in fremde
-            if set(n.split("_")) <= worte or n in worte
+        # Mehrteilig heisst: alle Teile stehen im Satz. Ein solcher Treffer
+        # kann keine Prosa sein — niemand schreibt "dateien wurzeln", ohne
+        # den Dienst zu meinen.
+        mehrteilig = sorted(
+            n for n in fremde if "_" in n and set(n.split("_")) <= worte
         )
-        if genannt:
+        # Einteilig heisst: das Sachwort der Domaene. Es steht in jedem
+        # zweiten Negativfall, und meistens meint es die Kategorie.
+        einteilig = sorted(
+            n for n in fremde if "_" not in n and n in worte
+        )
+        if mehrteilig:
             maengel.append(Mangel(
                 regel="ausschluss",
                 grad="verweigert",
                 text=(
-                    f"Negativfall nennt fremde Dienste {genannt} — ein Zettel "
+                    f"Negativfall nennt fremde Dienste {mehrteilig} — ein Zettel "
                     f"darf keinen anderen Dienst ausschliessen: Im Fehlerfall "
                     f"schloesse er den korrekten Dienst mit aus"
+                ),
+            ))
+        if einteilig:
+            maengel.append(Mangel(
+                regel="ausschluss",
+                grad="gemeldet",
+                text=(
+                    f"Negativfall enthaelt die Sachwoerter {einteilig}, die "
+                    f"zugleich Dienstnamen sind — meint der Satz die Kategorie, "
+                    f"ist er richtig; meint er den Nachbarn, ist er ein "
+                    f"Ausschluss. Am Wort nicht entscheidbar, deshalb eine "
+                    f"Meldung an den Autor beider Zettel"
                 ),
             ))
     return maengel

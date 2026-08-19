@@ -181,14 +181,18 @@ class AusschlussTest(unittest.TestCase):
         discover_managers()
         discover_agents()
 
-    def test_negativfall_mit_fremdem_dienst_verweigert(self) -> None:
-        """Ein Negativfall, der einen anderen Dienst benennt, sperrt.
+    def test_negativfall_mit_mehrteiligem_dienstnamen_verweigert(self) -> None:
+        """Der Ausloesefall: ein mehrteiliger Name kann keine Prosa sein.
 
         Ein Plugin kann seinen Nachbarn nicht kennen; und ein
         Ausschlussrecht waere Gift, weil es im Fehlerfall den korrekten
-        Dienst mit ausschloesse.
+        Dienst mit ausschloesse. Bei einem mehrteiligen Namen ist der Fall
+        entscheidbar: Wer beide Teile hinschreibt, meint den Dienst.
+
+        **Ohne diesen Zeugen ist ein schweigender Riegel von einem
+        sauberen Bestand nicht zu unterscheiden.**
         """
-        fremd = "timeline"
+        fremd = "dateien_wurzeln"
         self.assertIn(
             fremd, AgentRegistry.alle(),
             "Der Test faehrt einen echten Dienstnamen aus dem Bestand",
@@ -199,6 +203,40 @@ class AusschlussTest(unittest.TestCase):
         )
         befund = anmelden(agent)
         self.assertEqual(befund.grad, "verweigert")
+        self.assertIn("ausschluss", [m.regel for m in befund.maengel])
+
+    def test_einteiliges_sachwort_wird_gemeldet_und_nicht_verweigert(self) -> None:
+        """19.08.2026 — das Sachwort der Domaene sperrt niemanden mehr aus.
+
+        Der Anlass ist gemessen: An diesem Tag wurde das Silo `wissen` zum
+        Dienst. Damit wurden **zwei unveraenderte, richtige Zettel zu harten
+        Verstoessen** — `dateien` sagt *"das ist Wissen, keine Fundstelle"*,
+        `timeline` sagt *"das ist Wissen, kein Termin"*. Beide benennen eine
+        Eigenschaft der Aeusserung und schliessen niemanden aus.
+
+        Der Befund bleibt und verliert seine Haerte: Ob ein Satz die
+        Kategorie meint oder den Nachbarn, ist am Wort nicht entscheidbar —
+        und ein Urteil, das den korrekten Dienst aussperrt, ist genau der
+        Fehler, gegen den die geprueft Regel gebaut ist.
+        """
+        # Der Name kommt aus dem Bestand, nicht aus dem Test: Die Klasse
+        # haengt an der FORM des Namens und nicht an einem bestimmten Dienst.
+        # Ein fest hingeschriebener Name koppelte diesen Zeugen an die
+        # Existenz genau dieses Dienstes — und damit an die Reihenfolge, in
+        # der gebaut wird.
+        einteilig = sorted(n for n in AgentRegistry.alle() if "_" not in n)
+        self.assertTrue(einteilig, "Der Bestand traegt keinen einteiligen Namen")
+        fremd = einteilig[0]
+        agent = _Attrappe(
+            name="attrappe",
+            negativfaelle=[
+                f"eine Aeusserung ueber {fremd} als Sache, nicht als Auftrag — "
+                f"das ist eine Kategorie und kein Dienst"
+            ],
+        )
+        befund = anmelden(agent)
+        self.assertEqual(befund.grad, "gemeldet")
+        self.assertTrue(befund.eingebunden, "Der Dienst bleibt eingebunden")
         self.assertIn("ausschluss", [m.regel for m in befund.maengel])
 
     def test_domaenenwort_ist_kein_ausschluss(self) -> None:
@@ -219,6 +257,27 @@ class AusschlussTest(unittest.TestCase):
             "ausschluss", [m.regel for m in befund.maengel],
             "Ein Domaenenwort der eigenen Namensfamilie ist kein Ausschluss",
         )
+
+    def test_ein_neuer_dienstname_sperrt_keinen_bestehenden_aus(self) -> None:
+        """Kein Urteil ueber Zettel A haengt daran, dass Dienst B hinzukam.
+
+        Die Ruecknahme der Haerte hat einen Gegenstand, und er ist gezaehlt:
+        **12 von 19** Dienstnamen sind einteilige deutsche Sachwoerter. Jeder
+        neue Dienst mit einem solchen Namen konnte bisher jeden bestehenden
+        Zettel rueckwirkend zum harten Verstoss machen.
+        """
+        einteilig = [n for n in AgentRegistry.alle() if "_" not in n]
+        self.assertGreaterEqual(
+            len(einteilig), 10,
+            "Die Klasse hat einen Gegenstand — sonst waere der Zeuge gegenstandslos",
+        )
+        for name in ("dateien", "timeline"):
+            befund = anmelden(AgentRegistry.finden(name))
+            self.assertTrue(
+                befund.eingebunden,
+                f"'{name}' waere ausgesperrt: "
+                f"{[m.text for m in befund.maengel if m.grad == 'verweigert']}",
+            )
 
 
 class VierterAusgangTest(unittest.TestCase):
