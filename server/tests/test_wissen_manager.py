@@ -94,6 +94,16 @@ class WissenManagerTest(unittest.TestCase):
 
         Bewusst nicht ueber das Repository: Sonst liefe die Erwartung durch
         dieselbe Funktion wie das Ergebnis.
+
+        **Seit Konvention 4 gehoert die Themenzeile dazu.** Der Lesepfad
+        vergleicht gegen `autonomous_wissen_thema`, nicht mehr gegen den
+        gemittelten Vektor der Zeile; eine Ausarbeitung ohne Themenvektor ist
+        fuer ihn unsichtbar. Das Fixture legt beide an — sonst pruefte der
+        Zeuge einen Bestand, den es nicht mehr gibt.
+
+        Derselbe Vektor steht in beiden Spalten. Das ist hier richtig und
+        anderswo falsch: Der Zeuge misst die Naehe-Logik des Managers, nicht
+        die Frage, welcher Text eingebettet wurde.
         """
         pfad: str = f"{PFAD_PRAEFIX}{uuid.uuid4().hex}_{typ}.md"
         conn = psycopg2.connect(POSTGRES_URL)
@@ -107,12 +117,19 @@ class WissenManagerTest(unittest.TestCase):
                          salienz_anfang, gewicht_roh, gewicht_absolut, gewicht_decay)
                     VALUES (%s, %s, %s, 'assistant', %s, %s, %s::vector, %s,
                             'recherche', 'echte_tiefe', 0.7, 1.0, %s, %s)
+                    RETURNING id
                     """,
                     (
                         pfad, user_id, CHARAKTER, thema or f"Thema {self.marke}",
                         f"Zusammenfassung {self.marke}", _vektor_str(vektor), typ,
                         gewicht, gewicht,
                     ),
+                )
+                wissen_id: int = cur.fetchone()[0]
+                cur.execute(
+                    "INSERT INTO autonomous_wissen_thema (wissen_id, thema, embedding) "
+                    "VALUES (%s, %s, %s::vector)",
+                    (wissen_id, thema or f"Thema {self.marke}", _vektor_str(vektor)),
                 )
             conn.commit()
         finally:

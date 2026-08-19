@@ -30,6 +30,80 @@ WISSEN_STATUS: frozenset[str] = frozenset(
     {"echte_tiefe", "ergaenzung", "wiederholung", "fehlschlag"}
 )
 
+# Kuerzer als das ist kein Gegenstand, sondern ein Rest der Zerlegung: ein
+# leeres Glied nach einem doppelten Trennzeichen oder ein einzelnes Zeichen.
+#
+# **Der Wert ist am Bestand gemessen und war zuerst falsch geraten.** Ein
+# erster Ansatz stand auf 4 und haette echte Themen verworfen — gezaehlt ueber
+# alle aktiven Themenfelder: `KI` (4 Vorkommen), `AuD` und `AUM` (je 1). Bei
+# Laenge 4 stehen bereits 20 Vorkommen, darunter `Gold`, `Igel`, `Uran`,
+# `TQFT` und `vLLM`. Das kuerzeste echte Thema des Bestandes hat also ZWEI
+# Zeichen, und eine Abkuerzung ist ein Thema wie jedes andere.
+#
+# Gefunden hat es ein Zeuge mit dem Fall `"Mut; Vertrauen"`, nicht die
+# Ueberlegung beim Schreiben der Konstante.
+THEMA_MINDESTLAENGE: int = 2
+
+
+def themen_zerlegen(themenfeld: str) -> list[str]:
+    """Zerlegt das Themenfeld einer Ausarbeitung in seine einzelnen Themen.
+
+    **Die eine Quelle fuer Live-Pfad und Wartungswerkzeug** (`F-EMBED-1`).
+    Zwei Zerlegungen erzeugten zwei Mengen von Themenvektoren, und der
+    Unterschied fiele erst auf, wenn jemand dieselbe Frage zweimal stellt.
+
+    Der Hintergrund steht in `novaberg-convention-embedding.md` §5: Das Feld
+    traegt im Mittel 4,37 Themen, hoechstens 17, und 558 von 559 Feldern mehr
+    als eines. Ein einziger Vektor darueber liegt in ihrem Schwerpunkt und ist
+    keinem davon nah — gemessen 6 von 40 richtigen Antworten auf Rang 1 gegen
+    31 von 40 mit einem Vektor je Thema.
+
+    Vorbedingung: `themenfeld` ist eine Zeichenkette. Leer ist zulaessig und
+    ergibt eine leere Liste — eine Ausarbeitung ohne Thema ist ein Fall fuer
+    den Aufrufer, nicht fuer die Zerlegung.
+
+    Nachbedingung: eine Liste ohne Dubletten, in der Reihenfolge des Feldes,
+    jedes Glied mindestens `THEMA_MINDESTLAENGE` Zeichen lang.
+
+    Args:
+        themenfeld: Der Inhalt von `autonomous_wissen.thema`.
+
+    Returns:
+        Die einzelnen Themen, entdoppelt und in Reihenfolge.
+    """
+    # ── Eingabe-Validierung ─────────────────────
+    if not isinstance(themenfeld, str):
+        meldung = (
+            f"themen_zerlegen: themenfeld ist {type(themenfeld).__name__}, "
+            f"erwartet str — eine Zerlegung ueber einem Nicht-Text ergaebe "
+            f"Themenvektoren aus einer Zufallsdarstellung"
+        )
+        raise TypeError(meldung)
+
+    # ── Verarbeitung ────────────────────────────
+    # Semikolon und Komma trennen beide; das Semikolon kommt selten vor, aber
+    # wo es vorkommt, trennt es genauso.
+    roh: list[str] = []
+    for teil in themenfeld.replace(";", ",").split(","):
+        gestutzt: str = teil.strip()
+        if len(gestutzt) >= THEMA_MINDESTLAENGE and gestutzt not in roh:
+            roh.append(gestutzt)
+
+    # ── Ausgabe-Verifikation ────────────────────
+    # Ein nicht-leeres Feld, das nichts ergibt, ist kein leeres Ergebnis,
+    # sondern ein Feld, dessen Inhalt die Zerlegung nicht versteht. Still eine
+    # leere Liste zurueckzugeben hiesse, die Ausarbeitung unauffindbar zu
+    # machen, ohne dass es jemand bemerkt.
+    if themenfeld.strip() and not roh:
+        logger.warning(
+            "themen_zerlegen: '%s' ergab kein einziges Thema — die "
+            "Ausarbeitung bekommt keinen Themenvektor und ist ueber den "
+            "Bestell-Weg nicht auffindbar",
+            themenfeld[:80],
+        )
+
+    return roh
+
 
 @dataclass
 class WissensEintrag:
@@ -43,6 +117,17 @@ class WissensEintrag:
     `themen_embedding` ist die pgvector-Literal-Darstellung "[v1,v2,...]" oder
     None. None ist ein zulässiger Zustand — die Spalte ist nullbar, und eine
     Zeile ohne Vektor ist über Thema und Paar weiterhin auffindbar.
+
+    `themen_vektoren` bildet **Thema → Vektor-Literal** ab, für die einzelnen
+    Themen des Feldes (Konvention 4). Fehlt ein Thema in der Abbildung oder ist
+    sie leer, entsteht die Themenzeile trotzdem — mit `embedding = NULL` und
+    damit nachbettbar. Das ist Absicht: Die Zeile zu haben und den Vektor
+    nachzureichen ist wiederherstellbar, die Zeile gar nicht zu haben nicht,
+    weil dann niemand weiß, dass sie fehlt.
+
+    **Nicht dasselbe wie `themen_embedding`, und es ersetzt es nicht.** Das
+    eine trägt den Inhalt der Ausarbeitung für lange Anfragen, das andere ihre
+    Themen für kurze — siehe `novaberg-convention-embedding.md` §5.
     """
 
     dateipfad:        str
@@ -56,6 +141,7 @@ class WissensEintrag:
     status:           str
     salienz_anfang:   float
     themen_embedding: str | None = None
+    themen_vektoren:  dict[str, str] | None = None
 
 
 @dataclass
@@ -226,6 +312,24 @@ class AutonomousWissenRepository:
                     ),
                 )
                 conn.commit()
+
+                # **Auch der Verstaerkungszweig zieht die Themenzeilen nach.**
+                # Das Themenfeld kann sich zwischen zwei Laeufen aendern; ein
+                # Thema, das daraus verschwindet, muss aus der Suche
+                # verschwinden, sonst faende die Bibliothek eine Ausarbeitung
+                # ueber etwas, das sie nicht mehr behandelt.
+                #
+                # `[gemessen]` — 19.08.2026: Diese Zeilen fehlten zuerst, weil
+                # der Bau nur den INSERT-Zweig auf der Karte hatte. Gefunden
+                # hat es ein Zeuge, den die Gegenprobe erzwungen hat: `Alpha,
+                # Beta` verstaerkt zu `Alpha, Gamma` behielt `Beta`.
+                themen: list[str] = themen_zerlegen(eintrag.thema)
+                AutonomousWissenRepository.themenvektoren_schreiben(
+                    postgres_url,
+                    zeilen_id,
+                    [(th, (eintrag.themen_vektoren or {}).get(th)) for th in themen],
+                )
+
                 logger.info(
                     f"autonomous_wissen: Zeile {zeilen_id} verstaerkt — "
                     f"Durchlauf {haeufigkeit}, roh {gewicht_roh:.2f}, "
@@ -268,9 +372,105 @@ class AutonomousWissenRepository:
                 f"Salienz {eintrag.salienz_anfang:.2f}, absolut {gewicht_absolut:.2f}, "
                 f"Typ {eintrag.typ}, Status {eintrag.status}, Pfad {eintrag.dateipfad}"
             )
+
+            # **Die Themenzeilen entstehen HIER und nicht beim Aufrufer.**
+            # Es gibt zwei Schreibwege in diese Tabelle (den Recherche-Pfad
+            # ueber `ergebnis_ablegen` und den Rueckweg), und ein dritter
+            # kaeme ohne Weiteres dazu. Ein Weg, der die Zerlegung vergisst,
+            # legt eine Ausarbeitung ab, die ueber den Bestell-Weg unauffindbar
+            # ist — und das faellt niemandem auf, weil eine kurze Trefferliste
+            # wie ein enger Bestand aussieht.
+            #
+            # Ohne gelieferten Vektor bleibt `embedding` NULL. Die Zeile ist
+            # dann da und die Ausarbeitung nachbettbar; ohne Zeile waere sie
+            # es nicht, weil niemand wuesste, dass sie fehlt.
+            themen: list[str] = themen_zerlegen(eintrag.thema)
+            AutonomousWissenRepository.themenvektoren_schreiben(
+                postgres_url,
+                int(zeile[0]),
+                [(th, (eintrag.themen_vektoren or {}).get(th)) for th in themen],
+            )
+
             return int(zeile[0])
         finally:
             conn.close()
+
+    @staticmethod
+    def themenvektoren_schreiben(
+        postgres_url: str, wissen_id: int, themen: list[tuple[str, str | None]],
+    ) -> int:
+        """Schreibt die Themenvektoren einer Ausarbeitung — je Thema eine Zeile.
+
+        **Ersetzt den Bestand dieser Ausarbeitung vollstaendig.** Ein Thema,
+        das nicht mehr im Feld steht, verschwindet damit auch aus der Suche;
+        bliebe es stehen, faende die Bibliothek eine Ausarbeitung ueber ein
+        Thema, das sie nicht mehr behandelt. Der Austausch laeuft in EINER
+        Transaktion — ein Abbruch nach dem Loeschen und vor dem Schreiben
+        liesse die Ausarbeitung unauffindbar zurueck.
+
+        Vorbedingung: `wissen_id` ist positiv, `themen` traegt Paare aus Thema
+        und pgvector-Literal (oder None fuer "noch nicht eingebettet").
+        Nachbedingung: Genau `len(themen)` Zeilen tragen diese `wissen_id`.
+        Fehlerfaelle: ungueltige Eingabe (ValueError), Datenbankfehler
+        (psycopg2.Error) — beide an den Aufrufer.
+
+        Args:
+            postgres_url: Verbindung.
+            wissen_id: Die Ausarbeitung, zu der die Themen gehoeren.
+            themen: Paare (thema, vektor_literal_oder_None).
+
+        Returns:
+            Die Zahl geschriebener Zeilen.
+        """
+        # ── Eingabe-Validierung ─────────────────────
+        if wissen_id <= 0:
+            meldung = (
+                f"themenvektoren_schreiben: wissen_id={wissen_id} ist nicht "
+                f"positiv — es gibt keine Ausarbeitung mit dieser Kennung"
+            )
+            raise ValueError(meldung)
+
+        for thema, _ in themen:
+            if not thema or not thema.strip():
+                meldung = (
+                    f"themenvektoren_schreiben: leeres Thema fuer Ausarbeitung "
+                    f"{wissen_id} — ein Vektor ohne Gegenstand zeigt auf alles"
+                )
+                raise ValueError(meldung)
+
+        # ── Verarbeitung ────────────────────────────
+        conn = psycopg2.connect(postgres_url)
+        try:
+            with conn:
+                with conn.cursor() as cur:
+                    cur.execute(
+                        "DELETE FROM autonomous_wissen_thema WHERE wissen_id = %s",
+                        (wissen_id,),
+                    )
+                    for thema, vektor in themen:
+                        cur.execute(
+                            "INSERT INTO autonomous_wissen_thema "
+                            "(wissen_id, thema, embedding) "
+                            "VALUES (%s, %s, %s::vector)",
+                            (wissen_id, thema.strip(), vektor),
+                        )
+        finally:
+            conn.close()
+
+        # ── Ausgabe-Verifikation ────────────────────
+        ohne_vektor: int = sum(1 for _, v in themen if v is None)
+        if ohne_vektor:
+            logger.warning(
+                "themenvektoren_schreiben: %d von %d Themen der Ausarbeitung "
+                "%d ohne Vektor abgelegt — sie sind ueber den Bestell-Weg "
+                "nicht auffindbar, bis eine Nachbettung laeuft",
+                ohne_vektor, len(themen), wissen_id,
+            )
+        logger.info(
+            "themenvektoren_schreiben: %d Themen fuer Ausarbeitung %d",
+            len(themen), wissen_id,
+        )
+        return len(themen)
 
     @staticmethod
     def suchen(frage: Bibliotheksfrage) -> list[Bibliothekszeile]:
@@ -324,27 +524,60 @@ class AutonomousWissenRepository:
         conn = psycopg2.connect(frage.postgres_url)
         try:
             with conn.cursor() as cur:
+                # Der Vergleich laeuft gegen die EINZELNEN Themen, nicht
+                # gegen einen gemittelten Vektor der Zeile (Konvention 4).
+                # `max` waehlt je Ausarbeitung ihr bestpassendes Thema: Eine
+                # Ausarbeitung ueber fuenf Dinge ist getroffen, sobald EINES
+                # davon gefragt war — und nicht erst, wenn der Durchschnitt
+                # aller fuenf nahe genug liegt.
                 cur.execute(
                     """
-                    SELECT thema, zusammenfassung, dateipfad, modus, status,
-                           gewicht_decay, haeufigkeit,
-                           1 - (themen_embedding <=> %s::vector) AS cosine
-                    FROM   autonomous_wissen
-                    WHERE  user_id = %s AND character_id = %s
-                      AND  aktiv = TRUE
-                      AND  typ = %s
-                      AND  themen_embedding IS NOT NULL
-                      AND  1 - (themen_embedding <=> %s::vector) >= %s
-                    ORDER  BY themen_embedding <=> %s::vector
+                    SELECT w.thema, w.zusammenfassung, w.dateipfad, w.modus,
+                           w.status, w.gewicht_decay, w.haeufigkeit,
+                           MAX(1 - (t.embedding <=> %s::vector)) AS cosine
+                    FROM   autonomous_wissen w
+                    JOIN   autonomous_wissen_thema t ON t.wissen_id = w.id
+                    WHERE  w.user_id = %s AND w.character_id = %s
+                      AND  w.aktiv = TRUE
+                      AND  w.typ = %s
+                      AND  t.embedding IS NOT NULL
+                    GROUP  BY w.id, w.thema, w.zusammenfassung, w.dateipfad,
+                              w.modus, w.status, w.gewicht_decay, w.haeufigkeit
+                    HAVING MAX(1 - (t.embedding <=> %s::vector)) >= %s
+                    ORDER  BY cosine DESC
                     LIMIT  %s
                     """,
                     (
                         frage.vektor_str, frage.user_id, frage.character_id,
                         frage.typ, frage.vektor_str, frage.schwelle,
-                        frage.vektor_str, frage.limit,
+                        frage.limit,
                     ),
                 )
                 zeilen: list = cur.fetchall()
+
+                # Eine Ausarbeitung ohne Themenvektoren faellt aus dem JOIN
+                # und ist ueber diesen Weg unsichtbar — lautlos, denn eine
+                # kurze Trefferliste sieht aus wie ein enger Bestand. Die
+                # Zahl gehoert deshalb ins Protokoll, nicht in eine Annahme.
+                cur.execute(
+                    """
+                    SELECT count(*) FROM autonomous_wissen w
+                    WHERE  w.user_id = %s AND w.character_id = %s
+                      AND  w.aktiv = TRUE AND w.typ = %s
+                      AND  NOT EXISTS (SELECT 1 FROM autonomous_wissen_thema t
+                                       WHERE t.wissen_id = w.id
+                                         AND t.embedding IS NOT NULL)
+                    """,
+                    (frage.user_id, frage.character_id, frage.typ),
+                )
+                unsichtbar: int = int(cur.fetchone()[0])
+                if unsichtbar:
+                    logger.warning(
+                        "AutonomousWissenRepository.suchen: %d Ausarbeitungen "
+                        "ohne Themenvektor — sie sind ueber den Bestell-Weg "
+                        "unauffindbar, bis eine Nachbettung laeuft",
+                        unsichtbar,
+                    )
         finally:
             conn.close()
 

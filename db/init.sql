@@ -489,6 +489,57 @@ CREATE TABLE IF NOT EXISTS autonomous_wissen (
 CREATE INDEX IF NOT EXISTS idx_autonomous_wissen_aktiv
     ON autonomous_wissen (user_id, character_id, typ) WHERE aktiv = TRUE;
 
+-- autonomous_wissen_thema — ein Vektor je Thema (Konvention 4)
+-- ───────────────────────────────────────────────
+-- `autonomous_wissen.thema` traegt eine LISTE: im Mittel 4,37 durch Komma
+-- getrennte Themen, hoechstens 17, und 558 von 559 Feldern mehr als eines.
+-- Ein einzelner Vektor darueber liegt in ihrem Schwerpunkt, und der
+-- Schwerpunkt mehrerer unverwandter Begriffe ist keinem davon nah.
+--
+-- Gemessen am 19.08.2026 ueber 40 Fragen nach EINEM Thema, die richtige
+-- Antwort je Frage bekannt: Der Vektor der Zeile fand seinen eigenen Eintrag
+-- in 6 von 40 Faellen auf Rang 1, Kosinus-Median 0,2821 — UNTERHALB der
+-- Abweisungsschwelle von 0,40. Die richtige Antwort wurde also im Regelfall
+-- verworfen, nicht nur schlecht gereiht. Ein Vektor je Thema: 31 von 40,
+-- Median 0,7425.
+--
+-- Regel und Begruendung: docs/novaberg-convention-embedding.md §5.
+--
+-- DIESE TABELLE ERSETZT `themen_embedding` NICHT. Die Bibliothek hat zwei
+-- Konsumenten mit gegenlaeufiger Anfragelaenge: Die Bestellung fragt mit
+-- einer kurzen Frage (~60-100 Zeichen) und braucht Themenvektoren; der
+-- Rueckweg fragt mit Ø 833 Zeichen Kontext und braucht einen Inhaltsvektor.
+-- Gemessen: gegen das Destillat findet der Rueckweg die richtige Zeile 25 von
+-- 25 Mal unter den ersten acht, gegen Themenvektoren 12 von 25 — und die
+-- beiden Kandidatenlisten ueberlappen im Median mit 1 von 8. Wer eines der
+-- Ziele abschafft, repariert die eine Seite und bricht die andere.
+--
+-- ON DELETE CASCADE: Ein Themenvektor ohne seine Ausarbeitung ist
+-- gegenstandslos — er zeigt auf nichts und taucht trotzdem in jeder Suche
+-- auf. Dieselbe Semantik wie die Kanten in `verbindung` (abhaengige Zeile
+-- ohne eigenen Gegenstand), nicht die der Gedaechtnisknoten selbst.
+--
+-- UNIQUE (wissen_id, thema): Zweimal dasselbe Thema an derselben Zeile waere
+-- zweimal derselbe Vektor im Ergebnis. Dasselbe Thema an ZWEI Ausarbeitungen
+-- ist dagegen erlaubt und der Normalfall.
+--
+-- embedding NULL-faehig und ohne Vorgabewert: NULL heisst "noch nicht
+-- eingebettet". Ein Default waere genau das Muster, das eine fehlende
+-- Messung wie eine vorhandene aussehen laesst (dieselbe Klasse wie
+-- salienz_anfang oben).
+CREATE TABLE IF NOT EXISTS autonomous_wissen_thema (
+    id         SERIAL       PRIMARY KEY,
+    wissen_id  INTEGER      NOT NULL REFERENCES autonomous_wissen(id) ON DELETE CASCADE,
+    thema      TEXT         NOT NULL,
+    embedding  VECTOR(768),
+
+    UNIQUE (wissen_id, thema)
+);
+
+-- Jeder Lesepfad joint ueber wissen_id zurueck auf die Ausarbeitung.
+CREATE INDEX IF NOT EXISTS idx_autonomous_wissen_thema_wissen
+    ON autonomous_wissen_thema (wissen_id);
+
 -- Vektor-Index (ivfflat) bewusst NICHT angelegt — §7.2 nennt ihn, der Bestand
 -- widerlegt ihn. Bei kleinen Zeilenzahlen durchsucht ivfflat mit probes=1 eine
 -- einzige Zentroid-Liste und der Recall bricht auf nahezu null ein; belegt

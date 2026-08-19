@@ -30,7 +30,10 @@ from config import POSTGRES_URL, WISSENSSPEICHER_WURZEL
 from memory.repositories.autonomous_wissen_repository import (
     AutonomousWissenRepository,
     WissensEintrag,
+    themen_zerlegen,
 )
+from memory.utils import embedding_zu_pgvector_str
+from services.model_services import EmbedRequest, model_service
 from tools.dateien.schreiben import datei_lesen, datei_schreiben
 
 logger = logging.getLogger("ki_server.services.wissensspeicher")
@@ -329,6 +332,58 @@ def index_aktualisieren(*, charakter: str, thema: str, wissen_pfad: Path, datum_
         )
 
 
+def themen_vektoren_bauen(themenfeld: str) -> dict[str, str]:
+    """Bettet jedes einzelne Thema eines Themenfeldes ein (Konvention 4).
+
+    **Beide Schreibwege in die Bibliothek rufen diese Funktion**, damit eine
+    Ausarbeitung ueber jeden Weg gleich auffindbar wird. Der Recherche-Pfad
+    legt neu an, der Rueckweg verstaerkt — eine Ausarbeitung, die nur ueber
+    den einen Weg Themenvektoren bekaeme, waere je nach Herkunft auffindbar
+    oder nicht, und das faellt niemandem auf.
+
+    Die Zerlegung kommt aus `themen_zerlegen`, das Einbetten ueber den
+    Live-Worker. Ein Thema, dessen Einbettung scheitert, fehlt in der
+    Abbildung — die Zeile entsteht trotzdem mit `embedding = NULL` und ist
+    nachbettbar (`tools/nachbetten_themen.py`). Das ist der Unterschied
+    zwischen *spaeter auffindbar* und *nie*.
+
+    Vorbedingung: `themenfeld` ist eine Zeichenkette.
+    Nachbedingung: Abbildung Thema → pgvector-Literal; ein fehlendes Thema
+    bedeutet, dass seine Einbettung nicht zustande kam.
+
+    Args:
+        themenfeld: Der Inhalt von `autonomous_wissen.thema`.
+
+    Returns:
+        Thema → Vektor-Literal, moeglicherweise unvollstaendig.
+    """
+    # ── Verarbeitung ────────────────────────────
+    vektoren: dict[str, str] = {}
+    themen: list[str] = themen_zerlegen(themenfeld)
+    for thema in themen:
+        try:
+            antwort = model_service.embed.submit_sync(EmbedRequest(text=thema))
+            vektoren[thema] = embedding_zu_pgvector_str(antwort.embedding)
+        except (ValueError, RuntimeError, OSError) as fehler:
+            # Kein stiller Ausfall: Das Thema bleibt ohne Vektor, und die
+            # Zeile entsteht trotzdem — sonst wuesste spaeter niemand, dass
+            # hier etwas fehlt.
+            logger.error(
+                "themen_vektoren_bauen: '%s' nicht eingebettet (%s) — die "
+                "Themenzeile entsteht ohne Vektor und ist nachbettbar",
+                thema[:60], type(fehler).__name__,
+            )
+
+    # ── Ausgabe-Verifikation ────────────────────
+    if themen and not vektoren:
+        logger.error(
+            "themen_vektoren_bauen: kein einziges der %d Themen eingebettet — "
+            "die Ausarbeitung ist ueber den Bestell-Weg unauffindbar, bis eine "
+            "Nachbettung laeuft", len(themen),
+        )
+    return vektoren
+
+
 def ergebnis_ablegen(ergebnis: Arbeitsergebnis) -> dict[str, str]:
     """Legt ein Arbeitsergebnis in der Bibliothek ab und gibt die Pfade zurück.
 
@@ -393,6 +448,7 @@ def ergebnis_ablegen(ergebnis: Arbeitsergebnis) -> dict[str, str]:
             status=ergebnis.status,
             salienz_anfang=ergebnis.salienz,
             themen_embedding=ergebnis.themen_embedding,
+            themen_vektoren=themen_vektoren_bauen(ergebnis.thema),
         ),
     )
 

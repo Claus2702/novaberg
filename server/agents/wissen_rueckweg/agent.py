@@ -49,6 +49,7 @@ from memory.repositories.autonomous_wissen_repository import (
     WissensEintrag,
 )
 from services.model_services import EmbedRequest, model_service
+from services.wissensspeicher import themen_vektoren_bauen
 from tools.db_manager import db_manager
 
 from agents.base import AgentState, BaseAgent
@@ -331,6 +332,10 @@ class WissenRueckwegAgent(BaseAgent):
                 modus           = zeile["modus"],
                 status          = zeile["status"],
                 salienz_anfang  = float(zeile["salienz_anfang"]),
+                # Auch der Verstaerkungsweg baut die Themenvektoren, sonst
+                # haengt die Auffindbarkeit einer Ausarbeitung daran, ueber
+                # welchen der beiden Wege sie zuletzt geschrieben wurde.
+                themen_vektoren = themen_vektoren_bauen(ziel.get("thema", "")),
             ))
         except Exception as fehler:  # noqa: BLE001 — die Datei ist schon geschrieben
             logger.exception(

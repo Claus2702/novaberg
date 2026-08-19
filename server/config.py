@@ -475,12 +475,28 @@ WISSENSSPEICHER_WURZEL:                  str   = os.getenv("WISSENSSPEICHER_WURZ
 # verstanden wird.
 # Abruf der Bibliothek im Enricher (die sechste Kontextquelle).
 #
-# Die Schwelle ist von `anker_retrieval` uebernommen, NICHT gemessen: Dort
-# steht 0.40, kalibriert an 100 echten Prompts gegen nomic-embed-text-v2-moe.
-# Derselbe Embedding-Raum, dieselbe Art Anfrage — als Startwert vertretbar,
-# als Ergebnis nicht. Die Bibliothek hatte bei ihrer Einfuehrung drei Zeilen;
-# an drei Zeilen ist nichts kalibrierbar. Backlog: WIS-SCHWELLE-MESSEN.
-WISSEN_RETRIEVAL_SCHWELLE:         float = float(os.getenv("WISSEN_RETRIEVAL_SCHWELLE", "0.40"))
+# **Gemessen am 19.08.2026, in der Richtung, in der die Schwelle benutzt wird:
+# Frage gegen Bestand.** 40 Fragen nach EINEM Thema gegen 249 Ausarbeitungen,
+# die richtige Antwort je Frage bekannt, Ziel sind die Themenvektoren:
+#
+#   Schwelle 0.40 : richtige verworfen  0/40   Fehltreffer durchgelassen 36/40
+#   Schwelle 0.50 : richtige verworfen  0/40   Fehltreffer durchgelassen 27/40
+#   Schwelle 0.55 : richtige verworfen  1/40   Fehltreffer durchgelassen 20/40
+#   Schwelle 0.60 : richtige verworfen  2/40   Fehltreffer durchgelassen 13/40
+#
+# 0.50 ist der hoechste Wert, bei dem noch KEINE richtige Antwort verlorengeht,
+# und er nimmt gegenueber 0.40 ein Viertel der Fehltreffer heraus. Ab 0.55
+# kostet jede weitere Verschaerfung echte Treffer, und die wiegen schwerer:
+# Ein Fehltreffer wird von der Rangfolge nach unten sortiert und von TOP_K
+# abgeschnitten, eine verworfene richtige Antwort ist weg.
+#
+# **Der alte Wert 0.40 war von `anker_retrieval` uebernommen und galt fuer
+# einen anderen Vergleich** — dort gegen Knotenvektoren, hier gegen einen
+# gemittelten Vektor ueber das Destillat. Gegen diesen alten Raum lag der
+# Median der RICHTIGEN Antwort bei 0.2821, also unterhalb der Schwelle: Die
+# richtige Antwort wurde im Regelfall verworfen. Die Zahl gilt deshalb nur
+# zusammen mit dem Ziel, gegen das sie misst (Konvention 4).
+WISSEN_RETRIEVAL_SCHWELLE:         float = float(os.getenv("WISSEN_RETRIEVAL_SCHWELLE", "0.50"))
 
 # Wie viele Dateien der Enricher hoechstens heranzieht. Drei, weil ein
 # Bibliothekstreffer eine Zusammenfassung von bis zu 500 Zeichen mitbringt
