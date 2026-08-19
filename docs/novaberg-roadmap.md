@@ -261,6 +261,22 @@ Das Beziehungsprofil trug zusätzlich beide Fehler des Kern-Hash: `wortlaut_hole
 Gegenprobe: vorhergesagt 4 rot, gezählt 4. Suite 1546 grün.
 
 
+### 19.08.2026 — Die Spiegelung ist gebrochen, nachgemessen
+
+Die Reparatur der Charakter-Destillation vom 17.08. hatte eine offene Zahl hinterlassen: Die Räder laufen im festen Takt, zweimal täglich, und die Neuberechnung der Profile fiel dazwischen. Erzwungen wurde nichts — eine zurückdatierte Messreihe wäre von einer echten nicht mehr zu unterscheiden.
+
+Der Takt lief am **19.08.2026 um 02:23 und 02:39**. Ergebnis über zwölf Speichen des Zuwendungsrades:
+
+| | vor der Reparatur | jetzt |
+|---|---|---|
+| mittlere Abweichung | **0,0202** | **0,2634** |
+| größte Abweichung | 0,0592 | 0,6220 |
+| kleinste Abweichung | 0,0026 | 0,0298 |
+
+**Faktor 13.** Das produktive Paar war vorher das mit Abstand ähnlichste von zwölf; es liegt jetzt zwischen `mehmet` (0,1283) und `wenzel` (0,2917) — im Bereich der Paare, die nie gespiegelt haben. Deren Werte sind unverändert, das Messgerät also dasselbe.
+
+**Damit ist die Reparatur an der Größe belegt, um die es ging** — nicht an einem Ähnlichkeitsmaß über Texte, das schon vorher als schwach tragend berichtet worden war.
+
 ### 17.08.2026 — Jede Perspektive liest ihre eigene Seite
 
 Der Kern-Hash gab **beiden** Perspektiven denselben Text mit beiden Sprechern; unterschieden wurden sie allein durch die Anweisung darüber — und die macht **1,4 % des Prompts** aus. Gemessen am produktiven Paar stammten danach immer noch **90,5 %** des Materials von der Figur (Faktor 9,5), und der Träger *„der Nutzer"* kam im Material **null mal** vor: Der Mensch stand dort nur als *„Gegenueber"*, ein relativer Begriff, dessen Bezugspunkt die Anweisung gerade verschiebt.

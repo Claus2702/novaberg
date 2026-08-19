@@ -94,6 +94,12 @@ Die Zugehörigkeit zu einer dieser Reihen hebt einen Eintrag; alles andere sinkt
 
 **`PROFIL-HISTORIE-FEHLT` stand beim ersten Entwurf dieser Tabelle in Band A und gehört nicht dorthin.** Die Begründung lautete: Ohne Profilhistorie sei nicht messbar, ob ein behaltenes Rad früh genug wirkt. Der Eintrag selbst widerlegt das seit dem 02.08.2026 — `charakter_hash` führt das Paar im Primärschlüssel, und **die Räder sind ohnehin historisiert**: `charakter_rad_messung` trägt am 09.08.2026 231 Zeilen über 20 Kennungen seit dem 01.08. Die Frage nach dem Rad hängt an dieser Tabelle, nicht an der Profilhistorie. Er steht in Band B. **Das ist die Regel bei der Arbeit:** Ein Band, das gegen den Eintrag gehalten wird statt gegen die Erinnerung an ihn, korrigiert sich beim Lesen.
 
+### Neu aus Chat 146 (17.08.2026) — der Wächter, den die Reparatur nötig gemacht hat
+
+| Kennung | Was er anhält |
+|---|---|
+| `PROFIL-KONTRAST-UNGEWACHT` | **Kein Werkzeug prüft, ob zwei Profile desselben Paares verschiedene Personen beschreiben.** Am 16.08.2026 lagen beide Zuwendungsräder bei einer mittleren Abweichung von **0,0202** über zwölf Speichen — Lenkungsdrang 0,923 gegen 0,896 —, und das elf Tage lang, bei grüner Suite und plausibler Ausgabe. Gefunden hat es das Nebeneinanderlegen zweier Radar-Bilder von Hand. **Die Größe ist laufend rechenbar** (`labor/werkzeug/rad_spiegelung.sql`), und sie hat nach der Reparatur auf 0,2634 reagiert, also Trennschärfe. **Was fertig wäre:** Fällt die mittlere Abweichung der Räder eines Paares unter eine Schwelle, ist das ein Befund und kein Ergebnis. Der Grund, warum es einen eigenen Wächter braucht: Ein Charakterprofil ist ein wohlgeformter Text — es gibt keinen Rand, an dem etwas fehlt, und keine Zusicherung, die sich auf seinen **Inhalt** bezieht. Ein Zeuge hat den Defekt sogar festgeschrieben (`test_der_kern_prompt_traegt_die_gesprochenen_worte` sicherte zu, dass **beide** Sprecher im Prompt stehen). Schwelle offen — vor der Festlegung braucht es Werte mehrerer Paare über mehrere Takte |
+
 ### Band B — was in einer laufenden Reihe mitläuft
 
 **Neu aus Chat 135 (11.08.2026):**
