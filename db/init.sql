@@ -542,6 +542,25 @@ CREATE TABLE IF NOT EXISTS shadow_auftrag (
     emotion           TEXT             NOT NULL DEFAULT '',
     modus             TEXT             NOT NULL DEFAULT '',
 
+    -- Worauf sich der Auftrag bezieht — die Zeile, aus der er entstand.
+    -- Angekuendigt und angelegt am 19.08.2026 (F-DDL-1).
+    --
+    -- **Kein Fremdschluessel, und das ist eine Festlegung, keine Bequemlichkeit.**
+    -- Nach F-VERFALL-1 (b) verfaellt eine Entitaet nicht mehr, deren ID
+    -- anderswo als Fremdschluessel dient. Ein Queue-Auftrag darf die Zeile,
+    -- auf die er zeigt, nicht gegen den Verfall festnageln, dem sie
+    -- unterliegen soll. Eine ins Leere zeigende ID ist hier harmlos: Der
+    -- einzige Leser benutzt sie als Ausschluss, und ein Ausschluss, der
+    -- nichts trifft, kostet einen Kandidaten zu viel — keinen Datensatz.
+    --
+    -- **Die Zieltabelle haengt an der Aufgabe.** Bei 'wissen_verweis' ist es
+    -- autonomous_wissen.id — die Zeile, die die Recherche gerade angelegt hat
+    -- und die deshalb nicht ihr eigener Zuordnungskandidat sein darf. Genau
+    -- daran scheitert ein Fremdschluessel ein zweites Mal: Er bindet die
+    -- Spalte an eine Tabelle, waehrend der naechste Bedarf schon benannt ist
+    -- (der Turnbezug, der heute im modus-Feld mitreist).
+    bezug_id          INTEGER,
+
     -- Salienz: Bauart und Konstanten des lzg_knoten, eigene Rate (§4, §9).
     -- Aufbau ueber Sinus-Saettigung, Verfall exponentiell, Cap 1.0 statt 10.0
     -- — die Queue fuehrt Salienz, und auf Cap 10 waere die Schwelle 0,3

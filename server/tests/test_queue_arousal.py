@@ -55,7 +55,10 @@ class DerAuftragTraegtDieErregungTest(unittest.TestCase):
         self.assertIn("arousal", quelle)
         # Der Platzhalter muss mitgewachsen sein — sonst schiebt sich die
         # Werteliste um eins und jede Spalte danach traegt den falschen Wert.
-        self.assertIn("%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s", quelle)
+        # 14 seit dem 19.08.2026 — `bezug_id` ist dazugekommen.
+        self.assertIn(
+            "%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s", quelle,
+        )
 
 
 class DerSchreiberReichtSieDurchTest(unittest.TestCase):

@@ -36,6 +36,7 @@ def shadow_queue_push(
     emotion:      str  = "",
     modus:        str  = "",
     arousal:      float | None = None,
+    bezug_id:     int | None = None,
 ) -> None:
     """Legt einen Auftrag in die Shadow-Queue.
 
@@ -101,6 +102,7 @@ def shadow_queue_push(
         emotion      = emotion,
         modus        = modus,
         arousal      = arousal,
+        bezug_id     = bezug_id,
     )
 
     try:

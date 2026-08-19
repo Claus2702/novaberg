@@ -67,6 +67,12 @@ ERWARTETE_SPALTEN: dict[str, tuple[bool, bool]] = {
     # waere hier die stille Null: ein gueltig aussehender Messwert, der nie
     # gemessen wurde. NULL heisst unbekannt, und der Leser prueft darauf.
     "arousal":         (True,  False),
+    # Seit dem 19.08.2026: worauf sich der Auftrag bezieht. Nullbar und
+    # **ohne Vorgabewert** — eine 0 waere eine gueltig aussehende Zeilen-
+    # nummer, und der einzige Leser schliesst damit einen Kandidaten aus.
+    # Kein Fremdschluessel: `F-VERFALL-1` (b) — was anderswo als
+    # Fremdschluessel dient, verfaellt nicht mehr.
+    "bezug_id":        (True,  False),
     "salienz_roh":     (False, False),
     "salienz_absolut": (False, False),
     "salienz_decay":   (False, False),

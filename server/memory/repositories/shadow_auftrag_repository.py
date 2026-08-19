@@ -36,7 +36,7 @@ LESE_SPALTEN: str = (
     "id, user_id, character_id, beobachter, aufgabe, thema, kontext, "
     "intentionen, emotion, modus, arousal, salienz_roh, salienz_absolut, "
     "salienz_decay, haeufigkeit, aktiv, erstellt_am, verstaerkt_am, "
-    "decay_am, versuche"
+    "decay_am, versuche, bezug_id"
 )
 
 
@@ -163,6 +163,13 @@ class ShadowAuftrag:
     # saehe wie eine Messung aus und hoebe beim Einwurf Novas Zustand auf
     # eine erfundene Zahl (Bauteil B).
     arousal:      float | None = None
+    #: Die Zeile, aus der der Auftrag entstand — heute `autonomous_wissen.id`
+    #: beim Verweis. **Kein Fremdschluessel** (`F-VERFALL-1` b: eine ID, die
+    #: anderswo als Fremdschluessel dient, verfaellt nicht mehr) und deshalb
+    #: auch keine Zusicherung, dass die Zeile noch existiert. Ihr einziger
+    #: Leser benutzt sie als **Ausschluss**; eine ins Leere zeigende ID
+    #: kostet dort einen Kandidaten zu viel und sonst nichts.
+    bezug_id:     int | None = None
 
 
 class ShadowAuftragRepository:
@@ -240,14 +247,16 @@ class ShadowAuftragRepository:
                         INSERT INTO shadow_auftrag
                             (user_id, character_id, beobachter, aufgabe, thema,
                              kontext, intentionen, emotion, modus, arousal,
-                             salienz_roh, salienz_absolut, salienz_decay)
-                        VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                             salienz_roh, salienz_absolut, salienz_decay,
+                             bezug_id)
+                        VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
                         RETURNING id
                         """,
                         (auftrag.user_id, auftrag.character_id, auftrag.beobachter,
                          auftrag.aufgabe, auftrag.thema, auftrag.kontext,
                          auftrag.intentionen, auftrag.emotion, auftrag.modus,
-                         auftrag.arousal, roh, absolut, absolut),
+                         auftrag.arousal, roh, absolut, absolut,
+                         auftrag.bezug_id),
                     )
                     neue_id: int = cur.fetchone()[0]
                     conn.commit()
