@@ -26,6 +26,53 @@
 
 Vier Backlog-Einträge, ein Konventionsabschnitt, kein Code.
 
+### 19.08.2026, nachts — Ein Vektor je Thema, und die Bibliothek findet
+
+**Konvention 4 ist gebaut, migriert und im Betrieb belegt.** Was am Abend als
+Schwellenfrage begann, war eine Frage nach dem Ziel des Vergleichs.
+
+| | vorher | nachher |
+|---|---|---|
+| richtige Antwort auf Rang 1 | 6/40 · **15 %** | **37/40 · 92 %** |
+| Kosinus der richtigen (median) | 0,2821 | **0,7612** |
+
+Gemessen **gegen den gebauten Lesepfad**, nicht gegen eine Nachbildung. Im
+Betrieb: `WissenManager: 3 Bibliothekstreffer (Cosinus 0.730 bis 0.629)` —
+zuvor lieferte dieser Weg **5 Treffer in 32 Stunden** bei Kosinus 0,402 bis
+0,555.
+
+**Gebaut:** `autonomous_wissen_thema` (je Thema eine Zeile, `ON DELETE
+CASCADE`, `UNIQUE(wissen_id, thema)`), die Zerlegung als **eine** Quelle für
+Live-Pfad und Wartungswerkzeug, beide Schreibwege angeschlossen, Migration von
+**2443 Themenvektoren**, Schwelle 0,40 → 0,50 aus den Rohdaten.
+
+> **Die Themenzeilen entstehen im Repository, nicht beim Aufrufer.** Es gibt
+> zwei Schreibwege und ein dritter käme ohne Weiteres dazu; einer, der die
+> Zerlegung vergisst, legt eine unauffindbare Ausarbeitung an — und eine kurze
+> Trefferliste sieht aus wie ein enger Bestand.
+
+**Der Inhaltsvektor bleibt.** Der Rückweg fragt mit Ø 833 Zeichen und findet
+gegen das Destillat 25 von 25, gegen Themenvektoren 12; die Kandidatenlisten
+überlappen im Median mit **1 von 8**. Wer eines der Ziele abschafft, repariert
+eine Seite und bricht die andere.
+
+**Drei Konsumenten, nicht zwei.** Der Enricher fragt mit der verschobenen
+Nutzeräußerung und wurde zunächst mitgestellt, ohne gemessen zu sein. Nachgeholt:
+22/30 gegen 1/30 — er ist deutlich besser geworden. Die Verschiebung kostet
+nichts, weil bei dieser Art Frage kein Ziel aktiviert (stärkstes von sieben:
+`0,3903 × 0,8 = 0,312`, unter der Schwelle).
+
+**Zwei Zahlen waren geraten und wurden gemessen.** Die Mindestlänge eines
+Themas stand auf 4 und hätte `KI` (4 Vorkommen), `AuD` und `AUM` verworfen —
+korrigiert auf 2, und der zweite Migrationslauf holte **genau diese sechs**
+nach. Und die Gegenprobe sagte 12 rote Tests voraus, zählte **9**: Die drei
+fehlenden waren die Zusicherungen, die ihre Themenzeilen per direktem `INSERT`
+anlegen und damit den Schreibpfad umgehen — **nichts bezeugte, dass
+`speichern()` sie erzeugt.** Der daraufhin gebaute Zeuge fand sofort einen
+Defekt im Verstärkungszweig (`THEMENZEILEN-NUR-IM-INSERT-ZWEIG`).
+
+**Suite:** 1965 → **1987 grün**, 0 übersprungen.
+
 ### 19.08.2026, nachts — Die Schwelle war nie das Problem
 
 **Gemessen in der Richtung, in der sie benutzt wird.** Der Befund vom 17.08. maß
