@@ -1,6 +1,6 @@
 # Novaberg — Roadmap (Projektchronik)
 
-**Stand:** 18. August 2026, spät
+**Stand:** 19. August 2026
 *(Die Kopfzeile stand bis Chat 109 auf „Chat 93, 21. Mai 2026" — 15 Chats hinter dem Inhalt. **Sie ist danach erneut zurückgefallen:** von Chat 110 bis 114 blieb sie auf „Chat 109" stehen, während der Inhalt weiterwuchs, und wurde in Chat 115 nachgezogen. Wer hier etwas ergänzt, zieht die Kopfzeile mit — sie driftet zuverlässig. Achtung beim Nachschlagen: Nur bis Chat 97 trägt jeder Chat eine eigene `## Chat NNN`-Überschrift; die Chats 98–108 stehen als `###`-Abschnitte unter dem Chat-97-Block, benannt nach Sprint statt nach Chat.)*
 **Pfad:** novaberg/docs/novaberg-roadmap.md
 **Single Source of Truth für abgeschlossene Arbeit.**
@@ -25,6 +25,122 @@
 **Dazu ein Befund, der beim Zählen anfiel:** Der Recherche-Agent schreibt in `autonomous_wissen` und liest nie daraus — seine einzige Quelle ist das Netz, sein Vorwissen kommt aus dem Gedächtnis. Er füllt eine Bibliothek, die er selbst nicht befragt.
 
 Vier Backlog-Einträge, ein Konventionsabschnitt, kein Code.
+
+### 19.08.2026 — Die Bibliothek wird bestellbar, und ein Riegel sperrt beinahe zwei Dienste aus
+
+**Das eigene erarbeitete Wissen war angebunden wie ein Gedächtnis, nicht wie eine Quelle.** Es
+floss bei jedem Turn bei, und **niemand konnte es bestellen** — weder der Mensch (*„Was hast du
+selbst dazu erarbeitet?"*) noch sie selbst. Von den drei Rollen eines Silos
+(`novaberg-convention-nmcp.md` §6a) trug es genau eine. Die Lücke stand seit dem 18.08. im
+Dateien-Konzept §3.0c benannt und ohne Adresse.
+
+**Gebaut sind ein Zettel und ein Dienst:**
+
+| Teil | Ort |
+|---|---|
+| Der Aushang am schwarzen Brett | `plugins/wissen_manager/manager.py::router_prompt` |
+| Der Dienst dahinter, vier Ausgänge | `agents/wissen/` — `agent.py`, `dispatch.py`, `auskunft.py` |
+| **Eine** Abfrage für beide Eingänge | `AutonomousWissenRepository.suchen` (§6a.1) |
+
+**Die geteilte Abfrage ist der Kern, nicht die Zugabe.** Quelle und Zettel greifen auf denselben
+Bestand; zwei Abfragen ergäben zwei Rangfolgen, und die Abweichung fiele erst auf, wenn jemand
+dieselbe Frage zweimal stellt. Der Eingang wählt deshalb nur die **Tiefe** (3 gegen 5), nicht die
+Ordnung — Schwelle und Sortierung sind für beide dieselben, und ein Zeuge hält es fest.
+
+**Zwei echte Turns, beide Ausgänge:**
+
+| Turn | Weg | Ergebnis |
+|---|---|---|
+| 12:41 UTC | Sternentwicklung, Kernfusion | geroutet, **vierter Ausgang** — 0 Treffer, Bestand 242, nächste Nähe **0,3084** |
+| 12:43 UTC | Quantengravitation, Verschränkungsentropie | geroutet, **abgeschlossen** — 5 Treffer, Fundstellen im Text |
+
+**Und der vierte Ausgang hat im ersten Lauf getan, wofür er gebaut ist.** Er lieferte statt
+Schweigen eine Zahl — und die Zahl sagt, dass die Schwelle nicht trennt. Acht Fragen als rohes
+Embedding gegen 242 Ausarbeitungen: Der sachlich **richtige** Treffer (wortgleiches Thema) liegt
+bei **0,3054** und wird abgewiesen; ein Fall **ohne** einschlägigen Treffer liegt bei **0,4700**
+und kommt durch. Die Schwelle 0,40 ist aus `anker_retrieval` übernommen und für diesen Korpus nie
+gemessen worden.
+
+> **Die Quelle konnte das nicht sagen.** Sie trägt bei oder sie schweigt, und Schweigen ist von
+> *„ich habe nicht nachgesehen"* nicht zu unterscheiden. Erst der Ausgang, der begründet ablehnt,
+> macht aus der Lücke eine Messung.
+
+**Der Bau löste einen Riegel aus, der zwei fremde Dienste ausgesperrt hätte.** Mit `wissen` wurde
+ein gewöhnliches deutsches Sachwort zum Dienstnamen. Die Ausschlussprüfung
+(`agents/nmcp.py::_ausschluss_pruefen`) vergleicht Negativfall-Wörter gegen die Menge der
+Dienstnamen — und **zwei unveränderte, richtige Zettel wurden schlagartig zu harten Verstößen**:
+`dateien` sagt *„das ist Wissen, keine Fundstelle"*, `timeline` sagt *„das ist Wissen, kein
+Termin"*. Beide benennen eine Eigenschaft der Äußerung, wie §3.2 es verlangt; beide wären mit dem
+härtesten Grad aus dem Betrieb genommen worden.
+
+> **Damit erzeugte die Prüfung genau den Fehler, gegen den die geprüfte Regel gebaut ist:** Der
+> *korrekte* Dienst wäre ausgesperrt worden — der billige sichtbare Fehler wird zum teuren
+> unsichtbaren (§3.6b). Und sie tat es **rückwirkend**: Das Urteil über einen Zettel hing daran,
+> ob anderswo ein Dienst hinzukam.
+
+Die Trennlinie ist jetzt die **Form des Namens**: mehrteilig (`dateien_wurzeln`) kann keine
+deutsche Prosa sein und bleibt `verweigert`; einteilig (`wissen`, `fakten`) ist das Sachwort der
+Domäne und wird `gemeldet`. **12 von 19** Dienstnamen sind einteilig. Der Auslösefall steht als
+Zeuge: Nimmt man die Verschärfung zurück, werden drei Zeugen rot.
+
+**Die zweite Kontrolle zählte die Rollenmatrix maschinell — und fand ein zweites falsches
+Kriterium.** §9 der NMCP-Konvention nennt `immer_aktiv` als Merkmal der Rolle *Quelle*. Der
+Enricher ruft `enrich_entries` aber bei **jedem** Manager, gleich was `immer_aktiv` sagt; die
+Eigenschaft steuert den Schreibpfad. Über 10 Silos gehen die beiden Kriterien bei **zweien**
+auseinander — und einer davon ist `timeline`, der einzige Silo mit allen drei Rollen: nach §9
+zählte er nur zwei. Eine Prüfung nach §9 wie gebaut hätte schweigend falsch gezählt.
+
+| | Zahl |
+|---|---|
+| Suite | 1925 → **1953 grün, 0 übersprungen** |
+| Gegenprobe | 4 Eingriffe, **8 vorhergesagt, 10 gezählt** — zwei mehr aus einer fremden Zeugendatei |
+| Rollenmatrix | 10 Silos, 30 Zellen, **15 belegt**; alle drei Rollen: **1** (`timeline`) |
+| Bibliothek | 242 Ausarbeitungen im Paar, 274 aktiv gesamt |
+
+### 19.08.2026 — Ein fremder Dialog als Messgerät, und drei Umbauten, die nicht stattfanden
+
+Ein Gesprächsverlauf mit einem **fremden** System lief durch die eigene Perzeption und die
+volle EI-Kette — **ohne einen einzigen Eintrag im Bestand**, weil `_wahrnehmung_erheben` sein
+Ergebnis zurückgibt und `_wahrnehmung_schreiben` eine eigene Funktion ist. 49 Turns, danach
+beliebig oft nachrechenbar ohne Modell.
+
+**Was der Lauf fand:**
+
+| Fund | Zahl |
+|---|---|
+| Drei Perzeptionsfelder ohne Kanon-Riegel (`sprach_stil`, `intent`, `tone`) | 8 Werte in 7 von 49 Turns außerhalb; `ei_arousal` dadurch +0,070 bis +0,122 zu hoch |
+| Zwei Verfahren für denselben Sprachstil, uneinig | 17 von 24 Turns; Vorrang der Perzeption steht als Codezeile ohne Begründung |
+| Die Rad-Speichen bewerten den Profiltext, nicht das Verhalten | `treue` 0,85 gegen eine Auftragsverweigerung; `lenkungsdrang` und `assoziationsdrang` zählen dieselbe Eigenschaft — 61 % des Initiative-Versatzes |
+| Der gespeicherte Speichenwert ist nicht der Median seiner Erhebungen | 5 von 10 Speichen beim Initiative-Rad |
+| Kein Profil-Prompt kennt das Geschlecht seines Trägers | zwei Genera für denselben Träger im selben Lauf |
+
+**Und was die Züge angeht, unabhängig davon gemessen:** 37 % des Zugbudgets liegen auf
+Speichen, die zwischen den Paaren nicht trennen — `gleichgueltig` hat über sechs Paare eine
+Spanne von 0,04, `widerspenstig` 0,15, `aufmerksamkeit` 0,15. Unten sind nur **0,11 von 0,40**
+wirksam. Deshalb erreicht der Faktor über 88 Messungen nie die untere Hälfte: gemessen
+0,864–1,443 bei einer Nennspanne von 0,5–1,5. **Die Nabe ist nicht der Ort** — sie mittig zu
+setzen verschöbe den Median von 1,31 auf 1,41, also näher an den Anschlag.
+
+**Drei Umbauten wurden entworfen, gemessen und verworfen** — und das ist das eigentliche
+Ergebnis des Tages:
+
+1. *Das Rad übernimmt Wörter aus dem Profiltext.* Ein Zeuge mit bedeutungsgleicher Ersetzung
+   (»behutsam« → »schonend«) ließ die Speiche nicht fallen, sondern **steigen**. Widerlegt.
+2. *Die Prompt-Zeile über den Umgang mit anderen erzeugt den Bezug aufs Gegenüber.* Ohne sie
+   **verdoppelte** sich der Bezug. Widerlegt.
+3. *Benannte Achsen im Kern erzwingen Deutung.* Sie werden benutzt (4/4), heben aber die
+   Zitatreduktion der Deutungsfassung wieder auf. Im Blindvergleich abgelehnt.
+
+**Im Blindvergleich dreier Fassungen gewann der unveränderte Bestand.** Damit ist kein Prompt
+geändert, kein Stichtag nötig, und die 88 Rad-Messungen bleiben gültig.
+
+**Die Ursache der Fehlspur ist benannt und als Regel übernommen** (`21_MESSUNG/streuung-vor-ursache.md`):
+Der Ausgangswert von 42 % Gegenüber-Bezug im gespeicherten Profil war kein Befund über den
+Prompt, sondern der schlechteste Lauf einer streuenden Erhebung — drei Läufe desselben Prompts
+ergaben 16,5 / 24,5 / 19,7 %. Daraus der Backlog-Eintrag `PROFIL-EINMALERHEBUNG`: Die Räder
+werden dreimal erhoben, die Profile, aus denen sie gerechnet werden, einmal.
+
+Sechs Fundlisten-Einträge, zwei Harness-Regeln, ein Backlog-Eintrag, **kein Code**.
 
 ### 19.08.2026 — Der Rückweg bekommt seinen zweiten Weg, und der dritte fällt weg
 
