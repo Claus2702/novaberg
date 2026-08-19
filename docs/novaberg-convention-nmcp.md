@@ -560,6 +560,47 @@ Der Ausgang trägt deshalb drei Angaben und nicht eine:
 
 ---
 
+## 6a. Der zweite Eingang — wenn das Modell selbst greift
+
+**Neu am 19.08.2026, und ausdrücklich vor dem ersten Bau.** Ein Silo soll nicht nur **bestellbar** sein (der Empfang wählt anhand des Aushangs), sondern auch **greifbar** — das Modell zieht es mitten im Denken, wie es heute `web_search` zieht.
+
+**Das ist keine Erweiterung dieser Konvention, sondern die Rückkehr der Hälfte, die §1 ausklammert.** Dort steht, dass das etablierte Protokoll die Auswahl *model-controlled* lässt und dafür keine Protokollnachricht vorsieht; NMCP ist die andere Hälfte. Wer ein Silo zum Werkzeug macht, nimmt die erste Hälfte wieder dazu — beides nebeneinander ist zulässig, und die drei Rollen unterscheiden sich nur darin, **wer entscheidet und wann**:
+
+| Rolle | Wer entscheidet | Wann |
+|---|---|---|
+| **Quelle** | niemand — sie fließt bei | vor dem Denken |
+| **Zettel** | der Empfang, anhand der Äußerung | vor dem Denken |
+| **Werkzeug** | das Modell selbst | mitten im Denken |
+
+### 6a.1 Ein Silo hat einen Dienst — die Eingänge sind zwei, die Implementierung ist eine
+
+> **Zettel und Werkzeug sind zwei Türgriffe an derselben Tür.** Wer für den Werkzeug-Eingang eine zweite Suche über denselben Bestand baut, bekommt zwei Rangfolgen, die auseinanderlaufen — und die Abweichung fällt erst auf, wenn jemand dieselbe Frage zweimal stellt und zwei Antworten bekommt.
+
+Der Grund steht im eigenen Bestand: Am 19.08.2026 stellten zwei Wege desselben Dienstes dieselbe Frage mit entgegengesetztem Vorzeichen, weil beide denselben Zettel benutzten. Der Fehler war nicht die doppelte Implementierung, sondern die geteilte — er zeigt aber dieselbe Klasse: **Zwei Eingänge zu einem Gegenstand müssen sich über die eine Sache einig sein, sonst ist der Gegenstand zwei.**
+
+### 6a.2 Die vier Ausgänge überstehen den Werkzeug-Eingang nicht von selbst
+
+Ein Dienst antwortet auf einem von vier Wegen; der vierte trägt einen **Korrekturvorschlag** (§6). Ein Werkzeugaufruf bekommt dagegen eine **Zeichenkette** zurück — die Konvention des Denkknotens kennt keinen vierten Ausgang.
+
+> **Damit wird aus *„ich lehne begründet ab"* und *„ich habe nichts gefunden"* dieselbe leere Antwort**, wenn niemand die Unterscheidung in den Text schreibt. Das ist die Fehlerklasse aus `22_STILLE_FEHLER`, eine Ebene höher: nicht ein stiller Ausfall, sondern ein **eingeebneter Ausgang**.
+
+**Regel:** Ein Dienst, der über beide Eingänge erreichbar ist, faltet seine vier Ausgänge für den Werkzeug-Weg **benannt** in Text — der Ausgang steht als Wort in der Antwort, nicht als Abwesenheit von Inhalt.
+
+### 6a.3 Der Handshake hat auf dem Werkzeug-Weg kein Gegenüber
+
+Ein Dienst bekommt, was er **angemeldet** hat (§5) — der Empfang schneidet den Zustand nach seinen Zusagen zu. Ruft ihn das Modell mitten im Denken, gibt es keinen Empfang, der das täte.
+
+Zwei Auflösungen sind vertretbar, und die Wahl ist eine **Absicht**, keine Implementierungsfrage:
+
+| Auflösung | Preis |
+|---|---|
+| Der Werkzeug-Eingang reicht denselben zugeschnittenen Zustand durch | Der Aufrufer muss ihn haben — im Denkknoten liegt er nicht selbstverständlich vor |
+| Der Dienst kommt ohne den Zustand aus und sagt es an | Er arbeitet dann auf dem Werkzeug-Weg schlechter als auf dem Zettel-Weg, und **das gehört in seinen Aushang**, nicht in seinen Code |
+
+**Ungeklärt ist sie erst dann nicht mehr, wenn sie am Dienst steht.** Ein Dienst, der über beide Eingänge erreichbar ist und dazu nichts sagt, behauptet stillschweigend die erste Auflösung.
+
+---
+
 ## 7. Der Unterschied zwischen eigenem und fremdem Dienst
 
 Die Regeln §3 bis §6 gelten für beide. **Genau zwei Zeilen unterscheiden sich, und sie sind die wichtigsten:**
@@ -613,7 +654,7 @@ Acht Formen, in absteigender Schwere. Die ersten drei sind harte Brüche, die ü
 
 ## 9. Maschinelle Prüfbarkeit
 
-**Sechs der zehn Verstoßformen sind prüfbar, drei davon beim Start.**
+**Sechs der zehn Verstoßformen sind prüfbar, drei davon beim Start.** Dazu seit dem 19.08.2026 die **Rollenmatrix** aus §6a, die keine Verstoßform ist, sondern eine Vollständigkeitsfrage.
 
 | Form | Prüfung | Zeitpunkt |
 |---|---|---|
@@ -627,6 +668,7 @@ Acht Formen, in absteigender Schwere. Die ersten drei sind harte Brüche, die ü
 | 8.1 Aushang in Fachsprache | Abgleich des Aushangs gegen die Fachbegriffe des eigenen Dienstes | Prüfstrecke, heuristisch |
 | 8.2b Abgleich unter der Mindest-Stichprobe | Zählerstand gegen die Schwellen aus §4.8 | **Betrieb, im Abgleich selbst** |
 | 8.4 Aufruf ohne Audit | Abgleich der Aufrufe gegen die Audit-Einträge | Betrieb |
+| — **Rollenmatrix** (§6a) | Je Silo zählen, welche der drei Rollen es trägt — Quelle über `immer_aktiv`, Zettel über `router_prompt`, Werkzeug über den Werkzeugkasten des Denkknotens. **Eine leere Zelle ohne Begründung am Silo ist der Befund** | **Start** — Meldung an den Autor, keine Verweigerung: Eine fehlende Rolle kann richtig sein, aber nicht unbemerkt |
 
 **Nicht mechanisch prüfbar:** 8.5 bis 8.8 hängen an Bedeutung — ob eine Rückmeldung ein Urteil oder eine Störung ist, ob ein Vorschlag brauchbar ist, ob eine Zustellentscheidung Fachwissen voraussetzte.
 
@@ -670,6 +712,7 @@ Acht Formen, in absteigender Schwere. Die ersten drei sind harte Brüche, die ü
 
 ## 12. Versionshistorie
 
+- **v0.5 — 19.08.2026:** **Neu §6a — der zweite Eingang.** Ein Silo kann nicht nur bestellbar sein (Zettel, Empfang entscheidet), sondern auch greifbar (Werkzeug, das Modell entscheidet mitten im Denken). **Das ist keine Erweiterung dieser Konvention, sondern die Rückkehr der Hälfte, die §1 ausklammert** — dort steht, dass das etablierte Protokoll die Auswahl *model-controlled* lässt und NMCP die andere Hälfte ist. Drei Rollen, unterschieden nach **wer entscheidet und wann**: Quelle (niemand), Zettel (Empfang), Werkzeug (Modell). **Drei Regeln daraus, alle vor dem ersten Bau geschrieben:** §6a.1 — ein Silo hat **einen** Dienst, die Eingänge sind zwei, die Implementierung eine; zwei Suchen über denselben Bestand ergeben zwei Rangfolgen, die auseinanderlaufen. §6a.2 — **die vier Ausgänge überstehen den Werkzeug-Eingang nicht von selbst**: Ein Werkzeug gibt eine Zeichenkette zurück, und damit wird aus *begründet abgelehnt* und *nichts gefunden* dieselbe leere Antwort; der Ausgang gehört benannt in den Text. §6a.3 — **der Handshake hat auf dem Werkzeug-Weg kein Gegenüber**: Zwei Auflösungen sind vertretbar, und welche gilt, gehört an den Aushang, nicht in den Code. Dazu in §9 die **Rollenmatrix** als Startprüfung mit Meldung statt Verweigerung — gemessen am 19.08.2026 trägt von neun Silos genau eines alle drei Rollen (Timeline), und das am schlechtesten angebundene ist ihr eigenes erarbeitetes Wissen mit nur einer.
 - **v0.4 — 17.08.2026:** **Das schwarze Brett** (§3.6) — der Empfang nimmt bei jeder Äußerung das ganze Brett zur Hand, liest Zettel für Zettel und entscheidet je Zettel. **Er beurteilt keinen Zettel im Verhältnis zu einem anderen**, und der Grund liegt im Bild selbst: Ein Zettel ist für einen Leser geschrieben, der die anderen nicht kennt. Vier Folgen, jede eine Abweichung vom üblichen Routing: kein Vergleich und keine Rangliste; **mehrere Zusagen sind der Normalfall, nicht der Konflikt** (weshalb die Quotensumme über 100 % liegen darf); eine echte Doppelung wird als Negativfall **am Zettel** aufgelöst, weil der Dienst seinen Nachbarn kennt und der Empfang nicht; und gleichzeitiges Schreiben verhindert das Clipboard über die Reihenfolge, nicht die Auswahl. **Neu §5.6a, und ohne diesen Absatz kippte §5.6 ins Gegenteil:** Die vier Prüfungen über die Menge erzeugen eine **Meldung an den Autor** und niemals eine Regel für den Empfang — *die Registrierung darf über die Menge urteilen, um Zettel zu verbessern, nicht um Zustellungen zu entscheiden.* **Der Zeitpunkt entlastet dabei nicht:** eine bei der Registrierung berechnete Rangfolge ist zur Laufzeit dieselbe zentrale Zuordnungstabelle. Deshalb stehen alle vier unter *gemeldet* und keine unter *verweigert*. **Neu §3.6a mit einer benannten Schwäche:** Liegen alle Zettel in einem Modellaufruf, wägt das Modell sie unvermeidlich gegeneinander ab — die Unabhängigkeit ist dann eine Anweisung im Prompt und keine Eigenschaft des Aufbaus. Dazu der Zeuge, der sie prüfbar macht: **ein Zettel allein, dann derselbe neben einem zweiten — ändert sich das Urteil, ist die Unabhängigkeit verletzt**, und die Zahl dieser Fälle ist das Maß. Neu die Verstoßformen 8.7a (Verhältniswissen im Empfang, gleich wann gebildet) und 8.7b (Urteil nicht unabhängig). Drei erwogene Alternativen ergänzt, darunter der Aufruf je Zettel: strukturell unabhängig, teuer, und erneut zu bewerten, wenn die Gegenprobe schlecht ausfällt.
 - **v0.3 — 17.08.2026:** **Der Handshake ist als Registrierungsvorgang ausgebaut, und der Aufruf danach ist trivial** — Auftrag hinein, Antwort heraus (§5.5). Das ist der Ertrag der ganzen Bauart und der Grund, sie überhaupt zu haben: Alle Kosten liegen dort, wo etwas noch **verweigern** kann; zur Laufzeit kann niemand mehr nein sagen, ohne das Gespräch anzuhalten. Der Begriff **Naht** ist als allgemeiner Übergang zwischen zwei Modulen gefasst und ausdrücklich mit dem Skalenfall zusammengeführt (`novaberg-haltungsraum_k.md` §6) — dieselbe Regel an einer Zahlengrenze. Fünf Ergänzungen: **§5.6** nutzt den Zeitpunkt, an dem der Empfang als einziger alle Dienste zugleich sieht — Quotensumme, überlappende Aushänge ohne Negativfall, gleicher Bedarf mit verschiedener Bedeutung, Kanal ohne Gegenstück; vier Prüfungen vor dem ersten Durchlauf. **§5.7** die **Naht-Signatur** über die vier Teile jeder Zusage, bei jedem Start neu gebildet: Sie fängt den wahrscheinlichsten Verfall, nämlich einen Schlüssel, der seinen Namen behält und seine Bedeutung ändert — die Änderung, die kein Typprüfer sieht. **§5.8** die Prüfliste, mit der Zeile, die §5 an §4 bindet: **Die Zweifelsregel setzt den vierten Ausgang voraus**, weil ein Dienst ohne begründete Ablehnung ausführt statt zu beurteilen; ohne ihn keine Zweifelsfälle. **§5.9** drei Grade — verweigert, eingeschränkt, gemeldet —, die Ablehnung trifft den Dienst und nicht das System, sie bleibt zur Laufzeit sichtbar statt nur beim Hochlauf, und ein fremder Dienst ohne Quote bekommt sie **erhoben** statt verweigert. **§5.10** die benannte Grenze: geprüft wird die Form der Zusage, nicht der Umgang mit dem Wert. Ein Handshake, der Vertrauen verspricht, verspricht zu viel. Dazu in §5.5 die Schranke für die Zahl der Rückfragen je Auftrag — ohne sie hat ein Auftrag keinen Endzustand, und ein Transport mit nur einem Austausch macht das Rückfrage-Tor unbaubar.
 - **v0.2 — 17.08.2026:** **Die Quote und ihr Abgleich** (§4.4 bis §4.9) — aus der Messgröße in §4.2 ist ein Mechanismus geworden. Der Dienst nennt bei der Anmeldung eine geschätzte Quote auf einer Fünf-Stufen-Skala, der Empfang zählt die Zustellungen, der Abgleich meldet. **Der tragende Grund ist nicht die Zahl, sondern die Widerlegbarkeit:** Die Quote gibt jedem Aushang einen Leser, der ihm widersprechen kann — und behebt damit strukturell die Klasse aus §8.2, an der im Bestand ein Geltungsbereich vier Monate unbemerkt verrottete. Vier Entscheidungen darin sind gerechnet oder aus einer Messung begründet, nicht gesetzt: **Die Schwellen sind Verhältnisse, keine Differenzen** (0,75–1,33 Warnung, 0,5–2,0 Fehler), weil eine Differenz dieselbe Verwechslung zweier Nachbarstufen je nach Richtung verschieden beurteilt. **Die Mindest-Stichprobe ist gerechnet** — 16 Durchläufe für die halbe, 62 für die Viertel-Abweichung im ungünstigsten Fall, gesetzt auf 30 und 100. **Der Nenner ist je Graph getrennt**, weil an einem Tag Betrieb 49 von 122 Durchläufen eigene Impulse waren und die Impulsrate keinem Fachdienst gehört. **Gezählt wird die Zustellung, nicht der Erfolg** — die Differenz zu `bearbeitet` ist ein eigener Befund und kein Routing-Problem. Neu dazu §4.9, die Diagnose nach Abweichungsrichtung, deren letzte Zeile den Abgleich mit dem vierten Ausgang verbindet: Quote trifft und Ablehnungsquote hoch heißt richtiger Aushang und falsche Grenzangabe. Neu die Verstoßformen 8.2a (Aushang ohne Quote) und 8.2b (Abgleich unter der Mindest-Stichprobe — ein zu früher Alarm nimmt den Mechanismus mit). **Offen gelassen:** ob die untere Schranke enger gehört als die obere, weil die Untererfüllung nach §4.2 der teurere Fall ist.
