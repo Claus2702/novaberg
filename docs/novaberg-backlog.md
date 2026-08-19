@@ -162,6 +162,16 @@ Die Zugehörigkeit zu einer dieser Reihen hebt einen Eintrag; alles andere sinkt
 
 ---
 
+## Block 19.08.2026 — der dritte Konsument der Bibliothek
+
+| Kennung | Was offen ist | Band |
+|---|---|---|
+| ~~`WIS-ENRICHER-UNGEMESSEN`~~ | **✅ Nachgemessen am 19.08.2026 — der Weg ist besser geworden, nicht schlechter: 22/30 auf Rang 1 gegen 1/30, im Betrieb 3 Treffer bei Kosinus 0,730–0,629.** Ursprünglicher Befund: **Der Enricher-Weg wurde auf Themenvektoren und Schwelle 0,50 mitgestellt, ohne dass seine Anfrageart je gemessen wurde.** Er fragt mit dem **Gesprächsvektor** (`verschiebung.vektor`), nicht mit einer Frage und nicht mit einem Kontexttext — eine dritte Größe. Beide neuen Einstellungen sind an der **Frage**-Anfrage kalibriert. Aus dem Betriebslog über rund 32 Stunden vor dem Umbau: 5 Treffer bei Kosinus 0,402 bis 0,555; der erste Turn danach lieferte null. **Was fertig wäre:** dieselbe Methode wie an den anderen beiden Zugriffen — echte Gesprächsvektoren aus dem Betrieb, bekannte richtige Antwort, Anteil auf Rang 1, gegen beide Ziele. Erst danach ist entscheidbar, ob dieser Weg eine eigene Schwelle braucht oder ein eigenes Ziel. **Nicht im Vorbeigehen ändern:** Eine dritte Schwelle ohne Messung wäre genau der Fehler, den die Messung an den ersten beiden gerade verhindert hat.
+
+**Ergebnis:** Eine eigene Schwelle braucht dieser Weg **nicht** — die Verschiebung kostet bei dieser Art Frage 0,0000, weil kein Ziel aktiviert wird (stärkstes von 7: `similarity × motivation` = 0,3903 × 0,8 = 0,312, unter der Aktivierungsschwelle). Er verhält sich damit wie die Bestellung, für die 0,50 kalibriert ist. **Was offen bleibt:** Ob bei Äußerungen, die Novas Ziele *doch* aktivieren, ein Verlust entsteht — das ist eine andere Frage und braucht andere Fragen. | ungebändigt |
+
+---
+
 ## Block 19.08.2026 — ein Vektor je Gegenstand
 
 **Entschieden am 19.08.2026, festgehalten als Konvention 4** (`novaberg-convention-embedding.md` §5): Ein Vektor repräsentiert genau einen Gegenstand. Über sieben Vektorspalten gezählt folgen **fünf** der Regel, bevor sie geschrieben war — sie ist die Hausform. Zwei weichen ab, und es sind die jüngsten Speicher.
