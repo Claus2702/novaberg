@@ -295,7 +295,7 @@ project/
 │   │   ├── wiedervorlage/               #   WiedervorlageAgent (Pixie)
 │   │   ├── synapsen_promotion/          #   Synapsen P4 (Pixie, KZG -> lzg_knoten)
 │   │   ├── synapsen_decay/              #   Synapsen P6 (Pixie, Knoten-Decay + pipeline_log-Retention)
-│   │   ├── wissen_rueckweg/             #   Rueckweg: Fund -> Wissensdatei (Pixie, LLM-Spur, seit 18.08.2026)
+│   │   ├── wissen_rueckweg/             #   Rueckweg: zwei Auftragsarten — 'wissen_rueckweg' schneidet ein, 'wissen_verweis' verstaerkt nur (Pixie, LLM-Spur, seit 18.08.2026)
 │   │   │   ├── herkunft.py              #     roh vor verdichtet — die Marke reist mit
 │   │   │   ├── zuordnung.py             #     Pflegbarkeit statt Naehe; keine Datei ist eine Antwort
 │   │   │   └── einarbeitung.py          #     Absatz an die Stelle, versioniert, umkehrbar

@@ -10,6 +10,50 @@
 
 ## Chats 3–20: Grundlagen (März 2026)
 
+### 19.08.2026 — Der Rückweg bekommt seinen zweiten Weg, und der dritte fällt weg
+
+**Gebaut ist Weg 3, *das Zugehörige*** (`wissen_verweis`): Ein abgelegtes Recherche-Ergebnis wird einer vorhandenen Wissensdatei zugeordnet, und **deren Zeile wird verstärkt** — Häufigkeit, Gewicht, `verstaerkt_am`. **Kein Schnitt.** Das Ergebnis behält seine eigene Datei; sie ist die Ausarbeitung ihres Wissens und steht für weitere Vertiefungen bereit. Denselben Inhalt zusätzlich in die verwandte Datei zu schneiden, legte ihn zweimal ab — was die verwandte Zeile braucht, ist nicht der Text, sondern das Gewicht.
+
+**Weg 1, *das Einprägsame*, ist entfallen statt gebaut, und der Grund ist eine Zahl.** Seine Schwelle `salienz_roh ≥ 0,7` ist zeichengleich `KZG_SALIENZ_HIGH = 0,94393`, und an genau dieser Konstante hängt bereits der Einreihpunkt der Promotion. Er hätte auf exakt der Menge gefeuert, aus der Weg 2 seine Kandidaten zieht — dieselbe Quelle **ohne die Bewährungsprüfung**, die das Argument für Weg 2 war.
+
+| | Zahl |
+|---|---|
+| Einträge über der Schwelle | **2597 von 2942 — 88,3 %** |
+| neu in 24 h | **108 von 161** |
+| Rückweg-Aufträge im Bestand davor | **3** |
+
+**Zwei Gegenproben, und die zweite war die nützlichere.** Weg-3-Verzweigung entfernt: 1 vorhergesagt, 1 gezählt. Einreihpunkt entfernt: **0 vorhergesagt, 0 gezählt** — die Zeugen riefen den Auslöser selbst und hätten sein Verschwinden nicht bemerkt. Die Lücke wurde geschlossen und die Gegenprobe wiederholt: **0 → 1**.
+
+**Am Bestand gefunden, nicht am Zeugen:** Die ersten echten Läufe brachten Aufträge der Form *„Gescheitert &lt;hash&gt;"* hervor — eine gescheiterte Recherche schreibt nur einen Bericht, ihr Destillat ist ein Platzhalter, und ein Verweis darauf kostet zwei Modellaufrufe für einen Ausgang, der nur *„keine Datei passt"* lauten kann. Der Einreihpunkt hängt seitdem an der geschriebenen Wissensdatei. **Das Modell hatte in derselben Stunde unabhängig dasselbe geurteilt:** *„Der Fund beschreibt lediglich das Scheitern einer Recherche."*
+
+Suite 1910 → **1920 grün, 0 übersprungen.**
+
+**Nachmittags am selben Tag — der Verweis bekommt seine eigene Frage, und davor einen Riegel.** Der fünfte echte Lauf traf mit Kosinus **0,9226** und wurde abgelehnt: *„exakte textliche Wiederholung … kein Wissenszuwachs."* Für den Schnitt ist dieser Satz richtig, für den Verweis die Umkehrung seines Zwecks — **je besser die Zuordnung, desto sicherer die Ablehnung.**
+
+**Die Abhilfe sind zwei Zettel statt eines Bedingungsblocks.** Der Schnitt fragt, wo der Fund gepflegt werden kann; der Verweis fragt, welche Datei das Thema führt, und für ihn ist die Wiederholung die Bestätigung. Zwei Regeln, die dasselbe verneinen und bejahen, heben sich im selben Zettel auf.
+
+**Davor steht ein Riegel, der schwerer wiegt.** Die Kandidatenwahl nahm alle aktiven Wissenszeilen des Paares — auch die, die die Recherche **Sekunden vorher** angelegt hatte, mit derselben Zusammenfassung und Kosinus nahe eins. Sobald der Zettel die Wiederholung als Bestätigung liest, hätte **jedes Ergebnis seine eigene Zeile verstärkt**. Der Auftrag trägt deshalb ein `bezug_id` — eine angekündigte, additive Spalte, **ohne Fremdschlüssel**, weil eine ID, die anderswo als Fremdschlüssel dient, nach `F-VERFALL-1` nicht mehr verfällt: Ein Queue-Auftrag darf die Zeile nicht gegen den Verfall festnageln, dem sie unterliegen soll.
+
+**Drei Gegenproben.** Zettelwahl entfernt: 1 vorhergesagt, 1 gezählt. Ausschluss entfernt: **3 vorhergesagt, 2 gezählt** — und der dritte war vorher als unsicher benannt worden. Er ist der Befund: **Kein Zeuge fährt diese Abfrage gegen eine Datenbank**, eine Verschiebung zwischen Platzhaltern und Parametern bliebe grün.
+
+**Der sechste Lauf trifft, und er belegt zwei Sätze auf einmal.**
+
+```
+09:46:44  Gewinner — wissen_verweis (Prio 0.99)
+09:46:44  8 Kandidaten, bester Kosinus 0.4163
+09:46:50  → …manifestation-eines-stabilen-regulatorischen-zentrums… (Kosinus 0.3838)
+09:46:50  Verweis — Zeile verstärkt, Datei unverändert (8 Kandidaten)
+```
+
+| Zusicherung | gemessen |
+|---|---|
+| Die Zeile wird verstärkt | Zeile 2022: `haeufigkeit` **1 → 2**, `gewicht_roh` **1,0997**, `verstaerkt_am` **09:46:50,571** |
+| Die Datei bleibt unberührt | `find /knowledge -name "*.md" -newermt "09:46:00"` → **0 Treffer** |
+
+> **Das Modell nahm nicht den nächsten Vektor.** Bester Kosinus 0,4163, gewählt wurde 0,3838 — die Behauptung aus §4a, dass Zuordnung keine Ähnlichkeitsfrage ist, steht damit nicht mehr als Begründung, sondern als Beobachtung am laufenden System.
+
+Suite 1920 → **1925 grün, 0 übersprungen.**
+
 ### 18.08.2026 — Der Wackelzeuge ist still, und die Zahl, die den Fall trägt, ist eine Null
 
 **`ZEUGE-ERWARTUNG-AUS-DER-UHR` behoben** — der Defekt, der zwei Sitzungen lang gejagt und in Chat 151 in einer fremden Gegenprobe gefangen wurde. Sein Erwartungswert entstand **zweimal aus der Uhr**: `_schluessel()` las `time.time()` bei jedem Aufruf, und der Zeuge rief ihn einmal beim Aufbau des Bestandes und einmal in der Zusicherung. Tickte dazwischen eine Millisekunde, unterschieden sich beide Schlüssel um eins — **1 von 4 vollständigen Läufen rot, einzeln immer grün.**

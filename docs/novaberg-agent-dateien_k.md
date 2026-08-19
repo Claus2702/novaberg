@@ -732,7 +732,7 @@ Als Betriebssignal wird **Token-Verbrauch je Turn** genannt: **steigende Kosten 
 >
 > **Der erste Lauf ist der wichtigere.** Er zeigt den Ausgang, den §4a verlangt: *„keine passende Datei"* ist eine vollwertige Antwort, und der Aufruf hat sie mit einem Satz begründet, statt den nächstgelegenen Vektor zu nehmen. Im zweiten Lauf stand der neue Absatz **zwischen** der Definition und ihrem Beleg — nicht am Ende, und das ist die ganze Aussage von §4b.3.
 >
-> **Von den drei Wegen aus §4b.1a ist einer verdrahtet: das Überlebende.** Der Mechanismus ist für alle drei derselbe; die beiden anderen sind je eine Zeile an ihrem Einreihpunkt.
+> **Beide Wege aus §4b.1a sind seit dem 19.08.2026 verdrahtet** — das Überlebende schneidet, das Zugehörige verstärkt. Der dritte, das Einprägsame, ist entfallen: Seine Schwelle war die der Promotions-Queue, gemessen an 88,3 % des Bestandes.
 
 Bis zum 18.08.2026 führte **kein Weg** von einem Nutzer-Turn in eine Datei: `ergebnis_ablegen` hat genau einen Aufrufer, den Recherche-Agenten, und der arbeitet autonom im Hintergrund.
 
@@ -769,11 +769,33 @@ Die Umrechnung ist `sin(roh · π/2)^0,5`, nachgerechnet auf fünf Stellen.
 
 **Entschieden am 18.08.2026.**
 
-| Weg | Kriterium | wann |
-|---|---|---|
-| **Das Einprägsame** | `salienz_roh ≥ 0,7` | sofort |
-| **Das Überlebende** | der Eintrag schafft die Promotion ins Langzeitgedächtnis | nach Tagen, von selbst |
-| **Das Zugehörige** | er ist einer vorhandenen Wissensdatei **zuordenbar** | als Ergänzung, nicht als neue Datei |
+| Weg | Kriterium | wann | Wirkung |
+|---|---|---|---|
+| ~~**Das Einprägsame**~~ | ~~`salienz_roh ≥ 0,7`~~ | ~~sofort~~ | **entfallen am 19.08.2026, siehe unten** |
+| **Das Überlebende** | der Eintrag schafft die Promotion ins Langzeitgedächtnis | nach Tagen, von selbst | **Schnitt** — der Fund wird eingearbeitet |
+| **Das Zugehörige** | ein abgelegtes Recherche-Ergebnis, das einer vorhandenen Wissensdatei **zuordenbar** ist | sofort | **Verstärkung** — Häufigkeit und Gewicht, kein Schnitt |
+
+> **Der erste Weg ist entfallen, und der Grund ist eine Zahl.** `salienz_roh ≥ 0,7` ist zeichengleich `KZG_SALIENZ_HIGH = 0,94393` (der Code trägt den Kommentar `# roh 0.7`), und **an genau dieser Konstante hängt bereits der Einreihpunkt der Promotion** — `memory/kzg.py` und `agents/kzg/queues.py`. Der erste Weg hätte damit auf exakt der Menge gefeuert, aus der der zweite seine Kandidaten zieht: keine zweite Quelle, sondern dieselbe **ohne die Bewährungsprüfung**, die das Argument für den zweiten Weg war.
+>
+> `[gemessen]` — 19.08.2026 am laufenden Bestand: **2597 von 2942 Einträgen (88,3 %)** liegen über der Schwelle, in 24 Stunden **108 von 161 neuen**. Der Rückweg-Auftragsbestand war zu diesem Zeitpunkt **3**. Gebaut hätte der Weg den Bestand um zwei Größenordnungen erhöht — und jeder Auftrag hätte dieselbe Datei getroffen, die der zweite Weg für denselben Fund Tage später noch einmal anfasst. Was die Dublette verhindert hätte, wäre allein der Modellaufruf gewesen.
+>
+> **Die drei Wege waren nie drei Kriterien.** Sie waren zwei, und das dritte war die Beschreibung eines Einreihpunkts, den es schon gab.
+
+### 4b.1a-bis Das Zugehörige verstärkt, es schneidet nicht — entschieden am 19.08.2026
+
+**Das Recherche-Ergebnis behält seine eigene Datei.** Sie ist die Ausarbeitung ihres Wissens und steht für weitere Vertiefungen bereit; sie zusätzlich in eine verwandte Datei zu schneiden, legte denselben Inhalt zweimal ab.
+
+**Was die verwandte Zeile bekommt, ist deshalb nicht der Text, sondern das Gewicht:** `haeufigkeit` steigt, `gewicht_roh` wächst um den Boost, `verstaerkt_am` rückt vor — der Mechanismus aus §4b.2, den der Rückweg nur auslösen musste.
+
+> **Gemessen am 19.08.2026 und im selben Zug behoben: die Zuordnung kannte die Auftragsart nicht.** Der Zuordnungs-Prompt nennt als Grund für `null` unter anderem *„Er steht dort erkennbar schon — eine Wiederholung ist kein Zuwachs"*. Für den Schnitt ist das richtig; **für den Verweis ist es die Umkehrung seines eigenen Zwecks** — dass der Fund in der Datei schon steht, ist der stärkste Grund, ihre Zeile zu heben (§4b.2). Im fünften echten Lauf lag der beste Kosinus bei **0,9226**, und die Ablehnung lautete wörtlich *„exakte textliche Wiederholung … kein Wissenszuwachs"*. **Je besser die Zuordnung, desto sicherer die Ablehnung** — der Zweig war gebaut und konnte seine Wirkung so nicht erreichen.
+>
+> **Die Abhilfe sind zwei Zettel, kein Bedingungsblock.** Der Schnitt fragt, wo der Fund *gepflegt* werden kann; der Verweis fragt, welche Datei das Thema *führt*, und für ihn ist die Wiederholung die **Bestätigung**. Beides in einen Zettel zu schreiben legte dem Modell zwei Regeln vor, die sich widersprechen — und zwei Regeln, die dasselbe verneinen und bejahen, heben sich in der Wirkung auf (`F-PROMPT-1`).
+>
+> **Und davor steht ein Riegel, der schwerer wiegt als der Zettel.** `kandidaten_laden` wählte alle aktiven Wissenszeilen des Paares — ohne Ausschluss. Der Recherche-Weg legt aber **Sekunden vor dem Auftrag** eine Zeile mit genau der Zusammenfassung an, aus der das Material des Verweises stammt: Sie wäre der nächste Kandidat, mit Kosinus nahe eins. **Sobald der Zettel die Wiederholung als Bestätigung liest, verstärkte jedes Recherche-Ergebnis seine eigene, gerade erst angelegte Zeile** — und `haeufigkeit` und `gewicht_roh` sind die Größen, nach denen die Bibliothek später auswählt. Der Auftrag trägt deshalb seit dem 19.08.2026 ein `bezug_id` (§8 des Queue-Konzepts), und die Kandidatenwahl hält diese Zeile heraus.
+
+**Die Dublettenfrage beantwortet auf diesem Weg die Queue selbst.** `ShadowAuftragRepository.einreihen` verstärkt bei gleichem `(aufgabe, thema)` die vorhandene Zeile, statt eine zweite anzulegen (`novaberg-queue-verfall_k.md` §6.1) — zwei Recherche-Ergebnisse zum selben Thema erzeugen also **einen** Verweis. Das ist keine Lösung der fehlenden Idempotenz des Einarbeitungs-Wegs, sondern der Grund, warum sie hier nicht dieselbe Wirkung hat: Ein doppelter Verweis kostet eine Verstärkung zu viel, ein doppelter Schnitt einen zweiten Absatz.
+
+**Der Unterschied trägt einen eigenen Aufgabennamen** (`wissen_verweis` gegen `wissen_rueckweg`, `F-AUFGABE-1` geprüft: der Name war in Code und Doku frei). Ein Feld im Auftrag hätte es auch getan; die eigene Auftragsart macht die beiden Wege in der Queue **zählbar**, und das ist die Angabe, an der man später sieht, welcher Weg die Bibliothek bewegt hat.
 
 **Der zweite Weg löst das Problem, das er zu stellen schien.** Ein Fund unterhalb der Schwelle soll weder sofort verworfen noch sofort geschrieben werden — er soll sich über Tage bewähren. Dafür braucht es **keinen zweiten Speicher und kein Zwischenstadium**: Das Kurzzeitgedächtnis *ist* der Warteraum, mit einer Frist von 7 bis 30 Tagen je nach Band, und die Promotion ins Langzeitgedächtnis *ist* die Bewährungsprüfung. Sie ist gebaut und läuft.
 
