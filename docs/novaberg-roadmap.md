@@ -26,6 +26,36 @@
 
 Vier Backlog-Einträge, ein Konventionsabschnitt, kein Code.
 
+### 19.08.2026, spät — Die Laufzeit ist vier Monate alt, und die Nulllinie steht
+
+**Aus einer Frage nach Mehrfachvorhersage wurde eine Versionsuntersuchung.** Gemessen und
+verworfen: MTP ist hier weder eingeschaltet noch einschaltbar noch in den Gewichten — auf drei
+Ebenen geprüft, und jede Nennung in den Release Notes hängt am MLX-Runner, also an Apple
+Silicon. Als Erklärung für die verlorenen Token damit **ausgeschlossen**, nicht offen.
+
+**Der Fund liegt daneben:** installiert **0.20.7** vom 14. April, verfügbar **v0.32.14** vom
+15. August — zwölf Minor-Versionen. Fünf Einträge treffen die Kombination aus `gemma4` und
+`think=false`, die in **jedem** Gesprächsknoten läuft, darunter zwei am Renderer und einer über
+still verworfene Ausgabe am Ende der Generierung.
+
+**Einschränkung, gemessen statt übernommen:** Der Bestand sendet **kein** `format`-Feld;
+„structured outputs" meint bei Ollama genau das. Der Eintrag zu `think=false` trifft den Pfad
+also nicht so, wie er ihn beschreibt — Renderer und Parser bleiben einschlägig.
+
+**Ein Mechanismus ist nachgestellt:** Eine Haltefolge, die am Anfang trifft, ergibt
+`done_reason='stop'` bei stehenden Zählern und leerem Text. Direkt gegen `gemma4-gpu`
+reproduziert.
+
+**Die Nulllinie für das Update ist erhoben** und das Werkzeug läuft danach unverändert wieder:
+31 Stunden Betrieb, 319.267 Zeilen, JSON-Quoten **mit Nenner** (2,2 % / 2,7 % / 1,6 %), vier
+Leerantworten, 150 × `done_reason='stop'`, belegte Kanäle **ausschließlich `['content']`,**
+Antwortlängen-Mediane je Aufrufer.
+
+> **Dabei fiel ein Mangel der eigenen Instrumentierung auf:** Die Kanalzeile zählte das
+> **Schema** statt der Belegung — `model_dump()` liefert immer alle sechs Felder. Eine Liste,
+> die sich nie ändert, hätte beim nächsten Ausfall nichts gesagt, und genau dafür war sie
+> gebaut. Behoben, bevor sie zum Messgerät des Updates wurde.
+
 ### 19.08.2026, abends — Die tragende Variable bekommt ihre Spur
 
 **Ein Turn erreichte den Menschen nicht, und niemand konnte sagen, wo er verloren ging.** Der

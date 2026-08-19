@@ -38,6 +38,10 @@ elif response:                              …
 
 **Was der Riegel weiterhin nicht tut:** Er verhindert den Ausfall nicht. Ein **Wiederholversuch** bei `text_len == 0` ist nicht gebaut — er ist eine Verhaltensänderung im Antwortpfad und steht als Entscheidung im Backlog.
 
+**Ein Kandidat ist seit dem 19.08.2026 benannt und liegt außerhalb des eigenen Codes.** Die Laufzeit ist **zwölf Minor-Versionen alt** (0.20.7 vom 14.04.; verfügbar v0.32.14 vom 15.08.), und fünf Release-Einträge treffen die Schicht, in der die Token verschwinden — darunter v0.22.1 (*„Updated the Gemma 4 **renderer**"*), v0.30.9 (*„parser/render for cases where thinking was not emitted"*) und v0.32.3 (*„Fixed GLM tool calls being **silently dropped** at the end of generation"*, dieselbe Fehlerklasse an einer anderen Modellfamilie). Geführt als `OLLAMA-VERSION-VIER-MONATE-ALT`; die Nulllinie für den Vorher-Nachher-Vergleich ist erhoben.
+
+**Und ein Mechanismus ist nachgestellt:** Eine Haltefolge, die am Anfang der Ausgabe trifft, ergibt `done_reason='stop'` bei stehenden Zählern und leerem Text — direkt gegen `gemma4-gpu` reproduziert mit `eval_count=6`, `content=0`. Das Modelfile trägt `PARAMETER stop <turn|>`. **Für 243 Token erklärt das noch nichts** — dort bliebe der Zähler klein. Der verbliebene Kandidat ist ein dritter Ausgabekanal des Parsers; die Zeile, die ihn sichtbar macht, steht seit dem 19.08. im Protokoll.
+
 **Geschlossen, wenn** — unverändert offen: Die Ursache der verlorenen Token ist nicht bekannt. Beim nächsten Fall steht sie im Protokoll; **entschieden ist erst, dass sie nicht bei uns liegt.**
 
 ---
