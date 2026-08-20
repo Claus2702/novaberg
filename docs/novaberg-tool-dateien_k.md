@@ -90,6 +90,9 @@ def datei_suchen(verzeichnis: str, muster: str) -> list[str]:
 
 def struktur_analysieren(pfad: str) -> list[dict]:
     """Erkennt Markdown-Struktur ohne Inhalt zu laden.
+
+    ENTWURF. Gebaut mit zweitem Pflichtargument `wurzel` und mit drei
+    Ausgaengen statt zwei (20.08.2026, siehe den Absatz unter diesem Block).
     
     Liest die Datei zeilenweise, extrahiert Header (#, ##, ###)
     und deren Zeilenbereiche. Das LLM bekommt eine Karte, nicht den Inhalt.
@@ -100,6 +103,17 @@ def struktur_analysieren(pfad: str) -> list[dict]:
     
     Token-Kosten: ~15 pro Block (Header + Zahlen)
     """
+```
+
+> **Drei Ausgaenge statt zwei** (20.08.2026). Der Entwurf oben kennt zwei Faelle: eine Karte oder keine. Der Bestand kennt drei, und der dritte ist der Grund, warum ein Defekt zwei Tage unsichtbar blieb.
+>
+> Welcher Erkenner laeuft, entscheidet die **Dateiendung** ueber eine Registry. Fehlt einer, wirft `FormatOhneErkennerError`; der Markdown-Erkenner rechnet ausserdem die **Zaunbilanz** gegen und wirft `StrukturDefektError`, wenn sie ungerade ist. Beide erben von `StrukturUnklarError` und heissen **nicht erhoben** — ausdruecklich verschieden von der leeren Karte, die *„nachgesehen, keine Ueberschriften"* heisst.
+>
+> **Warum die Trennung traegt:** Die Zaunerkennung ist ein Umschalter. Faellt ein oeffnender Zaun aus, kippt sie und kippt nie zurueck — das Ergebnis ist keine Ausnahme, sondern eine **kuerzere Liste**, und eine kuerzere Liste sieht aus wie eine kuerzere Datei. Am 20.08.2026 blieben so von 83 Ueberschriften 5 uebrig. Eine ungerade Bilanz ist dagegen ohne jede Kenntnis des Inhalts pruefbar.
+>
+> Gemessen am selben Tag ueber die 174 indizierten Dateien: **173 erhoben, 0 leer, 1 nicht erhoben** — nach der Reparatur der einen Datei **174 / 0 / 0**.
+
+```python
 
 def datei_grep(pfad: str, suchbegriff: str,
                regex: bool = False) -> list[tuple[int, str]]:

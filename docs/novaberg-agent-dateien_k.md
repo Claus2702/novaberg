@@ -69,13 +69,15 @@ Daraus folgt die Sprechhandlung, die der Dienst ihr ermöglichen muss — und zu
 
 Der gesamte Enricher-Kontext steht heute unter `[GEDAECHTNIS]`. **Dateiinhalt darf dort nicht hinein** — die Beschriftung ist die Aussage.
 
-~~```
+**Überholt am 18.08.2026 — die Entwurfsfassung, aufgehoben durch die Fassung weiter unten:**
+
+```
 [AUFZEICHNUNGEN]
 Das Folgende stammt aus Dateien, die dir zugaenglich gemacht wurden.
 Es ist NICHT deine Erinnerung und NICHT dein Wissen ...
 Du darfst es NICHT als eigenes Wissen ausgeben und dich nicht daran
 erinnern.
-```~~
+```
 
 > **Der Wortlaut ist beim Bauen ersetzt worden, die drei Eigenschaften nicht** (18.08.2026). Die Entwurfsfassung trug drei `NICHT`-Sätze. `F-PROMPT-1` verlangt an dieser Stelle die positive Führung: Ein Verbot nennt das Unerwünschte und macht es damit zum Gegenstand — vier Anläufe im Bestand haben so gegen eine Struktur angeschrieben und verloren. **Und die Struktur trägt hier bereits:** Der Block *ist* ein anderer Block; die Zusicherung hängt nicht am Text.
 
@@ -650,7 +652,7 @@ Der Werkzeugsatz trägt damit zwei Hälften mit verschiedenen Rechten, und die T
 | `zusammenfassung` | wenige Sätze | vom Modell |
 | `stichwoerter` | `text[]` | für die exakte Suche neben der semantischen |
 | `themen_embedding` | `vector(768)` | über Thema + Stichwörter, **nicht** über den Volltext — §5.4 |
-| `struktur` | `jsonb` — die Blockkarte | Ergebnis von `struktur_analysieren`, damit der Zoom ohne Dateizugriff beginnt |
+| `struktur` | `jsonb` — die Blockkarte | Ergebnis von `struktur_analysieren`, damit der Zoom ohne Dateizugriff beginnt. **Drei Zustände seit dem 20.08.2026:** eine Liste ist die erhobene Karte, `[]` heißt *nachgesehen, keine Überschriften*, und **SQL-NULL heißt nicht erhoben** — kein Erkenner für dieses Format, oder die Auszeichnung geht nicht auf (`StrukturUnklarError`). Vorher waren die letzten beiden derselbe Wert, und der Index sagte über eine ungelesene Datei aus, sie sei ein durchgehender Text (`BLOCKKARTE-STILL-HALBIERT`) |
 | `groesse` | Bytes | |
 | `zeilen` | Zeilenzahl | die Einheit, in der `datei_grep` antwortet |
 | `inhalt_hash` | Prüfsumme des Inhalts | die Änderungserkennung, §5.2 |

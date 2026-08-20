@@ -1,6 +1,6 @@
 # Novaberg — Roadmap (Projektchronik)
 
-**Stand:** 20. August 2026, mittags
+**Stand:** 20. August 2026, nachmittags
 *(Die Kopfzeile stand bis Chat 109 auf „Chat 93, 21. Mai 2026" — 15 Chats hinter dem Inhalt. **Sie ist danach erneut zurückgefallen:** von Chat 110 bis 114 blieb sie auf „Chat 109" stehen, während der Inhalt weiterwuchs, und wurde in Chat 115 nachgezogen. Wer hier etwas ergänzt, zieht die Kopfzeile mit — sie driftet zuverlässig. Achtung beim Nachschlagen: Nur bis Chat 97 trägt jeder Chat eine eigene `## Chat NNN`-Überschrift; die Chats 98–108 stehen als `###`-Abschnitte unter dem Chat-97-Block, benannt nach Sprint statt nach Chat.)*
 **Pfad:** novaberg/docs/novaberg-roadmap.md
 **Single Source of Truth für abgeschlossene Arbeit.**
@@ -9,6 +9,20 @@
 ---
 
 ## Chats 3–20: Grundlagen (März 2026)
+
+### 20.08.2026, nachmittags — Die Blockkarte war halbiert, und nichts daran sah nach einem Fehler aus
+
+**Der Auslöser.** `struktur_analysieren` erkennt Codezäune mit einem Umschalter: Jede Zeile, die mit drei Backticks beginnt, kippt *„ich bin im Code"* um. In `novaberg-agent-dateien_k.md` steht ein **durchgestrichener** Codeblock — die öffnende Zeile beginnt mit den beiden Tilden und wird deshalb nicht gesehen, die schließende beginnt mit dem Zaun und wird gesehen. Ein Zaun ohne Partner, 17 statt 16, und ab Zeile 976 gilt der Rest der Datei als Code. Von **83 Überschriften blieben 5**; 1158 von 1236 Zeilen waren für den Zoom nicht vorhanden.
+
+**Warum es niemandem auffiel — und das ist der eigentliche Fund.** Die Karte war nicht leer, sondern kurz, und eine kurze Karte sieht aus wie eine kurze Datei. Dahinter steht eine Zusicherung, die zwei Dinge auf denselben Wert abbildete: *„nachgesehen, die Datei hat keine Überschriften"* und *„ich konnte nicht nachsehen"* waren beide die leere Liste, und der Docstring erklärte das ausdrücklich zum gültigen Ergebnis.
+
+**Gebaut.** Der Erkenner hängt jetzt an einer Registry nach Dateiendung, und für eine Endung ohne Erkenner gibt es `FormatOhneErkennerError` statt einer leeren Karte. Der Markdown-Erkenner rechnet die Zaunbilanz gegen und wirft `StrukturDefektError`, wenn sie ungerade ist. Der Index kennt seitdem **drei** Zustände statt zwei: Liste, leere Liste, `None` — und `None` wird als SQL-NULL geschrieben, nicht als JSON-`null`.
+
+**Die Lücke, die dabei sichtbar wurde:** `DATEIEN_INDEX_ENDUNGEN` lässt `.md`, `.txt`, `.rst`, `.org` und `.adoc` zu, erkannt wird allein Markdown. In reStructuredText steht die Überschrift über einer Unterstreichung, in Org-Mode beginnt sie mit einem Stern, in AsciiDoc mit einem Gleichheitszeichen — jede solche Datei hätte eine leere Karte bekommen und damit die Aussage *„durchgehender Text"*. Heute sind alle 174 indizierten Dateien Markdown, weshalb davon nichts zu sehen war.
+
+**Gemessen** über den echten Bestand, ohne einen einzigen Modellaufruf: 174 Dateien, **173 erhoben, 0 leer, 1 nicht erhoben** — und die eine ist die Datei, die den Bau ausgelöst hat. Zeugen: 4 neu, darunter zu jedem Fehlerfall eine Gegenprobe, die zeigt, was ohne die Prüfung durchginge (2 von 4 Blöcken bzw. 0 von 2 Überschriften). Suite **2004 grün, 0 übersprungen**. Gegenprobe zweimal, je 1 vorhergesagt und 1 gezählt.
+
+---
 
 ### 20.08.2026, mittags — Die Bibliothek findet auf Themenhöhe und ist auf Inhaltshöhe blind
 
