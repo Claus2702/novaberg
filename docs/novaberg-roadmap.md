@@ -54,6 +54,12 @@ deshalb ein zweites Embedding — und nur dann, wenn er stattgefunden hat.
 > der ausdrücklich prüfte, dass der Verlauf im Prompt steht, prüfte ihn in derselben falschen
 > Schreibweise. **Gefunden hat es eine Zeile im Pipeline-Log, nicht die Suite.**
 
+**Und ein dritter Befund kam aus dem Schritt, der fast ausgefallen wäre.** Die Prüfung gegen die
+Konventionen fand, dass der Protokolleintrag den Suchtext bei 200 Zeichen kappte, während die
+Plausibilitätsgrenze bei 300 liegt. Konvention 1 der Embedding-Regeln verlangt, dass ein
+Embedding-Text aus dem persistierten Zustand **rekonstruierbar** ist — ein gekappter Suchtext macht
+den Vektor nicht mehr nachrechenbar. Die Kappung ist aufgehoben.
+
 Seither steht ein Riegel davor: Ein leerer Verlauf bei vorhandenen Turns ist ein Defekt und kein
 Randfall. Im Betrieb belegt: *„Und wie weist man das eigentlich nach?"* wird zu *„Wie weist man das
 Informationsparadoxon bei Schwarzen Löchern nach?"*. Suite **2050 grün**, Gegenprobe 10 rot bei 7

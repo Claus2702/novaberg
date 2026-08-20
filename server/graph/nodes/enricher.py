@@ -857,7 +857,12 @@ def _enrich_character(
             inhalt  = {
                 "herkunft":     suchtext_herkunft,
                 "roh":          reiz_text(state)[:200],
-                "suchtext":     suchtext[:200],
+                # **Ungekappt, und das ist die Konvention und nicht Grosszuegigkeit:**
+                # Ein Embedding-Text muss aus dem persistierten Zustand
+                # rekonstruierbar sein. Der Suchtext ist der eingebettete Text;
+                # gekappt waere der Vektor nicht mehr nachrechenbar. Die
+                # Plausibilitaetsgrenze haelt ihn ohnehin unter 300 Zeichen.
+                "suchtext":     suchtext,
                 "roh_laenge":   len(reiz_text(state)),
                 "turns_gesehen": len(raw_turns),
             },

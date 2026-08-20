@@ -79,6 +79,8 @@ db_zugriff → ei_calc → ▶ enricher ◀ → emotionale_gravitation → reduc
 
 **Die Antwort des Modells ist eine externe Quelle und wird geprüft:** erste Zeile, nicht leer, nicht länger als die Plausibilitätsgrenze; ein vorangestelltes `Suchanfrage:` fällt weg. Jeder Ausgang, der nicht `rewrite` heißt, liefert die rohe Äußerung und **meldet sich laut** — `abgeschaltet`, `zu_wenig_verlauf`, `verlauf_leer`, `leer`, `zu_lang`, `aufruf_gescheitert`. Frist und Ausgabegrenze stehen als Paar an der Aufrufstelle.
 
+**Der Suchtext steht ungekappt im Protokoll** — Konvention 1 der Embedding-Regeln verlangt, dass ein Embedding-Text aus dem persistierten Zustand rekonstruierbar ist, und ein gekappter Text macht den Vektor nicht mehr nachrechenbar. Die Plausibilitätsgrenze hält ihn ohnehin unter 300 Zeichen.
+
 **Im Betrieb gemessen am 20.08.2026**, an einem echten Turn:
 
 ```
