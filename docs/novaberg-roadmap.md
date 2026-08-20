@@ -98,6 +98,15 @@ nicht, sie verschieben sie; ob es im Betrieb trägt, ist an echten Turns zu mess
 Suite **2032 grün, 0 übersprungen**, 18 Zeugen neu. Drei Gegenproben, je vorhergesagt und
 gezählt: Deckel ausgehängt 2/2, Mass-Block ausgehängt 5/5.
 
+**Nachtrag vom selben Abend, aus der Prüfung gegen die Konventionen:** Auf einem Impuls-Turn
+hätte der Abschlag gegriffen, und er hätte das Falsche gemessen. `reiz_text` trägt dort Novas
+eigenen Gedanken (`F-REIZ-1`), dessen Länge nichts über eine erwartete Antwort sagt — und die
+naheliegende Begründung, ein Impuls trage ohnehin keine Nutzer-Intentionen, ist **falsch**:
+`_extract_user_intentionen` liest sie aus dem jüngsten User-Turn, ein Impuls **erbt** sie also.
+Ein kurzer eigener Gedanke nach einem `smalltalk`-Turn wäre mit fremder Intention gedeckelt
+worden. Beide Knoten setzen den Turn-Bezug auf einem Impuls jetzt ausdrücklich aus; zwei Zeugen,
+Gegenprobe 1 vorhergesagt / 1 gezählt. Suite **2039 grün**.
+
 ---
 
 ### 20.08.2026, nachmittags — Der Index versteht jetzt jedes Format, das er annimmt
