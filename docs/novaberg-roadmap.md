@@ -1,14 +1,58 @@
 # Novaberg — Roadmap (Projektchronik)
 
-**Stand:** 20. August 2026, abends
-*(Die Kopfzeile stand bis Chat 109 auf „Chat 93, 21. Mai 2026" — 15 Chats hinter dem Inhalt. **Sie ist danach erneut zurückgefallen:** von Chat 110 bis 114 blieb sie auf „Chat 109" stehen, während der Inhalt weiterwuchs, und wurde in Chat 115 nachgezogen. Wer hier etwas ergänzt, zieht die Kopfzeile mit — sie driftet zuverlässig. Achtung beim Nachschlagen: Nur bis Chat 97 trägt jeder Chat eine eigene `## Chat NNN`-Überschrift; die Chats 98–108 stehen als `###`-Abschnitte unter dem Chat-97-Block, benannt nach Sprint statt nach Chat.)*
+**Stand:** 20. August 2026, später Nachmittag
 **Pfad:** novaberg/docs/novaberg-roadmap.md
 **Single Source of Truth für abgeschlossene Arbeit.**
 **Offene Punkte → novaberg-backlog.md**
 
+## Hinweis für Bearbeiter dieser Datei
+
+Die Kopfzeile stand bis Chat 109 auf „Chat 93, 21. Mai 2026" — 15 Chats hinter dem Inhalt. **Sie ist danach erneut zurückgefallen:** von Chat 110 bis 114 blieb sie auf „Chat 109" stehen, während der Inhalt weiterwuchs, und wurde in Chat 115 nachgezogen. Wer hier etwas ergänzt, zieht die Kopfzeile mit — sie driftet zuverlässig. Achtung beim Nachschlagen: Nur bis Chat 97 trägt jeder Chat eine eigene `## Chat NNN`-Überschrift; die Chats 98–108 stehen als `###`-Abschnitte unter dem Chat-97-Block, benannt nach Sprint statt nach Chat.
+
 ---
 
 ## Chats 3–20: Grundlagen (März 2026)
+
+### 20.08.2026, später Nachmittag — Vier Register führten ihren Verlauf in je einer Zeile
+
+**Der Befund kam aus einer Beobachtung am Dokument selbst:** ungewöhnlich lange Zeilen. Die
+Featureliste trug in Zeile 5 **10.774 Zeichen** — 19 % der ganzen Datei in der `**Stand:**`-Zeile,
+mit 25 verschachtelten `Zuvor ~HH:MM UTC:`-Gliedern.
+
+**Es war kein Einzelfall.** Fundliste 34.263 Zeichen (17 % der Datei), Bugs 11.906, Backlog
+10.512 — und in allen vier eine **unpaarige Klammerbilanz**: Jede Fortschreibung öffnete eine
+Klammer und schloss sie nicht. Die Roadmap desselben Projekts ist der Gegenbeleg: 35 Zeichen
+Kopfzeile, Chronik im Körper, und mit 552 KB die größte der fünf Dateien.
+
+**Das Wachstum war neu und schnell.** Die Kopfzeile der Featureliste stand am 18.08. auf **134**
+Zeichen; 8.250 kamen an einem einzigen Tag dazu. Der Grund ist kein Versäumnis, sondern der
+kürzeste Weg: Wer den Stand fortschreibt, findet den alten vor und schiebt ihn hinter ein
+*„Zuvor"*, statt ihn zu ersetzen.
+
+**Ein Folgeschaden stand bereits notiert, nur an anderer Stelle.** Der Veröffentlichungsprüfer
+liest hinzugefügte Diff-Zeilen und legt bei jeder Fortschreibung den gesamten Altbestand als
+Neuzugang vor — er schlug deshalb auf committeten Bestandstext an. Der Eintrag führte das als
+Defekt des Prüfers; die Ursache war die Kopfzeile.
+
+**Der Umbau:** 138 Glieder aus vier Ketten sind in je einen Abschnitt *Verlauf des Standes*
+gelöst, Wortlaut unverändert, je Punkt ein vorangestelltes Datum. Die längste Kopfzeile misst
+jetzt 38 Zeichen, jede Klammerbilanz steht auf 0.
+
+**Was der Umbau über das Prüfen sagt, ist der eigentliche Ertrag.** Die Kette hat keine Marke,
+die sie als Kette ausweist — welches Wort ihre Glieder trennt, weiß nur der Bestand. Neben
+`Zuvor` (110 Glieder) stand ein zweites, ungenanntes `Davor` (23 Glieder). **Gefunden hat es
+keine Durchsicht, sondern eine Klammerbilanz, die nicht aufging;** mit der erinnerten Marke
+allein wären 23 Glieder still verklebt worden, **ohne dass ein Zeichen verloren gegangen wäre**.
+
+**Dieselbe Sorte Lücke im Prüfwerkzeug selbst:** Die erste Verlustprüfung verglich das Ergebnis
+gegen die eigene Gliedliste und meldete ein unterschlagenes Glied als fehlerfrei. Ersetzt durch
+eine Zeichenbilanz gegen den Originaltext — die fängt jetzt **ein einzelnes gelöschtes Zeichen**
+(vier Gegenproben, vier Anschläge).
+
+**Der Riegel gegen den Rückfall ist ein Werkzeug, keine Vorsicht:** Das Fortschreiben des
+Standes läuft seit heute über ein Script, das die Kopfzeile **ersetzt** und den bisherigen Text
+als Punkt in den Verlauf legt — und das eine Kopfzeile über 200 Zeichen ablehnt, statt sie
+weiterzuschreiben.
 
 ### 20.08.2026, abends — Ihr eigenes Inneres kam bei ihr als dritte Stelle an
 
