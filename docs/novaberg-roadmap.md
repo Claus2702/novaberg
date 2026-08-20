@@ -1,6 +1,6 @@
 # Novaberg — Roadmap (Projektchronik)
 
-**Stand:** 20. August 2026, vormittags
+**Stand:** 20. August 2026, mittags
 *(Die Kopfzeile stand bis Chat 109 auf „Chat 93, 21. Mai 2026" — 15 Chats hinter dem Inhalt. **Sie ist danach erneut zurückgefallen:** von Chat 110 bis 114 blieb sie auf „Chat 109" stehen, während der Inhalt weiterwuchs, und wurde in Chat 115 nachgezogen. Wer hier etwas ergänzt, zieht die Kopfzeile mit — sie driftet zuverlässig. Achtung beim Nachschlagen: Nur bis Chat 97 trägt jeder Chat eine eigene `## Chat NNN`-Überschrift; die Chats 98–108 stehen als `###`-Abschnitte unter dem Chat-97-Block, benannt nach Sprint statt nach Chat.)*
 **Pfad:** novaberg/docs/novaberg-roadmap.md
 **Single Source of Truth für abgeschlossene Arbeit.**
@@ -9,6 +9,25 @@
 ---
 
 ## Chats 3–20: Grundlagen (März 2026)
+
+### 20.08.2026, mittags — Der Boden trägt, und der Fehler sitzt woanders
+
+**Die Frage stand seit dem 18.08. offen und war nicht beantwortbar:** Trägt der Boden 0,30 des dense Kanals? Damals lag der Bestand bei 13 Indexzeilen, einschlägige und fremde Sonde 0,038 auseinander. Mit der freigegebenen Doku-Wurzel sind es 174 Zeilen, und 24 Sonden — 12 einschlägig mit bekannter Zieldatei, 12 zu Themen, die im Bestand nicht vorkommen — ergeben:
+
+| Verteilung | min | Median | max |
+|---|---|---|---|
+| einschlägig (Kosinus des Ziels) | 0,2189 | **0,4293** | 0,6335 |
+| fremd (bester Kosinus überhaupt) | 0,1875 | **0,2519** | 0,3052 |
+
+**Die Lücke beträgt 0,177 statt 0,038 — wiederhergestellt hat sie der Korpus, nicht die Schwelle.** Der Boden schneidet 1 von 12 richtigen ab und lässt 1 von 12 fremden durch; elf der zwölf fremden Fragen erzeugen null Zeilen darüber. Ohne ihn lieferte jede die Kappung voll aus, also drei falsche Aufzeichnungen je fremdem Turn. **Urteil: Der dense Kanal braucht den Boden, und 0,30 ist an diesem Bestand brauchbar.**
+
+**Der abgeschnittene richtige Fall ist folgenlos, und auch das ist gemessen.** Die Sonde zur Initiative-Achse liegt dense bei 0,2189 unter dem Boden — der scharfe Kanal liefert genau diese Datei und kennt keinen Boden; der Fund des Turns besteht aus ihr allein. Die Zweikanaligkeit trägt sichtbar.
+
+**Auch der Vorbehalt des alten Eintrags ist vermessen statt vermutet.** Er lautete: Die Sonden laufen roh, der Betrieb sucht verschoben. Aus dem Protokoll: In **157 von 227** Fällen *ist* der Suchschlüssel das rohe Embedding — kein aktives Ziel oder Imperativ —, und in den übrigen 70 liegt der gefärbte bei Kosinus **0,9330 bis 0,9778** zum rohen. Das Messgerät weicht in der Mehrheit gar nicht ab und sonst um höchstens 0,07.
+
+**Der Befund, der dabei anfiel, ist größer als die Frage.** Zwei von zwölf Zielen stehen auf Rang 16 und 20, und bei einem entscheidet weder Boden noch Kappung: Die Sonde nach der Nabe des Charakter-Rads trifft ihr Ziel mit 0,3381 — **über** dem Boden — und bekommt es nie zu sehen, weil drei thematisch benachbarte Dateien davor liegen und die Kappung bei drei steht. Die Ursache steht im Bestand: Der Vektor einer Indexzeile entsteht aus `thema` **plus rund acht Stichwörtern**, ein Schwerpunkt aus neun Gegenständen, wo nach einem gesucht wird. Dieselbe Bauart hat die Bibliothek am 19.08. bezahlt — dort stieg der Anteil richtiger Antworten auf Rang 1 von 15 % auf 92 %, als je Thema ein eigener Vektor entstand.
+
+**Als `EMBED-LISTE-DATEIENINDEX` eingetragen, mit der Rang-1-Quote 8 von 12 als Nulllinie.** Ausdrücklich nicht mitzumachen: am Boden zu drehen. Er ist am selben Tag als tragend belegt worden.
 
 ### 20.08.2026, vormittags — Die Bitte um JSON wird zur Fessel, und eine Zusage fällt dabei zweimal
 
