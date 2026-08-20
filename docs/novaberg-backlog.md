@@ -2,8 +2,8 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Backlog — Konzipierte, noch nicht implementierte Features
-**Stand:** 20. August 2026, ~21:20 UTC
-**Verlauf:** [Verlauf des Standes](#verlauf-des-standes) — 33 Eintraege, juengster zuerst
+**Stand:** 20. August 2026, 19:36 UTC
+**Verlauf:** [Verlauf des Standes](#verlauf-des-standes) — 34 Eintraege, juengster zuerst
 **Pfad:** novaberg/docs/novaberg-backlog.md
 **Quellen:** nova-08-k.md (Kognitive Anreicherung), nova-10-k-backlog.md (Skill-System), nova-01-t-c-backlog.md (Node-Konfiguration)
 
@@ -367,6 +367,8 @@ Erste Erhebung der KZG-Salienz **nach** dem Reset, 400 Schlüssel des Paares `me
 ---
 
 #### BUGREGISTER-ZUSTAND-NICHT-LESBAR — offen oder behoben ist nicht auszaehlbar
+
+**Die Form steht seit dem 20.08.2026, 19:32 UTC — der Eintrag bleibt trotzdem offen.** Jeder Eintrag der Klassifikations-Sektion traegt eine Zeile `**Zustand:**` unmittelbar unter seiner Ueberschrift, mit einer geschlossenen Wertemenge (`offen` · `offen, unbelegt` · `behoben`), dem Pruefdatum und dem HEAD, gegen den geprueft wurde. **Auszaehlbar mit einem `grep`:** 70 Zeilen, davon 50 offen, 8 offen ohne heutigen Beleg, 12 behoben. **Der Rest der Datei ist noch nicht nachgezogen** — die Abschnitte ausserhalb der Klassifikations-Sektion (Behobene Bugs, Offene Bugs, die Einzelbefunde vom 18. und 19.08.) tragen ihren Zustand weiter in der alten, uneinheitlichen Form. **Ein Befund mit mehreren Stellen ist erst geschlossen, wenn jede steht:** Was fehlt, ist nicht mehr die Form, sondern der Nachzug der uebrigen zwoelf Abschnitte.
 
 **Befund (20.08.2026), beim Umzug der Fundliste entstanden.** `novaberg-bugs.md` fuehrt den Zustand eines Defekts **an drei verschiedenen Stellen und in keiner verbindlich**: In der Ueberschrift (`### KENNUNG — behoben am TT.MM.`), im Koerper (`**Behoben am ...**`) oder gar nicht. Am 20.08.2026 gezaehlt: **82 Abschnitte, 4 mit Marke in der Ueberschrift, 2 weitere nur im Koerper** — der Rest traegt keine.
 
@@ -5778,6 +5780,7 @@ Der NachfragenAgent hat eine Kopplung: `services/pixie/router.py` bildet `nachfr
 
 Die Fortschreibung des Standes, aus der Kopfzeile geloest am 20.08.2026. Der Wortlaut jedes Eintrags ist unveraendert; vorangestellt ist allein sein Datum.
 
+- **20. August 2026, 19:36 UTC** — **`BUGREGISTER-ZUSTAND-NICHT-LESBAR` zur Haelfte umgesetzt und ausdruecklich nicht geschlossen.** Die Form steht — je Eintrag eine Zeile `**Zustand:**` mit geschlossener Wertemenge, Pruefdatum und HEAD —, und 70 der 82 Abschnitte tragen sie. Die uebrigen zwoelf nicht. Ein Befund mit mehreren Stellen ist erst geschlossen, wenn jede steht.
 - **20. August 2026, ~21:20 UTC** — **Ein Eintrag neu aus dem Abgleich des Verlaufs:** `BUGREGISTER-ZUSTAND-NICHT-LESBAR` — der Zustand eines Defekts steht an drei Stellen und in keiner verbindlich; von 82 Abschnitten tragen 6 ueberhaupt eine Marke. Jede Zahl ueber offene Defekte ist bis dahin eine Schaetzung.
 - **20. August 2026, ~20:50 UTC** — **Ein Eintrag geschlossen:** `SUCHSCHLUESSEL-OHNE-VERLAUF` ist als Query Rewriting umgesetzt und im Betrieb belegt. Ein Rest ist benannt: Die Wirkung auf KZG und LZG ist ungemessen — gemessen wurde gegen die Bibliothek.
 - **20. August 2026, ~18:30 UTC** — **48 neue Eintraege** aus der Klassifikation der Fundliste, jeder mit ID, `Was fertig waere` und einer ersten Prioritaet. **Die Prioritaet ist kein Band** — ein Band wird gegen den Code vergeben, nicht gegen den Eintrag.

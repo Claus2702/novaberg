@@ -1,6 +1,6 @@
 # Novaberg — Roadmap (Projektchronik)
 
-**Stand:** 20. August 2026, Nacht
+**Stand:** 20. August 2026, 19:38 UTC
 **Pfad:** novaberg/docs/novaberg-roadmap.md
 **Single Source of Truth für abgeschlossene Arbeit.**
 **Offene Punkte → novaberg-backlog.md**
@@ -12,6 +12,51 @@ Die Kopfzeile stand bis Chat 109 auf „Chat 93, 21. Mai 2026" — 15 Chats hint
 ---
 
 ## Chats 3–20: Grundlagen (März 2026)
+
+### 20.08.2026, 19:38 UTC — Alle 70 Kennungen gegen den Code gehalten: zwölf waren erledigt
+
+**Wenige Stunden nach dem Umzug aus der Fundliste ist jeder der 70 neuen Defekteinträge gegen HEAD
+`00c16b6` geprüft worden — bevor einer von ihnen einen Rang bekommt.** Das Ergebnis: **50 offen, 8 offen ohne
+heutigen Beleg, 12 behoben.**
+
+**Keiner der zwölf ist von einem Auftrag geschlossen worden, der ihn kannte.** Vier fielen beim Umbau
+des Responder-Prompts (der Kern des Nutzers erreicht ihn, beide Beziehungsprofile sind nach dem
+Paar-Schema beschriftet, die doppelte Anweisung beschreibt statt anzuweisen, der Farbton steht in der
+Szene), zwei am Haltungsraum (die Übersteuerungsschwelle ist auf die feine Skala geeicht, der
+Riegel-Nachzug ist vollständig), zwei an der Bibliothek (die Abrufschwelle ist an 40 Fragen mit
+bekannter richtiger Antwort kalibriert, der Verweis-Weg hat einen eigenen Zuordnungs-Prompt), zwei in
+der Dokumentation, einer am Etikett des eigenen Gedankens und einer am Router-Prompt.
+
+> **Das ist der Ertrag des Durchgangs, nicht sein Nebenbefund.** Ein Register, das nicht gegen den Code
+> gehalten wird, sammelt Befunde, die es nicht mehr gibt — und **jede Rangvergabe darauf ordnet zu einem
+> Sechstel Arbeit ein, die getan ist.** Der Durchgang selbst war billig — er kostete je Eintrag einen
+> gezielten Blick in den Code, und keiner der zwölf war ohne diesen Blick zu sehen.
+
+**Drei Bestandszahlen haben sich seit ihrem Befund bewegt** und stehen jetzt am Eintrag: die Importe
+über die Schichtgrenze von 39 auf **52**, die leeren `Ausgabe-Verifikation`-Sektionen von 25 auf **36**,
+die Löschregeln der Fremdschlüssel von 3/3/2 auf **4/3/2** — ein vierter `CASCADE` kam am 19.08.2026 mit den
+Themenvektoren dazu.
+**Zwei von drei sind gewachsen, keine ist gefallen** — und beide gewachsenen sind Regeln, die als Zahl
+in einem Register standen und dort geduldet waren. Ein geduldeter Bestand ist keine Konstante; er ist
+eine Größe, die niemand mehr ansieht.
+
+> **Die Zahl selbst ist ein Beleg für den Durchgang.** Der erste Zählversuch dieser Prüfung lief mit
+> einem engeren Muster und kam auf 34 — er hätte einen **Rückgang** gemeldet, wo ein Anstieg steht.
+> Was ihn korrigiert hat, war die Strukturprüfung, die schon die 39 geliefert hatte. **Eine Zahl gegen
+> eine ältere zu halten, verlangt dasselbe Instrument, nicht dasselbe Thema.**
+
+**Jeder Eintrag trägt seinen Zustand jetzt an genau einer Stelle** — eine Zeile `**Zustand:**` unter der
+Überschrift, mit geschlossener Wertemenge, Prüfdatum und dem HEAD, gegen den geprüft wurde. Damit ist
+die Frage *„wie viele Defekte sind offen"* zum ersten Mal ein `grep` und keine Schätzung. **Für die
+übrigen zwölf Abschnitte des Registers gilt das noch nicht;** der Backlog-Eintrag dazu bleibt deshalb
+offen.
+
+**Zwei Funde blieben liegen** statt im Vorbeigehen repariert zu werden: der Rest des geschlossenen
+Kern-Hash-Befundes (40 von 444 Zeilen, 2 von 20 Bestandstagen) und eine Featurelisten-Zeile, deren
+Belegfeld ihrem eigenen Text widersprach — die eine ist beim Nachzug korrigiert, die Frage nach
+weiteren steht in der Fundliste.
+
+---
 
 ### 20.08.2026, Nacht — Der Suchschlüssel trägt jetzt den Gegenstand des Gesprächs
 

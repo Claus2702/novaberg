@@ -2,9 +2,9 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Rohe, noch unklassifizierte Funde aus laufender Arbeit
-**Stand:** 20. August 2026, ~18:30 UTC
-**Offen:** 0 Funde
-**Verlauf:** [Verlauf des Standes](#verlauf-des-standes) — 60 Eintraege, juengster zuerst
+**Stand:** 20. August 2026, 19:37 UTC
+**Offen:** 3 Funde
+**Verlauf:** [Verlauf des Standes](#verlauf-des-standes) — 61 Eintraege, juengster zuerst
 **Pfad:** novaberg/docs/novaberg-fundliste.md
 
 Was beim Bauen an anderer Stelle auffällt, landet hier — **eine Zeile mit Datum**. Kein Bug-Name, keine Priorität, keine Klassifizierung, keine Diskussion. Der Zweck ist, einen Fund festzuhalten, ohne die laufende Arbeit dafür zu unterbrechen.
@@ -225,7 +225,12 @@ Analog zum Kraft-1-Stichtag: ab wann eine Partition brauchbar ist. Kein Backfill
 
 ## Offen
 
-**Leer, seit dem 20.08.2026** — und das ist ein Zustand, kein Versehen: Alle 168 Punkte sind klassifiziert und an ihren Ort gewandert. Wohin, steht im Abschnitt *Umgezogen*; erledigte stehen unter *Erledigt*.
+- **2026-08-20** — Der Kern-Hash liest 40 von 444 `turn_roh`-Zeilen des produktiven Paares und deckt damit 2 von 20 Bestandstagen ab — fuer ein Profil, dessen erklaerter Gegenstand der dauerhafte Wesenskern ist. Rest aus `KERNHASH-LIEST-TURNWORTLAUT`, dessen tragende Aussage (die Doku nennt die falsche Quelle) am 16.08.2026 erledigt wurde.
+- **2026-08-20** — Eine Zeile der Featureliste widersprach sich in sich selbst: Das Belegfeld sagte *„die Schwelle ist uebernommen, nicht gemessen"*, waehrend derselbe Eintrag zwei Spalten weiter die Kalibrierung samt Zahlenreihe fuehrte. Beim Nachzug korrigiert; ob weitere Zeilen ein Belegfeld tragen, das aelter ist als ihr eigener Text, ist ungeprueft.
+
+- **2026-08-20** — Die Zusicherungs-Pruefung an der Vertrauensgrenze zaehlt heute 244 Befunde gegen 239 am 17.08.2026 — obwohl fuer sie eine harte Wand auf den Commit-Index laeuft, die jeden Zuwachs in einer beruehrten Datei melden soll. Ob die Wand in diesem Zeitraum lief, ist ungeprueft.
+
+**Davor leer, seit dem 20.08.2026** — Alle 168 Punkte sind klassifiziert und an ihren Ort gewandert. Wohin, steht im Abschnitt *Umgezogen*; erledigte stehen unter *Erledigt*.
 
 Der naechste Fund kommt hierher, als **eine Zeile mit Datum**.
 
@@ -332,6 +337,7 @@ Elf Zeilen sind in `novaberg-bugs.md` zu Einträgen mit Reproduktionsweg geworde
 
 Die Fortschreibung des Standes, aus der Kopfzeile geloest am 20.08.2026. Der Wortlaut jedes Eintrags ist unveraendert; vorangestellt ist allein sein Datum.
 
+- **20. August 2026, 19:37 UTC** — **3 offene Funde**, alle aus dem Durchgang durch die 70 Kennungen: der Rest eines geschlossenen Defekts (der Kern-Hash deckt 2 von 20 Bestandstagen) und eine Featurelisten-Zeile, deren Belegfeld ihrem eigenen Text widersprach; dazu eine Pruefzahl, die trotz harter Wand gestiegen ist.
 - **20. August 2026, ~18:30 UTC** — **0 offene Funde** — alle 168 Punkte des Abschnitts *Offen* sind klassifiziert und umgezogen: 70 als Defekt mit Kennung nach `novaberg-bugs.md`, 48 mit ID ins Backlog, 14 als Zustandsaussage in ihr Moduldokument, 10 als Regel des Vorgehens, 5 als Nachtrag an einen bestehenden Eintrag, 21 als erledigt. Die Zeichenbilanz ist bei jedem Schritt aufgegangen.
 - **20. August 2026, ~17:05 UTC** — **153 offene Funde** — einer geschlossen: Die Kopfzeilen-Kette der vier Register ist in den Koerper geloest (138 Glieder), der Fund von ~16:40 ist damit erledigt und durchgestrichen.
 - **20. August 2026, ~16:40 UTC** — **154 offene Funde** — einer neu: Die `Stand:`-Kopfzeile ist in vier Registern eine zweite Chronik in einer Zeile geworden, 11.001 bis 34.653 Zeichen, mit unpaarigen Klammern.
