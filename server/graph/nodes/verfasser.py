@@ -40,6 +40,7 @@ from graph.einwand import kopf_anweisung, urteil_lesen
 from graph.nodes.gespraechsvektor import VORAUSDENKEN_GELAUFEN
 from graph.reiz  import reiz_ist_eigener_gedanke, reiz_text
 from graph.state import ConversationState
+from ei.haltungssprache import stoffzeilen
 from graph.vorzeichen import Vorzeichenbefund, vorzeichen_pruefen
 
 logger = logging.getLogger("ki_server.verfasser")
@@ -261,6 +262,42 @@ def _build_system_prompt(state: ConversationState) -> str:
     gv_block: str = _gespraechsvektor_block(state)
     if gv_block:
         teile.append(gv_block)
+
+    # ── Das Mass, unmittelbar hinter der Landschaft ──
+    #
+    # **Der Verfasser ist der zweite Leser der Haltung, und das Konzept hat
+    # ihn von Anfang an so vorgesehen:** *„Ein eigener Knoten, vor der
+    # Verzweigung zum Verfasser. Beide lesen das Ergebnis aus dem Zustand"*
+    # (`novaberg-haltungsraum_k.md`, »Wer rechnet«). Genau daraus folgt die
+    # Position des Knotens im Graphen — und bis zum 20.08.2026 loeste sie
+    # niemand ein: `haltung` kam in diesem Modul nicht vor.
+    #
+    # **Drei der fuenf Groessen betreffen den Inhalt.** `umfang` nennt das
+    # Konzept ausdruecklich (der Verfasser liest, *wie viel es zu sagen gibt*),
+    # `fragen` und `draengen` stehen woertlich in seinem eigenen Auftrag: er
+    # bestimmt, *„was sie feststellt, was sie offen laesst, was sie
+    # zurueckfragt"*. `naehe` und `waerme` bleiben beim Responder — sie sind
+    # reiner Ton, und ihn hier zu wiederholen waere die Doppelung, die der
+    # Umbau vom 13.08.2026 beseitigt hat.
+    #
+    # **Fehlt die Haltung, faellt der Block laut aus.** Ein stilles Weglassen
+    # waere von einer Lage ohne Vorgabe nicht zu unterscheiden — dieselbe
+    # Bauart wie im Responder.
+    haltung = state.get("haltung")
+    if haltung is None:
+        logger.error(
+            "Verfasser: Keine Haltung im Zustand — dieser Turn bekommt KEINE "
+            "Mengen-, Rueckfrage- und Vorschlagsvorgabe. Der Knoten "
+            "`haltungsraum` ist nicht gelaufen."
+        )
+    else:
+        reiz_zeichen: int = len(reiz_text(state))
+        intentionen: tuple[str, ...] = tuple(state.get("user_intentionen") or ())
+        teile.append(
+            "[MASS]\n" + "\n".join(
+                stoffzeilen(haltung, reiz_zeichen, intentionen),
+            ),
+        )
 
     if state.get("memory_context"):
         teile.append(
