@@ -143,6 +143,12 @@ class ChatWorker(ModelWorker[ChatRequest, ChatResponse]):
         kwargs: dict[str, Any] = {
             "messages":    request.messages,
             "think":       request.think,
+            # `expect_json` reist wie `think` IMMER mit, nicht nur wenn
+            # gesetzt: Der Anbieter soll den Fall "ausdruecklich kein JSON"
+            # von "niemand hat etwas gesagt" unterscheiden koennen. Bis zum
+            # 20.08.2026 endete das Feld hier — der Worker parste streng,
+            # und der Anbieter erfuhr nie davon.
+            "expect_json": request.expect_json,
             "caller":      caller_label,
         }
         if request.system is not None:

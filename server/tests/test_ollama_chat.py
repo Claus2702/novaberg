@@ -122,6 +122,39 @@ class CallAufbau(ChatBasis):
         self._fahren(think=True)
         self.assertTrue(self.client.chat.call_args.kwargs["think"])
 
+    def test_expect_json_setzt_das_format_feld(self) -> None:
+        """Die Bitte um JSON wird beim Anbieter zur Fessel.
+
+        Ohne dieses Feld steht die Forderung allein als Satz im Prompt. Am
+        20.08.2026 kostete das fuenf von 160 Dateien — dieselben in jedem
+        Lauf, weil bei niedriger Temperatur nicht der Zufall entscheidet,
+        sondern die Eingabe.
+        """
+        self._fahren(expect_json=True)
+        self.assertEqual(self.client.chat.call_args.kwargs["format"], "json")
+
+    def test_ohne_expect_json_bleibt_das_format_feld_weg(self) -> None:
+        """Die Gegenprobe: Wer nichts fordert, bekommt keine Fessel.
+
+        Ohne sie waere der Zeuge darueber gruen, dass `format` immer steht —
+        und damit blind fuer den Fall, den er pruefen soll.
+        """
+        self._fahren()
+        self.assertNotIn("format", self.client.chat.call_args.kwargs)
+
+    def test_expect_json_und_think_stehen_nebeneinander(self) -> None:
+        """Beides zugleich ist zulaessig — gemessen, nicht angenommen.
+
+        Der Zusagenkatalog trug bis zum 20.08.2026 den Satz, die beiden
+        schloessen einander aus, samt eines Guards, den es nie gab. Gegen
+        beide eingesetzten Modelle gemessen: Der Inhalt traegt das JSON, der
+        Denkkanal steht getrennt daneben.
+        """
+        self._fahren(think=True, expect_json=True)
+        kwargs = self.client.chat.call_args.kwargs
+        self.assertTrue(kwargs["think"])
+        self.assertEqual(kwargs["format"], "json")
+
     def test_num_ctx_default_kommt_vom_provider(self) -> None:
         """Ohne eigenen Wert gilt der Provider-Default."""
         self._fahren()

@@ -276,6 +276,11 @@ class BackgroundWorker(ModelWorker[BackgroundRequest, BackgroundResponse]):
         """
         kwargs: dict[str, Any] = {
             "messages":    messages,
+            # `expect_json` reist IMMER mit, auch als False: Der Anbieter
+            # soll "ausdruecklich kein JSON" von "niemand hat etwas gesagt"
+            # unterscheiden koennen. Bis zum 20.08.2026 endete das Feld im
+            # Worker — er parste streng, und der Anbieter erfuhr nie davon.
+            "expect_json": request.expect_json,
             "caller":      caller_label,
         }
         if request.system is not None:

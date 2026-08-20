@@ -63,10 +63,19 @@ class LLMProvider(ABC):
         presence_penalty:  Optional[float] = None,
         max_output_tokens: Optional[int]   = None,
         think:             bool            = False,
+        expect_json:       bool            = False,
         caller:            str             = "",
         num_ctx:           Optional[int]   = None,
     ) -> LLMAntwort:
-        """Chat-Completion mit Nachrichtenverlauf."""
+        """Chat-Completion mit Nachrichtenverlauf.
+
+        `expect_json` ist die Bitte des Aufrufers um JSON — und sie gehoert
+        hierher, weil nur der Anbieter sie in eine **Fessel** verwandeln
+        kann. Wer sie nur im Prompt formuliert, hat gebeten; wer sie in die
+        Nutzlast setzt, hat verlangt. Ein Anbieter ohne diese Faehigkeit
+        nimmt sie an und meldet, dass er sie nicht durchsetzt — er
+        verschweigt sie nicht.
+        """
         ...
 
 
@@ -247,6 +256,7 @@ class OllamaProvider(LLMProvider):
         presence_penalty:  Optional[float] = None,
         max_output_tokens: Optional[int]   = None,
         think:             bool            = False,
+        expect_json:       bool            = False,
         caller:            str             = "",
         num_ctx:           Optional[int]   = None,
     ) -> LLMAntwort:
@@ -261,6 +271,26 @@ class OllamaProvider(LLMProvider):
             "options":  self._build_options(temperature, top_p, repeat_penalty, presence_penalty, max_output_tokens, num_ctx),
             "think":    think,
         }
+
+        # **Die Fessel, und nur hier ist sie eine.** Ollama erzwingt mit
+        # `format` die Form der Ausgabe; ohne das Feld steht die Forderung
+        # nach JSON allein als Satz im Prompt, und ein Prompt leitet, er
+        # erzwingt nicht.
+        #
+        # `[gemessen]` — 20.08.2026: Fuenf Dokumente trieben das Modell bei
+        # `temperature=0.05` **in jedem Lauf** in die Prosa (`**thema:** ...`,
+        # `1. thema: ...`). Der Fehlschlag war damit keine Rate, sondern eine
+        # Eigenschaft der Eingabe: 18 Aufrufe, keine Zeile. Dieselben Auszuege
+        # mit `format` ergaben 3 von 3 gueltiges JSON.
+        #
+        # **`think` und `format` schliessen einander NICHT aus.** Der
+        # Zusagenkatalog trug diesen Satz unter Berufung auf Ollama #15260,
+        # samt eines Guards, den es nie gab. Gemessen am 20.08.2026 gegen
+        # beide eingesetzten Modelle: `think=True` mit `format` liefert
+        # `{"thema": "Kakteen"}` im Inhalt und 612 Zeichen im getrennten
+        # Denkkanal. Wer den Satz zurueckholen will, misst ihn.
+        if expect_json:
+            kwargs["format"] = "json"
 
         response: dict = self._client.chat(**kwargs)
 
@@ -376,9 +406,22 @@ class AnthropicProvider(LLMProvider):
         presence_penalty:  Optional[float] = None,
         max_output_tokens: Optional[int]   = None,
         think:             bool            = False,
+        expect_json:       bool            = False,
         caller:            str             = "",
         num_ctx:           Optional[int]   = None,
     ) -> LLMAntwort:
+        # Die Claude-API kennt kein Gegenstueck zu Ollamas `format`: Die Form
+        # wird dort ueber ein Werkzeugschema oder eine vorgegebene erste
+        # Zeichenkette erzwungen, nicht ueber einen Schalter. Deshalb wird
+        # `expect_json` angenommen und **als nicht durchgesetzt gemeldet** —
+        # ein stilles Ignorieren waere genau die Naht, wegen der dieser
+        # Parameter ueberhaupt entstanden ist.
+        if expect_json:
+            logger.warning(
+                "AnthropicProvider.chat: expect_json=True wird NICHT erzwungen "
+                "(die Claude-API hat kein format-Gegenstueck; die Form haengt "
+                "allein am Prompt) — caller=%r", caller,
+            )
         # Claude kennt keinen Reasoning-Toggle in der API. think wird daher
         # akzeptiert (Signatur-Konsistenz mit OllamaProvider) und ignoriert.
         # Bei think=True ein Debug-Log, damit ein versehentlicher Konsumenten-

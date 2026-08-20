@@ -133,6 +133,32 @@ class ChatWorkerExpectJsonOkTest(_BaseChatWorkerTest):
         self.assertIn('"k"', response.text)
 
 
+class ChatWorkerExpectJsonReichtDurchTest(_BaseChatWorkerTest):
+    """Die Bitte um JSON endet nicht im Worker, sondern erreicht das Backend.
+
+    Der Zeuge sitzt bewusst hier und nicht nur am Provider: Bis zum
+    20.08.2026 waren beide Haelften fuer sich in Ordnung — der Worker parste
+    streng, der Anbieter haette `format` senden koennen —, und **niemand
+    verband sie**. Ein Zeuge je Haelfte waere gruen geblieben.
+    """
+
+    backend_contents = ['{"k": "v"}']
+
+    async def test_expect_json_erreicht_das_backend(self) -> None:
+        """Was der Aufrufer fordert, sieht der Anbieter."""
+        await self.worker.submit(ChatRequest(
+            messages=[{"role": "user", "content": "?"}], expect_json=True,
+        ))
+        self.assertTrue(self.backend.aufrufe[-1]["expect_json"])
+
+    async def test_ohne_forderung_sieht_das_backend_ausdruecklich_false(self) -> None:
+        """Auch das Nein reist mit — sonst ist "nichts gesagt" nicht unterscheidbar."""
+        await self.worker.submit(ChatRequest(
+            messages=[{"role": "user", "content": "?"}],
+        ))
+        self.assertIs(self.backend.aufrufe[-1]["expect_json"], False)
+
+
 class ChatWorkerExpectJsonFailTest(_BaseChatWorkerTest):
     """Test 6 — kaputtes, unreparierbares JSON propagiert JSONDecodeError."""
 

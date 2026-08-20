@@ -86,15 +86,23 @@ class ChatRequest:
         system: Optionaler System-Prompt; wird vom Provider vor `messages`
                 gestellt. None = kein Override (Provider-Default greift).
         temperature: Sampling-Temperatur. None = Backend-Default.
-        expect_json: True ⇒ Worker parst die Antwort strikt als JSON und
-                     belegt `parsed`. Fehlerhaft → Future wirft.
+        expect_json: True ⇒ die Form wird beim Anbieter **erzwungen**
+                     (Ollama: `format`), und der Worker parst die Antwort
+                     strikt als JSON und belegt `parsed`. Fehlerhaft →
+                     Future wirft. Ein Anbieter ohne Gegenstueck meldet,
+                     dass er nicht erzwingt (Anthropic).
         top_p, repeat_penalty, presence_penalty, max_output_tokens:
                      Optionale Sampling-Overrides. None ⇒ Provider-Default.
         think: Reasoning-Modus des Backends. Default False (systemweit). Nur
                Nodes, deren Funktion eine echte Reasoning-Kette ist (Thinker),
-               setzen True. Achtung: think=True und expect_json=True schliessen
-               sich aus (Ollama #15260) — der Provider greift mit einem Guard
-               ein, falls beide gleichzeitig kommen.
+               setzen True. **Frueher stand hier, think=True und
+               expect_json=True schloessen einander aus (Ollama #15260), und
+               ein Guard im Provider greife ein.** Beides war unzutreffend:
+               Der Guard existierte nicht — `expect_json` erreichte den
+               Provider ueberhaupt nicht —, und die Unvertraeglichkeit ist am
+               20.08.2026 gegen beide eingesetzten Modelle widerlegt worden
+               (Inhalt `{"thema": "Kakteen"}`, Denkkanal getrennt gefuellt).
+               Kein Aufrufer setzt heute beides.
         num_ctx: Optionaler Context-Window-Override pro Call. None ⇒
                  Provider-Default.
         caller: Freitext zur Identifikation im Token-Log (z.B. "agent.chat",
@@ -169,7 +177,8 @@ class BackgroundRequest:
                  empfiehlt fuer sie 0.0 statt 1.5. Ohne dieses Feld liesse sich
                  das nur im Modelfile stellen, also fuer alle Aufrufer
                  gleichzeitig.
-        expect_json: True ⇒ JSON-Parsing wie beim ChatWorker.
+        expect_json: True ⇒ Formzwang beim Anbieter und JSON-Parsing wie
+                     beim ChatWorker.
         max_output_tokens: Optionales Token-Limit fuer die Antwort.
         num_ctx: Optionaler Context-Window-Override pro Call. None ⇒
                  Provider-Default. Kurze Klassifikations-Prompts koennen
