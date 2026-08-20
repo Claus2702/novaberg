@@ -189,3 +189,11 @@ Verwandte Dokumente:
 - Pixie-Agenten-Übersicht: `novaberg-pixie.md`
 - KZG-Agent (Shadow-Queue-Quelle): `novaberg-pixie-kzg.md`
 - DelegationsAgent (Queue-Quelle): `novaberg-pixie-delegation.md`
+
+---
+
+## Befunde aus dem Betrieb — nachgetragen am 20.08.2026
+
+Aus `novaberg-fundliste.md` hierher gezogen: Aussagen ueber den **Zustand** dieses Gegenstands, die dort als rohe Funde standen und in kein Defekt- oder Vorhabenregister gehoeren. Der Wortlaut ist unveraendert, das Datum steht an jedem Befund — geprueft ist keiner von ihnen gegen den heutigen Code.
+
+- **16.08.2026** — **`server/agents/recherche/AGENT.md` ist seit dem 18.04.2026 unverändert und widerspricht dem Code an zwei Stellen.** Es führt `PIXIE_RECHERCHE_MAX_ITERATIONEN` mit Vorgabewert **2** und schreibt im Ablauf *„max 2 Iterationen"*; `server/config.py:425` und `novaberg-pixie-research.md` §7 sagen **3**. Und `## LLM-Calls` zählt *„Gesamt: 4-6 Calls"* **ohne die Zwischen-Destillation**, während das Konzeptdokument *„4-10 + 1"* zählt. **Gefunden von der zweiten Kontrolle**, nicht vom Nachzug — und der Grund ist mechanisch: Die Kandidatenmenge des Nachzugs durchsucht ausschließlich `docs/`, im Baum liegen aber **12 `AGENT.md` unter `server/`** und **null** in `docs/`. Das Moduldokument des geänderten Verzeichnisses ist damit der naheliegendste Kandidat und zugleich der einzige, den das Kriterium prinzipiell nicht erreicht.

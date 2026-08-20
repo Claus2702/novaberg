@@ -304,3 +304,11 @@ Kein Embedding noetig -- wenige Eintraege pro User, komplett laden. Kein Decay, 
 **Max aktive Anweisungen:** 3. Bei >= 3: Konsolidierungs-Rueckfrage.
 
 **Gemeinsame Infrastruktur:** `agents/crud_validation.py` -- KlassifikationsErgebnis, ValidationResult, CrudErgebnis, keyword_hints_ermitteln(), verb_mappings_laden(), verb_mapping_lernen().
+
+---
+
+## Befunde aus dem Betrieb — nachgetragen am 20.08.2026
+
+Aus `novaberg-fundliste.md` hierher gezogen: Aussagen ueber den **Zustand** dieses Gegenstands, die dort als rohe Funde standen und in kein Defekt- oder Vorhabenregister gehoeren. Der Wortlaut ist unveraendert, das Datum steht an jedem Befund — geprueft ist keiner von ihnen gegen den heutigen Code.
+
+- **16.08.2026** — **Das Profil über den Menschen ruht auf einem Siebzehntel des Materials, das das Selbstbild der Figur trägt.** Gemessen über `lzg_knoten` des produktiven Paares: **112 Knoten** mit `beobachter='user'` gegen **1896** mit `beobachter='assistant'`. Von den 112 beginnen **65** mit einer Aussage über die Person, der Rest ist Sachwissen aus den Gesprächsthemen. `PIXIE_CHARAKTER_LZG_LIMIT = 50` greift damit nur auf einer der beiden Seiten.

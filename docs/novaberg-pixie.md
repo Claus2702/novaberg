@@ -277,3 +277,11 @@ Alter Runner-Stack (services/shadow_agent/runner.py, discover_tasks, get_task_re
 ---
 
 *Konsolidiert aus nova-05-k.md, nova-05-a.md, nova-05-t-a.md, nova-05-m-a.md.*
+
+---
+
+## Befunde aus dem Betrieb — nachgetragen am 20.08.2026
+
+Aus `novaberg-fundliste.md` hierher gezogen: Aussagen ueber den **Zustand** dieses Gegenstands, die dort als rohe Funde standen und in kein Defekt- oder Vorhabenregister gehoeren. Der Wortlaut ist unveraendert, das Datum steht an jedem Befund — geprueft ist keiner von ihnen gegen den heutigen Code.
+
+- **18.08.2026** — **Der Befund *Zeitplan mit 714 Auftraegen hoeherer Salienz davor* ist heute 25.** Nachgemessen gegen `shadow_auftrag`: Auftraege mit `salienz_decay >= 0,917` (der niedrigsten der drei liegenden Rueckweg-Auftraege) und anderer Aufgabe: **25**. Der Verfall hat den Rueckstand vor dem Rueckweg abgetragen, ohne dass jemand etwas getan haette — **eine Diagnose von gestern, die heute eine andere Zahl traegt** (`30_ROLLEN_UND_AUFTRAG` §5).

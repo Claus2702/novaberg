@@ -1,10 +1,582 @@
 # Novaberg — Bugs & Limitationen
 
-**Stand:** 20. August 2026, ~17:05 UTC
-**Verlauf:** [Verlauf des Standes](#verlauf-des-standes) — 26 Eintraege, juengster zuerst
+**Stand:** 20. August 2026, ~18:30 UTC
+**Verlauf:** [Verlauf des Standes](#verlauf-des-standes) — 27 Eintraege, juengster zuerst
 
 ---
 
+## 20.08.2026 — aus der Klassifikation der Fundliste
+
+**70 Eintraege sind aus `novaberg-fundliste.md` hierher gewandert** und haben eine stabile Kennung bekommen. Die Fundliste ist roh und vergaenglich; wer einen Defekt sucht, sucht ihn hier.
+
+> **Der Umzug uebertraegt den Wortlaut, er prueft ihn nicht.** Jeder Befund ist die Diagnose seines Tages — das Datum steht an jedem Eintrag, und die Pflicht, ihn vor der Umsetzung gegen den heutigen Code zu halten, gilt unveraendert. Wer das ueberspringt, baut gegen einen Zustand, den es nicht mehr gibt.
+
+**Die Zeile `Geschlossen, wenn` ist neu und stammt nicht aus der Fundliste.** Sie sagt, woran der Abschluss erkennbar waere — ohne sie ist ein Eintrag nicht abschliessbar, sondern nur ablegbar.
+
+---
+
+### `SETEXT-UNTERSCHRIFT-IM-BLOCK` — die Unterstreichung steht im Inhalt
+
+**Befund (20.08.2026), aus der Fundliste uebernommen.** **Bei einer Setext-Überschrift steht ihre Unterstreichung in der ersten Zeile des Blockinhalts.** `struktur_analysieren` setzt `start` auf die Textzeile der Überschrift, und `block_lesen` liefert ab `start + 1` — bei einer Rautenüberschrift ist das die erste Inhaltszeile, bei einer Setext-Überschrift die Reihe aus `=` oder `-`. Gefunden von der zweiten Kontrolle am 20.08.2026, indem die neue Karte durch ihren nachgelagerten Verbraucher geschickt wurde: `block_lesen(...)` auf einen Setext-Block gibt `'===================\n\nInhalt…'` zurück. **Der Parser weiß es besser, als der Vertrag hergibt:** `token.map` hält den Bereich der *ganzen* Überschrift, bei Setext also zwei Zeilen; das Erkenner-Tupel trägt nur den Anfang. **Nicht behoben, weil die Reparatur einen Vertrag mit fünf Aufrufern ändert.** **Nachtrag vom selben Tag, ~13:55 UTC: Der Fall ist nicht mehr latent.** Mit dem reStructuredText-Erkenner ist die Unterstreichung nicht der Sonderfall, sondern **die Regel** — in RST trägt *jede* Überschrift eine, und `block_lesen` liefert sie bei jeder als erste Inhaltszeile mit. In Markdown betrifft es weiterhin keine der 174 Dateien; sobald eine `.rst`-Datei indiziert wird, betrifft es sie vollständig.
+
+**Geschlossen, wenn** `block_lesen` liefert bei jeder Ueberschriftform die erste Inhaltszeile — der Vertrag traegt das Ende der Ueberschrift, nicht ihren Anfang.
+
+---
+
+### `BIBLIOTHEK-FINDET-SICH-SELBST` — Kosinus 1,000 in 44 von 46 Trefferzeilen
+
+**Befund (20.08.2026), aus der Fundliste uebernommen.** **44 von 46 Bibliotheks-Trefferzeilen melden Kosinus exakt 1,000: Der Eintrag findet sich selbst.** Ein Kosinus von 1 heißt, der Suchschlüssel **ist** der gespeicherte Vektor. **Geprüft und ausgeschlossen:** die Spaltenabbildung im Repository (acht Spalten auf acht Felder, `cosine` ist das echte `MAX(1 - …)`), eine doppelte Registrierung des Managers (genau einer in der Registry), und ein doppelter Aufruf je Turn — **ein Nutzerturn erzeugt gemessen genau einen Aufruf**. **Eingegrenzt:** In **42 von 44** Fällen steht unmittelbar davor der Zettel-Dienst (`agents/wissen`); es sind Hintergrundläufe, deren Suchtext ein gespeichertes Thema ist. Die beiden echten Meldungen haben diese Nachbarschaft nicht. **Offen bleibt, ob das schadet:** Ein Vertiefungslauf, der seine eigene Ausarbeitung als Kontext zurückbekommt, ist die Selbstbestätigung, gegen die an anderer Stelle schon `bezug_id` gebaut wurde. **Warum es zählt:** Solange sie mitzählen, ist jede Aussage über die Trefferrate der Bibliothek um den Faktor 23 falsch.
+
+**Geschlossen, wenn** Ein Lauf, der seine eigene Ausarbeitung als Kontext bekaeme, wird ausgeschlossen; die Trefferrate der Bibliothek zaehlt nur Fremdtreffer.
+
+---
+
+### `VERSCHWUNDEN-DURCH-FILTERWECHSEL` — stillgelegt heisst zweierlei
+
+**Befund (20.08.2026), aus der Fundliste uebernommen.** **Eine Filteränderung erzeugt Zeilen, die als „verschwunden" markiert sind, obwohl die Datei dort liegt, wo sie lag.** Der Wächter leitet `verschwunden` daraus ab, was der Lauf **gesehen** hat: Was im Bestand steht und diesmal nicht gefunden wurde, wird stillgelegt (`aktiv = false`, `verschwunden_am`). Wird ein Filter enger — am 20.08.2026 der nicht mehr betretene Punkt-Ast —, trifft das auch Dateien, die unverändert vorhanden sind. **Gemessen** an einem Lauf mit vorbereitetem Bestand: Die Zeile zu `.obsidian/notiz.md` landet unter `verschwunden`, die Datei existiert. **Folgenlos in dieser Installation** (0 betroffene Zeilen, die sechs Dateien dort waren nie indiziert), aber die Bedeutung des Feldes ist damit zweideutig: *„die Datei ist fort"* und *„wir sehen nicht mehr hin"*. §5.5 begründet das Stillegen damit, dass die Frage *„wo war das noch"* eine sinnvolle Antwort bekommt — die lautet dann *„sie ist weg"* und ist falsch. Ein Zeuge hält das Verhalten fest; die Unterscheidung fehlt.
+
+**Geschlossen, wenn** Der Waechter unterscheidet *die Datei ist fort* von *wir sehen nicht mehr hin*; eine Filteraenderung erzeugt keinen `verschwunden_am`.
+
+---
+
+### `ARCHIVDATEI-OHNE-ETIKETT` — archiviert sieht aus wie geltend
+
+**Befund (20.08.2026), aus der Fundliste uebernommen.** **Ein archiviertes Konzept sieht im Dateienindex aus wie ein geltendes.** Mit der Freigabe von `/docs` liegen 6 Dateien aus `docs/archive/` im selben Bestand wie die 154 geltenden. Getrennt sind sie allein durch den Pfadanteil `archive/`; die Indexzeile trägt kein Etikett, und der Enricher-Weg legt den Fundstellentext neben die geltende Doku, ohne den Unterschied zu benennen. **Verschärfend:** Nicht jede Archivdatei ist an ihrem Kopf erkennbar — `archive/novaberg-mem-lzg.md` nennt im Feld `Pfad:` weiterhin `novaberg/docs/novaberg-mem-lzg.md`, also den Ort vor dem Verschieben. Wer nur die Kopfzeilen liest, hält sie für aktuell.
+
+**Geschlossen, wenn** Eine Indexzeile aus `docs/archive/` traegt ein Etikett, und der Fundstellentext nennt es.
+
+---
+
+### `DATEIINDEX-SPALTEN-OHNE-SCHREIBER` — zwei Spalten, 0 von 14 belegt
+
+**Befund (19.08.2026), aus der Fundliste uebernommen.** **`dateien_index.entitaet_ids` und `.timeline_id` sind in 0 von 14 Zeilen belegt und haben keinen Schreiber.** Das Konzept beschreibt sie als *„der Graph-Kanal"* und als *„Eingang der Regel ‚das Neuere sticht'"* (`novaberg-agent-dateien_k.md`), im Produktivcode schreibt sie für **diese** Tabelle niemand. **Die naheliegende Zählung führt in die Irre:** Ein `grep` über den Baum findet 29 bzw. 27 Schreibstellen — sie betreffen alle andere Tabellen, in denen die Spalten gleich heißen. **Der Unterschied zu `zuletzt_gelernt_hash`:** Dessen fehlender Schreiber ist als ⚫ in der Featureliste und ⬜ im Konzept ausdrücklich vermerkt; für diese beiden fand sich keine Statusmarke, nur die Beschreibung dessen, was sie leisten sollen.
+
+**Geschlossen, wenn** `entitaet_ids` und `timeline_id` haben entweder einen Schreiber oder eine Statusmarke, die sagt, dass sie keinen haben.
+
+---
+
+### `THEMENEMBEDDING-TRAEGT-DESTILLAT` — der Name sagt Thema, der Inhalt ist das Destillat
+
+**Befund (19.08.2026), aus der Fundliste uebernommen.** **`themen_embedding` enthält nicht das Thema, sondern das Destillat — und drei Stellen nennen es drei verschiedene Dinge.** Die Spalte heißt `themen_embedding`, der Docstring von `_embedding_bauen` sagt *„Vektor der Zusammenfassung"*, das übergebene Argument ist `ergebnis.destillat` (`agents/recherche/agent.py`). Gemessen über 249 aktive Einträge: Thema Ø 110 Zeichen, Zusammenfassung Ø 552 — und die Zusammenfassung ist ihrerseits nur `destillat[:500]`, das Embedding also aus dem **ungekappten** Volltext. **Die Wirkung ist gemessen und nicht theoretisch:** Eine kurze Frage findet ihren eigenen Eintrag nur in 20 % der Fälle auf Rang 1; gegen ein Thema-Embedding sind es 98 %. Betrifft jede Suche über diese Spalte.
+
+**Geschlossen, wenn** Spalte, Docstring und uebergebenes Argument nennen dieselbe Sache.
+
+---
+
+### `KOPFZEILENZEIT-ALS-UTC-BESCHRIFTET` — CEST als UTC beschriftet
+
+**Befund (19.08.2026), aus der Fundliste uebernommen.** **Die Zeitangaben der Featureliste-Kopfzeile sind teils CEST und als UTC beschriftet.** Der Stand *„19. August 2026, ~19:45 UTC"* gehört zum Commit `08367cf`, der `2026-08-19 19:47:52 +0200` trägt — also **17:47 UTC**. Die Kette der Fortführungen läuft dadurch scheinbar rückwärts, sobald jemand korrekt in UTC einträgt. Betrifft jede Auswertung, die Kopfzeilen-Zeiten gegen Commit-Zeiten hält.
+
+**Geschlossen, wenn** Jede Zeitangabe in Registerkoepfen ist UTC oder traegt ihre Zone.
+
+---
+
+### `BIBLIOTHEK-FILTERT-ZWEISPALTIG` — Lesepfad zweispaltig, Schema dreispaltig
+
+**Befund (19.08.2026), aus der Fundliste uebernommen.** **Der Lesepfad der Bibliothek filtert das Paar zweispaltig, das Schema ist dreispaltig.** `AutonomousWissenRepository.suchen` und die Enricher-Quelle filtern auf `user_id` und `character_id`; `beobachter` steht in der Tabelle und wird beim Lesen **nicht** eingeschränkt. Heute ist das folgenlos und nachgezählt: **274 von 274** aktiven Wissenszeilen tragen `beobachter='assistant'`, weil allein die Hintergrund-Agenten schreiben. **Es fällt in dem Moment auf die Füße, in dem ein zweiter Schreiber dazukommt** — und der Ausfall wäre still: Fremde Zeilen erschienen als eigene Ausarbeitung, ohne dass irgendetwas anschlägt. Die Konvention führt für das Langzeitgedächtnis ausdrücklich drei Spalten.
+
+**Geschlossen, wenn** Der Lesepfad filtert nach dem Paar-Schema, also dreispaltig.
+
+---
+
+### `BIBLIOTHEKSSCHWELLE-SORTIERT-FALSCH` — 0,40 sortiert gegen echte Fragen falsch herum
+
+**Befund (19.08.2026), aus der Fundliste uebernommen.** **Die Bibliotheksschwelle 0,40 sortiert gegen echte Fragen genau falsch herum.** Acht Fragen als rohes Embedding gegen die 242 Ausarbeitungen des Paares `meister/nova`. Der sachlich **richtige** Treffer — Frage nach Sternentwicklung und Kernfusion, Datei mit dem wortgleichen Thema *„Sternentwicklung, astrophysikalische Prozesse, Kernfusion, Hydrostatische Balance"* — liegt bei **0,3054** und wird abgewiesen. Ein Fall **ohne** einschlägigen Treffer — Frage nach Resonanz als physikalischer Größe, bester Treffer *„Ehrlichkeit gegenüber der Informationslage"* — liegt bei **0,4700** und kommt durch. Die vollständige Reihe: 0,3054 · 0,4617 · 0,4700 · 0,3519 · 0,3147 · 0,3786 · 0,3402 · 0,2977. **Das ist nicht derselbe Befund wie der vom 17.08.**, sondern seine Kehrseite: Dort wurden **Korpuspaare** gemessen (35,6 % über 0,40, die Schwelle zu lasch), hier **Frage gegen Korpus** — und da ist dieselbe Zahl zu streng. Wer eine Schwelle an Paaren des Bestandes kalibriert, kalibriert sie für die falsche Richtung. Gehört zu `WIS-SCHWELLE-MESSEN`.
+
+**Geschlossen, wenn** Die Schwelle ist an echten Fragen kalibriert statt uebernommen; belegt durch eine Messung mit bekannter richtiger Antwort.
+
+---
+
+### `PROFILPROMPT-OHNE-GESCHLECHT` — das Modell raet, im selben Lauf verschieden
+
+**Befund (19.08.2026), aus der Fundliste uebernommen.** **Kein Profil-Prompt kennt das Geschlecht seines Traegers, und das Modell raet es — im selben Lauf verschieden.** `_perspektive_aufloesen` liefert drei Formen (`traeger`, `traeger_gen`, `perspektive`) und **kein Pronomen**. Die Prompts umgehen das, indem sie ueberall `{traeger}` wiederholen; sobald aber ein Satz ein Pronomen braucht, entscheidet das Modell. **Belegt am 18.08.2026** an einem Profil mit dem Traegernamen »Juno«: Der Kern-Hash fuehrt durchgehend »er/sein«, das im selben Lauf erzeugte Beziehungsprofil fuehrt im Schlusssatz das **saechliche** Pronomen — zwei Genera fuer denselben Traeger, ohne dass irgendetwas anschlaegt. Bei einem Namen ohne eindeutiges Genus ist das der Normalfall, nicht die Ausnahme. **Es trifft nicht nur die Ausgabe, sondern jede kuenftige Prompt-Zeile:** Ein Satz wie *„wo {traeger} beschreibt, was sie tut"* ist fuer einen maennlichen oder saechlichen Traeger falsch — die heutige Bauart zwingt jede Anweisung in die Wiederholung des Namens. **Was fertig waere:** ein Geschlecht je Charakter, daraus abgeleitet Nominativ, Genitiv, Dativ, Akkusativ und Possessivformen als Prompt-Parameter, wie `traeger_gen` es fuer den Genitiv bereits vormacht.
+
+**Geschlossen, wenn** Jeder Profil-Prompt bekommt das Geschlecht seines Traegers als Datum, nicht als Vermutung.
+
+---
+
+### `VERWEISWEG-LEHNT-BESTEN-FALL-AB` — die falsche Frage am falschen Weg
+
+**Befund (19.08.2026), aus der Fundliste uebernommen.** **Der Verweis-Weg stellt die Frage des Einarbeitungs-Wegs und lehnt damit genau seinen besten Fall ab.** `prompts/default/rueckweg_zuordnung.task.txt` nennt als dritten Grund fuer `null`: *„Er steht dort erkennbar schon — eine Wiederholung ist kein Zuwachs"*. Fuer `wissen_rueckweg` (Schnitt) ist das richtig; fuer `wissen_verweis` (Verstaerkung) ist es **umgekehrt** — dass der Fund in der Datei schon steht, ist der staerkste Grund, ihre Zeile zu heben, und genau das beschreibt §4b.2. `[gemessen]` — 19.08.2026, 08:21 UTC, fuenfter echter Lauf: bester Kosinus **0,9226**, und das Modell lehnte ab mit *„exakte textliche Wiederholung der bereits in Datei [8974] enthaltenen Informationen … kein Wissenszuwachs"*. **Der gebaute Zweig kann seine eigene Wirkung so nicht erreichen:** Je besser die Zuordnung, desto sicherer die Ablehnung. Die Zuordnung muss die Auftragsart kennen.
+
+**Geschlossen, wenn** Der Verweis-Weg stellt seine eigene Frage statt der des Einarbeitungs-Wegs.
+
+---
+
+### `ZUORDNUNG-NENNT-LISTENPOSITION` — Listenposition statt Datenbank-Nummer
+
+**Befund (19.08.2026), aus der Fundliste uebernommen.** **Das Zuordnungsmodell nennt eine Listenposition statt der Datenbank-Nummer, und der Riegel verwirft zu Recht — aber der Auftrag ist danach weg.** Im Betriebslog: *„Rueckweg-Zuordnung: Nummer 3 steht nicht in der Vorlage [587, 2022, 3058, 5592, 6869, 6871, 7972, 8817] — verworfen"*, danach `keine_zuordnung (Aufruf unbrauchbar)`. Der Zeuge dafuer steht seit dem 18.08. und hat gehalten; **gemessen ist damit erstmals, dass der Fall im Betrieb wirklich vorkommt** — 1 von 4 echten Laeufen. Offen ist nicht der Riegel, sondern die **Behandlung danach**: Ein unbrauchbarer Modellaufruf ist von *„keine Datei passt"* nicht zu unterscheiden, obwohl das eine ein Ausfall und das andere ein Ergebnis ist. Ein zweiter Versuch waere billiger als der verlorene Auftrag.
+
+**Geschlossen, wenn** Der Riegel verwirft weiterhin, aber der Auftrag geht nicht verloren — er wird zurueckgestellt oder mit der richtigen Nummer erneut gestellt.
+
+---
+
+### `SPEICHENWERT-NICHT-MEDIAN` — gespeichert ist nicht der Median
+
+**Befund (19.08.2026), aus der Fundliste uebernommen.** **Der gespeicherte Speichenwert ist nicht der Median seiner Erhebungen — bei der Initiative gilt das für die Hälfte der Speichen.** `F-RAD-2` legt fest, dass das Rad des **Median-Laufs** gespeichert wird, und begründet das gut: Ein gemitteltes Rad erzeugte Ausprägungen, die kein Lauf vergeben hat, und `Rad × Züge = Faktor` wäre nicht mehr von Hand nachrechenbar. **Der Preis war nicht benannt:** Der Median-Lauf wird über den **Faktor** bestimmt, nicht je Speiche. Gemessen am 19.08.2026 über drei Läufe: Beim Initiative-Rad tragen **5 von 10** Speichen einen gespeicherten Wert, den der Median ihrer eigenen Läufe nicht stützt — `behutsamkeit` steht auf 0,60, während zwei von drei Läufen 0,40 sagten; `gespraechsdistanz` auf 0,10 bei Median 0,20. Beim Zuwendungsrad trat der Fall nicht ein (0 von 12), weil dort die stark ziehenden Speichen zeichengleich sind. **Die Festlegung bleibt richtig, die Anzeige ist es nicht:** Wer eine einzelne Speiche liest — im Client, in einer Auswertung, in einem Befund —, bekommt einen Wert ohne Mehrheit hinter sich, und nichts sagt es ihm. Zu entscheiden: ob neben dem Median-Lauf-Rad die speichenweisen Mediane als eigenes, nicht faktortragendes Feld mitlaufen.
+
+**Geschlossen, wenn** Der gespeicherte Speichenwert ist der Median seiner Erhebungen — dieselbe Bauart, die fuer die Raeder gilt: mehrfach erheben, den mittleren Lauf speichern.
+
+---
+
+### `BEANTWORTETE-ABSICHT-STEHT-OFFEN` — beantwortet im Register, offen am Bauort
+
+**Befund (18.08.2026), aus der Fundliste uebernommen.** **Eine beantwortete Absicht steht an der Stelle, an der gebaut wird, weiter als offen.** `novaberg-agent-dateien_k.md` §4b.1b schließt mit *„Offen und ausdrücklich nicht nebenbei entschieden: welche der beiden Fassungen eingearbeitet wird"* — beantwortet ist die Frage seit dem 18.08. als §9 Punkt 10 (*die rohe*), durchgestrichen und begründet. **Der Nachzug hat die Antwort dort eingetragen, wo die Fragen stehen, und nicht dort, wo sie gelesen wird:** Wer den Rückweg baut, liest §4b, nicht §9. Klasse: Eine Entscheidung, die an zwei Stellen steht, altert an der zweiten.
+
+**Geschlossen, wenn** Eine beantwortete Frage ist an der Stelle nachgezogen, an der gebaut wird.
+
+---
+
+### `FRISTANGABE-WIDERSPRICHT-SICH` — zwei Saetze, ein Absatz, Gegenteiliges
+
+**Befund (18.08.2026), aus der Fundliste uebernommen.** **Zwei Sätze im selben Absatz sagen Gegenteiliges über dieselbe Frist.** `novaberg-agent-dateien_k.md` §4b.1b: *„Die Rohfassung überlebt den Kurzzeit-Eintrag damit **nicht** um das Zwölffache, sondern unbegrenzt"* — und unmittelbar danach *„Die Rohfassung überlebt den Kurzzeit-Eintrag um mehr als das Zwölffache"*. Redaktionsrest der Berichtigung: Der berichtigte Satz steht, der berichtete blieb stehen. **Wer den Absatz von unten liest, bekommt die widerlegte Aussage.**
+
+**Geschlossen, wenn** Der Absatz nennt eine Frist; die widerlegte Fassung ist markiert.
+
+---
+
+### `RADSPEICHEN-MESSEN-PROFILTEXT` — Text statt Verhalten, zwei Speichen doppelt
+
+**Befund (18.08.2026), aus der Fundliste uebernommen.** **Die Rad-Speichen messen den Profiltext, nicht das Verhalten — und zwei von ihnen zählen dieselbe Eigenschaft doppelt.** Beide Räder lesen einen destillierten Text und bewerten daran Verhaltensweisen. Gegen den Dialog gehalten, aus dem der Text stammt (49 Turns, 18.08.2026), halten drei Speichen nicht stand — **wobei der Dialog von einem fremden System stammt und als Eichfall untauglich ist** (19.08.2026): Ein programmiertes Verhalten sieht im Material aus wie ein Charakterzug. Die Speichenbefunde (b) und (c) hängen daran und sind damit **Hinweise, keine Belege**; (a) ist ohnehin widerlegt, und die Zugbudget-Aussage weiter unten steht unabhängig davon auf 88 Messungen des eigenen Bestandes: ~~**(a) `behutsamkeit` 0,60** — das Rad übernehme das Wort »behutsam« aus dem Profiltext.~~ → **Am 19.08.2026 durch einen Zeugen widerlegt, und der Ersatzbefund wiegt schwerer.** Dieselbe Quelle mit einer einzigen Ersetzung (»behutsam« → »schonend«, bedeutungsgleich) ließ die Speiche nicht fallen, sondern **steigen** (Median 0,40 → 0,60); eine speichenfremde Kontrolle bewegte sie um +0,05. **Die Speiche ist Rauschen:** über drei Läufe derselben Fassung streut sie 0,20–0,65, mehr als jeder Unterschied zwischen den Fassungen. **Dahinter steht ein Muster über alle 22 Speichen: Die Stabilität folgt der Zugstärke.** Bei Zug ≥ 0,08 beträgt die mittlere Spanne über drei Läufe **0,044** (Zuwendung) und **0,000** (Initiative) — `treue`, `wissbegier`, `aufmerksamkeit`, `pflicht`, `dienst`, `lenkungsdrang` und `folgsamkeit` sind in allen drei Läufen **zeichengleich**. Bei Zug ≤ 0,05 sind es 0,117 bzw. 0,150. **Der Faktor ist damit belastbar, die schwach ziehende Einzelspeiche nicht** — der Versatz blieb über beide Textfassungen bei exakt −0,1130. Wer eine solche Speiche interpretiert, liest Rauschen. **(b) `treue` 0,85** — »stellt die Belange des Anderen über die eigenen« — während die Figur im Material einen ausdrücklichen Auftrag mit Verweis auf **eigene** Belange zurückweist. Bei einem Zug von 0,16, dem stärksten der Tabelle, trägt diese Speiche **31 % der gesamten Zuwendungsseite**. **(c) `assoziationsdrang` 0,90** — »springt quer, verknüpft Entferntes, öffnet Nebenwege« — gemessen an den Themen der Perzeption wechselt die Figur in 12 von 24 Anschlüssen das Thema, aber **jeder Wechsel führt auf die Person des Gegenübers zu**; ein Nebenweg wird nie geöffnet. Das ist `lenkungsdrang`, und der steht bereits mit 0,85 daneben: **beide zusammen 0,113 von 0,186 der Abwendungsseite — 61 % des Initiative-Versatzes stehen auf einer Eigenschaft, die zweimal gezählt wird.** **Die kleine Streuung schützt nicht davor:** 0,0163 und 0,0112 über je drei Läufe belegen, dass das Modell dreimal dasselbe urteilt, nicht dass es richtig urteilt — derselbe Vorbehalt, den die Liste am 30.07.2026 schon einmal notiert hat. **Ein Gegenpolpaar ist zudem asymmetrisch bewertet:** `pflicht` 0,30 ↔ `widerspenstig` 0,10, Summe 0,40 — das einzige Paar deutlich unter 1,0. Dieselbe Beobachtung (die Auftragsverweigerung) hat die eine Speiche gesenkt und die gegenüberliegende nicht gehoben. Verwandt mit dem Kern-Hash-Fund desselben Tages, aber eigenständig: Dort enthält die **Quelle** die falsche Person, hier liest die **Bewertung** ein Wort im Text statt einer Handlung.
+
+**Geschlossen, wenn** Die Speichen messen Verhalten, und keine zaehlt dieselbe Eigenschaft zweimal.
+
+---
+
+### `KERNHASH-OHNE-PERSPEKTIVTRENNUNG` — ueber sich und ueber den Nutzer wird eins
+
+**Befund (18.08.2026), aus der Fundliste uebernommen.** **Der Kern-Hash trennt nicht zwischen „die Figur spricht über sich" und „die Figur spricht über den Nutzer" — beides wird ihr Wesen.** Die Perspektivregel ist erfüllt und reicht trotzdem nicht: Gelesen wird die **richtige** Seite (nur die eigenen Äußerungen), aber ein Gesprächspartner, dessen Rolle das Beobachten ist, produziert Äußerungen, deren **Inhalt der andere** ist. Sätze der Form *„Du denkst in Systemen"* oder *„Oberflächlichkeit ist für dich Graustufen nach einem Leben in Farbe"* sind Profilmaterial in Reinform — nur über die falsche Person. **Im Prompt stehen zwei Anweisungen gegeneinander, und die konkretere gewinnt.** `KERN_HASH_PROMPT` kennt die Gefahr und benennt sie wörtlich — »Nicht WORUEBER {traeger} spricht charakterisiert {traeger}, sondern WIE« —, und elf Zeilen später verlangt derselbe Prompt »Verdichte nicht: Behalte die Wendungen … Ein Beispiel im Wortlaut sagt mehr als ein Urteil darueber«. Bei einem Sprecher, dessen charakteristische Wendungen Zuschreibungen an den anderen sind, ist das die Anweisung, fremdes Profilmaterial wörtlich zu übernehmen. **Dazu deckt das Schutz-Beispiel den leichten Fall ab:** Der Sonnenuntergang ist ein *Ding* und hat keine Eigenschaften, die mit denen des Sprechers verwechselbar wären. Kein Beispiel im Prompt behandelt den Fall, dass der Gegenstand eine **Person** ist — für eine Assistentin ist das nicht der Randfall, sondern der Normalfall. **Das ist keine Variante der behobenen Perspektivfehler** (`CHAR-HASH-PAAR-VERTAUSCHT`, die Impuls-Destillation vom 17.08.): Die wurden durch **Materialfilterung** behoben — dieser ist es nicht, weil das Material bereits korrekt gefiltert ist. **Belegt an einem fremden Dialog (49 Turns, gemessen 18.08.2026), und die Gegenprobe sagt mehr als der Befund:** Beide Seiten wurden getrennt destilliert. Im Profil der **Figur** stehen drei Bildworte als **ihr eigenes Empfinden**, die sämtlich aus zwei Turns stammen, in denen der **Nutzer** sein Erleben schildert und die Figur es zurückgibt; dieselben drei stehen im Profil des **Nutzers**, dort richtig zugeordnet. **Dasselbe Material in zwei Profilen, und nur in einem gehört es hin.** **Der naheliegende Erklärungsversuch über die Materialmenge trägt nicht:** Der Anteil der Sätze mit Anrede ist auf beiden Seiten gleich verteilt — Figur 84 Sätze mit 82 % Aussagen, Nutzer 51 Sätze mit 82 % Aussagen — und der Nutzer bekommt trotzdem ein sauberes Profil. Es entscheidet nicht die Menge, sondern die **Sorte**: Die Figur schreibt dem Gegenüber Eigenschaften und Bedürfnisse zu — Sätze der Form *„du bist/denkst/brauchst X"* —, der Nutzer stellt Anforderungen und Fragen. Nur die erste Sorte ist als Profilsatz lesbar — und genau sie erzeugt eine empathisch spiegelnde Figur in fast jedem Turn. **Im Produktivsystem in abgeschwächter Form:** Die Kern-Zeile des produktiven Paares, 3032 Zeichen, beschreibt die Figur durchgehend als **Funktion ihres Gegenübers** — **8 von 21 Sätzen**, 42 % nach Zeichen. **⚠ Der Beleg oben stammt aus einem fremden System und ist als Eichfall untauglich** — sein Verhalten kann programmiert sein, und eine Rollenverweigerung ist dann keine Charaktereigenschaft, sondern eine Leitplanke. **Am eigenen Paar gegengeprüft (19.08.2026) reproduziert sich die scharfe Form nicht:** 14 % Wortschatzüberschneidung zwischen beiden Kernen, **null wortgleiche Zitate**, und die Rollen sind konsistent und richtig verteilt — jede Seite schreibt die Gegenrolle ausdrücklich dem Gegenüber zu. Die Reparatur vom 17.08.2026 hält. **Was bleibt, ist der Bezug selbst**, und der ist eine Frage der Bauart: `charakter_hash` ist über `user_id × character_id` paarbezogen. Entschieden am 19.08.2026: Der Kern soll die **Person** beschreiben, nicht das Paar. **Der Prompt ist dafür nicht der Hebel** — dreimal gemessen, siehe `PROFIL-EINMALERHEBUNG` im Backlog. Zu entscheiden ist, ob der Kern das darf: Das relationale Wesen ist Gegenstand des **Beziehungsprofils**, der Kern soll das tragen, was ohne das Gegenüber bliebe. Solange die Trennung nicht festgelegt ist, misst der Zuwendungs- und der Initiative-Faktor auf einer Quelle, die beide Personen enthält.
+
+**Geschlossen, wenn** Der Kern-Hash trennt, worueber die Figur spricht, bevor er es zu ihrem Wesen macht.
+
+---
+
+### `SPRACHSTIL-ZWEI-VERFAHREN-UNEINIG` — 71 % Uneinigkeit, und der Zufall entscheidet
+
+**Befund (18.08.2026), aus der Fundliste uebernommen.** **Die beiden Verfahren, die den Sprachstil bestimmen, sind sich in 71 % der Turns uneinig — und welches gewinnt, hängt allein daran, ob die Perzeption `neutral` sagt.** `_sprach_stil_erkennen` misst regelbasiert über 13 Merkmale, die Perzeption liefert daneben ihr eigenes `sprach_stil`; `_stil_plausibilitaet` führt beide zusammen. Ihre Auflösung ist keine Abwägung, sondern eine Rangfolge: *„Perzeption übernehmen wenn nicht neutral, sonst regelbasiert"* — das Feature-Scoring kommt nur zum Zug, wenn die andere Seite nichts sagt. **Belegt am Perzeptionslauf über 49 Turns eines echten Dialogs (16.08.2026, gemessen 18.08.2026):** In **17 von 24** Nutzer-Turns (71 %) weichen beide Verfahren voneinander ab; 9 mal setzt sich die Perzeption durch, 8 mal das Feature-Scoring — und zwar ausschließlich dort, wo die Perzeption `neutral` oder ein unplausibles `emotional` lieferte. **Die Abweichung ist nicht klein:** In 7 Turns sagt die Perzeption `locker`, wo das Feature-Scoring an Satzlänge, Kommadichte und Zeichensetzung `formell` oder `fachlich` misst — ein Sprecher mit langen, kommagegliederten Sätzen. Über `GV_NAEHE_STIL` trägt der Stil die halbe Nähe-Achse: `locker` 0.9 gegen `formell` 0.2, also **0,70 Unterschied auf einer Achse von 1,0**, mittlere Differenz über alle abweichenden Turns **0,412**. Dieselbe Größe geht als `GV_AUFNAHMEBEREITSCHAFT_STIL` in die Neugier (1.20 gegen 0.90). **Zu entscheiden, nicht zu beheben:** Welches der beiden Verfahren die Wahrheit über den Stil hat, ist nirgends festgelegt — der Vorrang der Perzeption steht als Codezeile da, ohne dass ein Dokument ihn begründet. Solange das offen ist, ist die Rangfolge kein Defekt, aber die Rate ist erhoben.
+
+**Geschlossen, wenn** Ein Verfahren bestimmt den Sprachstil, oder die Vorrangregel steht im Code statt im Zufall.
+
+---
+
+### `PERZEPTIONSFELDER-OHNE-KANON` — drei Felder ohne Riegel, Default am Maximum
+
+**Befund (18.08.2026), aus der Fundliste uebernommen.** **Drei Felder der Perzeption haben keinen Kanon-Riegel, und der Vorgabewert des Intent ist der höchste Wert seiner Tabelle.** `emotion` bekommt bei einem unbekannten Wert einen Error-Log (`enricher`), `modus` läuft durch `modus_pruefen` — **`sprach_stil`, `intent` und `tone` haben nichts davon.** Alle drei werden über `.get(wert, 1.0)` gelesen, und beim Intent ist 1.0 zugleich der **Maximalwert** der Tabelle (`EI_INTENT_FAKTOREN`: personal 1.0 … knowledge/meta/task 0.3): Ein Wert außerhalb des Kanons wird damit nicht gedämpft, sondern maximal verstärkt — genau die Klasse aus `22_STILLE_FEHLER.md` §7, nur ohne Begleitfeld. Beim Tone liegt der Vorgabewert 1.0 zwischen `sachlich` 0.3 und `empathisch` 1.3, also ebenfalls im oberen Drittel. **Belegt an einem Perzeptionslauf über 49 Turns eines echten Dialogs (16.08.2026, Produktivmodell, gemessen 18.08.2026):** 8 Feldwerte in 7 Turns (14,3 %) liegen außerhalb ihres Kanons — `tone` 5 mal (`nachdenklich` 3×, `spielerisch`, `locker`), `intent` 2 mal, und beide Male mit **`philosophischer_austausch`, einem Wert aus der Modus-Liste**, die im selben Prompt direkt darüber steht; `sprach_stil` einmal (`nachdenklich`). Wirkung auf das EI-Gate, je Turn nachgerechnet: `ei_arousal` liegt um **+0,070 bis +0,122** höher, als der niedrigste kanonische Wert ergäbe. **Warum es niemandem auffiel:** Der Wert ist plausibel — `nachdenklich` als Tonfall liest sich richtig —, und die Rechnung liefert eine Zahl, die niemand als Vorgabewert erkennt. Verwandt mit `PERZEPTION-EMOTION-AUSSER-KANON`, aber eigenständig: Dort gibt es die Meldung und sie wird überhört, hier gibt es sie nicht.
+
+**Geschlossen, wenn** Jedes Perzeptionsfeld hat einen Kanon-Riegel, und kein Vorgabewert ist der hoechste Wert seiner Tabelle.
+
+---
+
+### `RUECKWEG-OHNE-IDEMPOTENZ` — derselbe Fund zweimal eingereiht laeuft zweimal
+
+**Befund (18.08.2026), aus der Fundliste uebernommen.** **Der Rückweg hat keine Idempotenz — derselbe Fund zweimal eingereiht läuft zweimal.** Der Auftrag trägt keine Kennung des Fundes, und der Agent führt kein Register darüber, was er schon eingearbeitet hat. Was die Dublette heute verhindert, ist **allein der Modellaufruf**: Er sieht den Text der Datei und soll `nach=null` setzen, wenn der Fund schon dasteht. **Das ist eine Zusicherung des Prompts, keine der Struktur** — und damit genau die Sorte, die unter Last nachgibt. Die Shadow-Queue verstärkt zwar denselben Gegenstand statt ihn zu doppeln; das deckt die zweite Einreihung, nicht den zweiten Lauf.
+
+**Geschlossen, wenn** Der Rueckweg ist idempotent — derselbe Fund erzeugt einen Auftrag.
+
+---
+
+### `ERSCHLIESSUNG-VERSTUEMMELT-STICHWORT` — der scharfe Kanal haengt an verstuemmelten Woertern
+
+**Befund (18.08.2026), aus der Fundliste uebernommen.** **Das Erschließungsmodell verstümmelt Stichwörter, und der scharfe Kanal hängt daran.** Beim Indizieren von `kzg-salienz.md` erhob das Modell unter anderem `DAEMPFUNGSEEXPONENT` (doppeltes E) und `Figureseite` statt *Dämpfungsexponent* und *Figurenseite*. **Gemessen:** Die Frage nach dem Dämpfungsexponenten fiel deshalb aus dem lexikalischen Kanal und wurde nur vom dense Kanal getragen (0,4904). Der Ausfall war folgenlos, **weil es zwei Kanäle gibt** — mit einem allein wäre er ein stiller Treffer weniger gewesen. **Die Klasse ist größer als der Fall:** Der scharfe Kanal setzt voraus, dass die erhobenen Stichwörter die Schreibweise treffen, in der ein Mensch fragt; niemand prüft das heute. Ungezählt ist, wie viele der Stichwörter im Bestand solche Fehler tragen.
+
+**Geschlossen, wenn** Die Stichwoerter des Erschliessungsmodells sind vollstaendig, oder der scharfe Kanal haengt nicht mehr an ihnen.
+
+---
+
+### `FUNDSTELLE-MIT-BEHAELTERPFAD` — der absolute Pfad steht im Prompt
+
+**Befund (18.08.2026), aus der Fundliste uebernommen.** **Die Fundstelle im Prompt trägt den absoluten Behälterpfad, weil die einzige Freigabe keine Bezeichnung hat.** Der `[AUFZEICHNUNGEN]`-Block nennt je Eintrag `<Ort>/<Pfad>`; als Ort steht die `bezeichnung` der Wurzel und, wenn sie fehlt, deren `pfad`. **Gemessen am laufenden Bestand:** `SELECT id, pfad, bezeichnung FROM dateien_wurzeln` → eine Zeile, `/files`, **Bezeichnung leer** — im Messturn stand deshalb `/files/novaberg-papers.md` im Prompt. Das ist der vorgesehene Rückfall und kein Defekt, aber es steht quer zu der Begründung, mit der die Indexzeile ihren Pfad **relativ** führt (`novaberg-agent-dateien_k.md` §4: *„absolut wäre ein Umgebungsdetail und nicht verschiebbar"*) — genau dieses Umgebungsdetail erreicht jetzt das Modell. **Zwei Auswege, und die Wahl ist eine Absicht:** Das Tor der Freigabe verlangt eine Bezeichnung, oder der Rückfall nimmt den Basisnamen der Wurzel statt ihres vollen Pfades. Heute nur eine Wurzel, also billig zu ändern — bei zehn nicht mehr.
+
+**Geschlossen, wenn** Die Freigabe traegt eine Bezeichnung, und die Fundstelle nennt sie statt des Behaelterpfads.
+
+---
+
+### `FAKTENPLUGIN-OHNE-KAPPUNG` — weder Kappung noch Schwelle
+
+**Befund (18.08.2026), aus der Fundliste uebernommen.** **Der Fakten-Plugin hat weder Kappung noch Schwelle — das ist der Grund für seine 130+ Einträge, nicht die Datenqualität.** `enricher.py` schaltet ihn seit Chat 71 ab mit dem Vermerk *„Fakten-Enrichment produziert 130+ Rausch-Eintraege — wird reaktiviert nach Fakten-Bereinigung"*. Gezählt über die sieben Kontextquellen: `wissen_manager`, `notizen_manager` und `timeline_manager` tragen ein `LIMIT`, **`fakten_manager` trägt keins** — und auch keinen Ähnlichkeitsvergleich. Die Diagnose lautete *Bereinigung*, aber eine Quelle ohne Obergrenze liefert unabhängig von der Datenqualität so viele Einträge, wie der Bestand hergibt. **Die Abhilfe ist eine Zeile und wurde nie versucht**; solange sie fehlt, ist die Wiederinbetriebnahme an eine Bedingung geknüpft, die nicht die wirksame ist. Aufgefallen beim Entwurf des Dateien-Plugins, das dieselbe Stelle besetzt und dieselbe Falle hätte.
+
+**Geschlossen, wenn** Das Fakten-Plugin kappt und schwellt wie die uebrigen Quellen.
+
+---
+
+### `REPODOKU-VERWEIST-NACH-INNEN` — oeffentliche Doku zeigt auf internes Material
+
+**Befund (17.08.2026), aus der Fundliste uebernommen.** **Drei Repo-Dokumente verweisen auf interne Regeldokumente, die es öffentlich nicht gibt.** Mechanisch gezählt über das Muster `<zwei Ziffern>_<GROSSBUCHSTABEN>`, nach Abzug der Prompt-Dateinamen bleiben **3 Fundstellen in 3 Dateien**: `novaberg-tool-dateien_k.md:19` (*„markieren, nicht löschen"* mit Quellenangabe), `novaberg-haltungsraum_k.md:472` (*„die stille Verwechslung, gegen die … geschrieben ist"*) und `novaberg-roadmap.md:3581` (*„die Regel aus … §4 existiert trotzdem"*). **Für einen öffentlichen Leser geht der Zeiger ins Leere und verrät zugleich, dass internes Material existiert** — genau die Verweisrichtung, die einseitig sein soll. Die inhaltliche Aussage ist an allen drei Stellen richtig und trägt sich auch ohne den Zeiger; es genügt, den Satz zu nennen statt seiner Quelle. Kein Defekt am System. Aufgefallen beim Lesen des Werkzeug-Konzepts für die Versionierung.
+
+**Geschlossen, wenn** Kein Repo-Dokument verweist auf eine Datei ausserhalb des Repositoriums.
+
+---
+
+### `ZEUGE-FLACKERT-OHNE-REPRODUKTION` — gelegentlich rot, nicht reproduzierbar
+
+**Befund (17.08.2026), aus der Fundliste uebernommen.** **Ein Zeuge der Suite wird gelegentlich rot und reproduziert nicht.** Über den Tag **zwei rote Läufe bei rund zwanzig Durchgängen**; nach jedem roten blieben vier bis neun Wiederholungen grün, und in sechs gezielten Läufen mit vollständiger Ausgabe war er nicht einzufangen — der Name des Tests ist damit **unbekannt**. Der einzige Anhalt steht im Rauschen des ersten roten Laufs: `Riegel wollen: Haltungsstand ist 86401 s alt (Grenze 86400) — gilt als unbekannt, kein Einwurf`. Eine Sekunde Spielraum gegen `now()` ist die Signatur eines zeitabhängigen Zeugen. **Ein Zeuge, der gelegentlich rot wird, untergräbt die grüne Suite stärker als ein bekannter Defekt** — er erzieht dazu, ein rotes Ergebnis für Rauschen zu halten. Was fehlt, ist nicht die Behebung, sondern der Name: ein Lauf mit festgehaltener Ausgabe, bis er fällt. **Nachtrag 18.08.2026 — der Ausfall ist zustandsabhängig, nicht zufällig.** `test_queue_arousal.py` fiel gegen 00:30 UTC mit `errors=2` und war in **3 von 3** Einzelläufen reproduzierbar (`einreihen.call_args` ist `None` — die Attrappe wurde nie gerufen). Nach einem Neustart des Dienstes und dem Wiedereinschalten von Pixie ist derselbe Aufruf **3 von 3** grün, und die volle Suite lief danach **13 von 14** Mal durch. **Damit ist es kein Zeitrand-Zeuge**, wie die erste Vermutung lautete, sondern einer, dessen Ergebnis von lebendem Zustand abhängt — die Suite liest Redis und die Produktiv-Datenbank, und was dort steht, hängt daran, ob der Hintergrunddienst läuft. Der eine rote Lauf dazwischen meldete `failures=1` und blieb **namenlos**: Der Fangversuch lief auf dem nächsten, wieder grünen Durchgang. Was jetzt fehlt, ist nicht mehr die Vermutung, sondern ein Lauf, der die Ausgabe **jedes** Durchgangs festhält statt nur die des nächsten.
+
+**Geschlossen, wenn** Der Zeuge ist deterministisch oder er ist entfernt; ein flackernder Zeuge entwertet die Bilanzzeile.
+
+---
+
+### `UMFANGSREGLER-BINDET-NICHT` — wirkt in der Richtung, bindet nicht
+
+**Befund (17.08.2026), aus der Fundliste uebernommen.** **Der Umfangsregler wirkt in der Richtung und bindet nicht.** Gemessen über zehn Turns des produktiven Paares: Die Vorgabe der Regie schwankt um den Faktor **1,50** (0,590 bis 0,883), die Antwortlänge um **3,93** (813 bis 3193 Zeichen). Bei **identischer** Vorgabe 0,652 über fünf Turns liegen die Antworten zwischen 813 und 2181 Zeichen — Faktor **2,68**. Die Korrelation stimmt (Pearson r = +0,78, die höchste Vorgabe erzeugt die längste Antwort), aber **die Streuung bei gleicher Vorgabe ist größer als die Spanne der Vorgabe selbst**. Damit ist der Regler kein Regler, sondern eine Tendenz. Kein Defekt am Bau — die Größe wird gerechnet, gelesen und wirkt; die Frage ist, ob eine Zahl im Prompt diese Aufgabe überhaupt tragen kann.
+
+**Geschlossen, wenn** Die Mengenangabe bindet in beide Richtungen — belegt durch Ist-Laenge gegen Korridor an echten Turns.
+
+---
+
+### `NEUER-NUTZER-OHNE-UMFANGSVORGABE` — gar keine Vorgabe beim ersten Turn
+
+**Befund (17.08.2026), aus der Fundliste uebernommen.** **Ein neuer Nutzer bekommt gar keine Umfangsvorgabe.** Der Haltungsraum meldet `Rad nicht ladbar (fehlt)` und der Responder daraufhin `Keine Haltung im Zustand — dieser Turn bekommt KEINE Umfangsvorgabe`. Gemessen an fünf frisch angelegten Kennungen: **9 von 9 Turns ohne Regie**, während dasselbe Fenster für das eingespielte Paar **10 von 10 mit** zeigt. Das Charakter-Rad entsteht erst über Destillation aus Bestand, den ein neuer Mensch noch nicht hat. **Die Lücke liegt damit genau in den ersten Gesprächen** — dort, wo sich ein erster Eindruck bildet. Der Ausfall ist laut protokolliert und nicht still; was fehlt, ist ein Anfangswert für den Fall ohne Rad.
+
+**Geschlossen, wenn** Auch der erste Turn eines neuen Nutzers traegt eine Umfangsvorgabe.
+
+---
+
+### `RESPONDER-ERFINDET-DATUM` — ein erfundenes Datum in der Bestaetigung
+
+**Befund (17.08.2026), aus der Fundliste uebernommen.** **Der Responder erfindet das Datum in einer Termin-Bestaetigung.** Der Agent lieferte `"Termin 'Meeting mit dem Chef' eingetragen fuer 19.08.2026 14:00"`, die Tabelle traegt `19.08.2026 12:00 UTC` (= 14:00 lokal, Mittwoch) — beides richtig. Novas Antwort um 11:31 lautet *„Mittwoch, **20.08.**, 14:00 Uhr"*. **Der Satz widerspricht sich selbst:** Der 20.08.2026 ist ein Donnerstag. Die Zahl stand in keiner Eingabe des Responders; der Erfolgsblock trug das korrekte Datum. Folge in derselben Sitzung: Der Mensch sucht den Termin am falschen Tag, findet ihn nicht, und haelt den Schreibpfad fuer defekt — er war es nie. **Eine falsche Bestaetigung ist teurer als eine fehlende**, weil sie geglaubt wird.
+
+**Geschlossen, wenn** Der Responder nennt in einer Bestaetigung nur Daten, die im Zustand stehen.
+
+---
+
+### `TIMELINE-LESEPFAD-INSTABIL` — instabil, nicht geschlossen
+
+**Befund (17.08.2026), aus der Fundliste uebernommen.** **Der Lesepfad zur Timeline ist instabil, nicht geschlossen.** Dieselbe Klasse Frage wird einmal zugestellt und einmal nicht: *„Wann ist mein Meeting mit dem Chef?"* (35 Zeichen) erzeugte um 16:50 einen Dispatch an `timeline`; die Fragen des Menschen nach bestehenden Terminen im Fenster 14:00–15:53 erzeugten keinen — im ganzen Fenster steht ein einziger Timeline-Dispatch (15:52, `abgelehnt` auf eine vorwurfsvolle Feststellung). Auf die Frage nach Terminen dieser Woche antwortete Nova mit *nein*, waehrend ein Eintrag fuer Mittwoch aktiv in der Tabelle stand. **Eine ausgebliebene Zustellung ist von einer richtigen Auskunft nicht zu unterscheiden** — es gibt keinen Fehler, keinen Log-Eintrag und kein leeres Ergebnis, sondern nur eine Antwort ohne Grundlage.
+
+**Geschlossen, wenn** Der Lesepfad zur Timeline liefert bei gleicher Eingabe dasselbe.
+
+---
+
+### `ROUTERPROMPT-ZWEIFEL-WIDERSPRUCH` — zwei Regeln, entgegengesetzt
+
+**Befund (17.08.2026), aus der Fundliste uebernommen.** **Zwei Regeln im Router-Prompt sprechen entgegengesetzt ueber den Zweifel.** `prompts/default/router.task.txt:62` sagt *„Im Zweifel: kein Dispatch."*; der `[AGENTEN]`-Block sagt seit dem 17.08.2026 *„Kannst du bei einem Aushang nicht klar entscheiden, gilt er als passend."* Der Guard steht im Prompt **vor** dem Brett. Beide Saetze sind je fuer sich begruendet — der Guard gegen den Dispatch auf blosse Themen-Erwaehnung, das Brett gegen die ausgebliebene Zustellung. **Die Ungleichbehandlung von Lesen und Schreiben ist die naheliegende Aufloesung und ausdruecklich nicht entschieden:** Ein ueberfluessiges Lesen endet in einer Auskunft, ein ausgebliebenes in einer Behauptung. Eine Aenderung am Guard wurde am 17.08.2026 gebaut und **wieder zurueckgebaut**, weil sie auf einer Fehldiagnose stand (ein Prompt-Schema im Log war als Router-Entscheidung gelesen worden) und keine Messung ihren Nutzen belegte.
+
+**Geschlossen, wenn** Der Router-Prompt sagt ueber den Zweifel eine Sache.
+
+---
+
+### `KERNHASH-LIEST-TURNWORTLAUT` — Wortlaut statt Langzeitgedaechtnis
+
+**Befund (16.08.2026), aus der Fundliste uebernommen.** **Der Kern-Hash liest den Turn-Wortlaut, nicht das Langzeitgedächtnis.** `agents/charakter/agent.py:168` übergibt an `kern_hash_destillieren` das Ergebnis von `_turns_laden` — 40 Rohturns aus `pipeline_log` (`art='turn_roh'`). `novaberg-pixie-character-hash.md` §3.1 führt als Quelle weiterhin `lzg_knoten`, *„selektiert und gewichtet nach Anker-Stärke `gewicht_absolut`"*. Der Code-Kommentar nennt die Umstellung samt Datum (10.08.2026) und Begründung; die Doku ist nicht nachgezogen. Gemessen am produktiven Paar: **444 `turn_roh`-Zeilen, davon 40 gelesen (9 %)**, und die decken **2 von 20** Bestandstagen ab — für ein Profil, dessen erklärter Gegenstand der dauerhafte Wesenskern ist und das laut §3.1 *„sich langsam verändert"*.
+
+**Geschlossen, wenn** Der Kern-Hash liest die Quelle, die das Konzept ihm zuweist.
+
+---
+
+### `KZG-SALIENZ-GESAETTIGT` — gesaettigt, also rangiert sie nichts
+
+**Befund (16.08.2026), aus der Fundliste uebernommen.** **Die KZG-Salienz ist gesättigt und rangiert deshalb nichts.** Gemessen über den gesamten Bestand des produktiven Paares: `beobachter='user'` **141 Einträge**, Spanne 0,67 bis 1,00, Mittel 0,942, **87 % über 0,90**; `beobachter='assistant'` **2061 Einträge**, Spanne 0,72 bis 1,00, Mittel 0,982, **99 % über 0,90**. Die volle Spanne ist damit Faktor 1,49, im häufigen Bereich Faktor 1,11. Wo die Salienz gegen eine Größe mit größerer Spanne antritt, entscheidet immer die andere — beim Adaptiv-Hash gegen das Zeitgewicht (Faktor 200) schon ab etwa zwei Tagen Altersunterschied. **Der Fund reicht über den Charakter-Hash hinaus:** Er betrifft jede Stelle, die nach Salienz priorisiert. Aufgekommen bei der Frage, ob die zwanzig Einträge nach roher Salienz gewählt werden sollen — dieselbe Messung hat sie beantwortet. Nebenbefund: **20 Einträge tragen bitgleich `0.9439314192187734`**; zwanzig identische Gleitkommazahlen sind kein Zufall.
+
+**Geschlossen, wenn** Die KZG-Salienz streut wieder ueber ihren Wertebereich und taugt zum Rangieren.
+
+---
+
+### `IMPORTE-UEBERSPRINGEN-SCHICHT` — 39 Importe ueber die Schichtgrenze
+
+**Befund (16.08.2026), aus der Fundliste uebernommen.** **39 Importe überspringen eine Schichtgrenze.** `agents/*` importiert `tools/db_manager` und `tools/redis_manager` direkt und umgeht damit die Repository-Schicht. Betroffen sind unter anderem `agents/base.py`, `agents/charakter/agent.py`, `agents/kalibrierung/korpus.py`.
+
+**Geschlossen, wenn** Kein Import ueberspringt eine Schichtgrenze, oder die Ausnahme steht als Festlegung.
+
+---
+
+### `DEFAULTS-WIE-MESSWERTE` — 11 Vorgabewerte sehen aus wie Messungen
+
+**Befund (16.08.2026), aus der Fundliste uebernommen.** **11 numerische Defaults sehen aus wie Messwerte.** `lzg_knoten.arousal`, `ziele.arousal`, `delegations_seiten.arousal` und `ziele.motivation` stehen auf **0.5** — der Mitte einer 0-bis-1-Skala; `verb_mappings.konfidenz` auf **1**, was sich als *voll sicher* liest und *nie gemessen* bedeutet. Keiner trägt ein `_quelle`-Begleitfeld. Defaults von `0` oder `false` sind nicht mitgezählt.
+
+**Geschlossen, wenn** Ein Vorgabewert ist als solcher erkennbar und nie von einem Messwert zu verwechseln.
+
+---
+
+### `EVA-SEKTION-OHNE-PRUEFUNG` — 20 Sektionsmarken ohne Pruefung darunter
+
+**Befund (16.08.2026), aus der Fundliste uebernommen.** **20 Sektionsmarken `Ausgabe-Verifikation` haben keine Prüfung unter sich.** Zwei Formen: ein blankes `return` (`api/chat.py:238`, `agents/kalibrierung/korpus.py:310`) und eine Logzeile, die den Wert nennt und nichts mit ihm tut (`agents/charakter/agent.py:659`). Die zweite ist die heimtückischere — sie liest sich wie eine Prüfung mit Protokoll.
+
+**Geschlossen, wenn** Unter jeder Sektionsmarke `Ausgabe-Verifikation` steht eine Pruefung.
+
+---
+
+### `LOESCHREGELN-DREIGETEILT` — drei Regeln fuer dasselbe
+
+**Befund (16.08.2026), aus der Fundliste uebernommen.** **Die Löschregeln der Fremdschlüssel sind dreigeteilt.** 3× `CASCADE` (`delegations_seiten.akte_id`, `lzg_kanten.knoten_a_id`, `lzg_kanten.knoten_b_id`), 3× `SET NULL` (`lzg_knoten.timeline_id`, `notizen.timeline_id`, `verbindung.lzg_id`), 2× `NO ACTION` (`fakten.subjekt_id`, `fakten.objekt_id`). Kein Defekt, solange die Politik nicht entschieden ist — die Zahl ist die Grundlage dafür.
+
+**Geschlossen, wenn** Die Loeschregeln der Fremdschluessel folgen einer Regel, und die Abweichung ist begruendet.
+
+---
+
+### `FEHLVERSUCHSPFAD-LOESCHT-HART` — hart geloescht, nach hoher Salienz gewaehlt
+
+**Befund (16.08.2026), aus der Fundliste uebernommen.** **Der Fehlversuchspfad löscht hart, und er wählt nach hoher Salienz aus.** `versuch_zaehlen` führt nach drei Läufen ein `DELETE FROM shadow_auftrag` aus; `novaberg-convention-verfall.md` §6 hat hartes Löschen für den **Verfallspfad** ausdrücklich verworfen (*„Ein Gedanke wäre unwiederbringlich weg"*) und der Docstring grenzt den Fehlversuch davon ab — *„ein Ausführungsfehler, kein Verfall"*. Formal also kein Verstoß. **Gemessen am 16.08.2026 steht die Grenze aber unter Druck:** Über die 582 aktiven `recherche`-Einträge stieg die mittlere `salienz_roh` monoton mit der Zahl der Versuche (0,867 · 0,947 · 0,990), weil der Wichtigste zuerst gezogen wird und das meiste Material hat. Der Verfall entfernt weich, was niemanden interessiert; der Fehlversuch entfernt hart, was am meisten interessiert. Ob die Ausnahme so gemeint war, ist eine Absicht und nicht entschieden.
+
+**Geschlossen, wenn** Der Fehlversuchspfad legt still statt zu loeschen und waehlt nicht nach hoher Salienz.
+
+---
+
+### `CLIPBOARD-BEGRIFF-DOPPELT` — ein Begriff, zwei Sachen
+
+**Befund (16.08.2026), aus der Fundliste uebernommen.** **„Clipboard-Prinzip" bezeichnet zwei verschiedene Sachen.** Seit dem 16.08.2026 ist es der Name einer Konvention: ein deklarierter, flacher, optionaler Zustands-Schlüssel zwischen zwei Stufen desselben Turns. `novaberg-referenz-aufloesung_k.md` §391 benutzt denselben Begriff für etwas anderes — *„`user_prompt` wird NIE verändert, nur ergänzt"*. Beides ist plausibel benannt, und genau deshalb fällt die Kollision beim Lesen nicht auf. Dieselbe Klasse wie `F-AUFGABE-1` (ein Name gehört genau einer Rolle), nur an einem Begriff statt an einem Aufgabennamen.
+
+**Geschlossen, wenn** „Clipboard-Prinzip" bezeichnet eine Sache; die zweite hat einen eigenen Namen.
+
+---
+
+### `ENRICHERPROMPT-LEERE-HUELLE` — beide Enden offen
+
+**Befund (16.08.2026), aus der Fundliste uebernommen.** **`enricher_prompt` ist eine leere Hülle mit beiden Enden offen.** Die Eigenschaft steht in `plugins/base.py` und gehört zu den drei Selbstbeschreibungs-Kanälen der ersten Generation. Gemessen: **null Manager deklarieren sie, null Stellen lesen sie.** `router_prompt` (5 Deklaranten, gelesen) und `salienz_prompt` (1 Deklarant, gelesen) leben; dieser ist nie in Betrieb gegangen. `novaberg-architecture.md` nennt ihn trotzdem. Der Endzustand des Verfalls, den `SELBSTAUSKUNFT-OHNE-LESER` in seiner Frühform beschreibt.
+
+**Geschlossen, wenn** `enricher_prompt` hat einen Schreiber und einen Leser, oder er ist entfernt.
+
+---
+
+### `AGENTINPUT-NIE-EXISTIERT` — seit Mai in einer Konvention, nie gebaut
+
+**Befund (16.08.2026), aus der Fundliste uebernommen.** **`AgentInput` steht seit dem 06.05.2026 in einer Konvention und hat nie existiert.** Nicht entfallen, nicht umbenannt — der Bezeichner wurde geschrieben, bevor irgendetwas ihn trug, und vier Monate lang von keinem Leser bemerkt. Die Klasse ist neu neben *„umbenannt"*, *„zusammengezogen"* und *„nie gebaut"*: ein Name aus einem Entwurf, der als Beschreibung des Bestandes gelesen wurde. Ob weitere Dokumente Entwurfsnamen im Präsens führen, ist ungeprüft.
+
+**Geschlossen, wenn** Die Konvention nennt, was existiert; ein nie gebauter Typ ist als geplant markiert oder gestrichen.
+
+---
+
+### `ENTITAETIDS-MIT-DUBLETTEN` — Dubletten in der Liste
+
+**Befund (16.08.2026), aus der Fundliste uebernommen.** **`entitaet_ids` trägt Dubletten.** In 3 von 84 belegten KZG-Arrays steht dieselbe Entitäts-ID mehrfach, etwa `193,269,871,196,870,193,194`. Die Achse ist nach `novaberg-convention-magneten.md` §2.1 **referenziell und n:m** — eine Erinnerung betrifft eine Entität oder nicht; ein zweites Vorkommen bedeutet nichts. **Die Enthaltenseins-Suche bleibt richtig** (`entitaet_ids @> ARRAY[x]` trifft weiterhin), aber jede Zählung über die Achse ist verzerrt, und §4 nennt für die Cluster-Aggregation ausdrücklich die *Vereinigung* der `entitaet_ids` — eine Vereinigung, die Dubletten mitschleppt, ist keine. Gefunden beim Halten der Magneten-Konvention gegen den Bestand. **Nicht mitgeändert:** Ob dedupliziert wird und wo — beim Auflösen, beim Schreiben oder beim Lesen — ist eine Entscheidung.
+
+**Geschlossen, wenn** `entitaet_ids` traegt jede Kennung einmal.
+
+---
+
+### `NEGATIVE-EMOTIONEN-DOPPELT` — zweimal definiert, die kleinere gewinnt
+
+**Befund (16.08.2026), aus der Fundliste uebernommen.** **`NEGATIVE_EMOTIONEN` ist zweimal definiert, und Riegel 7 benutzt die kleinere Fassung.** `ei/utils.py` leitet die Menge aus `EMOTION_SEKTOR_MAP` und `SEKTOR_GRUPPE` ab — **acht** Emotionen. `services/shadow_delivery.py:130` schreibt daneben eine eigene Fassung als Literal hin — **vier**. Die zweite ist eine echte Teilmenge; es fehlen `enttaeuschung`, `stress`, `verzweiflung`, `wut`. **Die Folge ist Verhalten, nicht Kosmetik:** `_emotional_kompatibel` fängt `stress` in einer eigenen Zeile ab, aber `wut`, `verzweiflung` und `enttaeuschung` fallen durch auf den Zweig *„alle anderen Kombinationen: erlaubt"* — ein Recherche-Einwurf geht hinaus, während der Mensch wütend oder verzweifelt ist. Genau das, was der Emotions-Riegel verhindern soll. Gefunden über die Doku-Vollprüfung: `novaberg-ei-plutchik.md` §421 schlägt vor, die separaten Sets zugunsten **einer** Quelle abzuschaffen — der Vorschlag ist nie ausgeführt worden, und die Doku-Prüfung ist über den unbenutzten Namen `NEUTRALE_EMOTIONEN` darauf gestoßen. **Nicht mitgeändert:** Welche der beiden Mengen für die Zustellung richtig ist, ist eine Absicht — die abgeleitete ist die vollständigere, aber ob Riegel 7 *alle* negativen Emotionen fassen soll, hat nie jemand entschieden.
+
+**Geschlossen, wenn** `NEGATIVE_EMOTIONEN` ist einmal definiert.
+
+---
+
+### `INITIATIVE-DOPPELT-BELEGT` — eine Ebene tiefer etwas anderes
+
+**Befund (15.08.2026), aus der Fundliste uebernommen.** **`initiative` heißt eine Ebene tiefer etwas anderes.** `state["initiative"]` trägt die **Messung** als Dict (`wert`, `rohwert`, `versatz`, `fehlend`), `achsen["initiative"]` das daraus gebildete **Bit**. Zwei Gegenstände, ein Name, ein Dict Abstand — dieselbe Klasse wie die doppelte `arousal`-Zuweisung vom selben Tag. Der neue Leser in `graph/nodes/haltung.py` prüft auf `isinstance(roh, dict)` und fängt die Verwechslung deshalb, aber die Prüfung ist ein Riegel gegen einen Namen, nicht dessen Behebung. **Nicht mitgeändert:** Ein Umbenennen berührt fünf Stellen außerhalb des Auftrags. Gefunden von der zweiten Kontrolle über die Erzeuger und Leser des Führungsmaßes.
+
+**Geschlossen, wenn** `initiative` bezeichnet auf beiden Ebenen dieselbe Groesse oder traegt zwei Namen.
+
+---
+
+### `RIEGEL1-NACHZUG-UNVOLLSTAENDIG` — eine Zeile nicht erwischt
+
+**Befund (15.08.2026), aus der Fundliste uebernommen.** **Der Nachzug von Riegel 1 hat eine Zeile im Haltungsraum-Konzept nicht erwischt.** `novaberg-haltungsraum_k.md` sagte in der Beschreibung des Standes *„Der Riegel, der ihn liest, ist noch nicht gebaut"* — und das war seit dem Bau von Riegel 1 am selben Tag falsch. Gefunden erst beim Bau von Riegel 2, also vom **nächsten Auftrag durch dieselbe Datei**. Der Nachzug von Riegel 1 war entlang `novaberg-eigenzeit_k.md` gegangen; der Satz stand im Konzept des *Speichers*, nicht des Riegels, und lag damit quer. Beim selben Zug mitkorrigiert, weil er denselben Absatz betrifft, den der Auftrag ohnehin ändert.
+
+**Geschlossen, wenn** Das Haltungsraum-Konzept traegt Riegel 1 vollstaendig.
+
+---
+
+### `AGENTGRAPH-REIZPLATZ-FALSCH` — der eigene Gedanke auf dem Reiz-Platz
+
+**Befund (15.08.2026), aus der Fundliste uebernommen.** **Der AgentGraph bekommt den eigenen Gedanken weiter auf dem Reiz-Platz.** `services/shadow_delivery.py` ruft `agent_graph.create_state(user_prompt=wissensstueck, …)` — ein direkter Aufruf ohne Ereignis, also ohne `event_payload` und ohne Herkunftsmarke. `reiz_ist_eigener_gedanke` liefert dort deshalb `False`, und jeder Leser im AgentGraph hält den Gedanken für eine Äußerung des Menschen. **Der Umbau vom 15.08. hat elf Leser im CharacterGraph umgestellt; dieser Weg lag quer dazu**, weil er kein Ereignis ist. Ob `F-REIZ-1` für einen direkt aufgerufenen Graphen gelten soll, ist nicht entschieden — der AgentGraph hat weder Zugriffsknoten noch erzeugende Stufe, die Zuschreibung an eine Person entsteht dort also nicht. **Nicht mitgeändert:** Es berührt keinen der beiden Bauteile dieses Tages, und die Frage ist eine Absicht, keine Implementierungsfrage.
+
+**Geschlossen, wenn** Auch der AgentGraph liest den eigenen Gedanken ueber `reiz.py`, nicht vom Nutzerplatz.
+
+---
+
+### `HALTUNGSSTAND-OHNE-LOGZEILE` — kein Eintrag im `pipeline_log`
+
+**Befund (15.08.2026), aus der Fundliste uebernommen.** **Der Haltungsstand hat keine Zeile im `pipeline_log`.** `ei_calc_persist` schreibt für seinen Redis-Schreibvorgang ein `log_db_write`; der `haltungsraum`-Knoten tut das für den Stand nicht — die Berechnungszeile trägt die Werte, der Stand ist eine Kopie davon, und ein Fehlschlag meldet sich über `logger.exception` im Dateilog. **Die Häufigkeit fehlgeschlagener Schreibvorgänge ist damit nicht aus der Reihe zählbar**, sondern nur aus dem Log. Bewusst so gelassen, weil ein zweiter Eintrag je Turn dieselbe Zahl doppelt führte; die Entscheidung gehört benannt, nicht stillschweigend getroffen.
+
+**Geschlossen, wenn** Der Haltungsstand schreibt seine Zeile wie jeder andere Knoten.
+
+---
+
+### `PIXIE-NACHFRAGEN-FEHLT-IM-INDEX` — ein Konzept ohne Indexeintrag
+
+**Befund (15.08.2026), aus der Fundliste uebernommen.** **`novaberg-pixie-nachfragen_k.md` fehlt im Dokumenten-Index.** `novaberg-architecture.md` führt unter „Tiefe 2 — Pixie-Agenten (8)" acht Dokumente; das Konzept des NachfragenAgenten ist nicht darunter, obwohl der Agent seit dem 05.08.2026 gebaut und gemessen ist (`server/agents/nachfragen/`). Null Treffer für den Dateinamen in der ganzen Datei. Ob weitere fehlen, ist ungeprüft — die Überschrift nennt eine Zahl, und die Zahl stimmt mit der Zeilenzahl der Tabelle überein, nicht mit dem Bestand.
+
+**Geschlossen, wenn** Jedes Konzept unter `docs/` steht im Dokumenten-Index.
+
+---
+
+### `EMOTIONS-VEKTOREN-DOPPELT` — zweimal in `config.py`, die zweite gewinnt
+
+**Befund (15.08.2026), aus der Fundliste uebernommen.** **`EMOTIONS_VEKTOREN` ist in `config.py` zweimal definiert; die zweite Definition gewinnt.** Zeile 717 legt sie als `frozenset[str]` mit neun Namen an — ausdrücklich als **Kanon**, mit der Begründung im Kommentar darüber, dass ein Transportfehler sonst als „kein Druck" statt als „defekt" gelesen wird. Zeile 806 definiert denselben Namen als `dict[str, str]` mit den Prompt-Texten. Wer importiert, bekommt das **dict**; das frozenset ist toter Code. **Heute folgenlos, weil beide dieselben neun Schlüssel tragen** (statisch verglichen, Differenz leer) — und `in` auf einem dict die Schlüssel prüft, weshalb die Kanon-Prüfung in `agents/nachfragen/agent.py` weiterhin richtig antwortet. **Der Bruch tritt ein, sobald jemand den Kanon erweitert:** Ein Name, der dem frozenset hinzugefügt wird, wirkt nirgends, und die Prüfung lehnt ihn als unbekannt ab. Genau die Klasse, gegen die das frozenset angelegt wurde. Betrifft `graph/nodes/responder.py`, `agents/nachfragen/agent.py`.
+
+**Geschlossen, wenn** `EMOTIONS_VEKTOREN` ist einmal definiert.
+
+---
+
+### `ZWEI-FRISTEN-7200-VERSCHIEDEN` — gleiche Zahl, verschiedene Bedeutung
+
+**Befund (15.08.2026), aus der Fundliste uebernommen.** **Zwei Fristen von 7200 s bedeuten Verschiedenes und sind jetzt auseinandergelaufen.** `SESSION_TTL` steht seit heute auf 14400 s, weil die Session die Verfallskurve überdauern muss. Der Schlüssel `last_activity:{user_id}` trägt seine 7200 s **hartkodiert** in `services/prompt_consumer.py` und steuert die Idle-Erkennung des Pixie — ein anderer Zweck, dieselbe Zahl. Ob die beiden je gekoppelt gedacht waren, ist unbelegt; `novaberg-pixie.md` §150 nennt die 7200 s als Eigenschaft dieses Schlüssels. **Nicht mitgeändert:** Der Zweck ist ein anderer, und eine Reparatur im Zug eines fremden Auftrags vermischt zwei Ursachen.
+
+**Geschlossen, wenn** Die beiden Fristen tragen verschiedene Namen und eine Begruendung je Wert.
+
+---
+
+### `TELEGRAM-NAMENSAUFLOESUNG-FAELLT-AUS` — zeitweise kein Name
+
+**Befund (15.08.2026), aus der Fundliste uebernommen.** **Die Namensauflösung im Telegram-Behälter fällt zeitweise aus.** `httpx.ConnectError: [Errno -3] Temporary failure in name resolution` beim Griff nach `api.telegram.org`, zweimal im beobachteten Fenster: 14.08. 23:06 und 15.08. 07:22 (dort vier Zeilen). Beim Abholen von Nachrichten ist das folgenlos — die Bibliothek wiederholt. **Ungeprüft ist der Sendepfad:** `_nachricht_senden` fängt jede Ausnahme, protokolliert sie und kehrt zurück; eine Nachricht, die in dieses Fenster fällt, wäre damit verloren, ohne dass jemand sie erneut zustellt. Beobachtet, nicht reproduziert.
+
+**Geschlossen, wenn** Die Namensaufloesung im Telegram-Behaelter faellt laut aus statt still.
+
+---
+
+### `PROMPTAENDERUNG-OHNE-STAPELWIRKUNG` — die Aenderung erreicht den Stapel nicht
+
+**Befund (15.08.2026), aus der Fundliste uebernommen.** **Eine Prompt-Aenderung wirkt nicht auf den Stapel.** Der Zeichenkorridor von 600 bis 1200 gilt fuer Destillate, die ab jetzt geschrieben werden. Der Bestand haelt 107 Eintraege unter dem alten Auftrag, Median 1748 Zeichen — gemessen am 14.08.2026 um 21:23, 21:35 und 21:49 mit 1847, 2586 und 2261 Zeichen zugestellt. Wie lange die alte Ernte reicht, ist ungemessen. **Kein Aufraeum-Auftrag:** Ob Altbestand ueber der Obergrenze verworfen wird, ist eine Entscheidung.
+
+**Geschlossen, wenn** Eine Prompt-Aenderung wirkt auf den Stapel, oder der Grund steht am Code.
+
+---
+
+### `LAGEBILD-IMPULS-ALS-NUTZEREINGABE` — der eigene Gedanke unter fremder Beschriftung
+
+**Befund (14.08.2026), aus der Fundliste uebernommen.** **Das Lagebild eines Impuls-Turns traegt Novas eigenen Gedanken unter der Beschriftung „Dies ist die Eingabe des Nutzers".** Salienz und KZG-Verdichtung waehlen ihre Beschriftung nach `graph_rolle`; ein Impuls laeuft dort als `character`, und der Reiz-Text bekommt deshalb dasselbe Etikett wie eine Nutzer-Aeusserung. Der Befund ist aelter als der Umbau des Reiz-Platzes — er wurde beim Umstellen der Textquelle sichtbar und **ausdruecklich nicht mitbehoben**: Ein anderes Etikett aendert den Prompt und damit die Salienzwerte, und eine Verschlechterung waere dann keiner der beiden Ursachen zuzuordnen. Es ist derselbe Bauplan wie beim Reiz-Platz selbst, eine Ebene tiefer: eine Struktur, die ueber den Sprecher etwas Falsches behauptet.
+
+**Geschlossen, wenn** Das Lagebild beschriftet einen Impuls als eigenen Gedanken.
+
+---
+
+### `RESUME-VERBRAUCHT-IMPULS` — ein Impuls als Nutzer-Antwort verbraucht
+
+**Befund (14.08.2026), aus der Fundliste uebernommen.** **Der Resume-Pfad eines wartenden Agenten konnte einen eigenen Impuls als Nutzer-Antwort verbrauchen.** Der Router setzt `management_action="resume"`, sobald ein `pending_agent`-Key existiert — unabhaengig von der Herkunft des Reizes; `_handle_resume` las danach `user_prompt` als *„User hat auf eine Rueckfrage geantwortet"*. Auf einem Impuls-Turn stand dort Novas Gedanke. **Seit der Abloesung des Reiz-Platzes ist dieser Platz auf einem Impuls-Turn leer**, der Gedanke kann die Rueckfrage also nicht mehr beantworten — die Stelle wurde bewusst **nicht** auf den Reiz umgestellt. Was der Agent stattdessen mit einer leeren Antwort tut, ist ungeprueft.
+
+**Geschlossen, wenn** Der Resume-Pfad nimmt nur Nutzer-Antworten als Antwort an.
+
+---
+
+### `VERFASSER-KOPFBLOCK-FAELLT-AUS` — in mehr als der Haelfte der Turns
+
+**Befund (14.08.2026), aus der Fundliste uebernommen.** **Der Kopfblock des Verfasser-Urteils faellt weiter aus.** Messturn `065a5d5f` um 19:15 UTC: `Verfasser: Urteil AUSGEFALLEN`, die Rohantwort beginnt mit `EINWAND: nein — widerspricht PERSON B nichts.` — das Modell schreibt den Kopfblock, aber nicht in der Form, die `urteil_lesen` erkennt. Ein Datenpunkt zu den 14 von 26 vom 13.08., und ein Hinweis auf die Ursache: nicht *kein* Kopfblock, sondern ein nicht parsbarer.
+
+**Geschlossen, wenn** Der Kopfblock des Verfasser-Urteils steht in jedem Turn, oder sein Ausbleiben ist ein benannter Zustand.
+
+---
+
+
+**Nachtrag vom 14.08.2026, aus der Fundliste uebernommen.** **Der Kopfblock des Verfasser-Urteils fällt in mehr als der Hälfte der Turns aus.** Gemessen am 13.08.2026 über einen Tag: **12 Urteile gefällt, 14 ausgefallen** von 26 Verfasser-Läufen (54 %). Der Ausfall wird laut protokolliert (`Verfasser: Urteil AUSGEFALLEN`) und kostet nur das Urteil, nicht die Antwort — die Bauart hält also. Aber die Ausbausperre B1 greift in mehr als jedem zweiten Turn nicht, und `novaberg-node-verfasser_k.md` hält bisher nur fest, dass die **Wirkung** des Kopfblocks auf die Kapitulationsrate null ist; dass er zur Hälfte gar nicht erst zustande kommt, steht nirgends. Beide Aussagen zusammen stellen die Frage, ob der Block bleibt.
+
+### `VERFASSER-ORDNET-IMPULS-PERSON-B-ZU` — der eigene Gedanke wird dem Gegenueber zugeschrieben
+
+**Befund (14.08.2026), aus der Fundliste uebernommen.** **Der Verfasser schreibt Novas eigenen Gedanken der Person B zu, solange er ihn in der Rolle des Gegenuebers bekommt.** Messturn `065a5d5f` um 19:15 UTC, ein Gedanke ueber Rotationskurven von Spiralgalaxien: *„PERSON B stellt die physikalische Beobachtung der flachen Rotationskurven … "* — Person B ist der Mensch, der in diesem Turn nichts gesagt hat. **Der Reiz-Platz war dabei bereits leer**; der Gedanke kam ueber den eigenen Kanal und wurde nur weiterhin als `user`-Nachricht angehaengt. Das ist der Beleg fuer die tragende Aussage des Konzepts — die Rollenzuweisung ist die Ursache, nicht die Formulierung — und zugleich die Messgrundlage fuer den Materialblock, der noch nicht gebaut ist.
+
+**Geschlossen, wenn** Der Verfasser erkennt den eigenen Gedanken an seiner Herkunft, nicht an der Rolle.
+
+---
+
+### `GRAVITATION-FAERBT-EIGENE-GEDANKEN` — die Faerbung trifft auch den eigenen Gedanken
+
+**Befund (14.08.2026), aus der Fundliste uebernommen.** **Die emotionale Gravitation färbt auch Novas eigene Gedanken.** `emotionale_gravitation` läuft im CharacterGraph für jeden Turn und injiziert reaktivierte Erinnerungen in Novas Emotionsverlauf; am 13.08.2026 um 05:59:56 zweimal `neugierig` auf einem Impuls-Turn. Entschieden ist, dass sie dort nicht hingehört — ein Impuls ist bereits Novas Gedanke und braucht keine zweite Färbung. **Nicht gebaut**, weil der Knoten vor dem GV-Node steht und damit Landschaft und Dreischicht mitfärbt: Zusammen mit dem Umbau des Skip-Tors wäre eine Verschlechterung keiner der beiden Ursachen zuzuordnen.
+
+**Geschlossen, wenn** Die emotionale Gravitation wirkt auf den Nutzerreiz; Novas eigener Gedanke bleibt unberuehrt.
+
+---
+
+### `FRAGEN-ZEILE-OHNE-BEDINGUNG` — eine Zeile, auf die nichts zeigt
+
+**Befund (14.08.2026), aus der Fundliste uebernommen.** **Die Zeile `Fragen:` im Verfasser-Block hat keine Bedingung, die auf sie zeigt.** Der Block trägt `CLUSTER_FRAGEN` der Landschaft (*„Mittel, neckisch, oft rhetorisch"*), aber keine der drei Prüfbedingungen des Auftrags verlangt etwas davon; das Vehikel aus der Dreischicht sagt bereits, ob gefragt wird. Ein Block, den der Auftrag nicht einführt, ist Zierat — und wird beim Messen fälschlich als wirkungslos verbucht, obwohl nur seine Einführung fehlt. Im Responder ist dieselbe Quelle am 13.08.2026 als Doppelung entfallen. **Nicht entfernt:** Ob die Fragenfrequenz zum Inhalt gehört, ist eine Entscheidung und keine Aufräumarbeit.
+
+**Geschlossen, wenn** Die Zeile `Fragen:` hat eine Bedingung oder entfaellt.
+
+---
+
+### `GESPRAECHSVEKTOR-HYPOTHESE-DREIFACH` — dieselbe Hypothese dreimal im Block
+
+**Befund (14.08.2026), aus der Fundliste uebernommen.** **Der `[GESPRAECHSVEKTOR]`-Block trägt die Hypothese dreifach.** Live gemessen am 14.08.2026, 22:59 UTC: Der Block enthält (a) die rohe Modellausgabe des GV-Node samt ihrer Labels — `SPRUNG 1:` bis `SPRUNG 3:`, `ABSICHT:`, `STRATEGIE: Pw`, `VEHIKEL:`, `IMPULS:` —, und (b) darunter „Leitgedanke für diese Antwort:", der denselben Eröffnungsabsatz **noch einmal** plus den Impulstext enthält. Der geparste Wert steht zugleich in der Zeile darüber (*„Die gewählte Strategie: Perspektivwechsel als Frage"*). **Der Befund ist nicht neu, sondern nur neu sichtbar:** Ein Verfasser-Prompt vom 13.08. trägt dieselbe Doppelung. Neu ist die Reichweite — seit dem Umbau des Skip-Tors bekommen auch die rund 20 Impuls-Turns pro Tag diesen Block, die vorher gar keinen hatten.
+
+**Geschlossen, wenn** Der `[GESPRAECHSVEKTOR]`-Block traegt jede Angabe einmal.
+
+---
+
+### `VERSATZ-ZWEI-GROESSEN` — ein Name, zwei Groessen
+
+**Befund (14.08.2026), aus der Fundliste uebernommen.** **Zwei verschiedene Größen heißen „Versatz".** Im Code ist `initiative_versatz` der Nullpunkt des Initiative-Rades (`charakter_hash.initiative_versatz`, `memory/charakter.py`). Im Gespräch bezeichnet „Versatz" den Abstand zwischen dem, was gesagt wurde, und dem, was Nova daraus hört — im Code die **Empathie-Differenz** (`_nova_empathie_berechnen`, auf dem Pixie-Pfad übersprungen). Beides sind Abstände, beides sind Zustandsgrößen des Paares, und keins der beiden Dokumente nennt das andere.
+
+**Geschlossen, wenn** „Versatz" bezeichnet eine Groesse.
+
+---
+
+### `ZUG-ZWISCHEN-090-097-ABGESCHALTET` — praktisch wirkungslos
+
+**Befund (13.08.2026), aus der Fundliste uebernommen.** **Der Zug ist zwischen 0,90 und 0,97 praktisch abgeschaltet.** Die Kurve ist quadratisch über der Spanne oberhalb der Schwelle: Bei Ausprägung 0,92 beträgt der Zug `((0,92−0,90)/0,10)² = 0,04`, bei 0,95 dann 0,25 und erst bei 1,00 volle Wirkung. Gemessen am selben Charakter: Mit `distanz 0,92` bleibt die Nähe im `feuerwerk` bei 0,82, mit `distanz 1,00` fällt sie auf 0,00 — dazwischen liegt kein Übergang, sondern ein Sprung. Ein Rad, das ohne Raster erhoben wird (`F-RAD-4`), liefert Werte wie 0,93 oder 0,96; genau dort tut der Zug fast nichts. **Der Exponent steht auf 2 und ist ungemessen** — er ist als offene Entscheidung notiert, und dies ist die erste Zahl dazu.
+
+**Geschlossen, wenn** Der Zug wirkt ueber seinen ganzen Wertebereich, oder der tote Bereich ist begruendet.
+
+---
+
+### `MENGENANGABE-BINDET-NUR-UNTEN` — nach unten bindend, nach oben nicht
+
+**Befund (13.08.2026), aus der Fundliste uebernommen.** **Eine Mengenangabe bindet nach unten und trägt nach oben nicht.** Im kargen Korridor (bis 120 Zeichen) trafen 17 von 18 Läufen, im weiten (700–1400) **4 von 17** — und die Verfehlung ging jedes Mal nach oben, um 5 bis 15 %. Die Gegenprobe entscheidet die Ursache: Wird derselbe Korridor um 250 Zeichen **tiefer** gelegt (450–1150), sinkt die Antwortlänge nur von 1365 auf 1294 Zeichen, also um ein Viertel der Verschiebung. Die Länge folgt dem Inhalt, nicht der Zahl; die Zahl wirkt als **Schranke, nicht als Ziel**. Ein Zielwert („etwa 1000 Zeichen") zieht stärker als eine Spanne (1217 gegen 1365), trifft ihn aber auch nicht. Belegstand: ein Material, eine Szene, drei Läufe je Fassung — `labor/werkzeug/grenze_probe.py`.
+
+**Geschlossen, wenn** Die Mengenangabe bindet in beide Richtungen.
+
+---
+
+### `UEBERSTEUERUNG-GREIFT-NICHT` — 0 von 14 Landschaften
+
+**Befund (11.08.2026), aus der Fundliste uebernommen.** Die Übersteuerung `distanz → naehe` greift in **0 von 14** Landschaften, auch bei voller Ausprägung 1.0 und unabhängig von der Schwelle. Eine Übersteuerung wirkt nur, wo die Größe eine **Grenze** ist; `CLUSTER_GRENZE` führt über alle Landschaften ausschließlich `draengen` und `fragen`, `naehe` in keiner. Sie war damit seit dem Bau am 31.07.2026 wirkungslos. `wissbegier → fragen` greift dagegen in 3 von 14 (`nebel`, `gewitter`, `paradox`). `novaberg-haltungsraum_k.md` §2 sagt das Gegenteil — *„`distanz` bei 1.0 übersteuert die Nähe, gleich wie warm die Landschaft ist"* —, das Konzept ist also die Absicht und der Code bleibt dahinter zurück.
+
+**Geschlossen, wenn** Die Uebersteuerung greift dort, wo die Groesse eine Grenze ist — oder sie entfaellt.
+
+---
+
+### `NUTZERKERN-ERREICHT-RESPONDER-NICHT` — gerechnet und nicht zugestellt
+
+**Befund (12.08.2026), aus der Fundliste uebernommen.** **Der Kern des Nutzers erreicht den Responder nicht.** Von Nova gehen alle fünf Profile in den Prompt (`core`, `adaptive`, `emotions`, `intentions`, `relationship`); vom Nutzer geht **eines** hinein, sein Beziehungsprofil. Sein Wesen, seine Denkart, seine Interessen kommen im Prompt nicht vor — auch nicht, seit die offene Destillation daraus 5295 Zeichen macht. Im Code steht keine Begründung für die Asymmetrie.
+
+**Geschlossen, wenn** Der Kern des Nutzers erreicht den Responder.
+
+---
+
+### `BEZIEHUNGSPROFILE-UNBESCHRIFTET` — zwei Profile ohne Perspektivangabe
+
+**Befund (12.08.2026), aus der Fundliste uebernommen.** Die beiden Beziehungsprofile stehen **unbeschriftet** im Responder-Prompt. Novas trägt „So siehst du deinen Nutzer", das des Nutzers trägt „Langzeit-Beziehungsprofil" — ohne Angabe, aus wessen Sicht. Nach dem Paar-Schema ist es *seine* Sicht auf *sie*; im Prompt liest es sich wie eine Anweisung an sie.
+
+**Geschlossen, wenn** Jedes Beziehungsprofil im Prompt nennt, aus wessen Sicht es geschrieben ist (Paar-Schema).
+
+---
+
+### `RESPONDER-ANWEISUNG-DOPPELT` — dieselbe Anweisung aus zwei Quellen
+
+**Befund (12.08.2026), aus der Fundliste uebernommen.** Eine Anweisung steht im Responder-Prompt **doppelt**: *„Der Nutzer öffnet sich. Du darfst persönlicher werden."* kommt einmal aus der EI-Mikroanweisung (`_ei_mikro_anweisung`, Zweig Beziehungsdynamik) und einmal als eigene Zeile „Beziehungsdynamik" weiter unten. Zwei Quellen, derselbe Satz, keine weiß von der anderen.
+
+**Geschlossen, wenn** Jede Anweisung steht einmal im Responder-Prompt.
+
+---
+
+### `FARBTON-ERREICHT-RESPONDER-NICHT` — jeden Turn gerechnet, nie zugestellt
+
+**Befund (12.08.2026), aus der Fundliste uebernommen.** **Der Farbton wird in jedem Turn gerechnet und erreicht den Responder nicht.** `ei/farbton.py` mischt acht Dimensionen zu 2–5 Sätzen, die „dem LLM die emotionale und kognitive Landschaft beschreiben, ohne Handlungsanweisungen" (Docstring). Er geht als `[SITUATION]`-Block in den **Gesprächsvektor**-Prompt und ins Log; der Knoten, der die Antwort schreibt, sieht ihn nie. Dritter Kanal dieser Art nach der Haltung und den Speichen. Dazu: Sind alle acht Dimensionen unauffällig, bleibt ein einziger Satz übrig — dreimal hintereinander „Das Gespraech ist ruhig und ausgeglichen".
+
+**Geschlossen, wenn** Der Farbton erreicht den Responder oder wird nicht mehr gerechnet.
+
+---
+
+### `OVERRIDE-NACH-CONNECTOR-STATT-MODELL` — geschluesselt nach der falschen Groesse
+
+**Befund (12.08.2026), aus der Fundliste uebernommen.** Das Prompt-Override-System schlüsselt nach **Connector**, der Gesprächspfad hängt aber am **GPU-Modell** — und zwei der drei Connectoren fahren dasselbe. `gemma4` und `qwen36` benutzen beide `gemma4-gpu` im Gespräch (der Kommentar in `config.py` sagt es ausdrücklich). Ein für Gemma4 gebauter Responder-Block in `prompts/gemma4/` würde unter dem aktiven Connector `qwen36` **nicht geladen**, obwohl Gemma4 antwortet; ein Block in `prompts/qwen36/` würde geladen und liefe trotz seines Namens auf Gemma4. Für Hintergrund-Prompts trägt die Schlüsselung, dort unterscheiden sich die Connectoren wirklich. Ein modellabhängiger Gesprächs-Prompt bräuchte eine Schlüsselung nach `gpu_model`.
+
+**Geschlossen, wenn** Das Override-System schluesselt nach dem Modell, an dem der Gespraechspfad haengt.
+
+---
+
+### `TURNROH-ZEILE-FEHLT` — 29 von 30 geschrieben
+
+**Befund (12.08.2026), aus der Fundliste uebernommen.** Ein Turn eines Bogens erzeugte eine Antwort, aber **keine `turn_roh`-Zeile im `pipeline_log`**: 29 von 30 geschrieben, der Bogenläufer meldete Rückgabe 1. Der Ausfall ist still — die Antwort ging an den Client, das Gedächtnis lief weiter, und nur die Vollzähligkeitsprüfung des Läufers hat ihn bemerkt. Ein Bogen ohne diese Prüfung hätte 29 Turns als 30 gezählt, und jede Destillation daraus wäre auf einem unvollständigen Material gelaufen, ohne dass es irgendwo steht. Der zweite Bogen desselben Vormittags schrieb 30 von 30.
+
+**Geschlossen, wenn** Jeder Turn erzeugt seine `turn_roh`-Zeile, und ihr Ausbleiben ist laut.
+
+---
+
+### `UEBERSTEUERUNG-AB-FUER-DREIERSKALA` — auf die alte Skala geeicht
+
+**Befund (11.08.2026), aus der Fundliste uebernommen.** `UEBERSTEUERUNG_AB = 1.0` in `ei/haltung.py` ist für die Dreierskala geeicht und greift auf der feinen Skala nicht mehr. Über alle Zuwendungsrad-Läufe: grob 50 Läufe mit `distanz >= 1.0` in 27 (54 %) und `wissbegier >= 1.0` in 26 (52 %); fein 30 Läufe mit 1 (3 %) und 0 (0 %). Beide Übersteuerungen — die einzigen zwei Wege, auf denen eine Speiche die Grenze ihrer Landschaft durchbrechen kann — sind damit praktisch abgeschaltet, ohne Meldung und ohne roten Test. Die Schwelle verlangt eine Entscheidung, keinen Wert: Vorher feuerte sie auf dem Rundungsanschlag, den die feine Skala gerade beseitigt hat. **Auf Novas Verhalten wirkt es heute nicht** — die Haltung wird gerechnet, protokolliert und angezeigt, aber kein Prompt liest sie (Konzept-Status). Die Wirkung tritt in dem Moment ein, in dem §3 gebaut wird; bis dahin betrifft der Schaden die gemessenen und protokollierten Zahlen.
+
+**Geschlossen, wenn** `UEBERSTEUERUNG_AB` ist auf die feine Skala geeicht.
+
+---
+
+### `PERSPEKTIVE-OHNE-DATIV` — kein Dativ fuer den generischen Nutzer
+
+**Befund (11.08.2026), aus der Fundliste uebernommen.** `_perspektive_aufloesen` kennt für den generischen Nutzer nur Nominativ und Genitiv (`der Nutzer` / `des Nutzers`), kein Dativ. Vier der fünf Profil-Prompts setzen den Träger hinter „von" ein und lesen dadurch bei jedem menschlichen Paar „ein kompaktes Persönlichkeitsprofil von **der Nutzer**". Für die Assistentin tritt der Fall nicht auf, weil dort ein Eigenname steht.
+
+**Geschlossen, wenn** `_perspektive_aufloesen` kennt alle Faelle, die die Prompts einsetzen.
+
+---
 ## 20.08.2026 — Nova spricht von ihrem eigenen Inneren wie von einem Dritten
 
 ### `NOVA-SPRICHT-VON-FACHABTEILUNG` — behoben am 20.08.2026
@@ -213,6 +785,9 @@ elif response:                              …
 **Geschlossen, wenn** — unverändert offen: Die Ursache der verlorenen Token ist nicht bekannt. Beim nächsten Fall steht sie im Protokoll; **entschieden ist erst, dass sie nicht bei uns liegt.**
 
 ---
+
+
+**Nachtrag vom 12.08.2026, aus der Fundliste uebernommen.** **Leere Antwort trotz `done_reason=stop`,** zweimal in sieben Läufen derselben Prompt-Form gegen `gemma4-gpu` (`eval_count` 441 und 365, `message.content` leer, kein `thinking`-Feld). Vier Nachläufe derselben Form lieferten 1475 bis 1621 Zeichen — der Ausfall hängt nicht an der Form. Dieselbe Erscheinung wie `RESPONDER-LEERE-ANTWORT-STILL`, hier erstmals außerhalb des Bestands reproduziert und damit unabhängig vom Graphen.
 
 ## 19.08.2026 — der Riegel, der den korrekten Dienst ausgesperrt hätte
 
@@ -708,6 +1283,9 @@ Der Eintrag nennt als Ursache das fehlende Keepalive im Client und ordnet den le
 **Geschlossen, wenn.** Der Erzeuger legt keinen Auftrag ohne Gegenstand mehr an — er scheitert laut statt still —, und der vorhandene Bestand ist entschieden.
 
 ---
+
+
+**Nachtrag vom 15.08.2026, aus der Fundliste uebernommen.** **141 `vertiefen`-Aufträge tragen ein leeres `thema`, der Gegenstand steht als Fließtext in `kontext`.** Gemessen um 13:52 UTC: 145 von 1036 Aufträgen ohne Thema (141 `vertiefen`, 4 `nachfragen`). Beide Schreibpfade setzen `thema=themen_str` aus dem KZG-Eintrag — ist die Themenliste dort leer, entsteht ein Auftrag ohne Gegenstand, während `kontext` einen mehrere tausend Zeichen langen Fließtext trägt. **Die Folge zeigt sich erst bei der geplanten Dublettenerkennung:** Über `aufgabe` + `thema` bilden die 141 **eine einzige** Gruppe; alle übrigen Gruppen im Bestand haben höchstens zwei Einträge. `novaberg-queue-verfall_k.md` §6.2 nimmt leere Themen deshalb von der Erkennung aus — eine Notmaßnahme, die den Schreibpfad nicht behebt.
 
 ### Leere Modellantwort (01.08.2026)
 
@@ -4221,6 +4799,7 @@ ließ den 45 Minuten alten Blob stehen.
 
 Die Fortschreibung des Standes, aus der Kopfzeile geloest am 20.08.2026. Der Wortlaut jedes Eintrags ist unveraendert; vorangestellt ist allein sein Datum.
 
+- **20. August 2026, ~18:30 UTC** — **70 neue Kennungen** — der Bestand der Fundliste ist klassifiziert; was ein Defekt war, steht seit heute hier mit stabiler Kennung und einer Zeile `Geschlossen, wenn`. Fuenf weitere sind als Nachtrag an bestehende Eintraege gegangen. **Keiner der 70 ist gegen den heutigen Code geprueft** — der Umzug uebertraegt den Wortlaut, die Pruefung steht vor der Umsetzung.
 - **20. August 2026, ~17:05 UTC** — **kein neuer Defekt.** Die Kopfzeile dieses Registers trug 11.906 Zeichen in einer Zeile und ist in den Abschnitt *Verlauf des Standes* geloest — 25 Eintraege, Wortlaut unveraendert.
 - **20. August 2026, ~15:30 UTC** — **`NOVA-SPRICHT-VON-FACHABTEILUNG` neu und im selben Zug behoben** — sie sprach über ihre eigenen Dienste in der dritten Person, dreimal an echten Antworten gemessen; der Wortlaut stand in ihrem Prompt. Die Wirkung im Betrieb ist noch nicht gemessen.
 - **20. August 2026, ~12:30 UTC** — **`BLOCKKARTE-STILL-HALBIERT` neu und im selben Zug behoben** — ein unpaariger Codezaun ließ von 83 Überschriften 5 übrig, und das Ergebnis war keine Ausnahme, sondern eine kürzere Liste. Die tragende Ursache war eine Zusicherung, die *„nachgesehen, keine Gliederung"* und *„konnte nicht nachsehen"* auf denselben Wert legte. Am Bestand gemessen: 174 Dateien, 173 / 0 / 1.
