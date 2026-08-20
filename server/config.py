@@ -1536,6 +1536,12 @@ NODE_LLM_CONFIG: dict = {
         "temperature": 0.05,
         "max_output_tokens": 512,
     },
+    # Eine Zeile Suchanfrage, deterministisch. Gemessen am 20.08.2026:
+    # Frageform 5/10 ueber der Schwelle gegen 0/10 der rohen Aeusserung.
+    "query_rewrite": {
+        "temperature": 0.0,
+        "max_output_tokens": 64,
+    },
     "planner": {
         "temperature": 0.2,
         "max_output_tokens": 1024,
@@ -2103,6 +2109,43 @@ TRIBUNAL_ETHIK_ABLEHNEN:      float = 0.9
 # Direktiven sind bindende Anweisungen — Vertragsbruch wird nicht toleriert
 TRIBUNAL_JURIST_DIREKTIVE_WARNUNG:  float = 0.5
 TRIBUNAL_JURIST_DIREKTIVE_ABLEHNEN: float = 0.7
+
+
+# ============================================================================
+# Query Rewriting — der Suchschluessel traegt den Gegenstand des Gespraechs
+# ============================================================================
+# Der Suchschluessel des Gedaechtnisses war bis zum 20.08.2026 die rohe
+# Aeusserung dieses Turns. Ein Turn wie "und wie weist man das nach?" suchte
+# damit ohne den Gegenstand, den der Turn davor genannt hat.
+#
+# Gemessen am 20.08.2026 gegen 306 Ausarbeitungen, zehn Verlaeufe mit
+# anaphorischem Schlussturn: Die rohe Aeusserung erreicht in **0 von 10**
+# Faellen die Abrufschwelle (Median-Kosinus 0,1865, Median-Rang 155,5); ein
+# Rewrite auf **Frageform** erreicht sie in **5 von 10** (0,4173, Rang 10,5).
+# Die Themenform blieb bei 3 von 10 und ist deshalb nicht gewaehlt.
+#
+# Beidseitig gesondet: Bei drei Verlaeufen mit Themenwechsel bleibt der ALTE
+# Gegenstand in 3 von 3 Faellen unter der Schwelle; bei fuenf Alltagsverlaeufen
+# ohne Bezug kommt in 15 von 15 Kombinationen kein Treffer ueber sie.
+
+# Schalter fuer den ganzen Weg. Aus = der Schluessel ist wieder die rohe
+# Aeusserung, ohne weitere Wirkung.
+QUERY_REWRITE_AKTIV: bool = os.getenv("QUERY_REWRITE_AKTIV", "true").lower() == "true"
+
+# Unter dieser Zahl vorhandener Turns lohnt kein Rewrite: Ein erster Turn hat
+# keinen Rueckbezug, den man aufloesen koennte.
+QUERY_REWRITE_MIN_TURNS: int = int(os.getenv("QUERY_REWRITE_MIN_TURNS", "2"))
+
+# Frist und Ausgabegrenze stehen als Paar an der Aufrufstelle, nicht am
+# Worker: Ein Aufrufer, der schweigt, erbt die Frist der langsamsten
+# Aufgabe, und ohne Ausgabegrenze begrenzt eine Frist nichts.
+# Die Ausgabegrenze traegt eine Zeile; 64 Token bei rund 20 Token/s sind gut
+# drei Sekunden und liegen damit deutlich unter der Frist.
+QUERY_REWRITE_FRIST_S: float = float(os.getenv("QUERY_REWRITE_FRIST_S", "20.0"))
+
+# Ausgabe-Plausibilitaet: Was laenger ist, ist keine Suchanfrage mehr, sondern
+# eine Erklaerung. Der laengste Rewrite der Messung hatte 78 Zeichen.
+QUERY_REWRITE_MAX_ZEICHEN: int = int(os.getenv("QUERY_REWRITE_MAX_ZEICHEN", "300"))
 
 
 def get_node_config(node_name: str) -> dict:

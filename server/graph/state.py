@@ -221,6 +221,13 @@ class ConversationState(TypedDict):
     # Wahrnehmungs-Gravitation (§8.5). KZG, LZG und die Bibliothek suchen
     # damit; gesetzt vom Enricher, nur wenn überhaupt gesucht wird.
     such_vektor:       list[float]
+    # Der Text, aus dem der Suchschlüssel entstanden ist — seit dem 20.08.2026
+    # das Ergebnis des Query Rewritings, sonst die rohe Äußerung. Daneben die
+    # Herkunft: `rewrite`, `abgeschaltet`, `zu_wenig_verlauf`, `leer`,
+    # `zu_lang` oder `aufruf_gescheitert`. Beide Felder existieren, damit ein
+    # Turn nachträglich beantworten kann, womit er gesucht hat.
+    suchtext:          str
+    suchtext_herkunft: str
 
     # ── Interne Anmerkungen (Node-übergreifend) ──
     node_annotations: list[str]

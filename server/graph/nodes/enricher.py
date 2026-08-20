@@ -22,7 +22,10 @@ Im HG-Lauf entfallen Plugin-Hooks, Memory-Search (KZG/LZG), Charakter-
 Hash-ContextEntry und emotionale Gravitation — kein HG-Konsument liest
 diese Felder.
 
-Kein LLM-Aufruf — nur Datenzugriff und Embedding-Erzeugung.
+~~Kein LLM-Aufruf — nur Datenzugriff und Embedding-Erzeugung.~~
+Seit dem 20.08.2026 **ein** Modellaufruf: das Query Rewriting, das aus dem
+Verlauf den Suchschluessel formt (`_suchtext_bauen`). Alles andere bleibt
+Datenzugriff und Embedding-Erzeugung.
 """
 
 import json
@@ -31,6 +34,15 @@ import logging
 import psycopg2
 import redis
 
+from config              import (
+    PROMPTS,
+    QUERY_REWRITE_AKTIV,
+    QUERY_REWRITE_FRIST_S,
+    QUERY_REWRITE_MAX_ZEICHEN,
+    QUERY_REWRITE_MIN_TURNS,
+    get_node_config,
+)
+from services.model_services import ChatRequest
 from graph.context_entry import ContextEntry
 from graph.reiz          import reiz_text
 from graph.state         import ConversationState, pipeline_quelle
@@ -171,8 +183,111 @@ def _intentionen_bestimmen(aus_ereignis: list, raw_turns: list[dict]) -> list:
     return _extract_user_intentionen(raw_turns), "letzter Session-Turn"
 
 
+def _suchtext_bauen(
+    state:     ConversationState,
+    raw_turns: list[dict],
+) -> tuple[str, str]:
+    """Formt aus dem Gespraechsverlauf den Text, der den Suchschluessel traegt.
+
+    **Warum nicht die rohe Aeusserung.** Ein Turn wie *„und wie weist man das
+    nach?"* nennt seinen Gegenstand nicht — er zeigt auf ihn zurueck. Der
+    Vektor daraus sucht ohne ihn, und zwar in allen drei Speichern zugleich,
+    weil sie denselben Schluessel benutzen. Gemessen am 20.08.2026: Die rohe
+    Aeusserung erreicht in **0 von 10** Faellen die Abrufschwelle, das Rewrite
+    in **5 von 10**.
+
+    **Die Antwort des Modells ist eine externe Quelle** und wird
+    geprueft: erste Zeile, nicht leer, nicht laenger als die Plausibilitaets-
+    grenze. Faellt sie durch, gilt die rohe Aeusserung — **laut**, nicht still.
+
+    Vorbedingung: `raw_turns` ist eine Liste (darf leer sein); der Reiz ist
+    gesetzt.
+    Nachbedingung: liefert einen nicht-leeren Text und die Herkunft, aus der
+    er stammt — `"rewrite"` oder einen benannten Grund fuer den Rueckfall.
+    """
+    # ── Eingabe ────────────────────────────────
+    roh: str = reiz_text(state)
+    if not roh:
+        raise ValueError("Enricher: Reiz ist leer — kein Suchtext bildbar")
+    if not QUERY_REWRITE_AKTIV:
+        return roh, "abgeschaltet"
+    if len(raw_turns) < QUERY_REWRITE_MIN_TURNS:
+        return roh, "zu_wenig_verlauf"
+
+    # ── Verarbeitung ───────────────────────────
+    # Kein festes Fenster: Was die Session traegt, sieht das Modell. Ein `k`
+    # muesste raten, wie weit ein Thema zurueckreicht.
+    # Die Session legt ihre Turns unter `rolle` und `inhalt` ab, nicht unter
+    # den englischen Namen des Chat-Formats. Am 20.08.2026 im Betrieb gemessen:
+    # Mit `role`/`content` filterte die Bedingung **jeden** Turn weg, und das
+    # Modell bekam die Aufgabe ohne Verlauf — es fragte danach, und die Frage
+    # wurde zum Suchschluessel.
+    namen: dict[str, str] = {"user": "Nutzer", "assistant": "Nova"}
+    verlauf: str = "\n".join(
+        f"{namen.get(t.get('rolle', 'user'), 'Nutzer')}: {t.get('inhalt', '')}"
+        for t in raw_turns
+        if t.get("inhalt")
+    )
+    # Ein leerer Verlauf bei vorhandenen Turns ist kein Randfall, sondern ein
+    # Defekt am Feldnamen — und er darf nicht als Rewrite durchgehen.
+    if not verlauf.strip():
+        logger.error(
+            "Enricher: Query-Rewrite bekaeme %d Turns ohne verwertbaren Inhalt "
+            "— Feldnamen pruefen; der Suchschluessel traegt die rohe Aeusserung",
+            len(raw_turns),
+        )
+        return roh, "verlauf_leer"
+    node_cfg: dict = get_node_config("query_rewrite")
+    chat_request = ChatRequest(
+        messages          = [{
+            "role":    "user",
+            "content": PROMPTS["query_rewrite.task"].format(verlauf=verlauf),
+        }],
+        temperature       = node_cfg.get("temperature", 0.0),
+        max_output_tokens = node_cfg.get("max_output_tokens"),
+        caller            = "query_rewrite",
+    )
+    try:
+        antwort: str = model_service.chat.submit_sync(
+            chat_request, timeout=QUERY_REWRITE_FRIST_S,
+        ).text
+    except Exception as fehler:                       # noqa: BLE001 — jede Stoerung faellt zurueck
+        logger.error(
+            "Enricher: Query-Rewrite gescheitert (%s: %s) — der Suchschluessel "
+            "traegt die rohe Aeusserung und damit keinen Rueckbezug",
+            type(fehler).__name__, fehler,
+        )
+        return roh, "aufruf_gescheitert"
+
+    # ── Ausgabe-Verifikation ───────────────────
+    # Erste Zeile, und die Zerlegung darf keine leere Liste voraussetzen:
+    # Eine Antwort aus reinem Weissraum ergibt genau die.
+    zeilen: list[str] = (antwort or "").strip().splitlines()
+    kandidat: str = zeilen[0].strip() if zeilen else ""
+    kandidat = kandidat.strip('"').strip("'").strip()
+    if kandidat.lower().startswith("suchanfrage:"):
+        kandidat = kandidat.split(":", 1)[1].strip()
+
+    if not kandidat:
+        logger.error(
+            "Enricher: Query-Rewrite lieferte nichts Verwertbares (%r) — "
+            "der Suchschluessel traegt die rohe Aeusserung", antwort[:120],
+        )
+        return roh, "leer"
+    if len(kandidat) > QUERY_REWRITE_MAX_ZEICHEN:
+        logger.error(
+            "Enricher: Query-Rewrite ist %d Zeichen lang (Grenze %d) und damit "
+            "keine Suchanfrage — der Suchschluessel traegt die rohe Aeusserung",
+            len(kandidat), QUERY_REWRITE_MAX_ZEICHEN,
+        )
+        return roh, "zu_lang"
+
+    return kandidat, "rewrite"
+
+
 def _create_prompt_embedding(
-    state: ConversationState,
+    state:    ConversationState,
+    suchtext: str,
 ) -> list[float]:
     """Erzeugt das Embedding fuer den Reiz dieses Durchlaufs.
 
@@ -181,11 +296,16 @@ def _create_prompt_embedding(
     Turn geht — auf einem Impuls-Turn ist das Novas eigener Gedanke, und der
     Reiz-Platz ist dort leer.
 
-    Vorbedingung: der Reiz ist gesetzt — `user_prompt` auf einem Nutzer-Turn,
-    `eigener_gedanke` auf einem Impuls-Turn.
+    **Seit dem 20.08.2026 bettet er nicht mehr den Reiz selbst ein**, sondern
+    den Text, den `_suchtext_bauen` daraus geformt hat — bei einem Turn mit
+    Rueckbezug ist das die aufgeloeste Frage, sonst die rohe Aeusserung.
+
+    Vorbedingung: `suchtext` ist nicht leer.
     Nachbedingung: liefert Embedding-Vektor.
     """
-    request = EmbedRequest(text=reiz_text(state))
+    if not suchtext:
+        raise ValueError("Enricher: Suchtext ist leer — kein Embedding bildbar")
+    request = EmbedRequest(text=suchtext)
     embed_response = model_service.embed.submit_sync(request)
     embedding = embed_response.embedding
     logger.debug(
@@ -328,7 +448,10 @@ def _enrich_human(
     )
 
     # 3. Prompt-Embedding (fuer Ziel-Gravitation).
-    embedding: list[float] = _create_prompt_embedding(state)
+    # Roher Reiz, kein Rewrite: Dieser Pfad fuehrt keine Vektorsuche, und die
+    # Zielaktivierung ist der Gegenstand, der am 20.08.2026 NICHT gemessen
+    # wurde. Was ungemessen ist, wird nicht mitverschoben.
+    embedding: list[float] = _create_prompt_embedding(state, reiz_text(state))
     state["prompt_embedding"] = embedding
 
     log_berechnung(
@@ -630,8 +753,8 @@ def _enrich_character(
     except Exception:
         pass
 
-    # Prompt-Embedding (fuer KZG/LZG + Gravitation)
-    embedding: list[float] = _create_prompt_embedding(state)
+    # Prompt-Embedding (fuer die Ziel-Aktivierung) — am rohen Reiz.
+    embedding: list[float] = _create_prompt_embedding(state, reiz_text(state))
 
     # In den State stellen, damit der Dispatcher es spaeter neben dem
     # User-Turn in der Session ablegen kann (Gravitationsgraph-Panel).
@@ -715,8 +838,36 @@ def _enrich_character(
         # Suchen denselben Schluessel benutzen.
         cluster: str = _vorturn_cluster_lesen(redis_client, user_id, character_id)
 
+        # Query Rewriting: Der Schluessel traegt den Gegenstand des Gespraechs,
+        # auch wenn dieser Turn ihn nur als Rueckbezug nennt. Das rohe
+        # Embedding von oben bleibt unberuehrt — es speist die Ziele, und die
+        # sind ein anderer Gegenstand als die Suche.
+        suchtext, suchtext_herkunft = _suchtext_bauen(state, raw_turns)
+        such_embedding: list[float] = (
+            _create_prompt_embedding(state, suchtext)
+            if suchtext_herkunft == "rewrite"
+            else embedding
+        )
+        state["suchtext"]           = suchtext
+        state["suchtext_herkunft"]  = suchtext_herkunft
+        log_berechnung(
+            turn_id = turn_id_log,
+            node    = "enricher",
+            quelle  = "query_rewrite",
+            inhalt  = {
+                "herkunft":     suchtext_herkunft,
+                "roh":          reiz_text(state)[:200],
+                "suchtext":     suchtext[:200],
+                "roh_laenge":   len(reiz_text(state)),
+                "turns_gesehen": len(raw_turns),
+            },
+            span_id = span_id,
+            user_id      = user_id,
+            character_id = character_id,
+        )
+
         verschiebung = wahrnehmung_verschieben(
-            anfrage_embedding = embedding,
+            anfrage_embedding = such_embedding,
             aktivierte_ziele  = aktiviert,
             cluster           = cluster,
             ist_anweisung     = INTENTION_ANWEISUNG in letzte_intentionen,

@@ -442,14 +442,22 @@ class DerSuchschluesselTest(unittest.TestCase):
 
     Ein Vektor ueber einer leeren Zeichenkette ist kein Ausfall, den irgendwer
     meldet — er ist ein gueltiger Vektor an der falschen Stelle im Raum.
+
+    **Umgezogen am 20.08.2026, nicht abgeschwaecht.** Bis dahin bettete
+    `_create_prompt_embedding` den Reiz selbst ein und war damit die Stelle,
+    an der die Zusicherung griff. Seit dem Query Rewriting nimmt sie den Text
+    entgegen, den `_suchtext_bauen` geformt hat — **dort** wird der Reiz-Platz
+    jetzt gelesen, und dort steht die Zusicherung. Der dritte Zeuge deckt den
+    Rest ab: Das Embedding nimmt, was es bekommt, und nichts anderes.
     """
 
     def _text(self, zustand: dict) -> str:
-        antwort = SimpleNamespace(embedding=[0.0] * 768, duration_seconds=0.0)
-        with patch.object(enr_mod.model_service.embed, "submit_sync",
-                          return_value=antwort) as ruf:
-            enr_mod._create_prompt_embedding(zustand)
-        return ruf.call_args.args[0].text
+        """Der Text, den `_suchtext_bauen` ohne Rewrite aus dem Zustand holt."""
+        # Ein einzelner Turn: zu wenig Verlauf, kein Modellaufruf, rohe
+        # Aeusserung — genau der Pfad, auf dem der Reiz-Platz allein zaehlt.
+        text, herkunft = enr_mod._suchtext_bauen(zustand, [{"role": "user", "content": "x"}])
+        assert herkunft == "zu_wenig_verlauf", herkunft
+        return text
 
     def test_impuls_wird_ueber_den_gedanken_gebildet(self) -> None:
         """Der Suchschluessel des Gedaechtnisses ist der Gedanke selbst."""
@@ -458,6 +466,14 @@ class DerSuchschluesselTest(unittest.TestCase):
     def test_nutzer_turn_wird_ueber_die_aeusserung_gebildet(self) -> None:
         """Die Gegenrichtung."""
         self.assertEqual(self._text(_nutzer_turn()), AEUSSERUNG)
+
+    def test_das_embedding_nimmt_den_uebergebenen_text(self) -> None:
+        """Und keinen anderen — sonst waere der Umzug oben wirkungslos."""
+        antwort = SimpleNamespace(embedding=[0.0] * 768, duration_seconds=0.0)
+        with patch.object(enr_mod.model_service.embed, "submit_sync",
+                          return_value=antwort) as ruf:
+            enr_mod._create_prompt_embedding(_nutzer_turn(), "ein ganz anderer Text")
+        self.assertEqual(ruf.call_args.args[0].text, "ein ganz anderer Text")
 
 
 class DerRouterEntscheidetNichtUeberNichtsTest(unittest.TestCase):

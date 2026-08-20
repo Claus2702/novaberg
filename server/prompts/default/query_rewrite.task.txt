@@ -1,0 +1,11 @@
+[AUFGABE]
+Vor dir steht ein Gespraechsverlauf. Forme die LETZTE Nutzeraeusserung zu einer
+eigenstaendigen Suchanfrage um: Setze fuer jeden Rueckbezug ("das", "dabei",
+"davon", "die Kurve") den Gegenstand ein, um den es geht.
+
+Wechselt das Thema im Verlauf, gilt allein das NEUE Thema.
+
+Deine Antwort ist eine einzige Zeile: die Suchanfrage.
+
+[VERLAUF]
+{verlauf}
