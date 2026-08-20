@@ -504,5 +504,30 @@ class AnmeldungTest(unittest.TestCase):
         self.assertTrue(any("loescht keine" in g for g in self.agent.grenze))
 
 
+class ErkennerDeckungTest(unittest.TestCase):
+    """Jede Endung, die der Index annimmt, hat einen Gliederungs-Erkenner.
+
+    Der Zeuge stammt aus der zweiten Kontrolle vom 20.08.2026 und prüft ein
+    **Kriterium statt einer Aufzählung**: Die beiden Mengen leben in zwei
+    Modulen, die einander nicht kennen — `config.DATEIEN_INDEX_ENDUNGEN`
+    sagt, was indiziert wird, `operationen._ERKENNER` sagt, was gelesen
+    werden kann. Wer die erste erweitert und die zweite vergisst, bekommt
+    keine falsche Karte mehr, sondern einen Fehler beim Indizieren — aber
+    erst im Betrieb und für jede Datei dieser Endung.
+    """
+
+    def test_jede_zugelassene_endung_hat_einen_erkenner(self) -> None:
+        """Die Menge der Endungen ist in der Menge der Erkenner enthalten."""
+        from config import DATEIEN_INDEX_ENDUNGEN
+        from tools.dateien.operationen import _ERKENNER
+
+        ohne: set[str] = set(DATEIEN_INDEX_ENDUNGEN) - set(_ERKENNER)
+        self.assertEqual(
+            ohne, set(),
+            f"Der Index nimmt {sorted(ohne)} an, ohne die Gliederung lesen zu "
+            f"können — jede solche Datei wirft beim Indizieren",
+        )
+
+
 if __name__ == "__main__":
     unittest.main()

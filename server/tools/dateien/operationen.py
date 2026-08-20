@@ -86,6 +86,23 @@ _CODEZAUN: re.Pattern = re.compile(r"^\s*(```|~~~)")
 _UEBERSCHRIFT: re.Pattern = re.compile(r"^(#{1,6})\s+(.*\S)\s*$")
 _METAZEILE: re.Pattern = re.compile(r"^\*\*(?P<feld>[^:*]+):\*\*\s*(?P<wert>.*\S)\s*$")
 
+#: reStructuredText — die Unterstreichung einer Ueberschrift. Zulaessig ist
+#: jedes der Satzzeichen aus der Spezifikation; welche Ebene ein Zeichen
+#: bezeichnet, steht NICHT fest, sondern ergibt sich aus der Reihenfolge
+#: seines ersten Auftretens im Dokument.
+_RST_STRICH: re.Pattern = re.compile(r"^([=\-`:'\"~^_*+#<>])\1{3,}\s*$")
+
+#: Org-Mode — Ueberschrift und Blockgrenze.
+_ORG_UEBERSCHRIFT: re.Pattern = re.compile(r"^(\*+)\s+(\S.*)$")
+_ORG_BLOCK_AUF: re.Pattern = re.compile(r"^\s*#\+BEGIN_\w+", re.IGNORECASE)
+_ORG_BLOCK_ZU: re.Pattern = re.compile(r"^\s*#\+END_\w+", re.IGNORECASE)
+
+#: AsciiDoc — Ueberschrift und Begrenzungslinie eines Blocks. Die Linie
+#: besteht aus mindestens vier gleichen Zeichen und sonst nichts; eine
+#: Ueberschrift traegt nach den Gleichheitszeichen ein Leerzeichen und Text.
+_ADOC_UEBERSCHRIFT: re.Pattern = re.compile(r"^(=+)\s+(\S.*)$")
+_ADOC_LINIE: re.Pattern = re.compile(r"^([-.+*_=/])\1{3,}\s*$")
+
 #: Der Markdown-Parser, einmal je Prozess. `commonmark` ist die strenge
 #: Grundfassung ohne Erweiterungen — sie deckt genau das ab, was ein
 #: handgeschriebener Zeilenautomat einzeln nachbauen muesste: Setext-Ueber-
@@ -231,17 +248,212 @@ def _ueberschriften_markdown(zeilen: list[str]) -> list[tuple[int, int, str]]:
     return treffer
 
 
+def _ueberschriften_rst(zeilen: list[str]) -> list[tuple[int, int, str]]:
+    """Findet Ueberschriften in reStructuredText.
+
+    Vorbedingung: `zeilen` sind die Zeilen einer .rst-Datei ohne Zeilenenden.
+    Nachbedingung: Liste aus (Zeilennummer der Textzeile, Ebene, Text).
+    Fehlerfaelle: keine — eine Datei ohne Ueberschriften ergibt die leere
+    Liste, und das ist hier ein Befund wie in Markdown.
+
+    **Die Ebene steht nicht am Zeichen, sondern an seiner Reihenfolge.** RST
+    schreibt keine feste Zuordnung vor: Welches Satzzeichen welche Tiefe
+    bezeichnet, entscheidet jedes Dokument fuer sich, und zwar dadurch, in
+    welcher Reihenfolge die Zeichen zum ersten Mal auftreten. Wer `=` fest
+    auf Ebene 1 legt, liest die Haelfte der Dateien falsch.
+
+    **Eingerueckte Zeilen scheiden aus.** Ein Literal-Block steht in RST
+    eingerueckt hinter `::`; eine Ueberschrift beginnt in Spalte 1. Damit ist
+    der Codeblock-Fall ohne eigenen Zustand erledigt — und ohne Zustand gibt
+    es keinen Umschalter, der kippen koennte.
+    """
+    treffer: list[tuple[int, int, str]] = []
+    ebene_je_zeichen: dict[str, int] = {}
+
+    # ── Verarbeitung ────────────────────────────
+    for nr in range(len(zeilen) - 1):
+        text: str = zeilen[nr]
+        strich: str = zeilen[nr + 1]
+        if not text.strip() or text[:1] in {" ", "\t"}:
+            continue
+        if not _RST_STRICH.match(strich):
+            continue
+        # Die Unterstreichung muss den Text tragen.
+        if len(strich.rstrip()) < len(text.rstrip()):
+            continue
+        zeichen: str = strich.strip()[0]
+        if zeichen not in ebene_je_zeichen:
+            ebene_je_zeichen[zeichen] = len(ebene_je_zeichen) + 1
+        treffer.append((nr + 1, ebene_je_zeichen[zeichen], text.rstrip()))
+
+    # ── Ausgabe-Verifikation ────────────────────
+    _ebenen_pruefen(treffer, len(zeilen), "_ueberschriften_rst")
+    return treffer
+
+
+def _ueberschriften_org(zeilen: list[str]) -> list[tuple[int, int, str]]:
+    """Findet Ueberschriften in Org-Mode.
+
+    Vorbedingung: `zeilen` sind die Zeilen einer .org-Datei ohne Zeilenenden.
+    Nachbedingung: Liste aus (Zeilennummer, Ebene, Zeilentext); die Ebene ist
+    die Zahl der fuehrenden Sterne.
+    Fehlerfaelle: unpaarige `#+BEGIN_`/`#+END_`-Marken (`StrukturDefektError`)
+    — dieselbe Bilanz wie beim Codezaun in Markdown und aus demselben Grund.
+    """
+    treffer: list[tuple[int, int, str]] = []
+    offen: int = 0
+    letzte_marke: int = 0
+
+    # ── Verarbeitung ────────────────────────────
+    for nr, zeile in enumerate(zeilen, start=1):
+        if _ORG_BLOCK_AUF.match(zeile):
+            offen += 1
+            letzte_marke = nr
+            continue
+        if _ORG_BLOCK_ZU.match(zeile):
+            offen -= 1
+            letzte_marke = nr
+            continue
+        if offen > 0:
+            continue
+        passung = _ORG_UEBERSCHRIFT.match(zeile)
+        if passung:
+            treffer.append((nr, len(passung.group(1)), zeile.rstrip()))
+
+    # ── Ausgabe-Verifikation ────────────────────
+    if offen != 0:
+        meldung: str = (
+            f"_ueberschriften_org: die Blockmarken gehen nicht auf "
+            f"(Bilanz {offen}, letzte in Zeile {letzte_marke} von "
+            f"{len(zeilen)}) — jede Karte darueber waere unvollstaendig"
+        )
+        raise StrukturDefektError(meldung)
+
+    _ebenen_pruefen(treffer, len(zeilen), "_ueberschriften_org")
+    return treffer
+
+
+def _ueberschriften_adoc(zeilen: list[str]) -> list[tuple[int, int, str]]:
+    """Findet Ueberschriften in AsciiDoc.
+
+    Vorbedingung: `zeilen` sind die Zeilen einer .adoc-Datei ohne
+    Zeilenenden.
+    Nachbedingung: Liste aus (Zeilennummer, Ebene, Zeilentext); die Ebene ist
+    die Zahl der fuehrenden Gleichheitszeichen.
+    Fehlerfaelle: eine unpaarige Blockbegrenzung (`StrukturDefektError`).
+
+    **Die Begrenzungslinie und die Ueberschrift teilen sich ein Zeichen.**
+    `==== ` mit Text ist eine Ueberschrift vierter Ebene, `====` allein ist
+    die Grenze eines Beispielblocks. Das Leerzeichen entscheidet, und
+    deshalb steht es in beiden Mustern ausdruecklich.
+    """
+    treffer: list[tuple[int, int, str]] = []
+    offene: dict[str, int] = {}
+    letzte_marke: int = 0
+
+    # ── Verarbeitung ────────────────────────────
+    for nr, zeile in enumerate(zeilen, start=1):
+        if _ADOC_LINIE.match(zeile):
+            zeichen: str = zeile.strip()[0]
+            offene[zeichen] = offene.get(zeichen, 0) + 1
+            letzte_marke = nr
+            continue
+        if any(zahl % 2 for zahl in offene.values()):
+            continue
+        passung = _ADOC_UEBERSCHRIFT.match(zeile)
+        if passung:
+            treffer.append((nr, len(passung.group(1)), zeile.rstrip()))
+
+    # ── Ausgabe-Verifikation ────────────────────
+    unpaarig: list[str] = [z for z, zahl in offene.items() if zahl % 2]
+    if unpaarig:
+        meldung: str = (
+            f"_ueberschriften_adoc: die Blockbegrenzungen {unpaarig} stehen "
+            f"ungerade oft, die letzte in Zeile {letzte_marke} von "
+            f"{len(zeilen)} — ab dort gilt der Rest der Datei als Block"
+        )
+        raise StrukturDefektError(meldung)
+
+    _ebenen_pruefen(treffer, len(zeilen), "_ueberschriften_adoc")
+    return treffer
+
+
+def _ohne_gliederung(zeilen: list[str]) -> list[tuple[int, int, str]]:
+    """Reine Textdateien haben keine Gliederung — ausdruecklich registriert.
+
+    Vorbedingung: keine. Nachbedingung: immer die leere Liste.
+    Fehlerfaelle: keine.
+
+    **Diese Funktion ist der Unterschied zwischen einer Antwort und einer
+    Luecke.** `.txt` kennt keine Ueberschriftensyntax; die leere Karte ist
+    hier die richtige Auskunft und keine Notloesung. Ohne die Registrierung
+    fiele die Endung in `FormatOhneErkennerError` — also in einen Ausfall,
+    obwohl gar keiner vorliegt.
+    """
+    # ── Ausgabe-Verifikation ────────────────────
+    # Die Nachbedingung ist eine Konstante; geprueft wird, dass die Eingabe
+    # ueberhaupt eine Zeilenliste war — sonst irrt der Aufrufer sich im Typ.
+    if not isinstance(zeilen, list):
+        meldung: str = (
+            f"_ohne_gliederung: erwartet eine Zeilenliste, bekam "
+            f"{type(zeilen).__name__}"
+        )
+        raise TypeError(meldung)
+    return []
+
+
+def _ebenen_pruefen(
+    treffer: list[tuple[int, int, str]], zeilenzahl: int, wer: str,
+) -> None:
+    """Prueft Zeilennummern und Ebenen eines Erkenner-Ergebnisses.
+
+    Vorbedingung: `treffer` stammt aus einem Erkenner, `zeilenzahl` ist die
+    Laenge der Datei.
+    Nachbedingung: keine Rueckgabe; die Funktion kehrt nur zurueck, wenn jede
+    Zeilennummer in der Datei liegt und jede Ebene zwischen 1 und 6.
+    Fehlerfaelle: beides als `StrukturDefektError`.
+
+    **Die gemeinsame Nachbedingung aller Erkenner steht an einer Stelle**,
+    damit ein neuer Erkenner sie nicht vergessen kann — sie ist ein Aufruf
+    und keine Konvention.
+    """
+    for nr, ebene, _text in treffer:
+        if not 1 <= nr <= zeilenzahl:
+            meldung: str = (
+                f"{wer}: Ueberschrift in Zeile {nr} liegt ausserhalb der "
+                f"Datei ({zeilenzahl} Zeilen)"
+            )
+            raise StrukturDefektError(meldung)
+        if not 1 <= ebene <= 6:
+            meldung = (
+                f"{wer}: Ebene {ebene} in Zeile {nr} liegt ausserhalb von "
+                f"1 bis 6"
+            )
+            raise StrukturDefektError(meldung)
+
+
 #: Welcher Erkenner fuer welche Endung zustaendig ist.
 #:
-#: **Der Index laesst mehr Endungen zu, als hier stehen** — heute
-#: `.md,.txt,.rst,.org,.adoc` (`DATEIEN_INDEX_ENDUNGEN`), erkannt wird allein
-#: Markdown. Die Luecke steht deshalb als Ausnahme im Weg und nicht als leere
-#: Karte: In reStructuredText steht die Ueberschrift ueber einer
-#: Unterstreichung, in Org-Mode beginnt sie mit `*`, in AsciiDoc mit `=` —
-#: keine davon traegt ein `#`, und alle drei ergaeben eine leere Liste, also
-#: die Aussage *„durchgehender Text"* ueber eine gegliederte Datei.
+#: **Sie deckt seit dem 20.08.2026 alle Endungen ab, die der Index annimmt**
+#: (`DATEIEN_INDEX_ENDUNGEN`). Jede Auszeichnungssprache hat ihre eigene
+#: Ueberschriftenform — RST unterstreicht, Org zaehlt Sterne, AsciiDoc zaehlt
+#: Gleichheitszeichen —, und ein Markdown-Erkenner haette fuer alle drei die
+#: leere Liste geliefert: die Aussage *„durchgehender Text"* ueber eine
+#: gegliederte Datei.
+#:
+#: **`.txt` steht ausdruecklich drin und liefert ausdruecklich nichts.** Eine
+#: fehlende Registrierung waere ein Ausfall, und Textdateien haben keine
+#: Gliederung — das ist eine Antwort, kein Ausfall.
+#:
+#: Eine Endung, die hier fehlt, wirft `FormatOhneErkennerError`. Das ist der
+#: Riegel, nicht die Luecke: Wer eine sechste Endung zulaesst, ohne sie hier
+#: einzutragen, bekommt einen Fehler statt einer falschen Karte.
 _ERKENNER: dict[str, Callable[[list[str]], list[tuple[int, int, str]]]] = {
-    ".md": _ueberschriften_markdown,
+    ".md":   _ueberschriften_markdown,
+    ".rst":  _ueberschriften_rst,
+    ".org":  _ueberschriften_org,
+    ".adoc": _ueberschriften_adoc,
+    ".txt":  _ohne_gliederung,
 }
 
 

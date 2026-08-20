@@ -181,6 +181,57 @@ Ein Abschnitt
 -------------
 
 Noch ein Absatz.
+
+Ein Unterabschnitt
+~~~~~~~~~~~~~~~~~~
+
+Ein eingerueckter Literal-Block::
+
+    Kein Titel
+    ==========
+
+Fertig.
+"""
+
+FREMDFORMAT_ORG: str = """#+TITLE: Eine Org-Datei
+
+* Erste Ebene
+
+Ein Absatz.
+
+** Zweite Ebene
+
+#+BEGIN_SRC python
+# keine Ueberschrift
+* auch keine
+#+END_SRC
+
+* Wieder erste Ebene
+"""
+
+FREMDFORMAT_ADOC: str = """= Der Dokumenttitel
+
+Ein Absatz.
+
+== Ein Abschnitt
+
+----
+= keine Ueberschrift, sondern ein Listing
+== auch keine
+----
+
+=== Ein Unterabschnitt
+
+====
+Ein Beispielblock, dessen Grenze wie eine Ueberschrift aussieht.
+====
+
+== Der letzte Abschnitt
+"""
+
+REINER_TEXT: str = """Eine Notiz ohne jede Auszeichnung.
+
+Zweiter Absatz. Hier steht nichts, was eine Ueberschrift waere.
 """
 
 
@@ -204,6 +255,11 @@ class LeseschichtTest(unittest.TestCase):
         # Vier Faelle, die der frühere Zeilenautomat nicht kannte und die
         # CommonMark mitbringt (20.08.2026).
         self.commonmark = self._schreiben("commonmark.md", COMMONMARK_FAELLE)
+        self.org      = self._schreiben("fremdformat.org", FREMDFORMAT_ORG)
+        self.adoc     = self._schreiben("fremdformat.adoc", FREMDFORMAT_ADOC)
+        self.txt      = self._schreiben("notiz.txt", REINER_TEXT)
+        # Eine Endung, für die absichtlich kein Erkenner registriert ist.
+        self.unbekannt = self._schreiben("aufsatz.tex", "\\section{Titel}\n")
         self.lang     = self._schreiben(
             "lang.md",
             "# Titel\n\n## Grosser Block\n\n"
@@ -362,27 +418,86 @@ class LeseschichtTest(unittest.TestCase):
 
     # ── Zusicherung 5: nicht erhoben ist nicht leer ─────────────
 
-    def test_format_ohne_erkenner_scheitert_laut(self) -> None:
-        """Eine .rst-Datei ist gegliedert — nur nicht mit Rautenzeichen."""
-        with self.assertRaises(FormatOhneErkennerError) as fall:
-            struktur_analysieren(self.fremd, self.wurzel)
-        self.assertIn(".rst", str(fall.exception))
+    def test_endung_ohne_erkenner_scheitert_laut(self) -> None:
+        """Der Riegel steht weiter.
 
-    def test_gegenprobe_fremdformat_haette_leere_karte_geliefert(self) -> None:
-        """Belegt, was der Zeuge oben verhindert: die stille Falschaussage.
-
-        Der Markdown-Erkenner findet in der .rst-Datei keine einzige
-        Überschrift, obwohl sie zwei trägt. Ohne die Endungsprüfung wäre das
-        Ergebnis eine leere Karte — also die Aussage *„durchgehender Text"*
-        über eine gegliederte Datei.
+        Geprüft an einer Endung, für die absichtlich kein Erkenner
+        registriert ist. Umgedreht am 20.08.2026: Bis dahin prüfte dieser Zeuge dieselbe
+        Zusicherung an einer `.rst`-Datei. Die hat seitdem einen Erkenner,
+        und der Zeuge wandert auf eine Endung, die keinen hat.
         """
-        zeilen = self.fremd.read_text(encoding="utf-8").splitlines()
-        mit_raute = [z for z in zeilen if z.startswith("#")]
-        unterstrichen = [
-            z for z in zeilen if z and set(z) <= set("=-") and len(z) > 2
-        ]
-        self.assertEqual(mit_raute, [])
-        self.assertEqual(len(unterstrichen), 2)
+        with self.assertRaises(FormatOhneErkennerError) as fall:
+            struktur_analysieren(self.unbekannt, self.wurzel)
+        self.assertIn(".tex", str(fall.exception))
+
+    def test_rst_ebenen_kommen_aus_der_reihenfolge_der_zeichen(self) -> None:
+        """RST legt kein Zeichen auf eine Ebene fest.
+
+        Die Reihenfolge ihres ersten Auftretens im Dokument tut es.
+        """
+        bloecke = struktur_analysieren(self.fremd, self.wurzel)
+        ebenen = {b["header"]: b["ebene"] for b in bloecke}
+        self.assertEqual(ebenen["Titel der Datei"], 1)
+        self.assertEqual(ebenen["Ein Abschnitt"], 2)
+        self.assertEqual(ebenen["Ein Unterabschnitt"], 3)
+        self.assertNotIn("Kein Titel", ebenen)
+
+    def test_org_zaehlt_sterne_und_ueberspringt_bloecke(self) -> None:
+        """Die Ebene ist die Zahl der Sterne.
+
+        Was zwischen `#+BEGIN_` und `#+END_` steht, ist Inhalt.
+        """
+        bloecke = struktur_analysieren(self.org, self.wurzel)
+        header = [b["header"] for b in bloecke]
+        ebenen = [b["ebene"] for b in bloecke]
+        self.assertEqual(header, ["* Erste Ebene", "** Zweite Ebene",
+                                  "* Wieder erste Ebene"])
+        self.assertEqual(ebenen, [1, 2, 1])
+
+    def test_adoc_trennt_ueberschrift_von_blockgrenze(self) -> None:
+        """Das Leerzeichen entscheidet.
+
+        `==== ` mit Text ist eine Überschrift vierter Ebene, `====` allein
+        die Grenze eines Beispielblocks.
+        """
+        bloecke = struktur_analysieren(self.adoc, self.wurzel)
+        header = [b["header"] for b in bloecke]
+        self.assertEqual(header, ["= Der Dokumenttitel", "== Ein Abschnitt",
+                                  "=== Ein Unterabschnitt",
+                                  "== Der letzte Abschnitt"])
+        self.assertNotIn("= keine Ueberschrift, sondern ein Listing", header)
+
+    def test_reiner_text_liefert_eine_erhobene_leere_karte(self) -> None:
+        """Registriert, und die Antwort ist die leere Liste.
+
+        Das ist eine Auskunft und kein Ausfall — der Unterschied zu einer
+        Endung, für die kein Erkenner eingetragen ist.
+        """
+        self.assertEqual(struktur_analysieren(self.txt, self.wurzel), [])
+
+    def test_gegenprobe_markdown_haette_bei_allen_dreien_leer_geliefert(self) -> None:
+        """Belegt, was die Erkenner verhindern: die stille Falschaussage.
+
+        Der Markdown-Erkenner findet in keiner der drei Dateien eine
+        Überschrift, obwohl alle drei gegliedert sind. Ohne eigene Erkenner
+        wäre das Ergebnis dreimal eine leere Karte — also die Aussage
+        *„durchgehender Text"* über gegliederte Dateien.
+        """
+        import re
+        raute = re.compile(r"^(#{1,6})\\s+\\S")
+        for datei, mindestens in ((self.fremd, 3), (self.org, 3), (self.adoc, 4)):
+            zeilen = datei.read_text(encoding="utf-8").splitlines()
+            markdown_faende = {
+                nr for nr, z in enumerate(zeilen, start=1) if raute.match(z)
+            }
+            erkannt = struktur_analysieren(datei, self.wurzel)
+            echte = {b["start"] for b in erkannt}
+            self.assertGreaterEqual(len(erkannt), mindestens)
+            self.assertEqual(
+                markdown_faende & echte, set(),
+                f"{datei.name}: Der Markdown-Erkenner träfe zufällig eine echte "
+                f"Überschrift — dann belegt die Gegenprobe nichts",
+            )
 
     # ── Zusicherung 3: keine Struktur ist ein Befund ────────────
 
