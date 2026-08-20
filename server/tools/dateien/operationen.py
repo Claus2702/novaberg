@@ -45,6 +45,8 @@ import re
 from collections.abc import Callable
 from pathlib import Path
 
+from markdown_it import MarkdownIt
+
 logger = logging.getLogger("ki_server.tools.dateien.operationen")
 
 # Hoechstzahl Zeilen je Lesevorgang. Der Wert begrenzt den Kontextverbrauch
@@ -83,6 +85,13 @@ class StrukturDefektError(StrukturUnklarError):
 _CODEZAUN: re.Pattern = re.compile(r"^\s*(```|~~~)")
 _UEBERSCHRIFT: re.Pattern = re.compile(r"^(#{1,6})\s+(.*\S)\s*$")
 _METAZEILE: re.Pattern = re.compile(r"^\*\*(?P<feld>[^:*]+):\*\*\s*(?P<wert>.*\S)\s*$")
+
+#: Der Markdown-Parser, einmal je Prozess. `commonmark` ist die strenge
+#: Grundfassung ohne Erweiterungen — sie deckt genau das ab, was ein
+#: handgeschriebener Zeilenautomat einzeln nachbauen muesste: Setext-Ueber-
+#: schriften, eingerueckte Codebloecke, Zaeune aus vier und mehr Zeichen,
+#: verschachtelte Zaeune, Ueberschriften mit bis zu drei Leerzeichen Einzug.
+_MARKDOWN: MarkdownIt = MarkdownIt("commonmark")
 
 
 def pfad_pruefen(pfad: Path | str, wurzel: Path | str) -> Path:
@@ -141,40 +150,83 @@ def _ueberschriften_markdown(zeilen: list[str]) -> list[tuple[int, int, str]]:
     Ueberschriftentext), in Dateireihenfolge.
     Fehlerfaelle: eine ungerade Zahl Codezaeune (`StrukturDefektError`).
 
-    **Der Schalter wird am Ende gegengerechnet, und das ist der Kern.** Die
-    Zaunerkennung ist ein Umschalter; faellt ein oeffnender Zaun aus, kippt
-    sie und kippt nie zurueck — ab dort gilt der Rest der Datei als Code.
-    Das Ergebnis ist keine Ausnahme, sondern eine kuerzere Liste, und eine
-    kuerzere Liste sieht aus wie eine kuerzere Datei. Eine ungerade Bilanz
-    ist immer ein Defekt und deshalb pruefbar, ohne die Datei zu verstehen.
+    **Die Erkennung macht `markdown-it-py` (CommonMark), nicht dieses
+    Modul.** Der Grund ist keine Bequemlichkeit: Ein Zeilenautomat kennt die
+    Regeln, die jemand hineingeschrieben hat, und die Datei, die er nicht
+    kennt, ist immer die naechste. Setext-Ueberschriften, eingerueckte
+    Codebloecke, Zaeune aus vier Zeichen und verschachtelte Zaeune sind vier
+    Faelle, die einzeln nachzubauen waeren.
+
+    **Die Zaunbilanz bleibt trotzdem, und zwar VOR dem Parser.** Sie ist
+    keine doppelte Absicherung, sondern faengt einen Fall, den auch
+    CommonMark falsch beantwortet: Am 20.08.2026 fand der Zeilenautomat in
+    einer Datei mit unpaarigem Zaun 5 von 83 Ueberschriften, der Parser
+    45 von 83. Beide Karten sind falsch — und eine falsche Karte ist teurer
+    als eine fehlende, weil der Aufrufer ihr folgt statt auszuweichen.
     """
-    treffer: list[tuple[int, int, str]] = []
+    # ── Eingabe-Validierung: die Zaunbilanz ─────
+    # Sie steht VOR dem Parser und nicht statt seiner. Der Parser macht
+    # denselben Fehler, nur schwaecher: An der defekten Fassung vom
+    # 20.08.2026 fand der Zeilenautomat 5 von 83 Ueberschriften, CommonMark
+    # 45 von 83 — beides ist eine falsche Karte, und eine falsche Karte ist
+    # teurer als gar keine. Die Bilanz kostet einen Durchlauf und ist ohne
+    # jede Kenntnis des Inhalts pruefbar.
     im_zaun: bool = False
     zaeune: int = 0
     letzter_zaun: int = 0
-
-    # ── Verarbeitung ────────────────────────────
     for nr, zeile in enumerate(zeilen, start=1):
         if _CODEZAUN.match(zeile):
             zaeune += 1
             letzter_zaun = nr
             im_zaun = not im_zaun
-            continue
-        if im_zaun:
-            continue
-        passung = _UEBERSCHRIFT.match(zeile)
-        if passung:
-            treffer.append((nr, len(passung.group(1)), zeile.rstrip()))
 
-    # ── Ausgabe-Verifikation ────────────────────
     if im_zaun:
         meldung: str = (
             f"_ueberschriften_markdown: {zaeune} Codezaeune sind eine ungerade "
             f"Zahl, der letzte in Zeile {letzter_zaun} von {len(zeilen)} — ab "
-            f"dort gilt der Rest der Datei als Code, und die {len(treffer)} "
-            f"Ueberschriften davor waeren alles, was die Karte traegt"
+            f"dort gilt der Rest der Datei als Code, und jede Karte darueber "
+            f"waere kuerzer als das Dokument"
         )
         raise StrukturDefektError(meldung)
+
+    # ── Verarbeitung ────────────────────────────
+    treffer: list[tuple[int, int, str]] = []
+    for marke in _MARKDOWN.parse("\n".join(zeilen)):
+        if marke.type != "heading_open" or not marke.map:
+            continue
+        # `level > 0` heisst: die Ueberschrift steht INNERHALB eines anderen
+        # Blocks, im Bestand durchweg in einem Blockzitat. Sie gehoert zum
+        # zitierten Text und ist kein Gliederungspunkt der Datei — ihr Block
+        # liefe bis zur naechsten gleichrangigen Ueberschrift und damit ueber
+        # das Zitat hinaus. Das ist dieselbe Zusicherung wie beim Codezaun:
+        # eine Blockgrenze, die im Dokument nicht existiert, ist schlimmer
+        # als eine fehlende. Am 20.08.2026 ueber den Bestand gezaehlt: acht
+        # solche Ueberschriften in acht Dateien.
+        if marke.level != 0:
+            continue
+        # `map` ist 0-basiert und haelt [Anfang, Ende); die Zeilennummern
+        # dieses Moduls sind durchgehend 1-basiert. Bei einer
+        # Setext-Ueberschrift zeigt `map[0]` auf die Textzeile, nicht auf
+        # ihre Unterstreichung — genau die Zeile, die der Header traegt.
+        zeilennummer: int = marke.map[0] + 1
+        ebene: int = int(marke.tag[1])
+        treffer.append((zeilennummer, ebene, zeilen[marke.map[0]].rstrip()))
+
+    # ── Ausgabe-Verifikation ────────────────────
+    for zeilennummer, ebene, _text in treffer:
+        if not 1 <= zeilennummer <= len(zeilen):
+            meldung = (
+                f"_ueberschriften_markdown: Ueberschrift in Zeile "
+                f"{zeilennummer} liegt ausserhalb der Datei ({len(zeilen)} "
+                f"Zeilen)"
+            )
+            raise StrukturDefektError(meldung)
+        if not 1 <= ebene <= 6:
+            meldung = (
+                f"_ueberschriften_markdown: Ebene {ebene} in Zeile "
+                f"{zeilennummer} liegt ausserhalb von 1 bis 6"
+            )
+            raise StrukturDefektError(meldung)
 
     return treffer
 

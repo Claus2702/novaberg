@@ -23,6 +23,11 @@ apscheduler==3.10.4
 # Zeitparser
 dateparser
 
+# Markdown — die Gliederung von .md-Dateien (tools/dateien/operationen.py).
+# Reines Python, CommonMark-konform, keine Systemabhaengigkeit. Der Grund
+# gegen die Eigenbau-Regeln steht im Backlog: MARKDOWN-ERKENNER-IST-HANDARBEIT.
+markdown-it-py==3.0.0
+
 # Utilities
 pydantic==2.9.0
 python-dotenv==1.0.1

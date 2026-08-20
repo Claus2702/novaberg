@@ -137,6 +137,41 @@ Noch ein Satz.
 Und noch einer.
 """
 
+COMMONMARK_FAELLE: str = """# Titel
+
+Ein Absatz.
+
+Setext-Ueberschrift
+===================
+
+Text darunter.
+
+Zweite Ebene per Setext
+-----------------------
+
+Noch ein Absatz.
+
+> ## Ueberschrift im Blockzitat
+>
+> Sie gehoert zum Zitat und ist kein Gliederungspunkt der Datei.
+
+## Echter Block
+
+Ein eingerueckter Codeblock, vier Leerzeichen:
+
+    # keine Ueberschrift, sondern Code
+    noch mehr Code
+
+````
+```
+Ein Zaun aus vier Zeichen, der einen aus drei enthaelt.
+# auch das hier ist Code
+```
+````
+
+## Letzter Block
+"""
+
 FREMDFORMAT_RST: str = """Titel der Datei
 ===============
 
@@ -166,6 +201,9 @@ class LeseschichtTest(unittest.TestCase):
         # wird gesehen — eine ungerade Bilanz.
         self.defekt   = self._schreiben("defekter_zaun.md", DEFEKTER_ZAUN)
         self.fremd    = self._schreiben("fremdformat.rst", FREMDFORMAT_RST)
+        # Vier Faelle, die der frühere Zeilenautomat nicht kannte und die
+        # CommonMark mitbringt (20.08.2026).
+        self.commonmark = self._schreiben("commonmark.md", COMMONMARK_FAELLE)
         self.lang     = self._schreiben(
             "lang.md",
             "# Titel\n\n## Grosser Block\n\n"
@@ -262,6 +300,65 @@ class LeseschichtTest(unittest.TestCase):
                 gefunden.append(zeile)
         self.assertEqual(len(vorhanden), 4)
         self.assertEqual(len(gefunden), 2)
+
+    # ── Zusicherung 2c: der Parser kennt die Regeln des Formats ─
+
+    def test_setext_ueberschriften_stehen_in_der_karte(self) -> None:
+        """Text über `===` bzw. `---` ist eine Überschrift — der frühere
+        Zeilenautomat hat sie nicht gesehen, weil er `#` verlangte."""
+        bloecke = struktur_analysieren(self.commonmark, self.wurzel)
+        header = [b["header"] for b in bloecke]
+        self.assertIn("Setext-Ueberschrift", header)
+        self.assertIn("Zweite Ebene per Setext", header)
+        ebenen = {b["header"]: b["ebene"] for b in bloecke}
+        self.assertEqual(ebenen["Setext-Ueberschrift"], 1)
+        self.assertEqual(ebenen["Zweite Ebene per Setext"], 2)
+
+    def test_ueberschrift_im_blockzitat_ist_kein_gliederungspunkt(self) -> None:
+        """Sie gehört zum zitierten Text; ihr Block liefe über das Zitat
+        hinaus und wäre eine Grenze, die im Dokument nicht existiert."""
+        header = [b["header"] for b in struktur_analysieren(self.commonmark, self.wurzel)]
+        self.assertNotIn("> ## Ueberschrift im Blockzitat", header)
+        self.assertNotIn("## Ueberschrift im Blockzitat", header)
+
+    def test_raute_im_eingerueckten_codeblock_zaehlt_nicht(self) -> None:
+        """Vier Leerzeichen sind ein Codeblock, auch ohne Zaun."""
+        header = [b["header"] for b in struktur_analysieren(self.commonmark, self.wurzel)]
+        self.assertNotIn("    # keine Ueberschrift, sondern Code", header)
+        self.assertFalse([h for h in header if "sondern Code" in h])
+
+    def test_zaun_aus_vier_zeichen_umschliesst_einen_aus_drei(self) -> None:
+        """Der verschachtelte Fall: Der innere Zaun beendet den äußeren
+        nicht, und die Raute dazwischen bleibt Code."""
+        header = [b["header"] for b in struktur_analysieren(self.commonmark, self.wurzel)]
+        self.assertNotIn("# auch das hier ist Code", header)
+        self.assertIn("## Letzter Block", header)
+
+    def test_gegenprobe_der_zeilenautomat_haette_drei_davon_verfehlt(self) -> None:
+        """Belegt, dass die vier Zeugen oben etwas prüfen.
+
+        Der frühere Erkenner war `^(#{1,6})\\s+` außerhalb von Zäunen. Auf
+        derselben Datei findet er die beiden Setext-Überschriften nicht,
+        dafür die Raute im Blockzitat — und die Zäune aus vier Zeichen
+        bringen seinen Umschalter durcheinander.
+        """
+        import re
+        zeilen = self.commonmark.read_text(encoding="utf-8").splitlines()
+        zaun = re.compile(r"^\s*(```|~~~)")
+        ueb = re.compile(r"^(#{1,6})\s+(.*\S)\s*$")
+        im_zaun, alt_treffer = False, []
+        for zeile in zeilen:
+            if zaun.match(zeile):
+                im_zaun = not im_zaun
+                continue
+            if not im_zaun and ueb.match(zeile):
+                alt_treffer.append(zeile.rstrip())
+
+        neu_header = [b["header"] for b in struktur_analysieren(self.commonmark, self.wurzel)]
+        self.assertNotIn("Setext-Ueberschrift", alt_treffer)
+        self.assertNotIn("Zweite Ebene per Setext", alt_treffer)
+        self.assertIn("Setext-Ueberschrift", neu_header)
+        self.assertGreater(len(neu_header), len(alt_treffer))
 
     # ── Zusicherung 5: nicht erhoben ist nicht leer ─────────────
 
