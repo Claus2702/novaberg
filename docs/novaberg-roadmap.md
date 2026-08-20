@@ -10,6 +10,56 @@
 
 ## Chats 3–20: Grundlagen (März 2026)
 
+### 20.08.2026, nachmittags — Auf zwölf Zeichen kamen 838 zurück
+
+**Der Befund aus dem Betrieb.** Ein *„Hey Kleines!"* — zwölf Zeichen, Landschaft `bier`,
+`umfang` 0,50 — bekam einen Korridor von 350 bis 700 Zeichen und eine Antwort von **838**.
+Die Länge hing allein am Raum: Wie lang die Äußerung war, ging an keiner Stelle in die
+Vorgabe ein.
+
+**Drei Einflüsse statt einem, an drei verschiedenen Stellen.** Der Raum bleibt, wo er ist —
+`CLUSTER_GRUNDWERT` ist unberührt, denn `haltung_berechnen` ist eine reine Funktion aus
+Landschaft und Zuwendungsrad und sagt, *wer* Nova hier ist. Die Korridore in `UMFANG_SPANNE`
+sind **halbiert**. Und die Länge der Äußerung deckelt den Korridor — in der neuen
+`spanne_fuer_turn`, also dort, wo aus Haltung eine Mengenvorgabe wird.
+
+**Die Zeichenzahl allein taugt nicht als Maß**, und das war der Einwand, der die Bauart
+bestimmt hat: *„Erkläre mir die Tritiumvorkommen"* ist genauso kurz wie ein Gruß und verlangt
+trotzdem Sachlänge. Was die beiden trennt, ist die **Intention** — im Betrieb gemessen trug
+*„Hey Kleines!"* `smalltalk`, *„Wie entsteht bei einem Gammablitz…"* `information_erfragen`.
+Der Abschlag greift deshalb nur, wenn der Turn **ausschließlich** leichte Intentionen trägt,
+wirkt nur nach unten und greift oberhalb von rund 30 Zeichen nicht mehr. Ein Turn ohne
+erhobene Intention bleibt unberührt: Eine fehlende Erhebung ist keine Erlaubnis zu kürzen.
+
+**Durchgerechnet an den echten Turns**, Landschaft `bier`, vorher durchweg 350–700:
+
+| Äußerung | Zeichen | jetzt |
+|---|---|---|
+| `Hey Kleines!` | 12 | 72–144 |
+| `Erklaere mir die Tritiumvorkommen` | 33 | 175–350 |
+| `Danke dir!` | 10 | 60–120 |
+| `Ja.` | 3 | 40–80 |
+
+**Und die Frage danach hat einen zweiten Bau ausgelöst: Was steht eigentlich in der Haltung?**
+Drei ihrer fünf Größen betreffen die fachliche Seite — `umfang` nennt das Konzept ausdrücklich,
+`fragen` und `draengen` stehen wörtlich im Auftrag des Verfassers, der bestimmen soll, *„was sie
+feststellt, was sie offen lässt, was sie zurückfragt"*. Er bekam davon nichts: `haltung` kam in
+seinem Modul **null Mal** vor, obwohl das Konzept mit genau dieser Forderung die Position des
+Knotens im Graphen begründet. Seit heute trägt sein Prompt den Block `[MASS]` mit Menge,
+Rückfrage und Vorschlag. `naehe` und `waerme` bleiben beim Responder — dieselbe Zahl, zwei
+Wortlisten, weil der eine liest, wie eine Rückfrage klingt, und der andere entscheidet, ob eine
+vorkommt.
+
+**Zwei Zahlen sind Startwerte ohne Messung** (`LEICHT_FAKTOR`, `LEICHT_SOCKEL`) und stehen so
+gekennzeichnet. **Und der Vorbehalt gehört an die Halbierung:** Bei identischer Vorgabe streute
+die Antwortlänge am 17.08. um den Faktor 2,68. Halbierte Korridore halbieren die Antworten
+nicht, sie verschieben sie; ob es im Betrieb trägt, ist an echten Turns zu messen.
+
+Suite **2032 grün, 0 übersprungen**, 18 Zeugen neu. Drei Gegenproben, je vorhergesagt und
+gezählt: Deckel ausgehängt 2/2, Mass-Block ausgehängt 5/5.
+
+---
+
 ### 20.08.2026, nachmittags — Der Index versteht jetzt jedes Format, das er annimmt
 
 **Gebaut.** Vier Erkenner statt einem. **reStructuredText:** Überschrift ist Text über einer

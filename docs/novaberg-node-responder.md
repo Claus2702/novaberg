@@ -74,6 +74,10 @@ Die Anweisung darf nicht fehlen. Ohne sie entschiede der Vorgabewert, und der na
 
 **`[REGIE FUER DIESE REPLIK]`** ist der einzige anweisende Block: Werkzeug und Vehikel aus dem GV-Knoten, der Umfang als **Zeichenspanne**, die abweichenden Haltungswörter, der Energiesatz und die EI-Mikroanweisung. Er steht am Ende der Nutzer-Nachricht.
 
+> **Die Zeichenspanne trägt seit dem 20.08.2026 drei Einflüsse**, nicht einen. Der Raum setzt `umfang`, die Tabelle `UMFANG_SPANNE` übersetzt ihn in Zeichen — **an diesem Tag halbiert** —, und die Länge der Äußerung deckelt ihn, sofern der Turn **ausschließlich** leichte Intentionen trägt (`smalltalk`, `bestaetigung`, `abschluss`, `humor`). Eine inhaltliche darunter setzt den Deckel aus: *„Erkläre mir die Tritiumvorkommen"* ist kurz und verlangt trotzdem Sachlänge. Die Zeile selbst sieht unverändert aus — eine Spanne und ein Wort —, weil der Prompt keine Rechnung lesen soll. Gerechnet wird das in `ei/haltungssprache.py::spanne_fuer_turn`.
+>
+> **Der Responder ist seither nicht mehr der einzige Leser der Haltung.** Die drei fachlichen Größen gehen zusätzlich an den Verfasser (`novaberg-node-verfasser_k.md` v0.7); `naehe` und `waerme` bleiben hier allein.
+
 ### 3.4 Vier Doppelungen, die entfallen sind
 
 | Aussage | stand | jetzt |
