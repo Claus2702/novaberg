@@ -800,12 +800,21 @@ def _sprachstil_block(state: ConversationState) -> str:
     else:
         try:
             # Der dritte Einfluss auf die Laenge: die Aeusserung selbst.
-            # `reiz_text` traegt auf einem Impuls-Turn Novas eigenen
-            # Gedanken statt einer Nutzeraeusserung — dort ist die Laenge
-            # kein Mass fuer eine erwartete Antwort, und der Abschlag faellt
-            # ohnehin aus, weil ein Impuls keine Nutzer-Intentionen traegt.
-            reiz_zeichen: int = len(reiz_text(state))
-            intentionen: tuple[str, ...] = tuple(
+            #
+            # **Auf einem Impuls-Turn faellt er aus, und zwar ausdruecklich.**
+            # `reiz_text` traegt dort Novas eigenen Gedanken (`F-REIZ-1`), und
+            # dessen Laenge sagt nichts darueber, wieviel eine Antwort
+            # braucht — es gibt keine Frage, auf die sie antwortet.
+            #
+            # **Die naheliegende Begruendung traegt nicht, und sie stand hier
+            # zuerst:** *„ein Impuls hat ohnehin keine Nutzer-Intentionen"*.
+            # `_extract_user_intentionen` liest sie aus dem **juengsten
+            # User-Turn** — ein Impuls erbt sie also vom letzten Menschenturn.
+            # Ein kurzer Gedanke nach einem `smalltalk`-Turn waere sonst mit
+            # fremder Intention gedeckelt worden.
+            eigener: bool = reiz_ist_eigener_gedanke(state)
+            reiz_zeichen: int = 0 if eigener else len(reiz_text(state))
+            intentionen: tuple[str, ...] = () if eigener else tuple(
                 state.get("user_intentionen") or (),
             )
             zeilen.extend(

@@ -291,8 +291,15 @@ def _build_system_prompt(state: ConversationState) -> str:
             "`haltungsraum` ist nicht gelaufen."
         )
     else:
-        reiz_zeichen: int = len(reiz_text(state))
-        intentionen: tuple[str, ...] = tuple(state.get("user_intentionen") or ())
+        # Dieselbe Ausnahme wie im Responder: Auf einem Impuls-Turn traegt
+        # `reiz_text` Novas eigenen Gedanken (`F-REIZ-1`), und die geerbten
+        # Intentionen stammen vom letzten Menschenturn. Beides taugt nicht
+        # als Mass fuer den Stoff dieses Turns.
+        eigener: bool = reiz_ist_eigener_gedanke(state)
+        reiz_zeichen: int = 0 if eigener else len(reiz_text(state))
+        intentionen: tuple[str, ...] = () if eigener else tuple(
+            state.get("user_intentionen") or (),
+        )
         teile.append(
             "[MASS]\n" + "\n".join(
                 stoffzeilen(haltung, reiz_zeichen, intentionen),

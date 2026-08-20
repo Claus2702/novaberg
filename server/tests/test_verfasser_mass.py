@@ -104,6 +104,39 @@ class MassBlockTest(unittest.TestCase):
             _state(haltung=_haltung(draengen=0.95)))
         self.assertIn("Vorschlag: ein Vorschlag und der naechste Schritt", prompt)
 
+    def test_auf_einem_impuls_turn_deckelt_die_eigene_laenge_nicht(self) -> None:
+        """`F-REIZ-1`: Novas eigener Gedanke ist kein Maß für eine Antwort.
+
+        Und die naheliegende Begründung trägt nicht — ein Impuls **erbt** die
+        Intentionen des letzten Menschenturns (`_extract_user_intentionen`
+        liest sie aus dem jüngsten User-Turn). Ohne die ausdrückliche
+        Ausnahme wäre ein kurzer eigener Gedanke nach einem
+        `smalltalk`-Turn mit fremder Intention gedeckelt worden.
+        """
+        impuls: dict = _state(
+            "Kurz.",
+            event_source="character",
+            event_payload={"reiz_herkunft": "eigener_impuls"},
+            eigener_gedanke="Kurz.",
+            user_intentionen=["smalltalk"],
+        )
+        prompt: str = verf_mod._build_system_prompt(impuls)
+        voll = spanne_fuer_turn(0.50, 0, ())
+        self.assertIn(f"{voll[0]} bis {voll[1]} Zeichen", prompt)
+
+    def test_gegenprobe_derselbe_text_als_nutzerturn_wird_gedeckelt(self) -> None:
+        """Belegt, dass der Zeuge oben etwas misst.
+
+        Derselbe kurze Text mit derselben Intention, nur vom Menschen: dann
+        greift der Deckel — der Unterschied ist allein die Herkunft.
+        """
+        nutzer: dict = _state("Kurz.", user_intentionen=["smalltalk"])
+        prompt: str = verf_mod._build_system_prompt(nutzer)
+        eng = spanne_fuer_turn(0.50, len("Kurz."), ("smalltalk",))
+        voll = spanne_fuer_turn(0.50, 0, ())
+        self.assertLess(eng[1], voll[1])
+        self.assertIn(f"{eng[0]} bis {eng[1]} Zeichen", prompt)
+
     def test_ohne_haltung_meldet_der_knoten_laut(self) -> None:
         """Fail loud statt stiller Auslassung.
 
