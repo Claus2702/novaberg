@@ -1,6 +1,6 @@
 # Novaberg — Roadmap (Projektchronik)
 
-**Stand:** 19. August 2026, nachts
+**Stand:** 20. August 2026, vormittags
 *(Die Kopfzeile stand bis Chat 109 auf „Chat 93, 21. Mai 2026" — 15 Chats hinter dem Inhalt. **Sie ist danach erneut zurückgefallen:** von Chat 110 bis 114 blieb sie auf „Chat 109" stehen, während der Inhalt weiterwuchs, und wurde in Chat 115 nachgezogen. Wer hier etwas ergänzt, zieht die Kopfzeile mit — sie driftet zuverlässig. Achtung beim Nachschlagen: Nur bis Chat 97 trägt jeder Chat eine eigene `## Chat NNN`-Überschrift; die Chats 98–108 stehen als `###`-Abschnitte unter dem Chat-97-Block, benannt nach Sprint statt nach Chat.)*
 **Pfad:** novaberg/docs/novaberg-roadmap.md
 **Single Source of Truth für abgeschlossene Arbeit.**
@@ -9,6 +9,31 @@
 ---
 
 ## Chats 3–20: Grundlagen (März 2026)
+
+### 20.08.2026 — Die Figur bekommt die Dokumente über sich selbst, und der Wächter verliert fünf davon still
+
+**Gefragt war eine Zustandsauskunft, gebaut wurde eine Freigabe.** Der Dateien-Verbund kannte genau eine Wurzel: `/files`, 14 Dateien. Das Dokumentationsverzeichnis des Repositoriums war nicht freigegeben und **konnte** es nicht sein — es war im Behälter nicht eingehängt, und der Außenrand nannte nur `/files`. Zwei Hälften derselben Zusicherung, und beide fehlten.
+
+| Hälfte | vorher | nachher |
+|---|---|---|
+| Einhängepunkt | keiner | `docs/` nach `/docs`, **nur lesend** |
+| `DATEIEN_AUSSENRAND` | `/files` | `/files,/docs` |
+
+**Der Rand steht bei den Einhängepunkten und nicht allein beim Vorgabewert im Code.** Er nennt Behälter-Pfade; welche es überhaupt gibt, weiß nur die Aufstellung. Wer einen Einhängepunkt hinzufügt und den Rand stehenlässt, hat ein Verzeichnis eingehängt, das niemand freigeben kann — der Ausfall ist die Ablehnung am Tor, also die geschlossene Seite.
+
+**Die Freigabe lief über das gebaute Tor, nicht über ein `INSERT`.** Es meldete `'/docs' -> '/docs' innerhalb von /files, /docs, 166 Dateien` — dieselbe Zahl, die außerhalb des Behälters gezählt wird, und damit zugleich die Probe darauf, dass der Einhängepunkt dort liegt, wo er soll. Nach der Bestätigung: Wurzel 2, `verifiziert=True`.
+
+**Der Erstlauf des Wächters, in Zahlen:** 160 indizierbare Dateien, vier Läufe zu je höchstens 50, am Ende **155 Zeilen mit Vektor**. Rund 30 Sekunden je Datei, gut 80 Minuten.
+
+**Und dabei fiel der Defekt an, der den Tag trägt.** Fünf Dateien scheiterten an unbrauchbaren Modellantworten — **dieselben in jedem Lauf**, 18 Aufrufe ohne eine einzige Zeile. Die Bilanz meldete `fehler: []` und der letzte Lauf `offen: 0`. Sichtbar ist es allein daran, dass `indiziert + offen` die Zahl der neuen Dateien nicht trifft; `offen: 0` heißt *„die Obergrenze hat nichts stehengelassen"* und nicht *„alles ist drin"*. Als `INDEXLAUF-VERSCHWEIGT-DATEIFEHLER` eingetragen, **offen**. Zu den fünf gehört das Konzeptdokument dieses Dienstes.
+
+**Die Ursache dahinter ist nicht der Wächter, und sie hat eine eigene Kennung.** `expect_json` ist eine Anweisung an den eigenen Worker; zum Anbieter dringt sie nicht durch — die Nutzlast trägt kein `format`, die Form steht nur im Prompt. Bei `temperature=0.05` heißt das: Es gibt Dokumente, die das Modell **zuverlässig** in den Beschreibungston kippen lassen, und sie scheitern in jedem Lauf gleich. Der Gegenbeweis ist gefahren — dieselben Auszüge mit `format="json"` ergeben **3 von 3 gültiges JSON**. Betroffen sind **31 Aufrufstellen**, nicht eine: im Log desselben Zeitraums acht Ausfälle im Wissens-Rückweg und drei in der Recherche. `JSON-FORMAT-NUR-ERBETEN`, offen — der Index hat es sichtbar gemacht, weil er 160 Dateien am Stück verarbeitet.
+
+**Zwei echte Turns als Messung, und der zweite ist der Beleg.** Auf eine benannte Datei hin: *„In der Datei `/docs/novaberg-salienz-berechnung_k.md` wird die Nabe mit dem Wert **0.9** definiert"* — Wert und Fundstelle im selben Satz. Der erste Turn ohne Dateinamen fand eine **thematisch benachbarte** Datei statt der richtigen und antwortete ehrlich darüber; das ist keine Störung des Zugriffs, sondern die Trefferfrage auf einem Bestand, der über Nacht von 14 auf 169 Zeilen gewachsen ist — und damit der Bestand, den `AUFZEICHNUNGEN-BODEN-NACHZIEHEN` seit dem 18.08. verlangt.
+
+**Nachgetragen am selben Tag: der führende Punkt.** `.obsidian` stand mit sechs Absagen in jeder Bilanz, und der Wächter kannte keine Regel dafür — nur die Endungsliste hielt es draußen, eine `.md` darin wäre indiziert worden. Jetzt wird ein Punkt-Verzeichnis **nicht betreten** und einmal mit Grund gemeldet statt Datei für Datei; eine verborgene Einzeldatei wird gesehen und mit eigenem Grund übergangen, vor der Endungsprüfung. Gegenprobe zweifach: Abschneiden ausgebaut → **4 vorhergesagt, 4 rot**; Dateiregel ausgebaut → **3 vorhergesagt, 3 rot**. Suite 1987 → **1993 grün**. Im Lauf danach: `uebergangen 0`, `uebergangene_verzeichnisse 1`.
+
+**Zwei Funde nebenbei, beide in der Fundliste.** Sechs archivierte Konzepte liegen im selben Index wie die geltenden, getrennt nur durch den Pfadanteil `archive/` — und eine von ihnen nennt in ihrer Kopfzeile weiterhin den Ort vor dem Verschieben. Und die Blockkarte von `novaberg-agent-dateien_k.md` zählt **5** Blöcke statt rund 80: Ein als Codeblock dargestellter, durchgestrichener Prompt-Entwurf öffnet mit `~~```` und schließt mit ` ```~~ `; der Zähler sieht nur den Schließer und läuft von da an invertiert.
 
 ### 19.08.2026 — Drei Rollen je Silo, und die Regel steht vor dem Bau
 

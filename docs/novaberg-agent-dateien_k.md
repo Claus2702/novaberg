@@ -878,6 +878,12 @@ Er läuft nach Zeitplan über die konfigurierten Wurzeln und bringt den Index au
 | **geändert** | `inhalt_hash` weicht ab | neu indizieren, Zeile aktualisieren |
 | **verschwunden** | Pfad im Index, Datei fehlt | `aktiv = false`, `verschwunden_am` setzen |
 
+> **Ein Verzeichnis mit führendem Punkt wird nicht betreten** (20.08.2026). Der Wächter übergeht Dateien mit Grund — das ist die Regel aus §9 Punkt 4 und sie bleibt. Für einen **Ast** ist sie die falsche Form: `.obsidian` stand nach der Freigabe von `/docs` mit sechs Absagen in jeder Bilanz, und keine davon wäre je eine andere geworden. Ein Punkt-Verzeichnis trägt Werkzeugschicht — Editor-Einstellungen, Zwischenspeicher, Arbeitskopien —, also Inhalt für ein Programm und nicht für einen Leser.
+>
+> **Abgeschnitten ist nicht verschwiegen.** Das Verzeichnis steht mit Grund in der Bilanz, einmal statt je Datei, und die Zahl `uebergangene_verzeichnisse` steht neben `uebergangen` statt darin: Dort zählen Dateien, hier Verzeichnisse, und eine Summe aus beidem beantwortet keine der beiden Fragen. Die Dateien darunter tauchen in **keiner** Menge auf — das ist der Unterschied zum Übergehen, denn gesehen hat sie niemand.
+>
+> **Die verborgene Einzeldatei geht den anderen Weg:** Sie wird gesehen und mit eigenem Grund übergangen — vor der Endungsprüfung, weil *„verborgen"* die genauere Auskunft ist als *„Endung ist kein Text"*.
+
 ### 5.2 Die Änderungserkennung prüft den Inhalt, nicht die Zeit
 
 **`mtime` allein reicht nicht, und `mtime` allein ist auch zu viel.** Zu wenig, weil ein Werkzeug eine Datei mit gleicher Zeit neu schreiben kann; zu viel, weil ein Kopiervorgang die Zeit ändert, ohne den Inhalt anzufassen — und eine Neu-Indizierung kostet einen Modellaufruf je Datei.
@@ -1020,6 +1026,12 @@ Der heikelste Teil des Entwurfs, und er ist keine Frage der Anmeldung.
 
    > **Gebaut am 18.08.2026:** `DATEIEN_AUSSENRAND` in `server/config.py`, eine kommagetrennte Liste von Behälter-Pfaden, Vorgabe `/files`. Die Rückrichtung stand zuerst nicht da — die Konfiguration verwies auf diesen Abschnitt, dieser Abschnitt nannte den Variablennamen nicht, und damit war die Naht nur von einer Seite begehbar. **Ein leerer Rand bedeutet, dass nichts freigebbar ist, und nicht, dass alles erlaubt wäre**: Der Wachtposten fällt geschlossen aus, und der Zustand wird gemeldet statt geraten.
    >
+   > **Der Rand hat seit dem 20.08.2026 zwei Einträge, und der zweite ist die Doku selbst.** `/files,/docs` — `/docs` hängt das Dokumentationsverzeichnis des Repositoriums ein, lesend, damit die Figur die Dokumente über sich selbst lesen kann. Gemessen am selben Tag: Das Tor meldete `'/docs' -> '/docs' innerhalb von /files, /docs, 166 Dateien`, und die Zahl stimmt mit der am Wirt gezählten überein — das ist zugleich die Probe darauf, dass der Einhängepunkt dort liegt, wo er soll.
+   >
+   > **Die Zusammensetzung des Randes ist eine Eigenschaft der Aufstellung, nicht des Codes.** Der Vorgabewert in `config.py` bleibt `/files`; welche Behälter-Pfade es überhaupt gibt, weiß allein die Compose-Datei, und dort steht deshalb auch die Liste. Wer einen Einhängepunkt hinzufügt und den Rand stehenlässt, hat ein Verzeichnis eingehängt, das niemand freigeben kann — der Ausfall ist die **Ablehnung am Tor** und nicht ein stiller Zugriff, also fällt er zur geschlossenen Seite.
+   >
+   > **Was mit `/docs` neu ist und in `/files` keinen Vorläufer hat:** Der Bestand hinter dem Rand ist hier **versioniert und öffentlich**, und er enthält unter `archive/` abgelöste und verworfene Konzepte. Der Einhängepunkt ist `:ro` — die Zusicherung aus Regel 2 trägt das Dateisystem und nicht nur der Import —, aber die zweite Hälfte ist keine Rechtefrage: **Ein archiviertes Konzept sieht im Index aus wie ein geltendes.** Getrennt sind beide allein durch den Pfadanteil `archive/`; ein Etikett am Indexeintrag gibt es nicht.
+
    > **Der Rand ist ein Behälter-Pfad, kein Wirtspfad.** Was in `dateien_wurzeln.pfad` steht, ist ebenfalls der Behälter-Pfad. Daraus folgt eine Falle, die zum Rand gehört: Ein späteres Umhängen **desselben** Einhängepunkts auf ein anderes Wirtsverzeichnis wäre stillschweigend wirksam — die gespeicherten Wurzeln zeigten dann auf andere Dateien, ohne dass eine Zeile sich ändert. **Der Einhängepunkt wandert mit, nicht der Inhalt hinter demselben Namen.**
 
    **b) Das Tor zeigt das Ergebnis der Auflösung, nicht die Eingabe.** Bestätigt wird der aufgelöste absolute Pfad samt Dateizahl — nicht das, was gesagt wurde. Wer `../..` schreibt, sieht, wo er landet.
