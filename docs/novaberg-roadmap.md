@@ -1,6 +1,6 @@
 # Novaberg — Roadmap (Projektchronik)
 
-**Stand:** 20. August 2026, später Nachmittag
+**Stand:** 20. August 2026, Abend
 **Pfad:** novaberg/docs/novaberg-roadmap.md
 **Single Source of Truth für abgeschlossene Arbeit.**
 **Offene Punkte → novaberg-backlog.md**
@@ -12,6 +12,48 @@ Die Kopfzeile stand bis Chat 109 auf „Chat 93, 21. Mai 2026" — 15 Chats hint
 ---
 
 ## Chats 3–20: Grundlagen (März 2026)
+
+### 20.08.2026, Abend — Die Fundliste ist klassifiziert und leer
+
+**168 rohe Funde standen im Abschnitt *Offen*, der älteste vom 01.08.2026.** Sie sind heute vollständig
+klassifiziert und an ihren Ort gewandert; der Abschnitt trägt jetzt null Einträge und einen Satz, der
+sagt, dass das ein Zustand ist und kein Versehen.
+
+| Ziel | Anzahl | Was sie dort bekommen |
+|---|---|---|
+| `novaberg-bugs.md` | **70** | eine stabile Kennung und eine Zeile `Geschlossen, wenn` |
+| `novaberg-backlog.md` | **48** | eine ID, `Was fertig wäre` und eine erste Priorität |
+| Moduldokumente | **14** | einen Abschnitt *Befunde aus dem Betrieb* im Dokument ihres Gegenstands |
+| Regeln des Vorgehens | **10** | eine Regel — eine neu, zwei geschärft, drei bereits vorhanden, zwei als Werkzeugdefekt, zwei anderswo geführt |
+| bestehende Einträge | **5** | einen Nachtrag, weil ihr Gegenstand schon eine Kennung hatte |
+| erledigt | **21** | einen Abschluss-Abschnitt — sie waren behoben und zählten trotzdem als offen |
+
+**Die Zahl 21 ist der Befund hinter der Aufräumarbeit.** 14 % der „offenen" Funde waren erledigt — 19
+trugen eine Durchstreichung, zwei einen Behoben-Vermerk. Wer die Zahl 153 las, las 132 offene Funde und
+21 Karteileichen.
+
+**Die Bauart ist ausdrücklich begrenzt: Der Umzug überträgt den Wortlaut, er prüft ihn nicht.** Jeder
+Befund ist die Diagnose seines Tages; das Datum steht an jedem Eintrag, und die Pflicht, ihn vor der
+Umsetzung gegen den heutigen Code zu halten, gilt unverändert. Die Alternative wäre ein Audit von 168
+Einträgen gewesen — und hätte die Klassifikation um Wochen verschoben, während die Fundliste weiter
+wächst.
+
+**Zwei Befunde entstanden beim Klassifizieren selbst:**
+
+Der erste betrifft das Zielregister: **Der Zustand eines Defekts ist dort nicht mechanisch lesbar.** Von
+66 Abschnitten nannten 7 den Zustand in der Überschrift, 7 weitere nur im Körper. Wer einen Fund umzieht,
+kann nicht prüfen, ob der Zieleintrag noch offen ist — zwei Fundzeilen sagten bereits „behoben", während
+ihre Kennung im Register keine Marke trug.
+
+Der zweite betrifft die Grenze zwischen innen und außen: **69 Verweise auf interne Regelkennungen stehen
+in 16 Dokumenten dieses Repositoriums.** Für einen öffentlichen Leser zeigen sie ins Leere. Der Bestand
+ist unangetastet geblieben und die Zahl über den Umzug hinweg konstant — sie hat sich nur zwischen den
+Dateien verschoben.
+
+**Geprüft wurde mit einer Zählung auf beiden Seiten, nicht mit einem zweiten Durchgang durch die eigene
+Liste:** Von 168 Wortlauten aus dem Stand vor dem Umzug stehen **158 unverändert** an ihrem neuen Ort,
+**10** als Spur plus destillierte Regel — die Lessons, deren Ertrag eine Regel ist und nicht ihr Wortlaut.
+**Ohne jede Spur: keiner.**
 
 ### 20.08.2026, später Nachmittag — Vier Register führten ihren Verlauf in je einer Zeile
 

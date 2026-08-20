@@ -2,8 +2,8 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Vollständiges Register aller Features mit Zustandsampel und Beleg
-**Stand:** 20. August 2026, ~17:05 UTC
-**Verlauf:** [Verlauf des Standes](#verlauf-des-standes) — 27 Eintraege, juengster zuerst
+**Stand:** 20. August 2026, ~18:45 UTC
+**Verlauf:** [Verlauf des Standes](#verlauf-des-standes) — 28 Eintraege, juengster zuerst
 **Pfad:** novaberg/docs/novaberg-featureliste.md
 **Typ:** Register
 **Quellen:** die 44 Konzeptdokumente, `novaberg-architecture.md`, die Moduldokumente, `novaberg-roadmap.md`, `novaberg-backlog.md`, `novaberg-bugs.md`, `novaberg-fundliste.md` — gehalten gegen Code und Produktivsystem
@@ -441,6 +441,7 @@ Ampelzeile  = eine Tabellenzeile, deren zweite Spalte genau eine der vier Farben
 
 Die Fortschreibung des Standes, aus der Kopfzeile geloest am 20.08.2026. Der Wortlaut jedes Eintrags ist unveraendert; vorangestellt ist allein sein Datum.
 
+- **20. August 2026, ~18:45 UTC** — **keine Ampel bewegt, und das ist der Befund** — die Fundliste ist klassifiziert und leer: 168 Punkte, davon 70 als Defekt mit Kennung, 48 ins Backlog, 14 in Moduldokumente, 10 als Regel des Vorgehens, 5 als Nachtrag, 21 als erledigt. **Kein Feature beruehrt** — kein Fund ist umgesetzt, nur einsortiert. Was sich fuer diese Liste aendert, ist die Sichtbarkeit: Ein Defekt mit Kennung kann eine Ampel auf 🔴 setzen, eine Zeile in der Fundliste konnte das nie.
 - **20. August 2026, ~17:05 UTC** — **keine Ampel bewegt, und das ist der Befund** — die Arbeit des Nachmittags war Doku: Die `Stand:`-Kopfzeilen von vier Registern trugen ihren eigenen Verlauf in *einer* Zeile (10.512 bis 34.263 Zeichen, zusammen 138 Glieder, alle vier mit unpaariger Klammerbilanz). Sie sind in den Koerper geloest, die laengste Kopfzeile misst jetzt 147 Zeichen. Kein Feature beruehrt: Ein Kopf traegt Felder, der Koerper den Verlauf.
 - **20. August 2026, ~15:30 UTC** — **ein Defekt am Selbstbild, gefunden an ihren eigenen Antworten** — Nova sprach über ihre Dienste in der dritten Person („die Fachabteilung"), dreimal in einer Sitzung; der Wortlaut stand in ihrem Prompt, und der Datenteil trug die Instanz mit. Beide Hälften behoben, 5 Zeugen, Gegenprobe 2/2 — **im Betrieb ungemessen** (`NOVA-SPRICHT-VON-FACHABTEILUNG`). Suite **2037 grün**.
 - **20. August 2026, ~14:15 UTC** — **die Antwortlänge hat drei Einflüsse statt einem, und die Haltung ihren zweiten Leser** — die Zeichenkorridore sind halbiert, die Länge der Äußerung deckelt sie bei rein leichten Intentionen, und der Verfasser bekommt die drei fachlichen Größen (`umfang`, `fragen`, `draengen`) im neuen Block `[MASS]`. Anlass: 12 Zeichen Gruß, 838 Zeichen Antwort. Durchgerechnet fällt derselbe Gruß auf 72–144, eine kurze Sachfrage nur auf 175–350. Suite **2032 grün**.
