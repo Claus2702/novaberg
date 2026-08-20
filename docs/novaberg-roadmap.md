@@ -10,6 +10,42 @@
 
 ## Chats 3–20: Grundlagen (März 2026)
 
+### 20.08.2026, nachmittags — Der Index versteht jetzt jedes Format, das er annimmt
+
+**Gebaut.** Vier Erkenner statt einem. **reStructuredText:** Überschrift ist Text über einer
+Unterstreichung — und welche Ebene ein Satzzeichen bezeichnet, steht in RST *nicht* fest,
+sondern ergibt sich aus der Reihenfolge seines ersten Auftretens im Dokument. Wer `=` fest auf
+Ebene 1 legt, liest die Hälfte der Dateien falsch. Eingerückte Zeilen scheiden aus, womit der
+Literal-Block ohne eigenen Zustand erledigt ist — und ohne Zustand gibt es keinen Umschalter,
+der kippen könnte. **Org-Mode:** Sterne zählen, `#+BEGIN_`/`#+END_` bilanzieren. **AsciiDoc:**
+Gleichheitszeichen zählen, Blockbegrenzungen bilanzieren — `==== ` mit Text ist eine
+Überschrift, `====` allein die Grenze eines Beispielblocks, und das Leerzeichen entscheidet.
+
+**`.txt` ist ausdrücklich registriert und liefert ausdrücklich nichts.** Eine reine Textdatei
+hat keine Gliederung; das ist eine Auskunft und kein Ausfall. Ohne die Registrierung fiele sie
+in `FormatOhneErkennerError` — also in einen Fehler, obwohl gar keiner vorliegt.
+
+**Gemessen an echten Fremddateien statt an einer Nachbildung:** sechs `.rst`-Dateien aus
+installierten Paketen im Behälter — Text, den niemand für diesen Zweck geschrieben hat.
+**24 Überschriften, 0 nicht erhoben**; die beiden Lizenzdateien darunter tragen tatsächlich
+keine. Der Markdown-Bestand bleibt unverändert bei **174 erhoben, 0 leer, 0 nicht erhoben**.
+
+**Aus der zweiten Kontrolle ein Riegel.** Der gewählte Zugriff war ein Kriterium statt einer
+Aufzählung: Die Menge der zugelassenen Endungen und die Menge der Erkenner leben in zwei
+Modulen, die einander nicht kennen. Ein Zeuge hält sie seitdem gegeneinander — wer die eine
+erweitert und die andere vergisst, merkt es in der Suite statt im Betrieb.
+
+**Ein Fund hat dabei seine Bewertung geändert.** Dass `block_lesen` die Unterstreichung einer
+Setext-Überschrift als erste Inhaltszeile mitliefert, war in Markdown ein Sonderfall ohne
+Vorkommen. In reStructuredText ist die Unterstreichung **die Regel** — jede Überschrift trägt
+eine. Der Eintrag steht entsprechend nachgetragen in der Fundliste; behoben ist er nicht, weil
+die Abhilfe einen Vertrag mit fünf Aufrufern ändert.
+
+Zeugen 6 neu, Suite **2014 grün, 0 übersprungen**. Gegenprobe: einen Erkenner aus der Registry
+genommen → 2 vorhergesagt, 2 gezählt.
+
+---
+
 ### 20.08.2026, nachmittags — Die Gliederung kommt aus einem Parser, und der Riegel bleibt trotzdem stehen
 
 **Gebaut.** `markdown-it-py 3.0.0` (Grundfassung `commonmark`) macht die Überschriftenerkennung

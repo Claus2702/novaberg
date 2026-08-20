@@ -117,6 +117,22 @@ def struktur_analysieren(pfad: str) -> list[dict]:
 >
 > **Der Parser ersetzt die Zaunbilanz nicht.** An der defekten Datei fand der Automat 5 von 83 Ueberschriften, CommonMark **45 von 83**: beide Karten falsch, nur verschieden falsch. Die Bilanz laeuft deshalb weiter vor dem Parser.
 >
+> **Seit dem 20.08.2026 hat jede zugelassene Endung ihren Erkenner** (`_ERKENNER`), und die Registry deckt `DATEIEN_INDEX_ENDUNGEN` vollstaendig ab — ein Zeuge haelt beide Mengen gegeneinander:
+>
+> | Endung | Ueberschrift | Blockgrenze | Bilanz |
+> |---|---|---|---|
+> | `.md` | `markdown-it-py`, Grundfassung `commonmark` | Zaun aus 3+ Zeichen | Zaunzahl gerade |
+> | `.rst` | Text ueber einer Unterstreichung; **Ebene aus der Reihenfolge der Zeichen** | eingerueckter Literal-Block | keine noetig — eine Ueberschrift beginnt in Spalte 1 |
+> | `.org` | fuehrende Sterne, Ebene = ihre Zahl | `#+BEGIN_` / `#+END_` | Marken paarig |
+> | `.adoc` | fuehrende Gleichheitszeichen, Ebene = ihre Zahl | Linie aus 4+ gleichen Zeichen | je Zeichen paarig |
+> | `.txt` | keine — **ausdrueckliche leere Registrierung** | — | — |
+>
+> **In RST steht die Ebene nicht am Zeichen.** Die Spezifikation legt keine Zuordnung fest; welche Tiefe `=` oder `-` bezeichnet, entscheidet jedes Dokument durch die Reihenfolge, in der die Zeichen zum ersten Mal auftreten. Eine feste Tabelle liest die Haelfte der Dateien falsch.
+>
+> **`.txt` ist der Grund, warum die Registry und nicht eine Fallunterscheidung.** Die leere Karte ist dort die richtige Auskunft; ohne Eintrag waere sie ein Ausfall. Eine Endung, die fehlt, wirft — das ist der Riegel und nicht die Luecke.
+>
+> Gemessen an sechs echten `.rst`-Dateien aus installierten Paketen: **24 Ueberschriften, 0 nicht erhoben**.
+
 > Ueber den Bestand gegengerechnet: **174 von 174** Dateien liefern dieselbe Karte wie der Automat — nachdem zwei Fehlauszeichnungen behoben waren, die der Automat verdeckt hatte (ein unpaariger Zaun, eine Trennlinie unmittelbar unter einem Absatz, die CommonMark als Setext-Ueberschrift liest).
 
 ```python
