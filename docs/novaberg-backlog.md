@@ -2,8 +2,8 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Backlog — Konzipierte, noch nicht implementierte Features
-**Stand:** 20. August 2026, ~20:50 UTC
-**Verlauf:** [Verlauf des Standes](#verlauf-des-standes) — 32 Eintraege, juengster zuerst
+**Stand:** 20. August 2026, ~21:20 UTC
+**Verlauf:** [Verlauf des Standes](#verlauf-des-standes) — 33 Eintraege, juengster zuerst
 **Pfad:** novaberg/docs/novaberg-backlog.md
 **Quellen:** nova-08-k.md (Kognitive Anreicherung), nova-10-k-backlog.md (Skill-System), nova-01-t-c-backlog.md (Node-Konfiguration)
 
@@ -365,6 +365,16 @@ Erste Erhebung der KZG-Salienz **nach** dem Reset, 400 Schlüssel des Paares `me
 **Die Zeilen `Was fertig waere` und `Prioritaet` sind neu** und stammen nicht aus der Fundliste. Die Prioritaet ist eine erste Einschaetzung aus dem Wortlaut, **kein Band** — ein Band wird gegen den Code vergeben.
 
 ---
+
+#### BUGREGISTER-ZUSTAND-NICHT-LESBAR — offen oder behoben ist nicht auszaehlbar
+
+**Befund (20.08.2026), beim Umzug der Fundliste entstanden.** `novaberg-bugs.md` fuehrt den Zustand eines Defekts **an drei verschiedenen Stellen und in keiner verbindlich**: In der Ueberschrift (`### KENNUNG — behoben am TT.MM.`), im Koerper (`**Behoben am ...**`) oder gar nicht. Am 20.08.2026 gezaehlt: **82 Abschnitte, 4 mit Marke in der Ueberschrift, 2 weitere nur im Koerper** — der Rest traegt keine.
+
+**Warum es zaehlt:** Wer einen Fund umzieht, kann nicht pruefen, ob der Zieleintrag noch offen ist. Zwei Fundzeilen sagten bereits *behoben*, waehrend ihre Kennung im Register keine Marke trug. Und jede Aussage der Form *„N Defekte sind offen"* — auch die der Featureliste — beruht auf einer Heuristik ueber Textmuster statt auf einem Feld.
+
+**Was fertig waere:** Der Zustand steht je Eintrag an genau einer Stelle und in einer geschlossenen Wertemenge, sodass ein Script ihn auszaehlen kann. Die vorhandenen 82 Abschnitte sind einmal nachgezogen.
+
+**Prioritaet:** mittel. Kein laufender Verlust — aber jede Zahl ueber offene Defekte bleibt bis dahin eine Schaetzung.
 
 #### QUERY-REWRITING-QUELLE-STEHT — der Verlauf liegt vor, bevor eingebettet wird
 
@@ -5768,6 +5778,7 @@ Der NachfragenAgent hat eine Kopplung: `services/pixie/router.py` bildet `nachfr
 
 Die Fortschreibung des Standes, aus der Kopfzeile geloest am 20.08.2026. Der Wortlaut jedes Eintrags ist unveraendert; vorangestellt ist allein sein Datum.
 
+- **20. August 2026, ~21:20 UTC** — **Ein Eintrag neu aus dem Abgleich des Verlaufs:** `BUGREGISTER-ZUSTAND-NICHT-LESBAR` — der Zustand eines Defekts steht an drei Stellen und in keiner verbindlich; von 82 Abschnitten tragen 6 ueberhaupt eine Marke. Jede Zahl ueber offene Defekte ist bis dahin eine Schaetzung.
 - **20. August 2026, ~20:50 UTC** — **Ein Eintrag geschlossen:** `SUCHSCHLUESSEL-OHNE-VERLAUF` ist als Query Rewriting umgesetzt und im Betrieb belegt. Ein Rest ist benannt: Die Wirkung auf KZG und LZG ist ungemessen — gemessen wurde gegen die Bibliothek.
 - **20. August 2026, ~18:30 UTC** — **48 neue Eintraege** aus der Klassifikation der Fundliste, jeder mit ID, `Was fertig waere` und einer ersten Prioritaet. **Die Prioritaet ist kein Band** — ein Band wird gegen den Code vergeben, nicht gegen den Eintrag.
 - **20. August 2026, ~17:05 UTC** — **kein Eintrag bewegt.** Die Kopfzeile trug 10.512 Zeichen in einer Zeile und ist in den Abschnitt *Verlauf des Standes* geloest — 29 Eintraege, Wortlaut unveraendert.
