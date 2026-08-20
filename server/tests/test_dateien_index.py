@@ -359,6 +359,69 @@ class VerborgenesTest(unittest.TestCase):
         self.assertNotIn("Endung", gruende[".DS_Store"])
 
 
+class BilanzGehtAufTest(unittest.TestCase):
+    """Eine Datei, die am Modell scheitert, steht in der Bilanz — mit Pfad.
+
+    Der Defekt, gegen den dieser Zeuge steht: `erschliessen` gibt bei
+    unbrauchbarer Modellantwort ein leeres Ergebnis zurück, der Lauf
+    verbrauchte dafür sein Budget, schrieb keine Zeile und meldete nichts.
+    `fehler` sammelt nur Ausnahmen je **Wurzel**; ein Fehlschlag je Datei
+    hatte dort kein Fach. Sichtbar war der Verlust allein daran, dass die
+    Zahlen sich nicht zur Zahl der Kandidaten addieren — und genau diese
+    Identität prüft der Zeuge.
+    """
+
+    def setUp(self) -> None:
+        """Zwei Textdateien, von denen eine am Modell scheitern wird."""
+        self.wurzel: Path = Path(tempfile.mkdtemp(prefix="index_bilanz_"))
+        (self.wurzel / "geht.md").write_text("# Geht\nA\n", encoding="utf-8")
+        (self.wurzel / "scheitert.md").write_text("# Scheitert\nB\n", encoding="utf-8")
+
+    def tearDown(self) -> None:
+        """Räumt die Wurzel ab."""
+        shutil.rmtree(self.wurzel, ignore_errors=True)
+
+    def test_gescheiterte_datei_steht_mit_pfad_in_der_bilanz(self) -> None:
+        """Der Fehlschlag bekommt ein Fach, und die Rechnung geht auf."""
+        from agents.dateien_index import agent as agent_modul
+        from agents.dateien_index.agent import DateienIndexAgent
+        from agents.dateien_index.indizieren import Erschliessung
+        from agents.dateien_wurzeln.aussenrand import WurzelBefund
+
+        def _erschliessen(pfad: Path, basis: Path, relativ: str) -> Erschliessung:
+            """Die eine Datei gelingt, die andere liefert ein leeres Ergebnis."""
+            if relativ == "scheitert.md":
+                return Erschliessung("", "", [], [], None)
+            return Erschliessung("Thema", "Fasst zusammen", ["a"], [], [0.1] * 768)
+
+        befund = WurzelBefund(
+            ok=True, aufgeloest=self.wurzel, dateizahl=2,
+            gezaehlt_vollstaendig=True, rand=str(self.wurzel), grund="",
+        )
+
+        with (
+            patch.object(agent_modul, "wurzel_pruefen", return_value=befund),
+            patch.object(agent_modul, "bestand_je_wurzel", return_value={}),
+            patch.object(agent_modul, "erschliessen", side_effect=_erschliessen),
+            patch.object(agent_modul, "zeile_schreiben", return_value=1),
+            patch.object(agent_modul, "suchtext_bauen", return_value="such"),
+            patch.object(agent_modul, "verschwunden_markieren", return_value=None),
+        ):
+            teil, _budget = DateienIndexAgent()._wurzel_bearbeiten(
+                {"id": 7, "pfad": str(self.wurzel)}, 50,
+            )
+
+        self.assertEqual(teil["indiziert"], 1)
+        self.assertEqual(teil["gescheitert"], 1)
+        self.assertEqual(
+            teil["gescheitert_gruende"][0]["pfad"], "scheitert.md",
+        )
+        # Die Identität, an der der Verlust sichtbar wird.
+        self.assertEqual(
+            teil["neu"], teil["indiziert"] + teil["offen"] + teil["gescheitert"],
+        )
+
+
 class EmbedTextTest(unittest.TestCase):
     """`F-EMBED-1`: eine benannte Stelle, rekonstruierbar aus dem Bestand."""
 

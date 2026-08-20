@@ -170,11 +170,18 @@ class DateienIndexAgent(BaseAgent):
         # ── Ausgabe-Verifikation ────────────────
         indiziert: int = sum(t["indiziert"] for t in bilanz)
         offen: int = sum(t["offen"] for t in bilanz)
+        gescheitert: int = sum(t.get("gescheitert", 0) for t in bilanz)
         ergebnis: dict = {
             "lauf_id": lauf_id,
             "wurzeln": len(wurzeln),
             "indiziert": indiziert,
             "offen": offen,
+            # **Steht neben `fehler`, nicht darin.** `fehler` sammelt
+            # Ausnahmen je WURZEL — ein abgebrochener Lauf. `gescheitert`
+            # zaehlt Dateien, die der Lauf ueberging, ohne dass etwas warf.
+            # Beides in einen Topf zu werfen machte aus einem stillen Verlust
+            # einen lauten Fehler und aus einem lauten Fehler eine Statistik.
+            "gescheitert": gescheitert,
             "fehler": fehler,
             "je_wurzel": bilanz,
         }
@@ -186,6 +193,17 @@ class DateienIndexAgent(BaseAgent):
                 offen, DATEIEN_INDEX_MAX_PRO_LAUF,
             )
 
+        # **`offen: 0` heisst nicht "alles ist drin".** Es heisst, die
+        # Obergrenze hat nichts stehengelassen. Wer den Unterschied nicht
+        # nennt, liefert die Sprache eines fertigen Laufs fuer einen, dem
+        # Dateien fehlen — der Lauf vom 20.08.2026 meldete genau das.
+        if gescheitert:
+            logger.error(
+                "Waechter: %d Dateien sind GESCHEITERT und stehen nicht im "
+                "Index — der Lauf ist trotz 'offen %d' nicht vollstaendig",
+                gescheitert, offen,
+            )
+
         if fehler:
             self._audit("fehler", f"{lauf_id}: {'; '.join(fehler)[:400]}")
             state["status"] = "fehler"
@@ -194,14 +212,15 @@ class DateienIndexAgent(BaseAgent):
             self._audit(
                 "erledigt",
                 f"{lauf_id}: {indiziert} indiziert, {offen} offen, "
-                f"{len(wurzeln)} Wurzeln",
+                f"{gescheitert} gescheitert, {len(wurzeln)} Wurzeln",
             )
             state["status"] = "abgeschlossen"
 
         state["ergebnis"] = ergebnis
         logger.info(
-            "Waechter: Lauf beendet (%s) — %d indiziert, %d offen, %d Fehler",
-            lauf_id, indiziert, offen, len(fehler),
+            "Waechter: Lauf beendet (%s) — %d indiziert, %d offen, "
+            "%d gescheitert, %d Fehler",
+            lauf_id, indiziert, offen, gescheitert, len(fehler),
         )
         return state
 
@@ -238,11 +257,22 @@ class DateienIndexAgent(BaseAgent):
         offen: int = len(zu_tun) - len(arbeit)
 
         indiziert: int = 0
+        gescheitert: list[tuple[str, str]] = []
         for fund in arbeit:
             erschliessung: Erschliessung = erschliessen(
                 fund.pfad_absolut, basis, fund.pfad_relativ,
             )
+            # **Ein Fehlschlag je Datei hatte bis zum 20.08.2026 kein Fach.**
+            # `erschliessen` gibt bei unbrauchbarer Modellantwort ein leeres
+            # Ergebnis zurueck; der Lauf verbrauchte dafuer sein Budget,
+            # schrieb keine Zeile und meldete nichts. Sichtbar war es allein
+            # daran, dass `indiziert + offen` die Zahl der Kandidaten nicht
+            # traf — fuenf von 160 Dateien fielen so heraus, dieselben in
+            # jedem Lauf (novaberg-bugs.md, INDEXLAUF-VERSCHWEIGT-DATEIFEHLER).
             if not erschliessung.thema:
+                gescheitert.append(
+                    (fund.pfad_relativ, "Erschliessung ohne Thema — Modellantwort unbrauchbar"),
+                )
                 continue
             zeilen_id = zeile_schreiben(
                 wurzel["id"], fund, erschliessung,
@@ -250,13 +280,42 @@ class DateienIndexAgent(BaseAgent):
             )
             if zeilen_id is not None:
                 indiziert += 1
+            else:
+                gescheitert.append(
+                    (fund.pfad_relativ, "Zeile nicht geschrieben — Speicherfehler"),
+                )
 
         verschwunden_markieren([z["id"] for z in lauf.verschwunden])
 
         zahlen: dict[str, int] = lauf.zahlen()
+
+        # ── Ausgabe-Verifikation ────────────────
+        # **Die Identitaet ist die Probe, und sie ist der ganze Riegel.**
+        # Kandidaten = geschrieben + stehengelassen + gescheitert. Geht sie
+        # nicht auf, ist eine Datei zwischen die Faelle gefallen — und genau
+        # diese Differenz war der Defekt: Wer `offen: 0, fehler: []` liest,
+        # haelt einen Lauf fuer vollstaendig, dem fuenf Dateien fehlen.
+        kandidaten: int = len(zu_tun)
+        if kandidaten != indiziert + offen + len(gescheitert):
+            logger.error(
+                "Waechter: Wurzel %s ('%s') — %d Kandidaten, aber %d "
+                "geschrieben + %d offen + %d gescheitert. Die Bilanz geht "
+                "nicht auf; eine Datei faellt zwischen die Faelle",
+                wurzel["id"], basis, kandidaten, indiziert, offen, len(gescheitert),
+            )
+
+        if gescheitert:
+            logger.error(
+                "Waechter: Wurzel %s ('%s') — %d von %d Dateien nicht "
+                "erschlossen: %s",
+                wurzel["id"], basis, len(gescheitert), kandidaten,
+                ", ".join(pfad for pfad, _ in gescheitert)[:300],
+            )
+
         logger.info(
-            "Waechter: Wurzel %s ('%s') — %s, davon %d geschrieben, %d offen",
-            wurzel["id"], basis, zahlen, indiziert, offen,
+            "Waechter: Wurzel %s ('%s') — %s, davon %d geschrieben, %d offen, "
+            "%d gescheitert",
+            wurzel["id"], basis, zahlen, indiziert, offen, len(gescheitert),
         )
         # **Die Gruende gehen mit in die Bilanz, nicht nur ihre Anzahl.**
         # Wer `uebergangen: 3` liest und nie erfaehrt, warum, hat eine Zahl
@@ -276,5 +335,9 @@ class DateienIndexAgent(BaseAgent):
             "uebergangene_verzeichnisse_gruende": [
                 {"pfad": pfad, "grund": grund}
                 for pfad, grund in lauf.uebergangene_verzeichnisse
+            ],
+            "gescheitert": len(gescheitert),
+            "gescheitert_gruende": [
+                {"pfad": pfad, "grund": grund} for pfad, grund in gescheitert
             ],
         }, max(0, budget - len(arbeit))
