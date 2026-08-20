@@ -53,6 +53,44 @@ db_zugriff → ei_calc → ▶ enricher ◀ → emotionale_gravitation → reduc
 
 ---
 
+
+## Query Rewriting — der Schlüssel trägt den Gegenstand des Gesprächs
+
+**Seit dem 20.08.2026 ist der eingebettete Text nicht mehr die rohe Äußerung.** Ein Turn wie *„und wie weist man das nach?"* nennt seinen Gegenstand nicht, er zeigt auf ihn zurück — und der Vektor daraus suchte ohne ihn — in **fünf** Konsumenten zugleich, weil sie denselben Schlüssel benutzen: KZG, LZG, die Bibliothek über den `WissenManager`, der Dateienindex (`aufzeichnungen`) und die beiden NMCP-Dienste `wissen` und `dateien`, denen `such_vektor` als angemeldeter Bedarf mitwandert.
+
+**Die Zahl fünf stammt aus der zweiten Kontrolle, nicht aus dem Bau:** Der Befund, der den Umbau ausgelöst hat, nannte drei Speicher. Ein Suchlauf über die Leser des Schlüssels fand zwei weitere — und für die ist die Wirkung des Rewritings **ungemessen**, weil die Sonden gegen die Bibliothek liefen.
+
+`_suchtext_bauen` formt aus dem Verlauf eine eigenständige Suchanfrage. **Ein Modellaufruf, und damit der einzige des Enrichers** — der Modulkopf sagte bis dahin ausdrücklich *„kein LLM-Aufruf"*.
+
+**Gemessen vor dem Bau**, gegen 306 Ausarbeitungen und zehn Verläufe mit anaphorischem Schlussturn:
+
+| Arm | Rang 1 | über der Abrufschwelle | Median-Rang | Median-Kosinus |
+|---|---|---|---|---|
+| rohe Äußerung (Zustand bis 20.08.) | 0/10 | **0/10** | 155,5 | 0,1865 |
+| Rewrite auf **Frageform** | 3/10 | **5/10** | 10,5 | 0,4173 |
+| Rewrite auf Themenform | 2/10 | 3/10 | 32,0 | 0,3514 |
+| die ausgeschriebene Referenzfrage | 2/10 | 2/10 | 8,0 | 0,3971 |
+
+> **Der vierte Arm war als Obergrenze gedacht und ist keine.** Das Rewrite schlägt die von Hand ausgeschriebene Frage. Erklärbar ist das damit, dass es aus demselben Modell stammt, das die Ausarbeitungen geschrieben hat: Es trifft die Sprache des Bestandes, die Handformulierung trifft die Sprache des Fragenden.
+
+**Beidseitig gesondet.** Bei drei Verläufen mit Themenwechsel bleibt der **alte** Gegenstand in 3 von 3 Fällen unter der Schwelle — das Rewrite schreibt den neuen. Bei fünf Alltagsverläufen ohne Bezug zur Bibliothek kommt in 15 von 15 Kombinationen kein Treffer über sie.
+
+**Was ausdrücklich nicht mitzieht: die Zielaktivierung.** Sie rechnet weiter gegen das rohe Embedding — aus demselben Grund, aus dem sie schon nicht mit dem verschobenen Vektor rechnet: Sie wäre sonst ihre eigene Eingabe. Der Rewrite kostet deshalb ein zweites Embedding, und nur dann, wenn er auch stattgefunden hat.
+
+**Die Antwort des Modells ist eine externe Quelle und wird geprüft:** erste Zeile, nicht leer, nicht länger als die Plausibilitätsgrenze; ein vorangestelltes `Suchanfrage:` fällt weg. Jeder Ausgang, der nicht `rewrite` heißt, liefert die rohe Äußerung und **meldet sich laut** — `abgeschaltet`, `zu_wenig_verlauf`, `verlauf_leer`, `leer`, `zu_lang`, `aufruf_gescheitert`. Frist und Ausgabegrenze stehen als Paar an der Aufrufstelle.
+
+**Im Betrieb gemessen am 20.08.2026**, an einem echten Turn:
+
+```
+roh      : "Und wie weist man das eigentlich nach?"
+Rewrite  : "Wie weist man das Informationsparadoxon bei Schwarzen Löchern nach?"
+herkunft : rewrite      turns_gesehen: 23
+```
+
+> **Der erste echte Turn hat einen Defekt gefunden, den zehn grüne Zeugen nicht sehen konnten.** Die Turns der Session tragen `rolle` und `inhalt`; der Bau las `role` und `content` und verwarf damit jeden Turn. Das Modell bekam seine Aufgabe ohne Verlauf und **fragte danach** — die Rückfrage *„Bitte stelle mir den Verlauf zur Verfügung"* wurde der Suchschlüssel. Seither steht ein Riegel davor: Ein leerer Verlauf bei vorhandenen Turns ist ein Defekt und kein Randfall.
+
+---
+
 ## 3. Kontextquellen
 
 **Hinweis (seit Chat 59, vereinfacht in Phase 3):** Der fünfte Abschnitt „Emotionale Intelligenz" wurde entfernt. Alle EI-Berechnungen laufen jetzt im EI-Calc-Node (→ `novaberg-node-ei-calc.md`). Der Enricher übergibt als Brücke nur noch `raw_turns` an den State.

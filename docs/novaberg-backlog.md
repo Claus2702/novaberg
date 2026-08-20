@@ -2,8 +2,8 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Backlog — Konzipierte, noch nicht implementierte Features
-**Stand:** 20. August 2026, ~18:30 UTC
-**Verlauf:** [Verlauf des Standes](#verlauf-des-standes) — 31 Eintraege, juengster zuerst
+**Stand:** 20. August 2026, ~20:50 UTC
+**Verlauf:** [Verlauf des Standes](#verlauf-des-standes) — 32 Eintraege, juengster zuerst
 **Pfad:** novaberg/docs/novaberg-backlog.md
 **Quellen:** nova-08-k.md (Kognitive Anreicherung), nova-10-k-backlog.md (Skill-System), nova-01-t-c-backlog.md (Node-Konfiguration)
 
@@ -390,11 +390,17 @@ Erste Erhebung der KZG-Salienz **nach** dem Reset, 400 Schlüssel des Paares `me
 
 **Prioritaet:** niedrig
 
-#### SUCHSCHLUESSEL-OHNE-VERLAUF — der Schluessel traegt nur den aktuellen Turn
+#### ~~SUCHSCHLUESSEL-OHNE-VERLAUF~~ — umgesetzt am 20.08.2026
 
 **Befund (20.08.2026), aus der Fundliste uebernommen.** **Der Suchschlüssel des Gedächtnisses trägt ausschließlich den aktuellen Turn.** `_create_prompt_embedding` bettet `reiz_text(state)` ein, also `user_prompt` bzw. `eigener_gedanke` — kein Verlauf. Verschoben wird der Vektor danach durch `wahrnehmung_verschieben`, aber Richtung **Ziele**, nicht Richtung Gespräch; vom Vorturn erreicht die Suche genau ein Datum, seinen *Cluster*, und der steuert nur die Mischstärke, nicht den Inhalt. **Folge:** Ein Turn wie *„und wie weist man das nach?“* sucht ohne den Gegenstand, den der Turn davor genannt hat — KZG, LZG und Bibliothek gleichermaßen, denn alle drei bekommen denselben `such_vektor`. **Entscheidung des Meisters, 20.08.2026: Der Weg ist Query Rewriting** — ein Modellaufruf formt aus den letzten Turns eine eigenständige Suchanfrage. Verlaufsvektor, HyDE-Variante und Mehrfachsuche mit Fusion sind ausdrücklich verworfen. **Offen ist der Wirkungsbereich:** alle drei Speicher oder zunächst nur die Bibliothek — heute ist der Schlüssel für alle derselbe, und das ist eine ausdrücklich begründete Eigenschaft (`enricher.py`, Kommentar zu `state["such_vektor"]`).
 
 **Was fertig waere:** Der Suchschluessel traegt den Gegenstand des Gespraechs; offen ist der Wirkungsbereich — alle drei Speicher oder zunaechst die Bibliothek.
+
+→ **Umgesetzt am 20.08.2026 als Query Rewriting.** `_suchtext_bauen` im Enricher formt aus dem Verlauf eine eigenstaendige Suchanfrage; der Wirkungsbereich sind **alle Leser des Schluessels** — und das sind fuenf, nicht drei: KZG, LZG, die Bibliothek, der Dateienindex und die beiden NMCP-Dienste, denen `such_vektor` als angemeldeter Bedarf mitwandert. Die Zahl kommt aus der zweiten Kontrolle; der ausloesende Befund nannte drei. **Die Zielaktivierung zieht nicht mit** — sie rechnet weiter gegen das rohe Embedding und waere sonst ihre eigene Eingabe.
+
+Gemessen vor dem Bau gegen 306 Ausarbeitungen und zehn Verlaeufe mit anaphorischem Schlussturn: Die rohe Aeusserung erreicht in **0 von 10** Faellen die Abrufschwelle, das Rewrite auf Frageform in **5 von 10**; die Themenform blieb bei 3 von 10 und ist deshalb nicht gewaehlt. Gegenrichtungen sauber: Themenwechsel 3/3 unter der Schwelle, fremde Alltagsverlaeufe 15/15 ohne Treffer. Im Betrieb an einem echten Turn belegt.
+
+**Ein Rest bleibt und ist benannt:** Ob das Rewrite auch KZG, LZG, den Dateienindex und die beiden Dienste **besser** trifft, ist nicht gemessen — die Sonden liefen gegen die Bibliothek. Belegt ist nur, dass es ihnen nicht schadet (kein Nachhall beim Themenwechsel, keine Fremdtreffer).
 
 **Prioritaet:** hoch
 
@@ -5762,6 +5768,7 @@ Der NachfragenAgent hat eine Kopplung: `services/pixie/router.py` bildet `nachfr
 
 Die Fortschreibung des Standes, aus der Kopfzeile geloest am 20.08.2026. Der Wortlaut jedes Eintrags ist unveraendert; vorangestellt ist allein sein Datum.
 
+- **20. August 2026, ~20:50 UTC** — **Ein Eintrag geschlossen:** `SUCHSCHLUESSEL-OHNE-VERLAUF` ist als Query Rewriting umgesetzt und im Betrieb belegt. Ein Rest ist benannt: Die Wirkung auf KZG und LZG ist ungemessen — gemessen wurde gegen die Bibliothek.
 - **20. August 2026, ~18:30 UTC** — **48 neue Eintraege** aus der Klassifikation der Fundliste, jeder mit ID, `Was fertig waere` und einer ersten Prioritaet. **Die Prioritaet ist kein Band** — ein Band wird gegen den Code vergeben, nicht gegen den Eintrag.
 - **20. August 2026, ~17:05 UTC** — **kein Eintrag bewegt.** Die Kopfzeile trug 10.512 Zeichen in einer Zeile und ist in den Abschnitt *Verlauf des Standes* geloest — 29 Eintraege, Wortlaut unveraendert.
 - **20. August 2026, ~14:15 UTC** — **zwei neu: `LAENGENVORGABE-UNGEMESSEN` und `MASSBLOCK-IM-BETRIEB-UNGEMESSEN`** — die Antwortlänge hat seit heute drei Einflüsse, und der Verfasser liest die Haltung; beides ist bezeugt und im Betrieb ungemessen.

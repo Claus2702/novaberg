@@ -2,8 +2,8 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Vollständiges Register aller Features mit Zustandsampel und Beleg
-**Stand:** 20. August 2026, ~19:30 UTC
-**Verlauf:** [Verlauf des Standes](#verlauf-des-standes) — 29 Eintraege, juengster zuerst
+**Stand:** 20. August 2026, ~20:55 UTC
+**Verlauf:** [Verlauf des Standes](#verlauf-des-standes) — 30 Eintraege, juengster zuerst
 **Pfad:** novaberg/docs/novaberg-featureliste.md
 **Typ:** Register
 **Quellen:** die 43 Konzeptdokumente, `novaberg-architecture.md`, die Moduldokumente, `novaberg-roadmap.md`, `novaberg-backlog.md`, `novaberg-bugs.md`, `novaberg-fundliste.md` — gehalten gegen Code und Produktivsystem
@@ -67,6 +67,7 @@ Die Feature-Matrix in `novaberg-architecture.md` §6 ist mit dieser Liste abgel�
 | `perzeption` — Emotion, Arousal, Intent, Dual-Modus | 🔴 | `[Code]` · `novaberg-node-perception.md` | schreibt **keinen** Pipeline-Eintrag · **🔴 seit 20.08.2026** (zuvor 🟢): `PERZEPTIONSFELDER-OHNE-KANON` offen |
 | `db_zugriff` — CG-Eingang, Personality-Klassen | 🟢 | `[Code]` · Pipeline-Einträge vorhanden `[gemessen]` | — |
 | `enricher` — Kontext aus vier Quellen | 🔴 | `[Code]` | Fakten-Enrichment **abgeschaltet** seit Chat 71 (`enricher.py:847`) · **🔴 seit 20.08.2026** (zuvor 🟠): `ENRICHERPROMPT-LEERE-HUELLE` offen |
+| **Query Rewriting** (der Suchschluessel traegt den Gegenstand) | 🟢 | `graph/nodes/enricher.py::_suchtext_bauen`, **10 Zeugen**, Gegenprobe 10 rot bei 7 vorhergesagt · gemessen vor dem Bau gegen 306 Ausarbeitungen: rohe Aeusserung **0/10** ueber der Abrufschwelle, Rewrite auf Frageform **5/10** (Median-Kosinus 0,1865 → 0,4173); Themenwechsel 3/3 unter der Schwelle, fremde Verlaeufe 15/15 ohne Treffer · im Betrieb an einem echten Turn belegt `[gemessen]` | der Schluessel hat **fuenf** Leser (KZG, LZG, Bibliothek, Dateienindex, zwei NMCP-Dienste) — gemessen ist die Wirkung nur fuer die Bibliothek |
 | `ei_calc` — Verlauf, Vektor, Empathie | 🟢 | `[Code]` · `novaberg-node-ei-calc.md` | kein Pipeline-Eintrag |
 | `emotionale_gravitation` — reaktivierte Erinnerung | 🟢 | `[Code]` · `novaberg-node-emotionale-gravitation.md` | kein Pipeline-Eintrag; `GRAVITATION-KLEMME-FEHLT` offen |
 | `ei_calc_persist` — CG-Ausgang, Zustand schreiben | 🟢 | `[Code]` | — |
@@ -490,6 +491,7 @@ Ampelzeile  = eine Tabellenzeile, deren zweite Spalte genau eine der vier Farben
 
 Die Fortschreibung des Standes, aus der Kopfzeile geloest am 20.08.2026. Der Wortlaut jedes Eintrags ist unveraendert; vorangestellt ist allein sein Datum.
 
+- **20. August 2026, ~20:55 UTC** — **Eine Ampel neu auf 🟢: Query Rewriting.** Der Suchschluessel des Gedaechtnisses traegt seit heute den Gegenstand des Gespraechs, auch wenn der Turn ihn nur als Rueckbezug nennt. Gemessen vor dem Bau: rohe Aeusserung **0 von 10** ueber der Abrufschwelle, Rewrite auf Frageform **5 von 10**; Themenwechsel 3/3 sauber, fremde Verlaeufe 15/15 ohne Treffer. Im Betrieb belegt, Suite **2050 gruen**. Der erste echte Turn fand dabei einen Defekt, den zehn gruene Zeugen nicht sehen konnten: geratene Feldnamen in der Attrappe.
 - **20. August 2026, ~19:30 UTC** — **Zweite Neuerhebung — 218 Zeilen, und 39 davon haben die Farbe gewechselt.** Anlass war die Klassifikation der Fundliste am selben Tag: 70 rohe Funde wurden zu Defekten mit Kennung, und **erst dadurch konnten sie eine Ampel setzen**. 74 offene Kennungen zeigten auf keine einzige; 61 liessen sich zuordnen. Die Liste steht jetzt auf **90 🟢 / 32 🟠 / 37 ⚫ / 59 🔴** gegen 103/36/37/18 bei der Erstaufstellung. **Kein Defekt ist heute entstanden** — sie lagen an einer Stelle, die keine Ampel setzen konnte. Dazu: fuenf neue Zeilen (darunter ein Feature, das gebaut, abgeschaltet und nie verzeichnet war), zwoelf gruene Zeilen erstmals gegen den Code belegt, zwei auf 🟠 zurueckgestuft, weil kein Zeuge auffindbar war, und **keine Zeile steht mehr ohne Herkunftsmarke** (zuvor zehn).
 - **20. August 2026, ~18:45 UTC** — **keine Ampel bewegt, und das ist der Befund** — die Fundliste ist klassifiziert und leer: 168 Punkte, davon 70 als Defekt mit Kennung, 48 ins Backlog, 14 in Moduldokumente, 10 als Regel des Vorgehens, 5 als Nachtrag, 21 als erledigt. **Kein Feature beruehrt** — kein Fund ist umgesetzt, nur einsortiert. Was sich fuer diese Liste aendert, ist die Sichtbarkeit: Ein Defekt mit Kennung kann eine Ampel auf 🔴 setzen, eine Zeile in der Fundliste konnte das nie.
 - **20. August 2026, ~17:05 UTC** — **keine Ampel bewegt, und das ist der Befund** — die Arbeit des Nachmittags war Doku: Die `Stand:`-Kopfzeilen von vier Registern trugen ihren eigenen Verlauf in *einer* Zeile (10.512 bis 34.263 Zeichen, zusammen 138 Glieder, alle vier mit unpaariger Klammerbilanz). Sie sind in den Koerper geloest, die laengste Kopfzeile misst jetzt 147 Zeichen. Kein Feature beruehrt: Ein Kopf traegt Felder, der Koerper den Verlauf.

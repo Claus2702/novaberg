@@ -1,6 +1,6 @@
 # Novaberg — Roadmap (Projektchronik)
 
-**Stand:** 20. August 2026, später Abend
+**Stand:** 20. August 2026, Nacht
 **Pfad:** novaberg/docs/novaberg-roadmap.md
 **Single Source of Truth für abgeschlossene Arbeit.**
 **Offene Punkte → novaberg-backlog.md**
@@ -12,6 +12,53 @@ Die Kopfzeile stand bis Chat 109 auf „Chat 93, 21. Mai 2026" — 15 Chats hint
 ---
 
 ## Chats 3–20: Grundlagen (März 2026)
+
+### 20.08.2026, Nacht — Der Suchschlüssel trägt jetzt den Gegenstand des Gesprächs
+
+**Ein Turn wie *„und wie weist man das nach?"* nennt seinen Gegenstand nicht — er zeigt auf ihn
+zurück.** Der Vektor daraus suchte ohne ihn. Seit heute formt ein Modellaufruf im Enricher aus dem
+Verlauf eine eigenständige Suchanfrage.
+
+**Wie weit das reicht, hat erst die zweite Kontrolle gesagt.** Der auslösende Befund nannte drei
+Speicher — KZG, LZG, Bibliothek. Ein Suchlauf über die *Leser* des Schlüssels fand **fünf**: dazu den
+Dateienindex und die beiden NMCP-Dienste, denen `such_vektor` als angemeldeter Bedarf mitwandert. Für
+die zwei zusätzlichen ist die Wirkung **ungemessen**; die Sonden liefen gegen die Bibliothek.
+
+**Gemessen wurde vor dem Bau, nicht danach.** Vier Arme gegen 306 Ausarbeitungen und zehn Verläufe mit
+anaphorischem Schlussturn:
+
+| Arm | Rang 1 | über der Abrufschwelle | Median-Kosinus |
+|---|---|---|---|
+| rohe Äußerung (Zustand bis heute) | 0/10 | **0/10** | 0,1865 |
+| Rewrite auf **Frageform** | 3/10 | **5/10** | 0,4173 |
+| Rewrite auf Themenform | 2/10 | 3/10 | 0,3514 |
+| die ausgeschriebene Referenzfrage | 2/10 | 2/10 | 0,3971 |
+
+**Der vierte Arm war als Obergrenze gebaut — als der Deckel, den ein perfektes Auflösen der Anapher
+höchstens erreichen kann. Er ist keiner.** Das Rewrite schlägt die von Hand ausgeschriebene Frage.
+Erklärbar ist das damit, dass es aus demselben Modell stammt, das die Ausarbeitungen geschrieben hat:
+Es trifft die Sprache des Bestandes, die Handformulierung trifft die Sprache des Fragenden.
+
+**Beidseitig gesondet:** Bei drei Verläufen mit Themenwechsel bleibt der alte Gegenstand 3 von 3 unter
+der Schwelle — das Rewrite schreibt Rasenmäher, Hochzeitsgeschenk und Sauerteigbrot. Bei fünf
+Alltagsverläufen ohne Bezug kommt in 15 von 15 Kombinationen nichts über sie.
+
+**Was ausdrücklich nicht mitzieht: die Zielaktivierung.** Sie rechnet weiter gegen das rohe Embedding,
+aus demselben Grund, aus dem sie schon nicht mit dem verschobenen Vektor rechnet. Der Rewrite kostet
+deshalb ein zweites Embedding — und nur dann, wenn er stattgefunden hat.
+
+> **Der erste echte Turn hat einen Defekt gefunden, den zehn grüne Zeugen nicht sehen konnten.** Die
+> Turns der Session tragen `rolle` und `inhalt`; der Bau las `role` und `content` und verwarf damit
+> jeden Turn. Das Modell bekam seine Aufgabe ohne Verlauf und **fragte danach** — die Rückfrage
+> *„Bitte stelle mir den Verlauf zur Verfügung"* wurde zum Suchschlüssel des Gedächtnisses. Der Zeuge,
+> der ausdrücklich prüfte, dass der Verlauf im Prompt steht, prüfte ihn in derselben falschen
+> Schreibweise. **Gefunden hat es eine Zeile im Pipeline-Log, nicht die Suite.**
+
+Seither steht ein Riegel davor: Ein leerer Verlauf bei vorhandenen Turns ist ein Defekt und kein
+Randfall. Im Betrieb belegt: *„Und wie weist man das eigentlich nach?"* wird zu *„Wie weist man das
+Informationsparadoxon bei Schwarzen Löchern nach?"*. Suite **2050 grün**, Gegenprobe 10 rot bei 7
+vorhergesagten — die drei zusätzlichen erklären sich aus dem Eingriff, der auch die Herkunft
+veränderte, die drei weitere Zeugen prüfen.
 
 ### 20.08.2026, später Abend — Die Featureliste, zum zweiten Mal gegen den Bestand gehalten
 
