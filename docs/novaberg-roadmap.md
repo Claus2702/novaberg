@@ -10,6 +10,35 @@
 
 ## Chats 3–20: Grundlagen (März 2026)
 
+### 20.08.2026, mittags — Die Bibliothek findet auf Themenhöhe und ist auf Inhaltshöhe blind
+
+**Angefangen hatte es mit einer Auslöserfrage, die sich selbst erledigte.** Stufe 2 der Bibliothek soll den Block lesen, wenn die Zusammenfassung nicht reicht — also wurde erst gezählt, wie oft der Fall eintritt. In **142** beantworteten Nutzerturns hat die Bibliothek **zweimal** beigetragen, und einer der beiden war provoziert.
+
+**Der erste Verdacht war die Abrufschwelle 0,50, und er hielt der Messung nicht stand.** 10 Sonden aus dem Dateiinhalt gegen 287 Ausarbeitungen, dazu 10 Fragen zu Themen, die die Bibliothek nicht führt:
+
+| Verteilung | min | Median | max |
+|---|---|---|---|
+| einschlägig | 0,1768 | 0,3447 | 0,5481 |
+| fremd | 0,2533 | 0,2925 | 0,3577 |
+
+Die Schwelle schneidet **9 von 10** richtigen ab und lässt **0 von 10** fremden durch. Eine niedrigere Zahl rettet nichts: Der beste Fremdtreffer liegt über **fünf** der zehn Ziele.
+
+**Die Kontrolle stellt die Diagnose — dieselbe Ausarbeitung, zweimal gefragt:**
+
+| Ausarbeitung | Themenhöhe | Inhaltshöhe |
+|---|---|---|
+| Entropie | Rang 1, **0,7375** | Rang 8, 0,3447 |
+| Dunkle Materie | Rang 1, **0,5751** | Rang **142**, 0,1768 |
+| Zytoskelett | Rang 1, **0,5559** | Rang 63, 0,2491 |
+
+**Nicht die Zahl ist falsch, sondern ihre Paarung.** Kalibriert wurde sie am 19.08. an Themenfragen — *„was hast du zu X erarbeitet"* —, und dort trägt sie: 92 % auf Rang 1. Der Enricher sucht mit dem Vektor des **Turns**, und ein Turn ist fast immer eine inhaltliche Äußerung. Zwei Verteilungen, dieselbe Konstante.
+
+**Damit dreht sich die Frage nach Stufe 2 um.** Sie wollte den Block lesen, wenn die Zusammenfassung nicht reicht. Die Messung sagt: Die Blöcke fehlen nicht beim **Lesen**, sondern beim **Finden**. Als `BIBLIOTHEK-BLIND-AUF-INHALTSHOEHE` eingetragen, mit der Nulllinie Rang 1 in 1 von 10.
+
+**Und der Warnhinweis steht vom selben Tag daneben:** `MAX` über viele Vektoren je Eintrag hebt auch das Rauschen — am Dateienindex gemessen und deshalb verworfen. Wer die Blöcke auffindbar macht, misst das mit.
+
+**Nebenbei aufgeklärt, was die Zählung verdarb:** 44 von 46 Trefferzeilen der Bibliothek melden Kosinus exakt 1,000 — Hintergrundläufe, deren Suchtext ein gespeichertes Thema ist; der Eintrag findet sich selbst. Geprüft und ausgeschlossen: Spaltenabbildung, doppelte Registrierung, doppelter Aufruf je Turn. Ein Nutzerturn erzeugt gemessen genau einen Aufruf.
+
 ### 20.08.2026, mittags — Ein Umbau, der vollständig stand und nichts brachte
 
 **Gebaut, gemessen, zurückgebaut — und der Befund ist die Ausbeute.** `themen_embedding` entsteht aus `thema` plus rund acht Stichwörtern; nach der Festlegung über Embeddings ist das ein Vektor über mehrere Gegenstände, und derselbe Umbau hatte die Bibliothek am Vortag von 15 % auf 92 % richtige Antworten auf Rang 1 gehoben. Die Analogie lag nahe genug, um sie zu bauen: Tabelle, Schreibweg, **drei** Lesewege, 1456 nachgebettete Vektoren über 174 Zeilen.
