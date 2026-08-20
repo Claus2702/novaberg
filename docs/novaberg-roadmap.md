@@ -1,6 +1,6 @@
 # Novaberg — Roadmap (Projektchronik)
 
-**Stand:** 20. August 2026, Abend
+**Stand:** 20. August 2026, später Abend
 **Pfad:** novaberg/docs/novaberg-roadmap.md
 **Single Source of Truth für abgeschlossene Arbeit.**
 **Offene Punkte → novaberg-backlog.md**
@@ -12,6 +12,39 @@ Die Kopfzeile stand bis Chat 109 auf „Chat 93, 21. Mai 2026" — 15 Chats hint
 ---
 
 ## Chats 3–20: Grundlagen (März 2026)
+
+### 20.08.2026, später Abend — Die Featureliste, zum zweiten Mal gegen den Bestand gehalten
+
+**Die Erhebung war fällig geworden, ohne dass jemand es an der Liste sehen konnte.** Am selben Tag sind
+168 rohe Funde klassifiziert worden, 70 davon zu Defekten mit stabiler Kennung — und **erst eine Kennung
+kann eine Ampel setzen**. Eine Zeile in der Fundliste konnte das nie.
+
+**Das Ergebnis in einer Zeile:** 103 🟢 / 36 🟠 / 37 ⚫ / 18 🔴 vorher, **90 🟢 / 32 🟠 / 37 ⚫ / 59 🔴**
+jetzt, bei 218 statt 194 Zeilen.
+
+**Kein einziger Defekt ist an diesem Tag entstanden.** Sie waren alle schon da — abgelegt an einer Stelle,
+die keine Farbe tragen konnte. 74 offene Kennungen zeigten auf keine Ampel; 61 ließen sich einer Zeile
+zuordnen, und **39 Zeilen wechselten die Farbe, 30 davon von grün**.
+
+**Was die Erhebung sonst fand:**
+
+- **13 von 14 grünen Zeilen mit reinem `[Doku]`-Beleg nannten keinen einzigen Bezeichner.** Ihre Farbe war
+  nicht nachrechenbar. Zwölf sind seither gegen den Code belegt; zwei stehen auf 🟠, weil unter 143
+  Testdateien keine den Namen trägt — eine Aussage über Namen, nicht über Existenz.
+- **Zwei Zeilen nennen Konstanten, die es unter diesem Namen im Code nicht gibt** — der Pausenfaktor der
+  Eigenzeit C und die Selbstauslösung. Beide standen ohne Herkunftsmarke da, und genau deshalb fiel es
+  niemandem auf.
+- **Ein Feature war gebaut, abgeschaltet und nie verzeichnet:** die KZG-Liberalisierung mit
+  Cluster-Promotion. Der Pfad ist seit Chat 98 tot, die Konstanten stehen weiter in `config.py` und wurden
+  in Chat 107 sogar nachkalibriert.
+- **Zehn Zeilen trugen keine Herkunftsmarke** und galten damit nach der eigenen Regel als nicht gesetzt.
+  Jetzt sind es null.
+
+**Geprüft wurde in beide Richtungen, mit einer Zahl je Richtung:** 45 der 59 roten Zeilen nennen eine
+offene Kennung, die übrigen 14 stehen aus einem der beiden anderen Gründe rot, die die Regel zulässt.
+Umgekehrt setzen 9 der 76 offenen Kennungen bewusst keine Ampel, weil ihr Gegenstand Dokumentation oder
+Benennung ist und kein Feature. **Beide Zahlen stehen in der Liste selbst** — ohne sie ist „keine Ampel"
+nicht von „übersehen" zu unterscheiden.
 
 ### 20.08.2026, Abend — Die Fundliste ist klassifiziert und leer
 

@@ -2,11 +2,11 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Vollständiges Register aller Features mit Zustandsampel und Beleg
-**Stand:** 20. August 2026, ~18:45 UTC
-**Verlauf:** [Verlauf des Standes](#verlauf-des-standes) — 28 Eintraege, juengster zuerst
+**Stand:** 20. August 2026, ~19:30 UTC
+**Verlauf:** [Verlauf des Standes](#verlauf-des-standes) — 29 Eintraege, juengster zuerst
 **Pfad:** novaberg/docs/novaberg-featureliste.md
 **Typ:** Register
-**Quellen:** die 44 Konzeptdokumente, `novaberg-architecture.md`, die Moduldokumente, `novaberg-roadmap.md`, `novaberg-backlog.md`, `novaberg-bugs.md`, `novaberg-fundliste.md` — gehalten gegen Code und Produktivsystem
+**Quellen:** die 43 Konzeptdokumente, `novaberg-architecture.md`, die Moduldokumente, `novaberg-roadmap.md`, `novaberg-backlog.md`, `novaberg-bugs.md`, `novaberg-fundliste.md` — gehalten gegen Code und Produktivsystem
 
 ---
 
@@ -53,7 +53,7 @@ Die Feature-Matrix in `novaberg-architecture.md` §6 ist mit dieser Liste abgel�
 |---|---|---|---|
 | **HumanGraph** (Pfad 1 — der Mensch spricht) | 🟢 | `graph/human_graph.py`, 5 Knoten `[Code]` | — |
 | **CharacterGraph** (Pfad 2 — die Figur antwortet) | 🟢 | `graph/character_graph.py`, 17 Knoten `[Code]` | — |
-| **AgentGraph** (Pfad 3 — Hintergrundarbeit) | 🟢 | `graph/agent_graph.py` `[Code]` | — |
+| **AgentGraph** (Pfad 3 — Hintergrundarbeit) | 🔴 | `graph/agent_graph.py` `[Code]` | — · **🔴 seit 20.08.2026** (zuvor 🟢): `AGENTGRAPH-REIZPLATZ-FALSCH` offen |
 | **PixieGraph** (eigener Graph für Pixie statt AgentGraph) | ⚫ | `create_pixie_state` existiert nicht `[Code]` · `novaberg-pixie-graph-merge_k.md` Phase 0–3 | alles |
 | **Kanalzwang im StateGraph** (jedes Feld deklariert) | 🟢 | 74 Zustandsfelder, **0 ohne Vorkommen außerhalb `state.py`** `[gemessen]` | — |
 | **Event-Modell** (Consumer statt async-Block) | 🟢 | `services/event_consumer.py`, `services/events.py` `[Code]` | — |
@@ -64,23 +64,23 @@ Die Feature-Matrix in `novaberg-architecture.md` §6 ist mit dieser Liste abgel�
 
 | Knoten | Ampel | Beleg | Rest |
 |---|---|---|---|
-| `perzeption` — Emotion, Arousal, Intent, Dual-Modus | 🟢 | `[Code]` · `novaberg-node-perception.md` | schreibt **keinen** Pipeline-Eintrag |
+| `perzeption` — Emotion, Arousal, Intent, Dual-Modus | 🔴 | `[Code]` · `novaberg-node-perception.md` | schreibt **keinen** Pipeline-Eintrag · **🔴 seit 20.08.2026** (zuvor 🟢): `PERZEPTIONSFELDER-OHNE-KANON` offen |
 | `db_zugriff` — CG-Eingang, Personality-Klassen | 🟢 | `[Code]` · Pipeline-Einträge vorhanden `[gemessen]` | — |
-| `enricher` — Kontext aus vier Quellen | 🟠 | `[Code]` | Fakten-Enrichment **abgeschaltet** seit Chat 71 (`enricher.py:847`) |
+| `enricher` — Kontext aus vier Quellen | 🔴 | `[Code]` | Fakten-Enrichment **abgeschaltet** seit Chat 71 (`enricher.py:847`) · **🔴 seit 20.08.2026** (zuvor 🟠): `ENRICHERPROMPT-LEERE-HUELLE` offen |
 | `ei_calc` — Verlauf, Vektor, Empathie | 🟢 | `[Code]` · `novaberg-node-ei-calc.md` | kein Pipeline-Eintrag |
 | `emotionale_gravitation` — reaktivierte Erinnerung | 🟢 | `[Code]` · `novaberg-node-emotionale-gravitation.md` | kein Pipeline-Eintrag; `GRAVITATION-KLEMME-FEHLT` offen |
 | `ei_calc_persist` — CG-Ausgang, Zustand schreiben | 🟢 | `[Code]` | — |
 | `reducer` — Gegenspieler zum Enricher | 🟠 | Knoten verdrahtet in `character_graph.py:63` `[Code]` | `REDUCER_AKTIV` und `REDUCER_LOG_REMOVED` haben **keinen Leser** `[gemessen]`; strukturierter `memory_context` (Reducer-Umbau) offen |
-| `router` — Routing und Delegation | 🟠 | `[Code]` · `novaberg-node-router.md` | kein Pipeline-Eintrag · `ROUTER-MISS-OHNE-ABSCHLUSS`, `ROUTE3` offen · Zweifel-Widerspruch im Prompt ungelöst |
-| `planner` — Agentenschleife, Resume | 🟠 | `[Code]` · `novaberg-node-planner.md` | kein Pipeline-Eintrag · `PLANNER-AKTIV-RELIKT` |
+| `router` — Routing und Delegation | 🔴 | `[Code]` · `novaberg-node-router.md` | kein Pipeline-Eintrag · `ROUTER-MISS-OHNE-ABSCHLUSS`, `ROUTE3` offen · Zweifel-Widerspruch im Prompt ungelöst · **🔴 seit 20.08.2026** (zuvor 🟠): `ROUTERPROMPT-ZWEIFEL-WIDERSPRUCH` offen |
+| `planner` — Agentenschleife, Resume | 🔴 | `[Code]` · `novaberg-node-planner.md` | kein Pipeline-Eintrag · `PLANNER-AKTIV-RELIKT` · **🔴 seit 20.08.2026** (zuvor 🟠): `RESUME-VERBRAUCHT-IMPULS` offen |
 | `agent_dispatch` — zentraler Eintritt | 🟢 | `[Code]` · Pipeline-Einträge `[gemessen]` | `DISPATCH-ABSCHLUSS-UNVOLLSTAENDIG` offen |
 | `gespraechsvektor` — Landschaft, Strategie, Lücken | 🟢 | `[Code]` · `novaberg-node-gv_k.md` | siehe §5 |
-| `haltung` — fünf Verhaltensgrößen | 🟢 | Knoten rechnet, protokolliert, persistiert `[Code]` | Wirkung siehe §5 |
-| `verfasser` — der Inhalt vor der Form | 🟢 | `[Code]` · `novaberg-node-verfasser_k.md` **✅ gebaut** | läuft **nicht** auf dem Aufgabenpfad |
-| `responder` — die Antwort | 🟢 | `[Code]` · `novaberg-node-responder.md` | kein Pipeline-Eintrag · `RESPONDER-LEERE-ANTWORT-STILL` Ursache offen |
+| `haltung` — fünf Verhaltensgrößen | 🔴 | Knoten rechnet, protokolliert, persistiert `[Code]` | Wirkung siehe §5 · **🔴 seit 20.08.2026** (zuvor 🟢): `UEBERSTEUERUNG-GREIFT-NICHT`, `UEBERSTEUERUNG-AB-FUER-DREIERSKALA` offen |
+| `verfasser` — der Inhalt vor der Form | 🔴 | `[Code]` · `novaberg-node-verfasser_k.md` **✅ gebaut** | läuft **nicht** auf dem Aufgabenpfad · **🔴 seit 20.08.2026** (zuvor 🟢): `VERFASSER-KOPFBLOCK-FAELLT-AUS`, `VERFASSER-ORDNET-IMPULS-PERSON-B-ZU`, `FRAGEN-ZEILE-OHNE-BEDINGUNG` offen |
+| `responder` — die Antwort | 🔴 | `[Code]` · `novaberg-node-responder.md` | kein Pipeline-Eintrag · `RESPONDER-LEERE-ANTWORT-STILL` Ursache offen · **🔴 seit 20.08.2026** (zuvor 🟢): `RESPONDER-ERFINDET-DATUM`, `NUTZERKERN-ERREICHT-RESPONDER-NICHT`, `BEZIEHUNGSPROFILE-UNBESCHRIFTET`, `RESPONDER-ANWEISUNG-DOPPELT`, `FARBTON-ERREICHT-RESPONDER-NICHT`, `FALSCHE-BESTAETIGUNG-WIRD-ERINNERUNG` offen |
 | `thinker` — Faktenprüfung, Websuche | 🟠 | `[Code]` · `novaberg-node-thinker.md` | kein Pipeline-Eintrag — der Thinker ist **nicht beobachtbar** (`B−1` der Sykophanz-Reihe) |
 | `thinker_cache` | 🟢 | `[Code]` | kein Pipeline-Eintrag |
-| `tribunal` — drei Perspektiven | 🟢 | `[Code]` · `novaberg-node-tribunal.md` | kein Pipeline-Eintrag · `TRIB-PERSON-DRIFT` offen |
+| `tribunal` — drei Perspektiven | 🔴 | `[Code]` · `novaberg-node-tribunal.md` | kein Pipeline-Eintrag · `TRIB-PERSON-DRIFT` offen · **🔴 seit 20.08.2026** (zuvor 🟢): `TRIBUNAL-ERKENNT-ABBRUCH-OHNE-FOLGE` offen |
 | `corrector` — Korrekturschleife | 🟢 | `[Code]` · `novaberg-node-corrector.md` | kein Pipeline-Eintrag |
 | `salience` — Salienz als Entscheider | 🔴 | `[Code]`, läuft — aber **gesättigt**: 87 % der `user`- und 99 % der `assistant`-Einträge über 0,90 `[Doku, Fundliste 17.08.]` | rangiert nichts mehr; `KZG-SALIENZ-SKALENBRUCH`, `SALIENZ-JSON-BRICHT-AN-LATEX` offen |
 | `dispatcher` — Schreiboperationen verteilen | 🟢 | `[Code]` · `novaberg-node-dispatcher.md` | — |
@@ -89,9 +89,9 @@ Die Feature-Matrix in `novaberg-architecture.md` §6 ist mit dieser Liste abgel�
 
 | Feature | Ampel | Beleg | Rest |
 |---|---|---|---|
-| **Prompt-Schema `[BLOCKNAME]`** auf allen Knoten | 🟢 | `novaberg-pattern-prompt-schema.md` `[Doku]` | — |
+| **Prompt-Schema `[BLOCKNAME]`** auf allen Knoten | 🟢 | `novaberg-pattern-prompt-schema.md` `[Doku]` · `[Code]` — **7 Dateien** unter `prompts/` und `graph/` tragen Blockmarken der Form `[GESPRAECHSVEKTOR]`, `[AUFZEICHNUNGEN]`, `[MASS]`; am Bestand gezaehlt 20.08.2026 `[Erhebung 20.08.2026]` | — |
 | **Entscheidungs-Eintrag je Knoten** (jede Weiche dauerhaft belegt) | 🔴 | **9 von 20 Knoten** schreiben einen Pipeline-Eintrag `[gemessen]` | 11 Knoten ohne, darunter Router, Responder, Thinker, Planner, Perzeption |
-| **Pipeline-Log** (Forensik, Spans, JSONB) | 🟢 | **87.913 Zeilen**, 10 Eintragsarten, täglich wachsend `[gemessen]` | `log_prompt`, `log_bemerkung`, `log_token` haben **keinen Aufrufer** `[gemessen]` |
+| **Pipeline-Log** (Forensik, Spans, JSONB) | 🔴 | **87.913 Zeilen**, 10 Eintragsarten, täglich wachsend `[gemessen]` | `log_prompt`, `log_bemerkung`, `log_token` haben **keinen Aufrufer** `[gemessen]` · **🔴 seit 20.08.2026** (zuvor 🟢): `TURNROH-ZEILE-FEHLT`, `HALTUNGSSTAND-OHNE-LOGZEILE` offen |
 | **Rückfrage-Kette** (Redis-Pending, Resume) | 🔴 | `[Code]` · `novaberg-graph.md` — **`ZUSTIMMUNG-GILT-ALS-ABLEHNUNG` offen seit 18.08.**: Die Ja/Nein-Deutung vergleicht Teilzeichenketten, `gerne` gilt als Nein `[gemessen]` | `RESUME-VERBRAUCHT-DEN-IMPULS` ✅ behoben 14.08. · die Deutung an Wortgrenzen, je Torwächter ein Zeuge |
 
 ---
@@ -100,14 +100,14 @@ Die Feature-Matrix in `novaberg-architecture.md` §6 ist mit dieser Liste abgel�
 
 | Feature | Ampel | Beleg | Rest |
 |---|---|---|---|
-| **Plutchik-Oktagon** (9 Vektoren, Normalisierung) | 🟢 | `ei/berechnung.py`, `novaberg-ei-plutchik.md` `[Code]` | `PERZEPTION-EMOTION-AUSSER-KANON` offen |
-| **EI-Plausibilitätsgate** (8 Sektoren) | 🟢 | `[Code]` · `novaberg-node-perception.md` | — |
+| **Plutchik-Oktagon** (9 Vektoren, Normalisierung) | 🔴 | `ei/berechnung.py`, `novaberg-ei-plutchik.md` `[Code]` | `PERZEPTION-EMOTION-AUSSER-KANON` offen · **🔴 seit 20.08.2026** (zuvor 🟢): `EMOTIONS-VEKTOREN-DOPPELT` offen |
+| **EI-Plausibilitätsgate** (8 Sektoren) | 🔴 | `[Code]` · `novaberg-node-perception.md` | — · **🔴 seit 20.08.2026** (zuvor 🟢): `NEGATIVE-EMOTIONEN-DOPPELT` offen |
 | **Arousal-basierter Decay** | 🟠 | `[Code]` · `novaberg-ei-plutchik_l.md` | zählt **Turns statt Zeit** — die Gegenbewegung über eine Pause ist Bauteil A der Eigenzeit (§8) |
 | **EI-MIKRO** (situative Mikro-Anweisungen) | 🟢 | `responder.py:_ei_mikro_anweisung` `[Code]` | — |
-| **Dual-Emotion Phase 1** (User-IDs entkoppelt) | 🟢 | `[Doku]` Chat 57 | — |
+| **Dual-Emotion Phase 1** (User-IDs entkoppelt) | 🟢 | `[Doku]` Chat 57 · `[Code]` — `memory/kzg.py`, Key-Schema `kzg:{user_id}:{character_id}:{entry_id}`; das Paar definiert das gemeinsame Gespraech `[Erhebung 20.08.2026]` | — |
 | **Dual-Emotion Phase 2** (Nova-Empathie, Konflikt) | 🟠 | `[Code]`, AP1–7 und AP9 gebaut | AP8 Client-Teil `[Doku]` |
 | **Dual-Emotion Phase 3** (Ziel-Vektor als dritte Kraft) | 🟠 | `ziele`: **259 Zeilen**, `ZielDecayAgent` läuft `[gemessen]` | `ziel_motivation_anpassen` hat **keinen Aufrufer** `[gemessen]`; der Antrieb wirkt nicht auf die Emotion |
-| **Emotionale Gravitation** (Erinnerung zieht) | 🟢 | `ei/gravitation.py` `[Code]` | `EMOTIONALE_GRAVITATION_FAKTOR_SESSION` ohne Leser `[gemessen]` |
+| **Emotionale Gravitation** (Erinnerung zieht) | 🔴 | `ei/gravitation.py` `[Code]` | `EMOTIONALE_GRAVITATION_FAKTOR_SESSION` ohne Leser `[gemessen]` · **🔴 seit 20.08.2026** (zuvor 🟢): `GRAVITATION-FAERBT-EIGENE-GEDANKEN`, `ZUG-ZWISCHEN-090-097-ABGESCHALTET` offen |
 | **Wahrnehmungs-Gravitation** (Synapsen P10) | 🟠 | `wahrnehmung_verschieben()` gebaut, live gemessen `[Doku]` | **Wirkung ungemessen** — ob sich je eine Trefferliste ändert, ist offen |
 | **Anker-Emotion** (Grundemotion je Charakter) | ⚫ | kein Code `[Code]` | alles |
 
@@ -121,7 +121,7 @@ Die Feature-Matrix in `novaberg-architecture.md` §6 ist mit dieser Liste abgel�
 |---|---|---|---|
 | **Session-Gedächtnis** (Redis, Turn-Formatierung) | 🟠 | 2.893 Redis-Keys `[gemessen]` | Die Session **stirbt nicht** — jeder Impuls verlängert die Frist (Eigenzeit §2, Bauteil C) |
 | **Kurzzeitgedächtnis KZG** (Redis + Vektor) | 🟢 | **2.803 `kzg:*`-Keys** `[gemessen]` · `novaberg-mem-kzg.md` | `KZG-SEGMENT-DUPLIKAT`, `KZG-VERDICHTER-KONTEXT-VERLUST` offen |
-| **KZG-Magnetfelder** (`entitaet_ids`, `timeline_id`) | 🟢 | `[Code]` · Synapsen P3 | — |
+| **KZG-Magnetfelder** (`entitaet_ids`, `timeline_id`) | 🔴 | `[Code]` · Synapsen P3 | — · **🔴 seit 20.08.2026** (zuvor 🟢): `ENTITAETIDS-MIT-DUBLETTEN` offen |
 | **Synapsen-Modell** (`lzg_knoten` + `lzg_kanten`) | 🟢 | **2.390 Knoten, 365.088 Kanten** `[gemessen]` | P1–P10 gebaut; Lesepfad-Umstellung `SYNAPSEN-DUAL-LZG` offen |
 | **Langzeitgedächtnis alt** (`langzeitgedaechtnis`) | 🟢 | abgelöst und gelöscht (P9) `[gemessen]` — Tabelle existiert nicht mehr | — |
 | **Ebbinghaus-Decay + Soft-Delete** | 🟢 | `SynapsenDecayAgent`, 40 Läufe im Log `[gemessen]` | `EBBINGHAUS_DECAY_RATE`, `EBBINGHAUS_MIN_GEWICHT` ohne Leser `[gemessen]` |
@@ -140,8 +140,9 @@ Die Feature-Matrix in `novaberg-architecture.md` §6 ist mit dieser Liste abgel�
 | **Zwei-Call-Promotion** (KZG → LZG) | 🟢 | `SynapsenPromotionAgent`, **29.129 Audit-Einträge** `[gemessen]` | `PROMO-DROP1`, `PROMO-FAKT-LEER`, `PROMO-KZG-KEY-ALS-TURN-ID` offen |
 | **KZG-Verdichter** | 🟠 | `[Code]` | `KZG-VERDICHTER-KONTEXT-VERLUST` — entkernte Inhalte |
 | **Queue-Verfall** (Auftrag verliert seinen Anlass) | 🟢 | 1.036 Aufträge migriert, **6 Verfallsläufe** `[gemessen]` · `novaberg-queue-verfall_k.md` ✅ | Messung über 30 Tage Betrieb offen |
-| **KZG-Salienz-Neubau** | 🟠 | Bauteil 1 gebaut und migriert `[Doku]` | **drei von sieben IDs offen**; die Skala ist gesättigt (§1.2) |
+| **KZG-Salienz-Neubau** | 🔴 | Bauteil 1 gebaut und migriert `[Doku]` | **drei von sieben IDs offen**; die Skala ist gesättigt (§1.2) · **🔴 seit 20.08.2026** (zuvor 🟠): `KZG-SALIENZ-GESAETTIGT` offen |
 | **Assoziatives / aktenbasiertes Retrieval** | ⚫ | kein Code `[Code]` | alles |
+| **KZG-Liberalisierung + Cluster-Promotion** | 🔴 | Konzept vom 25.04.2026 traegt *„implementiert und getestet"*; der Pfad ist **seit Chat 98 deaktiviert**, die Konstanten `CLUSTER_MIN_EINTRAEGE`, `CLUSTER_THEMEN_SIMILARITY`, `CLUSTER_LZG_SIMILARITY` stehen weiter in `config.py` und wurden in Chat 107 sogar nachkalibriert. `CLUSTER_PROMOTION` hat **0 Aufrufer** im Baum `[Code]` | gebaut, abgeschaltet, und die Konstanten leben weiter — der Kommentar im Code sagt es selbst: *„Alt-Cluster-Pfad (deaktiviert seit Chat 98), trotzdem mitgezogen"*. Neu aufgenommen bei der Erhebung am 20.08.2026 |
 
 ---
 
@@ -149,15 +150,15 @@ Die Feature-Matrix in `novaberg-architecture.md` §6 ist mit dieser Liste abgel�
 
 | Feature | Ampel | Beleg | Rest |
 |---|---|---|---|
-| **Fünf Charakter-Profile + Hash** | 🟢 | **34 Zeilen** in `charakter_hash` `[gemessen 19.08.2026]` · `novaberg-pixie-character-hash.md` | `CHAR-HASH-PAAR-VERTAUSCHT` offen — die Figur steht in der `user_id`-Spalte. **Neu:** `PROFIL-EINMALERHEBUNG` — die Profile werden einmal erhoben, die Räder daraus dreimal; derselbe Prompt streut über drei Läufe 16,5–24,5 %, der gespeicherte Lauf trug 42 % |
-| **Sprachadaption (CAT)** | 🟢 | `novaberg-ei-language-adaptation.md` `[Doku]` | `SPRACH-STIL-DEFENSIV-STUMM` offen |
-| **Charakter-Räder als Messreihe** | 🟢 | **178 Messungen** in `charakter_rad_messung` `[gemessen 19.08.2026]` · beide Räder | `RAD-GESPEICHERT-NICHT-REPRODUZIERBAR`, `RAD-WERT-AUF-SPALTEN-DEFAULT` offen. **Neu am 19.08. gemessen und in der Fundliste:** 37 % des Zugbudgets liegen auf Speichen ohne Trennschärfe zwischen den Paaren, der Faktor erreicht deshalb über 88 Messungen nur 0,864–1,443 statt 0,5–1,5; und beim Initiative-Rad tragen 5 von 10 Speichen einen gespeicherten Wert, den der Median ihrer Läufe nicht stützt |
+| **Fünf Charakter-Profile + Hash** | 🔴 | **34 Zeilen** in `charakter_hash` `[gemessen 19.08.2026]` · `novaberg-pixie-character-hash.md` · `[Code]` — `agents/charakter/` mit Destillation und `charakter_hash` | `CHAR-HASH-PAAR-VERTAUSCHT` offen — die Figur steht in der `user_id`-Spalte. **Neu:** `PROFIL-EINMALERHEBUNG` — die Profile werden einmal erhoben, die Räder daraus dreimal; derselbe Prompt streut über drei Läufe 16,5–24,5 %, der gespeicherte Lauf trug 42 % · **🔴 seit 20.08.2026** (zuvor 🟢): `PROFILPROMPT-OHNE-GESCHLECHT`, `KERNHASH-OHNE-PERSPEKTIVTRENNUNG`, `KERNHASH-LIEST-TURNWORTLAUT`, `PERSPEKTIVE-OHNE-DATIV` offen |
+| **Sprachadaption (CAT)** | 🔴 | `novaberg-ei-language-adaptation.md` `[Doku]` | `SPRACH-STIL-DEFENSIV-STUMM` offen · **🔴 seit 20.08.2026** (zuvor 🟢): `SPRACHSTIL-ZWEI-VERFAHREN-UNEINIG` offen |
+| **Charakter-Räder als Messreihe** | 🔴 | **178 Messungen** in `charakter_rad_messung` `[gemessen 19.08.2026]` · beide Räder · `[Code]` — Tabelle `charakter_rad_messung`, Spiegelung der beiden Raeder eines Paares als SQL-Abfrage | `RAD-GESPEICHERT-NICHT-REPRODUZIERBAR`, `RAD-WERT-AUF-SPALTEN-DEFAULT` offen. **Neu am 19.08. gemessen und in der Fundliste:** 37 % des Zugbudgets liegen auf Speichen ohne Trennschärfe zwischen den Paaren, der Faktor erreicht deshalb über 88 Messungen nur 0,864–1,443 statt 0,5–1,5; und beim Initiative-Rad tragen 5 von 10 Speichen einen gespeicherten Wert, den der Median ihrer Läufe nicht stützt · **🔴 seit 20.08.2026** (zuvor 🟢): `SPEICHENWERT-NICHT-MEDIAN`, `RADSPEICHEN-MESSEN-PROFILTEXT` offen |
 | **CharakterIdentitätsAgent** (Saatgut) | 🟢 | `[Code]` · 1 Zeile in `charakter_anweisungen` `[gemessen]` | `CRUD-REACTIVATE-STAMP`, `CHAR-ID4-ORPHAN` offen |
 | **Charakter-Resonanz — Bauteil 1a/1b** (Brücke) | 🟢 | `verbindung` **7.073 Zeilen** `[gemessen]` | — |
 | **Charakter-Resonanz — Bauteil 2** (Backfill) | ⚫ | optional, nicht gebaut `[Code]` | alles |
 | **Charakter-Resonanz — Bauteil 3** (`verhaltensweisen` + Verdichter) | ⚫ | **Tabelle existiert nicht** `[gemessen]` | der ganze Bauteil; die Brücke füllt sich seit Wochen für einen Verbraucher, den es nicht gibt |
 | **Charakter-Resonanz — Bauteil 4** (Lesepfad) | 🟠 | CharakterAgent liest `verbindung` `[Code]` — aber **anders als geplant** | liest Turn-Wortlaut statt destillierter Verhaltensweisen |
-| **Charakter-Resonanz — Bauteil 5** (Doku) | ⚫ | — | nach 1–4 |
+| **Charakter-Resonanz — Bauteil 5** (Doku) | ⚫ | — · `[Doku]` — der Bauteil ist die Dokumentation selbst; ohne Code kein Codebeleg moeglich | nach 1–4 |
 | **Charakterbildungs-Messreihe** (18 Bögen, 540 Turns) | 🟠 | aufgesetzt und zurückgesetzt `[Doku]` | wartet auf die GPU |
 | **Profil-Historie** | ⚫ | `PROFIL-HISTORIE-FEHLT` `[Doku]` | alles |
 
@@ -167,17 +168,17 @@ Die Feature-Matrix in `novaberg-architecture.md` §6 ist mit dieser Liste abgel�
 
 | Feature | Ampel | Beleg | Rest |
 |---|---|---|---|
-| **GV1 + GV2** (Farbmischung, Landschaft) | 🟢 | `graph/nodes/gespraechsvektor.py` `[Code]` | `GV-HYPOTHESE-ROHE-AUSGABE`, `GV-PANEL-STRATEGIE-DOPPELT` offen |
-| **14 Gesprächslandschaften** | 🟢 | `novaberg-gv-strategie_k.md` `[Doku]` | — |
+| **GV1 + GV2** (Farbmischung, Landschaft) | 🔴 | `graph/nodes/gespraechsvektor.py` `[Code]` | `GV-HYPOTHESE-ROHE-AUSGABE`, `GV-PANEL-STRATEGIE-DOPPELT` offen · **🔴 seit 20.08.2026** (zuvor 🟢): `GESPRAECHSVEKTOR-HYPOTHESE-DREIFACH` offen |
+| **14 Gesprächslandschaften** | 🟢 | `novaberg-gv-strategie_k.md` `[Doku]` · `[Code]` — `CLUSTER_BESCHREIBUNGEN` in `ei/dreischicht.py`, **14 Eintraege gezaehlt** am 20.08.2026 `[Erhebung 20.08.2026]` | — |
 | **Erreichbarkeit der Landschaften** | 🟠 | alle vierzehn erreichbar gemessen `[Doku]` | **Ablesung fällt in 14 % aus** — kein Code für die Abhilfe |
-| **Initiative-Achse** | 🟢 | `ei/initiative.py`, Schwelle gegen Zeugen kalibriert `[Code]` | `initiative_berechnen` in `ei/dreischicht.py` hat **keinen Produktivaufrufer** `[gemessen]` |
+| **Initiative-Achse** | 🔴 | `ei/initiative.py`, Schwelle gegen Zeugen kalibriert `[Code]` | `initiative_berechnen` in `ei/dreischicht.py` hat **keinen Produktivaufrufer** `[gemessen]` · **🔴 seit 20.08.2026** (zuvor 🟢): `INITIATIVE-DOPPELT-BELEGT` offen |
 | **Kalibrierverfahren** (sechs Klassen, Korridor) | 🟠 | `ei/kalibrierung.py` + `agents/kalibrierung/` als Messwerkzeug `[Code]` | **kein Erwartungskorridor geschrieben, keine Validierungsmenge erhoben** |
 | **GV4 — Wissenslücken im Prompt** | 🟢 | `ei/wissensluecken.py`, Lücken werden eingefügt `[Code]` | `WISSENSLUECKEN-FELDER-LEER` offen |
 | **Wissenslücken-Speicher** | 🔴 | **785 Zeilen, ausnahmslos `offen`**, 78 in zwei Tagen neu `[gemessen]` | kein Verbraucher; `geschlossen`/`ausgeschlossen` sind Statuswerte **ohne Schreiber**; GV4 rechnet parallel und liest die Tabelle nie |
-| **Haltungsraum — Rechnung, Knoten, Protokoll, Stand** | 🟢 | `ei/raum.py`, `graph/nodes/haltung.py`, `memory/haltung.py` `[Code]` | — |
+| **Haltungsraum — Rechnung, Knoten, Protokoll, Stand** | 🔴 | `ei/raum.py`, `graph/nodes/haltung.py`, `memory/haltung.py` `[Code]` | — · **🔴 seit 20.08.2026** (zuvor 🟢): `HALTUNGSSTAND-OHNE-LOGZEILE` offen |
 | **Haltungsraum — Prompt-Block** | 🔴 | gebaut am 13.08. (`_sprachstil_block`) `[Code]`, aber **gemessen ohne Bindung**: Streuung 2,68 bei identischer Vorgabe `[Doku, Messung 17.08.]` · seit 20.08. **drei Einflüsse statt einem** — Raum, halbierte Korridore, Länge der Äußerung bei rein leichten Intentionen `[Code]` | die Zahl regiert das Modell nicht; die Struktur, die binden würde, ist die Gedankenkette (§6). **Die Wirkung der Halbierung im Betrieb ist ungemessen** |
 | **Haltungsraum — der zweite Leser (Verfasser)** | 🟡 | Block `[MASS]` mit Menge, Rückfrage und Vorschlag; `umfang`, `fragen`, `draengen` gehen an den Verfasser, `naehe` und `waerme` bleiben beim Responder. 10 Zeugen, Gegenprobe 5/5 `[Code]` | gebaut und bezeugt, **im Betrieb nicht gemessen** — kein echter Turn seit dem Bau |
-| **Haltungsraum — Ablösung der alten Längenregel** | 🟢 | die drei Längenzweige sind entfernt (`responder.py:60`) `[Code]` | — |
+| **Haltungsraum — Ablösung der alten Längenregel** | 🔴 | die drei Längenzweige sind entfernt (`responder.py:60`) `[Code]` | — · **🔴 seit 20.08.2026** (zuvor 🟢): `UMFANGSREGLER-BINDET-NICHT`, `NEUER-NUTZER-OHNE-UMFANGSVORGABE`, `MENGENANGABE-BINDET-NUR-UNTEN` offen |
 | **Zuwendungs-Riegel** (erster Leser des Standes) | 🟠 | Riegel 1 gebaut, Schwelle 0,25 `[Doku]` | Riegel 2 **nicht gerechnet** → die stündliche Decke steht |
 
 ---
@@ -189,7 +190,7 @@ Die Feature-Matrix in `novaberg-architecture.md` §6 ist mit dieser Liste abgel�
 | **Thinker** (Faktenprüfung + Websuche) | 🟠 | `[Code]` | **nicht beobachtbar** — kein Protokoll seiner Weiche |
 | **Tribunal** (Drei-Perspektiven-Score) | 🟢 | `[Code]` · `novaberg-node-tribunal.md` | `TRIB-PERSON-DRIFT` offen |
 | **Recherche** (SearXNG, Dual-Modell, Destillation) | 🟢 | **1.647 Bibliotheksläufe**, 538 in sieben Tagen `[gemessen]` | `RECHERCHE-OHNE-AUDIT`, `RECHERCHE-RELEVANZ-UNGEPRUEFT`, `RECHERCHE-LEER-GLEICH-AUSFALL`, `RECHERCHE-SALIENZ-KONSTANT` offen |
-| **Wissensspeicher / Bibliothek** (`autonomous_wissen`) | 🟠 | **466 Zeilen**, seit 04.08. `[gemessen]` | **drei von vier Modi ohne Erzeuger** — nur `recherche` schreibt; `vertiefung`, `traum`, `nachfragen` sind deklariert und leer |
+| **Wissensspeicher / Bibliothek** (`autonomous_wissen`) | 🔴 | **466 Zeilen**, seit 04.08. `[gemessen]` | **drei von vier Modi ohne Erzeuger** — nur `recherche` schreibt; `vertiefung`, `traum`, `nachfragen` sind deklariert und leer · **🔴 seit 20.08.2026** (zuvor 🟠): `BIBLIOTHEK-FILTERT-ZWEISPALTIG` offen |
 | **Vertiefung** (aus dem eigenen Bestand) | 🔴 | **171 aktive + 233 verfallene Aufträge** für einen Agenten, den es nicht gibt `[gemessen]` | der ganze Agent; jeder Auftrag verbrennt drei Versuche im Heartbeat-Takt |
 | **Klärfrage** (aus dem Gegenüber) | 🟠 | `NachfragenAgent` gebaut `[Code]` | siehe §7 — 56 von 58 Läufen sind Fehler |
 | **Traum-Modus** | ⚫ | keine der zehn `TRAUM_*`-Konstanten existiert `[gemessen]` | alles |
@@ -210,7 +211,7 @@ Die Feature-Matrix in `novaberg-architecture.md` §6 ist mit dieser Liste abgel�
 | Bauteil | Ampel | Beleg | Rest |
 |---|---|---|---|
 | `B−1` Thinker protokolliert seine Weiche | ⚫ | kein Pipeline-Eintrag im Thinker `[gemessen]` | alles |
-| `B0` Fallenbatterie (Nulllinie) | 🟢 | beide Hälften gefahren `[Doku]` | — |
+| `B0` Fallenbatterie (Nulllinie) | 🟠 | beide Hälften gefahren `[Doku]` | — · **🟢 → 🟠 bei der Erhebung am 20.08.2026.** **Die Erhebung am 20.08.2026 fand keinen Zeugen**: kein Test unter `tests/` traegt Fallenbatterie oder Nulllinie im Namen; die naechstliegenden sind `test_einwandsurteil.py` und `test_vorzeichenpruefung.py`, und die gehoeren zu B1 und B4. `[gemessen]` |
 | `B1` Urteilsfeld vor dem Text | 🔴 | `graph/einwand.py` gebaut `[Code]` — **gemessen 87 % → 87 %** `[Doku]` | wirkt nicht; `quelle="haltung"` ist ein Wert ohne Gegenstück |
 | `B4` Vorzeichenprüfung Stufe 1 | 🔴 | gebaut, **85 % blind** `[Doku]` | Stufe 2 ist nicht die Verfeinerung, sondern der Mechanismus |
 | `B2`, `B3`, `B5`, `B6`, `B7` | ⚫ | kein Code `[Code]` | alles |
@@ -225,11 +226,11 @@ Die Feature-Matrix in `novaberg-architecture.md` §6 ist mit dieser Liste abgel�
 
 | Feature | Ampel | Beleg | Rest |
 |---|---|---|---|
-| **NMCP-Handshake beim Start** | 🟢 | **15 von 15 Diensten eingebunden, 0 verweigert** `[gemessen, 18.08.]` | — |
+| **NMCP-Handshake beim Start** | 🔴 | **15 von 15 Diensten eingebunden, 0 verweigert** `[gemessen, 18.08.]` · `[Code]` — `agents/nmcp.py`, `anmelden()` mit vier Ausgaengen | — · **🔴 seit 20.08.2026** (zuvor 🟢): `AUSSCHLUSSRIEGEL-TRIFFT-SACHWORT` offen |
 | **Zuschnitt des Zustands auf die Anmeldung** | 🟢 | `agents/nmcp.py` `[Code]` | — |
 | **Quotenabgleich** (angemeldet gegen gezählt) | 🟠 | Job im Scheduler, `NMCP_ABGLEICH_INTERVALL` `[Code]` | braucht 30–100 Äußerungen je Dienst — noch kein Urteil |
-| **Vierter Ausgang** (`abgelehnt` = Zweifelsfall) | 🟠 | **5 von 15 Diensten** melden ihn an `[gemessen, 18.08.]` | für die zehn Hintergrunddienste ist der Grad „eingeschränkt" eine Aussage **ohne Wirkung** |
-| **Selbstauskunft der Dienste** (`beschreibungen()`) | 🔴 | 15 Anmeldungen, **kein Produktivaufrufer** `[gemessen, 18.08.]` | `SELBSTAUSKUNFT-OHNE-LESER` |
+| **Vierter Ausgang** (`abgelehnt` = Zweifelsfall) | 🟠 | **5 von 15 Diensten** melden ihn an `[gemessen, 18.08.]` · `[Code]` — `agents/nmcp.py` Zeile 489, `if "abgelehnt" not in agent.ausgaenge` | für die zehn Hintergrunddienste ist der Grad „eingeschränkt" eine Aussage **ohne Wirkung** |
+| **Selbstauskunft der Dienste** (`beschreibungen()`) | 🔴 | 15 Anmeldungen, **kein Produktivaufrufer** `[gemessen, 18.08.]` · `[Code]` — genau **eine** `def beschreibungen`-Stelle im Baum, gezaehlt am 20.08.2026 `[gemessen]` | `SELBSTAUSKUNFT-OHNE-LESER` |
 | **Grenze** (`grenze`-Eigenschaft) | 🔴 | **5 Deklaranten, 0 Leser** `[gemessen]` | Ablageort entscheiden: Brett oder vierter Ausgang |
 | **Audit-Pflicht** (`hintergrund_log`) | 🔴 | **6 von 15 Agenten** schreiben; über die gesamte Lebenszeit nur **7 Aufgabenarten** `[gemessen]` | acht Agenten ohne Eintrag, darunter drei periodische; fünf eigene Kopien von `_audit_log` |
 
@@ -237,10 +238,10 @@ Die Feature-Matrix in `novaberg-architecture.md` §6 ist mit dieser Liste abgel�
 
 | Agent | Ampel | Beleg | Rest |
 |---|---|---|---|
-| **NotizenAgent** (CRUD, pg_trgm) | 🟠 | 1 Zeile in `notizen` `[gemessen]` | sechs offene Bugs: Container-Wechsel, Kontext-Rekonstruktion, Skill-Manifest, leeres UPDATE-Ziel, Befehl als Titel |
-| **TimelineAgent** (bi-temporal, ZeitVektor) | 🔴 | **61 Einträge** `[gemessen]` — aber der **Lesepfad ist instabil**: Nova verneinte einen aktiven Termin `[gemessen, 17.08.]` | eine ausgebliebene Zustellung ist von einer richtigen Auskunft nicht zu unterscheiden |
+| **NotizenAgent** (CRUD, pg_trgm) | 🔴 | 1 Zeile in `notizen` `[gemessen]` | sechs offene Bugs: Container-Wechsel, Kontext-Rekonstruktion, Skill-Manifest, leeres UPDATE-Ziel, Befehl als Titel · **🔴 seit 20.08.2026** (zuvor 🟠): `NOTIZAUFTRAG-GEHT-AN-TIMELINE` offen |
+| **TimelineAgent** (bi-temporal, ZeitVektor) | 🔴 | **61 Einträge** `[gemessen]` — aber der **Lesepfad ist instabil**: Nova verneinte einen aktiven Termin `[gemessen, 17.08.]` | eine ausgebliebene Zustellung ist von einer richtigen Auskunft nicht zu unterscheiden · `TIMELINE-LESEPFAD-INSTABIL` offen (Erhebung 20.08.2026) |
 | **DirektivenAgent** (HITL-Gate) | 🟢 | **12 Direktiven** `[gemessen]` | teilt die Deutung aus `ZUSTIMMUNG-GILT-ALS-ABLEHNUNG` — **nicht nachgemessen** |
-| **CharakterIdentitätsAgent** | 🟢 | siehe §4 | — |
+| **CharakterIdentitätsAgent** | 🟢 | siehe §4 · `[Code]` — `agents/charakter_identitaet/` | — |
 | **KZG-Agent** (5-Knoten-Subgraph) | 🟢 | 2.803 Keys `[gemessen]` | `QUEUE-PUSH-OHNE-PRIORITAET` offen |
 | **DelegationsAgent** (Halluzinationsventil) | 🟢 | **1.557 Akten / 2.068 Seiten** `[gemessen]` | `DELEG-SEITEN-VALENZ-TOT`, `DELEG-VEKTOR-EINGEFROREN` offen |
 
@@ -259,6 +260,7 @@ Die Feature-Matrix in `novaberg-architecture.md` §6 ist mit dieser Liste abgel�
 | **VertiefungsAgent** | ⚫ | existiert nicht `[gemessen]` | 404 Aufträge warten |
 | **Fachabteilungs-Agenten** (Fachspeicher bekommen Agenten) | ⚫ | `FACHSPEICHER-AGENTEN` `[Doku]` | alles |
 | **PromotionAgent / DecayAgent (alt)** | 🟢 | abgelöst durch die Synapsen-Agenten `[Code]` | Router-Tabelle nennt sie noch (`promotion`, `decay`, `aufraeumen` — kein Agent dahinter) |
+| **Pixie-Plugin — der Nutzer beauftragt Pixie** | ⚫ | Konzept `novaberg-pixie-plugin_k.md` vom 29.04.2026: *„Der User kann keinen Pixie-Auftrag erteilen"* — es gibt keinen Pfad vom Router in die Pixie-Welt. Kein Bezeichner `user_auftrag`/`pixie_auftrag` im Baum `[Code]` | die Pixie-Agenten laufen ausschliesslich periodisch oder Queue-getrieben; die symmetrische Haelfte des Plugin-Systems fehlt. Neu aufgenommen bei der Erhebung am 20.08.2026 |
 
 ---
 
@@ -267,18 +269,18 @@ Die Feature-Matrix in `novaberg-architecture.md` §6 ist mit dieser Liste abgel�
 | Feature | Ampel | Beleg | Rest |
 |---|---|---|---|
 | **Heartbeat, zwei Spuren** (LLM + CPU) | 🟢 | zwei Jobs im Scheduler `[Code]` | **ein serieller Platz** je Spur — der Engpass der Reihe 3 |
-| **Shadow-Queue in PostgreSQL** | 🟢 | **958 Aufträge** `[gemessen]` | Rückstand: 530 aktive `recherche`, ältester vom 27.07. |
+| **Shadow-Queue in PostgreSQL** | 🔴 | **958 Aufträge** `[gemessen]` | Rückstand: 530 aktive `recherche`, ältester vom 27.07. · **🔴 seit 20.08.2026** (zuvor 🟢): `FEHLVERSUCHSPFAD-LOESCHT-HART`, `ZWEI-FRISTEN-7200-VERSCHIEDEN` offen |
 | **Promotions-Queue in Redis** | 🟢 | `[Code]` | `QUEUE-SCHEMA-STALE` offen |
 | **Kandidatenwahl + Aging** | 🟢 | `services/pixie/kandidaten.py` `[Code]` | `DISPATCH-SALIENZ-DEFAULT`, `UNREGISTRIERTER-AGENT-GEWINNT` offen |
-| **Stapel + Zustellung** (Shadow Delivery) | 🟢 | `services/shadow_delivery.py` `[Code]` | `SHADOW-STACK-THEMA-LEER`, `ZUSTELLUNG-ABBRUCH-UNGEZAEHLT` offen |
+| **Stapel + Zustellung** (Shadow Delivery) | 🔴 | `services/shadow_delivery.py` `[Code]` | `SHADOW-STACK-THEMA-LEER`, `ZUSTELLUNG-ABBRUCH-UNGEZAEHLT` offen · **🔴 seit 20.08.2026** (zuvor 🟢): `PROMPTAENDERUNG-OHNE-STAPELWIRKUNG`, `LAGEBILD-IMPULS-ALS-NUTZEREINGABE` offen |
 | **Zustellungsfilter** (0,60 Kosinus) | 🔴 | `_stack_aehnliche_entfernen` `[Code]` | löscht den nächsten Gedanken zum selben Thema mit — die Gedankenkette ist die Abhilfe, sie ist nicht gebaut |
-| **Eigenzeit E** (Zeitstempel am Zustand) | 🟢 | `[Doku]` | — |
-| **Eigenzeit F** (Session altert) | 🟢 | `[Doku]` | — |
-| **Eigenzeit C** (Pausenfaktor) | 🟠 | gemessen: 48,7 h Pause → Faktor 0,0000 `[Doku, 17.08.]` | benannte offene Kante: der Fall ohne Bezug |
-| **Eigenzeit A** (Emotionsverfall über Zeit) | 🟢 | `[Doku]` | — |
+| **Eigenzeit E** (Zeitstempel am Zustand) | 🟢 | `[Doku]` · `[Code]` — `EIGENZEIT_*` in `config.py`, gelesen von `services/pixie/riegel.py` `[Erhebung 20.08.2026]` | — |
+| **Eigenzeit F** (Session altert) | 🟢 | `[Doku]` · `[Code]` — `EIGENZEIT_*` in `config.py` `[Erhebung 20.08.2026]` | — |
+| **Eigenzeit C** (Pausenfaktor) | 🟠 | gemessen: 48,7 h Pause → Faktor 0,0000 `[Doku, 17.08.]` · **Die Erhebung am 20.08.2026 fand keinen Bezeichner**: weder `PAUSE` noch `pausenfaktor` steht in `config.py` `[gemessen]` | benannte offene Kante: der Fall ohne Bezug |
+| **Eigenzeit A** (Emotionsverfall über Zeit) | 🟢 | `[Doku]` · `[Code]` — `EIGENZEIT_*` in `config.py` `[Erhebung 20.08.2026]` | — |
 | **Eigenzeit B** (Level im Eintrag) | 🟠 | gebaut `[Doku]` | wartet auf seinen **ersten Eintrag mit Level** |
 | **Eigenzeit D** (Rad-Riegel) | 🟠 | Riegel 1 gebaut `[Doku]` | Riegel 2 nicht gerechnet; `RIEGEL-5-7-OHNE-EINTRAG` |
-| **Selbstauslösung** (vierter Ausgang zurück in die Queue) | 🟠 | zweimal live gefeuert `[Doku, 16.08.]` | Budget: drei je Turn für **alle** Gründe zusammen — vor dem zweiten Aufrufer braucht es getrennte Zähler |
+| **Selbstauslösung** (vierter Ausgang zurück in die Queue) | 🟠 | zweimal live gefeuert `[Doku, 16.08.]` · **Die Erhebung am 20.08.2026 fand keinen Bezeichner**: kein `selbstausloesung`/`selbst_ausloes` im Baum `[gemessen]` | Budget: drei je Turn für **alle** Gründe zusammen — vor dem zweiten Aufrufer braucht es getrennte Zähler |
 | **Master-Switch `PIXIE_AKTIV`** | 🟢 | env-konfigurierbar `[Code]` | — |
 
 ---
@@ -287,16 +289,16 @@ Die Feature-Matrix in `novaberg-architecture.md` §6 ist mit dieser Liste abgel�
 
 | Feature | Ampel | Beleg | Rest |
 |---|---|---|---|
-| **Zeitparser** (Fuzzy, Vektor-Modus, zwei Uhren) | 🟢 | `tools/`-Modul, 47 Tests `[Doku]` | `PARSER-NACKTE-UHRZEIT-FALSCHER-TAG` umgangen, Ursache extern; `ZEIT-EXTRAKTION-UNSCHARF` offen |
+| **Zeitparser** (Fuzzy, Vektor-Modus, zwei Uhren) | 🟢 | `tools/`-Modul, 47 Tests `[Doku]` · `[Code]` — `utils/zeitparser.py` `[Erhebung 20.08.2026]` | `PARSER-NACKTE-UHRZEIT-FALSCHER-TAG` umgangen, Ursache extern; `ZEIT-EXTRAKTION-UNSCHARF` offen |
 | **Web-Infrastruktur** (SearXNG + PageFetcher) | 🟢 | `ki_searxng` läuft seit 4 Tagen `[gemessen]` | — |
-| **Auto-Fetch** (Suche → Seitenabruf) | 🟢 | `[Doku]` | — |
-| **Multi-Channel — Telegram** | 🟢 | `ki_telegram` läuft `[gemessen]` | — |
+| **Auto-Fetch** (Suche → Seitenabruf) | 🟢 | `[Doku]` · `[Code]` — `tools/web/search.py` und `tools/web/fetch.py` `[Erhebung 20.08.2026]` | — |
+| **Multi-Channel — Telegram** | 🔴 | `ki_telegram` läuft `[gemessen]` | — · **🔴 seit 20.08.2026** (zuvor 🟢): `TELEGRAM-NAMENSAUFLOESUNG-FAELLT-AUS` offen |
 | **Multi-Channel — Matrix + WireGuard** | ⚫ | kein Code `[Code]` | alles |
 | **Voice (TTS/STT)** | ⚫ | Vision `[Doku]` | alles |
 | **Dateien — Schreibwerkzeug** | 🟢 | `tools/dateien/schreiben.py` `[Code]` | nur schreibend, für Novas eigene Bibliothek |
-| **Dateien — Leseschicht** (Karte, Block, Fenster, Fundstelle) | 🟢 | `tools/dateien/operationen.py`, **35 Zeugen** · **erster Produktivaufrufer seit 18.08.2026**: `struktur_analysieren` füllt die Blockkarte des Index · seit 20.08.2026 **drei Ausgänge statt zwei** — erhoben / leer / `StrukturUnklarError` — und die Erkennung macht `markdown-it-py` statt eines Zeilenautomaten; am Bestand gemessen **174 / 0 / 0** · seit 20.08.2026 **alle fünf zugelassenen Formate**: Markdown über `markdown-it-py`, dazu eigene Erkenner für `.rst`, `.org`, `.adoc` und `.txt` als ausdrücklich leere Gliederung; an sechs echten `.rst`-Fremddateien gemessen, 24 Überschriften, 0 nicht erhoben `[gemessen]` | `block_lesen` liefert die Unterstreichung einer RST-Überschrift als erste Inhaltszeile mit (Fundliste 20.08.) |
+| **Dateien — Leseschicht** (Karte, Block, Fenster, Fundstelle) | 🔴 | `tools/dateien/operationen.py`, **35 Zeugen** · **erster Produktivaufrufer seit 18.08.2026**: `struktur_analysieren` füllt die Blockkarte des Index · seit 20.08.2026 **drei Ausgänge statt zwei** — erhoben / leer / `StrukturUnklarError` — und die Erkennung macht `markdown-it-py` statt eines Zeilenautomaten; am Bestand gemessen **174 / 0 / 0** · seit 20.08.2026 **alle fünf zugelassenen Formate**: Markdown über `markdown-it-py`, dazu eigene Erkenner für `.rst`, `.org`, `.adoc` und `.txt` als ausdrücklich leere Gliederung; an sechs echten `.rst`-Fremddateien gemessen, 24 Überschriften, 0 nicht erhoben `[gemessen]` | `block_lesen` liefert die Unterstreichung einer RST-Überschrift als erste Inhaltszeile mit (Fundliste 20.08.) · **🔴 seit 20.08.2026** (zuvor 🟢): `SETEXT-UNTERSCHRIFT-IM-BLOCK` offen |
 | **Formzwang am Modellaufruf** (`expect_json` erreicht den Anbieter) | 🟢 | `services/llm_provider.py` + beide Worker, **5 Zeugen an zwei Nähten** · Gegenproben 2/2 und 1/1 rot · im Betrieb: Index von 155 auf **160 von 160**, **0 unbrauchbare Modellantworten** gegen 18 zuvor `[gemessen]` | der Anthropic-Weg erzwingt nicht — er meldet es (Werkzeugschema fehlt) |
-| **Rückweg — Weg 3, der Verweis** (`wissen_verweis`) | 🟢 | `agents/wissen_rueckweg/` + Einreihpunkt in `agents/recherche/agent.py`, **15 Zeugen** · eigener Zuordnungs-Zettel, `bezug_id` hält die eigene Zeile aus der Kandidatenmenge · **sechster echter Lauf trifft**: Zeile 2022 `haeufigkeit` 1→2, `gewicht_roh` 1,0997, `verstaerkt_am` 09:46:50 — und **0 Dateien** unter `/knowledge` mit jüngerer Änderungszeit `[gemessen]` | die Kandidatenlandschaft bewegt sich zwischen Läufen (Fundliste 19.08.) |
+| **Rückweg — Weg 3, der Verweis** (`wissen_verweis`) | 🔴 | `agents/wissen_rueckweg/` + Einreihpunkt in `agents/recherche/agent.py`, **15 Zeugen** · eigener Zuordnungs-Zettel, `bezug_id` hält die eigene Zeile aus der Kandidatenmenge · **sechster echter Lauf trifft**: Zeile 2022 `haeufigkeit` 1→2, `gewicht_roh` 1,0997, `verstaerkt_am` 09:46:50 — und **0 Dateien** unter `/knowledge` mit jüngerer Änderungszeit `[gemessen]` | die Kandidatenlandschaft bewegt sich zwischen Läufen (Fundliste 19.08.) · **🔴 seit 20.08.2026** (zuvor 🟢): `VERWEISWEG-LEHNT-BESTEN-FALL-AB` offen |
 | **Dateien — Schreibschicht** (chirurgische Schnitte) | 🟢 | `tools/dateien/redaktion.py`, 20 Zeugen `[Code]` | — |
 | **Dateien — Versionierung im Dokument** (`[cN>]`/`[dN>]`/`[iN>]`, Paarungsprüfung) | 🟢 | `tools/dateien/versionierung.py`, 20 Zeugen · Kette an echter Wissensdatei gefahren, 0 Befunde `[gemessen]` | — |
 | **Dateien — Auftragsform `DATEI: {json}`** | 🟠 | `tools/dateien/hand.py`, 22 Zeugen `[Code]` — **weiterhin kein Aufrufer** | die Verdrahtung |
@@ -304,21 +306,21 @@ Die Feature-Matrix in `novaberg-architecture.md` §6 ist mit dieser Liste abgel�
 | **Ankertreue des Schreibmodells** | 🟢 | 30/30 zeichengenau und eindeutig, `gemma4-gpu` Median 1,7 s, `qwen36-cpu` 17,9 s `[gemessen]` | — |
 | ~~**Dateien-Dienst — Stufe 0** (Einbettung gegen den Korpus prüfen)~~ | — | **entfallen** mit `novaberg-agent-dateien_k.md` v0.10 §3.0a-bis `[Doku]` | Die Schwelle ist keine Konstante mehr, sondern das Quantil `1 − K/N` der mitlaufenden Verteilung — es gibt keine einmalige Vermessung mehr, die vorher stattfinden müsste |
 | **Dateien-Dienst — Stufe 1** (`dateien_wurzeln` + Freigabe) | 🟢 | `agents/dateien_wurzeln/`, 48 Zeugen · Tabelle steht, **Zeile 1 aus einem echten Turn**, **Zeile 2 ebenso am 20.08.2026**: `/docs`, Tor meldete 166 Dateien, `verifiziert=True` `[gemessen]` · Kette im Betriebslog von `Router: mgmt=agent/dateien_wurzeln` bis `verifiziert=True` `[gemessen]` | das **Vergessen** aus §2a.3 — es hat ohne Indextabelle keinen Gegenstand |
-| **Dateien-Dienst — Stufe 2** (`dateien_index` + Wächter) | 🟢 | `agents/dateien_index/`, **31 Zeugen** (nachgezählt) · Erstlauf **3 Dateien in 16 s**, Blockkarten 50/21/32, zweiter Lauf 0 neu / 3 unverändert · **am 20.08.2026 über 160 Dateien gefahren**: vier Läufe, rund 30 s je Datei; zunächst 155 Zeilen und **5 still verloren**, nach der Fessel am Modellaufruf **160 von 160** und 0 unbrauchbare Antworten · die Bilanz trägt seither `gescheitert` samt Pfaden und rechnet `Kandidaten == indiziert + offen + gescheitert` nach `[gemessen]` | der **Takt** — `periodic_task()` ist None, bis die Änderungsrate gemessen ist |
+| **Dateien-Dienst — Stufe 2** (`dateien_index` + Wächter) | 🔴 | `agents/dateien_index/`, **31 Zeugen** (nachgezählt) · Erstlauf **3 Dateien in 16 s**, Blockkarten 50/21/32, zweiter Lauf 0 neu / 3 unverändert · **am 20.08.2026 über 160 Dateien gefahren**: vier Läufe, rund 30 s je Datei; zunächst 155 Zeilen und **5 still verloren**, nach der Fessel am Modellaufruf **160 von 160** und 0 unbrauchbare Antworten · die Bilanz trägt seither `gescheitert` samt Pfaden und rechnet `Kandidaten == indiziert + offen + gescheitert` nach `[gemessen]` | der **Takt** — `periodic_task()` ist None, bis die Änderungsrate gemessen ist · **🔴 seit 20.08.2026** (zuvor 🟢): `VERSCHWUNDEN-DURCH-FILTERWECHSEL`, `ARCHIVDATEI-OHNE-ETIKETT`, `DATEIINDEX-SPALTEN-OHNE-SCHREIBER` offen |
 | **Dateien-Dienst — Stufe 3** (Enricher-Quelle, `[AUFZEICHNUNGEN]`) | 🟢 | `agents/dateien_index/aufzeichnungen.py`, seit 18.08. **zweikanalig**, 27 Zeugen · im Betrieb: scharfer Kanal 0,4879 und 0,4718, Fremdthemen 0 Treffer · **am 20.08.2026 an 174 Zeilen nachgemessen, 24 Sonden:** einschlägig Median 0,4293 gegen fremd 0,2519 — der Boden 0,30 **trägt**, elf von zwölf fremden Fragen erzeugen null Zeilen darüber, und der eine abgeschnittene richtige Fall wird vom scharfen Kanal geliefert `[gemessen]` | die **Quantilschwelle** (`AUFZEICHNUNGEN-QUANTIL`) · und der eigentliche Rest ist die **Rangfolge**, nicht die Schwelle (`EMBED-LISTE-DATEIENINDEX`) |
-| **Die epistemische Grenze im Prompt** (`[AUFZEICHNUNGEN]` neben `[GEDAECHTNIS]`) | 🟢 | eigener Block, Fundstelle je Eintrag · **im Betrieb**: die Figur nannte in allen drei Punkten ihrer Antwort die Quelldatei, und der gespeicherte Kurzzeit-Eintrag trägt sie mit — 1 von 2908 Einträgen mit Dateipfad, über den Abruf als Gedächtniszeile zurückgeholt `[gemessen]` | ~~eine Absicht, keine Arbeit~~ → **entschieden am 18.08.2026: der Übergang ist gewollt, es wird kein Tor gebaut** (`novaberg-agent-dateien_k.md` §9 Punkt 10). Offen bleibt allein die **Rate**: Wie oft die Herkunft den Übergang überlebt, ist an einem Fall belegt und nicht gemessen |
-| **Zuordnung des Planners** (exakt vor unscharf) | 🟢 | `graph/nodes/planner.py::_manager_zu_target`, 8 Zeugen · Gegenprobe 4 vorhergesagt, 4 gezählt `[gemessen]` | — |
+| **Die epistemische Grenze im Prompt** (`[AUFZEICHNUNGEN]` neben `[GEDAECHTNIS]`) | 🔴 | eigener Block, Fundstelle je Eintrag · **im Betrieb**: die Figur nannte in allen drei Punkten ihrer Antwort die Quelldatei, und der gespeicherte Kurzzeit-Eintrag trägt sie mit — 1 von 2908 Einträgen mit Dateipfad, über den Abruf als Gedächtniszeile zurückgeholt `[gemessen]` | ~~eine Absicht, keine Arbeit~~ → **entschieden am 18.08.2026: der Übergang ist gewollt, es wird kein Tor gebaut** (`novaberg-agent-dateien_k.md` §9 Punkt 10). Offen bleibt allein die **Rate**: Wie oft die Herkunft den Übergang überlebt, ist an einem Fall belegt und nicht gemessen · **🔴 seit 20.08.2026** (zuvor 🟢): `FUNDSTELLE-MIT-BEHAELTERPFAD` offen |
+| **Zuordnung des Planners** (exakt vor unscharf) | 🔴 | `graph/nodes/planner.py::_manager_zu_target`, 8 Zeugen · Gegenprobe 4 vorhergesagt, 4 gezählt `[gemessen]` | — · **🔴 seit 20.08.2026** (zuvor 🟢): `ZUORDNUNG-NENNT-LISTENPOSITION` offen |
 | **Dateien-Dienst — Stufe 4** (Auftragsweg mit Grep) | 🟢 | `agents/dateien/` samt Aufrufer (`plugins/dateien_manager/`, `klassifikation.py`, `agent.py`, `dispatch.py`, `auskunft.py`), 63 Zeugen · **echter Turn 18.08. 18:37 UTC**: scharfer Kanal 1 Treffer, Karte 7 Blöcke ohne Dateizugriff, Nadel 2 Fundstellen, und die Antwort trägt `/files/kzg-salienz.md` **und 0,67379** im selben Satz `[gemessen]` | die **Rückfrage** — der Dienst hat sie im Kanon und benutzt sie nicht; er ändert nichts, also gibt es nichts zu bestätigen |
-| **Rückweg ins Wissen** (Gespräch → Wissensdatei, §4b) | 🟢 | `agents/wissen_rueckweg/`, 26 Zeugen · **zwei echte Läufe 18.08.**: einer ohne Schnitt mit Begründung (8 Kandidaten, bester Kosinus 0,3137), einer mit `[i1>]` zwischen Definition und Beleg, Version 1.0 → 1.1, Häufigkeit 1 → 2 `[gemessen]` | **zwei der drei Wege** — das Einprägsame (Schwelle 0,7 roh) und das Zugehörige sind nicht verdrahtet; dazu die Idempotenz: derselbe Fund zweimal eingereiht läuft zweimal, und nur der Aufruf verhindert die Dublette |
+| **Rückweg ins Wissen** (Gespräch → Wissensdatei, §4b) | 🔴 | `agents/wissen_rueckweg/`, 26 Zeugen · **zwei echte Läufe 18.08.**: einer ohne Schnitt mit Begründung (8 Kandidaten, bester Kosinus 0,3137), einer mit `[i1>]` zwischen Definition und Beleg, Version 1.0 → 1.1, Häufigkeit 1 → 2 `[gemessen]` | **zwei der drei Wege** — das Einprägsame (Schwelle 0,7 roh) und das Zugehörige sind nicht verdrahtet; dazu die Idempotenz: derselbe Fund zweimal eingereiht läuft zweimal, und nur der Aufruf verhindert die Dublette · **🔴 seit 20.08.2026** (zuvor 🟢): `RUECKWEG-OHNE-IDEMPOTENZ` offen |
 | **Spur der Antwort** (`graph/antwort_spur.py`) | 🟢 | sechs Schreibstellen auf `state["response"]` laufen über einen Helfer, jede mit alter und neuer Länge im Protokoll · Anbieter-Umschlag mit `done_reason` **vor** jeder Zuweisung · AST-Riegel gegen Umgehung, mit Auslösefall · **10 Zeugen** · zwei echte Turns, Kette lückenlos `[gemessen]` | sie **meldet** den Verlust, sie **verhindert** ihn nicht — der Wiederholversuch bei leerer Antwort ist nicht gebaut |
 | **Bibliothek als bestellbarer Dienst** (`wissen`, NMCP-Zettel + Dienst) | 🟢 | **Trefferqualität nachgewiesen** (19.08.2026 nachts): 37 von 40 Fragen finden ihre Ausarbeitung auf Rang 1 (92 %, zuvor 15 %), im Betrieb 3 Treffer bei Kosinus 0,730–0,629 — `plugins/wissen_manager/manager.py` (Zettel), `agents/wissen/` (Dienst), geteilte Abfrage in `AutonomousWissenRepository.suchen`, **26 Zeugen** · **zwei echte Turns 19.08. 12:41 und 12:43 UTC**: beide über den Empfang geroutet (`Match via target 'wissen' → wissen (exakt)`), einer in den **vierten Ausgang** (0 Treffer, Bestand 242, nächste Nähe 0,3084), einer **abgeschlossen** mit 5 Treffern `[gemessen]` | die **Schwelle trennt nicht** (siehe Zeile darunter); der Wortlaut der Datei fehlt — Stufe 2 ist nicht gebaut, und der Dienst sagt es in seiner `grenze` |
-| **Retrieval der Bibliothek — ein Vektor je Thema** | 🟢 | **Gebaut, migriert und gemessen am 19.08.2026.** `autonomous_wissen_thema`, je Thema eine Zeile; **2443 Themenvektoren** über 559 Ausarbeitungen. Gegen den gebauten Lesepfad gemessen: **37/40 auf Rang 1** (Kosinus-Median 0,7612) gegen zuvor 6/40 und 0,2821 — der alte Median lag **unter** der damaligen Schwelle, die richtige Antwort wurde also im Regelfall verworfen. Schwelle 0,40 → **0,50** aus den Rohdaten: der höchste Wert, der noch keine richtige Antwort kostet. **Der Inhaltsvektor bleibt** — der Rückweg findet gegen ihn 25/25, gegen Themenvektoren 12/25, Überlappung der Top-8 im Median 1 von 8. Im Betrieb belegt: 3 Treffer bei 0,730–0,629 `[gemessen]` | die Schwelle ist **übernommen, nicht gemessen** (`config.py`, Backlog `WIS-SCHWELLE-MESSEN`) — sie sortiert an diesem Korpus genau falsch herum |
+| **Retrieval der Bibliothek — ein Vektor je Thema** | 🔴 | **Gebaut, migriert und gemessen am 19.08.2026.** `autonomous_wissen_thema`, je Thema eine Zeile; **2443 Themenvektoren** über 559 Ausarbeitungen. Gegen den gebauten Lesepfad gemessen: **37/40 auf Rang 1** (Kosinus-Median 0,7612) gegen zuvor 6/40 und 0,2821 — der alte Median lag **unter** der damaligen Schwelle, die richtige Antwort wurde also im Regelfall verworfen. Schwelle 0,40 → **0,50** aus den Rohdaten: der höchste Wert, der noch keine richtige Antwort kostet. **Der Inhaltsvektor bleibt** — der Rückweg findet gegen ihn 25/25, gegen Themenvektoren 12/25, Überlappung der Top-8 im Median 1 von 8. Im Betrieb belegt: 3 Treffer bei 0,730–0,629 `[gemessen]` | die Schwelle ist **übernommen, nicht gemessen** (`config.py`, Backlog `WIS-SCHWELLE-MESSEN`) — sie sortiert an diesem Korpus genau falsch herum · **🔴 seit 20.08.2026** (zuvor 🟢): `BIBLIOTHEK-FINDET-SICH-SELBST`, `THEMENEMBEDDING-TRAEGT-DESTILLAT`, `BIBLIOTHEKSSCHWELLE-SORTIERT-FALSCH` offen |
 | **Dateien-Dienst — Stufe 5** (Vertiefung) | ⚫ | `[Doku]` | **zuletzt**, hinter der Gedankenkette |
 | **Außenrand der Freigaben** (erzwungen, nicht deklariert) | 🟢 | `agents/dateien_wurzeln/aussenrand.py` · Gegenprobe: Randprüfung ausgehebelt → **5 vorhergesagt, 5 rot** · im Betrieb `/files/../knowledge` → `/knowledge` abgewiesen · **seit 20.08.2026 zweiteilig** (`/files,/docs`), im laufenden Dienst als `['/files', '/docs']` abgelesen `[gemessen]` | — |
 | **Rückweg der Rückfrage** (`dismissed`, Unklarheit fragt erneut) | 🟢 | `agents/dateien_wurzeln/resume.py` · Wortgrenzen statt Teilzeichenketten, im Betrieb nachgemessen `[gemessen]` | gilt nur für diesen Dienst; **drei Torwächter des Bestandes haben ihn weiterhin nicht**, und ihre Deutung ist als `ZUSTIMMUNG-GILT-ALS-ABLEHNUNG` offen |
 | **Änderungserkennung über den Inhalt** (Hash statt Zeit) | 🟢 | `agents/dateien_index/wandern.py` · am Bestand belegt: gleiche Größe, gleiche `mtime`, anderer Inhalt → **erkannt**; Gegenprobe 2 vorhergesagt, 2 rot `[gemessen]` | — |
 | **Verborgenes wird nicht betreten** (führender Punkt) | 🟢 | `agents/dateien_index/wandern.py`, **6 Zeugen** · Verzeichnis einmal mit Grund statt je Datei, verborgene Einzeldatei mit eigenem Grund vor der Endung · Gegenprobe zweifach: 4 vorhergesagt/4 rot und 3 vorhergesagt/3 rot · im Lauf danach `uebergangen 0`, `uebergangene_verzeichnisse 1` (`.obsidian`) `[gemessen]` | — |
-| **Bibliothek — drei Kanäle** (`suchtext`, `entitaet_ids`, `timeline_id`, `stichwoerter`) | 🟠 | vier Spalten auf `autonomous_wissen`, DDL gezündet, Schema-Zeuge deckt sie `[gemessen]` | **kein Schreiber** — die Spalten sind die Vorbedingung, nicht die Umsetzung |
+| **Bibliothek — drei Kanäle** (`suchtext`, `entitaet_ids`, `timeline_id`, `stichwoerter`) | 🔴 | vier Spalten auf `autonomous_wissen`, DDL gezündet, Schema-Zeuge deckt sie `[gemessen]` | **kein Schreiber** — die Spalten sind die Vorbedingung, nicht die Umsetzung · **🔴 seit 20.08.2026** (zuvor 🟠): `ERSCHLIESSUNG-VERSTUEMMELT-STICHWORT` offen |
 | **`zuletzt_gelernt_hash`** (§5.2a — der Wiedereröffner) | ⚫ | Spalte steht in `dateien_index`, **niemand schreibt sie** `[Code]` — 18.08.2026 nachgeprüft, Stufe 3 hat sie nicht mitgebracht: Sie gehört zum **frühen Tor** (§3.0d) und nicht zum Enricher-Weg |
 | **Verb-Mapping lernen** (nutzereigene Sprache) | 🔴 | `verb_mapping_lernen` **ohne Aufrufer**, `verb_mappings` **0 Zeilen** `[gemessen]` | Schreibpfad steht seit Chat 42 und wurde nie verdrahtet |
 | **Hermes-Substrat** (Ausführungsschicht) | ⚫ | kein Code, keine Anbindungsspezifikation `[Code]` | sieben Messfragen M0–M6 unbeantwortet |
@@ -337,7 +339,7 @@ Die Feature-Matrix in `novaberg-architecture.md` §6 ist mit dieser Liste abgel�
 | **TimelineManager** | 🟠 | `[Code]` | trägt einen ausdrücklichen Loud-Failure-Stub (`manager.py:243`) |
 | **DirektivenManager** | 🟢 | `[Code]` | — |
 | **CharakterIdentitaetManager** | 🟢 | `[Code]` | — |
-| **FaktenManager** | 🔴 | `[Code]` — aber **deaktiviert**, Speicher leer `[gemessen]` | Aktivierung erfordert die Lösung von `FAKTEN-RAUSCH` |
+| **FaktenManager** | 🔴 | `[Code]` — aber **deaktiviert**, Speicher leer `[gemessen]` | Aktivierung erfordert die Lösung von `FAKTEN-RAUSCH` · **🔴 seit 20.08.2026** (zuvor 🔴): `FAKTENPLUGIN-OHNE-KAPPUNG` offen |
 | **WissenManager** | 🟠 | `[Code]` | Stufe 2 „den Block lesen, der wirklich gebraucht wird" — **noch nicht gebaut** (`manager.py:9`). **Der Blocker ist seit dem 18.08.2026 weg, nicht die Lücke:** Die Leseschicht steht mit 26 Zeugen und hat zwei Produktivaufrufer — beide für die *freigegebenen Verzeichnisse*. Die Bibliothek öffnet weiterhin keine Datei; `dateipfad` geht nur als Fundstelle in den Text `[gemessen]` |
 
 ---
@@ -346,7 +348,7 @@ Die Feature-Matrix in `novaberg-architecture.md` §6 ist mit dieser Liste abgel�
 
 | Feature | Ampel | Beleg | Rest |
 |---|---|---|---|
-| **WebSocket-Umbau** (alle Stufen über WS) | 🟢 | abgeschlossen Chat 124 `[Doku]` | `WEBSOCKET-OHNE-KEEPALIVE` ✅ behoben 15.08. |
+| **WebSocket-Umbau** (alle Stufen über WS) | 🟢 | abgeschlossen Chat 124 `[Doku]` · `[Code]` — `api/websocket.py` `[Erhebung 20.08.2026]` | `WEBSOCKET-OHNE-KEEPALIVE` ✅ behoben 15.08. |
 | **Chat-Ansicht + Stream-Handler** | 🟢 | `client/ui/` `[Code]` | `CLIENT-STUFEN-OHNE-TURN-KENNUNG` offen |
 | **Emotions-Panel** (Radar) | 🟢 | `panels/emotions_panel.py` `[Code]` | Dual-Radar (beide Seiten) `[Doku]` offen |
 | **Charakter-Panel** (5 Profile) | 🟢 | `panels/character_panel.py` `[Code]` | — |
@@ -364,13 +366,13 @@ Die Feature-Matrix in `novaberg-architecture.md` §6 ist mit dieser Liste abgel�
 | Feature | Ampel | Beleg | Rest |
 |---|---|---|---|
 | **Docker-Verbund** (5 Dienste) | 🟢 | alle fünf Container up `[gemessen]` | — |
-| **Tri-LLM + Connector-System** | 🟢 | `[Doku]` · Block 4 der MS-Welle abgeschlossen | — |
+| **Tri-LLM + Connector-System** | 🔴 | `[Doku]` · Block 4 der MS-Welle abgeschlossen | — · **🔴 seit 20.08.2026** (zuvor 🟢): `OVERRIDE-NACH-CONNECTOR-STATT-MODELL` offen |
 | **Model-Service-Schicht** (ChatWorker, BackgroundWorker, EmbedWorker) | 🟢 | `services/model_services/` `[Code]` | `SUBMIT-SYNC-BEHAUPTET-WORKER-THREAD` offen — zweimal live zugeschlagen |
-| **Microservice-Modell-Queue** (Blöcke 1–5) | 🟢 | abgeschlossen Chat 97 `[Doku]` | — |
-| **Embedding-Konsolidierung** (ein Pfad) | 🟢 | `[Doku]` | `EMBED-DIMENSIONSCHECK-FEHLT` offen; Einbettungsmodell gegen Fachtexte **ungemessen** |
+| **Microservice-Modell-Queue** (Blöcke 1–5) | 🟢 | abgeschlossen Chat 97 `[Doku]` · `[Code]` — `services/model_services/` mit `worker_base`, `chat_worker`, `background_worker`, `embed_worker`, `registry` `[Erhebung 20.08.2026]` | — |
+| **Embedding-Konsolidierung** (ein Pfad) | 🟢 | `[Doku]` · `[Code]` — `embed_text_bauen` in `services/wissensspeicher.py`, **60 Fundstellen** im Baum `[Erhebung 20.08.2026]` | `EMBED-DIMENSIONSCHECK-FEHLT` offen; Einbettungsmodell gegen Fachtexte **ungemessen** |
 | **Health-Check** | 🟢 | `api/health.py`, rechnet den NMCP-Befund frisch `[Code]` | — |
 | **Admin-API** (Pause/Resume/Flush) | 🟢 | `api/admin.py` `[Code]` | — |
-| **Schema in `db/init.sql` + Agenten-`init.sql`** | 🟢 | 22 Tabellen definiert, **0 im Code benutzte Tabelle fehlt** `[gemessen]` | `LZG-MIGRATION-REVIEW-NICHT-IN-INIT`, `IDX-TIMELINE-TYPE-NICHT-IN-INIT` offen |
+| **Schema in `db/init.sql` + Agenten-`init.sql`** | 🔴 | 22 Tabellen definiert, **0 im Code benutzte Tabelle fehlt** `[gemessen]` | `LZG-MIGRATION-REVIEW-NICHT-IN-INIT`, `IDX-TIMELINE-TYPE-NICHT-IN-INIT` offen · **🔴 seit 20.08.2026** (zuvor 🟢): `LOESCHREGELN-DREIGETEILT` offen |
 
 ---
 
@@ -378,16 +380,60 @@ Die Feature-Matrix in `novaberg-architecture.md` §6 ist mit dieser Liste abgel�
 
 | Feature | Ampel | Beleg | Rest |
 |---|---|---|---|
-| **Test-Suite** | 🟠 | 1.617 grün, 0 übersprungen `[Doku, 17.08.]` | meldet **gelegentlich rot und reproduziert nicht** — der Testname ist unbekannt |
-| **Linter-Nulllinie** (`ruff.toml`) | 🟢 | 2.147 geduldete Treffer `[Doku]` | — |
+| **Test-Suite** | 🔴 | 1.617 grün, 0 übersprungen `[Doku, 17.08.]` · `[gemessen]` — `Ran 2039 tests — OK`, 0 uebersprungen, am 20.08.2026 | meldet **gelegentlich rot und reproduziert nicht** — der Testname ist unbekannt · **🔴 seit 20.08.2026** (zuvor 🟠): `ZEUGE-FLACKERT-OHNE-REPRODUKTION` offen |
+| **Linter-Nulllinie** (`ruff.toml`) | 🟢 | 2.147 geduldete Treffer `[Doku]` · `[Code]` — `novaberg/ruff.toml`, versioniert `[Erhebung 20.08.2026]` | — |
 | **Harte Wand** (`ruff-hart.toml`) | 🟠 | **4 Familien** hart: `LOG`, `F821`, `W`-Auswahl, `N` `[Code]` | elf Familien unbewacht, bis sie leer sind |
-| **Charakterisierungs-Netz** | 🟢 | `[Doku]` | — |
+| **Charakterisierungs-Netz** | 🟠 | `[Doku]` | — · **🟢 → 🟠 bei der Erhebung am 20.08.2026.** **Die Erhebung am 20.08.2026 fand keinen Zeugen**: unter 143 Testdateien traegt keine `charakterisier`, `netz` oder `golden` im Namen. Das Netz ist im Harness beschrieben und im Bestand nicht auffindbar. `[gemessen]` |
 | **Kanalprüfung** (Deklaration gegen Leser) | 🟢 | 74 Felder geprüft, **0 tote Kanäle** `[gemessen]` | — |
 | **Konfigurationsprüfung** (Konstante ohne Leser) | ⚫ | kein Werkzeug — **8 tote Konstanten** von Hand gefunden `[gemessen]` | `DATEILOG_AKTIV`, `EBBINGHAUS_DECAY_RATE`, `EBBINGHAUS_MIN_GEWICHT`, `EMOTIONALE_GRAVITATION_FAKTOR_SESSION`, `KZG_VERSTAERKUNG_DIVISOR`, `REDUCER_AKTIV`, `REDUCER_LOG_REMOVED`, `STIL_SESSION_GEWICHT` |
+| **Schichtprüfung** (Importwurzel) | ⚫ | kein Werkzeug prueft die Schichtgrenze; am Bestand gezaehlt **39 Importe**, die eine ueberspringen `[gemessen]` · `IMPORTE-UEBERSPRINGEN-SCHICHT` offen | die Regel steht, die Wand fehlt. Neu aufgenommen bei der Erhebung am 20.08.2026 |
+| **EVA-Sektionsprüfung** (leere Sektionsmarke) | ⚫ | **20 Sektionsmarken `Ausgabe-Verifikation`** ohne Pruefung darunter `[gemessen]` · `EVA-SEKTION-OHNE-PRUEFUNG` offen | eine Marke, unter der nur ein `return` steht, taeuscht eine Pruefung vor. Neu aufgenommen bei der Erhebung am 20.08.2026 |
+| **Default-Prüfung** (Begleitfeld beim Vorgabewert) | ⚫ | **11 numerische Defaults** sehen aus wie Messwerte `[gemessen]` · `DEFAULTS-WIE-MESSWERTE` offen | ohne Begleitfeld ist ein Vorgabewert von einer Messung nicht zu unterscheiden. Neu aufgenommen bei der Erhebung am 20.08.2026 |
 
 ---
 
-## 14. Was diese Erhebung nebenbei gefunden hat
+## 14. Was die Erhebungen nebenbei gefunden haben
+
+### Erhebung vom 20.08.2026 — die zweite
+
+**Der Auslöser war kein Zweifel an der Liste, sondern ein Umbau daneben:** Am selben Tag sind 168 rohe
+Funde aus `novaberg-fundliste.md` klassifiziert worden, davon 70 als Defekt mit stabiler Kennung. **Erst
+dadurch konnten sie überhaupt eine Ampel setzen** — eine Zeile in der Fundliste konnte das nie.
+
+1. **74 offene Defektkennungen zeigten auf keine einzige Ampel.** 61 davon ließen sich einer Zeile
+   zuordnen; **39 Zeilen wechselten die Farbe**, 30 von ihnen von 🟢. Die übrigen 13 Kennungen beschreiben
+   Doku, Code-Norm oder Umgebung und sind keine Features — für drei davon ist stattdessen eine neue Zeile
+   entstanden (§13).
+2. **13 von 14 grünen Zeilen mit reinem `[Doku]`-Beleg nannten keinen einzigen Bezeichner.** Ihre Farbe
+   war nicht nachrechenbar. Zwölf sind gegen den Code belegt worden; **zwei blieben ohne Fund und stehen
+   jetzt auf 🟠** — die Fallenbatterie `B0` und das Charakterisierungs-Netz. Für beide gilt die genaue
+   Aussage: Unter 143 Testdateien trägt keine den Namen; das ist eine Aussage über Namen, nicht über
+   Existenz.
+3. **Zwei Konstanten der Featureliste existieren im Code nicht unter dem Namen, den die Zeile nennt** —
+   *Eigenzeit C (Pausenfaktor)* und *Selbstauslösung*. Beide standen ohne Herkunftsmarke da, und genau das
+   war der Grund, warum es niemandem auffiel.
+4. **Ein Feature war gebaut, wieder abgeschaltet und trug trotzdem keine Zeile:** die
+   KZG-Liberalisierung mit Cluster-Promotion. Der Pfad ist seit Chat 98 tot, die drei Konstanten stehen
+   weiter in `config.py` — und wurden in Chat 107 sogar nachkalibriert. Der Kommentar im Code sagt es
+   selbst: *„Alt-Cluster-Pfad (deaktiviert seit Chat 98), trotzdem mitgezogen"*.
+> **Die Gegenprobe der Erhebung lief in beide Richtungen und ist nachrechenbar.** Von 59 roten Zeilen
+> nennen 45 eine offene Kennung; die übrigen 14 stehen aus einem der beiden anderen Gründe rot, die §2
+> zulässt — gebaut und ohne Wirkung, oder es liest niemand. Umgekehrt setzen **9 der 76 offenen Kennungen
+> bewusst keine Ampel**, weil ihr Gegenstand kein Feature ist: `KOPFZEILENZEIT-ALS-UTC-BESCHRIFTET`,
+> `BEANTWORTETE-ABSICHT-STEHT-OFFEN`, `FRISTANGABE-WIDERSPRICHT-SICH`, `REPODOKU-VERWEIST-NACH-INNEN`,
+> `CLIPBOARD-BEGRIFF-DOPPELT`, `AGENTINPUT-NIE-EXISTIERT`, `RIEGEL1-NACHZUG-UNVOLLSTAENDIG`,
+> `PIXIE-NACHFRAGEN-FEHLT-IM-INDEX` und `VERSATZ-ZWEI-GROESSEN` betreffen Dokumentation oder Benennung.
+> **Die Zahl gehört hierher und nicht in eine Fußnote:** Ohne sie ist „keine Ampel" nicht von „übersehen"
+> zu unterscheiden.
+
+5. **Zehn Zeilen trugen gar keine Herkunftsmarke** und galten damit nach der eigenen Regel als nicht
+   gesetzt. Alle zehn sind belegt oder als unbelegbar benannt.
+
+> **Der Ertrag der Erhebung ist nicht die neue Zahl, sondern ihr Vorzeichen.** Die Liste stand auf 123 🟢
+> und 19 🔴; sie steht jetzt auf 90 🟢 und 59 🔴. **Kein einziger Defekt ist heute entstanden** — sie waren
+> alle schon da, nur an einer Stelle abgelegt, die keine Ampel setzen konnte.
+
+### Erhebung vom 17.08.2026 — die erste
 
 Vier Befunde, die in keinem Register standen — gefunden beim Halten dieser Liste gegen den Bestand:
 
@@ -408,24 +454,25 @@ Vier Befunde, die in keinem Register standen — gefunden beim Halten dieser Lis
 
 ## 15. Die Zahlen dieser Erhebung
 
-Nachgezaehlt in dieser Datei, nicht geschaetzt:
+Nachgezaehlt in dieser Datei am 20.08.2026, nicht geschaetzt. Die Klammerwerte sind die der Erstaufstellung vom 17.08.2026.
 
 ```
-Dokumente im Verzeichnis        154
-davon Konzepte (*_k.md)          44   alle geprueft
-Zeilen mit Ampel                194
+Dokumente im Verzeichnis        154   (154)
+davon Konzepte (*_k.md)          43   (44)
+Zeilen mit Ampel                218   (194)
 
-  gruen   fertig                103
-  orange  begonnen               36
-  schwarz nicht begonnen         37
-  rot     fehlerhaft             18
+  gruen   fertig                 90   (103)
+  orange  begonnen               32   (36)
+  schwarz nicht begonnen         37   (37)
+  rot     fehlerhaft             59   (18)
 
-Belege [gemessen]                72
-Belege [Code]                    95
-Belege [Doku]                    36
+Belege [gemessen]                93   (72)
+Belege [Code]                   118   (95)
+Belege [Doku]                    36   (36)
+Zeilen ohne Herkunftsmarke        0   (10)
 ```
 
-Gezählt werden **nur Belege in Ampelzeilen** — die Marken im erklärenden Text zählen nicht mit. Die Zählvorschrift steht hier, weil eine Zahl ohne sie beim nächsten Nachrechnen um fünf danebenliegt:
+Gezählt werden **nur Belege in Ampelzeilen** — die Marken im erklärenden Text zählen nicht mit. Eine Zeile kann mehrere Marken tragen; die Summe der drei Belegzahlen ist deshalb größer als die Zahl der Zeilen. Die Zählvorschrift steht hier, weil eine Zahl ohne sie beim nächsten Nachrechnen danebenliegt:
 
 ```
 Ampelzeile  = eine Tabellenzeile, deren zweite Spalte genau eine der vier Farben trägt
@@ -433,7 +480,9 @@ Ampelzeile  = eine Tabellenzeile, deren zweite Spalte genau eine der vier Farben
 
 **Die 36 `[Doku]`-Belege sind die Arbeitsliste der nächsten Erhebung** — sie sind die einzigen, die noch niemand gegen den Bestand gehalten hat. Ihr Anteil ist zugleich der Fälligkeitsanzeiger dieser Liste: Er wächst zwischen zwei Erhebungen von selbst.
 
-**91 Zeilen stehen auf orange, schwarz oder rot.** Das ist die Menge der offenen Arbeit, und sie ist damit erstmals abzaehlbar.
+**128 Zeilen stehen auf orange, schwarz oder rot.** Das ist die Menge der offenen Arbeit — 37 mehr als bei der Erstaufstellung, und der Zuwachs kommt fast vollständig aus den 39 Zeilen, deren Defekt bis heute in der Fundliste lag statt im Defektregister.
+
+**Keine Zeile steht mehr ohne Herkunftsmarke.** Bei der Erstaufstellung waren es zehn; nach der eigenen Regel (§3) galt ihre Ampel damit als nicht gesetzt.
 
 ---
 
@@ -441,6 +490,7 @@ Ampelzeile  = eine Tabellenzeile, deren zweite Spalte genau eine der vier Farben
 
 Die Fortschreibung des Standes, aus der Kopfzeile geloest am 20.08.2026. Der Wortlaut jedes Eintrags ist unveraendert; vorangestellt ist allein sein Datum.
 
+- **20. August 2026, ~19:30 UTC** — **Zweite Neuerhebung — 218 Zeilen, und 39 davon haben die Farbe gewechselt.** Anlass war die Klassifikation der Fundliste am selben Tag: 70 rohe Funde wurden zu Defekten mit Kennung, und **erst dadurch konnten sie eine Ampel setzen**. 74 offene Kennungen zeigten auf keine einzige; 61 liessen sich zuordnen. Die Liste steht jetzt auf **90 🟢 / 32 🟠 / 37 ⚫ / 59 🔴** gegen 103/36/37/18 bei der Erstaufstellung. **Kein Defekt ist heute entstanden** — sie lagen an einer Stelle, die keine Ampel setzen konnte. Dazu: fuenf neue Zeilen (darunter ein Feature, das gebaut, abgeschaltet und nie verzeichnet war), zwoelf gruene Zeilen erstmals gegen den Code belegt, zwei auf 🟠 zurueckgestuft, weil kein Zeuge auffindbar war, und **keine Zeile steht mehr ohne Herkunftsmarke** (zuvor zehn).
 - **20. August 2026, ~18:45 UTC** — **keine Ampel bewegt, und das ist der Befund** — die Fundliste ist klassifiziert und leer: 168 Punkte, davon 70 als Defekt mit Kennung, 48 ins Backlog, 14 in Moduldokumente, 10 als Regel des Vorgehens, 5 als Nachtrag, 21 als erledigt. **Kein Feature beruehrt** — kein Fund ist umgesetzt, nur einsortiert. Was sich fuer diese Liste aendert, ist die Sichtbarkeit: Ein Defekt mit Kennung kann eine Ampel auf 🔴 setzen, eine Zeile in der Fundliste konnte das nie.
 - **20. August 2026, ~17:05 UTC** — **keine Ampel bewegt, und das ist der Befund** — die Arbeit des Nachmittags war Doku: Die `Stand:`-Kopfzeilen von vier Registern trugen ihren eigenen Verlauf in *einer* Zeile (10.512 bis 34.263 Zeichen, zusammen 138 Glieder, alle vier mit unpaariger Klammerbilanz). Sie sind in den Koerper geloest, die laengste Kopfzeile misst jetzt 147 Zeichen. Kein Feature beruehrt: Ein Kopf traegt Felder, der Koerper den Verlauf.
 - **20. August 2026, ~15:30 UTC** — **ein Defekt am Selbstbild, gefunden an ihren eigenen Antworten** — Nova sprach über ihre Dienste in der dritten Person („die Fachabteilung"), dreimal in einer Sitzung; der Wortlaut stand in ihrem Prompt, und der Datenteil trug die Instanz mit. Beide Hälften behoben, 5 Zeugen, Gegenprobe 2/2 — **im Betrieb ungemessen** (`NOVA-SPRICHT-VON-FACHABTEILUNG`). Suite **2037 grün**.
