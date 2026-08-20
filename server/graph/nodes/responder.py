@@ -799,7 +799,18 @@ def _sprachstil_block(state: ConversationState) -> str:
         )
     else:
         try:
-            zeilen.extend(regie_zeilen(haltung, arousal))
+            # Der dritte Einfluss auf die Laenge: die Aeusserung selbst.
+            # `reiz_text` traegt auf einem Impuls-Turn Novas eigenen
+            # Gedanken statt einer Nutzeraeusserung — dort ist die Laenge
+            # kein Mass fuer eine erwartete Antwort, und der Abschlag faellt
+            # ohnehin aus, weil ein Impuls keine Nutzer-Intentionen traegt.
+            reiz_zeichen: int = len(reiz_text(state))
+            intentionen: tuple[str, ...] = tuple(
+                state.get("user_intentionen") or (),
+            )
+            zeilen.extend(
+                regie_zeilen(haltung, arousal, reiz_zeichen, intentionen),
+            )
             # Die EI-Mikroanweisung schliesst die Regie ab: Sie ist situativ
             # gerechnet und traegt genau die Faelle, die der Haltungsraum nicht
             # kennt — Anti-Therapeut, Energie-Spiegelung, Rueckbezug.

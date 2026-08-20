@@ -93,13 +93,56 @@ BAENDER: dict[str, tuple[tuple[float, str], ...]] = {
 # 1011 bis 1384 Zeichen, »karg« 102 bis 166). Sie gehoeren in der ersten Reihe
 # nachgezogen und sind deshalb hier und nicht in `haltung.py`: Wer sie
 # kalibriert, fasst keine Rechnung an.
+#
+# **Am 20.08.2026 halbiert.** Der Anlass ist ein Befund aus dem Betrieb: Auf
+# einen Gruss von zwoelf Zeichen kamen 838 Zeichen zurueck, bei einem Korridor
+# von 350 bis 700. Die Entscheidung ist eine Setzung des Meisters und keine
+# Messung — sie gilt fuer jede Landschaft gleich, weil der Befund an der
+# Groessenordnung haengt und nicht an einem einzelnen Raum.
+#
+# **Was die Halbierung nicht leistet:** Die Vorgabe bindet nur schwach. Am
+# 17.08.2026 ueber zehn Turns gemessen streute die Antwortlaenge bei
+# IDENTISCHER Vorgabe um den Faktor 2,68 (813 bis 2181 Zeichen); die Richtung
+# stimmt mit r = +0,78, die Bindung fehlt. Halbierte Korridore halbieren die
+# Antworten deshalb nicht — sie verschieben sie.
 UMFANG_SPANNE: tuple[tuple[float, tuple[int, int]], ...] = (
-    (0.20, (0, 120)),
-    (0.45, (120, 350)),
-    (0.70, (350, 700)),
-    (0.88, (700, 1400)),
-    (99.0, (1400, 2500)),
+    (0.20, (0, 60)),
+    (0.45, (60, 175)),
+    (0.70, (175, 350)),
+    (0.88, (350, 700)),
+    (99.0, (700, 1250)),
 )
+
+# ─────────────────────────────────────────────
+# Der dritte Einfluss: die Laenge der Aeusserung
+# ─────────────────────────────────────────────
+# Der Raum sagt, wieviel Nova hier ueberhaupt redet; der Korridor uebersetzt
+# das in Zeichen. Beides steht fest, bevor der Turn da ist — und deshalb
+# bekommt ein Gruss von zwoelf Zeichen dieselbe Vorgabe wie ein Absatz.
+#
+# **Die Laenge allein taugt nicht als Mass.** *„Erklaere mir die
+# Tritiumvorkommen"* ist kurz und verlangt trotzdem eine Antwort in
+# Sachlaenge. Was die beiden Faelle trennt, ist nicht die Zeichenzahl,
+# sondern die **Intention**: Am 20.08.2026 im Betrieb gemessen trug
+# *„Hey Kleines!"* die Intention `smalltalk`, *„Wie entsteht bei einem
+# Gammablitz…"* trug `information_erfragen`.
+#
+# Der Abschlag greift deshalb nur, wenn der Turn **ausschliesslich** leichte
+# Intentionen traegt. Eine einzige inhaltliche darunter setzt ihn aus — und
+# ein Turn ohne erhobene Intention ebenso: Eine fehlende Erhebung ist keine
+# Erlaubnis zu kuerzen.
+LEICHTE_INTENTIONEN: frozenset[str] = frozenset({
+    "smalltalk", "bestaetigung", "abschluss", "humor",
+})
+
+#: Wieviel Text eine leichte Aeusserung nach sich ziehen darf, als Vielfaches
+#: ihrer eigenen Laenge, und der Sockel, unter den der Deckel nie faellt.
+#: **Startwerte ohne Messung** — dieselbe Sorte Zahl wie `UMFANG_SPANNE` bei
+#: ihrer Einfuehrung, und sie gehoeren genauso nachgezogen. Gewaehlt so, dass
+#: der Deckel oberhalb von rund 30 Zeichen Aeusserung nicht mehr greift: Ab
+#: dort traegt der Korridor der Landschaft allein.
+LEICHT_FAKTOR: int = 12
+LEICHT_SOCKEL: int = 80
 
 # ─────────────────────────────────────────────
 # Die Energie — Konzept §3.0ab
@@ -199,6 +242,201 @@ def zeichenspanne(umfang: float) -> tuple[int, int]:
     raise ValueError(f"umfang={umfang} liegt ueber jeder Spanne")
 
 
+def spanne_fuer_turn(
+    umfang: float, reiz_zeichen: int, intentionen: tuple[str, ...],
+) -> tuple[int, int]:
+    """Der Zeichenkorridor dieses Turns — Raum, Korridor und Aeusserung.
+
+    Drei Einfluesse an drei Stellen: Die Landschaft setzt `umfang`, die
+    Tabelle uebersetzt ihn in Zeichen, und diese Funktion legt den Bezug zur
+    Aeusserung darueber. Der dritte gehoert hierher und nicht in die
+    Haltungsrechnung: `haltung_berechnen` ist eine reine Funktion aus
+    Landschaft und Zuwendungsrad und sagt, **wer Nova hier ist**; wieviel
+    Text ein einzelner Turn verlangt, ist eine Frage an den Turn.
+
+    **Der Abschlag wirkt nur nach unten und nur bei leichten Turns.** Er
+    greift, wenn der Turn mindestens eine Intention traegt und **alle**
+    davon in `LEICHTE_INTENTIONEN` stehen. Eine inhaltliche darunter setzt
+    ihn aus — *„Erklaere mir die Tritiumvorkommen"* ist kurz und verlangt
+    trotzdem Sachlaenge. Ein Turn ohne erhobene Intention bleibt ebenfalls
+    unberuehrt: Eine fehlende Erhebung ist keine Erlaubnis zu kuerzen.
+
+    Vorbedingung: `umfang` ist nicht negativ, `reiz_zeichen` ist nicht
+        negativ, `intentionen` sind Zeichenketten.
+    Nachbedingung: Untergrenze < Obergrenze, beide nicht negativ, und beide
+        hoechstens so gross wie ohne den Abschlag.
+    Fehlerfaelle: negative Werte (ValueError) — beide waeren ein Aufruffehler
+        und keine Lage.
+
+    Args:
+        umfang: die Haltungsgroesse dieses Turns.
+        reiz_zeichen: Laenge der Nutzeraeusserung in Zeichen.
+        intentionen: die erhobenen Intentionen des Turns.
+
+    Returns:
+        Untergrenze und Obergrenze in Zeichen.
+    """
+    # ── Eingabe-Validierung ─────────────────────
+    if reiz_zeichen < 0:
+        meldung: str = f"spanne_fuer_turn: reiz_zeichen={reiz_zeichen} ist negativ"
+        raise ValueError(meldung)
+
+    unten, oben = zeichenspanne(umfang)
+
+    # ── Verarbeitung ────────────────────────────
+    leicht: bool = bool(intentionen) and all(
+        art in LEICHTE_INTENTIONEN for art in intentionen
+    )
+    if leicht:
+        deckel: int = max(LEICHT_SOCKEL, reiz_zeichen * LEICHT_FAKTOR)
+        if deckel < oben:
+            oben = deckel
+            unten = min(unten, oben // 2)
+
+    # ── Ausgabe-Verifikation ────────────────────
+    roh_unten, roh_oben = zeichenspanne(umfang)
+    if not 0 <= unten < oben:
+        meldung = (
+            f"spanne_fuer_turn: Korridor {unten} bis {oben} ist keine Spanne "
+            f"(umfang={umfang}, reiz_zeichen={reiz_zeichen})"
+        )
+        raise ValueError(meldung)
+    if unten > roh_unten or oben > roh_oben:
+        meldung = (
+            f"spanne_fuer_turn: Korridor {unten} bis {oben} liegt ueber dem "
+            f"der Landschaft ({roh_unten} bis {roh_oben}) — der Abschlag darf "
+            f"nur nach unten wirken"
+        )
+        raise ValueError(meldung)
+
+    return unten, oben
+
+
+# ─────────────────────────────────────────────
+# Die fachliche Seite der Haltung — fuer den Verfasser
+# ─────────────────────────────────────────────
+# **Drei der fuenf Groessen betreffen den Inhalt, nicht den Ton.** Der
+# Verfasser bestimmt laut seinem Auftrag, *„was sie feststellt, was sie offen
+# laesst, was sie zurueckfragt"* — also genau `fragen` und `draengen`; und das
+# Konzept sagt zum dritten woertlich: der Verfasser liest, *wie viel es zu
+# sagen gibt*, der Responder, *wie viel davon sie sagt*
+# (`novaberg-haltungsraum_k.md`, »Wer rechnet«).
+#
+# **`naehe` und `waerme` stehen hier nicht** und gehoeren auch nicht hierher:
+# Sie sind reiner Ton, und ihn ein zweites Mal zu nennen waere die Doppelung,
+# die der Umbau vom 13.08.2026 an anderer Stelle beseitigt hat.
+#
+# **Die Woerter sind andere als in `BAENDER`, die Grenzen dieselben.** Der
+# Responder liest, wie eine Rueckfrage klingt; der Verfasser entscheidet, ob
+# eine im Stoff vorkommt. Dieselbe Zahl, zwei Aufgaben, zwei Formulierungen —
+# eine gemeinsame Wortliste haette eine der beiden Rollen falsch bedient.
+STOFF_BAENDER: dict[str, tuple[tuple[float, str], ...]] = {
+    "fragen": (
+        (0.20, "keine Rueckfrage"),
+        (0.45, "hoechstens eine kurze Rueckfrage"),
+        (0.70, "eine Rueckfrage"),
+        (0.88, "eine Rueckfrage, die nachhakt"),
+        (99.0, "mehrere Rueckfragen"),
+    ),
+    "draengen": (
+        (0.20, "kein Vorschlag, nichts anschieben"),
+        (0.45, "hoechstens ein Hinweis"),
+        (0.70, "ein Vorschlag ist erlaubt"),
+        (0.88, "ein Vorschlag gehoert hinein"),
+        (99.0, "ein Vorschlag und der naechste Schritt dazu"),
+    ),
+}
+
+
+def stoff_band(groesse: str, wert: float) -> str:
+    """Das inhaltliche Wort zu einer der fachlichen Groessen.
+
+    Vorbedingung: `groesse` steht in `STOFF_BAENDER`, `wert` ist nicht negativ.
+    Nachbedingung: nichtleeres Wort.
+    Fehlerfaelle: unbekannte Groesse oder ein Wert ueber jedem Band
+        (ValueError) — beides waere ein Aufruffehler und kein Zustand.
+    """
+    # ── Eingabe-Validierung ─────────────────────
+    if groesse not in STOFF_BAENDER:
+        meldung: str = (
+            f"stoff_band: {groesse!r} ist keine fachliche Groesse — bekannt "
+            f"sind {sorted(STOFF_BAENDER)}"
+        )
+        raise ValueError(meldung)
+    if wert < 0.0:
+        meldung = f"stoff_band: {groesse}={wert} ist negativ"
+        raise ValueError(meldung)
+
+    # ── Verarbeitung ────────────────────────────
+    for grenze, wort in STOFF_BAENDER[groesse]:
+        if wert <= grenze:
+            return wort
+
+    meldung = f"stoff_band: {groesse}={wert} liegt ueber jedem Band"
+    raise ValueError(meldung)
+
+
+def stoffzeilen(
+    haltung: Haltung, reiz_zeichen: int, intentionen: tuple[str, ...],
+) -> list[str]:
+    """Die fachliche Vorgabe fuer den Verfasser: Menge, Rueckfrage, Vorschlag.
+
+    Das Gegenstueck zu `regie_zeilen` auf der anderen Seite des Schnitts. Beide
+    lesen dieselbe Haltung und dieselbe Turn-Lage; sie teilen sich die fuenf
+    Groessen nach Zustaendigkeit statt sie zu doppeln.
+
+    **Die Mengenangabe ist dieselbe Spanne wie beim Responder, und das ist
+    Absicht.** Sie bedeutet hier etwas anderes: nicht *„so lang wird die
+    Antwort"*, sondern *„fuer so viel Rede wird Stoff gebraucht"*. Wer dem
+    Verfasser mehr Material bestellt, als gesagt werden darf, laesst den
+    Responder streichen — und gestrichen wird, was zuletzt kam, nicht was am
+    wenigsten trug.
+
+    Vorbedingung: `haltung` traegt `umfang`, `fragen` und `draengen`.
+    Nachbedingung: drei Zeilen, in fester Reihenfolge — Menge, Rueckfrage,
+        Vorschlag.
+    Fehlerfaelle: fehlende Groesse (ValueError). Eine stumm ausgelassene Zeile
+        waere von einer Groesse am unteren Anschlag nicht zu unterscheiden.
+
+    Args:
+        haltung: das Ergebnis der Haltungsrechnung dieses Turns.
+        reiz_zeichen: Laenge der Nutzeraeusserung in Zeichen.
+        intentionen: die erhobenen Intentionen des Turns.
+
+    Returns:
+        Drei Zeilen fuer den Auftrag des Verfassers.
+    """
+    # ── Eingabe-Validierung ─────────────────────
+    fachlich: tuple[str, ...] = ("umfang", "fragen", "draengen")
+    fehlend: list[str] = [name for name in fachlich if name not in haltung.werte]
+    if fehlend:
+        meldung: str = (
+            f"stoffzeilen: Haltung unvollstaendig — es fehlen: "
+            f"{', '.join(fehlend)}"
+        )
+        raise ValueError(meldung)
+
+    # ── Verarbeitung ────────────────────────────
+    unten, oben = spanne_fuer_turn(
+        haltung.werte["umfang"].ergebnis, reiz_zeichen, intentionen,
+    )
+    zeilen: list[str] = [
+        f"Menge: Stoff fuer {unten} bis {oben} Zeichen Rede. Mehr wird nicht "
+        f"gesagt, sondern gestrichen.",
+        f"Rueckfrage: {stoff_band('fragen', haltung.werte['fragen'].ergebnis)}.",
+        f"Vorschlag: {stoff_band('draengen', haltung.werte['draengen'].ergebnis)}.",
+    ]
+
+    # ── Ausgabe-Verifikation ────────────────────
+    if len(zeilen) != len(fachlich):
+        meldung = (
+            f"stoffzeilen: {len(zeilen)} Zeilen fuer {len(fachlich)} Groessen"
+        )
+        raise ValueError(meldung)
+
+    return zeilen
+
+
 def energiesatz(arousal: float) -> str:
     """Der Energiesatz zu dieser Erregung.
 
@@ -222,8 +460,17 @@ def energiesatz(arousal: float) -> str:
     raise ValueError(f"arousal={arousal} liegt ueber jeder Stufe")
 
 
-def regie_zeilen(haltung: Haltung, arousal: float) -> list[str]:
+def regie_zeilen(
+    haltung: Haltung, arousal: float, reiz_zeichen: int,
+    intentionen: tuple[str, ...],
+) -> list[str]:
     """Die Regie fuer diesen Turn: Umfang, abweichende Haltung, Energie.
+
+    **Die Umfangszeile traegt seit dem 20.08.2026 drei Einfluesse**, nicht
+    einen: den Raum (`umfang` aus der Landschaft), den Korridor
+    (`UMFANG_SPANNE`) und die Laenge der Aeusserung, sofern der Turn nur
+    leichte Intentionen traegt. Die Zeile selbst sieht unveraendert aus —
+    eine Spanne und ein Wort —, weil der Prompt keine Rechnung lesen soll.
 
     **Der Umfang steht immer, die vier anderen nur bei Abweichung.** Das ist
     keine Inkonsequenz, sondern der Unterschied zwischen einer Vorgabe, die
@@ -243,6 +490,8 @@ def regie_zeilen(haltung: Haltung, arousal: float) -> list[str]:
     Args:
         haltung: das Ergebnis der Haltungsrechnung dieses Turns.
         arousal: die Erregung des Turns, aus der Perzeption.
+        reiz_zeichen: Laenge der Nutzeraeusserung in Zeichen.
+        intentionen: die erhobenen Intentionen des Turns.
 
     Returns:
         Zwei bis vier Zeilen fuer den `[REGIE]`-Block.
@@ -259,7 +508,7 @@ def regie_zeilen(haltung: Haltung, arousal: float) -> list[str]:
 
     # ── Verarbeitung ────────────────────────────
     umfang = haltung.werte["umfang"]
-    unten, oben = zeichenspanne(umfang.ergebnis)
+    unten, oben = spanne_fuer_turn(umfang.ergebnis, reiz_zeichen, intentionen)
     zeilen: list[str] = [
         f"Umfang: {unten} bis {oben} Zeichen — {band('umfang', umfang.ergebnis)}."
     ]

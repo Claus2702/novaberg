@@ -134,15 +134,15 @@ class TestRegieImBlock(unittest.TestCase):
         # sie verfehlte dieselbe Vorgabe den Korridor um das Fünffache.
         block: str = _sprachstil_block(self._mit_haltung(umfang=0.20))
 
-        self.assertIn("0 bis 120 Zeichen", block)
+        self.assertIn("0 bis 60 Zeichen", block)
         self.assertIn("einsilbig, wortkarg", block)
 
     def test_die_spanne_folgt_dem_umfang(self) -> None:
         """Der positive Zwilling: ein anderer Umfang, ein anderer Korridor."""
         block: str = _sprachstil_block(self._mit_haltung(umfang=0.80))
 
-        self.assertIn("700 bis 1400 Zeichen", block)
-        self.assertNotIn("0 bis 120 Zeichen", block)
+        self.assertIn("350 bis 700 Zeichen", block)
+        self.assertNotIn("0 bis 60 Zeichen", block)
 
     def test_eine_abweichende_groesse_steht_als_wort_im_block(self) -> None:
         block: str = _sprachstil_block(self._mit_haltung(waerme=0.90))

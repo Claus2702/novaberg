@@ -31,7 +31,10 @@ from ei.haltungssprache import (
     ENERGIE_STUFEN,
     band,
     energiesatz,
+    LEICHT_FAKTOR,
+    LEICHT_SOCKEL,
     regie_zeilen,
+    spanne_fuer_turn,
     zeichenspanne,
 )
 
@@ -108,15 +111,90 @@ class BaenderTest(unittest.TestCase):
             band("naehe", -0.1)
 
 
+class SpanneFuerTurnTest(unittest.TestCase):
+    """Der dritte Einfluss: die Länge der Äußerung, gefiltert über Intention.
+
+    Die Zusicherung, um die es geht: Ein Gruß von zwölf Zeichen soll keine
+    838 Zeichen nach sich ziehen — aber *„Erkläre mir die Tritiumvorkommen"*
+    ist genauso kurz und darf es.
+    """
+
+    def test_ein_kurzer_gruss_deckelt_den_korridor(self) -> None:
+        """Zwölf Zeichen `smalltalk` gegen die Landschaft `bier` (0,50)."""
+        ohne = zeichenspanne(0.50)
+        mit = spanne_fuer_turn(0.50, reiz_zeichen=12, intentionen=("smalltalk",))
+        self.assertLess(mit[1], ohne[1])
+        self.assertEqual(mit[1], max(LEICHT_SOCKEL, 12 * LEICHT_FAKTOR))
+
+    def test_eine_kurze_sachfrage_bleibt_unberuehrt(self) -> None:
+        """Der Fall, den der Abschlag nicht treffen darf."""
+        ohne = zeichenspanne(0.50)
+        mit = spanne_fuer_turn(
+            0.50, reiz_zeichen=31, intentionen=("information_erfragen",),
+        )
+        self.assertEqual(mit, ohne)
+
+    def test_eine_inhaltliche_intention_unter_leichten_setzt_aus(self) -> None:
+        """`alle` und nicht `eine`: Ein Auftrag im Turn hebt den Abschlag auf."""
+        ohne = zeichenspanne(0.50)
+        mit = spanne_fuer_turn(
+            0.50, reiz_zeichen=12, intentionen=("smalltalk", "anweisung"),
+        )
+        self.assertEqual(mit, ohne)
+
+    def test_ohne_erhobene_intention_wird_nicht_gekuerzt(self) -> None:
+        """Eine fehlende Erhebung ist keine Erlaubnis zu kürzen."""
+        self.assertEqual(
+            spanne_fuer_turn(0.50, reiz_zeichen=12, intentionen=()),
+            zeichenspanne(0.50),
+        )
+
+    def test_der_abschlag_wirkt_nur_nach_unten(self) -> None:
+        """Über die Landschaft hinaus hebt er nie — auch nicht bei langem Reiz."""
+        for zeichen in (0, 12, 100, 5000):
+            mit = spanne_fuer_turn(
+                0.50, reiz_zeichen=zeichen, intentionen=("smalltalk",),
+            )
+            ohne = zeichenspanne(0.50)
+            self.assertLessEqual(mit[0], ohne[0])
+            self.assertLessEqual(mit[1], ohne[1])
+            self.assertLess(mit[0], mit[1])
+
+    def test_ein_langer_smalltalk_bleibt_beim_korridor(self) -> None:
+        """Ab rund 30 Zeichen trägt die Landschaft wieder allein."""
+        self.assertEqual(
+            spanne_fuer_turn(0.50, reiz_zeichen=60, intentionen=("smalltalk",)),
+            zeichenspanne(0.50),
+        )
+
+    def test_negative_reizlaenge_ist_ein_fehler(self) -> None:
+        """Ein Aufruffehler, keine Lage."""
+        with self.assertRaises(ValueError):
+            spanne_fuer_turn(0.50, reiz_zeichen=-1, intentionen=())
+
+    def test_gegenprobe_ohne_den_deckel_bliebe_der_volle_korridor(self) -> None:
+        """Belegt, dass der erste Zeuge etwas misst.
+
+        Ohne den Abschlag liefert derselbe Aufruf die Landschaftsspanne, und
+        die ist bei `umfang` 0,50 mehr als doppelt so weit oben.
+        """
+        ohne = zeichenspanne(0.50)
+        mit = spanne_fuer_turn(0.50, reiz_zeichen=12, intentionen=("smalltalk",))
+        self.assertEqual(ohne, (175, 350))
+        self.assertEqual(mit, (72, 144))
+
+
 class ZeichenspanneTest(unittest.TestCase):
     """Die Spanne, die als einzige Groesse eine Zahl in den Prompt bringt."""
 
     def test_die_spannen_stehen_wie_im_konzept(self) -> None:
-        self.assertEqual(zeichenspanne(0.20), (0, 120))
-        self.assertEqual(zeichenspanne(0.45), (120, 350))
-        self.assertEqual(zeichenspanne(0.70), (350, 700))
-        self.assertEqual(zeichenspanne(0.88), (700, 1400))
-        self.assertEqual(zeichenspanne(0.95), (1400, 2500))
+        # Am 20.08.2026 halbiert — die Zahlen sind eine Setzung, nicht
+        # gerechnet, und dieser Zeuge haelt sie fest.
+        self.assertEqual(zeichenspanne(0.20), (0, 60))
+        self.assertEqual(zeichenspanne(0.45), (60, 175))
+        self.assertEqual(zeichenspanne(0.70), (175, 350))
+        self.assertEqual(zeichenspanne(0.88), (350, 700))
+        self.assertEqual(zeichenspanne(0.95), (700, 1250))
 
     def test_die_spannen_schliessen_aneinander_an(self) -> None:
         # Eine Luecke zwischen zwei Spannen waere ein Korridor, den kein
@@ -198,7 +276,7 @@ class RegieTest(unittest.TestCase):
     """Was gesprochen wird — und was die Landschaft schon gesagt hat."""
 
     def test_ohne_abweichung_bleiben_umfang_und_energie(self) -> None:
-        zeilen = regie_zeilen(_haltung(), arousal=0.30)
+        zeilen = regie_zeilen(_haltung(), arousal=0.30, reiz_zeichen=400, intentionen=())
         self.assertEqual(len(zeilen), 2)
         self.assertTrue(zeilen[0].startswith("Umfang:"))
         self.assertTrue(zeilen[1].startswith("Energie:"))
@@ -208,14 +286,14 @@ class RegieTest(unittest.TestCase):
         # Mengenangabe verfehlte dieselbe Form am 12.08.2026 den Korridor um
         # das Fuenffache; deshalb ist der Umfang von der Schweigeregel
         # ausgenommen.
-        zeilen = regie_zeilen(_haltung(umfang=0.20), arousal=0.30)
-        self.assertIn("0 bis 120 Zeichen", zeilen[0])
+        zeilen = regie_zeilen(_haltung(umfang=0.20), arousal=0.30, reiz_zeichen=400, intentionen=())
+        self.assertIn("0 bis 60 Zeichen", zeilen[0])
         self.assertIn("einsilbig, wortkarg", zeilen[0])
 
     def test_eine_abweichende_groesse_spricht(self) -> None:
         haltung = _haltung()
         haltung.werte["waerme"] = _wert("waerme", 0.90, grundwert=0.50)
-        zeilen = regie_zeilen(haltung, arousal=0.30)
+        zeilen = regie_zeilen(haltung, arousal=0.30, reiz_zeichen=400, intentionen=())
         self.assertEqual(len(zeilen), 3)
         self.assertEqual(zeilen[1], "herzlich, innig")
 
@@ -225,7 +303,7 @@ class RegieTest(unittest.TestCase):
         # die Landschaft ohnehin sagt, wird nicht wiederholt.
         haltung = _haltung()
         haltung.werte["waerme"] = _wert("waerme", 0.65, grundwert=0.50)
-        zeilen = regie_zeilen(haltung, arousal=0.30)
+        zeilen = regie_zeilen(haltung, arousal=0.30, reiz_zeichen=400, intentionen=())
         self.assertEqual(len(zeilen), 2)
 
     def test_ein_kleiner_schritt_ueber_die_bandgrenze_spricht(self) -> None:
@@ -237,14 +315,14 @@ class RegieTest(unittest.TestCase):
         # Regie wie Nova und wurde dreimal von drei als sie gelesen.
         haltung = _haltung()
         haltung.werte["naehe"] = _wert("naehe", 0.82, grundwert=0.90)
-        zeilen = regie_zeilen(haltung, arousal=0.30)
+        zeilen = regie_zeilen(haltung, arousal=0.30, reiz_zeichen=400, intentionen=())
         self.assertEqual(len(zeilen), 3)
         self.assertEqual(zeilen[1], "vertraut")
 
     def test_der_bandwechsel_gilt_in_beide_richtungen(self) -> None:
         haltung = _haltung()
         haltung.werte["naehe"] = _wert("naehe", 0.10, grundwert=0.80)
-        zeilen = regie_zeilen(haltung, arousal=0.30)
+        zeilen = regie_zeilen(haltung, arousal=0.30, reiz_zeichen=400, intentionen=())
         self.assertIn("fremd, distanziert, auf Abstand", zeilen[1])
 
     def test_mehrere_abweichungen_stehen_in_der_ordnung_der_groessen(self) -> None:
@@ -254,7 +332,7 @@ class RegieTest(unittest.TestCase):
         haltung = _haltung()
         haltung.werte["fragen"]   = _wert("fragen", 0.95, grundwert=0.30)
         haltung.werte["draengen"] = _wert("draengen", 0.95, grundwert=0.30)
-        zeilen = regie_zeilen(haltung, arousal=0.30)
+        zeilen = regie_zeilen(haltung, arousal=0.30, reiz_zeichen=400, intentionen=())
         self.assertEqual(zeilen[1], "brennend interessiert · draengend")
 
     def test_unvollstaendige_haltung_ist_fehler(self) -> None:
@@ -264,11 +342,11 @@ class RegieTest(unittest.TestCase):
         werte = dict(haltung.werte)
         del werte["fragen"]
         with self.assertRaises(ValueError):
-            regie_zeilen(Haltung(cluster="werkstatt", werte=werte), arousal=0.3)
+            regie_zeilen(Haltung(cluster="werkstatt", werte=werte), arousal=0.3, reiz_zeichen=400, intentionen=())
 
     def test_ungueltiges_arousal_ist_fehler(self) -> None:
         with self.assertRaises(ValueError):
-            regie_zeilen(_haltung(), arousal=1.5)
+            regie_zeilen(_haltung(), arousal=1.5, reiz_zeichen=400, intentionen=())
 
 
 if __name__ == "__main__":
