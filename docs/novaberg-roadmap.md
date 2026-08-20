@@ -10,6 +10,26 @@
 
 ## Chats 3–20: Grundlagen (März 2026)
 
+### 20.08.2026, mittags — Ein Umbau, der vollständig stand und nichts brachte
+
+**Gebaut, gemessen, zurückgebaut — und der Befund ist die Ausbeute.** `themen_embedding` entsteht aus `thema` plus rund acht Stichwörtern; nach der Festlegung über Embeddings ist das ein Vektor über mehrere Gegenstände, und derselbe Umbau hatte die Bibliothek am Vortag von 15 % auf 92 % richtige Antworten auf Rang 1 gehoben. Die Analogie lag nahe genug, um sie zu bauen: Tabelle, Schreibweg, **drei** Lesewege, 1456 nachgebettete Vektoren über 174 Zeilen.
+
+Dieselben 24 Sonden wie am Morgen, drei Arme:
+
+| Arm | Rang 1 | Top 3 | bester Fremdtreffer | Zeilen über dem Boden |
+|---|---|---|---|---|
+| **alt** — ein Vektor aus Thema + Stichwörtern | **8/12** | **10/12** | 0,3052 | **1** |
+| neu — ein Vektor je Gegenstand, MAX | 8/12 | 9/12 | 0,4008 | 20 |
+| nur Themensatz, ohne Stichwörter | 8/12 | 9/12 | 0,3556 | — |
+
+**Der Rang ist skalenfrei und bewegt sich nicht.** Was steigt, sind die Kosinuswerte über die ganze Breite — auch für Fragen, zu denen nichts im Bestand liegt.
+
+**Warum der Präzedenzfall nicht trägt, ist der eigentliche Ertrag.** In der Bibliothek stand eine Aufzählung *verschiedener* Gegenstände in einem Feld; der Schwerpunkt lag zwischen ihnen und traf keinen. Hier beschreiben Thema und Stichwörter **einen** Gegenstand — die Datei —, und ein Schwerpunkt aus Facetten eines Dings zeigt weiterhin auf dieses Ding. Dazu die Kehrseite des neuen Lesewegs: `MAX` über 1456 Vektoren ist eine Extremwertstatistik, und zu fast jeder Frage liegt irgendein Stichwort zufällig nah. Zur Sonde nach der Nabe des Charakter-Rads trug ausgerechnet das Stichwort `CharacterGraph` den besten Treffer.
+
+**Die Festlegung ist nicht widerlegt, ihre Probe war unvollständig:** Sie kannte Aufzählung und Aussage; der dritte Fall ist die Beschreibung eines Gegenstands aus mehreren Blickwinkeln, und dort ist der eine Vektor die richtige Form.
+
+**Was offen bleibt, steht jetzt ohne Kandidaten da:** Warum die richtige Datei nur in 8 von 12 Fällen auf Rang 1 steht. Der naheliegendste Verdacht ist verbraucht.
+
 ### 20.08.2026, mittags — Der Lauf sagt jetzt, was er verloren hat
 
 **Die zweite Hälfte des Vormittags-Vorfalls.** Der eine Defekt erzeugte den Fehlschlag und ist behoben; dieser hier verschwieg ihn. Die Bilanz trägt seit heute je Wurzel `gescheitert` samt Pfad und Grund — nach dem Vorbild der übergangenen Dateien, die diese Auskunft längst hatten.
