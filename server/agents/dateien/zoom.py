@@ -49,14 +49,37 @@ def karte_lesen(kandidat: dict) -> list[dict]:
     und als leer behandelt; sie stillschweigend zu übergehen hieße, eine
     fehlende Karte von einer kaputten nicht unterscheiden zu können.
 
+    **Die leere Rückgabe hat drei Ursachen, und sie werden getrennt
+    protokolliert** (20.08.2026). Seit der Index `NULL` schreibt, wenn die
+    Gliederung nicht erhoben werden konnte, ist *„die Datei hat keine
+    Überschriften"* nicht mehr dasselbe wie *„wir konnten nicht nachsehen"*.
+    Der Rückgabewert kann beide nicht unterscheiden — der Zoom weicht in
+    jedem Fall auf `zeilen_lesen` aus —, **das Protokoll muss es.** Sonst ist
+    die Trennung genau an der Stelle wieder aufgehoben, an der jemand
+    nachschaut, warum eine Datei keinen Zoom bekommt.
+
     **Kein Dateizugriff.** Wer hier die Datei öffnet, bezahlt für etwas, das
     beim Indizieren schon bezahlt wurde.
     """
     # ── Eingabe-Validierung ─────────────────────
-    roh = kandidat.get("struktur")
+    # `struktur IS NULL` heisst seit dem 20.08.2026 NICHT ERHOBEN und ist
+    # damit ein Befund ueber unseren Erkenner, nicht ueber die Datei. Vorher
+    # schrieb der Index in jedem Fall eine Liste, und `None` konnte nur eine
+    # fehlende Spalte sein — deshalb stand hier `info`.
+    if "struktur" not in kandidat:
+        logger.error(
+            "Zoom: Kandidat %s trägt das Feld 'struktur' nicht — die Abfrage in "
+            "suche.py liefert es nicht mehr",
+            kandidat.get("pfad"),
+        )
+        return []
+
+    roh = kandidat["struktur"]
     if roh is None:
-        logger.info(
-            "Zoom: %s trägt keine Blockkarte im Index — Stufe 1 liefert nichts",
+        logger.warning(
+            "Zoom: Gliederung von %s wurde beim Indizieren NICHT ERHOBEN "
+            "(Format ohne Erkenner oder defekte Auszeichnung) — Stufe 1 "
+            "liefert nichts, und das ist kein Befund über die Datei",
             kandidat.get("pfad"),
         )
         return []
@@ -78,6 +101,14 @@ def karte_lesen(kandidat: dict) -> list[dict]:
         logger.error(
             "Zoom: Blockkarte von %s ist %s statt einer Liste — als leer behandelt",
             kandidat.get("pfad"), type(roh).__name__,
+        )
+        return []
+
+    if not roh:
+        logger.info(
+            "Zoom: %s trägt eine erhobene, aber leere Karte — die Datei hat "
+            "keine Überschriften; Stufe 1 liefert nichts",
+            kandidat.get("pfad"),
         )
         return []
 

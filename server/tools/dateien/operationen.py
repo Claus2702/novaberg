@@ -23,6 +23,17 @@ Karte meldet das als leere Blockliste und protokolliert es; der Aufrufer
 faellt dann auf `zeilen_lesen` zurueck. Stillschweigend eine Ein-Block-Karte
 zu erfinden waere die teurere Variante — sie saehe aus wie Struktur.
 
+**Und davon getrennt: eine Gliederung, die nicht erhoben werden konnte, ist
+kein Befund.** Die leere Liste sagt *„nachgesehen, es gibt keine"*. Sie darf
+deshalb nicht auch *„ich verstehe dieses Format nicht"* und nicht *„die
+Auszeichnung dieser Datei geht nicht auf"* heissen — beides sind Ausfaelle
+und werfen `StrukturUnklarError` (`22_STILLE_FEHLER` §5).
+`[gemessen]` — 20.08.2026: Ein einzelner durchgestrichener Codezaun
+(`~~` gefolgt vom Zaun, dessen schliessendes Gegenstueck der Erkenner sah)
+liess in `novaberg-agent-dateien_k.md` von **83 Ueberschriften nur 5**
+uebrig; 1158 von 1236 Zeilen galten als Code. Die Karte war nicht leer,
+sondern falsch, und sah wie eine kurze Datei aus.
+
 Zeilennummern sind durchgehend **1-basiert**, weil `datei_grep` und
 `zeilen_lesen` ihre Ergebnisse an Menschen und an ein Sprachmodell geben und
 beide Seiten so zaehlen.
@@ -31,6 +42,7 @@ beide Seiten so zaehlen.
 import fnmatch
 import logging
 import re
+from collections.abc import Callable
 from pathlib import Path
 
 logger = logging.getLogger("ki_server.tools.dateien.operationen")
@@ -46,6 +58,27 @@ BLOCK_LIMIT: int = 200
 # die halbe Datei zurueckgibt. Ein abgeschnittenes Ergebnis wird ausgewiesen,
 # nicht stillschweigend gekuerzt.
 GREP_LIMIT: int = 100
+
+
+class StrukturUnklarError(Exception):
+    """Die Gliederung dieser Datei ist NICHT erhoben.
+
+    Ausdruecklich verschieden von der leeren Blockliste: Die sagt
+    *„nachgesehen, die Datei hat keine Ueberschriften"*. Diese Ausnahme sagt
+    *„nicht nachgesehen"* oder *„nachgesehen und es geht nicht auf"*. Wer
+    beides auf denselben Rueckgabewert abbildet, macht einen Ausfall von
+    einem Befund ununterscheidbar — und der Ausfall gewinnt, weil er wie das
+    haeufigere Ergebnis aussieht.
+    """
+
+
+class FormatOhneErkennerError(StrukturUnklarError):
+    """Fuer diese Dateiendung ist kein Gliederungs-Erkenner registriert."""
+
+
+class StrukturDefektError(StrukturUnklarError):
+    """Die Datei ist im erkannten Format nicht schluessig ausgezeichnet."""
+
 
 _CODEZAUN: re.Pattern = re.compile(r"^\s*(```|~~~)")
 _UEBERSCHRIFT: re.Pattern = re.compile(r"^(#{1,6})\s+(.*\S)\s*$")
@@ -99,17 +132,32 @@ def _zeilen_laden(pfad: Path, wurzel: Path | str) -> list[str]:
     return geprueft.read_text(encoding="utf-8").splitlines()
 
 
-def _ist_ueberschrift(zeilen: list[str]) -> list[tuple[int, int, str]]:
-    """Findet Ueberschriften ausserhalb von Codebloecken.
+def _ueberschriften_markdown(zeilen: list[str]) -> list[tuple[int, int, str]]:
+    """Findet Markdown-Ueberschriften ausserhalb von Codebloecken.
 
-    Returns:
-        Liste aus (Zeilennummer 1-basiert, Ebene, Ueberschriftentext).
+    Vorbedingung: `zeilen` sind die Zeilen einer Markdown-Datei, ohne
+    Zeilenenden.
+    Nachbedingung: Liste aus (Zeilennummer 1-basiert, Ebene,
+    Ueberschriftentext), in Dateireihenfolge.
+    Fehlerfaelle: eine ungerade Zahl Codezaeune (`StrukturDefektError`).
+
+    **Der Schalter wird am Ende gegengerechnet, und das ist der Kern.** Die
+    Zaunerkennung ist ein Umschalter; faellt ein oeffnender Zaun aus, kippt
+    sie und kippt nie zurueck — ab dort gilt der Rest der Datei als Code.
+    Das Ergebnis ist keine Ausnahme, sondern eine kuerzere Liste, und eine
+    kuerzere Liste sieht aus wie eine kuerzere Datei. Eine ungerade Bilanz
+    ist immer ein Defekt und deshalb pruefbar, ohne die Datei zu verstehen.
     """
     treffer: list[tuple[int, int, str]] = []
     im_zaun: bool = False
+    zaeune: int = 0
+    letzter_zaun: int = 0
 
+    # ── Verarbeitung ────────────────────────────
     for nr, zeile in enumerate(zeilen, start=1):
         if _CODEZAUN.match(zeile):
+            zaeune += 1
+            letzter_zaun = nr
             im_zaun = not im_zaun
             continue
         if im_zaun:
@@ -118,7 +166,31 @@ def _ist_ueberschrift(zeilen: list[str]) -> list[tuple[int, int, str]]:
         if passung:
             treffer.append((nr, len(passung.group(1)), zeile.rstrip()))
 
+    # ── Ausgabe-Verifikation ────────────────────
+    if im_zaun:
+        meldung: str = (
+            f"_ueberschriften_markdown: {zaeune} Codezaeune sind eine ungerade "
+            f"Zahl, der letzte in Zeile {letzter_zaun} von {len(zeilen)} — ab "
+            f"dort gilt der Rest der Datei als Code, und die {len(treffer)} "
+            f"Ueberschriften davor waeren alles, was die Karte traegt"
+        )
+        raise StrukturDefektError(meldung)
+
     return treffer
+
+
+#: Welcher Erkenner fuer welche Endung zustaendig ist.
+#:
+#: **Der Index laesst mehr Endungen zu, als hier stehen** — heute
+#: `.md,.txt,.rst,.org,.adoc` (`DATEIEN_INDEX_ENDUNGEN`), erkannt wird allein
+#: Markdown. Die Luecke steht deshalb als Ausnahme im Weg und nicht als leere
+#: Karte: In reStructuredText steht die Ueberschrift ueber einer
+#: Unterstreichung, in Org-Mode beginnt sie mit `*`, in AsciiDoc mit `=` —
+#: keine davon traegt ein `#`, und alle drei ergaeben eine leere Liste, also
+#: die Aussage *„durchgehender Text"* ueber eine gegliederte Datei.
+_ERKENNER: dict[str, Callable[[list[str]], list[tuple[int, int, str]]]] = {
+    ".md": _ueberschriften_markdown,
+}
 
 
 def struktur_analysieren(pfad: Path | str, wurzel: Path | str) -> list[dict]:
@@ -127,20 +199,36 @@ def struktur_analysieren(pfad: Path | str, wurzel: Path | str) -> list[dict]:
     Ein Block reicht von seiner Ueberschrift bis zur naechsten Ueberschrift
     gleicher oder hoeherer Ebene, sonst bis zum Dateiende.
 
-    Vorbedingung: `pfad` besteht die Wurzelpruefung.
+    Vorbedingung: `pfad` besteht die Wurzelpruefung und traegt eine Endung,
+    fuer die ein Erkenner registriert ist.
     Nachbedingung: Jeder Eintrag traegt `header`, `ebene`, `start`, `ende`
     und `zeilen`; die Bereiche ueberlappen nicht und `ende >= start`.
-    Fehlerfaelle: verletzte Wurzelpruefung (ValueError), Lesefehler (OSError).
+    Fehlerfaelle: verletzte Wurzelpruefung (ValueError), Lesefehler (OSError),
+    Endung ohne Erkenner (`FormatOhneErkennerError`), unschluessige Auszeichnung
+    (`StrukturDefektError`). Die letzten beiden sind `StrukturUnklarError` und heissen
+    *nicht erhoben* — der Aufrufer darf sie nicht auf die leere Liste
+    abbilden.
 
     Eine leere Liste bedeutet: **die Datei hat keine Blockstruktur.** Das ist
     ein gueltiges Ergebnis und wird protokolliert; der Aufrufer arbeitet dann
     mit `zeilen_lesen`.
     """
     # ── Eingabe-Validierung ─────────────────────
+    endung: str = Path(pfad).suffix.lower()
+    erkenner = _ERKENNER.get(endung)
+    if erkenner is None:
+        hinweis: str = (
+            f"struktur_analysieren: fuer '{endung or '(ohne Endung)'}' ist kein "
+            f"Gliederungs-Erkenner registriert ({pfad}) — bekannt sind "
+            f"{sorted(_ERKENNER)}. Eine leere Karte waere hier die Aussage "
+            f"'durchgehender Text' ueber eine Datei, die niemand angesehen hat"
+        )
+        raise FormatOhneErkennerError(hinweis)
+
     zeilen: list[str] = _zeilen_laden(Path(pfad), wurzel)
 
     # ── Verarbeitung ────────────────────────────
-    ueberschriften: list[tuple[int, int, str]] = _ist_ueberschrift(zeilen)
+    ueberschriften: list[tuple[int, int, str]] = erkenner(zeilen)
     bloecke: list[dict] = []
 
     for i, (start, ebene, text) in enumerate(ueberschriften):

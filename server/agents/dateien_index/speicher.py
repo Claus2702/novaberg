@@ -99,7 +99,11 @@ def zeile_schreiben(
             erschliessung.thema, erschliessung.zusammenfassung,
             erschliessung.stichwoerter,
             erschliessung.embedding,
-            json.dumps(erschliessung.struktur, ensure_ascii=False),
+            # SQL-NULL statt JSON-"null": Die Spalte unterscheidet damit
+            # "nicht erhoben" von der leeren Karte, und zwar in derselben
+            # Form wie jede andere nicht erhobene Groesse des Schemas.
+            None if erschliessung.struktur is None
+            else json.dumps(erschliessung.struktur, ensure_ascii=False),
             fund.groesse, fund.zeilen, fund.inhalt_hash,
             fund.geaendert_am, suchtext,
         ),

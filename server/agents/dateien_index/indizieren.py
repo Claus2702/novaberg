@@ -24,7 +24,7 @@ from pathlib import Path
 
 from config import EMBED_MODEL, PROMPTS, get_node_config, ollama_gpu_client
 from services.model_services import ChatRequest, model_service
-from tools.dateien.operationen import struktur_analysieren
+from tools.dateien.operationen import StrukturUnklarError, struktur_analysieren
 
 logger = logging.getLogger("ki_server.agents.dateien_index.indizieren")
 
@@ -47,12 +47,19 @@ class Erschliessung:
     `thema` leer heisst: Der Modellaufruf ist gescheitert oder unbrauchbar.
     Der Aufrufer schreibt dann keine Zeile — eine Indexzeile ohne Thema
     behauptete, die Datei sei erschlossen.
+
+    **`struktur` kennt drei Zustaende, nicht zwei.** Eine Liste ist die
+    erhobene Karte; die leere Liste heisst *„nachgesehen, keine
+    Ueberschriften"*; `None` heisst *„nicht erhoben"* — kein Erkenner fuer
+    dieses Format, oder die Auszeichnung geht nicht auf. Waeren die letzten
+    beiden derselbe Wert, sagte der Index ueber eine ungelesene Datei aus,
+    sie sei ein durchgehender Text.
     """
 
     thema: str
     zusammenfassung: str
     stichwoerter: list[str]
-    struktur: list[dict]
+    struktur: list[dict] | None
     embedding: list[float] | None
 
 
@@ -69,15 +76,22 @@ def _auszug_lesen(datei: Path) -> str:
     return roh.decode("utf-8", errors="replace")[:AUSZUG_ZEICHEN]
 
 
-def _struktur_text(struktur: list[dict]) -> str:
+def _struktur_text(struktur: list[dict] | None) -> str:
     """Formt die Blockkarte fuer den Prompt.
 
-    Vorbedingung: `struktur` ist das Ergebnis von `struktur_analysieren`.
-    Nachbedingung: Ein mehrzeiliger Text, oder ein ausdruecklicher Hinweis,
-    dass die Datei keine Blockstruktur traegt. **Das ist der Normalfall im
-    Bestand** und keine Stoerung: Am 17.08.2026 trugen 223 von 223
-    Wissensdateien keine einzige Ueberschrift.
+    Vorbedingung: `struktur` ist das Ergebnis von `struktur_analysieren`
+    oder `None`, wenn die Karte nicht erhoben werden konnte.
+    Nachbedingung: Ein mehrzeiliger Text, oder ein ausdruecklicher Hinweis —
+    und die beiden Hinweise sagen Verschiedenes. Die leere Karte heisst, die
+    Datei traegt keine Blockstruktur; **das ist der Normalfall im Bestand**
+    und keine Stoerung: Am 17.08.2026 trugen 223 von 223 Wissensdateien keine
+    einzige Ueberschrift. `None` heisst dagegen, dass niemand nachgesehen
+    hat — dem Modell dieselbe Zeile zu zeigen hiesse, ihm einen Befund zu
+    melden, den es nicht gibt.
     """
+    if struktur is None:
+        return "(Gliederung nicht erhoben — das Format ist unbekannt oder die Datei defekt)"
+
     if not struktur:
         return "(keine Ueberschriften — die Datei ist ein durchgehender Text)"
 
@@ -172,14 +186,28 @@ def erschliessen(datei: Path, wurzel: Path, pfad_relativ: str) -> Erschliessung:
     leer = Erschliessung("", "", [], [], None)
 
     # ── Eingabe-Validierung ─────────────────────
+    # Zwei Ausgaenge, die frueher einer waren: `StrukturUnklarError` heisst NICHT
+    # ERHOBEN und wird als `None` weitergereicht; die leere Liste bliebe die
+    # Aussage "durchgehender Text" ueber eine Datei, die kein Erkenner
+    # gelesen hat.
+    struktur: list[dict] | None
     try:
-        struktur: list[dict] = struktur_analysieren(datei, wurzel)
+        struktur = struktur_analysieren(datei, wurzel)
+    except StrukturUnklarError as fehler:
+        # `exception` statt `error`: Der Fall ist selten und der Auszug zeigt,
+        # welcher Erkenner gefehlt hat. TRY400 verlangt es ausserdem.
+        logger.exception(
+            "Indizieren: Gliederung von '%s' nicht erhoben (%s) — die Zeile "
+            "entsteht ohne Blockkarte; der Grund steht im Auszug",
+            pfad_relativ, type(fehler).__name__,
+        )
+        struktur = None
     except (ValueError, OSError) as fehler:
         logger.exception(
             "Indizieren: Blockkarte fuer '%s' nicht erhebbar (%s)",
             pfad_relativ, type(fehler).__name__,
         )
-        struktur = []
+        struktur = None
 
     try:
         auszug: str = _auszug_lesen(datei)
@@ -258,9 +286,10 @@ def erschliessen(datei: Path, wurzel: Path, pfad_relativ: str) -> Erschliessung:
     )
 
     logger.info(
-        "Indizieren: '%s' — Thema '%s', %d Stichwoerter, %d Bloecke, "
+        "Indizieren: '%s' — Thema '%s', %d Stichwoerter, %s Bloecke, "
         "Einbettung %s",
-        pfad_relativ, thema[:60], len(stichwoerter), len(struktur),
+        pfad_relativ, thema[:60], len(stichwoerter),
+        "nicht erhoben" if struktur is None else len(struktur),
         "ja" if embedding else "NEIN",
     )
     return Erschliessung(thema, zusammenfassung, stichwoerter, struktur, embedding)

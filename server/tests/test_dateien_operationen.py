@@ -16,6 +16,12 @@ Die vier Zusicherungen, die hier geprüft werden:
      17.08.2026 tragen 223 von 223 Wissensdateien keine `##`-Überschrift.
   4. **Ein mehrdeutiger Header ist ein Fehler, kein Griff zum ersten
      Treffer.** Sonst liefert derselbe Aufruf morgen einen anderen Block.
+  5. **Eine Karte, die nicht erhoben werden konnte, ist keine leere Karte.**
+     Ein Format ohne Erkenner und eine Datei mit unschlüssiger Auszeichnung
+     werfen — sonst sagt der Index über eine ungelesene Datei aus, sie sei
+     ein durchgehender Text. Gemessen am 20.08.2026 an einer echten Datei:
+     ein einzelner durchgestrichener Codezaun ließ von 83 Überschriften 5
+     übrig, und nichts daran sah nach einem Fehler aus.
 
 Die Zeugen:
 
@@ -37,6 +43,8 @@ from pathlib import Path
 from tools.dateien.operationen import (
     BLOCK_LIMIT,
     GREP_LIMIT,
+    FormatOhneErkennerError,
+    StrukturDefektError,
     block_lesen,
     datei_grep,
     datei_suchen,
@@ -110,6 +118,37 @@ Zweites Vorkommen.
 """
 
 
+DEFEKTER_ZAUN: str = """# Titel
+
+## Erster echter Block
+
+Ein Satz.
+
+~~```
+veralteter Code
+```~~
+
+## Zweiter echter Block
+
+Noch ein Satz.
+
+### Ein Unterblock
+
+Und noch einer.
+"""
+
+FREMDFORMAT_RST: str = """Titel der Datei
+===============
+
+Ein Absatz.
+
+Ein Abschnitt
+-------------
+
+Noch ein Absatz.
+"""
+
+
 class LeseschichtTest(unittest.TestCase):
     """Randfälle gegen angelegte Dateien."""
 
@@ -121,6 +160,12 @@ class LeseschichtTest(unittest.TestCase):
         self.ohne     = self._schreiben("ohne_bloecke.md", OHNE_BLOECKE)
         self.doppelt  = self._schreiben("zweimal_gleich.md", ZWEIMAL_GLEICH)
         self.leer     = self._schreiben("leer.md", "")
+        # Der echte Fall vom 20.08.2026: Ein durchgestrichener Codeblock. Das
+        # OEFFNENDE Gegenstueck steht hinter den beiden Tilden und wird vom
+        # Erkenner nicht gesehen, das schliessende beginnt mit dem Zaun und
+        # wird gesehen — eine ungerade Bilanz.
+        self.defekt   = self._schreiben("defekter_zaun.md", DEFEKTER_ZAUN)
+        self.fremd    = self._schreiben("fremdformat.rst", FREMDFORMAT_RST)
         self.lang     = self._schreiben(
             "lang.md",
             "# Titel\n\n## Grosser Block\n\n"
@@ -188,6 +233,59 @@ class LeseschichtTest(unittest.TestCase):
         bloecke = struktur_analysieren(self.zaun, self.wurzel)
         self.assertEqual(len(naiv), 5)
         self.assertEqual(len(bloecke), 3)
+
+    # ── Zusicherung 2b: eine unschluessige Bilanz ist ein Fehler ─
+
+    def test_ungerader_codezaun_scheitert_laut(self) -> None:
+        """Der Fall, der am 20.08.2026 78 von 83 Blöcken verschluckt hat."""
+        with self.assertRaises(StrukturDefektError) as fall:
+            struktur_analysieren(self.defekt, self.wurzel)
+        self.assertIn("ungerade", str(fall.exception))
+
+    def test_gegenprobe_ohne_bilanzpruefung_kaeme_eine_halbe_karte(self) -> None:
+        """Belegt, dass der Zeuge oben etwas fängt, was sonst durchginge.
+
+        Ohne die Prüfung liefert derselbe Text eine Karte mit genau den
+        Blöcken **vor** dem Zaun — hier zwei von vier. Das ist der Grund,
+        warum die halbierte Karte nie auffiel: Sie ist syntaktisch gültig
+        und sieht aus wie eine kurze Datei.
+        """
+        zeilen = self.defekt.read_text(encoding="utf-8").splitlines()
+        vorhanden = [z for z in zeilen if z.startswith("#")]
+        # Der Erkenner ohne Bilanzpruefung, nachgebaut:
+        im_zaun, gefunden = False, []
+        for zeile in zeilen:
+            if zeile.lstrip().startswith(("```", "~~~")) and zeile.startswith(("```", "~~~")):
+                im_zaun = not im_zaun
+                continue
+            if not im_zaun and zeile.startswith("#"):
+                gefunden.append(zeile)
+        self.assertEqual(len(vorhanden), 4)
+        self.assertEqual(len(gefunden), 2)
+
+    # ── Zusicherung 5: nicht erhoben ist nicht leer ─────────────
+
+    def test_format_ohne_erkenner_scheitert_laut(self) -> None:
+        """Eine .rst-Datei ist gegliedert — nur nicht mit Rautenzeichen."""
+        with self.assertRaises(FormatOhneErkennerError) as fall:
+            struktur_analysieren(self.fremd, self.wurzel)
+        self.assertIn(".rst", str(fall.exception))
+
+    def test_gegenprobe_fremdformat_haette_leere_karte_geliefert(self) -> None:
+        """Belegt, was der Zeuge oben verhindert: die stille Falschaussage.
+
+        Der Markdown-Erkenner findet in der .rst-Datei keine einzige
+        Überschrift, obwohl sie zwei trägt. Ohne die Endungsprüfung wäre das
+        Ergebnis eine leere Karte — also die Aussage *„durchgehender Text"*
+        über eine gegliederte Datei.
+        """
+        zeilen = self.fremd.read_text(encoding="utf-8").splitlines()
+        mit_raute = [z for z in zeilen if z.startswith("#")]
+        unterstrichen = [
+            z for z in zeilen if z and set(z) <= set("=-") and len(z) > 2
+        ]
+        self.assertEqual(mit_raute, [])
+        self.assertEqual(len(unterstrichen), 2)
 
     # ── Zusicherung 3: keine Struktur ist ein Befund ────────────
 
