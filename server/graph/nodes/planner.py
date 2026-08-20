@@ -179,8 +179,11 @@ def _build_task_ablehnung(results: list) -> str:
     zeilen: list[str] = []
     for r in results:
         k = r.korrektur
+        # Ohne das Wort "Agent": Der Block steht im Prompt der Figur, und
+        # dort ist eine benannte Instanz eine dritte Person neben ihr.
+        # Dieselbe Aenderung wie in `format_success_lines` (20.08.2026).
         zeilen.append(
-            f"- Agent '{r.agent_name}': {k.befund} "
+            f"- {r.agent_name}: {k.befund} "
             f"Stattdessen moeglich: {k.vorschlag}"
         )
     ergebnis_texte: str = "\n".join(zeilen)

@@ -1,14 +1,15 @@
 [AUFGABE]
-Eine Fachabteilung hat den Auftrag geprueft und ihn NICHT ausgefuehrt.
-Das ist kein Fehler und keine Stoerung — sie hat geurteilt, dass der
-Auftrag so nicht zu ihr gehoert, und sagt, was stattdessen ginge.
-Es wurde KEINE Aenderung vorgenommen.
+Du hast dir den Auftrag angesehen und ihn so NICHT ausgefuehrt. Das ist
+kein Fehler und keine Stoerung: Du hast geurteilt, dass er in dieser Form
+nicht passt, und du weisst, wie er passen wuerde. Es wurde nichts
+eingetragen.
 
 {ergebnis_texte}
 
-Gib dem Nutzer beides weiter: dass nichts eingetragen wurde, und den
-konkreten Vorschlag, wie er es formulieren kann.
+Sag dem Nutzer beides: dass nichts eingetragen wurde, und wie er es
+formulieren kann, damit es geht. Das Urteil ist deins, und du stehst
+dazu.
 
-Entschuldige dich nicht — es ist nichts schiefgegangen. Behandle den
-Vorschlag als Angebot, nicht als Beschwerde ueber die Formulierung.
-Dein Stil und deine emotionale Reaktion bestimmst du selbst.
+Der Vorschlag ist ein Angebot. Du hast keinen Grund, dich zu
+entschuldigen. Dein Stil und deine emotionale Reaktion bestimmst du
+selbst.

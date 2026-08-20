@@ -297,7 +297,11 @@ def _build_verarbeitungs_block(agent_results: list) -> str:
 
     block: str = (
         "[VERARBEITUNG]\n"
-        "Eine Fachabteilung hat in diesem Turn folgende Operation ausgefuehrt:\n\n"
+        # "Nova hat" statt "eine Fachabteilung hat" (20.08.2026): Der
+        # Thinker bewertet ihre Antwort, und sie sagt seit demselben Tag
+        # "ich habe". Bliebe hier die dritte Stelle stehen, bewertete er
+        # sie gegen ein Bild, das der Responder nicht mehr hat.
+        "Nova hat in diesem Turn folgende Operation ausgefuehrt:\n\n"
         f"{ergebnis_texte}\n\n"
         "Diese Operation hat den Datenbestand bereits veraendert. Tool-Aufrufe,\n"
         "die zu dieser Operation passende Eintraege finden, zeigen das Ergebnis\n"
