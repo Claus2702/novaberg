@@ -10,8 +10,17 @@ Gespräch auffindbar — **über die Datenbank, nicht über den Dateiinhalt.**
 
 Gebaut ist Stufe 1. Sie liefert Thema und Zusammenfassung; das reicht in den
 meisten Fällen als Kontext und kostet nichts als eine Abfrage. Erst wenn die
-Zusammenfassung nicht reicht, lohnt der Griff zur Datei — dafür fehlt der
-Lesepfad in `tools/dateien/` noch (Spezifikation: §7.3).
+Zusammenfassung nicht reicht, lohnt der Griff zur Datei (Spezifikation: §7.3).
+
+**Was Stufe 2 fehlt, ist der Aufrufer — nicht das Werkzeug.** Bis zum
+18.08.2026 stand hier, der Lesepfad in `server/tools/dateien/` fehle; das
+gilt nicht mehr. `struktur_analysieren`, `block_lesen`, `zeilen_lesen` und
+`datei_grep` stehen mit 26 Zeugen, und der lesende Dienst (`agents/dateien/`)
+benutzt sie im Betrieb. **Sie tun es aber fuer die freigegebenen
+Verzeichnisse, nicht fuer die Bibliothek:** Dieser Manager reicht
+`dateipfad` bis heute nur als Fundstelle in den Text weiter und oeffnet
+keine Datei. Der Backlog-Eintrag `WIS-8-STUFE-2` ist deshalb geschlossen und
+diese Stufe trotzdem offen — zwei Silos, ein Eintrag.
 
 **Der Suchschlüssel kommt aus dem State, nicht aus einem eigenen Embedding.**
 `state["such_vektor"]` trägt den Vektor, mit dem in diesem Turn auch KZG und

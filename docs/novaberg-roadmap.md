@@ -10,6 +10,18 @@
 
 ## Chats 3–20: Grundlagen (März 2026)
 
+### 20.08.2026, mittags — Der Lauf sagt jetzt, was er verloren hat
+
+**Die zweite Hälfte des Vormittags-Vorfalls.** Der eine Defekt erzeugte den Fehlschlag und ist behoben; dieser hier verschwieg ihn. Die Bilanz trägt seit heute je Wurzel `gescheitert` samt Pfad und Grund — nach dem Vorbild der übergangenen Dateien, die diese Auskunft längst hatten.
+
+**`gescheitert` steht neben `fehler`, nicht darin.** Jenes sammelt Ausnahmen je Wurzel, also einen abgebrochenen Lauf; dieses zählt Dateien, die übergangen wurden, ohne dass etwas warf. In einem Topf wäre aus einem stillen Verlust ein lauter Fehler geworden und aus einem lauten Fehler eine Statistik.
+
+**Der eigentliche Riegel ist die Identität.** Der Lauf rechnet `Kandidaten == indiziert + offen + gescheitert` nach und meldet, wenn sie nicht aufgeht: *„eine Datei fällt zwischen die Fälle"*. Genau diese Differenz war heute früh der einzige Hinweis auf fünf fehlende Dateien — sie war da, nur hat sie niemand gerechnet. Dazu die Zeile, die den Satz aus dem Befund beantwortet: **`offen: 0` heißt, die Obergrenze hat nichts stehengelassen, nicht, dass alles drin ist.**
+
+Ein Zeuge prüft Fach und Rechnung zugleich, Gegenprobe **1 vorhergesagt, 1 rot**. Suite **2000 grün**. Im Betrieb: `indiziert 4, offen 0, gescheitert 0` — dieselbe Sprache wie zuvor, jetzt mit der Zahl, die den Unterschied trägt.
+
+**Nebenbei berichtigt:** Der Docstring des Wissens-Managers nannte seit dem 18.08. einen Blocker, den es nicht mehr gibt — der Lesepfad für Stufe 2 steht mit 26 Zeugen. Offen ist dort nicht das Werkzeug, sondern der Aufrufer: Die Leseschicht hat zwei Produktivaufrufer, beide für die freigegebenen Verzeichnisse; die Bibliothek öffnet weiterhin keine Datei. Ein geschlossener Backlog-Eintrag las sich, als deckte er beide Silos.
+
 ### 20.08.2026, mittags — Der Boden trägt, und der Fehler sitzt woanders
 
 **Die Frage stand seit dem 18.08. offen und war nicht beantwortbar:** Trägt der Boden 0,30 des dense Kanals? Damals lag der Bestand bei 13 Indexzeilen, einschlägige und fremde Sonde 0,038 auseinander. Mit der freigegebenen Doku-Wurzel sind es 174 Zeilen, und 24 Sonden — 12 einschlägig mit bekannter Zieldatei, 12 zu Themen, die im Bestand nicht vorkommen — ergeben:
