@@ -21,6 +21,10 @@ Die Zusicherungen, die hier geprüft werden:
      18.08.2026 von der zweiten Kontrolle, mit Größe, Zeilenzahl und
      Prüfsumme der fremden Datei.
   6. **Was die Obergrenze stehen lässt, steht in der Bilanz.**
+  7. **Ein Verzeichnis mit führendem Punkt wird nicht betreten** — und das
+     wird gesagt, nicht verschwiegen. Die Dateien darunter tauchen in keiner
+     Menge auf, weil sie niemand gesehen hat; das Verzeichnis selbst steht
+     mit Grund in der Bilanz.
 
 Kein skipUnless, kein skipIf, kein try/except um Importe.
 """
@@ -37,6 +41,8 @@ from agents.dateien_index.wandern import (
     FALL_GEAENDERT,
     FALL_NEU,
     FALL_UNVERAENDERT,
+    GRUND_VERBORGENE_DATEI,
+    GRUND_VERBORGENES_VERZEICHNIS,
     Wanderung,
     wandern,
 )
@@ -233,7 +239,124 @@ class WanderungTest(unittest.TestCase):
         self.assertEqual(lauf.zahlen(), {
             "neu": 0, "geaendert": 0, "unveraendert": 0,
             "verschwunden": 0, "uebergangen": 0,
+            "uebergangene_verzeichnisse": 0,
         })
+
+
+class VerborgenesTest(unittest.TestCase):
+    """Der führende Punkt — abgeschnitten, und mit Grund benannt.
+
+    Eigene Wurzel statt Erweiterung der `WanderungTest`-Vorlage: Dort prüft
+    ein Zeuge die Summe aller Mengen gegen `os.walk`, und ein nicht
+    betretenes Verzeichnis bricht genau diese Gleichung — absichtlich. Beide
+    Zusicherungen sind richtig, sie gelten nur nicht am selben Bestand.
+    """
+
+    def setUp(self) -> None:
+        """Legt eine Wurzel mit sichtbarem und verborgenem Inhalt an."""
+        self.wurzel: Path = Path(tempfile.mkdtemp(prefix="index_punkt_"))
+        (self.wurzel / "sichtbar.md").write_text("# Sichtbar\nA\n", encoding="utf-8")
+        (self.wurzel / "unter").mkdir()
+        (self.wurzel / "unter" / "tief.md").write_text("# Tief\nB\n", encoding="utf-8")
+        (self.wurzel / ".obsidian").mkdir()
+        (self.wurzel / ".obsidian" / "notiz.md").write_text("# Werkzeug\nC\n", encoding="utf-8")
+        (self.wurzel / ".obsidian" / "themes").mkdir()
+        (self.wurzel / ".obsidian" / "themes" / "tief.md").write_text(
+            "# Tiefer\nD\n", encoding="utf-8",
+        )
+        (self.wurzel / "unter" / ".cache").mkdir()
+        (self.wurzel / "unter" / ".cache" / "rest.md").write_text("# Rest\nE\n", encoding="utf-8")
+        (self.wurzel / ".geheim.md").write_text("# Geheim\nF\n", encoding="utf-8")
+
+    def tearDown(self) -> None:
+        """Räumt die Wurzel ab."""
+        shutil.rmtree(self.wurzel, ignore_errors=True)
+
+    def _pfade(self, lauf: Wanderung) -> set[str]:
+        """Alle Pfade, die der Lauf in eine der drei Mengen gelegt hat."""
+        return {
+            fund.pfad_relativ
+            for fund in lauf.neu + lauf.geaendert + lauf.unveraendert
+        }
+
+    def test_sichtbares_wird_gefunden(self) -> None:
+        """Die Gegenprobe zuerst: Das Abschneiden trifft nicht den Bestand."""
+        lauf: Wanderung = wandern(self.wurzel, {})
+        self.assertEqual(
+            self._pfade(lauf), {"sichtbar.md", os.path.join("unter", "tief.md")},
+        )
+
+    def test_verborgenes_verzeichnis_wird_nicht_betreten(self) -> None:
+        """Was unter dem Punkt liegt, taucht in KEINER Menge auf."""
+        lauf: Wanderung = wandern(self.wurzel, {})
+        alle: str = " ".join(
+            self._pfade(lauf) | {pfad for pfad, _ in lauf.uebergangen},
+        )
+        self.assertNotIn(".obsidian", alle)
+        self.assertNotIn("notiz.md", alle)
+        self.assertNotIn(".cache", alle)
+
+    def test_das_uebergangene_verzeichnis_steht_mit_grund_in_der_bilanz(self) -> None:
+        """Nicht betreten heißt nicht verschwiegen — und zwar auf jeder Ebene."""
+        lauf: Wanderung = wandern(self.wurzel, {})
+        gruende: dict[str, str] = dict(lauf.uebergangene_verzeichnisse)
+        self.assertEqual(
+            set(gruende), {".obsidian", os.path.join("unter", ".cache")},
+        )
+        self.assertEqual(gruende[".obsidian"], GRUND_VERBORGENES_VERZEICHNIS)
+        self.assertEqual(lauf.zahlen()["uebergangene_verzeichnisse"], 2)
+
+    def test_der_ast_wird_einmal_gemeldet_nicht_je_datei(self) -> None:
+        """Zwei Dateien unter `.obsidian`, eine Zeile in der Bilanz.
+
+        Das ist der Unterschied zum Übergehen: Ohne das Abschneiden stünden
+        `.obsidian` in jedem Lauf mit so vielen Zeilen da, wie es Dateien
+        enthält — und keine davon würde je eine andere.
+        """
+        lauf: Wanderung = wandern(self.wurzel, {})
+        obsidian: list[str] = [
+            pfad for pfad, _ in lauf.uebergangene_verzeichnisse
+            if pfad == ".obsidian"
+        ]
+        self.assertEqual(len(obsidian), 1)
+
+    def test_verborgene_einzeldatei_wird_gesehen_und_begruendet(self) -> None:
+        """Die Datei liegt sichtbar da — sie wird übergangen, nicht übersehen."""
+        lauf: Wanderung = wandern(self.wurzel, {})
+        gruende: dict[str, str] = dict(lauf.uebergangen)
+        self.assertIn(".geheim.md", gruende)
+        self.assertEqual(gruende[".geheim.md"], GRUND_VERBORGENE_DATEI)
+
+    def test_altzeile_unter_dem_punkt_wird_stillgelegt_nicht_geloescht(self) -> None:
+        """Was vor der Regel indiziert wurde, gilt danach als verschwunden.
+
+        Der Fall entsteht nur einmal — beim Übergang. Er steht hier, weil
+        `verschwunden` damit **zwei** Bedeutungen trägt: die Datei ist fort,
+        oder wir sehen nicht mehr hin. Die Zeile bleibt in beiden Fällen
+        stehen und wird stillgelegt (§5.5); gelöscht wird sie nicht, und
+        genau das soll niemand später neu herausfinden müssen.
+        """
+        bestand: dict[str, dict] = {
+            os.path.join(".obsidian", "notiz.md"): _zeile(
+                os.path.join(".obsidian", "notiz.md"), 12, "gleichgueltig", 1000.0,
+            ),
+        }
+        lauf: Wanderung = wandern(self.wurzel, bestand)
+        self.assertEqual(
+            [z["pfad"] for z in lauf.verschwunden],
+            [os.path.join(".obsidian", "notiz.md")],
+        )
+
+    def test_der_punkt_schlaegt_die_endung_als_grund(self) -> None:
+        """`.DS_Store` ist nicht wegen seines Formats draußen.
+
+        Beide Regeln träfen zu; die Auskunft soll die genauere sein.
+        """
+        (self.wurzel / ".DS_Store").write_bytes(b"\x00\x01\x02")
+        lauf: Wanderung = wandern(self.wurzel, {})
+        gruende: dict[str, str] = dict(lauf.uebergangen)
+        self.assertEqual(gruende[".DS_Store"], GRUND_VERBORGENE_DATEI)
+        self.assertNotIn("Endung", gruende[".DS_Store"])
 
 
 class EmbedTextTest(unittest.TestCase):

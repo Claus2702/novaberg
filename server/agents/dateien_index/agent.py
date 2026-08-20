@@ -269,4 +269,12 @@ class DateienIndexAgent(BaseAgent):
             "uebergangen_gruende": [
                 {"pfad": pfad, "grund": grund} for pfad, grund in lauf.uebergangen
             ],
+            # Der abgeschnittene Ast gehoert in dieselbe Auskunft. Er ist
+            # sonst der einzige Teil des Laufs, ueber den die Bilanz
+            # schweigt — und ein nicht betretenes Verzeichnis sieht in ihr
+            # genauso aus wie ein leeres.
+            "uebergangene_verzeichnisse_gruende": [
+                {"pfad": pfad, "grund": grund}
+                for pfad, grund in lauf.uebergangene_verzeichnisse
+            ],
         }, max(0, budget - len(arbeit))

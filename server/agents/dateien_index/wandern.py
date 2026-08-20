@@ -27,6 +27,17 @@ FALL_GEAENDERT: str = "geaendert"
 FALL_UNVERAENDERT: str = "unveraendert"
 FAELLE: frozenset[str] = frozenset({FALL_NEU, FALL_GEAENDERT, FALL_UNVERAENDERT})
 
+#: Der Grund, aus dem ein Verzeichnis mit fuehrendem Punkt nicht betreten wird.
+#: Er steht als Konstante da, weil ihn zwei Seiten brauchen — die Wanderung
+#: schreibt ihn, der Zeuge prueft ihn — und eine frei getippte Zeichenkette an
+#: zwei Stellen laeuft auseinander, ohne dass etwas rot wird.
+GRUND_VERBORGENES_VERZEICHNIS: str = "Verzeichnis mit fuehrendem Punkt — nicht betreten"
+
+#: Dasselbe fuer die Einzeldatei. Getrennt gehalten, weil die beiden Faelle
+#: verschieden ausgehen: Das Verzeichnis wird gar nicht erst betreten, die
+#: Datei wird gesehen und mit Grund uebergangen.
+GRUND_VERBORGENE_DATEI: str = "verborgen (fuehrender Punkt)"
+
 
 @dataclass(frozen=True)
 class Fund:
@@ -57,6 +68,12 @@ class Wanderung:
     unveraendert: list[Fund] = field(default_factory=list)
     verschwunden: list[dict] = field(default_factory=list)
     uebergangen: list[tuple[str, str]] = field(default_factory=list)
+    #: Verzeichnisse, in die der Lauf nicht abgestiegen ist — (Pfad, Grund).
+    #: Sie stehen NEBEN `uebergangen` und nicht darin: Dort zaehlen Dateien,
+    #: hier Verzeichnisse, und eine Zahl, die beides addiert, beantwortet
+    #: keine der beiden Fragen. Ein abgeschnittener Ast ist auch kein
+    #: Sonderfall des Uebergehens — die Dateien darunter hat niemand gesehen.
+    uebergangene_verzeichnisse: list[tuple[str, str]] = field(default_factory=list)
 
     def zahlen(self) -> dict[str, int]:
         """Die Bilanz eines Laufs, in einer Zeile nachrechenbar."""
@@ -66,6 +83,7 @@ class Wanderung:
             "unveraendert": len(self.unveraendert),
             "verschwunden": len(self.verschwunden),
             "uebergangen": len(self.uebergangen),
+            "uebergangene_verzeichnisse": len(self.uebergangene_verzeichnisse),
         }
 
 
@@ -94,6 +112,12 @@ def _uebergehen(datei: Path, groesse: int) -> str:
     stiller Uebersprung machte eine unlesbare Datei von einer nicht
     vorhandenen ununterscheidbar.
     """
+    # Der Punkt steht vor der Endung, weil er die genauere Auskunft gibt:
+    # `.DS_Store` mit "Endung ist kein Text" abzuweisen ist richtig und sagt
+    # das Falsche — die Datei ist nicht wegen ihres Formats draussen, sondern
+    # weil sie zur Werkzeugschicht gehoert und nicht zum Bestand.
+    if datei.name.startswith("."):
+        return GRUND_VERBORGENE_DATEI
     if datei.suffix.lower() not in DATEIEN_INDEX_ENDUNGEN:
         return f"Endung '{datei.suffix or '(keine)'}' ist kein Text"
     if groesse > DATEIEN_INDEX_MAX_BYTES:
@@ -152,6 +176,11 @@ def wandern(wurzel: Path, bestand: dict[str, dict]) -> Wanderung:
     Nachbedingung: Eine `Wanderung`, in der **jede** gefundene Datei in
     genau einer Menge steht — indiziert oder mit Grund uebergangen. Zeilen
     des Bestands, die draussen fehlen, stehen unter `verschwunden`.
+    **Gefunden ist, was ausserhalb verborgener Verzeichnisse liegt:** Ein
+    Verzeichnis mit fuehrendem Punkt wird nicht betreten und steht unter
+    `uebergangene_verzeichnisse`; die Dateien darunter tauchen nirgends auf,
+    weil sie niemand gesehen hat. Eine verborgene EINZELDATEI wird dagegen
+    gesehen und wandert mit Grund nach `uebergangen`.
 
     **Jeder Pfad wird nach der Aufloesung gegen die Wurzel geprueft** — und
     zwar zusaetzlich zu `followlinks=False`. Die beiden decken verschiedene
@@ -179,7 +208,28 @@ def wandern(wurzel: Path, bestand: dict[str, dict]) -> Wanderung:
     gesehen: set[str] = set()
 
     # ── Verarbeitung ────────────────────────────
-    for ordner, _unter, dateien in os.walk(wurzel, followlinks=False):
+    for ordner, unter, dateien in os.walk(wurzel, followlinks=False):
+        # **Der Ast wird abgeschnitten, nicht Blatt fuer Blatt begruendet.**
+        # Ein Verzeichnis mit fuehrendem Punkt ist Werkzeugschicht — eine
+        # Editor-Einstellung, ein Zwischenspeicher, eine Arbeitskopie —, und
+        # es traegt seinen Inhalt fuer ein Programm, nicht fuer einen Leser.
+        # Der Abstieg kostet dort nicht nur Arbeit, er erzeugt in JEDEM Lauf
+        # dieselbe Liste von Absagen: `.obsidian` allein stand am 20.08.2026
+        # mit sechs Zeilen in der Bilanz, und keine davon wird je eine
+        # andere. `os.walk` erlaubt die Kuerzung nur ueber die Liste selbst —
+        # deshalb `unter[:]` und nicht `unter = `.
+        verborgen: list[str] = [name for name in sorted(unter) if name.startswith(".")]
+        for name in verborgen:
+            relativ_verzeichnis: str = str((Path(ordner) / name).relative_to(wurzel))
+            logger.info(
+                "Waechter: '%s' nicht betreten — %s",
+                relativ_verzeichnis, GRUND_VERBORGENES_VERZEICHNIS,
+            )
+            ergebnis.uebergangene_verzeichnisse.append(
+                (relativ_verzeichnis, GRUND_VERBORGENES_VERZEICHNIS),
+            )
+        unter[:] = [name for name in unter if not name.startswith(".")]
+
         for dateiname in sorted(dateien):
             absolut: Path = Path(ordner) / dateiname
             relativ: str = str(absolut.relative_to(wurzel))
@@ -245,9 +295,10 @@ def wandern(wurzel: Path, bestand: dict[str, dict]) -> Wanderung:
 
     logger.info(
         "Waechter: '%s' — neu %d, geaendert %d, unveraendert %d, "
-        "verschwunden %d, uebergangen %d",
+        "verschwunden %d, uebergangen %d, Verzeichnisse uebergangen %d",
         wurzel, zahlen["neu"], zahlen["geaendert"], zahlen["unveraendert"],
         zahlen["verschwunden"], zahlen["uebergangen"],
+        zahlen["uebergangene_verzeichnisse"],
     )
     return ergebnis
 
