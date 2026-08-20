@@ -10,6 +10,27 @@
 
 ## Chats 3–20: Grundlagen (März 2026)
 
+### 20.08.2026, vormittags — Die Bitte um JSON wird zur Fessel, und eine Zusage fällt dabei zweimal
+
+**Der Vormittag hat zwei Defekte getrennt, die wie einer aussahen.** Fünf von 160 Dateien fielen aus dem Index — in **jedem** Lauf dieselben. Das ist keine Ausfallrate, sondern eine Eigenschaft der Eingabe, und der Grund liegt eine Schicht tiefer als der Wächter.
+
+| | vorher | nachher |
+|---|---|---|
+| `expect_json` reicht bis | den eigenen Worker | den Anbieter |
+| Nutzlast an Ollama | ohne `format` | `format` bei Forderung |
+| Index über die Doku-Wurzel | 155 von 160 | **160 von 160** |
+| unbrauchbare Modellantworten je Lauf | 5 (18 Aufrufe, 0 Zeilen) | **0** |
+
+**Ein Prompt leitet, er erzwingt nicht.** Genau das stand als Regel schon im Bestand (`F-PROMPT-1`, für Novas Verhalten formuliert) und galt unbemerkt auch für die Form der Antwort: Die Forderung nach JSON war ein Satz im Prompt, und `expect_json` hieß auf unserer Seite nur *„parse streng"*. Betroffen waren **31 Aufrufstellen**.
+
+**Beim Bau fiel die Zusage, die den Bau hätte verhindern sollen.** Der Katalog hielt fest, `think=True` und `expect_json=True` schlössen einander aus, *„der Provider greift mit einem Guard ein"*. Den Guard gab es nie — der Parameter erreichte den Provider überhaupt nicht —, und die Unverträglichkeit ist gegen beide eingesetzten Modelle widerlegt: Inhalt `{"thema": "Kakteen"}`, Denkkanal getrennt gefüllt. **Eine Zusage, die zwei Behauptungen trägt und bei beiden irrt, ist kein Detail:** Sie hätte den nächsten Versuch abgeschreckt, ohne dass jemand nachmisst.
+
+**Der Anthropic-Weg erzwingt nichts und sagt es.** Die Claude-API hat kein Gegenstück zu `format`; die Form hinge dort an einem Werkzeugschema. Statt still zu ignorieren, meldet der Weg die nicht durchgesetzte Forderung — das stille Ignorieren wäre dieselbe Naht ein zweites Mal.
+
+**Fünf Zeugen, und sie sitzen an zwei Nähten.** Der Grund ist der Defekt selbst: Beide Hälften waren für sich in Ordnung — der Worker parste streng, der Anbieter *hätte* senden können —, und niemand verband sie; ein Zeuge je Hälfte wäre grün geblieben. Gegenproben zweifach: **2 vorhergesagt, 2 rot** und **1 vorhergesagt, 1 rot**. Suite 1994 → **1999 grün**, Linter-Nulllinie unverändert (86 vor, 86 nach).
+
+**Offen bleibt der Zwilling:** `INDEXLAUF-VERSCHWEIGT-DATEIFEHLER`. Es gibt derzeit nichts zu verschweigen — die Bilanz könnte es weiterhin.
+
 ### 20.08.2026 — Die Figur bekommt die Dokumente über sich selbst, und der Wächter verliert fünf davon still
 
 **Gefragt war eine Zustandsauskunft, gebaut wurde eine Freigabe.** Der Dateien-Verbund kannte genau eine Wurzel: `/files`, 14 Dateien. Das Dokumentationsverzeichnis des Repositoriums war nicht freigegeben und **konnte** es nicht sein — es war im Behälter nicht eingehängt, und der Außenrand nannte nur `/files`. Zwei Hälften derselben Zusicherung, und beide fehlten.
