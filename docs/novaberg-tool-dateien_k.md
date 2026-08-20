@@ -112,6 +112,12 @@ def struktur_analysieren(pfad: str) -> list[dict]:
 > **Warum die Trennung traegt:** Die Zaunerkennung ist ein Umschalter. Faellt ein oeffnender Zaun aus, kippt sie und kippt nie zurueck — das Ergebnis ist keine Ausnahme, sondern eine **kuerzere Liste**, und eine kuerzere Liste sieht aus wie eine kuerzere Datei. Am 20.08.2026 blieben so von 83 Ueberschriften 5 uebrig. Eine ungerade Bilanz ist dagegen ohne jede Kenntnis des Inhalts pruefbar.
 >
 > Gemessen am selben Tag ueber die 174 indizierten Dateien: **173 erhoben, 0 leer, 1 nicht erhoben** — nach der Reparatur der einen Datei **174 / 0 / 0**.
+>
+> **Die Erkennung selbst macht seit dem 20.08.2026 `markdown-it-py`** (Grundfassung `commonmark`), nicht mehr ein Regex ueber Zeilen. Der Automat kannte zwei Regeln des Formats; der Parser kennt sie alle — Setext-Ueberschriften, eingerueckte Codebloecke, Zaeune aus vier und mehr Zeichen, verschachtelte Zaeune. **Nicht in die Karte kommen Ueberschriften innerhalb eines Blockzitats:** Sie gehoeren zum zitierten Text, und ihr Block liefe bis zur naechsten gleichrangigen Ueberschrift und damit ueber das Zitat hinaus — dieselbe Zusicherung wie beim Codezaun.
+>
+> **Der Parser ersetzt die Zaunbilanz nicht.** An der defekten Datei fand der Automat 5 von 83 Ueberschriften, CommonMark **45 von 83**: beide Karten falsch, nur verschieden falsch. Die Bilanz laeuft deshalb weiter vor dem Parser.
+>
+> Ueber den Bestand gegengerechnet: **174 von 174** Dateien liefern dieselbe Karte wie der Automat — nachdem zwei Fehlauszeichnungen behoben waren, die der Automat verdeckt hatte (ein unpaariger Zaun, eine Trennlinie unmittelbar unter einem Absatz, die CommonMark als Setext-Ueberschrift liest).
 
 ```python
 

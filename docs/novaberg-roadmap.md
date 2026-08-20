@@ -10,6 +10,38 @@
 
 ## Chats 3–20: Grundlagen (März 2026)
 
+### 20.08.2026, nachmittags — Die Gliederung kommt aus einem Parser, und der Riegel bleibt trotzdem stehen
+
+**Gebaut.** `markdown-it-py 3.0.0` (Grundfassung `commonmark`) macht die Überschriftenerkennung
+für `.md`; der Zeilenautomat ist ersetzt. Er kannte zwei Regeln des Formats — Rautenüberschrift
+und Zaun aus drei Zeichen —, der Parser kennt sie alle: Setext-Überschriften, eingerückte
+Codeblöcke, Zäune aus vier und mehr Zeichen, verschachtelte Zäune.
+
+**Eine Auswahl, die kein Parser treffen kann.** Überschriften innerhalb eines Blockzitats kommen
+**nicht** in die Karte. Sie gehören zum zitierten Text; ihr Block liefe bis zur nächsten
+gleichrangigen Überschrift und damit über das Zitat hinaus — eine Blockgrenze, die im Dokument
+nicht existiert. Das ist dieselbe Zusicherung wie beim Codezaun. Über den Bestand gezählt: acht
+solche Überschriften in acht Dateien.
+
+**Die Zaunbilanz bleibt vor dem Parser stehen, und das ist gemessen statt vermutet.** Der
+Backlog-Eintrag behauptete, sie fange nur, was ein Parser ohnehin richtig macht. An der defekten
+Datei fand der Zeilenautomat **5 von 83** Überschriften, CommonMark **45 von 83**. Beide Karten
+sind falsch, nur verschieden falsch — und eine falsche Karte ist teurer als eine fehlende, weil
+der Aufrufer ihr folgt statt auszuweichen. Die Aussage ist im Backlog als widerlegt markiert.
+
+**Zwei Fehlauszeichnungen, die der Automat verdeckt hatte.** Der Vergleich beider Verfahren über
+174 Dateien ergab zunächst 9 Abweichungen. Acht waren die Blockzitate. Die neunte war eine
+Trennlinie unmittelbar unter einem Absatz in `novaberg-bugs.md` — nach CommonMark ist das eine
+Setext-Überschrift, und der Absatz war die Stand-Zeile. Eine Leerzeile behebt es.
+
+**Gemessen** nach dem Neubau des Behälters, gegen den echten Bestand: **174 von 174** Dateien
+liefern dieselbe Karte wie zuvor; Blockkarten **174 erhoben, 0 leer, 0 nicht erhoben**. Zeugen
+5 neu (Setext, Blockzitat, eingerückter Code, verschachtelter Zaun, dazu die Gegenprobe gegen
+den alten Automaten). Suite **2009 grün, 0 übersprungen**. Gegenprobe: Blockzitat-Filter
+ausgehängt → 1 vorhergesagt, 1 gezählt.
+
+---
+
 ### 20.08.2026, nachmittags — Die Blockkarte war halbiert, und nichts daran sah nach einem Fehler aus
 
 **Der Auslöser.** `struktur_analysieren` erkennt Codezäune mit einem Umschalter: Jede Zeile, die mit drei Backticks beginnt, kippt *„ich bin im Code"* um. In `novaberg-agent-dateien_k.md` steht ein **durchgestrichener** Codeblock — die öffnende Zeile beginnt mit den beiden Tilden und wird deshalb nicht gesehen, die schließende beginnt mit dem Zaun und wird gesehen. Ein Zaun ohne Partner, 17 statt 16, und ab Zeile 976 gilt der Rest der Datei als Code. Von **83 Überschriften blieben 5**; 1158 von 1236 Zeilen waren für den Zoom nicht vorhanden.
