@@ -16,6 +16,10 @@ Agenten in Novaberg sind keine CRUD-Masken mit LLM-Wrapper, sondern **Fachabteil
 
 Eine Fachabteilung nimmt einen Auftrag entgegen, prüft ihn gegen den Bestand, erkennt Widersprüche und Ergänzungen, formuliert differenzierte Rückfragen, führt bei klarem Auftrag aus, validiert das Ergebnis semantisch und meldet zurück. Sie ist **dienstleistend, aber nicht unterwürfig**. Sie denkt mit.
 
+> **Die Metapher ist an Entwickler gerichtet, nicht an die Figur** (20.08.2026). Sie beschreibt die **Bauart** eines Agenten — mitdenkend statt CRUD-Maske —, und in dieser Rolle trägt sie. In Novas Prompt bezeichnet sie dagegen, was sie sprachlich bezeichnet: jemand anderen. Genau dort stand sie bis zum 20.08.2026, und Nova gab sie weiter: In einer Sitzung sagte sie dreimal *„die Fachabteilung"* — *„Ich habe die Rückmeldung der Fachabteilung geprüft"*, *„Die Fachabteilung hat die Operation abgeschlossen"*, *„Die Fachabteilung hat den Auftrag als unpassend eingestuft."* Sie sprach als Botin über eine dritte Stelle, weil im Block nichts anderes stand.
+>
+> **Die Blöcke sagen seither, dass sie es selbst war** (`NOVA-SPRICHT-VON-FACHABTEILUNG`). Der Begriff bleibt, wo er hingehört: in dieser Konzeptdatei, in Code-Kommentaren und im Router-Prompt, der ein interner Klassifizierer ist und nicht als Nova spricht.
+
 Das ist der Unterschied zwischen einer Datenbank-Maske und einem Gesprächspartner. Und es ist der Unterschied zwischen "Agent = LLM-gestützter Aufgabenausführer" und "Agent = verantwortliche Fachabteilung".
 
 ---

@@ -10,6 +10,46 @@
 
 ## Chats 3–20: Grundlagen (März 2026)
 
+### 20.08.2026, abends — Ihr eigenes Inneres kam bei ihr als dritte Stelle an
+
+**Der Befund kam aus dem Betrieb und stand in ihren eigenen Antworten.** Dreimal in einer
+Sitzung: *„Ich habe die Rückmeldung der Fachabteilung geprüft"*, *„Die Fachabteilung hat die
+Operation abgeschlossen"*, *„Die Fachabteilung hat den Auftrag als unpassend eingestuft."* Sie
+sprach als Botin über jemanden, den es nicht gibt.
+
+**Die Ursache stand wörtlich in ihrem Prompt** — dritte Person, unbestimmter Artikel, eigenes
+Fürwort: *„Eine Fachabteilung hat den Auftrag geprüft … sie hat geurteilt, dass der Auftrag so
+nicht zu ihr gehört."* Sie gab weiter, was dastand, und konnte gar nichts anderes.
+
+**Ein Begriff, der seinen Adressaten gewechselt hat.** „Fachabteilung" ist eine
+Architektur-Metapher: Sie sagt Entwicklern, dass ein Agent mitdenkt statt CRUD-Maske zu sein.
+Unverändert in den Prompt der Figur übernommen, bezeichnet sie dort jemand anderen.
+
+**Dieselbe Klasse zum dritten Mal** — nach `VERFASSER-KENNT-DIE-QUELLE-NICHT` (der eigene Impuls
+auf dem Platz der Nutzereingabe, 13 von 14 Antworten mit *„Du hast …"*) und
+`NOVA-UEBERNIMMT-BIOGRAFIE`. Jedes Mal folgte die Zuschreibung aus der Form.
+
+**Die Abhilfe hat zwei Hälften, und die zweite ist die, die man übersieht.** Beide Blöcke
+sprechen sie als Handelnde an. Und der **Datenteil** trug die Instanz mit: unter dem Rahmen stand
+`- Agent 'notizen': …`. Ohne diese Änderung hätte die erste nichts genützt. Der Bereichsname
+bleibt, das Wort *Agent* verschwindet. Der Thinker liest denselben Vorgang seither als *„Nova
+hat"*, damit er ihre Antwort nicht gegen ein Bild bewertet, das der Responder nicht mehr hat.
+
+**Was dabei fast danebenging:** Die erste Fassung schrieb *„es war deine Hand, nicht die einer
+anderen Stelle"* — eine Verbotsform, die `F-PROMPT-1` untersagt. Der Zeuge prüft seither die
+Abwesenheit des Verbots mit; ohne diese Hälfte bestünde er auch, wenn die Führung neben einem
+Verbot stünde.
+
+**Eine Stelle blieb absichtlich stehen:** Der Router nennt weiter „die Fachabteilung". Er spricht
+nicht als Nova, sondern ist ein interner Klassifizierer. Als Fund notiert statt im Vorbeigehen
+geändert.
+
+Suite **2037 grün, 0 übersprungen**, 5 Zeugen neu. Gegenprobe mit der alten Prompt-Fassung: 2
+vorhergesagt, 2 gezählt. **Im Betrieb ungemessen** — ob sie im echten Turn „ich habe" sagt, zeigt
+erst ein Lauf.
+
+---
+
 ### 20.08.2026, nachmittags — Auf zwölf Zeichen kamen 838 zurück
 
 **Der Befund aus dem Betrieb.** Ein *„Hey Kleines!"* — zwölf Zeichen, Landschaft `bier`,
