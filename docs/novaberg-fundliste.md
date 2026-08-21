@@ -2,9 +2,9 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Rohe, noch unklassifizierte Funde aus laufender Arbeit
-**Stand:** 20. August 2026, 19:37 UTC
-**Offen:** 3 Funde
-**Verlauf:** [Verlauf des Standes](#verlauf-des-standes) — 61 Eintraege, juengster zuerst
+**Stand:** 21. August 2026, 09:42 UTC
+**Offen:** 5 Funde
+**Verlauf:** [Verlauf des Standes](#verlauf-des-standes) — 62 Eintraege, juengster zuerst
 **Pfad:** novaberg/docs/novaberg-fundliste.md
 
 Was beim Bauen an anderer Stelle auffällt, landet hier — **eine Zeile mit Datum**. Kein Bug-Name, keine Priorität, keine Klassifizierung, keine Diskussion. Der Zweck ist, einen Fund festzuhalten, ohne die laufende Arbeit dafür zu unterbrechen.
@@ -230,6 +230,9 @@ Analog zum Kraft-1-Stichtag: ab wann eine Partition brauchbar ist. Kein Backfill
 
 - **2026-08-20** — Die Zusicherungs-Pruefung an der Vertrauensgrenze zaehlt heute 244 Befunde gegen 239 am 17.08.2026 — obwohl fuer sie eine harte Wand auf den Commit-Index laeuft, die jeden Zuwachs in einer beruehrten Datei melden soll. Ob die Wand in diesem Zeitraum lief, ist ungeprueft.
 
+- **2026-08-21** — Die KZG-Schwelle 0,40 trennt nicht: Auf eine Rueckfrage ohne Gegenstand kommen 10 von 10 Plaetzen zurueck, und fuenf verschiedene Leerfragen liefern auf 50 Plaetzen 40 verschiedene Erinnerungen — keine einzige in allen fuenf. Beim NMCP-Dienst `dateien` (Kappung 8, gar keine Schwelle) 25 verschiedene auf 40 Plaetzen.
+- **2026-08-21** — `kzg_entries_retrieve` nennt im Docstring die Similarity-Schwelle 0.5, der Code verwirft bei `similarity < 0.40`. Zwei Zahlen fuer dieselbe Schwelle, elf Zeilen auseinander.
+
 **Davor leer, seit dem 20.08.2026** — Alle 168 Punkte sind klassifiziert und an ihren Ort gewandert. Wohin, steht im Abschnitt *Umgezogen*; erledigte stehen unter *Erledigt*.
 
 Der naechste Fund kommt hierher, als **eine Zeile mit Datum**.
@@ -337,6 +340,7 @@ Elf Zeilen sind in `novaberg-bugs.md` zu Einträgen mit Reproduktionsweg geworde
 
 Die Fortschreibung des Standes, aus der Kopfzeile geloest am 20.08.2026. Der Wortlaut jedes Eintrags ist unveraendert; vorangestellt ist allein sein Datum.
 
+- **21. August 2026, 09:42 UTC** — **5 offene Funde**, zwei neu aus der Rewriting-Messung: eine Abrufschwelle, die nicht trennt (KZG und der NMCP-Dienst `dateien` liefern ihre volle Kappung auch auf eine Frage ohne Gegenstand), und ein Docstring, der eine andere Schwelle nennt als der Code darunter.
 - **20. August 2026, 19:37 UTC** — **3 offene Funde**, alle aus dem Durchgang durch die 70 Kennungen: der Rest eines geschlossenen Defekts (der Kern-Hash deckt 2 von 20 Bestandstagen) und eine Featurelisten-Zeile, deren Belegfeld ihrem eigenen Text widersprach; dazu eine Pruefzahl, die trotz harter Wand gestiegen ist.
 - **20. August 2026, ~18:30 UTC** — **0 offene Funde** — alle 168 Punkte des Abschnitts *Offen* sind klassifiziert und umgezogen: 70 als Defekt mit Kennung nach `novaberg-bugs.md`, 48 mit ID ins Backlog, 14 als Zustandsaussage in ihr Moduldokument, 10 als Regel des Vorgehens, 5 als Nachtrag an einen bestehenden Eintrag, 21 als erledigt. Die Zeichenbilanz ist bei jedem Schritt aufgegangen.
 - **20. August 2026, ~17:05 UTC** — **153 offene Funde** — einer geschlossen: Die Kopfzeilen-Kette der vier Register ist in den Koerper geloest (138 Glieder), der Fund von ~16:40 ist damit erledigt und durchgestrichen.
