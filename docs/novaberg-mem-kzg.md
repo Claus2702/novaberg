@@ -233,14 +233,25 @@ Einträge verfallen automatisch per Redis TTL. Kein Cron-Job, kein manuelles Lö
 
 ## 7. WICHTIG: redis_client Unterscheidung (KZG-REDIS1)
 
-**Bug KZG-REDIS1 (Chat 29):** Alle KZG-Operationen nutzen `config.redis_client` (Raw-Client ohne `decode_responses`), NICHT `tools.redis_manager.client`.
+**Alle KZG-Operationen nutzen `config.redis_client`, NICHT `tools.redis_manager.client`.**
+
+~~| Client | `decode_responses` | Nutzung |~~
+~~| `config.redis_client` | **False (Raw)** | KZG-Store, Vektorsuche, Embedding-Write |~~
+
+> **Am 21.08.2026 gegen den Code und die Laufzeit geprüft und widerlegt: `config.redis_client` trägt `decode_responses=True`.** `config.py:203` setzt es so, der Kommentar in `tools/redis_manager.py:13` sagt es ausdrücklich, und der laufende Dienst bestätigt es. Die Tabelle stand hier über Monate mit *„False (Raw)"* — wer ihr folgte, hielt einen dekodierenden Client für einen rohen.
 
 | Client | `decode_responses` | Nutzung |
 |--------|-------------------|---------|
-| `config.redis_client` | False (Raw) | KZG-Store, Vektorsuche, Embedding-Write |
-| `redis_manager.client` | True (Decoded) | Pending-State, Session, allgemeine Redis-Ops |
+| `config.redis_client` | **True** | KZG-Store, Vektorsuche, Embedding-Write |
+| `redis_manager.client` | True | Pending-State, Session, allgemeine Redis-Ops |
 
-Der RedisManager mit `decode_responses=True` bricht binäre Vektorsuche und Embedding-Schreibvorgänge. Das Symptom: Vektorsuche liefert 0 Ergebnisse.
+**Der Unterschied liegt nicht am Dekodieren, sondern an der Schicht:** `redis_manager` ist eine Fassade mit eigenen Methoden; die KZG-Operationen brauchen den Client direkt, weil sie `ft().search()` und binäre Query-Parameter benutzen.
+
+**Warum die Vektorsuche trotzdem trägt:** Der Vektor geht als `query_params={"vec": <bytes>}` in die Abfrage und kommt als `score` zurück — beides läuft nicht durch die Dekodierung der Hash-Felder.
+
+> **Wo es beißt: beim Lesen des Hashes.** `hgetall` auf einen KZG-Schlüssel bricht mit `UnicodeDecodeError` ab, weil das Feld `embedding` rohe Bytes trägt und der Client jedes Feld zu dekodieren versucht. **`hmget` auf die Textfelder geht** — und genau so liest `kzg_entries_retrieve` nicht, sondern über den Index mit `return_fields`. Wer eine Sonde über den Bestand schreibt, holt einzelne Felder statt der ganzen Hash.
+
+`[gemessen]` — 21.08.2026, beim Ziehen einer Stichprobe über 2665 Schlüssel.
 
 ---
 
