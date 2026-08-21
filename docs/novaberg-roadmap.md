@@ -1,6 +1,6 @@
 # Novaberg — Roadmap (Projektchronik)
 
-**Stand:** 21. August 2026, 09:43 UTC
+**Stand:** 21. August 2026, 10:30 UTC
 **Pfad:** novaberg/docs/novaberg-roadmap.md
 **Single Source of Truth für abgeschlossene Arbeit.**
 **Offene Punkte → novaberg-backlog.md**
@@ -12,6 +12,65 @@ Die Kopfzeile stand bis Chat 109 auf „Chat 93, 21. Mai 2026" — 15 Chats hint
 ---
 
 ## Chats 3–20: Grundlagen (März 2026)
+
+### 21.08.2026, 10:30 UTC — Das Kurzzeitgedächtnis darf schweigen
+
+**Die Abrufschwelle stand auf 0,40 — unter dem Boden des Vektorraums.** Gemessen an den 2665 Einträgen des
+produktiven Paares erreicht der *schlechteste* Eintrag gegen eine beliebige Frage 0,48 bis 0,54. Die Schwelle
+konnte per Konstruktion nichts aussperren; die zehn Plätze des Lesepfads waren in jedem Turn voll, auch wenn die
+Frage keinen Gegenstand trug.
+
+> **Sie war nicht zu niedrig gewählt. Sie war wirkungslos** — und das ist eine andere Klasse von Fehler. Eine zu
+> niedrige Schwelle lässt zu viel durch und ist an ihrer Trefferquote zu erkennen. Eine, die unter dem Boden des
+> Raums liegt, verhält sich wie gar keine, und nichts an ihrem Verhalten sagt das.
+
+**Gemessen in der Richtung, in der die Schwelle benutzt wird — Frage gegen Bestand.** 40 Einträge über den
+Bestand verteilt, je eine Frage aus der *Aussage* des Eintrags gebaut; nicht aus dem Themenfeld, denn das steht
+im Einbettungstext und wäre die zweite Ableitung derselben Quelle. Dazu zehn Fragen zu nie besprochenen
+Gegenständen und zwei anaphorische Rückfragen.
+
+| Schwelle | richtige verworfen | davon lieferbar gewesen | fremde Fragen | Leerfragen |
+|---|---|---|---|---|
+| 0,40 *(vorher)* | 0/40 | 0/29 | **10/10** | 2/2 |
+| 0,70 | 3/40 | 1/29 | 0/10 | 1/2 |
+| **0,72** | 6/40 | **1/29** | **0/10** | **0/2** |
+| 0,80 | 20/40 | 10/29 | 0/10 | 0/2 |
+
+> **Die dritte Spalte ist die Kostenspalte, und sie entscheidet die Wahl.** Elf der vierzig richtigen Antworten
+> stehen ohnehin nicht in den zehn Plätzen — die Kappung schneidet sie ab, gleich wie die Schwelle steht. Ein
+> Verlust ist nur, was lieferbar gewesen wäre: **0,72 kostet eine von 29.**
+
+**Am Bestand vorher gegen nachher, mit demselben Lesepfad und denselben Fragen:** Zehn Fragen zu Gegenständen,
+die dieses Paar nie besprochen hat, lieferten **100 Einträge — jetzt 0**. Drei anaphorische Rückfragen ohne
+aufgelösten Gegenstand lieferten 30 — **jetzt 0**. Drei einschlägige Fragen lieferten 30 — **und liefern
+weiterhin 30**.
+
+**Was die Schwelle nicht leistet und nicht leisten soll:** Sie entscheidet nicht, *welche* Erinnerung passt. Der
+schlechteste Fehltreffer liegt bei 0,8565, und 33 der 40 richtigen Antworten liegen darunter — eine Zahl, die
+jeden Fehltreffer aussperrt, verwürfe vier Fünftel der richtigen. Die Auswahl leisten Rang und Kappung; die
+Schwelle entscheidet allein, ob überhaupt etwas passt.
+
+**Sechs Zeugen**, darunter der Grenzfall und der Eintrag, der unter 0,40 noch durchkam. Gegenprobe mit der alten
+Zahl: **fünf von sechs rot, wie vorhergesagt.** Suite 2056 grün.
+
+**Ein Fund fiel dabei mit:** Der Docstring des Lesepfads nannte die Schwelle 0,5, während der Code elf Zeilen
+tiefer bei 0,40 verwarf. Beide Zahlen sind fort; die geltende steht an genau einer Stelle.
+
+**Die zweite Kontrolle fragte, wer dieselbe Zahl sonst benutzt — und die Antwort grenzt die Ursache ein.** Die
+0,40 stammte aus dem Anker-Lesepfad des Langzeitgedächtnisses, und **dort trägt sie**: dieselben unbezogenen
+Fragen und dieselbe anaphorische Rückfrage liefern **0 Anker**, die einschlägige **3**. Nicht die Zahl war
+falsch, sondern der Raum, in den sie übernommen wurde.
+
+> **Der Unterschied zwischen beiden Räumen ist der Einbettungstext**, und das ist der Verdacht, den diese
+> Sitzung hinterlässt: Ein Langzeit-Knoten wird über den nackten Inhalt eingebettet, ein KZG-Eintrag über eine
+> **Schablone**, deren zwei Wörter in jedem Eintrag des Bestandes stehen. Ob sie den Boden heben, ist
+> ungemessen und steht als Fund.
+
+**Nicht mitgeändert:** Der NMCP-Dienst `dateien` trägt gar keine Schwelle und liefert seine acht Zeilen auch auf
+eine Frage ohne Gegenstand. Das ist eine andere Lage — dort hat jemand ausdrücklich gesucht — und steht als
+eigener Fund.
+
+---
 
 ### 21.08.2026, 09:40 UTC — Query Rewriting: die vier ungemessenen Konsumenten sind gemessen
 

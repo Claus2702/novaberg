@@ -2,8 +2,8 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Vollständiges Register aller Features mit Zustandsampel und Beleg
-**Stand:** 21. August 2026, 09:43 UTC
-**Verlauf:** [Verlauf des Standes](#verlauf-des-standes) — 32 Eintraege, juengster zuerst
+**Stand:** 21. August 2026, 10:29 UTC
+**Verlauf:** [Verlauf des Standes](#verlauf-des-standes) — 33 Eintraege, juengster zuerst
 **Pfad:** novaberg/docs/novaberg-featureliste.md
 **Typ:** Register
 **Quellen:** die 43 Konzeptdokumente, `novaberg-architecture.md`, die Moduldokumente, `novaberg-roadmap.md`, `novaberg-backlog.md`, `novaberg-bugs.md`, `novaberg-fundliste.md` — gehalten gegen Code und Produktivsystem
@@ -121,7 +121,7 @@ Die Feature-Matrix in `novaberg-architecture.md` §6 ist mit dieser Liste abgel�
 | Feature | Ampel | Beleg | Rest |
 |---|---|---|---|
 | **Session-Gedächtnis** (Redis, Turn-Formatierung) | 🟠 | 2.893 Redis-Keys `[gemessen]` | Die Session **stirbt nicht** — jeder Impuls verlängert die Frist (Eigenzeit §2, Bauteil C) |
-| **Kurzzeitgedächtnis KZG** (Redis + Vektor) | 🟢 | **2.803 `kzg:*`-Keys** `[gemessen]` · `novaberg-mem-kzg.md` | `KZG-SEGMENT-DUPLIKAT`, `KZG-VERDICHTER-KONTEXT-VERLUST` offen |
+| **Kurzzeitgedächtnis KZG** (Redis + Vektor) | 🟢 | **2.665 `kzg:*`-Keys** des Paares `[gemessen 21.08.2026]` · `novaberg-mem-kzg.md` · **Abrufschwelle am 21.08.2026 gemessen und auf 0,72 gesetzt** (vorher 0,40, unter dem Boden des Raums): am Bestand vorher/nachher — 10 unbezogene Fragen 100 → **0** Einträge, 3 anaphorische Rückfragen 30 → **0**, 3 einschlägige 30 → **30** `[gemessen]`, 6 Zeugen, Gegenprobe 5 von 6 rot | `KZG-SEGMENT-DUPLIKAT`, `KZG-VERDICHTER-KONTEXT-VERLUST` offen |
 | **KZG-Magnetfelder** (`entitaet_ids`, `timeline_id`) | 🔴 | `[Code]` · Synapsen P3 | — · **🔴 seit 20.08.2026** (zuvor 🟢): `ENTITAETIDS-MIT-DUBLETTEN` offen |
 | **Synapsen-Modell** (`lzg_knoten` + `lzg_kanten`) | 🟢 | **2.390 Knoten, 365.088 Kanten** `[gemessen]` | P1–P10 gebaut; Lesepfad-Umstellung `SYNAPSEN-DUAL-LZG` offen |
 | **Langzeitgedächtnis alt** (`langzeitgedaechtnis`) | 🟢 | abgelöst und gelöscht (P9) `[gemessen]` — Tabelle existiert nicht mehr | — |
@@ -493,6 +493,7 @@ Ampelzeile  = eine Tabellenzeile, deren zweite Spalte genau eine der vier Farben
 
 Die Fortschreibung des Standes, aus der Kopfzeile geloest am 20.08.2026. Der Wortlaut jedes Eintrags ist unveraendert; vorangestellt ist allein sein Datum.
 
+- **21. August 2026, 10:29 UTC** — **Keine Ampel wechselt, und eine Zeile bekommt eine Zahl, die sie vorher nicht hatte:** Die KZG-Abrufschwelle ist gemessen und steht auf 0,72 statt 0,40. Am Bestand vorher/nachher: zehn Fragen zu nie besprochenen Gegenstaenden lieferten 100 Eintraege, jetzt **0**; drei anaphorische Rueckfragen 30, jetzt **0**; drei einschlaegige Fragen 30, jetzt **30**. Die Zeile stand auf 🟢 und bleibt es — **das Bauteil tut jetzt, was die Ampel behauptet.**
 - **21. August 2026, 09:43 UTC** — **Keine Ampel wechselt, und eine Zeile verliert ihren Vorbehalt:** Query Rewriting ist am 21.08.2026 fuer alle fuenf Leser des Suchschluessels gemessen, nicht mehr nur fuer die Bibliothek. 39 Sonden aus dem Bestand der Konsumenten selbst, durch ihren echten Lesepfad: rohe Aeusserung **0/39**, Rewrite **37/39**, Deckung mit der handaufgeloesten Referenz **39/39**. Die Zeile stand bereits auf 🟢 und bleibt es — **der Beleg traegt sie jetzt.**
 - **20. August 2026, 19:36 UTC** — **Eine Ampel von 🔴 auf 🟠, sechs Zeilen nachgezogen: der Durchgang durch alle 70 Kennungen.** Zwoelf von ihnen sind behoben, keine davon von einem Auftrag, der sie kannte — vier am Responder-Prompt, zwei am Haltungsraum, zwei an der Bibliothek, zwei in der Doku, eine am Etikett des eigenen Gedankens, eine am Router-Prompt. **Nur eine Zeile wechselt die Farbe** (Rueckweg Weg 3, 🔴 -> 🟠: der Defekt ist fort, die Wirkung des neuen Prompts ungemessen); die uebrigen fuenf bleiben rot, weil neben der behobenen Kennung noch eine offene steht. Bestand danach: **91 gruen / 33 orange / 37 schwarz / 58 rot** `[gemessen]`.
 - **20. August 2026, ~20:55 UTC** — **Eine Ampel neu auf 🟢: Query Rewriting.** Der Suchschluessel des Gedaechtnisses traegt seit heute den Gegenstand des Gespraechs, auch wenn der Turn ihn nur als Rueckbezug nennt. Gemessen vor dem Bau: rohe Aeusserung **0 von 10** ueber der Abrufschwelle, Rewrite auf Frageform **5 von 10**; Themenwechsel 3/3 sauber, fremde Verlaeufe 15/15 ohne Treffer. Im Betrieb belegt, Suite **2050 gruen**. Der erste echte Turn fand dabei einen Defekt, den zehn gruene Zeugen nicht sehen konnten: geratene Feldnamen in der Attrappe.

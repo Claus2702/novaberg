@@ -108,6 +108,40 @@ FT.SEARCH idx:kzg "@user_id:{meister} @character_id:{nova}"
 
 Seit Chat 64 wird der Index nur noch zur Lese-/Retrieval-Zeit genutzt (Enricher, Cluster-Promotion). Die KZG-Schreib-Pipeline verwendet keine Vektorsuche mehr — die Verstärkung läuft über exakten Themen-String-Match.
 
+### Die Abrufschwelle — und dass das Kurzzeitgedächtnis schweigen darf (21.08.2026)
+
+**Zu einer Frage, zu der das Kurzzeitgedächtnis nichts Passendes hält, liefert es nichts.** `kzg_entries_retrieve` verwirft jeden Treffer unter `KZG_RETRIEVAL_SCHWELLE`; eine leere Rückgabe ist ein Ergebnis und kein Ausfall — dieselbe Zusicherung, die der Dateienindex trägt.
+
+**Bis zum 21.08.2026 konnte dieser Fall nicht eintreten.** Die Schwelle stand auf 0,40 und lag damit **unter dem Boden des Vektorraums**: Gemessen an den 2665 Einträgen des produktiven Paares erreicht der *schlechteste* Eintrag gegen eine beliebige Frage 0,48 bis 0,54. Sie konnte per Konstruktion nichts aussperren, und die zehn Plätze waren in jedem Turn voll.
+
+**Gemessen in der Richtung, in der die Schwelle benutzt wird — Frage gegen Bestand.** 40 Einträge über den Bestand verteilt, je eine Frage aus der *Aussage* des Eintrags gebaut (nicht aus dem Themenfeld — das steht im Einbettungstext `"Thema: {themen}. Aussage: {kern}"` und wäre die zweite Ableitung derselben Quelle):
+
+| Schwelle | richtige verworfen | davon lieferbar gewesen | fremde Fragen mit Treffer | Leerfragen mit Treffer |
+|---|---|---|---|---|
+| 0,40 *(bis 21.08.)* | 0/40 | 0/29 | **10/10** | 2/2 |
+| 0,70 | 3/40 | 1/29 | 0/10 | 1/2 |
+| **0,72** | 6/40 | **1/29** | **0/10** | **0/2** |
+| 0,74 | 8/40 | 2/29 | 0/10 | 0/2 |
+| 0,80 | 20/40 | 10/29 | 0/10 | 0/2 |
+
+> **Die dritte Spalte ist die Kostenspalte.** 11 der 40 richtigen Antworten stehen ohnehin nicht in den `top_k` — die Kappung schneidet sie ab, gleich wie die Schwelle steht. Ein Verlust ist nur, was lieferbar gewesen wäre. **0,72 kostet eine von 29.**
+
+**Am Bestand gemessen, vorher gegen nachher** — derselbe Lesepfad, dieselben Fragen:
+
+| Sorte | Fragen | Einträge vorher | Einträge jetzt |
+|---|---|---|---|
+| Gegenstände, die das Paar nie besprochen hat | 10 | **100** | **0** |
+| anaphorische Rückfrage ohne aufgelösten Gegenstand | 3 | **30** | **0** |
+| einschlägige Fragen | 3 | 30 | **30** |
+
+**Was die Schwelle nicht leistet und nicht leisten soll:** Sie entscheidet nicht, *welche* Erinnerung passt. Der schlechteste Fehltreffer liegt bei 0,8565, und 33 der 40 richtigen Antworten liegen darunter — eine Zahl, die jeden Fehltreffer aussperrt, verwürfe vier Fünftel der richtigen. Die Auswahl leisten Rang und Kappung (Rang 1 in 17 von 40, Median-Rang 2); die Schwelle entscheidet allein, ob überhaupt etwas passt.
+
+> **Die zweite Kontrolle fragte, wer dieselbe Zahl sonst benutzt — und die Antwort grenzt die Ursache ein.** Die 0,40 stammte aus `anker_retrieval`, dem Lesepfad des Langzeitgedächtnisses, und **dort trägt sie**: Dieselben unbezogenen Fragen und dieselbe anaphorische Rückfrage liefern **0 Anker**, die einschlägige Frage **3** (bester Kosinus 0,6556). Nicht die Zahl war falsch, sondern der Raum, in den sie übernommen wurde.
+>
+> **Der Unterschied zwischen beiden Räumen ist der Einbettungstext.** Ein Langzeit-Knoten wird über den nackten `inhalt` eingebettet — die Formel ist die Identität. Ein KZG-Eintrag über `"Thema: {themen}. Aussage: {kern}"`: **In jedem Eintrag des Bestandes stehen dieselben zwei Schablonenwörter.** Dass sie den Boden heben, ist damit die naheliegende Erklärung und **nicht gemessen** — sie steht als Fund in der Fundliste.
+
+**Zeugen:** `tests/test_kzg_abrufschwelle.py`, sechs Stück — Grenzfall, Unterschreitung, der Fall, der unter 0,40 noch durchkam, und die leere Rückgabe als zulässiges Ergebnis. Gegenprobe mit `KZG_RETRIEVAL_SCHWELLE=0.40`: fünf von sechs rot, wie vorhergesagt.
+
 ---
 
 ## 4. Thematische Verstärkung (seit Chat 64)
@@ -223,6 +257,7 @@ Der RedisManager mit `decode_responses=True` bricht binäre Vektorsuche und Embe
 | `KZG_TTL_LOW_SEKUNDEN` | 604800 (7 Tage) | `config.py` | Salienz 0.3–0.5 |
 | `KZG_TTL_MID_SEKUNDEN` | 1209600 (14 Tage) | `config.py` | Salienz 0.5–0.7 — Chat 64 neu |
 | `KZG_TTL_HIGH_SEKUNDEN` | 2592000 (30 Tage) | `config.py` | Salienz ≥ 0.7 |
+| `KZG_RETRIEVAL_SCHWELLE` | **0.72** ~~(0.40)~~ | `config.py` | Abrufschwelle des Lesepfads — **am 21.08.2026 gemessen**, vorher ein übernommener Startwert unter dem Boden des Raums. Die Reihe und ihre Kosten stehen an der Konstante; §3 trägt die Messung |
 | ~~`KZG_VERSTAERKUNG_DIVISOR`~~ | ~~2.0~~ | `config.py` | ~~Verstärkungs-Stärke (Roh-Boost vor sin^0.6-Dämpfung)~~ → **ohne Leser seit Chat 113.** Die Konstante steht noch in `config.py`, keine Codezeile liest sie mehr; `KZG_SALIENZ_BOOST` hat ihre Rolle übernommen |
 | `KZG_VERTIEFUNG_HAEUFIGKEIT` | 3 | `config.py` | Ab dieser Wiederholungszahl Vertiefungs-Trigger |
 | `PIXIE_PROMOTION_PRIORITAET` | 0.9 | `config.py` | Scheduler-Priorität für periodischen Promotion-Task |
