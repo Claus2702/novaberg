@@ -196,8 +196,8 @@ Wachposten-Kommentare.
 
 | Schwellwert | Ort | alt | **gesetzt** |
 |---|---|---|---|
-| `anker_retrieval` `min_similarity` | `memory/lzg_knoten.py` | 0.50 | **0.40** (gemessen: 82 % Turns mit Anker, Ø 4.1 — bei 0.50 nur 53 %/Ø 0.9; bei 0.35 beginnt Rauschen) |
-| `kzg_entries_retrieve` | `memory/kzg.py` | 0.50 (hartkodiert) | **0.40** |
+| `anker_retrieval` `min_similarity` | `memory/lzg_knoten.py` | 0.50 | **0.40** (gemessen: 82 % Turns mit Anker, Ø 4.1 — bei 0.50 nur 53 %/Ø 0.9; bei 0.35 beginnt Rauschen). **Am 21.08.2026 gegengeprüft und bestätigt:** Vier Fragen zu nie besprochenen Gegenständen und eine anaphorische Rückfrage liefern **0 Anker**, eine einschlägige Frage **3** — dieselbe Zahl, die im Kurzzeitgedächtnis wirkungslos war, trennt hier sauber. **Der Unterschied ist der Einbettungstext**, nicht die Zahl: hier die Identität des Inhalts, dort eine Schablone in jedem Eintrag |
+| `kzg_entries_retrieve` | `memory/kzg.py` | 0.50 (hartkodiert) | ~~**0.40**~~ → **0.72** am 21.08.2026, als `KZG_RETRIEVAL_SCHWELLE` in `config.py`. **Der Wachposten hat sich bestätigt, und zwar schärfer als vermutet:** Die 0.40 war nicht zu niedrig, sondern **wirkungslos** — der schlechteste Eintrag des gesamten Bestandes erreicht gegen eine beliebige Frage 0.48 bis 0.54, die Schwelle lag unter dem Boden des Raums. Gemessen an 40 Fragen mit bekannter richtiger Erinnerung; die Reihe steht an der Konstante |
 | `GRAVITATIONS_SCHWELLE` | `config.py` | 0.60 | **0.40** |
 | `EMOTIONALE_GRAVITATIONS_SCHWELLE` | `config.py` | 0.50 | **0.40** |
 | `GV_CHARAKTER_RESONANZ_SCHWELLE` | `config.py` | 0.40 (Fallback 0.5) | **0.40** (geprüft, bewusst unverändert) |

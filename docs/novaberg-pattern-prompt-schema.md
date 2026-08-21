@@ -139,6 +139,8 @@ Der Test führt **keine Liste zu schützender Namen** — die stünde damit im R
 
 Generische Wörter, die `aus X` mitnimmt (`aus Worker-Thread`, `aus Konzept §7.5`), stehen in `KEINE_NAMEN`. Wächst diese Liste, ist das ein Anlass hinzusehen.
 
+**Am 21.08.2026 um einen Eintrag gewachsen, und der Anlass ist eine eigene Klasse: der Produktname.** `RediSearch` ergab den Fund `Redi` — der Slot bricht nach dem ersten Kleinbuchstaben-Block ab, genau wie bei `PostgreSQL` → `Postgre`. **Beide Zwillinge stehen inzwischen in der Liste, und ihre Stammformen `Redis` und `Postgre` standen schon vorher darin.** Ein Produktname mit einem zweiten Großbuchstaben in der Mitte erzeugt also zuverlässig einen zweiten Fund — das ist keine Nachlässigkeit des Musters, sondern seine Bauart, und der Grund, warum die Liste hier steht statt im Muster.
+
 ---
 
 ## 6. Node-spezifische AUFGABE-Blöcke
