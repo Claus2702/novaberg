@@ -20,6 +20,7 @@ import redis
 
 from config                                import (
     ASSISTANT_USER_ID,
+    KZG_RETRIEVAL_SCHWELLE,
     KZG_SALIENZ_MINIMUM,
     KZG_SALIENZ_MID,
     KZG_SALIENZ_HIGH,
@@ -563,8 +564,19 @@ def kzg_entries_retrieve(
     finalen memory_context-String fuer den Responder.
 
     Datenbeschaffung: KNN-Suche im RediSearch-Index (paar-skopiert auf
-    user_id/character_id), Similarity-Schwelle 0.5, top_k Treffer.
-    Filter, Schwellwerte und Index bleiben identisch zur Vorgaengerfunktion.
+    user_id/character_id), Similarity-Schwelle `KZG_RETRIEVAL_SCHWELLE`,
+    hoechstens `top_k` Treffer.
+
+    **Die Funktion darf leer zurueckkehren, und das ist kein Ausfall.** Zu
+    einer Frage, zu der das Kurzzeitgedaechtnis nichts Passendes haelt, ist
+    Schweigen die richtige Antwort — dieselbe Zusicherung, die der
+    Dateienindex traegt. Bis zum 21.08.2026 konnte sie nicht eintreten: Die
+    Schwelle lag unter dem Boden des Vektorraums, und die `top_k` Plaetze
+    waren in jedem Turn voll.
+
+    Der Docstring nannte hier bis zum 21.08.2026 die Schwelle 0.5, waehrend
+    der Code elf Zeilen tiefer bei 0.40 verwarf. Beide Zahlen sind fort; die
+    geltende steht an genau einer Stelle, in `config.py`.
 
     Mapping pro KZG-Hash-Treffer auf ContextEntry:
       quelle  = "kzg" (Konstante)
@@ -627,13 +639,15 @@ def kzg_entries_retrieve(
 
         for doc in results.docs:
             similarity: float = 1.0 - (float(doc.score) / 2.0)
-            # Kalibriert auf nomic-embed-text-v2-moe (Chat 107). Vorher 0.5
-            # im casing-blinden Raum (Grundrauschen 0.74) — passierte fast
-            # alles; im neuen Raum (Grundrauschen 0.16) haette 0.5 fast
-            # nichts mehr passieren lassen.
-            # ⚠ Wachposten: Prompt↔Eintrag-Wert, nicht gemessen —
-            # begruendeter Startwert, kein Messergebnis.
-            if similarity < 0.40:
+            # ~~Wachposten: Prompt↔Eintrag-Wert, nicht gemessen.~~ Am
+            # 21.08.2026 gemessen; die Reihe und ihre Kosten stehen an der
+            # Konstante. Der alte Wert 0.40 war nicht zu niedrig, sondern
+            # wirkungslos: Der schlechteste Eintrag des gesamten Bestandes
+            # erreicht gegen eine beliebige Frage 0.48 bis 0.54, die Schwelle
+            # lag also unter dem Boden des Raums. Gemessen mit zehn Fragen zu
+            # nie besprochenen Gegenstaenden: 10 von 10 bekamen die vollen
+            # `top_k`.
+            if similarity < KZG_RETRIEVAL_SCHWELLE:
                 continue
 
             subtyp:  str   = getattr(doc, "dimension", "") or ""

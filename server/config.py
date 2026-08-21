@@ -647,6 +647,43 @@ KZG_TTL_LOW_SEKUNDEN:         int   = int(os.getenv("KZG_TTL_LOW_SEKUNDEN", "604
 KZG_TTL_MID_SEKUNDEN:         int   = int(os.getenv("KZG_TTL_MID_SEKUNDEN", "1209600"))      # 14 Tage — Salienz 0.5–0.7
 KZG_TTL_HIGH_SEKUNDEN:        int   = int(os.getenv("KZG_TTL_HIGH_SEKUNDEN", "2592000"))     # 30 Tage — Salienz >= 0.7
 KZG_VERTIEFUNG_HAEUFIGKEIT:   int   = int(os.getenv("KZG_VERTIEFUNG_HAEUFIGKEIT", "3"))
+
+# Die Abrufschwelle des Kurzzeitgedaechtnisses (`kzg_entries_retrieve`).
+#
+# **Gemessen am 21.08.2026 in der Richtung, in der die Schwelle benutzt wird:
+# Frage gegen Bestand.** 40 Eintraege ueber die 2665 des Paares verteilt, je
+# eine Frage aus der *Aussage* des Eintrags gebaut (nicht aus dem Themenfeld —
+# das steht im Einbettungstext), dazu zehn Fragen zu nie besprochenen
+# Gegenstaenden und zwei anaphorische Rueckfragen ohne aufgeloesten Gegenstand.
+# Gemessen gegen die gespeicherten Vektoren, ueber dieselbe KNN-Abfrage wie der
+# Lesepfad, ohne dessen Kappung.
+#
+#   Schwelle | richtige verworfen | davon LIEFERBAR | fremde Fragen | Leerfragen
+#     0.40   |       0/40         |      0/29       |    10/10      |    2/2
+#     0.70   |       3/40         |      1/29       |     0/10      |    1/2
+#     0.72   |       6/40         |      1/29       |     0/10      |    0/2
+#     0.74   |       8/40         |      2/29       |     0/10      |    0/2
+#     0.80   |      20/40         |     10/29       |     0/10      |    0/2
+#
+# **Die dritte Spalte ist die Kostenspalte.** 11 der 40 richtigen Antworten
+# stehen ohnehin nicht in den `top_k` — die Kappung schneidet sie ab, gleich
+# wie die Schwelle steht. Ein Verlust ist nur, was lieferbar gewesen waere.
+# 0.72 ist der guenstigste Wert, bei dem weder eine unbezogene noch eine
+# unaufgeloeste Frage einen Treffer bekommt; er kostet **eine** von 29.
+#
+# **Der alte Wert 0.40 war kein zu niedriger, sondern ein wirkungsloser.**
+# Der schlechteste Eintrag des GESAMTEN Bestandes erreicht gegen eine
+# beliebige Frage 0.48 bis 0.54 — der Boden des Raums liegt ueber der
+# Schwelle, und sie konnte per Konstruktion nichts aussperren. Gemessen an
+# denselben Fragen: 10 von 10 unbezogenen Fragen bekamen die vollen `top_k`.
+#
+# **Was die Schwelle NICHT leistet und nicht leisten soll:** Sie entscheidet
+# nicht, WELCHE Erinnerung passt. Der schlechteste Fehltreffer liegt bei
+# 0.8565, und 33 der 40 richtigen Antworten liegen darunter — eine Zahl, die
+# jeden Fehltreffer aussperrt, verwuerfe vier Fuenftel der richtigen. Die
+# Auswahl leisten Rang und Kappung (Rang 1 in 17 von 40, Median-Rang 2); die
+# Schwelle entscheidet allein, ob ueberhaupt etwas passt.
+KZG_RETRIEVAL_SCHWELLE:       float = float(os.getenv("KZG_RETRIEVAL_SCHWELLE", "0.72"))
 # Deckel der Salienzskala. War bis Chat 113 auf 10.0 — ein Wertebereich, den die
 # Eingangsgroesse nie hatte: Die Modellbewertung liegt in [0,1]. Gemessen am
 # 28.07.2026 standen dadurch 71 von 188 Eintraegen (38 %) ueber 1.0, der hoechste
