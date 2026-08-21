@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Verbindliche Konventionen für Embedding-Texte, Embedding-Modelle und die Grenze zwischen Vektor und strukturierten Feldern
-**Stand:** 16. August 2026 (gegen den Code geprüft: Konvention 1 und 3 eingelöst, Konvention 2 zur Hälfte; ein siebter Speicher in den Geltungsbereich aufgenommen). Davor: 12. Juli 2026, Chat 107
+**Stand:** 21. August 2026 (**Konvention 4 kennt einen dritten Fall** — die Beschreibung *eines* Gegenstands aus mehreren Blickwinkeln, für den der eine Vektor die richtige Form ist; am Dateienindex gemessen, der Umbau dorthin ist zurückgebaut. Das Register führte den Fall seit dem 20.08.2026, dieses Dokument nicht — gefunden von der Konventionsprüfung am Sitzungsende). Davor: 16. August 2026 (gegen den Code geprüft: Konvention 1 und 3 eingelöst, Konvention 2 zur Hälfte; ein siebter Speicher in den Geltungsbereich aufgenommen). Davor: 12. Juli 2026
 **Pfad:** novaberg/docs/novaberg-convention-embedding.md
 **Typ:** Convention
 **Anlass:** EMBEDDING-CASING-BLIND (Befund und Beweiskette: `novaberg-embedding-casing-blind_k.md`), Migration 12.07.2026
@@ -97,6 +97,26 @@ Die mittlere Zeile ist die aufschlussreichere: Ein Vektor über das ganze Themen
 Beide tragen Kommas. Eine Kommazählung über sieben Vektorspalten meldete am 19.08.2026 `lzg_knoten.inhalt` mit **2315 von 2545** Feldern als Verdachtsfall — es sind Sätze, und es ist **kein** Verstoß. Wer das Zeichen zählt statt der Sache, bekommt eine Zahl, die dreimal zu hoch ist.
 
 > **Vier Werte des Feldes ansehen kostet eine Minute und ist nicht ersetzbar.** Eine Aufzählung erkennt man daran, dass ihre Glieder nebeneinander stehen und keines vom anderen abhängt.
+
+### Der dritte Fall: Beschreibung **eines** Gegenstands aus mehreren Blickwinkeln
+
+**Die Probe kannte zwei Antworten — Aufzählung oder Aussage. Es gibt eine dritte, und sie sieht wie die erste aus.** Ein Feld kann mehrere Einträge tragen, die alle *dieselbe* Sache beschreiben: ein Themensatz plus Stichwörter zu **einer** Datei — Facetten statt Gegenstände. Dort gilt die Konvention **nicht**: Der Schwerpunkt aus Beschreibungen eines Dings zeigt weiterhin auf dieses Ding.
+
+**Die Prüffrage lautet deshalb nicht *„wie viele Einträge"*, sondern: Zeigen sie auf verschiedene Dinge?**
+
+| | Beispiel | Gegenstände | Konvention 4 |
+|---|---|---|---|
+| **Aufzählung** | *„Mut, Vertrauen"* | mehrere | greift |
+| **Aussage** | *„Nova hat erklärt, dass sie die Frage nicht auflösen wird"* | einer | greift nicht |
+| **Beschreibung aus mehreren Blickwinkeln** | *„Der TimelineAgent verwaltet Termine"* plus `TimelineAgent`, `ZeitVektor`, `event_type` | einer, mehrfach beschrieben | **greift nicht** |
+
+**Gemessen am 20.08.2026 am Dateienindex**, und der Umbau ist danach vollständig zurückgebaut worden: `themen_embedding` entsteht aus Themensatz plus rund acht Stichwörtern — nach dem Wortlaut ein Verdachtsfall. Ein Vektor je Gegenstand (1456 über 174 Zeilen) ergab **keine Verbesserung**: Rang 1 unverändert 8/12, in den ersten drei **9/12 statt 10/12**, und die Trennung wurde schlechter — der beste Fremdtreffer stieg von 0,3052 auf 0,4008.
+
+> **Und MAX über viele Vektoren ist eine Extremwertstatistik.** Bei 1456 Vektoren liegt zu fast jeder Frage *irgendein* Stichwort zufällig nah. Sichtbar an einer Sonde nach der Nabe des Charakter-Rads: Träger des besten Treffers war das Stichwort `CharacterGraph` — mit der Frage hat es nichts zu tun.
+
+**Nicht widerlegt ist die Konvention, widerlegt ist die Analogie zur Bibliothek.** Dort war das Feld eine Aufzählung *verschiedener* Gegenstände, im Mittel 4,37 je Eintrag, oft ohne Bezug zueinander. Hier beschreiben Themensatz und Stichwörter **einen** Gegenstand: die Datei.
+
+**Am 21.08.2026 kam die Gegenprobe dazu, und sie schließt den Fall:** Auch das Entfernen der Präambel des Themensatzes (66 von 174 Sätzen tragen eine) bewegt die Rangfolge nicht — 8/12 bleibt 8/12. Die Ursache liegt nicht an der **Form** des Vektors, sondern am **Umfang** des Index: Bei den echten Fehlschlägen kommt der tragende Begriff der Frage in keinem der neun Gegenstände vor, obwohl er in der Datei steht.
 
 ### Und sie hebt die Frage nach dem langen Text nicht auf
 
