@@ -1,6 +1,6 @@
 # Novaberg — Roadmap (Projektchronik)
 
-**Stand:** 21. August 2026, 10:48 UTC
+**Stand:** 21. August 2026, 22:50 UTC
 **Pfad:** novaberg/docs/novaberg-roadmap.md
 **Single Source of Truth für abgeschlossene Arbeit.**
 **Offene Punkte → novaberg-backlog.md**
@@ -12,6 +12,33 @@ Die Kopfzeile stand bis Chat 109 auf „Chat 93, 21. Mai 2026" — 15 Chats hint
 ---
 
 ## Chats 3–20: Grundlagen (März 2026)
+
+### 21.08.2026, 22:50 UTC — Das Defektregister ist auszaehlbar: 64 offen, 18 behoben
+
+**Bis heute war jede Zahl ueber offene Defekte eine Schaetzung.** Der Zustand eines Eintrags stand an drei
+Stellen — in der Ueberschrift, im Koerper oder nirgends. Seit dem 20.08.2026 gab es die Form, aber sie deckte
+70 von 82 Abschnitten; die uebrigen zwoelf fielen durch jede Zaehlung.
+
+**Die zwoelf sind nicht uebertragen, sondern einzeln gegen HEAD `62560cf` geprueft** — je Eintrag der benannte
+Codeort, nicht der Wortlaut des Eintrags. Ergebnis: **6 behoben, 6 offen**. Damit traegt jeder der 82 Abschnitte
+seinen Zustand an genau einer Stelle, und `grep -cE '^\*\*Zustand:\*\* offen'` beantwortet die Frage:
+**64 offen, 18 behoben**.
+
+Das gilt fuer die **Klassifikations-Sektion** — die 82 Eintraege der Form `### \`KENNUNG\``. **Der aeltere Bestand liegt eine Ebene tiefer und ist unberuehrt:** 166 Eintraege der Form `#### KENNUNG` tragen ihren Zustand weiter im Titel (`✅ behoben`) oder im Koerper, **keiner** von ihnen eine Zustandszeile. Gezaehlt am 21.08.2026 ueber beide Ueberschriftenebenen.
+
+> **Warum das Uebertragen nicht genuegt haette.** `NOVA-SPRICHT-VON-FACHABTEILUNG` trug *behoben am 20.08.2026*
+> in der Ueberschrift — und benannte im selben Eintrag, dass die Schlussbedingung aussteht: ein echter Turn in
+> der Ich-Form, der seit der Aenderung nicht stattgefunden hat. Eine Prompt-Aenderung mit fuenf gruenen Zeugen
+> ist kein Beleg fuer eine Wirkung im Betrieb. Der Zustand steht jetzt auf `offen`, die Kennung ist unveraendert
+> und der Prosateil der Ueberschrift berichtigt.
+
+**Zwei Befunde fielen am Bestand an, nicht im Register.** Von den vier Torwaechtern deutet nur
+`dateien_wurzeln/resume.py:62` an Wortgrenzen — `charakter_identitaet/resume.py:92` prueft weiterhin
+Teilzeichenketten, und weil `ne` in `gerne` steckt und die Ablehnung vor der Bestaetigung geprueft wird, gilt
+*„ja, gerne"* unveraendert als Ablehnung. `notizen` und `timeline` tragen dagegen **gar keine** eigene
+Ja/Nein-Deutung mehr; der Satz zur uebernommenen Bauart im Befund ist ueberholt.
+
+**Damit ist `BUGREGISTER-ZUSTAND-NICHT-LESBAR` geschlossen.**
 
 ### 21.08.2026, 10:48 UTC — Zwei Kandidaten verbraucht, die Ursache belegt: der Index trägt neun Gegenstände je Datei
 

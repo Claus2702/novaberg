@@ -2,8 +2,8 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Backlog — Konzipierte, noch nicht implementierte Features
-**Stand:** 21. August 2026, 09:43 UTC
-**Verlauf:** [Verlauf des Standes](#verlauf-des-standes) — 35 Eintraege, juengster zuerst
+**Stand:** 21. August 2026, 22:50 UTC
+**Verlauf:** [Verlauf des Standes](#verlauf-des-standes) — 36 Eintraege, juengster zuerst
 **Pfad:** novaberg/docs/novaberg-backlog.md
 **Quellen:** nova-08-k.md (Kognitive Anreicherung), nova-10-k-backlog.md (Skill-System), nova-01-t-c-backlog.md (Node-Konfiguration)
 
@@ -368,7 +368,9 @@ Erste Erhebung der KZG-Salienz **nach** dem Reset, 400 Schlüssel des Paares `me
 
 #### BUGREGISTER-ZUSTAND-NICHT-LESBAR — offen oder behoben ist nicht auszaehlbar
 
-**Die Form steht seit dem 20.08.2026, 19:32 UTC — der Eintrag bleibt trotzdem offen.** Jeder Eintrag der Klassifikations-Sektion traegt eine Zeile `**Zustand:**` unmittelbar unter seiner Ueberschrift, mit einer geschlossenen Wertemenge (`offen` · `offen, unbelegt` · `behoben`), dem Pruefdatum und dem HEAD, gegen den geprueft wurde. **Auszaehlbar mit einem `grep`:** 70 Zeilen, davon 50 offen, 8 offen ohne heutigen Beleg, 12 behoben. **Der Rest der Datei ist noch nicht nachgezogen** — die Abschnitte ausserhalb der Klassifikations-Sektion (Behobene Bugs, Offene Bugs, die Einzelbefunde vom 18. und 19.08.) tragen ihren Zustand weiter in der alten, uneinheitlichen Form. **Ein Befund mit mehreren Stellen ist erst geschlossen, wenn jede steht:** Was fehlt, ist nicht mehr die Form, sondern der Nachzug der uebrigen zwoelf Abschnitte.
+**Erledigt am 21.08.2026, 22:50 UTC.** Alle **82** Abschnitte tragen die Zeile `**Zustand:**` unmittelbar unter ihrer Ueberschrift, mit geschlossener Wertemenge, Pruefdatum und dem HEAD, gegen den geprueft wurde. Auszaehlbar mit `grep -cE '^\*\*Zustand:\*\* offen'`: **64 offen, 18 behoben**. Die zwoelf zuletzt fehlenden sind nicht uebertragen, sondern **einzeln gegen HEAD `62560cf` geprueft** — sechs waren behoben, sechs offen. **Der Rest ist benannt und traegt eine eigene Kennung:** `BUGREGISTER-ALTEBENE-OHNE-ZUSTAND`. Dabei kam heraus, warum die Uebertragung nicht genuegt haette: `NOVA-SPRICHT-VON-FACHABTEILUNG` trug *behoben* in der Ueberschrift und benannte im selben Eintrag die ausstehende Schlussbedingung.
+
+~~**Die Form steht seit dem 20.08.2026, 19:32 UTC — der Eintrag bleibt trotzdem offen.**~~ Der Rest des damaligen Absatzes ist mit der Erledigung gegenstandslos: Es fehlte nicht die Form, sondern der Nachzug der uebrigen zwoelf Abschnitte, und der steht.
 
 **Befund (20.08.2026), beim Umzug der Fundliste entstanden.** `novaberg-bugs.md` fuehrt den Zustand eines Defekts **an drei verschiedenen Stellen und in keiner verbindlich**: In der Ueberschrift (`### KENNUNG — behoben am TT.MM.`), im Koerper (`**Behoben am ...**`) oder gar nicht. Am 20.08.2026 gezaehlt: **82 Abschnitte, 4 mit Marke in der Ueberschrift, 2 weitere nur im Koerper** — der Rest traegt keine.
 
@@ -377,6 +379,27 @@ Erste Erhebung der KZG-Salienz **nach** dem Reset, 400 Schlüssel des Paares `me
 **Was fertig waere:** Der Zustand steht je Eintrag an genau einer Stelle und in einer geschlossenen Wertemenge, sodass ein Script ihn auszaehlen kann. Die vorhandenen 82 Abschnitte sind einmal nachgezogen.
 
 **Prioritaet:** mittel. Kein laufender Verlust — aber jede Zahl ueber offene Defekte bleibt bis dahin eine Schaetzung.
+
+#### BUGREGISTER-ALTEBENE-OHNE-ZUSTAND — 166 Eintraege zaehlen nicht mit
+
+**Befund (21.08.2026), aus einem Abgleich der Feature-Ampeln gegen die Registerzustaende.**
+`novaberg-bugs.md` fuehrt Defekte auf **zwei** Ueberschriftenebenen. Die Klassifikations-Sektion
+(`### \`KENNUNG\``) traegt seit dem 21.08.2026 an allen **82** Eintraegen eine Zustandszeile mit
+Pruefdatum und HEAD. Der aeltere Bestand steht als `#### KENNUNG` — **166 Eintraege**, und
+**keiner** von ihnen traegt sie; ihr Zustand steht im Titel (`✅ behoben`), im Koerper oder
+nirgends.
+
+**Warum es zaehlt:** Genau die Aussage, die der Vorlaeufer-Eintrag herstellen sollte, gilt damit
+nur fuer ein Drittel des Registers. Wer *„N Defekte sind offen"* zaehlt, zaehlt 82 von 248 —
+und die Zahl sieht vollstaendig aus, weil der `grep` sauber durchlaeuft. **Was ihn fand, war nicht das Register selbst, sondern das Dokument, das
+daran haengt:** Der Abgleich meldete **63 Kennungen, die eine Feature-Zeile nennt und zu denen
+es keinen Eintrag gibt** — sie lagen alle auf der zweiten Ebene.
+
+**Was fertig waere:** Beide Ebenen tragen dieselbe Zustandszeile, oder die zweite Ebene ist in die
+erste ueberfuehrt. Die Zahl aus einem `grep` deckt dann das ganze Register.
+
+**Prioritaet:** mittel. Kein laufender Verlust — aber eine Zahl, die vollstaendig aussieht und es
+nicht ist, ist teurer als eine, die als Schaetzung kenntlich bleibt.
 
 #### QUERY-REWRITING-QUELLE-STEHT — der Verlauf liegt vor, bevor eingebettet wird
 
@@ -5781,6 +5804,7 @@ Der NachfragenAgent hat eine Kopplung: `services/pixie/router.py` bildet `nachfr
 Die Fortschreibung des Standes, aus der Kopfzeile geloest am 20.08.2026. Der Wortlaut jedes Eintrags ist unveraendert; vorangestellt ist allein sein Datum.
 
 - **21. August 2026, 09:43 UTC** — **Der benannte Rest von `SUCHSCHLUESSEL-OHNE-VERLAUF` ist gemessen und zu.** Query Rewriting traegt bei allen fuenf Lesern des Suchschluessels: 39 Sonden, rohe Aeusserung 0, Rewrite 37, Deckung mit der Referenz 39 von 39. Dabei ein eigener Fund: Zwei der Konsumenten haben keinen wirksamen Boden.
+- **21. August 2026, 22:50 UTC** — **`BUGREGISTER-ZUSTAND-NICHT-LESBAR` geschlossen.** Die zwoelf fehlenden Abschnitte sind einzeln gegen HEAD `62560cf` geprueft statt uebertragen — **6 behoben, 6 offen** —, und damit traegt jeder der 82 Eintraege seinen Zustand an genau einer Stelle: **64 offen / 18 behoben**, mit `grep` zaehlbar. Die Pruefung fand nebenbei einen Widerspruch, den eine Uebertragung fortgeschrieben haette: eine Ueberschrift sagte *behoben*, waehrend derselbe Eintrag seine Schlussbedingung als ausstehend fuehrte. **Ein Eintrag kommt dabei neu hinzu:** `BUGREGISTER-ALTEBENE-OHNE-ZUSTAND` — eine Zaehlung ueber beide Ueberschriftenebenen des Registers fand **166 aeltere Eintraege ohne Zustandszeile**. Die neue Zahl deckt 82 von 248.
 - **20. August 2026, 19:36 UTC** — **`BUGREGISTER-ZUSTAND-NICHT-LESBAR` zur Haelfte umgesetzt und ausdruecklich nicht geschlossen.** Die Form steht — je Eintrag eine Zeile `**Zustand:**` mit geschlossener Wertemenge, Pruefdatum und HEAD —, und 70 der 82 Abschnitte tragen sie. Die uebrigen zwoelf nicht. Ein Befund mit mehreren Stellen ist erst geschlossen, wenn jede steht.
 - **20. August 2026, ~21:20 UTC** — **Ein Eintrag neu aus dem Abgleich des Verlaufs:** `BUGREGISTER-ZUSTAND-NICHT-LESBAR` — der Zustand eines Defekts steht an drei Stellen und in keiner verbindlich; von 82 Abschnitten tragen 6 ueberhaupt eine Marke. Jede Zahl ueber offene Defekte ist bis dahin eine Schaetzung.
 - **20. August 2026, ~20:50 UTC** — **Ein Eintrag geschlossen:** `SUCHSCHLUESSEL-OHNE-VERLAUF` ist als Query Rewriting umgesetzt und im Betrieb belegt. Ein Rest ist benannt: Die Wirkung auf KZG und LZG ist ungemessen — gemessen wurde gegen die Bibliothek.
