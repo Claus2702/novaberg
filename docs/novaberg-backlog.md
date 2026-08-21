@@ -2,8 +2,8 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Backlog — Konzipierte, noch nicht implementierte Features
-**Stand:** 20. August 2026, 19:36 UTC
-**Verlauf:** [Verlauf des Standes](#verlauf-des-standes) — 34 Eintraege, juengster zuerst
+**Stand:** 21. August 2026, 09:43 UTC
+**Verlauf:** [Verlauf des Standes](#verlauf-des-standes) — 35 Eintraege, juengster zuerst
 **Pfad:** novaberg/docs/novaberg-backlog.md
 **Quellen:** nova-08-k.md (Kognitive Anreicherung), nova-10-k-backlog.md (Skill-System), nova-01-t-c-backlog.md (Node-Konfiguration)
 
@@ -412,7 +412,7 @@ Erste Erhebung der KZG-Salienz **nach** dem Reset, 400 Schlüssel des Paares `me
 
 Gemessen vor dem Bau gegen 306 Ausarbeitungen und zehn Verlaeufe mit anaphorischem Schlussturn: Die rohe Aeusserung erreicht in **0 von 10** Faellen die Abrufschwelle, das Rewrite auf Frageform in **5 von 10**; die Themenform blieb bei 3 von 10 und ist deshalb nicht gewaehlt. Gegenrichtungen sauber: Themenwechsel 3/3 unter der Schwelle, fremde Alltagsverlaeufe 15/15 ohne Treffer. Im Betrieb an einem echten Turn belegt.
 
-**Ein Rest bleibt und ist benannt:** Ob das Rewrite auch KZG, LZG, den Dateienindex und die beiden Dienste **besser** trifft, ist nicht gemessen — die Sonden liefen gegen die Bibliothek. Belegt ist nur, dass es ihnen nicht schadet (kein Nachhall beim Themenwechsel, keine Fremdtreffer).
+~~**Ein Rest bleibt und ist benannt:** Ob das Rewrite auch KZG, LZG, den Dateienindex und die beiden Dienste **besser** trifft, ist nicht gemessen — die Sonden liefen gegen die Bibliothek.~~ → **Am 21.08.2026 gemessen, der Rest ist zu.** 39 Sonden aus dem Bestand der Konsumenten selbst, durch ihren echten Lesepfad: rohe Aeusserung **0/39**, Rewrite **37/39**, Deckung mit der handaufgeloesten Referenz **39/39**. Der fuenfte Konsument, NMCP `wissen`, teilt den Lesepfad der Bibliothek (dieselbe Abfrage, dieselbe Schwelle, Kappung 5 statt 3) und ist damit mitgedeckt. **Zwei Konsumenten haben keinen wirksamen Boden** — KZG und der NMCP-Dienst `dateien` liefern ihre volle Kappung auch auf eine Frage ohne Gegenstand; dort tauscht das Rewrite falschen Inhalt gegen richtigen, statt Treffer hinzuzufuegen. Das ist ein eigener Fund und steht in der Fundliste.
 
 **Prioritaet:** hoch
 
@@ -5780,6 +5780,7 @@ Der NachfragenAgent hat eine Kopplung: `services/pixie/router.py` bildet `nachfr
 
 Die Fortschreibung des Standes, aus der Kopfzeile geloest am 20.08.2026. Der Wortlaut jedes Eintrags ist unveraendert; vorangestellt ist allein sein Datum.
 
+- **21. August 2026, 09:43 UTC** — **Der benannte Rest von `SUCHSCHLUESSEL-OHNE-VERLAUF` ist gemessen und zu.** Query Rewriting traegt bei allen fuenf Lesern des Suchschluessels: 39 Sonden, rohe Aeusserung 0, Rewrite 37, Deckung mit der Referenz 39 von 39. Dabei ein eigener Fund: Zwei der Konsumenten haben keinen wirksamen Boden.
 - **20. August 2026, 19:36 UTC** — **`BUGREGISTER-ZUSTAND-NICHT-LESBAR` zur Haelfte umgesetzt und ausdruecklich nicht geschlossen.** Die Form steht — je Eintrag eine Zeile `**Zustand:**` mit geschlossener Wertemenge, Pruefdatum und HEAD —, und 70 der 82 Abschnitte tragen sie. Die uebrigen zwoelf nicht. Ein Befund mit mehreren Stellen ist erst geschlossen, wenn jede steht.
 - **20. August 2026, ~21:20 UTC** — **Ein Eintrag neu aus dem Abgleich des Verlaufs:** `BUGREGISTER-ZUSTAND-NICHT-LESBAR` — der Zustand eines Defekts steht an drei Stellen und in keiner verbindlich; von 82 Abschnitten tragen 6 ueberhaupt eine Marke. Jede Zahl ueber offene Defekte ist bis dahin eine Schaetzung.
 - **20. August 2026, ~20:50 UTC** — **Ein Eintrag geschlossen:** `SUCHSCHLUESSEL-OHNE-VERLAUF` ist als Query Rewriting umgesetzt und im Betrieb belegt. Ein Rest ist benannt: Die Wirkung auf KZG und LZG ist ungemessen — gemessen wurde gegen die Bibliothek.

@@ -58,7 +58,33 @@ db_zugriff → ei_calc → ▶ enricher ◀ → emotionale_gravitation → reduc
 
 **Seit dem 20.08.2026 ist der eingebettete Text nicht mehr die rohe Äußerung.** Ein Turn wie *„und wie weist man das nach?"* nennt seinen Gegenstand nicht, er zeigt auf ihn zurück — und der Vektor daraus suchte ohne ihn — in **fünf** Konsumenten zugleich, weil sie denselben Schlüssel benutzen: KZG, LZG, die Bibliothek über den `WissenManager`, der Dateienindex (`aufzeichnungen`) und die beiden NMCP-Dienste `wissen` und `dateien`, denen `such_vektor` als angemeldeter Bedarf mitwandert.
 
-**Die Zahl fünf stammt aus der zweiten Kontrolle, nicht aus dem Bau:** Der Befund, der den Umbau ausgelöst hat, nannte drei Speicher. Ein Suchlauf über die Leser des Schlüssels fand zwei weitere — und für die ist die Wirkung des Rewritings **ungemessen**, weil die Sonden gegen die Bibliothek liefen.
+**Die Zahl fünf stammt aus der zweiten Kontrolle, nicht aus dem Bau:** Der Befund, der den Umbau ausgelöst hat, nannte drei Speicher. Ein Suchlauf über die Leser des Schlüssels fand zwei weitere.
+
+### Alle fünf Konsumenten sind gemessen (21.08.2026)
+
+**Die Sonde kommt aus dem Bestand, nicht aus der Hand.** Je Konsument zehn Zeilen seines eigenen Bestandes, gleichmäßig über die Kennungen verteilt; aus dem Gegenstandsfeld jeder Zeile ein dreiteiliger Verlauf, dessen letzte Äußerung den Gegenstand nicht nennt (*„Und wie hängt das eigentlich zusammen?"*). Gemessen wird durch den **echten** Lesepfad — mit seiner Schwelle und seiner Kappung — und nicht der Rang, sondern die **Ankunft**.
+
+| Konsument | Lesepfad | n | roh | Rewrite | Referenz |
+|---|---|---|---|---|---|
+| KZG | Redis-KNN, Schwelle 0,40, top_k 10 | 10 | **0** | **10** | 10 |
+| LZG | Anker-Retrieval, Schwelle 0,40, 3 Anker | 9 | **0** | **7** | 7 |
+| Dateienindex (`aufzeichnungen`) | Boden 0,30, Kappung 3 | 10 | **0** | **10** | 10 |
+| NMCP `dateien` | keine Schwelle, Kappung 8 | 10 | **0** | **10** | 10 |
+| **Summe** | | **39** | **0** | **37** | **37** |
+
+**Das Rewrite deckt sich mit der von Hand aufgelösten Frage in 39 von 39 Sonden** — Sonde für Sonde dasselbe Urteil. Die zwei Ausfälle sind kein Befund über das Rewriting: Zwei LZG-Knoten erreichen den Lesepfad in **keinem** Arm, auch nicht mit ausgeschriebener Frage; bei drei Ankern über 2400 Knoten entscheidet der Wettbewerb.
+
+**NMCP `wissen` ist nicht eigens gemessen und trotzdem gedeckt:** Er benutzt denselben Lesepfad wie die Bibliothek — dieselbe Abfrage, dieselbe Schwelle 0,50 — und unterscheidet sich allein in der Kappung (5 gegen 3). Eine größere Kappung kann nur mehr durchlassen.
+
+> **Die Spalte, die mehr sagt als die Trefferzahl, ist die Menge des Angekommenen.** Sie trennt die vier in zwei Klassen:
+>
+> **Mit wirksamem Boden** — LZG (0,40) und Dateienindex (0,30): Ohne Rewriting kommt **nichts** an. Das Rewriting schaltet sie überhaupt erst ein.
+>
+> **Ohne wirksamen Boden** — KZG (top_k 10) und NMCP `dateien` (Kappung 8, keine Schwelle): Es kommt **immer die volle Kappung** an, auch wenn der Schlüssel keinen Gegenstand trägt — nur nie die richtige Zeile. Hier fügt das Rewriting nichts hinzu, es **tauscht falschen Inhalt gegen richtigen**.
+>
+> **Und es ist nicht einmal ein fester Bodensatz.** Fünf verschiedene gegenstandslose Rückfragen liefern im KZG auf 50 Plätzen **40 verschiedene** Einträge, keinen einzigen in allen fünf Antworten; im NMCP-Dienst `dateien` 25 verschiedene auf 40 Plätzen. Der Kontext folgte damit der **Formulierung** der leeren Frage statt ihrem Gegenstand — bis zum 20.08.2026 in jedem anaphorischen Turn.
+
+**Belege:** `labor/2026-08-21_rewriting_konsumenten.py` mit Rohdaten als JSON, `labor/2026-08-21_leerfrage_konstanz.py`, Ergebnis in `labor/2026-08-21_rewriting_konsumenten_ergebnis.md`. Dort stehen auch die drei Einschränkungen: der `roh`-Arm ist über alle Sonden derselbe Satz, der Deckel ist bei den beiden Datei-Konsumenten zu hoch angesetzt (ihr Vektor ist über `thema` gebildet, und daher stammt der Gegenstand der Sonde), und der Rewrite-Arm ruft das Modell über den direkten Client statt über den ModelWorker.
 
 `_suchtext_bauen` formt aus dem Verlauf eine eigenständige Suchanfrage. **Ein Modellaufruf, und damit der einzige des Enrichers** — der Modulkopf sagte bis dahin ausdrücklich *„kein LLM-Aufruf"*.
 

@@ -1,6 +1,6 @@
 # Novaberg — Roadmap (Projektchronik)
 
-**Stand:** 20. August 2026, 19:38 UTC
+**Stand:** 21. August 2026, 09:43 UTC
 **Pfad:** novaberg/docs/novaberg-roadmap.md
 **Single Source of Truth für abgeschlossene Arbeit.**
 **Offene Punkte → novaberg-backlog.md**
@@ -12,6 +12,45 @@ Die Kopfzeile stand bis Chat 109 auf „Chat 93, 21. Mai 2026" — 15 Chats hint
 ---
 
 ## Chats 3–20: Grundlagen (März 2026)
+
+### 21.08.2026, 09:40 UTC — Query Rewriting: die vier ungemessenen Konsumenten sind gemessen
+
+**Der Suchschlüssel hat fünf Leser; gemessen war einer.** Die Sonden vom Vortag liefen gegen die Bibliothek, für
+KZG, Langzeitgedächtnis, Dateienindex und die beiden NMCP-Dienste stand die Wirkung offen.
+
+**Die Sonde kommt aus dem Bestand, nicht aus der Hand.** Je Konsument zehn Zeilen seines eigenen Bestandes,
+gleichmäßig über die Kennungen verteilt; aus dem Gegenstandsfeld jeder Zeile ein Verlauf, dessen letzte Äußerung
+den Gegenstand nicht nennt. Gemessen wird durch den **echten** Lesepfad — mit seiner Schwelle, seiner Kappung —
+und nicht der Rang, sondern die Ankunft.
+
+**39 Sonden: rohe Äußerung 0, Rewrite 37, handaufgelöste Referenz 37.** Sonde für Sonde dasselbe Urteil in
+39 von 39 Fällen. Die zwei Ausfälle sind keiner des Rewritings: Zwei Knoten des Langzeitgedächtnisses erreichen
+den Lesepfad in keinem Arm, auch nicht mit ausgeschriebener Frage — bei drei Ankern über 2400 Knoten entscheidet
+der Wettbewerb.
+
+> **Die Zahl, die mehr sagt als die Trefferquote, ist die Menge des Angekommenen.** Sie trennt die vier in zwei
+> Klassen. **Mit wirksamem Boden** — Langzeitgedächtnis und Dateienindex — kommt ohne Rewriting **nichts** an;
+> das Rewriting schaltet sie überhaupt erst ein. **Ohne wirksamen Boden** — KZG und der NMCP-Dienst `dateien` —
+> kommt **immer die volle Kappung** an, zehn Erinnerungen und acht Dateien, auch wenn der Schlüssel keinen
+> Gegenstand trägt. Nur nie die richtige Zeile. Dort fügt das Rewriting nichts hinzu, es **tauscht falschen
+> Inhalt gegen richtigen.**
+>
+> **Und es ist nicht einmal ein fester Bodensatz:** Fünf verschiedene gegenstandslose Rückfragen liefern im KZG
+> auf 50 Plätzen 40 verschiedene Erinnerungen, keine einzige in allen fünf. Der Kontext folgte der
+> **Formulierung** der leeren Frage statt ihrem Gegenstand — bis zum 20.08.2026 in jedem anaphorischen Turn.
+
+**Der erste Lauf meldete Rewrite 0 von 19 — und das war ein Fehler der Sonde, kein totes Bauteil.** Der
+Produktivpfad ruft das Modell mit abgeschaltetem Reasoning; der Stellvertreter tat es nicht. Das Modell denkt
+dann, der Antworttext bleibt leer, und der Rückfallpfad liefert die rohe Äußerung — in 19 von 19 Sonden, sauber
+reproduzierbar, ohne eine einzige Fehlermeldung.
+
+> **Ein Stellvertreter, der eine Voreinstellung des Produktivpfads nicht übernimmt, misst seinen eigenen
+> Ausfall** — und liefert dabei genau das Bild, das ein echter Ausfall erzeugt hätte.
+
+**Zwei Funde blieben liegen:** eine Abrufschwelle, die nicht trennt, und ein Docstring, der eine andere Schwelle
+nennt als der Code elf Zeilen darunter.
+
+---
 
 ### 20.08.2026, 19:38 UTC — Alle 70 Kennungen gegen den Code gehalten: zwölf waren erledigt
 
