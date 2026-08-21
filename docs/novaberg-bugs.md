@@ -1,7 +1,7 @@
 # Novaberg — Bugs & Limitationen
 
-**Stand:** 20. August 2026, 19:32 UTC
-**Verlauf:** [Verlauf des Standes](#verlauf-des-standes) — 28 Eintraege, juengster zuerst
+**Stand:** 21. August 2026, 22:50 UTC
+**Verlauf:** [Verlauf des Standes](#verlauf-des-standes) — 29 Eintraege, juengster zuerst
 
 ---
 
@@ -735,7 +735,9 @@
 ---
 ## 20.08.2026 — Nova spricht von ihrem eigenen Inneren wie von einem Dritten
 
-### `NOVA-SPRICHT-VON-FACHABTEILUNG` — behoben am 20.08.2026
+### `NOVA-SPRICHT-VON-FACHABTEILUNG` — Abhilfe am 20.08.2026, Wirkung ungemessen
+
+**Zustand:** offen — gegen HEAD `62560cf` gehalten am 21.08.2026. Die Abhilfe steht im Code und 5 Zeugen decken die Bloecke, aber die Schlussbedingung ist ein echter Turn in der Ich-Form — und der hat seit der Aenderung nicht stattgefunden. Solange die Wirkung einer Prompt-Aenderung ungemessen ist, ist der Defekt nicht belegt weg: Ein gruener Zeuge belegt die Zusicherung, nicht das Verhalten im Betrieb.
 
 **Befund.** Wenn ein Dienst eine Anweisung ausgeführt oder abgelehnt hatte, sprach Nova über ihn
 in der dritten Person. Gemessen an ihren eigenen Antworten aus einer laufenden Sitzung, dreimal:
@@ -780,6 +782,8 @@ Lauf im Betrieb hat seit der Änderung nicht stattgefunden.
 
 ### `BLOCKKARTE-STILL-HALBIERT` — behoben am 20.08.2026
 
+**Zustand:** behoben — gegen HEAD `62560cf` gehalten am 21.08.2026. Die Zaunbilanz steht vor dem Parser (`server/tools/dateien/operationen.py:177`), und der Lauf ueber den echten Bestand liegt vor: 174 Dateien, **173 erhoben, 0 leer, 1 nicht erhoben** am 20.08.2026.
+
 **Befund.** `struktur_analysieren` überspringt Überschriften innerhalb von Codeblöcken und
 führt dafür einen Umschalter: Jede Zeile, auf die `^\s*(```|~~~)` passt, kippt ihn. Fällt ein
 öffnender Zaun aus der Erkennung, kippt der Schalter einmal zu viel und **nie zurück** — ab
@@ -821,6 +825,8 @@ nicht im Dokument.
 
 ### `JSON-FORMAT-NUR-ERBETEN` — behoben am 20.08.2026
 
+**Zustand:** behoben — gegen HEAD `62560cf` gehalten am 21.08.2026. `expect_json` reist bis zum Anbieter — `server/services/model_services/background_worker.py:175` reicht das Feld unbedingt durch, der JSON-Pfad laeuft ueber den Worker (`server/services/postprocess.py:8`).
+
 **Befund.** `expect_json=True` ist eine Anweisung an den **eigenen** Worker: Er parst die Antwort streng und wirft, wenn sie kein JSON ist. Zum Anbieter dringt die Forderung nicht durch — die Nutzlast in `services/llm_provider.py` trägt `model`, `messages`, `options` und `think`, aber **kein `format`**. Die Form steht ausschließlich als Zeile im Prompt (*„Antwort als JSON: …"*), und ein Prompt leitet, er erzwingt nicht.
 
 **Was daraus folgt, ist keine Ausfallrate, sondern eine Eigenschaft der Eingabe.** Bei `temperature=0.05` liefert derselbe Auszug denselben Fehlgriff — es gibt Dokumente, die das Modell **zuverlässig** in den Beschreibungston kippen lassen. Gemessen am 20.08.2026: Fünf von 160 Dateien scheiterten in **jedem** der vier Läufe, 18 Modellaufrufe ohne eine einzige Zeile. Drei Formen, alle drei kein JSON: `**thema:** …`, `1. thema: …`, `thema: …`.
@@ -848,6 +854,8 @@ nicht im Dokument.
 ## 20.08.2026 — vier Dateien fielen aus dem Indexlauf, und die Bilanz meldete keinen Fehler
 
 ### `INDEXLAUF-VERSCHWEIGT-DATEIFEHLER` — behoben am 20.08.2026
+
+**Zustand:** behoben — gegen HEAD `62560cf` gehalten am 21.08.2026. Die Bilanz traegt `gescheitert_gruende` je Wurzel mit Pfad und Grund (`server/agents/dateien_index/agent.py:340`), getrennt von `fehler`.
 
 **Befund.** Der Erstlauf des Wächters über die neu freigegebene Wurzel `/docs` meldete `neu 160`, `indiziert 46`, `offen 110`, `fehler: []` und `status: abgeschlossen`. **Die drei Zahlen gehen nicht auf:** 46 + 110 = 156, nicht 160. Die fehlenden vier stehen ausschließlich im Log, als `Indizieren: Modellantwort fuer '…' unbrauchbar (JSONDecodeError)` — `novaberg-agent-dateien_k.md`, `novaberg-agent-notes.md`, `novaberg-ei-character-profiles_l.md`, `novaberg-gv-initiative_k.md`.
 
@@ -896,6 +904,8 @@ nicht im Dokument.
 ## 19.08.2026, abends — die Spur zum Leer-Defekt
 
 ### `RESPONDER-LEERE-ANTWORT-STILL` — vierter Fall, und die Frage von damals ist entschieden
+
+**Zustand:** offen — gegen HEAD `62560cf` gehalten am 21.08.2026. Dieser Abschnitt ist der **Nachtrag vom 19.08.2026**, nicht der Eintrag; der steht als `#### RESPONDER-LEERE-ANTWORT-STILL` weiter unten. Der Riegel macht den Ausfall laut, die Ursache ist unveraendert offen — 243 Token wurden erzeugt und gingen vor dem eigenen Code verloren.
 
 **Der Eintrag von unten bleibt offen; hier steht, was der vierte Fall dazugelegt hat.**
 
@@ -949,6 +959,8 @@ elif response:                              …
 
 ### `AUSSCHLUSSRIEGEL-TRIFFT-SACHWORT`
 
+**Zustand:** behoben — gegen HEAD `62560cf` gehalten am 21.08.2026. Der Grad haengt an der Form des Namens: `server/agents/nmcp.py:74` verweigert nur bei mehrteiligen Namen, `:78` fuehrt die einteiligen als `gemeldet`. Ausloesefall als Zeuge: `server/tests/test_nmcp_anmeldung.py:184`.
+
 **Befund.** `agents/nmcp.py::_ausschluss_pruefen` setzt `novaberg-convention-nmcp.md` §3.6b durch: Ein Zettel darf keinen anderen Dienst ausschließen. Die Prüfung vergleicht dafür die Wörter jedes Negativfalls gegen die **Menge der registrierten Dienstnamen** — und die Dienstnamen dieses Projekts sind gewöhnliche deutsche Sachwörter.
 
 **Sobald ein Silo mit einem solchen Namen zum Dienst wird, werden unveränderte, richtige Zettel rückwirkend zu harten Verstößen.** Am 19.08.2026 beim Bau des `wissen`-Dienstes eingetreten:
@@ -985,6 +997,8 @@ Beide benennen eine **Eigenschaft der Äußerung**, genau wie §3.2 es verlangt;
 
 ### `VERWEIS-OHNE-WISSEN`
 
+**Zustand:** behoben — gegen HEAD `62560cf` gehalten am 21.08.2026. Der Einreihpunkt haengt an der geschriebenen Wissensdatei — `server/agents/recherche/agent.py:400` uebergibt `pfade["wissen_pfad"]`. Zeuge: `server/tests/test_wissen_rueckweg.py:446`. Der benannte Rest (drei Altauftraege in der Queue) ist unveraendert.
+
 **Befund.** Der neue Einreihpunkt von Weg 3 (`novaberg-agent-dateien_k.md` §4b.1a) hing am **Vorhandensein eines Destillats**, nicht am Vorhandensein von **Wissen**. Eine gescheiterte Recherche schreibt nur einen Bericht; ihr Destillat ist der Platzhalter
 
 ```
@@ -1016,6 +1030,8 @@ neuen sachlichen Wissenszuwachs.
 ## Chat 151 (18.08.2026) — der wacklige Zeuge, gefangen in einer Gegenprobe
 
 ### `ZEUGE-ERWARTUNG-AUS-DER-UHR`
+
+**Zustand:** behoben — gegen HEAD `62560cf` gehalten am 21.08.2026. Die Uhr sitzt nicht mehr im Helfer: `SCHLUESSEL_BASIS` wird einmal beim Laden gelesen (`server/tests/test_charakter_kzg_auswahl.py:47`) und in `:102` verwendet; der deterministische Zeuge steht in `:119`.
 
 **Befund.** `tests/test_charakter_kzg_auswahl.py::test_fremde_perspektive_bleibt_draussen` rechnet seinen Erwartungswert **zweimal aus der Uhr**. Der Schlüsselbauer liest bei jedem Aufruf die aktuelle Zeit:
 
@@ -1069,6 +1085,8 @@ def _schluessel(alter_tage: float) -> str:
 
 ### `ZUSTIMMUNG-GILT-ALS-ABLEHNUNG`
 
+**Zustand:** offen — gegen HEAD `62560cf` gehalten am 21.08.2026. Unveraendert: `server/agents/charakter_identitaet/resume.py:92` prueft weiter `any(kw in text for kw in ablehnungs_keywords)` mit `"ne"` in der Liste — und da Zeile 92 vor Zeile 99 steht, faellt `gerne` in die Ablehnung. **Von den vier Torwaechtern deutet nur `dateien_wurzeln/resume.py:62` an Wortgrenzen**; `notizen` und `timeline` tragen gar keine eigene Ja/Nein-Deutung mehr, der Satz zur uebernommenen Bauart im Befund ist damit ueberholt.
+
 **Befund.** Die Ja/Nein-Deutung der Torwächter vergleicht **Teilzeichenketten**. `_standard_interpretieren` in `agents/charakter_identitaet/resume.py` prüft `any(kw in text for kw in ...)` gegen eine Liste, die `ne` enthält — und `ne` steckt in `gerne`. Am laufenden Bestand gemessen:
 
 | Antwort | gedeutet als |
@@ -1101,6 +1119,8 @@ Drei Defekte aus einem 20-Turn-Bogen auf einem eigenen Paar (`vera`), mit angeha
 
 ### `NOTIZAUFTRAG-GEHT-AN-TIMELINE`
 
+**Zustand:** offen — gegen HEAD `62560cf` gehalten am 21.08.2026. Kein Commit seit dem 18.08.2026 beruehrt die Dienstwahl fuer Notizen. Die Schlussbedingung verlangt einen echten Turn, und der ist nicht nebenbei zu fahren: Ein Notizauftrag gegen das Produktivsystem erzeugt eine echte Schreibung.
+
 **Befund.** *„Notier mir bitte: Gasvertrag kuendigen, Frist laeuft Ende September."* wurde an `timeline` zugestellt, nicht an `notizen`. Der Timeline-Dienst lehnte ab: *„Kein konkreter Auftrag erkennbar; lediglich eine Feststellung/Befindlichkeit."* **Null Zeilen in `notizen`.**
 
 **Warum es ein Defekt ist.** Der Notizen-Dienst existiert, ist im Nutzergraphen zugelassen (`graph_eignung == ["user"]`), führt `notiz_anlegen` unter seinen Fähigkeiten und nennt als Grenze ausdrücklich *„keine Termine — Zeitgebundenes gehoert nicht hierher"*. Er wurde nicht gewählt. Vermutlich zog *„Frist laeuft Ende September"* die Wahl zur Timeline — das ist eine Vermutung, belegt ist nur die Zustellung.
@@ -1110,6 +1130,8 @@ Drei Defekte aus einem 20-Turn-Bogen auf einem eigenen Paar (`vera`), mit angeha
 **Geschlossen, wenn.** Derselbe Satz erzeugt eine Zeile in `notizen`.
 
 ### `FALSCHE-BESTAETIGUNG-WIRD-ERINNERUNG`
+
+**Zustand:** offen — gegen HEAD `62560cf` gehalten am 21.08.2026. Seit dem 20.08.2026 traegt der Prompt der Figur bei `status == "abgelehnt"` einen Block mit Befund und Vorschlag (`server/graph/nodes/planner.py:67` und `:170`) — das adressiert die erste Haelfte, ist aber keine Zusicherung, sondern eine Anweisung an ein Modell. Die zweite Haelfte ist unberuehrt: dass die Verdichtung den Ausgang mittraegt, ist nirgends belegt.
 
 **Befund.** Nach dem misslungenen Notizauftrag antwortete Nova: *„Ich habe es notiert... also, ich wollte es gerade so richtig ordentlich für dich festhalten. Aber da gab es ein kleines technisches Stolpern in der Logik meines 'Timeline'-Agenten."* **Der Satz widerspricht sich in zwei Sätzen selbst.** Und die falsche Hälfte wurde verdichtet:
 
@@ -1122,6 +1144,8 @@ Drei Defekte aus einem 20-Turn-Bogen auf einem eigenen Paar (`vera`), mit angeha
 **Geschlossen, wenn.** Eine Antwort, deren Agentenergebnis `abgelehnt` lautet, enthält keine Bestätigung der Handlung — und was ins Gedächtnis geht, trägt den Ausgang.
 
 ### `TRIBUNAL-ERKENNT-ABBRUCH-OHNE-FOLGE`
+
+**Zustand:** offen — gegen HEAD `62560cf` gehalten am 21.08.2026. Unveraendert: `server/graph/nodes/tribunal.py` kennt keine Abbrucherkennung — die einzige Korrekturschleife dort ist `korrekturauftrag` aus `utils.datum_pruefung` (`:24`) und haengt am Datum, nicht an einer abgeschnittenen Antwort.
 
 **Befund.** Zwei von zwanzig Antworten brachen mitten im Wort ab (319 bzw. 635 Zeichen, Ende auf *„…die intelle"* und *„…in ihrem Kopf sortieren,"*). **Das Tribunal hat es selbst erkannt** und benannt:
 
@@ -4956,6 +4980,7 @@ ließ den 45 Minuten alten Blob stehen.
 Die Fortschreibung des Standes, aus der Kopfzeile geloest am 20.08.2026. Der Wortlaut jedes Eintrags ist unveraendert; vorangestellt ist allein sein Datum.
 
 - **20. August 2026, 19:32 UTC** — **die 70 sind geprueft: 50 offen, 8 offen ohne heutigen Beleg, 12 behoben.** Jeder Eintrag traegt seinen Zustand jetzt in einer eigenen Zeile unter der Ueberschrift, mit Datum und dem HEAD, gegen den geprueft wurde. Drei Bestandszahlen haben sich seit ihrem Befund bewegt (Schichtimporte 39 -> 52, leere EVA-Sektionen 25 -> 36, Loeschregeln 3/3/2 -> 4/3/2).
+- **21. August 2026, ~22:50 UTC** — **jeder der 82 Eintraege traegt jetzt eine Zustandszeile** (vorher 70), und die zwoelf fehlenden sind einzeln gegen HEAD `62560cf` gehalten: **6 behoben, 6 offen**. Der Bestand liest sich damit als **64 offen / 18 behoben** — zaehlbar mit `grep -cE '^\*\*Zustand:\*\* offen'`, wo bisher jede Zahl ueber offene Defekte eine Schaetzung war. Das gilt fuer die **Klassifikations-Sektion** — die 82 Eintraege der Form `### \`KENNUNG\``. **Der aeltere Bestand liegt eine Ebene tiefer und ist unberuehrt:** 166 Eintraege der Form `#### KENNUNG` tragen ihren Zustand weiter im Titel (`✅ behoben`) oder im Koerper, **keiner** von ihnen eine Zustandszeile. Gezaehlt am 21.08.2026 ueber beide Ueberschriftenebenen. **Ein Widerspruch kam dabei heraus:** `NOVA-SPRICHT-VON-FACHABTEILUNG` trug *behoben am 20.08.2026* in der Ueberschrift, waehrend derselbe Eintrag die Schlussbedingung als ausstehend benennt — ein echter Turn hat seit der Aenderung nicht stattgefunden. Die Kennung bleibt, der Prosateil der Ueberschrift ist berichtigt. Dazu zwei Befunde am Bestand: Von den vier Torwaechtern deutet nur `dateien_wurzeln` an Wortgrenzen, und `notizen`/`timeline` tragen gar keine eigene Ja/Nein-Deutung mehr — der Satz zur *uebernommenen Bauart* in `ZUSTIMMUNG-GILT-ALS-ABLEHNUNG` ist damit ueberholt.
 - **20. August 2026, ~18:30 UTC** — **70 neue Kennungen** — der Bestand der Fundliste ist klassifiziert; was ein Defekt war, steht seit heute hier mit stabiler Kennung und einer Zeile `Geschlossen, wenn`. Fuenf weitere sind als Nachtrag an bestehende Eintraege gegangen. **Keiner der 70 ist gegen den heutigen Code geprueft** — der Umzug uebertraegt den Wortlaut, die Pruefung steht vor der Umsetzung.
 - **20. August 2026, ~17:05 UTC** — **kein neuer Defekt.** Die Kopfzeile dieses Registers trug 11.906 Zeichen in einer Zeile und ist in den Abschnitt *Verlauf des Standes* geloest — 25 Eintraege, Wortlaut unveraendert.
 - **20. August 2026, ~15:30 UTC** — **`NOVA-SPRICHT-VON-FACHABTEILUNG` neu und im selben Zug behoben** — sie sprach über ihre eigenen Dienste in der dritten Person, dreimal an echten Antworten gemessen; der Wortlaut stand in ihrem Prompt. Die Wirkung im Betrieb ist noch nicht gemessen.
