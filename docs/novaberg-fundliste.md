@@ -2,9 +2,9 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Rohe, noch unklassifizierte Funde aus laufender Arbeit
-**Stand:** 21. August 2026, 10:29 UTC
-**Offen:** 5 Funde
-**Verlauf:** [Verlauf des Standes](#verlauf-des-standes) — 63 Eintraege, juengster zuerst
+**Stand:** 21. August 2026, 10:48 UTC
+**Offen:** 6 Funde
+**Verlauf:** [Verlauf des Standes](#verlauf-des-standes) — 64 Eintraege, juengster zuerst
 **Pfad:** novaberg/docs/novaberg-fundliste.md
 
 Was beim Bauen an anderer Stelle auffällt, landet hier — **eine Zeile mit Datum**. Kein Bug-Name, keine Priorität, keine Klassifizierung, keine Diskussion. Der Zweck ist, einen Fund festzuhalten, ohne die laufende Arbeit dafür zu unterbrechen.
@@ -239,6 +239,8 @@ Analog zum Kraft-1-Stichtag: ab wann eine Partition brauchbar ist. Kein Backfill
 
 - **2026-08-21** — Der Boden des KZG-Vektorraums liegt bei 0,48 bis 0,54, der des Langzeitgedaechtnisses bei 0 (dieselben Fragen, 0 Anker). Der Unterschied zwischen beiden: Ein Langzeit-Knoten wird ueber den nackten Inhalt eingebettet, ein KZG-Eintrag ueber `"Thema: {themen}. Aussage: {kern}"` — in jedem Eintrag des Bestandes stehen dieselben zwei Schablonenwoerter. Ob sie den Boden heben, ist ungemessen.
 
+- **2026-08-21** — Die Nulllinie *Rang 1 in 8 von 12* fuer den Dateienindex misst zum Teil das Sollurteil und nicht die Rangfolge: Bei zwei der vier Fehlschlaege ist der Verdraenger inhaltlich richtig — einmal eine zweite Datei zum selben Gegenstand, einmal das Moduldokument ueber seinem Konzept. Wer gegen 8/12 optimiert, optimiert dort gegen ein falsch gesetztes Ziel.
+
 **Davor leer, seit dem 20.08.2026** — Alle 168 Punkte sind klassifiziert und an ihren Ort gewandert. Wohin, steht im Abschnitt *Umgezogen*; erledigte stehen unter *Erledigt*.
 
 Der naechste Fund kommt hierher, als **eine Zeile mit Datum**.
@@ -346,6 +348,7 @@ Elf Zeilen sind in `novaberg-bugs.md` zu Einträgen mit Reproduktionsweg geworde
 
 Die Fortschreibung des Standes, aus der Kopfzeile geloest am 20.08.2026. Der Wortlaut jedes Eintrags ist unveraendert; vorangestellt ist allein sein Datum.
 
+- **21. August 2026, 10:48 UTC** — **6 offene Funde**, einer neu aus der Rangdiagnose des Dateienindex: Die Nulllinie 8 von 12 misst zum Teil das Sollurteil statt der Rangfolge.
 - **21. August 2026, 10:29 UTC** — **5 offene Funde.** Zwei vom Vormittag sind am selben Tag erledigt: die KZG-Schwelle ist gemessen und steht auf 0,72, der widersprechende Docstring ist fort. Zwei sind neu: der NMCP-Dienst `dateien` traegt weiterhin gar keine Schwelle, und der Boden des KZG-Raums koennte von der Schablone im Einbettungstext kommen.
 - **21. August 2026, 09:42 UTC** — **5 offene Funde**, zwei neu aus der Rewriting-Messung: eine Abrufschwelle, die nicht trennt (KZG und der NMCP-Dienst `dateien` liefern ihre volle Kappung auch auf eine Frage ohne Gegenstand), und ein Docstring, der eine andere Schwelle nennt als der Code darunter.
 - **20. August 2026, 19:37 UTC** — **3 offene Funde**, alle aus dem Durchgang durch die 70 Kennungen: der Rest eines geschlossenen Defekts (der Kern-Hash deckt 2 von 20 Bestandstagen) und eine Featurelisten-Zeile, deren Belegfeld ihrem eigenen Text widersprach; dazu eine Pruefzahl, die trotz harter Wand gestiegen ist.

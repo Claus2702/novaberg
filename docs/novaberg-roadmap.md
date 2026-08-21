@@ -1,6 +1,6 @@
 # Novaberg — Roadmap (Projektchronik)
 
-**Stand:** 21. August 2026, 10:30 UTC
+**Stand:** 21. August 2026, 10:48 UTC
 **Pfad:** novaberg/docs/novaberg-roadmap.md
 **Single Source of Truth für abgeschlossene Arbeit.**
 **Offene Punkte → novaberg-backlog.md**
@@ -12,6 +12,42 @@ Die Kopfzeile stand bis Chat 109 auf „Chat 93, 21. Mai 2026" — 15 Chats hint
 ---
 
 ## Chats 3–20: Grundlagen (März 2026)
+
+### 21.08.2026, 10:48 UTC — Zwei Kandidaten verbraucht, die Ursache belegt: der Index trägt neun Gegenstände je Datei
+
+**Die Frage stand seit dem Vortag ohne Kandidaten da:** Warum steht die richtige Datei nur in 8 von 12 Fällen auf
+Rang 1? Der naheliegende Verdacht — ein Vektor über mehrere Gegenstände — war gebaut, gemessen und zurückgebaut
+worden.
+
+**Der zweite Kandidat ist heute verbraucht.** Die Vermutung: Der Themensatz *benennt das Dokument*, statt seinen
+Gegenstand zu beschreiben; 66 von 174 Sätzen beginnen mit einer solchen Präambel. Entfernt man sie, bleibt Rang 1
+bei **8/12** und Top 3 bei **10/12** — die Fehlschläge bewegen sich um je einen Platz. Der produktive Arm
+reproduziert dabei die Nulllinie exakt; das Ergebnis ist keins der Sonde.
+
+> **Zwei der vier Fehlschläge sind gar keine.** Bei der Frage nach dem Verfall eines Kurzzeit-Eintrags steht eine
+> zweite Datei über dem Ziel, deren Themensatz genau das Gefragte beschreibt. Bei der Frage nach der Führung im
+> Gespräch steht das Moduldokument über seinem Konzept. **Der Bestand führt zu mehreren Fragen mehr als eine
+> richtige Datei, und die Sonde erklärt genau eine dazu** — wer gegen 8/12 optimiert, optimiert dort gegen ein
+> falsch gesetztes Ziel. Das erklärt mit, warum zwei Umbauten hintereinander die Zahl nicht bewegt haben.
+
+**Bei den zwei echten Fehlschlägen kommt der tragende Begriff der Frage im Index nicht vor.** *Nabe* steht
+zweimal in der Datei — und weder im Themensatz noch in den acht Stichwörtern. *Führung* steht sechsmal in der
+Datei und in den Stichwörtern nur als Bezeichner `fuehrung_messen`. Zur Gegenprobe: Wo der Begriff im Themensatz
+steht, liegt die Datei auf Rang 1.
+
+> **Der Index trägt neun Gegenstände je Datei. Was nicht hineinfällt, ist für beide Kanäle unsichtbar** — für den
+> dense wie für den scharfen. **Keine Änderung an der Form des Vektors heilt das**, und deshalb haben zwei
+> Formänderungen nichts bewegt: Die Information steht nicht im Index.
+
+**Vor jedem Bau gemessen, was eine Blockebene hergäbe:** Der beste Block der Zieldatei erreicht **0,4617** gegen
+0,3381, im zweiten Fall **0,3926** gegen 0,2189 — und trägt dort den gefragten Begriff im Titel. **Das belegt
+Kopf, nicht Erfolg:** Bei einer Blockebene stiegen auch die Konkurrenten, und genau daran ist der Umbau vom
+Vortag gescheitert. Die vollständige Messung ist ein eigener Lauf.
+
+**Was daran hängt:** Eine Blockebene setzt voraus, dass die Blockkarte hält. `SETEXT-UNTERSCHRIFT-IM-BLOCK` ist
+offen — bei 174 Markdown-Dateien folgenlos, für eine Blockindizierung der Eingang.
+
+---
 
 ### 21.08.2026, 10:30 UTC — Das Kurzzeitgedächtnis darf schweigen
 
