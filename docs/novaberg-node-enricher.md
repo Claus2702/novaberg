@@ -84,6 +84,16 @@ db_zugriff → ei_calc → ▶ enricher ◀ → emotionale_gravitation → reduc
 >
 > **Und es ist nicht einmal ein fester Bodensatz.** Fünf verschiedene gegenstandslose Rückfragen liefern im KZG auf 50 Plätzen **40 verschiedene** Einträge, keinen einzigen in allen fünf Antworten; im NMCP-Dienst `dateien` 25 verschiedene auf 40 Plätzen. Der Kontext folgte damit der **Formulierung** der leeren Frage statt ihrem Gegenstand — bis zum 20.08.2026 in jedem anaphorischen Turn.
 
+### Was daraus für den Rückfallpfad folgt (21.08.2026)
+
+**Jeder Ausgang, der nicht `rewrite` heißt, liefert die rohe Äußerung** — und das las sich bisher als *„dann ist es eben so gut wie vorher"*. **Die Messung sagt etwas anderes:** Bei KZG und dem NMCP-Dienst `dateien` ist *vorher* kein Nullzustand, sondern zehn Erinnerungen und acht Dateien im Prompt, die mit der Frage nichts zu tun haben.
+
+> **Der Rückfall ist damit nicht die Abwesenheit einer Verbesserung, sondern der bezifferte Schadensfall.** Das Rewriting ist bei zwei von fünf Konsumenten die einzige Instanz, die Unsinn aus dem Prompt hält — fällt es aus, fällt nichts *sichtbar* aus, es wird nur schlechter.
+
+Der Rewriter ist ein Modellaufruf mit einer Frist von 20 s; jeder Zeitablauf schaltet diesen Zustand ein, laut protokolliert, aber ungehindert. **Wie oft das im Betrieb geschieht, ist keine Zahl:** Das `pipeline_log` führt vier echte Turns, vier davon mit `herkunft=rewrite`, null Rückfälle. Vier ist keine Rate.
+
+**Für das Kurzzeitgedächtnis ist der Schaden seit dem 21.08.2026 begrenzt** — seine Abrufschwelle steht auf einem gemessenen Wert und lässt eine Frage ohne Gegenstand nicht mehr durch. Für den NMCP-Dienst `dateien`, der gar keine Schwelle trägt, gilt es unverändert.
+
 **Belege:** `labor/2026-08-21_rewriting_konsumenten.py` mit Rohdaten als JSON, `labor/2026-08-21_leerfrage_konstanz.py`, Ergebnis in `labor/2026-08-21_rewriting_konsumenten_ergebnis.md`. Dort stehen auch die drei Einschränkungen: der `roh`-Arm ist über alle Sonden derselbe Satz, der Deckel ist bei **drei von vier** Konsumenten zu hoch angesetzt — bei den beiden Datei-Konsumenten und beim KZG geht das Themenfeld in den eingebetteten Text ein, und genau daher stammt der Gegenstand der Sonde; allein beim LZG ist der Einbettungstext die Identität des Inhalts und der Deckel damit echt, und der Rewrite-Arm ruft das Modell über den direkten Client statt über den ModelWorker.
 
 `_suchtext_bauen` formt aus dem Verlauf eine eigenständige Suchanfrage. **Ein Modellaufruf, und damit der einzige des Enrichers** — der Modulkopf sagte bis dahin ausdrücklich *„kein LLM-Aufruf"*.

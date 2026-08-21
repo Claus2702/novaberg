@@ -3,7 +3,7 @@
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Rohe, noch unklassifizierte Funde aus laufender Arbeit
 **Stand:** 21. August 2026, 10:48 UTC
-**Offen:** 6 Funde
+**Offen:** 7 Funde
 **Verlauf:** [Verlauf des Standes](#verlauf-des-standes) — 64 Eintraege, juengster zuerst
 **Pfad:** novaberg/docs/novaberg-fundliste.md
 
@@ -232,7 +232,7 @@ Analog zum Kraft-1-Stichtag: ab wann eine Partition brauchbar ist. Kein Backfill
 - **2026-08-20** — Der Kern-Hash liest 40 von 444 `turn_roh`-Zeilen des produktiven Paares und deckt damit 2 von 20 Bestandstagen ab — fuer ein Profil, dessen erklaerter Gegenstand der dauerhafte Wesenskern ist. Rest aus `KERNHASH-LIEST-TURNWORTLAUT`, dessen tragende Aussage (die Doku nennt die falsche Quelle) am 16.08.2026 erledigt wurde.
 - **2026-08-20** — Eine Zeile der Featureliste widersprach sich in sich selbst: Das Belegfeld sagte *„die Schwelle ist uebernommen, nicht gemessen"*, waehrend derselbe Eintrag zwei Spalten weiter die Kalibrierung samt Zahlenreihe fuehrte. Beim Nachzug korrigiert; ob weitere Zeilen ein Belegfeld tragen, das aelter ist als ihr eigener Text, ist ungeprueft.
 
-- **2026-08-20** — Die Zusicherungs-Pruefung an der Vertrauensgrenze zaehlt heute 244 Befunde gegen 239 am 17.08.2026 — obwohl fuer sie eine harte Wand auf den Commit-Index laeuft, die jeden Zuwachs in einer beruehrten Datei melden soll. Ob die Wand in diesem Zeitraum lief, ist ungeprueft.
+- **2026-08-20** — ~~Die Zusicherungs-Pruefung an der Vertrauensgrenze zaehlt heute 244 Befunde gegen 239 am 17.08.2026 — obwohl fuer sie eine harte Wand auf den Commit-Index laeuft. Ob die Wand in diesem Zeitraum lief, ist ungeprueft.~~ → **Am 21.08.2026 mit dem Auslesefall geprueft: Sie haelt nicht.** Ein Commit mit einer oeffentlichen Funktion an einer Datenbankgrenze ohne Zusicherung ging durch. Die Ursache steht in der Datei der Aufgabe; der Fund selbst ist damit beantwortet und die 244 erklaert.
 
 
 - **2026-08-21** — Der NMCP-Dienst `dateien` liefert seine Kappung von 8 Zeilen ohne jede Schwelle, auch auf eine Frage ohne Gegenstand (gemessen: 25 verschiedene Dateien auf 40 Plaetzen ueber fuenf Leerfragen). Beim KZG ist derselbe Fall am 21.08.2026 behoben; hier nicht mitgeaendert, weil ein Agent, der ausdruecklich sucht, eine andere Lage ist als ein Kontext, der ungefragt mitgeht.
@@ -240,6 +240,9 @@ Analog zum Kraft-1-Stichtag: ab wann eine Partition brauchbar ist. Kein Backfill
 - **2026-08-21** — Der Boden des KZG-Vektorraums liegt bei 0,48 bis 0,54, der des Langzeitgedaechtnisses bei 0 (dieselben Fragen, 0 Anker). Der Unterschied zwischen beiden: Ein Langzeit-Knoten wird ueber den nackten Inhalt eingebettet, ein KZG-Eintrag ueber `"Thema: {themen}. Aussage: {kern}"` — in jedem Eintrag des Bestandes stehen dieselben zwei Schablonenwoerter. Ob sie den Boden heben, ist ungemessen.
 
 - **2026-08-21** — Die Nulllinie *Rang 1 in 8 von 12* fuer den Dateienindex misst zum Teil das Sollurteil und nicht die Rangfolge: Bei zwei der vier Fehlschlaege ist der Verdraenger inhaltlich richtig — einmal eine zweite Datei zum selben Gegenstand, einmal das Moduldokument ueber seinem Konzept. Wer gegen 8/12 optimiert, optimiert dort gegen ein falsch gesetztes Ziel.
+
+- **2026-08-21** — Die Pruefungen vor dem Commit haengen an der Bedingung `Bash(git commit *)` und greifen nicht, wenn der Commit Teil einer Befehlskette ist (`git add … && git commit …`). **Sieben von sieben Commits dieses Tages liefen ohne jede der fuenf Pruefungen**, auch ohne die harte ruff-Wand.
+- **2026-08-21** — `codepruefungen.py --wand` und `--nur A8` melden mit Text und Rueckgabewert 1; ein `PreToolUse`-Hook blockiert nur ueber `permissionDecision: "deny"` bei Rueckgabewert 0. **Beide Waende sind damit wirkungslos** — bei A8a verdeckt durch null Treffer. `wand_commit.sh` macht es richtig und ist die Vorlage.
 
 **Davor leer, seit dem 20.08.2026** — Alle 168 Punkte sind klassifiziert und an ihren Ort gewandert. Wohin, steht im Abschnitt *Umgezogen*; erledigte stehen unter *Erledigt*.
 
