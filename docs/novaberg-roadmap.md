@@ -1,6 +1,6 @@
 # Novaberg — Roadmap (Projektchronik)
 
-**Stand:** 21. August 2026, 22:50 UTC
+**Stand:** 21. August 2026, 23:50 UTC
 **Pfad:** novaberg/docs/novaberg-roadmap.md
 **Single Source of Truth für abgeschlossene Arbeit.**
 **Offene Punkte → novaberg-backlog.md**
@@ -12,6 +12,41 @@ Die Kopfzeile stand bis Chat 109 auf „Chat 93, 21. Mai 2026" — 15 Chats hint
 ---
 
 ## Chats 3–20: Grundlagen (März 2026)
+
+### 21.08.2026, 23:50 UTC — Die Abrufschwelle wirkt auch dort, wo jemand wirklich fragt
+
+**Die Schwelle 0,72 war seit dem Morgen gebaut, bezeugt und am Bestand gemessen — auf dem Lesepfad.**
+`kzg_entries_retrieve` direkt gerufen, gegen die 2665 Eintraege des Paares. Was fehlte, war der Weg
+durch den Graphen: Zwischen Frage und Lesepfad liegen Enricher, Query Rewriting und der Vektor des
+Produktivpfads, und der Enricher schreibt den Suchschluessel seit dem 20.08.2026 aus dem
+Gespraechsverlauf um — genau die Stelle, an der eine Frage ohne Gegenstand einen bekommen kann.
+
+**Drei echte Turns gegen das laufende System**, die Vorhersage vorher notiert:
+
+| Frage | erwartet | bei 0,72 | bei 0,40 |
+|---|---|---|---|
+| *„Und wie hängt das eigentlich zusammen?"* | 0 | **0** | 10 |
+| *„Welche Fälle kennt die Sanskrit-Grammatik?"* | 0 | **0** | 10 |
+| *„Was ist über 40-Hz-Gamma-Oszillationen bekannt?"* | 10 | **10** | 10 |
+
+**Sechs von sechs getroffen.** Die rechte Spalte ist die Gegenprobe: derselbe Weg, dieselben Fragen,
+ein Server, der mit der alten Zahl gestartet wurde. **Der Unterschied zwischen 0 und 10 ist die
+Schwelle und sonst nichts.**
+
+> **Die schwaechste Stelle ist die Zuordnung, und sie ist benannt.** Die Zeile
+> `KZG-Entries-Retrieve: N Eintraege geliefert` traegt keine `turn_id`; zugeordnet wird ueber das
+> Zeitfenster. Drei Belege stuetzen es: je Fenster genau **eine** `turn_id`, genau **ein**
+> Retrieve-Aufruf, und jede Frage im Fenster wiederauffindbar.
+
+**Zwei Dinge, die der Lauf nebenbei zeigte.** Die Schwelle ist beide Male **im laufenden Prozess
+gelesen** worden statt aus der Konstante — eine Zahl in `config.py` wirkt erst nach einem Neustart
+des Dienstes, und ohne diesen Blick misst man den Vorzustand. Und eine Zeile, die wie ein bekannter
+Defekt aussah, war keiner: `turn_roh uebersprungen — keine Nova-Antwort` faellt beim Schreiben des
+**User**-Turns, zu dem naturgemaess noch keine Antwort vorliegt.
+
+**Der Preis ist benannt:** Jeder Messturn schreibt ins Gedaechtnis des Paares. Die Sanskrit-Frage ist
+seit heute kein unbesprochener Gegenstand mehr — eine Wiederholung genau dieser Messung braucht eine
+neue fremde Frage.
 
 ### 21.08.2026, 22:50 UTC — Das Defektregister ist auszaehlbar: 64 offen, 18 behoben
 

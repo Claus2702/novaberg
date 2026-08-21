@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** KZG-Speicher (Redis, Vektorsuche, TTL, Verstärkung)
-**Stand:** 29. Juli 2026, Chat 117 (Salienz-Neubau nachgezogen: abgeleiteter Wert statt Akkumulator, Cap 1.0, zwei neue Hash-Felder, Tore auf der Kurve. Kern: Chat 107, Embedding-Migration)
+**Stand:** 21. August 2026 — die Abrufschwelle 0,72 ist im echten Turn belegt, mit Gegenprobe gegen die alte Zahl (§3). Davor: 29. Juli 2026 (Salienz-Neubau nachgezogen: abgeleiteter Wert statt Akkumulator, Cap 1.0, zwei neue Hash-Felder, Tore auf der Kurve. Kern: die Embedding-Migration)
 **Pfad:** novaberg/docs/novaberg-mem-kzg.md
 **Quellen:** nova-02-m-b.md (Speicher-Abschnitte)
 
@@ -133,6 +133,18 @@ Seit Chat 64 wird der Index nur noch zur Lese-/Retrieval-Zeit genutzt (Enricher,
 | Gegenstände, die das Paar nie besprochen hat | 10 | **100** | **0** |
 | anaphorische Rückfrage ohne aufgelösten Gegenstand | 3 | **30** | **0** |
 | einschlägige Fragen | 3 | 30 | **30** |
+
+**Und im echten Turn, nicht nur im Lesepfad (21.08.2026, 23:09–23:43 UTC).** Die Messungen oben rufen `kzg_entries_retrieve` direkt; dazwischen liegen im Betrieb Enricher, Query Rewriting und der Vektor des Produktivpfads — der Enricher schreibt den Suchschlüssel seit dem 20.08.2026 aus dem Gesprächsverlauf um, also genau dort, wo eine Frage ohne Gegenstand einen bekommen könnte. Drei Turns gegen das laufende System, dieselben drei Fragen, danach dieselben drei gegen einen Server, der mit der alten Zahl gestartet wurde:
+
+| Sorte | Frage | bei 0,72 | bei 0,40 |
+|---|---|---|---|
+| anaphorisch | *„Und wie hängt das eigentlich zusammen?"* | **0** | 10 |
+| nie besprochen | *„Welche Fälle kennt die Sanskrit-Grammatik?"* | **0** | 10 |
+| einschlägig | *„Was ist über 40-Hz-Gamma-Oszillationen bekannt?"* | **10** | 10 |
+
+> **Der Unterschied zwischen 0 und 10 ist die Schwelle und sonst nichts.** Beide Läufe fuhren denselben Weg mit derselben Zuordnung; geändert wurde eine Zahl. Die Schwelle im laufenden Prozess ist dabei beide Male **gelesen** worden, nicht angenommen — eine Konstante wirkt erst nach einem Neustart des Dienstes.
+
+**Die Zuordnung ist die schwächste Stelle dieser Messung**, denn die Logzeile `KZG-Entries-Retrieve: N Eintraege geliefert` trägt keine `turn_id`. Sie läuft über das Zeitfenster zwischen Absenden und Ruhe und ist dreifach gestützt: je Fenster genau **eine** `turn_id`, genau **ein** Retrieve-Aufruf, und jede Frage im Fenster wiederauffindbar (`Prompt-Eingang: 39 / 43 / 48 Zeichen`). Rohdaten und Verfahren: `labor/2026-08-21_kzg_schwelle_turn*`.
 
 **Was die Schwelle nicht leistet und nicht leisten soll:** Sie entscheidet nicht, *welche* Erinnerung passt. Der schlechteste Fehltreffer liegt bei 0,8565, und 33 der 40 richtigen Antworten liegen darunter — eine Zahl, die jeden Fehltreffer aussperrt, verwürfe vier Fünftel der richtigen. Die Auswahl leisten Rang und Kappung (Rang 1 in 17 von 40, Median-Rang 2); die Schwelle entscheidet allein, ob überhaupt etwas passt.
 
