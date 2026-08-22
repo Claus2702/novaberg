@@ -1,6 +1,6 @@
 # Novaberg — Roadmap (Projektchronik)
 
-**Stand:** 22. August 2026, 09:35 UTC
+**Stand:** 22. August 2026, 10:55 UTC
 **Pfad:** novaberg/docs/novaberg-roadmap.md
 **Single Source of Truth für abgeschlossene Arbeit.**
 **Offene Punkte → novaberg-backlog.md**
@@ -12,6 +12,41 @@ Die Kopfzeile stand bis Chat 109 auf „Chat 93, 21. Mai 2026" — 15 Chats hint
 ---
 
 ## Chats 3–20: Grundlagen (März 2026)
+
+### 22.08.2026, 10:55 UTC — Eine neue Person bekommt keine geratene Haltung, sondern eine unvoreingenommene
+
+**Ein neuer Nutzer bekam gar keine Umfangsvorgabe.** Ohne `charakter_hash`-Zeile lieferte der Ladepfad
+`(None, 'fehlt')`, der Haltungsraum daraufhin keine Haltung und der Responder keine Regie — an fuenf
+frisch angelegten Kennungen gemessen **9 von 9 Turns ohne Vorgabe**, waehrend dasselbe Fenster fuer
+das eingespielte Paar 10 von 10 trug.
+
+**Die Abhilfe war keine technische Frage, und deshalb stand sie sieben Tage.** Der Ladepfad
+unterschied bewusst zwischen einem Rad **ohne Auspraegung** — das ist eine Messung und gilt — und
+einem **nicht gelesenen** — das ist keine. Wer beides gleich behandelt, laesst einen Lesefehler wie
+einen Charakter ohne Zuwendung aussehen. Ein neues Paar passte in keine der beiden Schubladen.
+
+> **Entschieden am 22.08.2026: Es ist eine dritte.** Ein Rad aus Nullen ist gegenueber einer Person,
+> ueber die noch nichts erhoben wurde, die **anfaenglich vorurteilsfreie Haltung** — nicht ein
+> fehlender Wert, sondern der richtige. Die Landschaft traegt den Turn, das Rad moduliert nichts.
+
+**Drei Herkuenfte statt zwei:** `destilliert` (erhoben), `default` (erhoben, ohne Ergebnis),
+`neutral` (nie erhoben). Die letzten beiden zusammenzulegen waere billiger gewesen und haette die
+Frage *„wie viele Paare sind ueberhaupt schon durch die Destillation gelaufen"* unbeantwortbar
+gemacht. **Ein Lesefehler bleibt `fehlt`.**
+
+**Am echten Ladepfad gegen die Produktivdatenbank gemessen:** unbekannte Kennung → `quelle=neutral`,
+12 Speichen, daraus `umfang: grundwert=0.9, modifikation=0.0`. Eingespieltes Paar → `modifikation=0.127`.
+
+> **Ein bestehender Zeuge ist dabei entfallen.** `test_fehlende_zeile_wird_abgelehnt` hielt die alte
+> Entscheidung fest; seine Begruendung steht jetzt im Docstring seines Nachfolgers. Ein Zeuge, der
+> eine geaenderte Absicht bewacht, wird ersetzt und nicht stillschweigend angepasst.
+
+**Und die Gegenprobe wich ab: 3 vorhergesagt, 2 gezaehlt.** Der Eingriff nahm nur die Rueckgabe
+zurueck, nicht die Logstufe — **ein halber Rueckbau prueft eine halbe Zusicherung**. Suite
+`Ran 2093 tests — OK`.
+
+**Nicht gemessen ist der Turn selbst:** Die Kette bis zur Haltung ist belegt, der Satz *„ein neuer
+Nutzer bekommt jetzt Regie"* braucht einen Lauf mit frischer Kennung.
 
 ### 22.08.2026, 09:35 UTC — Eine Spanne ohne Fall ist kein Nachweis, aber eine Zahl
 

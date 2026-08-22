@@ -120,6 +120,13 @@ Drei Gründe sprechen für einen eigenen Knoten statt eines Anbaus an den Gespr�
 
 ### 2.0 Die Ausgangswerte
 
+> **Ein neues Paar bekommt die Ausgangswerte allein — und das ist seit dem 22.08.2026 die Absicht.** Das Rad hat drei Herkünfte: `destilliert` (erhoben), `default` (erhoben, ohne Ergebnis) und `neutral` (nie erhoben). Beim dritten sind alle zwölf Speichen 0.0, die Modifikation ist 0, und es bleibt bei den Zahlen dieses Abschnitts.
+>
+> **Die Begründung ist keine technische.** Ein Rad aus Nullen ist gegenüber einer Person, über die noch nichts erhoben wurde, die **anfänglich vorurteilsfreie Haltung** — nicht ein fehlender Wert, sondern der richtige. Davor galt eine fehlende Zeile als Lesefehler: Der Haltungsraum lieferte keine Haltung, der Responder keine Umfangsvorgabe, und an fünf frischen Kennungen waren das **9 von 9 Turns ohne Regie** (`NEUER-NUTZER-OHNE-UMFANGSVORGABE`).
+>
+> **Ein Lesefehler bleibt einer.** Unlesbares JSON, fehlende Seite, leere Spalte liefern weiterhin `fehlt` — sonst sähe ein Defekt aus wie ein neuer Mensch.
+
+
 **Gesetzt, um gemessen zu werden.** Diese Zahlen sind ein Entwurf und ausdrücklich kein Ergebnis — sie stehen hier, damit die erste Messreihe etwas hat, gegen das sie laufen kann. Ihre Justierung folgt aus den Messungen, nicht aus weiterem Nachdenken.
 
 **Eine Spalte ist nicht gesetzt, sondern übersetzt:** `Fragen` folgt `CLUSTER_FRAGEN`, das für alle vierzehn Landschaften bereits im Bestand steht. Die Grenzen sind ebenfalls abgelesen — sie stehen wörtlich in `CLUSTER_BESCHREIBUNGEN`.

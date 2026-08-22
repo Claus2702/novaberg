@@ -2,8 +2,8 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Vollständiges Register aller Features mit Zustandsampel und Beleg
-**Stand:** 22. August 2026, 09:35 UTC
-**Verlauf:** [Verlauf des Standes](#verlauf-des-standes) — 42 Eintraege, juengster zuerst
+**Stand:** 22. August 2026, 10:55 UTC
+**Verlauf:** [Verlauf des Standes](#verlauf-des-standes) — 43 Eintraege, juengster zuerst
 **Pfad:** novaberg/docs/novaberg-featureliste.md
 **Typ:** Register
 **Quellen:** die 43 Konzeptdokumente, `novaberg-architecture.md`, die Moduldokumente, `novaberg-roadmap.md`, `novaberg-backlog.md`, `novaberg-bugs.md`, `novaberg-fundliste.md` — gehalten gegen Code und Produktivsystem
@@ -495,6 +495,7 @@ Die Fortschreibung des Standes, aus der Kopfzeile geloest am 20.08.2026. Der Wor
 
 - **21. August 2026, 10:49 UTC** — **Keine Ampel wechselt, und die Zeile des Dateien-Dienstes verliert eine Vermutung:** Die Rangfolge des Dateienindex ist diagnostiziert. Zwei Kandidaten an der Form des Vektors sind verbraucht; die Ursache ist der **Umfang** des Index — neun Gegenstaende je Datei, und der gefragte Begriff faellt bei den echten Fehlschlaegen nicht hinein. Zwei der vier Fehlschlaege sind ueberdies Sollurteil-Fehler.
 - **21. August 2026, 10:29 UTC** — **Keine Ampel wechselt, und eine Zeile bekommt eine Zahl, die sie vorher nicht hatte:** Die KZG-Abrufschwelle ist gemessen und steht auf 0,72 statt 0,40. Am Bestand vorher/nachher: zehn Fragen zu nie besprochenen Gegenstaenden lieferten 100 Eintraege, jetzt **0**; drei anaphorische Rueckfragen 30, jetzt **0**; drei einschlaegige Fragen 30, jetzt **30**. Die Zeile stand auf 🟢 und bleibt es — **das Bauteil tut jetzt, was die Ampel behauptet.**
+- **22. August 2026, 10:55 UTC** — **Ein Defekt weniger im Haltungsraum:** `NEUER-NUTZER-OHNE-UMFANGSVORGABE` ist behoben — ein Paar ohne Zeile bekommt das **neutrale Rad** statt eines Fehlerfalls, und damit die Landschaft als Haltung. **Am Ladepfad gegen die Produktivdatenbank belegt:** unbekannte Kennung → `quelle=neutral`, `umfang 0.9, modifikation 0.0`. Die Entscheidung dahinter ist keine technische: Ein Rad aus Nullen ist die anfaenglich vorurteilsfreie Haltung, nicht ein fehlender Wert.
 - **22. August 2026, 09:35 UTC** — **Keine Ampel wechselt, und eine Annahme bekommt eine Zahl:** `RESPONDER-LEERE-ANTWORT-STILL` ist seit dem Ollama-Update nicht mehr aufgetreten — **456 Antworten, 0 Verluste** ueber 61 Stunden. **Der Eintrag bleibt offen**: Eine Beobachtung ohne Fall ist kein Nachweis, die Abhilfe liegt beim Anbieter, und der Defekt trat in Schueben auf — fuenf ruhige Tage gab es schon einmal.
 - **22. August 2026, 09:10 UTC** — **Der `verfasser`-Klumpen ist abgearbeitet, die Ampel bleibt 🔴:** `FRAGEN-ZEILE-OHNE-BEDINGUNG` ist behoben — die rohe Fragenfrequenz ist entfallen, weil dieselbe Aussage charakterabhaengig aus dem `[MASS]`-Block kommt. **Am Betriebslog gemessen: 15 Prompts trugen beide Angaben, 11 davon uneinig.** Von den drei Defekten dieses Knotens ist einer behoben, einer war seit dem 14.08. erledigt und einer zur Haelfte gebaut — die Ampel haengt am letzten.
 - **22. August 2026, 08:35 UTC** — **Ein roter Grund war acht Tage lang keiner mehr:** `VERFASSER-ORDNET-IMPULS-PERSON-B-ZU` ist seit dem **14.08.2026** behoben — dem Tag des Befunds selbst —, stand aber bis heute als offen. Nichts gebaut, nur nachgeprueft: Fallunterscheidung im Code, Zeugen, **33 Betriebsfaelle**. **Der Zustand vom 20.08. nannte eine Zeilennummer, die auf den `elif`-Zweig zeigt** — die Bedingung, die den Fall ausschliesst, steht vier Zeilen darueber. Von den drei Defekten des `verfasser` ist damit einer weg, ohne dass er je einer war.

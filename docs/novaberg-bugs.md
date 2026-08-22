@@ -293,7 +293,17 @@
 
 ### `NEUER-NUTZER-OHNE-UMFANGSVORGABE` — gar keine Vorgabe beim ersten Turn
 
-**Zustand:** offen — gegen HEAD `00c16b6` gehalten am 20.08.2026. `graph/nodes/responder.py:796` meldet weiter *dieser Turn bekommt KEINE Umfangsvorgabe*.
+**Zustand:** behoben — gegen HEAD `880be4f` gehalten am 22.08.2026. Ein Paar ohne `charakter_hash`-Zeile bekommt das **neutrale Rad** statt `(None, 'fehlt')`: zwoelf Speichen auf 0.0, Herkunft `'neutral'` (`memory/charakter.py::_neutrales_rad`). Der Haltungsraum rechnet damit normal, und die Landschaft traegt den Turn allein.
+
+> **Die Begruendung ist keine technische, und deshalb war es eine Entscheidung und kein Bau:** Ein Rad aus Nullen ist gegenueber einer Person, ueber die noch nichts erhoben wurde, die **anfaenglich vorurteilsfreie Haltung** — nicht ein fehlender Wert, sondern der richtige. Entschieden am 22.08.2026.
+>
+> **Am echten Ladepfad gegen die Produktivdatenbank gemessen:** eine unbekannte Kennung liefert `quelle=neutral`, 12 Speichen, und `haltung_berechnen` daraus `umfang: grundwert=0.9, modifikation=0.0, ergebnis=0.9` — alle fuenf Groessen belegt. Zum Vergleich dasselbe fuer ein eingespieltes Paar: `modifikation=0.127, ergebnis=0.925`. **Die Landschaft traegt, das Rad moduliert.**
+>
+> **Drei Herkuenfte statt zwei, und das ist der Preis des Baus:** `destilliert` (erhoben), `default` (erhoben, ohne Ergebnis), `neutral` (nie erhoben). Wer die letzten beiden gleich nennt, kann spaeter nicht mehr zaehlen, wie viele Paare ueberhaupt durch die Destillation gelaufen sind. **Ein Lesefehler bleibt `fehlt`** — sonst saehe er aus wie ein neues Paar, und genau diese Verwechslung verhindert die Unterscheidung seit ihrem Bau.
+>
+> Vier Zeugen, einer davon auf die Gegenrichtung; **ein bestehender Zeuge ist entfallen** (`test_fehlende_zeile_wird_abgelehnt`) — er hielt die alte Entscheidung fest und steht als Begruendung im Docstring seines Nachfolgers. Gegenprobe 3 vorhergesagt / 2 gezaehlt (der Eingriff nahm nur die Rueckgabe zurueck, nicht die Logstufe). Suite `Ran 2093 tests — OK`.
+>
+> **Nicht gemessen ist der Turn selbst.** Die Kette bis zur Haltung ist am echten Bestand belegt, der Beleg *„ein neuer Nutzer bekommt jetzt Regie"* braucht einen Lauf mit frischer Kennung.
 
 **Befund (17.08.2026), aus der Fundliste uebernommen.** **Ein neuer Nutzer bekommt gar keine Umfangsvorgabe.** Der Haltungsraum meldet `Rad nicht ladbar (fehlt)` und der Responder daraufhin `Keine Haltung im Zustand — dieser Turn bekommt KEINE Umfangsvorgabe`. Gemessen an fünf frisch angelegten Kennungen: **9 von 9 Turns ohne Regie**, während dasselbe Fenster für das eingespielte Paar **10 von 10 mit** zeigt. Das Charakter-Rad entsteht erst über Destillation aus Bestand, den ein neuer Mensch noch nicht hat. **Die Lücke liegt damit genau in den ersten Gesprächen** — dort, wo sich ein erster Eindruck bildet. Der Ausfall ist laut protokolliert und nicht still; was fehlt, ist ein Anfangswert für den Fall ohne Rad.
 
