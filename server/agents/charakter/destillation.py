@@ -13,6 +13,7 @@ import time
 from collections.abc import Callable
 
 from config import (
+    ASSISTANT_GENUS,
     ASSISTANT_NAME,
     ASSISTANT_USER_ID,
     DEFAULT_USER_ID,
@@ -213,25 +214,28 @@ reagiert.
 
 Deine Aufgabe ist nicht, die Einträge zusammenzufassen. Lies sie wie ein
 Psychiater ein Gegenüber liest: Erschließe aus dem WIE — wie {traeger}
-spricht, worauf {traeger} achtet, was {traeger} wichtig ist, wie {traeger}
-mit anderen umgeht — das dauerhafte Wesen dahinter.
+spricht, worauf {traeger} achtet, was {traeger_dat} wichtig ist, wie
+{traeger} mit anderen umgeht — das dauerhafte Wesen dahinter.
 
 Entscheidend: Die Einträge handeln oft von anderen Dingen oder Personen. Das
-ist gleichgültig. Nicht WORÜBER {traeger} spricht charakterisiert {traeger},
-sondern WIE. Wer beim Beschreiben eines Sonnenuntergangs ins Schwärmen gerät,
+ist gleichgültig. Nicht WORÜBER {traeger} spricht charakterisiert
+{traeger_akk}, sondern WIE. Wer beim Beschreiben eines Sonnenuntergangs ins Schwärmen gerät,
 offenbart eine poetische, empfindsame Ader — unabhängig vom Sonnenuntergang
 selbst.
 
-Beschreibe das dauerhafte Wesen von {traeger} auf Deutsch. Tiefenwerte,
+Beschreibe das dauerhafte Wesen {traeger_gen} auf Deutsch. Tiefenwerte,
 dauerhafte Interessen, Denkweise, Grundhaltung. Zeitlos — keine
 Tagesstimmung, keine aktuellen Projekte.
 
 Nimm dir den Raum, den der Gegenstand braucht. Verdichte nicht: Behalte die
-Wendungen, den Ton und das Beilaeufige, an dem man {traeger} erkennt. Ein
+Wendungen, den Ton und das Beilaeufige, an dem man {traeger_akk} erkennt. Ein
 Beispiel im Wortlaut sagt mehr als ein Urteil darueber.
 
 Einträge:
 {eintraege}
+
+Schreibe ueber {traeger_akk} durchgehend mit den Pronomen {pronomen} und
+{possessiv}. Das grammatische Geschlecht steht damit fest.
 
 Antworte NUR mit dem Profil-Text, kein weiterer Kommentar."""
 
@@ -248,11 +252,14 @@ Anders als beim Wesensprofil geht es hier nicht ums Dauerhafte, sondern um die
 MOMENTANE Verfassung: Woran arbeitet {traeger} gerade, welche Themen sind
 aktiv, wie ist die aktuelle Stimmung? Deute die Lage, nicht nur die Liste.
 
-Erstelle ein kompaktes Profil von {traeger_gen} aktueller Verfassung in 2-4
+Erstelle ein kompaktes Profil der aktuellen Verfassung {traeger_gen} in 2-4
 Sätzen auf Deutsch.
 
 Einträge:
 {eintraege}
+
+Schreibe ueber {traeger_akk} durchgehend mit den Pronomen {pronomen} und
+{possessiv}. Das grammatische Geschlecht steht damit fest.
 
 Antworte NUR mit dem Profil-Text, kein weiterer Kommentar."""
 
@@ -261,7 +268,8 @@ Vor dir liegen Langzeit-Erinnerungen aus {perspektive} Blickwinkel — so wie
 {traeger} sich mitteilt und mit anderen umgeht.
 
 Deine Aufgabe ist nicht, die Einträge zusammenzufassen, sondern zu deuten:
-Was verrät die ART der Kommunikation über {traeger}? Lies drei Ebenen heraus
+Was verrät die ART der Kommunikation über {traeger_akk}? Lies drei Ebenen
+heraus
 — STIL (Satzbau, Formalität, Wortwahl, Humor), MODUS (in welchem Register
 {traeger} denkt: fachlich, philosophisch, alltäglich), INTENTION (was
 {traeger} typischerweise erreichen will).
@@ -270,11 +278,14 @@ Nicht WORÜBER geredet wird, sondern WIE. Wer knappe, präzise Sätze ohne
 Floskeln wählt, offenbart einen anderen Charakter als jemand, der ausschweift
 und ausschmückt — unabhängig vom Thema.
 
-Erstelle ein kompaktes Kommunikations-Profil von {traeger} in 3-5 Sätzen auf
+Erstelle ein kompaktes Kommunikations-Profil {traeger_gen} in 3-5 Sätzen auf
 Deutsch. Beschreibe den Charakter hinter der Sprache, nicht die Statistik.
 
 Einträge:
 {eintraege}
+
+Schreibe ueber {traeger_akk} durchgehend mit den Pronomen {pronomen} und
+{possessiv}. Das grammatische Geschlecht steht damit fest.
 
 Antworte NUR mit dem Profil-Text, kein weiterer Kommentar."""
 
@@ -284,16 +295,19 @@ Blickwinkel — so wie {traeger} fühlt und emotional reagiert.
 
 Deine Aufgabe ist nicht aufzuzählen, welche Gefühle vorkamen, sondern die
 emotionale Signatur dahinter zu erschließen — wie ein Psychiater das
-Temperament liest. Zwei Ebenen: GRUNDTENDENZ (welche Emotionen tragen
-{traeger} langfristig, welche Muster) und VOLATILITÄT (stabile Grundstimmung
+Temperament liest. Zwei Ebenen: GRUNDTENDENZ (welche Emotionen
+{traeger_akk} langfristig tragen, welche Muster) und VOLATILITÄT (stabile Grundstimmung
 oder sprunghafte Umschwünge — die Emotions-Vektoren als Hinweis: häufig
 Spirale/Absturz = volatil, häufig Plateau = stabil).
 
-Erstelle ein kompaktes emotionales Profil von {traeger} in 3-5 Sätzen auf
+Erstelle ein kompaktes emotionales Profil {traeger_gen} in 3-5 Sätzen auf
 Deutsch.
 
 Einträge:
 {eintraege}
+
+Schreibe ueber {traeger_akk} durchgehend mit den Pronomen {pronomen} und
+{possessiv}. Das grammatische Geschlecht steht damit fest.
 
 Antworte NUR mit dem Profil-Text, kein weiterer Kommentar."""
 
@@ -312,6 +326,9 @@ Sätzen auf Deutsch.
 
 Einträge:
 {eintraege}
+
+Schreibe ueber {traeger_akk} durchgehend mit den Pronomen {pronomen} und
+{possessiv}. Das grammatische Geschlecht steht damit fest.
 
 Antworte NUR mit dem Profil-Text, kein weiterer Kommentar."""
 
@@ -466,32 +483,108 @@ def _genitiv_bilden(name: str) -> str:
     return genitiv
 
 
+# Die Beugung der Pronomen je grammatischem Geschlecht. Sie steht als Tabelle
+# und nicht als Verzweigung, weil jede kuenftige Prompt-Zeile eine Form
+# brauchen kann, die heute keine benutzt — ein `if` je Form waere fuenf
+# Verzweigungen an fuenf Stellen.
+_PRONOMEN: dict[str, dict[str, str]] = {
+    "w": {"pronomen": "sie", "pronomen_dat": "ihr",  "pronomen_akk": "sie", "possessiv": "ihr"},
+    "m": {"pronomen": "er",  "pronomen_dat": "ihm",  "pronomen_akk": "ihn", "possessiv": "sein"},
+    "n": {"pronomen": "es",  "pronomen_dat": "ihm",  "pronomen_akk": "es",  "possessiv": "sein"},
+}
+
+# Die Formen des generischen Rollenbegriffs. »der Nutzer« ist grammatisch
+# maskulin; das ist eine Aussage ueber das Wort, nicht ueber den Menschen
+# dahinter, und deshalb steht hier eine feste Tabelle und keine Erhebung.
+_ROLLE_NUTZER: dict[str, str] = {
+    "traeger":     "der Nutzer",
+    "traeger_gen": "des Nutzers",
+    "traeger_dat": "dem Nutzer",
+    "traeger_akk": "den Nutzer",
+    "perspektive": "des Nutzers",
+}
+
+# Jede Form, die ein Prompt einsetzen darf. Die Ausgabe-Verifikation haelt die
+# Rueckgabe dagegen: Ein fehlender Schluessel ist im `format()` ein KeyError
+# mitten im Destillationslauf, hier eine Zeile vor dem Aufruf.
+_TRAEGERFORMEN: tuple[str, ...] = (
+    "traeger", "traeger_gen", "traeger_dat", "traeger_akk", "perspektive",
+    "pronomen", "pronomen_dat", "pronomen_akk", "possessiv", "genus_quelle",
+)
+
+
 def _perspektive_aufloesen(user_id: str) -> dict[str, str]:
-    """Loest aus der Subjekt-ID die Traeger-Bezeichnungen fuer die Prompts.
+    """Loest aus der Subjekt-ID alle Traeger-Formen fuer die Prompts.
 
     beobachter/Subjekt == ASSISTANT_USER_ID -> Assistent (Name aus
-    ASSISTANT_NAME, Genitiv gebildet); sonst -> generischer Nutzer (feste
-    Formen). Rueckgabe-Keys: traeger (Nominativ), traeger_gen (Genitiv),
-    perspektive (Genitiv-Form fuer "aus X Blickwinkel").
+    ASSISTANT_NAME, Genus aus ASSISTANT_GENUS); sonst -> generischer Nutzer
+    (feste Formen, grammatisch maskulin).
+
+    **Vollstaendig, nicht sparsam** (22.08.2026). Bis dahin lieferte die
+    Funktion drei Formen — Nominativ, Genitiv und die Genitiv-Form fuer »aus
+    X Blickwinkel« — und zwang damit zwei Fehler, die beide gemessen sind:
+
+    - **Kein Dativ.** Vier der fuenf Profil-Prompts setzen den Traeger hinter
+      »von« ein und lasen dadurch bei jedem menschlichen Paar »ein Profil von
+      *der Nutzer*« (`PERSPEKTIVE-OHNE-DATIV`, 11.08.2026).
+    - **Kein Pronomen.** Sobald ein Satz eins braucht, entscheidet das Modell
+      — am 18.08.2026 im selben Lauf verschieden: der Kern-Hash fuehrte fuer
+      den Traeger »Juno« durchgehend »er«, das Beziehungsprofil im Schlusssatz
+      das saechliche (`PROFILPROMPT-OHNE-GESCHLECHT`).
+
+    Eigennamen bleiben im Dativ und Akkusativ unflektiert; deshalb tragen die
+    beiden Formen dort denselben Wert wie der Nominativ.
+
+    Args:
+        user_id: die Subjekt-ID, deren Perspektive destilliert wird.
+
+    Returns:
+        Alle Formen aus `_TRAEGERFORMEN`. `genus_quelle` sagt, woher das
+        grammatische Geschlecht stammt (`konfiguration`, `rollenbegriff` oder
+        `rueckfall`) — ein Genus, das aus einem Rueckfall stammt, ist von
+        einem gesetzten sonst nicht unterscheidbar.
     """
     # ── Verarbeitung ──
     if user_id == ASSISTANT_USER_ID:
         name: str = ASSISTANT_NAME
+        genus: str = (ASSISTANT_GENUS or "").strip().lower()
+        quelle: str = "konfiguration"
+        if genus not in _PRONOMEN:
+            logger.error(
+                "_perspektive_aufloesen: ASSISTANT_GENUS=%r ist keins von %s "
+                "— die Prompts bekommen die Pronomen des Rueckfalls 'w'",
+                ASSISTANT_GENUS, sorted(_PRONOMEN),
+            )
+            genus, quelle = "w", "rueckfall"
         aufloesung: dict[str, str] = {
             "traeger":     name,
             "traeger_gen": _genitiv_bilden(name),
+            "traeger_dat": name,
+            "traeger_akk": name,
             "perspektive": _genitiv_bilden(name),
+            "genus_quelle": quelle,
+            **_PRONOMEN[genus],
         }
     else:
         aufloesung = {
-            "traeger":     "der Nutzer",
-            "traeger_gen": "des Nutzers",
-            "perspektive": "des Nutzers",
+            **_ROLLE_NUTZER,
+            "genus_quelle": "rollenbegriff",
+            **_PRONOMEN["m"],
         }
+
+    # ── Ausgabe-Verifikation ──
+    fehlend: list[str] = [form for form in _TRAEGERFORMEN if not aufloesung.get(form)]
+    if fehlend:
+        raise ValueError(
+            f"_perspektive_aufloesen: Formen ohne Wert fuer user_id={user_id}: "
+            f"{fehlend} — ein Prompt, der eine davon einsetzt, bricht im Lauf"
+        )
+
     # ── Ausgabe ──
     logger.debug(
-        "_perspektive_aufloesen: user_id=%s -> traeger=%s",
-        user_id, aufloesung["traeger"],
+        "_perspektive_aufloesen: user_id=%s -> traeger=%s, pronomen=%s (%s)",
+        user_id, aufloesung["traeger"], aufloesung["pronomen"],
+        aufloesung["genus_quelle"],
     )
     return aufloesung
 
@@ -528,6 +621,7 @@ def kern_hash_destillieren(turn_eintraege: list[dict], user_id: str = DEFAULT_US
 
     perspektive: dict[str, str] = _perspektive_aufloesen(user_id)
     traeger: str = perspektive["traeger"]
+    traeger_gen: str = perspektive["traeger_gen"]
 
     # Gegenstand ist **die eigene Seite**, und sie traegt den Namen des
     # Traegers. Bis zum 16.08.2026 bekamen beide Perspektiven denselben Text
@@ -547,13 +641,13 @@ def kern_hash_destillieren(turn_eintraege: list[dict], user_id: str = DEFAULT_US
     if not zeilen:
         logger.error(
             f"Kern-Hash ({user_id}): {len(turn_eintraege)} Begegnungen, aber "
-            f"keine einzige mit einem Beitrag von {traeger} — kein Profil"
+            f"keine einzige mit einem Beitrag {traeger_gen} — kein Profil"
         )
         return ""
 
     eintraege: str = "\n".join(zeilen)
     logger.info(
-        f"Kern-Hash ({user_id}): {len(zeilen)} Beitraege von {traeger}, "
+        f"Kern-Hash ({user_id}): {len(zeilen)} Beitraege {traeger_gen}, "
         f"{len(eintraege)} Zeichen"
     )
 

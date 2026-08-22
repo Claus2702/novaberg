@@ -33,8 +33,8 @@ einen mitten im Wort abgeschnittenen Text. Beide Zeugen stehen unten.
 
 import unittest
 
-from agents.charakter.destillation import KERN_HASH_PROMPT
-from config import get_node_config
+from agents.charakter.destillation import KERN_HASH_PROMPT, _perspektive_aufloesen
+from config import ASSISTANT_USER_ID, get_node_config
 
 
 class KernOhneDeckelTest(unittest.TestCase):
@@ -63,12 +63,15 @@ class KernOhneDeckelTest(unittest.TestCase):
         `_perspektive_aufloesen` setzt `traeger` je nach Subjekt auf einen
         Eigennamen oder auf »der Nutzer«. Ein Platzhalter, der beim Umbau
         verlorenginge, faellt sonst erst im Lauf auf.
+
+        **Die Formen kommen seit dem 22.08.2026 aus der Funktion selbst**,
+        nicht aus einer hier getippten Liste. Eine neu eingesetzte Form
+        faellt sonst nicht hier auf, sondern im Destillationslauf.
         """
         gefuellt = KERN_HASH_PROMPT.format(
-            traeger="Nova", traeger_gen="Novas", perspektive="Novas",
-            eintraege="…",
+            eintraege="…", **_perspektive_aufloesen(ASSISTANT_USER_ID),
         )
-        self.assertIn("Wesen von Nova", gefuellt)
+        self.assertIn("Wesen Novas", gefuellt)
         self.assertNotIn("{traeger}", gefuellt)
 
 

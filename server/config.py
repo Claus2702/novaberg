@@ -125,6 +125,12 @@ POSTGRES_URL: str = os.getenv("POSTGRES_URL", "postgresql://ki:ki@localhost:5432
 TIMEZONE:     str = os.getenv("TIMEZONE",      "Europe/Berlin")
 
 ASSISTANT_NAME:  str = os.getenv("ASSISTANT_NAME",  "Nova")
+# Das grammatische Geschlecht der Figur — "w", "m" oder "n".
+# Es steht neben dem Namen, weil es dieselbe Sorte Datum ist: Wer die
+# Figur umbenennt, entscheidet damit auch ueber ihre Pronomen. Ohne den
+# Wert raet das Modell, und im selben Lauf verschieden
+# (PROFILPROMPT-OHNE-GESCHLECHT).
+ASSISTANT_GENUS: str = os.getenv("ASSISTANT_GENUS", "w")
 BACKGROUND_NAME: str = os.getenv("BACKGROUND_NAME", "Pixie")
 
 # ── Identität ──────────────────────────────────────────────────
