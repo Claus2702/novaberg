@@ -24,6 +24,12 @@
 > **Und die Wirkung des Kopfblocks ist gemessen: keine.** Zweiter Batterielauf, dieselben 25 Items — Kapitulationsrate 87 %, exakt wie ohne ihn. Der Knoten ist richtig gebaut; die Reihenfolge im Text ist kein Hebel gegen die Übernahme.
 
 > **Nicht abgedeckt:** der Aufgabenpfad. Bei `task_context_cut` wird der Knoten übersprungen (§5.1), dort entsteht kein Urteil — und der HumanGraph hat ihn ohnehin nicht.
+
+> **Der Kopfblock fällt aus, und eine hinreichende Ursache ist seit dem 22.08.2026 behoben.** Der Prompt verlangt `GEPRUEFT` und `STAERKE`; das Modell schreibt `GEPRÜFT` und `STÄRKE`. Ein Feldname außerhalb der erwarteten Menge ließ `_kopf_deuten` das **ganze** Urteil verwerfen — ein Umlaut kostete alle fünf Felder. `_feldname` normalisiert jetzt Umlaute und Kleinschreibung.
+>
+> **Ob das die Ursache der gemessenen Ausfälle war, ist offen** — und der Grund gehört zum Befund: Der Logauszug war bei 120 Zeichen gekappt und endete im zweiten von fünf Feldern; gegen die fünf echten Ausfälle des Bestands gehalten blieben **0 von 5** lesbar, weil drei Felder im Auszug fehlen. Belegt ist eine Korrelation (4 von 5 trugen den Umlaut), nicht die Ursache. Der Auszug trägt jetzt 500 Zeichen.
+>
+> **Und die 54 % vom 13.08.2026 sind ohne Vergleichsgröße.** Der Zähllauf vom 22.08.2026 ergab 55 Ausfälle in 36 Stunden — **50 davon aus Suite-Läufen**, deren Zeugentexte im selben kumulativen Log stehen. Aus dem Betrieb stammen 5 Ausfälle und 1 gefälltes Urteil.
 **Voraussetzung:** `novaberg-gv-strategie_k.md` (Dreischicht: Strategie, Absicht, Vehikel)
 **Betrifft:** `novaberg-node-responder.md` · `graph/character_graph.py` · `graph/state.py`
 

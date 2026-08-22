@@ -569,7 +569,13 @@
 
 ### `VERFASSER-KOPFBLOCK-FAELLT-AUS` — in mehr als der Haelfte der Turns
 
-**Zustand:** offen, unbelegt — gegen HEAD `00c16b6` gehalten am 20.08.2026. `urteil_lesen` unveraendert; die Ausfallrate braucht einen neuen Zaehllauf.
+**Zustand:** offen — gegen HEAD `1330045` gehalten am 22.08.2026. Eine **hinreichende** Ursache ist belegt und behoben: `_kopf_deuten` verwarf das ganze Urteil, wenn ein Feldname einen Umlaut trug — der Prompt schreibt `GEPRUEFT` und `STAERKE` vor, das Modell schreibt `GEPRÜFT` und `STÄRKE`. Derselbe vollstaendige Kopfblock ist vorher `geliefert=False`, nachher `True`. `_feldname` normalisiert jetzt Umlaute und Kleinschreibung (`graph/einwand.py`), vier neue Zeugen, Gegenprobe 2 vorhergesagt / 2 gezaehlt, Suite `Ran 2087 tests — OK`.
+
+> **Dass es die Ursache der gemessenen Faelle war, ist damit NICHT belegt** — und der Grund dafuer ist ein zweiter Befund: Der Logauszug des Ausfalls war bei **120 Zeichen** gekappt und endete mitten im zweiten von fuenf Feldern. Gegen die fuenf echten Ausfaelle des Bestandes gehalten, blieben **0 von 5** lesbar, weil der Auszug drei Felder gar nicht enthaelt. Gezaehlt ist nur eine Korrelation: **4 von 5** trugen `GEPRÜFT` mit Umlaut.
+>
+> **Der Auszug traegt jetzt 500 Zeichen und die Gesamtlaenge** (`graph/nodes/verfasser.py`). Damit ist die naechste Messung moeglich; die heutige war es nicht.
+>
+> **Die Ausfallrate ist ebenfalls offen.** Der Zaehllauf vom 22.08.2026 ergab 55 Ausfaelle in 36 Stunden — **50 davon aus Suite-Laeufen**, deren Zeugentexte im selben kumulativen Log stehen. Aus dem Betrieb stammen **5 Ausfaelle und 1 gefaelltes Urteil**; das ist zu wenig fuer eine Rate und nicht mit den 54 % vom 13.08.2026 vergleichbar.
 
 **Befund (14.08.2026), aus der Fundliste uebernommen.** **Der Kopfblock des Verfasser-Urteils faellt weiter aus.** Messturn `065a5d5f` um 19:15 UTC: `Verfasser: Urteil AUSGEFALLEN`, die Rohantwort beginnt mit `EINWAND: nein — widerspricht PERSON B nichts.` — das Modell schreibt den Kopfblock, aber nicht in der Form, die `urteil_lesen` erkennt. Ein Datenpunkt zu den 14 von 26 vom 13.08., und ein Hinweis auf die Ursache: nicht *kein* Kopfblock, sondern ein nicht parsbarer.
 

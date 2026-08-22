@@ -1,6 +1,6 @@
 # Novaberg — Roadmap (Projektchronik)
 
-**Stand:** 22. August 2026, 00:40 UTC
+**Stand:** 22. August 2026, 08:15 UTC
 **Pfad:** novaberg/docs/novaberg-roadmap.md
 **Single Source of Truth für abgeschlossene Arbeit.**
 **Offene Punkte → novaberg-backlog.md**
@@ -12,6 +12,34 @@ Die Kopfzeile stand bis Chat 109 auf „Chat 93, 21. Mai 2026" — 15 Chats hint
 ---
 
 ## Chats 3–20: Grundlagen (März 2026)
+
+### 22.08.2026, 08:15 UTC — Ein Umlaut kostete das ganze Urteil, und die Messung dazu trug nicht
+
+**Der Kopfblock des Verfassers faellt aus, seit er gebaut ist.** Er traegt fuenf Felder und die
+Ausbausperre; misslingt er, kostet das nur das Urteil, nicht die Antwort — aber die Sperre greift in
+diesem Turn nicht.
+
+**Eine hinreichende Ursache ist gefunden und behoben.** Der Prompt verlangt `GEPRUEFT` und `STAERKE`;
+das Modell schreibt `GEPRÜFT` und `STÄRKE`. Ein Feldname ausserhalb der erwarteten Menge liess
+`_kopf_deuten` das **ganze** Urteil verwerfen — ein Umlaut kostete alle fuenf Felder. Derselbe
+vollstaendige Kopfblock ist vorher `geliefert=False`, nachher `True`.
+
+> **Was daran nicht belegt ist, und das ist der eigentliche Ertrag des Tages.** Ob der Umlaut die
+> Ursache der **gemessenen** Ausfaelle war, kann das Protokoll nicht sagen: Sein Auszug war bei 120
+> Zeichen gekappt und endete mitten im zweiten von fuenf Feldern. Gegen die fuenf echten Ausfaelle
+> des Bestandes gehalten, blieben **0 von 5** lesbar — nicht, weil die Abhilfe nicht greift, sondern
+> weil drei Felder im Auszug fehlen. Gezaehlt ist eine **Korrelation**: 4 von 5 trugen den Umlaut.
+>
+> **Ein Auszug, aus dem sich die Ursache nicht bestimmen laesst, macht den Ausfall sichtbar und
+> nicht untersuchbar.** Er traegt jetzt 500 Zeichen und die Gesamtlaenge.
+
+**Und eine Zahl, die als Rate gemeldet war, ist keine.** Der Zaehllauf ergab zunaechst 55 Ausfaelle
+in 36 Stunden — **50 davon aus Suite-Laeufen**. Das Log ist kumulativ und traegt die Zeugentexte der
+eigenen Tests (`'Ein Inhalt.'`, `'Ein Gammablitz ...'`); wer sie mitzaehlt, misst seine eigenen
+Tests. Aus dem Betrieb stammen **5 Ausfaelle und 1 gefaelltes Urteil** — zu wenig fuer eine Rate und
+nicht mit den 54 % vom 13.08.2026 vergleichbar.
+
+Vier neue Zeugen, Gegenprobe 2 vorhergesagt / 2 gezaehlt, Suite `Ran 2087 tests — OK`.
 
 ### 22.08.2026, 00:40 UTC — Eine Bestaetigung kann kein Datum mehr erfinden
 
