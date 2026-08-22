@@ -94,7 +94,6 @@ def _gespraechsvektor_block(state: ConversationState) -> str:
     # ── Verarbeitung ────────────────────────────
     from ei.dreischicht import (
         CLUSTER_BESCHREIBUNGEN,
-        CLUSTER_FRAGEN,
         STRATEGIE_NAMEN,
     )
 
@@ -103,10 +102,27 @@ def _gespraechsvektor_block(state: ConversationState) -> str:
     impuls:    str = detail.get("impuls", "")
     hypothese: str = state.get("gespraechsvektor", "")
 
+    # Die Fragenfrequenz aus `CLUSTER_FRAGEN` steht hier seit dem 22.08.2026
+    # **nicht** mehr, aus demselben Grund wie im Responder seit dem
+    # 13.08.2026 (`graph/nodes/responder.py`): Dieselbe Aussage kommt aus der
+    # Haltungsgroesse `fragen`, und zwar **charakterabhaengig** statt fuer
+    # jede Nova gleich. Sie erreicht diesen Knoten als Rueckfrage-Zeile des
+    # `[MASS]`-Blocks (`ei/haltungssprache.py::stoffzeilen`), seit der Block
+    # am 20.08.2026 dazukam.
+    #
+    # Bis dahin stand hier eine Zeile ohne Bedingung: Keine der drei
+    # Pruefbedingungen des Auftrags verlangte etwas von ihr, und das Vehikel
+    # der Dreischicht sagt fuer den einzelnen Turn ohnehin, ob gefragt wird
+    # (`FRAGEN-ZEILE-OHNE-BEDINGUNG`). Zuletzt war sie nicht mehr nur
+    # wirkungslos, sondern eine zweite Stimme: *„Selten, jeder 3.-4. Turn"*
+    # kann gegen eine hohe charakterabhaengige Rueckfrage-Vorgabe stehen.
+    #
+    # Die Tabelle bleibt, weil der GV-Knoten sie fuer die Strategiewahl
+    # braucht (`ei/dreischicht.py`) und die Haltungsgroesse aus ihr
+    # uebersetzt ist (`ei/haltung.py`).
     zeilen: list[str] = [
         f"Gespraechslandschaft: {cluster.capitalize()} — "
         f"{CLUSTER_BESCHREIBUNGEN.get(cluster, '')}",
-        f"Fragen: {CLUSTER_FRAGEN.get(cluster, '')}",
     ]
 
     if strategie:

@@ -198,3 +198,51 @@ class OhneLandschaftKeinBlockTest(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class DieFragenfrequenzStehtNichtMehrDarinTest(unittest.TestCase):
+    """Die rohe Fragenfrequenz ist am 22.08.2026 entfallen.
+
+    **Warum ein Zeuge auf eine Abwesenheit.** Die Zeile `Fragen: ...` stand
+    im Block ohne Bedingung — keine der drei Pruefbedingungen des Auftrags
+    verlangte etwas von ihr. Sie kam aus `CLUSTER_FRAGEN` und galt damit fuer
+    jede Nova gleich.
+
+    **Sie war zuletzt nicht mehr nur wirkungslos, sondern eine zweite
+    Stimme.** Seit dem 20.08.2026 traegt der `[MASS]`-Block dieselbe Aussage
+    charakterabhaengig — die Haltungsgroesse `fragen` ist genau aus
+    `CLUSTER_FRAGEN` uebersetzt (`ei/haltung.py`). *„Selten, jeder
+    3.-4. Turn"* konnte damit gegen eine hohe Rueckfrage-Vorgabe stehen.
+
+    Im Responder ist dieselbe Quelle am 13.08.2026 aus demselben Grund
+    entfallen. Ohne diesen Zeugen kommt die Zeile beim naechsten Umbau des
+    Blocks zurueck, und niemand merkt es: Sie sieht aus wie Lage.
+    """
+
+    def _voll(self) -> dict:
+        """Ein Turn mit vollstaendiger Lage — dort stand die Zeile."""
+        return _state(
+            gespraechsvektor="Das Gespraech vertieft ein Sachthema.",
+            gv_detail={
+                "cluster": "werkstatt", "strategie": "vertiefen",
+                "vehikel": "aussage", "impuls": "Bezug zur Supernova",
+                "vorausdenken": GELAUFEN,
+            },
+        )
+
+    def test_die_rohe_frequenz_steht_nicht_im_block(self) -> None:
+        block: str = verf_mod._gespraechsvektor_block(self._voll())
+
+        self.assertNotIn("Fragen:", block)
+
+    def test_auch_nicht_im_ganzen_prompt(self) -> None:
+        """Der Block ist eine Stelle; der Prompt ist die Zusicherung."""
+        prompt: str = verf_mod._build_system_prompt(self._voll())
+
+        self.assertNotIn("Fragen:", prompt)
+
+    def test_die_landschaft_bleibt(self) -> None:
+        """Die Gegenrichtung: Entfallen ist die Frequenz, nicht die Lage."""
+        block: str = verf_mod._gespraechsvektor_block(self._voll())
+
+        self.assertIn("Gespraechslandschaft:", block)
