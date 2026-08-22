@@ -1,6 +1,6 @@
 # Novaberg — Roadmap (Projektchronik)
 
-**Stand:** 22. August 2026, 08:15 UTC
+**Stand:** 22. August 2026, 08:35 UTC
 **Pfad:** novaberg/docs/novaberg-roadmap.md
 **Single Source of Truth für abgeschlossene Arbeit.**
 **Offene Punkte → novaberg-backlog.md**
@@ -12,6 +12,29 @@ Die Kopfzeile stand bis Chat 109 auf „Chat 93, 21. Mai 2026" — 15 Chats hint
 ---
 
 ## Chats 3–20: Grundlagen (März 2026)
+
+### 22.08.2026, 08:35 UTC — Ein Defekt, der seit acht Tagen behoben war, und warum niemand es sah
+
+**`VERFASSER-ORDNET-IMPULS-PERSON-B-ZU` ist geschlossen, ohne dass etwas gebaut wurde.** Der Verfasser
+schreibt Novas eigenen Gedanken nicht mehr der Person B zu: Bei `reiz_ist_eigener_gedanke(state)`
+haengt er den Auftrag an statt des Reizes, der Gedanke steht als Material im System-Prompt. Erkannt
+wird an `reiz_herkunft == "eigener_impuls"` — **an der Herkunft, nicht an der Rolle**, also genau die
+Schlussbedingung des Eintrags.
+
+**Das steht seit dem 14.08.2026 so — dem Tag, an dem der Befund entstand.** Zwei Commits desselben
+Tages haben es gebaut; der Eintrag wurde nie nachgezogen und stand acht Tage als offen.
+
+> **Wie der Zustand am 20.08.2026 falsch werden konnte, ist der eigentliche Ertrag.** Er nannte
+> `verfasser.py:405` und schrieb *„haengt den Reiz weiter als `user`-Nachricht an"*. Auf Zeile 405
+> steht genau das. **Es ist der `elif`-Zweig** — die Bedingung, die diesen Fall ausschliesst, steht
+> vier Zeilen darueber.
+>
+> **Eine Zeilennummer, die auf einen Zweig zeigt, ist ohne ihre Bedingung kein Befund.** Sie sieht
+> aus wie einer, sie laesst sich zitieren, und sie ueberlebt jede Pruefung, die dieselbe Zeile
+> wieder aufschlaegt.
+
+**Belegt in drei Richtungen**, keine davon der Commit selbst: die Fallunterscheidung im Code, die
+Zeugen in `tests/test_verfasser_herkunft.py`, und **33 Vorkommen des Auftragstextes im Betriebslog**.
 
 ### 22.08.2026, 08:15 UTC — Ein Umlaut kostete das ganze Urteil, und die Messung dazu trug nicht
 

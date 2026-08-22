@@ -588,7 +588,11 @@
 
 ### `VERFASSER-ORDNET-IMPULS-PERSON-B-ZU` — der eigene Gedanke wird dem Gegenueber zugeschrieben
 
-**Zustand:** offen — gegen HEAD `00c16b6` gehalten am 20.08.2026. `graph/nodes/verfasser.py:405` haengt den Reiz weiter als `user`-Nachricht an.
+**Zustand:** behoben — gegen HEAD `383d7e1` gehalten am 22.08.2026. **Und zwar seit dem 14.08.2026, dem Tag des Befunds selbst** (`b8abd82`, `e755b84`): `graph/nodes/verfasser.py` haengt bei `reiz_ist_eigener_gedanke(state)` den Auftrag `verfasser.auftrag_ohne_reiz` an statt des Reizes; der Gedanke steht als Material im System-Prompt. Erkannt wird an `event_payload["reiz_herkunft"] == "eigener_impuls"` — **an der Herkunft, nicht an der Rolle**, also genau die Schlussbedingung. Zeugen: `tests/test_verfasser_herkunft.py`. Im Betrieb belegt: Der Auftragstext steht **33-mal** im Log.
+
+> **Der Zustand vom 20.08.2026 war falsch, und wie er es wurde, ist der Ertrag dieses Eintrags.** Er nannte `verfasser.py:405` und schrieb *„haengt den Reiz weiter als `user`-Nachricht an"*. Auf Zeile 405 steht genau das — `messages.append({"role": "user", "content": reiz})`. **Es ist der `elif`-Zweig.** Die Bedingung, die diesen Fall ausschliesst, steht vier Zeilen darueber.
+>
+> **Eine Zeilennummer, die auf einen Zweig zeigt, ist ohne ihre Bedingung kein Befund** — sie sieht aus wie einer, und sie laesst sich zitieren. Der Eintrag stand danach acht Tage als offen, obwohl er am Tag seiner Entstehung geschlossen worden war.
 
 **Befund (14.08.2026), aus der Fundliste uebernommen.** **Der Verfasser schreibt Novas eigenen Gedanken der Person B zu, solange er ihn in der Rolle des Gegenuebers bekommt.** Messturn `065a5d5f` um 19:15 UTC, ein Gedanke ueber Rotationskurven von Spiralgalaxien: *„PERSON B stellt die physikalische Beobachtung der flachen Rotationskurven … "* — Person B ist der Mensch, der in diesem Turn nichts gesagt hat. **Der Reiz-Platz war dabei bereits leer**; der Gedanke kam ueber den eigenen Kanal und wurde nur weiterhin als `user`-Nachricht angehaengt. Das ist der Beleg fuer die tragende Aussage des Konzepts — die Rollenzuweisung ist die Ursache, nicht die Formulierung — und zugleich die Messgrundlage fuer den Materialblock, der noch nicht gebaut ist.
 
