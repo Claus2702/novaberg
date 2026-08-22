@@ -2,8 +2,8 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Rohe, noch unklassifizierte Funde aus laufender Arbeit
-**Stand:** 22. August 2026, 16:50 UTC
-**Offen:** 11 Funde
+**Stand:** 22. August 2026, 18:55 UTC
+**Offen:** 12 Funde
 **Verlauf:** [Verlauf des Standes](#verlauf-des-standes) — 64 Eintraege, juengster zuerst
 **Pfad:** novaberg/docs/novaberg-fundliste.md
 
@@ -229,6 +229,7 @@ Analog zum Kraft-1-Stichtag: ab wann eine Partition brauchbar ist. Kein Backfill
 
 ## Offen
 
+- **2026-08-22** — **Am Rueckweg des Wurzel-Dienstes wird *„keine Ahnung"* als Ablehnung gelesen und beendet den Vorgang.** `_antwort_deuten` (`agents/dateien_wurzeln/resume.py`) prueft die Ablehnungswoerter zuerst, und `keine` steht darunter. Fuer eine **Ja-Nein**-Bestaetigung am Tor ist das die sichere Seite — es wird nichts geschrieben. Fuer eine Frage nach einem **Wert** ist es die falsche Antwort auf ein *ich weiss es nicht*: Der Dienst sagt *„Gut, dann lasse ich es"*, statt die Frage zu wiederholen. Gefunden beim Bau der Eigentumsfrage am 22.08.2026; das heutige Verhalten ist als Zeuge festgehalten (`test_dateien_wurzeln_eigentum.py`), nicht geaendert.
 - **2026-08-22** — **Die Figur schreibt die Recherchen ihres eigenen Hintergrundprozesses dem Nutzer zu — und haelt das gegen ausdruecklichen Widerspruch aufrecht.** Belegt an zwei aufeinanderfolgenden Turns: Auf *„Du hast recherchiert"* antwortet sie noch richtig (*„meine kleinen Studien"*), im selben Zug aber schon gedreht (*„dient **dir** das eigentlich"*); auf die Korrektur *„Du recherchierst ja, nicht ich"* antwortet sie *„die ganze Recherche war **dein** Werk, nicht meins. Ich habe nur beobachtet."* **Der Dateien-Index scheidet als Quelle aus** — von 174 Eintraegen ist keiner eine Recherche des Hintergrundprozesses; die zwei Treffer mit *knowledge* im Pfad sind Konzeptdokumente. **Die Spur liegt im Langzeitgedaechtnis:** Die Recherchen stehen dort mit `beobachter='assistant'`, und der Prompt-Block gibt als einzigen Urheberhinweis das englische Schemawort aus (`Beobachter: assistant`) neben einem Inhalt, der oft mit *„Der Fund verknuepft…"* beginnt und selbst keinen Urheber nennt. **Eine Kategorie fuer „vom eigenen Hintergrundprozess recherchiert" gibt es nicht** — sie faellt mit „im Gespraech geaeussert" zusammen. ⚠ Dass diese Eintraege im fraglichen Turn tatsaechlich im Prompt standen, ist **nicht** belegt. **Der Folgeschaden ist bereits persistiert:** Ein LZG-Knoten desselben Tages traegt *„Nova fragt den Nutzer, ob **seine** Recherche…"*
 
   → **Am 22.08.2026 zur Haelfte behoben.** Der Dateiweg ist gebaut: `dateien_wurzeln.eigentum` und zwei Bloecke im Verfasser (`novaberg-agent-dateien_k.md` §1a.5). **Offen bleibt der Gedaechtnisweg** — die Recherchen stehen im LZG mit `beobachter='assistant'` und einem Inhalt ohne Urheber, und genau von dort kam der gemessene Fall: Der Dateiweg konnte ihn gar nicht verursachen, weil der Wissensspeicher nicht indiziert ist. **Der Umbau nimmt dem Fehler also einen Weg, den er noch nicht ging, und laesst den, den er ging.**

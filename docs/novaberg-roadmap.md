@@ -1,6 +1,6 @@
 # Novaberg — Roadmap (Projektchronik)
 
-**Stand:** 22. August 2026, 16:45 UTC
+**Stand:** 22. August 2026, 19:05 UTC
 **Pfad:** novaberg/docs/novaberg-roadmap.md
 **Single Source of Truth für abgeschlossene Arbeit.**
 **Offene Punkte → novaberg-backlog.md**
@@ -12,6 +12,38 @@ Die Kopfzeile stand bis Chat 109 auf „Chat 93, 21. Mai 2026" — 15 Chats hint
 ---
 
 ## Chats 3–20: Grundlagen (März 2026)
+
+### 22.08.2026, 19:05 UTC — Der Eigentuemer wird gefragt, nicht geraten
+
+**Der Vorgabewert der neuen Spalte war fuer den Gespraechsweg die falsche Antwort.** `'nutzer'` ist
+richtig fuer Bestandszeilen, die niemand mehr befragen kann. Beim Anlegen im Gespraech steht der
+Mensch daneben — ihm eine Angabe zu unterstellen, die er nicht gemacht hat, waere dieselbe Sorte
+Erfindung wie ein geratener Eigentuemer.
+
+**`_create` haelt jetzt an und fragt**, wenn der Wert fehlt oder ausserhalb des Kanons liegt. Der
+Klassifikationsprompt uebernimmt ihn, wenn der Mensch ihn nennt, und laesst das Feld sonst leer; er
+benennt die Verfuehrung ausdruecklich: *„/knowledge" kann seine Sammlung sein und „/notizen" ihre.*
+
+**Die Antwort traegt einen Wert und kein Ja**, und deshalb hat die Frage einen eigenen Rueckweg.
+Gelesen wird aus der Sicht des Antwortenden — die Figur fragt, der Mensch antwortet: *„deins"* meint
+ihres. **Nennt eine Antwort beide Seiten, ist das keine Mischung, sondern eine Unklarheit**:
+*„meins, aber auch deins"* und *„nicht meins, sondern deins"* tragen dieselben zwei Treffer und
+meinen Verschiedenes.
+
+**Am ganzen Weg belegt** — ohne Angabe `rueckfrage`, auf *„deins, das sind deine Recherchen"*
+`eigentum='figur'`, geschrieben `('meister', 'nova', '/knowledge/autonomous', None, 'figur')`.
+
+**Bilanz:** Suite 2108 → **2120 gruen, 0 uebersprungen**; zwoelf neue Zeugen. A11 faellt von 305 auf
+**301**, weil die neuen Funktionen Zeugen haben. Harte Wand sauber.
+
+**Zwei Zeugen des Bestandes schlugen an, und beide zu Recht.** Der Namensriegel las *„Bescheidenheit"*
+in einem Testtext als Namen — das Beispiel ist ersetzt. Und der bestehende create-Zeuge bekam
+plotzlich eine Rueckfrage statt einer Schreibung: genau die neue Regel, der Zeuge ist nachgezogen.
+
+**Ein Bestandsfund nebenher, festgehalten statt behoben:** *„keine Ahnung"* traegt das Wort `keine`
+und wird von `_antwort_deuten` als **Ablehnung** gelesen — der Vorgang endet, statt dass erneut
+gefragt wird. Fuer eine Ja-Nein-Frage ist das die sichere Seite, fuer eine Frage nach einem Wert die
+falsche Antwort auf ein *ich weiss es nicht*. Ein Zeuge haelt das heutige Verhalten fest.
 
 ### 22.08.2026, 16:45 UTC — Jede Wurzel sagt, wessen Material sie traegt
 

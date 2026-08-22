@@ -144,6 +144,14 @@ Die Grenze verläuft **nicht** zwischen „Datei" und „Gedächtnis", sondern z
 
 **Der zweite Blockname enthält den ersten nicht als Teilzeichenkette.** `[EIGENE FUNDE]`, nicht `[EIGENE AUFZEICHNUNGEN]`: Der Bestand zerteilt Prompts an `split("[AUFZEICHNUNGEN]")`, und ein Name, der den anderen enthält, ließe jede solche Prüfung an der falschen Stelle schneiden, ohne rot zu werden.
 
+**Über den Gesprächsweg wird die Angabe gefragt, nicht erschlossen** (seit 22.08.2026). Der Vorgabewert `nutzer` gilt für Bestandszeilen, die niemand mehr befragen kann; beim Anlegen im Gespräch steht der Mensch daneben, und ihm eine Angabe zu unterstellen, die er nicht gemacht hat, wäre dieselbe Sorte Erfindung wie ein geratener Eigentümer. Fehlt der Wert, hält `_create` an und fragt: *„Wessen Material liegt in diesem Verzeichnis — deins, meins, oder beides?"*
+
+> **Die Antwort trägt einen Wert und kein Ja**, und deshalb hat die Frage einen eigenen Rückweg (`resume._eigentum_deuten`). Gelesen wird aus der Sicht des Antwortenden — die Figur fragt, der Mensch antwortet: *„deins"* meint **ihres**, *„meins"* seines. Nennt eine Antwort **beide** Seiten, ist das keine Mischung, sondern eine Unklarheit: *„meins, aber auch deins"* und *„nicht meins, sondern deins"* tragen dieselben zwei Treffer und meinen Verschiedenes. Es wird erneut gefragt.
+>
+> **Kein Ausgang führt ohne gültigen Wert zur Schreibung** — dieselbe Zusicherung wie am Tor (§2a.2). Am ganzen Weg belegt: ohne Angabe `rueckfrage`, auf *„deins, das sind deine Recherchen"* → `eigentum='figur'`, geschrieben wurde `('meister', 'nova', '/knowledge/autonomous', None, 'figur')`.
+
+**Der Klassifikationsprompt kennt den Verzeichnisnamen als Verführung und benennt sie:** `/knowledge` kann die Sammlung des Menschen sein und `/notizen` die der Figur.
+
 **Der Eigen-Block nimmt §1a.4 nicht zurück.** Auch eigenes Material ist *nachgesehen* und nicht *erlebt*; der Block verlangt die Herkunft weiterhin im Wortlaut — nur lautet sie jetzt *„das habe ich nachgelesen"* statt *„ich habe hier Aufzeichnungen"*.
 
 > **Der Zustand am Tag des Baus: gebaut, bezeugt, ohne Eingabe.** Der Wissensspeicher ist **keine** Wurzel des Index — er ist unter `/knowledge` eingehängt (`F-WISSEN-1`) und trägt 1075 Dateien, aber der Index kennt nur `/files` und `/docs`. Am Bestand gemessen: 174 Indexzeilen, beide Kanäle liefern je 3 Treffer, **alle mit `eigentum='nutzer'`**. Solange die dritte Wurzel fehlt, kann `[EIGENE FUNDE]` im Betrieb nicht entstehen.
