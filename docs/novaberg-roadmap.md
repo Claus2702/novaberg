@@ -1,6 +1,6 @@
 # Novaberg — Roadmap (Projektchronik)
 
-**Stand:** 22. August 2026, 08:35 UTC
+**Stand:** 22. August 2026, 09:10 UTC
 **Pfad:** novaberg/docs/novaberg-roadmap.md
 **Single Source of Truth für abgeschlossene Arbeit.**
 **Offene Punkte → novaberg-backlog.md**
@@ -12,6 +12,34 @@ Die Kopfzeile stand bis Chat 109 auf „Chat 93, 21. Mai 2026" — 15 Chats hint
 ---
 
 ## Chats 3–20: Grundlagen (März 2026)
+
+### 22.08.2026, 09:10 UTC — Zwei Stimmen zur selben Frage, und eine war die aeltere
+
+**Der Verfasser bekam die Fragenfrequenz zweimal.** Einmal roh aus `CLUSTER_FRAGEN` — *„Selten,
+behutsam"*, fuer jede Nova gleich —, einmal charakterabhaengig als Rueckfrage-Zeile des
+`[MASS]`-Blocks, der am 20.08.2026 dazukam. Die Haltungsgroesse `fragen` ist genau aus derselben
+Tabelle uebersetzt.
+
+**Im Responder war dieselbe Quelle am 13.08.2026 aus genau diesem Grund entfallen.** Der Verfasser
+wurde nie nachgezogen — nicht aus Nachlaessigkeit, sondern weil sein `[MASS]`-Block damals noch nicht
+existierte. Die Entscheidung war getroffen, ihre zweite Stelle entstand erst eine Woche spaeter.
+
+> **Der Befund vom 14.08.2026 nannte die Zeile Zierat: eine Zeile, auf die keine Pruefbedingung
+> zeigt.** Das stimmte an dem Tag. Seit dem 20.08.2026 war sie mehr als das.
+
+**Am Betriebslog gemessen:** In **15** Verfasser-Prompts standen beide Angaben nebeneinander, in
+**11 davon uneinig** — die rohe Zeile sagte *selten*, die Vorgabe daneben verlangte *eine
+Rueckfrage*. Drei Viertel der Faelle gegenlaeufig.
+
+> **Was die Messung nicht sagt:** ob das Modell deshalb anders antwortete. Belegt ist, dass beide
+> Stimmen dastanden, nicht welche es befolgte.
+
+**Die Zeugen pruefen eine Abwesenheit**, und das ist Absicht: Ohne sie kaeme die Zeile beim naechsten
+Umbau des Blocks zurueck, und niemand merkte es — sie sieht aus wie Lage. Gegenprobe 2 vorhergesagt /
+2 gezaehlt, Suite `Ran 2090 tests — OK`.
+
+**Damit ist der `verfasser`-Klumpen abgearbeitet:** drei Defekte, einer behoben, einer als seit acht
+Tagen erledigt erkannt, einer zur Haelfte gebaut.
 
 ### 22.08.2026, 08:35 UTC — Ein Defekt, der seit acht Tagen behoben war, und warum niemand es sah
 

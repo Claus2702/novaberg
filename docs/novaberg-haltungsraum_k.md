@@ -124,6 +124,12 @@ Drei Gründe sprechen für einen eigenen Knoten statt eines Anbaus an den Gespr�
 
 **Eine Spalte ist nicht gesetzt, sondern übersetzt:** `Fragen` folgt `CLUSTER_FRAGEN`, das für alle vierzehn Landschaften bereits im Bestand steht. Die Grenzen sind ebenfalls abgelesen — sie stehen wörtlich in `CLUSTER_BESCHREIBUNGEN`.
 
+> **Seit dem 22.08.2026 ist die Übersetzung die einzige Stimme.** Die rohe Tabellenzeile stand bis dahin zusätzlich in den Prompts — im Responder bis zum 13.08.2026, im Verfasser bis heute. **Beide Stellen sind aus demselben Grund entfallen:** Die übersetzte Größe trägt dieselbe Aussage charakterabhängig, die Tabelle trägt sie für jede Nova gleich.
+>
+> **Am Betriebslog gemessen, bevor sie fiel:** In 15 Verfasser-Prompts standen beide Angaben nebeneinander, in **11 davon uneinig** — *„Selten, behutsam"* neben der Vorgabe *„eine Rueckfrage"*. Das ist der Preis einer zweiten Stimme, und er ist der Grund, warum eine übersetzte Größe ihre Quelle nicht daneben duldet.
+>
+> **Die Tabelle selbst bleibt**: Der GV-Knoten braucht sie für die Strategiewahl, und diese Spalte ist aus ihr abgeleitet.
+
 Skala 0.0 bis 1.0 je Größe: 0 = ein Satz · keine Fragen · distanziert · sachlich · zurückhaltend. `G` markiert eine **Grenze** (multipliziert), alles übrige ist **Neigung** (addiert).
 
 | Landschaft | Umfang | Fragen | Nähe | Wärme | Drängen | Grenze abgelesen aus |

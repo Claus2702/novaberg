@@ -612,7 +612,13 @@
 
 ### `FRAGEN-ZEILE-OHNE-BEDINGUNG` — eine Zeile, auf die nichts zeigt
 
-**Zustand:** offen — gegen HEAD `00c16b6` gehalten am 20.08.2026. `graph/nodes/verfasser.py:109` setzt die Zeile weiter ohne Bedingung.
+**Zustand:** behoben — gegen HEAD `387915f` gehalten am 22.08.2026. Die Zeile ist entfallen, und zwar aus demselben Grund wie im Responder am 13.08.2026: **Dieselbe Aussage kommt aus der Haltungsgroesse `fragen`, charakterabhaengig statt fuer jede Nova gleich.** Sie erreicht den Verfasser als Rueckfrage-Zeile des `[MASS]`-Blocks, seit dieser am 20.08.2026 dazukam. Die Tabelle `CLUSTER_FRAGEN` bleibt — der GV-Knoten braucht sie fuer die Strategiewahl, und die Haltungsgroesse ist aus ihr uebersetzt (`ei/haltung.py`). Drei Zeugen auf die **Abwesenheit** (`tests/test_verfasser_gv_block.py`), Gegenprobe 2 vorhergesagt / 2 gezaehlt, Suite `Ran 2090 tests — OK`.
+
+> **Der Befund vom 14.08.2026 nannte sie Zierat. Seit dem 20.08.2026 war sie mehr als das**, und die Messung zeigt es: In **15** Verfasser-Prompts des Betriebslogs standen beide Angaben nebeneinander, und in **11 davon waren sie uneinig** — die rohe Zeile sagte *„Selten, behutsam"* oder *„Selten (jeder 3.-4. Turn)"*, waehrend die Vorgabe daneben *„eine Rueckfrage"* verlangte. Zwei Stimmen im selben Prompt, in drei Vierteln der Faelle gegenlaeufig (`labor/2026-08-22_fragenfrequenz_doppelt.py`).
+>
+> **Nicht gemessen ist, ob das Modell deshalb anders antwortete.** Belegt ist, dass beide Stimmen dastanden, nicht welche es befolgte.
+>
+> **Die Absichtsfrage des Eintrags — ob die Fragenfrequenz zum Inhalt gehoert — ist damit nicht neu entschieden worden.** Sie war am 13.08.2026 entschieden; der Verfasser wurde nur nie nachgezogen, weil sein `[MASS]`-Block erst eine Woche spaeter kam.
 
 **Befund (14.08.2026), aus der Fundliste uebernommen.** **Die Zeile `Fragen:` im Verfasser-Block hat keine Bedingung, die auf sie zeigt.** Der Block trägt `CLUSTER_FRAGEN` der Landschaft (*„Mittel, neckisch, oft rhetorisch"*), aber keine der drei Prüfbedingungen des Auftrags verlangt etwas davon; das Vehikel aus der Dreischicht sagt bereits, ob gefragt wird. Ein Block, den der Auftrag nicht einführt, ist Zierat — und wird beim Messen fälschlich als wirkungslos verbucht, obwohl nur seine Einführung fehlt. Im Responder ist dieselbe Quelle am 13.08.2026 als Doppelung entfallen. **Nicht entfernt:** Ob die Fragenfrequenz zum Inhalt gehört, ist eine Entscheidung und keine Aufräumarbeit.
 
