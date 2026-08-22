@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Node-Referenz Tribunal
-**Stand:** 17. August 2026 (die Zeitangabe wird gerechnet, nicht beurteilt)
+**Stand:** 22. August 2026 — die Zeitangabe wird gerechnet, nicht beurteilt, und seit heute in zwei Formen: Wochentag gegen Datum, Bestätigung gegen das Gemeldete
 **Pfad:** novaberg/docs/novaberg-node-tribunal.md
 **Quellen:** nova-01-m-i.md
 **Datei:** `graph/nodes/tribunal.py`
@@ -272,3 +272,20 @@ Der Anlass ist gemessen: Nova bestätigte einen Termin mit *„Mittwoch, 20.08."
 **Die Kopplung ist eng gewählt.** Ein Fehlalarm schickt eine richtige Antwort in die Korrekturschleife und ist teurer als ein übersehener Widerspruch; die weite Kopplung über Satzteile hinweg ist negativ geprüft.
 
 Ein Befund kann ein `ablehnen` nicht abschwächen — ein falsches Datum ist ein Grund mehr zur Korrektur, nie einer weniger.
+
+### Die zweite Form: ein Datum ohne Wochentag (22.08.2026)
+
+**Die Prüfung oben braucht das Paar — und sieht ein erfundenes Datum ohne Wochentag nicht.** Am 22.08.2026 am Originalfall gemessen: *„Mittwoch, 20.08., 14:00 Uhr"* ergibt 1 Befund, *„am 20.08. um 14 Uhr"* ergibt **0**.
+
+`bestaetigung_pruefen` schließt diese Hälfte und wählt einen anderen Bezug: nicht den Text gegen sich selbst, sondern die Antwort gegen das, was die Dienste dieses Turns **gemeldet** haben. Nur `abgeschlossen` zählt als Quelle — was ein Dienst abgelehnt hat, wurde nicht eingetragen und belegt nichts.
+
+**Die Bedingung ist eng, und sie ist der Entwurf.** Gemeldet wird nur, wenn beides zutrifft:
+
+1. Eine Quelle nennt ein Datum — es gibt also etwas zu bestätigen.
+2. Die Antwort nennt **keines** der Quelldaten, wohl aber ein anderes.
+
+> Nennt die Antwort das richtige Datum und daneben ein zweites, ist das kein Widerspruch, sondern ein Satz über etwas anderes: *„Der Termin steht am 19.08. — der 25.08. wäre mir lieber gewesen."* Eine Regel *„jedes Datum muss belegt sein"* schickte diesen Satz in die Korrekturschleife.
+
+**Am Bestand belegt, nicht am Zeugen:** 5 Turns, in denen ein Dienst ein Datum meldete — **1 Anschlag, und das ist der Fall vom 17.08.2026**; die vier anderen echten Terminbestätigungen bleiben still (`labor/2026-08-22_bestaetigung_bestand*`). Ein Zeuge zeigt, dass die Prüfung den Fall erkennt; erst der Bestand zeigt, dass sie die richtigen Antworten in Ruhe lässt.
+
+Beide Prüfungen schreiben denselben Kopf `ZEITANGABE FALSCH` in die Zusammenfassung, und die Ausgabe-Verifikation des Knotens deckt seit dem 22.08.2026 beide — ein Befund, der die Zusammenfassung nicht erreicht, wäre folgenlos.

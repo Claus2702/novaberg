@@ -1,6 +1,6 @@
 # Novaberg — Roadmap (Projektchronik)
 
-**Stand:** 22. August 2026, 00:20 UTC
+**Stand:** 22. August 2026, 00:40 UTC
 **Pfad:** novaberg/docs/novaberg-roadmap.md
 **Single Source of Truth für abgeschlossene Arbeit.**
 **Offene Punkte → novaberg-backlog.md**
@@ -12,6 +12,42 @@ Die Kopfzeile stand bis Chat 109 auf „Chat 93, 21. Mai 2026" — 15 Chats hint
 ---
 
 ## Chats 3–20: Grundlagen (März 2026)
+
+### 22.08.2026, 00:40 UTC — Eine Bestaetigung kann kein Datum mehr erfinden
+
+**`RESPONDER-ERFINDET-DATUM` ist geschlossen, und der Weg dahin lief ueber eine gemessene Luecke.**
+Der Fall vom 17.08.2026: Der Dienst meldete `eingetragen fuer 19.08.2026 14:00`, die Antwort nannte
+*„Mittwoch, 20.08., 14:00 Uhr"*. Der Mensch suchte am falschen Tag, fand nichts und hielt den
+Schreibpfad fuer defekt — er war es nie.
+
+**Die Haelfte, die schon stand:** Seit dem 20.08.2026 prueft `widersprueche_finden`, ob Wochentag und
+Datum zusammenpassen — ein Rechenfehler, in Python entscheidbar, ohne vierten Modellaufruf. Gegen den
+Originalsatz gehalten: 1 Befund, mit dem richtigen Wochentag in der Meldung.
+
+**Die Haelfte, die fehlte, und sie war messbar:** Derselbe Satz **ohne** Wochentag — *„am 20.08. um
+14 Uhr"* — ergibt **0 Befunde**. Die Pruefung braucht das Paar; ein erfundenes Datum allein sieht sie
+nicht.
+
+`bestaetigung_pruefen` haelt jetzt die Datumsangaben der Antwort gegen die der **erfolgreichen**
+Dienstergebnisse. Was ein Dienst abgelehnt hat, belegt nichts — sonst stuende die Pruefung auf dem
+Kopf.
+
+> **Die Bedingung ist eng, und das ist der eigentliche Entwurf.** Gemeldet wird nur, wenn eine Quelle
+> ein Datum nennt und die Antwort **keines** der Quelldaten trifft. Ein zweites Datum neben dem
+> richtigen ist ein Satz ueber etwas anderes: *„Der Termin steht am 19.08. — der 25.08. waere mir
+> lieber gewesen."* Eine Regel *„jedes Datum muss belegt sein"* schickte diesen Satz in die
+> Korrekturschleife, und ein Fehlalarm korrigiert hier eine richtige Antwort.
+
+**Am Bestand gemessen statt am Zeugen:** 5 Turns, in denen ein Dienst ein Datum meldete, alle fuenf
+pruefbar — **1 Anschlag, und es ist der Fall vom 17.08.2026**; die vier anderen echten
+Terminbestaetigungen bleiben still. **Das ist die Zahl, die ein Zeuge nicht liefern kann:** Er zeigt,
+dass die Pruefung den Fall erkennt, nicht dass sie die richtigen Antworten in Ruhe laesst.
+
+16 Zeugen, Gegenprobe 1 vorhergesagt / 1 gezaehlt, Suite `Ran 2083 tests — OK`.
+
+> **Zwei Reste stehen am Eintrag.** Ob die Korrekturrunde die Antwort danach richtig macht, ist nicht
+> nachgemessen — belegt ist nur, dass der Auftrag dort steht, wo der Corrector ihn liest. Und fuenf
+> Faelle sind keine Rate: Die Aussage lautet *„an allem, was da ist, trennt sie richtig"*.
 
 ### 22.08.2026, 00:20 UTC — Die Verdichtung sieht jetzt, was tatsaechlich geschah
 

@@ -303,7 +303,13 @@
 
 ### `RESPONDER-ERFINDET-DATUM` — ein erfundenes Datum in der Bestaetigung
 
-**Zustand:** offen — gegen HEAD `00c16b6` gehalten am 20.08.2026. eine beitragende Ursache ist entfallen — die Szene traegt seit dem Umbau Ortszeit und deutschen Wochentag (`responder.py:230`); dass eine Bestaetigung nur Daten aus dem Zustand nennt, erzwingt nichts.
+**Zustand:** behoben — gegen HEAD `635dbfd` gehalten am 22.08.2026. Die Abhilfe sitzt in der **Ausgabe-Verifikation**, nicht im Prompt: Der Widerspruch Wochentag↔Datum lief seit dem 20.08.2026 (`utils/datum_pruefung.py::widersprueche_finden`, gerufen in `graph/nodes/tribunal.py`), **die zweite Haelfte ist am 22.08.2026 dazugekommen** — `bestaetigung_pruefen` haelt die Datumsangaben der Antwort gegen die der erfolgreichen Dienstergebnisse. Beide heben das Urteil auf `warnung` und damit in die Korrekturrunde.
+
+> **Die Luecke war gemessen, nicht vermutet:** Derselbe Originalsatz **ohne** Wochentag (*„am 20.08. um 14 Uhr"*) ergab 0 Befunde — die erste Pruefung braucht das Paar.
+>
+> **Am Bestand belegt** (22.08.2026, `labor/2026-08-22_bestaetigung_bestand*`): 5 Turns, in denen ein Dienst ein Datum meldete, alle fuenf pruefbar — **1 Anschlag, und das ist genau der Fall vom 17.08.2026**; die vier anderen echten Terminbestaetigungen bleiben still. 16 Zeugen (`tests/test_datum_bestaetigung.py`), Gegenprobe 1 vorhergesagt / 1 gezaehlt, Suite `Ran 2083 tests — OK`.
+>
+> **Der Rest ist benannt und gehoert nicht zu diesem Eintrag:** Ob die Korrekturrunde die Antwort danach richtig macht, ist nicht nachgemessen. Belegt ist, dass der Auftrag im `tribunal_summary` steht — dort, wo der Corrector ihn liest. Und fuenf Faelle sind keine Rate: Die Aussage lautet *„an allem, was da ist, trennt sie richtig"*.
 
 **Befund (17.08.2026), aus der Fundliste uebernommen.** **Der Responder erfindet das Datum in einer Termin-Bestaetigung.** Der Agent lieferte `"Termin 'Meeting mit dem Chef' eingetragen fuer 19.08.2026 14:00"`, die Tabelle traegt `19.08.2026 12:00 UTC` (= 14:00 lokal, Mittwoch) — beides richtig. Novas Antwort um 11:31 lautet *„Mittwoch, **20.08.**, 14:00 Uhr"*. **Der Satz widerspricht sich selbst:** Der 20.08.2026 ist ein Donnerstag. Die Zahl stand in keiner Eingabe des Responders; der Erfolgsblock trug das korrekte Datum. Folge in derselben Sitzung: Der Mensch sucht den Termin am falschen Tag, findet ihn nicht, und haelt den Schreibpfad fuer defekt — er war es nie. **Eine falsche Bestaetigung ist teurer als eine fehlende**, weil sie geglaubt wird.
 
