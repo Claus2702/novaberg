@@ -4931,7 +4931,11 @@ Novas Charakter wird heute aus der falschen Quelle destilliert: `lzg_knoten` ent
 
 ## Feature: ASSISTENT-GESCHLECHT-PRONOMEN — Pronomen bei Namenswechsel (Chat 103)
 
-Bei wechselndem Assistenten-Namen müssen Pronomen (sie/er, ihr/sein) durch die Charakter-Prompts mitgeführt werden; braucht ein Geschlechts-Attribut am Charakter. Der Genitiv des Namens ist in Chat 103 gelöst (`_genitiv_bilden`, s/Apostroph-Regel), Pronomen sind offen; die Prompts sind vorerst pronomen-arm formuliert. ⬜ Prio niedrig
+~~Bei wechselndem Assistenten-Namen müssen Pronomen (sie/er, ihr/sein) durch die Charakter-Prompts mitgeführt werden; braucht ein Geschlechts-Attribut am Charakter. Der Genitiv des Namens ist in Chat 103 gelöst (`_genitiv_bilden`, s/Apostroph-Regel), Pronomen sind offen; die Prompts sind vorerst pronomen-arm formuliert.~~ ⬜ Prio niedrig
+
+✅ **Umgesetzt am 22.08.2026** — `ASSISTANT_GENUS` (`config.py`, Vorgabe `w`) trägt das grammatische Geschlecht der Figur, `_perspektive_aufloesen` leitet daraus `pronomen`, `pronomen_dat`, `pronomen_akk` und `possessiv` ab, und jeder der fünf Profil-Prompts gibt sie ausdrücklich vor. Die Formulierung *„pronomen-arm"* ist damit keine Vorsichtsmaßnahme mehr, sondern hinfällig. Zugleich behoben: `PROFILPROMPT-OHNE-GESCHLECHT` und `PERSPEKTIVE-OHNE-DATIV` (bugs.md).
+
+**Der Rest, als Rest benannt:** Der Eintrag verlangte das Attribut *„am Charakter"*, gelegt ist es in die **Konfiguration** — dorthin, wo heute auch `ASSISTANT_NAME` steht. Solange der Name global per env kommt, wäre ein paarbezogenes Genus daneben die Inkonsistenz. **Wandert der Name mit `ASSISTENT-NAME-LAUFZEIT` in die Datenbank, wandert das Genus mit** — der Rest hängt an jenem Eintrag, nicht an diesem.
 
 ## Nacharbeit: PIPELINE-LOG-BACKFILL-PAAR — Alt-Forensik ohne Paar-Schlüssel (Chat 104)
 

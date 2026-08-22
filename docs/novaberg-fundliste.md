@@ -2,8 +2,8 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Rohe, noch unklassifizierte Funde aus laufender Arbeit
-**Stand:** 21. August 2026, 10:48 UTC
-**Offen:** 7 Funde
+**Stand:** 22. August 2026, 14:50 UTC
+**Offen:** 10 Funde
 **Verlauf:** [Verlauf des Standes](#verlauf-des-standes) — 64 Eintraege, juengster zuerst
 **Pfad:** novaberg/docs/novaberg-fundliste.md
 
@@ -229,6 +229,9 @@ Analog zum Kraft-1-Stichtag: ab wann eine Partition brauchbar ist. Kein Backfill
 
 ## Offen
 
+- **2026-08-22** — `server/prompts/default/salienz.assistant_task.txt:7` bildet den Genitiv des Traegers als `{traeger}s` statt ueber `_genitiv_bilden`. Fuer *Nova* stimmt das; ein Name auf s/ss/ss/tz/z/x — genau der Fall, fuer den `_genitiv_bilden` am 16.08.2026 gebaut wurde — bekommt hier die falsche Form. Gefunden von der zweiten Kontrolle ueber den ganzen Baum: 36 Dateien setzen eine Person in einen Prompt ein, vier Vorlagen ausserhalb der Destillation tragen `{traeger}`, und **alle vier fuellen ihn mit `ASSISTANT_NAME`** — die Kasusfehler des Rollenbegriffs treffen sie deshalb nicht, dieser eine Genitiv schon.
+- **2026-08-22** — In `agents/charakter/destillation.py` steht der Trennkommentar `# Prompts — Nova (eigene Perspektive)` ueber einem leeren Abschnitt: Die Nova-Prompts sind am 16.08.2026 in den parametrisierten Satz aufgegangen, die Ueberschrift blieb stehen und sagt jetzt eine Gliederung an, die es nicht gibt.
+- **2026-08-22** — Die Ampelzaehlung der Featureliste ueber `grep`/`cut` ist locale-abhaengig: In der Standard-Shell dieser Umgebung liefert `grep -c` fuer ⚫ **12** statt **37**, weil die Werkzeuge Bytes und keine Zeichen sehen. Der Wachposten des Handzettels benennt das Symptom, aber die falsche Ursache (er empfiehlt `grep -oE … | wc -l`, das denselben Fehler macht). Belastbar zaehlt nur ein Lauf, der UTF-8 liest.
 - **2026-08-20** — Der Kern-Hash liest 40 von 444 `turn_roh`-Zeilen des produktiven Paares und deckt damit 2 von 20 Bestandstagen ab — fuer ein Profil, dessen erklaerter Gegenstand der dauerhafte Wesenskern ist. Rest aus `KERNHASH-LIEST-TURNWORTLAUT`, dessen tragende Aussage (die Doku nennt die falsche Quelle) am 16.08.2026 erledigt wurde.
 - **2026-08-20** — Eine Zeile der Featureliste widersprach sich in sich selbst: Das Belegfeld sagte *„die Schwelle ist uebernommen, nicht gemessen"*, waehrend derselbe Eintrag zwei Spalten weiter die Kalibrierung samt Zahlenreihe fuehrte. Beim Nachzug korrigiert; ob weitere Zeilen ein Belegfeld tragen, das aelter ist als ihr eigener Text, ist ungeprueft.
 

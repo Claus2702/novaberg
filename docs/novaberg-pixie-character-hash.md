@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** CharakterAgent — Charakter-Hash aus KZG/LZG destillieren
-**Stand:** 16. August 2026 (**die Auswahl der KZG-Einträge ordnet nach `salienz × zeitgewicht`** statt nach Fundreihenfolge — neuer §4b samt Herleitung der Halbwertszeit; §3.2 nachgezogen. Dabei am Code geprüft und **widerlegt**: Der Kern-Hash liest seit dem 10.08.2026 den **Turn-Wortlaut**, nicht `lzg_knoten` — §3.1 sagte vier Wochen lang das Falsche, ebenso `AGENT.md`. Davor am selben Tag: die getrennten `*_PROMPT_NOVA` sind zu **einem parametrisierten Satz** zusammengezogen, Träger über `_perspektive_aufloesen`; §3.3 nachgezogen). Davor: 1. August 2026 (**beide Räder sind eine Messreihe** — rohe Läufe in `charakter_rad_messung`, gespeichert wird das gewichtete Mittel der letzten fünf Erhebungen, Takt zweimal täglich; §4a. Zuvor: 29. Juli 2026, Chat 117 — die zwei Charakter-Räder und die vollständige Spaltenliste nachgetragen, §2, §4a, §7. ⚠ Fundament-Warnung nach Gewichts-Reset, siehe Kasten in §3. Kern: Chat 79, P7-Update Chat 103)
+**Stand:** 22. August 2026 (**`_perspektive_aufloesen` liefert alle vier Kasus und die Pronomen** — das Genus der Figur steht in `ASSISTANT_GENUS` statt in der Vermutung des Modells; §3.3 nachgezogen. Davor: 16. August 2026 — **die Auswahl der KZG-Einträge ordnet nach `salienz × zeitgewicht`** statt nach Fundreihenfolge — neuer §4b samt Herleitung der Halbwertszeit; §3.2 nachgezogen. Dabei am Code geprüft und **widerlegt**: Der Kern-Hash liest seit dem 10.08.2026 den **Turn-Wortlaut**, nicht `lzg_knoten` — §3.1 sagte vier Wochen lang das Falsche, ebenso `AGENT.md`. Davor am selben Tag: die getrennten `*_PROMPT_NOVA` sind zu **einem parametrisierten Satz** zusammengezogen, Träger über `_perspektive_aufloesen`; §3.3 nachgezogen). Davor: 1. August 2026 (**beide Räder sind eine Messreihe** — rohe Läufe in `charakter_rad_messung`, gespeichert wird das gewichtete Mittel der letzten fünf Erhebungen, Takt zweimal täglich; §4a. Zuvor: 29. Juli 2026, Chat 117 — die zwei Charakter-Räder und die vollständige Spaltenliste nachgetragen, §2, §4a, §7. ⚠ Fundament-Warnung nach Gewichts-Reset, siehe Kasten in §3. Kern: Chat 79, P7-Update Chat 103)
 **Pfad:** novaberg/docs/novaberg-pixie-character-hash.md
 **Quellen:** nova-05-m-a.md, nova-04-m-b.md, nova-04-t-b.md
 
@@ -135,7 +135,22 @@ Jedes Profil ist Fließtext. Keine Listen, keine Stichworte — natürlichsprach
 
 → **Am 16.08.2026 gegen den Code geprueft: Die Verdopplung ist aufgeloest.** Es gibt keine `*_PROMPT_NOVA` mehr — weder die vier genannten noch sonst eine. An ihre Stelle ist **ein Satz parametrisierter Prompts** getreten, dessen Traeger zur Laufzeit eingesetzt wird.
 
-**Die Bauart** (`agents/charakter/destillation.py`): Jeder Prompt traegt die Platzhalter `{traeger}`, `{traeger_gen}` und `{perspektive}`. `_perspektive_aufloesen(user_id)` liefert die passenden Formen — fuer `ASSISTANT_USER_ID` den Namen aus `ASSISTANT_NAME` samt Genitiv ueber `_genitiv_bilden`, sonst *der Nutzer* / *des Nutzers*.
+**Die Bauart** (`agents/charakter/destillation.py`): `_perspektive_aufloesen(user_id)` liefert die Formen, die die Prompts einsetzen — fuer `ASSISTANT_USER_ID` den Namen aus `ASSISTANT_NAME` samt Genitiv ueber `_genitiv_bilden`, sonst die festen Formen des Rollenbegriffs *der Nutzer*.
+
+> **Seit dem 22.08.2026 sind es alle vier Kasus und die Pronomen** — bis dahin drei Formen (`{traeger}`, `{traeger_gen}`, `{perspektive}`), und die Luecke kostete zwei Defekte:
+>
+> | Fehlende Form | Was im Prompt stand |
+> |---|---|
+> | Dativ | *„ein kompaktes Persoenlichkeitsprofil von **der Nutzer**"* (`PERSPEKTIVE-OHNE-DATIV`) |
+> | Pronomen | das Modell raet das Genus, am 18.08.2026 **im selben Lauf verschieden** (`PROFILPROMPT-OHNE-GESCHLECHT`) |
+>
+> Heute liefert die Funktion `traeger`, `traeger_gen`, `traeger_dat`, `traeger_akk`, `perspektive`, dazu `pronomen`, `pronomen_dat`, `pronomen_akk`, `possessiv` und `genus_quelle`. Eigennamen bleiben im Dativ und Akkusativ unflektiert; **der Rollenbegriff »der Nutzer« ist grammatisch maskulin**, was eine Aussage ueber das Wort ist und keine ueber den Menschen dahinter.
+>
+> **Das Genus der Figur steht in `ASSISTANT_GENUS`** (`config.py`, Vorgabe `w`), neben `ASSISTANT_NAME` und aus demselben Grund: Wer die Figur umbenennt, entscheidet damit auch ueber ihre Pronomen. Ein unbekannter Wert faellt auf `w` zurueck und ist daran erkennbar, dass `genus_quelle` dann `rueckfall` traegt statt `konfiguration` — ein Rueckfall, der wie ein gesetzter Wert aussieht, waere ein stiller Fehler.
+>
+> **Jeder Prompt gibt das Genus ausdruecklich vor** (*»Schreibe ueber X durchgehend mit den Pronomen …«*). Die Formen allein genuegen nicht: Sie richten den Prompt-Text, aber das Modell schreibt seinen **eigenen** Text und raet dort weiter.
+>
+> **Gefunden hat die Fehlstellen das Rendern, nicht die Eintraege.** Die beiden Defekte nannten zusammen vier Stellen; beide Perspektiven durch alle fuenf Prompts gerendert ergaben **neun** — darunter *„charakterisiert der Nutzer"*, *„welche Emotionen tragen der Nutzer"* und *„an dem man der Nutzer erkennt"*, die in keinem Eintrag standen. Der Zeuge `tests/test_traegerformen.py` haelt jede davon fest.
 
 **Zwei Eigenschaften, die die alte Fassung nicht hatte** und die den Umbau erklaeren:
 

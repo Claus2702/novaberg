@@ -1,6 +1,6 @@
 # Novaberg — Roadmap (Projektchronik)
 
-**Stand:** 22. August 2026, 11:20 UTC
+**Stand:** 22. August 2026, 14:45 UTC
 **Pfad:** novaberg/docs/novaberg-roadmap.md
 **Single Source of Truth für abgeschlossene Arbeit.**
 **Offene Punkte → novaberg-backlog.md**
@@ -12,6 +12,43 @@ Die Kopfzeile stand bis Chat 109 auf „Chat 93, 21. Mai 2026" — 15 Chats hint
 ---
 
 ## Chats 3–20: Grundlagen (März 2026)
+
+### 22.08.2026, 14:45 UTC — Die Profil-Prompts bekommen jede Traeger-Form als Datum
+
+**Fuenf Profil-Prompts setzten den Traeger in einem Kasus ein, den sie nicht hatten.**
+`_perspektive_aufloesen` lieferte drei Formen — Nominativ, Genitiv und die Genitiv-Form fuer *aus X
+Blickwinkel* — und jede Prompt-Zeile, die etwas anderes brauchte, bekam trotzdem den Nominativ. Bei
+jedem menschlichen Paar stand deshalb *„ein kompaktes Persoenlichkeitsprofil von **der Nutzer**"* im
+Text, den das Modell liest. Fuer den Eigennamen fiel es nicht auf: *„von Nova"* ist richtig.
+
+**Und kein Prompt kannte das Genus seines Traegers.** Sobald ein Satz ein Pronomen braucht,
+entschied das Modell — am 18.08.2026 am Traeger »Juno« **im selben Lauf verschieden**: der Kern-Hash
+durchgehend maennlich, das Beziehungsprofil im Schlusssatz saechlich.
+
+**Gebaut ist beides an einer Stelle**, weil beides dieselbe Ursache hat: `_perspektive_aufloesen`
+liefert jetzt alle vier Kasus, dazu `pronomen`, `pronomen_dat`, `pronomen_akk`, `possessiv` und
+`genus_quelle`. Das Genus der Figur steht in `ASSISTANT_GENUS` (`config.py`, Vorgabe `w`) — neben
+dem Namen und aus demselben Grund: Wer die Figur umbenennt, entscheidet damit ueber ihre Pronomen.
+
+> **Die Formen allein genuegen nicht.** Ein gefuellter Platzhalter richtet den Prompt-Text; das
+> Modell schreibt aber seinen **eigenen**. Deshalb traegt jeder der fuenf Prompts die Vorgabe als
+> Satz: *»Schreibe ueber X durchgehend mit den Pronomen …«*
+
+**Gefunden hat die Fehlstellen das Rendern, nicht die Eintraege.** Die beiden Defekte nannten
+zusammen vier Stellen; beide Perspektiven durch alle fuenf Prompts gerendert ergaben **neun**.
+Darunter *„charakterisiert der Nutzer"*, *„welche Emotionen tragen der Nutzer"* und *„an dem man der
+Nutzer erkennt"* — Akkusative, die in keinem Eintrag standen, weil sie keine Praeposition tragen und
+deshalb keiner Suche nach *„von {traeger}"* auffallen.
+
+**Bilanz:** Suite 2093 → **2101 gruen, 0 uebersprungen**; acht neue Zeugen in
+`tests/test_traegerformen.py`, der bestehende `test_kern_offen.py` nachgezogen, weil er die Formen
+bis dahin selbst tippte statt sie aus der Funktion zu holen. Gegenprobe zweimal gefahren: der
+Dativfehler zurueckgebaut faerbt **2** Tests rot und benennt Perspektive, Prompt und Form; die
+Genus-Vorgabe aus dem Kern-Prompt entfernt faerbt **1**. Codepruefungen unveraendert
+(A3 13 · A4 22 · A5 36 · A8a 0 · A8b 52 · A10 244 · A11 305), harte Wand sauber.
+
+**Nebenher geschlossen:** der Backlog-Eintrag `ASSISTENT-GESCHLECHT-PRONOMEN`, den
+keiner der beiden Defekteintraege nannte — gefunden hat ihn der mechanische Nachzug, nicht der Bau.
 
 ### 22.08.2026, 11:20 UTC — Die Rangfolge steht jetzt im Register, nicht im Gespraech
 

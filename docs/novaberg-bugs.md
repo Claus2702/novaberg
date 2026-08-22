@@ -11,14 +11,16 @@
 und ist deshalb eine Entscheidung. Die hier festgehaltene ist am 22.08.2026 getroffen worden, nachdem
 die Zustandszeilen die Menge zum ersten Mal auszaehlbar gemacht hatten.
 
-**Das Kriterium ist der Klumpen, nicht der Einzeldefekt.** Von 60 offenen Kennungen halten 53 je ein
-Feature auf Rot; **20 davon sitzen zu neunt in Klumpen**, also an einem Knoten, den ein Zug gemeinsam
-raeumt. Ein Zug pro Knoten raeumt mehr als ein Zug pro Defekt.
+**Das Kriterium ist der Klumpen, nicht der Einzeldefekt.** Von 60 offenen Kennungen hielten am 22.08.2026
+53 je ein Feature auf Rot; **20 davon sassen zu neunt in Klumpen**, also an einem Knoten, den ein Zug
+gemeinsam raeumt. Ein Zug pro Knoten raeumt mehr als ein Zug pro Defekt.
+
+**Stand nach Rang 2** (22.08.2026): **58 offen / 24 behoben** von 82 Abschnitten.
 
 | Rang | Knoten | offene Defekte |
 |---|---|---|
 | **1** | ~~die Antwortstrecke `verfasser` / `haltung` / `responder`~~ — **am 22.08.2026 abgearbeitet**, von neun sind fuenf erledigt und zwei zur Haelfte gebaut | 2 |
-| 2 | **Fuenf Charakter-Profile + Hash** | 3 |
+| **2** | ~~**Fuenf Charakter-Profile + Hash**~~ — **am 22.08.2026 zu zwei Dritteln abgearbeitet**: `PERSPEKTIVE-OHNE-DATIV` und `PROFILPROMPT-OHNE-GESCHLECHT` behoben, `KERNHASH-OHNE-PERSPEKTIVTRENNUNG` entschieden und noch nicht gebaut | 1 |
 | 3 | **Dateien-Dienst Stufe 2** (`dateien_index` + Waechter) | 3 |
 | 4 | `responder` — die Antwort | 2 |
 | 5 | Pipeline-Log · Emotionale Gravitation · Charakter-Raeder · Shadow-Queue · Bibliothek | je 2 |
@@ -153,7 +155,11 @@ gehoeren deshalb nicht in dieselbe Reihe wie ein Defekt mit Codeort.
 
 ### `PROFILPROMPT-OHNE-GESCHLECHT` — das Modell raet, im selben Lauf verschieden
 
-**Zustand:** offen — gegen HEAD `00c16b6` gehalten am 20.08.2026. `_perspektive_aufloesen` (`agents/charakter/destillation.py:469`) liefert weiter drei Formen ohne Pronomen.
+**Zustand:** behoben — gegen HEAD `12a7c6a` gebaut am 22.08.2026. Das Genus der Figur steht in `ASSISTANT_GENUS` (`config.py`, Vorgabe `w`), `_perspektive_aufloesen` liefert daraus `pronomen`, `pronomen_dat`, `pronomen_akk` und `possessiv`, und **jeder der fuenf Prompts gibt die Pronomen ausdruecklich vor**. Zeuge: `tests/test_traegerformen.py::test_jeder_prompt_gibt_das_genus_vor`.
+
+**Die Formen allein genuegen nicht, und das ist die Lehre des Eintrags.** Ein gefuellter Platzhalter richtet den **Prompt**-Text; das Modell schreibt aber seinen **eigenen** und raet dort weiter. Deshalb steht die Vorgabe als Satz im Prompt und nicht nur als Formensatz in der Funktion.
+
+**Der Ort ist eine Entscheidung, kein Zufall.** Der Backlog-Eintrag `ASSISTENT-GESCHLECHT-PRONOMEN` verlangte *„ein Geschlechts-Attribut am Charakter"* — also in der Datenbank. Gelegt ist es in die Konfiguration, **dorthin, wo heute der Name steht**: Solange `ASSISTANT_NAME` global per env kommt, waere ein paarbezogenes Genus daneben die Inkonsistenz. Wandert der Name mit `ASSISTENT-NAME-LAUFZEIT` in die DB, wandert das Genus mit; der Rest steht dort.
 
 **Befund (19.08.2026), aus der Fundliste uebernommen.** **Kein Profil-Prompt kennt das Geschlecht seines Traegers, und das Modell raet es — im selben Lauf verschieden.** `_perspektive_aufloesen` liefert drei Formen (`traeger`, `traeger_gen`, `perspektive`) und **kein Pronomen**. Die Prompts umgehen das, indem sie ueberall `{traeger}` wiederholen; sobald aber ein Satz ein Pronomen braucht, entscheidet das Modell. **Belegt am 18.08.2026** an einem Profil mit dem Traegernamen »Juno«: Der Kern-Hash fuehrt durchgehend »er/sein«, das im selben Lauf erzeugte Beziehungsprofil fuehrt im Schlusssatz das **saechliche** Pronomen — zwei Genera fuer denselben Traeger, ohne dass irgendetwas anschlaegt. Bei einem Namen ohne eindeutiges Genus ist das der Normalfall, nicht die Ausnahme. **Es trifft nicht nur die Ausgabe, sondern jede kuenftige Prompt-Zeile:** Ein Satz wie *„wo {traeger} beschreibt, was sie tut"* ist fuer einen maennlichen oder saechlichen Traeger falsch — die heutige Bauart zwingt jede Anweisung in die Wiederholung des Namens. **Was fertig waere:** ein Geschlecht je Charakter, daraus abgeleitet Nominativ, Genitiv, Dativ, Akkusativ und Possessivformen als Prompt-Parameter, wie `traeger_gen` es fuer den Genitiv bereits vormacht.
 
@@ -223,7 +229,11 @@ gehoeren deshalb nicht in dieselbe Reihe wie ein Defekt mit Codeort.
 
 ### `KERNHASH-OHNE-PERSPEKTIVTRENNUNG` — ueber sich und ueber den Nutzer wird eins
 
-**Zustand:** offen — gegen HEAD `00c16b6` gehalten am 20.08.2026. die Trennung ist eine Absicht und nicht entschieden.
+**Zustand:** offen — gegen HEAD `12a7c6a` gehalten am 22.08.2026. **Die Absicht ist seit dem 22.08.2026 entschieden, gebaut ist nichts.**
+
+> **Die Festlegung:** Der Kern-Hash beschreibt die **Person**. Was die Figur ueber ihr Gegenueber sagt, gehoert ins **Beziehungsprofil** und nicht in ihr Wesen — das relationale Wesen ist der Gegenstand des einen, das ohne das Gegenueber Bleibende der des anderen. Damit ist der Eintrag kein Absichtsloch mehr, sondern ein Bauauftrag.
+>
+> **Was daran offen bleibt, ist der Hebel.** Der Prompt ist keiner — dreimal gemessen (`PROFIL-EINMALERHEBUNG` im Backlog: derselbe unveraenderte Prompt streut ueber drei Laeufe 16,5 / 24,5 / 19,7 %). Und die Materialfilterung, die die frueheren Perspektivfehler behoben hat, greift hier nicht: Das Material ist nach **Sprecher** bereits korrekt gefiltert, falsch ist sein **Gegenstand**.
 
 **Befund (18.08.2026), aus der Fundliste uebernommen.** **Der Kern-Hash trennt nicht zwischen „die Figur spricht über sich" und „die Figur spricht über den Nutzer" — beides wird ihr Wesen.** Die Perspektivregel ist erfüllt und reicht trotzdem nicht: Gelesen wird die **richtige** Seite (nur die eigenen Äußerungen), aber ein Gesprächspartner, dessen Rolle das Beobachten ist, produziert Äußerungen, deren **Inhalt der andere** ist. Sätze der Form *„Du denkst in Systemen"* oder *„Oberflächlichkeit ist für dich Graustufen nach einem Leben in Farbe"* sind Profilmaterial in Reinform — nur über die falsche Person. **Im Prompt stehen zwei Anweisungen gegeneinander, und die konkretere gewinnt.** `KERN_HASH_PROMPT` kennt die Gefahr und benennt sie wörtlich — »Nicht WORUEBER {traeger} spricht charakterisiert {traeger}, sondern WIE« —, und elf Zeilen später verlangt derselbe Prompt »Verdichte nicht: Behalte die Wendungen … Ein Beispiel im Wortlaut sagt mehr als ein Urteil darueber«. Bei einem Sprecher, dessen charakteristische Wendungen Zuschreibungen an den anderen sind, ist das die Anweisung, fremdes Profilmaterial wörtlich zu übernehmen. **Dazu deckt das Schutz-Beispiel den leichten Fall ab:** Der Sonnenuntergang ist ein *Ding* und hat keine Eigenschaften, die mit denen des Sprechers verwechselbar wären. Kein Beispiel im Prompt behandelt den Fall, dass der Gegenstand eine **Person** ist — für eine Assistentin ist das nicht der Randfall, sondern der Normalfall. **Das ist keine Variante der behobenen Perspektivfehler** (`CHAR-HASH-PAAR-VERTAUSCHT`, die Impuls-Destillation vom 17.08.): Die wurden durch **Materialfilterung** behoben — dieser ist es nicht, weil das Material bereits korrekt gefiltert ist. **Belegt an einem fremden Dialog (49 Turns, gemessen 18.08.2026), und die Gegenprobe sagt mehr als der Befund:** Beide Seiten wurden getrennt destilliert. Im Profil der **Figur** stehen drei Bildworte als **ihr eigenes Empfinden**, die sämtlich aus zwei Turns stammen, in denen der **Nutzer** sein Erleben schildert und die Figur es zurückgibt; dieselben drei stehen im Profil des **Nutzers**, dort richtig zugeordnet. **Dasselbe Material in zwei Profilen, und nur in einem gehört es hin.** **Der naheliegende Erklärungsversuch über die Materialmenge trägt nicht:** Der Anteil der Sätze mit Anrede ist auf beiden Seiten gleich verteilt — Figur 84 Sätze mit 82 % Aussagen, Nutzer 51 Sätze mit 82 % Aussagen — und der Nutzer bekommt trotzdem ein sauberes Profil. Es entscheidet nicht die Menge, sondern die **Sorte**: Die Figur schreibt dem Gegenüber Eigenschaften und Bedürfnisse zu — Sätze der Form *„du bist/denkst/brauchst X"* —, der Nutzer stellt Anforderungen und Fragen. Nur die erste Sorte ist als Profilsatz lesbar — und genau sie erzeugt eine empathisch spiegelnde Figur in fast jedem Turn. **Im Produktivsystem in abgeschwächter Form:** Die Kern-Zeile des produktiven Paares, 3032 Zeichen, beschreibt die Figur durchgehend als **Funktion ihres Gegenübers** — **8 von 21 Sätzen**, 42 % nach Zeichen. **⚠ Der Beleg oben stammt aus einem fremden System und ist als Eichfall untauglich** — sein Verhalten kann programmiert sein, und eine Rollenverweigerung ist dann keine Charaktereigenschaft, sondern eine Leitplanke. **Am eigenen Paar gegengeprüft (19.08.2026) reproduziert sich die scharfe Form nicht:** 14 % Wortschatzüberschneidung zwischen beiden Kernen, **null wortgleiche Zitate**, und die Rollen sind konsistent und richtig verteilt — jede Seite schreibt die Gegenrolle ausdrücklich dem Gegenüber zu. Die Reparatur vom 17.08.2026 hält. **Was bleibt, ist der Bezug selbst**, und der ist eine Frage der Bauart: `charakter_hash` ist über `user_id × character_id` paarbezogen. Entschieden am 19.08.2026: Der Kern soll die **Person** beschreiben, nicht das Paar. **Der Prompt ist dafür nicht der Hebel** — dreimal gemessen, siehe `PROFIL-EINMALERHEBUNG` im Backlog. Zu entscheiden ist, ob der Kern das darf: Das relationale Wesen ist Gegenstand des **Beziehungsprofils**, der Kern soll das tragen, was ohne das Gegenüber bliebe. Solange die Trennung nicht festgelegt ist, misst der Zuwendungs- und der Initiative-Faktor auf einer Quelle, die beide Personen enthält.
 
@@ -788,7 +798,9 @@ gehoeren deshalb nicht in dieselbe Reihe wie ein Defekt mit Codeort.
 
 ### `PERSPEKTIVE-OHNE-DATIV` — kein Dativ fuer den generischen Nutzer
 
-**Zustand:** offen — gegen HEAD `00c16b6` gehalten am 20.08.2026. `agents/charakter/destillation.py:487-489` kennt weiter nur Nominativ und Genitiv.
+**Zustand:** behoben — gegen HEAD `12a7c6a` gebaut am 22.08.2026. `_perspektive_aufloesen` liefert alle vier Kasus (`traeger`, `traeger_gen`, `traeger_dat`, `traeger_akk`); kein Prompt setzt den Traeger mehr im falschen Kasus ein. Zeuge: `tests/test_traegerformen.py::test_kein_prompt_traegt_eine_falsche_form` — er haelt **beide** Perspektiven gegen neun gemessene Fehlformen und wird rot, sobald eine zurueckkehrt.
+
+**Der Eintrag nannte vier Stellen, das Rendern fand neun.** Neben den vier »von«-Stellen standen im gerenderten Text auch *„Was verraet die ART der Kommunikation ueber **der Nutzer**"*, *„charakterisiert **der Nutzer**"*, *„welche Emotionen tragen **der Nutzer** langfristig"*, *„an dem man **der Nutzer** erkennt"* und *„was **der Nutzer** wichtig ist"* (Dativ). Vier der fuenf »von«-Stellen sind dabei nicht auf den Dativ gegangen, sondern auf das Genitivattribut — *„das dauerhafte Wesen des Nutzers"* statt *„von dem Nutzer"*, was fuer den Eigennamen dieselbe Zeile richtig macht (*„das dauerhafte Wesen Novas"*).
 
 **Befund (11.08.2026), aus der Fundliste uebernommen.** `_perspektive_aufloesen` kennt für den generischen Nutzer nur Nominativ und Genitiv (`der Nutzer` / `des Nutzers`), kein Dativ. Vier der fünf Profil-Prompts setzen den Träger hinter „von" ein und lesen dadurch bei jedem menschlichen Paar „ein kompaktes Persönlichkeitsprofil von **der Nutzer**". Für die Assistentin tritt der Fall nicht auf, weil dort ein Eigenname steht.
 
