@@ -173,6 +173,38 @@ def urteil_lesen(roh: str) -> tuple[Einwandsurteil, str]:
     return urteil, prosa
 
 
+#: Die fuenf Feldnamen des Kopfblocks, in ihrer ASCII-Form.
+_KOPFFELDER: frozenset[str] = frozenset(
+    {"EINWAND", "GEPRUEFT", "BEWERTUNG", "STAERKE", "QUELLE"}
+)
+
+#: Umlaute auf ihre ASCII-Doppel. Der Prompt schreibt `GEPRUEFT` vor, das
+#: Modell schreibt deutsch.
+_UMLAUTE: dict[int, str] = str.maketrans({
+    "Ä": "AE", "Ö": "OE", "Ü": "UE", "ä": "AE", "ö": "OE", "ü": "UE", "ß": "SS",
+})
+
+
+def _feldname(roh: str) -> str:
+    """Bringt einen Feldnamen des Kopfblocks auf seine ASCII-Form.
+
+    **Warum das noetig ist, und es ist gemessen.** Der Prompt verlangt
+    `GEPRUEFT` und `STAERKE`; das Modell schreibt die deutschen Formen
+    `GEPRÜFT` und `STÄRKE`. Ein Feldname ausserhalb der erwarteten Menge
+    liess `_kopf_deuten` bis zum 22.08.2026 das **ganze** Urteil verwerfen —
+    ein Umlaut kostete alle fuenf Felder.
+
+    `[gemessen]` — 22.08.2026 ueber 36 Stunden Betriebslog: Von fuenf echten
+    Ausfaellen des Kopfblocks trugen **vier** `GEPRÜFT` mit Umlaut.
+
+    Vorbedingung: `roh` ist der Text links vom Doppelpunkt.
+    Nachbedingung: derselbe Name in Grossbuchstaben, Umlaute aufgeloest.
+        Unbekannte Namen kommen unveraendert zurueck und werden vom Aufrufer
+        verworfen — diese Funktion entscheidet nicht, was ein Feld ist.
+    """
+    return roh.upper().translate(_UMLAUTE)
+
+
 def _kopf_deuten(kopf: str) -> Einwandsurteil | None:
     """Liest die fuenf Felder aus dem Kopfblock und prueft sie gegen ihre Menge.
 
@@ -184,12 +216,13 @@ def _kopf_deuten(kopf: str) -> Einwandsurteil | None:
     """
     felder: dict[str, str] = {}
     for zeile in kopf.splitlines():
-        treffer = re.match(r"^\s*(EINWAND|GEPRUEFT|BEWERTUNG|STAERKE|QUELLE)\s*:\s*(.*)$",
-                           zeile.strip())
+        treffer = re.match(r"^\s*([A-ZÄÖÜa-zäöü]+)\s*:\s*(.*)$", zeile.strip())
         if treffer:
-            felder[treffer.group(1)] = treffer.group(2).strip()
+            name: str = _feldname(treffer.group(1))
+            if name in _KOPFFELDER:
+                felder[name] = treffer.group(2).strip()
 
-    if set(felder) != {"EINWAND", "GEPRUEFT", "BEWERTUNG", "STAERKE", "QUELLE"}:
+    if set(felder) != _KOPFFELDER:
         return None
 
     bewertung: str = felder["BEWERTUNG"].lower()

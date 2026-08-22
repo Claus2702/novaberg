@@ -161,3 +161,66 @@ class KanalzwangTest(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class UmlautImFeldnamenTest(unittest.TestCase):
+    """Der Prompt schreibt `GEPRUEFT`, das Modell schreibt deutsch.
+
+    `[gemessen]` — 22.08.2026 ueber 36 Stunden Betriebslog: **vier von fuenf**
+    echten Kopfblock-Ausfaellen trugen `GEPRÜFT` mit Umlaut. Ein Feldname
+    ausserhalb der erwarteten Menge liess bis dahin das **ganze** Urteil
+    verwerfen — ein Umlaut kostete alle fuenf Felder, und die Ausbausperre
+    griff in diesem Turn nicht.
+
+    Der Ausfall war dabei nie still: `graph/nodes/verfasser.py` protokolliert
+    ihn mit den ersten 120 Zeichen der Rohantwort, und genau diese Zeilen
+    haben die Ursache gezeigt.
+    """
+
+    _MIT_UMLAUT: str = (
+        "EINWAND: nein\n"
+        "GEPRÜFT: Die Frage stand schon frueher da und wurde beantwortet.\n"
+        "BEWERTUNG: trifft_nicht_zu\n"
+        "STÄRKE: 0.2\n"
+        "QUELLE: fakt\n"
+        "---\n"
+        "Das hatten wir vorhin schon."
+    )
+
+    def test_gepruueft_mit_umlaut_wird_gelesen(self) -> None:
+        """Der gemessene Fall: vier von fuenf Ausfaellen sahen so aus."""
+        urteil, prosa = urteil_lesen(self._MIT_UMLAUT)
+        self.assertTrue(urteil.geliefert)
+        self.assertFalse(urteil.vorhanden)
+        self.assertEqual("trifft_nicht_zu", urteil.bewertung)
+        self.assertAlmostEqual(0.2, urteil.staerke)
+        self.assertIn("Die Frage stand schon", urteil.geprueft)
+        self.assertEqual("Das hatten wir vorhin schon.", prosa)
+
+    def test_ascii_form_liest_weiter(self) -> None:
+        """Die Gegenrichtung — die vorgeschriebene Form darf nicht brechen."""
+        urteil, _ = urteil_lesen(_GUT)
+        self.assertTrue(urteil.geliefert)
+
+    def test_kleinschreibung_wird_gelesen(self) -> None:
+        """Dasselbe Modell, dieselbe Freiheit: `geprueft:` statt `GEPRUEFT:`.
+
+        Nicht gemessen, sondern derselbe Fehlermodus eine Stufe weiter — wer
+        den Umlaut toleriert und die Kleinschreibung nicht, hat die Klasse
+        halb behandelt.
+        """
+        urteil, _ = urteil_lesen(_GUT.lower().replace("---", "---"))
+        self.assertTrue(urteil.geliefert)
+
+    def test_fremdes_feld_bleibt_ein_ausfall(self) -> None:
+        """Die Toleranz gilt der Schreibweise, nicht dem Bestand der Felder.
+
+        Fehlt ein Feld, bleibt es ein Ausfall — ein halbes Urteil saehe
+        gefaellt aus, und genau das verhindert `_kopf_deuten`.
+        """
+        ohne_quelle = "\n".join(
+            z for z in self._MIT_UMLAUT.splitlines() if not z.startswith("QUELLE")
+        )
+        urteil, prosa = urteil_lesen(ohne_quelle)
+        self.assertFalse(urteil.geliefert)
+        self.assertEqual("Das hatten wir vorhin schon.", prosa)

@@ -461,10 +461,17 @@ def verfassen(state: ConversationState) -> ConversationState:
         # Laut, nicht still: Ohne diese Zeile ist ein ausgefallener Kopfblock
         # in der Fallenbatterie von einem Turn ohne Einwand nicht zu
         # unterscheiden, und die Rate zaehlte Ausfaelle als Erfolge.
+        # Der Auszug traegt den **ganzen** Kopfblock, nicht seinen Anfang.
+        # `[gemessen]` — 22.08.2026: Mit 120 Zeichen endete er mitten im
+        # zweiten von fuenf Feldern. Ein Auszug, aus dem sich die Ursache
+        # nicht bestimmen laesst, macht den Ausfall zwar sichtbar, aber nicht
+        # untersuchbar — fuenf protokollierte Faelle liessen offen, woran sie
+        # scheiterten.
         logger.error(
             "Verfasser: kein lesbares Urteil im Kopfblock — die Ausbausperre "
-            "greift in diesem Turn nicht. Erste 120 Zeichen der Rohantwort: %r",
-            roh[:120],
+            "greift in diesem Turn nicht. Kopfblock der Rohantwort (%d Zeichen "
+            "gesamt): %r",
+            len(roh), roh[:500],
         )
 
     state["antwort_inhalt"] = inhalt
