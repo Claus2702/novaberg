@@ -1,6 +1,6 @@
 # Novaberg — Roadmap (Projektchronik)
 
-**Stand:** 22. August 2026, 19:05 UTC
+**Stand:** 22. August 2026, 20:15 UTC
 **Pfad:** novaberg/docs/novaberg-roadmap.md
 **Single Source of Truth für abgeschlossene Arbeit.**
 **Offene Punkte → novaberg-backlog.md**
@@ -12,6 +12,45 @@ Die Kopfzeile stand bis Chat 109 auf „Chat 93, 21. Mai 2026" — 15 Chats hint
 ---
 
 ## Chats 3–20: Grundlagen (März 2026)
+
+### 22.08.2026, 20:15 UTC — Der Wissensspeicher bekommt eine Ebene und wird zur Wurzel
+
+**Die Ablage kannte den Nutzer nur als Namensteil.** `autonomous/{charakter}/` war flach; wer
+darin eine Teilmenge ansprechen wollte, musste Dateinamen vergleichen. Ein Index kennt aber nur
+Verzeichnisse — und eine Wurzel traegt `user_id x character_id`. Am Bestand gemessen lagen dort
+**1097 Dateien ueber 17 Kennungen**: 1007 `meister`, dazu `falle` 41, `rasim` 12 und vierzehn
+weitere. Eine Wurzel darauf haette fremdes Material mitgenommen.
+
+**Gebaut ist `autonomous/{charakter}/{context_user}/`.** Das Praefix im Dateinamen bleibt und ist
+jetzt redundant — es haelt eine Datei zuordenbar, die aus ihrem Verzeichnis herausgereicht wird.
+Der `INDEX.md` wandert mit: Er liegt neben den Dateien, die er nennt, und `index_aktualisieren`
+leitet seinen Ort **aus dem Dateipfad ab**, statt ihn erneut zusammenzusetzen.
+
+**Der Umzug in Zahlen:** 1097 Dateien verschoben — 1071 mit `git mv`, 26 danach von Hand, weil sie
+seit dem letzten Commit entstanden und noch nicht versioniert waren. 0 ohne erkennbare Kennung, 0
+belegte Ziele. Der Sammelindex ist aufgeteilt: **391 Verweise, 391 uebertragen**, jedes Ziel
+vorhanden, 12 Paare mit eigenem Index. In der Datenbank **725 Zeilen** `autonomous_wissen.dateipfad`
+nachgezogen; danach 0 auf der alten Form, 0 Abweichungen zwischen Pfadverzeichnis und `user_id`, und
+**725 von 725** Zeilen zeigen auf eine existierende Datei.
+
+> **Waehrend des Umzugs ruhte der Hintergrundprozess** (`PIXIE_AKTIV=false`). Er hatte elf Minuten
+> vorher zuletzt geschrieben; ein Umzug unter laufendem Schreiber haette eine Datei an zwei Orten
+> haben koennen.
+
+**Die dritte Wurzel steht:** `/knowledge/autonomous/nova/meister`, `eigentum='figur'`, 1008 Dateien
+— angelegt ueber den Dienstweg, mit der Frage nach dem Eigentuemer und der Antwort darauf.
+
+**Der Aussenrand zeigt auf das Paar, nicht auf den Speicher**, und das ist im echten Ausloesefall
+belegt: `/knowledge` abgewiesen, `/knowledge/autonomous/nova` abgewiesen,
+`/knowledge/autonomous/nova/meister` bis zur Eigentumsfrage durchgelassen. Laege der Rand auf
+`/knowledge`, waere die Freigabe fremden Materials ein Satz im Gespraech.
+
+**Was fehlt, ist der Indexlauf.** Der Waechter hat keinen Takt und wird von Hand angestossen
+(`POST /admin/dateien/index`), hoechstens 50 Dateien je Lauf. 1008 Dateien sind rund 21 Laeufe auf
+dem CPU-Modell, das Pixie teilt. **Bis er durch ist, hat der Index von diesen Dateien keine Zeile**
+— der `[EIGENE FUNDE]`-Block bleibt bis dahin ohne Eingabe.
+
+**Bilanz:** Suite **2121 gruen, 0 uebersprungen**; Codepruefungen unveraendert, harte Wand sauber.
 
 ### 22.08.2026, 19:05 UTC — Der Eigentuemer wird gefragt, nicht geraten
 

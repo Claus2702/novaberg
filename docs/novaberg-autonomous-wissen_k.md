@@ -63,11 +63,23 @@ obsidian-vault/
 | `thema-slug` | Thema als URL-tauglicher Slug | `blockchain-grundlagen` |
 | `typ` | Art der Datei | `wissen` oder `bericht` |
 
-Der Charakter ist das Verzeichnis, nicht der Dateiname. Flach innerhalb des Charakter-Ordners, sortierbar nach Datum.
+~~Der Charakter ist das Verzeichnis, nicht der Dateiname. Flach innerhalb des Charakter-Ordners, sortierbar nach Datum.~~
 
-### 2.3 INDEX.md — pro Charakter
+→ **Am 22.08.2026 um eine Ebene erweitert: `autonomous/{charakter}/{context_user}/`.** Der Charakter bleibt Verzeichnis, der Nutzer wird eines. Das Präfix im Dateinamen bleibt und ist damit redundant — es hält eine Datei zuordenbar, die aus ihrem Verzeichnis herausgereicht wird.
+
+> **Der Anlass ist ein Zugriff, den die flache Ablage nicht zuließ.** Der Speicher sollte dem Dateien-Index als Wurzel dienen, und eine Wurzel trägt `user_id × character_id` (`novaberg-agent-dateien_k.md` §2.2). Am Bestand gemessen lagen in `autonomous/nova/` **1097 Dateien über 17 Kennungen** — 1007 `meister`, dazu `falle` 41, `rasim` 12 und vierzehn weitere. Keine Teilmenge davon war ohne Namensvergleich adressierbar, und ein Verzeichnis ist der einzige Zuschnitt, den ein Index kennt.
+>
+> **Die Zuordnung stand vorher nur im Dateinamen — als Konvention, die kein Werkzeug erzwingt.** Sie war lesbar und nicht ansprechbar; genau das ist der Unterschied, den der Umzug beseitigt.
+>
+> **Der Umzug in Zahlen, 22.08.2026:** 1097 Dateien verschoben (1071 mit `git mv`, 26 noch nicht versionierte danach), 0 ohne erkennbare Kennung, 0 belegte Ziele. In der Datenbank 725 Zeilen `autonomous_wissen.dateipfad` nachgezogen; danach **0** Zeilen auf der alten Form, **0** Abweichungen zwischen Pfadverzeichnis und `user_id`, und **725 von 725** Zeilen zeigen auf eine existierende Datei.
+
+### 2.3 INDEX.md — pro Paar
 
 Inspiriert durch Claude Codes `MEMORY.md`: Ein Index, kein Dump. Pro Eintrag eine Zeile mit Verweis auf die Detail-Datei. Gepflegt durch den Prune-Zyklus (autoDream-Pattern).
+
+> **Seit dem 22.08.2026 liegt er neben den Dateien, die er nennt** — also im Paarverzeichnis, nicht eine Ebene darüber. Ein Index je Charakter führte die Einträge aller Nutzer gemischt und konnte damit in keiner Wurzel liegen, ohne fremde Themen mit hineinzureichen. **Beim Aufteilen gemessen:** 391 Verweise, 391 übertragen, jedes Ziel vorhanden, 12 Paare mit eigenem Index (die übrigen fünf Kennungen tragen nur Berichte ohne Wissensdatei).
+
+> `index_aktualisieren` leitet den Ort seither **aus dem Dateipfad ab** statt ihn erneut zusammenzusetzen — sonst können Datei und Index auseinanderlaufen, ohne dass etwas anschlägt.
 
 ```markdown
 # Nova — Wissensindex

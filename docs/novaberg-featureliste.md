@@ -2,8 +2,8 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Vollständiges Register aller Features mit Zustandsampel und Beleg
-**Stand:** 22. August 2026, 19:05 UTC
-**Verlauf:** [Verlauf des Standes](#verlauf-des-standes) — 47 Eintraege, juengster zuerst
+**Stand:** 22. August 2026, 20:15 UTC
+**Verlauf:** [Verlauf des Standes](#verlauf-des-standes) — 48 Eintraege, juengster zuerst
 **Pfad:** novaberg/docs/novaberg-featureliste.md
 **Typ:** Register
 **Quellen:** die 43 Konzeptdokumente, `novaberg-architecture.md`, die Moduldokumente, `novaberg-roadmap.md`, `novaberg-backlog.md`, `novaberg-bugs.md`, `novaberg-fundliste.md` — gehalten gegen Code und Produktivsystem
@@ -493,6 +493,7 @@ Ampelzeile  = eine Tabellenzeile, deren zweite Spalte genau eine der vier Farben
 
 Die Fortschreibung des Standes, aus der Kopfzeile geloest am 20.08.2026. Der Wortlaut jedes Eintrags ist unveraendert; vorangestellt ist allein sein Datum.
 
+- **22. August 2026, 20:15 UTC** — **Keine Ampel wechselt, und ein Speicher wird adressierbar:** Der Wissensspeicher ist von `autonomous/{charakter}/` auf `autonomous/{charakter}/{user}/` umgezogen — 1097 Dateien ueber 17 Kennungen lagen in einem Verzeichnis, keine Teilmenge davon war als Pfad ansprechbar. **Die dritte Wurzel steht** (`eigentum='figur'`, 1008 Dateien), der Aussenrand zeigt auf das Paar und weist `/knowledge` wie `/knowledge/autonomous/nova` ab. **Der Indexlauf steht aus** — rund 21 Laeufe zu 50 Dateien; bis dahin hat der Index von diesen Dateien keine Zeile.
 - **22. August 2026, 19:05 UTC** — **Keine Ampel wechselt, und ein Vorgabewert hoert auf, eine Antwort zu sein:** Das Anlegen einer Freigabe fragt jetzt nach dem Eigentuemer, statt `nutzer` zu unterstellen — mit eigenem Rueckweg, weil die Antwort einen **Wert** traegt und kein Ja. Nennt sie beide Seiten, wird erneut gefragt statt zusammengefasst. Suite 2108 → **2120 gruen**, A11 305 → 301.
 - **22. August 2026, 16:45 UTC** — **Keine Ampel wechselt, und ein Prompt hoert auf, eine falsche Aussage zu machen:** Der Block der Dateitreffer sagte von jedem Treffer *„fremde Aufzeichnungen"* — auch von den Recherchen, die der Hintergrundprozess der Figur selbst ablegt. **Im Betrieb gemessen:** Auf die Korrektur *„Du recherchierst ja, nicht ich"* antwortete sie *„die ganze Recherche war dein Werk, nicht meins"*. Jede Wurzel traegt jetzt `eigentum`, der Verfasser baut zwei Bloecke. **Stufe 3 bleibt 🟢 und das Bauteil ist trotzdem wirkungslos**, bis `/knowledge` eine Wurzel ist — gebaut, bezeugt, ohne Eingabe.
 - **22. August 2026, 14:45 UTC** — **Die Ampel bleibt 🔴, und zwei von drei roten Gruenden fallen weg:** `PERSPEKTIVE-OHNE-DATIV` und `PROFILPROMPT-OHNE-GESCHLECHT` sind behoben — `_perspektive_aufloesen` liefert alle vier Kasus und die Pronomen, das Genus der Figur steht in `ASSISTANT_GENUS` statt in der Vermutung des Modells. **Die Eintraege nannten vier Fehlstellen, das Rendern beider Perspektiven durch alle fuenf Prompts fand neun.** Suite 2093 → **2101 gruen**, Gegenprobe 2 bzw. 1 rot. Die Ampel bleibt 🔴, weil `KERNHASH-OHNE-PERSPEKTIVTRENNUNG` steht — dort ist seit heute die **Absicht** entschieden und nichts gebaut.

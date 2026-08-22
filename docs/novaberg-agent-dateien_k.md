@@ -154,7 +154,13 @@ Die Grenze verläuft **nicht** zwischen „Datei" und „Gedächtnis", sondern z
 
 **Der Eigen-Block nimmt §1a.4 nicht zurück.** Auch eigenes Material ist *nachgesehen* und nicht *erlebt*; der Block verlangt die Herkunft weiterhin im Wortlaut — nur lautet sie jetzt *„das habe ich nachgelesen"* statt *„ich habe hier Aufzeichnungen"*.
 
-> **Der Zustand am Tag des Baus: gebaut, bezeugt, ohne Eingabe.** Der Wissensspeicher ist **keine** Wurzel des Index — er ist unter `/knowledge` eingehängt (`F-WISSEN-1`) und trägt 1075 Dateien, aber der Index kennt nur `/files` und `/docs`. Am Bestand gemessen: 174 Indexzeilen, beide Kanäle liefern je 3 Treffer, **alle mit `eigentum='nutzer'`**. Solange die dritte Wurzel fehlt, kann `[EIGENE FUNDE]` im Betrieb nicht entstehen.
+> ~~**Der Zustand am Tag des Baus: gebaut, bezeugt, ohne Eingabe.**~~ → **Am 22.08.2026 aufgehoben: die dritte Wurzel steht.** `/knowledge/autonomous/nova/meister`, `eigentum='figur'`, 1008 Dateien — angelegt über den Dienstweg, mit der Frage nach dem Eigentümer und der Antwort darauf. **Was noch fehlt, ist der Indexlauf**; bis er durch ist, hat der Index von diesen Dateien keine Zeile.
+>
+> **Der Außenrand zeigt auf das Paar, nicht auf den Speicher** (`DATEIEN_AUSSENRAND`, docker-compose). Im echten Auslösefall belegt: `/knowledge` abgewiesen, `/knowledge/autonomous/nova` abgewiesen, `/knowledge/autonomous/nova/meister` bis zur Eigentumsfrage durchgelassen. **Der Rand ist die Wand, nicht die Sorgfalt** — läge er auf `/knowledge`, wäre die Freigabe fremden Materials ein Satz im Gespräch.
+>
+> **Sein Preis ist benannt: Der Rand prüft den Pfad, nicht das Paar.** Er ist global; ein zweites Paar braucht einen zweiten Eintrag, und wer den Pfad kennt, könnte dieses Verzeichnis für sein eigenes Paar freigeben. Steht in der Fundliste.
+>
+> **Der ursprüngliche Zustand, als Beleg dafür, was der Zugriff fand:** Der Wissensspeicher war **keine** Wurzel des Index — er ist unter `/knowledge` eingehängt (`F-WISSEN-1`) und trägt 1075 Dateien, aber der Index kennt nur `/files` und `/docs`. Am Bestand gemessen: 174 Indexzeilen, beide Kanäle liefern je 3 Treffer, **alle mit `eigentum='nutzer'`**. Solange die dritte Wurzel fehlt, kann `[EIGENE FUNDE]` im Betrieb nicht entstehen.
 
 ### 1a.4 Die Beschriftung trägt die Herkunft über den Gedächtnis-Übergang
 
