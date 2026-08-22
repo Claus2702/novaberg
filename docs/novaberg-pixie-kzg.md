@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** KZG-Agent — LangGraph-Subgraph für Kurzzeitgedächtnis
-**Stand:** 16. Mai 2026, Chat 88 (Synapsen P3 — neuer Node `magnete_aufloesen` zwischen `schwelle_pruefen` und `verdichten`, KZG-Subgraph jetzt 5 Nodes)
+**Stand:** 22. August 2026 — `verdichten` sieht den Ausgang des Turns. Davor: 16. Mai 2026 (Synapsen P3 — neuer Node `magnete_aufloesen` zwischen `schwelle_pruefen` und `verdichten`, KZG-Subgraph jetzt 5 Nodes)
 **Pfad:** novaberg/docs/novaberg-pixie-kzg.md
 **Quellen:** nova-02-m-b.md (KZG-Agent-Abschnitte)
 
@@ -30,7 +30,7 @@ Schwelle prüfen → Magnete auflösen → Verdichten → Speichern → Queues
 |------|-------|---------|
 | `schwelle_pruefen` | `agent.py` | Salienz-Score gegen `KZG_SALIENZ_MINIMUM`. Unter Schwelle → kein LLM-Call, kein Store. |
 | `magnete_aufloesen` | `magnete.py` | Resolved Salience-Roh-Strings (`entitaeten_roh`, `zeitausdruck_roh`) zu `entitaet_ids` (via `EntityResolutionService`) und `timeline_id` (via `zeit_parsen_vektor` + `TimelineRepository`, ggf. Anlage eines `erinnerungs_anker`). Übernimmt eine im selben Turn vom TimelineAgent ins Clipboard geschriebene `timeline_id`, statt einen eigenen Anker anzulegen. |
-| `verdichten` | `verdichtung.py` | LLM-Call: Erzeugt `kern` — konkreter Satz mit allen Namen, Orten, Zahlen. |
+| `verdichten` | `verdichtung.py` | LLM-Call: Erzeugt `kern` — konkreter Satz mit allen Namen, Orten, Zahlen. **Seit dem 22.08.2026 sieht er auch den Ausgang des Turns** (siehe unten). |
 | `speichern` | `speicher.py` | Embedding erzeugen, eigenständigen Eintrag mit Magnet-Feldern schreiben, thematische Verstärkung verwandter Bestandseinträge in der Paar-Partition. TTL nach Salienz (7/14/30 Tage). Pipeline-Log-Eintrag nach erfolgreichem `hset` (Synapsen P1.1). |
 | `queues_befuellen` | `queues.py` | Promotion-Queue + Shadow-Queue + Dirty-Flag. |
 
@@ -41,6 +41,35 @@ schwelle_pruefen
   ├─ abgelehnt (Score < Schwelle) → END
   └─ angenommen → magnete_aufloesen → verdichten → speichern → queues_befuellen → END
 ```
+
+### Der Ausgang des Turns steht im Prompt (22.08.2026)
+
+**Die Verdichtung sah bis dahin zwei Texte und kein Ergebnis:** `reiz` — was gesagt wurde — und
+`response` — was geantwortet wurde. Ob ein Dienst den Auftrag ausgeführt oder **abgelehnt** hat,
+stand in keinem von beiden. Behauptet die Antwort eine Handlung, die nicht stattfand, wird die
+Behauptung verdichtet und ist beim nächsten Abruf eine Tatsache ohne ihren Widerspruch
+(`FALSCHE-BESTAETIGUNG-WIRD-ERINNERUNG`).
+
+`dispatch_kzg` sammelt die abgelehnten Dienste **einmal je Batch** — der Ausgang gehört dem Turn,
+nicht dem Segment — und reicht sie als `agent_ausgaenge` an jedes Segment. `verdichten` baut daraus
+den Block `[TATSAECHLICHER AUSGANG]` und setzt ihn **vor** das Bewertungsobjekt.
+
+| Was hineingeht | Was nicht |
+|---|---|
+| `status == "abgelehnt"` mit `korrektur.befund` | `fehler` — eine Störung geht den Betreiber an, nicht das Gedächtnis eines Menschen |
+| | `rejected` — eine Ablehnung ohne Begründung trüge einen Block ohne Inhalt |
+| | `abgeschlossen` — der häufige Fall bleibt unberührt |
+
+> **Der Block trägt eine Tatsache, keine Regel.** Ein Satz der Form *„behaupte keine Handlung"* wäre
+> wieder eine Bitte an ein Modell. Ein Ausgang, der neben dem Text steht, widerspricht der falschen
+> Hälfte der Antwort direkt — und **dass er steht, ist zusicherbar**; was das Modell daraus macht,
+> ist die Messung.
+
+**Zeugen:** `tests/test_kzg_ausgang_im_kern.py`, elf Stück — die vier Ausgänge einzeln, die Stellung
+vor dem Bewertungsobjekt, zwei Dienste gleichzeitig, und der laute Ausfall bei einer Ablehnung ohne
+Korrektur. Gegenprobe: 3 vorhergesagt, 3 gezählt.
+
+---
 
 `magnete_aufloesen` läuft bewusst VOR `verdichten` — defensiv: Resolver-Fehler verwerfen den teuren LLM-Call nicht, und bei Abbruch danach bleibt kein Waisenkind in der Timeline (Synapsen P3, siehe Code-Kommentar in `agent.py`).
 

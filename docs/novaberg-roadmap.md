@@ -1,6 +1,6 @@
 # Novaberg — Roadmap (Projektchronik)
 
-**Stand:** 21. August 2026, 23:50 UTC
+**Stand:** 22. August 2026, 00:20 UTC
 **Pfad:** novaberg/docs/novaberg-roadmap.md
 **Single Source of Truth für abgeschlossene Arbeit.**
 **Offene Punkte → novaberg-backlog.md**
@@ -12,6 +12,37 @@ Die Kopfzeile stand bis Chat 109 auf „Chat 93, 21. Mai 2026" — 15 Chats hint
 ---
 
 ## Chats 3–20: Grundlagen (März 2026)
+
+### 22.08.2026, 00:20 UTC — Die Verdichtung sieht jetzt, was tatsaechlich geschah
+
+**Das Kurzzeitgedaechtnis bekam bisher zwei Texte und keinen Ausgang.** Die Verdichtung liest `reiz` und
+`response` — was gesagt und was geantwortet wurde. Ob ein Dienst den Auftrag ausgefuehrt oder abgelehnt
+hat, stand in keinem von beiden. Behauptet die Antwort eine Handlung, die nicht stattfand, verdichtet
+sie die Behauptung: Am 18.08.2026 wurde aus einem misslungenen Notizauftrag der Gedaechtnisinhalt
+*„Nova hat notiert, dass der Gasvertrag gekuendigt werden soll"* — und beim naechsten Abruf steht er
+ohne den widersprechenden Nachsatz da.
+
+**Gebaut ist eine Sichtverbindung, keine Regel.** `abgelehnte_ausgaenge` zieht die abgelehnten Dienste
+samt Befund aus den Agentenergebnissen; die Verdichtung setzt daraus einen Block
+`[TATSAECHLICHER AUSGANG]` **vor** das Bewertungsobjekt.
+
+> **Eine Tatsache statt einer Anweisung, und das ist der Unterschied zur ersten Haelfte.** Ein Satz der
+> Form *„behaupte keine Handlung"* waere wieder nur eine Bitte an ein Modell. Ein Ausgang, der neben dem
+> Text steht, widerspricht der falschen Haelfte der Antwort direkt — und **dass er steht, ist
+> zusicherbar.** Was das Modell daraus macht, ist die Messung.
+
+**Nur `abgelehnt`, nicht `fehler` und nicht `rejected`.** Eine Stoerung geht den Betreiber an und
+haette im Gedaechtnis eines Menschen nichts zu suchen; `rejected` ist eine Ablehnung ohne Begruendung
+und truege einen Block ohne Inhalt. Beide Grenzen stehen als Zeugen.
+
+**Elf Zeugen, Gegenprobe 3 vorhergesagt / 3 gezaehlt, Suite `Ran 2067 tests — OK`.** Im Betrieb am
+22.08.2026, 00:16 UTC: Eine astronomische Zeitfrage brachte `timeline` zur Ablehnung, der Block wurde
+gesetzt, der Kern trug reinen Inhalt.
+
+> **Was diese Messung nicht zeigt, und der Eintrag bleibt deshalb offen:** Die Antwort jenes Turns
+> behauptete keine Handlung — belegt ist, dass der Weg **laeuft**, nicht dass er den Fehler
+> **verhindert**. Der scharfe Fall verlangt eine Antwort, die eine abgelehnte Handlung bestaetigt, und
+> die stellt das Modell her, nicht der Messende.
 
 ### 21.08.2026, 23:50 UTC — Die Abrufschwelle wirkt auch dort, wo jemand wirklich fragt
 

@@ -1131,7 +1131,9 @@ Drei Defekte aus einem 20-Turn-Bogen auf einem eigenen Paar (`vera`), mit angeha
 
 ### `FALSCHE-BESTAETIGUNG-WIRD-ERINNERUNG`
 
-**Zustand:** offen — gegen HEAD `62560cf` gehalten am 21.08.2026. Seit dem 20.08.2026 traegt der Prompt der Figur bei `status == "abgelehnt"` einen Block mit Befund und Vorschlag (`server/graph/nodes/planner.py:67` und `:170`) — das adressiert die erste Haelfte, ist aber keine Zusicherung, sondern eine Anweisung an ein Modell. Die zweite Haelfte ist unberuehrt: dass die Verdichtung den Ausgang mittraegt, ist nirgends belegt.
+**Zustand:** offen — gegen HEAD `62560cf` gehalten am 22.08.2026. **Die zweite Haelfte ist gebaut:** Die Verdichtung sieht den Ausgang. `agents/kzg/dispatch.py::abgelehnte_ausgaenge` zieht die abgelehnten Dienste samt Befund aus `agent_results`, und `agents/kzg/verdichtung.py` setzt daraus den Block `[TATSAECHLICHER AUSGANG]` **vor** das Bewertungsobjekt — als Tatsache, nicht als Regel. Elf Zeugen (`tests/test_kzg_ausgang_im_kern.py`), Gegenprobe 3 vorhergesagt / 3 gezaehlt, Suite `Ran 2067 tests — OK`. Im Betrieb belegt am 22.08.2026, 00:16 UTC: `timeline` lehnte ab, `Ausgangsblock gesetzt — 1 abgelehnte(r) Dienst(e)`, der Kern trug reinen Inhalt.
+
+> **Der Eintrag bleibt trotzdem offen, und zwar aus zwei Gruenden.** Erstens: Die Antwort jenes Messturns behauptete gar keine Handlung — belegt ist, dass der Weg **laeuft**, nicht dass er den Fehler **verhindert**. Der scharfe Fall verlangt eine Antwort, die eine abgelehnte Handlung bestaetigt, und den stellt das Modell her, nicht der Messende. Zweitens: Die erste Haelfte — dass die Antwort selbst keine Bestaetigung enthaelt — haengt weiter an einer Anweisung im Prompt der Figur (`server/graph/nodes/planner.py:67`, seit dem 20.08.2026) und ist keine Zusicherung.
 
 **Befund.** Nach dem misslungenen Notizauftrag antwortete Nova: *„Ich habe es notiert... also, ich wollte es gerade so richtig ordentlich für dich festhalten. Aber da gab es ein kleines technisches Stolpern in der Logik meines 'Timeline'-Agenten."* **Der Satz widerspricht sich in zwei Sätzen selbst.** Und die falsche Hälfte wurde verdichtet:
 
