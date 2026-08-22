@@ -2,8 +2,8 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Rohe, noch unklassifizierte Funde aus laufender Arbeit
-**Stand:** 22. August 2026, 14:50 UTC
-**Offen:** 10 Funde
+**Stand:** 22. August 2026, 16:50 UTC
+**Offen:** 11 Funde
 **Verlauf:** [Verlauf des Standes](#verlauf-des-standes) — 64 Eintraege, juengster zuerst
 **Pfad:** novaberg/docs/novaberg-fundliste.md
 
@@ -229,6 +229,9 @@ Analog zum Kraft-1-Stichtag: ab wann eine Partition brauchbar ist. Kein Backfill
 
 ## Offen
 
+- **2026-08-22** — **Die Figur schreibt die Recherchen ihres eigenen Hintergrundprozesses dem Nutzer zu — und haelt das gegen ausdruecklichen Widerspruch aufrecht.** Belegt an zwei aufeinanderfolgenden Turns: Auf *„Du hast recherchiert"* antwortet sie noch richtig (*„meine kleinen Studien"*), im selben Zug aber schon gedreht (*„dient **dir** das eigentlich"*); auf die Korrektur *„Du recherchierst ja, nicht ich"* antwortet sie *„die ganze Recherche war **dein** Werk, nicht meins. Ich habe nur beobachtet."* **Der Dateien-Index scheidet als Quelle aus** — von 174 Eintraegen ist keiner eine Recherche des Hintergrundprozesses; die zwei Treffer mit *knowledge* im Pfad sind Konzeptdokumente. **Die Spur liegt im Langzeitgedaechtnis:** Die Recherchen stehen dort mit `beobachter='assistant'`, und der Prompt-Block gibt als einzigen Urheberhinweis das englische Schemawort aus (`Beobachter: assistant`) neben einem Inhalt, der oft mit *„Der Fund verknuepft…"* beginnt und selbst keinen Urheber nennt. **Eine Kategorie fuer „vom eigenen Hintergrundprozess recherchiert" gibt es nicht** — sie faellt mit „im Gespraech geaeussert" zusammen. ⚠ Dass diese Eintraege im fraglichen Turn tatsaechlich im Prompt standen, ist **nicht** belegt. **Der Folgeschaden ist bereits persistiert:** Ein LZG-Knoten desselben Tages traegt *„Nova fragt den Nutzer, ob **seine** Recherche…"*
+
+  → **Am 22.08.2026 zur Haelfte behoben.** Der Dateiweg ist gebaut: `dateien_wurzeln.eigentum` und zwei Bloecke im Verfasser (`novaberg-agent-dateien_k.md` §1a.5). **Offen bleibt der Gedaechtnisweg** — die Recherchen stehen im LZG mit `beobachter='assistant'` und einem Inhalt ohne Urheber, und genau von dort kam der gemessene Fall: Der Dateiweg konnte ihn gar nicht verursachen, weil der Wissensspeicher nicht indiziert ist. **Der Umbau nimmt dem Fehler also einen Weg, den er noch nicht ging, und laesst den, den er ging.**
 - **2026-08-22** — `server/prompts/default/salienz.assistant_task.txt:7` bildet den Genitiv des Traegers als `{traeger}s` statt ueber `_genitiv_bilden`. Fuer *Nova* stimmt das; ein Name auf s/ss/ss/tz/z/x — genau der Fall, fuer den `_genitiv_bilden` am 16.08.2026 gebaut wurde — bekommt hier die falsche Form. Gefunden von der zweiten Kontrolle ueber den ganzen Baum: 36 Dateien setzen eine Person in einen Prompt ein, vier Vorlagen ausserhalb der Destillation tragen `{traeger}`, und **alle vier fuellen ihn mit `ASSISTANT_NAME`** — die Kasusfehler des Rollenbegriffs treffen sie deshalb nicht, dieser eine Genitiv schon.
 - **2026-08-22** — In `agents/charakter/destillation.py` steht der Trennkommentar `# Prompts — Nova (eigene Perspektive)` ueber einem leeren Abschnitt: Die Nova-Prompts sind am 16.08.2026 in den parametrisierten Satz aufgegangen, die Ueberschrift blieb stehen und sagt jetzt eine Gliederung an, die es nicht gibt.
 - **2026-08-22** — Die Ampelzaehlung der Featureliste ueber `grep`/`cut` ist locale-abhaengig: In der Standard-Shell dieser Umgebung liefert `grep -c` fuer ⚫ **12** statt **37**, weil die Werkzeuge Bytes und keine Zeichen sehen. Der Wachposten des Handzettels benennt das Symptom, aber die falsche Ursache (er empfiehlt `grep -oE … | wc -l`, das denselben Fehler macht). Belastbar zaehlt nur ein Lauf, der UTF-8 liest.

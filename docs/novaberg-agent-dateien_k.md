@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Konzept — Indizierung und Durchsuchung eines vorgegebenen Verzeichnisses als NMCP-Dienst
-**Stand:** 18. August 2026 (v0.15)
+**Stand:** 22. August 2026 (v0.16 — **jede Wurzel traegt, wessen Material sie enthaelt**, und der Block haengt daran: neuer §1a.5. Davor: 18. August 2026, v0.15)
 **Pfad:** novaberg/docs/novaberg-agent-dateien_k.md
 **Typ:** Konzept (`_k`)
 **Status:** 🟠 **Stufe 1 bis 3 gebaut und gemessen, Stufe 4 zur Hälfte** (18.08.2026) — Freigabe, Wächter und die Enricher-Quelle laufen, letztere seit heute **zweikanalig**; Suche und Zoom des Auftrags-Wegs stehen. **Was fehlt, ist der Aufrufer:** Aushang, Klassifikation und Dispatch des Dienstes `dateien` (§8.1). Offen bleibt der Rückweg (§4b).
@@ -121,6 +121,32 @@ Die Grenze verläuft **nicht** zwischen „Datei" und „Gedächtnis", sondern z
 | **Erarbeitetes** | sie findet eine Lücke, studiert, destilliert, legt ab (§3.0b) | **ja**, mit Herkunft |
 
 **Der mittlere Zustand ist der häufigste und war bis v0.8 nicht benannt.** Ein Mensch fragt nach etwas, das in den Unterlagen steht; sie beantwortet es. Damit ist nichts gelernt und nichts gespeichert — das Wissen liegt weiter in der Datei und ist beim nächsten Mal genauso erreichbar. **Sie muss nichts übernehmen, um auskunftsfähig zu sein.**
+
+### 1a.5 Nicht jede Wurzel trägt fremdes Material (22.08.2026)
+
+**Der Block von §1a.2 sagt in seinem ersten Satz »Es sind fremde Aufzeichnungen«, und das war bis zum 22.08.2026 eine Aussage über *alle* Treffer.** Für `/files` und `/docs` stimmt sie. Für den Wissensspeicher, in dem der Hintergrundprozess der Figur seine eigenen Recherchen ablegt, ist sie die schriftliche Anweisung, eigenes Material einem anderen zuzuschreiben.
+
+> **Gemessen im Betrieb, 22.08.2026.** Auf *„Du hast fleißig recherchiert"* antwortet sie zunächst richtig — *„meine kleinen Studien"* —, dreht aber im selben Absatz auf *„dient **dir** das eigentlich"*. Auf die ausdrückliche Korrektur *„Du recherchierst ja, nicht ich"* antwortet sie: *„die ganze Recherche war **dein** Werk, nicht meins. Ich habe nur beobachtet."*
+>
+> **Der Fehler pflanzt sich über §1a.4 fort:** Ein Langzeit-Knoten desselben Tages trägt bereits *„Nova fragt den Nutzer, ob **seine** Recherche…"*.
+
+**Die Angabe sitzt an der Wurzel, nicht an der Datei** — aus demselben Grund wie das Paar (§2.2): Eine Datei hat keinen Eigentümer, eine Freigabe schon. `dateien_wurzeln.eigentum` trägt sie, die Indexzeile erbt sie über `wurzel_id`, und `Aufzeichnung.eigentum` bringt sie bis in den Verfasser.
+
+| Wert | Was dahinter liegt | Welcher Block |
+|---|---|---|
+| `nutzer` | Unterlagen des Menschen, Projektdokumentation | `[AUFZEICHNUNGEN]` — fremd |
+| `figur` | was ihr eigener Hintergrundprozess nachgesehen und abgelegt hat | `[EIGENE FUNDE]` — ihre Arbeit |
+| `gemischt` | eine Wurzel, an der beides liegen kann | `[AUFZEICHNUNGEN]` — fremd |
+
+**`gemischt` läuft in den Fremd-Block, und der Vorgabewert ist `nutzer`.** Beides folgt derselben Abwägung: Der teurere Fehler ist, dass sie Fremdes als eigenes ausgibt — nicht, dass sie Eigenes zu vorsichtig behandelt. Eine Wurzel, deren Einstufung niemand entschieden hat, landet deshalb nicht auf ihrer Seite.
+
+**`/docs` ist `nutzer`, obwohl die Dokumentation von ihr handelt.** Sie ist nicht ihr Erarbeitetes (§1a.3), und §1a.4 nennt genau diesen Weg den teuersten Fall: Aus Konzepten lernt sie sonst, Fähigkeiten zu haben, die nicht gebaut sind.
+
+**Der zweite Blockname enthält den ersten nicht als Teilzeichenkette.** `[EIGENE FUNDE]`, nicht `[EIGENE AUFZEICHNUNGEN]`: Der Bestand zerteilt Prompts an `split("[AUFZEICHNUNGEN]")`, und ein Name, der den anderen enthält, ließe jede solche Prüfung an der falschen Stelle schneiden, ohne rot zu werden.
+
+**Der Eigen-Block nimmt §1a.4 nicht zurück.** Auch eigenes Material ist *nachgesehen* und nicht *erlebt*; der Block verlangt die Herkunft weiterhin im Wortlaut — nur lautet sie jetzt *„das habe ich nachgelesen"* statt *„ich habe hier Aufzeichnungen"*.
+
+> **Der Zustand am Tag des Baus: gebaut, bezeugt, ohne Eingabe.** Der Wissensspeicher ist **keine** Wurzel des Index — er ist unter `/knowledge` eingehängt (`F-WISSEN-1`) und trägt 1075 Dateien, aber der Index kennt nur `/files` und `/docs`. Am Bestand gemessen: 174 Indexzeilen, beide Kanäle liefern je 3 Treffer, **alle mit `eigentum='nutzer'`**. Solange die dritte Wurzel fehlt, kann `[EIGENE FUNDE]` im Betrieb nicht entstehen.
 
 ### 1a.4 Die Beschriftung trägt die Herkunft über den Gedächtnis-Übergang
 

@@ -108,6 +108,8 @@ Der Verfasser trägt seit dem 18.08.2026 einen weiteren Wissensblock: die Treffe
 
 > **Die Trennung ist die Aussage, nicht die Formatierung.** Was in den Dateien steht, ist nicht Novas Erinnerung und nicht ihr Wissen — es sind fremde Aufzeichnungen, die falsch oder veraltet sein können. Ein Dokument gehört zusätzlich niemandem. Wer es unbeschriftet in denselben Block legt, bekommt den Fehler aus dem offenen Präzedenzfall mit schlechterer Quelle.
 
+> **Es sind zwei Blöcke, seit dem 22.08.2026, und die Trennung verläuft zwischen ihnen ein zweites Mal.** `[AUFZEICHNUNGEN]` trägt fremdes Material, `[EIGENE FUNDE]` das, was ihr eigener Hintergrundprozess nachgesehen und abgelegt hat; welcher gilt, entscheidet `eigentum` an der Wurzel (`novaberg-agent-dateien_k.md` §1a.5). **Der Satz oben bleibt für den ersten Block richtig und war für den zweiten die Anweisung, eigenes Material einem anderen zuzuschreiben** — im Betrieb gemessen am 22.08.2026, gegen ausdrücklichen Widerspruch aufrechterhalten.
+
 Drei Eigenschaften tragen, und keine ist Zierde:
 
 - **Jeder Eintrag nennt seine Fundstelle.** Eine Aufzeichnung ohne Herkunft ist von einer Behauptung nicht zu unterscheiden.

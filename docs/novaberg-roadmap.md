@@ -1,6 +1,6 @@
 # Novaberg — Roadmap (Projektchronik)
 
-**Stand:** 22. August 2026, 14:45 UTC
+**Stand:** 22. August 2026, 16:45 UTC
 **Pfad:** novaberg/docs/novaberg-roadmap.md
 **Single Source of Truth für abgeschlossene Arbeit.**
 **Offene Punkte → novaberg-backlog.md**
@@ -12,6 +12,46 @@ Die Kopfzeile stand bis Chat 109 auf „Chat 93, 21. Mai 2026" — 15 Chats hint
 ---
 
 ## Chats 3–20: Grundlagen (März 2026)
+
+### 22.08.2026, 16:45 UTC — Jede Wurzel sagt, wessen Material sie traegt
+
+**Der Block der Dateitreffer sagte von jedem Treffer, er sei fremd.** Fuer die Unterlagen des
+Menschen und die Projektdokumentation stimmt das. Fuer die Recherchen, die der Hintergrundprozess
+der Figur selbst ablegt, ist es die schriftliche Anweisung, eigenes Material einem anderen
+zuzuschreiben.
+
+**Im Betrieb gemessen, und es war der Anlass:** Auf *„Du hast fleissig recherchiert"* antwortet sie
+zunaechst richtig — *„meine kleinen Studien"* —, dreht aber im selben Absatz auf *„dient **dir** das
+eigentlich"*. Auf die ausdrueckliche Korrektur *„Du recherchierst ja, nicht ich"* antwortet sie:
+*„die ganze Recherche war **dein** Werk, nicht meins. Ich habe nur beobachtet."* Ein Langzeit-Knoten
+desselben Tages traegt den Fehler bereits verdichtet: *„Nova fragt den Nutzer, ob **seine**
+Recherche…"*
+
+**Gebaut ist eine Angabe an der Wurzel, nicht an der Datei** — aus demselben Grund wie das Paar:
+Eine Datei hat keinen Eigentuemer, eine Freigabe schon. `dateien_wurzeln.eigentum` traegt
+`nutzer`, `figur` oder `gemischt`; die Indexzeile erbt sie ueber `wurzel_id`, und der Verfasser
+baut daraus **zwei** Bloecke: `[AUFZEICHNUNGEN]` fuer Fremdes, `[EIGENE FUNDE]` fuer ihres.
+
+> **Der zweite Name enthaelt den ersten bewusst nicht.** Der Bestand zerteilt Prompts an
+> `split("[AUFZEICHNUNGEN]")`; ein Blockname, der den anderen als Teilzeichenkette traegt, liesse
+> jede solche Pruefung an der falschen Stelle schneiden, ohne rot zu werden.
+
+**Vorgabewert ist `nutzer`, und `gemischt` laeuft in den Fremd-Block.** Beides folgt derselben
+Abwaegung: Der teurere Fehler ist, dass sie Fremdes als eigenes ausgibt.
+
+**Bilanz:** Suite 2101 → **2108 gruen, 0 uebersprungen**; sieben neue Zeugen. Gegenprobe: die
+Trennung zurueckgebaut faerbt **3** Tests rot. Schemapruefung unveraendert (A9b 11), Codepruefungen
+unveraendert, harte Wand sauber.
+
+**Der Zustand ist gebaut, bezeugt und ohne Eingabe, und das steht so in der Spezifikation.** Der
+Wissensspeicher ist **keine** Wurzel des Index: 1075 Dateien unter `/knowledge`, der Index kennt
+`/files` und `/docs`. Am Bestand gemessen — 174 Indexzeilen, beide Kanaele je 3 Treffer, **alle
+`eigentum='nutzer'`**. Solange die dritte Wurzel fehlt, kann `[EIGENE FUNDE]` im Betrieb nicht
+entstehen.
+
+**Nicht angefasst:** der zweite Weg zum selben Fehler. Die Recherchen stehen auch im
+Langzeitgedaechtnis, dort mit `beobachter='assistant'` und einem Inhalt, der oft mit *„Der Fund
+verknuepft…"* beginnt und keinen Urheber nennt. Das steht in der Fundliste.
 
 ### 22.08.2026, 14:45 UTC — Die Profil-Prompts bekommen jede Traeger-Form als Datum
 
