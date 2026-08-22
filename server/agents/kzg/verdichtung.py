@@ -181,8 +181,41 @@ def verdichten(state: AgentState) -> dict:
             f"{lagebild_text}\n\n"
         )
 
+    # ── Der tatsaechliche Ausgang ───────────────
+    # Bis hierher kennt die Verdichtung nur zwei Texte: was gesagt wurde und
+    # was geantwortet wurde. Was *geschah*, steht in keinem von beiden — und
+    # eine Antwort, die eine abgelehnte Handlung bestaetigt, wird sonst als
+    # Tatsache abgelegt (`FALSCHE-BESTAETIGUNG-WIRD-ERINNERUNG`, 18.08.2026).
+    #
+    # Der Block traegt eine **Tatsache, keine Regel.** Eine Anweisung der Form
+    # „behaupte keine Handlung" waere wieder nur eine Bitte an ein Modell; ein
+    # Ausgang, der neben dem Text steht, widerspricht der falschen Haelfte der
+    # Antwort direkt. Dass er steht, ist zusicherbar — was das Modell daraus
+    # macht, ist die Messung.
+    ausgaenge: list = state["parameter"].get("agent_ausgaenge") or []
+    ausgang: str = ""
+    if ausgaenge:
+        zeilen: str = "\n".join(
+            f"- {a.get('agent', '?')}: hat den Auftrag ABGELEHNT. "
+            f"Begruendung: {a.get('befund', '')}"
+            for a in ausgaenge
+        )
+        ausgang = (
+            "[TATSAECHLICHER AUSGANG]\n"
+            "Was in diesem Turn wirklich geschah. Dies sind Tatsachen und "
+            "gehen dem Wortlaut der Antwort vor: Behauptet die Antwort eine "
+            "Handlung, die hier als abgelehnt steht, hat sie nicht "
+            "stattgefunden.\n"
+            f"{zeilen}\n\n"
+        )
+        logger.info(
+            "KZG-Verdichtung: Ausgangsblock gesetzt — %d abgelehnte(r) Dienst(e)",
+            len(ausgaenge),
+        )
+
     user_message: str = (
         f"{lagebild}"
+        f"{ausgang}"
         "[BEWERTUNGSOBJEKT]\n"
         "Fasse NUR den folgenden Teil zusammen.\n"
         f"{eingabe_label}:\n{bewertungs_text}"

@@ -15,6 +15,61 @@ from graph.reiz import reiz_text
 logger = logging.getLogger("ki_server.agents.kzg.dispatch")
 
 
+def abgelehnte_ausgaenge(state: dict) -> list[dict]:
+    """Die Dienste, die in diesem Turn abgelehnt haben, mit ihrem Befund.
+
+    **Warum das ueberhaupt hier steht.** Der Verdichter sieht bisher `reiz` und
+    `response` — den Text der Aeusserung und den Text der Antwort. Was in dem
+    Turn tatsaechlich *geschah*, sieht er nicht. Behauptet die Antwort eine
+    Handlung, die ein Dienst abgelehnt hat, verdichtet er die Behauptung: Am
+    18.08.2026 wurde aus einem misslungenen Notizauftrag der Gedaechtnisinhalt
+    *„Nova hat notiert, dass der Gasvertrag gekuendigt werden soll"* — und beim
+    naechsten Abruf steht er ohne den widersprechenden Nachsatz da
+    (`FALSCHE-BESTAETIGUNG-WIRD-ERINNERUNG`).
+
+    **Nur `abgelehnt`, nicht `fehler`.** Eine Ablehnung ist ein Urteil ueber den
+    Auftrag und gehoert in den Gedaechtnisinhalt; eine Stoerung geht den
+    Betreiber an und haette dort nichts zu suchen (`agents/base.py:158`).
+
+    Vorbedingung: `state` traegt `agent_results` als Liste von `AgentResult`.
+    Fehlt der Schluessel, ist die Antwort die leere Liste — kein Turn muss
+    Agenten gerufen haben.
+    Nachbedingung: je abgelehntem Dienst ein Dict mit `agent` und `befund`.
+    Die Reihenfolge ist die der Ergebnisse.
+    """
+    # ── Eingabe-Validierung ─────────────────────
+    ergebnisse: list = state.get("agent_results") or []
+
+    # ── Verarbeitung ────────────────────────────
+    ausgaenge: list[dict] = []
+    for r in ergebnisse:
+        if getattr(r, "status", "") != "abgelehnt":
+            continue
+        korrektur = getattr(r, "korrektur", None)
+        if korrektur is None:
+            # `AgentResult.__post_init__` erzwingt die Korrektur bei dieser
+            # Lage. Fehlt sie doch, ist das Objekt an der Pruefung vorbei
+            # entstanden — laut melden statt einen Ausgang ohne Grund bauen.
+            logger.error(
+                "KZG-Ausgaenge: '%s' meldet 'abgelehnt' ohne Korrektur — "
+                "der Ausgang bleibt aussen vor, der Kern kann die Ablehnung "
+                "damit nicht tragen", getattr(r, "agent_name", "?"),
+            )
+            continue
+        ausgaenge.append({
+            "agent":  getattr(r, "agent_name", ""),
+            "befund": getattr(korrektur, "befund", ""),
+        })
+
+    # ── Ausgabe ─────────────────────────────────
+    if ausgaenge:
+        logger.info(
+            "KZG-Ausgaenge: %d Dienst(e) haben abgelehnt — %s",
+            len(ausgaenge), ", ".join(a["agent"] for a in ausgaenge),
+        )
+    return ausgaenge
+
+
 def dispatch_kzg(
     state: dict,
     writes: list[dict],
@@ -64,6 +119,9 @@ def dispatch_kzg(
     # Der Subgraph kennt sie (speicher.py), der Dispatcher bisher nicht.
     new_keys:         list[str] = []
     reinforced_keys:  list[str] = []
+
+    # Einmal je Batch, nicht je Segment: Der Ausgang gehoert dem Turn.
+    ausgaenge: list[dict] = abgelehnte_ausgaenge(state)
 
     for write_idx, write in enumerate(writes):
         daten:       dict = write.get("daten", {})
@@ -125,6 +183,12 @@ def dispatch_kzg(
                 "segment":        daten.get("segment", ""),
                 "segment_index":  daten.get("segment_index", 0),
                 "segment_gesamt": daten.get("segment_gesamt", 0),
+                # Was in diesem Turn tatsaechlich geschah, soweit ein Dienst
+                # widersprochen hat. Einmal je Batch berechnet und an jedes
+                # Segment gereicht: Der Ausgang gehoert dem Turn, nicht dem
+                # Segment — und ein Kernsatz aus Segment 2 darf so wenig eine
+                # abgelehnte Handlung behaupten wie einer aus Segment 1.
+                "agent_ausgaenge": ausgaenge,
             },
             "schritte": [],
             "ergebnis": None,
