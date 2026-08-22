@@ -109,20 +109,71 @@ class GutfallTest(unittest.TestCase):
         self.assertEqual(quelle, "default")
 
 
+class DasNeuePaarIstKeinFehlerfallTest(unittest.TestCase):
+    """Wer noch keine Zeile hat, ist neu — nicht unlesbar.
+
+    **Hier stand bis zum 22.08.2026 das Gegenteil**
+    (`test_fehlende_zeile_wird_abgelehnt`): Eine fehlende Zeile galt als
+    Fehlerfall und lieferte `(None, 'fehlt')`. Die Folge war messbar — der
+    Haltungsraum lieferte keine Haltung, der Responder daraufhin **keine
+    Umfangsvorgabe**, und an fuenf frisch angelegten Kennungen waren das
+    **9 von 9 Turns ohne Regie** (`NEUER-NUTZER-OHNE-UMFANGSVORGABE`).
+
+    **Entschieden am 22.08.2026, und die Begruendung ist keine technische:**
+    Ein Rad aus Nullen ist gegenueber einer Person, ueber die noch nichts
+    erhoben wurde, die **anfaenglich vorurteilsfreie Haltung** — nicht ein
+    fehlender Wert, sondern der richtige. Die Landschaft traegt den Turn, das
+    Rad moduliert nichts.
+
+    **Die Unterscheidung der drei Herkuenfte bleibt**, und darauf zielen die
+    Zeugen dieser Klasse: `destilliert` (erhoben), `default` (erhoben, ohne
+    Ergebnis), `neutral` (nie erhoben). Ein Lesefehler bleibt `fehlt` — sonst
+    saehe er aus wie ein neues Paar, und genau das war die Sorge, die den
+    alten Zeugen geschrieben hat.
+    """
+
+    def test_fehlende_zeile_liefert_das_neutrale_rad(self) -> None:
+        (rad, quelle), _ = _laden(None)
+
+        self.assertIsNotNone(rad)
+        self.assertEqual(quelle, "neutral")
+
+    def test_das_neutrale_rad_traegt_alle_speichen_auf_null(self) -> None:
+        """Vollstaendig, nicht leer: Die Rechnung braucht jede Speiche."""
+        (rad, _), _ = _laden(None)
+
+        self.assertEqual(12, len(rad))
+        self.assertEqual(0.0, sum(abs(w) for w in rad.values()))
+
+    def test_das_neue_paar_ist_kein_fehler_im_protokoll(self) -> None:
+        """Ein erster Turn ist kein Stoerfall.
+
+        Bliebe die Meldung auf `error`, faerbte jeder neue Nutzer das
+        Protokoll rot — und ein echter Lesefehler ginge darin unter.
+        """
+        with self.assertNoLogs(CHARAKTER_LOGGER, level="ERROR"):
+            _laden(None)
+
+    def test_ein_lesefehler_bleibt_ein_fehlerfall(self) -> None:
+        """Die Gegenrichtung, und sie traegt die ganze Unterscheidung."""
+        with self.assertLogs(CHARAKTER_LOGGER, level="ERROR"):
+            (rad, quelle), _ = _laden(("kein json", "destilliert"))
+
+        self.assertIsNone(rad)
+        self.assertEqual(quelle, "fehlt")
+
+
 class FehlerfallTest(unittest.TestCase):
-    """Jeder Fehlerfall liefert None und nicht ein leeres Rad."""
+    """Jeder **Lesefehler** liefert None und nicht ein leeres Rad.
+
+    Die fehlende Zeile steht seit dem 22.08.2026 nicht mehr hier, sondern in
+    `DasNeuePaarIstKeinFehlerfallTest` — sie ist kein Lesefehler.
+    """
 
     def test_leere_user_id_wird_abgelehnt(self) -> None:
         """Ohne Nutzer gibt es kein Paar."""
         with self.assertLogs(CHARAKTER_LOGGER, level="ERROR"):
             (rad, quelle), _ = _laden((json.dumps(RAD_ECHT), "destilliert"), user_id="")
-        self.assertIsNone(rad)
-        self.assertEqual(quelle, "fehlt")
-
-    def test_fehlende_zeile_wird_abgelehnt(self) -> None:
-        """Nie destilliert ist etwas anderes als destilliert ohne Auspraegung."""
-        with self.assertLogs(CHARAKTER_LOGGER, level="ERROR"):
-            (rad, quelle), _ = _laden(None)
         self.assertIsNone(rad)
         self.assertEqual(quelle, "fehlt")
 

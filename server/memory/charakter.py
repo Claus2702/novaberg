@@ -225,6 +225,36 @@ def _rad_flach_machen(roh: str, paar: str) -> tuple[dict[str, float] | None, str
     return rad, ""
 
 
+def _neutrales_rad() -> dict[str, float]:
+    """Das Rad eines Paares, ueber das noch nichts erhoben wurde.
+
+    Zwoelf Speichen, alle auf 0.0 — **die anfaenglich vorurteilsfreie
+    Haltung**, nicht ein fehlender Wert. Entschieden am 22.08.2026 zu
+    `NEUER-NUTZER-OHNE-UMFANGSVORGABE`: Ohne dieses Rad bekam ein neuer
+    Nutzer gar keine Haltung und damit keine Umfangsvorgabe — gemessen an
+    fuenf frischen Kennungen **9 von 9 Turns ohne Regie**.
+
+    **Die Speichennamen kommen aus der Destillation und werden hier nicht
+    wiederholt.** Zwei Orte fuer dieselbe Namensliste driften auch dann, wenn
+    heute niemand den zweiten liest; der Import steht deshalb in der Funktion
+    und nicht im Modulkopf — dieselbe Bauart wie in `graph/nodes/verfasser.py`
+    fuer `ei.dreischicht`, und aus demselben Grund: Der Speicher soll nicht
+    beim Laden schon an einem Agenten haengen.
+
+    Vorbedingung: keine.
+    Nachbedingung: ein flaches Rad mit den Speichen beider Seiten, jede 0.0.
+    """
+    # ── Verarbeitung ────────────────────────────
+    from agents.charakter.destillation import RAD_LEER
+
+    # ── Ausgabe ─────────────────────────────────
+    return {
+        name: 0.0
+        for seite in ("hoch", "runter")
+        for name in RAD_LEER[seite]
+    }
+
+
 def nutzer_gewichtung_rad_laden(
     postgres_url: str, user_id: str,
 ) -> tuple[dict[str, float] | None, str]:
@@ -246,15 +276,30 @@ def nutzer_gewichtung_rad_laden(
 
     Returns:
         (rad, quelle) — `rad` flach als Speichenname -> Auspraegung ueber beide
-        Seiten, `quelle` aus {'destilliert', 'default'}. Bei jedem Fehlerfall
-        (None, 'fehlt') und **nicht** ein leeres Rad: Ein Rad ohne Auspraegung
-        ist eine Messung, ein nicht gelesenes ist keine. Wer beides gleich
-        behandelt, laesst einen Lesefehler wie einen Charakter ohne Zuwendung
-        aussehen.
+        Seiten, `quelle` aus {'destilliert', 'default', 'neutral'}. Bei jedem
+        **Lesefehler** (None, 'fehlt') und **nicht** ein leeres Rad: Ein Rad
+        ohne Auspraegung ist eine Messung, ein nicht gelesenes ist keine. Wer
+        beides gleich behandelt, laesst einen Lesefehler wie einen Charakter
+        ohne Zuwendung aussehen.
 
-    Fehlerfaelle: leere user_id, fehlende Zeile, leere Spalte, unlesbares JSON,
-        fehlende Seite, nicht-numerische Auspraegung — je eine Meldung mit dem
-        Wert und (None, 'fehlt').
+    **Der dritte Fall ist seit dem 22.08.2026 keiner der beiden** (`NEUER-NUTZER-OHNE-UMFANGSVORGABE`):
+        Wer noch **keine Zeile** hat, ist kein Lesefehler und keine Messung —
+        er ist neu. Dafuer kommt das neutrale Rad zurueck, mit der eigenen
+        Herkunft `'neutral'`. Die Begruendung ist keine technische: Ein Rad
+        aus Nullen ist die **anfaenglich vorurteilsfreie Haltung** gegenueber
+        einer Person, ueber die noch nichts erhoben wurde — nicht ein
+        fehlender Wert, sondern der richtige.
+
+        **Die Herkunft bleibt trotzdem unterscheidbar**, und das ist der Grund
+        fuer den dritten Wert statt `'default'`: Ein gespeichertes Nullrad
+        wurde erhoben und ergab nichts; ein neutrales wurde nie erhoben. Wer
+        beides `'default'` nennt, kann spaeter nicht mehr zaehlen, wie viele
+        Paare ueberhaupt schon einmal durch die Destillation gelaufen sind.
+
+    Fehlerfaelle: leere user_id, leere Spalte, unlesbares JSON, fehlende
+        Seite, nicht-numerische Auspraegung — je eine Meldung mit dem Wert und
+        (None, 'fehlt'). Eine **fehlende Zeile** ist seit dem 22.08.2026
+        keiner mehr, siehe oben.
     """
     # ── Eingabe-Validierung ─────────────────────
     if not user_id:
@@ -281,11 +326,16 @@ def nutzer_gewichtung_rad_laden(
         return None, "fehlt"
 
     if not row:
-        logger.error(
+        # Kein Lesefehler, sondern ein neues Paar: Die neutrale Haltung ist
+        # hier die richtige, nicht die fehlende (Entscheidung 22.08.2026).
+        # `info` statt `error` — ein erster Turn ist kein Stoerfall, und die
+        # Zeile bleibt trotzdem im Protokoll, weil die Herkunft eine Aussage
+        # ueber die Antwort dieses Turns ist.
+        logger.info(
             f"nutzer_gewichtung_rad_laden: keine charakter_hash-Zeile fuer Paar "
-            f"'{paar}' — Rad nicht ermittelbar"
+            f"'{paar}' — neutrales Rad, dieses Paar ist neu"
         )
-        return None, "fehlt"
+        return _neutrales_rad(), "neutral"
 
     # `.get`-artige Defaults greifen hier nicht: Die Spalte kann NULL tragen,
     # und ein NULL ist etwas anderes als eine fehlende Zeile.

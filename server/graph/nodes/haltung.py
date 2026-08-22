@@ -66,7 +66,11 @@ def _protokoll_inhalt(haltung: Haltung, rad_quelle: str, speichen: int) -> dict:
 
     Args:
         haltung:    das Ergebnis der Rechnung.
-        rad_quelle: 'destilliert' oder 'default' — die Herkunft des Rades.
+        rad_quelle: 'destilliert', 'default' oder 'neutral' — die Herkunft
+            des Rades. Der dritte Wert kam am 22.08.2026 dazu und meint ein
+            Paar, ueber das noch nichts erhoben wurde; er steht neben
+            'default', weil jenes ein Rad meint, das erhoben wurde und nichts
+            ergab. Im Protokoll bleiben beide unterscheidbar.
         speichen:   Zahl der belegten Speichen, die in die Rechnung gingen.
 
     Returns:
