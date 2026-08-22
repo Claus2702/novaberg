@@ -1,6 +1,6 @@
 # Novaberg — Roadmap (Projektchronik)
 
-**Stand:** 22. August 2026, 09:10 UTC
+**Stand:** 22. August 2026, 09:35 UTC
 **Pfad:** novaberg/docs/novaberg-roadmap.md
 **Single Source of Truth für abgeschlossene Arbeit.**
 **Offene Punkte → novaberg-backlog.md**
@@ -12,6 +12,26 @@ Die Kopfzeile stand bis Chat 109 auf „Chat 93, 21. Mai 2026" — 15 Chats hint
 ---
 
 ## Chats 3–20: Grundlagen (März 2026)
+
+### 22.08.2026, 09:35 UTC — Eine Spanne ohne Fall ist kein Nachweis, aber eine Zahl
+
+**`RESPONDER-LEERE-ANTWORT-STILL` ist seit dem Ollama-Update vom 19.08.2026 nicht mehr aufgetreten.**
+Ueber sechs Log-Generationen — 19.08. 20:04 bis 22.08. 09:10, rund 61 Stunden — stehen **456 erzeugte
+Antworten und 0 Antwortverluste**. Der einzige `text_len=0` in diesem Zeitraum ist ein anderer Fall:
+`caller=thinker`, mit der Zeile *„content leer, thinking gefuellt (Ollama-Split) — Nachfass-Iteration
+1/2"* daneben, also ein greifender Rueckweg.
+
+> **Der Eintrag bleibt offen, und der Grund ist die Sorte des Belegs.** Eine Beobachtung ohne Fall
+> ist kein Nachweis, dass die Ursache beseitigt ist. Sie liegt beim Anbieter; dass sein Fehlerbericht
+> greift, laesst sich annehmen und nicht pruefen.
+>
+> **Dazu kommt die Verteilung.** Der Defekt trat in Schueben auf — **null Faelle in fuenf Tagen,
+> fuenf an einem Nachmittag** (01.08.2026). Bei dieser Verteilung ist eine Spanne ohne Fall
+> schwaecher, als ihre Laenge aussehen laesst: Fuenf ruhige Tage gab es schon einmal, und danach kam
+> der Nachmittag.
+
+**Was den Eintrag schliessen wuerde, steht jetzt an ihm:** eine Spanne, die laenger ist als der
+groesste bekannte Abstand zwischen zwei Schueben — oder ein Fall, der ihn wieder oeffnet.
 
 ### 22.08.2026, 09:10 UTC — Zwei Stimmen zur selben Frage, und eine war die aeltere
 

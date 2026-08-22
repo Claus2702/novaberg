@@ -927,7 +927,13 @@ nicht im Dokument.
 
 ### `RESPONDER-LEERE-ANTWORT-STILL` — vierter Fall, und die Frage von damals ist entschieden
 
-**Zustand:** offen — gegen HEAD `62560cf` gehalten am 21.08.2026. Dieser Abschnitt ist der **Nachtrag vom 19.08.2026**, nicht der Eintrag; der steht als `#### RESPONDER-LEERE-ANTWORT-STILL` weiter unten. Der Riegel macht den Ausfall laut, die Ursache ist unveraendert offen — 243 Token wurden erzeugt und gingen vor dem eigenen Code verloren.
+**Zustand:** offen — gegen HEAD `e36f4f0` gehalten am 22.08.2026. Dieser Abschnitt ist der **Nachtrag vom 19.08.2026**, nicht der Eintrag; der steht als `#### RESPONDER-LEERE-ANTWORT-STILL` weiter unten. Der Riegel macht den Ausfall laut, die Ursache ist unveraendert offen — 243 Token wurden erzeugt und gingen vor dem eigenen Code verloren.
+
+> **Seit dem Ollama-Update vom 19.08.2026, 20:31 UTC ist kein Fall mehr aufgetreten**, und das ist gezaehlt statt vermutet: ueber sechs Log-Generationen vom 19.08. 20:04 bis zum 22.08. 09:10 — rund 61 Stunden — stehen **456 erzeugte Antworten und 0 Antwortverluste**. Der einzige `text_len=0` in diesem Zeitraum traegt `caller=thinker` und die Zeile *„content leer, thinking gefuellt (Ollama-Split) — Nachfass-Iteration 1/2"* daneben: ein anderer Fall mit greifendem Rueckweg.
+>
+> **Der Eintrag bleibt trotzdem offen, und der Grund ist die Sorte des Belegs.** Was hier steht, ist eine Beobachtung ohne Fall — kein Nachweis, dass die Ursache beseitigt ist. Die Abhilfe liegt beim Anbieter; dass sein Fehlerbericht greift, koennen wir annehmen und nicht pruefen. Und der Defekt trat immer in **Schueben** auf: null Faelle in fuenf Tagen, fuenf an einem Nachmittag (01.08.2026). Eine Spanne ohne Fall ist bei dieser Verteilung schwaecher, als ihre Laenge aussehen laesst.
+>
+> **Was ihn schliessen wuerde:** eine Spanne, die laenger ist als der groesste bekannte Abstand zwischen zwei Schueben — oder ein Fall, der ihn wieder oeffnet.
 
 **Der Eintrag von unten bleibt offen; hier steht, was der vierte Fall dazugelegt hat.**
 
