@@ -21,7 +21,12 @@ from typing import Callable
 
 from graph.reiz  import reiz_text
 from graph.state import ConversationState, TribunalVote
-from utils.datum_pruefung import korrekturauftrag, widersprueche_finden
+from utils.datum_pruefung import (
+    bestaetigung_pruefen,
+    bestaetigungsauftrag,
+    korrekturauftrag,
+    widersprueche_finden,
+)
 from config import (
     get_node_config, PROMPTS,
     TRIBUNAL_JURIST_WARNUNG, TRIBUNAL_JURIST_ABLEHNEN,
@@ -291,21 +296,49 @@ def evaluate(state: ConversationState) -> ConversationState:
             "; ".join(w.satz() for w in zeit_befunde),
         )
 
+    # Die zweite Haelfte desselben Defekts: ein erfundenes Datum **ohne**
+    # Wochentag. Die Pruefung oben braucht das Paar und findet dann nichts —
+    # gemessen am 22.08.2026 am Originalfall: mit Wochentag 1 Befund, ohne 0.
+    #
+    # Hier ist der Bezug nicht der Text selbst, sondern das, was die Dienste
+    # dieses Turns gemeldet haben. Nur erfolgreiche Ergebnisse zaehlen: Was ein
+    # Dienst abgelehnt hat, wurde nicht eingetragen und kann nichts belegen.
+    quellen: list[str] = [
+        str(r.ergebnis) for r in (state.get("agent_results") or [])
+        if getattr(r, "status", "") == "abgeschlossen"
+        and getattr(r, "ergebnis", None) is not None
+    ]
+    datum_abweichungen = bestaetigung_pruefen(
+        state.get("response") or "", quellen, datetime.now().date()
+    )
+    if datum_abweichungen:
+        if state["tribunal_verdict"] == "ok":
+            state["tribunal_verdict"] = "warnung"
+        critical_feedback.insert(0, bestaetigungsauftrag(datum_abweichungen))
+        logger.error(
+            "Tribunal: %d Datumsangabe(n) der Antwort sind durch keinen Dienst "
+            "belegt — Urteil auf '%s' gehoben. %s",
+            len(datum_abweichungen), state["tribunal_verdict"],
+            "; ".join(a.satz() for a in datum_abweichungen),
+        )
+
     state["tribunal_summary"] = "\n".join(critical_feedback) if critical_feedback else ""
 
     # ── Ausgabe-Verifikation ────────────────────────────────────────
     # Ein Zeitbefund ohne Eintrag in der Zusammenfassung erreicht die
     # Korrekturrunde nicht — der Corrector liest ausschliesslich sie.
-    if zeit_befunde and "ZEITANGABE FALSCH" not in state["tribunal_summary"]:
+    befunde_gesamt: int = len(zeit_befunde) + len(datum_abweichungen)
+    if befunde_gesamt and "ZEITANGABE FALSCH" not in state["tribunal_summary"]:
         logger.error(
             "Tribunal: %d Zeitbefund(e) gefunden, aber der Korrekturauftrag "
             "steht nicht in der Zusammenfassung — die Korrekturrunde bekommt "
-            "ihn nicht", len(zeit_befunde),
+            "ihn nicht", befunde_gesamt,
         )
 
     logger.info(f"Tribunal-Auswertung: verdict={state['tribunal_verdict']} "
                 f"(ablehnungen={len(rejections)}, warnungen={len(warnings)}, "
-                f"zeitbefunde={len(zeit_befunde)})")
+                f"zeitbefunde={len(zeit_befunde)}, "
+                f"datumsabweichungen={len(datum_abweichungen)})")
 
     for vote in votes:
         logger.info(f"  [{vote['agent']}] {vote['vote']}: {vote['reasoning'][:80]}")

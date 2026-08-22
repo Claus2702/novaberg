@@ -204,3 +204,148 @@ def korrekturauftrag(widersprueche: list[Widerspruch]) -> str:
         "Nenne die Zeitangabe erneut und richtig. Aendere sonst nichts.",
     ]
     return "\n".join(zeilen)
+
+
+# ─────────────────────────────────────────────────────────────────────────
+# Die Bestaetigung gegen das, was der Dienst wirklich eingetragen hat
+# ─────────────────────────────────────────────────────────────────────────
+
+#: Ein Datum ohne Wochentag davor. Deckt `19.08.2026`, `19.08.` und `19.8.`.
+#:
+#: Die Pruefung oben braucht das **Paar** aus Wochentag und Datum; nennt eine
+#: Antwort ein erfundenes Datum ohne Wochentag, findet sie nichts. Gemessen am
+#: 22.08.2026 am Originalfall: mit Wochentag 1 Befund, ohne 0.
+_DATUM = re.compile(r"\b(?P<d>\d{1,2})\.\s?(?P<m>\d{1,2})\.(?:\s?(?P<j>\d{4}))?")
+
+
+@dataclass(frozen=True)
+class Abweichung:
+    """Ein Datum in der Antwort, das in keiner Quelle des Turns steht."""
+
+    genannt: date          # was die Antwort sagt
+    belegt: tuple[date, ...]   # was die Dienste gemeldet haben
+
+    def satz(self) -> str:
+        """Einzeiler fuer Protokoll und Korrekturauftrag."""
+        belegt = ", ".join(d.strftime("%d.%m.%Y") for d in self.belegt)
+        return (
+            f"Die Antwort nennt den {self.genannt.strftime('%d.%m.%Y')}; "
+            f"eingetragen wurde {belegt}"
+        )
+
+
+def datumsangaben(text: str, heute: date) -> set[date]:
+    """Alle Datumsangaben eines Textes, Jahr wo noetig ergaenzt.
+
+    Vorbedingung: `text` ist beliebig, auch leer. `heute` traegt den Bezug
+    fuer Angaben ohne Jahr.
+    Nachbedingung: die Menge der erkannten Daten; unmoegliche Angaben
+    (32.13.) fallen still heraus, weil sie kein Datum sind und keine
+    Aussage ueber die Antwort erlauben.
+    """
+    # ── Verarbeitung ─────────────────────────────────────────────────
+    gefunden: set[date] = set()
+    for treffer in _DATUM.finditer(text or ""):
+        jahr = treffer.group("j")
+        if jahr:
+            try:
+                gefunden.add(date(int(jahr), int(treffer.group("m")),
+                                  int(treffer.group("d"))))
+            except ValueError:
+                continue
+        else:
+            datum = _jahr_ergaenzen(int(treffer.group("d")),
+                                    int(treffer.group("m")), heute)
+            if datum is not None:
+                gefunden.add(datum)
+
+    # ── Ausgabe ──────────────────────────────────────────────────────
+    return gefunden
+
+
+def bestaetigung_pruefen(
+    antwort: str,
+    quellen: list[str],
+    heute: date,
+) -> list[Abweichung]:
+    """Prueft, ob die Antwort ein Datum bestaetigt, das kein Dienst nennt.
+
+    **Der Fall** (`RESPONDER-ERFINDET-DATUM`, 17.08.2026): Der Dienst meldete
+    `Termin 'Meeting mit dem Chef' eingetragen fuer 19.08.2026 14:00`, die
+    Antwort nannte den 20.08. Der Mensch sucht am falschen Tag, findet nichts
+    und haelt den Schreibpfad fuer defekt — er war es nie.
+
+    **Die Bedingung ist absichtlich eng, und das ist der Kern dieser
+    Funktion.** Gemeldet wird nur, wenn beides zutrifft:
+
+      1. Eine Quelle nennt ein Datum — es gibt also etwas zu bestaetigen.
+      2. Die Antwort nennt **keines** der Quelldaten, wohl aber ein anderes.
+
+    Nennt die Antwort das richtige Datum und daneben ein zweites, ist das
+    keine falsche Bestaetigung, sondern ein Satz ueber etwas anderes: *„Der
+    Termin steht am 19.08. — der 25.08. waere mir lieber gewesen."* Eine
+    Regel *„jedes Datum muss belegt sein"* schickte diesen Satz in die
+    Korrekturschleife, und ein Fehlalarm ist hier teuer: Er korrigiert eine
+    richtige Antwort.
+
+    Vorbedingung: `quellen` sind die Ergebnistexte der Dienste dieses Turns.
+    Eine leere Liste ist zulaessig und liefert nichts — kein Turn muss
+    Dienste gerufen haben.
+    Nachbedingung: je erfundenem Datum eine `Abweichung` mit dem belegten
+    Wert daneben. Der Wert steht dabei, damit die Korrektur ihn nennen kann
+    statt den naechsten zu erfinden.
+    """
+    # ── Eingabe-Validierung ──────────────────────────────────────────
+    if not antwort or not quellen:
+        return []
+
+    belegt: set[date] = set()
+    for quelle in quellen:
+        belegt |= datumsangaben(quelle, heute)
+    if not belegt:
+        # Kein Dienst hat ein Datum gemeldet — es gibt nichts zu bestaetigen,
+        # und jede Angabe der Antwort gehoert einem anderen Satz.
+        return []
+
+    # ── Verarbeitung ─────────────────────────────────────────────────
+    genannt: set[date] = datumsangaben(antwort, heute)
+    if belegt & genannt:
+        # Das eingetragene Datum steht in der Antwort. Weitere Angaben
+        # daneben sind kein Widerspruch (siehe Docstring).
+        return []
+
+    abweichungen: list[Abweichung] = [
+        Abweichung(genannt=d, belegt=tuple(sorted(belegt)))
+        for d in sorted(genannt)
+    ]
+
+    # ── Ausgabe-Verifikation ─────────────────────────────────────────
+    if abweichungen:
+        logger.error(
+            "Datumspruefung: Antwort bestaetigt %d Datum/Daten, das kein Dienst "
+            "nennt — %s",
+            len(abweichungen), "; ".join(a.satz() for a in abweichungen),
+        )
+    return abweichungen
+
+
+def bestaetigungsauftrag(abweichungen: list[Abweichung]) -> str:
+    """Der Korrekturauftrag zur falschen Bestaetigung.
+
+    Vorbedingung: `abweichungen` ist nicht leer — geprueft beim Aufrufer.
+    Nachbedingung: nicht-leerer Text, der jede Abweichung nennt und den
+    belegten Wert mitgibt — aus demselben Grund wie oben: Ein Modell, das
+    nur erfaehrt, dass etwas falsch war, erfindet den naechsten Wert.
+    """
+    # ── Eingabe-Validierung ──────────────────────────────────────────
+    if not abweichungen:
+        logger.error("Bestaetigungsauftrag ohne Abweichung angefordert — leer")
+        return ""
+
+    zeilen = [
+        "ZEITANGABE FALSCH — die Bestaetigung nennt ein Datum, das kein Dienst "
+        "eingetragen hat:",
+        *(f"  - {a.satz()}" for a in abweichungen),
+        "Nenne das eingetragene Datum. Aendere sonst nichts.",
+    ]
+    return "\n".join(zeilen)
