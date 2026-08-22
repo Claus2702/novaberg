@@ -138,10 +138,21 @@ def slug_bauen(thema: str) -> str:
 def dateipfad_bauen(*, charakter: str, context_user: str, thema: str, typ: str, datum: str) -> Path:
     """Baut den Pfad einer Bibliotheksdatei nach dem Namensschema aus §2.2.
 
-    `{wurzel}/autonomous/{charakter}/{datum}_{context_user}_{slug}_{typ}.md`
+    `{wurzel}/autonomous/{charakter}/{context_user}/{datum}_{context_user}_{slug}_{typ}.md`
 
-    Der Charakter ist das Verzeichnis, nicht der Dateiname: Novas Wissen ist
-    Novas Wissen. Flach innerhalb des Ordners, nach Datum sortierbar.
+    **Zwei Ebenen, seit dem 22.08.2026: Charakter und Nutzer.** Bis dahin lag
+    der Charakter im Verzeichnis und der Nutzer nur im Dateinamen — eine
+    Zuordnung, die kein Werkzeug erzwingt und die niemand als Pfad ansprechen
+    kann. Genau das wurde gebraucht: Ein Verzeichnis dieses Speichers soll dem
+    Dateien-Index als Wurzel dienen koennen, und eine Wurzel traegt
+    `user_id x character_id`. Am Bestand gemessen lagen in `autonomous/nova/`
+    **1096 Dateien ueber 14 Kennungen**; keine Teilmenge davon war ohne
+    Namensvergleich adressierbar.
+
+    **Das Praefix im Dateinamen bleibt.** Es ist jetzt redundant und schadet
+    nicht: Es macht eine Datei auch dann noch zuordenbar, wenn sie einmal aus
+    ihrem Verzeichnis herausgereicht wird — als Anhang, in einer Meldung, in
+    einer Fundstelle.
 
     Vorbedingung: Alle Teile sind nicht leer, `typ` steht im Kanon.
     Nachbedingung: Ein absoluter Pfad unterhalb der Wurzel. Ob er beschrieben
@@ -162,7 +173,7 @@ def dateipfad_bauen(*, charakter: str, context_user: str, thema: str, typ: str, 
     slug: str = slug_bauen(thema)
     name: str = f"{datum}_{context_user}_{slug}_{typ}.md"
 
-    return Path(WISSENSSPEICHER_WURZEL) / BEREICH / charakter / name
+    return Path(WISSENSSPEICHER_WURZEL) / BEREICH / charakter / context_user / name
 
 
 # Der Block, der den lebenden Text trägt. Er bildet mit `## HISTORIE` aus
@@ -281,20 +292,27 @@ def bericht_text_bauen(ergebnis: Arbeitsergebnis, datum_lang: str) -> str:
 
 
 def index_aktualisieren(*, charakter: str, thema: str, wissen_pfad: Path, datum_lang: str) -> None:
-    """Trägt eine Wissensdatei in die INDEX.md ihres Charakters ein.
+    """Trägt eine Wissensdatei in die INDEX.md ihres **Paares** ein.
 
     Ein Index, kein Abladeplatz: eine Zeile je Datei, mit Verweis auf die
     Detaildatei (§2.3). Ein bereits vorhandener Verweis auf dieselbe Datei
     wird nicht verdoppelt — die Datei ist ein lebendes Dokument, ihr Eintrag
     im Index ist es auch.
 
-    Vorbedingung: `wissen_pfad` liegt im Verzeichnis dieses Charakters.
+    **Der Index liegt seit dem 22.08.2026 neben den Dateien, die er nennt** —
+    also eine Ebene tiefer, im Paarverzeichnis. Vorher trug ein Index je
+    Charakter die Eintraege aller Nutzer gemischt; er konnte damit in keiner
+    Wurzel liegen, ohne fremde Themen mit hineinzureichen.
+
+    Vorbedingung: `wissen_pfad` liegt im Paarverzeichnis, aus dem der Index
+    abgeleitet wird — er wird **aus dem Pfad genommen und nicht erneut
+    zusammengesetzt**, damit Datei und Index nicht auseinanderlaufen koennen.
     Nachbedingung: Die INDEX.md existiert und enthält genau einen Verweis
     auf `wissen_pfad`.
     Fehlerfälle: Schreib- oder Waechterfehler werden durchgereicht.
     """
     # ── Eingabe-Validierung ─────────────────────
-    index_pfad: Path = Path(WISSENSSPEICHER_WURZEL) / BEREICH / charakter / INDEX_DATEI
+    index_pfad: Path = wissen_pfad.parent / INDEX_DATEI
 
     # ── Verarbeitung ────────────────────────────
     vorhanden: str = datei_lesen(index_pfad)

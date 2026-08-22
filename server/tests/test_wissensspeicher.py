@@ -59,7 +59,13 @@ from tools.dateien.schreiben import ARBEITSBAUM, datei_schreiben, schreibziel_pr
 # der Bestand von Nova unberührt bleibt.
 TEST_CHARAKTER: str = "test_wis3_nova"
 TEST_MENSCH:    str = "test_wis3_mensch"
-TEST_VERZEICHNIS: Path = Path(WISSENSSPEICHER_WURZEL) / "autonomous" / TEST_CHARAKTER
+#: Das Verzeichnis des Charakters — hier raeumt das Fixture auf, denn es
+#: enthaelt alle Paarverzeichnisse dieses Testcharakters.
+TEST_CHARAKTER_VERZEICHNIS: Path = Path(WISSENSSPEICHER_WURZEL) / "autonomous" / TEST_CHARAKTER
+
+#: Das **Paar**verzeichnis — dort liegen Dateien und Index seit dem
+#: 22.08.2026 (`dateipfad_bauen`, zwei Ebenen statt einer).
+TEST_VERZEICHNIS: Path = TEST_CHARAKTER_VERZEICHNIS / TEST_MENSCH
 
 
 def _zeilen_aufraeumen() -> None:
@@ -127,7 +133,7 @@ class SchreibenTest(unittest.TestCase):
 
     def tearDown(self) -> None:
         """Entfernt das Fixture-Verzeichnis vollständig."""
-        shutil.rmtree(TEST_VERZEICHNIS, ignore_errors=True)
+        shutil.rmtree(TEST_CHARAKTER_VERZEICHNIS, ignore_errors=True)
 
     def test_a_datei_entsteht_mit_modusbits(self) -> None:
         """Die Datei wird geschrieben und trägt die konfigurierten Modusbits.
@@ -173,14 +179,39 @@ class NamensschemaTest(unittest.TestCase):
                 slug_bauen(thema)
 
     def test_d_dateiname_folgt_dem_schema(self) -> None:
-        """`{datum}_{context_user}_{slug}_{typ}.md`, Charakter als Verzeichnis."""
+        """`{datum}_{context_user}_{slug}_{typ}.md`, darueber Charakter **und** Nutzer.
+
+        **Zwei Ebenen seit dem 22.08.2026.** Der Nutzer stand vorher nur im
+        Dateinamen; damit war keine Teilmenge des Speichers als Pfad
+        ansprechbar, und genau das braucht eine Wurzel des Dateien-Index.
+        Das Praefix im Namen bleibt und ist jetzt redundant — es haelt eine
+        Datei zuordenbar, die aus ihrem Verzeichnis herausgereicht wird.
+        """
         pfad: Path = dateipfad_bauen(
             charakter="nova", context_user="meister",
             thema="Gravitationswellen", typ="wissen", datum="2026-08-04",
         )
         self.assertEqual("2026-08-04_meister_gravitationswellen_wissen.md", pfad.name)
-        self.assertEqual("nova", pfad.parent.name)
-        self.assertEqual("autonomous", pfad.parent.parent.name)
+        self.assertEqual("meister", pfad.parent.name)
+        self.assertEqual("nova", pfad.parent.parent.name)
+        self.assertEqual("autonomous", pfad.parent.parent.parent.name)
+
+    def test_d2_zwei_nutzer_teilen_kein_verzeichnis(self) -> None:
+        """Der Zweck der zweiten Ebene, als Zeuge.
+
+        Am Bestand gemessen lagen am 22.08.2026 **1096 Dateien ueber 14
+        Kennungen** in einem Verzeichnis. Eine Wurzel darauf haette fremdes
+        Material mitgenommen.
+        """
+        einer: Path = dateipfad_bauen(
+            charakter="nova", context_user="meister",
+            thema="Gravitationswellen", typ="wissen", datum="2026-08-04",
+        )
+        anderer: Path = dateipfad_bauen(
+            charakter="nova", context_user="rasim",
+            thema="Gravitationswellen", typ="wissen", datum="2026-08-04",
+        )
+        self.assertNotEqual(einer.parent, anderer.parent)
 
     def test_e_unbekannter_typ_scheitert(self) -> None:
         """`typ` stammt aus einer geschlossenen Menge von zwei Werten."""
@@ -201,7 +232,7 @@ class AblageTest(unittest.TestCase):
 
     def tearDown(self) -> None:
         """Entfernt Fixture-Verzeichnis und Metadatenzeilen."""
-        shutil.rmtree(TEST_VERZEICHNIS, ignore_errors=True)
+        shutil.rmtree(TEST_CHARAKTER_VERZEICHNIS, ignore_errors=True)
         _zeilen_aufraeumen()
 
     def _ergebnis(self, status: str, salienz: float = 0.7) -> Arbeitsergebnis:
@@ -421,7 +452,7 @@ class GescheiterterDurchlaufTest(unittest.TestCase):
 
     def tearDown(self) -> None:
         """Entfernt Fixture-Verzeichnis und Metadatenzeilen."""
-        shutil.rmtree(TEST_VERZEICHNIS, ignore_errors=True)
+        shutil.rmtree(TEST_CHARAKTER_VERZEICHNIS, ignore_errors=True)
         _zeilen_aufraeumen()
 
     def test_a_bericht_entsteht_ohne_destillat(self) -> None:
