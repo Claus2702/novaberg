@@ -5,6 +5,36 @@
 
 ---
 
+## Die Rangfolge der offenen Defekte — Stand 22.08.2026
+
+**Der Rang folgt nicht aus dem Register.** Er folgt daraus, was das System als Naechstes koennen soll,
+und ist deshalb eine Entscheidung. Die hier festgehaltene ist am 22.08.2026 getroffen worden, nachdem
+die Zustandszeilen die Menge zum ersten Mal auszaehlbar gemacht hatten.
+
+**Das Kriterium ist der Klumpen, nicht der Einzeldefekt.** Von 60 offenen Kennungen halten 53 je ein
+Feature auf Rot; **20 davon sitzen zu neunt in Klumpen**, also an einem Knoten, den ein Zug gemeinsam
+raeumt. Ein Zug pro Knoten raeumt mehr als ein Zug pro Defekt.
+
+| Rang | Knoten | offene Defekte |
+|---|---|---|
+| **1** | ~~die Antwortstrecke `verfasser` / `haltung` / `responder`~~ — **am 22.08.2026 abgearbeitet**, von neun sind fuenf erledigt und zwei zur Haelfte gebaut | 2 |
+| 2 | **Fuenf Charakter-Profile + Hash** | 3 |
+| 3 | **Dateien-Dienst Stufe 2** (`dateien_index` + Waechter) | 3 |
+| 4 | `responder` — die Antwort | 2 |
+| 5 | Pipeline-Log · Emotionale Gravitation · Charakter-Raeder · Shadow-Queue · Bibliothek | je 2 |
+
+**Was von Rang 1 bleibt, ist kein Baufall.** `UMFANGSREGLER-BINDET-NICHT` und
+`MENGENANGABE-BINDET-NUR-UNTEN` beschreiben **Modellverhalten**, nicht eine Stelle im Code: Die
+Vorgabe wirkt in der Richtung und bindet nicht. Beide brauchen eine Messreihe, keinen Eingriff — und
+gehoeren deshalb nicht in dieselbe Reihe wie ein Defekt mit Codeort.
+
+> **Der Rang wird gegen den Code vergeben, nicht gegen den Eintrag.** Am 22.08.2026 ueberprueft:
+> Zwischen dem Pruefstand der Eintraege (`00c16b6`, 20.08.) und dem Tag lagen 15 Commits, aber nur
+> **vier** geaenderte Server-Dateien — ein Kriterium statt 25 Einzelpruefungen. Zwei Eintraege
+> erwiesen sich dabei als laengst erledigt.
+
+---
+
 ## 20.08.2026 — aus der Klassifikation der Fundliste
 
 **70 Eintraege sind aus `novaberg-fundliste.md` hierher gewandert** und haben eine stabile Kennung bekommen. Die Fundliste ist roh und vergaenglich; wer einen Defekt sucht, sucht ihn hier.

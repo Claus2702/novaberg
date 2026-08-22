@@ -1,6 +1,6 @@
 # Novaberg — Roadmap (Projektchronik)
 
-**Stand:** 22. August 2026, 10:55 UTC
+**Stand:** 22. August 2026, 11:20 UTC
 **Pfad:** novaberg/docs/novaberg-roadmap.md
 **Single Source of Truth für abgeschlossene Arbeit.**
 **Offene Punkte → novaberg-backlog.md**
@@ -12,6 +12,27 @@ Die Kopfzeile stand bis Chat 109 auf „Chat 93, 21. Mai 2026" — 15 Chats hint
 ---
 
 ## Chats 3–20: Grundlagen (März 2026)
+
+### 22.08.2026, 11:20 UTC — Die Rangfolge steht jetzt im Register, nicht im Gespraech
+
+**Die Bewertung der offenen Defekte war das Ergebnis dieses Tages und stand nirgends.** Sie ist am
+22.08.2026 getroffen worden, nachdem die Zustandszeilen die Menge zum ersten Mal auszaehlbar gemacht
+hatten — und sie steuert jede folgende Sitzung. Ein Ergebnis, das nur im Verlauf steht, gilt fuer
+alle, die den Verlauf nicht gefuehrt haben, als nicht vorhanden.
+
+**Das Kriterium ist der Klumpen, nicht der Einzeldefekt.** Von 60 offenen Kennungen halten 53 je ein
+Feature auf Rot; 20 davon sitzen zu neunt an Knoten, die ein Zug gemeinsam raeumt. Die Rangfolge
+steht in `novaberg-bugs.md` unter *Die Rangfolge der offenen Defekte*.
+
+**Rang 1 war die Antwortstrecke `verfasser` / `haltung` / `responder` — neun Defekte an drei Knoten,
+die hintereinander liegen.** Von ihnen sind heute fuenf erledigt und zwei zur Haelfte gebaut. Was
+bleibt, ist ausdruecklich kein Baufall: `UMFANGSREGLER-BINDET-NICHT` und
+`MENGENANGABE-BINDET-NUR-UNTEN` beschreiben Modellverhalten und brauchen eine Messreihe, keinen
+Eingriff.
+
+> **Der Rang wird gegen den Code vergeben, nicht gegen den Eintrag** — und das war an diesem Tag
+> keine Formel: Zwei der geprueften Eintraege erwiesen sich als laengst erledigt, einer davon seit
+> acht Tagen.
 
 ### 22.08.2026, 10:55 UTC — Eine neue Person bekommt keine geratene Haltung, sondern eine unvoreingenommene
 
