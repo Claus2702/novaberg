@@ -17,7 +17,7 @@ from memory.session import format_session_turns_numbered, session_turns_retrieve
 from services.model_services import ChatRequest, model_service
 
 from agents.base import AgentState
-from agents.dateien_wurzeln.crud import Paar, _read_aktive, _read_inaktive
+from agents.dateien_wurzeln.crud import EIGENTUM_KANON, Paar, _read_aktive, _read_inaktive
 
 logger = logging.getLogger("ki_server.agents.dateien_wurzeln.klassifikation")
 
@@ -237,6 +237,19 @@ def klassifizieren(state: AgentState) -> dict:
     target_id: int | None = _ziffer_oder_nichts(ergebnis.get("target_id"))
     normalisiert: str = ergebnis.get("normalisiert", "") or ""
 
+    # `eigentum` wird uebernommen, nicht erschlossen. Ein Wert ausserhalb des
+    # Kanons ist kein Wert: Das Modell hat dann etwas anderes verstanden als
+    # gefragt war, und der leere String fuehrt eine Zeile weiter zur
+    # Rueckfrage — dorthin, wo eine unbeantwortete Frage hingehoert.
+    eigentum: str = (ergebnis.get("eigentum", "") or "").strip().lower()
+    if eigentum and eigentum not in EIGENTUM_KANON:
+        logger.warning(
+            "dateien_wurzeln.klassifizieren: eigentum=%r liegt ausserhalb %s "
+            "— gilt als nicht genannt, es wird nachgefragt",
+            eigentum, sorted(EIGENTUM_KANON),
+        )
+        eigentum = ""
+
     # Ein Stichwort, das fehlt, aber aus der Bezeichnung ablesbar ist: Der
     # Mensch spricht seine Freigabe ueber ihren Namen an, und das Modell legt
     # ihn mal in das eine, mal in das andere Feld. Das ist keine Ersetzung
@@ -246,9 +259,10 @@ def klassifizieren(state: AgentState) -> dict:
 
     logger.info(
         "dateien_wurzeln.klassifizieren: action='%s', pfad='%s', "
-        "bezeichnung='%s', stichwort='%s', target_id=%s, normalisiert='%s'",
+        "bezeichnung='%s', stichwort='%s', target_id=%s, eigentum='%s', "
+        "normalisiert='%s'",
         action, pfad[:80], bezeichnung[:40], stichwort[:40], target_id,
-        normalisiert[:80],
+        eigentum or "(nicht genannt)", normalisiert[:80],
     )
 
     return {
@@ -260,6 +274,7 @@ def klassifizieren(state: AgentState) -> dict:
             "stichwort": stichwort,
             "target_id": target_id,
             "normalisiert": normalisiert,
+            "eigentum": eigentum,
         },
         "schritte": state["schritte"] + [
             {"node": "klassifizieren", "ergebnis": f"{action}/{(pfad or bezeichnung)[:40]}"}

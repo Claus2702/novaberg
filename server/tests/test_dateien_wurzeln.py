@@ -142,11 +142,11 @@ class Bank:
             raise AssertionError(f"Bank: unbekannte INSERT-Abfrage: {query}")
         if self.schreiben_wirkungslos:
             return {"id": 999}
-        user_id, character_id, pfad, bezeichnung = params
+        user_id, character_id, pfad, bezeichnung, eigentum = params
         zeile: dict = {
             "id": self._naechste_id, "user_id": user_id, "character_id": character_id,
-            "pfad": pfad, "bezeichnung": bezeichnung, "aktiv": True,
-            "erstellt_am": None, "geaendert_am": None,
+            "pfad": pfad, "bezeichnung": bezeichnung, "eigentum": eigentum,
+            "aktiv": True, "erstellt_am": None, "geaendert_am": None,
         }
         self._naechste_id += 1
         self.zeilen.append(zeile)
@@ -411,9 +411,16 @@ class AusfuehrungTest(unittest.TestCase):
         shutil.rmtree(self.basis, ignore_errors=True)
 
     def test_create_schreibt_den_aufgeloesten_pfad(self) -> None:
-        """In der Tabelle steht das Verzeichnis, nicht die Zeichenkette."""
+        """In der Tabelle steht das Verzeichnis, nicht die Zeichenkette.
+
+        **Der Auftrag traegt seit dem 22.08.2026 `eigentum`.** Ohne die
+        Angabe schreibt `_create` nicht mehr, sondern fragt — der Zeuge dafuer
+        steht in `test_dateien_wurzeln_eigentum.py`.
+        """
         umweg: str = str(self.innen / ".." / "projekt")
-        ergebnis = crud.ausfuehren(_state({"action": "create", "pfad": umweg}))
+        ergebnis = crud.ausfuehren(_state({
+            "action": "create", "pfad": umweg, "eigentum": "nutzer",
+        }))
 
         self.assertEqual(ergebnis["status"], "abgeschlossen")
         self.assertEqual(len(self.bank.zeilen), 1)

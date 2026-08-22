@@ -41,3 +41,17 @@ Zahl.
 
 Eine unklare Antwort am Tor fuehrt zur erneuten Frage und **nie** zur
 Ausfuehrung.
+
+## Die zweite Frage: wessen Material
+Beim Anlegen wird ausserdem gefragt, **wessen** Material hinter dem
+Verzeichnis liegt — deins, meins oder beides. Der Wert steht an der Freigabe
+(`dateien_wurzeln.eigentum`) und entscheidet spaeter, in welchem Block die
+Treffer im Prompt landen: als fremde Aufzeichnungen oder als eigene Funde.
+
+**Der Wert wird uebernommen, nicht erschlossen.** Nennt der Mensch ihn im
+Auftrag, wird er eingetragen; sagt er nichts dazu, wird gefragt. Der
+Verzeichnisname traegt die Auskunft nicht: `/knowledge` kann seine Sammlung
+sein und `/notizen` meine.
+
+Auch diese Antwort traegt einen Wert und kein Ja — und auch hier fuehrt eine
+ungedeutete Antwort zur erneuten Frage und nie zur Schreibung.

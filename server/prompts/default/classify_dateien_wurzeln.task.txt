@@ -6,7 +6,14 @@ Analysiere den Benutzer-Prompt und bestimme:
 4. stichwort: bei update/delete/reactivate ohne Nummer — das Wort, mit dem der Mensch die Freigabe anspricht
 5. target_id: bei update/delete/reactivate — die Nummer der Freigabe, falls er sie nennt
 6. normalisiert: der Auftrag in Fachsprache (siehe [FACHSPRACHE])
-7. grund: NUR bei rejected — kurze Begruendung (1 Satz)
+7. eigentum: NUR bei create — wessen Material hinter dem Verzeichnis liegt.
+   Drei Werte: "nutzer" (seine Unterlagen), "figur" (deine eigenen Funde),
+   "gemischt" (beides kann dort liegen).
+   Trage den Wert ein, wenn der Mensch ihn nennt. Sagt er nichts dazu, bleibt
+   das Feld leer ("") — dann wird nachgefragt, und das ist der richtige Ausgang.
+   Der Verzeichnisname sagt nichts darueber: "/knowledge" kann seine Sammlung
+   sein und "/notizen" deine.
+8. grund: NUR bei rejected — kurze Begruendung (1 Satz)
 
 VORPRUEFUNG — geht es ueberhaupt um ein Verzeichnis als Ganzes?
 Entscheidend ist der Bezug auf ein VERZEICHNIS, nicht auf eine Datei darin und
@@ -21,7 +28,9 @@ Beispiele fuer rejected:
 - "Leg mir das bitte ab" → hier wird geschrieben; dieser Dienst schreibt nichts
 
 Beispiele fuer ECHTE Auftraege:
-- "Du darfst in /dokumente nachsehen" → create
+- "Du darfst in /dokumente nachsehen" → create, eigentum: "" (er sagt nichts dazu)
+- "Nimm /studien auf, das sind deine Recherchen" → create, eigentum: "figur"
+- "Gib /unterlagen frei, das ist mein Material" → create, eigentum: "nutzer"
 - "Nimm das Verzeichnis wieder weg" → delete
 - "Worauf hast du Zugriff?" → read
 - "Nenn das ab jetzt meine Projektdoku" → update

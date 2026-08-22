@@ -25,6 +25,18 @@ from agents.dateien_wurzeln.aussenrand import (
 
 logger = logging.getLogger("ki_server.agents.dateien_wurzeln.crud")
 
+#: Die zulaessigen Werte von `dateien_wurzeln.eigentum`, deckungsgleich mit
+#: dem CHECK der Schemadatei. Er steht hier und nicht in der Klassifikation,
+#: weil die Datenbank ihn erzwingt und der Code ihm folgt — nicht umgekehrt.
+EIGENTUM_KANON: frozenset[str] = frozenset({"nutzer", "figur", "gemischt"})
+
+#: Was gefragt wird, wenn niemand es gesagt hat. Der Text nennt alle drei
+#: Werte, weil eine Frage ohne die moeglichen Antworten eine Ja-Nein-Frage
+#: mit drei Ausgaengen ist.
+EIGENTUM_FRAGE: str = (
+    "Wessen Material liegt in diesem Verzeichnis — deins, meins, oder beides?"
+)
+
 #: Geschlossene Menge der Aktionen dieses Dienstes. Kanon nach EVA — eine
 #: Teilmengen-Pruefung koennte einen unbekannten Wert nicht von einem
 #: gueltigen Nein unterscheiden (`11_EVA` §2).
@@ -531,6 +543,7 @@ def _create(state: AgentState) -> dict:
     paar: Paar = Paar.aus_state(state)
     genannter_pfad: str = state["parameter"].get("pfad", "") or ""
     bezeichnung: str | None = state["parameter"].get("bezeichnung") or None
+    eigentum: str = (state["parameter"].get("eigentum", "") or "").strip().lower()
 
     # ── Eingabe-Validierung ─────────────────────
     befund: WurzelBefund = wurzel_pruefen(genannter_pfad)
@@ -538,16 +551,34 @@ def _create(state: AgentState) -> dict:
         logger.error("dateien_wurzeln: create abgewiesen — %s", befund.grund)
         return _rand_urteil(state, befund, genannter_pfad)
 
+    # **Wer die Angabe nicht hat, fragt — er faellt nicht zurueck.** Der
+    # Vorgabewert der Spalte ist 'nutzer' und bleibt die sichere Seite fuer
+    # Zeilen, die niemand mehr befragen kann. Hier steht der Mensch im
+    # Gespraech: Ihn nicht zu fragen und trotzdem einen Wert zu schreiben
+    # hiesse, seine Freigabe um eine Angabe zu ergaenzen, die er nie gemacht
+    # hat — und ein geratener Eigentuemer ist genau der Fehler, gegen den die
+    # Spalte gebaut wurde.
+    if eigentum not in EIGENTUM_KANON:
+        logger.info(
+            "dateien_wurzeln: create haelt an — eigentum ist %s, es wird gefragt",
+            f"'{eigentum}' und nicht im Kanon" if eigentum else "nicht genannt",
+        )
+        return {
+            "parameter": {**state["parameter"], "frage_art": "eigentum"},
+            "status": "rueckfrage",
+            "rueckfrage": EIGENTUM_FRAGE,
+            "schritte": state["schritte"] + [
+                {"node": "ausfuehren", "ergebnis": "rueckfrage/eigentum"}
+            ],
+        }
+
     # ── Verarbeitung ────────────────────────────
     aufgeloest: str = str(befund.aufgeloest)
-    # `eigentum` bleibt auf dem Vorgabewert 'nutzer' und wird hier bewusst
-    # nicht gesetzt: Was ein Mensch im Gespraech freigibt, ist sein Material.
-    # Die Wurzel der Figur — ihr eigener Wissensspeicher — entsteht nicht
-    # ueber diesen Weg, sondern beim Aufbau des Schemas.
     ergebnis_zeile: dict | None = db_manager.execute_returning(
-        "INSERT INTO dateien_wurzeln (user_id, character_id, pfad, bezeichnung) "
-        "VALUES (%s, %s, %s, %s) RETURNING id",
-        (paar.user_id, paar.character_id, aufgeloest, bezeichnung),
+        "INSERT INTO dateien_wurzeln "
+        "(user_id, character_id, pfad, bezeichnung, eigentum) "
+        "VALUES (%s, %s, %s, %s, %s) RETURNING id",
+        (paar.user_id, paar.character_id, aufgeloest, bezeichnung, eigentum),
     )
     wurzel_id = ergebnis_zeile["id"] if ergebnis_zeile else None
 
@@ -555,15 +586,21 @@ def _create(state: AgentState) -> dict:
     verifiziert: bool = _verifizieren("create", wurzel_id, aktiv_erwartet=True)
     logger.info(
         "dateien_wurzeln: Freigabe angelegt (ID %s) auf '%s' fuer (%s x %s), "
-        "%s, verifiziert=%s",
+        "eigentum='%s', %s, verifiziert=%s",
         wurzel_id, aufgeloest, paar.user_id, paar.character_id,
-        dateizahl_text(befund), verifiziert,
+        eigentum, dateizahl_text(befund), verifiziert,
     )
 
     name: str = f" ('{bezeichnung}')" if bezeichnung else ""
+    wessen: str = {
+        "nutzer":   "dein Material",
+        "figur":    "mein Material",
+        "gemischt": "Material von uns beiden",
+    }[eigentum]
     return {
         "ergebnis": (
-            f"Verzeichnis freigegeben: {aufgeloest}{name} — {dateizahl_text(befund)}."
+            f"Verzeichnis freigegeben: {aufgeloest}{name} — {wessen}, "
+            f"{dateizahl_text(befund)}."
         ),
         "status": "abgeschlossen",
         "schritte": state["schritte"] + [{
