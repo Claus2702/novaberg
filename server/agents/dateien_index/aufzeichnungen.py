@@ -54,6 +54,16 @@ class Aufzeichnung:
     zusammenfassung: str
     #: Kosinus gegen den `such_vektor` dieses Turns, 0.0 bis 1.0.
     kosinus: float
+    #: Wessen Material hinter der Wurzel liegt: "nutzer" | "figur" |
+    #: "gemischt". Sie **erbt** es von der Wurzel, wie das Paar (§2.2) —
+    #: eine Datei hat keinen Eigentuemer, eine Freigabe schon.
+    #:
+    #: **Der Block im Prompt haengt daran** (§1a.2). Bis zum 22.08.2026 gab
+    #: es das Feld nicht, und der Block behauptete von jedem Treffer, er sei
+    #: fremd. Fuer die Unterlagen des Menschen stimmt das; fuer die
+    #: Recherchen, die ihr eigener Hintergrundprozess ablegt, ist es die
+    #: Anweisung, das eigene Material einem anderen zuzuschreiben.
+    eigentum: str = "nutzer"
 
 
 @dataclass
@@ -196,6 +206,7 @@ def _fund_bauen(zeilen: list[dict], bestand: int, kanal: str) -> Aufzeichnungsfu
             thema           = thema,
             zusammenfassung = zusammenfassung,
             kosinus         = round(float(zeile.get("kosinus") or 0.0), 4),
+            eigentum        = (zeile.get("eigentum") or "nutzer").strip(),
         ))
 
     fund = Aufzeichnungsfund(
@@ -285,7 +296,7 @@ def _scharfe_treffer(
             WITH bestand AS (
                 SELECT i.pfad, i.thema, i.zusammenfassung, i.suchtext,
                        i.stichwoerter, i.themen_embedding,
-                       w.pfad AS wurzel, w.bezeichnung
+                       w.pfad AS wurzel, w.bezeichnung, w.eigentum
                 FROM   dateien_index i
                 JOIN   dateien_wurzeln w ON w.id = i.wurzel_id
                 WHERE  w.user_id = %s AND w.character_id = %s
@@ -321,7 +332,7 @@ def _scharfe_treffer(
                 WHERE  anzahl <= GREATEST(1, (SELECT count(*) FROM bestand) / 2)
             )
             SELECT DISTINCT b.pfad, b.thema, b.zusammenfassung,
-                   b.wurzel, b.bezeichnung,
+                   b.wurzel, b.bezeichnung, b.eigentum,
                    {kosinus_ausdruck} AS kosinus
             FROM   bestand b
             JOIN   scharf s ON (b.suchtext @@ plainto_tsquery('german', s.wort)
@@ -419,7 +430,7 @@ def aufzeichnungen_suchen(
         zeilen: list[dict] = db_manager.select(
             """
             SELECT i.pfad, i.thema, i.zusammenfassung,
-                   w.pfad AS wurzel, w.bezeichnung,
+                   w.pfad AS wurzel, w.bezeichnung, w.eigentum,
                    1 - (i.themen_embedding <=> %s::vector) AS kosinus
             FROM   dateien_index i
             JOIN   dateien_wurzeln w ON w.id = i.wurzel_id

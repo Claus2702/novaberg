@@ -540,6 +540,10 @@ def _create(state: AgentState) -> dict:
 
     # ── Verarbeitung ────────────────────────────
     aufgeloest: str = str(befund.aufgeloest)
+    # `eigentum` bleibt auf dem Vorgabewert 'nutzer' und wird hier bewusst
+    # nicht gesetzt: Was ein Mensch im Gespraech freigibt, ist sein Material.
+    # Die Wurzel der Figur — ihr eigener Wissensspeicher — entsteht nicht
+    # ueber diesen Weg, sondern beim Aufbau des Schemas.
     ergebnis_zeile: dict | None = db_manager.execute_returning(
         "INSERT INTO dateien_wurzeln (user_id, character_id, pfad, bezeichnung) "
         "VALUES (%s, %s, %s, %s) RETURNING id",

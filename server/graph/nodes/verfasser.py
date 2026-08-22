@@ -165,7 +165,28 @@ def _gespraechsvektor_block(state: ConversationState) -> str:
 
 
 def _aufzeichnungen_block(state: ConversationState) -> str:
-    """Baut den [AUFZEICHNUNGEN]-Block aus den Treffern des Dateien-Index.
+    """Baut die Aufzeichnungs-Bloecke aus den Treffern des Dateien-Index.
+
+    **Es sind zwei, seit dem 22.08.2026, und sie unterscheiden sich in einer
+    Aussage:** `[AUFZEICHNUNGEN]` sagt *fremde Aufzeichnungen*,
+    `[EIGENE FUNDE]` sagt *deine Arbeit*. Der zweite Name enthaelt den ersten
+    bewusst **nicht** als Teilzeichenkette: Jede Pruefung, die einen Prompt an
+    `[AUFZEICHNUNGEN]` zerteilt, traefe sonst auch den Eigen-Block und
+    zerlegte ihn an der falschen Stelle — still. Welcher gilt, entscheidet
+    `eigentum` an der **Wurzel** — eine Datei hat keinen Eigentuemer, eine
+    Freigabe schon (§2.2).
+
+    **Der Anlass ist gemessen.** Bis dahin gab es nur den Fremd-Block, und er
+    behauptete von jedem Treffer, er sei fremd. Fuer `/files` und `/docs`
+    stimmt das; fuer die Recherchen, die ihr eigener Hintergrundprozess
+    ablegt, ist es die Anweisung, das eigene Material einem anderen
+    zuzuschreiben. Am 22.08.2026 antwortete sie auf die ausdrueckliche
+    Korrektur *„Du recherchierst ja, nicht ich"* mit *„die ganze Recherche war
+    dein Werk, nicht meins. Ich habe nur beobachtet."*
+
+    **`gemischt` laeuft in den Fremd-Block.** Eine Wurzel, bei der beides
+    liegen kann, traegt keine Zusicherung, dass ein einzelner Treffer ihrer
+    ist — und der teurere Fehler ist, Fremdes als eigenes auszugeben.
 
     Vorbedingung: `state["aufzeichnungen"]` traegt die Treffer dieses Turns
     (`agents.dateien_index.aufzeichnungen.Aufzeichnung`), moeglicherweise
@@ -197,20 +218,40 @@ def _aufzeichnungen_block(state: ConversationState) -> str:
         return ""
 
     # ── Verarbeitung ────────────────────────────
-    zeilen: list[str] = [
-        f"- {eintrag.fundstelle}: {eintrag.thema}"
-        + (f" — {eintrag.zusammenfassung}" if eintrag.zusammenfassung else "")
-        for eintrag in treffer
-    ]
+    # Getrennt nach Eigentum, und die Trennung ist der Zweck des Blocks: Der
+    # Text des einen sagt "fremde Aufzeichnungen", der des anderen "deine
+    # Arbeit". Eine gemeinsame Liste unter einer der beiden Ueberschriften
+    # ist fuer die andere Haelfte eine falsche Aussage.
+    eigene:  list = [e for e in treffer if getattr(e, "eigentum", "nutzer") == "figur"]
+    fremde:  list = [e for e in treffer if getattr(e, "eigentum", "nutzer") != "figur"]
+
+    bloecke: list[str] = []
+    for menge, prompt_name, marke in (
+        (eigene, "verfasser.eigene_aufzeichnungen", "[EIGENE FUNDE]"),
+        (fremde, "verfasser.aufzeichnungen",        "[AUFZEICHNUNGEN]"),
+    ):
+        if not menge:
+            continue
+        zeilen: list[str] = [
+            f"- {eintrag.fundstelle}: {eintrag.thema}"
+            + (f" — {eintrag.zusammenfassung}" if eintrag.zusammenfassung else "")
+            for eintrag in menge
+        ]
+        bloecke.append(PROMPTS[prompt_name].format(aufzeichnungen="\n".join(zeilen)))
+        logger.info(
+            f"Verfasser: {marke} mit {len(zeilen)} Eintrag(en), "
+            f"Kosinus {menge[0].kosinus:.4f} bis {menge[-1].kosinus:.4f}"
+        )
 
     # ── Ausgabe-Verifikation ────────────────────
-    logger.info(
-        f"Verfasser: [AUFZEICHNUNGEN] mit {len(zeilen)} Eintrag(en), "
-        f"Kosinus {treffer[0].kosinus:.4f} bis {treffer[-1].kosinus:.4f}"
-    )
-    return PROMPTS["verfasser.aufzeichnungen"].format(
-        aufzeichnungen="\n".join(zeilen)
-    )
+    if not bloecke:
+        logger.error(
+            "Verfasser: %d Aufzeichnungstreffer, aber kein Block gebaut — "
+            "kein Eintrag fiel in eine der beiden Mengen",
+            len(treffer),
+        )
+        return ""
+    return "\n\n".join(bloecke)
 
 
 def _build_system_prompt(state: ConversationState) -> str:
