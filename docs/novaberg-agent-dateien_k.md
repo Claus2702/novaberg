@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Konzept — Indizierung und Durchsuchung eines vorgegebenen Verzeichnisses als NMCP-Dienst
-**Stand:** 22. August 2026 (v0.16 — **jede Wurzel traegt, wessen Material sie enthaelt**, und der Block haengt daran: neuer §1a.5. Davor: 18. August 2026, v0.15)
+**Stand:** 23. August 2026 (v0.17 — die Prompt-Dateien beider Bloecke und der Kanon der Eigentumswerte sind benannt. Davor: 22. August 2026, v0.16 — **jede Wurzel traegt, wessen Material sie enthaelt**, und der Block haengt daran: neuer §1a.5. Davor: 18. August 2026, v0.15)
 **Pfad:** novaberg/docs/novaberg-agent-dateien_k.md
 **Typ:** Konzept (`_k`)
 **Status:** 🟠 **Stufe 1 bis 3 gebaut und gemessen, Stufe 4 zur Hälfte** (18.08.2026) — Freigabe, Wächter und die Enricher-Quelle laufen, letztere seit heute **zweikanalig**; Suche und Zoom des Auftrags-Wegs stehen. **Was fehlt, ist der Aufrufer:** Aushang, Klassifikation und Dispatch des Dienstes `dateien` (§8.1). Offen bleibt der Rückweg (§4b).

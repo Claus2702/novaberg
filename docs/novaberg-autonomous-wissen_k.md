@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Autonomes Wissensverzeichnis — Recherche, Vertiefung, Klaerfrage, Traeumen
-**Stand:** 15. August 2026 (v0.6); davor 4. August 2026 (Erstfassung 29. April 2026, Chat 70)
+**Stand:** 22. August 2026 (v0.7 — **`autonomous/{charakter}/{context_user}/`**: der Speicher bekommt eine Ebene und wird als Wurzel adressierbar, §2.2 und §2.3). Davor: 15. August 2026 (v0.6); davor 4. August 2026 (Erstfassung 29. April 2026, Chat 70)
 **Pfad:** novaberg/docs/novaberg-autonomous-wissen_k.md
 **Status:** ⬜ **nicht gebaut.** Die Erstfassung ist drei Monate alt und wurde nie umgesetzt; §11 traegt die Ueberarbeitung auf den heutigen Stand.
 **Quellen:** Chat 70 (autoresearch, Claude Code autoDream, SWE-agent, Letta, Sleep-time Compute Paper)

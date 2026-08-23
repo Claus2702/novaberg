@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Konzept — ein Node vor dem Responder, der den fachlichen Inhalt der Antwort bestimmt
-**Stand:** 18. August 2026 (Erstfassung 31. Juli 2026)
+**Stand:** 22. August 2026 (§2.2aa — aus einem Wissensblock werden zwei, und die Trennung verlaeuft zwischen ihnen ein zweites Mal). Davor: 18. August 2026 (Erstfassung 31. Juli 2026)
 **Pfad:** novaberg/docs/novaberg-node-verfasser_k.md
 **Typ:** Konzept (`_k`)
 **Status:** ✅ **gebaut.** Der Knoten läuft im CharacterGraph. Am 04.08.2026 um das Urteilsfeld erweitert, am 05.08.2026 um die Vorzeichenpruefung, am 13.08.2026 um die Herkunft des Reizes — siehe unten.
