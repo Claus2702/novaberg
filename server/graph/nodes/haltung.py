@@ -151,9 +151,25 @@ def _pipeline_zeile(
 def _initiative_aus_state(state: ConversationState) -> tuple[float | None, str]:
     """Holt das Fuehrungsmass des Turns aus dem Zustand.
 
-    Der Gespraechsvektor-Knoten rechnet es und legt es unter `initiative` ab;
+    Der Gespraechsvektor-Knoten rechnet es und legt es **in `gv_detail`** ab;
     er laeuft vor diesem Knoten (`graph.add_edge("gv_node", "haltungsraum")`).
     Hier wird es nur weitergereicht — gerechnet wird an einer Stelle.
+
+    **Es steht in `gv_detail` und nicht auf der obersten Ebene** — bis zum
+    23.08.2026 las diese Funktion `state["initiative"]`, und den Schluessel
+    setzt niemand. Gemessen ueber den ganzen Baum: **ein** Schreiber
+    (`_gv_detail_bauen`), **ein** Leser (hier), zwei verschiedene Ebenen. Der
+    Rueckgabewert war damit auf jedem Turn `(None, "gv_ohne_lauf")`, und
+    Riegel 2 sperrte seit seinem Bau am 15.08.2026 **immer**. Der letzte
+    Impuls-Turn stammt vom selben Tag.
+
+    **Warum es acht Tage niemand sah, gehoert zur Regel:** Der Riegel schliesst
+    bei Unbekanntem, und das ist richtig so (`novaberg-eigenzeit_k.md` §2.5).
+    Ein dauerhaft geschlossener Riegel sieht deshalb aus wie eine Figur, die
+    gerade nicht zugehen will — und `gv_ohne_lauf` ist ein vorgesehener Grund,
+    keine Fehlermeldung. **Ein Ausfall, der sich als gueltige Entscheidung
+    tarnt, hat keinen Melder.** Derselbe Knoten liest die Landschaft 130 Zeilen
+    weiter richtig aus `gv_detail`.
 
     **Der Ausfall wird benannt, nicht geglaettet.** Wer hier bei fehlendem Wert
     eine Zahl einsetzte, gaebe Riegel 2 eine Messung, die keine war. Und wer
@@ -161,6 +177,18 @@ def _initiative_aus_state(state: ConversationState) -> tuple[float | None, str]:
     Umkehrung: `ei/dreischicht.py` setzt bei fehlendem Mass **Bit 1** — *Nova
     fuehrt* —, was fuer eine Achse vertretbar ist und fuer einen Riegel den
     Schalter im Moment des Ausfalls **oeffnen** wuerde.
+
+    **Die drei Gruende sind drei Sachverhalte und tragen drei Namen.** Sie
+    zusammenzufassen war der zweite Teil desselben Defekts: `gv_ohne_lauf`
+    behauptet, der Knoten sei nicht gelaufen, und genau das hat die
+    Untersuchung verzoegert — der Stand trug `cluster=foyer` aus demselben
+    `gv_detail` und belegte damit das Gegenteil.
+
+    | Lage | Grund | was sie heisst |
+    |---|---|---|
+    | kein `gv_detail` | `gv_ohne_lauf` | der Knoten lief wirklich nicht |
+    | `gv_detail` ohne `initiative` | `fuehrung_fehlt_im_detail` | er lief und liess das Mass aus |
+    | `initiative` ohne Zahl | `masse_fehlen` / `ohne_wert` | er rechnete und kam nicht durch |
 
     Vorbedingung: keine.
     Nachbedingung: (Wert, Grund). Genau eines von beidem ist belegt.
@@ -172,12 +200,18 @@ def _initiative_aus_state(state: ConversationState) -> tuple[float | None, str]:
         Das Fuehrungsmass und den Grund seines Fehlens.
     """
     # ── Eingabe-Validierung ─────────────────────
-    roh = state.get("initiative")
-    if not isinstance(roh, dict):
+    gv_detail = state.get("gv_detail")
+    if not isinstance(gv_detail, dict):
         # Der GV-Knoten hat nichts hinterlassen — uebersprungener Turn oder ein
         # Pfad, der ihn nicht durchlaeuft. Kein Messausfall, sondern gar keine
         # Messung; die beiden werden getrennt benannt.
         return None, "gv_ohne_lauf"
+
+    roh = gv_detail.get("initiative")
+    if not isinstance(roh, dict):
+        # Er lief und hat das Mass ausgelassen. Das ist etwas anderes als ein
+        # uebersprungener Turn, und der Unterschied entscheidet, wo man sucht.
+        return None, "fuehrung_fehlt_im_detail"
 
     wert = roh.get("wert")
     if not isinstance(wert, (int, float)) or isinstance(wert, bool):
