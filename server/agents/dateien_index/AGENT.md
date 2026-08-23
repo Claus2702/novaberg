@@ -5,10 +5,24 @@ laeuft nicht im Gespraech, sondern als Wartungslauf ueber den Bestand.
 
 **Er schreibt keine Datei.** Was er anlegt, sind Zeilen ueber Dateien.
 
-## Drei Faelle, drei Wege
-- **neu** — Pfad nicht im Index → vollstaendig indizieren
-- **geaendert** — `inhalt_hash` weicht ab → auffrischen
-- **verschwunden** — Zeile im Index, Datei fehlt → `aktiv = false`, nicht loeschen
+## Vier Faelle, vier Wege
+- **neu** — Pfad nicht im Index → vollstaendig indizieren, `grund = 'created'`
+- **geaendert** — `inhalt_hash` weicht ab → auffrischen, `grund = 'changed'`
+- **verschwunden** — Zeile im Index, Datei fehlt **auf der Platte** →
+  `aktiv = false`, `grund = 'deleted'`, nicht loeschen
+- **ausserhalb** — Zeile im Index, Datei liegt da, der Lauf hat sie nicht
+  bewertet → `aktiv = false`, `grund = 'excluded'`
+
+**Nicht gesehen ist nicht fort.** Der vierte Fall steckte bis zum 23.08.2026
+im dritten: Ein engerer Filter legte Dateien still, die unveraendert dalagen,
+und beantwortete *wo war das noch* mit *sie ist weg*. Die Probe ist deshalb
+nicht die Buchfuehrung des Laufs, sondern ein Blick auf die Platte.
+
+## Der Wiedereintritt
+Ein Grabstein (`deleted`) mit **anderem** Hash ist eine **Neuanlage** — die
+alte Datei ist fort, eine andere liegt an ihrem Platz. Dann raeumt
+`zeile_schreiben` `entitaet_ids`, `timeline_id` und `zuletzt_gelernt_hash`:
+Sie gehoerten der Vorgaengerin. Gleicher Hash oder `excluded` setzen fort.
 
 ## Die Aenderungserkennung
 `mtime` und Groesse sind der Vorfilter, der Inhalts-Hash ist die

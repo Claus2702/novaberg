@@ -2,9 +2,9 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Rohe, noch unklassifizierte Funde aus laufender Arbeit
-**Stand:** 23. August 2026, 01:15 UTC
-**Offen:** 14 Funde
-**Verlauf:** [Verlauf des Standes](#verlauf-des-standes) — 64 Eintraege, juengster zuerst
+**Stand:** 23. August 2026, 16:15 UTC
+**Offen:** 16 Funde
+**Verlauf:** [Verlauf des Standes](#verlauf-des-standes) — 67 Eintraege, juengster zuerst
 **Pfad:** novaberg/docs/novaberg-fundliste.md
 
 Was beim Bauen an anderer Stelle auffällt, landet hier — **eine Zeile mit Datum**. Kein Bug-Name, keine Priorität, keine Klassifizierung, keine Diskussion. Der Zweck ist, einen Fund festzuhalten, ohne die laufende Arbeit dafür zu unterbrechen.
@@ -229,6 +229,9 @@ Analog zum Kraft-1-Stichtag: ab wann eine Partition brauchbar ist. Kein Backfill
 
 ## Offen
 
+- **2026-08-23** — **`dateien_index.aktiv` ist aus `grund` ableitbar, und nichts haelt die beiden zusammen.** `aktiv = (grund IS NULL OR grund IN ('created','changed'))` gilt heute an allen 175 Zeilen — gemessen: 0 Zeilen mit `aktiv = TRUE` und `grund IN ('deleted','excluded')`, 0 mit `aktiv = FALSE` und `grund IN ('created','changed')`. Die Konvention *Abgeleitete Werte* §3 Regel 1 erlaubt das Mitspeichern ausdruecklich, weil die Eingabe (`grund`) danebensteht. **Was fehlt, ist der Riegel:** Ein Schreibweg, der nur eine der beiden Spalten setzt, erzeugt eine Zeile, die zwei verschiedene Dinge sagt, und keine Pruefung faellt darueber. Ein `CHECK` in der Datenbank wuerde es ausschliessen und ist DDL. Beide Schreibwege setzen die Spalten heute gemeinsam.
+- **2026-08-23** — **Ein Begriff, der einen Schritt unserer internen Arbeitsweise benennt, steht an 11 Stellen im veroeffentlichten Repositorium** — 2 in Code-Docstrings, 9 in `novaberg-bugs.md` und `novaberg-roadmap.md`. Solche Begriffe gehoeren nicht hierher; die Stellen sind gepusht und nur mit einem Rewrite zu entfernen. Beim Schreiben faellt es nicht auf, weil der Begriff an seinem Herkunftsort richtig ist — zum Verstoss wird er erst durch den Ablageort. Zu entscheiden, ob umformuliert wird oder ob die Stellen als Vorbestand danebenstehen bleiben wie die uebrigen in `novaberg/CLAUDE.md`.
+- **2026-08-23** — Eine Neuanlage unter altem Pfad erbt `entitaet_ids`, `timeline_id` und `zuletzt_gelernt_hash` ihres Vorgaengers → **am selben Tag nach `novaberg-bugs.md` als `DATEIINDEX-NEUANLAGE-ERBT-VORGAENGER`, dort behoben.**
 - **2026-08-23** — **Ein Dienst ausserhalb von `server/` laeuft an jeder Pruefung vorbei.** Der Matrix-Connector (`matrix_bot/`) wird von der Testsuite nicht gefunden (`unittest discover` laeuft im Server-Behaelter ueber `/app`), von den Codepruefungen nicht erfasst (**0 Treffer** auf `matrix_bot` in allen sieben) und von der harten Wand nicht beruehrt. Seine 21 Zeugen laufen nur ueber einen eigenen Aufruf, den niemand automatisch startet. **Derselbe blinde Fleck gilt seit Chat 41 fuer `telegram_bot/`** — er ist mit dem zweiten Dienst nur sichtbar geworden. Zu entscheiden ist, ob die Pruefstrecke die Nebendienste aufnimmt oder ob sie ausdruecklich ausserhalb stehen.
 - **2026-08-22** — **Der Aussenrand des Dateien-Verbunds prueft den Pfad, nicht das Paar.** Eine Wurzel traegt `user_id x character_id`; `DATEIEN_AUSSENRAND` ist eine globale Liste von Pfaden. Seit dem 22.08.2026 steht dort `/knowledge/autonomous/nova/meister` — **ein Paarverzeichnis in einer Schranke, die kein Paar kennt.** Kaeme ein zweiter Nutzer hinzu, koennte er dasselbe Verzeichnis fuer **sein** Paar freigeben, sofern er den Pfad nennt; der Rand liesse ihn durch, und die Freigabe traegt danach seine Kennung. Heute mit einem Nutzer folgenlos — und genau die Sorte Luecke, die beim zweiten Nutzer niemand mehr sucht.
 - **2026-08-22** — **Am Rueckweg des Wurzel-Dienstes wird *„keine Ahnung"* als Ablehnung gelesen und beendet den Vorgang.** `_antwort_deuten` (`agents/dateien_wurzeln/resume.py`) prueft die Ablehnungswoerter zuerst, und `keine` steht darunter. Fuer eine **Ja-Nein**-Bestaetigung am Tor ist das die sichere Seite — es wird nichts geschrieben. Fuer eine Frage nach einem **Wert** ist es die falsche Antwort auf ein *ich weiss es nicht*: Der Dienst sagt *„Gut, dann lasse ich es"*, statt die Frage zu wiederholen. Gefunden beim Bau der Eigentumsfrage am 22.08.2026; das heutige Verhalten ist als Zeuge festgehalten (`test_dateien_wurzeln_eigentum.py`), nicht geaendert.
@@ -360,6 +363,9 @@ Elf Zeilen sind in `novaberg-bugs.md` zu Einträgen mit Reproduktionsweg geworde
 
 Die Fortschreibung des Standes, aus der Kopfzeile geloest am 20.08.2026. Der Wortlaut jedes Eintrags ist unveraendert; vorangestellt ist allein sein Datum.
 
+- **23. August 2026, 16:15 UTC** — **16 offene Funde**, zwei neu aus dem Umbau des Waechters: ein Begriff des internen Ablaufs an 11 Stellen im veroeffentlichten Repositorium, und `dateien_index.aktiv` ohne Riegel gegen `grund`.
+- **23. August 2026, 15:45 UTC** — **14 offene Funde.** Der Fund vom Mittag ist am selben Tag klassifiziert und behoben: Er wurde zu `DATEIINDEX-NEUANLAGE-ERBT-VORGAENGER` und ist mit dem Umbau des Waechters erledigt.
+- **23. August 2026, 14:20 UTC** — **15 offene Funde**, einer neu: Eine Neuanlage unter altem Pfad erbt `entitaet_ids`, `timeline_id` und `zuletzt_gelernt_hash` ihres Vorgaengers, weil `agent.py` neu und geaendert in einen Topf wirft und der UPSERT die drei Spalten nicht anfasst.
 - **21. August 2026, 10:48 UTC** — **6 offene Funde**, einer neu aus der Rangdiagnose des Dateienindex: Die Nulllinie 8 von 12 misst zum Teil das Sollurteil statt der Rangfolge.
 - **21. August 2026, 10:29 UTC** — **5 offene Funde.** Zwei vom Vormittag sind am selben Tag erledigt: die KZG-Schwelle ist gemessen und steht auf 0,72, der widersprechende Docstring ist fort. Zwei sind neu: der NMCP-Dienst `dateien` traegt weiterhin gar keine Schwelle, und der Boden des KZG-Raums koennte von der Schablone im Einbettungstext kommen.
 - **21. August 2026, 09:42 UTC** — **5 offene Funde**, zwei neu aus der Rewriting-Messung: eine Abrufschwelle, die nicht trennt (KZG und der NMCP-Dienst `dateien` liefern ihre volle Kappung auch auf eine Frage ohne Gegenstand), und ein Docstring, der eine andere Schwelle nennt als der Code darunter.

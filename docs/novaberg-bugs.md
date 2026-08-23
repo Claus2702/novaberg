@@ -1,6 +1,6 @@
 # Novaberg — Bugs & Limitationen
 
-**Stand:** 23. August 2026, 12:10 UTC (`PERSPEKTIVE-OHNE-DATIV` und `PROFILPROMPT-OHNE-GESCHLECHT` behoben, `KERNHASH-OHNE-PERSPEKTIVTRENNUNG` entschieden; die Rangfolge nachgezogen)
+**Stand:** 23. August 2026, 15:40 UTC (`VERSCHWUNDEN-DURCH-FILTERWECHSEL` behoben; `DATEIINDEX-NEUANLAGE-ERBT-VORGAENGER` gefunden und behoben)
 **Verlauf:** [Verlauf des Standes](#verlauf-des-standes) — 29 Eintraege, juengster zuerst
 
 ---
@@ -17,11 +17,13 @@ gemeinsam raeumt. Ein Zug pro Knoten raeumt mehr als ein Zug pro Defekt.
 
 **Stand nach Rang 2** (22.08.2026): **58 offen / 24 behoben** von 82 Abschnitten.
 
+**Stand nach dem ersten Zug in Rang 3** (23.08.2026): **57 offen / 26 behoben** von 83 Abschnitten — gezaehlt ueber die erste `Zustand:`-Zeile je Abschnitt mit Kennung, nicht fortgeschrieben. Ein Defekt behoben, einer im selben Zug gefunden und behoben.
+
 | Rang | Knoten | offene Defekte |
 |---|---|---|
 | **1** | ~~die Antwortstrecke `verfasser` / `haltung` / `responder`~~ — **am 22.08.2026 abgearbeitet**, von neun sind fuenf erledigt und zwei zur Haelfte gebaut | 2 |
 | **2** | ~~**Fuenf Charakter-Profile + Hash**~~ — **am 22.08.2026 zu zwei Dritteln abgearbeitet**: `PERSPEKTIVE-OHNE-DATIV` und `PROFILPROMPT-OHNE-GESCHLECHT` behoben, `KERNHASH-OHNE-PERSPEKTIVTRENNUNG` entschieden und noch nicht gebaut | 1 |
-| 3 | **Dateien-Dienst Stufe 2** (`dateien_index` + Waechter) | 3 |
+| 3 | **Dateien-Dienst Stufe 2** (`dateien_index` + Waechter) — `VERSCHWUNDEN-DURCH-FILTERWECHSEL` am 23.08.2026 behoben, dabei ein zweiter Defekt am selben Knoten gefunden und behoben | 2 |
 | 4 | `responder` — die Antwort | 2 |
 | 5 | Pipeline-Log · Emotionale Gravitation · Charakter-Raeder · Shadow-Queue · Bibliothek | je 2 |
 
@@ -83,13 +85,39 @@ gehoeren deshalb nicht in dieselbe Reihe wie ein Defekt mit Codeort.
 
 ---
 
-### `VERSCHWUNDEN-DURCH-FILTERWECHSEL` — stillgelegt heisst zweierlei
+### `VERSCHWUNDEN-DURCH-FILTERWECHSEL` — behoben am 23.08.2026
+
+**Zustand:** behoben — gegen HEAD `ecb2517` gehalten am 23.08.2026. Der Waechter fragt nicht mehr seine Buchfuehrung, sondern die Platte: `_liegt_noch_da()` in `agents/dateien_index/wandern.py` entscheidet je unbewerteter Bestandszeile, ob sie nach `verschwunden` oder nach `ausserhalb` geht.
+
+**Der Befund war enger als der Defekt.** Er nannte den nicht betretenen Punkt-Ast; gemessen am 23.08.2026 an einem Lauf mit vorbereitetem Bestand traf es **fuenf Klassen vorhandener Dateien** — Punkt-Ast, fremde Endung, ueber der Groessengrenze, leer, verborgene Einzeldatei. **Sechs Zeilen als verschwunden gemeldet, fuenf davon lagen da.**
+
+**Der Umbau in Zahlen.** DDL: `verschwunden_am` → `grund_am` umbenannt, `grund TEXT CHECK (grund IN ('created','changed','deleted','excluded'))` hinzugefuegt; die 174 Bestandszeilen ohne Nachfuellen. Zeugen 32 → **43**; Gegenprobe **6 vorhergesagt, 6 gezaehlt**. Suite `Ran 2132 tests — OK, 0 uebersprungen`. Im Betrieb belegt: ein Lauf ueber `/docs` schrieb **29 `changed` und 1 `created`**, und eine Sonde gegen dieselbe Datenbank legte eine vorhandene Datei als `excluded` und eine fehlende als `deleted` still.
+
+**Warum die Spalte und nicht ein NULL.** `verschwunden_am IS NULL` bei `aktiv = FALSE` haette die Unterscheidung auch getragen — aber nur die Tatsache, nicht den Grund, und der Wiedereintritt braucht ihn (siehe `DATEIINDEX-NEUANLAGE-ERBT-VORGAENGER`). `aktiv` bleibt daneben stehen: Es sagt, **ob** die Zeile gesucht wird, `grund` sagt **warum** sie ist, wie sie ist; fuenf Lesestellen filtern auf `aktiv` und keine davon will den Grund wissen.
+
+<details><summary>Der Befund, wie er bis zum 23.08.2026 stand</summary>
 
 **Zustand:** offen — gegen HEAD `00c16b6` gehalten am 20.08.2026. `speicher.py:138` setzt `verschwunden_am` weiter allein daraus, was der Lauf gesehen hat.
 
 **Befund (20.08.2026), aus der Fundliste uebernommen.** **Eine Filteränderung erzeugt Zeilen, die als „verschwunden" markiert sind, obwohl die Datei dort liegt, wo sie lag.** Der Wächter leitet `verschwunden` daraus ab, was der Lauf **gesehen** hat: Was im Bestand steht und diesmal nicht gefunden wurde, wird stillgelegt (`aktiv = false`, `verschwunden_am`). Wird ein Filter enger — am 20.08.2026 der nicht mehr betretene Punkt-Ast —, trifft das auch Dateien, die unverändert vorhanden sind. **Gemessen** an einem Lauf mit vorbereitetem Bestand: Die Zeile zu `.obsidian/notiz.md` landet unter `verschwunden`, die Datei existiert. **Folgenlos in dieser Installation** (0 betroffene Zeilen, die sechs Dateien dort waren nie indiziert), aber die Bedeutung des Feldes ist damit zweideutig: *„die Datei ist fort"* und *„wir sehen nicht mehr hin"*. §5.5 begründet das Stillegen damit, dass die Frage *„wo war das noch"* eine sinnvolle Antwort bekommt — die lautet dann *„sie ist weg"* und ist falsch. Ein Zeuge hält das Verhalten fest; die Unterscheidung fehlt.
 
 **Geschlossen, wenn** Der Waechter unterscheidet *die Datei ist fort* von *wir sehen nicht mehr hin*; eine Filteraenderung erzeugt keinen `verschwunden_am`.
+
+</details>
+
+---
+
+### `DATEIINDEX-NEUANLAGE-ERBT-VORGAENGER` — behoben am 23.08.2026
+
+**Zustand:** behoben — gefunden und behoben am 23.08.2026, im selben Zug wie `VERSCHWUNDEN-DURCH-FILTERWECHSEL`. Der Eintrag steht, weil er erklaert, warum der UPSERT drei `CASE`-Zweige traegt.
+
+**Befund (23.08.2026).** **Eine Neuanlage unter altem Pfad erbte drei Spalten ihres Vorgaengers.** `agent.py:255` rechnete `zu_tun = lauf.neu + lauf.geaendert` und verwarf damit das Etikett, das `wandern()` gerade vergeben hatte; beide Faelle nahmen denselben UPSERT. Dessen `DO UPDATE SET` frischte vierzehn Spalten auf und liess **`entitaet_ids`, `timeline_id` und `zuletzt_gelernt_hash`** stehen — die Graph-Verknuepfungen, den Zeitbezug und den Lernstand der geloeschten Datei. Erschwerend kam hinzu, dass eine stillgelegte Zeile mit vorhandener Datei ueberhaupt als *geaendert* galt: Der Fall *Grabstein mit anderem Hash* war nicht vorgesehen.
+
+**Folgenlos zum Zeitpunkt des Befundes, und messbar so:** Ein `grep` ueber `agents/dateien_index/` und `agents/dateien/` fand fuer alle drei Spalten **keinen Schreiber** — dieselbe Beobachtung, die als `DATEIINDEX-SPALTEN-OHNE-SCHREIBER` im Register steht. **Der erste Schreiber haette die Luecke scharf gemacht, und sie waere still gewesen:** Niemand sucht nach Beziehungen, die eine Datei zu Unrecht traegt.
+
+**Die Behebung.** `_fall_bestimmen()` in `wandern.py` entscheidet den Wiedereintritt: `deleted` mit abweichendem Hash ist eine **Neuanlage**, gleicher Hash oder `excluded` sind Fortsetzung. `zeile_schreiben` raeumt die drei Spalten bei `created` und laesst sie bei `changed` stehen. Vier Zeugen halten die Faelle einzeln fest (`KetteTest`), darunter der Fall `grund IS NULL` — die 174 Bestandszeilen von vor der Spalte werden nicht zu Neuanlagen.
+
+**Geschlossen, wenn** — erfuellt: Eine Zeile, die als `created` geschrieben wird, traegt in `entitaet_ids`, `timeline_id` und `zuletzt_gelernt_hash` nichts aus ihrem Vorleben. Im Betrieb geprueft: **0 Zeilen mit `grund = 'created'` und einem dieser drei Werte.**
 
 ---
 

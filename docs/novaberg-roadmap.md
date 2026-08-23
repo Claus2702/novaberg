@@ -1,6 +1,6 @@
 # Novaberg — Roadmap (Projektchronik)
 
-**Stand:** 23. August 2026, 10:20 UTC
+**Stand:** 23. August 2026, 15:40 UTC
 **Pfad:** novaberg/docs/novaberg-roadmap.md
 **Single Source of Truth für abgeschlossene Arbeit.**
 **Offene Punkte → novaberg-backlog.md**
@@ -12,6 +12,46 @@ Die Kopfzeile stand bis Chat 109 auf „Chat 93, 21. Mai 2026" — 15 Chats hint
 ---
 
 ## Chats 3–20: Grundlagen (März 2026)
+
+### 23.08.2026, 15:40 UTC — Nicht gesehen ist nicht fort
+
+**Der Wächter des Dateienindex schloss aus *„diesmal nicht gesehen"* auf *„gelöscht"*.** Er sieht
+aber nur, was innerhalb seines Auftrags liegt, und der ist enger als das Verzeichnis. Eine
+Filteränderung — eine Endung raus, eine Größengrenze runter, ein Ast nicht mehr betreten — erzeugte
+damit Grabsteine für Dateien, die unverändert dalagen.
+
+**Der Befund nannte eine Klasse, die Messung fand fünf.** Ein Lauf gegen einen vorbereiteten
+Bestand, jede Datei vor dem Lauf auf der Platte: **sechs Zeilen als verschwunden gemeldet, fünf
+davon lagen da** — Punkt-Ast, fremde Endung, über der Größengrenze, leer, verborgene Einzeldatei.
+
+**Die Trennung ist keine Erfindung dieses Projekts.** rsync räumt mit `--delete` nur innerhalb der
+übertragenen Menge; wer auch Ausgeschlossenes entfernen will, braucht zusätzlich
+`--delete-excluded`. Der Wächter verhielt sich, als wäre dieses Flag immer an.
+
+**Gebaut:** `verschwunden_am` heißt jetzt `grund_am` und bekommt mit `grund` einen Nachbarn
+(`created` · `changed` · `deleted` · `excluded`). Die Probe ist nicht mehr die Buchführung des
+Laufs, sondern ein Blick auf die Platte — **liegt die Datei noch da?** Ein Zugriff je Zeile, die der
+Lauf ohnehin nicht in der Hand hatte.
+
+**Ein zweiter Defekt fiel dabei auf, und er kam aus einer Frage nach dem Vorbild der
+Sync-Systeme:** Wenn `x` gelöscht wird und ein neues `x` mit anderem Hash erscheint, ist das eine
+**Neuanlage**. Der Code behandelte es als Änderung — `agent.py` warf neu und geändert in einen Topf,
+und der UPSERT ließ `entitaet_ids`, `timeline_id` und `zuletzt_gelernt_hash` stehen. Eine fremde
+Datei hätte die Beziehungen und den Lernstand ihrer Vorgängerin geerbt. **Folgenlos allein deshalb,
+weil keine der drei Spalten bis heute einen Schreiber hat** — der erste hätte die Lücke scharf
+gemacht, und sie wäre still gewesen.
+
+**Gemessen.** Zeugen 32 → **43**, Gegenprobe **6 vorhergesagt, 6 gezählt**, Suite
+`Ran 2132 tests — OK, 0 übersprungen`. Im Betrieb: ein Lauf über `/docs` schrieb **29 `changed` und
+1 `created`**; eine Sonde gegen dieselbe Datenbank legte eine vorhandene Datei als `excluded` und
+eine fehlende als `deleted` still. **0 Zeilen mit `grund = 'created'` tragen ein Erbe.**
+
+> **Der teuerste Zeuge war der, der schon dastand.** `test_altzeile_unter_dem_punkt_wird_stillgelegt`
+> hielt das falsche Verhalten fest und **beschrieb den Defekt in seinem eigenen Docstring**:
+> *„`verschwunden` trägt damit zwei Bedeutungen."* Ein Zeuge, der eine Zweideutigkeit benennt statt
+> sie rot zu machen, konserviert sie.
+
+---
 
 ### 23.08.2026, 10:20 UTC — Der Homeserver zieht nach Postgres, und der Client haengt dran
 

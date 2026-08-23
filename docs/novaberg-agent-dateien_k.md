@@ -702,8 +702,9 @@ Der Werkzeugsatz trägt damit zwei Hälften mit verschiedenen Rechten, und die T
 | `inhalt_hash` | Prüfsumme des Inhalts | die Änderungserkennung, §5.2 |
 | `geaendert_am` | mtime der Datei | |
 | `indiziert_am` | wann diese Zeile entstand | |
-| `aktiv` | ob die Datei noch existiert | Soft-Delete, §5.5 |
-| `verschwunden_am` | wann sie zuletzt fehlte | |
+| `aktiv` | ob die Zeile gesucht wird | Soft-Delete, §5.5 |
+| `grund` | der letzte Übergang — `created`, `changed`, `deleted`, `excluded` | §5.5; **`excluded` trennt *fort* von *nicht mehr betrachtet*** |
+| `grund_am` | seit wann dieser Zustand gilt | nicht dasselbe wie `indiziert_am` |
 | `entitaet_ids` | `integer[]` — welche Entitäten die Datei berührt | **der Graph-Kanal** (§6.1) |
 | `timeline_id` | `integer` — Zeitbezug, falls einer besteht | Eingang der Regel *„das Neuere sticht"* |
 | `suchtext` | `tsvector` | **der lexikalische Kanal** — bei 234 Dateien der stärkere |
@@ -916,13 +917,14 @@ Der Reducer dedupliziert die Kontexteinträge in zwei Stufen, **beide rein inhal
 
 ### 5.1 Was er tut
 
-Er läuft nach Zeitplan über die konfigurierten Wurzeln und bringt den Index auf den Stand des Verzeichnisses. Drei Fälle, drei Wege:
+Er läuft nach Zeitplan über die konfigurierten Wurzeln und bringt den Index auf den Stand des Verzeichnisses. **Vier Fälle seit dem 23.08.2026** — der vierte war bis dahin im dritten versteckt:
 
 | Fall | Erkennung | Folge |
 |---|---|---|
 | **neu** | Pfad nicht im Index | vollständig indizieren |
 | **geändert** | `inhalt_hash` weicht ab | neu indizieren, Zeile aktualisieren |
-| **verschwunden** | Pfad im Index, Datei fehlt | `aktiv = false`, `verschwunden_am` setzen |
+| **verschwunden** | Pfad im Index, Datei fehlt **auf der Platte** | `aktiv = false`, `grund = 'deleted'` |
+| **außerhalb** | Pfad im Index, Datei liegt da, der Lauf hat sie nicht bewertet | `aktiv = false`, `grund = 'excluded'` |
 
 > **Ein Verzeichnis mit führendem Punkt wird nicht betreten** (20.08.2026). Der Wächter übergeht Dateien mit Grund — das ist die Regel aus §9 Punkt 4 und sie bleibt. Für einen **Ast** ist sie die falsche Form: `.obsidian` stand nach der Freigabe von `/docs` mit sechs Absagen in jeder Bilanz, und keine davon wäre je eine andere geworden. Ein Punkt-Verzeichnis trägt Werkzeugschicht — Editor-Einstellungen, Zwischenspeicher, Arbeitskopien —, also Inhalt für ein Programm und nicht für einen Leser.
 >
@@ -967,6 +969,43 @@ Eingebettet werden Thema und Stichwörter, nicht der Dateiinhalt. Drei Gründe, 
 ### 5.5 Verschwundene Dateien werden markiert, nicht gelöscht
 
 Die Zeile bleibt mit `aktiv = false`. Zwei Gründe: Eine Datei, die wieder auftaucht, ist als dieselbe erkennbar; und die Frage *„wo war das noch"* ist auch für eine entfernte Datei eine sinnvolle Frage, solange die Antwort sagt, dass sie weg ist.
+
+#### 5.5a Nicht gesehen ist nicht fort
+
+> **Der Satz oben stand hier zwei Monate und trug eine Voraussetzung, die der Code nicht erfüllte.** Er begründet das Stilllegen damit, dass *„wo war das noch"* eine sinnvolle Antwort bekommt — die lautete für einen Teil der Zeilen *„sie ist weg"* und war falsch.
+
+Der Wächter schloss aus *„diesmal nicht gesehen"* auf *„gelöscht"*. Er sieht aber nur, was innerhalb seines Auftrags liegt, und der ist enger als das Verzeichnis. **Gemessen am 23.08.2026 an einem Lauf mit vorbereitetem Bestand: sechs Zeilen als verschwunden gemeldet, fünf davon lagen da.**
+
+| Klasse | Warum der Lauf sie nicht bewertet |
+|---|---|
+| unter einem Punkt-Verzeichnis | der Ast wird nicht betreten |
+| Endung außerhalb der Liste | wird gar nicht erst geöffnet |
+| über `DATEIEN_INDEX_MAX_BYTES` | wird nicht gelesen |
+| leer | wird mit Grund übergangen |
+| verborgene Einzeldatei | wird mit Grund übergangen |
+
+Jede dieser Grenzen ist eine **Einstellung**, und jede Änderung daran erzeugte Grabsteine für Dateien, die niemand angerührt hatte. Der Befund nannte eine Klasse; die Messung fand fünf.
+
+**Die Trennung ist keine Erfindung dieses Projekts.** rsync räumt mit `--delete` nur innerhalb der übertragenen Menge; wer auch Ausgeschlossenes am Ziel entfernt haben will, braucht zusätzlich `--delete-excluded` — ein eigenes Flag, weil *ausschließen* und *löschen* verschiedene Absichten sind. Syncthing hält ignorierte Dateien auf der Gegenseite ebenso unangetastet. **Der Wächter verhielt sich, als wäre `--delete-excluded` immer an.**
+
+Seit dem 23.08.2026 trägt die Zeile deshalb einen `grund`, und die Probe darauf ist nicht die Buchführung des Laufs, sondern ein Blick auf die Platte: **Liegt die Datei noch da?** Sie kostet einen Zugriff je Zeile, die der Lauf ohnehin nicht in der Hand hatte.
+
+| `grund` | heißt |
+|---|---|
+| `deleted` | im Auftrag gesucht, nicht gefunden — *sie ist weg* |
+| `excluded` | außerhalb des Auftrags — *wir sehen nicht mehr hin* |
+
+#### 5.5b Die Kette schließt sich beim Wiedereintritt
+
+Ein Grabstein hält den **alten Hash**, und daran entscheidet sich, was eine Datei am selben Pfad ist:
+
+| Zustand der Zeile | neuer Hash | Fall |
+|---|---|---|
+| `deleted` | weicht ab | **Neuanlage** — die alte Datei ist fort, eine andere liegt an ihrem Platz |
+| `deleted` | gleich | Fortsetzung — dieselbe Datei kam zurück |
+| `excluded` | gleich oder abweichend | Fortsetzung — sie war nie fort, wir sahen nur nicht hin |
+
+**Bei einer Neuanlage werden `entitaet_ids`, `timeline_id` und `zuletzt_gelernt_hash` geräumt.** Sie gehören der Datei, aus der sie gewonnen wurden; eine fremde Datei erbt weder die Beziehungen noch den Lernstand ihrer Vorgängerin. Bis zum 23.08.2026 ließ der UPSERT sie stehen — folgenlos allein deshalb, weil keine der drei Spalten bis heute einen Schreiber hat (§6.1). **Der erste Schreiber hätte die Lücke scharf gemacht, und sie wäre still gewesen.**
 
 ---
 

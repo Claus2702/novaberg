@@ -271,7 +271,8 @@ project/
 │   │   ├── charakter_identitaet/        #   CharakterIdentitaetAgent (User-Agent, Resume + init.sql)
 │   │   ├── direktiven/                  #   DirektivenAgent (User-Agent, HITL-Gate + init.sql)
 │   │   ├── dateien_index/               #   DateienIndexAgent (Waechter, ohne Takt, init.sql)
-│   │   │   ├── wandern.py               #     neu | geaendert | verschwunden — der Hash entscheidet
+│   │   │   ├── wandern.py               #     neu | geaendert | unveraendert | verschwunden | ausserhalb
+│   │   │                           #     Hash: neu/geaendert. Blick auf die Platte: fort/ausserhalb
 │   │   │   ├── indizieren.py            #     Thema, Stichwoerter, Blockkarte, Einbettung
 │   │   │   ├── speicher.py              #     Zeilen ueber Dateien, nie Dateien
 │   │   │   └── aufzeichnungen.py        #     der Enricher-Weg: Treffer je Turn (seit 18.08.2026)
