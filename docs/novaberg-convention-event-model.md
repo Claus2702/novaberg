@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Konzept — Event-Modell (Architektur-Evolution)
-**Stand:** 16. August 2026 (gegen den Code gehalten: alle benannten Mechanismen stehen; die Migrationsliste in §9.1 unterzeichnete den Stand, §9.3 ist **nicht** umgesetzt). Davor: 15. August 2026 (`gedanke_arousal` und sein **zweiter** Erzeuger, der Thinker-Retry); davor 1. August 2026, Chat 124 (Eingangs-Queue vor Pfad 1, Turn-Marker, fire-and-forget — Migrationsschritte 6 und 7 abgeschlossen). Kern: 21. April 2026, Chat 60
+**Stand:** 23. August 2026 (§7a neu — `event_payload` traegt die Herkunftsmarke auch ohne Ereignis; der AgentGraph wird direkt gerufen). Davor: 16. August 2026 (gegen den Code gehalten: alle benannten Mechanismen stehen; die Migrationsliste in §9.1 unterzeichnete den Stand, §9.3 ist **nicht** umgesetzt). Davor: 15. August 2026 (`gedanke_arousal` und sein **zweiter** Erzeuger, der Thinker-Retry); davor 1. August 2026, Chat 124 (Eingangs-Queue vor Pfad 1, Turn-Marker, fire-and-forget — Migrationsschritte 6 und 7 abgeschlossen). Kern: 21. April 2026, Chat 60
 **Pfad:** novaberg/docs/novaberg-convention-event-model.md
 **Typ:** Convention
 **Voraussetzung:** Session-Trennung (user_id × character_id), Chat 60 ✅
@@ -325,6 +325,52 @@ aber nicht heimlich.
 `llm_lock` wird für den gesamten Pfad-2-Durchlauf gehalten — nicht pro Node. Grund: Der Charakter-Graph ist eine kohärente Einheit (Router → Planner → Responder → Thinker → Tribunal). Feingranulares Locking würde GPU-Kontention mit Pixie riskieren.
 
 Pfad 1 (User) braucht auch den Lock für Perzeption + Salienz. Kontention minimal: Pfad 1 ist kurz (~3–5s), Pfad 2 läuft danach.
+
+---
+
+## 7a. `event_payload` ohne Ereignis — der direkt gerufene Graph
+
+**Am 23.08.2026 aufgekommen und entschieden.** §7 zeigt `event_payload` als das,
+was der Event-Consumer aus einem Ereignis in den Zustand hebt. Der AgentGraph
+wird aber nicht über ein Ereignis erreicht: `services/shadow_delivery.py` ruft
+`agent_graph.create_state(…)` direkt und lässt den Graphen im Wortthread laufen.
+
+**Genau deshalb trug er bis dahin keine Herkunftsmarke.** `reiz_herkunft` steht
+im Payload, `reiz_ist_eigener_gedanke` liest es dort — und lieferte im
+AgentGraph `False`, obwohl der Reiz Novas eigener Gedanke war. Der Umbau vom
+15.08.2026 hatte elf Leser im CharacterGraph umgestellt; **dieser Weg lag quer
+dazu, weil er kein Ereignis ist.**
+
+**Entschieden: `F-REIZ-1` gilt auch für den direkt gerufenen Graphen**, und das
+Payload ist der Träger der Marke — unabhängig davon, ob ein Ereignis es erzeugt
+hat. Der Aufrufer setzt es selbst:
+
+```python
+agent_state = agent_graph.create_state(
+    user_prompt     = "",
+    eigener_gedanke = wissensstueck,
+    event_payload   = {"reiz_herkunft": "eigener_impuls"},
+    …
+)
+```
+
+**Die Alternative wäre gewesen, dem AgentGraph ein echtes Ereignis zu geben** —
+und sie ist verworfen, nicht übersehen: Der Zustellpfad ruft ihn bewusst direkt,
+weil der Gedanke *entstehen* soll, bevor ein Ereignis den CharacterGraph
+auslöst. Ein Ereignis davorzusetzen kehrte die Reihenfolge um.
+
+> **Was der Leser daraus mitnehmen muss:** Ein `event_payload` im Zustand belegt
+> **nicht**, dass ein Ereignis gelaufen ist. Es ist der Kanal für die
+> Herkunftsangabe, und `event_source` bleibt die Frage danach, wer den Lauf
+> ausgelöst hat. Wer die beiden gleichsetzt, liest aus dem Payload eine
+> Ereignishistorie heraus, die es nicht gibt.
+
+**Die Marke gehört ins Payload und nicht an die Rolle**, und das ist keine
+Formfrage: Der Thinker-Retry trägt dieselbe Quelle `character` und ist trotzdem
+die Wiederholung einer echten Nutzeräußerung.
+
+Zeugen: `tests/test_reiz_platz.py::DerAgentGraphBekommtDieHerkunftTest` — einer
+liest die Aufrufstelle aus dem Quelltext, einer die Wirkung am Zugang.
 
 ---
 

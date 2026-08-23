@@ -1,6 +1,6 @@
 # Novaberg — Bugs & Limitationen
 
-**Stand:** 23. August 2026, 19:20 UTC (`OVERRIDE-NACH-CONNECTOR-STATT-MODELL` behoben — Rang 4 ist abgearbeitet; 53 offen / 30 behoben von 83 Abschnitten)
+**Stand:** 23. August 2026, 21:55 UTC (**Rang 5 abgearbeitet** — funf Knoten, sieben Eintraege behandelt; 47 offen / 36 nicht offen von 83 Abschnitten, gezaehlt ueber die erste `Zustand:`-Zeile je Abschnitt mit Kennung)
 **Verlauf:** [Verlauf des Standes](#verlauf-des-standes) — 29 Eintraege, juengster zuerst
 
 ---
@@ -25,7 +25,20 @@ gemeinsam raeumt. Ein Zug pro Knoten raeumt mehr als ein Zug pro Defekt.
 | **2** | ~~**Fuenf Charakter-Profile + Hash**~~ — **am 22.08.2026 zu zwei Dritteln abgearbeitet**: `PERSPEKTIVE-OHNE-DATIV` und `PROFILPROMPT-OHNE-GESCHLECHT` behoben, `KERNHASH-OHNE-PERSPEKTIVTRENNUNG` entschieden und noch nicht gebaut | 1 |
 | 3 | **Dateien-Dienst Stufe 2** (`dateien_index` + Waechter) — am 23.08.2026 zu zwei Dritteln abgearbeitet: `VERSCHWUNDEN-DURCH-FILTERWECHSEL` behoben, `DATEIINDEX-NEUANLAGE-ERBT-VORGAENGER` dabei gefunden und behoben, `DATEIINDEX-SPALTEN-OHNE-SCHREIBER` durch Statusmarke geschlossen, `ARCHIVDATEI-OHNE-ETIKETT` behoben — **der Knoten ist leer** | 0 |
 | 4 | ~~`responder` — die Antwort~~ — **am 23.08.2026 abgearbeitet**: `EMOTIONS-VEKTOREN-DOPPELT` und `OVERRIDE-NACH-CONNECTOR-STATT-MODELL` behoben | 0 |
-| 5 | Pipeline-Log · Emotionale Gravitation · Charakter-Raeder · Shadow-Queue · Bibliothek | je 2 |
+| 5 | ~~Pipeline-Log · Emotionale Gravitation · Charakter-Raeder · Shadow-Queue · Bibliothek~~ — **am 23.08.2026 abgearbeitet**, siehe unten | 3 |
+
+**Stand nach Rang 5** (23.08.2026): **47 offen / 36 nicht offen** von 83 Abschnitten. Von den zehn Eintraegen der fuenf Knoten standen bei der Rangpruefung **alle zehn noch** — keiner war nebenbei erledigt worden. Behandelt sind sieben:
+
+| Ausgang | Eintraege |
+|---|---|
+| **behoben** | `NEGATIVE-EMOTIONEN-DOPPELT` · `BIBLIOTHEK-FILTERT-ZWEISPALTIG` · `GRAVITATION-FAERBT-EIGENE-GEDANKEN` · `AGENTGRAPH-REIZPLATZ-FALSCH` · `SPEICHENWERT-NICHT-MEDIAN` |
+| **als entschieden geschlossen** | `HALTUNGSSTAND-OHNE-LOGZEILE` |
+| **zur Haelfte gebaut** | `FEHLVERSUCHSPFAD-LOESCHT-HART` — stillgelegt statt geloescht; die Auswahl nach hoher Salienz bleibt |
+| **offen, braucht eine Messung** | `BIBLIOTHEK-FINDET-SICH-SELBST` · `TURNROH-ZEILE-FEHLT` · `RADSPEICHEN-MESSEN-PROFILTEXT` |
+
+> **Zwei Befunde korrigierte erst die Nachmessung, nicht die Rangpruefung.** Bei `FEHLVERSUCHSPFAD-LOESCHT-HART` ist die Salienzkurve, die ihn trug, heute nicht mehr reproduzierbar — der Codebefund galt, die Begruendungszahl nicht. Bei `SPEICHENWERT-NICHT-MEDIAN` drehte die Messung ueber den ganzen Bestand die Aussage um: Das Zuwendungsrad ist mit 13,7 % **staerker** betroffen als das Initiative-Rad mit 10,0 %, waehrend die drei Laeufe vom 19.08. dort 0 von 12 gesehen hatten.
+>
+> **Und einmal war die Sperre selbst veraltet.** `GRAVITATION-FAERBT-EIGENE-GEDANKEN` nannte als Grund fuers Nichtbauen einen gleichzeitig laufenden Umbau des Skip-Tors. Der ist seit dem 14.08.2026 gebaut; der Eintrag trug den Grund unveraendert weiter. **Ein Eintrag altert nicht nur in seinem Befund, sondern auch in seiner Begruendung** — und die zweite Sorte prueft niemand, weil sie wie Kontext aussieht und nicht wie eine Behauptung.
 
 **Was von Rang 1 bleibt, ist kein Baufall.** `UMFANGSREGLER-BINDET-NICHT` und
 `MENGENANGABE-BINDET-NUR-UNTEN` beschreiben **Modellverhalten**, nicht eine Stelle im Code: Die
@@ -195,9 +208,13 @@ gehoeren deshalb nicht in dieselbe Reihe wie ein Defekt mit Codeort.
 
 ---
 
-### `BIBLIOTHEK-FILTERT-ZWEISPALTIG` — Lesepfad zweispaltig, Schema dreispaltig
+### `BIBLIOTHEK-FILTERT-ZWEISPALTIG` — behoben am 23.08.2026
 
-**Zustand:** offen — gegen HEAD `00c16b6` gehalten am 20.08.2026. `autonomous_wissen_repository.py:65` filtert weiter auf `user_id` und `character_id`.
+**Zustand:** behoben. Jede Abfrage auf `autonomous_wissen`, die auf das Paar filtert, filtert dreispaltig. `Bibliotheksfrage` traegt `beobachter` als Pflichtfeld ohne Default, geprueft gegen den neuen `BEOBACHTER_KANON` (`config.py`); die Lesestellen nehmen `BIBLIOTHEK_BEOBACHTER` aus dem Repository statt eines Literals. Zeugen: `tests/test_bibliothek_partition.py` (5), Gegenprobe 1 vorhergesagt / 1 gezaehlt, Suite `Ran 2180 tests — OK`.
+
+> **Der Befund nannte zwei Lesepfade, das Kriterium fand vier.** *Wer fragt `autonomous_wissen` mit `user_id = %s`?* — `AutonomousWissenRepository.suchen`, `AutonomousWissenRepository.zaehlen`, der Vorcheck im Enricher (`graph/nodes/enricher.py`) und die Kandidatenauswahl des Rueckwegs (`agents/wissen_rueckweg/zuordnung.py`). Die letzten beiden waeren bei einer Pruefung entlang der Aufzaehlung nie aufgefallen. Der Zeuge ist deshalb dasselbe Kriterium und keine Liste der vier.
+
+> **Die Zeilenangabe des Befundes war veraltet** — die Datei liegt heute unter `memory/repositories/`, der Filter stand in `suchen` bei :541, nicht bei :65. Und die Bestandszahl ist gewachsen: **831 Zeilen** statt 274 — die 274 waren der Stand vom 19.08.2026 —, weiterhin **alle** mit `beobachter='assistant'`; der Filterwechsel entfernt heute 0 Zeilen. Messwerkzeug: `labor/2026-08-23_bibliothek_partition.sql`.
 
 **Befund (19.08.2026), aus der Fundliste uebernommen.** **Der Lesepfad der Bibliothek filtert das Paar zweispaltig, das Schema ist dreispaltig.** `AutonomousWissenRepository.suchen` und die Enricher-Quelle filtern auf `user_id` und `character_id`; `beobachter` steht in der Tabelle und wird beim Lesen **nicht** eingeschränkt. Heute ist das folgenlos und nachgezählt: **274 von 274** aktiven Wissenszeilen tragen `beobachter='assistant'`, weil allein die Hintergrund-Agenten schreiben. **Es fällt in dem Moment auf die Füße, in dem ein zweiter Schreiber dazukommt** — und der Ausfall wäre still: Fremde Zeilen erschienen als eigene Ausarbeitung, ohne dass irgendetwas anschlägt. Die Konvention führt für das Langzeitgedächtnis ausdrücklich drei Spalten.
 
@@ -249,9 +266,13 @@ gehoeren deshalb nicht in dieselbe Reihe wie ein Defekt mit Codeort.
 
 ---
 
-### `SPEICHENWERT-NICHT-MEDIAN` — gespeichert ist nicht der Median
+### `SPEICHENWERT-NICHT-MEDIAN` — behoben am 23.08.2026
 
-**Zustand:** offen — gegen HEAD `00c16b6` gehalten am 20.08.2026. kein speichenweiser Median in `agents/charakter/`.
+**Zustand:** behoben. Entschieden: **der Speichenmedian laeuft als zweites, nicht rechnendes Feld mit.** `F-RAD-2` bleibt unangetastet — das gespeicherte Rad ist weiter das des Median-Laufs, und Faktor wie Versatz werden allein daraus gerechnet. Daneben tragen beide Raeder `speichen_median` (der Median je Speiche ueber alle gelungenen Laeufe) und `speichen_ohne_mehrheit` (die Namen der Abweichungen); eine Logzeile nennt sie. Eine Quelle fuer beide Raeder: `speichenweise_mediane` und `speichen_ohne_mehrheit` in `agents/charakter/destillation.py`. Zeugen: `tests/test_speichen_median.py` (8), Gegenprobe 3 vorhergesagt / 3 gezaehlt, Suite `Ran 2196 tests — OK`.
+
+> **Die Messung ueber den ganzen Bestand korrigiert den Befund.** Er stuetzte sich auf **drei** Laeufe vom 19.08.2026 und meldete Initiative 5 von 10, Zuwendung 0 von 12. Gegen alle 95 Erhebungen in `charakter_rad_messung` gerechnet: **Initiative 48 von 480 Speichen (10,0 %), Zuwendung 77 von 564 (13,7 %)** — das Zuwendungsrad ist **staerker** betroffen, nicht gar nicht. Die drei Laeufe waren nicht repraesentativ. Messwerkzeug: `labor/2026-08-23_speichen_ohne_mehrheit.py`.
+
+> **Das Werkzeug meldete zuerst 0 Speichen bei 95 Erhebungen** — es las die zweistufige Gestalt `hoch`/`runter`, waehrend `charakter_rad_messung.speichen` **flach** liegt. Eine Null, die aussah wie Einigkeit. Der Helfer `_flach` kennt seither beide Gestalten.
 
 **Befund (19.08.2026), aus der Fundliste uebernommen.** **Der gespeicherte Speichenwert ist nicht der Median seiner Erhebungen — bei der Initiative gilt das für die Hälfte der Speichen.** `F-RAD-2` legt fest, dass das Rad des **Median-Laufs** gespeichert wird, und begründet das gut: Ein gemitteltes Rad erzeugte Ausprägungen, die kein Lauf vergeben hat, und `Rad × Züge = Faktor` wäre nicht mehr von Hand nachrechenbar. **Der Preis war nicht benannt:** Der Median-Lauf wird über den **Faktor** bestimmt, nicht je Speiche. Gemessen am 19.08.2026 über drei Läufe: Beim Initiative-Rad tragen **5 von 10** Speichen einen gespeicherten Wert, den der Median ihrer eigenen Läufe nicht stützt — `behutsamkeit` steht auf 0,60, während zwei von drei Läufen 0,40 sagten; `gespraechsdistanz` auf 0,10 bei Median 0,20. Beim Zuwendungsrad trat der Fall nicht ein (0 von 12), weil dort die stark ziehenden Speichen zeichengleich sind. **Die Festlegung bleibt richtig, die Anzeige ist es nicht:** Wer eine einzelne Speiche liest — im Client, in einer Auswertung, in einem Befund —, bekommt einen Wert ohne Mehrheit hinter sich, und nichts sagt es ihm. Zu entscheiden: ob neben dem Median-Lauf-Rad die speichenweisen Mediane als eigenes, nicht faktortragendes Feld mitlaufen.
 
@@ -509,9 +530,19 @@ gehoeren deshalb nicht in dieselbe Reihe wie ein Defekt mit Codeort.
 
 ---
 
-### `FEHLVERSUCHSPFAD-LOESCHT-HART` — hart geloescht, nach hoher Salienz gewaehlt
+### `FEHLVERSUCHSPFAD-LOESCHT-HART` — zur Haelfte behoben am 23.08.2026
 
-**Zustand:** offen — gegen HEAD `00c16b6` gehalten am 20.08.2026. `shadow_auftrag_repository.py:416` und `:484` loeschen weiter hart.
+**Zustand:** offen — **die erste Haelfte ist gebaut, die zweite ausdruecklich nicht.** `versuch_zaehlen` legt an der Grenze still statt zu loeschen: `aktiv = FALSE, grund = 'fehlversuch'`. Der Verfallspfad schreibt `grund = 'verfall'` — zwei Ausgaenge, zwei Werte, sonst traegt die Spalte keine Unterscheidung. DDL angekuendigt und angelegt am 23.08.2026 (`F-DDL-1`): `shadow_auftrag.grund VARCHAR(20) NOT NULL DEFAULT ''`. Zeugen: `tests/test_queue_verfall.py` (i, i2, i3) und `tests/test_shadow_auftrag_schema.py`, Gegenprobe 2 vorhergesagt / 2 gezaehlt, Suite `Ran 2188 tests — OK`.
+
+> **Der Rest ist benannt und nicht gebaut:** *und waehlt nicht nach hoher Salienz*. Die Auswahlreihenfolge ist unveraendert — der Salienzstaerkste wird zuerst gezogen und scheitert deshalb zuerst. Das ist eine eigene Absicht und kein Rest desselben Zuges.
+
+> **Die Zahl, die den Befund trug, ist heute nicht reproduzierbar.** Am 16.08.2026 stieg die mittlere `salienz_roh` ueber 582 aktive `recherche`-Eintraege monoton mit der Versuchszahl (0,867 · 0,947 · 0,990). Nachgemessen am 23.08.2026: **213 Auftraege bei `versuche=0`, 3 bei 1, keiner darueber** — die Kurve hat keine Grundlage mehr. Der **Codebefund** (hartes `DELETE`) galt unveraendert; die Begruendungszahl gilt nicht. Messwerkzeug: `labor/2026-08-23_fehlversuch_salienz.sql`.
+
+> Die 247 stillgelegten Altzeilen tragen `grund = ''`. Das ist kein dritter Grund, sondern die Auskunft *vor dem 23.08.2026 stillgelegt, Ausgang unbekannt* — eine rueckwirkende Zuordnung waere geraten und nicht gemessen.
+
+> **Die Abhilfe erzeugte einen zweiten Defekt, und ein Suchlauf ueber die uebrigen Schreiber der Tabelle fand ihn am selben Tag.** `einreihen` weckt eine ruhende Zeile ueber `aktiv = TRUE` und setzte dabei weder `grund` noch `versuche` zurueck. Solange der Fehlversuchspfad **hart loeschte**, gab es die Lage nicht: Eine an der Grenze gescheiterte Zeile war fort, und ein neuer Anlass legte eine frische mit `versuche = 0` an. Seit sie liegen bleibt, weckt `einreihen` genau sie — mit ihrem vollen alten Fehlversuchsbudget. **Der erste Fehlschlag nach dem Wecken haette sie sofort wieder verworfen: Retry-Budget null statt drei.** Nachgespielt mit den beiden Produktivanweisungen in einer zurueckgerollten Transaktion: `nach_reaktivierung | t | fehlversuch | 3`. Behoben am selben Tag; Zeugen `test_g2_das_wecken_raeumt_das_fehlversuchsbudget_mit` und `test_g3_der_erste_fehlschlag_nach_dem_wecken_verwirft_nicht`, Gegenprobe 3 vorhergesagt / 3 gezaehlt.
+>
+> **Der bestehende Weck-Zeuge deckte den Pfad ab und pruefte die Stelle nicht** — er ruft `verfall_lauf` und danach `einreihen`, erzeugt also seit heute genau den Zustand `aktiv=TRUE, grund='verfall'`, und assertete `aktiv` und `salienz_decay`. Ein Zeuge, der den Weg laeuft, belegt nicht, dass er jedes Feld ansieht.
 
 **Befund (16.08.2026), aus der Fundliste uebernommen.** **Der Fehlversuchspfad löscht hart, und er wählt nach hoher Salienz aus.** `versuch_zaehlen` führt nach drei Läufen ein `DELETE FROM shadow_auftrag` aus; `novaberg-convention-verfall.md` §6 hat hartes Löschen für den **Verfallspfad** ausdrücklich verworfen (*„Ein Gedanke wäre unwiederbringlich weg"*) und der Docstring grenzt den Fehlversuch davon ab — *„ein Ausführungsfehler, kein Verfall"*. Formal also kein Verstoß. **Gemessen am 16.08.2026 steht die Grenze aber unter Druck:** Über die 582 aktiven `recherche`-Einträge stieg die mittlere `salienz_roh` monoton mit der Zahl der Versuche (0,867 · 0,947 · 0,990), weil der Wichtigste zuerst gezogen wird und das meiste Material hat. Der Verfall entfernt weich, was niemanden interessiert; der Fehlversuch entfernt hart, was am meisten interessiert. Ob die Ausnahme so gemeint war, ist eine Absicht und nicht entschieden.
 
@@ -559,9 +590,11 @@ gehoeren deshalb nicht in dieselbe Reihe wie ein Defekt mit Codeort.
 
 ---
 
-### `NEGATIVE-EMOTIONEN-DOPPELT` — zweimal definiert, die kleinere gewinnt
+### `NEGATIVE-EMOTIONEN-DOPPELT` — behoben am 23.08.2026
 
-**Zustand:** offen — gegen HEAD `00c16b6` gehalten am 20.08.2026. `ei/utils.py:24` und `services/shadow_delivery.py:130` tragen weiter zwei Fassungen.
+**Zustand:** behoben. `NEGATIVE_EMOTIONEN` ist einmal definiert — abgeleitet in `ei/utils.py` aus `EMOTION_SEKTOR_MAP` und `SEKTOR_GRUPPE`, acht Emotionen; `services/shadow_delivery.py` importiert sie. Entschieden wurde **fuer die groessere Menge**: Der Riegel haelt jetzt auch bei `wut`, `verzweiflung` und `enttaeuschung`. `stress` bleibt vor der Kanon-Pruefung stehen, weil dort auch die Nachfrage zu viel ist — die Reihenfolge traegt diese Unterscheidung. Zeugen: `tests/test_emotionsriegel_kanon.py` (6), Gegenprobe 2 vorhergesagt / 2 gezaehlt, Suite `Ran 2175 tests — OK`.
+
+> **Im Bestand ist der Fall nie eingetreten.** Ueber 729 `turn_roh`-Zeilen gemessen: 80 Turns mit einer der vier alten Emotionen (der Riegel hielt), 6 mit `stress`, **0 mit einer der drei durchgelassenen**. Die Abhilfe ist vorbeugend — und das aendert nichts daran, dass sie noetig war: Der Riegel war nicht wirkungslos, sondern unvollstaendig, und nichts haette es gemeldet. Messwerkzeug: `labor/2026-08-23_emotionsriegel_bestand.sql`.
 
 **Befund (16.08.2026), aus der Fundliste uebernommen.** **`NEGATIVE_EMOTIONEN` ist zweimal definiert, und Riegel 7 benutzt die kleinere Fassung.** `ei/utils.py` leitet die Menge aus `EMOTION_SEKTOR_MAP` und `SEKTOR_GRUPPE` ab — **acht** Emotionen. `services/shadow_delivery.py:130` schreibt daneben eine eigene Fassung als Literal hin — **vier**. Die zweite ist eine echte Teilmenge; es fehlen `enttaeuschung`, `stress`, `verzweiflung`, `wut`. **Die Folge ist Verhalten, nicht Kosmetik:** `_emotional_kompatibel` fängt `stress` in einer eigenen Zeile ab, aber `wut`, `verzweiflung` und `enttaeuschung` fallen durch auf den Zweig *„alle anderen Kombinationen: erlaubt"* — ein Recherche-Einwurf geht hinaus, während der Mensch wütend oder verzweifelt ist. Genau das, was der Emotions-Riegel verhindern soll. Gefunden über die Doku-Vollprüfung: `novaberg-ei-plutchik.md` §421 schlägt vor, die separaten Sets zugunsten **einer** Quelle abzuschaffen — der Vorschlag ist nie ausgeführt worden, und die Doku-Prüfung ist über den unbenutzten Namen `NEUTRALE_EMOTIONEN` darauf gestoßen. **Nicht mitgeändert:** Welche der beiden Mengen für die Zustellung richtig ist, ist eine Absicht — die abgeleitete ist die vollständigere, aber ob Riegel 7 *alle* negativen Emotionen fassen soll, hat nie jemand entschieden.
 
@@ -589,9 +622,13 @@ gehoeren deshalb nicht in dieselbe Reihe wie ein Defekt mit Codeort.
 
 ---
 
-### `AGENTGRAPH-REIZPLATZ-FALSCH` — der eigene Gedanke auf dem Reiz-Platz
+### `AGENTGRAPH-REIZPLATZ-FALSCH` — behoben am 23.08.2026
 
-**Zustand:** offen — gegen HEAD `00c16b6` gehalten am 20.08.2026. `services/shadow_delivery.py:598` uebergibt den Gedanken weiter als `user_prompt`, ohne Ereignis und ohne Herkunftsmarke.
+**Zustand:** behoben. Entschieden ist, dass `F-REIZ-1` **auch fuer den direkt gerufenen Graphen gilt**: `create_state` bekommt `user_prompt=""`, `eigener_gedanke=<Wissensstueck>` und `event_payload={"reiz_herkunft": "eigener_impuls"}`. Alle drei Knoten des AgentGraph lesen den Reiz bereits ueber `reiz_text` — geprueft als Kriterium, nicht als Aufzaehlung: Die einzige verbliebene direkte Lesung von `user_prompt` ist die Ablage des Session-Turns, und die ist in `F-REIZ-1` ausdruecklich ausgenommen. Zeugen: `tests/test_reiz_platz.py::DerAgentGraphBekommtDieHerkunftTest` (3), Gegenprobe 2 vorhergesagt / 2 gezaehlt.
+
+> **Zwei Zeugen, und sie pruefen Verschiedenes.** Der eine liest die **Aufrufstelle** aus dem Quelltext (traegt sie die Marke?), der andere die **Wirkung** (kommt der Gedanke beim Zugang an?). Ein Feld richtig zu belegen und trotzdem falsch gelesen zu werden ist genau der Fall, der hier gelaufen ist.
+
+> **Im Betrieb ungemessen, aus demselben Grund wie `GRAVITATION-FAERBT-EIGENE-GEDANKEN`:** Der AgentGraph wird ausschliesslich von der Impuls-Zustellung gerufen, und die ist seit dem 15.08.2026 geschlossen — am 23.08.2026 gemessen bis auf die Logzeile des sperrenden Riegels. **0 Aufrufe seit der Aenderung.** Die Schlussbedingung verlangt keinen echten Lauf, aber die Zusicherung *jeder Leser im Graphen sieht den Gedanken als eigenen* ist damit nur strukturell belegt.
 
 **Befund (15.08.2026), aus der Fundliste uebernommen.** **Der AgentGraph bekommt den eigenen Gedanken weiter auf dem Reiz-Platz.** `services/shadow_delivery.py` ruft `agent_graph.create_state(user_prompt=wissensstueck, …)` — ein direkter Aufruf ohne Ereignis, also ohne `event_payload` und ohne Herkunftsmarke. `reiz_ist_eigener_gedanke` liefert dort deshalb `False`, und jeder Leser im AgentGraph hält den Gedanken für eine Äußerung des Menschen. **Der Umbau vom 15.08. hat elf Leser im CharacterGraph umgestellt; dieser Weg lag quer dazu**, weil er kein Ereignis ist. Ob `F-REIZ-1` für einen direkt aufgerufenen Graphen gelten soll, ist nicht entschieden — der AgentGraph hat weder Zugriffsknoten noch erzeugende Stufe, die Zuschreibung an eine Person entsteht dort also nicht. **Nicht mitgeändert:** Es berührt keinen der beiden Bauteile dieses Tages, und die Frage ist eine Absicht, keine Implementierungsfrage.
 
@@ -599,9 +636,11 @@ gehoeren deshalb nicht in dieselbe Reihe wie ein Defekt mit Codeort.
 
 ---
 
-### `HALTUNGSSTAND-OHNE-LOGZEILE` — kein Eintrag im `pipeline_log`
+### `HALTUNGSSTAND-OHNE-LOGZEILE` — als entschieden geschlossen am 23.08.2026
 
-**Zustand:** offen — gegen HEAD `00c16b6` gehalten am 20.08.2026. `_stand_schreiben` (`graph/nodes/haltung.py:191`) schreibt weiter kein `log_db_write`.
+**Zustand:** geschlossen, **nicht behoben** — und der Unterschied ist die Sache selbst. Der Befund verlangte nicht die Zeile, sondern dass die Entscheidung *benannt* wird statt stillschweigend zu gelten. Sie ist benannt, seit `7c64fe9` (15.08.2026) und damit **vor** der Aufnahme des Eintrags: Der Docstring von `_stand_schreiben` traegt sie unter der Ueberschrift *Zwei Speicher, zwei Gegenstaende* — die Zeile im `pipeline_log` traegt den **Verlauf** und ist die Grundlage der Nachkalibrierung, dieser Stand traegt den **Zustand** und beantwortet die Frage eines Dienstes ausserhalb des Graphen.
+
+Nachgemessen am 23.08.2026: `graph/nodes/haltung.py` enthaelt weiterhin kein `log_db_write`. Der **Preis ist benannt und bleibt**: Die Haeufigkeit fehlgeschlagener Standschreibungen ist nicht aus der Reihe zaehlbar, sondern nur aus dem Dateilog. Wer das aendern will, baut keine zweite `db_write`-Zeile — die fuehrte dieselbe Zahl doppelt —, sondern eine eigene Art, die nicht als Messwert mitzaehlt.
 
 **Befund (15.08.2026), aus der Fundliste uebernommen.** **Der Haltungsstand hat keine Zeile im `pipeline_log`.** `ei_calc_persist` schreibt für seinen Redis-Schreibvorgang ein `log_db_write`; der `haltungsraum`-Knoten tut das für den Stand nicht — die Berechnungszeile trägt die Werte, der Stand ist eine Kopie davon, und ein Fehlschlag meldet sich über `logger.exception` im Dateilog. **Die Häufigkeit fehlgeschlagener Schreibvorgänge ist damit nicht aus der Reihe zählbar**, sondern nur aus dem Log. Bewusst so gelassen, weil ein zweiter Eintrag je Turn dieselbe Zahl doppelt führte; die Entscheidung gehört benannt, nicht stillschweigend getroffen.
 
@@ -738,9 +777,15 @@ gehoeren deshalb nicht in dieselbe Reihe wie ein Defekt mit Codeort.
 
 ---
 
-### `GRAVITATION-FAERBT-EIGENE-GEDANKEN` — die Faerbung trifft auch den eigenen Gedanken
+### `GRAVITATION-FAERBT-EIGENE-GEDANKEN` — behoben am 23.08.2026
 
-**Zustand:** offen — gegen HEAD `00c16b6` gehalten am 20.08.2026. `graph/nodes/emotionale_gravitation.py` fragt weiter nicht nach der Herkunft des Reizes.
+**Zustand:** behoben. `emotionale_gravitation_anwenden` fragt `reiz_ist_eigener_gedanke(state)` vor den Leerpruefungen und laesst den Verlauf auf einem Impuls-Turn unberuehrt. Der Ausfall ist **laut und mit Zahl**: Die Meldung nennt den Grund und die Menge der uebergangenen Punkte — eine Zeile, die nur *keine Faerbung* sagte, waere von einem echten leeren Punkte-Satz nicht zu unterscheiden. Zeugen: `tests/test_emotionale_gravitation_node.py::TestHerkunftstor` (3), Gegenprobe 2 vorhergesagt / 2 gezaehlt.
+
+> **Die Sperre, die den Bau bisher verhindert hat, war entfallen.** Der Eintrag nannte als Grund, dass der Umbau des Skip-Tors gleichzeitig lief und eine Verschlechterung dann keiner der beiden Ursachen zuzuordnen waere. Das Skip-Tor ist seit `f745d9a` (14.08.2026) gebaut; die beiden Ursachen sind seither trennbar. **Gefunden hat es die Rangpruefung, nicht der Eintrag** — er trug den Grund unveraendert weiter.
+
+> **Die Trefferzahl gibt der Bestand nicht her.** 85 der 729 Turns sind Impuls-Turns (11,7 %) und waren dem Defekt ausgesetzt; wie viele davon tatsaechlich gefaerbt wurden, ist nicht bestimmbar, weil die Logzeile der Gravitation keine `turn_id` traegt und ein Join damit nicht fahrbar ist. Das steht so im Messwerkzeug: `labor/2026-08-23_gravitation_impulsturns.sh`.
+
+> **Im Betrieb ungemessen, und der Grund ist gemessen.** Der Versuch am 23.08.2026 fuehrte ueber einen echten Turn (Wissenschaftsthema) und kam zwei Stufen weiter, ohne anzukommen: Der Ausloeser feuerte danach alle 30 Sekunden, **Riegel 2 sperrte jeden Zyklus** — `[wollen+0.55 frequenz- ruhe+] entschieden=frequenz`, weil der Haltungsstand kein Fuehrungsmass traegt. **Der letzte Impuls-Turn stammt vom 15.08.2026.** Solange der Impulsweg geschlossen ist, kann dieses Tor nicht im Betrieb belegt werden; beide Sperren stehen in `novaberg-fundliste.md`.
 
 **Befund (14.08.2026), aus der Fundliste uebernommen.** **Die emotionale Gravitation färbt auch Novas eigene Gedanken.** `emotionale_gravitation` läuft im CharacterGraph für jeden Turn und injiziert reaktivierte Erinnerungen in Novas Emotionsverlauf; am 13.08.2026 um 05:59:56 zweimal `neugierig` auf einem Impuls-Turn. Entschieden ist, dass sie dort nicht hingehört — ein Impuls ist bereits Novas Gedanke und braucht keine zweite Färbung. **Nicht gebaut**, weil der Knoten vor dem GV-Node steht und damit Landschaft und Dreischicht mitfärbt: Zusammen mit dem Umbau des Skip-Tors wäre eine Verschlechterung keiner der beiden Ursachen zuzuordnen.
 

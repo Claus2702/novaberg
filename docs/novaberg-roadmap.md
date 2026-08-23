@@ -1,6 +1,6 @@
 # Novaberg — Roadmap (Projektchronik)
 
-**Stand:** 23. August 2026, 20:10 UTC
+**Stand:** 23. August 2026, 22:40 UTC
 **Pfad:** novaberg/docs/novaberg-roadmap.md
 **Single Source of Truth für abgeschlossene Arbeit.**
 **Offene Punkte → novaberg-backlog.md**
@@ -12,6 +12,113 @@ Die Kopfzeile stand bis Chat 109 auf „Chat 93, 21. Mai 2026" — 15 Chats hint
 ---
 
 ## Chats 3–20: Grundlagen (März 2026)
+
+### 23.08.2026, 22:40 UTC — Die Messung zweier Bauteile fand den Weg dahin geschlossen
+
+Zwei der sechs gebauten Bauteile — das Herkunftstor der Gravitation und die Herkunftsmarke des
+AgentGraph — sind nur strukturell bezeugt und liegen auf dem **Impulsweg**. Die Betriebsmessung
+sollte beide in einem Lauf schliessen. Sie hat sie nicht geschlossen, und der Grund wiegt mehr
+als die beiden Luecken.
+
+**Der letzte Impuls-Turn stammt vom 15.08.2026** — neun Tage, bei 489 Eintraegen auf dem Stapel.
+Zwei Sperren stehen hintereinander, und beide sind gemessen statt vermutet:
+
+| Stufe | Befund |
+|---|---|
+| **Der Ausloeser** | `momentum` und `last_activity` waren **beide leer**. Ohne den zweiten faellt die Zustellschleife jeden Zyklus in `else: continue`; gesetzt wird er **allein** vom Nutzer-Turn, mit 2 h TTL. **Ein Impuls kann sich nicht selbst anstossen** — zwei Stunden nach dem letzten Wort des Menschen endet Novas Eigeninitiative, und zwar dauerhaft |
+| **Riegel 2** | Nach einem echten Turn feuerte der Ausloeser sofort wieder, alle 30 Sekunden — und der Initiative-Riegel sperrte jeden Zyklus: `[wollen+0.55 frequenz- ruhe+] entschieden=frequenz`. Der Haltungsstand traegt kein Fuehrungsmass |
+
+**Der zweite Befund widerspricht sich selbst.** Der Grund lautet `gv_ohne_lauf`, und der Kommentar
+an der Fundstelle liest ihn als *uebersprungener Turn oder ein Pfad, der den GV-Knoten nicht
+durchlaeuft*. Derselbe Stand traegt aber `cluster=foyer` — und `cluster` kommt aus `gv_detail`.
+**Der Knoten ist gelaufen.** Der Zweig greift, sobald `state["initiative"]` kein `dict` ist, und
+das ist nicht dasselbe.
+
+> **Die Ampel des Bauteils faellt dabei von 🔴 auf ⚫**, und sie faellt nicht wegen eines neuen
+> Defekts, sondern weil die Messung zum ersten Mal gefragt hat, ob der Weg **ueberhaupt** laeuft.
+> Drei offene Eintraege beschrieben bisher, wie er es schlecht tut.
+
+**Was die Messung fuer die zwei Bauteile ergibt, ist ein Ergebnis und kein Ausfall:** Sie bleiben
+im Betrieb ungemessen, und der Grund ist jetzt eine Logzeile statt einer Vermutung.
+
+**Nebenbei zweimal dieselbe alte Klasse:** Der erste Zaehlversuch lief ueber das Dateilog und
+zaehlte Zeugenfixtures als Betrieb mit (`turn_id=turn-1`, `thema='T'`) — die Suite schreibt in
+dieselbe Datei **und** in die Produktivdatenbank. Das saubere Instrument war `pipeline_log`.
+
+---
+
+### 23.08.2026, 21:55 UTC — Rang 5: fuenf Knoten, und zweimal widerspricht die Nachmessung dem Befund
+
+**Die Rangfolge der offenen Defekte ist bis Rang 5 abgearbeitet.** Der Rang nannte fuenf Knoten
+mit je zwei Eintraegen — Pipeline-Log, Emotionale Gravitation, Charakter-Raeder, Shadow-Queue,
+Bibliothek. **Die Rangpruefung gegen den heutigen Code fand alle zehn unveraendert stehend**;
+keiner war nebenbei erledigt worden. Sieben sind behandelt, drei brauchen eine Messung und keinen
+Eingriff.
+
+**Was gebaut ist**
+
+| Gegenstand | Was sich aendert |
+|---|---|
+| **Der Emotions-Riegel der Zustellung** | `NEGATIVE_EMOTIONEN` stand zweimal — acht abgeleitet, vier als Literal daneben, und der Riegel nahm die kleinere. `wut`, `verzweiflung` und `enttaeuschung` fielen auf *alle anderen Kombinationen: erlaubt*. Jetzt eine Quelle, und `stress` bleibt davor stehen, weil dort auch die Nachfrage zu viel ist |
+| **Die Partition der Bibliothek** | Jede paargefilterte Abfrage auf `autonomous_wissen` filtert dreispaltig. Der Beobachter ist Pflichtfeld ohne Default, geprueft gegen einen deklarierten Kanon |
+| **Die emotionale Gravitation** | Faerbt den eigenen Gedanken nicht mehr. Der Ausfall nennt Grund **und** Menge — eine Zeile, die nur *keine Faerbung* sagte, waere von einem echten leeren Punkte-Satz nicht zu unterscheiden |
+| **Der Reiz-Platz des AgentGraph** | Der direkt gerufene Graph bekommt `eigener_gedanke` und die Herkunftsmarke. Er trug bisher kein Ereignis und lag damit quer zum Umbau vom 15.08. |
+| **Der Fehlversuchspfad der Queue** | Legt still statt zu loeschen, mit eigener Spalte `grund` — `verfall` und `fehlversuch` sind zwei Ausgaenge und tragen zwei Werte |
+| **Der Speichenmedian** | Laeuft als zweites, nicht rechnendes Feld neben dem Rad des Median-Laufs. Der Faktor bleibt, wo er war |
+
+**Zweimal widersprach die Nachmessung dem Eintrag, und zweimal in die unbequeme Richtung.**
+
+Der Fehlversuchspfad stuetzte sich auf eine monoton steigende Salienzkurve ueber 582 aktive
+Eintraege (0,867 · 0,947 · 0,990). Nachgemessen: **213 Auftraege bei null Versuchen, drei bei
+einem, keiner darueber.** Der Codebefund galt unveraendert — das harte `DELETE` stand da —, aber
+die Zahl, mit der er begruendet war, hat heute keine Grundlage. Beides gehoert in den Eintrag,
+nicht nur das Erste.
+
+Der Speichenmedian kehrte seine eigene Aussage um. Der Befund kam aus **drei** Laeufen vom
+19.08.2026 und meldete Initiative 5 von 10 Speichen, Zuwendung 0 von 12. Gegen alle **95
+Erhebungen** des Bestandes gerechnet: Initiative **10,0 %**, Zuwendung **13,7 %** — das Rad, das
+nicht betroffen schien, ist es staerker. Drei Laeufe waren keine Stichprobe.
+
+> **Und einmal war nicht der Befund veraltet, sondern seine Begruendung.** Die emotionale
+> Gravitation war *nicht gebaut, weil der Umbau des Skip-Tors gleichzeitig lief* — der ist seit
+> dem 14.08.2026 fertig. Der Eintrag trug den Grund unveraendert weiter, acht Tage lang. **Ein
+> Eintrag altert in zwei Richtungen, und die zweite prueft niemand:** Der Befund sieht aus wie
+> eine Behauptung und wird nachgehalten; die Begruendung sieht aus wie Kontext.
+
+**Ein Suchlauf ueber Erzeuger und Leser jedes neuen Werts fand drei Befunde, und zwei davon hatte dieser Tag selbst erzeugt.**
+
+Der erste ist ein Verhaltensbruch: `einreihen` weckt eine ruhende Zeile und setzte dabei weder
+`grund` noch `versuche` zurueck. **Solange der Fehlversuchspfad hart loeschte, gab es die Lage
+nicht** — die gescheiterte Zeile war fort, und ein neuer Anlass legte eine frische an. Seit sie
+liegen bleibt, wird genau sie geweckt, mit ihrem vollen alten Budget: **Retry-Budget null statt
+drei.** Der bestehende Weck-Zeuge laeuft ueber diese Stelle und assertete `aktiv` und
+`salienz_decay`, nicht `grund`.
+
+Der zweite: Das am selben Tag ergaenzte `speichen_median` erreichte den Speicher **nie**. Beide
+Stabilisierungspfade bauen das Rad als aufgezaehltes Literal neu — und die Aufzaehlung ist die
+Klasse, nicht das Feld: Am Bestand trugen **20 von 24** gespeicherten Zuwendungs-Raedern nur
+`hoch` und `runter`; `laeufe` und `streuung` waren lange vorher herausgefallen, ohne dass es
+jemand gemerkt haette.
+
+Der dritte trifft eine Zahl: *274 von 274* stammt aus dem Befund vom 19.08. und wanderte beim
+Bauen an **drei** neue Stellen, dort mit dem heutigen Datum daneben. Nachgezaehlt sind es
+**831** — der Schluss trug weiter, die Zahl war um Faktor 3,0 veraltet und sah frisch aus.
+
+> **Alle drei liegen quer zum Bau.** Der Zugriff war *wer erzeugt und wer liest diesen Wert* als
+> Suche ueber den Baum; die anderen Schreiber nennen die neuen Namen nirgends und waeren von
+> keiner Suche ueber den Bezeichner gefunden worden. **Die Zeugen der drei Bauteile waren gruen
+> und blieben es.**
+
+**Das Messwerkzeug meldete zuerst eine Null, die aussah wie Einigkeit.** Der Speichenzaehler las
+die zweistufige Gestalt `hoch`/`runter`, waehrend `charakter_rad_messung.speichen` flach liegt —
+0 Speichen bei 95 Erhebungen, und ein Anteil von 0,0 % haette wie ein sauberes Ergebnis
+ausgesehen.
+
+Suite 2169 → **2196 gruen, 0 uebersprungen.** DDL angekuendigt und angelegt: `shadow_auftrag.grund`.
+Die Codepruefungen unveraendert bis auf A11 301 → 300; die harte Wand sauber, die ruff-Nulllinie
+ueber die geaenderten Dateien 108 → 108.
+
+---
 
 ### 23.08.2026, 20:10 UTC — Eine Zeile, deren Gegenstand es nicht mehr gibt
 

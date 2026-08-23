@@ -115,7 +115,7 @@ GROUP BY c.table_name ORDER BY 4 DESC, 2 DESC, 1;
 
 | Verworfen | Warum |
 |---|---|
-| **Hartes Löschen unter der Schwelle** | Ein Gedanke wäre unwiederbringlich weg. Stattdessen Soft-Delete nach LZG-Vorbild: `aktiv = FALSE`, weckbar über die Halbreaktivierung. Den Ausschlag gab ein Bestandsbefund — 233 Aufträge auf Salienz 0,0, deren Null ein Schreibfehler war und kein schwacher Anlass. |
+| **Hartes Löschen unter der Schwelle** | Ein Gedanke wäre unwiederbringlich weg. Stattdessen Soft-Delete nach LZG-Vorbild: `aktiv = FALSE`, weckbar über die Halbreaktivierung. Den Ausschlag gab ein Bestandsbefund — 233 Aufträge auf Salienz 0,0, deren Null ein Schreibfehler war und kein schwacher Anlass. **Seit dem 23.08.2026 gilt dasselbe für den Fehlversuchspfad**, der bis dahin ausdrücklich ausgenommen war: Ein Ausführungsfehler ist formal kein Verfall, aber der Verfall entfernte weich, was niemanden interessiert, und der Fehlversuch hart, was am meisten interessiert. Beide Pfade legen still, und die Spalte `grund` trennt sie (`F-STILLLEGUNG-1`). |
 | **Verfallsrate gestaffelt nach Salienz** | Eine zweite Kurve neben der ersten. Eine einzige Rate leistet dasselbe, weil ein schwächerer Eintrag von einem niedrigeren Anker startet und deshalb früher unten ankommt. |
 | **Mengengrenze je Speicher** | Verwürfe nach **Zahl** statt nach **Dringlichkeit**. Wächst ein Bestand über das Erträgliche, wird stattdessen die Verfallsrate verstärkt. |
 | **Verfall auch auf Faktentabellen** | Ein Termin, der an Gewicht verliert, ist kein Termin mehr. Und bei Fremdschlüsselzielen risse ein deaktivierter Satz die Referenz (§1.2). |

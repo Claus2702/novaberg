@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Backlog — Konzipierte, noch nicht implementierte Features
-**Stand:** 23. August 2026, 17:15 UTC (`DATEIINDEX-GRAPHKANAL` neu — was ein tragfaehiger Schreiber fuer den Graph-Kanal des Dateienindex leisten muesste)
+**Stand:** 23. August 2026, 21:55 UTC (zwei Stellen zum Fehlversuchspfad markiert — er legt seit heute still statt zu loeschen; die Auswahl nach hoher Salienz bleibt)
 **Verlauf:** [Verlauf des Standes](#verlauf-des-standes) — 37 Eintraege, juengster zuerst
 **Pfad:** novaberg/docs/novaberg-backlog.md
 **Quellen:** nova-08-k.md (Kognitive Anreicherung), nova-10-k-backlog.md (Skill-System), nova-01-t-c-backlog.md (Node-Konfiguration)
@@ -1092,7 +1092,9 @@ Der Befund steht im Wortlaut, in dem er notiert wurde; ergänzt sind Kennung, Pr
 >
 > **`RECHERCHE-RETRY-BLOCKIERT-QUEUE` ist in seinem Kern erklärt und zur Hälfte behoben.** *„Ein Lauf, der ihn über seine Zeitgrenze hinaus hält und danach mit vollem Anspruch zurückkehrt"* — die Zeitgrenze war die geerbte Frist von 300 s, und der Lauf hielt den Platz danach weiter, weil eine Frist nur das Warten beendet, nicht die Ausführung. Seit dem 16.08. trägt die Aufrufstelle 1200 s (`F-FRIST-1`). **Nicht behoben ist der Rückkehr-Teil:** Der Auftrag kommt mit unverändertem Anspruch zurück und verliert nur einen Versuch von dreien.
 >
-> **Und ein fünfter Aspekt kam hinzu, den keiner der vier nannte:** Der Fehlversuchspfad löscht **hart** und wählt dabei nach *hoher* Salienz aus — die mittlere `salienz_roh` steigt monoton mit dem Versuchszähler (0,867 · 0,947 · 0,990). Er steht in der Fundliste.
+> **Und ein fünfter Aspekt kam hinzu, den keiner der vier nannte:** ~~Der Fehlversuchspfad löscht **hart**~~ und wählt dabei nach *hoher* Salienz aus — ~~die mittlere `salienz_roh` steigt monoton mit dem Versuchszähler (0,867 · 0,947 · 0,990)~~. Er steht in der Fundliste.
+>
+> **Am 23.08.2026 zur Hälfte erledigt und einmal widerlegt** (`FEHLVERSUCHSPFAD-LOESCHT-HART`): Der Pfad legt still statt zu löschen, mit eigener Spalte `grund`. Die **Auswahl** nach hoher Salienz ist unverändert. Und die Kurve, die den Befund trug, ist heute nicht mehr reproduzierbar — nachgemessen 213 Aufträge bei null Versuchen, 3 bei einem, keiner darüber.
 
 **Zwei weitere hängen an derselben Zahl:** `KONTEXT-32768-IN-SECHS-DOKUMENTEN` und `RECHERCHE-ZWISCHENDESTILLATION-OHNE-GRUND`. Der zweite ist eine Folge des ersten — ein Verarbeitungsschritt, der verlustbehaftet gegen eine Grenze komprimiert, die achtmal weiter weg ist als angenommen.
 
@@ -1140,7 +1142,7 @@ Der Befund steht im Wortlaut, in dem er notiert wurde; ergänzt sind Kennung, Pr
 
 **Der Grund ist gefunden (16.08.2026) — die Kennung stimmt insofern nicht mehr, bleibt aber stehen, weil andere Stellen auf sie zeigen.** Der Ausfall war **kein** Fehler des Schritts, sondern seine Frist: `zwischen_destillieren` nannte keine und erbte den Worter-Vorgabewert `MODEL_BACKGROUND_TIMEOUT_S = 300`. Gemessen ueber 24 h, 190 Antworten des Aufrufs — Median **181 s**, p90 **314 s**, Maximum **638 s**; **24 davon (12 %) trafen nach dem Fristablauf ein.** Das Modell hatte geantwortet, der Aufrufer hatte aufgegeben, und das Werk lief unterdessen weiter und hielt den einzigen seriellen Platz.
 
-**Und der Schaden lag in der Auswahl, nicht im einzelnen Lauf.** Ein Fehlversuch loescht den Queue-Eintrag nach drei Laeufen **hart** (`versuch_zaehlen` → `DELETE`), waehrend der Verfall ihn nur weich deaktiviert und weckbar laesst. Über die 582 aktiven `recherche`-Einträge stieg die mittlere `salienz_roh` **monoton** mit der Zahl der Versuche — 0,867 bei null, 0,947 bei einem, **0,990 bei zwei** —, weil der Wichtigste zuerst gezogen wird, das meiste Material hat und deshalb als erster in die Frist laeuft. Sechzehn Eintraege standen einen Fehllauf vor der Loeschung.
+**Und der Schaden lag in der Auswahl, nicht im einzelnen Lauf.** ~~Ein Fehlversuch loescht den Queue-Eintrag nach drei Laeufen **hart** (`versuch_zaehlen` → `DELETE`), waehrend der Verfall ihn nur weich deaktiviert und weckbar laesst.~~ → **Am 23.08.2026 behoben:** Beide Pfade legen still, und die Spalte `grund` trennt sie (`verfall` gegen `fehlversuch`). Was bleibt, ist der Satz davor — die Auswahl nach hoher Salienz. Über die 582 aktiven `recherche`-Einträge stieg die mittlere `salienz_roh` **monoton** mit der Zahl der Versuche — 0,867 bei null, 0,947 bei einem, **0,990 bei zwei** —, weil der Wichtigste zuerst gezogen wird, das meiste Material hat und deshalb als erster in die Frist laeuft. Sechzehn Eintraege standen einen Fehllauf vor der Loeschung.
 
 > **Der Verfall wirft die Unwichtigen weich hinaus. Die Frist loeschte die Wichtigsten hart.** Ein Eintrag, der an Bedeutungslosigkeit stirbt, ist weckbar; einer, der an einer Frist stirbt, ist fort.
 

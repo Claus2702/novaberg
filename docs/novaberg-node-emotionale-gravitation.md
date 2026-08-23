@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Modul — Emotionale-Gravitation-Node
-**Stand:** 28. Juli 2026, Chat 114 (Nachzug nach internal.emotion, überholte Log-Zeile markiert)
+**Stand:** 23. August 2026 (das Herkunftstor — auf einem Impuls-Turn faellt die Injektion aus); davor 28. Juli 2026, Chat 114 (Nachzug nach internal.emotion, überholte Log-Zeile markiert)
 **Pfad:** novaberg/docs/novaberg-node-emotionale-gravitation.md
 **Konzept:** `novaberg-thinking-drive_k.md` §5.7
 **Code:** `server/graph/nodes/emotionale_gravitation.py`
@@ -38,6 +38,22 @@ Ein Tausch der Kanten wäre der naheliegende, aber falsche Eingriff gewesen — 
 ### Dass der Enricher auf der ungefärbten Lage wählt, ist eine Eigenschaft
 
 Seine Erinnerungsauswahl steht auf Novas Zustand **vor** der Gravitation. Das verhindert eine Rückkopplung: Sonst holte Trauer traurige Erinnerungen, die wieder Trauer injizieren. Die Erinnerung, die eine Emotion auslöst, soll nicht schon von ihrer eigenen Wirkung ausgewählt worden sein.
+
+## Das Herkunftstor — auf einem Impuls-Turn fällt die Injektion aus
+
+**Seit dem 23.08.2026 fragt der Knoten zuerst, woher der Reiz kommt.** Die Gravitation ist die Antwort auf einen **fremden** Reiz: Etwas kam von außen, und eine Erinnerung färbt, wie Nova es aufnimmt. Novas eigener Gedanke ist bereits ihrer — ihn ein zweites Mal zu färben verdoppelt dieselbe Quelle.
+
+**Der Knoten steht vor dem GV-Node, und das gibt dem Fehler seine Reichweite.** Die sechs Säulen der Aufnahmebereitschaft und die Achsen der Dreischicht lesen Novas Emotion; eine Färbung verschiebt deshalb nicht nur den Ton der Antwort, sondern auch Landschaft und Denkrichtung. Belegt am 13.08.2026, 05:59:56 — zweimal `neugierig` auf einem Impuls-Turn.
+
+Erkannt wird an `reiz_ist_eigener_gedanke(state)`, also an der **Herkunftsmarke im Ereignis** und nicht an der Rolle: Der Thinker-Retry trägt dieselbe Quelle und ist trotzdem die Wiederholung einer echten Nutzeräußerung (`F-REIZ-1`).
+
+> **Der Ausfall nennt den Grund und die Menge.** Eine Zeile, die nur *keine Färbung* sagte, wäre von einem echten leeren Punkte-Satz nicht zu unterscheiden — und der ist der Normalfall, weil nur wenige Turns eine Erinnerung über der Schwelle treffen.
+
+**Warum es nicht früher gebaut wurde, und warum der Grund abgelaufen war.** Der Defekteintrag nannte als Sperre den gleichzeitigen Umbau des Skip-Tors: Bei zwei Änderungen an derselben Strecke wäre eine Verschlechterung keiner von beiden zuzuordnen. Das Skip-Tor ist seit dem 14.08.2026 gebaut — die Sperre war acht Tage lang entfallen und stand unverändert im Eintrag.
+
+**Ausgesetzt waren 85 von 729 Turns** (11,7 %). Wie viele davon tatsächlich gefärbt wurden, gibt der Bestand nicht her: Die Logzeile der Gravitation trägt keine `turn_id`, ein Join ist nicht fahrbar.
+
+Zeugen: `tests/test_emotionale_gravitation_node.py::TestHerkunftstor`.
 
 ### Vor dem GV-Node — eine Entscheidung mit Reichweite
 

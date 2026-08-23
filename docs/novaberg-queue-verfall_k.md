@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Konzept — Warum ein Auftrag verfällt, wie er verfällt, und wohin die Queue dafür umzieht
-**Stand:** 15. August 2026, Chat 141 — v0.5, gebaut, gemessen und die Nähte auditiert (§16)
+**Stand:** 23. August 2026 — v0.6, **der Fehlversuchspfad loescht nicht mehr hart** (§12.1, §14 markiert); davor 15. August 2026, Chat 141 — v0.5, gebaut, gemessen und die Nähte auditiert (§16)
 **Pfad:** novaberg/docs/novaberg-queue-verfall_k.md
 **Typ:** Konzept
 **Status:** ✅ **Gebaut und gemessen am 15.08.2026.** Tabelle, Repository, Migration (1036 Aufträge), Schreib- und Auswahlpfad, Verfallslauf. §16 trägt die Messwerte. Offen: die Messung über 30 Tage Betrieb
@@ -13,6 +13,8 @@
 ## 1. Warum dieses Dokument — und warum es kein zweites ist
 
 **Die Shadow-Queue wächst und schrumpft nie.** Am 15.08.2026 liegen 1036 Aufträge darin, der älteste 18 Tage alt. Es gibt keinen Weg hinaus außer der Ausführung und dem Verwerfen nach drei Fehlversuchen. Ein Auftrag, den niemand je ausführt, bleibt für immer.
+
+> **Nachgemessen am 23.08.2026: 590 Aufträge, 343 aktiv und 247 stillgelegt.** Der Bestand schrumpft — er sieht nur nicht danach aus, weil ein abgearbeiteter Auftrag gelöscht wird und keine Zeile hinterlässt, an der man ihn zählen könnte. Am 23.08.2026 zwischen 15:20 und 20:25 UTC gemessen: 653 → 597 Zeilen bei unveränderten 247 Stillgelegten, also rund elf abgearbeitete je Stunde.
 
 > **Es gibt auch keine Obergrenze — entgegen dem, was das Moduldokument sagte.** `novaberg-pixie.md` §3 führte *„Max 20 Eintraege pro User"* als Eigenschaft der Shadow-Queue. Geprüft am 15.08.2026: Im Schreibpfad (`shadow_queue_push`) steht kein `LTRIM`, keine Längenprüfung, keine Konstante dieser Art; im ganzen Modul gibt es keinen Begrenzer. Der Bestand von 1036 ist der Beleg. **Die Zahl war eine Absicht, die als Zustand geschrieben stand** — und solange jemand sie glaubte, gab es keinen Anlass, nach einem Verfall zu fragen.
 
@@ -299,6 +301,7 @@ CREATE INDEX IF NOT EXISTS idx_shadow_auftrag_gegenstand
 | — | `character_id`, `beobachter` | **neu**, aus dem Paar-Schema |
 | — | `haeufigkeit`, `aktiv`, `verstaerkt_am`, `decay_am` | **neu**, aus der Verfallsmechanik |
 | — | `bezug_id` | **nachgetragen am 19.08.2026** — worauf sich der Auftrag bezieht. Bei `wissen_verweis` ist es `autonomous_wissen.id`: die Zeile, die die Recherche gerade angelegt hat und die deshalb **nicht ihr eigener Zuordnungskandidat** sein darf. Ohne sie verstärkte jedes Ergebnis seine eigene Zeile — dieselbe Zusammenfassung, Kosinus nahe eins. **NULL-fähig, ohne Vorgabewert, ohne Fremdschlüssel:** Eine 0 wäre eine gültig aussehende Zeilennummer, und ein Fremdschlüssel nagelte die Zielzeile gegen den Verfall fest, dem sie unterliegen soll — `F-VERFALL-1` (b). Eine ins Leere zeigende ID kostet einen Kandidaten zu viel und sonst nichts. Bestandszeilen bleiben NULL |
+| — | `grund` | **nachgetragen am 23.08.2026** — warum die Zeile ist, wie sie ist. `aktiv` sagt, **ob** sie gesucht wird; `grund` sagt, **warum** sie stillliegt (`F-STILLLEGUNG-1`). Kanon: `''` (aktiv oder Altbestand) · `verfall` · `fehlversuch`. **NOT NULL mit Vorgabewert `''`, und beides ist Absicht:** Ein NULL sagte, dass kein Wert da ist, nicht welcher fehlt. Die 247 stillgelegten Altzeilen tragen `''` — das ist kein dritter Grund, sondern die Auskunft *vor dem 23.08.2026 stillgelegt, Ausgang unbekannt*; eine rückwirkende Zuordnung wäre geraten und nicht gemessen |
 | — | `arousal` | **nachgetragen am 15.08.2026** — die dritte Größe derselben Lage, die `emotion` und `modus` beschreiben. Sie fehlte, und damit konnte die Recherche keinen Level auf den Stapel legen: Bauteil B war gebaut und ohne Eingabe. **NULL-fähig und ohne Vorgabewert**, anders als ihre beiden Nachbarn — die Quelle liefert sie stellenweise selbst leer, und eine 0,5 wäre ein Messwert, den nie jemand gemessen hat. Bestandszeilen bleiben NULL |
 
 **Drei Zusicherungen stehen im Schema statt im Code**, nach dem Vorbild von `autonomous_wissen`:
@@ -400,7 +403,7 @@ Der Entwurf ist am 15.08.2026 gegen den gemessenen Bestand durchgerechnet worden
 | **Erledigt** — der Agent hat den Auftrag ausgeführt | **Die Zeile wird entfernt.** Ein erledigter Vorsatz ist kein Vorsatz mehr | keiner, und keiner nötig |
 
 | **Verfallen** — 30 Tage ohne Anlass | `aktiv = FALSE`, die Zeile bleibt | Reaktivierung (§6) |
-| **Gescheitert** — drei Fehlversuche | **Die Zeile wird entfernt** (`_RETRY_GRENZE`) | keiner |
+| **Gescheitert** — drei Fehlversuche | ~~**Die Zeile wird entfernt**~~ → seit 23.08.2026 `aktiv = FALSE, grund = 'fehlversuch'` (`_RETRY_GRENZE`) | Reaktivierung, wie beim Verfall |
 
 > **Das Entnehmen nach der Ausführung ist ein Löschen, und es ist das einzige, das keiner Begründung bedarf.** Was abgearbeitet wurde, ist erledigt; es aufzubewahren hieße, eine Aufgabenliste mit einem Tagebuch zu verwechseln. **Alles andere wird gelagert, bis es drankommt** — und wenn es nicht drankommt, ist es später deaktiviert, nicht verschwunden.
 
@@ -511,7 +514,11 @@ Ein reaktivierter Auftrag springt auf `(salienz_absolut + 0,3) / 2` — bei eine
 
 - **Der Stapel zieht nicht um.** Er bleibt in Redis, mit den Konstanten aus `novaberg-autonomous-wissen_k.md` §11.6. Der Grund steht in §7.2 und ist gemessen, nicht vermutet.
 - **Wiederkehrende Aufgaben bleiben, wie sie sind.** Sie dürfen über 1,0 steigen und immer gewinnen; das ist gewollt. Ihr Aging (`_aging_zuschlag`) ist ein anderer Mechanismus mit einem anderen Zweck — Verhungerungsschutz statt Verfall — und wird von hier nicht berührt.
-- **Der Retry-Pfad bleibt, wie er ist.** Nach `_RETRY_GRENZE` = 3 Fehlversuchen wird ein Auftrag **hart** verworfen. Das ist kein Verfall, sondern ein Ausführungsfehler; die drei Wege hinaus stehen in §12.1.
+- ~~**Der Retry-Pfad bleibt, wie er ist.** Nach `_RETRY_GRENZE` = 3 Fehlversuchen wird ein Auftrag **hart** verworfen.~~ → **Am 23.08.2026 geändert.** Das Argument *ein Ausführungsfehler ist kein Verfall* war formal richtig und hat gegen die Messung nicht gehalten: Über die 582 aktiven `recherche`-Einträge stieg die mittlere `salienz_roh` monoton mit der Versuchszahl — **der Verfall entfernte weich, was niemanden interessiert, der Fehlversuch hart, was am meisten interessiert.** Seither legt auch dieser Weg still, mit eigenem `grund`.
+
+  > **Die Zahl selbst ist inzwischen nicht mehr reproduzierbar** (nachgemessen 23.08.2026: 213 Aufträge bei null Versuchen, 3 bei einem, keiner darüber). Sie hat die Entscheidung getragen, und die Entscheidung steht — aber wer sie nachprüfen will, findet die Kurve heute nicht mehr.
+
+  **Was bleibt:** Die **Auswahl** zieht weiter den Salienzstärksten zuerst, und der scheitert deshalb zuerst. Das ist eine eigene Absicht und nicht der Rest dieses Zuges.
 - **Kein Verhungerungsschutz für Queue-Aufträge.** Was die periodischen Aufgaben über `_aging_zuschlag` bekommen, bekommt die Queue ausdrücklich **nicht**: Ein Vorsatz wird nicht dringlicher, weil er lange liegt (§12.3). Ein Aging-Zuschlag auf `salienz_decay` würde den Verfall teilweise aufheben und ist deshalb nicht nur unnötig, sondern gegenläufig.
 - **Keine Mengengrenze und kein Jahresablauf** (§12.5). Wächst der Bestand über das Erträgliche, wird `QUEUE_DECAY_RATE` verstärkt.
 - **Die Umbenennung von `prioritaet`** geschieht im Umzug, weil die Spalten dort ohnehin neu entstehen — nicht als eigener Zug (§3.1).

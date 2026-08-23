@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Technik Plutchik-Emotionsmodell (Oktagon, sektorabhängige Normalisierung, Arousal-Radius)
-**Stand:** 16. August 2026 (gegen den Code geprüft: der Vorschlag, die drei Emotions-Sets abzuschaffen, ist **nicht ausgeführt** — und dabei kam eine zweite, kleinere `NEGATIVE_EMOTIONEN` im Zustelldienst zum Vorschein, die den Emotions-Riegel bedient; Fundliste 16.08.). Davor: 17. April 2026, Chat 52 (Code-Alignment)
+**Stand:** 23. August 2026 (**die zweite `NEGATIVE_EMOTIONEN` ist fort** — der Zustelldienst importiert die abgeleitete Menge; §11 nachgezogen). Davor: 16. August 2026 (gegen den Code geprüft), 17. April 2026, Chat 52 (Code-Alignment)
 **Pfad:** novaberg/docs/novaberg-ei-plutchik.md
 **Quellen:** nova-04-t-a.md
 **Dateien:** `config.py` (Sektor-Map, Distanzmatrix, Exponenten), `graph/nodes/enricher.py` (Normalisierung), Perzeption-Prompt (16+1 Emotionen), `client/ui/emotionen_tab.py` (Oktagon-Radar)
@@ -424,7 +424,11 @@ Die drei separaten Sets `POSITIVE_EMOTIONEN`, `NEGATIVE_EMOTIONEN`, `NEUTRALE_EM
 >
 > `ei/utils.py` leitet `POSITIVE_EMOTIONEN` und `NEGATIVE_EMOTIONEN` tatsächlich aus `EMOTION_SEKTOR_MAP` und `SEKTOR_GRUPPE` ab — insofern ist die eine Quelle der Wahrheit da. `NEUTRALE_EMOTIONEN` gibt es nirgends; der Name in diesem Absatz ist der Grund, warum die Doku-Prüfung hier angeschlagen hat.
 >
-> **Was sie dabei gefunden hat, wiegt schwerer:** `services/shadow_delivery.py` schreibt **eine zweite** `NEGATIVE_EMOTIONEN` als Literal hin — vier Emotionen gegen die acht der abgeleiteten Menge. Es fehlen `enttaeuschung`, `stress`, `verzweiflung` und `wut`. Diese zweite Fassung bedient den Emotions-Riegel der Zustellung, also **genau die Entscheidung, bei negativer Stimmung zu schweigen** — und drei der vier fehlenden fallen dort auf *erlaubt* durch. Eingetragen in `novaberg-fundliste.md`.
+> **Was sie dabei gefunden hat, wiegt schwerer:** ~~`services/shadow_delivery.py` schreibt **eine zweite** `NEGATIVE_EMOTIONEN` als Literal hin~~ — vier Emotionen gegen die acht der abgeleiteten Menge. Es fehlten `enttaeuschung`, `stress`, `verzweiflung` und `wut`. Diese zweite Fassung bediente den Emotions-Riegel der Zustellung, also **genau die Entscheidung, bei negativer Stimmung zu schweigen** — und drei der vier fehlenden fielen dort auf *erlaubt* durch.
+>
+> → **Am 23.08.2026 behoben** (`NEGATIVE-EMOTIONEN-DOPPELT`). Der Zustelldienst importiert die abgeleitete Menge; `stress` bleibt vor der Kanon-Prüfung stehen, weil dort auch die empathische Nachfrage zu viel ist, und die Reihenfolge trägt diese Unterscheidung. Zeuge über den ganzen Baum, dass es bei **einer** Definition bleibt: `tests/test_emotionsriegel_kanon.py::KanonquelleTest`.
+>
+> **Im Bestand ist der Fall nie eingetreten** — 729 `turn_roh`-Zeilen, 0 mit einer der drei durchgelassenen Emotionen. Der Riegel war nicht wirkungslos, sondern unvollständig, und nichts hätte es gemeldet.
 
 **Auswirkung auf `EI_PASSIV_NEGATIVE`:** Die passiv-negativen Emotionen, die im EI-Plausibilitäts-Gate den Modus `emotional` erzwingen, werden ebenfalls über den Sektor definiert: Sektor 5 (Trauer) erzwingt immer `emotional`, unabhängig vom Arousal. Die übrigen negativen Sektoren (6–8) erzwingen ab Mid-Arousal.
 

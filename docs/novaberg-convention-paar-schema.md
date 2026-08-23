@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Konzept — Verbindliche Konvention für (user_id, character_id, beobachter)
-**Stand:** 16. August 2026 — **§2.1, §2.2 und zwei Designprinzipien richtiggestellt**: `user_id` trägt den Menschen, `character_id` die Figur, die Perspektive allein der `beobachter`. Davor: 29. April 2026, Chat 71
+**Stand:** 23. August 2026 — **§3.2 nachgezogen: der Lesepfad der Bibliothek filtert dreispaltig.** Davor: 16. August 2026 — **§2.1, §2.2 und zwei Designprinzipien richtiggestellt**: `user_id` trägt den Menschen, `character_id` die Figur, die Perspektive allein der `beobachter`. Davor: 29. April 2026, Chat 71
 **Pfad:** novaberg/docs/novaberg-convention-paar-schema.md
 **Typ:** Convention
 **Voraussetzung:** Paar-Schema-Migration, Chat 66 ✅
@@ -104,6 +104,30 @@ Konsequenz für Lese-Pfade:
   Beobachter `assistant` für Nova-Selbstbild). Heute filtern die meisten
   Lesepfade nur auf `user_id` und ignorieren `character_id` + `beobachter` —
   das wird im Backlog adressiert.
+
+  > **Am 23.08.2026 für die Bibliothek (`autonomous_wissen`) erledigt.** Alle
+  > **vier** paargefilterten Abfragen filtern dreispaltig: `suchen` und
+  > `zaehlen` im Repository, der Vorcheck im Enricher, die Kandidatenauswahl
+  > des Rückwegs. Der Befund hatte zwei genannt — die anderen beiden fand ein
+  > Kriterium (*wer fragt `autonomous_wissen` mit `user_id = %s`?*), und genau
+  > die wären bei einer Prüfung entlang der Aufzählung nie aufgefallen.
+  >
+  > **Der Beobachter ist dort Pflichtfeld ohne Default**, geprüft gegen den
+  > neuen `BEOBACHTER_KANON` (`config.py`) — nicht gegen den einen erwarteten
+  > Wert: Eine Prüfung auf `assistant` allein könnte einen unbekannten Wert
+  > nicht von einem gültigen zweiten unterscheiden. Die gelesene Perspektive
+  > steht als `BIBLIOTHEK_BEOBACHTER` an einer Stelle statt als Literal an
+  > vier.
+  >
+  > **Folgenlos im heutigen Bestand und trotzdem nötig:** 831 aktive Zeilen,
+  > alle `beobachter='assistant'`, der Filterwechsel entfernt null. Der
+  > Ausfall wäre still gewesen — fremde Zeilen erschienen als eigene
+  > Ausarbeitung, und eine Trefferliste, die zu viel enthält, sieht aus wie
+  > eine Bibliothek mit Bestand.
+  >
+  > **Offen bleiben die anderen Speicher.** `lzg_knoten` wird im Enricher
+  > unmittelbar daneben weiterhin zweispaltig gefragt, und der Wert steht an
+  > acht Stellen des Baums als Literal. Beides in der Fundliste.
 
 ### 3.3 Charakter-Hash (Postgres)
 
