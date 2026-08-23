@@ -37,6 +37,7 @@ import numpy as np
 import redis
 
 from config         import ASSISTANT_USER_ID, shutdown_event
+from ei.utils      import NEGATIVE_EMOTIONEN
 from memory.haltung import haltung_lesen
 from memory.pipeline_log import log_berechnung
 from memory.session import session_turns_retrieve
@@ -127,13 +128,41 @@ def _cosine_similarity(vec_a: list[float], vec_b: list[float]) -> float:
 # ─────────────────────────────────────────────
 # Emotionale Kompatibilität prüfen
 # ─────────────────────────────────────────────
-NEGATIVE_EMOTIONEN: set = {"frustration", "aerger", "traurigkeit", "unsicherheit"}
-
 def _emotional_kompatibel(
     stack_aufgabe: str,
     user_emotion:  str,
 ) -> bool:
-    """Prüft ob ein Impuls zur aktuellen User-Emotion passt."""
+    """Prüft ob ein Impuls zur aktuellen User-Emotion passt.
+
+    **Die Menge der negativen Emotionen kommt aus `ei.utils`, nicht von hier.**
+    Bis zum 23.08.2026 stand daneben ein Literal mit vier Namen — eine echte
+    Teilmenge der acht, die `EMOTION_SEKTOR_MAP` als negativ führt. `wut`,
+    `verzweiflung` und `enttaeuschung` fielen deshalb auf den Schlusszweig
+    *alle anderen Kombinationen: erlaubt*: Ein Recherche-Einwurf ging hinaus,
+    während der Mensch wütend war — genau der Fall, den dieser Riegel
+    verhindern soll. Zwei Mengen für einen Gegenstand sind der Defekt, nicht
+    die kleinere Zahl (`novaberg-ei-plutchik.md`).
+
+    **`stress` steht in den acht und wird trotzdem vorher geprüft.** Der
+    Unterschied ist nicht die Gruppe, sondern die Strenge: Bei Stress ist
+    *nichts* zulässig, bei den übrigen negativen die empathische Nachfrage.
+    Die Reihenfolge trägt diese Unterscheidung — wer sie umdreht, lässt unter
+    Stress das Nachfragen durch.
+
+    Vorbedingung: `stack_aufgabe` und `user_emotion` sind Zeichenketten;
+    eine leere oder unbekannte Emotion ist zulässig und bedeutet *keine
+    Einschränkung aus dieser Richtung*.
+    Nachbedingung: True heißt, der Eintrag darf den Filter passieren — nicht,
+    dass er zugestellt wird; darüber entscheiden die Filter danach.
+
+    Args:
+        stack_aufgabe: Aufgabenname des Stapel-Eintrags, z.B. `nachfragen`.
+        user_emotion:  Emotion des Menschen in diesem Turn.
+
+    Returns:
+        True, wenn der Eintrag emotional passt.
+    """
+    # ── Verarbeitung ────────────────────────────
     # Bei Stress: Grundsätzlich nichts einbringen
     if user_emotion == "stress":
         return False
