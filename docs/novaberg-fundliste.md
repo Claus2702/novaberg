@@ -2,8 +2,8 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Rohe, noch unklassifizierte Funde aus laufender Arbeit
-**Stand:** 23. August 2026, 21:55 UTC
-**Offen:** 37 Funde — **gezaehlt am 23.08.2026, nicht fortgeschrieben** (fuenf neu aus dem Zug ueber Rang 5). Die Kopfzeile stand am selben Tag schon einmal auf 23 bei tatsaechlich 26; sie war ueber mehrere Zuege hochgezaehlt worden, und schon ihr Ausgangswert war es.
+**Stand:** 23. August 2026, 23:15 UTC
+**Offen:** 36 Funde — **gezaehlt am 23.08.2026, nicht fortgeschrieben** (fuenf neu aus dem Zug ueber Rang 5). Die Kopfzeile stand am selben Tag schon einmal auf 23 bei tatsaechlich 26; sie war ueber mehrere Zuege hochgezaehlt worden, und schon ihr Ausgangswert war es.
 **Verlauf:** [Verlauf des Standes](#verlauf-des-standes) — 73 Eintraege, juengster zuerst
 **Pfad:** novaberg/docs/novaberg-fundliste.md
 
@@ -12,6 +12,10 @@ Was beim Bauen an anderer Stelle auffällt, landet hier — **eine Zeile mit Dat
 Diese Liste ist bewusst roh. Von hier wandern Einträge nach `novaberg-bugs.md` oder `novaberg-backlog.md` und bekommen dort eine stabile ID; die Zeile hier wird beim Umzug entfernt.
 
 ---
+
+## Umgezogen — 23.08.2026, die Naht des Fuehrungsmasses
+
+- **2026-08-23** — Der Haltungsstand traegt kein Fuehrungsmass, obwohl der GV-Knoten lief → **nach `novaberg-bugs.md` als `FUEHRUNGSMASS-AUF-FALSCHER-EBENE`** (Leser und Schreiber auf zwei Ebenen) **und `GRUND-NENNT-FALSCHE-URSACHE`** (der Grundtext schickte die Untersuchung an den falschen Ort). Beide am selben Tag behoben.
 
 ## Umgezogen — 20.08.2026, aus der Klassifikation der Fundliste
 
@@ -230,7 +234,6 @@ Analog zum Kraft-1-Stichtag: ab wann eine Partition brauchbar ist. Kein Backfill
 ## Offen
 
 - **2026-08-23** — **Novas Eigeninitiative endet zwei Stunden nach dem letzten Wort des Menschen, und zwar dauerhaft.** Der Zustellschleife fehlt ohne `last_activity:{user_id}` **jeder** Ausloeser: `momentum` triggert nur nach einer Anfrage, und der Timeout-Zweig haengt an genau diesem Schluessel — steht er nicht, faellt die Schleife in `else: continue` (`services/shadow_delivery.py:928-971`). Gesetzt wird er **allein** vom Nutzer-Turn (`services/prompt_consumer.py:213`), mit `ex=7200`. **Ein Impuls kann sich nicht selbst anstossen.** Gemessen am 23.08.2026: `momentum:meister` und `last_activity:meister` beide leer, keine `session:*`-Schluessel, **letzter Impuls-Turn am 15.08.2026** — neun Tage, bei 489 Eintraegen auf dem Stapel. Nach einem einzigen Nutzer-Turn feuerte der Ausloeser sofort wieder, alle 30 Sekunden.
-- **2026-08-23** — **`gv_ohne_lauf` nennt die falsche Ursache.** Der Haltungsstand des Paares traegt `gerechnet=1`, `cluster=foyer` und alle fuenf Haltungsgroessen — `cluster` kommt aus `gv_detail`, der GV-Knoten **ist** also gelaufen. Trotzdem steht `initiative` leer mit `initiative_grund=gv_ohne_lauf`, und der Kommentar an der Fundstelle (`graph/nodes/haltung.py:176-180`) liest das als *uebersprungener Turn oder ein Pfad, der ihn nicht durchlaeuft*. Der Zweig greift, sobald `state["initiative"]` kein `dict` ist — das ist nicht dasselbe wie *der Knoten lief nicht*. **Die Folge ist Verhalten:** Riegel 2 behandelt ein fehlendes Fuehrungsmass als *unbekannt* und laesst keinen Einwurf durch; gemessen am 23.08.2026 sperrte er jeden Zyklus — `[wollen+0.55 frequenz- ruhe+] entschieden=frequenz`. **Der Impulsweg ist damit auch nach einem Nutzer-Turn geschlossen.**
 - **2026-08-23** — **Das Dateilog mischt Suite und Betrieb, und die Suite schreibt in die Produktivdatenbank.** Ein Zaehlversuch ueber `Delivery:`-Zeilen ergab Impulszustellungen mit `turn_id=turn-1`, `thema='T'` und `'Enceladus'` — Zeugenfixtures, nicht der Betrieb. Dieselbe Klasse wie schon einmal gemessen, hier zum zweiten Mal. **Die Datenbank ist das saubere Instrument** (`pipeline_log.art='turn_roh'` mit `herkunft`). Nebenbefund: drei Zeilen `user_id='test_wis3_mensch'` vom 19.08.2026 liegen unverbraucht in `shadow_auftrag` — sie treffen den Heartbeat nicht, weil der fuer ein anderes Paar laeuft.
 
 - **2026-08-23** — **Die Spalte `shadow_auftrag.grund` hat heute keinen Leser im Code.** `LESE_SPALTEN` (`memory/repositories/shadow_auftrag_repository.py:35`) fuehrt sie nicht, und die Auswahlpfade filtern ohnehin auf `aktiv = TRUE` — dort ist der Grund per Kanon immer leer. **Bewertet und nicht behoben:** Die Spalte ist als forensische Auskunft gebaut, nicht als Entscheidungsgrundlage eines Lesepfads; sie per SQL nachzulesen ist der gemeinte Zugriff. Was fehlt, ist die Stelle, an der jemand sie **braucht** — etwa ein Durchsatzzaehler, der `verfall` von `fehlversuch` trennt. Aufgefallen bei der Suche nach den Lesern der neuen Spalte.

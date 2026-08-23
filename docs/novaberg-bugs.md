@@ -1,6 +1,6 @@
 # Novaberg — Bugs & Limitationen
 
-**Stand:** 23. August 2026, 21:55 UTC (**Rang 5 abgearbeitet** — funf Knoten, sieben Eintraege behandelt; 47 offen / 36 nicht offen von 83 Abschnitten, gezaehlt ueber die erste `Zustand:`-Zeile je Abschnitt mit Kennung)
+**Stand:** 23. August 2026, 23:15 UTC (**der Impulsweg: die Naht zwischen GV-Knoten und Haltungsstand behoben** — Riegel 2 entscheidet zum ersten Mal auf einer Messung; davor 21:55 UTC: **Rang 5 abgearbeitet** — funf Knoten, sieben Eintraege behandelt; 47 offen / 38 nicht offen von 85 Abschnitten, gezaehlt ueber die erste `Zustand:`-Zeile je Abschnitt mit Kennung)
 **Verlauf:** [Verlauf des Standes](#verlauf-des-standes) — 29 Eintraege, juengster zuerst
 
 ---
@@ -49,6 +49,42 @@ gehoeren deshalb nicht in dieselbe Reihe wie ein Defekt mit Codeort.
 > Zwischen dem Pruefstand der Eintraege (`00c16b6`, 20.08.) und dem Tag lagen 15 Commits, aber nur
 > **vier** geaenderte Server-Dateien — ein Kriterium statt 25 Einzelpruefungen. Zwei Eintraege
 > erwiesen sich dabei als laengst erledigt.
+
+---
+
+## 23.08.2026 — die Naht zwischen GV-Knoten und Haltungsstand
+
+### `FUEHRUNGSMASS-AUF-FALSCHER-EBENE` — behoben am 23.08.2026
+
+**Zustand:** behoben. `_initiative_aus_state` liest das Fuehrungsmass aus `state["gv_detail"]["initiative"]`, wo der Erzeuger es ablegt. Bis dahin las es `state["initiative"]` — einen Schluessel, den **niemand setzt**.
+
+**Befund (23.08.2026).** **Der Defekt sass nicht in einem der beiden Bauteile, sondern zwischen ihnen.** Ueber den ganzen Baum gemessen: **ein** Schreiber (`_gv_detail_bauen`, `gespraechsvektor.py:1087`), **ein** Leser (`haltung.py:175`), zwei verschiedene Ebenen. Derselbe Knoten liest die Landschaft 130 Zeilen weiter richtig aus `gv_detail`.
+
+**Die Folge ist der Stillstand des Impulswegs, und er ist auf den Tag datierbar.** Der Leser gab auf **jedem** Turn `(None, "gv_ohne_lauf")` zurueck; Riegel 2 der Zustellung behandelt ein fehlendes Fuehrungsmass als *unbekannt* und laesst dann keinen Einwurf durch. Riegel und Leser kamen im **selben Commit** (`5bd2ab4`, 15.08.2026) — und der letzte Impuls-Turn stammt vom **15.08.2026**. Der Riegel hat seit seinem Bau nie geoeffnet.
+
+**Was er gekostet hat, ist eine Zahl.** Ueber 595 protokollierte Fuehrungsmasse lagen **217 (36,5 %)** bei oder unter `GV_INITIATIVE_SCHWELLE` = −0,05, also im Bereich *Nova fuehrt*. So oft haette der Riegel geoeffnet.
+
+> **Warum acht Tage lang nichts anschlug, gehoert zum Befund.** Der Riegel schliesst bei Unbekanntem, und das ist richtig so (`novaberg-eigenzeit_k.md` §2.5: *„Der Ausfall oeffnete den Schalter, statt ihn zu schliessen"*). Ein dauerhaft geschlossener Riegel sieht deshalb aus wie eine Figur, die gerade nicht zugehen will — und `gv_ohne_lauf` ist ein vorgesehener Grund, keine Fehlermeldung. **Ein Ausfall, der sich als gueltige Entscheidung tarnt, hat keinen Melder.**
+
+**Im Betrieb belegt am 23.08.2026:** Der Haltungsstand trug vor dem Eingriff `initiative` leer mit `initiative_grund=gv_ohne_lauf`, danach `initiative = 0.409` mit leerem Grund. Die Riegelzeile ging von `[wollen+0.55 frequenz- ruhe+]` auf `[wollen+0.49 frequenz-0.41 ruhe+]` — der Riegel entscheidet jetzt auf einer **Messung** statt auf Unbekanntem. Er sperrte dabei weiter, und zwar richtig: `initiative_bit` ist `0 if wert > schwelle else 1`, ein hoher Wert heisst *der Nutzer fuehrt*, und der Mensch hatte gerade geschrieben.
+
+Zeugen: `tests/test_fuehrungsmass_naht.py` (8) — der Naht-Zeuge ruft den **echten** Erzeuger und schickt seine Ausgabe durch den **echten** Leser; ein Zeuge, der das Dict selbst zusammenstellt, prueft seine eigene Vorstellung von der Naht. Gegenprobe: 4 vorhergesagt, **5 gezaehlt**. Suite `Ran 2213 tests — OK`.
+
+**Geschlossen, wenn** Der Haltungsstand traegt das Fuehrungsmass, das der GV-Knoten gerechnet hat.
+
+---
+
+### `GRUND-NENNT-FALSCHE-URSACHE` — behoben am 23.08.2026
+
+**Zustand:** behoben. Drei Sachverhalte tragen drei Namen: `gv_ohne_lauf` (kein `gv_detail` — der Knoten lief wirklich nicht), `fuehrung_fehlt_im_detail` (er lief und liess das Mass aus), `masse_fehlen` / `ohne_wert` (er rechnete und kam nicht durch).
+
+**Befund (23.08.2026).** **Der Grund behauptete, der GV-Knoten sei nicht gelaufen — und genau das hat die Untersuchung verzoegert.** Derselbe Haltungsstand trug `cluster=foyer`, und `cluster` kommt aus `gv_detail`: Der Knoten **war** gelaufen. Der Zweig griff aber, sobald `state["initiative"]` kein `dict` war, und das ist nicht dasselbe.
+
+**Die Klasse ist allgemeiner als der Fall:** Ein Grundtext ist eine Aussage ueber die **Ursache**, nicht ueber die Stelle, an der der Code abbricht. Wer beides gleichsetzt, schickt jede spaetere Untersuchung an den falschen Ort — hier an den GV-Knoten, waehrend der Defekt im Leser sass.
+
+Zeugen: `tests/test_fuehrungsmass_naht.py::DreiAusfaelleDreiNamenTest` (5), darunter der Fall, den `gv_ohne_lauf` bisher falsch benannte, und eine Zusicherung ueber alle vier Ausfaelle, dass keiner eine Zahl liefert.
+
+**Geschlossen, wenn** Jeder Grund benennt die Lage, die ihn ausgeloest hat.
 
 ---
 

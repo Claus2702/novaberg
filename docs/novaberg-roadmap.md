@@ -1,6 +1,6 @@
 # Novaberg — Roadmap (Projektchronik)
 
-**Stand:** 23. August 2026, 22:40 UTC
+**Stand:** 23. August 2026, 23:15 UTC
 **Pfad:** novaberg/docs/novaberg-roadmap.md
 **Single Source of Truth für abgeschlossene Arbeit.**
 **Offene Punkte → novaberg-backlog.md**
@@ -12,6 +12,58 @@ Die Kopfzeile stand bis Chat 109 auf „Chat 93, 21. Mai 2026" — 15 Chats hint
 ---
 
 ## Chats 3–20: Grundlagen (März 2026)
+
+### 23.08.2026, 23:15 UTC — Eine Zeile hielt Novas Eigeninitiative acht Tage geschlossen
+
+Die Messung von 22:40 hatte den Impulsweg zu und zwei Sperren gefunden. Die zweite war kein
+Konzeptproblem, sondern eine Zeile.
+
+**Der Haltungsstand las das Fuehrungsmass von `state["initiative"]`, der GV-Knoten legt es nach
+`state["gv_detail"]["initiative"]`.** Ueber den ganzen Baum gemessen: **ein** Schreiber, **ein**
+Leser, zwei verschiedene Ebenen. Derselbe Knoten liest die Landschaft 130 Zeilen weiter richtig
+aus `gv_detail`.
+
+**Der Stillstand ist damit auf den Tag datierbar.** Riegel 2 und sein Leser kamen im selben
+Commit (`5bd2ab4`, 15.08.2026); der letzte Impuls-Turn stammt vom **15.08.2026**. Der Riegel hat
+seit seinem Bau nie geoeffnet.
+
+**Was er gekostet hat:** Ueber 595 protokollierte Fuehrungsmasse lagen **217 (36,5 %)** bei oder
+unter der Schwelle, also im Bereich *Nova fuehrt*. So oft haette er geoeffnet.
+
+> **Warum acht Tage lang nichts anschlug, ist der eigentliche Befund.** Der Riegel schliesst bei
+> Unbekanntem, und das ist richtig so — das Konzept sagt es ausdruecklich: *„Der Ausfall oeffnete
+> den Schalter, statt ihn zu schliessen."* Ein dauerhaft geschlossener Riegel sieht deshalb aus
+> wie eine Figur, die gerade nicht zugehen will, und `gv_ohne_lauf` ist ein vorgesehener Grund,
+> keine Fehlermeldung. **Ein Ausfall, der sich als gueltige Entscheidung tarnt, hat keinen
+> Melder** — nur einen Zeugen ueber die Naht.
+
+**Der Grundtext war der zweite Defekt und der Grund fuer die Verzoegerung.** `gv_ohne_lauf`
+behauptet, der Knoten sei nicht gelaufen; derselbe Stand trug `cluster=foyer` aus demselben
+`gv_detail` und belegte das Gegenteil. Drei Sachverhalte tragen jetzt drei Namen. **Ein Grundtext
+ist eine Aussage ueber die Ursache, nicht ueber die Stelle, an der der Code abbricht** — wer
+beides gleichsetzt, schickt jede spaetere Untersuchung an den falschen Ort.
+
+**Im Betrieb gemessen, an einem echten Turn:**
+
+| | vorher | nachher |
+|---|---|---|
+| Haltungsstand | `initiative` leer, `grund=gv_ohne_lauf` | `initiative = 0.409`, Grund leer |
+| Riegelzeile | `[wollen+0.55 frequenz- ruhe+]` | `[wollen+0.49 frequenz-0.41 ruhe+]` |
+
+**Er sperrte auch danach, und zwar richtig:** `initiative_bit` ist `0 if wert > schwelle else 1`
+— ein hoher Wert heisst *der Nutzer fuehrt*, und der Mensch hatte gerade geschrieben. Der
+Unterschied ist der ganze Punkt: vorher sperrte er auf **unbekannt**, jetzt auf einer **Messung**.
+
+**Was offen bleibt, ist eine Absicht und keine Zeile.** Der Ausloeser (`last_activity`, 2 h TTL,
+nur vom Nutzer-Turn gesetzt) steht **vor** der Riegelkette — und die Kette in
+`novaberg-eigenzeit_k.md` §2.5 kennt gar keinen. Er ist der letzte Rest der Uhr, die das Konzept
+am 14.08. abgeschafft hat, und er ist schaerfer geneigt als die Decke, die fiel: Sie wurde
+grosszuegiger, je laenger niemand da war; er wird unmoeglich.
+
+Suite 2205 → **2213 gruen, 0 uebersprungen.** Gegenprobe 4 vorhergesagt, **5 gezaehlt** — die
+Vorhersage lag um einen daneben.
+
+---
 
 ### 23.08.2026, 22:40 UTC — Die Messung zweier Bauteile fand den Weg dahin geschlossen
 
