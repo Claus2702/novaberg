@@ -13,7 +13,7 @@ import logging
 from dataclasses import dataclass
 
 import psycopg2
-from config import LZG_KNOTEN_REINFORCEMENT_BOOST
+from config import BEOBACHTER_KANON, LZG_KNOTEN_REINFORCEMENT_BOOST
 
 from memory.lzg_knoten import gewicht_absolut_berechnen
 
@@ -25,6 +25,18 @@ logger = logging.getLogger("ki_server.memory.repositories.autonomous_wissen")
 # Kein CHECK in der Datenbank — dieselbe Konvention wie bei pipeline_log.art:
 # die schreibende Schicht setzt die Werte durch, nicht das Schema.
 WISSEN_TYPEN:  frozenset[str] = frozenset({"wissen", "bericht"})
+
+#: Die Perspektive, unter der die Bibliothek gelesen wird — die dritte Spalte
+#: der Paar-Partition.
+#:
+#: **Sie steht als Konstante und nicht als Literal an jeder Lesestelle.** Der
+#: Bestand traegt sie heute einheitlich (gemessen am 23.08.2026: **831 von 831**
+#: aktiven Zeilen), weil allein die Hintergrund-Agenten schreiben. Genau
+#: deshalb ist der Wert an vier Stellen hinzuschreiben verlockend und falsch:
+#: Kommt ein zweiter Schreiber dazu, muessen alle vier zugleich wandern, und
+#: wer eine vergisst, bekommt fremde Zeilen als eigene Ausarbeitung geliefert
+#: — ohne dass irgendetwas anschlaegt.
+BIBLIOTHEK_BEOBACHTER: str = "assistant"
 WISSEN_MODI:   frozenset[str] = frozenset({"recherche", "vertiefung", "traum", "nachfragen"})
 WISSEN_STATUS: frozenset[str] = frozenset(
     {"echte_tiefe", "ergaenzung", "wiederholung", "fehlschlag"}
@@ -148,10 +160,20 @@ class WissensEintrag:
 class Bibliotheksfrage:
     """Was ein Eingang von der Bibliothek wissen will — reiner Datencontainer.
 
-    **Ein Container und nicht sieben Argumente**, und der Grund ist nicht die
-    Zahl: `user_id` und `character_id` sind zwei Zeichenketten nebeneinander,
-    und eine Vertauschung ergäbe eine syntaktisch einwandfreie Abfrage über
-    eine Beziehung, die es nicht gibt. Am Feldnamen ist sie nicht möglich.
+    **Ein Container und nicht acht Argumente**, und der Grund ist nicht die
+    Zahl: `user_id`, `character_id` und `beobachter` sind drei Zeichenketten
+    nebeneinander, und eine Vertauschung ergäbe eine syntaktisch einwandfreie
+    Abfrage über eine Beziehung, die es nicht gibt. Am Feldnamen ist sie nicht
+    möglich.
+
+    **Die Partition ist dreispaltig, seit dem 23.08.2026 auch beim Lesen.**
+    Bis dahin filterte `suchen` auf zwei Spalten, während die Tabelle drei
+    führt — folgenlos, solange allein die Hintergrund-Agenten schreiben
+    (gemessen am 23.08.2026: **831 von 831** Zeilen `beobachter='assistant'`;
+    die 274 des Befundes stammen vom 19.08.2026), und still in dem
+    Moment, in dem ein zweiter Schreiber dazukommt: Fremde Zeilen erschienen
+    als eigene Ausarbeitung, ohne dass irgendetwas anschlägt
+    (`novaberg-convention-paar-schema.md` §3.2).
 
     **Die Felder zerfallen in zwei Sorten, und die Grenze ist §6a.1:**
     `typ` und `schwelle` bestimmen die **Ordnung** und sind für beide
@@ -161,6 +183,7 @@ class Bibliotheksfrage:
     postgres_url: str
     user_id:      str
     character_id: str
+    beobachter:   str
     vektor_str:   str
     typ:          str
     schwelle:     float
@@ -488,9 +511,11 @@ class AutonomousWissenRepository:
         Sortierung sind für beide dieselben.
 
         Vorbedingung: `frage.vektor_str` ist eine pgvector-Literaldarstellung,
-        `frage.typ` liegt in WISSEN_TYPEN, `frage.limit` ist positiv.
+        `frage.typ` liegt in WISSEN_TYPEN, `frage.beobachter` in
+        BEOBACHTER_KANON, `frage.limit` ist positiv.
         Nachbedingung: höchstens `frage.limit` Zeilen, absteigend nach Nähe,
-        alle über der Schwelle und alle aus dem angegebenen Paar.
+        alle über der Schwelle und alle aus der angegebenen **dreispaltigen**
+        Partition — Subjekt, Gegenüber und Beobachter.
         Fehlerfälle: ein Datenbankfehler wird **nicht** verschluckt, sondern
         weitergereicht. Der Grund steht in §6a.2: Wer hier die leere Liste
         zurückgibt, macht *„nichts gefunden"* von *„ich konnte nicht"*
@@ -520,6 +545,18 @@ class AutonomousWissenRepository:
             )
             raise ValueError(meldung)
 
+        # Gegen den Kanon, nicht gegen `assistant`: Eine Pruefung auf einen
+        # einzelnen erwarteten Wert kann einen unbekannten nicht von einem
+        # gueltigen zweiten unterscheiden (11_EVA §2, Teilmengen-Falle).
+        if frage.beobachter not in BEOBACHTER_KANON:
+            meldung = (
+                f"AutonomousWissenRepository.suchen: beobachter="
+                f"{frage.beobachter!r} steht nicht im Kanon "
+                f"{sorted(BEOBACHTER_KANON)} — die Perspektive ist die dritte "
+                f"Spalte der Partition und hat keinen Default"
+            )
+            raise ValueError(meldung)
+
         # ── Verarbeitung ────────────────────────────
         conn = psycopg2.connect(frage.postgres_url)
         try:
@@ -538,6 +575,7 @@ class AutonomousWissenRepository:
                     FROM   autonomous_wissen w
                     JOIN   autonomous_wissen_thema t ON t.wissen_id = w.id
                     WHERE  w.user_id = %s AND w.character_id = %s
+                      AND  w.beobachter = %s
                       AND  w.aktiv = TRUE
                       AND  w.typ = %s
                       AND  t.embedding IS NOT NULL
@@ -549,8 +587,8 @@ class AutonomousWissenRepository:
                     """,
                     (
                         frage.vektor_str, frage.user_id, frage.character_id,
-                        frage.typ, frage.vektor_str, frage.schwelle,
-                        frage.limit,
+                        frage.beobachter, frage.typ, frage.vektor_str,
+                        frage.schwelle, frage.limit,
                     ),
                 )
                 zeilen: list = cur.fetchall()
@@ -563,12 +601,14 @@ class AutonomousWissenRepository:
                     """
                     SELECT count(*) FROM autonomous_wissen w
                     WHERE  w.user_id = %s AND w.character_id = %s
+                      AND  w.beobachter = %s
                       AND  w.aktiv = TRUE AND w.typ = %s
                       AND  NOT EXISTS (SELECT 1 FROM autonomous_wissen_thema t
                                        WHERE t.wissen_id = w.id
                                          AND t.embedding IS NOT NULL)
                     """,
-                    (frage.user_id, frage.character_id, frage.typ),
+                    (frage.user_id, frage.character_id, frage.beobachter,
+                     frage.typ),
                 )
                 unsichtbar: int = int(cur.fetchone()[0])
                 if unsichtbar:
@@ -606,7 +646,10 @@ class AutonomousWissenRepository:
         (`novaberg-convention-nmcp.md` §6.8).
 
         Vorbedingung: `typ` liegt in WISSEN_TYPEN.
-        Nachbedingung: die Zahl der aktiven Zeilen dieses Paares und Typs.
+        Nachbedingung: die Zahl der aktiven Zeilen dieser **dreispaltigen**
+        Partition und dieses Typs — Subjekt, Gegenüber, Beobachter. Die
+        Perspektive ist kein Argument, sondern `BIBLIOTHEK_BEOBACHTER`: Die
+        Zahl belegt eine Ablehnung der Bibliothek, und die liest genau eine.
         Fehlerfälle: ein Datenbankfehler wird weitergereicht — derselbe Grund
         wie bei `suchen`.
         """
@@ -625,8 +668,9 @@ class AutonomousWissenRepository:
                 cur.execute(
                     "SELECT COUNT(*) FROM autonomous_wissen "
                     "WHERE user_id = %s AND character_id = %s "
+                    "AND beobachter = %s "
                     "AND typ = %s AND aktiv = TRUE",
-                    (user_id, character_id, typ),
+                    (user_id, character_id, BIBLIOTHEK_BEOBACHTER, typ),
                 )
                 zeile = cur.fetchone()
         finally:

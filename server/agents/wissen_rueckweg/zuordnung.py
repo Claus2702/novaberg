@@ -23,6 +23,7 @@ import json
 import logging
 
 from config import PROMPTS, get_node_config
+from memory.repositories.autonomous_wissen_repository import BIBLIOTHEK_BEOBACHTER
 from memory.utils import embedding_zu_pgvector_str
 from services.model_services import ChatRequest, model_service
 from tools.db_manager import db_manager
@@ -89,12 +90,13 @@ def kandidaten_laden(
             "       1 - (themen_embedding <=> %s::vector) AS kosinus "
             "FROM   autonomous_wissen "
             "WHERE  user_id = %s AND character_id = %s "
+            "  AND  beobachter = %s "
             "  AND  typ = 'wissen' AND aktiv = TRUE "
             "  AND  themen_embedding IS NOT NULL "
             "  AND  (%s::int IS NULL OR id <> %s::int) "
             "ORDER  BY themen_embedding <=> %s::vector LIMIT %s",
-            (vektor_str, user_id, character_id, ausschluss_id, ausschluss_id,
-             vektor_str, KANDIDATEN_KAPPUNG),
+            (vektor_str, user_id, character_id, BIBLIOTHEK_BEOBACHTER,
+             ausschluss_id, ausschluss_id, vektor_str, KANDIDATEN_KAPPUNG),
         )
     except Exception as fehler:
         logger.exception(

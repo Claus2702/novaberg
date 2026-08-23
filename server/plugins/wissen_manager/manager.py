@@ -43,6 +43,7 @@ from config import (
 )
 from graph.context_entry import ContextEntry
 from memory.repositories.autonomous_wissen_repository import (
+    BIBLIOTHEK_BEOBACHTER,
     AutonomousWissenRepository,
     Bibliotheksfrage,
     Bibliothekszeile,
@@ -214,6 +215,7 @@ BEISPIELE (alle -> management_action = "agent"):
                     postgres_url = postgres_url,
                     user_id      = user_id,
                     character_id = character_id,
+                    beobachter   = BIBLIOTHEK_BEOBACHTER,
                     vektor_str   = vektor_str,
                     typ          = "wissen",
                     schwelle     = WISSEN_RETRIEVAL_SCHWELLE,

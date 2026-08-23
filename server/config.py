@@ -1217,6 +1217,18 @@ INTENT_KANON: set[str] = {
     "bestaetigung", "widerspruch", "abschluss", "hilferuf", "humor",
 }
 
+# Die Perspektive einer Gedaechtniszeile — die dritte Spalte des Paar-Schemas.
+#
+# **`user_id` traegt den Menschen, `character_id` die Figur; wer die Zeile
+# geschrieben hat, sagt allein dieser Wert** (`novaberg-convention-paar-schema.md`
+# §2). Er steht hier als Kanon, weil eine Lesestelle sonst nur pruefen kann, ob
+# ihr Wert *einer bestimmte* ist — und ein unbekannter waere von einem gueltigen
+# Nein nicht zu unterscheiden (die Teilmengen-Falle).
+#
+# Der Bestand traegt den Wert an acht Stellen als Literal. Sie sind nicht
+# migriert; diese Deklaration ist die Quelle fuer neue Pruefungen.
+BEOBACHTER_KANON: frozenset[str] = frozenset({"user", "assistant"})
+
 # Gültige kanonische Emotionen (Perzeption soll NUR diese liefern)
 EMOTION_KANON: set[str] = {
     "begeisterung", "freude",           # Sektor 1 — Freude

@@ -37,6 +37,7 @@ from config import (
 from langgraph.graph import END, StateGraph
 from langgraph.graph.state import CompiledStateGraph
 from memory.repositories.autonomous_wissen_repository import (
+    BIBLIOTHEK_BEOBACHTER,
     AutonomousWissenRepository,
     Bibliotheksfrage,
     Bibliothekszeile,
@@ -316,6 +317,7 @@ class WissenAgent(BaseAgent):
                     postgres_url = POSTGRES_URL,
                     user_id      = user_id,
                     character_id = character_id,
+                    beobachter   = BIBLIOTHEK_BEOBACHTER,
                     vektor_str   = vektor_str,
                     typ          = TYP_WISSEN,
                     schwelle     = WISSEN_RETRIEVAL_SCHWELLE,
@@ -388,6 +390,7 @@ class WissenAgent(BaseAgent):
                     postgres_url = POSTGRES_URL,
                     user_id      = user_id,
                     character_id = character_id,
+                    beobachter   = BIBLIOTHEK_BEOBACHTER,
                     vektor_str   = vektor_str,
                     typ          = TYP_WISSEN,
                     # Ohne Schwelle: Gesucht ist der knappste Verfehler, und

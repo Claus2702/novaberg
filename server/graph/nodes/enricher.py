@@ -48,6 +48,7 @@ from graph.reiz          import reiz_text
 from graph.state         import ConversationState, pipeline_quelle
 from memory.kzg          import kzg_entries_retrieve, _kzg_prefix
 from memory.lzg_knoten   import spreading_lesen
+from memory.repositories.autonomous_wissen_repository import BIBLIOTHEK_BEOBACHTER
 from memory.utils        import embedding_zu_pgvector_str
 from memory.session      import session_turns_retrieve, _session_key
 from memory.ziele        import ziel_paar_bestimmen, ziele_aktive_laden
@@ -743,10 +744,15 @@ def _enrich_character(
         # Verschiebung ueberhaupt gerechnet wird: Ein Turn, in dem nur die
         # Bibliothek Bestand hat, braucht denselben Suchschluessel wie einer
         # mit KZG.
+        # Dreispaltig wie jeder Lesepfad der Bibliothek (23.08.2026): Ein
+        # Vorcheck, der die Perspektive weglaesst, meldet Bestand, den die
+        # Suche danach nicht findet — und das sieht aus wie eine zu enge
+        # Schwelle, nicht wie ein Filterunterschied.
         cursor.execute(
             "SELECT EXISTS(SELECT 1 FROM autonomous_wissen "
-            "WHERE user_id = %s AND character_id = %s AND aktiv = TRUE)",
-            (user_id, character_id),
+            "WHERE user_id = %s AND character_id = %s "
+            "AND beobachter = %s AND aktiv = TRUE)",
+            (user_id, character_id, BIBLIOTHEK_BEOBACHTER),
         )
         has_wissen = cursor.fetchone()[0]
         conn.close()
