@@ -142,6 +142,8 @@ Die Grenze verläuft **nicht** zwischen „Datei" und „Gedächtnis", sondern z
 
 **`/docs` ist `nutzer`, obwohl die Dokumentation von ihr handelt.** Sie ist nicht ihr Erarbeitetes (§1a.3), und §1a.4 nennt genau diesen Weg den teuersten Fall: Aus Konzepten lernt sie sonst, Fähigkeiten zu haben, die nicht gebaut sind.
 
+**Die beiden Bloecke liegen als eigene Prompt-Dateien:** `prompts/default/verfasser.aufzeichnungen.txt` fuer das fremde Material, `prompts/default/verfasser.eigene_aufzeichnungen.txt` fuer ihres; `_aufzeichnungen_block` in `graph/nodes/verfasser.py` waehlt zwischen ihnen.
+
 **Der zweite Blockname enthält den ersten nicht als Teilzeichenkette.** `[EIGENE FUNDE]`, nicht `[EIGENE AUFZEICHNUNGEN]`: Der Bestand zerteilt Prompts an `split("[AUFZEICHNUNGEN]")`, und ein Name, der den anderen enthält, ließe jede solche Prüfung an der falschen Stelle schneiden, ohne rot zu werden.
 
 **Über den Gesprächsweg wird die Angabe gefragt, nicht erschlossen** (seit 22.08.2026). Der Vorgabewert `nutzer` gilt für Bestandszeilen, die niemand mehr befragen kann; beim Anlegen im Gespräch steht der Mensch daneben, und ihm eine Angabe zu unterstellen, die er nicht gemacht hat, wäre dieselbe Sorte Erfindung wie ein geratener Eigentümer. Fehlt der Wert, hält `_create` an und fragt: *„Wessen Material liegt in diesem Verzeichnis — deins, meins, oder beides?"*
@@ -150,7 +152,9 @@ Die Grenze verläuft **nicht** zwischen „Datei" und „Gedächtnis", sondern z
 >
 > **Kein Ausgang führt ohne gültigen Wert zur Schreibung** — dieselbe Zusicherung wie am Tor (§2a.2). Am ganzen Weg belegt: ohne Angabe `rueckfrage`, auf *„deins, das sind deine Recherchen"* → `eigentum='figur'`, geschrieben wurde `('meister', 'nova', '/knowledge/autonomous', None, 'figur')`.
 
-**Der Klassifikationsprompt kennt den Verzeichnisnamen als Verführung und benennt sie:** `/knowledge` kann die Sammlung des Menschen sein und `/notizen` die der Figur.
+**Der Kanon der drei Werte steht als `EIGENTUM_KANON` in `agents/dateien_wurzeln/crud.py`** — an einer Stelle, deckungsgleich mit dem `CHECK` der Schemadatei; die Klassifikation haelt die Modellantwort dagegen.
+
+**Der Klassifikationsprompt (`prompts/default/classify_dateien_wurzeln.task.txt`) kennt den Verzeichnisnamen als Verführung und benennt sie:** `/knowledge` kann die Sammlung des Menschen sein und `/notizen` die der Figur.
 
 **Der Eigen-Block nimmt §1a.4 nicht zurück.** Auch eigenes Material ist *nachgesehen* und nicht *erlebt*; der Block verlangt die Herkunft weiterhin im Wortlaut — nur lautet sie jetzt *„das habe ich nachgelesen"* statt *„ich habe hier Aufzeichnungen"*.
 

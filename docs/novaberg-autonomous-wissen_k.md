@@ -65,7 +65,7 @@ obsidian-vault/
 
 ~~Der Charakter ist das Verzeichnis, nicht der Dateiname. Flach innerhalb des Charakter-Ordners, sortierbar nach Datum.~~
 
-→ **Am 22.08.2026 um eine Ebene erweitert: `autonomous/{charakter}/{context_user}/`.** Der Charakter bleibt Verzeichnis, der Nutzer wird eines. Das Präfix im Dateinamen bleibt und ist damit redundant — es hält eine Datei zuordenbar, die aus ihrem Verzeichnis herausgereicht wird.
+→ **Am 22.08.2026 um eine Ebene erweitert: `autonomous/{charakter}/{context_user}/`** (`dateipfad_bauen` in `services/wissensspeicher.py`). Der Charakter bleibt Verzeichnis, der Nutzer wird eines. Das Präfix im Dateinamen bleibt und ist damit redundant — es hält eine Datei zuordenbar, die aus ihrem Verzeichnis herausgereicht wird.
 
 > **Der Anlass ist ein Zugriff, den die flache Ablage nicht zuließ.** Der Speicher sollte dem Dateien-Index als Wurzel dienen, und eine Wurzel trägt `user_id × character_id` (`novaberg-agent-dateien_k.md` §2.2). Am Bestand gemessen lagen in `autonomous/nova/` **1097 Dateien über 17 Kennungen** — 1007 `meister`, dazu `falle` 41, `rasim` 12 und vierzehn weitere. Keine Teilmenge davon war ohne Namensvergleich adressierbar, und ein Verzeichnis ist der einzige Zuschnitt, den ein Index kennt.
 >

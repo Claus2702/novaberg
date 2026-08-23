@@ -217,6 +217,18 @@ Der Homeserver **schiebt** Ereignisse an den AS (`PUT /_matrix/app/v1/transactio
 
 ## 4. Wo was liegt
 
+### Die Dateien des Connectors
+
+| Datei | Was darin steht |
+|---|---|
+| `matrix_bot/bot.py` | die drei Aufgaben: Push-Empfang, WebSocket-Zuhoerer, Raumaufbau — dazu `absender_fuer` und `_profil_pflegen` |
+| `matrix_bot/matrix_api.py` | die Client-Server-API, so weit sie gebraucht wird; **hier steht `?user_id=`**, der ganze Unterschied zu einem Bot |
+| `matrix_bot/formatierung.py` | Markdown → Matrix-HTML (§2c) |
+| `matrix_bot/config.py` | alles aus der Umgebung, kein Geheimnis fest verdrahtet |
+| `matrix_bot/test_connector.py` | 26 Zeugen, eigener Lauf (§2b) |
+
+### Wo was liegt
+
 | Ort | Inhalt | Versioniert |
 |---|---|---|
 | `matrix/data/` | Synapse-Daten, `homeserver.yaml`, Signaturschluessel, SQLite | nein — Betriebsdaten |
