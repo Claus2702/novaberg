@@ -624,12 +624,26 @@ async def _delivery_ausfuehren(
                 f"Delivery: AgentGraph — erzeuge State fuer user='{user_id}', "
                 f"character='{ASSISTANT_USER_ID}', rolle='character', turn_id={turn_id}"
             )
+            # **Der Gedanke steht auf dem Gedanken-Platz, nicht auf dem
+            # Reiz-Platz** (`F-REIZ-1`, hier nachgezogen am 23.08.2026). Der
+            # AgentGraph wird direkt gerufen und nicht ueber ein Ereignis;
+            # deshalb trug er bis dahin kein `event_payload`, und
+            # `reiz_ist_eigener_gedanke` lieferte dort `False`. Jeder Leser im
+            # Graphen hielt Novas Gedanken fuer eine Aeusserung des Menschen —
+            # der Umbau vom 15.08.2026 stellte elf Leser im CharacterGraph um,
+            # dieser Weg lag quer dazu, weil er kein Ereignis ist.
+            #
+            # Die Marke gehoert ins Payload und nicht an die Rolle: Der
+            # Thinker-Retry traegt dieselbe Quelle und ist trotzdem die
+            # Wiederholung einer echten Nutzeraeusserung.
             agent_state = agent_graph.create_state(
-                user_prompt    = wissensstueck,
-                user_id        = user_id,
-                character_id   = ASSISTANT_USER_ID,
-                ei_calc_rolle  = "character",
-                turn_id        = turn_id,
+                user_prompt     = "",
+                eigener_gedanke = wissensstueck,
+                event_payload   = {"reiz_herkunft": "eigener_impuls"},
+                user_id         = user_id,
+                character_id    = ASSISTANT_USER_ID,
+                ei_calc_rolle   = "character",
+                turn_id         = turn_id,
             )
             logger.info(f"Delivery: AgentGraph — State erzeugt, starte invoke...")
             # ── Graph-Invoke async-isiert (Microservice-Welle Block 2 Phase 4, G6) ──

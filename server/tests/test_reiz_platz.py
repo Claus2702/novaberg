@@ -29,9 +29,13 @@ Zeugen dieser Datei:
 Kein skipUnless, kein skipIf, kein try/except um Importe.
 """
 
+import ast
+import inspect
 import unittest
 from types import SimpleNamespace
 from unittest.mock import MagicMock, patch
+
+from services import shadow_delivery
 
 from agents.kzg.dispatch import dispatch_kzg
 from agents.kzg.verdichtung import verdichten
@@ -42,7 +46,7 @@ from graph.nodes import salience as sal_mod
 from graph.nodes import verfasser as verf_mod
 from graph.nodes.thinker import _retry_nutzlast
 from graph.personality import Emotion, InternalPersonality, Personality
-from graph.reiz import reiz_text
+from graph.reiz import reiz_ist_eigener_gedanke, reiz_text
 from graph.state import ConversationState
 
 # Von Hand gesetzt, nicht aus dem Pruefobjekt gelesen. Der Satz kommt aus dem
@@ -525,6 +529,96 @@ class DieLandschaftHatEinenGegenstandTest(unittest.TestCase):
     def test_die_aeusserung_steht_im_aktuellen_prompt(self) -> None:
         """Die Gegenrichtung."""
         self.assertIn(AEUSSERUNG, self._nachricht(_nutzer_turn()))
+
+
+class DerAgentGraphBekommtDieHerkunftTest(unittest.TestCase):
+    """Der direkt gerufene Graph liest den Gedanken wie jeder andere.
+
+    **Der Umbau vom 15.08.2026 stellte elf Leser im CharacterGraph um; dieser
+    Weg lag quer dazu.** `shadow_delivery` ruft den AgentGraph nicht ueber ein
+    Ereignis, sondern direkt — er trug deshalb kein `event_payload`,
+    `reiz_ist_eigener_gedanke` lieferte dort `False`, und jeder Leser hielt
+    Novas Gedanken fuer eine Aeusserung des Menschen. Am 23.08.2026
+    nachgezogen: `F-REIZ-1` gilt auch fuer den direkten Aufruf.
+
+    Zwei Zeugen, und sie pruefen Verschiedenes: der erste die **Aufrufstelle**
+    (traegt sie die Marke?), der zweite die **Wirkung** (kommt der Gedanke
+    beim Zugang an?). Ein Feld richtig zu belegen und trotzdem falsch gelesen
+    zu werden ist genau der Fall, der hier zwei Monate lief.
+    """
+
+    def _create_state_aufruf(self) -> ast.Call:
+        """Der `create_state`-Aufruf in `_delivery_ausfuehren`, aus dem Quelltext.
+
+        Vorbedingung: keine.
+        Nachbedingung: der Knoten des Aufrufs.
+
+        **Gelesen und nicht nachgebaut.** Ein Zeuge, der die Argumente selbst
+        zusammenstellt, prueft seine eigene Vorstellung von der Aufrufstelle
+        und bleibt gruen, wenn sie sich aendert.
+        """
+        quelle: str = inspect.getsource(shadow_delivery)
+        baum = ast.parse(quelle)
+        aufrufe: list[ast.Call] = [
+            knoten for knoten in ast.walk(baum)
+            if isinstance(knoten, ast.Call)
+            and isinstance(knoten.func, ast.Attribute)
+            and knoten.func.attr == "create_state"
+        ]
+        self.assertEqual(
+            len(aufrufe), 1,
+            f"{len(aufrufe)} create_state-Aufrufe in shadow_delivery — der "
+            f"Zeuge deckt einen ab",
+        )
+        return aufrufe[0]
+
+    def test_die_aufrufstelle_traegt_gedanke_und_marke(self) -> None:
+        """Der Gedanke steht nicht mehr auf dem Reiz-Platz."""
+        argumente: dict = {
+            wort.arg: wort.value
+            for wort in self._create_state_aufruf().keywords
+            if wort.arg
+        }
+        self.assertIn("eigener_gedanke", argumente)
+        self.assertIn("event_payload", argumente)
+
+        reiz = argumente.get("user_prompt")
+        self.assertIsInstance(reiz, ast.Constant)
+        self.assertEqual(
+            reiz.value, "",
+            "Der Reiz-Platz des AgentGraph-Aufrufs traegt wieder einen Text",
+        )
+
+    def test_die_marke_nennt_die_eigene_herkunft(self) -> None:
+        """Ein Payload ohne `reiz_herkunft` waere eine leere Geste."""
+        argumente: dict = {
+            wort.arg: wort.value
+            for wort in self._create_state_aufruf().keywords
+            if wort.arg
+        }
+        self.assertIn(
+            "event_payload", argumente,
+            "Der AgentGraph-Aufruf traegt kein Ereignis-Payload — ohne es ist "
+            "die Herkunft nicht markierbar",
+        )
+        payload = argumente["event_payload"]
+        self.assertIsInstance(payload, ast.Dict)
+        eintraege: dict = {
+            schluessel.value: wert.value
+            for schluessel, wert in zip(payload.keys, payload.values)
+            if isinstance(schluessel, ast.Constant) and isinstance(wert, ast.Constant)
+        }
+        self.assertEqual(eintraege.get("reiz_herkunft"), "eigener_impuls")
+
+    def test_der_zugang_liefert_daraus_den_gedanken(self) -> None:
+        """Die Wirkung, nicht die Belegung — derselbe Zugang wie jeder Knoten."""
+        zustand: dict = {
+            "user_prompt":     "",
+            "eigener_gedanke": GEDANKE,
+            "event_payload":   {"reiz_herkunft": "eigener_impuls"},
+        }
+        self.assertTrue(reiz_ist_eigener_gedanke(zustand))
+        self.assertEqual(reiz_text(zustand), GEDANKE)
 
 
 class DerRetryBehaeltSeineHerkunftTest(unittest.TestCase):
