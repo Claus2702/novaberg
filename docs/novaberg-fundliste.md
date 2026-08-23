@@ -2,9 +2,9 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Rohe, noch unklassifizierte Funde aus laufender Arbeit
-**Stand:** 23. August 2026, 16:15 UTC
-**Offen:** 16 Funde
-**Verlauf:** [Verlauf des Standes](#verlauf-des-standes) — 67 Eintraege, juengster zuerst
+**Stand:** 23. August 2026, 18:40 UTC
+**Offen:** 20 Funde
+**Verlauf:** [Verlauf des Standes](#verlauf-des-standes) — 69 Eintraege, juengster zuerst
 **Pfad:** novaberg/docs/novaberg-fundliste.md
 
 Was beim Bauen an anderer Stelle auffällt, landet hier — **eine Zeile mit Datum**. Kein Bug-Name, keine Priorität, keine Klassifizierung, keine Diskussion. Der Zweck ist, einen Fund festzuhalten, ohne die laufende Arbeit dafür zu unterbrechen.
@@ -229,6 +229,10 @@ Analog zum Kraft-1-Stichtag: ab wann eine Partition brauchbar ist. Kein Backfill
 
 ## Offen
 
+- **2026-08-23** — **Drei Dateien unter `/files` sind echte Kopien aus `Texte/Paper/` und nennen in ihrer Kopfzeile den Ort des Originals.** `novaberg-papers.md`, `novaberg-papers-stoffsammlung_k.md`, `novaberg-papers-themenanalyse_k.md` tragen `**Pfad:** Texte/Paper/…`, liegen aber unter `/files` und werden von dort indiziert; das Modell bekommt `/files/novaberg-papers.md` als Fundstelle und im Text einen anderen Ort genannt. **Keine Hardlinks:** verschiedene Inodes, Linkzahl je 1, Inhalt heute md5-gleich — zwei driftfaehige Exemplare, und indiziert ist die Kopie. Dieselbe Klasse wie die drei berichtigten Kopfzeilen unter `docs/archive/`, nur ausserhalb des angesehenen Verzeichnisses und **auf dem Weg zum Modell**. Zu entscheiden ist, ob die Kopie eine Kopie bleiben soll.
+- **2026-08-23** — **Die Fundstelle traegt zwei gleichartige Klammern hintereinander:** `- /docs/archive/novaberg-mem-lzg.md (archiviert) (ueber den Dateinamen) — …`. Etikett und Kanalnotiz sind typografisch nicht unterscheidbar; die erste ist eine Einschraenkung der Geltung, die zweite eine Auskunft ueber den Suchweg. Am echten Lauf gesehen.
+- **2026-08-23** — **Wurzel 3 ist freigegeben und leer:** `/knowledge/autonomous/nova/meister` traegt `eigentum='figur'`, hat **1173 Dateien auf der Platte und 0 Zeilen in `dateien_index`**. Damit kann der `[EIGENE FUNDE]`-Block nie feuern — er ist gebaut und bezeugt, aber ohne Eingabe. Die 175 Indexzeilen decken **2 von 3** freigegebenen Wurzeln; jede Aussage ueber den Bestand des Dateienindex meint diese zwei.
+- **2026-08-23** — **Der Verzeichnisbaum in `novaberg-architecture.md` fuehrt unter `tools/dateien/` eine von sieben Dateien** und behauptete bis heute *Lesepfad fehlt*, obwohl `operationen.py`, `hand.py`, `redaktion.py` und `versionierung.py` dort liegen und der Lesepfad seit dem 18.08.2026 im Betrieb ist. Beim Eintragen von `etikett.py` aufgefallen; die falsche Halbaussage ist mit derselben Zeile entfernt, die fehlenden Dateien sind es nicht. Zu pruefen, ob der Baum an weiteren Stellen aelter ist als das Verzeichnis.
 - **2026-08-23** — **`dateien_index.aktiv` ist aus `grund` ableitbar, und nichts haelt die beiden zusammen.** `aktiv = (grund IS NULL OR grund IN ('created','changed'))` gilt heute an allen 175 Zeilen — gemessen: 0 Zeilen mit `aktiv = TRUE` und `grund IN ('deleted','excluded')`, 0 mit `aktiv = FALSE` und `grund IN ('created','changed')`. Die Konvention *Abgeleitete Werte* §3 Regel 1 erlaubt das Mitspeichern ausdruecklich, weil die Eingabe (`grund`) danebensteht. **Was fehlt, ist der Riegel:** Ein Schreibweg, der nur eine der beiden Spalten setzt, erzeugt eine Zeile, die zwei verschiedene Dinge sagt, und keine Pruefung faellt darueber. Ein `CHECK` in der Datenbank wuerde es ausschliessen und ist DDL. Beide Schreibwege setzen die Spalten heute gemeinsam.
 - **2026-08-23** — **Ein Begriff, der einen Schritt unserer internen Arbeitsweise benennt, steht an 11 Stellen im veroeffentlichten Repositorium** — 2 in Code-Docstrings, 9 in `novaberg-bugs.md` und `novaberg-roadmap.md`. Solche Begriffe gehoeren nicht hierher; die Stellen sind gepusht und nur mit einem Rewrite zu entfernen. Beim Schreiben faellt es nicht auf, weil der Begriff an seinem Herkunftsort richtig ist — zum Verstoss wird er erst durch den Ablageort. Zu entscheiden, ob umformuliert wird oder ob die Stellen als Vorbestand danebenstehen bleiben wie die uebrigen in `novaberg/CLAUDE.md`.
 - **2026-08-23** — Eine Neuanlage unter altem Pfad erbt `entitaet_ids`, `timeline_id` und `zuletzt_gelernt_hash` ihres Vorgaengers → **am selben Tag nach `novaberg-bugs.md` als `DATEIINDEX-NEUANLAGE-ERBT-VORGAENGER`, dort behoben.**
@@ -363,6 +367,8 @@ Elf Zeilen sind in `novaberg-bugs.md` zu Einträgen mit Reproduktionsweg geworde
 
 Die Fortschreibung des Standes, aus der Kopfzeile geloest am 20.08.2026. Der Wortlaut jedes Eintrags ist unveraendert; vorangestellt ist allein sein Datum.
 
+- **23. August 2026, 18:40 UTC** — **20 offene Funde**, drei neu aus der Nachpruefung des Archiv-Etiketts: drei driftfaehige Dateikopien unter `/files` mit der Kopfzeile des Originals, zwei ununterscheidbare Klammern an der Fundstelle, und eine freigegebene Wurzel mit 1173 Dateien und 0 Indexzeilen.
+- **23. August 2026, 18:05 UTC** — **17 offene Funde**, einer neu: Der Verzeichnisbaum der Architektur fuehrt unter `tools/dateien/` eine von sieben Dateien.
 - **23. August 2026, 16:15 UTC** — **16 offene Funde**, zwei neu aus dem Umbau des Waechters: ein Begriff des internen Ablaufs an 11 Stellen im veroeffentlichten Repositorium, und `dateien_index.aktiv` ohne Riegel gegen `grund`.
 - **23. August 2026, 15:45 UTC** — **14 offene Funde.** Der Fund vom Mittag ist am selben Tag klassifiziert und behoben: Er wurde zu `DATEIINDEX-NEUANLAGE-ERBT-VORGAENGER` und ist mit dem Umbau des Waechters erledigt.
 - **23. August 2026, 14:20 UTC** — **15 offene Funde**, einer neu: Eine Neuanlage unter altem Pfad erbt `entitaet_ids`, `timeline_id` und `zuletzt_gelernt_hash` ihres Vorgaengers, weil `agent.py` neu und geaendert in einen Topf wirft und der UPSERT die drei Spalten nicht anfasst.

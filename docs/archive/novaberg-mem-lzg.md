@@ -3,7 +3,7 @@
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Modul Langzeitgedächtnis
 **Stand:** 12. Juli 2026, Chat 107 (Embedding-Migration: Modellwechsel auf nomic-embed-text-v2-moe, ivfflat-Indizes entfernt, Retrieval-Schwelle 0.40)
-**Pfad:** novaberg/docs/novaberg-mem-lzg.md
+**Pfad:** novaberg/docs/archive/novaberg-mem-lzg.md
 **Quellen:** nova-02-m-c.md
 **Datei:** ~~`memory/lzg.py`~~ — mit P9 aus dem Repositorium entfernt
 **Status:** **Archiviert am 02.08.2026 (Synapsen P9).** Das beschriebene Modul und die Tabelle `langzeitgedaechtnis` existieren nicht mehr. Der Synapsen-Umbau hat das Langzeitgedächtnis auf `lzg_knoten` und `lzg_kanten` umgestellt: Jede Erinnerung bleibt ein eigener Knoten, Verbindungen leben als gerichtete Kanten mit eigenem Verfall. Das Dokument bleibt als Beleg, wie das Aggregat-Modell gebaut war — die Ablösung ist ohne es nicht nachvollziehbar.

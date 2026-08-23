@@ -1,6 +1,6 @@
 # Novaberg — Roadmap (Projektchronik)
 
-**Stand:** 23. August 2026, 17:15 UTC
+**Stand:** 23. August 2026, 18:05 UTC
 **Pfad:** novaberg/docs/novaberg-roadmap.md
 **Single Source of Truth für abgeschlossene Arbeit.**
 **Offene Punkte → novaberg-backlog.md**
@@ -12,6 +12,64 @@ Die Kopfzeile stand bis Chat 109 auf „Chat 93, 21. Mai 2026" — 15 Chats hint
 ---
 
 ## Chats 3–20: Grundlagen (März 2026)
+
+### 23.08.2026, 18:05 UTC — Archiviert sieht nicht mehr aus wie geltend
+
+**Mit der Freigabe von `/docs` lagen 6 abgelegte Dateien im selben Bestand wie 155 geltende**,
+getrennt allein durch den Pfadanteil `archive/`. Der Index hält beide gleich gut — er kennt den
+Unterschied nicht. Ein widerrufenes Konzept erreichte den Prompt in derselben Form wie ein gültiges.
+
+Seit heute trägt die Fundstelle ihr Etikett:
+
+```
+/docs/archive/novaberg-convention-planner-needs-erweiterung.md (archiviert)
+/files/bach.md
+```
+
+**Die Regel steht an einer Stelle und nicht an zweien, und der Grund ist der Fehlerfall.** Zwei
+Ausgabewege nennen dieselbe Datei — der Enricher und der lesende Dienst —, und beide bauen ihre
+Herkunftsangabe getrennt. Eine Regel, die an zwei Stellen getippt wird, läuft auseinander, ohne dass
+etwas rot wird; **die Hälfte, die das Etikett verlöre, ist genau die, die Widerrufenes als geltend
+ausgibt.** Ein Zeuge hält beide Wege einzeln fest.
+
+**Geprüft wird das Verzeichnisglied**, nicht der Anfang und nicht der Teilstring: `startswith` fände
+`konzepte/archive/alt.md` nicht, `"archive" in pfad` träfe `archivelogik_k.md`. Der Dateiname zählt
+nicht als Glied.
+
+**Gemessen im Betrieb**, beide Wege aus `dateien_index` über alle 175 Indexzeilen: **6 etikettiert,
+0 fälschlich, 0 Abweichungen.** Suite 2149 grün, Gegenprobe **6 vorhergesagt, 5 gezählt** — die Differenz ist ein
+Zählfehler der Vorhersage und kein blinder Zeuge.
+
+**Zwei Nachbesserungen kamen aus einer Prüfung, die ein Kriterium anlegte statt die bekannten
+Stellen abzugehen** — *wer setzt einen Dateipfad in einen Text für ein Modell oder einen Menschen?*
+Von 50 solchen Stellen im Baum erreichen 12 ein Publikum. Eine davon war ein **dritter** Ausgabeweg:
+`agents/wissen/auskunft.py` nennt dasselbe Wort *Fundstelle* vor demselben Publikum, liest aber aus
+`autonomous_wissen`. **Heute ohne Wirkung** — von 820 Zeilen liegt keine unter einem
+Archivverzeichnis —, und genau deshalb wäre er beim Prüfen entlang der Ausgabe nie aufgefallen.
+Verdrahtet.
+
+Die zweite: `Archiv/` fiel durch. Die Erkennung prüfte die exakte englische Kleinschreibung, richtig
+für `/docs` und falsch für die beiden anderen Freigaben — der Dateibaum eines Menschen und der einer
+Figur, wo `Archiv` die wahrscheinlichere Benennung ist. Seither wird kleingeschrieben verglichen;
+`archives` und `Archivierung` bleiben draußen.
+
+**Ein Teil des Befundes lag außerhalb des Codes.** Drei der sechs Archivdateien nannten in ihrer
+Kopfzeile `Pfad:` weiterhin den Ort **vor** dem Verschieben; wer nur den Kopf liest, hält sie für
+aktuell. Berichtigt.
+
+**Der erste Ort war der falsche, und die Wand vor dem Commit hat es gesagt.** Das Etikett lag
+zunächst in `tools/dateien/` — neben den Dateiwerkzeugen, weil es von Dateien handelt. `tools/` ist
+aber die Infrastrukturschicht, und ein Geschäftsablauf darf sie nicht importieren; die geduldete
+Nulllinie der Schichtprüfung wäre von 52 auf 55 gestiegen, und die Wand weist Zuwachs ab. Sie hatte
+recht: **Der Gegenstand, von dem eine Funktion handelt, bestimmt nicht ihre Schicht — ihr Zugriff
+tut es.** Was hier steht, ist eine Regel über eine Zeichenkette und öffnet nichts. Verschoben nach
+`utils/`, Nulllinie unverändert **52**.
+
+> **Rang 3 der Defektrangfolge ist damit abgearbeitet** — vier Defekte an einem Knoten, drei
+> behoben, einer durch eine Statusmarke geschlossen. Einer der vier stand in keinem Register: Er
+> kam aus der Frage, wie Sync-Systeme die Kette schließen.
+
+---
 
 ### 23.08.2026, 17:15 UTC — Eine Messung, die gegen den Bau entscheidet
 

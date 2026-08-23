@@ -1009,6 +1009,39 @@ Ein Grabstein hält den **alten Hash**, und daran entscheidet sich, was eine Dat
 
 ---
 
+### 5.6 Archiviert sieht nicht aus wie geltend
+
+**Der Index hält ein widerrufenes Konzept genauso gut wie ein gültiges** — er kennt den Unterschied nicht. Mit der Freigabe von `/docs` liegen 6 abgelegte Dateien im selben Bestand wie 155 geltende, getrennt allein durch den Pfadanteil `archive/`. Der Enricher legt den Auszug einer archivierten Datei neben den einer geltenden, ohne den Unterschied zu benennen.
+
+**Seit dem 23.08.2026 trägt die Fundstelle ein Etikett**, und zwar in **allen drei** Ausgabewegen:
+
+```
+/docs/archive/novaberg-convention-planner-needs-erweiterung.md (archiviert)
+/files/bach.md
+```
+
+**Die Regel steht an einer Stelle** (`utils/etikett.py`) und nicht in den Bauern der Herkunftsangabe. Der Grund ist der Fehlerfall, nicht die Ordnung: Sie bauen dieselbe Angabe getrennt, und eine Regel, die mehrfach getippt wird, läuft auseinander, ohne dass etwas rot wird. **Der Weg, der das Etikett verlöre, ist genau der, der Widerrufenes als geltend ausgibt.**
+
+| Ausgabeweg | Stelle | Quelle |
+|---|---|---|
+| Enricher | `agents/dateien_index/aufzeichnungen.py` `_fundstelle_bauen` | `dateien_index` |
+| lesender Dienst | `agents/dateien/auskunft.py` `fundstelle` | `dateien_index` |
+| Bibliothek | `agents/wissen/auskunft.py` `auskunft_bauen` | `autonomous_wissen` |
+
+> **Der dritte stand zunächst nicht in dieser Tabelle**, und das ist der Grund, warum sie jetzt existiert. Der Bau ging von den zwei Wegen aus, die er kannte; gefunden hat den dritten eine Nachprüfung, die nicht die bekannten Stellen abging, sondern ein **Kriterium** anlegte — *wer setzt einen Dateipfad in einen Text für ein Modell oder einen Menschen?* Von 50 solchen Stellen im Baum erreichen 12 ein Publikum, und eine davon hieß ebenfalls *Fundstelle*, las aber aus einer anderen Tabelle. **Heute ohne Wirkung** — von 820 Zeilen in `autonomous_wissen` liegt keine unter einem Archivverzeichnis —, und genau deshalb wäre sie beim Prüfen entlang der Ausgabe nie aufgefallen.
+
+**Geprüft wird das Verzeichnisglied, nicht der Anfang und nicht der Teilstring.** Ein `startswith("archive/")` fände `konzepte/archive/alt.md` nicht; ein `"archive" in pfad` träfe `archivelogik_k.md`. Der Pfad wird zerlegt, und das letzte Glied — der Dateiname — zählt nicht mit: `archive.md` ist ein Dokument über Archive, kein archiviertes.
+
+**Verglichen wird kleingeschrieben, und `archiv` gilt neben `archive`.** Die erste Fassung prüfte auf die exakte englische Kleinschreibung — richtig für `/docs`, das der Konvention des Repositoriums folgt, und falsch für die beiden anderen Freigaben: Wurzel 1 ist der Dateibaum eines Menschen, Wurzel 3 der einer Figur, und dort ist `Archiv` die wahrscheinlichere Benennung. Die Gegenprobe hält dagegen: `archives`, `archivar`, `Archivierung` bleiben draußen.
+
+**Gemessen am 23.08.2026 gegen den echten Bestand** (`labor/2026-08-23_archivetikett_betrieb.py`), über beide Wege aus `dateien_index` und alle 175 Indexzeilen: **6 etikettiert, 0 fälschlich, 0 Abweichungen** je Weg. 15 Zeugen. Gegenprobe: Etikett stillgelegt → 5 Zeugen rot (6 vorhergesagt; in `ErkennungTest` prüfen zwei Zeugen den archivierten Fall, nicht drei).
+
+> **Was das Etikett nicht leistet.** Thema und Zusammenfassung der Indexzeile sind beim Indizieren entstanden und lesen sich wie über ein geltendes Dokument — *„Das Konzept beschreibt die Implementierung einer vollwertigen …"*. Das Etikett steht an der **Fundstelle**, weil wer den Ort zitiert die Einschränkung mitträgt; im Auszug stünde es einmal mehr und ließe sich beim Zitieren trotzdem abschneiden.
+
+**Ein zweiter Teil des Befundes lag außerhalb des Codes.** Drei der sechs Archivdateien nannten in ihrer Kopfzeile `Pfad:` weiterhin den Ort **vor** dem Verschieben; wer nur den Kopf liest, hält sie für aktuell. Berichtigt. Eine vierte trägt gar keine `Pfad:`-Zeile — das ist keine falsche Angabe und bleibt.
+
+---
+
 ## 6. Drei Kanäle, und der scharfe kommt zuerst
 
 Bis v0.9 beschrieb dieser Abschnitt drei **Stufen** — Name, Thema, Inhalt —, die nacheinander enger zoomen. Das bleibt richtig für das *Lesen einer bekannten Datei*. Für das **Finden** ist es zu wenig, und das ist gemessen.

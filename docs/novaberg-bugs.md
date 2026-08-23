@@ -1,6 +1,6 @@
 # Novaberg — Bugs & Limitationen
 
-**Stand:** 23. August 2026, 17:10 UTC (`DATEIINDEX-SPALTEN-OHNE-SCHREIBER` behoben durch Statusmarke; davor `VERSCHWUNDEN-DURCH-FILTERWECHSEL` und `DATEIINDEX-NEUANLAGE-ERBT-VORGAENGER`)
+**Stand:** 23. August 2026, 18:05 UTC (`ARCHIVDATEI-OHNE-ETIKETT` behoben — Rang 3 ist damit abgearbeitet)
 **Verlauf:** [Verlauf des Standes](#verlauf-des-standes) — 29 Eintraege, juengster zuerst
 
 ---
@@ -17,13 +17,13 @@ gemeinsam raeumt. Ein Zug pro Knoten raeumt mehr als ein Zug pro Defekt.
 
 **Stand nach Rang 2** (22.08.2026): **58 offen / 24 behoben** von 82 Abschnitten.
 
-**Stand nach Rang 3** (23.08.2026): **56 offen / 27 behoben** von 83 Abschnitten — gezaehlt ueber die erste `Zustand:`-Zeile je Abschnitt mit Kennung, nicht fortgeschrieben. Drei Defekte an einem Knoten: zwei behoben, einer durch Statusmarke geschlossen; einer davon wurde beim Bauen erst gefunden.
+**Stand nach Rang 3** (23.08.2026): **55 offen / 28 behoben** von 83 Abschnitten — gezaehlt ueber die erste `Zustand:`-Zeile je Abschnitt mit Kennung, nicht fortgeschrieben. **Rang 3 ist abgearbeitet.** Vier Defekte an einem Knoten: drei behoben, einer durch Statusmarke geschlossen — einer der vier wurde beim Bauen erst gefunden.
 
 | Rang | Knoten | offene Defekte |
 |---|---|---|
 | **1** | ~~die Antwortstrecke `verfasser` / `haltung` / `responder`~~ — **am 22.08.2026 abgearbeitet**, von neun sind fuenf erledigt und zwei zur Haelfte gebaut | 2 |
 | **2** | ~~**Fuenf Charakter-Profile + Hash**~~ — **am 22.08.2026 zu zwei Dritteln abgearbeitet**: `PERSPEKTIVE-OHNE-DATIV` und `PROFILPROMPT-OHNE-GESCHLECHT` behoben, `KERNHASH-OHNE-PERSPEKTIVTRENNUNG` entschieden und noch nicht gebaut | 1 |
-| 3 | **Dateien-Dienst Stufe 2** (`dateien_index` + Waechter) — am 23.08.2026 zu zwei Dritteln abgearbeitet: `VERSCHWUNDEN-DURCH-FILTERWECHSEL` behoben, `DATEIINDEX-NEUANLAGE-ERBT-VORGAENGER` dabei gefunden und behoben, `DATEIINDEX-SPALTEN-OHNE-SCHREIBER` durch Statusmarke geschlossen | 1 |
+| 3 | **Dateien-Dienst Stufe 2** (`dateien_index` + Waechter) — am 23.08.2026 zu zwei Dritteln abgearbeitet: `VERSCHWUNDEN-DURCH-FILTERWECHSEL` behoben, `DATEIINDEX-NEUANLAGE-ERBT-VORGAENGER` dabei gefunden und behoben, `DATEIINDEX-SPALTEN-OHNE-SCHREIBER` durch Statusmarke geschlossen, `ARCHIVDATEI-OHNE-ETIKETT` behoben — **der Knoten ist leer** | 0 |
 | 4 | `responder` — die Antwort | 2 |
 | 5 | Pipeline-Log · Emotionale Gravitation · Charakter-Raeder · Shadow-Queue · Bibliothek | je 2 |
 
@@ -121,13 +121,29 @@ gehoeren deshalb nicht in dieselbe Reihe wie ein Defekt mit Codeort.
 
 ---
 
-### `ARCHIVDATEI-OHNE-ETIKETT` — archiviert sieht aus wie geltend
+### `ARCHIVDATEI-OHNE-ETIKETT` — behoben am 23.08.2026
+
+**Zustand:** behoben. Die Fundstelle traegt das Etikett `(archiviert)`, und zwar in **allen drei** Ausgabewegen — Enricher, lesender Dienst und Bibliothek. Die Regel steht an einer Stelle (`utils/etikett.py`), nicht in den beiden Bauern der Herkunftsangabe.
+
+**Warum eine gemeinsame Stelle und nicht zwei Zeilen.** `agents/dateien_index/aufzeichnungen.py` (Enricher) und `agents/dateien/auskunft.py` (lesender Dienst) bauen dieselbe Angabe getrennt. Eine Regel, die an zwei Stellen getippt wird, laeuft auseinander, ohne dass etwas rot wird — und die Haelfte, die das Etikett verloere, ist genau die, die Widerrufenes als geltend ausgibt. Ein Zeuge haelt beide Wege einzeln fest.
+
+**Geprueft wird das Verzeichnisglied**, nicht der Anfang (`startswith` fande `konzepte/archive/alt.md` nicht) und nicht der Teilstring (`"archive" in pfad` traefe `archivelogik_k.md`). Der Dateiname zaehlt nicht als Glied: `archive.md` ist ein Dokument ueber Archive.
+
+**Gemessen im Betrieb** (`labor/2026-08-23_archivetikett_betrieb.py`), beide Wege aus `dateien_index` ueber alle 175 Indexzeilen: **6 etikettiert, 0 faelschlich, 0 Abweichungen.** Zeugen 15, Gegenprobe **6 vorhergesagt, 5 gezaehlt** — die Differenz ist ein Zaehlfehler der Vorhersage, nicht ein blinder Zeuge: In `ErkennungTest` pruefen zwei Zeugen den archivierten Fall, die uebrigen sind Gegenproben.
+
+**Zwei Nachbesserungen aus einer Pruefung, die ein Kriterium anlegte statt die bekannten Stellen abzugehen.** Der Bau kannte zwei Ausgabewege; der Baum hat **drei** — `agents/wissen/auskunft.py` nennt dasselbe Wort *Fundstelle* vor demselben Publikum, liest aber aus `autonomous_wissen`. Heute ohne Wirkung (0 von 820 Zeilen unter einem Archivverzeichnis) und deshalb beim Pruefen entlang der Ausgabe unsichtbar. Verdrahtet. Zweitens fiel `Archiv/` durch: Die Erkennung pruefte auf die exakte englische Kleinschreibung — richtig fuer `/docs`, falsch fuer die Dateibaeume von Mensch und Figur. Seither wird kleingeschrieben verglichen, und `archiv` gilt neben `archive`; `archives` und `Archivierung` bleiben draussen.
+
+**Der verschaerfende Teil lag ausserhalb des Codes und ist mitbehoben.** Drei der sechs Archivdateien nannten in ihrer Kopfzeile `Pfad:` weiterhin den Ort **vor** dem Verschieben — `novaberg-iteration-control_k.md`, `novaberg-mem-lzg.md`, `novaberg-pixie-decay.md`. Berichtigt. Eine vierte traegt gar keine `Pfad:`-Zeile; das ist keine falsche Angabe und bleibt.
+
+<details><summary>Der Befund, wie er bis zum 23.08.2026 stand</summary>
 
 **Zustand:** offen — gegen HEAD `00c16b6` gehalten am 20.08.2026. kein Etikett im Indexweg — `archive` kommt in `agents/dateien_index/` nicht vor.
 
 **Befund (20.08.2026), aus der Fundliste uebernommen.** **Ein archiviertes Konzept sieht im Dateienindex aus wie ein geltendes.** Mit der Freigabe von `/docs` liegen 6 Dateien aus `docs/archive/` im selben Bestand wie die 154 geltenden. Getrennt sind sie allein durch den Pfadanteil `archive/`; die Indexzeile trägt kein Etikett, und der Enricher-Weg legt den Fundstellentext neben die geltende Doku, ohne den Unterschied zu benennen. **Verschärfend:** Nicht jede Archivdatei ist an ihrem Kopf erkennbar — `archive/novaberg-mem-lzg.md` nennt im Feld `Pfad:` weiterhin `novaberg/docs/novaberg-mem-lzg.md`, also den Ort vor dem Verschieben. Wer nur die Kopfzeilen liest, hält sie für aktuell.
 
 **Geschlossen, wenn** Eine Indexzeile aus `docs/archive/` traegt ein Etikett, und der Fundstellentext nennt es.
+
+</details>
 
 ---
 

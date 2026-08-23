@@ -324,7 +324,9 @@ project/
 │   │   │   ├── search.py                #     WebSearchManager (SearXNG)
 │   │   │   └── fetch.py                 #     PageFetcher (trafilatura + BS4)
 │   │   └── dateien/                     #   Datei-Werkzeuge (WIS-3)
-│   │       └── schreiben.py             #     Pfadwaechter + Modusbits (F-WISSEN-1); Lesepfad fehlt
+│   │       └── schreiben.py             #     Pfadwaechter + Modusbits (F-WISSEN-1)
+│   │                                    #     die uebrigen Dateien dieses Verzeichnisses
+│   │                                    #     fehlen im Baum — siehe novaberg-fundliste.md
 │   │
 │   ├── memory/                          # Gedaechtnis-Schicht
 │   │   ├── kzg.py                       #   Kurzzeitgedaechtnis (Redis, RediSearch-Index, Magnet-Felder P3)
@@ -348,8 +350,10 @@ project/
 │   │   └── services/
 │   │       └── entity_resolution.py     #   Entity Resolution (Name + Fuzzy + Embedding)
 │   │
-│   ├── utils/                           # Hilfsfunktionen
-│   │   └── zeitparser.py                #   Zeitaufloesung (Fuzzy + Normalisierung + Vektor)
+│   ├── utils/                           # Hilfsfunktionen — reine Rechnung, kein Zugriff
+│   │   ├── zeitparser.py                #   Zeitaufloesung (Fuzzy + Normalisierung + Vektor)
+│   │   ├── datum_pruefung.py            #   Wochentag gegen Datum
+│   │   └── etikett.py                   #   was ein Pfad ueber die Geltung sagt (23.08.2026)
 │   │
 │   ├── plugins/                         # Manager-Plugins
 │   │   ├── base.py                      #   BaseManager Interface
