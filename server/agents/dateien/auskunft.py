@@ -18,6 +18,8 @@ und `zoom.py` gelesen.
 
 import logging
 
+from utils.etikett import mit_etikett
+
 from agents.dateien.suche import KANAL_NAME, KANAL_STICHWORT, KANAL_VEKTOR
 from agents.dateien.zoom import STUFE_BLOCK, STUFE_KARTE, STUFE_NADEL
 
@@ -48,6 +50,11 @@ def fundstelle(kandidat: dict) -> str:
     Pfad allein mit Meldung, wenn die Wurzel fehlt. **Nie eine leere
     Zeichenkette**: Eine Auskunft ohne Ort ist genau die Aussage, gegen die
     dieses Modul gebaut ist.
+
+    **Eine archivierte Datei traegt ihr Etikett** (`utils/etikett.py`).
+    Die Regel steht dort und nicht hier, weil der Enricher-Weg dieselbe
+    Angabe baut: Zwei getippte Fassungen derselben Regel laufen auseinander,
+    und die Haelfte ohne Etikett gibt Widerrufenes als geltend aus.
     """
     # ── Eingabe-Validierung ─────────────────────
     pfad: str = (kandidat.get("pfad") or "").strip()
@@ -65,8 +72,8 @@ def fundstelle(kandidat: dict) -> str:
         logger.warning(
             "Auskunft: Kandidat '%s' ohne Wurzel — nur der relative Pfad", pfad,
         )
-        return pfad
-    return f"{wurzel.rstrip('/')}/{pfad.lstrip('/')}"
+        return mit_etikett(pfad, pfad)
+    return mit_etikett(f"{wurzel.rstrip('/')}/{pfad.lstrip('/')}", pfad)
 
 
 def _kopfzeile(kandidat: dict, anzahl: int) -> str:

@@ -17,6 +17,7 @@ Lücke zwischen Karte und Gebiet gesetzt wird.
 import logging
 
 from memory.repositories.autonomous_wissen_repository import Bibliothekszeile
+from utils.etikett import mit_etikett
 
 logger = logging.getLogger("ki_server.agents.wissen.auskunft")
 
@@ -58,7 +59,8 @@ def auskunft_bauen(zeilen: list[Bibliothekszeile]) -> str:
         teile.append(
             f"- {zeile.thema}\n"
             f"  {zeile.zusammenfassung}\n"
-            f"  (Fundstelle {zeile.dateipfad}, Naehe {zeile.cosine:.4f}, "
+            f"  (Fundstelle {mit_etikett(zeile.dateipfad, zeile.dateipfad)}, "
+            f"Naehe {zeile.cosine:.4f}, "
             f"{zeile.haeufigkeit}x bearbeitet)"
         )
     teile.append(TIEFE_HINWEIS)

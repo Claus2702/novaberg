@@ -33,6 +33,7 @@ from config import (
     AUFZEICHNUNGEN_KAPPUNG,
 )
 from memory.utils import embedding_zu_pgvector_str
+from utils.etikett import mit_etikett
 from tools.db_manager import db_manager
 
 logger = logging.getLogger("ki_server.agents.dateien_index.aufzeichnungen")
@@ -103,6 +104,12 @@ def _fundstelle_bauen(bezeichnung: str, wurzel: str, pfad: str) -> str:
     bezeichnet. Traegt die Freigabe eine Bezeichnung, steht sie davor: Sie
     ist das, was ein Mensch beim Freigeben gesagt hat, und damit die Form,
     unter der er die Ablage wiedererkennt.
+
+    **Eine archivierte Datei traegt ihr Etikett hier und nicht spaeter.**
+    Der Index kennt keinen Unterschied zwischen abgelegt und geltend — er
+    haelt beide gleich gut. Wer den Auszug in den Prompt bekommt, saehe
+    sonst ein widerrufenes Konzept in derselben Form wie ein geltendes
+    (`utils/etikett.py`).
     """
     # ── Eingabe-Validierung ─────────────────────
     if not pfad.strip():
@@ -111,7 +118,7 @@ def _fundstelle_bauen(bezeichnung: str, wurzel: str, pfad: str) -> str:
 
     # ── Verarbeitung ────────────────────────────
     ort: str = bezeichnung.strip() or wurzel.strip()
-    return f"{ort}/{pfad}" if ort else pfad
+    return mit_etikett(f"{ort}/{pfad}" if ort else pfad, pfad)
 
 
 #: Welcher Kanal einen Treffer geliefert hat. Geschlossene Menge.
