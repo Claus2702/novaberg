@@ -907,21 +907,12 @@ VEKTOR_QUELLE_KANON: frozenset[str] = frozenset({
     "gemessen", "gleichstand", "zu_wenig_turns", "nicht_gesetzt",
 })
 
-# Der Kanon der Emotionsvektoren — die geschlossene Menge, die
-# `ei/berechnung.py::emotions_vektor_bestimmen()` erzeugen kann.
-#
-# Er steht hier als **Obermenge**, damit ein gelesener Vektor validierbar ist
-# und nicht nur benutzbar: Ohne deklarierten Kanon ist ein unbekannter Wert
-# von einem gueltigen Nein nicht zu unterscheiden. Wer nur gegen die
-# Druck-Teilmenge prueft, liest bei einem Transportfehler „kein Druck" statt
-# „defekt" — und das sieht auf jeder Logstufe gleich aus.
-EMOTIONS_VEKTOREN: frozenset[str] = frozenset({
-    "absturz", "spirale", "einbruch",           # ins Negative
-    "abkuehlung", "plateau", "stabilisierung",  # seitwaerts
-    "erholung", "aufbluehen", "eskalation",     # ins Positive
-})
-
-# Die Teilmenge, die **Druck** bedeutet: eine Bewegung ins Negative.
+# Die Teilmenge von `EMOTIONS_VEKTOREN`, die **Druck** bedeutet: eine
+# Bewegung ins Negative. **Die Obermenge steht weiter unten**, seit die
+# doppelte Deklaration am 23.08.2026 aufgeloest wurde — vorher stand sie
+# zwei Zeilen darueber, und dieser Satz konnte `die Teilmenge` sagen,
+# ohne zu sagen, wovon. Ein Zeuge haelt die Beziehung
+# (`test_die_druck_teilmenge_liegt_im_kanon`).
 #
 #   absturz   positiv -> negativ
 #   einbruch  neutral -> negativ
@@ -1004,6 +995,32 @@ def arousal_label(value: float) -> str:
     else:
         return "low"
 
+# **Der Kanon der Emotionsvektoren — und zugleich ihr Prompttext.**
+#
+# Die Schluessel sind die geschlossene Menge, die
+# `ei/berechnung.py::stimmungsvektor_bestimmen()` erzeugen kann; der Wert ist
+# der Block, der daraus im Prompt wird.
+#
+# **Die Schluessel sind zugleich die Obermenge, damit ein gelesener Vektor
+# validierbar ist und nicht nur benutzbar.** Der Satz wiegt hier mehr als an
+# seinem frueheren Ort: Eine Tabelle `dict[str, str]` sieht nach Benutzung
+# aus, nicht nach Deklaration — und ohne die zweite Leseart ist ein
+# unbekannter Wert von einem gueltigen Nein nicht zu unterscheiden.
+#
+# **Zwei Definitionen, bis zum 23.08.2026.** Derselbe Name stand hier und
+# rund 90 Zeilen weiter oben ein zweites Mal, dort als `frozenset` mit
+# denselben neun Namen. Python nimmt die zweite; die erste war toter Text,
+# der wie eine Deklaration aussah. Beide Leser brauchen ohnehin diese hier —
+# `nodes/responder.py` schlaegt den Text nach, `agents/nachfragen/agent.py`
+# prueft die Zugehoerigkeit, und ein `in` ueber ein Woerterbuch liest seine
+# Schluessel. **Kein Werkzeug hat es gesehen:** Ruffs `F811` deckt Importe,
+# Funktionen und Klassen, nicht das erneute Binden einer Modulvariablen.
+#
+# Der Grund fuer den Kanon steht weiterhin, er stand nur an der toten
+# Haelfte: Ohne deklarierte Obermenge ist ein unbekannter Wert von einem
+# gueltigen Nein nicht zu unterscheiden. Wer nur gegen die Druck-Teilmenge
+# prueft, liest bei einem Transportfehler „kein Druck" statt „defekt" — und
+# das sieht auf jeder Logstufe gleich aus.
 EMOTIONS_VEKTOREN: dict[str, str] = {
     "absturz": (
         "EMOTIONALER VEKTOR: ABSTURZ (positiv → negativ). "
