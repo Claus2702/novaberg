@@ -1,6 +1,6 @@
 # Novaberg — Roadmap (Projektchronik)
 
-**Stand:** 23. August 2026, 18:05 UTC
+**Stand:** 23. August 2026, 18:50 UTC
 **Pfad:** novaberg/docs/novaberg-roadmap.md
 **Single Source of Truth für abgeschlossene Arbeit.**
 **Offene Punkte → novaberg-backlog.md**
@@ -12,6 +12,54 @@ Die Kopfzeile stand bis Chat 109 auf „Chat 93, 21. Mai 2026" — 15 Chats hint
 ---
 
 ## Chats 3–20: Grundlagen (März 2026)
+
+### 23.08.2026, 18:50 UTC — Eine Konstante, die zweimal dastand, und niemand sah es
+
+**`EMOTIONS_VEKTOREN` war in `config.py` zweimal definiert** — einmal als `frozenset` mit den neun
+gültigen Namen, rund neunzig Zeilen später als `dict` mit den Prompt-Texten. Python nimmt die
+zweite. Die erste war toter Text, der wie eine Deklaration aussah, und trug ausgerechnet die
+Begründung, **warum** es einen deklarierten Kanon braucht.
+
+**Folgenlos, und das ist der Grund für die achtzehn Tage.** Beide Hälften trugen dieselben neun
+Namen — statisch verglichen, Differenz in beide Richtungen leer —, und `in` über ein Wörterbuch
+liest dessen Schlüssel. Die Kanon-Prüfung im Nachfragen-Weg antwortete also richtig. Der Bruch wäre
+beim ersten Zusatz eingetreten: Ein Name, den jemand dem `frozenset` hinzufügt, wirkt nirgends, und
+die Prüfung lehnt ihn als unbekannt ab — genau die Klasse, gegen die das `frozenset` angelegt worden
+war.
+
+**Das dict bleibt, weil beide Leser es brauchen.** Der Responder prüft die Zugehörigkeit *und*
+schlägt den Text nach; der Nachfragen-Agent prüft nur. Ein `frozenset` könnte nur das eine.
+
+> **Kein Werkzeug sieht diese Klasse, und das ist der eigentliche Befund.** Ruffs `F811` deckt
+> Importe, Funktionen und Klassen — nicht das erneute Binden einer Modulvariablen; über `server/`
+> meldet es genau einen Treffer, und der ist ein doppelter Import. Deshalb steht der Zeuge jetzt
+> über dem **ganzen Baum** und nicht über `config.py`: Der Fall war dort, die Klasse ist es nicht.
+> Vor dem Eingriff gemessen: **ein Fall im gesamten Produktivcode.** Danach keiner.
+
+> **Der Zeuge selbst war der nächste Fund, und er kam aus derselben Richtung.** `hasattr(knoten,
+> "target")` trifft **vier** Knotentypen statt einem — `AnnAssign`, `AugAssign`, `For`, `AsyncFor`.
+> Zwei Modulebenen-Schleifen mit derselben Laufvariablen hätten die Suite rot gemacht, ohne dass
+> etwas falsch wäre; der Baum trägt heute genau eine. Gefunden hat es eine Prüfung, die nicht die
+> gemeinte Menge nachbaute, sondern **die Grammatik abfragte**: *welche Sprachformen binden laut
+> `ast` überhaupt einen Modulnamen?* Sechs Zeugen halten seither die Grenzen fest — sonst wäre die
+> Tabelle im Docstring eine Behauptung über sich selbst.
+
+**Zwei Sätze gingen beim Verschieben verloren oder verwaisten**, und beides fiel derselben Prüfung
+auf. *„damit ein gelesener Vektor validierbar ist und nicht nur benutzbar"* stammt aus der Lesson
+zur deklarierten Obermenge und wiegt am neuen Ort mehr als am alten — ein `dict[str, str]` sieht
+nach Benutzung aus, nicht nach Deklaration. Und der Kommentar der Druck-Teilmenge sagte *„die
+Teilmenge"*, ohne zu sagen wovon; das ergab sich aus zwei Zeilen Abstand zur Obermenge, und nach der
+Löschung liegen hundert dazwischen.
+
+**Ein Nebenzeuge fiel dabei ab**, weil die Frage sich stellte: `EMOTIONS_VEKTOREN` und
+`EMOTIONS_VEKTOREN_NOVA` tragen dieselben neun Namen. Ein Vektor, den nur eine der beiden
+Perspektiven kennt, entfiele auf der anderen ohne Meldung. Heute deckungsgleich, seither bezeugt.
+
+**Die Gegenprobe galt dem Zeugen, nicht dem Verhalten** — die Behebung ändert zur Laufzeit nichts.
+Doppelte Definition wieder eingesetzt: **1 vorhergesagt, 1 gezählt.** Suite 2160 grün, Linter über
+`config.py` 42 vor und 42 nach dem Eingriff.
+
+---
 
 ### 23.08.2026, 18:05 UTC — Archiviert sieht nicht mehr aus wie geltend
 

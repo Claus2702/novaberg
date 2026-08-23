@@ -1,6 +1,6 @@
 # Novaberg — Bugs & Limitationen
 
-**Stand:** 23. August 2026, 18:05 UTC (`ARCHIVDATEI-OHNE-ETIKETT` behoben — Rang 3 ist damit abgearbeitet)
+**Stand:** 23. August 2026, 18:50 UTC (`EMOTIONS-VEKTOREN-DOPPELT` behoben — 54 offen / 29 behoben von 83 Abschnitten)
 **Verlauf:** [Verlauf des Standes](#verlauf-des-standes) — 29 Eintraege, juengster zuerst
 
 ---
@@ -24,7 +24,7 @@ gemeinsam raeumt. Ein Zug pro Knoten raeumt mehr als ein Zug pro Defekt.
 | **1** | ~~die Antwortstrecke `verfasser` / `haltung` / `responder`~~ — **am 22.08.2026 abgearbeitet**, von neun sind fuenf erledigt und zwei zur Haelfte gebaut | 2 |
 | **2** | ~~**Fuenf Charakter-Profile + Hash**~~ — **am 22.08.2026 zu zwei Dritteln abgearbeitet**: `PERSPEKTIVE-OHNE-DATIV` und `PROFILPROMPT-OHNE-GESCHLECHT` behoben, `KERNHASH-OHNE-PERSPEKTIVTRENNUNG` entschieden und noch nicht gebaut | 1 |
 | 3 | **Dateien-Dienst Stufe 2** (`dateien_index` + Waechter) — am 23.08.2026 zu zwei Dritteln abgearbeitet: `VERSCHWUNDEN-DURCH-FILTERWECHSEL` behoben, `DATEIINDEX-NEUANLAGE-ERBT-VORGAENGER` dabei gefunden und behoben, `DATEIINDEX-SPALTEN-OHNE-SCHREIBER` durch Statusmarke geschlossen, `ARCHIVDATEI-OHNE-ETIKETT` behoben — **der Knoten ist leer** | 0 |
-| 4 | `responder` — die Antwort | 2 |
+| 4 | `responder` — die Antwort — `EMOTIONS-VEKTOREN-DOPPELT` am 23.08.2026 behoben | 1 |
 | 5 | Pipeline-Log · Emotionale Gravitation · Charakter-Raeder · Shadow-Queue · Bibliothek | je 2 |
 
 **Was von Rang 1 bleibt, ist kein Baufall.** `UMFANGSREGLER-BINDET-NICHT` und
@@ -619,13 +619,39 @@ gehoeren deshalb nicht in dieselbe Reihe wie ein Defekt mit Codeort.
 
 ---
 
-### `EMOTIONS-VEKTOREN-DOPPELT` — zweimal in `config.py`, die zweite gewinnt
+### `EMOTIONS-VEKTOREN-DOPPELT` — behoben am 23.08.2026
+
+**Zustand:** behoben. Das tote `frozenset` ist fort; `EMOTIONS_VEKTOREN` ist einmal definiert, als `dict[str, str]`. Die Begruendung des Kanons stand an der toten Haelfte und steht jetzt an der lebenden.
+
+**Warum das dict bleibt und nicht das frozenset.** Beide Produktivleser brauchen es: `graph/nodes/responder.py:484` prueft die Zugehoerigkeit **und** schlaegt den Text nach, `agents/nachfragen/agent.py:302` prueft nur die Zugehoerigkeit — und `in` ueber ein Woerterbuch liest seine Schluessel. Ein `frozenset` koennte nur die eine Leseart.
+
+**Gemessen vor dem Eingriff** (`labor/tmp`, per AST): Beide Definitionen trugen **dieselben neun Namen**, Differenz in beide Richtungen leer. Der Defekt war damit latent — und genau deshalb waere der naechste Zusatz an der falschen Haelfte wirkungslos geblieben.
+
+**Kein Werkzeug hat es gesehen, und das ist der eigentliche Befund.** Ruffs `F811` deckt Importe, Funktionen und Klassen, nicht das erneute Binden einer Modulvariablen; ueber `server/` meldet es genau einen Treffer, und der ist ein doppelter Import. **Deshalb steht der Zeuge jetzt ueber dem ganzen Baum**, nicht ueber `config.py`: `test_config_struktur.py` zerlegt jede Produktivdatei und prueft, dass kein Modulname zweimal zugewiesen wird. Vor dem Eingriff gemessen: **1 Fall im ganzen Produktivcode**, dieser. Danach 0.
+
+**Ein Nebenzeuge kam dabei zustande**, weil die Frage sich stellte: `EMOTIONS_VEKTOREN` und `EMOTIONS_VEKTOREN_NOVA` tragen dieselben neun Namen — ein Vektor, den nur eine der beiden Perspektiven kennt, entfiele auf der anderen ohne Meldung. Heute deckungsgleich, seither bezeugt.
+
+**Drei Nachbesserungen aus einer Pruefung, die die Grammatik abfragte statt die gemeinte Menge nachzubauen.**
+
+1. **Der Zeuge prueft mehr, als sein Name sagte.** `hasattr(knoten, "target")` trifft **vier** Knotentypen, nicht einen: `AnnAssign`, `AugAssign`, `For`, `AsyncFor`. Damit meldete er zwei legitime Bauarten als Doppeldeklaration — zwei Modulebenen-Schleifen mit derselben Laufvariablen, und ein `X += 1` nach `X = 1`. Der Baum traegt **eine** solche Schleife (`utils/zeitparser.py`); die zweite haette die Suite rot gemacht. Berichtigt auf `Assign` und `AnnAssign`, Entpacken (`a, b = …`) kommt hinzu, und **sechs Zeugen halten jetzt die Grenzen selbst fest** — sonst waere die Tabelle im Docstring eine Behauptung.
+2. **Ein Satz war beim Verschieben verlorengegangen:** *„damit ein gelesener Vektor validierbar ist und nicht nur benutzbar"*. Er stammt aus der Lesson zur deklarierten Obermenge und wiegt am neuen Ort **mehr** als am alten — eine Tabelle `dict[str, str]` sieht nach Benutzung aus, nicht nach Deklaration. Wiederhergestellt.
+3. **Der Kommentar der Teilmenge stand verwaist da.** *„Die Teilmenge, die Druck bedeutet"* sagte nicht, wovon — das ergab sich aus den zwei Zeilen Abstand zur Obermenge. Nach der Loeschung liegen 100 Zeilen dazwischen, und der naechststehende Nachbar ist eine Menge von **Quellenmarken** ohne einen gemeinsamen Wert. Die Obermenge steht jetzt im Satz.
+
+**Ein Fehler wurde dabei woertlich mituebernommen und ist berichtigt:** Beide Fassungen nannten die Erzeugerfunktion `emotions_vektor_bestimmen()`. Sie heisst `stimmungsvektor_bestimmen`; der Name ohne Unterstrich kommt im Produktivcode **0-mal** vor.
+
+**Der Kanon ist gegen seinen Erzeuger gehalten**, nicht nur gegen sich selbst: Was `stimmungsvektor_bestimmen` liefern kann — 7 aus der Abbildung, 2 aus der Gleichstandsregel, plus der Vorgabewert `plateau` — sind **dieselben neun**, Differenz in beide Richtungen leer. Im Bestand tragen 2018 von 3319 KZG-Hashes einen Vektor, **0 davon ausserhalb der neun**.
+
+**Gegenprobe:** Die Behebung aendert zur Laufzeit nichts, also gilt sie dem Zeugen — doppelte Definition wieder eingesetzt, **1 vorhergesagt, 1 gezaehlt**. Suite `Ran 2160 tests — OK, 0 uebersprungen`; Linter ueber `config.py` 42 vor und 42 nach dem Eingriff, Codepruefungen unveraendert.
+
+<details><summary>Der Befund, wie er bis zum 23.08.2026 stand</summary>
 
 **Zustand:** offen — gegen HEAD `00c16b6` gehalten am 20.08.2026. `config.py:875` (frozenset) und `:964` (dict) stehen unveraendert.
 
 **Befund (15.08.2026), aus der Fundliste uebernommen.** **`EMOTIONS_VEKTOREN` ist in `config.py` zweimal definiert; die zweite Definition gewinnt.** Zeile 717 legt sie als `frozenset[str]` mit neun Namen an — ausdrücklich als **Kanon**, mit der Begründung im Kommentar darüber, dass ein Transportfehler sonst als „kein Druck" statt als „defekt" gelesen wird. Zeile 806 definiert denselben Namen als `dict[str, str]` mit den Prompt-Texten. Wer importiert, bekommt das **dict**; das frozenset ist toter Code. **Heute folgenlos, weil beide dieselben neun Schlüssel tragen** (statisch verglichen, Differenz leer) — und `in` auf einem dict die Schlüssel prüft, weshalb die Kanon-Prüfung in `agents/nachfragen/agent.py` weiterhin richtig antwortet. **Der Bruch tritt ein, sobald jemand den Kanon erweitert:** Ein Name, der dem frozenset hinzugefügt wird, wirkt nirgends, und die Prüfung lehnt ihn als unbekannt ab. Genau die Klasse, gegen die das frozenset angelegt wurde. Betrifft `graph/nodes/responder.py`, `agents/nachfragen/agent.py`.
 
 **Geschlossen, wenn** `EMOTIONS_VEKTOREN` ist einmal definiert.
+
+</details>
 
 ---
 

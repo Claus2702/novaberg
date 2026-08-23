@@ -2,9 +2,9 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Rohe, noch unklassifizierte Funde aus laufender Arbeit
-**Stand:** 23. August 2026, 18:40 UTC
-**Offen:** 20 Funde
-**Verlauf:** [Verlauf des Standes](#verlauf-des-standes) — 69 Eintraege, juengster zuerst
+**Stand:** 23. August 2026, 19:10 UTC
+**Offen:** 21 Funde
+**Verlauf:** [Verlauf des Standes](#verlauf-des-standes) — 70 Eintraege, juengster zuerst
 **Pfad:** novaberg/docs/novaberg-fundliste.md
 
 Was beim Bauen an anderer Stelle auffällt, landet hier — **eine Zeile mit Datum**. Kein Bug-Name, keine Priorität, keine Klassifizierung, keine Diskussion. Der Zweck ist, einen Fund festzuhalten, ohne die laufende Arbeit dafür zu unterbrechen.
@@ -229,6 +229,7 @@ Analog zum Kraft-1-Stichtag: ab wann eine Partition brauchbar ist. Kein Backfill
 
 ## Offen
 
+- **2026-08-23** — **Die Nutzer-Seite der Vektorzeile im Responder hat keinen `else`-Zweig und keine Logzeile.** `graph/nodes/responder.py:484` lautet `if emotions_vektor and emotions_vektor in EMOTIONS_VEKTOREN:` — faellt der Wert durch, entfaellt die Zeile still. Die Nova-Seite derselben Datei (`:354`/`:359`) trennt denselben Fall in **zwei** Zweige, `warning` fuer leer und `error` fuer unbekannt. **Der Kanon-Kommentar verspricht genau diese Unterscheidung** und ist am 23.08.2026 an diese Konstante gezogen — an der Lesestelle 484 wird das Versprechen nicht eingeloest. **Gemessen:** ueber 31 Logdateien 0 Treffer auf *Unbekannter Emotions-Vektor* und **2809** auf *Emotions-Vektor ist leer*; im Bestand tragen 2018 von 3319 KZG-Hashes einen Vektor, **0 davon ausserhalb der neun**. Der Fall, gegen den der Kanon gebaut ist, ist nie eingetreten — der haeufige Fall ist der leere Wert, und der ist kein Kanonmitglied.
 - **2026-08-23** — **Drei Dateien unter `/files` sind echte Kopien aus `Texte/Paper/` und nennen in ihrer Kopfzeile den Ort des Originals.** `novaberg-papers.md`, `novaberg-papers-stoffsammlung_k.md`, `novaberg-papers-themenanalyse_k.md` tragen `**Pfad:** Texte/Paper/…`, liegen aber unter `/files` und werden von dort indiziert; das Modell bekommt `/files/novaberg-papers.md` als Fundstelle und im Text einen anderen Ort genannt. **Keine Hardlinks:** verschiedene Inodes, Linkzahl je 1, Inhalt heute md5-gleich — zwei driftfaehige Exemplare, und indiziert ist die Kopie. Dieselbe Klasse wie die drei berichtigten Kopfzeilen unter `docs/archive/`, nur ausserhalb des angesehenen Verzeichnisses und **auf dem Weg zum Modell**. Zu entscheiden ist, ob die Kopie eine Kopie bleiben soll.
 - **2026-08-23** — **Die Fundstelle traegt zwei gleichartige Klammern hintereinander:** `- /docs/archive/novaberg-mem-lzg.md (archiviert) (ueber den Dateinamen) — …`. Etikett und Kanalnotiz sind typografisch nicht unterscheidbar; die erste ist eine Einschraenkung der Geltung, die zweite eine Auskunft ueber den Suchweg. Am echten Lauf gesehen.
 - **2026-08-23** — **Wurzel 3 ist freigegeben und leer:** `/knowledge/autonomous/nova/meister` traegt `eigentum='figur'`, hat **1173 Dateien auf der Platte und 0 Zeilen in `dateien_index`**. Damit kann der `[EIGENE FUNDE]`-Block nie feuern — er ist gebaut und bezeugt, aber ohne Eingabe. Die 175 Indexzeilen decken **2 von 3** freigegebenen Wurzeln; jede Aussage ueber den Bestand des Dateienindex meint diese zwei.
@@ -367,6 +368,7 @@ Elf Zeilen sind in `novaberg-bugs.md` zu Einträgen mit Reproduktionsweg geworde
 
 Die Fortschreibung des Standes, aus der Kopfzeile geloest am 20.08.2026. Der Wortlaut jedes Eintrags ist unveraendert; vorangestellt ist allein sein Datum.
 
+- **23. August 2026, 19:10 UTC** — **21 offene Funde**, einer neu: Die Nutzer-Seite der Vektorzeile im Responder faellt still durch, waehrend die Nova-Seite denselben Fall in zwei Logzweige trennt.
 - **23. August 2026, 18:40 UTC** — **20 offene Funde**, drei neu aus der Nachpruefung des Archiv-Etiketts: drei driftfaehige Dateikopien unter `/files` mit der Kopfzeile des Originals, zwei ununterscheidbare Klammern an der Fundstelle, und eine freigegebene Wurzel mit 1173 Dateien und 0 Indexzeilen.
 - **23. August 2026, 18:05 UTC** — **17 offene Funde**, einer neu: Der Verzeichnisbaum der Architektur fuehrt unter `tools/dateien/` eine von sieben Dateien.
 - **23. August 2026, 16:15 UTC** — **16 offene Funde**, zwei neu aus dem Umbau des Waechters: ein Begriff des internen Ablaufs an 11 Stellen im veroeffentlichten Repositorium, und `dateien_index.aktiv` ohne Riegel gegen `grund`.
