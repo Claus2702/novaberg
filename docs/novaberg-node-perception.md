@@ -179,7 +179,7 @@ Zusammengebaut in `_build_system_prompt(today, session_turns, rolle)` aus drei `
 
 Reihenfolge nach Primacy/Recency: `[IDENTITAET]` → `[AUFGABE]` → (optional `[KONTEXT]`) → `[REGELN]` direkt vor der User-Message.
 
-**Gemma4-Override:** `prompts/gemma4/perzeption.rules.txt` existiert. Die Task-Blöcke haben keinen Connector-Override — ein Prompt gilt für alle Connectoren.
+**Gemma4-Override:** `prompts/gemma4-gpu/perzeption.rules.txt` existiert — **nach dem Modell geschlüsselt, seit dem 23.08.2026** (`OVERRIDE-NACH-CONNECTOR-STATT-MODELL`). Zuvor lag die Datei unter `prompts/gemma4/` und wurde unter dem aktiven Connector `qwen36` **nicht geladen**, obwohl Gemma4 antwortet. Die Task-Blöcke haben keinen Override — ein Prompt gilt für alle Modelle.
 
 ### 4.2 Session-Kontext (seit Chat 23)
 

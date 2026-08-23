@@ -1,6 +1,6 @@
 # Novaberg — Roadmap (Projektchronik)
 
-**Stand:** 23. August 2026, 18:50 UTC
+**Stand:** 23. August 2026, 19:20 UTC
 **Pfad:** novaberg/docs/novaberg-roadmap.md
 **Single Source of Truth für abgeschlossene Arbeit.**
 **Offene Punkte → novaberg-backlog.md**
@@ -12,6 +12,42 @@ Die Kopfzeile stand bis Chat 109 auf „Chat 93, 21. Mai 2026" — 15 Chats hint
 ---
 
 ## Chats 3–20: Grundlagen (März 2026)
+
+### 23.08.2026, 19:20 UTC — Sieben Prompt-Blöcke, die niemand geladen hat
+
+**Das Override-System schlüsselte nach Connector, der Gesprächspfad hängt aber am GPU-Modell** — und
+zwei der drei Connectoren fahren dort dasselbe. Unter dem aktiven `qwen36` gab es kein Verzeichnis
+`prompts/qwen36/`, also lud **kein einziger** der sieben für Gemma4 gebauten Blöcke, während Gemma4
+antwortete.
+
+**Der Defekt war aktiv, nicht latent**, und das Betriebslog sagte es die ganze Zeit — nur nicht
+verständlich:
+
+```
+vorher:   Prompts: Keine Overrides fuer Connector 'qwen36'
+nachher:  Prompts: 7 Override(s) ueber Modell 'gemma4-gpu':
+          ['perzeption.rules', 'router.rules', 'salienz.rules', …]
+```
+
+> **Eine Null, die aussieht wie *nichts zu tun*, und *sieben liegen still* bedeutet.** Die alte
+> Zeile nannte eine Anzahl ohne Namen. Wer sie las, konnte nicht unterscheiden, ob es keine
+> Overrides gibt oder ob die vorhandenen nicht greifen — und beides sieht auf jeder Logstufe gleich
+> aus.
+
+**Drei Ebenen statt zwei:** `default` → `{modell}` → `{connector}`. Der Connector bleibt die letzte,
+weil er der **engere** Schlüssel ist: Zwei Connectoren teilen sich ein Modell, kein Modell einen
+Connector. Für Hintergrund-Blöcke ist er die richtige Ebene — dort unterscheiden sich `gemma4` und
+`qwen36` wirklich. Heute existiert kein solcher Override; die Ebene bleibt trotzdem, weil ihre
+Entfernung eine Fähigkeit nähme, die der Befund ausdrücklich als richtig bezeichnet.
+
+**Die Gegenprobe lief zweimal, und die erste war der Befund.** 3 vorhergesagt, **1 gezählt** — nur
+ein einziger Zeuge deckte die Modellebene; die übrigen erwarten den Default und bleiben deshalb
+grün, wenn die Ebene fehlt. Nach einem nachgezogenen Zeugen, der alle drei Ebenen in **einer**
+Zusicherung hält: 2 vorhergesagt, 2 gezählt.
+
+**Suite 2168 grün**, harte Wand sauber. Rang 4 der Defektrangfolge ist damit abgearbeitet.
+
+---
 
 ### 23.08.2026, 18:50 UTC — Eine Konstante, die zweimal dastand, und niemand sah es
 

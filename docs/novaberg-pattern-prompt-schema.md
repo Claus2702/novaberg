@@ -303,7 +303,8 @@ Chat 45:     RESP-CHAR1 — [CHARAKTER]-Block entfällt, Nova-Profile (kern/adap
              beziehung) in [IDENTITÄT] konsolidiert. User-Hash über [GEDAECHTNIS].
 Chat 46:     Prompt-Segregation — alle statischen Blöcke aus Python-Code in
              prompts/default/*.txt extrahiert. Connector-Overrides (gemma4) in
-             prompts/gemma4/. PROMPTS-Dictionary in config.py. 0 hardcoded Prompts.
+             prompts/gemma4-gpu/ (nach MODELL, seit 23.08.2026).
+             PROMPTS-Dictionary in config.py. 0 hardcoded Prompts.
 Chat 47:     Segregation-Rollout auf verbleibende Nodes (Responder, Thinker, Corrector,
              GV, KZG-Verdichtung, 4× Classify) — Corrector nutzt weiterhin ═══-Marker
              für [LAGEBILD]/[BEWERTUNGSOBJEKT], nur Direktiven-Block ist [BLOCKNAME].

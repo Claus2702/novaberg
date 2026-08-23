@@ -85,5 +85,7 @@ Sobald Ollama den Bug fixt (#15260), kann `format="json"` wieder aktiviert werde
 
 → Ollama Bug: #15260 (github.com/ollama/ollama/issues/15260)
 → Cleanup-Pipeline: services/llm_provider.py
-→ Gemma4-Overrides: prompts/gemma4/*.txt
+→ Gemma4-Overrides: prompts/gemma4-gpu/*.txt   (nach dem MODELL geschluesselt,
+                                                seit 23.08.2026 — der Gespraechspfad
+                                                haengt am Modell, nicht am Connector)
 → Vorherige Lesson: novaberg-graph_l_kontextualisierung.md (Chat 27)

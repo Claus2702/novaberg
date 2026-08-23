@@ -1,6 +1,6 @@
 # Novaberg — Bugs & Limitationen
 
-**Stand:** 23. August 2026, 18:50 UTC (`EMOTIONS-VEKTOREN-DOPPELT` behoben — 54 offen / 29 behoben von 83 Abschnitten)
+**Stand:** 23. August 2026, 19:20 UTC (`OVERRIDE-NACH-CONNECTOR-STATT-MODELL` behoben — Rang 4 ist abgearbeitet; 53 offen / 30 behoben von 83 Abschnitten)
 **Verlauf:** [Verlauf des Standes](#verlauf-des-standes) — 29 Eintraege, juengster zuerst
 
 ---
@@ -24,7 +24,7 @@ gemeinsam raeumt. Ein Zug pro Knoten raeumt mehr als ein Zug pro Defekt.
 | **1** | ~~die Antwortstrecke `verfasser` / `haltung` / `responder`~~ — **am 22.08.2026 abgearbeitet**, von neun sind fuenf erledigt und zwei zur Haelfte gebaut | 2 |
 | **2** | ~~**Fuenf Charakter-Profile + Hash**~~ — **am 22.08.2026 zu zwei Dritteln abgearbeitet**: `PERSPEKTIVE-OHNE-DATIV` und `PROFILPROMPT-OHNE-GESCHLECHT` behoben, `KERNHASH-OHNE-PERSPEKTIVTRENNUNG` entschieden und noch nicht gebaut | 1 |
 | 3 | **Dateien-Dienst Stufe 2** (`dateien_index` + Waechter) — am 23.08.2026 zu zwei Dritteln abgearbeitet: `VERSCHWUNDEN-DURCH-FILTERWECHSEL` behoben, `DATEIINDEX-NEUANLAGE-ERBT-VORGAENGER` dabei gefunden und behoben, `DATEIINDEX-SPALTEN-OHNE-SCHREIBER` durch Statusmarke geschlossen, `ARCHIVDATEI-OHNE-ETIKETT` behoben — **der Knoten ist leer** | 0 |
-| 4 | `responder` — die Antwort — `EMOTIONS-VEKTOREN-DOPPELT` am 23.08.2026 behoben | 1 |
+| 4 | ~~`responder` — die Antwort~~ — **am 23.08.2026 abgearbeitet**: `EMOTIONS-VEKTOREN-DOPPELT` und `OVERRIDE-NACH-CONNECTOR-STATT-MODELL` behoben | 0 |
 | 5 | Pipeline-Log · Emotionale Gravitation · Charakter-Raeder · Shadow-Queue · Bibliothek | je 2 |
 
 **Was von Rang 1 bleibt, ist kein Baufall.** `UMFANGSREGLER-BINDET-NICHT` und
@@ -854,13 +854,40 @@ gehoeren deshalb nicht in dieselbe Reihe wie ein Defekt mit Codeort.
 
 ---
 
-### `OVERRIDE-NACH-CONNECTOR-STATT-MODELL` — geschluesselt nach der falschen Groesse
+### `OVERRIDE-NACH-CONNECTOR-STATT-MODELL` — behoben am 23.08.2026
+
+**Zustand:** behoben. `prompt_laden` kennt **drei Ebenen** — `default` → `{modell}` → `{connector}` —, und `config.py` reicht `OLLAMA_MODEL` mit.
+
+**Der Defekt war aktiv, nicht latent.** Alle sieben vorhandenen Overrides werden von Knoten verbraucht, die ueber `model_service.chat` laufen, und der laeuft auf `OLLAMA_MODEL` = `gemma4-gpu`. Unter dem aktiven Connector `qwen36` gab es kein Verzeichnis `prompts/qwen36/` — **also lud keiner von ihnen**, waehrend Gemma4 antwortete.
+
+**Im Betriebslog vorher und nachher belegt:**
+
+```
+vorher:   Prompts: Keine Overrides fuer Connector 'qwen36'
+nachher:  Prompts: 7 Override(s) ueber Modell 'gemma4-gpu':
+          ['perzeption.rules', 'router.rules', 'salienz.rules',
+           'salienz_segment.rules', 'tribunal_ethik.system',
+           'tribunal_jurist.system', 'tribunal_psychologe.system']
+          Prompts: Keine Overrides ueber Connector 'qwen36'
+```
+
+**Die Zahl steht jetzt mit Namen da.** Die alte Zeile nannte nur eine Anzahl; welche Bloecke ersetzt wurden, war im Betrieb nicht ablesbar — und `0` sah aus wie *nichts zu tun* statt wie *sieben liegen still*.
+
+**Der Connector bleibt die letzte Ebene, weil er der engere Schluessel ist.** Zwei Connectoren teilen sich ein Modell, aber kein Modell teilt sich einen Connector. Fuer Hintergrund-Bloecke ist er die richtige Ebene — dort unterscheiden sich `gemma4` und `qwen36` wirklich (`cpu_model`). Heute existiert kein einziger Hintergrund-Override; die Ebene bleibt trotzdem, weil ihre Entfernung eine Faehigkeit naehme, die der Befund ausdruecklich als richtig bezeichnet.
+
+**Verzeichnis umbenannt:** `prompts/gemma4/` → `prompts/gemma4-gpu/`. Die sieben Bloecke gehoeren dem Modell, nicht der Zusammenstellung — unter dem Connector `gemma4` laden sie weiterhin, weil dessen `gpu_model` dasselbe ist.
+
+**Zeugen 8**, davon einer ueber den echten Bestand: Ein Override, den es im Default nicht gibt, waere unter jedem anderen Modell ein `KeyError` — sichtbar erst im Betrieb. **Gegenprobe zweimal:** 3 vorhergesagt / 1 gezaehlt, dann nach einem nachgezogenen Zeugen 2 / 2. Die erste Differenz war ein Befund ueber die Zeugen — nur **einer** deckte die Modellebene, die uebrigen erwarten den Default und bleiben deshalb gruen, wenn die Ebene fehlt. Suite `Ran 2168 tests — OK, 0 uebersprungen`.
+
+<details><summary>Der Befund, wie er bis zum 23.08.2026 stand</summary>
 
 **Zustand:** offen — gegen HEAD `00c16b6` gehalten am 20.08.2026. `prompt_loader.py:15` schluesselt weiter nach Connector.
 
 **Befund (12.08.2026), aus der Fundliste uebernommen.** Das Prompt-Override-System schlüsselt nach **Connector**, der Gesprächspfad hängt aber am **GPU-Modell** — und zwei der drei Connectoren fahren dasselbe. `gemma4` und `qwen36` benutzen beide `gemma4-gpu` im Gespräch (der Kommentar in `config.py` sagt es ausdrücklich). Ein für Gemma4 gebauter Responder-Block in `prompts/gemma4/` würde unter dem aktiven Connector `qwen36` **nicht geladen**, obwohl Gemma4 antwortet; ein Block in `prompts/qwen36/` würde geladen und liefe trotz seines Namens auf Gemma4. Für Hintergrund-Prompts trägt die Schlüsselung, dort unterscheiden sich die Connectoren wirklich. Ein modellabhängiger Gesprächs-Prompt bräuchte eine Schlüsselung nach `gpu_model`.
 
 **Geschlossen, wenn** Das Override-System schluesselt nach dem Modell, an dem der Gespraechspfad haengt.
+
+</details>
 
 ---
 

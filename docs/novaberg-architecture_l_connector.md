@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Lesson — Connector-Segregation
-**Stand:** 15. April 2026, Chat 46
+**Stand:** 23. August 2026 (die Prompt-Segregation hat eine Modellebene bekommen — der Gespraechspfad haengt am GPU-Modell, nicht am Connector; davor: 15. April 2026, Chat 46)
 **Pfad:** novaberg/docs/novaberg-architecture_l_connector.md
 **Kontext:** Migration von Mistral Small 3.2 auf Google Gemma 4 26B MoE
 
@@ -33,16 +33,21 @@ Kein Node-Code aendert sich. Umschalten: `OLLAMA_CONNECTOR=mistral` in .env, Neu
 
 ### Schicht 2 — Prompt-Segregation (prompts/)
 
-Statische Prompt-Bloecke als Textdateien. Default-Verzeichnis + Override-Verzeichnis pro Connector:
+Statische Prompt-Bloecke als Textdateien. Default-Verzeichnis + Override-Verzeichnisse:
 
 ```
 prompts/
-  default/        ← 16 Bloecke (funktioniert mit jedem Modell)
-  gemma4/         ← 7 Overrides (verschaerfte JSON-Regeln)
-  mistral/        ← leer (nutzt Defaults)
+  default/        ← 91 Bloecke (funktioniert mit jedem Modell)
+  gemma4-gpu/     ← 7 Overrides (verschaerfte JSON-Regeln)
 ```
 
-Ein Loader liest beim Start alle Defaults, ueberschreibt mit Connector-Overrides. Dictionary auf `PROMPTS` in config.py. Nodes greifen ueber `PROMPTS["router.rules"]` zu.
+Ein Loader liest beim Start alle Defaults und ueberschreibt sie. Dictionary auf `PROMPTS` in config.py. Nodes greifen ueber `PROMPTS["router.rules"]` zu.
+
+> **Die Segregation nach Connector war für Gesprächs-Blöcke die falsche Größe, und das ist am 23.08.2026 gemessen worden.** Der Gesprächspfad hängt am **GPU-Modell**; zwei der drei Connectoren fahren dort dasselbe (`gemma4` und `qwen36` beide `gemma4-gpu`). Die sieben Overrides lagen deshalb unter dem aktiven Connector `qwen36` still, während Gemma4 antwortete — im Betriebslog als *„Keine Overrides fuer Connector 'qwen36'"* nachlesbar, und diese Null sah aus wie *nichts zu tun*.
+>
+> **Seither drei Ebenen:** `default` → `{gpu_model}` → `{connector}`. Der Connector bleibt die letzte, weil er der **engere** Schlüssel ist: Zwei Connectoren teilen sich ein Modell, kein Modell einen Connector. Für Hintergrund-Blöcke ist er weiterhin die richtige Ebene — dort unterscheiden sich die Connectoren wirklich (`cpu_model`).
+>
+> **Das Prinzip aus §4 trägt unverändert**, es hatte nur eine Ebene zu wenig. Ein Verzeichnis `mistral/` hat es übrigens nie gegeben; die Zeile stand hier, weil sie zur Symmetrie passte.
 
 ## 3. Warum Textdateien statt YAML/JSON?
 

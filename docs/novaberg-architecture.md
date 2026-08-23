@@ -78,6 +78,9 @@ Umschalten: `OLLAMA_CONNECTOR=gemma4|mistral` in `.env`, Neustart.
 |-----------|------------|------------|----------------|---------|
 | `gemma4`  | `gemma4-gpu` | `gemma4-cpu` | `qwen3-32b-cpu` | 32768 |
 | `mistral` | `mistral-small3.2-gpu` | `mistral-small3.2-cpu` | `qwen3-32b-cpu` | 16384 |
+| `qwen36` | `gemma4-gpu` | `qwen36-cpu` | `qwen36-cpu` | 32768 |
+
+> **`qwen36` teilt sich sein GPU-Modell mit `gemma4`** — die Zeile fehlte hier bis zum 23.08.2026, und genau an ihr wäre die Modellteilung ablesbar gewesen, die `OVERRIDE-NACH-CONNECTOR-STATT-MODELL` verursacht hat. Er ist seit dem 24.05.2026 der aktive Connector.
 
 ### 2.1.2 Prompt-Segregation (Chat 46-47)
 
@@ -85,16 +88,19 @@ Statische Prompt-Bloecke sind aus den Node-Dateien in Textdateien extrahiert. Ve
 
 ```
 server/prompts/
-  default/     — 51 Bloecke (alle Nodes)
-  gemma4/      — 7 Overrides (JSON-Regeln, Tribunal-Prompts)
-  mistral/     — leer (nutzt Defaults)
+  default/     — 91 Bloecke (alle Nodes)
+  gemma4-gpu/  — 7 Overrides (JSON-Regeln, Tribunal-Prompts)
 ```
 
-Lademechanismus: `prompt_loader.py` liest beim Start alle `.txt` aus `default/`, dann ueberschreibt der aktive Connector. Dictionary auf `PROMPTS` in `config.py`. Nodes greifen ueber `PROMPTS["node.block"]` zu.
+**Drei Ebenen, seit dem 23.08.2026:** `prompt_loader.py` liest beim Start `default/`, dann `{gpu_model}/`, dann `{connector}/` — jede spaetere ueberschreibt. Dictionary auf `PROMPTS` in `config.py`; Nodes greifen ueber `PROMPTS["node.block"]` zu.
+
+**Die mittlere Ebene ist der Gespraechspfad.** Er haengt am GPU-Modell, nicht am Connector, und zwei der drei Connectoren fahren dort dasselbe (`gemma4` und `qwen36` beide `gemma4-gpu`). Bis zum Umbau lagen die sieben Overrides deshalb unter dem aktiven Connector `qwen36` still, waehrend Gemma4 antwortete — `OVERRIDE-NACH-CONNECTOR-STATT-MODELL`. Der Connector bleibt die **letzte** Ebene, weil er der engere Schluessel ist; fuer Hintergrund-Bloecke ist er die richtige, dort unterscheiden sich die Connectoren wirklich.
+
+**Ein Verzeichnis `mistral/` hat es nie gegeben** — die Zeile stand hier, weil sie erwartet wurde. Erreichbar ist heute jeder Name aus `default`, den drei Connectoren und ihren Modellen; ein Zeuge haelt das fest (`test_jedes_verzeichnis_ist_erreichbar`).
 
 Namenskonvention: `{node}.{block}.txt` — Beispiel: `router.identity.txt`, `salienz.rules.txt`, `tribunal_jurist.system.txt`.
 
-Alle LLM-Prompts aus Python-Code extrahiert (Chat 46: Perzeption, Router, Salienz, Tribunal; Chat 47: Responder, Thinker, Corrector, GV, KZG-Verdichtung, 4x Classify-Nodes). 0 hardcoded Prompts in Python. Konvention: Alle PROMPTS[]-Zugriffe durch `.format()`, literale Klammern in LLM-Beispielen als `{{ }}` escaped.
+Die Prompts der **Graph-Knoten** sind aus dem Python-Code extrahiert (Chat 46: Perzeption, Router, Salienz, Tribunal; Chat 47: Responder, Thinker, Corrector, GV, KZG-Verdichtung, 4x Classify-Nodes). ~~0 hardcoded Prompts in Python.~~ → **Am 23.08.2026 gemessen und widerlegt: 33 Prompt-Literale ab 100 Zeichen im Produktivcode**, davon 17 mit der `[BLOCKNAME]`-Konvention — Schwerpunkte `agents/charakter/destillation.py` (9), `agents/recherche/` (7), `memory/kontext.py` (einer mit 1714 Zeichen). Die Aussage galt fuer die Graph-Knoten und ist mit den Agenten-Diensten unwahr geworden; die Fundliste traegt es. Konvention: Alle PROMPTS[]-Zugriffe durch `.format()`, literale Klammern in LLM-Beispielen als `{{ }}` escaped.
 
 ### 2.2 Provider-Architektur
 
@@ -223,7 +229,7 @@ project/
 ├── server/
 │   ├── main.py                          # App-Start, Lifespan, Router-Includes
 │   ├── config.py                        # Zentrale Konfiguration, Umgebungsvariablen
-│   ├── prompt_loader.py                 # Laedt PROMPTS-Dict (default/ + Connector-Override)
+│   ├── prompt_loader.py                 # Laedt PROMPTS-Dict (default/ + Modell + Connector)
 │   │
 │   ├── api/                             # REST + WebSocket Endpoints
 │   │   ├── chat.py                      #   /chat, /chat/stream (Pfad 1 + Event-Erzeugung)
