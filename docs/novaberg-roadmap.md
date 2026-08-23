@@ -1,6 +1,6 @@
 # Novaberg — Roadmap (Projektchronik)
 
-**Stand:** 23. August 2026, 15:40 UTC
+**Stand:** 23. August 2026, 17:15 UTC
 **Pfad:** novaberg/docs/novaberg-roadmap.md
 **Single Source of Truth für abgeschlossene Arbeit.**
 **Offene Punkte → novaberg-backlog.md**
@@ -12,6 +12,49 @@ Die Kopfzeile stand bis Chat 109 auf „Chat 93, 21. Mai 2026" — 15 Chats hint
 ---
 
 ## Chats 3–20: Grundlagen (März 2026)
+
+### 23.08.2026, 17:15 UTC — Eine Messung, die gegen den Bau entscheidet
+
+**`dateien_index.entitaet_ids` und `.timeline_id` bekommen keinen Schreiber, sondern eine Marke** — und der
+Unterschied zu *„noch nicht gebaut"* ist eine Zahl.
+
+Der naheliegende Bau lag bereit: Die je Datei erhobenen Stichwörter gegen den Entitätenbestand
+auflösen. Das Material ist da — 7,3 Stichwörter je Datei, 1281 insgesamt, und ein Auflöser, der
+im KZG-Pfad seit Monaten läuft.
+
+**Vor dem Bau gemessen** — gegen 175 Indexzeilen und die 690 Entitäten, die der Auflöser für dieses
+Paar sieht: Von 843 verschiedenen Stichwörtern treffen **10** eine bestehende Entität. 122 Dateien
+bekämen eine Kante — **116 davon zur selben Entität `Novaberg`, also 95,1 %.** Ohne sie bleiben
+**18 von 175**.
+
+**Nicht die Zahl der Kanten entscheidet, sondern ihre Verteilung.** Für eine Datei unter `/docs` ist
+*handelt von Novaberg* keine Auskunft; der Rest ist ein langer Schwanz mit Pixie an sieben und
+Planner an fünf Dateien.
+
+> **Die erste Fassung dieser Zahlen war zu weit gezogen, und eine Nachprüfung quer zum Bau hat es
+> gefunden.** Sie verglich ohne `user_id`-Filter und zählte drei Entitäten fremder Kennungen mit;
+> der reale Auflöser filtert. Aus 13 / 124 / 21 wurden **10 / 122 / 18**. Und der exakte Vergleich
+> ist nur eine von drei Stufen des Auflösers — auf einer Wortgrenzen-Stufe steigen die Kanten ohne
+> `Novaberg` auf 37, **der Novaberg-Anteil bleibt bei 91,4 %.** Die Lockerung ändert die Ausbeute,
+> nicht den Befund.
+>
+> **Ein zweiter Grund ist dabei ersatzlos entfallen**, und das ist die härtere Korrektur: Der
+> Abschnitt führte an, die Auflösung *lege an*, was sie nicht finde, und verdopple damit den
+> Entitätenbestand. Das ist eine Aussage über einen **Aufrufer**. `resolve_batch` schreibt nichts;
+> angelegt wird in drei Zeilen des KZG-Pfads. Ein Dateiweg lässt sie weg — **kein eigener Bau und
+> deshalb kein Grund gegen einen.** Der Befund trägt allein über die Verteilung.
+
+`timeline_id` scheitert an etwas anderem, nämlich am Gegenstand: Eine Datei hat keinen
+Ereigniszeitpunkt, und der Vorrang des Neueren steckt bereits in `geaendert_am`.
+
+> **Die Marke ist der Abschluss, nicht der Aufschub.** Die Geschlossen-wenn-Zeile des Defekts ließ
+> beides zu — Schreiber **oder** Statusmarke, die sagt, dass es keinen gibt. Was sie nicht zuließ,
+> war das Dritte: eine Spalte, die dasteht und über die niemand etwas sagt.
+
+Was ein tragfähiger Schreiber leisten müsste, steht als `DATEIINDEX-GRAPHKANAL` im Backlog — Entitäten
+aus dem **Dateiinhalt**, aufgelöst **ohne Anlegen**, gegen die Nulllinie von 21 Dateien.
+
+---
 
 ### 23.08.2026, 15:40 UTC — Nicht gesehen ist nicht fort
 

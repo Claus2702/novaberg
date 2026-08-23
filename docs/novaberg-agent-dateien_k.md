@@ -705,10 +705,10 @@ Der Werkzeugsatz trägt damit zwei Hälften mit verschiedenen Rechten, und die T
 | `aktiv` | ob die Zeile gesucht wird | Soft-Delete, §5.5 |
 | `grund` | der letzte Übergang — `created`, `changed`, `deleted`, `excluded` | §5.5; **`excluded` trennt *fort* von *nicht mehr betrachtet*** |
 | `grund_am` | seit wann dieser Zustand gilt | nicht dasselbe wie `indiziert_am` |
-| `entitaet_ids` | `integer[]` — welche Entitäten die Datei berührt | **der Graph-Kanal** (§6.1) |
-| `timeline_id` | `integer` — Zeitbezug, falls einer besteht | Eingang der Regel *„das Neuere sticht"* |
+| `entitaet_ids` | `integer[]` — welche Entitäten die Datei berührt | ⬜ **ohne Schreiber, entschieden am 23.08.2026** — §6.1a |
+| `timeline_id` | `integer` — Zeitbezug, falls einer besteht | ⬜ **ohne Schreiber** — eine Datei hat keinen Ereigniszeitpunkt, §6.1a |
 | `suchtext` | `tsvector` | **der lexikalische Kanal** — bei 234 Dateien der stärkere |
-| `zuletzt_gelernt_hash` | der `inhalt_hash`, als zuletzt daraus gelernt wurde | §5.2a — sonst ist „geändert seit dem Lernen" nicht von „nie gelernt" zu unterscheiden |
+| `zuletzt_gelernt_hash` | der `inhalt_hash`, als zuletzt daraus gelernt wurde | ⬜ **ohne Schreiber** — §5.2a; sonst wäre „geändert seit dem Lernen" nicht von „nie gelernt" zu unterscheiden |
 
 ### 4.1 Dieselben vier Spalten fehlen der Bibliothek
 
@@ -1024,6 +1024,34 @@ Der Stand der Technik nennt drei Zugänge, die nebeneinander laufen und deren Er
 | **Graph** (Entitäten) | Beziehungen, Mehrschritt | ❌ | ✅ `entitaet_ids` |
 
 **Die Bibliothek — der Ort des ausformulierten Wissens — hat genau einen Kanal.** Die übrigen Speicher desselben Systems haben die anderen längst; die Bauart ist im Haus, nur nicht dort, wo das Wissen liegt.
+
+### 6.1a Der Graph-Kanal des Dateienindex bleibt leer — gemessen, nicht vergessen
+
+`dateien_index.entitaet_ids` und `.timeline_id` stehen seit dem Entwurf da und sind in **0 von 175** Zeilen belegt. Bis zum 23.08.2026 war das eine Lücke; seither ist es eine Entscheidung, und sie hat eine Zahl.
+
+**Der naheliegende Bau war, die erhobenen Stichwörter gegen den Entitätenbestand aufzulösen** — das Material liegt vor: je Datei 7,3 Stichwörter, 843 verschiedene insgesamt. Gemessen vor dem Bau (`labor/2026-08-23_dateiindex_graphkanal.sql`), gegen die **690** Entitäten, die der Auflöser für dieses Paar überhaupt sieht:
+
+| Größe | Wert |
+|---|---|
+| verschiedene Stichwörter | 843 |
+| davon treffen eine bestehende Entität | **10** |
+| Dateien mit mindestens einer Kante | 122 |
+| davon zur Entität `Novaberg` | **116 — 95,1 %** |
+| Dateien mit einer anderen Kante | **18** |
+
+**Nicht die Zahl der Kanten entscheidet, sondern ihre Verteilung.** Eine Kante, die an zwei Dritteln des Bestands hängt, sortiert nicht — für eine Datei unter `/docs` ist *handelt von Novaberg* keine Auskunft. Der Rest ist ein langer Schwanz: Pixie an 7 Dateien, Planner an 5, alles Weitere an einer oder dreien.
+
+> **Zwei Berichtigungen gehören an diese Zahlen, beide aus einer Nachprüfung quer zum Bau.**
+>
+> **Der Kreis war zu weit gezogen.** Die erste Fassung der Messung verglich ohne `user_id`-Filter und zählte drei Entitäten fremder Kennungen mit — Leipzig, Prag, konrad. Der reale Auflöser filtert (`EntitaetenRepository.find_by_name`: `WHERE user_id = %s AND lower(name) = lower(%s) AND aktiv = TRUE`), und alle 175 Indexzeilen hängen an Wurzeln desselben Menschen. Die veröffentlichten Zahlen lauteten 13 / 124 / 21 und lauten berichtigt **10 / 122 / 18**.
+>
+> **Der Vergleich war nur eine von drei Stufen.** `resolve_batch` versucht Cache, dann exakten Namen, dann eine Embedding-Suche mit Plausibilitätsfilter. Die Messung bildete allein die mittlere ab. Auf einer Wortgrenzen-Stufe steigen die Kanten ohne `Novaberg` von 18 auf **37** — und der Novaberg-Anteil bleibt bei **91,4 %**. **Die Lockerung ändert die Ausbeute, nicht den Befund.**
+
+**`timeline_id` scheitert an etwas anderem, nämlich am Gegenstand.** Eine Datei hat keinen Ereigniszeitpunkt. Was §6.1 mit dem Vorrang des Neueren meint, trägt bereits `geaendert_am` — und der Wächter hält es aktuell.
+
+**Was einen Schreiber rechtfertigen würde**, ist eine Entitäten-Erhebung **aus dem Dateiinhalt** statt aus den Stichwörtern: benannte Personen, Orte und Systeme im Text. Das steht als `DATEIINDEX-GRAPHKANAL` im Backlog.
+
+> **Was dort *nicht* steht, weil es sich als falsch erwies:** Eine frühere Fassung dieses Abschnitts führte als zweiten Grund an, die Auflösung *lege an*, was sie nicht finde, und würde den Entitätenbestand verdoppeln. **Das ist eine Aussage über einen Aufrufer, nicht über den Dienst.** `resolve_batch` schreibt nichts; es markiert `ist_neu`. Angelegt wird in drei Zeilen des KZG-Pfads (`agents/kzg/magnete.py`, `if ent.ist_neu and ent.ist_referenz`). Ein Dateiweg, der nicht anlegen will, lässt sie weg — das ist kein eigener Bau und taugt deshalb nicht als Grund gegen einen. **Der Befund trägt allein über die Verteilung.**
 
 ### 6.2 Und es ist ausgerechnet der schwächere für diese Größe
 

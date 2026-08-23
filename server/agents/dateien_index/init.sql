@@ -77,7 +77,35 @@ CREATE TABLE IF NOT EXISTS dateien_index (
                                                         'deleted', 'excluded')),
     grund_am              TIMESTAMPTZ,
 
-    -- Der Graph-Kanal und der Zeitbezug (§6.1). Noch ohne Schreiber.
+    -- Der Graph-Kanal und der Zeitbezug (§6.1). **Ohne Schreiber, und das
+    -- ist seit dem 23.08.2026 eine Entscheidung statt einer Luecke.**
+    --
+    -- `entitaet_ids`: Der naheliegende Bau waere, die erhobenen
+    -- Stichwoerter gegen den Entitaetenbestand aufzuloesen. Vorher gemessen
+    -- (labor/2026-08-23_dateiindex_graphkanal.sql, 175 Zeilen gegen die 690
+    -- Entitaeten, die der Aufloeser fuer dieses Paar ueberhaupt sieht):
+    -- Von 843 verschiedenen Stichwoertern treffen **10** eine bestehende
+    -- Entitaet. 122 Dateien bekaemen eine Kante — **116 davon zu `Novaberg`,
+    -- also 95,1 %.**
+    --
+    -- **Nicht die Zahl der Kanten entscheidet, sondern ihre Verteilung.**
+    -- Eine Kante, die an zwei Dritteln des Bestands haengt, sortiert nicht;
+    -- fuer eine Datei unter `/docs` ist "handelt von Novaberg" keine
+    -- Auskunft. Der Rest ist ein langer Schwanz: Pixie an 7 Dateien,
+    -- Planner an 5, alles Weitere an einer oder dreien.
+    --
+    -- **Der exakte Vergleich ist nur eine von drei Stufen des Aufloesers**
+    -- (`resolve_batch`: Cache, `find_by_name`, Embedding-Suche mit
+    -- Plausibilitaetsfilter). Bei einem Vergleich auf Wortgrenze steigen die
+    -- Kanten ohne `Novaberg` von 18 auf 37 — **der Novaberg-Anteil bleibt
+    -- bei 91,4 %.** Die Lockerung aendert die Ausbeute, nicht den Befund.
+    --
+    -- `timeline_id`: Eine Datei hat keinen Ereigniszeitpunkt. Was §6.1 mit
+    -- dem Vorrang des Neueren meint, traegt bereits `geaendert_am`.
+    --
+    -- **Was einen Schreiber rechtfertigen wuerde**, ist eine Entitaeten-
+    -- Erhebung aus dem Dateiinhalt statt aus den Stichwoertern
+    -- (novaberg-backlog.md, DATEIINDEX-GRAPHKANAL).
     entitaet_ids          INTEGER[],
     timeline_id           INTEGER,
 

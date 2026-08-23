@@ -2,10 +2,30 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Backlog — Konzipierte, noch nicht implementierte Features
-**Stand:** 23. August 2026, 12:10 UTC (der Matrix-Epic ist zu sieben Achteln gebaut; `ASSISTENT-GESCHLECHT-PRONOMEN` geschlossen)
-**Verlauf:** [Verlauf des Standes](#verlauf-des-standes) — 36 Eintraege, juengster zuerst
+**Stand:** 23. August 2026, 17:15 UTC (`DATEIINDEX-GRAPHKANAL` neu — was ein tragfaehiger Schreiber fuer den Graph-Kanal des Dateienindex leisten muesste)
+**Verlauf:** [Verlauf des Standes](#verlauf-des-standes) — 37 Eintraege, juengster zuerst
 **Pfad:** novaberg/docs/novaberg-backlog.md
 **Quellen:** nova-08-k.md (Kognitive Anreicherung), nova-10-k-backlog.md (Skill-System), nova-01-t-c-backlog.md (Node-Konfiguration)
+
+---
+
+## DATEIINDEX-GRAPHKANAL — Entitäten aus dem Dateiinhalt statt aus den Stichwörtern (23.08.2026)
+
+**Anlass:** `DATEIINDEX-SPALTEN-OHNE-SCHREIBER` ist am 23.08.2026 durch eine **Statusmarke** geschlossen worden, nicht durch einen Schreiber — weil die Messung gegen den naheliegenden Schreiber entschied. Dieser Eintrag hält fest, was ein tragfähiger wäre.
+
+**Was gemessen wurde** (`labor/2026-08-23_dateiindex_graphkanal.sql`, 175 Indexzeilen gegen die 690 Entitäten, die der Auflöser für dieses Paar sieht): Die je Datei erhobenen Stichwörter gegen den Entitätenbestand aufzulösen ergibt aus 843 verschiedenen Stichwörtern **10 Treffer**. 122 Dateien bekämen eine Kante, **116 davon zur Entität `Novaberg` — 95,1 %.** Ohne sie 18 von 175. Eine Kante an zwei Dritteln des Bestands sortiert nicht.
+
+**Was fertig wäre:**
+
+1. **Erhebung aus dem Inhalt, nicht aus den Stichwörtern.** Benannte Personen, Orte, Systeme im Dateitext — der Indexlauf liest die Datei ohnehin und ruft je Datei ein Modell.
+2. **Auflösung ohne Anlegen.** Das ist **kein eigener Bau**: `resolve_batch` schreibt nichts, angelegt wird in drei Zeilen des KZG-Pfads (`agents/kzg/magnete.py`, `if ent.ist_neu and ist_referenz`). Der Dateiweg lässt sie weg. Zu beachten ist etwas anderes: `find_by_name` ist kein reines `SELECT`, sondern setzt `last_touched` — ein Indexlauf über 175 Dateien berührt damit den Entitätenbestand.
+3. **Die Nulllinie hängt an ihrer Vergleichsstufe und muss sie mitnennen.** Exakter Namensvergleich (die Stufe, die `find_by_name` bildet): **18** Dateien mit einer anderen Kante als `Novaberg`. Wortgrenze: 37. Der Novaberg-Anteil bleibt über beide Stufen bei 91 bis 95 % — ein Schreiber, der ihn nicht deutlich drückt, ist nicht gebaut, sondern verschoben.
+
+**Woran der Abschluss erkennbar wäre:** Die **Verteilung**, nicht die Menge — keine einzelne Entität trägt mehr als ein Drittel der verknüpften Dateien. Die Zahl der verknüpften Dateien wird gegen die Nulllinie **derselben Vergleichsstufe** gehalten (exakt: 18, Wortgrenze: 37); eine Zahl ohne ihre Stufe ist hier keine Aussage.
+
+**Nicht Teil davon: `timeline_id`.** Die Spalte scheitert am Gegenstand und nicht an der Ausbeute — eine Datei hat keinen Ereigniszeitpunkt, und der Vorrang des Neueren steckt in `geaendert_am`. Sie bleibt ⬜.
+
+**Band:** noch nicht zugeordnet — der Kanal ist eine Verbesserung der Auffindbarkeit, kein Defekt.
 
 ---
 
@@ -5858,6 +5878,7 @@ Der NachfragenAgent hat eine Kopplung: `services/pixie/router.py` bildet `nachfr
 
 ## Verlauf des Standes
 
+- **23. August 2026, 17:15 UTC** — ein Eintrag neu: `DATEIINDEX-GRAPHKANAL`. Er entsteht aus einer Messung, die gegen einen Bau entschied — die Stichwoerter des Dateienindex gegen den Entitaetenbestand aufzuloesen ergibt 10 Treffer aus 843, und 116 der 122 Kanten zeigen auf dieselbe Entitaet.
 Die Fortschreibung des Standes, aus der Kopfzeile geloest am 20.08.2026. Der Wortlaut jedes Eintrags ist unveraendert; vorangestellt ist allein sein Datum.
 
 - **21. August 2026, 09:43 UTC** — **Der benannte Rest von `SUCHSCHLUESSEL-OHNE-VERLAUF` ist gemessen und zu.** Query Rewriting traegt bei allen fuenf Lesern des Suchschluessels: 39 Sonden, rohe Aeusserung 0, Rewrite 37, Deckung mit der Referenz 39 von 39. Dabei ein eigener Fund: Zwei der Konsumenten haben keinen wirksamen Boden.

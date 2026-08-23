@@ -1,6 +1,6 @@
 # Novaberg — Bugs & Limitationen
 
-**Stand:** 23. August 2026, 15:40 UTC (`VERSCHWUNDEN-DURCH-FILTERWECHSEL` behoben; `DATEIINDEX-NEUANLAGE-ERBT-VORGAENGER` gefunden und behoben)
+**Stand:** 23. August 2026, 17:10 UTC (`DATEIINDEX-SPALTEN-OHNE-SCHREIBER` behoben durch Statusmarke; davor `VERSCHWUNDEN-DURCH-FILTERWECHSEL` und `DATEIINDEX-NEUANLAGE-ERBT-VORGAENGER`)
 **Verlauf:** [Verlauf des Standes](#verlauf-des-standes) — 29 Eintraege, juengster zuerst
 
 ---
@@ -17,13 +17,13 @@ gemeinsam raeumt. Ein Zug pro Knoten raeumt mehr als ein Zug pro Defekt.
 
 **Stand nach Rang 2** (22.08.2026): **58 offen / 24 behoben** von 82 Abschnitten.
 
-**Stand nach dem ersten Zug in Rang 3** (23.08.2026): **57 offen / 26 behoben** von 83 Abschnitten — gezaehlt ueber die erste `Zustand:`-Zeile je Abschnitt mit Kennung, nicht fortgeschrieben. Ein Defekt behoben, einer im selben Zug gefunden und behoben.
+**Stand nach Rang 3** (23.08.2026): **56 offen / 27 behoben** von 83 Abschnitten — gezaehlt ueber die erste `Zustand:`-Zeile je Abschnitt mit Kennung, nicht fortgeschrieben. Drei Defekte an einem Knoten: zwei behoben, einer durch Statusmarke geschlossen; einer davon wurde beim Bauen erst gefunden.
 
 | Rang | Knoten | offene Defekte |
 |---|---|---|
 | **1** | ~~die Antwortstrecke `verfasser` / `haltung` / `responder`~~ — **am 22.08.2026 abgearbeitet**, von neun sind fuenf erledigt und zwei zur Haelfte gebaut | 2 |
 | **2** | ~~**Fuenf Charakter-Profile + Hash**~~ — **am 22.08.2026 zu zwei Dritteln abgearbeitet**: `PERSPEKTIVE-OHNE-DATIV` und `PROFILPROMPT-OHNE-GESCHLECHT` behoben, `KERNHASH-OHNE-PERSPEKTIVTRENNUNG` entschieden und noch nicht gebaut | 1 |
-| 3 | **Dateien-Dienst Stufe 2** (`dateien_index` + Waechter) — `VERSCHWUNDEN-DURCH-FILTERWECHSEL` am 23.08.2026 behoben, dabei ein zweiter Defekt am selben Knoten gefunden und behoben | 2 |
+| 3 | **Dateien-Dienst Stufe 2** (`dateien_index` + Waechter) — am 23.08.2026 zu zwei Dritteln abgearbeitet: `VERSCHWUNDEN-DURCH-FILTERWECHSEL` behoben, `DATEIINDEX-NEUANLAGE-ERBT-VORGAENGER` dabei gefunden und behoben, `DATEIINDEX-SPALTEN-OHNE-SCHREIBER` durch Statusmarke geschlossen | 1 |
 | 4 | `responder` — die Antwort | 2 |
 | 5 | Pipeline-Log · Emotionale Gravitation · Charakter-Raeder · Shadow-Queue · Bibliothek | je 2 |
 
@@ -131,13 +131,31 @@ gehoeren deshalb nicht in dieselbe Reihe wie ein Defekt mit Codeort.
 
 ---
 
-### `DATEIINDEX-SPALTEN-OHNE-SCHREIBER` — zwei Spalten, 0 von 14 belegt
+### `DATEIINDEX-SPALTEN-OHNE-SCHREIBER` — behoben am 23.08.2026
+
+**Zustand:** behoben — durch die **Statusmarke**, nicht durch einen Schreiber. Die Geschlossen-wenn-Zeile laesst beides zu, und die Messung entschied gegen den Schreiber.
+
+**Warum kein Schreiber.** Der naheliegende Bau war, die je Datei erhobenen Stichwoerter gegen den Entitaetenbestand aufzuloesen. **Vor dem Bau gemessen** (`labor/2026-08-23_dateiindex_graphkanal.sql`, 175 Indexzeilen gegen die **690** Entitaeten, die der Aufloeser fuer dieses Paar sieht): Von **843** verschiedenen Stichwoertern treffen **10** eine bestehende Entitaet. 122 Dateien bekaemen eine Kante — **116 davon zu `Novaberg`, also 95,1 %.** Ohne sie bleiben **18 von 175**.
+
+**Nicht die Zahl der Kanten entscheidet, sondern ihre Verteilung.** Eine Kante an zwei Dritteln des Bestands sortiert nicht; fuer eine Datei unter `/docs` ist *handelt von Novaberg* keine Auskunft. Der Rest ist ein langer Schwanz mit Pixie an 7 und Planner an 5 Dateien.
+
+> **Zwei Berichtigungen an diesen Zahlen, aus einer Nachpruefung quer zum Bau.** Die erste Messung jointe **ohne `user_id`-Filter** und zaehlte drei Entitaeten fremder Kennungen mit; der reale Aufloeser filtert (`EntitaetenRepository.find_by_name`). Veroeffentlicht waren 13 / 124 / 21, berichtigt sind es **10 / 122 / 18**. Und der exakte Vergleich ist nur **eine von drei Stufen** des Aufloesers: Auf einer Wortgrenzen-Stufe steigen die Kanten ohne `Novaberg` auf 37, **der Novaberg-Anteil bleibt bei 91,4 %** — die Lockerung aendert die Ausbeute, nicht den Befund.
+>
+> **Ein zweiter Grund ist ersatzlos entfallen.** Die erste Fassung fuehrte an, die Aufloesung *lege an*, was sie nicht finde. Das ist eine Aussage ueber einen **Aufrufer**: `resolve_batch` schreibt nichts, angelegt wird in drei Zeilen des KZG-Pfads (`agents/kzg/magnete.py`). Ein Dateiweg laesst sie weg. Der Befund traegt allein ueber die Verteilung.
+
+**`timeline_id` scheitert am Gegenstand**, nicht an der Ausbeute: Eine Datei hat keinen Ereigniszeitpunkt. Der Vorrang des Neueren steckt bereits in `geaendert_am`, und der Waechter haelt es aktuell.
+
+**Wo die Marke steht:** `init.sql` an beiden Spalten mit der Messung, `novaberg-agent-dateien_k.md` §6.1a und die Spaltentabelle in §4 (⬜), Featureliste. **Der echte Graph-Kanal** — Entitaeten aus dem Dateiinhalt statt aus Stichwoertern, aufgeloest **ohne Anlegen** — steht als eigener Backlog-Eintrag.
+
+<details><summary>Der Befund, wie er bis zum 23.08.2026 stand</summary>
 
 **Zustand:** offen — gegen HEAD `00c16b6` gehalten am 20.08.2026. weder Schreiber noch Statusmarke gefunden.
 
 **Befund (19.08.2026), aus der Fundliste uebernommen.** **`dateien_index.entitaet_ids` und `.timeline_id` sind in 0 von 14 Zeilen belegt und haben keinen Schreiber.** Das Konzept beschreibt sie als *„der Graph-Kanal"* und als *„Eingang der Regel ‚das Neuere sticht'"* (`novaberg-agent-dateien_k.md`), im Produktivcode schreibt sie für **diese** Tabelle niemand. **Die naheliegende Zählung führt in die Irre:** Ein `grep` über den Baum findet 29 bzw. 27 Schreibstellen — sie betreffen alle andere Tabellen, in denen die Spalten gleich heißen. **Der Unterschied zu `zuletzt_gelernt_hash`:** Dessen fehlender Schreiber ist als ⚫ in der Featureliste und ⬜ im Konzept ausdrücklich vermerkt; für diese beiden fand sich keine Statusmarke, nur die Beschreibung dessen, was sie leisten sollen.
 
 **Geschlossen, wenn** `entitaet_ids` und `timeline_id` haben entweder einen Schreiber oder eine Statusmarke, die sagt, dass sie keinen haben.
+
+</details>
 
 ---
 
