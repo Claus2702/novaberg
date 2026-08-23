@@ -39,6 +39,7 @@ import logging
 
 from ei.gravitation import emotionale_gravitation_auf_verlauf_anwenden
 from graph.nodes.ei_calc import internal_emotion_uebertragen
+from graph.reiz import reiz_ist_eigener_gedanke
 from graph.state import ConversationState
 
 logger = logging.getLogger("ki_server.emotionale_gravitation")
@@ -65,10 +66,29 @@ def emotionale_gravitation_anwenden(state: ConversationState) -> ConversationSta
     Turns eine Erinnerung ueber der Schwelle treffen. Ein leerer Verlauf bei
     vorhandenen Punkten dagegen ist einer: Dann hat ei_calc nichts geliefert,
     und die Injektion haette nichts, worauf sie wirken koennte.
+
+    **Auf einem Impuls-Turn faellt die Injektion aus** (23.08.2026). Die
+    Gravitation ist die Antwort auf einen *fremden* Reiz: Etwas kam von aussen,
+    und eine Erinnerung faerbt, wie Nova es aufnimmt. Ein eigener Gedanke ist
+    bereits ihrer; ihn ein zweites Mal zu faerben verdoppelt dieselbe Quelle
+    und verschiebt Landschaft und Dreischicht, weil dieser Knoten vor dem
+    GV-Node steht. Belegt am 13.08.2026, 05:59:56 — zweimal `neugierig` auf
+    einem Impuls-Turn.
     """
     # ── Eingabe-Validierung ─────────────────────
     punkte:  list[dict] = state.get("emotionale_gravitationspunkte") or []
     verlauf: list[dict] = state.get("nova_emotions_verlauf") or []
+
+    # Vor den Leerpruefungen, und mit der Zahl: Ein Ausfall, der als "keine
+    # Punkte" protokolliert wuerde, waere von einem echten leeren Satz nicht
+    # zu unterscheiden (22_STILLE_FEHLER §5).
+    if reiz_ist_eigener_gedanke(state):
+        logger.info(
+            f"EmGrav-Node: eigener Impuls — Injektion faellt aus, "
+            f"{len(punkte)} Gravitationspunkt(e) nicht angewendet; der Gedanke "
+            f"ist bereits Novas eigener und braucht keine zweite Faerbung"
+        )
+        return state
 
     if not punkte:
         logger.debug(

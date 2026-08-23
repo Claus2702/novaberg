@@ -45,6 +45,71 @@ def _punkt(emotion: str = "trauer", gravitation: float = 0.55) -> dict:
     }
 
 
+class TestHerkunftstor(unittest.TestCase):
+    """Auf einem Impuls-Turn faellt die Injektion aus (23.08.2026).
+
+    Die Gravitation ist die Antwort auf einen **fremden** Reiz. Novas eigener
+    Gedanke ist bereits ihrer; eine zweite Faerbung verdoppelt dieselbe Quelle
+    — und weil dieser Knoten vor dem GV-Node steht, verschiebt sie Landschaft
+    und Dreischicht mit. Belegt am 13.08.2026, 05:59:56: zweimal `neugierig`
+    auf einem Impuls-Turn.
+    """
+
+    def _impuls_state(self) -> dict:
+        """Derselbe Fall wie in `TestInjektion`, nur mit eigener Herkunft.
+
+        Die Herkunft steht im Event-Payload und nicht an der Rolle — das ist
+        die Schlussbedingung von `F-REIZ-1` und die Bauart, die
+        `reiz_ist_eigener_gedanke` prueft.
+        """
+        return {
+            "nova_emotions_verlauf": _verlauf(),
+            "emotionale_gravitationspunkte": [_punkt("trauer")],
+            "event_payload": {"reiz_herkunft": "eigener_impuls"},
+        }
+
+    def test_eigener_impuls_bleibt_ungefaerbt(self) -> None:
+        """Der Fall, der bis zum 23.08.2026 durchlief."""
+        state: dict = self._impuls_state()
+        vorher: list[str] = [e["emotion"] for e in state["nova_emotions_verlauf"]]
+
+        with self.assertLogs(NODE_LOGGER, level="INFO"):
+            ergebnis = emotionale_gravitation_anwenden(state)
+
+        nachher: list[str] = [e["emotion"] for e in ergebnis["nova_emotions_verlauf"]]
+        self.assertEqual(vorher, nachher)
+        self.assertNotIn("trauer", nachher)
+
+    def test_der_ausfall_nennt_die_zahl_der_uebergangenen_punkte(self) -> None:
+        """Ein Ausfall, der wie *keine Punkte* aussieht, ist ein stiller.
+
+        Die Meldung muss den Grund **und** die Menge tragen, sonst ist sie von
+        einem echten leeren Punkte-Satz nicht zu unterscheiden.
+        """
+        with self.assertLogs(NODE_LOGGER, level="INFO") as protokoll:
+            emotionale_gravitation_anwenden(self._impuls_state())
+
+        gesamt: str = "\n".join(protokoll.output)
+        self.assertIn("eigener Impuls", gesamt)
+        self.assertIn("1 Gravitationspunkt", gesamt)
+
+    def test_der_nutzerreiz_wird_weiterhin_gefaerbt(self) -> None:
+        """Die Gegenprobe zum Tor: Ohne Marke wirkt die Gravitation wie bisher.
+
+        Ohne sie waere die Zusicherung oben auch von einem Knoten erfuellt,
+        der gar nichts mehr tut.
+        """
+        state: dict = self._impuls_state()
+        state["event_payload"] = {"reiz_herkunft": "nutzer"}
+
+        with self.assertLogs(NODE_LOGGER, level="INFO"):
+            ergebnis = emotionale_gravitation_anwenden(state)
+
+        self.assertIn(
+            "trauer", [e["emotion"] for e in ergebnis["nova_emotions_verlauf"]],
+        )
+
+
 class TestInjektion(unittest.TestCase):
     """Die Wirkung auf den Verlauf."""
 
