@@ -2756,7 +2756,20 @@ elif typ == "user_message":
 | 7 | Novaberg-Connector | `matrix_bot/bot.py` analog zu `telegram_bot/bot.py` — POST /chat + WebSocket-Listener + user_message-Einspeisung als `@meister` |
 | 8 | Client-Test | FluffyChat auf e/OS über VPN, Fractal auf dem Desktop, bidirektionaler Nachrichtentest |
 
-**Priorität:** Niedrig — Telegram funktioniert, Matrix ist Kür. Aber architektonisch sauber und privacy-konform.
+~~**Priorität:** Niedrig — Telegram funktioniert, Matrix ist Kür. Aber architektonisch sauber und privacy-konform.~~
+
+✅ **Prototyp gebaut am 23.08.2026.** Fünf der acht Arbeitspakete stehen: Homeserver (3), Accounts (5), Application Service (6), Connector (7) — dazu WireGuard (1, 2) vom Auftraggeber. **Gemessen im Raumverlauf:** drei Nachrichten, zwei Absender, kein `[Du]`-Präfix. Die dritte Zeile kam über `POST /chat` mit `client_id=desktop` und steht im Raum als Nachricht von `@meister` — genau der Fall, den Telegram nicht tragen kann.
+
+**Offen bleiben zwei Pakete, und beide brauchen ein Gerät oder ein Zertifikat:**
+
+| # | Was | Warum es offen ist |
+|---|---|---|
+| 4 | TLS-Zugang | Ob FluffyChat eine `http://`-Adresse annimmt, ist **ungeprüft** — die Recherche fand dazu keine belastbare Aussage. Erst der Versuch am Gerät entscheidet, ob ein Reverse Proxy nötig ist |
+| 8 | Client-Test | braucht das Handy |
+
+**Zustand:** Synapse als eigener Compose-Dienst, aus dem lokalen Netz erreichbar (`/_matrix/client/versions` → 200). Der Connector läuft daneben, ein Raum je Paar. Die Zugangsdaten liegen außerhalb des Repositoriums. Konzept: `novaberg-matrix-kanal_k.md`.
+
+**Telegram bleibt unangetastet und läuft parallel.** Ein Kanal wird abgeschaltet, wenn der andere gemessen trägt — der Handy-Test steht noch aus.
 
 **Voraussetzung:** WS-SINGLE Fix (Chat 68, ✅), ClientConnection mit client_id/character_id-Filterung (Chat 68, ✅).
 

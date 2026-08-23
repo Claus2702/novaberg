@@ -1,6 +1,6 @@
 # Novaberg — Roadmap (Projektchronik)
 
-**Stand:** 22. August 2026, 20:15 UTC
+**Stand:** 23. August 2026, 01:00 UTC
 **Pfad:** novaberg/docs/novaberg-roadmap.md
 **Single Source of Truth für abgeschlossene Arbeit.**
 **Offene Punkte → novaberg-backlog.md**
@@ -12,6 +12,55 @@ Die Kopfzeile stand bis Chat 109 auf „Chat 93, 21. Mai 2026" — 15 Chats hint
 ---
 
 ## Chats 3–20: Grundlagen (März 2026)
+
+### 23.08.2026, 01:00 UTC — Ein Kanal mit zwei Absendern
+
+**Der Telegram-Kanal kann eine Aeusserung des Menschen nicht als seine zustellen.** Ein Bot hat genau
+einen Absender: sich selbst. Wer am Desktop schreibt, dessen Satz verteilt der Prompt-Consumer als
+`user_message` an die anderen Clients — und der Bot kann ihn nur selbst sagen. Deshalb stand dort
+`[Du] ...`, gesendet von Novas Konto. Das Praefix ist Text; wer den Verlauf spaeter ausliest, sieht
+eine Nachricht der Figur.
+
+**Matrix hat den zweiten Absender.** Ein Application Service darf innerhalb seines Namensraums im
+Namen jedes Nutzers senden — `?user_id=` an der Client-Server-API, `as_token` als Bearer. Gebaut ist
+ein Homeserver (Synapse) als eigener Compose-Dienst, zwei Kennungen, die AS-Registrierung und ein
+Connector (`matrix_bot/`), der Ereignisse **per Push** entgegennimmt statt zu pollen.
+
+**Die Messung, die den Kanal rechtfertigt** — der Raumverlauf, ausgelesen als angemeldeter Client:
+
+| Absender | Woher |
+|---|---|
+| `@meister` | echter Client-Login, wie vom Handy |
+| `@nova` | Novas Antwort |
+| `@meister` | **`POST /chat` mit `client_id=desktop`** |
+
+**Die dritte Zeile ist der Punkt.** Kein Geraet in diesem Raum hat sie gesendet; sie lief als
+`user_message` durch den WebSocket und wurde vom Application Service im Namen des Menschen
+eingestellt. Drei Nachrichten, zwei Absender, **kein Praefix**.
+
+**Vier Entscheidungen, die dabei fielen:**
+
+- **`server_name` ist die Domain, nicht die IP.** Er steckt in jeder Nutzer- und Raum-ID und ist
+  nachtraeglich nicht aenderbar; die LAN-Adresse stammt aus DHCP. Erreichbarkeit und Name fallen
+  deshalb auseinander, und Matrix trennt beides ausdruecklich.
+- **SQLite statt Postgres.** Eine zweite Datenbank im laufenden Postgres waere ein Eingriff in ein
+  produktives System gewesen. Ein Paar in einem privaten Netz traegt SQLite.
+- **`exclusive: false` im Namensraum.** Der AS muss den Menschen puppeten duerfen, und der Mensch
+  muss sich mit demselben Account anmelden koennen. Ein exklusiver Namensraum verbietet das zweite.
+- **Der Raum bleibt unverschluesselt.** Ein AS kann in einem E2EE-Raum nicht ohne Geraeteschluessel
+  senden; im privaten Netz auf eigener Maschine ist der Gewinn gering und der Aufwand hoch.
+
+**Was beim Bauen nicht offensichtlich war:** Der Homeserver **wiederholt** jede Transaktion, die
+nicht mit 200 beantwortet wird — ein uebergangenes Ereignis darf deshalb kein Fehler sein. Und was
+der Connector selbst sendet, kommt als Transaktion zurueck; ohne ein Gedaechtnis der eigenen
+Event-Kennungen liefe der Kanal im Kreis.
+
+**Bilanz:** Suite **2121 gruen, 0 uebersprungen** (der Connector laeuft ausserhalb des Servers und
+bringt keine Zeugen in dessen Suite ein — das ist der offene Punkt, nicht ein Ergebnis).
+Codepruefungen unveraendert. **Telegram bleibt unangetastet und laeuft parallel.**
+
+**Offen:** TLS und der Test am Geraet. Ob ein Client eine `http://`-Adresse annimmt, ist ungeprueft;
+die Recherche fand dazu keine belastbare Aussage.
 
 ### 22.08.2026, 20:15 UTC — Der Wissensspeicher bekommt eine Ebene und wird zur Wurzel
 
