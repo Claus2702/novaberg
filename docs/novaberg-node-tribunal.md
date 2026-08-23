@@ -125,10 +125,12 @@ Der Jurist gibt zusätzlich `direktiven_score` zurück:
 
 **Interne Anmerkungen:** Der Thinker kann qualifizierte Hinweise hinterlassen (z.B. „Terminkonflikt erkannt und korrigiert"). Das Tribunal sieht diese als zusätzlichen Kontext — nicht als Anweisung.
 
-**Jeder Agent hat seinen eigenen System-Prompt** mit perspektivspezifischen Regeln. Die drei Prompts liegen als eigene Dateien in `prompts/default/` (Prompt-Segregation seit Chat 46):
+**Jeder Agent hat seinen eigenen System-Prompt** mit perspektivspezifischen Regeln. Die drei Prompts liegen als eigene Dateien in `prompts/default/` (Prompt-Segregation seit Chat 46, **dreistufig seit dem 23.08.2026**):
 - `tribunal_jurist.system.txt` — plus `tribunal_jurist.direktiven_pruefung.txt` für den zusätzlichen `[DIREKTIVEN]`-Block
 - `tribunal_psychologe.system.txt`
 - `tribunal_ethik.system.txt`
+
+> **Diese Bloecke haben einen Override.** Unter dem antwortenden GPU-Modell laedt `prompts/{modell}/` ueber den Default — heute `prompts/gemma4-gpu/`. Der Override traegt **nur** die verschaerften Ausgaberegeln; alles Inhaltliche steht im Default und gilt fuer jedes Modell. Drei Ebenen seit dem 23.08.2026: `default` → `{modell}` → `{connector}` (`novaberg-architecture_l_connector.md` §2a).
 
 Geladen über `PROMPTS["tribunal_{rolle}.system"]`. Neue Agenten werden durch ein Dict in der `AGENTS`-Liste registriert — Name + System-Prompt-Referenz, sonst nichts.
 

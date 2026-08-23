@@ -181,6 +181,8 @@ Bis Chat 112 gab es nur den zweiten. Der Text wurde korrekt getauscht, die Anwei
 <Aufgaben-Block>  — einer von drei, siehe Tabelle
 [DIMENSIONEN] — rollenneutral: die zehn Felder und das Antwortformat
 [REGELN]      — rollenneutral: Ausgabeformat + „bewerte ausschließlich das [BEWERTUNGSOBJEKT]"
+
+> **`salienz.rules` und `salienz_segment.rules` haben einen Override.** Unter dem antwortenden GPU-Modell laedt `prompts/gemma4-gpu/` ueber den Default und traegt dort **nur** die verschaerften Ausgaberegeln. Bis zum 23.08.2026 lud er gar nicht — das Override-System schluesselte nach Connector, der Gespraechspfad haengt aber am Modell (`OVERRIDE-NACH-CONNECTOR-STATT-MODELL`). Der Befund von Chat 112, dass die nutzerkalibrierte Skala **zweimal** auf der Platte lag, betraf genau dieses Verhaeltnis.
 ```
 
 | `graph_rolle` | Aufgaben-Block | Lage |

@@ -118,6 +118,9 @@ Zusammengebaut in `_build_router_prompt()` aus `[BLOCKNAME]`-Bausteinen (Prompt-
 
 Das gibt dem Router den vollständigen Kontext der Perzeption als Primacy-Position, ohne den Prompt selbst erneut analysieren zu müssen. Datum und Uhrzeit werden ebenfalls injiziert (`{today}`, Format `dd.mm.YYYY, HH:MM Uhr`).
 
+
+> **Diese Bloecke haben einen Override.** Unter dem antwortenden GPU-Modell laedt `prompts/{modell}/` ueber den Default — heute `prompts/gemma4-gpu/`. Der Override traegt **nur** die verschaerften Ausgaberegeln; alles Inhaltliche steht im Default und gilt fuer jedes Modell. Drei Ebenen seit dem 23.08.2026: `default` → `{modell}` → `{connector}` (`novaberg-architecture_l_connector.md` §2a).
+
 Reihenfolge: `[IDENTITAET]` → `[AUFGABE]` → (optional `[KONTEXT]`) → (optional `[AGENTEN]`) → `[REGELN]`.
 
 ### 4.2 Session-Kontext (seit Chat 23, nummeriert seit Chat 24)

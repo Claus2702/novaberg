@@ -974,7 +974,7 @@ Die Zeile bleibt mit `aktiv = false`. Zwei Gründe: Eine Datei, die wieder aufta
 
 > **Der Satz oben stand hier zwei Monate und trug eine Voraussetzung, die der Code nicht erfüllte.** Er begründet das Stilllegen damit, dass *„wo war das noch"* eine sinnvolle Antwort bekommt — die lautete für einen Teil der Zeilen *„sie ist weg"* und war falsch.
 
-Der Wächter schloss aus *„diesmal nicht gesehen"* auf *„gelöscht"*. Er sieht aber nur, was innerhalb seines Auftrags liegt, und der ist enger als das Verzeichnis. **Gemessen am 23.08.2026 an einem Lauf mit vorbereitetem Bestand: sechs Zeilen als verschwunden gemeldet, fünf davon lagen da.**
+Der Wächter schloss aus *„diesmal nicht gesehen"* auf *„gelöscht"*. Er sieht aber nur, was innerhalb seines Auftrags liegt, und der ist enger als das Verzeichnis. **Gemessen am 23.08.2026 an einem Lauf mit vorbereitetem Bestand (`labor/2026-08-23_waechter_verschwunden_klassen.py`): sechs Zeilen als verschwunden gemeldet, fünf davon lagen da.**
 
 | Klasse | Warum der Lauf sie nicht bewertet |
 |---|---|
