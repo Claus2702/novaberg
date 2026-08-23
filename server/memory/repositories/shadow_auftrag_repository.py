@@ -39,6 +39,20 @@ LESE_SPALTEN: str = (
     "decay_am, versuche, bezug_id"
 )
 
+# Warum eine Zeile stillliegt — die geschlossene Wertemenge der Spalte `grund`.
+#
+# **`aktiv` und `grund` beantworten zwei Fragen** (`F-STILLLEGUNG-1`): das eine,
+# **ob** die Zeile noch gesucht wird, das andere, **warum** sie ist, wie sie
+# ist. Ein NULL genuegt nicht — es sagt, dass kein Wert da ist, nicht welcher
+# fehlt.
+#
+# Der Altbestand traegt die leere Zeichenkette. Sie ist kein dritter Grund,
+# sondern die Auskunft *vor dem 23.08.2026 stillgelegt, Ausgang unbekannt* —
+# eine rueckwirkende Zuordnung waere geraten und nicht gemessen.
+GRUND_VERFALL:     str = "verfall"
+GRUND_FEHLVERSUCH: str = "fehlversuch"
+GRUND_KANON: frozenset[str] = frozenset({"", GRUND_VERFALL, GRUND_FEHLVERSUCH})
+
 
 def salienz_absolut_berechnen(salienz_roh: float) -> float:
     """Dämpft die frei wachsende `salienz_roh` auf den gesättigten Anker.
@@ -276,6 +290,21 @@ class ShadowAuftragRepository:
                 neu_decay: float = (
                     neu_absolut if war_aktiv else halbreaktivierungs_wert(alt_absolut)
                 )
+                # **Das Wecken raeumt `grund` und `versuche` mit.** Beide
+                # beschreiben den **vorigen** Ausgang, und eine aktive Zeile
+                # hat keinen: Der Kanon der Spalte kennt `''`, `verfall` und
+                # `fehlversuch`, und die letzten beiden sind Aussagen ueber
+                # eine ruhende Zeile.
+                #
+                # **Bei `versuche` haengt Verhalten daran, und zwar erst seit
+                # dem 23.08.2026.** Bis dahin loeschte `versuch_zaehlen` an der
+                # Grenze hart — eine gescheiterte Zeile war fort, und ein
+                # neuer Anlass legte eine frische mit `versuche = 0` an. Seit
+                # sie stillgelegt statt geloescht wird, weckt `einreihen`
+                # genau diese Zeile wieder auf; ohne Ruecksetzung traegt sie
+                # ihr volles Fehlversuchsbudget von damals, und der naechste
+                # Fehlschlag erfuellt `versuche >= grenze` sofort. Der Weckpfad
+                # bekaeme damit ein Retry-Budget von **null** statt drei.
                 cur.execute(
                     """
                     UPDATE shadow_auftrag
@@ -284,6 +313,8 @@ class ShadowAuftragRepository:
                            salienz_decay   = %s,
                            haeufigkeit     = haeufigkeit + 1,
                            aktiv           = TRUE,
+                           grund           = '',
+                           versuche        = 0,
                            verstaerkt_am   = NOW(),
                            decay_am        = NOW()
                     WHERE  id = %s
@@ -435,18 +466,31 @@ class ShadowAuftragRepository:
 
     @staticmethod
     def versuch_zaehlen(postgres_url: str, auftrag_id: int, grenze: int) -> str:
-        """Zählt einen Fehlversuch — und verwirft den Auftrag an der Grenze.
+        """Zählt einen Fehlversuch — und legt den Auftrag an der Grenze still.
 
-        Der zweite harte Löschpfad neben `entfernen`, und er bleibt davon
-        getrennt: Ein gescheiterter Auftrag ist ein Ausführungsfehler, kein
-        Verfall (§14).
+        **Seit dem 23.08.2026 kein Löschpfad mehr.** Bis dahin führte dieser
+        Weg ein `DELETE`, formal gedeckt: Die Verfallskonvention hatte hartes
+        Löschen für den *Verfall* verworfen, und ein gescheiterter Auftrag ist
+        ein Ausführungsfehler, kein Verfall (§14). Gegen die Messung vom
+        16.08.2026 hielt die Abgrenzung nicht — über 582 aktive
+        `recherche`-Einträge stieg die mittlere `salienz_roh` monoton mit der
+        Zahl der Versuche (0,867 · 0,947 · 0,990), weil der Wichtigste zuerst
+        gezogen wird und das meiste Material hat. **Der Verfall entfernte weich,
+        was niemanden interessiert; der Fehlversuch hart, was am meisten
+        interessiert.**
+
+        Stillgelegt wird mit Grund, nicht nur mit `aktiv = FALSE`: Ohne ihn
+        wäre ein gescheiterter Auftrag von einem verfallenen nicht zu
+        unterscheiden, und die Zeile behauptete etwas Falsches über ihren
+        eigenen Ausgang.
 
         Gegenüber der Redis-Fassung entfällt eine Lücke: Dort wurde der Eintrag
         entfernt und neu ans Ende geschrieben — stürzte der Dienst zwischen
         beiden Schritten ab, war der Auftrag weg.
 
         Vorbedingung: `grenze` ist positiv.
-        Nachbedingung: Der Zähler ist erhöht, oder die Zeile ist entfernt.
+        Nachbedingung: Der Zähler ist erhöht, oder die Zeile trägt
+        `aktiv = FALSE` und `grund = GRUND_FEHLVERSUCH` — sie bleibt lesbar.
 
         Args:
             postgres_url: Verbindungsstring.
@@ -481,11 +525,16 @@ class ShadowAuftragRepository:
 
                 versuche, aufgabe = zeile
                 if versuche >= grenze:
-                    cur.execute("DELETE FROM shadow_auftrag WHERE id = %s", (auftrag_id,))
+                    cur.execute(
+                        "UPDATE shadow_auftrag SET aktiv = FALSE, grund = %s "
+                        "WHERE id = %s",
+                        (GRUND_FEHLVERSUCH, auftrag_id),
+                    )
                     conn.commit()
                     logger.warning(
-                        "Queue: Auftrag '%s' (id=%s) nach %s Fehlversuchen verworfen",
-                        aufgabe, auftrag_id, versuche,
+                        "Queue: Auftrag '%s' (id=%s) nach %s Fehlversuchen "
+                        "stillgelegt (grund=%s) — die Zeile bleibt lesbar",
+                        aufgabe, auftrag_id, versuche, GRUND_FEHLVERSUCH,
                     )
                     return "verworfen"
 
@@ -574,9 +623,9 @@ class ShadowAuftragRepository:
 
                 # Liest die eben geschriebenen Werte — dieselbe Transaktion.
                 cur.execute(
-                    "UPDATE shadow_auftrag SET aktiv = FALSE "
+                    "UPDATE shadow_auftrag SET aktiv = FALSE, grund = %s "
                     "WHERE aktiv = TRUE AND salienz_decay < %s RETURNING id",
-                    (schwelle,),
+                    (GRUND_VERFALL, schwelle),
                 )
                 deaktivierte_ids: list[int] = [z[0] for z in cur.fetchall()]
             conn.commit()

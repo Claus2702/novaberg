@@ -38,6 +38,8 @@ import uuid
 import psycopg2
 from config import POSTGRES_URL, QUEUE_SCHWELLE
 from memory.repositories.shadow_auftrag_repository import (
+    GRUND_FEHLVERSUCH,
+    GRUND_VERFALL,
     ShadowAuftrag,
     ShadowAuftragRepository,
     halbreaktivierungs_wert,
@@ -143,14 +145,35 @@ class RepositoryTest(unittest.TestCase):
             conn.close()
 
     def _zeile(self, auftrag_id: int) -> dict:
-        """Liest eine Zeile roh aus der Tabelle."""
+        """Liest eine Zeile, von der der Aufrufer weiss, dass es sie gibt.
+
+        Fehlt sie, ist das kein Ergebnis, sondern ein Defekt der Vorbedingung —
+        und dann soll die Meldung das sagen, nicht ein `TypeError` aus
+        `dict(None)`. Wer *ob es die Zeile noch gibt* fragen will, nimmt
+        `_zeile_oder_none`.
+        """
+        zeile: dict | None = self._zeile_oder_none(auftrag_id)
+        self.assertIsNotNone(
+            zeile, f"Zeile id={auftrag_id} existiert nicht mehr",
+        )
+        return zeile or {}
+
+    def _zeile_oder_none(self, auftrag_id: int) -> dict | None:
+        """Liest eine Zeile — oder meldet, dass es sie nicht mehr gibt.
+
+        Die zweite Frage neben `_zeile`, und eine eigene: Seit dem 23.08.2026
+        legt der Fehlversuchspfad still statt zu loeschen, und der Unterschied
+        zwischen *ruht* und *ist fort* ist genau das, was ein Zeuge hier
+        pruefen muss.
+        """
         conn = psycopg2.connect(POSTGRES_URL)
         try:
             with conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cur:
                 cur.execute(
                     "SELECT * FROM shadow_auftrag WHERE id = %s", (auftrag_id,),
                 )
-                return dict(cur.fetchone())
+                roh = cur.fetchone()
+                return dict(roh) if roh else None
         finally:
             conn.close()
 
@@ -293,6 +316,62 @@ class RepositoryTest(unittest.TestCase):
         self.assertAlmostEqual(
             halbreaktivierungs_wert(0.9764), zeile["salienz_decay"], places=6,
         )
+        # Eine aktive Zeile hat keinen Grund — der Kanon kennt fuer sie nur ''.
+        self.assertEqual("", zeile["grund"])
+
+    def test_g2_das_wecken_raeumt_das_fehlversuchsbudget_mit(self) -> None:
+        """Der Fall, den das Stilllegen vom 23.08.2026 erst geschaffen hat.
+
+        Bis dahin loeschte `versuch_zaehlen` an der Grenze hart: Die
+        gescheiterte Zeile war fort, und ein neuer Anlass legte eine frische
+        mit `versuche = 0` an. Seit sie liegen bleibt, weckt `einreihen`
+        **genau diese** Zeile — und ohne Ruecksetzung traegt sie ihre drei
+        alten Fehlversuche weiter. Der naechste Fehlschlag erfuellt dann
+        `versuche >= grenze` sofort: Retry-Budget **null** statt drei.
+
+        Der Zeuge prueft beide Spalten, weil beide dasselbe beschreiben — den
+        **vorigen** Ausgang, den eine aktive Zeile nicht hat.
+        """
+        auftrag_id, _ = ShadowAuftragRepository.einreihen(POSTGRES_URL, _auftrag(self.marke))
+        for _ in range(3):
+            ShadowAuftragRepository.versuch_zaehlen(POSTGRES_URL, auftrag_id, 3)
+
+        stillgelegt = self._zeile(auftrag_id)
+        self.assertFalse(stillgelegt["aktiv"])
+        self.assertEqual(GRUND_FEHLVERSUCH, stillgelegt["grund"])
+        self.assertEqual(3, stillgelegt["versuche"])
+
+        gleiche_id, vorgang = ShadowAuftragRepository.einreihen(
+            POSTGRES_URL, _auftrag(self.marke),
+        )
+        self.assertEqual(auftrag_id, gleiche_id)
+        self.assertEqual("reaktiviert", vorgang)
+
+        geweckt = self._zeile(auftrag_id)
+        self.assertTrue(geweckt["aktiv"])
+        self.assertEqual("", geweckt["grund"])
+        self.assertEqual(
+            0, geweckt["versuche"],
+            "Die geweckte Zeile traegt ihr altes Fehlversuchsbudget — der "
+            "naechste Fehlschlag verwirft sie sofort",
+        )
+
+    def test_g3_der_erste_fehlschlag_nach_dem_wecken_verwirft_nicht(self) -> None:
+        """Die Wirkung, nicht die Spalte.
+
+        Ohne diesen Zeugen waere `versuche = 0` eine Belegung ohne Aussage:
+        Er prueft, was der naechste Fehlversuch tatsaechlich tut.
+        """
+        auftrag_id, _ = ShadowAuftragRepository.einreihen(POSTGRES_URL, _auftrag(self.marke))
+        for _ in range(3):
+            ShadowAuftragRepository.versuch_zaehlen(POSTGRES_URL, auftrag_id, 3)
+        ShadowAuftragRepository.einreihen(POSTGRES_URL, _auftrag(self.marke))
+
+        self.assertEqual(
+            "gezaehlt",
+            ShadowAuftragRepository.versuch_zaehlen(POSTGRES_URL, auftrag_id, 3),
+            "Der erste Fehlschlag nach dem Wecken verwirft den Auftrag",
+        )
 
     def test_h_erledigt_entfernt_die_zeile(self) -> None:
         """Der einzige Loeschpfad, der keiner Begruendung bedarf."""
@@ -304,8 +383,15 @@ class RepositoryTest(unittest.TestCase):
             ShadowAuftragRepository.bestand(POSTGRES_URL, MENSCH, CHARAKTER),
         )
 
-    def test_i_drei_fehlversuche_verwerfen(self) -> None:
-        """Der zweite harte Loeschpfad — ein Ausfuehrungsfehler, kein Verfall."""
+    def test_i_drei_fehlversuche_legen_still(self) -> None:
+        """Kein Loeschpfad mehr — die Zeile ruht mit Grund (23.08.2026).
+
+        Bis dahin fuehrte dieser Weg ein `DELETE`, und der Bestand stand danach
+        auf `{aktiv: 0, ruhend: 0}` — der Auftrag war fort. Gegen die Messung
+        vom 16.08.2026 hielt die Abgrenzung *Ausfuehrungsfehler ist kein
+        Verfall* nicht: Ueber 582 aktive Eintraege stieg die mittlere
+        `salienz_roh` monoton mit der Versuchszahl (0,867 / 0,947 / 0,990).
+        """
         auftrag_id, _ = ShadowAuftragRepository.einreihen(POSTGRES_URL, _auftrag(self.marke))
 
         self.assertEqual(
@@ -317,10 +403,44 @@ class RepositoryTest(unittest.TestCase):
         self.assertEqual(
             "verworfen", ShadowAuftragRepository.versuch_zaehlen(POSTGRES_URL, auftrag_id, 3),
         )
+
+        # Die Zeile ist nicht fort, sie ruht.
         self.assertEqual(
-            {"aktiv": 0, "ruhend": 0},
+            {"aktiv": 0, "ruhend": 1},
             ShadowAuftragRepository.bestand(POSTGRES_URL, MENSCH, CHARAKTER),
         )
+
+    def test_i2_der_stillgelegte_auftrag_nennt_seinen_grund(self) -> None:
+        """`aktiv = FALSE` allein macht Fehlversuch und Verfall ununterscheidbar.
+
+        Das ist der Kern von `F-STILLLEGUNG-1`: `aktiv` sagt, **ob** die Zeile
+        gesucht wird, `grund` sagt, **warum** sie ist, wie sie ist.
+        """
+        auftrag_id, _ = ShadowAuftragRepository.einreihen(POSTGRES_URL, _auftrag(self.marke))
+        for _ in range(3):
+            ShadowAuftragRepository.versuch_zaehlen(POSTGRES_URL, auftrag_id, 3)
+
+        zeile = self._zeile_oder_none(auftrag_id)
+        self.assertIsNotNone(zeile, "Die Zeile wurde geloescht statt stillgelegt")
+        self.assertFalse(zeile["aktiv"])
+        self.assertEqual(GRUND_FEHLVERSUCH, zeile["grund"])
+
+    def test_i3_der_verfall_traegt_einen_anderen_grund(self) -> None:
+        """Die Gegenprobe: Zwei Ausgaenge, zwei Werte.
+
+        Ohne sie waere die Zusicherung oben auch von einem Code erfuellt, der
+        jede Stilllegung `fehlversuch` nennt — und dann waere die Spalte da und
+        truege trotzdem keine Unterscheidung.
+        """
+        auftrag_id, _ = ShadowAuftragRepository.einreihen(POSTGRES_URL, _auftrag(self.marke))
+        self._alter_setzen(auftrag_id, 400)
+
+        ShadowAuftragRepository.verfall_lauf(POSTGRES_URL)
+
+        zeile = self._zeile(auftrag_id)
+        self.assertFalse(zeile["aktiv"])
+        self.assertEqual(GRUND_VERFALL, zeile["grund"])
+        self.assertNotEqual(GRUND_FEHLVERSUCH, zeile["grund"])
 
     def test_j_ein_junger_auftrag_ueberlebt_den_lauf(self) -> None:
         """Die Gegenprobe zu test_e: Was frisch ist, bleibt aktiv.

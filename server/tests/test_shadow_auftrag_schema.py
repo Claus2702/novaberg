@@ -78,6 +78,15 @@ ERWARTETE_SPALTEN: dict[str, tuple[bool, bool]] = {
     "salienz_decay":   (False, False),
     "haeufigkeit":     (False, True),
     "aktiv":           (False, True),
+    # Seit dem 23.08.2026: warum die Zeile ist, wie sie ist.
+    #
+    # **NOT NULL mit Vorgabewert `''`, und beides ist Absicht.** Ein NULL
+    # sagte, dass kein Wert da ist, nicht welcher fehlt — und der Wiedereintritt
+    # braucht den Grund (`F-STILLLEGUNG-1`). Die leere Zeichenkette ist kein
+    # dritter Grund, sondern die Auskunft *vor dem 23.08.2026 stillgelegt,
+    # Ausgang unbekannt*: Der Altbestand traegt sie, eine rueckwirkende
+    # Zuordnung waere geraten und nicht gemessen.
+    "grund":           (False, True),
     "erstellt_am":     (False, True),
     "verstaerkt_am":   (False, True),
     "decay_am":        (False, True),

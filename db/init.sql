@@ -624,6 +624,31 @@ CREATE TABLE IF NOT EXISTS shadow_auftrag (
     -- Soft-Delete: ein verfallener Auftrag verschwindet nicht, er ruht (§12.1)
     aktiv             BOOLEAN          NOT NULL DEFAULT TRUE,
 
+    -- Warum die Zeile ist, wie sie ist. Angekuendigt und angelegt am
+    -- 23.08.2026.
+    --
+    -- **`aktiv` und `grund` sind zwei Fragen, nicht eine.** `aktiv` sagt, ob
+    -- die Zeile noch gesucht wird; `grund` sagt, warum sie stillliegt. Die
+    -- Lesestellen filtern auf das erste und wollen das zweite nicht wissen —
+    -- sie zusammenzulegen hiesse, jeder Suche eine Bedeutungsfrage
+    -- aufzubuerden.
+    --
+    -- Kanon: '' (aktiv oder Altbestand) | 'verfall' | 'fehlversuch'.
+    -- Kein CHECK — dieselbe Konvention wie bei pipeline_log.art: die
+    -- schreibende Schicht setzt die Werte durch.
+    --
+    -- **Der Fehlversuchspfad loeschte bis dahin hart.** Formal war das kein
+    -- Verstoss gegen §6 der Verfallskonvention, die das harte Loeschen nur
+    -- fuer den *Verfall* verworfen hatte. Gemessen am 16.08.2026 stand die
+    -- Grenze aber unter Druck: Ueber 582 aktive recherche-Eintraege stieg die
+    -- mittlere salienz_roh monoton mit der Zahl der Versuche
+    -- (0,867 / 0,947 / 0,990) — der Verfall entfernte weich, was niemanden
+    -- interessiert, der Fehlversuch hart, was am meisten interessiert.
+    --
+    -- Die Altzeilen tragen '' und sind daran als Altbestand erkennbar; eine
+    -- rueckwirkende Zuordnung waere geraten und nicht gemessen.
+    grund             VARCHAR(20)      NOT NULL DEFAULT '',
+
     -- Zeit
     erstellt_am       TIMESTAMPTZ      NOT NULL DEFAULT NOW(),
     verstaerkt_am     TIMESTAMPTZ      NOT NULL DEFAULT NOW(),
