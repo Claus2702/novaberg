@@ -1127,8 +1127,10 @@ def charakter_rad_destillieren(
             Charakterlauf nicht toeten.
 
     Vorbedingung: `profil_text` ist nicht leer, `laeufe` >= 1.
-    Nachbedingung: (rad, faktor) — das Rad traegt zusaetzlich 'laeufe' und
-        'streuung'; der Faktor ist der Median der gelungenen Erhebungen.
+    Nachbedingung: (rad, faktor) — das Rad traegt zusaetzlich 'laeufe',
+        'streuung', 'speichen_median' und 'speichen_ohne_mehrheit'; der Faktor
+        ist der Median der gelungenen Erhebungen und wird **allein** aus dem
+        Median-Lauf-Rad gerechnet, nie aus den speichenweisen Medianen.
     Fehlerfaelle: **keine** gelungene Erhebung — dann None und eine
         error-Zeile; der Aufrufer behaelt den bestehenden Wert. Teilausfaelle
         sind kein Fehler, werden aber benannt und stehen in 'laeufe'.
@@ -1185,6 +1187,21 @@ def charakter_rad_destillieren(
     rad["laeufe"]   = [round(w, 4) for w in werte]
     rad["streuung"] = round(streuung, 4)
 
+    # Der Median je Speiche, neben dem Rad des Median-Laufs und ohne zu
+    # rechnen (23.08.2026). Der Median-Lauf wird ueber den Faktor gewaehlt;
+    # eine einzelne Speiche kann darin einen Wert tragen, den die Mehrheit
+    # ihrer eigenen Laeufe nicht stuetzt, und nichts sagte es dem Leser.
+    rad["speichen_median"] = speichenweise_mediane([r for r, _ in erhebungen])
+    ohne_mehrheit: list[str] = speichen_ohne_mehrheit(rad, rad["speichen_median"])
+    rad["speichen_ohne_mehrheit"] = ohne_mehrheit
+
+    if ohne_mehrheit:
+        logger.info(
+            f"Charakter-Rad ({user_id}): {len(ohne_mehrheit)} Speiche(n) ohne "
+            f"Mehrheit hinter ihrem Wert — {ohne_mehrheit}; der Faktor bleibt "
+            f"der des Median-Laufs (F-RAD-2)"
+        )
+
     if len(erhebungen) < laeufe:
         logger.error(
             f"Charakter-Rad ({user_id}): nur {len(erhebungen)} von {laeufe} "
@@ -1197,6 +1214,162 @@ def charakter_rad_destillieren(
         f"{[f'{w:.4f}' for w in werte]}, Streuung {streuung:.4f})"
     )
     return rad, faktor
+
+
+def speichenweise_mediane(erhebungen: list[dict]) -> dict[str, dict[str, float]]:
+    """Der Median **je Speiche** ueber alle gelungenen Laeufe.
+
+    **Warum das neben dem Median-Lauf-Rad steht und es nicht ersetzt.**
+    `F-RAD-2` legt fest, dass das Rad des Median-Laufs gespeichert wird, und
+    die Begruendung traegt: Ein gemitteltes Rad erzeugte Auspraegungen, die
+    kein Lauf vergeben hat, und `Rad x Zuege = Faktor` waere nicht mehr von
+    Hand nachrechenbar. Der Median-Lauf wird aber ueber den **Faktor**
+    bestimmt, nicht je Speiche — und damit kann eine einzelne Speiche einen
+    Wert tragen, den die Mehrheit ihrer eigenen Laeufe nicht stuetzt.
+
+    `[gemessen]` — 19.08.2026 ueber drei Laeufe: Beim Initiative-Rad traf das
+    **5 von 10** Speichen. `behutsamkeit` stand auf 0,60, waehrend zwei von
+    drei Laeufen 0,40 sagten; `gespraechsdistanz` auf 0,10 bei Median 0,20.
+    Beim Zuwendungsrad **0 von 12** — dort sind die stark ziehenden Speichen
+    zeichengleich.
+
+    **Dieses Feld rechnet nicht.** Es traegt keinen Faktor und keinen Versatz;
+    es beantwortet allein die Frage eines Lesers, der eine einzelne Speiche
+    ansieht: *steht hinter diesem Wert eine Mehrheit?* Wer daraus einen Faktor
+    rechnete, haette genau das gemittelte Rad, das `F-RAD-2` ausschliesst.
+
+    Bei gerader Anzahl wird der **untere** der beiden mittleren Werte genommen
+    — dieselbe Wahl wie bei der Auswahl des Median-Laufs, damit beide Zahlen
+    aus derselben Regel stammen und nicht zufaellig auseinanderlaufen.
+
+    Vorbedingung: `erhebungen` ist nicht leer, und jedes Rad traegt 'hoch' und
+    'runter' mit denselben Speichennamen.
+    Nachbedingung: dieselbe zweistufige Gestalt wie ein Rad, mit je einem Wert
+    auf vier Nachkommastellen. Eine Speiche, die nicht in jedem Lauf vorkommt,
+    wird ueber die Laeufe gemittelt, in denen sie vorkam — sie fehlen zu lassen
+    machte ihr Fehlen unsichtbar.
+
+    Args:
+        erhebungen: die Raeder aller gelungenen Laeufe, in Lauf-Reihenfolge.
+
+    Returns:
+        Abbildung Seite -> Speiche -> Median.
+    """
+    # ── Eingabe-Validierung ─────────────────────
+    if not erhebungen:
+        meldung = (
+            "speichenweise_mediane: keine Erhebungen — ein Median ueber die "
+            "leere Menge waere kein Wert, sondern eine Erfindung"
+        )
+        raise ValueError(meldung)
+
+    # ── Verarbeitung ────────────────────────────
+    mediane: dict[str, dict[str, float]] = {}
+    for seite in ("hoch", "runter"):
+        gesammelt: dict[str, list[float]] = {}
+        for rad in erhebungen:
+            for name, wert in (rad.get(seite) or {}).items():
+                gesammelt.setdefault(name, []).append(float(wert))
+        mediane[seite] = {}
+        for name, werte in gesammelt.items():
+            werte.sort()
+            mediane[seite][name] = round(werte[(len(werte) - 1) // 2], 4)
+
+    # ── Ausgabe-Verifikation ────────────────────
+    if not mediane["hoch"] and not mediane["runter"]:
+        meldung = (
+            f"speichenweise_mediane: {len(erhebungen)} Erhebung(en) ergaben "
+            f"keine einzige Speiche — die Raeder tragen weder 'hoch' noch "
+            f"'runter', und ein leeres Feld saehe aus wie Einigkeit"
+        )
+        raise ValueError(meldung)
+
+    return mediane
+
+
+def flache_reihe_als_raeder(
+    reihe:  list[dict[str, float]],
+    muster: dict,
+) -> list[dict]:
+    """Hebt flach abgelegte Messungen in die zweistufige Gestalt eines Rades.
+
+    **Zwei Gestalten fuer denselben Gegenstand, und jeder Verbraucher muss
+    beide kennen.** Die Destillation fuehrt ein Rad als `{"hoch": …,
+    "runter": …}`; `charakter_rad_messung.speichen` und damit auch
+    `reihe_laden` legen es **flach** ab (`{"treue": 0.85, …}`). Wer nur eine
+    kennt, bekommt von der anderen null Speichen — und null sieht aus wie
+    Einigkeit, nicht wie ein Lesefehler.
+
+    `[gemessen]` — 23.08.2026: Genau so meldete ein Messwerkzeug 0 Speichen
+    ueber 95 Erhebungen und einen Anteil von 0,0 %.
+
+    Welche Speiche auf welche Seite gehoert, sagt das **Muster** und nicht eine
+    zweite Liste: Die flache Ablage traegt die Zuordnung nicht mehr, und eine
+    eigene Aufzaehlung liefe gegen die des Rades.
+
+    Vorbedingung: `muster` traegt 'hoch' und 'runter'. Eine Messung darf
+    Speichen fehlen lassen — sie fehlen dann auch im Ergebnis, statt mit einem
+    erfundenen Wert aufzutauchen.
+    Nachbedingung: je Messung ein Rad in der zweistufigen Gestalt, in der
+    Reihenfolge der Eingabe. Speichen, die das Muster nicht kennt, entfallen.
+
+    Args:
+        reihe:  die Messungen, je ein Abbild Speichenname -> Wert.
+        muster: ein Rad, dessen Seiten die Zuordnung tragen.
+
+    Returns:
+        Dieselben Messungen, zweistufig.
+    """
+    # ── Eingabe-Validierung ─────────────────────
+    seiten: dict[str, set[str]] = {
+        seite: set(muster.get(seite) or {}) for seite in ("hoch", "runter")
+    }
+    if not seiten["hoch"] and not seiten["runter"]:
+        meldung = (
+            "flache_reihe_als_raeder: das Muster traegt weder 'hoch' noch "
+            "'runter' — ohne Zuordnung waere jedes Ergebnis leer, und leer "
+            "sieht aus wie Einigkeit"
+        )
+        raise ValueError(meldung)
+
+    # ── Verarbeitung / Ausgabe ──────────────────
+    return [
+        {
+            seite: {
+                name: float(wert) for name, wert in messung.items()
+                if name in namen
+            }
+            for seite, namen in seiten.items()
+        }
+        for messung in reihe
+    ]
+
+
+def speichen_ohne_mehrheit(rad: dict, mediane: dict) -> list[str]:
+    """Nennt die Speichen, deren gespeicherter Wert nicht ihr Median ist.
+
+    Die Zahl, die den Befund belegbar macht: Ohne sie sagt das Medianfeld,
+    *dass* es einen zweiten Wert gibt, aber nicht, *wo* die beiden auseinander
+    liegen.
+
+    Vorbedingung: beide tragen dieselbe zweistufige Gestalt.
+    Nachbedingung: `seite.speiche` je Abweichung, sortiert; leer heisst, jeder
+    gespeicherte Wert ist zugleich der Median seiner Laeufe.
+
+    Args:
+        rad:     das gespeicherte Rad des Median-Laufs.
+        mediane: die speichenweisen Mediane.
+
+    Returns:
+        Die Namen der abweichenden Speichen.
+    """
+    # ── Verarbeitung / Ausgabe ──────────────────
+    return sorted(
+        f"{seite}.{name}"
+        for seite in ("hoch", "runter")
+        for name, wert in (mediane.get(seite) or {}).items()
+        if round(float((rad.get(seite) or {}).get(name, wert)), 4) != round(wert, 4)
+    )
 
 
 def initiative_versatz_berechnen(rad: dict) -> float:
@@ -1349,9 +1522,11 @@ def initiative_rad_destillieren(
             Charakterlauf nicht toeten.
 
     Vorbedingung: `profil_text` ist nicht leer, `laeufe` >= 1.
-    Nachbedingung: (rad, versatz) — das Rad traegt zusaetzlich 'laeufe' und
-        'streuung'; versatz ist der Median der gelungenen Erhebungen und liegt
-        in [-INITIATIVE_RAD_SPANNE, +INITIATIVE_RAD_SPANNE].
+    Nachbedingung: (rad, versatz) — das Rad traegt zusaetzlich 'laeufe',
+        'streuung', 'speichen_median' und 'speichen_ohne_mehrheit'; versatz ist
+        der Median der gelungenen Erhebungen, wird **allein** aus dem
+        Median-Lauf-Rad gerechnet und liegt in
+        [-INITIATIVE_RAD_SPANNE, +INITIATIVE_RAD_SPANNE].
     Fehlerfaelle: leerer Profiltext oder **keine** gelungene Erhebung — dann
         None und eine error-Zeile; der Aufrufer behaelt den bestehenden Wert,
         statt einen erfundenen zu schreiben. Teilausfaelle sind kein Fehler,
@@ -1409,6 +1584,20 @@ def initiative_rad_destillieren(
     rad = dict(rad)
     rad["laeufe"]   = [round(v, 4) for v in werte]
     rad["streuung"] = round(streuung, 4)
+
+    # Dasselbe wie beim Zuwendungsrad, und aus demselben Grund: Der Median-Lauf
+    # wird ueber den Versatz gewaehlt, nicht je Speiche. Am 19.08.2026 traf das
+    # hier 5 von 10 Speichen — beim Zuwendungsrad keine einzige.
+    rad["speichen_median"] = speichenweise_mediane([r for r, _ in erhebungen])
+    ohne_mehrheit: list[str] = speichen_ohne_mehrheit(rad, rad["speichen_median"])
+    rad["speichen_ohne_mehrheit"] = ohne_mehrheit
+
+    if ohne_mehrheit:
+        logger.info(
+            f"Initiative-Rad ({user_id}): {len(ohne_mehrheit)} Speiche(n) ohne "
+            f"Mehrheit hinter ihrem Wert — {ohne_mehrheit}; der Versatz bleibt "
+            f"der des Median-Laufs (F-RAD-2)"
+        )
 
     if len(erhebungen) < laeufe:
         logger.error(

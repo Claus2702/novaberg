@@ -39,6 +39,9 @@ from agents.charakter.destillation import (
     initiative_rad_destillieren,
     initiative_versatz_berechnen,
     nutzer_gewichtung_berechnen,
+    flache_reihe_als_raeder,
+    speichenweise_mediane,
+    speichen_ohne_mehrheit,
     RAD_NABE,
     INITIATIVE_RAD_NABE,
     RAD_LEER,
@@ -867,10 +870,33 @@ class CharakterAgent(BaseAgent):
         # Zurueck in die verschachtelte Form, die der Faktor erwartet. Die
         # Namen kommen aus der frischen Messung, nicht aus einer zweiten Liste:
         # Eine Speiche, die dort fehlt, fehlt auch im Mittel.
-        rad_neu: dict = {
-            "hoch":   {name: flach[name] for name in hoch},
-            "runter": {name: flach[name] for name in runter},
-        }
+        #
+        # **Fortgeschrieben statt aufgezaehlt** (23.08.2026). Bis dahin stand
+        # hier ein Literal mit genau zwei Schluesseln, und alles andere fiel
+        # weg: Am Bestand gemessen trugen **20 von 24** destillierten
+        # Zuwendungs-Raedern nur `hoch` und `runter` — `laeufe` und `streuung`
+        # waren nie in der Spalte angekommen, obwohl die Erhebung sie liefert.
+        # Eine Aufzaehlung verliert lautlos, was sie nicht kennt, und beim
+        # naechsten neuen Metadatum wieder.
+        rad_neu: dict = dict(rad_frisch)
+        rad_neu["hoch"]   = {name: flach[name] for name in hoch}
+        rad_neu["runter"] = {name: flach[name] for name in runter}
+
+        # **Beide Speichenfelder werden hier neu gerechnet, ueber die Reihe.**
+        # Sie beantworten die Frage *steht hinter dem gespeicherten Wert eine
+        # Mehrheit* — und gespeichert wird ab hier das Reihenmittel, nicht das
+        # Rad des Median-Laufs. Die Fassung der frischen Erhebung mitzuschleppen
+        # ergaebe eine Liste, die einen Median der drei Laeufe gegen eine
+        # Speiche aus dem Mittel ueber alle Erhebungen haelt: zwei Groessen,
+        # ein Vergleich, keine Aussage.
+        #
+        # `laeufe` und `streuung` bleiben dagegen die der frischen Erhebung —
+        # sie **beschreiben** sie und vergleichen nichts.
+        raeder_der_reihe: list[dict] = flache_reihe_als_raeder(reihe, rad_frisch)
+        rad_neu["speichen_median"] = speichenweise_mediane(raeder_der_reihe)
+        rad_neu["speichen_ohne_mehrheit"] = speichen_ohne_mehrheit(
+            rad_neu, rad_neu["speichen_median"],
+        )
 
         try:
             faktor_neu: float = nutzer_gewichtung_berechnen(rad_neu)
@@ -950,16 +976,35 @@ class CharakterAgent(BaseAgent):
             )
             return rad_frisch, versatz_frisch
 
-        # Die Metadaten des frischen Laufs (`laeufe`, `streuung`) reisen mit:
-        # Sie beschreiben die juengste Erhebung, nicht die Reihe, und ohne sie
-        # verloere die Zeile ihre Herkunftsangabe.
-        rad_neu: dict = {
-            "hoch":     {name: flach[name] for name in rad_frisch["hoch"]},
-            "runter":   {name: flach[name] for name in rad_frisch["runter"]},
-            "laeufe":   rad_frisch.get("laeufe", []),
-            "streuung": rad_frisch.get("streuung", 0.0),
-            "erhebungen": len(reihe),
-        }
+        # Die Metadaten des frischen Laufs reisen mit: Sie beschreiben die
+        # juengste Erhebung, nicht die Reihe, und ohne sie verloere die Zeile
+        # ihre Herkunftsangabe.
+        #
+        # **Fortgeschrieben statt aufgezaehlt** (23.08.2026). Die Aufzaehlung
+        # nannte `laeufe` und `streuung` und liess damit `speichen_median` und
+        # `speichen_ohne_mehrheit` fallen, die am selben Tag dazugekommen
+        # waren — gebaut, bezeugt und ohne Wirkung, weil die Stabilisierung
+        # der Normalfall ist und nicht der Rand.
+        rad_neu: dict = dict(rad_frisch)
+        rad_neu["hoch"]       = {name: flach[name] for name in rad_frisch["hoch"]}
+        rad_neu["runter"]     = {name: flach[name] for name in rad_frisch["runter"]}
+        rad_neu["erhebungen"] = len(reihe)
+
+        # **Beide Speichenfelder werden hier neu gerechnet, ueber die Reihe.**
+        # Sie beantworten die Frage *steht hinter dem gespeicherten Wert eine
+        # Mehrheit* — und gespeichert wird ab hier das Reihenmittel, nicht das
+        # Rad des Median-Laufs. Die Fassung der frischen Erhebung mitzuschleppen
+        # ergaebe eine Liste, die einen Median der drei Laeufe gegen eine
+        # Speiche aus dem Mittel ueber alle Erhebungen haelt: zwei Groessen,
+        # ein Vergleich, keine Aussage.
+        #
+        # `laeufe` und `streuung` bleiben dagegen die der frischen Erhebung —
+        # sie **beschreiben** sie und vergleichen nichts.
+        raeder_der_reihe: list[dict] = flache_reihe_als_raeder(reihe, rad_frisch)
+        rad_neu["speichen_median"] = speichenweise_mediane(raeder_der_reihe)
+        rad_neu["speichen_ohne_mehrheit"] = speichen_ohne_mehrheit(
+            rad_neu, rad_neu["speichen_median"],
+        )
 
         try:
             versatz_neu: float = initiative_versatz_berechnen(rad_neu)
