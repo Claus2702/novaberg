@@ -1,6 +1,6 @@
 # Novaberg — Bugs & Limitationen
 
-**Stand:** 21. August 2026, 22:50 UTC
+**Stand:** 23. August 2026, 12:10 UTC (`PERSPEKTIVE-OHNE-DATIV` und `PROFILPROMPT-OHNE-GESCHLECHT` behoben, `KERNHASH-OHNE-PERSPEKTIVTRENNUNG` entschieden; die Rangfolge nachgezogen)
 **Verlauf:** [Verlauf des Standes](#verlauf-des-standes) — 29 Eintraege, juengster zuerst
 
 ---

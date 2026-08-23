@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Backlog — Konzipierte, noch nicht implementierte Features
-**Stand:** 21. August 2026, 22:50 UTC
+**Stand:** 23. August 2026, 12:10 UTC (der Matrix-Epic ist zu sieben Achteln gebaut; `ASSISTENT-GESCHLECHT-PRONOMEN` geschlossen)
 **Verlauf:** [Verlauf des Standes](#verlauf-des-standes) — 36 Eintraege, juengster zuerst
 **Pfad:** novaberg/docs/novaberg-backlog.md
 **Quellen:** nova-08-k.md (Kognitive Anreicherung), nova-10-k-backlog.md (Skill-System), nova-01-t-c-backlog.md (Node-Konfiguration)
