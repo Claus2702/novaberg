@@ -37,15 +37,21 @@ from pathlib import Path
 from unittest.mock import patch
 
 from agents.dateien_index import wandern as wandern_modul
+from agents.dateien_index.indizieren import Erschliessung
 from agents.dateien_index.wandern import (
     FALL_GEAENDERT,
     FALL_NEU,
     FALL_UNVERAENDERT,
+    GRUND_AUSSERHALB,
+    GRUND_GELOESCHT,
     GRUND_VERBORGENE_DATEI,
     GRUND_VERBORGENES_VERZEICHNIS,
+    Fund,
     Wanderung,
+    _hash_und_zeilen,
     wandern,
 )
+from config import DATEIEN_INDEX_MAX_BYTES
 
 
 class _Zeit:
@@ -60,15 +66,47 @@ class _Zeit:
         return self._wert
 
 
-def _zeile(pfad: str, groesse: int, hashwert: str, mtime: float, aktiv: bool = True) -> dict:
-    """Baut eine Indexzeile, wie `bestand_je_wurzel` sie liefert."""
+def _hash_von(datei: Path) -> str:
+    """Die Pruefsumme, die der Waechter fuer diese Datei bilden wuerde.
+
+    **Bewusst dieselbe Funktion und keine nachgebaute**: Ein Zeuge, der den
+    Hash selbst berechnet, prueft seine eigene Rechnung mit.
+    """
+    pruefsumme, _zeilen = _hash_und_zeilen(datei)
+    return pruefsumme
+
+
+def _altzeile_ohne_grund(pfad: str, hashwert: str) -> dict:
+    """Eine stillgelegte Zeile aus der Zeit vor der Spalte `grund`.
+
+    Sie laesst sich mit `_zeile` nicht bauen, und das ist Absicht: Dort
+    haengen `aktiv` und `grund` aneinander, weil sie im Bestand
+    zusammengehoeren. Diese Form gibt es nur, weil 145 Zeilen sie am
+    23.08.2026 wirklich trugen — nicht als zulaessige Kombination.
+    """
+    zeile: dict = _zeile(pfad, 9, hashwert, 1000.0)
+    zeile["aktiv"] = False
+    return zeile
+
+
+def _zeile(
+    pfad: str, groesse: int, hashwert: str, mtime: float, zustand: str | None = None,
+) -> dict:
+    """Baut eine Indexzeile, wie `bestand_je_wurzel` sie liefert.
+
+    `zustand` ist der `grund` einer stillgelegten Zeile oder None fuer eine
+    aktive. Die beiden gehoeren zusammen — eine Zeile mit `grund` und
+    `aktiv = True` gibt es im Bestand nicht mehr, seit sie stillgelegt
+    wurde, und ein Zeuge sollte sie deshalb nicht herstellen koennen.
+    """
     return {
         "id": abs(hash(pfad)) % 100000,
         "pfad": pfad,
         "groesse": groesse,
         "inhalt_hash": hashwert,
         "geaendert_am": _Zeit(mtime),
-        "aktiv": aktiv,
+        "aktiv": zustand is None,
+        "grund": zustand,
     }
 
 
@@ -168,7 +206,7 @@ class WanderungTest(unittest.TestCase):
 
     def test_bereits_stillgelegte_zeile_wird_nicht_erneut_gemeldet(self) -> None:
         """Was schon als verschwunden markiert ist, meldet der Lauf nicht wieder."""
-        bestand = {"weg.md": _zeile("weg.md", 12, "hash", 0.0, aktiv=False)}
+        bestand = {"weg.md": _zeile("weg.md", 12, "hash", 0.0, GRUND_GELOESCHT)}
         lauf: Wanderung = wandern(self.wurzel, bestand)
         self.assertEqual(lauf.verschwunden, [])
 
@@ -179,7 +217,7 @@ class WanderungTest(unittest.TestCase):
         bestand = {
             "eins.md": _zeile(
                 "eins.md", vorher.groesse, vorher.inhalt_hash,
-                vorher.geaendert_am, aktiv=False,
+                vorher.geaendert_am, GRUND_GELOESCHT,
             ),
         }
         lauf: Wanderung = wandern(self.wurzel, bestand)
@@ -238,7 +276,7 @@ class WanderungTest(unittest.TestCase):
         lauf: Wanderung = wandern(self.wurzel / "gibtsnicht", {})
         self.assertEqual(lauf.zahlen(), {
             "neu": 0, "geaendert": 0, "unveraendert": 0,
-            "verschwunden": 0, "uebergangen": 0,
+            "verschwunden": 0, "ausserhalb": 0, "uebergangen": 0,
             "uebergangene_verzeichnisse": 0,
         })
 
@@ -327,25 +365,35 @@ class VerborgenesTest(unittest.TestCase):
         self.assertIn(".geheim.md", gruende)
         self.assertEqual(gruende[".geheim.md"], GRUND_VERBORGENE_DATEI)
 
-    def test_altzeile_unter_dem_punkt_wird_stillgelegt_nicht_geloescht(self) -> None:
-        """Was vor der Regel indiziert wurde, gilt danach als verschwunden.
+    def test_altzeile_unter_dem_punkt_ist_ausserhalb_nicht_verschwunden(self) -> None:
+        """Was vor der Regel indiziert wurde, ist nicht fort — nur draußen.
 
-        Der Fall entsteht nur einmal — beim Übergang. Er steht hier, weil
-        `verschwunden` damit **zwei** Bedeutungen trägt: die Datei ist fort,
-        oder wir sehen nicht mehr hin. Die Zeile bleibt in beiden Fällen
-        stehen und wird stillgelegt (§5.5); gelöscht wird sie nicht, und
-        genau das soll niemand später neu herausfinden müssen.
+        **Dieser Zeuge hielt bis zum 23.08.2026 das Gegenteil fest** und
+        sagte in seinem eigenen Text, dass `verschwunden` damit zwei
+        Bedeutungen trägt. Genau das war der Defekt
+        (VERSCHWUNDEN-DURCH-FILTERWECHSEL), und ein Zeuge, der ihn
+        beschreibt statt ihn rot zu machen, hält ihn fest.
+
+        Die Datei liegt unverändert da; `wo war das noch` darf für sie
+        nicht mit `sie ist weg` beantwortet werden. Stillgelegt wird die
+        Zeile trotzdem (§5.5) — mit `excluded` statt `deleted`.
         """
-        bestand: dict[str, dict] = {
-            os.path.join(".obsidian", "notiz.md"): _zeile(
-                os.path.join(".obsidian", "notiz.md"), 12, "gleichgueltig", 1000.0,
-            ),
-        }
+        pfad: str = os.path.join(".obsidian", "notiz.md")
+        bestand: dict[str, dict] = {pfad: _zeile(pfad, 12, "gleichgueltig", 1000.0)}
+
         lauf: Wanderung = wandern(self.wurzel, bestand)
-        self.assertEqual(
-            [z["pfad"] for z in lauf.verschwunden],
-            [os.path.join(".obsidian", "notiz.md")],
-        )
+
+        self.assertEqual([z["pfad"] for z in lauf.ausserhalb], [pfad])
+        self.assertEqual(lauf.verschwunden, [])
+        # Die Gegenprobe an derselben Wurzel: Eine Zeile ohne Datei geht
+        # weiterhin nach `verschwunden`. Ohne sie prüfte der Zeuge nur, dass
+        # die Liste leer ist — und das wäre sie auch, wenn niemand mehr
+        # etwas als fort erkennt.
+        fort: str = "niemals-dagewesen.md"
+        bestand[fort] = _zeile(fort, 12, "gleichgueltig", 1000.0)
+        zweiter: Wanderung = wandern(self.wurzel, bestand)
+        self.assertEqual([z["pfad"] for z in zweiter.verschwunden], [fort])
+        self.assertEqual([z["pfad"] for z in zweiter.ausserhalb], [pfad])
 
     def test_der_punkt_schlaegt_die_endung_als_grund(self) -> None:
         """`.DS_Store` ist nicht wegen seines Formats draußen.
@@ -405,7 +453,7 @@ class BilanzGehtAufTest(unittest.TestCase):
             patch.object(agent_modul, "erschliessen", side_effect=_erschliessen),
             patch.object(agent_modul, "zeile_schreiben", return_value=1),
             patch.object(agent_modul, "suchtext_bauen", return_value="such"),
-            patch.object(agent_modul, "verschwunden_markieren", return_value=None),
+            patch.object(agent_modul, "stilllegen", return_value=None),
         ):
             teil, _budget = DateienIndexAgent()._wurzel_bearbeiten(
                 {"id": 7, "pfad": str(self.wurzel)}, 50,
@@ -527,6 +575,222 @@ class ErkennerDeckungTest(unittest.TestCase):
             f"Der Index nimmt {sorted(ohne)} an, ohne die Gliederung lesen zu "
             f"können — jede solche Datei wirft beim Indizieren",
         )
+
+
+class AusserhalbTest(unittest.TestCase):
+    """Fuenf Klassen vorhandener Dateien, die der Lauf nicht bewertet.
+
+    Der Eintrag `VERSCHWUNDEN-DURCH-FILTERWECHSEL` nannte eine — den nicht
+    betretenen Punkt-Ast. Am 23.08.2026 gegen den Code gemessen waren es
+    **fuenf**: Jede Datei lag vor dem Lauf auf der Platte, jede stand im
+    Bestand, und alle fuenf meldete der Waechter als `verschwunden`.
+
+    Die Klassen stehen hier einzeln und nicht als eine Schleife ueber eine
+    Liste: Ein Zeuge, der fuenf Faelle in einer Zusicherung buendelt, wird
+    von jedem einzelnen rot und sagt nicht, von welchem.
+    """
+
+    def setUp(self) -> None:
+        """Legt fuer jede Klasse eine Datei an, die wirklich da ist."""
+        self.wurzel: Path = Path(tempfile.mkdtemp(prefix="index_ausserhalb_"))
+        (self.wurzel / ".obsidian").mkdir()
+        (self.wurzel / ".obsidian" / "notiz.md").write_text("# A\n", encoding="utf-8")
+        (self.wurzel / "bild.png").write_text("kein Text\n", encoding="utf-8")
+        (self.wurzel / "gross.md").write_text(
+            "x" * (DATEIEN_INDEX_MAX_BYTES + 1), encoding="utf-8",
+        )
+        (self.wurzel / "leer.md").write_text("", encoding="utf-8")
+        (self.wurzel / ".geheim.md").write_text("# F\n", encoding="utf-8")
+
+    def tearDown(self) -> None:
+        """Raeumt die Wurzel ab."""
+        shutil.rmtree(self.wurzel, ignore_errors=True)
+
+    def _lauf_mit(self, relativ: str) -> Wanderung:
+        """Laesst den Waechter ueber eine Wurzel laufen, in der `relativ` steht."""
+        return wandern(self.wurzel, {relativ: _zeile(relativ, 9, "alt", 1000.0)})
+
+    def _ausserhalb(self, relativ: str) -> None:
+        """Die Zusicherung, die alle fuenf Klassen teilen."""
+        self.assertTrue(
+            (self.wurzel / relativ).exists(),
+            "Vorbedingung des Zeugen: Die Datei muss wirklich da liegen",
+        )
+        lauf: Wanderung = self._lauf_mit(relativ)
+        self.assertEqual([z["pfad"] for z in lauf.ausserhalb], [relativ])
+        self.assertEqual(lauf.verschwunden, [])
+
+    def test_unter_punkt_verzeichnis_ist_ausserhalb(self) -> None:
+        """Der Ast wurde nicht betreten — das ist keine Auskunft ueber die Datei."""
+        self._ausserhalb(os.path.join(".obsidian", "notiz.md"))
+
+    def test_fremde_endung_ist_ausserhalb(self) -> None:
+        """Eine engere Endungsliste loescht nichts."""
+        self._ausserhalb("bild.png")
+
+    def test_ueber_der_groesse_ist_ausserhalb(self) -> None:
+        """Eine gesenkte Groessengrenze loescht nichts.
+
+        Der Fall ist nicht theoretisch: Am 23.08.2026 lag die groesste
+        indizierte Datei bei 555 536 Bytes und waechst mit jedem Eintrag.
+        """
+        self._ausserhalb("gross.md")
+
+    def test_leere_datei_ist_ausserhalb(self) -> None:
+        """Eine leergeraeumte Datei ist nicht dieselbe wie eine geloeschte."""
+        self._ausserhalb("leer.md")
+
+    def test_verborgene_einzeldatei_ist_ausserhalb(self) -> None:
+        """Gesehen und mit Grund uebergangen — aber vorhanden."""
+        self._ausserhalb(".geheim.md")
+
+    def test_wirklich_fehlende_datei_bleibt_verschwunden(self) -> None:
+        """Die Gegenprobe: Der Umbau nimmt dem Waechter nicht das Erkennen.
+
+        Ohne sie pruefte die Reihe oben nur, dass `verschwunden` leer bleibt
+        — was auch dann zutraefe, wenn niemand mehr eine fehlende Datei
+        bemerkt.
+        """
+        lauf: Wanderung = self._lauf_mit("fort.md")
+        self.assertEqual([z["pfad"] for z in lauf.verschwunden], ["fort.md"])
+        self.assertEqual(lauf.ausserhalb, [])
+
+    def test_stillgelegte_zeile_wird_nicht_erneut_gemeldet(self) -> None:
+        """Was schon stillgelegt ist, taucht in keiner der beiden Mengen auf."""
+        bestand: dict[str, dict] = {
+            "bild.png": _zeile("bild.png", 9, "alt", 1000.0, GRUND_AUSSERHALB),
+            "fort.md": _zeile("fort.md", 9, "alt", 1000.0, GRUND_GELOESCHT),
+        }
+        lauf: Wanderung = wandern(self.wurzel, bestand)
+        self.assertEqual(lauf.ausserhalb, [])
+        self.assertEqual(lauf.verschwunden, [])
+
+
+class KetteTest(unittest.TestCase):
+    """Der Wiedereintritt: Setzt die neue Datei die alte fort oder nicht.
+
+    Die Frage ist nicht kosmetisch. `zeile_schreiben` raeumt bei `created`
+    die Spalten, die der alten Datei gehoerten (`entitaet_ids`,
+    `timeline_id`, `zuletzt_gelernt_hash`), und laesst sie bei `changed`
+    stehen. Wer den Fall falsch bestimmt, vererbt die Beziehungen einer
+    geloeschten Datei an eine fremde — still, weil niemand danach sucht.
+    """
+
+    def setUp(self) -> None:
+        """Eine Wurzel mit genau einer Datei."""
+        self.wurzel: Path = Path(tempfile.mkdtemp(prefix="index_kette_"))
+        (self.wurzel / "x.md").write_text("# Neu\nInhalt\n", encoding="utf-8")
+
+    def tearDown(self) -> None:
+        """Raeumt die Wurzel ab."""
+        shutil.rmtree(self.wurzel, ignore_errors=True)
+
+    def _fall(self, bestand: dict[str, dict]) -> str:
+        """Der Fall, den der Lauf fuer `x.md` vergibt."""
+        lauf: Wanderung = wandern(self.wurzel, bestand)
+        alle = {f.pfad_relativ: f.fall
+                for f in lauf.neu + lauf.geaendert + lauf.unveraendert}
+        return alle["x.md"]
+
+    def test_grabstein_mit_anderem_hash_ist_neuanlage(self) -> None:
+        """Geloescht, dann ein anderes x — der Zyklus beginnt von vorn."""
+        self.assertEqual(
+            self._fall({"x.md": _zeile("x.md", 9, "hash-der-alten", 1000.0, GRUND_GELOESCHT)}),
+            FALL_NEU,
+        )
+
+    def test_grabstein_mit_gleichem_hash_ist_fortsetzung(self) -> None:
+        """Dieselbe Datei kam zurueck — sie ist dieselbe."""
+        hashwert: str = _hash_von(self.wurzel / "x.md")
+        self.assertEqual(
+            self._fall({"x.md": _zeile("x.md", 9, hashwert, 1000.0, GRUND_GELOESCHT)}),
+            FALL_GEAENDERT,
+        )
+
+    def test_ausgeschlossene_zeile_setzt_fort_auch_bei_anderem_hash(self) -> None:
+        """Ein zurueckgenommener Filter loescht nichts und erbt alles.
+
+        Der Unterschied zum Grabstein ist der ganze Grund fuer die Spalte:
+        Wir haben nie gesehen, dass diese Datei fort war — sie lag die
+        ganze Zeit da, wir sahen nur nicht hin.
+        """
+        self.assertEqual(
+            self._fall({"x.md": _zeile("x.md", 9, "hash-von-vorher", 1000.0, GRUND_AUSSERHALB)}),
+            FALL_GEAENDERT,
+        )
+
+    def test_zeile_ohne_grund_setzt_fort(self) -> None:
+        """Bestandszeilen von vor der Spalte werden nicht zu Neuanlagen.
+
+        174 Zeilen tragen am 23.08.2026 `grund IS NULL`. Sie als Neuanlage
+        zu behandeln hiesse, ihnen eine Geschichte abzusprechen, ueber die
+        wir nichts wissen.
+        """
+        self.assertEqual(
+            self._fall({"x.md": _altzeile_ohne_grund("x.md", "alt")}),
+            FALL_GEAENDERT,
+        )
+
+
+class SchreibfallTest(unittest.TestCase):
+    """`zeile_schreiben` nimmt nur die zwei Faelle, die es buchen kann.
+
+    Der erste Entwurf hatte hier `GRUND_JE_FALL.get(fall, GRUND_GEAENDERT)`
+    — einen stillen Ersatzwert. Ein `unveraendert`, das hierher gelangt,
+    waere damit als **Aenderung** in die Datenbank gegangen, samt Datum:
+    eine Messung, die niemand vorgenommen hat. **Gefunden nicht vom Bau,
+    sondern von einer Nachpruefung quer dazu** (23.08.2026): Der Bau ging
+    entlang der neuen Faelle, der stille Ersatzwert lag daneben.
+    """
+
+    def test_unveraendert_wird_nicht_als_aenderung_gebucht(self) -> None:
+        """Der Fall wird abgewiesen, laut, und ohne Zeile."""
+        from agents.dateien_index import speicher as speicher_modul
+
+        fund = Fund(
+            pfad_relativ="x.md", pfad_absolut=Path(tempfile.gettempdir()) / "x.md", name="x.md",
+            groesse=9, zeilen=1, inhalt_hash="h", geaendert_am=1000.0,
+            fall=FALL_UNVERAENDERT,
+        )
+        erschliessung = Erschliessung(
+            thema="Ein Thema", zusammenfassung="", stichwoerter=[],
+            embedding=None, struktur=None,
+        )
+
+        with (
+            patch.object(speicher_modul.db_manager, "execute_returning") as schreiben,
+            self.assertLogs("ki_server.agents.dateien_index.speicher", "ERROR") as log,
+        ):
+            ergebnis = speicher_modul.zeile_schreiben(1, fund, erschliessung, "such")
+
+        self.assertIsNone(ergebnis)
+        schreiben.assert_not_called()
+        self.assertIn("unveraendert", " ".join(log.output))
+
+    def test_die_beiden_gueltigen_faelle_kommen_durch(self) -> None:
+        """Die Gegenprobe: Der Riegel sperrt nicht, was er durchlassen soll."""
+        from agents.dateien_index import speicher as speicher_modul
+
+        erschliessung = Erschliessung(
+            thema="Ein Thema", zusammenfassung="", stichwoerter=[],
+            embedding=None, struktur=None,
+        )
+        for fall, erwartet in ((FALL_NEU, "created"), (FALL_GEAENDERT, "changed")):
+            with self.subTest(fall=fall):
+                fund = Fund(
+                    pfad_relativ="x.md", pfad_absolut=Path(tempfile.gettempdir()) / "x.md",
+                    name="x.md", groesse=9, zeilen=1, inhalt_hash="h",
+                    geaendert_am=1000.0, fall=fall,
+                )
+                with patch.object(
+                    speicher_modul.db_manager, "execute_returning",
+                    return_value={"id": 5},
+                ) as schreiben:
+                    self.assertEqual(
+                        speicher_modul.zeile_schreiben(1, fund, erschliessung, "such"), 5,
+                    )
+                # Der geschriebene Grund steht im Parametertupel, nicht im SQL.
+                self.assertIn(erwartet, schreiben.call_args[0][1])
 
 
 if __name__ == "__main__":

@@ -31,12 +31,17 @@ from agents.base import AgentState, BaseAgent, PeriodicTask
 from agents.dateien_index.indizieren import Erschliessung, erschliessen
 from agents.dateien_index.speicher import (
     bestand_je_wurzel,
+    stilllegen,
     suchtext_bauen,
-    verschwunden_markieren,
     wurzeln_aktiv,
     zeile_schreiben,
 )
-from agents.dateien_index.wandern import Wanderung, wandern
+from agents.dateien_index.wandern import (
+    GRUND_AUSSERHALB,
+    GRUND_GELOESCHT,
+    Wanderung,
+    wandern,
+)
 from agents.dateien_wurzeln.aussenrand import wurzel_pruefen
 
 logger = logging.getLogger("ki_server.agents.dateien_index")
@@ -285,7 +290,12 @@ class DateienIndexAgent(BaseAgent):
                     (fund.pfad_relativ, "Zeile nicht geschrieben — Speicherfehler"),
                 )
 
-        verschwunden_markieren([z["id"] for z in lauf.verschwunden])
+        # Zwei Ausgaenge, zwei Gruende. Der Unterschied ist nicht kosmetisch:
+        # `deleted` beantwortet "wo war das noch" mit "sie ist weg",
+        # `excluded` sagt, dass wir nicht mehr hinsehen — und nimmt die
+        # Zeile zurueck, sobald der Filter es wieder tut.
+        stilllegen([z["id"] for z in lauf.verschwunden], GRUND_GELOESCHT)
+        stilllegen([z["id"] for z in lauf.ausserhalb], GRUND_AUSSERHALB)
 
         zahlen: dict[str, int] = lauf.zahlen()
 

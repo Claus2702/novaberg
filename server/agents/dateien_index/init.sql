@@ -53,8 +53,29 @@ CREATE TABLE IF NOT EXISTS dateien_index (
     -- Datei, die wiederkommt, ist als dieselbe erkennbar, und "wo war das
     -- noch" bleibt eine sinnvolle Frage, solange die Antwort sagt, dass sie
     -- weg ist.
+    --
+    -- `aktiv` sagt, OB die Zeile gesucht wird; `grund` sagt, WARUM sie in
+    -- ihrem Zustand ist. Die beiden ersetzen sich nicht: Fuenf Lesestellen
+    -- filtern auf `aktiv`, und keine davon will den Grund wissen.
     aktiv                 BOOLEAN      NOT NULL DEFAULT TRUE,
-    verschwunden_am       TIMESTAMPTZ,
+
+    -- Der letzte Uebergang und sein Datum. **`excluded` ist der Grund, um
+    -- dessentwillen die Spalte existiert** (23.08.2026): Der Waechter
+    -- schloss bis dahin aus "diesmal nicht gesehen" auf "die Datei ist
+    -- weg", und eine Filteraenderung legte damit Dateien still, die
+    -- unveraendert dalagen — gemessen fuenf Klassen, nicht eine
+    -- (novaberg-bugs.md, VERSCHWUNDEN-DURCH-FILTERWECHSEL).
+    --
+    -- rsync trennt dasselbe seit jeher: `--delete` raeumt nur innerhalb der
+    -- uebertragenen Menge, und wer auch Ausgeschlossenes loeschen will,
+    -- braucht zusaetzlich `--delete-excluded`.
+    --
+    -- `grund_am` sagt, SEIT WANN der Zustand gilt — `indiziert_am` sagt,
+    -- wann die Karte zuletzt geschrieben wurde. Ein unveraenderter Lauf
+    -- ruehrt beide nicht an.
+    grund                 TEXT         CHECK (grund IN ('created', 'changed',
+                                                        'deleted', 'excluded')),
+    grund_am              TIMESTAMPTZ,
 
     -- Der Graph-Kanal und der Zeitbezug (§6.1). Noch ohne Schreiber.
     entitaet_ids          INTEGER[],
@@ -71,6 +92,41 @@ CREATE TABLE IF NOT EXISTS dateien_index (
     -- erledigt.
     zuletzt_gelernt_hash  TEXT
 );
+
+-- ── Nachzug fuer bestehende Installationen (23.08.2026) ──────────────────
+-- Aus `verschwunden_am` wird `grund_am`, und `grund` kommt hinzu. Der Name
+-- musste mit: Ein Feld, das das Datum einer Neuanlage traegt, darf nicht
+-- `verschwunden_am` heissen.
+--
+-- Umbenennen ist nicht idempotent — deshalb die Abfrage statt eines
+-- `IF NOT EXISTS`, das es fuer RENAME nicht gibt.
+DO $$
+BEGIN
+    IF EXISTS (
+        SELECT 1 FROM information_schema.columns
+        WHERE table_name = 'dateien_index' AND column_name = 'verschwunden_am'
+    ) THEN
+        ALTER TABLE dateien_index RENAME COLUMN verschwunden_am TO grund_am;
+    END IF;
+END $$;
+
+ALTER TABLE dateien_index ADD COLUMN IF NOT EXISTS grund_am TIMESTAMPTZ;
+ALTER TABLE dateien_index ADD COLUMN IF NOT EXISTS grund TEXT;
+
+-- **Bestandszeilen bekommen kein Nachfuellen.** Welcher Uebergang sie
+-- zuletzt traf, weiss niemand; `created` hineinzuschreiben waere eine
+-- Behauptung ueber Vergangenes. NULL heisst "vor Einfuehrung der Spalte",
+-- und der naechste Lauf setzt den echten Wert.
+DO $$
+BEGIN
+    IF NOT EXISTS (
+        SELECT 1 FROM pg_constraint WHERE conname = 'dateien_index_grund_check'
+    ) THEN
+        ALTER TABLE dateien_index
+            ADD CONSTRAINT dateien_index_grund_check
+            CHECK (grund IN ('created', 'changed', 'deleted', 'excluded'));
+    END IF;
+END $$;
 
 -- Eine Datei je Wurzel genau einmal. Der Riegel steht in der Datenbank und
 -- nicht nur im Waechter: Ein zweiter Lauf, der doppelt einfuegt, waere ein
