@@ -1,6 +1,6 @@
 # Novaberg — Roadmap (Projektchronik)
 
-**Stand:** 23. August 2026, 01:00 UTC
+**Stand:** 23. August 2026, 10:20 UTC
 **Pfad:** novaberg/docs/novaberg-roadmap.md
 **Single Source of Truth für abgeschlossene Arbeit.**
 **Offene Punkte → novaberg-backlog.md**
@@ -12,6 +12,37 @@ Die Kopfzeile stand bis Chat 109 auf „Chat 93, 21. Mai 2026" — 15 Chats hint
 ---
 
 ## Chats 3–20: Grundlagen (März 2026)
+
+### 23.08.2026, 10:20 UTC — Der Homeserver zieht nach Postgres, und der Client haengt dran
+
+**Zwei Fragen des Erstaufbaus sind beantwortet, und beide anders als vermutet.**
+
+**Die erste hat das Geraet beantwortet:** FluffyChat nimmt eine `http://`-Adresse an. Zwei
+Suchlaeufe fanden dazu keine belastbare Aussage — eine halbe Stunde Recherche gegen eine Minute
+Ausprobieren. In der Ereignistabelle liegen jetzt Turns, die aus der App kamen. **Arbeitspaket 4 ist
+damit nicht erledigt, sondern zurueckgestellt**, und der Unterschied traegt: Ohne TLS gehen im
+heimischen WLAN Passwort und Nachrichtentext im Klartext; innerhalb des VPN-Tunnels ist die Strecke
+ohnehin verschluesselt.
+
+**Die zweite hat der Auftraggeber entschieden:** Postgres statt SQLite. Der Erstaufbau nahm SQLite,
+um das laufende Postgres nicht anzufassen — die kleinere Beruehrung. Entschieden wurde fuer die
+kleinere **Systemzahl**: Ein Stapel mit einer Datenbank ist einfacher zu sichern und zu verstehen
+als einer mit zweien, und dieser Gewinn faellt taeglich an, waehrend die Beruehrung einmalig war.
+
+**Die Migration in Zahlen:** Datenbank `synapse` mit `LC_COLLATE=C` und `LC_CTYPE=C` angelegt — fuer
+Synapse zwingend und nachtraeglich nur ueber einen Neuaufbau aenderbar, weil der Server sich auf
+byteweise Ordnung verlaesst. Danach `synapse_port_db`, danach **sechs Tabellen auf beiden Seiten
+gezaehlt: 0 Abweichungen** (2 Nutzer, 22 Events, 1 Raum, 4 Tokens, 3 Mitgliedschaften, 8
+Zustandsereignisse). Ein echter Turn hinterher: `events` 22 → **23**, die Nachricht in Postgres
+wiedergefunden. **`gedaechtnis` blieb unberuehrt**, die SQLite-Datei liegt als Rueckweg daneben.
+
+> **Nebenbei ist eine Entscheidung des Vortags eingetreten und hat sich bewaehrt.** Die Adresse des
+> Wirts wechselte ueber Nacht durch DHCP — von `.31` auf `.19`. Die Kennung `@meister:novaberg.de`
+> hat das ueberstanden; eine Kennung mit IP haette jeden Account und jeden Raum ungueltig gemacht.
+> Der Wirt hat seither eine feste Adresse. **Die Trennung von Name und Adresse hat genau den einen
+> Tag getragen, an dem sie gebraucht wurde.**
+
+**Damit stehen sieben der acht Arbeitspakete des Matrix-Epics.**
 
 ### 23.08.2026, 01:00 UTC — Ein Kanal mit zwei Absendern
 

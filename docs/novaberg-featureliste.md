@@ -2,8 +2,8 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Vollständiges Register aller Features mit Zustandsampel und Beleg
-**Stand:** 23. August 2026, 01:00 UTC
-**Verlauf:** [Verlauf des Standes](#verlauf-des-standes) — 49 Eintraege, juengster zuerst
+**Stand:** 23. August 2026, 10:20 UTC
+**Verlauf:** [Verlauf des Standes](#verlauf-des-standes) — 50 Eintraege, juengster zuerst
 **Pfad:** novaberg/docs/novaberg-featureliste.md
 **Typ:** Register
 **Quellen:** die 43 Konzeptdokumente, `novaberg-architecture.md`, die Moduldokumente, `novaberg-roadmap.md`, `novaberg-backlog.md`, `novaberg-bugs.md`, `novaberg-fundliste.md` — gehalten gegen Code und Produktivsystem
@@ -294,7 +294,7 @@ Die Feature-Matrix in `novaberg-architecture.md` §6 ist mit dieser Liste abgel�
 | **Web-Infrastruktur** (SearXNG + PageFetcher) | 🟢 | `ki_searxng` läuft seit 4 Tagen `[gemessen]` | — |
 | **Auto-Fetch** (Suche → Seitenabruf) | 🟢 | `[Doku]` · `[Code]` — `tools/web/search.py` und `tools/web/fetch.py` `[Erhebung 20.08.2026]` | — |
 | **Multi-Channel — Telegram** | 🔴 | `ki_telegram` läuft `[gemessen]` | — · **🔴 seit 20.08.2026** (zuvor 🟢): `TELEGRAM-NAMENSAUFLOESUNG-FAELLT-AUS` offen |
-| **Multi-Channel — Matrix + WireGuard** | 🟠 | `matrix_bot/` (Connector, 361 Zeilen) · Synapse als Compose-Dienst · `novaberg-matrix-kanal_k.md` · **im Betrieb gemessen 23.08.2026**: Raumverlauf mit drei Nachrichten und **zwei** Absendern, kein `[Du]`-Praefix | **5 von 8 Arbeitspaketen** — offen sind TLS (4) und der Test am Geraet (8). **Keine Zeugen in der Server-Suite**: Der Connector laeuft als eigener Dienst und wird von `discover` nicht erfasst — der Prototyp ist gemessen, nicht bezeugt |
+| **Multi-Channel — Matrix + WireGuard** | 🟢 | `matrix_bot/` (Connector, 21 eigene Zeugen) · Synapse als Compose-Dienst **auf Postgres** · `novaberg-matrix-kanal_k.md` · **im Betrieb 23.08.2026**: Raumverlauf mit zwei Absendern und ohne `[Du]`-Praefix, Client verbunden, Turns aus der App in der Ereignistabelle | **7 von 8 Arbeitspaketen.** TLS (4) ist **zurueckgestellt, nicht erledigt** — ohne ihn gehen im WLAN Passwort und Text im Klartext. **Keine Zeugen in der Server-Suite**: Der Connector laeuft als eigener Dienst und wird von `discover` nicht erfasst (Fundliste 23.08.2026) |
 | **Voice (TTS/STT)** | ⚫ | Vision `[Doku]` | alles |
 | **Dateien — Schreibwerkzeug** | 🟢 | `tools/dateien/schreiben.py` `[Code]` | nur schreibend, für Novas eigene Bibliothek |
 | **Dateien — Leseschicht** (Karte, Block, Fenster, Fundstelle) | 🔴 | `tools/dateien/operationen.py`, **35 Zeugen** · **erster Produktivaufrufer seit 18.08.2026**: `struktur_analysieren` füllt die Blockkarte des Index · seit 20.08.2026 **drei Ausgänge statt zwei** — erhoben / leer / `StrukturUnklarError` — und die Erkennung macht `markdown-it-py` statt eines Zeilenautomaten; am Bestand gemessen **174 / 0 / 0** · seit 20.08.2026 **alle fünf zugelassenen Formate**: Markdown über `markdown-it-py`, dazu eigene Erkenner für `.rst`, `.org`, `.adoc` und `.txt` als ausdrücklich leere Gliederung; an sechs echten `.rst`-Fremddateien gemessen, 24 Überschriften, 0 nicht erhoben `[gemessen]` | `block_lesen` liefert die Unterstreichung einer RST-Überschrift als erste Inhaltszeile mit (Fundliste 20.08.) · **🔴 seit 20.08.2026** (zuvor 🟢): `SETEXT-UNTERSCHRIFT-IM-BLOCK` offen |
@@ -493,6 +493,7 @@ Ampelzeile  = eine Tabellenzeile, deren zweite Spalte genau eine der vier Farben
 
 Die Fortschreibung des Standes, aus der Kopfzeile geloest am 20.08.2026. Der Wortlaut jedes Eintrags ist unveraendert; vorangestellt ist allein sein Datum.
 
+- **23. August 2026, 10:20 UTC** — **Eine Ampel wechselt von 🟠 auf 🟢:** Der Matrix-Kanal ist in Betrieb — Client verbunden, Turns aus der App in der Ereignistabelle, Homeserver auf **Postgres** statt SQLite (`synapse_port_db`, danach **6 Tabellen beidseitig gezaehlt, 0 Abweichungen**; ein Turn danach: events 22 → 23). **Gruen trotz eines offenen Arbeitspakets**, und das ist benannt: TLS ist zurueckgestellt, weil FluffyChat `http://` annimmt — der Kanal traegt, die Strecke ist im WLAN unverschluesselt.
 - **23. August 2026, 01:00 UTC** — **Eine Ampel wechselt von ⚫ auf 🟠, und der Kanal kann etwas, das keiner der bestehenden kann:** Matrix laeuft als Prototyp — Homeserver, zwei Kennungen, Application Service und Connector. **Gemessen im Raumverlauf: drei Nachrichten, zwei Absender, kein `[Du]`-Praefix.** Die Desktop-Aeusserung steht dort als Nachricht des Menschen, nicht als Zitat aus Novas Mund. Offen sind TLS und der Test am Geraet; Telegram laeuft unveraendert parallel.
 - **22. August 2026, 20:15 UTC** — **Keine Ampel wechselt, und ein Speicher wird adressierbar:** Der Wissensspeicher ist von `autonomous/{charakter}/` auf `autonomous/{charakter}/{user}/` umgezogen — 1097 Dateien ueber 17 Kennungen lagen in einem Verzeichnis, keine Teilmenge davon war als Pfad ansprechbar. **Die dritte Wurzel steht** (`eigentum='figur'`, 1008 Dateien), der Aussenrand zeigt auf das Paar und weist `/knowledge` wie `/knowledge/autonomous/nova` ab. **Der Indexlauf steht aus** — rund 21 Laeufe zu 50 Dateien; bis dahin hat der Index von diesen Dateien keine Zeile.
 - **22. August 2026, 19:05 UTC** — **Keine Ampel wechselt, und ein Vorgabewert hoert auf, eine Antwort zu sein:** Das Anlegen einer Freigabe fragt jetzt nach dem Eigentuemer, statt `nutzer` zu unterstellen — mit eigenem Rueckweg, weil die Antwort einen **Wert** traegt und kein Ja. Nennt sie beide Seiten, wird erneut gefragt statt zusammengefasst. Suite 2108 → **2120 gruen**, A11 305 → 301.

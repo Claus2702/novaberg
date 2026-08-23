@@ -2,10 +2,10 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Konzept — Matrix als dritter Kanal, mit Application Service statt Bot
-**Stand:** 23. August 2026 (v0.5 — dazu die Markdown-Formatierung, 21 Zeugen)
+**Stand:** 23. August 2026 (v0.6 — **Postgres statt SQLite**, und der Client ist verbunden)
 **Pfad:** novaberg/docs/novaberg-matrix-kanal_k.md
 **Typ:** Konzept (`_k`)
-**Status:** 🟠 **Prototyp laeuft** — Arbeitspakete 3, 5, 6 und 7 stehen; 4 (TLS) und 8 (Client) offen
+**Status:** 🟢 **in Betrieb** — sieben von acht Arbeitspaketen; TLS (4) ist zurueckgestellt, siehe §5
 **Voraussetzung:** `novaberg-tool-multi-channel.md` (die Kanalarchitektur) · der Epic in `novaberg-backlog.md`
 **Abgrenzung:** Der Telegram-Bot bleibt unangetastet und laeuft parallel
 
@@ -27,12 +27,12 @@
 
 | # | Teil | Zustand am 23.08.2026 |
 |---|---|---|
-| 3 | **Homeserver** — Synapse, `ki_synapse`, Port 8008 | **steht** |
-| 4 | TLS-Zugang — Reverse Proxy mit Zertifikat | offen, siehe §5 |
+| 3 | **Homeserver** — Synapse, `ki_synapse`, Port 8008, **auf Postgres** | **steht** |
+| 4 | TLS-Zugang — Reverse Proxy mit Zertifikat | **zurueckgestellt**, siehe §5 |
 | 5 | **Accounts** — `@meister` und `@nova`, beide im AS-Namensraum | **steht** |
 | 6 | **Application Service** — Registrierung geladen | **steht**, Empfaenger fehlt |
 | 7 | **Connector** — `matrix_bot/`, Push-Empfang und zwei Absender | **steht** |
-| 8 | Client-Test — FluffyChat ueber WireGuard | offen |
+| 8 | **Client-Test** — FluffyChat verbunden, Turns aus der App in der Ereignistabelle | **steht** |
 
 **Im Betrieb belegt, 23.08.2026 00:50 UTC:**
 
@@ -158,13 +158,30 @@ Ran 21 tests — OK
 
 **Erreichbarkeit und Name fallen deshalb auseinander**, und das ist kein Mangel: Beim Anmelden nennt der Client die **Adresse** des Wirts im lokalen Netz samt Port, die Kennung lautet trotzdem `@meister:novaberg.de`. Matrix trennt beides ausdruecklich.
 
+> **Der Fall ist am 23.08.2026 eingetreten.** Die Adresse des Wirts wechselte ueber Nacht von `.31` auf `.19` — durch DHCP, ohne Zutun. Die Kennung `@meister:novaberg.de` hat das ueberstanden; eine Kennung mit IP haette jeden Account und jeden Raum ungueltig gemacht. Der Wirt hat seither eine feste Adresse, und die Trennung bleibt trotzdem richtig: Sie hat den einen Tag getragen, an dem sie gebraucht wurde.
+
 **Foederiert wird nichts.** `federation_domain_whitelist: []` ist die geschlossene Seite — sie erlaubt nichts, statt alles ausser einer Aufzaehlung zu erlauben. Solange unter der Domain kein `.well-known` liegt, findet ohnehin kein fremder Server hierher.
 
-### 3.2 SQLite statt Postgres
+### 3.2 ~~SQLite statt Postgres~~ → Postgres, seit dem 23.08.2026
 
-**Eine zweite Datenbank im laufenden Postgres waere ein Eingriff in ein produktives System.** Der Homeserver traegt ein Paar in einem privaten Netz; dafuer genuegt SQLite, und die Datei liegt isoliert in `matrix/data/`. Synapse empfiehlt Postgres fuer Mehrbenutzerbetrieb und Foederation — hier ist beides nicht der Fall.
+**Der Erstaufbau nahm SQLite**, und die Begruendung war die kleinere Beruehrung: Eine zweite Datenbank im laufenden Postgres anzulegen ist ein Eingriff in ein produktives System, und ein Paar in einem privaten Netz traegt SQLite ohne weiteres.
 
-**Der Wechsel bleibt moeglich** und ist dann ein eigener, dokumentierter Migrationsschritt statt einer Nebenwirkung des Erstaufbaus.
+**Entschieden wurde dann anders, und die Begruendung ist eine andere Groesse:** weniger verschiedene Systeme. Ein Stapel mit einer Datenbank ist einfacher zu sichern, zu ueberwachen und zu verstehen als einer mit zweien — und dieser Gewinn faellt jeden Tag an, waehrend die Beruehrung einmalig war.
+
+**Die Migration in Zahlen (23.08.2026):**
+
+| Schritt | Beleg |
+|---|---|
+| Datenbank `synapse` angelegt | `LC_COLLATE=C`, `LC_CTYPE=C` — fuer Synapse zwingend |
+| `synapse_port_db` gelaufen | alle Tabellen portiert |
+| **Vergleich beider Seiten** | 6 Tabellen, **0 Abweichungen** (2 Nutzer, 22 Events, 1 Raum, 4 Tokens, 3 Mitgliedschaften, 8 Zustandsereignisse) |
+| Betrieb danach | ein echter Turn: `events` 22 → **23**, die Nachricht in Postgres wiedergefunden |
+
+> **`LC_COLLATE=C` ist nachtraeglich nicht aenderbar** — eine bestehende Datenbank mit sprachabhaengiger Kollation muesste neu aufgebaut werden. Synapse verlaesst sich auf byteweise Ordnung; `en_US.utf8`, wie es die uebrigen Datenbanken dieses Servers tragen, ordnet anders.
+>
+> **`gedaechtnis` blieb unberuehrt.** Die neue Datenbank steht daneben, nicht darin.
+
+**Die SQLite-Datei liegt als `homeserver.db.vor-migration` daneben** und wird nicht mehr gelesen. Sie bleibt, bis der Postgres-Betrieb ueber mehrere Tage getragen hat — ein Rueckweg, der nichts kostet.
 
 ### 3.3 `exclusive: false` im Namensraum
 
@@ -197,7 +214,11 @@ Der Homeserver **schiebt** Ereignisse an den AS (`PUT /_matrix/app/v1/transactio
 
 ## 5. Was offen ist
 
-**TLS.** Ein Reverse Proxy mit gueltigem Zertifikat ist Arbeitspaket 4 und noch nicht gebaut. Ob FluffyChat eine `http://`-Adresse annimmt, ist **ungeprueft** — die Recherche am 23.08.2026 fand dazu keine belastbare Aussage. Der Prototyp wird deshalb zuerst gegen die API gemessen und nicht gegen die App; scheitert die App an `http`, ist der Proxy der naechste Schritt und nicht ein Umbau.
+~~**TLS.** … Ob FluffyChat eine `http://`-Adresse annimmt, ist **ungeprueft**.~~
+
+→ **Am 23.08.2026 am Geraet beantwortet: FluffyChat nimmt `http://` an.** Die Verbindung steht, und in der Ereignistabelle liegen Turns, die aus der App kamen. **Damit ist Arbeitspaket 4 nicht erledigt, sondern zurueckgestellt** — der Unterschied ist wichtig: Unverschluesselt geht ueber das lokale Netz und den VPN-Tunnel ein Passwort und jeder Nachrichtentext im Klartext. Innerhalb von WireGuard ist die Strecke bereits verschluesselt; ohne ihn, im heimischen WLAN, ist sie es nicht.
+
+**Die Recherche hat diese Frage nicht beantwortet, das Geraet schon.** Zwei Suchlaeufe fanden keine belastbare Aussage zum Schema-Zwang von FluffyChat — eine halbe Stunde Suche gegen eine Minute Ausprobieren.
 
 **Push zum Handy.** Der Homeserver ist nur erreichbar, solange WireGuard steht. Was ohne dauerhaften Tunnel mit einem Impuls von Nova geschieht, steht als offener Punkt im Epic.
 

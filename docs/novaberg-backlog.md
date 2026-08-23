@@ -2760,12 +2760,16 @@ elif typ == "user_message":
 
 ✅ **Prototyp gebaut am 23.08.2026.** Fünf der acht Arbeitspakete stehen: Homeserver (3), Accounts (5), Application Service (6), Connector (7) — dazu WireGuard (1, 2) vom Auftraggeber. **Gemessen im Raumverlauf:** drei Nachrichten, zwei Absender, kein `[Du]`-Präfix. Die dritte Zeile kam über `POST /chat` mit `client_id=desktop` und steht im Raum als Nachricht von `@meister` — genau der Fall, den Telegram nicht tragen kann.
 
-**Offen bleiben zwei Pakete, und beide brauchen ein Gerät oder ein Zertifikat:**
+✅ **Am 23.08.2026 ergänzt: Postgres statt SQLite, und der Client ist verbunden.** Sieben der acht Arbeitspakete stehen.
 
-| # | Was | Warum es offen ist |
+| # | Was | Zustand |
 |---|---|---|
-| 4 | TLS-Zugang | Ob FluffyChat eine `http://`-Adresse annimmt, ist **ungeprüft** — die Recherche fand dazu keine belastbare Aussage. Erst der Versuch am Gerät entscheidet, ob ein Reverse Proxy nötig ist |
-| 8 | Client-Test | braucht das Handy |
+| 4 | TLS-Zugang | **zurückgestellt, nicht erledigt.** FluffyChat nimmt `http://` an — die Frage war ungeprüft und ist am Gerät beantwortet. Unverschlüsselt geht damit im heimischen WLAN jedes Passwort und jeder Nachrichtentext im Klartext; innerhalb des VPN-Tunnels ist die Strecke bereits verschlüsselt |
+| 8 | Client-Test | ✅ **verbunden.** In der Ereignistabelle liegen Turns aus der App |
+
+**Die Migration nach Postgres in Zahlen:** Datenbank `synapse` mit `LC_COLLATE=C` angelegt (für Synapse zwingend, nachträglich nur über einen Neuaufbau änderbar), `synapse_port_db` gelaufen, danach **6 Tabellen auf beiden Seiten gezählt — 0 Abweichungen**. Ein echter Turn danach: `events` 22 → 23. `gedaechtnis` blieb unberührt, die SQLite-Datei liegt als Rückweg daneben.
+
+**Der Grund für den Wechsel war nicht technische Not, sondern Systemzahl:** Ein Stapel mit einer Datenbank ist einfacher zu sichern und zu verstehen als einer mit zweien, und dieser Gewinn fällt täglich an.
 
 **Zustand:** Synapse als eigener Compose-Dienst, aus dem lokalen Netz erreichbar (`/_matrix/client/versions` → 200). Der Connector läuft daneben, ein Raum je Paar. Die Zugangsdaten liegen außerhalb des Repositoriums. Konzept: `novaberg-matrix-kanal_k.md`.
 
