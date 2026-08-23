@@ -2,9 +2,9 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Rohe, noch unklassifizierte Funde aus laufender Arbeit
-**Stand:** 23. August 2026, 20:10 UTC
-**Offen:** 23 Funde
-**Verlauf:** [Verlauf des Standes](#verlauf-des-standes) — 72 Eintraege, juengster zuerst
+**Stand:** 23. August 2026, 20:30 UTC
+**Offen:** 27 Funde — **gezaehlt am 23.08.2026, nicht fortgeschrieben.** Die Kopfzeile stand auf 23; sie war ueber mehrere Zuege hochgezaehlt worden, und schon ihr Ausgangswert war es.
+**Verlauf:** [Verlauf des Standes](#verlauf-des-standes) — 73 Eintraege, juengster zuerst
 **Pfad:** novaberg/docs/novaberg-fundliste.md
 
 Was beim Bauen an anderer Stelle auffällt, landet hier — **eine Zeile mit Datum**. Kein Bug-Name, keine Priorität, keine Klassifizierung, keine Diskussion. Der Zweck ist, einen Fund festzuhalten, ohne die laufende Arbeit dafür zu unterbrechen.
@@ -229,6 +229,7 @@ Analog zum Kraft-1-Stichtag: ab wann eine Partition brauchbar ist. Kein Backfill
 
 ## Offen
 
+- **2026-08-23** — **Der Bestand der Shadow-Queue laesst sich nicht an ihren Zeilen ablesen.** Ein abgearbeiteter Auftrag wird **geloescht** (`memory/repositories/shadow_auftrag_repository.py:416`), ein verfallener bleibt stillgelegt stehen. Wer den Fortschritt zaehlen will, sieht deshalb nur, was **nicht** vorangeht. Am 23.08.2026 zwischen 15:20 und 20:25 UTC gemessen: **653 → 597 Zeilen** bei unveraendert 247 stillgelegten — also 56 abgearbeitet, rund elf je Stunde. Die naheliegende Diagnose war an diesem Tag falsch: *keine neuen Eintraege seit dem 19.08.* und *403 von 406 mit `versuche = 0`* stimmten beide und trugen die Schlussfolgerung nicht. **Was fehlt, ist ein Zaehler, der Durchsatz sichtbar macht** — ohne ihn beantwortet der Bestand die Frage *arbeitet sie* mit dem Gegenteil.
 - **2026-08-23** — Die sieben Modell-Overrides trugen eine Anweisung, die auf einen abgeschalteten Modus zielte (*internen Ueberlegungen unter 100 Tokens*) → **am selben Tag gemessen und entfernt.** Die Formatzeilen bleiben: ohne `format="json"` liefern sie 36/36 gueltiges JSON gegen 0/36 des Defaults.
 - **2026-08-23** — **`OLLAMA_MODEL` ist nicht in jedem Fall das Modell, das antwortet.** Die Modellebene des Prompt-Laders wird mit `OLLAMA_MODEL` (= `gpu_model` des Connectors) geschluesselt; welches Modell der Chat-Worker fuehrt, entscheidet aber `MODEL_WORKER_BACKENDS` ueber die Umgebungsvariable `WORKER_BACKEND_CHAT`. Heute deckungsgleich — `ollama_gpu`, im Betriebslog belegt (*ChatWorker konfiguriert: Modell=gemma4-gpu*). **Die Reichweite ist neu:** Vor dem 23.08.2026 lud die Modellebene nie etwas. Ein Umschalten auf einen anderen Rueckhalt schoebe dem fremden Modell die Gemma-Regeln unter — dieselbe Fehlerklasse wie `OVERRIDE-NACH-CONNECTOR-STATT-MODELL`, eine Ebene hoeher.
 - **2026-08-23** — **Die Aussage *0 hardcoded Prompts in Python* stimmt seit den Agenten-Diensten nicht mehr.** Gemessen ueber 261 Produktivdateien: **33 Prompt-Literale ab 100 Zeichen**, davon 17 mit der `[BLOCKNAME]`-Konvention — `agents/charakter/destillation.py` 9, `agents/recherche/` 7, `memory/kontext.py` einer mit 1714 Zeichen. Die Aussage galt fuer die **Graph-Knoten** und ist dort weiterhin richtig; in `novaberg-architecture.md` stand sie im Praesens und ohne diese Einschraenkung. Dort berichtigt; zu entscheiden, ob die Agenten-Prompts nach `prompts/` wandern.
@@ -371,6 +372,7 @@ Elf Zeilen sind in `novaberg-bugs.md` zu Einträgen mit Reproduktionsweg geworde
 
 Die Fortschreibung des Standes, aus der Kopfzeile geloest am 20.08.2026. Der Wortlaut jedes Eintrags ist unveraendert; vorangestellt ist allein sein Datum.
 
+- **23. August 2026, 20:25 UTC** — **26 offene Funde, gezaehlt statt fortgeschrieben.** Die Kopfzeile stand auf 23 und war ueber mehrere Zuege dieses Tages hochgezaehlt worden; ihr Ausgangswert am Morgen war selbst nicht gemessen. Die drei fehlenden Eintraege sind keine neuen Funde, sondern nie mitgezaehlte.
 - **23. August 2026, 20:10 UTC** — **23 offene Funde.** Der Fund vom Abend ist am selben Tag gemessen und erledigt: Die Thinking-Zeile ist aus allen sieben Overrides entfernt, die Formatzeilen bleiben — die Kontrolle ohne Fessel gibt ihnen recht.
 - **23. August 2026, 19:35 UTC** — **24 offene Funde**, drei neu aus der Nachpruefung der Prompt-Ebenen: eine Anweisung in allen sieben Overrides, die auf einen abgeschalteten Modus zielt und seit heute erstmals wirkt; `OLLAMA_MODEL` ist nicht zwingend das antwortende Modell; und die Aussage *0 hardcoded Prompts* ist mit 33 gemessenen Literalen widerlegt.
 - **23. August 2026, 19:10 UTC** — **21 offene Funde**, einer neu: Die Nutzer-Seite der Vektorzeile im Responder faellt still durch, waehrend die Nova-Seite denselben Fall in zwei Logzweige trennt.
