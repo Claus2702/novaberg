@@ -184,6 +184,74 @@ class MatrixClient:
         )
         return antwort.get("event_id", "")
 
+    # ── Das Profil der Figur ────────────────────
+
+    async def profil(self, *, als: str) -> dict[str, str]:
+        """Liest Anzeigename und Bild einer Kennung.
+
+        Nachbedingung: Die vorhandenen Felder; fehlende fehlen auch im
+        Ergebnis. Ein Profil ohne Bild ist kein Fehler, sondern der Zustand
+        vor dem ersten Setzen.
+        """
+        return await self._ruf("GET", f"/profile/{als}")
+
+    async def anzeigename_setzen(self, name: str, *, als: str) -> None:
+        """Setzt den Anzeigenamen.
+
+        Ohne ihn zeigt ein Client den lokalen Teil der Kennung — also die
+        Kleinschreibung des Kontonamens, nicht den Namen der Figur.
+        """
+        if not name or not name.strip():
+            raise ValueError("anzeigename_setzen: leerer Name")
+        await self._ruf("PUT", f"/profile/{als}/displayname", als=als,
+                        json={"displayname": name})
+        logger.info("Anzeigename von %s auf %r gesetzt", als, name)
+
+    async def bild_hochladen(self, daten: bytes, *, als: str, name: str) -> str:
+        """Legt ein Bild im Medienspeicher ab und liefert seine `mxc:`-Adresse.
+
+        **Der Medienspeicher liegt nicht unter der Client-Server-API**, deshalb
+        geht dieser Aufruf an der gemeinsamen Methode vorbei.
+
+        Vorbedingung: `daten` ist ein PNG.
+        Nachbedingung: Eine `mxc://`-Adresse, dauerhaft und je Aufruf neu —
+        **derselbe Inhalt zweimal hochgeladen ergibt zwei Objekte.** Wer bei
+        jedem Start hochlaedt, fuellt den Speicher mit Kopien.
+        """
+        if not daten:
+            raise ValueError("bild_hochladen: leere Daten")
+
+        antwort = await self._client.post(
+            f"{MATRIX_HOMESERVER}/_matrix/media/v3/upload",
+            headers={
+                "Authorization": f"Bearer {MATRIX_AS_TOKEN}",
+                "Content-Type": "image/png",
+            },
+            params={"filename": name, "user_id": als},
+            content=daten,
+        )
+        if antwort.status_code >= 400:
+            try:
+                fehler: dict = antwort.json()
+            except Exception:
+                fehler = {}
+            raise MatrixFehler(antwort.status_code, fehler.get("errcode", "?"),
+                               fehler.get("error", antwort.text[:200]))
+
+        adresse: str = antwort.json().get("content_uri", "")
+        if not adresse:
+            raise MatrixFehler(200, "?", "upload lieferte keine content_uri")
+        logger.info("Bild hochgeladen: %s", adresse)
+        return adresse
+
+    async def bild_setzen(self, mxc: str, *, als: str) -> None:
+        """Haengt ein bereits hochgeladenes Bild an ein Profil."""
+        if not mxc.startswith("mxc://"):
+            raise ValueError(f"bild_setzen: {mxc!r} ist keine mxc-Adresse")
+        await self._ruf("PUT", f"/profile/{als}/avatar_url", als=als,
+                        json={"avatar_url": mxc})
+        logger.info("Profilbild von %s gesetzt: %s", als, mxc)
+
     async def raeume(self, *, als: str) -> list[str]:
         """Liefert die Raeume, in denen die Kennung Mitglied ist."""
         antwort = await self._ruf("GET", "/joined_rooms", als=als)

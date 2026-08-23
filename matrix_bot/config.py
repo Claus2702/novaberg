@@ -39,6 +39,15 @@ for _paar in _roh.split(","):
 #: Die Kennung der Figur — sie sendet die Antworten.
 MATRIX_CHARACTER: str = os.getenv("MATRIX_CHARACTER", "nova")
 
+#: Wie die Figur im Client heisst. Ohne ihn zeigt ein Client den lokalen Teil
+#: der Kennung — also die Kleinschreibung des Kontonamens.
+MATRIX_CHARACTER_NAME: str = os.getenv("MATRIX_CHARACTER_NAME", "Nova")
+
+#: Ihr Profilbild. Fehlt die Datei, bleibt das Profil ohne Bild — das ist ein
+#: Zustand und kein Ausfall, und er wird einmal protokolliert.
+MATRIX_CHARACTER_AVATAR: str = os.getenv(
+    "MATRIX_CHARACTER_AVATAR", "/config/avatar-nova.png")
+
 #: Der Novaberg-Charakter, dessen WebSocket abgehoert wird.
 NOVA_CHARACTER_ID: str = os.getenv("NOVA_CHARACTER_ID", "nova")
 
@@ -57,3 +66,10 @@ WS_RECONNECT_DELAY: float = float(os.getenv("WS_RECONNECT_DELAY", "5.0"))
 #: Wo die Raum-Kennung liegt. Sie wird beim ersten Lauf ermittelt oder
 #: angelegt und dann hier gehalten — ein Raum je Paar.
 RAUM_DATEI: str = os.getenv("RAUM_DATEI", "/state/raeume.json")
+
+#: Wo der Fingerabdruck des zuletzt gesetzten Profilbildes liegt.
+#:
+#: **Ohne ihn laedt jeder Start dasselbe Bild erneut hoch.** Der Medienspeicher
+#: vergibt je Aufruf eine neue Adresse; nach dreissig Neustarts liegen dort
+#: dreissig Kopien, und keine faellt auf.
+PROFIL_DATEI: str = os.getenv("PROFIL_DATEI", "/state/profil.json")

@@ -15,6 +15,7 @@ Mund. Konzept: `docs/novaberg-matrix-kanal_k.md`.
 """
 
 import asyncio
+import hashlib
 import json
 import logging
 import pathlib
@@ -28,11 +29,14 @@ from fastapi import FastAPI, HTTPException, Request
 from config import (
     MATRIX_BOT_PORT,
     MATRIX_CHARACTER,
+    MATRIX_CHARACTER_AVATAR,
+    MATRIX_CHARACTER_NAME,
     MATRIX_HS_TOKEN,
     MATRIX_USER_MAP,
     NOVA_API_TIMEOUT,
     NOVA_API_URL,
     NOVA_CHARACTER_ID,
+    PROFIL_DATEI,
     RAUM_DATEI,
     WS_RECONNECT_DELAY,
 )
@@ -130,6 +134,70 @@ async def _raum_sicherstellen(client: MatrixClient, nova_id: str) -> str:
     RAEUME[nova_id] = raum
     _raeume_sichern(RAEUME)
     return raum
+
+
+async def _profil_pflegen(client: MatrixClient) -> None:
+    """Sorgt dafuer, dass die Figur Namen und Bild traegt.
+
+    Vorbedingung: keine — fehlt das Bild auf der Platte, bleibt das Profil
+    ohne, und das wird einmal protokolliert.
+    Nachbedingung: Anzeigename gesetzt; Bild gesetzt, wenn eine Datei vorliegt.
+    Fehlerfaelle: **keine, die den Start verhindern.** Ein Profil ohne Bild
+    ist ein Schoenheitsfehler; ein Connector, der deswegen nicht startet,
+    kostet den Kanal.
+
+    **Hochgeladen wird nur, was sich geaendert hat.** Der Medienspeicher
+    vergibt je Aufruf eine neue Adresse — derselbe Inhalt zweimal hochgeladen
+    ergibt zwei Objekte. Der Fingerabdruck der Datei entscheidet, und er
+    ueberlebt im Zustandsverzeichnis: Ohne ihn fuellte jeder Neustart den
+    Speicher mit einer weiteren Kopie desselben Bildes, ohne dass etwas
+    auffiele.
+    """
+    figur: str = kennung(MATRIX_CHARACTER)
+
+    # ── Der Name ────────────────────────────────
+    try:
+        vorhanden: dict = await client.profil(als=figur)
+        if vorhanden.get("displayname") != MATRIX_CHARACTER_NAME:
+            await client.anzeigename_setzen(MATRIX_CHARACTER_NAME, als=figur)
+    except Exception as fehler:
+        logger.error("Anzeigename konnte nicht gesetzt werden: %s", fehler)
+        vorhanden = {}
+
+    # ── Das Bild ────────────────────────────────
+    bild = pathlib.Path(MATRIX_CHARACTER_AVATAR)
+    if not bild.is_file():
+        logger.info(
+            "Kein Profilbild unter %s — die Figur bleibt ohne Bild",
+            MATRIX_CHARACTER_AVATAR,
+        )
+        return
+
+    daten: bytes = bild.read_bytes()
+    finger: str = hashlib.sha256(daten).hexdigest()
+
+    stand: dict = {}
+    stand_datei = pathlib.Path(PROFIL_DATEI)
+    if stand_datei.is_file():
+        try:
+            stand = json.loads(stand_datei.read_text(encoding="utf-8"))
+        except Exception as fehler:
+            logger.warning("Profilstand unlesbar (%s) — das Bild wird neu gesetzt", fehler)
+
+    if stand.get("avatar_sha256") == finger and vorhanden.get("avatar_url"):
+        logger.debug("Profilbild unveraendert — kein Upload")
+        return
+
+    try:
+        mxc: str = await client.bild_hochladen(daten, als=figur, name=bild.name)
+        await client.bild_setzen(mxc, als=figur)
+        stand_datei.parent.mkdir(parents=True, exist_ok=True)
+        stand_datei.write_text(
+            json.dumps({"avatar_sha256": finger, "avatar_url": mxc}, indent=2),
+            encoding="utf-8",
+        )
+    except Exception as fehler:
+        logger.error("Profilbild konnte nicht gesetzt werden: %s", fehler)
 
 
 # ─────────────────────────────────────────────
@@ -364,6 +432,7 @@ async def starten() -> None:
 
     async with httpx.AsyncClient(timeout=30.0) as http:
         client = MatrixClient(http)
+        await _profil_pflegen(client)
 
         for localpart, nova_id in MATRIX_USER_MAP.items():
             wer: str = await client.wer_bin_ich(als=kennung(localpart))

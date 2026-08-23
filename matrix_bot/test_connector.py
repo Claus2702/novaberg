@@ -13,6 +13,7 @@ gewoehnliche Nachricht und faellt erst auf, wenn jemand den Verlauf liest.
 """
 
 import os
+import pathlib
 import unittest
 from unittest.mock import AsyncMock, patch
 
@@ -212,3 +213,81 @@ class FormatierungTest(unittest.TestCase):
         inhalt = inhalt_bauen("Das ist **wichtig**.")
         self.assertEqual(inhalt["body"], "Das ist **wichtig**.")
         self.assertIn("formatted_body", inhalt)
+
+
+class ProfilpflegeTest(unittest.IsolatedAsyncioTestCase):
+    """Der Start setzt Namen und Bild — und laedt nicht jedes Mal neu hoch."""
+
+    def setUp(self) -> None:
+        import tempfile
+        self._tmp = tempfile.TemporaryDirectory()
+        self.bild = pathlib.Path(self._tmp.name) / "avatar.png"
+        self.bild.write_bytes(b"\x89PNG\r\n\x1a\n-testbild-")
+        self.stand = pathlib.Path(self._tmp.name) / "profil.json"
+
+    def tearDown(self) -> None:
+        self._tmp.cleanup()
+
+    def _client(self, *, profil: dict) -> AsyncMock:
+        c = AsyncMock()
+        c.profil.return_value = profil
+        c.bild_hochladen.return_value = "mxc://novaberg.de/neu"
+        return c
+
+    async def test_ein_leeres_profil_bekommt_namen_und_bild(self) -> None:
+        client = self._client(profil={})
+        with patch.object(bot, "MATRIX_CHARACTER_AVATAR", str(self.bild)), \
+             patch.object(bot, "PROFIL_DATEI", str(self.stand)):
+            await bot._profil_pflegen(client)
+        client.anzeigename_setzen.assert_awaited_once()
+        client.bild_hochladen.assert_awaited_once()
+        client.bild_setzen.assert_awaited_once()
+
+    async def test_ein_unveraendertes_bild_wird_nicht_erneut_hochgeladen(self) -> None:
+        """**Der eigentliche Zeuge dieser Klasse.**
+
+        Der Medienspeicher vergibt je Aufruf eine neue Adresse. Ohne diese
+        Zusicherung legte jeder Neustart eine weitere Kopie desselben Bildes
+        ab — und keine fiele auf.
+        """
+        import hashlib, json as _json
+        finger = hashlib.sha256(self.bild.read_bytes()).hexdigest()
+        self.stand.write_text(_json.dumps({"avatar_sha256": finger}), encoding="utf-8")
+
+        client = self._client(profil={
+            "displayname": bot.MATRIX_CHARACTER_NAME,
+            "avatar_url": "mxc://novaberg.de/alt",
+        })
+        with patch.object(bot, "MATRIX_CHARACTER_AVATAR", str(self.bild)), \
+             patch.object(bot, "PROFIL_DATEI", str(self.stand)):
+            await bot._profil_pflegen(client)
+        client.bild_hochladen.assert_not_awaited()
+
+    async def test_ein_geaendertes_bild_wird_hochgeladen(self) -> None:
+        import json as _json
+        self.stand.write_text(_json.dumps({"avatar_sha256": "ein-alter-wert"}),
+                              encoding="utf-8")
+        client = self._client(profil={
+            "displayname": bot.MATRIX_CHARACTER_NAME,
+            "avatar_url": "mxc://novaberg.de/alt",
+        })
+        with patch.object(bot, "MATRIX_CHARACTER_AVATAR", str(self.bild)), \
+             patch.object(bot, "PROFIL_DATEI", str(self.stand)):
+            await bot._profil_pflegen(client)
+        client.bild_hochladen.assert_awaited_once()
+
+    async def test_ein_fehlendes_bild_haelt_den_start_nicht_auf(self) -> None:
+        """Ein Profil ohne Bild ist ein Schoenheitsfehler; ein Connector, der
+        deswegen nicht startet, kostet den Kanal."""
+        client = self._client(profil={})
+        with patch.object(bot, "MATRIX_CHARACTER_AVATAR", "/gibt/es/nicht.png"), \
+             patch.object(bot, "PROFIL_DATEI", str(self.stand)):
+            await bot._profil_pflegen(client)
+        client.bild_hochladen.assert_not_awaited()
+
+    async def test_ein_fehlschlag_beim_bild_haelt_den_start_nicht_auf(self) -> None:
+        client = self._client(profil={})
+        client.bild_hochladen.side_effect = MatrixFehler(413, "M_TOO_LARGE", "zu gross")
+        with patch.object(bot, "MATRIX_CHARACTER_AVATAR", str(self.bild)), \
+             patch.object(bot, "PROFIL_DATEI", str(self.stand)):
+            await bot._profil_pflegen(client)  # wirft nicht
