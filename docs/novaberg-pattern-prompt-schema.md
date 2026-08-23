@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Technik — Einheitliches Prompt-Schema für alle Nodes
-**Stand:** 18. August 2026 (`[AUFZEICHNUNGEN]` ergänzt); davor 17. April 2026, Chat 52 (Code-Alignment). **Die Matrix in §3 ist älter als die Trennung von Verfasser und Responder** — sie führt `GEDAECHTNIS` beim Responder, der ihn seit dem 14.08.2026 nicht mehr sieht; als Fund notiert, hier nicht mitrepariert
+**Stand:** 23. August 2026 (der Override-Pfad heisst `prompts/gemma4-gpu/`). Davor: 18. August 2026 (`[AUFZEICHNUNGEN]` ergänzt); davor 17. April 2026, Chat 52 (Code-Alignment). **Die Matrix in §3 ist älter als die Trennung von Verfasser und Responder** — sie führt `GEDAECHTNIS` beim Responder, der ihn seit dem 14.08.2026 nicht mehr sieht; als Fund notiert, hier nicht mitrepariert
 **Pfad:** novaberg/docs/novaberg-pattern-prompt-schema.md
 **Quellen:** nova-01-t-d.md
 **Betrifft:** Alle Nodes mit LLM-Prompts (Perzeption, Router, Responder, Thinker, Tribunal, Salienz, Classify-Nodes)

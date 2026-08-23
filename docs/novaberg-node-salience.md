@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Pipeline-Node Salienz (Bewertung & Gedächtnisbildung)
-**Stand:** 27. Juli 2026, Chat 112 (Salienz-Formel, Rollen-Switch am System-Prompt)
+**Stand:** 23. August 2026 (`salienz.rules` und `salienz_segment.rules` haben einen Override; er lud bis zum 23.08.2026 nicht, weil nach Connector statt nach Modell geschluesselt wurde). Davor: 27. Juli 2026, Chat 112 (Salienz-Formel, Rollen-Switch am System-Prompt)
 **Pfad:** novaberg/docs/novaberg-node-salience.md
 **Quellen:** nova-01-m-g.md (Node-Beschreibung), nova-02-t-b.md (Salienz-Technik)
 

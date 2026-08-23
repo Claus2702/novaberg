@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Lesson — Prompt ueber Framework
-**Stand:** 15. April 2026, Chat 46
+**Stand:** 23. August 2026 (der Override-Pfad heisst `prompts/gemma4-gpu/` — nach dem Modell geschluesselt, nicht nach dem Connector). Davor: 15. April 2026, Chat 46
 **Pfad:** novaberg/docs/novaberg-graph_l_prompt_ueber_framework.md
 **Kontext:** Ollama Bug #15260 — think=false bricht format="json" bei Gemma4
 

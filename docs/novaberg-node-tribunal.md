@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Node-Referenz Tribunal
-**Stand:** 22. August 2026 — die Zeitangabe wird gerechnet, nicht beurteilt, und seit heute in zwei Formen: Wochentag gegen Datum, Bestätigung gegen das Gemeldete
+**Stand:** 23. August 2026 (die drei System-Prompts haben einen Override ueber dem Default — dreistufige Prompt-Segregation). Davor: 22. August 2026 — die Zeitangabe wird gerechnet, nicht beurteilt, und seit heute in zwei Formen: Wochentag gegen Datum, Bestätigung gegen das Gemeldete
 **Pfad:** novaberg/docs/novaberg-node-tribunal.md
 **Quellen:** nova-01-m-i.md
 **Datei:** `graph/nodes/tribunal.py`
