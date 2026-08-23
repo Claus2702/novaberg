@@ -1,6 +1,6 @@
 # Novaberg — Roadmap (Projektchronik)
 
-**Stand:** 23. August 2026, 19:20 UTC
+**Stand:** 23. August 2026, 20:10 UTC
 **Pfad:** novaberg/docs/novaberg-roadmap.md
 **Single Source of Truth für abgeschlossene Arbeit.**
 **Offene Punkte → novaberg-backlog.md**
@@ -12,6 +12,45 @@ Die Kopfzeile stand bis Chat 109 auf „Chat 93, 21. Mai 2026" — 15 Chats hint
 ---
 
 ## Chats 3–20: Grundlagen (März 2026)
+
+### 23.08.2026, 20:10 UTC — Eine Zeile, deren Gegenstand es nicht mehr gibt
+
+Die sieben Prompt-Overrides, die seit heute überhaupt erst geladen werden, trugen eine Anweisung,
+die im Default nirgends steht: *„Denke kurz und effizient. Halte deine internen Ueberlegungen unter
+100 Tokens."* — **7 von 7 Overrides, 0 von 91 Defaults.**
+
+**Ihr Gegenstand ist datierbar entfallen.** Sie stammt aus der Migration auf Gemma4 im April 2026,
+als man das Nachdenken nur im Prompt begrenzen konnte. Das Feld `think` entstand erst am
+**20.05.2026**, fünf Wochen später; heute übernehmen alle vier verbrauchenden Knoten den
+systemweiten Vorgabewert `False`, und Ollama liefert dann kein Denkfeld. Im Betriebslog kommt
+`<think` in **0 von 31** Dateien vor.
+
+Damit traf die Vorgabe den **sichtbaren** Text — bei den Tribunal-Richtern das `reasoning`.
+
+**Gemessen wurde direkt gegen Ollama, mit angehaltenem Hintergrundprozess**, drei Blöcke × 12 Läufe
+je Fassung:
+
+| | Override | Default |
+|---|---|---|
+| **mit** `format="json"` | 36/36 gültiges JSON | **36/36** |
+| **ohne** `format` — die Kontrolle | 36/36 | **0/36** |
+
+> **Der Kontrollarm ist der Teil, der die Messung trägt.** Ohne ihn hieße *„kein Unterschied"* auch
+> *„die Sonde sieht nichts"*. Mit ihm steht fest, dass die sechs Formatzeilen genau das leisten,
+> wofür sie gebaut wurden — und dass die Fessel dasselbe erzwingt. **Sie bleiben trotzdem:** Eine
+> Redundanz, die im Fehlerfall trägt, ist keine.
+
+**Die Gegenprobe lief als dieselbe Messung nach dem Eingriff.** Vor dem Entfernen war der Override
+in **3 von 3** Blöcken kürzer als der Default, danach in **1 von 3**. Der Vorzeichenwechsel ist die
+Aussage und nicht der Mittelwert: Die Default-Fassung schwankte zwischen den beiden Läufen bei
+unverändertem Prompt selbst um 7 %, und das ist die Rauschgrenze.
+
+**Der Anstoß kam nicht aus dem Register.** Die Frage, ob die Formathärtung überhaupt noch trägt,
+entstand aus einem Satz des Meisters — dass JSON inzwischen eine Option der Schnittstelle ist, seit
+die Ollama-Fehler mit `think=False` behoben sind. Der Blick in den Code gab ihm recht: Alle fünf
+Aufrufstellen setzen `expect_json=True`, und der Provider macht daraus `format="json"`.
+
+---
 
 ### 23.08.2026, 19:20 UTC — Sieben Prompt-Blöcke, die niemand geladen hat
 

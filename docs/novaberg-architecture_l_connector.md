@@ -49,6 +49,23 @@ Ein Loader liest beim Start alle Defaults und ueberschreibt sie. Dictionary auf 
 >
 > **Das Prinzip aus §4 trägt unverändert**, es hatte nur eine Ebene zu wenig. Ein Verzeichnis `mistral/` hat es übrigens nie gegeben; die Zeile stand hier, weil sie zur Symmetrie passte.
 
+## 2a. Was von den Overrides trägt — gemessen statt vermutet
+
+Die sieben Gemma4-Blöcke stammen vom April 2026 und tun zwei verschiedene Dinge. Am 23.08.2026 direkt gegen Ollama gemessen, drei Tribunal-Blöcke × 12 Läufe je Fassung, `think=False`, temperature 0.2 (`labor/2026-08-23_prompt_overrides_wirkung.py`):
+
+| | Override | Default |
+|---|---|---|
+| **mit** `format="json"` | 36/36 gültiges JSON | **36/36** |
+| **ohne** `format` — die Kontrolle | 36/36 | **0/36** |
+
+**Die Kontrolle ist der Teil, der die Messung trägt.** Ohne sie hieße „kein Unterschied" auch: „die Sonde sieht nichts". Mit ihr steht fest, dass die sechs Formatzeilen genau das leisten, wofür sie gebaut wurden — und dass `format="json"` dasselbe strukturell erzwingt.
+
+**Sie bleiben trotzdem.** Eine Redundanz, die im Fehlerfall trägt, ist keine: Käme ein Aufrufer ohne `expect_json` hinzu, ist der Unterschied 36 zu 0.
+
+**Die Thinking-Zeile ist entfernt.** *„Halte deine internen Ueberlegungen unter 100 Tokens"* stand in 7 von 7 Overrides und 0 von 91 Defaults. Sie stammt aus einer Zeit, in der `think` kein Feld der Anfrage war — die Klasse entstand erst am **20.05.2026**, fünf Wochen später. Heute setzen alle verbrauchenden Knoten `think=False`, und Ollama liefert dann kein Denkfeld; im Betriebslog kommt `<think` in **0 von 31** Dateien vor.
+
+Ihre gemessene Wirkung traf deshalb den **sichtbaren** Text: Vor dem Entfernen war der Override in **3 von 3** Blöcken kürzer als der Default, danach in **1 von 3**. Der Vorzeichenwechsel ist die Aussage, nicht der Mittelwert — die Default-Fassung schwankte zwischen zwei Läufen bei unverändertem Prompt selbst um 7 %, und das ist die Rauschgrenze.
+
 ## 3. Warum Textdateien statt YAML/JSON?
 
 Die Diskussion in Chat 45 war kurz:

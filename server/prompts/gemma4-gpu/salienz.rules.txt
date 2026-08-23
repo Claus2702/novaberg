@@ -1,6 +1,4 @@
 [REGELN]
-- Denke kurz und effizient. Halte deine internen Ueberlegungen unter 100 Tokens.
-
 KRITISCH — Ausgabeformat:
 - Deine GESAMTE Antwort ist ein einziges JSON-Objekt.
 - KEIN Text vor dem JSON. KEIN Text nach dem JSON.
