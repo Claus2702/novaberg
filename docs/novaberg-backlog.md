@@ -2695,6 +2695,35 @@ Jeder Turn-Punkt (User-Aussage, GV-Schritte, Nova-Aussage) wird nicht als einfac
 
 **Leitprinzip:** "Der Kanal ist dumm. Absichtlich." — Gilt weiterhin. Matrix ist ein dritter Renderer neben Desktop (GTK4) und Telegram. Markdown bleibt das kanonische Format.
 
+### Was Telegram nicht kann, und warum es keine Einstellungssache ist
+
+**Ein Telegram-Bot hat genau einen Absender: sich selbst.** Die Bot-API kennt keinen Weg, eine Nachricht im Namen eines Menschen in einen Chat zu stellen — nicht als Berechtigung, die man erteilen könnte, sondern als Eigenschaft des Protokolls. Alles, was in diesem Chat erscheint, kommt entweder vom Menschen selbst (über seine App) oder vom Bot.
+
+**Der Nachrichtenfluss macht daraus ein Problem, sobald ein zweiter Client mitspielt.** Novaberg trägt drei Kanäle: Desktop, Telegram, künftig Matrix. Wer am Desktop schreibt, dessen Äußerung geht über `POST /chat` in den Server; der Prompt-Consumer verteilt sie danach als `user_message` an **alle anderen** Clients desselben Menschen (`prompt_consumer.py`, `exclude_client`). Genau dafür ist der Typ da: Der Telegram-Chat soll zeigen, was am Desktop gesagt wurde.
+
+**Nur kann der Bot sie nicht als fremde Äußerung zustellen — er kann sie nur selbst sagen.** In `telegram_bot/bot.py` steht deshalb:
+
+```python
+elif typ == "user_message":
+    # User-Eingabe von einem anderen Client — als Info anzeigen
+    await _nachricht_senden(bot, chat_id, user_id, f"[Du] {user_text}")
+```
+
+**Die vier eckigen Klammern sind die ganze Krücke**, und sie kosten mehr als ihr Aussehen:
+
+| Was geschieht | Folge |
+|---|---|
+| Novas Konto sagt einen Satz des Menschen | Der Verlauf zeigt eine Figur, die den Nutzer zitiert, ohne es zu kennzeichnen — außer durch ein Präfix, das nur ein Mensch versteht |
+| Das Präfix ist Text, keine Struktur | Wer den Chat später ausliest, sieht eine Nova-Nachricht. Kein Feld trennt Zitat von Äußerung |
+| Antwortbezüge zeigen auf den Bot | Ein Reply auf „seine eigene" Nachricht ist formal ein Reply an Nova |
+| Ungelesen-Zähler und Benachrichtigung | Jede eigene Desktop-Eingabe erscheint unterwegs als eingehende Nachricht von Nova |
+
+> **Und es ist keine Einstellungssache, sondern eine Grenze der Bot-API.** Was fehlt, ist nicht ein Schalter, sondern ein zweiter Absender.
+
+**Matrix hat genau diesen zweiten Absender.** Ein Application Service darf innerhalb seines Namensraums im Namen jedes Nutzers senden (`?user_id=` am Client-Server-Endpunkt). Die Desktop-Äußerung wird damit ein Event mit `sender: @meister` — nicht ein Zitat, sondern die Äußerung selbst, mit der Struktur, die jeder Client ohnehin liest. Das Präfix entfällt, weil die Information, die es transportiert, ins Protokoll gehört und nicht in den Text.
+
+**Der Preis steht dabei:** Der Account des Menschen muss im Namensraum des Application Service liegen, damit dieser für ihn sprechen darf. Praktisch heißt das ein gemeinsamer Account statt zweier Identitäten — entschieden am 23.08.2026 (Chat 160).
+
 **Architektur:**
 
 1. **Matrix-Homeserver** — Synapse oder Dendrite, lokal auf der Novaberg-Maschine. Kein Cloud-Dienst, kein föderierter Zugang (optional später).
@@ -2702,7 +2731,7 @@ Jeder Turn-Punkt (User-Aussage, GV-Schritte, Nova-Aussage) wird nicht als einfac
 3. **Application Service (AS)** — Novaberg registriert sich als AS beim Homeserver. Kann als beide Accounts schreiben. Empfängt Room-Events per Callback.
 4. **Novaberg-Integration** — Analog zum Telegram-Bot: fire-and-forget POST /chat + WebSocket-Listener. Aber zusätzlich: User-Nachrichten von anderen Clients werden als `@meister` in den Room geschrieben (nicht als Bot-Nachricht).
 5. **WireGuard-VPN** — Server auf der Novaberg-Maschine, Client auf dem Handy (e/OS, F-Droid). Kein offener Port, kein externer Server. Voller Zugriff auf lokales Netz (Matrix, REST-API, Panels, Docker).
-6. **Matrix-Client** — Element oder FluffyChat auf e/OS (F-Droid). Verbindet sich über VPN-Tunnel auf den lokalen Homeserver.
+6. **Matrix-Client** — FluffyChat auf e/OS (F-Droid), Fractal auf dem Desktop (GTK4, Flathub). Verbindet sich über VPN-Tunnel auf den lokalen Homeserver. Die Client-Wahl ist keine Architekturentscheidung: Das Puppeting läuft im Application Service, serverseitig. Jeder spezifikationskonforme Client zeigt `@meister` und `@nova` als getrennte Absender. Ausschlaggebend für FluffyChat ist UnifiedPush — ohne Play Services auf e/OS ist FCM kein gangbarer Push-Weg. Ausschlaggebend für Fractal ist GTK4: gleiche Toolkit-Familie wie der bestehende Desktop-Client, ein Widget-Set weniger im System.
 
 **Vorteil gegenüber Telegram:**
 
@@ -2711,7 +2740,7 @@ Jeder Turn-Punkt (User-Aussage, GV-Schritte, Nova-Aussage) wird nicht als einfac
 | User-Nachrichten einspeisen | ❌ Nur Bot-Messages | ✅ AS kann als beliebiger User schreiben |
 | Datenhaltung | Telegram-Cloud | Lokal (Homeserver auf eigener Maschine) |
 | Erreichbarkeit unterwegs | Internet (Telegram-API) | WireGuard-VPN (kein offener Port) |
-| Client-Verfügbarkeit | Telegram-App | Element/FluffyChat (F-Droid) |
+| Client-Verfügbarkeit | Telegram-App | FluffyChat (F-Droid) / Fractal (Flathub) |
 | Protokoll | Proprietär | Offen (Matrix-Spezifikation) |
 
 **Bestandteile:**
@@ -2720,15 +2749,22 @@ Jeder Turn-Punkt (User-Aussage, GV-Schritte, Nova-Aussage) wird nicht als einfac
 |---|-------------|-------------|
 | 1 | WireGuard-Server | Installation + Konfiguration auf der Novaberg-Maschine (Nobara/Fedora) |
 | 2 | WireGuard-Client | Konfiguration auf e/OS Handy, Verbindungstest |
-| 3 | Matrix-Homeserver | Synapse oder Dendrite als Docker-Service im Compose-Stack |
-| 4 | Account-Setup | Zwei Accounts anlegen, Room erstellen, Berechtigungen |
-| 5 | Application Service | AS-Registrierung, Event-Callback, Nachrichtensteuerung als beide User |
-| 6 | Novaberg-Connector | `matrix_bot/bot.py` analog zu `telegram_bot/bot.py` — POST /chat + WebSocket-Listener + user_message-Einspeisung als `@meister` |
-| 7 | Client-Test | Element auf e/OS über VPN, bidirektionaler Nachrichtentest |
+| 3 | Matrix-Homeserver | Synapse als Docker-Service im Compose-Stack. Synapse statt Dendrite, weil Simplified Sliding Sync nativ ab 1.114 (relevant für Element-X-basierte Clients als spätere Option) |
+| 4 | TLS-Zugang | Reverse Proxy mit gültigem Zertifikat vor Synapse. Clients lehnen `http://` gegen den Homeserver ab. Entweder eigene CA (Root-Cert auf jedem Gerät) oder echtes Zertifikat für eine Subdomain, die intern auf die VPN-IP zeigt. Blockiert AP 8 |
+| 5 | Account-Setup | Zwei Accounts anlegen, Room erstellen, Berechtigungen |
+| 6 | Application Service | AS-Registrierung, Event-Callback, Nachrichtensteuerung als beide User |
+| 7 | Novaberg-Connector | `matrix_bot/bot.py` analog zu `telegram_bot/bot.py` — POST /chat + WebSocket-Listener + user_message-Einspeisung als `@meister` |
+| 8 | Client-Test | FluffyChat auf e/OS über VPN, Fractal auf dem Desktop, bidirektionaler Nachrichtentest |
 
 **Priorität:** Niedrig — Telegram funktioniert, Matrix ist Kür. Aber architektonisch sauber und privacy-konform.
 
 **Voraussetzung:** WS-SINGLE Fix (Chat 68, ✅), ClientConnection mit client_id/character_id-Filterung (Chat 68, ✅).
+
+**Offene Punkte (Chat 160):**
+
+1. **Push versus VPN-Tunnel.** Der Homeserver ist nur erreichbar, solange WireGuard steht. Ohne dauerhaften Tunnel kommt ein Impuls von Nova erst an, wenn die App geöffnet wird. Zu klären: WireGuard-Keepalive dauerhaft aktiv (Akkukosten messen) oder Push-Gateway außerhalb des Tunnels. Beides betrifft nur die Erreichbarkeit unterwegs, nicht den Nachrichtenfluss im lokalen Netz.
+2. **UnifiedPush-Verteiler.** FluffyChat braucht einen Verteiler (ntfy oder vergleichbar). Ob der lokal betrieben werden kann oder eine öffentlich erreichbare Instanz braucht, ist nicht geprüft — hängt an Punkt 1.
+3. **Element X als spätere Option.** Element X ist deutlich performanter als die Classic-Generation, setzt aber Simplified Sliding Sync voraus (mit AP 3 gegeben) und der Push-Weg ohne Play Services ist ungeprüft. Nicht für den Erstaufbau, aber nach AP 8 als Vergleich sinnvoll.
 
 ---
 
