@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Konzept — Matrix als dritter Kanal, mit Application Service statt Bot
-**Stand:** 23. August 2026 (v0.6 — **Postgres statt SQLite**, und der Client ist verbunden)
+**Stand:** 23. August 2026 (v0.7 — die Figur traegt Namen und Bild, ohne sie bei jedem Start neu abzulegen)
 **Pfad:** novaberg/docs/novaberg-matrix-kanal_k.md
 **Typ:** Konzept (`_k`)
 **Status:** 🟢 **in Betrieb** — sieben von acht Arbeitspaketen; TLS (4) ist zurueckgestellt, siehe §5
@@ -111,11 +111,11 @@ Standdatei fuehrt deshalb zum Abbruch und nicht zu einem leeren Stand.
 
 ## 2b. Die Zeugen — und warum die erste Fassung wertlos war
 
-**21 Zeugen, in einem eigenen Lauf:**
+**26 Zeugen, in einem eigenen Lauf:**
 
 ```
 docker compose exec matrix-bot python -m unittest discover -p "test_*.py"
-Ran 21 tests — OK
+Ran 26 tests — OK
 ```
 
 **Sie laufen nicht in der Server-Suite**, und das ist die Lage und keine Nachlaessigkeit: Der Connector ist ein eigener Dienst mit eigenem Behaelter und eigenem Abhaengigkeitssatz. `unittest discover` im Server sieht ihn nicht. **Das steht auch so in der Featureliste** — der Prototyp ist gemessen und bezeugt, aber nicht von derselben Suite.
@@ -147,6 +147,24 @@ Ran 21 tests — OK
 **Der Code-Block wird vor dem Fettdruck gewandelt.** Sonst wird aus `a ** b` innerhalb eines Blocks ein `<strong>`, und der Code stimmt nicht mehr.
 
 **`formatted_body` kommt nur hinzu, wo etwas ausgezeichnet wurde.** Ein zweites Feld, das nur den maskierten Text wiederholt, kostet Uebertragung und traegt nichts.
+
+---
+
+## 2d. Das Profil der Figur
+
+**Ohne Anzeigename zeigt ein Client den lokalen Teil der Kennung** — also die Kleinschreibung des Kontonamens. Der Connector setzt beim Start Namen und Bild, damit ein Neuaufbau des Homeservers sie nicht kostet.
+
+**Hochgeladen wird nur, was sich geaendert hat**, und das ist die eigentliche Zusicherung dieses Abschnitts:
+
+> **Der Medienspeicher vergibt je Aufruf eine neue Adresse.** Derselbe Inhalt zweimal hochgeladen ergibt zwei Objekte. Ein Connector, der bei jedem Start ablegt, fuellt den Speicher mit Kopien desselben Bildes — und **keine davon faellt auf**, denn jede einzelne ist gueltig und das Profil sieht richtig aus.
+
+Der Fingerabdruck der Datei (SHA-256) liegt neben dem Raumstand im Zustandsverzeichnis. Stimmt er und traegt das Profil bereits ein Bild, geschieht nichts; aendert sich die Datei, wird neu abgelegt.
+
+**Im Auslesefall belegt (23.08.2026):** Medienobjekte vor einem Neustart **5**, danach **5**. Beim ersten Lauf mit Bild stieg die Zahl von 4 auf 5.
+
+**Ein fehlendes Bild haelt den Start nicht auf.** Ein Profil ohne Bild ist ein Schoenheitsfehler; ein Connector, der deswegen nicht startet, kostet den Kanal.
+
+> **Gefunden hat den Mount-Fehler der Betrieb, nicht die Zeugen.** Beim ersten Lauf lag das Bild nicht im Behaelter — `matrix/config` war nur bei Synapse eingehaengt. Die sechs Zeugen der Profilpflege konnten das nicht finden: Sie setzen den Pfad selbst, damit sie ohne Datei auskommen. **Ein Zeuge, der seine Eingabe herstellt, prueft nie, ob sie im Betrieb vorliegt.**
 
 ---
 
