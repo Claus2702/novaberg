@@ -2,8 +2,8 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Backlog — Konzipierte, noch nicht implementierte Features
-**Stand:** 23. August 2026, 21:55 UTC (zwei Stellen zum Fehlversuchspfad markiert — er legt seit heute still statt zu loeschen; die Auswahl nach hoher Salienz bleibt)
-**Verlauf:** [Verlauf des Standes](#verlauf-des-standes) — 37 Eintraege, juengster zuerst
+**Stand:** 24. August 2026, 13:35 UTC (der Matrix-Epic loest seine Abschaltbedingung ein — Telegram ist aus). Davor: 23. August 2026, 21:55 UTC (zwei Stellen zum Fehlversuchspfad markiert — er legt seit heute still statt zu loeschen; die Auswahl nach hoher Salienz bleibt)
+**Verlauf:** [Verlauf des Standes](#verlauf-des-standes) — 38 Eintraege, juengster zuerst
 **Pfad:** novaberg/docs/novaberg-backlog.md
 **Quellen:** nova-08-k.md (Kognitive Anreicherung), nova-10-k-backlog.md (Skill-System), nova-01-t-c-backlog.md (Node-Konfiguration)
 
@@ -2715,7 +2715,7 @@ Jeder Turn-Punkt (User-Aussage, GV-Schritte, Nova-Aussage) wird nicht als einfac
 
 **Vision:** Nova als vollwertiger Chat-Partner über das Matrix-Protokoll, erreichbar von überall per WireGuard-VPN. Im Gegensatz zu Telegram kann Matrix über den Application-Service-Mechanismus *beide* Seiten steuern — User-Nachrichten und Bot-Nachrichten. Damit entfällt die `[Du]`-Krücke: Desktop-Eingaben erscheinen im Matrix-Client als echte User-Nachrichten, Novas Antworten als echte Nova-Nachrichten.
 
-**Leitprinzip:** "Der Kanal ist dumm. Absichtlich." — Gilt weiterhin. Matrix ist ein dritter Renderer neben Desktop (GTK4) und Telegram. Markdown bleibt das kanonische Format.
+**Leitprinzip:** "Der Kanal ist dumm. Absichtlich." — Gilt weiterhin. Matrix war ein dritter Renderer neben Desktop (GTK4) und Telegram; **seit dem 24.08.2026 sind es zwei** — Telegram ist abgeschaltet. Markdown bleibt das kanonische Format.
 
 ### Was Telegram nicht kann, und warum es keine Einstellungssache ist
 
@@ -2795,7 +2795,9 @@ elif typ == "user_message":
 
 **Zustand:** Synapse als eigener Compose-Dienst, aus dem lokalen Netz erreichbar (`/_matrix/client/versions` → 200). Der Connector läuft daneben, ein Raum je Paar. Die Zugangsdaten liegen außerhalb des Repositoriums. Konzept: `novaberg-matrix-kanal_k.md`.
 
-**Telegram bleibt unangetastet und läuft parallel.** Ein Kanal wird abgeschaltet, wenn der andere gemessen trägt — der Handy-Test steht noch aus.
+**Seit dem 24.08.2026 aus dem Repositorium herstellbar.** Beide Compose-Dienste stehen in der Vorlage, drei Muster mit leeren Geheimnissen unter `novaberg/matrix/`, Aufbauanleitung in beiden READMEs (Schritt 6). Gegengehalten: 16 von 16 Schlüsseln der `homeserver.yaml`, 6 von 6 der AS-Registrierung, keine Abweichung außer den geleerten Werten. **Das war kein Arbeitspaket dieses Epics** — die acht beschreiben, was der Kanal *kann*, keins beschreibt, ob ihn jemand anders aufbauen kann.
+
+~~**Telegram bleibt unangetastet und läuft parallel.** Ein Kanal wird abgeschaltet, wenn der andere gemessen trägt — der Handy-Test steht noch aus.~~ → **Am 24.08.2026 eingelöst.** Die Bedingung war AP 8, und AP 8 steht seit dem 23.08.2026 auf ✅. **Telegram ist abgeschaltet:** Behälter `ki_telegram` gestoppt und entfernt, Compose-Block aus Betriebsdatei und Template genommen; `telegram_bot/` bleibt liegen. Der Server meldete `WebSocket getrennt: 'meister' (client=telegram, 2 verbleibend)`. **Nebenbei gemessen, über dieselben 24 Stunden davor:** `ki_telegram` 144 WebSocket-Abbrüche mit Reconnect, `ki_matrix_bot` **0**. Offen bleibt allein der Widerruf des Bot-Tokens beim BotFather — ein gestoppter Behälter widerruft nichts.
 
 **Voraussetzung:** WS-SINGLE Fix (Chat 68, ✅), ClientConnection mit client_id/character_id-Filterung (Chat 68, ✅).
 
@@ -5879,6 +5881,8 @@ Der NachfragenAgent hat eine Kopplung: `services/pixie/router.py` bildet `nachfr
 ---
 
 ## Verlauf des Standes
+
+- **24. August 2026, 13:35 UTC** — der Matrix-Epic loest seine eigene Abschaltbedingung ein. Sie stand seit dem 23.08. als Satz da (*„Ein Kanal wird abgeschaltet, wenn der andere gemessen traegt — der Handy-Test steht noch aus"*) und war seit dem 23.08. erfuellt, weil AP 8 auf ✅ ging; **einen Tag lang hielt sich die Sperre selbst, nachdem ihr Grund entfallen war.** Telegram ist abgeschaltet, `telegram_bot/` bleibt liegen. Offen: der Token-Widerruf beim BotFather.
 
 - **23. August 2026, 17:15 UTC** — ein Eintrag neu: `DATEIINDEX-GRAPHKANAL`. Er entsteht aus einer Messung, die gegen einen Bau entschied — die Stichwoerter des Dateienindex gegen den Entitaetenbestand aufzuloesen ergibt 10 Treffer aus 843, und 116 der 122 Kanten zeigen auf dieselbe Entitaet.
 Die Fortschreibung des Standes, aus der Kopfzeile geloest am 20.08.2026. Der Wortlaut jedes Eintrags ist unveraendert; vorangestellt ist allein sein Datum.

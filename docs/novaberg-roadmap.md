@@ -1,6 +1,6 @@
 # Novaberg — Roadmap (Projektchronik)
 
-**Stand:** 24. August 2026, 12:45 UTC
+**Stand:** 24. August 2026, 15:50 UTC
 **Pfad:** novaberg/docs/novaberg-roadmap.md
 **Single Source of Truth für abgeschlossene Arbeit.**
 **Offene Punkte → novaberg-backlog.md**
@@ -12,6 +12,88 @@ Die Kopfzeile stand bis Chat 109 auf „Chat 93, 21. Mai 2026" — 15 Chats hint
 ---
 
 ## Chats 3–20: Grundlagen (März 2026)
+
+### 24.08.2026, 15:50 UTC — Der Kanal war gruen und aus dem Repositorium nicht herstellbar
+
+Matrix stand seit dem 23.08. auf 🟢: gebaut, im Betrieb gemessen, konzeptionell
+vollstaendig beschrieben. **Herstellbar war er nicht.** Die Zahl, die es am kuerzesten
+sagt: `README.md` und `README.de.md` hatten **0 Treffer** auf `matrix` und `synapse`.
+Wer der Anleitung folgte, baute ein Novaberg ohne Fernkanal und merkte es nicht — es
+fehlte nichts, wonach er gesucht haette.
+
+**Sechs Teile fehlten, und keins davon war ein Geheimnis.** Die Trennung war zwischen
+*Betrieb* und *Repositorium* gezogen statt zwischen *Geheimnis* und *Struktur*, und
+damit lag die Struktur mit draussen: `exclusive: false` in beiden Namensraeumen, die
+`url` auf den Connector-Port, `LC_COLLATE=C` in der Datenbank,
+`app_service_config_files`. Das sind die tragenden Entscheidungen dieses Kanals.
+
+**Was jetzt im Repositorium steht:**
+
+| Was | Wo | Gegengehalten |
+|---|---|---|
+| Compose-Dienste `synapse` und `matrix-bot` | `docker-compose.template.yml` | sechs Dienste beidseitig, beide Matrix-Dienste **feldgleich**, keine Wertabweichung |
+| AS-Registrierung als Muster | `matrix/config/novaberg-as.template.yaml` | **6 von 6** Schluesseln, nur `as_token`/`hs_token` geleert |
+| Tokens als Muster | `matrix/config/as-tokens.env.template` | zwei leere Schluessel |
+| Homeserver-Konfiguration als Muster | `matrix/data/homeserver.template.yaml` | **16 von 16** Schluesseln, nur die drei Geheimnisse geleert |
+| Datenbank und Konten als Befehl | beide READMEs, Schritt 6 | s. u. |
+
+**Die zwei Befehle sind gefahren, nicht abgeschrieben.** Das `CREATE DATABASE … LC_COLLATE='C'
+LC_CTYPE='C'` lief gegen ein **frisch aufgesetztes** Postgres und lieferte `synapse C C` —
+dieselbe Sortierung, die die Betriebsdatenbank traegt. Der `generate`-Lauf lief gegen ein leeres
+Verzeichnis und erzeugte genau die drei Dateien, auf die das Muster zeigt
+(`homeserver.yaml`, `novaberg.de.log.config`, `novaberg.de.signing.key`), mit genau den drei
+Geheimnissen, die die Anleitung zu uebernehmen heisst. `register_new_matrix_user` liegt im
+Behaelter und traegt die vier benutzten Schalter.
+
+**Was ausserhalb bleibt und warum:** die beiden Tokens, das Passwort, der Signaturschluessel,
+`matrix/data/`. Das ist dieselbe Regel wie bei `.env` — nur zieht sie jetzt an der richtigen
+Stelle.
+
+> **Die Ampel war nie falsch, und genau das ist der Befund.** Sie misst den Bauzustand;
+> Herstellbarkeit misst sie nicht, und kein Register des Projekts tut es. Ein 🟢 kann
+> heissen: laeuft hier, nirgends sonst.
+
+---
+
+### 24.08.2026, 13:35 UTC — Der Telegram-Kanal ist aus, und der abgeloeste war der unruhigere
+
+Matrix hat Telegram abgeloest. Der Grund ist kein Komfort und stand seit dem 23.08. fest
+(`novaberg-matrix-kanal_k.md`): Ein Telegram-Bot hat genau **einen** Absender, weshalb jede
+Aeusserung von einem anderen Client dort als `[Du] ...` aus Novas Mund erschien statt als
+Nachricht des Menschen. Ein Application Service darf im Namen jedes Nutzers seines
+Namensraums senden — die Kruecke entfaellt damit nicht durch eine Einstellung, sondern durch
+das Protokoll.
+
+**Was abgeschaltet ist:** Der Behaelter `ki_telegram` ist gestoppt und entfernt, der
+Compose-Block aus der Betriebsdatei und aus `docker-compose.template.yml` genommen.
+**Was liegen bleibt:** `telegram_bot/` steht unveraendert im Repositorium. Der Dienst ist aus,
+der Code ist nicht geloescht — wer den Kanal zurueckholen will, findet den Block als Kommentar
+an seiner alten Stelle.
+
+**Der Beleg kommt aus dem Betrieb, nicht aus der Konfiguration.** Der Server meldete beim
+Abschalten `WebSocket getrennt: 'meister' (client=telegram, 2 verbleibend)` — die
+Zuhoererzahl faellt von 3 auf 2, waehrend Desktop und Matrix stehen bleiben. Suite
+**2218 gruen, 0 uebersprungen**.
+
+**Nebenbei gemessen, und es faellt zugunsten des Nachfolgers aus.** Beide Connectoren ueber
+dieselben 24 Stunden vor der Abschaltung:
+
+| | Logzeilen | WebSocket-Abbrueche mit Reconnect |
+|---|---|---|
+| `ki_telegram` | 6807 | **144** |
+| `ki_matrix_bot` | 618 | **0** |
+
+Der Kanal, der abgeloest wurde, riss alle zehn Minuten ab und baute neu auf. Das stand in
+keinem Defektregister — es faellt nur auf, wenn man beide nebeneinander zaehlt.
+
+**Was die Abschaltung NICHT tut: sie widerruft nichts.** Das Bot-Token in `.env` bleibt bei
+Telegram gueltig, bis es beim BotFather widerrufen wird. Ein gestoppter Behaelter ist keine
+Sperre.
+
+**Zwei Defekteintraege sind damit gegenstandslos** und als solche markiert statt entfernt:
+`TELEGRAM-NAMENSAUFLOESUNG-FAELLT-AUS` und `TELEGRAM-SHADOW-TYP-TOT`.
+
+---
 
 ### 24.08.2026, 12:45 UTC — Der Wartungslauf, und eine zweite Saettigung darunter
 

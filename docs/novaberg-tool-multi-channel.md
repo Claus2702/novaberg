@@ -1,8 +1,8 @@
 # Novaberg — Tool: Multi-Channel-Architektur
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
-**Dokument:** Multi-Channel-Architektur (Telegram Bot, Formatierung)
-**Stand:** 23. August 2026 (**dritter Kanal: Matrix**, als Prototyp — der erste mit zwei Absendern; §2, §4. Davor: 21. April 2026, Chat 60 — chat.py fire-and-forget, Event-Modell)
+**Dokument:** Multi-Channel-Architektur (Desktop, Matrix, Formatierung)
+**Stand:** 24. August 2026 (**der Telegram-Kanal ist abgeschaltet** — Matrix traegt ihn allein; §2, §3, §4). Davor: 23. August 2026 (**dritter Kanal: Matrix**, als Prototyp — der erste mit zwei Absendern; §2, §4. Davor: 21. April 2026, Chat 60 — chat.py fire-and-forget, Event-Modell)
 **Pfad:** novaberg/docs/novaberg-tool-multi-channel.md
 **Quellen:** Chat 41 (Telegram Bot), Chat 43 (Konzept-Referenz)
 
@@ -21,8 +21,8 @@ Novaberg ist nicht an einen einzelnen Client gebunden. Der Server (FastAPI) ist 
 | Kanal | Technologie | Status |
 |-------|------------|--------|
 | Desktop-Client | GTK4 (PyGObject) + WebKitGTK, SSE + WebSocket | Produktiv |
-| Telegram-Bot | python-telegram-bot v20+, Long Polling | Produktiv (Chat 41) |
-| **Matrix** | Synapse + Application Service, Push statt Polling | **Prototyp (23.08.2026)** |
+| ~~Telegram-Bot~~ | python-telegram-bot v20+, Long Polling | **abgeschaltet 24.08.2026** — von Matrix abgeloest (§3) |
+| **Matrix** | Synapse + Application Service, Push statt Polling | **Produktiv (23.08.2026)** — seit 24.08.2026 der einzige Fernkanal |
 | Web-Interface | — | Geplant |
 
 > **Der Matrix-Kanal ist der erste mit zwei Absendern.** Desktop und Telegram haben je einen: Was dort erscheint, kommt vom Menschen selbst oder vom Dienst. Ein Application Service darf im Namen jedes Nutzers seines Namensraums senden — deshalb erscheint dort eine Aeusserung, die an einem **anderen** Client gemacht wurde, als Nachricht des Menschen und nicht als `[Du] …` aus Novas Mund. Konzept: `novaberg-matrix-kanal_k.md`.
@@ -31,7 +31,18 @@ Novaberg ist nicht an einen einzelnen Client gebunden. Der Server (FastAPI) ist 
 
 ---
 
-## 3. Telegram-Bot
+## 3. Telegram-Bot — abgeschaltet am 24.08.2026
+
+> **Dieser Abschnitt beschreibt einen Kanal, der nicht mehr laeuft.** Er bleibt stehen, weil
+> `telegram_bot/` weiter im Repositorium liegt und der Kanal damit zurueckholbar ist — der
+> Dienst ist aus, der Code ist nicht geloescht. Was hier steht, gilt fuer den Code; es gilt
+> **nicht** fuer den Betrieb.
+>
+> **Der Grund der Abloesung steht in §2** und ist keine Geschmacksfrage: Ein Telegram-Bot hat
+> genau einen Absender. `novaberg-matrix-kanal_k.md` fuehrt es aus.
+>
+> **Was die Abschaltung nicht tut:** Das Token in `.env` bleibt bei Telegram gueltig, bis es
+> beim BotFather widerrufen wird.
 
 **Dateien:** `telegram_bot/bot.py`, `telegram_bot/config.py`
 
@@ -46,7 +57,7 @@ Seit Chat 60: chat.py führt nur Pfad 1 (HumanGraph) aus — Wahrnehmung und Spe
 - Typing-Indicator während der Verarbeitung
 - `concurrent_updates=False` — sequentielle Verarbeitung
 
-**Docker:** Eigener Service im Compose-Stack, `depends_on: server`, kein Port-Mapping nach außen.
+**Docker:** ~~Eigener Service im Compose-Stack, `depends_on: server`, kein Port-Mapping nach außen.~~ → **am 24.08.2026 entfernt.** Der Block steht als Kommentar an seiner alten Stelle in `docker-compose.template.yml`; der Behaelter `ki_telegram` existiert nicht mehr.
 
 ---
 
@@ -56,7 +67,7 @@ Seit Chat 60: chat.py führt nur Pfad 1 (HumanGraph) aus — Wahrnehmung und Spe
 |-------|--------|--------------|
 | Server-Antwort | Markdown (kanonisch) | — |
 | Desktop-Client | HTML (WebKitGTK WebView) | Markdown → HTML am Client |
-| Telegram | Plain Text | Markdown → Text (Telegram unterstützt teilweise Markdown) |
+| ~~Telegram~~ | Plain Text | Markdown → Text — **Kanal abgeschaltet 24.08.2026** |
 | Matrix | `m.text` mit `body` | derzeit keine — der Client zeigt den Markdown-Text roh |
 
 > **Der Matrix-Kanal sendet vorerst nur `body`.** Die Spezifikation kennt daneben `formatted_body` mit `org.matrix.custom.html`; ohne dieses Feld zeigt ein Client die Markdown-Zeichen woertlich. Das ist beim Prototyp bewusst offen gelassen — erst tragen, dann formatieren.

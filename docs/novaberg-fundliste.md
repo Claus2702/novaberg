@@ -2,8 +2,8 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Rohe, noch unklassifizierte Funde aus laufender Arbeit
-**Stand:** 24. August 2026, 12:45 UTC
-**Offen:** 41 Funde — **gezaehlt am 23.08.2026, nicht fortgeschrieben** (fuenf neu aus dem Zug ueber Rang 5). Die Kopfzeile stand am selben Tag schon einmal auf 23 bei tatsaechlich 26; sie war ueber mehrere Zuege hochgezaehlt worden, und schon ihr Ausgangswert war es.
+**Stand:** 24. August 2026, 13:35 UTC
+**Offen:** **45 Funde — gezaehlt am 24.08.2026** (46 Fundzeilen im Abschnitt *Offen*, davon eine durchgestrichen; fuenf neu aus der Abschaltung des Telegram-Kanals). Die Kopfzeile stand am 23.08. schon einmal auf 23 bei tatsaechlich 26; sie war ueber mehrere Zuege hochgezaehlt worden, und schon ihr Ausgangswert war es — **deshalb wird hier gezaehlt und nie fortgeschrieben.**
 **Verlauf:** [Verlauf des Standes](#verlauf-des-standes) — 73 Eintraege, juengster zuerst
 **Pfad:** novaberg/docs/novaberg-fundliste.md
 
@@ -232,6 +232,29 @@ Analog zum Kraft-1-Stichtag: ab wann eine Partition brauchbar ist. Kein Backfill
 ---
 
 ## Offen
+
+- **2026-08-24** — **Die Dienstetabelle der Architektur kennt den Kanal nicht, der seit einem Tag traegt.** `novaberg-architecture.md` §1.2 fuehrt `server`, `postgres`, `redis`, `searxng` und `telegram-bot`; `synapse` und `matrix-bot` laufen seit dem 23.08.2026 und stehen dort nicht. Derselbe Rueckstand im Compose-Auszug §8.1 und in der Startreihenfolge §8.3. **Gefunden hat es die Abschaltung des abgeloesten Kanals**, nicht der Nachzug des neuen — wer eine Zeile *entfernt*, liest die Tabelle; wer eine *hinzufuegt*, liest sein Konzept.
+- **2026-08-24** — ~~**Der Matrix-Kanal ist aus dem Repositorium nicht herstellbar — sechs Teile fehlen, und keins davon ist ein Geheimnis.**~~ → **am selben Tag behoben, fuenf von sechs; der Befund bleibt als Beleg stehen.** Nachgezaehlt am Tag, an dem Matrix der einzige Fernkanal wurde:
+
+  | Fehlt | Wo es im Betrieb liegt | Warum es ins Repositorium gehoert |
+  |---|---|---|
+  | die Compose-Dienste `synapse` und `matrix-bot` | `docker-compose.yml` | ohne sie gibt es weder Homeserver noch Connector |
+  | die AS-Registrierung als **Muster** | `matrix/config/novaberg-as.yaml` | `id`, `url`, `sender_localpart` und vor allem `exclusive: false` in **beiden** Namensraeumen sind Struktur, nicht Geheimnis — die Begruendung steht im Konzept §3.3, die Datei, die sie umsetzt, nirgends |
+  | `as-tokens.env` als **Muster** mit leeren Werten | `matrix/config/as-tokens.env` | genau die Bauart, die `.env.template` fuer die uebrigen Geheimnisse schon hat |
+  | das Anlegen der Datenbank `synapse` mit `LC_COLLATE=C` / `LC_CTYPE=C` | von Hand | **nachtraeglich nur ueber einen Neuaufbau aenderbar** — der eine Schritt, bei dem ein Fehler teuer ist. `db/init.sql` legt sie nicht an |
+  | das Anlegen der Konten `@meister` und `@nova` | von Hand | ohne sie hat der AS niemanden zu puppeten |
+  | die `homeserver.yaml` als Muster | `matrix/data/homeserver.yaml` | erzeugt und dann von Hand auf Postgres und `app_service_config_files` gestellt |
+
+  **Richtig ausserhalb bleiben** die beiden Tokens, das Passwort, der Signaturschluessel und `matrix/data/`.
+
+  **Behoben am 24.08.2026:** Die beiden Compose-Dienste stehen in der Vorlage (sechs Dienste beidseitig, `synapse` und `matrix-bot` **feldgleich** mit der Betriebsdatei, keine Wertabweichung). Unter `novaberg/matrix/` liegen drei Muster mit leeren Geheimnissen — **16 von 16** Schluesseln der `homeserver.yaml` und **6 von 6** der AS-Registrierung, keine Abweichung ausser den geleerten Werten. Datenbank und Konten stehen als Befehl in beiden READMEs, Schritt 6; beide sind gegen ein frisches Postgres bzw. den laufenden Homeserver gefahren.
+
+  **Offen bleibt einer, und er gehoert nicht hierher:** Die Dienstetabelle der Architektur kennt `synapse` und `matrix-bot` weiterhin nicht — das ist der Fund darueber, nicht dieser.
+
+  **Und die Anleitung nannte den Kanal mit null Woertern:** `README.md` und `README.de.md` haben **0 Treffer** auf `matrix` und `synapse`. Wer ihnen folgt, baut ein Novaberg ohne Fernkanal und merkt es nicht — es fehlt nichts, wonach er gesucht haette. **Die Trennung Geheimnis/Struktur ist bei `.env` sauber gezogen und bei Matrix gar nicht.**
+- **2026-08-24** — **Die Featureliste kennt keinen Zustand *ausser Betrieb*.** Die vier Ampeln beschreiben den **Bauzustand** (⚫ nicht begonnen · 🟠 begonnen · 🟢 fertig · 🔴 fehlerhaft); ein Feature, dessen Code steht und dessen Dienst abgeschaltet ist, passt in keine davon. Die Telegram-Zeile traegt seit dem 24.08.2026 ⚫ mit einem Vermerk daneben — ⚫ heisst aber laut Legende *Code existiert nicht*, und der Code existiert. Zu entscheiden ist, ob das Register eine fuenfte Ampel bekommt oder ob abgeschaltete Zeilen in einen eigenen Abschnitt wandern.
+- **2026-08-24** — **Die Ampelzaehlung der Featureliste war vier zu hoch, und zwar in jeder Kategorie um eins.** Fortgeschrieben stand **229 Zeilen / 103 🟢 / 36 🟠 / 52 🔴 / 38 ⚫**; gezaehlt ueber die Ampelspalte der Tabellenzeilen sind es **225 / 102 / 35 / 51 / 37**. Der Unterschied sind die **vier Legendenzeilen** in §Ampeln — sie tragen die Symbole in der **ersten** Spalte, nicht in der zweiten, und rutschen in jede Zaehlung, die auf *Zeile enthaelt Ampelsymbol* prueft statt auf *Spalte 2 ist ein Ampelsymbol*. **Der Fehler ist stabil und wandert mit**: Er steht in derselben Form im Verlaufseintrag vom 23.08.2026 und wurde von dort weitergereicht, statt neu gezaehlt zu werden.
+- **2026-08-24** — **Der Matrix-Connector bekommt Zustellungen nicht innerhalb der Frist bestaetigt.** Im Betriebslog des Servers zweimal in 30 Minuten: `WebSocket-Send (threadsafe) nicht innerhalb von 5.0 s bestaetigt fuer 'meister' (client=matrix): Zustellung laeuft im Event-Loop weiter, Verbindung bleibt bestehen`. Folgenlos beobachtet — die Zustellung laeuft weiter —, aber die Frist ist da, um etwas zu erkennen, und sie erkennt hier regelmaessig. Der abgeloeste Telegram-Client zeigte dieselbe Zeile zur selben Zeit; **es ist also nicht der Connector, sondern der Sendepfad des Servers.** Ungeprueft ist, ob eine Zustellung je ausbleibt.
 
 - **2026-08-24** — **Der KZG-Akkumulator saettigt, und das ist entschieden so.** `salienz_roh = salienz_eingang + (haeufigkeit-1) * KZG_SALIENZ_BOOST` waechst unbegrenzt; die Kurve kappt ihn bei 1,0. Nach dem Wartungslauf stehen **859 von 3390 Schluesseln (25,3 %)** dort, gegenueber 1156 (34,1 %) vorher — davon **324 allein durch den Boost**, mit `haeufigkeit` 10 bis 152. **Entschieden am 24.08.2026: Ein 152-mal verstaerkter Gedanke IST maximal salient.** Kein Defekt, sondern die Bauart. **Was daraus fuer die Auswahl folgt, ist die eigentliche Auskunft:** Unter den 859 ordnet die Salienz nichts mehr — die **Haeufigkeit** aber schon, mit 96 verschiedenen Werten von 1 bis 152, und die Spitze teilt sich niemand (Rang 1/2/3 sind 152, 151, 126). Eine Top-2/3-Auswahl unter den Gesaettigten laeuft also ueber `haeufigkeit`, und das ist nicht ein Ersatz, sondern die genauere Groesse: Die Salienz sagt *maximal*, die Haeufigkeit sagt *wie oft es wiederkam*.
 

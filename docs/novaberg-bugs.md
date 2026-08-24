@@ -797,7 +797,7 @@ Nachgemessen am 23.08.2026: `graph/nodes/haltung.py` enthaelt weiterhin kein `lo
 
 ### `TELEGRAM-NAMENSAUFLOESUNG-FAELLT-AUS` — zeitweise kein Name
 
-**Zustand:** offen — gegen HEAD `00c16b6` gehalten am 20.08.2026. der Sendepfad faengt weiter jede Ausnahme und kehrt zurueck.
+**Zustand:** **gegenstandslos seit dem 24.08.2026** — der Telegram-Kanal ist abgeschaltet, der Behaelter `ki_telegram` gestoppt und entfernt. Der Befund ist damit **nicht behoben, sondern ohne Gegenstand**: `_nachricht_senden` faengt weiter jede Ausnahme und kehrt zurueck, aber der Pfad laeuft nicht mehr. **Wer den Kanal zurueckholt, holt diesen Defekt mit** — der Eintrag bleibt deshalb stehen statt geschlossen zu werden. Davor: offen, gegen HEAD `00c16b6` gehalten am 20.08.2026.
 
 **Befund (15.08.2026), aus der Fundliste uebernommen.** **Die Namensauflösung im Telegram-Behälter fällt zeitweise aus.** `httpx.ConnectError: [Errno -3] Temporary failure in name resolution` beim Griff nach `api.telegram.org`, zweimal im beobachteten Fenster: 14.08. 23:06 und 15.08. 07:22 (dort vier Zeilen). Beim Abholen von Nachrichten ist das folgenlos — die Bibliothek wiederholt. **Ungeprüft ist der Sendepfad:** `_nachricht_senden` fängt jede Ausnahme, protokolliert sie und kehrt zurück; eine Nachricht, die in dieses Fenster fällt, wäre damit verloren, ohne dass jemand sie erneut zustellt. Beobachtet, nicht reproduziert.
 
@@ -4645,7 +4645,7 @@ Die Klasse ist auch im Bestand sichtbar: Ein Scan über 400 KZG-Keys findet mehr
 
 **Nebenwirkung des Umbaus, positiv:** Novas Impulse erreichen Telegram jetzt **zum ersten Mal** — sie laufen als regulärer `character_response`, den der Bot seit jeher behandelt.
 
-**Status:** Offen — Zweig entfernen oder Kommentar korrigieren.
+**Status:** **gegenstandslos seit dem 24.08.2026** — der Telegram-Kanal ist abgeschaltet. Der tote Zweig steht unveraendert in `telegram_bot/bot.py`; er wird nur nicht mehr ausgefuehrt. **Nicht behoben, sondern ohne Gegenstand** — wer den Kanal zurueckholt, holt ihn mit. Davor: Offen — Zweig entfernen oder Kommentar korrigieren.
 
 ---
 

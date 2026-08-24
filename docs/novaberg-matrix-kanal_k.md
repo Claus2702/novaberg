@@ -2,12 +2,12 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Konzept — Matrix als dritter Kanal, mit Application Service statt Bot
-**Stand:** 23. August 2026 (v0.7 — die Figur traegt Namen und Bild, ohne sie bei jedem Start neu abzulegen)
+**Stand:** 24. August 2026 (v0.9 — der Kanal ist aus dem Repositorium herstellbar: drei Muster unter `novaberg/matrix/`, zwei Compose-Dienste in der Vorlage, Aufbauanleitung in beiden READMEs; §4. Davor am selben Tag, v0.8 — der abgeloeste Kanal ist abgeschaltet, die Abgrenzung damit ueberholt; davor 23. August 2026, v0.7 — die Figur traegt Namen und Bild, ohne sie bei jedem Start neu abzulegen)
 **Pfad:** novaberg/docs/novaberg-matrix-kanal_k.md
 **Typ:** Konzept (`_k`)
 **Status:** 🟢 **in Betrieb** — sieben von acht Arbeitspaketen; TLS (4) ist zurueckgestellt, siehe §5
 **Voraussetzung:** `novaberg-tool-multi-channel.md` (die Kanalarchitektur) · der Epic in `novaberg-backlog.md`
-**Abgrenzung:** Der Telegram-Bot bleibt unangetastet und laeuft parallel
+**Abgrenzung:** ~~Der Telegram-Bot bleibt unangetastet und laeuft parallel~~ → **am 24.08.2026 ueberholt.** Der Parallelbetrieb war die Abgrenzung des *Aufbaus*, nicht das Ziel: Der Telegram-Kanal ist abgeschaltet, Matrix traegt ihn allein. `telegram_bot/` liegt weiter im Repositorium, der Dienst laeuft nicht mehr.
 
 ---
 
@@ -235,6 +235,25 @@ Der Homeserver **schiebt** Ereignisse an den AS (`PUT /_matrix/app/v1/transactio
 | `matrix/config/novaberg-as.yaml` | AS-Registrierung samt zweier Tokens | nein — Geheimnisse |
 | `matrix/config/` (weitere) | dieselben Tokens fuer den Connector, dazu die Anmeldedaten | nein — Geheimnisse |
 | `novaberg/matrix_bot/` | der Connector | **ja** — Code |
+| `novaberg/matrix/` | **die Muster** zu den drei Dateien oben, Geheimnisse leer | **ja** — Struktur |
+
+> **Die Trennung verlaeuft seit dem 24.08.2026 zwischen Geheimnis und Struktur, nicht
+> zwischen Betrieb und Repositorium.** Der Satz darunter — *was Geheimnisse traegt, liegt
+> neben dem Repositorium* — blieb richtig und war trotzdem zu grob gelesen: Er hielt
+> **auch die Struktur** draussen. `exclusive: false` in beiden Namensraeumen, die
+> `url` auf den Connector-Port, `LC_COLLATE=C` in der Datenbank und
+> `app_service_config_files` sind keine Geheimnisse, sondern die tragenden
+> Entscheidungen dieses Kanals — und sie standen nur in Dateien, die niemand ausser
+> dem Betreiber je sieht.
+>
+> **Gemessen am selben Tag:** `README.md` und `README.de.md` hatten **0 Treffer** auf
+> `matrix` und `synapse`. Der Kanal war gebaut, im Betrieb, konzeptionell vollstaendig
+> beschrieben — und aus dem Repositorium **nicht herstellbar**.
+>
+> Seither liegen unter `novaberg/matrix/` drei Muster mit leeren Geheimnissen. Sie sind
+> gegen die Betriebsdateien gehalten: **16 von 16 Schluesseln** in der `homeserver.yaml`,
+> **6 von 6** in der AS-Registrierung, keine Abweichung ausser den geleerten Werten.
+> Die Anleitung steht in beiden READMEs, Schritt 6.
 
 **Die Trennung folgt derselben Regel wie beim Wissensspeicher** (`F-WISSEN-1`): Was Geheimnisse oder Gespraechsinhalte traegt, liegt neben dem Repositorium, nicht darin.
 

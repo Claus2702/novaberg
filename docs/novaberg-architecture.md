@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Systemarchitektur, Tech-Stack, Plugin-System
-**Stand:** 23. August 2026 (`shadow_auftrag.grund` in der Tabellenliste; davor am selben Tag: Prompt-Segregation dreistufig — `default` → `{modell}` → `{connector}`; `utils/etikett.py` und der `tools/dateien/`-Baum berichtigt; Connector-Tabelle um `qwen36` ergaenzt; *0 hardcoded Prompts* gegen 33 gemessene Literale widerlegt). Davor: 19. August 2026 (`agents/wissen/` — die Bibliothek als **bestellbarer** Dienst: Aushang in `plugins/wissen_manager/`, vier Ausgaenge, und die Abfrage liegt geteilt im Repository, weil Quelle und Zettel denselben Bestand lesen. **Der Manager fehlt weiterhin in der Plugin-Tabelle unten** — der Bestandsbefund von §5 ist damit aelter geworden, nicht erledigt; davor 18. August 2026 (`agents/wissen_rueckweg/` — der Rueckweg vom Gespraech in die Wissensdatei, ausgeloest von der Promotion; dazu `agents/dateien/` **vollstaendig** — Suche, Zoom und der Aufrufer (Aushang in `plugins/dateien_manager/`, Klassifikation, Dispatch, Auskunft); davor am selben Tag ohne Aufrufer; dazu `agents/dateien_index/aufzeichnungen.py`; die Zaehlaussage „sechste Kontextquelle“ bei `autonomous_wissen` um den Dateien-Index ergaenzt — eine weitere Quelle des Enrichers, die ausdruecklich **kein** Plugin ist); davor 16. August 2026 (gegen den Code geprüft: die Modelle kommen aus der **Connector-Tabelle**, nicht aus `OLLAMA_GPU_MODEL`/`OLLAMA_CPU_MODEL`; der Baum unter `memory/` nannte `embedding.py` und `lzg.py`, die es beide nicht gibt — §2.5 und §4 nachgezogen); davor 15. August 2026 (`services/pixie/riegel.py` und `memory/haltung.py` im Baum, `shadow_auftrag.arousal` in der Tabellenliste); davor 8. August 2026 (`novaberg-graph-rechenkette.md` im Dokumenten-Index Tiefe 1 ergänzt — das Register der 34 Rechensysteme des Charakter-Pfads, zerlegt entlang der Rechnungen statt entlang der Knoten. Zuvor: 31. Juli 2026, abends — `graph/nodes/haltung.py` im Verzeichnisbaum ergänzt, Knotenzahlen des CharacterGraph und des Node-Verzeichnisses neu gezählt — beide standen älter als der Verfasser da. Zuvor: `ei/haltung.py` im Verzeichnisbaum ergänzt und der Eintrag zum Haltungsraum im Dokumenten-Index auf das Beitragsmodell umgestellt — die Rechnung ist gebaut, der Knoten fehlt. Zuvor: `novaberg-node-verfasser_k.md` im Dokumenten-Index ergänzt — Konzept, nicht gebaut. Zuvor: `ruff-hart.toml` im Verzeichnisbaum ergänzt, §3 — die harte Teilmenge ohne geduldeten Bestand. Zuvor: `ruff.toml` im Verzeichnisbaum ergänzt, §3. Zuvor: Verzeichnisbaum nachgezogen — `ei/` vollständig, vier fehlende Agenten ergänzt. Kern: Chat 94, Microservice-Welle Block 2+3; Embedding-Modellwechsel Chat 107, §2.4)
+**Stand:** 24. August 2026 (Telegram-Kanal abgeschaltet — Dienstetabelle §1.2, Compose-Auszug §8.1, Startreihenfolge §8.3). Davor: 23. August 2026 (`shadow_auftrag.grund` in der Tabellenliste; davor am selben Tag: Prompt-Segregation dreistufig — `default` → `{modell}` → `{connector}`; `utils/etikett.py` und der `tools/dateien/`-Baum berichtigt; Connector-Tabelle um `qwen36` ergaenzt; *0 hardcoded Prompts* gegen 33 gemessene Literale widerlegt). Davor: 19. August 2026 (`agents/wissen/` — die Bibliothek als **bestellbarer** Dienst: Aushang in `plugins/wissen_manager/`, vier Ausgaenge, und die Abfrage liegt geteilt im Repository, weil Quelle und Zettel denselben Bestand lesen. **Der Manager fehlt weiterhin in der Plugin-Tabelle unten** — der Bestandsbefund von §5 ist damit aelter geworden, nicht erledigt; davor 18. August 2026 (`agents/wissen_rueckweg/` — der Rueckweg vom Gespraech in die Wissensdatei, ausgeloest von der Promotion; dazu `agents/dateien/` **vollstaendig** — Suche, Zoom und der Aufrufer (Aushang in `plugins/dateien_manager/`, Klassifikation, Dispatch, Auskunft); davor am selben Tag ohne Aufrufer; dazu `agents/dateien_index/aufzeichnungen.py`; die Zaehlaussage „sechste Kontextquelle“ bei `autonomous_wissen` um den Dateien-Index ergaenzt — eine weitere Quelle des Enrichers, die ausdruecklich **kein** Plugin ist); davor 16. August 2026 (gegen den Code geprüft: die Modelle kommen aus der **Connector-Tabelle**, nicht aus `OLLAMA_GPU_MODEL`/`OLLAMA_CPU_MODEL`; der Baum unter `memory/` nannte `embedding.py` und `lzg.py`, die es beide nicht gibt — §2.5 und §4 nachgezogen); davor 15. August 2026 (`services/pixie/riegel.py` und `memory/haltung.py` im Baum, `shadow_auftrag.arousal` in der Tabellenliste); davor 8. August 2026 (`novaberg-graph-rechenkette.md` im Dokumenten-Index Tiefe 1 ergänzt — das Register der 34 Rechensysteme des Charakter-Pfads, zerlegt entlang der Rechnungen statt entlang der Knoten. Zuvor: 31. Juli 2026, abends — `graph/nodes/haltung.py` im Verzeichnisbaum ergänzt, Knotenzahlen des CharacterGraph und des Node-Verzeichnisses neu gezählt — beide standen älter als der Verfasser da. Zuvor: `ei/haltung.py` im Verzeichnisbaum ergänzt und der Eintrag zum Haltungsraum im Dokumenten-Index auf das Beitragsmodell umgestellt — die Rechnung ist gebaut, der Knoten fehlt. Zuvor: `novaberg-node-verfasser_k.md` im Dokumenten-Index ergänzt — Konzept, nicht gebaut. Zuvor: `ruff-hart.toml` im Verzeichnisbaum ergänzt, §3 — die harte Teilmenge ohne geduldeten Bestand. Zuvor: `ruff.toml` im Verzeichnisbaum ergänzt, §3. Zuvor: Verzeichnisbaum nachgezogen — `ei/` vollständig, vier fehlende Agenten ergänzt. Kern: Chat 94, Microservice-Welle Block 2+3; Embedding-Modellwechsel Chat 107, §2.4)
 **Pfad:** novaberg/docs/novaberg-architecture.md
 **Quellen:** nova-00-a.md (Architektur-Übersicht), nova-07-a.md (Tech-Stack), nova-07-m-a.md (Plugin-System)
 
@@ -29,7 +29,7 @@
 | **postgres** | PostgreSQL 16 + pgvector | 5432 | LZG, Entitäten, Fakten, Timeline, Notizen |
 | **redis** | Redis 7 Stack (mit RediSearch) | 6379 | KZG, Session, Queues, Stacks, Vektorsuche |
 | **searxng** | SearXNG | 8080 | Lokale Metasuchmaschine (JSON-API) |
-| **telegram-bot** | Python, Long Polling | — | Multi-Channel-Zugang (seit Chat 41) |
+| ~~**telegram-bot**~~ | Python, Long Polling | — | **abgeschaltet am 24.08.2026** — von Matrix abgeloest; Behaelter entfernt, Compose-Block genommen. `telegram_bot/` liegt weiter im Repositorium. **Die Zeilen fuer `synapse` und `matrix-bot` fehlen in dieser Tabelle** (Fundliste 24.08.2026) |
 
 ### 1.3 Host-native Services (Ollama)
 
@@ -837,13 +837,12 @@ services:
       - ./searxng:/etc/searxng:rw
     ports: ["8080:8080"]
 
-  telegram-bot:
-    build: ./telegram_bot
-    container_name: ki_telegram
-    depends_on: [server]
-    env_file: .env
-    restart: unless-stopped
+  # telegram-bot: abgeschaltet am 24.08.2026, Block entfernt
 ```
+
+> **Der Auszug ist unvollstaendig:** `synapse` und `matrix-bot` laufen seit dem 23.08.2026
+> und stehen hier nicht. Die Betriebsdatei ist `docker-compose.yml` im Arbeitsverzeichnis,
+> das Muster im Repositorium `docker-compose.template.yml`.
 
 ### 8.2 Ollama (Host-native)
 
@@ -872,7 +871,8 @@ Docker-Container erreichen den Host via `host.docker.internal`. Ollama muss expl
    ├── build_human_graph() + build_agent_graph()
    ├── APScheduler -> SchattenArbeit (alle 10 Min)
    └── API bereit auf :8000
-5. docker compose up -> telegram-bot (Long Polling, wartet auf server)
+5. docker compose up -> matrix-bot (Application Service, wartet auf server + synapse)
+   (bis 24.08.2026 stand hier telegram-bot, Long Polling — der Kanal ist abgeschaltet)
 6. Client -> GTK4 App verbindet sich via SSE + WebSocket
 ```
 
