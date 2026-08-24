@@ -4581,6 +4581,41 @@ Und live für den Impuls-Turn `57b6e84c…`: 14 `art`/`quelle`-Kombinationen im 
 
 ---
 
+#### `RUECKWEG-SETZT-KOPIE-NEBEN-ORIGINAL` — der Fund stand schon da ✅
+
+**Zustand:** behoben — gebaut und gemessen am 24.08.2026. `absatz_bestimmen` verlangt jetzt, dass ein Absatz mindestens **einen Satz** mitbringt, der noch nicht im Text steht (`_bringt_neues`); bringt er keinen, wird er als *steht schon da* behandelt. Zeugen `tests/test_rueckweg_dublette.py` (12), Gegenprobe **6 vorhergesagt / 6 gezählt**, Suite `Ran 2260 tests — OK`, 0 übersprungen.
+
+**Symptom.** Der Rückweg arbeitet Funde in bestehende Wissensdateien ein: Er spaltet einen Absatz hinter einem Anker und setzt den Fund in die Naht, mit Marke `[iN>]`. Schlägt das Modell als Fund einen Satz vor, **der schon dasteht**, landet die Kopie unmittelbar neben ihrem Original:
+
+```
+… Synapsenlast gesenkt und die regulatorische Stabilität erhöht wird. [i2>]
+… Synapsenlast gesenkt und die regulatorische Stabilität erhöht wird.
+```
+
+**Der Aufruf hat für diesen Fall einen eigenen Ausgang** — `nach=None`, *steht schon da* — und benutzt ihn nicht zuverlässig. Geprüft wurde er nie.
+
+**Gemessen am 24.08.2026 über 474 Wissensdateien:**
+
+| | |
+|---|---|
+| wörtlich doppelte Absätze | **17** |
+| unmittelbar wiederholte Sätze im selben Absatz | **7** |
+| betroffene Dateien | **22** |
+| davon in einem einzigen Durchgang entstanden | **5** |
+| Einarbeitungen dieses Durchgangs | 232 |
+| davon ohne einen neuen Satz | **12** |
+| davon echte Funde | **220** |
+
+> **Der Fehler ist still gegen die einzige Prüfung, die es gab.** `paarung_pruefen` wacht über die Invariante *eine Marke, ein Eintrag* — und die hält: Die Kopie bekommt ihre Marke, der Eintrag steht im Archiv, die Version wird fortgeschrieben. **Eine Invariante über die Buchführung sagt nichts über den Inhalt, den sie verbucht.** Nur wer den Absatz liest, sieht ihn doppelt.
+
+**Zwei Formen, und die Marken entscheiden über die Behandlung.** Beim Satz im selben Absatz trägt nur eine Kopie die Marke — die überlebt. Beim doppelten Absatz an zwei Stellen tragen **beide** eine eigene Marke; dort fällt die zweite Fassung, aber ihre Marke wandert an die erste (`Text [i4>] [i5>]`), damit kein Archiveintrag verwaist.
+
+**Der Bestand ist geräumt** (`labor/2026-08-24_dubletten_ruecknahme.py`): 23 Dateien, 7 Sätze und 18 Absätze zurückgenommen, danach **0 Dubletten**. Gegengeprüft mit der Produktivfunktion `paarung_pruefen` über alle 474 Dateien: **474 heil, 0 Befunde.** Die Gegenprobe am Werkzeug — Markenrettung abgeschaltet — hätte 12 Dateien wegen gerissener Paarung übersprungen; der Riegel greift also nachweislich.
+
+**Verwandt:** `KZG-SEGMENT-DUPLIKAT` und `PROMO-QUEUE-DUBLETTEN` (dieselbe Klasse an anderer Stelle: etwas entsteht zweimal, und die Buchführung darüber stimmt).
+
+---
+
 #### `IMPULS-FAELLT-AUS-DEM-VERLAUF` — Nova schreibt ihren eigenen Vorschlag dem Nutzer zu ✅
 
 **Zustand:** behoben — gebaut und gemessen am 24.08.2026. Der Sprecher kommt jetzt aus dem Feld `herkunft`, nicht aus der Position in der Liste. Zeugen `tests/test_verlauf_sprecher.py` (24), zwei Gegenproben (**9 vorhergesagt / 8 gezählt** an der Paarbildung, **4 vorhergesagt / 8 gezählt** an der Sprecherbezeichnung), Suite `Ran 2248 tests — OK`, 0 übersprungen.

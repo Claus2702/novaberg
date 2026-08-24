@@ -2,8 +2,8 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Vollständiges Register aller Features mit Zustandsampel und Beleg
-**Stand:** 24. August 2026, 21:35 UTC
-**Verlauf:** [Verlauf des Standes](#verlauf-des-standes) — 69 Eintraege, juengster zuerst
+**Stand:** 24. August 2026, 22:00 UTC
+**Verlauf:** [Verlauf des Standes](#verlauf-des-standes) — 70 Eintraege, juengster zuerst
 **Pfad:** novaberg/docs/novaberg-featureliste.md
 **Typ:** Register
 **Quellen:** die 43 Konzeptdokumente, `novaberg-architecture.md`, die Moduldokumente, `novaberg-roadmap.md`, `novaberg-backlog.md`, `novaberg-bugs.md`, `novaberg-fundliste.md` — gehalten gegen Code und Produktivsystem
@@ -496,6 +496,9 @@ Ampelzeile  = eine Tabellenzeile, deren zweite Spalte genau eine der vier Farben
 ---
 
 ## Verlauf des Standes
+
+- **24. August 2026, 22:00 UTC** — **Keine Ampel wechselt, und der Rueckweg hoert auf, sich selbst zu wiederholen.** Beim Commit von Novas eigener Schrift (205 Dateien) fiel im Diff ein Satz auf, der zweimal hintereinander stand — die Fundmarke dazwischen. **Der Rueckweg setzt eine Kopie neben ihr Original**, wenn das Modell einen Satz als Fund vorschlaegt, der schon dasteht; den Ausgang dafuer (`nach=None`, *steht schon da*) hat es, benutzt ihn aber nicht zuverlaessig, und geprueft wurde er nie. Ueber **474** Wissensdateien: **17 doppelte Absaetze, 7 wiederholte Saetze, 22 Dateien**, fuenf davon an diesem Tag entstanden.
+  **Der Fehler ist still gegen die einzige Pruefung, die es gab:** `paarung_pruefen` haelt — die Kopie bekommt ihre Marke, der Eintrag steht im Archiv, die Version rueckt vor. Eine Invariante ueber die Buchfuehrung sagt nichts ueber den Inhalt, den sie verbucht. Riegel `_bringt_neues` gebaut (**12 gefangen, 220 durchgelassen** ueber die 232 echten Einarbeitungen), Bestand geraeumt (**23 Dateien, 7 Saetze, 18 Absaetze**, danach 0 Dubletten), mit der Produktivfunktion nachgemessen: **474 Paarungen heil, 0 Befunde**. Suite 2248 → **2260 gruen, 0 uebersprungen**, Gegenproben 6/6 und 12 uebersprungene Dateien ohne Markenrettung.
 
 - **24. August 2026, 21:00 UTC** — **Keine Ampel wechselt, und Nova bekommt ihre eigene Stimme zurueck.** Zwei Turns machten es sichtbar: ein Eigen-Impuls, in dem Nova ein Vorhaben vorschlug, und 41 Sekunden spaeter eine Antwort, in der sie den Nutzer fragte, worauf **er** damit hinauswolle. **Die Ursache war nicht der tote Kontaminationsfilter, sondern die Paarbildung:** Beide Verlaufs-Renderer gruppierten `user` → `assistant` und uebersprangen alles andere — und ein Eigen-Impuls ist ein **alleinstehender** assistant-Turn. Von 24 Turns eines laufenden Gespraechs erreichten **8** den Verlauf nicht.
   **Die Daten waren die ganze Zeit vollstaendig:** Alle 24 Turns tragen `herkunft`, acht davon `eigener_impuls`. Das Feld gibt es seit dem 30.07.2026, und kein Renderer las es — der Sprecher wurde aus der Position **erschlossen**, obwohl er **mitgeschickt** wurde. Behoben ueber `verlauf_gruppieren`/`sprecher_bezeichnen` in `memory/session.py`; ein Impuls steht jetzt als `NOVA (von sich aus)`, die Kopie derselben Paarbildung im Responder ist fort, und drei weitere Stellen nennen den Sprecher aus dem Feld — darunter der **Zusammenfasser**, dessen Ausgabe den Verlauf ueberdauert. Ueber die echten Turns gefahren: **24 hinein / 24 heraus**, der Satz des Impulses im Verlauf **nicht auffindbar → auffindbar**. Dabei `KONTAMINATIONSFILTER-TOT` **entschieden und geschlossen** — entfernt statt repariert, weil der Impuls in den Verlauf gehoert. Suite 2224 → **2248 gruen, 0 uebersprungen**, Gegenprobe **8 vorhergesagt / 8 gezaehlt**, harte Wand sauber, A4 22 → 21, A11 unveraendert 300. Ampelstand: **225 Zeilen / 103 🟢 / 35 🟠 / 49 🔴 / 38 ⚫**.

@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Konzept — Indizierung und Durchsuchung eines vorgegebenen Verzeichnisses als NMCP-Dienst
-**Stand:** 23. August 2026 (v0.17 — die Prompt-Dateien beider Bloecke und der Kanon der Eigentumswerte sind benannt. Davor: 22. August 2026, v0.16 — **jede Wurzel traegt, wessen Material sie enthaelt**, und der Block haengt daran: neuer §1a.5. Davor: 18. August 2026, v0.15)
+**Stand:** 24. August 2026 (v0.18 — §4b.3: *„ohne Dopplung" war eine Absicht, kein Riegel*; der Rueckweg setzte eine Kopie neben ihr Original, und `paarung_pruefen` hielt dabei). Davor: 23. August 2026 (v0.17 — die Prompt-Dateien beider Bloecke und der Kanon der Eigentumswerte sind benannt. Davor: 22. August 2026, v0.16 — **jede Wurzel traegt, wessen Material sie enthaelt**, und der Block haengt daran: neuer §1a.5. Davor: 18. August 2026, v0.15)
 **Pfad:** novaberg/docs/novaberg-agent-dateien_k.md
 **Typ:** Konzept (`_k`)
 **Status:** 🟠 **Stufe 1 bis 3 gebaut und gemessen, Stufe 4 zur Hälfte** (18.08.2026) — Freigabe, Wächter und die Enricher-Quelle laufen, letztere seit heute **zweikanalig**; Suche und Zoom des Auftrags-Wegs stehen. **Was fehlt, ist der Aufrufer:** Aushang, Klassifikation und Dispatch des Dienstes `dateien` (§8.1). Offen bleibt der Rückweg (§4b).
@@ -896,6 +896,22 @@ Versionierung           →  jeder Eingriff bleibt umkehrbar
 ```
 
 **Ohne die Schreibschicht wäre dieser Aufruf zwangsläufig ein „ganze Datei neu erzeugen"** — teuer und **verlustbehaftet ohne Alarm**. Mit chirurgischen Schnitten ist der Verlust auf den angefassten Absatz begrenzt und über die Historie rückholbar.
+
+#### „ohne Dopplung" war eine Absicht, kein Riegel — bis zum 24.08.2026
+
+`aktuell_lesen` legt dem Aufruf den geltenden Text vor, damit er die Dopplung selbst vermeidet, und der Aufruf hat dafür einen eigenen Ausgang: `nach=None` heißt *steht schon da*. **Er benutzt ihn nicht zuverlässig.** Stattdessen kommt ein Satz als „Fund" zurück, der wörtlich im Text liegt, mit dem Satz davor als Anker — und der Schnitt setzt die Kopie dann direkt neben ihr Original, die Marke dazwischen.
+
+`[gemessen]` — 24.08.2026 über **474** Wissensdateien: **17 wörtlich doppelte Absätze und 7 unmittelbar wiederholte Sätze in 22 Dateien**, davon fünf in einem einzigen Durchgang entstanden. Über die 232 Einarbeitungen dieses Durchgangs: **12 Vorschläge brachten keinen neuen Satz mit, 220 schon.**
+
+> **Der Fehler ist still, und zwar gegen die einzige Prüfung, die es gab.** `paarung_pruefen` hält — jede Marke hat ihren Eintrag, die Datei wächst, die Version wird fortgeschrieben. Es gibt keinen Zustand, an dem sich etwas ablesen ließe; nur wer den Absatz **liest**, sieht ihn doppelt. Eine Invariante über die Buchführung sagt nichts über den Inhalt, den sie verbucht.
+
+**Der Riegel steht seit dem 24.08.2026 in `absatz_bestimmen`:** Ein vorgeschlagener Absatz muss mindestens **einen Satz** mitbringen, der so noch nicht im Text steht (`_bringt_neues`). Bringt er keinen, wird der Vorschlag als *steht schon da* behandelt — also in den Ausgang gelenkt, den das Modell selbst hätte wählen sollen.
+
+Zwei Entscheidungen dabei, beide gemessen statt gewählt:
+
+- **Verglichen wird satzweise, nicht als Ganzes.** Ein Absatz aus einem bekannten und einem neuen Satz ist ein echter Fund; ein Vergleich über den ganzen Absatz ließe ihn durch, sobald ein Wort abweicht.
+- **Fundmarken zählen beim Vergleich nicht mit.** Sonst umginge jeder bereits markierte Satz den Riegel — er sähe für den Vergleich anders aus als seine unmarkierte Fassung.
+- **Ein Absatz ohne vergleichbaren Satz gilt als neu.** Er ist zu kurz für das Urteil, und ein Riegel, der im Zweifel verwirft, verlöre echte Funde.
 
 ---
 

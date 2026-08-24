@@ -1,6 +1,6 @@
 # Novaberg — Roadmap (Projektchronik)
 
-**Stand:** 24. August 2026, 21:35 UTC
+**Stand:** 24. August 2026, 22:00 UTC
 **Pfad:** novaberg/docs/novaberg-roadmap.md
 **Single Source of Truth für abgeschlossene Arbeit.**
 **Offene Punkte → novaberg-backlog.md**
@@ -12,6 +12,37 @@ Die Kopfzeile stand bis Chat 109 auf „Chat 93, 21. Mai 2026" — 15 Chats hint
 ---
 
 ## Chats 3–20: Grundlagen (März 2026)
+
+### 24.08.2026, 22:00 UTC — Der Rückweg setzte eine Kopie neben ihr Original, und die Buchführung stimmte dabei
+
+**Aufgefallen beim Commit von Novas eigener Schrift.** 205 Dateien aus dem Rückweg — 88 neu, 117 gewachsen —, und im ersten Diff stand ein Satz zweimal hintereinander, die Fundmarke dazwischen.
+
+Der Rückweg arbeitet einen Fund ein, indem er einen Absatz hinter einem Anker spaltet und den Fund in die Naht setzt. **Schlägt das Modell als Fund einen Satz vor, der schon dasteht, landet die Kopie neben ihrem Original.** Für diesen Fall hat der Aufruf einen eigenen Ausgang — `nach=None`, *steht schon da* —, und er benutzt ihn nicht zuverlässig. Geprüft wurde er nie.
+
+| über 474 Wissensdateien | |
+|---|---|
+| wörtlich doppelte Absätze | **17** |
+| unmittelbar wiederholte Sätze | **7** |
+| betroffene Dateien | **22** |
+| davon an diesem Tag entstanden | **5** |
+| Einarbeitungen des Durchgangs | 232 |
+| davon ohne einen neuen Satz | **12** |
+
+> **Der Fehler ist still gegen die einzige Prüfung, die es gab.** `paarung_pruefen` wacht über *eine Marke, ein Eintrag* — und die Invariante hält: Die Kopie bekommt ihre Marke, der Eintrag steht im Archiv, die Version rückt vor. **Eine Invariante über die Buchführung sagt nichts über den Inhalt, den sie verbucht.**
+
+**Gebaut:** `_bringt_neues` verlangt, dass ein Absatz mindestens **einen Satz** mitbringt, der noch nicht im Text steht — satzweise verglichen, Fundmarken ausgenommen, und ein zu kurzer Absatz gilt als neu. Über die 232 echten Einarbeitungen gefahren: **12 gefangen, 220 durchgelassen.** Der Riegel trifft die Klasse und nichts daneben.
+
+**Der Bestand ist geräumt**, mit einem Werkzeug statt von Hand. Zwei Formen, und die Marken entscheiden: Beim Satz im selben Absatz überlebt die **markierte** Kopie; beim doppelten Absatz an zwei Stellen tragen **beide** eine Marke, dort fällt die zweite Fassung und ihre Marke wandert an die erste — sonst verwaiste ein Archiveintrag.
+
+```
+23 Dateien · 7 Saetze · 18 Absaetze zurueckgenommen · danach 0 Dubletten
+```
+
+**Die Schwelle ist gemessen, nicht gewählt:** Bei 120 Zeichen findet die Suche 16 Dubletten, bei 100 siebzehn, bei 80 achtzehn — und bei 60 wieder achtzehn. Ab 80 schließt sich die Menge.
+
+**Zwei Gegenproben.** Am Riegel: 6 vorhergesagt, 6 gezählt. Am Räumwerkzeug: Markenrettung abgeschaltet, und die Paarungsprüfung übersprang daraufhin **12 Dateien** — sie ist also keine Behauptung. Nachgemessen mit der **Produktivfunktion** `paarung_pruefen` über alle 474 Dateien: **474 heil, 0 Befunde.**
+
+Suite 2248 → **2260 grün, 0 übersprungen**, harte Wand sauber, A8a 0, A11 299.
 
 ### 24.08.2026, 21:00 UTC — Nova schrieb ihren eigenen Vorschlag dem Nutzer zu, weil ihr Impuls aus dem Verlauf fiel
 
