@@ -86,7 +86,42 @@ class SalienzLegtSegmentAbTest(unittest.TestCase):
         writes: list[dict] = _analyse([SEG_0, SEG_1])
         for write in writes:
             self.assertIn("salienz_obj", write["daten"])
-            self.assertEqual(write["daten"]["salienz_obj"]["salienz"], 0.5)
+            self.assertAlmostEqual(
+                write["daten"]["salienz_obj"]["salienz"], 0.5/1.3, places=4,
+            )
+
+    def test_die_modellbewertung_bleibt_unangetastet(self):
+        """Der Eingang der Formel ueberlebt ihr Ergebnis.
+
+        `salienz` traegt nach dem Lauf das **Ergebnis**; die Bewertung des
+        Modells steht daneben in `salienz_modell` und wird nicht
+        ueberschrieben. Ohne diese Trennung liest der Knoten beim zweiten
+        Segment seinen eigenen Ausgang.
+        """
+        writes: list[dict] = _analyse([SEG_0, SEG_1])
+        for write in writes:
+            self.assertEqual(write["daten"]["salienz_obj"]["salienz_modell"], 0.5)
+
+    def test_die_rechnung_ist_idempotent_ueber_die_segmente(self):
+        """Zwei Segmente ergeben denselben Wert wie eines — Regel 4.
+
+        **Der Fall, den es bis zum 24.08.2026 gab:** Der Knoten schrieb sein
+        Ergebnis nach `salienz` und las von dort die Eingabe des naechsten
+        Segments. Gemessen ergab derselbe Turn mit zwei Segmenten
+        `0.5 / 1.3² = 0.2958` statt `0.5 / 1.3 = 0.3846`.
+
+        **Latent, solange die Formel mit `(1 + zuschlag)` multiplizierte** —
+        bei ruhigem Turn ist der Faktor 1,0 und die Wiederholung unsichtbar.
+        Bei Erregung war sie es nie: Ein Fuenf-Segment-Turn bekam `(1 + z)^5`.
+        """
+        eins  = _analyse([SEG_0])
+        zwei  = _analyse([SEG_0, SEG_1])
+        drei  = _analyse([SEG_0, SEG_1, SEG_2])
+        werte = [w["daten"]["salienz_obj"]["salienz"] for w in (eins + zwei + drei)]
+        self.assertEqual(
+            len(set(round(x, 6) for x in werte)), 1,
+            f"Die Segmentzahl veraendert das Ergebnis: {sorted(set(werte))}",
+        )
 
 
 # ═══════════════════════════════════════════════════════════════════

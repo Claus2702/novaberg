@@ -202,7 +202,21 @@ def _salienz_wert_lesen(salienz_obj: dict) -> float | None:
         ohne dass irgendwo steht, dass ueberhaupt etwas fehlte.
     """
     # ── Eingabe-Validierung ─────────────────────
-    roh = salienz_obj.get("salienz")
+    # **Die Modellbewertung steht in `salienz_modell`, nicht in `salienz`.**
+    # `salienz` traegt ab dem ersten Lauf das **Ergebnis** der Formel
+    # (`salienz_obj["salienz"] = ergebnis.effektiv`), und dieser Knoten laeuft
+    # je Segment. Wer hier `salienz` liest, rechnet ab dem zweiten Segment auf
+    # seinem eigenen Ausgang weiter — eine Eingabe aus dem Ergebnis, was
+    # `novaberg-convention-abgeleitete-werte.md` Regel 2 ausschliesst, und die
+    # Rechnung ist nicht mehr idempotent (Regel 4).
+    #
+    # **Latent bis zum 24.08.2026**, weil die alte Formel mit `(1 + zuschlag)`
+    # multiplizierte: Bei ruhigem Turn war der Faktor 1,0 und die Wiederholung
+    # unsichtbar. Bei Erregung war sie es nicht — ein Fuenf-Segment-Turn bekam
+    # `(1 + z)^5`. Gemessen am 24.08.2026: **2027 Turns mit zwei oder mehr
+    # Segmenten gegen 713 mit einem.** Aufgefallen ist es erst, als die
+    # normierte Formel in die andere Richtung zeigte: `0.5 / 1.3² = 0.2958`.
+    roh = salienz_obj.get("salienz_modell", salienz_obj.get("salienz"))
 
     if roh is None:
         logger.error(
@@ -617,6 +631,12 @@ def analyze(
             # und der faellt nicht in das except unten, das nur
             # JSONDecodeError und KeyError kennt. Ein einziges "hoch" statt 0.8
             # riss damit den ganzen Turn ab.
+            # Die Modellbewertung einmal festhalten — danach ist sie die
+            # Eingabe jedes weiteren Segments, und `salienz` darf das Ergebnis
+            # tragen, ohne die naechste Rechnung zu speisen.
+            if "salienz_modell" not in salienz_obj and "salienz" in salienz_obj:
+                salienz_obj["salienz_modell"] = salienz_obj["salienz"]
+
             roh_wert: float | None = _salienz_wert_lesen(salienz_obj)
             if roh_wert is not None:
                 roh_salienzen.append(roh_wert)
