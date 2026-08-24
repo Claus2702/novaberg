@@ -1,6 +1,6 @@
 # Novaberg — Roadmap (Projektchronik)
 
-**Stand:** 24. August 2026, 12:10 UTC
+**Stand:** 24. August 2026, 12:45 UTC
 **Pfad:** novaberg/docs/novaberg-roadmap.md
 **Single Source of Truth für abgeschlossene Arbeit.**
 **Offene Punkte → novaberg-backlog.md**
@@ -12,6 +12,42 @@ Die Kopfzeile stand bis Chat 109 auf „Chat 93, 21. Mai 2026" — 15 Chats hint
 ---
 
 ## Chats 3–20: Grundlagen (März 2026)
+
+### 24.08.2026, 12:45 UTC — Der Wartungslauf, und eine zweite Saettigung darunter
+
+Der Bestand ist auf die neue Skala umgerechnet. Vorher eine Sicherung unter
+`backups/salienz-vor-wartungslauf-20260824T122815Z/`, gegengezaehlt (687 = 687 Queue-Zeilen,
+3388 = 3388 KZG-Schluessel) — und der Redis-Rueckweg nicht nur beschrieben, sondern an einer
+Zeile **gefahren**: geaendert, zurueckgespielt, zeichengleich. Der Postgres-Rueckweg steht
+beschrieben und ungefahren daneben, als benannter Rest.
+
+| | geschrieben | unangetastet |
+|---|---|---|
+| `shadow_auftrag` | 658 | 8 |
+| `lzg_knoten` | 2448 | 505 |
+| `kzg:*` | 2857 | 533 |
+
+**Am Bestand nachgemessen, nicht am Bericht des Laufs.** Die KZG-Schluessel auf exakt 1,0 fallen
+von **1156 (34,1 %) auf 859 (25,3 %)**, die verschiedenen Werte steigen von **308 auf 429**.
+
+**Die Saettigung ist damit kleiner und nicht fort — und der Rest hat eine andere Ursache.**
+324 der umgerechneten Eintraege laufen allein durch den **Akkumulator** zurueck auf 1,0:
+`salienz_roh = eingang + (haeufigkeit-1) · BOOST` waechst unbegrenzt, und die Kurve kappt ihn.
+Die Gruppe traegt `haeufigkeit` von 10 bis 152, Median 26; bei einem Eingang um 0,9 reicht ab
+etwa elf Verstaerkungen der Boost allein.
+
+> **Es ist dieselbe Klasse eine Ebene tiefer, und sie stand seit heute Vormittag im Harness.**
+> Eine Kappung, die regelmaessig greift, ist kein Randfall mehr, sondern ein Formteil. Die Formel
+> ist geschlossen, der Akkumulator ist es nicht. Unter den 859 gibt es keine Rangfolge — genau
+> das, was eine Top-2/3-Auswahl braeuchte.
+
+**Eine Reihenfolgefalle wurde vor dem Schreiben gefunden**, nicht danach: Der Knoten liest
+`salienz_eingang` aus dem KZG-Hash und erwartet dort den **alten** Wert, weil er die neue
+KZG-Salienz selbst rechnet. Waere KZG zuerst gelaufen, haette der Knoten ein zweites Mal geteilt.
+Das Werkzeug faehrt jetzt ausdruecklich queue → lzg → kzg und **verweigert** ein einzelnes
+`--speicher kzg --schreiben`, weil es nicht wissen kann, ob `lzg` noch kommt.
+
+---
 
 ### 24.08.2026, 12:10 UTC — Die Salienz-Skala, und der Verstaerker, der sich selbst fuetterte
 

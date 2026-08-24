@@ -2,8 +2,8 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Rohe, noch unklassifizierte Funde aus laufender Arbeit
-**Stand:** 24. August 2026, 12:10 UTC
-**Offen:** 40 Funde — **gezaehlt am 23.08.2026, nicht fortgeschrieben** (fuenf neu aus dem Zug ueber Rang 5). Die Kopfzeile stand am selben Tag schon einmal auf 23 bei tatsaechlich 26; sie war ueber mehrere Zuege hochgezaehlt worden, und schon ihr Ausgangswert war es.
+**Stand:** 24. August 2026, 12:45 UTC
+**Offen:** 41 Funde — **gezaehlt am 23.08.2026, nicht fortgeschrieben** (fuenf neu aus dem Zug ueber Rang 5). Die Kopfzeile stand am selben Tag schon einmal auf 23 bei tatsaechlich 26; sie war ueber mehrere Zuege hochgezaehlt worden, und schon ihr Ausgangswert war es.
 **Verlauf:** [Verlauf des Standes](#verlauf-des-standes) — 73 Eintraege, juengster zuerst
 **Pfad:** novaberg/docs/novaberg-fundliste.md
 
@@ -232,6 +232,8 @@ Analog zum Kraft-1-Stichtag: ab wann eine Partition brauchbar ist. Kein Backfill
 ---
 
 ## Offen
+
+- **2026-08-24** — **Der KZG-Akkumulator saettigt weiter, und zwar nach der Behebung der Formel.** `salienz_roh = salienz_eingang + (haeufigkeit-1) * KZG_SALIENZ_BOOST` waechst unbegrenzt; die Kurve kappt ihn bei 1,0. Am Bestand nach dem Wartungslauf gemessen: **324 der 2855 umgerechneten Eintraege landen wieder auf exakt 1,0** — allein durch den Boost. Die Gruppe traegt `haeufigkeit` von **10 bis 152, Median 26**; bei einem Eingang um 0,9 reicht ab etwa elf Verstaerkungen der Boost allein. **Insgesamt stehen danach 859 von 3390 Schluesseln (25,3 %) auf 1,0**, gegenueber 1156 (34,1 %) vorher — die Saettigung ist kleiner, nicht fort. **Es ist dieselbe Klasse eine Ebene tiefer:** eine Kappung, die regelmaessig greift, ist kein Randfall mehr, sondern ein Formteil, und unter den 859 gibt es keine Rangfolge. Ob ein 152-mal verstaerkter Gedanke maximal salient *sein soll*, ist eine Absicht; dass er von 858 anderen nicht unterscheidbar ist, ist die Folge. Betrifft die geplante Top-2/3-Auswahl unmittelbar.
 
 - **2026-08-24** — **Das Zugbudget des Zuwendungsrads liegt auf den Speichen, die sich nicht bewegen.** Ueber **148 Erhebungen** gerechnet: Der Faktor erreicht **0,8638 bis 1,4456** von deklarierten 0,5–1,5 — nach oben 95 % des Budgets ausgeschoepft, nach unten nur **56 %**, Median **1,3144**. Drei Speichen tragen zusammen **0,23** Zugbudget und bewegen sich fast nicht: `hoch.aufmerksamkeit` steht im Mittel bei 0,92 (24 % Spanne genutzt), `runter.gleichgueltig` bei 0,04 (15 %), `runter.langeweile` bei 0,08 (30 %). Umgekehrt bewegen sich `runter.distanz` (90 %) und `runter.misstrauen` (78 %) stark und tragen zusammen **0,05**. **Die Groessen, die trennen, sind die leichtesten am Rad.** Die gemessene Fassung von `RADSPEICHEN-MESSEN-PROFILTEXT`. Werkzeug: die Rechnung in `labor/2026-08-24_salienz_spektrum.sql` daneben.
 - **2026-08-24** — **`SALIENZ_EREGUNG_MAX_ZUSCHLAG` ist unvermessen, seit die Wiederholung fort ist.** Die Simulation vom selben Tag (*0,30 ist zu gross, 0,20 ist die Kante, unter 0,10 kontraproduktiv*) mass einen Verstaerker, der je Segment erneut angewandt wurde. Mit der Behebung von `SALIENZ-RECHNET-AUF-IHREM-ERGEBNIS` ist diese Grundlage weg; die Konstante steht unveraendert bei 0,30 und braucht eine **neue** Messung am Betrieb. **Eine Zahl, deren Eingangsbedingung sich geaendert hat, ist keine Zahl mehr, sondern eine Erinnerung.**

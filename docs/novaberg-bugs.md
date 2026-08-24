@@ -1,6 +1,6 @@
 # Novaberg — Bugs & Limitationen
 
-**Stand:** 24. August 2026, 12:10 UTC (**die Salienz-Skala: `KZG-SALIENZ-GESAETTIGT` behoben und `SALIENZ-RECHNET-AUF-IHREM-ERGEBNIS` dabei gefunden** — der Bestand steht noch auf der alten Skala, der Wartungslauf ist vorbereitet und nicht ausgefuehrt; davor 23.08.2026, 23:15 UTC: **der Impulsweg: die Naht zwischen GV-Knoten und Haltungsstand behoben** — Riegel 2 entscheidet zum ersten Mal auf einer Messung; davor 21:55 UTC: **Rang 5 abgearbeitet** — funf Knoten, sieben Eintraege behandelt; 46 offen / 40 nicht offen von 86 Abschnitten, gezaehlt ueber die erste `Zustand:`-Zeile je Abschnitt mit Kennung)
+**Stand:** 24. August 2026, 12:45 UTC (**der Wartungslauf ist gefahren** — 5963 Zeilen umgerechnet, 1046 unangetastet; die KZG-Saettigung faellt von 34,1 % auf 25,3 %, der Rest ist der Akkumulator. Davor 12:10 UTC: **die Salienz-Skala: `KZG-SALIENZ-GESAETTIGT` behoben und `SALIENZ-RECHNET-AUF-IHREM-ERGEBNIS` dabei gefunden** — der Bestand steht noch auf der alten Skala, der Wartungslauf ist vorbereitet und nicht ausgefuehrt; davor 23.08.2026, 23:15 UTC: **der Impulsweg: die Naht zwischen GV-Knoten und Haltungsstand behoben** — Riegel 2 entscheidet zum ersten Mal auf einer Messung; davor 21:55 UTC: **Rang 5 abgearbeitet** — funf Knoten, sieben Eintraege behandelt; 46 offen / 40 nicht offen von 86 Abschnitten, gezaehlt ueber die erste `Zustand:`-Zeile je Abschnitt mit Kennung)
 **Verlauf:** [Verlauf des Standes](#verlauf-des-standes) — 29 Eintraege, juengster zuerst
 
 ---
@@ -545,7 +545,11 @@ Mitgezogen wurden die abgeleiteten Konstanten, weil sie ihre **Bedeutung** behal
 
 Messwerkzeuge: `labor/2026-08-24_salienz_spektrum.sql` (wo die Skala ihre Spreizung verliert, Stufe fuer Stufe) und `labor/2026-08-24_salienz_neue_kette.py` (beide Ketten ueber dieselben Turns — die Tabelle oben stammt daraus). Zeugen: `tests/test_salienz_formel.py::DerEigenPfadIstGeschlossenTest` (Gitter 21×21, Monotonie in beiden Eingaengen), `tests/test_segment_durchstich.py` (Idempotenz). 15 bestehende Zeugen nachgezogen, drei davon von Zahlen auf **Konstanten** umgestellt, damit sie den naechsten Exponentenwechsel ueberleben. Suite `Ran 2218 tests — OK`.
 
-> **Der Bestand steht noch auf der alten Skala.** Der Wartungslauf ist vorbereitet und **nicht ausgefuehrt**: `labor/2026-08-24_salienz_wartungslauf.py`, Trockenlauf ist die Vorgabe. 5894 Zeilen umrechenbar, 1042 unangetastet — die gekappten, deren wahrer Wert verloren ist.
+> **Der Bestand ist am 24.08.2026, 12:38 UTC umgerechnet.** Geschrieben: 658 Queue-Zeilen, 2448 Knoten, 2857 KZG-Schluessel. Unangetastet blieben 8 + 505 + 533 — die gekappten, deren wahrer Wert verloren ist. Sicherung vorher unter `backups/salienz-vor-wartungslauf-20260824T122815Z/`, gegengezaehlt (687 = 687, 3388 = 3388) und der Redis-Rueckweg an einer Zeile **gefahren**. Werkzeug: `labor/2026-08-24_salienz_wartungslauf.py`, Trockenlauf ist die Vorgabe.
+
+> **Am Bestand nachgemessen, nicht am Bericht des Laufs — und die Saettigung ist kleiner, nicht fort:** KZG-Schluessel auf exakt 1,0 **1156 (34,1 %) → 859 (25,3 %)**, verschiedene Werte **308 → 429**. Der Rest hat eine andere Ursache als die behobene: **324 der umgerechneten Eintraege laufen allein durch den Akkumulator zurueck auf 1,0** (`salienz_roh = eingang + (haeufigkeit-1)·BOOST`, Gruppe mit `haeufigkeit` 10 bis 152, Median 26). Die Formel ist geschlossen, der Akkumulator ist es nicht — dieselbe Klasse eine Ebene tiefer. Steht in `novaberg-fundliste.md`.
+
+> **Eine Reihenfolgefalle im Werkzeug, vor dem Schreiben gefunden:** `lzg()` liest `salienz_eingang` aus dem KZG-Hash und erwartet dort den **alten** Wert. Laeuft `kzg()` vorher, teilt der Knoten ein zweites Mal. `--speicher alle` faehrt queue → lzg → kzg; ein einzelnes `--speicher kzg --schreiben` wird jetzt **verweigert**, weil das Werkzeug nicht wissen kann, ob `lzg` noch kommt.
 
 ---
 
