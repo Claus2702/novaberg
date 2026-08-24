@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Modul Session-Gedächtnis
-**Stand:** 16. August 2026 (gegen den Code geprüft: `session_turn_annotate` ist entfallen, der Turn entsteht vollständig — §1, §2.2 und §3.2 nachgezogen); davor 15. August 2026 (Schlüssel `haltung:{user_id}:{character_id}`, dazu die beiden Uhren der Eigenzeit in `nova_state`); davor 17. Mai 2026, Chat 90 (PFAD2-PERZEPTION-FIX abgeschlossen, HumanGraph-Slimming Phase 4)
+**Stand:** 24. August 2026 (der Sprecher kommt aus dem Feld `herkunft`, nicht aus der Position — §3.8; die Filterzeile des Enrichers war tot und ist entfernt — §5); davor 16. August 2026 (gegen den Code geprüft: `session_turn_annotate` ist entfallen, der Turn entsteht vollständig — §1, §2.2 und §3.2 nachgezogen); davor 15. August 2026 (Schlüssel `haltung:{user_id}:{character_id}`, dazu die beiden Uhren der Eigenzeit in `nova_state`); davor 17. Mai 2026, Chat 90 (PFAD2-PERZEPTION-FIX abgeschlossen, HumanGraph-Slimming Phase 4)
 **Pfad:** novaberg/docs/novaberg-mem-session.md
 **Quellen:** nova-02-m-a.md
 **Datei:** `memory/session.py`
@@ -189,6 +189,69 @@ Format: `[3] USER (neutral, a=0.3) [ERLEDIGT]: Lösch die Einkaufsliste`
 
 Der Marker verhindert, dass Classify-Nodes erledigte Anweisungen als aktive Aufträge interpretieren (KONTEXT1).
 
+**Seit dem 24.08.2026 steht der Marker in derselben Klammer wie Emotion und Anlass** — `[3] USER (neutral, ERLEDIGT): …`. Zwei Klammern hintereinander lesen sich wie Angaben über verschiedene Dinge; hier sind es Angaben über dieselbe Äußerung.
+
+---
+
+### 3.8 verlauf_gruppieren und sprecher_bezeichnen — der Sprecher steht im Feld (24.08.2026)
+
+**Wer gesprochen hat, entscheidet ausschließlich der Turn selbst** — `rolle` sagt die Person, `herkunft` den Anlass. Die Position in der Liste entscheidet nichts.
+
+`verlauf_gruppieren(turns) -> list[list[Verlaufsbeitrag]]` fasst Turns zu nummerierbaren Anzeigeeinheiten zusammen. **Die Gruppe ist eine Anzeigeeinheit, keine Zuordnung.** Ein Eigen-Impuls öffnet immer seine eigene Gruppe, entschieden am Feld `herkunft`.
+
+`sprecher_bezeichnen(beitrag, nova_name, zusatz) -> str` liefert den Namen für den Prompt:
+
+| Lage | Bezeichnung |
+|---|---|
+| `rolle = user` | `USER` |
+| Antwort auf eine Äußerung | `NOVA` |
+| `herkunft = eigener_impuls` | `NOVA (von sich aus)` |
+| `herkunft` leer | `NOVA (Anlass unbekannt)` |
+
+Die letzte Zeile folgt der Regel aus §3.1: **leer heißt unbekannt und nicht „auf Zuruf"**. Turns von vor dem 30.07.2026 tragen das Feld nicht, und ein Default hätte ihnen rückwirkend einen Anlass angedichtet.
+
+`fenster_waehlen(gruppen, max_turns)` schneidet den Verlauf auf die letzten `max_turns` **Wortwechsel** — Gruppen mit einer Nutzeräußerung —, und nimmt jede Impulsgruppe mit, die dazwischen liegt.
+
+> **Die Zahl zählt Wortwechsel und nicht Gruppen, und der Grund ist eine Regression, die einen Zug lang gebaut war.** Zählte jede Gruppe, kehrte sich der behobene Defekt um: Der Impuls fällt nicht mehr aus dem Verlauf, aber er **verdrängt** den Nutzer aus dem Fenster derer, die nur fünf Einheiten sehen. Acht der neun Aufrufer übergeben unverändert `5` und wurden nicht angefasst.
+>
+> `[gemessen]` — 24.08.2026, dieselbe Session Zustand für Zustand nachgefahren: Bei **16 von 24** Zuständen lagen weniger Nutzer-Turns im Fenster als vorher, und bei einem **keiner mehr** — Perzeption, Router und sechs Klassifikations-Knoten hätten dort einen Verlauf aus fünf aufeinanderfolgenden Eigen-Impulsen und keinem Wort des Nutzers bekommen. Nach der Berichtigung: **kein Zustand ohne Nutzer-Turn**, und jeder trägt mindestens so viele wie vorher.
+
+**Die Funktion trägt eine Zählung: so viele Beiträge heraus, wie Turns mit Inhalt hinein** — sonst eine `error`-Zeile.
+
+> **Sie ist ein Regressionsriegel und keine Datenprüfung.** Solange die Schleife jeden Beitrag in genau eine Gruppe legt, prüfen beide Seiten dasselbe Prädikat über dieselbe Menge; sie **kann** heute nicht anschlagen, und in 40.439 konstruierten Fällen tat sie es null Mal. Ihr Wert liegt in der Zukunft: Sie feuert, sobald jemand ein `continue` in diese Schleife setzt — und genau so ist der Defekt entstanden, den sie bewacht.
+
+#### Was sie ersetzt, und warum es teuer war
+
+Bis zum 24.08.2026 bildeten **zwei** Stellen Paare `user` → `assistant` und übersprangen alles, was nicht hineinpasste: `format_session_turns_numbered` und eine wörtliche Kopie derselben Logik im Responder. Ein Eigen-Impuls ist ein **alleinstehender** assistant-Turn und traf genau diesen Zweig — er erreichte **keinen** der beiden Verläufe.
+
+**Gemessen am 24.08.2026:** Von 24 Turns eines laufenden Gesprächs fielen **8** aus. Im Betrieb belegt: Nova schlug um 18:37:40 UTC aus eigenem Antrieb ein Vorhaben vor, der Nutzer fragte sieben Sekunden später nach, worum es gehe — und Nova fragte zurück, worauf **er** damit hinauswolle. Ihr eigener Vorschlag stand in dem Verlauf, den sie las, nicht mehr drin.
+
+> **Der Verlust war unsichtbar, weil das Übrige lesbar blieb.** Fällt der Impuls heraus, stehen im Verlauf noch eine Nova-Zeile und darunter die Nachfrage des Nutzers — ein sauberer Wortwechsel. Eine Lücke ist nur daran zu erkennen, dass eine Antwort auf eine Frage antwortet, die nicht dasteht, und daran zweifelt niemand, der den Verlauf zum ersten Mal liest.
+
+Die Daten waren vollständig: **alle 24 Turns trugen `herkunft`**, acht davon `eigener_impuls`. Das Feld existierte seit dem 30.07.2026 und wurde von keinem Renderer gelesen.
+
+#### Alle sieben Renderer
+
+**Den Verlauf lesen sieben Stellen, nicht zwei.** Die zweite Kontrolle hat sie gesucht statt erinnert; vier waren nachgezogen, drei nicht:
+
+| Renderer | Turns | Anlass genannt |
+|---|---|---|
+| `format_session_turns_numbered` (§3.7) | 24/24 | 8/8 |
+| Responder-Verlauf | 24/24 | 8/8 |
+| Zusammenfasser (§3.3) | — | ✅ |
+| `session_context_build` (§3.9) | — | ✅ |
+| `memory/kontext.py::_turns_formatieren` | 24/24 | 8/8 |
+| `enricher.py::_suchtext_bauen` (Query-Rewrite) | 24/24 | 8/8 |
+| `verfasser.py`, Verlaufsblock | 24/24 | 8/8 |
+
+**Beim Zusammenfasser wiegt es am schwersten** — seine Ausgabe überdauert den Verlauf und wird später als Tatsache gelesen.
+
+**Der Verfasser hat dafür seine Prompt-Form gewechselt, und das ist eine Entscheidung.** Er reichte den Verlauf bis zum 24.08.2026 als **Nachrichtenfolge** durch: je Turn eine Chat-Nachricht mit `role: user` oder `role: assistant`. Darin ist die **Person** eindeutig und der **Anlass** nicht — ein Eigen-Impuls und eine Antwort sind beide `assistant`.
+
+> **In einer Chat-Nachricht gibt es für den Anlass nur einen Platz: den Inhalt. Genau dort darf er nicht stehen.** Ein Präfix im Text der eigenen Äußerung ist Iteration 1 aus `novaberg-pixie_l_kontamination.md` — das Modell hat den Marker damals mitgeschrieben. Im Textblock steht der Anlass in der **Sprecherzeile**, also im Rahmen und nicht in Novas Mund; dieselbe Form fährt der Responder seit jeher.
+>
+> **Der Preis ist benannt:** Das Modell sieht den Verlauf nicht mehr in seinem nativen Format. Woran ein Rückschlag zu erkennen wäre — `(von sich aus)` taucht in Novas Antworten auf, oder der Bezug auf früher Gesagtes wird schlechter. Dabei bekam der Verfasser zugleich eine Obergrenze, die es vorher nicht gab (`VERFASSER_WORTWECHSEL = 8`); er sah bis dahin den ganzen Bestand.
+
 ---
 
 ## 4. Konstanten
@@ -208,7 +271,7 @@ Seit Chat 60: Der Dispatcher (`graph/nodes/dispatcher.py`) schreibt alle Session
 | Node | Interaktion |
 |------|-------------|
 | **Dispatcher** | Schreibt User- und Assistant-Turns vollständig via `session_turn_store` (seit Chat 60) |
-| **Enricher** | Liest Turns via `session_turns_retrieve`, destilliert sie, blendet Shadow-Impulse aus |
+| **Enricher** | Liest Turns via `session_turns_retrieve` und reicht sie **vollstaendig** durch. ~~blendet Shadow-Impulse aus~~ — **das hat er nie getan** (24.08.2026): Der Filter prueste auf einen Marker, den niemand setzt (`KONTAMINATIONSFILTER-TOT`), und ist entfernt. Der Impuls gehoert in den Verlauf, kenntlich am Sprecher |
 | **db_zugriff** | Liest `nova_state:{user_id}:{character_id}` am CG-Eingang, befüllt `state["internal"].emotion` (Chat 89) und `.raum` (Chat 114; fehlen die Achsen, werden sie aus den Register-Labels abgeleitet) |
 | **ei_calc_persist** | Schreibt `nova_state:{user_id}:{character_id}` am CG-Ausgang (Chat 89) |
 | **Salienz** | ~~Legacy-Annotation via `session_turn_annotate`~~ → **entfallen** (16.08.2026 geprüft). Die Salienz schreibt nicht mehr in die Session; der Dispatcher speichert den Turn vollständig |

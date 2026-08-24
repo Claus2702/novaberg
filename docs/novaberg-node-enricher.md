@@ -47,7 +47,7 @@ db_zugriff → ei_calc → ▶ enricher ◀ → emotionale_gravitation → reduc
 `raw_turns`, `user_intentionen`, `prompt_embedding`, `aktivierte_ziele`, `gravitationsterm`
 
 **CharacterGraph (`_enrich_character`, 8 produktive Felder):**
-`raw_turns`, `session_turns` (Shadow-Impulse gefiltert), `user_intentionen`, `prompt_embedding`, `aktivierte_ziele` + `gravitationsterm`, `emotionale_gravitationspunkte`, `memory_entries`, `lzg_resonanz`
+`raw_turns`, `session_turns` (**ungefiltert**, seit 24.08.2026), `user_intentionen`, `prompt_embedding`, `aktivierte_ziele` + `gravitationsterm`, `emotionale_gravitationspunkte`, `memory_entries`, `lzg_resonanz`
 
 → Vollständige Tabelle: §4 Geschrieben.
 
@@ -143,11 +143,13 @@ Session-Key seit Chat 60: `session:{user_id}:{character_id}:turns`. Der Enricher
 
 **Session-Summary:** Zusammenfassung älterer Turns (`session:{user_id}:{character_id}:summary`). Komprimierter Überblick über das bisherige Gespräch.
 
-**Session-Turns (Chat 30: vollständiges Durchreichen):** Rohe Session-Turns werden vollständig in `state["session_turns"]` durchgereicht. Der Enricher filtert nur Shadow-Impulse (`[Nova-Impuls]`-Prefix im `kern`-Feld) — alle anderen Felder (inhalt, emotion, arousal, vektor, stil, dynamik, tone, kern, intentionen, modus) bleiben erhalten.
+**Session-Turns (Chat 30: vollständiges Durchreichen):** Rohe Session-Turns werden vollständig in `state["session_turns"]` durchgereicht — alle Felder (inhalt, emotion, arousal, vektor, stil, dynamik, tone, kern, intentionen, modus, herkunft) bleiben erhalten.
+
+> ~~Der Enricher filtert nur Shadow-Impulse (`[Nova-Impuls]`-Prefix im `kern`-Feld).~~ **Er hat nie gefiltert**, und der Satz beschrieb eine Absicht, keinen Zustand: Den Marker `[Nova-Impuls]` setzt im ganzen Server niemand, die Bedingung war die einzige Fundstelle (`KONTAMINATIONSFILTER-TOT`). Am 24.08.2026 **entfernt statt repariert** — der Impuls gehoert in den Verlauf; was der Filter verhindern wollte, war eine Verwechslung, und die verhindert jetzt der benannte Sprecher (`memory/session.py::sprecher_bezeichnen`), ohne die Aeusserung zu verlieren.
 
 | Turn-Typ | Behandlung |
 |----------|-----------|
-| Shadow-Impuls (`[Nova-Impuls]` in kern) | **Komplett ausgeblendet** — nur in `_enrich_character`; `_enrich_human` hat den Filter nicht. **Seit Chat 110 wirkungslos:** Den Marker setzte allein die alte Delivery, auf dem neuen Pfad schreibt der CG-Dispatcher den Session-Turn ohne ihn. Ob der Filter noch gebraucht wird, ist offen — siehe `novaberg-pixie_l_kontamination.md` |
+| Eigen-Impuls (`herkunft = eigener_impuls`) | **Vollständig durchgereicht** — wie jeder andere Turn. ~~Komplett ausgeblendet~~ → **am 24.08.2026 entfernt** (`KONTAMINATIONSFILTER-TOT`). Der Filter prüfte auf `[Nova-Impuls]` im `kern`-Feld, gesetzt hatte den Marker allein die alte Delivery, und seit Chat 110 setzte ihn niemand mehr — er war **dreizehn Tage wirkungslos** und stand da wie ein Schutz. Kenntlich ist der Impuls jetzt an seinem Sprecher, nicht an seiner Abwesenheit (`memory/session.py::sprecher_bezeichnen`) |
 | Alle anderen Turns | **Vollständig durchgereicht** — alle Felder |
 
 Jeder konsumierende Node formatiert die Turn-Dicts selbst:
@@ -323,7 +325,7 @@ Die eigentliche Berechnung (Verlauf, Vektor, EI-Arousal, Modus-/Stil-Plausibilit
 | State-Ziel | Typ | Bewusst flach? | Beschreibung |
 |---|---|---|---|
 | `state["raw_turns"]` | list[dict] | n.a. | Ungefilterte Session-Turns |
-| `state["session_turns"]` | list[dict] | n.a. | Shadow-Impulse gefiltert |
+| `state["session_turns"]` | list[dict] | n.a. | **ungefiltert** — identisch mit `raw_turns` (24.08.2026) |
 | `state["user_intentionen"]` | list[str] | n.a. | Letzte Intentionen aus User-Turn |
 | `state["prompt_embedding"]` | list[float] | n.a. | 768-dim Vektor |
 | `state["aktivierte_ziele"]` | list[dict] | n.a. | Ziele über Schwelle, Feld `aktivierungs_staerke` (siehe HG-Tabelle) |

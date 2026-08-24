@@ -4581,9 +4581,75 @@ Und live für den Impuls-Turn `57b6e84c…`: 14 `art`/`quelle`-Kombinationen im 
 
 ---
 
-#### KONTAMINATIONSFILTER-TOT — der Filter prüft auf einen Marker, den niemand setzt ⚠️
+#### `IMPULS-FAELLT-AUS-DEM-VERLAUF` — Nova schreibt ihren eigenen Vorschlag dem Nutzer zu ✅
 
-**Zustand:** offen — gegen HEAD `9bcd214` gemessen am 24.08.2026. Unverändert, bis auf die Zeile: Der Filter steht heute in `graph/nodes/enricher.py:673` statt `:448`. Die Gegenprobe des Befundes liefert dasselbe Ergebnis wie damals — `grep -rn "Nova-Impuls" --include='*.py' server/` findet **genau einen** Treffer, die Lesestelle selbst. Die Entscheidung (streichen · auf `reiz_herkunft` umhängen · als bewusste Nicht-Filterung dokumentieren) steht weiter aus.
+**Zustand:** behoben — gebaut und gemessen am 24.08.2026. Der Sprecher kommt jetzt aus dem Feld `herkunft`, nicht aus der Position in der Liste. Zeugen `tests/test_verlauf_sprecher.py` (24), zwei Gegenproben (**9 vorhergesagt / 8 gezählt** an der Paarbildung, **4 vorhergesagt / 8 gezählt** an der Sprecherbezeichnung), Suite `Ran 2248 tests — OK`, 0 übersprungen.
+
+> **Die Behebung erzeugte ihr eigenes Spiegelbild, und die zweite Kontrolle fand es.** `max_turns` hieß *Turn-Paare* und ein Impuls zählte nicht, weil er übersprungen wurde; danach zählte **jede Gruppe**. Der Impuls fiel nicht mehr aus dem Verlauf — er **verdrängte** dafür den Nutzer aus dem Fenster derer, die nur fünf Einheiten sehen, und acht der neun Aufrufer übergeben unverändert `5`. Bei **16 von 24** Zuständen der echten Session lagen weniger Nutzer-Turns im Fenster als vorher, bei einem **keiner mehr**: fünf aufeinanderfolgende Eigen-Impulse und kein Wort des Nutzers, gelesen von Perzeption, Router und sechs Klassifikations-Knoten. Berichtigt über `fenster_waehlen` — die Zahl zählt wieder Wortwechsel, Impulse dazwischen kommen mit; danach kein Zustand ohne Nutzer-Turn.
+
+**Symptom, im Betrieb belegt am 24.08.2026.** Drei Turns in 41 Sekunden — die entscheidende Spanne ist die von **sieben**, zwischen Impuls und Nachfrage. Hier in ihrer Struktur — der Wortlaut trägt nichts zum Befund bei:
+
+```
+18:37:40  eigener_impuls   Nova   schlaegt aus eigenem Antrieb ein Vorhaben vor
+18:37:47  nutzer_turn      User   fragt nach, worum es dabei gehe        (+7 s)
+18:38:21  nutzer_turn      Nova   fragt zurueck, worauf DER NUTZER damit hinauswolle
+```
+
+**Nova schreibt den Vorschlag dem Nutzer zu.** Gemacht hatte ihn sie, sieben Sekunden vor seiner Nachfrage.
+
+**Ursache — und sie liegt nicht dort, wo der Verdacht hinzeigt.** Nicht der tote Kontaminationsfilter (`KONTAMINATIONSFILTER-TOT`) hat den Impuls entfernt, sondern die **Paarbildung**: Beide Verlaufs-Renderer gruppierten `user` → `assistant` und übersprangen, was nicht hineinpasste.
+
+```python
+else:
+    # Alleinstehender Assistant-Turn (z.B. Shadow) — ueberspringen
+    i += 1
+    continue
+```
+
+Ein Eigen-Impuls **ist** ein alleinstehender assistant-Turn. Er traf diesen Zweig in `memory/session.py::format_session_turns_numbered` **und** in einer wörtlichen Kopie derselben Logik in `graph/nodes/responder.py` — er erreichte keinen der beiden Verläufe.
+
+**Gemessen, mit der echten Funktion über die echten Turns:**
+
+| | |
+|---|---|
+| Turns im Verlauf | 24 |
+| alleinstehende assistant-Turns (fielen aus) | **8** |
+| Satz des Impulses im Verlauf wiederzufinden, vorher | **nein** |
+| Satz des Impulses im Verlauf wiederzufinden, nachher | **ja** |
+| Beiträge hinein / heraus, nachher | 8 / 8 |
+
+**Die Daten waren die ganze Zeit vollständig.** Alle 24 Turns tragen `herkunft`, acht davon `eigener_impuls`. Das Feld existiert seit dem 30.07.2026 und wurde von keinem Renderer gelesen — der Sprecher wurde aus der Position **erschlossen**, obwohl er **mitgeschickt** wurde.
+
+**Warum es nie auffiel.** Was übrig bleibt, liest sich vollständig:
+
+```
+[2] NOVA: <Frage aus dem vorigen Turn>
+[3] USER: <Nachfrage>
+```
+
+Das ist ein sauberer Wortwechsel. Die Lücke ist nur daran zu erkennen, dass die Antwort auf eine Frage antwortet, die nicht dasteht.
+
+**Die Abhilfe.** `verlauf_gruppieren` und `sprecher_bezeichnen` in `memory/session.py`; beide Renderer rufen sie, die Kopie im Responder ist fort. Ein Impuls steht als eigene Gruppe mit `NOVA (von sich aus)`. Eine Ausgabe-Verifikation zählt Beiträge gegen Turns und meldet, wenn der Verlauf eine Äußerung verliert — im Auslösepfad belegt, nicht nur gebaut.
+
+**Alle sieben Renderer nennen den Sprecher aus dem Feld**, nicht nur die zwei, an denen es auffiel. Die zweite Kontrolle hat sie gesucht statt erinnert und fand drei, die zwar jeden Turn trugen, aber den Anlass verschwiegen — `memory/kontext.py::_turns_formatieren`, `enricher.py::_suchtext_bauen` und den `messages`-Aufbau des Verfassers. **Person-eindeutig, Anlass unbekannt.** Alle drei nachgezogen, gemessen über die echten Turns: **24/24 Inhalte, 8/8 Impulsmarken** in jedem.
+
+> **Der Verfasser hat dafür seine Prompt-Form gewechselt.** Er reichte den Verlauf als Nachrichtenfolge durch — je Turn eine Chat-Nachricht —, und dort gibt es für den Anlass nur einen Platz: den Inhalt der `assistant`-Nachricht. **Genau dort darf er nicht stehen:** Das ist Iteration 1 aus `novaberg-pixie_l_kontamination.md`, und das Modell hat den Marker damals mitgeschrieben. Der Verlauf steht jetzt als benannter Textblock, wie beim Responder — der Anlass im Rahmen, nicht in Novas Mund. Der Preis ist benannt: kein natives Chat-Format mehr, und ein Rückschlag wäre daran zu erkennen, dass `(von sich aus)` in Novas Antworten auftaucht.
+
+Beim **Zusammenfasser** wiegt es am schwersten — seine Ausgabe überdauert den Verlauf und wird später als Tatsache gelesen.
+
+**Verwandt:** `KONTAMINATIONSFILTER-TOT` (derselbe Gegenstand, andere Ursache; durch diesen Befund entschieden) · `PFAD1-TIMEOUT-TURNVERLUST` (dort entstand das Feld `herkunft`, das hier fehlte, weil es niemand las).
+
+---
+
+#### KONTAMINATIONSFILTER-TOT — der Filter prüft auf einen Marker, den niemand setzt ✅
+
+**Zustand:** behoben — am 24.08.2026 **entfernt statt repariert**, und die ausstehende Entscheidung ist damit getroffen. Von den drei Möglichkeiten des Befundes (streichen · auf `reiz_herkunft` umhängen · als bewusste Nicht-Filterung dokumentieren) ist die **erste** gewählt, aus einem Grund, den der Befund noch nicht kannte: **Der Impuls gehört in den Verlauf.**
+
+> **Entschieden hat es ein zweiter Defekt am selben Gegenstand.** `IMPULS-FAELLT-AUS-DEM-VERLAUF` zeigte, was passiert, wenn ein Eigen-Impuls den Verlauf nicht erreicht — Nova schrieb einen Vorschlag, den sie selbst gemacht hatte, dem Nutzer zu. Ein Filter, der genau das absichtlich täte, hätte den behobenen Defekt wiederhergestellt, sobald jemand den Marker setzt.
+>
+> **Was der Filter verhindern wollte, war eine Verwechslung, kein Vorkommen.** Die verhindert jetzt der benannte Sprecher (`memory/session.py::sprecher_bezeichnen`) — ohne die Äußerung zu verlieren. Zeugen: `tests/test_verlauf_sprecher.py` (13), Suite `Ran 2237 tests — OK`.
+>
+> **Der Filter blieb dreizehn Tage stehen, weil er wie ein Schutz aussah.** Genau das ist die Klasse: Ein toter Schutzmechanismus ist teurer als keiner, weil wer ihn liest das Problem für gelöst hält.
 
 **Entdeckt:** Chat 110, bei der Frage, ob der Impuls-Turn gefiltert werden muss.
 
@@ -4603,7 +4669,7 @@ Der Marker `[Nova-Impuls]` wird im gesamten Server **nirgends gesetzt** — die 
 
 **Nicht entschieden:** Der Impuls-Turn steht jetzt **ungefiltert** im Kontext. Das ist vermutlich richtig — er trägt Novas eigene Stimme, nicht mehr eine fremdformulierte Zeile. Aber es ist nicht entschieden, und die Lesson aus Chat 7 beschreibt einen realen Vorfall mit kontaminiertem Kontext. Drei Möglichkeiten: streichen, auf `reiz_herkunft` umhängen, oder als bewusste Nicht-Filterung dokumentieren.
 
-**Status:** Offen, Entscheidung ausstehend.
+~~**Status:** Offen, Entscheidung ausstehend.~~ → entschieden und behoben am 24.08.2026, siehe Zustandszeile.
 
 ---
 

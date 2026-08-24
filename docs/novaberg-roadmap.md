@@ -1,6 +1,6 @@
 # Novaberg — Roadmap (Projektchronik)
 
-**Stand:** 24. August 2026, 19:55 UTC
+**Stand:** 24. August 2026, 21:35 UTC
 **Pfad:** novaberg/docs/novaberg-roadmap.md
 **Single Source of Truth für abgeschlossene Arbeit.**
 **Offene Punkte → novaberg-backlog.md**
@@ -12,6 +12,79 @@ Die Kopfzeile stand bis Chat 109 auf „Chat 93, 21. Mai 2026" — 15 Chats hint
 ---
 
 ## Chats 3–20: Grundlagen (März 2026)
+
+### 24.08.2026, 21:00 UTC — Nova schrieb ihren eigenen Vorschlag dem Nutzer zu, weil ihr Impuls aus dem Verlauf fiel
+
+**Zwei Turns machten den Defekt sichtbar.** Um 18:37:40 UTC schlug Nova aus eigenem Antrieb ein Vorhaben vor. Sieben Sekunden später fragte der Nutzer nach, worum es dabei gehe — und Nova fragte zurück, worauf **er** damit hinauswolle. Der Wortlaut steht nicht hier; er trägt nichts, was die Struktur nicht schon sagt.
+
+**Die Ursache liegt nicht dort, wo der Verdacht hinzeigte.** Nicht der tote Kontaminationsfilter aus `KONTAMINATIONSFILTER-TOT` hat den Impuls entfernt, sondern die **Paarbildung des Verlaufs**:
+
+```python
+else:
+    # Alleinstehender Assistant-Turn (z.B. Shadow) — ueberspringen
+    i += 1
+    continue
+```
+
+Ein Eigen-Impuls **ist** ein alleinstehender assistant-Turn. Er traf diesen Zweig in `memory/session.py::format_session_turns_numbered` **und** in einer wörtlichen Kopie derselben Logik im Responder — er erreichte keinen der beiden Verläufe.
+
+**Gemessen mit der echten Funktion über die echten Turns:**
+
+| | vorher | nachher |
+|---|---|---|
+| Turns im Verlauf | 24 | 24 |
+| alleinstehende assistant-Turns, die ausfielen | **8** | 0 |
+| Satz des Impulses im Verlauf wiederzufinden | **nein** | **ja** |
+| Beiträge hinein / heraus | 8 / 6 | 8 / 8 |
+
+**Die Daten waren die ganze Zeit vollständig.** Alle 24 Turns tragen `herkunft`, acht davon `eigener_impuls`. Das Feld existiert seit dem 30.07.2026 — angelegt bei `PFAD1-TIMEOUT-TURNVERLUST`, ausdrücklich mit dem Kommentar, dass sonst *„wer den Verlauf aus dem Speicher las, einen Impuls für eine Antwort hielt"*. **Kein Renderer hat es je gelesen.** Der Sprecher wurde aus der Position **erschlossen**, obwohl er **mitgeschickt** wurde — `22_STILLE_FEHLER/bezug-aus-reihenfolge.md` in Reinform, vier Wochen lang.
+
+> **Der Verlust war unsichtbar, weil das Übrige lesbar blieb.** Fällt der Impuls heraus, stehen im Verlauf noch eine Nova-Zeile und darunter die Nachfrage des Nutzers — ein sauberer Wortwechsel. Die Lücke ist nur daran zu erkennen, dass eine Antwort auf eine Frage antwortet, die nicht dasteht, und daran zweifelt niemand, der den Verlauf zum ersten Mal liest. **Genau das unterscheidet eine Verschiebung von einem Ausfall.**
+
+**Gebaut:** `verlauf_gruppieren` und `sprecher_bezeichnen` in `memory/session.py`. Die Gruppe ist eine **Anzeigeeinheit, keine Zuordnung** — wer gesprochen hat, entscheidet ausschließlich der Beitrag aus seinen eigenen Feldern. Ein Impuls öffnet immer seine eigene Gruppe und steht als `NOVA (von sich aus)`; eine Äußerung ohne belegte Herkunft als `NOVA (Anlass unbekannt)`, weil leer *unbekannt* heißt und nicht *auf Zuruf*.
+
+**Vier Stellen nennen den Sprecher jetzt aus dem Feld**, nicht nur die eine, an der es auffiel: der nummerierte Verlauf, der Responder-Verlauf (die Kopie ist fort), `session_context_build` und der **Zusammenfasser**. Der letzte wiegt am schwersten — seine Ausgabe überdauert den Verlauf und wird später als Tatsache gelesen.
+
+**Die Ausgabe-Verifikation prüft den Zweck, nicht die Bauart:** so viele Beiträge heraus wie Turns mit Inhalt hinein, sonst eine `error`-Zeile. Sie ist **im Auslösepfad belegt**, nicht nur gebaut — unter der Gegenprobe meldete sie *„3 Turns mit Inhalt hinein, 2 Beiträge heraus"*.
+
+**Dabei entschieden: `KONTAMINATIONSFILTER-TOT` ist geschlossen** — entfernt statt repariert. Von den drei Möglichkeiten des Befundes ist die erste gewählt, aus einem Grund, den er noch nicht kannte: Der Impuls **gehört** in den Verlauf. Ein Filter, der ihn absichtlich entfernte, hätte den heute behobenen Defekt wiederhergestellt, sobald jemand den Marker setzt. Was er verhindern wollte, war eine **Verwechslung**, kein Vorkommen.
+
+**Fünf Aussagen in drei Moduldokumenten waren falsch, und zwar schon vorher:** *„der Enricher blendet Shadow-Impulse aus"* stand in `novaberg-mem-session.md`, dreimal in `novaberg-node-enricher.md` und einmal in `novaberg-node-responder.md`. Er hat es nie getan — die Dokumente beschrieben eine Absicht als Zustand.
+
+**Suite** 2224 → **2243 grün, 0 übersprungen**. **Gegenprobe: 9 vorhergesagt, 8 gezählt** — die Abweichung ist erklärt und liegt bei der Vorhersage: Ein Zeuge fährt nur Nutzer-Turns und kann den Paarbildungs-Defekt gar nicht sehen. Harte Wand sauber, A8a 0, A4 22 → 21, A11 300 unverändert.
+
+### Was die zweite Kontrolle einriss — sechs Befunde, davon zwei schwer
+
+**Sie nahm einen anderen Zugriff: alle 24 Turns durch alle sieben Renderer des Baums statt der acht Turns durch die zwei, an denen der Defekt auffiel.** Dazu die Session Zustand für Zustand nachgefahren und 40.439 konstruierte Turn-Listen.
+
+**1. Die Behebung erzeugte ihr eigenes Spiegelbild.** `max_turns` hieß *Turn-Paare*; ein Impuls zählte nicht, weil er übersprungen wurde. Danach zählte **jede Gruppe** — und der Impuls, der nicht mehr aus dem Verlauf fällt, **verdrängte** dafür den Nutzer aus dem Fenster derer, die nur fünf Einheiten sehen. Acht der neun Aufrufer übergeben unverändert `5`.
+
+```
+Zustand n=13 der echten Session, Fenster max_turns=5
+  vorher      3 Nutzer-Turns
+  nach Bau    0 Nutzer-Turns   <- fünf aufeinanderfolgende Eigen-Impulse
+  berichtigt  3 Nutzer-Turns
+```
+
+Bei **16 von 24** Zuständen lagen weniger Nutzer-Turns im Fenster als vorher, bei einem keiner. Berichtigt über `fenster_waehlen`: Die Zahl zählt wieder **Wortwechsel**, und Impulse dazwischen kommen mit. Nach der Berichtigung kein Zustand ohne Nutzer-Turn. Sechs weitere Zeugen.
+
+**2. Wörtliche Gesprächsinhalte standen in vier veröffentlichten Dateien und im Zeugen.** Der Beleg des Befundes trug den Wortlaut zweier echter Turns, darunter einen **Kosenamen** — den `32_VEROEFFENTLICHUNG.md` §1a ausdrücklich nennt. Vor dem Umbau kam er in `docs/` **null** Mal vor. Ersetzt durch die Struktur, die den Befund allein trägt; der Zeuge fährt jetzt einen nachgebauten Verlauf. **Die eigene Prüfung hatte den Verstoß nicht gefunden, weil sie nur `docs/` absuchte** — `server/tests/` wird ebenso veröffentlicht. Gegenprobe über den ganzen Diff: 576 echte Fünf-Wort-Folgen gegen 453 neue Zeilen, **0 Überschneidungen**.
+
+**3. Ein Zeitstempel war an vier Stellen falsch zugeschrieben.** Die Nachfrage des Nutzers liegt bei 18:37:47, nicht bei 18:38:21 — das ist Novas Antwort. Die entscheidende Spanne ist damit **sieben** Sekunden, nicht 41. Dieselbe Zahl war aus der Fundzeile in vier Dokumente kopiert worden, ohne noch einmal gerechnet zu werden.
+
+**4. Die Ausgabe-Verifikation kann strukturell nicht feuern.** `erwartet` und `gezählt` prüfen dasselbe Prädikat über dieselbe Menge; 0 Anschläge in 40.439 Fällen. Sie ist ein **Regressionsriegel** gegen ein künftiges `continue` und keine Laufzeitprüfung der Daten — ihr Docstring behauptete das Zweite und sagt es jetzt richtig.
+
+**5. `novaberg-node-enricher.md` widersprach sich vier Zeilen unter dem eigenen Widerruf.** Drei Stellen der Datei waren nachgezogen, die Tabelle darunter nicht.
+
+**6. Eine Lesson protokolliert die gewählte Lösung als zweimal gescheitert.** `novaberg-pixie_l_kontamination.md` schließt: *„Die einzige sichere Lösung ist nicht Markierung, nicht Anweisung, sondern Ausblendung."* Gewählt ist eine Markierung. Zwei Unterschiede zu damals — sie steht in der **Sprecherzeile** statt im Text des Turns, und der Filter, dem Iteration 3 ihren Erfolg zuschreibt, hat seit Chat 110 **nie gefeuert** —, aber beide sind Hypothesen. Die Lesson ist als **bestritten** markiert, nicht widerlegt, und die Beweislast liegt bei der neuen Lösung: Taucht `(von sich aus)` in Novas Antworten auf, fällt sie wieder.
+
+**Drei weitere Renderer nannten den Anlass nicht** — `memory/kontext.py`, `_suchtext_bauen` im Enricher, der `messages`-Aufbau im Verfasser. Sie trugen jeden Turn (24/24), aber 0 von 8 Impulsen waren dort als solche erkennbar: **person-eindeutig, Anlass unbekannt.** Auf Weisung nachgezogen, alle drei gemessen: **24/24 Inhalte, 8/8 Impulsmarken.** Damit gilt die Zusicherung in **sieben von sieben** Renderern.
+
+> **Der Verfasser hat dafür seine Prompt-Form gewechselt, und das ist die eine Entscheidung dieses Zugs.** Er reichte den Verlauf als **Nachrichtenfolge** durch — je Turn eine Chat-Nachricht mit `role: user` oder `assistant`. Darin gibt es für den Anlass nur einen Platz: den **Inhalt** der `assistant`-Nachricht. Genau dort darf er nicht stehen — das ist Iteration 1 aus `novaberg-pixie_l_kontamination.md`, und das Modell schrieb den Marker damals mit. Der Verlauf steht jetzt als benannter Textblock wie beim Responder: der Anlass im **Rahmen**, nicht in Novas Mund.
+>
+> **Der Preis ist benannt und nicht wegdiskutiert:** Das Modell sieht den Verlauf nicht mehr in seinem nativen Format, und der Verfasser bekam dabei eine Obergrenze, die es vorher nicht gab (acht Wortwechsel; er sah bis dahin den ganzen Bestand). **Woran ein Rückschlag zu erkennen wäre:** `(von sich aus)` taucht in Novas Antworten auf, oder der Bezug auf früher Gesagtes wird schlechter.
+
+**Zweite Gegenprobe, an der Sprecherbezeichnung: 4 vorhergesagt, 8 gezählt.** Wieder lag die Vorhersage zu niedrig — die Marke trägt mehr Zeugen, als beim Zählen im Blick waren. Suite **2248 grün, 0 übersprungen**, A11 300 → 299.
 
 ### 24.08.2026, 19:55 UTC — 26 Kandidaten gelesen: zwei waren still behoben, und das Register hat fünf Formate
 

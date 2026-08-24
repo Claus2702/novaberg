@@ -445,7 +445,7 @@ Ich bin so hyped gerade, das ist nicht real!
 | `intent`, `tone` | Perzeption | Routing-Info |
 | `memory_context` | Enricher | Gedächtnis-Kontext |
 | `web_context` | (Platzhalter) | Web-Kontext. Aktuell werden Web-Informationen über den Thinker eingearbeitet (SearXNG, seit Chat 12/15). |
-| `session_turns` | Enricher | Vollständige Turn-Dicts aus Redis (alle Felder, nur Shadow-Impulse gefiltert) |
+| `session_turns` | Enricher | Vollständige Turn-Dicts aus Redis, **ungefiltert** (24.08.2026; die Filterzeile war tot) |
 | `emotions_verlauf` | EI-Calc (seit Chat 59) | Gewichteter Emotions-Verlauf |
 | `emotions_vektor` | EI-Calc (seit Chat 59) | Richtungsvektor |
 | `sprach_stil` | EI-Calc (seit Chat 59) | Erkannter Formulierungsstil (Plausibilitäts-Gegencheck zur Perzeption) |

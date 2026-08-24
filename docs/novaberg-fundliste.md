@@ -2,8 +2,8 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Rohe, noch unklassifizierte Funde aus laufender Arbeit
-**Stand:** 24. August 2026, 19:55 UTC
-**Offen:** **68 Funde — gezaehlt am 24.08.2026, 19:55 UTC** (71 Fundzeilen im Abschnitt *Offen*, davon **drei** durchgestrichen; drei aus dem Lesen der 26 Registerkandidaten; fuenf aus der Abschaltung des Telegram-Kanals, zwei aus der Messung des Impuls-Turns, zwoelf aus dem Zuschnitt des Anschubs — der **entschieden und zurueckgestellt** ist —, zwei aus dem Fall der Zwei-Stunden-Wand). Die Kopfzeile stand am 23.08. schon einmal auf 23 bei tatsaechlich 26; sie war ueber mehrere Zuege hochgezaehlt worden, und schon ihr Ausgangswert war es — **deshalb wird hier gezaehlt und nie fortgeschrieben.**
+**Stand:** 24. August 2026, 21:35 UTC
+**Offen:** **73 Funde — gezaehlt am 24.08.2026, 21:35 UTC** (77 Fundzeilen im Abschnitt *Offen*, davon **vier** durchgestrichen; sechs aus der Behebung des Impuls-Verlusts und ihrer zweiten Kontrolle, drei aus dem Lesen der 26 Registerkandidaten; fuenf aus der Abschaltung des Telegram-Kanals, zwei aus der Messung des Impuls-Turns, zwoelf aus dem Zuschnitt des Anschubs — der **entschieden und zurueckgestellt** ist —, zwei aus dem Fall der Zwei-Stunden-Wand). Die Kopfzeile stand am 23.08. schon einmal auf 23 bei tatsaechlich 26; sie war ueber mehrere Zuege hochgezaehlt worden, und schon ihr Ausgangswert war es — **deshalb wird hier gezaehlt und nie fortgeschrieben.**
 **Verlauf:** [Verlauf des Standes](#verlauf-des-standes) — 73 Eintraege, juengster zuerst
 **Pfad:** novaberg/docs/novaberg-fundliste.md
 
@@ -232,6 +232,18 @@ Analog zum Kraft-1-Stichtag: ab wann eine Partition brauchbar ist. Kein Backfill
 ---
 
 ## Offen
+
+- **2026-08-24** — ~~**Drei Verlaufs-Renderer nennen den Anlass nicht.**~~ → **am 24.08.2026 behoben**, alle drei: `24/24` Inhalte und `8/8` Impulsmarken, gemessen ueber die echten Turns. Der Verfasser wechselte dafuer von der Nachrichtenfolge auf einen benannten Textblock — in einer `assistant`-Nachricht haette die Marke nur in den Inhalt gekonnt, und das ist die gescheiterte Iteration 1 aus `novaberg-pixie_l_kontamination.md`. Urspruenglicher Befund: `memory/kontext.py::_turns_formatieren`, `graph/nodes/enricher.py::_suchtext_bauen` und der `messages`-Aufbau in `graph/nodes/verfasser.py` tragen jeden der 24 Turns (kein Verlust), aber **0 von 8** Impulsen sind dort als solche erkennbar — sie stehen als `ASSISTANT:` / `Nova:` / `{"role": "assistant"}`. Person-eindeutig, Anlass unbekannt. `memory/kontext.py` ist live (`agents/recherche/agent.py:533`, `lagebeurteilung.py:44`). Gefunden von der zweiten Kontrolle, die alle **sieben** Renderer des Baums suchte statt der zwei, an denen der Defekt auffiel.
+
+- **2026-08-24** — **Der Gruppenkopf im Responder-Verlauf traegt seit heute manchmal Novas Emotion statt der des Nutzers.** `----- Turn n von m (begeisterung, a=0.8) -----` nimmt `gruppe[0]`, und bei einer Impulsgruppe ist das Nova. Von 16 Koepfen betrifft es **8**. Vorher war es immer der Nutzer. Die Zeile sagt nicht, wem der Wert gehoert. Nicht entschieden, ob gewollt.
+
+- **2026-08-24** — **`state["session_turns"]` ist seit heute dasselbe Listenobjekt wie `raw_turns`, keine Kopie.** Der Enricher filtert nicht mehr und weist direkt zu. Kein Konsument mutiert heute (`responder.py` kopiert mit `list()`), die Wirkung ist also null — aber eine unbenannte Zusicherung weniger.
+
+- **2026-08-24** — **Die Ausgabe-Verifikation in `verlauf_gruppieren` kann strukturell nicht feuern.** `erwartet` und `gezaehlt` pruefen dasselbe Praedikat ueber dieselbe Schleife; in 40.439 konstruierten Faellen **0** Anschlaege. Als Regressionsriegel gegen ein kuenftiges `continue` traegt sie, als Laufzeitpruefung der Daten prueft sie nichts — ihr Docstring behauptet das Zweite. Gefunden von der zweiten Kontrolle.
+
+- **2026-08-24** — **Ein `replace` auf den ersten Treffer traf den falschen Eintrag.** Die Zeichenkette `**Status:** Offen, Entscheidung ausstehend.` steht in `novaberg-bugs.md` **zweimal** — bei `IMPULS-DOPPELTE-SPUR` und bei `KONTAMINATIONSFILTER-TOT`. Eine Ersetzung ohne Abschnittsgrenze schrieb *„entschieden und behoben am 24.08.2026"* in den Eintrag, der nie angefasst wurde. Gefunden hat es der Vorher-Nachher-Abgleich der Zustandsverteilung (112 → 110 offen bei genau **einer** Schliessung), nicht das Lesen des Diffs. **Wer in einem Register ersetzt, ersetzt im Abschnitt, nicht in der Datei.**
+
+- **2026-08-24** — **`filtered_turns_count` im `pipeline_log` traegt seit dem 24.08.2026 dieselbe Zahl wie `raw_turns_count`.** Der Enricher filtert nicht mehr; das Feld ist absichtlich stehengeblieben, weil ein entfallenes Feld in Auswertungen ueber den Bestand nicht von einer Null zu unterscheiden waere. Ob es bleibt oder mit einem Stichtag endet, ist nicht entschieden.
 
 - **2026-08-24** — **`DESTILLAT-PERSPEKTIVE-VS-SUBJEKT` hat keinen eigenen Abschnitt im Defektregister.** Die Kennung wird dreimal als *Verwandt* genannt (`ZIELE-AUS-ZERRBILD`, zwei weitere) und nirgends gefuehrt. Damit ist der Grund, aus dem `ZIELE-AUS-ZERRBILD` offen steht, aus dem Register nicht zu beantworten.
 
