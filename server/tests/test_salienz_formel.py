@@ -72,9 +72,14 @@ class FormelAusDemKonzeptTest(unittest.TestCase):
         self.assertEqual(_rechne(human=0.5, gewichtung=1.5).effektiv, 0.75)
 
     def test_eigen_pfad_gewinnt(self):
-        """max(0.2 × 0.9, 0.8) = 0.8 — ihr Antrieb schlaegt seinen."""
+        """max(0.2 × 0.9, 0.8/1.3) = 0.6154 — ihr Antrieb schlaegt seinen.
+
+        Der Eigen-Pfad traegt seit dem 24.08.2026 die Normierung durch
+        (1 + MAX_ZUSCHLAG); ohne Erregung bleibt davon 0.8/1.3 uebrig. Der
+        Pflicht-Pfad ist unveraendert und liegt bei 0.18.
+        """
         ergebnis = _rechne(sprachlich=0.8, human=0.2, gewichtung=0.9)
-        self.assertEqual(ergebnis.effektiv, 0.8)
+        self.assertAlmostEqual(ergebnis.effektiv, 0.8/1.3, places=4)
         self.assertEqual(ergebnis.gewinner, "eigen")
 
     def test_idempotenz(self):
@@ -88,13 +93,21 @@ class KeineAusloeschungTest(unittest.TestCase):
     """Kein einzelner Faktor darf das Ergebnis allein umlegen."""
 
     def test_arousal_null_loescht_den_eigen_pfad_nicht(self):
-        """Der Verstaerker wirkt als (1 + z) — bei z=0 bleibt der Wert stehen."""
-        self.assertEqual(_rechne(sprachlich=0.6, arousal=0.0).eigen_pfad, 0.6)
+        """Der Verstaerker loescht nicht — er teilt die Skala mit.
+
+        Seit dem 24.08.2026 lautet der Pfad `s · (1+z) / (1+MAX)`. Bei z=0
+        bleibt `s/(1+MAX)` stehen, **nicht** null: Die Einseitigkeit aus
+        `novaberg-salienz-berechnung_k.md` §4 gilt weiter, nur ist der
+        Bezugspunkt jetzt der voll erregte Turn statt des ruhigen.
+        """
+        pfad = _rechne(sprachlich=0.6, arousal=0.0).eigen_pfad
+        self.assertAlmostEqual(pfad, 0.6/1.3, places=4)
+        self.assertGreater(pfad, 0.0)
 
     def test_ein_antrieb_bei_null_loescht_den_anderen_nicht(self):
         """max() statt Produkt: ein schweigender Antrieb nimmt nichts weg."""
-        self.assertEqual(_rechne(sprachlich=0.7, ziel=0.0).eigen_pfad, 0.7)
-        self.assertEqual(_rechne(sprachlich=0.0, ziel=0.7).eigen_pfad, 0.7)
+        self.assertAlmostEqual(_rechne(sprachlich=0.7, ziel=0.0).eigen_pfad, 0.7/1.3, places=4)
+        self.assertAlmostEqual(_rechne(sprachlich=0.0, ziel=0.7).eigen_pfad, 0.7/1.3, places=4)
 
     def test_kleinste_gewichtung_halbiert_hoechstens(self):
         """RAD_MIN ist 0.5 und enthaelt die Null nicht."""
@@ -109,9 +122,17 @@ class KeineAusloeschungTest(unittest.TestCase):
         self.assertEqual(ergebnis.pflicht_pfad, 0.0)
 
     def test_erregung_hebt_aber_erschafft_nicht(self):
-        """Aus einer belanglosen Aussage macht Erregung keine bedeutsame."""
+        """Aus einer belanglosen Aussage macht Erregung keine bedeutsame.
+
+        Der zweite Teil misst gegen den **ruhigen** Turn derselben Bewertung,
+        nicht mehr gegen die Bewertung selbst: Die Normierung verschiebt den
+        Bezugspunkt, die Aussage bleibt.
+        """
         self.assertEqual(_rechne(sprachlich=0.0, arousal=1.0).eigen_pfad, 0.0)
-        self.assertGreater(_rechne(sprachlich=0.5, arousal=1.0).eigen_pfad, 0.5)
+        self.assertGreater(
+            _rechne(sprachlich=0.5, arousal=1.0).eigen_pfad,
+            _rechne(sprachlich=0.5, arousal=0.0).eigen_pfad,
+        )
 
 
 class FehlenderPflichtPfadTest(unittest.TestCase):
@@ -121,7 +142,7 @@ class FehlenderPflichtPfadTest(unittest.TestCase):
         ergebnis = _rechne(sprachlich=0.6, human=None, gewichtung=1.04)
         self.assertIsNone(ergebnis.pflicht_pfad)
         self.assertEqual(ergebnis.gewinner, "eigen")
-        self.assertEqual(ergebnis.effektiv, 0.6)
+        self.assertAlmostEqual(ergebnis.effektiv, 0.6/1.3, places=4)
 
     def test_ohne_gewichtung_kein_pflicht_pfad(self):
         ergebnis = _rechne(sprachlich=0.6, human=0.9, gewichtung=None)
@@ -279,7 +300,7 @@ class FormelImNodeTest(unittest.TestCase):
         Salienz. Nicht null, weil die Lesung seines Textes ein Antrieb ist."""
         eintraege, ergebnis = self._mit_faktor("agent", [0.6])
         gespeichert: float = ergebnis["pending_writes"][0]["daten"]["salienz_obj"]["salienz"]
-        self.assertEqual(gespeichert, 0.6)
+        self.assertAlmostEqual(gespeichert, round(0.6/1.3, 4), places=4)
 
         zeile: dict = _formel_zeilen(eintraege)[0].inhalt
         self.assertIsNone(zeile["pflicht_pfad"])
@@ -290,7 +311,7 @@ class FormelImNodeTest(unittest.TestCase):
         Zuschlag obendrauf. 0.5 und Gravitation 0.3 ergeben 0.5, nicht 0.8."""
         _, ergebnis = self._mit_faktor("character", [0.5], gravitationsterm=0.3)
         gespeichert: float = ergebnis["pending_writes"][0]["daten"]["salienz_obj"]["salienz"]
-        self.assertEqual(gespeichert, 0.5)
+        self.assertAlmostEqual(gespeichert, round(0.5/1.3, 4), places=4)
 
     def test_pipeline_log_traegt_beide_operanden(self):
         eintraege, _ = self._mit_faktor("character", [0.5], salienz_human=0.7)
@@ -301,7 +322,7 @@ class FormelImNodeTest(unittest.TestCase):
         self.assertEqual(inhalt["salienz_effektiv"],  0.728)
         self.assertEqual(inhalt["gewinner"],          "pflicht")
         self.assertEqual(inhalt["pflicht_pfad"],      0.728)
-        self.assertEqual(inhalt["eigen_pfad"],        0.5)
+        self.assertAlmostEqual(inhalt["eigen_pfad"], round(0.5/1.3, 4), places=4)
         self.assertEqual(inhalt["salienz_human"],     0.7)
         self.assertEqual(inhalt["nutzer_gewichtung"], 1.04)
         self.assertEqual(inhalt["gewichtung_quelle"], "destilliert")
@@ -324,3 +345,55 @@ class FormelImNodeTest(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class DerEigenPfadIstGeschlossenTest(unittest.TestCase):
+    """Die Zusicherung, die es vor dem 24.08.2026 nicht gab.
+
+    `s · (1 + z)` **muss** die Obergrenze ueberschreiten, sobald beide
+    Eingaenge hoch sind — gemessen ueber 2506 protokollierte Turns lief das in
+    **21,3 %** der Faelle in die Kappung, und danach trugen 534 Turns denselben
+    Wert 1.0. Ein Feld, das seine eigene Skala verlaesst, macht aus einem
+    Messwert eine Marke.
+
+    `s · (1 + z) / (1 + MAX)` ist auf [0, 1] **geschlossen**: Beide Eingaenge
+    liegen darin, also auch das Ergebnis. Die Kappung bleibt als Sicherung
+    stehen und ist kein Formteil mehr.
+    """
+
+    def test_kein_eingang_verlaesst_die_skala(self) -> None:
+        """Ueber das ganze Gitter, nicht an einem Punkt.
+
+        Ein Zeuge auf den Extremwert allein bliebe gruen, wenn die Formel
+        dazwischen ausbricht — und genau dazwischen liegt der Betrieb.
+        """
+        for i in range(0, 21):
+            for j in range(0, 21):
+                s_wert, a_wert = i/20, j/20
+                with self.subTest(sprachlich=s_wert, arousal=a_wert):
+                    pfad = _rechne(sprachlich=s_wert, arousal=a_wert).eigen_pfad
+                    self.assertLessEqual(pfad, 1.0)
+                    self.assertGreaterEqual(pfad, 0.0)
+
+    def test_die_eins_erreicht_nur_wer_beides_traegt(self) -> None:
+        """Der Punkt der Aenderung, als Zusicherung.
+
+        Volle Bewertung allein genuegt nicht mehr, volle Erregung allein auch
+        nicht. Das ist die neue Bedeutung der Zahl.
+        """
+        self.assertAlmostEqual(_rechne(sprachlich=1.0, arousal=1.0).eigen_pfad, 1.0, places=6)
+        self.assertLess(_rechne(sprachlich=1.0, arousal=0.0).eigen_pfad, 1.0)
+        self.assertLess(_rechne(sprachlich=0.9, arousal=1.0).eigen_pfad, 1.0)
+
+    def test_monoton_in_beiden_eingaengen(self) -> None:
+        """Die Ordnung bleibt — sonst waere es eine andere Groesse.
+
+        Ohne diese Probe waere die Geschlossenheit auch von einer Formel
+        erfuellt, die alles auf eine Konstante abbildet.
+        """
+        for a_wert in (0.0, 0.5, 1.0):
+            werte = [_rechne(sprachlich=i/10, arousal=a_wert).eigen_pfad for i in range(11)]
+            self.assertEqual(werte, sorted(werte), f"nicht monoton in s bei a={a_wert}")
+        for s_wert in (0.2, 0.6, 1.0):
+            werte = [_rechne(sprachlich=s_wert, arousal=i/10).eigen_pfad for i in range(11)]
+            self.assertEqual(werte, sorted(werte), f"nicht monoton in a bei s={s_wert}")

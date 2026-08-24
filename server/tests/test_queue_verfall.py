@@ -37,6 +37,7 @@ import uuid
 
 import psycopg2
 from config import POSTGRES_URL, QUEUE_SCHWELLE
+from config import KZG_SALIENZ_HIGH, KZG_SALIENZ_MID, KZG_SALIENZ_MINIMUM
 from memory.repositories.shadow_auftrag_repository import (
     GRUND_FEHLVERSUCH,
     GRUND_VERFALL,
@@ -80,7 +81,18 @@ class DieKurveIstUmkehrbarTest(unittest.TestCase):
         "roh 0.3 / 0.5 / 0.7". Trifft die Rueckrechnung diese Rohwerte, ist
         belegt, dass Queue und KZG dieselbe Kurve benutzen.
         """
-        for absolut, erwartet_roh in ((0.67378, 0.3), (0.84089, 0.5), (0.94393, 0.7)):
+        # **Gegen die Konstanten, nicht gegen ihre Zahlen von heute.** Bis zum
+        # 24.08.2026 standen hier die Literale 0.67378 / 0.84089 / 0.94393 —
+        # die Bilder der Rohwerte durch den damaligen Exponenten 0.5. Mit dem
+        # Wechsel auf 1.1 wurden sie falsch, obwohl die Zusicherung dieselbe
+        # blieb: Der Zeuge hielt eine Zahl fest, wo er eine **Beziehung**
+        # pruefen soll.
+        marken = (
+            (KZG_SALIENZ_MINIMUM, 0.3),
+            (KZG_SALIENZ_MID,     0.5),
+            (KZG_SALIENZ_HIGH,    0.7),
+        )
+        for absolut, erwartet_roh in marken:
             with self.subTest(absolut=absolut):
                 self.assertAlmostEqual(
                     erwartet_roh, salienz_roh_zurueckrechnen(absolut), places=4,
@@ -106,7 +118,7 @@ class DieHalbreaktivierungTest(unittest.TestCase):
 
     def test_liegt_zwischen_schwelle_und_anker(self) -> None:
         """Der Weckwert ist echt groesser als die Schwelle und echt kleiner als der Anker."""
-        for anker in (0.5, 0.67378, 0.84089, 0.9764, 1.0):
+        for anker in (0.5, KZG_SALIENZ_MINIMUM, KZG_SALIENZ_MID, 0.9764, 1.0):
             with self.subTest(anker=anker):
                 wert: float = halbreaktivierungs_wert(anker)
                 self.assertGreater(

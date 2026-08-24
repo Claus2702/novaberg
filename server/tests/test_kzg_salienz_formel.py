@@ -46,9 +46,14 @@ class TestSalienzTore(unittest.TestCase):
 
     def test_bewertung_030_liegt_genau_auf_dem_minimum(self) -> None:
         """Die drei Tore sind Bilder der alten Rohwerte unter der neuen Kurve."""
-        self.assertAlmostEqual(salienz_berechnen(0.3, 1), 0.6738, places=4)
-        self.assertAlmostEqual(salienz_berechnen(0.5, 1), 0.8409, places=4)
-        self.assertAlmostEqual(salienz_berechnen(0.7, 1), 0.9439, places=4)
+        # **Gegen die Konstanten, nicht gegen ihre Zahlen von heute** — die
+        # drei Marken sind Bilder der Rohwerte 0.3 / 0.5 / 0.7 durch dieselbe
+        # Kurve, die auch die Formel benutzt. Bis zum 24.08.2026 standen hier
+        # die Literale des damaligen Exponenten 0.5; mit dem Wechsel auf 1.1
+        # wurden sie falsch, obwohl die Zusicherung unveraendert gilt.
+        self.assertAlmostEqual(salienz_berechnen(0.3, 1), KZG_SALIENZ_MINIMUM, places=4)
+        self.assertAlmostEqual(salienz_berechnen(0.5, 1), KZG_SALIENZ_MID,     places=4)
+        self.assertAlmostEqual(salienz_berechnen(0.7, 1), KZG_SALIENZ_HIGH,    places=4)
 
     def test_die_tore_stehen_auf_derselben_skala_wie_die_werte(self) -> None:
         """Gegen KZG-SALIENZ-KONSUMENTEN-DISSENS: eine Skala, nicht zwei."""
@@ -102,7 +107,7 @@ class TestSalienzDeckel(unittest.TestCase):
         wert: float = salienz_berechnen(0.5, 1)
         self.assertGreater(wert, 0.0)
         self.assertLess(wert, 1.0)
-        self.assertAlmostEqual(wert, 0.8409, places=4)
+        self.assertAlmostEqual(wert, KZG_SALIENZ_MID, places=4)
 
 
 class TestSalienzBauart(unittest.TestCase):
@@ -150,7 +155,7 @@ class TestSalienzFehlerpfade(unittest.TestCase):
     def test_haeufigkeit_null_meldet_fehler(self) -> None:
         with self.assertLogs(KZG_LOGGER, level="ERROR") as protokoll:
             wert: float = salienz_berechnen(0.5, 0)
-        self.assertAlmostEqual(wert, 0.8409, places=4)
+        self.assertAlmostEqual(wert, KZG_SALIENZ_MID, places=4)
         self.assertIn("haeufigkeit=0", "\n".join(protokoll.output))
 
 

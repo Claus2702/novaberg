@@ -646,9 +646,31 @@ DATEIEN_INDEX_MAX_PRO_LAUF: int = int(os.getenv("DATEIEN_INDEX_MAX_PRO_LAUF", "5
 # am Live-Turn vom 28.07.2026, 09:27 UTC: „Salienz 0.6738 (Eingang 0.30)
 # < 0.6738 — abgelehnt". Wer genau die Bewertung trifft, die das Tor meint,
 # muss hindurchgehen.
-KZG_SALIENZ_MINIMUM:          float = float(os.getenv("KZG_SALIENZ_MINIMUM", "0.67378"))  # roh 0.3
-KZG_SALIENZ_MID:              float = float(os.getenv("KZG_SALIENZ_MID", "0.84089"))      # roh 0.5
-KZG_SALIENZ_HIGH:             float = float(os.getenv("KZG_SALIENZ_HIGH", "0.94393"))     # roh 0.7
+# Die drei Schwellen sind **Bilder von roh 0.3 / 0.5 / 0.7** durch dieselbe
+# Kurve, die auch die Salienz speichert — keine freien Konstanten. Wandert der
+# Exponent, wandern sie mit, sonst bedeuten sie etwas anderes als am Tag ihrer
+# Setzung.
+#
+# **Am 24.08.2026 auf Exponent 1.1 nachgezogen** (vorher 0.67378 / 0.84089 /
+# 0.94393 bei Exponent 0.5). Die Rohwerte 0.3 / 0.5 / 0.7 sind unveraendert —
+# die Bedeutung bleibt, die Zahl aendert sich.
+#
+# **Sie sind ABGERUNDET, und das ist keine Schoenheitsfrage.** Die Tore pruefen
+# mit `>=`; eine aufgerundete Konstante liegt ueber ihrem eigenen Rohwert und
+# weist genau den Fall ab, den sie einlassen soll. Gemessen am Live-Turn vom
+# 28.07.2026, 09:27 UTC: Eine Bewertung von exakt 0.30 wurde abgelehnt, weil
+# 0.6738 ueber 0.6737882 lag. Beim Nachziehen am 24.08.2026 ist derselbe
+# Fehler noch einmal entstanden (0.41952 statt 0.41951) und vom Zeugen
+# `test_wer_das_tor_genau_trifft_geht_hindurch` gefangen worden.
+#
+# **Der Exponent aendert an diesen Toren nichts.** Die Kurve ist monoton, und
+# Schwelle wie Wert laufen durch dieselbe: `f(e) >= f(0.7)` gilt genau dann,
+# wenn `e >= 0.7`. Gemessen ueber 2506 Turns sind die Verteilungen bei 0.5 und
+# 1.1 zeichengleich. Was der Exponent aendert, ist die **Ablesbarkeit** der
+# gespeicherten Zahl.
+KZG_SALIENZ_MINIMUM:          float = float(os.getenv("KZG_SALIENZ_MINIMUM", "0.41951"))  # roh 0.3
+KZG_SALIENZ_MID:              float = float(os.getenv("KZG_SALIENZ_MID", "0.68302"))      # roh 0.5
+KZG_SALIENZ_HIGH:             float = float(os.getenv("KZG_SALIENZ_HIGH", "0.88078"))     # roh 0.7
 KZG_TTL_LOW_SEKUNDEN:         int   = int(os.getenv("KZG_TTL_LOW_SEKUNDEN", "604800"))       # 7 Tage  — Salienz 0.3–0.5
 KZG_TTL_MID_SEKUNDEN:         int   = int(os.getenv("KZG_TTL_MID_SEKUNDEN", "1209600"))      # 14 Tage — Salienz 0.5–0.7
 KZG_TTL_HIGH_SEKUNDEN:        int   = int(os.getenv("KZG_TTL_HIGH_SEKUNDEN", "2592000"))     # 30 Tage — Salienz >= 0.7
@@ -698,7 +720,17 @@ KZG_SALIENZ_CAP:              float = float(os.getenv("KZG_SALIENZ_CAP", "1.0"))
 
 # Exponent der Salienzkurve. Von 0.6 auf 0.5 gezogen, damit KZG und LZG dieselbe
 # Kurve tragen (gewicht_absolut_berechnen in memory/lzg_knoten.py).
-KZG_SALIENZ_DAEMPFUNG_EXP:    float = float(os.getenv("KZG_SALIENZ_DAEMPFUNG_EXP", "0.5"))
+# **Am 24.08.2026 von 0.5 auf 1.1.** Die Kurve ist `sin(roh*pi/2) ** exp`. Der
+# Sinus flacht oben bereits ab; ein Exponent unter 1 hebt danach **zusaetzlich**
+# an, und beides zusammen staucht die obere Haelfte der Rohskala auf einen
+# Streifen: roh 0.7-1.0 bildete auf 0.9439-1.0000 ab, also 30 % der Eingabe auf
+# 5,6 % der Ausgabe. Genau dieses Band trug der ganze Bestand.
+#
+# Ueber 1 gebogen bleibt die weiche Annaeherung an 1.0 erhalten, ohne
+# anzuheben: dieselben 30 % bilden auf 12 % ab. **Kein Tor aendert sich davon**
+# (die Schwellen sind Bilder derselben Kurve, siehe oben) — die Wirkung ist die
+# Aufloesung der gespeicherten Zahl.
+KZG_SALIENZ_DAEMPFUNG_EXP:    float = float(os.getenv("KZG_SALIENZ_DAEMPFUNG_EXP", "1.1"))
 
 # Zuwachs je thematischer Verstaerkung, am Anker vor der Kurve. Nicht frei
 # gewaehlt, sondern durch die TTL-Stufen bestimmt: Ein Eintrag muss nicht nur
@@ -1415,7 +1447,14 @@ EMOTIONALE_GRAVITATION_FAKTOR_LZG:      float = 0.5    # LZG: stärker gedämpft
 
 # ─── DelegationsAgent (VENT1) ─────────────────
 DELEGATION_EFFEKTIVWERT_SCHWELLE: float = 0.15
-DELEGATION_SALIENZ_SCHWELLE:      float = 0.6
+# **Am 24.08.2026 von 0.6 auf 0.4615 mitgezogen** — 0.6 / 1.3, weil der
+# Eigen-Pfad der Salienz seit demselben Tag durch (1 + MAX_ZUSCHLAG) normiert
+# ist und dieselbe Lage nun einen um diesen Faktor kleineren Wert traegt.
+#
+# **Ohne den Nachzug waere das Tor gekippt, nicht verschoben:** Gemessen ueber
+# 2506 Turns kaemen bei stehender 0.6 noch **65,1 %** durch statt 89,4 %; mit
+# dem Nachzug sind es 90,1 %. Die Schwelle beschreibt eine Lage, keine Zahl.
+DELEGATION_SALIENZ_SCHWELLE:      float = 0.4615
 DELEGATION_VERSTAERKUNG_DIVISOR:  float = 2.0
 DELEGATION_AROUSAL_BOOST:         float = 0.5
 
@@ -2275,14 +2314,32 @@ LZG_KNOTEN_REINFORCEMENT_BOOST: float = float(os.getenv("LZG_KNOTEN_REINFORCEMEN
 # praktisch nie erreicht, und der Verfall liefe still ins Leere.
 QUEUE_SALIENZ_CAP: float = float(os.getenv("QUEUE_SALIENZ_CAP", "1.0"))
 
-# Exponent der Sin^X-Daempfung. Wie beim Knoten und wie im KZG-Aufbau.
-QUEUE_DAEMPFUNG_EXP: float = float(os.getenv("QUEUE_DAEMPFUNG_EXP", "0.5"))
+# Exponent der Sin^X-Kurve. **Am 24.08.2026 von 0.5 auf 1.1**, gemeinsam mit
+# KZG_SALIENZ_DAEMPFUNG_EXP und aus demselben Grund (dort steht er).
+#
+# **Der Spiegel zum Knoten ist damit gebrochen, und das ist Absicht.**
+# LZG_KNOTEN_DAEMPFUNG_EXP bleibt bei 0.5, weil der Knoten die Lage nicht hat,
+# die hier behoben wird: Gemessen am 24.08.2026 stehen **0,0 %** der 2927
+# Knoten am Cap, bei im Mittel 5,36 Verstaerkungen — dort daempft die Kurve
+# einen echten Akkumulator und trifft ihren Zweck. Die Queue akkumuliert
+# praktisch nicht (681 von 683 Zeilen mit haeufigkeit = 1) und war trotzdem
+# gesaettigt. Gleiche Kurve, verschiedene Bestaende, verschiedene Antwort.
+QUEUE_DAEMPFUNG_EXP: float = float(os.getenv("QUEUE_DAEMPFUNG_EXP", "1.1"))
 
 # Taegliche exponentielle Verfallsrate der effektiven Salienz.
-# Hergeleitet aus ln(0.9764 / 0.3) / 30: Der am 15.08.2026 gemessene Median
-# des Bestands erreicht nach **30 Tagen** die Deaktivierungsschwelle.
-# 26-mal die Knoten-Rate — dort faellt derselbe Wert erst nach 787 Tagen.
-QUEUE_DECAY_RATE: float = float(os.getenv("QUEUE_DECAY_RATE", "0.0393"))
+# Hergeleitet aus ln(Median / QUEUE_SCHWELLE) / 30: Der gemessene Median des
+# Bestands erreicht nach **30 Tagen** die Deaktivierungsschwelle.
+#
+# **Am 24.08.2026 nachgerechnet: ln(0.8108 / 0.3) / 30 = 0.03314**, vorher
+# 0.0393 aus ln(0.9764 / 0.3) / 30. Die Rate selbst ist unveraendert gemeint —
+# **ihr Eingang hat sich bewegt**: Der Median des absoluten Standes faellt mit
+# der Normierung des Eigen-Pfades und dem neuen Exponenten von 0.9764 auf
+# 0.8108. Ohne den Nachzug fiele derselbe Bestand nach 25,3 statt 30 Tagen.
+#
+# **Eine abgeleitete Konstante wandert mit ihrer Herleitung.** Sie stehen zu
+# lassen hiesse, die 30 Tage stillschweigend gegen 25 zu tauschen — eine
+# Verhaltensaenderung, die niemand entschieden hat.
+QUEUE_DECAY_RATE: float = float(os.getenv("QUEUE_DECAY_RATE", "0.03314"))
 
 # Schwellwert: Unterschreitet die effektive Salienz diesen Wert, wird der
 # Auftrag auf aktiv = FALSE gesetzt. Er bleibt gespeichert und ist ueber die

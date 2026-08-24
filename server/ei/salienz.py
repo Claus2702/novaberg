@@ -159,8 +159,30 @@ def salienz_effektiv_berechnen(
         "ziel_gravitation": round(ziel_gravitation, 4),
     }
 
+    # **Der Zuschlag hebt, und die Normierung haelt die Skala.** Bis zum
+    # 24.08.2026 stand hier `max(antriebe) * (1 + zuschlag)` — ein Ausdruck,
+    # der die Obergrenze ueberschreiten **muss**, sobald der Antrieb hoch und
+    # die Erregung stark ist. Gemessen ueber 2506 protokollierte Turns lief
+    # das in **21,3 %** der Faelle in die Kappung; danach trugen 534 Turns
+    # denselben Wert 1,0 und waren untereinander nicht mehr unterscheidbar.
+    #
+    # Die Teilung durch `(1 + MAX_ZUSCHLAG)` macht den Ausdruck auf [0, 1]
+    # **geschlossen**: Beide Eingaenge liegen in [0, 1], also liegt auch das
+    # Ergebnis darin, und die Kappung wird zur Sicherung statt zum Formteil.
+    # Gemessen faellt sie damit auf 1,5 % — der Rest kommt aus dem
+    # Pflicht-Pfad, der unveraendert ungebremst multipliziert.
+    #
+    # **Die Bedeutung der Zahl aendert sich dabei, und das ist Absicht.** Voll
+    # erreicht sie nur, wer **beides** traegt: volle Bewertung und volle
+    # Erregung. Ein ruhiger Turn behaelt `1/(1+k)` seiner Bewertung — die
+    # Erregung vergroessert nicht mehr, sie **teilt die Skala mit**. Die
+    # Einseitigkeit aus `novaberg-salienz-berechnung_k.md` §4 bleibt: Der
+    # Zuschlag hebt gegenueber einem ruhigen Turn, er loescht nichts aus.
     zuschlag:   float = _erregungs_zuschlag_berechnen(arousal)
-    eigen_pfad: float = max(antriebe.values()) * (1.0 + zuschlag)
+    eigen_pfad: float = (
+        max(antriebe.values()) * (1.0 + zuschlag)
+        / (1.0 + SALIENZ_EREGUNG_MAX_ZUSCHLAG)
+    )
 
     # ── Verarbeitung: der Pflicht-Pfad ──────────
     # Beide Teile muessen da sein. Fehlt einer, gibt es keinen Pflicht-Pfad —
