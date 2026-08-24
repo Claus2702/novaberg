@@ -171,6 +171,10 @@ Das Repository liegt in einem Projektverzeichnis neben den Runtime-Dateien:
 <projekt-verzeichnis>/
 ├── novaberg/             # geklont
 ├── searxng/              # Runtime-State für SearXNG (leer anlegen, wird beim ersten Start befüllt)
+├── matrix/               # Runtime-State für Matrix — nur für den Matrix-Kanal (Schritt 6)
+│   ├── config/           #   AS-Registrierung + Tokens (aus den Mustern ausfüllen)
+│   ├── data/             #   Synapse-Daten, homeserver.yaml, Signaturschlüssel
+│   └── state/            #   Raum-Kennung und Bild-Fingerabdruck (leer anlegen)
 ├── .env                  # Secrets (aus Template erzeugen)
 └── docker-compose.yml    # (aus Template erzeugen)
 ```
@@ -180,15 +184,24 @@ cd ..
 mkdir searxng
 cp novaberg/.env.template .env
 cp novaberg/docker-compose.template.yml docker-compose.yml
+
+# Nur für den Matrix-Kanal (Schritt 6):
+cp -r novaberg/matrix matrix
+mkdir -p matrix/state
 ```
 
 ### 3. `.env` ausfüllen
 
 Mindestens diese Werte setzen:
 
-- `TELEGRAM_BOT_TOKEN` — vom [BotFather](https://t.me/BotFather)
-- `TELEGRAM_USER_MAP` — Deine Telegram-User-ID (bei [@userinfobot](https://t.me/userinfobot))
 - `ANTHROPIC_API_KEY` — nur falls `LLM_PROFILE=claude` genutzt wird
+
+Die Telegram-Schlüssel (`TELEGRAM_BOT_TOKEN`, `TELEGRAM_USER_MAP`) werden
+**nicht mehr gebraucht**: Der Telegram-Kanal ist am 24.08.2026 abgeschaltet, der
+Dienst steht nicht mehr in der Compose-Datei. `telegram_bot/` liegt weiter im
+Repositorium — der Dienst ist aus, der Code ist nicht gelöscht. Setze sie nur,
+wenn Du den Kanal zurückholst; der Compose-Block steht auskommentiert an seiner
+alten Stelle in `docker-compose.template.yml`.
 
 ### 4. Ollama einrichten
 
@@ -224,9 +237,92 @@ Dienste:
 - Redis auf `:6379`
 - SearXNG auf `:8080`
 - Nova-Server auf `:8000`
-- Telegram-Bot (im Hintergrund)
+- Synapse auf `:8008` und der Matrix-Connector — **erst nach Schritt 6**; ohne
+  ihn starten beide Behälter in einer Schleife neu
 
-### 6. Desktop-Client starten (optional)
+Der Telegram-Kanal ist am 24.08.2026 abgeschaltet und nicht mehr Teil des
+Stapels. `telegram_bot/` liegt weiter im Repositorium — der Dienst ist aus, der
+Code ist nicht gelöscht, und der Compose-Block steht auskommentiert an seiner
+alten Stelle.
+
+### 6. Matrix-Kanal (optional)
+
+Das ist der Fernkanal: Nova vom Handy aus erreichbar, über einen VPN-Tunnel, in
+einem echten Matrix-Client. **Es ist kein Bot.** Ein Bot hat genau einen
+Absender — alles, was Du am Desktop schreibst, erschiene im Kanal als
+`[Du] ...` aus Novas Mund. Novaberg meldet stattdessen einen *Application
+Service* an, der im Namen jedes Nutzers seines Namensraums senden darf: Eine
+Desktop-Äußerung erscheint als Nachricht von **Dir**, Novas Antwort als
+Nachricht von **Nova**. Die Begründung steht in
+`docs/novaberg-matrix-kanal_k.md`.
+
+Vier Dinge müssen vor dem ersten Start existieren. Keins davon ist optional.
+
+**a) Die Datenbank.** Synapse besteht auf `C`-Sortierung, und das ist
+nachträglich nur über einen Neuaufbau änderbar — also jetzt, nicht nach dem
+ersten Fehler:
+
+```bash
+docker compose up -d postgres
+docker compose exec -T postgres psql -U ki -d postgres -c \
+  "CREATE DATABASE synapse WITH OWNER ki TEMPLATE template0 LC_COLLATE='C' LC_CTYPE='C';"
+```
+
+**b) Die Homeserver-Konfiguration.** Synapse seine Geheimnisse und den
+Signaturschlüssel erzeugen lassen, dann das Muster darüberlegen und die drei
+erzeugten Werte übernehmen:
+
+```bash
+docker run --rm -v "$(pwd)/matrix/data:/data" \
+  -e SYNAPSE_SERVER_NAME=novaberg.de -e SYNAPSE_REPORT_STATS=no \
+  ghcr.io/element-hq/synapse:latest generate
+
+cp matrix/data/homeserver.template.yaml matrix/data/homeserver.yaml
+# dann eintragen: registration_shared_secret, macaroon_secret_key, form_secret
+```
+
+`server_name` steckt in **jeder** Nutzer- und Raum-Kennung und ist nachträglich
+nicht änderbar. Eine Domain nehmen, nicht die Adresse des Wirts — die kommt aus
+DHCP und wechselt.
+
+**c) Der Application Service.** Zwei Tokens, frei wählbar, aber lang, zufällig
+und voneinander verschieden. Sie gehören in **zwei** Dateien: Der Homeserver
+liest die eine, der Connector die andere, und weichen sie ab, weist jede Seite
+die andere ab.
+
+```bash
+cp matrix/config/novaberg-as.template.yaml matrix/config/novaberg-as.yaml
+cp matrix/config/as-tokens.env.template     matrix/config/as-tokens.env
+openssl rand -hex 32   # as_token  -> in beide Dateien
+openssl rand -hex 32   # hs_token  -> in beide Dateien
+```
+
+**d) Die zwei Konten.** Eins für Dich, eins für Nova:
+
+```bash
+docker compose up -d synapse
+docker compose exec -T synapse register_new_matrix_user \
+  -c /data/homeserver.yaml -u meister -p '<passwort>' --no-admin
+docker compose exec -T synapse register_new_matrix_user \
+  -c /data/homeserver.yaml -u nova -p "$(openssl rand -base64 24)" --no-admin
+```
+
+Novas Passwort wird nie gebraucht — der Application Service spricht für sie über
+seinen `as_token`. Deins ist das, womit Du Dich anmeldest.
+
+Danach `docker compose up -d` und einen Client (FluffyChat, Fractal, Element)
+auf `http://<wirt>:8008` richten, angemeldet als `meister`. Den Raum legt der
+Connector beim ersten Lauf an; seine Kennung liegt in `matrix/state/` — **ohne
+diesen Mount legt jeder Neustart einen neuen Raum an**, und der Verlauf des
+alten bleibt liegen, ohne dass etwas anschlägt.
+
+Zwei Dinge tut dieser Aufbau nicht: Vor Synapse steht **kein TLS**, außerhalb
+eines VPN-Tunnels gehen also Passwort und jede Nachricht im Klartext über die
+Leitung; und `matrix/config/avatar-nova.png` wird nicht mitgeliefert — ein
+beliebiges Bild dorthin legen gibt der Figur ein Profilbild, weglassen geht
+auch.
+
+### 7. Desktop-Client starten (optional)
 
 ```bash
 # Abhängigkeiten installieren (Fedora/Nobara — das meiste ist vorinstalliert)

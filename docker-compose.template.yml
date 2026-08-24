@@ -97,15 +97,101 @@ services:
       - ./novaberg/server:/app
     restart: unless-stopped
 
-  telegram-bot:
-    build: ./novaberg/telegram_bot
-    container_name: ki_telegram
+  # ── Matrix-Homeserver ─────────────────────────────────────────
+  # Der Fernkanal. Der Unterschied zu einem Bot ist keine Bequemlichkeit,
+  # sondern eine Faehigkeit: Ein Bot hat genau einen Absender, ein
+  # Application Service darf im Namen jedes Nutzers seines Namensraums
+  # senden. Damit erscheint eine Aeusserung, die am Desktop gemacht wurde,
+  # im Matrix-Client als Nachricht DES MENSCHEN. Konzept:
+  # docs/novaberg-matrix-kanal_k.md
+  #
+  # VOR dem ersten Start sind vier Dinge anzulegen — die Anleitung steht in
+  # README.md, Abschnitt "Matrix channel (optional)". Kurzform:
+  #   1. Datenbank `synapse` mit LC_COLLATE=C und LC_CTYPE=C
+  #      (NACHTRAEGLICH nur ueber einen Neuaufbau aenderbar)
+  #   2. matrix/data/homeserver.yaml aus matrix/data/homeserver.template.yaml
+  #   3. matrix/config/novaberg-as.yaml aus dem Muster daneben, mit zwei
+  #      selbst erzeugten Tokens
+  #   4. dieselben Tokens in matrix/config/as-tokens.env
+  #
+  # `server_name` steckt in JEDER Nutzer- und Raum-Kennung und ist
+  # nachtraeglich nicht aenderbar. Deshalb eine Domain und nicht die
+  # Adresse des Wirts: Die kommt aus DHCP und wechselt.
+  #
+  # `depends_on` auf postgres ist keine Bequemlichkeit — ohne die
+  # Datenbank startet der Homeserver nicht.
+  synapse:
+    image: ghcr.io/element-hq/synapse:latest
+    container_name: ki_synapse
     restart: unless-stopped
-    env_file: .env
     environment:
-      NOVA_API_URL: http://server:8000
+      SYNAPSE_CONFIG_PATH: /data/homeserver.yaml
+    ports:
+      # Client-Server-API, ohne TLS. Vertretbar im privaten Netz hinter
+      # einem VPN-Tunnel; im blanken WLAN gehen Passwort und Nachrichtentext
+      # im Klartext. Ein Reverse Proxy mit Zertifikat ist offen.
+      - "8008:8008"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    volumes:
+      - ./matrix/data:/data
+      # Die AS-Registrierung liegt getrennt von den Daten: Sie gehoert dem
+      # Menschen, nicht dem Server-Nutzer (UID 991), und wird von Hand
+      # gepflegt statt vom Behaelter geschrieben.
+      - ./matrix/config:/config:ro
+
+  # Der Connector zum Matrix-Raum. Duenner Client wie jeder Kanal hier —
+  # mit zwei Unterschieden: Er empfaengt Ereignisse per Push vom Homeserver
+  # (PUT /_matrix/app/v1/transactions/{txnId}) statt per Polling, und er
+  # sendet unter zwei Identitaeten.
+  matrix-bot:
+    build: ./novaberg/matrix_bot
+    container_name: ki_matrix_bot
+    restart: unless-stopped
+    # Traegt MATRIX_AS_TOKEN und MATRIX_HS_TOKEN. Muster:
+    # matrix/config/as-tokens.env.template
+    env_file: ./matrix/config/as-tokens.env
+    environment:
+      NOVA_API_URL:       http://server:8000
+      MATRIX_HOMESERVER:  http://synapse:8008
+      MATRIX_SERVER_NAME: novaberg.de
+      MATRIX_USER_MAP:    "meister:meister"
+      MATRIX_CHARACTER:   nova
+    volumes:
+      # Die Raum-Kennung ueberlebt hier den Neustart. OHNE DIESEN MOUNT legt
+      # jeder Start einen NEUEN Raum an, und der Verlauf des alten bleibt
+      # liegen, ohne dass etwas anschlaegt. Daneben liegt der Fingerabdruck
+      # des Profilbildes — ohne ihn laedt jeder Start dasselbe Bild erneut
+      # hoch, und der Medienspeicher fuellt sich mit Kopien.
+      - ./matrix/state:/state
+      # Dasselbe Verzeichnis wie bei Synapse, aus einem anderen Grund: Der
+      # Connector liest hier das Profilbild der Figur.
+      - ./matrix/config:/config:ro
     depends_on:
       - server
+      - synapse
+
+  # ── Telegram-Bot — abgeschaltet am 24.08.2026 ──────────────────
+  # Der Matrix-Kanal hat ihn abgeloest; der Grund steht in
+  # docs/novaberg-matrix-kanal_k.md und ist keine Geschmacksfrage: Ein
+  # Telegram-Bot hat genau einen Absender, weshalb jede Aeusserung von
+  # einem anderen Client im Kanal als `[Du] ...` aus Novas Mund
+  # erschien statt als Nachricht des Menschen.
+  #
+  # `telegram_bot/` bleibt im Repositorium liegen — der Dienst ist aus,
+  # der Code ist nicht geloescht. Wer den Kanal zurueckholen will,
+  # stellt diesen Block wieder her:
+  #
+  #   telegram-bot:
+  #     build: ./novaberg/telegram_bot
+  #     container_name: ki_telegram
+  #     restart: unless-stopped
+  #     env_file: .env
+  #     environment:
+  #       NOVA_API_URL: http://server:8000
+  #     depends_on:
+  #       - server
 
 volumes:
   postgres_data:
