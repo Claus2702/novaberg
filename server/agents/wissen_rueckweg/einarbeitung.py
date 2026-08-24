@@ -129,6 +129,62 @@ def version_fortschreiben(pfad: Path | str, wurzel: Path | str) -> str:
 SATZ_MINDESTLAENGE: int = 40
 
 
+#: Ab welcher Trigramm-Uebereinstimmung ein Satz als "steht schon da" gilt.
+#:
+#: **Die Zahl ist an den echten Faellen abgelesen, nicht gesetzt.** Ueber die
+#: 232 Einarbeitungen des 24.08.2026, je Absatz die schwaechste
+#: Uebereinstimmung seiner Saetze mit dem Bestand:
+#:
+#:     1.00  12 Faelle   woertliche Kopie
+#:     0.65-0.95   6     Umformulierung ohne neuen Gehalt — bei zweien sagt
+#:                       die "neue" Fassung sogar WENIGER als die alte
+#:     0.50-0.65   6     gemischt: echte Ergaenzungen neben Umformulierungen
+#:     unter 0.50  208   echte Funde
+#:
+#: **Ein sauberes Tal gibt es nicht** — bei 0,65 kippt das Urteil beim Lesen,
+#: und zwei Umformulierungen darunter laufen durch.
+#:
+#: **Die Schwelle liegt bewusst hoch, und der Grund ist die Asymmetrie der
+#: Kosten:** Ein durchgelassener Doppelgaenger ist ein doppelter Absatz —
+#: sichtbar, zaehlbar, mit einem Werkzeug zuruecknehmbar. Ein faelschlich
+#: abgewiesener Fund ist **fort**: `steht_schon_da` reiht nicht wieder ein,
+#: und niemand erfaehrt, was verloren ging. Im Zweifel wird eingearbeitet.
+#:
+#: Geeicht an `pg_trgm.similarity()` (in dieser Datenbank vorhanden) ueber 60
+#: echte Paare: groesste Abweichung 0,083, mittlere 0,025, und **0 Paare mit
+#: abweichendem Urteil an dieser Schwelle**. Die Rechnung bleibt trotzdem hier
+#: und geht nicht in die Datenbank — ein Datenbankaufruf fuer einen reinen
+#: Textvergleich fuegt einen Ausfallpfad hinzu, der still waere.
+AEHNLICH_GENUG: float = 0.65
+
+
+def _trigramme(satz: str) -> set[str]:
+    """Die Trigramm-Menge eines Satzes — normalisiert wie `pg_trgm`.
+
+    Nachbedingung: Kleinschreibung, keine Satzzeichen, einfacher Leerraum,
+        Raender mit einem Leerzeichen gepolstert. Zwei Saetze, die sich nur
+        in Zeichensetzung oder Grossschreibung unterscheiden, liefern
+        dieselbe Menge.
+    """
+    rein: str = re.sub(r"[^a-z0-9äöüß ]", " ", satz.lower())
+    rein = " " + " ".join(rein.split()) + " "
+    return {rein[i:i + 3] for i in range(len(rein) - 2)}
+
+
+def _aehnlichkeit(a: str, b: str) -> float:
+    """Trigramm-Uebereinstimmung zweier Saetze, 0.0 bis 1.0.
+
+    Vorbedingung: beide Saetze sind nicht leer.
+    Nachbedingung: Der Jaccard-Quotient ihrer Trigramm-Mengen — 1.0 bei
+        gleichem Wortlaut, 0.0 ohne gemeinsame Zeichenfolge.
+    Fehlerfaelle: keine; zwei leere Saetze liefern 0.0 statt zu teilen.
+    """
+    ta: set[str] = _trigramme(a)
+    tb: set[str] = _trigramme(b)
+    vereinigung: int = len(ta | tb)
+    return len(ta & tb) / vereinigung if vereinigung else 0.0
+
+
 def _saetze(text: str) -> list[str]:
     """Zerlegt einen Text in vergleichbare Saetze — ohne Marken, ohne Leerraum.
 
@@ -144,21 +200,40 @@ def _saetze(text: str) -> list[str]:
     ]
 
 
-def _bringt_neues(absatz: str, text: str) -> bool:
+def _bringt_neues(absatz: str, text: str) -> tuple[bool, float]:
     """Traegt `absatz` mindestens einen Satz, der so nicht im Text steht?
 
     Vorbedingung: beide nicht leer.
-    Nachbedingung: True, wenn wenigstens ein Satz des Absatzes im Text fehlt.
-        **Ein Absatz ohne vergleichbaren Satz gilt als neu** — er ist zu kurz
-        fuer das Urteil, und ein Riegel, der im Zweifel verwirft, verloere
-        echte Funde.
+    Nachbedingung: `(neu, hoechste_uebereinstimmung)`. `neu` ist True, wenn
+        wenigstens ein Satz des Absatzes unter `AEHNLICH_GENUG` gegen jeden
+        Satz des Textes bleibt. Die Zahl ist die **schwaechste** der besten
+        Uebereinstimmungen — also der Wert, an dem die Entscheidung haengt,
+        und sie gehoert ins Log, damit die Schwelle aus dem Betrieb
+        nachjustierbar bleibt statt aus der Erinnerung.
+        **Ein Absatz ohne vergleichbaren Satz gilt als neu** (Rueckgabe
+        `(True, 0.0)`) — er ist zu kurz fuer das Urteil, und ein Riegel, der
+        im Zweifel verwirft, verloere echte Funde.
     Fehlerfaelle: keine.
+
+    **Verglichen wird auf Aehnlichkeit, nicht auf Gleichheit.** Die erste
+    Fassung dieses Riegels (24.08.2026, vormittags) verlangte den exakten
+    Wortlaut und fing damit 12 von 18 Doppelgaengern: Die uebrigen sechs
+    waren Umformulierungen desselben Satzes, zwei davon **aermer** als das
+    Original — ein umgestelltes Wort genuegte, um durchzukommen.
     """
-    vorhanden: set[str] = set(_saetze(text))
     eigene: list[str] = _saetze(absatz)
-    if not eigene:
-        return True
-    return any(s not in vorhanden for s in eigene)
+    fremde: list[str] = _saetze(text)
+    if not eigene or not fremde:
+        return True, 0.0
+
+    # Je eigenem Satz seine beste Entsprechung im Text; entschieden wird an
+    # der **schwaechsten** davon: Ein Absatz bringt etwas mit, sobald EIN
+    # Satz keine Entsprechung hat.
+    beste: list[float] = [
+        max(_aehnlichkeit(e, f) for f in fremde) for e in eigene
+    ]
+    schwaechste: float = min(beste)
+    return schwaechste < AEHNLICH_GENUG, schwaechste
 
 
 def absatz_bestimmen(text: str, kern: str) -> dict | None:
@@ -268,11 +343,13 @@ def absatz_bestimmen(text: str, kern: str) -> dict | None:
     # fuenf davon in einem einzigen Durchgang entstanden. Der Fehler ist
     # still: Die Paarungspruefung haelt (Marke und Eintrag stimmen), die
     # Datei waechst, und nur wer den Absatz liest, sieht ihn doppelt.
-    if not _bringt_neues(absatz, text):
+    neu, naehe = _bringt_neues(absatz, text)
+    if not neu:
         logger.info(
-            "Rückweg-Einarbeitung: der vorgeschlagene Absatz steht bereits "
-            "Satz für Satz im Text — als 'steht schon da' behandelt statt "
-            "als Einschub (%r)", absatz[:80],
+            "Rückweg-Einarbeitung: der vorgeschlagene Absatz steht bereits im "
+            "Text (Übereinstimmung %.2f, Schwelle %.2f) — als 'steht schon da' "
+            "behandelt statt als Einschub (%r)",
+            naehe, AEHNLICH_GENUG, absatz[:80],
         )
         return {"absatz": absatz, "nach": None, "ergaenzung": ergaenzung}
 
