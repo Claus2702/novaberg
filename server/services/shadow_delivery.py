@@ -968,8 +968,55 @@ async def shadow_delivery_loop(
 
                     except (ValueError, TypeError):
                         continue
+
+                # Trigger 3: Stille — die Frist ist abgelaufen, und das ist
+                # kein Grund zu schweigen.
+                #
+                # **Was hier bis zum 24.08.2026 stand, war `continue`.** Der
+                # Schluessel `last_activity` traegt eine TTL von zwei Stunden
+                # und wird nur vom Nutzer-Turn gesetzt; war er fort, ging die
+                # Schleife jeden Zyklus ins Leere und die Riegelkette wurde
+                # nicht einmal gefragt. **Beendet hat das ausschliesslich ein
+                # Nutzer-Turn** — gemessen ueber 214,5 h Betrieb: zwoelf
+                # Luecken ueber einer Stunde, zehn davon enden binnen zwei
+                # Minuten mit einer Aeusserung des Menschen; die beiden
+                # anderen sind exakt 1:00:33 und 1:00:17 lang und damit die
+                # Burst-TTL. Zusammen 126 von 214,5 Stunden, 59 % der Zeit.
+                #
+                # **Die Uhr misst nicht Anwesenheit.** Die prueft die Schleife
+                # eine Ebene hoeher, ueber `websocket_map` — ohne offene
+                # Verbindung kommt hier niemand an. `last_activity` misst
+                # *hat jemand in den letzten zwei Stunden gesprochen*, und das
+                # ist eine andere Frage (novaberg-eigenzeit_k.md §2.5).
+                #
+                # **Die Riegel tragen die Entscheidung laenger als die Uhr sie
+                # zuliess.** Ein Haltungsstand gilt bis
+                # ZUWENDUNG_STAND_MAX_ALTER_SEKUNDEN = 24 h; danach gelten
+                # Riegel 1 und 2 als *unbekannt* und verweigern von selbst.
+                # Die Wand schnitt bei 2 h ab, was die Riegel bis 24 h tragen
+                # — zwoelf Mal frueher als ihr eigenes Kriterium.
                 else:
-                    continue
+                    # Dieselbe Vorbedingung wie beim Timeout: Ohne Gespraech
+                    # gibt es nichts anzuknuepfen, und ein Einwurf in die
+                    # leere Sitzung waere eine Begruessung, kein Gedanke.
+                    turns_stille: list = session_turns_retrieve(
+                        redis_client, user_id, ASSISTANT_USER_ID,
+                    )
+                    if not turns_stille:
+                        continue
+
+                    trigger = "stille"
+
+                    # **Der Ausloeser wird verbraucht wie der Timeout.** Ohne
+                    # diese Zeile fragte die Schleife alle PRUEF_INTERVALL
+                    # Sekunden statt alle INAKTIVITAET_GRENZE — die Riegel
+                    # entschieden dann sechsmal so oft, und ihre Verteilung
+                    # waere mit der des Timeout-Zweigs nicht mehr vergleichbar.
+                    redis_client.set(
+                        f"last_activity:{user_id}",
+                        str(time.time()),
+                        ex=7200,
+                    )
 
                 if not trigger:
                     continue
