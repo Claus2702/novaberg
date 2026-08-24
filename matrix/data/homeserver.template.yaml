@@ -1,0 +1,93 @@
+# Synapse — Novaberg  (MUSTER)
+#
+# Kopieren nach  matrix/data/homeserver.yaml  und die vier mit AUSFUELLEN
+# markierten Stellen setzen. Die ausgefuellte Datei traegt drei Geheimnisse
+# und einen Pfad auf den Signaturschluessel; sie gehoert nicht ins
+# Repositorium.
+#
+# ── Wie man an die Geheimnisse kommt ─────────────────────────────
+# Synapse erzeugt sie selbst. Einmal generieren lassen und die drei Werte
+# von dort uebernehmen (der Lauf legt zugleich den Signaturschluessel an):
+#
+#   docker run --rm \
+#     -v "$(pwd)/matrix/data:/data" \
+#     -e SYNAPSE_SERVER_NAME=novaberg.de \
+#     -e SYNAPSE_REPORT_STATS=no \
+#     ghcr.io/element-hq/synapse:latest generate
+#
+# Danach diese Datei ueber die erzeugte legen und die drei Werte eintragen.
+# Der umgekehrte Weg — die erzeugte Datei von Hand nachbessern — geht auch;
+# dann sind es genau die vier Bloecke `database`, `app_service_config_files`,
+# `enable_registration` und `federation_domain_whitelist`, die sich
+# unterscheiden.
+
+# ── Kennung ──────────────────────────────────────────────────────
+# server_name steckt in JEDER Nutzer- und Raum-Kennung und ist
+# NACHTRAEGLICH NICHT AENDERBAR — ein Wechsel macht jeden Account und jeden
+# Raum ungueltig. Deshalb eine Domain und nicht die Adresse des Wirts: Die
+# stammt aus DHCP und wechselt. Der Name muss nicht aufloesbar sein; der
+# Client bekommt die Adresse beim Anmelden getrennt genannt.
+server_name: "novaberg.de"
+pid_file: /data/homeserver.pid
+
+listeners:
+  - port: 8008
+    tls: false
+    type: http
+    x_forwarded: true
+    resources:
+      - names: [client, federation]
+        compress: false
+
+# ── Datenbank ────────────────────────────────────────────────────
+# Postgres statt der vorgegebenen SQLite, und der Grund ist Systemzahl: Ein
+# Stapel mit einer Datenbank ist einfacher zu sichern und zu verstehen als
+# einer mit zweien.
+#
+# ACHTUNG — die Datenbank muss VORHER angelegt sein, mit
+# LC_COLLATE=C und LC_CTYPE=C. Synapse verlangt das, und es ist
+# nachtraeglich nur ueber einen Neuaufbau aenderbar. Der Befehl steht in
+# README.md. Zugangsdaten wie beim uebrigen Stapel (POSTGRES_USER /
+# POSTGRES_PASSWORD der Compose-Datei).
+database:
+  name: psycopg2
+  txn_limit: 10000
+  args:
+    user: ki
+    password: ki
+    database: synapse
+    host: postgres
+    port: 5432
+    cp_min: 5
+    cp_max: 10
+
+log_config: "/data/novaberg.de.log.config"
+media_store_path: /data/media_store
+signing_key_path: "/data/novaberg.de.signing.key"
+report_stats: false
+
+# ── AUSFUELLEN: die drei Geheimnisse aus dem generate-Lauf ────────
+registration_shared_secret: ""
+macaroon_secret_key: ""
+form_secret: ""
+
+# ── Der Application Service ──────────────────────────────────────
+# Ohne diese Zeile laedt der Homeserver die Registrierung nicht, und der
+# Connector bekommt nie eine Transaktion. Der Pfad ist der Mount aus der
+# Compose-Datei (./matrix/config:/config:ro).
+app_service_config_files:
+  - /config/novaberg-as.yaml
+
+# ── Abgrenzung nach aussen ───────────────────────────────────────
+# Leere Weisse Liste = keine Foederation. Der Homeserver spricht mit
+# niemandem ausser den eigenen Clients — Absicht, nicht Versaeumnis.
+federation_domain_whitelist: []
+
+# Keine offene Registrierung. Konten werden von Hand angelegt; der Befehl
+# steht in README.md.
+enable_registration: false
+
+enable_room_list_search: true
+
+trusted_key_servers:
+  - server_name: "matrix.org"

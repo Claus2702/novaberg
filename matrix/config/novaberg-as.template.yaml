@@ -1,0 +1,58 @@
+# Application Service — Novaberg  (MUSTER)
+#
+# Kopieren nach  matrix/config/novaberg-as.yaml  und die beiden Tokens
+# einsetzen. Die ausgefuellte Datei traegt zwei Geheimnisse und gehoert
+# deshalb NICHT ins Repositorium — dieses Muster schon, denn alles daran
+# ausser den Tokens ist Struktur.
+#
+# Der AS ist der Grund, warum dieser Kanal mehr kann als ein Bot: Er darf im
+# Namen JEDES Nutzers seines Namensraums senden (`?user_id=` an der
+# Client-Server-API, `as_token` als Bearer). Damit wird aus der Kruecke
+# "[Du] ..." ein Event mit `sender: @meister` — die Aeusserung selbst statt
+# eines Zitats durch die Figur.
+
+id: novaberg
+
+# Wohin der Homeserver seine Transaktionen liefert. Der Name ist der
+# Compose-Dienst, der Port ist MATRIX_BOT_PORT aus matrix_bot/config.py.
+# Beide muessen zusammenpassen, sonst laufen die Transaktionen ins Leere.
+url: http://matrix-bot:8010
+
+# Die beiden Tokens sind frei waehlbar, muessen aber lang und zufaellig sein
+# und duerfen sich nicht gleichen. Erzeugen z. B. mit:
+#   openssl rand -hex 32
+#
+# `as_token`  — womit der CONNECTOR sich beim Homeserver ausweist.
+# `hs_token`  — womit der HOMESERVER sich beim Connector ausweist. Jede
+#               eingehende Transaktion traegt ihn; eine ohne ihn ist keine
+#               vom Homeserver.
+#
+# Dieselben zwei Werte gehoeren zusaetzlich nach matrix/config/as-tokens.env,
+# weil der Connector sie aus der Umgebung liest und diese Datei nicht sieht.
+as_token: ""
+hs_token: ""
+
+sender_localpart: novaberg
+
+# `exclusive: false` ist die tragende Entscheidung dieser Datei.
+#
+# Der AS muss `@meister` puppeten duerfen — sonst erscheint eine
+# Desktop-Aeusserung wieder als Nachricht der Figur. Zugleich muss sich der
+# Mensch mit genau diesem Account normal anmelden koennen, vom Handy aus.
+# `exclusive: true` verbietet das zweite: Ein exklusiver Namensraum gehoert
+# dem AS allein, und niemand sonst darf sich darin anmelden oder registrieren.
+#
+# Der Preis ist benannt: Ein nicht-exklusiver Namensraum haelt niemanden
+# davon ab, Namen darin zu vergeben. Bei einem Homeserver ohne offene
+# Registrierung und mit einem Menschen ist das folgenlos.
+#
+# Der Domainteil der beiden Ausdruecke muss `server_name` aus der
+# homeserver.yaml entsprechen.
+namespaces:
+  users:
+    - exclusive: false
+      regex: "@.*:novaberg\\.de"
+  aliases:
+    - exclusive: false
+      regex: "#.*:novaberg\\.de"
+  rooms: []
