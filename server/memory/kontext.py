@@ -19,6 +19,8 @@ from config import (
 )
 from services.model_services import model_service, BackgroundRequest
 
+from memory.session import _beitrag_aus_turn, sprecher_bezeichnen
+
 logger = logging.getLogger(__name__)
 
 
@@ -134,10 +136,15 @@ def _turns_formatieren(turns: list[dict]) -> str:
     parts: list[str] = []
 
     for i, turn in enumerate(turns, 1):
-        rolle: str = turn.get("rolle", "?").upper()
-        inhalt: str = turn.get("inhalt", "")
+        # Der Sprecher kommt aus den Feldern des Turns, nicht aus `rolle`
+        # allein: Ein Eigen-Impuls und eine Antwort sind beide `assistant`,
+        # und wer sie nicht unterscheidet, macht aus Novas eigenem Einfall
+        # eine Aeusserung auf Zuruf (`IMPULS-FAELLT-AUS-DEM-VERLAUF`).
+        beitrag = _beitrag_aus_turn(turn)
+        rolle: str = sprecher_bezeichnen(beitrag, nova_name="ASSISTANT")
+        inhalt: str = beitrag.inhalt
 
-        if rolle == "USER" and turn.get("kern"):
+        if beitrag.sprecher == "user" and turn.get("kern"):
             # Annotierter User-Turn: Alle Dimensionen zeigen
             meta_parts: list[str] = []
 

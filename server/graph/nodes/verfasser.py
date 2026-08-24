@@ -43,6 +43,20 @@ from graph.state import ConversationState
 from ei.haltungssprache import stoffzeilen
 from graph.vorzeichen import Vorzeichenbefund, vorzeichen_pruefen
 
+from memory.session import (
+    Verlaufsbeitrag,
+    fenster_waehlen,
+    sprecher_bezeichnen,
+    verlauf_gruppieren,
+)
+
+#: Wieviele Wortwechsel der Verfasser im Verlauf sieht. Vorher sah er den
+#: ganzen `session_turns`-Bestand; die Zahl ist die Obergrenze, die es bis
+#: zum 24.08.2026 nicht gab, und sie liegt bewusst hoeher als die fuenf der
+#: uebrigen Leser: Der Verfasser bestimmt den Inhalt und braucht den Bezug
+#: auf frueher Gesagtes.
+VERFASSER_WORTWECHSEL: int = 8
+
 logger = logging.getLogger("ki_server.verfasser")
 
 
@@ -441,12 +455,44 @@ def verfassen(state: ConversationState) -> ConversationState:
 
     # Der Verlauf gibt dem Inhalt seinen Bezug: Ohne ihn beantwortet der
     # Verfasser jede Rueckfrage als staende sie allein.
+    # **Der Verlauf steht als benannter Textblock, nicht als Nachrichtenfolge**
+    # — seit dem 24.08.2026, und die Wahl ist begruendet.
+    #
+    # Vorher trug jeder Turn seine Chat-Rolle: `user` oder `assistant`. Damit
+    # ist die **Person** eindeutig und der **Anlass** nicht — ein Eigen-Impuls
+    # und eine Antwort auf eine Frage sind beide `assistant`, und Nova hielt
+    # daraufhin ihren eigenen Vorschlag fuer den des Nutzers
+    # (`IMPULS-FAELLT-AUS-DEM-VERLAUF`).
+    #
+    # In einer Chat-Nachricht gibt es fuer den Anlass nur einen Platz: den
+    # Inhalt. **Genau dort darf er nicht stehen.** Ein Praefix im Text der
+    # eigenen Aeusserung ist Iteration 1 aus `novaberg-pixie_l_kontamination.md`
+    # — das Modell hat den Marker damals mitgeschrieben. Im Textblock steht
+    # der Anlass in der **Sprecherzeile**, also im Rahmen und nicht in Novas
+    # Mund; dieselbe Form faehrt der Responder.
+    #
+    # Der Preis ist benannt: Das Modell sieht den Verlauf nicht mehr in seinem
+    # nativen Format. Woran ein Rueckschlag zu erkennen waere: `(von sich aus)`
+    # taucht in Novas Antworten auf, oder der Bezug auf frueher Gesagtes wird
+    # schlechter als vorher.
+    gruppen: list[list[Verlaufsbeitrag]] = fenster_waehlen(
+        verlauf_gruppieren(state.get("session_turns", [])), VERFASSER_WORTWECHSEL,
+    )
+    verlauf_zeilen: list[str] = []
+    for gruppe in gruppen:
+        for beitrag in gruppe:
+            wer: str = sprecher_bezeichnen(beitrag, nova_name="Nova")
+            verlauf_zeilen.append(f"{wer}: {beitrag.inhalt}")
+
     messages: list[dict] = []
-    for turn in state.get("session_turns", []):
-        rolle: str = "user" if turn.get("rolle") == "user" else "assistant"
-        inhalt: str = turn.get("inhalt", "")
-        if inhalt:
-            messages.append({"role": rolle, "content": inhalt})
+    if verlauf_zeilen:
+        messages.append({"role": "user", "content": (
+            "[GESPRAECHSVERLAUF]\n"
+            "Bisherige Turns dieses Gespraechs, aelteste zuerst. "
+            "`Nova (von sich aus)` heisst: Diese Aeusserung hat sie selbst "
+            "begonnen, niemand hat danach gefragt.\n\n"
+            + "\n".join(verlauf_zeilen)
+        )})
 
     # **Auf einem Impuls-Turn bleibt der Platz des Gegenuebers leer.** Der
     # Gedanke steht als Block im System-Prompt; hier steht nur der Auftrag,
@@ -458,7 +504,14 @@ def verfassen(state: ConversationState) -> ConversationState:
         messages.append({
             "role": "user", "content": PROMPTS["verfasser.auftrag_ohne_reiz"],
         })
-    elif not messages or messages[-1].get("content") != reiz:
+    else:
+        # Der Reiz steht immer als eigene Nachricht. Die fruehere Bedingung
+        # `messages[-1]["content"] != reiz` verglich gegen den letzten Turn
+        # der Folge; seit der Verlauf **ein** Block ist, verglich sie gegen
+        # den ganzen Block und war damit immer wahr — eine Pruefung, die
+        # nicht mehr prueft. Die Doppelung, die sie verhindern sollte, kann
+        # nicht mehr entstehen: Der Verlaufsblock traegt den aktuellen Reiz
+        # nicht, weil `session_turns` ihn beim Verfasser noch nicht enthaelt.
         messages.append({"role": "user", "content": reiz})
 
     # Log: Inhalt direkt ausgeben, ohne JSON-Wrapping — dieselbe Form wie beim

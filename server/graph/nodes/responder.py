@@ -20,6 +20,11 @@ from zoneinfo    import ZoneInfo
 from config      import ASSISTANT_NAME, BEZIEHUNG_EINFLUSS, EMOTIONS_VEKTOREN, EMOTIONS_VEKTOREN_NOVA, PROMPTS, TIMEZONE, get_node_config
 from graph.reiz  import reiz_ist_eigener_gedanke, reiz_text
 from graph.antwort_spur import antwort_setzen
+from memory.session import (
+    Verlaufsbeitrag,
+    sprecher_bezeichnen,
+    verlauf_gruppieren,
+)
 from graph.state import ConversationState
 from utils.datum_pruefung import NAMEN as WOCHENTAGSNAMEN
 from services.model_services import model_service, ChatRequest
@@ -919,43 +924,31 @@ def respond(
         session_turns = bereinigte_turns
 
     if session_turns:
-        # Paare bilden und nummerieren
-        turn_paare: list[dict] = []
-        idx: int = 0
-        while idx < len(session_turns):
-            turn: dict = session_turns[idx]
-            paar: dict = {}
-            if turn.get("rolle") == "user":
-                paar["user"] = turn.get("inhalt", "")
-                paar["emotion"] = turn.get("emotion", "")
-                paar["arousal"] = turn.get("arousal", 0.0)
-                if idx + 1 < len(session_turns) and session_turns[idx + 1].get("rolle") == "assistant":
-                    paar["assistant"] = session_turns[idx + 1].get("inhalt", "")
-                    idx += 2
-                else:
-                    idx += 1
-            else:
-                idx += 1
-                continue
-            if paar.get("user"):
-                turn_paare.append(paar)
+        # Gruppen bilden — **die Zuordnung kommt aus dem Feld, nicht aus der
+        # Position** (`memory/session.py::verlauf_gruppieren`). Hier stand bis
+        # zum 24.08.2026 eine zweite Kopie der Paarbildung aus `session.py`,
+        # mit demselben Defekt: Ein alleinstehender assistant-Turn traf den
+        # Zweig `else: continue` und fiel aus dem Verlauf. Genau das ist ein
+        # Eigen-Impuls, und beide Konsumenten verloren ihn.
+        gruppen: list[list[Verlaufsbeitrag]] = verlauf_gruppieren(session_turns)
 
         # Verlauf als zusammenhaengenden Textblock aufbauen
-        total: int = len(turn_paare)
+        total: int = len(gruppen)
         verlauf_zeilen: list[str] = []
-        for nr, paar in enumerate(turn_paare, start=1):
-            emo: str = paar.get("emotion", "")
-            aro: float = paar.get("arousal", 0.0)
-            if emo:
+        for nr, gruppe in enumerate(gruppen, start=1):
+            kopf: Verlaufsbeitrag = gruppe[0]
+            if kopf.emotion:
                 verlauf_zeilen.append(
-                    f"----- Turn {nr} von {total} ({emo}, a={aro:.1f}) -----"
+                    f"----- Turn {nr} von {total} ({kopf.emotion}, a={kopf.arousal:.1f}) -----"
                 )
             else:
                 verlauf_zeilen.append(f"----- Turn {nr} von {total} -----")
-            verlauf_zeilen.append(f"User: {_strip_salienz_tags(paar['user'])}")
-            if paar.get("assistant"):
-                verlauf_zeilen.append(f"Nova: {paar['assistant']}")
-            verlauf_zeilen.append("")  # Leerzeile zwischen Paaren
+
+            for beitrag in gruppe:
+                wer: str = sprecher_bezeichnen(beitrag, nova_name="Nova")
+                verlauf_zeilen.append(f"{wer}: {_strip_salienz_tags(beitrag.inhalt)}")
+
+            verlauf_zeilen.append("")  # Leerzeile zwischen Gruppen
 
         verlauf_text: str = "\n".join(verlauf_zeilen)
 

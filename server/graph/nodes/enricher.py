@@ -50,7 +50,12 @@ from memory.kzg          import kzg_entries_retrieve, _kzg_prefix
 from memory.lzg_knoten   import spreading_lesen
 from memory.repositories.autonomous_wissen_repository import BIBLIOTHEK_BEOBACHTER
 from memory.utils        import embedding_zu_pgvector_str
-from memory.session      import session_turns_retrieve, _session_key
+from memory.session      import (
+    _beitrag_aus_turn,
+    _session_key,
+    session_turns_retrieve,
+    sprecher_bezeichnen,
+)
 from memory.ziele        import ziel_paar_bestimmen, ziele_aktive_laden
 from memory.pipeline_log import (
     span_start,
@@ -223,9 +228,13 @@ def _suchtext_bauen(
     # Mit `role`/`content` filterte die Bedingung **jeden** Turn weg, und das
     # Modell bekam die Aufgabe ohne Verlauf — es fragte danach, und die Frage
     # wurde zum Suchschluessel.
-    namen: dict[str, str] = {"user": "Nutzer", "assistant": "Nova"}
+    # **Der Sprecher kommt aus den Feldern, nicht aus `rolle` allein.** Ein
+    # Eigen-Impuls und eine Antwort sind beide `assistant`; ohne die
+    # Unterscheidung sucht der Rewrite nach einem Thema, das Nova selbst
+    # aufgebracht hat, als haette der Nutzer danach gefragt.
     verlauf: str = "\n".join(
-        f"{namen.get(t.get('rolle', 'user'), 'Nutzer')}: {t.get('inhalt', '')}"
+        f"{sprecher_bezeichnen(_beitrag_aus_turn(t), nova_name='Nova')}: "
+        f"{t.get('inhalt', '')}"
         for t in raw_turns
         if t.get("inhalt")
     )
@@ -666,16 +675,24 @@ def _enrich_character(
 
     # Session-Turns vollstaendig durchreichen — kein Datenverlust.
     # Formatierung ist Sache der konsumierenden Nodes.
-    gefilterte_turns: list[dict] = []
-
-    for turn in raw_turns:
-        # Shadow-Impulse ausblenden
-        if turn.get("kern") and turn["kern"].startswith("[Nova-Impuls]"):
-            continue
-
-        gefilterte_turns.append(turn)
-
-    state["session_turns"] = gefilterte_turns
+    #
+    # **Hier stand bis zum 24.08.2026 ein Filter, der Eigen-Impulse ausblenden
+    # sollte, und er hat es nie getan** (`KONTAMINATIONSFILTER-TOT`): Er prueft
+    # auf den Marker `[Nova-Impuls]`, den im ganzen Server niemand setzt. Er
+    # ist entfernt statt repariert, und das ist eine Entscheidung:
+    #
+    # Der Impuls **gehoert** in den Verlauf. Er traegt Novas eigene Stimme, und
+    # ohne ihn fehlt der Anlass fuer alles, was danach kommt — sie schrieb
+    # einen Vorschlag, den sie selbst gemacht hatte, dem Nutzer zu
+    # (`IMPULS-FAELLT-AUS-DEM-VERLAUF`). Was der Filter verhindern wollte, war
+    # eine **Verwechslung**, kein Vorkommen; die Verwechslung verhindert jetzt
+    # der benannte Sprecher (`memory/session.py::sprecher_bezeichnen`), und
+    # zwar ohne die Aeusserung zu verlieren.
+    #
+    # Der Filter blieb stehen, weil er wie ein Schutz aussah. Ein toter
+    # Schutzmechanismus ist teurer als keiner: Wer ihn liest, haelt das
+    # Problem fuer geloest.
+    state["session_turns"] = raw_turns
 
     # Intentionen des Reizes. **Der Wert aus dem Ereignis gewinnt.**
     #
@@ -708,7 +725,11 @@ def _enrich_character(
             "user_id":              user_id,
             "character_id":         character_id,
             "raw_turns_count":      len(raw_turns) if raw_turns else 0,
-            "filtered_turns_count": len(gefilterte_turns) if gefilterte_turns else 0,
+            # Seit dem 24.08.2026 filtert dieser Knoten nicht mehr. Das Feld
+            # bleibt und traegt dieselbe Zahl wie `raw_turns_count`: Es steht
+            # in Auswertungen ueber den Bestand, und ein entfallenes Feld
+            # unterscheidet sich dort nicht von einer Null.
+            "filtered_turns_count": len(raw_turns) if raw_turns else 0,
             "has_summary":          bool(summary),
         },
         span_id = span_id,
