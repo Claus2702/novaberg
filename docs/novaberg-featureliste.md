@@ -2,8 +2,8 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Vollständiges Register aller Features mit Zustandsampel und Beleg
-**Stand:** 24. August 2026, 18:20 UTC
-**Verlauf:** [Verlauf des Standes](#verlauf-des-standes) — 66 Eintraege, juengster zuerst
+**Stand:** 24. August 2026, 19:15 UTC
+**Verlauf:** [Verlauf des Standes](#verlauf-des-standes) — 67 Eintraege, juengster zuerst
 **Pfad:** novaberg/docs/novaberg-featureliste.md
 **Typ:** Register
 **Quellen:** die 43 Konzeptdokumente, `novaberg-architecture.md`, die Moduldokumente, `novaberg-roadmap.md`, `novaberg-backlog.md`, `novaberg-bugs.md`, `novaberg-fundliste.md` — gehalten gegen Code und Produktivsystem
@@ -131,7 +131,7 @@ Die Feature-Matrix in `novaberg-architecture.md` §6 ist mit dieser Liste abgel�
 | **Knowledge Graph — Fakten** (bi-temporal) | 🔴 | **0 Zeilen** `[gemessen]` — Enrichment seit Chat 71 abgeschaltet | `FAKTEN-RAUSCH`, `FAK1`, `D9`, `FAK-LECK` offen; ohne Fakten läuft der ganze Faktenpfad leer |
 | **Entity Resolution** | 🟢 | `memory/services/entity_resolution.py` `[Code]` | — |
 | **Verbindungstabelle** (Turn ↔ KZG ↔ LZG) | 🟢 | **7.073 Zeilen** `[gemessen]` | Pixie-Turns erzeugen **keine** Brückenzeile (`PIXIE-TURN-ID-LEER`) |
-| **Gesprächsarchiv** (`gespraech_archiv`) | 🔴 | **0 Zeilen, kein Writer** `[gemessen]` · `GESPRAECH-ARCHIV-VERWAIST` | Tabelle existiert seit Chat 103 und ist nie gefüllt worden |
+| **Gesprächsarchiv** (`gespraech_archiv`) | 🔴 | **0 Zeilen, kein Writer** — **am 24.08.2026 nachgemessen, beides unverändert** `[gemessen]` | Tabelle existiert seit Chat 103 und ist nie gefüllt worden. **`GESPRAECH-ARCHIV-VERWAIST` steht im Backlog, nicht im Defektregister** — die Ampel ist trotzdem gedeckt (*es erzeugt etwas, das niemand liest*), aber nicht über eine Kennung des Registers, wie die Legende es verlangt |
 | **Chronik** (vollständiges Turn-Log) | ⚫ | Konzept im Backlog, kein Code `[Code]` | alles |
 
 ### 3.2 Promotion und Verdichtung
@@ -373,7 +373,7 @@ Die Feature-Matrix in `novaberg-architecture.md` §6 ist mit dieser Liste abgel�
 | Feature | Ampel | Beleg | Rest |
 |---|---|---|---|
 | **Docker-Verbund** (5 Dienste) | 🟢 | alle fünf Container up `[gemessen]` | — |
-| **Tri-LLM + Connector-System** | 🔴 | `[Doku]` · Block 4 der MS-Welle abgeschlossen | — · **🔴 seit 20.08.2026** (zuvor 🟢): `OVERRIDE-NACH-CONNECTOR-STATT-MODELL` offen |
+| **Tri-LLM + Connector-System** | 🟢 | `[Doku]` · Block 4 der MS-Welle abgeschlossen · `prompt_laden` kennt **drei Ebenen** — `default` → `{modell}` → `{connector}` | **🟢 seit 24.08.2026** (zuvor 🔴 seit 20.08.): `OVERRIDE-NACH-CONNECTOR-STATT-MODELL` ist **am 23.08.2026 behoben**, die Ampel stand vier Tage nach. Gefunden vom Abgleich der Featureliste gegen das Defektregister, nicht von einer Nachprüfung des Eintrags |
 | **Model-Service-Schicht** (ChatWorker, BackgroundWorker, EmbedWorker) | 🟢 | `services/model_services/` `[Code]` | `SUBMIT-SYNC-BEHAUPTET-WORKER-THREAD` offen — zweimal live zugeschlagen |
 | **Microservice-Modell-Queue** (Blöcke 1–5) | 🟢 | abgeschlossen Chat 97 `[Doku]` · `[Code]` — `services/model_services/` mit `worker_base`, `chat_worker`, `background_worker`, `embed_worker`, `registry` `[Erhebung 20.08.2026]` | — |
 | **Embedding-Konsolidierung** (ein Pfad) | 🟢 | `[Doku]` · `[Code]` — `embed_text_bauen` in `services/wissensspeicher.py`, **60 Fundstellen** im Baum `[Erhebung 20.08.2026]` | `EMBED-DIMENSIONSCHECK-FEHLT` offen; Einbettungsmodell gegen Fachtexte **ungemessen** |
@@ -496,6 +496,9 @@ Ampelzeile  = eine Tabellenzeile, deren zweite Spalte genau eine der vier Farben
 ---
 
 ## Verlauf des Standes
+
+- **24. August 2026, 19:15 UTC** — **Die Liste ist gegen den Code gehalten, und sie steht besser da als das Register, gegen das sie zeigt.** Vier Kriterien statt 225 Lesungen: **kein ⚫ mit vorhandenem Code (0)**, **kein 🟢 mit totem Beleg (0)** — in beiden Richtungen nicht veraltet. Eine Ampel wechselt: **Tri-LLM + Connector-System 🔴 → 🟢**, weil `OVERRIDE-NACH-CONNECTOR-STATT-MODELL` am 23.08. behoben wurde und die Ampel vier Tage nachstand. Das Gespraechsarchiv bleibt 🔴 — 0 Zeilen und kein Writer, beides nachgemessen —, aber seine Kennung steht im **Backlog**, nicht im Register.
+  **Zwei Befunde ueber die Register selbst:** Das Defektregister traegt **vier Eintragsformate**; jede bisherige Zaehlung kannte eines und meldete **57** statt **115** offener Eintraege, 45 davon ohne jede Zustandsangabe. Und **dreizehn rote Ampeln tragen keine Kennung** — sie sind weder zu bestaetigen noch zu widerlegen. **100 von 225 Zeilen erreichen kein Kriterium** und werden gezaehlt, nicht behauptet. Ampelstand: **225 Zeilen / 103 🟢 / 35 🟠 / 49 🔴 / 38 ⚫**.
 
 - **24. August 2026, 18:20 UTC** — **keine Ampel wechselt, und der Nachfolger der Wand ist benannt:** Was Novas Eigeninitiative jetzt begrenzt, ist **Pruefung 1**, der Burst — vier Riegelketten in 90 Sekunden, zwei Impulse, dann eine Stunde Stille, waehrend `last_activity` noch gilt. Er ist ein **Cooldown, kein Rate-Limit**: Die TTL wird bei jedem Inkrement neu gesetzt, `MAX_BURST=2` heisst *zwei, dann eine volle Stunde ab dem letzten*. Die beiden Nicht-Wand-Luecken des Bestands bestaetigen es auf die Sekunde (1:00:33 und 1:00:17). **Die Groessenordnung ist unvermessen und gross** — rechnerisch bis zu 48 Impulse am Tag gegen 15 in zwei Tagen. Vor der Messung wird an den Konstanten nichts gedreht.
 

@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Konzept — zusammenhängende Zustellungen zu einem Thema
-**Stand:** 15. August 2026 (v0.4, Erstfassung 27. Juli 2026)
+**Stand:** 24. August 2026 (v0.5 — **der Burst-Cooldown ist nicht gefallen**, gemessen; §2, und die Frage in §11 ist damit wieder offen). Davor: 15. August 2026 (v0.4, Erstfassung 27. Juli 2026)
 **Pfad:** novaberg/docs/novaberg-gedankenkette_k.md
 **Typ:** Konzept
 **Status:** ⬜ Konzept, nicht gebaut
@@ -25,7 +25,13 @@ Alles auf ihrem Stapel, das dem eben Gesagten mit **0.60 Cosine** ähnelt, flieg
 
 > **Eingegrenzt am 14.08.2026.** Was hier verlorengeht, ist der **Einwurf-Kandidat**, nicht das Wissen. Jede Recherche legt ihr Ergebnis zusätzlich in der Bibliothek ab — Bericht und Wissensdatei plus eine Metadatenzeile —, und die überlebt das Aufräumen des Stapels. Der Verlust ist damit schmaler als dieser Abschnitt ursprünglich sagte: Sie kann den Gedanken nicht mehr **von sich aus** einwerfen, aber sie findet ihn wieder, wenn danach gefragt wird (§10).
 
-Dazu `MAX_BURST = 2`. ~~und ein Cooldown von einer Stunde~~ → **Der Cooldown ist am 15.08.2026 gefallen** (`novaberg-eigenzeit_k.md` §2.5); die Frist von einer Stunde hängt seither am Burst-Zähler, der sie als *Gedächtnis* trägt und nicht als Sperre.
+Dazu `MAX_BURST = 2` und ein **Cooldown von einer Stunde**.
+
+> ~~**Der Cooldown ist am 15.08.2026 gefallen**; die Frist von einer Stunde hängt seither am Burst-Zähler, der sie als *Gedächtnis* trägt und nicht als Sperre.~~ → **Am 24.08.2026 durch Messung widerlegt. Zwei Größen waren verwechselt.**
+>
+> **Gefallen ist die *stündliche Decke*** — eine eigene Obergrenze, die es seit dem 15.08.2026 nicht mehr gibt (`shadow_delivery.py:78`, `:1048`). **Der Burst-Cooldown steht unverändert**, und er ist eine Sperre und kein Gedächtnis: `_burst_erhoehen` setzt `BURST_TTL` bei **jedem** Inkrement neu, und `_burst_erlaubt` blockt in **Prüfung 1** — also *vor* der Auslöservergabe, weshalb die Riegelkette dann nicht einmal eine Zeile schreibt.
+>
+> **`MAX_BURST = 2` heißt damit nicht *zwei je Stunde*, sondern *zwei, dann eine volle Stunde ab dem letzten*.** Im Bestand belegt: zwei Zustellpausen von **exakt 1:00:33 und 1:00:17**, beide ohne Zutun des Menschen beendet. Am 24.08.2026 unmittelbar nachgestellt — vier Riegelketten in 90 Sekunden, zwei Impulse, dann Stille bei `shadow_burst_count = 2`, TTL 2459 s.
 
 **Der Filter ist als Dublettenschutz gemeint und das ist richtig gedacht** — sie soll nicht zweimal dasselbe sagen. Nur unterscheidet ein Kosinus von 0.60 nicht zwischen *„dasselbe nochmal"* und *„der nächste Gedanke zum selben Thema"*.
 
@@ -304,7 +310,7 @@ Die Bibliothek ist gebaut und läuft in beide Richtungen:
 
 **Der Radius 0.95** ist ein Startwert. Die erste Messung über die Zahl der Zustellungen sagt, ob er stimmt — siehe §3.
 
-~~**Wie verhält sich eine Kette zum Burst-Cooldown?** Eine Stunde Sperre nach zwei Zustellungen würde jede Kette zerreißen. Der Cooldown müsste zwischen Ketten greifen, nicht innerhalb.~~ → **Gegenstandslos seit §6a (14.08.2026).** Die Sorge stand auf der Annahme, eine Kette bestehe aus mehreren Zustellungen. Sie besteht aus **einer** — dem Ruf — und danach aus Antworten auf Nutzer-Turns. Burst und Cooldown greifen damit ohnehin nur dort, wo sie sollen: zwischen Ketten. Die Forderung war richtig und ist bereits erfüllt.
+**Wie verhält sich eine Kette zum Burst-Cooldown?** Eine Stunde Sperre nach zwei Zustellungen würde jede Kette zerreißen. Der Cooldown müsste zwischen Ketten greifen, nicht innerhalb. → **Am 24.08.2026 wieder geöffnet:** Die Frage galt als gegenstandslos, weil der Cooldown gefallen sei — er ist es nicht (§2). ~~Gegenstandslos seit §6a (14.08.2026).~~ Die Sorge stand auf der Annahme, eine Kette bestehe aus mehreren Zustellungen. Sie besteht aus **einer** — dem Ruf — und danach aus Antworten auf Nutzer-Turns. Burst und Cooldown greifen damit ohnehin nur dort, wo sie sollen: zwischen Ketten. Die Forderung war richtig und ist bereits erfüllt.
 
 **Wie lang darf ein Schritt sein?** §6a sagt „ein, zwei Sätze". Eine Zahl steht nicht dabei, und ohne Zahl bindet die Vorgabe nicht — gemessen an anderer Stelle dieses Projekts: Die Mengenangabe trägt, das Adjektiv nicht. **Die Untergrenze ist dabei kein Satz, sondern ein Laut:** Ein Ruf kann aus einem gedehnten Wort bestehen. Ein Zeichenkorridor, dessen Unterkante bei einem Satz liegt, macht ihn unmöglich.
 

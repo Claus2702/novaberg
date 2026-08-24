@@ -1,6 +1,6 @@
 # Novaberg — Roadmap (Projektchronik)
 
-**Stand:** 24. August 2026, 18:20 UTC
+**Stand:** 24. August 2026, 19:15 UTC
 **Pfad:** novaberg/docs/novaberg-roadmap.md
 **Single Source of Truth für abgeschlossene Arbeit.**
 **Offene Punkte → novaberg-backlog.md**
@@ -12,6 +12,77 @@ Die Kopfzeile stand bis Chat 109 auf „Chat 93, 21. Mai 2026" — 15 Chats hint
 ---
 
 ## Chats 3–20: Grundlagen (März 2026)
+
+### 24.08.2026, 19:15 UTC — Die Liste steht, das Register hat vier Formate
+
+Featureliste und Defektregister gegen den Code gehalten — **ueber Kriterien, nicht ueber
+225 und 263 Lesungen.** Das ist die Form, die `DOKU-VOLLPRUEFUNG` verlangt: ableitbare
+Fragen mit Zahlen, und der Rest wird gezaehlt statt behauptet.
+
+**Die Featureliste ist in beiden Richtungen nicht veraltet.**
+
+| Kriterium | Kandidaten |
+|---|---|
+| ⚫, aber der Code existiert | **0** |
+| 🟢 mit totem Beleg | **0** |
+| 🔴 ohne offene Kennung im Register | **2** |
+| 🔴 ganz ohne Kennung | **13** |
+
+**Eine Ampel wechselt:** *Tri-LLM + Connector-System* von 🔴 auf 🟢.
+`OVERRIDE-NACH-CONNECTOR-STATT-MODELL` ist am **23.08.** behoben; die Ampel stand vier Tage
+nach. **Gefunden hat es der Abgleich, nicht die Nachpruefung des Eintrags** — der Eintrag
+sagt seit dem 23.08. *behoben* und niemand hat die Zeile gesucht, die auf ihn zeigt.
+
+Das *Gespraechsarchiv* bleibt 🔴, nachgemessen: **0 Zeilen, kein Writer**. Seine Kennung
+steht aber im **Backlog** und nicht im Register — die Ampel ist ueber die dritte Lesart der
+Legende gedeckt (*es erzeugt etwas, das niemand liest*), nicht ueber eine Kennung.
+
+**Der schwerere Befund betrifft das Register, gegen das die Liste zeigt.**
+
+```
+263 Abschnitte mit Kennung
+     86  Zustand steht in **Zustand:**
+     21  Zustand steht in **Status:**
+    111  Zustand steht in der UEBERSCHRIFT   (⬜ ✅ 🔧)
+     45  Zustand steht GAR NICHT
+
+    115 offen · 103 nicht offen · 45 ohne Zustandsangabe
+```
+
+**Jede bisherige Zaehlung kannte ein Format.** Im Umlauf waren *86 Abschnitte, 46 offen*
+und *90 Abschnitte, 45 offen* — beide um mehr als das Doppelte zu niedrig. **Keine der beiden sah aus wie ein Fehler**, weil sie ein
+vollstaendiges Register beschrieben, nur ein kleineres als das vorhandene.
+
+**Die Triage der 115:** 27 Kandidaten (der Code bewegte sich seit dem Pruefstand) · 2 mit
+totem Pfad · 17 unbewegt · **69 ohne Anker**. Die aeltere Generation datiert ueber
+Chat-Nummern, und die ist fuer git kein Bezugspunkt.
+
+Drei Kandidaten gelesen, **alle drei bestaetigt offen** — darunter
+`INITIATIVE-DOPPELT-BELEGT`, dessen Datei sich mit der Fuehrungsmass-Behebung bewegte,
+waehrend der Befund unveraendert steht: `gespraechsvektor.py` schreibt ein Dict,
+`dreischicht.py` ein Bit, unter demselben Namen. **24 Kandidaten sind ungelesen.**
+
+**Und die Frage nach der Vollstaendigkeit fand zwei Dokumente, die der Nachzug uebersprang.**
+
+`novaberg-gedankenkette_k.md` trug seit dem 15.08. *„Der Cooldown ist gefallen; die Frist
+haengt seither am Burst-Zaehler, der sie als **Gedaechtnis** traegt und nicht als Sperre."*
+**Zwei Groessen waren verwechselt:** Gefallen ist die *stuendliche Decke*; der Burst-Cooldown
+steht unveraendert und ist sehr wohl eine Sperre. Damit ist auch eine Frage wieder offen, die
+als gegenstandslos durchgestrichen war — *wie sich eine Kette zum Cooldown verhaelt*.
+
+`novaberg-pixie.md`, das **Moduldokument**, kannte den dritten Ausloeser nicht und fuehrte
+`MAX_BURST` als *„Max. Impulse pro Delivery-Zyklus"* — ein Rate-Limit, wo ein Cooldown steht.
+
+> **Dieselbe Klasse wie am 15.08.2026, und der dritte Beleg dafuer:** Der Nachzug ging entlang
+> des Konzepts, an dem gebaut wurde. Das Moduldokument beschreibt denselben Code aus der
+> anderen Richtung und liegt damit quer. **Gefunden hat es eine Frage, nicht die Selbstpruefung.**
+
+> **Die zwei Werkzeuge bleiben und tragen ihre eigene Grenze:** Ein blosser Dateiname ist
+> kein Pfad — die erste Fassung meldete *Datei geloescht* fuer fuenf von sieben Dateien, die
+> zwei Ebenen tiefer lagen. Und **100 von 225 Zeilen der Featureliste erreichen kein
+> Kriterium**; sie stehen als Zahl da und nicht als Zusicherung.
+
+---
 
 ### 24.08.2026, 18:20 UTC — Die Uhr faellt, und der Burst steht sofort an ihrer Stelle
 

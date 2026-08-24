@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Pixie — Hintergrundverarbeitung (Übersicht)
-**Stand:** 16. August 2026 (gegen den Code geprüft: die beschriebene Idle-Umleitung auf das GPU-Modell existiert nicht — `pixie_llm_call`, `PIXIE_IDLE_SCHWELLE_SEKUNDEN` und `PIXIE_GPU_IDLE` kommen im Code nicht vor). Davor: 15. August 2026 (Riegel 1 **und Riegel 2** der Zustellung und ihr Protokoll je Zustellversuch; mit Riegel 2 ist die stündliche Decke gefallen); davor 29. Juli 2026, Chat 117 (`ziel_decay` läuft wieder — die Stilllegung galt einen halben Tag. Kern: Chat 113, Aging gegen das Verhungern periodischer Aufgaben)
+**Stand:** 24. August 2026 (der **dritte Auslöser** `stille` und der Burst als **Cooldown statt Rate-Limit** — beides gemessen, §Delivery Service und die Konstantentabelle). Davor: 16. August 2026 (gegen den Code geprüft: die beschriebene Idle-Umleitung auf das GPU-Modell existiert nicht — `pixie_llm_call`, `PIXIE_IDLE_SCHWELLE_SEKUNDEN` und `PIXIE_GPU_IDLE` kommen im Code nicht vor). Davor: 15. August 2026 (Riegel 1 **und Riegel 2** der Zustellung und ihr Protokoll je Zustellversuch; mit Riegel 2 ist die stündliche Decke gefallen); davor 29. Juli 2026, Chat 117 (`ziel_decay` läuft wieder — die Stilllegung galt einen halben Tag. Kern: Chat 113, Aging gegen das Verhungern periodischer Aufgaben)
 **Pfad:** novaberg/docs/novaberg-pixie.md
 **Quellen:** nova-05-k.md (Pixie-Konzept), nova-05-a.md (AgentGraph), nova-05-t-a.md (Queue/Stack/Delivery), nova-05-m-a.md (Agenten-Referenz)
 
@@ -155,7 +155,17 @@ Shadow-Stack Eintragsformat:
 }
 ```
 
-**Delivery Service:** Eigenstaendiger Dienst, prueft zyklisch ob eine proaktive Nachricht gesendet werden soll. Entscheidungskette: Momentum low? Session-Turns vorhanden? Cosine Similarity >= 0.65? Emotionale Kompatibilitaet? Modus-Kompatibilitaet? MAX_BURST = 2 Impulse pro Zyklus.
+**Delivery Service:** Eigenstaendiger Dienst, prueft alle fuenf Sekunden ob eine proaktive Nachricht gesendet werden soll — ausschliesslich fuer Kennungen mit **offener Verbindung**.
+
+**Drei Ausloeser, seit dem 24.08.2026:**
+
+| # | Ausloeser | Bedingung |
+|---|---|---|
+| 1 | `momentum_low` | `momentum:{user}` steht auf `low` — nach einer Anfrage |
+| 2 | `timeout` | `last_activity` liegt >= `INAKTIVITAET_GRENZE` (30 s) zurueck |
+| 3 | `stille` | **`last_activity` ist fort** — die Zwei-Stunden-Frist ist abgelaufen |
+
+**Ausloeser 3 ist neu und war bis dahin ein `continue`.** Solange er fehlte, endete Novas Eigeninitiative zwei Stunden nach dem letzten Wort des Menschen, und beendet hat das ausschliesslich ein Nutzer-Turn — ueber 214,5 h Betrieb **126 Stunden, 59 % der Zeit**. Beide neuen Zweige tragen dieselbe Vorbedingung (ohne Gespraech kein Impuls) und verbrauchen ihren Ausloeser gleich. Herleitung in `novaberg-eigenzeit_k.md` §2.5.
 
 **Bei Bestehen — geaendert Chat 110.** ~~GPU-Modell formuliert Nachricht, WebSocket liefert aus.~~ Die Delivery formuliert nichts mehr. Sie erzeugt eine `turn_id` und gibt das **Wissensstueck selbst** — nicht einen daraus vorformulierten Satz — in beide Graphen:
 
@@ -250,7 +260,7 @@ Der geplante PixieGraph (PIX-GRAPH) wird den AgentGraph als zentrale Routing-Inf
 | `PIXIE_PROMOTION_INTERVALL_SEKUNDEN` | 300 | `config.py` | Trigger-Intervall des Promotion-Tasks |
 | `qwen3-32b-cpu` | Port 11435 | — | Analyse-Modell (Reasoning, JSON) |
 | `mistral-small3.2-cpu` | Port 11435 | — | Sprach-Modell (Fliesstext, Deutsch) |
-| `MAX_BURST` | 2 | `services/shadow_delivery.py` | Max. Impulse pro Delivery-Zyklus |
+| `MAX_BURST` | 2 | `services/shadow_delivery.py` | **Cooldown, kein Rate-Limit** — zwei Impulse, dann `BURST_TTL` (3600 s) Sperre **ab dem letzten**, weil `_burst_erhoehen` die TTL bei jedem Inkrement neu setzt. ~~Max. Impulse pro Delivery-Zyklus~~ war falsch; am 24.08.2026 gemessen, zwei Zustellpausen von exakt 1:00:33 und 1:00:17. **Er blockt in Pruefung 1** — vor der Ausloeservergabe, die Riegelkette schreibt dann keine Zeile |
 
 Naming-Konvention: Anzeige = "Pixie" (Logs, UI, Dokumentation). Technisch = "Shadow" (Redis-Keys, Verzeichnisse, Funktionsnamen).
 

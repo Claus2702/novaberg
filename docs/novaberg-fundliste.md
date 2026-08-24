@@ -2,8 +2,8 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Rohe, noch unklassifizierte Funde aus laufender Arbeit
-**Stand:** 24. August 2026, 18:20 UTC
-**Offen:** **60 Funde — gezaehlt am 24.08.2026, 18:20 UTC** (63 Fundzeilen im Abschnitt *Offen*, davon **drei** durchgestrichen; fuenf aus der Abschaltung des Telegram-Kanals, zwei aus der Messung des Impuls-Turns, zwoelf aus dem Zuschnitt des Anschubs — der **entschieden und zurueckgestellt** ist —, zwei aus dem Fall der Zwei-Stunden-Wand). Die Kopfzeile stand am 23.08. schon einmal auf 23 bei tatsaechlich 26; sie war ueber mehrere Zuege hochgezaehlt worden, und schon ihr Ausgangswert war es — **deshalb wird hier gezaehlt und nie fortgeschrieben.**
+**Stand:** 24. August 2026, 19:45 UTC
+**Offen:** **65 Funde — gezaehlt am 24.08.2026, 19:45 UTC** (68 Fundzeilen im Abschnitt *Offen*, davon **drei** durchgestrichen; fuenf aus der Abschaltung des Telegram-Kanals, zwei aus der Messung des Impuls-Turns, zwoelf aus dem Zuschnitt des Anschubs — der **entschieden und zurueckgestellt** ist —, zwei aus dem Fall der Zwei-Stunden-Wand). Die Kopfzeile stand am 23.08. schon einmal auf 23 bei tatsaechlich 26; sie war ueber mehrere Zuege hochgezaehlt worden, und schon ihr Ausgangswert war es — **deshalb wird hier gezaehlt und nie fortgeschrieben.**
 **Verlauf:** [Verlauf des Standes](#verlauf-des-standes) — 73 Eintraege, juengster zuerst
 **Pfad:** novaberg/docs/novaberg-fundliste.md
 
@@ -232,6 +232,26 @@ Analog zum Kraft-1-Stichtag: ab wann eine Partition brauchbar ist. Kein Backfill
 ---
 
 ## Offen
+
+- **2026-08-24** — **Zwei Groessen waren verwechselt: Gefallen ist die stuendliche Decke, nicht der Burst-Cooldown.** `novaberg-gedankenkette_k.md` §2 trug seit dem 15.08.2026 *„Der Cooldown ist gefallen; die Frist von einer Stunde haengt seither am Burst-Zaehler, der sie als **Gedaechtnis** traegt und nicht als Sperre."* **Gemessen am 24.08.2026 ist er sehr wohl eine Sperre:** `_burst_erhoehen` setzt `BURST_TTL` bei jedem Inkrement neu, und `_burst_erlaubt` blockt in **Pruefung 1** — vor der Ausloeservergabe, weshalb die Riegelkette dann nicht einmal eine Zeile schreibt. Belegt durch zwei Zustellpausen von **exakt 1:00:33 und 1:00:17**, beide ohne Zutun des Menschen beendet.
+
+  **Die Folge ist eine Frage, die als erledigt galt und wieder offen ist:** *„Wie verhaelt sich eine Kette zum Burst-Cooldown? Eine Stunde Sperre nach zwei Zustellungen wuerde jede Kette zerreissen."* Sie war durchgestrichen, **weil der Cooldown gefallen sei**. Beide Stellen sind am 24.08.2026 markiert.
+
+  **Gefunden hat es die Frage nach der Vollstaendigkeit der Doku, nicht der Bau** — der Nachzug der Wand ging entlang `novaberg-eigenzeit_k.md`, und die widerlegte Aussage stand in einem Nachbardokument.
+
+- **2026-08-24** — **Das Moduldokument der Zustellung kannte den dritten Ausloeser nicht und beschrieb den Burst falsch.** `novaberg-pixie.md` nannte als Entscheidungskette *„Momentum low? Session-Turns vorhanden? …"* — der am selben Tag gebaute Ausloeser `stille` fehlte —, und seine Konstantentabelle fuehrte `MAX_BURST = 2` als *„Max. Impulse pro Delivery-Zyklus"*, was ihn als Rate-Limit beschreibt statt als Cooldown. **Beides am 24.08.2026 berichtigt.** Dieselbe Klasse wie am 15.08.2026 (`31_SITZUNG.md` §4, dritter Beleg): Der Nachzug ging entlang des Konzepts, an dem gebaut wurde; das Moduldokument beschreibt denselben Code aus der anderen Richtung und lag quer.
+
+- **2026-08-24** — **Das Defektregister traegt vier Eintragsformate, und jede bisherige Zaehlung kannte nur eines.** Ueber **263** Abschnitte mit Kennung gezaehlt: `**Zustand:**` **86** · `**Status:**` **21** · der Zustand steht **in der Ueberschrift** (⬜ ✅ 🔧) **111** · er steht **gar nicht** **45**. Ein Leser, der nur die erste Form kennt, meldet **57** offene Eintraege; ueber alle vier sind es **115**, dazu 103 nicht offen und **45 ohne jede Zustandsangabe**.
+
+  **Die falsche Zahl stand in zwei Fassungen im Umlauf:** *86 Abschnitte, 46 offen* und *90 Abschnitte, 45 offen*. Beide waren um mehr als das Doppelte zu niedrig — und keine der beiden sah aus wie ein Fehler, weil sie ein vollständiges Register beschrieben, nur ein kleineres als das vorhandene.
+
+  **Die 45 ohne Zustandsangabe sind die teuerste Teilmenge.** Sie sind weder offen noch geschlossen, und eine Ampel, die auf sie zeigt, ist weder bestätigt noch widerlegt. Werkzeug: `labor/2026-08-24_defektregister_triage.py`, es meldet sie als eigene Klasse.
+
+- **2026-08-24** — **Die Triage des Defektregisters: 115 offen, 27 Kandidaten, 69 ohne Anker.** Geprueft ueber ein Kriterium statt ueber 115 Lesungen — *hat sich der Code, den der Eintrag nennt, seit seinem Pruefstand bewegt?* **27 Kandidaten** (der Code bewegte sich, der Eintrag koennte erledigt sein) · **2 mit totem Pfad** · **17 unbewegt** (der Befund gilt ohne Lesen weiter) · **69 ohne Anker**, weil sie weder Datei noch Pruefstand nennen. **Die aeltere Generation datiert ueber Chat-Nummern**, und die ist fuer git kein Bezugspunkt; sie laeuft ersatzweise gegen den juengsten Pruefstand des Registers und traegt damit eine schwaechere Aussage.
+
+  **Drei Kandidaten sind gelesen, alle drei bestaetigt offen:** `INITIATIVE-DOPPELT-BELEGT` (die Datei bewegte sich mit der Fuehrungsmass-Behebung, der Befund nicht — `gespraechsvektor.py:1087` schreibt ein Dict, `dreischicht.py:520` ein Bit, ein Name), `EVA-SEKTION-OHNE-PRUEFUNG` (jetzt mit Zahl: **15** Sektionsmarken mit nur einem `return` darunter), `ZEUGE-FLACKERT-OHNE-REPRODUKTION` (**zehn Laeufe, zehnmal gruen** — das widerlegt ihn nicht, aber es ist die erste Reproduktion und sie fand nichts). **24 Kandidaten sind ungelesen.**
+
+- **2026-08-24** — **Dreizehn rote Ampeln der Featureliste tragen keine Kennung — die Legende verlangt eine.** 🔴 heisst dort *eine offene Kennung im Defektregister zeigt darauf* · **oder** *gebaut und gemessen ohne Wirkung* · **oder** *es erzeugt etwas, das niemand liest*. Die zweite und dritte Lesart brauchen keine Kennung, aber dann steht der Grund nirgends: Die dreizehn Zeilen nennen weder eine Kennung noch, welche der beiden anderen Lesarten gilt. **Sie sind damit nicht nachpruefbar** — weder zu bestaetigen noch zu widerlegen. Betroffen unter anderem `Entscheidungs-Eintrag je Knoten`, `Haltungsraum — Prompt-Block`, `Audit-Pflicht`, `NachfragenAgent`. Werkzeug: `labor/2026-08-24_featureliste_gegen_code.py`.
 
 - **2026-08-24** — **Mit dem Fall der Wand wird der Burst zum bindenden Riegel — und er ist ein Cooldown, kein Rate-Limit.** Die ersten 90 Sekunden nach dem Umbau zeigen den neuen Takt vollstaendig: **vier Riegelketten** (17:56:37 · 17:57:08 · 17:57:38 · 17:58:08 — genau alle 30 s, wie gebaut), **zwei Impulse** (17:57:59, 17:59:33), danach **Stille**. Gemessen um 18:17 UTC: `shadow_burst_count:meister = 2` bei TTL **2459 s**, waehrend `last_activity` noch 6042 s traegt — die Wand steht also nicht, Pruefung 1 blockt.
 
