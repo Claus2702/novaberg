@@ -1,6 +1,6 @@
 # Novaberg — Roadmap (Projektchronik)
 
-**Stand:** 24. August 2026, 22:00 UTC
+**Stand:** 24. August 2026, 22:30 UTC
 **Pfad:** novaberg/docs/novaberg-roadmap.md
 **Single Source of Truth für abgeschlossene Arbeit.**
 **Offene Punkte → novaberg-backlog.md**
@@ -42,7 +42,22 @@ Der Rückweg arbeitet einen Fund ein, indem er einen Absatz hinter einem Anker s
 
 **Zwei Gegenproben.** Am Riegel: 6 vorhergesagt, 6 gezählt. Am Räumwerkzeug: Markenrettung abgeschaltet, und die Paarungsprüfung übersprang daraufhin **12 Dateien** — sie ist also keine Behauptung. Nachgemessen mit der **Produktivfunktion** `paarung_pruefen` über alle 474 Dateien: **474 heil, 0 Befunde.**
 
-Suite 2248 → **2260 grün, 0 übersprungen**, harte Wand sauber, A8a 0, A11 299.
+Suite 2248 → **2272 grün, 0 übersprungen**, harte Wand sauber, A8a 0, A11 299.
+
+**Auf die Frage nach der Zuverlässigkeit wurde der Vergleich justierbar.** Die erste Fassung verlangte den exakten Wortlaut und fing **12 von 18** Doppelgängern — die übrigen sechs waren Umformulierungen, zwei davon **ärmer** als das Original. Verglichen wird jetzt über **Trigramm-Übereinstimmung** mit `AEHNLICH_GENUG = 0.65`, und die Zahl ist abgelesen statt gesetzt:
+
+```
+1.00        12 Faelle   woertliche Kopie
+0.65-0.95    6          Umformulierung ohne neuen Gehalt
+0.50-0.65    6          gemischt: echte Ergaenzungen neben Umformulierungen
+unter 0.50 208          echte Funde
+```
+
+**Ein sauberes Tal gibt es nicht.** Bei 0,65 kippt das Urteil beim Lesen der zwölf Grenzfälle; zwei Umformulierungen darunter laufen durch. **Die Schwelle liegt bewusst hoch, und der Grund ist die Asymmetrie der Kosten:** Ein durchgelassener Doppelgänger ist ein sichtbarer doppelter Absatz; ein fälschlich abgewiesener Fund ist **fort**, denn `steht_schon_da` reiht nicht wieder ein. Ein Zeuge hält die Grenze fest, statt sie zu verschweigen: Wer rund ein Drittel des Satzes weglässt, kommt durch.
+
+**Geeicht an `pg_trgm.similarity()`**, das in dieser Datenbank vorhanden ist, über 60 echte Paare: größte Abweichung 0,083, mittlere 0,025, **0 Paare mit abweichendem Urteil**. Die Rechnung bleibt trotzdem im Code — ein Datenbankaufruf für einen reinen Textvergleich fügt einen Ausfallpfad hinzu, der still wäre.
+
+Über die 232 echten Einarbeitungen: **18 gefangen, 214 durchgelassen.** Und der Blick zurück auf den geräumten Bestand zeigt den Rest, den die exakte Räumung ließ: **29 Absatzpaare über 0,65**, bis 0,96. Die werden **nicht** automatisch gefaltet — bei einer wörtlichen Kopie sagt die zweite Fassung nichts Eigenes, bei 0,80 kann die Differenz der Inhalt sein. In der Fundliste.
 
 ### 24.08.2026, 21:00 UTC — Nova schrieb ihren eigenen Vorschlag dem Nutzer zu, weil ihr Impuls aus dem Verlauf fiel
 

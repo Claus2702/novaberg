@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Konzept — Indizierung und Durchsuchung eines vorgegebenen Verzeichnisses als NMCP-Dienst
-**Stand:** 24. August 2026 (v0.18 — §4b.3: *„ohne Dopplung" war eine Absicht, kein Riegel*; der Rueckweg setzte eine Kopie neben ihr Original, und `paarung_pruefen` hielt dabei). Davor: 23. August 2026 (v0.17 — die Prompt-Dateien beider Bloecke und der Kanon der Eigentumswerte sind benannt. Davor: 22. August 2026, v0.16 — **jede Wurzel traegt, wessen Material sie enthaelt**, und der Block haengt daran: neuer §1a.5. Davor: 18. August 2026, v0.15)
+**Stand:** 24. August 2026 (v0.19 — §4b.3: der Vergleich ist justierbar, Schwelle an den echten Faellen abgelesen und an `pg_trgm` geeicht. Davor v0.18: *„ohne Dopplung" war eine Absicht, kein Riegel*; der Rueckweg setzte eine Kopie neben ihr Original, und `paarung_pruefen` hielt dabei). Davor: 23. August 2026 (v0.17 — die Prompt-Dateien beider Bloecke und der Kanon der Eigentumswerte sind benannt. Davor: 22. August 2026, v0.16 — **jede Wurzel traegt, wessen Material sie enthaelt**, und der Block haengt daran: neuer §1a.5. Davor: 18. August 2026, v0.15)
 **Pfad:** novaberg/docs/novaberg-agent-dateien_k.md
 **Typ:** Konzept (`_k`)
 **Status:** 🟠 **Stufe 1 bis 3 gebaut und gemessen, Stufe 4 zur Hälfte** (18.08.2026) — Freigabe, Wächter und die Enricher-Quelle laufen, letztere seit heute **zweikanalig**; Suche und Zoom des Auftrags-Wegs stehen. **Was fehlt, ist der Aufrufer:** Aushang, Klassifikation und Dispatch des Dienstes `dateien` (§8.1). Offen bleibt der Rückweg (§4b).
@@ -912,6 +912,26 @@ Zwei Entscheidungen dabei, beide gemessen statt gewählt:
 - **Verglichen wird satzweise, nicht als Ganzes.** Ein Absatz aus einem bekannten und einem neuen Satz ist ein echter Fund; ein Vergleich über den ganzen Absatz ließe ihn durch, sobald ein Wort abweicht.
 - **Fundmarken zählen beim Vergleich nicht mit.** Sonst umginge jeder bereits markierte Satz den Riegel — er sähe für den Vergleich anders aus als seine unmarkierte Fassung.
 - **Ein Absatz ohne vergleichbaren Satz gilt als neu.** Er ist zu kurz für das Urteil, und ein Riegel, der im Zweifel verwirft, verlöre echte Funde.
+- **Verglichen wird auf Ähnlichkeit, nicht auf Gleichheit** — über Trigramme, Schwelle `AEHNLICH_GENUG = 0.65`. Der exakte Wortlaut fing nur **12 von 18** Doppelgängern; die übrigen sechs waren Umformulierungen desselben Satzes, und ein umgestelltes Wort genügte.
+
+##### Warum 0,65 und keine andere Zahl
+
+Über die 232 Einarbeitungen des 24.08.2026, je Absatz die **schwächste** Übereinstimmung seiner Sätze mit dem Bestand:
+
+| Übereinstimmung | Fälle | was dort steht |
+|---|---|---|
+| 1,00 | 12 | wörtliche Kopie |
+| 0,65–0,95 | 6 | Umformulierung ohne neuen Gehalt — bei zweien sagt die „neue" Fassung **weniger** |
+| 0,50–0,65 | 6 | gemischt: echte Ergänzungen neben Umformulierungen |
+| unter 0,50 | 208 | echte Funde |
+
+**Ein sauberes Tal gibt es nicht.** Bei 0,65 kippt das Urteil beim Lesen der zwölf Grenzfälle, und zwei Umformulierungen darunter laufen durch.
+
+> **Die Schwelle liegt bewusst hoch, und der Grund ist die Asymmetrie der Kosten.** Ein durchgelassener Doppelgänger ist ein doppelter Absatz — sichtbar, zählbar, mit einem Werkzeug zurücknehmbar. Ein fälschlich abgewiesener Fund ist **fort**: `steht_schon_da` reiht nicht wieder ein, und niemand erfährt, was verloren ging. **Im Zweifel wird eingearbeitet.**
+
+**Geeicht an einer fremden Umsetzung.** `pg_trgm` ist in dieser Datenbank vorhanden; über 60 echte Paare gegen `similarity()` gehalten beträgt die größte Abweichung **0,083**, die mittlere **0,025**, und **kein Paar** bekommt an dieser Schwelle ein anderes Urteil. Die Rechnung bleibt trotzdem im Code: Ein Datenbankaufruf für einen reinen Textvergleich fügt einen Ausfallpfad hinzu, der still wäre.
+
+**Die gemessene Nähe steht bei jeder Abweisung im Log.** Ohne sie wäre die Schwelle nur aus der Erinnerung nachstellbar; mit ihr aus dem Betrieb.
 
 ---
 

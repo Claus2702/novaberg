@@ -2,8 +2,8 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Rohe, noch unklassifizierte Funde aus laufender Arbeit
-**Stand:** 24. August 2026, 21:35 UTC
-**Offen:** **73 Funde — gezaehlt am 24.08.2026, 21:35 UTC** (77 Fundzeilen im Abschnitt *Offen*, davon **vier** durchgestrichen; sechs aus der Behebung des Impuls-Verlusts und ihrer zweiten Kontrolle, drei aus dem Lesen der 26 Registerkandidaten; fuenf aus der Abschaltung des Telegram-Kanals, zwei aus der Messung des Impuls-Turns, zwoelf aus dem Zuschnitt des Anschubs — der **entschieden und zurueckgestellt** ist —, zwei aus dem Fall der Zwei-Stunden-Wand). Die Kopfzeile stand am 23.08. schon einmal auf 23 bei tatsaechlich 26; sie war ueber mehrere Zuege hochgezaehlt worden, und schon ihr Ausgangswert war es — **deshalb wird hier gezaehlt und nie fortgeschrieben.**
+**Stand:** 24. August 2026, 22:30 UTC
+**Offen:** **74 Funde — gezaehlt am 24.08.2026, 22:30 UTC** (78 Fundzeilen im Abschnitt *Offen*, davon **vier** durchgestrichen; sechs aus der Behebung des Impuls-Verlusts und ihrer zweiten Kontrolle, drei aus dem Lesen der 26 Registerkandidaten; fuenf aus der Abschaltung des Telegram-Kanals, zwei aus der Messung des Impuls-Turns, zwoelf aus dem Zuschnitt des Anschubs — der **entschieden und zurueckgestellt** ist —, zwei aus dem Fall der Zwei-Stunden-Wand). Die Kopfzeile stand am 23.08. schon einmal auf 23 bei tatsaechlich 26; sie war ueber mehrere Zuege hochgezaehlt worden, und schon ihr Ausgangswert war es — **deshalb wird hier gezaehlt und nie fortgeschrieben.**
 **Verlauf:** [Verlauf des Standes](#verlauf-des-standes) — 73 Eintraege, juengster zuerst
 **Pfad:** novaberg/docs/novaberg-fundliste.md
 
@@ -232,6 +232,8 @@ Analog zum Kraft-1-Stichtag: ab wann eine Partition brauchbar ist. Kein Backfill
 ---
 
 ## Offen
+
+- **2026-08-24** — **29 nahe Absatzpaare im Wissensbestand, nicht zusammengefaltet.** Nach der Raeumung der woertlichen Dubletten mit derselben Trigramm-Schwelle nachgemessen (0,65): **29 Paare**, bis hinauf zu **0,96**; in `2026-08-16_meister_metaphorik-…` stehen drei fast gleiche Absaetze. **Automatisch geraeumt wird das nicht:** Bei einer woertlichen Kopie sagt die zweite Fassung nachweislich nichts Eigenes, bei 0,80 kann die Differenz der Inhalt sein. Das ist eine Entscheidung je Fall. Der Riegel verhindert **neue**; dieser Bestand ist aelter als er.
 
 - **2026-08-24** — ~~**Drei Verlaufs-Renderer nennen den Anlass nicht.**~~ → **am 24.08.2026 behoben**, alle drei: `24/24` Inhalte und `8/8` Impulsmarken, gemessen ueber die echten Turns. Der Verfasser wechselte dafuer von der Nachrichtenfolge auf einen benannten Textblock — in einer `assistant`-Nachricht haette die Marke nur in den Inhalt gekonnt, und das ist die gescheiterte Iteration 1 aus `novaberg-pixie_l_kontamination.md`. Urspruenglicher Befund: `memory/kontext.py::_turns_formatieren`, `graph/nodes/enricher.py::_suchtext_bauen` und der `messages`-Aufbau in `graph/nodes/verfasser.py` tragen jeden der 24 Turns (kein Verlust), aber **0 von 8** Impulsen sind dort als solche erkennbar — sie stehen als `ASSISTANT:` / `Nova:` / `{"role": "assistant"}`. Person-eindeutig, Anlass unbekannt. `memory/kontext.py` ist live (`agents/recherche/agent.py:533`, `lagebeurteilung.py:44`). Gefunden von der zweiten Kontrolle, die alle **sieben** Renderer des Baums suchte statt der zwei, an denen der Defekt auffiel.
 

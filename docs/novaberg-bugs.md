@@ -4583,7 +4583,17 @@ Und live für den Impuls-Turn `57b6e84c…`: 14 `art`/`quelle`-Kombinationen im 
 
 #### `RUECKWEG-SETZT-KOPIE-NEBEN-ORIGINAL` — der Fund stand schon da ✅
 
-**Zustand:** behoben — gebaut und gemessen am 24.08.2026. `absatz_bestimmen` verlangt jetzt, dass ein Absatz mindestens **einen Satz** mitbringt, der noch nicht im Text steht (`_bringt_neues`); bringt er keinen, wird er als *steht schon da* behandelt. Zeugen `tests/test_rueckweg_dublette.py` (12), Gegenprobe **6 vorhergesagt / 6 gezählt**, Suite `Ran 2260 tests — OK`, 0 übersprungen.
+**Zustand:** behoben — gebaut und gemessen am 24.08.2026. `absatz_bestimmen` verlangt jetzt, dass ein Absatz mindestens **einen Satz** mitbringt, der noch nicht im Text steht (`_bringt_neues`); bringt er keinen, wird er als *steht schon da* behandelt. Zeugen `tests/test_rueckweg_dublette.py` (24), zwei Gegenproben (**6 vorhergesagt / 6 gezählt** am Riegel, **5 vorhergesagt / 2 gezählt** an der Schwelle), Suite `Ran 2272 tests — OK`, 0 übersprungen.
+
+> **Die erste Fassung verglich auf Gleichheit und war damit zu schwach.** Sie fing **12 von 18** Doppelgängern; die übrigen sechs waren Umformulierungen desselben Satzes, und ein umgestelltes Wort genügte, um durchzukommen. **Bei zweien sagte die „neue" Fassung sogar weniger als die alte.**
+>
+> Verglichen wird jetzt über **Trigramm-Übereinstimmung**, Schwelle `AEHNLICH_GENUG = 0.65`. Die Zahl ist an den echten Fällen abgelesen: Über die 232 Einarbeitungen liegen 12 auf 1,00, sechs zwischen 0,65 und 0,95 (allesamt Umformulierungen ohne neuen Gehalt), dann sechs zwischen 0,50 und 0,65 (gemischt) und 208 darunter. **Ein sauberes Tal gibt es nicht** — bei 0,65 kippt das Urteil beim Lesen, und zwei Umformulierungen darunter laufen durch.
+>
+> **Die Schwelle liegt bewusst hoch, und der Grund ist die Asymmetrie der Kosten:** Ein durchgelassener Doppelgänger ist ein doppelter Absatz — sichtbar, zählbar, mit einem Werkzeug zurücknehmbar. Ein fälschlich abgewiesener Fund ist **fort**: `steht_schon_da` reiht nicht wieder ein, und niemand erfährt, was verloren ging. Ein Zeuge hält die Grenze ausdrücklich fest: Wer rund ein Drittel des Satzes weglässt, kommt durch.
+>
+> **Geeicht an `pg_trgm.similarity()`** — in dieser Datenbank vorhanden — über 60 echte Paare: größte Abweichung **0,083**, mittlere **0,025**, und **0 Paare mit abweichendem Urteil** an dieser Schwelle. Die Rechnung bleibt trotzdem im Code: Ein Datenbankaufruf für einen reinen Textvergleich fügt einen Ausfallpfad hinzu, der still wäre.
+>
+> Über die 232 echten Einarbeitungen: **18 gefangen, 214 durchgelassen** (vorher 12 / 220). Die gemessene Nähe steht bei jeder Abweisung im Log, damit die Schwelle aus dem Betrieb nachjustierbar bleibt statt aus der Erinnerung.
 
 **Symptom.** Der Rückweg arbeitet Funde in bestehende Wissensdateien ein: Er spaltet einen Absatz hinter einem Anker und setzt den Fund in die Naht, mit Marke `[iN>]`. Schlägt das Modell als Fund einen Satz vor, **der schon dasteht**, landet die Kopie unmittelbar neben ihrem Original:
 
@@ -4610,7 +4620,9 @@ Und live für den Impuls-Turn `57b6e84c…`: 14 `art`/`quelle`-Kombinationen im 
 
 **Zwei Formen, und die Marken entscheiden über die Behandlung.** Beim Satz im selben Absatz trägt nur eine Kopie die Marke — die überlebt. Beim doppelten Absatz an zwei Stellen tragen **beide** eine eigene Marke; dort fällt die zweite Fassung, aber ihre Marke wandert an die erste (`Text [i4>] [i5>]`), damit kein Archiveintrag verwaist.
 
-**Der Bestand ist geräumt** (`labor/2026-08-24_dubletten_ruecknahme.py`): 23 Dateien, 7 Sätze und 18 Absätze zurückgenommen, danach **0 Dubletten**. Gegengeprüft mit der Produktivfunktion `paarung_pruefen` über alle 474 Dateien: **474 heil, 0 Befunde.** Die Gegenprobe am Werkzeug — Markenrettung abgeschaltet — hätte 12 Dateien wegen gerissener Paarung übersprungen; der Riegel greift also nachweislich.
+**Der Bestand ist geräumt** (`labor/2026-08-24_dubletten_ruecknahme.py`): 23 Dateien, 7 Sätze und 18 Absätze zurückgenommen, danach **0 wörtliche Dubletten**.
+
+> **Das Räumwerkzeug verglich ebenfalls exakt, und damit bleibt ein Rest.** Mit derselben Trigramm-Schwelle nachgemessen stehen im Bestand noch **29 Absatzpaare über 0,65**, bis hinauf zu 0,96 — in einer Datei drei fast gleiche Absätze. **Sie werden nicht automatisch zusammengefaltet:** Bei einer wörtlichen Kopie sagt die zweite Fassung nachweislich nichts Eigenes, bei 0,80 kann die Differenz der Inhalt sein. Das ist eine Entscheidung je Fall und keine Schwelle — geführt in der Fundliste. Gegengeprüft mit der Produktivfunktion `paarung_pruefen` über alle 474 Dateien: **474 heil, 0 Befunde.** Die Gegenprobe am Werkzeug — Markenrettung abgeschaltet — hätte 12 Dateien wegen gerissener Paarung übersprungen; der Riegel greift also nachweislich.
 
 **Verwandt:** `KZG-SEGMENT-DUPLIKAT` und `PROMO-QUEUE-DUBLETTEN` (dieselbe Klasse an anderer Stelle: etwas entsteht zweimal, und die Buchführung darüber stimmt).
 
