@@ -250,6 +250,27 @@ Verhaeltnis        0,22 0,30 0,32 0,35 0,38
 
 **Zuwendung entscheidet das Ob, Initiative den Moment.** Die Häufigkeit entsteht aus dem Zusammenspiel aller Riegel und ist keine eigene Größe mehr.
 
+### Anwesenheit ist Bedingung, und sie steht vor der Kette — entschieden am 24.08.2026
+
+**Ein Einwurf setzt voraus, dass jemand zuhört.** Die Zustellschleife läuft ausschließlich über
+Kennungen mit offener Verbindung (`services/shadow_delivery.py`, die Schleife über
+`websocket_map`), und ohne Empfänger wird ein Impuls verworfen statt aufgehoben. **Anwesenheit
+ist damit bereits geprüft, bevor der erste Riegel überhaupt gefragt wird** — sie ist keine
+Aufgabe der Riegelkette und taucht in ihr deshalb nicht auf.
+
+**Das gehört hier hin, weil es beim Abbau der Uhr gebraucht wird.** Der Auslöser
+(`last_activity`, zwei Stunden Frist, nur vom Nutzer-Turn gesetzt) steht **vor** dieser Kette, und
+die Kette kennt ihn nicht — er ist der letzte Rest der stündlichen Decke, die am 14.08.2026 fiel.
+Er misst aber nicht *ist jemand da* (das tut die Verbindung), sondern *hat jemand in den letzten
+zwei Stunden gesprochen*. **Wer ihn entfernt, entfernt keine Anwesenheitsprüfung** — sondern eine
+Frist, die Novas Eigeninitiative zwei Stunden nach dem letzten Wort des Menschen dauerhaft
+beendet.
+
+> `[gemessen]` — 24.08.2026: Zwischen 00:00 und 07:41 UTC wurde die Riegelkette **kein einziges
+> Mal gefragt**. Die Schleife lief weiter, fand `last_activity` nicht und ging jeden Zyklus in
+> `else: continue`; 489 Stapeleinträge lagen daneben. Beendet hat es das Einzige, was es beenden
+> kann — ein Nutzer-Turn.
+
 ### Die Salienz ist ein Anschub, kein Riegel — entschieden am 24.08.2026
 
 **Ein Gegenstandsmaß darf Riegel 1 nicht überstimmen.** Der Vorschlag, ein Salienz-Tor vor die Kette zu setzen, das „die zwei oder drei stärksten" durchlässt, ist verworfen: Zuwendung ist eine **Eigenschaft der Person**, Salienz eine des **Gegenstands**, und die Ordnung oben — *erst die Person, dann der Gegenstand* — ist keine Bequemlichkeit. Eine Figur, die auf Abstand hält, bricht nicht aus sich heraus, weil ein Fund stark ist.
