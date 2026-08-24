@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Modul — Emotionale-Gravitation-Node
-**Stand:** 23. August 2026 (das Herkunftstor — auf einem Impuls-Turn faellt die Injektion aus); davor 28. Juli 2026, Chat 114 (Nachzug nach internal.emotion, überholte Log-Zeile markiert)
+**Stand:** 24. August 2026 (das Herkunftstor **im Betrieb belegt** — 15 Feuerungen auf 15 Impuls-Turns, jede mit genau 2 unterdrueckten Punkten; die Aussage *der Bestand gibt es nicht her* ist damit zur Haelfte widerlegt). Davor: 23. August 2026 (das Herkunftstor — auf einem Impuls-Turn faellt die Injektion aus); davor 28. Juli 2026, Chat 114 (Nachzug nach internal.emotion, überholte Log-Zeile markiert)
 **Pfad:** novaberg/docs/novaberg-node-emotionale-gravitation.md
 **Konzept:** `novaberg-thinking-drive_k.md` §5.7
 **Code:** `server/graph/nodes/emotionale_gravitation.py`
@@ -51,7 +51,17 @@ Erkannt wird an `reiz_ist_eigener_gedanke(state)`, also an der **Herkunftsmarke 
 
 **Warum es nicht früher gebaut wurde, und warum der Grund abgelaufen war.** Der Defekteintrag nannte als Sperre den gleichzeitigen Umbau des Skip-Tors: Bei zwei Änderungen an derselben Strecke wäre eine Verschlechterung keiner von beiden zuzuordnen. Das Skip-Tor ist seit dem 14.08.2026 gebaut — die Sperre war acht Tage lang entfallen und stand unverändert im Eintrag.
 
-**Ausgesetzt waren 85 von 729 Turns** (11,7 %). Wie viele davon tatsächlich gefärbt wurden, gibt der Bestand nicht her: Die Logzeile der Gravitation trägt keine `turn_id`, ein Join ist nicht fahrbar.
+**Ausgesetzt waren 85 von 729 Turns** (11,7 %). ~~Wie viele davon tatsächlich gefärbt wurden, gibt der Bestand nicht her: Die Logzeile der Gravitation trägt keine `turn_id`, ein Join ist nicht fahrbar.~~ → **Am 24.08.2026 zur Hälfte widerlegt.** Der Join ist unverändert nicht fahrbar — die Logzeile trägt weiterhin keine `turn_id`. **Die Frage ist trotzdem beantwortbar**, und der Unterschied liegt in der Methode, nicht im Bestand: In einem **begrenzten Fenster** ersetzt die Gleichheit zweier Zählungen den Join, sobald kein Schlupf bleibt.
+
+> **Im Betrieb belegt, 24.08.2026.** Über zwei Tage Behälterlog feuerte das Tor **15 Mal**, und im selben Fenster gibt es **15** Impuls-Turns — 15 gegen 15, in beide Richtungen ohne Rest. Jeder Impuls-Turn hat das Tor also getroffen, und kein anderer Turn hat es ausgelöst.
+>
+> **Keine der 15 Meldungen nennt 0 übergangene Punkte; alle nennen 2.** Das ist der Beleg dafür, dass das Tor nicht im Leerlauf schließt — und genau der Grund, warum die Meldung die Menge nennt (Kasten oben). Zum Vergleich im selben Fenster: **32** Färbungen liefen durch, alle auf Nutzer-Turns.
+>
+> **Dass es immer genau 2 sind, ist ungeklärt** und steht als Fund vom 24.08.2026: Entweder liefert der Gravitationsscan auf Impuls-Turns einen strukturell konstanten Satz, oder eine Kappung begrenzt ihn.
+>
+> Werkzeug: `labor/2026-08-24_impulsturn_messung.sh`. Es prüft die Deckung selbst und behauptet nichts, wenn sie ausbleibt.
+
+**Was die alte Fassung richtig sah, und wo sie zu weit ging.** *Ein Join ist nicht fahrbar* stimmt und stimmt weiter. *Der Bestand gibt es nicht her* folgt daraus nicht — es setzt den Join mit der Messung gleich. Eine Zählung auf beiden Seiten desselben Fensters ist schwächer als ein Join (sie ordnet nicht zu, sie deckt), und für diese Frage genügt sie.
 
 Zeugen: `tests/test_emotionale_gravitation_node.py::TestHerkunftstor`.
 

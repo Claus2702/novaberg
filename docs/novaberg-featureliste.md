@@ -2,8 +2,8 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Vollständiges Register aller Features mit Zustandsampel und Beleg
-**Stand:** 24. August 2026, 15:50 UTC
-**Verlauf:** [Verlauf des Standes](#verlauf-des-standes) — 62 Eintraege, juengster zuerst
+**Stand:** 24. August 2026, 17:05 UTC
+**Verlauf:** [Verlauf des Standes](#verlauf-des-standes) — 63 Eintraege, juengster zuerst
 **Pfad:** novaberg/docs/novaberg-featureliste.md
 **Typ:** Register
 **Quellen:** die 43 Konzeptdokumente, `novaberg-architecture.md`, die Moduldokumente, `novaberg-roadmap.md`, `novaberg-backlog.md`, `novaberg-bugs.md`, `novaberg-fundliste.md` — gehalten gegen Code und Produktivsystem
@@ -53,7 +53,7 @@ Die Feature-Matrix in `novaberg-architecture.md` §6 ist mit dieser Liste abgel�
 |---|---|---|---|
 | **HumanGraph** (Pfad 1 — der Mensch spricht) | 🟢 | `graph/human_graph.py`, 5 Knoten `[Code]` | — |
 | **CharacterGraph** (Pfad 2 — die Figur antwortet) | 🟢 | `graph/character_graph.py`, 17 Knoten `[Code]` | — |
-| **AgentGraph** (Pfad 3 — Hintergrundarbeit) | 🟢 | `graph/agent_graph.py` `[Code]` · `tests/test_reiz_platz.py::DerAgentGraphBekommtDieHerkunftTest` | **🟢 seit 23.08.2026** (zuvor 🔴): `AGENTGRAPH-REIZPLATZ-FALSCH` behoben — der direkt gerufene Graph bekommt `eigener_gedanke` und die Herkunftsmarke; alle drei Knoten lesen den Reiz ueber `reiz_text` |
+| **AgentGraph** (Pfad 3 — Hintergrundarbeit) | 🟢 | `graph/agent_graph.py` `[Code]` · `tests/test_reiz_platz.py::DerAgentGraphBekommtDieHerkunftTest` · **im Betrieb 24.08.2026** `[gemessen]`: **15 Aufrufe** in zwei Tagen, 15 begonnen und 15 abgeschlossen; die Marke wirkt nachweislich, weil das Herkunftstor der Gravitation sie liest und **15 von 15** feuerte | **🟢 seit 23.08.2026** (zuvor 🔴): `AGENTGRAPH-REIZPLATZ-FALSCH` behoben. **Die Marke steht in keiner seiner eigenen Zeilen** — 120 `pipeline_log`-Zeilen ueber die 15 Turns, **0 mit `herkunft`/`initiator`**; rekonstruierbar nur ueber `turn_id` aus der `turn_roh`-Zeile des CharacterGraph, und **28 von 209** AgentGraph-Turns haben nie eine bekommen (alle vor dem 16.08.2026) — Fundliste 24.08.2026 |
 | **PixieGraph** (eigener Graph für Pixie statt AgentGraph) | ⚫ | `create_pixie_state` existiert nicht `[Code]` · `novaberg-pixie-graph-merge_k.md` Phase 0–3 | alles |
 | **Kanalzwang im StateGraph** (jedes Feld deklariert) | 🟢 | 74 Zustandsfelder, **0 ohne Vorkommen außerhalb `state.py`** `[gemessen]` | — |
 | **Event-Modell** (Consumer statt async-Block) | 🟢 | `services/event_consumer.py`, `services/events.py` `[Code]` | — |
@@ -108,7 +108,7 @@ Die Feature-Matrix in `novaberg-architecture.md` §6 ist mit dieser Liste abgel�
 | **Dual-Emotion Phase 1** (User-IDs entkoppelt) | 🟢 | `[Doku]` Chat 57 · `[Code]` — `memory/kzg.py`, Key-Schema `kzg:{user_id}:{character_id}:{entry_id}`; das Paar definiert das gemeinsame Gespraech `[Erhebung 20.08.2026]` | — |
 | **Dual-Emotion Phase 2** (Nova-Empathie, Konflikt) | 🟠 | `[Code]`, AP1–7 und AP9 gebaut | AP8 Client-Teil `[Doku]` |
 | **Dual-Emotion Phase 3** (Ziel-Vektor als dritte Kraft) | 🟠 | `ziele`: **259 Zeilen**, `ZielDecayAgent` läuft `[gemessen]` | `ziel_motivation_anpassen` hat **keinen Aufrufer** `[gemessen]`; der Antrieb wirkt nicht auf die Emotion |
-| **Emotionale Gravitation** (Erinnerung zieht) | 🔴 | `ei/gravitation.py` `[Code]` · `tests/test_emotionale_gravitation_node.py::TestHerkunftstor` | `EMOTIONALE_GRAVITATION_FAKTOR_SESSION` ohne Leser `[gemessen]` · **🔴 seit 20.08.2026** (zuvor 🟢): `ZUG-ZWISCHEN-090-097-ABGESCHALTET` offen. `GRAVITATION-FAERBT-EIGENE-GEDANKEN` ist am 23.08.2026 behoben — der eigene Gedanke bleibt ungefaerbt, 85 von 729 Turns waren dem ausgesetzt |
+| **Emotionale Gravitation** (Erinnerung zieht) | 🔴 | `ei/gravitation.py` `[Code]` · `tests/test_emotionale_gravitation_node.py::TestHerkunftstor` · **Herkunftstor im Betrieb belegt 24.08.2026** `[gemessen]`: **15 Feuerungen auf 15 Impuls-Turns**, jede mit **genau 2** unterdrueckten Punkten und keine mit 0 — es schliesst also nicht im Leerlauf; im selben Fenster **32** Faerbungen durchgelaufen | `EMOTIONALE_GRAVITATION_FAKTOR_SESSION` ohne Leser `[gemessen]` · **🔴 seit 20.08.2026** (zuvor 🟢): `ZUG-ZWISCHEN-090-097-ABGESCHALTET` offen. `GRAVITATION-FAERBT-EIGENE-GEDANKEN` ist am 23.08.2026 behoben und seit dem 24.08.2026 im Betrieb gemessen — der eigene Gedanke bleibt ungefaerbt |
 | **Wahrnehmungs-Gravitation** (Synapsen P10) | 🟠 | `wahrnehmung_verschieben()` gebaut, live gemessen `[Doku]` | **Wirkung ungemessen** — ob sich je eine Trefferliste ändert, ist offen |
 | **Anker-Emotion** (Grundemotion je Charakter) | ⚫ | kein Code `[Code]` | alles |
 
@@ -496,6 +496,8 @@ Ampelzeile  = eine Tabellenzeile, deren zweite Spalte genau eine der vier Farben
 ---
 
 ## Verlauf des Standes
+
+- **24. August 2026, 17:05 UTC** — **keine Ampel wechselt, und zwei Belege wechseln ihre Sorte:** Der Impuls-Turn ist gemessen, und mit ihm zwei Bauteile, die seit dem 23.08. gebaut und im Betrieb unbelegt dastanden. Das **Herkunftstor der Gravitation** feuerte **15 Mal auf 15 Impuls-Turns**, jede Feuerung mit **genau 2** unterdrueckten Punkten und keine mit 0 — es schliesst nicht im Leerlauf; daneben liefen 32 Faerbungen auf Nutzer-Turns durch. Die **Herkunftsmarke des AgentGraph** wirkt (15 Aufrufe, und das Tor liest genau sie) und **steht in keiner seiner 120 eigenen Zeilen** — 0 von 75 markierten Zeilen stammen aus seiner Haelfte. **Die Grenze des Vorgaenger-Werkzeugs blieb und wurde umgangen:** Die Logzeile der Gravitation traegt keine `turn_id`, ein Join ist nicht fahrbar — an seiner Stelle steht die **Gleichheit zweier Zaehlungen** im selben Fenster, 15 gegen 15, ohne Schlupf. Werkzeug: `labor/2026-08-24_impulsturn_messung.sh`.
 
 - **24. August 2026, 15:50 UTC** — **keine Ampel wechselt, und das ist der Befund:** Der Matrix-Kanal stand seit dem 23.08. auf 🟢 und war aus dem Repositorium **nicht herstellbar** — gebaut, im Betrieb, konzeptionell vollstaendig beschrieben, und `README.md` wie `README.de.md` hatten **0 Treffer** auf `matrix` und `synapse`. Seither: beide Compose-Dienste in der Vorlage (sechs Dienste beidseitig, `synapse` und `matrix-bot` **feldgleich**, keine Wertabweichung), drei Muster unter `novaberg/matrix/` mit leeren Geheimnissen (**16/16** Schluessel der `homeserver.yaml`, **6/6** der AS-Registrierung), Aufbauanleitung in beiden READMEs. **Die Ampel war nie falsch** — sie misst den Bauzustand, und der war gruen. Herstellbarkeit misst sie nicht.
 

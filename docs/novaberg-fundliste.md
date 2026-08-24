@@ -2,8 +2,8 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Rohe, noch unklassifizierte Funde aus laufender Arbeit
-**Stand:** 24. August 2026, 13:35 UTC
-**Offen:** **45 Funde — gezaehlt am 24.08.2026** (46 Fundzeilen im Abschnitt *Offen*, davon eine durchgestrichen; fuenf neu aus der Abschaltung des Telegram-Kanals). Die Kopfzeile stand am 23.08. schon einmal auf 23 bei tatsaechlich 26; sie war ueber mehrere Zuege hochgezaehlt worden, und schon ihr Ausgangswert war es — **deshalb wird hier gezaehlt und nie fortgeschrieben.**
+**Stand:** 24. August 2026, 17:05 UTC
+**Offen:** **46 Funde — gezaehlt am 24.08.2026, 17:05 UTC** (48 Fundzeilen im Abschnitt *Offen*, davon **zwei** durchgestrichen; fuenf aus der Abschaltung des Telegram-Kanals, zwei aus der Messung des Impuls-Turns). Die Kopfzeile stand am 23.08. schon einmal auf 23 bei tatsaechlich 26; sie war ueber mehrere Zuege hochgezaehlt worden, und schon ihr Ausgangswert war es — **deshalb wird hier gezaehlt und nie fortgeschrieben.**
 **Verlauf:** [Verlauf des Standes](#verlauf-des-standes) — 73 Eintraege, juengster zuerst
 **Pfad:** novaberg/docs/novaberg-fundliste.md
 
@@ -232,6 +232,9 @@ Analog zum Kraft-1-Stichtag: ab wann eine Partition brauchbar ist. Kein Backfill
 ---
 
 ## Offen
+
+- **2026-08-24** — **Das Herkunftstor der Gravitation unterdrueckt jedes Mal genau zwei Punkte — fuenfzehn Mal, ohne eine einzige Abweichung.** Ueber zwei Tage Behaelterlog feuerte es auf allen 15 Impuls-Turns, und jede der 15 Meldungen nennt **2 Gravitationspunkt(e) nicht angewendet**. Nie 1, nie 3, nie 0. Dass es nie 0 ist, ist der Beleg dafuer, dass das Tor nicht im Leerlauf schliesst; dass es **immer 2** ist, ist etwas anderes und ungeklaert. Entweder liefert der Gravitationsscan des Enrichers auf Impuls-Turns einen strukturell konstanten Satz, oder eine Kappung begrenzt ihn auf zwei. **Auf Nutzer-Turns waere dieselbe Frage stellbar** — die Faerbungsmeldung nennt die Punkte einzeln (32 Durchlaeufe im selben Fenster), gezaehlt wurde sie noch nicht.
+- **2026-08-24** — **28 von 209 AgentGraph-Turns haben nie eine `turn_roh`-Zeile bekommen — ihre Herkunft ist dauerhaft nicht bestimmbar.** Der AgentGraph schreibt seine 120 Zeilen je Impuls-Turn **ohne** Herkunftsmarke; sie steht allein in der `turn_roh`-Zeile, die der CharacterGraph rund siebzig Sekunden spaeter setzt. Solange diese Zeile kommt, ist die Marke ueber `turn_id` rekonstruierbar — kommt sie nicht, sind die Zeilen verwaist. **261 Zeilen** sind es im Bestand. **Der juengste Fall stammt vom 15.08.2026, seither neun Tage sauber** — der Befund ist damit ein Bestandsbefund und kein laufender, aber die Bauart, die ihn erlaubt, ist unveraendert: Die Haelfte, die zuerst schreibt, traegt die Angabe nicht, von der ihre Deutung abhaengt. Verwandt: `TURNROH-ZEILE-FEHLT`.
 
 - **2026-08-24** — **Die Dienstetabelle der Architektur kennt den Kanal nicht, der seit einem Tag traegt.** `novaberg-architecture.md` §1.2 fuehrt `server`, `postgres`, `redis`, `searxng` und `telegram-bot`; `synapse` und `matrix-bot` laufen seit dem 23.08.2026 und stehen dort nicht. Derselbe Rueckstand im Compose-Auszug §8.1 und in der Startreihenfolge §8.3. **Gefunden hat es die Abschaltung des abgeloesten Kanals**, nicht der Nachzug des neuen — wer eine Zeile *entfernt*, liest die Tabelle; wer eine *hinzufuegt*, liest sein Konzept.
 - **2026-08-24** — ~~**Der Matrix-Kanal ist aus dem Repositorium nicht herstellbar — sechs Teile fehlen, und keins davon ist ein Geheimnis.**~~ → **am selben Tag behoben, fuenf von sechs; der Befund bleibt als Beleg stehen.** Nachgezaehlt am Tag, an dem Matrix der einzige Fernkanal wurde:

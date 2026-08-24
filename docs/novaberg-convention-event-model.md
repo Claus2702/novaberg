@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Konzept — Event-Modell (Architektur-Evolution)
-**Stand:** 23. August 2026 (§7a neu — `event_payload` traegt die Herkunftsmarke auch ohne Ereignis; der AgentGraph wird direkt gerufen). Davor: 16. August 2026 (gegen den Code gehalten: alle benannten Mechanismen stehen; die Migrationsliste in §9.1 unterzeichnete den Stand, §9.3 ist **nicht** umgesetzt). Davor: 15. August 2026 (`gedanke_arousal` und sein **zweiter** Erzeuger, der Thinker-Retry); davor 1. August 2026, Chat 124 (Eingangs-Queue vor Pfad 1, Turn-Marker, fire-and-forget — Migrationsschritte 6 und 7 abgeschlossen). Kern: 21. April 2026, Chat 60
+**Stand:** 24. August 2026 (§7a **im Betrieb belegt** — 15 Aufrufe, die Marke kommt an; sie steht aber in keiner der 120 AgentGraph-Zeilen des Protokolls). Davor: 23. August 2026 (§7a neu — `event_payload` traegt die Herkunftsmarke auch ohne Ereignis; der AgentGraph wird direkt gerufen). Davor: 16. August 2026 (gegen den Code gehalten: alle benannten Mechanismen stehen; die Migrationsliste in §9.1 unterzeichnete den Stand, §9.3 ist **nicht** umgesetzt). Davor: 15. August 2026 (`gedanke_arousal` und sein **zweiter** Erzeuger, der Thinker-Retry); davor 1. August 2026, Chat 124 (Eingangs-Queue vor Pfad 1, Turn-Marker, fire-and-forget — Migrationsschritte 6 und 7 abgeschlossen). Kern: 21. April 2026, Chat 60
 **Pfad:** novaberg/docs/novaberg-convention-event-model.md
 **Typ:** Convention
 **Voraussetzung:** Session-Trennung (user_id × character_id), Chat 60 ✅
@@ -353,6 +353,20 @@ agent_state = agent_graph.create_state(
     …
 )
 ```
+
+> **Im Betrieb belegt, 24.08.2026 — und zwar an einem anderen Knoten.** Dass die
+> Marke ankommt, zeigt sich dort, wo eine Entscheidung von ihr abhängt: Das
+> Herkunftstor der emotionalen Gravitation liest `reiz_ist_eigener_gedanke` und
+> fiel auf **15 von 15** Impuls-Turns. Wäre das Payload nicht durchgereicht
+> worden, wäre es kein einziges Mal gefallen.
+>
+> **Der Träger ist der Zustand, nicht das Protokoll.** Über dieselben 15 Turns
+> schreibt der AgentGraph **120 Zeilen** ins `pipeline_log`, und **keine** trägt
+> `herkunft` oder `initiator` — von 75 markierten Zeilen des Turns stammt keine
+> aus seiner Hälfte. Die Marke steht allein in der `turn_roh`-Zeile, die der
+> CharacterGraph rund siebzig Sekunden später schreibt. Für die Zuordnung genügt
+> das über `turn_id`; wer sie live an einer AgentGraph-Zeile ablesen will, findet
+> sie dort nicht.
 
 **Die Alternative wäre gewesen, dem AgentGraph ein echtes Ereignis zu geben** —
 und sie ist verworfen, nicht übersehen: Der Zustellpfad ruft ihn bewusst direkt,

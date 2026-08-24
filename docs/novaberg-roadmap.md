@@ -1,6 +1,6 @@
 # Novaberg — Roadmap (Projektchronik)
 
-**Stand:** 24. August 2026, 15:50 UTC
+**Stand:** 24. August 2026, 17:05 UTC
 **Pfad:** novaberg/docs/novaberg-roadmap.md
 **Single Source of Truth für abgeschlossene Arbeit.**
 **Offene Punkte → novaberg-backlog.md**
@@ -12,6 +12,59 @@ Die Kopfzeile stand bis Chat 109 auf „Chat 93, 21. Mai 2026" — 15 Chats hint
 ---
 
 ## Chats 3–20: Grundlagen (März 2026)
+
+### 24.08.2026, 17:05 UTC — Der Impuls-Turn, gemessen: ein Tor, das nie im Leerlauf schliesst
+
+Zwei Bauteile standen seit dem 23.08.2026 gebaut, bezeugt und **im Betrieb unbelegt** —
+aus demselben Grund: Der AgentGraph wird ausschliesslich von der Impuls-Zustellung
+gerufen, und die war seit dem 15.08.2026 geschlossen. Sie ist wieder offen.
+
+**Das Herkunftstor der Gravitation.** Auf einem Impuls-Turn faellt die Injektion aus:
+Ein eigener Gedanke ist bereits Novas, ihn ein zweites Mal zu faerben verdoppelt
+dieselbe Quelle. Gemessen ueber zwei Tage Behaelterlog:
+
+```
+Tor gefeuert                  15
+unterdrueckte Punkte je Mal    2   (15x — nie 0)
+Faerbungen durchgelaufen      32   (Nutzer-Turns)
+```
+
+**Dass keine Feuerung 0 nennt, ist der Beweis und nicht die Zugabe.** Ein Tor, das nur
+schliesst, wenn ohnehin nichts durchginge, saehe im Beleg genauso aus wie eins, das
+etwas aufhaelt. Die Meldung nennt die Menge der uebergangenen Punkte, und deshalb sind
+die beiden hier unterscheidbar: Jedes Mal lagen zwei Punkte bereit, jedes Mal blieben
+sie liegen.
+
+**Die Herkunftsmarke des AgentGraph — sie wirkt, und sie steht nirgends.** Dass jeder
+Leser im Graphen den Gedanken als eigenen sieht, zeigt sich dort, wo eine Entscheidung
+davon abhaengt: Das Tor oben liest genau diese Marke und fiel auf 15 von 15. Waere sie
+nicht angekommen, waere es kein einziges Mal gefallen.
+
+Im Protokoll steht sie trotzdem nicht:
+
+```
+Impuls-Turns                   15
+Zeilen im pipeline_log        732
+davon aus dem AgentGraph      120
+Zeilen mit Herkunftsmarke      75
+davon aus dem AgentGraph        0
+```
+
+Die Marke steht allein in der `turn_roh`-Zeile, die der CharacterGraph rund siebzig
+Sekunden spaeter schreibt. **Das ist eine Eigenschaft, kein Defekt** — ueber `turn_id`
+ist sie rekonstruierbar. Sie ist es aber nur, solange diese Zeile kommt, und das ist
+keine Selbstverstaendlichkeit: **28 von 209** AgentGraph-Turns im Bestand haben nie eine
+bekommen; ihre 261 Zeilen sind dauerhaft keiner Herkunft zuzuordnen. Der juengste Fall
+stammt vom **15.08.2026** — seither neun Tage sauber.
+
+**Die Grenze des Vorgaengerwerkzeugs blieb bestehen und wurde umgangen, nicht behoben.**
+Die Logzeile der Gravitation traegt keine `turn_id`; ein Join ist nicht fahrbar. An
+seiner Stelle steht die **Gleichheit zweier Zaehlungen im selben Fenster** — 15
+Tor-Feuerungen gegen 15 Impuls-Turns, ohne Schlupf in beide Richtungen. Das Werkzeug
+`labor/2026-08-24_impulsturn_messung.sh` prueft diese Deckung selbst und behauptet
+nichts, wenn sie ausbleibt.
+
+---
 
 ### 24.08.2026, 15:50 UTC — Der Kanal war gruen und aus dem Repositorium nicht herstellbar
 
