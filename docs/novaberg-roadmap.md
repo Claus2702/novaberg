@@ -1,6 +1,6 @@
 # Novaberg — Roadmap (Projektchronik)
 
-**Stand:** 24. August 2026, 17:05 UTC
+**Stand:** 24. August 2026, 18:05 UTC
 **Pfad:** novaberg/docs/novaberg-roadmap.md
 **Single Source of Truth für abgeschlossene Arbeit.**
 **Offene Punkte → novaberg-backlog.md**
@@ -12,6 +12,56 @@ Die Kopfzeile stand bis Chat 109 auf „Chat 93, 21. Mai 2026" — 15 Chats hint
 ---
 
 ## Chats 3–20: Grundlagen (März 2026)
+
+### 24.08.2026, 18:05 UTC — Die Uhr faellt, und die Riegel trugen immer schon laenger
+
+`last_activity` traegt eine TTL von zwei Stunden und wird **nur** vom Nutzer-Turn gesetzt.
+War der Schluessel fort, ging die Zustellschleife jeden Zyklus in `else: continue` — die
+Riegelkette wurde nicht einmal gefragt. An dieser Stelle steht jetzt ein dritter Ausloeser,
+`stille`, mit derselben Sitzungspruefung und demselben Verbrauch wie der Timeout.
+
+**Die Messung, die den Bau trug, ist eine Trennung — nicht eine Summe.** Ueber 214,5 h Betrieb
+liegen zwoelf Luecken ueber einer Stunde. Sie haben zwei verschiedene Ursachen, und die
+naheliegende Zaehlung haette beide zusammengeworfen:
+
+| | Zahl | Erkennungsmerkmal |
+|---|---|---|
+| **die Wand** | 10 | endet binnen zwei Minuten mit einer Aeusserung des Menschen |
+| **die Burst-TTL** | 2 | exakt 1:00:33 und 1:00:17 lang |
+
+**Dass es keine Verbindungsfrage ist, steht in derselben Spalte.** Ein Reconnect setzt die
+Schleife von selbst fort; hier war jedes Mal ein Mensch noetig. Zusammen **126 von 214,5
+Stunden — 59 % der Zeit** war Nova strukturell stumm, bei offenen Verbindungen und einem
+Stapel von rund 460 Eintraegen daneben.
+
+**Und das Kriterium, das die Uhr ersetzt, gab es die ganze Zeit.** Ein Haltungsstand gilt bis
+`ZUWENDUNG_STAND_MAX_ALTER_SEKUNDEN` = **24 Stunden**; danach gelten Riegel 1 und 2 als
+*unbekannt* und verweigern von selbst. Die Wand schnitt bei zwei Stunden ab — **zwoelfmal
+frueher als das Kriterium der Riegel**, die sie ersetzen sollte. In acht der zehn Wand-Luecken
+haette der Stand noch getragen.
+
+**Im Betrieb belegt, 17:56 UTC.** Der Ausloesefall ist hergestellt worden — `last_activity` und
+der Burst-Zaehler von Hand geleert, beides mimt die natuerliche Expiry und ist als Eingriff
+benannt:
+
+```
+17:56:37  Trigger 'stille' fuer 'meister'
+17:56:37  Riegelkette [wollen+0.96 frequenz+-0.86 ruhe+] entschieden=keiner
+17:56:39  Bester Match 'Ordnung, Stoerung der Ordnung' (score=0.43)
+17:56:58  Erfolgreich fuer 'meister' (trigger=stille)   1293 Zeichen
+17:57:08  Trigger 'timeout'  — der Ausloeser ist verbraucht, der Takt ist der alte
+```
+
+Suite 2218 → **2224 gruen, 0 uebersprungen**. Sechs Zeugen, **Gegenprobe 4 vorhergesagt und
+4 gezaehlt** — die Wand zurueckgebaut, vier Zeugen rot.
+
+> **Warum die Zeugen den Quelltext lesen.** Der Zweig sitzt inline in einer `while True`-Schleife
+> mit `await asyncio.sleep` am Kopf; eine Runde isoliert zu fahren hiesse, die Schleife zu
+> zerlegen — ein groesserer Eingriff als der, den sie pruefen sollen. Der Verhaltensbeleg ist die
+> Messung oben. Was die Zeugen leisten, ist das andere: Sie werden rot, wenn jemand die Wand
+> zurueckbaut.
+
+---
 
 ### 24.08.2026, 17:05 UTC — Der Impuls-Turn, gemessen: ein Tor, das nie im Leerlauf schliesst
 

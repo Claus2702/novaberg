@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Konzept — Novas Zustand zwischen den Begegnungen, ob sie zugeht und in welchem Zustand sie ihrem Menschen begegnet
-**Stand:** 15. August 2026 (v0.17)
+**Stand:** 24. August 2026 (v0.19 — **die Zwei-Stunden-Wand ist gefallen**: dritter Auslöser `stille` statt `else: continue`, im Betrieb belegt; §2.5. Davor am selben Tag, v0.18 — der Salienz-Anschub in §2.5 ist **zurückgestellt**: Nähe und Initiative reichen; drei Messungen desselben Tages stehen dabei, darunter die entscheidende — Riegel 2 lässt seit dem 24.08. 21,7 % durch, wo er von seinem Bau bis zum 23.08. nie öffnete). Davor: 15. August 2026 (v0.17)
 **Pfad:** novaberg/docs/novaberg-eigenzeit_k.md
 **Typ:** Konzept (`_k`)
 **Status:** 🔶 Konzept — **fünf der sechs Bauteile gebaut** (E, F, C, A, B); **D fehlt** und ist ohne die Haltungs-Persistenz nicht baubar. C trägt eine benannte offene Kante (der Fall ohne Bezug), B wartet auf seinen ersten Eintrag mit Level.
@@ -271,7 +271,58 @@ beendet.
 > `else: continue`; 489 Stapeleinträge lagen daneben. Beendet hat es das Einzige, was es beenden
 > kann — ein Nutzer-Turn.
 
-### Die Salienz ist ein Anschub, kein Riegel — entschieden am 24.08.2026
+> **Am 24.08.2026 gebaut: Die Uhr ist gefallen.** An der Stelle des `else: continue` steht ein
+> dritter Auslöser, `stille`. Er trägt dieselbe Vorbedingung wie der Timeout — ohne Gespräch feuert
+> er nicht — und verbraucht seinen Auslöser genauso, sonst fragte die Schleife alle 5 s statt alle 30 s.
+>
+> **Die Messung, die es trug, ist die Trennung von Wand und Burst.** Über 214,5 h Betrieb liegen
+> zwölf Lücken über einer Stunde. **Zehn davon enden binnen zwei Minuten mit einer Äußerung des
+> Menschen** — das ist die Signatur der Wand und keine Verbindungsfrage, denn eine wiederhergestellte
+> Verbindung setzt die Schleife von selbst fort. Die beiden anderen sind **exakt 1:00:33 und 1:00:17**
+> lang: die Burst-TTL. Zusammen **126 von 214,5 Stunden, 59 % der Zeit**.
+>
+> **Und die Riegel trugen die Entscheidung immer schon länger als die Uhr sie zuließ.** Ein
+> Haltungsstand gilt bis `ZUWENDUNG_STAND_MAX_ALTER_SEKUNDEN` = **24 h**; danach gelten Riegel 1
+> und 2 als *unbekannt* und verweigern von selbst. Die Wand schnitt bei 2 h ab — **zwölfmal früher
+> als das Kriterium der Riegel**. In acht der zehn Wand-Lücken hätte der Stand noch getragen.
+>
+> **Im Betrieb belegt am 24.08.2026, 17:56 UTC** (Auslösefall: `last_activity` und der
+> Burst-Zähler von Hand geleert, beides mimt die natürliche Expiry):
+> `Trigger 'stille'` → `Riegelkette [wollen+0.96 frequenz+-0.86 ruhe+] entschieden=keiner` →
+> `Bester Match 'Ordnung, Störung der Ordnung' (score=0.43)` → `Erfolgreich für 'meister'
+> (trigger=stille)`, 1293 Zeichen. Dreißig Sekunden später übernahm wieder `timeout` — der
+> Auslöser ist verbraucht, die Schleife fällt in den bekannten Takt zurück.
+>
+> Zeugen: `tests/test_stille_ausloeser.py` (6), Gegenprobe **4 vorhergesagt / 4 gezählt**.
+
+### ~~Die Salienz ist ein Anschub, kein Riegel~~ — der Anschub ist am 24.08.2026 zurückgestellt
+
+> **Entschieden am 24.08.2026, am selben Tag wie der Absatz darunter: Der Anschub wird nicht gebaut.**
+> **Nähe und Initiative reichen** — die beiden Größen, die Riegel 1 und 2 heute schon lesen. Der
+> Abschnitt bleibt stehen, weil seine Ordnung weiter gilt (*erst die Person, dann der Gegenstand*)
+> und weil er den Weg dorthin dokumentiert; **gebaut wird nichts davon.**
+>
+> **Drei Messungen desselben Tages tragen die Entscheidung, und die dritte wiegt am schwersten:**
+>
+> 1. **Die Größe wechselte von der Salienz zur Erregung — und beide tragen nicht.** Die Salienz ist
+>    auf dem Stapel praktisch konstant (454 Einträge, 0,8670–1,0000, Median 0,9960; **99,3 % über
+>    0,6**), ein Anschub daraus unterschiede nichts. Novas Erregung dagegen bewegt sich (127 Werte,
+>    0,092–0,941) — aber ein Anschub aus ihr verlangt eine **Kohärenzbedingung**: Wer energiegeladen
+>    herausplatzt, darf kein langweiliges Thema liefern. Die trägt allein `arousal` am Stapeleintrag,
+>    und der liegt auf **17 %** (79 von 462), ohne Alterstrend, weil schon die Queue ihn unregelmäßig
+>    schreibt (100 % am 17.08., 9 % am 24.08.).
+> 2. **Der Regler wäre eine Treppe.** Die 741 Blockaden von Riegel 2 liegen auf **15 Werten**, drei
+>    tragen 79 % — `0,549` allein 410. Eine Anhebung auf 0,00 öffnet 59, auf 0,40 öffnet 246, auf
+>    0,55 öffnet alle. Eine feine Stellgröße auf eine dreistufige Wirkung.
+> 3. **Der Grund, der den Anschub verlangte, ist entfallen.** Er wurde aufgeschrieben, als Riegel 2
+>    **jeden** Zyklus sperrte: 15.–22.08. **8902 Blockaden, 0 Durchlässe**. Seit der Behebung von
+>    `FUEHRUNGSMASS-AUF-FALSCHER-EBENE` lässt er **205 von 946 durch (21,7 %)**. Der Weg hat sich
+>    geöffnet, ohne dass ein Anschub gebaut wurde. **Was ihn begründete, war die Zahl 0; sie ist 205.**
+>
+> **Zurückgestellt, nicht verworfen.** Die Ordnung des Abschnitts bleibt richtig, und die beiden
+> offenen Fragen unten bleiben offen. Wer ihn wieder aufnimmt, prüft zuerst die 205 — nicht den
+> Aufwand.
+
 
 **Ein Gegenstandsmaß darf Riegel 1 nicht überstimmen.** Der Vorschlag, ein Salienz-Tor vor die Kette zu setzen, das „die zwei oder drei stärksten" durchlässt, ist verworfen: Zuwendung ist eine **Eigenschaft der Person**, Salienz eine des **Gegenstands**, und die Ordnung oben — *erst die Person, dann der Gegenstand* — ist keine Bequemlichkeit. Eine Figur, die auf Abstand hält, bricht nicht aus sich heraus, weil ein Fund stark ist.
 
