@@ -3,7 +3,7 @@
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Rohe, noch unklassifizierte Funde aus laufender Arbeit
 **Stand:** 24. August 2026, 18:20 UTC
-**Offen:** **59 Funde — gezaehlt am 24.08.2026, 18:05 UTC** (62 Fundzeilen im Abschnitt *Offen*, davon **drei** durchgestrichen; fuenf aus der Abschaltung des Telegram-Kanals, zwei aus der Messung des Impuls-Turns, zwoelf aus dem Zuschnitt des Anschubs — der **entschieden und zurueckgestellt** ist —, zwei aus dem Fall der Zwei-Stunden-Wand). Die Kopfzeile stand am 23.08. schon einmal auf 23 bei tatsaechlich 26; sie war ueber mehrere Zuege hochgezaehlt worden, und schon ihr Ausgangswert war es — **deshalb wird hier gezaehlt und nie fortgeschrieben.**
+**Offen:** **60 Funde — gezaehlt am 24.08.2026, 18:20 UTC** (63 Fundzeilen im Abschnitt *Offen*, davon **drei** durchgestrichen; fuenf aus der Abschaltung des Telegram-Kanals, zwei aus der Messung des Impuls-Turns, zwoelf aus dem Zuschnitt des Anschubs — der **entschieden und zurueckgestellt** ist —, zwei aus dem Fall der Zwei-Stunden-Wand). Die Kopfzeile stand am 23.08. schon einmal auf 23 bei tatsaechlich 26; sie war ueber mehrere Zuege hochgezaehlt worden, und schon ihr Ausgangswert war es — **deshalb wird hier gezaehlt und nie fortgeschrieben.**
 **Verlauf:** [Verlauf des Standes](#verlauf-des-standes) — 73 Eintraege, juengster zuerst
 **Pfad:** novaberg/docs/novaberg-fundliste.md
 
@@ -232,6 +232,14 @@ Analog zum Kraft-1-Stichtag: ab wann eine Partition brauchbar ist. Kein Backfill
 ---
 
 ## Offen
+
+- **2026-08-24** — **Mit dem Fall der Wand wird der Burst zum bindenden Riegel — und er ist ein Cooldown, kein Rate-Limit.** Die ersten 90 Sekunden nach dem Umbau zeigen den neuen Takt vollstaendig: **vier Riegelketten** (17:56:37 · 17:57:08 · 17:57:38 · 17:58:08 — genau alle 30 s, wie gebaut), **zwei Impulse** (17:57:59, 17:59:33), danach **Stille**. Gemessen um 18:17 UTC: `shadow_burst_count:meister = 2` bei TTL **2459 s**, waehrend `last_activity` noch 6042 s traegt — die Wand steht also nicht, Pruefung 1 blockt.
+
+  **`_burst_erhoehen` setzt die TTL bei jedem Inkrement neu** (`incr` + `expire(key, BURST_TTL)`). Damit heisst `MAX_BURST=2` nicht *zwei je Stunde*, sondern *zwei, dann eine volle Stunde ab dem letzten*. Die beiden Nicht-Wand-Luecken des Bestands bestaetigen es: **1:00:33 und 1:00:17**.
+
+  **Die Groessenordnung ist unvermessen und sie ist gross.** Der Takt erlaubt rechnerisch zwei Impulse je Stunde, also bis zu 48 am Tag; im Bestand waren es **15 in zwei Tagen**. Wieviel davon Riegel 2 wegnimmt (er blockt 78 %), sagt keine Rechnung — das ist die Messung, die einen Betriebstag braucht. **Vor ihr wird an `MAX_BURST` und `BURST_TTL` nichts gedreht.**
+
+  **Und Pruefung 1 steht vor dem Ausloeser** — sperrt sie, wird nicht einmal ein Trigger vergeben und die Riegelkette schreibt keine Zeile. Die Luecken des Burst sehen im Protokoll deshalb genauso aus wie die der Wand; unterschieden werden sie allein an ihrer Laenge (`labor/2026-08-24_wand_gegen_burst.sql`).
 
 - **2026-08-24** — **`last_activity` misst nicht mehr, was sein Name sagt — und tat es schon vorher nicht.** Der Name verspricht *wann der Mensch zuletzt gesprochen hat*; geschrieben wird er von **drei** Stellen: dem Nutzer-Turn (`prompt_consumer.py:213`), dem Timeout-Zweig und seit dem 24.08.2026 dem Stille-Zweig der Zustellung. Die beiden letzten schreiben ihn, um ihren **eigenen Takt** zu halten, nicht weil jemand gesprochen hat. **Der Bruch ist aelter als der heutige Bau** — der Timeout-Zweig tat es schon —, aber der Stille-Zweig weitet ihn aus: Der Schluessel laeuft jetzt **nie mehr ab**, solange eine Verbindung offen ist. Wer ihn als *letzte Menschenaeusserung* liest, liest falsch; die richtige Quelle ist die `turn_roh`-Zeile mit `herkunft='nutzer_turn'`. **Nicht im Vorbeigehen repariert** — ein eigener Taktschluessel waere die Abhilfe.
 - **2026-08-24** — **Ein Zeugen-Docstring beschreibt eine Abhaengigkeit, die es seit Chat 125 nicht mehr gibt.** `tests/test_pixie_aging.py:52` nennt als Operationen der Kandidaten-Sammlung *„scan_iter (Schedule-Keys und last_activity)"*. `_aktive_user_ids` entscheidet seit Chat 125 ueber `AKTIVES_PAAR_USER_ID` und liest `last_activity` nicht mehr; im Produktivcode steht der Name nur noch in einem historischen Kommentar. Gefunden von der zweiten Kontrolle ueber alle Leser und Schreiber (12 Treffer im Baum), nicht vom Bau.

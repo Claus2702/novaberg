@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Konzept — Novas Zustand zwischen den Begegnungen, ob sie zugeht und in welchem Zustand sie ihrem Menschen begegnet
-**Stand:** 24. August 2026 (v0.19 — **die Zwei-Stunden-Wand ist gefallen**: dritter Auslöser `stille` statt `else: continue`, im Betrieb belegt; §2.5. Davor am selben Tag, v0.18 — der Salienz-Anschub in §2.5 ist **zurückgestellt**: Nähe und Initiative reichen; drei Messungen desselben Tages stehen dabei, darunter die entscheidende — Riegel 2 lässt seit dem 24.08. 21,7 % durch, wo er von seinem Bau bis zum 23.08. nie öffnete). Davor: 15. August 2026 (v0.17)
+**Stand:** 24. August 2026 (v0.20 — **die Zwei-Stunden-Wand ist gefallen**, und der Burst steht an ihrer Stelle; die Größenordnung des neuen Takts ist unvermessen. Davor am selben Tag, v0.19 — die Wand ist gefallen: dritter Auslöser `stille` statt `else: continue`, im Betrieb belegt; §2.5. Davor am selben Tag, v0.18 — der Salienz-Anschub in §2.5 ist **zurückgestellt**: Nähe und Initiative reichen; drei Messungen desselben Tages stehen dabei, darunter die entscheidende — Riegel 2 lässt seit dem 24.08. 21,7 % durch, wo er von seinem Bau bis zum 23.08. nie öffnete). Davor: 15. August 2026 (v0.17)
 **Pfad:** novaberg/docs/novaberg-eigenzeit_k.md
 **Typ:** Konzept (`_k`)
 **Status:** 🔶 Konzept — **fünf der sechs Bauteile gebaut** (E, F, C, A, B); **D fehlt** und ist ohne die Haltungs-Persistenz nicht baubar. C trägt eine benannte offene Kante (der Fall ohne Bezug), B wartet auf seinen ersten Eintrag mit Level.
@@ -294,6 +294,14 @@ beendet.
 > Auslöser ist verbraucht, die Schleife fällt in den bekannten Takt zurück.
 >
 > Zeugen: `tests/test_stille_ausloeser.py` (6), Gegenprobe **4 vorhergesagt / 4 gezählt**.
+>
+> **Was an die Stelle der Wand trat, stand sofort da: Prüfung 1, der Burst.** Vier Riegelketten in
+> neunzig Sekunden, zwei Impulse, dann Stille — um 18:17 UTC `shadow_burst_count = 2` bei TTL
+> 2459 s, während `last_activity` noch 6042 s trägt. **Er ist ein Cooldown, kein Rate-Limit:**
+> `_burst_erhoehen` setzt die TTL bei jedem Inkrement neu, `MAX_BURST=2` heißt *zwei, dann eine
+> volle Stunde ab dem letzten*. Rechnerisch sind das bis zu 48 Impulse am Tag gegen 15 in zwei
+> Tagen im Bestand; wieviel Riegel 2 davon wegnimmt, braucht einen Betriebstag. **Vor dieser
+> Messung wird an den beiden Konstanten nichts gedreht.**
 
 ### ~~Die Salienz ist ein Anschub, kein Riegel~~ — der Anschub ist am 24.08.2026 zurückgestellt
 

@@ -1,6 +1,6 @@
 # Novaberg — Roadmap (Projektchronik)
 
-**Stand:** 24. August 2026, 18:05 UTC
+**Stand:** 24. August 2026, 18:20 UTC
 **Pfad:** novaberg/docs/novaberg-roadmap.md
 **Single Source of Truth für abgeschlossene Arbeit.**
 **Offene Punkte → novaberg-backlog.md**
@@ -13,7 +13,7 @@ Die Kopfzeile stand bis Chat 109 auf „Chat 93, 21. Mai 2026" — 15 Chats hint
 
 ## Chats 3–20: Grundlagen (März 2026)
 
-### 24.08.2026, 18:05 UTC — Die Uhr faellt, und die Riegel trugen immer schon laenger
+### 24.08.2026, 18:20 UTC — Die Uhr faellt, und der Burst steht sofort an ihrer Stelle
 
 `last_activity` traegt eine TTL von zwei Stunden und wird **nur** vom Nutzer-Turn gesetzt.
 War der Schluessel fort, ging die Zustellschleife jeden Zyklus in `else: continue` — die
@@ -60,6 +60,28 @@ Suite 2218 → **2224 gruen, 0 uebersprungen**. Sechs Zeugen, **Gegenprobe 4 vor
 > zerlegen — ein groesserer Eingriff als der, den sie pruefen sollen. Der Verhaltensbeleg ist die
 > Messung oben. Was die Zeugen leisten, ist das andere: Sie werden rot, wenn jemand die Wand
 > zurueckbaut.
+
+**Und der Nachfolger stand sofort da: der Burst.** Die ersten neunzig Sekunden zeigen den neuen
+Takt vollstaendig — vier Riegelketten (17:56:37 · 17:57:08 · 17:57:38 · 17:58:08, genau alle
+dreissig Sekunden wie gebaut), zwei Impulse (17:57:59, 17:59:33), danach Stille. Um 18:17 UTC
+nachgemessen: `shadow_burst_count = 2` bei TTL **2459 s**, waehrend `last_activity` noch 6042 s
+traegt. **Die Wand steht nicht — Pruefung 1 blockt.**
+
+**Und das Burst-Limit ist ein Cooldown, kein Rate-Limit.** `_burst_erhoehen` setzt die TTL bei
+jedem Inkrement neu; `MAX_BURST=2` heisst damit nicht *zwei je Stunde*, sondern *zwei, dann eine
+volle Stunde ab dem letzten*. Die beiden Nicht-Wand-Luecken des Bestands bestaetigen es auf die
+Sekunde: **1:00:33 und 1:00:17**.
+
+> **Die Groessenordnung ist unvermessen, und sie ist gross.** Der Takt erlaubt rechnerisch zwei
+> Impulse je Stunde — bis zu 48 am Tag, gegen **15 in zwei Tagen** im Bestand. Wieviel davon
+> Riegel 2 wegnimmt (er blockt 78 %), sagt keine Rechnung. **An `MAX_BURST` und `BURST_TTL` wird
+> vor dieser Messung nichts gedreht** — eine Aenderung an der Groesse, die man messen will, macht
+> die Messung wertlos.
+>
+> Erschwert wird sie durch die Reihenfolge: **Pruefung 1 steht vor dem Ausloeser.** Sperrt der
+> Burst, wird nicht einmal ein Trigger vergeben und die Riegelkette schreibt keine Zeile — seine
+> Luecken sehen im Protokoll aus wie die der Wand. Getrennt werden sie an ihrer Laenge, und das
+> tut `labor/2026-08-24_wand_gegen_burst.sql`.
 
 ---
 
