@@ -1,6 +1,6 @@
 # Novaberg — Roadmap (Projektchronik)
 
-**Stand:** 23. August 2026, 23:15 UTC
+**Stand:** 24. August 2026, 12:10 UTC
 **Pfad:** novaberg/docs/novaberg-roadmap.md
 **Single Source of Truth für abgeschlossene Arbeit.**
 **Offene Punkte → novaberg-backlog.md**
@@ -12,6 +12,76 @@ Die Kopfzeile stand bis Chat 109 auf „Chat 93, 21. Mai 2026" — 15 Chats hint
 ---
 
 ## Chats 3–20: Grundlagen (März 2026)
+
+### 24.08.2026, 12:10 UTC — Die Salienz-Skala, und der Verstaerker, der sich selbst fuetterte
+
+Aus der Frage nach einem Salienz-Tor fuer die Eigeninitiative wurde eine Vermessung der ganzen
+Kette. Der Anlass: 462 Stapeleintraege lagen in einem Band von **0,056** Breite, 87 davon auf
+exakt 1,000 — eine Auswahl unter Gleichen ist keine.
+
+**Die Quelle war nie das Problem.** Das Modell verteilt ueber 3234 Bewertungen sauber von 0,10
+bis 0,95 in 18 Stufen. Die Spreizung ging danach verloren, in drei gestapelten Stauchungen:
+
+| | Was sie tut | Gemessen |
+|---|---|---|
+| **Der Zuschlag kann nur heben** | `(1 + z)`, und `z` wird nie null | 0,060–0,285 |
+| **Zwei Pfade, genommen wird der groessere** | ein Maximum ist systematisch groesser | Eigen-Pfad gewinnt in 92,3 % |
+| **Kappung bei 1,0** | alles darueber wird ununterscheidbar | **534 von 2502 = 21,3 %** |
+| **Die Speicherkurve** | `sin(roh·π/2)^0,5` staucht ein zweites Mal | roh 0,7–1,0 → 5,6 % der Ausgabe |
+
+Die Rechnung an der haeufigsten Modellbewertung: **0,85 × 1,159 = 0,985.** Der haeufigste Wert des
+Systems landet an der Kappungsgrenze, bevor irgendetwas anderes wirkt. Und das Bild von roh 0,7–1,0
+ist **0,9439–1,0000** — exakt das Band, das der Stapel trug.
+
+**Der groesste Anteil war aber ein Defekt, kein Kalibrierfehler.** Der Salienz-Knoten las seine
+Eingabe aus demselben Feld, in das er sein Ergebnis schrieb, und er laeuft **je Segment**. Bei
+mehrsegmentigen Turns — 2027 gegen 713 — wurde der Verstaerker erneut angewandt; ein
+Fuenf-Segment-Turn bekam `(1 + z)^5`.
+
+> **Gefunden hat es die Gegenrichtung.** Solange der Ausdruck nach oben multiplizierte, sah die
+> Wiederholung wie Saettigung aus und wurde als solche diagnostiziert. Erst als die normierte
+> Formel nach unten zeigte, meldete ein Zeuge `0,5 / 1,3² = 0,2958` — und die zweite Anwendung
+> stand da. **Ein Verstaerker, der in dieselbe Richtung irrt wie der gesuchte Defekt, wird zu
+> seiner Erklaerung.**
+
+**Gebaut:** Der Eigen-Pfad ist durch `(1 + MAX_ZUSCHLAG)` normiert und damit auf [0,1]
+geschlossen. Die Modellbewertung steht in `salienz_modell` und wird nicht mehr ueberschrieben.
+Der Kurvenexponent geht von 0,5 auf 1,1.
+
+| | alt | neu |
+|---|---|---|
+| gekappt | 21,31 % | **1,48 %** |
+| ueber 0,9 | 47,17 % | **4,35 %** |
+| verschiedene Werte | 159 | **215** |
+| Spanne gespeichert | 0,5872 | **0,8928** |
+| genau 1,0 | 534 | **37** |
+
+**Der Exponent ist dabei verhaltensneutral, und das ist eine eigene Erkenntnis.** Die drei
+KZG-Schwellen sind Bilder derselben Rohwerte durch dieselbe monotone Kurve — `f(e) >= f(0,7)` gilt
+genau dann, wenn `e >= 0,7`, fuer **jeden** Exponenten. Gemessen sind die Verteilungen bei 0,5 und
+1,1 zeichengleich. Was er aendert, ist allein die Ablesbarkeit.
+
+**Was die Umstellung nach sich zog, war groesser als sie selbst: die TTL-Staffelung war faktisch
+abgeschaltet.** 7 / 14 / 30 Tage, und **72,3 %** aller Gedaechtniseintraege bekamen die 30-Tage-
+Frist. Jetzt 50 / 34 / 12. Mitgezogen wurden die abgeleiteten Konstanten, weil sie ihre Bedeutung
+behalten sollen — die drei Schwellen (abgerundet, weil die Tore mit `>=` pruefen),
+`DELEGATION_SALIENZ_SCHWELLE` 0,60 → 0,4615 und `QUEUE_DECAY_RATE` 0,0393 → 0,03314.
+
+**Ein Zeuge fing dabei einen Fehler im Nachziehen:** Die Schwelle war auf 0.41952
+**aufgerundet**, und die Tore pruefen mit `>=` — eine Bewertung von exakt 0,30 waere abgewiesen
+worden. Genau der Live-Defekt vom 28.07.2026, fuer den der Zeuge gebaut wurde.
+
+**Nicht angefasst:** der Pflicht-Pfad. Sein Faktor ist das Charakter-Rad, und das fuellt gemessen
+ueber 148 Erhebungen nur **0,86–1,45** von deklarierten 0,5–1,5 aus. Der Grund liegt in den
+Speichen: **Drei tragen 0,23 Zugbudget und bewegen sich fast nicht** — `aufmerksamkeit` steht
+immer bei ~0,92, `gleichgueltig` und `langeweile` bei ~0. Umgekehrt bewegen sich `distanz` und
+`misstrauen` stark und tragen zusammen **0,05**. Das Budget liegt auf den Speichen, die nicht
+unterscheiden.
+
+Suite 2213 → **2218 gruen, 0 uebersprungen.** Der Bestand steht noch auf der alten Skala; der
+Wartungslauf ist vorbereitet und **nicht ausgefuehrt**.
+
+---
 
 ### 23.08.2026, 23:15 UTC — Eine Zeile hielt Novas Eigeninitiative acht Tage geschlossen
 

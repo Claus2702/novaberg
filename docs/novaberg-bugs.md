@@ -1,6 +1,6 @@
 # Novaberg — Bugs & Limitationen
 
-**Stand:** 23. August 2026, 23:15 UTC (**der Impulsweg: die Naht zwischen GV-Knoten und Haltungsstand behoben** — Riegel 2 entscheidet zum ersten Mal auf einer Messung; davor 21:55 UTC: **Rang 5 abgearbeitet** — funf Knoten, sieben Eintraege behandelt; 47 offen / 38 nicht offen von 85 Abschnitten, gezaehlt ueber die erste `Zustand:`-Zeile je Abschnitt mit Kennung)
+**Stand:** 24. August 2026, 12:10 UTC (**die Salienz-Skala: `KZG-SALIENZ-GESAETTIGT` behoben und `SALIENZ-RECHNET-AUF-IHREM-ERGEBNIS` dabei gefunden** — der Bestand steht noch auf der alten Skala, der Wartungslauf ist vorbereitet und nicht ausgefuehrt; davor 23.08.2026, 23:15 UTC: **der Impulsweg: die Naht zwischen GV-Knoten und Haltungsstand behoben** — Riegel 2 entscheidet zum ersten Mal auf einer Messung; davor 21:55 UTC: **Rang 5 abgearbeitet** — funf Knoten, sieben Eintraege behandelt; 46 offen / 40 nicht offen von 86 Abschnitten, gezaehlt ueber die erste `Zustand:`-Zeile je Abschnitt mit Kennung)
 **Verlauf:** [Verlauf des Standes](#verlauf-des-standes) — 29 Eintraege, juengster zuerst
 
 ---
@@ -62,7 +62,7 @@ gehoeren deshalb nicht in dieselbe Reihe wie ein Defekt mit Codeort.
 
 **Die Folge ist der Stillstand des Impulswegs, und er ist auf den Tag datierbar.** Der Leser gab auf **jedem** Turn `(None, "gv_ohne_lauf")` zurueck; Riegel 2 der Zustellung behandelt ein fehlendes Fuehrungsmass als *unbekannt* und laesst dann keinen Einwurf durch. Riegel und Leser kamen im **selben Commit** (`5bd2ab4`, 15.08.2026) — und der letzte Impuls-Turn stammt vom **15.08.2026**. Der Riegel hat seit seinem Bau nie geoeffnet.
 
-**Was er gekostet hat, ist eine Zahl.** Ueber 595 protokollierte Fuehrungsmasse lagen **217 (36,5 %)** bei oder unter `GV_INITIATIVE_SCHWELLE` = −0,05, also im Bereich *Nova fuehrt*. So oft haette der Riegel geoeffnet.
+**Was er gekostet hat, ist eine Zahl.** Ueber 595 protokollierte Fuehrungsmasse lagen **217 (36,5 %)** bei oder unter `GV_INITIATIVE_SCHWELLE` = −0,05, also im Bereich *Nova fuehrt*. So oft haette der Riegel geoeffnet. Messwerkzeug: `labor/2026-08-23_fuehrungsmass_verteilung.sql`.
 
 > **Warum acht Tage lang nichts anschlug, gehoert zum Befund.** Der Riegel schliesst bei Unbekanntem, und das ist richtig so (`novaberg-eigenzeit_k.md` §2.5: *„Der Ausfall oeffnete den Schalter, statt ihn zu schliessen"*). Ein dauerhaft geschlossener Riegel sieht deshalb aus wie eine Figur, die gerade nicht zugehen will — und `gv_ohne_lauf` ist ein vorgesehener Grund, keine Fehlermeldung. **Ein Ausfall, der sich als gueltige Entscheidung tarnt, hat keinen Melder.**
 
@@ -516,13 +516,64 @@ Zeugen: `tests/test_fuehrungsmass_naht.py::DreiAusfaelleDreiNamenTest` (5), daru
 
 ---
 
-### `KZG-SALIENZ-GESAETTIGT` — gesaettigt, also rangiert sie nichts
+### `KZG-SALIENZ-GESAETTIGT` — behoben am 24.08.2026
 
-**Zustand:** offen, unbelegt — gegen HEAD `00c16b6` gehalten am 20.08.2026. braucht die Verteilung ueber den heutigen Bestand.
+**Zustand:** behoben. **Die Ursache war nicht eine, sondern drei gestapelte Stauchungen, und die groesste war ein Defekt.**
+
+1. **Der Eigen-Pfad multiplizierte ungebremst.** `s · (1 + a·0,3)` **muss** die Obergrenze ueberschreiten, sobald beide Eingaenge hoch sind; ueber 2506 protokollierte Turns lief das in **21,3 %** in die Kappung, und danach trugen 534 Turns denselben Wert 1,0. Seit dem 24.08.2026 lautet er `s · (1 + a·0,3) / 1,3` und ist auf [0,1] **geschlossen** — die Kappung faellt auf 1,5 %.
+2. **Die Speicherkurve stauchte ein zweites Mal.** `sin(roh·π/2)^0,5` bildete roh 0,7–1,0 auf **0,9439–1,0000** ab: 30 % der Eingabe auf 5,6 % der Ausgabe. Genau dieses Band trug der ganze Bestand — und der Nebenbefund unten (20 Eintraege bitgleich auf `0.9439314192187734`) ist sein Fingerabdruck: Das ist `sin(0,7·π/2)^0,5`. Exponent jetzt **1,1**.
+3. **Der Knoten rechnete auf seinem eigenen Ergebnis weiter** — eigene Kennung `SALIENZ-RECHNET-AUF-IHREM-ERGEBNIS`, siehe dort. Bei mehrsegmentigen Turns wurde der Verstaerker je Segment erneut angewandt; **2027 Turns mit zwei oder mehr Segmenten gegen 713 mit einem.**
+
+**Gemessen ueber dieselben 2506 Turns, beide Ketten gerechnet:**
+
+| | alt | neu |
+|---|---|---|
+| gekappt | 21,31 % | **1,48 %** |
+| Mittel effektiv | 0,8133 | 0,6524 |
+| ueber 0,9 | 47,17 % | **4,35 %** |
+| verschiedene Werte | 159 | **215** |
+| Spanne gespeichert | 0,5872 | **0,8928** |
+| genau 1,0 | 534 | **37** |
+
+Die verbliebenen 37 sind der **Pflicht-Pfad** (`salienz_human × nutzer_gewichtung`), der unveraendert ungebremst multipliziert. Er wartet auf die Vermessung des Charakter-Rads: Dessen Faktor fuellt gemessen nur **0,86–1,45** von deklarierten 0,5–1,5 aus, und eine Normierung gegen einen nie erreichten Rand zementierte die Schieflage.
+
+> **Ein Nebeneffekt wiegt schwerer als die Zahl selbst: die TTL-Staffelung war faktisch abgeschaltet.** Sie teilt in 7 / 14 / 30 Tage — und **72,3 %** aller Eintraege bekamen die 30-Tage-Frist. Nach der Umstellung sind es 50 / 34 / 12. Das aendert, wie lange das Kurzzeitgedaechtnis Dinge haelt, und zwar deutlich mehr als der Wert.
+
+Mitgezogen wurden die abgeleiteten Konstanten, weil sie ihre **Bedeutung** behalten sollen: die drei KZG-Schwellen als Bilder von roh 0,3 / 0,5 / 0,7 unter dem neuen Exponenten (**abgerundet**, weil die Tore mit `>=` pruefen), `DELEGATION_SALIENZ_SCHWELLE` 0,60 → 0,4615 (ohne den Nachzug waere das Tor von 89,4 % auf 65,1 % gekippt) und `QUEUE_DECAY_RATE` 0,0393 → 0,03314 (sonst faellt derselbe Bestand nach 25,3 statt 30 Tagen).
+
+`LZG_KNOTEN_DAEMPFUNG_EXP` bleibt bei 0,5: Der Knoten hat die Lage nicht — **0,0 %** der 2927 Knoten stehen am Cap, bei im Mittel 5,36 Verstaerkungen. Dort daempft die Kurve einen echten Akkumulator.
+
+Messwerkzeuge: `labor/2026-08-24_salienz_spektrum.sql` (wo die Skala ihre Spreizung verliert, Stufe fuer Stufe) und `labor/2026-08-24_salienz_neue_kette.py` (beide Ketten ueber dieselben Turns — die Tabelle oben stammt daraus). Zeugen: `tests/test_salienz_formel.py::DerEigenPfadIstGeschlossenTest` (Gitter 21×21, Monotonie in beiden Eingaengen), `tests/test_segment_durchstich.py` (Idempotenz). 15 bestehende Zeugen nachgezogen, drei davon von Zahlen auf **Konstanten** umgestellt, damit sie den naechsten Exponentenwechsel ueberleben. Suite `Ran 2218 tests — OK`.
+
+> **Der Bestand steht noch auf der alten Skala.** Der Wartungslauf ist vorbereitet und **nicht ausgefuehrt**: `labor/2026-08-24_salienz_wartungslauf.py`, Trockenlauf ist die Vorgabe. 5894 Zeilen umrechenbar, 1042 unangetastet — die gekappten, deren wahrer Wert verloren ist.
+
+---
+
+<details><summary>Der Befund von 2026-08-16, unveraendert</summary>
 
 **Befund (16.08.2026), aus der Fundliste uebernommen.** **Die KZG-Salienz ist gesättigt und rangiert deshalb nichts.** Gemessen über den gesamten Bestand des produktiven Paares: `beobachter='user'` **141 Einträge**, Spanne 0,67 bis 1,00, Mittel 0,942, **87 % über 0,90**; `beobachter='assistant'` **2061 Einträge**, Spanne 0,72 bis 1,00, Mittel 0,982, **99 % über 0,90**. Die volle Spanne ist damit Faktor 1,49, im häufigen Bereich Faktor 1,11. Wo die Salienz gegen eine Größe mit größerer Spanne antritt, entscheidet immer die andere — beim Adaptiv-Hash gegen das Zeitgewicht (Faktor 200) schon ab etwa zwei Tagen Altersunterschied. **Der Fund reicht über den Charakter-Hash hinaus:** Er betrifft jede Stelle, die nach Salienz priorisiert. Aufgekommen bei der Frage, ob die zwanzig Einträge nach roher Salienz gewählt werden sollen — dieselbe Messung hat sie beantwortet. Nebenbefund: **20 Einträge tragen bitgleich `0.9439314192187734`**; zwanzig identische Gleitkommazahlen sind kein Zufall.
 
+</details>
+
 **Geschlossen, wenn** Die KZG-Salienz streut wieder ueber ihren Wertebereich und taugt zum Rangieren.
+
+---
+
+### `SALIENZ-RECHNET-AUF-IHREM-ERGEBNIS` — behoben am 24.08.2026
+
+**Zustand:** behoben. Der Salienz-Knoten las seine Eingabe aus `salienz_obj["salienz"]` — und schrieb sein Ergebnis in denselben Schluessel (`salience.py`, `salienz_obj["salienz"] = ergebnis.effektiv`). Der Knoten laeuft **je Segment**; ab dem zweiten rechnete er auf seinem eigenen Ausgang weiter.
+
+**Befund (24.08.2026).** Das verletzt `novaberg-convention-abgeleitete-werte.md` **Regel 2** (*eine Eingabe wird nie aus dem Ergebnis berechnet*) und **Regel 4** (*zweimal rechnen aendert nichts*).
+
+**Latent, weil die alte Formel mit `(1 + zuschlag)` multiplizierte:** Bei ruhigem Turn war der Faktor 1,0 und die Wiederholung unsichtbar. Bei Erregung war sie es nie — ein Fuenf-Segment-Turn bekam `(1 + z)^5`. **Mehrsegmentige Turns sind die Mehrheit: 2027 gegen 713.**
+
+**Gefunden hat es die Gegenrichtung.** Erst als die normierte Formel nach unten zeigte, wurde die Wiederholung sichtbar: Ein Zeuge meldete `0,5 / 1,3² = 0,2958` statt `0,3846`. Solange der Fehler nach oben wirkte, sah er wie Saettigung aus — und wurde als solche diagnostiziert.
+
+Die Modellbewertung steht jetzt in **`salienz_modell`** und wird einmal festgehalten; `salienz` traegt das Ergebnis. Zeugen: `tests/test_segment_durchstich.py::test_die_rechnung_ist_idempotent_ueber_die_segmente` (ein, zwei, drei Segmente ergeben denselben Wert) und `::test_die_modellbewertung_bleibt_unangetastet`. Gegenprobe 2 vorhergesagt / 2 gezaehlt.
+
+> **Ein Verstaerker, der in dieselbe Richtung irrt wie der Defekt, den man sucht, wird zu seiner Erklaerung.** Die Saettigung wurde zuerst allein der Zuschlagshoehe zugeschrieben — die dazu gerechneten Zahlen (*0,30 ist zu gross, 0,20 ist die Kante*) massen einen Verstaerker, dessen wahre Wirkung unbekannt war. `SALIENZ_EREGUNG_MAX_ZUSCHLAG` steht deshalb unveraendert bei 0,30 und muss neu gemessen werden.
+
+**Geschlossen, wenn** Die Zahl der Segmente aendert das Ergebnis nicht.
 
 ---
 

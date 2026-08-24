@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Konzept — Formel und Herleitung der Salienz für beide Beobachter
-**Stand:** 31. Juli 2026 (§5 **die Speichen-Reihenfolge ist eine Gegenpol-Anordnung** — Paartabelle ergänzt, die frühere Ordnung war die Aufzählung beider Listen und stellte `Wissbegier` gegen `Distanz`. Für den Faktor gleichgültig, für die Fläche des Haltungsraums tragend. Zuvor: 27. Juli 2026, Chat 112 — Formel gebaut und live abgenommen)
+**Stand:** 24. August 2026 (§4 **der Eigen-Pfad ist normiert** — der Ausdruck ist auf [0,1] geschlossen, die Kappung faellt von 21,3 % auf 1,5 %). Davor: 31. Juli 2026 (§5 **die Speichen-Reihenfolge ist eine Gegenpol-Anordnung** — Paartabelle ergänzt, die frühere Ordnung war die Aufzählung beider Listen und stellte `Wissbegier` gegen `Distanz`. Für den Faktor gleichgültig, für die Fläche des Haltungsraums tragend. Zuvor: 27. Juli 2026, Chat 112 — Formel gebaut und live abgenommen)
 **Pfad:** novaberg/docs/novaberg-salienz-berechnung_k.md
 **Typ:** Konzept
 **Voraussetzung:** `novaberg-convention-abgeleitete-werte.md`
@@ -59,9 +59,24 @@ Die Begründung ist kognitiv: Was hängen bleibt, sind die aussagekräftigen Tei
 salienz_charakter = max( sprachlich , ziel_gravitation ,
                          emotionale_gravitation , neugier_bezug )
                     × (1 + erregungs_zuschlag)
+                    ÷ (1 + SALIENZ_EREGUNG_MAX_ZUSCHLAG)      ← seit 24.08.2026
 ```
 
 Wieder `max()`, aus demselben Grund: mehrere Gründe, einer genügt.
+
+### Die Normierung — seit dem 24.08.2026
+
+**Ohne den Teiler verlässt der Ausdruck seine eigene Skala, und zwar zwangsläufig.** Beide Eingänge liegen in [0, 1], das Produkt bis zu `1 × 1,3` — gemessen über 2506 protokollierte Turns lief das in **21,3 %** der Fälle in die Kappung. Danach trugen 534 Turns denselben Wert 1,0 und waren untereinander nicht mehr unterscheidbar: **Aus einem Messwert wurde eine Marke.**
+
+Mit dem Teiler ist der Ausdruck auf [0, 1] **geschlossen**, und die Kappung ist wieder das, was sie sein soll — eine Sicherung, kein Formteil. Gemessen fällt sie auf 1,5 %; der Rest kommt aus dem Pflicht-Pfad, der unverändert ungebremst multipliziert.
+
+**Die Bedeutung der Zahl ändert sich dabei, und das ist Absicht.** Die volle Salienz erreicht nur, wer **beides** trägt: volle Bewertung und volle Erregung. Ein ruhiger Turn behält `1/(1+k)` seiner Bewertung — **die Erregung vergrößert nicht mehr, sie teilt die Skala mit**.
+
+> **Die Einseitigkeit bleibt.** Der Zuschlag hebt gegenüber einem ruhigen Turn derselben Bewertung und löscht nichts aus; aus einer belanglosen Aussage macht Erregung weiter keine bedeutsame. Was sich verschiebt, ist der **Bezugspunkt**: vorher der ruhige Turn, jetzt der voll erregte.
+
+**Was der Teiler nicht behoben hat und was daneben stand:** Der Knoten las seine Eingabe aus demselben Feld, in das er sein Ergebnis schrieb — bei mehrsegmentigen Turns wurde der Verstärker je Segment erneut angewandt, und die sind mit 2027 gegen 713 die Mehrheit. Solange der Ausdruck nach oben multiplizierte, sah das wie Sättigung aus; erst der Teiler machte es sichtbar. Die Modellbewertung steht seither in `salienz_modell` (`SALIENZ-RECHNET-AUF-IHREM-ERGEBNIS`).
+
+**Der Pflicht-Pfad ist bewusst nicht mitgezogen.** Sein Faktor ist das Charakter-Rad, und das füllt gemessen nur **0,86–1,45** von deklarierten 0,5–1,5 aus — 95 % des Zugbudgets nach oben ausgeschöpft, 56 % nach unten. Eine Normierung gegen einen Rand, den das Rad nie berührt, zementierte die Schieflage, statt sie zu beheben.
 
 | Antrieb | Formel | Stand (27.07.2026) |
 |---|---|---|

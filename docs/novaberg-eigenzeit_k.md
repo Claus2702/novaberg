@@ -250,6 +250,19 @@ Verhaeltnis        0,22 0,30 0,32 0,35 0,38
 
 **Zuwendung entscheidet das Ob, Initiative den Moment.** Die Häufigkeit entsteht aus dem Zusammenspiel aller Riegel und ist keine eigene Größe mehr.
 
+### Die Salienz ist ein Anschub, kein Riegel — entschieden am 24.08.2026
+
+**Ein Gegenstandsmaß darf Riegel 1 nicht überstimmen.** Der Vorschlag, ein Salienz-Tor vor die Kette zu setzen, das „die zwei oder drei stärksten" durchlässt, ist verworfen: Zuwendung ist eine **Eigenschaft der Person**, Salienz eine des **Gegenstands**, und die Ordnung oben — *erst die Person, dann der Gegenstand* — ist keine Bequemlichkeit. Eine Figur, die auf Abstand hält, bricht nicht aus sich heraus, weil ein Fund stark ist.
+
+**Wo die Salienz hingehört, ist Riegel 2** — als einziger beschreibt er eine *Häufigkeit*, und ein Gegenstand, der stark bewegt, macht diesen Moment eher zu ihrem. Aus dem Schalter würde eine verschiebbare Schwelle: `GV_INITIATIVE_SCHWELLE + f(salienz)`. Bei ruhigem Stapel bleibt es beim Schalter.
+
+**Zwei Fragen sind dabei offen und gehören zur Absicht, nicht zur Umsetzung:**
+
+- **Woher der Wert kommt.** Riegel 2 läuft **vor** dem Themen-Riegel; dort ist noch kein Eintrag gewählt. Der Anschub müsste aus dem Stapel als Ganzem stammen — das Maximum, die Spitze der Verteilung — und das ist eine andere Größe als „die Salienz dieses Gedankens".
+- **Die Skala trug ihn bis zum 24.08.2026 nicht.** Sie war gesättigt (`KZG-SALIENZ-GESAETTIGT`); die 462 Stapeleinträge tragen 32 verschiedene Werte, die obersten fünf zeichengleich. **Eine Umrechnung löst das nicht** — sie ist monoton und erhält Gleichstände. Der Anschub unterscheidet erst, wenn neue Einträge auf der feinen Skala entstanden sind.
+
+> **Deshalb die Reihenfolge: erst die Skala, dann messen, wie oft Riegel 2 überhaupt öffnet, dann der Anschub.** Die Zahl dafür gab es nie — der Riegel hat von seinem Bau am 15.08.2026 bis zum 23.08.2026 kein einziges Mal geöffnet (`FUEHRUNGSMASS-AUF-FALSCHER-EBENE`).
+
 Die Riegel 3, 6 und 7 bestehen bereits. Neu sind 1, 2, 4 und die Schwelle in 5.
 
 **Die Schwelle von Riegel 2 wurde nicht gesetzt, sondern gefunden.** `ei/dreischicht.py` macht aus demselben Führungsmaß seit Langem ein Bit — `initiative_bit(wert, GV_INITIATIVE_SCHWELLE)`, gegen 83 unabhängige Lesarten kalibriert, Bit 1 heißt *du treibst*. Genau der Schalter. Eine zweite Schwelle daneben hieße, dass zwei Stellen dasselbe Wort verschieden lesen — und die Fassung wandert: 34 Zeilen des Bestandes stehen noch auf −0,45, 424 auf −0,05, weshalb `skalenfassung()` sie je Zeile mitschreibt.
