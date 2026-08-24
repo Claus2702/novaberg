@@ -123,6 +123,44 @@ def version_fortschreiben(pfad: Path | str, wurzel: Path | str) -> str:
     return neu
 
 
+#: Ein Satz unter dieser Laenge traegt zu wenig, um ueber Neuheit zu
+#: entscheiden — *„Das ist bemerkenswert."* steht in vielen Dateien und sagt
+#: nichts darueber, ob der Absatz etwas beitraegt.
+SATZ_MINDESTLAENGE: int = 40
+
+
+def _saetze(text: str) -> list[str]:
+    """Zerlegt einen Text in vergleichbare Saetze — ohne Marken, ohne Leerraum.
+
+    Nachbedingung: Nur Saetze ab `SATZ_MINDESTLAENGE`; Fundmarken `[iN>]` und
+    mehrfacher Leerraum sind entfernt, damit ein Satz mit Marke und derselbe
+    ohne als gleich gelten.
+    """
+    ohne_marken: str = re.sub(r"\[i\d+>\]", " ", text)
+    roh: list[str] = re.split(r"(?<=[.!?])\s+", ohne_marken)
+    return [
+        s for s in (" ".join(x.split()) for x in roh)
+        if len(s) >= SATZ_MINDESTLAENGE
+    ]
+
+
+def _bringt_neues(absatz: str, text: str) -> bool:
+    """Traegt `absatz` mindestens einen Satz, der so nicht im Text steht?
+
+    Vorbedingung: beide nicht leer.
+    Nachbedingung: True, wenn wenigstens ein Satz des Absatzes im Text fehlt.
+        **Ein Absatz ohne vergleichbaren Satz gilt als neu** — er ist zu kurz
+        fuer das Urteil, und ein Riegel, der im Zweifel verwirft, verloere
+        echte Funde.
+    Fehlerfaelle: keine.
+    """
+    vorhanden: set[str] = set(_saetze(text))
+    eigene: list[str] = _saetze(absatz)
+    if not eigene:
+        return True
+    return any(s not in vorhanden for s in eigene)
+
+
 def absatz_bestimmen(text: str, kern: str) -> dict | None:
     """Fragt Absatz, Anker und Zusammenfassungs-Ergänzung in einem Aufruf ab.
 
@@ -216,6 +254,27 @@ def absatz_bestimmen(text: str, kern: str) -> dict | None:
             treffer, anker[:80],
         )
         return None
+
+    # **Der Absatz muss etwas mitbringen, das noch nicht dasteht.**
+    #
+    # Das Modell hat einen Ausgang fuer diesen Fall — `nach=None`, *steht
+    # schon da* — und benutzt ihn nicht zuverlaessig: Es schlaegt stattdessen
+    # einen Satz als Fund vor, der woertlich im Text liegt, und nennt als
+    # Anker den Satz davor. Der Schnitt setzt die Kopie dann direkt neben das
+    # Original, Marke dazwischen.
+    #
+    # `[gemessen]` — 24.08.2026 ueber 474 Wissensdateien: **17 woertlich
+    # doppelte Absaetze und 7 unmittelbar wiederholte Saetze in 22 Dateien**,
+    # fuenf davon in einem einzigen Durchgang entstanden. Der Fehler ist
+    # still: Die Paarungspruefung haelt (Marke und Eintrag stimmen), die
+    # Datei waechst, und nur wer den Absatz liest, sieht ihn doppelt.
+    if not _bringt_neues(absatz, text):
+        logger.info(
+            "Rückweg-Einarbeitung: der vorgeschlagene Absatz steht bereits "
+            "Satz für Satz im Text — als 'steht schon da' behandelt statt "
+            "als Einschub (%r)", absatz[:80],
+        )
+        return {"absatz": absatz, "nach": None, "ergaenzung": ergaenzung}
 
     return {"absatz": absatz, "nach": anker, "ergaenzung": ergaenzung}
 
