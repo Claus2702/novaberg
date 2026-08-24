@@ -2,8 +2,8 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Rohe, noch unklassifizierte Funde aus laufender Arbeit
-**Stand:** 24. August 2026, 19:45 UTC
-**Offen:** **65 Funde — gezaehlt am 24.08.2026, 19:45 UTC** (68 Fundzeilen im Abschnitt *Offen*, davon **drei** durchgestrichen; fuenf aus der Abschaltung des Telegram-Kanals, zwei aus der Messung des Impuls-Turns, zwoelf aus dem Zuschnitt des Anschubs — der **entschieden und zurueckgestellt** ist —, zwei aus dem Fall der Zwei-Stunden-Wand). Die Kopfzeile stand am 23.08. schon einmal auf 23 bei tatsaechlich 26; sie war ueber mehrere Zuege hochgezaehlt worden, und schon ihr Ausgangswert war es — **deshalb wird hier gezaehlt und nie fortgeschrieben.**
+**Stand:** 24. August 2026, 19:55 UTC
+**Offen:** **68 Funde — gezaehlt am 24.08.2026, 19:55 UTC** (71 Fundzeilen im Abschnitt *Offen*, davon **drei** durchgestrichen; drei aus dem Lesen der 26 Registerkandidaten; fuenf aus der Abschaltung des Telegram-Kanals, zwei aus der Messung des Impuls-Turns, zwoelf aus dem Zuschnitt des Anschubs — der **entschieden und zurueckgestellt** ist —, zwei aus dem Fall der Zwei-Stunden-Wand). Die Kopfzeile stand am 23.08. schon einmal auf 23 bei tatsaechlich 26; sie war ueber mehrere Zuege hochgezaehlt worden, und schon ihr Ausgangswert war es — **deshalb wird hier gezaehlt und nie fortgeschrieben.**
 **Verlauf:** [Verlauf des Standes](#verlauf-des-standes) — 73 Eintraege, juengster zuerst
 **Pfad:** novaberg/docs/novaberg-fundliste.md
 
@@ -232,6 +232,12 @@ Analog zum Kraft-1-Stichtag: ab wann eine Partition brauchbar ist. Kein Backfill
 ---
 
 ## Offen
+
+- **2026-08-24** — **`DESTILLAT-PERSPEKTIVE-VS-SUBJEKT` hat keinen eigenen Abschnitt im Defektregister.** Die Kennung wird dreimal als *Verwandt* genannt (`ZIELE-AUS-ZERRBILD`, zwei weitere) und nirgends gefuehrt. Damit ist der Grund, aus dem `ZIELE-AUS-ZERRBILD` offen steht, aus dem Register nicht zu beantworten.
+
+- **2026-08-24** — **Der Verweisbestand des Defektregisters ist unvermessen, und das Kriterium dafuer fehlt.** Ein Suchlauf ueber kennungsaehnliche Zeichenketten meldet rund 60 Verweise, die weder in `novaberg-bugs.md` noch in Backlog oder Fundliste aufloesen — die Zahl ist aber **nicht belastbar**: Der Ausdruck trennt echte Kennungen nicht von Textfragmenten (`NOTIZAUFTRAG-GEHT`, `LIMIT-ZUERST`, `SQL-NULL`). Belastbar ist genau ein Fall, von Hand geprueft: `DESTILLAT-PERSPEKTIVE-VS-SUBJEKT`, Zeile darueber.
+
+- **2026-08-24** — **Der Verlauf der Featureliste ist nicht sortiert.** Unter *Verlauf des Standes* steht der Eintrag von **19:40 UTC** hinter denen von 18:20 und 18:05; die Kopfzeile sagt *juengster zuerst*. Nicht im Vorbeigehen berichtigt.
 
 - **2026-08-24** — **Zwei Groessen waren verwechselt: Gefallen ist die stuendliche Decke, nicht der Burst-Cooldown.** `novaberg-gedankenkette_k.md` §2 trug seit dem 15.08.2026 *„Der Cooldown ist gefallen; die Frist von einer Stunde haengt seither am Burst-Zaehler, der sie als **Gedaechtnis** traegt und nicht als Sperre."* **Gemessen am 24.08.2026 ist er sehr wohl eine Sperre:** `_burst_erhoehen` setzt `BURST_TTL` bei jedem Inkrement neu, und `_burst_erlaubt` blockt in **Pruefung 1** — vor der Ausloeservergabe, weshalb die Riegelkette dann nicht einmal eine Zeile schreibt. Belegt durch zwei Zustellpausen von **exakt 1:00:33 und 1:00:17**, beide ohne Zutun des Menschen beendet.
 

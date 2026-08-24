@@ -2,8 +2,8 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Vollständiges Register aller Features mit Zustandsampel und Beleg
-**Stand:** 24. August 2026, 19:15 UTC
-**Verlauf:** [Verlauf des Standes](#verlauf-des-standes) — 67 Eintraege, juengster zuerst
+**Stand:** 24. August 2026, 19:55 UTC
+**Verlauf:** [Verlauf des Standes](#verlauf-des-standes) — 68 Eintraege, juengster zuerst
 **Pfad:** novaberg/docs/novaberg-featureliste.md
 **Typ:** Register
 **Quellen:** die 43 Konzeptdokumente, `novaberg-architecture.md`, die Moduldokumente, `novaberg-roadmap.md`, `novaberg-backlog.md`, `novaberg-bugs.md`, `novaberg-fundliste.md` — gehalten gegen Code und Produktivsystem
@@ -496,6 +496,10 @@ Ampelzeile  = eine Tabellenzeile, deren zweite Spalte genau eine der vier Farben
 ---
 
 ## Verlauf des Standes
+
+- **24. August 2026, 19:55 UTC** — **Keine Ampel wechselt, und das Defektregister verliert zwei Eintraege an die Wirklichkeit.** Die 26 Kandidaten der Triage sind gelesen — nicht die Zeile, der Block, und jeder gegen den heutigen Code gehalten. **Zwei waren behoben, ohne dass es jemand vermerkt hat:** `SALIENZ-OHNE-PIPELINE-LOG` seit Chat 111 (die Reproduktion des Befundes liefert heute **13.326 Zeilen** ueber drei Graphen statt der behaupteten null) und `HASH-DIRTY-SETZER-DRIFT` (drei statt fuenf Setzer, **alle** hinter dem `PIXIE_AKTIV`-Gate). **Sieben weitere trugen falsche Zahlen oder tote Zeiger** — darunter `HASH-DIRTY-WAISENKEYS`, wo aus zwei Waisenkeys **zwoelf** geworden sind und die Ursache eine andere ist als beschrieben.
+  **Der schwerere Befund liegt wieder am Werkzeug, nicht am Bestand:** Das Register traegt **fuenf** Eintragsformate, nicht vier — `**Status: Behoben Chat 112.**` setzt den Doppelpunkt *innerhalb* der Fettung, und ein **durchgestrichener** Zustand wurde als geltend gelesen. Beides korrigiert und gegengezaehlt: **115/103/45 → 114 offen / 106 zu / 43 ohne Zustandsangabe**. Dazu trug eine Kennung **zwei Abschnitte** — fuer jedes Werkzeug ein Eintrag, der andere faellt lautlos weg.
+  **Die zweite Kontrolle riss drei dieser Aussagen wieder ein**, und alle drei stammten daher, dem eigenen Werkzeug geglaubt statt gegen den Bestand gemessen zu haben: Ein Messgeraet, das als geloescht ins Register geschrieben war, **liegt da** (das Werkzeug loeste `labor/`-Anker gegen `novaberg/` auf, ein Geschwisterverzeichnis); die Berichtigung der doppelten Kennung **zerstoerte eine Abschnittsgrenze**, weil eine Ueberschrift hier kein Text ist; und von 13 Redis-Keys sind es **zwoelf** — der dreizehnte ist der einzige mit Leser und Loescher und deshalb transient. Alle drei berichtigt, die Wurzelaufloesung im Werkzeug mit. Nach dem Zug: **112 offen, 0 Kandidaten, 1 echter toter Pfad**. Suite `Ran 2224 tests — OK`, 0 uebersprungen. Ampelstand unveraendert: **225 Zeilen / 103 🟢 / 35 🟠 / 49 🔴 / 38 ⚫**.
 
 - **24. August 2026, 19:15 UTC** — **Die Liste ist gegen den Code gehalten, und sie steht besser da als das Register, gegen das sie zeigt.** Vier Kriterien statt 225 Lesungen: **kein ⚫ mit vorhandenem Code (0)**, **kein 🟢 mit totem Beleg (0)** — in beiden Richtungen nicht veraltet. Eine Ampel wechselt: **Tri-LLM + Connector-System 🔴 → 🟢**, weil `OVERRIDE-NACH-CONNECTOR-STATT-MODELL` am 23.08. behoben wurde und die Ampel vier Tage nachstand. Das Gespraechsarchiv bleibt 🔴 — 0 Zeilen und kein Writer, beides nachgemessen —, aber seine Kennung steht im **Backlog**, nicht im Register.
   **Zwei Befunde ueber die Register selbst:** Das Defektregister traegt **vier Eintragsformate**; jede bisherige Zaehlung kannte eines und meldete **57** statt **115** offener Eintraege, 45 davon ohne jede Zustandsangabe. Und **dreizehn rote Ampeln tragen keine Kennung** — sie sind weder zu bestaetigen noch zu widerlegen. **100 von 225 Zeilen erreichen kein Kriterium** und werden gezaehlt, nicht behauptet. Ampelstand: **225 Zeilen / 103 🟢 / 35 🟠 / 49 🔴 / 38 ⚫**.

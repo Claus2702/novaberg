@@ -1,6 +1,6 @@
 # Novaberg — Roadmap (Projektchronik)
 
-**Stand:** 24. August 2026, 19:15 UTC
+**Stand:** 24. August 2026, 19:55 UTC
 **Pfad:** novaberg/docs/novaberg-roadmap.md
 **Single Source of Truth für abgeschlossene Arbeit.**
 **Offene Punkte → novaberg-backlog.md**
@@ -12,6 +12,54 @@ Die Kopfzeile stand bis Chat 109 auf „Chat 93, 21. Mai 2026" — 15 Chats hint
 ---
 
 ## Chats 3–20: Grundlagen (März 2026)
+
+### 24.08.2026, 19:55 UTC — 26 Kandidaten gelesen: zwei waren still behoben, und das Register hat fünf Formate
+
+**Die Triage nach bewegtem Code hatte 27 Kandidaten benannt; einer war bereits gelesen, die übrigen 26 sind es jetzt.** Gelesen wurde je der **Block**, nicht die Zeile, und jeder gegen den heutigen Code (`9bcd214`) gehalten — nicht gegen die Erinnerung an ihn.
+
+**Zwei Einträge waren behoben, ohne dass es jemand vermerkt hat:**
+
+- **`SALIENZ-OHNE-PIPELINE-LOG`** — behoben in Chat 111, offen geführt bis heute. Der Docstring von `salienz_bewerten` nennt die Kennung als Anlass; **die Reproduktion des Befundes liefert das Gegenteil ihrer Behauptung.** Sie lautete *„es erscheint keine Zeile mit Salienz-Bezug"*: gezählt am Bestand **13.326 Zeilen** über alle drei Graphen (`character` 4887 · `user` 1933 · `agent` 1387 Berechnungen, dazu Spans, Switches und 10 Fehlerzeilen), erste am 27.07., letzte heute.
+- **`HASH-DIRTY-SETZER-DRIFT`** — der beschriebene Zustand existiert nicht mehr: **drei statt fünf** Setzer, `agents/promotion/agent.py` setzt gar nicht mehr, und **alle drei** stehen hinter dem `PIXIE_AKTIV`-Gate. Auch der eine, dessen fehlendes Gate der ganze Befund war. Ein Rest bleibt und ist kleiner als der Befund: die Meldung beim Übersprung ist weiter uneinheitlich, einmal `debug` mit Grund, einmal ein Kürzel in einer Sammelzeile, einmal ein blankes `pass`.
+
+**Sieben weitere trugen eine falsche Zahl oder einen toten Zeiger** — der Befund galt, seine Begründung nicht:
+
+| Eintrag | was nicht mehr stimmte |
+|---|---|
+| `HASH-DIRTY-WAISENKEYS` | „zwei Redis-Keys" — es sind **zwölf**, und die beiden genannten sind fort. Andere Ursache: nicht mehr ein Migrationsskript, sondern die **einelementige Paarliste** |
+| `FUNDSTELLE-MIT-BEHAELTERPFAD` | „heute nur eine Wurzel, also billig zu ändern" — es sind **drei**, und die dritte trägt bereits eine Bezeichnung |
+| `THINKING-NULL-FALLE-LATENT` | Zeilen 166/168/169 gibt es nicht; die Falle steht in `:317`, und die Eingangsseite hat sich **unabsichtlich** mit abgesichert |
+| `ZIELE-AUS-ZERRBILD` | „das steht bisher in keinem Bauteil" — die Ziel-Invalidierung ist seit Chat 125 gebaut |
+| `PIXIE-QUEUE-LAUF-DISSENS` | Teil (3), das `except Exception: pass`, ist behoben; (1) und (2) stehen |
+| `UNREGISTRIERTER-AGENT-GEWINNT` | die Verdrängung ist durch die Spurentrennung entfallen — der Auftrag gewinnt weiter und läuft ins Leere, blockiert aber nichts Schnelles |
+| `KONTAMINATIONSFILTER-TOT` · `DESTILLATION-LEERE-UEBERSCHRIFT` · `FALSCHE-BESTAETIGUNG-WIRD-ERINNERUNG` | Zeilenzeiger auf Stellen, die es so nicht mehr gibt |
+
+**Der schwerere Befund liegt wieder am Werkzeug, nicht am Bestand — und er hat dieselbe Signatur wie der von 19:15 UTC.**
+
+Das Register trägt **fünf** Eintragsformate, nicht vier. Das fünfte setzt den Doppelpunkt **innerhalb** der Fettung — `**Status: Behoben Chat 112.**` —, und dazu kam ein zweiter Fehler derselben Art: **ein durchgestrichener Zustand wurde als geltend gelesen.** `~~**Status:** Offen.~~` ist ein Widerruf; das Werkzeug nahm die erste Zustandszeile ohne Rücksicht auf die Streichung.
+
+```
+vorher   115 offen · 103 zu · 45 ohne Zustandsangabe
+nachher  114 offen · 106 zu · 43 ohne Zustandsangabe
+```
+
+> **Die naheliegende Abhilfe wäre falsch gewesen.** *Die letzte Zustandszeile gewinnt* schlägt fehl: Das Register schreibt den heutigen Zustand **oben** in den Block und lässt den des ursprünglichen Befundes darunter stehen — bei fünf Einträgen steht oben *behoben* und unten *offen*. Die Regel lautet deshalb **erste ungestrichene Zeile**, und sie ist gegen den Bestand gegengezählt, nicht gewählt.
+
+**Und eine Kennung trug zwei Abschnitte.** `RESPONDER-LEERE-ANTWORT-STILL` stand zweimal als Überschrift — Eintrag und Nachtrag. Für jedes Werkzeug, das Abschnitte nach Kennung sammelt, ist das **ein** Eintrag; welcher überlebt, entscheidet die Bauart, und der andere fällt lautlos weg. Die Triage führte dieselbe Kennung zugleich als Kandidat und als unbewegt. Die Überschrift des Nachtrags sagt jetzt, dass sie der Nachtrag ist; **die Kennung selbst ist unverändert** und bleibt auflösbar.
+
+**Ein Fund über das Verfahren, nicht über das Register:** Von den drei Einträgen, die die vorige Sitzung gelesen und bestätigt hatte, war **keiner** aus der Kandidatenliste verschwunden — der Prüfstand war nicht mitgezogen worden. Ein Lesen ohne neuen Prüfstand ist folgenlos: Derselbe Eintrag steht beim nächsten Lauf wieder da, und niemand sieht ihm an, dass er schon gelesen wurde. Heute tragen **27 Abschnitte** den Prüfstand `gegen HEAD 9bcd214` — die 26 Kandidaten und der Nachtrag, der dabei eine eigene Kennung bekam.
+
+### Was die zweite Kontrolle davon wieder einriss
+
+**Drei der oben berichteten Aussagen waren falsch, und alle drei stammten aus demselben Muster: dem eigenen Werkzeug geglaubt, statt gegen den Bestand gemessen.**
+
+- **Eine Falschaussage stand bereits im veröffentlichten Register.** Zu `MENGENANGABE-BINDET-NUR-UNTEN` war geschrieben, sein Messgerät `labor/werkzeug/grenze_probe.py` gebe es nicht mehr. **Die Datei liegt da, versioniert seit `fdd70d9`.** Die Ursache ist eine Zeile im Werkzeug: Es löst jeden Anker gegen `novaberg/` auf, und `labor/` ist ein **Geschwister** davon, kein Unterverzeichnis — jeder Anker auf ein Messwerkzeug musste als *Datei existiert nicht mehr* herauskommen. Von den „zwei Einträgen mit totem Pfad" war **einer echt und einer ein Wurzel-Artefakt**. Berichtigt, im Werkzeug wie im Register; solche Anker sind jetzt eine eigene Klasse (*vorhanden, aber nicht gegen dieses Repositorium vergleichbar*).
+- **Die Berichtigung der doppelten Kennung war schlimmer als der Zustand.** Die Überschrift des Nachtrags lautete kurzzeitig *„Nachtrag zu `RESPONDER-…`"* — sie begann damit mit einem Wort statt einer Kennung und war **keine Abschnittsgrenze mehr**. Der ganze Nachtrag samt Zustandszeile fiel an den Eintrag darüber, der dadurch zwei einander widersprechende Zustände trug. **Eine Überschrift ist hier kein Text, sondern eine Grenze.** Der Nachtrag trägt jetzt eine eigene, abgeleitete Kennung — eindeutig und eine Grenze.
+- **Die Redis-Zahl war um eins zu hoch, und der Fehler war lehrreich.** Gemeldet waren 13 `hash_dirty`-Keys; es sind **zwölf**. Der dreizehnte war `hash_dirty:meister:nova` — **der einzige mit Leser und Löscher**, und damit transient. Eine einzelne Zählung erwischte ihn am Leben. Vier Wiederholungen über zwanzig Minuten sahen ihn nie wieder, während die zwölf anderen unverändert dastanden. **Das trennt sie sauberer als jede Prosa:** Was einen Leser hat, ist selten da; was keinen hat, liegt immer da.
+
+> **Der Zugriff, der es fand, war nicht mehr Sorgfalt, sondern ein anderer:** das Dateisystem und der echte Redis-Keyspace statt der Wurzel, die das Werkzeug annimmt, und eine Wiederholung statt einer Messung. Der Bau konnte ihn nicht haben — er hatte das Werkzeug geschrieben, dessen Verdikte er übernahm.
+
+**Stand nach dem Zug:** 263 Abschnitte · **112 offen** · **0 Kandidaten** · **1** Eintrag mit tatsächlich totem Pfad · keine doppelte Kennung. Suite `Ran 2224 tests — OK`, 0 übersprungen, zweimal gelaufen.
 
 ### 24.08.2026, 19:15 UTC — Die Liste steht, das Register hat vier Formate
 

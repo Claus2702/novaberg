@@ -294,7 +294,7 @@ Zeugen: `tests/test_fuehrungsmass_naht.py::DreiAusfaelleDreiNamenTest` (5), daru
 
 ### `ZUORDNUNG-NENNT-LISTENPOSITION` — Listenposition statt Datenbank-Nummer
 
-**Zustand:** offen — gegen HEAD `00c16b6` gehalten am 20.08.2026. `zuordnung.py:239` verwirft weiter ohne zweiten Versuch und ohne Rueckstellung.
+**Zustand:** offen — gegen HEAD `9bcd214` gemessen am 24.08.2026. Unveraendert: `agents/wissen_rueckweg/zuordnung.py:240-244` verwirft mit `return None`, ohne zweiten Versuch und ohne Rueckstellung. Der Riegel selbst ist intakt — drei Rueckgabepfade melden je einen eigenen Grund (Nummer nicht in der Vorlage · `ziel` keine Nummer · `kern` leer) —, aber alle drei enden gleich, und keiner ist von *„keine Datei passt"* zu unterscheiden.
 
 **Befund (19.08.2026), aus der Fundliste uebernommen.** **Das Zuordnungsmodell nennt eine Listenposition statt der Datenbank-Nummer, und der Riegel verwirft zu Recht — aber der Auftrag ist danach weg.** Im Betriebslog: *„Rueckweg-Zuordnung: Nummer 3 steht nicht in der Vorlage [587, 2022, 3058, 5592, 6869, 6871, 7972, 8817] — verworfen"*, danach `keine_zuordnung (Aufruf unbrauchbar)`. Der Zeuge dafuer steht seit dem 18.08. und hat gehalten; **gemessen ist damit erstmals, dass der Fall im Betrieb wirklich vorkommt** — 1 von 4 echten Laeufen. Offen ist nicht der Riegel, sondern die **Behandlung danach**: Ein unbrauchbarer Modellaufruf ist von *„keine Datei passt"* nicht zu unterscheiden, obwohl das eine ein Ausfall und das andere ein Ergebnis ist. Ein zweiter Versuch waere billiger als der verlorene Auftrag.
 
@@ -402,7 +402,16 @@ Zeugen: `tests/test_fuehrungsmass_naht.py::DreiAusfaelleDreiNamenTest` (5), daru
 
 ### `FUNDSTELLE-MIT-BEHAELTERPFAD` — der absolute Pfad steht im Prompt
 
-**Zustand:** offen — gegen HEAD `00c16b6` gehalten am 20.08.2026. `aufzeichnungen.py:103` faellt weiter auf den vollen Wurzelpfad zurueck.
+**Zustand:** offen — gegen HEAD `9bcd214` gemessen am 24.08.2026. `_fundstelle_bauen` fällt weiter auf den vollen Wurzelpfad zurück (`ort = bezeichnung.strip() or wurzel.strip()`, `aufzeichnungen.py:120`). **Die Zahl, die den Befund billig machte, gilt nicht mehr:** Es ist nicht mehr eine Wurzel, es sind **drei**, und die dritte hat die offene Frage von damals bereits in eine Richtung beantwortet.
+
+```
+id | pfad                               | bezeichnung
+ 1 | /files                             | <LEER>            -> Behaelterpfad im Prompt
+ 2 | /docs                              | <LEER>            -> Behaelterpfad im Prompt
+ 3 | /knowledge/autonomous/nova/meister | meine Recherchen  -> traegt eine Bezeichnung
+```
+
+> **Der Weg ist damit begehbar, aber nicht gebahnt.** Wurzel 3 zeigt, dass eine Bezeichnung vergeben werden *kann*; das Tor der Freigabe verlangt sie weiterhin nicht, und der Rückfall nimmt weiterhin den vollen Pfad statt des Basisnamens. Zwei von drei Wurzeln reichen heute ein Umgebungsdetail an das Modell durch — 2026 war es eine von einer.
 
 **Befund (18.08.2026), aus der Fundliste uebernommen.** **Die Fundstelle im Prompt trägt den absoluten Behälterpfad, weil die einzige Freigabe keine Bezeichnung hat.** Der `[AUFZEICHNUNGEN]`-Block nennt je Eintrag `<Ort>/<Pfad>`; als Ort steht die `bezeichnung` der Wurzel und, wenn sie fehlt, deren `pfad`. **Gemessen am laufenden Bestand:** `SELECT id, pfad, bezeichnung FROM dateien_wurzeln` → eine Zeile, `/files`, **Bezeichnung leer** — im Messturn stand deshalb `/files/novaberg-papers.md` im Prompt. Das ist der vorgesehene Rückfall und kein Defekt, aber es steht quer zu der Begründung, mit der die Indexzeile ihren Pfad **relativ** führt (`novaberg-agent-dateien_k.md` §4: *„absolut wäre ein Umgebungsdetail und nicht verschiebbar"*) — genau dieses Umgebungsdetail erreicht jetzt das Modell. **Zwei Auswege, und die Wahl ist eine Absicht:** Das Tor der Freigabe verlangt eine Bezeichnung, oder der Rückfall nimmt den Basisnamen der Wurzel statt ihres vollen Pfades. Heute nur eine Wurzel, also billig zu ändern — bei zehn nicht mehr.
 
@@ -412,7 +421,7 @@ Zeugen: `tests/test_fuehrungsmass_naht.py::DreiAusfaelleDreiNamenTest` (5), daru
 
 ### `FAKTENPLUGIN-OHNE-KAPPUNG` — weder Kappung noch Schwelle
 
-**Zustand:** offen — gegen HEAD `00c16b6` gehalten am 20.08.2026. `plugins/fakten_manager/manager.py` traegt weiterhin kein `LIMIT`.
+**Zustand:** offen — gegen HEAD `9bcd214` gemessen am 24.08.2026. Unveraendert und im Kontextpfad nachgesehen: `enrich_entries` (`plugins/fakten_manager/manager.py:130`) laeuft ueber `EntitaetenRepository.find_by_user` und je Entitaet ueber `FaktenRepository.find_by_subjekt` — **kein `LIMIT`, keine Schwelle, kein Aehnlichkeitsvergleich** an einer der beiden Stellen. Die Menge ist weiterhin allein durch den Bestand begrenzt.
 
 **Befund (18.08.2026), aus der Fundliste uebernommen.** **Der Fakten-Plugin hat weder Kappung noch Schwelle — das ist der Grund für seine 130+ Einträge, nicht die Datenqualität.** `enricher.py` schaltet ihn seit Chat 71 ab mit dem Vermerk *„Fakten-Enrichment produziert 130+ Rausch-Eintraege — wird reaktiviert nach Fakten-Bereinigung"*. Gezählt über die sieben Kontextquellen: `wissen_manager`, `notizen_manager` und `timeline_manager` tragen ein `LIMIT`, **`fakten_manager` trägt keins** — und auch keinen Ähnlichkeitsvergleich. Die Diagnose lautete *Bereinigung*, aber eine Quelle ohne Obergrenze liefert unabhängig von der Datenqualität so viele Einträge, wie der Bestand hergibt. **Die Abhilfe ist eine Zeile und wurde nie versucht**; solange sie fehlt, ist die Wiederinbetriebnahme an eine Bedingung geknüpft, die nicht die wirksame ist. Aufgefallen beim Entwurf des Dateien-Plugins, das dieselbe Stelle besetzt und dieselbe Falle hätte.
 
@@ -583,7 +592,7 @@ Die Modellbewertung steht jetzt in **`salienz_modell`** und wird einmal festgeha
 
 ### `IMPORTE-UEBERSPRINGEN-SCHICHT` — 39 Importe ueber die Schichtgrenze
 
-**Zustand:** offen — gegen HEAD `00c16b6` gehalten am 20.08.2026. heute **52** statt 39 — mit derselben Strukturpruefung gezaehlt, die die 39 geliefert hat; die Verletzung ist nicht zurueckgegangen, sondern um ein Drittel gewachsen.
+**Zustand:** offen — gegen HEAD `9bcd214` gemessen am 24.08.2026, weiterhin **52**, mit derselben Strukturpruefung gezaehlt, die die 39 geliefert hat (Pruefung A8b). Die Zahl steht seit dem 20.08. still; sie ist nicht zurueckgegangen und gegenueber den 39 des Befundes um ein Drittel gewachsen.
 
 **Befund (16.08.2026), aus der Fundliste uebernommen.** **39 Importe überspringen eine Schichtgrenze.** `agents/*` importiert `tools/db_manager` und `tools/redis_manager` direkt und umgeht damit die Repository-Schicht. Betroffen sind unter anderem `agents/base.py`, `agents/charakter/agent.py`, `agents/kalibrierung/korpus.py`.
 
@@ -603,7 +612,7 @@ Die Modellbewertung steht jetzt in **`salienz_modell`** und wird einmal festgeha
 
 ### `EVA-SEKTION-OHNE-PRUEFUNG` — 20 Sektionsmarken ohne Pruefung darunter
 
-**Zustand:** offen — gegen HEAD `00c16b6` gehalten am 20.08.2026. die Strukturpruefung ueber den Produktivbestand zaehlt heute **36** Marken ohne Pruefung darunter. **Die 20 des Befundes stammen aus einer anderen Zaehlung** — dieselbe Pruefung stand am 16.08.2026 bei 25 und ist seither um elf gewachsen.
+**Zustand:** offen — gegen HEAD `9bcd214` gemessen am 24.08.2026, weiterhin **36**, mit derselben Strukturpruefung gezaehlt (Pruefung A5). **Die 20 des Befundes stammen aus einer anderen Zaehlung** — dieselbe Pruefung stand am 16.08.2026 bei 25, am 20.08. bei 36 und steht seither still.
 
 **Befund (16.08.2026), aus der Fundliste uebernommen.** **20 Sektionsmarken `Ausgabe-Verifikation` haben keine Prüfung unter sich.** Zwei Formen: ein blankes `return` (`api/chat.py:238`, `agents/kalibrierung/korpus.py:310`) und eine Logzeile, die den Wert nennt und nichts mit ihm tut (`agents/charakter/agent.py:659`). Die zweite ist die heimtückischere — sie liest sich wie eine Prüfung mit Protokoll.
 
@@ -623,7 +632,7 @@ Die Modellbewertung steht jetzt in **`salienz_modell`** und wird einmal festgeha
 
 ### `FEHLVERSUCHSPFAD-LOESCHT-HART` — zur Haelfte behoben am 23.08.2026
 
-**Zustand:** offen — **die erste Haelfte ist gebaut, die zweite ausdruecklich nicht.** `versuch_zaehlen` legt an der Grenze still statt zu loeschen: `aktiv = FALSE, grund = 'fehlversuch'`. Der Verfallspfad schreibt `grund = 'verfall'` — zwei Ausgaenge, zwei Werte, sonst traegt die Spalte keine Unterscheidung. DDL angekuendigt und angelegt am 23.08.2026 (`F-DDL-1`): `shadow_auftrag.grund VARCHAR(20) NOT NULL DEFAULT ''`. Zeugen: `tests/test_queue_verfall.py` (i, i2, i3) und `tests/test_shadow_auftrag_schema.py`, Gegenprobe 2 vorhergesagt / 2 gezaehlt, Suite `Ran 2188 tests — OK`.
+**Zustand:** offen — gegen HEAD `9bcd214` nachgesehen am 24.08.2026, unveraendert. **Die erste Haelfte ist gebaut, die zweite ausdruecklich nicht.** `versuch_zaehlen` legt an der Grenze still statt zu loeschen: `aktiv = FALSE, grund = 'fehlversuch'`. Der Verfallspfad schreibt `grund = 'verfall'` — zwei Ausgaenge, zwei Werte, sonst traegt die Spalte keine Unterscheidung. DDL angekuendigt und angelegt am 23.08.2026 (`F-DDL-1`): `shadow_auftrag.grund VARCHAR(20) NOT NULL DEFAULT ''`. Zeugen: `tests/test_queue_verfall.py` (i, i2, i3) und `tests/test_shadow_auftrag_schema.py`, Gegenprobe 2 vorhergesagt / 2 gezaehlt, Suite `Ran 2188 tests — OK`.
 
 > **Der Rest ist benannt und nicht gebaut:** *und waehlt nicht nach hoher Salienz*. Die Auswahlreihenfolge ist unveraendert — der Salienzstaerkste wird zuerst gezogen und scheitert deshalb zuerst. Das ist eine eigene Absicht und kein Rest desselben Zuges.
 
@@ -695,7 +704,7 @@ Die Modellbewertung steht jetzt in **`salienz_modell`** und wird einmal festgeha
 
 ### `INITIATIVE-DOPPELT-BELEGT` — eine Ebene tiefer etwas anderes
 
-**Zustand:** offen — gegen HEAD `00c16b6` gehalten am 20.08.2026. der Name traegt weiter zwei Gegenstaende; `graph/nodes/haltung.py:156` warnt im Docstring davor.
+**Zustand:** offen — gegen HEAD `9bcd214` gemessen am 24.08.2026. Der Name traegt weiter zwei Gegenstaende: `graph/nodes/haltung.py:211` prueft `isinstance(roh, dict)` und faengt die Verwechslung, `ei/dreischicht.py:645` rechnet mit `achsen["initiative"]` als Bit. Der Docstring in `haltung.py:159-176` warnt ausdruecklich davor, den einen fuer den anderen zu nehmen — der Riegel steht, die Namensgleichheit ebenso.
 
 **Befund (15.08.2026), aus der Fundliste uebernommen.** **`initiative` heißt eine Ebene tiefer etwas anderes.** `state["initiative"]` trägt die **Messung** als Dict (`wert`, `rohwert`, `versatz`, `fehlend`), `achsen["initiative"]` das daraus gebildete **Bit**. Zwei Gegenstände, ein Name, ein Dict Abstand — dieselbe Klasse wie die doppelte `arousal`-Zuweisung vom selben Tag. Der neue Leser in `graph/nodes/haltung.py` prüft auf `isinstance(roh, dict)` und fängt die Verwechslung deshalb, aber die Prüfung ist ein Riegel gegen einen Namen, nicht dessen Behebung. **Nicht mitgeändert:** Ein Umbenennen berührt fünf Stellen außerhalb des Auftrags. Gefunden von der zweiten Kontrolle über die Erzeuger und Leser des Führungsmaßes.
 
@@ -841,7 +850,7 @@ Nachgemessen am 23.08.2026: `graph/nodes/haltung.py` enthaelt weiterhin kein `lo
 
 ### `VERFASSER-KOPFBLOCK-FAELLT-AUS` — in mehr als der Haelfte der Turns
 
-**Zustand:** offen — gegen HEAD `1330045` gehalten am 22.08.2026. Eine **hinreichende** Ursache ist belegt und behoben: `_kopf_deuten` verwarf das ganze Urteil, wenn ein Feldname einen Umlaut trug — der Prompt schreibt `GEPRUEFT` und `STAERKE` vor, das Modell schreibt `GEPRÜFT` und `STÄRKE`. Derselbe vollstaendige Kopfblock ist vorher `geliefert=False`, nachher `True`. `_feldname` normalisiert jetzt Umlaute und Kleinschreibung (`graph/einwand.py`), vier neue Zeugen, Gegenprobe 2 vorhergesagt / 2 gezaehlt, Suite `Ran 2087 tests — OK`.
+**Zustand:** offen — gegen HEAD `9bcd214` nachgesehen am 24.08.2026; am Code unveraendert seit `1330045`. **Die Rate ist weiterhin unbelegt, und sie ist es jetzt ohne Hindernis:** Der Auszug traegt seit dem 22.08. 500 Zeichen statt 120, die Messung, die daran haengt, ist noch nicht gelaufen. Eine **hinreichende** Ursache ist belegt und behoben: `_kopf_deuten` verwarf das ganze Urteil, wenn ein Feldname einen Umlaut trug — der Prompt schreibt `GEPRUEFT` und `STAERKE` vor, das Modell schreibt `GEPRÜFT` und `STÄRKE`. Derselbe vollstaendige Kopfblock ist vorher `geliefert=False`, nachher `True`. `_feldname` normalisiert jetzt Umlaute und Kleinschreibung (`graph/einwand.py`), vier neue Zeugen, Gegenprobe 2 vorhergesagt / 2 gezaehlt, Suite `Ran 2087 tests — OK`.
 
 > **Dass es die Ursache der gemessenen Faelle war, ist damit NICHT belegt** — und der Grund dafuer ist ein zweiter Befund: Der Logauszug des Ausfalls war bei **120 Zeichen** gekappt und endete mitten im zweiten von fuenf Feldern. Gegen die fuenf echten Ausfaelle des Bestandes gehalten, blieben **0 von 5** lesbar, weil der Auszug drei Felder gar nicht enthaelt. Gezaehlt ist nur eine Korrelation: **4 von 5** trugen `GEPRÜFT` mit Umlaut.
 >
@@ -910,7 +919,7 @@ Nachgemessen am 23.08.2026: `graph/nodes/haltung.py` enthaelt weiterhin kein `lo
 
 ### `GESPRAECHSVEKTOR-HYPOTHESE-DREIFACH` — dieselbe Hypothese dreimal im Block
 
-**Zustand:** offen — gegen HEAD `00c16b6` gehalten am 20.08.2026. `graph/nodes/verfasser.py:105-129` traegt Strategie, rohe Hypothese und Leitgedanken weiterhin nebeneinander.
+**Zustand:** offen — gegen HEAD `9bcd214` gemessen am 24.08.2026. Unveraendert, an der Quelle nachgesehen: `state["gespraechsvektor"]` ist die **rohe** Modellausgabe (`gespraechsvektor.py:1222`, gespeist aus `response.text.strip()` in `:661`) und geht als Ganzes in den Block. `graph/nodes/verfasser.py` setzt daneben die geparste Strategiezeile (`:130-137`), die rohe Hypothese (`:141`) und den Leitgedanken (`:145`) — Strategie und Impuls stehen damit weiterhin je zweimal im selben Block.
 
 **Befund (14.08.2026), aus der Fundliste uebernommen.** **Der `[GESPRAECHSVEKTOR]`-Block trägt die Hypothese dreifach.** Live gemessen am 14.08.2026, 22:59 UTC: Der Block enthält (a) die rohe Modellausgabe des GV-Node samt ihrer Labels — `SPRUNG 1:` bis `SPRUNG 3:`, `ABSICHT:`, `STRATEGIE: Pw`, `VEHIKEL:`, `IMPULS:` —, und (b) darunter „Leitgedanke für diese Antwort:", der denselben Eröffnungsabsatz **noch einmal** plus den Impulstext enthält. Der geparste Wert steht zugleich in der Zeile darüber (*„Die gewählte Strategie: Perspektivwechsel als Frage"*). **Der Befund ist nicht neu, sondern nur neu sichtbar:** Ein Verfasser-Prompt vom 13.08. trägt dieselbe Doppelung. Neu ist die Reichweite — seit dem Umbau des Skip-Tors bekommen auch die rund 20 Impuls-Turns pro Tag diesen Block, die vorher gar keinen hatten.
 
@@ -920,7 +929,7 @@ Nachgemessen am 23.08.2026: `graph/nodes/haltung.py` enthaelt weiterhin kein `lo
 
 ### `VERSATZ-ZWEI-GROESSEN` — ein Name, zwei Groessen
 
-**Zustand:** offen — gegen HEAD `00c16b6` gehalten am 20.08.2026. beide Groessen tragen den Namen weiter.
+**Zustand:** offen — gegen HEAD `9bcd214` gemessen am 24.08.2026. Beide Groessen tragen den Namen weiter: `initiative_versatz` als Nullpunkt des Rades (`memory/charakter.py:363`, gelesen in `graph/nodes/gespraechsvektor.py:969`) und die Empathie-Differenz aus `_nova_empathie_berechnen` (`ei/berechnung.py:945`, gerufen in `graph/nodes/ei_calc.py:274`). Keine der beiden Stellen nennt die andere.
 
 **Befund (14.08.2026), aus der Fundliste uebernommen.** **Zwei verschiedene Größen heißen „Versatz".** Im Code ist `initiative_versatz` der Nullpunkt des Initiative-Rades (`charakter_hash.initiative_versatz`, `memory/charakter.py`). Im Gespräch bezeichnet „Versatz" den Abstand zwischen dem, was gesagt wurde, und dem, was Nova daraus hört — im Code die **Empathie-Differenz** (`_nova_empathie_berechnen`, auf dem Pixie-Pfad übersprungen). Beides sind Abstände, beides sind Zustandsgrößen des Paares, und keins der beiden Dokumente nennt das andere.
 
@@ -940,7 +949,9 @@ Nachgemessen am 23.08.2026: `graph/nodes/haltung.py` enthaelt weiterhin kein `lo
 
 ### `MENGENANGABE-BINDET-NUR-UNTEN` — nach unten bindend, nach oben nicht
 
-**Zustand:** offen, unbelegt — gegen HEAD `00c16b6` gehalten am 20.08.2026. die halbierten Korridore sind gebaut und im Betrieb ungemessen.
+**Zustand:** offen, unbelegt — gegen HEAD `9bcd214` gehalten am 24.08.2026. Die halbierten Korridore sind gebaut und im Betrieb ungemessen.
+
+> **Das Messgeraet steht.** `labor/werkzeug/grenze_probe.py` ist der einzige genannte Beleg des Befundes, und es ist vorhanden und versioniert. Der Befund ist damit wiederholbar; was fehlt, ist die Wiederholung gegen die halbierten Korridore.
 
 **Befund (13.08.2026), aus der Fundliste uebernommen.** **Eine Mengenangabe bindet nach unten und trägt nach oben nicht.** Im kargen Korridor (bis 120 Zeichen) trafen 17 von 18 Läufen, im weiten (700–1400) **4 von 17** — und die Verfehlung ging jedes Mal nach oben, um 5 bis 15 %. Die Gegenprobe entscheidet die Ursache: Wird derselbe Korridor um 250 Zeichen **tiefer** gelegt (450–1150), sinkt die Antwortlänge nur von 1365 auf 1294 Zeichen, also um ein Viertel der Verschiebung. Die Länge folgt dem Inhalt, nicht der Zahl; die Zahl wirkt als **Schranke, nicht als Ziel**. Ein Zielwert („etwa 1000 Zeichen") zieht stärker als eine Spanne (1217 gegen 1365), trifft ihn aber auch nicht. Belegstand: ein Material, eine Szene, drei Läufe je Fassung — `labor/werkzeug/grenze_probe.py`.
 
@@ -1236,9 +1247,15 @@ nicht im Dokument.
 
 ## 19.08.2026, abends — die Spur zum Leer-Defekt
 
-### `RESPONDER-LEERE-ANTWORT-STILL` — vierter Fall, und die Frage von damals ist entschieden
+### `RESPONDER-LEERE-ANTWORT-STILL-NACHTRAG` — vierter Fall, und die Frage von damals ist entschieden
 
-**Zustand:** offen — gegen HEAD `e36f4f0` gehalten am 22.08.2026. Dieser Abschnitt ist der **Nachtrag vom 19.08.2026**, nicht der Eintrag; der steht als `#### RESPONDER-LEERE-ANTWORT-STILL` weiter unten. Der Riegel macht den Ausfall laut, die Ursache ist unveraendert offen — 243 Token wurden erzeugt und gingen vor dem eigenen Code verloren.
+**Zustand:** offen — gegen HEAD `9bcd214` nachgesehen am 24.08.2026, unverändert. Dieser Abschnitt ist der **Nachtrag vom 19.08.2026**, nicht der Eintrag; der steht als `#### RESPONDER-LEERE-ANTWORT-STILL` weiter unten. Der Riegel macht den Ausfall laut, die Ursache ist unveraendert offen — 243 Token wurden erzeugt und gingen vor dem eigenen Code verloren.
+
+> **Die Überschrift trug bis zum 24.08.2026 die blanke Kennung des Eintrags — zweimal im Register, für jedes Werkzeug ein und derselbe Abschnitt.** Ein Leser, der Abschnitte nach Kennung sammelt, behält je nach Bauart den ersten oder den letzten und verliert den anderen lautlos; die Triage führte dieselbe Kennung zugleich als Kandidat und als unbewegt.
+>
+> **Der erste Versuch, es zu berichtigen, war schlimmer als der Zustand.** Die Überschrift lautete kurzzeitig *„Nachtrag zu `RESPONDER-…`"* — damit begann sie mit einem Wort statt einer Kennung und war **keine Abschnittsgrenze mehr**: Der ganze Nachtrag samt seiner Zustandszeile fiel an den Eintrag darüber, `INDEXLAUF-VERSCHWEIGT-DATEIFEHLER`, der dadurch zwei einander widersprechende Zustandszeilen trug. Gefunden hat es die zweite Kontrolle, nicht der Bau. **Eine Überschrift ist hier kein Text, sondern eine Grenze** — wer sie umschreibt, verschiebt sie.
+>
+> Deshalb trägt der Nachtrag jetzt eine **eigene, abgeleitete Kennung**. Sie ist als Nachtrag lesbar, sie ist eindeutig, und sie ist eine Grenze. Die Kennung des Eintrags selbst ist unverändert und bleibt auflösbar.
 
 > **Seit dem Ollama-Update vom 19.08.2026, 20:31 UTC ist kein Fall mehr aufgetreten**, und das ist gezaehlt statt vermutet: ueber sechs Log-Generationen vom 19.08. 20:04 bis zum 22.08. 09:10 — rund 61 Stunden — stehen **456 erzeugte Antworten und 0 Antwortverluste**. Der einzige `text_len=0` in diesem Zeitraum traegt `caller=thinker` und die Zeile *„content leer, thinking gefuellt (Ollama-Split) — Nachfass-Iteration 1/2"* daneben: ein anderer Fall mit greifendem Rueckweg.
 >
@@ -1424,7 +1441,7 @@ def _schluessel(alter_tage: float) -> str:
 
 ### `ZUSTIMMUNG-GILT-ALS-ABLEHNUNG`
 
-**Zustand:** offen — gegen HEAD `62560cf` gehalten am 21.08.2026. Unveraendert: `server/agents/charakter_identitaet/resume.py:92` prueft weiter `any(kw in text for kw in ablehnungs_keywords)` mit `"ne"` in der Liste — und da Zeile 92 vor Zeile 99 steht, faellt `gerne` in die Ablehnung. **Von den vier Torwaechtern deutet nur `dateien_wurzeln/resume.py:62` an Wortgrenzen**; `notizen` und `timeline` tragen gar keine eigene Ja/Nein-Deutung mehr, der Satz zur uebernommenen Bauart im Befund ist damit ueberholt.
+**Zustand:** offen — gegen HEAD `9bcd214` gemessen am 24.08.2026. Unveraendert: `server/agents/charakter_identitaet/resume.py:92` prueft weiter `any(kw in text for kw in ablehnungs_keywords)` mit `"ne"` in der Liste — und da Zeile 92 vor Zeile 99 steht, faellt `gerne` in die Ablehnung. **Ueber alle vier `resume.py` gegengeprueft:** Wortgrenzen kennt genau eine Stelle, `dateien_wurzeln/resume.py:114` (`re.search(rf"\b{re.escape(wort)}\b", text)`); `notizen` und `timeline` tragen gar keine eigene Ja/Nein-Deutung mehr, der Satz zur uebernommenen Bauart im Befund ist damit ueberholt. Es bleibt **eine** defekte Deutung, nicht vier.
 
 **Befund.** Die Ja/Nein-Deutung der Torwächter vergleicht **Teilzeichenketten**. `_standard_interpretieren` in `agents/charakter_identitaet/resume.py` prüft `any(kw in text for kw in ...)` gegen eine Liste, die `ne` enthält — und `ne` steckt in `gerne`. Am laufenden Bestand gemessen:
 
@@ -1470,9 +1487,11 @@ Drei Defekte aus einem 20-Turn-Bogen auf einem eigenen Paar (`vera`), mit angeha
 
 ### `FALSCHE-BESTAETIGUNG-WIRD-ERINNERUNG`
 
-**Zustand:** offen — gegen HEAD `62560cf` gehalten am 22.08.2026. **Die zweite Haelfte ist gebaut:** Die Verdichtung sieht den Ausgang. `agents/kzg/dispatch.py::abgelehnte_ausgaenge` zieht die abgelehnten Dienste samt Befund aus `agent_results`, und `agents/kzg/verdichtung.py` setzt daraus den Block `[TATSAECHLICHER AUSGANG]` **vor** das Bewertungsobjekt — als Tatsache, nicht als Regel. Elf Zeugen (`tests/test_kzg_ausgang_im_kern.py`), Gegenprobe 3 vorhergesagt / 3 gezaehlt, Suite `Ran 2067 tests — OK`. Im Betrieb belegt am 22.08.2026, 00:16 UTC: `timeline` lehnte ab, `Ausgangsblock gesetzt — 1 abgelehnte(r) Dienst(e)`, der Kern trug reinen Inhalt.
+**Zustand:** offen — gegen HEAD `9bcd214` nachgesehen am 24.08.2026, unveraendert seit `62560cf`. **Die zweite Haelfte ist gebaut:** Die Verdichtung sieht den Ausgang. `agents/kzg/dispatch.py::abgelehnte_ausgaenge` zieht die abgelehnten Dienste samt Befund aus `agent_results`, und `agents/kzg/verdichtung.py` setzt daraus den Block `[TATSAECHLICHER AUSGANG]` **vor** das Bewertungsobjekt — als Tatsache, nicht als Regel. Elf Zeugen (`tests/test_kzg_ausgang_im_kern.py`), Gegenprobe 3 vorhergesagt / 3 gezaehlt, Suite `Ran 2067 tests — OK`. Im Betrieb belegt am 22.08.2026, 00:16 UTC: `timeline` lehnte ab, `Ausgangsblock gesetzt — 1 abgelehnte(r) Dienst(e)`, der Kern trug reinen Inhalt.
 
-> **Der Eintrag bleibt trotzdem offen, und zwar aus zwei Gruenden.** Erstens: Die Antwort jenes Messturns behauptete gar keine Handlung — belegt ist, dass der Weg **laeuft**, nicht dass er den Fehler **verhindert**. Der scharfe Fall verlangt eine Antwort, die eine abgelehnte Handlung bestaetigt, und den stellt das Modell her, nicht der Messende. Zweitens: Die erste Haelfte — dass die Antwort selbst keine Bestaetigung enthaelt — haengt weiter an einer Anweisung im Prompt der Figur (`server/graph/nodes/planner.py:67`, seit dem 20.08.2026) und ist keine Zusicherung.
+> **Der Eintrag bleibt trotzdem offen, und zwar aus zwei Gruenden.** Erstens: Die Antwort jenes Messturns behauptete gar keine Handlung — belegt ist, dass der Weg **laeuft**, nicht dass er den Fehler **verhindert**. Der scharfe Fall verlangt eine Antwort, die eine abgelehnte Handlung bestaetigt, und den stellt das Modell her, nicht der Messende. Zweitens: Die erste Haelfte — dass die Antwort selbst keine Bestaetigung enthaelt — haengt weiter an einer Anweisung im Prompt der Figur (`server/graph/nodes/planner.py`, seit dem 20.08.2026) und ist keine Zusicherung.
+
+> **Nachgesehen am 24.08.2026 gegen HEAD `9bcd214`: unveraendert in der Sache, der Zeiger ist tot.** `planner.py:67` traegt heute den `refusals`-Filter. Die Anweisung steht in der Prompt-Vorlage `responder.aufgabe_ablehnung`, gesetzt von `_build_task_ablehnung` (`:165`) — sie ist damit weiterhin eine Anweisung an die Figur und keine Pruefung im Code. Der einzige Riegel dort ist eine Ausgabe-Verifikation auf **leeren Text**, nicht auf eine Bestaetigung.
 
 **Befund.** Nach dem misslungenen Notizauftrag antwortete Nova: *„Ich habe es notiert... also, ich wollte es gerade so richtig ordentlich für dich festhalten. Aber da gab es ein kleines technisches Stolpern in der Logik meines 'Timeline'-Agenten."* **Der Satz widerspricht sich in zwei Sätzen selbst.** Und die falsche Hälfte wurde verdichtet:
 
@@ -1486,7 +1505,9 @@ Drei Defekte aus einem 20-Turn-Bogen auf einem eigenen Paar (`vera`), mit angeha
 
 ### `TRIBUNAL-ERKENNT-ABBRUCH-OHNE-FOLGE`
 
-**Zustand:** offen — gegen HEAD `62560cf` gehalten am 21.08.2026. Unveraendert: `server/graph/nodes/tribunal.py` kennt keine Abbrucherkennung — die einzige Korrekturschleife dort ist `korrekturauftrag` aus `utils.datum_pruefung` (`:24`) und haengt am Datum, nicht an einer abgeschnittenen Antwort.
+**Zustand:** offen — gegen HEAD `9bcd214` gemessen am 24.08.2026. Unveraendert: `server/graph/nodes/tribunal.py` kennt keine Abbrucherkennung — die einzige Korrekturschleife dort ist `korrekturauftrag` aus `utils.datum_pruefung` (`:27`, gesetzt in `:291`) und haengt am Datum, nicht an einer abgeschnittenen Antwort.
+
+> **Der Eintrag nennt eine Datei, die es nicht gibt.** Im Befundtext steht `nova_gedaechtnis.py`; eine Triage, die ihre Anker aus dem Rumpf zieht, meldet den Eintrag deshalb als *Pfad veraltet* statt als Kandidaten. Der geltende Ort steht in dieser Zustandszeile.
 
 **Befund.** Zwei von zwanzig Antworten brachen mitten im Wort ab (319 bzw. 635 Zeichen, Ende auf *„…die intelle"* und *„…in ihrem Kopf sortieren,"*). **Das Tribunal hat es selbst erkannt** und benannt:
 
@@ -1845,6 +1866,8 @@ soll:  similarity × gewicht_absolut × e^(−rt)  × zeit_decay × faktor
 
 #### RESPONDER-LEERE-ANTWORT-STILL — eine Antwort ohne Zeichen passiert vier Stufen als Erfolg 🔧 Riegel gebaut 01.08.2026, Ursache offen
 
+**Zustand:** offen — gegen HEAD `9bcd214` nachgesehen am 24.08.2026, unveraendert. Der Riegel meldet den Ausfall, die Ursache ist nicht ermittelt. Der juengste Stand steht im **Nachtrag vom 19.08.2026** weiter oben; dieser Abschnitt ist der Eintrag.
+
 **Symptom.** Ein Turn erreicht den Nutzer nicht. Kein Fehler, keine Meldung, keine Antwort — die Oberfläche zeigt die Stufen bis zum Dispatcher und dann nichts mehr.
 
 **Beleg, 01.08.2026, Turn `563c35fe`:**
@@ -2013,6 +2036,10 @@ Siebzehn Defekte, der aelteste Bestand der Liste. **Sechs von ihnen sind derselb
 
 #### UNREGISTRIERTER-AGENT-GEWINNT 🔧 offen
 
+**Zustand:** offen — gegen HEAD `9bcd214` gemessen am 24.08.2026. **Der Befund steht; sein Schaden ist durch einen Umbau kleiner geworden, der ihn nicht meinte.** `services/pixie/router.py:18` bildet `vertiefen` weiter auf `vertiefung` ab, und `server/agents/` führt keinen solchen Agenten; die Registry-Prüfung sitzt weiterhin **hinter** der Wahl des Gewinners (`services/pixie/dispatch.py:33`, `return False`). Ein Auftrag ohne Agenten kann den Heartbeat also weiterhin gewinnen — was fertig wäre, ist nicht gebaut.
+
+> **Die Spurentrennung nimmt ihm die Verdrängung, nicht den Leerlauf.** `services/pixie/scheduler.py::_spur_von` fragt den Router **vor** der Wahl — aber nur nach der Lastart. Sein Docstring sagt die Folge ausdrücklich: *„Ein Kandidat ohne auffindbaren Agenten bleibt in der LLM-Spur: Dort fällt er auf und blockiert nichts Schnelles."* Der Auftrag gewinnt und läuft ins Leere; die CPU-Spur bleibt frei. Die sechs Minuten ohne anderen Job aus dem Befund von 2026-07-27 sind damit nicht mehr die Wirkung, die zu erwarten ist.
+
 **Band A seit dem 16.08.2026** (Rangordnung in `novaberg-backlog.md`, Reihe 3) — der einzige Eintrag des neu gefuellten Bandes. **Zur Haelfte veraltet:** `nachfragen` ist seit dem 05.08.2026 gebaut, nur `vertiefung` fehlt weiterhin. **Die lebende Haelfte kostet laufend Material:** Gemessen am 16.08.2026 durchlief `vertiefen` id=1004 die drei Fehlversuche in **90 Sekunden** und wurde dann hart geloescht; **192 aktive Auftraege** stehen darauf, ⌀ Salienz 0,750, aeltester vom 30.07. Und der Verlust hat sich am selben Tag **beschleunigt**: Seit die Zwischen-Destillation der Recherche ihre eigene Frist traegt, dreht der einzige LLM-Platz schneller, und `vertiefen` wird oefter gezogen — in zwei Stunden dreimal.
 
 **Befund (2026-07-27).** Ein Queue-Auftrag für einen **nicht registrierten** Agenten gewinnt den Heartbeat und verdrängt laufende Arbeit. `services/pixie/router.py` bildet `vertiefen` → `vertiefung` und `nachfragen` → `nachfragen` ab; **beide Agenten existieren nicht**. Gemessen an der über `discover_agents()` befüllten Registry: 15 Agenten, `recherche` und `wiedervorlage` darunter, die zwei nicht. Beobachtet am selben Tag: `nachfragen` (Prio 0.97) gewann dreimal gegen `charakter_hash` (Prio 0.3) und scheiterte jedes Mal an `Agent 'nachfragen' nicht in Registry` — nach drei Fehlversuchen verworfen, sechs Minuten ohne anderen Job (Server-Log 13:19–13:23 UTC). Die fehlenden Agenten sind **kein Bug, sondern Roadmap** (`PIX-MIG-7`, dort aber nur einer von zweien); der Befund ist die Verdrängung: Ein Auftrag für einen unbekannten Agenten sollte gar nicht erst gewinnen. **Kopplung beachten:** Wird nur die `prioritaet` oben repariert, gewinnen acht liegengebliebene `vertiefen`-Aufträge sofort den Heartbeat und laufen ins Leere — der Nullwert hält sie heute ruhig.
@@ -2067,6 +2094,8 @@ Siebzehn Defekte, der aelteste Bestand der Liste. **Sechs von ihnen sind derselb
 
 #### SUBMIT-SYNC-BEHAUPTET-WORKER-THREAD 🔧 offen
 
+**Zustand:** offen — gegen HEAD `9bcd214` gemessen am 24.08.2026. Unveraendert: `services/model_services/worker_base.py:151` traegt weiterhin keinen `asyncio.get_running_loop()`-Versuch, und die Debug-Zeile in `:187` schreibt weiter woertlich *„submit_sync aus Worker-Thread"* — eine Behauptung, die an keiner Stelle geprueft wird. Die Pruefung waere weiterhin eine Zeile.
+
 **Befund (2026-07-29).** `submit_sync` behauptet in seiner Logzeile, aus einem Worker-Thread gerufen zu werden, und prüft es nicht. `services/model_services/worker_base.py`, `submit_sync`: Der Docstring nennt als Verwendung ausdrücklich „Konsumenten in sync-Kontexten (LangGraph-Nodes in `asyncio.to_thread`-Worker-Threads)", die Debug-Zeile schreibt wörtlich „submit_sync aus Worker-Thread" — beides ohne Prüfung. Wird die Funktion aus dem Event-Loop-Thread gerufen, blockiert sie den Loop, der die Antwort zustellen müsste, und läuft in den Timeout: gemessen am 29.07.2026 **33 Fehlschläge zu je 60 Sekunden hintereinander**, während dieselbe Ollama-Instanz direkt in 0,142 s antwortete. Die Fehlermeldung nennt dabei nur `TimeoutError` mit leerem Text und weist auf das Modell statt auf den Aufrufer. Die Prüfung wäre eine Zeile — ein `asyncio.get_running_loop()` in `try/except`: Gibt es im aufrufenden Thread einen laufenden Loop, ist der Aufruf falsch. Dieselbe Klasse wie `novaberg-lesson_l_log-behauptet-was-es-weiss.md`; Kontext in `novaberg-lesson_l_async-bruecken.md`.
 
 **Was fertig waere.** Der Aufruf prueft, ob er im Event-Loop-Thread laeuft, und scheitert dort laut statt in einen Timeout.
@@ -2114,6 +2143,15 @@ Siebzehn Defekte, der aelteste Bestand der Liste. **Sechs von ihnen sind derselb
 **Prioritaet:** mittel.
 
 #### THINKING-NULL-FALLE-LATENT 🔧 offen
+
+**Zustand:** offen — gegen HEAD `9bcd214` gemessen am 24.08.2026. **Die Falle ist noch da, sie ist nur umgezogen, und eine ihrer beiden Hälften hat sich nebenbei geschlossen.** Die Zeilen 166/168/169 des Befundes gibt es nicht mehr; die Rechnung steht heute in `services/llm_provider.py:314-318`.
+
+| Zähler | heute | trägt ein gesetztes `null`? |
+|---|---|---|
+| `input_tokens` | `.get("prompt_eval_count", 0)`, danach `if not input_tokens:` mit Rückfall auf `message` | **nein** — der Rückfall fängt `None` mit ab, unabsichtlich |
+| `output_tokens` | `.get("eval_count", 0)`, ohne Absicherung | **ja** — `input_tokens + output_tokens` stürzt |
+
+> **Die Absicherung, die der Befund verlangte, ist an anderer Stelle gebaut:** `_antwort_umschlag_melden` liest dieselben zwei Schlüssel in `:143-144` mit `int(... or 0)`. Zwei Lesestellen desselben Feldpaars, eine abgesichert, eine nicht — die ungesicherte ist die, die rechnet.
 
 **Befund (2026-07-30).** Dieselbe Falle wie `OLLAMA-THINKING-NULL` sitzt latent drei Zeilen darüber: `services/llm_provider.py` liest `response.get("prompt_eval_count", 0)` und `response.get("eval_count", 0)`. Kommt dort je ein gesetztes `null` statt eines fehlenden Schlüssels, rechnet `input_tokens + output_tokens` mit `None` und stürzt — im Pfad der Token-Verbuchung, also **nach** dem erfolgreichen Call. Heute schlägt es nicht zu; Ollama liefert beide Zähler. *(Zeilennummern gemessen 30.07.2026: 166, 168, 169.)*
 
@@ -2458,6 +2496,8 @@ Beide Endpunkte bauen die Nutzlast jetzt an **einer** Stelle. Der streamende bra
 **Auch gelöst: die Ununterscheidbarkeit.** Der Session-Turn trägt seit dem 30.07.2026 ein `herkunft`-Feld (`nutzer_turn` oder `eigener_impuls`), gespeist aus `reiz_herkunft` im Ereignis. Leer heißt **unbekannt**, nicht „vom Nutzer" — Turns von vor der Änderung tragen das Feld nicht, und ein Default hätte ihnen rückwirkend eine Herkunft angedichtet.
 
 **Offen bleiben (A) und (B):** der Aussetzer selbst — Ursache im Modell-Backend, nicht ermittelt — und der harte Timeout, der ein 6 ms später eintreffendes Ergebnis verwirft. Beide sind seit (C) folgenlos für den Turn: Er überlebt, und der Ausfall ist am Ereignis erkennbar.
+
+**Gegen HEAD `9bcd214` nachgesehen am 24.08.2026:** unverändert. `submit_sync` gibt weiterhin nach `timeout` Sekunden auf (Default 60,0) und verwirft das Ergebnis; einen Zweig, der ein knapp verspätetes Ergebnis noch annimmt, gibt es nicht. **(B) und `SUBMIT-SYNC-BEHAUPTET-WORKER-THREAD` sitzen in derselben Funktion** — wer die eine anfasst, liest die andere mit.
 
 **Entdeckt:** Chat 119, live am Client. **Drei Defekte in einer Kette** — sie stehen zusammen, weil keiner von ihnen allein den beobachteten Schaden erklärt und weil die Reihenfolge der Behebung von der Kette abhängt.
 
@@ -3246,6 +3286,10 @@ Header der aktiven Datei sagt explizit „Migriert aus: services/shadow_agent/ta
 **Behoben Chat 77:** Audit hat `LzgPromotionTask` als Karteileiche bestätigt (keine aktiven Aufrufer seit Chat 62). Datei `services/shadow_agent/tasks/lzg_promotion.py` (555 Zeilen, 23 KB) entfernt. Siehe Chat-77-Protokoll Abschnitt 1.
 
 #### REDIS-KEY-ASYMMETRY — Inline-Key-Konstruktion ohne Helper, Reader-Setter-Schema-Mismatch ⬜
+
+**Zustand:** offen — gegen HEAD `9bcd214` gemessen am 24.08.2026. **Eigenschaft 1 gilt unveraendert:** Es gibt weiterhin keinen zentralen Helfer fuer `hash_dirty`; jede Stelle baut den Key per f-string (`memory/kzg.py:546`, `agents/kzg/queues.py:135`, `agents/synapsen_promotion/agent.py:472`). Das Vorbild `_kzg_key()` steht weiter allein in `memory/kzg.py:69` und bedient nur seine eigene Familie.
+
+> **Eigenschaft 3 hat sich verschoben.** Der Leser hartcodiert nicht mehr `(DEFAULT_USER_ID, ASSISTANT_USER_ID)`, sondern iteriert ueber eine **Paarliste aus der Konfiguration** (`agents/charakter/agent.py:150`, `AKTIVES_PAAR_USER_ID`). Die Asymmetrie ist damit nicht behoben, sondern hat die Form gewechselt: Sie liegt jetzt zwischen *Setzer schreibt fuer jedes Paar* und *Leser liest fuer genau eins* — mit `HASH-DIRTY-WAISENKEYS` als gemessener Folge, dort 12 ungelesene Keys.
 **Entdeckt:** Chat 84 (Audit nach Karteileichen-Fund `hash_dirty:nova:nova` plus `drive:short_term:nova:nova` in Redis)
 
 **Symptom:** Drei Setter-Familien teilen identisches strukturelles Bug-Profil:
@@ -3285,6 +3329,10 @@ Header der aktiven Datei sagt explizit „Migriert aus: services/shadow_agent/ta
 - **Code:** `novaberg/server/graph/nodes/thinker_cache.py` (neue Datei), Wiring in `novaberg/server/graph/nodes/thinker.py`.
 
 #### PIXIE-AGENT-MISSING — Periodische Pixie-Dispatches auf nicht-registrierte Agenten ⬜
+
+**Zustand:** offen — gegen HEAD `9bcd214` gemessen am 24.08.2026. **Zur Haelfte ueberholt:** `nachfragen` ist gebaut und liegt als `server/agents/nachfragen/` in der Registry; die ERROR-Zeile dazu kann nicht mehr entstehen. `vertiefung` gibt es weiterhin nicht, und `services/pixie/router.py:18` bildet weiter darauf ab.
+
+> **Dieser Eintrag und `UNREGISTRIERTER-AGENT-GEWINNT` beschreiben denselben Defekt aus zwei Richtungen** — hier der Log-Laerm, dort die Verdraengung. Beide nennen dieselben zwei Agentennamen und dieselbe Routingtabelle. Zusammenzufuehren waere eine Entscheidung; solange beide stehen, gilt der andere als der genauere: Er benennt die Ursache (die Registry-Pruefung sitzt hinter der Wahl des Gewinners), dieser nur ihr Symptom.
 **Entdeckt:** Chat 75, Reducer-Umbau Smoke-Tests
 **Symptom:** Pixie-Dispatcher loggt periodisch ERROR für zwei nicht-registrierte Agenten:
 - `Pixie-Dispatch: Agent 'nachfragen' nicht in Registry` (beobachtet 13:37:22)
@@ -4394,6 +4442,12 @@ Lumi ist ein Schnittlauch aus dem Supermarkt. Er ist eingegangen.
 
 #### ZIELE-AUS-ZERRBILD — Novas Langfristziele erben die Haltung aus dem verzerrten kern_hash ⚠️
 
+**Zustand:** offen — gegen HEAD `9bcd214` gemessen am 24.08.2026. **Die Konsequenz, die der Eintrag verlangte, ist gebaut; die Ursache, auf die er zeigt, ist nicht nachprüfbar.**
+
+**Gebaut ist die Ziel-Invalidierung** (`agents/charakter/agent.py:388-397`, Chat 125): Liefert die Destillation neue Ziele, werden die aktiven langfristigen Ziele **dieses Paares** vorher deaktiviert (`ziele_aktive_laden` → `ziel_deaktivieren` für `ziel_typ == "langfristig"`). Der Kommentar nennt das Gegenüber ausdrücklich als Pflichtangabe — ohne es räumte die Destillation eines Paares die Ziele jedes anderen ab. Damit ist der Satz *„Das steht bisher in keinem Bauteil"* überholt: Ein reparierter Lesepfad zieht die abgeleiteten Ziele heute mit.
+
+> **Nicht nachprüfbar ist die andere Hälfte.** Der Eintrag hängt sein Symptom an `DESTILLAT-PERSPEKTIVE-VS-SUBJEKT` — und **diese Kennung hat in diesem Register keinen eigenen Abschnitt.** Sie wird dreimal als *Verwandt* genannt und nirgends geführt. Solange das so ist, ist *„ist der Hash noch das Zerrbild"* aus dem Register nicht zu beantworten, und dieser Eintrag bleibt offen, weil sein Grund unbelegt ist — nicht, weil er widerlegt wäre.
+
 **Symptom:** Der Ziel-Destillator (`agents/charakter/destillation.py`, `langfristige_ziele_destillieren`) läuft ausschließlich im Nova-Build und liest den unmittelbar zuvor erzeugten `kern_hash`. Ist dieser das bekannte Zerrbild (Novas Profil beschreibt den Meister → DESTILLAT-PERSPEKTIVE-VS-SUBJEKT), übernimmt Nova dessen Haltung als eigenes Langfristziel in Ich-Form.
 
 **Beleg, Live-Lauf 25.07.2026 08:00:22 UTC** (`caller=charakter/ziele`, qwen36-cpu, `expect_json=True`, 2 Ziele):
@@ -4497,7 +4551,11 @@ Das ist ein **Datenpfad**-Defekt, kein Prompt-Defekt. Der Verdichter zog nicht d
 
 ---
 
-#### SALIENZ-OHNE-PIPELINE-LOG — der Wert, der über Erinnern entscheidet, ist forensisch unsichtbar ⚠️
+#### SALIENZ-OHNE-PIPELINE-LOG — der Wert, der über Erinnern entscheidet, ist forensisch unsichtbar ✅
+
+**Zustand:** behoben — gegen HEAD `9bcd214` gemessen am 24.08.2026. `graph/nodes/salience.py` schreibt fünf Arten von Einträgen ins `pipeline_log` und hängt in einem Span; der Docstring von `salienz_bewerten` nennt diese Kennung als Anlass (Chat 111). **Am Bestand gezählt statt am Code geschlossen:** 13.326 Zeilen des Salienz-Knotens über alle drei Graphen — `character` 4887/804/804/800/9, `user` 1933/619/619/617/1, `agent` 1387/219/219/208 (berechnung · span_start · switch · span_end · fehler), erste am 27.07.2026, letzte am 24.08.2026.
+
+> **Die Reproduktion des Befundes liefert heute das Gegenteil.** Sie lautete *„es erscheint keine Zeile mit Salienz-Bezug"*; dieselbe Abfrage über `node` liefert vierzehn `art`/`quelle`-Kombinationen. Der Eintrag stand **dreizehn Tage** auf *offen*, nachdem er behoben war — gefunden hat es die Triage nach bewegtem Code, nicht die Nachprüfung des Eintrags.
 
 **Entdeckt:** Chat 110, bei der Prüfung, ob der AgentGraph äquivalent zum HumanGraph protokolliert.
 
@@ -4519,11 +4577,13 @@ Und live für den Impuls-Turn `57b6e84c…`: 14 `art`/`quelle`-Kombinationen im 
 
 **Auswirkung:** Der Fund `bewertungs_laenge=0` im AgentGraph (behoben Chat 110 über `graph_rolle`) war **nur** deshalb aufwendig zu finden, weil diese Zeile fehlt: Er lag seit Einführung des Graphen vor und war ausschließlich im flüchtigen Container-Log sichtbar. Dieselbe Blindheit gilt weiter für jede Fehlbewertung.
 
-**Status:** Offen. **Verwandt:** KZG-SALIENZ-SKALENBRUCH (dort geht es um den Wert, hier um seine Sichtbarkeit).
+~~**Status:** Offen.~~ **Verwandt:** KZG-SALIENZ-SKALENBRUCH (dort geht es um den Wert, hier um seine Sichtbarkeit).
 
 ---
 
 #### KONTAMINATIONSFILTER-TOT — der Filter prüft auf einen Marker, den niemand setzt ⚠️
+
+**Zustand:** offen — gegen HEAD `9bcd214` gemessen am 24.08.2026. Unverändert, bis auf die Zeile: Der Filter steht heute in `graph/nodes/enricher.py:673` statt `:448`. Die Gegenprobe des Befundes liefert dasselbe Ergebnis wie damals — `grep -rn "Nova-Impuls" --include='*.py' server/` findet **genau einen** Treffer, die Lesestelle selbst. Die Entscheidung (streichen · auf `reiz_herkunft` umhängen · als bewusste Nicht-Filterung dokumentieren) steht weiter aus.
 
 **Entdeckt:** Chat 110, bei der Frage, ob der Impuls-Turn gefiltert werden muss.
 
@@ -4605,6 +4665,20 @@ Die Klasse ist auch im Bestand sichtbar: Ein Scan über 400 KZG-Keys findet mehr
 
 #### HASH-DIRTY-WAISENKEYS — zwei Redis-Keys ohne Leser und ohne Löscher ⚠️
 
+**Zustand:** offen — gegen HEAD `9bcd214` gemessen am 24.08.2026. **Die beiden genannten Keys sind fort, und der Befund ist trotzdem größer geworden: aus zwei Waisen sind zwölf.** Weder `hash_dirty:meister` (einteilig) noch `hash_dirty:nova:meister` (vertauscht) liegen noch in Redis; das Schema ist durchgehend `{user}:{char}`. 
+
+```
+redis-cli --scan --pattern "hash_dirty*"   ->  12 Keys, alle Form {user}:nova
+   b1_live · default · konrad · leon · mehmet · nmcp_cut · nmcp_live
+   nmcp_probe · nmcp_read · nmcp_read2 · sarah · vera
+```
+
+> **Alle zwölf sind Waisen, und der dreizehnte ist der Beleg dafür.** Der einzige Key mit Leser und Löscher — `hash_dirty:meister:nova`, das aktive Paar — ist **transient**: Er entsteht, wird destilliert und verschwindet. Eine erste Zählung erwischte ihn am Leben und meldete 13; vier Wiederholungen über zwanzig Minuten sahen ihn nie wieder, während die zwölf anderen unverändert dastanden. **Das ist die Trennlinie**: Was einen Leser hat, ist selten da; was keinen hat, liegt immer da.
+
+> **Die Ursache ist eine andere als 2026.** Damals war es ein Migrationsskript; heute ist es die **einelementige Paarliste**: `agents/charakter/agent.py:150` iteriert über `[(AKTIVES_PAAR_USER_ID, ASSISTANT_USER_ID)]`, im Behälter `meister:nova`. Jedes andere Paar — Sonden, Messreihen, Testnutzer — setzt sein Flag und findet nie einen Leser oder Löscher. Der Kommentar an der Stelle nennt den Backlog-Eintrag `PAARLISTE-FEST` und die Absicht, über den Bestand zu iterieren; bis dahin wächst die Waisenmenge mit jedem neuen Paar.
+>
+> Severity bleibt **niedrig** — kein Schaden, kein Speicherdruck bei zwölf Keys. Der Wert des Eintrags liegt darin, dass jeder Leser die Keys für aktiv hält, und dass die Zahl mit der Zahl der Paare mitwächst.
+
 **Entdeckt:** Chat 110, Audit `AUDIT-HASH-DIRTY-SICHTBARKEIT`.
 
 **Klasse:** Verwaiste Zustandsflags. Severity **niedrig** — kein Schaden, aber jeder Leser hält sie für aktiv.
@@ -4617,7 +4691,11 @@ Die Klasse ist auch im Bestand sichtbar: Ein Scan über 400 KZG-Keys findet mehr
 
 ---
 
-#### HASH-DIRTY-SETZER-DRIFT — fünf Setzer, drei verschiedene Bauarten ⚠️
+#### HASH-DIRTY-SETZER-DRIFT — fünf Setzer, drei verschiedene Bauarten ✅
+
+**Zustand:** behoben — gegen HEAD `9bcd214` gemessen am 24.08.2026. **Der beschriebene Zustand existiert nicht mehr.** Von fünf Setzern sind drei übrig (`memory/kzg.py:546`, `agents/kzg/queues.py:135`, `agents/synapsen_promotion/agent.py:472`); `agents/promotion/agent.py` setzt das Flag an keiner Stelle mehr. **Alle drei stehen hinter einem `PIXIE_AKTIV`-Gate** — auch `queues.py`, dessen fehlendes Gate der Befund war: `queues_befuellen` kehrt bei `not PIXIE_AKTIV` schon in Zeile 43 zurück, und der Setzer steht in derselben Funktion.
+
+> **Ein Rest bleibt, und er ist kleiner als der Befund:** Die Meldung beim Übersprung ist weiter uneinheitlich. `memory/kzg.py:539` schreibt eine `debug`-Zeile mit dem Grund, `queues.py` meldet nur das Kürzel `dirty_flag` in einer Sammelzeile, und `synapsen_promotion/agent.py:464` überspringt mit einem blanken `pass` — ohne jede Zeile. Das ist die Logspalte der Tabelle, nicht die Gate-Spalte.
 
 **Entdeckt:** Chat 110, im selben Audit.
 
@@ -4637,7 +4715,7 @@ Die Klasse ist auch im Bestand sichtbar: Ein Scan über 400 KZG-Keys findet mehr
 
 **Reproduktion:** `grep -rn "hash_dirty" --include='*.py' server/ | grep -v test` — die fünf Setzer und ihre Umgebung vergleichen.
 
-**Status:** Offen. **Verwandt:** HASH-DIRTY-WAISENKEYS.
+~~**Status:** Offen.~~ **Verwandt:** HASH-DIRTY-WAISENKEYS.
 
 ---
 
@@ -4663,7 +4741,7 @@ Die Klasse ist auch im Bestand sichtbar: Ein Scan über 400 KZG-Keys findet mehr
 
 **Symptom:** `agents/charakter/destillation.py:127-129` trägt die Abschnittsüberschrift „Prompts — Nova (eigene Perspektive)" ohne Inhalt darunter. Entweder fehlt der Block, oder die Überschrift ist ein Rest.
 
-**Status:** Offen, Prio niedrig.
+**Status:** Offen, Prio niedrig. Gegen HEAD `9bcd214` gemessen am 24.08.2026: unverändert, die Überschrift steht heute in **Zeile 336** und trägt weiterhin nichts — zwischen ihr und dem nächsten Abschnitt (`Hilfsfunktionen`, `:340`) liegen zwei Leerzeilen.
 
 ---
 
@@ -4718,6 +4796,16 @@ FROM pipeline_log WHERE turn_id = '<turn>' AND node = 'salienz'
 ---
 
 #### PIXIE-QUEUE-LAUF-DISSENS — Dispatcher und Agent meinen Verschiedenes mit „ein Queue-Lauf" ⚠️
+
+**Zustand:** offen — gegen HEAD `9bcd214` gemessen am 24.08.2026. **Einer der drei Befunde ist behoben, die beiden tragenden stehen.**
+
+| Teil | heute |
+|---|---|
+| (1) `lrem` greift ins Leere | **steht** — `_eintrag_entfernen` unverändert; die Annahme ist jetzt im Docstring festgehalten (*„lrem auf einem nicht vorhandenen Satz ist wirkungslos"*), also dokumentiert statt aufgelöst |
+| (2) Retry schreibt in eine geleerte Queue zurück | **steht** — `_wiedereinreihen_oder_verwerfen` legt weiterhin genau **einen** Eintrag zurück |
+| (3) `except Exception: pass` im Retry-Pfad | **behoben** — ein unlesbarer Rohsatz wird gemeldet und lässt die Queue unberührt; der Docstring nennt den alten Zweig beim Namen |
+
+> **Dazu ein gepinntes Verhalten, das der Befund nicht kannte** und das der Code selbst als Falle ausweist: Das Entfernen steht **vor** der Abfrage auf `PIXIE_AKTIV`. Bei abgeschaltetem Pixie ist der Auftrag entfernt und wird nicht wieder eingereiht — er ist weg. `tests/test_pixie_abschluss.py` hält es fest.
 
 **Entdeckt:** Chat 111, Audit der Promotion-Queue.
 

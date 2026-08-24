@@ -1365,6 +1365,8 @@ Das Datenmodell trägt das Paar überall; es fehlt die **Iteration**, nicht das 
 >
 > **Und die Reihenfolge hat sich umgekehrt:** Vor der Iteration muss geklärt sein, was Novas Seite pro Beziehung trennt. Bei `ziele` war es eine fehlende Spalte, die beim Destillieren mehrerer Paare *gelöscht* hätte (behoben am 02.08.); `charakter_anweisungen` und die Arbeitsqueues `queue:{user_id}` stehen unverändert ohne Gegenüber, beide in der Fundliste. Eine Iteration vor dieser Klärung vervielfacht die Schreiber auf gemeinsamen Zustand.
 
+> **Der Preis der einelementigen Liste ist seit dem 24.08.2026 gezählt, und er ist Müll, kein Schaden.** In Redis liegen **12** `hash_dirty`-Keys ohne jeden Leser, alle in der Form `{user}:nova`. Der dreizehnte, der des aktiven Paares, ist transient — er wird gelesen und gelöscht und liegt deshalb meist gar nicht da. Die zwölf — Sonden, Messreihen, Testnutzer (`b1_live`, `default`, `konrad`, `leon`, `mehmet`, `nmcp_cut`, `nmcp_live`, `nmcp_probe`, `nmcp_read`, `nmcp_read2`, `sarah`, `vera`) — haben weder Leser noch Löscher. Geführt als `HASH-DIRTY-WAISENKEYS`; die Menge wächst mit jedem neuen Paar, das einmal einen Turn hatte.
+
 ~~**Priorität:** hoch, vor der Reihe.~~ **Priorität:** mittel — nach der Reihe, und erst nach der Klärung oben.
 
 ---
