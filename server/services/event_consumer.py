@@ -567,6 +567,26 @@ async def event_consumer_loop(
             await asyncio.sleep(POLL_INTERVAL)
 
 
+# Die Zustandsfelder, deren Belegung die Zustellung protokolliert. Sie sind
+# eine Auswahl aus der Nutzlast: Was hier steht, wird gezaehlt und namentlich
+# gemeldet, wenn es leer ist. Die uebrigen Felder der Nutzlast — Modell,
+# Tokenzahl, Herkunft, die Emotionswerte des Nutzers — bleiben ungemessen.
+#
+# Ein Name, der in der Nutzlast nicht vorkommt, waere hier unsichtbar falsch:
+# Er wuerde bei jedem Turn als leer gemeldet. `tests/test_nutzlast_belegung.py`
+# haelt die Liste deshalb gegen die Schluessel der gebauten Nutzlast.
+GEMESSENE_ZUSTANDSFELDER: tuple[str, ...] = (
+    "nova_emotion",
+    "nova_emotions_vektor",
+    "intent",
+    "tone",
+    "gespraechs_modus",
+    "user_intentionen",
+    "momentum",
+    "gespraechsvektor",
+)
+
+
 def _antwort_nutzlast_bauen(
     zustand: dict,
     turn_id: str,
@@ -596,30 +616,7 @@ def _antwort_nutzlast_bauen(
     """
     zustand_internal = zustand.get("internal")
 
-    # **Was gefuellt war, steht im Log — nicht nur, wie lang die Antwort ist.**
-    # Bis zum 25.08.2026 meldete die Zustellung `342 Zeichen, 2 Clients` und
-    # sonst nichts; welches der acht Zustandsfelder gefehlt hat, war
-    # hinterher nicht feststellbar (`18_NACHVOLLZIEHBARKEIT.md` §3: die
-    # Eingangsgroessen einzeln).
-    _belegung: dict = {
-        "nova_emotion":         bool(zustand.get("nova_emotions_verlauf")),
-        "nova_emotions_vektor": bool(zustand_internal),
-        "intent":               bool(zustand_internal),
-        "tone":                 bool(zustand_internal),
-        "gespraechs_modus":     bool(zustand_internal),
-        "user_intentionen":     bool(zustand.get("user_intentionen")),
-        "momentum":             bool(zustand.get("momentum")),
-        "gespraechsvektor":     bool(zustand.get("gespraechsvektor")),
-    }
-    _fehlend: list = sorted(f for f, da in _belegung.items() if not da)
-    logger.info(
-        "Nutzlast: %d von 8 Zustandsfeldern gefuellt%s (turn_id=%s, %d Zeichen)",
-        sum(_belegung.values()),
-        f" — leer: {', '.join(_fehlend)}" if _fehlend else "",
-        turn_id or "(keine)",
-        len(zustand.get("response", "")),
-    )
-    return json.dumps({
+    nutzlast: dict = {
         "typ":                "character_response",
         "nachricht":          zustand.get("response", ""),
         # Der Reiz, auf den diese Antwort antwortet. Leer heisst
@@ -658,7 +655,36 @@ def _antwort_nutzlast_bauen(
         "user_intentionen":   zustand.get("user_intentionen", []),
         "momentum":           zustand.get("momentum", ""),
         "gespraechsvektor":   zustand.get("gespraechsvektor", ""),
-    }, ensure_ascii=False)
+    }
+
+    # **Was gefuellt war, steht im Log — nicht nur, wie lang die Antwort ist.**
+    # Bis zum 25.08.2026 meldete die Zustellung `342 Zeichen, 2 Clients` und
+    # sonst nichts; welches Zustandsfeld gefehlt hat, war hinterher nicht
+    # feststellbar (`18_NACHVOLLZIEHBARKEIT.md` §3: die Eingangsgroessen
+    # einzeln).
+    #
+    # **Die Belegung wird an der fertigen Nutzlast gemessen, nicht an einer
+    # zweiten Liste daneben.** Die erste Fassung dieser Zeile fuehrte eine
+    # eigene Tabelle, und vier ihrer acht Eintraege prueften dieselbe Groesse:
+    # `bool(zustand_internal)` sagt, ob das Traegerobjekt da ist — nicht, ob
+    # das Feld darin belegt ist. Gemessen am 25.08.2026 mit einer frisch
+    # angelegten InternalPersonality: Die Zeile meldete **8 von 8**, waehrend
+    # `nova_emotions_vektor` als leerer String beim Client ankam. Das ist der
+    # haeufige Fall und nicht der konstruierte — `Emotion.emotions_vector`
+    # traegt "" als Vorgabewert.
+    #
+    # Gegen die Nutzlast gemessen kann die Zeile nichts anderes mehr sagen als
+    # das, was gesendet wird.
+    _fehlend: list = sorted(f for f in GEMESSENE_ZUSTANDSFELDER if not nutzlast.get(f))
+    logger.info(
+        "Nutzlast: %d von %d Zustandsfeldern gefuellt%s (turn_id=%s, %d Zeichen)",
+        len(GEMESSENE_ZUSTANDSFELDER) - len(_fehlend),
+        len(GEMESSENE_ZUSTANDSFELDER),
+        f" — leer: {', '.join(_fehlend)}" if _fehlend else "",
+        turn_id or "(keine)",
+        len(zustand.get("response", "")),
+    )
+    return json.dumps(nutzlast, ensure_ascii=False)
 
 
 async def _event_verarbeiten(
