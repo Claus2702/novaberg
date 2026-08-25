@@ -1,6 +1,6 @@
 # Novaberg — Roadmap (Projektchronik)
 
-**Stand:** 25. August 2026, 08:40 UTC
+**Stand:** 25. August 2026, 09:20 UTC
 **Pfad:** novaberg/docs/novaberg-roadmap.md
 **Single Source of Truth für abgeschlossene Arbeit.**
 **Offene Punkte → novaberg-backlog.md**
@@ -12,6 +12,29 @@ Die Kopfzeile stand bis Chat 109 auf „Chat 93, 21. Mai 2026" — 15 Chats hint
 ---
 
 ## Chats 3–20: Grundlagen (März 2026)
+
+### 25.08.2026, 09:20 UTC — Das Bugregister wird geteilt, weil seine Größe den Zustand seiner Einträge altern ließ
+
+**Der Anlass ist eine Zahl, nicht ein Gefühl über die Datei.** `novaberg-bugs.md` trug 558 kB und rund 113.000 Token; zusammen mit Backlog und Chronik sind es 1,8 MB und rund 378.000 Token. Eine Datei dieser Größe wird nicht mehr am Stück gelesen, sondern nur noch durchsucht — und genau daran altert der Zustand ihrer Einträge.
+
+**Gemessen am selben Tag, bevor geschnitten wurde:** Von 170 offenen Einträgen trugen 54 eine Prüfung aus den letzten fünf Tagen; **116 waren seit ihrem Befund nie wieder gegen den Code gehalten worden.** Von 75 daraus nachgeprüften waren **23 nicht mehr offen** — behoben, gegenstandslos oder nicht mehr belegbar. Das ist jeder dritte bis vierte.
+
+| | vorher | nachher |
+|---|---|---|
+| `novaberg-bugs.md` | 558 kB · 273 Einträge | **290 kB · 172 Einträge** |
+| `novaberg-bugs-archiv.md` | — | **280 kB · 101 Einträge** |
+
+**Geschnitten wurde am erfassten Zustand, nicht an einer Neubewertung.** Die 23 Befunde des Durchgangs sind bewusst *nicht* in denselben Schritt geflossen: Ein Schnitt, der zugleich umsortiert, ist weder nachrechenbar noch rückgängig zu machen.
+
+**Der Test ist eine Bilanz, keine Meinung.** Er prüft vier Zusicherungen: keine Kennung in beiden Dateien, kein abgeschlossener Zustand im offenen Register, kein offener im Archiv, und die Summe stimmt. Gegenprobe an der ungeteilten Datei: **rot mit 101 Befunden**. An den geteilten: grün. Zeilenbilanz über beide Dateien: **0 verlorene Zeilen**, 17 Abschnittsüberschriften stehen absichtlich in beiden.
+
+**Drei Nachträge hätte ein rein mechanischer Schnitt zerrissen.** Sie tragen eine `###`-Überschrift, obwohl sie zu einem `####`-Eintrag darüber gehören — für jeden Blockschnitt sind sie damit eigenständig. Sie sind eigens ausgenommen.
+
+> **Was dabei nebenbei sichtbar wurde: Die Abschnitte `## Behobene Bugs` und `## Offene Bugs` waren seit langem falsch beschriftet** — unter „Offene Bugs" standen 56 abgeschlossene Einträge. Eine Überschrift, die einen Zustand behauptet, wird nicht mitgepflegt; eine Datei, die ihn garantiert, schon. Genau das ist der Unterschied zwischen der alten Gliederung und dem Schnitt.
+
+**Was der Schnitt nicht ändert:** Ein behobener Defekt bleibt mit Vermerk stehen und erklärt weiter, warum der Code so aussieht. Er steht nur nicht mehr in der Datei, die die offene Arbeit trägt. Die Kennung bleibt die Klammer zur Featureliste, und sie ist ein Grep.
+
+---
 
 ### 25.08.2026, 08:40 UTC — Ein Nebensatz verschiebt die Ähnlichkeit weiter, als eine Schwelle reicht
 
