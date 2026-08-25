@@ -2,8 +2,8 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Rohe, noch unklassifizierte Funde aus laufender Arbeit
-**Stand:** 25. August 2026, 20:10 UTC
-**Offen:** **109 Funde — gezaehlt am 25.08.2026, 20:10 UTC** (117 Fundzeilen im Abschnitt *Offen*, davon **8** durchgestrichen; **einer neu aus der Aufloesung der doppelten Kennungen** — das Findemittel des Backlogs kennt einen Eintrag nicht)
+**Stand:** 25. August 2026, 20:55 UTC
+**Offen:** **110 Funde — gezaehlt am 25.08.2026, 20:55 UTC** (118 Fundzeilen im Abschnitt *Offen*, davon **8** durchgestrichen; **einer neu aus dem Nachzug an den Moduldokumenten** — der Audit-Trail der Agenten hat kein Dokument)
 **Verlauf:** [Verlauf des Standes](#verlauf-des-standes) — 73 Eintraege, juengster zuerst
 **Pfad:** novaberg/docs/novaberg-fundliste.md
 
@@ -232,6 +232,8 @@ Analog zum Kraft-1-Stichtag: ab wann eine Partition brauchbar ist. Kein Backfill
 ---
 
 ## Offen
+
+- **2026-08-25** — **Der Audit-Trail der Agenten hat kein Dokument.** `schritte` ist in `agents/base.py` ausdruecklich als *Audit-Trail* deklariert, jeder Agent schreibt hinein, und die Dispatcher lesen daraus den Grund eines Fehlschlags. **Gesucht ueber alle Repo-Dokumente: keins beschreibt ihn** — die einzigen Fundstellen sind ein Defekteintrag und ein Chronikeintrag, beide von heute. Aufgefallen beim Nachzug zu `VORHER-ZUSTAND-OHNE-SPUR`: Es gab keine Stelle, an der die neue Spur haette eingetragen werden muessen, also wurde sie in die beiden Agenten-Moduldokumente geschrieben. **Ein Kanal, den jeder Agent fuellt und kein Dokument beschreibt, hat keine Form, gegen die man ihn pruefen koennte** — welche Felder ein Schritt-Eintrag traegt, steht nirgends.
 
 - **2026-08-25** — **Das Findemittel des Backlogs kennt `WISSEN-OHNE-ZETTEL` nicht.** Die Kennung steht als Eintrag in `novaberg-backlog-wissen.md` (geschlossen am 19.08.2026), aber in `novaberg-backlog-index.md` kommt sie nicht vor — obwohl der Index 14 andere abgeschlossene Kennungen fuehrt. **Ein Findemittel, das einen Eintrag nicht kennt, ist von einem Findemittel, das ihn korrekt als nicht vorhanden meldet, nicht zu unterscheiden.** Aufgefallen bei der Aufloesung der doppelten Kennungen; ob weitere Eintraege im Index fehlen, ist ungezaehlt — die Gegenrichtung (Index nennt etwas, das es nicht gibt) ebenfalls.
 

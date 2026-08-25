@@ -192,7 +192,9 @@ Der Thinker nutzt `timeline_check`, `memory_search`, `web_search`. Bei Recherche
 
 ### 6.4 Concurrent Pixie + Chat
 
-Was passiert wenn ein User chattet waehrend Pixie gerade einen PixieGraph-Durchlauf macht? Beide schreiben in dieselbe Session. Der Chat-Pfad hat den `llm_lock` (GPU). Pixie laeuft auf CPU — kein Lock-Konflikt. Aber Session-Writes koennten sich ueberlappen. Loesung: Dispatcher schreibt atomar (einzelner Redis-Call), Session-Reihenfolge durch Timestamp.
+Was passiert wenn ein User chattet waehrend Pixie gerade einen PixieGraph-Durchlauf macht? Beide schreiben in dieselbe Session. Der Chat-Pfad hat den `graph_run_lock` (GPU). Pixie laeuft auf CPU — kein Lock-Konflikt. Aber Session-Writes koennten sich ueberlappen. Loesung: Dispatcher schreibt atomar (einzelner Redis-Call), Session-Reihenfolge durch Timestamp.
+
+> **Umbenannt am 25.08.2026: `llm_lock` heisst jetzt `graph_run_lock`.** Der Name sagte *Sperre vor dem Sprachmodell* und meinte *ein Graphenlauf zur Zeit*; seit dem Vormittag desselben Tages traegt `services/llm_riegel.py` den echten Modell-Riegel, und die Verwechslung waere teuer geworden.
 
 ### 6.5 Queue-Duplikat-Pruefung
 

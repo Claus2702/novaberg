@@ -26,7 +26,9 @@ CharacterGraph (Pfad 2): ... → Tribunal → Evaluate → ok → Salienz → �
 
 **Seit Chat 60 wieder im Graph.** Der Dispatcher ist letzter Node beider Graphen. Salienz und Dispatcher laufen nicht mehr asynchron — sie sind Teil des jeweiligen Graph-Durchlaufs.
 
-**Kein LLM-Call:** Der Dispatcher selbst macht nichts am LLM — er ruft nur Manager-Plugins und Agent-Dispatcher auf. Der `llm_lock` wird hier nicht erworben.
+**Kein LLM-Call:** Der Dispatcher selbst macht nichts am LLM — er ruft nur Manager-Plugins und Agent-Dispatcher auf. Der `graph_run_lock` wird hier nicht erworben.
+
+> **Umbenannt am 25.08.2026: `llm_lock` heisst jetzt `graph_run_lock`.** Der Name sagte *Sperre vor dem Sprachmodell* und meinte *ein Graphenlauf zur Zeit*; seit dem Vormittag desselben Tages traegt `services/llm_riegel.py` den echten Modell-Riegel, und die Verwechslung waere teuer geworden.
 
 **Input:** State mit `pending_writes` (befüllt von Salienz; Planner-Writes sind bereits vor dem Dispatcher geflossen — deren Dispatch passiert weiterhin implizit im Planner-Pfad).
 

@@ -1,13 +1,13 @@
 # Novaberg — Roadmap (Projektchronik)
 
-**Stand:** 25. August 2026 — juengster Eintrag **20:37 UTC** (gemessen via `date -u`); die Eintraege darunter tragen Zeiten bis 21:30 UTC, die zu dieser Zeitbasis in der Zukunft liegen und deshalb **oberhalb** ihres Datums stehen. Der Widerspruch steht in der Fundliste.
+**Stand:** 25. August 2026 — juengster Eintrag **20:55 UTC** (gemessen via `date -u`); die Eintraege darunter tragen Zeiten bis 21:30 UTC, die zu dieser Zeitbasis in der Zukunft liegen und deshalb **oberhalb** ihres Datums stehen. Der Widerspruch steht in der Fundliste.
 **Pfad:** novaberg/docs/novaberg-roadmap.md
 **Single Source of Truth für abgeschlossene Arbeit.**
 **Offene Punkte → novaberg-backlog.md**
 
 | Zeitraum | Datei | Kapitel |
 |---|---|---|
-| 2026-08 | **novaberg-roadmap.md** ← diese Datei | 129 |
+| 2026-08 | **novaberg-roadmap.md** ← diese Datei | 130 |
 | 2026-07 | [`novaberg-roadmap-2026-07.md`](novaberg-roadmap-2026-07.md) | 12 |
 | 2026-05 | [`novaberg-roadmap-2026-05.md`](novaberg-roadmap-2026-05.md) | 18 |
 | 2026-04 | [`novaberg-roadmap-2026-04.md`](novaberg-roadmap-2026-04.md) | 21 |
@@ -18,6 +18,27 @@
 ## Hinweis für Bearbeiter dieser Datei
 
 Die Kopfzeile stand bis Chat 109 auf „Chat 93, 21. Mai 2026" — 15 Chats hinter dem Inhalt. **Sie ist danach erneut zurückgefallen:** von Chat 110 bis 114 blieb sie auf „Chat 109" stehen, während der Inhalt weiterwuchs, und wurde in Chat 115 nachgezogen. Wer hier etwas ergänzt, zieht die Kopfzeile mit — sie driftet zuverlässig. Achtung beim Nachschlagen: Nur bis Chat 97 trägt jeder Chat eine eigene `## Chat NNN`-Überschrift; die Chats 98–108 stehen als `###`-Abschnitte unter dem Chat-97-Block, benannt nach Sprint statt nach Chat.
+
+---
+
+## 25.08.2026, 20:55 UTC — der Nachzug, den die Frage nach den Moduldokumenten fand
+
+**ZIEL:** Kein Moduldokument und keine Konvention beschreibt einen Zustand, den der Code heute nicht mehr hat.
+**TEST:** `grep` ueber `docs/` nach dem alten Bezeichner — historische Befunde bleiben, Zustandsbeschreibungen nicht.
+**MESSUNG:** **10 Dokumente nannten `llm_lock`**, 21 Vorkommen. Sieben davon in vier Zustandsdokumenten, nachgezogen; der Rest sind Befunde mit Datum und bleibt.
+
+**Die Chronik und die Featureliste waren nachgezogen, die Moduldokumente nicht.** Gefunden hat es eine Frage — *„haben wir alles?"* —, nicht die Schlusspruefung; die war zu diesem Zeitpunkt gelaufen und gruen. Genau die Klasse, die der Nachzug nicht sieht: **Ein Moduldokument beschreibt denselben Code aus der anderen Richtung und liegt damit quer zum gebauten Weg.**
+
+| Dokument | Was falsch stand |
+|---|---|
+| `novaberg-convention-event-model.md` | vier Stellen, darunter ein Codebeispiel `with llm_lock:` |
+| `novaberg-node-dispatcher.md`, `novaberg-node-salience.md`, `novaberg-pixie-graph-merge_k.md` | je eine Zustandsaussage |
+
+Jedes trägt jetzt einen Umbenennungsvermerk, damit ein alter Verweis auflösbar bleibt.
+
+**Zwei weitere Änderungen des Tages hatten ebenfalls kein Dokument erreicht:** Die Audit-Spur des ersetzten Inhalts steht jetzt in `novaberg-agent-directives.md` §5.2 und `novaberg-agent-character.md` §5.3; die Belegungszeile des Antwort-Payloads in der Ereignis-Konvention, samt dem Defekt, der sie ausgelöst hat.
+
+**Und dabei fiel auf, dass der Audit-Trail selbst kein Dokument hat.** `schritte` ist in `agents/base.py` als solcher deklariert, jeder Agent schreibt hinein, kein Dokument beschreibt ihn — deshalb gab es keine Stelle, an der die neue Spur einzutragen gewesen wäre. In der Fundliste.
 
 ---
 

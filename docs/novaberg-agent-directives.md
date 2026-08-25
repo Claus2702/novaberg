@@ -140,6 +140,8 @@ Bei delete wird per ILIKE-Suche das Target in den aktiven Direktiven gesucht. Be
 
 Update = Invalidieren + Neu Anlegen. Kein in-place UPDATE. Die alte Direktive wird auf `aktiv = FALSE` gesetzt, eine neue mit geaendertem Text angelegt. Historie bleibt erhalten.
 
+**Der ersetzte Inhalt steht seit dem 25.08.2026 in der Audit-Spur.** Der bisherige Datensatz wurde vor jedem Schreibvorgang gelesen und nie weiterverwendet — sechsmal dasselbe Muster ueber zwei Agenten, sichtbar geworden ueber einen `F841`-Treffer. Nach dem `UPDATE ... SET aktiv = FALSE` ist die Zeile noch da, aber nicht mehr als *die vorherige* erkennbar; bei einem Update liegt daneben die neue. `_previous_state_trace()` legt sie in den `schritte`-Eintrag. Fehlt der Datensatz, steht dort `{"gelesen": False}` statt eines leeren Strings, der wie eine leere Anweisung aussaehe (`VORHER-ZUSTAND-OHNE-SPUR`).
+
 ---
 
 ## 6. DB-Validierung (HITL-Gate)

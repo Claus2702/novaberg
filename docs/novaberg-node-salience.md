@@ -36,7 +36,9 @@ Seit Chat 60 wieder Teil beider Graphen (HumanGraph und CharacterGraph). Nicht m
 
 **Nach dem Tribunal (CharacterGraph):** Nur geprüfte und freigegebene Antworten werden für die Gedächtnisbildung bewertet — der State, mit dem die Salienz arbeitet, ist der State nach dem ok-Verdikt. Verhindert, dass fehlerhafte oder ethisch fragwürdige Inhalte im Gedächtnis landen.
 
-**GPU-LLM-Call (`llm_lock`):** Wird pro Call erworben, nicht pro Graph-Durchlauf.
+**GPU-LLM-Call (`graph_run_lock`):** Wird pro Call erworben, nicht pro Graph-Durchlauf.
+
+> **Umbenannt am 25.08.2026: `llm_lock` heisst jetzt `graph_run_lock`.** Der Name sagte *Sperre vor dem Sprachmodell* und meinte *ein Graphenlauf zur Zeit*; seit dem Vormittag desselben Tages traegt `services/llm_riegel.py` den echten Modell-Riegel, und die Verwechslung waere teuer geworden.
 
 ### Salienz als Gedächtnis-Weiche
 

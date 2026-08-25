@@ -56,7 +56,9 @@ Die Antwort erreicht den Client per WebSocket.
 
 Vor der Ereignis-Queue liegt seit dem 01.08.2026 eine zweite: `prompt_queue:{user_id}:{character_id}`. Der Chat-Endpunkt **nimmt nur an** — er stempelt `empfangen_am`, reiht ein und bestätigt mit einer `nachrichten_id`. Gemessen: **0,01 s** statt 11 bis 104 Sekunden.
 
-**Warum vor und nicht hinter Pfad 1.** Pfad 1 hält den `llm_lock`; eine zweite Äußerung wartet dort, und ihr Ereignis entsteht erst danach — mit rund zehn Sekunden Abstand. In der Ereignis-Queue liegt deshalb **praktisch nie mehr als ein Nutzer-Reiz**, und eine Zusammenfassung dort kann nicht greifen. Vor Pfad 1 greift sie, weil Einreihen eine Redis-Operation ist und kein Modellaufruf.
+**Warum vor und nicht hinter Pfad 1.** Pfad 1 hält den `graph_run_lock`; eine zweite Äußerung wartet dort, und ihr Ereignis entsteht erst danach — mit rund zehn Sekunden Abstand. In der Ereignis-Queue liegt deshalb **praktisch nie mehr als ein Nutzer-Reiz**, und eine Zusammenfassung dort kann nicht greifen. Vor Pfad 1 greift sie, weil Einreihen eine Redis-Operation ist und kein Modellaufruf.
+
+> **Umbenannt am 25.08.2026: `llm_lock` heisst jetzt `graph_run_lock`.** Der Name sagte *Sperre vor dem Sprachmodell* und meinte *ein Graphenlauf zur Zeit*; seit dem Vormittag desselben Tages traegt `services/llm_riegel.py` den echten Modell-Riegel, und die Verwechslung waere teuer geworden.
 
 **Der Block.** Der Prompt-Consumer nimmt beim Poll, was da liegt, und schneidet die vorderste Gruppe ab: Äußerungen, deren Abstand **zum unmittelbaren Vorgänger** höchstens `EINGANG_FENSTER` (30 s) beträgt. Der Rest bleibt für den nächsten Durchlauf. Es wird **nicht gewartet** — ein Ruhefenster wäre eine Wartezeit auf jeder Antwort.
 
@@ -68,7 +70,7 @@ Vor der Ereignis-Queue liegt seit dem 01.08.2026 eine zweite: `prompt_queue:{use
 
 **Und der Marker allein genügt nicht.** Ein Impuls löscht ihn am Ende seines eigenen Durchlaufs, auch wenn das Nutzer-Ereignis dahinter noch in der Ereignis-Queue liegt. Der Prompt-Consumer prüft deshalb beides: *läuft gerade etwas* (Marker) und *kommt noch etwas* (`event_wartet`). Die zweite Frage ist nicht die erste.
 
-> Der `llm_lock` kann das nicht leisten: Er wird zwischen Pfad 1 und dem CharacterGraph kurz frei, und in diesen Spalt geriet am 01.08.2026 ein zweiter Durchlauf — sein Modellaufruf lief danach in einen Timeout, der Turn blieb ohne Perzeption. Der Marker umspannt beide Hälften; sein TTL ist die Notbremse gegen einen Turn, den niemand beendet.
+> Der `graph_run_lock` kann das nicht leisten: Er wird zwischen Pfad 1 und dem CharacterGraph kurz frei, und in diesen Spalt geriet am 01.08.2026 ein zweiter Durchlauf — sein Modellaufruf lief danach in einen Timeout, der Turn blieb ohne Perzeption. Der Marker umspannt beide Hälften; sein TTL ist die Notbremse gegen einen Turn, den niemand beendet.
 
 Belegt am 01.08.2026: Eine Äußerung während eines laufenden Turns wartete 1:57 min in der Queue, wurde 558 ms nach dem Turn-Ende genommen und lief ohne Timeout durch. Drei Äußerungen mit 12 und 4 Sekunden Abstand wurden zu **einem** Prompt und in **einer** Antwort beantwortet, die alle drei Kennungen nennt.
 
@@ -118,6 +120,12 @@ Jedes Event ist ein JSON-Dict:
 **Gelesen wird die Kennung aus dem Payload, nicht aus dem Ergebnis-Zustand.** Beide tragen sie, und beide liegen im selben Griffbereich — aber was der Client braucht, ist die Kennung **seiner Frage**, nicht die des Laufs, der geantwortet hat. Ein leeres Feld heisst „nicht zuordenbar" und wird als Fehler gemeldet; ein Platzhalter waere schlimmer als die Luecke, weil er gueltig aussaehe.
 
 Der Anlass steht in `novaberg-bugs.md` → `ANTWORT-OHNE-ZUORDNUNG`: Ohne die Zuordnung ordnet der Client der letzten Nachricht zu, was ankommt. Solange jeder Turn antwortet, stimmt das; faellt einer aus, verschiebt sich alles um eins.
+
+**Die Belegung des Payloads steht im Log, und sie wird am Payload gemessen.** Acht der 24 Felder werden gezaehlt und namentlich gemeldet, wenn sie leer sind — `MEASURED_STATE_FIELDS` in `event_consumer.py` nennt sie. Die Auswahl ist eine Auswahl: Modell, Tokenzahl, Herkunft und die Emotionswerte des Nutzers bleiben ungemessen.
+
+> **Bis zum 25.08.2026 fuehrte die Zeile eine eigene Belegungstabelle neben dem Payload, und vier ihrer acht Eintraege prueften dieselbe Groesse** — `bool(zustand_internal)` sagt, ob das Traegerobjekt existiert, nicht ob das Feld belegt ist. Sie meldete `8 von 8`, waehrend `nova_emotions_vektor` als leerer String hinausging; `Emotion.emotions_vector` traegt `""` als Vorgabewert, der Fall ist also der haeufige. Seither entsteht das Payload zuerst und die Aussage wird an ihm gemessen (`BELEGUNG-ZAEHLT-DAS-TRAEGEROBJEKT`).
+>
+> **Was dabei offen bleibt:** `intent`, `tone` und `gespraechs_modus` tragen Vorgabewerte, die nicht leer sind — keine Belegungspruefung unterscheidet sie von einer Messung.
 
 **`reiz_herkunft`.** Markiert einen Reiz, den Nova sich selbst erarbeitet hat. Gelesen vom Responder (Block `[EIGENER GEDANKE]`) und vom Event-Consumer, der das Feld ins `character_response`-Payload weiterreicht, damit der Client den Impuls einfaerben kann. Fehlt das Feld, gilt der Reiz als fremd.
 
@@ -291,7 +299,7 @@ def event_consumer_loop(redis_client, human_graph, ...):
             # Weitere User-Events einsammeln (Queue leeren)
 
         # Graph-Durchlauf
-        with llm_lock:
+        with graph_run_lock:
             state = human_graph.create_state(...)
             state["event_source"] = event["source"]
             state["event_payload"] = event.get("payload", {})
@@ -324,7 +332,7 @@ aber nicht heimlich.
 
 ### 7.2 GPU-Locking
 
-`llm_lock` wird für den gesamten Pfad-2-Durchlauf gehalten — nicht pro Node. Grund: Der Charakter-Graph ist eine kohärente Einheit (Router → Planner → Responder → Thinker → Tribunal). Feingranulares Locking würde GPU-Kontention mit Pixie riskieren.
+`graph_run_lock` wird für den gesamten Pfad-2-Durchlauf gehalten — nicht pro Node. Grund: Der Charakter-Graph ist eine kohärente Einheit (Router → Planner → Responder → Thinker → Tribunal). Feingranulares Locking würde GPU-Kontention mit Pixie riskieren.
 
 Pfad 1 (User) braucht auch den Lock für Perzeption + Salienz. Kontention minimal: Pfad 1 ist kurz (~3–5s), Pfad 2 läuft danach.
 
