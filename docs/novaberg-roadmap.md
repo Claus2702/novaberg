@@ -1,13 +1,13 @@
 # Novaberg — Roadmap (Projektchronik)
 
-**Stand:** 25. August 2026 — juengster Eintrag **18:16 UTC** (gemessen via `date -u`); die Eintraege darunter tragen Zeiten bis 21:30 UTC, die zu dieser Zeitbasis in der Zukunft liegen und deshalb **oberhalb** ihres Datums stehen. Der Widerspruch steht in der Fundliste.
+**Stand:** 25. August 2026 — juengster Eintrag **18:43 UTC** (gemessen via `date -u`); die Eintraege darunter tragen Zeiten bis 21:30 UTC, die zu dieser Zeitbasis in der Zukunft liegen und deshalb **oberhalb** ihres Datums stehen. Der Widerspruch steht in der Fundliste.
 **Pfad:** novaberg/docs/novaberg-roadmap.md
 **Single Source of Truth für abgeschlossene Arbeit.**
 **Offene Punkte → novaberg-backlog.md**
 
 | Zeitraum | Datei | Kapitel |
 |---|---|---|
-| 2026-08 | **novaberg-roadmap.md** ← diese Datei | 124 |
+| 2026-08 | **novaberg-roadmap.md** ← diese Datei | 125 |
 | 2026-07 | [`novaberg-roadmap-2026-07.md`](novaberg-roadmap-2026-07.md) | 12 |
 | 2026-05 | [`novaberg-roadmap-2026-05.md`](novaberg-roadmap-2026-05.md) | 18 |
 | 2026-04 | [`novaberg-roadmap-2026-04.md`](novaberg-roadmap-2026-04.md) | 21 |
@@ -18,6 +18,36 @@
 ## Hinweis für Bearbeiter dieser Datei
 
 Die Kopfzeile stand bis Chat 109 auf „Chat 93, 21. Mai 2026" — 15 Chats hinter dem Inhalt. **Sie ist danach erneut zurückgefallen:** von Chat 110 bis 114 blieb sie auf „Chat 109" stehen, während der Inhalt weiterwuchs, und wurde in Chat 115 nachgezogen. Wer hier etwas ergänzt, zieht die Kopfzeile mit — sie driftet zuverlässig. Achtung beim Nachschlagen: Nur bis Chat 97 trägt jeder Chat eine eigene `## Chat NNN`-Überschrift; die Chats 98–108 stehen als `###`-Abschnitte unter dem Chat-97-Block, benannt nach Sprint statt nach Chat.
+
+---
+
+## 25.08.2026, 18:43 UTC — 884 Treffer weniger, und keiner davon war ein Fehler im Produktivcode
+
+**ZIEL:** Die Trefferzahl misst den Produktivcode, nicht das Testverzeichnis.
+**TEST:** Suite unveraendert; `ruff check --config ruff-hart.toml server/` mit Rueckgabewert 0 — **auch fuer einen Verstoss, der in `server/tests/` liegt**.
+**MESSUNG:** **2305 → 1421**. Testverzeichnis **1032 → 148**, Produktivcode 1273. Suite **2322 gruen**, 0 uebersprungen.
+
+**Die Zahl war irrefuehrend, und das aenderte die Bewertung.** `D102` (fehlende Methoden-Docstring) stand mit 642 Treffern an der Spitze des Bestands — **560 davon lagen in `server/tests/`**. Bei einer Testmethode *ist* der Name die Beschreibung; eine erzwungene Docstring darueber wiederholt ihn oder sagt nichts. Im Produktivcode bleiben 88, und das ist eine durchsetzbare Groesse.
+
+### Erst pruefen, ob die Regel behebbar ist — dann ausnehmen
+
+`ANN201` stand mit 304 Treffern im Testverzeichnis und war der zweitgroesste Posten. Er steht **nicht** in den Ausnahmen: **303 der 304 waren maschinell mit `-> None` zu schliessen.** Eine richtige Annotation ist besser als eine begruendete Ausnahme, und der Unterschied kostete einen Lauf. Der eine Rest ist eine Attrappen-Methode ohne ableitbaren Rueckgabetyp.
+
+**Drei Regeln sind ausgenommen, jede einzeln und mit Grund:**
+
+| Regel | Treffer | Warum sie hier etwas anderes misst |
+|---|---:|---|
+| `D102` | 560 | Der Testname ist die Beschreibung |
+| `S608` | 10 | Abfragen einer Testvorrichtung aus Literalen derselben Datei — es gibt keine Eingabe von aussen |
+| `S101` | 1 | In einem Zeugen ist die Zusicherung der Zweck; ein Test laeuft nie mit `-O` |
+
+Dazu `T201` fuer **eine Datei**: `korpus_laeufer.py` ist kein Zeuge, sondern ein Werkzeug mit Konsolenausgabe — dort ist `print` die Schnittstelle.
+
+**Was ausdruecklich NICHT ausgenommen ist**, obwohl es im Testverzeichnis trifft: `D205` (45), `D101` (10), `D104` (5), `D107` (2) — Formregeln an echten Docstrings, die auch in einem Zeugen gelten.
+
+### Die Wand bleibt in `tests/` scharf, und das ist gemessen
+
+`ruff-hart.toml` erbt `ruff.toml` ueber `extend` — **und damit auch die Ausnahmen.** Eine Ausnahme fuer eine harte Regel waere ein Loch, das niemand sieht. Geprueft mit einer Probedatei **in `server/tests/`**: `B006`, `B905`, `I001` und `N802` melden unveraendert, Rueckgabewert 1; nach ihrer Entfernung 0.
 
 ---
 
