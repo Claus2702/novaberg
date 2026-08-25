@@ -1,6 +1,6 @@
 # Novaberg — Roadmap (Projektchronik)
 
-**Stand:** 25. August 2026, 17:15 UTC
+**Stand:** 25. August 2026, 18:40 UTC
 **Pfad:** novaberg/docs/novaberg-roadmap.md
 **Single Source of Truth für abgeschlossene Arbeit.**
 **Offene Punkte → novaberg-backlog.md**
@@ -18,6 +18,33 @@
 ## Hinweis für Bearbeiter dieser Datei
 
 Die Kopfzeile stand bis Chat 109 auf „Chat 93, 21. Mai 2026" — 15 Chats hinter dem Inhalt. **Sie ist danach erneut zurückgefallen:** von Chat 110 bis 114 blieb sie auf „Chat 109" stehen, während der Inhalt weiterwuchs, und wurde in Chat 115 nachgezogen. Wer hier etwas ergänzt, zieht die Kopfzeile mit — sie driftet zuverlässig. Achtung beim Nachschlagen: Nur bis Chat 97 trägt jeder Chat eine eigene `## Chat NNN`-Überschrift; die Chats 98–108 stehen als `###`-Abschnitte unter dem Chat-97-Block, benannt nach Sprint statt nach Chat.
+
+---
+
+## 25.08.2026, 18:40 UTC — Das Backlog trägt seine Kategorie: 442 von 442
+
+**Ein Schnitt nach Gegenstand braucht die Zuordnung am Eintrag, nicht am Abschnitt** — und das war gemessen, bevor entschieden wurde. Eine Zuordnung über Abschnittstitel erfasste 188 von 442; die übrigen 254 liegen in Abschnitten, die nach **Herkunft** gruppieren (*aus der Klassifikation der Fundliste*, *Offene Epics*) und Einträge aus allen Gegenständen nebeneinander tragen.
+
+| Kategorie | Einträge |
+|---|---|
+| **BAUART** — Code, Schema, Werkzeug, Tests, Doku, Register | 96 |
+| **CHARAKTER** — Profile, Räder, Haltung, Emotion, Destillation | 79 |
+| **GEDAECHTNIS** — KZG, LZG, Promotion, Entitäten, Salienz | 77 |
+| **WISSEN** — Bibliothek, Dateien, Notizen, Timeline, Fakten | 71 |
+| **HINTERGRUND** — Pixie, Queue, Agenten, Recherche, Zustellung | 67 |
+| **ANTWORTPFAD** — Gesprächsvektor, Responder, Verfasser, Prompts | 52 |
+
+**Die Verteilung ist die eigentliche Auskunft.** Sechs Kategorien zwischen 52 und 96 Einträgen — kein Sammelbecken, keine leere Schublade. Hätte eine 200 getragen und eine 12, wäre der Schnitt falsch geschnitten; das wusste vorher niemand.
+
+**Dass BAUART obenauf liegt, ist der Befund darin.** Fast ein Viertel der offenen Arbeit betrifft nicht das, was Nova kann, sondern das, womit an ihr gearbeitet wird — Schema, Werkzeug, Zusicherungen, Register, Doku-Drift. Das ist keine Verzerrung des Registers, sondern das, was ein Register über sich selbst sagt, wenn man es zum ersten Mal sortiert.
+
+**Die Form folgt dem Zustand.** Unter einer Überschrift steht eine `**Kategorie:**`-Zeile, in einer Tabellenzeile ein Kürzel in eckigen Klammern am Anfang der letzten Zelle — dieselbe Zweiteilung wie beim Zustand, aus demselben Grund: Eine Zeile passt nicht in eine Tabelle. Beides liest das Findemittel.
+
+**Die zehn Doppelgänger haben ihre Kategorie vom ersten Vorkommen bekommen** und tragen den Vermerk. Sie sind der Rest, der bleibt, bis jemand entscheidet, welcher der beiden Abschnitte der Eintrag ist.
+
+**Belegt:** +520 Zeilen, **keine verlorene** — geprüft mit einem Abgleich, der eine verlängerte Tabellenzeile als dieselbe Zeile erkennt, solange alle alten Zellen in ihrer Reihenfolge darin stehen.
+
+**Damit ist der Schnitt vorbereitet und nicht getan.** Was noch fehlt, ist die Entscheidung über die drei Sammeltabellen, deren Zeilen quer zu allen sechs Kategorien liegen.
 
 ---
 
