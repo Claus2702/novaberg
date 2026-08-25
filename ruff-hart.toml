@@ -174,4 +174,27 @@ select = [
     # nicht, und der Bestand an deutschen Bezeichnern bleibt fuer sie
     # unsichtbar.
     "N",
+
+    # I001 (isort) — unsortierte Importe.
+    #
+    # Bestand am 25.08.2026, ruff 0.16.0, ueber server/: 0 Treffer, nachdem
+    # 162 maschinell behoben wurden. I001 ist stable, nicht im Preview.
+    #
+    # WARUM NICHT DIE FAMILIE "I", obwohl sie bei null steht: I002
+    # (missing-required-import) wirkt nur mit gesetztem required-imports, und
+    # ruff.toml setzt es nicht — gemessen mit --show-settings:
+    # linter.isort.required_imports = []. Sie waere eine Wand ohne Deckung, die
+    # nie feuern kann und trotzdem null sagt. Derselbe Fall wie W505.
+    #
+    # REICHWEITE, gemessen am 25.08.2026: Ein konstruierter Verstoss — zwei
+    # Standardbibliotheks-Importe in falscher Reihenfolge in server/api/health.py
+    # — wurde im echten Riegelpfad gemeldet, mit Rueckgabewert ungleich null.
+    # Die Null sagt damit "kein Verstoss vorhanden".
+    #
+    # Was diese Wand NICHT leistet: Sie prueft die REIHENFOLGE, nicht die
+    # SCHICHTGRENZEN. `15_ARCHITEKTUR.md` §1 verlangt eine Importwurzel; ein
+    # Import quer durch die Schichten ist korrekt sortiert und passiert diese
+    # Wand ohne Widerspruch. Dafuer braucht es den Import-Pruefer aus
+    # `19_WERKZEUGE/der-satz.md`, den es noch nicht gibt.
+    "I001",
 ]
