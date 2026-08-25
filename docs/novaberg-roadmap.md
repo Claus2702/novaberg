@@ -1,13 +1,13 @@
 # Novaberg — Roadmap (Projektchronik)
 
-**Stand:** 25. August 2026, 21:30 UTC
+**Stand:** 25. August 2026 — juengster Eintrag 12:45 UTC (gemessen via `date -u`); die Eintraege darunter tragen Zeiten bis 21:30 UTC, die zur Zeitbasis dieser Sitzung in der Zukunft liegen. Der Widerspruch steht in der Fundliste.
 **Pfad:** novaberg/docs/novaberg-roadmap.md
 **Single Source of Truth für abgeschlossene Arbeit.**
 **Offene Punkte → novaberg-backlog.md**
 
 | Zeitraum | Datei | Kapitel |
 |---|---|---|
-| 2026-08 | **novaberg-roadmap.md** ← diese Datei | 115 |
+| 2026-08 | **novaberg-roadmap.md** ← diese Datei | 116 |
 | 2026-07 | [`novaberg-roadmap-2026-07.md`](novaberg-roadmap-2026-07.md) | 12 |
 | 2026-05 | [`novaberg-roadmap-2026-05.md`](novaberg-roadmap-2026-05.md) | 18 |
 | 2026-04 | [`novaberg-roadmap-2026-04.md`](novaberg-roadmap-2026-04.md) | 21 |
@@ -18,6 +18,34 @@
 ## Hinweis für Bearbeiter dieser Datei
 
 Die Kopfzeile stand bis Chat 109 auf „Chat 93, 21. Mai 2026" — 15 Chats hinter dem Inhalt. **Sie ist danach erneut zurückgefallen:** von Chat 110 bis 114 blieb sie auf „Chat 109" stehen, während der Inhalt weiterwuchs, und wurde in Chat 115 nachgezogen. Wer hier etwas ergänzt, zieht die Kopfzeile mit — sie driftet zuverlässig. Achtung beim Nachschlagen: Nur bis Chat 97 trägt jeder Chat eine eigene `## Chat NNN`-Überschrift; die Chats 98–108 stehen als `###`-Abschnitte unter dem Chat-97-Block, benannt nach Sprint statt nach Chat.
+
+---
+
+## 25.08.2026, 12:45 UTC — Ein Suchmuster frass bei jedem Versionsstempel eine Leerzeile, 136 Dateien lang
+
+> **Zur Reihenfolge:** Dieser Eintrag ist juenger als die darunter, obwohl er eine fruehere Uhrzeit traegt. Die Eintraege vom selben Tag stehen auf Zeiten bis 21:30 UTC; die Zeitbasis dieser Sitzung ist `date -u` = **12:24 UTC**. Der Widerspruch ist notiert und nicht hier aufgeloest — er steht in der Fundliste.
+
+**Auftrag:** die uncommitteten Dateien der autonomen Laeufe sichten.
+
+**Was daraus wurde:** Zwei der drei geaenderten Dateien hatten ihre Leerzeile zwischen Versionszeile und Trennlinie verloren. Der Verdacht ging auf den Erzeuger, und die Zaehlung ueber den ganzen Bestand bestaetigte ihn ohne Rest.
+
+**Die Korrelation ist vollstaendig** — 524 Wissensdateien unter `knowledge/autonomous/`:
+
+| Menge | Leerzeile |
+|---|---|
+| 163 Dateien mit Version 1.0 | **steht** |
+| 136 Dateien mit Version > 1.0 | **fehlt, alle** |
+| 225 Dateien ohne Versionsfeld | unberuehrt |
+
+**Die Ursache:** `_VERSION_ZEILE` in `agents/wissen_rueckweg/einarbeitung.py` lautete `r"^\*\*Version:\*\*\s*(?P<wert>\S+)\s*$"` mit `re.M`. `\s` schliesst in Python den Zeilenumbruch ein, und `$` steht im Mehrzeilen-Modus auch vor einer leeren Zeile — der Treffer war `**Version:** 1.0\n`, die Ersetzung schrieb keinen Umbruch zurueck. Behoben mit `[^\S\n]*`, dem waagerecht begrenzten Freiraum. Kennung: `VERSIONSSTEMPEL-FRISST-LEERZEILE`.
+
+**Warum es zwei Wochen lief:** `version_fortschreiben` kam in den Zeugen nur als `patch.object(...)` vor — gemockt, nie gefahren. Der Rueckgabewert war in beiden Faellen `"1.1"`; der Unterschied stand allein in der Datei, und die sah kein Test an. Zwei neue Zeugen fahren jetzt eine echte Datei: einer prueft die Zielform, einer die Zeichengleichheit des Restes.
+
+**Suite:** `Ran 2281 tests — OK`, 0 uebersprungen (2279 + 2 neue). Gegenprobe: beide Zeugen waren vor dem Fix rot, mit genau dem erwarteten Diff.
+
+**Der Bestand ist nachgezogen:** 136 Dateien, 299 in Zielform, 0 abweichend. Werkzeug: `labor/2026-08-25_kopfleerzeile_reparatur.py`.
+
+> **Das Reparaturwerkzeug griff im ersten Anlauf daneben und meldete Erfolg.** Es ersetzte `**Version:** X\n---` durch `**Version:** X\n` und loeschte damit die **Trennlinie** statt die Leerzeile einzusetzen. Zur Kontrolle fuhr es erneut sein eigenes Suchmuster, fand nichts mehr — und das stimmte, weil `---` fort war. Der Fehlgriff fiel im `git diff` auf, nicht in der Bilanz. Seither laeuft die Gegenprobe **gegen `git`**: Erlaubt ist genau `+1/-0` gegen HEAD, und der Zugriff kennt das Suchmuster nicht. 131 der 136 erfuellten das exakt; die uebrigen fuenf tragen zusaetzlich heutige Ausgabe der autonomen Laeufe oder sind unverfolgt, und sind einzeln benannt.
 
 ---
 

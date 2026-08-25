@@ -1,7 +1,7 @@
 # Novaberg — Bugs & Limitationen, Archiv
 
-**Stand:** 25. August 2026, 10:05 UTC — angelegt beim Teilen des Registers, am selben Tag um 21 nachgepruefte Eintraege gewachsen.
-**Inhalt:** 122 abgeschlossene Eintraege — behoben, geschlossen, gegenstandslos oder verworfen.
+**Stand:** 25. August 2026, 12:45 UTC — `VERSIONSSTEMPEL-FRISST-LEERZEILE` am Tag seines Befundes behoben und abgelegt. Davor 10:05 UTC: angelegt beim Teilen des Registers, am selben Tag um 21 nachgepruefte Eintraege gewachsen.
+**Inhalt:** 123 abgeschlossene Eintraege — behoben, geschlossen, gegenstandslos oder verworfen.
 **Das offene Register:** [`novaberg-bugs.md`](novaberg-bugs.md)
 
 ---
@@ -15,6 +15,24 @@
 **Die Abschnittsueberschriften stammen aus der Quelldatei** und sagen, *wann und wobei* ein Eintrag entstanden ist — nicht, welchen Zustand er hat. Jeder Eintrag hier ist abgeschlossen; ein Abschnitt namens `## Offene Bugs` beschreibt in dieser Datei nur die Herkunft seiner Eintraege.
 
 **Hier wird nicht gearbeitet.** Wer einen dieser Befunde wieder aufmachen muss, verschiebt den Eintrag zurueck nach `novaberg-bugs.md` — mit neuem Zustand und neuem Datum. Eine Kennung wird nie wiederverwendet und steht nie in beiden Dateien.
+
+---
+
+## 25.08.2026 — der Versionsstempel frass die Leerzeile unter sich
+
+### `VERSIONSSTEMPEL-FRISST-LEERZEILE` — jeder Eingriff des Rueckwegs nahm dem Kopf eine Zeile
+
+**Zustand:** behoben am 25.08.2026 — `agents/wissen_rueckweg/einarbeitung.py:36` traegt ein waagerecht begrenztes Suchmuster, zwei Zeugen bewachen es, 136 Dateien im Bestand sind nachgezogen.
+
+**Befund (25.08.2026), beim Sichten der autonomen Laeufe.** **Ein Suchmuster mit `\s*$` im Mehrzeilen-Modus verschluckt den Zeilenumbruch, den es zu begrenzen scheint.** `_VERSION_ZEILE` lautete `r"^\*\*Version:\*\*\s*(?P<wert>\S+)\s*$"` mit `re.M`. In Python schliesst `\s` den Umbruch ein, und `$` steht im Mehrzeilen-Modus auch vor einer leeren Zeile — der Treffer lautete damit `**Version:** 1.0\n` statt `**Version:** 1.0`. Die Ersetzung `f"**Version:** {neu}"` schreibt keinen Umbruch zurueck, also verlor der Kopf bei **jedem** Versionsstempel seine Leerzeile zur Trennlinie darunter.
+
+**Gemessen ueber den Bestand (25.08.2026, 524 Wissensdateien unter `knowledge/autonomous/`):** Die Korrelation ist vollstaendig — **163 Dateien mit Version 1.0 trugen die Leerzeile, alle 136 mit Version > 1.0 trugen sie nicht.** 225 weitere fuehren kein Versionsfeld und sind unberuehrt. Alle 136 liegen im Verzeichnis **einer einzigen Figur** — der einzigen, deren Wissensdateien ueberhaupt Rueckweg-Einarbeitungen erhalten; die uebrigen 16 Figurenverzeichnisse tragen keinen Fall.
+
+**Der Schaden bleibt beim zweiten Eingriff stehen.** Nach dem ersten Stempel steht keine Leerzeile mehr da, die `\s*` fressen koennte — deshalb fehlt genau eine, nicht eine je Version. Eine Datei bei Version 1.4 sieht aus wie eine bei 1.1.
+
+**Warum es zwei Wochen lief:** `version_fortschreiben` hatte keinen eigenen Zeugen. In `tests/test_wissen_rueckweg.py` kam die Funktion nur als `patch.object(...)` vor — gemockt, nie gefahren. Ihr Rueckgabewert war in beiden Faellen `"1.1"`; der Unterschied stand allein in der Datei darunter, und die sah kein Test an.
+
+**Geschlossen, wenn** ~~Der Versionsstempel fasst die Versionszeile an und sonst nichts, und der Bestand traegt die Zielform.~~ **Erfuellt am 25.08.2026**: Suchmuster auf `[^\S\n]*` umgestellt, `VersionsstempelTest` mit zwei Zeugen (Zielform, Zeichengleichheit des Rests), Suite 2281 gruen / 0 uebersprungen, Bestand 299 in Zielform / 0 abweichend.
 
 ---
 
