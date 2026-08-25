@@ -169,6 +169,50 @@ ignore = [
     "D400",
 ]
 
+[lint.per-file-ignores]
+# Ausnahmen je Datei. Keine davon ist pauschal: Jede nennt eine einzelne Regel
+# und den Grund, warum sie an dieser Stelle etwas anderes misst als gemeint.
+# Der Bestand des Testverzeichnisses hat am 25.08.2026 die Gesamtzahl dominiert
+# — 1032 der 2305 Treffer lagen dort, und 571 davon waren die drei Regeln unten.
+#
+# Was hier ausdruecklich NICHT steht, obwohl es dort ebenfalls trifft:
+# D205 (45), D101 (10), D104 (5), D107 (2) — Formregeln an echten Docstrings,
+# die auch in einem Zeugen gelten. Und ANN201 stand mit 304 Treffern hier zur
+# Debatte und ist stattdessen BEHOBEN worden: 303 der 304 waren maschinell mit
+# `-> None` zu schliessen, und eine richtige Annotation ist besser als eine
+# begruendete Ausnahme.
+"server/tests/**" = [
+    # D102 "Missing docstring in public method" — 560 Treffer, der groesste
+    # Einzelposten des gesamten Bestands.
+    #
+    # Bei einer Testmethode IST der Name die Beschreibung:
+    # `test_der_dispatcher_reicht_beim_nutzer_turn_die_aeusserung`. Eine
+    # erzwungene Docstring darueber wiederholt entweder den Namen oder sagt
+    # nichts. Der Bestand setzt sie dort, wo sie etwas hinzufuegt — etwa
+    # "Dieselbe Stelle, andere Herkunft, anderes Ergebnis." —, und genau diese
+    # Freiwilligkeit macht sie lesenswert.
+    #
+    # Die Regel bleibt fuer den Produktivcode scharf: dort 82 Treffer, und die
+    # sind eine durchsetzbare Groesse.
+    "D102",
+
+    # S101 "Use of assert detected" — in einem Zeugen ist die Zusicherung der
+    # Zweck. Die Regel zielt auf Produktivcode, wo ein `assert` bei -O
+    # verschwindet; ein Test laeuft nie mit -O.
+    "S101",
+
+    # S608 "Possible SQL injection vector" — die Treffer sind Abfragen, die
+    # eine Testvorrichtung baut, mit Literalen aus derselben Datei. Es gibt
+    # keine Eingabe von aussen, gegen die die Regel schuetzen koennte.
+    "S608",
+]
+
+# korpus_laeufer.py ist kein Zeuge, sondern ein Werkzeug im Testverzeichnis: Es
+# faehrt einen Korpus und schreibt sein Ergebnis auf die Standardausgabe. Fuer
+# ein Werkzeug mit Konsolenausgabe ist `print` die Schnittstelle und nicht der
+# Fehler; ein Logger schriebe woandershin als der Aufrufer liest.
+"server/tests/korpus_laeufer.py" = ["T201"]
+
 [lint.pydocstyle]
 # Konvention pep257. Wirkt sich aus: die Konvention schaltet von der oben mit
 # "D" selektierten Familie eine Reihe von Regeln wieder ab, nachgemessen mit
