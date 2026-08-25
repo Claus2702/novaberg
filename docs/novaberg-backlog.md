@@ -2348,7 +2348,7 @@ Die Projektseite ist beim Umzug **nicht** mitgezogen. Sie soll nachkommen, und z
 
 ---
 
-## Epic: Sykophanz eindämmen (Chat 126)
+## EPIC-SYKOPHANZ — Sykophanz eindaemmen
 
 **Status:** ⬜ nicht begonnen. Befund gemessen, Bauteile entworfen, Reihenfolge festgelegt.
 **Konzept:** `novaberg-sykophanz-eindaemmung_k.md` — dort stehen ZIEL, TEST, MESSUNG und Gegenprobe je Bauteil.
@@ -2392,7 +2392,7 @@ Die Projektseite ist beim Umzug **nicht** mitgezogen. Sie soll nachkommen, und z
 Der LZG-Lesepfad war in **allen sechs Läufen untätig** — eine frische Persona hat kein Langzeitgedächtnis. Die Reihe sagt deshalb nichts über das Synapsennetz und nichts über die Wahrnehmungs-Gravitation aus P10. Beide bleiben an einem Korpus zu messen, der einen Bestand mitbringt.
 
 ---
-## Epic: Pixie — der Abfluss steht (04.08.2026)
+## EPIC-PIXIE-ABFLUSS — der Abfluss steht (04.08.2026)
 
 **Status:** ⬜ nicht begonnen. **Gemessen am 04.08.2026**, nicht vermutet.
 
@@ -2413,7 +2413,7 @@ Der LZG-Lesepfad war in **allen sechs Läufen untätig** — eine frische Person
 
 ---
 
-## Epic: Wissensspeicher (04.08.2026)
+## EPIC-WISSENSSPEICHER — Novas eigene Bibliothek (04.08.2026)
 
 **Status:** 🔶 Vier von sechs Schritten gebaut, dazu der Enricher-Anschluss.
 **Konzept:** `novaberg-autonomous-wissen_k.md` §11 — dort stehen alle Entscheidungen samt Herleitung.
@@ -2456,7 +2456,7 @@ Der LZG-Lesepfad war in **allen sechs Läufen untätig** — eine frische Person
 
 ---
 
-## Epic: Klärung — Abweichung und Lücke (04.08.2026)
+## EPIC-KLAERUNG — Abweichung und Luecke (04.08.2026)
 
 **Status:** ⬜ nicht begonnen. Grundsatz formuliert, Bestand belegt, Bauteile entworfen.
 **Konzept:** `novaberg-klaerung_k.md` — dort stehen ZIEL, TEST, MESSUNG und Gegenprobe je Bauteil.
@@ -2556,7 +2556,7 @@ Der LZG-Lesepfad war in **allen sechs Läufen untätig** — eine frische Person
 
 ---
 
-## Epic: Emotionale Gravitation (Chat 61)
+## EPIC-EMOTIONALE-GRAVITATION — Erinnerungen ziehen nach Aehnlichkeit und Gewicht
 
 **Vision:** Gespeicherte emotional aufgeladene Erinnerungen wirken als Attraktoren auf Novas aktuellen Emotionsstrom. Still, passiv, bis ein thematisch verwandtes Gespräch sie reaktiviert.
 
@@ -2611,7 +2611,7 @@ Der LZG-Lesepfad war in **allen sechs Läufen untätig** — eine frische Person
 
 ---
 
-## Epic: Graph-Neuordnung (Chat 58–59) — ✅ Chat 59
+## EPIC-GRAPH-NEUORDNUNG — HumanGraph und CharacterGraph getrennt ✅
 
 **Beschluss:** Enricher vor Router verschieben. Der Router sieht dadurch die volle Session, KZG, LZG, Charakter-Hash und EI-Ergebnisse — statt nur 5 Turns aus eigenem Redis-Read.
 
@@ -2627,7 +2627,7 @@ GV-Node → Responder → Thinker → Tribunal → [Corrector]
 
 ---
 
-## Epic: Session-Trennung (User × Charakter) (Chat 54, 59)
+## EPIC-SESSION-TRENNUNG — eine Sitzung je Paar ✅
 
 **Vision:** Jede Gesprächskombination (User × Charakter) bekommt eine eigene Session-Partition. `session:meister:nova`, `session:meister:james`, `session:meister:tarzan`.
 
@@ -2650,7 +2650,7 @@ GV-Node → Responder → Thinker → Tribunal → [Corrector]
 
 ---
 
-## Vision: TurnOrchestrator (Chat 58)
+## VISION-TURNORCHESTRATOR — ein Dirigent ueber den Turn
 
 **Idee:** Den linearen Graph durch einen sternförmigen Orchestrator ersetzen. Ein TurnOrchestrator entscheidet regelbasiert, welcher Node als nächstes läuft ("Waren wir schon bei Perception? Nein? Dann Perception."). Der asynchrone Nova-Pfad wäre dann kein Sonderfall, sondern eine weitere Sequenz in derselben State-Machine.
 
@@ -2662,7 +2662,7 @@ GV-Node → Responder → Thinker → Tribunal → [Corrector]
 
 ---
 
-## Epic: Client WebSocket-Umbau (Chat 60) ✅ **abgeschlossen 01.08.2026 (Chat 124)**
+## EPIC-CLIENT-WEBSOCKET — der Client haengt am Ereignisstrom ✅ **abgeschlossen 01.08.2026**
 
 **Erledigt.** Der SSE-Kanal trägt nur noch die Bestätigung; alle Stufen — Pfad 1 **und** Pfad 2 — gehen als `character_stage` über den WebSocket, die Antwort als `character_response`. Damit sind die Migrationsschritte 6 und 7 aus `novaberg-convention-event-model.md` §9.1 durch.
 
@@ -2929,7 +2929,9 @@ Jeder Turn-Punkt (User-Aussage, GV-Schritte, Nova-Aussage) wird nicht als einfac
 
 **Leitprinzip:** "Der Kanal ist dumm. Absichtlich." — Gilt weiterhin. Matrix war ein dritter Renderer neben Desktop (GTK4) und Telegram; **seit dem 24.08.2026 sind es zwei** — Telegram ist abgeschaltet. Markdown bleibt das kanonische Format.
 
-### Was Telegram nicht kann, und warum es keine Einstellungssache ist
+### TELEGRAM-GRENZE-STRUKTURELL — was der Kanal nicht kann, und warum es keine Einstellungssache ist
+
+**Zustand:** gegenstandslos seit dem 24.08.2026 — der Telegram-Kanal ist abgeschaltet. **Der Abschnitt bleibt stehen, weil er eine Begruendung traegt und keinen Auftrag:** Wer den Kanal zurueckholen will, findet hier, woran er strukturell scheitert.
 
 **Ein Telegram-Bot hat genau einen Absender: sich selbst.** Die Bot-API kennt keinen Weg, eine Nachricht im Namen eines Menschen in einen Chat zu stellen — nicht als Berechtigung, die man erteilen könnte, sondern als Eigenschaft des Protokolls. Alles, was in diesem Chat erscheint, kommt entweder vom Menschen selbst (über seine App) oder vom Bot.
 
@@ -3344,7 +3346,7 @@ Perzeption klassifiziert 😍-Katzen-Chat als `gespraechs_modus="emotional"` sta
 
 ---
 
-## Epic: Memory-Promotion-Korrektur (Chat 75)
+## EPIC-PROMOTION-KORREKTUR — was bei der Promotion verlorenging
 
 **Status:** Konzept
 **Bezug:** PROMO-DROP1, PROMO-CLUSTER-EI, PROMO-DUAL-IMPL (siehe novaberg-bugs.md, Sektion Datenqualität)
@@ -3467,9 +3469,9 @@ plausibel (frühestes Auftreten der Erinnerung).
 
 ---
 
-## Epic: Memory-Kern-Umbau (Synapsen-Modell, Chat 86)
+## EPIC-MEMORY-KERN-UMBAU — das Synapsen-Modell
 
-**Status:** **Alle zehn Sprints abgeschlossen (P1–P9 in Chat 125, P10 in Chat 126).** Der Umbau ist gebaut. ~~Offen bleiben zwei Reste, die keine Sprints sind: die dünne Zeit- und Entitätsschicht aus P3 (unten) und die ungemessene Wirkung von P10 (`P10-WIRKUNG-UNGEMESSEN`).~~ → **Ein Rest, seit 07.08.2026:** die dünne Zeit- und Entitätsschicht aus P3 (unten). `P10-WIRKUNG-UNGEMESSEN` ist beantwortet; die Kalibrierung der Cluster-Faktoren, die daraus folgt, ist keine Synapsen-Arbeit mehr, sondern ein Bauteil des Kalibrierungskonzepts.
+**Status:** abgeschlossen — **alle zehn Sprints.** Der Umbau ist gebaut. ~~Offen bleiben zwei Reste, die keine Sprints sind: die dünne Zeit- und Entitätsschicht aus P3 (unten) und die ungemessene Wirkung von P10 (`P10-WIRKUNG-UNGEMESSEN`).~~ → **Ein Rest, seit 07.08.2026:** die dünne Zeit- und Entitätsschicht aus P3 (unten). `P10-WIRKUNG-UNGEMESSEN` ist beantwortet; die Kalibrierung der Cluster-Faktoren, die daraus folgt, ist keine Synapsen-Arbeit mehr, sondern ein Bauteil des Kalibrierungskonzepts.
 
 *Die vorige Angabe „P0–P3 implementiert, P4 wartet auf MS-Welle" stammte aus Chat 91 und war fünf Phasen im Rückstand — P4 bis P8 sind zwischen Chat 98 und 111 gebaut worden, ohne dass diese Tabelle nachgezogen wurde. Nachgemessen am 02.08.2026 gegen den Bestand, nicht gegen die Doku.*
 **Bezug:** novaberg-memory-synapsen_k.md, novaberg-memory-synapsen-p4-entscheidungen_k.md (Chat 91)
@@ -3590,7 +3592,7 @@ Der Synapsen-Umbau ist die strukturelle Voraussetzung für die Akten-Architektur
 
 ---
 
-## Epic: Microservice-Modell-Queue (Chat 91) — ✅ abgeschlossen Chat 97
+## EPIC-MS-MODELL-QUEUE — die Modellaufrufe bekommen eine Warteschlange ✅
 
 **Status:** ✅ MS-Welle vollständig abgeschlossen (Block 1–5). Block 1 (Chat 92), Block 2 + Block 3 (Chat 93/94), Block 5 (Chat 96), Block 4 + Inbetriebnahme + Pixie-Reaktivierung (Chat 97).
 **Bezug:** novaberg-memory-synapsen-p4-entscheidungen_k.md (Chat 91), Audit-Ausgaben Chat 91, novaberg-microservice-modell-queue_k.md
@@ -3685,7 +3687,7 @@ Block 3 (think pro Call + Thinking-Normalizer + Self-Trigger) ist code-vollstän
 
 ---
 
-## Tech-Debt: Reducer-Umbau-Nachzügler (Chat 75)
+## REDUCER-NACHZUEGLER — was der Reducer-Umbau offengelassen hat
 
 **Status:** Beobachtet
 **Bezug:** novaberg-reducer-umbau_k.md, Implementierungsbericht (Abschnitt 13)
@@ -3847,7 +3849,7 @@ Der Thinker `memory_search`-Tool-Output verwendet seit STRUCT-5c (Chat 75) den g
 
 ---
 
-## Sprint: M2.5a — TimelineAgent-Manager-Cleanup (Chat 78)
+## SPRINT-M25A-TIMELINE-CLEANUP — der TimelineAgent verliert seinen Manager ✅
 
 **Status:** ✅ Abgeschlossen (Chat 80) — Audit (Chat 78), Implementierung in zwei Phasen (Chat 80)
 
@@ -3950,7 +3952,7 @@ Der Thinker `memory_search`-Tool-Output verwendet seit STRUCT-5c (Chat 75) den g
 
 ---
 
-## Konzept: COGNITIVE PIPELINE — Frames, Verstehens-Loop, Skills, Task Orchestration (Chat 80–81)
+## KONZEPT-COGNITIVE-PIPELINE — Frames, Verstehens-Schleife, Faehigkeiten, Auftragsfuehrung
 
 **Status:** Konzept fertig in vier Dokumenten, Implementation steht aus.
 
@@ -4027,7 +4029,7 @@ Diese Konzeption materialisiert **Typ 1** (Prompt-Skills als Markdown) aus Epic 
 
 ---
 
-## Konzept: CHRONIK — Vollständiges Turn-Log als episodisches Nachschlagewerk (Chat 91)
+## KONZEPT-TURNLOG-CHRONIK — vollstaendiges Turn-Log als episodisches Nachschlagewerk
 
 **Status:** Konzept-Idee, eigenes Konzeptpapier nach P4–P9 vorgesehen
 **Auslöser:** K9-Diskussion (Chat 91) zur Embedding-Quelle in Synapsen P4
@@ -4323,7 +4325,7 @@ Bei Multi-Charakter-Setup würden Aria-Termine bei Nova auftauchen (und umgekehr
 
 ---
 
-## Sprint: Pixie-EVA-Härtung — PromotionAgent (Chat 85)
+## SPRINT-PIXIE-EVA-HAERTUNG — der Promotionsweg bekommt seine Zusicherungen ✅
 
 **Status:** ✅ Erledigt (Chat 85)
 
@@ -4352,7 +4354,7 @@ Bei Multi-Charakter-Setup würden Aria-Termine bei Nova auftauchen (und umgekehr
 
 ---
 
-## Epic: Code-Audit-Sprint — EVA-Disziplin im gesamten Code
+## EPIC-EVA-DISZIPLIN — Zusicherungen im ganzen Bestand
 
 **Status:** ⬜ Geplant (nach M5)
 **Auslöser:** Chat 85 — Pixie-Schleife durch fehlende EVA-Disziplin
@@ -4787,7 +4789,7 @@ Zwei Redis-`LRANGE`-Calls pro User-Turn für identische Daten. Im CG analog, dor
 
 ---
 
-## Refactor: [GELÖST Chat 97] CONFIG-PIXIE-AKTIV-HARDCODED — `PIXIE_AKTIV` nicht env-konfigurierbar (Chat 91)
+## CONFIG-PIXIE-AKTIV-HARDCODED — `PIXIE_AKTIV` war nicht env-konfigurierbar
 
 **Status:** ✅ Gelöst Chat 97
 **Prio:** Niedrig

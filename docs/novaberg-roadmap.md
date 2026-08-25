@@ -1,6 +1,6 @@
 # Novaberg — Roadmap (Projektchronik)
 
-**Stand:** 25. August 2026, 16:30 UTC
+**Stand:** 25. August 2026, 17:15 UTC
 **Pfad:** novaberg/docs/novaberg-roadmap.md
 **Single Source of Truth für abgeschlossene Arbeit.**
 **Offene Punkte → novaberg-backlog.md**
@@ -18,6 +18,30 @@
 ## Hinweis für Bearbeiter dieser Datei
 
 Die Kopfzeile stand bis Chat 109 auf „Chat 93, 21. Mai 2026" — 15 Chats hinter dem Inhalt. **Sie ist danach erneut zurückgefallen:** von Chat 110 bis 114 blieb sie auf „Chat 109" stehen, während der Inhalt weiterwuchs, und wurde in Chat 115 nachgezogen. Wer hier etwas ergänzt, zieht die Kopfzeile mit — sie driftet zuverlässig. Achtung beim Nachschlagen: Nur bis Chat 97 trägt jeder Chat eine eigene `## Chat NNN`-Überschrift; die Chats 98–108 stehen als `###`-Abschnitte unter dem Chat-97-Block, benannt nach Sprint statt nach Chat.
+
+---
+
+## 25.08.2026, 17:15 UTC — Die Gegenrichtung: 19 Abschnitte bekommen einen Schlüssel
+
+**Ein Zustand ohne Kennung ist so wenig wert wie eine Kennung ohne Zustand.** Nach dem Durchgang durch die 271 blieben 22 Abschnitte übrig, die eine Statusangabe trugen und keinen stabilen Schlüssel — zählbar, aber nicht verweisbar. Beide Zahlen stehen jetzt auf null.
+
+| | vorher | jetzt |
+|---|---|---|
+| Einträge mit Kennung | 420 | **442** |
+| ohne lesbaren Zustand | 0 | **0** |
+| Zustand ohne Kennung | 22 | **0** |
+
+**Drei der 22 hatten ihre Kennung längst — sie stand nur hinter einem erklärenden Wort.** Zwei hinter `Doku-Sprint:`, das das Findemittel nicht als Sorte erkannte, weil es einen Bindestrich trägt; eine hinter `[GELÖST Chat 97]`. Die ersten beiden hat das Werkzeug gelernt, die dritte ist aus der Überschrift entfernt worden — sie war zugleich eine Chat-Nummer im veröffentlichten Repositorium.
+
+**19 haben eine neue bekommen**, gegen die 768 im Umlauf befindlichen geprüft, keine Kollision. Die Überschrift beginnt jetzt mit dem Schlüssel statt mit der Sorte: `## EPIC-SYKOPHANZ — …` statt `## Epic: Sykophanz eindämmen (Chat 126)`. Die Chat-Nummern sind dabei entfallen; sie zeigen für einen Leser dieses Repositoriums ins Leere.
+
+> **Und dann zählte das Findemittel etwas, das keiner der Durchgänge gesehen hatte: 442 Einträge tragen nur 431 Schlüssel.** Elf Kennungen stehen mehrfach. Aufgefallen waren zuerst nur sechs — die, an denen der Einsetzer der Zustandszeilen hängenblieb, weil er jeweils nur das erste Vorkommen traf. Die anderen fünf nennt erst eine Zählung über die ganze Menge.
+>
+> **Das ist der Unterschied zwischen einem Fund und einer Messung.** Sechs Doppelgänger sind ein Ärgernis, das man beim Arbeiten bemerkt. Elf sind eine Aussage über das Register.
+
+**Zwei Statuszeilen waren vorhanden und trotzdem unlesbar.** Eine begann mit einer Auszeichnung statt mit einem Wort (`**Status:** **Alle zehn Sprints abgeschlossen…**`), die andere fehlte ganz unter einem Abschnitt, den nur die Prosa als erledigt auswies. Beide sind auf die Form gebracht, die eine Zählung findet.
+
+**Belegt:** 21 geänderte Zeilen — 19 Überschriften, eine Statuszeile, eine entfernte Chat-Nummer. Kein Rumpftext angefasst. Die Prüfung des Findemittels ist grün.
 
 ---
 
