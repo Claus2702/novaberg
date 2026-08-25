@@ -31,8 +31,8 @@ from config import (
     PIXIE_ANALYSE_MODEL,
     PIXIE_ANALYSE_NUM_CTX,
     SHADOW_MODEL,
-    ollama_cpu_client,
-    ollama_gpu_client,
+    ollama_cpu_chat,
+    ollama_gpu_chat,
 )
 from services.llm_provider import AnthropicProvider, LLMProvider, OllamaProvider
 from services.model_services.background_worker import BackgroundWorker
@@ -54,13 +54,13 @@ def _build_backend(kind: str) -> LLMProvider:
     """
     # ── Eingabe-Validierung & Verarbeitung ──────
     if kind == "ollama_gpu":
-        return OllamaProvider(ollama_gpu_client, OLLAMA_MODEL, OLLAMA_GPU_NUM_CTX)
+        return OllamaProvider(ollama_gpu_chat, OLLAMA_MODEL, OLLAMA_GPU_NUM_CTX)
     if kind == "ollama_cpu_analyse":
         return OllamaProvider(
-            ollama_cpu_client, PIXIE_ANALYSE_MODEL, PIXIE_ANALYSE_NUM_CTX
+            ollama_cpu_chat, PIXIE_ANALYSE_MODEL, PIXIE_ANALYSE_NUM_CTX
         )
     if kind == "ollama_cpu_sprache":
-        return OllamaProvider(ollama_cpu_client, SHADOW_MODEL, OLLAMA_CPU_NUM_CTX)
+        return OllamaProvider(ollama_cpu_chat, SHADOW_MODEL, OLLAMA_CPU_NUM_CTX)
     if kind == "anthropic":
         if not ANTHROPIC_API_KEY:
             raise ValueError(

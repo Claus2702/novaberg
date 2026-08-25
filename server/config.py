@@ -10,6 +10,8 @@ import threading
 
 import redis
 import ollama
+
+from services.llm_riegel import GesperrterOllamaClient
 import psycopg2
 from dotenv import load_dotenv
 
@@ -231,8 +233,39 @@ OLLAMA_CONNECTOR: str = os.getenv("OLLAMA_CONNECTOR", "qwen36")
 # Verbindungen
 OLLAMA_GPU_URL:     str           = os.getenv("OLLAMA_GPU_URL", "http://localhost:11434")
 OLLAMA_CPU_URL:     str           = os.getenv("OLLAMA_CPU_URL", "http://localhost:11435")
-ollama_gpu_client:  ollama.Client = ollama.Client(host=OLLAMA_GPU_URL)
-ollama_cpu_client:  ollama.Client = ollama.Client(host=OLLAMA_CPU_URL)
+# **Drei Ressourcen, drei Riegel, drei Verbindungspools.**
+#
+# Jeder dieser Namen ist eine Ressource, wie ein Aufrufer sie sieht: Wer ihn
+# hat, spricht das LLM an und haelt dabei den Riegel, ohne davon zu wissen.
+# Ein Weg daran vorbei ist nicht vorgesehen und wird von
+# `tests/test_llm_riegel.py` ueber den ganzen Baum ausgeschlossen.
+#
+# **Warum jeder seinen EIGENEN `ollama.Client` bekommt und nicht nur sein
+# eigenes Sperrmittel:** Ein `ollama.Client` haelt einen `httpx.Client` und
+# damit einen Verbindungspool. Zwei Riegel auf **einem** Client waeren zwei
+# Schloesser an derselben Tuer — der geteilte Pool bliebe, und mit ihm der
+# Zustand, den zwei Threads sich teilen. Gemessen am 25.08.2026: Der
+# ChatWorker sendete auf einer Verbindung, die der EmbedWorker 77 ms zuvor
+# geoeffnet hatte und noch benutzte.
+#
+# **GPU-Chat und GPU-Embedding bleiben damit gleichzeitig moeglich.** Sie
+# teilen die Hardware, aber keinen Prozesszustand mehr; Ollama serialisiert
+# auf seiner Seite ueber Slots. Wer sie auch gegeneinander sperren will, gibt
+# ihnen dasselbe Riegel-Objekt — eine Zeile, und der Preis ist, dass jede
+# Einbettung hinter dem laufenden Turn wartet.
+_ollama_gpu_chat_roh:  ollama.Client = ollama.Client(host=OLLAMA_GPU_URL)
+_ollama_gpu_embed_roh: ollama.Client = ollama.Client(host=OLLAMA_GPU_URL)
+_ollama_cpu_chat_roh:  ollama.Client = ollama.Client(host=OLLAMA_CPU_URL)
+
+ollama_gpu_chat:  GesperrterOllamaClient = GesperrterOllamaClient(
+    _ollama_gpu_chat_roh, "gpu-chat",
+)
+ollama_gpu_embed: GesperrterOllamaClient = GesperrterOllamaClient(
+    _ollama_gpu_embed_roh, "gpu-embed",
+)
+ollama_cpu_chat:  GesperrterOllamaClient = GesperrterOllamaClient(
+    _ollama_cpu_chat_roh, "cpu-chat",
+)
 
 # Connector-Definitionen (Modelle + Context)
 #

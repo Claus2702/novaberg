@@ -180,6 +180,27 @@ def _antwort_umschlag_melden(response: dict, caller: str | None) -> None:
         )
 
 
+def _zaehlerstand(wert: object) -> int:
+    """Macht aus einer Anbieter-Angabe eine Zahl — auch wenn keine kam.
+
+    Der Anbieter darf einen Zaehler weglassen, auf `null` setzen oder als
+    Zeichenkette schicken. Keine dieser Formen ist ein Grund, den laufenden
+    Turn abzubrechen: Die Zahl geht ins Log und in keine Entscheidung.
+
+    Args:
+        wert: Was im Umschlag stand — `int`, `None`, oder etwas anderes.
+
+    Returns:
+        Der Zaehlerstand, oder 0 wenn keiner lesbar war.
+    """
+    if isinstance(wert, bool) or not isinstance(wert, (int, float, str)):
+        return 0
+    try:
+        return int(wert)
+    except (TypeError, ValueError):
+        return 0
+
+
 class OllamaProvider(LLMProvider):
     """LLM-Provider fuer lokale Ollama-Instanz."""
 
@@ -311,10 +332,30 @@ class OllamaProvider(LLMProvider):
         # tiefer als RAW und flutet sonst das Protokoll.
         _antwort_umschlag_melden(response, caller)
 
-        input_tokens = response.get("prompt_eval_count", 0)
+        # ── Die Zaehlerstaende ──────────────────────
+        #
+        # **`.get(schluessel, 0)` greift nur beim FEHLENDEN Schluessel.** Steht
+        # er da und traegt `null`, kommt `None` zurueck — und die Addition
+        # darunter wirft. Das ist kein gedachter Fall: Am 25.08.2026 meldete
+        # der Anbieter `done=False` mit `eval_count=null`, `prompt_eval_count=null`
+        # und 797 Zeichen Inhalt. Der `TypeError` lief aus der Salienz durch
+        # `graph/base.py` bis in den Event-Consumer, der den Graphen abbrach —
+        # **und nahm eine Antwort mit, die siebzehn Sekunden zuvor fertig und
+        # vom Tribunal angenommen war.** Kennung: `TOKENZAEHLUNG-REISST-DEN-GRAPHEN`.
+        #
+        # Die Eingabeseite trug den Schutz bereits, als `if not input_tokens`
+        # — die Ausgabeseite nicht. Beide gehen jetzt durch dieselbe Umrechnung.
+        #
+        # **Die Zaehlung ist Buchhaltung.** Sie geht in ein Log und in keine
+        # Entscheidung; sie steht aber im Pfad jeder Modellantwort. Was dort
+        # steht, darf nicht werfen — ein fehlender Zaehlerstand ist eine
+        # unbekannte Zahl, kein Grund, eine fertige Antwort zu verlieren.
+        input_tokens  = _zaehlerstand(response.get("prompt_eval_count"))
         if not input_tokens:
-            input_tokens = response.get("message", {}).get("prompt_eval_count", 0)
-        output_tokens = response.get("eval_count", 0)
+            input_tokens = _zaehlerstand(
+                response.get("message", {}).get("prompt_eval_count"),
+            )
+        output_tokens = _zaehlerstand(response.get("eval_count"))
         total_tokens  = input_tokens + output_tokens
         ctx_limit     = self._default_num_ctx
         caller_label  = f" [{caller}]" if caller else ""

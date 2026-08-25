@@ -14,7 +14,7 @@ from apscheduler.schedulers.asyncio import AsyncIOScheduler
 
 from config import (
     NMCP_ABGLEICH_INTERVALL_SEKUNDEN,
-    redis_client, ollama_gpu_client, ollama_cpu_client, llm_lock,
+    redis_client, llm_lock,
     OLLAMA_MODEL, OLLAMA_GPU_NUM_CTX, OLLAMA_CPU_NUM_CTX,
     SHADOW_MODEL, POSTGRES_URL,
     LLM_PROFILE, ANTHROPIC_API_KEY, ANTHROPIC_MODEL,

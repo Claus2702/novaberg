@@ -11,7 +11,6 @@ import logging
 from config import (
     EMOTION_SEKTOR_MAP,
     EMBED_MODEL,
-    ollama_gpu_client,
     GV_ACHSE_ENERGIE_SCHWELLE,
     GV_ACHSE_NAEHE_SCHWELLE,
     GV_ACHSE_TIEFE_SCHWELLE,

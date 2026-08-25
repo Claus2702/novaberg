@@ -15,7 +15,6 @@ import psycopg2
 from config import (
     POSTGRES_URL,
     EMBED_MODEL,
-    ollama_gpu_client,
     redis_client,
     GV_LUECKEN_MAX,
     GV_LUECKEN_MIN_RELEVANZ,

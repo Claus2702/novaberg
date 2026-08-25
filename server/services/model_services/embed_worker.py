@@ -5,7 +5,7 @@ Konkrete Eigenschaften:
   - Modell: nomic-embed-text-v2-moe (aus config.EMBED_MODEL; seit A4
     Chat 107 — v1 war casing-blind, siehe EMBEDDING-CASING-BLIND).
     Ohne Task-Praefixe — die Messung schlaegt das Datenblatt.
-  - Endpoint: config.ollama_gpu_client (Port 11434)
+  - Endpoint: config.ollama_gpu_embed (Port 11434, eigener Riegel)
   - API-Stil: client.embed(model=..., input=...)["embeddings"][0]
     (neuere Ollama-API; die alte .embeddings(prompt=...)["embedding"] ist
     deprecated)
@@ -18,7 +18,7 @@ import asyncio
 import logging
 import time
 
-from config import EMBED_MODEL, ollama_gpu_client
+from config import EMBED_MODEL, ollama_gpu_embed
 from services.model_services.types import EmbedRequest, EmbedResponse
 from services.model_services.worker_base import ModelWorker
 
@@ -35,7 +35,7 @@ class EmbedWorker(ModelWorker[EmbedRequest, EmbedResponse]):
 
     def __init__(self) -> None:
         super().__init__(name="embed")
-        self._client = ollama_gpu_client
+        self._client = ollama_gpu_embed
         self._model = EMBED_MODEL
         logger.info(
             "EmbedWorker konfiguriert: Modell='%s', Host=%s",

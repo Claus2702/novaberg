@@ -63,7 +63,7 @@ import psycopg2
 import psycopg2.extras
 import redis as redis_lib
 
-from config import POSTGRES_URL, REDIS_URL, ollama_gpu_client, EMBED_MODEL
+from config import POSTGRES_URL, REDIS_URL, ollama_gpu_embed, EMBED_MODEL
 from memory import lzg_knoten, lzg_kanten
 from memory.utils import embedding_zu_pgvector_str
 from memory.repositories.entitaeten_repository import EntitaetenRepository
@@ -127,7 +127,7 @@ def embedding_berechnen(text: str) -> list[float]:
     einziger Dimensions-Check).
     """
     # ── Verarbeitung ────────────────────────────
-    antwort = ollama_gpu_client.embed(model=EMBED_MODEL, input=text)
+    antwort = ollama_gpu_embed.embed(model=EMBED_MODEL, input=text)
     embeddings = antwort.get("embeddings")
 
     # ── Ausgabe-Verifikation ────────────────────

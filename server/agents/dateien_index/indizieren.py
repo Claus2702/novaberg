@@ -22,7 +22,7 @@ import logging
 from dataclasses import dataclass
 from pathlib import Path
 
-from config import EMBED_MODEL, PROMPTS, get_node_config, ollama_gpu_client
+from config import EMBED_MODEL, PROMPTS, get_node_config, ollama_gpu_embed
 from services.model_services import ChatRequest, model_service
 from tools.dateien.operationen import StrukturUnklarError, struktur_analysieren
 
@@ -150,7 +150,7 @@ def _embedding_holen(text: str) -> list[float] | None:
 
     # ── Verarbeitung ────────────────────────────
     try:
-        antwort = ollama_gpu_client.embed(model=EMBED_MODEL, input=text)
+        antwort = ollama_gpu_embed.embed(model=EMBED_MODEL, input=text)
         vektor: list[float] = antwort["embeddings"][0]
     except (KeyError, IndexError, TypeError, OSError) as fehler:
         logger.exception(

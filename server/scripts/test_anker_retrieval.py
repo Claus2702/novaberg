@@ -5,7 +5,7 @@ min_similarity=0.0) gegen die Live-lzg_knoten auf und prueft das zurueck-
 gegebene Dict-Format, das der Thinker-Faktencheck (_format_faktencheck_treffer)
 konsumiert: Keys id + beobachter vorhanden, Cosine-absteigende Reihenfolge.
 
-Embedding-Weg: direkter ollama_gpu_client.embed(model=EMBED_MODEL, ...) —
+Embedding-Weg: ollama_gpu_embed.embed(model=EMBED_MODEL, ...) ueber den Riegel —
 exakt derselbe Client + dasselbe Modell wie der EmbedWorker, den der Thinker
 ueber model_service.embed nutzt (siehe embed_worker.py:36-37). Der Vektor ist
 identisch; der Worker wird hier bewusst umgangen, weil ein Throwaway-Skript
@@ -17,7 +17,7 @@ Aufruf im Server-Container (NICHT in der Sandbox):
 
 import logging
 
-from config            import POSTGRES_URL, EMBED_MODEL, ollama_gpu_client
+from config            import POSTGRES_URL, EMBED_MODEL, ollama_gpu_embed
 from memory.lzg_knoten import anker_retrieval
 from memory.utils      import embedding_zu_pgvector_str
 
@@ -43,7 +43,7 @@ def embedding_berechnen(text: str) -> list[float]:
     ueber model_service.embed bekaeme.
     Fehlerfall: Ollama liefert keine Embeddings -> RuntimeError (fail loud).
     """
-    antwort = ollama_gpu_client.embed(model=EMBED_MODEL, input=text)
+    antwort = ollama_gpu_embed.embed(model=EMBED_MODEL, input=text)
     embeddings = antwort.get("embeddings")
     if not embeddings:
         raise RuntimeError(f"Ollama lieferte kein Embedding (Modell={EMBED_MODEL})")

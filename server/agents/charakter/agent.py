@@ -14,7 +14,6 @@ from config import (
     AKTIVES_PAAR_USER_ID,
     ASSISTANT_USER_ID,
     redis_client,
-    ollama_gpu_client,
     EMBED_MODEL,
     POSTGRES_URL,
     ZIEL_MAX_LANGFRISTIG,

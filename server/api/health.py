@@ -8,7 +8,7 @@ import logging
 from fastapi           import APIRouter
 from fastapi.responses import JSONResponse
 
-from config import redis_client, ollama_gpu_client, OLLAMA_MODEL, postgres_verbinden, SEARXNG_URL
+from config import redis_client, ollama_gpu_chat, OLLAMA_MODEL, postgres_verbinden, SEARXNG_URL
 
 logger = logging.getLogger("ki_server.health")
 router = APIRouter()
@@ -20,7 +20,7 @@ router = APIRouter()
 def ollama_testen() -> bool:
     """Ollama-Verbindung und Modellverfügbarkeit prüfen."""
     try:
-        models       = ollama_gpu_client.list()
+        models       = ollama_gpu_chat.list()
         model_namen: list = [m.model for m in models.models]
         logger.debug(f"Ollama erreichbar. Modelle: {model_namen}")
 
@@ -178,7 +178,7 @@ def health():
 def modelle_auflisten():
     """Verfügbare Ollama-Modelle."""
     try:
-        models = ollama_gpu_client.list()
+        models = ollama_gpu_chat.list()
         return {"modelle": [m.model for m in models.models]}
     except Exception as fehler:
         return JSONResponse(status_code=503, content={"fehler": str(fehler)})
@@ -189,7 +189,7 @@ def modell_laden(modell_name: str):
     """Ollama-Modell herunterladen."""
     try:
         logger.info(f"Lade Modell: {modell_name}")
-        ollama_gpu_client.pull(modell_name)
+        ollama_gpu_chat.pull(modell_name)
         return {"status": "ok", "modell": modell_name}
     except Exception as fehler:
         return JSONResponse(status_code=500, content={"fehler": str(fehler)})
