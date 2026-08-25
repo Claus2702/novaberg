@@ -179,6 +179,29 @@ _ASCII_ZU_UMLAUT: dict[str, str] = {}
 
 _ALLE_WOERTER: list[str] = _WOCHENTAGE + _MONATE + _RELATIVE
 
+#: Die Namen der Dauer-Einheiten, Einzahl und Mehrzahl.
+#:
+#: **Sie muessen geschuetzt sein, weil die kurzen Einzahlformen in
+#: Levenshtein-Reichweite eines Monats- oder Wochentagsnamens liegen.**
+#: Gemessen am 25.08.2026: `Tag` -> `Mai` und `Monat` -> `Montag`, beide auf
+#: Distanz 2 und damit innerhalb von `max_distanz`. Danach parste `in einem
+#: Tag` als *im Mai* (01.05.2027) und `in einem Monat` als *am Montag*
+#: (01.07.2026 — 29 Tage RUECKWAERTS, obwohl die Zukunft bevorzugt wird).
+#:
+#: **Die Mehrzahlformen waren nie betroffen** und darum fiel es nicht auf:
+#: `Tagen` und `Monaten` sind lang genug, dass keine Korrektur greift. Der
+#: Defekt sah deshalb aus wie ein Einzahl-Problem und war eines der
+#: Wortlaenge. Kennung: `ZEIT-EINZAHL-GREIFT-DANEBEN`.
+#:
+#: Aufgenommen sind auch die heute unauffaelligen Einheiten. Was eine
+#: Zeiteinheit benennt, ist nie ein verschriebener Monatsname — die Regel
+#: haengt nicht daran, welche Distanz eine einzelne Form gerade hat.
+_ZEITEINHEITEN: set[str] = {
+    "sekunde", "sekunden", "minute", "minuten", "stunde", "stunden",
+    "tag", "tage", "tagen", "woche", "wochen",
+    "monat", "monate", "monaten", "jahr", "jahre", "jahren",
+}
+
 _GESCHUETZTE_WOERTER: set[str] = {
     "morgens", "vormittags", "mittags", "nachmittags",
     "abends", "abend", "nachts", "früh",
@@ -186,7 +209,7 @@ _GESCHUETZTE_WOERTER: set[str] = {
     "sechs", "sieben", "acht", "neun", "zehn",
     "elf", "zwölf", "halb", "viertel", "dreiviertel",
     "vor", "nach", "um", "am", "in", "an",
-} | set(_RELATIVE_PRAEFIXE)
+} | set(_RELATIVE_PRAEFIXE) | _ZEITEINHEITEN
 
 
 
