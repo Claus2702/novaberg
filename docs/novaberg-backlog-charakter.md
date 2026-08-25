@@ -339,9 +339,7 @@ Dazu eine Zeile in der Spur (`services/event_consumer.py`), damit das Ergebnis b
 
 **Kategorie:** [CHA] CHARAKTER
 
-**Kategorie:** [CHA] CHARAKTER
-
-**Zustand:** offen — nachgesehen am 25.08.2026. Der Unterlauf ist unvermessen. **Achtung: dieselbe Kennung steht ein zweites Mal im Register** — zwei Ueberschriften auf einen Schluessel.
+**Zustand:** offen — nachgesehen am 25.08.2026. Der Unterlauf ist unvermessen. **Der Anlassfall bleibt offen**, die Saettigung ist gebaut. Der urspruengliche Eintrag steht als historischer Teil darunter (25.08.2026 als solcher gekennzeichnet); er ist **keine zweite Kennung**.
 
 **Gewählt ist die Sättigung** — der Weg, den dieser Eintrag schon als den plausibleren benannt hat. Der Eintrag verlangte die Messung vor der Entscheidung; sie lag vor, und sie fiel eindeutig aus.
 
@@ -356,11 +354,9 @@ Dazu eine Zeile in der Spur (`services/event_consumer.py`), damit das Ergebnis b
 Der ursprüngliche Eintrag bleibt darunter stehen:
 
 
-#### HALTUNG-SPANNENENDEN-OFFEN — die Zahlen verlassen den Korridor
+##### Vorgeschichte zu HALTUNG-SPANNENENDEN-OFFEN — der urspruengliche Eintrag (Chat 128)
 
-**Kategorie:** [CHA] CHARAKTER — zweites Vorkommen dieser Kennung.
-
-**Zustand:** offen — nachgesehen am 25.08.2026. **Zweite Ueberschrift derselben Kennung.** Der Befund steht auch hier; die Dopplung selbst ist der groessere Mangel: Ein Verweis auf `HALTUNG-SPANNENENDEN-OFFEN` trifft zwei Abschnitte, und welcher gilt, entscheidet der Zufall des Lesers. Dasselbe gilt fuer `RAD-STABILITAET-UNGEMESSEN`.
+**Kein zweiter Eintrag, sondern die Vorgeschichte des Abschnitts darueber.** Der obere Teil sagt es woertlich: *„Der urspruengliche Eintrag bleibt darunter stehen."* Bis zum 25.08.2026 trugen beide dieselbe Ueberschriftenebene, und eine Zaehlung ueber das Register sah zwei Eintraege auf einen Schluessel. Die Ebene ist jetzt tiefer; der Zustand des Eintrags steht **oben**, nicht hier.
 
 Gemessen am Entwurf: `glut/waerme` ergibt 1.15, `feuerwerk/fragen` 1.40, und nach unten reicht **eine** voll ausgeprägte Speiche — `glut/draengen` fällt mit `treue` auf −0.10.
 

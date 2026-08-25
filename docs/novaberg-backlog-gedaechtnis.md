@@ -1986,7 +1986,9 @@ Ein KZG-Eintrag, der ins LZG promotet wurde, **bleibt danach im KZG liegen**. De
 ---
 
 
-## Sprint KZG-SALIENZ-NEUBAU — was nach Bauteil 1 offen bleibt (Chat 114)
+### Fortsetzung von KZG-SALIENZ-NEUBAU — was nach Bauteil 1 offen bleibt (Chat 114)
+
+**Fortsetzung des Sprint-Abschnitts von Chat 109, kein zweiter Eintrag.** Bis zum 25.08.2026 trugen beide dieselbe Ueberschriftenebene; eine Zaehlung ueber das Register sah zwei Eintraege auf einen Schluessel. Der Zustand steht beim ersten Abschnitt.
 
 Bauteil 1 — die Salienz als abgeleiteter Wert statt als Akkumulator — steht seit Chat 113, migriert und live gemessen. Die restlichen Schritte standen bis Chat 114 nur in der Sitzungsübergabe außerhalb des Repos und damit nirgends, wo sie eine Sitzung überleben.
 
