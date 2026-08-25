@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Vollständiges Register aller Features mit Zustandsampel und Beleg
-**Stand:** 25. August 2026, 20:10 UTC (`date -u`)
+**Stand:** 25. August 2026, 20:37 UTC (`date -u`)
 **Verlauf:** [Verlauf des Standes](#verlauf-des-standes) — 77 Eintraege, juengster zuerst
 **Pfad:** novaberg/docs/novaberg-featureliste.md
 **Typ:** Register
@@ -393,6 +393,7 @@ Die Feature-Matrix in `novaberg-architecture.md` §6 ist mit dieser Liste abgel�
 | **Charakterisierungs-Netz** | 🟠 | `[Doku]` | — · **🟢 → 🟠 bei der Erhebung am 20.08.2026.** **Die Erhebung am 20.08.2026 fand keinen Zeugen**: unter 143 Testdateien traegt keine `charakterisier`, `netz` oder `golden` im Namen. Das Netz ist im Harness beschrieben und im Bestand nicht auffindbar. `[gemessen]` |
 | **Kanalprüfung** (Deklaration gegen Leser) | 🟢 | 74 Felder geprüft, **0 tote Kanäle** `[gemessen]` | — |
 | **Konfigurationsprüfung** (Konstante ohne Leser) | ⚫ | kein Werkzeug — **8 tote Konstanten** von Hand gefunden `[gemessen]` | `DATEILOG_AKTIV`, `EBBINGHAUS_DECAY_RATE`, `EBBINGHAUS_MIN_GEWICHT`, `EMOTIONALE_GRAVITATION_FAKTOR_SESSION`, `KZG_VERSTAERKUNG_DIVISOR`, `REDUCER_AKTIV`, `REDUCER_LOG_REMOVED`, `STIL_SESSION_GEWICHT` |
+| **Bezeichner-Sprache** (englisch, kein Denglisch) | 🟠 | **Nulllinie 893 von 1479 Funktionen (60 %)** über 185 Dateien `[gemessen 25.08.2026]` · Wand vor neuen Dateien gebaut und belegt (Rückgabewert 1 bei konstruiertem Verstoß) · `F-NAME-1` | Der Bestand ist geduldet — eine Umbenennung müsste in 218 `patch`-Zielen mitwandern und ist ein eigener Auftrag. Klassen sind mit 8 von 151 fast sauber |
 | **Schichtprüfung** (Importwurzel) | ⚫ | kein Werkzeug prueft die Schichtgrenze; am Bestand gezaehlt **39 Importe**, die eine ueberspringen `[gemessen]` · `IMPORTE-UEBERSPRINGEN-SCHICHT` offen | die Regel steht, die Wand fehlt. Neu aufgenommen bei der Erhebung am 20.08.2026 |
 | **EVA-Sektionsprüfung** (leere Sektionsmarke) | ⚫ | **20 Sektionsmarken `Ausgabe-Verifikation`** ohne Pruefung darunter `[gemessen]` · `EVA-SEKTION-OHNE-PRUEFUNG` offen | eine Marke, unter der nur ein `return` steht, taeuscht eine Pruefung vor. Neu aufgenommen bei der Erhebung am 20.08.2026 |
 | **Default-Prüfung** (Begleitfeld beim Vorgabewert) | ⚫ | **11 numerische Defaults** sehen aus wie Messwerte `[gemessen]` · `DEFAULTS-WIE-MESSWERTE` offen | ohne Begleitfeld ist ein Vorgabewert von einer Messung nicht zu unterscheiden. Neu aufgenommen bei der Erhebung am 20.08.2026 |

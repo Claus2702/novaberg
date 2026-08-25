@@ -1,13 +1,13 @@
 # Novaberg — Roadmap (Projektchronik)
 
-**Stand:** 25. August 2026 — juengster Eintrag **20:10 UTC** (gemessen via `date -u`); die Eintraege darunter tragen Zeiten bis 21:30 UTC, die zu dieser Zeitbasis in der Zukunft liegen und deshalb **oberhalb** ihres Datums stehen. Der Widerspruch steht in der Fundliste.
+**Stand:** 25. August 2026 — juengster Eintrag **20:37 UTC** (gemessen via `date -u`); die Eintraege darunter tragen Zeiten bis 21:30 UTC, die zu dieser Zeitbasis in der Zukunft liegen und deshalb **oberhalb** ihres Datums stehen. Der Widerspruch steht in der Fundliste.
 **Pfad:** novaberg/docs/novaberg-roadmap.md
 **Single Source of Truth für abgeschlossene Arbeit.**
 **Offene Punkte → novaberg-backlog.md**
 
 | Zeitraum | Datei | Kapitel |
 |---|---|---|
-| 2026-08 | **novaberg-roadmap.md** ← diese Datei | 128 |
+| 2026-08 | **novaberg-roadmap.md** ← diese Datei | 129 |
 | 2026-07 | [`novaberg-roadmap-2026-07.md`](novaberg-roadmap-2026-07.md) | 12 |
 | 2026-05 | [`novaberg-roadmap-2026-05.md`](novaberg-roadmap-2026-05.md) | 18 |
 | 2026-04 | [`novaberg-roadmap-2026-04.md`](novaberg-roadmap-2026-04.md) | 21 |
@@ -18,6 +18,41 @@
 ## Hinweis für Bearbeiter dieser Datei
 
 Die Kopfzeile stand bis Chat 109 auf „Chat 93, 21. Mai 2026" — 15 Chats hinter dem Inhalt. **Sie ist danach erneut zurückgefallen:** von Chat 110 bis 114 blieb sie auf „Chat 109" stehen, während der Inhalt weiterwuchs, und wurde in Chat 115 nachgezogen. Wer hier etwas ergänzt, zieht die Kopfzeile mit — sie driftet zuverlässig. Achtung beim Nachschlagen: Nur bis Chat 97 trägt jeder Chat eine eigene `## Chat NNN`-Überschrift; die Chats 98–108 stehen als `###`-Abschnitte unter dem Chat-97-Block, benannt nach Sprint statt nach Chat.
+
+---
+
+## 25.08.2026, 20:37 UTC — `graph_run_lock`, und eine Regel, die einen Monat lang gegen sich selbst wuchs
+
+**ZIEL:** Der Riegel heisst nach dem, was er sperrt — und die Namensregel bekommt eine Nulllinie statt weiterer stiller Verstoesse.
+**TEST:** Suite unveraendert; die Namens-Wand meldet bei einer konstruierten neuen Datei Rueckgabewert 1, ohne sie 0.
+**MESSUNG:** Suite **2327 gruen**, 0 uebersprungen. 38 Umbenennungen in 12 Dateien.
+
+### Die Bauart stimmte, der Name nicht
+
+Der Handzettel fragte, ob `llm_lock` die falsche Bauart sei. **Geprueft: nein.** Beide Verwendungsstellen nehmen nicht blockierend, jeder fruehe Rueckweg gibt frei, der Hauptweg in einem `finally` — genau das, was ein Ressourcen-Riegel leisten soll. Die Marke ueber den Vorgang gibt es daneben schon (`turn_beginnen`/`turn_beenden`), und der Kommentar an der Stelle sagt, was der Riegel zusaetzlich abdeckt: den Pixie- und den Recherche-Pfad.
+
+**Der Name sagte „Sperre vor dem Sprachmodell" und meinte „ein Graphenlauf zur Zeit".** Seit dem Vormittag traegt `services/llm_riegel.py` den echten Modell-Riegel; die Verwechslung waere von da an teuer geworden. Jetzt `graph_run_lock`, 38 Stellen in 12 Dateien, davon 6 in `patch`-Zeichenketten.
+
+### 893 von 1479 — die Zahl war um den Faktor vier zu klein geschaetzt
+
+`novaberg/CLAUDE.md` und `12_NAMENSGEBUNG.md` §1 schreiben englische Bezeichner vor und verbieten Denglisch. Eine erste Stichprobe ueber 30 Woerter ergab 224 Funktionen; die Messung gegen eine Wortliste aus **allen 430 mehrfach vorkommenden Namensteilen** des Bestands ergibt:
+
+| | |
+|---|---:|
+| Funktionen im Produktivcode | 1479 |
+| davon mit deutschem Namensteil | **893 (60 %)** |
+| betroffene Dateien | 185 |
+| Klassen mit deutschem Teil | 8 von 151 |
+
+**Auch das ist eine Untergrenze** — was nur einmal vorkommt, steht nicht in der Liste.
+
+**Die Regel wuchs einen Monat lang gegen sich selbst, und das ist am eigenen Werk desselben Tages belegt:** `_vorher_spur()` und `GEMESSENE_ZUSTANDSFELDER` entstanden in einem Zug, der eine Nachvollziehbarkeitsluecke schloss — zwei neue Verstoesse, committet, ohne dass etwas anschlug. Beide sind jetzt `_previous_state_trace` und `MEASURED_STATE_FIELDS`.
+
+### Nulllinie statt Aufraeumaktion
+
+Ein Durchgang ueber 893 Namen in 185 Dateien ist ein Sprint mit eigenem Risiko: **Jeder umbenannte Name muss in jedem `patch("modul.name")` mitwandern**, und der Bestand traegt 218 solcher Ziele. Am selben Nachmittag rissen vier Tests, weil ein einziger Name aus einem Modul verschwand.
+
+Deshalb wie beim Linter: Bestand zaehlen und dulden, **die Wand steht vor dem Zuwachs**. Eine neu angelegte Datei traegt keinen deutschen Bezeichner — eine Menge, die per Konstruktion leer ist und keine gepflegte Vergleichszahl braucht.
 
 ---
 
