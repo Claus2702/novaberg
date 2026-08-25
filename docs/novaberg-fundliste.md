@@ -2,8 +2,8 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Rohe, noch unklassifizierte Funde aus laufender Arbeit
-**Stand:** 25. August 2026, 14:10 UTC
-**Offen:** **86 Funde — gezaehlt am 25.08.2026, 14:10 UTC** (91 Fundzeilen im Abschnitt *Offen*, davon **fuenf** durchgestrichen; **vier neu aus den ersten beiden Etappen der Zustandspruefung**; **fuenf neu aus der Teilung des Bugregisters und dem Durchgang durch die ungeprueften Eintraege**; sechs aus der Behebung des Impuls-Verlusts und ihrer zweiten Kontrolle, drei aus dem Lesen der 26 Registerkandidaten; fuenf aus der Abschaltung des Telegram-Kanals, zwei aus der Messung des Impuls-Turns, zwoelf aus dem Zuschnitt des Anschubs — der **entschieden und zurueckgestellt** ist —, zwei aus dem Fall der Zwei-Stunden-Wand). Die Kopfzeile stand am 23.08. schon einmal auf 23 bei tatsaechlich 26; sie war ueber mehrere Zuege hochgezaehlt worden, und schon ihr Ausgangswert war es — **deshalb wird hier gezaehlt und nie fortgeschrieben.**
+**Stand:** 25. August 2026, 16:30 UTC
+**Offen:** **88 Funde — gezaehlt am 25.08.2026, 16:30 UTC** (93 Fundzeilen im Abschnitt *Offen*, davon **fuenf** durchgestrichen; **sechs neu aus der Zustandspruefung des Backlogs**; **fuenf neu aus der Teilung des Bugregisters und dem Durchgang durch die ungeprueften Eintraege**; sechs aus der Behebung des Impuls-Verlusts und ihrer zweiten Kontrolle, drei aus dem Lesen der 26 Registerkandidaten; fuenf aus der Abschaltung des Telegram-Kanals, zwei aus der Messung des Impuls-Turns, zwoelf aus dem Zuschnitt des Anschubs — der **entschieden und zurueckgestellt** ist —, zwei aus dem Fall der Zwei-Stunden-Wand). Die Kopfzeile stand am 23.08. schon einmal auf 23 bei tatsaechlich 26; sie war ueber mehrere Zuege hochgezaehlt worden, und schon ihr Ausgangswert war es — **deshalb wird hier gezaehlt und nie fortgeschrieben.**
 **Verlauf:** [Verlauf des Standes](#verlauf-des-standes) — 73 Eintraege, juengster zuerst
 **Pfad:** novaberg/docs/novaberg-fundliste.md
 
@@ -232,6 +232,10 @@ Analog zum Kraft-1-Stichtag: ab wann eine Partition brauchbar ist. Kein Backfill
 ---
 
 ## Offen
+
+- **2026-08-25** — **Vier Kennungen stehen im Backlog zweimal als eigener Abschnitt**, `RAD-STABILITAET-UNGEMESSEN`, `HALTUNG-SPANNENENDEN-OFFEN`, `TOK-DRIFT-SALIENCE`, `TURN-ROH-VOR-KRAFT1-ENTWERTET`, dazu `SPRACH-STIL-DEFENSIV-STUMM` und `EI-CALC-ROLLE-DEFAULT-ASYMMETRIE` als doppelte Tabellenzeile. **Aufgefallen ist es erst beim Setzen der Zustaende:** Der Einsetzer traf jeweils nur das erste Vorkommen, und die Zaehlung ging um genau die Zahl der Doppelgaenger nicht auf.
+
+- **2026-08-25** — **`IDX-TIMELINE-TYPE-NICHT-IN-INIT` und `REFAC-DB-INDEX-DUPLIKAT` beschreiben denselben Index und verlangen Entgegengesetztes** — der eine, ihn in die Schemadatei nachzutragen, der andere, ihn als Dublette zu pruefen und zu entfernen. Wer den einen umsetzt, macht den anderen unmoeglich. **Zwei Eintraege, ein Gegenstand, kein gemeinsamer Ort, an dem der Widerspruch auffaellt.**
 
 - **2026-08-25** — **Zwei Befunde stehen im Backlog unter je zwei Kennungen.** `RECHERCHE-LIEST-EIGENE-BIBLIOTHEK-NICHT` und `RECHERCHE-LIEST-IHRE-BIBLIOTHEK-NICHT` beschreiben dieselbe Stelle; ebenso `CLUSTER-BESCHREIBUNG-MISCHT-BEFEHL` und `SZENE-STATT-REGIE-IN-DEN-CLUSTERN`. Beide Paare entstanden beim Umzug aus der Fundliste an verschiedenen Tagen. **Eine Kennung ist ein Schluessel; zwei Schluessel auf einen Gegenstand heisst, dass eine Erledigung nur die Haelfte schliesst.**
 

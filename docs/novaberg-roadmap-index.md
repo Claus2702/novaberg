@@ -1,11 +1,11 @@
 # Novaberg — Chronik, Findemittel
 
 **Inhalt:** eine Zeile je Abschnitt der Projektchronik, ueber alle Zeitraeume.
-**Umfang:** 491 Abschnitte in 5 Dateien — 198 mit eigenem Datum, 292 geerbt, 1 ohne.
+**Umfang:** 495 Abschnitte in 5 Dateien — 199 mit eigenem Datum, 295 geerbt, 1 ohne.
 
 | Zeitraum | Datei | Abschnitte |
 |---|---|---|
-| laufend | [`novaberg-roadmap.md`](novaberg-roadmap.md) | 228 |
+| laufend | [`novaberg-roadmap.md`](novaberg-roadmap.md) | 232 |
 | 2026-07 | [`novaberg-roadmap-2026-07.md`](novaberg-roadmap-2026-07.md) | 69 |
 | 2026-05 | [`novaberg-roadmap-2026-05.md`](novaberg-roadmap-2026-05.md) | 87 |
 | 2026-04 | [`novaberg-roadmap-2026-04.md`](novaberg-roadmap-2026-04.md) | 101 |
@@ -19,7 +19,7 @@
 
 **Sie wird gerechnet, nicht geschrieben.** Ein von Hand gefuehrtes Findemittel ist eine zweite Wahrheit neben der ersten und faellt zurueck; die Chronik traegt den Beleg dafuer im eigenen Kopf. Wer hier etwas von Hand aendert, aendert es bis zum naechsten Lauf.
 
-**Die Sprungmarken sind eindeutig, ihre Form ist unbelegt.** 491 Marken, 491 verschiedene — das ist gerechnet, und es gilt ueber alle Teile zusammen. Ob ein Betrachter aus einem Gedankenstrich zwischen Leerzeichen zwei Bindestriche bildet, wie hier angenommen, ist im Bestand nicht nachpruefbar: Vor diesem Index gab es keinen einzigen Anker-Verweis in der Doku. Der erste Klick entscheidet es.
+**Die Sprungmarken sind eindeutig, ihre Form ist unbelegt.** 495 Marken, 495 verschiedene — das ist gerechnet, und es gilt ueber alle Teile zusammen. Ob ein Betrachter aus einem Gedankenstrich zwischen Leerzeichen zwei Bindestriche bildet, wie hier angenommen, ist im Bestand nicht nachpruefbar: Vor diesem Index gab es keinen einzigen Anker-Verweis in der Doku. Der erste Klick entscheidet es.
 
 **Ein Datum in Klammern ist geerbt** — der Abschnitt selbst nennt keins; es stammt von der naechsten Ueberschrift darueber, die eins traegt. Ein geerbtes Datum ist eine Zuordnung und keine Angabe.
 
@@ -28,6 +28,10 @@
 | Datum | Datei | Ebene | Abschnitt |
 |---|---|---|---|
 | — | laufend | ## | [Hinweis für Bearbeiter dieser Datei](novaberg-roadmap.md#hinweis-für-bearbeiter-dieser-datei) |
+| 2026-08-25 | laufend | ## | [25.08.2026, 16:30 UTC — Vier Etappen, 204 Einträge: das Backlog trägt seinen Zustand vollständig](novaberg-roadmap.md#25082026-1630-utc--vier-etappen-204-einträge-das-backlog-trägt-seinen-zustand-vollständig) |
+| (2026-08-25) | laufend | ### | · [Was die Prüfung an Erledigtem fand](novaberg-roadmap.md#was-die-prüfung-an-erledigtem-fand) |
+| (2026-08-25) | laufend | ### | · [Vier Zahlen, die sich seit ihrem Befund bewegt haben](novaberg-roadmap.md#vier-zahlen-die-sich-seit-ihrem-befund-bewegt-haben) |
+| (2026-08-25) | laufend | ### | · [Und drei Befunde über das Register selbst](novaberg-roadmap.md#und-drei-befunde-über-das-register-selbst) |
 | 2026-08-25 | laufend | ## | [25.08.2026, 14:10 UTC — Zweite Etappe: 51 Backlog-Einträge, und die Prüfung trifft auf ihren eigenen Vortag](novaberg-roadmap.md#25082026-1410-utc--zweite-etappe-51-backlog-einträge-und-die-prüfung-trifft-auf-ihren-eigenen-vortag) |
 | 2026-08-25 | laufend | ## | [25.08.2026, 13:20 UTC — Erste Etappe der Zustandsprüfung: 20 Backlog-Einträge gegen den Code](novaberg-roadmap.md#25082026-1320-utc--erste-etappe-der-zustandsprüfung-20-backlog-einträge-gegen-den-code) |
 | 2026-08-25 | laufend | ## | [25.08.2026, 12:40 UTC — Das Backlog bekommt sein Findemittel, und es zählt aus, was ihm fehlt](novaberg-roadmap.md#25082026-1240-utc--das-backlog-bekommt-sein-findemittel-und-es-zählt-aus-was-ihm-fehlt) |

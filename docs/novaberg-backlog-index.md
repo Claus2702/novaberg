@@ -1,7 +1,7 @@
 # Novaberg — Backlog, Findemittel
 
 **Inhalt:** eine Zeile je Eintrag mit Kennung, aus Ueberschriften und Tabellenzeilen.
-**Umfang:** 420 Eintraege mit Kennung — 169 offen, 51 abgeschlossen, **200 ohne lesbaren Zustand**.
+**Umfang:** 420 Eintraege mit Kennung — 362 offen, 58 abgeschlossen, **0 ohne lesbaren Zustand**.
 **Dazu 22 Abschnitte mit Zustand und ohne Kennung** — zaehlbar, aber nicht querverweisbar.
 **Das Backlog:** [`novaberg-backlog.md`](novaberg-backlog.md)
 
@@ -43,237 +43,37 @@
 
 | Zeile | Zustand | Abschnitt |
 |---|---|---|
-| 2247 | offen | Epic: Sykophanz eindämmen (Chat 126) |
-| 2291 | offen | Epic: Pixie — der Abfluss steht (04.08.2026) |
-| 2312 | offen | Epic: Wissensspeicher (04.08.2026) |
-| 2355 | offen | Epic: Klärung — Abweichung und Lücke (04.08.2026) |
-| 2455 | offen | Epic: Emotionale Gravitation (Chat 61) |
-| 2510 | abgeschlossen | Epic: Graph-Neuordnung (Chat 58–59) — ✅ Chat 59 |
-| 2526 | abgeschlossen | Epic: Session-Trennung (User × Charakter) (Chat 54, 59) |
-| 2549 | offen | Vision: TurnOrchestrator (Chat 58) |
-| 2561 | offen | Epic: Client WebSocket-Umbau (Chat 60) ✅ **abgeschlossen 01.08.2026 (Chat 124)** |
-| 2824 | unlesbar | Was Telegram nicht kann, und warum es keine Einstellungssache ist |
-| 3237 | offen | Epic: Memory-Promotion-Korrektur (Chat 75) |
-| 3360 | unlesbar | Epic: Memory-Kern-Umbau (Synapsen-Modell, Chat 86) |
-| 3483 | abgeschlossen | Epic: Microservice-Modell-Queue (Chat 91) — ✅ abgeschlossen Chat 97 |
-| 3578 | offen | Tech-Debt: Reducer-Umbau-Nachzügler (Chat 75) |
-| 3734 | abgeschlossen | Sprint: M2.5a — TimelineAgent-Manager-Cleanup (Chat 78) |
-| 3837 | offen | Konzept: COGNITIVE PIPELINE — Frames, Verstehens-Loop, Skills, Task Orchestratio |
-| 3914 | offen | Konzept: CHRONIK — Vollständiges Turn-Log als episodisches Nachschlagewerk (Chat |
-| 4194 | abgeschlossen | Sprint: Pixie-EVA-Härtung — PromotionAgent (Chat 85) |
-| 4223 | offen | Epic: Code-Audit-Sprint — EVA-Disziplin im gesamten Code |
-| 4650 | abgeschlossen | Refactor: [GELÖST Chat 97] CONFIG-PIXIE-AKTIV-HARDCODED — `PIXIE_AKTIV` nicht en |
-| 4668 | offen | Doku-Sprint: DOKU-DRIFT-WELLE-PROMOTION — Sieben Drift-Punkte aus PromotionAgent |
-| 4688 | offen | Doku-Sprint: CHRONIK-BACKFILL — Lücken in Roadmap- und Backlog-Chronik (Chat 97) |
+| 2351 | offen | Epic: Sykophanz eindämmen (Chat 126) |
+| 2395 | offen | Epic: Pixie — der Abfluss steht (04.08.2026) |
+| 2416 | offen | Epic: Wissensspeicher (04.08.2026) |
+| 2459 | offen | Epic: Klärung — Abweichung und Lücke (04.08.2026) |
+| 2559 | offen | Epic: Emotionale Gravitation (Chat 61) |
+| 2614 | abgeschlossen | Epic: Graph-Neuordnung (Chat 58–59) — ✅ Chat 59 |
+| 2630 | abgeschlossen | Epic: Session-Trennung (User × Charakter) (Chat 54, 59) |
+| 2653 | offen | Vision: TurnOrchestrator (Chat 58) |
+| 2665 | offen | Epic: Client WebSocket-Umbau (Chat 60) ✅ **abgeschlossen 01.08.2026 (Chat 124)** |
+| 2932 | unlesbar | Was Telegram nicht kann, und warum es keine Einstellungssache ist |
+| 3347 | offen | Epic: Memory-Promotion-Korrektur (Chat 75) |
+| 3470 | unlesbar | Epic: Memory-Kern-Umbau (Synapsen-Modell, Chat 86) |
+| 3593 | abgeschlossen | Epic: Microservice-Modell-Queue (Chat 91) — ✅ abgeschlossen Chat 97 |
+| 3688 | offen | Tech-Debt: Reducer-Umbau-Nachzügler (Chat 75) |
+| 3850 | abgeschlossen | Sprint: M2.5a — TimelineAgent-Manager-Cleanup (Chat 78) |
+| 3953 | offen | Konzept: COGNITIVE PIPELINE — Frames, Verstehens-Loop, Skills, Task Orchestratio |
+| 4030 | offen | Konzept: CHRONIK — Vollständiges Turn-Log als episodisches Nachschlagewerk (Chat |
+| 4326 | abgeschlossen | Sprint: Pixie-EVA-Härtung — PromotionAgent (Chat 85) |
+| 4355 | offen | Epic: Code-Audit-Sprint — EVA-Disziplin im gesamten Code |
+| 4790 | abgeschlossen | Refactor: [GELÖST Chat 97] CONFIG-PIXIE-AKTIV-HARDCODED — `PIXIE_AKTIV` nicht en |
+| 4808 | offen | Doku-Sprint: DOKU-DRIFT-WELLE-PROMOTION — Sieben Drift-Punkte aus PromotionAgent |
+| 4828 | offen | Doku-Sprint: CHRONIK-BACKFILL — Lücken in Roadmap- und Backlog-Chronik (Chat 97) |
 
 ---
 
-## Ohne lesbaren Zustand — 200 Eintraege
+## Ohne lesbaren Zustand — 0 Eintraege
 
 **Die Arbeitsliste.** Jede Zeile braucht eine `**Zustand:**`-Angabe an genau einer Stelle, aus geschlossener Wertemenge.
 
 | Zeile | Art | Kennung | Kapitel |
 |---|---|---|---|
-| 124 | Tabellenzeile | `LAENGENVORGABE-UNGEMESSEN` | Die Rangordnung — Bänder statt Einzelurteile (09.08.2026) |
-| 125 | Tabellenzeile | `MASSBLOCK-IM-BETRIEB-UNGEMESSEN` | Die Rangordnung — Bänder statt Einzelurteile (09.08.2026) |
-| 153 | Tabellenzeile | `PROFILTEXT-SCHRUMPFT-MIT-MATERIAL` | Die Rangordnung — Bänder statt Einzelurteile (09.08.2026) |
-| 162 | Tabellenzeile | `RESPONDER-ALS-AUFGABE` | Die Rangordnung — Bänder statt Einzelurteile (09.08.2026) |
-| 166 | Tabellenzeile | `PERSON-B-OHNE-BESCHREIBUNG` | Die Rangordnung — Bänder statt Einzelurteile (09.08.2026) |
-| 171 | Tabellenzeile | `VERDICHTUNG-UNGEPRUEFT` | Die Rangordnung — Bänder statt Einzelurteile (09.08.2026) |
-| 218 | Tabellenzeile | `BIBLIOTHEK-BLIND-AUF-INHALTSHOEHE` | Block 19.08.2026 — ein Vektor je Gegenstand |
-| 245 | Tabellenzeile | `ANBIETER-FELDER-UNGELESEN` | Block 19.08.2026 — der Antwortpfad meldet seinen Verlust und |
-| 253 | Tabellenzeile | `KANAL-OHNE-GEGENSTUECK` | Block 16.08.2026 — die Gegenrichtung der Doku-Pruefung |
-| 254 | Tabellenzeile | `SELBSTAUSKUNFT-OHNE-LESER` | Block 16.08.2026 — die Gegenrichtung der Doku-Pruefung |
-| 255 | Tabellenzeile | `NAMENSREGELN-JENSEITS-DER-FORM` | Block 16.08.2026 — die Gegenrichtung der Doku-Pruefung |
-| 263 | Tabellenzeile | `PENDING-AGENT-INS-PAYLOAD` | Block 16.08.2026 — aus dem Halten der Konventionen |
-| 295 | Tabellenzeile | `FACHSPEICHER-AGENTEN` | Block 16.08.2026 — die Fachspeicher bekommen ihre Agenten |
-| 296 | Tabellenzeile | `FAKTEN-BINDUNG-OHNE-VERFALL` | Block 16.08.2026 — die Fachspeicher bekommen ihre Agenten |
-| 297 | Tabellenzeile | `REEMBED-WISSENSSPEICHER` | Block 16.08.2026 — die Fachspeicher bekommen ihre Agenten |
-| 312 | Tabellenzeile | `ZUSTELLUNG-ABBRUCH-UNGEZAEHLT` | Block 15.08.2026 — das Messinstrument der Zustellung |
-| 313 | Tabellenzeile | `RIEGEL-5-7-OHNE-EINTRAG` | Block 15.08.2026 — das Messinstrument der Zustellung |
-| 328 | Tabellenzeile | `SALIENZKURVE-UNTEN-ZU-STEIL` | Block 18.08.2026 — aus dem Bau der Enricher-Quelle |
-| 329 | Tabellenzeile | `AUFZEICHNUNGEN-QUANTIL` | Block 18.08.2026 — aus dem Bau der Enricher-Quelle |
-| 330 | Tabellenzeile | `AUFZEICHNUNGEN-BODEN-NACHZIEHEN` | Block 18.08.2026 — aus dem Bau der Enricher-Quelle |
-| 338 | Tabellenzeile | `DOKU-VOLLPRUEFUNG` | Block 15.08.2026 — aus dem Nachzug selbst |
-| 339 | Tabellenzeile | `RAUCHTEST-ANWENDUNG-IMPORT` | Block 15.08.2026 — aus dem Nachzug selbst |
-| 340 | Tabellenzeile | `NACHZUG-KANDIDATEN-GATE` | Block 15.08.2026 — aus dem Nachzug selbst |
-| 350 | Tabellenzeile | `EIGENZEIT-BAUTEILE` | Block 14.08.2026 — aus der Eigenzeit-Messung |
-| 351 | Tabellenzeile | `SCHWELLE-OHNE-PAARUNG` | Block 14.08.2026 — aus der Eigenzeit-Messung |
-| 352 | Tabellenzeile | `PRUEFFIGUR-DISTANZ-090` | Block 14.08.2026 — aus der Eigenzeit-Messung |
-| 923 | Ueberschrift #### | `KOPPLUNG-FRAGENSPALTE-UNGEPRUEFT` | 0c. Aus der Fundliste klassifiziert — Chat 133 (08.08.2026) |
-| 933 | Ueberschrift #### | `EINWANDSURTEIL-OHNE-LESER` | 0c. Aus der Fundliste klassifiziert — Chat 133 (08.08.2026) |
-| 943 | Ueberschrift #### | `KANAELE-OHNE-VERTRAG` | 0c. Aus der Fundliste klassifiziert — Chat 133 (08.08.2026) |
-| 953 | Ueberschrift #### | `GV-SKIP-TOTE-AUSLOESER` | 0c. Aus der Fundliste klassifiziert — Chat 133 (08.08.2026) |
-| 963 | Ueberschrift #### | `RESPONDER-KOMMENTAR-FALSCHE-SCHICHT` | 0c. Aus der Fundliste klassifiziert — Chat 133 (08.08.2026) |
-| 973 | Ueberschrift #### | `PROFILE-LEER-URSACHE-UNBEKANNT` | 0c. Aus der Fundliste klassifiziert — Chat 133 (08.08.2026) |
-| 987 | Ueberschrift #### | `CHARAKTER-HASH-DOKU-FALSCHE-QUELLE` | 0c. Aus der Fundliste klassifiziert — Chat 133 (08.08.2026) |
-| 1003 | Ueberschrift #### | `DOKU-MEHRDEUTIGE-ANKER` | 0c. Aus der Fundliste klassifiziert — Chat 133 (08.08.2026) |
-| 1011 | Ueberschrift #### | `AGENT-MD-NIE-GEPRUEFT` | 0c. Aus der Fundliste klassifiziert — Chat 133 (08.08.2026) |
-| 1019 | Ueberschrift #### | `SESSION-CONTEXT-BUILD-OHNE-AUFRUFER` | 0c. Aus der Fundliste klassifiziert — Chat 133 (08.08.2026) |
-| 1027 | Ueberschrift #### | `EIGENIMPULSE-IN-DER-SCHWELLE` | 0c. Aus der Fundliste klassifiziert — Chat 133 (08.08.2026) |
-| 1035 | Ueberschrift #### | `REPERTOIRE-UNGLEICH-VERTEILT` | 0c. Aus der Fundliste klassifiziert — Chat 133 (08.08.2026) |
-| 1043 | Ueberschrift #### | `NOTIZEN-ENRICH-16-ZWEIGE` | 0c. Aus der Fundliste klassifiziert — Chat 133 (08.08.2026) |
-| 1051 | Ueberschrift #### | `LLM-PROVIDER-ZWEIG-UNERREICHBAR` | 0c. Aus der Fundliste klassifiziert — Chat 133 (08.08.2026) |
-| 1059 | Ueberschrift #### | `FUENF-STELLEN-FORM-MEHRFACH` | 0c. Aus der Fundliste klassifiziert — Chat 133 (08.08.2026) |
-| 1067 | Ueberschrift #### | `LOGGING-PROZENT-STATT-FSTRING` | 0c. Aus der Fundliste klassifiziert — Chat 133 (08.08.2026) |
-| 1079 | Ueberschrift #### | `PROMPT-DOPPELTE-FORMULIERUNG` | 0c. Aus der Fundliste klassifiziert — Chat 133 (08.08.2026) |
-| 1095 | Ueberschrift #### | `GRAPH-TABELLE-OHNE-VERFASSER` | 0c. Aus der Fundliste klassifiziert — Chat 133 (08.08.2026) |
-| 1103 | Ueberschrift #### | `INITIATIVE-RAD-GEGENPOL-UNGEPRUEFT` | 0c. Aus der Fundliste klassifiziert — Chat 133 (08.08.2026) |
-| 1111 | Ueberschrift #### | `CLUSTERZAHL-13-GEGEN-14` | 0c. Aus der Fundliste klassifiziert — Chat 133 (08.08.2026) |
-| 1119 | Ueberschrift #### | `GV-DETAIL-LAENGE-IRREFUEHREND` | 0c. Aus der Fundliste klassifiziert — Chat 133 (08.08.2026) |
-| 1127 | Ueberschrift #### | `BILD-VERWAIST` | 0c. Aus der Fundliste klassifiziert — Chat 133 (08.08.2026) |
-| 1139 | Ueberschrift #### | `LLM-LOCK-SCHUETZT-DIE-GPU-NICHT-DEN-TURN` | 0c. Aus der Fundliste klassifiziert — Chat 133 (08.08.2026) |
-| 1147 | Ueberschrift #### | `CLIENT-OHNE-TESTLAUF` | 0c. Aus der Fundliste klassifiziert — Chat 133 (08.08.2026) |
-| 1155 | Ueberschrift #### | `RAD-STABILITAET-UNGEMESSEN` | 0c. Aus der Fundliste klassifiziert — Chat 133 (08.08.2026) |
-| 1203 | Ueberschrift #### | `INTENTION-AUFGABE-MAP-DOPPELT` | 0c. Aus der Fundliste klassifiziert — Chat 133 (08.08.2026) |
-| 1211 | Ueberschrift #### | `QUEUE-RUHE-DURCH-REIHENFOLGE` | 0c. Aus der Fundliste klassifiziert — Chat 133 (08.08.2026) |
-| 1219 | Ueberschrift #### | `PIXIE-EIN-SLOT-BLOCKIERT-ALLES` | 0c. Aus der Fundliste klassifiziert — Chat 133 (08.08.2026) |
-| 1229 | Ueberschrift #### | `KONTEXT-32768-IN-SECHS-DOKUMENTEN` | 0c. Aus der Fundliste klassifiziert — Chat 133 (08.08.2026) |
-| 1237 | Ueberschrift #### | `RECHERCHE-ZWISCHENDESTILLATION-OHNE-GRUND` | 0c. Aus der Fundliste klassifiziert — Chat 133 (08.08.2026) |
-| 1258 | Ueberschrift #### | `ARCHITEKTUR-TABELLENLISTE-UNVOLLSTAENDIG` | 0c. Aus der Fundliste klassifiziert — Chat 133 (08.08.2026) |
-| 1266 | Ueberschrift #### | `KERN-SCHEMA-OHNE-DRIFTPRUEFUNG` | 0c. Aus der Fundliste klassifiziert — Chat 133 (08.08.2026) |
-| 1274 | Ueberschrift #### | `EBBINGHAUS-KONSTANTEN-TOT` | 0c. Aus der Fundliste klassifiziert — Chat 133 (08.08.2026) |
-| 1282 | Ueberschrift #### | `KNOTENGEWICHT-DOKU-BEHAUPTET-LIVE` | 0c. Aus der Fundliste klassifiziert — Chat 133 (08.08.2026) |
-| 1290 | Ueberschrift #### | `RECHERCHE-RETRY-BLOCKIERT-QUEUE` | 0c. Aus der Fundliste klassifiziert — Chat 133 (08.08.2026) |
-| 1298 | Ueberschrift #### | `ENTITAET-IDS-LEER-82-PROZENT` | 0c. Aus der Fundliste klassifiziert — Chat 133 (08.08.2026) |
-| 1306 | Ueberschrift #### | `GRAVITATION-CLUSTER-AUS-VORTURN-UNGEPRUEFT` | 0c. Aus der Fundliste klassifiziert — Chat 133 (08.08.2026) |
-| 1314 | Ueberschrift #### | `AUFTRAGSARTEN-OHNE-AGENTEN` | 0c. Aus der Fundliste klassifiziert — Chat 133 (08.08.2026) |
-| 1333 | Ueberschrift #### | `SHADOW-QUEUE-RUECKSTAND-UNGEMESSEN` | 0c. Aus der Fundliste klassifiziert — Chat 133 (08.08.2026) |
-| 1343 | Ueberschrift #### | `ARBEITSQUEUES-OHNE-GEGENUEBER` | 0c. Aus der Fundliste klassifiziert — Chat 133 (08.08.2026) |
-| 1351 | Ueberschrift #### | `CHARAKTER-ANWEISUNGEN-OHNE-GEGENUEBER` | 0c. Aus der Fundliste klassifiziert — Chat 133 (08.08.2026) |
-| 1446 | Ueberschrift #### | `PROFIL-HISTORIE-FEHLT` | 0b. Charakterbildung messen — der nächste Sprint (01.08.2026 |
-| 1460 | Ueberschrift #### | `PAARLISTE-FEST` | 0b. Charakterbildung messen — der nächste Sprint (01.08.2026 |
-| 1500 | Ueberschrift #### | `GRAPH-SACKGASSE-UNGEPRUEFT` | 0a. Haltungsraum — der unterbrochene Sprint (31.07.2026) |
-| 1540 | Ueberschrift #### | `HALTUNG-SPANNENENDEN-OFFEN` | 0a. Haltungsraum — der unterbrochene Sprint (31.07.2026) |
-| 1572 | Ueberschrift #### | `HALTUNG-LAENGE-ZWEI-ERZEUGER` | 0a. Haltungsraum — der unterbrochene Sprint (31.07.2026) |
-| 1588 | Ueberschrift #### | `ZEIT-KORPUS-TESTS-AUF-UNITTEST` | 0. Zeitparser und Kalibrierung (31.07.2026) |
-| 1598 | Ueberschrift #### | `ZEIT-ZWOELF-STUNDEN-DEUTUNG` | 0. Zeitparser und Kalibrierung (31.07.2026) |
-| 1608 | Ueberschrift #### | `ZEIT-TAGESZEIT-VOR-ZIFFER` | 0. Zeitparser und Kalibrierung (31.07.2026) |
-| 1616 | Ueberschrift #### | `KALIBRIERUNG-ZEUGE-TRENNT-SCHWACH` | 0. Zeitparser und Kalibrierung (31.07.2026) |
-| 2233 | Ueberschrift ## | `PROJEKTSEITE-NACHZIEHEN` | PROJEKTSEITE-NACHZIEHEN — die Seite kommt modernisiert wiede |
-| 2259 | Tabellenzeile | `SYK-B-1-THINKER-WEICHE` | Epic: Sykophanz eindämmen (Chat 126) |
-| 2264 | Tabellenzeile | `SYK-B1-WERT-FALSCH` | Epic: Sykophanz eindämmen (Chat 126) |
-| 2268 | Tabellenzeile | `SYK-B8-SCHREIBPFAD` | Epic: Sykophanz eindämmen (Chat 126) |
-| 2269 | Tabellenzeile | `SYK-B3-VORZEICHENREGEL` | Epic: Sykophanz eindämmen (Chat 126) |
-| 2270 | Tabellenzeile | `SYK-B9-REGISTER` | Epic: Sykophanz eindämmen (Chat 126) |
-| 2271 | Tabellenzeile | `SYK-B2-IMPULS-GRENZE` | Epic: Sykophanz eindämmen (Chat 126) |
-| 2272 | Tabellenzeile | `SYK-B5-ESKALATION` | Epic: Sykophanz eindämmen (Chat 126) |
-| 2273 | Tabellenzeile | `SYK-B6-MOTIVENTLASTUNG` | Epic: Sykophanz eindämmen (Chat 126) |
-| 2274 | Tabellenzeile | `SYK-B7-ZWEITABLEITUNG` | Epic: Sykophanz eindämmen (Chat 126) |
-| 2282 | Tabellenzeile | `SYK-M-TRIBUNAL` | Epic: Sykophanz eindämmen (Chat 126) |
-| 2283 | Tabellenzeile | `SYK-M-VERFASSER` | Epic: Sykophanz eindämmen (Chat 126) |
-| 2284 | Tabellenzeile | `SYK-M-RAHMUNG` | Epic: Sykophanz eindämmen (Chat 126) |
-| 2303 | Tabellenzeile | `PIX-AGENTEN-FEHLEN` | Epic: Pixie — der Abfluss steht (04.08.2026) |
-| 2304 | Tabellenzeile | `PIX-RETRY-KREIS` | Epic: Pixie — der Abfluss steht (04.08.2026) |
-| 2305 | Tabellenzeile | `PIX-SERIELLER-PLATZ` | Epic: Pixie — der Abfluss steht (04.08.2026) |
-| 2306 | Tabellenzeile | `PIX-PRIORITAET-STILL` | Epic: Pixie — der Abfluss steht (04.08.2026) |
-| 2324 | Tabellenzeile | `WIS-6-FORTSETZEN` | Epic: Wissensspeicher (04.08.2026) |
-| 2327 | Tabellenzeile | `WIS-8-STUFE-2` | Epic: Wissensspeicher (04.08.2026) |
-| 2348 | Tabellenzeile | `WIS-GATE-MESSUNG` | Epic: Wissensspeicher (04.08.2026) |
-| 2349 | Tabellenzeile | `PIX-WARTESCHLANGE-AM-MODELL` | Epic: Wissensspeicher (04.08.2026) |
-| 2368 | Tabellenzeile | `KLA-K5-FAKTENPFAD` | Epic: Klärung — Abweichung und Lücke (04.08.2026) |
-| 2369 | Tabellenzeile | `KLA-K1-ERWARTUNGSSCHEMA` | Epic: Klärung — Abweichung und Lücke (04.08.2026) |
-| 2370 | Tabellenzeile | `KLA-K2-KLAERUNGSTOR` | Epic: Klärung — Abweichung und Lücke (04.08.2026) |
-| 2371 | Tabellenzeile | `KLA-K3-SALIENZ` | Epic: Klärung — Abweichung und Lücke (04.08.2026) |
-| 2372 | Tabellenzeile | `KLA-K4-ZWISCHENSCHRITT` | Epic: Klärung — Abweichung und Lücke (04.08.2026) |
-| 2602 | Ueberschrift ### | `ROUTE-CHAR-NOTIZ` | Epic: Chat 62 — Folgearbeiten aus dem Paar-Schema |
-| 2612 | Ueberschrift ## | `KZG-L` | Epic: KZG-Liberalisierung + LZG-Destillation (Chat 63) |
-| 3200 | Ueberschrift ### | `GV-P` | Epic: Chat 72 — Folgearbeiten aus Dreischicht-Integration |
-| 3585 | Ueberschrift ### | `REDUCER-CONFIG-DEAD` | Tech-Debt: Reducer-Umbau-Nachzügler (Chat 75) |
-| 3591 | Ueberschrift ### | `LOGGER-NAMESPACE` | Tech-Debt: Reducer-Umbau-Nachzügler (Chat 75) |
-| 3597 | Ueberschrift ### | `SESSION-SUMMARY-INACTIVE` | Tech-Debt: Reducer-Umbau-Nachzügler (Chat 75) |
-| 4047 | Ueberschrift ## | `TIMELINE-PAIR-MISSING` | Bug: TIMELINE-PAIR-MISSING — Timeline-Tabelle ohne `characte |
-| 4073 | Ueberschrift ## | `NOTIZEN-PAIR-MISSING` | Bug: NOTIZEN-PAIR-MISSING — Notizen-Tabelle ohne `character_ |
-| 4087 | Ueberschrift ## | `FAKTEN-PAIR-IGNORED` | Bug: FAKTEN-PAIR-IGNORED — Fakten-Repository ignoriert `char |
-| 4101 | Ueberschrift ## | `ZIELE-PAIR-MISSING` | Bug: ZIELE-PAIR-MISSING — Ziele-Tabelle ohne `character_id`  |
-| 4115 | Ueberschrift ## | `NOTIZEN-KONTEXT-REKONSTRUKTION` | Bug: NOTIZEN-KONTEXT-REKONSTRUKTION — Mehrschritt-Rekonstruk |
-| 4138 | Ueberschrift ## | `NOTIZEN-CONTAINER-WECHSEL` | Bug: NOTIZEN-CONTAINER-WECHSEL — Notiz↔Liste-Wechsel verweig |
-| 4158 | Ueberschrift ## | `NOTIZEN-SKILL-MANIFEST` | Bug: NOTIZEN-SKILL-MANIFEST — Nova kennt eigene Fähigkeiten  |
-| 4174 | Ueberschrift ## | `NOTIZEN-UPDATE-TARGET-LEER` | Bug: NOTIZEN-UPDATE-TARGET-LEER — Bezugs-Pronomen für UPDATE |
-| 4721 | Tabellenzeile | `EMOTIONS-VEKTOR-LEER` | Sammelposten: AUDIT-1-BEIFANG-PROMOTION — Tote Pfade und Beo |
-| 4722 | Tabellenzeile | `KZG-ERSTELLT-AM-PARSE-HÄRTE` | Sammelposten: AUDIT-1-BEIFANG-PROMOTION — Tote Pfade und Beo |
-| 4723 | Tabellenzeile | `GEDACHTNISTYP-DEFAULT-BEFÜLLT` | Sammelposten: AUDIT-1-BEIFANG-PROMOTION — Tote Pfade und Beo |
-| 4724 | Tabellenzeile | `TRIGGER-2-RECACHE-KONZEPT-LÜCKE` | Sammelposten: AUDIT-1-BEIFANG-PROMOTION — Tote Pfade und Beo |
-| 4725 | Tabellenzeile | `FAKTEN-TABELLE-ENTITY-MERGE` | Sammelposten: AUDIT-1-BEIFANG-PROMOTION — Tote Pfade und Beo |
-| 4726 | Tabellenzeile | `TIMELINE-FK-DOKU-DRIFT` | Sammelposten: AUDIT-1-BEIFANG-PROMOTION — Tote Pfade und Beo |
-| 4727 | Tabellenzeile | `REFAC-MAGNETE-AUDIT` | Sammelposten: AUDIT-1-BEIFANG-PROMOTION — Tote Pfade und Beo |
-| 4761 | Ueberschrift ## | `TOK-DRIFT-SALIENCE` | Bug: TOK-DRIFT-SALIENCE — Token-Akkumulator zählt fehlgeschl |
-| 4791 | Ueberschrift ## | `QUEUE-SCHEMA-STALE` | Cleanup: QUEUE-SCHEMA-STALE — `queue:nova` mit toten Aufträg |
-| 4799 | Ueberschrift ## | `SCHED-STALE-SCHEDULE` | Refactor: SCHED-STALE-SCHEDULE — Startup räumt `pixie:schedu |
-| 4807 | Ueberschrift ## | `SHADOW-PAYLOAD-FIELD-MISMATCH` | Bug: SHADOW-PAYLOAD-FIELD-MISMATCH — Dispatch liest Felder,  |
-| 4821 | Ueberschrift ## | `WIEDERVORLAGE-MULTI-USER` | Refactor: WIEDERVORLAGE-MULTI-USER — Periodische Aufgaben pr |
-| 4829 | Ueberschrift ## | `SYNAPSEN-LIVE-VERIFY` | Sprint: SYNAPSEN-LIVE-VERIFY — Entitäts- und Timeline-Kanten |
-| 4839 | Ueberschrift ## | `SYNAPSEN-DUAL-LZG` | Sprint: SYNAPSEN-DUAL-LZG — Lesepfad auf `lzg_knoten`/`lzg_k |
-| 4849 | Ueberschrift ## | `KZG-GEWICHT-ABSOLUT-CEILING` | Befund: KZG-GEWICHT-ABSOLUT-CEILING — sin^0.5-Dämpfung klemm |
-| 4940 | Tabellenzeile | `RECH-SPIRAL` | 8. Offene Bugs |
-| 4941 | Tabellenzeile | `RECH-CHARAKTER` | 8. Offene Bugs |
-| 4942 | Tabellenzeile | `DELIVERY-DEDUP` | 8. Offene Bugs |
-| 4943 | Tabellenzeile | `SPRACH-STIL-DEFENSIV-STUMM` | 8. Offene Bugs |
-| 4945 | Tabellenzeile | `EI-CALC-ROLLE-DEFAULT-ASYMMETRIE` | 8. Offene Bugs |
-| 4946 | Tabellenzeile | `TOK-DRIFT-SALIENCE` | 8. Offene Bugs |
-| 4987 | Ueberschrift ## | `BEZEICHNER-WAR-AKTIV` | Refactor: BEZEICHNER-WAR-AKTIV — was_active statt war_aktiv  |
-| 4996 | Ueberschrift ## | `CONFIG-DECAY-RATE-KOMMENTAR-DRIFT` | Fix: CONFIG-DECAY-RATE-KOMMENTAR-DRIFT — falscher Kommentar  |
-| 5007 | Ueberschrift ## | `PATTERN-DOMAIN-LANGUAGE-RECONCILE` | Frage: PATTERN-DOMAIN-LANGUAGE-RECONCILE — deutsche Domaenen |
-| 5037 | Ueberschrift ## | `HALBREAKTIVIERUNG-LIVE` | Frage: HALBREAKTIVIERUNG-LIVE — erster inaktiver Match feuer |
-| 5048 | Ueberschrift ## | `SYNAPSEN-REAKTIV-SCHWELLE` | Frage: SYNAPSEN-REAKTIV-SCHWELLE — eigene Match-Schwelle fue |
-| 5056 | Ueberschrift ## | `CHARHASH-GEWICHT-ABSOLUT-LIVE` | Beobachtung: CHARHASH-GEWICHT-ABSOLUT-LIVE — erste volle Liv |
-| 5060 | Ueberschrift ## | `CHARHASH-PROMPT-DUPLIKAT` | Bug: CHARHASH-PROMPT-DUPLIKAT — Kern-Persönlichkeit 5× wortg |
-| 5066 | Ueberschrift ## | `DESTILLAT-PERSPEKTIVE-VS-SUBJEKT` | Bug: DESTILLAT-PERSPEKTIVE-VS-SUBJEKT — Charakter-Destillati |
-| 5087 | Ueberschrift ## | `HAEUFIGKEIT-AUF-KNOTEN` | Notiz: HAEUFIGKEIT-AUF-KNOTEN — haeufigkeit auf lzg_knoten m |
-| 5091 | Ueberschrift ## | `CHARHASH-DOKU-DRIFT` | Doku: CHARHASH-DOKU-DRIFT — Hash-Doku beschreibt LZG-Quelle  |
-| 5095 | Ueberschrift ## | `REFERENZ-AUFLOESUNG-VOR-RETRIEVAL` | Bug: REFERENZ-AUFLOESUNG-VOR-RETRIEVAL — anaphorische Verwei |
-| 5099 | Ueberschrift ## | `CHARAKTER-RESONANZ` | Epic: CHARAKTER-RESONANZ — Novas Charakter aus dem Umgang (C |
-| 5103 | Ueberschrift ## | `GESPRAECH-ARCHIV-VERWAIST` | Aufräumen: GESPRAECH-ARCHIV-VERWAIST — tote Tabelle ohne Wri |
-| 5109 | Ueberschrift ## | `ASSISTENT-NAME-LAUFZEIT` | Feature: ASSISTENT-NAME-LAUFZEIT — Assistenten-Name pro Paar |
-| 5113 | Ueberschrift ## | `ASSISTENT-GESCHLECHT-PRONOMEN` | Feature: ASSISTENT-GESCHLECHT-PRONOMEN — Pronomen bei Namens |
-| 5121 | Ueberschrift ## | `PIPELINE-LOG-BACKFILL-PAAR` | Nacharbeit: PIPELINE-LOG-BACKFILL-PAAR — Alt-Forensik ohne P |
-| 5125 | Ueberschrift ## | `KZG-QUELLE-IST-USER-ID` | Refactor: KZG-QUELLE-IST-USER-ID — `quelle` trägt `user_id`  |
-| 5129 | Ueberschrift ## | `PIPELINE-LOG-ART-DOKU-DRIFT` | Doku: PIPELINE-LOG-ART-DOKU-DRIFT — Forensik-Queries der Syn |
-| 5148 | Ueberschrift ## | `DELEGATION-STATE-UNDEKLARIERT` | Landmine: DELEGATION-STATE-UNDEKLARIERT — Sperrvermerk für d |
-| 5160 | Ueberschrift ## | `PLANNER-AKTIV-RELIKT` | Aufräumen: PLANNER-AKTIV-RELIKT — Stage-Anzeige liest nie ge |
-| 5172 | Ueberschrift ## | `WEB-CONTEXT-ALTPFAD` | Aufräumen: WEB-CONTEXT-ALTPFAD — toter [WEB]-Block, Nachfolg |
-| 5184 | Ueberschrift ## | `BUILDER-CREATE-INITIAL-STATE-TOT` | Aufräumen: BUILDER-CREATE-INITIAL-STATE-TOT — aufruferloser  |
-| 5196 | Ueberschrift ## | `LESSON-INDEX-LUECKE` | Doku: LESSON-INDEX-LUECKE — zwölf ältere lesson_l-Dateien fe |
-| 5205 | Ueberschrift ## | `DOKU-DUPLIKATE-CHAT80` | Doku: DOKU-DUPLIKATE-CHAT80 — 8 Bezeichner stehen in bugs.md |
-| 5221 | Ueberschrift ## | `LOG-TUERKLINGEL` | Feature: LOG-TUERKLINGEL — Warn-/Fehler-Lampen mit Sitzungsz |
-| 5256 | Ueberschrift ## | `ENTITAET-EMBED-DREIFACH` | Bug: ENTITAET-EMBED-DREIFACH — Entitäts-Suchpfad embeddet an |
-| 5268 | Ueberschrift ## | `DESTILLAT-ASYMMETRIE` | Konzept: DESTILLAT-ASYMMETRIE — Prompts und Knoten leben in  |
-| 5276 | Ueberschrift ## | `GESPRAECH-ARCHIV-LEER` | Feature: GESPRAECH-ARCHIV-LEER — kein Writer, Rohgespräche v |
-| 5282 | Ueberschrift ## | `EMBED-DIMENSIONSCHECK-FEHLT` | Fix: EMBED-DIMENSIONSCHECK-FEHLT — kein harter Dimensions-Ch |
-| 5286 | Ueberschrift ## | `PIPELINE-LOG-MERGE-BLIND` | Nacharbeit: PIPELINE-LOG-MERGE-BLIND — Reinforcement loggt d |
-| 5290 | Ueberschrift ## | `DELEG-VEKTOR-EINGEFROREN` | Konzept: DELEG-VEKTOR-EINGEFROREN — Akten-Vektor beschreibt  |
-| 5294 | Ueberschrift ## | `LZG-MIGRATION-REVIEW-NICHT-IN-INIT` | Fix: LZG-MIGRATION-REVIEW-NICHT-IN-INIT — Live-Tabelle ohne  |
-| 5298 | Ueberschrift ## | `IDX-TIMELINE-TYPE-NICHT-IN-INIT` | Fix: IDX-TIMELINE-TYPE-NICHT-IN-INIT — Live-Index ohne Defin |
-| 5302 | Ueberschrift ## | `DELEG-SEITEN-VALENZ-TOT` | Aufräumen: DELEG-SEITEN-VALENZ-TOT — persistiert, nie gelese |
-| 5310 | Ueberschrift ## | `REDUCER-DOKU-DRIFT` | Doku: REDUCER-DOKU-DRIFT — drei Drifts aus dem Reducer-Audit |
-| 5314 | Ueberschrift ## | `DOKU-NOTIZEN-INIT-SQL` | Doku: DOKU-NOTIZEN-INIT-SQL — Verweis auf nicht existierende |
-| 5318 | Ueberschrift ## | `KZG-SALIENZ-GRENZWERT-UNKLAR` | Frage: KZG-SALIENZ-GRENZWERT-UNKLAR — soll jede Recherche in |
-| 5351 | Ueberschrift ## | `PROMOTION-NOVA-GUARD-TOT` | Aufräumen: PROMOTION-NOVA-GUARD-TOT — Nova-Guard in der Clus |
-| 5361 | Ueberschrift ## | `CHARHASH-KZG-SCAN-UNSORTIERT` | Bug: CHARHASH-KZG-SCAN-UNSORTIERT — zwei von fünf Profilen d |
-| 5371 | Ueberschrift ## | `HASH-DIRTY-KEY-OHNE-PAAR` | Aufräumen: HASH-DIRTY-KEY-OHNE-PAAR — `hash_dirty:meister` o |
-| 5379 | Ueberschrift ## | `AUDIT-HASH-DIRTY-SICHTBARKEIT` | Audit: AUDIT-HASH-DIRTY-SICHTBARKEIT — KEYS zeigt das Flag,  |
-| 5389 | Ueberschrift ## | `TURN-ROH-VOR-KRAFT1-ENTWERTET` | Landmine: TURN-ROH-VOR-KRAFT1-ENTWERTET — Sperrvermerk für d |
-| 5407 | Ueberschrift ## | `PERMISSION-OHNE-BODEN` | Befund: PERMISSION-OHNE-BODEN — „Brudi ist read-only" ist Ko |
-| 5419 | Ueberschrift ## | `PROMO-KZG-KEY-ALS-TURN-ID` | Bug: PROMO-KZG-KEY-ALS-TURN-ID — `pipeline_log.turn_id` träg |
-| 5431 | Ueberschrift ## | `ALLOWLIST-DRIFT` | Aufräumen: ALLOWLIST-DRIFT — die Claude-Code-Allowlist wächs |
-| 5441 | Ueberschrift ## | `KZG-VERSTAERKUNG-KEYS-SCAN` | Performance: KZG-VERSTAERKUNG-KEYS-SCAN — Vollscan der Paar- |
-| 5451 | Ueberschrift ## | `KZG-TURN-ID-UNBEKANNT` | Nacharbeit: KZG-TURN-ID-UNBEKANNT — Platzhalter statt Turn-B |
-| 5463 | Ueberschrift ## | `TURN-ROH-HG-SKIP` | Befund: TURN-ROH-HG-SKIP — der übersprungene Rohturn pro Tur |
-| 5477 | Ueberschrift ## | `KZG-SALIENZ-BOOST-OHNE-DECKEL` | Bug: KZG-SALIENZ-BOOST-OHNE-DECKEL — die thematische Verstär |
-| 5503 | Ueberschrift ## | `DESTILLAT-SUBJEKT-SCHABLONE` | Bug: DESTILLAT-SUBJEKT-SCHABLONE — der Verdichter erfindet „ |
-| 5528 | Ueberschrift ## | `PIXIE-TURN-ID-LEER` | Bug: PIXIE-TURN-ID-LEER — Pixie-initiierter CharacterGraph-L |
-| 5554 | Ueberschrift ## | `KZG-SALIENZ-SKALENBRUCH` | Bug: KZG-SALIENZ-SKALENBRUCH — die Dämpfung ist auf CAP 10.0 |
-| 5599 | Ueberschrift ## | `KZG-TTL-UNSTERBLICH` | Limitation: KZG-TTL-UNSTERBLICH — die Auffrischung kann nur  |
-| 5619 | Ueberschrift ## | `KZG-KEIN-DECAY` | Bug: KZG-KEIN-DECAY — die Salienz kennt keine Abwärtsbewegun |
-| 5655 | Ueberschrift ## | `KZG-SALIENZ-KONSUMENTEN-DISSENS` | Bug: KZG-SALIENZ-KONSUMENTEN-DISSENS — drei Leser, drei Anna |
-| 5685 | Ueberschrift ## | `KZG-SALIENZ-NEUBAU` | Sprint: KZG-SALIENZ-NEUBAU — die KZG-Salienz bekommt die Bau |
-| 5707 | Ueberschrift ## | `PROMOTION-ENTFERNT-KZG-NICHT` | Bug: PROMOTION-ENTFERNT-KZG-NICHT — der promotete Eintrag bl |
-| 5732 | Ueberschrift ## | `ROADMAP-GLIEDERUNGSBRUCH` | Doku: ROADMAP-GLIEDERUNGSBRUCH — ab Chat 98 wechselt die Chr |
-| 5746 | Ueberschrift ## | `DB-SELECT-SCHREIBT-OHNE-COMMIT` | Landmine: DB-SELECT-SCHREIBT-OHNE-COMMIT — `select()` führt  |
-| 5796 | Ueberschrift ## | `IMPULS-HANDLUNG-OHNE-HERKUNFT` | IMPULS-HANDLUNG-OHNE-HERKUNFT — was sie selbst angelegt hat, |
-| 5827 | Ueberschrift ## | `PUB-ROLLENNAMEN-IM-BESTAND` | Audit: PUB-ROLLENNAMEN-IM-BESTAND — die Doku nennt die inter |
-| 5861 | Ueberschrift ## | `REGISTER-SPIEGEL-DURCHGANG` | Audit: REGISTER-SPIEGEL-DURCHGANG — wo spiegelt sonst eine A |
-| 5879 | Ueberschrift ## | `GV-RELEVANZ-UNNORMIERT` | Landmine: GV-RELEVANZ-UNNORMIERT — die Relevanz kann über 1. |
 
 ---
 
@@ -286,54 +86,54 @@
 | 114 | abgeschlossen | Tabellenspalte | `PROMOTION-FENSTER-LAEUFT-AB-STATT-LEER` | Die Rangordnung — Bänder statt Einzelurteile (09.08.2026) |
 | 115 | abgeschlossen | Tabellenspalte | `RAD-STABILITAET-UNGEMESSEN` | Die Rangordnung — Bänder statt Einzelurteile (09.08.2026) |
 | 116 | abgeschlossen | Tabellenspalte | `REIHE-GEWICHTET-ZEILEN-STATT-ERHEBUNGEN` | Die Rangordnung — Bänder statt Einzelurteile (09.08.2026) |
-| 124 | unlesbar | — | `LAENGENVORGABE-UNGEMESSEN` | Die Rangordnung — Bänder statt Einzelurteile (09.08.2026) |
-| 125 | unlesbar | — | `MASSBLOCK-IM-BETRIEB-UNGEMESSEN` | Die Rangordnung — Bänder statt Einzelurteile (09.08.2026) |
+| 124 | offen | Tabellenspalte | `LAENGENVORGABE-UNGEMESSEN` | Die Rangordnung — Bänder statt Einzelurteile (09.08.2026) |
+| 125 | offen | Tabellenspalte | `MASSBLOCK-IM-BETRIEB-UNGEMESSEN` | Die Rangordnung — Bänder statt Einzelurteile (09.08.2026) |
 | 138 | offen | Tabellenspalte | `PROFIL-EINMALERHEBUNG` | Die Rangordnung — Bänder statt Einzelurteile (09.08.2026) |
 | 144 | offen | Tabellenspalte | `PROFIL-KONTRAST-UNGEWACHT` | Die Rangordnung — Bänder statt Einzelurteile (09.08.2026) |
 | 152 | offen | Tabellenspalte | `HASH-DIRTY-ALTLASTEN` | Die Rangordnung — Bänder statt Einzelurteile (09.08.2026) |
-| 153 | unlesbar | — | `PROFILTEXT-SCHRUMPFT-MIT-MATERIAL` | Die Rangordnung — Bänder statt Einzelurteile (09.08.2026) |
+| 153 | offen | Tabellenspalte | `PROFILTEXT-SCHRUMPFT-MIT-MATERIAL` | Die Rangordnung — Bänder statt Einzelurteile (09.08.2026) |
 | 158 | abgeschlossen | Tabellenspalte | `ZUGSCHWELLE-AUF-FREIEN-WERTEN` | Die Rangordnung — Bänder statt Einzelurteile (09.08.2026) |
 | 159 | offen | Tabellenspalte | `VERDICHTUNG-UEBRIGE-VIER-PROMPTS` | Die Rangordnung — Bänder statt Einzelurteile (09.08.2026) |
 | 160 | offen | Tabellenspalte | `KERN-EINBETTUNG-NACH-DEM-DECKEL` | Die Rangordnung — Bänder statt Einzelurteile (09.08.2026) |
 | 161 | abgeschlossen | Tabellenspalte | `MESSREIHE-MISCHT-ZWEI-RASTER` | Die Rangordnung — Bänder statt Einzelurteile (09.08.2026) |
-| 162 | unlesbar | — | `RESPONDER-ALS-AUFGABE` | Die Rangordnung — Bänder statt Einzelurteile (09.08.2026) |
+| 162 | offen | Tabellenspalte | `RESPONDER-ALS-AUFGABE` | Die Rangordnung — Bänder statt Einzelurteile (09.08.2026) |
 | 163 | offen | Tabellenspalte | `SZENE-STATT-REGIE-IN-DEN-CLUSTERN` | Die Rangordnung — Bänder statt Einzelurteile (09.08.2026) |
 | 164 | offen | Tabellenspalte | `AROUSAL-ACHSE-SCHNEIDET-DEN-GIPFEL` | Die Rangordnung — Bänder statt Einzelurteile (09.08.2026) |
 | 165 | abgeschlossen | Tabellenspalte | `FARBTON-OHNE-LESER` | Die Rangordnung — Bänder statt Einzelurteile (09.08.2026) |
-| 166 | unlesbar | — | `PERSON-B-OHNE-BESCHREIBUNG` | Die Rangordnung — Bänder statt Einzelurteile (09.08.2026) |
+| 166 | offen | Tabellenspalte | `PERSON-B-OHNE-BESCHREIBUNG` | Die Rangordnung — Bänder statt Einzelurteile (09.08.2026) |
 | 167 | abgeschlossen | Tabellenspalte | `HALTUNG-OHNE-LESER` | Die Rangordnung — Bänder statt Einzelurteile (09.08.2026) |
-| 171 | unlesbar | — | `VERDICHTUNG-UNGEPRUEFT` | Die Rangordnung — Bänder statt Einzelurteile (09.08.2026) |
+| 171 | offen | Tabellenspalte | `VERDICHTUNG-UNGEPRUEFT` | Die Rangordnung — Bänder statt Einzelurteile (09.08.2026) |
 | 196 | offen | Tabellenspalte | `SILO-OHNE-WERKZEUG` | Block 19.08.2026 — die Rollen eines Wissen-Silos |
 | 197 | offen | Tabellenspalte | `ROLLENMATRIX-OHNE-PRUEFUNG` | Block 19.08.2026 — die Rollen eines Wissen-Silos |
 | 198 | offen | Tabellenspalte | `RECHERCHE-LIEST-IHRE-BIBLIOTHEK-NICHT` | Block 19.08.2026 — die Rollen eines Wissen-Silos |
 | 206 | abgeschlossen | Tabellenspalte | `WIS-ENRICHER-UNGEMESSEN` | Block 19.08.2026 — der dritte Konsument der Bibliothek |
-| 218 | unlesbar | — | `BIBLIOTHEK-BLIND-AUF-INHALTSHOEHE` | Block 19.08.2026 — ein Vektor je Gegenstand |
+| 218 | offen | Tabellenspalte | `BIBLIOTHEK-BLIND-AUF-INHALTSHOEHE` | Block 19.08.2026 — ein Vektor je Gegenstand |
 | 219 | offen | Tabellenspalte | `EMBED-LISTE-AUTONOMES-WISSEN` | Block 19.08.2026 — ein Vektor je Gegenstand |
 | 220 | abgeschlossen | Tabellenspalte | `EMBED-LISTE-DATEIENINDEX` | Block 19.08.2026 — ein Vektor je Gegenstand |
 | 221 | offen | Tabellenspalte | `EMBED-LISTE-DELEGATIONSAKTEN` | Block 19.08.2026 — ein Vektor je Gegenstand |
 | 222 | offen | Tabellenspalte | `EMBED-RUECKWEG-UNGEMESSEN` | Block 19.08.2026 — ein Vektor je Gegenstand |
 | 243 | offen | Tabellenspalte | `ANTWORT-LEER-OHNE-WIEDERHOLUNG` | Block 19.08.2026 — der Antwortpfad meldet seinen Verlust und |
 | 244 | abgeschlossen | Tabellenspalte | `OLLAMA-VERSION-VIER-MONATE-ALT` | Block 19.08.2026 — der Antwortpfad meldet seinen Verlust und |
-| 245 | unlesbar | — | `ANBIETER-FELDER-UNGELESEN` | Block 19.08.2026 — der Antwortpfad meldet seinen Verlust und |
-| 253 | unlesbar | — | `KANAL-OHNE-GEGENSTUECK` | Block 16.08.2026 — die Gegenrichtung der Doku-Pruefung |
-| 254 | unlesbar | — | `SELBSTAUSKUNFT-OHNE-LESER` | Block 16.08.2026 — die Gegenrichtung der Doku-Pruefung |
-| 255 | unlesbar | — | `NAMENSREGELN-JENSEITS-DER-FORM` | Block 16.08.2026 — die Gegenrichtung der Doku-Pruefung |
-| 263 | unlesbar | — | `PENDING-AGENT-INS-PAYLOAD` | Block 16.08.2026 — aus dem Halten der Konventionen |
+| 245 | offen | Tabellenspalte | `ANBIETER-FELDER-UNGELESEN` | Block 19.08.2026 — der Antwortpfad meldet seinen Verlust und |
+| 253 | offen | Tabellenspalte | `KANAL-OHNE-GEGENSTUECK` | Block 16.08.2026 — die Gegenrichtung der Doku-Pruefung |
+| 254 | offen | Tabellenspalte | `SELBSTAUSKUNFT-OHNE-LESER` | Block 16.08.2026 — die Gegenrichtung der Doku-Pruefung |
+| 255 | offen | Tabellenspalte | `NAMENSREGELN-JENSEITS-DER-FORM` | Block 16.08.2026 — die Gegenrichtung der Doku-Pruefung |
+| 263 | offen | Tabellenspalte | `PENDING-AGENT-INS-PAYLOAD` | Block 16.08.2026 — aus dem Halten der Konventionen |
 | 264 | abgeschlossen | Tabellenspalte | `SSE-REST-IM-ENDPUNKT` | Block 16.08.2026 — aus dem Halten der Konventionen |
-| 295 | unlesbar | — | `FACHSPEICHER-AGENTEN` | Block 16.08.2026 — die Fachspeicher bekommen ihre Agenten |
-| 296 | unlesbar | — | `FAKTEN-BINDUNG-OHNE-VERFALL` | Block 16.08.2026 — die Fachspeicher bekommen ihre Agenten |
-| 297 | unlesbar | — | `REEMBED-WISSENSSPEICHER` | Block 16.08.2026 — die Fachspeicher bekommen ihre Agenten |
-| 312 | unlesbar | — | `ZUSTELLUNG-ABBRUCH-UNGEZAEHLT` | Block 15.08.2026 — das Messinstrument der Zustellung |
-| 313 | unlesbar | — | `RIEGEL-5-7-OHNE-EINTRAG` | Block 15.08.2026 — das Messinstrument der Zustellung |
-| 328 | unlesbar | — | `SALIENZKURVE-UNTEN-ZU-STEIL` | Block 18.08.2026 — aus dem Bau der Enricher-Quelle |
-| 329 | unlesbar | — | `AUFZEICHNUNGEN-QUANTIL` | Block 18.08.2026 — aus dem Bau der Enricher-Quelle |
-| 330 | unlesbar | — | `AUFZEICHNUNGEN-BODEN-NACHZIEHEN` | Block 18.08.2026 — aus dem Bau der Enricher-Quelle |
-| 338 | unlesbar | — | `DOKU-VOLLPRUEFUNG` | Block 15.08.2026 — aus dem Nachzug selbst |
-| 339 | unlesbar | — | `RAUCHTEST-ANWENDUNG-IMPORT` | Block 15.08.2026 — aus dem Nachzug selbst |
-| 340 | unlesbar | — | `NACHZUG-KANDIDATEN-GATE` | Block 15.08.2026 — aus dem Nachzug selbst |
-| 350 | unlesbar | — | `EIGENZEIT-BAUTEILE` | Block 14.08.2026 — aus der Eigenzeit-Messung |
-| 351 | unlesbar | — | `SCHWELLE-OHNE-PAARUNG` | Block 14.08.2026 — aus der Eigenzeit-Messung |
-| 352 | unlesbar | — | `PRUEFFIGUR-DISTANZ-090` | Block 14.08.2026 — aus der Eigenzeit-Messung |
+| 295 | offen | Tabellenspalte | `FACHSPEICHER-AGENTEN` | Block 16.08.2026 — die Fachspeicher bekommen ihre Agenten |
+| 296 | offen | Tabellenspalte | `FAKTEN-BINDUNG-OHNE-VERFALL` | Block 16.08.2026 — die Fachspeicher bekommen ihre Agenten |
+| 297 | offen | Tabellenspalte | `REEMBED-WISSENSSPEICHER` | Block 16.08.2026 — die Fachspeicher bekommen ihre Agenten |
+| 312 | offen | Tabellenspalte | `ZUSTELLUNG-ABBRUCH-UNGEZAEHLT` | Block 15.08.2026 — das Messinstrument der Zustellung |
+| 313 | offen | Tabellenspalte | `RIEGEL-5-7-OHNE-EINTRAG` | Block 15.08.2026 — das Messinstrument der Zustellung |
+| 328 | abgeschlossen | Tabellenspalte | `SALIENZKURVE-UNTEN-ZU-STEIL` | Block 18.08.2026 — aus dem Bau der Enricher-Quelle |
+| 329 | offen | Tabellenspalte | `AUFZEICHNUNGEN-QUANTIL` | Block 18.08.2026 — aus dem Bau der Enricher-Quelle |
+| 330 | offen | Tabellenspalte | `AUFZEICHNUNGEN-BODEN-NACHZIEHEN` | Block 18.08.2026 — aus dem Bau der Enricher-Quelle |
+| 338 | offen | Tabellenspalte | `DOKU-VOLLPRUEFUNG` | Block 15.08.2026 — aus dem Nachzug selbst |
+| 339 | offen | Tabellenspalte | `RAUCHTEST-ANWENDUNG-IMPORT` | Block 15.08.2026 — aus dem Nachzug selbst |
+| 340 | abgeschlossen | Tabellenspalte | `NACHZUG-KANDIDATEN-GATE` | Block 15.08.2026 — aus dem Nachzug selbst |
+| 350 | offen | Tabellenspalte | `EIGENZEIT-BAUTEILE` | Block 14.08.2026 — aus der Eigenzeit-Messung |
+| 351 | offen | Tabellenspalte | `SCHWELLE-OHNE-PAARUNG` | Block 14.08.2026 — aus der Eigenzeit-Messung |
+| 352 | offen | Tabellenspalte | `PRUEFFIGUR-DISTANZ-090` | Block 14.08.2026 — aus der Eigenzeit-Messung |
 | 391 | abgeschlossen | Zustand-Zeile | `BUGREGISTER-ZUSTAND-NICHT-LESBAR` | Block 20.08.2026 — aus der Klassifikation der Fundliste |
 | 407 | offen | Zustand-Zeile | `BUGREGISTER-ALTEBENE-OHNE-ZUSTAND` | Block 20.08.2026 — aus der Klassifikation der Fundliste |
 | 430 | offen | Zustand-Zeile | `QUERY-REWRITING-QUELLE-STEHT` | Block 20.08.2026 — aus der Klassifikation der Fundliste |
@@ -384,320 +184,320 @@
 | 886 | offen | Zustand-Zeile | `BEITRAGSTABELLE-SCHLIESST-KOMBINATION-AUS` | Block 20.08.2026 — aus der Klassifikation der Fundliste |
 | 896 | offen | Zustand-Zeile | `CLUSTER-BESCHREIBUNG-MISCHT-BEFEHL` | Block 20.08.2026 — aus der Klassifikation der Fundliste |
 | 907 | offen | Zustand-Zeile | `BEISPIELE-OHNE-HERKUNFTSMARKE` | Block 20.08.2026 — aus der Klassifikation der Fundliste |
-| 923 | unlesbar | — | `KOPPLUNG-FRAGENSPALTE-UNGEPRUEFT` | 0c. Aus der Fundliste klassifiziert — Chat 133 (08.08.2026) |
-| 933 | unlesbar | — | `EINWANDSURTEIL-OHNE-LESER` | 0c. Aus der Fundliste klassifiziert — Chat 133 (08.08.2026) |
-| 943 | unlesbar | — | `KANAELE-OHNE-VERTRAG` | 0c. Aus der Fundliste klassifiziert — Chat 133 (08.08.2026) |
-| 953 | unlesbar | — | `GV-SKIP-TOTE-AUSLOESER` | 0c. Aus der Fundliste klassifiziert — Chat 133 (08.08.2026) |
-| 963 | unlesbar | — | `RESPONDER-KOMMENTAR-FALSCHE-SCHICHT` | 0c. Aus der Fundliste klassifiziert — Chat 133 (08.08.2026) |
-| 973 | unlesbar | — | `PROFILE-LEER-URSACHE-UNBEKANNT` | 0c. Aus der Fundliste klassifiziert — Chat 133 (08.08.2026) |
-| 987 | unlesbar | — | `CHARAKTER-HASH-DOKU-FALSCHE-QUELLE` | 0c. Aus der Fundliste klassifiziert — Chat 133 (08.08.2026) |
-| 1003 | unlesbar | — | `DOKU-MEHRDEUTIGE-ANKER` | 0c. Aus der Fundliste klassifiziert — Chat 133 (08.08.2026) |
-| 1011 | unlesbar | — | `AGENT-MD-NIE-GEPRUEFT` | 0c. Aus der Fundliste klassifiziert — Chat 133 (08.08.2026) |
-| 1019 | unlesbar | — | `SESSION-CONTEXT-BUILD-OHNE-AUFRUFER` | 0c. Aus der Fundliste klassifiziert — Chat 133 (08.08.2026) |
-| 1027 | unlesbar | — | `EIGENIMPULSE-IN-DER-SCHWELLE` | 0c. Aus der Fundliste klassifiziert — Chat 133 (08.08.2026) |
-| 1035 | unlesbar | — | `REPERTOIRE-UNGLEICH-VERTEILT` | 0c. Aus der Fundliste klassifiziert — Chat 133 (08.08.2026) |
-| 1043 | unlesbar | — | `NOTIZEN-ENRICH-16-ZWEIGE` | 0c. Aus der Fundliste klassifiziert — Chat 133 (08.08.2026) |
-| 1051 | unlesbar | — | `LLM-PROVIDER-ZWEIG-UNERREICHBAR` | 0c. Aus der Fundliste klassifiziert — Chat 133 (08.08.2026) |
-| 1059 | unlesbar | — | `FUENF-STELLEN-FORM-MEHRFACH` | 0c. Aus der Fundliste klassifiziert — Chat 133 (08.08.2026) |
-| 1067 | unlesbar | — | `LOGGING-PROZENT-STATT-FSTRING` | 0c. Aus der Fundliste klassifiziert — Chat 133 (08.08.2026) |
-| 1079 | unlesbar | — | `PROMPT-DOPPELTE-FORMULIERUNG` | 0c. Aus der Fundliste klassifiziert — Chat 133 (08.08.2026) |
-| 1095 | unlesbar | — | `GRAPH-TABELLE-OHNE-VERFASSER` | 0c. Aus der Fundliste klassifiziert — Chat 133 (08.08.2026) |
-| 1103 | unlesbar | — | `INITIATIVE-RAD-GEGENPOL-UNGEPRUEFT` | 0c. Aus der Fundliste klassifiziert — Chat 133 (08.08.2026) |
-| 1111 | unlesbar | — | `CLUSTERZAHL-13-GEGEN-14` | 0c. Aus der Fundliste klassifiziert — Chat 133 (08.08.2026) |
-| 1119 | unlesbar | — | `GV-DETAIL-LAENGE-IRREFUEHREND` | 0c. Aus der Fundliste klassifiziert — Chat 133 (08.08.2026) |
-| 1127 | unlesbar | — | `BILD-VERWAIST` | 0c. Aus der Fundliste klassifiziert — Chat 133 (08.08.2026) |
-| 1139 | unlesbar | — | `LLM-LOCK-SCHUETZT-DIE-GPU-NICHT-DEN-TURN` | 0c. Aus der Fundliste klassifiziert — Chat 133 (08.08.2026) |
-| 1147 | unlesbar | — | `CLIENT-OHNE-TESTLAUF` | 0c. Aus der Fundliste klassifiziert — Chat 133 (08.08.2026) |
-| 1155 | unlesbar | — | `RAD-STABILITAET-UNGEMESSEN` | 0c. Aus der Fundliste klassifiziert — Chat 133 (08.08.2026) |
-| 1203 | unlesbar | — | `INTENTION-AUFGABE-MAP-DOPPELT` | 0c. Aus der Fundliste klassifiziert — Chat 133 (08.08.2026) |
-| 1211 | unlesbar | — | `QUEUE-RUHE-DURCH-REIHENFOLGE` | 0c. Aus der Fundliste klassifiziert — Chat 133 (08.08.2026) |
-| 1219 | unlesbar | — | `PIXIE-EIN-SLOT-BLOCKIERT-ALLES` | 0c. Aus der Fundliste klassifiziert — Chat 133 (08.08.2026) |
-| 1229 | unlesbar | — | `KONTEXT-32768-IN-SECHS-DOKUMENTEN` | 0c. Aus der Fundliste klassifiziert — Chat 133 (08.08.2026) |
-| 1237 | unlesbar | — | `RECHERCHE-ZWISCHENDESTILLATION-OHNE-GRUND` | 0c. Aus der Fundliste klassifiziert — Chat 133 (08.08.2026) |
-| 1258 | unlesbar | — | `ARCHITEKTUR-TABELLENLISTE-UNVOLLSTAENDIG` | 0c. Aus der Fundliste klassifiziert — Chat 133 (08.08.2026) |
-| 1266 | unlesbar | — | `KERN-SCHEMA-OHNE-DRIFTPRUEFUNG` | 0c. Aus der Fundliste klassifiziert — Chat 133 (08.08.2026) |
-| 1274 | unlesbar | — | `EBBINGHAUS-KONSTANTEN-TOT` | 0c. Aus der Fundliste klassifiziert — Chat 133 (08.08.2026) |
-| 1282 | unlesbar | — | `KNOTENGEWICHT-DOKU-BEHAUPTET-LIVE` | 0c. Aus der Fundliste klassifiziert — Chat 133 (08.08.2026) |
-| 1290 | unlesbar | — | `RECHERCHE-RETRY-BLOCKIERT-QUEUE` | 0c. Aus der Fundliste klassifiziert — Chat 133 (08.08.2026) |
-| 1298 | unlesbar | — | `ENTITAET-IDS-LEER-82-PROZENT` | 0c. Aus der Fundliste klassifiziert — Chat 133 (08.08.2026) |
-| 1306 | unlesbar | — | `GRAVITATION-CLUSTER-AUS-VORTURN-UNGEPRUEFT` | 0c. Aus der Fundliste klassifiziert — Chat 133 (08.08.2026) |
-| 1314 | unlesbar | — | `AUFTRAGSARTEN-OHNE-AGENTEN` | 0c. Aus der Fundliste klassifiziert — Chat 133 (08.08.2026) |
-| 1333 | unlesbar | — | `SHADOW-QUEUE-RUECKSTAND-UNGEMESSEN` | 0c. Aus der Fundliste klassifiziert — Chat 133 (08.08.2026) |
-| 1343 | unlesbar | — | `ARBEITSQUEUES-OHNE-GEGENUEBER` | 0c. Aus der Fundliste klassifiziert — Chat 133 (08.08.2026) |
-| 1351 | unlesbar | — | `CHARAKTER-ANWEISUNGEN-OHNE-GEGENUEBER` | 0c. Aus der Fundliste klassifiziert — Chat 133 (08.08.2026) |
-| 1446 | unlesbar | — | `PROFIL-HISTORIE-FEHLT` | 0b. Charakterbildung messen — der nächste Sprint (01.08.2026 |
-| 1460 | unlesbar | — | `PAARLISTE-FEST` | 0b. Charakterbildung messen — der nächste Sprint (01.08.2026 |
-| 1482 | abgeschlossen | Marke | `HALTUNG-KNOTEN-FEHLT` | 0a. Haltungsraum — der unterbrochene Sprint (31.07.2026) |
-| 1500 | unlesbar | — | `GRAPH-SACKGASSE-UNGEPRUEFT` | 0a. Haltungsraum — der unterbrochene Sprint (31.07.2026) |
-| 1508 | abgeschlossen | Marke | `HALTUNG-PROTOKOLL-FEHLT` | 0a. Haltungsraum — der unterbrochene Sprint (31.07.2026) |
-| 1526 | abgeschlossen | Marke | `HALTUNG-SPANNENENDEN-OFFEN` | 0a. Haltungsraum — der unterbrochene Sprint (31.07.2026) |
-| 1540 | unlesbar | — | `HALTUNG-SPANNENENDEN-OFFEN` | 0a. Haltungsraum — der unterbrochene Sprint (31.07.2026) |
-| 1558 | abgeschlossen | Marke | `HALTUNG-OHNE-LANDSCHAFT` | 0a. Haltungsraum — der unterbrochene Sprint (31.07.2026) |
-| 1572 | unlesbar | — | `HALTUNG-LAENGE-ZWEI-ERZEUGER` | 0a. Haltungsraum — der unterbrochene Sprint (31.07.2026) |
-| 1588 | unlesbar | — | `ZEIT-KORPUS-TESTS-AUF-UNITTEST` | 0. Zeitparser und Kalibrierung (31.07.2026) |
-| 1598 | unlesbar | — | `ZEIT-ZWOELF-STUNDEN-DEUTUNG` | 0. Zeitparser und Kalibrierung (31.07.2026) |
-| 1608 | unlesbar | — | `ZEIT-TAGESZEIT-VOR-ZIFFER` | 0. Zeitparser und Kalibrierung (31.07.2026) |
-| 1616 | unlesbar | — | `KALIBRIERUNG-ZEUGE-TRENNT-SCHWACH` | 0. Zeitparser und Kalibrierung (31.07.2026) |
-| 1902 | offen | Tabellenspalte | `PIX-MIG-6` | 7. Offene Epics & Features |
-| 1903 | abgeschlossen | Tabellenspalte | `PIX-MIG-7` | 7. Offene Epics & Features |
-| 1904 | offen | Tabellenspalte | `PIX-MIG-9` | 7. Offene Epics & Features |
-| 1905 | offen | Tabellenspalte | `ERK-VORFRAGE` | 7. Offene Epics & Features |
-| 1906 | offen | Tabellenspalte | `ERK-GATE-WIEDERHOLUNG` | 7. Offene Epics & Features |
-| 1907 | abgeschlossen | Tabellenspalte | `ERK-DOKU-NACHZUG` | 7. Offene Epics & Features |
-| 1908 | offen | Tabellenspalte | `PIX-STAPEL-RADFAKTOR` | 7. Offene Epics & Features |
-| 1909 | offen | Tabellenspalte | `PIX-AUFGABENNAMEN-GATE` | 7. Offene Epics & Features |
-| 1910 | offen | Tabellenspalte | `PIX-MIG-8` | 7. Offene Epics & Features |
-| 1911 | abgeschlossen | Tabellenspalte | `PIX-CLEAN` | 7. Offene Epics & Features |
-| 1912 | offen | Tabellenspalte | `PIX-MIG-NOVA` | 7. Offene Epics & Features |
-| 1913 | offen | Tabellenspalte | `PIX-GRAPH` | 7. Offene Epics & Features |
-| 1914 | offen | Tabellenspalte | `PIX-STATUS` | 7. Offene Epics & Features |
-| 1915 | offen | Tabellenspalte | `PIX-FALLBACK` | 7. Offene Epics & Features |
-| 1917 | offen | Tabellenspalte | `PIX-LLM-ROUTER` | 7. Offene Epics & Features |
-| 1919 | offen | Status-Zeile | `PIXIE-GRAPH-MERGE` | 7. Offene Epics & Features |
-| 1940 | offen | Status-Zeile | `META-KOGNITION` | 7. Offene Epics & Features |
-| 1969 | offen | Status-Zeile | `HERMES-SUBSTRAT` | 7. Offene Epics & Features |
-| 2003 | abgeschlossen | Tabellenspalte | `CLIENT-RENDER` | 7. Offene Epics & Features |
-| 2013 | offen | Tabellenspalte | `PENDING-RELEVANZ` | 7. Offene Epics & Features |
-| 2015 | offen | Tabellenspalte | `ROUTE-MISS1` | 7. Offene Epics & Features |
-| 2017 | offen | Tabellenspalte | `DELIVERY-VOICE` | 7. Offene Epics & Features |
-| 2019 | offen | Status-Zeile | `RECH-NO-PERSIST` | 7. Offene Epics & Features |
-| 2028 | offen | Status-Zeile | `AGENT-RUECKFRAGE-LOOP` | 7. Offene Epics & Features |
-| 2038 | offen | Status-Zeile | `NOTIZEN-VOR-TURN-BEZUG` | 7. Offene Epics & Features |
-| 2057 | offen | Tabellenspalte | `SHADOW-DEAD` | 7. Offene Epics & Features |
-| 2058 | offen | Tabellenspalte | `PIX-GPU-IDLE` | 7. Offene Epics & Features |
-| 2066 | offen | Tabellenspalte | `REFAC-ENRICHER-EVA` | 7. Offene Epics & Features |
-| 2067 | offen | Tabellenspalte | `REFAC-LOGGER-HIERARCHIE` | 7. Offene Epics & Features |
-| 2068 | offen | Tabellenspalte | `REFAC-SHUTDOWN-DISZIPLIN` | 7. Offene Epics & Features |
-| 2069 | offen | Tabellenspalte | `REFAC-SCHEMA-MIGRIEREN-FAILMODE` | 7. Offene Epics & Features |
-| 2070 | offen | Tabellenspalte | `SHUTDOWN-EVENT-ASYNC` | 7. Offene Epics & Features |
-| 2071 | offen | Tabellenspalte | `REFAC-PIPELINE-LOG-VOLLVERKABELUNG` | 7. Offene Epics & Features |
-| 2072 | offen | Tabellenspalte | `REFAC-UMLAUTE` | 7. Offene Epics & Features |
-| 2073 | offen | Tabellenspalte | `REFAC-DB-INDEX-DUPLIKAT` | 7. Offene Epics & Features |
-| 2074 | offen | Tabellenspalte | `REFAC-SEEDS-AUSLAGERN` | 7. Offene Epics & Features |
-| 2075 | offen | Tabellenspalte | `REFAC-AGENT-INIT-COMPOSE-MOUNT` | 7. Offene Epics & Features |
-| 2076 | offen | Tabellenspalte | `TIMELINE-IN-KERN` | 7. Offene Epics & Features |
-| 2077 | abgeschlossen | Tabellenspalte | `FAKTEN-IN-KERN` | 7. Offene Epics & Features |
-| 2078 | offen | Tabellenspalte | `NOTIZEN-INDIZES-NACHTRAG` | 7. Offene Epics & Features |
-| 2079 | offen | Tabellenspalte | `REFAC-EVENT-PAYLOAD-SEEDING` | 7. Offene Epics & Features |
-| 2081 | offen | Tabellenspalte | `REFAC-KZG-CODE-DUPLIKAT` | 7. Offene Epics & Features |
-| 2082 | offen | Tabellenspalte | `PLANNER-TIMELINE-INTENT-MISS` | 7. Offene Epics & Features |
-| 2083 | abgeschlossen | Tabellenspalte | `TEST-WORKER-SHUTDOWN-COROUTINE` | 7. Offene Epics & Features |
-| 2084 | offen | Tabellenspalte | `WORKER-SHUTDOWN-QUEUE-DRAIN` | 7. Offene Epics & Features |
-| 2085 | offen | Tabellenspalte | `NODE-TOKEN-AUSLASTUNG-FALLBACK` | 7. Offene Epics & Features |
-| 2086 | abgeschlossen | Tabellenspalte | `EMOTIONS-VECTOR-WERTE-DRIFT` | 7. Offene Epics & Features |
-| 2087 | offen | Tabellenspalte | `EI-KANON-FEHLT` | 7. Offene Epics & Features |
-| 2088 | offen | Tabellenspalte | `INTENT-TOTE-ZWEIGE` | 7. Offene Epics & Features |
-| 2089 | offen | Tabellenspalte | `SILENT-SKIP-EI-DEFAULTS` | 7. Offene Epics & Features |
-| 2090 | offen | Tabellenspalte | `DIRECTIVE-DATACLASS` | 7. Offene Epics & Features |
-| 2091 | offen | Tabellenspalte | `TURN-ROH-VOR-KRAFT1-ENTWERTET` | 7. Offene Epics & Features |
-| 2092 | abgeschlossen | Tabellenspalte | `ZIEL-DECAY-FORMEL-KUMULATIV` | 7. Offene Epics & Features |
-| 2093 | abgeschlossen | Tabellenspalte | `ZIEL-DECAY-TYP-FILTER` | 7. Offene Epics & Features |
-| 2094 | abgeschlossen | Tabellenspalte | `ZIEL-DECAY-DOKU-LUEGT` | 7. Offene Epics & Features |
-| 2095 | offen | Tabellenspalte | `PIXIE-ROUTING-DOPPELREGISTRY` | 7. Offene Epics & Features |
-| 2096 | offen | Tabellenspalte | `NOVA-ZUSAGE-OHNE-DECKUNG` | 7. Offene Epics & Features |
-| 2097 | offen | Tabellenspalte | `PIXIE-SELBSTTRIGGER-KEIN-TURN-ROH` | 7. Offene Epics & Features |
-| 2098 | offen | Tabellenspalte | `ENRICHER-REDIS-UNGESCHUETZT` | 7. Offene Epics & Features |
-| 2099 | offen | Tabellenspalte | `STATE-LADEZUSTAND` | 7. Offene Epics & Features |
-| 2100 | offen | Tabellenspalte | `WEB-EXTRAKTION-STILL-LEER` | 7. Offene Epics & Features |
-| 2101 | offen | Tabellenspalte | `EI-VEKTOR-LOG-GATE` | 7. Offene Epics & Features |
-| 2102 | offen | Tabellenspalte | `LOG-FREMDBIBLIOTHEK-DEBUG` | 7. Offene Epics & Features |
-| 2233 | unlesbar | — | `PROJEKTSEITE-NACHZIEHEN` | PROJEKTSEITE-NACHZIEHEN — die Seite kommt modernisiert wiede |
-| 2259 | unlesbar | — | `SYK-B-1-THINKER-WEICHE` | Epic: Sykophanz eindämmen (Chat 126) |
-| 2260 | abgeschlossen | Tabellenspalte | `SYK-B0-ABSTAND` | Epic: Sykophanz eindämmen (Chat 126) |
-| 2261 | abgeschlossen | Tabellenspalte | `SYK-B0-BEZIEHUNG` | Epic: Sykophanz eindämmen (Chat 126) |
-| 2262 | offen | Tabellenspalte | `SYK-B0-FALLENBATTERIE` | Epic: Sykophanz eindämmen (Chat 126) |
-| 2263 | abgeschlossen | Tabellenspalte | `SYK-B1-URTEILSFELD` | Epic: Sykophanz eindämmen (Chat 126) |
-| 2264 | unlesbar | — | `SYK-B1-WERT-FALSCH` | Epic: Sykophanz eindämmen (Chat 126) |
-| 2265 | abgeschlossen | Tabellenspalte | `SYK-B4-VORZEICHENPRUEFUNG` | Epic: Sykophanz eindämmen (Chat 126) |
-| 2266 | abgeschlossen | Tabellenspalte | `SYK-B4-STUFE-2-OHNE-FILTER` | Epic: Sykophanz eindämmen (Chat 126) |
-| 2267 | abgeschlossen | Tabellenspalte | `SYK-B4-WERT-BENENNEN` | Epic: Sykophanz eindämmen (Chat 126) |
-| 2268 | unlesbar | — | `SYK-B8-SCHREIBPFAD` | Epic: Sykophanz eindämmen (Chat 126) |
-| 2269 | unlesbar | — | `SYK-B3-VORZEICHENREGEL` | Epic: Sykophanz eindämmen (Chat 126) |
-| 2270 | unlesbar | — | `SYK-B9-REGISTER` | Epic: Sykophanz eindämmen (Chat 126) |
-| 2271 | unlesbar | — | `SYK-B2-IMPULS-GRENZE` | Epic: Sykophanz eindämmen (Chat 126) |
-| 2272 | unlesbar | — | `SYK-B5-ESKALATION` | Epic: Sykophanz eindämmen (Chat 126) |
-| 2273 | unlesbar | — | `SYK-B6-MOTIVENTLASTUNG` | Epic: Sykophanz eindämmen (Chat 126) |
-| 2274 | unlesbar | — | `SYK-B7-ZWEITABLEITUNG` | Epic: Sykophanz eindämmen (Chat 126) |
-| 2282 | unlesbar | — | `SYK-M-TRIBUNAL` | Epic: Sykophanz eindämmen (Chat 126) |
-| 2283 | unlesbar | — | `SYK-M-VERFASSER` | Epic: Sykophanz eindämmen (Chat 126) |
-| 2284 | unlesbar | — | `SYK-M-RAHMUNG` | Epic: Sykophanz eindämmen (Chat 126) |
-| 2303 | unlesbar | — | `PIX-AGENTEN-FEHLEN` | Epic: Pixie — der Abfluss steht (04.08.2026) |
-| 2304 | unlesbar | — | `PIX-RETRY-KREIS` | Epic: Pixie — der Abfluss steht (04.08.2026) |
-| 2305 | unlesbar | — | `PIX-SERIELLER-PLATZ` | Epic: Pixie — der Abfluss steht (04.08.2026) |
-| 2306 | unlesbar | — | `PIX-PRIORITAET-STILL` | Epic: Pixie — der Abfluss steht (04.08.2026) |
-| 2319 | abgeschlossen | Tabellenspalte | `WIS-1-MOUNT` | Epic: Wissensspeicher (04.08.2026) |
-| 2320 | abgeschlossen | Tabellenspalte | `WIS-2-TABELLE` | Epic: Wissensspeicher (04.08.2026) |
-| 2321 | abgeschlossen | Tabellenspalte | `WIS-3-DATEIEN` | Epic: Wissensspeicher (04.08.2026) |
-| 2322 | offen | Tabellenspalte | `WIS-4-STAPEL-SALIENZ` | Epic: Wissensspeicher (04.08.2026) |
-| 2323 | offen | Tabellenspalte | `WIS-5-VERFALL` | Epic: Wissensspeicher (04.08.2026) |
-| 2324 | unlesbar | — | `WIS-6-FORTSETZEN` | Epic: Wissensspeicher (04.08.2026) |
-| 2325 | abgeschlossen | Tabellenspalte | `WIS-PRUEFUNG-F-WISSEN-1` | Epic: Wissensspeicher (04.08.2026) |
-| 2326 | abgeschlossen | Tabellenspalte | `WIS-7-ENRICHER` | Epic: Wissensspeicher (04.08.2026) |
-| 2327 | unlesbar | — | `WIS-8-STUFE-2` | Epic: Wissensspeicher (04.08.2026) |
-| 2328 | offen | Tabellenspalte | `WIS-SCHWELLE-MESSEN` | Epic: Wissensspeicher (04.08.2026) |
-| 2348 | unlesbar | — | `WIS-GATE-MESSUNG` | Epic: Wissensspeicher (04.08.2026) |
-| 2349 | unlesbar | — | `PIX-WARTESCHLANGE-AM-MODELL` | Epic: Wissensspeicher (04.08.2026) |
-| 2350 | offen | Tabellenspalte | `WIS-KONTEXT-NEU-DIMENSIONIEREN` | Epic: Wissensspeicher (04.08.2026) |
-| 2351 | offen | Tabellenspalte | `WIS-AGENTEN-NACHZIEHEN` | Epic: Wissensspeicher (04.08.2026) |
-| 2368 | unlesbar | — | `KLA-K5-FAKTENPFAD` | Epic: Klärung — Abweichung und Lücke (04.08.2026) |
-| 2369 | unlesbar | — | `KLA-K1-ERWARTUNGSSCHEMA` | Epic: Klärung — Abweichung und Lücke (04.08.2026) |
-| 2370 | unlesbar | — | `KLA-K2-KLAERUNGSTOR` | Epic: Klärung — Abweichung und Lücke (04.08.2026) |
-| 2371 | unlesbar | — | `KLA-K3-SALIENZ` | Epic: Klärung — Abweichung und Lücke (04.08.2026) |
-| 2372 | unlesbar | — | `KLA-K4-ZWISCHENSCHRITT` | Epic: Klärung — Abweichung und Lücke (04.08.2026) |
-| 2590 | abgeschlossen | Marke | `KZG-DEDUP` | Epic: Chat 62 — Folgearbeiten aus dem Paar-Schema |
-| 2596 | abgeschlossen | Marke | `KZG-KERN-BLIND` | Epic: Chat 62 — Folgearbeiten aus dem Paar-Schema |
-| 2602 | unlesbar | — | `ROUTE-CHAR-NOTIZ` | Epic: Chat 62 — Folgearbeiten aus dem Paar-Schema |
-| 2612 | unlesbar | — | `KZG-L` | Epic: KZG-Liberalisierung + LZG-Destillation (Chat 63) |
-| 3200 | unlesbar | — | `GV-P` | Epic: Chat 72 — Folgearbeiten aus Dreischicht-Integration |
-| 3311 | offen | Status-Zeile | `PROMO-CLUSTER-EI-UPDATE` | Epic: Memory-Promotion-Korrektur (Chat 75) |
-| 3333 | offen | Status-Zeile | `PROMO-CLUSTER-TIE-DETERMINISM` | Epic: Memory-Promotion-Korrektur (Chat 75) |
-| 3342 | offen | Status-Zeile | `PROMO-DESTILL-DEAD` | Epic: Memory-Promotion-Korrektur (Chat 75) |
-| 3350 | offen | Status-Zeile | `PROMO-INTENTIONEN-FORMAT-DRIFT` | Epic: Memory-Promotion-Korrektur (Chat 75) |
-| 3585 | unlesbar | — | `REDUCER-CONFIG-DEAD` | Tech-Debt: Reducer-Umbau-Nachzügler (Chat 75) |
-| 3591 | unlesbar | — | `LOGGER-NAMESPACE` | Tech-Debt: Reducer-Umbau-Nachzügler (Chat 75) |
-| 3597 | unlesbar | — | `SESSION-SUMMARY-INACTIVE` | Tech-Debt: Reducer-Umbau-Nachzügler (Chat 75) |
-| 3604 | offen | Status-Zeile | `PIX-CLEAN` | Tech-Debt: Reducer-Umbau-Nachzügler (Chat 75) |
-| 3631 | offen | Status-Zeile | `INIT-SQL-VERALTET` | Tech-Debt: Reducer-Umbau-Nachzügler (Chat 75) |
-| 3645 | offen | Status-Zeile | `LZG-HAEUFIGKEIT-AMBIVALENT` | Tech-Debt: Reducer-Umbau-Nachzügler (Chat 75) |
-| 3665 | offen | Status-Zeile | `THINKER-TOOL-FORMAT` | Designdiskussion: THINKER-TOOL-FORMAT (Chat 75) |
-| 3680 | offen | Status-Zeile | `THINK-TRANSITION-INFO` | Sprint: THINK-TRANSITION-INFO — Thinker bekommt Verarbeitung |
-| 3704 | abgeschlossen | Status-Zeile | `NOTIZEN-VOR-TURN-BEZUG` | Sprint: NOTIZEN-VOR-TURN-BEZUG — Inhalts-Auflösung im Classi |
-| 3774 | offen | Status-Zeile | `MEMORY-SALIENZ-VERERBUNG` | Konzept: MEMORY-SALIENZ-VERERBUNG — Salienz auf semantischen |
-| 3804 | offen | Status-Zeile | `ENRICHER-AKTE` | Konzept: ENRICHER-AKTE — Strukturierte Memory-Context-Akte a |
-| 3959 | abgeschlossen | Status-Zeile | `MIGRATION-PIX-CLEANUP` | Sprint: MIGRATION-PIX-CLEANUP — Pixie-Migration nach Multi-C |
-| 3984 | abgeschlossen | Status-Zeile | `KZG-CLEANUP` | Sprint: KZG-CLEANUP — Bereinigung fehlerhafter KZG-Einträge  |
-| 4011 | offen | Status-Zeile | `CHAR-HASH-TEST-LEICHEN` | Cleanup: CHAR-HASH-TEST-LEICHEN — Test-User in `charakter_ha |
-| 4027 | offen | Status-Zeile | `LZG-DOKU-DRIFT` | Cleanup: LZG-DOKU-DRIFT — `novaberg-mem-lzg.md` reflektiert  |
-| 4047 | unlesbar | — | `TIMELINE-PAIR-MISSING` | Bug: TIMELINE-PAIR-MISSING — Timeline-Tabelle ohne `characte |
-| 4073 | unlesbar | — | `NOTIZEN-PAIR-MISSING` | Bug: NOTIZEN-PAIR-MISSING — Notizen-Tabelle ohne `character_ |
-| 4087 | unlesbar | — | `FAKTEN-PAIR-IGNORED` | Bug: FAKTEN-PAIR-IGNORED — Fakten-Repository ignoriert `char |
-| 4101 | unlesbar | — | `ZIELE-PAIR-MISSING` | Bug: ZIELE-PAIR-MISSING — Ziele-Tabelle ohne `character_id`  |
-| 4115 | unlesbar | — | `NOTIZEN-KONTEXT-REKONSTRUKTION` | Bug: NOTIZEN-KONTEXT-REKONSTRUKTION — Mehrschritt-Rekonstruk |
-| 4138 | unlesbar | — | `NOTIZEN-CONTAINER-WECHSEL` | Bug: NOTIZEN-CONTAINER-WECHSEL — Notiz↔Liste-Wechsel verweig |
-| 4158 | unlesbar | — | `NOTIZEN-SKILL-MANIFEST` | Bug: NOTIZEN-SKILL-MANIFEST — Nova kennt eigene Fähigkeiten  |
-| 4174 | unlesbar | — | `NOTIZEN-UPDATE-TARGET-LEER` | Bug: NOTIZEN-UPDATE-TARGET-LEER — Bezugs-Pronomen für UPDATE |
-| 4269 | offen | Status-Zeile | `TRIB-PERSON-DRIFT` | Bug: TRIB-PERSON-DRIFT — Tribunal-Agenten kennen Novas Ident |
-| 4313 | offen | Status-Zeile | `REFAC-HG-CHAR-HASH-LOAD` | Refactor: REFAC-HG-CHAR-HASH-LOAD — Char-Hash-Tiebreaker im  |
-| 4352 | offen | Status-Zeile | `SPRACH-STIL-DEFENSIV-STUMM` | Bug: SPRACH-STIL-DEFENSIV-STUMM — `_sprach_stil_erkennen` br |
-| 4372 | offen | Status-Zeile | `EI-CALC-ROLLE-RENAME` | Refactor: EI-CALC-ROLLE-RENAME — `ei_calc_rolle` semantisch  |
-| 4395 | offen | Status-Zeile | `AUDIT-PIXIE-TURN-ID` | Bug: AUDIT-PIXIE-TURN-ID — Pixie-Pfad-turn_id-Auflösung unge |
-| 4423 | offen | Status-Zeile | `EI-CALC-ROLLE-DEFAULT-ASYMMETRIE` | Bug: EI-CALC-ROLLE-DEFAULT-ASYMMETRIE — Inkonsistente Defaul |
-| 4458 | offen | Status-Zeile | `DOPPEL-SESSION-LOAD` | Performance: DOPPEL-SESSION-LOAD — Session-Turns werden im H |
-| 4491 | offen | Status-Zeile | `REDUCER-LOGGER-NAME-KONVENTION` | Refactor: REDUCER-LOGGER-NAME-KONVENTION — Logger-Namen weic |
-| 4518 | offen | Status-Zeile | `REDUCER-CONFIG-DEAD-KONSTANTEN` | Refactor: REDUCER-CONFIG-DEAD-KONSTANTEN — Tote Konstanten i |
-| 4546 | offen | Status-Zeile | `SESSION-SUMMARY-PFAD-INAKTIV` | Audit: SESSION-SUMMARY-PFAD-INAKTIV — Memory-Quelle "summary |
-| 4580 | offen | Status-Zeile | `KZG-VERDICHTER-KONTEXT-VERLUST` | Bug: KZG-VERDICHTER-KONTEXT-VERLUST — Verdichter produziert  |
-| 4608 | offen | Status-Zeile | `SALIENZ-VERDICHTUNG-MEHRFACH` | Bug: SALIENZ-VERDICHTUNG-MEHRFACH — Salienz- und Verdichtung |
-| 4631 | offen | Status-Zeile | `WORKER-TIMEOUT-MUSTER-DIVERGENZ` | Refactor: WORKER-TIMEOUT-MUSTER-DIVERGENZ — `num_ctx` (Per-C |
-| 4711 | offen | Status-Zeile | `AUDIT-1-BEIFANG-PROMOTION` | Sammelposten: AUDIT-1-BEIFANG-PROMOTION — Tote Pfade und Beo |
-| 4721 | unlesbar | — | `EMOTIONS-VEKTOR-LEER` | Sammelposten: AUDIT-1-BEIFANG-PROMOTION — Tote Pfade und Beo |
-| 4722 | unlesbar | — | `KZG-ERSTELLT-AM-PARSE-HÄRTE` | Sammelposten: AUDIT-1-BEIFANG-PROMOTION — Tote Pfade und Beo |
-| 4723 | unlesbar | — | `GEDACHTNISTYP-DEFAULT-BEFÜLLT` | Sammelposten: AUDIT-1-BEIFANG-PROMOTION — Tote Pfade und Beo |
-| 4724 | unlesbar | — | `TRIGGER-2-RECACHE-KONZEPT-LÜCKE` | Sammelposten: AUDIT-1-BEIFANG-PROMOTION — Tote Pfade und Beo |
-| 4725 | unlesbar | — | `FAKTEN-TABELLE-ENTITY-MERGE` | Sammelposten: AUDIT-1-BEIFANG-PROMOTION — Tote Pfade und Beo |
-| 4726 | unlesbar | — | `TIMELINE-FK-DOKU-DRIFT` | Sammelposten: AUDIT-1-BEIFANG-PROMOTION — Tote Pfade und Beo |
-| 4727 | unlesbar | — | `REFAC-MAGNETE-AUDIT` | Sammelposten: AUDIT-1-BEIFANG-PROMOTION — Tote Pfade und Beo |
-| 4733 | offen | Status-Zeile | `AUDIT-DOKU-DRIFT-MS` | Bug: AUDIT-DOKU-DRIFT-MS — Drift-Befunde aus Microservice-Vo |
-| 4761 | unlesbar | — | `TOK-DRIFT-SALIENCE` | Bug: TOK-DRIFT-SALIENCE — Token-Akkumulator zählt fehlgeschl |
-| 4791 | unlesbar | — | `QUEUE-SCHEMA-STALE` | Cleanup: QUEUE-SCHEMA-STALE — `queue:nova` mit toten Aufträg |
-| 4799 | unlesbar | — | `SCHED-STALE-SCHEDULE` | Refactor: SCHED-STALE-SCHEDULE — Startup räumt `pixie:schedu |
-| 4807 | unlesbar | — | `SHADOW-PAYLOAD-FIELD-MISMATCH` | Bug: SHADOW-PAYLOAD-FIELD-MISMATCH — Dispatch liest Felder,  |
-| 4821 | unlesbar | — | `WIEDERVORLAGE-MULTI-USER` | Refactor: WIEDERVORLAGE-MULTI-USER — Periodische Aufgaben pr |
-| 4829 | unlesbar | — | `SYNAPSEN-LIVE-VERIFY` | Sprint: SYNAPSEN-LIVE-VERIFY — Entitäts- und Timeline-Kanten |
-| 4839 | unlesbar | — | `SYNAPSEN-DUAL-LZG` | Sprint: SYNAPSEN-DUAL-LZG — Lesepfad auf `lzg_knoten`/`lzg_k |
-| 4849 | unlesbar | — | `KZG-GEWICHT-ABSOLUT-CEILING` | Befund: KZG-GEWICHT-ABSOLUT-CEILING — sin^0.5-Dämpfung klemm |
-| 4906 | abgeschlossen | Tabellenspalte | `P5-LIVE-ABNAHME` | Lesepfad-Folgepunkte (Chat 99) |
-| 4907 | offen | Tabellenspalte | `KANTEN-RICHTUNG-UNDOKUMENTIERT` | Lesepfad-Folgepunkte (Chat 99) |
-| 4908 | offen | Tabellenspalte | `SPREADING-RELEVANZ-BEOBACHTEN` | Lesepfad-Folgepunkte (Chat 99) |
-| 4909 | offen | Tabellenspalte | `LZG-RESONANZ-DATETIME` | Lesepfad-Folgepunkte (Chat 99) |
-| 4910 | abgeschlossen | Tabellenspalte | `LZG-RESONANZ-STATE-DEKL` | Lesepfad-Folgepunkte (Chat 99) |
-| 4911 | offen | Tabellenspalte | `LZG-RESONANZ-ENTITAET-NAMEN` | Lesepfad-Folgepunkte (Chat 99) |
-| 4912 | offen | Tabellenspalte | `LIB-VECTORS-MIGRATION` | Lesepfad-Folgepunkte (Chat 99) |
-| 4913 | offen | Tabellenspalte | `B3-API-KEY-SEMANTIK` | Lesepfad-Folgepunkte (Chat 99) |
-| 4926 | offen | Tabellenspalte | `ROUTE-MISS1` | 8. Offene Bugs |
-| 4928 | offen | Tabellenspalte | `CRUD-DESTILL-SUBTRAKT` | 8. Offene Bugs |
-| 4929 | offen | Tabellenspalte | `CRUD-REACTIVATE-STAMP` | 8. Offene Bugs |
-| 4930 | offen | Tabellenspalte | `EMOTE-LOCK` | 8. Offene Bugs |
-| 4931 | offen | Tabellenspalte | `TOPOS-LOCK` | 8. Offene Bugs |
-| 4932 | offen | Tabellenspalte | `ABER-SAG-MAL` | 8. Offene Bugs |
-| 4933 | offen | Tabellenspalte | `REDUCER-MULTILINE` | 8. Offene Bugs |
-| 4934 | offen | Tabellenspalte | `PATH1-LATENZ` | 8. Offene Bugs |
-| 4935 | abgeschlossen | Tabellenspalte | `ROUTE-CHAR-NOTIZ` | 8. Offene Bugs |
-| 4936 | offen | Tabellenspalte | `ENRICHER-DUP` | 8. Offene Bugs |
-| 4937 | offen | Tabellenspalte | `RESP-DEAD` | 8. Offene Bugs |
-| 4938 | offen | Tabellenspalte | `PIXIE-GHOST` | 8. Offene Bugs |
-| 4939 | offen | Tabellenspalte | `PIXIE-AGENT-MISSING` | 8. Offene Bugs |
-| 4940 | unlesbar | — | `RECH-SPIRAL` | 8. Offene Bugs |
-| 4941 | unlesbar | — | `RECH-CHARAKTER` | 8. Offene Bugs |
-| 4942 | unlesbar | — | `DELIVERY-DEDUP` | 8. Offene Bugs |
-| 4943 | unlesbar | — | `SPRACH-STIL-DEFENSIV-STUMM` | 8. Offene Bugs |
-| 4944 | offen | Tabellenspalte | `AUDIT-PIXIE-TURN-ID` | 8. Offene Bugs |
-| 4945 | unlesbar | — | `EI-CALC-ROLLE-DEFAULT-ASYMMETRIE` | 8. Offene Bugs |
-| 4946 | unlesbar | — | `TOK-DRIFT-SALIENCE` | 8. Offene Bugs |
-| 4947 | abgeschlossen | Tabellenspalte | `TEST-RUNNER-FEHLT-CONTAINER` | 8. Offene Bugs |
-| 4987 | unlesbar | — | `BEZEICHNER-WAR-AKTIV` | Refactor: BEZEICHNER-WAR-AKTIV — was_active statt war_aktiv  |
-| 4996 | unlesbar | — | `CONFIG-DECAY-RATE-KOMMENTAR-DRIFT` | Fix: CONFIG-DECAY-RATE-KOMMENTAR-DRIFT — falscher Kommentar  |
-| 5007 | unlesbar | — | `PATTERN-DOMAIN-LANGUAGE-RECONCILE` | Frage: PATTERN-DOMAIN-LANGUAGE-RECONCILE — deutsche Domaenen |
-| 5017 | abgeschlossen | Marke | `SYNAPSEN-DECAY-SCHEDULE-LIVE` | Frage: SYNAPSEN-DECAY-SCHEDULE-LIVE — Heartbeat legt Schedul |
-| 5031 | abgeschlossen | Marke | `PIXIE-DECAY-KEIN-AGENT` | Bug: PIXIE-DECAY-KEIN-AGENT — Router kennt periodische Aufga |
-| 5037 | unlesbar | — | `HALBREAKTIVIERUNG-LIVE` | Frage: HALBREAKTIVIERUNG-LIVE — erster inaktiver Match feuer |
-| 5048 | unlesbar | — | `SYNAPSEN-REAKTIV-SCHWELLE` | Frage: SYNAPSEN-REAKTIV-SCHWELLE — eigene Match-Schwelle fue |
-| 5056 | unlesbar | — | `CHARHASH-GEWICHT-ABSOLUT-LIVE` | Beobachtung: CHARHASH-GEWICHT-ABSOLUT-LIVE — erste volle Liv |
-| 5060 | unlesbar | — | `CHARHASH-PROMPT-DUPLIKAT` | Bug: CHARHASH-PROMPT-DUPLIKAT — Kern-Persönlichkeit 5× wortg |
-| 5066 | unlesbar | — | `DESTILLAT-PERSPEKTIVE-VS-SUBJEKT` | Bug: DESTILLAT-PERSPEKTIVE-VS-SUBJEKT — Charakter-Destillati |
-| 5087 | unlesbar | — | `HAEUFIGKEIT-AUF-KNOTEN` | Notiz: HAEUFIGKEIT-AUF-KNOTEN — haeufigkeit auf lzg_knoten m |
-| 5091 | unlesbar | — | `CHARHASH-DOKU-DRIFT` | Doku: CHARHASH-DOKU-DRIFT — Hash-Doku beschreibt LZG-Quelle  |
-| 5095 | unlesbar | — | `REFERENZ-AUFLOESUNG-VOR-RETRIEVAL` | Bug: REFERENZ-AUFLOESUNG-VOR-RETRIEVAL — anaphorische Verwei |
-| 5099 | unlesbar | — | `CHARAKTER-RESONANZ` | Epic: CHARAKTER-RESONANZ — Novas Charakter aus dem Umgang (C |
-| 5103 | unlesbar | — | `GESPRAECH-ARCHIV-VERWAIST` | Aufräumen: GESPRAECH-ARCHIV-VERWAIST — tote Tabelle ohne Wri |
-| 5109 | unlesbar | — | `ASSISTENT-NAME-LAUFZEIT` | Feature: ASSISTENT-NAME-LAUFZEIT — Assistenten-Name pro Paar |
-| 5113 | unlesbar | — | `ASSISTENT-GESCHLECHT-PRONOMEN` | Feature: ASSISTENT-GESCHLECHT-PRONOMEN — Pronomen bei Namens |
-| 5121 | unlesbar | — | `PIPELINE-LOG-BACKFILL-PAAR` | Nacharbeit: PIPELINE-LOG-BACKFILL-PAAR — Alt-Forensik ohne P |
-| 5125 | unlesbar | — | `KZG-QUELLE-IST-USER-ID` | Refactor: KZG-QUELLE-IST-USER-ID — `quelle` trägt `user_id`  |
-| 5129 | unlesbar | — | `PIPELINE-LOG-ART-DOKU-DRIFT` | Doku: PIPELINE-LOG-ART-DOKU-DRIFT — Forensik-Queries der Syn |
-| 5148 | unlesbar | — | `DELEGATION-STATE-UNDEKLARIERT` | Landmine: DELEGATION-STATE-UNDEKLARIERT — Sperrvermerk für d |
-| 5160 | unlesbar | — | `PLANNER-AKTIV-RELIKT` | Aufräumen: PLANNER-AKTIV-RELIKT — Stage-Anzeige liest nie ge |
-| 5172 | unlesbar | — | `WEB-CONTEXT-ALTPFAD` | Aufräumen: WEB-CONTEXT-ALTPFAD — toter [WEB]-Block, Nachfolg |
-| 5184 | unlesbar | — | `BUILDER-CREATE-INITIAL-STATE-TOT` | Aufräumen: BUILDER-CREATE-INITIAL-STATE-TOT — aufruferloser  |
-| 5196 | unlesbar | — | `LESSON-INDEX-LUECKE` | Doku: LESSON-INDEX-LUECKE — zwölf ältere lesson_l-Dateien fe |
-| 5205 | unlesbar | — | `DOKU-DUPLIKATE-CHAT80` | Doku: DOKU-DUPLIKATE-CHAT80 — 8 Bezeichner stehen in bugs.md |
-| 5221 | unlesbar | — | `LOG-TUERKLINGEL` | Feature: LOG-TUERKLINGEL — Warn-/Fehler-Lampen mit Sitzungsz |
-| 5256 | unlesbar | — | `ENTITAET-EMBED-DREIFACH` | Bug: ENTITAET-EMBED-DREIFACH — Entitäts-Suchpfad embeddet an |
-| 5268 | unlesbar | — | `DESTILLAT-ASYMMETRIE` | Konzept: DESTILLAT-ASYMMETRIE — Prompts und Knoten leben in  |
-| 5276 | unlesbar | — | `GESPRAECH-ARCHIV-LEER` | Feature: GESPRAECH-ARCHIV-LEER — kein Writer, Rohgespräche v |
-| 5282 | unlesbar | — | `EMBED-DIMENSIONSCHECK-FEHLT` | Fix: EMBED-DIMENSIONSCHECK-FEHLT — kein harter Dimensions-Ch |
-| 5286 | unlesbar | — | `PIPELINE-LOG-MERGE-BLIND` | Nacharbeit: PIPELINE-LOG-MERGE-BLIND — Reinforcement loggt d |
-| 5290 | unlesbar | — | `DELEG-VEKTOR-EINGEFROREN` | Konzept: DELEG-VEKTOR-EINGEFROREN — Akten-Vektor beschreibt  |
-| 5294 | unlesbar | — | `LZG-MIGRATION-REVIEW-NICHT-IN-INIT` | Fix: LZG-MIGRATION-REVIEW-NICHT-IN-INIT — Live-Tabelle ohne  |
-| 5298 | unlesbar | — | `IDX-TIMELINE-TYPE-NICHT-IN-INIT` | Fix: IDX-TIMELINE-TYPE-NICHT-IN-INIT — Live-Index ohne Defin |
-| 5302 | unlesbar | — | `DELEG-SEITEN-VALENZ-TOT` | Aufräumen: DELEG-SEITEN-VALENZ-TOT — persistiert, nie gelese |
-| 5310 | unlesbar | — | `REDUCER-DOKU-DRIFT` | Doku: REDUCER-DOKU-DRIFT — drei Drifts aus dem Reducer-Audit |
-| 5314 | unlesbar | — | `DOKU-NOTIZEN-INIT-SQL` | Doku: DOKU-NOTIZEN-INIT-SQL — Verweis auf nicht existierende |
-| 5318 | unlesbar | — | `KZG-SALIENZ-GRENZWERT-UNKLAR` | Frage: KZG-SALIENZ-GRENZWERT-UNKLAR — soll jede Recherche in |
-| 5351 | unlesbar | — | `PROMOTION-NOVA-GUARD-TOT` | Aufräumen: PROMOTION-NOVA-GUARD-TOT — Nova-Guard in der Clus |
-| 5361 | unlesbar | — | `CHARHASH-KZG-SCAN-UNSORTIERT` | Bug: CHARHASH-KZG-SCAN-UNSORTIERT — zwei von fünf Profilen d |
-| 5371 | unlesbar | — | `HASH-DIRTY-KEY-OHNE-PAAR` | Aufräumen: HASH-DIRTY-KEY-OHNE-PAAR — `hash_dirty:meister` o |
-| 5379 | unlesbar | — | `AUDIT-HASH-DIRTY-SICHTBARKEIT` | Audit: AUDIT-HASH-DIRTY-SICHTBARKEIT — KEYS zeigt das Flag,  |
-| 5389 | unlesbar | — | `TURN-ROH-VOR-KRAFT1-ENTWERTET` | Landmine: TURN-ROH-VOR-KRAFT1-ENTWERTET — Sperrvermerk für d |
-| 5407 | unlesbar | — | `PERMISSION-OHNE-BODEN` | Befund: PERMISSION-OHNE-BODEN — „Brudi ist read-only" ist Ko |
-| 5419 | unlesbar | — | `PROMO-KZG-KEY-ALS-TURN-ID` | Bug: PROMO-KZG-KEY-ALS-TURN-ID — `pipeline_log.turn_id` träg |
-| 5431 | unlesbar | — | `ALLOWLIST-DRIFT` | Aufräumen: ALLOWLIST-DRIFT — die Claude-Code-Allowlist wächs |
-| 5441 | unlesbar | — | `KZG-VERSTAERKUNG-KEYS-SCAN` | Performance: KZG-VERSTAERKUNG-KEYS-SCAN — Vollscan der Paar- |
-| 5451 | unlesbar | — | `KZG-TURN-ID-UNBEKANNT` | Nacharbeit: KZG-TURN-ID-UNBEKANNT — Platzhalter statt Turn-B |
-| 5463 | unlesbar | — | `TURN-ROH-HG-SKIP` | Befund: TURN-ROH-HG-SKIP — der übersprungene Rohturn pro Tur |
-| 5477 | unlesbar | — | `KZG-SALIENZ-BOOST-OHNE-DECKEL` | Bug: KZG-SALIENZ-BOOST-OHNE-DECKEL — die thematische Verstär |
-| 5503 | unlesbar | — | `DESTILLAT-SUBJEKT-SCHABLONE` | Bug: DESTILLAT-SUBJEKT-SCHABLONE — der Verdichter erfindet „ |
-| 5528 | unlesbar | — | `PIXIE-TURN-ID-LEER` | Bug: PIXIE-TURN-ID-LEER — Pixie-initiierter CharacterGraph-L |
-| 5554 | unlesbar | — | `KZG-SALIENZ-SKALENBRUCH` | Bug: KZG-SALIENZ-SKALENBRUCH — die Dämpfung ist auf CAP 10.0 |
-| 5599 | unlesbar | — | `KZG-TTL-UNSTERBLICH` | Limitation: KZG-TTL-UNSTERBLICH — die Auffrischung kann nur  |
-| 5619 | unlesbar | — | `KZG-KEIN-DECAY` | Bug: KZG-KEIN-DECAY — die Salienz kennt keine Abwärtsbewegun |
-| 5655 | unlesbar | — | `KZG-SALIENZ-KONSUMENTEN-DISSENS` | Bug: KZG-SALIENZ-KONSUMENTEN-DISSENS — drei Leser, drei Anna |
-| 5685 | unlesbar | — | `KZG-SALIENZ-NEUBAU` | Sprint: KZG-SALIENZ-NEUBAU — die KZG-Salienz bekommt die Bau |
-| 5707 | unlesbar | — | `PROMOTION-ENTFERNT-KZG-NICHT` | Bug: PROMOTION-ENTFERNT-KZG-NICHT — der promotete Eintrag bl |
-| 5732 | unlesbar | — | `ROADMAP-GLIEDERUNGSBRUCH` | Doku: ROADMAP-GLIEDERUNGSBRUCH — ab Chat 98 wechselt die Chr |
-| 5746 | unlesbar | — | `DB-SELECT-SCHREIBT-OHNE-COMMIT` | Landmine: DB-SELECT-SCHREIBT-OHNE-COMMIT — `select()` führt  |
-| 5760 | abgeschlossen | Marke | `QUEUE-VERFALL-KONZEPT` | QUEUE-VERFALL-KONZEPT — der Stapel und die Queue brauchen ei |
-| 5796 | unlesbar | — | `IMPULS-HANDLUNG-OHNE-HERKUNFT` | IMPULS-HANDLUNG-OHNE-HERKUNFT — was sie selbst angelegt hat, |
-| 5827 | unlesbar | — | `PUB-ROLLENNAMEN-IM-BESTAND` | Audit: PUB-ROLLENNAMEN-IM-BESTAND — die Doku nennt die inter |
-| 5861 | unlesbar | — | `REGISTER-SPIEGEL-DURCHGANG` | Audit: REGISTER-SPIEGEL-DURCHGANG — wo spiegelt sonst eine A |
-| 5879 | unlesbar | — | `GV-RELEVANZ-UNNORMIERT` | Landmine: GV-RELEVANZ-UNNORMIERT — die Relevanz kann über 1. |
+| 923 | offen | Zustand-Zeile | `KOPPLUNG-FRAGENSPALTE-UNGEPRUEFT` | 0c. Aus der Fundliste klassifiziert — Chat 133 (08.08.2026) |
+| 935 | offen | Zustand-Zeile | `EINWANDSURTEIL-OHNE-LESER` | 0c. Aus der Fundliste klassifiziert — Chat 133 (08.08.2026) |
+| 947 | offen | Zustand-Zeile | `KANAELE-OHNE-VERTRAG` | 0c. Aus der Fundliste klassifiziert — Chat 133 (08.08.2026) |
+| 959 | offen | Zustand-Zeile | `GV-SKIP-TOTE-AUSLOESER` | 0c. Aus der Fundliste klassifiziert — Chat 133 (08.08.2026) |
+| 971 | offen | Zustand-Zeile | `RESPONDER-KOMMENTAR-FALSCHE-SCHICHT` | 0c. Aus der Fundliste klassifiziert — Chat 133 (08.08.2026) |
+| 983 | offen | Zustand-Zeile | `PROFILE-LEER-URSACHE-UNBEKANNT` | 0c. Aus der Fundliste klassifiziert — Chat 133 (08.08.2026) |
+| 999 | offen | Zustand-Zeile | `CHARAKTER-HASH-DOKU-FALSCHE-QUELLE` | 0c. Aus der Fundliste klassifiziert — Chat 133 (08.08.2026) |
+| 1017 | offen | Zustand-Zeile | `DOKU-MEHRDEUTIGE-ANKER` | 0c. Aus der Fundliste klassifiziert — Chat 133 (08.08.2026) |
+| 1027 | offen | Zustand-Zeile | `AGENT-MD-NIE-GEPRUEFT` | 0c. Aus der Fundliste klassifiziert — Chat 133 (08.08.2026) |
+| 1037 | offen | Zustand-Zeile | `SESSION-CONTEXT-BUILD-OHNE-AUFRUFER` | 0c. Aus der Fundliste klassifiziert — Chat 133 (08.08.2026) |
+| 1047 | offen | Zustand-Zeile | `EIGENIMPULSE-IN-DER-SCHWELLE` | 0c. Aus der Fundliste klassifiziert — Chat 133 (08.08.2026) |
+| 1057 | offen | Zustand-Zeile | `REPERTOIRE-UNGLEICH-VERTEILT` | 0c. Aus der Fundliste klassifiziert — Chat 133 (08.08.2026) |
+| 1067 | offen | Zustand-Zeile | `NOTIZEN-ENRICH-16-ZWEIGE` | 0c. Aus der Fundliste klassifiziert — Chat 133 (08.08.2026) |
+| 1077 | offen | Zustand-Zeile | `LLM-PROVIDER-ZWEIG-UNERREICHBAR` | 0c. Aus der Fundliste klassifiziert — Chat 133 (08.08.2026) |
+| 1087 | offen | Zustand-Zeile | `FUENF-STELLEN-FORM-MEHRFACH` | 0c. Aus der Fundliste klassifiziert — Chat 133 (08.08.2026) |
+| 1097 | offen | Zustand-Zeile | `LOGGING-PROZENT-STATT-FSTRING` | 0c. Aus der Fundliste klassifiziert — Chat 133 (08.08.2026) |
+| 1111 | offen | Zustand-Zeile | `PROMPT-DOPPELTE-FORMULIERUNG` | 0c. Aus der Fundliste klassifiziert — Chat 133 (08.08.2026) |
+| 1129 | offen | Zustand-Zeile | `GRAPH-TABELLE-OHNE-VERFASSER` | 0c. Aus der Fundliste klassifiziert — Chat 133 (08.08.2026) |
+| 1139 | offen | Zustand-Zeile | `INITIATIVE-RAD-GEGENPOL-UNGEPRUEFT` | 0c. Aus der Fundliste klassifiziert — Chat 133 (08.08.2026) |
+| 1149 | offen | Zustand-Zeile | `CLUSTERZAHL-13-GEGEN-14` | 0c. Aus der Fundliste klassifiziert — Chat 133 (08.08.2026) |
+| 1159 | offen | Zustand-Zeile | `GV-DETAIL-LAENGE-IRREFUEHREND` | 0c. Aus der Fundliste klassifiziert — Chat 133 (08.08.2026) |
+| 1169 | offen | Zustand-Zeile | `BILD-VERWAIST` | 0c. Aus der Fundliste klassifiziert — Chat 133 (08.08.2026) |
+| 1183 | offen | Zustand-Zeile | `LLM-LOCK-SCHUETZT-DIE-GPU-NICHT-DEN-TURN` | 0c. Aus der Fundliste klassifiziert — Chat 133 (08.08.2026) |
+| 1193 | offen | Zustand-Zeile | `CLIENT-OHNE-TESTLAUF` | 0c. Aus der Fundliste klassifiziert — Chat 133 (08.08.2026) |
+| 1203 | abgeschlossen | Zustand-Zeile | `RAD-STABILITAET-UNGEMESSEN` | 0c. Aus der Fundliste klassifiziert — Chat 133 (08.08.2026) |
+| 1253 | abgeschlossen | Zustand-Zeile | `INTENTION-AUFGABE-MAP-DOPPELT` | 0c. Aus der Fundliste klassifiziert — Chat 133 (08.08.2026) |
+| 1263 | offen | Zustand-Zeile | `QUEUE-RUHE-DURCH-REIHENFOLGE` | 0c. Aus der Fundliste klassifiziert — Chat 133 (08.08.2026) |
+| 1273 | offen | Zustand-Zeile | `PIXIE-EIN-SLOT-BLOCKIERT-ALLES` | 0c. Aus der Fundliste klassifiziert — Chat 133 (08.08.2026) |
+| 1285 | offen | Zustand-Zeile | `KONTEXT-32768-IN-SECHS-DOKUMENTEN` | 0c. Aus der Fundliste klassifiziert — Chat 133 (08.08.2026) |
+| 1295 | offen | Zustand-Zeile | `RECHERCHE-ZWISCHENDESTILLATION-OHNE-GRUND` | 0c. Aus der Fundliste klassifiziert — Chat 133 (08.08.2026) |
+| 1318 | offen | Zustand-Zeile | `ARCHITEKTUR-TABELLENLISTE-UNVOLLSTAENDIG` | 0c. Aus der Fundliste klassifiziert — Chat 133 (08.08.2026) |
+| 1328 | offen | Zustand-Zeile | `KERN-SCHEMA-OHNE-DRIFTPRUEFUNG` | 0c. Aus der Fundliste klassifiziert — Chat 133 (08.08.2026) |
+| 1338 | offen | Zustand-Zeile | `EBBINGHAUS-KONSTANTEN-TOT` | 0c. Aus der Fundliste klassifiziert — Chat 133 (08.08.2026) |
+| 1348 | offen | Zustand-Zeile | `KNOTENGEWICHT-DOKU-BEHAUPTET-LIVE` | 0c. Aus der Fundliste klassifiziert — Chat 133 (08.08.2026) |
+| 1358 | offen | Zustand-Zeile | `RECHERCHE-RETRY-BLOCKIERT-QUEUE` | 0c. Aus der Fundliste klassifiziert — Chat 133 (08.08.2026) |
+| 1368 | offen | Zustand-Zeile | `ENTITAET-IDS-LEER-82-PROZENT` | 0c. Aus der Fundliste klassifiziert — Chat 133 (08.08.2026) |
+| 1378 | offen | Zustand-Zeile | `GRAVITATION-CLUSTER-AUS-VORTURN-UNGEPRUEFT` | 0c. Aus der Fundliste klassifiziert — Chat 133 (08.08.2026) |
+| 1388 | offen | Zustand-Zeile | `AUFTRAGSARTEN-OHNE-AGENTEN` | 0c. Aus der Fundliste klassifiziert — Chat 133 (08.08.2026) |
+| 1409 | offen | Zustand-Zeile | `SHADOW-QUEUE-RUECKSTAND-UNGEMESSEN` | 0c. Aus der Fundliste klassifiziert — Chat 133 (08.08.2026) |
+| 1421 | offen | Zustand-Zeile | `ARBEITSQUEUES-OHNE-GEGENUEBER` | 0c. Aus der Fundliste klassifiziert — Chat 133 (08.08.2026) |
+| 1431 | offen | Zustand-Zeile | `CHARAKTER-ANWEISUNGEN-OHNE-GEGENUEBER` | 0c. Aus der Fundliste klassifiziert — Chat 133 (08.08.2026) |
+| 1528 | offen | Zustand-Zeile | `PROFIL-HISTORIE-FEHLT` | 0b. Charakterbildung messen — der nächste Sprint (01.08.2026 |
+| 1544 | offen | Zustand-Zeile | `PAARLISTE-FEST` | 0b. Charakterbildung messen — der nächste Sprint (01.08.2026 |
+| 1568 | abgeschlossen | Marke | `HALTUNG-KNOTEN-FEHLT` | 0a. Haltungsraum — der unterbrochene Sprint (31.07.2026) |
+| 1586 | offen | Zustand-Zeile | `GRAPH-SACKGASSE-UNGEPRUEFT` | 0a. Haltungsraum — der unterbrochene Sprint (31.07.2026) |
+| 1596 | abgeschlossen | Marke | `HALTUNG-PROTOKOLL-FEHLT` | 0a. Haltungsraum — der unterbrochene Sprint (31.07.2026) |
+| 1614 | offen | Zustand-Zeile | `HALTUNG-SPANNENENDEN-OFFEN` | 0a. Haltungsraum — der unterbrochene Sprint (31.07.2026) |
+| 1630 | offen | Zustand-Zeile | `HALTUNG-SPANNENENDEN-OFFEN` | 0a. Haltungsraum — der unterbrochene Sprint (31.07.2026) |
+| 1650 | abgeschlossen | Marke | `HALTUNG-OHNE-LANDSCHAFT` | 0a. Haltungsraum — der unterbrochene Sprint (31.07.2026) |
+| 1664 | offen | Zustand-Zeile | `HALTUNG-LAENGE-ZWEI-ERZEUGER` | 0a. Haltungsraum — der unterbrochene Sprint (31.07.2026) |
+| 1682 | offen | Zustand-Zeile | `ZEIT-KORPUS-TESTS-AUF-UNITTEST` | 0. Zeitparser und Kalibrierung (31.07.2026) |
+| 1694 | offen | Zustand-Zeile | `ZEIT-ZWOELF-STUNDEN-DEUTUNG` | 0. Zeitparser und Kalibrierung (31.07.2026) |
+| 1706 | offen | Zustand-Zeile | `ZEIT-TAGESZEIT-VOR-ZIFFER` | 0. Zeitparser und Kalibrierung (31.07.2026) |
+| 1716 | offen | Zustand-Zeile | `KALIBRIERUNG-ZEUGE-TRENNT-SCHWACH` | 0. Zeitparser und Kalibrierung (31.07.2026) |
+| 2004 | offen | Tabellenspalte | `PIX-MIG-6` | 7. Offene Epics & Features |
+| 2005 | abgeschlossen | Tabellenspalte | `PIX-MIG-7` | 7. Offene Epics & Features |
+| 2006 | offen | Tabellenspalte | `PIX-MIG-9` | 7. Offene Epics & Features |
+| 2007 | offen | Tabellenspalte | `ERK-VORFRAGE` | 7. Offene Epics & Features |
+| 2008 | offen | Tabellenspalte | `ERK-GATE-WIEDERHOLUNG` | 7. Offene Epics & Features |
+| 2009 | abgeschlossen | Tabellenspalte | `ERK-DOKU-NACHZUG` | 7. Offene Epics & Features |
+| 2010 | offen | Tabellenspalte | `PIX-STAPEL-RADFAKTOR` | 7. Offene Epics & Features |
+| 2011 | offen | Tabellenspalte | `PIX-AUFGABENNAMEN-GATE` | 7. Offene Epics & Features |
+| 2012 | offen | Tabellenspalte | `PIX-MIG-8` | 7. Offene Epics & Features |
+| 2013 | abgeschlossen | Tabellenspalte | `PIX-CLEAN` | 7. Offene Epics & Features |
+| 2014 | offen | Tabellenspalte | `PIX-MIG-NOVA` | 7. Offene Epics & Features |
+| 2015 | offen | Tabellenspalte | `PIX-GRAPH` | 7. Offene Epics & Features |
+| 2016 | offen | Tabellenspalte | `PIX-STATUS` | 7. Offene Epics & Features |
+| 2017 | offen | Tabellenspalte | `PIX-FALLBACK` | 7. Offene Epics & Features |
+| 2019 | offen | Tabellenspalte | `PIX-LLM-ROUTER` | 7. Offene Epics & Features |
+| 2021 | offen | Status-Zeile | `PIXIE-GRAPH-MERGE` | 7. Offene Epics & Features |
+| 2042 | offen | Status-Zeile | `META-KOGNITION` | 7. Offene Epics & Features |
+| 2071 | offen | Status-Zeile | `HERMES-SUBSTRAT` | 7. Offene Epics & Features |
+| 2105 | abgeschlossen | Tabellenspalte | `CLIENT-RENDER` | 7. Offene Epics & Features |
+| 2115 | offen | Tabellenspalte | `PENDING-RELEVANZ` | 7. Offene Epics & Features |
+| 2117 | offen | Tabellenspalte | `ROUTE-MISS1` | 7. Offene Epics & Features |
+| 2119 | offen | Tabellenspalte | `DELIVERY-VOICE` | 7. Offene Epics & Features |
+| 2121 | offen | Status-Zeile | `RECH-NO-PERSIST` | 7. Offene Epics & Features |
+| 2130 | offen | Status-Zeile | `AGENT-RUECKFRAGE-LOOP` | 7. Offene Epics & Features |
+| 2140 | offen | Status-Zeile | `NOTIZEN-VOR-TURN-BEZUG` | 7. Offene Epics & Features |
+| 2159 | offen | Tabellenspalte | `SHADOW-DEAD` | 7. Offene Epics & Features |
+| 2160 | offen | Tabellenspalte | `PIX-GPU-IDLE` | 7. Offene Epics & Features |
+| 2168 | offen | Tabellenspalte | `REFAC-ENRICHER-EVA` | 7. Offene Epics & Features |
+| 2169 | offen | Tabellenspalte | `REFAC-LOGGER-HIERARCHIE` | 7. Offene Epics & Features |
+| 2170 | offen | Tabellenspalte | `REFAC-SHUTDOWN-DISZIPLIN` | 7. Offene Epics & Features |
+| 2171 | offen | Tabellenspalte | `REFAC-SCHEMA-MIGRIEREN-FAILMODE` | 7. Offene Epics & Features |
+| 2172 | offen | Tabellenspalte | `SHUTDOWN-EVENT-ASYNC` | 7. Offene Epics & Features |
+| 2173 | offen | Tabellenspalte | `REFAC-PIPELINE-LOG-VOLLVERKABELUNG` | 7. Offene Epics & Features |
+| 2174 | offen | Tabellenspalte | `REFAC-UMLAUTE` | 7. Offene Epics & Features |
+| 2175 | offen | Tabellenspalte | `REFAC-DB-INDEX-DUPLIKAT` | 7. Offene Epics & Features |
+| 2176 | offen | Tabellenspalte | `REFAC-SEEDS-AUSLAGERN` | 7. Offene Epics & Features |
+| 2177 | offen | Tabellenspalte | `REFAC-AGENT-INIT-COMPOSE-MOUNT` | 7. Offene Epics & Features |
+| 2178 | offen | Tabellenspalte | `TIMELINE-IN-KERN` | 7. Offene Epics & Features |
+| 2179 | abgeschlossen | Tabellenspalte | `FAKTEN-IN-KERN` | 7. Offene Epics & Features |
+| 2180 | offen | Tabellenspalte | `NOTIZEN-INDIZES-NACHTRAG` | 7. Offene Epics & Features |
+| 2181 | offen | Tabellenspalte | `REFAC-EVENT-PAYLOAD-SEEDING` | 7. Offene Epics & Features |
+| 2183 | offen | Tabellenspalte | `REFAC-KZG-CODE-DUPLIKAT` | 7. Offene Epics & Features |
+| 2184 | offen | Tabellenspalte | `PLANNER-TIMELINE-INTENT-MISS` | 7. Offene Epics & Features |
+| 2185 | abgeschlossen | Tabellenspalte | `TEST-WORKER-SHUTDOWN-COROUTINE` | 7. Offene Epics & Features |
+| 2186 | offen | Tabellenspalte | `WORKER-SHUTDOWN-QUEUE-DRAIN` | 7. Offene Epics & Features |
+| 2187 | offen | Tabellenspalte | `NODE-TOKEN-AUSLASTUNG-FALLBACK` | 7. Offene Epics & Features |
+| 2188 | abgeschlossen | Tabellenspalte | `EMOTIONS-VECTOR-WERTE-DRIFT` | 7. Offene Epics & Features |
+| 2189 | offen | Tabellenspalte | `EI-KANON-FEHLT` | 7. Offene Epics & Features |
+| 2190 | offen | Tabellenspalte | `INTENT-TOTE-ZWEIGE` | 7. Offene Epics & Features |
+| 2191 | offen | Tabellenspalte | `SILENT-SKIP-EI-DEFAULTS` | 7. Offene Epics & Features |
+| 2192 | offen | Tabellenspalte | `DIRECTIVE-DATACLASS` | 7. Offene Epics & Features |
+| 2193 | offen | Tabellenspalte | `TURN-ROH-VOR-KRAFT1-ENTWERTET` | 7. Offene Epics & Features |
+| 2194 | abgeschlossen | Tabellenspalte | `ZIEL-DECAY-FORMEL-KUMULATIV` | 7. Offene Epics & Features |
+| 2195 | abgeschlossen | Tabellenspalte | `ZIEL-DECAY-TYP-FILTER` | 7. Offene Epics & Features |
+| 2196 | abgeschlossen | Tabellenspalte | `ZIEL-DECAY-DOKU-LUEGT` | 7. Offene Epics & Features |
+| 2197 | offen | Tabellenspalte | `PIXIE-ROUTING-DOPPELREGISTRY` | 7. Offene Epics & Features |
+| 2198 | offen | Tabellenspalte | `NOVA-ZUSAGE-OHNE-DECKUNG` | 7. Offene Epics & Features |
+| 2199 | offen | Tabellenspalte | `PIXIE-SELBSTTRIGGER-KEIN-TURN-ROH` | 7. Offene Epics & Features |
+| 2200 | offen | Tabellenspalte | `ENRICHER-REDIS-UNGESCHUETZT` | 7. Offene Epics & Features |
+| 2201 | offen | Tabellenspalte | `STATE-LADEZUSTAND` | 7. Offene Epics & Features |
+| 2202 | offen | Tabellenspalte | `WEB-EXTRAKTION-STILL-LEER` | 7. Offene Epics & Features |
+| 2203 | offen | Tabellenspalte | `EI-VEKTOR-LOG-GATE` | 7. Offene Epics & Features |
+| 2204 | offen | Tabellenspalte | `LOG-FREMDBIBLIOTHEK-DEBUG` | 7. Offene Epics & Features |
+| 2335 | offen | Zustand-Zeile | `PROJEKTSEITE-NACHZIEHEN` | PROJEKTSEITE-NACHZIEHEN — die Seite kommt modernisiert wiede |
+| 2363 | offen | Tabellenspalte | `SYK-B-1-THINKER-WEICHE` | Epic: Sykophanz eindämmen (Chat 126) |
+| 2364 | abgeschlossen | Tabellenspalte | `SYK-B0-ABSTAND` | Epic: Sykophanz eindämmen (Chat 126) |
+| 2365 | abgeschlossen | Tabellenspalte | `SYK-B0-BEZIEHUNG` | Epic: Sykophanz eindämmen (Chat 126) |
+| 2366 | offen | Tabellenspalte | `SYK-B0-FALLENBATTERIE` | Epic: Sykophanz eindämmen (Chat 126) |
+| 2367 | abgeschlossen | Tabellenspalte | `SYK-B1-URTEILSFELD` | Epic: Sykophanz eindämmen (Chat 126) |
+| 2368 | offen | Tabellenspalte | `SYK-B1-WERT-FALSCH` | Epic: Sykophanz eindämmen (Chat 126) |
+| 2369 | abgeschlossen | Tabellenspalte | `SYK-B4-VORZEICHENPRUEFUNG` | Epic: Sykophanz eindämmen (Chat 126) |
+| 2370 | abgeschlossen | Tabellenspalte | `SYK-B4-STUFE-2-OHNE-FILTER` | Epic: Sykophanz eindämmen (Chat 126) |
+| 2371 | abgeschlossen | Tabellenspalte | `SYK-B4-WERT-BENENNEN` | Epic: Sykophanz eindämmen (Chat 126) |
+| 2372 | offen | Tabellenspalte | `SYK-B8-SCHREIBPFAD` | Epic: Sykophanz eindämmen (Chat 126) |
+| 2373 | offen | Tabellenspalte | `SYK-B3-VORZEICHENREGEL` | Epic: Sykophanz eindämmen (Chat 126) |
+| 2374 | offen | Tabellenspalte | `SYK-B9-REGISTER` | Epic: Sykophanz eindämmen (Chat 126) |
+| 2375 | offen | Tabellenspalte | `SYK-B2-IMPULS-GRENZE` | Epic: Sykophanz eindämmen (Chat 126) |
+| 2376 | offen | Tabellenspalte | `SYK-B5-ESKALATION` | Epic: Sykophanz eindämmen (Chat 126) |
+| 2377 | offen | Tabellenspalte | `SYK-B6-MOTIVENTLASTUNG` | Epic: Sykophanz eindämmen (Chat 126) |
+| 2378 | offen | Tabellenspalte | `SYK-B7-ZWEITABLEITUNG` | Epic: Sykophanz eindämmen (Chat 126) |
+| 2386 | offen | Tabellenspalte | `SYK-M-TRIBUNAL` | Epic: Sykophanz eindämmen (Chat 126) |
+| 2387 | offen | Tabellenspalte | `SYK-M-VERFASSER` | Epic: Sykophanz eindämmen (Chat 126) |
+| 2388 | offen | Tabellenspalte | `SYK-M-RAHMUNG` | Epic: Sykophanz eindämmen (Chat 126) |
+| 2407 | offen | Tabellenspalte | `PIX-AGENTEN-FEHLEN` | Epic: Pixie — der Abfluss steht (04.08.2026) |
+| 2408 | offen | Tabellenspalte | `PIX-RETRY-KREIS` | Epic: Pixie — der Abfluss steht (04.08.2026) |
+| 2409 | offen | Tabellenspalte | `PIX-SERIELLER-PLATZ` | Epic: Pixie — der Abfluss steht (04.08.2026) |
+| 2410 | offen | Tabellenspalte | `PIX-PRIORITAET-STILL` | Epic: Pixie — der Abfluss steht (04.08.2026) |
+| 2423 | abgeschlossen | Tabellenspalte | `WIS-1-MOUNT` | Epic: Wissensspeicher (04.08.2026) |
+| 2424 | abgeschlossen | Tabellenspalte | `WIS-2-TABELLE` | Epic: Wissensspeicher (04.08.2026) |
+| 2425 | abgeschlossen | Tabellenspalte | `WIS-3-DATEIEN` | Epic: Wissensspeicher (04.08.2026) |
+| 2426 | offen | Tabellenspalte | `WIS-4-STAPEL-SALIENZ` | Epic: Wissensspeicher (04.08.2026) |
+| 2427 | offen | Tabellenspalte | `WIS-5-VERFALL` | Epic: Wissensspeicher (04.08.2026) |
+| 2428 | offen | Tabellenspalte | `WIS-6-FORTSETZEN` | Epic: Wissensspeicher (04.08.2026) |
+| 2429 | abgeschlossen | Tabellenspalte | `WIS-PRUEFUNG-F-WISSEN-1` | Epic: Wissensspeicher (04.08.2026) |
+| 2430 | abgeschlossen | Tabellenspalte | `WIS-7-ENRICHER` | Epic: Wissensspeicher (04.08.2026) |
+| 2431 | offen | Tabellenspalte | `WIS-8-STUFE-2` | Epic: Wissensspeicher (04.08.2026) |
+| 2432 | offen | Tabellenspalte | `WIS-SCHWELLE-MESSEN` | Epic: Wissensspeicher (04.08.2026) |
+| 2452 | offen | Tabellenspalte | `WIS-GATE-MESSUNG` | Epic: Wissensspeicher (04.08.2026) |
+| 2453 | offen | Tabellenspalte | `PIX-WARTESCHLANGE-AM-MODELL` | Epic: Wissensspeicher (04.08.2026) |
+| 2454 | offen | Tabellenspalte | `WIS-KONTEXT-NEU-DIMENSIONIEREN` | Epic: Wissensspeicher (04.08.2026) |
+| 2455 | offen | Tabellenspalte | `WIS-AGENTEN-NACHZIEHEN` | Epic: Wissensspeicher (04.08.2026) |
+| 2472 | offen | Tabellenspalte | `KLA-K5-FAKTENPFAD` | Epic: Klärung — Abweichung und Lücke (04.08.2026) |
+| 2473 | offen | Tabellenspalte | `KLA-K1-ERWARTUNGSSCHEMA` | Epic: Klärung — Abweichung und Lücke (04.08.2026) |
+| 2474 | offen | Tabellenspalte | `KLA-K2-KLAERUNGSTOR` | Epic: Klärung — Abweichung und Lücke (04.08.2026) |
+| 2475 | offen | Tabellenspalte | `KLA-K3-SALIENZ` | Epic: Klärung — Abweichung und Lücke (04.08.2026) |
+| 2476 | offen | Tabellenspalte | `KLA-K4-ZWISCHENSCHRITT` | Epic: Klärung — Abweichung und Lücke (04.08.2026) |
+| 2694 | abgeschlossen | Marke | `KZG-DEDUP` | Epic: Chat 62 — Folgearbeiten aus dem Paar-Schema |
+| 2700 | abgeschlossen | Marke | `KZG-KERN-BLIND` | Epic: Chat 62 — Folgearbeiten aus dem Paar-Schema |
+| 2706 | offen | Zustand-Zeile | `ROUTE-CHAR-NOTIZ` | Epic: Chat 62 — Folgearbeiten aus dem Paar-Schema |
+| 2718 | offen | Zustand-Zeile | `KZG-L` | Epic: KZG-Liberalisierung + LZG-Destillation (Chat 63) |
+| 3308 | offen | Zustand-Zeile | `GV-P` | Epic: Chat 72 — Folgearbeiten aus Dreischicht-Integration |
+| 3421 | offen | Status-Zeile | `PROMO-CLUSTER-EI-UPDATE` | Epic: Memory-Promotion-Korrektur (Chat 75) |
+| 3443 | offen | Status-Zeile | `PROMO-CLUSTER-TIE-DETERMINISM` | Epic: Memory-Promotion-Korrektur (Chat 75) |
+| 3452 | offen | Status-Zeile | `PROMO-DESTILL-DEAD` | Epic: Memory-Promotion-Korrektur (Chat 75) |
+| 3460 | offen | Status-Zeile | `PROMO-INTENTIONEN-FORMAT-DRIFT` | Epic: Memory-Promotion-Korrektur (Chat 75) |
+| 3695 | offen | Zustand-Zeile | `REDUCER-CONFIG-DEAD` | Tech-Debt: Reducer-Umbau-Nachzügler (Chat 75) |
+| 3703 | offen | Zustand-Zeile | `LOGGER-NAMESPACE` | Tech-Debt: Reducer-Umbau-Nachzügler (Chat 75) |
+| 3711 | offen | Zustand-Zeile | `SESSION-SUMMARY-INACTIVE` | Tech-Debt: Reducer-Umbau-Nachzügler (Chat 75) |
+| 3720 | offen | Status-Zeile | `PIX-CLEAN` | Tech-Debt: Reducer-Umbau-Nachzügler (Chat 75) |
+| 3747 | offen | Status-Zeile | `INIT-SQL-VERALTET` | Tech-Debt: Reducer-Umbau-Nachzügler (Chat 75) |
+| 3761 | offen | Status-Zeile | `LZG-HAEUFIGKEIT-AMBIVALENT` | Tech-Debt: Reducer-Umbau-Nachzügler (Chat 75) |
+| 3781 | offen | Status-Zeile | `THINKER-TOOL-FORMAT` | Designdiskussion: THINKER-TOOL-FORMAT (Chat 75) |
+| 3796 | offen | Status-Zeile | `THINK-TRANSITION-INFO` | Sprint: THINK-TRANSITION-INFO — Thinker bekommt Verarbeitung |
+| 3820 | abgeschlossen | Status-Zeile | `NOTIZEN-VOR-TURN-BEZUG` | Sprint: NOTIZEN-VOR-TURN-BEZUG — Inhalts-Auflösung im Classi |
+| 3890 | offen | Status-Zeile | `MEMORY-SALIENZ-VERERBUNG` | Konzept: MEMORY-SALIENZ-VERERBUNG — Salienz auf semantischen |
+| 3920 | offen | Status-Zeile | `ENRICHER-AKTE` | Konzept: ENRICHER-AKTE — Strukturierte Memory-Context-Akte a |
+| 4075 | abgeschlossen | Status-Zeile | `MIGRATION-PIX-CLEANUP` | Sprint: MIGRATION-PIX-CLEANUP — Pixie-Migration nach Multi-C |
+| 4100 | abgeschlossen | Status-Zeile | `KZG-CLEANUP` | Sprint: KZG-CLEANUP — Bereinigung fehlerhafter KZG-Einträge  |
+| 4127 | offen | Status-Zeile | `CHAR-HASH-TEST-LEICHEN` | Cleanup: CHAR-HASH-TEST-LEICHEN — Test-User in `charakter_ha |
+| 4143 | offen | Status-Zeile | `LZG-DOKU-DRIFT` | Cleanup: LZG-DOKU-DRIFT — `novaberg-mem-lzg.md` reflektiert  |
+| 4163 | offen | Zustand-Zeile | `TIMELINE-PAIR-MISSING` | Bug: TIMELINE-PAIR-MISSING — Timeline-Tabelle ohne `characte |
+| 4191 | offen | Zustand-Zeile | `NOTIZEN-PAIR-MISSING` | Bug: NOTIZEN-PAIR-MISSING — Notizen-Tabelle ohne `character_ |
+| 4207 | offen | Zustand-Zeile | `FAKTEN-PAIR-IGNORED` | Bug: FAKTEN-PAIR-IGNORED — Fakten-Repository ignoriert `char |
+| 4223 | abgeschlossen | Zustand-Zeile | `ZIELE-PAIR-MISSING` | Bug: ZIELE-PAIR-MISSING — Ziele-Tabelle ohne `character_id`  |
+| 4239 | offen | Zustand-Zeile | `NOTIZEN-KONTEXT-REKONSTRUKTION` | Bug: NOTIZEN-KONTEXT-REKONSTRUKTION — Mehrschritt-Rekonstruk |
+| 4264 | offen | Zustand-Zeile | `NOTIZEN-CONTAINER-WECHSEL` | Bug: NOTIZEN-CONTAINER-WECHSEL — Notiz↔Liste-Wechsel verweig |
+| 4286 | offen | Zustand-Zeile | `NOTIZEN-SKILL-MANIFEST` | Bug: NOTIZEN-SKILL-MANIFEST — Nova kennt eigene Fähigkeiten  |
+| 4304 | offen | Zustand-Zeile | `NOTIZEN-UPDATE-TARGET-LEER` | Bug: NOTIZEN-UPDATE-TARGET-LEER — Bezugs-Pronomen für UPDATE |
+| 4401 | offen | Status-Zeile | `TRIB-PERSON-DRIFT` | Bug: TRIB-PERSON-DRIFT — Tribunal-Agenten kennen Novas Ident |
+| 4445 | offen | Status-Zeile | `REFAC-HG-CHAR-HASH-LOAD` | Refactor: REFAC-HG-CHAR-HASH-LOAD — Char-Hash-Tiebreaker im  |
+| 4484 | offen | Status-Zeile | `SPRACH-STIL-DEFENSIV-STUMM` | Bug: SPRACH-STIL-DEFENSIV-STUMM — `_sprach_stil_erkennen` br |
+| 4508 | offen | Status-Zeile | `EI-CALC-ROLLE-RENAME` | Refactor: EI-CALC-ROLLE-RENAME — `ei_calc_rolle` semantisch  |
+| 4531 | offen | Status-Zeile | `AUDIT-PIXIE-TURN-ID` | Bug: AUDIT-PIXIE-TURN-ID — Pixie-Pfad-turn_id-Auflösung unge |
+| 4559 | offen | Status-Zeile | `EI-CALC-ROLLE-DEFAULT-ASYMMETRIE` | Bug: EI-CALC-ROLLE-DEFAULT-ASYMMETRIE — Inkonsistente Defaul |
+| 4598 | offen | Status-Zeile | `DOPPEL-SESSION-LOAD` | Performance: DOPPEL-SESSION-LOAD — Session-Turns werden im H |
+| 4631 | offen | Status-Zeile | `REDUCER-LOGGER-NAME-KONVENTION` | Refactor: REDUCER-LOGGER-NAME-KONVENTION — Logger-Namen weic |
+| 4658 | offen | Status-Zeile | `REDUCER-CONFIG-DEAD-KONSTANTEN` | Refactor: REDUCER-CONFIG-DEAD-KONSTANTEN — Tote Konstanten i |
+| 4686 | offen | Status-Zeile | `SESSION-SUMMARY-PFAD-INAKTIV` | Audit: SESSION-SUMMARY-PFAD-INAKTIV — Memory-Quelle "summary |
+| 4720 | offen | Status-Zeile | `KZG-VERDICHTER-KONTEXT-VERLUST` | Bug: KZG-VERDICHTER-KONTEXT-VERLUST — Verdichter produziert  |
+| 4748 | offen | Status-Zeile | `SALIENZ-VERDICHTUNG-MEHRFACH` | Bug: SALIENZ-VERDICHTUNG-MEHRFACH — Salienz- und Verdichtung |
+| 4771 | offen | Status-Zeile | `WORKER-TIMEOUT-MUSTER-DIVERGENZ` | Refactor: WORKER-TIMEOUT-MUSTER-DIVERGENZ — `num_ctx` (Per-C |
+| 4851 | offen | Status-Zeile | `AUDIT-1-BEIFANG-PROMOTION` | Sammelposten: AUDIT-1-BEIFANG-PROMOTION — Tote Pfade und Beo |
+| 4861 | offen | Tabellenspalte | `EMOTIONS-VEKTOR-LEER` | Sammelposten: AUDIT-1-BEIFANG-PROMOTION — Tote Pfade und Beo |
+| 4862 | offen | Tabellenspalte | `KZG-ERSTELLT-AM-PARSE-HÄRTE` | Sammelposten: AUDIT-1-BEIFANG-PROMOTION — Tote Pfade und Beo |
+| 4863 | abgeschlossen | Tabellenspalte | `GEDACHTNISTYP-DEFAULT-BEFÜLLT` | Sammelposten: AUDIT-1-BEIFANG-PROMOTION — Tote Pfade und Beo |
+| 4864 | offen | Tabellenspalte | `TRIGGER-2-RECACHE-KONZEPT-LÜCKE` | Sammelposten: AUDIT-1-BEIFANG-PROMOTION — Tote Pfade und Beo |
+| 4865 | offen | Tabellenspalte | `FAKTEN-TABELLE-ENTITY-MERGE` | Sammelposten: AUDIT-1-BEIFANG-PROMOTION — Tote Pfade und Beo |
+| 4866 | offen | Tabellenspalte | `TIMELINE-FK-DOKU-DRIFT` | Sammelposten: AUDIT-1-BEIFANG-PROMOTION — Tote Pfade und Beo |
+| 4867 | offen | Tabellenspalte | `REFAC-MAGNETE-AUDIT` | Sammelposten: AUDIT-1-BEIFANG-PROMOTION — Tote Pfade und Beo |
+| 4873 | offen | Status-Zeile | `AUDIT-DOKU-DRIFT-MS` | Bug: AUDIT-DOKU-DRIFT-MS — Drift-Befunde aus Microservice-Vo |
+| 4901 | offen | Zustand-Zeile | `TOK-DRIFT-SALIENCE` | Bug: TOK-DRIFT-SALIENCE — Token-Akkumulator zählt fehlgeschl |
+| 4935 | abgeschlossen | Zustand-Zeile | `QUEUE-SCHEMA-STALE` | Cleanup: QUEUE-SCHEMA-STALE — `queue:nova` mit toten Aufträg |
+| 4945 | offen | Zustand-Zeile | `SCHED-STALE-SCHEDULE` | Refactor: SCHED-STALE-SCHEDULE — Startup räumt `pixie:schedu |
+| 4955 | offen | Zustand-Zeile | `SHADOW-PAYLOAD-FIELD-MISMATCH` | Bug: SHADOW-PAYLOAD-FIELD-MISMATCH — Dispatch liest Felder,  |
+| 4971 | offen | Zustand-Zeile | `WIEDERVORLAGE-MULTI-USER` | Refactor: WIEDERVORLAGE-MULTI-USER — Periodische Aufgaben pr |
+| 4981 | offen | Zustand-Zeile | `SYNAPSEN-LIVE-VERIFY` | Sprint: SYNAPSEN-LIVE-VERIFY — Entitäts- und Timeline-Kanten |
+| 4993 | offen | Zustand-Zeile | `SYNAPSEN-DUAL-LZG` | Sprint: SYNAPSEN-DUAL-LZG — Lesepfad auf `lzg_knoten`/`lzg_k |
+| 5005 | offen | Zustand-Zeile | `KZG-GEWICHT-ABSOLUT-CEILING` | Befund: KZG-GEWICHT-ABSOLUT-CEILING — sin^0.5-Dämpfung klemm |
+| 5064 | abgeschlossen | Tabellenspalte | `P5-LIVE-ABNAHME` | Lesepfad-Folgepunkte (Chat 99) |
+| 5065 | offen | Tabellenspalte | `KANTEN-RICHTUNG-UNDOKUMENTIERT` | Lesepfad-Folgepunkte (Chat 99) |
+| 5066 | offen | Tabellenspalte | `SPREADING-RELEVANZ-BEOBACHTEN` | Lesepfad-Folgepunkte (Chat 99) |
+| 5067 | offen | Tabellenspalte | `LZG-RESONANZ-DATETIME` | Lesepfad-Folgepunkte (Chat 99) |
+| 5068 | abgeschlossen | Tabellenspalte | `LZG-RESONANZ-STATE-DEKL` | Lesepfad-Folgepunkte (Chat 99) |
+| 5069 | offen | Tabellenspalte | `LZG-RESONANZ-ENTITAET-NAMEN` | Lesepfad-Folgepunkte (Chat 99) |
+| 5070 | offen | Tabellenspalte | `LIB-VECTORS-MIGRATION` | Lesepfad-Folgepunkte (Chat 99) |
+| 5071 | offen | Tabellenspalte | `B3-API-KEY-SEMANTIK` | Lesepfad-Folgepunkte (Chat 99) |
+| 5084 | offen | Tabellenspalte | `ROUTE-MISS1` | 8. Offene Bugs |
+| 5086 | offen | Tabellenspalte | `CRUD-DESTILL-SUBTRAKT` | 8. Offene Bugs |
+| 5087 | offen | Tabellenspalte | `CRUD-REACTIVATE-STAMP` | 8. Offene Bugs |
+| 5088 | offen | Tabellenspalte | `EMOTE-LOCK` | 8. Offene Bugs |
+| 5089 | offen | Tabellenspalte | `TOPOS-LOCK` | 8. Offene Bugs |
+| 5090 | offen | Tabellenspalte | `ABER-SAG-MAL` | 8. Offene Bugs |
+| 5091 | offen | Tabellenspalte | `REDUCER-MULTILINE` | 8. Offene Bugs |
+| 5092 | offen | Tabellenspalte | `PATH1-LATENZ` | 8. Offene Bugs |
+| 5093 | abgeschlossen | Tabellenspalte | `ROUTE-CHAR-NOTIZ` | 8. Offene Bugs |
+| 5094 | offen | Tabellenspalte | `ENRICHER-DUP` | 8. Offene Bugs |
+| 5095 | offen | Tabellenspalte | `RESP-DEAD` | 8. Offene Bugs |
+| 5096 | offen | Tabellenspalte | `PIXIE-GHOST` | 8. Offene Bugs |
+| 5097 | offen | Tabellenspalte | `PIXIE-AGENT-MISSING` | 8. Offene Bugs |
+| 5098 | offen | Tabellenspalte | `RECH-SPIRAL` | 8. Offene Bugs |
+| 5099 | offen | Tabellenspalte | `RECH-CHARAKTER` | 8. Offene Bugs |
+| 5100 | offen | Tabellenspalte | `DELIVERY-DEDUP` | 8. Offene Bugs |
+| 5101 | offen | Tabellenspalte | `SPRACH-STIL-DEFENSIV-STUMM` | 8. Offene Bugs |
+| 5102 | offen | Tabellenspalte | `AUDIT-PIXIE-TURN-ID` | 8. Offene Bugs |
+| 5103 | offen | Tabellenspalte | `EI-CALC-ROLLE-DEFAULT-ASYMMETRIE` | 8. Offene Bugs |
+| 5104 | offen | Tabellenspalte | `TOK-DRIFT-SALIENCE` | 8. Offene Bugs |
+| 5105 | abgeschlossen | Tabellenspalte | `TEST-RUNNER-FEHLT-CONTAINER` | 8. Offene Bugs |
+| 5145 | offen | Zustand-Zeile | `BEZEICHNER-WAR-AKTIV` | Refactor: BEZEICHNER-WAR-AKTIV — was_active statt war_aktiv  |
+| 5156 | offen | Zustand-Zeile | `CONFIG-DECAY-RATE-KOMMENTAR-DRIFT` | Fix: CONFIG-DECAY-RATE-KOMMENTAR-DRIFT — falscher Kommentar  |
+| 5169 | offen | Zustand-Zeile | `PATTERN-DOMAIN-LANGUAGE-RECONCILE` | Frage: PATTERN-DOMAIN-LANGUAGE-RECONCILE — deutsche Domaenen |
+| 5181 | abgeschlossen | Marke | `SYNAPSEN-DECAY-SCHEDULE-LIVE` | Frage: SYNAPSEN-DECAY-SCHEDULE-LIVE — Heartbeat legt Schedul |
+| 5195 | abgeschlossen | Marke | `PIXIE-DECAY-KEIN-AGENT` | Bug: PIXIE-DECAY-KEIN-AGENT — Router kennt periodische Aufga |
+| 5201 | offen | Zustand-Zeile | `HALBREAKTIVIERUNG-LIVE` | Frage: HALBREAKTIVIERUNG-LIVE — erster inaktiver Match feuer |
+| 5214 | offen | Zustand-Zeile | `SYNAPSEN-REAKTIV-SCHWELLE` | Frage: SYNAPSEN-REAKTIV-SCHWELLE — eigene Match-Schwelle fue |
+| 5224 | offen | Zustand-Zeile | `CHARHASH-GEWICHT-ABSOLUT-LIVE` | Beobachtung: CHARHASH-GEWICHT-ABSOLUT-LIVE — erste volle Liv |
+| 5230 | offen | Zustand-Zeile | `CHARHASH-PROMPT-DUPLIKAT` | Bug: CHARHASH-PROMPT-DUPLIKAT — Kern-Persönlichkeit 5× wortg |
+| 5238 | offen | Zustand-Zeile | `DESTILLAT-PERSPEKTIVE-VS-SUBJEKT` | Bug: DESTILLAT-PERSPEKTIVE-VS-SUBJEKT — Charakter-Destillati |
+| 5261 | offen | Zustand-Zeile | `HAEUFIGKEIT-AUF-KNOTEN` | Notiz: HAEUFIGKEIT-AUF-KNOTEN — haeufigkeit auf lzg_knoten m |
+| 5267 | offen | Zustand-Zeile | `CHARHASH-DOKU-DRIFT` | Doku: CHARHASH-DOKU-DRIFT — Hash-Doku beschreibt LZG-Quelle  |
+| 5273 | offen | Zustand-Zeile | `REFERENZ-AUFLOESUNG-VOR-RETRIEVAL` | Bug: REFERENZ-AUFLOESUNG-VOR-RETRIEVAL — anaphorische Verwei |
+| 5279 | offen | Zustand-Zeile | `CHARAKTER-RESONANZ` | Epic: CHARAKTER-RESONANZ — Novas Charakter aus dem Umgang (C |
+| 5285 | offen | Zustand-Zeile | `GESPRAECH-ARCHIV-VERWAIST` | Aufräumen: GESPRAECH-ARCHIV-VERWAIST — tote Tabelle ohne Wri |
+| 5293 | offen | Zustand-Zeile | `ASSISTENT-NAME-LAUFZEIT` | Feature: ASSISTENT-NAME-LAUFZEIT — Assistenten-Name pro Paar |
+| 5299 | offen | Zustand-Zeile | `ASSISTENT-GESCHLECHT-PRONOMEN` | Feature: ASSISTENT-GESCHLECHT-PRONOMEN — Pronomen bei Namens |
+| 5309 | offen | Zustand-Zeile | `PIPELINE-LOG-BACKFILL-PAAR` | Nacharbeit: PIPELINE-LOG-BACKFILL-PAAR — Alt-Forensik ohne P |
+| 5315 | offen | Zustand-Zeile | `KZG-QUELLE-IST-USER-ID` | Refactor: KZG-QUELLE-IST-USER-ID — `quelle` trägt `user_id`  |
+| 5321 | offen | Zustand-Zeile | `PIPELINE-LOG-ART-DOKU-DRIFT` | Doku: PIPELINE-LOG-ART-DOKU-DRIFT — Forensik-Queries der Syn |
+| 5342 | offen | Zustand-Zeile | `DELEGATION-STATE-UNDEKLARIERT` | Landmine: DELEGATION-STATE-UNDEKLARIERT — Sperrvermerk für d |
+| 5356 | offen | Zustand-Zeile | `PLANNER-AKTIV-RELIKT` | Aufräumen: PLANNER-AKTIV-RELIKT — Stage-Anzeige liest nie ge |
+| 5370 | offen | Zustand-Zeile | `WEB-CONTEXT-ALTPFAD` | Aufräumen: WEB-CONTEXT-ALTPFAD — toter [WEB]-Block, Nachfolg |
+| 5384 | offen | Zustand-Zeile | `BUILDER-CREATE-INITIAL-STATE-TOT` | Aufräumen: BUILDER-CREATE-INITIAL-STATE-TOT — aufruferloser  |
+| 5398 | offen | Zustand-Zeile | `LESSON-INDEX-LUECKE` | Doku: LESSON-INDEX-LUECKE — zwölf ältere lesson_l-Dateien fe |
+| 5409 | offen | Zustand-Zeile | `DOKU-DUPLIKATE-CHAT80` | Doku: DOKU-DUPLIKATE-CHAT80 — 8 Bezeichner stehen in bugs.md |
+| 5427 | offen | Zustand-Zeile | `LOG-TUERKLINGEL` | Feature: LOG-TUERKLINGEL — Warn-/Fehler-Lampen mit Sitzungsz |
+| 5464 | offen | Zustand-Zeile | `ENTITAET-EMBED-DREIFACH` | Bug: ENTITAET-EMBED-DREIFACH — Entitäts-Suchpfad embeddet an |
+| 5478 | offen | Zustand-Zeile | `DESTILLAT-ASYMMETRIE` | Konzept: DESTILLAT-ASYMMETRIE — Prompts und Knoten leben in  |
+| 5488 | offen | Zustand-Zeile | `GESPRAECH-ARCHIV-LEER` | Feature: GESPRAECH-ARCHIV-LEER — kein Writer, Rohgespräche v |
+| 5496 | offen | Zustand-Zeile | `EMBED-DIMENSIONSCHECK-FEHLT` | Fix: EMBED-DIMENSIONSCHECK-FEHLT — kein harter Dimensions-Ch |
+| 5502 | offen | Zustand-Zeile | `PIPELINE-LOG-MERGE-BLIND` | Nacharbeit: PIPELINE-LOG-MERGE-BLIND — Reinforcement loggt d |
+| 5508 | offen | Zustand-Zeile | `DELEG-VEKTOR-EINGEFROREN` | Konzept: DELEG-VEKTOR-EINGEFROREN — Akten-Vektor beschreibt  |
+| 5514 | offen | Zustand-Zeile | `LZG-MIGRATION-REVIEW-NICHT-IN-INIT` | Fix: LZG-MIGRATION-REVIEW-NICHT-IN-INIT — Live-Tabelle ohne  |
+| 5520 | offen | Zustand-Zeile | `IDX-TIMELINE-TYPE-NICHT-IN-INIT` | Fix: IDX-TIMELINE-TYPE-NICHT-IN-INIT — Live-Index ohne Defin |
+| 5526 | offen | Zustand-Zeile | `DELEG-SEITEN-VALENZ-TOT` | Aufräumen: DELEG-SEITEN-VALENZ-TOT — persistiert, nie gelese |
+| 5536 | offen | Zustand-Zeile | `REDUCER-DOKU-DRIFT` | Doku: REDUCER-DOKU-DRIFT — drei Drifts aus dem Reducer-Audit |
+| 5542 | offen | Zustand-Zeile | `DOKU-NOTIZEN-INIT-SQL` | Doku: DOKU-NOTIZEN-INIT-SQL — Verweis auf nicht existierende |
+| 5548 | offen | Zustand-Zeile | `KZG-SALIENZ-GRENZWERT-UNKLAR` | Frage: KZG-SALIENZ-GRENZWERT-UNKLAR — soll jede Recherche in |
+| 5583 | offen | Zustand-Zeile | `PROMOTION-NOVA-GUARD-TOT` | Aufräumen: PROMOTION-NOVA-GUARD-TOT — Nova-Guard in der Clus |
+| 5595 | offen | Zustand-Zeile | `CHARHASH-KZG-SCAN-UNSORTIERT` | Bug: CHARHASH-KZG-SCAN-UNSORTIERT — zwei von fünf Profilen d |
+| 5607 | abgeschlossen | Zustand-Zeile | `HASH-DIRTY-KEY-OHNE-PAAR` | Aufräumen: HASH-DIRTY-KEY-OHNE-PAAR — `hash_dirty:meister` o |
+| 5617 | offen | Zustand-Zeile | `AUDIT-HASH-DIRTY-SICHTBARKEIT` | Audit: AUDIT-HASH-DIRTY-SICHTBARKEIT — KEYS zeigt das Flag,  |
+| 5629 | offen | Zustand-Zeile | `TURN-ROH-VOR-KRAFT1-ENTWERTET` | Landmine: TURN-ROH-VOR-KRAFT1-ENTWERTET — Sperrvermerk für d |
+| 5649 | offen | Zustand-Zeile | `PERMISSION-OHNE-BODEN` | Befund: PERMISSION-OHNE-BODEN — „Brudi ist read-only" ist Ko |
+| 5663 | offen | Zustand-Zeile | `PROMO-KZG-KEY-ALS-TURN-ID` | Bug: PROMO-KZG-KEY-ALS-TURN-ID — `pipeline_log.turn_id` träg |
+| 5677 | offen | Zustand-Zeile | `ALLOWLIST-DRIFT` | Aufräumen: ALLOWLIST-DRIFT — die Claude-Code-Allowlist wächs |
+| 5689 | offen | Zustand-Zeile | `KZG-VERSTAERKUNG-KEYS-SCAN` | Performance: KZG-VERSTAERKUNG-KEYS-SCAN — Vollscan der Paar- |
+| 5701 | offen | Zustand-Zeile | `KZG-TURN-ID-UNBEKANNT` | Nacharbeit: KZG-TURN-ID-UNBEKANNT — Platzhalter statt Turn-B |
+| 5715 | offen | Zustand-Zeile | `TURN-ROH-HG-SKIP` | Befund: TURN-ROH-HG-SKIP — der übersprungene Rohturn pro Tur |
+| 5731 | offen | Zustand-Zeile | `KZG-SALIENZ-BOOST-OHNE-DECKEL` | Bug: KZG-SALIENZ-BOOST-OHNE-DECKEL — die thematische Verstär |
+| 5759 | offen | Zustand-Zeile | `DESTILLAT-SUBJEKT-SCHABLONE` | Bug: DESTILLAT-SUBJEKT-SCHABLONE — der Verdichter erfindet „ |
+| 5786 | offen | Zustand-Zeile | `PIXIE-TURN-ID-LEER` | Bug: PIXIE-TURN-ID-LEER — Pixie-initiierter CharacterGraph-L |
+| 5814 | offen | Zustand-Zeile | `KZG-SALIENZ-SKALENBRUCH` | Bug: KZG-SALIENZ-SKALENBRUCH — die Dämpfung ist auf CAP 10.0 |
+| 5861 | offen | Zustand-Zeile | `KZG-TTL-UNSTERBLICH` | Limitation: KZG-TTL-UNSTERBLICH — die Auffrischung kann nur  |
+| 5883 | offen | Zustand-Zeile | `KZG-KEIN-DECAY` | Bug: KZG-KEIN-DECAY — die Salienz kennt keine Abwärtsbewegun |
+| 5921 | offen | Zustand-Zeile | `KZG-SALIENZ-KONSUMENTEN-DISSENS` | Bug: KZG-SALIENZ-KONSUMENTEN-DISSENS — drei Leser, drei Anna |
+| 5953 | offen | Zustand-Zeile | `KZG-SALIENZ-NEUBAU` | Sprint: KZG-SALIENZ-NEUBAU — die KZG-Salienz bekommt die Bau |
+| 5977 | offen | Zustand-Zeile | `PROMOTION-ENTFERNT-KZG-NICHT` | Bug: PROMOTION-ENTFERNT-KZG-NICHT — der promotete Eintrag bl |
+| 6004 | offen | Zustand-Zeile | `ROADMAP-GLIEDERUNGSBRUCH` | Doku: ROADMAP-GLIEDERUNGSBRUCH — ab Chat 98 wechselt die Chr |
+| 6020 | offen | Zustand-Zeile | `DB-SELECT-SCHREIBT-OHNE-COMMIT` | Landmine: DB-SELECT-SCHREIBT-OHNE-COMMIT — `select()` führt  |
+| 6036 | abgeschlossen | Marke | `QUEUE-VERFALL-KONZEPT` | QUEUE-VERFALL-KONZEPT — der Stapel und die Queue brauchen ei |
+| 6072 | offen | Zustand-Zeile | `IMPULS-HANDLUNG-OHNE-HERKUNFT` | IMPULS-HANDLUNG-OHNE-HERKUNFT — was sie selbst angelegt hat, |
+| 6105 | offen | Zustand-Zeile | `PUB-ROLLENNAMEN-IM-BESTAND` | Audit: PUB-ROLLENNAMEN-IM-BESTAND — die Doku nennt die inter |
+| 6141 | offen | Zustand-Zeile | `REGISTER-SPIEGEL-DURCHGANG` | Audit: REGISTER-SPIEGEL-DURCHGANG — wo spiegelt sonst eine A |
+| 6161 | offen | Zustand-Zeile | `GV-RELEVANZ-UNNORMIERT` | Landmine: GV-RELEVANZ-UNNORMIERT — die Relevanz kann über 1. |

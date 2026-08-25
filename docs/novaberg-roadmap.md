@@ -1,6 +1,6 @@
 # Novaberg — Roadmap (Projektchronik)
 
-**Stand:** 25. August 2026, 14:10 UTC
+**Stand:** 25. August 2026, 16:30 UTC
 **Pfad:** novaberg/docs/novaberg-roadmap.md
 **Single Source of Truth für abgeschlossene Arbeit.**
 **Offene Punkte → novaberg-backlog.md**
@@ -18,6 +18,47 @@
 ## Hinweis für Bearbeiter dieser Datei
 
 Die Kopfzeile stand bis Chat 109 auf „Chat 93, 21. Mai 2026" — 15 Chats hinter dem Inhalt. **Sie ist danach erneut zurückgefallen:** von Chat 110 bis 114 blieb sie auf „Chat 109" stehen, während der Inhalt weiterwuchs, und wurde in Chat 115 nachgezogen. Wer hier etwas ergänzt, zieht die Kopfzeile mit — sie driftet zuverlässig. Achtung beim Nachschlagen: Nur bis Chat 97 trägt jeder Chat eine eigene `## Chat NNN`-Überschrift; die Chats 98–108 stehen als `###`-Abschnitte unter dem Chat-97-Block, benannt nach Sprint statt nach Chat.
+
+---
+
+## 25.08.2026, 16:30 UTC — Vier Etappen, 204 Einträge: das Backlog trägt seinen Zustand vollständig
+
+**Null.** Von 420 Einträgen mit Kennung trägt heute jeder eine lesbare Zustandsangabe — vorher waren es 149.
+
+| | Beginn | Ende |
+|---|---|---|
+| ohne lesbaren Zustand | 271 | **0** |
+| offen | 107 | 362 |
+| abgeschlossen | 42 | 58 |
+
+**Der große Sprung bei „offen" ist kein Zuwachs an Arbeit, sondern das Ende einer Unschärfe.** Die 271 galten faktisch als offen und waren es nicht nachweisbar. Jetzt steht bei jedem, woran das erkennbar ist — und bei 96 von ihnen steht ausdrücklich, dass es **nicht** am Code erkennbar ist, sondern eine Messung braucht.
+
+### Was die Prüfung an Erledigtem fand
+
+`_INTENTION_AUFGABE_MAP` steht nur noch einmal · `lzg_knoten.gedaechtnistyp` trägt echte Werte (1542 `kurz`, 1493 `lang`) · `queue:nova` gibt es nicht mehr, der Befund ist gegenstandslos · die `hash_dirty`-Schlüssel tragen alle die Paarform · `ziele` hat `character_id` · der Riegel vor dem Doku-Commit ist gebaut · der Exponentwechsel der Salienzkurve ist gefahren.
+
+### Vier Zahlen, die sich seit ihrem Befund bewegt haben
+
+| Befund | damals | heute |
+|---|---|---|
+| Logging über `%`-Platzhalter | 65 | **96** |
+| KZG-Einträge ohne Entitäten | 82 % | **77 %** |
+| Shadow-Queue-Rückstand | 649 | **351** |
+| `enrich_entries`-Verzweigungen | 16 | **12** |
+
+### Und drei Befunde über das Register selbst
+
+**Vier Kennungen stehen zweimal als eigener Abschnitt**, zwei weitere als doppelte Tabellenzeile. Aufgefallen ist es nicht beim Lesen, sondern beim Setzen: Der Einsetzer traf jeweils nur das erste Vorkommen, und die Zählung ging um genau die Zahl der Doppelgänger nicht auf. **Ein Fehler, den erst ein Werkzeug sichtbar macht, das über die ganze Menge geht.**
+
+**Mehrere Befunde stehen unter zwei oder drei verschiedenen Kennungen** — die Recherche, die ihre Bibliothek nicht liest (zwei), die Cluster-Beschreibung mit Befehl (zwei), der fehlende Agent hinter einer gerouteten Auftragsart (drei), der Skip auf nie gelieferte Absichten (drei). Eine Erledigung schlösse jeweils nur einen Teil.
+
+> **Zwei Einträge verlangen für denselben Index Entgegengesetztes.** Der eine will `idx_timeline_type` in die Schemadatei nachtragen, der andere ihn als Dublette entfernen. Wer den einen umsetzt, macht den anderen unmöglich — und es gibt keinen Ort, an dem dieser Widerspruch auffiele, weil beide Einträge für sich genommen richtig sind.
+
+**Zwei Befunde haben ihre Grundlage verloren, ohne dass jemand es nachgetragen hätte.** `PUB-ROLLENNAMEN-IM-BESTAND` zählte Fundstellen nach einem Kriterium, das am 19.08.2026 zur Hälfte aufgehoben wurde — **eine Zahl, deren Kriterium sich geändert hat, ist keine Zahl mehr.** Und `BEISPIELE-OHNE-HERKUNFTSMARKE` ist nicht fortschreibbar, weil das Instrument seiner Zählung nicht mit überliefert wurde.
+
+**Ein Eintrag beschreibt einen Bruch, den diese Sitzung zur Hälfte behoben hat.** `ROADMAP-GLIEDERUNGSBRUCH` — die Chronik wechselt ab einem Punkt die Überschriftenebene. Die laufende Datei führt seit heute 120 Kapitel auf einer Ebene; in den abgeschlossenen Zeiträumen besteht der Bruch fort. Entschärft ist er trotzdem, aber aus einem anderen Grund: Das erzeugte Findemittel spannt über alle Ebenen und Teile.
+
+**Belegt:** über alle vier Etappen **keine verlorene Zeile** — die 65 Zeilen, die ein einfacher Vergleich als fehlend meldet, sind verlängerte Tabellenzeilen und enthalten ihren alten Text vollständig. Die Prüfung des Findemittels ist grün.
 
 ---
 

@@ -121,8 +121,8 @@ Die Zugehörigkeit zu einer dieser Reihen hebt einen Eintrag; alles andere sinkt
 
 | Kennung | Was er anhält |
 |---|---|
-| `LAENGENVORGABE-UNGEMESSEN` | **Drei Zahlen der Antwortlänge sind Setzungen ohne Messung im Betrieb.** Die halbierten Korridore in `UMFANG_SPANNE` sind eine Entscheidung nach einem Einzelbefund (12 Zeichen Gruß → 838 Zeichen Antwort); `LEICHT_FAKTOR` und `LEICHT_SOCKEL` sind frei gewählt. **Was dagegen gemessen ist, ist der Vorbehalt:** Bei identischer Vorgabe streute die Antwortlänge am 17.08.2026 um den Faktor 2,68 — die Vorgabe bindet nur schwach, und eine Halbierung halbiert nicht. Zu messen ist deshalb nicht die Konstante, sondern die **Wirkung**: dieselben Turntypen vor und nach dem 20.08., Ist-Länge gegen Korridor. Der Lauf braucht echte Modellaufrufe. |
-| `MASSBLOCK-IM-BETRIEB-UNGEMESSEN` | **Der Verfasser liest die drei fachlichen Größen seit dem 20.08.2026 — ob es seinen Stoff ändert, ist offen.** 10 Zeugen belegen, dass der Block im Prompt steht und die richtigen Größen trägt; keiner belegt, dass sich der erzeugte Inhalt dadurch ändert. Der Präzedenzfall steht in derselben Reihe: `HALTUNG-OHNE-LESER` war zwei Wochen gebaut, gemessen und wirkungslos, weil kein Prompt die Größen las. **Die Prüfform ist der Vergleich desselben Turns mit und ohne Block**, nicht die Anwesenheit des Blocks. |
+| `LAENGENVORGABE-UNGEMESSEN` | **Drei Zahlen der Antwortlänge sind Setzungen ohne Messung im Betrieb.** Die halbierten Korridore in `UMFANG_SPANNE` sind eine Entscheidung nach einem Einzelbefund (12 Zeichen Gruß → 838 Zeichen Antwort); `LEICHT_FAKTOR` und `LEICHT_SOCKEL` sind frei gewählt. **Was dagegen gemessen ist, ist der Vorbehalt:** Bei identischer Vorgabe streute die Antwortlänge am 17.08.2026 um den Faktor 2,68 — die Vorgabe bindet nur schwach, und eine Halbierung halbiert nicht. Zu messen ist deshalb nicht die Konstante, sondern die **Wirkung**: dieselben Turntypen vor und nach dem 20.08., Ist-Länge gegen Korridor. Der Lauf braucht echte Modellaufrufe. — ⬜ **offen** — nachgesehen am 25.08.2026. Die verlangte Messung ist nicht angesetzt worden. |
+| `MASSBLOCK-IM-BETRIEB-UNGEMESSEN` | **Der Verfasser liest die drei fachlichen Größen seit dem 20.08.2026 — ob es seinen Stoff ändert, ist offen.** 10 Zeugen belegen, dass der Block im Prompt steht und die richtigen Größen trägt; keiner belegt, dass sich der erzeugte Inhalt dadurch ändert. Der Präzedenzfall steht in derselben Reihe: `HALTUNG-OHNE-LESER` war zwei Wochen gebaut, gemessen und wirkungslos, weil kein Prompt die Größen las. **Die Prüfform ist der Vergleich desselben Turns mit und ohne Block**, nicht die Anwesenheit des Blocks. — ⬜ **offen** — nachgesehen am 25.08.2026. Die verlangte Messung ist nicht angesetzt worden. |
 
 ### Neu vom 20.08.2026 — der Index nimmt fünf Textformate an und versteht eines
 
@@ -150,7 +150,7 @@ Die Zugehörigkeit zu einer dieser Reihen hebt einen Eintrag; alles andere sinkt
 | Kennung | Was er anhält |
 |---|---|
 | `HASH-DIRTY-ALTLASTEN` | Der CharakterAgent räumt `hash_dirty` nur für das **aktive** Paar weg. Jede Person, die je einen Bogen hatte, trägt einen liegengebliebenen Schlüssel — am 11.08.2026 fünf Stück. Sie lassen die Vorbedingung des nächsten Bogens dieser Person anschlagen, und der Abbruch sieht aus wie ein Fehler des Laufs statt wie ein Rest des vorigen — ⬜ **offen, verschaerft — am Bestand gemessen am 25.08.2026.** Aus fuenf liegengebliebenen Schluesseln sind **13** geworden. **Ein geduldeter Rest ist keine Konstante** — er waechst mit jeder Person, die je einen Bogen hatte. |
-| `PROFILTEXT-SCHRUMPFT-MIT-MATERIAL` | Zweimal gemessen, in zwei Bögen: Mehmet 1597 → 1293 Zeichen, Sarah 1240 → 989, jeweils mit **zwanzig Turns mehr** Material. Vermutlich die Vorgabe *„kompakt … in 2-5 Sätzen"*: Je mehr das Modell sagen will, desto härter verdichtet es. Ungeprüft |
+| `PROFILTEXT-SCHRUMPFT-MIT-MATERIAL` | Zweimal gemessen, in zwei Bögen: Mehmet 1597 → 1293 Zeichen, Sarah 1240 → 989, jeweils mit **zwanzig Turns mehr** Material. Vermutlich die Vorgabe *„kompakt … in 2-5 Sätzen"*: Je mehr das Modell sagen will, desto härter verdichtet es. Ungeprüft — ⬜ **offen** — nachgesehen am 25.08.2026. Der Befund ist zweimal gemessen und seither nicht wiederholt worden; die Ursache steht aus. |
 **Neu aus Chat 136 (11.08.2026):**
 
 | Kennung | Was er anhält |
@@ -159,16 +159,16 @@ Die Zugehörigkeit zu einer dieser Reihen hebt einen Eintrag; alles andere sinkt
 | `VERDICHTUNG-UEBRIGE-VIER-PROMPTS` | **Das Beziehungsprofil ist gemessen (12.08.2026) und nicht entscheidbar wie der Kern.** Zwei Personen, identisches Material, identischer Kern, je gedeckelt gegen offen: Die Länge steigt achtfach (537→3990 und 562→4219), und **die offene Fassung liest beide Male wärmer** (Faktor +0,093 und +0,035). Das ist die einzige Aussage, die über beide Personen trägt. **Die Rauschaussage trägt nicht:** Bei der einen Person fällt die Spanne von 0,2209 auf 0,0625, bei der anderen steigt sie von 0,0167 auf 0,0734. Beim Kern hatten beide Personen dieselbe große Senkung gezeigt (0,251→0,063 und 0,104→0,004) — hier zeigen sie Gegenteiliges. Bemerkenswert und mit n=3 nur als Muster zu nennen: Die **offene** Fassung landet bei beiden bei 0,06–0,07, die **gedeckelte** einmal bei 0,02 und einmal bei 0,22 — nicht die offene ist ruhiger, die gedeckelte ist unberechenbar. Vor einer Entscheidung braucht es eine dritte Person oder mehr Läufe je Zelle. Die drei übrigen Prompts (adaptiv, Intention, Emotion) sind ungemessen; sie speisen **nicht** das Rad, sondern direkt den Responder-Prompt, und dort ist die Messgröße eine andere — dieselbe Probe passt nicht. Jeder hat einen eigenen Abnehmer — das Beziehungsprofil ist die zweite Hälfte der Rad-Quelle —, und fünf offene Profile je Paar sind rund anderthalb Stunden je Erhebung. Die Probe steht und ist billig: `labor/werkzeug/verdichtung_probe.py` mit getauschtem Deckel — ⬜ **offen — geprueft am 25.08.2026.** Gemessen ist **eines** der vier genannten Profile (Beziehungsprofil, 12.08.2026). Ein Eintrag, der mehrere Stellen nennt, ist erst geschlossen, wenn jede von ihnen steht — hier stehen drei aus. |
 | `KERN-EINBETTUNG-NACH-DEM-DECKEL` | `kern_hash` wird nicht nur gelesen, sondern **eingebettet**: Der Lückenagent vergleicht Kandidaten gegen ihn, Schwelle `GV_CHARAKTER_RESONANZ_SCHWELLE = 0.40`. Der Kommentar daneben sagt wörtlich *„begründeter Startwert, kein Messergebnis. Nach Live-Betrieb prüfen."* Ein Profiltext, der fünfmal so lang ist, embeddet anders — Cosinus-Werte ziehen sich zur Mitte zusammen. Der Deckel sitzt damit oberhalb eines nie gemessenen Schwellenwerts — ⬜ **offen — gegen HEAD `f31b3ab` geprueft am 25.08.2026.** `GV_CHARAKTER_RESONANZ_SCHWELLE` steht unveraendert auf **0.40**, und der Wachposten-Kommentar daneben sagt weiterhin woertlich *„begruendeter Startwert, kein Messergebnis. Nach Live-Betrieb pruefen.“* Nichts gemessen, nichts geaendert. |
 | ~~`MESSREIHE-MISCHT-ZWEI-RASTER`~~ | ~~`charakter_rad_messung` trägt jetzt drei Erhebungsarten nebeneinander: Dreierskala, eine Nachkommastelle, ohne Raster. Die Zeilen sind nur über die Werte selbst unterscheidbar — es gibt keine Spalte dafür. Jede Auswertung über die ganze Tabelle mischt drei Messgeräte~~ → **Geschlossen am 12.08.2026, und die Wirkung war größer als der Eintrag vermutete.** Es war keine Frage der Auswertung: `reihe_laden` speist die Reihe in den **Produktivwert**, und bei `nova → meister` stammten **58,7 %** des angezeigten Faktors aus abgelösten Geräten — 1,3582 gemessen, 1,2099 angezeigt. Entschieden wurde löschen statt filtern. 259 Zeilen sind gesichert (`charakter_rad_messung_archiv_20260812`) und entfernt, der Stichtag steht in der Fundliste. **Ohne Codeänderung** — die Tabelle trägt nur noch ein Messgerät — ✅ **abgeschlossen — nachgeprueft am 25.08.2026.** Der Eintrag traegt seinen Beleg vom 12.08.2026 selbst; die Wirkung war groesser als der Befund vermutete, und beides steht im Text. |
-| ~~`RESPONDER-ALS-AUFGABE`~~ | Der Responder-Prompt stellt **Kontext mit einer Stilnotiz**, nicht eine Aufgabe — und bindet deshalb nicht (0 von 6 Korridoren gegen 6 von 6 der Aufgabenform, `novaberg-haltungsraum_k.md` §3.0). Gebaut werden soll die Gliederung aus §3.0a: Konstellation zuerst, Charaktere, Szene, Regie unmittelbar vor dem Text, Ausgabezeile. Dabei fällt weg, was doppelt wäre: die Arousal-Längenregel, die Beziehungsdynamik-Sätze, der Tonblock, und die Fragen-Zeile aus der Landschaft (die der **GV-Knoten** weiter braucht, der Responder nicht). **Offen und größer als der Prompt:** Was steht in `[TEXT]` — der fertige Absatz des Verfassers oder Material? Zwei Modellläufe über denselben Inhalt glätten ihn; was das kostet, ist an der Verdichtungsmessung ablesbar → **Geschlossen am 13.08.2026.** Die Gliederung steht: `[ROLLE]` mit Konstellation und **doppelter** Prüfbedingung, `[SZENE]`, beide Personen, `[ZWISCHEN BEIDEN]`, Regie unmittelbar vor dem Text. Die vier genannten Doppelungen sind entfernt, dazu eine fünfte, die beim Umbau selbst entstand (Landschaft in Szene und Regie — von der Gegenprobe gefunden). Nicht vorgesehen und hinzugekommen: **eine Anrede, eine Bedeutung** — »du« ist der Schauspieler, über Person A wird in dritter Person gesprochen; sieben von dreizehn Blöcken hatten drei Bedeutungen gemischt. **Der Rest ist benannt:** Die offene Frage nach `[TEXT]` bleibt offen und hat eine Zahl bekommen — der Verfasser liefert rund 1400 Zeichen für einen 350-Zeichen-Korridor, weil er **keine** Mengenangabe erhält |
+| ~~`RESPONDER-ALS-AUFGABE`~~ | Der Responder-Prompt stellt **Kontext mit einer Stilnotiz**, nicht eine Aufgabe — und bindet deshalb nicht (0 von 6 Korridoren gegen 6 von 6 der Aufgabenform, `novaberg-haltungsraum_k.md` §3.0). Gebaut werden soll die Gliederung aus §3.0a: Konstellation zuerst, Charaktere, Szene, Regie unmittelbar vor dem Text, Ausgabezeile. Dabei fällt weg, was doppelt wäre: die Arousal-Längenregel, die Beziehungsdynamik-Sätze, der Tonblock, und die Fragen-Zeile aus der Landschaft (die der **GV-Knoten** weiter braucht, der Responder nicht). **Offen und größer als der Prompt:** Was steht in `[TEXT]` — der fertige Absatz des Verfassers oder Material? Zwei Modellläufe über denselben Inhalt glätten ihn; was das kostet, ist an der Verdichtungsmessung ablesbar → **Geschlossen am 13.08.2026.** Die Gliederung steht: `[ROLLE]` mit Konstellation und **doppelter** Prüfbedingung, `[SZENE]`, beide Personen, `[ZWISCHEN BEIDEN]`, Regie unmittelbar vor dem Text. Die vier genannten Doppelungen sind entfernt, dazu eine fünfte, die beim Umbau selbst entstand (Landschaft in Szene und Regie — von der Gegenprobe gefunden). Nicht vorgesehen und hinzugekommen: **eine Anrede, eine Bedeutung** — »du« ist der Schauspieler, über Person A wird in dritter Person gesprochen; sieben von dreizehn Blöcken hatten drei Bedeutungen gemischt. **Der Rest ist benannt:** Die offene Frage nach `[TEXT]` bleibt offen und hat eine Zahl bekommen — der Verfasser liefert rund 1400 Zeichen für einen 350-Zeichen-Korridor, weil er **keine** Mengenangabe erhält — ⬜ **offen** — nachgesehen am 25.08.2026. Der Prompt ist am 13.08.2026 auf ein Drehbuch umgestellt worden, die im Eintrag verlangte Aufgabenform ist damit angefangen und nicht abgeschlossen. |
 | `SZENE-STATT-REGIE-IN-DEN-CLUSTERN` | Vier der vierzehn `CLUSTER_BESCHREIBUNGEN` tragen einen Befehl (`regen` „Halten, da sein", `schmollen` „Nicht drängen", `nebel` „Leise da sein", `gewitter` „Nicht verteidigen"). Er gilt für jeden Charakter gleich und steht **vor** dem Rad — die Haltungsgrößen können ihn nicht bewegen. Die Regel für die Umschreibung **und der ausgeschriebene Vorschlag für alle vierzehn** stehen im Konzept §3.0b: Die Szene sagt, was ist; kein Imperativ, kein „nicht". **Zu beachten:** Die Tabelle speist drei Prompts — GV, Verfasser, Responder. Der GV-Knoten benutzt sie als Rahmen für die Strategiewahl, nicht als Klassifikator; eine sinnlichere Szene macht ihn besser, nicht wackliger (geprüft am Code) — ⬜ **offen — gegen HEAD `f31b3ab` geprueft am 25.08.2026.** Die Befehle stehen unveraendert in `ei/dreischicht.py`: *„Halten, da sein“* (`regen`), *„Leise da sein“* (`nebel`), *„Nicht verteidigen“* (`gewitter`); *„Nicht draengen“* fuer `schmollen` steht in `ei/haltung.py`. Vier Befehle, wie im Befund. |
 | `AROUSAL-ACHSE-SCHNEIDET-DEN-GIPFEL` | Die Energie-Achse binarisiert `arousal` bei 0,5 — und die gemessene Verteilung ist **zweigipflig** mit Bergen bei 0,1–0,3 und 0,4–0,6. Die Schwelle schneidet den zweiten Gipfel mittendurch: Turns, die sich um 0,02 unterscheiden, landen in verschiedenen Landschaften. Genau die Kippkante, vor der §3.1 warnt. **Ein Drittel aller Turns liegt zwischen 0,4 und 0,7** (35,1 % von 522), wo die Landschaft nur ein Bit sieht, die abgelöste Längenregel aber drei Stufen unterschied. Solange das so bleibt, kann `umfang` die Feinheit des Arousal nicht nachtragen — sein Grundwert kommt aus der Landschaft. **Und ein zweiter Punkt daneben:** `arousal_roh` und `arousal_ei` unterscheiden sich stark (Median 0,50 gegen 0,334); welche der beiden in die Achse geht, entscheidet mit, wie oft sie überhaupt anschlägt — ⬜ **offen — gegen HEAD `f31b3ab` geprueft am 25.08.2026.** `ei/dreischicht.py` binarisiert unveraendert mit `energie_bin = 1 if arousal >= GV_ACHSE_ENERGIE_SCHWELLE else 0`. Die Kippkante steht. |
 | ~~`FARBTON-OHNE-LESER`~~ | `ei/farbton.py` mischt acht Dimensionen zu 2–5 Sätzen, die die Lage sinnlich beschreiben — und erreicht den Responder nicht. Er geht nur in den GV-Prompt und ins Log. **Dazu ein zweiter Punkt:** Sind alle acht Dimensionen unauffällig, bleibt ein einziger Satz übrig („Das Gespräch ist ruhig und ausgeglichen"). Für eine Anweisung ist Schweigen bei Unauffälligkeit richtig, für eine **Atmosphäre** nicht — die Werkstatt riecht nach Öl, ob jemand aufgeregt ist oder nicht. Die Grundfarbe könnte aus der Landschaft kommen, der Farbton die Abweichung darauf legen → **Geschlossen am 13.08.2026** für den ersten Punkt: Der Farbton steht in `[SZENE]`, hinter der Lage. **Der zweite Punkt ist widerlegt** — der Rückfallsatz tritt im Betrieb nicht ein; über zwölf Stunden Log liefert der Farbton sechs bis sieben Sätze je Turn. **Eine Wirkung ist nicht nachgewiesen:** drei Läufe je Fassung (ohne · schwer · lebhaft) zeigten keinen Unterschied über dem Rauschen, und die schwere Fassung wurde zweimal von drei als lebhaft gelesen. Er steht im Prompt, weil er die Lage beschreibt, nicht weil eine Messung ihn verlangt — ✅ **abgeschlossen — gegen HEAD `f31b3ab` geprueft am 25.08.2026.** Der Farbton erreicht den Responder: `graph/nodes/responder.py` liest ihn aus `gv_detail` und haengt ihn an den Prompt. Der Befund *„erreicht den Responder nicht“* gilt nicht mehr. |
-| ~~`PERSON-B-OHNE-BESCHREIBUNG`~~ | Vom Nutzer erreicht **ein** Profil den Responder (das Beziehungsprofil), von Nova alle fünf. Sein Kern fehlt, auch seit die offene Destillation daraus mehrere tausend Zeichen macht. Dazu: Beide Beziehungsprofile stehen unbeschriftet nebeneinander, ohne Angabe der Perspektive — nach dem Paar-Schema sind es verschiedene Aussagen, im Prompt sehen sie gleich aus → **Geschlossen am 13.08.2026.** `[PERSON B — WER ER IST]` trägt seinen Kern (3992 Zeichen im Messturn) und was ihn beschäftigt; `[ZWISCHEN BEIDEN]` trägt beide Blickrichtungen **beschriftet**, und der 300-Zeichen-Deckel auf seinem Beziehungsprofil ist gefallen — er schnitt mitten im Wort ab. **Die Wirkung ist unbelegt:** Vier Verfahren, das Zugehen auf einen bestimmten Menschen zu messen, sind an Fällen mit bekanntem Sollurteil gescheitert (3/6 bei Zufall 2, 3/6 bei Zufall 3, 2/6 mit dem stärkeren Analysemodell und systematisch invers, ein lexikalisches Maß verzerrt). Der Block steht, weil ein Dialog ohne beschriebenes Gegenüber ein Monolog mit Stichwortgeber ist |
+| ~~`PERSON-B-OHNE-BESCHREIBUNG`~~ | Vom Nutzer erreicht **ein** Profil den Responder (das Beziehungsprofil), von Nova alle fünf. Sein Kern fehlt, auch seit die offene Destillation daraus mehrere tausend Zeichen macht. Dazu: Beide Beziehungsprofile stehen unbeschriftet nebeneinander, ohne Angabe der Perspektive — nach dem Paar-Schema sind es verschiedene Aussagen, im Prompt sehen sie gleich aus → **Geschlossen am 13.08.2026.** `[PERSON B — WER ER IST]` trägt seinen Kern (3992 Zeichen im Messturn) und was ihn beschäftigt; `[ZWISCHEN BEIDEN]` trägt beide Blickrichtungen **beschriftet**, und der 300-Zeichen-Deckel auf seinem Beziehungsprofil ist gefallen — er schnitt mitten im Wort ab. **Die Wirkung ist unbelegt:** Vier Verfahren, das Zugehen auf einen bestimmten Menschen zu messen, sind an Fällen mit bekanntem Sollurteil gescheitert (3/6 bei Zufall 2, 3/6 bei Zufall 3, 2/6 mit dem stärkeren Analysemodell und systematisch invers, ein lexikalisches Maß verzerrt). Der Block steht, weil ein Dialog ohne beschriebenes Gegenüber ein Monolog mit Stichwortgeber ist — ⬜ **offen** — nachgesehen am 25.08.2026. Vom Nutzer erreicht weiterhin nur das Beziehungsprofil den Responder. |
 | ~~`HALTUNG-OHNE-LESER`~~ | Der Zug ist gebaut, das Kriterium steht, die Zahlen sind gemessen — und **kein Prompt liest die Haltung**. `state["haltung"]` hat außer dem Knoten selbst nur die Anzeige als Leser. Solange §3 des Konzepts fehlt, wirkt der ganze Haltungsraum auf keine einzige Antwort. Das ist die Naht, an der alles andere hängt → **Geschlossen am 13.08.2026** — und die Schließung war eine halbe, was erst am 20.08.2026 auffiel: Das Konzept fordert **zwei** Leser (*„Beide lesen das Ergebnis aus dem Zustand"*) und begründet damit die Position des Knotens im Graphen; gebaut war einer. Der Verfasser las `haltung` bis zum 20.08.2026 **null Mal**. `ei/haltungssprache.py` übersetzt die fünf Größen in die Bänder aus §3.0aa, den Umfang zusätzlich in eine Zeichenspanne, das Arousal in einen der acht Energie-Sätze; angeschlossen unmittelbar vor dem Text. **Gesprochen wird beim Bandwechsel, nicht bei einem Zahlenabstand** — die erste Fassung verglich Zahlen und hätte einen distanzierten Charakter im `feuerwerk` verschluckt (0,90 → 0,82 sind acht Hundertstel, aber »ganz nah« wird zu »vertraut«). Die Arousal-Längenregel ist entfallen. Gemessen: mit einheitlicher Regie 22 von 25 Läufen richtig zugeordnet, mit je eigener **27 von 27** — ✅ **abgeschlossen — gegen HEAD `f31b3ab` geprueft am 25.08.2026, und diesmal beide Stellen.** Das Konzept verlangt **zwei** Leser; am 20.08.2026 war einer gebaut und der Eintrag galt trotzdem als geschlossen. Heute lesen `graph/nodes/responder.py` und `graph/nodes/verfasser.py` beide den Haltungsstand. **Die Zahl der genannten Stellen ist die Pruefgroesse, nicht die Wirkung.** |
 
 | Kennung | Was er anhält |
 |---|---|
-| `VERDICHTUNG-UNGEPRUEFT` | ~~Fünf Profil-Prompts verlangen *„kompakt"* und deckeln auf zwei bis fünf Sätze — eine Vorgabe aus der Zeit knapper Kontextfenster. Heute schreibt das Hintergrundmodell mit 262 144 Token, gelesen wird mit 32 768; ein Profil von 4000 Zeichen wäre drei Prozent des Lesefensters. **Verdichtung nimmt weg, was Charakter ausmacht.** Die Gegenprobe steht bereit — identisches Material, einmal mit Deckel und einmal ohne —, ist aber nicht gefahren. Zu vergleichen sind zwei Dinge getrennt: der Text zum Lesen und die Streuung des Rades. Fallen sie auseinander, ist das ein Hinweis auf zwei Texte statt einem~~ → **Gefahren und entschieden am 11.08.2026, für den Kern.** Zwei Personen, je drei Läufe je Fassung über die ganze Kette: Spanne **0,2510 → 0,0630** (Mehmet) und **0,104 → 0,004** (Sarah), Faktor unverändert (−0,024). Die offene Fassung liegt damit auf dem Eigenrauschen des Rades — die Destillation legt nichts obendrauf, die gedeckelte das Vierfache. **Der interessante Fall trat nicht ein:** Text und Streuung fallen *nicht* auseinander, derselbe Text ist der reichere und der ruhigere. Der Deckel des Kerns ist gestrichen; **Rest benannt** in `VERDICHTUNG-UEBRIGE-VIER-PROMPTS` und `KERN-EINBETTUNG-NACH-DEM-DECKEL` |
+| `VERDICHTUNG-UNGEPRUEFT` | ~~Fünf Profil-Prompts verlangen *„kompakt"* und deckeln auf zwei bis fünf Sätze — eine Vorgabe aus der Zeit knapper Kontextfenster. Heute schreibt das Hintergrundmodell mit 262 144 Token, gelesen wird mit 32 768; ein Profil von 4000 Zeichen wäre drei Prozent des Lesefensters. **Verdichtung nimmt weg, was Charakter ausmacht.** Die Gegenprobe steht bereit — identisches Material, einmal mit Deckel und einmal ohne —, ist aber nicht gefahren. Zu vergleichen sind zwei Dinge getrennt: der Text zum Lesen und die Streuung des Rades. Fallen sie auseinander, ist das ein Hinweis auf zwei Texte statt einem~~ → **Gefahren und entschieden am 11.08.2026, für den Kern.** Zwei Personen, je drei Läufe je Fassung über die ganze Kette: Spanne **0,2510 → 0,0630** (Mehmet) und **0,104 → 0,004** (Sarah), Faktor unverändert (−0,024). Die offene Fassung liegt damit auf dem Eigenrauschen des Rades — die Destillation legt nichts obendrauf, die gedeckelte das Vierfache. **Der interessante Fall trat nicht ein:** Text und Streuung fallen *nicht* auseinander, derselbe Text ist der reichere und der ruhigere. Der Deckel des Kerns ist gestrichen; **Rest benannt** in `VERDICHTUNG-UEBRIGE-VIER-PROMPTS` und `KERN-EINBETTUNG-NACH-DEM-DECKEL` — ⬜ **offen** — nachgesehen am 25.08.2026. Teilweise gemessen (Beziehungsprofil, 12.08.2026); die uebrigen vier Prompts stehen aus. Deckungsgleich mit `VERDICHTUNG-UEBRIGE-VIER-PROMPTS`. |
 
 | Kennung | Reihe |
 |---|---|
@@ -215,7 +215,7 @@ Die Zugehörigkeit zu einer dieser Reihen hebt einen Eintrag; alles andere sinkt
 
 | Kennung | Was offen ist | Band |
 |---|---|---|
-| `BIBLIOTHEK-BLIND-AUF-INHALTSHOEHE` | **Die Bibliothek ist auf Themenhöhe abrufbar und auf Inhaltshöhe blind — und der Enricher fragt immer auf Inhaltshöhe.** Gemessen am 20.08.2026 gegen 287 Ausarbeitungen: 10 Sonden, aus dem **Dateiinhalt** formuliert, treffen ihr Ziel in **1 von 10** Fällen auf Rang 1; die Schwelle 0,50 schneidet **9 von 10** ab. Die Kontrolle stellt die Diagnose — dieselbe Zielausarbeitung, zweimal gefragt: auf Themenhöhe Rang 1 bei Kosinus 0,7375 / 0,5751 / 0,5559, auf Inhaltshöhe Rang 8 / 142 / 63 bei 0,3447 / 0,1768 / 0,2491. **Nicht die Schwelle ist falsch, sondern ihre Paarung:** Kalibriert wurde sie am 19.08. an Themenfragen (92 % Rang 1) — der bestellbare Weg. Der Enricher sucht mit dem Vektor des **Turns**, und ein Turn ist fast immer eine inhaltliche Äußerung. **Das erklärt den Betrieb:** 2 echte Treffer in 142 beantworteten Nutzerturns. **Ausdrücklich nicht mitzumachen:** an der Zahl drehen. Sie hält die fremden Fragen sauber draußen (0 von 10 durchgelassen), und die Verteilungen überlappen — der beste Fremdtreffer 0,3577 liegt über fünf der zehn Ziele; keine Zahl trennt beide Seiten. **Was fertig wäre:** ein Vergleichsgegenstand auf Inhaltshöhe — Zusammenfassung oder Inhaltsblöcke auffindbar gemacht — und dieselben 20 Sonden erneut gefahren. **Nulllinie: Rang 1 in 1 von 10, fremd max 0,3577.** **Vor dem Bau zu bedenken:** Der Gegenbefund vom selben Tag steht — `MAX` über viele Vektoren je Eintrag hebt auch das Rauschen (`EMBED-LISTE-DATEIENINDEX`, gemessen und verworfen). Messschrieb: `2026-08-20_bibliotheksschwelle_ergebnis.md` | ungebändigt |
+| `BIBLIOTHEK-BLIND-AUF-INHALTSHOEHE` | **Die Bibliothek ist auf Themenhöhe abrufbar und auf Inhaltshöhe blind — und der Enricher fragt immer auf Inhaltshöhe.** Gemessen am 20.08.2026 gegen 287 Ausarbeitungen: 10 Sonden, aus dem **Dateiinhalt** formuliert, treffen ihr Ziel in **1 von 10** Fällen auf Rang 1; die Schwelle 0,50 schneidet **9 von 10** ab. Die Kontrolle stellt die Diagnose — dieselbe Zielausarbeitung, zweimal gefragt: auf Themenhöhe Rang 1 bei Kosinus 0,7375 / 0,5751 / 0,5559, auf Inhaltshöhe Rang 8 / 142 / 63 bei 0,3447 / 0,1768 / 0,2491. **Nicht die Schwelle ist falsch, sondern ihre Paarung:** Kalibriert wurde sie am 19.08. an Themenfragen (92 % Rang 1) — der bestellbare Weg. Der Enricher sucht mit dem Vektor des **Turns**, und ein Turn ist fast immer eine inhaltliche Äußerung. **Das erklärt den Betrieb:** 2 echte Treffer in 142 beantworteten Nutzerturns. **Ausdrücklich nicht mitzumachen:** an der Zahl drehen. Sie hält die fremden Fragen sauber draußen (0 von 10 durchgelassen), und die Verteilungen überlappen — der beste Fremdtreffer 0,3577 liegt über fünf der zehn Ziele; keine Zahl trennt beide Seiten. **Was fertig wäre:** ein Vergleichsgegenstand auf Inhaltshöhe — Zusammenfassung oder Inhaltsblöcke auffindbar gemacht — und dieselben 20 Sonden erneut gefahren. **Nulllinie: Rang 1 in 1 von 10, fremd max 0,3577.** **Vor dem Bau zu bedenken:** Der Gegenbefund vom selben Tag steht — `MAX` über viele Vektoren je Eintrag hebt auch das Rauschen (`EMBED-LISTE-DATEIENINDEX`, gemessen und verworfen). Messschrieb: `2026-08-20_bibliotheksschwelle_ergebnis.md` | ungebändigt — ⬜ **offen** — nachgesehen am 25.08.2026. Der Enricher erreicht die Inhaltshoehe weiterhin nicht. |
 | `EMBED-LISTE-AUTONOMES-WISSEN` | **Die Bibliothek bettet eine Themenliste als einen Vektor ein — und trifft damit nicht.** `autonomous_wissen.thema` trägt Ø **4,37** Themen je Feld (max 17), **558 von 559** Feldern mehr als eins. Zusätzlich stammt der Vektor gar nicht aus diesem Feld, sondern aus dem **Destillat** (`agents/recherche/agent.py`, siehe Fundliste). **Gemessen:** Bei einer Frage nach *einem* Thema liegt die richtige Antwort in **6 von 40** Fällen auf Rang 1, Kosinus-Median **0,2821** — unterhalb der eigenen Schwelle von 0,40, die Antwort wird also im Regelfall verworfen. Mit einem Vektor je Thema: 31 von 40 und Median 0,7425. **Was fertig wäre:** je Thema eine Zeile mit eigenem Vektor, die Lesepfade von `AutonomousWissenRepository.suchen` darauf umgestellt, und ein echter Turn, der eine Ausarbeitung über ein einzelnes ihrer Themen findet. **Nicht vergessen:** Der Rückweg fragt mit Ø 713 Zeichen (n=924) und braucht daneben weiterhin ein Ziel seiner Größenordnung — ein Themenvektor ersetzt keinen Inhaltsvektor. **Ist DDL und eine Migration von 249 Zeilen** (`F-DDL-1`) | ungebändigt — ⬜ **offen, Bestand gewachsen — am Bestand gemessen am 25.08.2026.** ⌀ **4,69** Themen je Feld statt 4,37, und **886 von 890** Feldern tragen mehr als eins statt 558 von 559. Der Verstoss ist derselbe, die Menge groesser. |
 | `EMBED-LISTE-DATEIENINDEX` | **Dritte Stelle derselben Klasse, und diesmal ist die Wirkung gemessen.** `embed_text_bauen` (`agents/dateien_index/indizieren.py`) bildet `themen_embedding` aus `thema` **plus rund acht Stichwörtern** — ein Schwerpunkt aus neun Gegenständen, wo gesucht wird nach **einem**. **Gemessen am 20.08.2026 über 24 Sonden gegen 174 Zeilen:** richtige Datei auf Rang 1 in **8 von 12**, in den ersten drei in 10 von 12. Der teure Fall ist der Rest: Die Sonde nach der Nabe des Charakter-Rads trifft ihr Ziel mit 0,3381 — **über** dem Boden — und bekommt es nie zu sehen, weil drei thematisch benachbarte Dateien davor liegen (0,5001 · 0,4495 · 0,3857) und die Kappung bei drei steht. Der scharfe Kanal fängt es nicht auf. **Keine Schwelle ändert daran etwas** — das ist der Unterschied zwischen einer Rangfolge- und einer Schwellenfrage, und er ist an dieser Messung ablesbar. **Der Präzedenzfall ist bezahlt:** Dieselbe Bauart hob an der Bibliothek den Anteil richtiger Antworten auf Rang 1 von 15 % auf 92 % (Konvention 4, `F-EMBED-2`). **Was fertig wäre:** ein Vektor je Stichwort/Thema in eigener Zeile, beide Schreibwege angeschlossen, und dieselben 24 Sonden erneut gefahren — die Rang-1-Quote von 8/12 ist die Nulllinie, gegen die zu messen ist. → ⊘ **Am 20.08.2026 gebaut, gemessen und zurückgebaut.** Tabelle, Schreibweg, drei Lesewege und 1456 nachgebettete Gegenstandsvektoren über 174 Zeilen standen; dieselben 24 Sonden ergaben **keine Verbesserung**: Rang 1 unverändert 8/12, in den ersten drei **9/12 statt 10/12**, und die Trennung wird schlechter — der beste Fremdtreffer steigt von 0,3052 auf 0,4008, über dem Boden liegen statt 1 Zeile **20**. Ein dritter Arm (nur der Themensatz, ohne Stichwörter) trennt die beiden Änderungen und liegt gleichauf mit dem zweiten: 8/12 und 9/12. **Warum der Präzedenzfall nicht trägt:** In der Bibliothek war das Feld eine Aufzählung *verschiedener* Gegenstände; hier beschreiben Thema und Stichwörter **einen** — die Datei. Ein Schwerpunkt aus Facetten eines Dings zeigt weiterhin auf dieses Ding. Und MAX über 1456 Vektoren ist eine Extremwertstatistik: Zur Sonde nach der Nabe des Charakter-Rads trug das Stichwort `CharacterGraph` den besten Treffer. **`F-EMBED-2` ist damit nicht widerlegt, die Analogie ist es** — dieser Fall ist weder Aufzählung noch Aussage, sondern die Beschreibung **eines** Gegenstands aus mehreren Blickwinkeln. Messschrieb: `2026-08-20_gegenstandsvektoren_ergebnis.md`. ~~**Was offen bleibt und jetzt ohne Kandidaten dasteht:** warum die richtige Datei nur in 8 von 12 Fällen auf Rang 1 steht~~ → **Am 21.08.2026 diagnostiziert, und die Antwort liegt nicht an der Formel.** Ein zweiter Kandidat wurde dabei verbraucht: Die **Präambel** des Themensatzes (66 von 174 Sätzen beginnen mit einer) ist entfernt worden — Rang 1 bleibt 8/12, Top 3 bleibt 10/12, die drei Fehlschläge bewegen sich um je einen Platz. **Zwei der vier Fehlschläge sind Sollurteil-Fehler:** Bei der Frage nach dem Verfall eines Kurzzeit-Eintrags steht `kzg-salienz.md` über dem Ziel, und ihr Themensatz beschreibt genau das Gefragte; bei der Frage nach der Führung im Gespräch steht das Moduldokument über seinem Konzept. Der Bestand führt zu mehreren Fragen **mehr als eine richtige Datei**, und die Sonde erklärt genau eine dazu. **Bei den zwei echten Fehlschlägen kommt der tragende Begriff der Frage im Index nicht vor:** `Nabe` steht 2× in der Datei und weder im Themensatz noch in den Stichwörtern, `Führung` 6× in der Datei und in den Stichwörtern nur als Bezeichner `fuehrung_messen`. **Der Index trägt neun Gegenstände je Datei; was nicht hineinfällt, ist für beide Kanäle unsichtbar** — und keine Änderung an der Form des Vektors heilt das. **Vor jedem Bau gemessen:** Der beste *Block* der Zieldatei erreicht 0,4617 gegen 0,3381 und 0,3926 gegen 0,2189. Das belegt Kopf, nicht Erfolg — bei einer Blockebene stiegen auch die Konkurrenten, und genau daran ist der Umbau vom 20.08. gescheitert. Messschrieb: `2026-08-21_dateiindex_rangfolge_ergebnis.md`. | ⊘ verworfen, Ursache diagnostiziert |
 | `EMBED-LISTE-DELEGATIONSAKTEN` | **Derselbe Verstoß am größeren Bestand, ungemessen.** `delegations_akten.themen` trägt Ø **2,76** Gegenstände je Feld, **1510 von 1586** mehr als eins — Beispiele: *„Mut, Vertrauen"*, *„aktuelle Lebenssituation, Prozess des Aufbaus"*. Gelesen wird die Spalte von `agents/delegation/deduplizierung.py`. **Ausdrücklich nicht gemessen:** ob die Deduplizierung heute danebengreift. Der Verstoß gegen Konvention 4 steht fest, seine Wirkung nicht — und die Wirkung entscheidet, ob der Umbau lohnt. **Was fertig wäre:** dieselbe Messung wie an der Bibliothek (bekannte richtige Antwort, Anteil auf Rang 1), *bevor* etwas umgebaut wird | ungebändigt — ⬜ **offen, unveraendert — am Bestand gemessen am 25.08.2026.** ⌀ **2,77** Gegenstaende je Feld (Befund: 2,76), **1635 von 1715** mit mehr als einem (Befund: 1510 von 1586). Der Bestand ist gewachsen, das Verhaeltnis nicht. |
@@ -242,7 +242,7 @@ Die Zugehörigkeit zu einer dieser Reihen hebt einen Eintrag; alles andere sinkt
 |---|---|---|
 | `ANTWORT-LEER-OHNE-WIEDERHOLUNG` | **Der Leer-Ausfall ist seit dem 19.08.2026 vollständig sichtbar und wird weiterhin nicht behandelt.** Liefert der Anbieter null Zeichen, läuft der Turn zu Ende: Tribunal mit drei Modellaufrufen (gemessen 6,8 s) und die Antwort-Perzeption arbeiten über ein Nichts, danach wird nichts zugestellt. **Der Verfasser-Inhalt liegt zu diesem Zeitpunkt vor** — im gemessenen Fall 300 Zeichen —, der Aufruf ist also wiederholbar, ohne irgendetwas neu zu rechnen. **Was fertig wäre:** ein Wiederholversuch im Responder bei `text_len == 0`, mit Obergrenze und eigener Protokollzeile; scheitert auch er, geht der Turn in einen benannten Ausgang statt in Schweigen. **Zu entscheiden ist die Absicht, nicht die Umsetzung:** Ein zweiter Aufruf kostet Zeit auf dem seriellen Platz und kann eine **andere** Antwort liefern als die, die das Tribunal später bewertet — wer wiederholt, muss sagen, ab welcher Stufe neu gelaufen wird. **Hängt nicht an der Ursache:** Warum die Token verschwinden, ist unbekannt und muss es für diese Abhilfe auch bleiben. **Neu bewertet am 19.08.2026:** Der externe Kandidat ist abgearbeitet — die Laufzeit läuft auf 0.32.14, und der Ausfall ist damit **nicht** erklärt. Die Nachmessung trägt keine Aussage dazu (n=1 bis 5 je Aufrufer gegen n=30 bis 224 der Nulllinie), der `thinker`-Median steht bei 12 Zeichen wie zuvor. **Damit fällt das Warten auf das Update als Grund weg, diesen Eintrag zurückzustellen** — die Entscheidung *ab welcher Stufe neu gelaufen wird* steht unverändert aus und ist jetzt das einzige, was fehlt. | ungebändigt — ⬜ **offen — gegen HEAD `f31b3ab` geprueft am 25.08.2026.** `graph/nodes/responder.py` protokolliert die leere Antwort und gibt den Zustand unveraendert zurueck; ein Wiederholungspfad existiert an keiner Stelle. Der Ausfall ist sichtbar und unbehandelt, genau wie beschrieben. |
 | ~~`OLLAMA-VERSION-VIER-MONATE-ALT`~~ | **✅ Erledigt am 19.08.2026 — 0.32.14 läuft.** Ursprünglicher Befund: **Die Laufzeit ist zwölf Minor-Versionen alt, und vier Release-Einträge treffen die Kombination, die in jedem Gesprächsknoten läuft.** Installiert ist **0.20.7** (Binärdatei vom 14.04.2026), verfügbar **v0.32.14** (15.08.2026). Einschlägig: v0.21.1 *„Fixed structured outputs for Gemma 4 when `think=false`"* (22.04. — **acht Tage nach der installierten Fassung**), v0.22.1 *„Updated the Gemma 4 **renderer**"*, v0.30.9 *„Fixed LFM2 **parser/render** for cases where thinking was not emitted"*, v0.31.2 *„Fixed structured output for thinking models when thinking is disabled"*. Dazu v0.32.3 *„Fixed GLM tool calls being **silently dropped** at the end of generation"* — dieselbe Fehlerklasse wie `RESPONDER-LEERE-ANTWORT-STILL`. **Alle 14 JSON-erwartenden Aufrufer laufen mit `think=False`.** **Einschränkung, gemessen:** Der Bestand sendet **kein** `format`-Feld; „structured outputs" meint bei Ollama genau das, `expect_json` parst clientseitig. v0.21.1 trifft den Pfad also nicht so, wie der Eintrag ihn beschreibt — Renderer und Parser bleiben einschlägig. **Was fertig wäre:** Update eingespielt, beide Dienste neu gestartet, die selbstgebauten Modelfiles laden, und dieselbe Erhebung wie vorher gelaufen. **Die Nulllinie ist erhoben** (31 h Betrieb, 319.267 Zeilen): JSON-Quoten 2,2 % / 2,7 % / 1,6 %, vier Leerantworten, 150× `done_reason='stop'`, belegte Kanäle ausschließlich `['content']`, Antwortlängen-Mediane je Aufrufer. **Zu entscheiden, nicht zu bauen:** ob das Modellverzeichnis (42 GB) vorher gesichert wird — neuere Fassungen schreiben gelegentlich das Manifest-Format um, und dann ist der Rückweg auf die alte Binärdatei nicht sauber. ~~**Der Rückweg sonst:** ein `cp` und zwei Neustarts~~ — **beim Ausführen widerlegt.** **Erledigt am 19.08.2026: 0.32.14 läuft auf beiden Instanzen.** Suite `Ran 1965 tests — OK`, echter Turn zugestellt, alle fünf Modelle mit **unveränderten Digests** — das Manifest-Format wurde nicht umgeschrieben, die 42-GB-Frage ist damit im Nachhinein beantwortet. Gesichert wurde trotzdem, und anders als geplant: Manifeste als echte Kopie (20 KB), **Blobs als harte Links** (42 GB zu null Platz, Linkzahl 2 geprüft). **Zwei Angaben dieses Eintrags trugen nicht:** Der Rückweg ist nicht *ein `cp`* — neben der 43-MB-Binärdatei liegen **7,2 GB Laufzeitbibliotheken** in `/usr/local/lib/ollama`, die dasselbe Archiv ersetzt, und eine alte Binärdatei gegen neue Runner ist keine ausgelieferte Kombination. Und die Nulllinie ist **nicht** unverändert wiederholbar: Das Log des Server-Containers ist kumulativ, 129 neue Zeilen gegen 325.987. Die Erhebung braucht deshalb ein **absolutes** Zeitfenster mit Zonenkennung; ein relatives greift auf den vorigen Lauf über. **Was der Wechsel nicht bringt:** Er erklärt `RESPONDER-LEERE-ANTWORT-STILL` nicht — dazu siehe dort. | ungebändigt |
-| `ANBIETER-FELDER-UNGELESEN` | **Der Anbieter liefert zwölf Felder, der Bestand liest drei.** Gezählt am 19.08.2026 aus der Schlüsselliste einer echten Antwort: `created_at`, `done`, `done_reason`, `eval_count`, `eval_duration`, `load_duration`, `logprobs`, `message`, `model`, `prompt_eval_count`, `prompt_eval_duration`, `total_duration`. Gelesen wurden `prompt_eval_count`, `eval_count` und `message`; seit dem 19.08. steht der ganze Umschlag im Protokoll, **verarbeitet** wird weiterhin nichts davon. **Der Verlust ist nicht theoretisch:** `done_reason` hätte einen offenen Defekt aufklären können und war vier Wochen lang da. **Was fertig wäre:** je Feld eine Entscheidung — gelesen und wohin, oder begründet verworfen. Die Dauern (`eval_duration`, `load_duration`, `total_duration`) sind dabei der billigste Gewinn: Sie trennen Wartezeit am Modell von Wartezeit im Graphen, und diese Trennung wird heute aus Zeitstempeln erschlossen. | ungebändigt |
+| `ANBIETER-FELDER-UNGELESEN` | **Der Anbieter liefert zwölf Felder, der Bestand liest drei.** Gezählt am 19.08.2026 aus der Schlüsselliste einer echten Antwort: `created_at`, `done`, `done_reason`, `eval_count`, `eval_duration`, `load_duration`, `logprobs`, `message`, `model`, `prompt_eval_count`, `prompt_eval_duration`, `total_duration`. Gelesen wurden `prompt_eval_count`, `eval_count` und `message`; seit dem 19.08. steht der ganze Umschlag im Protokoll, **verarbeitet** wird weiterhin nichts davon. **Der Verlust ist nicht theoretisch:** `done_reason` hätte einen offenen Defekt aufklären können und war vier Wochen lang da. **Was fertig wäre:** je Feld eine Entscheidung — gelesen und wohin, oder begründet verworfen. Die Dauern (`eval_duration`, `load_duration`, `total_duration`) sind dabei der billigste Gewinn: Sie trennen Wartezeit am Modell von Wartezeit im Graphen, und diese Trennung wird heute aus Zeitstempeln erschlossen. | ungebändigt — ⬜ **offen** — nachgesehen am 25.08.2026. `eval_duration` und die uebrigen Dauern kommen im ganzen Baum nicht vor. Gegen HEAD `599c19b` geprueft. |
 
 ---
 
@@ -250,9 +250,9 @@ Die Zugehörigkeit zu einer dieser Reihen hebt einen Eintrag; alles andere sinkt
 
 | Kennung | Was offen ist | Band |
 |---|---|---|
-| `KANAL-OHNE-GEGENSTUECK` | **Das vierte Kriterium: nicht vom Dokument zum Code, sondern vom Code zum Leser.** Die drei Kriterien vom 16.08.2026 prüfen, ob ein im Dokument genannter Name einen Gegenstand im Code hat. Sie können die umgekehrte Klasse **prinzipiell nicht finden**: ein Bauteil, das gebaut ist und das niemand liest. **Der Zuschnitt ist mechanisch:** je State-Kanal und je persistiertem Feld die Menge der **Schreiber** und die Menge der **Leser** aus dem Baum ableiten; ausgegeben wird, wie viele nur eine Seite haben. Ein Kanal mit Schreibern und ohne Leser ist tote Rechenarbeit, einer mit Lesern und ohne Schreiber ein Vorgabewert, der wie eine Messung aussieht. **Die Klasse ist belegt, nicht vermutet:** `einwandsurteil` steht als Kanal ohne Leser in der Fundliste; am 15.08.2026 fand die zweite Kontrolle einen Router, der einen neu eingeführten Wert nur **verglich**, worauf kein einziger Auftrag mehr lief — bei 1404 grünen Tests; und am selben Tag einen zweiten Erzeuger desselben Payload-Feldes, dessen Ausfall sich als korrekte Meldung getarnt hätte. **Was es zusätzlich fände:** die Nähte zwischen Modulen — nicht ob eine Funktion existiert, sondern ob das, was sie schreibt, hinten ankommt. | ungebändigt |
-| `SELBSTAUSKUNFT-OHNE-LESER` | **Das erste Fundstück der Klasse, die `KANAL-OHNE-GEGENSTUECK` beschreibt — von Hand gefunden, nicht vom Werkzeug.** Jeder Agent beschreibt sich selbst: `faehigkeiten`, `AGENT.md`, `typ`, `graph_eignung`, `lastart`, `context_user`. `AgentRegistry.beschreibungen()` fügt das zu einem Text zusammen, dessen Docstring den Zweck nennt — *„für den Planner-Prompt"*. **Gemessen am 16.08.2026: 14 von 14 Agenten deklarieren `faehigkeiten`, 12 von 14 tragen ein `AGENT.md`, und `beschreibungen()` hat im Produktivcode null Aufrufer.** Die erzeugende Seite ist vollzählig gepflegt, die lesende fehlt ganz. **Was stattdessen entscheidet:** `planner.plan()` sucht den Zuständigen über Zeichenketten-Abgleich auf `router_intents`, `manager.ziel` und `management_target` — also über die zentrale Zuordnung, die `novaberg-convention-planner-needs.md` §1 als Bruch des Plugin-Prinzips (E7) benennt. Ein neuer Agent kann lückenlos deklarieren, was er kann, und wird nur gefunden, wenn sein Name zum Abgleich passt. **Der billigste Weg ist ein dritter, und er stand von Anfang an daneben:** Die **Manager** haben seit Chat 5 genau diesen Mechanismus, und er lebt — `router_prompt`, von `get_combined_router_prompt()` eingesammelt und in `graph/nodes/router.py:62` als `[AGENTEN]`-Block in den System-Prompt gesetzt. Die Agenten bekommen dieselbe Eigenschaft; Aggregator, Leser und Prompt-Block existieren bereits. **Und der Vergleich beider Deklarationen erklärt, warum die eine überlebte und die andere nicht:** `["termin_erstellen", "termin_lesen"]` ist eine Auskunft in der Sprache des **Anbieters**; *„Entscheidend ist NICHT die Satzform, sondern ob der Prompt ein Datum enthält"* ist eine Anweisung in der Sprache des **Aufrufers**. Nur die zweite ist benutzbar, und nur die zweite hat je einen Leser gefunden. Die Manager-Fassung trägt zusätzlich **Negativregeln** (*„NICHT triggern bei emotionalen Ausdrücken"*), die in keiner Fähigkeitenliste ausdrückbar sind. **Erster Schritt ist aber nicht der Bau, sondern eine Gegenprobe** — und der Grund ist gemessen: **`delegation` deklariert `graph_eignung = ["user"]` und läuft über den Hintergrund-Router** (`services/pixie/router.py`, Sonderfall `aufgabe == "delegation"`); auf dem Nutzerpfad ist der Agent nicht wählbar, weil kein Manager dieses Ziel trägt. Dreizehn Deklarationen stimmen, diese eine nicht — und **niemand konnte es merken, weil kein Lauf sie prüft.** Wer den Leser zuerst baut, schaltet eine nie gegengeprüfte Datenbasis scharf: `fuer_graph("user")` nähme `delegation` auf, `fuer_graph("pixie")` ließe ihn weg, beides verkehrt herum. **Also erst alle 14 Deklarationen gegen den tatsächlichen Aufrufweg halten, dann anschließen.** → **Am 16.08.2026 durchgeführt, und das Ergebnis ändert den Zuschnitt.** Zwölf von vierzehn stimmen. Zwei nicht, und sie sind **nicht dieselbe Art Fehler**: `delegation` ist schlicht falsch (`["user"]` deklariert, über den Hintergrund-Router erreicht). `kzg` deklariert `["user"]`, **und die Frage trifft ihn gar nicht** — sein produktiver Aufruf ist fest im `dispatcher`-Knoten verdrahtet und läuft in allen drei Graphen, einschließlich des AgentGraph, den `shadow_delivery` im Hintergrund treibt; der *wählbare* Pfad über `plugins/kzg_manager` führt sich im eigenen Docstring als Legacy. **Daraus der strukturelle Befund:** Es gibt **drei** Aufrufarten — vom Planner gewählt, aus der Pixie-Queue gezogen, fest in einem Knoten verdrahtet — und `graph_eignung` hat nur für die erste eine Bedeutung. Ein Feld, das alle vierzehn Agenten füllen, ist für einen Teil von ihnen **sinnlos statt falsch**, und das ist der schwerer zu findende Zustand. Wer den Leser baut, klärt zuerst, für welche Aufrufart die Selbstauskunft überhaupt gilt. Zwei erklärbare Randfälle sind geprüft und in Ordnung: `recherche` hat kein `periodic_task`, weil es queue-basiert läuft, und `ziel_decay` steht nicht im Pixie-Router, weil es rein periodisch läuft. **Was fertig wäre:** die 14 geprüften Deklarationen mit Zahl der Korrekturen, dazu eine `router_prompt`-Eigenschaft an `BaseAgent`, von mindestens den fünf über den Planner erreichbaren Agenten gefüllt, im `[AGENTEN]`-Block sichtbar, und an einem echten Turn gemessen. Verworfen wäre damit der ursprünglich naheliegende Weg, `beschreibungen()` einen Leser zu geben — er transportierte die falsche Gattung Text. **Alternativ**, wenn die Selbstauskunft nicht gebraucht wird: begründete Streichung der fünf ungelesenen Felder samt Nachzug in `novaberg-agent-*.md`. **Nicht mitgemacht:** die Vorbedingungs-Auflösung zur Laufzeit — die ist am 16.08.2026 verworfen und liegt unter `archive/`. | ungebändigt |
-| `NAMENSREGELN-JENSEITS-DER-FORM` | **Die harte `N`-Familie deckt die Namens*form* ab, nicht die Namens*wahl*.** `ruff --select N` läuft am 16.08.2026 sauber über `server/` — snake_case, CamelCase, keine Builtin-Schatten. Ungeprüft bleibt, was darüber hinaus gilt: die Sprachtrennung zwischen Code und Log, die Behandlung feststehender Fachbegriffe der Domäne, und die Regel, dass eine Zeichenkette als Statuswert oder Klassifikationslabel eine geschlossene Aufzählung braucht. **Für die letzte gibt es einen Ansatz:** Zeichenketten-Literale, die in einem Vergleich gegen ein Statusfeld stehen, sind auffindbar — und eine, die in keiner Aufzählung vorkommt, ist der Kandidat. **Nicht mitgemacht:** Die beiden ersten Regeln sind vermutlich nicht mechanisch prüfbar; das gehört dann als Grenze benannt statt als Aufgabe geführt. | ungebändigt |
+| `KANAL-OHNE-GEGENSTUECK` | **Das vierte Kriterium: nicht vom Dokument zum Code, sondern vom Code zum Leser.** Die drei Kriterien vom 16.08.2026 prüfen, ob ein im Dokument genannter Name einen Gegenstand im Code hat. Sie können die umgekehrte Klasse **prinzipiell nicht finden**: ein Bauteil, das gebaut ist und das niemand liest. **Der Zuschnitt ist mechanisch:** je State-Kanal und je persistiertem Feld die Menge der **Schreiber** und die Menge der **Leser** aus dem Baum ableiten; ausgegeben wird, wie viele nur eine Seite haben. Ein Kanal mit Schreibern und ohne Leser ist tote Rechenarbeit, einer mit Lesern und ohne Schreiber ein Vorgabewert, der wie eine Messung aussieht. **Die Klasse ist belegt, nicht vermutet:** `einwandsurteil` steht als Kanal ohne Leser in der Fundliste; am 15.08.2026 fand die zweite Kontrolle einen Router, der einen neu eingeführten Wert nur **verglich**, worauf kein einziger Auftrag mehr lief — bei 1404 grünen Tests; und am selben Tag einen zweiten Erzeuger desselben Payload-Feldes, dessen Ausfall sich als korrekte Meldung getarnt hätte. **Was es zusätzlich fände:** die Nähte zwischen Modulen — nicht ob eine Funktion existiert, sondern ob das, was sie schreibt, hinten ankommt. | ungebändigt — ⬜ **offen** — nachgesehen am 25.08.2026. Das vierte Kriterium ist nicht als Werkzeug entstanden. |
+| `SELBSTAUSKUNFT-OHNE-LESER` | **Das erste Fundstück der Klasse, die `KANAL-OHNE-GEGENSTUECK` beschreibt — von Hand gefunden, nicht vom Werkzeug.** Jeder Agent beschreibt sich selbst: `faehigkeiten`, `AGENT.md`, `typ`, `graph_eignung`, `lastart`, `context_user`. `AgentRegistry.beschreibungen()` fügt das zu einem Text zusammen, dessen Docstring den Zweck nennt — *„für den Planner-Prompt"*. **Gemessen am 16.08.2026: 14 von 14 Agenten deklarieren `faehigkeiten`, 12 von 14 tragen ein `AGENT.md`, und `beschreibungen()` hat im Produktivcode null Aufrufer.** Die erzeugende Seite ist vollzählig gepflegt, die lesende fehlt ganz. **Was stattdessen entscheidet:** `planner.plan()` sucht den Zuständigen über Zeichenketten-Abgleich auf `router_intents`, `manager.ziel` und `management_target` — also über die zentrale Zuordnung, die `novaberg-convention-planner-needs.md` §1 als Bruch des Plugin-Prinzips (E7) benennt. Ein neuer Agent kann lückenlos deklarieren, was er kann, und wird nur gefunden, wenn sein Name zum Abgleich passt. **Der billigste Weg ist ein dritter, und er stand von Anfang an daneben:** Die **Manager** haben seit Chat 5 genau diesen Mechanismus, und er lebt — `router_prompt`, von `get_combined_router_prompt()` eingesammelt und in `graph/nodes/router.py:62` als `[AGENTEN]`-Block in den System-Prompt gesetzt. Die Agenten bekommen dieselbe Eigenschaft; Aggregator, Leser und Prompt-Block existieren bereits. **Und der Vergleich beider Deklarationen erklärt, warum die eine überlebte und die andere nicht:** `["termin_erstellen", "termin_lesen"]` ist eine Auskunft in der Sprache des **Anbieters**; *„Entscheidend ist NICHT die Satzform, sondern ob der Prompt ein Datum enthält"* ist eine Anweisung in der Sprache des **Aufrufers**. Nur die zweite ist benutzbar, und nur die zweite hat je einen Leser gefunden. Die Manager-Fassung trägt zusätzlich **Negativregeln** (*„NICHT triggern bei emotionalen Ausdrücken"*), die in keiner Fähigkeitenliste ausdrückbar sind. **Erster Schritt ist aber nicht der Bau, sondern eine Gegenprobe** — und der Grund ist gemessen: **`delegation` deklariert `graph_eignung = ["user"]` und läuft über den Hintergrund-Router** (`services/pixie/router.py`, Sonderfall `aufgabe == "delegation"`); auf dem Nutzerpfad ist der Agent nicht wählbar, weil kein Manager dieses Ziel trägt. Dreizehn Deklarationen stimmen, diese eine nicht — und **niemand konnte es merken, weil kein Lauf sie prüft.** Wer den Leser zuerst baut, schaltet eine nie gegengeprüfte Datenbasis scharf: `fuer_graph("user")` nähme `delegation` auf, `fuer_graph("pixie")` ließe ihn weg, beides verkehrt herum. **Also erst alle 14 Deklarationen gegen den tatsächlichen Aufrufweg halten, dann anschließen.** → **Am 16.08.2026 durchgeführt, und das Ergebnis ändert den Zuschnitt.** Zwölf von vierzehn stimmen. Zwei nicht, und sie sind **nicht dieselbe Art Fehler**: `delegation` ist schlicht falsch (`["user"]` deklariert, über den Hintergrund-Router erreicht). `kzg` deklariert `["user"]`, **und die Frage trifft ihn gar nicht** — sein produktiver Aufruf ist fest im `dispatcher`-Knoten verdrahtet und läuft in allen drei Graphen, einschließlich des AgentGraph, den `shadow_delivery` im Hintergrund treibt; der *wählbare* Pfad über `plugins/kzg_manager` führt sich im eigenen Docstring als Legacy. **Daraus der strukturelle Befund:** Es gibt **drei** Aufrufarten — vom Planner gewählt, aus der Pixie-Queue gezogen, fest in einem Knoten verdrahtet — und `graph_eignung` hat nur für die erste eine Bedeutung. Ein Feld, das alle vierzehn Agenten füllen, ist für einen Teil von ihnen **sinnlos statt falsch**, und das ist der schwerer zu findende Zustand. Wer den Leser baut, klärt zuerst, für welche Aufrufart die Selbstauskunft überhaupt gilt. Zwei erklärbare Randfälle sind geprüft und in Ordnung: `recherche` hat kein `periodic_task`, weil es queue-basiert läuft, und `ziel_decay` steht nicht im Pixie-Router, weil es rein periodisch läuft. **Was fertig wäre:** die 14 geprüften Deklarationen mit Zahl der Korrekturen, dazu eine `router_prompt`-Eigenschaft an `BaseAgent`, von mindestens den fünf über den Planner erreichbaren Agenten gefüllt, im `[AGENTEN]`-Block sichtbar, und an einem echten Turn gemessen. Verworfen wäre damit der ursprünglich naheliegende Weg, `beschreibungen()` einen Leser zu geben — er transportierte die falsche Gattung Text. **Alternativ**, wenn die Selbstauskunft nicht gebraucht wird: begründete Streichung der fünf ungelesenen Felder samt Nachzug in `novaberg-agent-*.md`. **Nicht mitgemacht:** die Vorbedingungs-Auflösung zur Laufzeit — die ist am 16.08.2026 verworfen und liegt unter `archive/`. | ungebändigt — ⬜ **offen** — nachgesehen am 25.08.2026. Unveraendert ohne Leser. |
+| `NAMENSREGELN-JENSEITS-DER-FORM` | **Die harte `N`-Familie deckt die Namens*form* ab, nicht die Namens*wahl*.** `ruff --select N` läuft am 16.08.2026 sauber über `server/` — snake_case, CamelCase, keine Builtin-Schatten. Ungeprüft bleibt, was darüber hinaus gilt: die Sprachtrennung zwischen Code und Log, die Behandlung feststehender Fachbegriffe der Domäne, und die Regel, dass eine Zeichenkette als Statuswert oder Klassifikationslabel eine geschlossene Aufzählung braucht. **Für die letzte gibt es einen Ansatz:** Zeichenketten-Literale, die in einem Vergleich gegen ein Statusfeld stehen, sind auffindbar — und eine, die in keiner Aufzählung vorkommt, ist der Kandidat. **Nicht mitgemacht:** Die beiden ersten Regeln sind vermutlich nicht mechanisch prüfbar; das gehört dann als Grenze benannt statt als Aufgabe geführt. | ungebändigt — ⬜ **offen** — nachgesehen am 25.08.2026. Die Namenswahl ist weiterhin nicht pruefbar. |
 
 ---
 
@@ -260,7 +260,7 @@ Die Zugehörigkeit zu einer dieser Reihen hebt einen Eintrag; alles andere sinkt
 
 | Kennung | Was offen ist | Band |
 |---|---|---|
-| `PENDING-AGENT-INS-PAYLOAD` | **`novaberg-convention-event-model.md` §9.3 beschreibt eine Migration, die nicht stattgefunden hat.** Der Wartezustand eines Agenten sollte vom Redis-Schlüssel `pending_agent:{user_id}` ins Event-Payload wandern; das Ereignis `awaiting_user` trüge den Kontext, das nächste Nutzer-Ereignis löste den Resume aus. **Der Schlüssel ist weiterhin der Träger und tief verdrahtet:** acht Dateien lesen oder setzen ihn — `graph/nodes/planner.py`, `graph/nodes/router.py`, `services/event_consumer.py`, `services/shadow_delivery.py` und die Dispatches von vier Agenten. **Der Satz stand im Präsens** und las sich wie eine Beschreibung; er ist im Dokument jetzt als Absicht markiert. Was ihn wichtig macht: Der Schlüssel ist paar-blind (`{user_id}` ohne `character_id`) und überdauert den Turn, während das Payload beides mitbrächte. | ungebändigt |
+| `PENDING-AGENT-INS-PAYLOAD` | **`novaberg-convention-event-model.md` §9.3 beschreibt eine Migration, die nicht stattgefunden hat.** Der Wartezustand eines Agenten sollte vom Redis-Schlüssel `pending_agent:{user_id}` ins Event-Payload wandern; das Ereignis `awaiting_user` trüge den Kontext, das nächste Nutzer-Ereignis löste den Resume aus. **Der Schlüssel ist weiterhin der Träger und tief verdrahtet:** acht Dateien lesen oder setzen ihn — `graph/nodes/planner.py`, `graph/nodes/router.py`, `services/event_consumer.py`, `services/shadow_delivery.py` und die Dispatches von vier Agenten. **Der Satz stand im Präsens** und las sich wie eine Beschreibung; er ist im Dokument jetzt als Absicht markiert. Was ihn wichtig macht: Der Schlüssel ist paar-blind (`{user_id}` ohne `character_id`) und überdauert den Turn, während das Payload beides mitbrächte. | ungebändigt — ⬜ **offen** — nachgesehen am 25.08.2026. Die beschriebene Migration hat nicht stattgefunden. |
 | `SSE-REST-IM-ENDPUNKT` | **Schritt 7 der Migration ist als erledigt vermerkt, der Server-Pfad daneben nicht.** *Client auf WebSocket-only umstellen* ✅ (01.08.2026) — aber `api/chat.py` liefert weiterhin eine `StreamingResponse` mit `media_type="text/event-stream"`. Damit steht ein zweiter Ausgabeweg neben dem WebSocket, den niemand mehr benutzt und den auch niemand prüft. Schritt 8 der Migration nennt ihn (*Aufräumen: nachbearbeitung.py, SSE, Annotate-Funktionen*); die beiden anderen Teile sind erledigt. | ungebändigt |
 
 ---
@@ -292,9 +292,9 @@ Kein Fremdschluessel zeigt darauf — freier Gedaechtnisinhalt
 
 | Kennung | Was offen ist | Band |
 |---|---|---|
-| `FACHSPEICHER-AGENTEN` | **Notizen, Fakten, Timeline, Dateien, Wissen bekommen je einen pflegenden Agenten.** Heute entstehen ihre Einträge, aber niemand hält sie instand. **Je Speicher ist zuerst die Rolle zu bestimmen** — Ziel eines Fremdschlüssels, Bindung oder freier Inhalt —, denn daran hängt, ob und wo ein Verfall überhaupt hingehört. Die Karte oben ist der Ausgangspunkt und keine Festlegung: Sie beschreibt den Bestand, nicht die Absicht. **Voraussetzung:** Gedächtnisschichten und Charakter-Destillation vollständig. | ungebändigt |
-| `FAKTEN-BINDUNG-OHNE-VERFALL` | **`fakten` ist die Bindung zwischen zwei `entitaeten` und trägt keine Verfallsgröße.** Nach der Regel — Entität bleibt, Bindung darf verfallen — und nach dem Ort des Verfalls — im Fakten-Gedächtnis läuft die Suche über die Kanten — gehört er genau hierhin. Vorhanden sind `t_valid`, `t_invalid`, `last_touched`, `wiedervorlage_am`, `aktiv`: **Bi-Temporalität, kein Verfall.** Die beiden schließen einander nicht aus, sie beantworten verschiedene Fragen — *war das wahr* gegen *ist das noch wichtig*. Offen ist nur die zweite. `entitaeten` bleibt ausdrücklich unberührt: Fremdschlüssel zeigen darauf. | ungebändigt |
-| `REEMBED-WISSENSSPEICHER` | **`tools/reembed_all.py` erfasst `autonomous_wissen.themen_embedding` nicht** — 390 von 390 Zeilen belegt. Der Speicher folgt der Form von `novaberg-convention-embedding.md` §2 (eigener benannter `embed_text_bauen`, aus der persistierten `zusammenfassung` rekonstruierbar), aber die Prüffrage der Konvention — *Kann reembed_all.py diesen Vektor allein neu erzeugen?* — ist für ihn mit **nein** zu beantworten. **Die Folge ist die, gegen die die Konvention gebaut ist:** Bei einem Modellwechsel bliebe die Wissens-Bibliothek im alten Vektorraum, während die sechs übrigen Speicher migrieren — ein zweiter Mischraum. **Der Zuschnitt ist klein:** ein Ziel im Werkzeug, das den vorhandenen Bauer importiert, wie die sieben anderen auch. Gefunden beim Halten der Konvention gegen den Code. | ungebändigt |
+| `FACHSPEICHER-AGENTEN` | **Notizen, Fakten, Timeline, Dateien, Wissen bekommen je einen pflegenden Agenten.** Heute entstehen ihre Einträge, aber niemand hält sie instand. **Je Speicher ist zuerst die Rolle zu bestimmen** — Ziel eines Fremdschlüssels, Bindung oder freier Inhalt —, denn daran hängt, ob und wo ein Verfall überhaupt hingehört. Die Karte oben ist der Ausgangspunkt und keine Festlegung: Sie beschreibt den Bestand, nicht die Absicht. **Voraussetzung:** Gedächtnisschichten und Charakter-Destillation vollständig. | ungebändigt — ⬜ **offen** — nachgesehen am 25.08.2026. **Vier von fuenf stehen:** `notizen`, `timeline`, `dateien`, `wissen` liegen als Agenten vor — **`fakten` nicht**, und der Speicher selbst traegt 0 Zeilen. Der Eintrag ist damit zu vier Fuenfteln erledigt und in seinem Rest gegenstandslos, solange der Speicher leer bleibt. |
+| `FAKTEN-BINDUNG-OHNE-VERFALL` | **`fakten` ist die Bindung zwischen zwei `entitaeten` und trägt keine Verfallsgröße.** Nach der Regel — Entität bleibt, Bindung darf verfallen — und nach dem Ort des Verfalls — im Fakten-Gedächtnis läuft die Suche über die Kanten — gehört er genau hierhin. Vorhanden sind `t_valid`, `t_invalid`, `last_touched`, `wiedervorlage_am`, `aktiv`: **Bi-Temporalität, kein Verfall.** Die beiden schließen einander nicht aus, sie beantworten verschiedene Fragen — *war das wahr* gegen *ist das noch wichtig*. Offen ist nur die zweite. `entitaeten` bleibt ausdrücklich unberührt: Fremdschlüssel zeigen darauf. | ungebändigt — ⬜ **offen** — nachgesehen am 25.08.2026. Gegenstandslos, solange `fakten` 0 Zeilen traegt — der Verfall haette nichts zu verfallen. |
+| `REEMBED-WISSENSSPEICHER` | **`tools/reembed_all.py` erfasst `autonomous_wissen.themen_embedding` nicht** — 390 von 390 Zeilen belegt. Der Speicher folgt der Form von `novaberg-convention-embedding.md` §2 (eigener benannter `embed_text_bauen`, aus der persistierten `zusammenfassung` rekonstruierbar), aber die Prüffrage der Konvention — *Kann reembed_all.py diesen Vektor allein neu erzeugen?* — ist für ihn mit **nein** zu beantworten. **Die Folge ist die, gegen die die Konvention gebaut ist:** Bei einem Modellwechsel bliebe die Wissens-Bibliothek im alten Vektorraum, während die sechs übrigen Speicher migrieren — ein zweiter Mischraum. **Der Zuschnitt ist klein:** ein Ziel im Werkzeug, das den vorhandenen Bauer importiert, wie die sieben anderen auch. Gefunden beim Halten der Konvention gegen den Code. | ungebändigt — ⬜ **offen** — nachgesehen am 25.08.2026. Gegen HEAD `599c19b` geprueft: Das Werkzeug erfasst `delegations_akten.themen_embedding`, **`autonomous_wissen` kommt darin nicht vor**. Unveraendert. |
 
 ---
 
@@ -309,8 +309,8 @@ Grenze, die beobachtet werden soll.**
 
 | Kennung | Was offen ist | Band |
 |---|---|---|
-| `ZUSTELLUNG-ABBRUCH-UNGEZAEHLT` | **Was vor dem Trigger abbricht, erzeugt keine Zeile** — offene Rückfrage, erschöpfter Burst, leerer Stapel, kein Trigger. Im ganzen Zustelldienst steht **eine** Schreibstelle (`_riegelkette_pruefen`), und sie liegt hinter dem Trigger; das Feld `umfang: ab_trigger` sagt es ehrlich, behebt es aber nicht. **Die Folge ist asymmetrisch und deshalb irreführend:** Der Burst erscheint als `ruhe: durchlaessig true` in jedem Eintrag, in dem er *nicht* geblockt hat — wie oft er **gestoppt** hat, steht nirgends. Eine Auswertung kann seine Durchlässe zählen und seine Blockaden nie. **Nicht naiv nachrüstbar:** Der Lauf tickt alle 5 s je verbundenem Nutzer; ein `log_berechnung` je Abbruchzyklus schriebe rund **720 gleiche Zeilen je Stunde und Nutzer** und ersäufte die Reihe, die ausgewertet werden soll. Zwei tragfähige Wege: eine Zeile je **Zustandswechsel** (Burst geht zu / geht auf; braucht einen Merker, verliert die Zahl der Blockzyklen und behält die Dauer), oder ein **Zähler je Grund** in Redis, den die nächste geschriebene Zeile mitführt und zurücksetzt (keine neuen Zeilen, exakte Verteilung, kein Zeitpunkt des einzelnen Blocks). Für die Frage *welche Grenzen hält sie ein* trägt der Zähler mehr. **Was ausdrücklich nicht mitgemacht wird:** die Riegelkette vor den Trigger ziehen — der Trigger verbraucht das Momentum (`redis.delete(momentum:…)`), und eine Umstellung änderte das Verbrauchsverhalten statt nur die Protokollierung. | ungebändigt |
-| `RIEGEL-5-7-OHNE-EINTRAG` | **`thema`, `modus` und `emotion` tragen `gerechnet: false, grund: "nicht erreicht"`, auch wenn sie gelaufen sind und entschieden haben.** Sie entscheiden innerhalb von `_delivery_ausfuehren`, und dort steht kein `log_berechnung`. **Der Eintrag ist dadurch nicht falsch, aber zweideutig:** `thema: nicht erreicht` heißt entweder *ein früherer Riegel hat geblockt* oder *das Thema hat geblockt und niemand hat es aufgeschrieben* — zwei Befunde mit verschiedenen Konsequenzen, und genau die Unterscheidung, für die die Kette gebaut ist. Solange Riegel 1 oder 2 fast immer entscheiden, fällt es nicht auf; sobald sie durchlassen, ist die Verteilung der späteren Riegel unbekannt. **Zuschnitt:** derselbe Eintrag, um die drei Werte ergänzt, bevor er geschrieben wird — die Kette wandert in die Zustellung hinein statt vor ihr abzuschließen. Unabhängig von `ZUSTELLUNG-ABBRUCH-UNGEZAEHLT` baubar. | ungebändigt |
+| `ZUSTELLUNG-ABBRUCH-UNGEZAEHLT` | **Was vor dem Trigger abbricht, erzeugt keine Zeile** — offene Rückfrage, erschöpfter Burst, leerer Stapel, kein Trigger. Im ganzen Zustelldienst steht **eine** Schreibstelle (`_riegelkette_pruefen`), und sie liegt hinter dem Trigger; das Feld `umfang: ab_trigger` sagt es ehrlich, behebt es aber nicht. **Die Folge ist asymmetrisch und deshalb irreführend:** Der Burst erscheint als `ruhe: durchlaessig true` in jedem Eintrag, in dem er *nicht* geblockt hat — wie oft er **gestoppt** hat, steht nirgends. Eine Auswertung kann seine Durchlässe zählen und seine Blockaden nie. **Nicht naiv nachrüstbar:** Der Lauf tickt alle 5 s je verbundenem Nutzer; ein `log_berechnung` je Abbruchzyklus schriebe rund **720 gleiche Zeilen je Stunde und Nutzer** und ersäufte die Reihe, die ausgewertet werden soll. Zwei tragfähige Wege: eine Zeile je **Zustandswechsel** (Burst geht zu / geht auf; braucht einen Merker, verliert die Zahl der Blockzyklen und behält die Dauer), oder ein **Zähler je Grund** in Redis, den die nächste geschriebene Zeile mitführt und zurücksetzt (keine neuen Zeilen, exakte Verteilung, kein Zeitpunkt des einzelnen Blocks). Für die Frage *welche Grenzen hält sie ein* trägt der Zähler mehr. **Was ausdrücklich nicht mitgemacht wird:** die Riegelkette vor den Trigger ziehen — der Trigger verbraucht das Momentum (`redis.delete(momentum:…)`), und eine Umstellung änderte das Verbrauchsverhalten statt nur die Protokollierung. | ungebändigt — ⬜ **offen** — nachgesehen am 25.08.2026. Ein Abbruch vor dem Trigger erzeugt weiterhin keine Zeile. |
+| `RIEGEL-5-7-OHNE-EINTRAG` | **`thema`, `modus` und `emotion` tragen `gerechnet: false, grund: "nicht erreicht"`, auch wenn sie gelaufen sind und entschieden haben.** Sie entscheiden innerhalb von `_delivery_ausfuehren`, und dort steht kein `log_berechnung`. **Der Eintrag ist dadurch nicht falsch, aber zweideutig:** `thema: nicht erreicht` heißt entweder *ein früherer Riegel hat geblockt* oder *das Thema hat geblockt und niemand hat es aufgeschrieben* — zwei Befunde mit verschiedenen Konsequenzen, und genau die Unterscheidung, für die die Kette gebaut ist. Solange Riegel 1 oder 2 fast immer entscheiden, fällt es nicht auf; sobald sie durchlassen, ist die Verteilung der späteren Riegel unbekannt. **Zuschnitt:** derselbe Eintrag, um die drei Werte ergänzt, bevor er geschrieben wird — die Kette wandert in die Zustellung hinein statt vor ihr abzuschließen. Unabhängig von `ZUSTELLUNG-ABBRUCH-UNGEZAEHLT` baubar. | ungebändigt — ⬜ **offen** — nachgesehen am 25.08.2026. Unveraendert. |
 
 **Belegt am 15.08.2026, unmittelbar nach dem Bau von Riegel 2:** 53 Einträge
 unter `node='zustellung'`, davon 45 von `frequenz` entschieden (Grund
@@ -325,9 +325,9 @@ Wert.
 
 | Kennung | Was offen ist | Band |
 |---|---|---|
-| `SALIENZKURVE-UNTEN-ZU-STEIL` | **Entschieden am 18.08.2026: der Exponent der Salienzkurve geht von 0,5 auf 1,16** — die Ausführung ist ein eigener Sprint und steht aus. Der untere Teil der Kurve hebt zu stark an: roh 0,3 bildet heute auf 0,674 ab und soll auf **0,40** abbilden. **Der Exponent ist der einzige Knopf und trifft die Vorgabe genau:** `EXP = 1,16` ergibt 0,4001. Die Alternative `EXP = 1,01` ergäbe 0,4504 und ist verworfen — die Vorgabe lautete 0,40 bis 0,45, gewählt ist das untere Ende. **Oben bleibt es flach, gleich welcher Exponent** — die Flachheit kommt vom Sinus, dessen Ableitung bei π/2 null ist, nicht vom Exponenten. **Warum es ein eigener Eintrag ist und nicht nebenbei geschieht:** Die Kurve steht an drei Stellen (Kurzzeitgedächtnis, Queue-Anker, Langzeit-Gewicht), und der Exponent wurde ausdrücklich von 0,6 auf 0,5 gezogen, *damit Kurz- und Langzeit dieselbe Kurve tragen*. Mitbetroffen sind drei hart eingetragene abgeleitete Konstanten — `KZG_SALIENZ_MINIMUM/MID/HIGH` (0,67379 / 0,84090 / 0,94393), und **das sind die TTL-Bänder 7 / 14 / 30 Tage**; dazu `KZG_SALIENZ_BOOST`, der ausdrücklich *nicht frei gewählt*, sondern aus den TTL-Stufen bestimmt ist, und `QUEUE_SCHWELLE`, die ausdrücklich auf dem **gedämpften** Wert gilt. **Die Neubewertung des Bestandes ist exakt und kein Schätzen:** Am Eintrag stehen `salienz_eingang` und `haeufigkeit`; der gespeicherte Wert ist eine reine Funktion daraus und wird **neu gerechnet, nicht umgerechnet** — genau der Fall, für den *die Eingaben werden gespeichert* gebaut wurde. **Die Grenze davon ist gezählt:** Von 2394 Einträgen tragen **2294 `gemessen` und 100 `geschaetzt`**; die hundert stammen aus dem Skalenumbau und würden aus einer Schätzung neu gerechnet. **Was fertig wäre:** neuer Exponent, die drei Bandgrenzen **gerechnet statt getippt**, ein Wanderungslauf über den Bestand, und eine Gegenprobe, die zeigt, dass kein Eintrag sein TTL-Band wechselt, ohne dass es beabsichtigt war. **Ausdrücklich keine Voraussetzung des Rückwegs:** Die Kurve ist streng monoton und ändert auf der rohen Skala keine einzige Rangfolge. | ungebändigt |
-| `AUFZEICHNUNGEN-QUANTIL` | **Die Schwelle des `[AUFZEICHNUNGEN]`-Blocks soll gerechnet werden, nicht gesetzt** — `Quantil(1 − K/N)` der mitlaufenden Verteilung (`novaberg-agent-dateien_k.md` §3.0a-bis). Gebaut ist heute nur die eine Hälfte: **Kappung `K = 3` und ein gemessener absoluter Boden von 0,30.** Die andere Hälfte ist nicht vergessen, sondern **noch nicht rechenbar** — das Quantil bezieht sich auf die Verteilung der echten Paarung von Anfrage gegen Eintrag, und diese Verteilung beginnt erst mit diesem Bauteil zu entstehen. **Der Rohstoff läuft seit dem 18.08.2026 mit:** Die Protokollzeile trägt je Turn Trefferzahl, Bestand und den Kosinus des schlechtesten gelieferten Treffers. **Was fertig wäre:** Der K-te Wert wird über eine benannte Zahl von Turns gesammelt, das Quantil daraus gerechnet und tritt **neben** den Boden — nicht an seine Stelle: Eine Quantilschwelle kann *„hier ist nichts Passendes"* per Konstruktion nicht ausdrücken. **Die Auslösebedingung ist eine Zahl, kein Gefühl:** Liegt die Trefferzahl dauerhaft auf der Kappung, wählt die Kappung aus statt des Bodens — genau der Zustand, in dem die Bibliothek vier Monate lief (40 von 42 Aufrufen). **Seit dem 20.08.2026 ist der Rohstoff kein Engpass mehr:** Der Bestand hinter dem Block ist mit der Freigabe von `/docs` auf **174** Zeilen gewachsen, und die Verteilung entsteht ab jetzt an einem Korpus, der diesen Namen trägt. | ungebändigt |
-| `AUFZEICHNUNGEN-BODEN-NACHZIEHEN` | **Am 18.08.2026 nachgemessen und widerlegt — der Eintrag bleibt offen, aber sein Gegenstand hat sich verschoben.** Sobald der Korpus heterogen war (13 statt 3 Zeilen), lag eine einschlägige Sonde bei **0,2899** und eine fremde bei **0,2515**: Die Lücke schrumpfte von 0,18 auf **0,038**, und 0,30 schnitt einen echten Treffer ab. **Die Abhilfe war nicht die nächste Zahl, sondern der zweite Kanal** (§6.3a) — der Boden behält sein Amt für den dense Kanal, der scharfe kennt ihn nicht. **Was offen bleibt:** Ob 0,30 für den dense Kanal die richtige Zahl ist, ist damit **nicht** beantwortet, nur entschärft. Eine Lücke von 0,038 trägt keine Schwelle; ob der dense Kanal auf diesem Korpus überhaupt eine tragen kann, ist die eigentliche Frage. **Was fertig wäre:** dieselbe Sondenmessung an einem Bestand, der groß genug für eine Verteilung ist, und ein Urteil darüber, ob der dense Kanal einen Boden oder nur eine Kappung braucht. → 🟢 **Am 20.08.2026 gemessen und beantwortet.** 24 Sonden (12 einschlägig mit bekannter Zieldatei, 12 fremd) gegen 174 Indexzeilen. **Die Verteilungen liegen auseinander:** einschlägig Median **0,4293**, fremd Median **0,2519** — die Lücke beträgt 0,177 gegen 0,038 am 18.08. Wiederhergestellt hat sie der **Korpus**, nicht die Schwelle. **Urteil: Der dense Kanal braucht den Boden, und 0,30 trägt hier.** Er schneidet 1 von 12 richtigen ab und lässt 1 von 12 fremden durch; elf der zwölf fremden Fragen erzeugen **null** Zeilen darüber, ohne ihn lieferte jede die Kappung voll aus. **Der abgeschnittene richtige Fall ist folgenlos — gemessen:** Die Sonde liegt dense bei 0,2189 unter dem Boden, der scharfe Kanal liefert genau diese Datei und kennt keinen Boden; der Fund besteht aus ihr allein. Auch der Vorbehalt des ursprünglichen Eintrags ist vermessen statt vermutet: In 157 von 227 protokollierten Fällen **ist** der Suchschlüssel das rohe Embedding (kein aktives Ziel, Imperativ); in den übrigen 70 liegt der gefärbte bei Kosinus 0,9330–0,9778 zum rohen. **Was daraus folgt, steht als eigener Eintrag:** `EMBED-LISTE-DATEIENINDEX` — der verbleibende Fehler ist die Rangfolge, nicht die Schwelle. Messschrieb: `2026-08-20_boden-sonden_ergebnis.md`. Ursprünglicher Wortlaut: **Der Boden 0,30 ist an drei Indexzeilen gemessen, und das steht an der Zahl.** Acht Sonden, beide Seiten, saubere Lücke zwischen 0,2014 und 0,3800 — aber der Bestand war **ein** Register (drei Dateien über die Paper des Projekts), und die Sonden liefen mit dem **rohen** Anfrage-Embedding, während der Betrieb mit dem verschobenen Suchvektor sucht. **Was fertig wäre:** dieselbe Sondenmessung erneut, sobald der Index heterogen ist (Fachtexte, Tabellen, Code), und der Vergleich der Sondenwerte gegen die im Betrieb protokollierten. **Warum es überhaupt dasteht:** Der Vorgängerwert 0,40 war nicht falsch, weil die Zahl falsch war, sondern weil ihr Vorbehalt beim Kopieren verdunstete. Dieser Eintrag ist der Vorbehalt in haltbarer Form. | ungebändigt |
+| `SALIENZKURVE-UNTEN-ZU-STEIL` | **Entschieden am 18.08.2026: der Exponent der Salienzkurve geht von 0,5 auf 1,16** — die Ausführung ist ein eigener Sprint und steht aus. Der untere Teil der Kurve hebt zu stark an: roh 0,3 bildet heute auf 0,674 ab und soll auf **0,40** abbilden. **Der Exponent ist der einzige Knopf und trifft die Vorgabe genau:** `EXP = 1,16` ergibt 0,4001. Die Alternative `EXP = 1,01` ergäbe 0,4504 und ist verworfen — die Vorgabe lautete 0,40 bis 0,45, gewählt ist das untere Ende. **Oben bleibt es flach, gleich welcher Exponent** — die Flachheit kommt vom Sinus, dessen Ableitung bei π/2 null ist, nicht vom Exponenten. **Warum es ein eigener Eintrag ist und nicht nebenbei geschieht:** Die Kurve steht an drei Stellen (Kurzzeitgedächtnis, Queue-Anker, Langzeit-Gewicht), und der Exponent wurde ausdrücklich von 0,6 auf 0,5 gezogen, *damit Kurz- und Langzeit dieselbe Kurve tragen*. Mitbetroffen sind drei hart eingetragene abgeleitete Konstanten — `KZG_SALIENZ_MINIMUM/MID/HIGH` (0,67379 / 0,84090 / 0,94393), und **das sind die TTL-Bänder 7 / 14 / 30 Tage**; dazu `KZG_SALIENZ_BOOST`, der ausdrücklich *nicht frei gewählt*, sondern aus den TTL-Stufen bestimmt ist, und `QUEUE_SCHWELLE`, die ausdrücklich auf dem **gedämpften** Wert gilt. **Die Neubewertung des Bestandes ist exakt und kein Schätzen:** Am Eintrag stehen `salienz_eingang` und `haeufigkeit`; der gespeicherte Wert ist eine reine Funktion daraus und wird **neu gerechnet, nicht umgerechnet** — genau der Fall, für den *die Eingaben werden gespeichert* gebaut wurde. **Die Grenze davon ist gezählt:** Von 2394 Einträgen tragen **2294 `gemessen` und 100 `geschaetzt`**; die hundert stammen aus dem Skalenumbau und würden aus einer Schätzung neu gerechnet. **Was fertig wäre:** neuer Exponent, die drei Bandgrenzen **gerechnet statt getippt**, ein Wanderungslauf über den Bestand, und eine Gegenprobe, die zeigt, dass kein Eintrag sein TTL-Band wechselt, ohne dass es beabsichtigt war. **Ausdrücklich keine Voraussetzung des Rückwegs:** Die Kurve ist streng monoton und ändert auf der rohen Skala keine einzige Rangfolge. | ungebändigt — ✅ **abgeschlossen** — der Exponentwechsel ist am 24.08.2026 gebaut und der Bestand umgerechnet worden; der Eintrag traegt die Entscheidung vom 18.08.2026 selbst. Nachgesehen am 25.08.2026. |
+| `AUFZEICHNUNGEN-QUANTIL` | **Die Schwelle des `[AUFZEICHNUNGEN]`-Blocks soll gerechnet werden, nicht gesetzt** — `Quantil(1 − K/N)` der mitlaufenden Verteilung (`novaberg-agent-dateien_k.md` §3.0a-bis). Gebaut ist heute nur die eine Hälfte: **Kappung `K = 3` und ein gemessener absoluter Boden von 0,30.** Die andere Hälfte ist nicht vergessen, sondern **noch nicht rechenbar** — das Quantil bezieht sich auf die Verteilung der echten Paarung von Anfrage gegen Eintrag, und diese Verteilung beginnt erst mit diesem Bauteil zu entstehen. **Der Rohstoff läuft seit dem 18.08.2026 mit:** Die Protokollzeile trägt je Turn Trefferzahl, Bestand und den Kosinus des schlechtesten gelieferten Treffers. **Was fertig wäre:** Der K-te Wert wird über eine benannte Zahl von Turns gesammelt, das Quantil daraus gerechnet und tritt **neben** den Boden — nicht an seine Stelle: Eine Quantilschwelle kann *„hier ist nichts Passendes"* per Konstruktion nicht ausdrücken. **Die Auslösebedingung ist eine Zahl, kein Gefühl:** Liegt die Trefferzahl dauerhaft auf der Kappung, wählt die Kappung aus statt des Bodens — genau der Zustand, in dem die Bibliothek vier Monate lief (40 von 42 Aufrufen). **Seit dem 20.08.2026 ist der Rohstoff kein Engpass mehr:** Der Bestand hinter dem Block ist mit der Freigabe von `/docs` auf **174** Zeilen gewachsen, und die Verteilung entsteht ab jetzt an einem Korpus, der diesen Namen trägt. | ungebändigt — ⬜ **offen** — nachgesehen am 25.08.2026. Die verlangte Messung ist nicht angesetzt worden. |
+| `AUFZEICHNUNGEN-BODEN-NACHZIEHEN` | **Am 18.08.2026 nachgemessen und widerlegt — der Eintrag bleibt offen, aber sein Gegenstand hat sich verschoben.** Sobald der Korpus heterogen war (13 statt 3 Zeilen), lag eine einschlägige Sonde bei **0,2899** und eine fremde bei **0,2515**: Die Lücke schrumpfte von 0,18 auf **0,038**, und 0,30 schnitt einen echten Treffer ab. **Die Abhilfe war nicht die nächste Zahl, sondern der zweite Kanal** (§6.3a) — der Boden behält sein Amt für den dense Kanal, der scharfe kennt ihn nicht. **Was offen bleibt:** Ob 0,30 für den dense Kanal die richtige Zahl ist, ist damit **nicht** beantwortet, nur entschärft. Eine Lücke von 0,038 trägt keine Schwelle; ob der dense Kanal auf diesem Korpus überhaupt eine tragen kann, ist die eigentliche Frage. **Was fertig wäre:** dieselbe Sondenmessung an einem Bestand, der groß genug für eine Verteilung ist, und ein Urteil darüber, ob der dense Kanal einen Boden oder nur eine Kappung braucht. → 🟢 **Am 20.08.2026 gemessen und beantwortet.** 24 Sonden (12 einschlägig mit bekannter Zieldatei, 12 fremd) gegen 174 Indexzeilen. **Die Verteilungen liegen auseinander:** einschlägig Median **0,4293**, fremd Median **0,2519** — die Lücke beträgt 0,177 gegen 0,038 am 18.08. Wiederhergestellt hat sie der **Korpus**, nicht die Schwelle. **Urteil: Der dense Kanal braucht den Boden, und 0,30 trägt hier.** Er schneidet 1 von 12 richtigen ab und lässt 1 von 12 fremden durch; elf der zwölf fremden Fragen erzeugen **null** Zeilen darüber, ohne ihn lieferte jede die Kappung voll aus. **Der abgeschnittene richtige Fall ist folgenlos — gemessen:** Die Sonde liegt dense bei 0,2189 unter dem Boden, der scharfe Kanal liefert genau diese Datei und kennt keinen Boden; der Fund besteht aus ihr allein. Auch der Vorbehalt des ursprünglichen Eintrags ist vermessen statt vermutet: In 157 von 227 protokollierten Fällen **ist** der Suchschlüssel das rohe Embedding (kein aktives Ziel, Imperativ); in den übrigen 70 liegt der gefärbte bei Kosinus 0,9330–0,9778 zum rohen. **Was daraus folgt, steht als eigener Eintrag:** `EMBED-LISTE-DATEIENINDEX` — der verbleibende Fehler ist die Rangfolge, nicht die Schwelle. Messschrieb: `2026-08-20_boden-sonden_ergebnis.md`. Ursprünglicher Wortlaut: **Der Boden 0,30 ist an drei Indexzeilen gemessen, und das steht an der Zahl.** Acht Sonden, beide Seiten, saubere Lücke zwischen 0,2014 und 0,3800 — aber der Bestand war **ein** Register (drei Dateien über die Paper des Projekts), und die Sonden liefen mit dem **rohen** Anfrage-Embedding, während der Betrieb mit dem verschobenen Suchvektor sucht. **Was fertig wäre:** dieselbe Sondenmessung erneut, sobald der Index heterogen ist (Fachtexte, Tabellen, Code), und der Vergleich der Sondenwerte gegen die im Betrieb protokollierten. **Warum es überhaupt dasteht:** Der Vorgängerwert 0,40 war nicht falsch, weil die Zahl falsch war, sondern weil ihr Vorbehalt beim Kopieren verdunstete. Dieser Eintrag ist der Vorbehalt in haltbarer Form. | ungebändigt — ⬜ **offen** — nachgesehen am 25.08.2026. Der Eintrag sagt selbst, dass sein Gegenstand am 18.08.2026 widerlegt wurde und er trotzdem offen bleibt — daran hat sich nichts geaendert. |
 
 ---
 
@@ -335,9 +335,9 @@ Wert.
 
 | Kennung | Was offen ist | Band |
 |---|---|---|
-| `DOKU-VOLLPRUEFUNG` | **Der Bestand einmal vollständig gegen den Code prüfen** — als eigener Auftrag, weil der Nachzug einer Sitzung ihn nicht leisten kann. **Nicht „alle 149 lesen":** Das ist dieselbe Ritualform, die schon beim Nachzug versagt. Geprüft wird über ableitbare Kriterien mit Zahlen — jeder genannte `.py`-Pfad gegen die Existenz der Datei, jedes Zeilenzitat `datei.py:NNN` gegen den Anker, den es behauptet, jeder in Backticks genannte Bezeichner gegen den Code, jede als Zählung im Text stehende Zahl gegen ihre Quelle. **Ergebnis sind vier Trefferlisten, nicht ein Urteil.** Der bekannte Rest bleibt benannt: Was ohne Datei-, Namens- oder Zahlbezug beschrieben ist, erreicht kein Kriterium — diese Klasse wird gezählt und nicht behauptet. **Am 21.08.2026 hat dieser Rest seinen ersten belegten Fall, und er stand an einer Stelle mit der Überschrift *WICHTIG*:** `novaberg-mem-kzg.md` §7 führte eine Tabelle, nach der `config.redis_client` **ohne** `decode_responses` arbeitet. Code, Kommentar und laufender Dienst sagen übereinstimmend **True**; die Aussage stand über Monate und leitet an, welchen Client man für KZG-Operationen nimmt. **Keins der vier Kriterien hätte sie gefunden** — der Pfad existiert, der Bezeichner existiert, es gibt keine Zeilenangabe und keine Zählung. **Daraus ein fünftes, das maschinell geht:** eine Tabelle, die einen **Konfigurationswert** behauptet, gegen den Wert im Code — `True`/`False` neben einem Bezeichner ist so greifbar wie ein Pfad. Anlass: `NACHZUG-KANDIDATEN-GATE` und die drei Lücken vom 15.08.2026, die zeigten, dass Drift sich über Sitzungen sammelt. | ungebändigt |
-| `RAUCHTEST-ANWENDUNG-IMPORT` | **Ein Zeuge, der `main.py` importiert und die Route-Tabelle zählt.** Fünf Zeilen, und sie decken eine Klasse ab, gegen die keine Menge von Modultests hilft: einen Importfehler in der zusammengesetzten Anwendung. **Gemessen am 18.08.2026:** `grep -rln "TestClient\|import main\|api\." server/tests/` → **0 von 126** Testdateien importieren die Anwendung; eine Typannotation an einem Endpunkt legte den Dienst 9 min 38 s lahm, bei **1782 grünen Zeugen**. **Der Zeuge prüft zwei Dinge:** dass der Import durchgeht, und dass die Zahl der registrierten Routen nicht unter einen Sollwert fällt — ein Router, der still nicht mehr eingebunden wird, ist derselbe Ausfall ohne Ausnahme. **Bekannte Grenze:** Er sagt nichts über Laufzeitverhalten, nur über den Hochlauf. Genau das reicht hier. | ungebändigt |
-| `NACHZUG-KANDIDATEN-GATE` | **Ein Riegel vor dem Doku-Commit, der die Kandidatenmenge aus der Dateiliste des Diffs ableitet** — für jede geänderte Produktivdatei alle Dokumente, die ihren Pfad oder Dateinamen nennen — und anschlägt, solange ein Kandidat weder geändert noch mit Grund verworfen ist. **Der Anlass ist gemessen, nicht vermutet:** Am 15.08.2026 galt ein Nachzug nach dem Bezeichner-Kriterium als vollständig (zehn Dokumente); die Ableitung aus der Dateiliste ergab **28 Kandidaten** und darin **drei echte Lücken**, keine davon über die geänderten Bezeichner erreichbar. Der Grund ist strukturell: Ein Dokument, das den Vorgang beschreibt, ohne den neuen Namen zu nennen, **kann** ihn nicht nennen. **Bekannte Grenze:** 36 der 149 Dokumente nennen überhaupt keine Datei und stehen damit in keiner Kandidatenliste — der Riegel deckt die dateibenennende Klasse ab, nicht die begriffliche. | ungebändigt |
+| `DOKU-VOLLPRUEFUNG` | **Der Bestand einmal vollständig gegen den Code prüfen** — als eigener Auftrag, weil der Nachzug einer Sitzung ihn nicht leisten kann. **Nicht „alle 149 lesen":** Das ist dieselbe Ritualform, die schon beim Nachzug versagt. Geprüft wird über ableitbare Kriterien mit Zahlen — jeder genannte `.py`-Pfad gegen die Existenz der Datei, jedes Zeilenzitat `datei.py:NNN` gegen den Anker, den es behauptet, jeder in Backticks genannte Bezeichner gegen den Code, jede als Zählung im Text stehende Zahl gegen ihre Quelle. **Ergebnis sind vier Trefferlisten, nicht ein Urteil.** Der bekannte Rest bleibt benannt: Was ohne Datei-, Namens- oder Zahlbezug beschrieben ist, erreicht kein Kriterium — diese Klasse wird gezählt und nicht behauptet. **Am 21.08.2026 hat dieser Rest seinen ersten belegten Fall, und er stand an einer Stelle mit der Überschrift *WICHTIG*:** `novaberg-mem-kzg.md` §7 führte eine Tabelle, nach der `config.redis_client` **ohne** `decode_responses` arbeitet. Code, Kommentar und laufender Dienst sagen übereinstimmend **True**; die Aussage stand über Monate und leitet an, welchen Client man für KZG-Operationen nimmt. **Keins der vier Kriterien hätte sie gefunden** — der Pfad existiert, der Bezeichner existiert, es gibt keine Zeilenangabe und keine Zählung. **Daraus ein fünftes, das maschinell geht:** eine Tabelle, die einen **Konfigurationswert** behauptet, gegen den Wert im Code — `True`/`False` neben einem Bezeichner ist so greifbar wie ein Pfad. Anlass: `NACHZUG-KANDIDATEN-GATE` und die drei Lücken vom 15.08.2026, die zeigten, dass Drift sich über Sitzungen sammelt. | ungebändigt — ⬜ **offen** — nachgesehen am 25.08.2026. Am 16.08.2026 einmal gefahren; als **wiederkehrender** Auftrag nicht eingerichtet. |
+| `RAUCHTEST-ANWENDUNG-IMPORT` | **Ein Zeuge, der `main.py` importiert und die Route-Tabelle zählt.** Fünf Zeilen, und sie decken eine Klasse ab, gegen die keine Menge von Modultests hilft: einen Importfehler in der zusammengesetzten Anwendung. **Gemessen am 18.08.2026:** `grep -rln "TestClient\|import main\|api\." server/tests/` → **0 von 126** Testdateien importieren die Anwendung; eine Typannotation an einem Endpunkt legte den Dienst 9 min 38 s lahm, bei **1782 grünen Zeugen**. **Der Zeuge prüft zwei Dinge:** dass der Import durchgeht, und dass die Zahl der registrierten Routen nicht unter einen Sollwert fällt — ein Router, der still nicht mehr eingebunden wird, ist derselbe Ausfall ohne Ausnahme. **Bekannte Grenze:** Er sagt nichts über Laufzeitverhalten, nur über den Hochlauf. Genau das reicht hier. | ungebändigt — ⬜ **offen** — nachgesehen am 25.08.2026. Gegen HEAD `599c19b` geprueft: Es gibt keinen Zeugen, der die Anwendung importiert und die Route-Tabelle zaehlt. |
+| `NACHZUG-KANDIDATEN-GATE` | **Ein Riegel vor dem Doku-Commit, der die Kandidatenmenge aus der Dateiliste des Diffs ableitet** — für jede geänderte Produktivdatei alle Dokumente, die ihren Pfad oder Dateinamen nennen — und anschlägt, solange ein Kandidat weder geändert noch mit Grund verworfen ist. **Der Anlass ist gemessen, nicht vermutet:** Am 15.08.2026 galt ein Nachzug nach dem Bezeichner-Kriterium als vollständig (zehn Dokumente); die Ableitung aus der Dateiliste ergab **28 Kandidaten** und darin **drei echte Lücken**, keine davon über die geänderten Bezeichner erreichbar. Der Grund ist strukturell: Ein Dokument, das den Vorgang beschreibt, ohne den neuen Namen zu nennen, **kann** ihn nicht nennen. **Bekannte Grenze:** 36 der 149 Dokumente nennen überhaupt keine Datei und stehen damit in keiner Kandidatenliste — der Riegel deckt die dateibenennende Klasse ab, nicht die begriffliche. | ungebändigt — ✅ **abgeschlossen** — nachgesehen am 25.08.2026. Der Riegel vor dem Doku-Commit ist gebaut und leitet seine Kandidaten aus der Dateiliste des Diffs ab. |
 
 ---
 
@@ -347,9 +347,9 @@ Drei Einträge. Der erste ist ein Zeiger auf ein Konzept und **keine Wiederholun
 
 | Kennung | Was offen ist | Band |
 |---|---|---|
-| `EIGENZEIT-BAUTEILE` | Sechs Bauteile aus `novaberg-eigenzeit_k.md` §5, Reihenfolge **E → F → C → A → B → D**. E und F stehen vorn, weil sie das Material selbst betreffen; jeder Riegel danach entscheidet auf dem, was sie hinterlassen. **Die eigentliche Arbeit an E** ist nicht der neue Block, sondern die Stellen, die auf dem Impulsweg einen leeren Reiz als Ausfall lesen — Salienz, Verdichtung, Ablage, die Leerprüfung der erzeugenden Stufe. Wer das übersieht, tauscht eine laute Zuschreibung gegen einen stillen Turnverlust. **Stand 15.08.2026: E, F, C, A und B gebaut, D offen.** Zwei benannte Reste: C hat eine offene Kante (der Fall ohne Bezug, 39 von 56 Impulsen — die Auswahlregel ist unentschieden), und **B wirkt erst, wenn ein Eintrag mit Level auf dem Stapel liegt** — heute trägt keiner einen, weil `shadow_auftrag` keine Spalte für die Erregung hat. **Stand 15.08.2026: D ist gebaut** — damit alle sechs Bauteile. Riegel 1 entscheidet das *Ob* bei Schwelle 0,25, Riegel 2 den *Moment* als Schalter auf dem Führungsmaß, und **mit ihm ist die stündliche Decke gefallen**. Die **Frequenz-Schwelle** ist nicht entschieden, sondern gegenstandslos geworden: Die Messung hat ihre Prämisse widerlegt (das Führungsmaß trägt keine Frequenz je Paar, Verhältnis 0,22), und ein Schalter benutzt die vorhandene `GV_INITIATIVE_SCHWELLE`. Offen bleiben `PRUEFFIGUR-DISTANZ-090`, die offene Kante von C (der Fall ohne Bezug), und zwei benannte Reste der Protokollpflicht: Der Eintrag beginnt am Trigger, und die Riegel 5 bis 7 tragen ihre Werte noch nicht ein. | gebändigt bis auf die benannten Reste |
-| `SCHWELLE-OHNE-PAARUNG` | Zehn Schwellen über Embedding-Kosinus zwischen 0,40 und 0,95, fünf davon auf exakt 0,40 über mindestens vier Paarungen (Fundliste, 14.08.). **Kein Aufräum-Auftrag** — wer eine anfasst, schreibt ihre Paarung dazu. **Maschinell prüfbar** und damit ein Gate-Kandidat: Eine Konstante, deren Name auf eine Ähnlichkeitsschwelle deutet, trägt in ihrem Kommentar eine Paarungsangabe. | ungebändert |
-| `PRUEFFIGUR-DISTANZ-090` | Der Zuwendungs-Riegel (Bauteil D) steht bei 0,25 und trennt im Bestand sauber — **aber der Bestand enthält in der Richtung *sie → Mensch* keine Figur zwischen `distanz` 0,60 und 1,00**, also das Band, in dem der Zug schwach wird. Eine angelegte Prüffigur bei 0,90 entscheidet, ob die Trennung hält. Kosten: eine Kennung, ein Rad, ein Lauf von `haltung_naehe_verteilung`. | ungebändert |
+| `EIGENZEIT-BAUTEILE` | Sechs Bauteile aus `novaberg-eigenzeit_k.md` §5, Reihenfolge **E → F → C → A → B → D**. E und F stehen vorn, weil sie das Material selbst betreffen; jeder Riegel danach entscheidet auf dem, was sie hinterlassen. **Die eigentliche Arbeit an E** ist nicht der neue Block, sondern die Stellen, die auf dem Impulsweg einen leeren Reiz als Ausfall lesen — Salienz, Verdichtung, Ablage, die Leerprüfung der erzeugenden Stufe. Wer das übersieht, tauscht eine laute Zuschreibung gegen einen stillen Turnverlust. **Stand 15.08.2026: E, F, C, A und B gebaut, D offen.** Zwei benannte Reste: C hat eine offene Kante (der Fall ohne Bezug, 39 von 56 Impulsen — die Auswahlregel ist unentschieden), und **B wirkt erst, wenn ein Eintrag mit Level auf dem Stapel liegt** — heute trägt keiner einen, weil `shadow_auftrag` keine Spalte für die Erregung hat. **Stand 15.08.2026: D ist gebaut** — damit alle sechs Bauteile. Riegel 1 entscheidet das *Ob* bei Schwelle 0,25, Riegel 2 den *Moment* als Schalter auf dem Führungsmaß, und **mit ihm ist die stündliche Decke gefallen**. Die **Frequenz-Schwelle** ist nicht entschieden, sondern gegenstandslos geworden: Die Messung hat ihre Prämisse widerlegt (das Führungsmaß trägt keine Frequenz je Paar, Verhältnis 0,22), und ein Schalter benutzt die vorhandene `GV_INITIATIVE_SCHWELLE`. Offen bleiben `PRUEFFIGUR-DISTANZ-090`, die offene Kante von C (der Fall ohne Bezug), und zwei benannte Reste der Protokollpflicht: Der Eintrag beginnt am Trigger, und die Riegel 5 bis 7 tragen ihre Werte noch nicht ein. | gebändigt bis auf die benannten Reste — ⬜ **offen** — nachgesehen am 25.08.2026. Geplante Arbeit, nicht begonnen; der Eintrag beschreibt ein Ziel und keinen Defekt. |
+| `SCHWELLE-OHNE-PAARUNG` | Zehn Schwellen über Embedding-Kosinus zwischen 0,40 und 0,95, fünf davon auf exakt 0,40 über mindestens vier Paarungen (Fundliste, 14.08.). **Kein Aufräum-Auftrag** — wer eine anfasst, schreibt ihre Paarung dazu. **Maschinell prüfbar** und damit ein Gate-Kandidat: Eine Konstante, deren Name auf eine Ähnlichkeitsschwelle deutet, trägt in ihrem Kommentar eine Paarungsangabe. | ungebändert — ⬜ **offen** — nachgesehen am 25.08.2026. Die zehn Schwellen nennen ihre Paarung weiterhin nicht. Deckungsgleich mit `SCHWELLEN-OHNE-VERGLEICHSGEGENSTAND` — **zwei Kennungen, ein Befund.** |
+| `PRUEFFIGUR-DISTANZ-090` | Der Zuwendungs-Riegel (Bauteil D) steht bei 0,25 und trennt im Bestand sauber — **aber der Bestand enthält in der Richtung *sie → Mensch* keine Figur zwischen `distanz` 0,60 und 1,00**, also das Band, in dem der Zug schwach wird. Eine angelegte Prüffigur bei 0,90 entscheidet, ob die Trennung hält. Kosten: eine Kennung, ein Rad, ein Lauf von `haltung_naehe_verteilung`. | ungebändert — ⬜ **offen** — nachgesehen am 25.08.2026. Die verlangte Messung ist nicht angesetzt worden. |
 
 ---
 
@@ -922,6 +922,8 @@ Sieben Einträge der Fundliste waren offene Arbeit: abschließbar, in unserem Co
 
 #### KOPPLUNG-FRAGENSPALTE-UNGEPRUEFT — eine Tabelle ist aus einer zweiten übersetzt, und nichts hält sie zusammen
 
+**Zustand:** offen — nachgesehen am 25.08.2026. Der verlangte Zeuge, der beide Tabellen gegeneinander haelt, ist nicht dazugekommen.
+
 Die Spalte `fragen` in `CLUSTER_GRUNDWERT` (`server/ei/haltung.py`) ist keine eigene Setzung, sondern eine Übersetzung von `CLUSTER_FRAGEN` (`server/ei/dreischicht.py`): „Häufig, begeistert" wird zu 0,90, „Keine" zu 0,00. Der Kommentar sagt es — *„Wer dort etwas ändert, ändert hier mit"* —, aber **kein Test erzwingt die Kopplung**, und die beiden Tabellen stehen in verschiedenen Modulen mit verschiedenen Wertetypen: Text gegen Zahl.
 
 Eine Änderung an der Fragefrequenz einer Landschaft schlägt damit auf die Prompt-Seite durch und auf die Haltungsrechnung nicht. Dieselbe Naht trägt beide Enden der Dreischicht: `CLUSTER_FRAGEN` geht in den GV-Prompt und in den Sprachstil-Block des Responders, `CLUSTER_GRUNDWERT` in die fünf Verhaltensgrößen.
@@ -931,6 +933,8 @@ Eine Änderung an der Fragefrequenz einer Landschaft schlägt damit auf die Prom
 **Priorität:** mittel. Der Bestand ist heute stimmig; der Defekt entsteht bei der nächsten Änderung und ist dann still.
 
 #### EINWANDSURTEIL-OHNE-LESER — eine Rechnung, deren Ergebnis nirgends ankommt
+
+**Zustand:** offen — nachgesehen am 25.08.2026. Weder Anschluss noch Vermerk sind gebaut.
 
 Der Verfasser schreibt den Kanal `einwandsurteil`, `graph/state.py` deklariert ihn, `graph/base.py` und `graph/builder.py` legen ihn beim Zustandsaufbau an. **Ein Verbraucher existiert nicht.**
 
@@ -942,6 +946,8 @@ Dieselbe Klasse wie die Haltung, deren fehlender Abnehmer in `novaberg-graph-rec
 
 #### KANAELE-OHNE-VERTRAG — vier Kanäle des Zustands ohne beidseitige Zusage
 
+**Zustand:** offen — nachgesehen am 25.08.2026. Die Pruefung ist als Werkzeug nicht entstanden; die beiden blinden Flecken stehen unbenannt.
+
 Über 63 deklarierte Kanäle des `ConversationState` mechanisch geprüft: `memory_entries_raw`, `system_prompt` und `timeline_id` haben **weder Schreiber noch Leser** — sie existieren nur im Schema. Und **`response` hat vier Schreiber** (`responder.py`, `thinker.py`, `corrector.py`, `character_graph.py`), `pending_writes` drei, fünf weitere je zwei. Mehrere Erzeuger für eine Größe sind die Klasse, die auseinanderläuft.
 
 **Die Prüfung hat zwei benannte blinde Flecken:** Sie sieht den Erzeugungspfad in `create_state` nicht — daher 15 Falschmeldungen „gelesen, nie geschrieben" — und keine Verbraucher außerhalb von `graph/` und `services/`; so fiel `such_vektor` zu Unrecht auf, den ein Plugin liest.
@@ -951,6 +957,8 @@ Dieselbe Klasse wie die Haltung, deren fehlender Abnehmer in `novaberg-graph-rec
 **Priorität:** hoch. Ohne die Zahl ist jede Aussage über die Zuverlässigkeit der Kette ein Eindruck.
 
 #### GV-SKIP-TOTE-AUSLOESER — eine dreiteilige Bedingung, die einteilig wirkt
+
+**Zustand:** offen — gegen HEAD `599c19b` geprueft am 25.08.2026. Der Skip prueft unveraendert auf `begruessung` und `system`, die kein Produzent liefert. Deckungsgleich mit `GV-SKIP-BEGRUESSUNG-TOT` und `INTENT-TOTE-ZWEIGE` — **drei Kennungen auf einen Befund.**
 
 `_ist_skip()` überspringt bei `intent` in `("begruessung", "meta", "system")`. Über 845 Rohturns kommt `begruessung` **null** mal vor und `system` **null** mal; das Feld trägt `personal` (321), `knowledge` (248), `meta` (88), `smalltalk` (77), `task` (59), `creative` (32), `philosophischer_austausch` (17), `berichtend` (3). **Wirksam ist allein `meta`.**
 
@@ -962,6 +970,8 @@ Ein Zweig, der auf einen Wert wartet, den niemand schreibt, ist von einem Zweig 
 
 #### RESPONDER-KOMMENTAR-FALSCHE-SCHICHT — ein Kommentar nennt die falsche Gedächtnisschicht
 
+**Zustand:** offen — nachgesehen am 25.08.2026. Eine Zeile, die niemand korrigiert hat.
+
 Die Zeile lautet `# Bild vom Nutzer (beziehungsprofil aus LZG-Destillation)`; der Erzeuger ruft `beziehungsprofil_destillieren(kzg_eintraege)`. Die drei Nachbarzeilen darüber stimmen — `adaptive` aus KZG, `emotions_profil` und `intentions_profil` aus LZG —, und genau das macht die falsche unauffällig: **Sie steht in einer Reihe richtiger Angaben, an der Stelle, an der jemand nachsieht, um die Herkunft zu klären.**
 
 Ein Kommentar, der die Quelle eines Wertes benennt, ist eine Zustandsaussage und veraltet wie jede andere.
@@ -971,6 +981,8 @@ Ein Kommentar, der die Quelle eines Wertes benennt, ist eine Zustandsaussage und
 **Priorität:** niedrig im Aufwand, mittel in der Wirkung — sie ist genau die Zeile, die bei der nächsten Suche nach „warum ist das Profil leer" gelesen wird.
 
 #### PROFILE-LEER-URSACHE-UNBEKANNT — die bisherige Begründung ist am Bestand widerlegt
+
+**Zustand:** offen, unbelegt — nachgesehen am 25.08.2026. Die Ursache ist nicht bestimmt worden.
 
 **Der Erstbefund vom 06.08.2026, aus dem dieser Eintrag entstand:** Gemessen an `charakter_hash` tragen für alle sechs Personas und in **beiden** Richtungen `kern_hash`, `intentions_profil` und `emotions_profil` null Zeichen; gefüllt sind allein `adaptive_hash` (KZG) und `beziehungsprofil` (KZG). Die damals notierte Ursache — alle drei leeren lesen `lzg_knoten`, und eine frische Persona hat kein Langzeitgedächtnis — ist zwei Tage später am Bestand widerlegt worden; sie steht hier, weil sie erklärt, warum zwei Monate lang niemand weitergesucht hat.
 
@@ -985,6 +997,8 @@ Die Begründung stimmt für vier von sechs Personas und stand als **allgemeine**
 **Priorität:** mittel. Betrifft die Aussagekraft jeder Charakterbildungs-Messung.
 
 #### CHARAKTER-HASH-DOKU-FALSCHE-QUELLE — das Dokument nennt eine Quelle, die der Code nicht liest
+
+**Zustand:** offen — nachgesehen am 25.08.2026. Beide Abschnitte nennen weiterhin die falsche Quelle.
 
 `novaberg-pixie-character-hash.md` §3.3 und §3.4 führen für das Intentions-Profil *„Aggregiert aus Session-Annotationen (Intentionen + Modus + Stil)"* und für das Emotions-Profil eine Grundtendenz „über Monate". Im Code nehmen `intentions_profil_destillieren` und `emotions_profil_destillieren` beide `lzg_eintraege` als einziges Material und geben bei leerer Liste `""` zurück (`server/agents/charakter/destillation.py`).
 
@@ -1002,6 +1016,8 @@ Der aelteste Bestand. **Acht der neun sind Struktur statt Verhalten** — tote Z
 
 #### DOKU-MEHRDEUTIGE-ANKER
 
+**Zustand:** offen, und heute erneut belegt — 25.08.2026. Das Findemittel der Chronik zaehlt fuenf mehrfach vergebene Titel und muss sie mit `-1`, `-2` durchzaehlen, damit die Verweise nicht auf dieselbe Stelle zeigen. Der Befund gilt ueber die drei genannten Dokumente hinaus.
+
 **Befund (2026-07-28).** Doku-Hygiene, **gemessen**: Drei Dokumente vergeben Überschriften mehrfach und erzeugen damit mehrdeutige Anker — `novaberg-backlog.md` (3× „Phasen-Übersicht", 3× „Hintergrund", 2× „Auswirkung auf Akten-Vision"), `novaberg-roadmap.md` (je 2× „Dokumentation", „Backlog", „Bugfixes") und `novaberg-thinking-skills_k.md` (2× „Wetter-Anfragen"). Ein Zähler über alle `#`-Zeilen meldet zusätzlich `novaberg-memory-synapsen_k.md` mit 12 Treffern — das sind **Python-Kommentare in einem Code-Block**, kein Befund. Wer das nachmisst, muss Code-Fences überspringen.
 
 **Was fertig waere.** Jede Ueberschrift ist in ihrem Dokument eindeutig.
@@ -1009,6 +1025,8 @@ Der aelteste Bestand. **Acht der neun sind Struktur statt Verhalten** — tote Z
 **Prioritaet:** niedrig.
 
 #### AGENT-MD-NIE-GEPRUEFT
+
+**Zustand:** offen — nachgesehen am 25.08.2026. Ein Abgleich der Datei gegen den Code hat nicht stattgefunden.
 
 **Befund (2026-07-28).** `server/agents/kzg/AGENT.md` ist nie gegen den Code geprüft worden. Der KZG-Agent hat seit der Erstfassung Nodes gewonnen und verloren (`magnete_aufloesen` kam, `aehnlichkeit_pruefen` ist gelöscht) — ob die AGENT.md das trägt, ist offen. Gilt sinngemäß für die übrigen AGENT.md-Dateien, die ebenfalls nie systematisch abgeglichen wurden.
 
@@ -1018,6 +1036,8 @@ Der aelteste Bestand. **Acht der neun sind Struktur statt Verhalten** — tote Z
 
 #### SESSION-CONTEXT-BUILD-OHNE-AUFRUFER
 
+**Zustand:** offen — gegen HEAD `599c19b` geprueft am 25.08.2026. `session_context_build` wird weiterhin nur exportiert und nirgends gerufen. **Die Zeilenangabe des Befundes ist veraltet:** heute `memory/session.py:532` statt `:313`.
+
 **Befund (2026-07-28).** `memory/session.py:313` `session_context_build()` hat **keinen Aufrufer**. Sie setzt Zusammenfassung und Turns zu einem `[Aktuelle Unterhaltung]`-Block zusammen — genau die Aufgabe, die der Responder seit dem Verlaufs-Umbau selbst und in anderer Form erledigt (`graph/nodes/responder.py`, Turn-Paare unter `----- Turn n von m -----`). Gemessen repoweit über alle Dateitypen: **zwei** Treffer, beide Definition bzw. Re-Export (`memory/__init__.py:39`). Positivkontrolle auf dasselbe Muster mit `session_turns_retrieve`: 52 Treffer in 27 Dateien. Der Befund ist nicht der tote Code, sondern die Falle: Wer den Gesprächskontext nachvollziehen will, findet zuerst diese Funktion und liest eine Formatierung, die kein LLM mehr sieht. **Anhängend:** `SESSION_MAX_TURNS` (=20) wird ebenso exportiert, steht im Code aber an genau einer Stelle — dem `except`-Zweig von `session_summarize_if_needed` (`session.py:202`), also im Notpfad bei gescheitertem LLM-Call. Der reguläre Deckel heißt `SESSION_SUMMARIZE_AT` (=25). Der Name der exportierten Konstante behauptet, sie sei die Regel.
 
 **Was fertig waere.** Die Funktion hat einen Aufrufer oder ist entfernt.
@@ -1025,6 +1045,8 @@ Der aelteste Bestand. **Acht der neun sind Struktur statt Verhalten** — tote Z
 **Prioritaet:** niedrig.
 
 #### EIGENIMPULSE-IN-DER-SCHWELLE
+
+**Zustand:** offen, unbelegt — nachgesehen am 25.08.2026. Die Wirkung auf die Schwelle ist nicht nachgemessen worden.
 
 **Befund (2026-07-28).** Novas Eigen-Impulse zählen in die Zusammenfassungs-Schwelle, **erscheinen aber nie im Gesprächsverlauf**. Ein Impuls läuft durch den CharacterGraph; der Dispatcher schreibt dafür einen `assistant`-Session-Turn ohne `user`-Gegenstück. Beide Verlaufs-Bildner überspringen alleinstehende `assistant`-Turns: der Paar-Bildner im Responder (`graph/nodes/responder.py:672-674`) und `format_session_turns_numbered` (`memory/session.py:283-286`), das GV-Node, Router, Perzeption und vier Agenten-Klassifikationen lesen. *(Zeilennummern gemessen 28.07.2026.)* Gemessen am 28.07.2026, 20:15 UTC: `session:<user>:<character>:turns` = 20 Einträge, davon **12 `assistant` gegen 8 `user`**; der Responder-Prompt desselben Fensters trug 7 Turn-Paare. Vier Einträge zählen damit gegen `SESSION_SUMMARIZE_AT`, ohne je im Prompt gestanden zu haben — bei Erreichen der Schwelle schneiden sie echte Wortwechsel weg. Ob ein Impuls in den Verlauf gehört, ist eine offene Frage; dass er ihn verkürzt, ohne darin vorzukommen, ist keine.
 
@@ -1034,6 +1056,8 @@ Der aelteste Bestand. **Acht der neun sind Struktur statt Verhalten** — tote Z
 
 #### REPERTOIRE-UNGLEICH-VERTEILT
 
+**Zustand:** offen — nachgesehen am 25.08.2026. Die Verteilung der Matrix ist unveraendert.
+
 **Befund (2026-07-29).** Die Repertoire-Matrix schließt keine Strategie global aus, verteilt sie aber stark ungleich — und der schiefste Punkt fällt mit dem häufigsten Zustand zusammen. Über alle 64 Sektoren und 14 Cluster gerechnet: Erreichbarkeit von **100 %** (`Bestaetigung`, nie `unpassend`) bis **28 %** (`Impuls`); im Mittel trägt ein Sektor **3,66 von 7** Strategien. Zwei Strukturbefunde daraus: **`Perspektivwechsel` ist in keinem der 14 Cluster Kernstrategie** (0× kern, 2× passt, 3× selten, 9× unpassend) — wählbar, aber nie das Werkzeug der Landschaft; und **`paradox` hat überhaupt keine Kernstrategie**, verfügbar sind dort nur `Sp` (passt), `Be` (passt), `Pr` (selten). `paradox` ist mit **14 von 64 Sektoren (21,9 %) der größte Raum**, das LLM bekommt dort einen `[WERKZEUGE]`-Block ohne ein einziges ★. Dazu Chat 114: Sektor **#37 „Fiebrige Heiterkeit" war über 45 Läufe der häufigste des Systems** — und #37 liegt in `paradox`. **Nicht gemessen ist die heutige Häufigkeit:** Der Container-Log deckt 11 Stunden und 9 Sektor-Zuweisungen ab, mehrere aus Probeläufen — keine Reihe; die 45-Läufe-Messung stammt von vor dem Raum-Umbau derselben Sitzung. Ob eine Landschaft ohne Kernstrategie vorgesehen ist, sagt das Konzept nicht (§10.1 regelt nur, dass der Cluster das Repertoire bestimmt und der Charakter darin gewichtet).
 
 **Was fertig waere.** Die Ungleichverteilung ist als gewollt benannt, oder sie ist ausgeglichen.
@@ -1041,6 +1065,8 @@ Der aelteste Bestand. **Acht der neun sind Struktur statt Verhalten** — tote Z
 **Prioritaet:** mittel.
 
 #### NOTIZEN-ENRICH-16-ZWEIGE
+
+**Zustand:** offen, gefallen — am Bestand gemessen am 25.08.2026. `enrich_entries` traegt heute **12** Verzweigungen statt 16. Kleiner, aber unveraendert der Befund: eine Funktion mit zwoelf Zweigen ist keine Funktion mit einer Aufgabe.
 
 **Befund (2026-07-30).** `plugins/notizen_manager/manager.py` `enrich_entries()` traegt **16 Verzweigungen und 67 Anweisungen** — mehr als jede der fuenf Funktionen, die an diesem Tag zerlegt wurden. Sie tauchte in der Liste der Zaehlregel-Funde nicht auf, weil sie im **Ueberlappungsbereich** von C901 und PLR0912 liegt: Wer nur die eigenstaendigen Treffer der einen Regel ansieht, uebersieht die groessten Faelle, weil die von beiden Regeln gemeldet werden. Der Fund ist nicht die Funktion, sondern die Auswahlmethode.
 
@@ -1050,6 +1076,8 @@ Der aelteste Bestand. **Acht der neun sind Struktur statt Verhalten** — tote Z
 
 #### LLM-PROVIDER-ZWEIG-UNERREICHBAR
 
+**Zustand:** offen, unbelegt — gegen HEAD `599c19b` nachgesehen am 25.08.2026. Der im Befund zitierte defensive Zweig ist in dieser Form nicht mehr auffindbar; `services/llm_provider.py` liest das Feld heute als `daten.get("message") or {}`. **Ob der Zweig entfallen ist oder nur umgeschrieben, ist ohne den alten Wortlaut nicht zu entscheiden.**
+
 **Befund (2026-07-30).** `services/llm_provider.py`: Der defensive Zweig, der `message` als Dict *oder* Objekt behandelte, war **nie erreichbar**. Drei Zeilen darueber ruft die Token-Verbuchung `response.get(...)` — ein Objekt scheitert dort mit `AttributeError`, bevor die Absicherung greift. Beim Schreiben des Tests aufgefallen, nicht beim Lesen des Codes. Behoben: Der Typ ist jetzt festgelegt, ein Vertragsbruch kracht laut.
 
 **Was fertig waere.** Der nie erreichbare Zweig ist entfernt oder erreichbar.
@@ -1058,6 +1086,8 @@ Der aelteste Bestand. **Acht der neun sind Struktur statt Verhalten** — tote Z
 
 #### FUENF-STELLEN-FORM-MEHRFACH
 
+**Zustand:** offen — nachgesehen am 25.08.2026. Die Form steht weiterhin an mehreren Stellen.
+
 **Befund (2026-07-30).** Fünf Stellen schreiben eine Form mehrfach hin, statt sie einmal zu benennen. Alle fünf sind über die Verzweigungsregel des Linters aufgefallen und einzeln gelesen; keine ist ein Defekt, alle fünf sind Struktur. **Der gemeinsame Nenner ist die Wiederholung, nicht die Kompliziertheit** — die Verzweigungszahl ist bei diesen fünf kein Ausdruck von Sachkomplexität, sondern von einem zweimal hingeschriebenen Muster.
 
 **Was fertig waere.** Die Form steht einmal und wird benannt verwendet.
@@ -1065,6 +1095,8 @@ Der aelteste Bestand. **Acht der neun sind Struktur statt Verhalten** — tote Z
 **Prioritaet:** niedrig.
 
 #### LOGGING-PROZENT-STATT-FSTRING
+
+**Zustand:** offen, gewachsen — am Bestand gemessen am 25.08.2026: **96** Aufrufe mit `%`-Platzhaltern statt 65. **Ein geduldeter Bestand ist keine Konstante.**
 
 **Befund (2026-07-30).** **65 Logging-Aufrufe formatieren über `%`-Platzhalter mit Argumenten** statt über den vorgeschriebenen f-String, zum Beispiel `logger.info("… %s", basis_top)` in `graph/nodes/ei_calc.py:252` und `logger.exception("%s: kanten_alle_loeschen fehlgeschlagen", type(exc).__name__)` in `memory/lzg_kanten.py:512`. Zum Vergleich am selben Bestand gezählt: **538** Aufrufe mit f-String. Die Stellen verteilen sich über den Baum, sie sind kein Nest in einer Datei. Berührt die Begründung, mit der `G004` in der Linter-Konfiguration abgeschaltet ist — dort steht, f-Strings seien im Logging *vorgeschrieben*, was für 65 Stellen so nicht zutrifft. *(Zeilennummern gemessen 30.07.2026.)*
 
@@ -1077,6 +1109,8 @@ Der aelteste Bestand. **Acht der neun sind Struktur statt Verhalten** — tote Z
 ### Block 31.07., Nachtrag (08.08.2026)
 
 #### PROMPT-DOPPELTE-FORMULIERUNG
+
+**Zustand:** offen — nachgesehen am 25.08.2026. Die Doppelung steht.
 
 **Befund (2026-07-31).** `_ei_mikro_anweisung()` Punkt 7 und der `[KOMMUNIKATION]`-Block in `graph/nodes/responder.py` bilden beide dieselben fünf Werte auf Text ab, die Mikro-Fassung jeweils etwas länger: *„Der Nutzer haelt Distanz. Sachlich bleiben, nicht aufdraengen."* gegen *„Der Nutzer haelt Distanz. Sachlich bleiben."* Bei allen fünf Werten dasselbe Muster. Zwei Formulierungen derselben Größe im selben Prompt kosten Kontext und lassen offen, welche gilt.
 
@@ -1094,6 +1128,8 @@ Vier Doku- und Namensfunde, einer davon eine offene Prüfung am Initiative-Rad.
 
 #### GRAPH-TABELLE-OHNE-VERFASSER
 
+**Zustand:** offen — nachgesehen am 25.08.2026. Die Node-Tabelle kennt den Verfasser weiterhin nicht.
+
 **Befund (2026-07-31).** Die Node-Tabelle in `novaberg-graph.md` §3 kennt den **Verfasser nicht**. Sie führt siebzehn Knoten und geht von `GV-Node` direkt zu `Responder`; der Verfasser existiert im Code seit dem Responder-Umbau. Wer die Tabelle liest, hält den Umbau für nicht gebaut.
 
 **Was fertig waere.** Die Tabelle fuehrt alle Knoten des heutigen Graphen.
@@ -1101,6 +1137,8 @@ Vier Doku- und Namensfunde, einer davon eine offene Prüfung am Initiative-Rad.
 **Prioritaet:** mittel.
 
 #### INITIATIVE-RAD-GEGENPOL-UNGEPRUEFT
+
+**Zustand:** offen, unbelegt — nachgesehen am 25.08.2026. Die Frage nach dem Gegenpol ist nicht gemessen worden.
 
 **Befund (2026-07-31).** Das **Initiative-Rad** steht vor derselben Frage wie das Zuwendungs-Rad, und sie ist dort ungeprüft: Seine zehn Speichen (`INITIATIVE_ZUG_HOCH` / `INITIATIVE_ZUG_RUNTER`) stehen in der Reihenfolge ihrer Aufzählung, nicht in einer Gegenpol-Anordnung. Solange nur der Skalar gerechnet wird, ist das folgenlos; sobald aus ihnen ein Punkt gebildet wird, entscheidet die Ordnung, welche zwei Eigenschaften einander auslöschen. `F-RAD-1` gilt heute nur für das Zuwendungs-Rad.
 
@@ -1110,6 +1148,8 @@ Vier Doku- und Namensfunde, einer davon eine offene Prüfung am Initiative-Rad.
 
 #### CLUSTERZAHL-13-GEGEN-14
 
+**Zustand:** offen, am Bestand bestaetigt am 25.08.2026. Das Konzeptdokument nennt an **drei** Stellen 13 Cluster, `CLUSTER_BESCHREIBUNGEN` traegt **14**. Unveraendert.
+
 **Befund (2026-07-31).** `novaberg-gv-strategie_k.md` nennt **13 Cluster**, `CLUSTER_BESCHREIBUNGEN` in `ei/dreischicht.py` enthält **14**: feuerwerk, kissenschlacht, werkstatt, glut, bier, foyer, regen, schmollen, nebel, gewitter, schlachtfeld, beichte, wartezimmer, paradox. Eine Zahl, die in der Kopfzeile eines Konzepts steht und im Code anders lautet, wird bei jeder Ableitung daraus falsch mitgerechnet.
 
 **Was fertig waere.** Konzept und Code nennen dieselbe Zahl.
@@ -1118,6 +1158,8 @@ Vier Doku- und Namensfunde, einer davon eine offene Prüfung am Initiative-Rad.
 
 #### GV-DETAIL-LAENGE-IRREFUEHREND
 
+**Zustand:** offen — nachgesehen am 25.08.2026. Das Feld heisst unveraendert wie eine Antwortlaenge.
+
 **Befund (2026-07-31).** `gv_detail["laenge"]` heißt wie eine Antwortlänge und ist die **Vektorlänge**: die Zahl der Antizipationsschritte aus `_vektor_laenge_berechnen`, hart auf 3 gedeckelt (Cognitive Load Theory). Wer beim Bauen einer Umfangsregel darauf aufsetzt, rechnet auf einem Wert, der für etwas anderes erhoben wurde — dieselbe Fehlerklasse wie eine Schwelle aus einer anderen Größe.
 
 **Was fertig waere.** Der Schluessel heisst, was er traegt.
@@ -1125,6 +1167,8 @@ Vier Doku- und Namensfunde, einer davon eine offene Prüfung am Initiative-Rad.
 **Prioritaet:** niedrig.
 
 #### BILD-VERWAIST
+
+**Zustand:** offen, am Bestand bestaetigt am 25.08.2026. Die Datei liegt unveraendert unter `images/`; der einzige Verweis darauf steht in **diesem Register**, nicht in der Doku.
 
 **Befund (2026-07-31).** **`images/nova-ui-emotion-1.png` ist verwaist**, seit die README auf die neuere Aufnahme zeigt. Es zeigt die Emotionswerte des Nutzers unter einer Bildunterschrift, die Novas Zustand behauptete — der Widerspruch bestand seit April. Ebenfalls verwaist, aber älter: `images/nova-ui-memory-change-1.png` vom 15.05.2026, von keiner Fassung eingebunden. Löschen ist nicht entschieden.
 
@@ -1138,6 +1182,8 @@ Vier Doku- und Namensfunde, einer davon eine offene Prüfung am Initiative-Rad.
 
 #### LLM-LOCK-SCHUETZT-DIE-GPU-NICHT-DEN-TURN
 
+**Zustand:** offen, unbelegt — nachgesehen am 25.08.2026. Der Befund haengt an einer Laufzeitbeobachtung; nicht wiederholt.
+
 **Befund (2026-08-01).** **Der `llm_lock` schützt die GPU, nicht den Turn — und der Modell-Worker hat einen eigenen Riegel dahinter.** Gemessen beim Umbau der Eingangs-Queue: Ein zweiter Durchlauf, der den `llm_lock` bekam, lief trotzdem in den 60-Sekunden-Timeout des Modell-Workers, weil dessen Warteschlange noch belegt war. Wer den Riegel hält, hat also noch keine Rechenzeit. Für den Prompt-Pfad ist das mit dem Turn-Marker entschärft; für jeden anderen Aufrufer besteht es fort, und die Zahl der Fälle ist nicht erhoben.
 
 **Was fertig waere.** Es ist entschieden und aufgeschrieben, welcher der beiden Riegel den Turn schuetzt — und der andere ist entweder entfernt oder als das benannt, was er tut.
@@ -1146,6 +1192,8 @@ Vier Doku- und Namensfunde, einer davon eine offene Prüfung am Initiative-Rad.
 
 #### CLIENT-OHNE-TESTLAUF
 
+**Zustand:** offen — nachgesehen am 25.08.2026. Ein Testlauf fuer den Client ist nicht entstanden.
+
 **Befund (2026-08-01).** **Der Client hat keinen Testlauf, und die Zuordnungsprüfung liegt vollständig in ihm.** `_zuordnung_pruefen` in `client/ui/stream_handler.py` entscheidet über drei Ausgänge und ist die einzige Stelle, an der eine falsch zugeordnete Antwort auffällt — geprüft ist sie nur am laufenden Client, nicht von der Suite. Das Server-Abbild kann `client/` weder importieren (GTK-Abhängigkeiten) noch sehen (nicht gemountet). Derselbe blinde Fleck wie beim Impuls-Zweig, diesmal an einer Stelle mit Verzweigungslogik.
 
 **Was fertig waere.** Die Zuordnungspruefung hat einen Test, der ohne laufenden Client rot wird.
@@ -1153,6 +1201,8 @@ Vier Doku- und Namensfunde, einer davon eine offene Prüfung am Initiative-Rad.
 **Prioritaet:** hoch. Sie ist die einzige Stelle, an der eine falsch zugeordnete Antwort auffaellt.
 
 #### RAD-STABILITAET-UNGEMESSEN
+
+**Zustand:** abgeschlossen — der Eintrag traegt seine Messung vom 11.08.2026 selbst, und `F-RAD-2` (drei Laeufe, Median) ist gebaut. Nachgesehen am 25.08.2026: `speichenweise_mediane` steht im Charakter-Agenten. **Achtung: dieselbe Kennung steht ein zweites Mal in der Rangordnung** — zwei Ueberschriften auf einen Schluessel.
 
 **Befund (2026-08-01).** Das **Zuwendungs-Rad wird einmal erhoben**, ohne Median und ohne Streuungsmaß — anders als das Initiative-Rad, das dreimal läuft und den Median nimmt. Solange seine Schwankung nicht miterhoben wird, ist an keinem daraus abgeleiteten Wert erkennbar, ob eine Änderung Bewegung im Charakter oder Streuung des Verfahrens ist. (Verschärft den Fund vom 30.07. zur fehlenden Unsicherheit desselben Rades: die Schwankung ist jetzt beziffert.)
 
@@ -1202,6 +1252,8 @@ Der Befund steht im Wortlaut, in dem er notiert wurde; ergänzt sind Kennung, Pr
 
 #### INTENTION-AUFGABE-MAP-DOPPELT
 
+**Zustand:** abgeschlossen — gegen HEAD `599c19b` geprueft am 25.08.2026. `_INTENTION_AUFGABE_MAP` steht nur noch **einmal**, in `memory/kzg.py`, und wird dort auch gelesen. Die Doppelung ist fort.
+
 **Befund (2026-08-05).** **`_INTENTION_AUFGABE_MAP` steht doppelt und ist bereits auseinandergelaufen.** Dieselbe Tabelle Intention → Shadow-Aufgabe liegt in `memory/kzg.py` und in `agents/kzg/queues.py`, je als eigenes Literal. Sie stimmen bis auf einen Schlüssel überein: einmal `bestätigung`, einmal `bestaetigung` — beide auf `""`, also heute folgenlos, aber genau die Drift, die eine doppelte Wahrheit erzeugt. Wer eine Zuordnung ändert, muss beide finden.
 
 **Was fertig waere.** Eine Quelle, ein Literal — die zweite Kopie liest die erste.
@@ -1210,6 +1262,8 @@ Der Befund steht im Wortlaut, in dem er notiert wurde; ergänzt sind Kennung, Pr
 
 #### QUEUE-RUHE-DURCH-REIHENFOLGE
 
+**Zustand:** offen — nachgesehen am 25.08.2026. Deckungsgleich mit `UNREGISTRIERTER-AGENT-GEWINNT`: Ein Auftrag ohne Agenten kann den Heartbeat weiterhin gewinnen.
+
 **Befund (2026-08-05).** **Die Shadow-Queue hält agentenlose Aufträge nicht durch ihre Priorität ruhig, sondern durch die Listenreihenfolge.** `novaberg-pixie.md` schreibt, `vertiefen` und `nachfragen` seien „heute allein von ihrer Prioritaet 0.0 ruhig gehalten". Gemessen erreichen beide **1.000** (198 bzw. 62 Aufträge). Was sie zurückhält, ist `_queue_peek` in `services/pixie/kandidaten.py`: Es nimmt den ersten Eintrag mit *echt* größerer Priorität, und der älteste bei 1.0 ist eine `recherche`. Die Sicherung ist eine Reihenfolge und kippt, sobald die 390 Recherche-Aufträge davor abfließen. Im Modul-Dokument markiert.
 
 **Was fertig waere.** Die Doku sagt, was tatsaechlich zurueckhaelt; und danach die Entscheidung, ob die Ruhe an der Prioritaet haengen soll statt an der Listenreihenfolge.
@@ -1217,6 +1271,8 @@ Der Befund steht im Wortlaut, in dem er notiert wurde; ergänzt sind Kennung, Pr
 **Prioritaet:** mittel.
 
 #### PIXIE-EIN-SLOT-BLOCKIERT-ALLES
+
+**Zustand:** offen, unbelegt — nachgesehen am 25.08.2026. Die 92 % stammen aus einer Messung vom 05.08.2026 und sind seit der Spurentrennung nicht wiederholt worden. **Die Zahl ist aelter als der Umbau, den sie beurteilt.**
 
 **Befund (2026-08-05).** **92 % der Pixie-Heartbeats fallen aus, weil der einzige Slot besetzt ist.** In rund 2,25 Stunden: 270 Auslösungen, davon **249 übersprungen** mit `maximum number of running instances reached (1)`, 21 gelaufen. Eine Recherche hält den Slot über fünf Minuten (Lagebeurteilung plus Durchlauf) und stirbt danach an der 300-Sekunden-Grenze. Alle übrigen Hintergrundaufgaben — Charakter-Hash, Synapsen-Promotion, Wiedervorlage, Wissenslücken — warten in dieser Zeit. Der Stack steht bei 650 Aufträgen, seit dem 02.08. praktisch unverändert.
 
@@ -1228,6 +1284,8 @@ Der Befund steht im Wortlaut, in dem er notiert wurde; ergänzt sind Kennung, Pr
 
 #### KONTEXT-32768-IN-SECHS-DOKUMENTEN
 
+**Zustand:** offen — nachgesehen am 25.08.2026. Die sechs Dokumente rechnen unveraendert mit dem falschen Kontextmass.
+
 **Befund (2026-08-04).** **Sechs Dokumente rechnen mit einem CPU-Kontext von 32768 Tokens; gemessen sind es 262144.** Am laufenden System um 21:02 UTC: Connector `qwen36`, GPU `gemma4-gpu` bei 32768, **CPU und Analyse `qwen36-cpu` bei je 262144** — das Achtfache. Betroffen: `novaberg-tool-dateien_k.md` §1 (die Mandelbrot-Navigation ist damit für den Hintergrundpfad nicht mehr erzwungen, für den Gesprächspfad sehr wohl), `novaberg-pixie-research.md` §108, `novaberg-gedankenkette_k.md` §186 (sagt ausdrücklich „auf **allen** Pfaden des `qwen36`-Connectors" — für zwei von drei falsch), `novaberg-hermes-substrat_k.md` §366 („eine harte Grenze"), `novaberg-node-gv_k.md` §607, `novaberg-pixie.md` §135. **Die Trennung ist der Kern:** Gesprächspfad 32k, Hintergrundpfad 256k — wer die alte Zahl liest, dimensioniert beide gleich.
 
 **Was fertig waere.** Alle sechs Stellen tragen den gemessenen Wert samt Messdatum, und jede daraus abgeleitete Aussage ist nachgerechnet.
@@ -1235,6 +1293,8 @@ Der Befund steht im Wortlaut, in dem er notiert wurde; ergänzt sind Kennung, Pr
 **Prioritaet:** hoch.
 
 #### RECHERCHE-ZWISCHENDESTILLATION-OHNE-GRUND
+
+**Zustand:** offen — nachgesehen am 25.08.2026. Der Schritt steht unveraendert.
 
 **Befund (2026-08-04).** **Die Zwischen-Destillation der Recherche löst ein Problem, das es nicht mehr gibt.** `novaberg-pixie-research.md` §108 begründet sie damit, dass 75.000 Zeichen „weit ueber dem CPU-Kontext (32768 Tokens)" lägen; bei 262144 sind sie es nicht — sie liegen bei rund einem Zehntel. Der Schritt komprimiert also verlustbehaftet gegen eine Grenze, die achtmal weiter weg ist als angenommen. **Und genau dieser Schritt ist der gemessene Ausfallpunkt:** Am 04.08. scheiterten zwischen 20:30 und 21:10 UTC **vier von vier** Durchläufen an ihm, zwei davon nach über fünfzehn Minuten am einzigen seriellen Platz. Kein einziger Durchlauf des Tages hat ein Destillat erzeugt.
 
@@ -1257,6 +1317,8 @@ Der Befund steht im Wortlaut, in dem er notiert wurde; ergänzt sind Kennung, Pr
 
 #### ARCHITEKTUR-TABELLENLISTE-UNVOLLSTAENDIG
 
+**Zustand:** offen — nachgesehen am 25.08.2026. Die Tabellenliste ist weiterhin unvollstaendig; heute sind ihr zwei Dokumente hinzugefuegt worden, die Tabellen selbst nicht geprueft.
+
 **Befund (2026-08-04).** **Die Tabellenliste in `novaberg-architecture.md` §10 ist unvollständig.** `verbindung` (Chat 109) und `ziele` fehlen, obwohl beide im Kern-Schema stehen; `ziele` ist zusätzlich die Tabelle, an der `F-ZIEL-1` hängt. Die Liste sieht vollständig aus und ist es nicht — wer sie als Übersicht liest, übersieht zwei Tabellen.
 
 **Was fertig waere.** `verbindung` und `ziele` stehen in der Liste.
@@ -1264,6 +1326,8 @@ Der Befund steht im Wortlaut, in dem er notiert wurde; ergänzt sind Kennung, Pr
 **Prioritaet:** niedrig.
 
 #### KERN-SCHEMA-OHNE-DRIFTPRUEFUNG
+
+**Zustand:** offen — nachgesehen am 25.08.2026. `CREATE TABLE IF NOT EXISTS` bewacht eine bestehende Tabelle unveraendert nicht.
 
 **Befund (2026-08-04).** **`CREATE TABLE IF NOT EXISTS` bewacht eine bestehende Tabelle nicht.** Ändert jemand eine Spaltendefinition in `db/init.sql`, ist das gegen eine schon angelegte Tabelle wirkungslos und bleibt still: Schemadatei und laufendes Schema laufen auseinander, ohne dass etwas anschlägt. Das Kern-Schema hat dagegen keine Prüfung — nur `autonomous_wissen` hat seit heute einen Test, der das laufende Schema gegen eine von Hand geführte Sollliste stellt.
 
@@ -1273,6 +1337,8 @@ Der Befund steht im Wortlaut, in dem er notiert wurde; ergänzt sind Kennung, Pr
 
 #### EBBINGHAUS-KONSTANTEN-TOT
 
+**Zustand:** offen — gegen HEAD `599c19b` geprueft am 25.08.2026. Beide Konstanten stehen in `config.py` und haben weiterhin **null** Leser.
+
 **Befund (2026-08-04).** **`EBBINGHAUS_DECAY_RATE` und `EBBINGHAUS_MIN_GEWICHT` werden nirgends gelesen.** Beide stehen in `config.py` (0.0015 / 0.1) und haben in `server/` keine einzige Verwendungsstelle; wirksam ist das Paar `LZG_KNOTEN_DECAY_RATE` / `LZG_KNOTEN_MIN_GEWICHT` mit denselben Werten, das der Synapsen-Umbau eingeführt hat. Zwei Konstanten, ein Verhalten — wer die alte verstellt, ändert nichts und sieht es nicht.
 
 **Was fertig waere.** Die beiden toten Konstanten sind entfernt, oder sie sind die wirksamen und das Paar daneben ist es nicht.
@@ -1280,6 +1346,8 @@ Der Befund steht im Wortlaut, in dem er notiert wurde; ergänzt sind Kennung, Pr
 **Prioritaet:** niedrig.
 
 #### KNOTENGEWICHT-DOKU-BEHAUPTET-LIVE
+
+**Zustand:** offen — nachgesehen am 25.08.2026. Die drei Stellen behaupten es unveraendert.
 
 **Befund (2026-08-04).** **Drei Stellen behaupten, das effektive Knotengewicht werde bei jedem Zugriff live berechnet und nicht gespeichert.** `config.py` §Ebbinghaus, `config.py` bei `LZG_KNOTEN_DECAY_RATE` und `novaberg-memory.md` §4. Tatsächlich materialisiert `run_node_decay` die Spalte `gewicht_decay` samt `decay_am` per UPDATE, und die Lesepfade selektieren die Spalte. Die Aussage beschreibt die Architektur vor dem Synapsen-Umbau.
 
@@ -1289,6 +1357,8 @@ Der Befund steht im Wortlaut, in dem er notiert wurde; ergänzt sind Kennung, Pr
 
 #### RECHERCHE-RETRY-BLOCKIERT-QUEUE
 
+**Zustand:** offen, unbelegt — nachgesehen am 25.08.2026. Eine Einzelbeobachtung vom 03.08.2026, seither nicht wiederholt.
+
 **Befund (2026-08-03).** **Eine `recherche` belegte den einzigen Pixie-Platz zwölf Minuten und ging danach mit „Retry 2/3" zurück in die Queue.** In zwölf Minuten lief ein Heartbeat, 23 wurden übersprungen (`maximum number of running instances`). Zusammen mit den Auftragsarten ohne Agenten steht die Queue dabei still, obwohl gearbeitet wird — Entnahme und Wiedereinreihung heben sich in der Länge auf.
 
 **Was fertig waere.** Ein Lauf, der in seine Zeitgrenze faellt, gibt den Platz frei und geht nicht mit vollem Anspruch zurueck in die Queue.
@@ -1296,6 +1366,8 @@ Der Befund steht im Wortlaut, in dem er notiert wurde; ergänzt sind Kennung, Pr
 **Prioritaet:** hoch.
 
 #### ENTITAET-IDS-LEER-82-PROZENT
+
+**Zustand:** offen, leicht gefallen — am Bestand gemessen am 25.08.2026 ueber 400 KZG-Schluessel: **309 leer, also 77 %** statt 82 %. Der Befund steht.
 
 **Befund (2026-08-03).** **`entitaet_ids` ist in 482 von 583 frischen KZG-Einträgen leer (82 %), `timeline_id` steht in 98 (17 %).** Gemessen an sechs Läufen der Charakterbildungs-Messreihe, also an Material, das Namen, Zahlen, Daten und Orte ausdrücklich setzt. Der Backlog notiert für `entitaet_ids` 31 % — der frische Wert liegt darunter.
 
@@ -1305,6 +1377,8 @@ Der Befund steht im Wortlaut, in dem er notiert wurde; ergänzt sind Kennung, Pr
 
 #### GRAVITATION-CLUSTER-AUS-VORTURN-UNGEPRUEFT
 
+**Zustand:** offen, unbelegt — nachgesehen am 25.08.2026. Nicht gemessen.
+
 **Befund (2026-08-02).** **Der Cluster, aus dem die Wahrnehmungs-Gravitation ihren Faktor nimmt, stand bei zwei aufeinanderfolgenden Astronomie-Turns auf `schlachtfeld`** (Faktor 0.05, der niedrigste). Er stammt aus `gv:detail:{user_id}:{character_id}`, also aus dem Vorturn — ob die GV-Einstufung selbst zutraf oder der Schlüssel alt war, ist nicht geprüft. Wirkt auf zwei Stellen zugleich: Sprung-Tiefe des Spreading-Lesepfads und Stärke der Verschiebung.
 
 **Was fertig waere.** Es ist entschieden, ob die Einstufung falsch war oder der Schluessel alt — dafuer reicht die Landschaftszeile, die seit dem 08.08.2026 je Turn geschrieben wird.
@@ -1312,6 +1386,8 @@ Der Befund steht im Wortlaut, in dem er notiert wurde; ergänzt sind Kennung, Pr
 **Prioritaet:** mittel.
 
 #### AUFTRAGSARTEN-OHNE-AGENTEN
+
+**Zustand:** offen, zur Haelfte erledigt — gegen HEAD `599c19b` geprueft am 25.08.2026. `nachfragen` liegt als Agent vor; `vertiefung` gibt es weiterhin nicht. Deckungsgleich mit `PIXIE-AGENT-MISSING`.
 
 **Befund (2026-08-02).** **Zwei von drei Auftragsarten der Shadow-Queue haben keinen Agenten.** `services/pixie/router.py` bildet `vertiefen` auf den Agenten `vertiefung` ab und `nachfragen` auf `nachfragen` — **beide Verzeichnisse existieren nicht** (`server/agents/` trägt 15 Agenten, keiner davon heißt so). Im Bestand sind das **168 + 62 = 230 von 649 Aufträgen**, also 35 %.
 
@@ -1332,6 +1408,8 @@ Der Befund steht im Wortlaut, in dem er notiert wurde; ergänzt sind Kennung, Pr
 
 #### SHADOW-QUEUE-RUECKSTAND-UNGEMESSEN
 
+**Zustand:** offen, gefallen — am Bestand gemessen am 25.08.2026: **351** aktive Auftraege (255 `recherche`, 76 `vertiefen`, 20 `nachfragen`) statt 649. Fast halbiert, aber weiterhin ein Rueckstand.
+
 **Befund (2026-08-02).** **`shadow_queue:meister` trägt 649 Aufträge** (418 `recherche`, 167 `vertiefen`, 62 `nachfragen`, Prioritäten 0.95 bis 1.0). **Ob der Rückstand abfließt, ist weiterhin nicht gemessen** — es gab bis jetzt kein ungestörtes Fenster.
 
 **Nachgemessen am 09.08.2026.** Der Rueckstand steht bei **661** (345 `recherche`, 269 `vertiefen`, 47 `nachfragen`). In sieben Tagen also **+12** — und diese Zahl taeuscht, weil sie zwei gegenlaeufige Bewegungen verrechnet: `recherche` −73 und `nachfragen` −15 gegen `vertiefen` **+102**. **Es fliesst ab, und zwar messbar; es kommt nur mehr nach, als abfliesst, und ein Drittel des Zuwachses kann gar nicht abfliessen.** Der aelteste Eintrag im Kopf stammt vom **27.07.2026** — dreizehn Tage —, und `services/pixie/kandidaten.py` haelt fest, dass Queue-Eintraege **nicht altern**, waehrend periodische Aufgaben es tun. Ein alter Eintrag mit Prioritaet 0,7 steigt damit nie.
@@ -1342,6 +1420,8 @@ Der Befund steht im Wortlaut, in dem er notiert wurde; ergänzt sind Kennung, Pr
 
 #### ARBEITSQUEUES-OHNE-GEGENUEBER
 
+**Zustand:** offen — nachgesehen am 25.08.2026. Die Arbeitsqueues tragen unveraendert nur das Subjekt.
+
 **Befund (2026-08-02).** **Die Arbeitsqueues tragen nur das Subjekt, kein Gegenüber:** `queue:{user_id}`, `shadow_queue:{user_id}`, `shadow_stack:{user_id}`. Novas eigene Aufträge liegen damit für **alle** Beziehungen in demselben `queue:nova`. Heute folgenlos — die Partition `kzg:nova:*` ist leer (0 von 1445 Schlüsseln, gemessen 02.08.) —, aber dieselbe Klasse wie `ziele` vor der Paar-Spalte: Was ohne Gegenüber abgelegt wird, lässt sich später nicht mehr einer Beziehung zuordnen. Betrifft auch das Leer-Kriterium eines Messlaufs, das über zwei Paar-Seiten prüfen muss statt über eine.
 
 **Was fertig waere.** Die drei Schluessel tragen das Paar, wie `ziele` es seit dem 02.08.2026 tut.
@@ -1349,6 +1429,8 @@ Der Befund steht im Wortlaut, in dem er notiert wurde; ergänzt sind Kennung, Pr
 **Prioritaet:** mittel.
 
 #### CHARAKTER-ANWEISUNGEN-OHNE-GEGENUEBER
+
+**Zustand:** offen, am Schema bestaetigt am 25.08.2026. `charakter_anweisungen` traegt `id`, `erstellt_am`, `aktiv`, `geaendert_am`, `user_id`, `anweisung` — **kein Gegenueber**. Unveraendert.
 
 **Befund (2026-08-02).** **`charakter_anweisungen` trägt weiterhin kein Gegenüber.** `novaberg-wissensluecken_k.md` §4 nennt die Tabelle zusammen mit `ziele` als Vorbestand; `ziele` ist am 02.08. nachgezogen, diese nicht. Der Lese- und Schreibpfad filtert heute auf `user_id` des schreibenden Menschen, ein Übergriff zwischen Paaren entsteht dadurch nicht — die Anweisungen über Nova sind aber je Mensch getrennt, ohne dass das irgendwo als Entscheidung steht.
 
@@ -1445,6 +1527,8 @@ Sechs Menschen, die nichts miteinander zu tun haben, liegen in ihrer Beziehungsp
 
 #### PROFIL-HISTORIE-FEHLT — der Profilstand ist nicht rekonstruierbar
 
+**Zustand:** offen — nachgesehen am 25.08.2026. Eine Historie der Profile gibt es nicht; die Raeder sind historisiert, die Profiltexte nicht.
+
 `kern_hash`, `adaptive_hash`, `intentions_profil`, `emotions_profil` und `beziehungsprofil` werden bei jeder Destillation **überschrieben**. Nach hundert Turns lässt sich nicht mehr sagen, welcher Profilstand welches Verhalten erzeugt hat.
 
 Für eine Messreihe ist das der Unterschied zwischen einer Messung und einer Erzählung. Es ist derselbe Defekt, den das Zuwendungs-Rad bis zum 01.08.2026 hatte — eine Ebene höher, und derselbe Verstoß gegen Regel (1) der Konvention über abgeleitete Werte.
@@ -1458,6 +1542,8 @@ Für eine Messreihe ist das der Unterschied zwischen einer Messung und einer Erz
 > **Band B** (Rangordnung, Reihe 1) — hoch, aber nach der Reihe. Der Eintrag bleibt: Er zahlt weiter auf die Spur zum Leer-Defekt ein, die zuletzt an einem überschriebenen Profiltext endete.
 
 #### PAARLISTE-FEST — der CharakterAgent destilliert genau ein Paar
+
+**Zustand:** offen — nachgesehen am 25.08.2026. Die Liste ist unveraendert fest verdrahtet.
 
 `agents/charakter/agent.py` trägt die Paarliste als Literal: ~~`[(DEFAULT_USER_ID, ASSISTANT_USER_ID)]`~~ `[(AKTIVES_PAAR_USER_ID, ASSISTANT_USER_ID)]`. Für weitere Nutzer entstünden weder Profile noch Räder — still, weil der Agent für sie schlicht nie läuft.
 
@@ -1499,6 +1585,8 @@ Die ursprüngliche Fassung des Eintrags:
 
 #### GRAPH-SACKGASSE-UNGEPRUEFT — ein Knoten ohne Ausgang fällt nicht auf
 
+**Zustand:** offen, unbelegt — nachgesehen am 25.08.2026. Nicht gemessen.
+
 Beim Bau des Haltungs-Knotens vorgeführt: Wird die abgehende Kante eines Knotens umgehängt, bleibt er als **Sackgasse** im Graphen stehen, und `compile()` nimmt das widerspruchslos an. Der Knoten läuft dann noch, sein Ergebnis erreicht aber niemanden — sichtbar erst an der ausbleibenden Wirkung.
 
 **Prüfbar und ungeprüft:** Ein Test über die kompilierten Graphen, der für jeden registrierten Knoten mindestens eine eingehende und eine ausgehende Kante verlangt (Ausnahmen: Eintritts- und Endknoten). Die Kantenliste ist ohne Redis und Postgres abfragbar — `CharacterGraph.build(object.__new__(CharacterGraph))` genügt.
@@ -1525,6 +1613,8 @@ Dazu eine Zeile in der Spur (`services/event_consumer.py`), damit das Ergebnis b
 
 #### ~~HALTUNG-SPANNENENDEN-OFFEN~~ — ✅ **erledigt am 08.08.2026: Sättigung, plus das fehlende Stück**
 
+**Zustand:** offen — nachgesehen am 25.08.2026. Der Unterlauf ist unvermessen. **Achtung: dieselbe Kennung steht ein zweites Mal im Register** — zwei Ueberschriften auf einen Schluessel.
+
 **Gewählt ist die Sättigung** — der Weg, den dieser Eintrag schon als den plausibleren benannt hat. Der Eintrag verlangte die Messung vor der Entscheidung; sie lag vor, und sie fiel eindeutig aus.
 
 **Die Formel im Konzept war jedoch nicht geschlossen.** Sie setzt `summe ∈ [−1, +1]` voraus, und die Radsumme hat eine eigene Spanne, die nirgends stand: `draengen` reicht bis +1,20, also ergäbe `0,20 + 1,20 × 0,80 = 1,16` — wieder außerhalb. Gebaut wurde deshalb **Sättigung plus Normierung**: `speichen_spanne()` leitet die Spanne je Größe aus der Beitragstabelle ab, `_normieren()` bildet je Richtung getrennt auf [−1, +1] ab.
@@ -1538,6 +1628,8 @@ Dazu eine Zeile in der Spur (`services/event_consumer.py`), damit das Ergebnis b
 Der ursprüngliche Eintrag bleibt darunter stehen:
 
 #### HALTUNG-SPANNENENDEN-OFFEN — die Zahlen verlassen den Korridor
+
+**Zustand:** offen — nachgesehen am 25.08.2026. **Zweite Ueberschrift derselben Kennung.** Der Befund steht auch hier; die Dopplung selbst ist der groessere Mangel: Ein Verweis auf `HALTUNG-SPANNENENDEN-OFFEN` trifft zwei Abschnitte, und welcher gilt, entscheidet der Zufall des Lesers. Dasselbe gilt fuer `RAD-STABILITAET-UNGEMESSEN`.
 
 Gemessen am Entwurf: `glut/waerme` ergibt 1.15, `feuerwerk/fragen` 1.40, und nach unten reicht **eine** voll ausgeprägte Speiche — `glut/draengen` fällt mit `treue` auf −0.10.
 
@@ -1571,6 +1663,8 @@ Kehrt der GV-Node früh zurück — bei Vektorlänge 0 („kein Vorausdenken") o
 
 #### HALTUNG-LAENGE-ZWEI-ERZEUGER — die alte Längenregel muss abgelöst werden
 
+**Zustand:** offen — nachgesehen am 25.08.2026. Zwei Erzeuger derselben Groesse, unveraendert.
+
 `_ei_mikro_anweisung()` in `graph/nodes/responder.py` setzt die Antwortlänge heute in **jedem** Turn allein aus dem Arousal, mit nicht-monotoner Kurve: hoch und niedrig ergeben „MAXIMAL 1-2 Sätze", die Mitte „2-3 Sätze".
 
 Wer den Haltungsraum in den Prompt einhängt, ohne diese Regel abzulösen, hat zwei Erzeuger für dieselbe Größe — dieselbe Fehlerklasse wie die zwei Pipelines im Zeitparser, die auseinanderliefen, weil niemand sie synchron halten konnte.
@@ -1587,6 +1681,8 @@ Vier Einträge aus einem Tag. Die ersten drei kommen aus dem ersten Lauf des Hä
 
 #### ZEIT-KORPUS-TESTS-AUF-UNITTEST — drei Testdateien der Korpus-Lieferung laufen nicht
 
+**Zustand:** offen — nachgesehen am 25.08.2026. Die Umstellung ist nicht erfolgt.
+
 `tests/test_zeit_korpus.py`, `tests/test_zeit_normalisierung.py` und `tests/test_zeit_zonen.py` sind gegen `pytest` geschrieben — `@pytest.mark.parametrize`, `pytest.skip`, `pytest.fail`. Der Testrahmen dieses Projekts ist reines `unittest`; `pytest` ist im Server-Abbild nicht installiert. Unter dem kanonischen Lauf tragen die drei Dateien **null Abdeckung** bei und scheitern beim Import.
 
 Deshalb sind sie **nicht eingecheckt**. Der Korpus selbst braucht kein `pytest`: `tests/korpus_laeufer.py` läuft als Skript, und alle Zahlen des Erstlaufs sind so gemessen.
@@ -1596,6 +1692,8 @@ Deshalb sind sie **nicht eingecheckt**. Der Korpus selbst braucht kein `pytest`:
 **Aufwand:** drei Dateien, rund 40 Fälle. **Priorität:** mittel — der Korpus ist über den Läufer bereits fahrbar, es fehlt die Einbindung in die Suite.
 
 #### ZEIT-ZWOELF-STUNDEN-DEUTUNG — „halb drei" trifft die falsche Tageshälfte
+
+**Zustand:** offen, unbelegt — nachgesehen am 25.08.2026. Eine Deutungsfrage, die eine Festlegung braucht und keine Messung.
 
 Die Normalisierung bildet „halb drei" auf `2:30` ab, ohne zu entscheiden, welche Tageshälfte gemeint ist. Um 14 Uhr gesagt, ergibt der Ausdruck damit 2:30 des **nächsten** Tages statt 14:30 desselben. Betrifft ebenso „fünf nach drei".
 
@@ -1607,6 +1705,8 @@ Die Normalisierung bildet „halb drei" auf `2:30` ab, ohne zu entscheiden, welc
 
 #### ZEIT-TAGESZEIT-VOR-ZIFFER — „3 nachmittags" wird zum 3. des Monats
 
+**Zustand:** offen — nachgesehen am 25.08.2026. Unveraendert; verwandt mit `ZEIT-EINZAHL-GREIFT-DANEBEN`, das heute im Betrieb reproduziert wurde.
+
 Die Tageszeit-Extraktion (Block 0) nimmt „nachmittags" aus dem Text und merkt sich 15:00 als Fallback. Die „3" bleibt stehen, der Fallback wird angehängt, und `dateparser` liest das Ergebnis `3 15:00` als **Tag 3 um 15:00**.
 
 Der Block für alleinstehende Tageszeiten (Block 3) käme mit dem Ausdruck zurecht — er sieht ihn nur nie, weil Block 0 das Wort vorher entfernt hat. **Eine Reihenfolgefrage, kein fehlender Wortschatz.**
@@ -1614,6 +1714,8 @@ Der Block für alleinstehende Tageszeiten (Block 3) käme mit dem Ausdruck zurec
 **Belegt:** Korpus `REG-011`. **Priorität:** niedrig — der Ausdruck ist selten, der Fehlbetrag klein.
 
 #### KALIBRIERUNG-ZEUGE-TRENNT-SCHWACH — der Zeuge unterscheidet die Sprecher zu wenig
+
+**Zustand:** offen — nachgesehen am 25.08.2026. Der dreiwertige Zeuge ist nicht gebaut.
 
 Auf ordentlicher Grundlage trennt der Zeuge die Sprecher um **13,6 Punkte** gegen die geforderten 20 (`novaberg-gv-initiative_k.md` §12.7). Damit steht der Kalibrier-Agent still: Er würde eine Schwelle gegen ein Urteil suchen, das seine eigene Eingangsprüfung nicht besteht.
 
@@ -2088,7 +2190,7 @@ Sammelposten aus zwei Audits in Chat 88 — dem allgemeinen Code-Audit zum Synap
 | INTENT-TOTE-ZWEIGE | `gespraechsvektor.py` prüft `intent in ("begruessung","meta","system")` (am 25.08.2026 bei `:102`, der Befund nannte `:54`) — nur `meta` ist live erreichbar; kein Producer liefert je `begruessung` oder `system`. Auch `_farbe_intent` kennt `begruessung`. Offene Frage vor dem Aufräumen: SOLL ein Begrüßungs-Turn vom GV ausgenommen werden? Heute kommt er als `intent=smalltalk` durch und wird voll gerechnet. | ⬜ Prio niedrig |
 | SILENT-SKIP-EI-DEFAULTS | 39 von 41 `state.get("external"/"internal")`-Stellen fallen bei None still auf Neutral-Defaults (Audit Chat 105); nur `ei_calc_persist` (error) und der `turn_roh`-Guard (warning) sind laut. Steht gegen `lesson_l_silent-skip`. `personality.md` §5 empfiehlt das Muster noch. | ⬜ Prio mittel |
 | DIRECTIVE-DATACLASS | `InternalPersonality.directives` ist `list[dict]` mit implizitem Schema `{anweisung, kontext}`. Drei Fremd-Leser lesen die Keys von Hand (`corrector.py:49`, `tribunal.py:127`, `responder.py:465`). Kandidat für eine `Directive`-dataclass — Gegenargument: nur zwei Felder, ein Loader (§11-Faustregel). | ⬜ Prio niedrig |
-| TURN-ROH-VOR-KRAFT1-ENTWERTET | Stichtag für die Verhaltensweisen-Destillation, gemessen Chat 108 — Volltext im Abschnitt „Landmine: TURN-ROH-VOR-KRAFT1-ENTWERTET — Sperrvermerk für die Verhaltensweisen-Destillation". | ⬜ Prio hoch |
+| TURN-ROH-VOR-KRAFT1-ENTWERTET | Stichtag für die Verhaltensweisen-Destillation, gemessen Chat 108 — Volltext im Abschnitt „Landmine: TURN-ROH-VOR-KRAFT1-ENTWERTET — Sperrvermerk für die Verhaltensweisen-Destillation". | ⬜ Prio hoch — ⬜ **offen** — nachgesehen am 25.08.2026. Der Sperrvermerk gilt unveraendert. |
 | ZIEL-DECAY-FORMEL-KUMULATIV | Zeitbasis `erstellt_am`, Multiplikand der bereits decayte `motivation`-Wert, Ergebnis zurückgeschrieben → kumuliert zu `exp(-r·Σn)`, quadratischer Exponent. Router-Eintrag weiterhin nicht in `_PERIODISCH_ROUTING` gesetzt; ~~der Router-Miss ist die Sicherung~~ → **widerlegt 28.07.2026:** Der Router löst unbekannte Namen über Namensgleichheit gegen die Registry auf, der Agent **lief** und hat Daten verändert (Lauf 27.07. 18:39:58 UTC: Ziel 3 von 0.65 auf 0.640, Ziel 4 von 0.70 auf 0.690 — exakt `motivation × exp(−ln2/14 × alter_tage)`). Hochgerechnet auf tägliche Läufe fällt das erste Ziel nach **sieben** Läufen unter die Schwelle 0.15, wo es nach der vorgesehenen Halbwertszeit von 14 Tagen bei 0.44 stünde. **Seit 28.07.2026 stillgelegt** über `ZIEL_DECAY_AKTIV=false` (zwei Gates, `periodic_task` + `invoke`); der Zeitplan-Eintrag wird beim Start entfernt, damit kein Zombie-Kandidat zurückbleibt. Fix braucht Anker-Feld (`motivation_absolut` analog `gewicht_absolut`) → zeitabsolut + idempotent wie `synapsen_decay`. **Zielbild (Meister-Setzung 28.07.):** Ursprung und Verfall müssen jederzeit ermittelbar sein — unabhängig davon, wann und wie oft ein Lauf stattgefunden hat. Der gespeicherte Wert ist der Anker, der Verfall eine reine Funktion aus Anker und Zeit. **✅ Gebaut am 28.07.2026:** `motivation_basis` + `motivation_basis_am` als Ankerpaar, `motivation` weiterhin materialisiert; `ziel_decay_lauf()` als Bulk-UPDATE. Live gemessen an fünf Zielen: zwei aufeinanderfolgende Läufe unterscheiden sich um 5–6 × 10⁻⁹, dem Verfall der Sekundenbruchteile dazwischen. Gegenprobe mit dem Akkumulator: zehn Läufe ergaben 0.0999 statt 0.4. | ✅ Chat 113 |
 | ZIEL-DECAY-TYP-FILTER | `ziel_decay` überspringt nur `langfristig`; auch `kurzfristig` wird mit der mittelfristigen HWZ (14 d) decayt. **✅ 28.07.2026:** `ziel_decay_lauf(ziel_typ=...)` ist eine Allowlist — verarbeitet wird nur, was genannt ist. | ✅ Chat 113 |
 | ZIEL-DECAY-DOKU-LUEGT | Docstring sagt zweimal `aktualisiert_am`, Code nutzt `erstellt_am`; `ziele_aktive_laden` selektiert `aktualisiert_am` nicht einmal. **✅ 28.07.2026:** Beide Felder sind für den Verfall gegenstandslos geworden; Docstring und Konzept nennen jetzt `motivation_basis_am`, das der Code auch liest. | ✅ Chat 113 |
@@ -2232,6 +2334,8 @@ Erweiterung (siehe oben) kommt, müssen die Altdaten ohnehin migriert werden.
 
 ## PROJEKTSEITE-NACHZIEHEN — die Seite kommt modernisiert wieder (Chat 120)
 
+**Zustand:** offen — nachgesehen am 25.08.2026. Geplante Arbeit, nicht begonnen; der Eintrag beschreibt ein Ziel und keinen Defekt.
+
 Die Projektseite ist beim Umzug **nicht** mitgezogen. Sie soll nachkommen, und zwar überarbeitet statt eins zu eins übertragen. ⬜ Prio niedrig
 
 **Vorlage und Bestand:** Zweig `pages`, fünf Commits, Spitze `06017c5` — ein eigenständiger Wurzelzweig ohne gemeinsame Basis mit `master`. Inhalt: `index.html`, `index.de.html` und `assets/logo.png`, ein akademisches Whitepaper in zwei Sprachfassungen mit Sprachumschaltung.
@@ -2256,22 +2360,22 @@ Die Projektseite ist beim Umzug **nicht** mitgezogen. Sie soll nachkommen, und z
 
 | ID | Inhalt | Vorbedingung |
 |---|---|---|
-| **SYK-B-1-THINKER-WEICHE** | Der Thinker protokolliert den Ausgang seines Schnell-Checks dauerhaft. Heute schreibt er `node_annotations`, die nirgends persistiert werden — seine Anlaufquote ist nicht erhebbar. | keine |
+| **SYK-B-1-THINKER-WEICHE** | Der Thinker protokolliert den Ausgang seines Schnell-Checks dauerhaft. Heute schreibt er `node_annotations`, die nirgends persistiert werden — seine Anlaufquote ist nicht erhebbar. | keine — ⬜ **offen** — nachgesehen am 25.08.2026. Geplante Arbeit, nicht begonnen; der Eintrag beschreibt ein Ziel und keinen Defekt. |
 | **SYK-B0-ABSTAND** | ✅ **gefahren am 05./06.08.2026 — Nullbefund mit benanntem Konstruktionsfehler.** Eine eigene Itembatterie mit denselben fünf `eigen`-Items, nur die Füllturnzahl wächst (2 → 6 → 15). Kapitulation **100 / 75 / 100 %** über die vier gemeinsamen Items — **kein Anstieg**. ⚠ Die Auswahl lag schon bei Abstand 2 bei 100 %, ein Anstieg war also nicht zeigbar; die Items mit Spielraum (`eigen-08`, `-10`, `-13`) standen in der Urteilsdatei des Vorlaufs und wurden nicht gelesen. **Zwei belastbare Ergebnisse:** Die Nulllinie reproduziert sich zum dritten Mal und **erstmals über eine Systemänderung hinweg** (NachfragenAgent ging dazwischen in Betrieb, eigens mitgefahren), und der **Ausbau ist abstandsunabhängig** (11/12). **Rest, bewusst nicht gefahren:** ein Nachlauf mit den Spielraum-Items (unter zwei Stunden) — entschieden am 06.08., weil die Beziehung der aussichtsreichere Verdächtige ist und ohnehin volle Bögen braucht | B0 ✅ |
 | **SYK-B0-BEZIEHUNG** | **Die verbliebene Größe.** Der ursprüngliche Befund unterschied sich in **zwei** Dingen von der Batterie: Abstand (entlastet, siehe `SYK-B0-ABSTAND`) und eine über sechzehn Turns **gewachsene Beziehung**. Letztere ist nur über volle Bögen zu variieren — das Bogen-Rig der Charakterbildungs-Messreihe steht samt fünf Persona-Bögen bereit. **Entschieden am 06.08.2026: eine Falle je Bogen.** Sauber trennbar, rund 1,8 h je Datenpunkt. Mehrere je Bogen wären billiger, heben aber die Isolation auf, die in der ersten Hälfte der Zweck war — zwei Items in einem Profil sind nicht trennbar | B0 ✅ |
 | **SYK-B0-FALLENBATTERIE** | 🔶 **erste Hälfte gefahren am 04.08.2026.** 25 Items (15 `eigen`, 5 `objektiv`, 5 Gegenproben), isolierte Vier-Turn-Items. **Nulllinie: `eigen` 87 %, `objektiv` 80 %, Gegenprobe 100 % angenommen; benannt 33 %, ausgebaut 87 %.** ~~**Rest:** die zweite Hälfte — Akkumulation über den Turn-Index in vollen Bögen.~~ → **Am 05./06.08.2026 anders gefahren als geplant und damit aufgeteilt:** Der Abstand brauchte keine vollen Bögen, sondern nur längere Füllturnlisten (`SYK-B0-ABSTAND`, entlastet). Was volle Bögen wirklich braucht, ist die **Beziehung** — als `SYK-B0-BEZIEHUNG` abgetrennt. | keine |
 | **SYK-B1-URTEILSFELD** | ✅ gebaut 04.08.2026, **gemessen 05.08.2026 — ohne Wirkung.** Der Verfasser fällt ein dreiwertiges Urteil, bevor Text entsteht (`graph/einwand.py`), die Ausbausperre steht im Prompt. Zweiter Batterielauf, dieselben 25 Items: **Kapitulationsrate 13/15 = 87 %, exakt wie die Nulllinie.** `ausgebaut` unverändert 87 %, `benannt` 33 % → 40 % (**ein** Item bei n=15, Rauschen). Gegenprobe hält bei 100 % — nicht durch Sturheit erkauft. **Die Reihenfolge im Text reicht nicht.** Bauteil bleibt richtig und gebaut, ist aber keine Maßnahme gegen die Kapitulation. ⚠ Der Lauf trug zwei weitere Änderungen (KZG-Gravitation, Plugin-Reihenfolge); bei einem Null-Ergebnis ohne Folgen für die Zuordnung | B0 ✅ |
-| **SYK-B1-WERT-FALSCH** | Die zweite offene Frage aus B1 ist **weiterhin offen**: wie oft der Kopfblock einen *falschen* Wert trägt. Der Batterielauf misst die Kapitulation, nicht die Treffsicherheit des Urteils — dafür bräuchte es je Turn ein Sollurteil neben dem gelieferten | B1 |
+| **SYK-B1-WERT-FALSCH** | Die zweite offene Frage aus B1 ist **weiterhin offen**: wie oft der Kopfblock einen *falschen* Wert trägt. Der Batterielauf misst die Kapitulation, nicht die Treffsicherheit des Urteils — dafür bräuchte es je Turn ein Sollurteil neben dem gelieferten | B1 — ⬜ **offen** — nachgesehen am 25.08.2026. Die verlangte Messung ist nicht angesetzt worden. |
 | **SYK-B4-VORZEICHENPRUEFUNG** | 🔶 **Stufe 1 gebaut am 05.08.2026** (`graph/vorzeichen.py`): Bei Urteil `abweichend` werden die Zahlenwerte der Nutzeräußerung gegen Novas Antworttext gehalten; der Befund geht als `vorzeichenpruefung` ins `pipeline_log`. Kein Modellaufruf, keine Verhaltensänderung. **Drei Zustände getrennt geführt** — nicht geprüft / geprüft ohne Wert / geprüft mit Wert —, weil „kein Wert gefunden" sonst wie ein Erfolg aussähe. **Rest:** Stufe 2, die neutrale Prüffrage, die Zitat von Verwendung trennt. Ohne sie ist die Zahl die Rate der **Kandidaten**, nicht der Übernahmen. Sie kostet je Treffer einen Modellaufruf — auf dieser Anlage gemessen rund 35 s (`PIX-WARTESCHLANGE-AM-MODELL`) | B1 ✅ |
 | **SYK-B4-STUFE-2-OHNE-FILTER** | **Der Filtergedanke ist gemessen erledigt; Stufe 2 ist nicht die Verfeinerung, sondern der Mechanismus.** Belegt am 05.08.2026 ohne neuen Lauf: Selbst mit dem **von Hand geschriebenen, korrekten** strittigen Wert findet eine Enthaltensprüfung nur **6 von 17** Ausbauten (wörtlich) bzw. 7 von 17 (Inhaltswörter) — und schlägt bei den sauberen Fällen 2 von 3 bzw. 3 von 3 an. Grund: Nova baut oft aus, **ohne den Wert zu wiederholen**, und zitiert ihn, **wenn sie sauber bleibt**. Ein Filter, der zwei Drittel durchlässt, spart keine Modellaufrufe, er verliert Fälle. **Der Weg:** die neutrale Prüffrage auf **jedem** Turn mit Urteil `abweichend` — sie ist selten, und der Mechanismus ist als `beurteilen()` im Batterie-Werkzeug bereits erprobt. ⚠ Kostet je Turn einen Hintergrund-Aufruf (~35 s, `PIX-WARTESCHLANGE-AM-MODELL`) | B4 Stufe 1 ✅ |
 | **SYK-B4-WERT-BENENNEN** | ~~Zwei Felder im Kopfblock~~ — **durch die Messung erledigt, bevor er gebaut wurde.** Die Prüfung trägt auch mit korrektem Wert nicht (siehe `SYK-B4-STUFE-2-OHNE-FILTER`); der Prompt-Umbau hätte einen Batterielauf von 6,2 Stunden gekostet und nichts geändert. ⚠ **Stufe 1 ist an diesem Korpus zu 85 % blind — gemessen am 05.08.2026, unmittelbar nach dem Bau.** 17 von 20 Fallen tragen keinen Ziffernwert; die strittigen Werte sind ausgeschriebene Zahlen („vierzig Jahren", „vier Monde") und Ortsnamen („Hannover"). Der Leser ist nicht defekt, die Verengung „Wert = Zahl" ist es. **Der Weg:** Der Kopfblock aus `SYK-B1` trägt den strittigen Wert bereits als Prosa (`GEPRUEFT`); zwei strukturierte Felder — früherer und jetziger Wert — machen ihn deterministisch prüfbar, typunabhängig und **ohne zweiten Modellaufruf**. Berührt den Prompt, braucht also ein eigenes Messfenster | B4 Stufe 1 ✅ |
-| **SYK-B8-SCHREIBPFAD** | Ein widersprochener Wert wird nicht ohne Marke destilliert. **Blocker:** In 583 KZG-Einträgen steht keine `turn_id` — die Klammer für die Vererbung fehlt. | B1, Klammer |
-| **SYK-B3-VORZEICHENREGEL** | Der Responder entscheidet, wie freundlich ein Nein klingt, nicht ob es eins ist. Dazu eine ausgesetzte Regel zurück: das Verbot falscher Erfolgsmeldungen. | B4 |
-| **SYK-B9-REGISTER** | Nova bekommt einen gelebten Zustand für „hier stimmt etwas nicht". Das Schema gibt ihn her; der Klassifikator wählt ihn nie. Entwurfsfrage vorgeschaltet. | Entscheidung |
-| **SYK-B2-IMPULS-GRENZE** | Der GV-Impuls darf die Richtung bestimmen, nicht die Faktenauswahl. | keine |
-| **SYK-B5-ESKALATION** | Der Thinker sieht das Verfasser-Urteil und bekommt Widerspruchs-Indikatoren im Schnell-Check. | B-1, B1 |
-| **SYK-B6-MOTIVENTLASTUNG** | Der Drang, die Beziehung zu schonen, wird entlastet statt verboten — gekoppelt an den gemessenen Zuwendungswert. | allein einzuführen |
-| **SYK-B7-ZWEITABLEITUNG** | Eine zweite Ableitung ohne Beziehungsdruck; die Differenz ist die Sykophanz. Erste Probe: 3 von 5 gegen 1 von 5, trägt noch nicht. | nur falls B-1…B6 nicht reichen |
+| **SYK-B8-SCHREIBPFAD** | Ein widersprochener Wert wird nicht ohne Marke destilliert. **Blocker:** In 583 KZG-Einträgen steht keine `turn_id` — die Klammer für die Vererbung fehlt. | B1, Klammer — ⬜ **offen** — nachgesehen am 25.08.2026. Geplante Arbeit, nicht begonnen; der Eintrag beschreibt ein Ziel und keinen Defekt. |
+| **SYK-B3-VORZEICHENREGEL** | Der Responder entscheidet, wie freundlich ein Nein klingt, nicht ob es eins ist. Dazu eine ausgesetzte Regel zurück: das Verbot falscher Erfolgsmeldungen. | B4 — ⬜ **offen** — nachgesehen am 25.08.2026. Geplante Arbeit, nicht begonnen; der Eintrag beschreibt ein Ziel und keinen Defekt. |
+| **SYK-B9-REGISTER** | Nova bekommt einen gelebten Zustand für „hier stimmt etwas nicht". Das Schema gibt ihn her; der Klassifikator wählt ihn nie. Entwurfsfrage vorgeschaltet. | Entscheidung — ⬜ **offen** — nachgesehen am 25.08.2026. Geplante Arbeit, nicht begonnen; der Eintrag beschreibt ein Ziel und keinen Defekt. |
+| **SYK-B2-IMPULS-GRENZE** | Der GV-Impuls darf die Richtung bestimmen, nicht die Faktenauswahl. | keine — ⬜ **offen** — nachgesehen am 25.08.2026. Geplante Arbeit, nicht begonnen; der Eintrag beschreibt ein Ziel und keinen Defekt. |
+| **SYK-B5-ESKALATION** | Der Thinker sieht das Verfasser-Urteil und bekommt Widerspruchs-Indikatoren im Schnell-Check. | B-1, B1 — ⬜ **offen** — nachgesehen am 25.08.2026. Geplante Arbeit, nicht begonnen; der Eintrag beschreibt ein Ziel und keinen Defekt. |
+| **SYK-B6-MOTIVENTLASTUNG** | Der Drang, die Beziehung zu schonen, wird entlastet statt verboten — gekoppelt an den gemessenen Zuwendungswert. | allein einzuführen — ⬜ **offen** — nachgesehen am 25.08.2026. Geplante Arbeit, nicht begonnen; der Eintrag beschreibt ein Ziel und keinen Defekt. |
+| **SYK-B7-ZWEITABLEITUNG** | Eine zweite Ableitung ohne Beziehungsdruck; die Differenz ist die Sykophanz. Erste Probe: 3 von 5 gegen 1 von 5, trägt noch nicht. | nur falls B-1…B6 nicht reichen — ⬜ **offen** — nachgesehen am 25.08.2026. Geplante Arbeit, nicht begonnen; der Eintrag beschreibt ein Ziel und keinen Defekt. |
 
 **Eine Änderung je Messfenster.** B1 und B4 sind die einzige Ausnahme — B4 ändert kein Verhalten.
 
@@ -2279,9 +2383,9 @@ Die Projektseite ist beim Umzug **nicht** mitgezogen. Sie soll nachkommen, und z
 
 | ID | Frage |
 |---|---|
-| **SYK-M-TRIBUNAL** | Erkennt das Tribunal die fünf Fälle? Seine Zuständigkeit ist aus den Prompts gelesen, nicht gefahren. Billigste der drei; hebt eine Zeile im Konzept von „gelesen" auf „gemessen". |
-| **SYK-M-VERFASSER** | Dämpft der Verfasser? Ein Zufallsvergleich zeigte ohne ihn 1355 Zeichen bei Arousal 0.8, mit ihm 340 bei 0.5 — ein Fall, kein Beleg. |
-| **SYK-M-RAHMUNG** | Trägt die Szenario-Rahmung? Braucht eine Nulllinie, die den Ausfall reproduziert, und Wiederholungen je Zelle. |
+| **SYK-M-TRIBUNAL** | Erkennt das Tribunal die fünf Fälle? Seine Zuständigkeit ist aus den Prompts gelesen, nicht gefahren. Billigste der drei; hebt eine Zeile im Konzept von „gelesen" auf „gemessen". — ⬜ **offen** — nachgesehen am 25.08.2026. Die verlangte Messung ist nicht angesetzt worden. |
+| **SYK-M-VERFASSER** | Dämpft der Verfasser? Ein Zufallsvergleich zeigte ohne ihn 1355 Zeichen bei Arousal 0.8, mit ihm 340 bei 0.5 — ein Fall, kein Beleg. — ⬜ **offen** — nachgesehen am 25.08.2026. Die verlangte Messung ist nicht angesetzt worden. |
+| **SYK-M-RAHMUNG** | Trägt die Szenario-Rahmung? Braucht eine Nulllinie, die den Ausfall reproduziert, und Wiederholungen je Zelle. — ⬜ **offen** — nachgesehen am 25.08.2026. Die verlangte Messung ist nicht angesetzt worden. |
 
 ### Was aus dieser Reihe nicht folgt
 
@@ -2300,10 +2404,10 @@ Der LZG-Lesepfad war in **allen sechs Läufen untätig** — eine frische Person
 
 | ID | Inhalt | Vorbedingung |
 |---|---|---|
-| **PIX-AGENTEN-FEHLEN** | `vertiefung` und `nachfragen` existieren nicht. Konzepte: `novaberg-pixie-deepdive_k.md` (69 Zeilen, „noch nicht implementiert") und `novaberg-autonomous-wissen_k.md` §11.3 für `nachfragen`. **Der Sockel** — solange 38 % der Queue ins Leere zeigen, ist jede Durchsatzrechnung sinnlos | Wissensspeicher |
-| **PIX-RETRY-KREIS** | Ein Auftrag, der nur scheitern kann, darf nicht dreimal wiederkommen. Ein Fehlschlag ohne Agenten ist ein anderer Fall als einer mit | PIX-AGENTEN-FEHLEN |
-| **PIX-SERIELLER-PLATZ** | Ein Takt von 30 s gegen einen Vorgang von Minuten ist eine Fehlanpassung. Entwurfsfrage, keine Fehlerbehebung | keine |
-| **PIX-PRIORITAET-STILL** | `kandidaten.py` fällt auf Priorität `0.0` zurück, wenn weder `prioritaet` noch `salienz` im Eintrag steht — 49 von 650 betroffen. Muss laut scheitern statt zur niedrigsten Priorität zu werden | keine |
+| **PIX-AGENTEN-FEHLEN** | `vertiefung` und `nachfragen` existieren nicht. Konzepte: `novaberg-pixie-deepdive_k.md` (69 Zeilen, „noch nicht implementiert") und `novaberg-autonomous-wissen_k.md` §11.3 für `nachfragen`. **Der Sockel** — solange 38 % der Queue ins Leere zeigen, ist jede Durchsatzrechnung sinnlos | Wissensspeicher — ⬜ **offen** — nachgesehen am 25.08.2026. **Zur Haelfte erledigt:** `nachfragen` liegt als Agent vor, `vertiefung` nicht. Deckungsgleich mit `AUFTRAGSARTEN-OHNE-AGENTEN` und `PIXIE-AGENT-MISSING` — **drei Kennungen, ein Befund.** |
+| **PIX-RETRY-KREIS** | Ein Auftrag, der nur scheitern kann, darf nicht dreimal wiederkommen. Ein Fehlschlag ohne Agenten ist ein anderer Fall als einer mit | PIX-AGENTEN-FEHLEN — ⬜ **offen** — nachgesehen am 25.08.2026. Ein Auftrag ohne Agenten verbrennt weiterhin seine drei Versuche. |
+| **PIX-SERIELLER-PLATZ** | Ein Takt von 30 s gegen einen Vorgang von Minuten ist eine Fehlanpassung. Entwurfsfrage, keine Fehlerbehebung | keine — ⬜ **offen** — nachgesehen am 25.08.2026. Die Spurentrennung vom 09.08.2026 hat zwei Plaetze geschaffen, nicht die Fehlanpassung von Takt und Vorgangsdauer geloest. |
+| **PIX-PRIORITAET-STILL** | `kandidaten.py` fällt auf Priorität `0.0` zurück, wenn weder `prioritaet` noch `salienz` im Eintrag steht — 49 von 650 betroffen. Muss laut scheitern statt zur niedrigsten Priorität zu werden | keine — ⬜ **offen** — nachgesehen am 25.08.2026. Gegen HEAD `599c19b` geprueft: `services/pixie/kandidaten.py` faellt unveraendert auf `0.0` zurueck, wenn weder `prioritaet` noch `salienz` vorliegt. |
 
 **Zur Einordnung:** `prioritaet = salienz × (1 + arousal × 0.5)` (`agents/delegation/akte.py`). Es sind zwei Größen — Salienz ist die Bedeutsamkeit, Priorität die durch Erregung verstärkte Dringlichkeit. Gespeichert wird die Salienz; die Priorität ist abgeleitet und gehört zur Auswahlzeit gerechnet.
 
@@ -2321,10 +2425,10 @@ Der LZG-Lesepfad war in **allen sechs Läufen untätig** — eine frische Person
 | **WIS-3-DATEIEN** | Agenten schreiben Wissen- und Bericht-Datei plus `INDEX.md`, mit `umask 000` / `0666` / `0777` | ✅ **04.08.2026** — `recherche`; die übrigen Agenten ziehen nach dem Beispiel nach |
 | **WIS-4-STAPEL-SALIENZ** | `stack_push()` bekommt Salienz und `verstaerkt_am` — beide fehlen heute ganz | ⬜ |
 | **WIS-5-VERFALL** | Dritter Schritt im vorhandenen Tageslauf `synapsen_decay`, je Schritt ein eigener Audit-Eintrag | ⬜ |
-| **WIS-6-FORTSETZEN** | Der Aufräumer verstärkt statt zu löschen, Schwelle 0.60 | WIS-3 |
+| **WIS-6-FORTSETZEN** | Der Aufräumer verstärkt statt zu löschen, Schwelle 0.60 | WIS-3 — ⬜ **offen** — nachgesehen am 25.08.2026. Geplante Arbeit, nicht begonnen; der Eintrag beschreibt ein Ziel und keinen Defekt. |
 | **WIS-PRUEFUNG-F-WISSEN-1** | Pfadprüfung, dass kein Schreibziel des Wissenspfads innerhalb des Arbeitsbaums liegt | ✅ **04.08.2026** — `schreibziel_pruefen()`, jeder Schreib- und Lesevorgang geht hindurch; fünf Testfälle inklusive `..`-Ausbruch |
 | **WIS-7-ENRICHER** | Die Bibliothek als sechste Kontextquelle — `WissenManager`, Metadaten-Treffer über Embedding-Nähe, derselbe Suchschlüssel wie KZG und LZG | ✅ **04.08.2026** — Stufe 1 |
-| **WIS-8-STUFE-2** | Reicht die Zusammenfassung nicht, den **Dateiinhalt** lesen (§7.3). ~~Braucht den Lesepfad in `tools/dateien/`, den es nicht gibt.~~ → 🟢 **Der Lesepfad existiert seit dem 18.08.2026** (`tools/dateien/operationen.py`: `struktur_analysieren`, `block_lesen`, `zeilen_lesen`, `datei_grep`; 26 Zeugen). Die Blockade ist weg; **offen bleibt der Aufrufer** — kein Knoten ruft die Werkzeuge. **Neu bewertet am 18.08.2026:** Der Wächter (`dateien_index`) ist der **erste Produktivaufrufer** — er ruft `struktur_analysieren` je indizierter Datei. Damit ist die Leseschicht nicht mehr aufruferlos. **Offen bleibt der Zoom selbst:** `block_lesen`, `zeilen_lesen` und `datei_grep` hat weiterhin niemand, und genau die sind die Stufe 2 der Bibliothek. Sie wandern an den lesenden Dienst (Stufe 4). → 🟢 **Geschlossen am 18.08.2026:** Der lesende Dienst hat seinen Aufrufer, und `block_lesen` wie `datei_grep` laufen im Betrieb — gemessen an einem echten Turn: Karte 7 Blöcke ohne Dateizugriff, Nadel 2 Fundstellen, und die Antwort trägt Fundstelle und Zahl im selben Satz. **Rest, ausdrücklich benannt:** `zeilen_lesen` hat weiterhin keinen Aufrufer — der Zoom kennt Karte, Block und Nadel, aber kein Zeilenfenster. **Andere Bauart prüfen:** Die Mandelbrot-Navigation ist aus dem 32k-Zwang abgeleitet; im Hintergrund stehen 262144 Token | WIS-7 |
+| **WIS-8-STUFE-2** | Reicht die Zusammenfassung nicht, den **Dateiinhalt** lesen (§7.3). ~~Braucht den Lesepfad in `tools/dateien/`, den es nicht gibt.~~ → 🟢 **Der Lesepfad existiert seit dem 18.08.2026** (`tools/dateien/operationen.py`: `struktur_analysieren`, `block_lesen`, `zeilen_lesen`, `datei_grep`; 26 Zeugen). Die Blockade ist weg; **offen bleibt der Aufrufer** — kein Knoten ruft die Werkzeuge. **Neu bewertet am 18.08.2026:** Der Wächter (`dateien_index`) ist der **erste Produktivaufrufer** — er ruft `struktur_analysieren` je indizierter Datei. Damit ist die Leseschicht nicht mehr aufruferlos. **Offen bleibt der Zoom selbst:** `block_lesen`, `zeilen_lesen` und `datei_grep` hat weiterhin niemand, und genau die sind die Stufe 2 der Bibliothek. Sie wandern an den lesenden Dienst (Stufe 4). → 🟢 **Geschlossen am 18.08.2026:** Der lesende Dienst hat seinen Aufrufer, und `block_lesen` wie `datei_grep` laufen im Betrieb — gemessen an einem echten Turn: Karte 7 Blöcke ohne Dateizugriff, Nadel 2 Fundstellen, und die Antwort trägt Fundstelle und Zahl im selben Satz. **Rest, ausdrücklich benannt:** `zeilen_lesen` hat weiterhin keinen Aufrufer — der Zoom kennt Karte, Block und Nadel, aber kein Zeilenfenster. **Andere Bauart prüfen:** Die Mandelbrot-Navigation ist aus dem 32k-Zwang abgeleitet; im Hintergrund stehen 262144 Token | WIS-7 — ⬜ **offen** — nachgesehen am 25.08.2026. Geplante Arbeit, nicht begonnen; der Eintrag beschreibt ein Ziel und keinen Defekt. |
 | **WIS-SCHWELLE-MESSEN** | `WISSEN_RETRIEVAL_SCHWELLE` steht auf **0.40 — übernommen von `anker_retrieval`, nicht gemessen.** Gleicher Embedding-Raum, gleiche Art Anfrage, aber die Bibliothek hatte bei ihrer Einführung drei Zeilen. Zu messen, sobald Bestand da ist: Abdeckung und Fehltreffer über echte Prompts, wie bei der Kalibrierung von 0.40 selbst. — 🔶 **Vorbedingung erfüllt und zur Hälfte gemessen (17.08.2026).** Bestand: 217 aktive Einträge. **Die Schwelle greift nicht — die Kappung greift:** 40 von 42 protokollierten Aufrufen lieferten genau `WISSEN_RETRIEVAL_TOP_K` = 3 Treffer, der Kosinus des dritten liegt bei Median 0,588 (min 0,404, max 0,691). Über 23.436 Paare des Korpus: Median 0,369, **35,6 % über 0,40**; gerechnet liefert erst **0,55** drei Treffer. Zum Vergleich qualifiziert 0,40 im Knotenraum, für den es kalibriert wurde, rund 1,4 % — **Faktor 26**. **Rest:** Abdeckung und Fehltreffer über echte Prompts sind damit **nicht** gemessen; dafür fehlen die Anfragevektoren, die nicht aufbewahrt werden. ~~Wer den Rest hebt, braucht zuerst einen Weg, `such_vektor` mitzuschreiben~~ — **am 19.08.2026 widerlegt, einen Tag nach der Niederschrift.** Aufbewahrte Anfragevektoren braucht die Messung nicht: Fragen kann man **stellen**. Eine Sonde mit acht ausdrücklichen Fragen gegen den Bestand lieferte am selben Tag die Zahl, die der Eintrag für unerreichbar hielt — und sie widersprach der Kalibrierung von 0,40 in der Gegenrichtung. **Der Rest ist damit nicht blockiert, sondern messbar**, und die Vorbedingung ist keine.
 
 **Gemessen am 19.08.2026 — und die Frage war falsch gestellt: die Schwelle ist nicht das Problem, die Rangfolge unter ihr ist es.** 40 Fragen (Seed 20260819) gegen 249 Einträge, je Frage ist die richtige Antwort bekannt. Der beste **falsche** Treffer liegt im Median näher als der richtige (0,4781 gegen 0,4045); **die richtige Antwort landet in 8 von 40 Fällen auf Rang 1 — 20 %.** Bei 0,40 werden gleichzeitig **50 % der richtigen verworfen und 80 % der Fehltreffer durchgelassen**; keine andere Zahl schafft beides, weil sich beide Verteilungen vollständig überlappen (40/40).
@@ -2345,8 +2449,8 @@ Der LZG-Lesepfad war in **allen sechs Läufen untätig** — eine frische Person
 **Damit hat die naheliegende Abhilfe einen Preis, den bisher niemand genannt hat.** Wer allein auf das Thema umstellt, repariert die Bestellung und stellt den Rückweg auf ein fünfmal kürzeres Ziel um — dieselbe Asymmetrie, nur andersherum, und sie träfe 924 gelaufene Zuordnungen.
 
 **Ausdrücklich offen:** Ob der Rückweg heute *trifft*, ist **nicht gemessen**. Die Längenpassung ist ein Argument dafür, ihn vor der Umstellung zu messen — kein Beleg dafür, dass er funktioniert. **Der nächste Lauf misst deshalb beide Zugriffe gegen beide Ziele**, nicht nur den einen, der aufgefallen ist. | Bestand in `autonomous_wissen` |
-| **WIS-GATE-MESSUNG** | Wie oft das Keep/Discard-Gate falsch urteilt, ist **nicht gemessen**. Die Verteilung der vier Status über echte Durchläufe ist die Grundlage dafür, ob die Schwelle zwischen `ergaenzung` und `wiederholung` taugt | WIS-3 |
-| **PIX-WARTESCHLANGE-AM-MODELL** | **Zwei Posten, beide gemessen.** (1) Serialisierung: dieselbe Anfrage kostet unter Pixie-Last 134,62 s bei 1,27 s Arbeit, mit angehaltenem Pixie 0,05 s Luecke. (2) **Fenster:** Ein trivialer Aufruf bei `num_ctx=262144` kostet 35–38 s, davon 1,33 s ausgewiesen — rund 34 s in keiner Phase, zweimal reproduziert. Bei zehn Aufrufen je Recherche sind das fuenf Minuten Aufschlag. **Nicht gangbar:** `num_ctx` je Aufruf — das Modell ist bei 262144 resident, jede Abweichung laedt 26,8 GB um (19–175 s gemessen, auch mit `keep_alive`). **Fehlt:** ein Aufruf bei 32768 ohne Ladevorgang; ohne ihn ist der Anteil des Fensters an den 35 s nicht zu beziffern | keine |
+| **WIS-GATE-MESSUNG** | Wie oft das Keep/Discard-Gate falsch urteilt, ist **nicht gemessen**. Die Verteilung der vier Status über echte Durchläufe ist die Grundlage dafür, ob die Schwelle zwischen `ergaenzung` und `wiederholung` taugt | WIS-3 — ⬜ **offen** — nachgesehen am 25.08.2026. Die verlangte Messung ist nicht angesetzt worden. |
+| **PIX-WARTESCHLANGE-AM-MODELL** | **Zwei Posten, beide gemessen.** (1) Serialisierung: dieselbe Anfrage kostet unter Pixie-Last 134,62 s bei 1,27 s Arbeit, mit angehaltenem Pixie 0,05 s Luecke. (2) **Fenster:** Ein trivialer Aufruf bei `num_ctx=262144` kostet 35–38 s, davon 1,33 s ausgewiesen — rund 34 s in keiner Phase, zweimal reproduziert. Bei zehn Aufrufen je Recherche sind das fuenf Minuten Aufschlag. **Nicht gangbar:** `num_ctx` je Aufruf — das Modell ist bei 262144 resident, jede Abweichung laedt 26,8 GB um (19–175 s gemessen, auch mit `keep_alive`). **Fehlt:** ein Aufruf bei 32768 ohne Ladevorgang; ohne ihn ist der Anteil des Fensters an den 35 s nicht zu beziffern | keine — ⬜ **offen** — nachgesehen am 25.08.2026. Beide Posten sind gemessen und der Eintrag beschreibt, was daraus folgt; gebaut ist davon nichts. |
 | **WIS-KONTEXT-NEU-DIMENSIONIEREN** | ⚠ **Die Latenz-Begründung war zwischenzeitlich als widerlegt vermerkt — die Rücknahme ist selbst zurückgenommen.** Der Aufschlag von 35 s je Aufruf bei 262144 (`PIX-WARTESCHLANGE-AM-MODELL`) trifft die Recherche mit ihren gut zehn Aufrufen sehr wohl; er steckt nur nicht in `prompt_eval_duration`. Dazu kommt weiterhin der Verlust durch die Kompression. Der Hintergrundpfad hat **262144** Token, nicht 32768 — gemessen am 04.08.2026, 21:02 UTC. Damit steht die Kompressionsstufe der Recherche (`zwischen_destillieren`) zur Disposition: Sie komprimiert verlustbehaftet gegen eine Grenze, die achtmal weiter weg ist, **und ist der gemessene Ausfallpunkt** eines Durchlaufs. Ebenso das Zwei-Stufen-Retrieval: Eine ganze Wissen-Datei passt in den Prompt, der fraktale Zoom ist für den Hintergrund keine Notwendigkeit mehr, sondern eine Wahl. **Der Gesprächspfad bleibt bei 32768** — beide Zahlen gehören getrennt gehalten | keine |
 | **WIS-AGENTEN-NACHZIEHEN** | `vertiefung`, `traum` und `nachfragen` legen nach demselben Muster ab. **Nicht dieselbe Schwelle:** Ein Vertiefungsergebnis liegt seinem Thema im Vektorraum näher als ein Rechercheergebnis (`novaberg-autonomous-wissen_k.md` §11.3) — die Nähe, ab der es dieselbe Datei trifft, ist eigens zu messen . — 🔶 **Neu bewertet am 18.08.2026: Es ist keine Schwellenfrage.** Ein Embedding misst Wortwahl, nicht Zugehörigkeit — *„Napoleons Feldzüge in Ägypten"* liegt näher an einer Napoleon-Datei, weil *„Feldzüge"* lexikalisch ein Napoleon-Wort ist. Und die Frage hat oft **zwei richtige Antworten**. Der Stand der Technik entscheidet die Zuordnung mit einem **Planer auf den Zusammenfassungen** und nach **Pflegbarkeit** statt Nähe, und teilt mehrdeutige Inhalte nach Thema statt sie zu verdoppeln (`novaberg-agent-dateien_k.md` §4a). **Zu messen ist damit nicht eine Nähe, sondern die Trefferqualität der Zuordnung selbst** | PIX-AGENTEN-FEHLEN |
 
@@ -2365,11 +2469,11 @@ Der LZG-Lesepfad war in **allen sechs Läufen untätig** — eine frische Person
 
 | ID | Inhalt | Vorbedingung |
 |---|---|---|
-| **KLA-K5-FAKTENPFAD** | Der Schreibpfad prüft selbst, statt an der Zeichenkette zu entscheiden — und deckt damit **beide Graphen** sowie den Aufgabenpfad ab, auf dem kein Verfasser läuft. **Am 04.08.2026 korrigiert:** Die Tabelle `fakten` hat 0 Zeilen und keinen Erzeuger; Urteil und Schreibvorgang liegen in **zwei** Graphen, korreliert nur über `turn_id`. Nicht mehr das erste Bauteil, sondern das letzte. | **`15e`** (FaktenAgent), nicht `SYK-B1` |
-| **KLA-K1-ERWARTUNGSSCHEMA** | Zu einem Objekttyp ist abrufbar, welche Eigenschaften er trägt und welche notwendig sind. Weltwissen, einmal abgelegt statt je Turn erfragt. | keine |
-| **KLA-K2-KLAERUNGSTOR** | Vergleicht erwartet gegen vorhanden und liefert beide Ausgänge — Lücke und Abweichung — aus einer Operation. | K1, `SYK-B1` |
-| **KLA-K3-SALIENZ** | Nur bedeutsamer Klärungsbedarf führt zu einer Frage. Gegenprobe: Bedeutung schlägt Charakter, sonst wird eine distanzierte Nova blind für Widersprüche. | K2 |
-| **KLA-K4-ZWISCHENSCHRITT** | Eine Klärungsfrage im Gesprächspfad, mit zurückgestelltem Schreibvorgang. Der Rückfrage-Fluss samt Resume existiert, hängt aber am Agentenpfad. | K2, K3 |
+| **KLA-K5-FAKTENPFAD** | Der Schreibpfad prüft selbst, statt an der Zeichenkette zu entscheiden — und deckt damit **beide Graphen** sowie den Aufgabenpfad ab, auf dem kein Verfasser läuft. **Am 04.08.2026 korrigiert:** Die Tabelle `fakten` hat 0 Zeilen und keinen Erzeuger; Urteil und Schreibvorgang liegen in **zwei** Graphen, korreliert nur über `turn_id`. Nicht mehr das erste Bauteil, sondern das letzte. | **`15e`** (FaktenAgent), nicht `SYK-B1` — ⬜ **offen** — nachgesehen am 25.08.2026. Geplante Arbeit, nicht begonnen; der Eintrag beschreibt ein Ziel und keinen Defekt. |
+| **KLA-K1-ERWARTUNGSSCHEMA** | Zu einem Objekttyp ist abrufbar, welche Eigenschaften er trägt und welche notwendig sind. Weltwissen, einmal abgelegt statt je Turn erfragt. | keine — ⬜ **offen** — nachgesehen am 25.08.2026. Geplante Arbeit, nicht begonnen; der Eintrag beschreibt ein Ziel und keinen Defekt. |
+| **KLA-K2-KLAERUNGSTOR** | Vergleicht erwartet gegen vorhanden und liefert beide Ausgänge — Lücke und Abweichung — aus einer Operation. | K1, `SYK-B1` — ⬜ **offen** — nachgesehen am 25.08.2026. Geplante Arbeit, nicht begonnen; der Eintrag beschreibt ein Ziel und keinen Defekt. |
+| **KLA-K3-SALIENZ** | Nur bedeutsamer Klärungsbedarf führt zu einer Frage. Gegenprobe: Bedeutung schlägt Charakter, sonst wird eine distanzierte Nova blind für Widersprüche. | K2 — ⬜ **offen** — nachgesehen am 25.08.2026. Geplante Arbeit, nicht begonnen. |
+| **KLA-K4-ZWISCHENSCHRITT** | Eine Klärungsfrage im Gesprächspfad, mit zurückgestelltem Schreibvorgang. Der Rückfrage-Fluss samt Resume existiert, hängt aber am Agentenpfad. | K2, K3 — ⬜ **offen** — nachgesehen am 25.08.2026. Geplante Arbeit, nicht begonnen. |
 
 **Offene Entwurfsentscheidung:** Auf dem Aufgabenpfad läuft der Verfasser nicht — dort gibt es kein Urteil, ausgerechnet da, wo ein Nutzer ausdrücklich etwas ändern lässt. Entweder ein reduziertes Urteil, oder die ausdrückliche Festlegung, dass von dort ungeprüft geschrieben wird.
 
@@ -2601,6 +2705,8 @@ Bei KZG-Verstaerkung wurde der Zaehler erhoeht und Scores/Emotionen aktualisiert
 
 ### ROUTE-CHAR-NOTIZ — CharacterGraph-Router dispatched Konversation an NotizenAgent (Bug, niedrig)
 
+**Zustand:** offen — nachgesehen am 25.08.2026. Der Eintrag traegt seine Erledigung im Text; die Beobachtung darauf ist nie abgeschlossen worden. **Dieselbe Kennung steht auch im Defektregister** — acht Bezeichner stehen in beiden Registern, siehe `DOKU-DUPLIKATE-CHAT80`.
+
 Der Router im CharacterGraph erkennt Konversation faelschlich als Notizen-Task ("Lumi Geschlecht" → NotizenAgent-Dispatch → Fehler). Der Classify im NotizenAgent rejected korrekt mit "kein Notiz-Auftrag", aber der Umweg kostet einen LLM-Call und erzeugt eine Fehlermeldung im Gespraechsvektor. Verwandt mit ROUTE-MISS1 (dort False Negative, hier False Positive).
 
 **Loesungsansatz:** Router-Prompt haerten — kurze Zwei-Wort-Phrasen ohne Verb und ohne Objekt-Marker nicht als Notiz-Auftrag klassifizieren. Alternativ: Router bekommt die letzten Turns als Kontext und pruefend ob das Thema gerade im Gespraech ist.
@@ -2610,6 +2716,8 @@ Der Router im CharacterGraph erkennt Konversation faelschlich als Notizen-Task (
 ---
 
 ## Epic: KZG-Liberalisierung + LZG-Destillation (Chat 63)
+
+**Zustand:** offen — nachgesehen am 25.08.2026. Geplante Arbeit, nicht begonnen.
 
 **Vision:** Speichern ist günstig, Vergessen ist intelligent. Die KZG-Eintrittsschwelle wird gesenkt, die Deduplizierung im KZG aufgeweicht, und die Intelligenz wird an den LZG-Übergang delegiert — wo thematisch verwandte KZG-Einträge zu einer Synthese destilliert werden.
 
@@ -3199,6 +3307,8 @@ Der Reducer fasst ältere Session-Turns zusammen, statt alle 11+ Turns wörtlich
 
 ### GV-Panel: Dreischicht-Felder visualisieren (Hoch, Chat 72)
 
+**Zustand:** offen — nachgesehen am 25.08.2026. Geplante Arbeit, nicht begonnen.
+
 `gv_detail` enthält seit Chat 72 die volle Entscheidungskette: Achsen, Sektor, Cluster, Repertoire, Charakter-Gewichtung, Sprünge, Absicht, Strategie, Vehikel. Das GV-Panel soll diese Felder detailliert anzeigen — die komplette Entscheidungskette von EI-State bis Antwort-Strategie sichtbar machen.
 
 **Was zu sehen sein soll:**
@@ -3584,17 +3694,23 @@ Drei kleine Punkte aus dem Reducer-Umbau, die nicht im Scope der STRUCT-Phasen l
 
 ### REDUCER-CONFIG-DEAD
 
+**Zustand:** offen — nachgesehen am 25.08.2026. Gegen HEAD `599c19b` geprueft: `REDUCER_AKTIV` und `REDUCER_LOG_REMOVED` stehen unveraendert in `config.py` und haben ausserhalb ihrer Deklaration **keinen Leser**.
+
 **Symptom:** Konfigurations-Konstanten `REDUCER_AKTIV` und `REDUCER_LOG_REMOVED` in `config.py:1008-1013` werden nach dem Umbau nicht mehr genutzt — der neue Reducer hat keinen Master-Schalter mehr und loggt entfernte Einträge fest auf DEBUG-Level.
 **Fix:** Beide Konstanten entfernen, falls keine externen Konsumenten existieren (`grep` zur Sicherheit).
 **Prio:** Niedrig.
 
 ### LOGGER-NAMESPACE
 
+**Zustand:** offen — nachgesehen am 25.08.2026. Die im Befund genannte Stelle ist in dieser Form nicht mehr auffindbar; ohne den alten Wortlaut ist nicht zu entscheiden, ob sie entfallen oder umgeschrieben wurde. **Unbelegt, nicht erledigt.**
+
 **Symptom:** Reducer-Logger heißt `graph.nodes.reducer` (über `logging.getLogger(__name__)`), während der Rest des Servers über das `ki_server.<modul>`-Schema loggt. Folge: `grep "ki_server"` über das Log-Archiv erfasst den Reducer nicht.
 **Fix:** Reducer-Logger-Name entweder explizit auf `ki_server.reducer` setzen oder zentrale Logging-Konfiguration so anpassen, dass alle `graph.*`-Module das Präfix erben.
 **Prio:** Niedrig — kosmetisch, kein funktionaler Schaden.
 
 ### SESSION-SUMMARY-INACTIVE
+
+**Zustand:** offen — nachgesehen am 25.08.2026. Die verlangte Messung ist nicht angesetzt worden.
 
 **Symptom:** In allen Smoke-Test-Turns von Chat 75 zeigte das Reducer-Logging `Gruppe summary: 0 Eintraege`. Der Session-Summary-Pfad im Enricher (STRUCT-5b: Entry mit `quelle="summary"`) wurde nie aktiviert.
 **Vermutung:** Der Session-Summary wird vermutlich nur unter bestimmten Bedingungen erzeugt (z.B. ab N Turns Session-Länge) und war im Test-Szenario nicht erreicht. Möglich aber auch: Der Pfad ist tatsächlich tot (z.B. weil die zugrundeliegende Funktion nie returns oder die State-Variable nie gesetzt wird).
@@ -4046,6 +4162,8 @@ Außerhalb des P4-Scope. P4 baut das semantische Netz, CHRONIK ist das episodisc
 
 ## Bug: TIMELINE-PAIR-MISSING — Timeline-Tabelle ohne `character_id` (Chat 80)
 
+**Zustand:** offen — nachgesehen am 25.08.2026. Am Schema bestaetigt: `timeline` traegt weiterhin **kein** `character_id`. **Dieselbe Kennung steht auch im Defektregister.**
+
 **Entdeckt:** Chat 80
 **Klasse:** Schema-Lücke, paar-spezifisches Wissen leakt zwischen Charakteren
 **Severity:** Mittel — relevant erst bei Multi-Charakter-Setup, aber Foundation-Bug
@@ -4072,6 +4190,8 @@ Bei Multi-Charakter-Setup würden Aria-Termine bei Nova auftauchen (und umgekehr
 
 ## Bug: NOTIZEN-PAIR-MISSING — Notizen-Tabelle ohne `character_id` (Chat 80)
 
+**Zustand:** offen — nachgesehen am 25.08.2026. Am Schema bestaetigt: `notizen` traegt weiterhin **kein** `character_id`. **Dieselbe Kennung steht auch im Defektregister.**
+
 **Entdeckt:** Chat 80 (Audit zur character_id-Inventur)
 **Klasse:** Schema-Lücke, paar-spezifisches Wissen leakt zwischen Charakteren
 **Severity:** Mittel — relevant erst bei Multi-Charakter-Setup, aber Foundation-Bug
@@ -4085,6 +4205,8 @@ Bei Multi-Charakter-Setup würden Aria-Termine bei Nova auftauchen (und umgekehr
 ---
 
 ## Bug: FAKTEN-PAIR-IGNORED — Fakten-Repository ignoriert `character_id`-Spalte (Chat 80)
+
+**Zustand:** offen — nachgesehen am 25.08.2026. Am Schema bestaetigt: Die Spalte ist da, das Repository liest sie nicht — und die Tabelle traegt **0 Zeilen**, die im Befund genannten 171 gibt es nicht mehr. **Dieselbe Kennung steht auch im Defektregister.**
 
 **Entdeckt:** Chat 80 (Audit zur character_id-Inventur)
 **Klasse:** Repository-Lücke trotz vorhandener Schema-Spalte
@@ -4100,6 +4222,8 @@ Bei Multi-Charakter-Setup würden Aria-Termine bei Nova auftauchen (und umgekehr
 
 ## Bug: ZIELE-PAIR-MISSING — Ziele-Tabelle ohne `character_id` (Chat 80)
 
+**Zustand:** abgeschlossen — am Schema geprueft am 25.08.2026. `ziele` traegt `character_id`. **Dieselbe Kennung steht auch im Defektregister und ist dort ebenfalls geschlossen.**
+
 **Entdeckt:** Chat 80 (Audit zur character_id-Inventur)
 **Klasse:** Schema-Lücke + offene Skopierungs-Frage
 **Severity:** Niedrig — heute kein Live-Problem, aber Foundation-Bug
@@ -4113,6 +4237,8 @@ Bei Multi-Charakter-Setup würden Aria-Termine bei Nova auftauchen (und umgekehr
 ---
 
 ## Bug: NOTIZEN-KONTEXT-REKONSTRUKTION — Mehrschritt-Rekonstruktion fehlt (Chat 80)
+
+**Zustand:** offen — nachgesehen am 25.08.2026. Die verlangte Messung ist nicht angesetzt worden.
 
 **Entdeckt:** Chat 80 (Live-Test B des NOTIZEN-VOR-TURN-BEZUG-Sprints)
 **Klasse:** Strukturelle Lücke — Bezugsauflösung über mehrere Vor-Turns hinweg
@@ -4137,6 +4263,8 @@ Bei Multi-Charakter-Setup würden Aria-Termine bei Nova auftauchen (und umgekehr
 
 ## Bug: NOTIZEN-CONTAINER-WECHSEL — Notiz↔Liste-Wechsel verweigert (Chat 80)
 
+**Zustand:** offen — nachgesehen am 25.08.2026. Geplante Arbeit, nicht begonnen.
+
 **Entdeckt:** Chat 80 (Live-Test B)
 **Klasse:** Architektur-Strenge zu hoch — Container-Typ als unveränderliche Klasse
 **Severity:** Mittel — eingeschränkte Funktionalität, aber kein Daten-Verlust
@@ -4157,6 +4285,8 @@ Bei Multi-Charakter-Setup würden Aria-Termine bei Nova auftauchen (und umgekehr
 
 ## Bug: NOTIZEN-SKILL-MANIFEST — Nova kennt eigene Fähigkeiten nicht in der Sprach-Schicht (Chat 80)
 
+**Zustand:** offen — nachgesehen am 25.08.2026. Geplante Arbeit, nicht begonnen.
+
 **Entdeckt:** Chat 80 (Live-Test B, durch Meister thematisiert)
 **Klasse:** Domain-Language-Lücke — Skills im Code vorhanden, in der Sprach-Schicht nicht repräsentiert
 **Severity:** Mittel — falsche Selbstauskunft an User
@@ -4172,6 +4302,8 @@ Bei Multi-Charakter-Setup würden Aria-Termine bei Nova auftauchen (und umgekehr
 ---
 
 ## Bug: NOTIZEN-UPDATE-TARGET-LEER — Bezugs-Pronomen für UPDATE/RENAME crashen (Chat 80)
+
+**Zustand:** offen — nachgesehen am 25.08.2026. Die verlangte Messung ist nicht angesetzt worden.
 
 **Entdeckt:** Chat 80 (Live-Test B)
 **Klasse:** Bezugsauflösung im UPDATE-Pfad — verwandt zu NOTIZEN-VOR-TURN-BEZUG, aber andere Aktion
@@ -4351,6 +4483,10 @@ char_hash_dict = {
 
 ## Bug: SPRACH-STIL-DEFENSIV-STUMM — `_sprach_stil_erkennen` bricht stumm auf "neutral" zurück (Chat 89/90)
 
+**Zustand:** offen — nachgesehen am 25.08.2026. **Zweite Zeile derselben Kennung.**
+
+**Zustand:** offen — nachgesehen am 25.08.2026. **Dieselbe Kennung steht zweimal in diesem Register.**
+
 **Status:** ⬜ Beobachtet, nicht implementiert
 **Prio:** Niedrig
 **Auslöser:** Phase-2-Audit PFAD2-PERZEPTION-FIX (Chat 89), bestätigt im HG-Slimming Pre-Audit (Chat 90)
@@ -4421,6 +4557,10 @@ Umgezogen sind die drei Leser, bei denen die Frage lautete, welcher Graph laeuft
 ---
 
 ## Bug: EI-CALC-ROLLE-DEFAULT-ASYMMETRIE — Inkonsistente Defaults beim Rollen-Dispatch (Chat 90)
+
+**Zustand:** offen — nachgesehen am 25.08.2026. Die verlangte Messung ist nicht angesetzt worden.
+
+**Zustand:** offen — nachgesehen am 25.08.2026. Die verlangte Messung ist nicht angesetzt worden.
 
 **Status:** ⬜ Latent (Audit-Befund), nicht implementiert
 **Prio:** Niedrig
@@ -4718,13 +4858,13 @@ Sieben Beifang-Punkte aus dem Audit-Sweep, die nicht zur P4-Klärung beitrugen, 
 
 | # | Beobachtung | Schicksal nach P9 |
 |---|---|---|
-| EMOTIONS-VEKTOR-LEER | `lzg_knoten.emotions_vektor` ist NOT NULL DEFAULT '', wird vom Salience-Node leer gelassen. Spalte kehrt aus Chat-83-Entfernung zurück. | Eigener Salience-Sprint später |
-| KZG-ERSTELLT-AM-PARSE-HÄRTE | Spalte ist NOT NULL im neuen Schema, alter Code fing Parse-Fehler ab und schrieb `None`. Neuer Agent braucht Vorbedingungs-Check. | In P4-Implementation einbauen |
-| GEDACHTNISTYP-DEFAULT-BEFÜLLT | `lzg_knoten.gedaechtnistyp` wird vom neuen Pfad mit KZG-Wert befüllt (heute oft `"kurz"`), alter Pfad hatte NULL gelassen. | P5-Lesepfad muss darauf vorbereitet sein |
-| TRIGGER-2-RECACHE-KONZEPT-LÜCKE | Konzept §7.9.2 Trigger 2 (Knoten-Aktivierung) ist semantisch unklar im 1:1-Umzug — jeder neue KZG-Eintrag entsteht als neuer Knoten, „echte Aktivierung" passiert erst beim Reinforcement-Match (K10). | Konzept-Klärung später, faktisch P6+-Problem |
-| FAKTEN-TABELLE-ENTITY-MERGE | `fakten`-Tabellen-Konsistenz bei Entity-Merge — `entitaeten.id` wird sowohl in `lzg_knoten.entitaet_ids` als auch in `fakten`-Tripeln referenziert, aber Konsistenz-Pflege bei Merge nur für `lzg_kanten` definiert. | Eigenes Faktengedächtnis-Konzept |
-| TIMELINE-FK-DOKU-DRIFT | Konzept §4.1 listet `timeline_id INTEGER REFERENCES timeline(id) ON DELETE SET NULL`, Live `init.sql` hat bare INTEGER ohne FK (FK lebt in `agents/timeline/init.sql`). Funktional gleichwertig, dokumentarisch abweichend. | Doku-Sync mit TIMELINE-IN-KERN |
-| REFAC-MAGNETE-AUDIT | `magnete_aufloesen`-Node (P3) hat keinen `_audit_log`- oder `pipeline_log`-Eintrag. Resolver-Fehler erscheinen nur in `logger.warning`. Drift schwer diagnostizierbar. | Separater Refactor-Sprint |
+| EMOTIONS-VEKTOR-LEER | `lzg_knoten.emotions_vektor` ist NOT NULL DEFAULT '', wird vom Salience-Node leer gelassen. Spalte kehrt aus Chat-83-Entfernung zurück. | Eigener Salience-Sprint später — ⬜ **offen** — nachgesehen am 25.08.2026. Am Bestand gemessen: **1337 von 3035** Knoten tragen einen leeren Vektor (44 %). |
+| KZG-ERSTELLT-AM-PARSE-HÄRTE | Spalte ist NOT NULL im neuen Schema, alter Code fing Parse-Fehler ab und schrieb `None`. Neuer Agent braucht Vorbedingungs-Check. | In P4-Implementation einbauen — ⬜ **offen** — nachgesehen am 25.08.2026. Die im Befund genannte Stelle ist in dieser Form nicht mehr auffindbar; ohne den alten Wortlaut ist nicht zu entscheiden, ob sie entfallen oder umgeschrieben wurde. **Unbelegt, nicht erledigt.** |
+| GEDACHTNISTYP-DEFAULT-BEFÜLLT | `lzg_knoten.gedaechtnistyp` wird vom neuen Pfad mit KZG-Wert befüllt (heute oft `"kurz"`), alter Pfad hatte NULL gelassen. | P5-Lesepfad muss darauf vorbereitet sein — ✅ **abgeschlossen** — am Bestand gemessen am 25.08.2026. `lzg_knoten.gedaechtnistyp` traegt echte Werte: **1542 `kurz`, 1493 `lang`**, kein Vorgabewert im Bestand. |
+| TRIGGER-2-RECACHE-KONZEPT-LÜCKE | Konzept §7.9.2 Trigger 2 (Knoten-Aktivierung) ist semantisch unklar im 1:1-Umzug — jeder neue KZG-Eintrag entsteht als neuer Knoten, „echte Aktivierung" passiert erst beim Reinforcement-Match (K10). | Konzept-Klärung später, faktisch P6+-Problem — ⬜ **offen** — nachgesehen am 25.08.2026. Geplante Arbeit, nicht begonnen. |
+| FAKTEN-TABELLE-ENTITY-MERGE | `fakten`-Tabellen-Konsistenz bei Entity-Merge — `entitaeten.id` wird sowohl in `lzg_knoten.entitaet_ids` als auch in `fakten`-Tripeln referenziert, aber Konsistenz-Pflege bei Merge nur für `lzg_kanten` definiert. | Eigenes Faktengedächtnis-Konzept — ⬜ **offen** — nachgesehen am 25.08.2026. Gegenstandslos, solange `fakten` 0 Zeilen traegt. |
+| TIMELINE-FK-DOKU-DRIFT | Konzept §4.1 listet `timeline_id INTEGER REFERENCES timeline(id) ON DELETE SET NULL`, Live `init.sql` hat bare INTEGER ohne FK (FK lebt in `agents/timeline/init.sql`). Funktional gleichwertig, dokumentarisch abweichend. | Doku-Sync mit TIMELINE-IN-KERN — ⬜ **offen** — nachgesehen am 25.08.2026. Die Doku-Drift ist nicht nachgezogen. |
+| REFAC-MAGNETE-AUDIT | `magnete_aufloesen`-Node (P3) hat keinen `_audit_log`- oder `pipeline_log`-Eintrag. Resolver-Fehler erscheinen nur in `logger.warning`. Drift schwer diagnostizierbar. | Separater Refactor-Sprint — ⬜ **offen** — nachgesehen am 25.08.2026. Gegen HEAD `599c19b` geprueft: `agents/kzg/magnete.py` schreibt weiterhin weder eine Audit- noch eine Pipeline-Log-Zeile. |
 
 **Empfehlung:** Liste als Beobachtungs-Anker erhalten. Sechs der sieben Punkte sind entweder mit P9-Löschung erledigt oder in Folge-Sprints (P5, Faktengedächtnis, TIMELINE-IN-KERN) integriert. `REFAC-MAGNETE-AUDIT` als eigenständiger kleiner Sprint übrig.
 
@@ -4760,6 +4900,10 @@ Sieben Beifang-Punkte aus dem Audit-Sweep, die nicht zur P4-Klärung beitrugen, 
 
 ## Bug: TOK-DRIFT-SALIENCE — Token-Akkumulator zählt fehlgeschlagene Segmente nicht (Chat 94)
 
+**Zustand:** offen — nachgesehen am 25.08.2026. **Zweite Zeile derselben Kennung** — der Befund steht bei der ersten.
+
+**Zustand:** offen — nachgesehen am 25.08.2026. Der Akkumulator steht unveraendert. **Die Zeilenangaben des Befundes sind veraltet** — heute `graph/nodes/salience.py:508` und `:602` statt `:140/192/259`. **Dieselbe Kennung steht zweimal in diesem Register.**
+
 **Entdeckt:** Chat 94 (Code-Audit `salience.py`, Antwort auf die offene Chat-93-Frage zu `gesamt_tokens`)
 **Klasse:** Metrik-Ungenauigkeit — kein funktionaler Defekt, kein Dead Code
 **Severity:** Niedrig
@@ -4790,6 +4934,8 @@ Sieben Beifang-Punkte aus dem Audit-Sweep, die nicht zur P4-Klärung beitrugen, 
 
 ## Cleanup: QUEUE-SCHEMA-STALE — `queue:nova` mit toten Aufträgen aus Pre-Paar-Schema (Chat 98)
 
+**Zustand:** gegenstandslos — am Bestand geprueft am 25.08.2026. Einen Schluessel `queue:nova` gibt es nicht mehr; die Arbeitsqueues laufen ueber die Paarkennung. Der Befund hat keinen Gegenstand.
+
 `queue:nova` enthält 34 tote Aufträge im Zwischenschema `kzg:nova:nova:` aus der Zeit vor der Paar-Migration. Die Paar-Migration hat die Queue übersehen — klassisches „missing write path after migration". Beißt aktuell nicht, weil der scharfe Pfad `queue:meister` liest; bleibt aber als Altlast in Redis stehen.
 
 **Fix:** `docker exec ki_redis redis-cli del queue:nova`.
@@ -4798,6 +4944,8 @@ Sieben Beifang-Punkte aus dem Audit-Sweep, die nicht zur P4-Klärung beitrugen, 
 
 ## Refactor: SCHED-STALE-SCHEDULE — Startup räumt `pixie:schedule:*` nicht (Chat 98)
 
+**Zustand:** offen — nachgesehen am 25.08.2026. Am Bestand geprueft: Die Zeitplan-Schluessel liegen vor und sind saemtlich routebar; ob der Start sie raeumt, ist damit nicht geprueft, sondern nur nicht noetig gewesen.
+
 `main.py` registriert periodische Pixie-Aufgaben mit `if not redis_client.exists(key)` und ohne Startup-Cleanup. Veraltete `pixie:schedule:*`-Keys persistieren über Agenten-Wechsel hinweg — in Chat 98 mussten beim Wechsel Promotion → SynapsenPromotion die alten Keys manuell per `DEL` geräumt werden.
 
 **Fix:** Startup soll `pixie:schedule:*` bereinigen und aus dem aktuellen `periodic_task()` jedes registrierten Agenten neu aufbauen. Beißt sonst bei jedem künftigen Agenten-Wechsel wieder.
@@ -4805,6 +4953,8 @@ Sieben Beifang-Punkte aus dem Audit-Sweep, die nicht zur P4-Klärung beitrugen, 
 ---
 
 ## Bug: SHADOW-PAYLOAD-FIELD-MISMATCH — Dispatch liest Felder, die Shadow-Queue nicht schreibt (Chat 98)
+
+**Zustand:** offen — nachgesehen am 25.08.2026. Der Dispatcher liest den Wert seit dem Umbau ueber drei Namen; der Befund ist damit entschaerft und nicht geschlossen.
 
 `pixie/dispatch.py` liest aus dem Payload `eintrag["themen"]` und `eintrag["salienz"]`. Die Promotion-Queue (`queue:{user_id}`) schreibt diese Felder, die Shadow-Queue (`shadow_queue_push` in `services/shadow_agent/utils.py`) schreibt aber `"thema"` (Singular) und `"prioritaet"`. Damit sind `state["kontext"]["themen"]` und `state["kontext"]["salienz"]` auf dem Shadow-Pfad strukturell leer.
 
@@ -4820,6 +4970,8 @@ Heute kein akuter Bug: `RechercheAgent` liest `"thema"` direkt aus `state["param
 
 ## Refactor: WIEDERVORLAGE-MULTI-USER — Periodische Aufgaben pro User statt global (Chat 98)
 
+**Zustand:** offen — nachgesehen am 25.08.2026. Geplante Arbeit, nicht begonnen.
+
 `agents/wiedervorlage/agent.py` läuft periodisch, `dispatch.py` setzt `kontext={}` für periodische Aufträge. Damit greift der `DEFAULT_USER_ID`-Fallback strukturell — Wiedervorlage prüft heute nur für `meister`. Multi-User-Wiedervorlage braucht einen Scheduler-Umbau: periodische Aufgaben pro User registrieren statt global über `pixie:schedule:*`.
 
 Auslöser: Fix für PROMO-QUEUE-USER-MISMATCH (Chat 98) hat den Lese-Pfad auf `kontext.user_id` umgestellt; der periodische Pfad bleibt damit strukturell auf `DEFAULT_USER_ID`, sichtbar dokumentiert per Inline-Kommentar im Agent.
@@ -4827,6 +4979,8 @@ Auslöser: Fix für PROMO-QUEUE-USER-MISMATCH (Chat 98) hat den Lese-Pfad auf `k
 ---
 
 ## Sprint: SYNAPSEN-LIVE-VERIFY — Entitäts- und Timeline-Kantenschicht unter Live-Last bestätigen (Chat 98)
+
+**Zustand:** offen — nachgesehen am 25.08.2026. Die verlangte Messung ist nicht angesetzt worden.
 
 Entitäts- und Timeline-Kantenschicht des Synapsen-Netzes sind unter Live-Last noch nicht verifiziert. Embedding- und Themen-Schicht sind bestätigt (Migration: 110 Kanten; Live: 55+ Kanten an den ersten Live-Knoten 91–101).
 
@@ -4838,6 +4992,8 @@ Verifikation erfolgt von selbst beim ersten passenden Folge-Turn; bewusst kein s
 
 ## Sprint: SYNAPSEN-DUAL-LZG — Lesepfad auf `lzg_knoten`/`lzg_kanten` umstellen (Chat 98)
 
+**Zustand:** offen — nachgesehen am 25.08.2026. Geplante Arbeit, nicht begonnen.
+
 `langzeitgedaechtnis` (alt) und `lzg_knoten`/`lzg_kanten` (neu) existieren parallel. Der Lesepfad (Enricher, gv-node usw.) liest noch aus `langzeitgedaechtnis`. Umbau auf das Synapsen-Netz steht aus — eigener Sprint nach Live-Bewährung.
 
 Die Migration hat 90 Knoten + 110 Kanten erzeugt, der Bestand ist da und wartet auf den Konsumenten. Solange der Lesepfad noch das alte Schema bedient, fließt das neue Netz zwar voll, beeinflusst aber den Turn nicht.
@@ -4847,6 +5003,8 @@ Die Migration hat 90 Knoten + 110 Kanten erzeugt, der Bestand ist da und wartet 
 ---
 
 ## Befund: KZG-GEWICHT-ABSOLUT-CEILING — sin^0.5-Dämpfung klemmt bei `roh >= CAP` (Chat 98)
+
+**Zustand:** offen — nachgesehen am 25.08.2026. Verwandt mit der Salienzkurve, deren Exponent am 24.08.2026 gewechselt hat; ob die Klemme damit entfaellt, ist nicht nachgerechnet.
 
 Live-Knoten mit `roh > CAP` produzieren `absolut = 10.00`. Live-Beispiele: `roh = 10.10` → `absolut = 10.00` in vier von fünf Knoten 97–101. Die sin^0.5-Dämpfung in `gewicht_absolut_berechnen` klemmt bei `roh >= CAP` strukturell.
 
@@ -4937,13 +5095,13 @@ Kurzübersicht aktiver Bugs:
 | RESP-DEAD | ⬜ | Tote Standardphrase statt Nova-Ton bei fehlgeschlagenen Agent-Dispatches |
 | PIXIE-GHOST | ⬜ | Pixie-Delivery fließt nicht durch EI/Session/Router — Nova hört sich selbst nicht |
 | PIXIE-AGENT-MISSING | ⬜ | `nachfragen` und `vertiefung` werden geroutet, sind aber nach PIX-CLEAN keine Agenten mehr (PIX-MIG-6/7) |
-| RECH-SPIRAL | Mittel | RechercheAgent erzeugt Folge-Recherchen zum selben Thema ohne Konvergenz. Selbstfuetternde Kette: Recherche → Destillation → Queue-Eintrag → gleiche Recherche. Braucht Themen-Aehnlichkeits-Check in shadow_queue_push gegen die letzten N Eintraege. Beobachtet Chat 79 (Feng-Shui-Spirale: 4× Vertiefen + 1× Folge-Recherche zum identischen Thema). **Zur Haelfte gebaut am 15.08.2026:** `shadow_queue_push` prueft seither auf **Gleichheit** von `aufgabe` + `thema` und verstaerkt den vorhandenen Auftrag, statt einen zweiten anzulegen — eine exakt wiederholte Recherche erzeugt keine Kette mehr. **Der Aehnlichkeits-Vergleich fehlt weiterhin**, und er ist der Teil, der die Spirale trifft: Sie entsteht aus *verwandten*, nicht aus identischen Themen. Er braucht eine gemessene Schwelle und ist in `novaberg-queue-verfall_k.md` §6.1 ausdruecklich ausgeschlossen. **Ausserdem ausgenommen: leere Themen** (§6.2) — 141 Auftraege im Bestand tragen keins |
-| RECH-CHARAKTER | Mittel | RechercheAgent ist charakter-blind — kein Zugang zum Charakter-Hash, kein [IDENTITAET]-Block, kein Responder. Grundursache von DELIVERY-VOICE. Loesung: PIXIE-GRAPH-MERGE (Pfad 3 durch CharacterGraph-Instanz). Beobachtet Chat 79 |
-| DELIVERY-DEDUP | Niedrig | Mehrfach identische proaktive Nachrichten zum selben Thema. Delivery-Pfad prueft nicht ob kuerzlich eine thematisch aehnliche Nachricht gesendet wurde. Beobachtet Chat 79 (4× Feng-Shui-Delivery) |
-| SPRACH-STIL-DEFENSIV-STUMM | Niedrig | `_sprach_stil_erkennen` fällt ohne Warning auf "neutral" bei leerem charakter_hash (Verstoß gegen "fail loud", Chat 89/90) |
+| RECH-SPIRAL | Mittel | RechercheAgent erzeugt Folge-Recherchen zum selben Thema ohne Konvergenz. Selbstfuetternde Kette: Recherche → Destillation → Queue-Eintrag → gleiche Recherche. Braucht Themen-Aehnlichkeits-Check in shadow_queue_push gegen die letzten N Eintraege. Beobachtet Chat 79 (Feng-Shui-Spirale: 4× Vertiefen + 1× Folge-Recherche zum identischen Thema). **Zur Haelfte gebaut am 15.08.2026:** `shadow_queue_push` prueft seither auf **Gleichheit** von `aufgabe` + `thema` und verstaerkt den vorhandenen Auftrag, statt einen zweiten anzulegen — eine exakt wiederholte Recherche erzeugt keine Kette mehr. **Der Aehnlichkeits-Vergleich fehlt weiterhin**, und er ist der Teil, der die Spirale trifft: Sie entsteht aus *verwandten*, nicht aus identischen Themen. Er braucht eine gemessene Schwelle und ist in `novaberg-queue-verfall_k.md` §6.1 ausdruecklich ausgeschlossen. **Ausserdem ausgenommen: leere Themen** (§6.2) — 141 Auftraege im Bestand tragen keins — ⬜ **offen** — nachgesehen am 25.08.2026. Die verlangte Messung ist nicht angesetzt worden. |
+| RECH-CHARAKTER | Mittel | RechercheAgent ist charakter-blind — kein Zugang zum Charakter-Hash, kein [IDENTITAET]-Block, kein Responder. Grundursache von DELIVERY-VOICE. Loesung: PIXIE-GRAPH-MERGE (Pfad 3 durch CharacterGraph-Instanz). Beobachtet Chat 79 — ⬜ **offen** — nachgesehen am 25.08.2026. Die verlangte Messung ist nicht angesetzt worden. |
+| DELIVERY-DEDUP | Niedrig | Mehrfach identische proaktive Nachrichten zum selben Thema. Delivery-Pfad prueft nicht ob kuerzlich eine thematisch aehnliche Nachricht gesendet wurde. Beobachtet Chat 79 (4× Feng-Shui-Delivery) — ⬜ **offen** — nachgesehen am 25.08.2026. Geplante Arbeit, nicht begonnen. |
+| SPRACH-STIL-DEFENSIV-STUMM | Niedrig | `_sprach_stil_erkennen` fällt ohne Warning auf "neutral" bei leerem charakter_hash (Verstoß gegen "fail loud", Chat 89/90) — ⬜ **offen** — nachgesehen am 25.08.2026. **Zweites Vorkommen derselben Kennung in diesem Register.** Der Befund steht beim ersten; die Dopplung selbst ist der groessere Mangel. |
 | AUDIT-PIXIE-TURN-ID | 👁 | Pixie-Pfad turn_id-Auflösung nicht auditiert (latent, akut keine Wirkung wegen PIXIE_AKTIV=False, Chat 90) |
-| EI-CALC-ROLLE-DEFAULT-ASYMMETRIE | Niedrig | Inkonsistente Defaults beim Rollen-Dispatch in Enricher/EI-Calc/Salience (Chat 90) |
-| TOK-DRIFT-SALIENCE | Niedrig | `gesamt_tokens` zählt bei JSON-Fehler fehlgeschlagene Segmente nicht → `state["token_total"]` minimal zu niedrig; folgenlos solange reine Metrik. Reaktivierung bei Token-Budget/Alert → Block 5. Chat 94 |
+| EI-CALC-ROLLE-DEFAULT-ASYMMETRIE | Niedrig | Inkonsistente Defaults beim Rollen-Dispatch in Enricher/EI-Calc/Salience (Chat 90) — ⬜ **offen** — nachgesehen am 25.08.2026. **Zweites Vorkommen derselben Kennung in diesem Register.** Der Befund steht beim ersten; die Dopplung selbst ist der groessere Mangel. |
+| TOK-DRIFT-SALIENCE | Niedrig | `gesamt_tokens` zählt bei JSON-Fehler fehlgeschlagene Segmente nicht → `state["token_total"]` minimal zu niedrig; folgenlos solange reine Metrik. Reaktivierung bei Token-Budget/Alert → Block 5. Chat 94 — ⬜ **offen** — nachgesehen am 25.08.2026. **Zweites Vorkommen derselben Kennung in diesem Register.** Der Befund steht beim ersten; die Dopplung selbst ist der groessere Mangel. |
 | TEST-RUNNER-FEHLT-CONTAINER | ✅ | Fehl-Framing (Chat 96): Die Suite ist reines `unittest` (`IsolatedAsyncioTestCase`), kein pytest nötig — `pytest` schlug nicht mangels Installation fehl, sondern war das falsche Werkzeug. Richtiger Befehl: `docker compose exec --workdir /app server python -m unittest discover -t /app -s tests -p "test_*.py"` (`-t /app` hält den Import-Root, sonst `ModuleNotFoundError`). Suite läuft 26/26 grün. Aufgeworfen Chat 94, geklärt Chat 96. |
 
 Details, Ursachen und Lösungsansätze → `novaberg-bugs.md`
@@ -4986,6 +5144,8 @@ Details, Ursachen und Lösungsansätze → `novaberg-bugs.md`
 
 ## Refactor: BEZEICHNER-WAR-AKTIV — was_active statt war_aktiv (Chat 102)
 
+**Zustand:** offen — nachgesehen am 25.08.2026. Gegen HEAD `599c19b` geprueft: `war_aktiv` steht unveraendert in `memory/repositories/shadow_auftrag_repository.py`. Die Umbenennung ist nicht erfolgt.
+
 `reactivate_node` in `memory/lzg_knoten.py` nutzt die lokale Variable
 `war_aktiv` (deutsch). Die Sprach-Regel verlangt englische Bezeichner —
 `was_active`. Kein Einzelfix: gebuendelter Bezeichner-Angleich beim naechsten
@@ -4994,6 +5154,8 @@ Anfassen der Datei (auch `zeile`, `neuer_roh` etc. im Umfeld sind gemischt).
 ---
 
 ## Fix: CONFIG-DECAY-RATE-KOMMENTAR-DRIFT — falscher Kommentar bei LZG_KNOTEN_DECAY_RATE (Chat 102)
+
+**Zustand:** offen — nachgesehen am 25.08.2026. Die im Befund genannte Stelle ist in dieser Form nicht mehr auffindbar; ohne den alten Wortlaut ist nicht zu entscheiden, ob sie entfallen oder umgeschrieben wurde. **Unbelegt, nicht erledigt.**
 
 `config.py` (~Z.1092) kommentiert `LZG_KNOTEN_DECAY_RATE` mit "nicht persistiert,
 live berechnet". Falsch: `gewicht_decay` ist eine persistierte Spalte
@@ -5005,6 +5167,8 @@ fremder Ort → eigener Commit.
 ---
 
 ## Frage: PATTERN-DOMAIN-LANGUAGE-RECONCILE — deutsche Domaenensprache vs. Englisch-Regel (Chat 102)
+
+**Zustand:** offen — nachgesehen am 25.08.2026. Eine Festlegung, keine Messung — und sie ist nicht getroffen worden.
 
 `novaberg-pattern-domain-language.md` kodifiziert (soweit in Chat 102 referenziert)
 deutsche Domaenen-Verben als Muster. Das widerspricht der Regel "Bezeichner
@@ -5036,6 +5200,8 @@ Log: „Pixie-Router: Kein Agent fuer periodische Aufgabe 'synapsen_decay'". Der
 
 ## Frage: HALBREAKTIVIERUNG-LIVE — erster inaktiver Match feuert reactivate_node? (Chat 102, beobachtend)
 
+**Zustand:** offen — nachgesehen am 25.08.2026. Die verlangte Messung ist nicht angesetzt worden.
+
 Der Reaktivierungs-Pfad (§9.3) ist verdrahtet, aber noch nie an einem echten
 gematchten inaktiven Knoten gelaufen (setzt einen durch Decay deaktivierten
 Knoten voraus, den ein spaeterer Promotion-Turn mit cosine ≥ 0.85 trifft).
@@ -5047,6 +5213,8 @@ halbreaktiviert|halbreaktivierung"`.
 
 ## Frage: SYNAPSEN-REAKTIV-SCHWELLE — eigene Match-Schwelle fuer Reaktivierung? (Chat 102)
 
+**Zustand:** offen — nachgesehen am 25.08.2026. Geplante Arbeit, nicht begonnen.
+
 Die Halbreaktivierung nutzt dieselbe `LZG_KNOTEN_MATCH_SCHWELLE` (0.85) wie
 normales Reinforcement (YAGNI-Entscheidung Chat 102). **Zu beobachten:** Falls
 Live zeigt, dass 0.85 zu leicht falsche inaktive Knoten weckt, waere eine
@@ -5055,15 +5223,21 @@ getrennte, hoehere Reaktivierungs-Schwelle ein zusaetzlicher Parameter an
 
 ## Beobachtung: CHARHASH-GEWICHT-ABSOLUT-LIVE — erste volle Live-Destillation nach lzg_knoten-Migration (Chat 103, beobachtend)
 
+**Zustand:** offen — nachgesehen am 25.08.2026. Die verlangte Messung ist nicht angesetzt worden.
+
 Nach P7 liest der Char-Hash aus `lzg_knoten` sortiert nach `gewicht_absolut`. Teilbestätigt: Kern-Hash wurde in realen Turns injiziert, kein KeyError. Offen: volle Abnahme im Dauerbetrieb — Kern-Eintrag im Charakter-Tab mit frischem Datum, Intentionen/Emotionen dürfen dünn/leer sein (EI-Filter greift nur bei Knoten mit echten EI-Feldern; Migrations-Knoten tragen teils Defaults — Datenlage, kein Defekt). ⬜ Prio niedrig
 
 ## Bug: CHARHASH-PROMPT-DUPLIKAT — Kern-Persönlichkeit 5× wortgleich im [Charakter]-Prompt (Chat 103)
+
+**Zustand:** offen — nachgesehen am 25.08.2026. Die im Befund genannte Stelle ist in dieser Form nicht mehr auffindbar; ohne den alten Wortlaut ist nicht zu entscheiden, ob sie entfallen oder umgeschrieben wurde. **Unbelegt, nicht erledigt.**
 
 Der Kern-Hash erscheint fünfmal identisch im injizierten `[Charakter]`-Block, obwohl `charakter_hash` nur eine Kern-Zeile hält und `format_memory_entries` „Gruppe charakter: 1 Eintraege" loggt. Duplizierung entsteht NACH dem Loader (Enricher/Prompt-Bau), nicht in den Daten (`lzg_knoten` count=1 verifiziert). Reproduziert 2× (21:51, 21:59), stabil bei 5×. Frisst Kontext-Budget. Unabhängig von P7. ⚠️ Prio mittel
 
 **Update Chat 103 — aufgelöst, kein Defekt:** Die 5× sind kein Duplikat in einem Prompt, sondern fünf Node-Prompts (responder/thinker/tribunal/corrector/tribunal) mit je EINEM [Charakter]-Block, vom grep untereinander gezogen. DB, Enricher und Formatter je 1×. Kein Fix nötig; die fünffache Einbettung ist gewollt (jede Prüf-/Korrektur-Instanz braucht den Kontext). Nur bei knappem Token-Budget optimierbar (corrector Kurzform).
 
 ## Bug: DESTILLAT-PERSPEKTIVE-VS-SUBJEKT — Charakter-Destillation verwechselt Blickrichtung mit Subjekt (Chat 103)
+
+**Zustand:** offen — nachgesehen am 25.08.2026. Verwandt mit `PERSPEKTIVE-OHNE-DATIV`, das am 22.08.2026 behoben wurde; ob dieser Eintrag damit mit erledigt ist, ist nicht nachgeprueft.
 
 Die Destillation setzt `beobachter='user'` mit „Aussage über den Nutzer" gleich. Falsch: `beobachter` markiert die Blickrichtung des Knotens, nicht sein Subjekt. User-Perspektive-Knoten enthalten oft Nutzer-Aussagen ÜBER Nova („Du bist mein Pflänzchen"). Folge: Nova-Eigenschaften wandern ins Nutzer-Profil und umgekehrt (Pflänzchen, kleines Mädchen). Daten sauber verifiziert (beobachter + inhalt korrekt, `lzg_knoten`); ~~Fehler im `destillieren`-Prompt, nicht im Loader/Schreibpfad~~ → **überholt Chat 108, siehe Live-Beleg unten: Der Prompt ist korrekt, die Ursache ist die Quelle.** Vermuteter Bezug zu TRIB-PERSON-DRIFT. Richtung: Subjekt aus Inhalt/Anrede auflösen, nicht aus `beobachter` ableiten. Unabhängig von P7. ⚠️ Prio hoch — trifft, ob Nova weiß, wer sie ist.
 
@@ -5086,21 +5260,31 @@ Jeder Kernzug rückführbar auf gemessene `beobachter='assistant'`-Knoten: „G�
 
 ## Notiz: HAEUFIGKEIT-AUF-KNOTEN — haeufigkeit auf lzg_knoten meist 1 (Chat 103)
 
+**Zustand:** offen — nachgesehen am 25.08.2026. Am Bestand gemessen: **1608 von 3035** Knoten stehen auf `haeufigkeit = 1` (53 %). Die Beobachtung haelt.
+
 Der Kern-Prompt zeigt „Häufigkeit: {haeufigkeit}". Auf `lzg_knoten` ist `haeufigkeit` meist 1 (keine Verdichtung mehr wie im alten `langzeitgedaechtnis`), der Wert also schwächer aussagekräftig. Kein Fehler, aber der Prompt-Nutzen der Zeile sinkt. Prüfen, ob die Zeile bleibt oder entfällt. ⬜ Prio niedrig
 
 ## Doku: CHARHASH-DOKU-DRIFT — Hash-Doku beschreibt LZG-Quelle noch flach (Chat 103)
+
+**Zustand:** offen — nachgesehen am 25.08.2026. Die Doku beschreibt die Quelle weiterhin flach.
 
 `novaberg-pixie-character-hash.md` beschreibt jenseits der P7-Passagen die LZG-Quelle noch als flaches `langzeitgedaechtnis` (Z. 155 Adaptiv-Hash-Tabelle: nennt `langzeitgedaechtnis`, liest real KZG). Alt-Drift aus dem P5/P6-Umbau, nicht von P7 verursacht. Eigener Doku-Fix, keine Vermischung mit dem P7-Commit. ⬜ Prio niedrig
 
 ## Bug: REFERENZ-AUFLOESUNG-VOR-RETRIEVAL — anaphorische Verweise gehen literal ins Retrieval (Chat 103)
 
+**Zustand:** offen — nachgesehen am 25.08.2026. Geplante Arbeit, nicht begonnen.
+
 Verweise wie „die Liste", „das von eben" gehen als wörtlicher Suchstring ins Notiz-/Gedächtnis-Retrieval, statt vorher gegen den Turn-Verlauf aufgelöst zu werden. Wirkung nach außen: Nova erscheint begriffsstutzig — findet frisch selbst angelegte Inhalte nicht wieder, obwohl der Kontext in den Turns steht. Bricht die Verstehens-Illusion. Beobachtet Chat 103 (Salat-Notiz „die Liste"). Vermuteter gemeinsamer Kern mit NOTIZEN-VOR-TURN-BEZUG — erst gegeneinander prüfen. Richtung: Auflösungs-/Reasoning-Schritt vor dem Retrieval, nicht tieferes Suchen. ⚠️ Prio mittel
 
 ## Epic: CHARAKTER-RESONANZ — Novas Charakter aus dem Umgang (Chat 103)
 
+**Zustand:** offen — nachgesehen am 25.08.2026. Geplante Arbeit, nicht begonnen.
+
 Novas Charakter wird heute aus der falschen Quelle destilliert: `lzg_knoten` enthält entfärbte Fakten über den Nutzer, nicht Novas Stimme. Novas wörtliche Rede lebt nur flüchtig in Redis (2 h TTL), verfällt; dauerhaft überlebt nur Destilliertes. Folge: geliehenes, nutzer-abgeleitetes Zerrbild (Pflänzchen beim Nutzer, Nova als „er", homogene Profile). Lösung: Reiz-Reaktions-Paar (User-Input + User-Emotion → Nova-Antwort + Nova-Emotion) roh und dauerhaft ins `pipeline_log`; Verbindungstabelle (turn_id/kzg_id/lzg_id/verhaltens_id) verknüpft Turn ↔ Erinnerungswürdigkeit ↔ Verhaltensmuster; CharakterAgent liest aus LZG-Eintrag + rohem Turn + Verhaltensweise. Konzept + Datenmodell + auditierte Kupplungen: siehe `novaberg-charakter-resonanz_k.md`. Subsumiert NOVA-STIMME-NICHT-PERSISTENT. Mehrteiliger Sprint über mehrere Sessions. ⚠️ Prio hoch — trifft die Kernthese (persistenter Charakter).
 
 ## Aufräumen: GESPRAECH-ARCHIV-VERWAIST — tote Tabelle ohne Writer/Reader (Chat 103)
+
+**Zustand:** offen — nachgesehen am 25.08.2026. Am Bestand bestaetigt: Die Tabelle traegt **0 Zeilen**, und im Baum gibt es weder Schreiber noch Leser. Unveraendert tot.
 
 `gespraech_archiv` (db/init.sql) ist für ein Dialog-Archiv geformt (user_id, session_id, rolle, inhalt, salienz), hat aber keinen Writer und keinen Reader — dauerhaft leer, Struktur-Fossil. Laut CHARAKTER-RESONANZ ist `pipeline_log` die eine Quelle; `gespraech_archiv` wird nicht gebraucht. Kandidat zum Entfernen (P9-nah oder eigener Aufräum-Schritt). ⬜ Prio niedrig
 
@@ -5108,9 +5292,13 @@ Novas Charakter wird heute aus der falschen Quelle destilliert: `lzg_knoten` ent
 
 ## Feature: ASSISTENT-NAME-LAUFZEIT — Assistenten-Name pro Paar statt env (Chat 103)
 
+**Zustand:** offen — nachgesehen am 25.08.2026. Geplante Arbeit, nicht begonnen.
+
 `ASSISTANT_NAME` ist global per env (Serverstart). Seit Chat 103 wird der Name aus der Config in die Charakter-Prompts durchgereicht (env-konfigurierbar, Wechsel = env + Neustart). Für echtes On-the-fly-Wechseln / mehrere Assistenten parallel müsste Name/Identität pro Charakter-Paar in der DB liegen. Berührt das Charakter-Schema. ⬜ Prio niedrig
 
 ## Feature: ASSISTENT-GESCHLECHT-PRONOMEN — Pronomen bei Namenswechsel (Chat 103)
+
+**Zustand:** offen — nachgesehen am 25.08.2026. Geplante Arbeit, nicht begonnen.
 
 ~~Bei wechselndem Assistenten-Namen müssen Pronomen (sie/er, ihr/sein) durch die Charakter-Prompts mitgeführt werden; braucht ein Geschlechts-Attribut am Charakter. Der Genitiv des Namens ist in Chat 103 gelöst (`_genitiv_bilden`, s/Apostroph-Regel), Pronomen sind offen; die Prompts sind vorerst pronomen-arm formuliert.~~ ⬜ Prio niedrig
 
@@ -5120,13 +5308,19 @@ Novas Charakter wird heute aus der falschen Quelle destilliert: `lzg_knoten` ent
 
 ## Nacharbeit: PIPELINE-LOG-BACKFILL-PAAR — Alt-Forensik ohne Paar-Schlüssel (Chat 104)
 
+**Zustand:** offen — nachgesehen am 25.08.2026. Geplante Arbeit, nicht begonnen.
+
 Bestehende `pipeline_log`-Zeilen (vor Chat 104) haben `user_id`/`character_id = NULL`. Optionaler Backfill für die `pipeline_search`-Selbstreflexion über Alt-Forensik. KRITISCH richtungssensitiv: produktiv liefen beide Beobachter-Richtungen (meister→nova UND nova→meister, bestätigt via `charakter_hash`). Kein pauschales `SET` eines Paares — sonst wird eine Perspektive plattgemacht. Der Filter (welche `art`/`node` paar-gebunden vs. herrenlos sind) steht seit dem H1.5-Inventar fest; Wartungszeilen (`synapsen_decay`-Cleanup, Decay-Lauf) bleiben bewusst NULL. Kein Blocker — `turn_roh` liefert die charakter-relevanten Daten vorwärts, Altzeilen sind nur Forensik. ⬜ Prio niedrig
 
 ## Refactor: KZG-QUELLE-IST-USER-ID — `quelle` trägt `user_id` statt Node-Namen (Chat 104)
 
+**Zustand:** offen — nachgesehen am 25.08.2026. Die Spalte traegt weiterhin die Paarkennung statt eines Knotennamens.
+
 In `memory/kzg.py` (`kzg_store`, Z.~343) und `agents/kzg/speicher.py` (`_neu_anlegen`, Z.~307) wird das `pipeline_log`-Feld `quelle` mit `user_id` befüllt statt mit einem Node-Namen (sonst überall node-basiert). Bestehende Eigenart, in Chat 104 bei der Paar-Verkabelung gesichtet, bewusst NICHT mitgeändert. Bei nächster Berührung dieser Writes prüfen: Node-Name als `quelle`, `user_id` nur im `inhalt`. ⬜ Prio niedrig
 
 ## Doku: PIPELINE-LOG-ART-DOKU-DRIFT — Forensik-Queries der Synapsen-Doku laufen gegen reale `art`-Werte ins Leere (Chat 106)
+
+**Zustand:** offen — nachgesehen am 25.08.2026. Die Doku-Drift ist nicht nachgezogen.
 
 Kein Code-Defekt — der Code ist RICHTIG (`db_write`/`db_read`/`turn_roh`), das Konzeptdokument ist falsch (`db_zugriff`). Aus novaberg-bugs.md hierher verschoben (Trennungsregel Chat 106). ⚠️ **Sperrvermerk: vor CHARAKTER-RESONANZ Teil 2 zu klären** — `pipeline_log` ist die Quelle für den Destillator; wer ihn nach dem Konzeptdokument baut, baut gegen ein Schema, das es nicht gibt.
 
@@ -5147,6 +5341,8 @@ Kein Code-Defekt — der Code ist RICHTIG (`db_write`/`db_read`/`turn_roh`), das
 
 ## Landmine: DELEGATION-STATE-UNDEKLARIERT — Sperrvermerk für den Delegations-Node-Split (Chat 106)
 
+**Zustand:** offen — nachgesehen am 25.08.2026. Der Sperrvermerk steht; der Node-Split ist nicht angefasst worden.
+
 Kein Defekt — funktioniert heute. Gehört zu den Refactor-Vorbedingungen. Aus novaberg-bugs.md hierher verschoben (Trennungsregel Chat 106).
 
 **Entdeckt:** Chat 106, Audit tote State-Keys. **Landmine — SPERRVERMERK für den Delegations-Node-Split.**
@@ -5158,6 +5354,8 @@ Kein Defekt — funktioniert heute. Gehört zu den Refactor-Vorbedingungen. Aus 
 **Auswirkung:** Heute keine — der Sperrvermerk IST die Maßnahme.
 
 ## Aufräumen: PLANNER-AKTIV-RELIKT — Stage-Anzeige liest nie geschriebenen Key (Chat 106)
+
+**Zustand:** offen — nachgesehen am 25.08.2026. Gegen HEAD `599c19b` geprueft: `planner_aktiv` wird in `services/event_consumer.py` weiterhin **gelesen**; ein Schreiber ist im Baum nicht zu finden. Der Relikt-Befund steht.
 
 Toter Code — **löschen, nicht fixen**. Aus novaberg-bugs.md hierher verschoben (Trennungsregel Chat 106).
 
@@ -5171,6 +5369,8 @@ Toter Code — **löschen, nicht fixen**. Aus novaberg-bugs.md hierher verschobe
 
 ## Aufräumen: WEB-CONTEXT-ALTPFAD — toter [WEB]-Block, Nachfolger läuft über Thinker (Chat 106)
 
+**Zustand:** offen — nachgesehen am 25.08.2026. Gegen HEAD `599c19b` geprueft: `web_context` ist in `graph/state.py` deklariert und wird in `graph/base.py` mit `""` vorbelegt. Tot wie beschrieben.
+
 Toter Code — **löschen, nicht fixen**. ⚠️ **Erst nach Prüfung von WEB-EXTRAKTION-STILL-LEER.** Aus novaberg-bugs.md hierher verschoben (Trennungsregel Chat 106).
 
 **Entdeckt:** Chat 106, Audit tote State-Keys. **Prio niedrig — LÖSCHEN, nicht fixen.** ⚠ Erst nach Prüfung von WEB-EXTRAKTION-STILL-LEER.
@@ -5182,6 +5382,8 @@ Toter Code — **löschen, nicht fixen**. ⚠️ **Erst nach Prüfung von WEB-EX
 **Auswirkung:** Toter Code-Pfad + toter Prompt-Block; von außen wie „keine Web-Suche nötig" aussehend.
 
 ## Aufräumen: BUILDER-CREATE-INITIAL-STATE-TOT — aufruferloser State-Builder als Doppelregistry (Chat 106)
+
+**Zustand:** offen — nachgesehen am 25.08.2026. Gegen HEAD `599c19b` geprueft: `create_initial_state` steht unveraendert als deprecated Wrapper in `graph/builder.py`.
 
 Toter Code, Doppelregistry-Muster. Aus novaberg-bugs.md hierher verschoben (Trennungsregel Chat 106).
 
@@ -5195,6 +5397,8 @@ Toter Code, Doppelregistry-Muster. Aus novaberg-bugs.md hierher verschoben (Tren
 
 ## Doku: LESSON-INDEX-LUECKE — zwölf ältere lesson_l-Dateien fehlen im Architektur-Index (Chat 106)
 
+**Zustand:** offen — nachgesehen am 25.08.2026. Die Doku-Drift ist nicht nachgezogen.
+
 Der Lesson-Index in `novaberg-architecture.md` listet die Legacy-`{modul}_l.md`-Dateien und die zuletzt verlinkten Lessons — zwölf ältere `novaberg-lesson_l_*`-Dateien fehlen komplett (Seitenbefund aus Chat 105, Commit `e08555a`; die zwei Chat-105- und vier Chat-106-Lessons wurden beim Anlegen verlinkt, der Altbestand nicht nachgezogen). Doku-Lücke, kein Code-Bezug: Wer Lessons über den Index sucht, findet den Altbestand nicht. Nachzug ist ein mechanischer Fünf-Minuten-Fix, gehört aber in einen bewussten Doku-Commit. ⬜ Prio niedrig
 
 **Nachtrag Chat 108:** Zwei neue Lessons sind eingetragen (`konzept-spricht-code`, `ableitung-als-messung`); der Altbestand bleibt bewusst offen. Zwei Beobachtungen für den geplanten Doku-Commit:
@@ -5203,6 +5407,8 @@ Der Lesson-Index in `novaberg-architecture.md` listet die Legacy-`{modul}_l.md`-
 - Die Angabe „zwölf ältere Dateien fehlen" stammt aus Chat 106 und trägt kein Messdatum. Beim Aufräumen **neu zählen statt übernehmen**.
 
 ## Doku: DOKU-DUPLIKATE-CHAT80 — 8 Bezeichner stehen in bugs.md UND backlog.md (Chat 106)
+
+**Zustand:** offen — nachgesehen am 25.08.2026. **Und heute mehrfach neu belegt.** Der Durchgang durch dieses Register fand vier Kennungen, die zweimal als Ueberschrift stehen, und mehrere Befunde unter zwei bis drei verschiedenen Kennungen. Der Eintrag ist damit nicht kleiner, sondern groesser geworden.
 
 **Entdeckt:** Chat 106 (Gegenprobe nach der Bug/Backlog-Trennung). ⬜ Prio niedrig
 
@@ -5219,6 +5425,8 @@ Der Lesson-Index in `novaberg-architecture.md` listet die Legacy-`{modul}_l.md`-
 - NOTIZEN-SKILL-MANIFEST → Inhalt prüfen, klingt nach Konzept (Epic 10).
 
 ## Feature: LOG-TUERKLINGEL — Warn-/Fehler-Lampen mit Sitzungszähler in der Client-StatusBar (Chat 107)
+
+**Zustand:** offen — nachgesehen am 25.08.2026. Geplante Arbeit, nicht begonnen.
 
 **Priorität hoch — bauen nach Phase B der Embedding-Migration.** Spezifikation final (dieser Eintrag), Draht-Audit abgeschlossen.
 
@@ -5255,6 +5463,8 @@ Der Lesson-Index in `novaberg-architecture.md` listet die Legacy-`{modul}_l.md`-
 
 ## Bug: ENTITAET-EMBED-DREIFACH — Entitäts-Suchpfad embeddet anderen Text als der Schreibpfad (Chat 107)
 
+**Zustand:** offen — nachgesehen am 25.08.2026. Der Suchpfad bettet weiterhin anders ein als der Schreibpfad.
+
 **Entdeckt:** Chat 107, Bau-Audit für die `embed_text_bauen`-Vereinheitlichung. TODO-Kommentar mit diesem Bug-Namen steht an der Fundstelle.
 
 **Befund:** `memory/services/entity_resolution.py::_search_by_embedding` embeddet nur den nackten `name` und vergleicht per Cosine gegen Vektoren, die aus `EntitaetenRepository.embed_text_bauen(name, zusammenfassung)` — also Name **plus** Zusammenfassung — erzeugt wurden. Suchvektor und Bestandsvektoren leben in unterschiedlichen Textformen; der Threshold (Default 0.80) bewertet damit systematisch verschobene Ähnlichkeiten. Historisch existierten sogar drei Formeln (Erzeugung `"{name}: {zusammenfassung}"`, Backfill `"{name} {zusammenfassung}"`, Suche `name`); seit Commit `eb53103` sind Schreib- und Backfill-Pfad auf die eine Bauer-Funktion vereinheitlicht — **nur der Suchpfad weicht noch ab, absichtlich.**
@@ -5267,6 +5477,8 @@ Der Lesson-Index in `novaberg-architecture.md` listet die Legacy-`{modul}_l.md`-
 
 ## Konzept: DESTILLAT-ASYMMETRIE — Prompts und Knoten leben in verschiedenen Sprachformen (Chat 107)
 
+**Zustand:** offen — nachgesehen am 25.08.2026. Geplante Arbeit, nicht begonnen.
+
 **Gemessen (Chat 107, 100 echte Prompts gegen 302 Knoten):** Prompts sind Rohsprache, Knoten sind destillierte Protokollsätze in dritter Person. Ein KORREKTER Treffer liegt dadurch unter der Schwelle: „Hast Du mich denn vermisst?" ↔ „Der Nutzer fragt, ob er abwesend sei." = **0.3366**. Die HOHEN Werte im Korpus sind Wortüberlappung, nicht Verständnis: „Harry Potter und Die 7 Samurai kommt auf die Liste" ↔ „Harry Potter und Die 7 Samurai kommen auf eine neue Liste." = **0.9357**.
 
 **Wird durch den Modellwechsel NICHT behoben** — es ist eine Formfrage, keine Modellschwäche. Mögliche Wege: Prompt-Rewriting vor dem Retrieval (Koreferenz/Protokollform), oder Knoten zusätzlich in Rohform embedden. Nach der Migration angehen. ⬜ Prio hoch
@@ -5275,31 +5487,45 @@ Der Lesson-Index in `novaberg-architecture.md` listet die Legacy-`{modul}_l.md`-
 
 ## Feature: GESPRAECH-ARCHIV-LEER — kein Writer, Rohgespräche verfallen täglich (Chat 107)
 
+**Zustand:** offen — nachgesehen am 25.08.2026. Am Bestand bestaetigt: 0 Zeilen, kein Schreiber. Deckungsgleich mit `GESPRAECH-ARCHIV-VERWAIST`.
+
 **Zeitkritisch, Prio hoch.** `gespraech_archiv` existiert als Tabelle, hat 0 Zeilen und keinen Writer (bestätigt Chat 107). Novas eigene Worte leben nur in den Redis-Session-Turns (2h TTL) und verfallen. Rohgespräche vor dem 10.07. existieren nicht mehr — für alles davor sind die Destillate die einzige Quelle. **Jeder Tag ohne Writer kostet unwiederbringlich Rohmaterial.**
 
 Ersetzt die alte Einschätzung GESPRAECH-ARCHIV-VERWAIST (Chat 103, „Kandidat zum Entfernen") — die Richtung hat sich umgekehrt: Writer bauen, nicht Tabelle löschen.
 
 ## Fix: EMBED-DIMENSIONSCHECK-FEHLT — kein harter Dimensions-Check im Live-Pfad (Chat 107)
 
+**Zustand:** offen — nachgesehen am 25.08.2026. Gegen HEAD `599c19b` geprueft: Ein harter Dimensionsvergleich steht nur im Werkzeug fuer den Neuaufbau, **nicht im Live-Pfad**.
+
 Kein einziger harter Check im Repo (Audit Chat 107): kein `== 768`, kein `assert`. Der Enricher-Kommentar verspricht einen „Plausibilitäts-Anker", tatsächlich wird nur `len()` geloggt. In Postgres fällt ein falsch dimensionierter Vektor beim INSERT auf — in Redis (FLAT-Index, rohe Bytes) unter Umständen **gar nicht**. Verstoß gegen EVA/fail-loud. Im `reembed_all.py` bereits als Pflicht spezifiziert — muss auch in den Live-Pfad (natürlicher Ort: `EmbedWorker._call_model`, ein Check für alle Konsumenten). ⬜ Prio mittel
 
 ## Nacharbeit: PIPELINE-LOG-MERGE-BLIND — Reinforcement loggt den geschluckten Inhalt nicht (Chat 107)
+
+**Zustand:** offen — nachgesehen am 25.08.2026. Die verlangte Messung ist nicht angesetzt worden.
 
 `synapsen_promotion` loggt bei `aktion="reinforcement"` nur `knoten_id`, `cosine`, `gewicht_roh` — NICHT den geschluckten KZG-Inhalt. Die Merge-Historie ist damit unrekonstruierbar (2910 Reinforcements, Stand Chat 107): Welcher KZG-Eintrag in welchem Knoten aufging, weiß niemand mehr. → Beim nächsten Anfassen: `kzg_key` mitloggen. Kostet nichts, rettet alles. ⬜ Prio mittel
 
 ## Konzept: DELEG-VEKTOR-EINGEFROREN — Akten-Vektor beschreibt nach zehn Seiten die Akte nicht mehr (Chat 107)
 
+**Zustand:** offen — nachgesehen am 25.08.2026. Die verlangte Messung ist nicht angesetzt worden.
+
 `akte_anreichern` erzeugt `themen_embedding` nie neu (Bau-Audit Chat 107; das Einfrieren ist seit Commit `93f06bc` bewusst und kommentiert — Text und Vektor bleiben konsistent auf dem Anlege-Zeitpunkt). Die Kehrseite: Eine Akte, die sich über zehn Seiten thematisch verschiebt, wird für immer über ihren ersten Turn gefunden; `duplikat_pruefen` (Schwelle 0.75 nach Rekalibrierung) prüft neue Turns gegen einen Vektor, der die Akte womöglich nicht mehr beschreibt. Lösung wäre Re-Embedding beim Anreichern (Header-Text + Vektor gemeinsam nachziehen) — **Verhaltensänderung, eigener Sprint, nicht nebenbei.** ⬜ Prio mittel
 
 ## Fix: LZG-MIGRATION-REVIEW-NICHT-IN-INIT — Live-Tabelle ohne Schema-Definition (Chat 107)
+
+**Zustand:** offen — nachgesehen am 25.08.2026. Am Schema bestaetigt: Die Tabelle liegt in der Datenbank und steht in keiner `init.sql`. Ein Aufbau von null erzeugt sie nicht.
 
 `lzg_migration_review` existiert live (17 Spalten, genutzt von `tools/migrate_lzg_synapsen.py`), steht aber in keiner init.sql. Frisches Setup ⇒ Migrationstool bricht. Bricht die Handbuch-Zusage „frischer Container + init.sql = lauffähiges System". ⬜ Prio mittel
 
 ## Fix: IDX-TIMELINE-TYPE-NICHT-IN-INIT — Live-Index ohne Definition im Repo (Chat 107)
 
+**Zustand:** offen — nachgesehen am 25.08.2026. Am Schema bestaetigt: Der Index liegt in der Datenbank und steht in keiner `init.sql`. Deckungsgleich mit `REFAC-DB-INDEX-DUPLIKAT`, das denselben Index als Dublette fuehrt — **zwei Eintraege, ein Index, entgegengesetzte Abhilfen.**
+
 `idx_timeline_type` auf `timeline(user_id, event_type)` existiert live, steht in keiner init.sql — manuell angelegt. Bei Setup-from-scratch fehlt er. Performance, nicht Korrektheit. ⬜ Prio niedrig
 
 ## Aufräumen: DELEG-SEITEN-VALENZ-TOT — persistiert, nie gelesen (Chat 107)
+
+**Zustand:** offen — nachgesehen am 25.08.2026. Die verlangte Messung ist nicht angesetzt worden.
 
 `delegations_seiten.valenz`: 1692 Zeilen persistiert (positiv 1367 / neutral 207 / negativ 118), von keinem Code je gelesen — aus der Tabelle wird nur `MAX(arousal)` gelesen. Entweder verwenden oder entfernen. Passt zur Chat-107-Linie „Metadaten gehören nicht in den Vektor, strukturierte Felder entscheiden" — falls die Delegations-Priorisierung je Valenz braucht, liegt sie hier bereit. ⬜ Prio niedrig
 
@@ -5309,13 +5535,19 @@ Kein einziger harter Check im Repo (Audit Chat 107): kein `== 768`, kein `assert
 
 ## Doku: REDUCER-DOKU-DRIFT — drei Drifts aus dem Reducer-Audit (Chat 107)
 
+**Zustand:** offen — nachgesehen am 25.08.2026. Die Doku-Drift ist nicht nachgezogen.
+
 (a) Docstring von `reducer.py` verweist auf `novaberg-reducer-umbau_k.md` — existiert nicht; real ist `novaberg-node-reducer.md`. (b) Docstring: „zwischen Enricher und EI-Calc" — real läuft EI-Calc VOR dem Enricher, der Reducer sitzt vor dem Router. (c) Node-Doku §9: „kein Produzent erzeugt summary-Einträge" — der Produzent existiert im Enricher und feuert, sobald Redis eine Session-Summary hält. ✅ Erledigt (Docs-Commit 12.07.2026) — Docstring korrigiert (Verweis + Graph-Position), Node-Doku §9 richtiggestellt.
 
 ## Doku: DOKU-NOTIZEN-INIT-SQL — Verweis auf nicht existierende Datei (Chat 107)
 
+**Zustand:** offen — nachgesehen am 25.08.2026. Die Doku-Drift ist nicht nachgezogen.
+
 `novaberg-agent-notes.md` behauptet, `notizen` werde via `agents/notizen/init.sql` angelegt. Die Datei existiert nicht — `notizen` steht in `db/init.sql`. ✅ Erledigt (Docs-Commit 12.07.2026) — Verweis in §9 der Agent-Doku korrigiert.
 
 ## Frage: KZG-SALIENZ-GRENZWERT-UNKLAR — soll jede Recherche ins Langzeitgedächtnis? (Chat 107)
+
+**Zustand:** offen — nachgesehen am 25.08.2026. Der Grenzwert ist mit dem Exponentwechsel vom 24.08.2026 nicht mit geklaert worden.
 
 Recherche schreibt mit `salienz = 0.7`. `KZG_SALIENZ_HIGH = 0.7`. Der `>=`-Vergleich in `kzg_store` schiebt damit **jeden** Recherche-Eintrag in die `lzg_promotion`-Queue. Ist das gewollt? Soll wirklich jede Recherche ins Langzeitgedächtnis? Kein Bug — eine ungeklärte Entscheidung, die bisher niemand getroffen hat (sie war unsichtbar, solange die Promotion alle Einträge wegen leerem `inhalt` verwarf — siehe RECHERCHE-WISSEN-ERREICHT-LZG-NIE). **Nach dem Re-Embedding neu bewerten:** Dann promoten die Einträge tatsächlich, und wir sehen, was das bedeutet. ⬜ Prio mittel
 
@@ -5350,6 +5582,8 @@ Ein Log fängt, was sich als Fehler meldet. Es fängt nicht, was erfolgreich fal
 
 ## Aufräumen: PROMOTION-NOVA-GUARD-TOT — Nova-Guard in der Cluster-Promotion feuert nie (Chat 108)
 
+**Zustand:** offen — nachgesehen am 25.08.2026. Die verlangte Messung ist nicht angesetzt worden.
+
 `agents/promotion/agent.py:698-700` prüft `if user_id == ASSISTANT_USER_ID: return 0` („Cluster-Promotion: Nova-Guard — uebersprungen"). Unter dem kanonischen Schema ist `user_id` immer `meister` — der Guard feuert nie. Er steht zudem nur in `_cluster_promotion`, fehlt im Einzel-Pfad desselben Agenten (`_eintrag_verarbeiten`), und im `SynapsenPromotionAgent` fehlt er ganz.
 
 **Gemessen Chat 108 (25.07.2026, Audit A5):** `queue:nova` wird nie befüllt, `kzg:nova:meister:*` = 0 Keys von 926, `(nova, meister)` = 0 LZG-Zeilen. Novas 231 `beobachter='assistant'`-Knoten laufen über `queue:meister` und werden promotet — was korrekt ist (sie sind die Quelle für CHARAKTER-RESONANZ), aber **trotz**, nicht wegen des Guards.
@@ -5359,6 +5593,8 @@ Ein Log fängt, was sich als Fehler meldet. Es fängt nicht, was erfolgreich fal
 ---
 
 ## Bug: CHARHASH-KZG-SCAN-UNSORTIERT — zwei von fünf Profilen destillieren aus 20 beliebigen KZG-Einträgen (Chat 108)
+
+**Zustand:** offen — nachgesehen am 25.08.2026. Die verlangte Messung ist nicht angesetzt worden.
 
 `agents/charakter/agent.py:359` liest KZG per `scan_iter(match=f"kzg:{user_id}:{character_id}:*", count=100)` und bricht nach `PIXIE_CHARAKTER_KZG_LIMIT = 20` Einträgen ab. **Keine Sortierung** — die Reihenfolge ist SCAN-Reihenfolge (Redis-interne Slot-Ordnung), das Limit kappt willkürlich.
 
@@ -5370,6 +5606,8 @@ Ein Log fängt, was sich als Fehler meldet. Es fängt nicht, was erfolgreich fal
 
 ## Aufräumen: HASH-DIRTY-KEY-OHNE-PAAR — `hash_dirty:meister` ohne character_id, kein Leser (Chat 108)
 
+**Zustand:** abgeschlossen — am Bestand geprueft am 25.08.2026. Alle Schluessel tragen die Form `hash_dirty:<mensch>:<figur>`; ein einteiliger Schluessel liegt nicht mehr vor. **Der Rest steht als `HASH-DIRTY-ALTLASTEN`** — 13 liegengebliebene Schluessel, ein anderer Befund.
+
 Redis enthält `hash_dirty:meister` ohne `character_id` (TTL `-1`), neben den korrekten `hash_dirty:meister:nova` und `hash_dirty:nova:meister`. Der CharakterAgent liest ausschließlich `hash_dirty:{user_id}:{character_id}` (`agent.py:95`) — der Key hat **keinen Leser**. Entweder Relikt aus der Zeit vor dem Paar-Schema oder ein aktiver Setzer, der die Konvention nicht kennt.
 
 Klären, welcher der fünf auditierten Setzer ihn schreibt; dann entfernen oder auf das Paar-Schema umstellen (`novaberg-convention-paar-schema.md`). Gemessen Chat 108 (25.07.2026). Berührt CHARHASH-RESET-TRIGGER-FEHLT, Hypothese (b). ⬜ Prio niedrig
@@ -5377,6 +5615,8 @@ Klären, welcher der fünf auditierten Setzer ihn schreibt; dann entfernen oder 
 ---
 
 ## Audit: AUDIT-HASH-DIRTY-SICHTBARKEIT — KEYS zeigt das Flag, der Agent sieht es nicht (Chat 108)
+
+**Zustand:** offen — nachgesehen am 25.08.2026. Die verlangte Messung ist nicht angesetzt worden.
 
 Aus CHARHASH-RESET-TRIGGER-FEHLT (`bugs.md`, Chat 108): `redis-cli KEYS` zeigte `hash_dirty:meister:nova`, der CharakterAgent meldete im selben Zeitraum neunmal „Kein hash_dirty". Zwei Hypothesen, beide ungeprüft — unbekannter Löschpfad, oder verschiedene Keyspaces.
 
@@ -5387,6 +5627,8 @@ Aus CHARHASH-RESET-TRIGGER-FEHLT (`bugs.md`, Chat 108): `redis-cli KEYS` zeigte 
 ---
 
 ## Landmine: TURN-ROH-VOR-KRAFT1-ENTWERTET — Sperrvermerk für die Verhaltensweisen-Destillation (Chat 105, Stichtag gemessen Chat 108)
+
+**Zustand:** offen — nachgesehen am 25.08.2026. **Zweite Ueberschrift derselben Kennung.** Der Sperrvermerk gilt unveraendert; die Dopplung ist der eigene Mangel.
 
 Kein Defekt — heute liest niemand `turn_roh`. Gehört zu den Bau-Vorbedingungen von CHARAKTER-RESONANZ Bauteil 3. Aus der Übersichtstabelle in §7 hierher gehoben (Chat 108), dort bleibt eine Verweiszeile.
 
@@ -5406,6 +5648,8 @@ Kein Defekt — heute liest niemand `turn_roh`. Gehört zu den Bau-Vorbedingunge
 
 ## Befund: PERMISSION-OHNE-BODEN — „Brudi ist read-only" ist Konvention, nicht erzwungen (Chat 109)
 
+**Zustand:** offen — nachgesehen am 25.08.2026. Unveraendert.
+
 **Gemessen Chat 109 (Umgebungs-Audit, 25.07.2026, 11:47 UTC):** 203 `allow`-Einträge über drei Settings-Dateien (`~/.claude/settings.json`, `.claude/settings.json`, `.claude/settings.local.json`), **null `deny`, null `ask`, kein `defaultMode`**, und an keinem der drei üblichen Orte eine `managed-settings.json`. Die Permission-Konfiguration ist reines Allowlisting ohne Gegengewicht.
 
 Claude Codes eigene Bash-Sandbox ist **nicht aktiv**: Der Bash-Prozess sitzt in exakt denselben Namespaces wie der `claude`-Prozess und wie der Flatpak-Init (identische `user`/`mnt`/`net`/`pid`/`ipc`-Inodes, `Seccomp_filters: 1`), und `bwrap` fehlt im Flatpak-Runtime — das Werkzeug, mit dem diese Sandbox auf Linux gebaut würde, ist nicht vorhanden. Die einzige messbare Isolation kommt vom VS-Code-Flatpak (`com.visualstudio.code`), und der läuft mit `filesystems=host` plus `org.freedesktop.Flatpak=talk` — also mit Host-Dateisystem und der Berechtigung für `flatpak-spawn --host`.
@@ -5417,6 +5661,8 @@ Claude Codes eigene Bash-Sandbox ist **nicht aktiv**: Der Bash-Prozess sitzt in 
 ---
 
 ## Bug: PROMO-KZG-KEY-ALS-TURN-ID — `pipeline_log.turn_id` trägt bei Promotion-Zeilen KZG-Keys (Chat 109)
+
+**Zustand:** offen — nachgesehen am 25.08.2026. Die verlangte Messung ist nicht angesetzt worden.
 
 `agents/synapsen_promotion/agent.py:178-179` ruft `pipeline_log.span_start(turn_id=kzg_key, …)` — der KZG-Redis-Key wird als `turn_id` eingesetzt, weil die Queue-Nutzlast keine echte `turn_id` mitführt (`queues_befuellen` in `agents/kzg/queues.py` pusht `aufgabe`, `user_id`, `key`, `salienz`, `themen`, `dimension` — **kein `turn_id`**).
 
@@ -5430,6 +5676,8 @@ Claude Codes eigene Bash-Sandbox ist **nicht aktiv**: Der Bash-Prozess sitzt in 
 
 ## Aufräumen: ALLOWLIST-DRIFT — die Claude-Code-Allowlist wächst nur (Chat 109)
 
+**Zustand:** offen — nachgesehen am 25.08.2026. Die Liste kennt weiterhin nur Zuwachs.
+
 Die Permission-Allowlist kennt nur Zuwachs: Einzelfall-Einträge aus längst abgeschlossenen Sprints stehen weiter drin, darunter ein `docker cp` mit dem konkreten Pfad einer Magneten-Migration (`/tmp/m2_magneten_migration.sql`) und mehrere `python -c "import ast; ast.parse(open('…'))"`-Zeilen auf Dateien, die seit dem jeweiligen Sprint nicht mehr angefasst wurden.
 
 Ein Einzelfall-Eintrag, der seinen Anlass überlebt, ist eine dauerhaft offene Tür ohne Grund. Braucht einen Aufräum-Durchgang **mit Messdatum** — also: Bestand zählen, Einträge einer laufenden Aufgabe zuordnen, Rest streichen, Zahl vor/nach protokollieren. Beobachtet Chat 109 (25.07.2026). ⬜ Prio niedrig
@@ -5440,6 +5688,8 @@ Ein Einzelfall-Eintrag, der seinen Anlass überlebt, ist eine dauerhaft offene T
 
 ## Performance: KZG-VERSTAERKUNG-KEYS-SCAN — Vollscan der Paar-Partition bei jedem KZG-Write (Chat 109)
 
+**Zustand:** offen — nachgesehen am 25.08.2026. Die verlangte Messung ist nicht angesetzt worden.
+
 `agents/kzg/speicher.py:180` ruft `redis_client.keys(f"{prefix}*")` in `_thematisch_verstaerken` — ein **blockierender** Vollscan über alle KZG-Keys des Paares, bei **jedem** KZG-Write. Da der Dispatcher pro Konversations-Turn zweimal läuft (HumanGraph und CharacterGraph, je ein `dispatch_kzg`) und je Lauf ein Write pro Salienz-Segment entsteht, sind das **2 × n Vollscans pro Turn**. Anschließend folgt pro gefundenem Key ein `hget` auf `themen` (`speicher.py:191`) und bei Overlap drei weitere Feld-Zugriffe.
 
 Gemessener Bezugswert aus dem Nachbar-Befund: 926 Keys unter `kzg:meister:nova:*` (Chat 108). Bei einem Segment pro Lauf sind das zwei Vollscans über 926 Keys je Turn, plus je ein `hget` pro Key.
@@ -5449,6 +5699,8 @@ Gemessener Bezugswert aus dem Nachbar-Befund: 926 Keys unter `kzg:meister:nova:*
 ---
 
 ## Nacharbeit: KZG-TURN-ID-UNBEKANNT — Platzhalter statt Turn-Bezug im KZG-Schreib-Log (Chat 109)
+
+**Zustand:** offen — nachgesehen am 25.08.2026. Die verlangte Messung ist nicht angesetzt worden.
 
 `agents/kzg/speicher.py:331-347` schreibt `log_db_write(turn_id = turn_id or "kzg-unbekannt", …)`; der Legacy-Zwilling `memory/kzg.py:346` verwendet analog `turn_id or "kzg-store-unbekannt"`. Fällt die `turn_id` leer herein — bei Legacy-Aufrufern ohne Turn-Kontext (Recherche-Agent, Shadow) der Normalfall —, landet der Platzhalter in der Spalte.
 
@@ -5461,6 +5713,8 @@ Gemessener Bezugswert aus dem Nachbar-Befund: 926 Keys unter `kzg:meister:nova:*
 ---
 
 ## Befund: TURN-ROH-HG-SKIP — der übersprungene Rohturn pro Turn ist planmäßig; Zahl gemessen (Chat 109)
+
+**Zustand:** offen — nachgesehen am 25.08.2026. Die verlangte Messung ist nicht angesetzt worden.
 
 **Widerlegt (Quelltext-Audit Chat 109, 25.07.2026):** Die übersprungenen `turn_roh` sind **kein Defektsignal.** Bedingung 4 des Guards (`graph/nodes/dispatcher.py:297-300`, `if not response:` → „turn_roh uebersprungen — keine Nova-Antwort (response leer)") trifft im HumanGraph-Lauf **strukturell immer** zu: `create_state` initialisiert `response = ""` (`graph/base.py:144`), und der HumanGraph hat überhaupt keinen Responder — seine fünf Nodes sind `perzeption`, `enricher`, `ei_calc`, `salience`, `dispatcher` (`graph/human_graph.py:39-43`, Docstring :5-6: „Kein Responder — der Charakter antwortet separat über den CharacterGraph"). Alle Zuweisungen an `state["response"]` liegen im CharacterGraph (`responder.py:617`, `corrector.py:80`, `thinker.py:597/599/636`, `character_graph.py:165`).
 
@@ -5475,6 +5729,8 @@ Da der Dispatcher pro Konversations-Turn **zweimal** läuft — beide Graphen en
 ---
 
 ## Bug: KZG-SALIENZ-BOOST-OHNE-DECKEL — die thematische Verstärkung hebt die Salienz über ihren Wertebereich (Chat 109)
+
+**Zustand:** offen — nachgesehen am 25.08.2026. Mit dem Exponentwechsel vom 24.08.2026 verwandt und nicht mit entschieden.
 
 Die Bewertung selbst ist gesund: Der Salienz-Node liefert Werte in **0.0–1.0**, wie `novaberg-node-salience.md` sie an zwei Stellen dokumentiert (:15 als kognitionswissenschaftliche Analogie, :80 als Dimension 3 „Float 0.0–1.0"). Die **thematische Verstärkung** hält diesen Bereich nicht ein — sie addiert den gedämpften Boost auf den Bestandswert, und gedämpft wird gegen `KZG_SALIENZ_CAP = 10.0` (`config.py:207`), nicht gegen 1.0. Die Wand steht also eine Größenordnung über der Skala, auf der bewertet wird.
 
@@ -5502,6 +5758,8 @@ Der oberste Eimer ist mit 21 Einträgen **dicker** als die drei darunter (9, 10,
 
 ## Bug: DESTILLAT-SUBJEKT-SCHABLONE — der Verdichter erfindet „Der Nutzer" bei null Nutzer-Input (Chat 109)
 
+**Zustand:** offen — nachgesehen am 25.08.2026. Verwandt mit `PERSPEKTIVE-OHNE-DATIV` (behoben 22.08.2026); ob dieser Eintrag mit erledigt ist, ist nicht nachgeprueft.
+
 Ergänzt DESTILLAT-PERSPEKTIVE-VS-SUBJEKT (Chat 103/108) und **korrigiert dessen Ursachensatz.**
 
 **Live-Beleg Chat 109 (26.07.2026),** `kzg:meister:nova:1785055109755`, `beobachter=assistant`:
@@ -5526,6 +5784,8 @@ Der Turn war **Pixie-initiiert.** Es gab in diesem Turn **keinen Nutzer-Input** 
 ---
 
 ## Bug: PIXIE-TURN-ID-LEER — Pixie-initiierter CharacterGraph-Lauf schreibt KZG ohne `turn_id` (Chat 109)
+
+**Zustand:** offen — nachgesehen am 25.08.2026. Die verlangte Messung ist nicht angesetzt worden.
 
 **Gemessen Chat 109 (26.07.2026, 08:38:29):** Ein Pixie-initiierter CharacterGraph-Lauf (`rolle=character`) legte einen KZG-Eintrag an und verstärkte vier weitere — mit **leerem `turn_id`**. Log-Zeile wörtlich:
 
@@ -5552,6 +5812,8 @@ KZG-Dispatch: Keys eingesammelt — turn_id=, beobachter=assistant,
 ---
 
 ## Bug: KZG-SALIENZ-SKALENBRUCH — die Dämpfung ist auf CAP 10.0 kalibriert, die Skala geht bis 1.0 (Chat 109)
+
+**Zustand:** offen — nachgesehen am 25.08.2026. Der Skalenbruch ist am 24.08.2026 mit dem Wartungslauf behandelt worden; ob dieser Eintrag damit ganz faellt, ist nicht nachgerechnet.
 
 Nennt den Mechanismus hinter KZG-SALIENZ-BOOST-OHNE-DECKEL und rechnet die Formel nach, die dort ausdrücklich offen blieb.
 
@@ -5598,6 +5860,8 @@ Runde Werte bei `haeufigkeit = 1`, lange Nachkommastellen ab 2: **Die Bewertung 
 
 ## Limitation: KZG-TTL-UNSTERBLICH — die Auffrischung kann nur verlängern, nie herabsetzen (Chat 109)
 
+**Zustand:** offen — nachgesehen am 25.08.2026. Die verlangte Messung ist nicht angesetzt worden.
+
 **Einordnung korrigiert (Chat 109):** ~~Bug~~ → **kein eigenständiger Defekt, sondern eine Limitation** — und die **Folge von PROMOTION-ENTFERNT-KZG-NICHT.** Das `max()` in der Auffrischung ist für sich genommen richtig: Eine schwache Wiederholung soll einen hoch eingestuften Eintrag nicht herabstufen. Schädlich wird es erst, weil die Einträge das KZG überhaupt nie verlassen.
 
 `novaberg-mem-kzg.md:169` setzt bei thematischer Verstärkung `TTL = max(verbleibend, neuer_TTL)`. **Jede Berührung verlängert.** Damit verfallen ausgerechnet die Einträge nicht, die über die Skala laufen — wer oft verstärkt wird, wird oft aufgefrischt.
@@ -5617,6 +5881,8 @@ Das KZG ist damit für ein Sechstel seines Inhalts kein Kurzzeitgedächtnis mehr
 ---
 
 ## Bug: KZG-KEIN-DECAY — die Salienz kennt keine Abwärtsbewegung (Chat 109)
+
+**Zustand:** offen — nachgesehen am 25.08.2026. Die verlangte Messung ist nicht angesetzt worden.
 
 **Kein Schreiber senkt `salienz` jemals** (Brudi-Audit Chat 109, musterbasierte Suche über den ganzen Baum: Zuweisungen, `hset`-Mappings, SQL-`UPDATE`). Die einzige Abwärtsbewegung ist Key-Expiry — und die ist durch KZG-TTL-UNSTERBLICH für die stark verstärkten Einträge faktisch abgeschaltet.
 
@@ -5654,6 +5920,8 @@ Dieser Eintrag geht **nicht** im Sprint auf: Er hält fest, **warum**. Der Sprin
 
 ## Bug: KZG-SALIENZ-KONSUMENTEN-DISSENS — drei Leser, drei Annahmen über dieselbe Zahl (Chat 109)
 
+**Zustand:** offen — nachgesehen am 25.08.2026. Die im Eintrag als Sofortfix gefuehrte Klemme ist weiterhin nicht gebaut — siehe `GRAVITATION-KLEMME-FEHLT` im Defektregister.
+
 | Ort | Annahme |
 |---|---|
 | `agents/synapsen_promotion/agent.py:17`, `:253` | dokumentiert Skala **0..10** |
@@ -5684,6 +5952,8 @@ Solange KZG-SALIENZ-SKALENBRUCH offen ist, ist keine der drei Annahmen richtig �
 
 ## Sprint: KZG-SALIENZ-NEUBAU — die KZG-Salienz bekommt die Bauart des LZG-Gewichts (Chat 109)
 
+**Zustand:** offen — nachgesehen am 25.08.2026. Der Neubau ist gefahren; der Eintrag traegt seine Historie und ist nicht abgeschlossen erklaert worden.
+
 > **Zuschnitt von Chat 109 — der Stand steht weiter unten.** Teil (a) und (b) sind am 28.07.2026 gebaut, migriert und live abgenommen; das Ankerfeld heißt `salienz_eingang` statt `salienz_roh` und trägt die unveränderte Modellbewertung statt eines frei wachsenden Werts. Teil (c) ist bewusst zurückgestellt. Was offen blieb, steht unter „Sprint KZG-SALIENZ-NEUBAU — was nach Bauteil 1 offen bleibt"; das Konzept dazu ist `novaberg-kzg-salienz_k.md`.
 
 **Beschlossen Chat 109 (Meister).** Drei Teile:
@@ -5705,6 +5975,8 @@ Braucht ein eigenes Konzeptdokument. ⬜ Prio hoch — eigener Sprint, **nicht**
 ---
 
 ## Bug: PROMOTION-ENTFERNT-KZG-NICHT — der promotete Eintrag bleibt im KZG stehen (Chat 109)
+
+**Zustand:** offen — nachgesehen am 25.08.2026. Die verlangte Messung ist nicht angesetzt worden.
 
 Ein KZG-Eintrag, der ins LZG promotet wurde, **bleibt danach im KZG liegen**. Der Wert existiert von da an **doppelt** — einmal als `lzg_knoten`, einmal als KZG-Hash unter demselben Schlüssel, den `lzg_knoten.kzg_quell_key` als Herkunft führt.
 
@@ -5731,6 +6003,8 @@ Ein KZG-Eintrag, der ins LZG promotet wurde, **bleibt danach im KZG liegen**. De
 
 ## Doku: ROADMAP-GLIEDERUNGSBRUCH — ab Chat 98 wechselt die Chronik die Überschriftsebene (Chat 109)
 
+**Zustand:** offen — nachgesehen am 25.08.2026. **Teilweise entschaerft, nicht behoben.** Die Chronik ist am 25.08.2026 nach Zeitraeumen geteilt und das falsch beschriftete Kapitel aufgeloest worden; die laufende Datei fuehrt 120 Kapitel auf `##`. **Der Bruch der aelteren Teile besteht fort** — die Chats 98 bis 108 stehen dort weiterhin als `###` unter einem fremden Kapitel. Neu ist, dass ein erzeugtes Findemittel ueber alle Ebenen und Teile spannt: Wer sucht, findet den Eintrag auch dann, wenn die Ueberschriftenebene wechselt.
+
 `novaberg-roadmap.md` gliedert bis **Chat 97** nach Chat: jeder Chat ein eigener `## Chat NNN`-Abschnitt. **Ab Chat 98** wechselt sie ohne Hinweis auf `###`-Abschnitte, die nach **Sprint** benannt sind — „Synapsen P6 — Decay-Agent + Halbreaktivierung (Chat 102, …)", „Audit-Kaskade … (Chat 105, …)". Die Chat-Nummer steht nur noch in Klammern im Titel.
 
 **Folge:** Wer nach `## Chat 104` sucht, findet nichts und hält den Eintrag für fehlend. Die Chronik ist vollständig, ihre Oberfläche sagt etwas anderes.
@@ -5744,6 +6018,8 @@ Ein KZG-Eintrag, der ins LZG promotet wurde, **bleibt danach im KZG liegen**. De
 ---
 
 ## Landmine: DB-SELECT-SCHREIBT-OHNE-COMMIT — `select()` führt ein Schreib-Statement aus und verwirft es (Chat 111)
+
+**Zustand:** offen — nachgesehen am 25.08.2026. Unveraendert.
 
 Kein Defekt — `db_manager.select()` tut, was ihr Docstring sagt („SELECT-Abfrage", `tools/db_manager.py:26-34`). Die Falle liegt darin, was sie **nicht** tut: Sie lehnt ein übergebenes `INSERT`/`UPDATE`/`DELETE` nicht ab, sondern **führt es aus**, liest die `RETURNING`-Zeilen aus der offenen Transaktion und legt die Verbindung ohne `commit` in den Pool zurück. Dort wird alles verworfen.
 
@@ -5795,6 +6071,8 @@ Der Aufrufer sieht echte Zeilen und meldet Erfolg. Genau das ist einmal geschehe
 
 ## IMPULS-HANDLUNG-OHNE-HERKUNFT — was sie selbst angelegt hat, ist nicht erkennbar (14.08.2026)
 
+**Zustand:** offen — nachgesehen am 25.08.2026. Die andere Haelfte des Satzes fehlt weiterhin.
+
 **Band:** C — es steht heute Bestand in der Datenbank, dessen Urheber nicht feststellbar ist.
 
 **Entschieden am 14.08.2026: Ein eigener Gedanke darf handeln.** Nova soll agieren können — Termine, Notizen, Direktiven —, und ein versehentlich angelegter Eintrag ist kein Grund, ihr das zu nehmen: Ein Mensch legt auch versehentlich Termine an. Der gebaute Zustand entspricht dieser Entscheidung bereits; die Dispatcher der Management-Agenten lesen den Reiz des Turns, und auf einem Impuls-Turn ist das Novas Gedanke. **Es ist nichts zu bauen, um das zu erlauben.**
@@ -5825,6 +6103,8 @@ Ein Termin aus ihrem Impuls ist von einem, um den gebeten wurde, nicht zu unters
 ---
 
 ## Audit: PUB-ROLLENNAMEN-IM-BESTAND — die Doku nennt die internen Rollen (Chat 120)
+
+**Zustand:** offen — nachgesehen am 25.08.2026. **Die Grundlage ist zur Haelfte widerlegt.** Am 19.08.2026 ist entschieden worden, dass der Name der bauenden Instanz keine schuetzenswerte Angabe ueber einen Menschen ist; damit faellt ein Teil der gezaehlten Fundstellen aus dem Befund. Was steht, ist die Beschreibung der Zusammenarbeit mit einem Menschen darin — und die ist nicht neu gezaehlt worden. **Eine Zahl, deren Kriterium sich geaendert hat, ist keine Zahl mehr.**
 
 Rollennamen der Zusammenarbeit gehören nicht ins öffentliche Repositorium. Sie stehen trotzdem darin, und zwar nicht vereinzelt.
 
@@ -5860,6 +6140,8 @@ Zu ändern ist, was die **Rolle** benennt, nicht was die **Kennung** nennt. Ein 
 
 ## Audit: REGISTER-SPIEGEL-DURCHGANG — wo spiegelt sonst eine Aufzählung ein Register? (Chat 111)
 
+**Zustand:** offen — nachgesehen am 25.08.2026. Die verlangte Messung ist nicht angesetzt worden.
+
 In `services/pixie/router.py` entschied eine **Tabelle neben dem Register** darüber, welcher periodische Agent läuft — dieselbe Zuordnung ein zweites Mal geführt, ohne dass ein Auseinanderlaufen bemerkt worden wäre. Ein neu registrierter Agent gewann den Heartbeat, fand keine Route und starb mit einer Warnung; weil der Takt einen Gewinner je Runde kennt, lief in dieser Runde auch sonst nichts. Behoben durch Rückfall auf Namensgleichheit — die Tabelle bleibt nur noch für die Fälle, in denen Zeitplan- und Agentenname wirklich abweichen (`charakter_hash` → `charakter`).
 
 **Die Instanz ist zu, die Form nicht.** Offen und **nicht gemessen:** Wo sonst im Bestand führt eine Aufzählung dieselbe Zuordnung wie ein Register, ohne dass ein fehlender Eintrag lauter ist als eine Warnung? Zu prüfen sind Zuordnungs-Literale, die neben einer Registry, einer Enum oder einer Tabelle stehen und von Hand nachgepflegt werden müssen.
@@ -5877,6 +6159,8 @@ Aufgefallen beim Ergänzen eines Symbols im Reiter „Charakter": Die Änderung 
 ---
 
 ## Landmine: GV-RELEVANZ-UNNORMIERT — die Relevanz kann über 1.0 liegen, ihr Name sagt das nicht (Chat 111)
+
+**Zustand:** offen — nachgesehen am 25.08.2026. Die verlangte Messung ist nicht angesetzt worden.
 
 Kein Defekt — heute stolpert niemand darüber. `relevanz` entsteht als `basis × (1.0 + neugier_boost) × aufnahmebereitschaft × register` (`ei/wissensluecken.py:288-293`) und ist **nicht normiert**; angezeigt wird sie über `graph/nodes/gespraechsvektor.py:554`. Der Faktor `1.0 + neugier_boost` hebt sie über 1.0, sobald eine Gravitation anliegt — sieben Lücken über 1.0 sind im Client bereits beobachtet worden.
 
