@@ -63,15 +63,15 @@ def _rechne(
 class FormelAusDemKonzeptTest(unittest.TestCase):
     """Die drei Faelle, die das Konzept als TEST-Zeile vorgibt."""
 
-    def test_gewichtung_unter_eins_daempft(self):
+    def test_gewichtung_unter_eins_daempft(self) -> None:
         """max(0.5 × 0.9, 0.0) = 0.45."""
         self.assertEqual(_rechne(human=0.5, gewichtung=0.9).effektiv, 0.45)
 
-    def test_gewichtung_ueber_eins_hebt(self):
+    def test_gewichtung_ueber_eins_hebt(self) -> None:
         """max(0.5 × 1.5, 0.0) = 0.75."""
         self.assertEqual(_rechne(human=0.5, gewichtung=1.5).effektiv, 0.75)
 
-    def test_eigen_pfad_gewinnt(self):
+    def test_eigen_pfad_gewinnt(self) -> None:
         """max(0.2 × 0.9, 0.8/1.3) = 0.6154 — ihr Antrieb schlaegt seinen.
 
         Der Eigen-Pfad traegt seit dem 24.08.2026 die Normierung durch
@@ -82,7 +82,7 @@ class FormelAusDemKonzeptTest(unittest.TestCase):
         self.assertAlmostEqual(ergebnis.effektiv, 0.8/1.3, places=4)
         self.assertEqual(ergebnis.gewinner, "eigen")
 
-    def test_idempotenz(self):
+    def test_idempotenz(self) -> None:
         """Zweimal rechnen liefert bitgleich."""
         a = _rechne(sprachlich=0.37, ziel=0.21, arousal=0.63, human=0.44, gewichtung=1.04)
         b = _rechne(sprachlich=0.37, ziel=0.21, arousal=0.63, human=0.44, gewichtung=1.04)
@@ -92,7 +92,7 @@ class FormelAusDemKonzeptTest(unittest.TestCase):
 class KeineAusloeschungTest(unittest.TestCase):
     """Kein einzelner Faktor darf das Ergebnis allein umlegen."""
 
-    def test_arousal_null_loescht_den_eigen_pfad_nicht(self):
+    def test_arousal_null_loescht_den_eigen_pfad_nicht(self) -> None:
         """Der Verstaerker loescht nicht — er teilt die Skala mit.
 
         Seit dem 24.08.2026 lautet der Pfad `s · (1+z) / (1+MAX)`. Bei z=0
@@ -104,24 +104,24 @@ class KeineAusloeschungTest(unittest.TestCase):
         self.assertAlmostEqual(pfad, 0.6/1.3, places=4)
         self.assertGreater(pfad, 0.0)
 
-    def test_ein_antrieb_bei_null_loescht_den_anderen_nicht(self):
+    def test_ein_antrieb_bei_null_loescht_den_anderen_nicht(self) -> None:
         """max() statt Produkt: ein schweigender Antrieb nimmt nichts weg."""
         self.assertAlmostEqual(_rechne(sprachlich=0.7, ziel=0.0).eigen_pfad, 0.7/1.3, places=4)
         self.assertAlmostEqual(_rechne(sprachlich=0.0, ziel=0.7).eigen_pfad, 0.7/1.3, places=4)
 
-    def test_kleinste_gewichtung_halbiert_hoechstens(self):
+    def test_kleinste_gewichtung_halbiert_hoechstens(self) -> None:
         """RAD_MIN ist 0.5 und enthaelt die Null nicht."""
         ergebnis = _rechne(human=0.8, gewichtung=RAD_MIN)
         self.assertEqual(ergebnis.effektiv, 0.4)
         self.assertGreater(ergebnis.effektiv, 0.0)
 
-    def test_alles_null_ergibt_ehrliche_null(self):
+    def test_alles_null_ergibt_ehrliche_null(self) -> None:
         """Der positive Zwilling: eine 0.0 aus lauter Nullen ist ein Ergebnis."""
         ergebnis = _rechne(sprachlich=0.0, ziel=0.0, arousal=0.0, human=0.0, gewichtung=0.9)
         self.assertEqual(ergebnis.effektiv, 0.0)
         self.assertEqual(ergebnis.pflicht_pfad, 0.0)
 
-    def test_erregung_hebt_aber_erschafft_nicht(self):
+    def test_erregung_hebt_aber_erschafft_nicht(self) -> None:
         """Aus einer belanglosen Aussage macht Erregung keine bedeutsame.
 
         Der zweite Teil misst gegen den **ruhigen** Turn derselben Bewertung,
@@ -138,17 +138,17 @@ class KeineAusloeschungTest(unittest.TestCase):
 class FehlenderPflichtPfadTest(unittest.TestCase):
     """None ist kein Wert — und 0.0 ist keiner zu wenig."""
 
-    def test_ohne_nutzeraeusserung_kein_pflicht_pfad(self):
+    def test_ohne_nutzeraeusserung_kein_pflicht_pfad(self) -> None:
         ergebnis = _rechne(sprachlich=0.6, human=None, gewichtung=1.04)
         self.assertIsNone(ergebnis.pflicht_pfad)
         self.assertEqual(ergebnis.gewinner, "eigen")
         self.assertAlmostEqual(ergebnis.effektiv, 0.6/1.3, places=4)
 
-    def test_ohne_gewichtung_kein_pflicht_pfad(self):
+    def test_ohne_gewichtung_kein_pflicht_pfad(self) -> None:
         ergebnis = _rechne(sprachlich=0.6, human=0.9, gewichtung=None)
         self.assertIsNone(ergebnis.pflicht_pfad)
 
-    def test_nutzersalienz_null_ist_ein_pflicht_pfad(self):
+    def test_nutzersalienz_null_ist_ein_pflicht_pfad(self) -> None:
         """Der positive Zwilling zu den beiden Faellen darueber."""
         ergebnis = _rechne(sprachlich=0.6, human=0.0, gewichtung=1.04)
         self.assertIsNotNone(ergebnis.pflicht_pfad)
@@ -158,22 +158,22 @@ class FehlenderPflichtPfadTest(unittest.TestCase):
 class SkalaTest(unittest.TestCase):
     """Die Skala endet bei 1.0, und die Kappung wird vermerkt."""
 
-    def test_ueber_eins_wird_gekappt_und_markiert(self):
+    def test_ueber_eins_wird_gekappt_und_markiert(self) -> None:
         ergebnis = _rechne(human=1.0, gewichtung=1.5)
         self.assertEqual(ergebnis.effektiv, 1.0)
         self.assertTrue(ergebnis.gekappt)
 
-    def test_im_bereich_bleibt_ungekappt(self):
+    def test_im_bereich_bleibt_ungekappt(self) -> None:
         """Positiver Zwilling: gekappt ist nicht immer True."""
         self.assertFalse(_rechne(human=0.5, gewichtung=0.9).gekappt)
 
-    def test_gewichtung_ausserhalb_wird_gekappt_und_genannt(self):
+    def test_gewichtung_ausserhalb_wird_gekappt_und_genannt(self) -> None:
         with self.assertLogs(LOGGER, level="WARNING") as protokoll:
             ergebnis = _rechne(human=0.4, gewichtung=2.0)
         self.assertIn("2.0000", "\n".join(protokoll.output))
         self.assertEqual(ergebnis.pflicht_pfad, round(0.4 * RAD_MAX, 4))
 
-    def test_arousal_ausserhalb_wird_gekappt_und_genannt(self):
+    def test_arousal_ausserhalb_wird_gekappt_und_genannt(self) -> None:
         with self.assertLogs(LOGGER, level="WARNING") as protokoll:
             ergebnis = _rechne(sprachlich=0.5, arousal=1.5)
         self.assertIn("1.500", "\n".join(protokoll.output))
@@ -183,15 +183,15 @@ class SkalaTest(unittest.TestCase):
 class HerkunftImErgebnisTest(unittest.TestCase):
     """Das Ergebnis traegt, woraus es entstand."""
 
-    def test_gewinner_wird_benannt(self):
+    def test_gewinner_wird_benannt(self) -> None:
         self.assertEqual(_rechne(sprachlich=0.1, human=0.9, gewichtung=1.0).gewinner, "pflicht")
         self.assertEqual(_rechne(sprachlich=0.9, human=0.1, gewichtung=1.0).gewinner, "eigen")
 
-    def test_antriebe_stehen_benannt_nicht_gezaehlt(self):
+    def test_antriebe_stehen_benannt_nicht_gezaehlt(self) -> None:
         antriebe: dict = _rechne(sprachlich=0.4, ziel=0.25).antriebe
         self.assertEqual(antriebe, {"sprachlich": 0.4, "ziel_gravitation": 0.25})
 
-    def test_fehlende_antriebe_werden_mitgefuehrt(self):
+    def test_fehlende_antriebe_werden_mitgefuehrt(self) -> None:
         """Zwei von vier Antrieben schweigen — das gehoert ins Ergebnis, sonst
         sieht ein max() ueber zwei aus wie eines ueber vier.
         """
@@ -243,14 +243,14 @@ class NutzerGewichtungLadenTest(unittest.TestCase):
         finally:
             conn.close()
 
-    def test_liest_novas_zuwendung_nicht_die_gegenrichtung(self):
+    def test_liest_novas_zuwendung_nicht_die_gegenrichtung(self) -> None:
         faktor, quelle = nutzer_gewichtung_laden(POSTGRES_URL, self.GEGENUEBER)
         self.assertEqual(faktor, 1.31)
         self.assertEqual(quelle, "destilliert")
         # Der eigentliche Beweis: Es ist nicht der Wert der Gegenzeile.
         self.assertNotEqual(faktor, 0.62)
 
-    def test_fehlendes_paar_liefert_none_statt_nabe(self):
+    def test_fehlendes_paar_liefert_none_statt_nabe(self) -> None:
         """Nicht (0.9, 'default') — sonst saehe ein Lesefehler aus wie ein
         Charakter ohne Auspraegung.
         """
@@ -258,13 +258,13 @@ class NutzerGewichtungLadenTest(unittest.TestCase):
         self.assertIsNone(faktor)
         self.assertEqual(quelle, "fehlt")
 
-    def test_leere_user_id_wird_abgelehnt(self):
+    def test_leere_user_id_wird_abgelehnt(self) -> None:
         with self.assertLogs("ki_server.memory.charakter", level="ERROR"):
             faktor, quelle = nutzer_gewichtung_laden(POSTGRES_URL, "")
         self.assertIsNone(faktor)
         self.assertEqual(quelle, "fehlt")
 
-    def test_gelesener_faktor_liegt_im_radbereich(self):
+    def test_gelesener_faktor_liegt_im_radbereich(self) -> None:
         faktor, _ = nutzer_gewichtung_laden(POSTGRES_URL, self.GEGENUEBER)
         self.assertGreaterEqual(faktor, RAD_MIN)
         self.assertLessEqual(faktor, RAD_MAX)
@@ -284,13 +284,13 @@ class FormelImNodeTest(unittest.TestCase):
                    return_value=(faktor, "destilliert")):
             return _lauf(rolle, salienzen, postgres_url="postgres://attrappe", **kw)
 
-    def test_charactergraph_rechnet_die_formel(self):
+    def test_charactergraph_rechnet_die_formel(self) -> None:
         """0.7 × 1.04 = 0.728 schlaegt den Eigen-Pfad von 0.5."""
         _, ergebnis = self._mit_faktor("character", [0.5], salienz_human=0.7)
         gespeichert: float = ergebnis["pending_writes"][0]["daten"]["salienz_obj"]["salienz"]
         self.assertEqual(gespeichert, 0.728)
 
-    def test_humangraph_rechnet_die_formel_nicht(self):
+    def test_humangraph_rechnet_die_formel_nicht(self) -> None:
         """Der Nutzer-Eintrag behaelt seine Salienz — dort greift weiter der
         alte Gravitationsboost, bis Bauteil 1 ihn ausbaut.
         """
@@ -298,7 +298,7 @@ class FormelImNodeTest(unittest.TestCase):
         gespeichert: float = ergebnis["pending_writes"][0]["daten"]["salienz_obj"]["salienz"]
         self.assertEqual(gespeichert, 0.8)
 
-    def test_agentgraph_faellt_auf_den_eigen_pfad(self):
+    def test_agentgraph_faellt_auf_den_eigen_pfad(self) -> None:
         """Ein eigener Gedanke hat keine Nutzeraeusserung — und trotzdem eine
         Salienz. Nicht null, weil die Lesung seines Textes ein Antrieb ist.
         """
@@ -310,7 +310,7 @@ class FormelImNodeTest(unittest.TestCase):
         self.assertIsNone(zeile["pflicht_pfad"])
         self.assertEqual(zeile["gewinner"], "eigen")
 
-    def test_gravitation_zaehlt_nicht_zweimal(self):
+    def test_gravitation_zaehlt_nicht_zweimal(self) -> None:
         """Im CharacterGraph ist die Gravitation ein Antrieb im max(), kein
         Zuschlag obendrauf. 0.5 und Gravitation 0.3 ergeben 0.5, nicht 0.8.
         """
@@ -318,7 +318,7 @@ class FormelImNodeTest(unittest.TestCase):
         gespeichert: float = ergebnis["pending_writes"][0]["daten"]["salienz_obj"]["salienz"]
         self.assertAlmostEqual(gespeichert, round(0.5/1.3, 4), places=4)
 
-    def test_pipeline_log_traegt_beide_operanden(self):
+    def test_pipeline_log_traegt_beide_operanden(self) -> None:
         eintraege, _ = self._mit_faktor("character", [0.5], salienz_human=0.7)
         zeilen: list = _formel_zeilen(eintraege)
 
@@ -337,7 +337,7 @@ class FormelImNodeTest(unittest.TestCase):
             set(inhalt["nicht_angeschlossen"]), set(ANTRIEBE_NICHT_ANGESCHLOSSEN),
         )
 
-    def test_ohne_datenbank_kein_pflicht_pfad_und_eine_fehlerzeile(self):
+    def test_ohne_datenbank_kein_pflicht_pfad_und_eine_fehlerzeile(self) -> None:
         """Kein stiller Ruecktritt auf die Nabe 0.9."""
         with self.assertLogs("ki_server.salience", level="ERROR") as protokoll:
             eintraege, _ = _lauf("character", [0.5], salienz_human=0.7)

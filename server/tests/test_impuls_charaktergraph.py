@@ -52,7 +52,7 @@ class ImpulsInDenCharaktergraphTest(unittest.TestCase):
 
     # ── Form und Inhalt des Events ───────────────────
 
-    def test_event_traegt_das_wissensstueck_als_reiz(self):
+    def test_event_traegt_das_wissensstueck_als_reiz(self) -> None:
         erfolg, ruf = self._feuern()
         self.assertTrue(erfolg)
         self.assertEqual(ruf.call_count, 1)
@@ -76,7 +76,7 @@ class ImpulsInDenCharaktergraphTest(unittest.TestCase):
         _, ruf = self._feuern()
         self.assertNotIn("user_prompt", ruf.call_args.kwargs["payload"])
 
-    def test_event_traegt_die_emotion_des_stack_eintrags(self):
+    def test_event_traegt_die_emotion_des_stack_eintrags(self) -> None:
         """Pixies Zustand beim Recherchieren ist die Reiz-Haelfte des Paares."""
         _, ruf = self._feuern()
         payload: dict = ruf.call_args.kwargs["payload"]
@@ -84,7 +84,7 @@ class ImpulsInDenCharaktergraphTest(unittest.TestCase):
         self.assertEqual(payload["gespraechs_modus"], "fachgespraech")
         self.assertEqual(payload["prompt_thema"], "Bodenverdichtung, Hainbuche")
 
-    def test_keine_erfundenen_ei_dimensionen(self):
+    def test_keine_erfundenen_ei_dimensionen(self) -> None:
         """Was der Stack-Eintrag nicht hat, wird nicht plausibel aufgefuellt."""
         _, ruf = self._feuern()
         payload: dict = ruf.call_args.kwargs["payload"]
@@ -92,14 +92,14 @@ class ImpulsInDenCharaktergraphTest(unittest.TestCase):
                      "beziehungs_dynamik", "emotions_vektor"):
             self.assertNotIn(feld, payload)
 
-    def test_das_event_ist_serialisierbar(self):
+    def test_das_event_ist_serialisierbar(self) -> None:
         """Es geht als JSON in die Redis-Queue — ein Objekt darin braeche sie."""
         _, ruf = self._feuern()
         json.dumps(ruf.call_args.kwargs["payload"], ensure_ascii=False)
 
     # ── Fehlerpfade ──────────────────────────────────
 
-    def test_ohne_turn_id_kein_event_und_ein_error(self):
+    def test_ohne_turn_id_kein_event_und_ein_error(self) -> None:
         with self.assertLogs(DELIVERY_LOGGER, level="ERROR") as log:
             with patch("services.shadow_delivery.event_erzeugen") as ruf:
                 erfolg: bool = _impuls_in_den_charaktergraph(
@@ -110,7 +110,7 @@ class ImpulsInDenCharaktergraphTest(unittest.TestCase):
         self.assertEqual(len(log.records), 1)
         self.assertIn("ohne turn_id", log.records[0].getMessage())
 
-    def test_ohne_inhalt_kein_event_und_ein_error(self):
+    def test_ohne_inhalt_kein_event_und_ein_error(self) -> None:
         with self.assertLogs(DELIVERY_LOGGER, level="ERROR") as log:
             with patch("services.shadow_delivery.event_erzeugen") as ruf:
                 erfolg: bool = _impuls_in_den_charaktergraph(
@@ -120,7 +120,7 @@ class ImpulsInDenCharaktergraphTest(unittest.TestCase):
         self.assertEqual(ruf.call_count, 0)
         self.assertEqual(len(log.records), 1)
 
-    def test_redis_fehler_loggt_genau_einen_error_und_wirft_nicht(self):
+    def test_redis_fehler_loggt_genau_einen_error_und_wirft_nicht(self) -> None:
         with patch(
             "services.shadow_delivery.event_erzeugen",
             side_effect=ConnectionError("Redis weg"),
@@ -135,7 +135,7 @@ class ImpulsInDenCharaktergraphTest(unittest.TestCase):
         self.assertIn("Event fuer den CharacterGraph fehlgeschlagen",
                       log.records[0].getMessage())
 
-    def test_leere_event_id_gilt_als_fehlschlag(self):
+    def test_leere_event_id_gilt_als_fehlschlag(self) -> None:
         """event_erzeugen ohne ID heisst: nichts liegt in der Queue."""
         with patch("services.shadow_delivery.event_erzeugen", return_value=""):
             with self.assertLogs(DELIVERY_LOGGER, level="ERROR") as log:
@@ -148,7 +148,7 @@ class ImpulsInDenCharaktergraphTest(unittest.TestCase):
 
     # ── Erfolgsmeldung ───────────────────────────────
 
-    def test_erfolg_nennt_turn_id_und_event_id(self):
+    def test_erfolg_nennt_turn_id_und_event_id(self) -> None:
         with self.assertLogs(DELIVERY_LOGGER, level="INFO") as log:
             self._feuern(turn_id="t-impuls-5")
         meldungen = [r.getMessage() for r in log.records]

@@ -42,15 +42,15 @@ class DerStilleAusloeserStehtTest(unittest.TestCase):
     def setUp(self) -> None:
         self.quelle: str = _schleifenquelle()
 
-    def test_die_schleife_ist_auffindbar(self):
+    def test_die_schleife_ist_auffindbar(self) -> None:
         """Ohne diesen Zeugen pruefen die uebrigen eine leere Zeichenkette."""
         self.assertIn("last_activity", self.quelle)
         self.assertIn("momentum", self.quelle)
 
-    def test_der_ausloeser_stille_existiert(self):
+    def test_der_ausloeser_stille_existiert(self) -> None:
         self.assertIn('trigger = "stille"', self.quelle)
 
-    def test_der_else_zweig_bricht_nicht_mehr_sofort_ab(self):
+    def test_der_else_zweig_bricht_nicht_mehr_sofort_ab(self) -> None:
         """Die Wand war genau `else:` gefolgt von `continue`.
 
         Der Zeuge trifft die Wand und nicht ihre Nachbarn: Gesucht wird ein
@@ -65,7 +65,7 @@ class DerStilleAusloeserStehtTest(unittest.TestCase):
             "steht erneut.",
         )
 
-    def test_stille_traegt_dieselbe_sitzungspruefung_wie_der_timeout(self):
+    def test_stille_traegt_dieselbe_sitzungspruefung_wie_der_timeout(self) -> None:
         """Ein Einwurf in die leere Sitzung waere eine Begruessung.
 
         Beide Zweige duerfen nur feuern, wenn ein Gespraech existiert. Gezaehlt
@@ -76,7 +76,7 @@ class DerStilleAusloeserStehtTest(unittest.TestCase):
             "Timeout und Stille brauchen je eine eigene Sitzungspruefung.",
         )
 
-    def test_stille_verbraucht_ihren_ausloeser(self):
+    def test_stille_verbraucht_ihren_ausloeser(self) -> None:
         """Ohne Verbrauch fragte die Schleife alle 5 s statt alle 30 s.
 
         Beide Zweige schreiben `last_activity` zurueck. Fehlt das im
@@ -92,7 +92,7 @@ class DerStilleAusloeserStehtTest(unittest.TestCase):
 class DieUhrIstNichtDieAnwesenheitTest(unittest.TestCase):
     """Was die Wand geprueft hat, und was nicht."""
 
-    def test_die_schleife_laeuft_nur_ueber_offene_verbindungen(self):
+    def test_die_schleife_laeuft_nur_ueber_offene_verbindungen(self) -> None:
         """Anwesenheit prueft die Verbindung, nicht `last_activity`.
 
         Faellt dieser Zeuge, ist der Wegfall der Wand **nicht** mehr harmlos:

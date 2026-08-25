@@ -131,18 +131,18 @@ class VerbindungNachtragTest(unittest.TestCase):
 
     # ── Der Nachtrag schreibt ────────────────────────
 
-    def test_alle_zeilen_des_keys_tragen_die_lzg_id(self):
+    def test_alle_zeilen_des_keys_tragen_die_lzg_id(self) -> None:
         ergebnis = VerbindungRepository.lzg_id_nachtragen(
             POSTGRES_URL, self.kzg_id, self.knoten_id,
         )
         self.assertEqual(ergebnis, {"gefunden": 2, "geaendert": 2})
         self.assertEqual(self._lzg_ids(self.kzg_id), [self.knoten_id, self.knoten_id])
 
-    def test_fremder_key_bleibt_unberuehrt(self):
+    def test_fremder_key_bleibt_unberuehrt(self) -> None:
         VerbindungRepository.lzg_id_nachtragen(POSTGRES_URL, self.kzg_id, self.knoten_id)
         self.assertEqual(self._lzg_ids(self.fremd_kzg_id), [None])
 
-    def test_zweiter_lauf_schreibt_nichts_mehr(self):
+    def test_zweiter_lauf_schreibt_nichts_mehr(self) -> None:
         """Idempotent: gefunden bleibt, geaendert faellt auf 0."""
         VerbindungRepository.lzg_id_nachtragen(POSTGRES_URL, self.kzg_id, self.knoten_id)
         zweiter = VerbindungRepository.lzg_id_nachtragen(
@@ -150,7 +150,7 @@ class VerbindungNachtragTest(unittest.TestCase):
         )
         self.assertEqual(zweiter, {"gefunden": 2, "geaendert": 0})
 
-    def test_umgezogener_knoten_wird_korrigiert(self):
+    def test_umgezogener_knoten_wird_korrigiert(self) -> None:
         """IS DISTINCT FROM statt IS NULL: ein anderes Ziel wird geschrieben."""
         VerbindungRepository.lzg_id_nachtragen(POSTGRES_URL, self.kzg_id, self.knoten_id)
         zweiter = VerbindungRepository.lzg_id_nachtragen(
@@ -159,7 +159,7 @@ class VerbindungNachtragTest(unittest.TestCase):
         self.assertEqual(zweiter, {"gefunden": 2, "geaendert": 2})
         self.assertEqual(self._lzg_ids(self.kzg_id), [self.knoten_id2, self.knoten_id2])
 
-    def test_leere_eingabe_wird_abgewiesen(self):
+    def test_leere_eingabe_wird_abgewiesen(self) -> None:
         with self.assertRaises(ValueError):
             VerbindungRepository.lzg_id_nachtragen(POSTGRES_URL, "", self.knoten_id)
         with self.assertRaises(ValueError):
@@ -167,7 +167,7 @@ class VerbindungNachtragTest(unittest.TestCase):
 
     # ── Der Aufrufer in der Promotion ────────────────
 
-    def test_agent_schreibt_und_meldet_die_zahlen(self):
+    def test_agent_schreibt_und_meldet_die_zahlen(self) -> None:
         agent = SynapsenPromotionAgent()
         with self.assertLogs(PROMOTION_LOGGER, level="INFO") as log:
             geaendert: int = agent._verbindung_lzg_id_nachtragen(
@@ -179,7 +179,7 @@ class VerbindungNachtragTest(unittest.TestCase):
         meldungen = [r.getMessage() for r in log.records]
         self.assertTrue(any("2 von 2 Zeilen geschrieben" in m for m in meldungen), meldungen)
 
-    def test_ohne_bruecken_zeile_genau_eine_info_ohne_defekt(self):
+    def test_ohne_bruecken_zeile_genau_eine_info_ohne_defekt(self) -> None:
         """KZG-Eintraege ohne turn_id haben keine Zeile — kein Fehler, aber sichtbar."""
         agent = SynapsenPromotionAgent()
         unbekannt: str = f"kzg:test:nachtrag:{uuid.uuid4().hex}:ohnezeile"
@@ -192,7 +192,7 @@ class VerbindungNachtragTest(unittest.TestCase):
         self.assertEqual(log.records[0].levelname, "INFO")
         self.assertIn("ohne Treffer", log.records[0].getMessage())
 
-    def test_db_fehler_loggt_genau_einen_error_und_wirft_nicht(self):
+    def test_db_fehler_loggt_genau_einen_error_und_wirft_nicht(self) -> None:
         agent = SynapsenPromotionAgent()
         fehler = psycopg2.OperationalError("Verbindung zur Datenbank verloren")
         with patch.object(VerbindungRepository, "lzg_id_nachtragen", side_effect=fehler):
@@ -206,7 +206,7 @@ class VerbindungNachtragTest(unittest.TestCase):
         self.assertEqual(log.records[0].levelname, "ERROR")
         self.assertIn("verbindung-Nachtrag fehlgeschlagen", log.records[0].getMessage())
 
-    def test_fehlende_eingabe_loggt_error_statt_zu_werfen(self):
+    def test_fehlende_eingabe_loggt_error_statt_zu_werfen(self) -> None:
         agent = SynapsenPromotionAgent()
         with self.assertLogs(PROMOTION_LOGGER, level="ERROR") as log:
             geaendert: int = agent._verbindung_lzg_id_nachtragen(

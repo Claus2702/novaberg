@@ -19,14 +19,14 @@ from services.model_services.types import EmbedRequest, EmbedResponse
 class EmbedWorkerBasicTest(unittest.IsolatedAsyncioTestCase):
     """Worker-Lifecycle und Resultat-Form."""
 
-    async def asyncSetUp(self):
+    async def asyncSetUp(self) -> None:
         self.worker = EmbedWorker()
         await self.worker.start()
 
-    async def asyncTearDown(self):
+    async def asyncTearDown(self) -> None:
         await self.worker.shutdown()
 
-    async def test_embed_worker_basic_submit(self):
+    async def test_embed_worker_basic_submit(self) -> None:
         """submit() liefert EmbedResponse mit nicht-leerem Vektor."""
         fake_vektor: list[float] = [0.1, 0.2, 0.3, 0.4]
 
@@ -53,14 +53,14 @@ class EmbedWorkerBasicTest(unittest.IsolatedAsyncioTestCase):
 class EmbedWorkerFifoTest(unittest.IsolatedAsyncioTestCase):
     """Drei Requests parallel — Reihenfolge im Worker ist FIFO."""
 
-    async def asyncSetUp(self):
+    async def asyncSetUp(self) -> None:
         self.worker = EmbedWorker()
         await self.worker.start()
 
-    async def asyncTearDown(self):
+    async def asyncTearDown(self) -> None:
         await self.worker.shutdown()
 
-    async def test_embed_worker_fifo_order(self):
+    async def test_embed_worker_fifo_order(self) -> None:
         """client.embed() wird in Einreich-Reihenfolge aufgerufen."""
         aufruf_reihenfolge: list[str] = []
 
@@ -92,14 +92,14 @@ class EmbedWorkerFifoTest(unittest.IsolatedAsyncioTestCase):
 class EmbedWorkerExceptionTest(unittest.IsolatedAsyncioTestCase):
     """Exceptions aus _call_model werden ueber die Future propagiert."""
 
-    async def asyncSetUp(self):
+    async def asyncSetUp(self) -> None:
         self.worker = EmbedWorker()
         await self.worker.start()
 
-    async def asyncTearDown(self):
+    async def asyncTearDown(self) -> None:
         await self.worker.shutdown()
 
-    async def test_embed_worker_exception_propagation(self):
+    async def test_embed_worker_exception_propagation(self) -> None:
         """submit() raised die Original-Exception, kein silent skip."""
 
         class OllamaSimulatedError(RuntimeError):
@@ -121,14 +121,14 @@ class EmbedWorkerExceptionTest(unittest.IsolatedAsyncioTestCase):
 class EmbedWorkerSubmitSyncTest(unittest.IsolatedAsyncioTestCase):
     """submit_sync brueckt aus Worker-Thread zurueck in den Haupt-Loop."""
 
-    async def asyncSetUp(self):
+    async def asyncSetUp(self) -> None:
         self.worker = EmbedWorker()
         await self.worker.start()
 
-    async def asyncTearDown(self):
+    async def asyncTearDown(self) -> None:
         await self.worker.shutdown()
 
-    async def test_embed_worker_submit_sync_from_thread(self):
+    async def test_embed_worker_submit_sync_from_thread(self) -> None:
         """
         Verifiziert, dass submit_sync aus einem Worker-Thread funktioniert.
 

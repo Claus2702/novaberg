@@ -37,7 +37,7 @@ KONZEPT_EMBEDDING_SCHWELLWERT: float = 0.85
 class TestKantenStaerke(unittest.TestCase):
     """Die drei Konzept-Beispiele aus §7.5 (Toleranz 0.005 wegen Konzept-Rundung)."""
 
-    def test_beispiel_1_timeline_only(self):
+    def test_beispiel_1_timeline_only(self) -> None:
         # Praezision Tag, Distanz 4, Toleranz 21 (Konzept-Fixture, s.o.)
         tiefe_timeline = (
             (KONZEPT_TIMELINE_TOLERANZ_TAG - 4) / KONZEPT_TIMELINE_TOLERANZ_TAG
@@ -46,7 +46,7 @@ class TestKantenStaerke(unittest.TestCase):
         self.assertAlmostEqual(roh_ab, 0.899, delta=0.005)
         self.assertAlmostEqual(roh_ba, 1.259, delta=0.005)
 
-    def test_beispiel_2_timeline_und_embedding(self):
+    def test_beispiel_2_timeline_und_embedding(self) -> None:
         tiefe_timeline = (
             (KONZEPT_TIMELINE_TOLERANZ_TAG - 4) / KONZEPT_TIMELINE_TOLERANZ_TAG
         )
@@ -60,17 +60,17 @@ class TestKantenStaerke(unittest.TestCase):
         self.assertAlmostEqual(roh_ab, 1.169, delta=0.005)
         self.assertAlmostEqual(roh_ba, 1.466, delta=0.005)
 
-    def test_beispiel_3_entitaet_only(self):
+    def test_beispiel_3_entitaet_only(self) -> None:
         roh_ab, roh_ba = kanten_staerke_berechnen(0.7, 5.0, {SCHICHT_ENTITAET: 1.0})
         self.assertAlmostEqual(roh_ab, 2.609, delta=0.005)
         self.assertAlmostEqual(roh_ba, 3.723, delta=0.005)
 
-    def test_symmetrie_gleicher_knoten(self):
+    def test_symmetrie_gleicher_knoten(self) -> None:
         # Bei gleichen Anker-Staerken kollabiert die Asymmetrie: A->B == B->A.
         roh_ab, roh_ba = kanten_staerke_berechnen(3.0, 3.0, {SCHICHT_ENTITAET: 1.0})
         self.assertAlmostEqual(roh_ab, roh_ba, delta=1e-9)
 
-    def test_richtung_unabhaengig_von_argument_reihenfolge(self):
+    def test_richtung_unabhaengig_von_argument_reihenfolge(self) -> None:
         # Egal ob der neue Knoten staerker oder schwaecher ist: die A->B-Kante
         # muss konsistent bleiben, wenn man die Argumente vertauscht.
         ab1, ba1 = kanten_staerke_berechnen(0.7, 5.0, {SCHICHT_ENTITAET: 1.0})
@@ -82,18 +82,18 @@ class TestKantenStaerke(unittest.TestCase):
 
 class TestTiefeFaktoren(unittest.TestCase):
 
-    def test_themen_max_straft_breite(self):
+    def test_themen_max_straft_breite(self) -> None:
         # Schmaler Knoten (1 Thema) vs. breiter (10 Themen), 1 geteilt -> 1/10
         tiefe, geteilt = themen_tiefe(["Geburtstag"], ["Geburtstag"] + [f"t{i}" for i in range(9)])
         self.assertEqual(geteilt, ["Geburtstag"])
         self.assertAlmostEqual(tiefe, 0.1, delta=1e-9)
 
-    def test_themen_kein_overlap(self):
+    def test_themen_kein_overlap(self) -> None:
         tiefe, geteilt = themen_tiefe(["A"], ["B"])
         self.assertEqual(geteilt, [])
         self.assertEqual(tiefe, 0.0)
 
-    def test_embedding_tiefe_linear(self):
+    def test_embedding_tiefe_linear(self) -> None:
         # embedding_tiefe ist ueber LZG_EMBEDDING_SCHWELLWERT definiert. Ein
         # hartcodierter Schwellwert misst nur, was zur Schreibzeit der Zeile
         # galt — er wird beim naechsten Tuning still falsch oder dauerhaft rot.
@@ -104,18 +104,18 @@ class TestTiefeFaktoren(unittest.TestCase):
         self.assertAlmostEqual(embedding_tiefe(1.0), 1.0, delta=1e-9)       # maximal
         self.assertAlmostEqual(embedding_tiefe(mitte), 0.5, delta=1e-9)     # Mitte
 
-    def test_embedding_tiefe_unter_schwellwert_klemmt_auf_null(self):
+    def test_embedding_tiefe_unter_schwellwert_klemmt_auf_null(self) -> None:
         # Unterhalb des Schwellwerts greift die Schicht nicht.
         unter: float = LZG_EMBEDDING_SCHWELLWERT / 2
         self.assertEqual(embedding_tiefe(unter), 0.0)
 
-    def test_timeline_praezisions_ungleichheit_sperrt(self):
+    def test_timeline_praezisions_ungleichheit_sperrt(self) -> None:
         t = datetime(2026, 5, 1, tzinfo=timezone.utc)
         tiefe, distanz = timeline_tiefe("minute", "day", t, t)
         self.assertEqual(tiefe, 0.0)
         self.assertIsNone(distanz)
 
-    def test_timeline_ausserhalb_toleranz_sperrt(self):
+    def test_timeline_ausserhalb_toleranz_sperrt(self) -> None:
         # Abstand aus config abgeleitet: bei angehobener Toleranz waere ein
         # fester Abstand irgendwann INNERHALB und der Test still wertlos.
         a = datetime(2026, 1, 1, tzinfo=timezone.utc)
@@ -124,7 +124,7 @@ class TestTiefeFaktoren(unittest.TestCase):
         self.assertEqual(tiefe, 0.0)
         self.assertIsNone(distanz)
 
-    def test_timeline_innerhalb_toleranz_traegt(self):
+    def test_timeline_innerhalb_toleranz_traegt(self) -> None:
         # Positiver Zwilling zum Sperr-Test: sonst bliebe unbemerkt, wenn
         # timeline_tiefe fuer JEDEN Abstand 0.0 lieferte.
         a = datetime(2026, 1, 1, tzinfo=timezone.utc)

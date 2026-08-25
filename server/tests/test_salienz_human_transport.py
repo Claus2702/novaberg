@@ -144,19 +144,19 @@ def _schritt(eintraege: list, name: str) -> list:
 class SalienzWertLesenTest(unittest.TestCase):
     """Ein unlesbarer Wert darf nicht als 0.0 durchgehen."""
 
-    def test_zahl_wird_gelesen(self):
+    def test_zahl_wird_gelesen(self) -> None:
         self.assertEqual(_salienz_wert_lesen({"salienz": 0.6}), 0.6)
 
-    def test_zahl_als_zeichenkette_wird_gelesen(self):
+    def test_zahl_als_zeichenkette_wird_gelesen(self) -> None:
         """Das Modell liefert gelegentlich "0.6" statt 0.6 — beides ist derselbe Wert."""
         self.assertEqual(_salienz_wert_lesen({"salienz": "0.6"}), 0.6)
 
-    def test_fehlendes_feld_meldet_und_liefert_none(self):
+    def test_fehlendes_feld_meldet_und_liefert_none(self) -> None:
         with self.assertLogs(LOGGER, level="ERROR") as protokoll:
             self.assertIsNone(_salienz_wert_lesen({"themen": ["Kosmologie"]}))
         self.assertIn("ohne Feld 'salienz'", "\n".join(protokoll.output))
 
-    def test_unlesbarer_wert_meldet_und_nennt_ihn(self):
+    def test_unlesbarer_wert_meldet_und_nennt_ihn(self) -> None:
         with self.assertLogs(LOGGER, level="ERROR") as protokoll:
             self.assertIsNone(_salienz_wert_lesen({"salienz": "hoch"}))
         zeilen: str = "\n".join(protokoll.output)
@@ -169,21 +169,21 @@ class SalienzWertLesenTest(unittest.TestCase):
 class SalienzHumanErmittelnTest(unittest.TestCase):
     """Das Maximum, und die Trennung von None und 0.0."""
 
-    def test_maximum_gewinnt(self):
+    def test_maximum_gewinnt(self) -> None:
         """Ein Turn ist so gewichtig wie sein staerkster Teil."""
         self.assertEqual(_salienz_human_ermitteln([0.4, 0.7, 0.6]), 0.7)
 
-    def test_einzelner_wert_bleibt_stehen(self):
+    def test_einzelner_wert_bleibt_stehen(self) -> None:
         self.assertEqual(_salienz_human_ermitteln([0.35]), 0.35)
 
-    def test_echte_null_bleibt_null(self):
+    def test_echte_null_bleibt_null(self) -> None:
         """Der positive Zwilling zum None-Fall: 0.0 ist ein Messergebnis."""
         self.assertEqual(_salienz_human_ermitteln([0.0, 0.0]), 0.0)
 
-    def test_ohne_werte_none_statt_null(self):
+    def test_ohne_werte_none_statt_null(self) -> None:
         self.assertIsNone(_salienz_human_ermitteln([]))
 
-    def test_ueber_eins_wird_gekappt_und_der_rohwert_genannt(self):
+    def test_ueber_eins_wird_gekappt_und_der_rohwert_genannt(self) -> None:
         with self.assertLogs(LOGGER, level="WARNING") as protokoll:
             self.assertEqual(_salienz_human_ermitteln([1.4]), 1.0)
         self.assertIn("1.40", "\n".join(protokoll.output))
@@ -192,27 +192,27 @@ class SalienzHumanErmittelnTest(unittest.TestCase):
 class SalienzHumanImNodeTest(unittest.TestCase):
     """Wer den Wert setzt — und wer ihn ausdruecklich nicht setzt."""
 
-    def test_humangraph_setzt_das_maximum_seiner_segmente(self):
+    def test_humangraph_setzt_das_maximum_seiner_segmente(self) -> None:
         _, ergebnis = _lauf("human", [0.4, 0.7, 0.6])
         self.assertEqual(ergebnis["salienz_human"], 0.7)
 
-    def test_charactergraph_ueberschreibt_den_gereichten_wert_nicht(self):
+    def test_charactergraph_ueberschreibt_den_gereichten_wert_nicht(self) -> None:
         """Er bewertet Novas Antwort — schriebe er hier, ersetzte die Reaktion den Reiz."""
         _, ergebnis = _lauf("character", [0.9], salienz_human=0.55)
         self.assertEqual(ergebnis["salienz_human"], 0.55)
 
-    def test_agentgraph_laesst_none_stehen(self):
+    def test_agentgraph_laesst_none_stehen(self) -> None:
         """Ein eigener Gedanke hat keine Nutzeraeusserung."""
         _, ergebnis = _lauf("agent", [0.8])
         self.assertIsNone(ergebnis["salienz_human"])
 
-    def test_unlesbares_segment_senkt_das_maximum_nicht(self):
+    def test_unlesbares_segment_senkt_das_maximum_nicht(self) -> None:
         """Der Kern: ein nicht gelesener Wert ist kein Wert, keine Null."""
         with self.assertLogs(LOGGER, level="ERROR"):
             _, ergebnis = _lauf("human", [0.7, "hoch"])
         self.assertEqual(ergebnis["salienz_human"], 0.7)
 
-    def test_gravitationsboost_faellt_nicht_in_den_wert(self):
+    def test_gravitationsboost_faellt_nicht_in_den_wert(self) -> None:
         """salienz_human ist die LLM-Bewertung. Die Gravitation wird mit der
         Formel ein Antrieb des Eigen-Pfads und zaehlte hier ein zweites Mal.
         """
@@ -223,7 +223,7 @@ class SalienzHumanImNodeTest(unittest.TestCase):
 class SalienzHumanForensikTest(unittest.TestCase):
     """Der Wert ist ohne Container-Log nachvollziehbar."""
 
-    def test_pipeline_log_traegt_wert_und_herkunft(self):
+    def test_pipeline_log_traegt_wert_und_herkunft(self) -> None:
         eintraege, _ = _lauf("human", [0.4, 0.7])
         zeilen: list = _schritt(eintraege, "salienz_human")
 
@@ -234,11 +234,11 @@ class SalienzHumanForensikTest(unittest.TestCase):
         # sonst ist das Maximum im Nachhinein nicht nachrechenbar.
         self.assertEqual(inhalt["segmentwerte"], [0.4, 0.7])
 
-    def test_charactergraph_schreibt_keine_solche_zeile(self):
+    def test_charactergraph_schreibt_keine_solche_zeile(self) -> None:
         eintraege, _ = _lauf("character", [0.9])
         self.assertEqual(_schritt(eintraege, "salienz_human"), [])
 
-    def test_ohne_lesbaren_wert_fehlereintrag_und_logzeile(self):
+    def test_ohne_lesbaren_wert_fehlereintrag_und_logzeile(self) -> None:
         with self.assertLogs(LOGGER, level="ERROR") as protokoll:
             eintraege, ergebnis = _lauf("human", ["hoch"])
 
@@ -262,19 +262,19 @@ class _StubGraph:
 class CreateStateTest(unittest.TestCase):
     """Der Default ist None, nicht 0.0."""
 
-    def test_ohne_angabe_none(self):
+    def test_ohne_angabe_none(self) -> None:
         zustand = GraphBase.create_state(
             _StubGraph(), user_prompt="Wie entstehen schwarze Loecher?", user_id="meister",
         )
         self.assertIsNone(zustand["salienz_human"])
 
-    def test_gereichter_wert_kommt_an(self):
+    def test_gereichter_wert_kommt_an(self) -> None:
         zustand = GraphBase.create_state(
             _StubGraph(), user_prompt=REAKTION, user_id="meister", salienz_human=0.62,
         )
         self.assertEqual(zustand["salienz_human"], 0.62)
 
-    def test_echte_null_ueberlebt_die_uebergabe(self):
+    def test_echte_null_ueberlebt_die_uebergabe(self) -> None:
         """Der positive Zwilling: 0.0 darf nicht zu None werden."""
         zustand = GraphBase.create_state(
             _StubGraph(), user_prompt=REAKTION, user_id="meister", salienz_human=0.0,

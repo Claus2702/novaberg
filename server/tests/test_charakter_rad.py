@@ -42,18 +42,18 @@ def _rad(hoch: dict | None = None, runter: dict | None = None) -> dict:
 class RadGrenzenTest(unittest.TestCase):
     """Volle Auslenkung trifft die Grenzen exakt — die Kappung ist Sicherung."""
 
-    def test_leeres_rad_ergibt_die_nabe(self):
+    def test_leeres_rad_ergibt_die_nabe(self) -> None:
         self.assertAlmostEqual(nutzer_gewichtung_berechnen(RAD_LEER), RAD_NABE, places=9)
 
-    def test_alle_zuwendungs_speichen_treffen_die_obergrenze_exakt(self):
+    def test_alle_zuwendungs_speichen_treffen_die_obergrenze_exakt(self) -> None:
         voll: dict = _rad(hoch={name: 1.0 for name in RAD_ZUG_HOCH})
         self.assertAlmostEqual(nutzer_gewichtung_berechnen(voll), RAD_MAX, places=9)
 
-    def test_alle_abwendungs_speichen_treffen_die_untergrenze_exakt(self):
+    def test_alle_abwendungs_speichen_treffen_die_untergrenze_exakt(self) -> None:
         voll: dict = _rad(runter={name: 1.0 for name in RAD_ZUG_RUNTER})
         self.assertAlmostEqual(nutzer_gewichtung_berechnen(voll), RAD_MIN, places=9)
 
-    def test_die_zuege_summieren_sich_auf_die_dokumentierten_spannen(self):
+    def test_die_zuege_summieren_sich_auf_die_dokumentierten_spannen(self) -> None:
         """Wer einen Zug aendert, muss die Spanne mitaendern — sonst trifft die
         volle Auslenkung die Grenze nicht mehr, und die Kappung wird zum
         Formteil statt zur Sicherung.
@@ -65,21 +65,21 @@ class RadGrenzenTest(unittest.TestCase):
 class RadBeispieleTest(unittest.TestCase):
     """Die drei Charaktere aus dem Konzept, nachgerechnet."""
 
-    def test_die_treu_ergebene(self):
+    def test_die_treu_ergebene(self) -> None:
         rad: dict = _rad(hoch={
             "treue": 1.0, "dienst": 1.0, "pflicht": 1.0,
             "aufmerksamkeit": 1.0, "wissbegier": 0.5, "wohlwollen": 1.0,
         })
         self.assertAlmostEqual(nutzer_gewichtung_berechnen(rad), 1.46, places=4)
 
-    def test_die_sachliche(self):
+    def test_die_sachliche(self) -> None:
         rad: dict = _rad(
             hoch={"aufmerksamkeit": 0.5, "pflicht": 0.5},
             runter={"distanz": 0.5},
         )
         self.assertAlmostEqual(nutzer_gewichtung_berechnen(rad), 0.98, places=4)
 
-    def test_die_widerspenstige_mit_wissbegier(self):
+    def test_die_widerspenstige_mit_wissbegier(self) -> None:
         """Das Rad ist kein Schieberegler: Ihr Interesse zieht sie nach oben,
         obwohl sie ihn ablehnt.
         """
@@ -98,7 +98,7 @@ class RadBeispieleTest(unittest.TestCase):
             nutzer_gewichtung_berechnen(ohne_wissbegier),
         )
 
-    def test_zweimal_rechnen_liefert_bitgleich(self):
+    def test_zweimal_rechnen_liefert_bitgleich(self) -> None:
         """Reine Funktion — kein Akkumulator, keine Pfadabhaengigkeit."""
         rad: dict = _rad(hoch={"treue": 1.0, "wissbegier": 0.5}, runter={"distanz": 1.0})
         erst: float = nutzer_gewichtung_berechnen(rad)
@@ -109,37 +109,37 @@ class RadBeispieleTest(unittest.TestCase):
 class RadValidierungTest(unittest.TestCase):
     """Ein unvollstaendiges Rad ergibt keinen halben Faktor, sondern gar keinen."""
 
-    def test_fehlende_speiche_wird_abgelehnt(self):
+    def test_fehlende_speiche_wird_abgelehnt(self) -> None:
         rad: dict = _rad()
         del rad["hoch"]["treue"]
         with self.assertRaises(ValueError) as ctx:
             nutzer_gewichtung_berechnen(rad)
         self.assertIn("treue", str(ctx.exception))
 
-    def test_unbekannte_speiche_wird_abgelehnt(self):
+    def test_unbekannte_speiche_wird_abgelehnt(self) -> None:
         rad: dict = _rad()
         rad["runter"]["erfunden"] = 1.0
         with self.assertRaises(ValueError) as ctx:
             nutzer_gewichtung_berechnen(rad)
         self.assertIn("erfunden", str(ctx.exception))
 
-    def test_fehlende_seite_wird_abgelehnt(self):
+    def test_fehlende_seite_wird_abgelehnt(self) -> None:
         with self.assertRaises(ValueError):
             nutzer_gewichtung_berechnen({"hoch": {n: 0.0 for n in RAD_ZUG_HOCH}})
 
-    def test_nicht_numerische_auspraegung_wird_abgelehnt(self):
+    def test_nicht_numerische_auspraegung_wird_abgelehnt(self) -> None:
         rad: dict = _rad()
         rad["hoch"]["treue"] = "viel"
         with self.assertRaises(ValueError):
             nutzer_gewichtung_berechnen(rad)
 
-    def test_auspraegung_ausserhalb_null_bis_eins_wird_abgelehnt(self):
+    def test_auspraegung_ausserhalb_null_bis_eins_wird_abgelehnt(self) -> None:
         rad: dict = _rad()
         rad["hoch"]["treue"] = 2.0
         with self.assertRaises(ValueError):
             nutzer_gewichtung_berechnen(rad)
 
-    def test_kein_dict_wird_abgelehnt(self):
+    def test_kein_dict_wird_abgelehnt(self) -> None:
         with self.assertRaises(ValueError):
             nutzer_gewichtung_berechnen("kein Rad")
 
@@ -158,7 +158,7 @@ class RadDestillationTest(unittest.TestCase):
         ):
             return charakter_rad_destillieren(profil, user_id="nova")
 
-    def test_gueltige_antwort_liefert_rad_und_faktor(self):
+    def test_gueltige_antwort_liefert_rad_und_faktor(self) -> None:
         """Positiver Zwilling: Ohne ihn bestuenden alle Fehlerpfad-Tests auch
         dann, wenn die Funktion grundsaetzlich None liefert.
         """
@@ -176,13 +176,13 @@ class RadDestillationTest(unittest.TestCase):
         self.assertEqual(len(erhalten["laeufe"]), ZUWENDUNG_RAD_LAEUFE)
         self.assertAlmostEqual(faktor, RAD_NABE + 0.16 + 0.03, places=9)
 
-    def test_kein_json_liefert_none_und_eine_fehlerzeile(self):
+    def test_kein_json_liefert_none_und_eine_fehlerzeile(self) -> None:
         with self.assertLogs(DESTILLATION_LOGGER, level="ERROR") as log:
             self.assertIsNone(self._destillieren("Das ist kein JSON."))
         self.assertIn("kein JSON",
                       "\n".join(r.getMessage() for r in log.records))
 
-    def test_unvollstaendiges_rad_liefert_none_und_eine_fehlerzeile(self):
+    def test_unvollstaendiges_rad_liefert_none_und_eine_fehlerzeile(self) -> None:
         rad: dict = _rad()
         del rad["runter"]["distanz"]
         with self.assertLogs(DESTILLATION_LOGGER, level="ERROR") as log:
@@ -190,7 +190,7 @@ class RadDestillationTest(unittest.TestCase):
         self.assertIn("distanz",
                       "\n".join(r.getMessage() for r in log.records))
 
-    def test_leerer_profiltext_ruft_kein_llm(self):
+    def test_leerer_profiltext_ruft_kein_llm(self) -> None:
         """Ohne Profil gibt es nichts zu bewerten — und keinen Grund, ein
         Modell zu fragen.
         """

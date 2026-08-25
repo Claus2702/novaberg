@@ -116,7 +116,7 @@ def _dateien() -> list[Path]:
 class PromptBeispielnamenTest(unittest.TestCase):
     """Negativ: kein fremder Name. Positiv: der Cast ist wirklich da."""
 
-    def test_kein_name_ausserhalb_des_erfundenen_casts(self):
+    def test_kein_name_ausserhalb_des_erfundenen_casts(self) -> None:
         funde: dict[str, set[str]] = {}
         for pfad in _dateien():
             fremd: set[str] = _namen_aus(pfad.read_text(encoding="utf-8")) - ERLAUBTE_BEISPIELNAMEN
@@ -130,7 +130,7 @@ class PromptBeispielnamenTest(unittest.TestCase):
             "generisches Wort, das der Slot mitgenommen hat, nach KEINE_NAMEN eintragen.",
         )
 
-    def test_dateien_werden_ueberhaupt_gefunden(self):
+    def test_dateien_werden_ueberhaupt_gefunden(self) -> None:
         """Ohne Dateien pruefte der Waechter nichts und waere trotzdem gruen."""
         dateien = _dateien()
         self.assertGreater(len(dateien), 40)
@@ -139,7 +139,7 @@ class PromptBeispielnamenTest(unittest.TestCase):
             [str(p.relative_to(BASIS)) for p in dateien],
         )
 
-    def test_der_cast_steht_wirklich_in_den_beispielen(self):
+    def test_der_cast_steht_wirklich_in_den_beispielen(self) -> None:
         """Positiver Zwilling: sonst waere Loeschen aller Beispiele gruen."""
         erwartet: dict[str, set[str]] = {
             "prompts/default/kzg_verdichtung.task.txt":           {"Merten", "Ilva", "Rufus"},

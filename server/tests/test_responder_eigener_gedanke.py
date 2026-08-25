@@ -57,22 +57,22 @@ class ReizHerkunftTest(unittest.TestCase):
     `test_verfasser_herkunft.py`.
     """
 
-    def test_eigener_impuls_wird_erkannt(self):
+    def test_eigener_impuls_wird_erkannt(self) -> None:
         self.assertTrue(reiz_ist_eigener_gedanke(
             _state({"reiz_herkunft": "eigener_impuls"}, event_source="character")
         ))
 
-    def test_nutzer_turn_ist_kein_eigener_gedanke(self):
+    def test_nutzer_turn_ist_kein_eigener_gedanke(self) -> None:
         self.assertFalse(reiz_ist_eigener_gedanke(_state()))
 
-    def test_thinker_retry_ist_kein_eigener_gedanke(self):
+    def test_thinker_retry_ist_kein_eigener_gedanke(self) -> None:
         """Gleiche event_source, aber eine wiederholte NUTZER-Aeusserung."""
         self.assertFalse(reiz_ist_eigener_gedanke(
             _state({"thinker_unsicher_retry": True, "turn_id": "t-1"},
                    event_source="character")
         ))
 
-    def test_fehlender_payload_gilt_als_fremd(self):
+    def test_fehlender_payload_gilt_als_fremd(self) -> None:
         zustand = _state()
         zustand["event_payload"] = None
         self.assertFalse(reiz_ist_eigener_gedanke(zustand))
@@ -81,23 +81,23 @@ class ReizHerkunftTest(unittest.TestCase):
 class ResponderPromptTest(unittest.TestCase):
     """Der Block steht im Prompt — und nur dann, wenn er hingehoert."""
 
-    def test_impuls_bekommt_den_block(self):
+    def test_impuls_bekommt_den_block(self) -> None:
         prompt: str = _build_system_prompt(
             _state({"reiz_herkunft": "eigener_impuls"}, event_source="character")
         )
         self.assertIn(MARKER, prompt)
 
-    def test_nutzer_turn_bekommt_den_block_nicht(self):
+    def test_nutzer_turn_bekommt_den_block_nicht(self) -> None:
         prompt: str = _build_system_prompt(_state())
         self.assertNotIn(MARKER, prompt)
 
-    def test_thinker_retry_bekommt_den_block_nicht(self):
+    def test_thinker_retry_bekommt_den_block_nicht(self) -> None:
         prompt: str = _build_system_prompt(
             _state({"thinker_unsicher_retry": True}, event_source="character")
         )
         self.assertNotIn(MARKER, prompt)
 
-    def test_kommunikations_kopf_nennt_den_richtigen_traeger(self):
+    def test_kommunikations_kopf_nennt_den_richtigen_traeger(self) -> None:
         """External ist beim Impuls eine Kopie von internal (db_zugriff)."""
         eigen: str = _build_system_prompt(
             _state({"reiz_herkunft": "eigener_impuls"}, event_source="character")
@@ -109,7 +109,7 @@ class ResponderPromptTest(unittest.TestCase):
         self.assertIn(KOPF_FREMD, fremd)
         self.assertNotIn(KOPF_EIGEN, fremd)
 
-    def test_der_block_fuehrt_die_zuschreibung_um(self):
+    def test_der_block_fuehrt_die_zuschreibung_um(self) -> None:
         """Der gemessene Defekt war eine Zuschreibung — der Block adressiert sie.
 
         **Am 14.08.2026 umgedreht, nicht geloescht.** Bis dahin pruefte diese
@@ -143,7 +143,7 @@ class ResponderPromptTest(unittest.TestCase):
             with self.subTest(verbot=verbot):
                 self.assertNotIn(verbot, block)
 
-    def test_beide_prompts_bleiben_im_blockschema(self):
+    def test_beide_prompts_bleiben_im_blockschema(self) -> None:
         for payload, name in (({"reiz_herkunft": "eigener_impuls"}, "impuls"),
                               ({}, "nutzer")):
             with self.subTest(fall=name):

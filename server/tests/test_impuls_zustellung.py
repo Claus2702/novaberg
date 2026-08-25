@@ -21,7 +21,7 @@ from services.shadow_delivery import _impuls_in_den_charaktergraph
 class ImpulsHerkunftImPayloadTest(unittest.TestCase):
     """Der Marker entsteht in der Delivery und muss bis zum Client tragen."""
 
-    def test_delivery_setzt_den_herkunfts_marker(self):
+    def test_delivery_setzt_den_herkunfts_marker(self) -> None:
         eintrag: dict = {"thema": "T", "aufgabe": "recherche", "inhalt": "Wissen",
                          "emotion": "neugierig", "modus": "fachgespraech"}
         with patch("services.shadow_delivery.event_erzeugen", return_value="ev") as ruf:
@@ -30,7 +30,7 @@ class ImpulsHerkunftImPayloadTest(unittest.TestCase):
         payload: dict = ruf.call_args.kwargs["payload"]
         self.assertEqual(payload["reiz_herkunft"], "eigener_impuls")
 
-    def test_marker_ueberlebt_die_json_runde(self):
+    def test_marker_ueberlebt_die_json_runde(self) -> None:
         """Das Payload reist als JSON durch Redis — ein Objekt darin braeche es."""
         import json
         eintrag: dict = {"thema": "T", "aufgabe": "recherche", "inhalt": "W"}
@@ -45,21 +45,21 @@ class ImpulsHerkunftImPayloadTest(unittest.TestCase):
 class KeineRueckfallebeneTest(unittest.TestCase):
     """Was nicht gedacht wurde, wird nicht gesprochen."""
 
-    def test_delivery_formuliert_selbst_nichts_mehr(self):
+    def test_delivery_formuliert_selbst_nichts_mehr(self) -> None:
         """Der eigene LLM-Call und sein Prompt sind entfernt, nicht stillgelegt."""
         import services.shadow_delivery as sd
 
         self.assertFalse(hasattr(sd, "_delivery_formulieren"))
         self.assertFalse(hasattr(sd, "DELIVERY_SYSTEM_PROMPT"))
 
-    def test_delivery_sendet_nicht_mehr_selbst(self):
+    def test_delivery_sendet_nicht_mehr_selbst(self) -> None:
         """Kein broadcast, kein eigener Session-Turn — beides macht der Graph."""
         import services.shadow_delivery as sd
 
         self.assertFalse(hasattr(sd, "broadcast"))
         self.assertFalse(hasattr(sd, "session_turn_store"))
 
-    def test_kein_eigener_nachrichtentyp_mehr(self):
+    def test_kein_eigener_nachrichtentyp_mehr(self) -> None:
         """shadow_impuls existiert nirgends mehr im Modul."""
         import inspect
 

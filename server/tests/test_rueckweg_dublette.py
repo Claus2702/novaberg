@@ -70,54 +70,54 @@ BESTAND: str = f"{SATZ_A} {SATZ_B}"
 class DerAbsatzMussEtwasMitbringenTest(unittest.TestCase):
     """Der gemessene Fall: der Fund steht schon da."""
 
-    def test_ein_satz_der_schon_dasteht_bringt_nichts(self):
+    def test_ein_satz_der_schon_dasteht_bringt_nichts(self) -> None:
         self.assertFalse(bringt_neues(SATZ_B, BESTAND))
 
-    def test_der_ganze_absatz_woertlich_bringt_nichts(self):
+    def test_der_ganze_absatz_woertlich_bringt_nichts(self) -> None:
         self.assertFalse(bringt_neues(BESTAND, BESTAND))
 
-    def test_zwei_bekannte_saetze_bringen_nichts(self):
+    def test_zwei_bekannte_saetze_bringen_nichts(self) -> None:
         self.assertFalse(bringt_neues(f"{SATZ_B} {SATZ_A}", BESTAND))
 
 
 class EchteFundeLaufenDurchTest(unittest.TestCase):
     """Die Gegenrichtung — ein Riegel, der zu viel faengt, kostet Funde."""
 
-    def test_ein_neuer_satz_kommt_durch(self):
+    def test_ein_neuer_satz_kommt_durch(self) -> None:
         self.assertTrue(bringt_neues(SATZ_NEU, BESTAND))
 
-    def test_ein_neuer_satz_neben_einem_bekannten_kommt_durch(self):
+    def test_ein_neuer_satz_neben_einem_bekannten_kommt_durch(self) -> None:
         self.assertTrue(bringt_neues(f"{SATZ_B} {SATZ_NEU}", BESTAND))
 
-    def test_ein_leerer_bestand_haelt_nichts_auf(self):
+    def test_ein_leerer_bestand_haelt_nichts_auf(self) -> None:
         self.assertTrue(bringt_neues(SATZ_NEU, ""))
 
 
 class DerVergleichSiehtUeberMarkenHinwegTest(unittest.TestCase):
     """Sonst umginge jeder bereits markierte Satz den Riegel."""
 
-    def test_derselbe_satz_mit_marke_gilt_als_vorhanden(self):
+    def test_derselbe_satz_mit_marke_gilt_als_vorhanden(self) -> None:
         self.assertFalse(bringt_neues(SATZ_B, f"{SATZ_A} {SATZ_B} [i7>]"))
 
-    def test_derselbe_satz_ohne_marke_gilt_als_vorhanden(self):
+    def test_derselbe_satz_ohne_marke_gilt_als_vorhanden(self) -> None:
         self.assertFalse(bringt_neues(f"{SATZ_B} [i9>]", BESTAND))
 
-    def test_mehrfacher_leerraum_macht_keinen_unterschied(self):
+    def test_mehrfacher_leerraum_macht_keinen_unterschied(self) -> None:
         self.assertFalse(bringt_neues(SATZ_B, BESTAND.replace(" ", "  ")))
 
 
 class ZuKurzGiltAlsNeuTest(unittest.TestCase):
     """Ein Absatz ohne vergleichbaren Satz traegt kein Urteil."""
 
-    def test_ein_kurzer_absatz_kommt_durch(self):
+    def test_ein_kurzer_absatz_kommt_durch(self) -> None:
         kurz: str = "Das gilt auch hier."
         self.assertLess(len(kurz), SATZ_MINDESTLAENGE)
         self.assertTrue(bringt_neues(kurz, BESTAND))
 
-    def test_die_zerlegung_verwirft_zu_kurze_saetze(self):
+    def test_die_zerlegung_verwirft_zu_kurze_saetze(self) -> None:
         self.assertEqual(_saetze("Kurz. Auch kurz."), [])
 
-    def test_die_zerlegung_findet_beide_saetze_des_bestands(self):
+    def test_die_zerlegung_findet_beide_saetze_des_bestands(self) -> None:
         self.assertEqual(len(_saetze(BESTAND)), 2)
 
 
@@ -132,7 +132,7 @@ class UmformulierungGiltAlsVorhandenTest(unittest.TestCase):
     beide stehen lassen.
     """
 
-    def test_ein_umgestellter_satz_gilt_als_vorhanden(self):
+    def test_ein_umgestellter_satz_gilt_als_vorhanden(self) -> None:
         umgestellt: str = (
             "Die Umstellung des vegetativen Nervensystems senkt die "
             "Herzfrequenz messbar ab auf parasympathische Dominanz."
@@ -140,7 +140,7 @@ class UmformulierungGiltAlsVorhandenTest(unittest.TestCase):
         self.assertNotEqual(umgestellt, SATZ_A)
         self.assertFalse(bringt_neues(umgestellt, BESTAND))
 
-    def test_eine_aermere_fassung_gilt_als_vorhanden(self):
+    def test_eine_aermere_fassung_gilt_als_vorhanden(self) -> None:
         """Der teuerste Fall: die Kopie sagt WENIGER und kaeme trotzdem rein.
 
         Die Laenge ist am **gemessenen** Fall geeicht, nicht erfunden: Im
@@ -158,7 +158,7 @@ class UmformulierungGiltAlsVorhandenTest(unittest.TestCase):
         self.assertFalse(bringt_neues(aermer, BESTAND))
 
     @patch("agents.wissen_rueckweg.einarbeitung._ist_dasselbe_gesagt")
-    def test_wer_ein_drittel_weglaesst_wird_gefragt_statt_gezaehlt(self, urteil):
+    def test_wer_ein_drittel_weglaesst_wird_gefragt_statt_gezaehlt(self, urteil) -> None:
         """Was die Zahl frueher entschied und heute nicht mehr entscheidet.
 
         Eine Fassung, die rund ein Drittel des Satzes weglaesst, liegt bei
@@ -187,11 +187,11 @@ class UmformulierungGiltAlsVorhandenTest(unittest.TestCase):
         self.assertTrue(bringt_neues(stark_gekuerzt, BESTAND))
         self.assertEqual(urteil.call_count, 1)
 
-    def test_andere_zeichensetzung_gilt_als_vorhanden(self):
+    def test_andere_zeichensetzung_gilt_als_vorhanden(self) -> None:
         self.assertFalse(bringt_neues(SATZ_B.upper().replace(",", ""), BESTAND))
 
     @patch("agents.wissen_rueckweg.einarbeitung._ist_dasselbe_gesagt")
-    def test_eine_echte_ergaenzung_kommt_trotz_aehnlichkeit_durch(self, urteil):
+    def test_eine_echte_ergaenzung_kommt_trotz_aehnlichkeit_durch(self, urteil) -> None:
         """Derselbe Satzanfang, aber mit neuer Aussage am Ende — bei 0,60.
 
         Auch dieser Fall liegt im Band; die Zahl allein wuerde ihn nicht von
@@ -211,33 +211,33 @@ class UmformulierungGiltAlsVorhandenTest(unittest.TestCase):
 class DieNaeheWirdBerichtetTest(unittest.TestCase):
     """Ohne die Zahl im Log ist die Schwelle aus dem Betrieb nicht nachstellbar."""
 
-    def test_bei_woertlicher_kopie_ist_die_naehe_eins(self):
+    def test_bei_woertlicher_kopie_ist_die_naehe_eins(self) -> None:
         neu, naehe = _bringt_neues(SATZ_B, BESTAND)
         self.assertFalse(neu)
         self.assertAlmostEqual(naehe, 1.0, places=3)
 
-    def test_bei_einem_fremden_satz_liegt_die_naehe_unter_der_schwelle(self):
+    def test_bei_einem_fremden_satz_liegt_die_naehe_unter_der_schwelle(self) -> None:
         neu, naehe = _bringt_neues(SATZ_NEU, BESTAND)
         self.assertTrue(neu)
         self.assertLess(naehe, AEHNLICH_GENUG)
 
-    def test_ohne_vergleichbaren_satz_ist_die_naehe_null(self):
+    def test_ohne_vergleichbaren_satz_ist_die_naehe_null(self) -> None:
         self.assertEqual(_bringt_neues("Kurz.", BESTAND), (True, 0.0))
 
 
 class DieAehnlichkeitSelbstTest(unittest.TestCase):
     """Die Raender der Kennzahl, nicht nur ihre Mitte."""
 
-    def test_derselbe_satz_ergibt_eins(self):
+    def test_derselbe_satz_ergibt_eins(self) -> None:
         self.assertEqual(_aehnlichkeit(SATZ_A, SATZ_A), 1.0)
 
-    def test_zwei_leere_saetze_teilen_nicht_durch_null(self):
+    def test_zwei_leere_saetze_teilen_nicht_durch_null(self) -> None:
         self.assertEqual(_aehnlichkeit("", ""), 0.0)
 
-    def test_grossschreibung_macht_keinen_unterschied(self):
+    def test_grossschreibung_macht_keinen_unterschied(self) -> None:
         self.assertEqual(_aehnlichkeit(SATZ_A, SATZ_A.upper()), 1.0)
 
-    def test_voellig_fremde_saetze_liegen_weit_unter_der_schwelle(self):
+    def test_voellig_fremde_saetze_liegen_weit_unter_der_schwelle(self) -> None:
         fremd: str = "Der Bahnsteig war leer und der Zug hatte Verspaetung."
         self.assertLess(_aehnlichkeit(SATZ_A, fremd), AEHNLICH_GENUG)
 
@@ -272,46 +272,46 @@ class DasBandWirdGefragtTest(unittest.TestCase):
     geschieht —, nicht die Urteilskraft des Modells.
     """
 
-    def setUp(self):
+    def setUp(self) -> None:
         naehe = max(_aehnlichkeit(UMSCHRIEBEN, s) for s in _saetze(BESTAND))
         self.assertGreaterEqual(naehe, FRAGEN_AB, "Testsatz liegt unter dem Band")
         self.assertLess(naehe, AEHNLICH_GENUG, "Testsatz liegt ueber dem Band")
 
     @patch("agents.wissen_rueckweg.einarbeitung._ist_dasselbe_gesagt")
-    def test_im_band_wird_gefragt(self, urteil):
+    def test_im_band_wird_gefragt(self, urteil) -> None:
         urteil.return_value = False
         bringt_neues(UMSCHRIEBEN, BESTAND)
         self.assertEqual(urteil.call_count, 1)
 
     @patch("agents.wissen_rueckweg.einarbeitung._ist_dasselbe_gesagt")
-    def test_sagt_das_modell_dasselbe_faellt_der_absatz(self, urteil):
+    def test_sagt_das_modell_dasselbe_faellt_der_absatz(self, urteil) -> None:
         urteil.return_value = True
         self.assertFalse(bringt_neues(UMSCHRIEBEN, BESTAND))
 
     @patch("agents.wissen_rueckweg.einarbeitung._ist_dasselbe_gesagt")
-    def test_sagt_das_modell_neues_kommt_der_absatz_durch(self, urteil):
+    def test_sagt_das_modell_neues_kommt_der_absatz_durch(self, urteil) -> None:
         urteil.return_value = False
         self.assertTrue(bringt_neues(UMSCHRIEBEN, BESTAND))
 
     @patch("agents.wissen_rueckweg.einarbeitung._ist_dasselbe_gesagt")
-    def test_ohne_urteil_wird_eingearbeitet(self, urteil):
+    def test_ohne_urteil_wird_eingearbeitet(self, urteil) -> None:
         """Ein ausgefallener Aufruf darf keinen Fund kosten."""
         urteil.return_value = None
         self.assertTrue(bringt_neues(UMSCHRIEBEN, BESTAND))
 
     @patch("agents.wissen_rueckweg.einarbeitung._ist_dasselbe_gesagt")
-    def test_ueber_der_schwelle_wird_nicht_gefragt(self, urteil):
+    def test_ueber_der_schwelle_wird_nicht_gefragt(self, urteil) -> None:
         """Eine woertliche Kopie braucht kein Urteil — und kostet keinen Aufruf."""
         self.assertFalse(bringt_neues(SATZ_B, BESTAND))
         self.assertEqual(urteil.call_count, 0)
 
     @patch("agents.wissen_rueckweg.einarbeitung._ist_dasselbe_gesagt")
-    def test_unter_dem_band_wird_nicht_gefragt(self, urteil):
+    def test_unter_dem_band_wird_nicht_gefragt(self, urteil) -> None:
         self.assertTrue(bringt_neues(SATZ_NEU, BESTAND))
         self.assertEqual(urteil.call_count, 0)
 
     @patch("agents.wissen_rueckweg.einarbeitung._ist_dasselbe_gesagt")
-    def test_ein_satz_mit_eigenem_gehalt_beendet_das_fragen(self, urteil):
+    def test_ein_satz_mit_eigenem_gehalt_beendet_das_fragen(self, urteil) -> None:
         """Der erste Satz, der etwas mitbringt, macht den Absatz zum Fund."""
         urteil.return_value = False
         self.assertTrue(bringt_neues(f"{UMSCHRIEBEN} {SATZ_B}", BESTAND))

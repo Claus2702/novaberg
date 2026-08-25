@@ -21,28 +21,28 @@ from agents.charakter_identitaet.resume import (
 
 class StandardInterpretierenTest(unittest.TestCase):
 
-    def test_nein_gross(self):
+    def test_nein_gross(self) -> None:
         self.assertEqual(_standard_interpretieren("Nein"), ABLEHNUNG)
 
-    def test_nein_klein(self):
+    def test_nein_klein(self) -> None:
         self.assertEqual(_standard_interpretieren("nein"), ABLEHNUNG)
 
-    def test_nein_mit_begruendung(self):
+    def test_nein_mit_begruendung(self) -> None:
         self.assertEqual(
             _standard_interpretieren("Nein, ich muss das korrigieren"),
             ABLEHNUNG,
         )
 
-    def test_ja(self):
+    def test_ja(self) -> None:
         self.assertEqual(_standard_interpretieren("Ja"), BESTAETIGUNG)
 
-    def test_ok_mach(self):
+    def test_ok_mach(self) -> None:
         self.assertEqual(_standard_interpretieren("ok mach"), BESTAETIGUNG)
 
-    def test_vielleicht_ist_unklar(self):
+    def test_vielleicht_ist_unklar(self) -> None:
         self.assertEqual(_standard_interpretieren("vielleicht"), UNKLAR)
 
-    def test_leer_ist_unklar(self):
+    def test_leer_ist_unklar(self) -> None:
         self.assertEqual(_standard_interpretieren(""), UNKLAR)
 
 

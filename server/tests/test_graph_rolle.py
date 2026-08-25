@@ -42,14 +42,14 @@ def _state(graph_rolle: str, user_prompt: str = REIZ, response: str = REAKTION) 
 class PipelineQuelleTest(unittest.TestCase):
     """Bestandswerte bleiben, der AgentGraph wird unterscheidbar."""
 
-    def test_bestandswerte_unveraendert(self):
+    def test_bestandswerte_unveraendert(self) -> None:
         self.assertEqual(pipeline_quelle(_state("human")),     "user")
         self.assertEqual(pipeline_quelle(_state("character")), "character")
 
-    def test_agentgraph_ist_eigene_quelle(self):
+    def test_agentgraph_ist_eigene_quelle(self) -> None:
         self.assertEqual(pipeline_quelle(_state("agent")), "agent")
 
-    def test_fehlende_rolle_gilt_als_humangraph(self):
+    def test_fehlende_rolle_gilt_als_humangraph(self) -> None:
         self.assertEqual(pipeline_quelle({}), "user")
 
 
@@ -73,23 +73,23 @@ class SalienzBewertungsobjektTest(unittest.TestCase):
         nachricht: str = ruf.call_args.args[0].messages[0]["content"]
         return nachricht.split("[BEWERTUNGSOBJEKT]", 1)[1]
 
-    def test_charactergraph_bewertet_die_reaktion(self):
+    def test_charactergraph_bewertet_die_reaktion(self) -> None:
         objekt: str = self._bewertet("character")
         self.assertIn(REAKTION, objekt)
         self.assertNotIn(REIZ, objekt)
 
-    def test_humangraph_bewertet_den_reiz(self):
+    def test_humangraph_bewertet_den_reiz(self) -> None:
         objekt: str = self._bewertet("human")
         self.assertIn(REIZ, objekt)
         self.assertNotIn(REAKTION, objekt)
 
-    def test_agentgraph_bewertet_den_reiz_nicht_die_leere_antwort(self):
+    def test_agentgraph_bewertet_den_reiz_nicht_die_leere_antwort(self) -> None:
         """Der Kern des Fixes: kein Responder, also nichts zu reagieren."""
         objekt: str = self._bewertet("agent", response="")
         self.assertIn(REIZ, objekt)
         self.assertIn("Eigener Gedanke der Assistentin", objekt)
 
-    def test_agentgraph_traegt_kein_lagebild(self):
+    def test_agentgraph_traegt_kein_lagebild(self) -> None:
         antwort = MagicMock()
         antwort.parsed = {"salienz": 0.9, "themen": ["T"], "dimension": "kontext"}
         antwort.token_total = 0
@@ -107,7 +107,7 @@ class SalienzBewertungsobjektTest(unittest.TestCase):
 class LeeresBewertungsobjektTest(unittest.TestCase):
     """Fail loud statt Unsinn klassifizieren."""
 
-    def test_leerer_reiz_erzeugt_error_und_keinen_write(self):
+    def test_leerer_reiz_erzeugt_error_und_keinen_write(self) -> None:
         with self.assertLogs(SALIENZ_LOGGER, level="ERROR") as log:
             ergebnis = analyze(_state("agent", user_prompt="", response=""), MagicMock(), "meister")
 
@@ -116,7 +116,7 @@ class LeeresBewertungsobjektTest(unittest.TestCase):
         self.assertEqual(len(fehler), 1)
         self.assertIn("Bewertungsobjekt leer", fehler[0].getMessage())
 
-    def test_kein_llm_call_bei_leerem_objekt(self):
+    def test_kein_llm_call_bei_leerem_objekt(self) -> None:
         with patch.object(
             __import__("services.model_services", fromlist=["model_service"]).model_service.chat,
             "submit_sync",

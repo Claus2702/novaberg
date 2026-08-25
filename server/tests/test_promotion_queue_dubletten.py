@@ -67,7 +67,7 @@ def _push(redis, key: str, salienz: float = 0.8) -> bool:
 class DublettenTest(unittest.TestCase):
     """Je Key hoechstens ein Auftrag."""
 
-    def test_erster_aufruf_reiht_ein(self):
+    def test_erster_aufruf_reiht_ein(self) -> None:
         redis = FakeRedis()
         self.assertTrue(_push(redis, "kzg:test:1"))
 
@@ -76,7 +76,7 @@ class DublettenTest(unittest.TestCase):
         self.assertEqual(eintraege[0]["aufgabe"], "lzg_promotion")
         self.assertEqual(eintraege[0]["key"],     "kzg:test:1")
 
-    def test_zweiter_aufruf_fuer_denselben_key_schreibt_nichts(self):
+    def test_zweiter_aufruf_fuer_denselben_key_schreibt_nichts(self) -> None:
         redis = FakeRedis()
         _push(redis, "kzg:test:1")
         self.assertFalse(_push(redis, "kzg:test:1", salienz=0.95))
@@ -86,7 +86,7 @@ class DublettenTest(unittest.TestCase):
         # liest sie ohnehin frisch aus dem Hash.
         self.assertEqual(redis.eintraege()[0]["salienz"], 0.8)
 
-    def test_verschiedene_keys_kommen_beide_durch(self):
+    def test_verschiedene_keys_kommen_beide_durch(self) -> None:
         """Positiver Zwilling: die Pruefung darf nicht alles blockieren."""
         redis = FakeRedis()
         self.assertTrue(_push(redis, "kzg:test:1"))
@@ -95,7 +95,7 @@ class DublettenTest(unittest.TestCase):
         self.assertEqual([e["key"] for e in redis.eintraege()],
                          ["kzg:test:1", "kzg:test:2"])
 
-    def test_fremde_auftragsart_mit_gleichem_key_blockiert_nicht(self):
+    def test_fremde_auftragsart_mit_gleichem_key_blockiert_nicht(self) -> None:
         """Nur lzg_promotion zaehlt — ein anderer Auftrag ist kein Duplikat."""
         fremd: str = json.dumps({"aufgabe": "recherche", "key": "kzg:test:1"})
         redis = FakeRedis([fremd])
@@ -107,7 +107,7 @@ class DublettenTest(unittest.TestCase):
 class RobustheitTest(unittest.TestCase):
     """Was der Helfer aushalten muss, ohne die Promotion zu blockieren."""
 
-    def test_unlesbarer_fremdeintrag_wird_benannt_und_uebergangen(self):
+    def test_unlesbarer_fremdeintrag_wird_benannt_und_uebergangen(self) -> None:
         redis = FakeRedis(["das ist kein json"])
 
         with self.assertLogs(UTILS_LOGGER, level="WARNING") as log:
@@ -122,7 +122,7 @@ class RobustheitTest(unittest.TestCase):
         unlesbar = [r for r in log.records if "unlesbarer Queue-Eintrag" in r.getMessage()]
         self.assertEqual(len(unlesbar), 1)
 
-    def test_leerer_key_wird_laut_abgelehnt(self):
+    def test_leerer_key_wird_laut_abgelehnt(self) -> None:
         redis = FakeRedis()
 
         with self.assertLogs(UTILS_LOGGER, level="ERROR") as log:
@@ -131,7 +131,7 @@ class RobustheitTest(unittest.TestCase):
         self.assertEqual(redis.eintraege(), [])
         self.assertIn("Pflichtfeld leer", log.records[0].getMessage())
 
-    def test_ohne_pixie_wird_nichts_eingereiht(self):
+    def test_ohne_pixie_wird_nichts_eingereiht(self) -> None:
         redis = FakeRedis()
         with patch("services.shadow_agent.utils.PIXIE_AKTIV", False):
             self.assertFalse(

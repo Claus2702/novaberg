@@ -44,12 +44,12 @@ def _prompt(rolle: str) -> str:
 class RollenBlockTest(unittest.TestCase):
     """Jede Rolle zieht ihren eigenen Aufgaben-Block."""
 
-    def test_jede_rolle_bekommt_ihre_lage(self):
+    def test_jede_rolle_bekommt_ihre_lage(self) -> None:
         self.assertIn(NUTZER_LAGE,  _prompt("human"))
         self.assertIn(ANTWORT_LAGE, _prompt("character"))
         self.assertIn(IMPULS_LAGE,  _prompt("agent"))
 
-    def test_keine_rolle_bekommt_eine_fremde_lage(self):
+    def test_keine_rolle_bekommt_eine_fremde_lage(self) -> None:
         """Der eigentliche Befund: Der CharacterGraph bekam die Nutzerlage."""
         character: str = _prompt("character")
         self.assertNotIn(NUTZER_LAGE, character)
@@ -63,11 +63,11 @@ class RollenBlockTest(unittest.TestCase):
         self.assertNotIn(ANTWORT_LAGE, human)
         self.assertNotIn(IMPULS_LAGE,  human)
 
-    def test_die_drei_prompts_sind_verschieden(self):
+    def test_die_drei_prompts_sind_verschieden(self) -> None:
         drei: set = {_prompt("human"), _prompt("character"), _prompt("agent")}
         self.assertEqual(len(drei), 3)
 
-    def test_blockname_kommt_mit_dem_prompt_zurueck(self):
+    def test_blockname_kommt_mit_dem_prompt_zurueck(self) -> None:
         """Ein Rueckgabewert statt zweier Ableitungen — sonst kann das Log eine
         Schablone melden, die nie gezogen wurde.
         """
@@ -75,7 +75,7 @@ class RollenBlockTest(unittest.TestCase):
             _, block = _build_salienz_prompt(rolle)
             self.assertEqual(block, _aufgaben_block_name(rolle), rolle)
 
-    def test_geteilte_bloecke_stehen_in_allen_dreien(self):
+    def test_geteilte_bloecke_stehen_in_allen_dreien(self) -> None:
         """Dimensionen und Regeln haengen nicht an der Rolle — sonst waeren
         die zehn Felder dreimal gepflegt und liefen auseinander.
         """
@@ -85,7 +85,7 @@ class RollenBlockTest(unittest.TestCase):
             self.assertIn("[REGELN]",      prompt, f"Rolle {rolle}")
             self.assertIn("ZEITAUSDRUCK_ROH", prompt, f"Rolle {rolle}")
 
-    def test_traeger_wird_ersetzt(self):
+    def test_traeger_wird_ersetzt(self) -> None:
         """Ein stehengebliebener Platzhalter wuerde dem Modell woertlich
         vorgelegt.
         """
@@ -94,14 +94,14 @@ class RollenBlockTest(unittest.TestCase):
             self.assertNotIn("{traeger}", prompt, f"Rolle {rolle}")
             self.assertIn(ASSISTANT_NAME, prompt, f"Rolle {rolle}")
 
-    def test_unbekannte_rolle_faellt_auf_nutzer_zurueck_und_meldet(self):
+    def test_unbekannte_rolle_faellt_auf_nutzer_zurueck_und_meldet(self) -> None:
         with self.assertLogs("ki_server.salience", level="WARNING") as protokoll:
             prompt, block = _build_salienz_prompt("charakter")   # Tippfehler
         self.assertIn("unbekannte graph_rolle", "\n".join(protokoll.output))
         self.assertIn(NUTZER_LAGE, prompt)
         self.assertEqual(block, "salienz.task")
 
-    def test_blockname_und_prompt_stimmen_ueberein(self):
+    def test_blockname_und_prompt_stimmen_ueberein(self) -> None:
         """Die Abbildung Rolle -> Block wird an zwei Stellen gebraucht. Laufen
         sie auseinander, steht im Log eine Schablone, die nicht gezogen wurde.
         """
@@ -120,7 +120,7 @@ class InvertierteAnweisungTest(unittest.TestCase):
         wurzel = pathlib.Path(__file__).resolve().parent.parent / "prompts"
         return sorted(wurzel.glob("*/salienz*.txt"))
 
-    def test_messgeraet_sieht_die_dateien(self):
+    def test_messgeraet_sieht_die_dateien(self) -> None:
         """Positivkontrolle vor der Null-Aussage: Ein leerer Glob wuerde die
         Pruefung darunter bestehen lassen, ohne irgendetwas geprueft zu haben.
         """
@@ -129,14 +129,14 @@ class InvertierteAnweisungTest(unittest.TestCase):
         gelesen: str = "\n".join(d.read_text(encoding="utf-8") for d in dateien)
         self.assertIn("[REGELN]", gelesen)
 
-    def test_kein_prompt_traegt_die_invertierte_anweisung(self):
+    def test_kein_prompt_traegt_die_invertierte_anweisung(self) -> None:
         treffer: list[str] = [
             d.name for d in self._salienz_dateien()
             if INVERTIERTE_ANWEISUNG in d.read_text(encoding="utf-8")
         ]
         self.assertEqual(treffer, [])
 
-    def test_regeln_verweisen_auf_das_bewertungsobjekt(self):
+    def test_regeln_verweisen_auf_das_bewertungsobjekt(self) -> None:
         """Der Ersatz ist rollenneutral: Er nennt den Block, nicht die Person."""
         for datei in self._salienz_dateien():
             if not datei.name.endswith("salienz.rules.txt"):
@@ -145,7 +145,7 @@ class InvertierteAnweisungTest(unittest.TestCase):
             self.assertIn("[BEWERTUNGSOBJEKT]", text, datei.name)
             self.assertIn("[LAGEBILD]",         text, datei.name)
 
-    def test_skala_liegt_nicht_mehr_in_den_regeln(self):
+    def test_skala_liegt_nicht_mehr_in_den_regeln(self) -> None:
         """Sie lag dort in zwei Kopien, beide auf die Nutzerlage geschrieben.
         Eine Skala je Lage gehoert in den Lage-Block.
         """
@@ -163,7 +163,7 @@ class BlockImPipelineLogTest(unittest.TestCase):
     def _switch(eintraege: list) -> dict:
         return [e for e in eintraege if e.art == "switch"][0].inhalt
 
-    def test_switch_nennt_den_gezogenen_block(self):
+    def test_switch_nennt_den_gezogenen_block(self) -> None:
         for rolle, erwartet in (
             ("human",     "salienz.task"),
             ("character", "salienz.assistant_task"),
@@ -172,7 +172,7 @@ class BlockImPipelineLogTest(unittest.TestCase):
             eintraege, _ = _lauf(rolle, [0.5])
             self.assertEqual(self._switch(eintraege)["aufgaben_block"], erwartet, rolle)
 
-    def test_block_und_rolle_stehen_in_derselben_zeile(self):
+    def test_block_und_rolle_stehen_in_derselben_zeile(self) -> None:
         """Getrennt waeren sie beim Auswerten nicht zu korrelieren."""
         eintraege, _ = _lauf("character", [0.5])
         inhalt: dict = self._switch(eintraege)
@@ -190,26 +190,26 @@ class PromptAmModellTest(unittest.TestCase):
     die Wirkung.
     """
 
-    def test_charactergraph_schickt_die_assistenten_schablone(self):
+    def test_charactergraph_schickt_die_assistenten_schablone(self) -> None:
         _, ergebnis = _lauf("character", [0.5])
         system: str = ergebnis["_system_prompts"][0]
         self.assertIn(ANTWORT_LAGE, system)
         self.assertNotIn(NUTZER_LAGE, system)
 
-    def test_agentgraph_schickt_die_impuls_schablone(self):
+    def test_agentgraph_schickt_die_impuls_schablone(self) -> None:
         _, ergebnis = _lauf("agent", [0.5])
         system: str = ergebnis["_system_prompts"][0]
         self.assertIn(IMPULS_LAGE, system)
         self.assertNotIn(NUTZER_LAGE, system)
 
-    def test_humangraph_schickt_die_nutzer_schablone(self):
+    def test_humangraph_schickt_die_nutzer_schablone(self) -> None:
         """Positiver Zwilling zu den beiden darueber."""
         _, ergebnis = _lauf("human", [0.5])
         system: str = ergebnis["_system_prompts"][0]
         self.assertIn(NUTZER_LAGE, system)
         self.assertNotIn(ANTWORT_LAGE, system)
 
-    def test_jedes_segment_bekommt_dieselbe_schablone(self):
+    def test_jedes_segment_bekommt_dieselbe_schablone(self) -> None:
         """Die Rolle gilt fuer den Turn, nicht fuer das einzelne Segment."""
         _, ergebnis = _lauf("character", [0.5, 0.7, 0.3])
         prompts: list = ergebnis["_system_prompts"]
@@ -217,7 +217,7 @@ class PromptAmModellTest(unittest.TestCase):
         self.assertEqual(len(set(prompts)), 1)
         self.assertIn(ANTWORT_LAGE, prompts[0])
 
-    def test_gemeldeter_block_und_gesendeter_prompt_passen_zusammen(self):
+    def test_gemeldeter_block_und_gesendeter_prompt_passen_zusammen(self) -> None:
         """Der eigentliche Riss: Log und Prompt duerfen nicht auseinanderlaufen."""
         for rolle, kennsatz in (
             ("human",     NUTZER_LAGE),

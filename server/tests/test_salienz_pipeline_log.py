@@ -86,7 +86,7 @@ def _mit_schritt(eintraege: list, schritt: str) -> list:
 class SalienzSpanTest(unittest.TestCase):
     """Der Lauf haengt in einer Klammer und ist korrelierbar."""
 
-    def test_lauf_schreibt_span_switch_bewertung_und_ende(self):
+    def test_lauf_schreibt_span_switch_bewertung_und_ende(self) -> None:
         eintraege, _ = _lauf("human")
         arten: list = [e.art for e in eintraege]
 
@@ -97,14 +97,14 @@ class SalienzSpanTest(unittest.TestCase):
         self.assertEqual(arten[0],  "span_start")
         self.assertEqual(arten[-1], "span_end")
 
-    def test_alle_eintraege_tragen_dieselbe_span_id(self):
+    def test_alle_eintraege_tragen_dieselbe_span_id(self) -> None:
         """Ohne gemeinsame span_id ist ein Lauf nicht von einem zweiten zu trennen."""
         eintraege, _ = _lauf("human")
         span_ids: set = {e.span_id for e in eintraege}
         self.assertEqual(len(span_ids), 1)
         self.assertIsNotNone(eintraege[0].span_id)
 
-    def test_node_und_paar_stehen_an_jedem_eintrag(self):
+    def test_node_und_paar_stehen_an_jedem_eintrag(self) -> None:
         eintraege, _ = _lauf("character")
         for eintrag in eintraege:
             self.assertEqual(eintrag.node,         "salienz")
@@ -116,7 +116,7 @@ class SalienzSpanTest(unittest.TestCase):
 class SalienzSwitchTest(unittest.TestCase):
     """Die Zeile, die bewertungs_laenge=0 sofort gezeigt haette."""
 
-    def test_switch_nennt_rolle_und_beide_textlaengen(self):
+    def test_switch_nennt_rolle_und_beide_textlaengen(self) -> None:
         eintraege, _ = _lauf("human")
         switch = [e for e in eintraege if e.art == "switch"]
         self.assertEqual(len(switch), 1)
@@ -126,7 +126,7 @@ class SalienzSwitchTest(unittest.TestCase):
         self.assertEqual(inhalt["bewertungs_laenge"], len(REIZ))
         self.assertEqual(inhalt["lagebild_laenge"],   len(REAKTION))
 
-    def test_agentgraph_bewertet_den_reiz_und_traegt_kein_lagebild(self):
+    def test_agentgraph_bewertet_den_reiz_und_traegt_kein_lagebild(self) -> None:
         """Der Chat-110-Befund, jetzt dauerhaft nachweisbar."""
         eintraege, _ = _lauf("agent", response="")
         inhalt: dict = [e for e in eintraege if e.art == "switch"][0].inhalt
@@ -134,11 +134,11 @@ class SalienzSwitchTest(unittest.TestCase):
         self.assertEqual(inhalt["bewertungs_laenge"], len(REIZ))
         self.assertEqual(inhalt["lagebild_laenge"],   0)
 
-    def test_agentgraph_ist_im_log_eine_eigene_quelle(self):
+    def test_agentgraph_ist_im_log_eine_eigene_quelle(self) -> None:
         eintraege, _ = _lauf("agent", response="")
         self.assertEqual({e.quelle for e in eintraege}, {"agent"})
 
-    def test_humangraph_und_charactergraph_behalten_ihre_bestandswerte(self):
+    def test_humangraph_und_charactergraph_behalten_ihre_bestandswerte(self) -> None:
         human,     _ = _lauf("human")
         character, _ = _lauf("character")
         self.assertEqual({e.quelle for e in human},     {"user"})
@@ -148,7 +148,7 @@ class SalienzSwitchTest(unittest.TestCase):
 class SalienzBewertungTest(unittest.TestCase):
     """Der Wert, der ueber Erinnern entscheidet."""
 
-    def test_bewertung_traegt_salienzwert_und_themen(self):
+    def test_bewertung_traegt_salienzwert_und_themen(self) -> None:
         eintraege, _ = _lauf("human")
         bewertung = _mit_schritt(eintraege, "bewertung")
         self.assertEqual(len(bewertung), 1)
@@ -158,20 +158,20 @@ class SalienzBewertungTest(unittest.TestCase):
         self.assertEqual(inhalt["themen"],    ["Kosmologie"])
         self.assertEqual(inhalt["dimension"], "wissen")
 
-    def test_segmentschnitt_ist_nachvollziehbar(self):
+    def test_segmentschnitt_ist_nachvollziehbar(self) -> None:
         """Wie viele KZG-Eintraege ein Turn erzeugt, haengt am Schnitt."""
         eintraege, _ = _lauf("human", segmente=3)
         segmentierung = _mit_schritt(eintraege, "segmentierung")
         self.assertEqual(len(segmentierung), 1)
         self.assertEqual(segmentierung[0].inhalt["segmente"], 3)
 
-    def test_jedes_segment_bekommt_eine_eigene_bewertung(self):
+    def test_jedes_segment_bekommt_eine_eigene_bewertung(self) -> None:
         eintraege, _ = _lauf("human", segmente=3)
         bewertung = _mit_schritt(eintraege, "bewertung")
         self.assertEqual(len(bewertung), 3)
         self.assertEqual([e.inhalt["segment_index"] for e in bewertung], [0, 1, 2])
 
-    def test_span_ende_meldet_segmente_und_pending_writes(self):
+    def test_span_ende_meldet_segmente_und_pending_writes(self) -> None:
         eintraege, ergebnis = _lauf("human", segmente=2)
         ende = [e for e in eintraege if e.art == "span_end"][0]
 
@@ -184,7 +184,7 @@ class SalienzBewertungTest(unittest.TestCase):
 class SalienzGravitationTest(unittest.TestCase):
     """Kam die hohe Salienz vom Modell oder vom Ziel-Antrieb?"""
 
-    def test_boost_bekommt_eine_eigene_zeile_mit_basis_und_ergebnis(self):
+    def test_boost_bekommt_eine_eigene_zeile_mit_basis_und_ergebnis(self) -> None:
         eintraege, _ = _lauf("human", segmente=1)
         self.assertEqual(_mit_schritt(eintraege, "gravitationsboost"), [])
 
@@ -216,7 +216,7 @@ class SalienzGravitationTest(unittest.TestCase):
 class SalienzFehlerpfadTest(unittest.TestCase):
     """Ein Turn, der nichts ablegt, muss sagen warum."""
 
-    def test_leeres_objekt_schreibt_fehler_und_schliesst_den_span(self):
+    def test_leeres_objekt_schreibt_fehler_und_schliesst_den_span(self) -> None:
         eintraege, ergebnis = _lauf("agent", user_prompt="", response="")
 
         fehler = [e for e in eintraege if e.art == "fehler"]
@@ -230,7 +230,7 @@ class SalienzFehlerpfadTest(unittest.TestCase):
         self.assertEqual(len(ende), 1)
         self.assertTrue(ende[0].inhalt["abbruch"])
 
-    def test_positiver_zwilling_gefuellter_text_legt_genau_eines_an(self):
+    def test_positiver_zwilling_gefuellter_text_legt_genau_eines_an(self) -> None:
         """Zwingend: die Zusicherung oben erwartet null und kann nie rot werden.
 
         Ohne diesen Zwilling bestuende der Fehlerpfad-Test die Gegenprobe auch
@@ -242,7 +242,7 @@ class SalienzFehlerpfadTest(unittest.TestCase):
         self.assertEqual(len(_mit_schritt(eintraege, "bewertung")), 1)
         self.assertEqual([e for e in eintraege if e.art == "fehler"], [])
 
-    def test_verworfenes_segment_wird_als_fehler_vermerkt(self):
+    def test_verworfenes_segment_wird_als_fehler_vermerkt(self) -> None:
         """Ein uebersprungenes Segment ist ein verlorener Gedaechtnis-Eintrag."""
         kaputt = MagicMock()
         kaputt.token_total = 0

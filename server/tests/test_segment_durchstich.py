@@ -66,7 +66,7 @@ def _analyse(segmente: list[str]) -> list[dict]:
 
 class SalienzLegtSegmentAbTest(unittest.TestCase):
 
-    def test_jeder_pending_write_traegt_sein_eigenes_segment(self):
+    def test_jeder_pending_write_traegt_sein_eigenes_segment(self) -> None:
         writes: list[dict] = _analyse([SEG_0, SEG_1, SEG_2])
         self.assertEqual(len(writes), 3)
 
@@ -74,14 +74,14 @@ class SalienzLegtSegmentAbTest(unittest.TestCase):
         self.assertEqual([w["daten"]["segment_index"] for w in writes], [0, 1, 2])
         self.assertEqual({w["daten"]["segment_gesamt"] for w in writes}, {3})
 
-    def test_ein_segment_traegt_den_volltext_ohne_sonderfall(self):
+    def test_ein_segment_traegt_den_volltext_ohne_sonderfall(self) -> None:
         """Ein ungeschnittener Turn ist ein Turn mit einem Segment."""
         writes: list[dict] = _analyse([SEG_1])
         self.assertEqual(len(writes), 1)
         self.assertEqual(writes[0]["daten"]["segment"],        SEG_1)
         self.assertEqual(writes[0]["daten"]["segment_gesamt"], 1)
 
-    def test_salienz_obj_bleibt_daneben_stehen(self):
+    def test_salienz_obj_bleibt_daneben_stehen(self) -> None:
         """Das Segment ergaenzt die Bewertung, es ersetzt sie nicht."""
         writes: list[dict] = _analyse([SEG_0, SEG_1])
         for write in writes:
@@ -90,7 +90,7 @@ class SalienzLegtSegmentAbTest(unittest.TestCase):
                 write["daten"]["salienz_obj"]["salienz"], 0.5/1.3, places=4,
             )
 
-    def test_die_modellbewertung_bleibt_unangetastet(self):
+    def test_die_modellbewertung_bleibt_unangetastet(self) -> None:
         """Der Eingang der Formel ueberlebt ihr Ergebnis.
 
         `salienz` traegt nach dem Lauf das **Ergebnis**; die Bewertung des
@@ -102,7 +102,7 @@ class SalienzLegtSegmentAbTest(unittest.TestCase):
         for write in writes:
             self.assertEqual(write["daten"]["salienz_obj"]["salienz_modell"], 0.5)
 
-    def test_die_rechnung_ist_idempotent_ueber_die_segmente(self):
+    def test_die_rechnung_ist_idempotent_ueber_die_segmente(self) -> None:
         """Zwei Segmente ergeben denselben Wert wie eines — Regel 4.
 
         **Der Fall, den es bis zum 24.08.2026 gab:** Der Knoten schrieb sein
@@ -154,7 +154,7 @@ def _dispatch_parameter(writes: list[dict]) -> list[dict]:
 
 class DispatchReichtSegmentWeiterTest(unittest.TestCase):
 
-    def test_segment_kommt_im_parameter_kanal_an(self):
+    def test_segment_kommt_im_parameter_kanal_an(self) -> None:
         writes: list[dict] = _analyse([SEG_0, SEG_1, SEG_2])
         parameter: list[dict] = _dispatch_parameter(writes)
 
@@ -162,7 +162,7 @@ class DispatchReichtSegmentWeiterTest(unittest.TestCase):
         self.assertEqual([p["segment"] for p in parameter], [SEG_0, SEG_1, SEG_2])
         self.assertEqual([p["segment_index"] for p in parameter], [0, 1, 2])
 
-    def test_fremder_write_ohne_segment_kommt_als_leerstring_an(self):
+    def test_fremder_write_ohne_segment_kommt_als_leerstring_an(self) -> None:
         """Der RechercheAgent baut eigene pending_writes — ohne Segment.
 
         Leerstring statt None, damit die Rueckfall-Bedingung in der Verdichtung
@@ -215,13 +215,13 @@ def _bewertungsobjekt(state: dict) -> str:
 
 class VerdichtungBevorzugtSegmentTest(unittest.TestCase):
 
-    def test_segment_steht_im_bewertungsobjekt_der_volltext_nicht(self):
+    def test_segment_steht_im_bewertungsobjekt_der_volltext_nicht(self) -> None:
         objekt: str = _bewertungsobjekt(_verdichtungs_state(SEG_1, index=1))
         self.assertIn(SEG_1, objekt)
         self.assertNotIn(SEG_0, objekt)
         self.assertNotIn(SEG_2, objekt)
 
-    def test_drei_segmente_ergeben_drei_verschiedene_bewertungsobjekte(self):
+    def test_drei_segmente_ergeben_drei_verschiedene_bewertungsobjekte(self) -> None:
         """Das ZIEL: drei Eintraege mit drei Inhalten, nicht dreimal einer."""
         objekte: list[str] = [
             _bewertungsobjekt(_verdichtungs_state(seg, index=i))
@@ -231,7 +231,7 @@ class VerdichtungBevorzugtSegmentTest(unittest.TestCase):
         for seg, objekt in zip([SEG_0, SEG_1, SEG_2], objekte, strict=True):
             self.assertIn(seg, objekt)
 
-    def test_lagebild_bleibt_die_andere_turn_haelfte(self):
+    def test_lagebild_bleibt_die_andere_turn_haelfte(self) -> None:
         """Kein Volltext im Lagebild — sonst waere die Ursache reproduziert."""
         antwort = SimpleNamespace(text="ein Kern")
         with patch.object(model_service.chat, "submit_sync", return_value=antwort) as ruf:
@@ -244,7 +244,7 @@ class VerdichtungBevorzugtSegmentTest(unittest.TestCase):
         self.assertNotIn(SEG_0, lagebild)
         self.assertNotIn(SEG_2, lagebild)
 
-    def test_ohne_segment_volltext_und_eine_warnung_die_das_benennt(self):
+    def test_ohne_segment_volltext_und_eine_warnung_die_das_benennt(self) -> None:
         """Ein Rueckfall darf nicht aussehen wie der Normalfall."""
         zustand: dict = _verdichtungs_state("", index=0, gesamt=0)
 
@@ -265,7 +265,7 @@ class VerdichtungBevorzugtSegmentTest(unittest.TestCase):
         ]
         self.assertEqual(len(rueckfall), 1)
 
-    def test_positiver_zwilling_mit_segment_keine_rueckfall_warnung(self):
+    def test_positiver_zwilling_mit_segment_keine_rueckfall_warnung(self) -> None:
         """Zwingend: die Zusicherung oben erwartet eine Warnung.
 
         Ohne diesen Zwilling bliebe unbemerkt, wenn die Verdichtung IMMER

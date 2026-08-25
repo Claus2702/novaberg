@@ -69,7 +69,7 @@ class VerdichtungDatenpfadTest(unittest.TestCase):
         self.assertEqual(ruf.call_count, 1)
         return ruf.call_args.args[0]
 
-    def test_assistant_verdichtet_novas_antwort(self):
+    def test_assistant_verdichtet_novas_antwort(self) -> None:
         request = self._anfrage("assistant")
         nachricht: str = request.messages[0]["content"]
 
@@ -81,7 +81,7 @@ class VerdichtungDatenpfadTest(unittest.TestCase):
         self.assertIn(USER_TEXT, lagebild)
         self.assertIn("Antwort der Assistentin:", bewertungsobjekt)
 
-    def test_user_verdichtet_den_user_prompt(self):
+    def test_user_verdichtet_den_user_prompt(self) -> None:
         request = self._anfrage("user")
         nachricht: str = request.messages[0]["content"]
 
@@ -93,7 +93,7 @@ class VerdichtungDatenpfadTest(unittest.TestCase):
         self.assertIn(NOVA_TEXT, lagebild)
         self.assertIn("Eingabe des Nutzers:", bewertungsobjekt)
 
-    def test_beide_pfade_bewerten_verschiedene_texte(self):
+    def test_beide_pfade_bewerten_verschiedene_texte(self) -> None:
         """Der Kern des Sprints: derselbe Turn, zwei verschiedene Bewertungsobjekte."""
         als_user      = self._anfrage("user").messages[0]["content"]
         als_assistent = self._anfrage("assistant").messages[0]["content"]
@@ -102,7 +102,7 @@ class VerdichtungDatenpfadTest(unittest.TestCase):
             als_assistent.split("[BEWERTUNGSOBJEKT]", 1)[1],
         )
 
-    def test_agentgraph_verdichtet_den_reiz_mit_nova_als_subjekt(self):
+    def test_agentgraph_verdichtet_den_reiz_mit_nova_als_subjekt(self) -> None:
         """Novas Sicht auf einen Reiz — die Kombination, an der es sich trennt.
 
         beobachter='assistant' waehlt den Nova-Prompt, graph_rolle='agent'
@@ -118,7 +118,7 @@ class VerdichtungDatenpfadTest(unittest.TestCase):
         # Der Prompt-Baustein bleibt der von Nova — das Subjekt aendert sich nicht.
         self.assertIn(ASSISTANT_NAME, request.system)
 
-    def test_agentgraph_ohne_reiz_bricht_laut_ab(self):
+    def test_agentgraph_ohne_reiz_bricht_laut_ab(self) -> None:
         """Leeres Bewertungsobjekt: kein Kern, kein Satz ueber das Fehlen."""
         zustand = _state("assistant", graph_rolle="agent")
         zustand["parameter"]["reiz"] = ""
@@ -133,7 +133,7 @@ class VerdichtungDatenpfadTest(unittest.TestCase):
         self.assertEqual(len(log.records), 1)
         self.assertIn("Bewertungsobjekt leer", log.records[0].getMessage())
 
-    def test_fehlender_beobachter_warnt_und_faellt_auf_user_zurueck(self):
+    def test_fehlender_beobachter_warnt_und_faellt_auf_user_zurueck(self) -> None:
         antwort = SimpleNamespace(text="kern")
         with patch.object(model_service.chat, "submit_sync", return_value=antwort) as ruf:
             with self.assertLogs(VERDICHTUNG_LOGGER, level="WARNING") as log:
@@ -157,13 +157,13 @@ class VerdichtungDatenpfadTest(unittest.TestCase):
 class VerdichtungPromptTest(unittest.TestCase):
     """Ursache B: ein Prompt fuer beide Laeufe, sechs Beispiele auf den Nutzer."""
 
-    def test_beide_rollen_bekommen_verschiedene_prompts(self):
+    def test_beide_rollen_bekommen_verschiedene_prompts(self) -> None:
         self.assertNotEqual(
             _build_verdichtung_prompt("user"),
             _build_verdichtung_prompt("assistant"),
         )
 
-    def test_assistenten_prompt_nennt_nova_als_subjekt(self):
+    def test_assistenten_prompt_nennt_nova_als_subjekt(self) -> None:
         prompt: str = _build_verdichtung_prompt("assistant")
         self.assertIn(ASSISTANT_NAME, prompt)
         self.assertNotIn("{traeger}", prompt)
@@ -171,7 +171,7 @@ class VerdichtungPromptTest(unittest.TestCase):
         # eines Subjekts — ein Beispiel schlaegt eine Anweisung.
         self.assertIn(f"GUT: \"{ASSISTANT_NAME} hat", prompt)
 
-    def test_nutzer_prompt_nennt_nova_nicht_als_subjekt(self):
+    def test_nutzer_prompt_nennt_nova_nicht_als_subjekt(self) -> None:
         prompt: str = _build_verdichtung_prompt("user")
         # Auf die Struktur pruefen, nicht auf den Beispieltext: welcher Name im
         # Beispiel steht, gehoert nicht hierher, sondern in
@@ -179,7 +179,7 @@ class VerdichtungPromptTest(unittest.TestCase):
         self.assertIn('GUT: "Der Nutzer heisst ', prompt)
         self.assertNotIn(f"GUT: \"{ASSISTANT_NAME} hat", prompt)
 
-    def test_impuls_bekommt_einen_eigenen_block(self):
+    def test_impuls_bekommt_einen_eigenen_block(self) -> None:
         """Drei Lagen, drei Bausteine — nicht zwei mit einer Ausnahmeregel."""
         nutzer:    str = _build_verdichtung_prompt("user",      "human")
         antwort:   str = _build_verdichtung_prompt("assistant", "character")
@@ -188,7 +188,7 @@ class VerdichtungPromptTest(unittest.TestCase):
         self.assertNotEqual(impuls, antwort)
         self.assertNotEqual(impuls, nutzer)
 
-    def test_impuls_block_rahmt_den_entstehenden_gedanken(self):
+    def test_impuls_block_rahmt_den_entstehenden_gedanken(self) -> None:
         """Der Assistenten-Block behauptet eine Antwort, die es nicht gibt."""
         impuls:  str = _build_verdichtung_prompt("assistant", "agent")
         antwort: str = _build_verdichtung_prompt("assistant", "character")
@@ -198,19 +198,19 @@ class VerdichtungPromptTest(unittest.TestCase):
         # Gegenprobe zur Abgrenzung: der Antwort-Block sagt genau das.
         self.assertIn("Sie hat gerade geantwortet", antwort)
 
-    def test_impuls_block_traegt_nova_als_subjekt(self):
+    def test_impuls_block_traegt_nova_als_subjekt(self) -> None:
         impuls: str = _build_verdichtung_prompt("assistant", "agent")
         self.assertIn(ASSISTANT_NAME, impuls)
         self.assertNotIn("{traeger}", impuls)
         self.assertIn(f"GUT: \"{ASSISTANT_NAME} ", impuls)
 
-    def test_unbekannter_beobachter_bekommt_den_nutzer_block(self):
+    def test_unbekannter_beobachter_bekommt_den_nutzer_block(self) -> None:
         self.assertEqual(
             _build_verdichtung_prompt("irgendwas"),
             _build_verdichtung_prompt("user"),
         )
 
-    def test_beide_prompts_tragen_identitaet_und_regeln(self):
+    def test_beide_prompts_tragen_identitaet_und_regeln(self) -> None:
         for rolle in ("user", "assistant"):
             with self.subTest(rolle=rolle):
                 prompt: str = _build_verdichtung_prompt(rolle)
