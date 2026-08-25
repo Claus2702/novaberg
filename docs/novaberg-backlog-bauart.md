@@ -1,6 +1,6 @@
 # Novaberg — Backlog: Bauart — Code, Schema, Werkzeug, Tests, Doku, Register
 
-**Inhalt:** die offene und abgeschlossene Arbeit dieses Gegenstands, 96 Eintraege.
+**Inhalt:** die offene und abgeschlossene Arbeit dieses Gegenstands, 97 Eintraege.
 **Findemittel ueber alle Gegenstaende:** [`novaberg-backlog-index.md`](novaberg-backlog-index.md) — es traegt auch die Rangordnung.
 
 **Die Abschnittsueberschriften stammen aus dem ungeteilten Backlog** und sagen, *wann und wobei* ein Eintrag entstanden ist — nicht, welchen Gegenstand er hat. Den sagt die Datei, in der er steht.
@@ -13,6 +13,16 @@
 | Antwortpfad | [`novaberg-backlog-antwortpfad.md`](novaberg-backlog-antwortpfad.md) | 46 |
 | Wissen | [`novaberg-backlog-wissen.md`](novaberg-backlog-wissen.md) | 71 |
 | Bauart | [`novaberg-backlog-bauart.md`](novaberg-backlog-bauart.md) | 96 |
+
+---
+
+## Block 25.08.2026 — das Gate, das die Protokollpflicht bewacht, gibt es nicht
+
+**`18_NACHVOLLZIEHBARKEIT.md` §7 ist seit seiner Markierung als maschinell pruefbar gefuehrt und nie gebaut worden.** Nach `01_LESSON_UEBERNAHME.md` §6 gehoert zu jedem markierten Gate ein Backlog-Eintrag; fuer dieses gab es keinen — bemerkt beim Abgleich des Verlaufs gegen die Speicher am 25.08.2026.
+
+| Kennung | Was offen ist | Band |
+|---|---|---|
+| `PROTOKOLLPFLICHT-OHNE-GATE` | **Kein Werkzeug prueft, ob ein Knoten seinen Ein- und Ausgang protokolliert und eine Weiche ihre Entscheidungsgroessen.** Die Regel steht seit dem 25.08.2026 als `F-LOG-3` und inhaltlich laenger in `18_NACHVOLLZIEHBARKEIT.md` §3; das Gate aus §7 fehlt. **Der Anlass ist gemessen:** Am 25.08.2026 riss ein Fehler in einem Nachlaufknoten den CharakterGraphen, und hinterher war nicht feststellbar, welcher Wert gefehlt hatte — die Weiche `_after_evaluate` las drei Eingangsgroessen mit Indexzugriff und protokollierte keine davon, die Zustellzeile meldete `342 Zeichen, 2 Clients`. **Drei Luecken sind von Hand geschlossen, das Gate fehlt weiter** — und damit ist die Regel eine Verabredung, keine Zusicherung. **Was fertig waere:** eine Pruefung ueber die Knotenfunktionen des Graphen, die eine Funktion ohne Eingangs- oder Ausgangszeile meldet, dazu eine ueber die Weichen, die einen Indexzugriff auf eine Entscheidungsgroesse findet. **Der Ausloesefall gehoert dazu:** Ein Knoten, dem man die Ausgangszeile nimmt, muss gemeldet werden — ohne ihn ist ein schweigender Scan von einem sauberen Bestand nicht zu unterscheiden. **Vorarbeit liegt vor:** Eine Handmessung am 25.08.2026 ueber die Einstiegsfunktionen ergab **2 von 19** ohne Ein- und Ausgang (`enricher`, `tribunal`), mit bekannter Unschaerfe — beide loggen in Unterfunktionen, und drei weitere Knoten waren so nicht messbar. **Die Zahl ist eine Untergrenze und ersetzt das Gate nicht.** | [BAU] ungebaendigt |
 
 ---
 
