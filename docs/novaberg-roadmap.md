@@ -1,6 +1,6 @@
 # Novaberg — Roadmap (Projektchronik)
 
-**Stand:** 25. August 2026, 18:40 UTC
+**Stand:** 25. August 2026, 20:10 UTC
 **Pfad:** novaberg/docs/novaberg-roadmap.md
 **Single Source of Truth für abgeschlossene Arbeit.**
 **Offene Punkte → novaberg-backlog.md**
@@ -18,6 +18,40 @@
 ## Hinweis für Bearbeiter dieser Datei
 
 Die Kopfzeile stand bis Chat 109 auf „Chat 93, 21. Mai 2026" — 15 Chats hinter dem Inhalt. **Sie ist danach erneut zurückgefallen:** von Chat 110 bis 114 blieb sie auf „Chat 109" stehen, während der Inhalt weiterwuchs, und wurde in Chat 115 nachgezogen. Wer hier etwas ergänzt, zieht die Kopfzeile mit — sie driftet zuverlässig. Achtung beim Nachschlagen: Nur bis Chat 97 trägt jeder Chat eine eigene `## Chat NNN`-Überschrift; die Chats 98–108 stehen als `###`-Abschnitte unter dem Chat-97-Block, benannt nach Sprint statt nach Chat.
+
+---
+
+## 25.08.2026, 20:10 UTC — Das Backlog ist nach Gegenstand geteilt
+
+**Aus 660 kB in einer Datei werden neun, keine über 173 kB.**
+
+| Datei | kB | Einträge |
+|---|---|---|
+| `novaberg-backlog-gedaechtnis.md` | 173 | 76 |
+| `novaberg-backlog-bauart.md` | 150 | 96 |
+| `novaberg-backlog-wissen.md` | 105 | 71 |
+| `novaberg-backlog-hintergrund.md` | 99 | 66 |
+| `novaberg-backlog-charakter.md` | 93 | 66 |
+| `novaberg-backlog-antwortpfad.md` | 75 | 46 |
+| `novaberg-backlog-index.md` | 94 | Findemittel, **erzeugt** |
+| `novaberg-backlog-rangordnung.md` | 37 | quer zu allen |
+| `novaberg-backlog.md` | 37 | Kopf, Wegweiser, Verlauf |
+
+**Der Schnitt liegt am Block, nicht am Abschnitt.** Ein Block ist eine Überschrift mit allem bis zur nächsten. **261 von 385 tragen Einträge genau einer Kategorie und wandern ganz; 13 sind gemischt** — dort wandern die Tabellenzeilen einzeln, und Überschrift samt Text steht in jeder empfangenden Datei mit dem Vermerk, dass sie geteilt ist.
+
+**Drei Sorten Kontext mussten eigens behandelt werden, und jede ist beim Prüfen aufgefallen, nicht beim Planen.**
+
+Der erste Lauf verlor **46 Zeilen**: Eine Elternüberschrift wanderte als Herkunftsmarke mit, aber nur ihre Zeile — die Prosa darunter blieb liegen. Genau die trägt bei den Sammelabschnitten die Herkunft der Einträge.
+
+Der zweite Lauf legte **vier Kennungen in zwei Dateien**: Eine Elternüberschrift, die selbst ein Eintrag ist, stand als Marke in vier Dateien und war damit viermal ein Eintrag. Eine Herkunftsmarke trägt jetzt **keine Kennung** — ein Schlüssel in ihr wäre für jede Zählung einer.
+
+Der dritte Lauf ließ **67 kB Prosa liegen**: Unterabschnitte ohne eigene Einträge, deren Kapitel längst fortgezogen war. Die Zuordnung wird jetzt auch nach unten durchgereicht.
+
+> **Die Rangordnung ist aus dem Backlog heraus und steht im Findemittel.** Sie sagt, was als Nächstes angefasst wird, und das entscheidet sich nicht je Gegenstand — sie liegt quer zu allen sechs. Gepflegt wird sie in einer eigenen Datei; der Index zieht sie ein, damit sie dort steht, wo über alle Teile hinweg gesucht wird. **Eine zweite Fassung gibt es nicht.**
+
+**Belegt:** **keine verlorene Zeile** über alle neun Dateien · **412 Kennungen vorher, 412 nachher**, keine verloren, keine erfunden · **keine Kennung in zwei Dateien** · das Findemittel zählt 421 Einträge mit Zustand und Kategorie, wie vorher.
+
+**Zweimal in dieser Sitzung hat ein `cd` in ein Arbeitsverzeichnis die Wiederherstellung dorthin geschrieben** statt an ihren Platz, und der nächste Lauf arbeitete auf dem Rest weiter und überschrieb sein eigenes gutes Ergebnis. Gerettet hat es beide Male der letzte Commit. **Ein relativer Pfad nach einem Verzeichniswechsel ist kein Pfad, sondern eine Annahme.**
 
 ---
 

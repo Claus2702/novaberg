@@ -1,10 +1,18 @@
 # Novaberg — Backlog, Findemittel
 
 **Inhalt:** eine Zeile je Eintrag mit Kennung, aus Ueberschriften und Tabellenzeilen.
-**Umfang:** 442 Eintraege mit Kennung — 376 offen, 66 abgeschlossen, **0 ohne lesbaren Zustand**.
+**Umfang:** 421 Eintraege mit Kennung — 362 offen, 59 abgeschlossen, **0 ohne lesbaren Zustand**.
 **Dazu 0 Abschnitte mit Zustand und ohne Kennung** — zaehlbar, aber nicht querverweisbar.
-**Kategorie:** 442 von 442 Eintraegen zugeordnet.
-**Das Backlog:** [`novaberg-backlog.md`](novaberg-backlog.md)
+**Kategorie:** 421 von 421 Eintraegen zugeordnet.
+
+| Gegenstand | Datei | Eintraege |
+|---|---|---|
+| Gedaechtnis | [`novaberg-backlog-gedaechtnis.md`](novaberg-backlog-gedaechtnis.md) | 76 |
+| Hintergrund | [`novaberg-backlog-hintergrund.md`](novaberg-backlog-hintergrund.md) | 66 |
+| Charakter | [`novaberg-backlog-charakter.md`](novaberg-backlog-charakter.md) | 66 |
+| Antwortpfad | [`novaberg-backlog-antwortpfad.md`](novaberg-backlog-antwortpfad.md) | 46 |
+| Wissen | [`novaberg-backlog-wissen.md`](novaberg-backlog-wissen.md) | 71 |
+| Bauart | [`novaberg-backlog-bauart.md`](novaberg-backlog-bauart.md) | 96 |
 
 ---
 
@@ -28,7 +36,6 @@
 - `EI-CALC-ROLLE-DEFAULT-ASYMMETRIE`
 - `HALTUNG-SPANNENENDEN-OFFEN`
 - `PIX-CLEAN`
-- `RAD-STABILITAET-UNGEMESSEN`
 - `ROUTE-CHAR-NOTIZ`
 - `ROUTE-MISS1`
 - `SPRACH-STIL-DEFENSIV-STUMM`
@@ -43,452 +50,592 @@
 
 | Zeile | Art | Kennung | Kapitel |
 |---|---|---|---|
+## Die Rangordnung
+
+**Eingezogen aus [`novaberg-backlog-rangordnung.md`](novaberg-backlog-rangordnung.md) — dort wird sie gepflegt, hier steht sie, weil sie quer zu allen Kategorien liegt.**
+
+
+**Der Anlass ist ein Befund über diese Datei, nicht über die Arbeit.** Gemessen am 09.08.2026: **184 offene Einträge** — 56 hier, 128 in `novaberg-bugs.md`. Davon tragen **18 eine Priorität und 166 keine.** Die Priorität ist Pflichtteil jedes Eintrags; sie fehlt in neun von zehn Fällen.
+
+Und die 18 vorhandenen sind das kleinere Problem in der besseren Verkleidung: Jede wurde beim **Anlegen** des Eintrags gesetzt, keine je gegen die anderen gehalten.
+
+> **Eine Priorität, die nur gegen sich selbst steht, ist ein Gefühl über einen Eintrag — keine Reihenfolge.** „Hoch" heißt dann „das ärgerte mich, als ich es aufschrieb".
+
+Deshalb steht hier eine **Tabelle** und nicht in jedem Eintrag eine Zahl. Ein Band ist eine Aussage über das Verhältnis zu den anderen; es entsteht dadurch, dass der Eintrag neben die anderen gelegt wird.
+
+### Die vier Bänder
+
+| Band | Bedeutung | Die Prüffrage |
+|---|---|---|
+| **A** | **Hält eine laufende Reihe an.** Solange er offen ist, ist eine aufgesetzte oder laufende Messung nicht auswertbar. | *Verfällt Maschinenzeit oder Material, wenn er liegen bleibt?* |
+| **B** | **Gehört zu einer laufenden Reihe.** Sie läuft auch ohne ihn, aber sein Ergebnis geht in ihres ein. | *Würde ich ihn beim Auswerten der Reihe vermissen?* |
+| **C** | **Entwertet eine Aussage außerhalb der laufenden Reihen.** Stiller Fehler, Defekt am Messwerkzeug, Vorgabewert an einer Stelle, an der ein Ausfall gehört. | *Steht heute irgendwo eine Zahl, die dadurch falsch ist?* |
+| **D** | **Richtig, aber ohne Anschluss an eine offene Frage.** | — |
+
+### Zwei Regeln, ohne die die Bänder wieder Stimmungen werden
+
+**1. Band A ist knapp und bleibt es.** Es fasst nur, was als Nächstes tatsächlich angefasst wird. Wächst der Bedarf, muss etwas **heraus** — nicht das Band wachsen. Ein A mit zwanzig Einträgen ist dasselbe wie „hoch" mit siebenundzwanzig.
+
+**2. Das Band wird beim Lesen vergeben, nicht beim Anlegen.** Ein neuer Eintrag kommt **ohne** Band herein. Er bekommt eins, wenn die Tabelle das nächste Mal gegen den Bestand gehalten wird. Das ist der ganze Unterschied zum bisherigen Verfahren und der Grund, warum ein fehlendes Band hier kein Mangel ist.
+
+### Die laufenden Reihen — Stand 09.08.2026
+
+Die Zugehörigkeit zu einer dieser Reihen hebt einen Eintrag; alles andere sinkt.
+
+| Reihe | Zustand |
+|---|---|
+| **1 — Charakterbildung** | 18 Bögen, 540 Turns, aufgesetzt und zurückgesetzt, wartet auf die GPU |
+| **2 — Haltungsraum und Zuwendungsrad** | Beitragsverhältnisse gefallen, nicht kalibriert (`F-HALTUNG-1`) |
+| **3 — Erkenntniszyklus und der Abfluss der Shadow-Queue** | Vorfrage am 09.08. beantwortet, Entscheidung über 614 Altaufträge offen |
+| **4 — Die Linter-Wände** | vier Familien hart, `B` bei null und nicht als Kürzel schaltbar |
+
+### Band A — leer, Stand 16.08.2026
+
+> **Beide Eintraege waren erledigt, bevor sie hier oben standen — und keiner der beiden wurde je angefasst, weil an keinem etwas zu tun war.**
+>
+> | Eintrag | Abhilfe gebaut | in Band A gefuehrt |
+> |---|---|---|
+> | `PROMOTION-FENSTER-LAEUFT-AB-STATT-LEER` | 09.08.2026 | stand bereits, Marke nie gezogen |
+> | `REIHE-GEWICHTET-ZEILEN-STATT-ERHEBUNGEN` | **01.08.2026** | **11.08.2026** — zehn Tage nach der Abhilfe |
+>
+> **Der Befund ist ueber die beiden Faelle hinaus einer ueber dieses Verfahren.** Regel 2 dieses Abschnitts sagt: *„Das Band wird beim **Lesen** vergeben, nicht beim Anlegen."* Genau das ist geschehen — gelesen wurde der **Eintrag**. Ein Eintrag beschreibt aber den Code von damals, und die Pflicht, ihn gegen heute zu halten, greift bisher erst **vor der Umsetzung**. Zwischen Rangvergabe und Umsetzung liegt jedoch die ganze Zeit, in der das Band steuert.
+>
+> **Daraus die Schaerfung, die hier fehlte: Ein Band wird gegen den Code vergeben, nicht gegen den Eintrag.** Der Aufwand ist klein und im Nachhinein beziffert — bei `REIHE-GEWICHTET-ZEILEN-STATT-ERHEBUNGEN` genuegte ein `git log -S` auf den Bezeichner, den der Eintrag selbst nennt; der Kommentar im Code trug denselben Satz wie der Eintrag.
+>
+> **Was das fuer den naechsten Durchgang heisst:** Band A ist nicht abgearbeitet, es ist **leergeraeumt**. Es muss aus den ungebaenderten Eintraegen neu gefuellt werden, und die Kandidaten sind diesmal gegen den Code zu halten, bevor sie ein Band bekommen.
+
+### Band A — neu gefuellt am 16.08.2026, ein Eintrag
+
+**Der Durchgang folgte der eigenen Reihenfolge dieses Abschnitts** — zuerst die Bugs mit `🔧 offen` — und der neuen Regel, dass ein Rang **gegen den Code** vergeben wird, nicht gegen den Eintrag.
+
+| Kennung | Reihe | Was er anhaelt |
+|---|---|---|
+| `UNREGISTRIERTER-AGENT-GEWINNT` | 3 | [HGR] **Er zerstoert laufend Material, und seit dem 16.08.2026 schneller.** Ein Queue-Auftrag fuer einen nicht registrierten Agenten gewinnt den Heartbeat, scheitert sofort und verbrennt seine drei Versuche im Takt des Heartbeats — gemessen am laufenden System: `vertiefen` id=1004 durchlief `1/3`, `2/3` und die Verwerfung in **90 Sekunden**, danach `DELETE`. **192 aktive `vertiefen`-Auftraege stehen darauf**, ⌀ Salienz 0,750, aeltester vom 30.07. Bisher kam die Auftragsart kaum dran, weil eine Recherche den Platz minutenlang hielt; **seit der Frist-Reparatur vom 16.08. dreht der Platz schneller**, und `vertiefen` rueckt nach — in zwei Stunden dreimal gezogen. Der Eintrag ist vom 27.07. und trug seither Prioritaet *hoch*, ohne je ein Band zu bekommen. **Sein `Was fertig waere` ist die kleinste denkbare Abhilfe:** *„Ein Auftrag ohne Agenten kann den Heartbeat nicht gewinnen."* **Zur Haelfte veraltet:** Der Eintrag nennt `vertiefung` **und** `nachfragen` als fehlend; `nachfragen` ist seit dem 05.08.2026 gebaut (`PIX-MIG-7`), nur `vertiefung` fehlt — ⬜ **offen — gegen HEAD `f31b3ab` und den Bestand geprueft am 25.08.2026.** Der Befund steht: `services/pixie/router.py` bildet `vertiefen` weiter auf `vertiefung` ab, und `server/agents/vertiefung/` gibt es nicht. **Der Schaden ist kleiner geworden, ohne dass jemand ihn gemeint hat:** statt 192 aktiver `vertiefen`-Auftraege sind es **75** von 390 insgesamt, und die mittlere Salienz faellt von 0,750 auf **0,317**. Der aelteste stammt unveraendert vom 30.07. |
+
+**Was der Durchgang sonst ergab — mit Zahlen, damit die Reichweite nachrechenbar ist.** Geprueft wurden **41** offene Bug-Eintraege mit drei mechanischen Kriterien und **5** davon zusaetzlich von Hand gegen Code und Betrieb.
+
+| Kriterium | Treffer | davon echt |
+|---|---|---|
+| Ein genannter Bezeichner existiert nicht mehr | 5 | **0** — Datenwerte, URLs, Fremdfelder und ein Archivtabellenname |
+| Eine Erledigt-Vokabel im Koerper | 9 | **0** — durchweg *„Geschlossen, wenn"* als Abschlusskriterium |
+| Ein `✅`-Abschnitt im Koerper eines `🔧`-Eintrags | 0 | — (das Kriterium hat heute frueh seinen einen Fall gefunden) |
+
+**Zwei Eintraege mit Prioritaet *hoch* sind durch die Handpruefung hinfaellig geworden** und gehoeren in den naechsten Durchgang zur Schliessung, nicht in ein Band:
+
+- `ENTITAETEN-OHNE-EMBEDDING` (29.07.) — *„Entitaeten entstehen ohne Zusammenfassung und ohne Embedding."* Gemessen am 16.08.2026: **0 von 704** ohne Embedding. Ob der Erzeuger nachgezogen wurde oder ein Nachlauf gefuellt hat, ist ungeprueft — die Frage nach dem **Warum** steht noch, das Symptom nicht mehr.
+- `CHARAKTERAGENT-AUSGEHUNGERT` (27.07.) — *„Vier Heartbeats in Folge ging der Charakter leer aus."* Gemessen ueber 39 h: **22 Gewinne**, Wartezeit zuletzt **0,37 h**. Vermutlich eine Folge der Zwei-Spuren-Trennung; nicht abschliessend geprueft.
+
+**Einer wurde bestaetigt und gehoert nicht nach A:** `RECHERCHE-SALIENZ-KONSTANT` — das Literal `"salienz": 0.7` steht unveraendert in `agents/recherche/agent.py`. Er entwertet eine gespeicherte Groesse, zerstoert aber nichts; das ist Band **C**.
+
+> **Kein stiller Deckel:** Von 41 offenen Eintraegen sind **5** von Hand gegen den Code gehalten worden, ausgewaehlt danach, ob ihr Wortlaut laufenden Verlust behauptet. **Die uebrigen 36 sind ungeprueft** und koennen denselben Zustand tragen wie die beiden oben — erledigt und unmarkiert. Der Durchgang ist damit begonnen und nicht abgeschlossen.
+
+### Band A — die geschlossenen Eintraege
+
+| Kennung | Reihe | Was er anhält |
+|---|---|---|
+| ~~`PROMOTION-FENSTER-LAEUFT-AB-STATT-LEER`~~ | 1 | [GED] **Geschlossen am 16.08.2026 — der Eintrag stand acht Tage zu Unrecht an der Spitze.** Die Ursache war bereits am 09.08. widerlegt (kein Fenster, kein Loeschen — die Promotion **verhungerte**) und die Abhilfe am selben Tag gebaut: die Zwei-Spuren-Trennung, seit der die Promotion auf der `cpu`-Spur laeuft und nicht mehr gegen eine Recherche antritt. **Nur die Marke wurde nie nachgezogen.** Nachgemessen am **Bestand** statt am Zeugen, sieben Tage spaeter: `konrad` traegt **69** LZG-Knoten statt des einen, der den Defekt belegte; die fuenf Personas liegen zwischen 48 und 69 bei KZG-Staenden von 88 bis 98, das produktive Paar bei 2005 zu 2203. Ueber zwei Stunden gewann die Promotion **22-mal** die CPU-Spur und fand jedes Mal eine leere Queue vor — **Rueckstand null**. Der benannte kleine Rest (die letzten Auftraege einer Persona nach dem Zurueckschalten) bleibt und ist kein Band-A-Fall — ✅ **abgeschlossen — nachgeprueft am 25.08.2026.** Die Zwei-Spuren-Trennung steht (`services/pixie/scheduler.py` fuehrt die Spur als Parameter durch den Heartbeat), und der Bestandsbeleg haelt: `konrad` traegt weiterhin **69** LZG-Knoten. Kein Rueckfall in neun Tagen. |
+| ~~`RAD-STABILITAET-UNGEMESSEN`~~ | 2 | [CHA] [CHA] **✅ gemessen am 11.08.2026 — der Eintrag ist beantwortet.** Über drei Quellen mit je vier Läufen bei unveränderter Eingabe: Streuung **0,18 · 0,18 · 0,22** auf der Dreierskala, **0,061 · 0,062 · 0,080** mit einer Nachkommastelle. Die Trennschärfe zweier Personen steigt dabei von 2,4–3,3 σ auf 10,2–12,9 σ. Daraus zwei Bauten: `F-RAD-2` (drei Läufe, Median) und `F-RAD-3` (elf Stufen statt drei). **Die Kalibrierung der Beitragsverhältnisse ist damit freigegeben** — sie liefe jetzt gegen ein Rauschen bekannter und kleiner Breite |
+| ~~`REIHE-GEWICHTET-ZEILEN-STATT-ERHEBUNGEN`~~ | 2 | [CHA] **Geschlossen am 16.08.2026 — und er war bereits erledigt, als er hier eingetragen wurde.** Der Eintrag entstand am 11.08.2026; `reihe_laden` gruppiert seit **`837d6df` vom 01.08.2026, 16:13** nach `erhebung_id` und zieht die Laeufe einer Erhebung mit `rad_zusammenfassen_gleichgewichtig` zusammen — *ohne Verfall, alle gleich alt*. Der Kommentar im Code nennt sogar denselben Grund wie der Eintrag: **Das Fenster zaehlt Erhebungen, nicht Zeilen.** Das ist Weg 2 der beiden hier vorgeschlagenen, zehn Tage vor dem Vorschlag gebaut. **Bezeugt ist er auch:** `test_drei_laeufe_einer_erhebung_ergeben_einen_punkt` und `test_die_laeufe_einer_erhebung_werden_gleich_gewichtet` in `tests/test_rad_messreihe.py`, am 16.08.2026 gruen (28 Tests). Nachgesehen wurde am Code, nicht am Eintrag — ✅ **abgeschlossen — nachgeprueft am 25.08.2026.** `reihe_laden` (`agents/charakter/rad_messreihe.py`) zieht mehrere Laeufe einer Erhebung weiterhin mit `rad_zusammenfassen_gleichgewichtig` zusammen. Unveraendert. |
+
+**`PROFIL-HISTORIE-FEHLT` stand beim ersten Entwurf dieser Tabelle in Band A und gehört nicht dorthin.** Die Begründung lautete: Ohne Profilhistorie sei nicht messbar, ob ein behaltenes Rad früh genug wirkt. Der Eintrag selbst widerlegt das seit dem 02.08.2026 — `charakter_hash` führt das Paar im Primärschlüssel, und **die Räder sind ohnehin historisiert**: `charakter_rad_messung` trägt am 09.08.2026 231 Zeilen über 20 Kennungen seit dem 01.08. Die Frage nach dem Rad hängt an dieser Tabelle, nicht an der Profilhistorie. Er steht in Band B. **Das ist die Regel bei der Arbeit:** Ein Band, das gegen den Eintrag gehalten wird statt gegen die Erinnerung an ihn, korrigiert sich beim Lesen.
+
+### Neu vom 20.08.2026 — die Länge ist gesetzt, nicht gemessen
+
+| Kennung | Was er anhält |
+|---|---|
+| `LAENGENVORGABE-UNGEMESSEN` | [ANT] **Drei Zahlen der Antwortlänge sind Setzungen ohne Messung im Betrieb.** Die halbierten Korridore in `UMFANG_SPANNE` sind eine Entscheidung nach einem Einzelbefund (12 Zeichen Gruß → 838 Zeichen Antwort); `LEICHT_FAKTOR` und `LEICHT_SOCKEL` sind frei gewählt. **Was dagegen gemessen ist, ist der Vorbehalt:** Bei identischer Vorgabe streute die Antwortlänge am 17.08.2026 um den Faktor 2,68 — die Vorgabe bindet nur schwach, und eine Halbierung halbiert nicht. Zu messen ist deshalb nicht die Konstante, sondern die **Wirkung**: dieselben Turntypen vor und nach dem 20.08., Ist-Länge gegen Korridor. Der Lauf braucht echte Modellaufrufe. — ⬜ **offen** — nachgesehen am 25.08.2026. Die verlangte Messung ist nicht angesetzt worden. |
+| `MASSBLOCK-IM-BETRIEB-UNGEMESSEN` | [ANT] **Der Verfasser liest die drei fachlichen Größen seit dem 20.08.2026 — ob es seinen Stoff ändert, ist offen.** 10 Zeugen belegen, dass der Block im Prompt steht und die richtigen Größen trägt; keiner belegt, dass sich der erzeugte Inhalt dadurch ändert. Der Präzedenzfall steht in derselben Reihe: `HALTUNG-OHNE-LESER` war zwei Wochen gebaut, gemessen und wirkungslos, weil kein Prompt die Größen las. **Die Prüfform ist der Vergleich desselben Turns mit und ohne Block**, nicht die Anwesenheit des Blocks. — ⬜ **offen** — nachgesehen am 25.08.2026. Die verlangte Messung ist nicht angesetzt worden. |
+
+### Neu vom 20.08.2026 — der Index nimmt fünf Textformate an und versteht eines
+
+| Kennung | Was er anhält |
+|---|---|
+| ~~`GLIEDERUNG-NUR-MARKDOWN`~~ → **umgesetzt am 20.08.2026** — vier Erkenner statt einem: reStructuredText (Unterstreichung, Ebene aus der Reihenfolge der Zeichen), Org-Mode (Sterne, `#+BEGIN_`/`#+END_`-Bilanz), AsciiDoc (Gleichheitszeichen, Blockbegrenzungen) und `.txt` als **ausdrückliche leere Registrierung**. Gegen sechs echte `.rst`-Dateien aus installierten Paketen gemessen: 24 Überschriften, 0 nicht erhoben. Ein Zeuge hält seitdem die beiden Mengen gegeneinander — jede zugelassene Endung hat einen Erkenner. Der ursprüngliche Befund: **`DATEIEN_INDEX_ENDUNGEN` lässt `.md`, `.txt`, `.rst`, `.org` und `.adoc` zu; `_ERKENNER` kennt allein Markdown.** In reStructuredText steht die Überschrift über einer Unterstreichung, in Org-Mode beginnt sie mit einem Stern, in AsciiDoc mit einem Gleichheitszeichen — keine davon trägt ein Rautenzeichen. Seit dem 20.08.2026 wirft eine solche Datei `FormatOhneErkennerError` statt still eine leere Karte zu liefern; **der Riegel ersetzt die Erkenner nicht**, er macht ihr Fehlen sichtbar. Heute unbetreten: alle 174 indizierten Dateien sind Markdown. **Zu bauen sind drei zeilenbasierte Erkenner** — die Syntax ist in wenigen Zeilen zu fassen, und für keines der drei Formate lohnt eine Abhängigkeit. `.txt` bleibt bewusst ohne Erkenner: Dort ist die leere Karte die richtige Aussage, und das muss als Registrierung dastehen statt als Lücke. |
+| ~~`MARKDOWN-ERKENNER-IST-HANDARBEIT`~~ → **umgesetzt am 20.08.2026** (`markdown-it-py 3.0.0`, Grundfassung `commonmark`; über den Bestand gemessen: 174 von 174 Dateien liefern dieselbe Karte wie zuvor, nachdem zwei Fehlauszeichnungen behoben waren). **Eine Aussage dieses Eintrags war falsch und ist widerlegt:** Die Zaunbilanz fängt *nicht* nur, was ein Parser ohnehin richtig macht — an der defekten Datei fand der Zeilenautomat 5 von 83 Überschriften, CommonMark **45 von 83**. Beide Karten sind falsch; die Bilanz steht deshalb weiterhin **vor** dem Parser. Der ursprüngliche Befund: **Der Markdown-Erkenner ist ein zeilenweiser Regex-Automat und kennt nur zwei Regeln von CommonMark** — Rautenüberschriften und Zäune aus mindestens drei Backticks oder Tilden. Nicht erkannt: Setext-Überschriften (Text über `===` oder `---`), eingerückte Codeblöcke, Zäune aus vier und mehr Zeichen, verschachtelte Zäune, YAML-Frontmatter. Am Bestand gezählt: keine Datei mit langem Zaun, keine mit Frontmatter, **eine** mit möglicher Setext-Überschrift — die Fälle sind also latent und nicht akut. **Der Weg ist `markdown-it-py`** (reines Python, CommonMark-konform, keine Systemabhängigkeit); heute ist kein Parser installiert. Die Zaunbilanz aus `BLOCKKARTE-STILL-HALBIERT` bleibt daneben stehen: Sie fängt, was ein Parser gar nicht erst falsch macht, kostet aber nichts. |
+
+### Neu aus Chat 152 (19.08.2026) — die Mehrfacherhebung, die eine Stufe zu spät greift
+
+| Kennung | Was er anhält |
+|---|---|
+| `PROFIL-EINMALERHEBUNG` | [CHA] **Die fünf Profile werden einmal erhoben und stehen bis zum nächsten Takt — die Räder, die aus ihnen gerechnet werden, dreimal.** `F-RAD-2` begründet die Mehrfacherhebung wörtlich damit, dass ein Wert *„bei der Destillation EINMAL geschrieben wird und bis zur nächsten stehenbleibt; ein unglücklicher Lauf legte ihn sonst für Tage fest"*. Genau das gilt für den Kern-Hash, und dort greift die Regel nicht. **Gemessen am 19.08.2026:** Derselbe unveränderte Prompt liefert über drei Läufe **16,5 / 24,5 / 19,7 %** Aussagen über das Gegenüber; das an diesem Tag gespeicherte Profil trug **42 %**. Der Bestandswert war der schlechteste Lauf, und er ging zwölf Stunden lang in jeden Responder-Prompt und in beide Räder. **Was fertig wäre:** dieselbe Bauart wie bei den Rädern — mehrfach erheben, den mittleren Lauf speichern, die Einzelläufe mit gemeinsamer `erhebung_id` in eine Senke. Der Preis ist bekannt und der Grund, warum das zu überdenken und nicht sofort zu bauen ist: Ein Profillauf dauert 340 bis 500 s, fünf Profile je Paar mal drei Läufe sind rund anderthalb Stunden je Destillation auf demselben CPU-Modell, das Pixie teilt. **Offen ist deshalb nicht das Ob, sondern welche der fünf Profile es brauchen** — der Kern speist Räder und Responder, die übrigen vier nicht in gleichem Maß — ⬜ **offen — gegen HEAD `f31b3ab` geprueft am 25.08.2026.** Die Mehrfacherhebung gilt weiterhin nur fuer die Raeder: In `agents/charakter/destillation.py` steht je Profil **ein** Aufruf, ein Gegenstueck zu `_initiative_rad_einmal` fuer die fuenf Profile gibt es nicht. Der Kern-Hash wird einmal erhoben und bleibt bis zum naechsten Takt stehen. |
+
+### Neu aus Chat 146 (17.08.2026) — der Wächter, den die Reparatur nötig gemacht hat
+
+| Kennung | Was er anhält |
+|---|---|
+| `PROFIL-KONTRAST-UNGEWACHT` | [CHA] **Kein Werkzeug prüft, ob zwei Profile desselben Paares verschiedene Personen beschreiben.** Am 16.08.2026 lagen beide Zuwendungsräder bei einer mittleren Abweichung von **0,0202** über zwölf Speichen — Lenkungsdrang 0,923 gegen 0,896 —, und das elf Tage lang, bei grüner Suite und plausibler Ausgabe. Gefunden hat es das Nebeneinanderlegen zweier Radar-Bilder von Hand. **Die Größe ist laufend rechenbar** (`labor/werkzeug/rad_spiegelung.sql`), und sie hat nach der Reparatur auf 0,2634 reagiert, also Trennschärfe. **Was fertig wäre:** Fällt die mittlere Abweichung der Räder eines Paares unter eine Schwelle, ist das ein Befund und kein Ergebnis. Der Grund, warum es einen eigenen Wächter braucht: Ein Charakterprofil ist ein wohlgeformter Text — es gibt keinen Rand, an dem etwas fehlt, und keine Zusicherung, die sich auf seinen **Inhalt** bezieht. Ein Zeuge hat den Defekt sogar festgeschrieben (`test_der_kern_prompt_traegt_die_gesprochenen_worte` sicherte zu, dass **beide** Sprecher im Prompt stehen). Schwelle offen — vor der Festlegung braucht es Werte mehrerer Paare über mehrere Takte — ⬜ **offen — gegen HEAD `f31b3ab` geprueft am 25.08.2026.** Es gibt weiterhin kein Werkzeug im Produktivpfad, das zwei Profile desselben Paares gegeneinander haelt; die genannte Groesse ist nur von Hand rechenbar. Der Befund ist unveraendert. |
+
+### Band B — was in einer laufenden Reihe mitläuft
+
+**Neu aus Chat 135 (11.08.2026):**
+
+| Kennung | Was er anhält |
+|---|---|
+| `HASH-DIRTY-ALTLASTEN` | [CHA] Der CharakterAgent räumt `hash_dirty` nur für das **aktive** Paar weg. Jede Person, die je einen Bogen hatte, trägt einen liegengebliebenen Schlüssel — am 11.08.2026 fünf Stück. Sie lassen die Vorbedingung des nächsten Bogens dieser Person anschlagen, und der Abbruch sieht aus wie ein Fehler des Laufs statt wie ein Rest des vorigen — ⬜ **offen, verschaerft — am Bestand gemessen am 25.08.2026.** Aus fuenf liegengebliebenen Schluesseln sind **13** geworden. **Ein geduldeter Rest ist keine Konstante** — er waechst mit jeder Person, die je einen Bogen hatte. |
+| `PROFILTEXT-SCHRUMPFT-MIT-MATERIAL` | [CHA] Zweimal gemessen, in zwei Bögen: Mehmet 1597 → 1293 Zeichen, Sarah 1240 → 989, jeweils mit **zwanzig Turns mehr** Material. Vermutlich die Vorgabe *„kompakt … in 2-5 Sätzen"*: Je mehr das Modell sagen will, desto härter verdichtet es. Ungeprüft — ⬜ **offen** — nachgesehen am 25.08.2026. Der Befund ist zweimal gemessen und seither nicht wiederholt worden; die Ursache steht aus. |
+**Neu aus Chat 136 (11.08.2026):**
+
+| Kennung | Was er anhält |
+|---|---|
+| `ZUGSCHWELLE-AUF-FREIEN-WERTEN` | [CHA] ~~`UEBERSTEUERUNG_AB = 0.8` ist ein Startwert und kein Messergebnis. Er stammt aus der Zeit der Rundungsvorgabe: Auf einer Nachkommastelle war oberhalb von 0.9 nur die 1.0 erreichbar, und die Schwelle brauchte Raum darunter. Seit `F-RAD-4` gibt es kein Raster mehr — **wie oft eine Speiche ohne Raster über 0.8 oder 0.9 kommt, ist ungemessen.** Alle 30 Läufe, aus denen die heutigen Zahlen stammen, sind gerastert erhoben. `labor/werkzeug/raster_probe.py` liefert die Verteilung; danach gehören Schwelle und Exponent nachgezogen~~ → **Gemessen am 12.08.2026, 01:49 UTC, und die Schwelle steht auf 0,9.** Zwei Paare, je sechs Läufe gerastert und sechs frei. Der Befund war nicht der erwartete: **Das Gitter hat `distanz` heruntergerundet** — zwölfmal exakt 0,9 gerastert gegen 0,93 bis 0,96 frei. Eine Schwelle auf dem Rasterwert löst deshalb nie aus, nicht weil das Urteil darunter liegt, sondern weil es darüber nicht darstellbar war. Ziehende Speichen je Lauf: bei 0,8 zwei bis zweieinhalb, bei 0,9 knapp eine. **Rest benannt:** Die Streuung bleibt offen — mehmet wurde unruhiger (0,0151 → 0,0344), sarah ruhiger (0,0467 → 0,0370); bei n=6 je Zelle trägt keine Richtung. Der Exponent ist unverändert 2 und ungemessen — ✅ **abgeschlossen mit benanntem Rest — nachgeprueft am 25.08.2026.** Die Messung vom 12.08.2026 steht im Eintrag; offen bleiben ausdruecklich die Streuung und der ungemessene Exponent. Das ist ein eigener Gegenstand und kein Rest dieses Eintrags. |
+| `VERDICHTUNG-UEBRIGE-VIER-PROMPTS` | [CHA] **Das Beziehungsprofil ist gemessen (12.08.2026) und nicht entscheidbar wie der Kern.** Zwei Personen, identisches Material, identischer Kern, je gedeckelt gegen offen: Die Länge steigt achtfach (537→3990 und 562→4219), und **die offene Fassung liest beide Male wärmer** (Faktor +0,093 und +0,035). Das ist die einzige Aussage, die über beide Personen trägt. **Die Rauschaussage trägt nicht:** Bei der einen Person fällt die Spanne von 0,2209 auf 0,0625, bei der anderen steigt sie von 0,0167 auf 0,0734. Beim Kern hatten beide Personen dieselbe große Senkung gezeigt (0,251→0,063 und 0,104→0,004) — hier zeigen sie Gegenteiliges. Bemerkenswert und mit n=3 nur als Muster zu nennen: Die **offene** Fassung landet bei beiden bei 0,06–0,07, die **gedeckelte** einmal bei 0,02 und einmal bei 0,22 — nicht die offene ist ruhiger, die gedeckelte ist unberechenbar. Vor einer Entscheidung braucht es eine dritte Person oder mehr Läufe je Zelle. Die drei übrigen Prompts (adaptiv, Intention, Emotion) sind ungemessen; sie speisen **nicht** das Rad, sondern direkt den Responder-Prompt, und dort ist die Messgröße eine andere — dieselbe Probe passt nicht. Jeder hat einen eigenen Abnehmer — das Beziehungsprofil ist die zweite Hälfte der Rad-Quelle —, und fünf offene Profile je Paar sind rund anderthalb Stunden je Erhebung. Die Probe steht und ist billig: `labor/werkzeug/verdichtung_probe.py` mit getauschtem Deckel — ⬜ **offen — geprueft am 25.08.2026.** Gemessen ist **eines** der vier genannten Profile (Beziehungsprofil, 12.08.2026). Ein Eintrag, der mehrere Stellen nennt, ist erst geschlossen, wenn jede von ihnen steht — hier stehen drei aus. |
+| `KERN-EINBETTUNG-NACH-DEM-DECKEL` | [CHA] `kern_hash` wird nicht nur gelesen, sondern **eingebettet**: Der Lückenagent vergleicht Kandidaten gegen ihn, Schwelle `GV_CHARAKTER_RESONANZ_SCHWELLE = 0.40`. Der Kommentar daneben sagt wörtlich *„begründeter Startwert, kein Messergebnis. Nach Live-Betrieb prüfen."* Ein Profiltext, der fünfmal so lang ist, embeddet anders — Cosinus-Werte ziehen sich zur Mitte zusammen. Der Deckel sitzt damit oberhalb eines nie gemessenen Schwellenwerts — ⬜ **offen — gegen HEAD `f31b3ab` geprueft am 25.08.2026.** `GV_CHARAKTER_RESONANZ_SCHWELLE` steht unveraendert auf **0.40**, und der Wachposten-Kommentar daneben sagt weiterhin woertlich *„begruendeter Startwert, kein Messergebnis. Nach Live-Betrieb pruefen.“* Nichts gemessen, nichts geaendert. |
+| ~~`MESSREIHE-MISCHT-ZWEI-RASTER`~~ | [CHA] ~~`charakter_rad_messung` trägt jetzt drei Erhebungsarten nebeneinander: Dreierskala, eine Nachkommastelle, ohne Raster. Die Zeilen sind nur über die Werte selbst unterscheidbar — es gibt keine Spalte dafür. Jede Auswertung über die ganze Tabelle mischt drei Messgeräte~~ → **Geschlossen am 12.08.2026, und die Wirkung war größer als der Eintrag vermutete.** Es war keine Frage der Auswertung: `reihe_laden` speist die Reihe in den **Produktivwert**, und bei `nova → meister` stammten **58,7 %** des angezeigten Faktors aus abgelösten Geräten — 1,3582 gemessen, 1,2099 angezeigt. Entschieden wurde löschen statt filtern. 259 Zeilen sind gesichert (`charakter_rad_messung_archiv_20260812`) und entfernt, der Stichtag steht in der Fundliste. **Ohne Codeänderung** — die Tabelle trägt nur noch ein Messgerät — ✅ **abgeschlossen — nachgeprueft am 25.08.2026.** Der Eintrag traegt seinen Beleg vom 12.08.2026 selbst; die Wirkung war groesser als der Befund vermutete, und beides steht im Text. |
+| ~~`RESPONDER-ALS-AUFGABE`~~ | [ANT] Der Responder-Prompt stellt **Kontext mit einer Stilnotiz**, nicht eine Aufgabe — und bindet deshalb nicht (0 von 6 Korridoren gegen 6 von 6 der Aufgabenform, `novaberg-haltungsraum_k.md` §3.0). Gebaut werden soll die Gliederung aus §3.0a: Konstellation zuerst, Charaktere, Szene, Regie unmittelbar vor dem Text, Ausgabezeile. Dabei fällt weg, was doppelt wäre: die Arousal-Längenregel, die Beziehungsdynamik-Sätze, der Tonblock, und die Fragen-Zeile aus der Landschaft (die der **GV-Knoten** weiter braucht, der Responder nicht). **Offen und größer als der Prompt:** Was steht in `[TEXT]` — der fertige Absatz des Verfassers oder Material? Zwei Modellläufe über denselben Inhalt glätten ihn; was das kostet, ist an der Verdichtungsmessung ablesbar → **Geschlossen am 13.08.2026.** Die Gliederung steht: `[ROLLE]` mit Konstellation und **doppelter** Prüfbedingung, `[SZENE]`, beide Personen, `[ZWISCHEN BEIDEN]`, Regie unmittelbar vor dem Text. Die vier genannten Doppelungen sind entfernt, dazu eine fünfte, die beim Umbau selbst entstand (Landschaft in Szene und Regie — von der Gegenprobe gefunden). Nicht vorgesehen und hinzugekommen: **eine Anrede, eine Bedeutung** — »du« ist der Schauspieler, über Person A wird in dritter Person gesprochen; sieben von dreizehn Blöcken hatten drei Bedeutungen gemischt. **Der Rest ist benannt:** Die offene Frage nach `[TEXT]` bleibt offen und hat eine Zahl bekommen — der Verfasser liefert rund 1400 Zeichen für einen 350-Zeichen-Korridor, weil er **keine** Mengenangabe erhält — ⬜ **offen** — nachgesehen am 25.08.2026. Der Prompt ist am 13.08.2026 auf ein Drehbuch umgestellt worden, die im Eintrag verlangte Aufgabenform ist damit angefangen und nicht abgeschlossen. |
+| `SZENE-STATT-REGIE-IN-DEN-CLUSTERN` | [ANT] Vier der vierzehn `CLUSTER_BESCHREIBUNGEN` tragen einen Befehl (`regen` „Halten, da sein", `schmollen` „Nicht drängen", `nebel` „Leise da sein", `gewitter` „Nicht verteidigen"). Er gilt für jeden Charakter gleich und steht **vor** dem Rad — die Haltungsgrößen können ihn nicht bewegen. Die Regel für die Umschreibung **und der ausgeschriebene Vorschlag für alle vierzehn** stehen im Konzept §3.0b: Die Szene sagt, was ist; kein Imperativ, kein „nicht". **Zu beachten:** Die Tabelle speist drei Prompts — GV, Verfasser, Responder. Der GV-Knoten benutzt sie als Rahmen für die Strategiewahl, nicht als Klassifikator; eine sinnlichere Szene macht ihn besser, nicht wackliger (geprüft am Code) — ⬜ **offen — gegen HEAD `f31b3ab` geprueft am 25.08.2026.** Die Befehle stehen unveraendert in `ei/dreischicht.py`: *„Halten, da sein“* (`regen`), *„Leise da sein“* (`nebel`), *„Nicht verteidigen“* (`gewitter`); *„Nicht draengen“* fuer `schmollen` steht in `ei/haltung.py`. Vier Befehle, wie im Befund. |
+| `AROUSAL-ACHSE-SCHNEIDET-DEN-GIPFEL` | [ANT] Die Energie-Achse binarisiert `arousal` bei 0,5 — und die gemessene Verteilung ist **zweigipflig** mit Bergen bei 0,1–0,3 und 0,4–0,6. Die Schwelle schneidet den zweiten Gipfel mittendurch: Turns, die sich um 0,02 unterscheiden, landen in verschiedenen Landschaften. Genau die Kippkante, vor der §3.1 warnt. **Ein Drittel aller Turns liegt zwischen 0,4 und 0,7** (35,1 % von 522), wo die Landschaft nur ein Bit sieht, die abgelöste Längenregel aber drei Stufen unterschied. Solange das so bleibt, kann `umfang` die Feinheit des Arousal nicht nachtragen — sein Grundwert kommt aus der Landschaft. **Und ein zweiter Punkt daneben:** `arousal_roh` und `arousal_ei` unterscheiden sich stark (Median 0,50 gegen 0,334); welche der beiden in die Achse geht, entscheidet mit, wie oft sie überhaupt anschlägt — ⬜ **offen — gegen HEAD `f31b3ab` geprueft am 25.08.2026.** `ei/dreischicht.py` binarisiert unveraendert mit `energie_bin = 1 if arousal >= GV_ACHSE_ENERGIE_SCHWELLE else 0`. Die Kippkante steht. |
+| ~~`FARBTON-OHNE-LESER`~~ | [ANT] `ei/farbton.py` mischt acht Dimensionen zu 2–5 Sätzen, die die Lage sinnlich beschreiben — und erreicht den Responder nicht. Er geht nur in den GV-Prompt und ins Log. **Dazu ein zweiter Punkt:** Sind alle acht Dimensionen unauffällig, bleibt ein einziger Satz übrig („Das Gespräch ist ruhig und ausgeglichen"). Für eine Anweisung ist Schweigen bei Unauffälligkeit richtig, für eine **Atmosphäre** nicht — die Werkstatt riecht nach Öl, ob jemand aufgeregt ist oder nicht. Die Grundfarbe könnte aus der Landschaft kommen, der Farbton die Abweichung darauf legen → **Geschlossen am 13.08.2026** für den ersten Punkt: Der Farbton steht in `[SZENE]`, hinter der Lage. **Der zweite Punkt ist widerlegt** — der Rückfallsatz tritt im Betrieb nicht ein; über zwölf Stunden Log liefert der Farbton sechs bis sieben Sätze je Turn. **Eine Wirkung ist nicht nachgewiesen:** drei Läufe je Fassung (ohne · schwer · lebhaft) zeigten keinen Unterschied über dem Rauschen, und die schwere Fassung wurde zweimal von drei als lebhaft gelesen. Er steht im Prompt, weil er die Lage beschreibt, nicht weil eine Messung ihn verlangt — ✅ **abgeschlossen — gegen HEAD `f31b3ab` geprueft am 25.08.2026.** Der Farbton erreicht den Responder: `graph/nodes/responder.py` liest ihn aus `gv_detail` und haengt ihn an den Prompt. Der Befund *„erreicht den Responder nicht“* gilt nicht mehr. |
+| ~~`PERSON-B-OHNE-BESCHREIBUNG`~~ | [CHA] Vom Nutzer erreicht **ein** Profil den Responder (das Beziehungsprofil), von Nova alle fünf. Sein Kern fehlt, auch seit die offene Destillation daraus mehrere tausend Zeichen macht. Dazu: Beide Beziehungsprofile stehen unbeschriftet nebeneinander, ohne Angabe der Perspektive — nach dem Paar-Schema sind es verschiedene Aussagen, im Prompt sehen sie gleich aus → **Geschlossen am 13.08.2026.** `[PERSON B — WER ER IST]` trägt seinen Kern (3992 Zeichen im Messturn) und was ihn beschäftigt; `[ZWISCHEN BEIDEN]` trägt beide Blickrichtungen **beschriftet**, und der 300-Zeichen-Deckel auf seinem Beziehungsprofil ist gefallen — er schnitt mitten im Wort ab. **Die Wirkung ist unbelegt:** Vier Verfahren, das Zugehen auf einen bestimmten Menschen zu messen, sind an Fällen mit bekanntem Sollurteil gescheitert (3/6 bei Zufall 2, 3/6 bei Zufall 3, 2/6 mit dem stärkeren Analysemodell und systematisch invers, ein lexikalisches Maß verzerrt). Der Block steht, weil ein Dialog ohne beschriebenes Gegenüber ein Monolog mit Stichwortgeber ist — ⬜ **offen** — nachgesehen am 25.08.2026. Vom Nutzer erreicht weiterhin nur das Beziehungsprofil den Responder. |
+| ~~`HALTUNG-OHNE-LESER`~~ | [CHA] Der Zug ist gebaut, das Kriterium steht, die Zahlen sind gemessen — und **kein Prompt liest die Haltung**. `state["haltung"]` hat außer dem Knoten selbst nur die Anzeige als Leser. Solange §3 des Konzepts fehlt, wirkt der ganze Haltungsraum auf keine einzige Antwort. Das ist die Naht, an der alles andere hängt → **Geschlossen am 13.08.2026** — und die Schließung war eine halbe, was erst am 20.08.2026 auffiel: Das Konzept fordert **zwei** Leser (*„Beide lesen das Ergebnis aus dem Zustand"*) und begründet damit die Position des Knotens im Graphen; gebaut war einer. Der Verfasser las `haltung` bis zum 20.08.2026 **null Mal**. `ei/haltungssprache.py` übersetzt die fünf Größen in die Bänder aus §3.0aa, den Umfang zusätzlich in eine Zeichenspanne, das Arousal in einen der acht Energie-Sätze; angeschlossen unmittelbar vor dem Text. **Gesprochen wird beim Bandwechsel, nicht bei einem Zahlenabstand** — die erste Fassung verglich Zahlen und hätte einen distanzierten Charakter im `feuerwerk` verschluckt (0,90 → 0,82 sind acht Hundertstel, aber »ganz nah« wird zu »vertraut«). Die Arousal-Längenregel ist entfallen. Gemessen: mit einheitlicher Regie 22 von 25 Läufen richtig zugeordnet, mit je eigener **27 von 27** — ✅ **abgeschlossen — gegen HEAD `f31b3ab` geprueft am 25.08.2026, und diesmal beide Stellen.** Das Konzept verlangt **zwei** Leser; am 20.08.2026 war einer gebaut und der Eintrag galt trotzdem als geschlossen. Heute lesen `graph/nodes/responder.py` und `graph/nodes/verfasser.py` beide den Haltungsstand. **Die Zahl der genannten Stellen ist die Pruefgroesse, nicht die Wirkung.** |
+
+| Kennung | Was er anhält |
+|---|---|
+| `VERDICHTUNG-UNGEPRUEFT` | [CHA] ~~Fünf Profil-Prompts verlangen *„kompakt"* und deckeln auf zwei bis fünf Sätze — eine Vorgabe aus der Zeit knapper Kontextfenster. Heute schreibt das Hintergrundmodell mit 262 144 Token, gelesen wird mit 32 768; ein Profil von 4000 Zeichen wäre drei Prozent des Lesefensters. **Verdichtung nimmt weg, was Charakter ausmacht.** Die Gegenprobe steht bereit — identisches Material, einmal mit Deckel und einmal ohne —, ist aber nicht gefahren. Zu vergleichen sind zwei Dinge getrennt: der Text zum Lesen und die Streuung des Rades. Fallen sie auseinander, ist das ein Hinweis auf zwei Texte statt einem~~ → **Gefahren und entschieden am 11.08.2026, für den Kern.** Zwei Personen, je drei Läufe je Fassung über die ganze Kette: Spanne **0,2510 → 0,0630** (Mehmet) und **0,104 → 0,004** (Sarah), Faktor unverändert (−0,024). Die offene Fassung liegt damit auf dem Eigenrauschen des Rades — die Destillation legt nichts obendrauf, die gedeckelte das Vierfache. **Der interessante Fall trat nicht ein:** Text und Streuung fallen *nicht* auseinander, derselbe Text ist der reichere und der ruhigere. Der Deckel des Kerns ist gestrichen; **Rest benannt** in `VERDICHTUNG-UEBRIGE-VIER-PROMPTS` und `KERN-EINBETTUNG-NACH-DEM-DECKEL` — ⬜ **offen** — nachgesehen am 25.08.2026. Teilweise gemessen (Beziehungsprofil, 12.08.2026); die uebrigen vier Prompts stehen aus. Deckungsgleich mit `VERDICHTUNG-UEBRIGE-VIER-PROMPTS`. |
+
+| Kennung | Reihe |
+|---|---|
+| `KALIBRIERUNG-ZEUGE-TRENNT-SCHWACH` · `PROFILE-LEER-URSACHE-UNBEKANNT` · `PAARLISTE-FEST` · `PROFIL-HISTORIE-FEHLT` | 1 |
+| `HALTUNG-SPANNENENDEN-OFFEN` · `HALTUNG-LAENGE-ZWEI-ERZEUGER` | 2 |
+| `AUFTRAGSARTEN-OHNE-AGENTEN` · `SHADOW-QUEUE-RUECKSTAND-UNGEMESSEN` · `PIXIE-EIN-SLOT-BLOCKIERT-ALLES` · `RECHERCHE-RETRY-BLOCKIERT-QUEUE` · `VERTIEFEN-AUFTRAEGE-OHNE-THEMA` | 3 |
+
+**Die vier Einträge der Reihe 3 sind derselbe Engpass von vier Seiten** und werden nicht einzeln bewertet — wer einen angeht, misst die anderen drei mit. Ihre Reihenfolge untereinander steht bei `AUFTRAGSARTEN-OHNE-AGENTEN`.
+
+### Was mit den übrigen 171 ist
+
+**Sie sind nicht C oder D — sie sind ungebändert**, und das ist eine ehrliche Angabe und keine Auslassung. Ein Band im Sinne von Regel 2 entsteht durch Vergleich; 166 Einträge in einem Zug zu bebändern hieße, genau das Verfahren zu wiederholen, gegen das dieser Abschnitt geschrieben ist.
+
+**Die Reihenfolge für den nächsten Durchgang:** Zuerst die Bugs mit `🔧 offen`, die eine heute berichtete Zahl tragen — das ist Band C und die einzige Gruppe, bei der Liegenlassen weiterläuft statt nur zu warten.
 
 ---
 
-## Alle 442 Eintraege
 
-| Zeile | Kat | Zustand | Quelle | Kennung | Kapitel |
-|---|---|---|---|---|---|
-| 12 | WIS | offen | Zustand-Zeile | `DATEIINDEX-GRAPHKANAL` | DATEIINDEX-GRAPHKANAL — Entitäten aus dem Dateiinhalt statt  |
-| 93 | HGR | offen | Tabellenspalte | `UNREGISTRIERTER-AGENT-GEWINNT` | Die Rangordnung — Bänder statt Einzelurteile (09.08.2026) |
-| 116 | GED | abgeschlossen | Tabellenspalte | `PROMOTION-FENSTER-LAEUFT-AB-STATT-LEER` | Die Rangordnung — Bänder statt Einzelurteile (09.08.2026) |
-| 117 | CHA | abgeschlossen | Tabellenspalte | `RAD-STABILITAET-UNGEMESSEN` | Die Rangordnung — Bänder statt Einzelurteile (09.08.2026) |
-| 118 | CHA | abgeschlossen | Tabellenspalte | `REIHE-GEWICHTET-ZEILEN-STATT-ERHEBUNGEN` | Die Rangordnung — Bänder statt Einzelurteile (09.08.2026) |
-| 126 | ANT | offen | Tabellenspalte | `LAENGENVORGABE-UNGEMESSEN` | Die Rangordnung — Bänder statt Einzelurteile (09.08.2026) |
-| 127 | ANT | offen | Tabellenspalte | `MASSBLOCK-IM-BETRIEB-UNGEMESSEN` | Die Rangordnung — Bänder statt Einzelurteile (09.08.2026) |
-| 140 | CHA | offen | Tabellenspalte | `PROFIL-EINMALERHEBUNG` | Die Rangordnung — Bänder statt Einzelurteile (09.08.2026) |
-| 146 | CHA | offen | Tabellenspalte | `PROFIL-KONTRAST-UNGEWACHT` | Die Rangordnung — Bänder statt Einzelurteile (09.08.2026) |
-| 154 | CHA | offen | Tabellenspalte | `HASH-DIRTY-ALTLASTEN` | Die Rangordnung — Bänder statt Einzelurteile (09.08.2026) |
-| 155 | CHA | offen | Tabellenspalte | `PROFILTEXT-SCHRUMPFT-MIT-MATERIAL` | Die Rangordnung — Bänder statt Einzelurteile (09.08.2026) |
-| 160 | CHA | abgeschlossen | Tabellenspalte | `ZUGSCHWELLE-AUF-FREIEN-WERTEN` | Die Rangordnung — Bänder statt Einzelurteile (09.08.2026) |
-| 161 | CHA | offen | Tabellenspalte | `VERDICHTUNG-UEBRIGE-VIER-PROMPTS` | Die Rangordnung — Bänder statt Einzelurteile (09.08.2026) |
-| 162 | CHA | offen | Tabellenspalte | `KERN-EINBETTUNG-NACH-DEM-DECKEL` | Die Rangordnung — Bänder statt Einzelurteile (09.08.2026) |
-| 163 | CHA | abgeschlossen | Tabellenspalte | `MESSREIHE-MISCHT-ZWEI-RASTER` | Die Rangordnung — Bänder statt Einzelurteile (09.08.2026) |
-| 164 | ANT | offen | Tabellenspalte | `RESPONDER-ALS-AUFGABE` | Die Rangordnung — Bänder statt Einzelurteile (09.08.2026) |
-| 165 | ANT | offen | Tabellenspalte | `SZENE-STATT-REGIE-IN-DEN-CLUSTERN` | Die Rangordnung — Bänder statt Einzelurteile (09.08.2026) |
-| 166 | ANT | offen | Tabellenspalte | `AROUSAL-ACHSE-SCHNEIDET-DEN-GIPFEL` | Die Rangordnung — Bänder statt Einzelurteile (09.08.2026) |
-| 167 | ANT | abgeschlossen | Tabellenspalte | `FARBTON-OHNE-LESER` | Die Rangordnung — Bänder statt Einzelurteile (09.08.2026) |
-| 168 | CHA | offen | Tabellenspalte | `PERSON-B-OHNE-BESCHREIBUNG` | Die Rangordnung — Bänder statt Einzelurteile (09.08.2026) |
-| 169 | CHA | abgeschlossen | Tabellenspalte | `HALTUNG-OHNE-LESER` | Die Rangordnung — Bänder statt Einzelurteile (09.08.2026) |
-| 173 | CHA | offen | Tabellenspalte | `VERDICHTUNG-UNGEPRUEFT` | Die Rangordnung — Bänder statt Einzelurteile (09.08.2026) |
-| 198 | WIS | offen | Tabellenspalte | `SILO-OHNE-WERKZEUG` | Block 19.08.2026 — die Rollen eines Wissen-Silos |
-| 199 | BAU | offen | Tabellenspalte | `ROLLENMATRIX-OHNE-PRUEFUNG` | Block 19.08.2026 — die Rollen eines Wissen-Silos |
-| 200 | HGR | offen | Tabellenspalte | `RECHERCHE-LIEST-IHRE-BIBLIOTHEK-NICHT` | Block 19.08.2026 — die Rollen eines Wissen-Silos |
-| 208 | WIS | abgeschlossen | Tabellenspalte | `WIS-ENRICHER-UNGEMESSEN` | Block 19.08.2026 — der dritte Konsument der Bibliothek |
-| 220 | WIS | offen | Tabellenspalte | `BIBLIOTHEK-BLIND-AUF-INHALTSHOEHE` | Block 19.08.2026 — ein Vektor je Gegenstand |
-| 221 | WIS | offen | Tabellenspalte | `EMBED-LISTE-AUTONOMES-WISSEN` | Block 19.08.2026 — ein Vektor je Gegenstand |
-| 222 | WIS | abgeschlossen | Tabellenspalte | `EMBED-LISTE-DATEIENINDEX` | Block 19.08.2026 — ein Vektor je Gegenstand |
-| 223 | GED | offen | Tabellenspalte | `EMBED-LISTE-DELEGATIONSAKTEN` | Block 19.08.2026 — ein Vektor je Gegenstand |
-| 224 | WIS | offen | Tabellenspalte | `EMBED-RUECKWEG-UNGEMESSEN` | Block 19.08.2026 — ein Vektor je Gegenstand |
-| 245 | ANT | offen | Tabellenspalte | `ANTWORT-LEER-OHNE-WIEDERHOLUNG` | Block 19.08.2026 — der Antwortpfad meldet seinen Verlust und |
-| 246 | BAU | abgeschlossen | Tabellenspalte | `OLLAMA-VERSION-VIER-MONATE-ALT` | Block 19.08.2026 — der Antwortpfad meldet seinen Verlust und |
-| 247 | BAU | offen | Tabellenspalte | `ANBIETER-FELDER-UNGELESEN` | Block 19.08.2026 — der Antwortpfad meldet seinen Verlust und |
-| 255 | BAU | offen | Tabellenspalte | `KANAL-OHNE-GEGENSTUECK` | Block 16.08.2026 — die Gegenrichtung der Doku-Pruefung |
-| 256 | WIS | offen | Tabellenspalte | `SELBSTAUSKUNFT-OHNE-LESER` | Block 16.08.2026 — die Gegenrichtung der Doku-Pruefung |
-| 257 | BAU | offen | Tabellenspalte | `NAMENSREGELN-JENSEITS-DER-FORM` | Block 16.08.2026 — die Gegenrichtung der Doku-Pruefung |
-| 265 | BAU | offen | Tabellenspalte | `PENDING-AGENT-INS-PAYLOAD` | Block 16.08.2026 — aus dem Halten der Konventionen |
-| 266 | BAU | abgeschlossen | Tabellenspalte | `SSE-REST-IM-ENDPUNKT` | Block 16.08.2026 — aus dem Halten der Konventionen |
-| 297 | WIS | offen | Tabellenspalte | `FACHSPEICHER-AGENTEN` | Block 16.08.2026 — die Fachspeicher bekommen ihre Agenten |
-| 298 | WIS | offen | Tabellenspalte | `FAKTEN-BINDUNG-OHNE-VERFALL` | Block 16.08.2026 — die Fachspeicher bekommen ihre Agenten |
-| 299 | WIS | offen | Tabellenspalte | `REEMBED-WISSENSSPEICHER` | Block 16.08.2026 — die Fachspeicher bekommen ihre Agenten |
-| 314 | HGR | offen | Tabellenspalte | `ZUSTELLUNG-ABBRUCH-UNGEZAEHLT` | Block 15.08.2026 — das Messinstrument der Zustellung |
-| 315 | HGR | offen | Tabellenspalte | `RIEGEL-5-7-OHNE-EINTRAG` | Block 15.08.2026 — das Messinstrument der Zustellung |
-| 330 | GED | abgeschlossen | Tabellenspalte | `SALIENZKURVE-UNTEN-ZU-STEIL` | Block 18.08.2026 — aus dem Bau der Enricher-Quelle |
-| 331 | WIS | offen | Tabellenspalte | `AUFZEICHNUNGEN-QUANTIL` | Block 18.08.2026 — aus dem Bau der Enricher-Quelle |
-| 332 | WIS | offen | Tabellenspalte | `AUFZEICHNUNGEN-BODEN-NACHZIEHEN` | Block 18.08.2026 — aus dem Bau der Enricher-Quelle |
-| 340 | BAU | offen | Tabellenspalte | `DOKU-VOLLPRUEFUNG` | Block 15.08.2026 — aus dem Nachzug selbst |
-| 341 | BAU | offen | Tabellenspalte | `RAUCHTEST-ANWENDUNG-IMPORT` | Block 15.08.2026 — aus dem Nachzug selbst |
-| 342 | BAU | abgeschlossen | Tabellenspalte | `NACHZUG-KANDIDATEN-GATE` | Block 15.08.2026 — aus dem Nachzug selbst |
-| 352 | HGR | offen | Tabellenspalte | `EIGENZEIT-BAUTEILE` | Block 14.08.2026 — aus der Eigenzeit-Messung |
-| 353 | BAU | offen | Tabellenspalte | `SCHWELLE-OHNE-PAARUNG` | Block 14.08.2026 — aus der Eigenzeit-Messung |
-| 354 | CHA | offen | Tabellenspalte | `PRUEFFIGUR-DISTANZ-090` | Block 14.08.2026 — aus der Eigenzeit-Messung |
-| 393 | BAU | abgeschlossen | Zustand-Zeile | `BUGREGISTER-ZUSTAND-NICHT-LESBAR` | Block 20.08.2026 — aus der Klassifikation der Fundliste |
-| 411 | BAU | offen | Zustand-Zeile | `BUGREGISTER-ALTEBENE-OHNE-ZUSTAND` | Block 20.08.2026 — aus der Klassifikation der Fundliste |
-| 436 | GED | offen | Zustand-Zeile | `QUERY-REWRITING-QUELLE-STEHT` | Block 20.08.2026 — aus der Klassifikation der Fundliste |
-| 448 | ANT | offen | Zustand-Zeile | `INTERNE-PROMPTS-SPRACHGEBRAUCH` | Block 20.08.2026 — aus der Klassifikation der Fundliste |
-| 460 | ANT | offen | Zustand-Zeile | `RESPONDER-BRAUCHT-FRAGEN-DRAENGEN` | Block 20.08.2026 — aus der Klassifikation der Fundliste |
-| 472 | GED | abgeschlossen | Zustand-Zeile | `SUCHSCHLUESSEL-OHNE-VERLAUF` | Block 20.08.2026 — aus der Klassifikation der Fundliste |
-| 490 | WIS | offen | Zustand-Zeile | `ZUSAMMENFASSUNG-ALS-ZWEITER-ARM` | Block 20.08.2026 — aus der Klassifikation der Fundliste |
-| 502 | BAU | offen | Zustand-Zeile | `AUFSTELLUNG-NICHT-VERSIONIERT` | Block 20.08.2026 — aus der Klassifikation der Fundliste |
-| 514 | WIS | offen | Zustand-Zeile | `SCHREIBPFAD-BIBLIOTHEK-UNGEMESSEN` | Block 20.08.2026 — aus der Klassifikation der Fundliste |
-| 526 | WIS | offen | Zustand-Zeile | `RUECKWEG-VORAUSWAHL-OHNE-TRENNSCHAERFE` | Block 20.08.2026 — aus der Klassifikation der Fundliste |
-| 538 | WIS | offen | Zustand-Zeile | `BEZUG-ID-NIE-AUSGELOEST` | Block 20.08.2026 — aus der Klassifikation der Fundliste |
-| 550 | HGR | offen | Zustand-Zeile | `RECHERCHE-REIHT-NICHT-MEHR-EIN` | Block 20.08.2026 — aus der Klassifikation der Fundliste |
-| 562 | ANT | offen | Zustand-Zeile | `NACHLAUF-VOR-DER-ZUSTELLUNG` | Block 20.08.2026 — aus der Klassifikation der Fundliste |
-| 574 | BAU | offen | Zustand-Zeile | `REPEAT-PENALTY-OHNE-HERKUNFT` | Block 20.08.2026 — aus der Klassifikation der Fundliste |
-| 586 | BAU | offen | Zustand-Zeile | `ANBIETERDAUERN-UNGELESEN` | Block 20.08.2026 — aus der Klassifikation der Fundliste |
-| 598 | WIS | offen | Zustand-Zeile | `FUNDSTELLE-ERREICHT-DEN-MENSCHEN-NICHT` | Block 20.08.2026 — aus der Klassifikation der Fundliste |
-| 610 | WIS | offen | Zustand-Zeile | `SILO-OHNE-ZUSTAND-IN-DER-MATRIX` | Block 20.08.2026 — aus der Klassifikation der Fundliste |
-| 622 | WIS | offen | Zustand-Zeile | `BESTAND-ANTWORTET-ANDERS-NACH-90-MIN` | Block 20.08.2026 — aus der Klassifikation der Fundliste |
-| 634 | WIS | offen | Zustand-Zeile | `KANDIDATENABFRAGE-OHNE-DB-ZEUGEN` | Block 20.08.2026 — aus der Klassifikation der Fundliste |
-| 646 | WIS | offen | Zustand-Zeile | `VERSTAERKUNGSPFAD-IM-BETRIEB-UNGETROFFEN` | Block 20.08.2026 — aus der Klassifikation der Fundliste |
-| 658 | WIS | offen | Zustand-Zeile | `DREI-WEGE-EINE-SCHWELLE` | Block 20.08.2026 — aus der Klassifikation der Fundliste |
-| 670 | WIS | offen | Zustand-Zeile | `EINREIHPUNKT-HINTER-DEM-SCHREIBEN` | Block 20.08.2026 — aus der Klassifikation der Fundliste |
-| 682 | HGR | offen | Zustand-Zeile | `SHADOW-AUFTRAG-OHNE-TURNBEZUG` | Block 20.08.2026 — aus der Klassifikation der Fundliste |
-| 694 | HGR | offen | Zustand-Zeile | `RUECKWEG-HINTER-DEM-RUECKSTAND` | Block 20.08.2026 — aus der Klassifikation der Fundliste |
-| 706 | BAU | offen | Zustand-Zeile | `DATEIEN-VERBUND-OHNE-MODULDOKUMENT` | Block 20.08.2026 — aus der Klassifikation der Fundliste |
-| 718 | WIS | offen | Zustand-Zeile | `RUECKFRAGE-DEKLARIERT-UND-UNGENUTZT` | Block 20.08.2026 — aus der Klassifikation der Fundliste |
-| 730 | WIS | offen | Zustand-Zeile | `ZEILEN-LESEN-OHNE-AUFRUFER` | Block 20.08.2026 — aus der Klassifikation der Fundliste |
-| 742 | ANT | offen | Zustand-Zeile | `AGENTGRAPH-FAEHRT-VOLLEN-ENRICHER` | Block 20.08.2026 — aus der Klassifikation der Fundliste |
-| 754 | WIS | abgeschlossen | Zustand-Zeile | `WERKZEUGSCHICHT-DATEIEN-OHNE-RUFER` | Block 20.08.2026 — aus der Klassifikation der Fundliste |
-| 766 | HGR | offen | Zustand-Zeile | `RECHERCHE-LIEST-EIGENE-BIBLIOTHEK-NICHT` | Block 20.08.2026 — aus der Klassifikation der Fundliste |
-| 778 | WIS | offen | Zustand-Zeile | `RETRIEVAL-SCHWELLE-OHNE-WIRKUNG` | Block 20.08.2026 — aus der Klassifikation der Fundliste |
-| 790 | WIS | offen | Zustand-Zeile | `GRENZE-OHNE-LESER` | Block 20.08.2026 — aus der Klassifikation der Fundliste |
-| 802 | WIS | offen | Zustand-Zeile | `WISSEN-UND-WEBSUCHE-NICHT-ANSPRECHBAR` | Block 20.08.2026 — aus der Klassifikation der Fundliste |
-| 814 | HGR | offen | Zustand-Zeile | `SELBSTAUSLOESUNG-BUDGET-EINZWECKIG` | Block 20.08.2026 — aus der Klassifikation der Fundliste |
-| 826 | WIS | offen | Zustand-Zeile | `ZUSTELLART-EINWERTIG` | Block 20.08.2026 — aus der Klassifikation der Fundliste |
-| 838 | BAU | offen | Zustand-Zeile | `AGENT-MD-MIT-STELLWERTEN` | Block 20.08.2026 — aus der Klassifikation der Fundliste |
-| 850 | BAU | offen | Zustand-Zeile | `ENDPUNKTE-OHNE-BEDINGUNGEN` | Block 20.08.2026 — aus der Klassifikation der Fundliste |
-| 862 | BAU | offen | Zustand-Zeile | `PRIVATE-MEMBER-OHNE-ZUSICHERUNG` | Block 20.08.2026 — aus der Klassifikation der Fundliste |
-| 874 | BAU | offen | Zustand-Zeile | `FUNKTIONEN-ZU-TIEF-VERSCHACHTELT` | Block 20.08.2026 — aus der Klassifikation der Fundliste |
-| 886 | BAU | offen | Zustand-Zeile | `KLASSEN-OHNE-GEMEINSAMES-FELD` | Block 20.08.2026 — aus der Klassifikation der Fundliste |
-| 898 | BAU | offen | Zustand-Zeile | `KANALZWANG-NUR-22-PROZENT-PRUEFBAR` | Block 20.08.2026 — aus der Klassifikation der Fundliste |
-| 910 | BAU | offen | Zustand-Zeile | `NODE-LLM-CONFIG-RECHERCHE-OHNE-RUFER` | Block 20.08.2026 — aus der Klassifikation der Fundliste |
-| 922 | BAU | offen | Zustand-Zeile | `ERLEDIGT-MARKE-STATT-STICHWORTLISTE` | Block 20.08.2026 — aus der Klassifikation der Fundliste |
-| 934 | HGR | offen | Zustand-Zeile | `RUECKWEG-UEBER-DEN-MENSCHEN-OHNE-RIEGEL` | Block 20.08.2026 — aus der Klassifikation der Fundliste |
-| 946 | CHA | offen | Zustand-Zeile | `VERLAUF-REPRODUZIERT-EIGENE-WENDUNGEN` | Block 20.08.2026 — aus der Klassifikation der Fundliste |
-| 958 | BAU | offen | Zustand-Zeile | `SCHWELLEN-OHNE-VERGLEICHSGEGENSTAND` | Block 20.08.2026 — aus der Klassifikation der Fundliste |
-| 970 | CHA | offen | Zustand-Zeile | `CHARAKTER-BESCHAEDIGT-INHALT` | Block 20.08.2026 — aus der Klassifikation der Fundliste |
-| 982 | CHA | offen | Zustand-Zeile | `BEITRAGSTABELLE-SCHLIESST-KOMBINATION-AUS` | Block 20.08.2026 — aus der Klassifikation der Fundliste |
-| 994 | ANT | offen | Zustand-Zeile | `CLUSTER-BESCHREIBUNG-MISCHT-BEFEHL` | Block 20.08.2026 — aus der Klassifikation der Fundliste |
-| 1007 | BAU | offen | Zustand-Zeile | `BEISPIELE-OHNE-HERKUNFTSMARKE` | Block 20.08.2026 — aus der Klassifikation der Fundliste |
-| 1025 | CHA | offen | Zustand-Zeile | `KOPPLUNG-FRAGENSPALTE-UNGEPRUEFT` | 0c. Aus der Fundliste klassifiziert — Chat 133 (08.08.2026) |
-| 1039 | ANT | offen | Zustand-Zeile | `EINWANDSURTEIL-OHNE-LESER` | 0c. Aus der Fundliste klassifiziert — Chat 133 (08.08.2026) |
-| 1053 | BAU | offen | Zustand-Zeile | `KANAELE-OHNE-VERTRAG` | 0c. Aus der Fundliste klassifiziert — Chat 133 (08.08.2026) |
-| 1067 | ANT | offen | Zustand-Zeile | `GV-SKIP-TOTE-AUSLOESER` | 0c. Aus der Fundliste klassifiziert — Chat 133 (08.08.2026) |
-| 1081 | ANT | offen | Zustand-Zeile | `RESPONDER-KOMMENTAR-FALSCHE-SCHICHT` | 0c. Aus der Fundliste klassifiziert — Chat 133 (08.08.2026) |
-| 1095 | CHA | offen | Zustand-Zeile | `PROFILE-LEER-URSACHE-UNBEKANNT` | 0c. Aus der Fundliste klassifiziert — Chat 133 (08.08.2026) |
-| 1113 | BAU | offen | Zustand-Zeile | `CHARAKTER-HASH-DOKU-FALSCHE-QUELLE` | 0c. Aus der Fundliste klassifiziert — Chat 133 (08.08.2026) |
-| 1133 | BAU | offen | Zustand-Zeile | `DOKU-MEHRDEUTIGE-ANKER` | 0c. Aus der Fundliste klassifiziert — Chat 133 (08.08.2026) |
-| 1145 | BAU | offen | Zustand-Zeile | `AGENT-MD-NIE-GEPRUEFT` | 0c. Aus der Fundliste klassifiziert — Chat 133 (08.08.2026) |
-| 1157 | GED | offen | Zustand-Zeile | `SESSION-CONTEXT-BUILD-OHNE-AUFRUFER` | 0c. Aus der Fundliste klassifiziert — Chat 133 (08.08.2026) |
-| 1169 | HGR | offen | Zustand-Zeile | `EIGENIMPULSE-IN-DER-SCHWELLE` | 0c. Aus der Fundliste klassifiziert — Chat 133 (08.08.2026) |
-| 1181 | ANT | offen | Zustand-Zeile | `REPERTOIRE-UNGLEICH-VERTEILT` | 0c. Aus der Fundliste klassifiziert — Chat 133 (08.08.2026) |
-| 1193 | WIS | offen | Zustand-Zeile | `NOTIZEN-ENRICH-16-ZWEIGE` | 0c. Aus der Fundliste klassifiziert — Chat 133 (08.08.2026) |
-| 1205 | BAU | offen | Zustand-Zeile | `LLM-PROVIDER-ZWEIG-UNERREICHBAR` | 0c. Aus der Fundliste klassifiziert — Chat 133 (08.08.2026) |
-| 1217 | BAU | offen | Zustand-Zeile | `FUENF-STELLEN-FORM-MEHRFACH` | 0c. Aus der Fundliste klassifiziert — Chat 133 (08.08.2026) |
-| 1229 | BAU | offen | Zustand-Zeile | `LOGGING-PROZENT-STATT-FSTRING` | 0c. Aus der Fundliste klassifiziert — Chat 133 (08.08.2026) |
-| 1245 | ANT | offen | Zustand-Zeile | `PROMPT-DOPPELTE-FORMULIERUNG` | 0c. Aus der Fundliste klassifiziert — Chat 133 (08.08.2026) |
-| 1265 | BAU | offen | Zustand-Zeile | `GRAPH-TABELLE-OHNE-VERFASSER` | 0c. Aus der Fundliste klassifiziert — Chat 133 (08.08.2026) |
-| 1277 | CHA | offen | Zustand-Zeile | `INITIATIVE-RAD-GEGENPOL-UNGEPRUEFT` | 0c. Aus der Fundliste klassifiziert — Chat 133 (08.08.2026) |
-| 1289 | ANT | offen | Zustand-Zeile | `CLUSTERZAHL-13-GEGEN-14` | 0c. Aus der Fundliste klassifiziert — Chat 133 (08.08.2026) |
-| 1301 | ANT | offen | Zustand-Zeile | `GV-DETAIL-LAENGE-IRREFUEHREND` | 0c. Aus der Fundliste klassifiziert — Chat 133 (08.08.2026) |
-| 1313 | BAU | offen | Zustand-Zeile | `BILD-VERWAIST` | 0c. Aus der Fundliste klassifiziert — Chat 133 (08.08.2026) |
-| 1329 | BAU | offen | Zustand-Zeile | `LLM-LOCK-SCHUETZT-DIE-GPU-NICHT-DEN-TURN` | 0c. Aus der Fundliste klassifiziert — Chat 133 (08.08.2026) |
-| 1341 | ANT | offen | Zustand-Zeile | `CLIENT-OHNE-TESTLAUF` | 0c. Aus der Fundliste klassifiziert — Chat 133 (08.08.2026) |
-| 1353 | CHA | abgeschlossen | Zustand-Zeile | `RAD-STABILITAET-UNGEMESSEN` | 0c. Aus der Fundliste klassifiziert — Chat 133 (08.08.2026) |
-| 1405 | HGR | abgeschlossen | Zustand-Zeile | `INTENTION-AUFGABE-MAP-DOPPELT` | 0c. Aus der Fundliste klassifiziert — Chat 133 (08.08.2026) |
-| 1417 | HGR | offen | Zustand-Zeile | `QUEUE-RUHE-DURCH-REIHENFOLGE` | 0c. Aus der Fundliste klassifiziert — Chat 133 (08.08.2026) |
-| 1429 | HGR | offen | Zustand-Zeile | `PIXIE-EIN-SLOT-BLOCKIERT-ALLES` | 0c. Aus der Fundliste klassifiziert — Chat 133 (08.08.2026) |
-| 1443 | BAU | offen | Zustand-Zeile | `KONTEXT-32768-IN-SECHS-DOKUMENTEN` | 0c. Aus der Fundliste klassifiziert — Chat 133 (08.08.2026) |
-| 1455 | HGR | offen | Zustand-Zeile | `RECHERCHE-ZWISCHENDESTILLATION-OHNE-GRUND` | 0c. Aus der Fundliste klassifiziert — Chat 133 (08.08.2026) |
-| 1480 | BAU | offen | Zustand-Zeile | `ARCHITEKTUR-TABELLENLISTE-UNVOLLSTAENDIG` | 0c. Aus der Fundliste klassifiziert — Chat 133 (08.08.2026) |
-| 1492 | BAU | offen | Zustand-Zeile | `KERN-SCHEMA-OHNE-DRIFTPRUEFUNG` | 0c. Aus der Fundliste klassifiziert — Chat 133 (08.08.2026) |
-| 1504 | GED | offen | Zustand-Zeile | `EBBINGHAUS-KONSTANTEN-TOT` | 0c. Aus der Fundliste klassifiziert — Chat 133 (08.08.2026) |
-| 1516 | GED | offen | Zustand-Zeile | `KNOTENGEWICHT-DOKU-BEHAUPTET-LIVE` | 0c. Aus der Fundliste klassifiziert — Chat 133 (08.08.2026) |
-| 1528 | HGR | offen | Zustand-Zeile | `RECHERCHE-RETRY-BLOCKIERT-QUEUE` | 0c. Aus der Fundliste klassifiziert — Chat 133 (08.08.2026) |
-| 1540 | GED | offen | Zustand-Zeile | `ENTITAET-IDS-LEER-82-PROZENT` | 0c. Aus der Fundliste klassifiziert — Chat 133 (08.08.2026) |
-| 1552 | CHA | offen | Zustand-Zeile | `GRAVITATION-CLUSTER-AUS-VORTURN-UNGEPRUEFT` | 0c. Aus der Fundliste klassifiziert — Chat 133 (08.08.2026) |
-| 1564 | HGR | offen | Zustand-Zeile | `AUFTRAGSARTEN-OHNE-AGENTEN` | 0c. Aus der Fundliste klassifiziert — Chat 133 (08.08.2026) |
-| 1587 | HGR | offen | Zustand-Zeile | `SHADOW-QUEUE-RUECKSTAND-UNGEMESSEN` | 0c. Aus der Fundliste klassifiziert — Chat 133 (08.08.2026) |
-| 1601 | HGR | offen | Zustand-Zeile | `ARBEITSQUEUES-OHNE-GEGENUEBER` | 0c. Aus der Fundliste klassifiziert — Chat 133 (08.08.2026) |
-| 1613 | CHA | offen | Zustand-Zeile | `CHARAKTER-ANWEISUNGEN-OHNE-GEGENUEBER` | 0c. Aus der Fundliste klassifiziert — Chat 133 (08.08.2026) |
-| 1712 | CHA | offen | Zustand-Zeile | `PROFIL-HISTORIE-FEHLT` | 0b. Charakterbildung messen — der nächste Sprint (01.08.2026 |
-| 1730 | CHA | offen | Zustand-Zeile | `PAARLISTE-FEST` | 0b. Charakterbildung messen — der nächste Sprint (01.08.2026 |
-| 1756 | CHA | abgeschlossen | Marke | `HALTUNG-KNOTEN-FEHLT` | 0a. Haltungsraum — der unterbrochene Sprint (31.07.2026) |
-| 1776 | ANT | offen | Zustand-Zeile | `GRAPH-SACKGASSE-UNGEPRUEFT` | 0a. Haltungsraum — der unterbrochene Sprint (31.07.2026) |
-| 1788 | CHA | abgeschlossen | Marke | `HALTUNG-PROTOKOLL-FEHLT` | 0a. Haltungsraum — der unterbrochene Sprint (31.07.2026) |
-| 1808 | CHA | offen | Zustand-Zeile | `HALTUNG-SPANNENENDEN-OFFEN` | 0a. Haltungsraum — der unterbrochene Sprint (31.07.2026) |
-| 1828 | CHA | offen | Zustand-Zeile | `HALTUNG-SPANNENENDEN-OFFEN` | 0a. Haltungsraum — der unterbrochene Sprint (31.07.2026) |
-| 1850 | CHA | abgeschlossen | Marke | `HALTUNG-OHNE-LANDSCHAFT` | 0a. Haltungsraum — der unterbrochene Sprint (31.07.2026) |
-| 1866 | CHA | offen | Zustand-Zeile | `HALTUNG-LAENGE-ZWEI-ERZEUGER` | 0a. Haltungsraum — der unterbrochene Sprint (31.07.2026) |
-| 1886 | BAU | offen | Zustand-Zeile | `ZEIT-KORPUS-TESTS-AUF-UNITTEST` | 0. Zeitparser und Kalibrierung (31.07.2026) |
-| 1900 | WIS | offen | Zustand-Zeile | `ZEIT-ZWOELF-STUNDEN-DEUTUNG` | 0. Zeitparser und Kalibrierung (31.07.2026) |
-| 1914 | WIS | offen | Zustand-Zeile | `ZEIT-TAGESZEIT-VOR-ZIFFER` | 0. Zeitparser und Kalibrierung (31.07.2026) |
-| 1926 | CHA | offen | Zustand-Zeile | `KALIBRIERUNG-ZEUGE-TRENNT-SCHWACH` | 0. Zeitparser und Kalibrierung (31.07.2026) |
-| 2216 | HGR | offen | Tabellenspalte | `PIX-MIG-6` | 7. Offene Epics & Features |
-| 2217 | HGR | abgeschlossen | Tabellenspalte | `PIX-MIG-7` | 7. Offene Epics & Features |
-| 2218 | HGR | offen | Tabellenspalte | `PIX-MIG-9` | 7. Offene Epics & Features |
-| 2219 | HGR | offen | Tabellenspalte | `ERK-VORFRAGE` | 7. Offene Epics & Features |
-| 2220 | HGR | offen | Tabellenspalte | `ERK-GATE-WIEDERHOLUNG` | 7. Offene Epics & Features |
-| 2221 | BAU | abgeschlossen | Tabellenspalte | `ERK-DOKU-NACHZUG` | 7. Offene Epics & Features |
-| 2222 | HGR | offen | Tabellenspalte | `PIX-STAPEL-RADFAKTOR` | 7. Offene Epics & Features |
-| 2223 | HGR | offen | Tabellenspalte | `PIX-AUFGABENNAMEN-GATE` | 7. Offene Epics & Features |
-| 2224 | HGR | offen | Tabellenspalte | `PIX-MIG-8` | 7. Offene Epics & Features |
-| 2225 | HGR | abgeschlossen | Tabellenspalte | `PIX-CLEAN` | 7. Offene Epics & Features |
-| 2226 | HGR | offen | Tabellenspalte | `PIX-MIG-NOVA` | 7. Offene Epics & Features |
-| 2227 | HGR | offen | Tabellenspalte | `PIX-GRAPH` | 7. Offene Epics & Features |
-| 2228 | HGR | offen | Tabellenspalte | `PIX-STATUS` | 7. Offene Epics & Features |
-| 2229 | HGR | offen | Tabellenspalte | `PIX-FALLBACK` | 7. Offene Epics & Features |
-| 2231 | HGR | offen | Tabellenspalte | `PIX-LLM-ROUTER` | 7. Offene Epics & Features |
-| 2233 | HGR | offen | Status-Zeile | `PIXIE-GRAPH-MERGE` | 7. Offene Epics & Features |
-| 2256 | ANT | offen | Status-Zeile | `META-KOGNITION` | 7. Offene Epics & Features |
-| 2287 | BAU | offen | Status-Zeile | `HERMES-SUBSTRAT` | 7. Offene Epics & Features |
-| 2323 | ANT | abgeschlossen | Tabellenspalte | `CLIENT-RENDER` | 7. Offene Epics & Features |
-| 2333 | ANT | offen | Tabellenspalte | `PENDING-RELEVANZ` | 7. Offene Epics & Features |
-| 2335 | ANT | offen | Tabellenspalte | `ROUTE-MISS1` | 7. Offene Epics & Features |
-| 2337 | HGR | offen | Tabellenspalte | `DELIVERY-VOICE` | 7. Offene Epics & Features |
-| 2339 | HGR | offen | Status-Zeile | `RECH-NO-PERSIST` | 7. Offene Epics & Features |
-| 2350 | WIS | offen | Status-Zeile | `AGENT-RUECKFRAGE-LOOP` | 7. Offene Epics & Features |
-| 2362 | WIS | offen | Status-Zeile | `NOTIZEN-VOR-TURN-BEZUG` | 7. Offene Epics & Features |
-| 2383 | HGR | offen | Tabellenspalte | `SHADOW-DEAD` | 7. Offene Epics & Features |
-| 2384 | HGR | offen | Tabellenspalte | `PIX-GPU-IDLE` | 7. Offene Epics & Features |
-| 2392 | BAU | offen | Tabellenspalte | `REFAC-ENRICHER-EVA` | 7. Offene Epics & Features |
-| 2393 | BAU | offen | Tabellenspalte | `REFAC-LOGGER-HIERARCHIE` | 7. Offene Epics & Features |
-| 2394 | BAU | offen | Tabellenspalte | `REFAC-SHUTDOWN-DISZIPLIN` | 7. Offene Epics & Features |
-| 2395 | BAU | offen | Tabellenspalte | `REFAC-SCHEMA-MIGRIEREN-FAILMODE` | 7. Offene Epics & Features |
-| 2396 | BAU | offen | Tabellenspalte | `SHUTDOWN-EVENT-ASYNC` | 7. Offene Epics & Features |
-| 2397 | BAU | offen | Tabellenspalte | `REFAC-PIPELINE-LOG-VOLLVERKABELUNG` | 7. Offene Epics & Features |
-| 2398 | BAU | offen | Tabellenspalte | `REFAC-UMLAUTE` | 7. Offene Epics & Features |
-| 2399 | BAU | offen | Tabellenspalte | `REFAC-DB-INDEX-DUPLIKAT` | 7. Offene Epics & Features |
-| 2400 | BAU | offen | Tabellenspalte | `REFAC-SEEDS-AUSLAGERN` | 7. Offene Epics & Features |
-| 2401 | BAU | offen | Tabellenspalte | `REFAC-AGENT-INIT-COMPOSE-MOUNT` | 7. Offene Epics & Features |
-| 2402 | WIS | offen | Tabellenspalte | `TIMELINE-IN-KERN` | 7. Offene Epics & Features |
-| 2403 | WIS | abgeschlossen | Tabellenspalte | `FAKTEN-IN-KERN` | 7. Offene Epics & Features |
-| 2404 | WIS | offen | Tabellenspalte | `NOTIZEN-INDIZES-NACHTRAG` | 7. Offene Epics & Features |
-| 2405 | BAU | offen | Tabellenspalte | `REFAC-EVENT-PAYLOAD-SEEDING` | 7. Offene Epics & Features |
-| 2407 | GED | offen | Tabellenspalte | `REFAC-KZG-CODE-DUPLIKAT` | 7. Offene Epics & Features |
-| 2408 | WIS | offen | Tabellenspalte | `PLANNER-TIMELINE-INTENT-MISS` | 7. Offene Epics & Features |
-| 2409 | BAU | abgeschlossen | Tabellenspalte | `TEST-WORKER-SHUTDOWN-COROUTINE` | 7. Offene Epics & Features |
-| 2410 | BAU | offen | Tabellenspalte | `WORKER-SHUTDOWN-QUEUE-DRAIN` | 7. Offene Epics & Features |
-| 2411 | BAU | offen | Tabellenspalte | `NODE-TOKEN-AUSLASTUNG-FALLBACK` | 7. Offene Epics & Features |
-| 2412 | CHA | abgeschlossen | Tabellenspalte | `EMOTIONS-VECTOR-WERTE-DRIFT` | 7. Offene Epics & Features |
-| 2413 | CHA | offen | Tabellenspalte | `EI-KANON-FEHLT` | 7. Offene Epics & Features |
-| 2414 | ANT | offen | Tabellenspalte | `INTENT-TOTE-ZWEIGE` | 7. Offene Epics & Features |
-| 2415 | CHA | offen | Tabellenspalte | `SILENT-SKIP-EI-DEFAULTS` | 7. Offene Epics & Features |
-| 2416 | BAU | offen | Tabellenspalte | `DIRECTIVE-DATACLASS` | 7. Offene Epics & Features |
-| 2417 | CHA | offen | Tabellenspalte | `TURN-ROH-VOR-KRAFT1-ENTWERTET` | 7. Offene Epics & Features |
-| 2418 | GED | abgeschlossen | Tabellenspalte | `ZIEL-DECAY-FORMEL-KUMULATIV` | 7. Offene Epics & Features |
-| 2419 | GED | abgeschlossen | Tabellenspalte | `ZIEL-DECAY-TYP-FILTER` | 7. Offene Epics & Features |
-| 2420 | GED | abgeschlossen | Tabellenspalte | `ZIEL-DECAY-DOKU-LUEGT` | 7. Offene Epics & Features |
-| 2421 | HGR | offen | Tabellenspalte | `PIXIE-ROUTING-DOPPELREGISTRY` | 7. Offene Epics & Features |
-| 2422 | ANT | offen | Tabellenspalte | `NOVA-ZUSAGE-OHNE-DECKUNG` | 7. Offene Epics & Features |
-| 2423 | HGR | offen | Tabellenspalte | `PIXIE-SELBSTTRIGGER-KEIN-TURN-ROH` | 7. Offene Epics & Features |
-| 2424 | GED | offen | Tabellenspalte | `ENRICHER-REDIS-UNGESCHUETZT` | 7. Offene Epics & Features |
-| 2425 | BAU | offen | Tabellenspalte | `STATE-LADEZUSTAND` | 7. Offene Epics & Features |
-| 2426 | HGR | offen | Tabellenspalte | `WEB-EXTRAKTION-STILL-LEER` | 7. Offene Epics & Features |
-| 2427 | CHA | offen | Tabellenspalte | `EI-VEKTOR-LOG-GATE` | 7. Offene Epics & Features |
-| 2428 | BAU | offen | Tabellenspalte | `LOG-FREMDBIBLIOTHEK-DEBUG` | 7. Offene Epics & Features |
-| 2559 | BAU | offen | Zustand-Zeile | `PROJEKTSEITE-NACHZIEHEN` | PROJEKTSEITE-NACHZIEHEN — die Seite kommt modernisiert wiede |
-| 2577 | CHA | offen | Status-Zeile | `EPIC-SYKOPHANZ` | EPIC-SYKOPHANZ — Sykophanz eindaemmen |
-| 2591 | CHA | offen | Tabellenspalte | `SYK-B-1-THINKER-WEICHE` | EPIC-SYKOPHANZ — Sykophanz eindaemmen |
-| 2592 | CHA | abgeschlossen | Tabellenspalte | `SYK-B0-ABSTAND` | EPIC-SYKOPHANZ — Sykophanz eindaemmen |
-| 2593 | CHA | abgeschlossen | Tabellenspalte | `SYK-B0-BEZIEHUNG` | EPIC-SYKOPHANZ — Sykophanz eindaemmen |
-| 2594 | CHA | offen | Tabellenspalte | `SYK-B0-FALLENBATTERIE` | EPIC-SYKOPHANZ — Sykophanz eindaemmen |
-| 2595 | CHA | abgeschlossen | Tabellenspalte | `SYK-B1-URTEILSFELD` | EPIC-SYKOPHANZ — Sykophanz eindaemmen |
-| 2596 | CHA | offen | Tabellenspalte | `SYK-B1-WERT-FALSCH` | EPIC-SYKOPHANZ — Sykophanz eindaemmen |
-| 2597 | CHA | abgeschlossen | Tabellenspalte | `SYK-B4-VORZEICHENPRUEFUNG` | EPIC-SYKOPHANZ — Sykophanz eindaemmen |
-| 2598 | CHA | abgeschlossen | Tabellenspalte | `SYK-B4-STUFE-2-OHNE-FILTER` | EPIC-SYKOPHANZ — Sykophanz eindaemmen |
-| 2599 | CHA | abgeschlossen | Tabellenspalte | `SYK-B4-WERT-BENENNEN` | EPIC-SYKOPHANZ — Sykophanz eindaemmen |
-| 2600 | CHA | offen | Tabellenspalte | `SYK-B8-SCHREIBPFAD` | EPIC-SYKOPHANZ — Sykophanz eindaemmen |
-| 2601 | CHA | offen | Tabellenspalte | `SYK-B3-VORZEICHENREGEL` | EPIC-SYKOPHANZ — Sykophanz eindaemmen |
-| 2602 | CHA | offen | Tabellenspalte | `SYK-B9-REGISTER` | EPIC-SYKOPHANZ — Sykophanz eindaemmen |
-| 2603 | CHA | offen | Tabellenspalte | `SYK-B2-IMPULS-GRENZE` | EPIC-SYKOPHANZ — Sykophanz eindaemmen |
-| 2604 | CHA | offen | Tabellenspalte | `SYK-B5-ESKALATION` | EPIC-SYKOPHANZ — Sykophanz eindaemmen |
-| 2605 | CHA | offen | Tabellenspalte | `SYK-B6-MOTIVENTLASTUNG` | EPIC-SYKOPHANZ — Sykophanz eindaemmen |
-| 2606 | CHA | offen | Tabellenspalte | `SYK-B7-ZWEITABLEITUNG` | EPIC-SYKOPHANZ — Sykophanz eindaemmen |
-| 2614 | CHA | offen | Tabellenspalte | `SYK-M-TRIBUNAL` | EPIC-SYKOPHANZ — Sykophanz eindaemmen |
-| 2615 | CHA | offen | Tabellenspalte | `SYK-M-VERFASSER` | EPIC-SYKOPHANZ — Sykophanz eindaemmen |
-| 2616 | CHA | offen | Tabellenspalte | `SYK-M-RAHMUNG` | EPIC-SYKOPHANZ — Sykophanz eindaemmen |
-| 2623 | HGR | offen | Status-Zeile | `EPIC-PIXIE-ABFLUSS` | EPIC-PIXIE-ABFLUSS — der Abfluss steht (04.08.2026) |
-| 2637 | HGR | offen | Tabellenspalte | `PIX-AGENTEN-FEHLEN` | EPIC-PIXIE-ABFLUSS — der Abfluss steht (04.08.2026) |
-| 2638 | HGR | offen | Tabellenspalte | `PIX-RETRY-KREIS` | EPIC-PIXIE-ABFLUSS — der Abfluss steht (04.08.2026) |
-| 2639 | HGR | offen | Tabellenspalte | `PIX-SERIELLER-PLATZ` | EPIC-PIXIE-ABFLUSS — der Abfluss steht (04.08.2026) |
-| 2640 | HGR | offen | Tabellenspalte | `PIX-PRIORITAET-STILL` | EPIC-PIXIE-ABFLUSS — der Abfluss steht (04.08.2026) |
-| 2646 | WIS | offen | Status-Zeile | `EPIC-WISSENSSPEICHER` | EPIC-WISSENSSPEICHER — Novas eigene Bibliothek (04.08.2026) |
-| 2655 | WIS | abgeschlossen | Tabellenspalte | `WIS-1-MOUNT` | EPIC-WISSENSSPEICHER — Novas eigene Bibliothek (04.08.2026) |
-| 2656 | WIS | abgeschlossen | Tabellenspalte | `WIS-2-TABELLE` | EPIC-WISSENSSPEICHER — Novas eigene Bibliothek (04.08.2026) |
-| 2657 | WIS | abgeschlossen | Tabellenspalte | `WIS-3-DATEIEN` | EPIC-WISSENSSPEICHER — Novas eigene Bibliothek (04.08.2026) |
-| 2658 | WIS | offen | Tabellenspalte | `WIS-4-STAPEL-SALIENZ` | EPIC-WISSENSSPEICHER — Novas eigene Bibliothek (04.08.2026) |
-| 2659 | WIS | offen | Tabellenspalte | `WIS-5-VERFALL` | EPIC-WISSENSSPEICHER — Novas eigene Bibliothek (04.08.2026) |
-| 2660 | WIS | offen | Tabellenspalte | `WIS-6-FORTSETZEN` | EPIC-WISSENSSPEICHER — Novas eigene Bibliothek (04.08.2026) |
-| 2661 | WIS | abgeschlossen | Tabellenspalte | `WIS-PRUEFUNG-F-WISSEN-1` | EPIC-WISSENSSPEICHER — Novas eigene Bibliothek (04.08.2026) |
-| 2662 | WIS | abgeschlossen | Tabellenspalte | `WIS-7-ENRICHER` | EPIC-WISSENSSPEICHER — Novas eigene Bibliothek (04.08.2026) |
-| 2663 | WIS | offen | Tabellenspalte | `WIS-8-STUFE-2` | EPIC-WISSENSSPEICHER — Novas eigene Bibliothek (04.08.2026) |
-| 2664 | WIS | offen | Tabellenspalte | `WIS-SCHWELLE-MESSEN` | EPIC-WISSENSSPEICHER — Novas eigene Bibliothek (04.08.2026) |
-| 2684 | WIS | offen | Tabellenspalte | `WIS-GATE-MESSUNG` | EPIC-WISSENSSPEICHER — Novas eigene Bibliothek (04.08.2026) |
-| 2685 | HGR | offen | Tabellenspalte | `PIX-WARTESCHLANGE-AM-MODELL` | EPIC-WISSENSSPEICHER — Novas eigene Bibliothek (04.08.2026) |
-| 2686 | WIS | offen | Tabellenspalte | `WIS-KONTEXT-NEU-DIMENSIONIEREN` | EPIC-WISSENSSPEICHER — Novas eigene Bibliothek (04.08.2026) |
-| 2687 | HGR | offen | Tabellenspalte | `WIS-AGENTEN-NACHZIEHEN` | EPIC-WISSENSSPEICHER — Novas eigene Bibliothek (04.08.2026) |
-| 2691 | WIS | offen | Status-Zeile | `EPIC-KLAERUNG` | EPIC-KLAERUNG — Abweichung und Luecke (04.08.2026) |
-| 2706 | WIS | offen | Tabellenspalte | `KLA-K5-FAKTENPFAD` | EPIC-KLAERUNG — Abweichung und Luecke (04.08.2026) |
-| 2707 | WIS | offen | Tabellenspalte | `KLA-K1-ERWARTUNGSSCHEMA` | EPIC-KLAERUNG — Abweichung und Luecke (04.08.2026) |
-| 2708 | WIS | offen | Tabellenspalte | `KLA-K2-KLAERUNGSTOR` | EPIC-KLAERUNG — Abweichung und Luecke (04.08.2026) |
-| 2709 | WIS | offen | Tabellenspalte | `KLA-K3-SALIENZ` | EPIC-KLAERUNG — Abweichung und Luecke (04.08.2026) |
-| 2710 | WIS | offen | Tabellenspalte | `KLA-K4-ZWISCHENSCHRITT` | EPIC-KLAERUNG — Abweichung und Luecke (04.08.2026) |
-| 2793 | GED | offen | Status-Zeile | `EPIC-EMOTIONALE-GRAVITATION` | EPIC-EMOTIONALE-GRAVITATION — Erinnerungen ziehen nach Aehnl |
-| 2850 | ANT | abgeschlossen | Status-Zeile | `EPIC-GRAPH-NEUORDNUNG` | EPIC-GRAPH-NEUORDNUNG — HumanGraph und CharacterGraph getren |
-| 2868 | ANT | abgeschlossen | Status-Zeile | `EPIC-SESSION-TRENNUNG` | EPIC-SESSION-TRENNUNG — eine Sitzung je Paar ✅ |
-| 2893 | ANT | offen | Status-Zeile | `VISION-TURNORCHESTRATOR` | VISION-TURNORCHESTRATOR — ein Dirigent ueber den Turn |
-| 2907 | ANT | offen | Status-Zeile | `EPIC-CLIENT-WEBSOCKET` | EPIC-CLIENT-WEBSOCKET — der Client haengt am Ereignisstrom ✅ |
-| 2938 | GED | abgeschlossen | Marke | `KZG-DEDUP` | Epic: Chat 62 — Folgearbeiten aus dem Paar-Schema |
-| 2946 | GED | abgeschlossen | Marke | `KZG-KERN-BLIND` | Epic: Chat 62 — Folgearbeiten aus dem Paar-Schema |
-| 2954 | ANT | offen | Zustand-Zeile | `ROUTE-CHAR-NOTIZ` | Epic: Chat 62 — Folgearbeiten aus dem Paar-Schema |
-| 2970 | GED | offen | Zustand-Zeile | `KZG-L` | Epic: KZG-Liberalisierung + LZG-Destillation (Chat 63) |
-| 3186 | BAU | abgeschlossen | Zustand-Zeile | `TELEGRAM-GRENZE-STRUKTURELL` | Epic: Matrix-Kanal + WireGuard-Zugang (Chat 68) |
-| 3566 | ANT | offen | Zustand-Zeile | `GV-P` | Epic: Chat 72 — Folgearbeiten aus Dreischicht-Integration |
-| 3607 | GED | offen | Status-Zeile | `EPIC-PROMOTION-KORREKTUR` | EPIC-PROMOTION-KORREKTUR — was bei der Promotion verlorengin |
-| 3683 | GED | offen | Status-Zeile | `PROMO-CLUSTER-EI-UPDATE` | EPIC-PROMOTION-KORREKTUR — was bei der Promotion verlorengin |
-| 3707 | GED | offen | Status-Zeile | `PROMO-CLUSTER-TIE-DETERMINISM` | EPIC-PROMOTION-KORREKTUR — was bei der Promotion verlorengin |
-| 3718 | GED | offen | Status-Zeile | `PROMO-DESTILL-DEAD` | EPIC-PROMOTION-KORREKTUR — was bei der Promotion verlorengin |
-| 3728 | GED | offen | Status-Zeile | `PROMO-INTENTIONEN-FORMAT-DRIFT` | EPIC-PROMOTION-KORREKTUR — was bei der Promotion verlorengin |
-| 3740 | GED | abgeschlossen | Status-Zeile | `EPIC-MEMORY-KERN-UMBAU` | EPIC-MEMORY-KERN-UMBAU — das Synapsen-Modell |
-| 3865 | BAU | abgeschlossen | Status-Zeile | `EPIC-MS-MODELL-QUEUE` | EPIC-MS-MODELL-QUEUE — die Modellaufrufe bekommen eine Warte |
-| 3962 | ANT | offen | Status-Zeile | `REDUCER-NACHZUEGLER` | REDUCER-NACHZUEGLER — was der Reducer-Umbau offengelassen ha |
-| 3971 | ANT | offen | Zustand-Zeile | `REDUCER-CONFIG-DEAD` | REDUCER-NACHZUEGLER — was der Reducer-Umbau offengelassen ha |
-| 3981 | BAU | offen | Zustand-Zeile | `LOGGER-NAMESPACE` | REDUCER-NACHZUEGLER — was der Reducer-Umbau offengelassen ha |
-| 3991 | GED | offen | Zustand-Zeile | `SESSION-SUMMARY-INACTIVE` | REDUCER-NACHZUEGLER — was der Reducer-Umbau offengelassen ha |
-| 4002 | HGR | abgeschlossen | Status-Zeile | `PIX-CLEAN` | REDUCER-NACHZUEGLER — was der Reducer-Umbau offengelassen ha |
-| 4031 | BAU | offen | Status-Zeile | `INIT-SQL-VERALTET` | REDUCER-NACHZUEGLER — was der Reducer-Umbau offengelassen ha |
-| 4047 | GED | offen | Status-Zeile | `LZG-HAEUFIGKEIT-AMBIVALENT` | REDUCER-NACHZUEGLER — was der Reducer-Umbau offengelassen ha |
-| 4069 | ANT | offen | Status-Zeile | `THINKER-TOOL-FORMAT` | Designdiskussion: THINKER-TOOL-FORMAT (Chat 75) |
-| 4086 | ANT | offen | Status-Zeile | `THINK-TRANSITION-INFO` | Sprint: THINK-TRANSITION-INFO — Thinker bekommt Verarbeitung |
-| 4112 | WIS | abgeschlossen | Status-Zeile | `SPRINT-NOTIZEN-BEZUGSAUFLOESUNG` | SPRINT-NOTIZEN-BEZUGSAUFLOESUNG — Inhalts-Aufloesung im Clas |
-| 4146 | WIS | abgeschlossen | Status-Zeile | `SPRINT-M25A-TIMELINE-CLEANUP` | SPRINT-M25A-TIMELINE-CLEANUP — der TimelineAgent verliert se |
-| 4188 | GED | offen | Status-Zeile | `MEMORY-SALIENZ-VERERBUNG` | Konzept: MEMORY-SALIENZ-VERERBUNG — Salienz auf semantischen |
-| 4220 | GED | offen | Status-Zeile | `ENRICHER-AKTE` | Konzept: ENRICHER-AKTE — Strukturierte Memory-Context-Akte a |
-| 4255 | ANT | offen | Status-Zeile | `KONZEPT-COGNITIVE-PIPELINE` | KONZEPT-COGNITIVE-PIPELINE — Frames, Verstehens-Schleife, Fa |
-| 4334 | GED | offen | Status-Zeile | `KONZEPT-TURNLOG-CHRONIK` | KONZEPT-TURNLOG-CHRONIK — vollstaendiges Turn-Log als episod |
-| 4381 | HGR | abgeschlossen | Status-Zeile | `MIGRATION-PIX-CLEANUP` | Sprint: MIGRATION-PIX-CLEANUP — Pixie-Migration nach Multi-C |
-| 4408 | GED | abgeschlossen | Status-Zeile | `KZG-CLEANUP` | Sprint: KZG-CLEANUP — Bereinigung fehlerhafter KZG-Einträge  |
-| 4437 | CHA | offen | Status-Zeile | `CHAR-HASH-TEST-LEICHEN` | Cleanup: CHAR-HASH-TEST-LEICHEN — Test-User in `charakter_ha |
-| 4455 | BAU | offen | Status-Zeile | `LZG-DOKU-DRIFT` | Cleanup: LZG-DOKU-DRIFT — `novaberg-mem-lzg.md` reflektiert  |
-| 4477 | WIS | offen | Zustand-Zeile | `TIMELINE-PAIR-MISSING` | Bug: TIMELINE-PAIR-MISSING — Timeline-Tabelle ohne `characte |
-| 4507 | WIS | offen | Zustand-Zeile | `NOTIZEN-PAIR-MISSING` | Bug: NOTIZEN-PAIR-MISSING — Notizen-Tabelle ohne `character_ |
-| 4525 | WIS | offen | Zustand-Zeile | `FAKTEN-PAIR-IGNORED` | Bug: FAKTEN-PAIR-IGNORED — Fakten-Repository ignoriert `char |
-| 4543 | WIS | abgeschlossen | Zustand-Zeile | `ZIELE-PAIR-MISSING` | Bug: ZIELE-PAIR-MISSING — Ziele-Tabelle ohne `character_id`  |
-| 4561 | WIS | offen | Zustand-Zeile | `NOTIZEN-KONTEXT-REKONSTRUKTION` | Bug: NOTIZEN-KONTEXT-REKONSTRUKTION — Mehrschritt-Rekonstruk |
-| 4588 | WIS | offen | Zustand-Zeile | `NOTIZEN-CONTAINER-WECHSEL` | Bug: NOTIZEN-CONTAINER-WECHSEL — Notiz↔Liste-Wechsel verweig |
-| 4612 | WIS | offen | Zustand-Zeile | `NOTIZEN-SKILL-MANIFEST` | Bug: NOTIZEN-SKILL-MANIFEST — Nova kennt eigene Fähigkeiten  |
-| 4632 | WIS | offen | Zustand-Zeile | `NOTIZEN-UPDATE-TARGET-LEER` | Bug: NOTIZEN-UPDATE-TARGET-LEER — Bezugs-Pronomen für UPDATE |
-| 4656 | GED | abgeschlossen | Status-Zeile | `SPRINT-PIXIE-EVA-HAERTUNG` | SPRINT-PIXIE-EVA-HAERTUNG — der Promotionsweg bekommt seine  |
-| 4687 | BAU | offen | Status-Zeile | `EPIC-EVA-DISZIPLIN` | EPIC-EVA-DISZIPLIN — Zusicherungen im ganzen Bestand |
-| 4735 | ANT | offen | Status-Zeile | `TRIB-PERSON-DRIFT` | Bug: TRIB-PERSON-DRIFT — Tribunal-Agenten kennen Novas Ident |
-| 4781 | CHA | offen | Status-Zeile | `REFAC-HG-CHAR-HASH-LOAD` | Refactor: REFAC-HG-CHAR-HASH-LOAD — Char-Hash-Tiebreaker im  |
-| 4822 | CHA | offen | Status-Zeile | `SPRACH-STIL-DEFENSIV-STUMM` | Bug: SPRACH-STIL-DEFENSIV-STUMM — `_sprach_stil_erkennen` br |
-| 4850 | CHA | offen | Status-Zeile | `EI-CALC-ROLLE-RENAME` | Refactor: EI-CALC-ROLLE-RENAME — `ei_calc_rolle` semantisch  |
-| 4875 | HGR | offen | Status-Zeile | `AUDIT-PIXIE-TURN-ID` | Bug: AUDIT-PIXIE-TURN-ID — Pixie-Pfad-turn_id-Auflösung unge |
-| 4907 | CHA | offen | Status-Zeile | `EI-CALC-ROLLE-DEFAULT-ASYMMETRIE` | Bug: EI-CALC-ROLLE-DEFAULT-ASYMMETRIE — Inkonsistente Defaul |
-| 4950 | GED | offen | Status-Zeile | `DOPPEL-SESSION-LOAD` | Performance: DOPPEL-SESSION-LOAD — Session-Turns werden im H |
-| 4985 | BAU | offen | Status-Zeile | `REDUCER-LOGGER-NAME-KONVENTION` | Refactor: REDUCER-LOGGER-NAME-KONVENTION — Logger-Namen weic |
-| 5014 | BAU | offen | Status-Zeile | `REDUCER-CONFIG-DEAD-KONSTANTEN` | Refactor: REDUCER-CONFIG-DEAD-KONSTANTEN — Tote Konstanten i |
-| 5044 | GED | offen | Status-Zeile | `SESSION-SUMMARY-PFAD-INAKTIV` | Audit: SESSION-SUMMARY-PFAD-INAKTIV — Memory-Quelle "summary |
-| 5080 | GED | offen | Status-Zeile | `KZG-VERDICHTER-KONTEXT-VERLUST` | Bug: KZG-VERDICHTER-KONTEXT-VERLUST — Verdichter produziert  |
-| 5110 | GED | offen | Status-Zeile | `SALIENZ-VERDICHTUNG-MEHRFACH` | Bug: SALIENZ-VERDICHTUNG-MEHRFACH — Salienz- und Verdichtung |
-| 5135 | BAU | offen | Status-Zeile | `WORKER-TIMEOUT-MUSTER-DIVERGENZ` | Refactor: WORKER-TIMEOUT-MUSTER-DIVERGENZ — `num_ctx` (Per-C |
-| 5156 | HGR | abgeschlossen | Status-Zeile | `CONFIG-PIXIE-AKTIV-HARDCODED` | CONFIG-PIXIE-AKTIV-HARDCODED — `PIXIE_AKTIV` war nicht env-k |
-| 5176 | BAU | offen | Status-Zeile | `DOKU-DRIFT-WELLE-PROMOTION` | Doku-Sprint: DOKU-DRIFT-WELLE-PROMOTION — Sieben Drift-Punkt |
-| 5198 | BAU | offen | Status-Zeile | `CHRONIK-BACKFILL` | Doku-Sprint: CHRONIK-BACKFILL — Lücken in Roadmap- und Backl |
-| 5223 | GED | offen | Status-Zeile | `AUDIT-1-BEIFANG-PROMOTION` | Sammelposten: AUDIT-1-BEIFANG-PROMOTION — Tote Pfade und Beo |
-| 5235 | GED | offen | Tabellenspalte | `EMOTIONS-VEKTOR-LEER` | Sammelposten: AUDIT-1-BEIFANG-PROMOTION — Tote Pfade und Beo |
-| 5236 | GED | offen | Tabellenspalte | `KZG-ERSTELLT-AM-PARSE-HÄRTE` | Sammelposten: AUDIT-1-BEIFANG-PROMOTION — Tote Pfade und Beo |
-| 5237 | GED | abgeschlossen | Tabellenspalte | `GEDACHTNISTYP-DEFAULT-BEFÜLLT` | Sammelposten: AUDIT-1-BEIFANG-PROMOTION — Tote Pfade und Beo |
-| 5238 | GED | offen | Tabellenspalte | `TRIGGER-2-RECACHE-KONZEPT-LÜCKE` | Sammelposten: AUDIT-1-BEIFANG-PROMOTION — Tote Pfade und Beo |
-| 5239 | WIS | offen | Tabellenspalte | `FAKTEN-TABELLE-ENTITY-MERGE` | Sammelposten: AUDIT-1-BEIFANG-PROMOTION — Tote Pfade und Beo |
-| 5240 | WIS | offen | Tabellenspalte | `TIMELINE-FK-DOKU-DRIFT` | Sammelposten: AUDIT-1-BEIFANG-PROMOTION — Tote Pfade und Beo |
-| 5241 | GED | offen | Tabellenspalte | `REFAC-MAGNETE-AUDIT` | Sammelposten: AUDIT-1-BEIFANG-PROMOTION — Tote Pfade und Beo |
-| 5247 | BAU | offen | Status-Zeile | `AUDIT-DOKU-DRIFT-MS` | Bug: AUDIT-DOKU-DRIFT-MS — Drift-Befunde aus Microservice-Vo |
-| 5277 | GED | offen | Zustand-Zeile | `TOK-DRIFT-SALIENCE` | Bug: TOK-DRIFT-SALIENCE — Token-Akkumulator zählt fehlgeschl |
-| 5313 | HGR | abgeschlossen | Zustand-Zeile | `QUEUE-SCHEMA-STALE` | Cleanup: QUEUE-SCHEMA-STALE — `queue:nova` mit toten Aufträg |
-| 5325 | HGR | offen | Zustand-Zeile | `SCHED-STALE-SCHEDULE` | Refactor: SCHED-STALE-SCHEDULE — Startup räumt `pixie:schedu |
-| 5337 | HGR | offen | Zustand-Zeile | `SHADOW-PAYLOAD-FIELD-MISMATCH` | Bug: SHADOW-PAYLOAD-FIELD-MISMATCH — Dispatch liest Felder,  |
-| 5355 | HGR | offen | Zustand-Zeile | `WIEDERVORLAGE-MULTI-USER` | Refactor: WIEDERVORLAGE-MULTI-USER — Periodische Aufgaben pr |
-| 5367 | GED | offen | Zustand-Zeile | `SYNAPSEN-LIVE-VERIFY` | Sprint: SYNAPSEN-LIVE-VERIFY — Entitäts- und Timeline-Kanten |
-| 5381 | GED | offen | Zustand-Zeile | `SYNAPSEN-DUAL-LZG` | Sprint: SYNAPSEN-DUAL-LZG — Lesepfad auf `lzg_knoten`/`lzg_k |
-| 5395 | GED | offen | Zustand-Zeile | `KZG-GEWICHT-ABSOLUT-CEILING` | Befund: KZG-GEWICHT-ABSOLUT-CEILING — sin^0.5-Dämpfung klemm |
-| 5456 | GED | abgeschlossen | Tabellenspalte | `P5-LIVE-ABNAHME` | Lesepfad-Folgepunkte (Chat 99) |
-| 5457 | GED | offen | Tabellenspalte | `KANTEN-RICHTUNG-UNDOKUMENTIERT` | Lesepfad-Folgepunkte (Chat 99) |
-| 5458 | GED | offen | Tabellenspalte | `SPREADING-RELEVANZ-BEOBACHTEN` | Lesepfad-Folgepunkte (Chat 99) |
-| 5459 | GED | offen | Tabellenspalte | `LZG-RESONANZ-DATETIME` | Lesepfad-Folgepunkte (Chat 99) |
-| 5460 | GED | abgeschlossen | Tabellenspalte | `LZG-RESONANZ-STATE-DEKL` | Lesepfad-Folgepunkte (Chat 99) |
-| 5461 | GED | offen | Tabellenspalte | `LZG-RESONANZ-ENTITAET-NAMEN` | Lesepfad-Folgepunkte (Chat 99) |
-| 5462 | BAU | offen | Tabellenspalte | `LIB-VECTORS-MIGRATION` | Lesepfad-Folgepunkte (Chat 99) |
-| 5463 | BAU | offen | Tabellenspalte | `B3-API-KEY-SEMANTIK` | Lesepfad-Folgepunkte (Chat 99) |
-| 5476 | ANT | offen | Tabellenspalte | `ROUTE-MISS1` | 8. Offene Bugs |
-| 5478 | CHA | offen | Tabellenspalte | `CRUD-DESTILL-SUBTRAKT` | 8. Offene Bugs |
-| 5479 | CHA | offen | Tabellenspalte | `CRUD-REACTIVATE-STAMP` | 8. Offene Bugs |
-| 5480 | ANT | offen | Tabellenspalte | `EMOTE-LOCK` | 8. Offene Bugs |
-| 5481 | ANT | offen | Tabellenspalte | `TOPOS-LOCK` | 8. Offene Bugs |
-| 5482 | ANT | offen | Tabellenspalte | `ABER-SAG-MAL` | 8. Offene Bugs |
-| 5483 | ANT | offen | Tabellenspalte | `REDUCER-MULTILINE` | 8. Offene Bugs |
-| 5484 | BAU | offen | Tabellenspalte | `PATH1-LATENZ` | 8. Offene Bugs |
-| 5485 | ANT | offen | Tabellenspalte | `ROUTE-CHAR-NOTIZ` | 8. Offene Bugs |
-| 5486 | GED | offen | Tabellenspalte | `ENRICHER-DUP` | 8. Offene Bugs |
-| 5487 | ANT | offen | Tabellenspalte | `RESP-DEAD` | 8. Offene Bugs |
-| 5488 | HGR | offen | Tabellenspalte | `PIXIE-GHOST` | 8. Offene Bugs |
-| 5489 | HGR | offen | Tabellenspalte | `PIXIE-AGENT-MISSING` | 8. Offene Bugs |
-| 5490 | HGR | offen | Tabellenspalte | `RECH-SPIRAL` | 8. Offene Bugs |
-| 5491 | HGR | offen | Tabellenspalte | `RECH-CHARAKTER` | 8. Offene Bugs |
-| 5492 | HGR | offen | Tabellenspalte | `DELIVERY-DEDUP` | 8. Offene Bugs |
-| 5493 | CHA | offen | Tabellenspalte | `SPRACH-STIL-DEFENSIV-STUMM` | 8. Offene Bugs |
-| 5494 | HGR | offen | Tabellenspalte | `AUDIT-PIXIE-TURN-ID` | 8. Offene Bugs |
-| 5495 | CHA | offen | Tabellenspalte | `EI-CALC-ROLLE-DEFAULT-ASYMMETRIE` | 8. Offene Bugs |
-| 5496 | GED | offen | Tabellenspalte | `TOK-DRIFT-SALIENCE` | 8. Offene Bugs |
-| 5497 | BAU | abgeschlossen | Tabellenspalte | `TEST-RUNNER-FEHLT-CONTAINER` | 8. Offene Bugs |
-| 5537 | BAU | offen | Zustand-Zeile | `BEZEICHNER-WAR-AKTIV` | Refactor: BEZEICHNER-WAR-AKTIV — was_active statt war_aktiv  |
-| 5550 | BAU | offen | Zustand-Zeile | `CONFIG-DECAY-RATE-KOMMENTAR-DRIFT` | Fix: CONFIG-DECAY-RATE-KOMMENTAR-DRIFT — falscher Kommentar  |
-| 5565 | BAU | offen | Zustand-Zeile | `PATTERN-DOMAIN-LANGUAGE-RECONCILE` | Frage: PATTERN-DOMAIN-LANGUAGE-RECONCILE — deutsche Domaenen |
-| 5579 | GED | abgeschlossen | Marke | `SYNAPSEN-DECAY-SCHEDULE-LIVE` | Frage: SYNAPSEN-DECAY-SCHEDULE-LIVE — Heartbeat legt Schedul |
-| 5595 | HGR | abgeschlossen | Marke | `PIXIE-DECAY-KEIN-AGENT` | Bug: PIXIE-DECAY-KEIN-AGENT — Router kennt periodische Aufga |
-| 5603 | GED | offen | Zustand-Zeile | `HALBREAKTIVIERUNG-LIVE` | Frage: HALBREAKTIVIERUNG-LIVE — erster inaktiver Match feuer |
-| 5618 | GED | offen | Zustand-Zeile | `SYNAPSEN-REAKTIV-SCHWELLE` | Frage: SYNAPSEN-REAKTIV-SCHWELLE — eigene Match-Schwelle fue |
-| 5630 | CHA | offen | Zustand-Zeile | `CHARHASH-GEWICHT-ABSOLUT-LIVE` | Beobachtung: CHARHASH-GEWICHT-ABSOLUT-LIVE — erste volle Liv |
-| 5638 | CHA | offen | Zustand-Zeile | `CHARHASH-PROMPT-DUPLIKAT` | Bug: CHARHASH-PROMPT-DUPLIKAT — Kern-Persönlichkeit 5× wortg |
-| 5648 | CHA | offen | Zustand-Zeile | `DESTILLAT-PERSPEKTIVE-VS-SUBJEKT` | Bug: DESTILLAT-PERSPEKTIVE-VS-SUBJEKT — Charakter-Destillati |
-| 5673 | GED | offen | Zustand-Zeile | `HAEUFIGKEIT-AUF-KNOTEN` | Notiz: HAEUFIGKEIT-AUF-KNOTEN — haeufigkeit auf lzg_knoten m |
-| 5681 | BAU | offen | Zustand-Zeile | `CHARHASH-DOKU-DRIFT` | Doku: CHARHASH-DOKU-DRIFT — Hash-Doku beschreibt LZG-Quelle  |
-| 5689 | GED | offen | Zustand-Zeile | `REFERENZ-AUFLOESUNG-VOR-RETRIEVAL` | Bug: REFERENZ-AUFLOESUNG-VOR-RETRIEVAL — anaphorische Verwei |
-| 5697 | CHA | offen | Zustand-Zeile | `CHARAKTER-RESONANZ` | Epic: CHARAKTER-RESONANZ — Novas Charakter aus dem Umgang (C |
-| 5705 | GED | offen | Zustand-Zeile | `GESPRAECH-ARCHIV-VERWAIST` | Aufräumen: GESPRAECH-ARCHIV-VERWAIST — tote Tabelle ohne Wri |
-| 5715 | CHA | offen | Zustand-Zeile | `ASSISTENT-NAME-LAUFZEIT` | Feature: ASSISTENT-NAME-LAUFZEIT — Assistenten-Name pro Paar |
-| 5723 | CHA | offen | Zustand-Zeile | `ASSISTENT-GESCHLECHT-PRONOMEN` | Feature: ASSISTENT-GESCHLECHT-PRONOMEN — Pronomen bei Namens |
-| 5735 | BAU | offen | Zustand-Zeile | `PIPELINE-LOG-BACKFILL-PAAR` | Nacharbeit: PIPELINE-LOG-BACKFILL-PAAR — Alt-Forensik ohne P |
-| 5743 | GED | offen | Zustand-Zeile | `KZG-QUELLE-IST-USER-ID` | Refactor: KZG-QUELLE-IST-USER-ID — `quelle` trägt `user_id`  |
-| 5751 | BAU | offen | Zustand-Zeile | `PIPELINE-LOG-ART-DOKU-DRIFT` | Doku: PIPELINE-LOG-ART-DOKU-DRIFT — Forensik-Queries der Syn |
-| 5774 | ANT | offen | Zustand-Zeile | `DELEGATION-STATE-UNDEKLARIERT` | Landmine: DELEGATION-STATE-UNDEKLARIERT — Sperrvermerk für d |
-| 5790 | ANT | offen | Zustand-Zeile | `PLANNER-AKTIV-RELIKT` | Aufräumen: PLANNER-AKTIV-RELIKT — Stage-Anzeige liest nie ge |
-| 5806 | ANT | offen | Zustand-Zeile | `WEB-CONTEXT-ALTPFAD` | Aufräumen: WEB-CONTEXT-ALTPFAD — toter [WEB]-Block, Nachfolg |
-| 5822 | ANT | offen | Zustand-Zeile | `BUILDER-CREATE-INITIAL-STATE-TOT` | Aufräumen: BUILDER-CREATE-INITIAL-STATE-TOT — aufruferloser  |
-| 5838 | BAU | offen | Zustand-Zeile | `LESSON-INDEX-LUECKE` | Doku: LESSON-INDEX-LUECKE — zwölf ältere lesson_l-Dateien fe |
-| 5851 | BAU | offen | Zustand-Zeile | `DOKU-DUPLIKATE-CHAT80` | Doku: DOKU-DUPLIKATE-CHAT80 — 8 Bezeichner stehen in bugs.md |
-| 5871 | ANT | offen | Zustand-Zeile | `LOG-TUERKLINGEL` | Feature: LOG-TUERKLINGEL — Warn-/Fehler-Lampen mit Sitzungsz |
-| 5910 | GED | offen | Zustand-Zeile | `ENTITAET-EMBED-DREIFACH` | Bug: ENTITAET-EMBED-DREIFACH — Entitäts-Suchpfad embeddet an |
-| 5926 | CHA | offen | Zustand-Zeile | `DESTILLAT-ASYMMETRIE` | Konzept: DESTILLAT-ASYMMETRIE — Prompts und Knoten leben in  |
-| 5938 | GED | offen | Zustand-Zeile | `GESPRAECH-ARCHIV-LEER` | Feature: GESPRAECH-ARCHIV-LEER — kein Writer, Rohgespräche v |
-| 5948 | BAU | offen | Zustand-Zeile | `EMBED-DIMENSIONSCHECK-FEHLT` | Fix: EMBED-DIMENSIONSCHECK-FEHLT — kein harter Dimensions-Ch |
-| 5956 | GED | offen | Zustand-Zeile | `PIPELINE-LOG-MERGE-BLIND` | Nacharbeit: PIPELINE-LOG-MERGE-BLIND — Reinforcement loggt d |
-| 5964 | GED | offen | Zustand-Zeile | `DELEG-VEKTOR-EINGEFROREN` | Konzept: DELEG-VEKTOR-EINGEFROREN — Akten-Vektor beschreibt  |
-| 5972 | BAU | offen | Zustand-Zeile | `LZG-MIGRATION-REVIEW-NICHT-IN-INIT` | Fix: LZG-MIGRATION-REVIEW-NICHT-IN-INIT — Live-Tabelle ohne  |
-| 5980 | BAU | offen | Zustand-Zeile | `IDX-TIMELINE-TYPE-NICHT-IN-INIT` | Fix: IDX-TIMELINE-TYPE-NICHT-IN-INIT — Live-Index ohne Defin |
-| 5988 | GED | offen | Zustand-Zeile | `DELEG-SEITEN-VALENZ-TOT` | Aufräumen: DELEG-SEITEN-VALENZ-TOT — persistiert, nie gelese |
-| 6000 | BAU | offen | Zustand-Zeile | `REDUCER-DOKU-DRIFT` | Doku: REDUCER-DOKU-DRIFT — drei Drifts aus dem Reducer-Audit |
-| 6008 | BAU | offen | Zustand-Zeile | `DOKU-NOTIZEN-INIT-SQL` | Doku: DOKU-NOTIZEN-INIT-SQL — Verweis auf nicht existierende |
-| 6016 | GED | offen | Zustand-Zeile | `KZG-SALIENZ-GRENZWERT-UNKLAR` | Frage: KZG-SALIENZ-GRENZWERT-UNKLAR — soll jede Recherche in |
-| 6053 | GED | offen | Zustand-Zeile | `PROMOTION-NOVA-GUARD-TOT` | Aufräumen: PROMOTION-NOVA-GUARD-TOT — Nova-Guard in der Clus |
-| 6067 | CHA | offen | Zustand-Zeile | `CHARHASH-KZG-SCAN-UNSORTIERT` | Bug: CHARHASH-KZG-SCAN-UNSORTIERT — zwei von fünf Profilen d |
-| 6081 | CHA | abgeschlossen | Zustand-Zeile | `HASH-DIRTY-KEY-OHNE-PAAR` | Aufräumen: HASH-DIRTY-KEY-OHNE-PAAR — `hash_dirty:meister` o |
-| 6093 | CHA | offen | Zustand-Zeile | `AUDIT-HASH-DIRTY-SICHTBARKEIT` | Audit: AUDIT-HASH-DIRTY-SICHTBARKEIT — KEYS zeigt das Flag,  |
-| 6107 | CHA | offen | Zustand-Zeile | `TURN-ROH-VOR-KRAFT1-ENTWERTET` | Landmine: TURN-ROH-VOR-KRAFT1-ENTWERTET — Sperrvermerk für d |
-| 6129 | BAU | offen | Zustand-Zeile | `PERMISSION-OHNE-BODEN` | Befund: PERMISSION-OHNE-BODEN — „Brudi ist read-only" ist Ko |
-| 6145 | GED | offen | Zustand-Zeile | `PROMO-KZG-KEY-ALS-TURN-ID` | Bug: PROMO-KZG-KEY-ALS-TURN-ID — `pipeline_log.turn_id` träg |
-| 6161 | BAU | offen | Zustand-Zeile | `ALLOWLIST-DRIFT` | Aufräumen: ALLOWLIST-DRIFT — die Claude-Code-Allowlist wächs |
-| 6175 | GED | offen | Zustand-Zeile | `KZG-VERSTAERKUNG-KEYS-SCAN` | Performance: KZG-VERSTAERKUNG-KEYS-SCAN — Vollscan der Paar- |
-| 6189 | GED | offen | Zustand-Zeile | `KZG-TURN-ID-UNBEKANNT` | Nacharbeit: KZG-TURN-ID-UNBEKANNT — Platzhalter statt Turn-B |
-| 6205 | CHA | offen | Zustand-Zeile | `TURN-ROH-HG-SKIP` | Befund: TURN-ROH-HG-SKIP — der übersprungene Rohturn pro Tur |
-| 6223 | GED | offen | Zustand-Zeile | `KZG-SALIENZ-BOOST-OHNE-DECKEL` | Bug: KZG-SALIENZ-BOOST-OHNE-DECKEL — die thematische Verstär |
-| 6253 | CHA | offen | Zustand-Zeile | `DESTILLAT-SUBJEKT-SCHABLONE` | Bug: DESTILLAT-SUBJEKT-SCHABLONE — der Verdichter erfindet „ |
-| 6282 | HGR | offen | Zustand-Zeile | `PIXIE-TURN-ID-LEER` | Bug: PIXIE-TURN-ID-LEER — Pixie-initiierter CharacterGraph-L |
-| 6312 | GED | offen | Zustand-Zeile | `KZG-SALIENZ-SKALENBRUCH` | Bug: KZG-SALIENZ-SKALENBRUCH — die Dämpfung ist auf CAP 10.0 |
-| 6361 | GED | offen | Zustand-Zeile | `KZG-TTL-UNSTERBLICH` | Limitation: KZG-TTL-UNSTERBLICH — die Auffrischung kann nur  |
-| 6385 | GED | offen | Zustand-Zeile | `KZG-KEIN-DECAY` | Bug: KZG-KEIN-DECAY — die Salienz kennt keine Abwärtsbewegun |
-| 6425 | GED | offen | Zustand-Zeile | `KZG-SALIENZ-KONSUMENTEN-DISSENS` | Bug: KZG-SALIENZ-KONSUMENTEN-DISSENS — drei Leser, drei Anna |
-| 6459 | GED | offen | Zustand-Zeile | `KZG-SALIENZ-NEUBAU` | Sprint: KZG-SALIENZ-NEUBAU — die KZG-Salienz bekommt die Bau |
-| 6485 | GED | offen | Zustand-Zeile | `PROMOTION-ENTFERNT-KZG-NICHT` | Bug: PROMOTION-ENTFERNT-KZG-NICHT — der promotete Eintrag bl |
-| 6514 | BAU | offen | Zustand-Zeile | `ROADMAP-GLIEDERUNGSBRUCH` | Doku: ROADMAP-GLIEDERUNGSBRUCH — ab Chat 98 wechselt die Chr |
-| 6532 | BAU | offen | Zustand-Zeile | `DB-SELECT-SCHREIBT-OHNE-COMMIT` | Landmine: DB-SELECT-SCHREIBT-OHNE-COMMIT — `select()` führt  |
-| 6550 | HGR | abgeschlossen | Marke | `QUEUE-VERFALL-KONZEPT` | QUEUE-VERFALL-KONZEPT — der Stapel und die Queue brauchen ei |
-| 6588 | HGR | offen | Zustand-Zeile | `IMPULS-HANDLUNG-OHNE-HERKUNFT` | IMPULS-HANDLUNG-OHNE-HERKUNFT — was sie selbst angelegt hat, |
-| 6623 | BAU | offen | Zustand-Zeile | `PUB-ROLLENNAMEN-IM-BESTAND` | Audit: PUB-ROLLENNAMEN-IM-BESTAND — die Doku nennt die inter |
-| 6661 | BAU | offen | Zustand-Zeile | `REGISTER-SPIEGEL-DURCHGANG` | Audit: REGISTER-SPIEGEL-DURCHGANG — wo spiegelt sonst eine A |
-| 6683 | ANT | offen | Zustand-Zeile | `GV-RELEVANZ-UNNORMIERT` | Landmine: GV-RELEVANZ-UNNORMIERT — die Relevanz kann über 1. |
+---
+
+
+---
+
+## Alle 421 Eintraege
+
+| Kat | Zeile | Zustand | Kennung | Kapitel (Datei) |
+|---|---|---|---|---|
+| GED | 27 | offen | `EMBED-LISTE-DELEGATIONSAKTEN` | [Block 19.08.2026 — ein Vektor je Gegenstand](novaberg-backlog-gedaechtnis.md) |
+| GED | 51 | abgeschlossen | `SALIENZKURVE-UNTEN-ZU-STEIL` | [Block 18.08.2026 — aus dem Bau der Enricher-Quelle](novaberg-backlog-gedaechtnis.md) |
+| GED | 67 | offen | `QUERY-REWRITING-QUELLE-STEHT` | [Block 20.08.2026 — aus der Klassifikation der Fundli](novaberg-backlog-gedaechtnis.md) |
+| GED | 80 | abgeschlossen | `SUCHSCHLUESSEL-OHNE-VERLAUF` | [Block 20.08.2026 — aus der Klassifikation der Fundli](novaberg-backlog-gedaechtnis.md) |
+| GED | 109 | offen | `SESSION-CONTEXT-BUILD-OHNE-AUFRUFER` | [0c. Aus der Fundliste klassifiziert — Chat 133 (08.0](novaberg-backlog-gedaechtnis.md) |
+| GED | 161 | offen | `EBBINGHAUS-KONSTANTEN-TOT` | [0c. Aus der Fundliste klassifiziert — Chat 133 (08.0](novaberg-backlog-gedaechtnis.md) |
+| GED | 174 | offen | `KNOTENGEWICHT-DOKU-BEHAUPTET-LIVE` | [0c. Aus der Fundliste klassifiziert — Chat 133 (08.0](novaberg-backlog-gedaechtnis.md) |
+| GED | 187 | offen | `ENTITAET-IDS-LEER-82-PROZENT` | [0c. Aus der Fundliste klassifiziert — Chat 133 (08.0](novaberg-backlog-gedaechtnis.md) |
+| GED | 418 | offen | `REFAC-KZG-CODE-DUPLIKAT` | [7. Offene Epics & Features](novaberg-backlog-gedaechtnis.md) |
+| GED | 419 | abgeschlossen | `ZIEL-DECAY-FORMEL-KUMULATIV` | [7. Offene Epics & Features](novaberg-backlog-gedaechtnis.md) |
+| GED | 420 | abgeschlossen | `ZIEL-DECAY-TYP-FILTER` | [7. Offene Epics & Features](novaberg-backlog-gedaechtnis.md) |
+| GED | 421 | abgeschlossen | `ZIEL-DECAY-DOKU-LUEGT` | [7. Offene Epics & Features](novaberg-backlog-gedaechtnis.md) |
+| GED | 422 | offen | `ENRICHER-REDIS-UNGESCHUETZT` | [7. Offene Epics & Features](novaberg-backlog-gedaechtnis.md) |
+| GED | 425 | offen | `EPIC-EMOTIONALE-GRAVITATION` | [EPIC-EMOTIONALE-GRAVITATION — Erinnerungen ziehen na](novaberg-backlog-gedaechtnis.md) |
+| GED | 464 | abgeschlossen | `KZG-DEDUP` | [Epic: Chat 62 — Folgearbeiten aus dem Paar-Schema](novaberg-backlog-gedaechtnis.md) |
+| GED | 473 | abgeschlossen | `KZG-KERN-BLIND` | [Epic: Chat 62 — Folgearbeiten aus dem Paar-Schema](novaberg-backlog-gedaechtnis.md) |
+| GED | 482 | offen | `KZG-L` | [Epic: KZG-Liberalisierung + LZG-Destillation (Chat 6](novaberg-backlog-gedaechtnis.md) |
+| GED | 702 | offen | `EPIC-PROMOTION-KORREKTUR` | [EPIC-PROMOTION-KORREKTUR — was bei der Promotion ver](novaberg-backlog-gedaechtnis.md) |
+| GED | 784 | offen | `PROMO-CLUSTER-EI-UPDATE` | [EPIC-PROMOTION-KORREKTUR — was bei der Promotion ver](novaberg-backlog-gedaechtnis.md) |
+| GED | 809 | offen | `PROMO-CLUSTER-TIE-DETERMINISM` | [EPIC-PROMOTION-KORREKTUR — was bei der Promotion ver](novaberg-backlog-gedaechtnis.md) |
+| GED | 821 | offen | `PROMO-DESTILL-DEAD` | [EPIC-PROMOTION-KORREKTUR — was bei der Promotion ver](novaberg-backlog-gedaechtnis.md) |
+| GED | 832 | offen | `PROMO-INTENTIONEN-FORMAT-DRIFT` | [EPIC-PROMOTION-KORREKTUR — was bei der Promotion ver](novaberg-backlog-gedaechtnis.md) |
+| GED | 845 | abgeschlossen | `EPIC-MEMORY-KERN-UMBAU` | [EPIC-MEMORY-KERN-UMBAU — das Synapsen-Modell](novaberg-backlog-gedaechtnis.md) |
+| GED | 982 | offen | `SESSION-SUMMARY-INACTIVE` | [Herkunft: was der Reducer-Umbau offengelassen hat](novaberg-backlog-gedaechtnis.md) |
+| GED | 994 | offen | `LZG-HAEUFIGKEIT-AMBIVALENT` | [Herkunft: was der Reducer-Umbau offengelassen hat](novaberg-backlog-gedaechtnis.md) |
+| GED | 1017 | offen | `MEMORY-SALIENZ-VERERBUNG` | [Konzept: MEMORY-SALIENZ-VERERBUNG — Salienz auf sema](novaberg-backlog-gedaechtnis.md) |
+| GED | 1050 | offen | `ENRICHER-AKTE` | [Konzept: ENRICHER-AKTE — Strukturierte Memory-Contex](novaberg-backlog-gedaechtnis.md) |
+| GED | 1086 | offen | `KONZEPT-TURNLOG-CHRONIK` | [KONZEPT-TURNLOG-CHRONIK — vollstaendiges Turn-Log al](novaberg-backlog-gedaechtnis.md) |
+| GED | 1140 | abgeschlossen | `KZG-CLEANUP` | [Sprint: KZG-CLEANUP — Bereinigung fehlerhafter KZG-E](novaberg-backlog-gedaechtnis.md) |
+| GED | 1170 | abgeschlossen | `SPRINT-PIXIE-EVA-HAERTUNG` | [SPRINT-PIXIE-EVA-HAERTUNG — der Promotionsweg bekomm](novaberg-backlog-gedaechtnis.md) |
+| GED | 1202 | offen | `DOPPEL-SESSION-LOAD` | [Performance: DOPPEL-SESSION-LOAD — Session-Turns wer](novaberg-backlog-gedaechtnis.md) |
+| GED | 1238 | offen | `SESSION-SUMMARY-PFAD-INAKTIV` | [Audit: SESSION-SUMMARY-PFAD-INAKTIV — Memory-Quelle ](novaberg-backlog-gedaechtnis.md) |
+| GED | 1275 | offen | `KZG-VERDICHTER-KONTEXT-VERLUST` | [Bug: KZG-VERDICHTER-KONTEXT-VERLUST — Verdichter pro](novaberg-backlog-gedaechtnis.md) |
+| GED | 1306 | offen | `SALIENZ-VERDICHTUNG-MEHRFACH` | [Bug: SALIENZ-VERDICHTUNG-MEHRFACH — Salienz- und Ver](novaberg-backlog-gedaechtnis.md) |
+| GED | 1332 | offen | `AUDIT-1-BEIFANG-PROMOTION` | [Sammelposten: AUDIT-1-BEIFANG-PROMOTION — Tote Pfade](novaberg-backlog-gedaechtnis.md) |
+| GED | 1346 | offen | `EMOTIONS-VEKTOR-LEER` | [Sammelposten: AUDIT-1-BEIFANG-PROMOTION — Tote Pfade](novaberg-backlog-gedaechtnis.md) |
+| GED | 1347 | offen | `KZG-ERSTELLT-AM-PARSE-HÄRTE` | [Sammelposten: AUDIT-1-BEIFANG-PROMOTION — Tote Pfade](novaberg-backlog-gedaechtnis.md) |
+| GED | 1348 | abgeschlossen | `GEDACHTNISTYP-DEFAULT-BEFÜLLT` | [Sammelposten: AUDIT-1-BEIFANG-PROMOTION — Tote Pfade](novaberg-backlog-gedaechtnis.md) |
+| GED | 1349 | offen | `TRIGGER-2-RECACHE-KONZEPT-LÜCKE` | [Sammelposten: AUDIT-1-BEIFANG-PROMOTION — Tote Pfade](novaberg-backlog-gedaechtnis.md) |
+| GED | 1350 | offen | `REFAC-MAGNETE-AUDIT` | [Sammelposten: AUDIT-1-BEIFANG-PROMOTION — Tote Pfade](novaberg-backlog-gedaechtnis.md) |
+| GED | 1357 | offen | `TOK-DRIFT-SALIENCE` | [Bug: TOK-DRIFT-SALIENCE — Token-Akkumulator zählt fe](novaberg-backlog-gedaechtnis.md) |
+| GED | 1378 | offen | `SYNAPSEN-LIVE-VERIFY` | [Sprint: SYNAPSEN-LIVE-VERIFY — Entitäts- und Timelin](novaberg-backlog-gedaechtnis.md) |
+| GED | 1393 | offen | `SYNAPSEN-DUAL-LZG` | [Sprint: SYNAPSEN-DUAL-LZG — Lesepfad auf `lzg_knoten](novaberg-backlog-gedaechtnis.md) |
+| GED | 1408 | offen | `KZG-GEWICHT-ABSOLUT-CEILING` | [Befund: KZG-GEWICHT-ABSOLUT-CEILING — sin^0.5-Dämpfu](novaberg-backlog-gedaechtnis.md) |
+| GED | 1472 | abgeschlossen | `P5-LIVE-ABNAHME` | [Lesepfad-Folgepunkte (Chat 99)](novaberg-backlog-gedaechtnis.md) |
+| GED | 1473 | offen | `KANTEN-RICHTUNG-UNDOKUMENTIERT` | [Lesepfad-Folgepunkte (Chat 99)](novaberg-backlog-gedaechtnis.md) |
+| GED | 1474 | offen | `SPREADING-RELEVANZ-BEOBACHTEN` | [Lesepfad-Folgepunkte (Chat 99)](novaberg-backlog-gedaechtnis.md) |
+| GED | 1475 | offen | `LZG-RESONANZ-DATETIME` | [Lesepfad-Folgepunkte (Chat 99)](novaberg-backlog-gedaechtnis.md) |
+| GED | 1476 | abgeschlossen | `LZG-RESONANZ-STATE-DEKL` | [Lesepfad-Folgepunkte (Chat 99)](novaberg-backlog-gedaechtnis.md) |
+| GED | 1477 | offen | `LZG-RESONANZ-ENTITAET-NAMEN` | [Lesepfad-Folgepunkte (Chat 99)](novaberg-backlog-gedaechtnis.md) |
+| GED | 1494 | offen | `ENRICHER-DUP` | [8. Offene Bugs](novaberg-backlog-gedaechtnis.md) |
+| GED | 1495 | offen | `TOK-DRIFT-SALIENCE` | [8. Offene Bugs](novaberg-backlog-gedaechtnis.md) |
+| GED | 1536 | abgeschlossen | `SYNAPSEN-DECAY-SCHEDULE-LIVE` | [Frage: SYNAPSEN-DECAY-SCHEDULE-LIVE — Heartbeat legt](novaberg-backlog-gedaechtnis.md) |
+| GED | 1553 | offen | `HALBREAKTIVIERUNG-LIVE` | [Frage: HALBREAKTIVIERUNG-LIVE — erster inaktiver Mat](novaberg-backlog-gedaechtnis.md) |
+| GED | 1569 | offen | `SYNAPSEN-REAKTIV-SCHWELLE` | [Frage: SYNAPSEN-REAKTIV-SCHWELLE — eigene Match-Schw](novaberg-backlog-gedaechtnis.md) |
+| GED | 1582 | offen | `HAEUFIGKEIT-AUF-KNOTEN` | [Notiz: HAEUFIGKEIT-AUF-KNOTEN — haeufigkeit auf lzg_](novaberg-backlog-gedaechtnis.md) |
+| GED | 1591 | offen | `REFERENZ-AUFLOESUNG-VOR-RETRIEVAL` | [Bug: REFERENZ-AUFLOESUNG-VOR-RETRIEVAL — anaphorisch](novaberg-backlog-gedaechtnis.md) |
+| GED | 1600 | offen | `GESPRAECH-ARCHIV-VERWAIST` | [Aufräumen: GESPRAECH-ARCHIV-VERWAIST — tote Tabelle ](novaberg-backlog-gedaechtnis.md) |
+| GED | 1611 | offen | `KZG-QUELLE-IST-USER-ID` | [Refactor: KZG-QUELLE-IST-USER-ID — `quelle` trägt `u](novaberg-backlog-gedaechtnis.md) |
+| GED | 1620 | offen | `ENTITAET-EMBED-DREIFACH` | [Bug: ENTITAET-EMBED-DREIFACH — Entitäts-Suchpfad emb](novaberg-backlog-gedaechtnis.md) |
+| GED | 1637 | offen | `GESPRAECH-ARCHIV-LEER` | [Feature: GESPRAECH-ARCHIV-LEER — kein Writer, Rohges](novaberg-backlog-gedaechtnis.md) |
+| GED | 1648 | offen | `PIPELINE-LOG-MERGE-BLIND` | [Nacharbeit: PIPELINE-LOG-MERGE-BLIND — Reinforcement](novaberg-backlog-gedaechtnis.md) |
+| GED | 1657 | offen | `DELEG-VEKTOR-EINGEFROREN` | [Konzept: DELEG-VEKTOR-EINGEFROREN — Akten-Vektor bes](novaberg-backlog-gedaechtnis.md) |
+| GED | 1666 | offen | `DELEG-SEITEN-VALENZ-TOT` | [Aufräumen: DELEG-SEITEN-VALENZ-TOT — persistiert, ni](novaberg-backlog-gedaechtnis.md) |
+| GED | 1675 | offen | `KZG-SALIENZ-GRENZWERT-UNKLAR` | [Frage: KZG-SALIENZ-GRENZWERT-UNKLAR — soll jede Rech](novaberg-backlog-gedaechtnis.md) |
+| GED | 1686 | offen | `PROMOTION-NOVA-GUARD-TOT` | [Aufräumen: PROMOTION-NOVA-GUARD-TOT — Nova-Guard in ](novaberg-backlog-gedaechtnis.md) |
+| GED | 1701 | offen | `PROMO-KZG-KEY-ALS-TURN-ID` | [Bug: PROMO-KZG-KEY-ALS-TURN-ID — `pipeline_log.turn_](novaberg-backlog-gedaechtnis.md) |
+| GED | 1718 | offen | `KZG-VERSTAERKUNG-KEYS-SCAN` | [Performance: KZG-VERSTAERKUNG-KEYS-SCAN — Vollscan d](novaberg-backlog-gedaechtnis.md) |
+| GED | 1733 | offen | `KZG-TURN-ID-UNBEKANNT` | [Nacharbeit: KZG-TURN-ID-UNBEKANNT — Platzhalter stat](novaberg-backlog-gedaechtnis.md) |
+| GED | 1750 | offen | `KZG-SALIENZ-BOOST-OHNE-DECKEL` | [Bug: KZG-SALIENZ-BOOST-OHNE-DECKEL — die thematische](novaberg-backlog-gedaechtnis.md) |
+| GED | 1781 | offen | `KZG-SALIENZ-SKALENBRUCH` | [Bug: KZG-SALIENZ-SKALENBRUCH — die Dämpfung ist auf ](novaberg-backlog-gedaechtnis.md) |
+| GED | 1831 | offen | `KZG-TTL-UNSTERBLICH` | [Limitation: KZG-TTL-UNSTERBLICH — die Auffrischung k](novaberg-backlog-gedaechtnis.md) |
+| GED | 1856 | offen | `KZG-KEIN-DECAY` | [Bug: KZG-KEIN-DECAY — die Salienz kennt keine Abwärt](novaberg-backlog-gedaechtnis.md) |
+| GED | 1897 | offen | `KZG-SALIENZ-KONSUMENTEN-DISSENS` | [Bug: KZG-SALIENZ-KONSUMENTEN-DISSENS — drei Leser, d](novaberg-backlog-gedaechtnis.md) |
+| GED | 1932 | offen | `KZG-SALIENZ-NEUBAU` | [Sprint: KZG-SALIENZ-NEUBAU — die KZG-Salienz bekommt](novaberg-backlog-gedaechtnis.md) |
+| GED | 1959 | offen | `PROMOTION-ENTFERNT-KZG-NICHT` | [Bug: PROMOTION-ENTFERNT-KZG-NICHT — der promotete Ei](novaberg-backlog-gedaechtnis.md) |
+| HGR | 28 | offen | `RECHERCHE-LIEST-IHRE-BIBLIOTHEK-NICHT` | [Block 19.08.2026 — die Rollen eines Wissen-Silos](novaberg-backlog-hintergrund.md) |
+| HGR | 44 | offen | `ZUSTELLUNG-ABBRUCH-UNGEZAEHLT` | [Block 15.08.2026 — das Messinstrument der Zustellung](novaberg-backlog-hintergrund.md) |
+| HGR | 45 | offen | `RIEGEL-5-7-OHNE-EINTRAG` | [Block 15.08.2026 — das Messinstrument der Zustellung](novaberg-backlog-hintergrund.md) |
+| HGR | 65 | offen | `EIGENZEIT-BAUTEILE` | [Block 14.08.2026 — aus der Eigenzeit-Messung](novaberg-backlog-hintergrund.md) |
+| HGR | 81 | offen | `RECHERCHE-REIHT-NICHT-MEHR-EIN` | [Block 20.08.2026 — aus der Klassifikation der Fundli](novaberg-backlog-hintergrund.md) |
+| HGR | 94 | offen | `SHADOW-AUFTRAG-OHNE-TURNBEZUG` | [Block 20.08.2026 — aus der Klassifikation der Fundli](novaberg-backlog-hintergrund.md) |
+| HGR | 107 | offen | `RUECKWEG-HINTER-DEM-RUECKSTAND` | [Block 20.08.2026 — aus der Klassifikation der Fundli](novaberg-backlog-hintergrund.md) |
+| HGR | 120 | offen | `RECHERCHE-LIEST-EIGENE-BIBLIOTHEK-NICHT` | [Block 20.08.2026 — aus der Klassifikation der Fundli](novaberg-backlog-hintergrund.md) |
+| HGR | 133 | offen | `SELBSTAUSLOESUNG-BUDGET-EINZWECKIG` | [Block 20.08.2026 — aus der Klassifikation der Fundli](novaberg-backlog-hintergrund.md) |
+| HGR | 146 | offen | `RUECKWEG-UEBER-DEN-MENSCHEN-OHNE-RIEGEL` | [Block 20.08.2026 — aus der Klassifikation der Fundli](novaberg-backlog-hintergrund.md) |
+| HGR | 169 | offen | `EIGENIMPULSE-IN-DER-SCHWELLE` | [0c. Aus der Fundliste klassifiziert — Chat 133 (08.0](novaberg-backlog-hintergrund.md) |
+| HGR | 221 | abgeschlossen | `INTENTION-AUFGABE-MAP-DOPPELT` | [0c. Aus der Fundliste klassifiziert — Chat 133 (08.0](novaberg-backlog-hintergrund.md) |
+| HGR | 234 | offen | `QUEUE-RUHE-DURCH-REIHENFOLGE` | [0c. Aus der Fundliste klassifiziert — Chat 133 (08.0](novaberg-backlog-hintergrund.md) |
+| HGR | 247 | offen | `PIXIE-EIN-SLOT-BLOCKIERT-ALLES` | [0c. Aus der Fundliste klassifiziert — Chat 133 (08.0](novaberg-backlog-hintergrund.md) |
+| HGR | 262 | offen | `RECHERCHE-ZWISCHENDESTILLATION-OHNE-GRUND` | [0c. Aus der Fundliste klassifiziert — Chat 133 (08.0](novaberg-backlog-hintergrund.md) |
+| HGR | 288 | offen | `RECHERCHE-RETRY-BLOCKIERT-QUEUE` | [0c. Aus der Fundliste klassifiziert — Chat 133 (08.0](novaberg-backlog-hintergrund.md) |
+| HGR | 301 | offen | `AUFTRAGSARTEN-OHNE-AGENTEN` | [0c. Aus der Fundliste klassifiziert — Chat 133 (08.0](novaberg-backlog-hintergrund.md) |
+| HGR | 325 | offen | `SHADOW-QUEUE-RUECKSTAND-UNGEMESSEN` | [0c. Aus der Fundliste klassifiziert — Chat 133 (08.0](novaberg-backlog-hintergrund.md) |
+| HGR | 340 | offen | `ARBEITSQUEUES-OHNE-GEGENUEBER` | [0c. Aus der Fundliste klassifiziert — Chat 133 (08.0](novaberg-backlog-hintergrund.md) |
+| HGR | 361 | offen | `PIX-MIG-6` | [7. Offene Epics & Features](novaberg-backlog-hintergrund.md) |
+| HGR | 362 | abgeschlossen | `PIX-MIG-7` | [7. Offene Epics & Features](novaberg-backlog-hintergrund.md) |
+| HGR | 363 | offen | `PIX-MIG-9` | [7. Offene Epics & Features](novaberg-backlog-hintergrund.md) |
+| HGR | 364 | offen | `ERK-VORFRAGE` | [7. Offene Epics & Features](novaberg-backlog-hintergrund.md) |
+| HGR | 365 | offen | `ERK-GATE-WIEDERHOLUNG` | [7. Offene Epics & Features](novaberg-backlog-hintergrund.md) |
+| HGR | 366 | offen | `PIX-STAPEL-RADFAKTOR` | [7. Offene Epics & Features](novaberg-backlog-hintergrund.md) |
+| HGR | 367 | offen | `PIX-AUFGABENNAMEN-GATE` | [7. Offene Epics & Features](novaberg-backlog-hintergrund.md) |
+| HGR | 368 | offen | `PIX-MIG-8` | [7. Offene Epics & Features](novaberg-backlog-hintergrund.md) |
+| HGR | 369 | abgeschlossen | `PIX-CLEAN` | [7. Offene Epics & Features](novaberg-backlog-hintergrund.md) |
+| HGR | 370 | offen | `PIX-MIG-NOVA` | [7. Offene Epics & Features](novaberg-backlog-hintergrund.md) |
+| HGR | 371 | offen | `PIX-GRAPH` | [7. Offene Epics & Features](novaberg-backlog-hintergrund.md) |
+| HGR | 372 | offen | `PIX-STATUS` | [7. Offene Epics & Features](novaberg-backlog-hintergrund.md) |
+| HGR | 373 | offen | `PIX-FALLBACK` | [7. Offene Epics & Features](novaberg-backlog-hintergrund.md) |
+| HGR | 375 | offen | `PIX-LLM-ROUTER` | [7. Offene Epics & Features](novaberg-backlog-hintergrund.md) |
+| HGR | 378 | offen | `PIXIE-GRAPH-MERGE` | [7. Offene Epics & Features](novaberg-backlog-hintergrund.md) |
+| HGR | 410 | offen | `DELIVERY-VOICE` | [7. Offene Epics & Features](novaberg-backlog-hintergrund.md) |
+| HGR | 413 | offen | `RECH-NO-PERSIST` | [7. Offene Epics & Features](novaberg-backlog-hintergrund.md) |
+| HGR | 436 | offen | `SHADOW-DEAD` | [7. Offene Epics & Features](novaberg-backlog-hintergrund.md) |
+| HGR | 437 | offen | `PIX-GPU-IDLE` | [7. Offene Epics & Features](novaberg-backlog-hintergrund.md) |
+| HGR | 449 | offen | `PIXIE-ROUTING-DOPPELREGISTRY` | [7. Offene Epics & Features](novaberg-backlog-hintergrund.md) |
+| HGR | 450 | offen | `PIXIE-SELBSTTRIGGER-KEIN-TURN-ROH` | [7. Offene Epics & Features](novaberg-backlog-hintergrund.md) |
+| HGR | 451 | offen | `WEB-EXTRAKTION-STILL-LEER` | [7. Offene Epics & Features](novaberg-backlog-hintergrund.md) |
+| WIS | 454 | offen | `EPIC-PIXIE-ABFLUSS` | [EPIC-PIXIE-ABFLUSS — der Abfluss steht (04.08.2026)](novaberg-backlog-hintergrund.md) |
+| HGR | 468 | offen | `PIX-AGENTEN-FEHLEN` | [EPIC-PIXIE-ABFLUSS — der Abfluss steht (04.08.2026)](novaberg-backlog-hintergrund.md) |
+| HGR | 469 | offen | `PIX-RETRY-KREIS` | [EPIC-PIXIE-ABFLUSS — der Abfluss steht (04.08.2026)](novaberg-backlog-hintergrund.md) |
+| HGR | 470 | offen | `PIX-SERIELLER-PLATZ` | [EPIC-PIXIE-ABFLUSS — der Abfluss steht (04.08.2026)](novaberg-backlog-hintergrund.md) |
+| HGR | 471 | offen | `PIX-PRIORITAET-STILL` | [EPIC-PIXIE-ABFLUSS — der Abfluss steht (04.08.2026)](novaberg-backlog-hintergrund.md) |
+| HGR | 507 | offen | `PIX-WARTESCHLANGE-AM-MODELL` | [EPIC-PIXIE-ABFLUSS — der Abfluss steht (04.08.2026)](novaberg-backlog-hintergrund.md) |
+| HGR | 508 | offen | `WIS-AGENTEN-NACHZIEHEN` | [EPIC-PIXIE-ABFLUSS — der Abfluss steht (04.08.2026)](novaberg-backlog-hintergrund.md) |
+| HGR | 517 | abgeschlossen | `PIX-CLEAN` | [Herkunft: was der Reducer-Umbau offengelassen hat](novaberg-backlog-hintergrund.md) |
+| HGR | 547 | abgeschlossen | `MIGRATION-PIX-CLEANUP` | [Sprint: MIGRATION-PIX-CLEANUP — Pixie-Migration nach](novaberg-backlog-hintergrund.md) |
+| HGR | 575 | offen | `AUDIT-PIXIE-TURN-ID` | [Bug: AUDIT-PIXIE-TURN-ID — Pixie-Pfad-turn_id-Auflös](novaberg-backlog-hintergrund.md) |
+| HGR | 608 | abgeschlossen | `CONFIG-PIXIE-AKTIV-HARDCODED` | [CONFIG-PIXIE-AKTIV-HARDCODED — `PIXIE_AKTIV` war nic](novaberg-backlog-hintergrund.md) |
+| HGR | 629 | abgeschlossen | `QUEUE-SCHEMA-STALE` | [Cleanup: QUEUE-SCHEMA-STALE — `queue:nova` mit toten](novaberg-backlog-hintergrund.md) |
+| HGR | 642 | offen | `SCHED-STALE-SCHEDULE` | [Refactor: SCHED-STALE-SCHEDULE — Startup räumt `pixi](novaberg-backlog-hintergrund.md) |
+| HGR | 655 | offen | `SHADOW-PAYLOAD-FIELD-MISMATCH` | [Bug: SHADOW-PAYLOAD-FIELD-MISMATCH — Dispatch liest ](novaberg-backlog-hintergrund.md) |
+| HGR | 674 | offen | `WIEDERVORLAGE-MULTI-USER` | [Refactor: WIEDERVORLAGE-MULTI-USER — Periodische Auf](novaberg-backlog-hintergrund.md) |
+| HGR | 699 | offen | `PIXIE-GHOST` | [8. Offene Bugs](novaberg-backlog-hintergrund.md) |
+| HGR | 700 | offen | `PIXIE-AGENT-MISSING` | [8. Offene Bugs](novaberg-backlog-hintergrund.md) |
+| HGR | 701 | offen | `RECH-SPIRAL` | [8. Offene Bugs](novaberg-backlog-hintergrund.md) |
+| HGR | 702 | offen | `RECH-CHARAKTER` | [8. Offene Bugs](novaberg-backlog-hintergrund.md) |
+| HGR | 703 | offen | `DELIVERY-DEDUP` | [8. Offene Bugs](novaberg-backlog-hintergrund.md) |
+| HGR | 704 | offen | `AUDIT-PIXIE-TURN-ID` | [8. Offene Bugs](novaberg-backlog-hintergrund.md) |
+| HGR | 745 | abgeschlossen | `PIXIE-DECAY-KEIN-AGENT` | [Bug: PIXIE-DECAY-KEIN-AGENT — Router kennt periodisc](novaberg-backlog-hintergrund.md) |
+| HGR | 782 | offen | `PIXIE-TURN-ID-LEER` | [Bug: PIXIE-TURN-ID-LEER — Pixie-initiierter Characte](novaberg-backlog-hintergrund.md) |
+| HGR | 813 | abgeschlossen | `QUEUE-VERFALL-KONZEPT` | [QUEUE-VERFALL-KONZEPT — der Stapel und die Queue bra](novaberg-backlog-hintergrund.md) |
+| HGR | 852 | offen | `IMPULS-HANDLUNG-OHNE-HERKUNFT` | [IMPULS-HANDLUNG-OHNE-HERKUNFT — was sie selbst angel](novaberg-backlog-hintergrund.md) |
+| CHA | 27 | offen | `PRUEFFIGUR-DISTANZ-090` | [Block 14.08.2026 — aus der Eigenzeit-Messung](novaberg-backlog-charakter.md) |
+| CHA | 43 | offen | `VERLAUF-REPRODUZIERT-EIGENE-WENDUNGEN` | [Block 20.08.2026 — aus der Klassifikation der Fundli](novaberg-backlog-charakter.md) |
+| CHA | 56 | offen | `CHARAKTER-BESCHAEDIGT-INHALT` | [Block 20.08.2026 — aus der Klassifikation der Fundli](novaberg-backlog-charakter.md) |
+| CHA | 69 | offen | `BEITRAGSTABELLE-SCHLIESST-KOMBINATION-AUS` | [Block 20.08.2026 — aus der Klassifikation der Fundli](novaberg-backlog-charakter.md) |
+| CHA | 87 | offen | `KOPPLUNG-FRAGENSPALTE-UNGEPRUEFT` | [0c. Aus der Fundliste klassifiziert — Chat 133 (08.0](novaberg-backlog-charakter.md) |
+| CHA | 102 | offen | `PROFILE-LEER-URSACHE-UNBEKANNT` | [0c. Aus der Fundliste klassifiziert — Chat 133 (08.0](novaberg-backlog-charakter.md) |
+| CHA | 126 | offen | `INITIATIVE-RAD-GEGENPOL-UNGEPRUEFT` | [0c. Aus der Fundliste klassifiziert — Chat 133 (08.0](novaberg-backlog-charakter.md) |
+| CHA | 142 | abgeschlossen | `RAD-STABILITAET-UNGEMESSEN` | [0c. Aus der Fundliste klassifiziert — Chat 133 (08.0](novaberg-backlog-charakter.md) |
+| CHA | 196 | offen | `GRAVITATION-CLUSTER-AUS-VORTURN-UNGEPRUEFT` | [0c. Aus der Fundliste klassifiziert — Chat 133 (08.0](novaberg-backlog-charakter.md) |
+| CHA | 209 | offen | `CHARAKTER-ANWEISUNGEN-OHNE-GEGENUEBER` | [0c. Aus der Fundliste klassifiziert — Chat 133 (08.0](novaberg-backlog-charakter.md) |
+| CHA | 249 | offen | `PROFIL-HISTORIE-FEHLT` | [0b. Charakterbildung messen — der nächste Sprint (01](novaberg-backlog-charakter.md) |
+| CHA | 268 | offen | `PAARLISTE-FEST` | [0b. Charakterbildung messen — der nächste Sprint (01](novaberg-backlog-charakter.md) |
+| CHA | 296 | abgeschlossen | `HALTUNG-KNOTEN-FEHLT` | [0a. Haltungsraum — der unterbrochene Sprint (31.07.2](novaberg-backlog-charakter.md) |
+| CHA | 317 | abgeschlossen | `HALTUNG-PROTOKOLL-FEHLT` | [0a. Haltungsraum — der unterbrochene Sprint (31.07.2](novaberg-backlog-charakter.md) |
+| CHA | 338 | offen | `HALTUNG-SPANNENENDEN-OFFEN` | [0a. Haltungsraum — der unterbrochene Sprint (31.07.2](novaberg-backlog-charakter.md) |
+| CHA | 359 | offen | `HALTUNG-SPANNENENDEN-OFFEN` | [0a. Haltungsraum — der unterbrochene Sprint (31.07.2](novaberg-backlog-charakter.md) |
+| CHA | 382 | abgeschlossen | `HALTUNG-OHNE-LANDSCHAFT` | [0a. Haltungsraum — der unterbrochene Sprint (31.07.2](novaberg-backlog-charakter.md) |
+| CHA | 399 | offen | `HALTUNG-LAENGE-ZWEI-ERZEUGER` | [0a. Haltungsraum — der unterbrochene Sprint (31.07.2](novaberg-backlog-charakter.md) |
+| CHA | 421 | offen | `KALIBRIERUNG-ZEUGE-TRENNT-SCHWACH` | [0. Zeitparser und Kalibrierung (31.07.2026)](novaberg-backlog-charakter.md) |
+| CHA | 450 | abgeschlossen | `EMOTIONS-VECTOR-WERTE-DRIFT` | [7. Offene Epics & Features](novaberg-backlog-charakter.md) |
+| CHA | 451 | offen | `EI-KANON-FEHLT` | [7. Offene Epics & Features](novaberg-backlog-charakter.md) |
+| CHA | 452 | offen | `SILENT-SKIP-EI-DEFAULTS` | [7. Offene Epics & Features](novaberg-backlog-charakter.md) |
+| CHA | 453 | offen | `TURN-ROH-VOR-KRAFT1-ENTWERTET` | [7. Offene Epics & Features](novaberg-backlog-charakter.md) |
+| CHA | 454 | offen | `EI-VEKTOR-LOG-GATE` | [7. Offene Epics & Features](novaberg-backlog-charakter.md) |
+| CHA | 457 | offen | `EPIC-SYKOPHANZ` | [EPIC-SYKOPHANZ — Sykophanz eindaemmen](novaberg-backlog-charakter.md) |
+| CHA | 471 | offen | `SYK-B-1-THINKER-WEICHE` | [EPIC-SYKOPHANZ — Sykophanz eindaemmen](novaberg-backlog-charakter.md) |
+| CHA | 472 | abgeschlossen | `SYK-B0-ABSTAND` | [EPIC-SYKOPHANZ — Sykophanz eindaemmen](novaberg-backlog-charakter.md) |
+| CHA | 473 | abgeschlossen | `SYK-B0-BEZIEHUNG` | [EPIC-SYKOPHANZ — Sykophanz eindaemmen](novaberg-backlog-charakter.md) |
+| CHA | 474 | offen | `SYK-B0-FALLENBATTERIE` | [EPIC-SYKOPHANZ — Sykophanz eindaemmen](novaberg-backlog-charakter.md) |
+| CHA | 475 | abgeschlossen | `SYK-B1-URTEILSFELD` | [EPIC-SYKOPHANZ — Sykophanz eindaemmen](novaberg-backlog-charakter.md) |
+| CHA | 476 | offen | `SYK-B1-WERT-FALSCH` | [EPIC-SYKOPHANZ — Sykophanz eindaemmen](novaberg-backlog-charakter.md) |
+| CHA | 477 | abgeschlossen | `SYK-B4-VORZEICHENPRUEFUNG` | [EPIC-SYKOPHANZ — Sykophanz eindaemmen](novaberg-backlog-charakter.md) |
+| CHA | 478 | abgeschlossen | `SYK-B4-STUFE-2-OHNE-FILTER` | [EPIC-SYKOPHANZ — Sykophanz eindaemmen](novaberg-backlog-charakter.md) |
+| CHA | 479 | abgeschlossen | `SYK-B4-WERT-BENENNEN` | [EPIC-SYKOPHANZ — Sykophanz eindaemmen](novaberg-backlog-charakter.md) |
+| CHA | 480 | offen | `SYK-B8-SCHREIBPFAD` | [EPIC-SYKOPHANZ — Sykophanz eindaemmen](novaberg-backlog-charakter.md) |
+| CHA | 481 | offen | `SYK-B3-VORZEICHENREGEL` | [EPIC-SYKOPHANZ — Sykophanz eindaemmen](novaberg-backlog-charakter.md) |
+| CHA | 482 | offen | `SYK-B9-REGISTER` | [EPIC-SYKOPHANZ — Sykophanz eindaemmen](novaberg-backlog-charakter.md) |
+| CHA | 483 | offen | `SYK-B2-IMPULS-GRENZE` | [EPIC-SYKOPHANZ — Sykophanz eindaemmen](novaberg-backlog-charakter.md) |
+| CHA | 484 | offen | `SYK-B5-ESKALATION` | [EPIC-SYKOPHANZ — Sykophanz eindaemmen](novaberg-backlog-charakter.md) |
+| CHA | 485 | offen | `SYK-B6-MOTIVENTLASTUNG` | [EPIC-SYKOPHANZ — Sykophanz eindaemmen](novaberg-backlog-charakter.md) |
+| CHA | 486 | offen | `SYK-B7-ZWEITABLEITUNG` | [EPIC-SYKOPHANZ — Sykophanz eindaemmen](novaberg-backlog-charakter.md) |
+| CHA | 495 | offen | `SYK-M-TRIBUNAL` | [EPIC-SYKOPHANZ — Sykophanz eindaemmen](novaberg-backlog-charakter.md) |
+| CHA | 496 | offen | `SYK-M-VERFASSER` | [EPIC-SYKOPHANZ — Sykophanz eindaemmen](novaberg-backlog-charakter.md) |
+| CHA | 497 | offen | `SYK-M-RAHMUNG` | [EPIC-SYKOPHANZ — Sykophanz eindaemmen](novaberg-backlog-charakter.md) |
+| CHA | 543 | offen | `CHAR-HASH-TEST-LEICHEN` | [Cleanup: CHAR-HASH-TEST-LEICHEN — Test-User in `char](novaberg-backlog-charakter.md) |
+| CHA | 562 | offen | `REFAC-HG-CHAR-HASH-LOAD` | [Refactor: REFAC-HG-CHAR-HASH-LOAD — Char-Hash-Tiebre](novaberg-backlog-charakter.md) |
+| CHA | 604 | offen | `SPRACH-STIL-DEFENSIV-STUMM` | [Bug: SPRACH-STIL-DEFENSIV-STUMM — `_sprach_stil_erke](novaberg-backlog-charakter.md) |
+| CHA | 633 | offen | `EI-CALC-ROLLE-RENAME` | [Refactor: EI-CALC-ROLLE-RENAME — `ei_calc_rolle` sem](novaberg-backlog-charakter.md) |
+| CHA | 659 | offen | `EI-CALC-ROLLE-DEFAULT-ASYMMETRIE` | [Bug: EI-CALC-ROLLE-DEFAULT-ASYMMETRIE — Inkonsistent](novaberg-backlog-charakter.md) |
+| CHA | 715 | offen | `CRUD-DESTILL-SUBTRAKT` | [8. Offene Bugs](novaberg-backlog-charakter.md) |
+| CHA | 716 | offen | `CRUD-REACTIVATE-STAMP` | [8. Offene Bugs](novaberg-backlog-charakter.md) |
+| CHA | 717 | offen | `SPRACH-STIL-DEFENSIV-STUMM` | [8. Offene Bugs](novaberg-backlog-charakter.md) |
+| CHA | 718 | offen | `EI-CALC-ROLLE-DEFAULT-ASYMMETRIE` | [8. Offene Bugs](novaberg-backlog-charakter.md) |
+| CHA | 759 | offen | `CHARHASH-GEWICHT-ABSOLUT-LIVE` | [Beobachtung: CHARHASH-GEWICHT-ABSOLUT-LIVE — erste v](novaberg-backlog-charakter.md) |
+| CHA | 768 | offen | `CHARHASH-PROMPT-DUPLIKAT` | [Bug: CHARHASH-PROMPT-DUPLIKAT — Kern-Persönlichkeit ](novaberg-backlog-charakter.md) |
+| CHA | 779 | offen | `DESTILLAT-PERSPEKTIVE-VS-SUBJEKT` | [Bug: DESTILLAT-PERSPEKTIVE-VS-SUBJEKT — Charakter-De](novaberg-backlog-charakter.md) |
+| CHA | 805 | offen | `CHARAKTER-RESONANZ` | [Epic: CHARAKTER-RESONANZ — Novas Charakter aus dem U](novaberg-backlog-charakter.md) |
+| CHA | 814 | offen | `ASSISTENT-NAME-LAUFZEIT` | [Feature: ASSISTENT-NAME-LAUFZEIT — Assistenten-Name ](novaberg-backlog-charakter.md) |
+| CHA | 823 | offen | `ASSISTENT-GESCHLECHT-PRONOMEN` | [Feature: ASSISTENT-GESCHLECHT-PRONOMEN — Pronomen be](novaberg-backlog-charakter.md) |
+| CHA | 836 | offen | `DESTILLAT-ASYMMETRIE` | [Konzept: DESTILLAT-ASYMMETRIE — Prompts und Knoten l](novaberg-backlog-charakter.md) |
+| CHA | 849 | offen | `CHARHASH-KZG-SCAN-UNSORTIERT` | [Bug: CHARHASH-KZG-SCAN-UNSORTIERT — zwei von fünf Pr](novaberg-backlog-charakter.md) |
+| CHA | 864 | abgeschlossen | `HASH-DIRTY-KEY-OHNE-PAAR` | [Aufräumen: HASH-DIRTY-KEY-OHNE-PAAR — `hash_dirty:me](novaberg-backlog-charakter.md) |
+| CHA | 877 | offen | `AUDIT-HASH-DIRTY-SICHTBARKEIT` | [Audit: AUDIT-HASH-DIRTY-SICHTBARKEIT — KEYS zeigt da](novaberg-backlog-charakter.md) |
+| CHA | 892 | offen | `TURN-ROH-VOR-KRAFT1-ENTWERTET` | [Landmine: TURN-ROH-VOR-KRAFT1-ENTWERTET — Sperrverme](novaberg-backlog-charakter.md) |
+| CHA | 915 | offen | `TURN-ROH-HG-SKIP` | [Befund: TURN-ROH-HG-SKIP — der übersprungene Rohturn](novaberg-backlog-charakter.md) |
+| CHA | 934 | offen | `DESTILLAT-SUBJEKT-SCHABLONE` | [Bug: DESTILLAT-SUBJEKT-SCHABLONE — der Verdichter er](novaberg-backlog-charakter.md) |
+| ANT | 25 | offen | `ANTWORT-LEER-OHNE-WIEDERHOLUNG` | [Block 19.08.2026 — der Antwortpfad meldet seinen Ver](novaberg-backlog-antwortpfad.md) |
+| ANT | 41 | offen | `INTERNE-PROMPTS-SPRACHGEBRAUCH` | [Block 20.08.2026 — aus der Klassifikation der Fundli](novaberg-backlog-antwortpfad.md) |
+| ANT | 54 | offen | `RESPONDER-BRAUCHT-FRAGEN-DRAENGEN` | [Block 20.08.2026 — aus der Klassifikation der Fundli](novaberg-backlog-antwortpfad.md) |
+| ANT | 67 | offen | `NACHLAUF-VOR-DER-ZUSTELLUNG` | [Block 20.08.2026 — aus der Klassifikation der Fundli](novaberg-backlog-antwortpfad.md) |
+| ANT | 80 | offen | `AGENTGRAPH-FAEHRT-VOLLEN-ENRICHER` | [Block 20.08.2026 — aus der Klassifikation der Fundli](novaberg-backlog-antwortpfad.md) |
+| ANT | 93 | offen | `CLUSTER-BESCHREIBUNG-MISCHT-BEFEHL` | [Block 20.08.2026 — aus der Klassifikation der Fundli](novaberg-backlog-antwortpfad.md) |
+| ANT | 112 | offen | `EINWANDSURTEIL-OHNE-LESER` | [0c. Aus der Fundliste klassifiziert — Chat 133 (08.0](novaberg-backlog-antwortpfad.md) |
+| ANT | 127 | offen | `GV-SKIP-TOTE-AUSLOESER` | [0c. Aus der Fundliste klassifiziert — Chat 133 (08.0](novaberg-backlog-antwortpfad.md) |
+| ANT | 142 | offen | `RESPONDER-KOMMENTAR-FALSCHE-SCHICHT` | [0c. Aus der Fundliste klassifiziert — Chat 133 (08.0](novaberg-backlog-antwortpfad.md) |
+| ANT | 162 | offen | `REPERTOIRE-UNGLEICH-VERTEILT` | [0c. Aus der Fundliste klassifiziert — Chat 133 (08.0](novaberg-backlog-antwortpfad.md) |
+| ANT | 178 | offen | `PROMPT-DOPPELTE-FORMULIERUNG` | [0c. Aus der Fundliste klassifiziert — Chat 133 (08.0](novaberg-backlog-antwortpfad.md) |
+| ANT | 200 | offen | `CLUSTERZAHL-13-GEGEN-14` | [0c. Aus der Fundliste klassifiziert — Chat 133 (08.0](novaberg-backlog-antwortpfad.md) |
+| ANT | 213 | offen | `GV-DETAIL-LAENGE-IRREFUEHREND` | [0c. Aus der Fundliste klassifiziert — Chat 133 (08.0](novaberg-backlog-antwortpfad.md) |
+| ANT | 229 | offen | `CLIENT-OHNE-TESTLAUF` | [0c. Aus der Fundliste klassifiziert — Chat 133 (08.0](novaberg-backlog-antwortpfad.md) |
+| ANT | 249 | offen | `GRAPH-SACKGASSE-UNGEPRUEFT` | [0a. Haltungsraum — der unterbrochene Sprint (31.07.2](novaberg-backlog-antwortpfad.md) |
+| ANT | 272 | offen | `META-KOGNITION` | [7. Offene Epics & Features](novaberg-backlog-antwortpfad.md) |
+| ANT | 307 | abgeschlossen | `CLIENT-RENDER` | [7. Offene Epics & Features](novaberg-backlog-antwortpfad.md) |
+| ANT | 320 | offen | `PENDING-RELEVANZ` | [7. Offene Epics & Features](novaberg-backlog-antwortpfad.md) |
+| ANT | 322 | offen | `ROUTE-MISS1` | [7. Offene Epics & Features](novaberg-backlog-antwortpfad.md) |
+| ANT | 335 | offen | `INTENT-TOTE-ZWEIGE` | [7. Offene Epics & Features](novaberg-backlog-antwortpfad.md) |
+| ANT | 336 | offen | `NOVA-ZUSAGE-OHNE-DECKUNG` | [7. Offene Epics & Features](novaberg-backlog-antwortpfad.md) |
+| ANT | 405 | abgeschlossen | `EPIC-GRAPH-NEUORDNUNG` | [EPIC-GRAPH-NEUORDNUNG — HumanGraph und CharacterGrap](novaberg-backlog-antwortpfad.md) |
+| ANT | 424 | abgeschlossen | `EPIC-SESSION-TRENNUNG` | [EPIC-SESSION-TRENNUNG — eine Sitzung je Paar ✅](novaberg-backlog-antwortpfad.md) |
+| ANT | 450 | offen | `VISION-TURNORCHESTRATOR` | [VISION-TURNORCHESTRATOR — ein Dirigent ueber den Tur](novaberg-backlog-antwortpfad.md) |
+| ANT | 465 | offen | `EPIC-CLIENT-WEBSOCKET` | [EPIC-CLIENT-WEBSOCKET — der Client haengt am Ereigni](novaberg-backlog-antwortpfad.md) |
+| ANT | 498 | offen | `ROUTE-CHAR-NOTIZ` | [Epic: Chat 62 — Folgearbeiten aus dem Paar-Schema](novaberg-backlog-antwortpfad.md) |
+| ANT | 518 | offen | `GV-P` | [Epic: Chat 72 — Folgearbeiten aus Dreischicht-Integr](novaberg-backlog-antwortpfad.md) |
+| ANT | 550 | offen | `REDUCER-NACHZUEGLER` | [REDUCER-NACHZUEGLER — was der Reducer-Umbau offengel](novaberg-backlog-antwortpfad.md) |
+| ANT | 560 | offen | `REDUCER-CONFIG-DEAD` | [REDUCER-NACHZUEGLER — was der Reducer-Umbau offengel](novaberg-backlog-antwortpfad.md) |
+| ANT | 571 | offen | `THINKER-TOOL-FORMAT` | [Designdiskussion: THINKER-TOOL-FORMAT (Chat 75)](novaberg-backlog-antwortpfad.md) |
+| ANT | 589 | offen | `THINK-TRANSITION-INFO` | [Sprint: THINK-TRANSITION-INFO — Thinker bekommt Vera](novaberg-backlog-antwortpfad.md) |
+| ANT | 616 | offen | `KONZEPT-COGNITIVE-PIPELINE` | [KONZEPT-COGNITIVE-PIPELINE — Frames, Verstehens-Schl](novaberg-backlog-antwortpfad.md) |
+| ANT | 696 | offen | `TRIB-PERSON-DRIFT` | [Bug: TRIB-PERSON-DRIFT — Tribunal-Agenten kennen Nov](novaberg-backlog-antwortpfad.md) |
+| ANT | 754 | offen | `ROUTE-MISS1` | [8. Offene Bugs](novaberg-backlog-antwortpfad.md) |
+| ANT | 756 | offen | `EMOTE-LOCK` | [8. Offene Bugs](novaberg-backlog-antwortpfad.md) |
+| ANT | 757 | offen | `TOPOS-LOCK` | [8. Offene Bugs](novaberg-backlog-antwortpfad.md) |
+| ANT | 758 | offen | `ABER-SAG-MAL` | [8. Offene Bugs](novaberg-backlog-antwortpfad.md) |
+| ANT | 759 | offen | `REDUCER-MULTILINE` | [8. Offene Bugs](novaberg-backlog-antwortpfad.md) |
+| ANT | 760 | offen | `ROUTE-CHAR-NOTIZ` | [8. Offene Bugs](novaberg-backlog-antwortpfad.md) |
+| ANT | 761 | offen | `RESP-DEAD` | [8. Offene Bugs](novaberg-backlog-antwortpfad.md) |
+| ANT | 802 | offen | `DELEGATION-STATE-UNDEKLARIERT` | [Landmine: DELEGATION-STATE-UNDEKLARIERT — Sperrverme](novaberg-backlog-antwortpfad.md) |
+| ANT | 819 | offen | `PLANNER-AKTIV-RELIKT` | [Aufräumen: PLANNER-AKTIV-RELIKT — Stage-Anzeige lies](novaberg-backlog-antwortpfad.md) |
+| ANT | 836 | offen | `WEB-CONTEXT-ALTPFAD` | [Aufräumen: WEB-CONTEXT-ALTPFAD — toter [WEB]-Block, ](novaberg-backlog-antwortpfad.md) |
+| ANT | 853 | offen | `BUILDER-CREATE-INITIAL-STATE-TOT` | [Aufräumen: BUILDER-CREATE-INITIAL-STATE-TOT — aufruf](novaberg-backlog-antwortpfad.md) |
+| ANT | 870 | offen | `LOG-TUERKLINGEL` | [Feature: LOG-TUERKLINGEL — Warn-/Fehler-Lampen mit S](novaberg-backlog-antwortpfad.md) |
+| ANT | 910 | offen | `GV-RELEVANZ-UNNORMIERT` | [Landmine: GV-RELEVANZ-UNNORMIERT — die Relevanz kann](novaberg-backlog-antwortpfad.md) |
+| WIS | 19 | offen | `DATEIINDEX-GRAPHKANAL` | [DATEIINDEX-GRAPHKANAL — Entitäten aus dem Dateiinhal](novaberg-backlog-wissen.md) |
+| WIS | 53 | offen | `SILO-OHNE-WERKZEUG` | [Block 19.08.2026 — die Rollen eines Wissen-Silos](novaberg-backlog-wissen.md) |
+| WIS | 62 | abgeschlossen | `WIS-ENRICHER-UNGEMESSEN` | [Block 19.08.2026 — der dritte Konsument der Biblioth](novaberg-backlog-wissen.md) |
+| WIS | 77 | offen | `BIBLIOTHEK-BLIND-AUF-INHALTSHOEHE` | [Block 19.08.2026 — ein Vektor je Gegenstand](novaberg-backlog-wissen.md) |
+| WIS | 78 | offen | `EMBED-LISTE-AUTONOMES-WISSEN` | [Block 19.08.2026 — ein Vektor je Gegenstand](novaberg-backlog-wissen.md) |
+| WIS | 79 | abgeschlossen | `EMBED-LISTE-DATEIENINDEX` | [Block 19.08.2026 — ein Vektor je Gegenstand](novaberg-backlog-wissen.md) |
+| WIS | 80 | offen | `EMBED-RUECKWEG-UNGEMESSEN` | [Block 19.08.2026 — ein Vektor je Gegenstand](novaberg-backlog-wissen.md) |
+| WIS | 104 | offen | `SELBSTAUSKUNFT-OHNE-LESER` | [Block 16.08.2026 — die Gegenrichtung der Doku-Pruefu](novaberg-backlog-wissen.md) |
+| WIS | 136 | offen | `FACHSPEICHER-AGENTEN` | [Block 16.08.2026 — die Fachspeicher bekommen ihre Ag](novaberg-backlog-wissen.md) |
+| WIS | 137 | offen | `FAKTEN-BINDUNG-OHNE-VERFALL` | [Block 16.08.2026 — die Fachspeicher bekommen ihre Ag](novaberg-backlog-wissen.md) |
+| WIS | 138 | offen | `REEMBED-WISSENSSPEICHER` | [Block 16.08.2026 — die Fachspeicher bekommen ihre Ag](novaberg-backlog-wissen.md) |
+| WIS | 149 | offen | `AUFZEICHNUNGEN-QUANTIL` | [Block 18.08.2026 — aus dem Bau der Enricher-Quelle](novaberg-backlog-wissen.md) |
+| WIS | 150 | offen | `AUFZEICHNUNGEN-BODEN-NACHZIEHEN` | [Block 18.08.2026 — aus dem Bau der Enricher-Quelle](novaberg-backlog-wissen.md) |
+| WIS | 166 | offen | `ZUSAMMENFASSUNG-ALS-ZWEITER-ARM` | [Block 20.08.2026 — aus der Klassifikation der Fundli](novaberg-backlog-wissen.md) |
+| WIS | 179 | offen | `SCHREIBPFAD-BIBLIOTHEK-UNGEMESSEN` | [Block 20.08.2026 — aus der Klassifikation der Fundli](novaberg-backlog-wissen.md) |
+| WIS | 192 | offen | `RUECKWEG-VORAUSWAHL-OHNE-TRENNSCHAERFE` | [Block 20.08.2026 — aus der Klassifikation der Fundli](novaberg-backlog-wissen.md) |
+| WIS | 205 | offen | `BEZUG-ID-NIE-AUSGELOEST` | [Block 20.08.2026 — aus der Klassifikation der Fundli](novaberg-backlog-wissen.md) |
+| WIS | 218 | offen | `FUNDSTELLE-ERREICHT-DEN-MENSCHEN-NICHT` | [Block 20.08.2026 — aus der Klassifikation der Fundli](novaberg-backlog-wissen.md) |
+| WIS | 231 | offen | `SILO-OHNE-ZUSTAND-IN-DER-MATRIX` | [Block 20.08.2026 — aus der Klassifikation der Fundli](novaberg-backlog-wissen.md) |
+| WIS | 244 | offen | `BESTAND-ANTWORTET-ANDERS-NACH-90-MIN` | [Block 20.08.2026 — aus der Klassifikation der Fundli](novaberg-backlog-wissen.md) |
+| WIS | 257 | offen | `KANDIDATENABFRAGE-OHNE-DB-ZEUGEN` | [Block 20.08.2026 — aus der Klassifikation der Fundli](novaberg-backlog-wissen.md) |
+| WIS | 270 | offen | `VERSTAERKUNGSPFAD-IM-BETRIEB-UNGETROFFEN` | [Block 20.08.2026 — aus der Klassifikation der Fundli](novaberg-backlog-wissen.md) |
+| WIS | 283 | offen | `DREI-WEGE-EINE-SCHWELLE` | [Block 20.08.2026 — aus der Klassifikation der Fundli](novaberg-backlog-wissen.md) |
+| WIS | 296 | offen | `EINREIHPUNKT-HINTER-DEM-SCHREIBEN` | [Block 20.08.2026 — aus der Klassifikation der Fundli](novaberg-backlog-wissen.md) |
+| WIS | 309 | offen | `RUECKFRAGE-DEKLARIERT-UND-UNGENUTZT` | [Block 20.08.2026 — aus der Klassifikation der Fundli](novaberg-backlog-wissen.md) |
+| WIS | 322 | offen | `ZEILEN-LESEN-OHNE-AUFRUFER` | [Block 20.08.2026 — aus der Klassifikation der Fundli](novaberg-backlog-wissen.md) |
+| WIS | 335 | abgeschlossen | `WERKZEUGSCHICHT-DATEIEN-OHNE-RUFER` | [Block 20.08.2026 — aus der Klassifikation der Fundli](novaberg-backlog-wissen.md) |
+| WIS | 348 | offen | `RETRIEVAL-SCHWELLE-OHNE-WIRKUNG` | [Block 20.08.2026 — aus der Klassifikation der Fundli](novaberg-backlog-wissen.md) |
+| WIS | 361 | offen | `GRENZE-OHNE-LESER` | [Block 20.08.2026 — aus der Klassifikation der Fundli](novaberg-backlog-wissen.md) |
+| WIS | 374 | offen | `WISSEN-UND-WEBSUCHE-NICHT-ANSPRECHBAR` | [Block 20.08.2026 — aus der Klassifikation der Fundli](novaberg-backlog-wissen.md) |
+| WIS | 387 | offen | `ZUSTELLART-EINWERTIG` | [Block 20.08.2026 — aus der Klassifikation der Fundli](novaberg-backlog-wissen.md) |
+| WIS | 410 | offen | `NOTIZEN-ENRICH-16-ZWEIGE` | [0c. Aus der Fundliste klassifiziert — Chat 133 (08.0](novaberg-backlog-wissen.md) |
+| WIS | 428 | offen | `ZEIT-ZWOELF-STUNDEN-DEUTUNG` | [0. Zeitparser und Kalibrierung (31.07.2026)](novaberg-backlog-wissen.md) |
+| WIS | 443 | offen | `ZEIT-TAGESZEIT-VOR-ZIFFER` | [0. Zeitparser und Kalibrierung (31.07.2026)](novaberg-backlog-wissen.md) |
+| WIS | 502 | offen | `AGENT-RUECKFRAGE-LOOP` | [7. Offene Epics & Features](novaberg-backlog-wissen.md) |
+| WIS | 515 | offen | `NOTIZEN-VOR-TURN-BEZUG` | [7. Offene Epics & Features](novaberg-backlog-wissen.md) |
+| WIS | 534 | offen | `TIMELINE-IN-KERN` | [7. Offene Epics & Features](novaberg-backlog-wissen.md) |
+| WIS | 535 | abgeschlossen | `FAKTEN-IN-KERN` | [7. Offene Epics & Features](novaberg-backlog-wissen.md) |
+| WIS | 536 | offen | `NOTIZEN-INDIZES-NACHTRAG` | [7. Offene Epics & Features](novaberg-backlog-wissen.md) |
+| WIS | 538 | offen | `PLANNER-TIMELINE-INTENT-MISS` | [7. Offene Epics & Features](novaberg-backlog-wissen.md) |
+| WIS | 541 | offen | `EPIC-WISSENSSPEICHER` | [EPIC-WISSENSSPEICHER — Novas eigene Bibliothek (04.0](novaberg-backlog-wissen.md) |
+| WIS | 552 | abgeschlossen | `WIS-1-MOUNT` | [EPIC-WISSENSSPEICHER — Novas eigene Bibliothek (04.0](novaberg-backlog-wissen.md) |
+| WIS | 553 | abgeschlossen | `WIS-2-TABELLE` | [EPIC-WISSENSSPEICHER — Novas eigene Bibliothek (04.0](novaberg-backlog-wissen.md) |
+| WIS | 554 | abgeschlossen | `WIS-3-DATEIEN` | [EPIC-WISSENSSPEICHER — Novas eigene Bibliothek (04.0](novaberg-backlog-wissen.md) |
+| WIS | 555 | offen | `WIS-4-STAPEL-SALIENZ` | [EPIC-WISSENSSPEICHER — Novas eigene Bibliothek (04.0](novaberg-backlog-wissen.md) |
+| WIS | 556 | offen | `WIS-5-VERFALL` | [EPIC-WISSENSSPEICHER — Novas eigene Bibliothek (04.0](novaberg-backlog-wissen.md) |
+| WIS | 557 | offen | `WIS-6-FORTSETZEN` | [EPIC-WISSENSSPEICHER — Novas eigene Bibliothek (04.0](novaberg-backlog-wissen.md) |
+| WIS | 558 | abgeschlossen | `WIS-PRUEFUNG-F-WISSEN-1` | [EPIC-WISSENSSPEICHER — Novas eigene Bibliothek (04.0](novaberg-backlog-wissen.md) |
+| WIS | 559 | abgeschlossen | `WIS-7-ENRICHER` | [EPIC-WISSENSSPEICHER — Novas eigene Bibliothek (04.0](novaberg-backlog-wissen.md) |
+| WIS | 560 | offen | `WIS-8-STUFE-2` | [EPIC-WISSENSSPEICHER — Novas eigene Bibliothek (04.0](novaberg-backlog-wissen.md) |
+| WIS | 561 | offen | `WIS-SCHWELLE-MESSEN` | [EPIC-WISSENSSPEICHER — Novas eigene Bibliothek (04.0](novaberg-backlog-wissen.md) |
+| WIS | 581 | offen | `WIS-GATE-MESSUNG` | [EPIC-WISSENSSPEICHER — Novas eigene Bibliothek (04.0](novaberg-backlog-wissen.md) |
+| WIS | 582 | offen | `WIS-KONTEXT-NEU-DIMENSIONIEREN` | [EPIC-WISSENSSPEICHER — Novas eigene Bibliothek (04.0](novaberg-backlog-wissen.md) |
+| WIS | 587 | offen | `EPIC-KLAERUNG` | [EPIC-KLAERUNG — Abweichung und Luecke (04.08.2026)](novaberg-backlog-wissen.md) |
+| WIS | 602 | offen | `KLA-K5-FAKTENPFAD` | [EPIC-KLAERUNG — Abweichung und Luecke (04.08.2026)](novaberg-backlog-wissen.md) |
+| WIS | 603 | offen | `KLA-K1-ERWARTUNGSSCHEMA` | [EPIC-KLAERUNG — Abweichung und Luecke (04.08.2026)](novaberg-backlog-wissen.md) |
+| WIS | 604 | offen | `KLA-K2-KLAERUNGSTOR` | [EPIC-KLAERUNG — Abweichung und Luecke (04.08.2026)](novaberg-backlog-wissen.md) |
+| WIS | 605 | offen | `KLA-K3-SALIENZ` | [EPIC-KLAERUNG — Abweichung und Luecke (04.08.2026)](novaberg-backlog-wissen.md) |
+| WIS | 606 | offen | `KLA-K4-ZWISCHENSCHRITT` | [EPIC-KLAERUNG — Abweichung und Luecke (04.08.2026)](novaberg-backlog-wissen.md) |
+| WIS | 801 | abgeschlossen | `SPRINT-NOTIZEN-BEZUGSAUFLOESUNG` | [SPRINT-NOTIZEN-BEZUGSAUFLOESUNG — Inhalts-Aufloesung](novaberg-backlog-wissen.md) |
+| WIS | 836 | abgeschlossen | `SPRINT-M25A-TIMELINE-CLEANUP` | [SPRINT-M25A-TIMELINE-CLEANUP — der TimelineAgent ver](novaberg-backlog-wissen.md) |
+| WIS | 879 | offen | `TIMELINE-PAIR-MISSING` | [Bug: TIMELINE-PAIR-MISSING — Timeline-Tabelle ohne `](novaberg-backlog-wissen.md) |
+| WIS | 910 | offen | `NOTIZEN-PAIR-MISSING` | [Bug: NOTIZEN-PAIR-MISSING — Notizen-Tabelle ohne `ch](novaberg-backlog-wissen.md) |
+| WIS | 929 | offen | `FAKTEN-PAIR-IGNORED` | [Bug: FAKTEN-PAIR-IGNORED — Fakten-Repository ignorie](novaberg-backlog-wissen.md) |
+| WIS | 948 | abgeschlossen | `ZIELE-PAIR-MISSING` | [Bug: ZIELE-PAIR-MISSING — Ziele-Tabelle ohne `charac](novaberg-backlog-wissen.md) |
+| WIS | 967 | offen | `NOTIZEN-KONTEXT-REKONSTRUKTION` | [Bug: NOTIZEN-KONTEXT-REKONSTRUKTION — Mehrschritt-Re](novaberg-backlog-wissen.md) |
+| WIS | 995 | offen | `NOTIZEN-CONTAINER-WECHSEL` | [Bug: NOTIZEN-CONTAINER-WECHSEL — Notiz↔Liste-Wechsel](novaberg-backlog-wissen.md) |
+| WIS | 1020 | offen | `NOTIZEN-SKILL-MANIFEST` | [Bug: NOTIZEN-SKILL-MANIFEST — Nova kennt eigene Fähi](novaberg-backlog-wissen.md) |
+| GED | 1041 | offen | `NOTIZEN-UPDATE-TARGET-LEER` | [Bug: NOTIZEN-UPDATE-TARGET-LEER — Bezugs-Pronomen fü](novaberg-backlog-wissen.md) |
+| WIS | 1079 | offen | `FAKTEN-TABELLE-ENTITY-MERGE` | [Bug: NOTIZEN-UPDATE-TARGET-LEER — Bezugs-Pronomen fü](novaberg-backlog-wissen.md) |
+| WIS | 1080 | offen | `TIMELINE-FK-DOKU-DRIFT` | [Bug: NOTIZEN-UPDATE-TARGET-LEER — Bezugs-Pronomen fü](novaberg-backlog-wissen.md) |
+| BAU | 28 | offen | `ROLLENMATRIX-OHNE-PRUEFUNG` | [Block 19.08.2026 — die Rollen eines Wissen-Silos](novaberg-backlog-bauart.md) |
+| BAU | 39 | abgeschlossen | `OLLAMA-VERSION-VIER-MONATE-ALT` | [Block 19.08.2026 — der Antwortpfad meldet seinen Ver](novaberg-backlog-bauart.md) |
+| BAU | 40 | offen | `ANBIETER-FELDER-UNGELESEN` | [Block 19.08.2026 — der Antwortpfad meldet seinen Ver](novaberg-backlog-bauart.md) |
+| BAU | 51 | offen | `KANAL-OHNE-GEGENSTUECK` | [Block 16.08.2026 — die Gegenrichtung der Doku-Pruefu](novaberg-backlog-bauart.md) |
+| BAU | 52 | offen | `NAMENSREGELN-JENSEITS-DER-FORM` | [Block 16.08.2026 — die Gegenrichtung der Doku-Pruefu](novaberg-backlog-bauart.md) |
+| BAU | 61 | offen | `PENDING-AGENT-INS-PAYLOAD` | [Block 16.08.2026 — aus dem Halten der Konventionen](novaberg-backlog-bauart.md) |
+| BAU | 62 | abgeschlossen | `SSE-REST-IM-ENDPUNKT` | [Block 16.08.2026 — aus dem Halten der Konventionen](novaberg-backlog-bauart.md) |
+| BAU | 71 | offen | `DOKU-VOLLPRUEFUNG` | [Block 15.08.2026 — aus dem Nachzug selbst](novaberg-backlog-bauart.md) |
+| BAU | 72 | offen | `RAUCHTEST-ANWENDUNG-IMPORT` | [Block 15.08.2026 — aus dem Nachzug selbst](novaberg-backlog-bauart.md) |
+| BAU | 73 | abgeschlossen | `NACHZUG-KANDIDATEN-GATE` | [Block 15.08.2026 — aus dem Nachzug selbst](novaberg-backlog-bauart.md) |
+| BAU | 86 | offen | `SCHWELLE-OHNE-PAARUNG` | [Block 14.08.2026 — aus der Eigenzeit-Messung](novaberg-backlog-bauart.md) |
+| BAU | 129 | abgeschlossen | `BUGREGISTER-ZUSTAND-NICHT-LESBAR` | [Block 20.08.2026 — aus der Klassifikation der Fundli](novaberg-backlog-bauart.md) |
+| BAU | 148 | offen | `BUGREGISTER-ALTEBENE-OHNE-ZUSTAND` | [Block 20.08.2026 — aus der Klassifikation der Fundli](novaberg-backlog-bauart.md) |
+| BAU | 174 | offen | `AUFSTELLUNG-NICHT-VERSIONIERT` | [Block 20.08.2026 — aus der Klassifikation der Fundli](novaberg-backlog-bauart.md) |
+| BAU | 187 | offen | `REPEAT-PENALTY-OHNE-HERKUNFT` | [Block 20.08.2026 — aus der Klassifikation der Fundli](novaberg-backlog-bauart.md) |
+| BAU | 200 | offen | `ANBIETERDAUERN-UNGELESEN` | [Block 20.08.2026 — aus der Klassifikation der Fundli](novaberg-backlog-bauart.md) |
+| BAU | 213 | offen | `DATEIEN-VERBUND-OHNE-MODULDOKUMENT` | [Block 20.08.2026 — aus der Klassifikation der Fundli](novaberg-backlog-bauart.md) |
+| BAU | 226 | offen | `AGENT-MD-MIT-STELLWERTEN` | [Block 20.08.2026 — aus der Klassifikation der Fundli](novaberg-backlog-bauart.md) |
+| BAU | 239 | offen | `ENDPUNKTE-OHNE-BEDINGUNGEN` | [Block 20.08.2026 — aus der Klassifikation der Fundli](novaberg-backlog-bauart.md) |
+| BAU | 252 | offen | `PRIVATE-MEMBER-OHNE-ZUSICHERUNG` | [Block 20.08.2026 — aus der Klassifikation der Fundli](novaberg-backlog-bauart.md) |
+| BAU | 265 | offen | `FUNKTIONEN-ZU-TIEF-VERSCHACHTELT` | [Block 20.08.2026 — aus der Klassifikation der Fundli](novaberg-backlog-bauart.md) |
+| BAU | 278 | offen | `KLASSEN-OHNE-GEMEINSAMES-FELD` | [Block 20.08.2026 — aus der Klassifikation der Fundli](novaberg-backlog-bauart.md) |
+| BAU | 291 | offen | `KANALZWANG-NUR-22-PROZENT-PRUEFBAR` | [Block 20.08.2026 — aus der Klassifikation der Fundli](novaberg-backlog-bauart.md) |
+| BAU | 304 | offen | `NODE-LLM-CONFIG-RECHERCHE-OHNE-RUFER` | [Block 20.08.2026 — aus der Klassifikation der Fundli](novaberg-backlog-bauart.md) |
+| BAU | 317 | offen | `ERLEDIGT-MARKE-STATT-STICHWORTLISTE` | [Block 20.08.2026 — aus der Klassifikation der Fundli](novaberg-backlog-bauart.md) |
+| BAU | 330 | offen | `SCHWELLEN-OHNE-VERGLEICHSGEGENSTAND` | [Block 20.08.2026 — aus der Klassifikation der Fundli](novaberg-backlog-bauart.md) |
+| BAU | 343 | offen | `BEISPIELE-OHNE-HERKUNFTSMARKE` | [Block 20.08.2026 — aus der Klassifikation der Fundli](novaberg-backlog-bauart.md) |
+| BAU | 363 | offen | `KANAELE-OHNE-VERTRAG` | [0c. Aus der Fundliste klassifiziert — Chat 133 (08.0](novaberg-backlog-bauart.md) |
+| BAU | 378 | offen | `CHARAKTER-HASH-DOKU-FALSCHE-QUELLE` | [0c. Aus der Fundliste klassifiziert — Chat 133 (08.0](novaberg-backlog-bauart.md) |
+| BAU | 400 | offen | `DOKU-MEHRDEUTIGE-ANKER` | [0c. Aus der Fundliste klassifiziert — Chat 133 (08.0](novaberg-backlog-bauart.md) |
+| BAU | 413 | offen | `AGENT-MD-NIE-GEPRUEFT` | [0c. Aus der Fundliste klassifiziert — Chat 133 (08.0](novaberg-backlog-bauart.md) |
+| BAU | 426 | offen | `LLM-PROVIDER-ZWEIG-UNERREICHBAR` | [0c. Aus der Fundliste klassifiziert — Chat 133 (08.0](novaberg-backlog-bauart.md) |
+| BAU | 439 | offen | `FUENF-STELLEN-FORM-MEHRFACH` | [0c. Aus der Fundliste klassifiziert — Chat 133 (08.0](novaberg-backlog-bauart.md) |
+| BAU | 452 | offen | `LOGGING-PROZENT-STATT-FSTRING` | [0c. Aus der Fundliste klassifiziert — Chat 133 (08.0](novaberg-backlog-bauart.md) |
+| BAU | 472 | offen | `GRAPH-TABELLE-OHNE-VERFASSER` | [0c. Aus der Fundliste klassifiziert — Chat 133 (08.0](novaberg-backlog-bauart.md) |
+| BAU | 485 | offen | `BILD-VERWAIST` | [0c. Aus der Fundliste klassifiziert — Chat 133 (08.0](novaberg-backlog-bauart.md) |
+| BAU | 503 | offen | `LLM-LOCK-SCHUETZT-DIE-GPU-NICHT-DEN-TURN` | [0c. Aus der Fundliste klassifiziert — Chat 133 (08.0](novaberg-backlog-bauart.md) |
+| BAU | 555 | offen | `KONTEXT-32768-IN-SECHS-DOKUMENTEN` | [0c. Aus der Fundliste klassifiziert — Chat 133 (08.0](novaberg-backlog-bauart.md) |
+| BAU | 568 | offen | `ARCHITEKTUR-TABELLENLISTE-UNVOLLSTAENDIG` | [0c. Aus der Fundliste klassifiziert — Chat 133 (08.0](novaberg-backlog-bauart.md) |
+| BAU | 581 | offen | `KERN-SCHEMA-OHNE-DRIFTPRUEFUNG` | [0c. Aus der Fundliste klassifiziert — Chat 133 (08.0](novaberg-backlog-bauart.md) |
+| BAU | 599 | offen | `ZEIT-KORPUS-TESTS-AUF-UNITTEST` | [0. Zeitparser und Kalibrierung (31.07.2026)](novaberg-backlog-bauart.md) |
+| BAU | 642 | abgeschlossen | `ERK-DOKU-NACHZUG` | [7. Offene Epics & Features](novaberg-backlog-bauart.md) |
+| BAU | 646 | offen | `HERMES-SUBSTRAT` | [7. Offene Epics & Features](novaberg-backlog-bauart.md) |
+| BAU | 688 | offen | `REFAC-ENRICHER-EVA` | [7. Offene Epics & Features](novaberg-backlog-bauart.md) |
+| BAU | 689 | offen | `REFAC-LOGGER-HIERARCHIE` | [7. Offene Epics & Features](novaberg-backlog-bauart.md) |
+| BAU | 690 | offen | `REFAC-SHUTDOWN-DISZIPLIN` | [7. Offene Epics & Features](novaberg-backlog-bauart.md) |
+| BAU | 691 | offen | `REFAC-SCHEMA-MIGRIEREN-FAILMODE` | [7. Offene Epics & Features](novaberg-backlog-bauart.md) |
+| BAU | 692 | offen | `SHUTDOWN-EVENT-ASYNC` | [7. Offene Epics & Features](novaberg-backlog-bauart.md) |
+| BAU | 693 | offen | `REFAC-PIPELINE-LOG-VOLLVERKABELUNG` | [7. Offene Epics & Features](novaberg-backlog-bauart.md) |
+| BAU | 694 | offen | `REFAC-UMLAUTE` | [7. Offene Epics & Features](novaberg-backlog-bauart.md) |
+| BAU | 695 | offen | `REFAC-DB-INDEX-DUPLIKAT` | [7. Offene Epics & Features](novaberg-backlog-bauart.md) |
+| BAU | 696 | offen | `REFAC-SEEDS-AUSLAGERN` | [7. Offene Epics & Features](novaberg-backlog-bauart.md) |
+| BAU | 697 | offen | `REFAC-AGENT-INIT-COMPOSE-MOUNT` | [7. Offene Epics & Features](novaberg-backlog-bauart.md) |
+| BAU | 698 | offen | `REFAC-EVENT-PAYLOAD-SEEDING` | [7. Offene Epics & Features](novaberg-backlog-bauart.md) |
+| BAU | 700 | abgeschlossen | `TEST-WORKER-SHUTDOWN-COROUTINE` | [7. Offene Epics & Features](novaberg-backlog-bauart.md) |
+| BAU | 701 | offen | `WORKER-SHUTDOWN-QUEUE-DRAIN` | [7. Offene Epics & Features](novaberg-backlog-bauart.md) |
+| BAU | 702 | offen | `NODE-TOKEN-AUSLASTUNG-FALLBACK` | [7. Offene Epics & Features](novaberg-backlog-bauart.md) |
+| BAU | 703 | offen | `DIRECTIVE-DATACLASS` | [7. Offene Epics & Features](novaberg-backlog-bauart.md) |
+| BAU | 704 | offen | `STATE-LADEZUSTAND` | [7. Offene Epics & Features](novaberg-backlog-bauart.md) |
+| BAU | 705 | offen | `LOG-FREMDBIBLIOTHEK-DEBUG` | [7. Offene Epics & Features](novaberg-backlog-bauart.md) |
+| BAU | 708 | offen | `PROJEKTSEITE-NACHZIEHEN` | [PROJEKTSEITE-NACHZIEHEN — die Seite kommt modernisie](novaberg-backlog-bauart.md) |
+| BAU | 734 | abgeschlossen | `TELEGRAM-GRENZE-STRUKTURELL` | [Epic: Matrix-Kanal + WireGuard-Zugang (Chat 68)](novaberg-backlog-bauart.md) |
+| BAU | 831 | abgeschlossen | `EPIC-MS-MODELL-QUEUE` | [EPIC-MS-MODELL-QUEUE — die Modellaufrufe bekommen ei](novaberg-backlog-bauart.md) |
+| BAU | 941 | offen | `LOGGER-NAMESPACE` | [Herkunft: was der Reducer-Umbau offengelassen hat](novaberg-backlog-bauart.md) |
+| BAU | 952 | offen | `INIT-SQL-VERALTET` | [Herkunft: was der Reducer-Umbau offengelassen hat](novaberg-backlog-bauart.md) |
+| BAU | 969 | offen | `LZG-DOKU-DRIFT` | [Cleanup: LZG-DOKU-DRIFT — `novaberg-mem-lzg.md` refl](novaberg-backlog-bauart.md) |
+| BAU | 992 | offen | `EPIC-EVA-DISZIPLIN` | [EPIC-EVA-DISZIPLIN — Zusicherungen im ganzen Bestand](novaberg-backlog-bauart.md) |
+| BAU | 1041 | offen | `REDUCER-LOGGER-NAME-KONVENTION` | [Refactor: REDUCER-LOGGER-NAME-KONVENTION — Logger-Na](novaberg-backlog-bauart.md) |
+| BAU | 1071 | offen | `REDUCER-CONFIG-DEAD-KONSTANTEN` | [Refactor: REDUCER-CONFIG-DEAD-KONSTANTEN — Tote Kons](novaberg-backlog-bauart.md) |
+| BAU | 1102 | offen | `WORKER-TIMEOUT-MUSTER-DIVERGENZ` | [Refactor: WORKER-TIMEOUT-MUSTER-DIVERGENZ — `num_ctx](novaberg-backlog-bauart.md) |
+| BAU | 1124 | offen | `DOKU-DRIFT-WELLE-PROMOTION` | [Doku-Sprint: DOKU-DRIFT-WELLE-PROMOTION — Sieben Dri](novaberg-backlog-bauart.md) |
+| BAU | 1147 | offen | `CHRONIK-BACKFILL` | [Doku-Sprint: CHRONIK-BACKFILL — Lücken in Roadmap- u](novaberg-backlog-bauart.md) |
+| BAU | 1173 | offen | `AUDIT-DOKU-DRIFT-MS` | [Bug: AUDIT-DOKU-DRIFT-MS — Drift-Befunde aus Microse](novaberg-backlog-bauart.md) |
+| BAU | 1229 | offen | `LIB-VECTORS-MIGRATION` | [Lesepfad-Folgepunkte (Chat 99)](novaberg-backlog-bauart.md) |
+| BAU | 1230 | offen | `B3-API-KEY-SEMANTIK` | [Lesepfad-Folgepunkte (Chat 99)](novaberg-backlog-bauart.md) |
+| BAU | 1247 | offen | `PATH1-LATENZ` | [8. Offene Bugs](novaberg-backlog-bauart.md) |
+| BAU | 1248 | abgeschlossen | `TEST-RUNNER-FEHLT-CONTAINER` | [8. Offene Bugs](novaberg-backlog-bauart.md) |
+| BAU | 1289 | offen | `BEZEICHNER-WAR-AKTIV` | [Refactor: BEZEICHNER-WAR-AKTIV — was_active statt wa](novaberg-backlog-bauart.md) |
+| BAU | 1303 | offen | `CONFIG-DECAY-RATE-KOMMENTAR-DRIFT` | [Fix: CONFIG-DECAY-RATE-KOMMENTAR-DRIFT — falscher Ko](novaberg-backlog-bauart.md) |
+| BAU | 1319 | offen | `PATTERN-DOMAIN-LANGUAGE-RECONCILE` | [Frage: PATTERN-DOMAIN-LANGUAGE-RECONCILE — deutsche ](novaberg-backlog-bauart.md) |
+| BAU | 1334 | offen | `CHARHASH-DOKU-DRIFT` | [Doku: CHARHASH-DOKU-DRIFT — Hash-Doku beschreibt LZG](novaberg-backlog-bauart.md) |
+| BAU | 1343 | offen | `PIPELINE-LOG-BACKFILL-PAAR` | [Nacharbeit: PIPELINE-LOG-BACKFILL-PAAR — Alt-Forensi](novaberg-backlog-bauart.md) |
+| BAU | 1352 | offen | `PIPELINE-LOG-ART-DOKU-DRIFT` | [Doku: PIPELINE-LOG-ART-DOKU-DRIFT — Forensik-Queries](novaberg-backlog-bauart.md) |
+| BAU | 1376 | offen | `LESSON-INDEX-LUECKE` | [Doku: LESSON-INDEX-LUECKE — zwölf ältere lesson_l-Da](novaberg-backlog-bauart.md) |
+| BAU | 1390 | offen | `DOKU-DUPLIKATE-CHAT80` | [Doku: DOKU-DUPLIKATE-CHAT80 — 8 Bezeichner stehen in](novaberg-backlog-bauart.md) |
+| BAU | 1411 | offen | `EMBED-DIMENSIONSCHECK-FEHLT` | [Fix: EMBED-DIMENSIONSCHECK-FEHLT — kein harter Dimen](novaberg-backlog-bauart.md) |
+| BAU | 1420 | offen | `LZG-MIGRATION-REVIEW-NICHT-IN-INIT` | [Fix: LZG-MIGRATION-REVIEW-NICHT-IN-INIT — Live-Tabel](novaberg-backlog-bauart.md) |
+| BAU | 1429 | offen | `IDX-TIMELINE-TYPE-NICHT-IN-INIT` | [Fix: IDX-TIMELINE-TYPE-NICHT-IN-INIT — Live-Index oh](novaberg-backlog-bauart.md) |
+| BAU | 1443 | offen | `REDUCER-DOKU-DRIFT` | [Doku: REDUCER-DOKU-DRIFT — drei Drifts aus dem Reduc](novaberg-backlog-bauart.md) |
+| BAU | 1452 | offen | `DOKU-NOTIZEN-INIT-SQL` | [Doku: DOKU-NOTIZEN-INIT-SQL — Verweis auf nicht exis](novaberg-backlog-bauart.md) |
+| BAU | 1461 | offen | `PERMISSION-OHNE-BODEN` | [Befund: PERMISSION-OHNE-BODEN — „Brudi ist read-only](novaberg-backlog-bauart.md) |
+| BAU | 1478 | offen | `ALLOWLIST-DRIFT` | [Aufräumen: ALLOWLIST-DRIFT — die Claude-Code-Allowli](novaberg-backlog-bauart.md) |
+| BAU | 1493 | offen | `ROADMAP-GLIEDERUNGSBRUCH` | [Doku: ROADMAP-GLIEDERUNGSBRUCH — ab Chat 98 wechselt](novaberg-backlog-bauart.md) |
+| BAU | 1512 | offen | `DB-SELECT-SCHREIBT-OHNE-COMMIT` | [Landmine: DB-SELECT-SCHREIBT-OHNE-COMMIT — `select()](novaberg-backlog-bauart.md) |
+| BAU | 1531 | offen | `PUB-ROLLENNAMEN-IM-BESTAND` | [Audit: PUB-ROLLENNAMEN-IM-BESTAND — die Doku nennt d](novaberg-backlog-bauart.md) |
+| BAU | 1570 | offen | `REGISTER-SPIEGEL-DURCHGANG` | [Audit: REGISTER-SPIEGEL-DURCHGANG — wo spiegelt sons](novaberg-backlog-bauart.md) |
