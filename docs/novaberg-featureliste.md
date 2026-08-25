@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Vollständiges Register aller Features mit Zustandsampel und Beleg
-**Stand:** 25. August 2026, 18:43 UTC (`date -u`)
+**Stand:** 25. August 2026, 19:03 UTC (`date -u`)
 **Verlauf:** [Verlauf des Standes](#verlauf-des-standes) — 77 Eintraege, juengster zuerst
 **Pfad:** novaberg/docs/novaberg-featureliste.md
 **Typ:** Register
@@ -388,7 +388,7 @@ Die Feature-Matrix in `novaberg-architecture.md` §6 ist mit dieser Liste abgel�
 | Feature | Ampel | Beleg | Rest |
 |---|---|---|---|
 | **Test-Suite** | 🔴 | 1.617 grün, 0 übersprungen `[Doku, 17.08.]` · `[gemessen]` — `Ran 2039 tests — OK`, 0 uebersprungen, am 20.08.2026 | meldet **gelegentlich rot und reproduziert nicht** — der Testname ist unbekannt · **🔴 seit 20.08.2026** (zuvor 🟠): `ZEUGE-FLACKERT-OHNE-REPRODUKTION` offen |
-| **Linter-Nulllinie** (`ruff.toml`) | 🟢 | **1.421 geduldete Treffer** — davon **1.273 im Produktivcode**, 148 im Testverzeichnis. `ruff check --statistics server/`, ruff 0.16.0 `[gemessen 25.08.2026]` · `[Code]` — `novaberg/ruff.toml`, versioniert. Verlauf: 2.659 (30.07.) → 2.471 (20.08.) → 2.675 (25.08., vor dem Durchgang) → 2.345 → 2.316 → 2.305 → **1.421** | **1.254 an einem Tag**, Suite dabei 2279 → 2322 gruen. **`F841`, `I001`, `B`, `W`, `N`, `LOG`, `F821` bei null.** 884 des letzten Schritts: 303 `ANN201` maschinell behoben, 581 als begruendete Datei-Ausnahme (`D102`, `S608`, `S101`, `T201`) — **erst geprueft, ob behebbar, dann ausgenommen**. Rest ist Handarbeit: `E501` 334, `D205` 175, `TRY003` 101, `D102` 88 |
+| **Linter-Nulllinie** (`ruff.toml`) | 🟢 | **1.143 geduldete Treffer** — davon **995 im Produktivcode**, 148 im Testverzeichnis. `ruff check --statistics server/`, ruff 0.16.0 `[gemessen 25.08.2026]` · `[Code]` — `novaberg/ruff.toml`, versioniert. Verlauf: 2.659 (30.07.) → 2.675 (25.08., vor dem Durchgang) → 2.345 → 2.305 → 1.421 → **1.143** | **1.532 an einem Tag**, Suite dabei 2279 → 2322 gruen. **`F841`, `I001`, `F541`, `B`, `W`, `N`, `LOG`, `F821` bei null.** `E501` 334 → **56**: 278 umgebrochen mit AST-Aequivalenzpruefung, 0 Verwerfungen. Rest: 20 innerhalb mehrzeiliger Literale (Umbruch aendert den Inhalt), 36 mit Einzelentscheidung |
 | **Harte Wand** (`ruff-hart.toml`) | 🟠 | **6 Regelgruppen** hart: `LOG`, `F821`, `W`-Auswahl, `N`, `I001`, **37 der 39 stabilen `B`-Regeln, neu am 25.08.2026** `[Code]` · Reichweite fuer **jede** der 39 einzeln konstruiert und gemessen; im echten Riegelpfad 37 Fehler / Rueckgabewert 1, danach 0 `[gemessen 25.08.2026]` | **`B911` und `B912` bewusst draussen** — `strict=` gibt es erst ab py313 bzw. py314, bei `target-version = "py312"` waeren sie eine Wand ohne Deckung. Ungewacht bleiben `D`, `ANN`, `E`, `TRY`, `BLE`, `C90`, `PLR09`, `ERA`, `T20`, `S` |
 | **Charakterisierungs-Netz** | 🟠 | `[Doku]` | — · **🟢 → 🟠 bei der Erhebung am 20.08.2026.** **Die Erhebung am 20.08.2026 fand keinen Zeugen**: unter 143 Testdateien traegt keine `charakterisier`, `netz` oder `golden` im Namen. Das Netz ist im Harness beschrieben und im Bestand nicht auffindbar. `[gemessen]` |
 | **Kanalprüfung** (Deklaration gegen Leser) | 🟢 | 74 Felder geprüft, **0 tote Kanäle** `[gemessen]` | — |

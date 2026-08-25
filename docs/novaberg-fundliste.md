@@ -2,8 +2,8 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Rohe, noch unklassifizierte Funde aus laufender Arbeit
-**Stand:** 25. August 2026, 18:16 UTC
-**Offen:** **104 Funde — gezaehlt am 25.08.2026, 18:16 UTC** (112 Fundzeilen im Abschnitt *Offen*, davon **8** durchgestrichen; **vier davon heute nachmittag aufgeloest** — zwei als Defekt ins Archiv, zwei behandelt, und einer erwies sich beim Nachsehen als kein Befund)
+**Stand:** 25. August 2026, 19:03 UTC
+**Offen:** **106 Funde — gezaehlt am 25.08.2026, 19:03 UTC** (114 Fundzeilen im Abschnitt *Offen*, davon **8** durchgestrichen; **zwei neu aus dem Zeilenlaengen-Durchgang** — die ausgerichteten Dict-Bloecke, bei denen Regel und Bestandsstil gegeneinander stehen, und fuenf Feld-Kommentare bis 390 Zeichen)
 **Verlauf:** [Verlauf des Standes](#verlauf-des-standes) — 73 Eintraege, juengster zuerst
 **Pfad:** novaberg/docs/novaberg-fundliste.md
 
@@ -232,6 +232,10 @@ Analog zum Kraft-1-Stichtag: ab wann eine Partition brauchbar ist. Kein Backfill
 ---
 
 ## Offen
+
+- **2026-08-25** — **Neun ausgerichtete Dict-Eintraege in `services/event_consumer.py` liegen bei 101 bis 105 Zeichen — Regel und Bestandsstil stehen gegeneinander.** Der Block (Zeilen 644 bis 653) schreibt Zustandsfelder spaltenbuendig; genau diese Ausrichtung kostet die letzten ein bis fuenf Zeichen. **Ein Umbruch loest die Regel und zerstoert den Block, ein `noqa` loest den Block und schwaecht die Regel, ein engerer Einzug loest beides und macht die Datei inkonsistent zu den fuenfzehn anderen Bloecken derselben Bauart.** Dieselbe Lage in `agents/delegation/dispatch.py:76` und `graph/nodes/enricher.py:972`. Das ist keine Formatierungsfrage mehr, sondern die Entscheidung, ob die Spaltenausrichtung eine Konvention dieses Bestands ist oder eine Gewohnheit.
+
+- **2026-08-25** — **Fuenf Feld-Kommentare in `graph/state.py` sind bis zu 390 Zeichen lang.** `turn_id: str  # UUID4-Hex zur Korrelation …` (152), Zeile 100 mit **390**, Zeile 179 mit 313, Zeile 121 mit 177, Zeile 224 mit 122. Sie tragen die einzige Beschreibung, die diese Zustandsfelder haben — und sie stehen hinter dem Feld, wo sie beim Lesen der Struktur nicht auffallen. **Ein Kommentar, der laenger ist als der Bildschirm, wird beim Lesen des Feldes uebersprungen**; er gehoert entweder ueber das Feld oder in das Moduldokument. Ueber `E501` sichtbar geworden.
 
 - **2026-08-25** — ~~**Sechsmal wird der Vorher-Zustand geladen und nie protokolliert.**~~ → **nach `novaberg-bugs-archiv.md` als `VORHER-ZUSTAND-OHNE-SPUR`, am selben Tag behoben.** Ursprünglicher Befund: `vorher = _read_by_id(target_id)` steht in `agents/charakter_identitaet/crud.py` (265, 298, 362) und `agents/direktiven/crud.py` (288, 345, 394) jedes Mal **unmittelbar vor einem `UPDATE ... SET aktiv = FALSE`** — und wird danach nirgends gelesen. Das Muster ist in zwei Modulen identisch, also kein Versehen an einer Stelle, sondern eine **Absicht ohne Empfänger**: Genau das, was ein Löschvorgang für die Nachvollziehbarkeit festhalten müsste, wird geholt und fallengelassen. Gefunden über `F841`; die sechs Zuweisungen sind deshalb bewusst stehengeblieben, weil Löschen die Absicht mit entfernt.
 

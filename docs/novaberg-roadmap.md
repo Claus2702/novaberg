@@ -1,13 +1,13 @@
 # Novaberg — Roadmap (Projektchronik)
 
-**Stand:** 25. August 2026 — juengster Eintrag **18:43 UTC** (gemessen via `date -u`); die Eintraege darunter tragen Zeiten bis 21:30 UTC, die zu dieser Zeitbasis in der Zukunft liegen und deshalb **oberhalb** ihres Datums stehen. Der Widerspruch steht in der Fundliste.
+**Stand:** 25. August 2026 — juengster Eintrag **19:03 UTC** (gemessen via `date -u`); die Eintraege darunter tragen Zeiten bis 21:30 UTC, die zu dieser Zeitbasis in der Zukunft liegen und deshalb **oberhalb** ihres Datums stehen. Der Widerspruch steht in der Fundliste.
 **Pfad:** novaberg/docs/novaberg-roadmap.md
 **Single Source of Truth für abgeschlossene Arbeit.**
 **Offene Punkte → novaberg-backlog.md**
 
 | Zeitraum | Datei | Kapitel |
 |---|---|---|
-| 2026-08 | **novaberg-roadmap.md** ← diese Datei | 125 |
+| 2026-08 | **novaberg-roadmap.md** ← diese Datei | 126 |
 | 2026-07 | [`novaberg-roadmap-2026-07.md`](novaberg-roadmap-2026-07.md) | 12 |
 | 2026-05 | [`novaberg-roadmap-2026-05.md`](novaberg-roadmap-2026-05.md) | 18 |
 | 2026-04 | [`novaberg-roadmap-2026-04.md`](novaberg-roadmap-2026-04.md) | 21 |
@@ -18,6 +18,40 @@
 ## Hinweis für Bearbeiter dieser Datei
 
 Die Kopfzeile stand bis Chat 109 auf „Chat 93, 21. Mai 2026" — 15 Chats hinter dem Inhalt. **Sie ist danach erneut zurückgefallen:** von Chat 110 bis 114 blieb sie auf „Chat 109" stehen, während der Inhalt weiterwuchs, und wurde in Chat 115 nachgezogen. Wer hier etwas ergänzt, zieht die Kopfzeile mit — sie driftet zuverlässig. Achtung beim Nachschlagen: Nur bis Chat 97 trägt jeder Chat eine eigene `## Chat NNN`-Überschrift; die Chats 98–108 stehen als `###`-Abschnitte unter dem Chat-97-Block, benannt nach Sprint statt nach Chat.
+
+---
+
+## 25.08.2026, 19:03 UTC — 278 zu lange Zeilen umgebrochen, ohne den Stil des Bestands mitzunehmen
+
+**ZIEL:** Die zu langen Zeilen brechen um, und die spaltenausgerichtete Schreibweise des Bestands bleibt.
+**TEST:** Suite unveraendert; `F541` darf nicht steigen (Teilstuecke ohne Platzhalter waeren neue Treffer); harte Wand mit Rueckgabewert 0.
+**MESSUNG:** `E501` **334 → 56**, Gesamt **1421 → 1143**, Suite **2322 gruen**, 0 uebersprungen. 69 Dateien.
+
+**Der Formatter ueber den Baum war entschieden und verworfen:** Er haette 28.472 Zeilen in 372 von 450 Dateien angefasst, um 334 zu reparieren, und dabei die ausgerichteten Zuweisungen aufgeloest — dieselbe Sorte Verlust wie bei den ausgerichteten Importen am Vormittag. Stattdessen `ruff format --range` je Trefferzeile.
+
+### Drei Fallen, jede erst beim Messen sichtbar
+
+**Die Bereichsangabe.** `--range=N-N` bedeutet *Zeile N, Spalte N* und formatiert nichts. Der erste Lauf meldete daraufhin **302 unveraenderte Zeilen und null Fehler** — ein sauber aussehendes Ergebnis ohne jede Wirkung. Richtig ist `--range=N:1-(N+1):1`.
+
+**Der Formatter erweitert auf die logische Zeile.** Sitzt der Treffer in einem Dict-Literal, formt er den ganzen Block um. Gemessen nach dem zweiten Lauf: **111 der 384 entfernten Zeilen waren gar keine Trefferzeilen** — darunter genau die ausgerichteten Bloecke, die erhalten bleiben sollten. Der Lauf wurde zurueckgenommen und um eine Pruefung erweitert: Verschwindet eine Zeile, die selbst kuerzer als die Grenze war, wird der Umbruch verworfen. **31 Umbrueche fielen danach aus** — und die Kollateralzahl von 111 auf 1.
+
+**Ein Teilstueck ohne Platzhalter ist kein f-String.** Beim Teilen langer Literale bekommt jedes Stueck sein `f` nur, wenn es eine Klammer traegt; sonst waeren 63 neue `F541`-Treffer entstanden, die am selben Tag erst abgeraeumt worden waren. `F541` steht nach dem Durchgang unveraendert bei null.
+
+### Zwei Durchgaenge, beide mit Aequivalenzpruefung
+
+| Durchgang | Gegenstand | Treffer |
+|---|---|---:|
+| `ruff format --range` je Zeile | Code-Umbrueche | 215 |
+| Literal-Teilung an Wortgrenzen | Zeichenketten, die fuer sich zu lang sind | 63 |
+
+Die Pruefung ist beide Male dieselbe: Der AST vorher gegen nachher, nachdem in beiden benachbarte Literale eines f-Strings verschmolzen wurden — implizite Konkatenation ist genau das, was der Umbruch erzeugt, und sonst darf sich nichts bewegen. **0 Verwerfungen ueber 278 Umbrueche.** Die Gegenprobe des Normalisierers laeuft mit: ein geaendertes Zeichen im Text wird erkannt, ein reiner Umbruch nicht.
+
+### Was bleibt, und warum
+
+| Menge | Grund |
+|---|---:|
+| **20** liegen **innerhalb** eines mehrzeiligen Literals | Der Umbruch waere Teil des Inhalts. Bei einem Prompt-Text aendert er, was das Modell liest — und `noqa` hilft nicht, denn ein Kommentar in einer solchen Zeile waere Text |
+| **36** brauchen eine Einzelentscheidung | Neun davon sind ausgerichtete Dict-Eintraege in `event_consumer.py` bei 101 bis 105 Zeichen: **hier stehen Regel und Bestandsstil gegeneinander**, und das ist keine Formatierungsfrage mehr |
 
 ---
 
