@@ -18,6 +18,28 @@
 
 ---
 
+## 25.08.2026 — eine Dauer in der Einzahl war ein Monatsname
+
+#### ZEIT-EINZAHL-GREIFT-DANEBEN ✅ behoben
+
+**Zustand:** **behoben am 25.08.2026.** Suite 2288 gruen / 0 uebersprungen, sieben neue Zeugen in `tests/test_zeit_dauer_einzahl.py`. Gegen Referenz 30.07.2026 nachgemessen: `in einem Tag` = `in 1 Tag` = **31.07.2026**, `in zwei Tagen` = 01.08.2026, `in einem Monat` = **30.08.2026** (vorwaerts). Alle dreizehn Faelle der Reihe rechnen richtig.
+
+**Die Ursache war weder die Einzahl noch `dateparser`, sondern die eigene Fuzzy-Korrektur.** Sie zog `Tag` auf `Mai` und `Monat` auf `Montag` — beide auf Levenshtein-Distanz 2 und damit innerhalb von `max_distanz`. Danach parste `in einem Tag` als *im Mai* und `in einem Monat` als *am Montag*; die Ergebnisse 01.05.2027 und 01.07.2026 sind genau das, kein Rechenfehler.
+
+**Die Mehrzahlformen waren nie betroffen, und daran lag die Fehldiagnose:** `Tagen` und `Monaten` sind lang genug, dass keine Korrektur greift. Der Defekt sah deshalb aus wie ein Einzahl-Problem und war eines der **Wortlaenge** — er traf jede Zahl, `in 2 Tag` ergab 2027-05-02. Die Vermutung des Befundes (*„vermutlich die Normalisierung der Einzahlform"*) traf die Wirkung und verfehlte die Ursache: Die Normalisierung reicht Dauern unveraendert durch, gemessen.
+
+**Behoben** ueber `_ZEITEINHEITEN` in `_GESCHUETZTE_WOERTER` (`utils/zeitparser.py:182`) — der Mechanismus, den die Stufe fuer genau diesen Fall schon hatte. Geschuetzt sind alle sieben Einheiten in beiden Formen, auch die heute unauffaelligen.
+
+**Was dabei offen bleibt und groesser ist als dieser Eintrag:** Ueber 57 gebraeuchliche Woerter gemessen werden **13** auf einen Monats- oder Wochentagsnamen gezogen. `Mittag` loest auf den **naechsten Montag** auf statt auf 12:00 desselben Tages, waehrend `mittags` korrekt rechnet; `morgen Mittag`, `heute Mittag` und `Freitag Mittag` parsen gar nicht. Steht in der Fundliste, nicht behoben — ein Fund wird nicht im Vorbeigehen repariert.
+
+**Befund (2026-07-31).** **`in einem Tag` und `in 1 Tag` lösen auf den 01.05.2027 auf.** Die Mehrzahlform `in zwei Tagen` funktioniert. Gemessen gegen Referenz 30.07.2026. Ein Ausdruck, der um Monate danebengreift, ist schlimmer als einer, der gar nicht parst — er legt einen Anker an, und zwar einen plausibel aussehenden. Betrifft `utils/zeitparser.py`, vermutlich die Normalisierung der Einzahlform.
+
+**Was fertig waere.** ~~`in einem Tag` loest auf denselben Tag auf wie `in 1 Tag` und `in zwei Tagen`.~~ **Erfuellt am 25.08.2026**, nachgemessen gegen die Referenz des Befundes.
+
+**Prioritaet:** hoch.
+
+---
+
 ## 25.08.2026 — der Versionsstempel frass die Leerzeile unter sich
 
 #### TELEGRAM-SHADOW-TYP-TOT — der Bot behandelt einen Nachrichtentyp, den der Server nie erzeugt ⚠️

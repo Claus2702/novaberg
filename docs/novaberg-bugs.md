@@ -2,7 +2,7 @@
 
 **Stand:** 25. August 2026, 10:05 UTC (**21 Eintraege sind nach der Nachpruefung geschlossen** — 13 behoben, 8 gegenstandslos — und stehen im Archiv; 15 weitere tragen eine neue Zustandszeile, weil ihr Beleg sich bewegt hat, ohne den Befund zu erledigen. Davor, 09:20 UTC: **das Register ist geteilt** — die abgeschlossenen Eintraege stehen seit heute in [`novaberg-bugs-archiv.md`](novaberg-bugs-archiv.md), diese Datei traegt die nicht abgeschlossenen. Keine Kennung ist dabei verlorengegangen, und keine steht in beiden Dateien. **Die Zaehlungen weiter unten sind aelter als der Schnitt** und beziehen sich auf die ungeteilte Datei. Davor: 24. August 2026, 12:45 UTC (**der Wartungslauf ist gefahren** — 5963 Zeilen umgerechnet, 1046 unangetastet; die KZG-Saettigung faellt von 34,1 % auf 25,3 %, der Rest ist der Akkumulator. Davor 12:10 UTC: **die Salienz-Skala: `KZG-SALIENZ-GESAETTIGT` behoben und `SALIENZ-RECHNET-AUF-IHREM-ERGEBNIS` dabei gefunden** — der Bestand steht noch auf der alten Skala, der Wartungslauf ist vorbereitet und nicht ausgefuehrt; davor 23.08.2026, 23:15 UTC: **der Impulsweg: die Naht zwischen GV-Knoten und Haltungsstand behoben** — Riegel 2 entscheidet zum ersten Mal auf einer Messung; davor 21:55 UTC: **Rang 5 abgearbeitet** — funf Knoten, sieben Eintraege behandelt; 46 offen / 40 nicht offen von 86 Abschnitten, gezaehlt ueber die erste `Zustand:`-Zeile je Abschnitt mit Kennung))
 **Verlauf:** [Verlauf des Standes](#verlauf-des-standes) — 29 Eintraege, juengster zuerst
-**Archiv:** [`novaberg-bugs-archiv.md`](novaberg-bugs-archiv.md) — 123 abgeschlossene Eintraege. Ein behobener Defekt bleibt mit Vermerk stehen; er steht nur nicht mehr hier.
+**Archiv:** [`novaberg-bugs-archiv.md`](novaberg-bugs-archiv.md) — 125 abgeschlossene Eintraege. Ein behobener Defekt bleibt mit Vermerk stehen; er steht nur nicht mehr hier.
 
 ---
 
@@ -1102,16 +1102,6 @@ Acht Defekte. **Vier davon sind Prompt-Bloecke, die etwas ueber den Nutzer behau
 **Was fertig waere.** Was als Zeitausdruck geliefert wird, ist einer — oder das Feld traegt eine Marke, dass es ungeprueft ist.
 
 **Prioritaet:** mittel.
-
-#### ZEIT-EINZAHL-GREIFT-DANEBEN 🔧 offen
-
-**Zustand:** offen — **im Betrieb reproduziert am 25.08.2026, unveraendert seit dem Befund.** Gegen Referenz 30.07.2026 im laufenden Behaelter gemessen: `in einem Tag` und `in 1 Tag` ergeben beide den **01.05.2027**. **Dabei faellt ein zweiter Fall an, den der Befund nicht nennt: `in einem Monat` ergibt den 01.07.2026** — 29 Tage **vor** der Referenz, obwohl die Zukunft bevorzugt wird. Die Mehrzahlformen rechnen richtig (`in zwei Tagen` → 01.08.2026, `in einer Woche` → 06.08.2026, `in einer Stunde` → 17:00 desselben Tages). **Die Klasse ist damit groesser als der Eintrag:** Nicht die Einzahl greift daneben, sondern die Einzahl in Verbindung mit einer Einheit, die zugleich ein Datumsteil ist.
-
-**Befund (2026-07-31).** **`in einem Tag` und `in 1 Tag` lösen auf den 01.05.2027 auf.** Die Mehrzahlform `in zwei Tagen` funktioniert. Gemessen gegen Referenz 30.07.2026. Ein Ausdruck, der um Monate danebengreift, ist schlimmer als einer, der gar nicht parst — er legt einen Anker an, und zwar einen plausibel aussehenden. Betrifft `utils/zeitparser.py`, vermutlich die Normalisierung der Einzahlform.
-
-**Was fertig waere.** `in einem Tag` loest auf denselben Tag auf wie `in 1 Tag` und `in zwei Tagen`.
-
-**Prioritaet:** hoch.
 
 #### GV-PANEL-STRATEGIE-DOPPELT 🔧 offen
 

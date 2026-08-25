@@ -1,13 +1,13 @@
 # Novaberg — Roadmap (Projektchronik)
 
-**Stand:** 25. August 2026 — juengster Eintrag 14:20 UTC (gemessen via `date -u`); die Eintraege darunter tragen Zeiten bis 21:30 UTC, die zur Zeitbasis dieser Sitzung in der Zukunft liegen. Der Widerspruch steht in der Fundliste.
+**Stand:** 25. August 2026 — juengster Eintrag 15:25 UTC (gemessen via `date -u`); die Eintraege darunter tragen Zeiten bis 21:30 UTC, die zur Zeitbasis dieser Sitzung in der Zukunft liegen. Der Widerspruch steht in der Fundliste.
 **Pfad:** novaberg/docs/novaberg-roadmap.md
 **Single Source of Truth für abgeschlossene Arbeit.**
 **Offene Punkte → novaberg-backlog.md**
 
 | Zeitraum | Datei | Kapitel |
 |---|---|---|
-| 2026-08 | **novaberg-roadmap.md** ← diese Datei | 117 |
+| 2026-08 | **novaberg-roadmap.md** ← diese Datei | 118 |
 | 2026-07 | [`novaberg-roadmap-2026-07.md`](novaberg-roadmap-2026-07.md) | 12 |
 | 2026-05 | [`novaberg-roadmap-2026-05.md`](novaberg-roadmap-2026-05.md) | 18 |
 | 2026-04 | [`novaberg-roadmap-2026-04.md`](novaberg-roadmap-2026-04.md) | 21 |
@@ -18,6 +18,33 @@
 ## Hinweis für Bearbeiter dieser Datei
 
 Die Kopfzeile stand bis Chat 109 auf „Chat 93, 21. Mai 2026" — 15 Chats hinter dem Inhalt. **Sie ist danach erneut zurückgefallen:** von Chat 110 bis 114 blieb sie auf „Chat 109" stehen, während der Inhalt weiterwuchs, und wurde in Chat 115 nachgezogen. Wer hier etwas ergänzt, zieht die Kopfzeile mit — sie driftet zuverlässig. Achtung beim Nachschlagen: Nur bis Chat 97 trägt jeder Chat eine eigene `## Chat NNN`-Überschrift; die Chats 98–108 stehen als `###`-Abschnitte unter dem Chat-97-Block, benannt nach Sprint statt nach Chat.
+
+---
+
+## 25.08.2026, 15:25 UTC — `in einem Tag` war der Mai, `in einem Monat` war der Montag
+
+**ZIEL:** Eine Dauer in der Einzahl-Wortform loest auf denselben Moment auf wie in der Mehrzahl.
+**TEST:** `tests/test_zeit_dauer_einzahl.py` — sieben Zeugen, die die Wortformen **gegeneinander** halten statt gegen ein Wunschdatum, dazu eine Klasse *keine Dauer landet vor ihrer Referenz*.
+**MESSUNG:** dreizehn Ausdruecke gegen Referenz 30.07.2026, vorher und nachher.
+
+**Der Eintrag vermutete die Normalisierung der Einzahlform. Beides war falsch — die Einzahl und die Stelle.**
+
+```
+"in einem Tag"    -> Fuzzy -> "in einem Mai"     -> 01.05.2027
+"in einem Monat"  -> Fuzzy -> "in einem Montag"  -> 01.07.2026   (29 Tage rueckwaerts)
+```
+
+`Tag` → `Mai` und `Monat` → `Montag` liegen beide auf **Levenshtein-Distanz 2** und damit innerhalb von `max_distanz`. Die falschen Ergebnisse sind kein Rechenfehler, sondern die richtige Antwort auf die falsche Frage.
+
+**Warum es zwei Wochen unentdeckt blieb — und warum die Diagnose danebenlag:** Die Mehrzahlformen sind lang genug, dass keine Korrektur greift. Damit sah der Defekt wie ein Einzahl-Problem aus und war eines der **Wortlaenge**; er traf jede Zahl, `in 2 Tag` ergab 2027-05-02. Die Vermutung des Eintrags traf die Wirkung und verfehlte die Ursache: Der Normalisierer reicht Dauern unveraendert durch, gemessen.
+
+**Behoben ueber `_ZEITEINHEITEN` in `_GESCHUETZTE_WOERTER`** — den Mechanismus, den die Fuzzy-Korrektur fuer genau diesen Fall schon hatte. Geschuetzt sind alle sieben Einheiten in beiden Formen, auch die heute unauffaelligen: **Was eine Zeiteinheit benennt, ist nie ein verschriebener Monatsname**, und die Regel soll nicht daran haengen, welche Distanz eine einzelne Form gerade hat.
+
+**Suite:** 2281 → **2288 gruen**, 0 uebersprungen. Gegenprobe: Schutz zurueckgenommen → 8 Fehlschlaege, wiederhergestellt → gruen.
+
+> **Die zweite Kontrolle fragte in die Gegenrichtung und fand die groessere Klasse.** Der Bau ging von den Zeiteinheiten aus; die Kontrolle fragte, welches Alltagswort auf einem Monat oder Wochentag landet. **13 von 57**: `mittag` → `montag`, `mail`/`main`/`mais`/`rat`/`rad`/`mama`/`oma` → `mai`, `apfel` → `april`, `dienst` → `dienstag`, `mars` → `märz`.
+>
+> **Der teuerste Fall ist `Mittag`:** Er loest auf den **naechsten Montag** auf statt auf 12:00 desselben Tages — gemessen an einem Donnerstag ein Fehler von vier Tagen —, waehrend `mittags` mit s korrekt rechnet. `morgen Mittag`, `heute Mittag` und `Freitag Mittag` parsen gar nicht. **Nicht behoben:** ein Fund wird nicht im Vorbeigehen repariert, und diese Klasse ist groesser als der Auftrag.
 
 ---
 

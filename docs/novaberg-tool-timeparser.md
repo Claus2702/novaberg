@@ -115,6 +115,15 @@ Levenshtein-Distanz gegen Wochentage, Monate und relative Zeitbegriffe. Maximale
 | „morgens" → „morgen" | `morgens` geschützt (Tageszeit ≠ relatives Datum) |
 | „acht" → „nachts" | `acht` geschützt (Zahl ≠ Tageszeit) |
 | „halb", „viertel", „dreiviertel" | Geschützt (Bruchteile, keine Wochentage) |
+| **„Tag" → „Mai", „Monat" → „Montag"** | **seit 25.08.2026 `_ZEITEINHEITEN` geschützt** — Einzahl und Mehrzahl aller sieben Einheiten |
+
+> **Die Einzahlform einer Dauer-Einheit ist kurz genug, um auf einen Monatsnamen zu fallen.** `Tag` → `Mai` und `Monat` → `Montag` liegen beide auf Distanz 2 und damit innerhalb von `max_distanz`. Gemessen gegen Referenz 30.07.2026: `in einem Tag` ergab den **01.05.2027**, `in einem Monat` den **01.07.2026** — 29 Tage *rückwärts*, obwohl die Zukunft bevorzugt wird.
+>
+> **Die Mehrzahlformen waren nie betroffen, und daran lag es, dass es niemandem auffiel:** `Tagen` und `Monaten` sind lang genug, dass keine Korrektur greift. Der Defekt sah aus wie ein Einzahl-Problem (`ZEIT-EINZAHL-GREIFT-DANEBEN`) und war eines der **Wortlänge** — er traf jede Zahl, auch `in 2 Tag`.
+>
+> Geschützt sind deshalb **alle** sieben Einheiten in beiden Formen, auch die heute unauffälligen: Was eine Zeiteinheit benennt, ist nie ein verschriebener Monatsname, und die Regel soll nicht daran hängen, welche Distanz eine einzelne Form gerade hat.
+
+**Die Schutzliste ist unvollständig, und das ist gemessen.** Über 57 gebräuchliche Wörter am 25.08.2026: **13 werden auf einen Monats- oder Wochentagsnamen gezogen** — darunter `mittag` → `montag`, `mail`/`main`/`mais`/`rat`/`rad` → `mai`, `apfel` → `april`, `dienst` → `dienstag`. Der Fall `Mittag` ist der teuerste: Er löst auf den **nächsten Montag** auf statt auf 12:00 Uhr desselben Tages, während `mittags` mit s korrekt rechnet. Steht in der Fundliste, nicht behoben.
 
 ---
 

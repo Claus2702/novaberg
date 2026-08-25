@@ -1,11 +1,11 @@
 # Novaberg — Chronik, Findemittel
 
 **Inhalt:** eine Zeile je Abschnitt der Projektchronik, ueber alle Zeitraeume.
-**Umfang:** 501 Abschnitte in 5 Dateien — 205 mit eigenem Datum, 295 geerbt, 1 ohne.
+**Umfang:** 502 Abschnitte in 5 Dateien — 206 mit eigenem Datum, 295 geerbt, 1 ohne.
 
 | Zeitraum | Datei | Abschnitte |
 |---|---|---|
-| laufend | [`novaberg-roadmap.md`](novaberg-roadmap.md) | 238 |
+| laufend | [`novaberg-roadmap.md`](novaberg-roadmap.md) | 239 |
 | 2026-07 | [`novaberg-roadmap-2026-07.md`](novaberg-roadmap-2026-07.md) | 69 |
 | 2026-05 | [`novaberg-roadmap-2026-05.md`](novaberg-roadmap-2026-05.md) | 87 |
 | 2026-04 | [`novaberg-roadmap-2026-04.md`](novaberg-roadmap-2026-04.md) | 101 |
@@ -19,7 +19,7 @@
 
 **Sie wird gerechnet, nicht geschrieben.** Ein von Hand gefuehrtes Findemittel ist eine zweite Wahrheit neben der ersten und faellt zurueck; die Chronik traegt den Beleg dafuer im eigenen Kopf. Wer hier etwas von Hand aendert, aendert es bis zum naechsten Lauf.
 
-**Die Sprungmarken sind eindeutig, ihre Form ist unbelegt.** 501 Marken, 501 verschiedene — das ist gerechnet, und es gilt ueber alle Teile zusammen. Ob ein Betrachter aus einem Gedankenstrich zwischen Leerzeichen zwei Bindestriche bildet, wie hier angenommen, ist im Bestand nicht nachpruefbar: Vor diesem Index gab es keinen einzigen Anker-Verweis in der Doku. Der erste Klick entscheidet es.
+**Die Sprungmarken sind eindeutig, ihre Form ist unbelegt.** 502 Marken, 502 verschiedene — das ist gerechnet, und es gilt ueber alle Teile zusammen. Ob ein Betrachter aus einem Gedankenstrich zwischen Leerzeichen zwei Bindestriche bildet, wie hier angenommen, ist im Bestand nicht nachpruefbar: Vor diesem Index gab es keinen einzigen Anker-Verweis in der Doku. Der erste Klick entscheidet es.
 
 **Ein Datum in Klammern ist geerbt** — der Abschnitt selbst nennt keins; es stammt von der naechsten Ueberschrift darueber, die eins traegt. Ein geerbtes Datum ist eine Zuordnung und keine Angabe.
 
@@ -28,6 +28,7 @@
 | Datum | Datei | Ebene | Abschnitt |
 |---|---|---|---|
 | — | laufend | ## | [Hinweis für Bearbeiter dieser Datei](novaberg-roadmap.md#hinweis-für-bearbeiter-dieser-datei) |
+| 2026-08-25 | laufend | ## | [25.08.2026, 15:25 UTC — `in einem Tag` war der Mai, `in einem Monat` war der Montag](novaberg-roadmap.md#25082026-1525-utc--in-einem-tag-war-der-mai-in-einem-monat-war-der-montag) |
 | 2026-08-25 | laufend | ## | [25.08.2026, 14:20 UTC — Die 45 Alt-Eintraege des Defektregisters tragen einen Zustand](novaberg-roadmap.md#25082026-1420-utc--die-45-alt-eintraege-des-defektregisters-tragen-einen-zustand) |
 | 2026-08-25 | laufend | ## | [25.08.2026, 12:45 UTC — Ein Suchmuster frass bei jedem Versionsstempel eine Leerzeile, 136 Dateien lang](novaberg-roadmap.md#25082026-1245-utc--ein-suchmuster-frass-bei-jedem-versionsstempel-eine-leerzeile-136-dateien-lang) |
 | 2026-08-25 | laufend | ## | [25.08.2026, 21:30 UTC — Sechs Regeldokumente zeigten noch auf Dateien, die keine Einträge mehr tragen](novaberg-roadmap.md#25082026-2130-utc--sechs-regeldokumente-zeigten-noch-auf-dateien-die-keine-einträge-mehr-tragen) |
