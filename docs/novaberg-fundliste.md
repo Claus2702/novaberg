@@ -2,8 +2,8 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Rohe, noch unklassifizierte Funde aus laufender Arbeit
-**Stand:** 25. August 2026, 09:00 UTC
-**Offen:** **78 Funde — gezaehlt am 25.08.2026, 09:00 UTC** (82 Fundzeilen im Abschnitt *Offen*, davon **vier** durchgestrichen; sechs aus der Behebung des Impuls-Verlusts und ihrer zweiten Kontrolle, drei aus dem Lesen der 26 Registerkandidaten; fuenf aus der Abschaltung des Telegram-Kanals, zwei aus der Messung des Impuls-Turns, zwoelf aus dem Zuschnitt des Anschubs — der **entschieden und zurueckgestellt** ist —, zwei aus dem Fall der Zwei-Stunden-Wand). Die Kopfzeile stand am 23.08. schon einmal auf 23 bei tatsaechlich 26; sie war ueber mehrere Zuege hochgezaehlt worden, und schon ihr Ausgangswert war es — **deshalb wird hier gezaehlt und nie fortgeschrieben.**
+**Stand:** 25. August 2026, 09:35 UTC
+**Offen:** **82 Funde — gezaehlt am 25.08.2026, 09:35 UTC** (87 Fundzeilen im Abschnitt *Offen*, davon **fuenf** durchgestrichen; **fuenf neu aus der Teilung des Bugregisters und dem Durchgang durch die ungeprueften Eintraege**; sechs aus der Behebung des Impuls-Verlusts und ihrer zweiten Kontrolle, drei aus dem Lesen der 26 Registerkandidaten; fuenf aus der Abschaltung des Telegram-Kanals, zwei aus der Messung des Impuls-Turns, zwoelf aus dem Zuschnitt des Anschubs — der **entschieden und zurueckgestellt** ist —, zwei aus dem Fall der Zwei-Stunden-Wand). Die Kopfzeile stand am 23.08. schon einmal auf 23 bei tatsaechlich 26; sie war ueber mehrere Zuege hochgezaehlt worden, und schon ihr Ausgangswert war es — **deshalb wird hier gezaehlt und nie fortgeschrieben.**
 **Verlauf:** [Verlauf des Standes](#verlauf-des-standes) — 73 Eintraege, juengster zuerst
 **Pfad:** novaberg/docs/novaberg-fundliste.md
 
@@ -232,6 +232,16 @@ Analog zum Kraft-1-Stichtag: ab wann eine Partition brauchbar ist. Kein Backfill
 ---
 
 ## Offen
+
+- **2026-08-25** — **Die Testsuite schreibt in die produktive `shadow_auftrag`-Tabelle.** 80 aktive Zeilen unter der Testkennung, alle ohne `thema`, juengste vom selben Tag — **12 % des Bestands von 683 Zeilen**, und alle in derselben Auftragsart. Jede Rate ueber diese Tabelle ist ohne Filter auf den Schreiber falsch; eine Bestandszaehlung hatte den Befund `VERTIEFEN-AUFTRAEGE-OHNE-THEMA` deshalb beinahe bestaetigt, obwohl er dort nicht mehr gilt.
+
+- **2026-08-25** — **`in einem Monat` loest rueckwaerts auf.** `zeit_parsen("in einem Monat", 30.07.2026)` ergibt den **01.07.2026** — 29 Tage vor der Referenz, obwohl `zukunft_bevorzugt` gesetzt ist. Zweiter Fall derselben Klasse wie `ZEIT-EINZAHL-GREIFT-DANEBEN`, der ihn nicht nennt; `in einem Tag` und `in 1 Tag` ergeben unveraendert den 01.05.2027. Die Mehrzahlformen rechnen richtig.
+
+- **2026-08-25** — **21 Verweise auf Messskripte ausserhalb des Repositoriums stehen in der veroeffentlichten Doku**, verteilt ueber 13 Dokumente unter `docs/`. Sie nennen jeweils das Werkzeug, mit dem eine Zahl entstanden ist — ein Zeiger auf eine Datei, die der Leser nicht hat. Verwandt mit `REPODOKU-VERWEIST-NACH-INNEN`, aber eine eigene Menge: Dort ging es um interne Dokumente, hier um Messwerkzeuge. **Die Herkunft einer Zahl gehoert genannt, ihr Ablageort nicht.**
+
+- **2026-08-25** — **Die Abschnitte `## Behobene Bugs` und `## Offene Bugs` des Bugregisters waren falsch beschriftet.** Unter *Offene Bugs* standen **56 abgeschlossene** Eintraege, unter *Behobene Bugs* nur zwei Eintraege und eine Tabelle. Beim Teilen des Registers aufgefallen; die Ueberschriften stehen als Herkunftsmarken weiter, ihre Zustandsaussage traegt jetzt die Datei.
+
+- **2026-08-25** — **Drei Nachtraege tragen eine `###`-Ueberschrift, obwohl sie zu einem `####`-Eintrag darueber gehoeren.** Fuer jedes Werkzeug, das an der Ueberschriftenform schneidet, sind sie eigenstaendige Abschnitte — und der Eintrag, zu dem sie gehoeren, verliert sie. Beim Teilen des Registers eigens ausgenommen; die Bauart bleibt.
 
 - **2026-08-25** — **Die letzte Zeile der Chronik ist ein Zeiger in den Harness.** `novaberg-roadmap.md` endet auf `<!-- ../harness/00_INDEX.md -->` — ein HTML-Kommentar, fuer den Leser unsichtbar, im veroeffentlichten Repositorium aber vorhanden. `32_VEROEFFENTLICHUNG.md` §1c verbietet genau das: Der Zeiger geht fuer jeden oeffentlichen Leser ins Leere und verraet zugleich, dass internes Material existiert. **Bestand**, gepusht mit `c3f598d`; das Entfernen aus der laufenden Fassung ist ein normaler Schnitt, das Entfernen aus der Historie eine Entscheidung. Gemeldet von der zweiten Kontrolle am 24.08.2026 — und **an diesem Tag nicht abgelegt**, was der eigentliche Fund ist: Ein Befund, der im Bericht steht und in keinem Speicher, ist am naechsten Tag keiner mehr.
 
