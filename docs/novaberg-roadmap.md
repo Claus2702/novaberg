@@ -1,6 +1,6 @@
 # Novaberg — Roadmap (Projektchronik)
 
-**Stand:** 25. August 2026, 10:05 UTC
+**Stand:** 25. August 2026, 11:10 UTC
 **Pfad:** novaberg/docs/novaberg-roadmap.md
 **Single Source of Truth für abgeschlossene Arbeit.**
 **Offene Punkte → novaberg-backlog.md**
@@ -12,6 +12,26 @@ Die Kopfzeile stand bis Chat 109 auf „Chat 93, 21. Mai 2026" — 15 Chats hint
 ---
 
 ## Chats 3–20: Grundlagen (März 2026)
+
+### 25.08.2026, 11:10 UTC — Die Chronik bekommt ein Findemittel, und es findet als Erstes einen Fehler in ihr
+
+**Diese Datei wird nicht gelesen, sie wird befragt** — *wann wurde X gebaut, gibt es das schon?* Bei 657 kB und 486 Überschriften ist die Antwort ein Suchlauf durch rund 137.000 Token, und deshalb unterbleibt sie. `novaberg-roadmap-index.md` trägt eine Zeile je Abschnitt: Datum, Titel, Sprungmarke. 76 kB statt 657.
+
+**Er wird gerechnet, nicht geschrieben.** Ein von Hand geführtes Findemittel ist eine zweite Wahrheit neben der ersten und fällt zurück — und diese Datei trägt den Beleg dafür im eigenen Kopf: Ihre Standzeile stand einmal fünfzehn Chats hinter dem Inhalt und ist danach ein zweites Mal zurückgefallen. `--pruefen` vergleicht, ohne zu schreiben, und meldet die Abweichung.
+
+> **Der erste Lauf fand einen Fehler in der Datei, für die er gebaut wurde.** Das Kapitel `## Chats 3–20: Grundlagen (März 2026)` trägt **218 kB und 92 Unterabschnitte — davon 82 aus August 2026**. Die neuesten Einträge wachsen seit Wochen oben in ein Kapitel hinein, dessen Überschrift einen anderen Zeitraum nennt; die zehn echten Grundlagen-Abschnitte stehen 2900 Zeilen darunter. Aufgefallen ist es nie, weil niemand bis zum Ende liest.
+>
+> **Dieselbe Klasse wie die Abschnitte `## Offene Bugs` mit 56 abgeschlossenen Einträgen, drei Stunden vorher.** Eine Überschrift, die einen Inhalt behauptet, wird nicht mitgepflegt — und wer die Datei von oben liest, sieht die Behauptung nie neben ihrem Gegenstand. **Der Index stellt beides in eine Zeile, und dann ist es eine Rechnung.**
+
+**Die Prüfung wurde deshalb eingebaut, nicht nur der Befund notiert.** Ein Kapitel, dessen eigenes Datum keinen der Monate seiner datierten Abschnitte trifft, steht im Kopf des Index. Beim ersten Lauf: genau eines.
+
+**Was gemessen ist und was nicht.** Gemessen ist die Eindeutigkeit: 486 Marken, 486 verschiedene. **Unbelegt ist ihre Form** — ob ein Betrachter aus einem Gedankenstrich zwischen Leerzeichen zwei Bindestriche bildet, wie hier angenommen. Vor diesem Index stand in der ganzen Doku **kein einziger** Anker-Verweis, an dem sich das hätte prüfen lassen. Der erste Klick entscheidet es; die Abhilfe wäre eine Zeile und ein neuer Lauf.
+
+**Die Erbregel ist der Unterschied zwischen einem Index und einer Liste.** Ein Abschnitt ohne eigenes Datum erbt von der nächsten Überschrift darüber, die eins trägt — **nicht vom Kapitel**. Genau am Fall oben trennt sich das: Wer vom Kapitel erbt, datiert 82 Abschnitte aus August auf März. Geerbte Daten stehen in Klammern, weil ein geerbtes Datum eine Zuordnung ist und keine Angabe. Von 486 Abschnitten tragen 193 ein eigenes.
+
+**Der Schnitt nach Etappen ist damit vorbereitet und nicht getan.** Er braucht diese Zuordnung: Von 486 Abschnitten trugen vorher 285 auf Ebene 3 kein Datum, und ohne Datum lässt sich nichts chronologisch teilen.
+
+---
 
 ### 25.08.2026, 10:05 UTC — 21 Einträge standen als offen und waren es nicht mehr
 
