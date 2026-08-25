@@ -19,6 +19,18 @@ target-version = "py312"
 # dort bleibt Fließtext-Code unbeanstandet, den im Review niemand überblickt.
 line-length = 100
 
+# Quellwurzel fuer die Importsortierung. Ohne diese Zeile sucht Ruff nach
+# novaberg/ und novaberg/src/ — beides falsch: der Quellbaum ist server/, und er
+# wird als solcher in den Container gemountet (docker inspect: server -> /app).
+# Die Folge war messbar und stand in jeder Datei: `from config import ...` und
+# `from memory.kzg import ...` galten als FREMDE Importe und wurden zwischen
+# `redis` und `langgraph` einsortiert. Erst das Einschalten der harten Wand fuer
+# I001 machte das sichtbar — eine Wand haette sonst die falsche Ordnung
+# festgeschrieben.
+#
+# Gemessen am 25.08.2026: 142 Dateien sortieren mit dieser Zeile anders als ohne.
+src = ["server"]
+
 [lint]
 select = [
     "D",    # pydocstyle          — Docstrings
