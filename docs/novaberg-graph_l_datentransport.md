@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Lesson — Middleware darf filtern, nicht transformieren
-**Stand:** 12. April 2026, Chat 44 (migriert, Inhalt unverändert)
+**Stand:** 25. August 2026 (der Sprecher kommt aus dem Feld, nicht aus der Position; der Enricher filtert nicht mehr). Davor: 12. April 2026, Chat 44 (migriert, Inhalt unverändert)
 **Pfad:** novaberg/docs/novaberg-graph_l_datentransport.md
 **Ursprung:** nova-11-l-c.md
 **Typ:** Lesson (L)
@@ -60,12 +60,11 @@ Die Tags `[emotionaler_ausdruck | wut | emotional]` im Text erzeugten zwei Folge
 ## 4. Lösung: Durchreichen statt Destillieren
 
 ```python
-# Enricher NACHHER — nur filtern, nicht transformieren
-for turn in raw_turns:
-    if turn.get("kern") and turn["kern"].startswith("[Nova-Impuls]"):
-        continue  # Shadow-Impulse ausblenden
-    gefilterte_turns.append(turn)  # Vollstaendiges Dict
+# Enricher NACHHER — durchreichen, nicht transformieren
+state["session_turns"] = raw_turns          # Vollstaendige Dicts
 ```
+
+> ~~Der Enricher filtert Shadow-Impulse (`[Nova-Impuls]`-Praefix im `kern`).~~ **Am 24.08.2026 entfernt, und er hat es nie getan:** Den Marker setzte im ganzen Server niemand — die Bedingung war die einzige Fundstelle (`novaberg-bugs.md` → `KONTAMINATIONSFILTER-TOT`). **Der Impuls gehoert in den Verlauf**; was der Filter verhindern wollte, war eine Verwechslung, und die verhindert jetzt der benannte Sprecher (`memory/session.py::sprecher_bezeichnen`), ohne die Aeusserung zu verlieren.
 
 Jeder Konsument formatiert selbst:
 
@@ -89,7 +88,7 @@ Aber im Gespraechsverlauf der Graph-Nodes gehoert der Originaltext. Das Modell b
 ```
 Redis (10+ Felder pro Turn)
     |
-Enricher: Filtern (Shadow-Impulse entfernen), NICHT transformieren
+Enricher: Durchreichen, NICHT transformieren  (ungefiltert seit 24.08.2026)
     |
 state["session_turns"] = vollstaendige Turn-Dicts
     |
@@ -101,7 +100,7 @@ state["session_turns"] = vollstaendige Turn-Dicts
 ```
 
 **Drei Regeln:**
-1. Middleware darf filtern (Shadow-Impulse, abgelaufene Turns), aber nicht transformieren
+1. Middleware darf filtern (abgelaufene Turns), aber nicht transformieren — ~~Shadow-Impulse~~ ausdruecklich **nicht**: Ihr Ausblenden kostete den Anlass fuer alles, was danach kam (`IMPULS-FAELLT-AUS-DEM-VERLAUF`, 24.08.2026)
 2. Die vollstaendige Datenstruktur fliesst durch die Pipeline
 3. Jeder Konsument hat eine eigene Formatierungsfunktion
 

@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Pipeline-Node Perzeption (Emotionale + rationale Analyse)
-**Stand:** 23. August 2026 (der Gemma4-Override liegt unter `prompts/gemma4-gpu/` und lud bis dahin gar nicht). Davor: 30. Juli 2026, Chat 118 (Zerlegung: `Wahrnehmung`-Dataclass + acht Helfer; Verhalten unverändert)
+**Stand:** 25. August 2026 (der Sprecher kommt aus dem Feld, nicht aus der Position; der Enricher filtert nicht mehr). Davor: 23. August 2026 (der Gemma4-Override liegt unter `prompts/gemma4-gpu/` und lud bis dahin gar nicht). Davor: 30. Juli 2026, Chat 118 (Zerlegung: `Wahrnehmung`-Dataclass + acht Helfer; Verhalten unverändert)
 **Pfad:** novaberg/docs/novaberg-node-perception.md
 **Quellen:** nova-01-m-a.md (Node-Beschreibung), nova-04-m-a.md (Emotions-Vektoren, Plutchik-Details)
 
@@ -196,7 +196,9 @@ Emotions-Kontext und Themen-Kontinuitaet. Hoehere Nummern sind aktueller.
 [2] NOVA: ...
 ```
 
-Die Turns werden über die zentrale Funktion `format_session_turns_numbered()` aus `memory/session.py` formatiert — chronologisch aufsteigend nummeriert, höhere Nummer = näher am aktuellen Prompt. Dieselbe Funktion wird auch von Router und Responder verwendet.
+Die Turns werden über die zentrale Funktion `format_session_turns_numbered()` aus `memory/session.py` formatiert — chronologisch aufsteigend nummeriert, höhere Nummer = näher am aktuellen Prompt. Dieselbe Funktion wird auch vom Router verwendet; der Responder baut seinen Verlauf selbst, aber über dieselbe Gruppierung.
+
+> **Jede Zeile nennt seit dem 24.08.2026 ihren Sprecher, und der kommt aus dem Feld `herkunft` statt aus der Position** — ein Eigen-Impuls steht als `NOVA (von sich aus)`, eine Äußerung ohne belegte Herkunft als `NOVA (Anlass unbekannt)`. Vorher bildete die Funktion Paare `user` → `assistant` und übersprang alles andere; **8 von 24 Turns einer echten Session erreichten damit keinen Verlauf** (`IMPULS-FAELLT-AUS-DEM-VERLAUF`). `max_turns` zählt seither **Wortwechsel**, nicht Gruppen.
 
 **Zwei Regeln im Kontext-Block:**
 1. „Der Verlauf hilft bei Pronomen-Auflösung, Emotions-Kontext, Themen-Kontinuität" — definiert den erlaubten Nutzungsbereich

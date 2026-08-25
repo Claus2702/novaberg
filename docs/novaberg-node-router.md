@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Node-Referenz Router
-**Stand:** 23. August 2026 (die `[REGELN]` haben einen Override ueber dem Default — dreistufige Prompt-Segregation). Davor: 17. August 2026 (das Brett kommt von der Dienst-Fläche)
+**Stand:** 25. August 2026 (der Sprecher kommt aus dem Feld, nicht aus der Position; der Enricher filtert nicht mehr). Davor: 23. August 2026 (die `[REGELN]` haben einen Override ueber dem Default — dreistufige Prompt-Segregation). Davor: 17. August 2026 (das Brett kommt von der Dienst-Fläche)
 **Pfad:** novaberg/docs/novaberg-node-router.md
 **Quellen:** nova-01-m-b.md
 **Datei:** `graph/nodes/router.py`
@@ -125,7 +125,9 @@ Reihenfolge: `[IDENTITAET]` → `[AUFGABE]` → (optional `[KONTEXT]`) → (opti
 
 ### 4.2 Session-Kontext (seit Chat 23, nummeriert seit Chat 24)
 
-Die letzten 5 User+Assistant-Turns werden direkt aus Redis geladen und als `[KONTEXT]`-Block zwischen `[AUFGABE]` und `[AGENTEN]`/`[REGELN]` eingefügt. Die Turns werden über `format_session_turns_numbered()` aus `memory/session.py` formatiert — chronologisch aufsteigend nummeriert, höhere Nummer = aktueller.
+Die letzten **5 Wortwechsel** werden direkt aus Redis geladen und als `[KONTEXT]`-Block zwischen `[AUFGABE]` und `[AGENTEN]`/`[REGELN]` eingefügt. Die Turns werden über `format_session_turns_numbered()` aus `memory/session.py` formatiert — chronologisch aufsteigend nummeriert, höhere Nummer = aktueller.
+
+> **~~5 User+Assistant-Turns~~ → 5 Wortwechsel, und der Unterschied ist gemessen (24.08.2026).** Ein Eigen-Impuls ist ein **alleinstehender** assistant-Turn; die alte Paarbildung übersprang ihn, die neue zählt Wortwechsel und nimmt Impulse **dazwischen** mit. Zählte stattdessen jede Gruppe, verdrängte der Impuls den Nutzer aus dem Fenster: bei **16 von 24** Zuständen einer echten Session weniger Nutzer-Turns, bei einem **keiner**. Jede Zeile nennt jetzt ihren Sprecher, ein Impuls als `NOVA (von sich aus)`.
 
 ```
 [KONTEXT]
