@@ -1,13 +1,13 @@
 # Novaberg — Roadmap (Projektchronik)
 
-**Stand:** 25. August 2026 — juengster Eintrag **17:51 UTC** (gemessen via `date -u`); die Eintraege darunter tragen Zeiten bis 21:30 UTC, die zu dieser Zeitbasis in der Zukunft liegen und deshalb **oberhalb** ihres Datums stehen. Der Widerspruch steht in der Fundliste.
+**Stand:** 25. August 2026 — juengster Eintrag **18:16 UTC** (gemessen via `date -u`); die Eintraege darunter tragen Zeiten bis 21:30 UTC, die zu dieser Zeitbasis in der Zukunft liegen und deshalb **oberhalb** ihres Datums stehen. Der Widerspruch steht in der Fundliste.
 **Pfad:** novaberg/docs/novaberg-roadmap.md
 **Single Source of Truth für abgeschlossene Arbeit.**
 **Offene Punkte → novaberg-backlog.md**
 
 | Zeitraum | Datei | Kapitel |
 |---|---|---|
-| 2026-08 | **novaberg-roadmap.md** ← diese Datei | 123 |
+| 2026-08 | **novaberg-roadmap.md** ← diese Datei | 124 |
 | 2026-07 | [`novaberg-roadmap-2026-07.md`](novaberg-roadmap-2026-07.md) | 12 |
 | 2026-05 | [`novaberg-roadmap-2026-05.md`](novaberg-roadmap-2026-05.md) | 18 |
 | 2026-04 | [`novaberg-roadmap-2026-04.md`](novaberg-roadmap-2026-04.md) | 21 |
@@ -18,6 +18,42 @@
 ## Hinweis für Bearbeiter dieser Datei
 
 Die Kopfzeile stand bis Chat 109 auf „Chat 93, 21. Mai 2026" — 15 Chats hinter dem Inhalt. **Sie ist danach erneut zurückgefallen:** von Chat 110 bis 114 blieb sie auf „Chat 109" stehen, während der Inhalt weiterwuchs, und wurde in Chat 115 nachgezogen. Wer hier etwas ergänzt, zieht die Kopfzeile mit — sie driftet zuverlässig. Achtung beim Nachschlagen: Nur bis Chat 97 trägt jeder Chat eine eigene `## Chat NNN`-Überschrift; die Chats 98–108 stehen als `###`-Abschnitte unter dem Chat-97-Block, benannt nach Sprint statt nach Chat.
+
+---
+
+## 25.08.2026, 18:16 UTC — die B-Wand, und zwei Defekte, die ein Linter-Treffer sichtbar gemacht hat
+
+**ZIEL:** `B` steht hinter einer Wand, und jeder `F841`-Treffer ist entschieden — behoben oder als Defekt benannt.
+**TEST:** `tests/test_vorher_spur.py` (8 Zeugen) und `tests/test_shutdown_disziplin.py` (2), dazu `ruff check --config ruff-hart.toml server/` mit Rueckgabewert 0.
+**MESSUNG:** **2316 → 2305**, Suite **2312 → 2322 gruen**, 0 uebersprungen. `F841` steht bei **null**.
+
+### 37 der 39 stabilen B-Regeln sind hart — und zwei bewusst nicht
+
+Fuer **jede** der 39 wurde ein Verstoss konstruiert und unter py312 geprueft. 37 melden. Die Probedatei liegt als `labor/2026-08-25_b_reichweite_probe.py`; im echten Riegelpfad lag sie kurz unter `server/` und trieb den Lauf auf **37 Fehler, Rueckgabewert 1**, danach wieder 0.
+
+**`B911` und `B912` bleiben draussen, und der Grund ist eine Wand ohne Deckung.** `itertools.batched(..., strict=)` gibt es erst ab Python 3.13, `map(..., strict=)` erst ab 3.14. Gemessen: beide stumm bei py312, `B911` meldet ab py313, `B912` ab py314. Sie koennten nie feuern und wuerden trotzdem null sagen — derselbe Fall wie `W505`. Sie gehoeren hinein, sobald die Container-Version steigt.
+
+**Drei Regeln brauchten einen zweiten Anlauf, und das gehoert zur Reichweite:**
+
+| Regel | Was sie **nicht** sieht |
+|---|---|
+| `B005` | Ein mehrzeichiger `strip()`-Aufruf **ohne wiederholtes Zeichen** — `s.strip("xyz")` bleibt stumm, `s.strip("aab")` meldet |
+| `B008` | Nicht jeden Aufruf im Vorgabewert; `os.getpid()` blieb stumm |
+| `B026` | Nur mit Schluesselwort-Argument **vor** dem `*`; `f(*werte, **kw)` ist die erlaubte Form |
+
+### `F841`: von 17 Treffern waren zwei echte Defekte
+
+**`PROMPT-CONSUMER-OHNE-ABRAEUMEN`.** Der Lifespan legt vier Hintergrundaufgaben an; drei werden beim Herunterfahren angefasst, **`prompt_task` fehlte** — die Aufgabe hinter der Eingangs-Queue, also der Weg, auf dem jede Nutzeraeusserung ankommt. Ein nicht abgebrochener Task erzeugt keine Fehlermeldung; sichtbar war er allein daran, dass seine Variable als einzige der vier nie gelesen wurde. **Die ungenutzte Variable *war* der fehlende Abbruch.**
+
+Der Zeuge prueft nicht diesen Fall, sondern die Bauart: `test_shutdown_disziplin.py` liest den AST von `main.py` und haelt jede an `create_task(...)` gebundene Variable gegen die Namen, auf denen `.cancel()` oder ein `await` steht. Ueber den AST und nicht ueber einen Lauf, weil der Lifespan ohne Datenbank, Redis und Modelldienst nicht zu fahren ist — genau deshalb hat hier nie jemand hingesehen.
+
+**`VORHER-ZUSTAND-OHNE-SPUR`.** Sechsmal `vorher = _read_by_id(target_id)` unmittelbar vor einem `UPDATE ... SET aktiv = FALSE`, in zwei Modulen, nie weiterverwendet. Der `schritte`-Eintrag — in `base.py` ausdruecklich als Audit-Trail deklariert — trug `id` und `verifiziert` und nicht den ersetzten Inhalt. Jetzt traegt er ihn; fehlt der Datensatz, steht dort `{"gelesen": False}` statt eines leeren Strings, der wie eine leere Anweisung aussaehe.
+
+### Und einer der vier Funde war beim Nachsehen keiner
+
+Die zwei Werte, die im Responder aus `external` geholt wurden und nie im Prompt standen, **erreichen ihn bereits auf einem anderen Weg** — `character.relationship` als `nutzer_beziehung` in `[ZWISCHEN BEIDEN]`, `emotion.arousal` in der Regie. Es waren doppelte Extraktionen aus zwei dokumentierten Umbauten. Entfernt, mit einem Kommentar an der Stelle, damit die naechste Extraktion vorher fragt.
+
+Dasselbe bei `result_internal` im Ereignis-Verbraucher: `internal` wird in `_antwort_nutzlast_bauen` selbst gelesen. **Zwei von zwoelf Befunden waren Reste** — das ist die Quote, die den Lesevorgang rechtfertigt, nicht widerlegt.
 
 ---
 

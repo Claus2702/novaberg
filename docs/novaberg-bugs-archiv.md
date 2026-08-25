@@ -18,6 +18,64 @@
 
 ---
 
+## 25.08.2026, nachmittags — zwei Defekte, die ein Linter-Treffer sichtbar gemacht hat
+
+Beide standen jahrelang gruen und waren mit keinem Zeugen und keiner Messung zu finden:
+Ihr Symptom ist die **Abwesenheit** einer Wirkung, und die sieht aus wie ein ruhiger Lauf.
+Sichtbar wurden sie ueber `F841` — eine Variable, die zugewiesen und nie gelesen wird.
+
+#### `PROMPT-CONSUMER-OHNE-ABRAEUMEN` — die Aufgabe hinter der Eingangs-Queue ueberlebt das Herunterfahren ✅
+
+**Zustand:** behoben am 25.08.2026, mit Strukturzeuge.
+
+**Symptom.** Der Lifespan legt vier Hintergrundaufgaben an. Drei werden beim Herunterfahren
+angefasst — `delivery_task.cancel()`, `consumer_task.cancel()`, `pipeline_log_task` sogar mit
+`await` und 30 Sekunden Frist. **`prompt_task` fehlte.** Er faehrt Pfad 1 hinter der
+Eingangs-Queue, also den Weg, auf dem jede Nutzeraeusserung ankommt, und lief beim
+Herunterfahren weiter, bis der Prozess starb.
+
+**Warum es niemand sah.** Ein nicht abgebrochener Task erzeugt keine Fehlermeldung. Der
+Prozess endet, die Aufgabe endet mit ihm, und im Log steht nichts. Aufgefallen ist es
+allein daran, dass `prompt_task` als **einzige** der vier Task-Variablen nirgends gelesen
+wurde — der Linter meldete eine ungenutzte Variable, und die ungenutzte Variable *war* der
+fehlende Abbruch.
+
+**Abhilfe.** `prompt_task.cancel()` neben den beiden anderen. Dazu ein Zeuge, der nicht
+diesen einen Fall prueft, sondern die Bauart: `tests/test_shutdown_disziplin.py` liest den
+AST von `main.py` und haelt jede im Lifespan an `asyncio.create_task(...)` gebundene
+Variable gegen die Namen, auf denen im selben Block `.cancel()` oder ein `await` steht.
+**Ein neuer Task ohne Gegenstueck macht ihn rot, ohne dass jemand daran denken muss.**
+Gegenprobe: 1 vorhergesagt, 1 gezaehlt.
+
+Der Zeuge geht ueber den AST und nicht ueber einen Lauf, weil der Lifespan ohne Datenbank,
+Redis und Modelldienst nicht zu fahren ist — genau deshalb hat hier noch nie jemand
+hingesehen.
+
+#### `VORHER-ZUSTAND-OHNE-SPUR` — sechsmal geladen, nie protokolliert ✅
+
+**Zustand:** behoben am 25.08.2026, mit acht Zeugen.
+
+**Symptom.** `agents/direktiven/crud.py` und `agents/charakter_identitaet/crud.py` lesen vor
+jedem Schreibvorgang den bisherigen Datensatz — `vorher = _read_by_id(target_id)`, je
+dreimal, unmittelbar vor `UPDATE ... SET aktiv = FALSE`. **Der Wert wurde in keiner der
+sechs Stellen weiterverwendet.** Der `schritte`-Eintrag, in base.py ausdruecklich als
+Audit-Trail deklariert, trug `id` und `verifiziert` und nicht den ersetzten Inhalt.
+
+**Was das kostet.** Nach dem Soft-Delete ist die Zeile noch da, aber nicht mehr als *die
+vorherige* erkennbar; bei `_update` liegt daneben die neue. Wer spaeter fragt, was ersetzt
+wurde, hat keine Quelle. `18_NACHVOLLZIEHBARKEIT` verlangt die Eingangsgroessen einzeln —
+hier war die Eingangsgroesse geladen und fallengelassen.
+
+**Dass es sechsmal identisch in zwei Modulen steht, ist der eigentliche Befund:** keine
+vergessene Zeile, sondern eine Absicht ohne Empfaenger.
+
+**Abhilfe.** `_vorher_spur()` je Modul; der `schritte`-Eintrag traegt den ersetzten Inhalt.
+Fehlt der Datensatz, steht dort `{"gelesen": False}` — ein leerer String saehe aus wie eine
+leere Anweisung und waere ein Default, der wie ein Messwert aussieht.
+`tests/test_vorher_spur.py`, **acht Zeugen**; Gegenprobe 4 vorhergesagt / 4 gezaehlt.
+
+---
+
 ## 25.08.2026 — eine fertige Antwort wartete auf Felder, die niemand liest
 
 #### `AUSLIEFERUNG-HINTER-DEM-NACHLAUF` — jeder Fehler nach dem Responder kostet die fertige Antwort ✅
