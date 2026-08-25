@@ -59,7 +59,6 @@ def queues_befuellen(state: AgentState) -> dict:
     user_id:         str   = state["kontext"].get("user_id", "")
     character_id:    str   = state["kontext"].get("character_id", "")
 
-    salienz:     float = salienz_obj.get("salienz", 0.0)
     intentionen: list  = salienz_obj.get("intentionen", [])
     emotion:     str   = salienz_obj.get("emotion", "neutral")
     modus:       str   = salienz_obj.get("modus", "")
@@ -68,8 +67,8 @@ def queues_befuellen(state: AgentState) -> dict:
     arousal:     float | None = salienz_obj.get("arousal")
 
     # Exakte Werte aus speicher.py. `neue_salienz` steht auf der gekruemmten
-    # Skala, gegen die auch KZG_SALIENZ_HIGH prueft; `salienz` aus dem
-    # salienz_obj ist die rohe Modellbewertung. Ein Fallback auf den rohen Wert
+    # Skala, gegen die auch KZG_SALIENZ_HIGH prueft; `salienz_obj["salienz"]`
+    # ist die rohe Modellbewertung und wird hier bewusst nicht gelesen. Ein Fallback auf den rohen Wert
     # waere ein Default, der wie ein echter Wert aussieht — er pruefte gegen ein
     # Tor auf der anderen Skala und traefe es nie. Fehlt der Wert, ist der
     # Speicher-Node nicht gelaufen; das ist ein Fehler, kein Ersatzfall.

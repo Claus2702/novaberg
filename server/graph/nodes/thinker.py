@@ -36,12 +36,11 @@ from memory.lzg_knoten import anker_retrieval
 from memory.repositories.timeline_repository import TimelineRepository
 from memory.utils import embedding_zu_pgvector_str
 from services.model_services import ChatRequest, EmbedRequest, model_service
-
-logger = logging.getLogger("ki_server.thinker")
-
 from tools.thinking_normalizer import get_thinking_normalizer
 from tools.web.fetch import page_fetch
 from tools.web.search import web_search_manager
+
+logger = logging.getLogger("ki_server.thinker")
 
 # Block 3 Teil B: Nachfass-Iteration bei Ollama-thinking/content-Split.
 # Separate Haertung -- zaehlt NICHT gegen max_iterations, lieber einmal zu

@@ -12,6 +12,7 @@ import psycopg2
 import redis
 from dotenv import load_dotenv
 
+from prompt_loader import prompt_laden
 from services.llm_riegel import GesperrterOllamaClient
 
 # .env laden (Repo-Root und aufwaerts). Fuer lokale Entwicklung; im Docker-
@@ -2613,8 +2614,6 @@ ZUWENDUNG_STAND_MAX_ALTER_SEKUNDEN: float = float(
 # `qwen36` fahren dort dasselbe. Ein Block, der fuer das antwortende Modell
 # gebaut ist, gehoert unter `prompts/{OLLAMA_MODEL}/`; einer, der fuer diese
 # Zusammenstellung gilt, unter `prompts/{OLLAMA_CONNECTOR}/`.
-from prompt_loader import prompt_laden
-
 PROMPTS: dict[str, str] = prompt_laden(OLLAMA_CONNECTOR, modell=OLLAMA_MODEL)
 
 

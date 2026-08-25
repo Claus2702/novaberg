@@ -395,9 +395,9 @@ class LeseschichtTest(unittest.TestCase):
         self.assertIn("## Letzter Block", header)
 
     def test_gegenprobe_der_zeilenautomat_haette_drei_davon_verfehlt(self) -> None:
-        """Belegt, dass die vier Zeugen oben etwas prüfen.
+        r"""Belegt, dass die vier Zeugen oben etwas prüfen.
 
-        Der frühere Erkenner war `^(#{1,6})\\s+` außerhalb von Zäunen. Auf
+        Der frühere Erkenner war `^(#{1,6})\s+` außerhalb von Zäunen. Auf
         derselben Datei findet er die beiden Setext-Überschriften nicht,
         dafür die Raute im Blockzitat — und die Zäune aus vier Zeichen
         bringen seinen Umschalter durcheinander.

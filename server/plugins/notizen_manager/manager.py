@@ -304,7 +304,6 @@ Falls keine Notiz erkennbar: "snippet": null
         """
         action:  str = state.get("management_action", "")
         target:  str = state.get("management_target", "")
-        user_id: str = state.get("user_id", "")
         prompt:  str = state.get("user_prompt", "")
 
         pending:    list = []

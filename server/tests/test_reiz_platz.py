@@ -604,7 +604,7 @@ class DerAgentGraphBekommtDieHerkunftTest(unittest.TestCase):
         self.assertIsInstance(payload, ast.Dict)
         eintraege: dict = {
             schluessel.value: wert.value
-            for schluessel, wert in zip(payload.keys, payload.values)
+            for schluessel, wert in zip(payload.keys, payload.values, strict=True)
             if isinstance(schluessel, ast.Constant) and isinstance(wert, ast.Constant)
         }
         self.assertEqual(eintraege.get("reiz_herkunft"), "eigener_impuls")

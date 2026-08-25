@@ -70,7 +70,7 @@ def recherche_planen(thema: str, session_kontext: dict, lage: dict = None) -> di
 
     luecken_list = lage.get("wissensluecken", [])
     if isinstance(luecken_list, list):
-        luecken_str = "\n".join(f"- {l}" for l in luecken_list) if luecken_list else "Keine Luecken identifiziert."
+        luecken_str = "\n".join(f"- {luecke}" for luecke in luecken_list) if luecken_list else "Keine Luecken identifiziert."
     else:
         luecken_str = str(luecken_list)
 

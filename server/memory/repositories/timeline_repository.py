@@ -201,7 +201,6 @@ class TimelineRepository:
                     ORDER BY event_time
                 """, (user_id, tag_start.astimezone(_TZ_UTC), tag_ende.astimezone(_TZ_UTC)))
             else:
-                datum_utc = _to_utc(datum)
                 cursor.execute("""
                     SELECT * FROM timeline
                     WHERE user_id = %s

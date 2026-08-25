@@ -379,8 +379,8 @@ def wissensluecken_finden(
         logger.info(
             f"GV4: {len(ergebnis)} Wissensluecken qualifiziert — "
             + ", ".join(
-                f"'{l['konzept'][:40]}' ({l['quelle']}, rel={l['relevanz']:.3f})"
-                for l in ergebnis
+                f"'{luecke['konzept'][:40]}' ({luecke['quelle']}, rel={luecke['relevanz']:.3f})"
+                for luecke in ergebnis
             )
         )
     else:

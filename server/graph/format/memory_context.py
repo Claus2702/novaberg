@@ -201,8 +201,8 @@ def _format_lzg(entry: ContextEntry) -> str:
 
 
 def _format_plugin(entry: ContextEntry) -> str:
-    """Plugin-Block: [{meta.praefix}] {inhalt} (einzeilig) oder
-    [{meta.praefix}]\\n{inhalt} (mehrzeilig).
+    r"""Plugin-Block: [{meta.praefix}] {inhalt} (einzeilig) oder
+    [{meta.praefix}]\n{inhalt} (mehrzeilig).
 
     Fehlt meta['praefix'], wird WARNING geloggt und als Fallback
     quelle.replace('plugin_', '') verwendet.

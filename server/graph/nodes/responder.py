@@ -218,7 +218,6 @@ def _szenenblock(state: ConversationState) -> str:
     # ── Eingabe ─────────────────────────────────
     gv_detail: dict = state.get("gv_detail") or {}
     farbton: str = gv_detail.get("farbton", "")
-    jetzt = datetime.now()
 
     # ── Verarbeitung ────────────────────────────
     # **Dieselbe Lage in drei Koernungen**, von grob nach fein: die Landschaft
@@ -267,7 +266,6 @@ def _build_system_prompt(state: ConversationState) -> str:
     parts.append(_szenenblock(state))
 
     # ── [PERSON A] ── Wer spielt ──
-    jetzt = datetime.now()
     identitaet_parts: list[str] = [
         "[PERSON A — WER SIE IST]\n"
         f"Person A ist {ASSISTANT_NAME}. Sie spricht deutsch."

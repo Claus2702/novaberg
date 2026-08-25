@@ -1254,13 +1254,13 @@ def gespraechsvektor(state: ConversationState) -> ConversationState:
             "resonanz_kontext": resonanz_kontext[:500] if resonanz_kontext else "",
             "wissensluecken": [
                 {
-                    "konzept":       l["konzept"][:120],
-                    "quelle":        l["quelle"],
-                    "relevanz":      round(l["relevanz"], 3),
-                    "neugier_boost": round(l.get("neugier_boost", 0), 3),
-                    "register":      round(l.get("register", 1.0), 2),
+                    "konzept":       luecke["konzept"][:120],
+                    "quelle":        luecke["quelle"],
+                    "relevanz":      round(luecke["relevanz"], 3),
+                    "neugier_boost": round(luecke.get("neugier_boost", 0), 3),
+                    "register":      round(luecke.get("register", 1.0), 2),
                 }
-                for l in wissensluecken
+                for luecke in wissensluecken
             ],
             "strategie_aktiv":     strategie_aktiv,
             "korridor_verstoesse": korridor_verstoesse,

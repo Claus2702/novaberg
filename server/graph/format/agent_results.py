@@ -8,9 +8,9 @@ logger = logging.getLogger(__name__)
 
 
 def format_success_lines(results: list) -> str:
-    """Baut die Listen-Zeilen fuer erfolgreiche AgentResults.
+    r"""Baut die Listen-Zeilen fuer erfolgreiche AgentResults.
 
-    Format: '- {bereich}: {ergebnis}' pro Zeile, gejoined per \\n.
+    Format: '- {bereich}: {ergebnis}' pro Zeile, gejoined per \n.
     Wird vom Planner (_build_task_success) und vom Thinker
     (_build_verarbeitungs_block) genutzt, damit das Format an einer
     einzigen Stelle lebt.
