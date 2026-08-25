@@ -415,6 +415,11 @@ async def lifespan(app: FastAPI):
     if delivery_task is not None:
         delivery_task.cancel()
     consumer_task.cancel()
+    # Der Prompt-Consumer faehrt Pfad 1 hinter der Eingangs-Queue. Er fehlte
+    # hier bis zum 25.08.2026 als einziger der vier Aufgaben und lief beim
+    # Herunterfahren weiter, bis der Prozess starb — sichtbar geworden, weil
+    # `prompt_task` als einzige Task-Variable nie gelesen wurde.
+    prompt_task.cancel()
 
     # Pipeline-Log-Writer sauber beenden: shutdown_event ist bereits gesetzt,
     # der Writer sieht das im nächsten Loop-Tick und führt einen Final-Flush

@@ -17,6 +17,26 @@ from tools.db_manager import db_manager
 logger = logging.getLogger("ki_server.agents.charakter_identitaet.crud")
 
 
+def _vorher_spur(vorher: dict | None) -> dict:
+    """Der ersetzte Inhalt als Eingangsgroesse der Entscheidung.
+
+    Der Datensatz wird vor jedem Schreibvorgang gelesen; ohne diesen Eintrag
+    laege er nur im Arbeitsspeicher und waere nach dem UPDATE nicht mehr
+    rekonstruierbar. `18_NACHVOLLZIEHBARKEIT` verlangt die Eingangsgroessen
+    einzeln, nicht nur das Ergebnis.
+
+    Fehlt der Datensatz, sagt die Spur das ausdruecklich: `gelesen=False`. Ein
+    leerer String saehe aus wie eine leere Anweisung und waere ein Default, der
+    wie ein Messwert aussieht.
+    """
+    if vorher is None:
+        return {"gelesen": False}
+    return {
+        "gelesen":   True,
+        "anweisung": vorher.get("anweisung", ""),
+    }
+
+
 # ============================================================
 # Lese-Funktionen (auch von klassifikation.py genutzt)
 # ============================================================
@@ -284,7 +304,14 @@ def _update(state: AgentState) -> dict:
     return {
         "ergebnis": f"Charakter-Anweisung aktualisiert: {neue_anweisung}",
         "status": "abgeschlossen",
-        "schritte": state["schritte"] + [{"node": "ausfuehren", "ergebnis": "aktualisiert", "alte_id": target_id, "neue_id": neue_id, "verifiziert": verifiziert}],
+        "schritte": state["schritte"] + [{
+            "node": "ausfuehren",
+            "ergebnis": "aktualisiert",
+            "alte_id": target_id,
+            "neue_id": neue_id,
+            "verifiziert": verifiziert,
+            "vorher": _vorher_spur(vorher),
+        }],
     }
 
 
@@ -308,7 +335,13 @@ def _delete(state: AgentState) -> dict:
     return {
         "ergebnis": f"Charakter-Anweisung (ID {target_id}) entfernt.",
         "status": "abgeschlossen",
-        "schritte": state["schritte"] + [{"node": "ausfuehren", "ergebnis": "geloescht", "id": target_id, "verifiziert": verifiziert}],
+        "schritte": state["schritte"] + [{
+            "node": "ausfuehren",
+            "ergebnis": "geloescht",
+            "id": target_id,
+            "verifiziert": verifiziert,
+            "vorher": _vorher_spur(vorher),
+        }],
     }
 
 
@@ -374,7 +407,13 @@ def _reactivate(state: AgentState) -> dict:
     return {
         "ergebnis": f"Charakter-Anweisung wiederhergestellt: {nachher['anweisung'] if nachher else '?'}",
         "status": "abgeschlossen",
-        "schritte": state["schritte"] + [{"node": "ausfuehren", "ergebnis": "reaktiviert", "id": target_id, "verifiziert": verifiziert}],
+        "schritte": state["schritte"] + [{
+            "node": "ausfuehren",
+            "ergebnis": "reaktiviert",
+            "id": target_id,
+            "verifiziert": verifiziert,
+            "vorher": _vorher_spur(vorher),
+        }],
     }
 
 

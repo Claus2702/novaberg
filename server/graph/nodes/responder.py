@@ -462,11 +462,21 @@ def _build_system_prompt(state: ConversationState) -> str:
 
     emotions_vektor:    str  = external.emotion.emotions_vector      if external else ""
     sprach_stil:        str  = external.emotion.language_style       if external else ""
-    beziehungs_kontext: str  = external.character.relationship       if external else ""
     gespraechs_modus:   str  = external.emotion.mode                 if external else ""
     current_emotion:    str  = external.emotion.emotion              if external else "neutral"
-    current_arousal:    float= external.emotion.arousal              if external else 0.5
     beziehungs_dynamik: str  = external.emotion.relationship_dynamic if external else "neutral"
+
+    # **Zwei Zeilen standen hier, die diesen Block nie erreicht haben** — beide
+    # Reste eines dokumentierten Umbaus, und beide holten einen Wert, der schon
+    # anderswo geholt wird:
+    #   `external.character.relationship` steht als `nutzer_beziehung` weiter
+    #   oben und geht beschriftet in [ZWISCHEN BEIDEN] (der Kommentar unten
+    #   sagt genau das).
+    #   `external.emotion.arousal` steht in der Regie und speist dort die
+    #   Zeichenkorridore; im Emotionsverlauf oben erscheint es je Eintrag.
+    # Sie sind am 25.08.2026 entfernt worden, nachdem `F841` sie sichtbar
+    # gemacht hatte. Wer hier wieder einen Wert extrahiert, prueft vorher, ob
+    # er den Prompt nicht schon auf einem anderen Weg erreicht.
 
     # Beim eigenen Impuls traegt `external` laut db_zugriff eine Kopie von
     # `internal` — die Werte unten sind dann Novas Zustand, nicht der des

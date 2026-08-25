@@ -47,6 +47,27 @@ def _read_by_id(direktive_id: int) -> dict | None:
     )
 
 
+def _vorher_spur(vorher: dict | None) -> dict:
+    """Der ersetzte Inhalt als Eingangsgroesse der Entscheidung.
+
+    Der Datensatz wird vor jedem Schreibvorgang gelesen; ohne diesen Eintrag
+    laege er nur im Arbeitsspeicher und waere nach dem UPDATE nicht mehr
+    rekonstruierbar. `18_NACHVOLLZIEHBARKEIT` verlangt die Eingangsgroessen
+    einzeln, nicht nur das Ergebnis.
+
+    Fehlt der Datensatz, sagt die Spur das ausdruecklich: `gelesen=False`. Ein
+    leerer String saehe aus wie eine leere Anweisung und waere ein Default, der
+    wie ein Messwert aussieht.
+    """
+    if vorher is None:
+        return {"gelesen": False}
+    return {
+        "gelesen":   True,
+        "anweisung": vorher.get("anweisung", ""),
+        "kontext":   vorher.get("kontext"),
+    }
+
+
 def _suche_by_keyword(user_id: str, keyword: str) -> list[dict]:
     """ILIKE-Suche in anweisung fuer delete/update Target-Aufloesung."""
     return db_manager.select(
@@ -307,7 +328,14 @@ def _update(state: AgentState) -> dict:
     return {
         "ergebnis": f"Direktive aktualisiert: {neue_anweisung}",
         "status": "abgeschlossen",
-        "schritte": state["schritte"] + [{"node": "ausfuehren", "ergebnis": "aktualisiert", "alte_id": target_id, "neue_id": neue_id, "verifiziert": verifiziert}],
+        "schritte": state["schritte"] + [{
+            "node": "ausfuehren",
+            "ergebnis": "aktualisiert",
+            "alte_id": target_id,
+            "neue_id": neue_id,
+            "verifiziert": verifiziert,
+            "vorher": _vorher_spur(vorher),
+        }],
     }
 
 
@@ -356,7 +384,13 @@ def _delete(state: AgentState) -> dict:
     return {
         "ergebnis": f"Direktive (ID {target_id}) entfernt.",
         "status": "abgeschlossen",
-        "schritte": state["schritte"] + [{"node": "ausfuehren", "ergebnis": "geloescht", "id": target_id, "verifiziert": verifiziert}],
+        "schritte": state["schritte"] + [{
+            "node": "ausfuehren",
+            "ergebnis": "geloescht",
+            "id": target_id,
+            "verifiziert": verifiziert,
+            "vorher": _vorher_spur(vorher),
+        }],
     }
 
 
@@ -406,5 +440,11 @@ def _reactivate(state: AgentState) -> dict:
     return {
         "ergebnis": f"Direktive wiederhergestellt: {nachher['anweisung'] if nachher else '?'}",
         "status": "abgeschlossen",
-        "schritte": state["schritte"] + [{"node": "ausfuehren", "ergebnis": "reaktiviert", "id": target_id, "verifiziert": verifiziert}],
+        "schritte": state["schritte"] + [{
+            "node": "ausfuehren",
+            "ergebnis": "reaktiviert",
+            "id": target_id,
+            "verifiziert": verifiziert,
+            "vorher": _vorher_spur(vorher),
+        }],
     }

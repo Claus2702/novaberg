@@ -825,7 +825,8 @@ async def _event_verarbeiten(
         # WebSocket-Payload zeigt Novas Wahrnehmung ihrer eigenen Antwort
         # (internal.emotion, von perzeption_assistant + ei_calc_persist
         # gesetzt). nova_emotions_vector wandert in internal.emotion.
-        result_internal = result.get("internal")
+        # `internal` wird dabei in _antwort_nutzlast_bauen selbst gelesen; die
+        # Zeile, die es hier noch einmal holte, hat nie etwas damit getan.
         response_payload: str = _antwort_nutzlast_bauen(result, turn_id, payload, event)
 
         await broadcast(user_id, response_payload, character_id=character_id)

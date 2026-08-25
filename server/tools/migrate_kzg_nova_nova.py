@@ -93,7 +93,10 @@ def migrieren(commit: bool = False) -> None:
 
             logger.info(f"  ✅ {alter_key} → {neuer_key} (TTL={ttl}s)")
         else:
-            logger.info(f"  🔍 {alter_key} → {neuer_key} (TTL={ttl}s)")
+            # Die Vorschau wird zwei Bloecke weiter oben aufbereitet und stand
+            # bis zum 25.08.2026 in keiner Zeile — ein Dry-Run, der den Inhalt
+            # nicht zeigt, ist von einer Schluesselliste nicht zu unterscheiden.
+            logger.info(f"  🔍 {alter_key} → {neuer_key} (TTL={ttl}s) — \"{inhalt}\"")
 
         migriert += 1
 

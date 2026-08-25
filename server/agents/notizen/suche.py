@@ -173,15 +173,27 @@ def suchen(state: AgentState) -> dict:
             abgeschnitten = treffer[trennlinie:]
             treffer = treffer[:trennlinie]
 
+            # Die Verworfenen gehoeren in dieselbe Zeile wie die Behaltenen.
+            # Ohne sie ist eine zu scharfe Trennlinie von einer knappen
+            # Trefferlage nicht zu unterscheiden — beide Male steht dort nur,
+            # wie viele uebrig blieben.
+            verworfen: str = (
+                f"{len(abgeschnitten)} verworfen "
+                f"(scores={[f'{t["score"]:.2f}' for t in abgeschnitten[:3]]}"
+                f"{', ...' if len(abgeschnitten) > 3 else ''})"
+            )
+
             if len(treffer) == 1:
                 logger.info(
                     f"suchen: Score-Gap -- Klarer Gewinner: '{treffer[0]['name']}' "
-                    f"(score={scores[0]:.2f}, gap={scores[0] - scores[1]:.2f}, avg={avg:.2f})"
+                    f"(score={scores[0]:.2f}, gap={scores[0] - scores[1]:.2f}, avg={avg:.2f}) "
+                    f"-- {verworfen}"
                 )
             else:
                 logger.info(
                     f"suchen: Score-Gap -- {len(treffer)} Kandidaten in Gewinner-Gruppe "
-                    f"(scores={[f'{s:.2f}' for s in scores[:trennlinie]]}, avg={avg:.2f}) -- Disambiguierung"
+                    f"(scores={[f'{s:.2f}' for s in scores[:trennlinie]]}, avg={avg:.2f}) "
+                    f"-- {verworfen} -- Disambiguierung"
                 )
 
     if len(treffer) > 1 and action in ("update", "delete", "append"):
