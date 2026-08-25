@@ -20,6 +20,22 @@
 
 ## 25.08.2026 — der Versionsstempel frass die Leerzeile unter sich
 
+#### TELEGRAM-SHADOW-TYP-TOT — der Bot behandelt einen Nachrichtentyp, den der Server nie erzeugt ⚠️
+
+**Entdeckt:** Chat 110, beim Rückbau der Shadow-Delivery.
+
+**Klasse:** Toter Zweig nach Architekturwechsel. Severity **niedrig**.
+
+**Symptom:** `telegram_bot/bot.py:137` verzweigt auf `elif typ == "shadow_delivery":`, dokumentiert im Modulkopf (`:6`, `:105`). Ein solcher Nachrichtentyp wird vom Server **nirgends** erzeugt — auch vor Chat 110 hieß der Broadcast `shadow_impuls`. Der Zweig war also nie erreichbar.
+
+**Beleg:** `grep -rn "shadow_delivery" --include='*.py'` außerhalb des Delivery-Moduls selbst → nur Bot und Importe.
+
+**Nebenwirkung des Umbaus, positiv:** Novas Impulse erreichen Telegram jetzt **zum ersten Mal** — sie laufen als regulärer `character_response`, den der Bot seit jeher behandelt.
+
+**Zustand:** **gegenstandslos seit dem 24.08.2026** — der Telegram-Kanal ist abgeschaltet. Der tote Zweig steht unveraendert in `telegram_bot/bot.py`; er wird nur nicht mehr ausgefuehrt. **Nicht behoben, sondern ohne Gegenstand** — wer den Kanal zurueckholt, holt ihn mit. Davor: Offen — Zweig entfernen oder Kommentar korrigieren.
+
+---
+
 ### `VERSIONSSTEMPEL-FRISST-LEERZEILE` — jeder Eingriff des Rueckwegs nahm dem Kopf eine Zeile
 
 **Zustand:** behoben am 25.08.2026 — `agents/wissen_rueckweg/einarbeitung.py:36` traegt ein waagerecht begrenztes Suchmuster, zwei Zeugen bewachen es, 136 Dateien im Bestand sind nachgezogen.

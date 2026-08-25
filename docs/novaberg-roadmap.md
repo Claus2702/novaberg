@@ -1,13 +1,13 @@
 # Novaberg — Roadmap (Projektchronik)
 
-**Stand:** 25. August 2026 — juengster Eintrag 12:45 UTC (gemessen via `date -u`); die Eintraege darunter tragen Zeiten bis 21:30 UTC, die zur Zeitbasis dieser Sitzung in der Zukunft liegen. Der Widerspruch steht in der Fundliste.
+**Stand:** 25. August 2026 — juengster Eintrag 14:20 UTC (gemessen via `date -u`); die Eintraege darunter tragen Zeiten bis 21:30 UTC, die zur Zeitbasis dieser Sitzung in der Zukunft liegen. Der Widerspruch steht in der Fundliste.
 **Pfad:** novaberg/docs/novaberg-roadmap.md
 **Single Source of Truth für abgeschlossene Arbeit.**
 **Offene Punkte → novaberg-backlog.md**
 
 | Zeitraum | Datei | Kapitel |
 |---|---|---|
-| 2026-08 | **novaberg-roadmap.md** ← diese Datei | 116 |
+| 2026-08 | **novaberg-roadmap.md** ← diese Datei | 117 |
 | 2026-07 | [`novaberg-roadmap-2026-07.md`](novaberg-roadmap-2026-07.md) | 12 |
 | 2026-05 | [`novaberg-roadmap-2026-05.md`](novaberg-roadmap-2026-05.md) | 18 |
 | 2026-04 | [`novaberg-roadmap-2026-04.md`](novaberg-roadmap-2026-04.md) | 21 |
@@ -18,6 +18,35 @@
 ## Hinweis für Bearbeiter dieser Datei
 
 Die Kopfzeile stand bis Chat 109 auf „Chat 93, 21. Mai 2026" — 15 Chats hinter dem Inhalt. **Sie ist danach erneut zurückgefallen:** von Chat 110 bis 114 blieb sie auf „Chat 109" stehen, während der Inhalt weiterwuchs, und wurde in Chat 115 nachgezogen. Wer hier etwas ergänzt, zieht die Kopfzeile mit — sie driftet zuverlässig. Achtung beim Nachschlagen: Nur bis Chat 97 trägt jeder Chat eine eigene `## Chat NNN`-Überschrift; die Chats 98–108 stehen als `###`-Abschnitte unter dem Chat-97-Block, benannt nach Sprint statt nach Chat.
+
+---
+
+## 25.08.2026, 14:20 UTC — Die 45 Alt-Eintraege des Defektregisters tragen einen Zustand
+
+**Auftrag:** dieselbe Arbeit wie tags zuvor im Backlog, ein Sechstel des Umfangs.
+
+**Ergebnis: 45 → 0.** Das Register fuehrt danach 150 offene Eintraege, 124 im Archiv, 0 Kennungen in beiden. Bilanz C21 geht auf.
+
+| Ausgang | Eintraege |
+|---|---|
+| **am Code oder Bestand geprueft** | 19 |
+| **`unbelegt — braucht Messturn`** | 24 |
+| **aufgegangen in einem anderen Eintrag** | 1 (`AGT4` → `ROUTE3`) |
+| **gegenstandslos, ins Archiv** | 1 (`TELEGRAM-SHADOW-TYP-TOT`) |
+
+**Die 24 sind das Ergebnis, kein Ausweichen.** Sie beschreiben Modell-Compliance, Sprechhaltung, halluzinierte Bestaetigung, die Aufloesung eines Bezugs ueber mehrere Turns — Groessen, die kein Grep hergibt. Sie als `offen` zu fuehren verwechselt *nicht widerlegt* mit *gemessen*.
+
+**Von den 19 geprueften gilt keiner als behoben, aber fuenf nicht mehr so, wie sie dastanden:**
+
+- **`FAKTEN-PAIR-IGNORED`** — der Codebefund steht (`character_id` kommt im Repository **0 mal** vor), die Begruendung ist verfallen: Die *171 Live-Eintraege* sind **0 Zeilen**.
+- **`BATCH-ZAEHLER-ZAEHLEN-AUFRUFE`** — die Haelfte des Belegs hat keinen Gegenstand mehr, `agents/promotion/agent.py` existiert nicht mehr. Im aktiven Pfad gilt er unveraendert.
+- **`EI-VEKTOR-TEXT-EMOTIONSFEST`** — acht von neun Vektortexten beschreiben heute eine Richtung; **einer traegt den Symptomsatz woertlich** (`config.py:1119`).
+- **`NOTIZ-RESUME-TARGET-VERLUST`** — der leere String ist durch einen Vorgabewert abgefangen; die Ursache steht und ist jetzt verdeckt statt sichtbar.
+- **`CLUSTER-META-CONTAMINATION`** — die zwei belegenden Knoten gibt es nicht mehr, **113 von 3047** tragen den Befund. Der Beleg ist verfallen, die Klasse gewachsen.
+
+> **Ein geduldeter Bestand ist keine Konstante — und die Richtung ist nicht vorhersagbar.** Am Vortag wuchsen zwei Zahlen beim Nachmessen; heute fiel eine von 171 auf 0 und eine von 2 auf 113. Was alle vier verbindet: **Die Zahl im Eintrag war die des Befundtages**, und kein Eintrag sagte das dazu.
+
+**Drei Zeilennummern zeigten ins Leere** — `DISPATCH-DELEGATION-RUECKGABE-VERWORFEN` nennt `:406-416`, der Aufruf steht heute in `:650`. Der Befund war jedes Mal richtig, nur nicht mehr dort.
 
 ---
 

@@ -743,6 +743,7 @@ Gegenstandslos geworden: der Stichtag der assistant-Partition vom 26.07.2026, di
 
 #### CHAR-HASH-PAAR-VERTAUSCHT — die Figur steht in der `user_id`-Spalte, für jeden Menschen einmal
 
+**Zustand:** offen — am Bestand nachgezaehlt am 25.08.2026, **unveraendert**: `charakter_hash` traegt **34 Zeilen, davon 17 mit der Figur in der `user_id`-Spalte** — exakt die Zahlen des Befundes vom 16.08.2026. Neun Tage ohne Bewegung in beide Richtungen.
 **Symptom.** `charakter_hash` enthält zu **jedem** Menschen zwei Zeilen: die richtige `({mensch}, nova)` und eine gespiegelte `(nova, {mensch})`, in der die Figur in der `user_id`-Spalte steht. Gemessen am 16.08.2026: **34 Zeilen, exakt gespiegelt, 17 davon falsch.** Der Fehler ist **kein Bestandsrest** — `(nova, meister)` trägt ein `kern_aktualisiert_am` von diesem Tag.
 
 Das verletzt die Definition `user_id` (der Mensch) × `character_id` (die Figur) × `beobachter` (der Schreiber). Es ist derselbe Fehlertyp, der im Kurzzeit- und Langzeitgedächtnis bereits beseitigt wurde — dort ist der Bestand sauber (0 Schlüssel `kzg:nova:*`, 0 Zeilen in `lzg_knoten` mit `user_id='nova'`).
@@ -896,6 +897,7 @@ Er fügt der Tabelle nichts Neues hinzu, sondern **bestätigt ihre Trennung**: g
 
 #### RESPONDER-OHNE-INHALT-ANTWORTET-TROTZDEM — ohne Material aus dem Verfasser greift der Responder auf den Kontext
 
+**Zustand:** unbelegt — braucht Messturn. Gegen HEAD `cc5aaae` am 25.08.2026 gesichtet: der Befund beschreibt, was der Responder **sagt**, wenn ein Agent nichts liefert. Kein Codeort trennt das von einer richtigen Antwort.
 Liefert der Verfasser nichts (`antwort_inhalt` fehlt), läuft der Responder unverändert weiter und baut eine Antwort aus dem **Gedächtniskontext** — im belegten Fall 23.824 Zeichen.
 
 **Belegt am 01.08.2026, 18:40:52:** `antwort_inhalt` FEHLT, Antwort **4312 Zeichen**. Der Trace meldete `Verfasser — Inhalt · kein Inhalt`, und die Antwort handelte von Themen früherer Turns.
@@ -1364,6 +1366,8 @@ if self.now > dateobj - tz_offset:
 ### Prompt & Antwortqualität
 
 #### THER1 — Therapeuten-Modus bei negativem Arousal ⚠️
+
+**Zustand:** unbelegt — braucht Messturn. Gegen HEAD `cc5aaae` am 25.08.2026 gesichtet: Modell-Compliance. Der Eintrag nennt selbst *Modell-Limit, kein Architektur-Problem* — nur ein Lauf ueber mehrere Turns zeigt, ob der Ton noch auftritt.
 **Entdeckt:** Chat 30, Smoke-Test (#7, #8, #9, #11)
 **Symptom:** "Ich verstehe, dass...", "Es ist verständlich, dass...", "Lass uns gemeinsam..." — trotz Anti-Therapeut-Baustein (EI-MIKRO) und explizitem Verbot ([REGELN]).
 **Bestätigt Chat 31:** RLHF-Conditioning, kein Cocktail-Artefakt. Tritt bei Leon (Teen) auf, bei Mehmet und Renate kaum — deren Charakter-Hashes ("erwartet Direktheit") unterdrücken den Modus. Persona-Charakter kann THER1 mildern.
@@ -1372,6 +1376,8 @@ if self.now > dateobj - tz_offset:
 ---
 
 #### BUTLER1 — Eigeninitiative und Pseudo-Angebote ⚠️
+
+**Zustand:** unbelegt — braucht Messturn. Gegen HEAD `cc5aaae` am 25.08.2026 gesichtet: Modell-Compliance. Das Butler-Verbot steht im Prompt; ob es greift, entscheidet das Modell, nicht der Code.
 **Entdeckt:** Chat 30, Smoke-Test (#3, #13)
 **Symptom:** "Ich kann auch gleich eine Feier organisieren", "Lass uns morgen weiterreden. Gute Nacht.", "Welcher Fonds ist als nächstes dran?"
 **Update Chat 39:** Verstärkt bei Claude-Backend (RLHF).
@@ -1397,6 +1403,8 @@ if self.now > dateobj - tz_offset:
 ---
 
 #### HALL2 — Halluzinierte Bestätigung ⚠️
+
+**Zustand:** unbelegt — braucht Messturn. Gegen HEAD `cc5aaae` am 25.08.2026 gesichtet: halluzinierte Bestaetigung ohne Agent-Lauf. Der Eintrag traegt drei Updates aus drei Chats und zuletzt eine ganz andere Manifestation (KZG-Klebrigkeit) — welche davon heute gilt, sagt kein Grep.
 **Entdeckt:** Chat 39, Claude API-Test
 **Symptom:** Nova sagt "Termin ist auf 10:00 Uhr — jetzt stimmt's" ohne dass ein TimelineAgent lief. Keine Agent-Dispatch im Log. Der Responder halluziniert eine erfolgreiche Aktion.
 **Ursache:** Vermutlich generiert der Responder die Bestätigung aus dem Gesprächskontext ("Du hast recht, das hattest du mir gesagt") statt aus einem Agent-Ergebnis.
@@ -1429,6 +1437,8 @@ if self.now > dateobj - tz_offset:
 ---
 
 #### CRUD-DESTILL-SUBTRAKT — Subtraktive Charakter-Änderungen werden als Anweisung gespeichert statt integriert ⚠️
+
+**Zustand:** unbelegt — braucht Messturn. Gegen HEAD `cc5aaae` am 25.08.2026 gesichtet: das Destillat einer subtraktiven Charakter-Aenderung. Der Prompt laesst sich lesen, das Ergebnis nicht vorhersagen.
 **Entdeckt:** Chat 49, Test 3
 **Symptom:** User sagt "Sei nicht mehr das kleine Mädchen" bei aktivem Charakter "Das kesse, witzige, lebenslustige, junge Mädel vom Land mit Botanik-Leidenschaft, das auch manchmal ein fieses, freches Miststück sein kann, wenn man es neckt, sowie die Rolle als 'kleines Mädchen'". Der Classify destilliert als neue Anweisung: **"Nicht mehr das kleine Mädchen sein"** — die pure Negation, ohne den positiven Teil.
 **Erwartet:** "Das kesse, witzige, lebenslustige, junge Mädel vom Land mit Botanik-Leidenschaft, das auch manchmal ein fieses, freches Miststück sein kann, wenn man es neckt" (bestehende Anweisung minus das abgezogene Attribut).
@@ -1444,6 +1454,8 @@ if self.now > dateobj - tz_offset:
 ---
 
 #### AGT3-READ — Responder halluziniert bei Read-Pfad ⚠️
+
+**Zustand:** unbelegt — braucht Messturn. Gegen HEAD `cc5aaae` am 25.08.2026 gesichtet: Nova mischt Daten aus aehnlich benannten Notizen. Braucht zwei Notizen mit aehnlichem Namen und einen Lesezugriff.
 **Entdeckt:** Chat 23
 **Symptom:** "Welches Obst hast du auf der Liste?" → Nova mischt Daten aus verschiedenen Notizen.
 **Prio:** Niedrig — tritt nur bei ähnlichen Notiz-Namen auf.
@@ -1451,12 +1463,16 @@ if self.now > dateobj - tz_offset:
 ---
 
 #### AGT4 — Kontext-Referenzierung ⚠️
+
+**Zustand:** aufgegangen in `ROUTE3` — gesichtet am 25.08.2026. Der Eintrag traegt keinen eigenen Befund mehr: Er meldet die 3-Stufen-Aufloesung als implementiert und verweist fuer den Rest ausdruecklich auf `ROUTE3`. Ein Eintrag, dessen ganzer offener Anteil woanders steht, ist kein zweiter Defekt.
 **Entdeckt:** Chat 24
 **Status:** 3-Stufen-Auflösung + target_typ implementiert. Recency vs. Semantik noch offen (ROUTE3).
 
 ---
 
 #### ROUTE3 — Router löst Kontext-Bezüge semantisch statt per Recency ⚠️
+
+**Zustand:** unbelegt — braucht Messturn. Gesichtet am 25.08.2026: Der Eintrag vermerkt `AGT6` als Teilloesung und nennt als Rest *Recency vs. Semantik* — eine Frage der Aufloesungsreihenfolge, die sich an einem Bezugs-Turn zeigt, nicht im Code. Traegt zugleich den offenen Anteil von `AGT4`.
 **Entdeckt:** Chat 24
 **Teilweise gelöst (Chat 26):** AGT6 verlagert Target-Auflösung in den Agent.
 
@@ -1476,6 +1492,8 @@ if self.now > dateobj - tz_offset:
 ---
 
 #### PROMPT3 — Halluzinierte PFLICHT-RÜCKFRAGE ⚠️ Beobachten
+
+**Zustand:** unbelegt — braucht Messturn. Gegen HEAD `cc5aaae` am 25.08.2026 gesichtet: halluzinierte Pflicht-Rueckfrage. Der Eintrag vermerkt ein Verbot im REGELN-Block als Abhilfe; ob es traegt, ist eine Beobachtung.
 **Entdeckt:** Chat 25
 **Update Chat 27:** Pseudo-Rückfragen-Verbot im REGELN-Block.
 
@@ -1546,6 +1564,7 @@ trennen; Name aus dem Sach-Inhalt ableiten.
 
 #### CLUSTER-META-CONTAMINATION — Pipeline-Meta-Begriffe als Themen-Tags
 
+**Zustand:** offen — gegen HEAD `cc5aaae` und den Bestand gehalten am 25.08.2026. **Der Beleg ist verfallen, der Befund gewachsen:** Die Knoten `id 50` und `id 67` gibt es nicht mehr; ueber `lzg_knoten` gezaehlt tragen aber **113 von 3047** einen der genannten Meta-Begriffe im Themenfeld (3,7 %). Von den zwei Loesungsansaetzen ist keiner gebaut — `SALIENZ_THEMEN_STOPWORDS` kommt in `config.py` nicht vor.
 **Status:** ⬜ Offen
 **Entdeckt:** Chat 86 (Cluster-Qualitäts-Diagnose im LZG)
 
@@ -1570,6 +1589,7 @@ trennen; Name aus dem Sach-Inhalt ableiten.
 
 #### PROMO-FAKT-LEER — Fakt-klassifizierte Einträge ohne Fakten fallen aus dem LZG-Schreib-Pfad
 
+**Zustand:** unbelegt — braucht Messturn. Gegen HEAD `cc5aaae` am 25.08.2026 gesichtet: ein Promotionsergebnis ohne Faktinhalt. Die Bedingung entsteht im Lauf, nicht in einer Zeile.
 **Status:** ⬜ Offen
 **Entdeckt:** Chat 85 (durch EVA-Audit-Logging nach Pixie-EVA-Härtung sichtbar geworden)
 
@@ -1680,6 +1700,8 @@ trennen; Name aus dem Sach-Inhalt ableiten.
 ### Responder & Stilqualität (Chat 49)
 
 #### RESP-CRUD-GENERIC — Generische Aktionsbestätigung statt inhaltlicher Referenz ⚠️
+
+**Zustand:** unbelegt — braucht Messturn. Gegen HEAD `cc5aaae` am 25.08.2026 gesichtet: generische Antwort auf eine CRUD-Operation. Formulierungsbefund.
 **Entdeckt:** Chat 49, Telegram-Konversation "frecher Charakter"
 **Symptom:** Nach erfolgreichem CharakterIdentitaetAgent-Update ("Etwas frecher, macht gerne böse Witze über das hohe Alter...") antwortet Nova mit einer leeren Corporate-Platitüde:
 > "Alles klar, das Update ist eingespielt. Ich werde ab jetzt mit vollem Einsatz dabei sein und die Qualität unserer Interaktion auf das nächste Level heben. Ich freue mich darauf, dich weiterhin so tatkräftig zu unterstützen!"
@@ -1693,6 +1715,8 @@ trennen; Name aus dem Sach-Inhalt ableiten.
 ---
 
 #### EMOTE-LOCK — Emote-Inflation und -Wiederholung ⚠️
+
+**Zustand:** unbelegt — braucht Messturn. Gegen HEAD `cc5aaae` am 25.08.2026 gesichtet: Emote-Wiederholung ueber Turns hinweg — nur ueber eine Turnfolge sichtbar.
 **Entdeckt:** Chat 48 (erste Beobachtung), Chat 49 (bestätigt), Chat 81 (empirisch bestätigt im warmen Register)
 **Symptom:** Nova zykelt im Charakter-Register auf einen Emote-/Emoji-Baustein und reproduziert ihn als Default-Markierung. Beobachtungen:
 - Chat 49 ("freches Mädel"-Register): 12 von 15 Antworten mit `*kichere boshaft*` oder minimaler Variation als Eröffnungsemote.
@@ -1775,6 +1799,8 @@ Beide Beobachtungen zeigen dasselbe Muster in unterschiedlichen Registern — de
 ### Chat 74 — Reducer-Iteration + Live-Beobachtungen
 
 #### REDUCER-MULTILINE — Mehrzeilen-Plugin-Blöcke werden vom String-Parser fragmentiert ⚠
+
+**Zustand:** unbelegt — braucht Messturn. Gegen HEAD `cc5aaae` am 25.08.2026 gesichtet: mehrzeilige Eintraege im Reducer. Der Eintrag nennt keine Stelle und kein Muster, an dem sich das ohne Lauf zeigen liesse.
 **Entdeckt:** Chat 74, 02. Mai 2026
 **Symptom:** Der Reducer-Erst-Iteration-Parser zerlegt mehrzeilige Plugin-Blöcke (Notizen mit mehreren Listenpunkten) in einzelne Zeilen. Beobachtung: "einkaufsliste: kümmel" wird ein Eintrag, "kardamon" und "hefe" werden zu eigenständigen Einträgen ohne Präfix mit Gewicht 0.0.
 **Risiko:** Bei zufälligem Match-Wort ("hefe" auch in einem anderen Eintrag) würde die Notiz löchrig — der Reducer würde "hefe" entfernen und der Responder bekäme die Notiz unvollständig.
@@ -1801,6 +1827,7 @@ Beide Beobachtungen zeigen dasselbe Muster in unterschiedlichen Registern — de
 
 #### PFAD2-EMO-MIX — Pfad-2-KZG-Eintrag mischt User- und Nova-Emotion ⚠️
 
+**Zustand:** unbelegt — braucht Messturn. Gegen HEAD `cc5aaae` am 25.08.2026 gesichtet: Vermischung zweier Emotionsquellen im zweiten Pfad. Braucht einen Turn mit beiden.
 **Entdeckt:** Chat 78 Audit (KZG/LZG-Befund)
 
 **Symptom:** Im CharacterGraph schreibt der KZG-Pfad einen `beobachter=assistant`-Eintrag, aber die Emotion-Felder sind inkonsistent:
@@ -1838,6 +1865,7 @@ Beide Beobachtungen zeigen dasselbe Muster in unterschiedlichen Registern — de
 
 #### TIMELINE-PAIR-MISSING — Timeline-Tabelle ohne `character_id` ⚠️
 
+**Zustand:** offen — am laufenden Schema geprueft am 25.08.2026, **unveraendert**: `timeline` fuehrt `user_id` und kein `character_id`.
 **Entdeckt:** Chat 80, im Zuge der M2.5a-Phase-2-Implementierung (Magnet-Spalten-Befüllung beim Timeline-Schreiben)
 
 **Klasse:** Schema-Lücke, Severity Mittel — Foundation-Bug, akut nur bei Multi-Charakter-Setup
@@ -1852,6 +1880,7 @@ Beide Beobachtungen zeigen dasselbe Muster in unterschiedlichen Registern — de
 
 #### NOTIZEN-PAIR-MISSING — Notizen-Tabelle ohne `character_id` ⚠️
 
+**Zustand:** offen — am laufenden Schema geprueft am 25.08.2026, **unveraendert**: `notizen` fuehrt `user_id` und kein `character_id`.
 **Entdeckt:** Chat 80, im Zuge der character_id-Inventur nach M2.5a-Phase-2
 
 **Klasse:** Schema-Lücke, Severity Mittel — Foundation-Bug, akut nur bei Multi-Charakter-Setup
@@ -1864,6 +1893,7 @@ Beide Beobachtungen zeigen dasselbe Muster in unterschiedlichen Registern — de
 
 #### FAKTEN-PAIR-IGNORED — Fakten-Repository ignoriert `character_id` ⚠️
 
+**Zustand:** offen im Code, **Begruendungszahl verfallen** — gegen HEAD `cc5aaae` und den Bestand gehalten am 25.08.2026. Die Spalte `character_id` steht in `fakten`; `fakten_repository.py` nennt sie **0 mal**, der Befund gilt also unveraendert. Die *171 Live-Eintraege*, die ihn als Severity Hoch begruendeten, sind **0 Zeilen** — die Tabelle ist leer. Was bleibt, ist die Repository-Luecke ohne Datenmigration.
 **Entdeckt:** Chat 80, im Zuge der character_id-Inventur nach M2.5a-Phase-2
 
 **Klasse:** Repository-Lücke trotz vorhandener Schema-Spalte, Severity Hoch — 171 Live-Einträge betroffen
@@ -1880,6 +1910,7 @@ Beide Beobachtungen zeigen dasselbe Muster in unterschiedlichen Registern — de
 
 #### NOTIZEN-KONTEXT-REKONSTRUKTION — Mehrschritt-Rekonstruktion fehlt ⚠️
 
+**Zustand:** unbelegt — braucht Messturn. Gegen HEAD `cc5aaae` am 25.08.2026 gesichtet: Bezugsaufloesung ueber mehr als einen Vor-Turn. Der Eintrag verweist auf das Frame-Konzept als Loesung; sein Symptom ist eine Turnfolge.
 **Entdeckt:** Chat 80, Live-Test B des NOTIZEN-VOR-TURN-BEZUG-Sprints
 
 **Klasse:** Strukturelle Lücke — Bezugsauflösung über mehrere Vor-Turns hinweg, Severity Hoch
@@ -1894,6 +1925,7 @@ Beide Beobachtungen zeigen dasselbe Muster in unterschiedlichen Registern — de
 
 #### NOTIZEN-CONTAINER-WECHSEL — Notiz↔Liste-Wechsel verweigert ⚠️
 
+**Zustand:** unbelegt — braucht Messturn. Gegen HEAD `cc5aaae` am 25.08.2026 gesichtet: die Verweigerung eines Notiz-zu-Liste-Wechsels ist eine Antwort, keine Codezeile.
 **Entdeckt:** Chat 80, Live-Test B
 
 **Klasse:** Architektur-Strenge zu hoch — Container-Typ als unveränderliche Klasse, Severity Mittel
@@ -1908,6 +1940,7 @@ Beide Beobachtungen zeigen dasselbe Muster in unterschiedlichen Registern — de
 
 #### NOTIZEN-SKILL-MANIFEST — Skills nicht in Sprach-Schicht repräsentiert ⚠️
 
+**Zustand:** unbelegt — braucht Messturn. Gegen HEAD `cc5aaae` am 25.08.2026 gesichtet: falsche Selbstauskunft ueber die eigenen Faehigkeiten. Der Nachtrag vom 16.08.2026 im Rumpf nennt mit `SELBSTAUSKUNFT-OHNE-LESER` die messbare Haelfte derselben Ursache.
 **Entdeckt:** Chat 80, Live-Test B (durch Meister thematisiert)
 
 **Klasse:** Domain-Language-Lücke — Skills im Code vorhanden, in der Sprach-Schicht nicht repräsentiert, Severity Mittel
@@ -1924,6 +1957,7 @@ Beide Beobachtungen zeigen dasselbe Muster in unterschiedlichen Registern — de
 
 #### NOTIZEN-UPDATE-TARGET-LEER — Bezugs-Pronomen für UPDATE crashen ⚠️
 
+**Zustand:** unbelegt — braucht Messturn. Gegen HEAD `cc5aaae` am 25.08.2026 gesichtet: Crash bei leerem `target` im UPDATE-Pfad. Verwandt mit `NOTIZ-RESUME-TARGET-VERLUST`, wo der leere String inzwischen einen Vorgabewert hat — ob dieser Pfad denselben traegt, zeigt erst der Aufruf.
 **Entdeckt:** Chat 80, Live-Test B
 
 **Klasse:** Bezugsauflösung im UPDATE-Pfad — verwandt zu NOTIZEN-VOR-TURN-BEZUG, andere Aktion, Severity Hoch — Crash-Verhalten
@@ -1942,6 +1976,7 @@ Beide Beobachtungen zeigen dasselbe Muster in unterschiedlichen Registern — de
 
 #### NOVA-SYKOPHANZ-BESTAETIGT — Nova stimmt einem selbstwidersprüchlichen Einwand zu ⚠️
 
+**Zustand:** unbelegt — braucht Messturn. Gegen HEAD `cc5aaae` am 25.08.2026 gesichtet: zustimmendes Antwortverhalten, auf Protokollwortlaut gezogen. Der laengste Eintrag der Menge und der am wenigsten grepbare.
 **Entdeckt:** Chat 106, Live-Abnahme des RESPONDER-VEKTOR-TOT-Fixes, 11.7. 19:39
 
 **Klasse:** Sykophanz — Zustimmung zur FORM der Kritik ohne Prüfung ihres INHALTS, Severity **Hoch**
@@ -2047,6 +2082,7 @@ propagiert Fehler vorbildlich — das Muster sitzt in den Zustell- und Batch-Pfa
 
 #### BROADCAST-VERSCHLUCKT-FEHLER — broadcast() macht ehrliche Logs unmöglich ⚠️
 
+**Zustand:** offen — gegen HEAD `cc5aaae` gehalten am 25.08.2026, **unveraendert**: `broadcast()` in `api/websocket.py:116` ist weiterhin `-> None`; der Aufrufer erfaehrt nichts ueber gescheiterte Sends.
 **Entdeckt:** Chat 106, Audit „Lügende Logs". **Prio hoch** — Wurzel der beiden folgenden.
 
 **Symptom:** `broadcast()` verschluckt jeden Send-Fehler intern und wirft nie. Das ist
@@ -2062,6 +2098,7 @@ ist unverifizierbar.
 
 #### WIEDERVORLAGE-SNOOZE-OHNE-WIRKUNG — fällige Erinnerung weggesnoozed ohne Erinnerung ⚠️
 
+**Zustand:** offen — gegen HEAD `cc5aaae` gehalten am 25.08.2026, **unveraendert**: `_wiedervorlage_verschieben(eintrag)` und `verarbeitet += 1` stehen weiterhin ausserhalb des `if nachfrage:`-Blocks und laufen bedingungslos je Schleifendurchlauf. Der Stack-Push haengt an der Bedingung, das Verschieben nicht.
 **Entdeckt:** Chat 106, Audit „Lügende Logs". **Prio hoch — DATENVERLUST.**
 
 **Symptom:** Leere LLM-Antwort (`_nachfrage_formulieren` → `""`, völlig stiller Pfad) oder
@@ -2076,6 +2113,7 @@ der Stack-Push hängt an `if nachfrage:` bzw. einem gefangenen try/except.
 
 #### BATCH-ZAEHLER-ZAEHLEN-AUFRUFE — „N promotet" zählt Verworfene mit ⚠️
 
+**Zustand:** offen, **Beleg zur Haelfte gegenstandslos** — gegen HEAD `cc5aaae` gehalten am 25.08.2026. `agents/promotion/agent.py` (der als *dormant* genannte Pfad) **existiert nicht mehr**. Im aktiven Pfad gilt der Befund unveraendert, an neuer Stelle: `agents/synapsen_promotion/agent.py:234` zaehlt `promotet += 1` nach jedem exceptionfreien Aufruf, waehrend die Verwurfsfaelle (`:300` TTL abgelaufen, `:316` Inhalt leer) per normalem `return` zurueckkehren.
 **Entdeckt:** Chat 106, Audit „Lügende Logs". **Prio mittel.**
 
 **Symptom:** Die Summenzeilen „{promotet} Eintraege promotet, {fehler} Fehler" zählen
@@ -2092,6 +2130,7 @@ Debuggen schaut, lügt. Das per-Eintrag-`hintergrund_log` ist korrekt.
 
 #### DISPATCH-DELEGATION-RUECKGABE-VERWORFEN — „gefeuert" ohne Ergebnisprüfung ⚠️
 
+**Zustand:** offen — gegen HEAD `cc5aaae` gehalten am 25.08.2026, **unveraendert**, an neuer Stelle: `graph/nodes/dispatcher.py:650` ruft `dispatch_delegation(state)` ohne Zuweisung, die Zeile darunter loggt *gefeuert*. Der Eintrag nennt `:406-416`.
 **Entdeckt:** Chat 106, Audit „Lügende Logs". **Prio mittel.**
 
 **Symptom:** Der Dispatcher loggt „DelegationsAgent gefeuert (trigger=…)" nach
@@ -2110,6 +2149,7 @@ Ebene unsichtbar.
 
 #### EI-VEKTOR-TEXT-EMOTIONSFEST — Vektor-Texte nennen Emotionen statt Richtungen ⚠️
 
+**Zustand:** offen, **zu acht Neunteln behoben** — gegen HEAD `cc5aaae` gehalten am 25.08.2026. Von den neun Texten in `EMOTIONS_VEKTOREN_NOVA` beschreiben acht heute eine Richtung (*„Du rutschst emotional tiefer"*, *„Du kommst aus einem Tief"*). **Einer traegt den Symptomsatz woertlich:** `config.py:1119` — *„Du bist in Hochstimmung. Die Begeisterung steigt weiter."* Die Nutzer-Variante daneben ebenso (`:1083`, `:1087`).
 **Entdeckt:** Chat 106, Live-Abnahme des Vektor-Fixes. **Prio mittel.**
 
 **Symptom:** Die Texte in `EMOTIONS_VEKTOREN_NOVA` nennen konkrete Emotionen (*„Die
@@ -2126,6 +2166,7 @@ klingt ab"* bei noch 89 %) — der Mechanismus stimmt, die Textbausteine sind zu
 
 #### NOTIZ-RESUME-TARGET-VERLUST — Rückfrage verarmt bei jedem Resume ⚠️
 
+**Zustand:** offen, **entschaerft** — gegen HEAD `cc5aaae` gehalten am 25.08.2026. `agents/notizen/resume.py:206` liest heute `state["parameter"].get("target", "Notiz")` — der leere String aus dem Symptom ist abgefangen, die Rueckfrage lautet nicht mehr *„Notiz ''"*. Die Ursache steht: `target` wird weiterhin nicht aus den Vor-Turns aufgeloest, der Vorgabewert verdeckt das nur.
 **Entdeckt:** Chat 106, Nebenbefund der AGENT-RUECKFRAGE-LOOP-Abnahme. **Prio mittel.**
 
 **Symptom:** Turn 1: *„Es gibt bereits eine Notiz 'Neue Notiz anlegen'."* → Turn 2:
@@ -2161,6 +2202,7 @@ Disambiguierung erzeugen, die den Loop auslöste: der Crash ist behoben, nicht d
 
 #### REDUCER-SIEHT-LZG-NICHT — LZG-Erinnerungen durchlaufen nie den Dedup ⚠️
 
+**Zustand:** offen — gegen HEAD `cc5aaae` gehalten am 25.08.2026, **unveraendert**: `graph/nodes/reducer.py:99` traegt weiterhin den Kommentar *„lzg_resonanz wird durchgereicht"*; das Objekt geht an `format_memory_entries` vorbei am Dedup, der nur `nach_stufe2` sieht.
 **Entdeckt:** Chat 107, Reducer-Audit (Code-Lesung des Live-Pfads, keine Vermutung).
 
 **Klasse:** Architektur-Lücke im Lesepfad, Severity **Hoch** — derselbe Fakt kann doppelt im Kontext landen, und keine Schicht ist zuständig.
@@ -2216,6 +2258,7 @@ Disambiguierung erzeugen, die den Loop auslöste: der Crash ist behoben, nicht d
 
 #### CHARHASH-RESET-TRIGGER-FEHLT — Neu-Destillation nach dem Gewichts-Reset ist nicht angestoßen ⚠️
 
+**Zustand:** offen im strukturellen Teil — gegen HEAD `cc5aaae` gehalten am 25.08.2026. Der Eintrag nennt zwei Lösungsrichtungen; die kurzfristige ist im Rumpf als ausgefuehrt vermerkt. Die strukturelle steht: `hash_dirty` kommt in `memory/lzg_knoten.py` und `tools/reembed_all.py` **nicht vor** — wer die Rechengrundlage der Destillation aendert, stoesst sie weiterhin nicht an.
 **Entdeckt:** 12.07.2026, Docs-Commit nach Chat 107 — statische Prüfung der Trigger-Kette (Live-DB in der Prüf-Umgebung nicht erreichbar, Zeitstempel-Verifikation ✅ erledigt Chat 108, siehe Nachtrag unten).
 
 **Klasse:** Offener Migrationsrest von EMBEDDING-CASING-BLIND, Severity **Hoch** — der produktive `charakter_hash` war bis Chat 108 auf dem alten Fundament entstanden; seit dem manuellen Trigger am 25.07. neu destilliert (siehe Nachtrag).
@@ -2254,6 +2297,7 @@ TTL scheidet aus: `hash_dirty:meister` und `hash_dirty:nova:meister` haben TTL `
 
 #### GV-IMPULS-ALS-FAKTENSPERRE — der GV-Impuls weist den Responder an, das Gedächtnis nicht zu benutzen ⚠️
 
+**Zustand:** unbelegt — braucht Messturn. Gegen HEAD `cc5aaae` am 25.08.2026 gesichtet: ein Impuls, der den Responder vom Gedaechtnis wegweist. Der Eintrag belegt ihn an einem Turn verbatim — wiederholbar nur als Turn.
 **Entdeckt:** Chat 107, Live-Betrieb nach dem Embedding-Fix, Turn „Was weißt Du über Lumi?" (12.07., 12:49).
 
 **Klasse:** Fehlsteuerung über drei Instanzen (GV → Responder → Tribunal), Severity **Hoch** — der Gesprächsvektor formuliert einen IMPULS, der den Responder anweist, das Gedächtnis NICHT zu benutzen. Der Responder gehorcht. Das Tribunal lobt es.
@@ -2346,6 +2390,7 @@ redis-cli HGET <kzg_id> inhalt ; redis-cli HGET <kzg_id> beobachter
 
 #### IMPULS-DOPPELTE-SPUR — ein eigener Gedanke wird zweimal ins Gedächtnis geschrieben ⚠️
 
+**Zustand:** unbelegt — braucht Messturn. Gegen HEAD `cc5aaae` am 25.08.2026 gesichtet: ein Impuls schreibt ueber beide Graphen unter derselben `turn_id`. Zaehlbar, aber nur an einem Impuls-Turn, den es zu erzeugen gilt.
 **Entdeckt:** Chat 110, nach der Umverdrahtung des Impuls-Pfads.
 
 **Klasse:** Doppelte Persistenz durch zwei Graphen auf einem Turn. Severity **mittel** — kein Datenverlust, aber ein Gedanke wiegt doppelt.
@@ -2362,6 +2407,7 @@ redis-cli HGET <kzg_id> inhalt ; redis-cli HGET <kzg_id> beobachter
 
 #### DESTILLAT-BEHAUPTETE-HANDLUNG — die assistant-Partition übernimmt behauptete Handlungen als Verhaltensbeleg ⚠️
 
+**Zustand:** unbelegt — braucht Messturn. Gegen HEAD `cc5aaae` am 25.08.2026 gesichtet: das Destillat uebernimmt eine angekuendigte Handlung als geschehene. Braucht einen Turn mit Ankuendigung und die Gegenmessung in derselben Zeitspanne.
 **Entdeckt:** Chat 110, beim Prüfen der Seiteneffekte eines Messlaufs.
 
 **Klasse:** Falscher Verhaltensbeleg. Severity **hoch für Bauteil 3** — die assistant-Partition soll dort die Grundlage für `verhaltensweisen` werden. Was sie als Handlung führt, muss stattgefunden haben.
@@ -2388,6 +2434,7 @@ Die Klasse ist auch im Bestand sichtbar: Ein Scan über 400 KZG-Keys findet mehr
 
 #### IMPULS-ICH-PERSPEKTIVE-TEILWEISE — der Block verhindert die Zuschreibung, erreicht aber die Sprechhaltung nicht ⚠️
 
+**Zustand:** unbelegt — braucht Messturn. Gegen HEAD `cc5aaae` am 25.08.2026 gesichtet: die Sprechhaltung der Impuls-Antwort. Der Eintrag misst sie selbst an einer einzelnen Antwort.
 **Entdeckt:** Chat 110, an der Abnahmemessung des `[EIGENER GEDANKE]`-Blocks.
 
 **Klasse:** Teilerfolg eines Fixes. Severity **niedrig** — kein Datenfehler, eine Qualitätslücke.
@@ -2402,6 +2449,7 @@ Die Klasse ist auch im Bestand sichtbar: Ein Scan über 400 KZG-Keys findet mehr
 
 #### IMPULS-BEZIEHUNGSRECHERCHE — Vertiefung kann die Beziehung selbst zum Gedächtnisinhalt machen ⚠️
 
+**Zustand:** unbelegt — braucht Messturn. Gegen HEAD `cc5aaae` am 25.08.2026 gesichtet: **Entscheidung ausstehend, kein Defekt** — ob die Beziehung selbst Gegenstand der Vertiefung sein darf, ist keine Messung, sondern eine Festlegung.
 **Entdeckt:** Chat 110, beim Lesen der Impuls-Inhalte über die Brücke.
 
 **Klasse:** Inhaltliche Rückkopplung, Datenschutz-relevant. Severity **mittel** — kein technischer Defekt, aber eine Wirkung, die niemand entschieden hat.
@@ -2444,24 +2492,9 @@ redis-cli --scan --pattern "hash_dirty*"   ->  12 Keys, alle Form {user}:nova
 
 ---
 
-#### TELEGRAM-SHADOW-TYP-TOT — der Bot behandelt einen Nachrichtentyp, den der Server nie erzeugt ⚠️
-
-**Entdeckt:** Chat 110, beim Rückbau der Shadow-Delivery.
-
-**Klasse:** Toter Zweig nach Architekturwechsel. Severity **niedrig**.
-
-**Symptom:** `telegram_bot/bot.py:137` verzweigt auf `elif typ == "shadow_delivery":`, dokumentiert im Modulkopf (`:6`, `:105`). Ein solcher Nachrichtentyp wird vom Server **nirgends** erzeugt — auch vor Chat 110 hieß der Broadcast `shadow_impuls`. Der Zweig war also nie erreichbar.
-
-**Beleg:** `grep -rn "shadow_delivery" --include='*.py'` außerhalb des Delivery-Moduls selbst → nur Bot und Importe.
-
-**Nebenwirkung des Umbaus, positiv:** Novas Impulse erreichen Telegram jetzt **zum ersten Mal** — sie laufen als regulärer `character_response`, den der Bot seit jeher behandelt.
-
-**Status:** **gegenstandslos seit dem 24.08.2026** — der Telegram-Kanal ist abgeschaltet. Der tote Zweig steht unveraendert in `telegram_bot/bot.py`; er wird nur nicht mehr ausgefuehrt. **Nicht behoben, sondern ohne Gegenstand** — wer den Kanal zurueckholt, holt ihn mit. Davor: Offen — Zweig entfernen oder Kommentar korrigieren.
-
----
-
 #### DESTILLATION-LEERE-UEBERSCHRIFT — Abschnittsüberschrift ohne Inhalt ⚠️
 
+**Zustand:** offen — gegen HEAD `cc5aaae` gehalten am 25.08.2026, unveraendert seit der Messung vom 24.08.2026 (siehe `Status` im Rumpf). Prio niedrig.
 **Entdeckt:** Chat 110, beim Lesen des Charakter-Destillators.
 
 **Symptom:** `agents/charakter/destillation.py:127-129` trägt die Abschnittsüberschrift „Prompts — Nova (eigene Perspektive)" ohne Inhalt darunter. Entweder fehlt der Block, oder die Überschrift ist ein Rest.
@@ -2520,6 +2553,7 @@ mit §9.3. Die Konstanten entsprechen §10.2 und Anhang A.3/A.4.
 
 #### GV-FARBTON-SUBJEKTWECHSEL — der Farbton behauptet etwas über den Nutzer und misst Nova ⚠️
 
+**Zustand:** offen — gegen HEAD `cc5aaae` gehalten am 25.08.2026, **unveraendert und am Code belegt**: `ei/farbton.py:198-202` liest `state.get("internal")`, also Novas Werte; `:72` formuliert daraus *„Der Nutzer haelt Abstand."* — genau der Satz aus dem Beleg. Das gilt fuer die ganze Tabelle: acht Saetze beginnen mit *„Der Nutzer"*.
 **Entdeckt:** Chat 114, GV-Vollaudit. **Prio mittel-hoch.**
 
 **Symptom:** `farbton_berechnen` liest durchgehend `internal` (Nova), formuliert aber
@@ -2543,6 +2577,7 @@ Nutzer. Der Node liest beides und hat beide Quellen zur Hand.
 
 #### GV4-QUELLEN-SILENT-SKIP — die zwei Wissenslücken-Suchen tragen das Muster, das den Entity-Hop vier Monate versteckt hat ⚠️
 
+**Zustand:** offen — gegen HEAD `cc5aaae` gehalten am 25.08.2026, **unveraendert**: `ei/wissensluecken.py:110` und `:178` fangen `Exception`, loggen `warning` und geben die leere Kandidatenliste zurueck. Eine **dritte** Stelle derselben Bauart kam hinzu, die der Eintrag nicht nennt: `:229` (Embedding).
 **Entdeckt:** Chat 114, GV-Vollaudit. **Prio mittel.**
 
 **Symptom:** `lzg_kandidaten_suchen` und `kzg_kandidaten_suchen` fangen `Exception`, loggen
@@ -2558,6 +2593,7 @@ plus `log_fehler`); diese beiden sind es nicht.
 
 #### GV-ABSICHT-OHNE-KORRIDOR — alle vier Absichten werden in jedem Cluster angeboten ⚠️
 
+**Zustand:** offen — gegen HEAD `cc5aaae` gehalten am 25.08.2026. `ABSICHT_KANON` in `ei/dreischicht.py:369` fuehrt weiterhin alle vier Werte (`teilen`, `lenken`, `halten`, `saeen`) als eine Menge ohne Zuordnung zum Cluster; ein Korridor je Cluster ist im Code nicht angelegt.
 **Entdeckt:** Chat 114, GV-Vollaudit. **Prio mittel.**
 
 **Symptom:** `dreischicht_prompt_bauen` listet die vier Absichten unverändert in jedem
@@ -2574,6 +2610,7 @@ geprüft, nicht gegen die Landschaft.
 
 #### GV-CHARAKTER-DEFAULT-UEBER-MESSBEREICH — der Ausfallwert schlägt jede echte Messung ⚠️
 
+**Zustand:** unbelegt — braucht Messturn. Gegen HEAD `cc5aaae` am 25.08.2026 gesichtet: der Ausfallwert schlaegt die echte Messung. Sichtbar nur, wenn eine Gewichtung fehlt — der Eintrag belegt es an einem Lauf vom 28.07.2026.
 **Entdeckt:** Chat 114, GV-Vollaudit. **Prio mittel.**
 
 **Symptom:** `dreischicht_prompt_bauen` nimmt bei fehlender Gewichtung
@@ -2601,6 +2638,7 @@ Gewichtung zeigt sieben Striche, während der Prompt desselben Turns sieben Mal
 
 #### GV4-SYSTEM-2-TOT — von sechs Systemen der Relevanzformel differenzieren drei ⚠️
 
+**Zustand:** offen — gegen HEAD `cc5aaae` gehalten am 25.08.2026, **unveraendert**: `session_aktualitaet` hat im ganzen Serverbaum **genau einen** Treffer, ihre eigene Definition in `ei/neugier.py:166`. Kein Aufrufer. System 3 und 6 sind dabei nicht nachgemessen — sie brauchen einen Lauf, keinen Grep.
 **Entdeckt:** Chat 114, GV-Vollaudit. **Prio mittel.**
 
 **Symptom:** Anhang A.2 nennt sechs Systeme. Gemessen am Code:
@@ -2618,6 +2656,7 @@ tut es nicht.
 
 #### GV-SKIP-BEGRUESSUNG-TOT — zwei von drei Skip-Gründen können nicht eintreten ⚠️
 
+**Zustand:** offen — gegen HEAD `cc5aaae` gehalten am 25.08.2026, **unveraendert**: `graph/nodes/gespraechsvektor.py:102` prueft weiterhin `("begruessung", "meta", "system")`, waehrend der Perzeptions-Prompt nur `smalltalk|knowledge|personal|task|creative|meta` zulaesst. Schreiber fuer die beiden anderen: keiner — nur zwei Leser und ein Zeuge.
 **Entdeckt:** Chat 114, GV-Vollaudit. **Prio niedrig.**
 
 **Symptom:** `_ist_skip` prüft `intent in ("begruessung", "meta", "system")`. Die Perzeption
