@@ -2,8 +2,8 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Rohe, noch unklassifizierte Funde aus laufender Arbeit
-**Stand:** 25. August 2026, 20:55 UTC
-**Offen:** **110 Funde — gezaehlt am 25.08.2026, 20:55 UTC** (118 Fundzeilen im Abschnitt *Offen*, davon **8** durchgestrichen; **einer neu aus dem Nachzug an den Moduldokumenten** — der Audit-Trail der Agenten hat kein Dokument)
+**Stand:** 25. August 2026, 21:05 UTC
+**Offen:** **112 Funde — gezaehlt am 25.08.2026, 21:05 UTC** (120 Fundzeilen im Abschnitt *Offen*, davon **8** durchgestrichen; **zwei neu aus dem Abgleich des Verlaufs gegen die Speicher** — der unbegruendete Gegenstandsbereich aller drei Waende und die halb festgehaltene `T201`-Entscheidung)
 **Verlauf:** [Verlauf des Standes](#verlauf-des-standes) — 73 Eintraege, juengster zuerst
 **Pfad:** novaberg/docs/novaberg-fundliste.md
 
@@ -232,6 +232,10 @@ Analog zum Kraft-1-Stichtag: ab wann eine Partition brauchbar ist. Kein Backfill
 ---
 
 ## Offen
+
+- **2026-08-25** — **Alle drei Waende dieses Projekts messen nur `server/`, und der Gegenstandsbereich ist nirgends begruendet.** Gemessen am 25.08.2026: ueber das ganze Repositorium **1324 Linter-Treffer**, die Nulllinie nennt **1143** — **181 liegen ausserhalb**, in 30 Python-Dateien: `client/` 116, `matrix_bot/` 56, `telegram_bot/` 9. **`matrix_bot/` laeuft als eigener Dienst im Betrieb** und ist seit dem 24.08.2026 der einzige Fernkanal; seine 56 Treffer zaehlt niemand. Dasselbe gilt fuer `ruff-hart.toml` und die neue Namens-Wand (`F-NAME-1`) — beide laufen gegen `server/`, weil es immer so war. **Eine Wand mit unbegruendetem Gegenstandsbereich sieht aus wie eine Wand und ist eine Tuer**; die Frage ist nicht, ob die Auswahl richtig ist, sondern dass sie nie getroffen wurde.
+
+- **2026-08-25** — **Die Begruendung der `T201`-Ausnahme steht nur zur Haelfte in der Konfiguration.** `per-file-ignores` nimmt `print` fuer `tests/korpus_laeufer.py` aus und nennt den Grund. **Nicht dokumentiert ist, warum die uebrigen 23 Treffer stehenbleiben:** gemessen am 25.08.2026 liegen von 36 `T201`-Treffern **13 in `tools/`, 13 in `scripts/`, 10 in `tests/`** — und in `scripts/` sind es Messwerkzeuge, bei denen `print` dieselbe Schnittstelle ist wie im Korpus-Laeufer. Die Entscheidung, sie **nicht** mit auszunehmen, ist gefallen und nirgends festgehalten; wer sie das naechste Mal trifft, faengt bei null an.
 
 - **2026-08-25** — **Der Audit-Trail der Agenten hat kein Dokument.** `schritte` ist in `agents/base.py` ausdruecklich als *Audit-Trail* deklariert, jeder Agent schreibt hinein, und die Dispatcher lesen daraus den Grund eines Fehlschlags. **Gesucht ueber alle Repo-Dokumente: keins beschreibt ihn** — die einzigen Fundstellen sind ein Defekteintrag und ein Chronikeintrag, beide von heute. Aufgefallen beim Nachzug zu `VORHER-ZUSTAND-OHNE-SPUR`: Es gab keine Stelle, an der die neue Spur haette eingetragen werden muessen, also wurde sie in die beiden Agenten-Moduldokumente geschrieben. **Ein Kanal, den jeder Agent fuellt und kein Dokument beschreibt, hat keine Form, gegen die man ihn pruefen koennte** — welche Felder ein Schritt-Eintrag traegt, steht nirgends.
 
