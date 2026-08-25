@@ -27,7 +27,7 @@ Damit räumen wir nicht nur die fünf strukturellen Defizite auf, die Audit 4 in
 
 Audit 4 im Chat 91 hat fünf konkrete Stellen identifiziert, an denen die heutige Architektur bricht. Sie stehen hier nicht als Kritik, sondern als Diagnose — jede einzelne ist ein logisches Folgesymptom der direkten Konsument-Modell-Verbindung, und alle fünf lösen sich auf, wenn die Drei-Schichten-Architektur greift.
 
-**1. Zwei parallele Embedding-Pfade.** `embedding_manager` läuft als Singleton mit Lazy-Init und Caching. Daneben existiert `embedding_create()` als freie Funktion mit eigenen Aufruf-Konventionen. Beide rufen am Ende denselben `ollama_gpu_client` an, aber sie wissen nichts voneinander. Konkurrenz-Schutz gibt es weder beim einen noch beim anderen. Wenn der Enricher und der Salienz-Knoten gleichzeitig Embeddings anfordern, treffen sie sich am gleichen HTTP-Client ohne Koordination.
+**1. Zwei parallele Embedding-Pfade.** `embedding_manager` läuft als Singleton mit Lazy-Init und Caching. Daneben existiert `embedding_create()` als freie Funktion mit eigenen Aufruf-Konventionen. Beide rufen am Ende denselben `ollama_gpu_client` an, aber sie wissen nichts voneinander. Konkurrenz-Schutz gibt es weder beim einen noch beim anderen. → **Seit dem 25.08.2026 gibt es ihn:** `ollama_gpu_embed` ist ein eigenes Objekt mit eigenem Riegel und eigenem Verbindungspool (`F-RIEGEL-1`); der rohe Client ist nicht mehr erreichbar. Wenn der Enricher und der Salienz-Knoten gleichzeitig Embeddings anfordern, treffen sie sich am gleichen HTTP-Client ohne Koordination.
 
 **2. Zwei parallele LLM-Aufruf-Schichten.** `pixie_llm_call` ist über die Zeit als Spezial-Wrapper für Pixie-Calls gewachsen und macht heute Dinge, die der Provider nicht macht (z.B. JSON-Repair). Gleichzeitig läuft `OllamaProvider.chat()` als Hauptpfad für Chat-Calls. Beide rufen Ollama an, aber mit unterschiedlichen Parameter-Sätzen und unterschiedlichen Workarounds. Pixie und Chat haben damit unterschiedliche Wahrheiten darüber, was ein Modell-Aufruf bedeutet.
 
@@ -150,7 +150,9 @@ class ModelWorker:
 
 Die Klasse ist absichtlich klein. Sie hat eine Verantwortung: zwischen Konsument-Absicht und Modell-Aufruf vermitteln, sequentiell, ohne dass Konsumenten sich gegenseitig in die Quere kommen.
 
-Der Konkurrenz-Schutz auf `ollama_gpu_client` ergibt sich aus dem Worker-Pattern selbst, nicht aus expliziten Locks: solange jeweils nur ein Worker pro Modell läuft und der Worker FIFO arbeitet, kann es keine parallelen Calls am selben HTTP-Client geben. Locks brauchen wir nur dort, wo zwei Worker denselben Endpoint anfassen — und das ist genau der Fall beim Embedding-Modell, das von Nova und Pixie geteilt wird (siehe Schicht 3).
+~~Der Konkurrenz-Schutz auf `ollama_gpu_client` ergibt sich aus dem Worker-Pattern selbst, nicht aus expliziten Locks: solange jeweils nur ein Worker pro Modell läuft und der Worker FIFO arbeitet, kann es keine parallelen Calls am selben HTTP-Client geben.~~ Locks brauchen wir nur dort, wo zwei Worker denselben Endpoint anfassen — und das ist genau der Fall beim Embedding-Modell, das von Nova und Pixie geteilt wird (siehe Schicht 3).
+
+> **Dieser Absatz hat den Defekt vorhergesagt und ist der Grund, warum er zwei Monate lief.** Die Bedingung *„solange jeweils nur ein Worker pro Modell läuft"* traf nicht zu: **ChatWorker und EmbedWorker hingen beide am `ollama_gpu_client`** — 2897 und 7407 Aufrufe in 42 Stunden, gemessen am 25.08.2026. Der Satz daneben nennt die Ausnahme genau richtig und **niemand hat sie gebaut**. `[gemessen]` — der ChatWorker sendete auf einer Verbindung, die der EmbedWorker 77 ms zuvor geöffnet hatte und noch benutzte. Kennung: `GPU-LOCK-SCHUETZT-EINEN-VON-FUENF`, behoben am 25.08.2026 durch `F-RIEGEL-1`: drei Ressourcen, drei Riegel, **drei Verbindungspools**.
 
 ### 4.3 Schicht 3 — Modell-Service
 
@@ -220,7 +222,7 @@ Die Architektur entsteht in fünf Sprints. Reihenfolge ist nicht beliebig: Block
 
 **Aufräum-Arbeiten:** `embedding_manager` Singleton wird zum Worker. Sein Lazy-Init bleibt erhalten, sein Cache-Verhalten bleibt erhalten, aber er hängt jetzt an einer Queue. Die freie Funktion `embedding_create()` verschwindet. Alle Aufrufer (Salienz, Enricher, KZG-Persist, mehrere Agenten) werden auf `model_service.embed.submit(...)` umgestellt. Der CPU-Routing-Sonderpfad in `agents/recherche/agent.py:264` wird aufgelöst — es gibt keinen CPU-Pfad für Embeddings mehr, Nomic läuft auf GPU, einzige Anlaufstelle ist der Worker. Der Kapselungs-Bruch im PromotionAgent (Zugriff auf `embedding_manager._client` und `._model`) wird zurückgebaut. Wer die Modell-Internalia braucht, bekommt sie als sauberen API-Punkt am Worker.
 
-**Konkurrenz-Schutz:** Der Worker arbeitet FIFO. Damit ist gleichzeitiger Zugriff auf `ollama_gpu_client` ausgeschlossen — keine Locks, keine Race Conditions.
+**Konkurrenz-Schutz:** Der Worker arbeitet FIFO. ~~Damit ist gleichzeitiger Zugriff auf `ollama_gpu_client` ausgeschlossen — keine Locks, keine Race Conditions.~~ → **Am 25.08.2026 widerlegt.** Die FIFO-Ordnung gilt **je Worker**, nicht je Ressource: Zwei Worker am selben Client sind zwei Ordnungen, die voneinander nichts wissen. Seither hält jede Ressource ihren eigenen Riegel und ihren eigenen Pool (`F-RIEGEL-1`).
 
 ### 6.2 Block 2 — `pixie_llm_call`-Konsolidierung
 

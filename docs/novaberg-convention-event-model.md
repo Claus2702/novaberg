@@ -111,7 +111,9 @@ Jedes Event ist ein JSON-Dict:
 
 **`turn_id`: erzeugen oder erben.** Wer einen neuen Turn ausloest, erzeugt eine neue `turn_id` (Chat-API, Delivery). Nur der Retry erbt sie. Die Unterscheidung ist nicht aus `source` ableitbar — Delivery und Retry tragen beide `character` —, deshalb steht die Herkunft ausdruecklich im Payload.
 
-**Die Kennungen reisen bis in die Antwort.** Der Event-Consumer legt `turn_id` **und** `nachrichten_ids` in das `character_response`-Payload. Die Bestaetigung des Endpunkts gibt dem Client die `nachrichten_id` seiner eigenen Aeusserung — nicht die `turn_id`, denn der Turn entsteht erst im Prompt-Consumer und kann mehrere Aeusserungen umfassen. Der Client haelt eine **Menge** offener Kennungen und schliesst alle, die eine Antwort nennt.
+**Die Kennungen reisen bis in die Antwort.** Der Event-Consumer legt `turn_id` **und** `nachrichten_ids` in das `character_response`-Payload.
+
+> **Seit dem 25.08.2026 verlaesst dieses Payload den Server bei der Freigabe durch `evaluate`, nicht am Ende des Graphenlaufs** (`AUSLIEFERUNG-HINTER-DEM-NACHLAUF`). Die vier Zustandsfelder aus `internal` beschreiben Novas Zustand **nach** ihrer eigenen Antwort und sind zu diesem Zeitpunkt leer — gemessen liest der Client sieben der acht Zustandsfelder ohnehin nicht. Dazu kommt der Typ `turn_gescheitert`: Ein Turn ohne Antwort meldet sich, statt still zu bleiben. Die Bestaetigung des Endpunkts gibt dem Client die `nachrichten_id` seiner eigenen Aeusserung — nicht die `turn_id`, denn der Turn entsteht erst im Prompt-Consumer und kann mehrere Aeusserungen umfassen. Der Client haelt eine **Menge** offener Kennungen und schliesst alle, die eine Antwort nennt.
 
 **Gelesen wird die Kennung aus dem Payload, nicht aus dem Ergebnis-Zustand.** Beide tragen sie, und beide liegen im selben Griffbereich — aber was der Client braucht, ist die Kennung **seiner Frage**, nicht die des Laufs, der geantwortet hat. Ein leeres Feld heisst „nicht zuordenbar" und wird als Fehler gemeldet; ein Platzhalter waere schlimmer als die Luecke, weil er gueltig aussaehe.
 

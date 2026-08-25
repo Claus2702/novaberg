@@ -134,9 +134,16 @@ db_zugriff → EI-Calc(character) → Enricher → EmGrav → Reducer → Router
             +───────────────────────────────────────────────────────────────────────+
             |
             +── ok / fallback → perzeption_assistant → ei_calc_persist → Salienz → Dispatcher → END
+                                 ↑
+                                 hier geht die Antwort raus (seit 25.08.2026)
             |
             +── correct → Corrector → Tribunal (max 2 Iterationen)
 ```
+
+> **Die Auslieferung haengt an der Freigabe, nicht am Ende des Laufs.** Bis zum 25.08.2026 wurde die Antwort erst bei `END` gesendet — also hinter Perzeption, EI-Persistenz, Salienz und Dispatcher. Am 25.08. kostete das eine fertige, vom Tribunal angenommene Antwort: Ein Fehler in der Salienz riss den Graphen, und der Mensch sah nichts (`AUSLIEFERUNG-HINTER-DEM-NACHLAUF`).
+>
+> **Das Signal ist `perzeption_assistant`, nicht die Weiche selbst.** Die Entscheidung faellt in einer Kante, und Kanten erscheinen nicht im Stream; ueber `ok` **und** `fallback` fuehrt der Weg zu diesem Knoten — also genau auf den beiden Wegen, auf denen ausgegeben werden soll. **Der Nachlauf laeuft unveraendert weiter:** Er schreibt Novas Zustand, die Salienz und das Gedaechtnis. Nur wartet niemand mehr darauf.
+
 
 **Datei:** `graph/character_graph.py`
 **Entry-Point:** `db_zugriff` (seit Chat 89, PFAD2-PERZEPTION-FIX Phase 2). Lädt Identitäten und Nova-State, befüllt `state["external"]` und `state["internal"]`.
