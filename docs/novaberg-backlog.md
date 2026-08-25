@@ -3721,7 +3721,7 @@ Drei kleine Punkte aus dem Reducer-Umbau, die nicht im Scope der STRUCT-Phasen l
 
 ### PIX-CLEAN — Toter ShadowAgent-Runner und aufruflose Tasks (Chat 77)
 
-**Status:** Beobachtet
+**Status:** ✅ abgeschlossen — gegen HEAD `25b7a95` geprueft am 25.08.2026. `services/shadow_agent/` traegt nur noch `__init__.py` und `utils.py`; Runner, der ganze `tasks/`-Baum, `base_task.py` und `nova_gedaechtnis.py` sind fort. Die Modulzeile sagt es woertlich: *beide hatten 0 Aufrufer*. **Der Abschnitt stand auf „Beobachtet“, waehrend die Tabellenzeile derselben Kennung ihn seit Langem als erledigt fuehrte** — der Widerspruch ist beim Schnitt aufgefallen, nicht beim Lesen.
 **Bezug:** M1-Audit Memory-Promotion-Korrektur (Chat 77)
 
 Der M1-Audit hat bestätigt, dass `services/shadow_agent/runner.py`
@@ -3819,7 +3819,9 @@ Der Thinker `memory_search`-Tool-Output verwendet seit STRUCT-5c (Chat 75) den g
 
 ---
 
-## Sprint: NOTIZEN-VOR-TURN-BEZUG — Inhalts-Auflösung im Classify-Node (Chat 80)
+## SPRINT-NOTIZEN-BEZUGSAUFLOESUNG — Inhalts-Aufloesung im Classify-Knoten
+
+> **Umbenannt am 25.08.2026.** Dieser Sprint trug bis dahin die Kennung `NOTIZEN-VOR-TURN-BEZUG` — dieselbe wie der Defekt, den er nur zur kleinsten Wirkstufe bearbeitet hat. **Ein Sprint und der Defekt, den er halb schliesst, sind nicht derselbe Gegenstand**, und der Defekt steht weiterhin offen unter seinem Namen.
 
 **Status:** ✅ Abgeschlossen (Chat 80) — kleinste Wirkstufe der Bezugsauflösung
 
@@ -5092,7 +5094,7 @@ Kurzübersicht aktiver Bugs:
 | ABER-SAG-MAL | ⬜ | TOPOS-LOCK-Verstärkung im flirty Register (Chat 74) |
 | REDUCER-MULTILINE | ⚠ | Reducer-String-Parser fragmentiert mehrzeilige Plugin-Blöcke (Chat 74, latent) |
 | PATH1-LATENZ | ⬜ | Pfad-1 kann bei GPU-Druck auf 55+ Sekunden gehen (Einmal-Event beobachtet) |
-| ROUTE-CHAR-NOTIZ | ✅ (beobachten) | CharacterGraph-Router dispatched Konversation an NotizenAgent (Chat 62) |
+| ROUTE-CHAR-NOTIZ | ⬜ | CharacterGraph-Router dispatched Konversation an NotizenAgent — **dieselbe Kennung fuehrt weiter oben einen eigenen Abschnitt, und der steht offen.** Die Marke hier stand auf *erledigt (beobachten)*; am 25.08.2026 auf den Zustand des Abschnitts gebracht, weil zwei Zustaende unter einem Schluessel keine Aussage sind |
 | ENRICHER-DUP | 👁 | Fakten werden mehrfach in den Enricher-Kontext injiziert (Chat 62, Beobachtung; Chat 74: durch Reducer teilweise adressiert) |
 | RESP-DEAD | ⬜ | Tote Standardphrase statt Nova-Ton bei fehlgeschlagenen Agent-Dispatches |
 | PIXIE-GHOST | ⬜ | Pixie-Delivery fließt nicht durch EI/Session/Router — Nova hört sich selbst nicht |

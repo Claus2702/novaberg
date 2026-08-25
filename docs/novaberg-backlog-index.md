@@ -26,7 +26,6 @@
 - `AUDIT-PIXIE-TURN-ID`
 - `EI-CALC-ROLLE-DEFAULT-ASYMMETRIE`
 - `HALTUNG-SPANNENENDEN-OFFEN`
-- `NOTIZEN-VOR-TURN-BEZUG`
 - `PIX-CLEAN`
 - `RAD-STABILITAET-UNGEMESSEN`
 - `ROUTE-CHAR-NOTIZ`
@@ -339,156 +338,156 @@
 | 3697 | offen | Zustand-Zeile | `REDUCER-CONFIG-DEAD` | REDUCER-NACHZUEGLER — was der Reducer-Umbau offengelassen ha |
 | 3705 | offen | Zustand-Zeile | `LOGGER-NAMESPACE` | REDUCER-NACHZUEGLER — was der Reducer-Umbau offengelassen ha |
 | 3713 | offen | Zustand-Zeile | `SESSION-SUMMARY-INACTIVE` | REDUCER-NACHZUEGLER — was der Reducer-Umbau offengelassen ha |
-| 3722 | offen | Status-Zeile | `PIX-CLEAN` | REDUCER-NACHZUEGLER — was der Reducer-Umbau offengelassen ha |
+| 3722 | abgeschlossen | Status-Zeile | `PIX-CLEAN` | REDUCER-NACHZUEGLER — was der Reducer-Umbau offengelassen ha |
 | 3749 | offen | Status-Zeile | `INIT-SQL-VERALTET` | REDUCER-NACHZUEGLER — was der Reducer-Umbau offengelassen ha |
 | 3763 | offen | Status-Zeile | `LZG-HAEUFIGKEIT-AMBIVALENT` | REDUCER-NACHZUEGLER — was der Reducer-Umbau offengelassen ha |
 | 3783 | offen | Status-Zeile | `THINKER-TOOL-FORMAT` | Designdiskussion: THINKER-TOOL-FORMAT (Chat 75) |
 | 3798 | offen | Status-Zeile | `THINK-TRANSITION-INFO` | Sprint: THINK-TRANSITION-INFO — Thinker bekommt Verarbeitung |
-| 3822 | abgeschlossen | Status-Zeile | `NOTIZEN-VOR-TURN-BEZUG` | Sprint: NOTIZEN-VOR-TURN-BEZUG — Inhalts-Auflösung im Classi |
-| 3852 | abgeschlossen | Status-Zeile | `SPRINT-M25A-TIMELINE-CLEANUP` | SPRINT-M25A-TIMELINE-CLEANUP — der TimelineAgent verliert se |
-| 3892 | offen | Status-Zeile | `MEMORY-SALIENZ-VERERBUNG` | Konzept: MEMORY-SALIENZ-VERERBUNG — Salienz auf semantischen |
-| 3922 | offen | Status-Zeile | `ENRICHER-AKTE` | Konzept: ENRICHER-AKTE — Strukturierte Memory-Context-Akte a |
-| 3955 | offen | Status-Zeile | `KONZEPT-COGNITIVE-PIPELINE` | KONZEPT-COGNITIVE-PIPELINE — Frames, Verstehens-Schleife, Fa |
-| 4032 | offen | Status-Zeile | `KONZEPT-TURNLOG-CHRONIK` | KONZEPT-TURNLOG-CHRONIK — vollstaendiges Turn-Log als episod |
-| 4077 | abgeschlossen | Status-Zeile | `MIGRATION-PIX-CLEANUP` | Sprint: MIGRATION-PIX-CLEANUP — Pixie-Migration nach Multi-C |
-| 4102 | abgeschlossen | Status-Zeile | `KZG-CLEANUP` | Sprint: KZG-CLEANUP — Bereinigung fehlerhafter KZG-Einträge  |
-| 4129 | offen | Status-Zeile | `CHAR-HASH-TEST-LEICHEN` | Cleanup: CHAR-HASH-TEST-LEICHEN — Test-User in `charakter_ha |
-| 4145 | offen | Status-Zeile | `LZG-DOKU-DRIFT` | Cleanup: LZG-DOKU-DRIFT — `novaberg-mem-lzg.md` reflektiert  |
-| 4165 | offen | Zustand-Zeile | `TIMELINE-PAIR-MISSING` | Bug: TIMELINE-PAIR-MISSING — Timeline-Tabelle ohne `characte |
-| 4193 | offen | Zustand-Zeile | `NOTIZEN-PAIR-MISSING` | Bug: NOTIZEN-PAIR-MISSING — Notizen-Tabelle ohne `character_ |
-| 4209 | offen | Zustand-Zeile | `FAKTEN-PAIR-IGNORED` | Bug: FAKTEN-PAIR-IGNORED — Fakten-Repository ignoriert `char |
-| 4225 | abgeschlossen | Zustand-Zeile | `ZIELE-PAIR-MISSING` | Bug: ZIELE-PAIR-MISSING — Ziele-Tabelle ohne `character_id`  |
-| 4241 | offen | Zustand-Zeile | `NOTIZEN-KONTEXT-REKONSTRUKTION` | Bug: NOTIZEN-KONTEXT-REKONSTRUKTION — Mehrschritt-Rekonstruk |
-| 4266 | offen | Zustand-Zeile | `NOTIZEN-CONTAINER-WECHSEL` | Bug: NOTIZEN-CONTAINER-WECHSEL — Notiz↔Liste-Wechsel verweig |
-| 4288 | offen | Zustand-Zeile | `NOTIZEN-SKILL-MANIFEST` | Bug: NOTIZEN-SKILL-MANIFEST — Nova kennt eigene Fähigkeiten  |
-| 4306 | offen | Zustand-Zeile | `NOTIZEN-UPDATE-TARGET-LEER` | Bug: NOTIZEN-UPDATE-TARGET-LEER — Bezugs-Pronomen für UPDATE |
-| 4328 | abgeschlossen | Status-Zeile | `SPRINT-PIXIE-EVA-HAERTUNG` | SPRINT-PIXIE-EVA-HAERTUNG — der Promotionsweg bekommt seine  |
-| 4357 | offen | Status-Zeile | `EPIC-EVA-DISZIPLIN` | EPIC-EVA-DISZIPLIN — Zusicherungen im ganzen Bestand |
-| 4403 | offen | Status-Zeile | `TRIB-PERSON-DRIFT` | Bug: TRIB-PERSON-DRIFT — Tribunal-Agenten kennen Novas Ident |
-| 4447 | offen | Status-Zeile | `REFAC-HG-CHAR-HASH-LOAD` | Refactor: REFAC-HG-CHAR-HASH-LOAD — Char-Hash-Tiebreaker im  |
-| 4486 | offen | Status-Zeile | `SPRACH-STIL-DEFENSIV-STUMM` | Bug: SPRACH-STIL-DEFENSIV-STUMM — `_sprach_stil_erkennen` br |
-| 4510 | offen | Status-Zeile | `EI-CALC-ROLLE-RENAME` | Refactor: EI-CALC-ROLLE-RENAME — `ei_calc_rolle` semantisch  |
-| 4533 | offen | Status-Zeile | `AUDIT-PIXIE-TURN-ID` | Bug: AUDIT-PIXIE-TURN-ID — Pixie-Pfad-turn_id-Auflösung unge |
-| 4561 | offen | Status-Zeile | `EI-CALC-ROLLE-DEFAULT-ASYMMETRIE` | Bug: EI-CALC-ROLLE-DEFAULT-ASYMMETRIE — Inkonsistente Defaul |
-| 4600 | offen | Status-Zeile | `DOPPEL-SESSION-LOAD` | Performance: DOPPEL-SESSION-LOAD — Session-Turns werden im H |
-| 4633 | offen | Status-Zeile | `REDUCER-LOGGER-NAME-KONVENTION` | Refactor: REDUCER-LOGGER-NAME-KONVENTION — Logger-Namen weic |
-| 4660 | offen | Status-Zeile | `REDUCER-CONFIG-DEAD-KONSTANTEN` | Refactor: REDUCER-CONFIG-DEAD-KONSTANTEN — Tote Konstanten i |
-| 4688 | offen | Status-Zeile | `SESSION-SUMMARY-PFAD-INAKTIV` | Audit: SESSION-SUMMARY-PFAD-INAKTIV — Memory-Quelle "summary |
-| 4722 | offen | Status-Zeile | `KZG-VERDICHTER-KONTEXT-VERLUST` | Bug: KZG-VERDICHTER-KONTEXT-VERLUST — Verdichter produziert  |
-| 4750 | offen | Status-Zeile | `SALIENZ-VERDICHTUNG-MEHRFACH` | Bug: SALIENZ-VERDICHTUNG-MEHRFACH — Salienz- und Verdichtung |
-| 4773 | offen | Status-Zeile | `WORKER-TIMEOUT-MUSTER-DIVERGENZ` | Refactor: WORKER-TIMEOUT-MUSTER-DIVERGENZ — `num_ctx` (Per-C |
-| 4792 | abgeschlossen | Status-Zeile | `CONFIG-PIXIE-AKTIV-HARDCODED` | CONFIG-PIXIE-AKTIV-HARDCODED — `PIXIE_AKTIV` war nicht env-k |
-| 4810 | offen | Status-Zeile | `DOKU-DRIFT-WELLE-PROMOTION` | Doku-Sprint: DOKU-DRIFT-WELLE-PROMOTION — Sieben Drift-Punkt |
-| 4830 | offen | Status-Zeile | `CHRONIK-BACKFILL` | Doku-Sprint: CHRONIK-BACKFILL — Lücken in Roadmap- und Backl |
-| 4853 | offen | Status-Zeile | `AUDIT-1-BEIFANG-PROMOTION` | Sammelposten: AUDIT-1-BEIFANG-PROMOTION — Tote Pfade und Beo |
-| 4863 | offen | Tabellenspalte | `EMOTIONS-VEKTOR-LEER` | Sammelposten: AUDIT-1-BEIFANG-PROMOTION — Tote Pfade und Beo |
-| 4864 | offen | Tabellenspalte | `KZG-ERSTELLT-AM-PARSE-HÄRTE` | Sammelposten: AUDIT-1-BEIFANG-PROMOTION — Tote Pfade und Beo |
-| 4865 | abgeschlossen | Tabellenspalte | `GEDACHTNISTYP-DEFAULT-BEFÜLLT` | Sammelposten: AUDIT-1-BEIFANG-PROMOTION — Tote Pfade und Beo |
-| 4866 | offen | Tabellenspalte | `TRIGGER-2-RECACHE-KONZEPT-LÜCKE` | Sammelposten: AUDIT-1-BEIFANG-PROMOTION — Tote Pfade und Beo |
-| 4867 | offen | Tabellenspalte | `FAKTEN-TABELLE-ENTITY-MERGE` | Sammelposten: AUDIT-1-BEIFANG-PROMOTION — Tote Pfade und Beo |
-| 4868 | offen | Tabellenspalte | `TIMELINE-FK-DOKU-DRIFT` | Sammelposten: AUDIT-1-BEIFANG-PROMOTION — Tote Pfade und Beo |
-| 4869 | offen | Tabellenspalte | `REFAC-MAGNETE-AUDIT` | Sammelposten: AUDIT-1-BEIFANG-PROMOTION — Tote Pfade und Beo |
-| 4875 | offen | Status-Zeile | `AUDIT-DOKU-DRIFT-MS` | Bug: AUDIT-DOKU-DRIFT-MS — Drift-Befunde aus Microservice-Vo |
-| 4903 | offen | Zustand-Zeile | `TOK-DRIFT-SALIENCE` | Bug: TOK-DRIFT-SALIENCE — Token-Akkumulator zählt fehlgeschl |
-| 4937 | abgeschlossen | Zustand-Zeile | `QUEUE-SCHEMA-STALE` | Cleanup: QUEUE-SCHEMA-STALE — `queue:nova` mit toten Aufträg |
-| 4947 | offen | Zustand-Zeile | `SCHED-STALE-SCHEDULE` | Refactor: SCHED-STALE-SCHEDULE — Startup räumt `pixie:schedu |
-| 4957 | offen | Zustand-Zeile | `SHADOW-PAYLOAD-FIELD-MISMATCH` | Bug: SHADOW-PAYLOAD-FIELD-MISMATCH — Dispatch liest Felder,  |
-| 4973 | offen | Zustand-Zeile | `WIEDERVORLAGE-MULTI-USER` | Refactor: WIEDERVORLAGE-MULTI-USER — Periodische Aufgaben pr |
-| 4983 | offen | Zustand-Zeile | `SYNAPSEN-LIVE-VERIFY` | Sprint: SYNAPSEN-LIVE-VERIFY — Entitäts- und Timeline-Kanten |
-| 4995 | offen | Zustand-Zeile | `SYNAPSEN-DUAL-LZG` | Sprint: SYNAPSEN-DUAL-LZG — Lesepfad auf `lzg_knoten`/`lzg_k |
-| 5007 | offen | Zustand-Zeile | `KZG-GEWICHT-ABSOLUT-CEILING` | Befund: KZG-GEWICHT-ABSOLUT-CEILING — sin^0.5-Dämpfung klemm |
-| 5066 | abgeschlossen | Tabellenspalte | `P5-LIVE-ABNAHME` | Lesepfad-Folgepunkte (Chat 99) |
-| 5067 | offen | Tabellenspalte | `KANTEN-RICHTUNG-UNDOKUMENTIERT` | Lesepfad-Folgepunkte (Chat 99) |
-| 5068 | offen | Tabellenspalte | `SPREADING-RELEVANZ-BEOBACHTEN` | Lesepfad-Folgepunkte (Chat 99) |
-| 5069 | offen | Tabellenspalte | `LZG-RESONANZ-DATETIME` | Lesepfad-Folgepunkte (Chat 99) |
-| 5070 | abgeschlossen | Tabellenspalte | `LZG-RESONANZ-STATE-DEKL` | Lesepfad-Folgepunkte (Chat 99) |
-| 5071 | offen | Tabellenspalte | `LZG-RESONANZ-ENTITAET-NAMEN` | Lesepfad-Folgepunkte (Chat 99) |
-| 5072 | offen | Tabellenspalte | `LIB-VECTORS-MIGRATION` | Lesepfad-Folgepunkte (Chat 99) |
-| 5073 | offen | Tabellenspalte | `B3-API-KEY-SEMANTIK` | Lesepfad-Folgepunkte (Chat 99) |
-| 5086 | offen | Tabellenspalte | `ROUTE-MISS1` | 8. Offene Bugs |
-| 5088 | offen | Tabellenspalte | `CRUD-DESTILL-SUBTRAKT` | 8. Offene Bugs |
-| 5089 | offen | Tabellenspalte | `CRUD-REACTIVATE-STAMP` | 8. Offene Bugs |
-| 5090 | offen | Tabellenspalte | `EMOTE-LOCK` | 8. Offene Bugs |
-| 5091 | offen | Tabellenspalte | `TOPOS-LOCK` | 8. Offene Bugs |
-| 5092 | offen | Tabellenspalte | `ABER-SAG-MAL` | 8. Offene Bugs |
-| 5093 | offen | Tabellenspalte | `REDUCER-MULTILINE` | 8. Offene Bugs |
-| 5094 | offen | Tabellenspalte | `PATH1-LATENZ` | 8. Offene Bugs |
-| 5095 | abgeschlossen | Tabellenspalte | `ROUTE-CHAR-NOTIZ` | 8. Offene Bugs |
-| 5096 | offen | Tabellenspalte | `ENRICHER-DUP` | 8. Offene Bugs |
-| 5097 | offen | Tabellenspalte | `RESP-DEAD` | 8. Offene Bugs |
-| 5098 | offen | Tabellenspalte | `PIXIE-GHOST` | 8. Offene Bugs |
-| 5099 | offen | Tabellenspalte | `PIXIE-AGENT-MISSING` | 8. Offene Bugs |
-| 5100 | offen | Tabellenspalte | `RECH-SPIRAL` | 8. Offene Bugs |
-| 5101 | offen | Tabellenspalte | `RECH-CHARAKTER` | 8. Offene Bugs |
-| 5102 | offen | Tabellenspalte | `DELIVERY-DEDUP` | 8. Offene Bugs |
-| 5103 | offen | Tabellenspalte | `SPRACH-STIL-DEFENSIV-STUMM` | 8. Offene Bugs |
-| 5104 | offen | Tabellenspalte | `AUDIT-PIXIE-TURN-ID` | 8. Offene Bugs |
-| 5105 | offen | Tabellenspalte | `EI-CALC-ROLLE-DEFAULT-ASYMMETRIE` | 8. Offene Bugs |
-| 5106 | offen | Tabellenspalte | `TOK-DRIFT-SALIENCE` | 8. Offene Bugs |
-| 5107 | abgeschlossen | Tabellenspalte | `TEST-RUNNER-FEHLT-CONTAINER` | 8. Offene Bugs |
-| 5147 | offen | Zustand-Zeile | `BEZEICHNER-WAR-AKTIV` | Refactor: BEZEICHNER-WAR-AKTIV — was_active statt war_aktiv  |
-| 5158 | offen | Zustand-Zeile | `CONFIG-DECAY-RATE-KOMMENTAR-DRIFT` | Fix: CONFIG-DECAY-RATE-KOMMENTAR-DRIFT — falscher Kommentar  |
-| 5171 | offen | Zustand-Zeile | `PATTERN-DOMAIN-LANGUAGE-RECONCILE` | Frage: PATTERN-DOMAIN-LANGUAGE-RECONCILE — deutsche Domaenen |
-| 5183 | abgeschlossen | Marke | `SYNAPSEN-DECAY-SCHEDULE-LIVE` | Frage: SYNAPSEN-DECAY-SCHEDULE-LIVE — Heartbeat legt Schedul |
-| 5197 | abgeschlossen | Marke | `PIXIE-DECAY-KEIN-AGENT` | Bug: PIXIE-DECAY-KEIN-AGENT — Router kennt periodische Aufga |
-| 5203 | offen | Zustand-Zeile | `HALBREAKTIVIERUNG-LIVE` | Frage: HALBREAKTIVIERUNG-LIVE — erster inaktiver Match feuer |
-| 5216 | offen | Zustand-Zeile | `SYNAPSEN-REAKTIV-SCHWELLE` | Frage: SYNAPSEN-REAKTIV-SCHWELLE — eigene Match-Schwelle fue |
-| 5226 | offen | Zustand-Zeile | `CHARHASH-GEWICHT-ABSOLUT-LIVE` | Beobachtung: CHARHASH-GEWICHT-ABSOLUT-LIVE — erste volle Liv |
-| 5232 | offen | Zustand-Zeile | `CHARHASH-PROMPT-DUPLIKAT` | Bug: CHARHASH-PROMPT-DUPLIKAT — Kern-Persönlichkeit 5× wortg |
-| 5240 | offen | Zustand-Zeile | `DESTILLAT-PERSPEKTIVE-VS-SUBJEKT` | Bug: DESTILLAT-PERSPEKTIVE-VS-SUBJEKT — Charakter-Destillati |
-| 5263 | offen | Zustand-Zeile | `HAEUFIGKEIT-AUF-KNOTEN` | Notiz: HAEUFIGKEIT-AUF-KNOTEN — haeufigkeit auf lzg_knoten m |
-| 5269 | offen | Zustand-Zeile | `CHARHASH-DOKU-DRIFT` | Doku: CHARHASH-DOKU-DRIFT — Hash-Doku beschreibt LZG-Quelle  |
-| 5275 | offen | Zustand-Zeile | `REFERENZ-AUFLOESUNG-VOR-RETRIEVAL` | Bug: REFERENZ-AUFLOESUNG-VOR-RETRIEVAL — anaphorische Verwei |
-| 5281 | offen | Zustand-Zeile | `CHARAKTER-RESONANZ` | Epic: CHARAKTER-RESONANZ — Novas Charakter aus dem Umgang (C |
-| 5287 | offen | Zustand-Zeile | `GESPRAECH-ARCHIV-VERWAIST` | Aufräumen: GESPRAECH-ARCHIV-VERWAIST — tote Tabelle ohne Wri |
-| 5295 | offen | Zustand-Zeile | `ASSISTENT-NAME-LAUFZEIT` | Feature: ASSISTENT-NAME-LAUFZEIT — Assistenten-Name pro Paar |
-| 5301 | offen | Zustand-Zeile | `ASSISTENT-GESCHLECHT-PRONOMEN` | Feature: ASSISTENT-GESCHLECHT-PRONOMEN — Pronomen bei Namens |
-| 5311 | offen | Zustand-Zeile | `PIPELINE-LOG-BACKFILL-PAAR` | Nacharbeit: PIPELINE-LOG-BACKFILL-PAAR — Alt-Forensik ohne P |
-| 5317 | offen | Zustand-Zeile | `KZG-QUELLE-IST-USER-ID` | Refactor: KZG-QUELLE-IST-USER-ID — `quelle` trägt `user_id`  |
-| 5323 | offen | Zustand-Zeile | `PIPELINE-LOG-ART-DOKU-DRIFT` | Doku: PIPELINE-LOG-ART-DOKU-DRIFT — Forensik-Queries der Syn |
-| 5344 | offen | Zustand-Zeile | `DELEGATION-STATE-UNDEKLARIERT` | Landmine: DELEGATION-STATE-UNDEKLARIERT — Sperrvermerk für d |
-| 5358 | offen | Zustand-Zeile | `PLANNER-AKTIV-RELIKT` | Aufräumen: PLANNER-AKTIV-RELIKT — Stage-Anzeige liest nie ge |
-| 5372 | offen | Zustand-Zeile | `WEB-CONTEXT-ALTPFAD` | Aufräumen: WEB-CONTEXT-ALTPFAD — toter [WEB]-Block, Nachfolg |
-| 5386 | offen | Zustand-Zeile | `BUILDER-CREATE-INITIAL-STATE-TOT` | Aufräumen: BUILDER-CREATE-INITIAL-STATE-TOT — aufruferloser  |
-| 5400 | offen | Zustand-Zeile | `LESSON-INDEX-LUECKE` | Doku: LESSON-INDEX-LUECKE — zwölf ältere lesson_l-Dateien fe |
-| 5411 | offen | Zustand-Zeile | `DOKU-DUPLIKATE-CHAT80` | Doku: DOKU-DUPLIKATE-CHAT80 — 8 Bezeichner stehen in bugs.md |
-| 5429 | offen | Zustand-Zeile | `LOG-TUERKLINGEL` | Feature: LOG-TUERKLINGEL — Warn-/Fehler-Lampen mit Sitzungsz |
-| 5466 | offen | Zustand-Zeile | `ENTITAET-EMBED-DREIFACH` | Bug: ENTITAET-EMBED-DREIFACH — Entitäts-Suchpfad embeddet an |
-| 5480 | offen | Zustand-Zeile | `DESTILLAT-ASYMMETRIE` | Konzept: DESTILLAT-ASYMMETRIE — Prompts und Knoten leben in  |
-| 5490 | offen | Zustand-Zeile | `GESPRAECH-ARCHIV-LEER` | Feature: GESPRAECH-ARCHIV-LEER — kein Writer, Rohgespräche v |
-| 5498 | offen | Zustand-Zeile | `EMBED-DIMENSIONSCHECK-FEHLT` | Fix: EMBED-DIMENSIONSCHECK-FEHLT — kein harter Dimensions-Ch |
-| 5504 | offen | Zustand-Zeile | `PIPELINE-LOG-MERGE-BLIND` | Nacharbeit: PIPELINE-LOG-MERGE-BLIND — Reinforcement loggt d |
-| 5510 | offen | Zustand-Zeile | `DELEG-VEKTOR-EINGEFROREN` | Konzept: DELEG-VEKTOR-EINGEFROREN — Akten-Vektor beschreibt  |
-| 5516 | offen | Zustand-Zeile | `LZG-MIGRATION-REVIEW-NICHT-IN-INIT` | Fix: LZG-MIGRATION-REVIEW-NICHT-IN-INIT — Live-Tabelle ohne  |
-| 5522 | offen | Zustand-Zeile | `IDX-TIMELINE-TYPE-NICHT-IN-INIT` | Fix: IDX-TIMELINE-TYPE-NICHT-IN-INIT — Live-Index ohne Defin |
-| 5528 | offen | Zustand-Zeile | `DELEG-SEITEN-VALENZ-TOT` | Aufräumen: DELEG-SEITEN-VALENZ-TOT — persistiert, nie gelese |
-| 5538 | offen | Zustand-Zeile | `REDUCER-DOKU-DRIFT` | Doku: REDUCER-DOKU-DRIFT — drei Drifts aus dem Reducer-Audit |
-| 5544 | offen | Zustand-Zeile | `DOKU-NOTIZEN-INIT-SQL` | Doku: DOKU-NOTIZEN-INIT-SQL — Verweis auf nicht existierende |
-| 5550 | offen | Zustand-Zeile | `KZG-SALIENZ-GRENZWERT-UNKLAR` | Frage: KZG-SALIENZ-GRENZWERT-UNKLAR — soll jede Recherche in |
-| 5585 | offen | Zustand-Zeile | `PROMOTION-NOVA-GUARD-TOT` | Aufräumen: PROMOTION-NOVA-GUARD-TOT — Nova-Guard in der Clus |
-| 5597 | offen | Zustand-Zeile | `CHARHASH-KZG-SCAN-UNSORTIERT` | Bug: CHARHASH-KZG-SCAN-UNSORTIERT — zwei von fünf Profilen d |
-| 5609 | abgeschlossen | Zustand-Zeile | `HASH-DIRTY-KEY-OHNE-PAAR` | Aufräumen: HASH-DIRTY-KEY-OHNE-PAAR — `hash_dirty:meister` o |
-| 5619 | offen | Zustand-Zeile | `AUDIT-HASH-DIRTY-SICHTBARKEIT` | Audit: AUDIT-HASH-DIRTY-SICHTBARKEIT — KEYS zeigt das Flag,  |
-| 5631 | offen | Zustand-Zeile | `TURN-ROH-VOR-KRAFT1-ENTWERTET` | Landmine: TURN-ROH-VOR-KRAFT1-ENTWERTET — Sperrvermerk für d |
-| 5651 | offen | Zustand-Zeile | `PERMISSION-OHNE-BODEN` | Befund: PERMISSION-OHNE-BODEN — „Brudi ist read-only" ist Ko |
-| 5665 | offen | Zustand-Zeile | `PROMO-KZG-KEY-ALS-TURN-ID` | Bug: PROMO-KZG-KEY-ALS-TURN-ID — `pipeline_log.turn_id` träg |
-| 5679 | offen | Zustand-Zeile | `ALLOWLIST-DRIFT` | Aufräumen: ALLOWLIST-DRIFT — die Claude-Code-Allowlist wächs |
-| 5691 | offen | Zustand-Zeile | `KZG-VERSTAERKUNG-KEYS-SCAN` | Performance: KZG-VERSTAERKUNG-KEYS-SCAN — Vollscan der Paar- |
-| 5703 | offen | Zustand-Zeile | `KZG-TURN-ID-UNBEKANNT` | Nacharbeit: KZG-TURN-ID-UNBEKANNT — Platzhalter statt Turn-B |
-| 5717 | offen | Zustand-Zeile | `TURN-ROH-HG-SKIP` | Befund: TURN-ROH-HG-SKIP — der übersprungene Rohturn pro Tur |
-| 5733 | offen | Zustand-Zeile | `KZG-SALIENZ-BOOST-OHNE-DECKEL` | Bug: KZG-SALIENZ-BOOST-OHNE-DECKEL — die thematische Verstär |
-| 5761 | offen | Zustand-Zeile | `DESTILLAT-SUBJEKT-SCHABLONE` | Bug: DESTILLAT-SUBJEKT-SCHABLONE — der Verdichter erfindet „ |
-| 5788 | offen | Zustand-Zeile | `PIXIE-TURN-ID-LEER` | Bug: PIXIE-TURN-ID-LEER — Pixie-initiierter CharacterGraph-L |
-| 5816 | offen | Zustand-Zeile | `KZG-SALIENZ-SKALENBRUCH` | Bug: KZG-SALIENZ-SKALENBRUCH — die Dämpfung ist auf CAP 10.0 |
-| 5863 | offen | Zustand-Zeile | `KZG-TTL-UNSTERBLICH` | Limitation: KZG-TTL-UNSTERBLICH — die Auffrischung kann nur  |
-| 5885 | offen | Zustand-Zeile | `KZG-KEIN-DECAY` | Bug: KZG-KEIN-DECAY — die Salienz kennt keine Abwärtsbewegun |
-| 5923 | offen | Zustand-Zeile | `KZG-SALIENZ-KONSUMENTEN-DISSENS` | Bug: KZG-SALIENZ-KONSUMENTEN-DISSENS — drei Leser, drei Anna |
-| 5955 | offen | Zustand-Zeile | `KZG-SALIENZ-NEUBAU` | Sprint: KZG-SALIENZ-NEUBAU — die KZG-Salienz bekommt die Bau |
-| 5979 | offen | Zustand-Zeile | `PROMOTION-ENTFERNT-KZG-NICHT` | Bug: PROMOTION-ENTFERNT-KZG-NICHT — der promotete Eintrag bl |
-| 6006 | offen | Zustand-Zeile | `ROADMAP-GLIEDERUNGSBRUCH` | Doku: ROADMAP-GLIEDERUNGSBRUCH — ab Chat 98 wechselt die Chr |
-| 6022 | offen | Zustand-Zeile | `DB-SELECT-SCHREIBT-OHNE-COMMIT` | Landmine: DB-SELECT-SCHREIBT-OHNE-COMMIT — `select()` führt  |
-| 6038 | abgeschlossen | Marke | `QUEUE-VERFALL-KONZEPT` | QUEUE-VERFALL-KONZEPT — der Stapel und die Queue brauchen ei |
-| 6074 | offen | Zustand-Zeile | `IMPULS-HANDLUNG-OHNE-HERKUNFT` | IMPULS-HANDLUNG-OHNE-HERKUNFT — was sie selbst angelegt hat, |
-| 6107 | offen | Zustand-Zeile | `PUB-ROLLENNAMEN-IM-BESTAND` | Audit: PUB-ROLLENNAMEN-IM-BESTAND — die Doku nennt die inter |
-| 6143 | offen | Zustand-Zeile | `REGISTER-SPIEGEL-DURCHGANG` | Audit: REGISTER-SPIEGEL-DURCHGANG — wo spiegelt sonst eine A |
-| 6163 | offen | Zustand-Zeile | `GV-RELEVANZ-UNNORMIERT` | Landmine: GV-RELEVANZ-UNNORMIERT — die Relevanz kann über 1. |
+| 3822 | abgeschlossen | Status-Zeile | `SPRINT-NOTIZEN-BEZUGSAUFLOESUNG` | SPRINT-NOTIZEN-BEZUGSAUFLOESUNG — Inhalts-Aufloesung im Clas |
+| 3854 | abgeschlossen | Status-Zeile | `SPRINT-M25A-TIMELINE-CLEANUP` | SPRINT-M25A-TIMELINE-CLEANUP — der TimelineAgent verliert se |
+| 3894 | offen | Status-Zeile | `MEMORY-SALIENZ-VERERBUNG` | Konzept: MEMORY-SALIENZ-VERERBUNG — Salienz auf semantischen |
+| 3924 | offen | Status-Zeile | `ENRICHER-AKTE` | Konzept: ENRICHER-AKTE — Strukturierte Memory-Context-Akte a |
+| 3957 | offen | Status-Zeile | `KONZEPT-COGNITIVE-PIPELINE` | KONZEPT-COGNITIVE-PIPELINE — Frames, Verstehens-Schleife, Fa |
+| 4034 | offen | Status-Zeile | `KONZEPT-TURNLOG-CHRONIK` | KONZEPT-TURNLOG-CHRONIK — vollstaendiges Turn-Log als episod |
+| 4079 | abgeschlossen | Status-Zeile | `MIGRATION-PIX-CLEANUP` | Sprint: MIGRATION-PIX-CLEANUP — Pixie-Migration nach Multi-C |
+| 4104 | abgeschlossen | Status-Zeile | `KZG-CLEANUP` | Sprint: KZG-CLEANUP — Bereinigung fehlerhafter KZG-Einträge  |
+| 4131 | offen | Status-Zeile | `CHAR-HASH-TEST-LEICHEN` | Cleanup: CHAR-HASH-TEST-LEICHEN — Test-User in `charakter_ha |
+| 4147 | offen | Status-Zeile | `LZG-DOKU-DRIFT` | Cleanup: LZG-DOKU-DRIFT — `novaberg-mem-lzg.md` reflektiert  |
+| 4167 | offen | Zustand-Zeile | `TIMELINE-PAIR-MISSING` | Bug: TIMELINE-PAIR-MISSING — Timeline-Tabelle ohne `characte |
+| 4195 | offen | Zustand-Zeile | `NOTIZEN-PAIR-MISSING` | Bug: NOTIZEN-PAIR-MISSING — Notizen-Tabelle ohne `character_ |
+| 4211 | offen | Zustand-Zeile | `FAKTEN-PAIR-IGNORED` | Bug: FAKTEN-PAIR-IGNORED — Fakten-Repository ignoriert `char |
+| 4227 | abgeschlossen | Zustand-Zeile | `ZIELE-PAIR-MISSING` | Bug: ZIELE-PAIR-MISSING — Ziele-Tabelle ohne `character_id`  |
+| 4243 | offen | Zustand-Zeile | `NOTIZEN-KONTEXT-REKONSTRUKTION` | Bug: NOTIZEN-KONTEXT-REKONSTRUKTION — Mehrschritt-Rekonstruk |
+| 4268 | offen | Zustand-Zeile | `NOTIZEN-CONTAINER-WECHSEL` | Bug: NOTIZEN-CONTAINER-WECHSEL — Notiz↔Liste-Wechsel verweig |
+| 4290 | offen | Zustand-Zeile | `NOTIZEN-SKILL-MANIFEST` | Bug: NOTIZEN-SKILL-MANIFEST — Nova kennt eigene Fähigkeiten  |
+| 4308 | offen | Zustand-Zeile | `NOTIZEN-UPDATE-TARGET-LEER` | Bug: NOTIZEN-UPDATE-TARGET-LEER — Bezugs-Pronomen für UPDATE |
+| 4330 | abgeschlossen | Status-Zeile | `SPRINT-PIXIE-EVA-HAERTUNG` | SPRINT-PIXIE-EVA-HAERTUNG — der Promotionsweg bekommt seine  |
+| 4359 | offen | Status-Zeile | `EPIC-EVA-DISZIPLIN` | EPIC-EVA-DISZIPLIN — Zusicherungen im ganzen Bestand |
+| 4405 | offen | Status-Zeile | `TRIB-PERSON-DRIFT` | Bug: TRIB-PERSON-DRIFT — Tribunal-Agenten kennen Novas Ident |
+| 4449 | offen | Status-Zeile | `REFAC-HG-CHAR-HASH-LOAD` | Refactor: REFAC-HG-CHAR-HASH-LOAD — Char-Hash-Tiebreaker im  |
+| 4488 | offen | Status-Zeile | `SPRACH-STIL-DEFENSIV-STUMM` | Bug: SPRACH-STIL-DEFENSIV-STUMM — `_sprach_stil_erkennen` br |
+| 4512 | offen | Status-Zeile | `EI-CALC-ROLLE-RENAME` | Refactor: EI-CALC-ROLLE-RENAME — `ei_calc_rolle` semantisch  |
+| 4535 | offen | Status-Zeile | `AUDIT-PIXIE-TURN-ID` | Bug: AUDIT-PIXIE-TURN-ID — Pixie-Pfad-turn_id-Auflösung unge |
+| 4563 | offen | Status-Zeile | `EI-CALC-ROLLE-DEFAULT-ASYMMETRIE` | Bug: EI-CALC-ROLLE-DEFAULT-ASYMMETRIE — Inkonsistente Defaul |
+| 4602 | offen | Status-Zeile | `DOPPEL-SESSION-LOAD` | Performance: DOPPEL-SESSION-LOAD — Session-Turns werden im H |
+| 4635 | offen | Status-Zeile | `REDUCER-LOGGER-NAME-KONVENTION` | Refactor: REDUCER-LOGGER-NAME-KONVENTION — Logger-Namen weic |
+| 4662 | offen | Status-Zeile | `REDUCER-CONFIG-DEAD-KONSTANTEN` | Refactor: REDUCER-CONFIG-DEAD-KONSTANTEN — Tote Konstanten i |
+| 4690 | offen | Status-Zeile | `SESSION-SUMMARY-PFAD-INAKTIV` | Audit: SESSION-SUMMARY-PFAD-INAKTIV — Memory-Quelle "summary |
+| 4724 | offen | Status-Zeile | `KZG-VERDICHTER-KONTEXT-VERLUST` | Bug: KZG-VERDICHTER-KONTEXT-VERLUST — Verdichter produziert  |
+| 4752 | offen | Status-Zeile | `SALIENZ-VERDICHTUNG-MEHRFACH` | Bug: SALIENZ-VERDICHTUNG-MEHRFACH — Salienz- und Verdichtung |
+| 4775 | offen | Status-Zeile | `WORKER-TIMEOUT-MUSTER-DIVERGENZ` | Refactor: WORKER-TIMEOUT-MUSTER-DIVERGENZ — `num_ctx` (Per-C |
+| 4794 | abgeschlossen | Status-Zeile | `CONFIG-PIXIE-AKTIV-HARDCODED` | CONFIG-PIXIE-AKTIV-HARDCODED — `PIXIE_AKTIV` war nicht env-k |
+| 4812 | offen | Status-Zeile | `DOKU-DRIFT-WELLE-PROMOTION` | Doku-Sprint: DOKU-DRIFT-WELLE-PROMOTION — Sieben Drift-Punkt |
+| 4832 | offen | Status-Zeile | `CHRONIK-BACKFILL` | Doku-Sprint: CHRONIK-BACKFILL — Lücken in Roadmap- und Backl |
+| 4855 | offen | Status-Zeile | `AUDIT-1-BEIFANG-PROMOTION` | Sammelposten: AUDIT-1-BEIFANG-PROMOTION — Tote Pfade und Beo |
+| 4865 | offen | Tabellenspalte | `EMOTIONS-VEKTOR-LEER` | Sammelposten: AUDIT-1-BEIFANG-PROMOTION — Tote Pfade und Beo |
+| 4866 | offen | Tabellenspalte | `KZG-ERSTELLT-AM-PARSE-HÄRTE` | Sammelposten: AUDIT-1-BEIFANG-PROMOTION — Tote Pfade und Beo |
+| 4867 | abgeschlossen | Tabellenspalte | `GEDACHTNISTYP-DEFAULT-BEFÜLLT` | Sammelposten: AUDIT-1-BEIFANG-PROMOTION — Tote Pfade und Beo |
+| 4868 | offen | Tabellenspalte | `TRIGGER-2-RECACHE-KONZEPT-LÜCKE` | Sammelposten: AUDIT-1-BEIFANG-PROMOTION — Tote Pfade und Beo |
+| 4869 | offen | Tabellenspalte | `FAKTEN-TABELLE-ENTITY-MERGE` | Sammelposten: AUDIT-1-BEIFANG-PROMOTION — Tote Pfade und Beo |
+| 4870 | offen | Tabellenspalte | `TIMELINE-FK-DOKU-DRIFT` | Sammelposten: AUDIT-1-BEIFANG-PROMOTION — Tote Pfade und Beo |
+| 4871 | offen | Tabellenspalte | `REFAC-MAGNETE-AUDIT` | Sammelposten: AUDIT-1-BEIFANG-PROMOTION — Tote Pfade und Beo |
+| 4877 | offen | Status-Zeile | `AUDIT-DOKU-DRIFT-MS` | Bug: AUDIT-DOKU-DRIFT-MS — Drift-Befunde aus Microservice-Vo |
+| 4905 | offen | Zustand-Zeile | `TOK-DRIFT-SALIENCE` | Bug: TOK-DRIFT-SALIENCE — Token-Akkumulator zählt fehlgeschl |
+| 4939 | abgeschlossen | Zustand-Zeile | `QUEUE-SCHEMA-STALE` | Cleanup: QUEUE-SCHEMA-STALE — `queue:nova` mit toten Aufträg |
+| 4949 | offen | Zustand-Zeile | `SCHED-STALE-SCHEDULE` | Refactor: SCHED-STALE-SCHEDULE — Startup räumt `pixie:schedu |
+| 4959 | offen | Zustand-Zeile | `SHADOW-PAYLOAD-FIELD-MISMATCH` | Bug: SHADOW-PAYLOAD-FIELD-MISMATCH — Dispatch liest Felder,  |
+| 4975 | offen | Zustand-Zeile | `WIEDERVORLAGE-MULTI-USER` | Refactor: WIEDERVORLAGE-MULTI-USER — Periodische Aufgaben pr |
+| 4985 | offen | Zustand-Zeile | `SYNAPSEN-LIVE-VERIFY` | Sprint: SYNAPSEN-LIVE-VERIFY — Entitäts- und Timeline-Kanten |
+| 4997 | offen | Zustand-Zeile | `SYNAPSEN-DUAL-LZG` | Sprint: SYNAPSEN-DUAL-LZG — Lesepfad auf `lzg_knoten`/`lzg_k |
+| 5009 | offen | Zustand-Zeile | `KZG-GEWICHT-ABSOLUT-CEILING` | Befund: KZG-GEWICHT-ABSOLUT-CEILING — sin^0.5-Dämpfung klemm |
+| 5068 | abgeschlossen | Tabellenspalte | `P5-LIVE-ABNAHME` | Lesepfad-Folgepunkte (Chat 99) |
+| 5069 | offen | Tabellenspalte | `KANTEN-RICHTUNG-UNDOKUMENTIERT` | Lesepfad-Folgepunkte (Chat 99) |
+| 5070 | offen | Tabellenspalte | `SPREADING-RELEVANZ-BEOBACHTEN` | Lesepfad-Folgepunkte (Chat 99) |
+| 5071 | offen | Tabellenspalte | `LZG-RESONANZ-DATETIME` | Lesepfad-Folgepunkte (Chat 99) |
+| 5072 | abgeschlossen | Tabellenspalte | `LZG-RESONANZ-STATE-DEKL` | Lesepfad-Folgepunkte (Chat 99) |
+| 5073 | offen | Tabellenspalte | `LZG-RESONANZ-ENTITAET-NAMEN` | Lesepfad-Folgepunkte (Chat 99) |
+| 5074 | offen | Tabellenspalte | `LIB-VECTORS-MIGRATION` | Lesepfad-Folgepunkte (Chat 99) |
+| 5075 | offen | Tabellenspalte | `B3-API-KEY-SEMANTIK` | Lesepfad-Folgepunkte (Chat 99) |
+| 5088 | offen | Tabellenspalte | `ROUTE-MISS1` | 8. Offene Bugs |
+| 5090 | offen | Tabellenspalte | `CRUD-DESTILL-SUBTRAKT` | 8. Offene Bugs |
+| 5091 | offen | Tabellenspalte | `CRUD-REACTIVATE-STAMP` | 8. Offene Bugs |
+| 5092 | offen | Tabellenspalte | `EMOTE-LOCK` | 8. Offene Bugs |
+| 5093 | offen | Tabellenspalte | `TOPOS-LOCK` | 8. Offene Bugs |
+| 5094 | offen | Tabellenspalte | `ABER-SAG-MAL` | 8. Offene Bugs |
+| 5095 | offen | Tabellenspalte | `REDUCER-MULTILINE` | 8. Offene Bugs |
+| 5096 | offen | Tabellenspalte | `PATH1-LATENZ` | 8. Offene Bugs |
+| 5097 | offen | Tabellenspalte | `ROUTE-CHAR-NOTIZ` | 8. Offene Bugs |
+| 5098 | offen | Tabellenspalte | `ENRICHER-DUP` | 8. Offene Bugs |
+| 5099 | offen | Tabellenspalte | `RESP-DEAD` | 8. Offene Bugs |
+| 5100 | offen | Tabellenspalte | `PIXIE-GHOST` | 8. Offene Bugs |
+| 5101 | offen | Tabellenspalte | `PIXIE-AGENT-MISSING` | 8. Offene Bugs |
+| 5102 | offen | Tabellenspalte | `RECH-SPIRAL` | 8. Offene Bugs |
+| 5103 | offen | Tabellenspalte | `RECH-CHARAKTER` | 8. Offene Bugs |
+| 5104 | offen | Tabellenspalte | `DELIVERY-DEDUP` | 8. Offene Bugs |
+| 5105 | offen | Tabellenspalte | `SPRACH-STIL-DEFENSIV-STUMM` | 8. Offene Bugs |
+| 5106 | offen | Tabellenspalte | `AUDIT-PIXIE-TURN-ID` | 8. Offene Bugs |
+| 5107 | offen | Tabellenspalte | `EI-CALC-ROLLE-DEFAULT-ASYMMETRIE` | 8. Offene Bugs |
+| 5108 | offen | Tabellenspalte | `TOK-DRIFT-SALIENCE` | 8. Offene Bugs |
+| 5109 | abgeschlossen | Tabellenspalte | `TEST-RUNNER-FEHLT-CONTAINER` | 8. Offene Bugs |
+| 5149 | offen | Zustand-Zeile | `BEZEICHNER-WAR-AKTIV` | Refactor: BEZEICHNER-WAR-AKTIV — was_active statt war_aktiv  |
+| 5160 | offen | Zustand-Zeile | `CONFIG-DECAY-RATE-KOMMENTAR-DRIFT` | Fix: CONFIG-DECAY-RATE-KOMMENTAR-DRIFT — falscher Kommentar  |
+| 5173 | offen | Zustand-Zeile | `PATTERN-DOMAIN-LANGUAGE-RECONCILE` | Frage: PATTERN-DOMAIN-LANGUAGE-RECONCILE — deutsche Domaenen |
+| 5185 | abgeschlossen | Marke | `SYNAPSEN-DECAY-SCHEDULE-LIVE` | Frage: SYNAPSEN-DECAY-SCHEDULE-LIVE — Heartbeat legt Schedul |
+| 5199 | abgeschlossen | Marke | `PIXIE-DECAY-KEIN-AGENT` | Bug: PIXIE-DECAY-KEIN-AGENT — Router kennt periodische Aufga |
+| 5205 | offen | Zustand-Zeile | `HALBREAKTIVIERUNG-LIVE` | Frage: HALBREAKTIVIERUNG-LIVE — erster inaktiver Match feuer |
+| 5218 | offen | Zustand-Zeile | `SYNAPSEN-REAKTIV-SCHWELLE` | Frage: SYNAPSEN-REAKTIV-SCHWELLE — eigene Match-Schwelle fue |
+| 5228 | offen | Zustand-Zeile | `CHARHASH-GEWICHT-ABSOLUT-LIVE` | Beobachtung: CHARHASH-GEWICHT-ABSOLUT-LIVE — erste volle Liv |
+| 5234 | offen | Zustand-Zeile | `CHARHASH-PROMPT-DUPLIKAT` | Bug: CHARHASH-PROMPT-DUPLIKAT — Kern-Persönlichkeit 5× wortg |
+| 5242 | offen | Zustand-Zeile | `DESTILLAT-PERSPEKTIVE-VS-SUBJEKT` | Bug: DESTILLAT-PERSPEKTIVE-VS-SUBJEKT — Charakter-Destillati |
+| 5265 | offen | Zustand-Zeile | `HAEUFIGKEIT-AUF-KNOTEN` | Notiz: HAEUFIGKEIT-AUF-KNOTEN — haeufigkeit auf lzg_knoten m |
+| 5271 | offen | Zustand-Zeile | `CHARHASH-DOKU-DRIFT` | Doku: CHARHASH-DOKU-DRIFT — Hash-Doku beschreibt LZG-Quelle  |
+| 5277 | offen | Zustand-Zeile | `REFERENZ-AUFLOESUNG-VOR-RETRIEVAL` | Bug: REFERENZ-AUFLOESUNG-VOR-RETRIEVAL — anaphorische Verwei |
+| 5283 | offen | Zustand-Zeile | `CHARAKTER-RESONANZ` | Epic: CHARAKTER-RESONANZ — Novas Charakter aus dem Umgang (C |
+| 5289 | offen | Zustand-Zeile | `GESPRAECH-ARCHIV-VERWAIST` | Aufräumen: GESPRAECH-ARCHIV-VERWAIST — tote Tabelle ohne Wri |
+| 5297 | offen | Zustand-Zeile | `ASSISTENT-NAME-LAUFZEIT` | Feature: ASSISTENT-NAME-LAUFZEIT — Assistenten-Name pro Paar |
+| 5303 | offen | Zustand-Zeile | `ASSISTENT-GESCHLECHT-PRONOMEN` | Feature: ASSISTENT-GESCHLECHT-PRONOMEN — Pronomen bei Namens |
+| 5313 | offen | Zustand-Zeile | `PIPELINE-LOG-BACKFILL-PAAR` | Nacharbeit: PIPELINE-LOG-BACKFILL-PAAR — Alt-Forensik ohne P |
+| 5319 | offen | Zustand-Zeile | `KZG-QUELLE-IST-USER-ID` | Refactor: KZG-QUELLE-IST-USER-ID — `quelle` trägt `user_id`  |
+| 5325 | offen | Zustand-Zeile | `PIPELINE-LOG-ART-DOKU-DRIFT` | Doku: PIPELINE-LOG-ART-DOKU-DRIFT — Forensik-Queries der Syn |
+| 5346 | offen | Zustand-Zeile | `DELEGATION-STATE-UNDEKLARIERT` | Landmine: DELEGATION-STATE-UNDEKLARIERT — Sperrvermerk für d |
+| 5360 | offen | Zustand-Zeile | `PLANNER-AKTIV-RELIKT` | Aufräumen: PLANNER-AKTIV-RELIKT — Stage-Anzeige liest nie ge |
+| 5374 | offen | Zustand-Zeile | `WEB-CONTEXT-ALTPFAD` | Aufräumen: WEB-CONTEXT-ALTPFAD — toter [WEB]-Block, Nachfolg |
+| 5388 | offen | Zustand-Zeile | `BUILDER-CREATE-INITIAL-STATE-TOT` | Aufräumen: BUILDER-CREATE-INITIAL-STATE-TOT — aufruferloser  |
+| 5402 | offen | Zustand-Zeile | `LESSON-INDEX-LUECKE` | Doku: LESSON-INDEX-LUECKE — zwölf ältere lesson_l-Dateien fe |
+| 5413 | offen | Zustand-Zeile | `DOKU-DUPLIKATE-CHAT80` | Doku: DOKU-DUPLIKATE-CHAT80 — 8 Bezeichner stehen in bugs.md |
+| 5431 | offen | Zustand-Zeile | `LOG-TUERKLINGEL` | Feature: LOG-TUERKLINGEL — Warn-/Fehler-Lampen mit Sitzungsz |
+| 5468 | offen | Zustand-Zeile | `ENTITAET-EMBED-DREIFACH` | Bug: ENTITAET-EMBED-DREIFACH — Entitäts-Suchpfad embeddet an |
+| 5482 | offen | Zustand-Zeile | `DESTILLAT-ASYMMETRIE` | Konzept: DESTILLAT-ASYMMETRIE — Prompts und Knoten leben in  |
+| 5492 | offen | Zustand-Zeile | `GESPRAECH-ARCHIV-LEER` | Feature: GESPRAECH-ARCHIV-LEER — kein Writer, Rohgespräche v |
+| 5500 | offen | Zustand-Zeile | `EMBED-DIMENSIONSCHECK-FEHLT` | Fix: EMBED-DIMENSIONSCHECK-FEHLT — kein harter Dimensions-Ch |
+| 5506 | offen | Zustand-Zeile | `PIPELINE-LOG-MERGE-BLIND` | Nacharbeit: PIPELINE-LOG-MERGE-BLIND — Reinforcement loggt d |
+| 5512 | offen | Zustand-Zeile | `DELEG-VEKTOR-EINGEFROREN` | Konzept: DELEG-VEKTOR-EINGEFROREN — Akten-Vektor beschreibt  |
+| 5518 | offen | Zustand-Zeile | `LZG-MIGRATION-REVIEW-NICHT-IN-INIT` | Fix: LZG-MIGRATION-REVIEW-NICHT-IN-INIT — Live-Tabelle ohne  |
+| 5524 | offen | Zustand-Zeile | `IDX-TIMELINE-TYPE-NICHT-IN-INIT` | Fix: IDX-TIMELINE-TYPE-NICHT-IN-INIT — Live-Index ohne Defin |
+| 5530 | offen | Zustand-Zeile | `DELEG-SEITEN-VALENZ-TOT` | Aufräumen: DELEG-SEITEN-VALENZ-TOT — persistiert, nie gelese |
+| 5540 | offen | Zustand-Zeile | `REDUCER-DOKU-DRIFT` | Doku: REDUCER-DOKU-DRIFT — drei Drifts aus dem Reducer-Audit |
+| 5546 | offen | Zustand-Zeile | `DOKU-NOTIZEN-INIT-SQL` | Doku: DOKU-NOTIZEN-INIT-SQL — Verweis auf nicht existierende |
+| 5552 | offen | Zustand-Zeile | `KZG-SALIENZ-GRENZWERT-UNKLAR` | Frage: KZG-SALIENZ-GRENZWERT-UNKLAR — soll jede Recherche in |
+| 5587 | offen | Zustand-Zeile | `PROMOTION-NOVA-GUARD-TOT` | Aufräumen: PROMOTION-NOVA-GUARD-TOT — Nova-Guard in der Clus |
+| 5599 | offen | Zustand-Zeile | `CHARHASH-KZG-SCAN-UNSORTIERT` | Bug: CHARHASH-KZG-SCAN-UNSORTIERT — zwei von fünf Profilen d |
+| 5611 | abgeschlossen | Zustand-Zeile | `HASH-DIRTY-KEY-OHNE-PAAR` | Aufräumen: HASH-DIRTY-KEY-OHNE-PAAR — `hash_dirty:meister` o |
+| 5621 | offen | Zustand-Zeile | `AUDIT-HASH-DIRTY-SICHTBARKEIT` | Audit: AUDIT-HASH-DIRTY-SICHTBARKEIT — KEYS zeigt das Flag,  |
+| 5633 | offen | Zustand-Zeile | `TURN-ROH-VOR-KRAFT1-ENTWERTET` | Landmine: TURN-ROH-VOR-KRAFT1-ENTWERTET — Sperrvermerk für d |
+| 5653 | offen | Zustand-Zeile | `PERMISSION-OHNE-BODEN` | Befund: PERMISSION-OHNE-BODEN — „Brudi ist read-only" ist Ko |
+| 5667 | offen | Zustand-Zeile | `PROMO-KZG-KEY-ALS-TURN-ID` | Bug: PROMO-KZG-KEY-ALS-TURN-ID — `pipeline_log.turn_id` träg |
+| 5681 | offen | Zustand-Zeile | `ALLOWLIST-DRIFT` | Aufräumen: ALLOWLIST-DRIFT — die Claude-Code-Allowlist wächs |
+| 5693 | offen | Zustand-Zeile | `KZG-VERSTAERKUNG-KEYS-SCAN` | Performance: KZG-VERSTAERKUNG-KEYS-SCAN — Vollscan der Paar- |
+| 5705 | offen | Zustand-Zeile | `KZG-TURN-ID-UNBEKANNT` | Nacharbeit: KZG-TURN-ID-UNBEKANNT — Platzhalter statt Turn-B |
+| 5719 | offen | Zustand-Zeile | `TURN-ROH-HG-SKIP` | Befund: TURN-ROH-HG-SKIP — der übersprungene Rohturn pro Tur |
+| 5735 | offen | Zustand-Zeile | `KZG-SALIENZ-BOOST-OHNE-DECKEL` | Bug: KZG-SALIENZ-BOOST-OHNE-DECKEL — die thematische Verstär |
+| 5763 | offen | Zustand-Zeile | `DESTILLAT-SUBJEKT-SCHABLONE` | Bug: DESTILLAT-SUBJEKT-SCHABLONE — der Verdichter erfindet „ |
+| 5790 | offen | Zustand-Zeile | `PIXIE-TURN-ID-LEER` | Bug: PIXIE-TURN-ID-LEER — Pixie-initiierter CharacterGraph-L |
+| 5818 | offen | Zustand-Zeile | `KZG-SALIENZ-SKALENBRUCH` | Bug: KZG-SALIENZ-SKALENBRUCH — die Dämpfung ist auf CAP 10.0 |
+| 5865 | offen | Zustand-Zeile | `KZG-TTL-UNSTERBLICH` | Limitation: KZG-TTL-UNSTERBLICH — die Auffrischung kann nur  |
+| 5887 | offen | Zustand-Zeile | `KZG-KEIN-DECAY` | Bug: KZG-KEIN-DECAY — die Salienz kennt keine Abwärtsbewegun |
+| 5925 | offen | Zustand-Zeile | `KZG-SALIENZ-KONSUMENTEN-DISSENS` | Bug: KZG-SALIENZ-KONSUMENTEN-DISSENS — drei Leser, drei Anna |
+| 5957 | offen | Zustand-Zeile | `KZG-SALIENZ-NEUBAU` | Sprint: KZG-SALIENZ-NEUBAU — die KZG-Salienz bekommt die Bau |
+| 5981 | offen | Zustand-Zeile | `PROMOTION-ENTFERNT-KZG-NICHT` | Bug: PROMOTION-ENTFERNT-KZG-NICHT — der promotete Eintrag bl |
+| 6008 | offen | Zustand-Zeile | `ROADMAP-GLIEDERUNGSBRUCH` | Doku: ROADMAP-GLIEDERUNGSBRUCH — ab Chat 98 wechselt die Chr |
+| 6024 | offen | Zustand-Zeile | `DB-SELECT-SCHREIBT-OHNE-COMMIT` | Landmine: DB-SELECT-SCHREIBT-OHNE-COMMIT — `select()` führt  |
+| 6040 | abgeschlossen | Marke | `QUEUE-VERFALL-KONZEPT` | QUEUE-VERFALL-KONZEPT — der Stapel und die Queue brauchen ei |
+| 6076 | offen | Zustand-Zeile | `IMPULS-HANDLUNG-OHNE-HERKUNFT` | IMPULS-HANDLUNG-OHNE-HERKUNFT — was sie selbst angelegt hat, |
+| 6109 | offen | Zustand-Zeile | `PUB-ROLLENNAMEN-IM-BESTAND` | Audit: PUB-ROLLENNAMEN-IM-BESTAND — die Doku nennt die inter |
+| 6145 | offen | Zustand-Zeile | `REGISTER-SPIEGEL-DURCHGANG` | Audit: REGISTER-SPIEGEL-DURCHGANG — wo spiegelt sonst eine A |
+| 6165 | offen | Zustand-Zeile | `GV-RELEVANZ-UNNORMIERT` | Landmine: GV-RELEVANZ-UNNORMIERT — die Relevanz kann über 1. |
