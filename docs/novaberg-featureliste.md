@@ -2,8 +2,8 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Vollständiges Register aller Features mit Zustandsampel und Beleg
-**Stand:** 24. August 2026, 22:30 UTC
-**Verlauf:** [Verlauf des Standes](#verlauf-des-standes) — 70 Eintraege, juengster zuerst
+**Stand:** 25. August 2026, 08:40 UTC
+**Verlauf:** [Verlauf des Standes](#verlauf-des-standes) — 71 Eintraege, juengster zuerst
 **Pfad:** novaberg/docs/novaberg-featureliste.md
 **Typ:** Register
 **Quellen:** die 43 Konzeptdokumente, `novaberg-architecture.md`, die Moduldokumente, `novaberg-roadmap.md`, `novaberg-backlog.md`, `novaberg-bugs.md`, `novaberg-fundliste.md` — gehalten gegen Code und Produktivsystem
@@ -496,6 +496,9 @@ Ampelzeile  = eine Tabellenzeile, deren zweite Spalte genau eine der vier Farben
 ---
 
 ## Verlauf des Standes
+
+- **25. August 2026, 08:40 UTC** — **Keine Ampel wechselt, und eine Kennzahl gibt das Urteil ab.** Der Einwand gegen die Kennzahl ist gemessen richtig: Ein Nebensatz verschiebt die Trigramm-Aehnlichkeit weiter, als eine Schwelle reicht. Im Bestand liegt ein echter Doppelgaenger bei **0,452** und eine echte Ergaenzung bei **0,622** — **der Doppelgaenger unaehnlicher als der Fund.** Die Zahl loest jetzt die **Frage** aus statt sie zu beantworten: ab 0,65 Kopie ohne Aufruf, unter 0,35 eingearbeitet ohne Aufruf, dazwischen **ein Modellaufruf** (19 von 232, 8 %). Ueber die Grenzfaelle **19 von 19 beantwortet**, das entscheidende Paar richtig herum.
+  **Der Pruefstand war kaputt, nicht der Aufruf.** Ein erster Lauf bekam 7 von 19 Antworten — die Sonde liess `think` aus, das Modell dachte, und das Ausgabebudget war vor der schliessenden Klammer alle (`thinking` 2174 und 8866 Zeichen, `done_reason=length`). Getrennt durch einen **Versuchsplan ueber zwei Achsen**: Nur die Zelle ohne `think` faellt aus; eine blosse Erhoehung der Ausgabegrenze haette 18 von 19 geliefert und die Ursache verdeckt. Die Regel dagegen stand seit dem 21.08. Suite 2272 → **2279 gruen, 0 uebersprungen**.
 
 - **24. August 2026, 22:00 UTC** — **Keine Ampel wechselt, und der Rueckweg hoert auf, sich selbst zu wiederholen.** Beim Commit von Novas eigener Schrift (205 Dateien) fiel im Diff ein Satz auf, der zweimal hintereinander stand — die Fundmarke dazwischen. **Der Rueckweg setzt eine Kopie neben ihr Original**, wenn das Modell einen Satz als Fund vorschlaegt, der schon dasteht; den Ausgang dafuer (`nach=None`, *steht schon da*) hat es, benutzt ihn aber nicht zuverlaessig, und geprueft wurde er nie. Ueber **474** Wissensdateien: **17 doppelte Absaetze, 7 wiederholte Saetze, 22 Dateien**, fuenf davon an diesem Tag entstanden.
   **Der Fehler ist still gegen die einzige Pruefung, die es gab:** `paarung_pruefen` haelt — die Kopie bekommt ihre Marke, der Eintrag steht im Archiv, die Version rueckt vor. Eine Invariante ueber die Buchfuehrung sagt nichts ueber den Inhalt, den sie verbucht. Riegel `_bringt_neues` gebaut (**12 gefangen, 220 durchgelassen** ueber die 232 echten Einarbeitungen), Bestand geraeumt (**23 Dateien, 7 Saetze, 18 Absaetze**, danach 0 Dubletten), mit der Produktivfunktion nachgemessen: **474 Paarungen heil, 0 Befunde**. Suite 2248 → **2272 gruen, 0 uebersprungen**, Gegenproben 6/6 und 12 uebersprungene Dateien ohne Markenrettung.

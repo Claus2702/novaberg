@@ -4595,6 +4595,14 @@ Und live für den Impuls-Turn `57b6e84c…`: 14 `art`/`quelle`-Kombinationen im 
 >
 > Über die 232 echten Einarbeitungen: **18 gefangen, 214 durchgelassen** (vorher 12 / 220). Die gemessene Nähe steht bei jeder Abweisung im Log, damit die Schwelle aus dem Betrieb nachjustierbar bleibt statt aus der Erinnerung.
 
+> **Und dann reicht auch die justierbare Zahl nicht — am 25.08.2026 nachgemessen und behoben.** Ein Nebensatz verschiebt die Übereinstimmung weiter, als eine Schwelle reicht: Im Bestand liegt ein echter Doppelgänger bei **0,452** und eine echte Ergänzung bei **0,622**. **Der Doppelgänger ist unähnlicher als der Fund**, und keine Schwelle kann das ordnen.
+>
+> Die Zahl löst deshalb jetzt die **Frage** aus statt sie zu beantworten. Drei Zonen: ab 0,65 Kopie ohne Aufruf (18 von 232), unter 0,35 eingearbeitet ohne Aufruf (195), dazwischen **ein Modellaufruf je Satz** (19 von 232, also 8 %). Der untere Rand liegt zehn Hundertstel unter dem schwächsten nachgewiesenen Doppelgänger.
+>
+> **Gefragt wird schmal.** `rueckweg_dublette.*` stellt eine Frage und schreibt nichts — im Unterschied zum Einarbeitungs-Aufruf, dem dieselbe Auskunft eine von vier Aufgaben ist und der mit *„schreibe einen Absatz"* konkurriert. Über die 19 Grenzfälle: **19 von 19 beantwortet**, 10 Fund / 9 Dublette, und das entscheidende Paar richtig herum — 0,622 → Fund, 0,452 → Dublette.
+>
+> **Ein ausgefallenes Urteil führt zur Einarbeitung, nicht zur Abweisung**, und der Unterschied steht als `error` im Log.
+
 **Symptom.** Der Rückweg arbeitet Funde in bestehende Wissensdateien ein: Er spaltet einen Absatz hinter einem Anker und setzt den Fund in die Naht, mit Marke `[iN>]`. Schlägt das Modell als Fund einen Satz vor, **der schon dasteht**, landet die Kopie unmittelbar neben ihrem Original:
 
 ```

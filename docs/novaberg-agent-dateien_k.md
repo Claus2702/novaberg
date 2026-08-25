@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Konzept — Indizierung und Durchsuchung eines vorgegebenen Verzeichnisses als NMCP-Dienst
-**Stand:** 24. August 2026 (v0.19 — §4b.3: der Vergleich ist justierbar, Schwelle an den echten Faellen abgelesen und an `pg_trgm` geeicht. Davor v0.18: *„ohne Dopplung" war eine Absicht, kein Riegel*; der Rueckweg setzte eine Kopie neben ihr Original, und `paarung_pruefen` hielt dabei). Davor: 23. August 2026 (v0.17 — die Prompt-Dateien beider Bloecke und der Kanon der Eigentumswerte sind benannt. Davor: 22. August 2026, v0.16 — **jede Wurzel traegt, wessen Material sie enthaelt**, und der Block haengt daran: neuer §1a.5. Davor: 18. August 2026, v0.15)
+**Stand:** 25. August 2026 (v0.20 — §4b.3: die Zahl loest die Frage aus, das Modell beantwortet sie; ein Nebensatz verschiebt die Aehnlichkeit weiter, als eine Schwelle reicht. Davor v0.19: der Vergleich ist justierbar, Schwelle an den echten Faellen abgelesen und an `pg_trgm` geeicht. Davor v0.18: *„ohne Dopplung" war eine Absicht, kein Riegel*; der Rueckweg setzte eine Kopie neben ihr Original, und `paarung_pruefen` hielt dabei). Davor: 23. August 2026 (v0.17 — die Prompt-Dateien beider Bloecke und der Kanon der Eigentumswerte sind benannt. Davor: 22. August 2026, v0.16 — **jede Wurzel traegt, wessen Material sie enthaelt**, und der Block haengt daran: neuer §1a.5. Davor: 18. August 2026, v0.15)
 **Pfad:** novaberg/docs/novaberg-agent-dateien_k.md
 **Typ:** Konzept (`_k`)
 **Status:** 🟠 **Stufe 1 bis 3 gebaut und gemessen, Stufe 4 zur Hälfte** (18.08.2026) — Freigabe, Wächter und die Enricher-Quelle laufen, letztere seit heute **zweikanalig**; Suche und Zoom des Auftrags-Wegs stehen. **Was fehlt, ist der Aufrufer:** Aushang, Klassifikation und Dispatch des Dienstes `dateien` (§8.1). Offen bleibt der Rückweg (§4b).
@@ -932,6 +932,33 @@ Zwei Entscheidungen dabei, beide gemessen statt gewählt:
 **Geeicht an einer fremden Umsetzung.** `pg_trgm` ist in dieser Datenbank vorhanden; über 60 echte Paare gegen `similarity()` gehalten beträgt die größte Abweichung **0,083**, die mittlere **0,025**, und **kein Paar** bekommt an dieser Schwelle ein anderes Urteil. Die Rechnung bleibt trotzdem im Code: Ein Datenbankaufruf für einen reinen Textvergleich fügt einen Ausfallpfad hinzu, der still wäre.
 
 **Die gemessene Nähe steht bei jeder Abweisung im Log.** Ohne sie wäre die Schwelle nur aus der Erinnerung nachstellbar; mit ihr aus dem Betrieb.
+
+##### Und dann reicht auch die justierbare Zahl nicht
+
+**Ein Nebensatz verschiebt die Übereinstimmung weit genug, dass keine Schwelle mehr trennt.** Im Bestand vom 24.08.2026 liegen nebeneinander:
+
+| Nähe | was es ist |
+|---|---|
+| **0,452** | zwei Sätze mit **derselben Aussage** und fast keinem gemeinsamen Wort |
+| **0,622** | eine **echte Ergänzung** — derselbe Satz plus eine neue Angabe |
+
+**Der Doppelgänger ist unähnlicher als der Fund.** Die Kennzahl ordnet die beiden also falsch herum, und keine Schwelle kann das reparieren: Was oberhalb liegt, wäre der Fund; was unterhalb liegt, die Kopie.
+
+**Deshalb wird die Zahl zum Auslöser der Frage statt zur Antwort.** Drei Zonen, und nur die mittlere kostet einen Aufruf:
+
+```
+Nähe ≥ 0,65   Kopie          verworfen, ohne zu fragen        18 von 232
+0,35 – 0,65   unentscheidbar EIN Modellaufruf je Satz         19 von 232  (8 %)
+Nähe < 0,35   weit auseinander eingearbeitet, ohne zu fragen  195 von 232
+```
+
+Der untere Rand trägt seine eigene Grenze: **0,452 ist der schwächste nachgewiesene Doppelgänger**, 0,35 lässt dafür rund zehn Hundertstel Rand. Unterhalb davon gibt es keinen Beleg für einen Doppelgänger — **aber auch keinen dagegen.**
+
+**Der Aufruf fragt genau eine Sache und schreibt nichts** (`rueckweg_dublette.*`). Das ist der Unterschied zum bestehenden Einarbeitungs-Aufruf, der dieselbe Auskunft schon geben *könnte*: Ihm ist sie eine von vier Aufgaben und konkurriert mit *„schreibe einen Absatz"*. Hier gibt es nichts zu schreiben.
+
+**Gemessen über dieselben 19 Grenzfälle** (25.08.2026, Bestandseinstellungen): **19 von 19 beantwortet**, 10 Fund / 9 Dublette, jede mit Begründung. Und das entscheidende Paar steht richtig herum — **0,622 → Fund, 0,452 → Dublette.**
+
+> **Ein ausgefallenes Urteil führt zur Einarbeitung, nicht zur Abweisung**, und der Unterschied steht als `error` im Log. Dieselbe Asymmetrie wie bei der Schwelle: Ein doppelter Absatz ist sichtbar und rücknehmbar, ein verlorener Fund nicht.
 
 ---
 

@@ -1,6 +1,6 @@
 # Novaberg — Roadmap (Projektchronik)
 
-**Stand:** 24. August 2026, 22:30 UTC
+**Stand:** 25. August 2026, 08:40 UTC
 **Pfad:** novaberg/docs/novaberg-roadmap.md
 **Single Source of Truth für abgeschlossene Arbeit.**
 **Offene Punkte → novaberg-backlog.md**
@@ -12,6 +12,41 @@ Die Kopfzeile stand bis Chat 109 auf „Chat 93, 21. Mai 2026" — 15 Chats hint
 ---
 
 ## Chats 3–20: Grundlagen (März 2026)
+
+### 25.08.2026, 08:40 UTC — Ein Nebensatz verschiebt die Ähnlichkeit weiter, als eine Schwelle reicht
+
+**Ein Einwand gegen die Kennzahl, und er ist gemessen richtig.** Die Trigramm-Schwelle fängt die Umformulierung — aber nicht die, die einen Nebensatz anhängt oder das Vokabular tauscht. Im Bestand liegen nebeneinander:
+
+| Nähe | was es ist |
+|---|---|
+| **0,452** | zwei Sätze mit **derselben Aussage** und fast keinem gemeinsamen Wort |
+| **0,622** | eine **echte Ergänzung** — derselbe Satz plus eine neue Angabe |
+
+**Der Doppelgänger ist unähnlicher als der Fund.** Damit ist keine Schwelle mehr zu finden, egal welche: Was oberhalb liegt, wäre der Fund; was unterhalb liegt, die Kopie.
+
+**Die Zahl löst jetzt die Frage aus, statt sie zu beantworten.** Drei Zonen, und nur die mittlere kostet einen Aufruf — 19 von 232 Einarbeitungen, also 8 %. Gefragt wird schmal: `rueckweg_dublette.*` urteilt und schreibt nichts. Der bestehende Einarbeitungs-Aufruf könnte dieselbe Auskunft geben und tut es nicht zuverlässig, weil sie ihm eine von vier Aufgaben ist.
+
+**Über die 19 Grenzfälle: 19 von 19 beantwortet, 10 Fund / 9 Dublette — und das entscheidende Paar richtig herum** (0,622 → Fund, 0,452 → Dublette).
+
+#### Der Prüfstand war kaputt, nicht der Aufruf
+
+Ein erster Lauf am 24.08. bekam **7 von 19** Antworten; der Rest kam leer. Das sah aus wie ein untauglicher Aufruf. **Es war die Sonde:** Sie sandte Modell, Prompt, Temperatur, Ausgabegrenze und `format=json` wie der Bestand — und ließ `think` aus, das als Voreinstellung im Anfrageobjekt steht und im Prompt nicht vorkommt.
+
+Getrennt wurde es durch einen **Versuchsplan über zwei Achsen** statt durch eine Wiederholung:
+
+```
+num_predict   Voreinstellungen        Ergebnis
+        512   ohne                    leer 12, beantwortet  7     <- der Fehlschlag vom Vortag
+        512   think=False + num_ctx   beantwortet 19
+       2048   ohne                    leer  1, beantwortet 18
+       2048   think=False + num_ctx   beantwortet 19
+```
+
+Das Denken verbrauchte das Ausgabebudget — `thinking` trug 2174 und 8866 Zeichen, `content` blieb leer, `done_reason=length`. **Wer nur die Grenze erhöht hätte, hätte 18 von 19 gesehen, den Rest für Rauschen gehalten und die Ursache nie gefunden.** Zwei Achsen sind der Unterschied zwischen einer Ursache und einer Verbesserung.
+
+**Die Regel dagegen stand seit dem 21.08.2026** und wurde beim Bau der Sonde nicht angewandt — vier Tage, dieselbe Auslassung, dasselbe Bild von **19 gleichen Ausfällen**.
+
+**Zwei Zeugen mussten dabei umgeschrieben werden.** Sie hielten fest, was die Schwelle bei 0,60 entscheidet — und dort entscheidet sie seit heute nichts mehr, weil der Fall im Band liegt. Beide prüfen jetzt die Verdrahtung mit gemocktem Urteil statt das Ergebnis einer Zahl. Suite 2272 → **2279 grün, 0 übersprungen**.
 
 ### 24.08.2026, 22:00 UTC — Der Rückweg setzte eine Kopie neben ihr Original, und die Buchführung stimmte dabei
 
