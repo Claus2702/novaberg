@@ -197,4 +197,48 @@ select = [
     # Wand ohne Widerspruch. Dafuer braucht es den Import-Pruefer aus
     # `19_WERKZEUGE/der-satz.md`, den es noch nicht gibt.
     "I001",
+
+    # B (flake8-bugbear) — haeufige Fallen. Aufgenommen sind 37 der 39 stabilen
+    # Regeln, einzeln aufgezaehlt und NICHT als Kuerzel.
+    #
+    # Bestand am 25.08.2026, ruff 0.16.0, ueber server/: 0 Treffer, nachdem der
+    # letzte behoben wurde (B905, `zip()` ohne `strict=` in einem Zeugen ueber
+    # ast.Dict — dort paaren sich keys und values per Konstruktion, `strict=True`
+    # macht daraus eine Zusicherung).
+    #
+    # WARUM NICHT DAS KUERZEL "B": Vier der 43 Regeln stehen im Preview — B043,
+    # B901, B903, B909. Aufnahmekriterium 2 schliesst das aus; eine Wand, die
+    # mit der naechsten Werkzeugversion um vier Regeln waechst, gegen die der
+    # Bestand nie geprueft wurde, ist keine. Derselbe Grund wie bei "W".
+    #
+    # ZWEI STABILE REGELN SIND TROTZDEM DRAUSSEN, und der Grund ist der von
+    # W505 — eine Wand ohne Deckung. Gemessen am 25.08.2026 an einem
+    # konstruierten Verstoss je Regel:
+    #   B911 (batched-without-explicit-strict)  stumm bei py312, meldet ab py313
+    #   B912 (map-without-explicit-strict)      stumm bei py312, meldet ab py314
+    # `itertools.batched(..., strict=)` gibt es erst ab Python 3.13,
+    # `map(..., strict=)` erst ab 3.14. Bei target-version = "py312" koennen
+    # beide nie feuern und wuerden trotzdem null sagen. Sie gehoeren hier hinein,
+    # sobald die Container-Version steigt — und nicht frueher.
+    #
+    # REICHWEITE, gemessen am 25.08.2026: Fuer **jede** der 39 stabilen Regeln
+    # wurde ein Verstoss konstruiert und unter py312 geprueft. 37 von 39 melden.
+    # Drei brauchten einen zweiten Anlauf, und der Grund gehoert dazu:
+    #   B005 feuert NUR, wenn das strip-Argument ein Zeichen WIEDERHOLT.
+    #        `s.strip("xyz")` und `"text".strip("prefix_")` bleiben stumm,
+    #        `s.strip("aab")` und `s.rstrip("//")` melden. Ein mehrzeichiger
+    #        strip-Aufruf ohne Dublette ist fuer diese Wand unsichtbar.
+    #   B008 feuert nicht bei jedem Aufruf im Vorgabewert — `os.getpid()` blieb
+    #        stumm, ein Aufruf mit veraenderlicher Rueckgabe meldet.
+    #   B026 braucht ein Schluesselwort-Argument VOR dem `*` (`f(kw=1, *werte)`);
+    #        `f(*werte, **kw)` ist die erlaubte Form und bleibt stumm.
+    #
+    # Positivkontrolle im echten Riegelpfad: Eine Probedatei mit allen 39
+    # Verstoessen lag unter server/, der Lauf endete mit Rueckgabewert 1; nach
+    # ihrer Entfernung mit 0.
+    "B002", "B003", "B004", "B005", "B006", "B007", "B008", "B009", "B010",
+    "B011", "B012", "B013", "B014", "B015", "B016", "B017", "B018", "B019",
+    "B020", "B021", "B022", "B023", "B024", "B025", "B026", "B027", "B028",
+    "B029", "B030", "B031", "B032", "B033", "B034", "B035", "B039",
+    "B904", "B905",
 ]
