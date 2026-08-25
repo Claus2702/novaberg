@@ -88,7 +88,7 @@ Die Zugehörigkeit zu einer dieser Reihen hebt einen Eintrag; alles andere sinkt
 | **1 — Charakterbildung** | 18 Bögen, 540 Turns, aufgesetzt und zurückgesetzt, wartet auf die GPU |
 | **2 — Haltungsraum und Zuwendungsrad** | Beitragsverhältnisse gefallen, nicht kalibriert (`F-HALTUNG-1`) |
 | **3 — Erkenntniszyklus und der Abfluss der Shadow-Queue** | Vorfrage am 09.08. beantwortet, Entscheidung über 614 Altaufträge offen |
-| **4 — Die Linter-Wände** | **fünf Regelgruppen hart** — `LOG`, `N`, `F821`, fünf `W`-Regeln, **`I001` seit 25.08.2026**. `B` steht bei **1** (nicht bei null), nächster Kandidat |
+| **4 — Die Linter-Wände** | **fünf Regelgruppen hart** — `LOG`, `N`, `F821`, fünf `W`-Regeln, **`I001` seit 25.08.2026**. `B` steht seit 25.08.2026 bei **null**, ist aber nicht als Kürzel schaltbar: 4 der 43 Regeln im Preview (B043, B901, B903, B909) — die 39 stabilen einzeln mit Reichweitenbeleg ist der nächste Zug |
 
 ### Band A — leer, Stand 16.08.2026
 

@@ -2,8 +2,8 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Rohe, noch unklassifizierte Funde aus laufender Arbeit
-**Stand:** 25. August 2026, 17:16 UTC
-**Offen:** **104 Funde — gezaehlt am 25.08.2026, 17:16 UTC** (108 Fundzeilen im Abschnitt *Offen*, davon **4** durchgestrichen; **drei neu aus dem maschinellen Linter-Durchgang** — ein Zeuge, der ins Leere patcht, eine Fehlkonfiguration der Importsortierung, der Verlust der ausgerichteten Importe). **Die Vorgaengerzahl war 89 bei tatsaechlich 105** — sie war ueber mehrere Zuege fortgeschrieben statt gezaehlt worden, genau der Fall, vor dem der Satz unten warnt
+**Stand:** 25. August 2026, 17:51 UTC
+**Offen:** **108 Funde — gezaehlt am 25.08.2026, 17:51 UTC** (112 Fundzeilen im Abschnitt *Offen*, davon **4** durchgestrichen; **vier neu aus dem zweiten Linter-Durchgang** — alle vier ueber `F841` sichtbar geworden: ein geladener Vorher-Zustand ohne Protokoll, zwei Prompt-Werte ohne Prompt, eine Hintergrundaufgabe ohne Abraeumen, drei stille Verwerfungen ohne Zaehlung)
 **Verlauf:** [Verlauf des Standes](#verlauf-des-standes) — 73 Eintraege, juengster zuerst
 **Pfad:** novaberg/docs/novaberg-fundliste.md
 
@@ -232,6 +232,14 @@ Analog zum Kraft-1-Stichtag: ab wann eine Partition brauchbar ist. Kein Backfill
 ---
 
 ## Offen
+
+- **2026-08-25** — **Sechsmal wird der Vorher-Zustand geladen und nie protokolliert.** `vorher = _read_by_id(target_id)` steht in `agents/charakter_identitaet/crud.py` (265, 298, 362) und `agents/direktiven/crud.py` (288, 345, 394) jedes Mal **unmittelbar vor einem `UPDATE ... SET aktiv = FALSE`** — und wird danach nirgends gelesen. Das Muster ist in zwei Modulen identisch, also kein Versehen an einer Stelle, sondern eine **Absicht ohne Empfänger**: Genau das, was ein Löschvorgang für die Nachvollziehbarkeit festhalten müsste, wird geholt und fallengelassen. Gefunden über `F841`; die sechs Zuweisungen sind deshalb bewusst stehengeblieben, weil Löschen die Absicht mit entfernt.
+
+- **2026-08-25** — **Zwei Werte werden für den Responder-Prompt aus `external` geholt und stehen nie darin.** `beziehungs_kontext` (`external.character.relationship`) und `current_arousal` (`external.emotion.arousal`) in `graph/nodes/responder.py:467` und `:470` — beide in derselben Zuweisungsgruppe wie `emotions_vektor`, `sprach_stil`, `gespraechs_modus`, `current_emotion`, `beziehungs_dynamik`, die alle in den Prompt gehen. **Die Gruppe sieht vollständig aus, und zwei ihrer sieben Zeilen wirken nicht.** Ob der Prompt sie tragen soll oder ob die Zeilen Reste sind, ist ohne die Absicht nicht entscheidbar — beides ist ein anderer Auftrag.
+
+- **2026-08-25** — **Der Prompt-Consumer ist die einzige der vier Hintergrundaufgaben, die beim Herunterfahren nicht abgeräumt wird.** `main.py` legt vier Tasks an — `delivery_task` (366), `consumer_task` (381), `prompt_task` (395), `pipeline_log_task` (404). Drei davon werden später gelesen; `prompt_task` nicht, und nur deshalb meldet `F841` ihn. **Er faehrt Pfad 1 hinter der Eingangs-Queue**, also den Weg, auf dem jede Nutzeraeusserung ankommt. Nicht gelöscht: Die Zuweisung ist die einzige starke Referenz auf den Task; ohne sie darf die Laufzeit ihn einsammeln.
+
+- **2026-08-25** — **Zwei Stellen verwerfen still und zählen es nicht.** `agents/notizen/suche.py:173` bindet `abgeschnitten = treffer[trennlinie:]` und loggt danach nur die Gewinner-Gruppe — **wie viele Treffer die Score-Lücke gekostet hat, steht in keiner Zeile**. `services/event_consumer.py:828` holt `result_internal = result.get("internal")` unter einem Kommentar, der beschreibt, was damit geschehen soll (Novas Wahrnehmung ihrer eigenen Antwort ins WebSocket-Payload); es geschieht nicht. Dazu `tools/migrate_kzg_nova_nova.py:82`, wo `inhalt` samt eigenem `except`-Zweig für eine Log-Zeile aufbereitet wird, die fehlt. **Alle drei sind über `F841` sichtbar geworden und bewusst stehengeblieben** — der ungelesene Wert ist hier der Zeiger auf den fehlenden Leser.
 
 - **2026-08-25** — **Zwei Zeugen patchen einen Namen, den ihr Modul nicht benutzt.** `tests/test_segment_durchstich.py` und `tests/test_reiz_platz.py` setzen `patch("agents.kzg.dispatch.cfg_redis_client", MagicMock())`. In `agents/kzg/dispatch.py` kommt dieser Name **nur in der Importzeile vor** — der Patch ersetzt etwas, das keine Zeile des Moduls liest. Aufgefallen ist es nur, weil der maschinelle F401-Durchgang den ungenutzten Import entfernte und vier Tests mit `AttributeError` starben. **Solange der Import steht, sind die vier gruen, ohne dass der Patch etwas bewirkt** — und die Stelle, die sie zu schuetzen glauben, ist ungeschuetzt. Der Import ist deshalb am 25.08.2026 bewusst stehengeblieben und als einziger F401-Treffer geduldet; die Frage darunter ist, was die Zeugen eigentlich pruefen wollten.
 

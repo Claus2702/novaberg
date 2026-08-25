@@ -2,7 +2,7 @@
 
 **Projekt:** Novaberg — The Nova Anima Resonance System
 **Dokument:** Vollständiges Register aller Features mit Zustandsampel und Beleg
-**Stand:** 25. August 2026, 17:16 UTC (`date -u`)
+**Stand:** 25. August 2026, 17:51 UTC (`date -u`)
 **Verlauf:** [Verlauf des Standes](#verlauf-des-standes) — 77 Eintraege, juengster zuerst
 **Pfad:** novaberg/docs/novaberg-featureliste.md
 **Typ:** Register
@@ -388,8 +388,8 @@ Die Feature-Matrix in `novaberg-architecture.md` §6 ist mit dieser Liste abgel�
 | Feature | Ampel | Beleg | Rest |
 |---|---|---|---|
 | **Test-Suite** | 🔴 | 1.617 grün, 0 übersprungen `[Doku, 17.08.]` · `[gemessen]` — `Ran 2039 tests — OK`, 0 uebersprungen, am 20.08.2026 | meldet **gelegentlich rot und reproduziert nicht** — der Testname ist unbekannt · **🔴 seit 20.08.2026** (zuvor 🟠): `ZEUGE-FLACKERT-OHNE-REPRODUKTION` offen |
-| **Linter-Nulllinie** (`ruff.toml`) | 🟢 | **2.345 geduldete Treffer** — `ruff check --statistics server/`, ruff 0.16.0 `[gemessen 25.08.2026]` · `[Code]` — `novaberg/ruff.toml`, versioniert. Verlauf: 2.659 (30.07.) → 2.263 (02.08.) → 2.471 (20.08.) → 2.675 (25.08., vor dem Durchgang) → **2.345** | **330 maschinell abgeraeumt** bei unveraenderter Suite (2312 gruen); 375 weitere nur mit unsicheren Fixes, bewusst offen. `src = ["server"]` am 25.08. ergaenzt — ohne sie galt jeder Projekt-Import als Fremdimport |
-| **Harte Wand** (`ruff-hart.toml`) | 🟠 | **5 Regelgruppen** hart: `LOG`, `F821`, `W`-Auswahl, `N`, **`I001` neu am 25.08.2026** `[Code]` · Anschlag im echten Pfad belegt: konstruierter Verstoss in `server/api/health.py`, Rueckgabewert 1, danach 0 `[gemessen 25.08.2026]` | zehn Familien unbewacht, bis sie leer sind. Naechster Kandidat: `B` bei **1** Treffer |
+| **Linter-Nulllinie** (`ruff.toml`) | 🟢 | **2.316 geduldete Treffer** — `ruff check --statistics server/`, ruff 0.16.0 `[gemessen 25.08.2026]` · `[Code]` — `novaberg/ruff.toml`, versioniert. Verlauf: 2.659 (30.07.) → 2.263 (02.08.) → 2.471 (20.08.) → 2.675 (25.08., vor dem Durchgang) → 2.345 → **2.316** | **359 an einem Tag abgeraeumt** bei unveraenderter Suite (2312 gruen). `src = ["server"]` ergaenzt, `D400` gegen `D415` getauscht (14 Frage-Docstrings, die kein Fehler sind). 366 Treffer nur mit unsicheren Fixes, bewusst offen; **12 `F841` bewusst stehengelassen** — sie zeigen fehlende Leser, siehe Fundliste |
+| **Harte Wand** (`ruff-hart.toml`) | 🟠 | **5 Regelgruppen** hart: `LOG`, `F821`, `W`-Auswahl, `N`, **`I001` neu am 25.08.2026** `[Code]` · Anschlag im echten Pfad belegt: konstruierter Verstoss in `server/api/health.py`, Rueckgabewert 1, danach 0 `[gemessen 25.08.2026]` | **`B` steht seit 25.08.2026 bei null**, ist aber **nicht als Kuerzel schaltbar**: 4 der 43 Regeln im Preview (B043, B901, B903, B909). Die 39 stabilen einzeln aufzuzaehlen und ihre Reichweite zu belegen, ist ein eigener Zug |
 | **Charakterisierungs-Netz** | 🟠 | `[Doku]` | — · **🟢 → 🟠 bei der Erhebung am 20.08.2026.** **Die Erhebung am 20.08.2026 fand keinen Zeugen**: unter 143 Testdateien traegt keine `charakterisier`, `netz` oder `golden` im Namen. Das Netz ist im Harness beschrieben und im Bestand nicht auffindbar. `[gemessen]` |
 | **Kanalprüfung** (Deklaration gegen Leser) | 🟢 | 74 Felder geprüft, **0 tote Kanäle** `[gemessen]` | — |
 | **Konfigurationsprüfung** (Konstante ohne Leser) | ⚫ | kein Werkzeug — **8 tote Konstanten** von Hand gefunden `[gemessen]` | `DATEILOG_AKTIV`, `EBBINGHAUS_DECAY_RATE`, `EBBINGHAUS_MIN_GEWICHT`, `EMOTIONALE_GRAVITATION_FAKTOR_SESSION`, `KZG_VERSTAERKUNG_DIVISOR`, `REDUCER_AKTIV`, `REDUCER_LOG_REMOVED`, `STIL_SESSION_GEWICHT` |

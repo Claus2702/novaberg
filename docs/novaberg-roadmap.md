@@ -1,13 +1,13 @@
 # Novaberg — Roadmap (Projektchronik)
 
-**Stand:** 25. August 2026 — juengster Eintrag **17:16 UTC** (gemessen via `date -u`); die Eintraege darunter tragen Zeiten bis 21:30 UTC, die zu dieser Zeitbasis in der Zukunft liegen und deshalb **oberhalb** ihres Datums stehen. Der Widerspruch steht in der Fundliste.
+**Stand:** 25. August 2026 — juengster Eintrag **17:51 UTC** (gemessen via `date -u`); die Eintraege darunter tragen Zeiten bis 21:30 UTC, die zu dieser Zeitbasis in der Zukunft liegen und deshalb **oberhalb** ihres Datums stehen. Der Widerspruch steht in der Fundliste.
 **Pfad:** novaberg/docs/novaberg-roadmap.md
 **Single Source of Truth für abgeschlossene Arbeit.**
 **Offene Punkte → novaberg-backlog.md**
 
 | Zeitraum | Datei | Kapitel |
 |---|---|---|
-| 2026-08 | **novaberg-roadmap.md** ← diese Datei | 122 |
+| 2026-08 | **novaberg-roadmap.md** ← diese Datei | 123 |
 | 2026-07 | [`novaberg-roadmap-2026-07.md`](novaberg-roadmap-2026-07.md) | 12 |
 | 2026-05 | [`novaberg-roadmap-2026-05.md`](novaberg-roadmap-2026-05.md) | 18 |
 | 2026-04 | [`novaberg-roadmap-2026-04.md`](novaberg-roadmap-2026-04.md) | 21 |
@@ -18,6 +18,43 @@
 ## Hinweis für Bearbeiter dieser Datei
 
 Die Kopfzeile stand bis Chat 109 auf „Chat 93, 21. Mai 2026" — 15 Chats hinter dem Inhalt. **Sie ist danach erneut zurückgefallen:** von Chat 110 bis 114 blieb sie auf „Chat 109" stehen, während der Inhalt weiterwuchs, und wurde in Chat 115 nachgezogen. Wer hier etwas ergänzt, zieht die Kopfzeile mit — sie driftet zuverlässig. Achtung beim Nachschlagen: Nur bis Chat 97 trägt jeder Chat eine eigene `## Chat NNN`-Überschrift; die Chats 98–108 stehen als `###`-Abschnitte unter dem Chat-97-Block, benannt nach Sprint statt nach Chat.
+
+---
+
+## 25.08.2026, 17:51 UTC — 29 weitere Treffer, und `F841` zeigte vier Stellen, an denen etwas berechnet und weggeworfen wird
+
+**ZIEL:** Die kleinen Regelgruppen des Restbestands sind entschieden — behoben, umkonfiguriert oder als Befund benannt.
+**TEST:** Suite nach jeder Etappe; `ruff check --config ruff-hart.toml server/` mit Rueckgabewert 0.
+**MESSUNG:** **2345 → 2316**, Suite **2312 gruen, 0 uebersprungen**.
+
+| Etappe | Gegenstand | Treffer |
+|---|---|---:|
+| D400 → D415 | Konfiguration, nicht Korrektur | 14 |
+| E741, E402 | Bezeichner `l`, Importe nicht am Dateianfang | 7 |
+| D301 | `r"""` bei Backslash in der Docstring | 3 |
+| B905 | `zip` ohne `strict=` | 1 |
+| F841 | ungenutzte Variablen — **5 von 17** | 5 |
+
+**D400 war kein Fehler des Bestands, sondern der Konfiguration.** Alle vierzehn Treffer sind Docstrings, die als **Frage** formuliert sind und auf `?` enden — `"""Was fuer ein Gespraech ist das?"""`. D400 verlangt strikt den Punkt; D415 laesst Punkt, Fragezeichen und Ausrufezeichen gelten und hat ueber `server/` **null** Treffer. Getauscht, mit Positivkontrolle: eine Zusammenfassung ohne Satzende wird weiterhin gemeldet. Der Zweck der Regel bleibt, die Form des Bestands auch.
+
+**D301 wurde mit einer Aequivalenzpruefung umgestellt, nicht mit einer Ersetzung.** Der Bestand hatte die Backslashes bereits korrekt verdoppelt (`\\n`); mit `r"""` waere daraus ein doppelter geworden. `labor/2026-08-25_d301_raw_docstrings.py` stellt um und liest den Docstring danach aus dem AST zurueck — dreimal zeichengleich (684, 217, 324 Zeichen). Ohne diese Pruefung waere die Aenderung stumm gewesen.
+
+**`B` steht damit bei null.** Hart schaltbar ist die Familie trotzdem nicht als Kuerzel: **vier ihrer 43 Regeln stehen im Preview** (B043, B901, B903, B909). Eine Wand, die sich mit der Werkzeugversion bewegt, ist keine — die 39 stabilen einzeln aufzuzaehlen und ihre Reichweite zu belegen, ist ein eigener Zug.
+
+### `F841` ist keine Aufraeumregel, sondern ein Zeiger auf fehlende Leser
+
+Von 17 Treffern waren **fuenf** echte Ueberbleibsel und sind entfernt: zweimal `jetzt = datetime.now()` im Responder, `datum_utc` im Timeline-Repository, `user_id` im Notizen-Manager, `salienz` in den KZG-Queues (dort steht der Kommentar, der den Wert erklaert, weiter — auf den Ausdruck umgestellt).
+
+**Die uebrigen zwoelf sind stehengeblieben, weil Loeschen den Befund mit entfernen wuerde:**
+
+| Stellen | Was der ungelesene Wert zeigt |
+|---|---|
+| **6×** `vorher = _read_by_id(target_id)` in zwei `crud.py` | Der Vorher-Zustand wird unmittelbar vor jedem `UPDATE ... SET aktiv = FALSE` geladen und **nie protokolliert** |
+| **2×** `beziehungs_kontext`, `current_arousal` in `responder.py` | Aus `external` geholt, in derselben Gruppe wie fuenf Werte, die in den Prompt gehen — diese beiden nicht |
+| **1×** `prompt_task` in `main.py` | Die einzige der vier Hintergrundaufgaben, die beim Herunterfahren nicht abgeraeumt wird |
+| **3×** `abgeschnitten`, `result_internal`, `inhalt` | Stille Verwerfung ohne Zaehlung im Log; ein Kommentar, der eine Wirkung beschreibt, die es nicht gibt |
+
+**Das Muster bei `vorher` ist das staerkste**, weil es in zwei Modulen identisch steht: keine vergessene Zeile, sondern eine Absicht ohne Empfaenger. Alle vier Klassen stehen in der Fundliste.
 
 ---
 
