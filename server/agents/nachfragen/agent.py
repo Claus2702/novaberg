@@ -14,6 +14,8 @@ import logging
 
 import psycopg2
 import redis
+
+from agents.base import AgentState, BaseAgent
 from config import (
     ASSISTANT_USER_ID,
     DEFAULT_USER_ID,
@@ -26,8 +28,6 @@ from ei.farbton import lage_beschreiben
 from memory.session import _session_key
 from services.pixie.stack import stack_push
 from tools.db_manager import db_manager
-
-from agents.base import AgentState, BaseAgent
 
 logger = logging.getLogger("ki_server.agents.nachfragen")
 

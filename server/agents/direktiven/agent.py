@@ -12,10 +12,11 @@ Graph-Aufbau und Routing-Logik. Die Business-Logik liegt in:
 
 import logging
 
-from agents.base import BaseAgent, AgentState
-from langgraph.graph import StateGraph, END
-from agents.direktiven.klassifikation import klassifizieren
+from langgraph.graph import END, StateGraph
+
+from agents.base import AgentState, BaseAgent
 from agents.direktiven.crud import ausfuehren, validieren_gegen_db
+from agents.direktiven.klassifikation import klassifizieren
 
 logger = logging.getLogger("ki_server.agents.direktiven")
 

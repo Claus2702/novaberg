@@ -13,9 +13,9 @@ Client haengt daran; sie hat keinen Testlauf im Server-Image.
 """
 
 import unittest
+from unittest.mock import MagicMock, patch
 
 from services.shadow_delivery import _impuls_in_den_charaktergraph
-from unittest.mock import MagicMock, patch
 
 
 class ImpulsHerkunftImPayloadTest(unittest.TestCase):
@@ -62,6 +62,7 @@ class KeineRueckfallebeneTest(unittest.TestCase):
     def test_kein_eigener_nachrichtentyp_mehr(self):
         """shadow_impuls existiert nirgends mehr im Modul."""
         import inspect
+
         import services.shadow_delivery as sd
 
         quelle: str = inspect.getsource(sd)

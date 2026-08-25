@@ -21,8 +21,8 @@ import logging
 import sys
 
 import psycopg2
-from config import POSTGRES_URL
 
+from config import POSTGRES_URL
 from memory.repositories.autonomous_wissen_repository import (
     AutonomousWissenRepository,
     themen_zerlegen,

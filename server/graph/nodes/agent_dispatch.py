@@ -19,10 +19,9 @@ import logging
 from agents import get_dispatch
 from agents.base import AgentResult
 from agents.nmcp_quote import REGISTER
-from memory.pipeline_log import log_ausgabe
-
 from graph.reiz import reiz_text
 from graph.state import reiz_herkunft
+from memory.pipeline_log import log_ausgabe
 
 logger = logging.getLogger("ki_server.agent_dispatch")
 

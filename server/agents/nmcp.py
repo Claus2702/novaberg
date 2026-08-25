@@ -765,9 +765,8 @@ def aushaenge_sammeln(graph_typ: str) -> str:
     Verhaeltnis zwischen zwei Zetteln waere die zentrale Zuordnungstabelle,
     gegen die die ganze Bauart gerichtet ist.
     """
-    from plugins import get_registry
-
     from agents import AgentRegistry  # lokal: Zyklus Registry <-> nmcp
+    from plugins import get_registry
 
     # ── Eingabe-Validierung ──────────────────────────────────────────
     if graph_typ not in GRAPH_KANON:

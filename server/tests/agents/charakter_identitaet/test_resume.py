@@ -12,10 +12,10 @@ Analog notizen/resume.py. Fix via Word-Split-Match in Phase 1.
 import unittest
 
 from agents.charakter_identitaet.resume import (
-    _standard_interpretieren,
     ABLEHNUNG,
     BESTAETIGUNG,
     UNKLAR,
+    _standard_interpretieren,
 )
 
 

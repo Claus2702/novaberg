@@ -9,32 +9,32 @@ from dataclasses import dataclass
 
 import psycopg2
 
-from agents.base import BaseAgent, AgentState
-from agents.recherche.lagebeurteilung import kontext_paket_bauen, lagebeurteilung_erstellen
-from agents.recherche.planung import recherche_planen
-from agents.recherche.suche import suche_ausfuehren
+from agents.base import AgentState, BaseAgent
+from agents.kzg.speicher import embed_text_bauen as kzg_embed_text_bauen
 from agents.recherche.bewertung import ergebnisse_bewerten
 from agents.recherche.destillation import ergebnisse_destillieren, zwischen_destillieren
 from agents.recherche.gate import ergebnis_einordnen
-from memory.kontext import session_kontext_extrahieren
+from agents.recherche.lagebeurteilung import kontext_paket_bauen, lagebeurteilung_erstellen
+from agents.recherche.planung import recherche_planen
+from agents.recherche.suche import suche_ausfuehren
 from agents.wissen_rueckweg import AUFGABE_VERWEIS
 from agents.wissen_rueckweg.herkunft import QUELLE_VERDICHTET
+from config import (
+    ASSISTANT_USER_ID,
+    DEFAULT_USER_ID,
+    PIXIE_RECHERCHE_MAX_ITERATIONEN,
+    POSTGRES_URL,
+    ZIEL_MAX_MITTELFRISTIG,
+    redis_client,
+)
+from memory.kontext import session_kontext_extrahieren
+from memory.ziele import embed_text_bauen as ziel_embed_text_bauen
+from memory.ziele import ziel_speichern, ziele_aktive_laden
+from services.model_services import BackgroundRequest, EmbedRequest, model_service
 from services.pixie.stack import stack_push
 from services.shadow_agent.utils import shadow_queue_push
 from services.wissensspeicher import Arbeitsergebnis, embed_text_bauen, ergebnis_ablegen
 from tools.db_manager import db_manager
-from config import (
-    ASSISTANT_USER_ID,
-    DEFAULT_USER_ID,
-    redis_client,
-    POSTGRES_URL,
-    ZIEL_MAX_MITTELFRISTIG,
-    PIXIE_RECHERCHE_MAX_ITERATIONEN,
-)
-from agents.kzg.speicher import embed_text_bauen as kzg_embed_text_bauen
-from memory.ziele import ziel_speichern, ziele_aktive_laden
-from memory.ziele import embed_text_bauen as ziel_embed_text_bauen
-from services.model_services import model_service, EmbedRequest, BackgroundRequest
 
 logger = logging.getLogger("ki_server.agents.recherche")
 
@@ -49,8 +49,6 @@ def _ziel_aus_recherche_extrahieren(recherche_ziel: str, destillat: str) -> dict
     Returns:
         Dict mit zielsatz, motivation, emotion, arousal — oder None.
     """
-    import json
-
     prompt: str = (
         "[IDENTITAET]\n"
         "Du bist Novas Reflexions-Modul.\n\n"
@@ -292,7 +290,8 @@ class RechercheAgent(BaseAgent):
 
     def build_graph(self):
         """Kein LangGraph-Subgraph — der Ablauf ist eine lineare
-        Python-Schleife mit Iteration. Subgraph waere Overhead."""
+        Python-Schleife mit Iteration. Subgraph waere Overhead.
+        """
         return None
 
     @staticmethod

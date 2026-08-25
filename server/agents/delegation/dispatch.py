@@ -8,9 +8,9 @@ und schreibt das Beruhigungs-Signal als AgentResult in den State.
 import logging
 
 from agents import AgentRegistry
-from agents.base import AgentState, AgentResult
-from graph.reiz import reiz_text
+from agents.base import AgentResult, AgentState
 from config import DELEGATION_SIGNALE, DELEGATION_SIGNALE_FALLBACK
+from graph.reiz import reiz_text
 
 logger = logging.getLogger("ki_server.agents.delegation.dispatch")
 

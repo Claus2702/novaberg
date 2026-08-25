@@ -20,17 +20,11 @@ from dataclasses import dataclass
 import psycopg2
 import redis
 
-from graph.context_entry import ContextEntry
-from plugins.base import BaseManager
-from memory.repositories.notizen_repository import NotizenRepository
-from memory.repositories.entitaeten_repository import EntitaetenRepository
-from memory.services.entity_resolution import (
-    EntityResolutionService,
-    ResolutionResult,
-)
-
 from config import get_node_config
-from services.model_services import model_service, ChatRequest
+from graph.context_entry import ContextEntry
+from memory.repositories.notizen_repository import NotizenRepository
+from plugins.base import BaseManager
+from services.model_services import ChatRequest, model_service
 
 logger = logging.getLogger("ki_server.plugins.notizen")
 

@@ -15,15 +15,15 @@ import logging
 
 from agents.base import AgentState
 from agents.crud_validation import (
+    erkennungshilfe_block,
     keyword_hints_ermitteln,
+    konfidenz_berechnen,
     verb_mapping_pruefen,
     verb_mappings_laden,
-    konfidenz_berechnen,
-    erkennungshilfe_block,
 )
-from config import redis_client, get_node_config, PROMPTS
-from memory.session import session_turns_retrieve, format_session_turns_numbered
-from services.model_services import model_service, ChatRequest
+from config import PROMPTS, get_node_config, redis_client
+from memory.session import format_session_turns_numbered, session_turns_retrieve
+from services.model_services import ChatRequest, model_service
 
 logger = logging.getLogger("ki_server.agents.timeline.klassifikation")
 

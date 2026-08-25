@@ -13,7 +13,7 @@ Entscheider legen pending_writes an → Dispatcher verteilt → Manager führt a
 
 import inspect
 import logging
-from abc     import ABC, abstractmethod
+from abc import ABC, abstractmethod
 from pathlib import Path
 
 import psycopg2

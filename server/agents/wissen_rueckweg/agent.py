@@ -37,6 +37,11 @@ import logging
 import uuid
 from dataclasses import dataclass
 
+from agents.base import AgentState, BaseAgent
+from agents.wissen_rueckweg import AUFGABE_EINARBEITEN, AUFGABE_VERWEIS
+from agents.wissen_rueckweg.einarbeitung import einarbeiten
+from agents.wissen_rueckweg.herkunft import herkunft_lesen
+from agents.wissen_rueckweg.zuordnung import kandidaten_laden, ziel_bestimmen
 from config import (
     ASSISTANT_USER_ID,
     DEFAULT_USER_ID,
@@ -51,12 +56,6 @@ from memory.repositories.autonomous_wissen_repository import (
 from services.model_services import EmbedRequest, model_service
 from services.wissensspeicher import themen_vektoren_bauen
 from tools.db_manager import db_manager
-
-from agents.base import AgentState, BaseAgent
-from agents.wissen_rueckweg import AUFGABE_EINARBEITEN, AUFGABE_VERWEIS
-from agents.wissen_rueckweg.einarbeitung import einarbeiten
-from agents.wissen_rueckweg.herkunft import herkunft_lesen
-from agents.wissen_rueckweg.zuordnung import kandidaten_laden, ziel_bestimmen
 
 logger = logging.getLogger("ki_server.agents.wissen_rueckweg")
 

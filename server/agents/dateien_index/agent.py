@@ -24,9 +24,6 @@ import logging
 import uuid
 from pathlib import Path
 
-from config import DATEIEN_INDEX_MAX_PRO_LAUF, DEFAULT_USER_ID
-from tools.db_manager import db_manager
-
 from agents.base import AgentState, BaseAgent, PeriodicTask
 from agents.dateien_index.indizieren import Erschliessung, erschliessen
 from agents.dateien_index.speicher import (
@@ -43,6 +40,8 @@ from agents.dateien_index.wandern import (
     wandern,
 )
 from agents.dateien_wurzeln.aussenrand import wurzel_pruefen
+from config import DATEIEN_INDEX_MAX_PRO_LAUF, DEFAULT_USER_ID
+from tools.db_manager import db_manager
 
 logger = logging.getLogger("ki_server.agents.dateien_index")
 

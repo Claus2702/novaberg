@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Einmalige Migration: kzg:nova:nova:* → kzg:nova:meister:*
+"""Einmalige Migration: kzg:nova:nova:* → kzg:nova:meister:*.
 
 Novas Selbst-Erkenntnisse lagen vor Chat 71 unter dem falschen
 Gegenueber-Key (nova statt meister). Dieses Skript verschiebt sie
@@ -10,8 +10,8 @@ Aufruf:
     python3 -m tools.migrate_kzg_nova_nova --commit  (Ausfuehren)
 """
 
-import sys
 import logging
+import sys
 
 from config import redis_client
 

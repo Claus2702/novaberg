@@ -22,19 +22,19 @@ import logging
 
 import redis
 
-from graph.reiz  import reiz_text
-from graph.state import ConversationState, pipeline_quelle
-from config import get_node_config, PROMPTS, ASSISTANT_NAME
+from config import ASSISTANT_NAME, PROMPTS, get_node_config
 from ei.salienz import salienz_effektiv_berechnen
+from graph.reiz import reiz_text
+from graph.state import ConversationState, pipeline_quelle
 from memory.charakter import nutzer_gewichtung_laden
 from memory.pipeline_log import (
-    span_start,
-    span_end,
-    log_switch,
     log_berechnung,
     log_fehler,
+    log_switch,
+    span_end,
+    span_start,
 )
-from services.model_services import model_service, ChatRequest
+from services.model_services import ChatRequest, model_service
 
 logger = logging.getLogger("ki_server.salience")
 

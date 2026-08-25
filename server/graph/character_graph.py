@@ -27,12 +27,12 @@ Flow (PFAD2-PERZEPTION-FIX Phase 2):
 
 import logging
 
-from langgraph.graph import StateGraph, END
+from langgraph.graph import END, StateGraph
 from langgraph.graph.state import CompiledStateGraph
 
-from graph.base  import GraphBase
-from graph.state import ConversationState
 from graph.antwort_spur import antwort_setzen
+from graph.base import GraphBase
+from graph.state import ConversationState
 
 logger = logging.getLogger("ki_server.graph.character")
 

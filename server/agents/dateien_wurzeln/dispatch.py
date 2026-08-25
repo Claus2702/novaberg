@@ -9,12 +9,11 @@ Tor-Fluss:
 
 import logging
 
-from graph.reiz import reiz_text
-from tools.redis_manager import redis_manager
-
 from agents import AgentRegistry
 from agents.base import AgentResult, AgentState, Korrektur
 from agents.dateien_wurzeln.aussenrand import rand_text
+from graph.reiz import reiz_text
+from tools.redis_manager import redis_manager
 
 logger = logging.getLogger("ki_server.agents.dateien_wurzeln.dispatch")
 

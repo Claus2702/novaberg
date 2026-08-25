@@ -7,7 +7,7 @@ Bekommt die Lagebeurteilung als Kontext fuer gezielte Queries.
 import json
 import logging
 
-from services.model_services import model_service, BackgroundRequest
+from services.model_services import BackgroundRequest, model_service
 
 logger = logging.getLogger("ki_server.agents.recherche")
 

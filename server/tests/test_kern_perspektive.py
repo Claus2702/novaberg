@@ -28,8 +28,8 @@ Kein skipUnless, kein skipIf, kein try/except um Importe.
 import unittest
 from unittest.mock import patch
 
-from config import ASSISTANT_NAME, ASSISTANT_USER_ID
 from agents.charakter.destillation import kern_hash_destillieren
+from config import ASSISTANT_NAME, ASSISTANT_USER_ID
 
 DESTILLATION_LOGGER: str = "ki_server.agents.charakter.destillation"
 
@@ -111,7 +111,8 @@ class TestMaterialTrennung(unittest.TestCase):
 
     def test_ohne_beitrag_des_traegers_kein_profil(self) -> None:
         """Begegnungen ohne eigenen Beitrag ergeben kein leeres Profil, sondern
-        eine Meldung — sonst sieht ein Ausfall wie ein Ergebnis aus."""
+        eine Meldung — sonst sieht ein Ausfall wie ein Ergebnis aus.
+        """
         nur_antworten = [{"aeusserung": "", "antwort": "Ich denke nach."}]
 
         with patch("agents.charakter.destillation._llm_call", _Faenger()):

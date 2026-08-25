@@ -75,8 +75,8 @@ def _letzte_nutzer_nachricht(zustand: dict) -> str:
     Nachbedingung: der Inhalt der letzten Nachricht in der Rolle des Nutzers.
     Fehlerfaelle: keine — fehlt sie, scheitert der Aufrufer sichtbar.
     """
-    from unittest.mock import patch
     from types import SimpleNamespace
+    from unittest.mock import patch
 
     from graph.nodes import responder as modul
 

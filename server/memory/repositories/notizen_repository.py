@@ -4,7 +4,7 @@ Keine Business-Logik — reine CRUD-Operationen.
 """
 
 import logging
-from datetime import datetime, timedelta
+from datetime import datetime
 
 import psycopg2
 import psycopg2.extras

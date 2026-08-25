@@ -24,8 +24,6 @@ import uuid
 
 from api.websocket import broadcast_threadsafe
 from config import ASSISTANT_USER_ID, llm_lock, redis_client, shutdown_event
-from tools.db_manager import db_manager
-
 from services.events import event_erzeugen, event_wartet
 from services.prompt_eingang import (
     block_zu_prompt,
@@ -34,6 +32,7 @@ from services.prompt_eingang import (
     turn_beginnen,
 )
 from services.shadow_delivery import shadow_burst_reset
+from tools.db_manager import db_manager
 
 logger = logging.getLogger("ki_server.prompt_consumer")
 

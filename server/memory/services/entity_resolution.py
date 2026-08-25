@@ -15,7 +15,7 @@ from dataclasses import dataclass, field
 import redis
 
 from memory.repositories.entitaeten_repository import EntitaetenRepository
-from services.model_services import model_service, EmbedRequest
+from services.model_services import EmbedRequest, model_service
 
 logger = logging.getLogger("ki_server.memory.services.entity_resolution")
 
@@ -29,6 +29,7 @@ AGENT_STATE_TTL: int = 3600  # 1 Stunde
 @dataclass
 class ResolvedEntity:
     """Ergebnis einer Entity Resolution."""
+
     name:             str
     typ:              str = "sonstiges"
     bekannte_id:      int | None = None
@@ -42,6 +43,7 @@ class ResolvedEntity:
 @dataclass
 class ResolutionResult:
     """Gesamtergebnis einer Batch-Resolution."""
+
     aufgeloest:        list[ResolvedEntity] = field(default_factory=list)
     braucht_klärung:   bool = False
     klärungsfragen:    list[str] = field(default_factory=list)

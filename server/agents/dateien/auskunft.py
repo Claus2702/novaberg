@@ -18,10 +18,9 @@ und `zoom.py` gelesen.
 
 import logging
 
-from utils.etikett import mit_etikett
-
 from agents.dateien.suche import KANAL_NAME, KANAL_STICHWORT, KANAL_VEKTOR
 from agents.dateien.zoom import STUFE_BLOCK, STUFE_KARTE, STUFE_NADEL
+from utils.etikett import mit_etikett
 
 logger = logging.getLogger("ki_server.agents.dateien.auskunft")
 

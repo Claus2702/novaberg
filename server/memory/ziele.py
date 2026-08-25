@@ -12,8 +12,8 @@ from datetime import datetime, timezone
 import psycopg2
 
 from config import ASSISTANT_USER_ID, DEFAULT_USER_ID, ZIEL_MITTELFRISTIG_DECAY_TAGE
-from services.model_services import model_service, EmbedRequest
 from memory.utils import embedding_zu_pgvector_str
+from services.model_services import EmbedRequest, model_service
 
 logger = logging.getLogger("ki_server.memory.ziele")
 

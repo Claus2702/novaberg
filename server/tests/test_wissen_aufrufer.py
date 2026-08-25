@@ -39,17 +39,18 @@ from pathlib import Path
 from unittest.mock import patch
 
 import psycopg2
+
+#: Der Endknoten des Graphen, wie LangGraph ihn benennt. Als Import und nicht
+#: als Zeichenkette: Ein Zeuge, der "__end__" hinschreibt, bliebe bei einer
+#: Umbenennung gruen und pruefte nichts mehr.
+from langgraph.graph import END as END_FREI
+
 from agents.base import AgentState
 from agents.nmcp import ZUSAGEN, anmelden
 from agents.wissen import auskunft
 from agents.wissen.agent import TYP_WISSEN, WissenAgent
 from config import WISSEN_AUFTRAG_TOP_K, WISSEN_RETRIEVAL_TOP_K
 from graph.nodes.planner import _manager_zu_target
-
-#: Der Endknoten des Graphen, wie LangGraph ihn benennt. Als Import und nicht
-#: als Zeichenkette: Ein Zeuge, der "__end__" hinschreibt, bliebe bei einer
-#: Umbenennung gruen und pruefte nichts mehr.
-from langgraph.graph import END as END_FREI
 from memory.repositories.autonomous_wissen_repository import Bibliothekszeile
 from plugins.wissen_manager.manager import WissenManager
 

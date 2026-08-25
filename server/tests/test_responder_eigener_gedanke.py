@@ -98,7 +98,7 @@ class ResponderPromptTest(unittest.TestCase):
         self.assertNotIn(MARKER, prompt)
 
     def test_kommunikations_kopf_nennt_den_richtigen_traeger(self):
-        """external ist beim Impuls eine Kopie von internal (db_zugriff)."""
+        """External ist beim Impuls eine Kopie von internal (db_zugriff)."""
         eigen: str = _build_system_prompt(
             _state({"reiz_herkunft": "eigener_impuls"}, event_source="character")
         )

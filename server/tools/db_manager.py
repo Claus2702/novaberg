@@ -1,9 +1,11 @@
 """DBManager — PostgreSQL-Zugriff, threadsafe durch Connection-Pooling."""
 
+import logging
+
 import psycopg2
 import psycopg2.extras
 import psycopg2.pool
-import logging
+
 from config import POSTGRES_URL
 
 logger = logging.getLogger(__name__)
@@ -16,7 +18,7 @@ class DBManager:
     arbeitet damit, gibt sie zurück. Kein geteilter Zustand im Manager.
     """
 
-    def __init__(self, postgres_url: str):
+    def __init__(self, postgres_url: str) -> None:
         self._pool = psycopg2.pool.ThreadedConnectionPool(
             minconn=2,
             maxconn=10,

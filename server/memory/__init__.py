@@ -12,39 +12,38 @@ Aufbau:
 """
 
 # KZG
+# Charakter-Hash
+from memory.charakter import charakter_hash_retrieve
 from memory.kzg import (
+    EMBEDDING_DIM,
+    KZG_INDEX_NAME,
+    KZG_PREFIX,
+    PROMOTION_THRESHOLD,
+    SIMILARITY_THRESHOLD,
+    kzg_entries_retrieve,
     kzg_index_create,
     kzg_similar_find,
     kzg_store,
-    kzg_entries_retrieve,
-    EMBEDDING_DIM,
-    SIMILARITY_THRESHOLD,
-    PROMOTION_THRESHOLD,
-    KZG_INDEX_NAME,
-    KZG_PREFIX,
-)
-
-# Charakter-Hash
-from memory.charakter import charakter_hash_retrieve
-
-# Session
-from memory.session import (
-    session_turn_store,
-    session_turn_mark_action,
-    session_summarize_if_needed,
-    session_turns_retrieve,
-    session_context_build,
-    session_reset,
-    SESSION_MAX_TURNS,
-    SESSION_TTL,
-    SESSION_SUMMARIZE_AT,
 )
 
 # Repositories (M2-M6)
 from memory.repositories import (
     EntitaetenRepository,
     FaktenRepository,
-    TimelineRepository,
     NotizenRepository,
+    TimelineRepository,
 )
 from memory.services import EntityResolutionService
+
+# Session
+from memory.session import (
+    SESSION_MAX_TURNS,
+    SESSION_SUMMARIZE_AT,
+    SESSION_TTL,
+    session_context_build,
+    session_reset,
+    session_summarize_if_needed,
+    session_turn_mark_action,
+    session_turn_store,
+    session_turns_retrieve,
+)

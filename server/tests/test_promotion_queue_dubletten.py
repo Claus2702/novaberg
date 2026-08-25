@@ -28,7 +28,7 @@ UTILS_LOGGER: str = "ki_server.shadow"
 class FakeRedis:
     """Minimal-Redis mit den drei Listen-Operationen, die der Helfer nutzt."""
 
-    def __init__(self, vorbelegung: list[str] | None = None):
+    def __init__(self, vorbelegung: list[str] | None = None) -> None:
         self.listen: dict[str, list[str]] = {}
         if vorbelegung:
             self.listen["queue:meister"] = list(vorbelegung)
@@ -48,7 +48,8 @@ class FakeRedis:
     def eintraege(self, key: str = "queue:meister") -> list[dict]:
         """Nur die lesbaren Eintraege. Unlesbare gehoeren zum Testaufbau und
         werden hier uebergangen — sonst scheitert der Helfer statt der
-        geprueften Funktion."""
+        geprueften Funktion.
+        """
         lesbar: list[dict] = []
         for roh in self.listen.get(key, []):
             try:

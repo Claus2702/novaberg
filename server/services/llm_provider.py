@@ -8,22 +8,17 @@ Embedding ist NICHT Teil dieser Abstraktion — bleibt immer Ollama.
 """
 
 import logging
-import re
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from typing import Optional
 
-import ollama
 import anthropic
+import ollama
+
 from config import (
     ANTHROPIC_PRICE_INPUT_PER_M,
     ANTHROPIC_PRICE_OUTPUT_PER_M,
     DEFAULT_USER_ID,
-)
-from services.postprocess import (
-    clean_json_response,
-    deduplicate_repetition,
-    repair_truncated_json,
 )
 
 logger = logging.getLogger("ki_server.llm_provider")
@@ -44,6 +39,7 @@ class LLMAntwort:
                   separates thinking-Feld in der Chat-Response). Default ""
                   — additiv, bricht keine bestehende Konstruktion.
     """
+
     content:     str
     token_total: int
     thinking:    str = ""

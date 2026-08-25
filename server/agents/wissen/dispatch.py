@@ -16,10 +16,9 @@ Bibliothek als Quelle gesucht haben — dieselbe Suche, zweiter Eingang
 
 import logging
 
-from graph.reiz import reiz_text
-
 from agents import AgentRegistry
 from agents.base import AgentResult, AgentState, Korrektur
+from graph.reiz import reiz_text
 
 logger = logging.getLogger("ki_server.agents.wissen.dispatch")
 

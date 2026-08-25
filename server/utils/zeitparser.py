@@ -13,7 +13,7 @@ Python loest ihn deterministisch auf.
 import logging
 import re
 from dataclasses import dataclass
-from datetime import date, datetime, timezone, timedelta
+from datetime import date, datetime, timedelta, timezone
 from typing import Optional
 from zoneinfo import ZoneInfo
 
@@ -27,6 +27,7 @@ logger = logging.getLogger("ki_server.zeitparser")
 @dataclass
 class ZeitVektor:
     """Ergebnis des Vektor-Parsings: Was wurde erkannt?"""
+
     datum: Optional[datetime]
     tag_erkannt: bool
     uhrzeit_erkannt: bool
@@ -49,6 +50,7 @@ class MarkerBefund:
     hat. Der Rumpf wird nur von dem befreit, was `dateparser` verwirren
     wuerde — was er selbst versteht, bleibt stehen.
     """
+
     richtung: str = "unbestimmt"       # "vorwaerts"|"rueckwaerts"|"unbestimmt"
     ankerart: str = "referenz"         # "jetzt"|"referenz"
     versatz_tage: int = 0              # "uebernaechste" -> 7
@@ -80,6 +82,7 @@ class MarkerRegel:
     `dateparser` selbst, `seit` nicht. Wer beides in einem Flag fuehrt, muss
     fuer jeden neuen Marker den falschen Kompromiss waehlen.
     """
+
     kennung: str
     muster: str
     richtung: str = "unbestimmt"
@@ -1048,7 +1051,7 @@ def _aufloesen(
 
     # Letzter Fallback: Originaler Text, falls Normalisierung dateparser verwirrt hat
     if ergebnis is None and normalisiert != korrigiert:
-        logger.info(f"Zeitparser: Normalisierter Text fehlgeschlagen, versuche Original...")
+        logger.info("Zeitparser: Normalisierter Text fehlgeschlagen, versuche Original...")
         ergebnis = dateparser.parse(korrigiert, languages=["de"], settings=settings)
         if ergebnis:
             pfad = 3

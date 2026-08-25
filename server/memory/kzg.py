@@ -12,35 +12,33 @@ import json
 import logging
 import math
 import time
-
 from typing import Optional
 
 import numpy as np
 import redis
+from redis.commands.search.field import NumericField, TagField, TextField, VectorField
+from redis.commands.search.indexDefinition import IndexDefinition, IndexType
+from redis.commands.search.query import Query
 
-from config                                import (
+from config import (
     ASSISTANT_USER_ID,
     KZG_RETRIEVAL_SCHWELLE,
-    KZG_SALIENZ_MINIMUM,
-    KZG_SALIENZ_MID,
-    KZG_SALIENZ_HIGH,
+    KZG_SALIENZ_BOOST,
     KZG_SALIENZ_CAP,
     KZG_SALIENZ_DAEMPFUNG_EXP,
-    KZG_SALIENZ_BOOST,
+    KZG_SALIENZ_HIGH,
+    KZG_SALIENZ_MID,
+    KZG_SALIENZ_MINIMUM,
+    KZG_TTL_HIGH_SEKUNDEN,
     KZG_TTL_LOW_SEKUNDEN,
     KZG_TTL_MID_SEKUNDEN,
-    KZG_TTL_HIGH_SEKUNDEN,
-    PIXIE_AKTIV,
     MESSREIHE_OHNE_AUTOMATISCHE_DESTILLATION,
+    PIXIE_AKTIV,
 )
-from graph.context_entry                   import ContextEntry
-from memory.pipeline_log                   import log_db_write
-from services.shadow_agent                 import shadow_queue_push
-from services.shadow_agent.utils           import promotion_queue_push
-
-from redis.commands.search.field           import TextField, NumericField, VectorField, TagField
-from redis.commands.search.indexDefinition import IndexDefinition, IndexType
-from redis.commands.search.query           import Query
+from graph.context_entry import ContextEntry
+from memory.pipeline_log import log_db_write
+from services.shadow_agent import shadow_queue_push
+from services.shadow_agent.utils import promotion_queue_push
 
 logger = logging.getLogger("ki_server.memory.kzg")
 

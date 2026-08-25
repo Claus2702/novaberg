@@ -1,10 +1,11 @@
 """Agent-System — Registry, Auto-Discovery, Dispatch-Registry."""
 
 import logging
-from pathlib        import Path
-from importlib      import import_module
-from agents.base    import BaseAgent
-from typing         import Callable
+from importlib import import_module
+from pathlib import Path
+from typing import Callable
+
+from agents.base import BaseAgent
 
 logger = logging.getLogger(__name__)
 

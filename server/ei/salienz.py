@@ -32,8 +32,8 @@ import logging
 from dataclasses import dataclass, field
 
 from config import (
-    RAD_MIN,
     RAD_MAX,
+    RAD_MIN,
     SALIENZ_EREGUNG_MAX_ZUSCHLAG,
 )
 

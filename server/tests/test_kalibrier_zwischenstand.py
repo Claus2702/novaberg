@@ -259,6 +259,7 @@ class TestZeugenkennung(unittest.TestCase):
         # Zeuge ist eine eigene Rechnung im Test, nicht die geprüfte Funktion:
         # Derselbe Algorithmus auf einem geaenderten Text muss abweichen.
         import hashlib
+
         from agents.kalibrierung.zeuge import ZEUGE_PROMPT
 
         anders: str = hashlib.sha256(

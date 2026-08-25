@@ -87,7 +87,7 @@ def _create(state: AgentState) -> dict:
     """Neue Notiz anlegen -- LLM extrahiert Name, Typ, Text, Themen."""
     from config import POSTGRES_URL, get_node_config
     from memory.repositories.notizen_repository import NotizenRepository
-    from services.model_services import model_service, ChatRequest
+    from services.model_services import ChatRequest, model_service
 
     user_id = state["kontext"].get("user_id", "")
     prompt = state["aufgabe"]
@@ -200,7 +200,7 @@ def _update(state: AgentState) -> dict:
     """
     from config import POSTGRES_URL, get_node_config
     from memory.repositories.notizen_repository import NotizenRepository
-    from services.model_services import model_service, ChatRequest
+    from services.model_services import ChatRequest, model_service
 
     notiz = state["parameter"].get("notiz", {})
     notiz_id = notiz.get("id")

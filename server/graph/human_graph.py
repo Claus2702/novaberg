@@ -18,10 +18,10 @@ Reducer weiterhin zwischen Enricher und EI-Calc.
 
 import logging
 
-from langgraph.graph import StateGraph, END
+from langgraph.graph import END, StateGraph
 from langgraph.graph.state import CompiledStateGraph
 
-from graph.base  import GraphBase
+from graph.base import GraphBase
 from graph.state import ConversationState
 
 logger = logging.getLogger("ki_server.graph.human")

@@ -77,7 +77,7 @@ class VerfasserPromptTest(unittest.TestCase):
         self.assertIn("eigener Gedanke von Person A", prompt)
 
     def test_der_block_fuehrt_statt_zu_verbieten(self) -> None:
-        """**Am 14.08.2026 umgedreht, nicht geloescht.**
+        """**Am 14.08.2026 umgedreht, nicht geloescht.**.
 
         Bis dahin stand hier die Zusicherung, dass der Block die gemessene
         Formulierung „Du hast …" **woertlich verbietet**. Der Gegenstand ist

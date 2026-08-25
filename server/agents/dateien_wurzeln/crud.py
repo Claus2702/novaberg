@@ -12,8 +12,6 @@ Zusicherung aus §7 Regel 2.
 import logging
 from dataclasses import dataclass
 
-from tools.db_manager import db_manager
-
 from agents.base import AgentState, Korrektur
 from agents.crud_validation import ValidationResult
 from agents.dateien_wurzeln.aussenrand import (
@@ -22,6 +20,7 @@ from agents.dateien_wurzeln.aussenrand import (
     rand_text,
     wurzel_pruefen,
 )
+from tools.db_manager import db_manager
 
 logger = logging.getLogger("ki_server.agents.dateien_wurzeln.crud")
 

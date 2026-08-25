@@ -36,6 +36,7 @@ def _add_months(dt: datetime, months: int) -> datetime:
 @dataclass(frozen=True)
 class EventTime:
     """Zeitwert mit variabler Präzision für Timeline-Einträge."""
+
     timestamp: datetime
     precision: str
 

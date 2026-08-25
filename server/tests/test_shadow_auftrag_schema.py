@@ -41,8 +41,9 @@ import unittest
 import uuid
 
 import psycopg2
-from config import POSTGRES_URL
 from psycopg2 import errors
+
+from config import POSTGRES_URL
 
 TABELLE:          str = "shadow_auftrag"
 INDEX_WAHL:       str = "idx_shadow_auftrag_wahl"

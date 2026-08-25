@@ -17,9 +17,8 @@ from config import (
     PIXIE_RECHERCHE_SESSION_TURNS,
     redis_client,
 )
-from services.model_services import model_service, BackgroundRequest
-
 from memory.session import _beitrag_aus_turn, sprecher_bezeichnen
+from services.model_services import BackgroundRequest, model_service
 
 logger = logging.getLogger(__name__)
 

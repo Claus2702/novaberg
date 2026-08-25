@@ -11,14 +11,13 @@ from datetime import datetime, timedelta, timezone
 
 from config import LZG_EMBEDDING_SCHWELLWERT, LZG_TIMELINE_TOLERANZ_TAG
 from memory.lzg_kanten import (
+    SCHICHT_EMBEDDING,
+    SCHICHT_ENTITAET,
+    SCHICHT_TIMELINE,
+    embedding_tiefe,
     kanten_staerke_berechnen,
     themen_tiefe,
-    embedding_tiefe,
     timeline_tiefe,
-    SCHICHT_ENTITAET,
-    SCHICHT_EMBEDDING,
-    SCHICHT_THEMEN,
-    SCHICHT_TIMELINE,
 )
 
 # Konzept §7.5 rechnet seine drei Beispiele mit den Konstanten durch, die zur

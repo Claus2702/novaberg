@@ -17,33 +17,33 @@ import re
 from dataclasses import dataclass
 
 from config import (
-    EMOTION_DECAY_FACTOR,
-    EMOTION_DECAY_BASE,
-    EMOTION_DEFAULT_AROUSAL,
-    EMOTION_MAX_TURNS,
-    EMOTION_MIN_WEIGHT,
-    EMOTION_VEKTOR_TURNS,
-    GV_VEKTOR_INTENSITAET_SCHWELLE,
-    STIL_ANALYSE_TURNS,
+    EI_AROUSAL_DOMINANZ,
     EI_AROUSAL_PERSISTENCE,
     EI_DYNAMIK_FAKTOREN,
-    EI_INTENT_FAKTOREN,
-    EI_TONE_FAKTOREN,
     EI_GEWICHTE,
+    EI_INTENT_FAKTOREN,
     EI_PASSIV_NEGATIVE,
+    EI_TONE_FAKTOREN,
+    EMOTION_AROUSAL_DECAY,
+    EMOTION_DECAY_BASE,
+    EMOTION_DECAY_FACTOR,
+    EMOTION_DEFAULT_AROUSAL,
+    EMOTION_GLAETTUNGS_MAXIMUM,
+    EMOTION_HISTORIEN_GEWICHT,
+    EMOTION_KANON,
+    EMOTION_MAX_TURNS,
+    EMOTION_MIN_WEIGHT,
+    EMOTION_SEKTOR_DISTANZ,
     EMOTION_SEKTOR_MAP,
     EMOTION_SYNONYM_MAP,
-    EMOTION_KANON,
-    EMOTION_SEKTOR_DISTANZ,
-    SEKTOR_GRUPPE,
-    EMOTION_AROUSAL_DECAY,
-    EI_AROUSAL_DOMINANZ,
-    EMOTION_HISTORIEN_GEWICHT,
-    EMOTION_GLAETTUNGS_MAXIMUM,
+    EMOTION_VEKTOR_TURNS,
     EMPATHIE_ALPHA,
     EMPATHIE_ALPHA_NEUTRAL,
     EMPATHIE_KONFLIKT_DISTANZ,
     EMPATHIE_KONFLIKT_MIN_AROUSAL,
+    GV_VEKTOR_INTENSITAET_SCHWELLE,
+    SEKTOR_GRUPPE,
+    STIL_ANALYSE_TURNS,
 )
 
 logger = logging.getLogger("ki_server.ei.berechnung")
@@ -842,9 +842,7 @@ def _modus_plausibilitaet(
     ei_arousal:       float,
     perzeption_modus: str,
 ) -> str:
-    """
-    Bestimmt den plausiblen Gesprächsmodus basierend auf Emotion und EI-Arousal.
-    """
+    """Bestimmt den plausiblen Gesprächsmodus basierend auf Emotion und EI-Arousal."""
     sektor: int | None = EMOTION_SEKTOR_MAP.get(emotion)
     gruppe: str = SEKTOR_GRUPPE.get(sektor, "neutral") if sektor else "neutral"
 

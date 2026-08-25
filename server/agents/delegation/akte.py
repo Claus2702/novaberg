@@ -7,13 +7,11 @@ akte_anreichern: Bestehende Akte um eine Seite erweitern, Prioritaet erhoehen.
 import json
 import logging
 
-import numpy as np
-
 from agents.base import AgentState
 from config import (
-    postgres_verbinden,
-    DELEGATION_VERSTAERKUNG_DIVISOR,
     DELEGATION_AROUSAL_BOOST,
+    DELEGATION_VERSTAERKUNG_DIVISOR,
+    postgres_verbinden,
 )
 
 logger = logging.getLogger("ki_server.agents.delegation.akte")

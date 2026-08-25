@@ -31,10 +31,10 @@ from tools.dateien.versionierung import (
     ARCHIVBLOCK,
     LEBENDBLOCK,
     Fassung,
-    aktuell_lesen,
     absatz_aendern,
     absatz_einfuegen,
     absatz_loeschen,
+    aktuell_lesen,
     marken_finden,
     paarung_pruefen,
     verlauf_lesen,
@@ -256,7 +256,8 @@ class VersionierungTest(unittest.TestCase):
 
     def test_leerzeile_vor_dem_archivblock(self) -> None:
         """Ohne sie liest ein Parser die Überschrift als Teil des Absatzes —
-        dann wäre der Archivblock über die Karte nicht mehr auffindbar."""
+        dann wäre der Archivblock über die Karte nicht mehr auffindbar.
+        """
         absatz_einfuegen(self.datei, self.wurzel, "Ein Zusatz.", self.f23)
         zeilen = self._text().splitlines()
         i = zeilen.index(ARCHIVBLOCK)
@@ -280,7 +281,8 @@ class VersionierungTest(unittest.TestCase):
 
     def test_aktuell_lesen_funktioniert_ohne_historie(self) -> None:
         """Eine unberührte Datei hat keinen Historienblock — der lebende Teil
-        ist dann die ganze Datei."""
+        ist dann die ganze Datei.
+        """
         lebend = aktuell_lesen(self.datei, self.wurzel)
         self.assertIn("Der Westfaelische Friede", lebend)
 

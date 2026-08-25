@@ -9,7 +9,7 @@ import logging
 import time
 
 from agents.base import AgentState
-from config import redis_client, PIXIE_AKTIV, DEFAULT_USER_ID, POSTGRES_URL
+from config import DEFAULT_USER_ID, PIXIE_AKTIV, POSTGRES_URL, redis_client
 from memory.repositories.shadow_auftrag_repository import ShadowAuftragRepository
 from services.llm_provider import set_aktiver_pixie_user
 
@@ -28,6 +28,7 @@ async def agent_ausfuehren(agent_name: str, kandidat: dict, app_state) -> bool:
         True bei Erfolg, False bei Fehler
     """
     import asyncio
+
     from agents import AgentRegistry
 
     agent = AgentRegistry.finden(agent_name)

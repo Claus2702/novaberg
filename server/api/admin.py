@@ -1,6 +1,4 @@
-"""
-Admin-Endpunkte — Pixie-Steuerung für Tests und Wartung.
-"""
+"""Admin-Endpunkte — Pixie-Steuerung für Tests und Wartung."""
 
 import logging
 

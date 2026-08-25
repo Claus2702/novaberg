@@ -28,8 +28,8 @@ from json import JSONDecodeError
 from typing import Any
 
 from config import MODEL_BACKGROUND_TIMEOUT_S
-from services.llm_provider import LLMAntwort, LLMProvider
 from services import postprocess
+from services.llm_provider import LLMAntwort, LLMProvider
 from services.model_services.types import BackgroundRequest, BackgroundResponse
 from services.model_services.worker_base import ModelWorker
 

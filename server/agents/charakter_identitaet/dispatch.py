@@ -7,8 +7,9 @@ Resume-Flow:
 """
 
 import logging
+
 from agents import AgentRegistry
-from agents.base import Korrektur, AgentState, AgentResult
+from agents.base import AgentResult, AgentState, Korrektur
 from graph.reiz import reiz_text
 from tools.redis_manager import redis_manager
 

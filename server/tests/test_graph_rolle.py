@@ -17,8 +17,8 @@ Kein skipUnless, kein skipIf, kein try/except um Importe.
 import unittest
 from unittest.mock import MagicMock, patch
 
-from graph.state import pipeline_quelle
 from graph.nodes.salience import analyze
+from graph.state import pipeline_quelle
 
 SALIENZ_LOGGER: str = "ki_server.salience"
 

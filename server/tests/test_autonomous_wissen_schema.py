@@ -39,8 +39,9 @@ import unittest
 import uuid
 
 import psycopg2
-from config import POSTGRES_URL
 from psycopg2 import errors
+
+from config import POSTGRES_URL
 
 TABELLE:     str = "autonomous_wissen"
 INDEX_AKTIV: str = "idx_autonomous_wissen_aktiv"

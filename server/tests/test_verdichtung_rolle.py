@@ -14,8 +14,8 @@ import unittest
 from types import SimpleNamespace
 from unittest.mock import patch
 
-from config import ASSISTANT_NAME
 from agents.kzg.verdichtung import _build_verdichtung_prompt, verdichten
+from config import ASSISTANT_NAME
 from services.model_services import model_service
 
 VERDICHTUNG_LOGGER: str = "ki_server.agents.kzg.verdichtung"

@@ -93,6 +93,7 @@ class TestAufrufImNode(unittest.TestCase):
 
     def test_ei_calc_ruft_die_uebertragung(self) -> None:
         import inspect
+
         from graph.nodes import ei_calc as modul
 
         quelle: str = inspect.getsource(modul._ei_calc_character)

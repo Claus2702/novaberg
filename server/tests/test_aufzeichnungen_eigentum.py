@@ -90,7 +90,8 @@ class DerBlockNenntDenEigentuemerTest(unittest.TestCase):
 
     def test_beide_sorten_stehen_getrennt(self) -> None:
         """Der eigentliche Zweck: eine Liste unter einer Ueberschrift waere
-        fuer die andere Haelfte eine falsche Aussage."""
+        fuer die andere Haelfte eine falsche Aussage.
+        """
         block: str = verf_mod._aufzeichnungen_block(_state(aufzeichnungen=[
             _treffer("figur",  thema="Was ich nachgelesen habe"),
             _treffer("nutzer", thema="Was in seinen Unterlagen steht"),
@@ -106,7 +107,8 @@ class DerBlockNenntDenEigentuemerTest(unittest.TestCase):
 
     def test_der_eigenblock_traegt_die_herkunft_ueber_den_uebergang(self) -> None:
         """Ohne diesen Satz liegt beim naechsten Mal eine herkunftslose
-        Aussage im Gedaechtnis (§1a.4) — auch bei eigenem Material."""
+        Aussage im Gedaechtnis (§1a.4) — auch bei eigenem Material.
+        """
         block: str = verf_mod._aufzeichnungen_block(
             _state(aufzeichnungen=[_treffer("figur")])
         )

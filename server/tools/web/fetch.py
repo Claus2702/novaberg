@@ -1,8 +1,10 @@
 """PageFetcher — URL abrufen und Artikeltext extrahieren."""
 
 import logging
+
 import httpx
-from config import PAGE_FETCH_TIMEOUT, PAGE_FETCH_MAX_CHARS
+
+from config import PAGE_FETCH_MAX_CHARS, PAGE_FETCH_TIMEOUT
 
 logger = logging.getLogger(__name__)
 

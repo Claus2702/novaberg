@@ -4,8 +4,8 @@ Stellt Datenklassen, Keyword-Hints und Verb-Mapping-Logik bereit.
 Konzept: nova-14-k.md (Chat 42).
 """
 
-import re
 import logging
+import re
 from dataclasses import dataclass, field
 
 from tools.db_manager import db_manager
@@ -20,6 +20,7 @@ logger = logging.getLogger("ki_server.agents.crud_validation")
 @dataclass
 class KlassifikationsErgebnis:
     """Output des Classify-Node nach Keyword-Hints + LLM."""
+
     aktion: str
     target: str | None = None
     slots: dict = field(default_factory=dict)
@@ -30,6 +31,7 @@ class KlassifikationsErgebnis:
 @dataclass
 class ValidationResult:
     """Ergebnis der Validierung gegen DB-Zustand."""
+
     ok: bool
     korrektur: str | None = None
     grund: str = ""
@@ -40,6 +42,7 @@ class ValidationResult:
 @dataclass
 class CrudErgebnis:
     """Ergebnis einer CRUD-Operation mit Vorher/Nachher-Snapshot."""
+
     erfolg: bool
     aktion: str
     vorher: dict | None = None

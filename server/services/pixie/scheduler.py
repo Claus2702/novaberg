@@ -33,7 +33,6 @@ import time
 
 from agents import AgentRegistry
 from config import PIXIE_LOCK_TTL_SEKUNDEN, redis_client
-
 from services.model_services.spur import SPUR_LLM, spur_setzen, spur_zuruecksetzen
 from services.pixie.dispatch import abschluss, agent_ausfuehren
 from services.pixie.kandidaten import kandidaten_sammeln

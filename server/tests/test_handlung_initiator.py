@@ -33,7 +33,7 @@ Kein skipUnless, kein skipIf, kein try/except um Importe.
 import unittest
 from unittest.mock import MagicMock, patch
 
-from agents.base import Korrektur, AgentResult
+from agents.base import AgentResult, Korrektur
 from graph.nodes import agent_dispatch as ad_mod
 
 GEDANKE: str = (

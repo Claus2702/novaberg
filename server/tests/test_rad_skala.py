@@ -91,7 +91,8 @@ class SkalaTest(unittest.TestCase):
 
     def test_volle_auslenkung_trifft_die_klemme_weiterhin_exakt(self) -> None:
         """Die Gegenprobe zur vorigen: Die feine Skala verschiebt die
-        Konstruktion nicht, sie fuellt sie nur dichter."""
+        Konstruktion nicht, sie fuellt sie nur dichter.
+        """
         voll_hoch = {"hoch":   {n: 1.0 for n in RAD_ZUG_HOCH},
                      "runter": {n: 0.0 for n in RAD_ZUG_RUNTER}}
         voll_runter = {"hoch":   {n: 0.0 for n in RAD_ZUG_HOCH},

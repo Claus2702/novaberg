@@ -12,11 +12,12 @@ from typing import TypedDict
 from ei.haltung import Haltung
 from graph.context_entry import ContextEntry
 from graph.einwand import Einwandsurteil
-from graph.personality import Personality, InternalPersonality
+from graph.personality import InternalPersonality, Personality
 
 
 class TribunalVote(TypedDict):
     """Einzelnes Votum eines Tribunal-Agenten."""
+
     agent:     str    # jurist | psychologe | ethik
     vote:      str    # ok | warnung | ablehnen
     reasoning: str
@@ -24,6 +25,7 @@ class TribunalVote(TypedDict):
 
 class PendingWrite(TypedDict):
     """Geplante DB-Operation — wird vom Dispatcher an Manager verteilt."""
+
     ziel:          str    # kzg | fakten | timeline | notizen | ...
     aktion:        str    # create | update | delete | upsert
     daten:         dict   # Manager-spezifische Nutzdaten

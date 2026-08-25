@@ -1,8 +1,10 @@
 """WebSearchManager — SearXNG-Zugriff für Web-Suche."""
 
 import logging
+
 import httpx
-from config import SEARXNG_URL, SEARXNG_TIMEOUT, SEARXNG_MAX_RESULTS
+
+from config import SEARXNG_MAX_RESULTS, SEARXNG_TIMEOUT, SEARXNG_URL
 
 logger = logging.getLogger(__name__)
 
@@ -14,7 +16,7 @@ class WebSearchManager:
     bietet aber eine synchrone, vereinfachte API für Agenten.
     """
 
-    def __init__(self, base_url: str, timeout: float, max_results: int):
+    def __init__(self, base_url: str, timeout: float, max_results: int) -> None:
         self._base_url = base_url.rstrip("/")
         self._timeout = timeout
         self._max_results = max_results

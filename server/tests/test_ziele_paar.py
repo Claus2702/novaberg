@@ -34,8 +34,9 @@ import unittest
 from pathlib import Path
 from unittest.mock import patch
 
-import graph.nodes.enricher as enricher_mod
 import psycopg2
+
+import graph.nodes.enricher as enricher_mod
 from config import ASSISTANT_USER_ID, DEFAULT_USER_ID, POSTGRES_URL
 from memory.ziele import ziel_paar_bestimmen, ziel_speichern, ziele_aktive_laden
 

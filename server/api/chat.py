@@ -1,6 +1,4 @@
-"""
-Chat-Endpunkte — Synchron und SSE-Streaming.
-"""
+"""Chat-Endpunkte — Synchron und SSE-Streaming."""
 
 import json
 import logging
@@ -8,18 +6,18 @@ import time
 from collections.abc import Iterator
 from dataclasses import dataclass
 
+from fastapi import APIRouter, Request
+from fastapi.responses import JSONResponse, StreamingResponse
+
+from api.models import GespraechAnfrage
 from config import (
     ASSISTANT_USER_ID,
     POSTGRES_URL,
     redis_client,
 )
-from fastapi import APIRouter, Request
-from fastapi.responses import JSONResponse, StreamingResponse
 from memory.repositories.entitaeten_repository import EntitaetenRepository
 from services.model_services import EmbedRequest, model_service
 from services.prompt_eingang import EingehendeNachricht, nachricht_einreihen
-
-from api.models import GespraechAnfrage
 
 logger = logging.getLogger("ki_server.chat")
 

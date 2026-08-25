@@ -10,7 +10,7 @@ from dataclasses import dataclass
 
 import redis
 
-from services.model_services import model_service, ChatRequest
+from services.model_services import ChatRequest, model_service
 
 logger = logging.getLogger("ki_server.memory.session")
 
@@ -276,6 +276,7 @@ class Verlaufsbeitrag:
     Aeusserung der falschen Person zu — und jede sieht an ihrer neuen Stelle
     plausibel aus.
     """
+
     sprecher:           str            #: "user" | "nova"
     inhalt:             str
     aus_eigenem_antrieb: bool = False  #: Nova hat begonnen, niemand hat gefragt

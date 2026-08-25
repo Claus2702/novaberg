@@ -23,8 +23,8 @@ from agents.charakter.destillation import (
     RAD_NABE,
     RAD_ZUG_HOCH,
     RAD_ZUG_RUNTER,
-    charakter_rad_destillieren,
     ZUWENDUNG_RAD_LAEUFE,
+    charakter_rad_destillieren,
     nutzer_gewichtung_berechnen,
 )
 
@@ -56,7 +56,8 @@ class RadGrenzenTest(unittest.TestCase):
     def test_die_zuege_summieren_sich_auf_die_dokumentierten_spannen(self):
         """Wer einen Zug aendert, muss die Spanne mitaendern — sonst trifft die
         volle Auslenkung die Grenze nicht mehr, und die Kappung wird zum
-        Formteil statt zur Sicherung."""
+        Formteil statt zur Sicherung.
+        """
         self.assertAlmostEqual(sum(RAD_ZUG_HOCH.values()),   RAD_MAX - RAD_NABE, places=9)
         self.assertAlmostEqual(sum(RAD_ZUG_RUNTER.values()), RAD_NABE - RAD_MIN, places=9)
 
@@ -80,7 +81,8 @@ class RadBeispieleTest(unittest.TestCase):
 
     def test_die_widerspenstige_mit_wissbegier(self):
         """Das Rad ist kein Schieberegler: Ihr Interesse zieht sie nach oben,
-        obwohl sie ihn ablehnt."""
+        obwohl sie ihn ablehnt.
+        """
         rad: dict = _rad(
             hoch={"wissbegier": 1.0},
             runter={"widerspenstig": 1.0, "gleichgueltig": 1.0,
@@ -158,7 +160,8 @@ class RadDestillationTest(unittest.TestCase):
 
     def test_gueltige_antwort_liefert_rad_und_faktor(self):
         """Positiver Zwilling: Ohne ihn bestuenden alle Fehlerpfad-Tests auch
-        dann, wenn die Funktion grundsaetzlich None liefert."""
+        dann, wenn die Funktion grundsaetzlich None liefert.
+        """
         rad: dict = _rad(hoch={"treue": 1.0, "wohlwollen": 0.5})
         ergebnis = self._destillieren(json.dumps(rad))
 
@@ -189,7 +192,8 @@ class RadDestillationTest(unittest.TestCase):
 
     def test_leerer_profiltext_ruft_kein_llm(self):
         """Ohne Profil gibt es nichts zu bewerten — und keinen Grund, ein
-        Modell zu fragen."""
+        Modell zu fragen.
+        """
         with patch(
             "agents.charakter.destillation.model_service.background.submit_sync",
         ) as ruf:

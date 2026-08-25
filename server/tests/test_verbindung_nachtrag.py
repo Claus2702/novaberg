@@ -29,8 +29,8 @@ from unittest.mock import patch
 
 import psycopg2
 
-from config import POSTGRES_URL
 from agents.synapsen_promotion.agent import SynapsenPromotionAgent
+from config import POSTGRES_URL
 from memory.repositories.verbindung_repository import VerbindungRepository
 
 PROMOTION_LOGGER: str = "ki_server.agents.synapsen_promotion"

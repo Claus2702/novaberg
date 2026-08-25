@@ -1,11 +1,10 @@
-"""
-Charakter-Hash — Kern + Adaptiv aus PostgreSQL.
-"""
+"""Charakter-Hash — Kern + Adaptiv aus PostgreSQL."""
 
 import json
 import logging
 
 import psycopg2
+
 from config import ASSISTANT_USER_ID, INITIATIVE_RAD_SPANNE, RAD_MAX, RAD_MIN
 
 logger = logging.getLogger("ki_server.memory.charakter")

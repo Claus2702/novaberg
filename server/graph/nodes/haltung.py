@@ -43,11 +43,10 @@ from collections.abc import Callable
 
 from config import redis_client
 from ei.haltung import GROESSEN, Haltung, haltung_berechnen
+from graph.state import ConversationState, pipeline_quelle
 from memory.charakter import nutzer_gewichtung_rad_laden
 from memory.haltung import Standkopf, haltung_speichern
 from memory.pipeline_log import log_berechnung, log_fehler
-
-from graph.state import ConversationState, pipeline_quelle
 
 logger = logging.getLogger("ki_server.graph.haltung")
 

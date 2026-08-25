@@ -10,10 +10,11 @@ Schreibt in PostgreSQL (delegations_akten + delegations_seiten).
 
 import logging
 
-from agents.base import BaseAgent, AgentState
-from langgraph.graph import StateGraph, END
+from langgraph.graph import END, StateGraph
+
+from agents.base import AgentState, BaseAgent
+from agents.delegation.akte import akte_anreichern, akte_erstellen
 from agents.delegation.deduplizierung import duplikat_pruefen
-from agents.delegation.akte import akte_erstellen, akte_anreichern
 
 logger = logging.getLogger("ki_server.agents.delegation")
 

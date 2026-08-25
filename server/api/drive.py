@@ -15,26 +15,24 @@ import logging
 from collections import Counter
 
 import numpy as np
-
-from fastapi           import APIRouter
+import psycopg2
+from fastapi import APIRouter
 from fastapi.responses import JSONResponse
 
-import psycopg2
-
 from config import (
-    redis_client,
-    POSTGRES_URL,
     ASSISTANT_USER_ID,
     DEFAULT_USER_ID,
-    GRAVITATIONS_SCHWELLE,
     GRAVITATIONS_SALIENZ_FAKTOR,
-    ZIEL_MITTELFRISTIG_DECAY_TAGE,
+    GRAVITATIONS_SCHWELLE,
+    POSTGRES_URL,
     ZIEL_MAX_LANGFRISTIG,
     ZIEL_MAX_MITTELFRISTIG,
+    ZIEL_MITTELFRISTIG_DECAY_TAGE,
+    redis_client,
 )
 from ei.gravitation import _cosine_similarity
 from memory.session import session_turns_retrieve
-from memory.ziele   import ziele_aktive_laden
+from memory.ziele import ziele_aktive_laden
 
 logger = logging.getLogger("ki_server.drive")
 

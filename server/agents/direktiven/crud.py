@@ -126,7 +126,7 @@ def validieren_gegen_db(state: AgentState) -> ValidationResult:
                     ok=False,
                     grund="Mehrere inaktive Direktiven passen",
                     bestaetigung_noetig=True,
-                    bestaetigung_text=f"Mehrere geloeschte Direktiven passen:\n" + "\n".join(zeilen) + "\nWelche soll ich wiederherstellen?",
+                    bestaetigung_text="Mehrere geloeschte Direktiven passen:\n" + "\n".join(zeilen) + "\nWelche soll ich wiederherstellen?",
                 )
 
     # --- Pflicht-Rueckfrage fuer alle Schreiboperationen ---
@@ -326,7 +326,7 @@ def _delete(state: AgentState) -> dict:
                 zeilen = [f"  [{t['id']}] {t['anweisung']}" for t in treffer]
                 return {
                     "status": "rueckfrage",
-                    "rueckfrage": f"Mehrere Direktiven passen:\n" + "\n".join(zeilen) + "\n\nWelche soll ich entfernen?",
+                    "rueckfrage": "Mehrere Direktiven passen:\n" + "\n".join(zeilen) + "\n\nWelche soll ich entfernen?",
                     "schritte": state["schritte"] + [{"node": "ausfuehren", "ergebnis": "disambiguierung"}],
                 }
             else:
@@ -375,7 +375,7 @@ def _reactivate(state: AgentState) -> dict:
                 zeilen = [f"  [{t['id']}] {t['anweisung']}" for t in treffer]
                 return {
                     "status": "rueckfrage",
-                    "rueckfrage": f"Mehrere geloeschte Direktiven passen:\n" + "\n".join(zeilen) + "\n\nWelche soll ich wiederherstellen?",
+                    "rueckfrage": "Mehrere geloeschte Direktiven passen:\n" + "\n".join(zeilen) + "\n\nWelche soll ich wiederherstellen?",
                     "schritte": state["schritte"] + [{"node": "ausfuehren", "ergebnis": "disambiguierung"}],
                 }
             else:

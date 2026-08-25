@@ -34,12 +34,12 @@ import statistics
 import sys
 
 import psycopg2
-from config import POSTGRES_URL, WISSEN_RETRIEVAL_SCHWELLE
 
+from config import POSTGRES_URL, WISSEN_RETRIEVAL_SCHWELLE
 from ei.gravitation import wahrnehmung_verschieben, ziel_gravitation_berechnen
 from memory.repositories.autonomous_wissen_repository import themen_zerlegen
-from memory.ziele import ziele_aktive_laden
 from memory.utils import embedding_zu_pgvector_str
+from memory.ziele import ziele_aktive_laden
 from tools.reembed_all import embedding_berechnen
 
 logger = logging.getLogger("ki_server.tools.messung_enricher_ziel")

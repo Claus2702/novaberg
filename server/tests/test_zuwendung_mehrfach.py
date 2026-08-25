@@ -69,7 +69,8 @@ class MehrfachErhebungTest(unittest.TestCase):
 
     def test_die_streuung_reist_mit(self) -> None:
         """Ohne sie ist hinterher nicht unterscheidbar, ob ein Wert steht
-        oder nur zufaellig getroffen wurde."""
+        oder nur zufaellig getroffen wurde.
+        """
         antworten = [json.dumps(_rad(treue=1.0)),
                      json.dumps(_rad(treue=0.0)),
                      json.dumps(_rad(treue=0.5))]

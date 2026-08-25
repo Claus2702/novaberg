@@ -23,13 +23,13 @@ Kein skipUnless, kein skipIf, kein try/except um Importe.
 
 import unittest
 
-from config import INITIATIVE_RAD_NABE, INITIATIVE_RAD_SPANNE
 from agents.charakter.destillation import (
     INITIATIVE_RAD_LEER,
     INITIATIVE_ZUG_HOCH,
     INITIATIVE_ZUG_RUNTER,
     initiative_versatz_berechnen,
 )
+from config import INITIATIVE_RAD_NABE, INITIATIVE_RAD_SPANNE
 
 
 def _rad(hoch: dict | None = None, runter: dict | None = None) -> dict:
@@ -202,14 +202,16 @@ class TestMedianErhebung(unittest.TestCase):
 
     def test_ein_gescheiterter_lauf_zaehlt_nicht_mit(self) -> None:
         """Von Hand: aus -0.20 und -0.05 (einer gescheitert) ist -0.20 der
-        untere der beiden mittleren — ein echter Lauf, kein Mittelwert."""
+        untere der beiden mittleren — ein echter Lauf, kein Mittelwert.
+        """
         rad, versatz = self._erheben(["b", None, "c"])
         self.assertAlmostEqual(-0.14, versatz)
         self.assertEqual(2, len(rad["laeufe"]))
 
     def test_alle_laeufe_gescheitert_ergibt_keine_erhebung(self) -> None:
         """Der bestehende Versatz bleibt stehen, statt durch die Nabe ersetzt
-        zu werden."""
+        zu werden.
+        """
         self.assertIsNone(self._erheben([None, None, None]))
 
     def test_ein_einzelner_lauf_ist_zulaessig(self) -> None:

@@ -8,12 +8,13 @@ Graph-Aufbau und Routing-Logik. Die Business-Logik liegt in:
 
 import logging
 
-from agents.base import Bedarf, BaseAgent, AgentState
-from langgraph.graph import StateGraph, END
+from langgraph.graph import END, StateGraph
+
+from agents.base import AgentState, BaseAgent, Bedarf
 from agents.kzg.magnete import magnete_aufloesen
-from agents.kzg.verdichtung import verdichten
-from agents.kzg.speicher import speichern
 from agents.kzg.queues import queues_befuellen
+from agents.kzg.speicher import speichern
+from agents.kzg.verdichtung import verdichten
 from config import KZG_SALIENZ_MINIMUM
 from memory.kzg import salienz_berechnen
 

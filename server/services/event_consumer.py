@@ -14,8 +14,7 @@ import json
 import logging
 
 from api.websocket import broadcast, broadcast_threadsafe
-from config import ASSISTANT_USER_ID, shutdown_event
-
+from config import shutdown_event
 from services.events import (
     MAX_SELF_TRIGGERS,
     event_erzeugen,

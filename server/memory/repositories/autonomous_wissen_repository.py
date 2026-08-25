@@ -13,8 +13,8 @@ import logging
 from dataclasses import dataclass
 
 import psycopg2
-from config import BEOBACHTER_KANON, LZG_KNOTEN_REINFORCEMENT_BOOST
 
+from config import BEOBACHTER_KANON, LZG_KNOTEN_REINFORCEMENT_BOOST
 from memory.lzg_knoten import gewicht_absolut_berechnen
 
 logger = logging.getLogger("ki_server.memory.repositories.autonomous_wissen")

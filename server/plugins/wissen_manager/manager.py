@@ -36,6 +36,7 @@ import logging
 
 import psycopg2
 import redis
+
 from config import (
     LZG_KNOTEN_GEWICHT_CAP,
     WISSEN_RETRIEVAL_SCHWELLE,
@@ -49,7 +50,6 @@ from memory.repositories.autonomous_wissen_repository import (
     Bibliothekszeile,
 )
 from memory.utils import embedding_zu_pgvector_str
-
 from plugins.base import BaseManager
 
 logger = logging.getLogger("ki_server.plugins.wissen")

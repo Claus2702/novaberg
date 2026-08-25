@@ -29,6 +29,7 @@ memory/lzg_knoten.py (P6 Teil B).
 import logging
 import uuid
 
+from agents.base import AgentState, BaseAgent, PeriodicTask
 from config import (
     DEFAULT_USER_ID,
     PIXIE_DECAY_INTERVALL_SEKUNDEN,
@@ -39,8 +40,6 @@ from config import (
 from memory import lzg_knoten, pipeline_log
 from memory.repositories.shadow_auftrag_repository import ShadowAuftragRepository
 from tools.db_manager import db_manager
-
-from agents.base import AgentState, BaseAgent, PeriodicTask
 
 logger = logging.getLogger("ki_server.agents.synapsen_decay")
 

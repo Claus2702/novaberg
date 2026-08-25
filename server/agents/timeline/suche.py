@@ -12,12 +12,12 @@ from datetime import datetime, timedelta
 from zoneinfo import ZoneInfo
 
 from agents.base import AgentState
-from agents.timeline.event_time import precision_has_time, precision_format
+from agents.timeline.event_time import precision_has_time
 from config import (
-    TIMEZONE,
     TIMELINE_SUCHE_LIMIT,
-    TIMELINE_UEBERSICHT_TAGE_ZURUECK,
     TIMELINE_UEBERSICHT_TAGE_VORAUS,
+    TIMELINE_UEBERSICHT_TAGE_ZURUECK,
+    TIMEZONE,
 )
 
 logger = logging.getLogger("ki_server.agents.timeline.suche")

@@ -15,13 +15,14 @@ Graph-Aufbau und Routing-Logik. Die Business-Logik liegt in:
 
 import logging
 
-from agents.base import BaseAgent, AgentState
-from langgraph.graph import StateGraph, END
+from langgraph.graph import END, StateGraph
+
+from agents.base import AgentState, BaseAgent
+from agents.notizen.bestaetigung import bestaetigen
+from agents.notizen.crud import ausfuehren
 from agents.notizen.klassifikation import klassifizieren
 from agents.notizen.resume import resume
 from agents.notizen.suche import suchen
-from agents.notizen.crud import ausfuehren
-from agents.notizen.bestaetigung import bestaetigen
 
 logger = logging.getLogger("ki_server.agents.notizen")
 

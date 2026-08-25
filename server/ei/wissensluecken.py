@@ -13,20 +13,19 @@ import numpy as np
 import psycopg2
 
 from config import (
-    POSTGRES_URL,
-    EMBED_MODEL,
-    redis_client,
+    GV_CHARAKTER_RESONANZ_SCHWELLE,
     GV_LUECKEN_MAX,
     GV_LUECKEN_MIN_RELEVANZ,
-    GV_NEUGIER_BOOST_SCHWELLE,
-    GV_CHARAKTER_RESONANZ_SCHWELLE,
-    GV_QUELLEN_FAKTOR,
     GV_LUECKEN_SIM_OBERGRENZE,
+    GV_NEUGIER_BOOST_SCHWELLE,
+    GV_QUELLEN_FAKTOR,
+    POSTGRES_URL,
+    redis_client,
 )
-from graph.state import ConversationState
-from services.model_services import model_service, EmbedRequest
-from ei.utils import cosine_similarity
 from ei.neugier import register_kompatibilitaet
+from ei.utils import cosine_similarity
+from graph.state import ConversationState
+from services.model_services import EmbedRequest, model_service
 
 logger = logging.getLogger("ki_server.ei.wissensluecken")
 

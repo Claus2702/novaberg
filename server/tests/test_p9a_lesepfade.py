@@ -34,8 +34,9 @@ import unittest
 from datetime import datetime, timezone
 from unittest.mock import patch
 
-import agents.recherche.lagebeurteilung as lage_mod
 import psycopg2
+
+import agents.recherche.lagebeurteilung as lage_mod
 from config import POSTGRES_URL
 
 # Eigener Skopus: Die Suite laeuft gegen die Produktiv-Datenbank.

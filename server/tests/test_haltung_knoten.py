@@ -25,10 +25,11 @@ import unittest
 from contextlib import AbstractContextManager
 from unittest.mock import MagicMock, patch
 
+from langgraph.graph import END, StateGraph
+
 from graph.nodes import haltung as haltung_modul
 from graph.nodes.haltung import haltung_bestimmen
 from graph.state import ConversationState
-from langgraph.graph import END, StateGraph
 from services.event_consumer import CHARACTER_NODE_LABELS, _stage_detail_bauen
 
 HALTUNG_LOGGER: str = "ki_server.graph.haltung"

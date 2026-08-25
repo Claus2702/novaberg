@@ -36,19 +36,23 @@ import json
 import logging
 from datetime import datetime, timezone
 
-from agents.base import BaseAgent, AgentState, PeriodicTask
-from config import (
-    MESSREIHE_OHNE_AUTOMATISCHE_DESTILLATION,
-    ASSISTANT_USER_ID, DEFAULT_USER_ID,
-    redis_client, POSTGRES_URL,
-    PIXIE_PROMOTION_PRIORITAET, PIXIE_PROMOTION_INTERVALL_SEKUNDEN,
-    PIXIE_AKTIV, MAX_PROMOTION_RUECKSTELLUNGEN,
-)
-from memory import lzg_knoten, lzg_kanten, pipeline_log
+from agents.base import AgentState, BaseAgent, PeriodicTask
 from agents.wissen_rueckweg.herkunft import material_waehlen
-from services.shadow_agent import shadow_queue_push
+from config import (
+    ASSISTANT_USER_ID,
+    DEFAULT_USER_ID,
+    MAX_PROMOTION_RUECKSTELLUNGEN,
+    MESSREIHE_OHNE_AUTOMATISCHE_DESTILLATION,
+    PIXIE_AKTIV,
+    PIXIE_PROMOTION_INTERVALL_SEKUNDEN,
+    PIXIE_PROMOTION_PRIORITAET,
+    POSTGRES_URL,
+    redis_client,
+)
+from memory import lzg_kanten, lzg_knoten, pipeline_log
 from memory.repositories.verbindung_repository import VerbindungRepository
-from services.model_services import model_service, EmbedRequest
+from services.model_services import EmbedRequest, model_service
+from services.shadow_agent import shadow_queue_push
 from tools.db_manager import db_manager
 
 logger = logging.getLogger("ki_server.agents.synapsen_promotion")
@@ -73,7 +77,8 @@ class SynapsenPromotionAgent(BaseAgent):
         """Die CPU-Spur. Nur Embed-Worker und Datenbank — kein Sprachmodell. Sie ist der
         Grund, aus dem es die Trennung gibt: Waehrend Konrads Bogen am
         09.08.2026 kam sie in 28 Minuten einmal dran und brachte 1 von 72
-        Auftraegen durch."""
+        Auftraegen durch.
+        """
         return "cpu"
 
     @property
@@ -168,7 +173,6 @@ class SynapsenPromotionAgent(BaseAgent):
             was in diesem Lauf gescheitert ist — beim naechsten Lauf wird es
             zurueckgelegt und erneut versucht.
         """
-
         user_id: str = state["kontext"].get("user_id", "") or DEFAULT_USER_ID
         queue_key: str = f"queue:{user_id}"
         arbeit_key: str = f"{queue_key}:arbeit"

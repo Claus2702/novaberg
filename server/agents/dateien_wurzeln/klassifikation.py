@@ -12,12 +12,11 @@ Prompt-Schema: [BLOCKNAME]-Format wie bei den uebrigen Klassifikatoren.
 import json
 import logging
 
+from agents.base import AgentState
+from agents.dateien_wurzeln.crud import EIGENTUM_KANON, Paar, _read_aktive, _read_inaktive
 from config import PROMPTS, get_node_config, redis_client
 from memory.session import format_session_turns_numbered, session_turns_retrieve
 from services.model_services import ChatRequest, model_service
-
-from agents.base import AgentState
-from agents.dateien_wurzeln.crud import EIGENTUM_KANON, Paar, _read_aktive, _read_inaktive
 
 logger = logging.getLogger("ki_server.agents.dateien_wurzeln.klassifikation")
 

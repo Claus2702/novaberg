@@ -8,26 +8,26 @@ Migriert aus: services/shadow_agent/tasks/wiedervorlage.py
 import logging
 from datetime import datetime, timedelta
 
-from agents.base import BaseAgent, AgentState, PeriodicTask
+from agents.base import AgentState, BaseAgent, PeriodicTask
 from config import (
     ASSISTANT_NAME,
     ASSISTANT_USER_ID,
     DEFAULT_USER_ID,
-    POSTGRES_URL,
-    PIXIE_WIEDERVORLAGE_PRIORITAET,
     PIXIE_WIEDERVORLAGE_INTERVALL_SEKUNDEN,
+    PIXIE_WIEDERVORLAGE_PRIORITAET,
     PIXIE_WIEDERVORLAGE_SNOOZE_TAGE,
-    redis_client,
+    POSTGRES_URL,
     get_node_config,
+    redis_client,
 )
-from services.model_services import model_service, BackgroundRequest
-from services.pixie.stack import stack_push
 from memory.repositories import (
     EntitaetenRepository,
     FaktenRepository,
-    TimelineRepository,
     NotizenRepository,
+    TimelineRepository,
 )
+from services.model_services import BackgroundRequest, model_service
+from services.pixie.stack import stack_push
 
 logger = logging.getLogger("ki_server.agents.wiedervorlage")
 

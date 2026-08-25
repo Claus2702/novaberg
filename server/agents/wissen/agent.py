@@ -29,13 +29,16 @@ Verzicht sich als Vollständigkeit liest.
 import logging
 
 import psycopg2
+from langgraph.graph import END, StateGraph
+from langgraph.graph.state import CompiledStateGraph
+
+from agents.base import AgentState, BaseAgent, Bedarf, Korrektur
+from agents.wissen.auskunft import auskunft_bauen, beleg_bauen
 from config import (
     POSTGRES_URL,
     WISSEN_AUFTRAG_TOP_K,
     WISSEN_RETRIEVAL_SCHWELLE,
 )
-from langgraph.graph import END, StateGraph
-from langgraph.graph.state import CompiledStateGraph
 from memory.repositories.autonomous_wissen_repository import (
     BIBLIOTHEK_BEOBACHTER,
     AutonomousWissenRepository,
@@ -43,9 +46,6 @@ from memory.repositories.autonomous_wissen_repository import (
     Bibliothekszeile,
 )
 from memory.utils import embedding_zu_pgvector_str
-
-from agents.base import AgentState, BaseAgent, Bedarf, Korrektur
-from agents.wissen.auskunft import auskunft_bauen, beleg_bauen
 
 logger = logging.getLogger("ki_server.agents.wissen")
 

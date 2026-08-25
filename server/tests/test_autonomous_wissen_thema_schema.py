@@ -44,8 +44,9 @@ wird dieser Test rot — er ueberspringt sich nicht.
 import unittest
 
 import psycopg2
-from config import POSTGRES_URL
 from psycopg2 import errors
+
+from config import POSTGRES_URL
 
 TABELLE:     str = "autonomous_wissen_thema"
 INDEX_WISSEN: str = "idx_autonomous_wissen_thema_wissen"

@@ -34,7 +34,11 @@ import logging
 import psycopg2
 import redis
 
-from config              import (
+from agents.dateien_index.aufzeichnungen import (
+    Aufzeichnungsfund,
+    aufzeichnungen_suchen,
+)
+from config import (
     PROMPTS,
     QUERY_REWRITE_AKTIV,
     QUERY_REWRITE_FRIST_S,
@@ -42,43 +46,38 @@ from config              import (
     QUERY_REWRITE_MIN_TURNS,
     get_node_config,
 )
-from services.model_services import ChatRequest
+from ei.dreischicht import CLUSTER_ENRICHER_SPRUENGE, INTENTION_ANWEISUNG
+from ei.gravitation import (
+    Verschiebung,
+    emotionale_gravitation_scannen,
+    gravitationsterm_berechnen,
+    wahrnehmung_verschieben,
+    ziel_gravitation_berechnen,
+)
 from graph.context_entry import ContextEntry
-from graph.reiz          import reiz_text
-from graph.state         import ConversationState, pipeline_quelle
-from memory.kzg          import kzg_entries_retrieve, _kzg_prefix
-from memory.lzg_knoten   import spreading_lesen
+from graph.reiz import reiz_text
+from graph.state import ConversationState, pipeline_quelle
+from memory.kzg import _kzg_prefix, kzg_entries_retrieve
+from memory.lzg_knoten import spreading_lesen
+from memory.pipeline_log import (
+    log_ausgabe,
+    log_berechnung,
+    log_eingang,
+    log_switch,
+    span_end,
+    span_start,
+)
 from memory.repositories.autonomous_wissen_repository import BIBLIOTHEK_BEOBACHTER
-from memory.utils        import embedding_zu_pgvector_str
-from memory.session      import (
+from memory.session import (
     _beitrag_aus_turn,
     _session_key,
     session_turns_retrieve,
     sprecher_bezeichnen,
 )
-from memory.ziele        import ziel_paar_bestimmen, ziele_aktive_laden
-from memory.pipeline_log import (
-    span_start,
-    span_end,
-    log_eingang,
-    log_berechnung,
-    log_switch,
-    log_ausgabe,
-)
-from ei.gravitation      import (
-    Verschiebung,
-    ziel_gravitation_berechnen,
-    gravitationsterm_berechnen,
-    emotionale_gravitation_scannen,
-    wahrnehmung_verschieben,
-)
-from agents.dateien_index.aufzeichnungen import (
-    Aufzeichnungsfund,
-    aufzeichnungen_suchen,
-)
-from ei.dreischicht      import CLUSTER_ENRICHER_SPRUENGE, INTENTION_ANWEISUNG
-from plugins             import get_registry
-from services.model_services import model_service, EmbedRequest
+from memory.utils import embedding_zu_pgvector_str
+from memory.ziele import ziel_paar_bestimmen, ziele_aktive_laden
+from plugins import get_registry
+from services.model_services import ChatRequest, EmbedRequest, model_service
 
 logger = logging.getLogger("ki_server.enricher")
 

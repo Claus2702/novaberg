@@ -10,20 +10,17 @@ import logging
 
 from config import (
     EMOTION_SEKTOR_MAP,
-    EMBED_MODEL,
     GV_ACHSE_ENERGIE_SCHWELLE,
     GV_ACHSE_NAEHE_SCHWELLE,
     GV_ACHSE_TIEFE_SCHWELLE,
-    GV_ACHSE_INITIATIVE_VERH,
     GV_INITIATIVE_SCHWELLE,
     GV_RICHTUNG_MAP,
     GV_VALENZ_SEKTOR,
-    GV_TIEFE_MODUS,
 )
-from graph.state import ConversationState
-from services.model_services import model_service, EmbedRequest
 from ei.initiative import Fuehrung, fuehrung_messen, initiative_bit
 from ei.utils import cosine_similarity, modus_pruefen
+from graph.state import ConversationState
+from services.model_services import EmbedRequest, model_service
 
 logger = logging.getLogger("ki_server.ei.dreischicht")
 
@@ -777,14 +774,14 @@ def dreischicht_prompt_bauen(
         f"Verfuegbare Strategien (★ Kern, ● passt, ○ selten):\n"
         + "\n".join(strat_zeilen)
         + "\n"
-        f"Nenne bei STRATEGIE nur das Kuerzel — z.B. 'STRATEGIE: Sp'.\n"
-        f"Andere Strategien stehen in dieser Landschaft nicht zur Wahl.\n\n"
-        f"[ABSICHTEN]\n"
-        f"Waehle eine Absicht und nenne nur ihren Namen:\n"
-        f"  Teilen — etwas von dir geben, Verbindung\n"
-        f"  Lenken — den Nutzer zu einer Erkenntnis fuehren\n"
-        f"  Halten — Raum bewahren, Sicherheit geben\n"
-        f"  Saeen  — einen Gedanken pflanzen, ohne ihn auszusprechen"
+        "Nenne bei STRATEGIE nur das Kuerzel — z.B. 'STRATEGIE: Sp'.\n"
+        "Andere Strategien stehen in dieser Landschaft nicht zur Wahl.\n\n"
+        "[ABSICHTEN]\n"
+        "Waehle eine Absicht und nenne nur ihren Namen:\n"
+        "  Teilen — etwas von dir geben, Verbindung\n"
+        "  Lenken — den Nutzer zu einer Erkenntnis fuehren\n"
+        "  Halten — Raum bewahren, Sicherheit geben\n"
+        "  Saeen  — einen Gedanken pflanzen, ohne ihn auszusprechen"
     )
 
     return block

@@ -17,24 +17,28 @@ Prompt-Schema: [BLOCKNAME]-Format (nova-01-t-d, Chat 27).
 import json
 import logging
 from datetime import datetime
-from typing import Callable
 
-from graph.reiz  import reiz_text
+from config import (
+    PROMPTS,
+    TRIBUNAL_ETHIK_ABLEHNEN,
+    TRIBUNAL_ETHIK_WARNUNG,
+    TRIBUNAL_JURIST_ABLEHNEN,
+    TRIBUNAL_JURIST_DIREKTIVE_ABLEHNEN,
+    TRIBUNAL_JURIST_DIREKTIVE_WARNUNG,
+    TRIBUNAL_JURIST_WARNUNG,
+    TRIBUNAL_PSYCHOLOGE_ABLEHNEN,
+    TRIBUNAL_PSYCHOLOGE_WARNUNG,
+    get_node_config,
+)
+from graph.reiz import reiz_text
 from graph.state import ConversationState, TribunalVote
+from services.model_services import ChatRequest, model_service
 from utils.datum_pruefung import (
     bestaetigung_pruefen,
     bestaetigungsauftrag,
     korrekturauftrag,
     widersprueche_finden,
 )
-from config import (
-    get_node_config, PROMPTS,
-    TRIBUNAL_JURIST_WARNUNG, TRIBUNAL_JURIST_ABLEHNEN,
-    TRIBUNAL_PSYCHOLOGE_WARNUNG, TRIBUNAL_PSYCHOLOGE_ABLEHNEN,
-    TRIBUNAL_ETHIK_WARNUNG, TRIBUNAL_ETHIK_ABLEHNEN,
-    TRIBUNAL_JURIST_DIREKTIVE_WARNUNG, TRIBUNAL_JURIST_DIREKTIVE_ABLEHNEN,
-)
-from services.model_services import model_service, ChatRequest
 
 logger = logging.getLogger("ki_server.tribunal")
 

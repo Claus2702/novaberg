@@ -29,10 +29,10 @@ from ei.haltung import GROESSEN, Groessenwert, Haltung
 from ei.haltungssprache import (
     BAENDER,
     ENERGIE_STUFEN,
-    band,
-    energiesatz,
     LEICHT_FAKTOR,
     LEICHT_SOCKEL,
+    band,
+    energiesatz,
     regie_zeilen,
     spanne_fuer_turn,
     zeichenspanne,

@@ -20,31 +20,28 @@ Prompt-Schema: [BLOCKNAME]-Format (nova-01-t-d, Chat 27).
 import hashlib
 import json
 import logging
-
 from datetime import datetime
-from typing   import Annotated
+from typing import Annotated
 
 import redis
-
 from langchain_core.tools import tool
 
-from agents.timeline.event_time import precision_has_time, precision_format
-from graph.nodes.thinker_cache import ThinkerToolCache
+from agents.timeline.event_time import precision_has_time
+from config import PROMPTS, get_node_config
 from graph.antwort_spur import antwort_setzen
-from graph.reiz          import LEVEL_FELD, reiz_ist_eigener_gedanke, reiz_level, reiz_text
-from graph.state         import ConversationState
+from graph.nodes.thinker_cache import ThinkerToolCache
+from graph.reiz import LEVEL_FELD, reiz_ist_eigener_gedanke, reiz_level, reiz_text
+from graph.state import ConversationState
+from memory.lzg_knoten import anker_retrieval
 from memory.repositories.timeline_repository import TimelineRepository
-from memory.lzg_knoten    import anker_retrieval
-from memory.utils         import embedding_zu_pgvector_str
-from config              import get_node_config, PROMPTS
-from services.model_services import model_service, ChatRequest, EmbedRequest
+from memory.utils import embedding_zu_pgvector_str
+from services.model_services import ChatRequest, EmbedRequest, model_service
 
 logger = logging.getLogger("ki_server.thinker")
 
-from tools.web.search import web_search_manager
-from tools.web.fetch import page_fetch
 from tools.thinking_normalizer import get_thinking_normalizer
-
+from tools.web.fetch import page_fetch
+from tools.web.search import web_search_manager
 
 # Block 3 Teil B: Nachfass-Iteration bei Ollama-thinking/content-Split.
 # Separate Haertung -- zaehlt NICHT gegen max_iterations, lieber einmal zu
@@ -78,11 +75,13 @@ def create_tools(
         Nutze dieses Tool wenn in der Antwort Termine, Daten oder Zeitangaben vorkommen.
         Damit kannst du prüfen ob es zeitliche Konflikte mit bestehenden Terminen gibt.
         Bedenke: Termine haben eine Dauer und erfordern physische Anwesenheit —
-        zwei Termine zur gleichen Zeit am gleichen Tag sind ein Konflikt."""
+        zwei Termine zur gleichen Zeit am gleichen Tag sind ein Konflikt.
+        """
         logger.info(f"Thinker-Tool: timeline_check({datum})")
 
         from datetime import datetime as dt
         from zoneinfo import ZoneInfo
+
         from config import TIMEZONE
 
         try:
@@ -113,7 +112,8 @@ def create_tools(
     def timeline_search(keyword: Annotated[str, "Suchbegriff für Termine"]) -> str:
         """Suche nach Terminen anhand eines Begriffs (z.B. 'Friseur', 'Zahnarzt', 'Geburtstag').
         Nutze dieses Tool wenn du prüfen willst, ob es bereits ähnliche Termine gibt
-        oder wann der nächste/letzte Termin einer bestimmten Art war."""
+        oder wann der nächste/letzte Termin einer bestimmten Art war.
+        """
         logger.info(f"Thinker-Tool: timeline_search({keyword})")
 
         rows: list[dict] = TimelineRepository.find_by_keyword(
@@ -137,7 +137,8 @@ def create_tools(
     def memory_search(frage: Annotated[str, "Semantische Suchanfrage ans Gedächtnis"]) -> str:
         """Durchsuche das Langzeitgedächtnis des Nutzers nach relevanten Informationen.
         Nutze dieses Tool wenn du Fakten über den Nutzer prüfen willst,
-        z.B. ob eine Behauptung in der Antwort mit dem übereinstimmt, was bekannt ist."""
+        z.B. ob eine Behauptung in der Antwort mit dem übereinstimmt, was bekannt ist.
+        """
         # Implementierung (Faktencheck-Read): liest direkt die lzg_knoten.
         # 1. Embedding der Query erzeugen, in pgvector-Literal wandeln.
         # 2. anker_retrieval() liefert die Top-20 lzg_knoten-Dicts (Cosine-sortiert,
@@ -206,10 +207,11 @@ def create_tools(
         - Die Antwort Fakten enthaelt die sich auf aktuelle Ereignisse beziehen
         - Du Behauptungen gegen externe Quellen pruefen willst
         - Der Nutzer nach Informationen fragt die nicht im Gedaechtnis sind
-        - Der Router needs_web=true gesetzt hat
+        - Der Router needs_web=true gesetzt hat.
 
         Liefert eine Trefferliste plus den vollstaendigen Artikeltext
-        des relevantesten Ergebnisses. Fuer weitere URLs nutze web_fetch(url)."""
+        des relevantesten Ergebnisses. Fuer weitere URLs nutze web_fetch(url).
+        """
         logger.info(f"Thinker-Tool: web_search({suchbegriff})")
 
         try:
@@ -249,7 +251,8 @@ def create_tools(
         web_search laedt bereits automatisch den Top-Treffer.
         Nutze dieses Tool nur wenn du eine ANDERE URL aus der
         Trefferliste laden willst.
-        Gibt den extrahierten Artikeltext zurueck (ohne Navigation, Werbung, Footer)."""
+        Gibt den extrahierten Artikeltext zurueck (ohne Navigation, Werbung, Footer).
+        """
         logger.info(f"Thinker-Tool: web_fetch({url})")
 
         text: str = page_fetch(url)

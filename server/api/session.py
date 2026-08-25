@@ -1,12 +1,9 @@
-"""
-Session-Verwaltung — Reset und Kontext-Abruf.
-"""
+"""Session-Verwaltung — Reset und Kontext-Abruf."""
 
 from fastapi import APIRouter
 
-from config       import redis_client, ASSISTANT_USER_ID
-from memory.session import session_reset, session_turns_retrieve
-from memory.session import _session_key
+from config import ASSISTANT_USER_ID, redis_client
+from memory.session import _session_key, session_reset, session_turns_retrieve
 
 router = APIRouter()
 

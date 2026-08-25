@@ -9,10 +9,9 @@ Kein Schreibpfad ins Dateisystem, auch nicht mittelbar.
 import json
 import logging
 
-from tools.db_manager import db_manager
-
 from agents.dateien_index.indizieren import Erschliessung
 from agents.dateien_index.wandern import GRUENDE, GRUND_JE_FALL, Fund
+from tools.db_manager import db_manager
 
 logger = logging.getLogger("ki_server.agents.dateien_index.speicher")
 

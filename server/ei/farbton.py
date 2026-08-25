@@ -8,8 +8,8 @@ Analog zu EI-MIKRO: Python waehlt, LLM interpretiert.
 
 import logging
 
+from ei.utils import NEGATIVE_EMOTIONEN, POSITIVE_EMOTIONEN
 from graph.state import ConversationState
-from ei.utils import POSITIVE_EMOTIONEN, NEGATIVE_EMOTIONEN
 
 logger = logging.getLogger("ki_server.ei.farbton")
 

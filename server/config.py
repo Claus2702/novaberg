@@ -3,17 +3,16 @@ KI-Server — Zentrale Konfiguration.
 Umgebungsvariablen, Verbindungen, gemeinsame Ressourcen.
 """
 
-import math
-import os
 import logging
+import os
 import threading
 
-import redis
 import ollama
+import psycopg2
+import redis
+from dotenv import load_dotenv
 
 from services.llm_riegel import GesperrterOllamaClient
-import psycopg2
-from dotenv import load_dotenv
 
 # .env laden (Repo-Root und aufwaerts). Fuer lokale Entwicklung; im Docker-
 # Container werden die Werte zusaetzlich ueber env_file injiziert.

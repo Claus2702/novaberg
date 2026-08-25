@@ -8,9 +8,9 @@ import logging
 
 import redis
 
+from config import ASSISTANT_USER_ID
+from memory.kzg import kzg_store
 from plugins.base import BaseManager
-from memory.kzg   import kzg_store
-from config       import ASSISTANT_USER_ID
 
 logger = logging.getLogger("ki_server.plugins.kzg")
 

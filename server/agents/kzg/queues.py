@@ -3,13 +3,17 @@
 Befuellt die Redis-Queues fuer Pixie basierend auf Salienz-Schwellen.
 """
 
-import json
 import logging
 
 from agents.base import AgentState
-from services.shadow_agent.utils import shadow_queue_push, promotion_queue_push
-from config import (ASSISTANT_USER_ID, redis_client, KZG_SALIENZ_HIGH,
-                    PIXIE_AKTIV, MESSREIHE_OHNE_AUTOMATISCHE_DESTILLATION)
+from config import (
+    ASSISTANT_USER_ID,
+    KZG_SALIENZ_HIGH,
+    MESSREIHE_OHNE_AUTOMATISCHE_DESTILLATION,
+    PIXIE_AKTIV,
+    redis_client,
+)
+from services.shadow_agent.utils import promotion_queue_push, shadow_queue_push
 
 logger = logging.getLogger("ki_server.agents.kzg.queues")
 

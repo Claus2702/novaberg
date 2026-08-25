@@ -12,9 +12,10 @@ Doku: novaberg-node-reducer.md (Format-Vertrag und Dedup-Mechanik).
 
 import logging
 import re
+
 from graph.context_entry import ContextEntry
-from graph.state import zustand_verifizieren
 from graph.format import format_memory_entries
+from graph.state import zustand_verifizieren
 
 logger = logging.getLogger(__name__)
 

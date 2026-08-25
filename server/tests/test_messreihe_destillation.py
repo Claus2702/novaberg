@@ -47,7 +47,8 @@ class OhneAutomatischeDestillationTest(unittest.TestCase):
 
     def test_im_regelbetrieb_setzt_der_turn_das_dirty_flag(self) -> None:
         """Der positive Zwilling: Ohne ihn bestuende der Test oben auch dann,
-        wenn gar nichts mehr gesetzt wuerde."""
+        wenn gar nichts mehr gesetzt wuerde.
+        """
         gesetzt, aktionen = self._echten_schritt_fahren(messlauf=False)
 
         self.assertEqual(len(gesetzt), 1)

@@ -24,21 +24,23 @@ from typing import Any
 
 import redis
 
-from graph.reiz  import reiz_text
-from graph.state import ConversationState, reiz_herkunft
-from plugins     import get_registry
-from agents.kzg.dispatch import dispatch_kzg
 from agents.delegation.dispatch import dispatch_delegation
+from agents.kzg.dispatch import dispatch_kzg
 from config import (
     ASSISTANT_USER_ID,
     DELEGATION_EFFEKTIVWERT_SCHWELLE,
     DELEGATION_SALIENZ_SCHWELLE,
     EI_AROUSAL_DOMINANZ,
+)
+from config import (
     redis_client as cfg_redis_client,
 )
-from memory.session import session_turn_store, session_summarize_if_needed
-from memory.pipeline_log import log_turn_roh, log_fehler, log_db_write
+from graph.reiz import reiz_text
+from graph.state import ConversationState, reiz_herkunft
+from memory.pipeline_log import log_db_write, log_fehler, log_turn_roh
 from memory.repositories.verbindung_repository import VerbindungRepository
+from memory.session import session_summarize_if_needed, session_turn_store
+from plugins import get_registry
 
 logger = logging.getLogger("ki_server.dispatcher")
 

@@ -26,10 +26,10 @@ from unittest.mock import MagicMock, patch
 from graph.base import GraphBase
 from graph.nodes.enricher import _intentionen_bestimmen
 from graph.nodes.salience import (
-    analyze,
     _intentionen_human_ermitteln,
     _salienz_human_ermitteln,
     _salienz_wert_lesen,
+    analyze,
 )
 
 REIZ:     str = "Die Rotverschiebung entfernter Galaxien belegt die Ausdehnung des Raums."
@@ -214,7 +214,8 @@ class SalienzHumanImNodeTest(unittest.TestCase):
 
     def test_gravitationsboost_faellt_nicht_in_den_wert(self):
         """salienz_human ist die LLM-Bewertung. Die Gravitation wird mit der
-        Formel ein Antrieb des Eigen-Pfads und zaehlte hier ein zweites Mal."""
+        Formel ein Antrieb des Eigen-Pfads und zaehlte hier ein zweites Mal.
+        """
         _, ergebnis = _lauf("human", [0.5], gravitationsterm=0.3)
         self.assertEqual(ergebnis["salienz_human"], 0.5)
 
@@ -254,6 +255,7 @@ class SalienzHumanForensikTest(unittest.TestCase):
 
 class _StubGraph:
     """Traegt nur, was create_state von self liest."""
+
     MAX_CORRECTIONS: int = 2
 
 

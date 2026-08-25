@@ -39,7 +39,7 @@ FIGUR: str = "nova"
 class _Graph:
     """Ein CharacterGraph-Doppel, das nach N Knoten scheitert."""
 
-    def __init__(self, knoten: list[tuple[str, dict]], scheitert_nach: int | None = None):
+    def __init__(self, knoten: list[tuple[str, dict]], scheitert_nach: int | None = None) -> None:
         self._knoten = knoten
         self._scheitert_nach = scheitert_nach
 

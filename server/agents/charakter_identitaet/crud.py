@@ -79,14 +79,14 @@ def validieren_gegen_db(state: AgentState) -> ValidationResult:
             inaktive = _read_inaktive(user_id)
             treffer = [a for a in inaktive if anweisung.lower() in a["anweisung"].lower() or a["anweisung"].lower() in anweisung.lower()] if anweisung else inaktive
             if not treffer:
-                return ValidationResult(ok=False, grund=f"Keine inaktive Charakter-Anweisung gefunden")
+                return ValidationResult(ok=False, grund="Keine inaktive Charakter-Anweisung gefunden")
             if len(treffer) > 1:
                 zeilen = [f"  [{a['id']}] {a['anweisung']}" for a in treffer]
                 return ValidationResult(
                     ok=False,
                     grund="Mehrere inaktive Anweisungen passen",
                     bestaetigung_noetig=True,
-                    bestaetigung_text=f"Mehrere fruehere Charakter-Anweisungen gefunden:\n" + "\n".join(zeilen) + "\nWelche soll ich wiederherstellen?",
+                    bestaetigung_text="Mehrere fruehere Charakter-Anweisungen gefunden:\n" + "\n".join(zeilen) + "\nWelche soll ich wiederherstellen?",
                 )
 
     # --- delete: Target existiert? ---
@@ -112,11 +112,11 @@ def validieren_gegen_db(state: AgentState) -> ValidationResult:
     if action in ("create", "delete", "update", "reactivate", "replace", "konsolidieren"):
         beschreibung = {
             "create": f"Neue Charakter-Anweisung anlegen: '{anweisung}'",
-            "delete": f"Charakter-Anweisung loeschen" + (f" (ID {target_id})" if target_id else " (alle)"),
+            "delete": "Charakter-Anweisung loeschen" + (f" (ID {target_id})" if target_id else " (alle)"),
             "update": f"Charakter-Anweisung aendern (ID {target_id}): '{anweisung}'",
-            "reactivate": f"Charakter-Anweisung wiederherstellen",
+            "reactivate": "Charakter-Anweisung wiederherstellen",
             "replace": f"Charakter komplett ersetzen durch: '{anweisung}'",
-            "konsolidieren": f"Charakter-Anweisungen zusammenfassen",
+            "konsolidieren": "Charakter-Anweisungen zusammenfassen",
         }
         return ValidationResult(
             ok=True,
@@ -349,7 +349,7 @@ def _reactivate(state: AgentState) -> dict:
             zeilen = [f"  [{a['id']}] {a['anweisung']}" for a in treffer]
             return {
                 "status": "rueckfrage",
-                "rueckfrage": f"Mehrere fruehere Anweisungen passen:\n" + "\n".join(zeilen) + "\nWelche soll ich wiederherstellen?",
+                "rueckfrage": "Mehrere fruehere Anweisungen passen:\n" + "\n".join(zeilen) + "\nWelche soll ich wiederherstellen?",
                 "schritte": state["schritte"] + [{"node": "ausfuehren", "ergebnis": "disambiguierung"}],
             }
         else:

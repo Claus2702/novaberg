@@ -13,17 +13,16 @@ ein Write hier landen, schlaegt execute() lauf fehl — Absicht.
 """
 
 import logging
-
-import redis
 from datetime import datetime, timedelta
 from zoneinfo import ZoneInfo
 
+import redis
+
 from agents.timeline.event_time import precision_has_time
 from config import TIMEZONE
-
 from graph.context_entry import ContextEntry
-from plugins.base import BaseManager
 from memory.repositories.timeline_repository import TimelineRepository
+from plugins.base import BaseManager
 
 logger = logging.getLogger("ki_server.plugins.timeline")
 

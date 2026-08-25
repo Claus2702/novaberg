@@ -10,7 +10,7 @@ from datetime import datetime
 import redis
 
 from config import PIXIE_AKTIV
-from services.model_services import model_service, EmbedRequest
+from services.model_services import EmbedRequest, model_service
 
 logger = logging.getLogger("ki_server.pixie.stack")
 

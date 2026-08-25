@@ -9,7 +9,8 @@ import logging
 
 from agents import AgentRegistry
 from agents.base import AgentState
-from config import ASSISTANT_USER_ID, redis_client as cfg_redis_client
+from config import ASSISTANT_USER_ID
+from config import redis_client as cfg_redis_client
 from graph.reiz import reiz_text
 
 logger = logging.getLogger("ki_server.agents.kzg.dispatch")

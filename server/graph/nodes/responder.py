@@ -14,20 +14,28 @@ EI-MIKRO (seit Chat 19):
 
 import logging
 import re
+from datetime import datetime
+from zoneinfo import ZoneInfo
 
-from datetime    import datetime
-from zoneinfo    import ZoneInfo
-from config      import ASSISTANT_NAME, BEZIEHUNG_EINFLUSS, EMOTIONS_VEKTOREN, EMOTIONS_VEKTOREN_NOVA, PROMPTS, TIMEZONE, get_node_config
-from graph.reiz  import reiz_ist_eigener_gedanke, reiz_text
+from config import (
+    ASSISTANT_NAME,
+    BEZIEHUNG_EINFLUSS,
+    EMOTIONS_VEKTOREN,
+    EMOTIONS_VEKTOREN_NOVA,
+    PROMPTS,
+    TIMEZONE,
+    get_node_config,
+)
 from graph.antwort_spur import antwort_setzen
+from graph.reiz import reiz_ist_eigener_gedanke, reiz_text
+from graph.state import ConversationState
 from memory.session import (
     Verlaufsbeitrag,
     sprecher_bezeichnen,
     verlauf_gruppieren,
 )
-from graph.state import ConversationState
+from services.model_services import ChatRequest, model_service
 from utils.datum_pruefung import NAMEN as WOCHENTAGSNAMEN
-from services.model_services import model_service, ChatRequest
 
 logger = logging.getLogger("ki_server.responder")
 

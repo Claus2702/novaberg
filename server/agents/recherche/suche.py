@@ -2,9 +2,9 @@
 
 import logging
 
-from tools.web.search import web_search_manager
-from tools.web.fetch import page_fetch
 from config import PIXIE_RECHERCHE_MAX_SEITEN_PRO_RUNDE
+from tools.web.fetch import page_fetch
+from tools.web.search import web_search_manager
 
 logger = logging.getLogger("ki_server.agents.recherche")
 

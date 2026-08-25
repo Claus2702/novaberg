@@ -63,14 +63,14 @@ import psycopg2
 import psycopg2.extras
 import redis as redis_lib
 
-from config import POSTGRES_URL, REDIS_URL, ollama_gpu_embed, EMBED_MODEL
-from memory import lzg_knoten, lzg_kanten
-from memory.utils import embedding_zu_pgvector_str
-from memory.repositories.entitaeten_repository import EntitaetenRepository
-from memory.repositories.fakten_repository import FaktenRepository
-from memory.ziele import embed_text_bauen as ziel_embed_text_bauen
 from agents.delegation.akte import embed_text_bauen as delegation_embed_text_bauen
 from agents.kzg.speicher import embed_text_bauen as kzg_embed_text_bauen
+from config import EMBED_MODEL, POSTGRES_URL, REDIS_URL, ollama_gpu_embed
+from memory import lzg_kanten, lzg_knoten
+from memory.repositories.entitaeten_repository import EntitaetenRepository
+from memory.repositories.fakten_repository import FaktenRepository
+from memory.utils import embedding_zu_pgvector_str
+from memory.ziele import embed_text_bauen as ziel_embed_text_bauen
 
 logging.basicConfig(
     level=logging.INFO,

@@ -7,12 +7,10 @@ Bei keinem Treffer: nur Embedding setzen → Agent erstellt neue Akte.
 
 import logging
 
-import numpy as np
-
 from agents.base import AgentState
 from agents.delegation.akte import embed_text_bauen
-from config import postgres_verbinden, DELEGATION_SIMILARITY_SCHWELLE
-from services.model_services import model_service, EmbedRequest
+from config import DELEGATION_SIMILARITY_SCHWELLE, postgres_verbinden
+from services.model_services import EmbedRequest, model_service
 
 logger = logging.getLogger("ki_server.agents.delegation.deduplizierung")
 

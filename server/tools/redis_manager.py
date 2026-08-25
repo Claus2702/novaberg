@@ -2,6 +2,7 @@
 
 import json
 import logging
+
 from config import redis_client as _redis
 
 logger = logging.getLogger(__name__)
@@ -14,7 +15,7 @@ class RedisManager:
     d.h. alle Rückgaben sind bereits str (kein .decode() nötig).
     """
 
-    def __init__(self, client):
+    def __init__(self, client) -> None:
         self._client = client
 
     def get(self, key: str) -> str | None:

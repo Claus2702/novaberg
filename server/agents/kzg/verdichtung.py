@@ -7,8 +7,8 @@ Inhalt, nicht Emotion.
 import logging
 
 from agents.base import AgentState
-from config import ASSISTANT_NAME, get_node_config, PROMPTS
-from services.model_services import model_service, ChatRequest
+from config import ASSISTANT_NAME, PROMPTS, get_node_config
+from services.model_services import ChatRequest, model_service
 
 logger = logging.getLogger("ki_server.agents.kzg.verdichtung")
 

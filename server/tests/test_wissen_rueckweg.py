@@ -417,7 +417,7 @@ class VerweisAusloeserTest(unittest.TestCase):
         push.assert_not_called()
 
     def test_die_recherche_ruft_den_ausloeser(self) -> None:
-        """**Die Verdrahtung, nicht die Fähigkeit.**
+        """**Die Verdrahtung, nicht die Fähigkeit.**.
 
         Die drei Zeugen daneben rufen `_verweis_einreihen` selbst — sie
         blieben grün, wenn niemand ihn mehr riefe. Die Gegenprobe hat genau
@@ -446,7 +446,7 @@ class VerweisAusloeserTest(unittest.TestCase):
         ausloeser.assert_called_once()
 
     def test_ohne_wissensdatei_wird_nicht_eingereiht(self) -> None:
-        """**Am Bestand gefunden, nicht am Zeugen.**
+        """**Am Bestand gefunden, nicht am Zeugen.**.
 
         Eine gescheiterte Recherche schreibt nur einen Bericht; ihr Destillat
         ist der Platzhalter „Ohne Ergebnis zum Ziel: …". Ohne diese Bedingung

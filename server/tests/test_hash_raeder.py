@@ -50,7 +50,6 @@ from api.gedaechtnis import (
 )
 from config import (
     INITIATIVE_RAD_NABE,
-    INITIATIVE_RAD_SPANNE,
     RAD_MAX,
     RAD_MIN,
     RAD_NABE,

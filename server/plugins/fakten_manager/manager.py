@@ -14,15 +14,15 @@ import logging
 import redis
 
 from graph.context_entry import ContextEntry
-from plugins.base import BaseManager
-from services.model_services import model_service, EmbedRequest
 from memory.repositories.entitaeten_repository import EntitaetenRepository
 from memory.repositories.fakten_repository import FaktenRepository
 from memory.services.entity_resolution import (
     EntityResolutionService,
-    ResolvedEntity,
     ResolutionResult,
+    ResolvedEntity,
 )
+from plugins.base import BaseManager
+from services.model_services import EmbedRequest, model_service
 
 logger = logging.getLogger("ki_server.plugins.fakten")
 
@@ -632,7 +632,7 @@ Trigger-Phrasen: "das stimmt nicht", "korrigiere", "vergiss das",
     ) -> dict:
         """
         Fragt die Historie eines Fakts ab (aktive + inaktive).
-        "Wo hat Michael früher gewohnt?"
+        "Wo hat Michael früher gewohnt?".
 
         Returns:
             dict mit erfolg, historie, braucht_klärung, klärungsfrage

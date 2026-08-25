@@ -9,55 +9,54 @@ import logging
 import time
 import uuid
 
-from agents.base import BaseAgent, AgentState, PeriodicTask
-from config import (
-    AKTIVES_PAAR_USER_ID,
-    ASSISTANT_USER_ID,
-    redis_client,
-    EMBED_MODEL,
-    POSTGRES_URL,
-    ZIEL_MAX_LANGFRISTIG,
-    PIXIE_CHARAKTER_PRIORITAET,
-    PIXIE_CHARAKTER_INTERVALL_SEKUNDEN,
-    PIXIE_CHARAKTER_LZG_LIMIT,
-    PIXIE_CHARAKTER_KZG_LIMIT,
-    PIXIE_CHARAKTER_KZG_LADEGRENZE_TAGE,
-    PIXIE_ANALYSE_MODEL,
-    get_node_config,
-)
-from tools.db_manager import db_manager
+from agents.base import AgentState, BaseAgent, PeriodicTask
 from agents.charakter.destillation import (
-    zeitgewicht,
-    kern_hash_destillieren,
-    adaptive_hash_destillieren,
-    intentions_profil_destillieren,
-    emotions_profil_destillieren,
-    beziehungsprofil_destillieren,
-    langfristige_ziele_destillieren,
-    charakter_rad_destillieren,
-    initiative_rad_destillieren,
-    initiative_versatz_berechnen,
-    nutzer_gewichtung_berechnen,
-    flache_reihe_als_raeder,
-    speichenweise_mediane,
-    speichen_ohne_mehrheit,
-    RAD_NABE,
+    INITIATIVE_RAD_LEER,
     INITIATIVE_RAD_NABE,
     RAD_LEER,
-    INITIATIVE_RAD_LEER,
+    RAD_NABE,
+    adaptive_hash_destillieren,
+    beziehungsprofil_destillieren,
+    charakter_rad_destillieren,
+    emotions_profil_destillieren,
+    flache_reihe_als_raeder,
+    initiative_rad_destillieren,
+    initiative_versatz_berechnen,
+    intentions_profil_destillieren,
+    kern_hash_destillieren,
+    langfristige_ziele_destillieren,
+    nutzer_gewichtung_berechnen,
+    speichen_ohne_mehrheit,
+    speichenweise_mediane,
+    zeitgewicht,
 )
 from agents.charakter.rad_messreihe import (
-    Messung,
     RAD_ART_INITIATIVE,
     RAD_ART_ZUWENDUNG,
+    Messung,
     messung_ablegen,
     messung_faellig,
     rad_zusammenfassen,
     reihe_laden,
 )
-from memory.ziele import ziel_speichern, ziele_aktive_laden, ziel_deaktivieren
+from config import (
+    AKTIVES_PAAR_USER_ID,
+    ASSISTANT_USER_ID,
+    PIXIE_ANALYSE_MODEL,
+    PIXIE_CHARAKTER_INTERVALL_SEKUNDEN,
+    PIXIE_CHARAKTER_KZG_LADEGRENZE_TAGE,
+    PIXIE_CHARAKTER_KZG_LIMIT,
+    PIXIE_CHARAKTER_LZG_LIMIT,
+    PIXIE_CHARAKTER_PRIORITAET,
+    POSTGRES_URL,
+    ZIEL_MAX_LANGFRISTIG,
+    get_node_config,
+    redis_client,
+)
 from memory.ziele import embed_text_bauen as ziel_embed_text_bauen
-from services.model_services import model_service, EmbedRequest
+from memory.ziele import ziel_deaktivieren, ziel_speichern, ziele_aktive_laden
+from services.model_services import EmbedRequest, model_service
+from tools.db_manager import db_manager
 
 logger = logging.getLogger("ki_server.agents.charakter")
 

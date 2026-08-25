@@ -29,26 +29,25 @@ import logging
 from datetime import datetime
 
 from config import PROMPTS, get_node_config
-from memory.pipeline_log import log_berechnung
-from services.model_services import ChatRequest, model_service
-
+from ei.haltungssprache import stoffzeilen
 from graph.einwand import kopf_anweisung, urteil_lesen
+
 # Die Marke gehoert zum Vertrag von `gv_detail` und hat genau eine Quelle.
 # Sie hier als Literal zu wiederholen waere der zweite Ort fuer denselben
 # Wert — und der Fall, in dem sie gebraucht wird, ist
 # genau der, in dem niemand hinsieht.
 from graph.nodes.gespraechsvektor import VORAUSDENKEN_GELAUFEN
-from graph.reiz  import reiz_ist_eigener_gedanke, reiz_text
+from graph.reiz import reiz_ist_eigener_gedanke, reiz_text
 from graph.state import ConversationState
-from ei.haltungssprache import stoffzeilen
 from graph.vorzeichen import Vorzeichenbefund, vorzeichen_pruefen
-
+from memory.pipeline_log import log_berechnung
 from memory.session import (
     Verlaufsbeitrag,
     fenster_waehlen,
     sprecher_bezeichnen,
     verlauf_gruppieren,
 )
+from services.model_services import ChatRequest, model_service
 
 #: Wieviele Wortwechsel der Verfasser im Verlauf sieht. Vorher sah er den
 #: ganzen `session_turns`-Bestand; die Zahl ist die Obergrenze, die es bis

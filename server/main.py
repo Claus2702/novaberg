@@ -3,45 +3,47 @@ KI-Server — Einstiegspunkt.
 FastAPI + APScheduler + Router-Integration.
 """
 
-import logging
 import asyncio
-
+import logging
 from contextlib import asynccontextmanager
-from pathlib    import Path
+from pathlib import Path
 
-from fastapi                        import FastAPI
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
+from fastapi import FastAPI
 
-from config import (
-    NMCP_ABGLEICH_INTERVALL_SEKUNDEN,
-    redis_client, llm_lock,
-    OLLAMA_MODEL, OLLAMA_GPU_NUM_CTX, OLLAMA_CPU_NUM_CTX,
-    SHADOW_MODEL, POSTGRES_URL,
-    LLM_PROFILE, ANTHROPIC_API_KEY, ANTHROPIC_MODEL,
-    PIXIE_ANALYSE_MODEL, PIXIE_ANALYSE_NUM_CTX,
-    PIXIE_INTERVALL_MIN, PIXIE_AKTIV, shutdown_event,
-    DEFAULT_USER_ID, ASSISTANT_USER_ID, AKTIVES_PAAR_USER_ID,
-)
-from graph.builder              import build_human_graph, build_agent_graph, build_character_graph
+from api.admin import router as admin_router
+from api.chat import entitaeten_embeddings_sicherstellen
+from api.chat import router as chat_router
+from api.drive import router as drive_router
+from api.gedaechtnis import router as gedaechtnis_router
+from api.health import ollama_testen, postgres_testen, redis_testen
 
 # API-Router
-from api.health                 import router as health_router,      ollama_testen, redis_testen, postgres_testen
-from api.chat                   import router as chat_router, entitaeten_embeddings_sicherstellen
-from memory.ziele               import ziele_embeddings_sicherstellen
-from api.gedaechtnis            import router as gedaechtnis_router
-from api.session                import router as session_router
-from api.websocket              import router as websocket_router, aktive_verbindungen
-from api.admin                  import router as admin_router
-from api.drive                  import router as drive_router
-
-from services.shadow_delivery   import shadow_delivery_loop
-from services.event_consumer    import event_consumer_loop
-from services.prompt_consumer   import prompt_consumer_loop
-
-from memory.pipeline_log        import (
+from api.health import router as health_router
+from api.session import router as session_router
+from api.websocket import aktive_verbindungen
+from api.websocket import router as websocket_router
+from config import (
+    AKTIVES_PAAR_USER_ID,
+    ASSISTANT_USER_ID,
+    NMCP_ABGLEICH_INTERVALL_SEKUNDEN,
+    PIXIE_AKTIV,
+    POSTGRES_URL,
+    llm_lock,
+    redis_client,
+    shutdown_event,
+)
+from graph.builder import build_agent_graph, build_character_graph, build_human_graph
+from memory.pipeline_log import (
     init_buffer as pipeline_log_init,
+)
+from memory.pipeline_log import (
     writer_loop as pipeline_log_writer,
 )
+from memory.ziele import ziele_embeddings_sicherstellen
+from services.event_consumer import event_consumer_loop
+from services.prompt_consumer import prompt_consumer_loop
+from services.shadow_delivery import shadow_delivery_loop
 
 logger    = logging.getLogger("ki_server")
 scheduler = AsyncIOScheduler()
@@ -163,7 +165,7 @@ async def lifespan(app: FastAPI):
         await ziele_embeddings_sicherstellen(POSTGRES_URL)
 
     # Epic 11: Agent-Discovery
-    from agents import discover_agents, AgentRegistry
+    from agents import AgentRegistry, discover_agents
     discover_agents()
     for agent in AgentRegistry.alle().values():
         agent.setup(POSTGRES_URL)
@@ -272,12 +274,11 @@ async def lifespan(app: FastAPI):
         logger.debug("main: Periodic-Task-Discovery uebersprungen (PIXIE_AKTIV=False)")
 
     # Scheduler starten — Pixie-Heartbeat (kompetitives Scheduling)
-    from config import PIXIE_INTERVALL_SEKUNDEN, PIXIE_CPU_INTERVALL_SEKUNDEN
+    from config import PIXIE_CPU_INTERVALL_SEKUNDEN, PIXIE_INTERVALL_SEKUNDEN
 
     if PIXIE_AKTIV:
-        from services.pixie.scheduler import pixie_heartbeat
-
         from services.model_services.spur import SPUR_CPU, SPUR_LLM
+        from services.pixie.scheduler import pixie_heartbeat
 
         # Zwei Spuren, zwei Jobs, zwei Sperren. Je `max_instances=1`, damit
         # innerhalb einer Spur weiterhin genau einer laeuft — darauf beruht

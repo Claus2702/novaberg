@@ -94,7 +94,8 @@ class BestaetigungPruefenTest(unittest.TestCase):
 
     def test_quelle_ohne_datum_meldet_nichts(self) -> None:
         """Ohne Eintrag gibt es nichts zu bestaetigen — jedes Datum der Antwort
-        gehoert dann einem anderen Satz."""
+        gehoert dann einem anderen Satz.
+        """
         self.assertEqual(
             bestaetigung_pruefen(
                 "Am 20.08. ist es soweit.", ["Keine Termine gefunden."], HEUTE
@@ -145,7 +146,8 @@ class VerdrahtungImTribunalTest(unittest.TestCase):
 
     def test_erfundenes_datum_hebt_das_urteil_und_erreicht_den_corrector(self) -> None:
         """Ein Befund ohne Eintrag in der Zusammenfassung waere folgenlos —
-        der Corrector liest ausschliesslich sie."""
+        der Corrector liest ausschliesslich sie.
+        """
         state = self._auswerten(
             "Ich habe ihn am 20.08. um 14 Uhr eingetragen.",
             [self._ergebnis("abgeschlossen", QUELLE)],

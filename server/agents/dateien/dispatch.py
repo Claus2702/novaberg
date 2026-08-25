@@ -14,10 +14,9 @@ Verschiebung, die ihn zu diesem Turn gehören lässt.
 
 import logging
 
-from graph.reiz import reiz_text
-
 from agents import AgentRegistry
 from agents.base import AgentResult, AgentState, Korrektur
+from graph.reiz import reiz_text
 
 logger = logging.getLogger("ki_server.agents.dateien.dispatch")
 

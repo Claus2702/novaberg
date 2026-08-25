@@ -14,7 +14,7 @@ from datetime import datetime
 from zoneinfo import ZoneInfo
 
 from agents.base import AgentState
-from agents.timeline.event_time import precision_has_time, precision_format
+from agents.timeline.event_time import precision_has_time
 from config import TIMEZONE
 
 logger = logging.getLogger("ki_server.agents.timeline.crud")
@@ -75,13 +75,13 @@ def ausfuehren(state: AgentState) -> dict:
 
 def _create(state: AgentState) -> dict:
     """Neuen Termin anlegen — Zeitparser fuer Datumsaufloesung."""
-    from config import POSTGRES_URL
-    from memory.repositories.timeline_repository import TimelineRepository
-    from utils.zeitparser import zeit_parsen_vektor, ZeitVektor
     from agents.timeline.magneten import (
         themen_aus_event_type,
         verhaltens_flags_aus_event_type,
     )
+    from config import POSTGRES_URL
+    from memory.repositories.timeline_repository import TimelineRepository
+    from utils.zeitparser import ZeitVektor, zeit_parsen_vektor
 
     user_id = state["kontext"].get("user_id", "")
     title = state["parameter"].get("target", "")
@@ -161,13 +161,13 @@ def _update(state: AgentState) -> dict:
 
     Wird sowohl fuer action='update' als auch action='reschedule' aufgerufen.
     """
-    from config import POSTGRES_URL
-    from memory.repositories.timeline_repository import TimelineRepository
-    from utils.zeitparser import zeit_parsen_vektor, ZeitVektor
     from agents.timeline.magneten import (
         themen_aus_event_type,
         verhaltens_flags_aus_event_type,
     )
+    from config import POSTGRES_URL
+    from memory.repositories.timeline_repository import TimelineRepository
+    from utils.zeitparser import ZeitVektor, zeit_parsen_vektor
 
     termin = state["parameter"].get("termin", {})
     termin_id = termin.get("id")

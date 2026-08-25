@@ -27,8 +27,8 @@ from unittest.mock import patch
 
 import psycopg2
 
-from config import ASSISTANT_USER_ID, POSTGRES_URL, RAD_MIN, RAD_MAX
-from ei.salienz import salienz_effektiv_berechnen, ANTRIEBE_NICHT_ANGESCHLOSSEN
+from config import ASSISTANT_USER_ID, POSTGRES_URL, RAD_MAX, RAD_MIN
+from ei.salienz import ANTRIEBE_NICHT_ANGESCHLOSSEN, salienz_effektiv_berechnen
 from memory.charakter import nutzer_gewichtung_laden
 from tests.test_salienz_human_transport import _lauf
 
@@ -64,11 +64,11 @@ class FormelAusDemKonzeptTest(unittest.TestCase):
     """Die drei Faelle, die das Konzept als TEST-Zeile vorgibt."""
 
     def test_gewichtung_unter_eins_daempft(self):
-        """max(0.5 × 0.9, 0.0) = 0.45"""
+        """max(0.5 × 0.9, 0.0) = 0.45."""
         self.assertEqual(_rechne(human=0.5, gewichtung=0.9).effektiv, 0.45)
 
     def test_gewichtung_ueber_eins_hebt(self):
-        """max(0.5 × 1.5, 0.0) = 0.75"""
+        """max(0.5 × 1.5, 0.0) = 0.75."""
         self.assertEqual(_rechne(human=0.5, gewichtung=1.5).effektiv, 0.75)
 
     def test_eigen_pfad_gewinnt(self):
@@ -193,7 +193,8 @@ class HerkunftImErgebnisTest(unittest.TestCase):
 
     def test_fehlende_antriebe_werden_mitgefuehrt(self):
         """Zwei von vier Antrieben schweigen — das gehoert ins Ergebnis, sonst
-        sieht ein max() ueber zwei aus wie eines ueber vier."""
+        sieht ein max() ueber zwei aus wie eines ueber vier.
+        """
         ergebnis = _rechne(sprachlich=0.4)
         self.assertEqual(ergebnis.nicht_angeschlossen, ANTRIEBE_NICHT_ANGESCHLOSSEN)
         self.assertIn("emotionale_gravitation", ergebnis.nicht_angeschlossen)
@@ -251,7 +252,8 @@ class NutzerGewichtungLadenTest(unittest.TestCase):
 
     def test_fehlendes_paar_liefert_none_statt_nabe(self):
         """Nicht (0.9, 'default') — sonst saehe ein Lesefehler aus wie ein
-        Charakter ohne Auspraegung."""
+        Charakter ohne Auspraegung.
+        """
         faktor, quelle = nutzer_gewichtung_laden(POSTGRES_URL, "__gibt_es_nicht__")
         self.assertIsNone(faktor)
         self.assertEqual(quelle, "fehlt")
@@ -290,14 +292,16 @@ class FormelImNodeTest(unittest.TestCase):
 
     def test_humangraph_rechnet_die_formel_nicht(self):
         """Der Nutzer-Eintrag behaelt seine Salienz — dort greift weiter der
-        alte Gravitationsboost, bis Bauteil 1 ihn ausbaut."""
+        alte Gravitationsboost, bis Bauteil 1 ihn ausbaut.
+        """
         _, ergebnis = self._mit_faktor("human", [0.5], salienz_human=0.7, gravitationsterm=0.3)
         gespeichert: float = ergebnis["pending_writes"][0]["daten"]["salienz_obj"]["salienz"]
         self.assertEqual(gespeichert, 0.8)
 
     def test_agentgraph_faellt_auf_den_eigen_pfad(self):
         """Ein eigener Gedanke hat keine Nutzeraeusserung — und trotzdem eine
-        Salienz. Nicht null, weil die Lesung seines Textes ein Antrieb ist."""
+        Salienz. Nicht null, weil die Lesung seines Textes ein Antrieb ist.
+        """
         eintraege, ergebnis = self._mit_faktor("agent", [0.6])
         gespeichert: float = ergebnis["pending_writes"][0]["daten"]["salienz_obj"]["salienz"]
         self.assertAlmostEqual(gespeichert, round(0.6/1.3, 4), places=4)
@@ -308,7 +312,8 @@ class FormelImNodeTest(unittest.TestCase):
 
     def test_gravitation_zaehlt_nicht_zweimal(self):
         """Im CharacterGraph ist die Gravitation ein Antrieb im max(), kein
-        Zuschlag obendrauf. 0.5 und Gravitation 0.3 ergeben 0.5, nicht 0.8."""
+        Zuschlag obendrauf. 0.5 und Gravitation 0.3 ergeben 0.5, nicht 0.8.
+        """
         _, ergebnis = self._mit_faktor("character", [0.5], gravitationsterm=0.3)
         gespeichert: float = ergebnis["pending_writes"][0]["daten"]["salienz_obj"]["salienz"]
         self.assertAlmostEqual(gespeichert, round(0.5/1.3, 4), places=4)

@@ -22,14 +22,13 @@ from ei.berechnung import (
     _sprach_stil_erkennen,
     _stil_plausibilitaet,
 )
+from graph.state import ConversationState, reiz_herkunft
 from memory.pipeline_log import (
     log_berechnung,
     log_db_write,
     span_end,
     span_start,
 )
-
-from graph.state import ConversationState, reiz_herkunft
 
 logger = logging.getLogger("ki_server.ei_calc_persist")
 

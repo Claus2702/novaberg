@@ -9,9 +9,9 @@ import logging
 
 from agents.base import AgentState
 from config import (
-    NOTIZEN_SUCHE_MIN_SIMILARITY,
-    NOTIZEN_SUCHE_MIN_SCORE,
     NOTIZEN_SUCHE_LIMIT,
+    NOTIZEN_SUCHE_MIN_SCORE,
+    NOTIZEN_SUCHE_MIN_SIMILARITY,
 )
 
 logger = logging.getLogger("ki_server.agents.notizen.suche")
@@ -126,7 +126,7 @@ def suchen(state: AgentState) -> dict:
 
     if not treffer:
         if action == "read":
-            logger.debug(f"suchen: Return -- status='abgeschlossen', nicht gefunden (read)")
+            logger.debug("suchen: Return -- status='abgeschlossen', nicht gefunden (read)")
             return {
                 "status": "abgeschlossen",
                 "ergebnis": f"Keine Notiz mit '{target}' gefunden.",
@@ -147,7 +147,7 @@ def suchen(state: AgentState) -> dict:
                 "schritte": state["schritte"] + [{"node": "suchen", "ergebnis": "nicht_gefunden_rueckfrage"}],
             }
 
-        logger.debug(f"suchen: Return -- status='fehler', nicht gefunden")
+        logger.debug("suchen: Return -- status='fehler', nicht gefunden")
         return {
             "status": "fehler",
             "fehler": f"Keine Notiz mit '{target}' gefunden.",

@@ -66,7 +66,7 @@ class TestNachzugNachGravitation(unittest.TestCase):
         )
 
     def test_arousal_wandert_mit(self) -> None:
-        """arousal = min(1.0, 0.90 × 0.80) = 0.72, von Hand gerechnet."""
+        """Arousal = min(1.0, 0.90 × 0.80) = 0.72, von Hand gerechnet."""
         state: dict = _state(mit_punkten=True)
 
         ergebnis: dict = emotionale_gravitation_anwenden(state)

@@ -33,8 +33,8 @@ from config import (
     AUFZEICHNUNGEN_KAPPUNG,
 )
 from memory.utils import embedding_zu_pgvector_str
-from utils.etikett import mit_etikett
 from tools.db_manager import db_manager
+from utils.etikett import mit_etikett
 
 logger = logging.getLogger("ki_server.agents.dateien_index.aufzeichnungen")
 

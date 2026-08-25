@@ -20,6 +20,7 @@ from dataclasses import dataclass, field
 
 import psycopg2
 import psycopg2.extras
+
 from config import (
     QUEUE_DAEMPFUNG_EXP,
     QUEUE_DECAY_RATE,

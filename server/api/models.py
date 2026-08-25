@@ -1,13 +1,13 @@
-"""
-API-Datenmodelle — Pydantic-Schemas für Request/Response.
-"""
+"""API-Datenmodelle — Pydantic-Schemas für Request/Response."""
 
-from config     import ASSISTANT_NAME
-from pydantic   import BaseModel, Field
+from pydantic import BaseModel, Field
+
+from config import ASSISTANT_NAME
 
 
 class GespraechAnfrage(BaseModel):
     """Eingehende Chat-Nachricht."""
+
     prompt:     str   = Field(..., min_length=1, description="Benutzereingabe")
     user_id:    str   = Field(default="default",  description="Benutzer-ID")
     client_id:  str   = Field(default="",         description="Absender-Client (z.B. desktop, telegram)")

@@ -18,11 +18,10 @@ from datetime import datetime
 from agents.nmcp import aushaenge_sammeln
 from agents.nmcp_quote import REGISTER
 from config import PROMPTS, get_node_config, redis_client
-from memory.session import format_session_turns_numbered, session_turns_retrieve
-from services.model_services import ChatRequest, model_service
-
 from graph.reiz import reiz_ist_eigener_gedanke, reiz_text
 from graph.state import ConversationState
+from memory.session import format_session_turns_numbered, session_turns_retrieve
+from services.model_services import ChatRequest, model_service
 
 logger = logging.getLogger("ki_server.router")
 

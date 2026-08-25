@@ -9,15 +9,23 @@ import json
 import logging
 
 import redis as redis_lib
-from fastapi           import APIRouter
+from fastapi import APIRouter
 from fastapi.responses import JSONResponse
 
 from config import (
-    redis_client, REDIS_URL, postgres_verbinden, EMOTION_SEKTOR_MAP, ASSISTANT_USER_ID,
-    RAD_NABE, RAD_MIN, RAD_MAX, INITIATIVE_RAD_NABE, INITIATIVE_RAD_SPANNE,
+    ASSISTANT_USER_ID,
+    EMOTION_SEKTOR_MAP,
+    INITIATIVE_RAD_NABE,
+    INITIATIVE_RAD_SPANNE,
+    RAD_MAX,
+    RAD_MIN,
+    RAD_NABE,
+    REDIS_URL,
+    postgres_verbinden,
+    redis_client,
 )
-from memory.kzg     import _kzg_prefix
-from memory.session import _session_key, session_turns_retrieve
+from memory.kzg import _kzg_prefix
+from memory.session import _session_key
 
 logger = logging.getLogger("ki_server.gedaechtnis")
 router = APIRouter()

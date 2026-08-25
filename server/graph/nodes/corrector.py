@@ -5,11 +5,11 @@ Wird nur aufgerufen wenn das Tribunal warnung oder ablehnen meldet.
 
 import logging
 
-from graph.reiz  import reiz_text
-from graph.state import ConversationState
+from config import PROMPTS, get_node_config
 from graph.antwort_spur import antwort_setzen
-from config import get_node_config, PROMPTS
-from services.model_services import model_service, ChatRequest
+from graph.reiz import reiz_text
+from graph.state import ConversationState
+from services.model_services import ChatRequest, model_service
 
 logger = logging.getLogger("ki_server.corrector")
 

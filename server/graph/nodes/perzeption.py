@@ -23,12 +23,12 @@ import logging
 from dataclasses import dataclass
 from datetime import datetime
 
-from graph.personality import Personality, InternalPersonality
+from config import PROMPTS, get_node_config, redis_client
+from graph.personality import InternalPersonality, Personality
 from graph.reiz import reiz_text
 from graph.state import ConversationState
-from config import redis_client, get_node_config, PROMPTS
-from memory.session import session_turns_retrieve, format_session_turns_numbered
-from services.model_services import model_service, ChatRequest
+from memory.session import format_session_turns_numbered, session_turns_retrieve
+from services.model_services import ChatRequest, model_service
 
 logger = logging.getLogger("ki_server.perzeption")
 

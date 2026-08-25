@@ -1,6 +1,4 @@
-"""
-WebSocket-Verbindung für proaktive Rückmeldungen.
-"""
+"""WebSocket-Verbindung für proaktive Rückmeldungen."""
 
 import asyncio
 import concurrent.futures
@@ -23,6 +21,7 @@ class ClientConnection:
         character_id: Aktiver Chat-Charakter (z.B. "nova").
         websocket: Die WebSocket-Verbindung.
     """
+
     client_id:    str
     character_id: str
     websocket:    WebSocket

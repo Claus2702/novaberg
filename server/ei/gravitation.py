@@ -18,13 +18,13 @@ import numpy as np
 import redis
 
 from config import (
-    GRAVITATIONS_SCHWELLE,
-    GRAVITATIONS_SALIENZ_FAKTOR,
-    EMOTIONALE_GRAVITATIONS_SCHWELLE,
-    EMOTIONALE_GRAVITATION_ZEIT_HALBWERT,
-    EMOTIONALE_GRAVITATION_MAX_PRO_TURN,
     EMOTIONALE_GRAVITATION_FAKTOR_KZG,
     EMOTIONALE_GRAVITATION_FAKTOR_LZG,
+    EMOTIONALE_GRAVITATION_MAX_PRO_TURN,
+    EMOTIONALE_GRAVITATION_ZEIT_HALBWERT,
+    EMOTIONALE_GRAVITATIONS_SCHWELLE,
+    GRAVITATIONS_SALIENZ_FAKTOR,
+    GRAVITATIONS_SCHWELLE,
     REDIS_URL,
 )
 
@@ -52,6 +52,7 @@ class ActivatedGoal:
             None nur, wenn die Quelle keins hatte — dann ist das Ziel gar
             nicht erst aktiviert worden.
     """
+
     ziel_id:              int
     ziel_typ:             str
     zielsatz:             str

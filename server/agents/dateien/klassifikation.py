@@ -22,11 +22,10 @@ Prompt-Schema: [BLOCKNAME]-Format wie bei den übrigen Klassifikatoren.
 import json
 import logging
 
+from agents.base import AgentState
 from config import PROMPTS, get_node_config, redis_client
 from memory.session import format_session_turns_numbered, session_turns_retrieve
 from services.model_services import ChatRequest, model_service
-
-from agents.base import AgentState
 
 logger = logging.getLogger("ki_server.agents.dateien.klassifikation")
 

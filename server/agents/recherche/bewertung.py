@@ -7,7 +7,7 @@ Bewertet gegen Kriterien UND bekanntes Vorwissen UND User-Relevanz.
 import json
 import logging
 
-from services.model_services import model_service, BackgroundRequest
+from services.model_services import BackgroundRequest, model_service
 
 logger = logging.getLogger("ki_server.agents.recherche")
 

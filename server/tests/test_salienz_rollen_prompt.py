@@ -21,10 +21,9 @@ Kein skipUnless, kein skipIf, kein try/except um Importe.
 
 import pathlib
 import unittest
-from unittest.mock import MagicMock
 
 from config import ASSISTANT_NAME
-from graph.nodes.salience import _build_salienz_prompt, _aufgaben_block_name
+from graph.nodes.salience import _aufgaben_block_name, _build_salienz_prompt
 from tests.test_salienz_human_transport import _lauf
 
 # Der Satz, der die Inversion trug. Er darf in keiner Salienz-Prompt-Datei
@@ -70,14 +69,16 @@ class RollenBlockTest(unittest.TestCase):
 
     def test_blockname_kommt_mit_dem_prompt_zurueck(self):
         """Ein Rueckgabewert statt zweier Ableitungen — sonst kann das Log eine
-        Schablone melden, die nie gezogen wurde."""
+        Schablone melden, die nie gezogen wurde.
+        """
         for rolle in ("human", "character", "agent"):
             _, block = _build_salienz_prompt(rolle)
             self.assertEqual(block, _aufgaben_block_name(rolle), rolle)
 
     def test_geteilte_bloecke_stehen_in_allen_dreien(self):
         """Dimensionen und Regeln haengen nicht an der Rolle — sonst waeren
-        die zehn Felder dreimal gepflegt und liefen auseinander."""
+        die zehn Felder dreimal gepflegt und liefen auseinander.
+        """
         for rolle in ("human", "character", "agent"):
             prompt: str = _prompt(rolle)
             self.assertIn("[DIMENSIONEN]", prompt, f"Rolle {rolle}")
@@ -86,7 +87,8 @@ class RollenBlockTest(unittest.TestCase):
 
     def test_traeger_wird_ersetzt(self):
         """Ein stehengebliebener Platzhalter wuerde dem Modell woertlich
-        vorgelegt."""
+        vorgelegt.
+        """
         for rolle in ("character", "agent"):
             prompt: str = _prompt(rolle)
             self.assertNotIn("{traeger}", prompt, f"Rolle {rolle}")
@@ -101,7 +103,8 @@ class RollenBlockTest(unittest.TestCase):
 
     def test_blockname_und_prompt_stimmen_ueberein(self):
         """Die Abbildung Rolle -> Block wird an zwei Stellen gebraucht. Laufen
-        sie auseinander, steht im Log eine Schablone, die nicht gezogen wurde."""
+        sie auseinander, steht im Log eine Schablone, die nicht gezogen wurde.
+        """
         self.assertEqual(_aufgaben_block_name("human"),     "salienz.task")
         self.assertEqual(_aufgaben_block_name("character"), "salienz.assistant_task")
         self.assertEqual(_aufgaben_block_name("agent"),     "salienz.impuls_task")
@@ -109,7 +112,8 @@ class RollenBlockTest(unittest.TestCase):
 
 class InvertierteAnweisungTest(unittest.TestCase):
     """Der Satz, der den Defekt trug, ist nirgends mehr — auch nicht in einem
-    Override."""
+    Override.
+    """
 
     @staticmethod
     def _salienz_dateien() -> list[pathlib.Path]:
@@ -118,7 +122,8 @@ class InvertierteAnweisungTest(unittest.TestCase):
 
     def test_messgeraet_sieht_die_dateien(self):
         """Positivkontrolle vor der Null-Aussage: Ein leerer Glob wuerde die
-        Pruefung darunter bestehen lassen, ohne irgendetwas geprueft zu haben."""
+        Pruefung darunter bestehen lassen, ohne irgendetwas geprueft zu haben.
+        """
         dateien = self._salienz_dateien()
         self.assertGreaterEqual(len(dateien), 6)
         gelesen: str = "\n".join(d.read_text(encoding="utf-8") for d in dateien)
@@ -142,7 +147,8 @@ class InvertierteAnweisungTest(unittest.TestCase):
 
     def test_skala_liegt_nicht_mehr_in_den_regeln(self):
         """Sie lag dort in zwei Kopien, beide auf die Nutzerlage geschrieben.
-        Eine Skala je Lage gehoert in den Lage-Block."""
+        Eine Skala je Lage gehoert in den Lage-Block.
+        """
         for datei in self._salienz_dateien():
             if not datei.name.endswith("salienz.rules.txt"):
                 continue

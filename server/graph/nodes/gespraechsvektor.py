@@ -21,35 +21,36 @@ from dataclasses import dataclass
 import psycopg2
 
 from config import (
-    POSTGRES_URL,
-    redis_client as cfg_redis_client,
-    PROMPTS,
-    get_node_config,
     GV_LAENGE_MODUS_DELTA,
     GV_STRATEGIE_MIN_LAENGE,
+    POSTGRES_URL,
+    PROMPTS,
+    get_node_config,
 )
-from graph.reiz  import reiz_ist_eigener_gedanke, reiz_text
-from graph.state import ConversationState, pipeline_quelle
-from memory.charakter import initiative_versatz_laden
-from memory.pipeline_log import log_berechnung, log_fehler
-from memory.session import format_session_turns_numbered
-from services.model_services import model_service, ChatRequest, EmbedRequest
-
-from ei.utils import POSITIVE_EMOTIONEN, NEGATIVE_EMOTIONEN, modus_pruefen
-from ei.farbton import farbton_berechnen
-from ei.neugier import aufnahmebereitschaft_berechnen
-from ei.wissensluecken import wissensluecken_finden
-from ei.initiative import Fuehrung, fuehrung_messen, skalenfassung
+from config import (
+    redis_client as cfg_redis_client,
+)
 from ei.dreischicht import (
     achsen_berechnen,
     achsen_fassung,
-    sektor_bestimmen,
-    repertoire_laden,
     charakter_gewichtung_berechnen,
     dreischicht_prompt_bauen,
     gv_output_parsen,
     korridor_pruefen,
+    repertoire_laden,
+    sektor_bestimmen,
 )
+from ei.farbton import farbton_berechnen
+from ei.initiative import Fuehrung, fuehrung_messen, skalenfassung
+from ei.neugier import aufnahmebereitschaft_berechnen
+from ei.utils import NEGATIVE_EMOTIONEN, POSITIVE_EMOTIONEN, modus_pruefen
+from ei.wissensluecken import wissensluecken_finden
+from graph.reiz import reiz_ist_eigener_gedanke, reiz_text
+from graph.state import ConversationState, pipeline_quelle
+from memory.charakter import initiative_versatz_laden
+from memory.pipeline_log import log_berechnung, log_fehler
+from memory.session import format_session_turns_numbered
+from services.model_services import ChatRequest, EmbedRequest, model_service
 
 logger = logging.getLogger("ki_server.gespraechsvektor")
 

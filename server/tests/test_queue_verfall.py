@@ -36,8 +36,14 @@ import unittest
 import uuid
 
 import psycopg2
-from config import POSTGRES_URL, QUEUE_SCHWELLE
-from config import KZG_SALIENZ_HIGH, KZG_SALIENZ_MID, KZG_SALIENZ_MINIMUM
+
+from config import (
+    KZG_SALIENZ_HIGH,
+    KZG_SALIENZ_MID,
+    KZG_SALIENZ_MINIMUM,
+    POSTGRES_URL,
+    QUEUE_SCHWELLE,
+)
 from memory.repositories.shadow_auftrag_repository import (
     GRUND_FEHLVERSUCH,
     GRUND_VERFALL,

@@ -36,9 +36,9 @@ Kein skipUnless, kein skipIf, kein try/except um Importe.
 import unittest
 from unittest.mock import patch
 
-from config import ASSISTANT_NAME, ASSISTANT_USER_ID
-from agents.charakter.agent import CharakterAgent
 from agents.charakter import destillation
+from agents.charakter.agent import CharakterAgent
+from config import ASSISTANT_NAME, ASSISTANT_USER_ID
 
 IMPULS: str = "eigener_impuls"
 
@@ -76,7 +76,8 @@ class TestWoGefiltertWird(unittest.TestCase):
 
     def test_knoten_ohne_bruecke_bleibt(self) -> None:
         """`IS DISTINCT FROM` statt `<>` — sonst faellt jeder Knoten ohne
-        Verbindung heraus, obwohl er kein Impuls sein muss."""
+        Verbindung heraus, obwohl er kein Impuls sein muss.
+        """
         bank = _Bank()
         with patch("agents.charakter.agent.db_manager", bank):
             CharakterAgent._lzg_intentionen_laden(None, "meister", "nova", "assistant")
@@ -173,7 +174,8 @@ class TestWoBewusstNichtGefiltertWird(unittest.TestCase):
 
     def test_kzg_auswahl_filtert_nicht(self) -> None:
         """Der Adaptiv-Hash liest das KZG; dort wird nach Perspektive
-        getrennt, aber nicht nach Herkunft."""
+        getrennt, aber nicht nach Herkunft.
+        """
         quelltext = CharakterAgent._kzg_laden.__doc__ or ""
         self.assertNotIn(IMPULS, quelltext)
 

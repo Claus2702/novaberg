@@ -17,11 +17,10 @@ import logging
 
 from agents import AgentRegistry
 from config import PROMPTS
-from plugins import get_registry
-from plugins.base import BaseManager
-
 from graph.format.agent_results import format_success_lines
 from graph.state import ConversationState
+from plugins import get_registry
+from plugins.base import BaseManager
 
 logger = logging.getLogger("ki_server.planner")
 

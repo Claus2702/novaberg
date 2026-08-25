@@ -15,7 +15,6 @@ von MAX_GROESSE, damit der Cache nicht unbegrenzt waechst.
 """
 
 import logging
-
 from collections import OrderedDict
 
 logger = logging.getLogger("ki_server.thinker.cache")

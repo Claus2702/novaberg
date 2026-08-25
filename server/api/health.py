@@ -1,14 +1,11 @@
-"""
-health-Check und Modellverwaltung.
-"""
+"""health-Check und Modellverwaltung."""
 
-import json
 import logging
 
-from fastapi           import APIRouter
+from fastapi import APIRouter
 from fastapi.responses import JSONResponse
 
-from config import redis_client, ollama_gpu_chat, OLLAMA_MODEL, postgres_verbinden, SEARXNG_URL
+from config import OLLAMA_MODEL, SEARXNG_URL, ollama_gpu_chat, postgres_verbinden, redis_client
 
 logger = logging.getLogger("ki_server.health")
 router = APIRouter()

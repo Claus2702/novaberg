@@ -46,10 +46,10 @@ from tools.dateien.operationen import (
 )
 from tools.dateien.versionierung import (
     Fassung,
-    aktuell_lesen,
     absatz_aendern,
     absatz_einfuegen,
     absatz_loeschen,
+    aktuell_lesen,
     paarung_pruefen,
     verlauf_lesen,
 )

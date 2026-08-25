@@ -12,14 +12,13 @@ import json
 import logging
 
 from config import (
-    PIXIE_VERTIEFUNG_LZG_LIMIT,
     PIXIE_VERTIEFUNG_KZG_LIMIT,
+    PIXIE_VERTIEFUNG_LZG_LIMIT,
+    redis_client,
 )
 from memory.kontext import session_kontext_extrahieren
+from services.model_services import BackgroundRequest, EmbedRequest, model_service
 from tools.db_manager import db_manager
-from services.model_services import model_service, BackgroundRequest
-from services.model_services import model_service, EmbedRequest
-from config import redis_client
 
 logger = logging.getLogger("ki_server.pixie.lagebeurteilung")
 

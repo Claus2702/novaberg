@@ -141,7 +141,8 @@ def _format_summary(entry: ContextEntry) -> str:
 
 def _format_charakter(entry: ContextEntry) -> str:
     """Einzeiliger Praefix; Inhalt direkt anschliessend (Newlines im Inhalt
-    werden belassen)."""
+    werden belassen).
+    """
     inhalt: str = entry.get("inhalt", "")
     return f"[Charakter] {inhalt}"
 

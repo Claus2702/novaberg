@@ -129,8 +129,8 @@ class KernWortlautTest(unittest.TestCase):
         liest und das der Figur ihre Antworten. Vorher standen beide in beiden,
         und daraus entstand die Spiegelung der Charakter-Raeder.
         """
-        from config import ASSISTANT_USER_ID
         from agents.charakter.destillation import kern_hash_destillieren
+        from config import ASSISTANT_USER_ID
 
         begegnung = [{"aeusserung": "jo", "antwort": "Na, alles klar bei dir?"}]
 

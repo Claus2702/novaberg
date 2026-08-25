@@ -28,13 +28,13 @@ standen.
 import unittest
 
 from agents.charakter.destillation import (
+    _PRONOMEN,
+    _TRAEGERFORMEN,
     ADAPTIVE_HASH_PROMPT,
     BEZIEHUNGS_PROFIL_PROMPT,
     EMOTIONS_PROFIL_PROMPT,
     INTENTIONS_PROFIL_PROMPT,
     KERN_HASH_PROMPT,
-    _PRONOMEN,
-    _TRAEGERFORMEN,
     _perspektive_aufloesen,
 )
 from config import ASSISTANT_USER_ID, DEFAULT_USER_ID
@@ -79,7 +79,8 @@ class TraegerformenTest(unittest.TestCase):
 
     def test_der_rollenbegriff_traegt_seine_eigenen_kasus(self) -> None:
         """»der Nutzer« ist grammatisch maskulin — das ist eine Aussage ueber
-        das Wort, nicht ueber den Menschen. Die vier Kasus stehen fest."""
+        das Wort, nicht ueber den Menschen. Die vier Kasus stehen fest.
+        """
         formen = _perspektive_aufloesen(DEFAULT_USER_ID)
         self.assertEqual(formen["traeger"],      "der Nutzer")
         self.assertEqual(formen["traeger_gen"],  "des Nutzers")
@@ -102,7 +103,8 @@ class TraegerformenTest(unittest.TestCase):
 
     def test_ein_unbekanntes_genus_bleibt_als_rueckfall_erkennbar(self) -> None:
         """Ein Rueckfall, der wie ein gesetzter Wert aussieht, ist ein stiller
-        Fehler (`22_STILLE_FEHLER/default-nicht-wie-messwert.md`)."""
+        Fehler (`22_STILLE_FEHLER/default-nicht-wie-messwert.md`).
+        """
         import agents.charakter.destillation as dest
 
         vorher = dest.ASSISTANT_GENUS

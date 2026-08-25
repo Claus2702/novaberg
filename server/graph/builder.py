@@ -11,11 +11,11 @@ import warnings
 import redis
 from langgraph.graph.state import CompiledStateGraph
 
-from graph.human_graph     import HumanGraph
-from graph.agent_graph     import AgentGraph
+from graph.agent_graph import AgentGraph
 from graph.character_graph import CharacterGraph
-from graph.state           import ConversationState
-from graph.einwand         import Einwandsurteil
+from graph.einwand import Einwandsurteil
+from graph.human_graph import HumanGraph
+from graph.state import ConversationState
 
 logger = logging.getLogger("ki_server.graph")
 

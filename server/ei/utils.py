@@ -1,6 +1,4 @@
-"""
-EI-Hilfsfunktionen — gemeinsam genutzt von Neugier, Wissensluecken, Dreischicht.
-"""
+"""EI-Hilfsfunktionen — gemeinsam genutzt von Neugier, Wissensluecken, Dreischicht."""
 
 import logging
 import math

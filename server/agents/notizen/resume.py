@@ -146,7 +146,7 @@ def _resume_nicht_gefunden(state: AgentState, info: dict, user_answer: str) -> d
         }
 
     if any(w in user_lower for w in ["nein", "ne", "nee", "nicht", "lass", "abbruch", "stopp"]):
-        logger.info(f"_resume_nicht_gefunden: User lehnt ab")
+        logger.info("_resume_nicht_gefunden: User lehnt ab")
         return {
             "status": "abgeschlossen",
             "ergebnis": f"Okay, '{target}' wird nicht angelegt.",
@@ -156,7 +156,7 @@ def _resume_nicht_gefunden(state: AgentState, info: dict, user_answer: str) -> d
             }],
         }
 
-    logger.info(f"_resume_nicht_gefunden: Antwort unklar -- erneute Rueckfrage")
+    logger.info("_resume_nicht_gefunden: Antwort unklar -- erneute Rueckfrage")
     return {
         "status": "rueckfrage",
         "rueckfrage": json.dumps({

@@ -21,13 +21,13 @@ import logging
 
 from config import redis_client
 from ei.berechnung import (
-    _emotions_verlauf_berechnen,
-    stimmungsvektor_bestimmen,
-    _sprach_stil_erkennen,
     _ei_arousal_berechnen,
+    _emotions_verlauf_berechnen,
     _modus_plausibilitaet,
-    _stil_plausibilitaet,
     _nova_empathie_berechnen,
+    _sprach_stil_erkennen,
+    _stil_plausibilitaet,
+    stimmungsvektor_bestimmen,
 )
 from ei.raum import raum_nachfuehren
 from graph.personality import InternalPersonality, Personality

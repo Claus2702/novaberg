@@ -33,6 +33,7 @@ import unittest
 from unittest.mock import MagicMock, patch
 
 import redis
+
 from graph.nodes import haltung as haltung_modul
 from graph.nodes.haltung import haltung_bestimmen
 from memory.haltung import (

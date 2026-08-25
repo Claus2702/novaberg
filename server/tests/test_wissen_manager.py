@@ -36,8 +36,9 @@ import uuid
 from contextlib import ExitStack
 from unittest.mock import MagicMock, patch
 
-import graph.nodes.enricher as enricher_mod
 import psycopg2
+
+import graph.nodes.enricher as enricher_mod
 from config import LZG_KNOTEN_GEWICHT_CAP, POSTGRES_URL, WISSEN_RETRIEVAL_SCHWELLE
 from plugins.wissen_manager.manager import WissenManager
 

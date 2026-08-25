@@ -64,7 +64,8 @@ class DieAntwortWirdGedeutetTest(unittest.TestCase):
 
     def test_beide_seiten_genannt_ist_unklar_und_keine_mischung(self) -> None:
         """*„meins, aber auch deins"* und *„nicht meins, sondern deins"*
-        tragen dieselben zwei Treffer und meinen Verschiedenes."""
+        tragen dieselben zwei Treffer und meinen Verschiedenes.
+        """
         self.assertEqual(resume_mod._eigentum_deuten("nicht meins, sondern deins"), "")
 
     def test_ohne_antwort_kein_wert(self) -> None:
@@ -106,7 +107,7 @@ class DerRueckwegFuehrtNieOhneWertZurAusfuehrungTest(unittest.TestCase):
         self.assertNotIn("eigentum", ergebnis.get("parameter", {}))
 
     def test_eine_unklarheit_mit_ablehnungswort_beendet_den_vorgang(self) -> None:
-        """**Ein Bestandsverhalten, festgehalten statt stillschweigend gedeutet.**
+        """**Ein Bestandsverhalten, festgehalten statt stillschweigend gedeutet.**.
 
         *„keine Ahnung"* traegt `keine` und wird von `_antwort_deuten` als
         Ablehnung gelesen — der Vorgang endet, statt dass erneut gefragt

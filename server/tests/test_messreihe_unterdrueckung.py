@@ -34,6 +34,7 @@ import unittest
 from unittest.mock import patch
 
 import psycopg2
+
 from config import POSTGRES_URL
 from services.shadow_agent.utils import shadow_queue_push
 

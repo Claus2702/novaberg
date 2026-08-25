@@ -321,7 +321,8 @@ class LeseschichtTest(unittest.TestCase):
 
     def test_gegenprobe_ohne_zaunerkennung_waeren_es_mehr(self) -> None:
         """Belegt, dass der Zaun wirklich etwas entfernt — sonst prüft der
-        Test oben nichts."""
+        Test oben nichts.
+        """
         roh = self.zaun.read_text(encoding="utf-8").splitlines()
         naiv = [z for z in roh if z.startswith("#")]
         bloecke = struktur_analysieren(self.zaun, self.wurzel)
@@ -361,7 +362,8 @@ class LeseschichtTest(unittest.TestCase):
 
     def test_setext_ueberschriften_stehen_in_der_karte(self) -> None:
         """Text über `===` bzw. `---` ist eine Überschrift — der frühere
-        Zeilenautomat hat sie nicht gesehen, weil er `#` verlangte."""
+        Zeilenautomat hat sie nicht gesehen, weil er `#` verlangte.
+        """
         bloecke = struktur_analysieren(self.commonmark, self.wurzel)
         header = [b["header"] for b in bloecke]
         self.assertIn("Setext-Ueberschrift", header)
@@ -372,7 +374,8 @@ class LeseschichtTest(unittest.TestCase):
 
     def test_ueberschrift_im_blockzitat_ist_kein_gliederungspunkt(self) -> None:
         """Sie gehört zum zitierten Text; ihr Block liefe über das Zitat
-        hinaus und wäre eine Grenze, die im Dokument nicht existiert."""
+        hinaus und wäre eine Grenze, die im Dokument nicht existiert.
+        """
         header = [b["header"] for b in struktur_analysieren(self.commonmark, self.wurzel)]
         self.assertNotIn("> ## Ueberschrift im Blockzitat", header)
         self.assertNotIn("## Ueberschrift im Blockzitat", header)
@@ -385,7 +388,8 @@ class LeseschichtTest(unittest.TestCase):
 
     def test_zaun_aus_vier_zeichen_umschliesst_einen_aus_drei(self) -> None:
         """Der verschachtelte Fall: Der innere Zaun beendet den äußeren
-        nicht, und die Raute dazwischen bleibt Code."""
+        nicht, und die Raute dazwischen bleibt Code.
+        """
         header = [b["header"] for b in struktur_analysieren(self.commonmark, self.wurzel)]
         self.assertNotIn("# auch das hier ist Code", header)
         self.assertIn("## Letzter Block", header)
@@ -598,7 +602,8 @@ class LeseschichtTest(unittest.TestCase):
 
     def test_datei_suchen_trennt_aehnliche_namen(self) -> None:
         """Das Muster ist wörtlich, nicht ungefähr: `*_bloecke.md` trifft
-        `ohne_bloecke.md` und gerade nicht `mit_bloecken.md`."""
+        `ohne_bloecke.md` und gerade nicht `mit_bloecken.md`.
+        """
         treffer = datei_suchen(self.wurzel, self.wurzel, "*_bloecke.md")
         self.assertEqual(len(treffer), 1)
         self.assertTrue(treffer[0].endswith("ohne_bloecke.md"))

@@ -30,7 +30,7 @@ from __future__ import annotations
 
 import importlib
 from dataclasses import dataclass, field
-from datetime import date, datetime, timedelta
+from datetime import datetime, timedelta
 from pathlib import Path
 from typing import Any, Optional
 from zoneinfo import ZoneInfo
@@ -60,6 +60,7 @@ _ERLAUBTE_PHASEN: frozenset = frozenset({None, 0, 1, 2, 3, 4, 5})
 @dataclass
 class Befund:
     """Ergebnis eines einzelnen Korpusfalls."""
+
     fall_id: str
     zustand: str
     ab_phase: Optional[int]
@@ -72,6 +73,7 @@ class Befund:
 @dataclass
 class Bericht:
     """Gesamtergebnis eines Korpuslaufs."""
+
     phase: int
     befunde: list[Befund] = field(default_factory=list)
 

@@ -156,8 +156,9 @@ class DerDatumsteilBleibtEinDatumsteil(unittest.TestCase):
     """
 
     def test_ein_datumsteil_ohne_dauer_bleibt_unangetastet(self) -> None:
-        from utils.zeitparser import _text_normalisieren
         from datetime import date
+
+        from utils.zeitparser import _text_normalisieren
         for text in ("1. Tag des Monats", "der Tag danach", "diesen Monat",
                      "Tag der Arbeit"):
             with self.subTest(text=text):

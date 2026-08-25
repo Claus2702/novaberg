@@ -149,7 +149,8 @@ class StatusTest(unittest.TestCase):
 
     def test_zustaende_sind_verschieden(self):
         """Ein Boolean koennte das nicht: Er sagt nicht, WARUM eine Zeile
-        nicht mehr zaehlt."""
+        nicht mehr zaehlt.
+        """
         self.assertEqual(len(STATUS_ALLE), 3)
 
 

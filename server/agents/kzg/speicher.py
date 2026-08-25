@@ -5,7 +5,6 @@ Schreibt direkt in Redis. Nutzt redis_client aus config.
 
 import json
 import logging
-import math
 import time
 
 import numpy as np
@@ -14,14 +13,14 @@ from agents.base import AgentState
 from config import (
     KZG_SALIENZ_HIGH,
     KZG_SALIENZ_MID,
+    KZG_TTL_HIGH_SEKUNDEN,
     KZG_TTL_LOW_SEKUNDEN,
     KZG_TTL_MID_SEKUNDEN,
-    KZG_TTL_HIGH_SEKUNDEN,
     redis_client,
 )
 from memory.kzg import _kzg_key, salienz_berechnen
 from memory.pipeline_log import log_db_write
-from services.model_services import model_service, EmbedRequest
+from services.model_services import EmbedRequest, model_service
 
 logger = logging.getLogger("ki_server.agents.kzg.speicher")
 

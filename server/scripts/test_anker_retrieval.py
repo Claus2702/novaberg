@@ -17,9 +17,9 @@ Aufruf im Server-Container (NICHT in der Sandbox):
 
 import logging
 
-from config            import POSTGRES_URL, EMBED_MODEL, ollama_gpu_embed
+from config import EMBED_MODEL, POSTGRES_URL, ollama_gpu_embed
 from memory.lzg_knoten import anker_retrieval
-from memory.utils      import embedding_zu_pgvector_str
+from memory.utils import embedding_zu_pgvector_str
 
 logging.basicConfig(
     level=logging.INFO,

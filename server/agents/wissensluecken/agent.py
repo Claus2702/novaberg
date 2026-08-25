@@ -14,7 +14,7 @@ import json
 import logging
 import random
 
-from agents.base import BaseAgent, AgentState, PeriodicTask
+from agents.base import AgentState, BaseAgent, PeriodicTask
 from agents.wissensluecken.berechnung import (
     STATUS_OFFEN,
     ist_dublette,
@@ -24,15 +24,15 @@ from agents.wissensluecken.berechnung import (
 from config import (
     ASSISTANT_USER_ID,
     DEFAULT_USER_ID,
+    LUECKEN_HINWEIS_THEMEN,
+    LUECKEN_INTERVALL_SEKUNDEN,
     LUECKEN_KANDIDATEN_JE_LAUF,
     LUECKEN_PRIORITAET,
-    LUECKEN_INTERVALL_SEKUNDEN,
     LUECKEN_SAAT_THEMEN,
-    LUECKEN_HINWEIS_THEMEN,
     get_node_config,
 )
 from memory.utils import embedding_zu_pgvector_str
-from services.model_services import model_service, BackgroundRequest, EmbedRequest
+from services.model_services import BackgroundRequest, EmbedRequest, model_service
 from tools.db_manager import db_manager
 
 logger = logging.getLogger("ki_server.agents.wissensluecken")

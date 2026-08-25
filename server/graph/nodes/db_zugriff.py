@@ -34,6 +34,15 @@ from ei.eigenzeit import (
     verfall_faktor,
 )
 from ei.raum import raum_ziel_bestimmen
+from graph.personality import (
+    Character,
+    Emotion,
+    InternalPersonality,
+    Personality,
+    Raum,
+)
+from graph.reiz import reiz_level
+from graph.state import ConversationState, reiz_herkunft
 from memory.charakter import (
     charakter_hash_retrieve_dict,
     nova_charakter_hash_retrieve_dict,
@@ -46,16 +55,6 @@ from memory.pipeline_log import (
     span_start,
 )
 from tools.db_manager import db_manager
-
-from graph.personality import (
-    Character,
-    Emotion,
-    InternalPersonality,
-    Personality,
-    Raum,
-)
-from graph.reiz import reiz_level
-from graph.state import ConversationState, reiz_herkunft
 
 logger = logging.getLogger("ki_server.db_zugriff")
 

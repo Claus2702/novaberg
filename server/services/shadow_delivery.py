@@ -36,13 +36,13 @@ from datetime import datetime
 import numpy as np
 import redis
 
-from config         import ASSISTANT_USER_ID, shutdown_event
-from ei.utils      import NEGATIVE_EMOTIONEN
+from config import ASSISTANT_USER_ID, shutdown_event
+from ei.utils import NEGATIVE_EMOTIONEN
 from memory.haltung import haltung_lesen
 from memory.pipeline_log import log_berechnung
 from memory.session import session_turns_retrieve
 from services.events import event_erzeugen
-from services.model_services import model_service, EmbedRequest
+from services.model_services import EmbedRequest, model_service
 from services.pixie.riegel import (
     Riegelkette,
     initiative_pruefen,
@@ -645,7 +645,7 @@ async def _delivery_ausfuehren(
                 ei_calc_rolle   = "character",
                 turn_id         = turn_id,
             )
-            logger.info(f"Delivery: AgentGraph — State erzeugt, starte invoke...")
+            logger.info("Delivery: AgentGraph — State erzeugt, starte invoke...")
             # ── Graph-Invoke async-isiert (Microservice-Welle Block 2 Phase 4, G6) ──
             # compiled_agent_graph.invoke ist ein kompletter sync LangGraph-
             # Durchlauf — die migrierten Worker-Calls darin (submit_sync) sind

@@ -43,7 +43,7 @@ ANTWORT: str = "Die freigegebene Antwort."
 class _Graph:
     """Ein CharacterGraph-Doppel mit steuerbarem Abbruchpunkt."""
 
-    def __init__(self, knoten: list, scheitert_bei: str | None = None):
+    def __init__(self, knoten: list, scheitert_bei: str | None = None) -> None:
         self._knoten = knoten
         self._scheitert_bei = scheitert_bei
 

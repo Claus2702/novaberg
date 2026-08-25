@@ -13,14 +13,14 @@ Kein LLM-Call. Reine Mathematik. Analog zum SynapsenDecayAgent.
 import logging
 import uuid
 
-from agents.base import BaseAgent, AgentState, PeriodicTask
+from agents.base import AgentState, BaseAgent, PeriodicTask
 from config import (
+    DEFAULT_USER_ID,
+    PIXIE_DECAY_INTERVALL_SEKUNDEN,
+    PIXIE_DECAY_PRIORITAET,
+    POSTGRES_URL,
     ZIEL_DECAY_AKTIV,
     ZIEL_MITTELFRISTIG_DECAY_TAGE,
-    PIXIE_DECAY_PRIORITAET,
-    PIXIE_DECAY_INTERVALL_SEKUNDEN,
-    POSTGRES_URL,
-    DEFAULT_USER_ID,
 )
 from memory import pipeline_log
 from memory.ziele import ziel_decay_lauf

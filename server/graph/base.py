@@ -15,29 +15,28 @@ import redis
 from langgraph.graph import END  # noqa: F401 — re-export für Subklassen
 from langgraph.graph.state import CompiledStateGraph
 
-from config                 import ASSISTANT_NAME, ASSISTANT_USER_ID
-from graph.state           import ConversationState
-from graph.einwand         import Einwandsurteil
-from graph.personality     import Personality, InternalPersonality
-from graph.nodes.perzeption import perceive
-from graph.nodes.router     import route
-from graph.nodes.enricher  import enrich
-from graph.nodes.ei_calc   import ei_calc
-from graph.nodes.emotionale_gravitation import emotionale_gravitation_anwenden
-from graph.nodes.haltung   import haltung_bestimmen
-from graph.nodes.planner   import plan
-from graph.nodes.reducer   import reduce_memory
-from graph.nodes.responder import respond
-from graph.nodes.verfasser import verfassen
-from graph.nodes.thinker   import think
-from graph.nodes.tribunal  import judge, evaluate
+from config import ASSISTANT_NAME, ASSISTANT_USER_ID
+from graph.einwand import Einwandsurteil
+from graph.nodes.agent_dispatch import agent_dispatch_node
 from graph.nodes.corrector import correct
-from graph.nodes.salience  import analyze
-from graph.nodes.dispatcher      import dispatch
-from graph.nodes.agent_dispatch  import agent_dispatch_node
-
+from graph.nodes.dispatcher import dispatch
+from graph.nodes.ei_calc import ei_calc
+from graph.nodes.emotionale_gravitation import emotionale_gravitation_anwenden
+from graph.nodes.enricher import enrich
+from graph.nodes.haltung import haltung_bestimmen
+from graph.nodes.perzeption import perceive
+from graph.nodes.planner import plan
+from graph.nodes.reducer import reduce_memory
+from graph.nodes.responder import respond
+from graph.nodes.router import route
+from graph.nodes.salience import analyze
+from graph.nodes.thinker import think
+from graph.nodes.tribunal import evaluate, judge
+from graph.nodes.verfasser import verfassen
+from graph.personality import InternalPersonality, Personality
+from graph.state import ConversationState
 from memory.kzg import kzg_index_create
-from plugins    import discover_managers, get_registry
+from plugins import discover_managers
 
 logger = logging.getLogger("ki_server.graph.base")
 

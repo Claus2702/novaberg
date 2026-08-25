@@ -21,18 +21,17 @@ Zeugen dieser Datei:
 Kein skipUnless, kein skipIf, kein try/except um Importe.
 """
 
-import logging
 import time
 import unittest
 from unittest.mock import patch
 
-from config import PIXIE_CHARAKTER_KZG_LIMIT
 from agents.charakter.agent import CharakterAgent
 from agents.charakter.destillation import (
-    zeitgewicht,
-    alterszone,
     adaptive_hash_destillieren,
+    alterszone,
+    zeitgewicht,
 )
+from config import PIXIE_CHARAKTER_KZG_LIMIT
 
 AGENT_LOGGER:        str = "ki_server.agents.charakter"
 DESTILLATION_LOGGER: str = "ki_server.agents.charakter.destillation"

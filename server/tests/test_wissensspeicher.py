@@ -41,6 +41,7 @@ from pathlib import Path
 from unittest.mock import patch
 
 import psycopg2
+
 from agents.recherche.agent import Durchlauf, RechercheAgent, _salienz_aus_auftrag
 from agents.recherche.gate import ergebnis_einordnen
 from config import POSTGRES_URL, WISSENSSPEICHER_DATEI_MODUS, WISSENSSPEICHER_WURZEL

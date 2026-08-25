@@ -118,7 +118,8 @@ class DerInhaltStehtInDritterPersonTest(unittest.TestCase):
 
     def test_die_form_bleibt_ausdruecklich_bei_der_zweiten_stufe(self) -> None:
         """Der positive Zwilling: Der Verfasser verliert die Stimme, nicht den
-        Inhalt."""
+        Inhalt.
+        """
         prompt: str = verf_mod._build_system_prompt(_state())
 
         self.assertIn("Wesen, Waerme, Naehe, Laune und Anrede", prompt)

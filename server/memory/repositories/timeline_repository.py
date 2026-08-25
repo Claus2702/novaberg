@@ -227,7 +227,7 @@ class TimelineRepository:
     ) -> list[dict]:
         """
         Alle Termine mit einer bestimmten Entität (aktive).
-        "Wann treffe ich Julia das nächste Mal?"
+        "Wann treffe ich Julia das nächste Mal?".
         """
         conn = psycopg2.connect(postgres_url)
         try:

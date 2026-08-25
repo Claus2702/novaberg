@@ -35,8 +35,6 @@ import unittest
 from types import SimpleNamespace
 from unittest.mock import MagicMock, patch
 
-from services import shadow_delivery
-
 from agents.kzg.dispatch import dispatch_kzg
 from agents.kzg.verdichtung import verdichten
 from graph.nodes import dispatcher as disp_mod
@@ -48,6 +46,7 @@ from graph.nodes.thinker import _retry_nutzlast
 from graph.personality import Emotion, InternalPersonality, Personality
 from graph.reiz import reiz_ist_eigener_gedanke, reiz_text
 from graph.state import ConversationState
+from services import shadow_delivery
 
 # Von Hand gesetzt, nicht aus dem Pruefobjekt gelesen. Der Satz kommt aus dem
 # Gegenstand des Konzepts — ein Rechercheergebnis, wie es auf dem Stapel liegt.
