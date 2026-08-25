@@ -34,7 +34,15 @@ logger = logging.getLogger("ki_server.agents.wissen_rueckweg.einarbeitung")
 TEXT_KAPPUNG: int = 12000
 
 #: Die Versionsangabe im Kopf der Wissensdatei.
-_VERSION_ZEILE: re.Pattern = re.compile(r"^\*\*Version:\*\*\s*(?P<wert>\S+)\s*$", re.M)
+#:
+#: **Der abschliessende Freiraum ist waagerecht begrenzt** (`[^\S\n]`), nicht
+#: `\s`. Im Mehrzeilen-Modus schliesst `\s` den Zeilenumbruch ein: `\s*$` frisst
+#: ihn und die Leerzeile darunter gleich mit, weil `$` auch vor einer leeren
+#: Zeile steht. Die Ersetzung schreibt keinen Umbruch zurueck — der Kopf
+#: verliert bei jedem Stempel seine Trennung zur Linie darunter.
+_VERSION_ZEILE: re.Pattern = re.compile(
+    r"^\*\*Version:\*\*[^\S\n]*(?P<wert>\S+)[^\S\n]*$", re.M,
+)
 
 #: Vorgabe, wenn eine Datei keine Versionsangabe trägt. Sie ist erkennbar
 #: keine gewachsene Zahl — eine Datei ohne Kopf soll nicht so aussehen, als

@@ -28,7 +28,9 @@ Die Zusicherungen, die hier geprüft werden:
 Kein skipUnless, kein skipIf, kein try/except um Importe.
 """
 
+import tempfile
 import unittest
+from pathlib import Path
 from unittest.mock import patch
 
 from agents.wissen_rueckweg import (
@@ -516,6 +518,83 @@ class VerdrahtungTest(unittest.TestCase):
             encoding="utf-8",
         )
         self.assertIn('"turn_id":            turn_id,', quelle)
+
+
+
+class VersionsstempelTest(unittest.TestCase):
+    """Der Stempel fasst die Versionszeile an — und sonst nichts.
+
+    Der Zeuge fährt eine echte Datei, keine Nachbildung: Der Defekt, den er
+    bewacht, sitzt im Zusammenspiel von Suchmuster und Ersetzung und ist an
+    einem Rückgabewert nicht zu sehen. `version_fortschreiben` gibt in beiden
+    Fällen `1.1` zurück — die Datei darunter ist eine andere.
+    """
+
+    def _datei(self, kopf: str) -> tuple[Path, Path]:
+        """Legt eine Wissensdatei mit dem gegebenen Kopf an und gibt (Wurzel, Datei)."""
+        wurzel = Path(self._tmp.name)
+        ziel = wurzel / "2026-08-23_meister_probe_wissen.md"
+        ziel.write_text(kopf, encoding="utf-8")
+        return wurzel, ziel
+
+    def setUp(self) -> None:
+        self._tmp = tempfile.TemporaryDirectory()
+        self.addCleanup(self._tmp.cleanup)
+
+    def test_die_leerzeile_unter_der_version_ueberlebt_den_stempel(self) -> None:
+        """Der Kopf ist danach derselbe — eine Ziffer weiter, keine Zeile weniger."""
+        wurzel, ziel = self._datei(
+            "# Probe\n\n"
+            "**Erstellt:** 23.08.2026\n"
+            "**Recherchiert fuer:** meister\n"
+            "**Modus:** recherche\n"
+            "**Version:** 1.0\n"
+            "\n"
+            "---\n"
+            "\n"
+            "## AKTUELL\n"
+            "\n"
+            "Ein Satz, der lang genug ist, um als Aussage zu gelten.\n",
+        )
+
+        neu: str = einarbeitung.version_fortschreiben(ziel, wurzel)
+
+        self.assertEqual("1.1", neu)
+        self.assertIn(
+            "**Version:** 1.1\n\n---",
+            ziel.read_text(encoding="utf-8"),
+            "Der Stempel hat die Leerzeile zwischen Kopf und Trennlinie gefressen",
+        )
+
+    def test_der_rest_der_datei_bleibt_zeichengleich(self) -> None:
+        """Ausser der Versionszeile darf sich nichts unterscheiden.
+
+        Die Gegenprobe zum Zeugen darueber: Der prueft eine Stelle, dieser
+        prueft, dass es bei der einen Stelle geblieben ist.
+        """
+        vorher: str = (
+            "# Probe\n\n"
+            "**Erstellt:** 23.08.2026\n"
+            "**Version:** 1.4\n"
+            "\n"
+            "---\n"
+            "\n"
+            "## AKTUELL\n"
+            "\n"
+            "Ein Satz. [i1>] Noch einer.\n"
+            "\n"
+            "## HISTORIE\n"
+            "\n"
+            "[<i1_1.1_2026-08-23]\n"
+        )
+        wurzel, ziel = self._datei(vorher)
+
+        einarbeitung.version_fortschreiben(ziel, wurzel)
+
+        self.assertEqual(
+            vorher.replace("**Version:** 1.4", "**Version:** 1.5"),
+            ziel.read_text(encoding="utf-8"),
+        )
 
 
 if __name__ == "__main__":
